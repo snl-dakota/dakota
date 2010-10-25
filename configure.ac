@@ -156,7 +156,6 @@ AM_CONDITIONAL(HAVE_CPPUNIT, test "$found_cppunit" = "yes")
 AC_CONFIG_FILES([Makefile 
                  Makefile.export
 		 packages/Makefile
-		 methods/Makefile
                  src/Makefile
                  test/Makefile
                  examples/Makefile

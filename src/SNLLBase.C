@@ -110,7 +110,7 @@ snll_post_instantiate(const int& num_cv, bool vendor_num_grad_flag,
 {
   // These options belong to the abstract base classes NLP0 and OptimizeClass
   // and are set after the pointer assignments. See bottom of
-  // methods/OPTPP/libopt/optnewtonlike.C for options.
+  // libopt/optnewtonlike.C in the OPT++ repository for options.
 
   // fcn_acc = fdss*fdss (forward) || fdss*fdss*fdss (central)
   if ( vendor_num_grad_flag ) {

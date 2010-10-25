@@ -66,7 +66,7 @@ namespace Dakota {
     value_based_line_search is used.  Otherwise (the "is_expensive"
     default is off), the algorithm will use the \c
     gradient_based_line_search.  Refer to [Meza, J.C., 1994] and to
-    the OPT++ source in the Dakota/methods/OPTPP directory for
+    the OPT++ source in the Dakota/packages/OPTPP directory for
     information on OPT++ class member functions. */
 
 class SNLLOptimizer: public Optimizer, public SNLLBase

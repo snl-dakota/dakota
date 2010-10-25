@@ -71,8 +71,8 @@ endif
 
 ## Methods;
 if WITH_ACRO
-ACRO_ROOT       = $(top_srcdir)/methods/acro
-ACRO_BUILD      = $(top_builddir)/methods/acro
+ACRO_ROOT       = $(top_srcdir)/packages/acro
+ACRO_BUILD      = $(top_builddir)/packages/acro
 ACRO_INCL       = -I$(ACRO_BUILD)/include -I$(ACRO_BUILD)/include/tinyxml
 ACRO_ARCHIVE    = $(ACRO_BUILD)/packages/coliny/src/libcoliny.a \
 		  $(ACRO_BUILD)/packages/colin/src/libcolin.a \
@@ -89,8 +89,8 @@ AMPL_ARCHIVE	= $(top_builddir)/packages/ampl/funcadd0.o \
 endif
 
 if WITH_APPSPACK
-HOPSPACK_ROOT    = $(top_srcdir)/methods/hopspack
-HOPSPACK_BUILD   = $(top_builddir)/methods/hopspack
+HOPSPACK_ROOT    = $(top_srcdir)/packages/hopspack
+HOPSPACK_BUILD   = $(top_builddir)/packages/hopspack
 HOPSPACK_INCL    = -I$(HOPSPACK_ROOT)/src-appspack  \
 		   -I$(HOPSPACK_ROOT)/src-cddlib    \
 		   -I$(HOPSPACK_ROOT)/src-conveyor  \
@@ -107,16 +107,16 @@ HOPSPACK_OPT_S   = APPSEvalMgr.C APPSOptimizer.C
 endif
 
 if WITH_CONMIN
-CONMIN_SRC       = $(top_srcdir)/methods/CONMIN/src
-CONMIN_BUILD     = $(top_builddir)/methods/CONMIN/src
+CONMIN_SRC       = $(top_srcdir)/packages/CONMIN/src
+CONMIN_BUILD     = $(top_builddir)/packages/CONMIN/src
 CONMIN_ARCHIVE   = $(CONMIN_BUILD)/libconmin.la
 CONMIN_OPT_H     = CONMINOptimizer.H
 CONMIN_OPT_S	 = CONMINOptimizer.C
 endif
 
 if WITH_DDACE
-DDACE_SRC       = $(top_srcdir)/methods/DDACE
-DDACE_BUILD     = $(top_builddir)/methods/DDACE
+DDACE_SRC       = $(top_srcdir)/packages/DDACE
+DDACE_BUILD     = $(top_builddir)/packages/DDACE
 DDACE_ARCHIVE   = $(DDACE_BUILD)/src/libddace.la
 DDACE_INCL      = -I$(DDACE_BUILD) -I$(DDACE_SRC)/include
 DDACE_H         = DDACEDesignCompExp.H
@@ -129,32 +129,32 @@ DL_SOLVER_S	= DLSolver.C
 endif
 
 if WITH_DOT
-DOT_SRC       = $(top_srcdir)/methods/DOT/dbl_prec
-DOT_BUILD     = $(top_builddir)/methods/DOT/dbl_prec
+DOT_SRC       = $(top_srcdir)/packages/DOT/dbl_prec
+DOT_BUILD     = $(top_builddir)/packages/DOT/dbl_prec
 DOT_ARCHIVE   = $(DOT_BUILD)/libdot.la
 DOT_OPT_H     = DOTOptimizer.H
 DOT_OPT_S     = DOTOptimizer.C
 endif
 
 if WITH_FSUDACE
-FSUD_SRC       = $(top_srcdir)/methods/FSUDace
-FSUD_INCL      = -I$(top_builddir)/methods/FSUDace -I$(FSUD_SRC)
-FSUD_BUILD     = $(top_builddir)/methods/FSUDace
+FSUD_SRC       = $(top_srcdir)/packages/FSUDace
+FSUD_INCL      = -I$(top_builddir)/packages/FSUDace -I$(FSUD_SRC)
+FSUD_BUILD     = $(top_builddir)/packages/FSUDace
 FSUD_ARCHIVE   = $(FSUD_BUILD)/libfsudace.la
 FSU_DACE_H     = FSUDesignCompExp.H
 FSU_DACE_S     = FSUDesignCompExp.C
 endif
 
 if WITH_GPMSA
-GPMSA_SRC     = $(top_srcdir)/methods/gpmsa
-##GPMSA_BUILD   = $(top_builddir)/methods/gpmsa
+GPMSA_SRC     = $(top_srcdir)/packages/gpmsa
+##GPMSA_BUILD   = $(top_builddir)/packages/gpmsa
 GPMSA_INCL    = -I$(GPMSA_SRC)
 GPMSA_H       = NonDGPMSABayesCalibration.H
 GPMSA_S       = NonDGPMSABayesCalibration.C
 endif
 
 if WITH_QUESO
-QUESO_BUILD   = $(top_builddir)/methods/queso
+QUESO_BUILD   = $(top_builddir)/packages/queso
 QUESO_INCL    = -I$(QUESO_BUILD)
 QUESO_ARCHIVE = $(QUESO_BUILD)/libqueso.la
 QUESO_H       = NonDQUESOBayesCalibration.H
@@ -162,48 +162,48 @@ QUESO_S       = NonDQUESOBayesCalibration.C
 endif
 
 if WITH_JEGA
-JEGA_ROOT      = $(top_srcdir)/methods/JEGA
+JEGA_ROOT      = $(top_srcdir)/packages/JEGA
 JEGA_SRC       = $(JEGA_ROOT)/src
 JEGA_MOGA_SRC  = $(JEGA_ROOT)/MOGA/src
 JEGA_SOGA_SRC  = $(JEGA_ROOT)/SOGA/src
 JEGA_UTIL_SRC  = $(JEGA_ROOT)/Utilities/src
-JEGA_INCL      = -I$(top_builddir)/methods/JEGA \
-		 -I$(top_builddir)/methods/JEGA/eddy \
+JEGA_INCL      = -I$(top_builddir)/packages/JEGA \
+		 -I$(top_builddir)/packages/JEGA/eddy \
 		 -I$(JEGA_ROOT) -I$(JEGA_ROOT)/include \
                  -I$(JEGA_ROOT)/eddy
-JEGA_BUILD     = $(top_builddir)/methods/JEGA/src
+JEGA_BUILD     = $(top_builddir)/packages/JEGA/src
 JEGA_ARCHIVE   = $(JEGA_BUILD)/libjega.la
 JEGA_OPT_H     = JEGAOptimizer.H
 JEGA_OPT_S     = JEGAOptimizer.C
 endif
 
 if WITH_NCSU
-NCSU_SRC     = $(top_srcdir)/methods/NCSUOpt
-NCSU_BUILD   = $(top_builddir)/methods/NCSUOpt
+NCSU_SRC     = $(top_srcdir)/packages/NCSUOpt
+NCSU_BUILD   = $(top_builddir)/packages/NCSUOpt
 NCSU_ARCHIVE = $(NCSU_BUILD)/libncsuopt.a
 NCSU_OPT_H   = NCSUOptimizer.H
 NCSU_OPT_S   = NCSUOptimizer.C
 endif
 
 if WITH_NL2SOL
-NL2SOL_SRC      = $(top_srcdir)/methods/NL2SOL
-NL2SOL_BUILD    = $(top_builddir)/methods/NL2SOL
+NL2SOL_SRC      = $(top_srcdir)/packages/NL2SOL
+NL2SOL_BUILD    = $(top_builddir)/packages/NL2SOL
 NL2SOL_ARCHIVE  = $(NL2SOL_BUILD)/libcport.la
 NL2SOL_OPT_H    = NL2SOLLeastSq.H
 NL2SOL_OPT_S    = NL2SOLLeastSq.C
 endif
 
 if WITH_NLPQL
-NLPQL_SRC       = $(top_srcdir)/methods/NLPQL
-NLPQL_BUILD     = $(top_builddir)/methods/NLPQL
+NLPQL_SRC       = $(top_srcdir)/packages/NLPQL
+NLPQL_BUILD     = $(top_builddir)/packages/NLPQL
 NLPQL_ARCHIVE   = $(NLPQL_BUILD)/libnlpql.la
 NLPQL_OPT_H     = NLPQLPOptimizer.H
 NLPQL_OPT_S     = NLPQLPOptimizer.C
 endif
 
 if WITH_NPSOL
-NPSOL_SRC       = $(top_srcdir)/methods/NPSOL
-NPSOL_BUILD     = $(top_builddir)/methods/NPSOL
+NPSOL_SRC       = $(top_srcdir)/packages/NPSOL
+NPSOL_BUILD     = $(top_builddir)/packages/NPSOL
 NPSOL_ARCHIVE   = $(NPSOL_BUILD)/libnpsol.la
 NPSOL_OPT_H     = SOLBase.H \
 		  NPSOLOptimizer.H \
@@ -215,8 +215,8 @@ NPSOL_OPT_S     = SOLBase.C \
 endif
 
 if WITH_OPTPP
-OPTPP_SRC       = $(top_srcdir)/methods/OPTPP
-OPTPP_BUILD     = $(top_builddir)/methods/OPTPP
+OPTPP_SRC       = $(top_srcdir)/packages/OPTPP
+OPTPP_BUILD     = $(top_builddir)/packages/OPTPP
 OPTPP_INCL      = -I$(OPTPP_BUILD)/include -I$(OPTPP_SRC)/include \
 		  -I$(OPTPP_SRC)/newmat11
 OPTPP_ARCHIVE   = $(OPTPP_BUILD)/lib/libopt.la
@@ -230,8 +230,8 @@ OPTPP_OPT_S     = SNLLBase.C \
 endif
 
 if WITH_PSUADE
-PSUADE_SRC      = $(top_srcdir)/methods/PSUADE
-PSUADE_BUILD    = $(top_builddir)/methods/PSUADE
+PSUADE_SRC      = $(top_srcdir)/packages/PSUADE
+PSUADE_BUILD    = $(top_builddir)/packages/PSUADE
 PSUADE_INCL     = -I${PSUADE_BUILD} -I${PSUADE_SRC}
 PSUADE_ARCHIVE  = $(PSUADE_BUILD)/libpsuade.la
 PSUADE_H	= PSUADEDesignCompExp.H

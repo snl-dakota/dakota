@@ -17,7 +17,7 @@ SUBDIRS += motif plplot
 endif
 
 ##if WITH_PECOS
-SUBDIRS += Pecos
+SUBDIRS += pecos
 ##endif
 
 ## Need some AC_SUBST magic to handle optional directories like Surfpack.

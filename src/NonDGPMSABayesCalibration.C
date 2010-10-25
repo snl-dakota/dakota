@@ -18,7 +18,7 @@
 #include "DakotaResponse.H"
 #include "ProblemDescDB.H"
 #include "NonDLHSSampling.H"
-// includes from methods/gpmsa
+// includes from gpmsa TPL
 #ifdef DAKOTA_GPMSA
 #include "GPmodel.h"
 //#include "rawData.h"

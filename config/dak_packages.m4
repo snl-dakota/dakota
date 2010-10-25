@@ -338,7 +338,7 @@ AC_DEFUN([DAK_PACKAGES],[
   dnl AC_ARG_WITH([pecos],AS_HELP_STRING([--without-pecos],
   dnl 	      [turn Pecos support off]),[with_pecos=$withval],[with_pecos=yes])
   dnl if test "x$with_pecos" = xyes; then
-     AC_CONFIG_SUBDIRS([packages/Pecos])
+     AC_CONFIG_SUBDIRS([packages/pecos])
      AC_DEFINE([DAKOTA_PECOS],[1],
 	       [Macro to handle code which depends on PECOS.])
   dnl fi
@@ -361,16 +361,16 @@ AC_DEFUN([DAK_PACKAGES],[
 					[turn SURFPACK support off]),
 	      [with_surfpack=$withval],[with_surfpack=yes])
   if test "x$with_surfpack" = xyes -a -d $srcdir/packages/Surfpack; then
-    AC_CONFIG_SUBDIRS([packages/Surfpack])
+    AC_CONFIG_SUBDIRS([packages/surfpack])
     AC_DEFINE([DAKOTA_SURFPACK],[1],
 	      [Macro to handle code which depends on SURFPACK.])
-    MAYBE_SURFPACK=Surfpack
+    MAYBE_SURFPACK=surfpack
   else
     MAYBE_SURFPACK=
   fi
   AC_SUBST([MAYBE_SURFPACK])
   AM_CONDITIONAL([WITH_SURFPACK],[test "x$with_surfpack" = xyes -a \
-				       -d $srcdir/packages/Surfpack])
+				       -d $srcdir/packages/surfpack])
 
   dnl GSL package check.
   AC_ARG_WITH([gsl],

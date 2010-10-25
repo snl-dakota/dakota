@@ -1,10 +1,10 @@
 ## Process this file with automake to produce 'Makefile.in'.
 
 ## Need the config directory for its m4 files.
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I config
 
 ## Source subdirectories to be recursed into during the build.
-SUBDIRS = packages methods src
+SUBDIRS = packages src
 if ENABLE_TESTS
 SUBDIRS += test
 endif
