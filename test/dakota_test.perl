@@ -53,34 +53,34 @@
 #
 #      dakota_test.perl base
 #      -> executes all the serial tests in the current directory
-#         and creates a new baseline file, dakota_base.test
+#         and creates a new baseline file, dakota_base.test.new
 #
 # -- parallel baseline
 #
 #      dakota_test.perl parallel base
 #      -> executes all the parallel tests in the current directory
-#         and creates a new baseline file, dakota_pbase.test
+#         and creates a new baseline file, dakota_pbase.test.new
 #
 # Baseline creating guidelines:
 #
 # To create a new serial baseline :
 # 1. Run dakota_test.perl in baseline serial mode
 #      dakota_test.perl base
-# 2. Review results in dakota_base.test to make sure all tests executed
+# 2. Review results in dakota_base.test.new to make sure all tests executed
 #    correctly. Making sure any expected changes are present and are reasonable.
-# 3. copy the dakota_base.test file to the test/sqa directory.
-#      cp dakota_base.test sqa
-# 4. commit the update dakota_base.test to Subversion
+# 3. copy the dakota_base.test.new file
+#      cp dakota_base.test.new dakota_base.test
+# 4. commit the updated dakota_base.test to Subversion
 #      svn commit
 #
 # To create a new parallel baseline :
 # 1. Run dakota_test.perl in baseline parallel mode
 #      dakota_test.perl parallel base
-# 2. Review results in dakota_pbase.test .to make sure all tests executed
+# 2. Review results in dakota_pbase.test.new .to make sure all tests executed
 #    correctly. Making sure any expected changes are present and are reasonable.
-# 3. Copy the dakota_pbase.test file to the test/sqa directory.
-#      cp dakota_pbase.test sqa
-# 4. commit the update dakota_pbase.test to Subversion
+# 3. Copy the dakota_pbase.test.new file
+#      cp dakota_pbase.test.new dakota_pbase.test
+# 4. commit the updated dakota_pbase.test to Subversion
 #      svn commit
 #
 #######################################################################
@@ -156,12 +156,12 @@ else {
 # Create a new baseline file for output.  Define filename based on mode.
 if ($mode == 2) {
   if ($parallel == 1) {
-    open (TEST_OUT, ">dakota_pbase.test") ||
-      die "cannot open dakota_pbase.test\n$!";
+    open (TEST_OUT, ">dakota_pbase.test.new") ||
+      die "cannot open dakota_pbase.test.new\n$!";
   }
   else {
-    open (TEST_OUT, ">dakota_base.test") ||
-      die "cannot open dakota_base.test\n$!";
+    open (TEST_OUT, ">dakota_base.test.new") ||
+      die "cannot open dakota_base.test.new\n$!";
   }
 }
 
@@ -657,10 +657,10 @@ foreach $file (@testin) {
     close(TEST_OUT);
     # diff the test output against the base output and save to a file
     if ($parallel == 1) {
-      system("sqa/dakota_diff.perl $file sqa/dakota_pbase.test $test >> dakota_pdiffs.out");
+      system("dakota_diff.perl $file dakota_pbase.test $test >> dakota_pdiffs.out");
     }
     else {
-      system("sqa/dakota_diff.perl $file sqa/dakota_base.test $test >> dakota_diffs.out");
+      system("dakota_diff.perl $file dakota_base.test $test >> dakota_diffs.out");
     }
   }
   # remove unneeded files (especially $tempin since the last instance of this

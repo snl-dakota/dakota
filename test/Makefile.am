@@ -209,19 +209,9 @@ dist_noinst_SCRIPTS = acro_test.pl \
 		      test_3pc_if \
 		      test_3pc_of \
 		      acro/dakota_test \
-		      sqa/checkout_script.csh \
-		      sqa/create_votd.csh \
-		      sqa/dakota_diff.perl \
-		      sqa/dakota_test.perl \
-		      sqa/dakota_update_input.perl \
-		      sqa/extract_bin.csh \
-		      sqa/extract_src.csh \
-		      sqa/grep_error.perl \
-		      sqa/make_script.csh \
-		      sqa/run_base_test.csh \
-		      sqa/run_package_test.csh \
-		      sqa/send_base_mail.csh \
-		      sqa/send_package_mail.csh
+		      dakota_diff.perl \
+		      dakota_test.perl \
+		      dakota_update_input.perl 
 
 ## Define the files which should be in the distribution.
 include $(srcdir)/Makefile.dist
