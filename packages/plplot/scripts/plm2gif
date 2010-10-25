@@ -1,0 +1,74 @@
+#!/bin/sh
+############################################################################
+#
+# $Id: plm2gif 3186 2006-02-15 18:17:33Z slbrow $
+#
+# File: plm2gif
+# Usage: plm2gif [files] 
+#
+# Maurice J. LeBrun (mjl@dino.ph.utexas.edu)
+# Institute for Fusion Studies, University of Texas
+# 10-Jan-95
+#
+# Converts specified PLplot metafiles to GIF format files.  This is a
+# two-step process:
+#   1. process into postscript (with custom flags)
+#   2. convert to GIF using ghostscript (more custom flags)
+#
+# Each input file must end with ".plm", and a corresponding family of GIF
+# files ending with "<number>.gif" (one for each page) is created.
+#
+# The PLplot and ghostscript flags are chosen so that the output GIF file
+# plots have the correct aspect ratio.  This is complicated by the need to
+# swap the postscript orientation into landscape mode.  The GIF files
+# created are by default of resolution 640x480 or less.  To change, modify
+# $res accordingly (note: Y-res must be exactly 9/16 of X-res in order for
+# the plots to have the correct aspect ratio).
+#
+############################################################################
+
+# Settings
+
+gs="gs"
+res="75.3x42.36"	# 640 x 466
+#res="94.1x52.93"	# 800 x 582
+
+# First find plrender and check version.
+# Have to be a bit clever here since old versions of plrender returned an
+# error code of 1 when passed the -v flag.
+
+plversion=`plrender -v 2>&1 | awk 'NR == 2 {print $NF}'` || {
+    echo "How odd, don't you have awk?  Aborting."
+    exit 1
+}
+
+if test -z "$plversion"; then
+    echo "plrender not found, aborting"
+    exit 1
+fi
+
+if test `expr "$plversion" \< "4.99j"` -eq 1; then
+    echo "Must be running PLplot version 4.99j or later"
+    exit
+fi
+
+# Now find ghostscript
+
+gs_out=`$gs -v 2>&1` || {
+    echo "ghostscript ($gs) not found, aborting"
+    exit 1
+}
+
+# Finally, process files.
+
+for arg in $*
+    do
+    if test -f $arg; then
+	echo "Processing $arg.."
+	name=`basename $arg .plm`
+	plrender -dev psc -o $name.ps -ori 3 -freeaspect $arg >/dev/null 2>&1
+	$gs -sDEVICE=gif8 -r$res -sOutputFile=$name%d.gif $name.ps \
+	    </dev/null >/dev/null 2>&1 
+    fi
+done
+exit 0

@@ -1,0 +1,18 @@
+#_data=ampl/text_book _optimum=0.125 _opttol=1e02 _termination='Box-Size-Limit'
+_data=ampl/text_book_unc _optimum=0.0 _opttol=1e-2 _termination='Box-Size-Limit'
+_data=ampl/linear2 _optimum=-2.0 _opttol=1e-4 _termination='Box-Size-Limit'
+### Following test not working in DAKOTA/COLINY (funcadd.c)
+##_data=ampl/TestProblem0 _optimum=1.0
+#_data=ampl/TestProblem1 _optimum=0.0
+_data=ampl/TestProblem2 _optimum=27.0 _opttol=375 _termination='Box-Size-Limit'
+#_data=ampl/TestProblem3 _optimum=0.1715728752538099023 _opttol=1e-4
+#_data=ampl/TestProblem4 _optimum=1.3431457505076198045 _opttol=1e-3
+#_data=ampl/TestProblem5 _optimum=1.33333333333333333 _opttol=1e-2 step_tolerance=1e-8
+### Following test not working in DAKOTA/COLINY (funcadd.c)
+#_data=ampl/TestProblem6 _optimum=1.0 _opttol=1e-2 _termination='Max-Num-Evals'
+_data=ampl/TestProblem7 _optimum=0.0 _opttol=250 _termination='Box-Size-Limit'
+_data=ampl/TestProblem8 _optimum=0.1715728752538099023 _opttol=1000 _termination='Box-Size-Limit'
+_data=ampl/TestProblem9 _optimum=1.33333333333333333 _opttol=1e-4 _termination='Box-Size-Limit'
+_data=ampl/TestProblem11 _optimum=0.0 _opttol=3100 _termination='Max-Num-Evals-Curr'
+_data=ampl/TestProblem12 _optimum=19.4553 _opttol=300 _termination='Max-Num-Evals-Curr'
+#_data=ampl/TestProblem13 _optimum=9.0 _opttol=1e-3

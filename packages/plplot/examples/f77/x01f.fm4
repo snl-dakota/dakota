@@ -1,0 +1,209 @@
+C      $Id: x01f.fm4 3186 2006-02-15 18:17:33Z slbrow $
+C      Simple line plot and multiple windows demo.
+C
+C      Copyright (C) 2004  Alan W. Irwin
+C
+C      This file is part of PLplot.
+C
+C      PLplot is free software; you can redistribute it and/or modify
+C      it under the terms of the GNU General Library Public License as
+C      published by the Free Software Foundation; either version 2 of the
+C      License, or (at your option) any later version.
+C
+C      PLplot is distributed in the hope that it will be useful,
+C      but WITHOUT ANY WARRANTY; without even the implied warranty of
+C      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+C      GNU Library General Public License for more details.
+C
+C      You should have received a copy of the GNU Library General Public
+C      License along with PLplot; if not, write to the Free Software
+C      Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+      implicit none
+      real*8  x(101), y(101)
+      real*8  xs(6), ys(6)
+      real*8  xscale, yscale, xoff, yoff
+      common /plotdat/ x, y, xs, ys, xscale, yscale, xoff, yoff
+      character*80 version
+      integer digmax
+      integer PL_PARSE_FULL
+      parameter(PL_PARSE_FULL = 1)
+C      some fortran compilers demand typing of intrinsic lnblnk, and
+C      although this is not demanded on g77 it also works there.
+      integer lnblnk
+      
+C      Process command-line arguments
+      call plparseopts(PL_PARSE_FULL)
+
+C      Divide page into 2x2 plots
+      call plssub(2, 2)
+
+C      Print plplot version
+      call plgver(version)
+      write (0,'(a,a)') 'PLplot library version: ',
+     &  version(:lnblnk(version))
+
+C      Initialize plplot
+      call plinit()
+
+C      Set up the data
+C      Original case
+
+      xscale = 6.d0
+      yscale = 1.d0
+      xoff = 0.d0
+      yoff = 0.d0
+
+C      Do a plot
+
+      call plot1()
+
+C      Set up the data
+
+      xscale = 1.d0
+      yscale = 0.0014d0
+      yoff = 0.0185d0
+
+C      Do a plot
+
+      digmax = 5
+      call plsyax(digmax,  0)
+      call plot1()
+
+      call plot2()
+      call plot3()
+C      Don't forget to call PLEND to finish off!
+
+      call plend()
+      end
+C======================================================================
+
+      subroutine plot1()
+      implicit none
+
+      real*8 x(101), y(101)
+      real*8 xs(6), ys(6)
+      real*8  xscale, yscale, xoff, yoff,
+     &  xmin, xmax, ymin, ymax
+      integer i
+      common /plotdat/ x, y, xs, ys, xscale, yscale, xoff, yoff
+
+      do i = 1, 60
+        x(i) = xoff + xscale * dble(i)/60.0d0
+        y(i) = yoff + yscale * x(i)**2
+      enddo
+
+      xmin = x(1)
+      xmax = x(60)
+      ymin = y(1)
+      ymax = y(60)
+
+      do i = 1, 6
+        xs(i) = x((i-1)*10+4)
+        ys(i) = y((i-1)*10+4)
+      enddo
+
+C      Set up the viewport and window using PLENV. The range in X is
+C      0.0 to 6.0, and the range in Y is 0.0 to 30.0. The axes are
+C      scaled separately (just = 0), and we just draw a labelled
+C      box (axis = 0).
+
+      call plcol0(1)
+      call plenv( xmin, xmax, ymin, ymax, 0, 0 )
+      call plcol0(2)
+      call pllab( '(x)', '(y)', '#frPLplot Example 1 - y=x#u2' )
+
+C      Plot the data points
+
+      call plcol0(4)
+      call plpoin( 6, xs, ys, 9 )
+
+C      Draw the line through the data
+
+      call plcol0(3)
+      call plline( 60, x, y )
+      end
+
+C======================================================================
+
+      subroutine plot2()
+      real*8  x(101), y(101)
+      real*8  xs(6), ys(6)
+      real*8  xscale, yscale, xoff, yoff
+      integer i
+      common /plotdat/ x, y, xs, ys, xscale, yscale, xoff, yoff
+
+C======================================================================
+C
+C      Set up the viewport and window using PLENV. The range in X is
+C      -2.0 to 10.0, and the range in Y is -0.4 to 2.0. The axes are
+C      scaled separately (just = 0), and we draw a box with axes
+C      (axis = 1).
+
+      call plcol0(1)
+      call plenv(-2.0d0, 10.0d0, -0.4d0, 1.2d0, 0, 1 )
+      call plcol0(2)
+      call pllab( '(x)', 'sin(x)/x',
+     &            '#frPLplot Example 1 - Sinc Function' )
+
+C      Fill up the arrays
+
+      do i = 1, 100
+        x(i) = (i-20.0d0)/6.0d0
+        y(i) = 1.0d0
+        if (x(i) .ne. 0.0d0) y(i) = sin(x(i)) / x(i)
+      enddo
+C      Draw the line
+
+      call plcol0(3)
+      call plwid(2)
+      call plline( 100, x, y )
+      call plwid(1)
+      end
+
+C======================================================================
+      subroutine plot3()
+C
+C      For the final graph we wish to override the default tick intervals,
+C      and so do not use PLENV
+
+      real*8 PI
+      parameter (PI = 3.1415926535897932384d0)
+      real*8  x(101), y(101)
+      real*8  xs(6), ys(6)
+      real*8  xscale, yscale, xoff, yoff
+      integer i
+      common /plotdat/ x, y, xs, ys, xscale, yscale, xoff, yoff
+      call pladv(0)
+
+C      Use standard viewport, and define X range from 0 to 360 degrees,
+C      Y range from -1.2 to 1.2.
+
+      call plvsta()
+      call plwind( 0.0d0, 360.0d0, -1.2d0, 1.2d0 )
+
+C      Draw a box with ticks spaced 60 degrees apart in X, and 0.2 in Y.
+
+      call plcol0(1)
+      call plbox( 'bcnst', 60.0d0, 2, 'bcnstv', 0.2d0, 2 )
+
+C      Superimpose a dashed line grid, with 1.5 mm marks and spaces. With
+C      only a single mark and space element, we do not need arrays
+
+      call plstyl( 1, 1500, 1500 )
+      call plcol0(2)
+      call plbox( 'g', 30.0d0, 0, 'g', 0.2d0, 0 )
+      call plstyl( 0, 0, 0 )
+
+      call plcol0(3)
+      call pllab( 'Angle (degrees)', 'sine',
+     &            '#frPLplot Example 1 - Sine function' )
+
+      do i = 1, 101
+        x(i) = 3.6d0 * (i-1)
+        y(i) = sin( x(i) * PI/180.0d0 )
+      enddo
+
+      call plcol0(4)
+      call plline( 101, x, y )
+      end

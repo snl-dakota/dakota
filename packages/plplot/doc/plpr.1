@@ -1,0 +1,22 @@
+.\" -*- nroff -*-
+.TH PLPR 1
+.SH NAME
+plpr \- converts PLplot metafile to something the printer will understand
+.SH SYNOPSIS
+.B plpr
+.I "file"
+.SH "DESCRIPTION"
+This manual page documents briefly the
+.BR plpr ,
+command.
+.PP
+.B plpr
+Takes the named metafile and converts it to something your printer
+will understand.  This will be improved later to handle multiple
+printers and printer settings.  Only intended for use from the
+plplot/TK driver!  It deletes the named metafile after converting to
+the proper type so this is not suitable for general use.
+.SH "SEE ALSO"
+See /usr/share/doc/plplot/plplot.ps.gz for more details.
+.SH AUTHOR
+This manual page was written by Rafael Laboissiere <rafael@debian.org>.

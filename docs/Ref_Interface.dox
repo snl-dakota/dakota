@@ -1,0 +1,858 @@
+namespace Dakota {
+
+/** \page InterfCommands Interface Commands
+
+\htmlonly
+<b>Interface Commands Table of Contents</b>
+<ul>
+<li> <a href="InterfCommands.html#InterfDescr">Interface Description</a>
+<li> <a href="InterfCommands.html#InterfSpec">Interface Specification</a>
+<li> <a href="InterfCommands.html#InterfIndControl">Interface Independent 
+     Controls</a>
+<li> <a href="InterfCommands.html#InterfAlgebraic">Algebraic mappings</a>
+<li> <a href="InterfCommands.html#InterfApplic">Simulation interfaces</a>
+  <ul>
+  <li> <a href="InterfCommands.html#InterfApplicSC">System call interface</a>
+  <li> <a href="InterfCommands.html#InterfApplicF">Fork interface</a>
+  <li> <a href="InterfCommands.html#InterfApplicDF">Direct function 
+       interface</a>
+  <li> <a href="InterfCommands.html#InterfApplicG">Grid interface</a>
+  </ul>
+</ul>
+\endhtmlonly
+
+
+\section InterfDescr Interface Description
+
+
+The interface section in a DAKOTA input file specifies how function
+evaluations will be performed in order to map a set of parameters into
+a set of responses.  Function evaluations are performed using either
+algebraic mappings, interfaces to simulation codes, or a combination
+of the two.  
+
+When employing algebraic mappings, the AMPL solver library 
+[\ref Gay1997 "Gay, 1997"] is used to evaluate a directed acyclic 
+graph (DAG) specification from a separate <tt>stub.nl</tt> file.
+Separate <tt>stub.col</tt> and <tt>stub.row</tt> files are also
+required to declare the string identifiers of the subset of inputs and
+outputs, respectively, that will be used in the algebraic mappings.
+
+When employing mappings with simulation codes, the simulations may be
+available internally or externally to DAKOTA.  The interface invokes
+the simulation using either system calls, forks, direct function
+invocations, or computational grid invocations. In the system call and
+fork cases, the simulation is external to DAKOTA and communication
+between DAKOTA and the simulation occurs through parameter and
+response files.  In the direct function case, the simulation is
+internal to DAKOTA and communication occurs through the function
+parameter list.  The direct case can involve linked simulation codes
+or test functions which are compiled into the DAKOTA executable.  The
+test functions allow for rapid testing of algorithms without process
+creation overhead or engineering simulation expense.  The grid case is
+experimental and under development, but is intended to support
+simulations which are external to DAKOTA and geographically
+distributed.
+
+Several examples follow. The first example shows an system call
+interface specification which specifies the names of the analysis
+executable and the parameters and results files, and that parameters
+and responses files will be tagged and saved. Refer to 
+\ref InterfApplicSC for more information on the use of these options.
+\verbatim
+interface,
+	system
+	  analysis_drivers = 'rosenbrock'
+	  parameters_file  = 'params.in'
+	  results_file     = 'results.out'
+	  file_tag
+	  file_save
+\endverbatim
+
+The next example shows a similar specification, except that an
+external \c rosenbrock executable has been replaced by use of the
+internal \c rosenbrock test function from the DirectApplicInterface
+class.  Refer to \ref InterfApplicDF for more information on this
+specification.
+\verbatim
+interface,
+	direct
+	  analysis_drivers = 'rosenbrock'
+\endverbatim
+
+The final example demonstrates an interface employing both 
+algebraic and simulation-based mappings.  The results from the
+individual mappings are overlaid based on the variable and
+response descriptors used by the individual mappings.
+\verbatim
+interface,
+	algebraic_mappings = 'ampl/fma.nl'
+	system
+	  analysis_driver = 'text_book'
+	  parameters_file = 'tb.in'
+	  results_file    = 'tb.out'
+	  file_tag
+	asynchronous
+\endverbatim
+
+
+\section InterfSpec Interface Specification
+
+
+The interface specification has the following top-level structure:
+\verbatim
+interface,
+	<interface independent controls>
+	<algebraic mappings specification>
+	<simulation interface selection>
+	  <simulation interface dependent controls>
+\endverbatim
+
+The <tt>\<interface independent controls\></tt> are those controls
+which are valid for all interfaces. Referring to <a
+href="dakota.input.summary">dakota.input.summary</a>, these controls are
+defined externally from the algebraic mappings and simulation
+interface selection blocks (before and after). Both the algebraic
+mappings specification and the simulation interface selection are
+optional specifications, allowing the use of algebraic mappings alone,
+simulation-based mappings alone, or a combination.  The simulation
+interface selection blocks are all required group specifications
+separated by logical OR's, where the interface selection must be \c
+system, \c fork, \c direct, or \c grid. The <tt>\<interface dependent
+controls\></tt> are those controls which are only meaningful for a
+specific simulation interface selection.  These controls are defined
+within each interface selection block. Defaults for interface
+independent and simulation interface dependent controls are defined in
+DataInterface.  The following sections provide additional detail on
+the interface independent controls followed by the algebraic mappings
+specification, the simulation interface selections, and their
+corresponding simulation interface dependent controls.
+
+
+\section InterfIndControl Interface Independent Controls
+
+
+The optional set identifier specification uses the keyword \c
+id_interface to input a string for use in identifying a particular
+interface specification.  A model can then identify the use of this
+interface by specifying the same string in its \c interface_pointer
+specification (see \ref ModelCommands). For example, a model whose
+specification contains <tt>interface_pointer = 'I1'</tt> will use an
+interface specification with <tt>id_interface = 'I1'</tt>.  If the \c
+id_interface specification is omitted, a particular interface
+specification will be used by a model only if that model omits
+specifying a \c interface_pointer and if the interface set was the
+last set parsed (or is the only set parsed). In common practice, if
+only one interface set exists, then \c id_interface can be safely
+omitted from the interface specification and \c interface_pointer can
+be omitted from the model specification(s), since there is no
+potential for ambiguity in this case.
+
+Table \ref T8d1 "8.1" summarizes the set identifier interface 
+independent control.
+
+\anchor T8d1
+<table>
+<caption align = "top">
+\htmlonly
+Table 8.1
+\endhtmlonly
+Specification detail for interface independent controls: set identifier
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>%Interface set identifier
+<td>\c id_interface
+<td>string
+<td>Optional
+<td>use of last interface parsed
+</table>
+
+Table \ref T8d2 "8.2" summarizes the interface independent controls 
+associated with parallel computing.
+
+\anchor T8d2
+<table>
+<caption align = "top">
+\htmlonly
+Table 8.2
+\endhtmlonly
+Specification detail for interface independent controls: parallelism
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Asynchronous interface usage
+<td>\c asynchronous
+<td>none
+<td>Optional group
+<td>synchronous interface usage
+<tr>
+<td>Asynchronous evaluation concurrency
+<td>\c evaluation_concurrency
+<td>integer
+<td>Optional
+<td>local: unlimited concurrency, hybrid: no concurrency
+<tr>
+<td>Self-schedule local evals
+<td>\c local_evaluation_self_scheduling
+<td>none
+<td>Optional (1 of 2)
+<td>self-scheduled local evals
+<tr>
+<td>Static-schedule local evals
+<td>\c local_evaluation_static_scheduling
+<td>none
+<td>Optional (1 of 2)
+<td>self-scheduled local evals
+<tr>
+<td>Asynchronous analysis concurrency
+<td>\c analysis_concurrency
+<td>integer
+<td>Optional
+<td>local: unlimited concurrency, hybrid: no concurrency
+<tr>
+<td>Number of evaluation servers
+<td>\c evaluation_servers
+<td>integer
+<td>Optional
+<td>no override of auto configure
+<tr>
+<td>Self scheduling of evaluations
+<td>\c evaluation_self_scheduling
+<td>none
+<td>Optional
+<td>no override of auto configure
+<tr>
+<td>Static scheduling of evaluations
+<td>\c evaluation_static_scheduling
+<td>none
+<td>Optional
+<td>no override of auto configure
+<tr>
+<td>Number of analysis servers
+<td>\c analysis_servers
+<td>integer
+<td>Optional
+<td>no override of auto configure
+<tr>
+<td>Self scheduling of analyses
+<td>\c analysis_self_scheduling
+<td>none
+<td>Optional
+<td>no override of auto configure
+<tr>
+<td>Static scheduling of analyses
+<td>\c analysis_static_scheduling
+<td>none
+<td>Optional
+<td>no override of auto configure
+</table>
+
+The optional \c asynchronous flag specifies use of asynchronous
+protocols (i.e., background system calls, nonblocking forks, POSIX
+threads) when evaluations or analyses are invoked.  The \c
+evaluation_concurrency and \c analysis_concurrency specifications
+serve a dual purpose:
+
+\li when running DAKOTA on a single processor in \c asynchronous
+mode, the default concurrency of evaluations and analyses is all
+concurrency that is available.  The \c evaluation_concurrency and \c
+analysis_concurrency specifications can be used to limit this
+concurrency in order to avoid machine overload or usage policy
+violation.
+
+\li when running DAKOTA on multiple processors in message passing
+mode, the default concurrency of evaluations and analyses on each of
+the servers is one (i.e., the parallelism is exclusively that of the
+message passing).  With the \c evaluation_concurrency and \c
+analysis_concurrency specifications, a hybrid parallelism can be
+selected through combination of message passing parallelism with
+asynchronous parallelism on each server.
+
+The optional \c evaluation_servers and \c analysis_servers
+specifications support user overrides of the automatic parallel
+configuration for the number of evaluation servers and the number of
+analysis servers.  Similarly, the optional \c
+evaluation_self_scheduling, \c evaluation_static_scheduling, \c
+analysis_self_scheduling, and \c analysis_static_scheduling
+specifications can be used to override the automatic parallel
+configuration of scheduling approach at the evaluation and analysis
+parallelism levels.  That is, if the automatic configuration is
+undesirable for some reason, the user can enforce a desired number of
+partitions and a desired scheduling policy at these parallelism
+levels. Refer to ParallelLibrary and the Parallel Computing chapter of
+the Users Manual [\ref UsersMan "Adams et al., 2010"] for additional 
+information.
+
+When performing asynchronous local evaluations, the local evaluation
+scheduling keywords control how new evaluation jobs are dispatched
+when one completes.  If \c local_evaluation_self_scheduling (default)
+is specified, each completed evaluation will be replaced by the next
+in the local evaluation queue.  If \c
+local_evaluation_static_scheduling is specified, each completed
+evaluation will be replaced by an evaluation number congruent modulo
+the \c evaluation_concurrency.  This is helpful for relative node
+scheduling as described in \c Dakota/examples/parallelism.  For
+example, assuming only local concurrency (no MPI), if the local
+concurrency is 7 and job 2 completes, it will be replaced with job 9.
+This can result in idle processors if runtimes are non-uniform.
+
+
+\section InterfAlgebraic Algebraic mappings
+
+If desired, one can define algebraic input-output mappings using the
+AMPL code [\ref Ampl2003 "Fourer et al., 2003"] and save these
+mappings in 3 files: <tt>stub.nl</tt>, <tt>stub.col</tt>, and
+<tt>stub.row</tt>, where <tt>stub</tt> is a particular root name
+describing a particular problem.  These files names can be
+communicated to DAKOTA using the \c algebraic_mappings input.  This
+string may either specify the <tt>stub.nl</tt> filename, or
+alternatively, just the <tt>stub</tt> itself.
+
+DAKOTA then uses <tt>stub.col</tt> and <tt>stub.row</tt> to extract
+the input and output identifier strings and employs the AMPL solver
+library [\ref Gay1997 "Gay, 1997"] to process the DAG specification in
+<tt>stub.nl</tt>.  The variable and objective function names declared
+within AMPL should be a subset of the variable descriptors and
+response descriptors used by DAKOTA (see \ref VarCommands and \ref
+RespLabels).  Ordering is not important, as DAKOTA will reorder data
+as needed.
+
+Table \ref T8d3 "8.3" summarizes the algebraic mappings specification.
+
+\anchor T8d3
+<table>
+<caption align = "top">
+\htmlonly
+Table 8.3
+\endhtmlonly
+Specification detail for algebraic mappings
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Algebraic mappings file
+<td>\c algebraic_mappings
+<td>string
+<td>Optional
+<td>no algebraic mappings
+</table>
+
+
+\section InterfApplic Simulation interfaces
+
+
+Each simulation interface uses one or more simulator programs, and optionally
+filter programs, to perform the parameter to response mapping. The
+simulator and filter programs are invoked with system calls, forks,
+direct function calls, or computational grid invocations. In the
+system call and fork cases, a separate process is created for the
+simulator program and files are used for transfer of parameter and
+response data between DAKOTA and the simulator program. This approach
+is simple and reliable and does not require any modification to
+simulator programs.  In the direct function case, subroutine parameter
+lists are used to pass the parameter and response data. This approach
+requires modification to simulator programs so that they can be linked
+into DAKOTA; however it can be more efficient through the elimination
+of process creation overhead and deactivation of unnecessary simulator
+functions (e.g., output), can be less prone to loss of precision in
+that data can be passed directly rather than written to and read from
+a file, and can enable completely internal management of multiple
+levels of parallelism through the use of MPI communicator
+partitioning.  In the grid case, computational grid services are
+utilized in order to enable distribution of simulations across
+different computer resources.  This capability targets Condor and/or
+Globus services but is currently experimental and incomplete.
+
+Table \ref T8d4 "8.4" summarizes the interface independent controls 
+associated with the simulator programs.
+
+\anchor T8d4
+<table>
+<caption align = "top">
+\htmlonly
+Table 8.4
+\endhtmlonly
+Specification detail for simulation interface controls: drivers, 
+filters, failure capturing, and feature management
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Analysis drivers
+<td>\c analysis_drivers
+<td>list of strings
+<td>Required
+<td>N/A
+<tr>
+<td>Additional identifiers for use by the \c analysis_drivers
+<td>\c analysis_components
+<td>list of strings
+<td>Optional
+<td>no additional identifiers
+<tr>
+<td>Input filter
+<td>\c input_filter
+<td>string
+<td>Optional
+<td>no input filter
+<tr>
+<td>Output filter
+<td>\c output_filter
+<td>string
+<td>Optional
+<td>no output filter
+<tr>
+<td>Failure capturing
+<td>\c failure_capture
+<td>\c abort | \c retry (with integer data) | 
+\c recover (with list of reals data) | \c continuation
+<td>Optional group
+<!-- <td>algorithm-specific mitigation if available; otherwise abort -->
+<td>abort
+<tr>
+<td>Feature deactivation
+<td>\c deactivate
+<td>\c active_set_vector, \c evaluation_cache, and/or \c restart_file
+<td>Optional group
+<td>Active set vector control, function evaluation cache, and restart 
+file features are active
+</table>
+
+The required \c analysis_drivers specification provides the names of
+executable analysis programs or scripts which comprise a function
+evaluation.  The specification can also give values to environment
+variables that the programs will see; for details, see the subsection
+on Syntax for Filter and Driver Strings in the Interfaces chapter of
+the Users Manual [\ref UsersMan "Adams et al., 2010"].
+The common case of a single analysis driver is simply accommodated by
+specifying a list of one driver (this also provides backward
+compatibility with previous DAKOTA versions).  The optional
+\c analysis_components specification allows the user to provide
+additional identifiers (e.g., mesh file names) for use by the analysis
+drivers.  This is particularly useful when the same analysis driver is
+to be reused multiple times for slightly different analyses.  The
+specific content within the strings is open-ended and can involve
+whatever syntax is convenient for a particular analysis driver.  The
+number of analysis components \f$n_c\f$ should be an integer multiple
+of the number of drivers \f$n_d\f$, and the first \f$n_c/n_d\f$
+component strings will be passed to the first driver, etc.  The
+optional \c input_filter and \c output_filter specifications provide
+the names of separate pre- and post-processing programs or scripts
+which assist in mapping DAKOTA parameters files into analysis input
+files and mapping analysis output files into DAKOTA results files,
+respectively.  If there is only a single analysis driver, then it is
+usually most convenient to combine pre- and post-processing
+requirements into a single analysis driver script and omit the
+separate input and output filters. However, in the case of multiple
+analysis drivers, the input and output filters provide a convenient
+location for non-repeated pre- and post-processing requirements.  That
+is, input and output filters are only executed once per function
+evaluation, regardless of the number of analysis drivers, which makes
+them convenient locations for data processing operations that are
+shared among the analysis drivers.
+
+Failure capturing in interfaces is governed by the
+optional \c failure_capture specification. Supported directives for
+mitigating captured failures are \c abort (the default), \c retry, \c
+recover, and \c continuation.  The \c retry selection supports an
+integer input for specifying a limit on retries, and the \c recover
+selection supports a list of reals for specifying the dummy function
+values (only zeroth order information is supported) to use for the
+failed function evaluation.  Refer to the Simulation Code Failure
+Capturing chapter of the Users Manual [\ref UsersMan "Adams et al., 2010"] 
+for additional information.
+<!-- If no failure -->
+<!-- capturing specification is provided, then the default behavior is -->
+<!-- method dependent.  For those iterative algorithms that provide -->
+<!-- internal failure mitigation strategies (currently NL2SOL and MOOCHO), -->
+<!-- the default is to transfer the failure information from the interface -->
+<!-- back to the algorithm for mitigation, with no specific action taken by -->
+<!-- DAKOTA.  For all other algorithms, the default is to abort. -->
+
+The optional \c deactivate specification block includes three features
+which a user may deactivate in order to simplify interface development, 
+increase execution speed, and/or reduce memory and disk requirements:
+
+\li Active set vector (ASV) control: deactivation of this feature
+using a \c deactivate \c active_set_vector specification allows the
+user to turn off any variability in ASV values so that active set
+logic can be omitted in the user's simulation interface.  This option
+trades some efficiency for simplicity in interface development.  The
+default behavior is to request the minimum amount of data required by
+an algorithm at any given time, which implies that the ASV values may
+vary from one function evaluation to the next.  Since the user's
+interface must return the data set requested by the ASV values, this
+interface must contain additional logic to account for any variations
+in ASV content. Deactivating this ASV control causes DAKOTA to always
+request a "full" data set (the full function, gradient, and Hessian
+data that is available from the interface as specified in the
+responses specification) on each function evaluation.  For example, if
+ASV control has been deactivated and the responses section specifies
+four response functions, analytic gradients, and no Hessians, then the
+ASV on every function evaluation will be { 3 3 3 3 }, regardless of
+what subset of this data is currently needed. While wasteful of
+computations in many instances, this simplifies the interface and
+allows the user to return the same data set on every evaluation.
+Conversely, if ASV control is active (the default behavior), then the
+ASV requests in this example might vary from { 1 1 1 1 } to { 2 0 0 2 }, 
+etc., according to the specific data needed on a particular
+function evaluation. This will require the user's interface to read
+the ASV requests and perform the appropriate logic in conditionally
+returning only the data requested.  In general, the default ASV
+behavior is recommended for the sake of computational efficiency,
+unless interface development time is a critical concern.  Note that in
+both cases, the data returned to DAKOTA from the user's interface must
+match the ASV passed in, or else a response recovery error will
+result. However, when the ASV control is deactivated, the ASV values
+are invariant and need not be checked on every evaluation.  \e Note:
+Deactivating the ASV control can have a positive effect on load
+balancing for parallel DAKOTA executions. Thus, there is significant
+overlap in this ASV control option with speculative gradients (see
+\ref MethodIndControl). There is also overlap with the mode override
+approach used with certain optimizers (see SNLLOptimizer and 
+SNLLLeastSq) to combine individual value, gradient, and Hessian requests.
+
+\li Function evaluation cache: deactivation of this feature using a \c
+deactivate \c evaluation_cache specification allows the user to avoid
+retention of the complete function evaluation history in memory.  This
+can be important for reducing memory requirements in large-scale
+applications (i.e., applications with a large number of variables or
+response functions) and for eliminating the overhead of searching for
+duplicates within the function evaluation cache prior to each new
+function evaluation (e.g., for improving speed in problems with 1000's
+of inexpensive function evaluations or for eliminating overhead when
+performing timing studies).  However, the downside is that unnecessary
+computations may be performed since duplication in function evaluation
+requests may not be detected.  For this reason, this option is not
+recommended when function evaluations are costly.  \e Note:
+duplication detection within DAKOTA can be deactivated, but duplication
+detection features within specific optimizers may still be active.
+
+\li Restart file: deactivation of this feature using a \c deactivate
+\c restart_file specification allows the user to eliminate the output
+of each new function evaluation to the binary restart file.  This can
+increase speed and reduce disk storage requirements, but at the
+expense of a loss in the ability to recover and continue a run that
+terminates prematurely (e.g., due to a system crash or network
+problem).  This option is not recommended when function evaluations
+are costly or prone to failure.
+
+In addition to these simulation interface specifications, the
+type of interface involves a selection between \c system,
+\c fork, \c direct, or \c grid required group specifications. The
+following sections describe these group specifications in detail.
+
+
+\subsection InterfApplicSC System call interface
+
+For system call interfaces, the \c system keyword anchors the group
+specification and the \c parameters_file, \c results_file,
+\c verbatim, \c aprepro, \c file_tag, and \c file_save are additional
+settings within the group specification. The parameters and results
+file names are supplied as strings using the \c parameters_file and \c
+results_file specifications. Both specifications are optional with the
+default data transfer files being Unix temporary files with
+system-generated names (e.g., \c /usr/tmp/aaaa08861). The parameters
+and results file names are passed on the command line to the analysis
+driver(s) and any specified input/output filters, unless the \c
+verbatim option is invoked, in which case the driver/filter invocation
+syntax is used verbatim without command line argument augmentation.
+For additional information on invocation syntax, see the Interfaces
+chapter of the Users Manual [\ref UsersMan "Adams et al., 2010"].  The 
+format of data in the parameters files can be modified for direct usage
+ with the APREPRO pre-processing tool [\ref Sjaar1992 "Sjaardema, 1992"] 
+using the \c aprepro specification (NOTE: the DPrePro pre-processing
+utility does not require this special formatting). File tagging
+(appending parameters and results files with the function evaluation
+number) and file saving (leaving parameters and results files in
+existence after their use is complete) are controlled with the \c
+file_tag and \c file_save flags. If these specifications are omitted,
+the default is no file tagging (no appended function evaluation
+number) and no file saving (files will be removed after a function
+evaluation). File tagging is most useful when multiple function
+evaluations are running simultaneously using files in a shared disk
+space, and file saving is most useful when debugging the data
+communication between DAKOTA and the simulation.  
+
+By default DAKOTA will remove existing results files before invoking
+the \c analysis_driver to avoid problems created by stale files in the
+current directory.  To override this behavior and not delete existing
+files, specify \c allow_existing_files.  The additional specifications
+for system call interfaces are summarized in \ref T8d5 "Table 8.5".
+  
+\anchor T8d5
+<table>
+<caption align = "top">
+\htmlonly
+Table 8.5
+\endhtmlonly
+Additional specifications for system call interfaces
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>System call interface 
+<td>\c system
+<td>none
+<td>Required group (1 of 4 selections)
+<td>N/A
+<tr>
+<td>Parameters file name
+<td>\c parameters_file
+<td>string
+<td>Optional
+<td>Unix temp files
+<tr>
+<td>Results file name
+<td>\c results_file
+<td>string
+<td>Optional
+<td>Unix temp files
+<tr>
+<td>Allow existing results files
+<td>\c allow_existing_results
+<td>none
+<td>Optional
+<td>results files removed before each evaluation
+<tr>
+<td>Verbatim driver/filter invocation syntax
+<td>\c verbatim
+<td>none
+<td>Optional
+<td>driver/filter invocation syntax augmented with file names
+<tr>
+<td>Aprepro parameters file format
+<td>\c aprepro
+<td>none
+<td>Optional
+<td>standard parameters file format
+<tr>
+<td>Parameters and results file tagging
+<td>\c file_tag
+<td>none
+<td>Optional
+<td>no tagging
+<tr>
+<td>Parameters and results file saving
+<td>\c file_save
+<td>none
+<td>Optional
+<td>file cleanup
+<tr>
+<td>Create work directory
+<td>\c work_directory
+<td>none
+<td>Optional
+<td>no work directory
+<tr>
+<td>Name of work directory
+<td>\c named
+<td>string
+<td>Optional
+<td>workdir
+<tr>
+<td>Tag work directory
+<td>\c directory_tag
+<td>none
+<td>Optional
+<td>no work directory tagging
+<tr>
+<td>Save work directory
+<td>\c directory_save
+<td>none
+<td>Optional
+<td>remove work directory
+<tr>
+<td>Template directory
+<td>\c template_directory
+<td>string path
+<td>Optional
+<td>no template directory
+<tr>
+<td>Template files
+<td>\c template_files
+<td>list of strings
+<td>Optional
+<td>no template files
+<tr>
+<td>Copy template files
+<td>\c copy
+<td>none
+<td>Optional
+<td>link template files
+<tr>
+<td>Replace existing files
+<td>\c replace
+<td>none
+<td>Optional
+<td>do not overwrite files
+</table>
+
+
+\subsection InterfApplicF Fork interface
+
+For fork interfaces, the \c fork keyword anchors a group specification. 
+The \c parameters_file, \c results_file, \c verbatim, \c aprepro, \c 
+file_tag, and \c file_save are additional settings within this group 
+specification and have identical meanings to those for the system call 
+interface as summarized previously in \ref T8d5 "Table 8.5".
+
+
+\subsection InterfApplicDF Direct function interface
+
+For direct function interfaces, \c processors_per_analysis is an
+additional optional setting within the required group which can be
+used to specify multiprocessor analysis partitions. As with the \c
+evaluation_servers, \c analysis_servers, \c
+evaluation_self_scheduling, \c evaluation_static_scheduling, \c
+analysis_self_scheduling, and \c analysis_static_scheduling
+specifications described above in \ref InterfIndControl, \c
+processors_per_analysis provides a means for the user to override the
+automatic parallel configuration (refer to ParallelLibrary and the
+Parallel Computing chapter of the Users Manual 
+[\ref UsersMan "Adams et al., 2010"]) for the number of
+processors used for each analysis partition.  Note that if both \c
+analysis_servers and \c processors_per_analysis are specified and they
+are not in agreement, then \c analysis_servers takes precedence. The
+direct interface specifications are summarized in \ref T8d6 "Table 8.6".
+
+\anchor T8d6
+<table>
+<caption align = "top">
+\htmlonly
+Table 8.6
+\endhtmlonly
+Additional specifications for direct function interfaces
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Direct function interface 
+<td>\c direct
+<td>none
+<td>Required group (1 of 4 selections)
+<td>N/A
+<tr>
+<td>Number of processors per analysis
+<td>\c processors_per_analysis
+<td>integer
+<td>Optional
+<td>no override of auto configure
+</table>
+
+DAKOTA supports direct interfaces to a few select simulation codes.
+One example is ModelCenter, a commercial simulation management
+framework from Phoenix Integration.  To utilize this interface, a user
+must first define the simulation specifics within a ModelCenter
+session and then save these definitions to a ModelCenter configuration
+file.  The \c analysis_components specification provides the means to
+communicate this configuration file to DAKOTA's ModelCenter interface.
+A similar direct interface to The Mathworks'
+(http://www.mathworks.com/) Matlab (specified by <tt> analysis_driver
+= 'matlab' </tt>) enables a user to employ the \c analysis_components
+specification to point to a Matlab m-file containing a function that
+performs the simulation.  This capability is disabled by default in
+DAKOTA binaries, but information on enabling and using it is available
+in the Users Manual [\ref UsersMan "Adams et al., 2010"].  Contact the
+DAKOTA developers for assistance building and using DAKOTA with Matlab
+simulation support.
+
+Other direct interfaces to simulation codes include Sandia's SALINAS
+structural dynamics code, Sandia's SIERRA multiphysics framework, and
+Sandia's SAGE computational fluid dynamics code, which are available
+within Sandia and supported to varying degrees.  In addition to
+interfaces with simulation codes, a common usage of the direct
+interface is for invoking internal test functions which are available
+for performing parameter to response mappings as inexpensively as
+possible. These problems are compiled directly into the DAKOTA
+executable as part of the direct function interface class and are used
+for algorithm testing.  Refer to DirectApplicInterface for currently
+available testers.
+
+
+\subsection InterfApplicG Grid interface
+
+For grid interfaces, no additional specifications are used at this time.
+<!-- \c hostnames and \c processors_per_host are
+additional settings within the required group.  The \c hostnames
+specification provides a list of machines for use in distributing
+evaluations, and the \c processors_per_host specification provides the
+number of processors to use from each host. -->
+This capability has been used for interfaces with IDEA and JAVASpaces
+in the past and is currently a placeholder for future work with Condor
+and/or Globus services.  It is not currently operational.  The grid 
+interface specification is summarized in \ref T8d7 "Table 8.7".
+
+\anchor T8d7
+<table>
+<caption align = "top">
+\htmlonly
+Table 8.7
+\endhtmlonly
+Additional specifications for grid interfaces
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Grid interface 
+<td>\c grid
+<td>none
+<td>Required group (1 of 4 selections)
+<td>N/A
+<!-- 
+<tr>
+<td>Names of host machines
+<td>\c hostnames
+<td>list of strings
+<td>Required
+<td>N/A
+<tr>
+<td>Number of processors per host
+<td>\c processors_per_host
+<td>list of integers
+<td>Optional
+<td>1 processor from each host
+-->
+</table>
+
+\htmlonly
+<hr>
+<br><b><a href="VarCommands.html#VarCommands">Previous chapter</a></b>
+<br>
+<br><b><a href="RespCommands.html#RespCommands">Next chapter</a></b>
+\endhtmlonly
+
+*/
+
+} // namespace Dakota

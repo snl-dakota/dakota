@@ -1,0 +1,11 @@
+DAKOTA Cygwin Demo Package
+
+See the file INSTALL.cygwin for general guidance using the Cygwin
+version of DAKOTA.  In particular, this demonstration assumes that the
+dakota.exe binary and the rosenbrock.exe test driver are available via
+the present PATH.  For example, if running in a command prompt:
+
+  set PATH=C:\Dakota\bin;C:\Dakota\test;%PATH%
+
+The Python script demonstration assumes that python.exe is available
+at the command prompt as well.

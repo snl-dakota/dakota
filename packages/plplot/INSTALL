@@ -1,0 +1,437 @@
+PLplot Installation Notes
+=========================
+
+For non Unix-based systems, refer to the notes in sys/<system name>.
+
+------------------------------------------------------------------------------
+General instructions for Unix-based systems
+------------------------------------------------------------------------------
+
+(For specific Unix instructions see below.)
+
+PLplot building and installation is trivially easy on most Unix systems.
+From the distribution directory, type:
+
+./configure --prefix=MYPREFIX
+make
+make install
+# Important, for the remainder to work, MYPREFIX/bin must be on your path.
+cd MYPREFIX/share/plplotVERSION/examples
+make
+./plplot-test.sh
+
+MYPREFIX stands symbolically for the installation prefix.  That could be
+/usr/local/plplot, but that requires root account access to use that system
+location.  Another alternative is some convenient location under your home
+account such as $HOME/local/plplot where you have write access under your
+ordinary user account.
+
+VERSION stands symbolically for the version.  Currently, that is 5.5.1, but
+it will change.
+
+IMPORTANT.  In prior versions we only supported the Gnu form of the make
+command, but thanks to autotools the native form of the make command is now
+supported.
+
+To find out all options available for configure type
+./configure --help |less
+
+We also support a wide variety of environment variables to help the
+configuration system find software that has been installed in non-standard
+places.  Eventually, all those environment variables will be replaced by
+documented configuration options, but for now see the code in sysloc.in to
+see what environment variables can be set prior to running ./configure, e.g., 
+
+JAVAMDINCDIR
+GDINCDIR
+CDINCDIR
+FREETYPEINCDIR
+TCLINCDIR
+ITCLINCDIR
+TKINCDIR
+TKPRIVATEINCDIR
+TCLPRIVATEINCDIR
+PYTHON_INC_DIR
+
+GDLIBDIR
+PNGLIBDIR
+JPEGLIBDIR
+ZLIBLIBDIR
+CDLIBDIR
+FREETYPELIBDIR
+TCLLIBDIR
+ITCLLIBDIR
+TKLIBDIR
+ITKLIBDIR
+VGALIBDIR
+
+------------------------------------------------------------------------------
+
+To compile your own programs, there are two ways possible:
+
+
+1) Use "plplot-config", eg:
+
+   cc  myprog.c -o myprog  `plplot-config --cflags --libs`
+   c++  myprog.cc -o myprog  `plplot-config --cflags --libs --with-c++`
+   f77  myprog.c -o myprog  `plplot-config --cflags --libs --with-f77`
+   cc  myprog.c -o myprog  `plplot-config --cflags --libs --with-tcl`
+
+   The last variation of the cc command is required if you are building your
+   own extended wish as in examples/tk/xtk??.c where you need to mention the
+   tcl/tk headers for the compile step and libplplottcltk for the link step.
+
+
+2) Use the pkg-config support, eg:
+
+       cc myprog.c -o myprog `pkg-config --cflags --libs <package>`
+
+   where <package> is either "plplot" (for single precision) or "plplotd"
+   (for double precision).  For C++, Fortran 77, and Tcl/Tk programs,
+   <package> should be respectively plplot-c++, plplot-f77, and plplot-tcl
+   (for single precision), or plplotd-c++, plplotd-f77, amd plplotd-tcl (for
+   double precision).
+
+   For getting the PLplot configuration flags in autoconf scripts, use the
+   PKG_CHECK_MODULES macro distributed with pkg-config (usually in
+   /usr/share/aclocal/pkg.m4) like this:
+
+       PKG_CHECK_MODULES(PLPLOT, plplotd >= 5.3)
+
+   and the variables PLPLOT_CFLAGS and PLPLOT_LIBS will be set.
+
+------------------------------------------------------------------------------
+Build Instructions for Cygwin (from information supplied by U.D.Kini)
+------------------------------------------------------------------------------
+
+Platform: i686-pc-cygwin
+
+Cygwin (1.5.5)
+gcc (3.3.1)
+Windows 98 2nd Edition
+Pentium 3 Processor
+
+Must disable everything Tcl/Tk related because the Cygwin Tcl/Tk packages
+are only for the windows subset of the full Unix version, and our tcl
+interface needs the full Unix version.
+
+Must disable qhull and cgm because both Cygwin packages only have the
+static version of the libraries, and autotools on Cygwin does not work
+for mixed static and shared libraries.
+
+Must disable dyndrivers because of multiple segfaults when running the
+examples.  It appears that dynamic loading of shared objects (such as our
+dynamic devices) is not quite ready for prime time for Cygwin.
+
+Must disable the xterm device because the Cygwin version of the xterm
+application that comes with XFree86 has trouble switching between the xterm
+plot windown and the ordinary command-line window for the xterm application.
+However, the xterm device is disabled by default in any case since you would
+only use it as last resort (monochrome, rather lame software fill) so no
+need to be explicit.
+
+./configure --prefix=$MYPREFIX --disable-tcl --without-qhull --disable-cgm \
+--disable-dyndrivers
+
+make
+
+Simple Cygwin g77 test programmes indicate iargc works fine, but
+nevertheless for our configurable.f which is linked as part of libplplotf77
+iargc always returns -1 for the number of arguments regardless of the actual
+number so fortran command-line parsing fails.  We assume this problem is 
+caused by some sort of linking problem and maturation of Cygwin and/or
+libtool will fix it. Meanwhile to work-around this problem do the following:
+
+edit test/test_f77.sh and change line from
+
+if test "yes" = "yes"; then
+
+to
+
+if test "yes" != "yes"; then
+
+The remainder of the check, install, and test of installed examples should
+go as normal.
+
+make check
+
+make install
+
+cd MYPREFIX/share/plplotVERSION/examples
+
+make
+
+Finally, run 
+
+./plplot-test.sh
+
+(which invokes test_f77.sh and other test scripts) to generate a rather
+complete set of postscript examples for the available language interfaces.
+Use
+
+./plplot-test.sh --help
+
+for instructions on testing additional file devices.
+
+------------------------------------------------------------------------------
+Build Instructions for Mingw
+------------------------------------------------------------------------------
+
+Platform: i686-pc-mingw32
+
+Mingw (2.0) + MSYS (1.1.10)
+gcc (3.2)
+Windows XP SP1
+Athlon XP Processor
+
+
+You must install Msys as well as Mingw in order to build plplot under Mingw. 
+If you want to rebuild from CVS, you will also need MsysDTK as well.
+
+The library must be built with "--disable-shared".
+
+Under Mingw & Msys, simply use "configure --disable-shared" then 
+"make install" to build.
+
+The Mingw display driver is called "wingcc". As a driver, it is still under 
+development and is only in its infancy. The driver has two driver specific 
+options if plplot was compiled with freetype support: "text" and "smooth". 
+"-drvopt text,smooth", as with the GD drivers, makes the driver use freetype 
+to render text, rather than plplot's hershey fonts.
+
+
+------------------------------------------------------------------------------
+Build Instructions for the MacOS X 10.3 (note we do not support older versions
+of Mac OS X)
+------------------------------------------------------------------------------
+
+From: Koen van der Drift <kvddrift@earthlink.net>
+Subject: Re: [Plplot-devel] Positive test on the Mac
+Date: Tue, 20 Jan 2004 17:43:45 -0500
+To: "Alan W. Irwin" <irwin@beluga.phys.uvic.ca>
+Cc: PLplot development list <Plplot-devel@lists.sourceforge.net>
+
+
+On Jan 20, 2004, at 11:35 AM, Alan W. Irwin wrote:
+> Koen, could you also give some input on what belongs in the MacOS X
+> documentation?  A listing of all the environment variables you had
+> to set in order to specify header/library locations would be quite
+> useful.  It would be useful to list any other Mac OS X workarounds
+> you had to make as well.
+
+My instructions are based on the installation through fink, which is
+what I recommend :)
+
+Here are the settings I use for fink (where /sw is the prefix - if
+people don't want to use fink, they need to adjust the paths in
+configure to wherever the corresponding files are located):
+
+
+export CFLAGS=-Wno-long-double
+export FLIBS='-L/sw/lib -lfrtbegin -lSystem'
+
+./configure --mandir=/sw/share/man FREETYPELIBDIR=/usr/X11R6/lib
+FREETYPEINCDIR=/usr/X11R6/include/freetype2 TCLLIBDIR=/sw/lib
+TKLIBDIR=/sw/lib GDLIBDIR=/sw/lib
+JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/1.4.1/Home
+--with-pthreads --with-pkg-config
+
+make
+make install
+
+> Also, is Michel's use of F77="g77 -lcc_dynamic" really necessary or
+> can -lcc_dynamic be specified with FLIBS? I prefer the latter since
+> FLIBS will ultimately be used to transmit the correct linker flags
+> (presumably including -lcc_dynamic) when the AC_F77_LIBRARY_LDFLAGS
+> macro begins to work as documented for the MacOSX platform.
+
+There is no need on my system to use that flag.
+
+[ N.B.: some users reported that the --with-pthreads option cause problems
+  with interactive demos, like using the mouse with the xwin driver.  
+  -- RL ]
+
+------------------------------------------------------------------------------
+Build Instructions for Solaris (as of plplot-5.3.0.cvs.20040217.tar.gz)
+N.B. with this version FLIBS is no longer required!
+------------------------------------------------------------------------------
+
+* Platform (uname -a): SunOS sparc-solaris1 5.9 Generic_112233-03 sun4u sparc SUNW,Ultra-60
+
+* Development environment: native cc, f95, and ld.
+
+* Environment variables that should be set _before_ ./configure is run:
+
+  + export MYPREFIX=/whatever
+
+  + export PATH="/opt/SUNWspro/bin:/usr/ccs/bin:"$PATH":$MYPREFIX/bin"
+
+    /opt/SUNWspro/bin puts native cc and f95 on the path, /usr/ccs/bin puts
+    native ld on the path, and $MYPREFIX/bin is there for when you want to
+    execute some of those PLplot executables or scripts you have just
+    installed.
+
+  + export CC=cc
+
+    Identify the native C compiler for ./configure
+
+  + export F77=f95
+
+    Identify the native fortran compiler for ./configure
+
+    Note, there is also a f77 script that invokes the f95 compiler with
+    certain options.  But use of F77=f77 confused libtool, and it was better
+    to use F77=f95 directly (with no special options).  This means our
+    fortran code (interface and examples) is reasonably standards compliant
+    because it all compiled under the native solaris f95 compiler with no
+    special flags. Note, fortran command-line parsing worked on solaris so
+    we are now three for three (g77, OSF1 f77, and solaris f95) on that
+    score.
+
+* Remaining commands to configure, build, and install:
+
+  + ./configure --prefix=$MYPREFIX --disable-cxx --without-gnu-ld
+
+    --disable-cxx is required since native C++ is not available on this
+    system (while g++ is, and that may confuse issues unless you turn it
+    off).  --without-gnu-ld is required so the native linker, /usr/ccs/bin
+    is used rather than the Gnu linker in /usr/local/bin/ld.  Note this is a
+    "bare bones" sparcbox so absolutely nothing is available for development
+    natively other than the cc C compiler, the g95 fortran compiler, and the
+    ld linker.
+
+  + make
+  
+  + make check
+
+  + make install
+
+Here is the configuration summary:
+
+command:        ./configure --prefix=/home/users/a/ai/airwin/plplot_install_solaris_sparc --disable-cxx --without-gnu-ld
+system:         sparc-sun-solaris2.9
+have_x:         yes
+prefix:         /home/users/a/ai/airwin/plplot_install_solaris_sparc
+CC:             cc 
+F77:            f95 
+LIB_TAG:        d
+devices:         hp7470 hp7580 lj_hpgl mem null pbm plmeta ps psc pstex xfig xwin
+
+Available device drivers:
+static:         
+dynamic:         hpgl.la mem.la null.la pbm.la plmeta.la ps.la pstex.la xfig.la xwin.la
+
+Compilation options:
+with_debug:     no              with_opt:       yes
+with_warn:      no              with_profile:   no
+
+Library options:
+enable_shared:  yes             enable_static:  yes
+with_rpath:     yes             with_double:    yes
+
+Optional libraries:
+with_qhull:     no              with_csa:       yes
+with_freetype:  no              with_pthreads:  no
+
+
+Language Bindings:
+enable_tcl:     no              enable_itcl:    no
+enable_cxx:     no              enable_f77:     yes
+enable_java:    no              enable_python:  no
+enable_octave:  no
+
+As you can see a fair number of devices got built, although the only ones
+really useful on a remote machine like this without X client access are the
+psc, ps, and plmeta devices. make, make check (which builds 34 postscript
+files in the build tree), and make install proceeded without errors. After I
+installed (to a non-root MYPREFIX that was under my control as an ordinary
+user) I did the usual install tree test as well:
+
+cd MYPREFIX/share/plplotVERSION/examples; make; ./plplot-test.sh
+
+and 34 postscript figures were produced.  Roughly half were identical with
+Linux-produced figures, and the other half were only slightly distinguishable
+visually (slight changes in the rendering of some of the characters).
+Presumably these differences are due to our current 16-bit rendering.
+
+In sum, it was a good result for plplot-5.3.0.cvs.20040217.tar.gz and it
+should also be a good native (cc, f95, and ld) solaris result for
+PLplot-5.3.1 (when that official release is completed).  
+
+Adjust these instructions if you want to use the Gnu versions of everything
+(which allows you to use g++). 
+
+------------------------------------------------------------------------------
+Build Instructions for IRIX (as of plplot-5.3.0.cvs.20040217.tar.gz)
+N.B. with this version FLIBS is no longer required!
+(Note by Arjen Markus)
+------------------------------------------------------------------------------
+
+* Platform (uname -a): IRIX64 (machinename removed) 6.5 04101930 IP27
+
+* Development environment: native cc, f90, and ld.
+
+* Environment variables that should be set _before_ ./configure is run:
+
+  + export PATH=/wherever the compilers are located:"$PATH"
+
+    On the system that I used the cc and f90 were available via /usr/local/bin,
+    this may or may not be a typical situation.
+
+  + export CC=cc
+
+    Identify the native C compiler for ./configure
+
+  + export F77=f90
+
+    Identify the native fortran compiler for ./configure
+
+* Remaining commands to configure, build, and install:
+
+  + ./configure --prefix=$MYPREFIX --without-gnu-ld CXXFLAGS=-LANG:std -disable-cxx --disable-tk --disable-tkwin
+
+    Notes on the various flags:
+    - CXXFLAGS is needed because the C++ compiler complained about the
+      lines "use namespace std" and suggested this option to be added.
+    - --disable-cxx was required nonetheless because the examples would
+      not compile.
+    - --disable-tk and --disable-tkwin were necessary, because the 
+      installation of Tcl/Tk was incomplete (change of directory structure)
+
+  + make
+  
+  + make check
+
+    This produced almost identical PostScript files for the C and F77
+    examples.
+
+  + make install 
+
+------------------------------------------------------------------------------
+Build Instructions for AIX5.2 (as of the forthcoming plplot-5.5.2 since
+there was one ./configure script problem for plplot-5.5.1 that has just
+been fixed in CVS).
+(This report compiled by Alan W. Irwin on 2005-04-12
+from e-mail sent by Simon Pinches)
+------------------------------------------------------------------------------
+
+* Platform AIX 5.2
+
+* Development environment: gcc
+
+* Environment variables that should be set _before_ ./configure is run: None
+
+Simon found a ./configure issue for plplot-5.5.1 which has since been fixed
+in CVS.  He also found that dynamic devices and shared libraries did not
+work for AIX5.2.  This is probably a libtool problem, and it will be worth
+checking this again every year or so to see if this libtool problem has been
+fixed.
+
+When Simon used the fix in CVS (which should be released in the
+forthcoming plplot-5.5.2) and used
+
+./configure --prefix=MYPREFIX --disable-shared --enable-static
+
+followed by the remainder of the generic install instructions at the top of
+this file, then he got good results.  Note, the --disable-shared option also
+automatically invokes the --disable-dyndrivers option internally.

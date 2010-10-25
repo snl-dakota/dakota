@@ -1,0 +1,43 @@
+dnl rpath.ac for PLplot  -*- autoconf -*-
+dnl
+dnl rpath related settings
+dnl
+dnl Copyright (C) 1994, 2004  Maurice LeBrun
+dnl Copyright (C) 2002, 2003, 2004  Rafael Laboissiere
+dnl Copyright (C) 2002, 2003, 2004  Alan W. Irwin
+dnl Copyright (C) 2003, 2004  Joao Cardoso
+dnl
+dnl This file is part of PLplot.
+dnl
+dnl PLplot is free software; you can redistribute it and/or modify
+dnl it under the terms of the GNU Library General Public License as published
+dnl by the Free Software Foundation; version 2 of the License.
+dnl
+dnl PLplot is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU Library General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU Library General Public License
+dnl along with the file PLplot; if not, write to the Free Software
+dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+
+dnl Note: to recover legacy behavior as regards (site-specific) defaults
+dnl files, configure using:
+dnl
+dnl $ CONFIG_SITE=~/config/cf_plplot.in ./configure
+
+PL_ARG_WITH(rpath, [use -rpath when linking libraries], yes)
+
+if test "$with_rpath" = yes ; then
+  RPATH='-rpath $(libdir)'
+  PL_EXPAND_EXPRESSION(RPATHCMD, [-Wl,-rpath -Wl,$libdir])
+else
+  RPATH=
+  RPATHCMD=
+fi
+
+AC_SUBST(RPATH)
+AC_SUBST(RPATHCMD)
+
+AM_CONDITIONAL(with_rpath, [test "$with_rpath" = yes])

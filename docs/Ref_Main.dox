@@ -1,0 +1,94 @@
+namespace Dakota { // for some reason, this doesn't work with mainpage
+
+/** \mainpage DAKOTA Reference Manual
+
+\image html logo_3d_halfsize.jpg
+
+\author Brian M. Adams, William J. Bohnhoff, Keith R. Dalbey, John
+P. Eddy, Michael S. Eldred, David M. Gay, Karen Haskell, Patricia
+D. Hough, Laura P. Swiler
+
+\htmlonly
+<b>Main Page Table of Contents</b>
+<ul>
+<li> <a href="index.html#RefOverview">Overview</a> 
+<li> <a href="index.html#RefSpec">Input Specification Reference</a> 
+<li> <a href="index.html#RefAddtnl">Additional Resources</a>
+</ul>
+\endhtmlonly
+
+
+\section RefOverview Overview
+
+
+The DAKOTA (Design Analysis Kit for Optimization and Terascale
+Applications) toolkit provides a flexible, extensible interface
+between analysis codes and iteration methods.  DAKOTA contains
+algorithms for optimization with gradient and nongradient-based
+methods, uncertainty quantification with sampling, reliability,
+stochastic expansion, and interval estimation methods, parameter
+estimation with nonlinear least squares methods, and
+sensitivity/variance analysis with design of experiments and parameter
+study capabilities. These capabilities may be used on their own or as
+components within advanced algorithms such as surrogate-based
+optimization, mixed integer nonlinear programming, mixed
+aleatory-epistemic uncertainty quantification, or optimization under
+uncertainty. By employing object-oriented design to implement
+abstractions of the key components required for iterative systems
+analyses, the DAKOTA toolkit provides a flexible problem-solving
+environment as well as a platform for rapid prototyping of new
+solution approaches.
+
+The Reference Manual focuses on documentation of the various input
+commands for the DAKOTA system.  It follows closely the structure of
+dakota.input.summary, the master
+input specification summary.  For information on
+software structure, refer to the <a href="../html-dev/index.html">Developers
+Manual</a>, and for a tour of DAKOTA features and capabilities, refer
+to the Users Manual [\ref UsersMan "Adams et al., 2010"].
+
+
+\section RefSpec Input Specification Reference
+
+
+In the DAKOTA system, the \e strategy creates and manages \e iterators
+and \e models.  A model contains a set of \e variables, an \e
+interface, and a set of \e responses, and the iterator operates on the
+model to map the variables into responses using the interface.  In a
+DAKOTA input file, the user specifies these components through
+strategy, method, model, variables, interface, and responses keyword
+specifications.  The Reference Manual closely follows this structure,
+with introductory material followed by detailed documentation of the
+strategy, method, model, variables, interface, and responses keyword
+specifications:
+
+\ref IntroCommands
+
+\ref StratCommands
+
+\ref MethodCommands
+
+\ref ModelCommands
+
+\ref VarCommands
+
+\ref InterfCommands
+
+\ref RespCommands
+
+
+\section RefAddtnl Additional Resources
+
+
+A bibliography for the Reference Manual is provided in:
+
+\ref Bibliography
+
+Project web pages are maintained at http://www.cs.sandia.gov/dakota with
+documentation pointers provided at
+http://www.cs.sandia.gov/dakota/documentation.html and a list of 
+publications provided at http://www.cs.sandia.gov/dakota/publications.html
+
+*/
+
+} // namespace Dakota

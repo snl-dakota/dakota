@@ -1,0 +1,17 @@
+# WJB - ToDo: use CMake utils instead of sed/awk to create .build-info
+#             and svn delete cmake/DakotaBuildInfo.C.in
+DAKOTA BUILD INFORMATION
+
+SUBVERSION REPOSITORY REVISIONS:
+Dakota/methods/CONMIN^2350M
+Dakota/methods/acro^6896M
+Dakota/methods/DDACE^398M
+Dakota/methods/OPTPP^661M
+Dakota/methods/JEGA^681M
+Dakota/methods/hopspack^11892M
+Dakota/packages/boost^2350M
+Dakota/packages/Pecos^299:301M
+Dakota/packages/ampl^2350M
+Dakota/packages/teuchos^2350M
+Dakota/packages/Surfpack^480M
+

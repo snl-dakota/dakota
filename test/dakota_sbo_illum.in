@@ -1,0 +1,115 @@
+# DAKOTA INPUT FILE - dakota_sbo_illum.in
+
+# Demonstrates the use of approximation models and a trust region
+# optimization strategy in the illumination example problem.
+
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# seperated by a comma.
+
+strategy,
+	single_method
+	graphics
+	method_pointer = 'SBLO'
+
+method,
+	id_method = 'SBLO'
+	surrogate_based_local
+	model_pointer = 'SURROGATE'
+	approx_method_pointer = 'NLP'
+	max_iterations = 100,
+	trust_region
+	  initial_size = 0.10
+	  contraction_factor = 0.50
+	  expansion_factor   = 1.50
+
+method,
+	id_method = 'NLP'
+#	optpp_cg,
+#	npsol,
+#	dot_bfgs,
+#	dot_frcg,
+	conmin_frcg
+	  max_iterations = 50,
+	  convergence_tolerance = 1e-8
+
+model,
+	id_model = 'SURROGATE'
+	surrogate global
+	  responses_pointer = 'SURROGATE_RESP'
+	  dace_method_pointer = 'SAMPLING'
+#	  reuse_samples region
+#	  use_derivatives
+	  correction multiplicative zeroth_order
+#	  neural_network
+#	  polynomial quadratic
+	  kriging
+	   correlations =  1.0 1.0 1.0 1.0 1.0 1.0 1.0
+#	  mars
+# 	surogate local taylor_series
+#	  actual_model_pointer = 'TRUTH'
+
+variables,
+        continuous_design = 7
+          initial_point   .5 .5 .5 .5 .5 .5 .5
+          lower_bounds   0. 0. 0. 0. 0. 0. 0.
+          upper_bounds   1. 1. 1. 1. 1. 1. 1.
+          descriptors   'x1' 'x2' 'x3' 'x4' 'x5' 'x6' 'x7'
+
+responses,
+	id_responses = 'SURROGATE_RESP'
+	num_objective_functions = 1
+# 	analytic_gradients
+  	numerical_gradients
+  	  method_source dakota
+  	  interval_type central
+  	  fd_gradient_step_size = .00001
+#	analytic_hessians
+	no_hessians
+
+###############################################
+# SAMPLING method specifications for building #
+# surrogate functions			      #
+###############################################
+method,
+	id_method = 'SAMPLING'
+	model_pointer = 'TRUTH'
+#	dace box_behnken
+#	dace central_composite
+	dace lhs
+	  seed = 13579
+	  samples = 40
+#	dace oas seed = 5
+#	  samples = 49 symbols = 7
+
+model,
+	id_model = 'TRUTH'
+	single
+	  interface_pointer = 'TRUE_FN'
+	  responses_pointer = 'TRUE_RESP'
+
+interface,
+	system #asynchronous
+	id_interface = 'TRUE_FN'
+ 	  analysis_driver =    'illumination'
+
+responses,
+	id_responses = 'TRUE_RESP'
+	num_objective_functions = 1
+	no_gradients
+#  	numerical_gradients
+#  	  method_source dakota
+#  	  interval_type central
+#  	  fd_gradient_step_size = .0001
+	no_hessians

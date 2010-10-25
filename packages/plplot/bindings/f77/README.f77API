@@ -1,0 +1,57 @@
+The following files work together to define the fortran API for PLplot.
+The general rule is 
+
+* use sfstubs.fm4 for routines that have character strings;
+
+* use configurable.f.in for fortran routines that must be configurable
+(i.e, plparseopts).
+
+* use sc3d.c for 3D perspective routines (plmesh, plot3d, and plsurf3d and
+friends [which necessarily must have special handling of 2D arrays]);
+
+* use sccont.c for contour and shade plots (which necessarily must have
+special handling of 2D arrays and which are wrapped in sfstubs.f(m4)); and
+
+* use scstubs.c for everything else (i.e., the non-special cases).
+
+Here are more details about the files in this directory:
+
+* plstubs.h defines the name style for the stub routines.  Every fortran
+PLplot routine that has a corresponding C routine must have an entry in this
+file.
+
+* sc3d.c contains complete stubs for plmesh and plot3d.
+
+* sfstubs.fm4 has a name which is a historical artifact because originally
+this was an odd mixture of fortran and m4 processing directives which were
+processed to form either a single-precision or double-precision version.
+Now it is the double-precision form of the code only which is simply
+copied when double-precision libraries are wanted, and a simple sed script
+double2single.sed is used to convert to single-precision when single-precision
+libraries are wanted.
+
+* double2single.sed.  Simple sed commands to convert from sfstubs.fm4 from
+double to single precision.  Currently the only double-precision construct
+occurring in sfstubs.fm4 is "real*8" so that is the only string that
+double2single.sed converts.  But if sfstubs.fm4 is changed to include
+other double-precison constructs such as double-precision numbers, then
+it will be necessary to change double2single.sed to deal with it.
+
+* sfstubs.f is copied from sfstubs.fm4 at build time.  It (and sfstubs.fm4)
+contains all PLplot fortran API where character strings or other
+complications are more easily handled in fortran than C.  The called C
+equivalents have a suffix of "7" on the name to avoid fortran name clashes
+and also to identify in the following C routines those which have a special
+wrapper in sfstubs.f.
+
+* sfstubs.h contains fortran code (common block definitions) used repeatedly
+in sfstubs.f(m4).
+
+* strutil.f contains fortran string utilities that allows for translating from
+fortran to C null-terminated strings or vice versa.
+
+* sccont.c contains plcont and plshade related routines (with a 7 suffix
+meaning there is a wrapper in sfstubs.f(m4). Also contains plvect routines.
+
+* scstubs.c contains all the simple (non-3D, non-cont, non-shade) API plus
+some 7-suffix routines that have a special wrapper in sfstubs.f(m4).

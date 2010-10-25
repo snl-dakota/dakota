@@ -1,0 +1,150 @@
+<!--
+    api-compat.xml: "API compatibility definition" chapter
+
+    Copyright (C) 2004  Alan W. Irwin
+    Copyright (C) 2004  Rafael Laboissiere
+
+    Redistribution and use in source (XML DocBook) and "compiled" forms
+    (HTML, PDF, PostScript, DVI, TeXinfo and so forth) with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+       1. Redistributions of source code (XML DocBook) must retain the
+          above copyright notice, this list of conditions and the following
+          disclaimer as the first lines of this file unmodified.
+
+       2. Redistributions in compiled form (transformed to other DTDs,
+          converted to HTML, PDF, PostScript, and other formats) must
+          reproduce the above copyright notice, this list of conditions and
+          the following disclaimer in the documentation and/or other
+          materials provided with the distribution.
+
+    Important: THIS DOCUMENTATION IS PROVIDED BY THE PLPLOT PROJECT "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE PLPLOT PROJECT BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS DOCUMENTATION,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<chapter id="api-compat">
+  <title>API compatibility definition</title>
+
+  <para>
+    This chapter presents the formal definition of what is considered to be
+    in the PLplot library API.  It is assumed that major new releases of
+    PLplot will have substantial backwards incompatible changes in the API,
+    but the PLplot developers commit to introducing as few as possible of
+    such incompatibilities between minor releases such that stability
+    across those minor releases is practically guaranteed.  In all cases
+    where backwards incompatible changes have been introduced, then the
+    library soname will be changed (for operating systems such as Linux
+    that support versioned shared libraries).
+  </para>
+
+  <para>
+    The information in this chapter regards version &Project-Version; of
+    PLplot, released on &Release-Date;.
+  </para>
+
+  <sect1>
+    <title>
+      What is in the API?
+    </title>
+
+    <para>
+      The formal definition of the PLplot C API is everything that is defined
+      in the include file <filename>plplot.h</filename>.  This includes all
+      the function prototypes, the defined structures and the semantics of
+      the constants.  The list of symbols currently exported by the shared
+      library <filename>libplplot.h</filename> that are declared in
+      <filename>plplot.h</filename> is the following:
+    </para>
+
+    <para>
+      <programlisting>&plplot-symbols;</programlisting>
+    </para>
+
+    <para>
+      Another important aspect of compatibility regard the Application
+      Binary Interface (ABI).  Backwards compatibility can be broken by
+      changes in the C structures made public through
+      <filename>plplot.h</filename>.  Currently, they are:
+    </para>
+
+    <para>
+      <programlisting>&plplot-structs;</programlisting>
+    </para>
+
+  </sect1>
+
+  <sect1>
+    <title>
+      Regression test for backwards compatibility
+    </title>
+
+    <para>
+      Since PLplot is developed by so many people, the task of checking for
+      backwards compatiblity of the library is very hard.  As for the 5.3.1
+      release, we do not have any rigorous regression test for check
+      whether the library is really backwards compatible.
+    </para>
+
+    <para>
+      However, here are some rules to be followed by the Release Manager
+      prior to releasing a new version of PLplot:
+      <itemizedlist>
+        <listitem>
+          <para>
+            Check if there are any changes in
+            <filename>plplot.h</filename>.  If no prototype is changed,
+            then the chances are high that no backwards compatibilities
+            have been introduced.  If new functions has been added, then
+            the library soname will be kept, although the libtool soversion
+            string in <filename>configure.ac</filename> must be changed
+            from <literal>x:y:z</literal> to
+            <literal>(x+1):0:(z+1)</literal>.  See the
+            <application>libtool</application> manual for details.
+        </para>
+        </listitem>
+        <listitem>
+          <para>
+            A necessary, but not sufficient test consists of the following:
+            first, install the previous released version of PLplot in the
+            system and compile all the examples
+            <filename>examples/c/x??c.</filename>.  After that, install the
+            to-be-released version of PLplot and try to run the previously
+            compiled examples.  If they either link or run incorrectly,
+            then backwards incompatibilities have been introduced and the
+            soversion string must be upgraded from <literal>x:y:z</literal>
+            to <literal>(x+1):0:0</literal>.
+          </para>
+        </listitem>
+      </itemizedlist>
+    </para>
+
+  </sect1>
+
+</chapter>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document: ("plplotdoc.xml" "book" "chapter" "")
+sgml-default-dtd-file:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:("/usr/lib/sgml/catalog")
+sgml-local-ecat-files:nil
+End:
+-->

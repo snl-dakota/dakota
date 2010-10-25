@@ -1,0 +1,165 @@
+NOTES:
+------
+
+The library specific -L paths are included for completeness, but are not
+required since all libraries are copied to $(DAKOTA)/lib.
+
+Dependencies may involve multiple levels and/or redundancies.  For example, 
+DAKOTA requires SGOPT and PICO, each of which require UTILIB, etc.
+
+$(target_canonical) is a platform-specific triplet (cpu-vendor-os):
+  rs6000-ibm-aix       - IBM AIX
+  mips-sgi-irix6.5     - SGI IRIX
+  i686-unknown-linux   - PC Linux
+  alpha-dec-osf5.1     - DEC OSF
+  sparc-sun-solaris2.8 - Sun Solaris
+  pentium-intel-tflop  - TFLOP OS
+
+
+<!-- library name: DAKOTA -->
+-D: none
+-L: -L$(DAKOTA)/src/$(target_canonical)
+-I: -I$(DAKOTA)/src
+-l: -ldakota
+dependency: each library below (based on configuration), mpi, lapack
+
+<!-- #################### -->
+<!-- # VendorOptimizers # -->
+<!-- #################### -->
+
+<!-- library name: DOT -->
+-D: -DDAKOTA_DOT
+-L: -L$(DAKOTA)/VendorOptimizers/DOT/$(target_canonical)
+-I: none
+-l: -ldot
+dependency: none
+
+<!-- library name: NPSOL -->
+-D: -DDAKOTA_NPSOL
+-L: -L$(DAKOTA)/VendorOptimizers/NPSOL/$(target_canonical)
+-I: none
+-l: -lnpsol
+dependency: blas
+
+<!-- library name: CONMIN -->
+-D: -DDAKOTA_CONMIN
+-L: -L$(DAKOTA)/VendorOptimizers/CONMIN/$(target_canonical)
+-I: none
+-l: -lconmin
+dependency: none
+
+<!-- library name: NL2SOL -->
+-D: -DDAKOTA_NL2SOL
+-L: -L$(DAKOTA)/VendorOptimizers/NL2SOL/$(target_canonical)
+-I: none
+-l: -lcport
+dependency: none
+
+<!-- library name: OPT++ -->
+-D: -DDAKOTA_OPTPP -DSERIAL -DDAKOTA_NEWMAT
+-L: -L$(DAKOTA)/VendorOptimizers/opt++/$(target_canonical)
+-I: -I$(DAKOTA)/VendorOptimizers/opt++/include
+    -I$(DAKOTA)/VendorOptimizers/opt++/newmat09
+-l: -loptpp -lnewmat
+dependency: none
+
+<!-- library name: DDACE -->
+-D: -DDAKOTA_DDACE -DUSEDLARAN -DNO_NAMESPACES -DNO_BLAS
+-L: -L$(DAKOTA)/VendorOptimizers/DDace/$(target_canonical)
+-I: -I$(DAKOTA)/VendorOptimizers/DDace/include
+    -I$(DAKOTA)/VendorOptimizers/DDace/CPPUtilities/src/PMachine
+    -I$(DAKOTA)/VendorOptimizers/DDace/CPPUtilities/src/Utils
+-l: -lddace
+dependency: none
+
+<!-- library name: LHS -->
+-D: -DDAKOTA_LHS
+-L: -L$(DAKOTA)/VendorOptimizers/LHS/$(target_canonical)
+-I: none
+-l: -llhs
+dependency: additional f90 libs on linux, janus, sgi
+
+<!-- library name: JEGA -->
+-D: -DDAKOTA_JEGA -DOTB_RTTI
+-L: -L$(DAKOTA)/VendorOptimizers/jega/lib/$(target_canonical)
+-I: -I$(DAKOTA)/VendorOptimizers/jega/include
+    -I$(DAKOTA)/VendorOptimizers/jega/Utilities/include
+    -I$(DAKOTA)/VendorOptimizers/jega/MOGA/include
+    -I$(DAKOTA)/VendorOptimizers/jega/SOGA/include
+-l: -ljega
+dependency: none
+
+<!-- library name: SGOPT -->
+-D: -DDAKOTA_SGOPT
+-L: -L$(DAKOTA)/VendorOptimizers/acro/packages/sgopt/lib/$(target_canonical)-$(CCC)
+-I: -I$(DAKOTA)/VendorOptimizers/acro/packages/sgopt
+-l: -lsgopt
+dependency: utilib
+
+<!-- library name: PICO -->
+-D: -DDAKOTA_PICO -DDEBUGGING
+-L: -L$(DAKOTA)/VendorOptimizers/acro/packages/pico/lib/$(target_canonical)-$(CCC)
+-I: -I$(DAKOTA)/VendorOptimizers/acro/packages/pico
+-l: -lpico
+dependency: utilib
+
+<!-- library name: COLINY -->
+-D: -DDAKOTA_COLINY -DDAKOTA_APPS -DDAKOTA_3PO
+-L: -L$(DAKOTA)/VendorOptimizers/acro/packages/coliny/lib/$(target_canonical)-$(CCC)
+    -L$(DAKOTA)/VendorOptimizers/acro/packages/colin/lib/$(target_canonical)-$(CCC)
+    -L$(DAKOTA)/VendorOptimizers/acro/packages/appspack/src
+    -L$(DAKOTA)/VendorOptimizers/acro/packages/3po/lib/$(target_canonical)-$(CCC)
+-I: -I$(DAKOTA)/VendorOptimizers/acro/packages/coliny
+    -I$(DAKOTA)/VendorOptimizers/acro/packages/colin
+    -I$(DAKOTA)/VendorOptimizers/acro/packages/appspack/include/appspack
+    -I$(DAKOTA)/VendorOptimizers/acro/packages/3po/include
+-l: -lcoliny -lcolin -lappspack -l3po
+dependency: utilib
+
+<!-- ################## -->
+<!-- # VendorPackages # -->
+<!-- ################## -->
+
+<!-- library name: IDR -->
+-D: -D__EXTERN_C__
+-L: -L$(DAKOTA)/VendorPackages/idr/$(target_canonical)
+-I: -I$(DAKOTA)/VendorPackages/idr
+-l: -lidr
+dependency: lex/flex library (-ll or -lfl), use "-ldakota -lidr -ldakota" in library mode
+
+<!-- library name: UTILIB -->
+-D: -DDAKOTA_UTILIB -DWITHOUT_COMMONIO
+-L: -L$(DAKOTA)/VendorOptimizers/acro/packages/utilib/lib/$(target_canonical)-$(CCC)
+-I: -I$(DAKOTA)/VendorOptimizers/acro/packages/utilib
+-l: -lutilib
+dependency: none
+
+<!-- library name: KRIGING -->
+-D: -DDAKOTA_KSM
+-L: -L$(DAKOTA)/VendorPackages/kriging/$(target_canonical)
+-I: none
+-l: -lkriging
+dependency: lapack
+
+<!-- library name: GRAPHICS -->
+-D: -DDAKOTA_GRAPHICS
+-L: -L$(DAKOTA)/VendorPackages/motif/$(target_canonical)
+    -L$(DAKOTA)/VendorPackages/plplot/$(target_canonical)/lib
+-I: -I$(DAKOTA)/VendorPackages/motif/include
+    -I$(DAKOTA)/VendorPackages/plplot/include
+-l: -lplplotfX -lDGraphics
+dependency: many platform dependent X11 libs, includes, defines
+
+<!-- library name: ANN -->
+-D: -DDAKOTA_ANN
+-L: -L$(DAKOTA)/VendorPackages/ann/$(target_canonical)
+-I: -I$(DAKOTA)/VendorPackages/ann/include
+-l: -lann
+dependency: none
+
+<!-- library name: EPETRA -->
+-D: -DDAKOTA_PETRA
+-L: -L$(DAKOTA)/VendorPackages/epetra/$(target_canonical)
+-I: -I$(DAKOTA)/VendorPackages/epetra
+-l: -lepetra
+dependency: blas, lapack

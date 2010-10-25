@@ -1,0 +1,277 @@
+\chapter{Responses}\label{responses}
+
+\section{Overview}\label{responses:overview}
+
+The \texttt{responses} specification in a DAKOTA input file controls
+the types of data that can be returned from an interface during
+DAKOTA's execution. The specification includes the number and type of
+response functions (objective functions, nonlinear constraints, least
+squares terms, etc.) as well as availability of first and second
+derivatives (gradient vectors and Hessian matrices) for these response
+functions.
+
+This chapter will present a brief overview of the response data sets
+and their uses, as well as cover some user issues relating to file
+formats and derivative vector and matrix sizing. For a detailed
+description of responses section syntax and example specifications,
+refer to the Responses Commands chapter in the DAKOTA Reference
+Manual~\cite{RefMan}.
+
+\subsection{Response function types}\label{responses:overview:types}
+
+The types of response functions listed in the responses
+specification should be consistent with the
+iterative technique called for in the method specification:
+
+\begin{itemize}
+
+\item an optimization data set comprised of
+  \texttt{num\_objective\_functions},\\
+  \texttt{num\_nonlinear\_inequality\_constraints}, and
+  \texttt{num\_nonlinear\_equality\_constraints}.  This data set is
+  appropriate for use with optimization methods (e.g., the methods in
+  Section~\ref{capabilities:optimization1}).
+  
+\item a least squares data set comprised of 
+  \texttt{num\_least\_squares\_terms},\\
+  \texttt{num\_nonlinear\_inequality\_constraints}, and
+  \texttt{num\_nonlinear\_equality\_constraints}.  This data set is
+  appropriate for use with nonlinear least squares algorithms
+  (e.g., the methods in Section~\ref{capabilities:nonlinear}).
+  
+\item a generic data set comprised of \texttt{num\_response\_functions}.  
+  This data set is appropriate for use with uncertainty quantification
+  methods (e.g., the methods in Section~\ref{capabilities:uncertainty}).
+  
+\end{itemize}
+
+Certain general-purpose iterative techniques, such as parameter
+studies and design of experiments methods, can be used with any of
+these data sets.
+
+\subsection{Gradient availability}\label{responses:overview:gradient}
+
+Gradient availability for these response functions may be described by:
+
+\begin{itemize}
+
+\item \texttt{no\_gradients}: gradients will not be used.
+
+\item \texttt{numerical\_gradients}: gradients are needed and will
+  be approximated by finite differences.
+
+\item \texttt{analytic\_gradients}: gradients are needed and will be supplied
+  by the simulation code (without any finite differencing by DAKOTA).
+
+\item \texttt{mixed\_gradients}: the simulation will supply some gradient
+  components and DAKOTA will approximate the others by finite
+  differences.
+
+\end{itemize}
+
+The gradient specification also links back to the iterative method
+used. Gradients commonly are needed when the iterative
+study involves gradient-based optimization, reliability analysis for
+uncertainty quantification, or local sensitivity analysis.
+
+\subsection{Hessian availability}\label{responses:overview:hessian}
+
+Hessian availability for the response functions is similar to the
+gradient availability specifications, with the addition of support
+for ``quasi-Hessians":
+
+\begin{itemize}
+
+\item \texttt{no\_hessians}: Hessians will not be used.
+
+\item \texttt{numerical\_gradients}: Hessians are needed and will be
+  approximated by finite differences.  These finite differences may be
+  involve first-order differences of gradients (if analytic gradients
+  are available for the response function of interest) or second-order 
+  differences of function values (in all other cases).
+
+\item \texttt{quasi\_hessians}: Hessians are needed and will be 
+  approximated by secant updates (BFGS or SR1) from a series of 
+  gradient evaluations.
+
+\item \texttt{analytic\_hessians}: Hessians are needed and are
+  available directly from the simulation code.
+
+\item \texttt{mixed\_hessians}: Hessians are needed and will be 
+  obtained from a mix of numerical, analytic, and ``quasi" sources.
+
+\end{itemize}
+
+The Hessian specification also links back to the iterative method in
+use; Hessians commonly would be used in gradient-based
+optimization by full Newton methods or in reliability analysis
+with second-order limit state approximations or second-order
+probability integrations.
+
+\section{DAKOTA Results File Data Format}\label{responses:results}
+
+Simulation interfaces using system calls and forks to create
+separate simulation processes must communicate with the simulation
+through the file system. This is done by reading and
+writing files of parameters and results. DAKOTA uses its own format
+for this data input/output. For the results file, only one format is
+supported (versus the two parameter-file formats described in
+Section~\ref{variables:parameters}). Ordering of response functions is
+as listed in Section~\ref{responses:overview:types} (e.g., objective
+functions or least squares terms are first, followed by nonlinear
+inequality constraints, followed by nonlinear equality constraints).
+
+After a simulation, DAKOTA expects to read a file
+containing responses reflecting the current parameters and
+corresponding to the function requests in the active
+set vector. The response data must be in the format
+shown in Figure \ref{responses:figure01}.
+
+\begin{figure}
+  \centering
+  \begin{bigbox}
+  \begin{alltt}
+    <double> <fn_tag\(\sb{1}\)>
+    <double> <fn_tag\(\sb{2}\)>
+    ...
+    <double> <fn_tag\(\sb{m}\)> \color{blue}
+    [ <double> <double> .. <double> ]
+    [ <double> <double> .. <double> ]
+    ...
+    [ <double> <double> .. <double> ] \color{red}
+    [[ <double> <double> .. <double> ]]
+    [[ <double> <double> .. <double> ]]
+    ...
+    [[ <double> <double> .. <double> ]]
+  \end{alltt}
+  \end{bigbox}
+  \caption{Results file data format.}
+  \label{responses:figure01}
+\end{figure}
+
+The first block of data (shown in black) conveys the requested function values
+and is followed by a block of requested gradients
+(shown in blue), followed by a block of requested Hessians (shown
+in red). If the amount of data in the file does not match the function
+request vector, DAKOTA will abort execution with an error message.
+
+Function values have no bracket delimiters and \emph{optionally} one
+character-string tag per function can be supplied.  These tags are not
+used by
+DAKOTA and are only included as an optional field for consistency with
+the parameters file format and for backwards compatibility.  If
+tags are used, they must be separated from
+numeric function values by white space (one or more blanks, tabs, or newline
+characters) and there must not
+be any white space embedded within a character-string tag (e.g., use
+``\texttt{variable1}'' or ``\texttt{variable\_1},'' but not
+``\texttt{variable 1}'').
+
+Gradient vectors are surrounded by single brackets
+[\ldots$n_{dvv}$-vector of doubles\ldots]. Tags are not used and must
+not be present. White space separating the brackets from the data is
+optional.
+
+Hessian matrices are surrounded by double brackets
+[[\ldots$n_{dvv} \times n_{dvv}$ matrix of doubles\ldots]].  Hessian
+components (numeric values for second partial derivatives) are
+listed by rows and separated by white space; in particular, they
+can be spread across multiple
+lines for readability.  Tags are not used and must not be present.
+White space after the initial double bracket and before the final one
+is optional, but none can appear within the double brackets.
+
+The format of the numeric fields may be floating point or scientific
+notation. In the latter case, acceptable exponent characters are
+``\texttt{E}'' or ``\texttt{e.}'' A common problem when dealing with
+Fortran programs is that a C++ read of a numeric field using
+``\texttt{D}'' or ``\texttt{d}'' as the exponent (i.e., a double
+precision value from Fortran) may fail or be truncated. In this case,
+the ``\texttt{D}'' exponent characters must be replaced either through
+modifications to the Fortran source or compiler flags or through a
+separate post-processing step (e.g., using the UNIX \texttt{sed}
+utility).
+
+\section{Active Variables for Derivatives}\label{responses:active}
+
+An important question for proper management of both gradient and
+Hessian data is: if several different types of variables are used,
+\emph{for which variables are response function derivatives needed?}
+That is, how is $n_{dvv}$ determined?  The short answer is that the
+derivative variables vector (DVV) specifies the set of variables to be
+used for computing derivatives, and $n_{dvv}$ is the length of this
+vector.  The long answer is that, in most cases, the DVV is defined
+directly from the set of active continuous variables for the iterative
+method in use.
+
+Since methods determine what subset, or view, of the variables is
+active in the iteration, it is this same set of variables for which
+derivatives are most commonly computed (see also
+Section~\ref{variables:mixed}).  Derivatives are never needed with
+respect to any discrete variables (since these derivatives do not in
+general exist) and the active continuous variables depend on the type
+of study being performed. For optimization and least-squares problems,
+the active continuous variables are the \emph{continuous design
+  variables} ($n_{dvv}=n_{cdv}$), since they are the variables the
+minimizer manipulates.  Similarly, for uncertainty quantification
+methods that use gradient and/or Hessian information, the active
+continuous variables are the \emph{continuous uncertain variables}
+($n_{dvv}=n_{cauv}$ for aleatory methods, $n_{dvv}=n_{ceuv}$ for
+epistemic methods, $n_{dvv}=n_{cauv}+n_{ceuv}$ for methods that handle
+both), with the exception of \texttt{all\_variables} mode.  And
+lastly, parameter study methods that are cataloging gradient and/or
+Hessian information do not draw a distinction among continuous
+variables; therefore, the active continuous variables are defined from
+\emph{all continuous variables} that are specified
+($n_{dvv}=n_{cdv}+n_{cauv}+n_{ceuv}+n_{csv}$).  Additional detail on
+these variables views is provided in Table~\ref{responses:active_tab}.
+
+\begin{table}
+\centering
+\caption{Variable views for different iterators.}
+\label{responses:active_tab}\vspace{2mm}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Method} & \textbf{Active view} & \textbf{Derivative variables} \\
+\hline
+branch and bound         & Merged Design   & $n_{cdv}+n_{ddiv}+n_{ddrv}$ \\
+\hline
+optimization,            & Mixed Design    & $n_{cdv}$ \\
+nonlinear least squares  &                 &           \\
+\hline
+sampling (standard mode) & Mixed Uncertain & $n_{cauv}+n_{ceuv}$ \\
+\hline
+local reliability,       & Mixed Aleatory Uncertain & $n_{cauv}$ \\
+global reliability (standard mode),  &              &            \\
+stochastic expansion (standard mode) &              &            \\
+\hline
+interval estimation,     & Mixed Epistemic Uncertain & $n_{ceuv}$ \\
+evidence                 &                           &            \\
+\hline
+parameter studies,       & Mixed All & $n_{cdv}+n_{cauv}+n_{ceuv}+n_{csv}$\\
+design of experiments,   &           & \\
+uncertainty quantification (all\_variables mode) & & \\
+\hline
+\end{tabular}
+\end{table}
+
+In a few cases, derivatives are needed with respect to the
+\emph{inactive} continuous variables.  This occurs for nested
+iteration where a top-level iterator sets derivative requirements
+(with respect to its active continuous variables) on the final
+solution of the lower-level iterator (for which the top-level active
+variables are inactive).  For example, in an uncertainty analysis
+within a nested design under uncertainty algorithm, derivatives of the
+lower-level response functions may be needed with respect to the
+design variables, which are active continuous variables at the top
+level but are inactive within the uncertainty quantification.  These
+instances are the reason for the creation and inclusion of the DVV
+vector --- to clearly indicate the variables whose partial derivatives
+are needed.
+
+In all cases, if the DVV is honored, then the correct derivative
+components are returned.  In simple cases, such as optimization and
+least squares studies that only specify design variables and for
+nondeterministic analyses that only specify uncertain variables,
+derivative component subsets are not an issue and the exact content of
+the DVV may be safely ignored.

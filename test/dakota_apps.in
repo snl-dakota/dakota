@@ -1,0 +1,174 @@
+# DAKOTA INPUT FILE - dakota_apps.in
+
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# seperated by a comma.
+
+# Tests:  asynch_pattern_search
+# This set of tests was arrived at by creating an orthogonal array
+# across the algorithm and execution parameters and then modifying it
+# to eliminate unsupported combinations.
+# 0-21  :  serial tests
+# p0-p21:  parallel tests
+
+# Processor specification for automated parallel tests:
+# p0=2, p1=2, p2=2, p3=2, p4=2, p5=2, p6=2, p7=2, p8=2, p9=2, p10=2, p11=2, p12=2, p13=2, p14=2, p15=2, p16=2, p17=2, p18=2, p19=2, p20=2, p21=2
+
+strategy,
+	single_method
+
+method,
+#	max_function_evaluations 500		#2,#5,#6,#8,#10,#11
+#	max_function_evaluations 500		#13,#14,#20,#21
+#	max_function_evaluations 500		#p2,#p5,#p6,#p8,#p10,#p11
+#	max_function_evaluations 500		#p13,#p14,#p20,#p21
+#	constraint_tolerance	1.e-6		#2,#4,#6,#8,#10,#12
+#	constraint_tolerance	1.e-6		#14,#16,#18,#20
+#	constraint_tolerance	1.e-6		#p2,#p4,#p6,#p8,#p10,#p12
+#	constraint_tolerance	1.e-6		#p14,#p16,#p18,#p20
+#
+	asynch_pattern_search
+#		output debug
+#		initial_delta = .5		#4,#9,#10,#11,#12,#13
+#		initial_delta = .5		#15,#16,#19,#20
+#		initial_delta = .5		#p4,#p9,#p10,#p11,#p12,#p13
+#		initial_delta = .5		#p15,#p16,#p19,#p20
+#		contraction_factor = 0.25	#2,#3,#4,#6,#8,#9
+#		contraction_factor = 0.25	#14,#15,#16,#19,#20,#21
+#		contraction_factor = 0.25	#p2,#p3,#p4,#p6,#p8,#p9
+#		contraction_factor = 0.25	#p14,#p15,#p16,#p19,#p20,#p21
+#		threshold_delta = 1.e-4		#2,#5,#6,#9,#10,#16
+#		threshold_delta = 1.e-4		#17,#18,#19,#20
+#		threshold_delta = 1.e-4		#p2,#p5,#p6,#p9,#p10,#p16
+#		threshold_delta = 1.e-4		#p17,#p18,#p19,#p20
+#		solution_target = 1.e-6		#2,#6,#7,#8,#9,#11
+#		solution_target = 1.e-6		#12,#15,#18,#19,#21
+#		solution_target = 1.e-6		#p2,#p6,#p7,#p8,#p9,#p11
+#		solution_target = 1.e-6		#p12,#p15,#p18,#p19,#p21
+#		synchronization blocking	#1,#6,#8,#11,#12,#13
+#		synchronization blocking	#14,#15,#16,#17,#18,#19,#20
+		synchronization blocking	#0,#p0
+#		synchronization blocking	#p1,#p2,#p3,#p4,#p5,#p6,#p7
+#		synchronization blocking	#p8,#p9,#p10,#p11,#p12,#p13
+#		synchronization blocking	#p14,#p15,#p16,#p17
+#		synchronization blocking	#p18,#p19,#p20,#p21
+#		linear_equality_constraint_matrix = 2. 1. 1.	#3,#5,#8,#9
+#		linear_equality_constraint_matrix = 2. 1. 1.	#11,#13,#15
+#		linear_equality_constraint_matrix = 2. 1. 1.	#16,#17,#18,#21
+#		linear_equality_constraint_matrix = 2. 1. 1.	#p3,#p5,#p8,#p9
+#		linear_equality_constraint_matrix = 2. 1. 1.	#p11,#p13,#p15
+#		linear_equality_constraint_matrix = 2. 1. 1.	#p16,#p17
+#		linear_equality_constraint_matrix = 2. 1. 1.	#p18,#p21
+#		linear_equality_targets = 4.0			#3,#5,#8,#9
+#		linear_equality_targets = 4.0			#11,#13,#15
+#		linear_equality_targets = 4.0			#16,#17,#18,#21
+#		linear_equality_targets = 4.0			#p3,#p5,#p8,#p9
+#		linear_equality_targets = 4.0			#p11,#p13,#p15
+#		linear_equality_targets = 4.0			#p16,#p17
+#		linear_equality_targets = 4.0			#p18,#p21
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#1,#2,#3,#10
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#11,#14,#16
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#18,#19,#21
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#p1,#p2,#p3
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#p10,#p11,#p14
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#p16,#p18
+#		linear_inequality_constraint_matrix = 1. 1. 1.	#p19,#p21
+#		linear_inequality_upper_bounds = 5.0		#1,#2,#3,#10
+#		linear_inequality_upper_bounds = 5.0		#11,#14,#16
+#		linear_inequality_upper_bounds = 5.0		#18,#19,#21
+#		linear_inequality_upper_bounds = 5.0		#p1,#p2,#p3
+#		linear_inequality_upper_bounds = 5.0		#p10,#p11,#p14
+#		linear_inequality_upper_bounds = 5.0		#p16,#p18
+#		linear_inequality_upper_bounds = 5.0		#p19,#p21
+#		merit_function merit_max		#11,#14,#19
+#		merit_function merit_max		#p11,#p14,#p19
+#		merit_function merit_max_smooth		#1,#7,#15,#20
+#		merit_function merit_max_smooth		#p1,#p7,#p15,#p20
+#		merit_function merit1			#17
+#		merit_function merit1			#p17
+#		merit_function merit1_smooth		#4,#6
+#		merit_function merit1_smooth		#p4,#p6
+#		merit_function merit2			#3,#21
+#		merit_function merit2			#p3,#p21
+#		merit_function merit2_squared		#13,#18
+#		merit_function merit2_squared		#p13,#p18
+#		constraint_penalty = 1000.0		#5,#7,#9,#13,#15
+#		constraint_penalty = 1000.0		#17,#18,#19
+#		constraint_penalty = 1000.0		#p5,#p7,#p9,#p13,#p15
+#		constraint_penalty = 1000.0		#p17,#p18,#p19
+#		smoothing_factor = 10.0			#4,#5,#6,#7,#9
+#		smoothing_factor = 10.0			#11,#14,#15,#17
+#		smoothing_factor = 10.0			#p4,#p5,#p6,#p7,#p9
+#		smoothing_factor = 10.0			#p11,#p14,#p15,#p17
+
+variables,
+	continuous_design = 3
+		initial_point	-1.0    1.5   2.0
+		upper_bounds	10.0   10.0  10.0	#0,#p0
+#		upper_bounds	10.0   10.0  10.0	#1,#2,#4,#8,#9,#11
+#		upper_bounds	10.0   10.0  10.0	#17,#18,#20,#21
+#		upper_bounds	10.0   10.0  10.0	#p1,#p2,#p4,#p8
+#		upper_bounds	10.0   10.0  10.0	#p9,#p11,#p17
+#		upper_bounds	10.0   10.0  10.0	#p18,#p20,#p21
+		lower_bounds   -10.0  -10.0 -10.0	#0,#p0
+#		lower_bounds   -10.0  -10.0 -10.0	#1,#3,#5,#8,#9,#12
+#		lower_bounds   -10.0  -10.0 -10.0	#13,#14,#18,#19,#20,#21
+#		lower_bounds   -10.0  -10.0 -10.0	#p1,#p3,#p5,#p8
+#		lower_bounds   -10.0  -10.0 -10.0	#p9,#p12,#p13,#p14
+#		lower_bounds   -10.0  -10.0 -10.0	#p18,#p19,#p20,#p21
+#		scale_types	'value'			#1,#3,#5,#8,#10,#11
+#		scale_types	'value'			#12,#15,#17,#19,#20,#21
+#		scale_types	'value'			#p1,#p3,#p5,#p8
+#		scale_types	'value'			#p10,#p11,#p12,#p15
+#		scale_types	'value'			#p17,#p19,#p20,#p21
+#		scales		5.0   1.5   2.0		#1,#3,#5,#8,#10,#11
+#		scales		5.0   1.5   2.0		#12,#15,#17,#19,#20,#21
+#		scales		5.0   1.5   2.0		#p1,#p3,#p5,#p8
+#		scales		5.0   1.5   2.0		#p10,#p11,#p12,#p15
+#		scales		5.0   1.5   2.0		#p17,#p19,#p20,#p21
+		descriptors	'x1'  'x2'  'x3'
+
+interface,
+	system					#0,#p0
+#	system					#2,#3,#13,#15,#18,#20
+#	system					#p2,#p3,#p13,#p15,#p18,#p20
+#	fork					#1,#4,#5,#7,#8,#11,#16,#19
+#	fork					#p1,#p4,#p5,#p7,#p8,
+#	fork					#p11,#p16,#p19
+#       direct					#6,#9,#10,#12,#14,#17,#21
+#       direct					#p6,#p9,#p10,#p12
+#       direct					#p14,#p17,#p21
+		asynchronous			#0,#p0
+#		asynchronous			#3,#7,#8,#11,#18,#19,#20
+#		asynchronous			#p3,#p7,#p8,#p11,#p18,#p19,#p20
+#		evaluation_concurrency 10	#3,#8,#18,#19
+		analysis_driver = 'text_book'
+
+responses,
+	num_objective_functions = 1
+#	num_nonlinear_equality_constraints = 1		#1,#3,#4,#5,#6
+#	num_nonlinear_equality_constraints = 1		#9,#11,#15,#18
+#	num_nonlinear_equality_constraints = 1		#p1,#p3,#p4,#p5,#p6
+#	num_nonlinear_equality_constraints = 1		#p9,#p11,#p15,#p18
+#		nonlinear_equality_targets = -.2	#1,#3,#4,#5,#6
+#		nonlinear_equality_targets = -.2	#9,#11,#15,#18
+#		nonlinear_equality_targets = -.2	#p1,#p3,#p4,#p5,#p6
+#		nonlinear_equality_targets = -.2	#p9,#p11,#p15,#p18
+#	num_nonlinear_inequality_constraints = 2	#4,#5,#7,#13,#14,#15
+#	num_nonlinear_inequality_constraints = 2	#17,#18,#19,#20,#21
+#	num_nonlinear_inequality_constraints = 2	#p4,#p5,#p7,#p13
+#	num_nonlinear_inequality_constraints = 2	#p14,#p15,#p17,#p18
+#	num_nonlinear_inequality_constraints = 2	#p19,#p20,#p21
+	no_gradients
+	no_hessians

@@ -1,0 +1,11 @@
+Perl (PDL) demos for PLplot
+---------------------------
+
+The files in this directory are close translations of the PLplot demos
+witten in C (see directory above ../c/).  They use the PDL and
+PDL::Graphics::PLplot modules distributed with PDL.
+
+CAVEAT: The scripts in this directory only work with the CVS sources of PDL
+(as on 2004-03-01 or later).
+
+ -- Rafael Laboissiere <rlaboiss@users.sf.net>, Mon Dec 15 18:26:08 CET 2003

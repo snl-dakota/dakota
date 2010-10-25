@@ -1,0 +1,91 @@
+dnl cf/summary.ac for PLplot  -*- autoconf -*-
+dnl
+dnl Print out some of the more important settings.
+dnl
+dnl Copyright (C) 1994, 2004  Maurice LeBrun
+dnl Copyright (C) 2002, 2003, 2004  Rafael Laboissiere
+dnl Copyright (C) 2002, 2003, 2004  Alan W. Irwin
+dnl Copyright (C) 2003, 2004  Joao Cardoso
+dnl
+dnl This file is part of PLplot.
+dnl
+dnl PLplot is free software; you can redistribute it and/or modify
+dnl it under the terms of the GNU Library General Public License as published
+dnl by the Free Software Foundation; version 2 of the License.
+dnl
+dnl PLplot is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU Library General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU Library General Public License
+dnl along with the file PLplot; if not, write to the Free Software
+dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+
+dnl In a reversal of previous practice, I print the actual variables
+dnl in the configure log.  This is to remind the user of the
+dnl difference between the command line syntax (which you can always
+dnl get help on by issuing a --help option) and the internal
+dnl representation.  It's necessary to remember this for when you want
+dnl to set the variable directly via ~/config/cf_plplot.in.
+
+dnl The following command is done in two parts to allow AIX 5.2 shell to
+dnl parse it.
+plplot_config_invocation1=`./config.status --version \
+  | grep 'with options' \
+  | sed 's/^  with options "//' | sed 's/"$//' | sed "s/'//g"`
+plplot_config_invocation="$0 $plplot_config_invocation1"
+
+plplot_config_result_msg="
+Configure results:
+
+command:	$plplot_config_invocation
+host:		$host
+have_x:		$have_x
+prefix:		$prefix
+CC:		$CC $CC_FLAGS"
+
+if test "$enable_cxx" = "yes"; then
+    plplot_config_result_msg=\
+"$plplot_config_result_msg
+CXX:		$CXX $CXX_FLAGS"
+fi
+
+if test "$enable_f77" = "yes"; then
+    plplot_config_result_msg=\
+"$plplot_config_result_msg
+F77:		$F77 $F77_FLAGS"
+fi
+
+plplot_config_result_msg=\
+"$plplot_config_result_msg
+LIB_TAG:	$LIB_TAG
+devices:	$DEVICES
+
+Available device drivers:
+static:		$STATIC_DRIVERS
+dynamic:	$DYNAMIC_DRIVERS
+
+Compilation options:
+with_debug:	$with_debug
+
+Library options:
+enable_shared:	$enable_shared		enable_static:	$enable_static
+with_rpath:	$with_rpath		with_double:	$with_double
+
+Optional libraries:
+with_qhull:	$with_qhull		with_csa:	$with_csa
+with_freetype:	$with_freetype		with_pthreads:	$with_pthreads
+
+Language Bindings:
+enable_tcl:	$enable_tcl		enable_itcl:	$enable_itcl
+enable_cxx:	$enable_cxx		enable_f77:	$enable_f77
+enable_java:	$enable_java		enable_python:	$enable_python
+enable_octave:	$enable_octave		enable_pdl:	$enable_pdl
+"
+
+cat << EOF > config.summary
+$plplot_config_result_msg
+EOF
+
+AC_MSG_NOTICE($plplot_config_result_msg)

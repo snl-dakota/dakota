@@ -1,0 +1,24 @@
+Spec files such as plplot_redhat6.2.spec and a tarball (e.g.,
+plplot-5.0.4.tar.gz) and optional patch files are all that are required to
+build source and binary rpm's.  For details of how to do this, please look at
+the Maximum RPM book by Ed Bailey (see http://redhat.com/support/books/).
+
+Every different rpm-based distribution (or version of RedHat) requires its
+own spec file which will differ in some small details from
+plplot_redhat6.2.spec.  So the plan is to build up a suite of these spec
+files in this directory as we get access to various distributions.
+plplot_redhat7.1.spec is the second example of this plan.
+
+plplot_redhat6.2.spec is the prototype of such spec files and must be
+considered experimental.  It has been used to build source and binary rpms
+successfully on *one* RedHat 6.2 system.  (Similar remarks also apply to
+plplot_redhat7.1.spec) It uses the built-in package relocatibility of PLplot
+to safely allow non-root users to build the rpm's. Nevertheless, because of
+the scarcity of testing, you are advised to take the ordinary precautions
+(check the file lists and scripts) before installing the binary rpm created
+by this package.
+
+Note that like all spec files, these spec files are package-version
+specific. They are only consistent with plplot-5.0.4 and will require some
+modification for every subsequent version change of plplot that we want to
+turn into an rpm.

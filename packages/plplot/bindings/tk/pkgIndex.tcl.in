@@ -1,0 +1,93 @@
+# $Id: pkgIndex.tcl.in 3186 2006-02-15 18:17:33Z slbrow $
+
+# Load PLplot tk extension
+
+# Copyright (C) 2004  Alan W. Irwin
+# Copyright (C) 2004  Joao Cardoso
+#
+# This file is part of PLplot.
+#
+# PLplot is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Library Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# PLplot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with PLplot; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+# This proc takes care of finding & loading the proper driver.
+
+# The original version dealt with the possibility that either or both $dir and
+# $file may contain spaces, or characters like []{}, but this hasn't been
+# tested for this version.
+
+proc load_pkg_Pltk {dir} {
+    global pllibrary tcl_platform auto_path
+    #puts "loading Pltk, dir: $dir"
+    set pllibrary $dir
+
+    if {$tcl_platform(platform) == "unix"} {
+	set stem tk
+	set thisDir [pwd]
+	set buildDir @BUILD_DIR@
+	set bLen [string length $buildDir]
+	if {![string compare -length $bLen $buildDir $thisDir]}	then {
+		set searchdirs "../../drivers/.libs"} else {
+		set searchdirs "@DRV_HARDDIR@"}
+	#puts $searchdirs
+	set suf [info sharedlibextension]
+
+	set file ""
+	foreach reldir $searchdirs {
+	    set driver [file join $dir $reldir $stem$suf]
+	    #puts "looking for driver file: $driver"
+	    if [file exists $driver] {
+	        set file $driver
+	        break
+	    }
+	    if { $file != "" } { break }
+	}
+	if { $file == "" } {
+	# Dynamic driver location failed, now try static driver location.
+	set searchdirs "@LIB_HARDDIR@";
+	# prefer double precision version
+	set dlnames "@DLNAME_LIBPLPLOTD@ @DLNAME_LIBPLPLOT@";
+	set file ""
+	foreach reldir $searchdirs {
+	    foreach dlname $dlnames {
+		set driver [file join $dir $reldir $dlname]
+		#puts "looking for driver file: $driver"
+		if [file exists $driver] {
+		    set file $driver
+		    break
+		}
+	    }
+	    if { $file != "" } { break }
+	}
+	}
+	if { $file == "" } {
+	    error "load_pkg_Pltk: could not find loadable driver"
+	}
+
+    } else {
+    # This is probably broken, someone should fix it.
+	if {[info exists tcl_platform(debug)]} {
+	    set file [file join $dir plplot510d[info sharedlibextension]]
+	} else {
+	    set file [file join $dir plplot510[info sharedlibextension]]
+	}
+    }
+
+    load $file Pltk
+# put core tcl scripts in path
+    lappend auto_path $dir/tcl
+    rename load_pkg_Pltk {}
+}
+
+package ifneeded Pltk @PLPLOT_TCL_VERSION@ [list load_pkg_Pltk $dir]

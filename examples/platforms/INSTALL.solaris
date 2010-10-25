@@ -1,0 +1,26 @@
+===========================================
+Sun Solaris (SunOS) Platform-specific Notes
+===========================================
+
+--------------------------
+configure-time environment
+--------------------------
+
+Add paths for mpirun and a particular make version on the Sun (also
+likely needed at run-time):
+  set path = (/opt/SUNWhpc/bin /opt/SUNWhpc/sbin /usr/ccs/bin $path)
+
+  setenv CC "cc"
+  setenv CXX "CC"
+  setenv F77 "f77"
+  setenv FC "f90"
+  setenv LDFLAGS "-lmvec"
+  setenv YACC "/usr/ccs/bin/yacc"
+  setenv CFLAGS "-fast"
+  setenv CXXFLAGS "-fast -library=stlport4,sunperf -features=tmplife -features=tmplrefstatic"
+  setenv FFLAGS "-fast"
+  setenv FCFLAGS "-fast"
+
+--------------------
+run-time environment
+--------------------

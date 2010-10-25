@@ -1,0 +1,534 @@
+namespace Dakota { // for some reason, this doesn't work with mainpage
+
+/** \mainpage DAKOTA Developers Manual
+
+\image html logo_3d_halfsize.jpg
+
+\author Brian M. Adams, William J. Bohnhoff, Keith R. Dalbey, John
+P. Eddy, Michael S. Eldred, David M. Gay, Karen Haskell, Patricia
+D. Hough, Laura P. Swiler
+
+\htmlonly
+<b>Main Page Table of Contents</b>
+<ul>
+<li> <a href="index.html#DevIntro">Introduction</a> 
+<li> <a href="index.html#DevOverview">Overview of DAKOTA</a> 
+  <ul>
+  <li> <a href="index.html#DevStrategies">Strategies</a>
+  <li> <a href="index.html#DevIterators">Iterators</a>
+  <li> <a href="index.html#DevModels">Models</a>
+  <li> <a href="index.html#DevVariables">Variables</a>
+  <li> <a href="index.html#DevInterfaces">Interfaces</a>
+  <li> <a href="index.html#DevResponses">Responses</a>
+  </ul>
+<li> <a href="index.html#DevServices">Services</a>
+<li> <a href="index.html#DevAddtnl">Additional Resources</a>
+</ul>
+\endhtmlonly
+
+
+\section DevIntro Introduction
+
+
+The DAKOTA (Design Analysis Kit for Optimization and Terascale
+Applications) toolkit provides a flexible, extensible interface
+between analysis codes and iteration methods.  DAKOTA contains
+algorithms for optimization with gradient and nongradient-based
+methods, uncertainty quantification with sampling, reliability,
+stochastic expansion, and interval estimation methods, parameter
+estimation with nonlinear least squares methods, and
+sensitivity/variance analysis with design of experiments and parameter
+study capabilities. These capabilities may be used on their own or as
+components within advanced algorithms such as surrogate-based
+optimization, mixed integer nonlinear programming, mixed
+aleatory-epistemic uncertainty quantification, or optimization under
+uncertainty. By employing object-oriented design to implement
+abstractions of the key components required for iterative systems
+analyses, the DAKOTA toolkit provides a flexible problem-solving
+environment as well as a platform for rapid prototyping of new
+solution approaches.
+
+The Developers Manual focuses on documentation of the class structures
+used by the DAKOTA system.  It derives directly from annotation of the
+actual source code.  For information on input command syntax, refer to
+the <a href="../html-ref/index.html">Reference Manual</a>, and for a
+tour of DAKOTA features and capabilities, refer to the Users Manual.
+
+
+\section DevOverview Overview of DAKOTA
+
+
+In the DAKOTA system, the \e strategy creates and manages \e iterators
+and \e models.  In the simplest case, the strategy creates a single
+iterator and a single model and executes the iterator on the model to
+perform a single study.  In a more advanced case, a hybrid
+optimization strategy might manage a global optimizer operating on a
+low-fidelity model in coordination with a local optimizer operating on
+a high-fidelity model.  And on the high end, a surrogate-based
+optimization under uncertainty strategy would employ an uncertainty
+quantification iterator nested within an optimization iterator and
+would employ truth models layered within surrogate models.  Thus,
+iterators and models provide both stand-alone capabilities as well as
+building blocks for more sophisticated studies.
+
+A model contains a set of \e variables, an \e interface, and a set of
+\e responses, and the iterator operates on the model to map the
+variables into responses using the interface.  Each of these
+components is a flexible abstraction with a variety of specializations
+for supporting different types of iterative studies.  In a DAKOTA
+input file, the user specifies these components through strategy,
+method, model, variables, interface, and responses keyword
+specifications.
+
+The use of class hierarchies provides a mechanism for extensibility in
+DAKOTA components.  In each of the various class hierarchies, adding a
+new capability typically involves deriving a new class and providing a
+small number of virtual function redefinitions.  These redefinitions
+define the coding portions specific to the new derived class, with the
+common portions already defined at the base class.  Thus, with a small
+amount of new code, the existing facilities can be extended, reused,
+and leveraged for new purposes.
+
+The software components are presented in the following sections using
+a top-down order.
+
+
+\subsection DevStrategies Strategies
+
+Class hierarchy: \ref Dakota::Strategy "Strategy".
+
+Strategies provide a control layer for creation and management of
+iterators and models.  Specific strategies include:
+
+<ul> 
+<li> \ref Dakota::SingleMethodStrategy "SingleMethodStrategy": the
+simplest strategy.  A single iterator is run on a single model to
+perform a single study.
+
+<li> \ref Dakota::HybridStrategy "HybridStrategy": hybrid minimization
+using a set of iterators employing a corresponding set of models of
+varying fidelity.  Coordination approaches among the iterators include
+collaborative, embedded, and sequential approaches, as embodied in
+the CollaborativeHybridStrategy, EmbeddedHybridStrategy, and
+SequentialHybridStrategy derived classes.
+
+<li> \ref Dakota::ConcurrentStrategy "ConcurrentStrategy": two similar
+algorithms are available: (1) multi-start iteration from several
+different starting points, and (2) pareto set optimization for several
+different multiobjective weightings.  Employs a single iterator with a
+single model, but runs multiple instances of the iterator concurrently
+for different settings within the model.
+</ul>
+
+
+\subsection DevIterators Iterators
+
+Class hierarchy: \ref Dakota::Iterator "Iterator".  Iterator
+implementations may choose to split operations up into run time phases
+as described in \ref IteratorFlow.
+
+The iterator hierarchy contains a variety of iterative algorithms for 
+optimization, uncertainty quantification, nonlinear least squares, 
+design of experiments, and parameter studies.  The hierarchy is divided
+into \ref Dakota::Minimizer "Minimizer" and \ref Dakota::Analyzer "Analyzer"
+branches.  The \ref Dakota::Minimizer "Minimizer" classes include:
+
+<ul>
+<li> Optimization: \ref Dakota::Optimizer "Optimizer" provides a base
+class for the 
+\ref Dakota::DOTOptimizer "DOTOptimizer", 
+\ref Dakota::CONMINOptimizer "CONMINOptimizer", 
+\ref Dakota::NPSOLOptimizer "NPSOLOptimizer", 
+\ref Dakota::NLPQLPOptimizer "NLPQLPOptimizer", and 
+\ref Dakota::SNLLOptimizer "SNLLOptimizer" gradient-based optimization
+libraries and the
+\ref Dakota::APPSOptimizer "APPSOptimizer", 
+\ref Dakota::COLINOptimizer "COLINOptimizer", 
+\ref Dakota::JEGAOptimizer "JEGAOptimizer", and
+\ref Dakota::NCSUOptimizer "NCSUOptimizer" nongradient-based 
+optimization methods and libraries.
+
+<li> Parameter estimation: \ref Dakota::LeastSq "LeastSq" provides a
+base class for \ref Dakota::NL2SOLLeastSq "NL2SOLLeastSq", a 
+least-squares solver based on NL2SOL, 
+\ref Dakota::SNLLLeastSq "SNLLLeastSq", a Gauss-Newton least-squares 
+solver, and \ref Dakota::NLSSOLLeastSq "NLSSOLLeastSq", an SQP-based 
+least-squares solver.
+
+<li> Surrogate-based minimization (optimization and nonlinear least
+squares): \ref Dakota::SurrBasedMinimizer "SurrBasedMinimizer"
+provides a base class for \ref Dakota::SurrBasedLocalMinimizer
+"SurrBasedLocalMinimizer", \ref Dakota::SurrBasedGlobalMinimizer
+"SurrBasedGlobalMinimizer", and \ref Dakota::EffGlobalMinimizer
+"EffGlobalMinimizer".  The surrogate-based local and global methods
+employ a single iterator with any of the available \ref
+Dakota::SurrogateModel "SurrogateModel" capabilities (local,
+multipoint, or global data fits or hierarchical approximations) and
+perform a sequence of approximate optimizations, each involving build,
+optimize, and verify steps.  The efficient global method, on the other
+hand, hard-wires a recursion involving Gaussian process surrogate
+models coupled with the DIRECT global optimizer to maximize an
+expected improvement function.
+</ul>
+
+and the \ref Dakota::Analyzer "Analyzer" classes include:
+<ul>
+
+<li> Uncertainty quantification: \ref Dakota::NonD "NonD" provides a
+base class for non-deterministic methods \ref Dakota::NonDSampling
+"NonDSampling", \ref Dakota::NonDReliability "NonDReliability"
+(reliability analysis), \ref Dakota::NonDExpansion "NonDExpansion"
+(stochastic expansion methods), \ref Dakota::NonDIntegration
+"NonDIntegration" (numerical integration methods), and \ref
+Dakota::NonDInterval "NonDInterval" (interval-based epistemic
+methods).  Bayesian calibration methods are prototyped in \ref
+Dakota::NonDBayesCal "NonDBayesCal".
+
+<ul> <li> \ref Dakota::NonDSampling "NonDSampling" is further
+specialized with the \ref Dakota::NonDLHSSampling "NonDLHSSampling"
+class for Latin hypercube and Monte Carlo sampling, the \ref
+Dakota::NonDIncremLHSSampling "NonDIncremLHSSampling" class for
+incremental Latin hypercube sampling, and \ref
+Dakota::NonDAdaptImpSampling "NonDAdaptImpSampling" for multimodal
+adaptive importance sampling.
+
+<li> \ref Dakota::NonDReliability "NonDReliability" is further specialized 
+with local and global methods 
+(\ref Dakota::NonDLocalReliability "NonDLocalReliability" and 
+\ref Dakota::NonDGlobalReliability "NonDGlobalReliability"). 
+
+<li> \ref Dakota::NonDExpansion "NonDExpansion" includes
+specializations for generalized polynomial chaos (\ref
+Dakota::NonDPolynomialChaos "NonDPolynomialChaos") and stochastic
+collocation (\ref Dakota::NonDStochCollocation "NonDStochCollocation")
+and is supported by \ref Dakota::NonDIntegration "NonDIntegration",
+which supplies tensor-product quadrature and Smolyak sparse grid
+methods (\ref Dakota::NonDQuadrature "NonDQuadrature" and \ref
+Dakota::NonDSparseGrid "NonDSparseGrid").
+
+<li> \ref Dakota::NonDInterval "NonDInterval" provides a base class
+for epistemic interval-based UQ methods.  Three interval analysis
+approaches are provided: LHS (\ref Dakota::NonDLHSInterval
+"NonDLHSInterval"), surrogate-based global optimization (\ref
+Dakota::NonDGlobalInterval "NonDGlobalInterval"), and local
+optimization (\ref Dakota::NonDLocalInterval "NonDLocalInterval").
+Each of these three has specializations for single interval (\ref
+Dakota::NonDLHSSingleInterval "NonDLHSSingleInterval", \ref
+Dakota::NonDGlobalSingleInterval "NonDGlobalSingleInterval", \ref
+Dakota::NonDLocalSingleInterval "NonDLocalSingleInterval") and
+Dempster-Shafer Theory of Evidence (\ref Dakota::NonDLHSEvidence
+"NonDLHSEvidence", \ref Dakota::NonDGlobalEvidence
+"NonDGlobalEvidence", \ref Dakota::NonDLocalEvidence
+"NonDLocalEvidence") approaches.
+</ul>
+
+<li> Parameter studies and design of experiments: 
+\ref Dakota::PStudyDACE "PStudyDACE" provides a base class for 
+\ref Dakota::ParamStudy "ParamStudy", which provides capabilities for 
+directed parameter space interrogation, 
+\ref Dakota::PSUADEDesignCompExp "PSUADEDesignCompExp", which provides 
+access to the Morris One-At-a-Time (MOAT) method for parameter screening, 
+and \ref Dakota::DDACEDesignCompExp "DDACEDesignCompExp" and 
+\ref Dakota::FSUDesignCompExp "FSUDesignCompExp", which provide
+for parameter space exploration through design and analysis of 
+computer experiments.  \ref Dakota::NonDLHSSampling "NonDLHSSampling" 
+from the uncertainty quantification branch also supports design of 
+experiments for design and state variables when in \c all_variables mode.
+</ul>
+
+
+\subsection DevModels Models
+
+Class hierarchy: \ref Dakota::Model "Model".
+
+The model classes are responsible for mapping variables into responses
+when an iterator makes a function evaluation request.  There are 
+several types of models, some supporting sub-iterators and sub-models
+for enabling layered and nested relationships.  When sub-models are
+used, they may be of arbitrary type so that a variety of recursions
+are supported. 
+
+<ul> 
+<li> \ref Dakota::SingleModel "SingleModel": variables are mapped into
+responses using a single \ref Dakota::Interface "Interface" object.
+No sub-iterators or sub-models are used.
+
+<li> \ref Dakota::SurrogateModel "SurrogateModel": variables are mapped
+into responses using an approximation.  The approximation is built
+and/or corrected using data from a sub-model (the truth model) and the
+data may be obtained using a sub-iterator (a design of experiments
+iterator).  \ref Dakota::SurrogateModel "SurrogateModel" has two derived
+classes: \ref Dakota::DataFitSurrModel "DataFitSurrModel" for data fit
+surrogates and \ref Dakota::HierarchSurrModel "HierarchSurrModel" for
+hierarchical models of varying fidelity.  The relationship of the
+sub-iterators and sub-models is considered to be "layered" since they
+are not used as part of every response evaluation on the top level
+model, but rather used periodically in surrogate update and
+verification steps.
+
+<li> \ref Dakota::NestedModel "NestedModel": variables are mapped into
+responses using a combination of an optional \ref 
+Dakota::Interface "Interface" and a sub-iterator/sub-model pair.  The 
+relationship of the sub-iterators and sub-models is considered to be 
+"nested" since they are used to perform a complete iterative study as 
+part of every response evaluation on the top level model.
+
+<li> \ref Dakota::RecastModel "RecastModel": recasts the inputs and
+outputs of a sub-model for the purposes of variable transformations
+(e.g., variable scaling, transformations to standardized random
+variables) and problem reformulation (e.g., multiobjective
+optimization, response scaling, augmented Lagrangian merit functions,
+expected improvement).
+</ul>
+
+
+\subsection DevVariables Variables
+
+Class hierarchy: \ref Dakota::Variables "Variables".
+
+The \ref Dakota::Variables "Variables" class hierarchy manages design,
+aleatory uncertain, epistemic uncertain, and state \e variable \e types for
+continuous, discrete integer, and discrete real \e domain \e types.  This
+hierarchy is specialized according to how the domain types are managed:
+
+<ul> 
+
+<li> \ref Dakota::MixedVariables "MixedVariables": domain type
+distinctions are retained, such that separate continuous, discrete
+integer, and discrete real domain types are managed.  This is the
+default Variable perspective, and draws its name from "mixed
+continuous-discrete" optimization.
+
+<li> \ref Dakota::MergedVariables "MergedVariables": domain types are
+combined through relaxation of discrete constraints; i.e., continuous
+and discrete variables are merged into continuous arrays through
+relaxation of integrality (for discrete integer ranges) or set
+membership (for discrete integer or discrete real sets) requirements.
+The branch and bound minimizer is the only method using this approach
+at present.
+
+</ul>
+
+Whereas domain types are controlled through the derived class
+selection, variable types are handled within each of these derived
+classes using variable views.  These views control the subset of
+variable types that are active and inactive within a particular
+iterative study.  For design optimization and uncertainty
+quantification, for example, the active variables view consists of
+design or uncertain types, respectively, and any other variable types
+are carried along invisible to the iterative algorithm being employed.
+For parameter studies and design of experiments, however, a variable
+subset view is not imposed and all variables are active.  Selected
+uncertainty quantification methods can also be toggled into an "All"
+view using the \c all_variables input specification.
+
+Any inactive view is set based on higher level iteration within a
+model recursion (e.g., a NestedModel), which enables lower level
+iteration to return derivatives with respect to variables that are
+active at the higher level.
+
+The \ref Dakota::Constraints "Constraints" hierarchy manages bound, 
+linear, and nonlinear constraints and utilizes the same 
+specializations for managing bounds on the variables (see 
+\ref Dakota::MixedConstraints "MixedConstraints" and
+\ref Dakota::MergedConstraints "MergedConstraints").
+
+
+\subsection DevInterfaces Interfaces
+
+Class hierarchy: \ref Dakota::Interface "Interface".
+
+Interfaces provide access to simulation codes or, conversely,
+approximations based on simulation code data.  In the simulation case,
+an \ref Dakota::ApplicationInterface "ApplicationInterface" is used.  
+\ref Dakota::ApplicationInterface "ApplicationInterface" is specialized
+according to the simulation invocation mechanism, for which 
+the following nonintrusive approaches
+
+<ul>
+<li> \ref Dakota::SysCallApplicInterface "SysCallApplicInterface": the
+simulation is invoked using a system call (the C function \c
+system()).  Asynchronous invocation utilizes a background system call.
+Utilizes the \ref Dakota::SysCallAnalysisCode "SysCallAnalysisCode"
+class to define syntax for input filter, analysis code, output filter,
+or combined spawning, which in turn utilize the \ref
+Dakota::CommandShell "CommandShell" utility.
+
+<li> \ref Dakota::ForkApplicInterface "ForkApplicInterface": the
+simulation is invoked using a fork (the \c fork/exec/wait family of
+functions).  Asynchronous invocation utilizes a nonblocking fork.
+Utilizes the \ref Dakota::ForkAnalysisCode "ForkAnalysisCode" class
+for lower level fork operations.
+
+<li> \ref Dakota::GridApplicInterface "GridApplicInterface": the
+simulation is invoked using distributed resource facilities.  This
+capability is experimental and still under development.  The design is
+evolving into the use of Condor and/or Globus tools.
+</ul>
+
+and the following semi-intrusive approach
+
+<ul>
+<li> \ref Dakota::DirectApplicInterface "DirectApplicInterface":
+the simulation is linked into the DAKOTA executable and is invoked
+using a procedure call.  Asynchronous invocations will utilize
+nonblocking threads (capability not yet available).
+</ul>
+
+are supported.  Scheduling of jobs for asynchronous local, message
+passing, and hybrid parallelism approaches is performed in the \ref
+Dakota::ApplicationInterface "ApplicationInterface" class, with job
+initiation and job capture specifics implemented in the derived
+classes.
+
+In the approximation case, global, multipoint, or local data fit
+approximations to simulation code response data can be built and used
+as surrogates for the actual, expensive simulation.  The interface
+class providing this capability is
+
+<ul> <li> \ref Dakota::ApproximationInterface
+"ApproximationInterface": builds an approximation using data from a
+truth model and then employs the approximation for mapping variables
+to responses.  This class contains an array of \ref
+Dakota::Approximation "Approximation" objects, one per response
+function, which support a variety of approximation types using the
+different \ref Dakota::Approximation "Approximation" derived classes.
+These include \ref Dakota::SurfpackApproximation
+"SurfpackApproximation" (provides kriging, MARS, moving least squares,
+neural network, polynomial regression, and radial basis functions),
+\ref Dakota::GaussProcApproximation "GaussProcApproximation" (Gaussian
+process models), \ref Dakota::OrthogPolyApproximation
+"OrthogPolyApproximation" (multivariate orthogonal polynomials),
+\ref Dakota::InterpPolyApproximation "InterpPolyApproximation"
+(multivariate Lagrange interpolation polynomials), \ref
+Dakota::TANA3Approximation "TANA3Approximation" (two-point adaptive
+nonlinearity approximation), and \ref Dakota::TaylorApproximation
+"TaylorApproximation" (local Taylor series).  </ul>
+
+which is an essential component within the \ref Dakota::DataFitSurrModel 
+"DataFitSurrModel" capability described above in \ref DevModels.
+
+
+\subsection DevResponses Responses
+
+Class: \ref Dakota::Response "Response".
+
+The \ref Dakota::Response "Response" class provides an abstract data
+representation of response functions and their first and second
+derivatives (gradient vectors and Hessian matrices).  These response
+functions can be interpreted as an objective function and constraints
+(optimization data set), residual functions and constraints (least
+squares data set), or generic response functions (uncertainty
+quantification data set).  This class is not currently part of a class
+hierarchy, since the abstraction has been sufficiently general and has
+not required specialization.
+
+
+\section DevServices Services
+
+
+A variety of services are provided in DAKOTA for parallel computing,
+failure capturing, restart, graphics, etc.  An overview of the classes
+and member functions involved in performing these services is included
+below.
+
+<ul> 
+<li> Multilevel parallel computing: DAKOTA supports multiple levels of
+nested parallelism.  A strategy can manage concurrent iterators, each
+of which manages concurrent function evaluations, each of which
+manages concurrent analyses executing on multiple processors.
+Partitioning of these levels with MPI communicators is managed in 
+\ref Dakota::ParallelLibrary "ParallelLibrary" and scheduling 
+routines for the levels are part of \ref Dakota::Strategy "Strategy", 
+\ref Dakota::ApplicationInterface "ApplicationInterface", and 
+\ref Dakota::ForkApplicInterface "ForkApplicInterface".
+
+<li> Parsing: DAKOTA employs the NIDR parser (New Input Deck Reader) to
+retrieve information from user input files.  Parsing options are
+processed in \ref Dakota::CommandLineHandler "CommandLineHandler" 
+and parsing occurs in 
+\ref 
+Dakota::ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()" 
+called from main.C.  NIDR uses the keyword handlers in the
+\ref Dakota::NIDRProblemDescDB "NIDRProblemDescDB" derived class to populate 
+data within the \ref Dakota::ProblemDescDB "ProblemDescDB" base class, 
+which maintains a \ref Dakota::DataStrategy "DataStrategy"
+specification and lists of \ref Dakota::DataMethod "DataMethod", 
+\ref Dakota::DataModel "DataModel", \ref Dakota::DataVariables "DataVariables", 
+\ref Dakota::DataInterface "DataInterface", and 
+\ref Dakota::DataResponses "DataResponses" specifications.  Procedures 
+for modifying the parsing subsystem are described in \ref SpecChange.
+
+<li> Failure capturing: Simulation failures can be trapped and managed
+using exception handling in 
+\ref Dakota::ApplicationInterface "ApplicationInterface" and its 
+derived classes.
+
+<li> Restart: DAKOTA maintains a record of all function evaluations
+both in memory (for capturing any duplication) and on the file system
+(for restarting runs).  Restart options are processed in \ref
+Dakota::CommandLineHandler "CommandLineHandler" and retrieved in
+\ref Dakota::ParallelLibrary::specify_outputs_restart "ParallelLibrary::specify_outputs_restart()", 
+restart file management occurs in \ref
+Dakota::ParallelLibrary::manage_outputs_restart "ParallelLibrary::manage_outputs_restart()", and restart file insertions occur in \ref
+Dakota::ApplicationInterface "ApplicationInterface".  The \c 
+dakota_restart_util executable, built from restart_util.C, provides 
+a variety of services for interrogating, converting, repairing, 
+concatenating, and post-processing restart files.
+
+<li> Memory management: DAKOTA employs the techniques of reference
+counting and representation sharing through the use of letter-envelope
+and handle-body idioms (Coplien, "Advanced C++").  The former idiom
+provides for memory efficiency and enhanced polymorphism in the
+following class hierarchies: \ref Dakota::Strategy "Strategy", \ref
+Dakota::Iterator "Iterator", \ref Dakota::Model "Model", \ref
+Dakota::Variables "Variables", \ref Dakota::Constraints "Constraints", 
+\ref Dakota::Interface "Interface", 
+\ref Dakota::ProblemDescDB "ProblemDescDB", 
+\ref Dakota::Approximation "Approximation", and 
+\ref Dakota::BasisPolynomial "BasisPolynomial".  The latter 
+idiom provides for memory efficiency in data-intensive classes which
+do not involve a class hierarchy.  The \ref Dakota::Response "Response",
+parser data (\ref Dakota::DataStrategy "DataStrategy", 
+\ref Dakota::DataMethod "DataMethod", \ref Dakota::DataModel "DataModel", 
+\ref Dakota::DataVariables "DataVariables",
+\ref Dakota::DataInterface "DataInterface", and
+\ref Dakota::DataResponses "DataResponses"), and 
+\ref Dakota::SurrogateDataPoint "SurrogateDataPoint" classes use
+this idiom.  When managing reference-counted data containers (e.g.,
+\ref Dakota::Variables "Variables" or \ref Dakota::Response "Response"
+objects), it is important to properly manage shallow and deep copies,
+to allow for both efficiency and data independence as needed in a
+particular context.
+
+<li> Graphics: DAKOTA provides 2D iteration history graphics using
+Motif widgets and 3D surface plotting graphics from the PLPLOT
+package.  Graphics data can also be catalogued in a tabular data file
+for post-processing with 3rd party tools such as Matlab, Tecplot, etc.
+All of these capabilities are encapsulated within the 
+\ref Dakota::Graphics "Graphics" class.
+</ul>
+
+
+\section DevAddtnl Additional Resources
+
+
+Additional development resources include:
+
+\li \ref RecommPract
+\li \ref SoftwareTools
+\li \ref SpecChange
+\li \ref IteratorFlow
+\li \ref DakLibrary
+\li The execution of function evaluations is a core component of DAKOTA
+    involving several class hierarchies.  An overview of the classes and
+    member functions involved in performing these evaluations is provided
+    in \ref FnEvals.
+\li Project web pages are maintained at http://www.cs.sandia.gov/dakota with
+    documentation pointers provided at
+    http://www.cs.sandia.gov/dakota/documentation.html, and a list of 
+    publications provided at http://www.cs.sandia.gov/dakota/publications.html
+
+*/
+
+} // namespace Dakota

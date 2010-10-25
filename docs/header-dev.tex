@@ -1,0 +1,82 @@
+\documentclass[letterpaper]{book}
+
+\input{../DakotaDefs.tex}
+%\usepackage{a4wide}
+\oddsidemargin  0.25 in
+\evensidemargin 0 in
+\topmargin  0 in
+\textwidth  6.25 in
+\textheight 8.25 in
+
+\usepackage{makeidx}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{alltt}
+\usepackage{times}
+\ifx\pdfoutput\undefined
+\usepackage[ps2pdf,
+            pagebackref=true,
+            colorlinks=true,
+            linkcolor=blue
+           ]{hyperref}
+\else
+\usepackage[pdftex,
+            pagebackref=true,
+            colorlinks=true,
+            linkcolor=blue
+           ]{hyperref}
+\fi
+
+\usepackage{doxygen}
+% Override some settings from doxygen.sty:
+\rfoot[\fancyplain{}{\bfseries\scriptsize DAKOTA Version \DakotaVersion\space Developers Manual generated on \today}]{}
+\lfoot[]{\fancyplain{}{\bfseries\scriptsize DAKOTA Version \DakotaVersion\space Developers Manual generated on \today}}
+
+\makeindex
+\setcounter{tocdepth}{1}
+\renewcommand\footrulewidth{0.4pt}
+
+\begin{document}
+
+\begin{titlepage}
+\pagenumbering{arabic}
+\setcounter{page}{3}
+\begin{center}
+{\large \DakotaSANDDev}\\
+{\large Unlimited Release}\\
+{\large \DakotaSANDDate}\\
+{\large Updated \today}\\
+
+\vspace*{1.5cm}
+{\LARGE DAKOTA, A Multilevel Parallel Object-Oriented Framework for 
+Design Optimization, Parameter Estimation, Uncertainty Quantification, 
+and Sensitivity Analysis}\\
+\vspace*{1cm}
+{\LARGE Version \DakotaVersion\space Developers Manual}\\
+\vspace*{1cm}
+
+\DakotaAuthorFormatted
+
+\pagebreak
+
+{\Large \bf Abstract}
+\end{center}
+
+\DakotaAbstractShared
+\DakotaAbstractDev
+
+\end{titlepage}
+
+\cleardoublepage
+\tableofcontents
+\cleardoublepage
+% Comment out lines:
+%   \chapter{DAKOTA Page Documentation}
+%   \include{todo}
+% Edit:
+%   change \include to \input for DakLibrary, FnEvals, RecommPract,
+%     SoftwareTools, and SpecChange (saves blank pages)
+%   edit latex-dev/(DakLibrary,FnEvals,RecommPract,SoftwareTools,SpecChange).tex
+%     to promote all sections up one level
+% ------------------------- End header-dev.tex -------------------------

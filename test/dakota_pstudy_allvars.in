@@ -1,0 +1,102 @@
+# DAKOTA INPUT FILE - dakota_pstudy_allvars.in
+
+# This sample Dakota input file tests inferred bounds and inferred 
+# initial points in the parameter study.
+
+strategy,				
+	single_method			 
+	  tabular_graphics_data		
+
+method, 				 
+        multidim_parameter_study
+          partitions = 0			#0
+#         partitions = 2			#1
+#         partitions = 1			#2,#3,#4
+
+variables,								 
+	continuous_design = 1			#0,#1,#4
+          upper_bounds = 20.			#0,#1,#4
+          lower_bounds = 10.			#0,#1,#4
+	discrete_design_range = 1		#0,#1
+          upper_bounds =  7			#0,#1
+          lower_bounds = -3			#0,#1
+	discrete_design_set_int = 1		#0,#1
+          set_values = 3 4 5			#0,#1
+	discrete_design_set_real = 1		#0,#1,#4
+          set_values = 30. 40. 50.		#0,#1,#4
+        normal_uncertain = 1			#0,#2
+          means = 69.0       			#0,#2
+          std_deviations = 1.0  		#0,#2
+    	lognormal_uncertain = 1			#0,#2
+          means             =  1.		#0,#2
+          std_deviations    =  0.5      	#0,#2
+	uniform_uncertain = 1               	#0,#2     
+	  lower_bounds      = 200.		#0,#2
+          upper_bounds = 300.			#0,#2
+ 	loguniform_uncertain = 1		#0,#2,#4
+          lower_bounds      =  0.1		#0,#2,#4
+          upper_bounds      =  10.		#0,#2,#4
+        triangular_uncertain = 1		#0,#2
+          modes             =  0.  		#0,#2
+          lower_bounds      = -2.		#0,#2
+	  upper_bounds      =  2.  		#0,#2
+	exponential_uncertain = 1		#0,#2
+	  betas             =  2.		#0,#2
+	beta_uncertain = 1			#0,#2
+	  alphas            =  1.5  		#0,#2
+	  betas             =  2. 		#0,#2
+	  lower_bounds      = -2.		#0,#2
+	  upper_bounds      =  2.		#0,#2
+	gamma_uncertain = 1			#0,#2
+	  alphas            =  2.5  		#0,#2
+	  betas             =  2.  		#0,#2
+	gumbel_uncertain = 1			#0,#2
+	  alphas            = 1.5 		#0,#2
+	  betas             = 2.5		#0,#2
+	frechet_uncertain = 1			#0,#2
+	  alphas            = 2.5 		#0,#2
+	  betas             = 3.5 		#0,#2
+	weibull_uncertain = 1			#0,#2
+	  alphas            =   12.		#0,#2
+	  betas             =  250.		#0,#2
+	histogram_bin_uncertain = 1		#0,#2
+	  abscissas   =  5  8 10 		#0,#2
+	  counts      = 17 21  0		#0,#2
+        poisson_uncertain = 1			#0,#3
+          lambdas           =  0.2   		#0,#3
+        binomial_uncertain = 1			#0,#3,#4
+          prob_per_trial    =  0.3  		#0,#3,#4
+          num_trials        =  10  		#0,#3,#4
+        negative_binomial_uncertain = 1		#0,#3
+          prob_per_trial    =  0.3  		#0,#3
+          num_trials        =  10    		#0,#3
+        geometric_uncertain = 1			#0,#3
+          prob_per_trial    = 0.1		#0,#3
+ 	hypergeometric_uncertain = 1		#0,#3
+          total_population    = 50 		#0,#3
+          selected_population = 20		#0,#3
+          num_drawn           =  5 		#0,#3
+	histogram_point_uncertain = 1		#0,#3,#4
+	  abscissas   = 3 4 5			#0,#3,#4
+	  counts      = 1 1 1			#0,#3,#4
+	continuous_state = 1			#0,#1
+          upper_bounds = 20.			#0,#1
+          lower_bounds = 10.			#0,#1
+	discrete_state_range = 1		#0,#1
+          upper_bounds =  7			#0,#1
+          lower_bounds = -3			#0,#1
+	discrete_state_set_int = 1		#0,#1,#4
+          set_values = 3 4 5			#0,#1,#4
+	discrete_state_set_real = 1		#0,#1
+          set_values = 30. 40. 50.		#0,#1
+
+interface,								 
+	direct					 
+	  analysis_driver = 'text_book'
+	  deactivate evaluation_cache restart_file
+
+responses,                                      			 
+	num_response_functions= 1					 
+	no_gradients							       
+	no_hessians
+

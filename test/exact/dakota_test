@@ -1,0 +1,123 @@
+#!/usr/bin/env python
+##
+## BUG: this script cannot correctly handle AMPL option values that contain a white space.
+##
+
+import signal
+import commands
+import sys
+import re
+import os
+import random
+import math
+import types
+pathname = os.path.dirname(sys.argv[0])
+fullpath = os.path.abspath(pathname)
+os.sys.path = os.sys.path + [fullpath + "/../../exact/src"]
+import exact
+
+#
+# Process the output log
+#
+def process_log(OUTPUT,logfile):
+	status = 1
+	leak_flag=False
+	valgrind_leaks="-1"
+	valgrind_errors="-1"
+	if os.path.exists(logfile):
+	   INPUT = open(logfile,"r")
+	   for line in INPUT:
+	     #print "LINE",line
+	     words = re.split('[ \t]+',line.strip())
+	     if len(words) < 2:
+	        continue
+
+	     if words[0] == "Final-Value:":
+	        status = 0
+	        print >>OUTPUT, "Value numeric/double " + words[1]
+
+	     elif words[0] == "Final-Point:":
+	        print >>OUTPUT, "Final-Point text/string \""," ".join(words[1:]),"\""
+
+	     elif words[0] == "Final-Stats:":
+	        print >>OUTPUT, "Num-Evaluations numeric/integer " + words[2]
+	        print >>OUTPUT, "ConstraintViolation numeric/double " + words[4]
+
+	     elif words[0] == "Termination:":
+	        print >>OUTPUT, "TerminationStatus text/string \"" + words[1] + "\""
+
+	     elif words[0] == "methodName":
+	        print >>OUTPUT, "Solver text/string \"" + words[2] + "\""
+
+             elif words[0] == "Total" and words[1] == "CPU":
+                print >>OUTPUT, "\"CPU TotalTime\" numeric/double " + words[3]
+
+             elif words[1] == "wall" and words[2] == "clock":
+                print >>OUTPUT, "\"WallClock TotalTime\" numeric/double " + words[4]
+
+             elif words[0] == "Seed:":
+                print >>OUTPUT, "Seed numeric/integer",eval("int(" + words[1] + ")")
+
+             #
+             # When running under AMPL, the first set of valgrind statistics is the
+             # one's that we want
+             #
+             elif words[1] == "ERROR" and words[2] == "SUMMARY:" and valgrind_errors == "-1":
+                valgrind_errors = words[3]
+             elif leak_flag==True and words[1] == "definitely" and valgrind_leaks == "-1":
+                valgrind_leaks = words[3]
+                leak_flag=False
+
+             elif words[1] == "LEAK" and words[2] == "SUMMARY:":
+                leak_flag=True
+
+        #
+        # Remove commas from valgrind #'s
+        #
+        p = re.compile( ',' )
+        valgrind_errors = p.sub( "", valgrind_errors)
+        valgrind_leaks = p.sub( "", valgrind_leaks)
+        print >>OUTPUT, "\"Valgrind Errors\" numeric/integer " + valgrind_errors
+        print >>OUTPUT, "\"Valgrind Leaks\" numeric/integer " + valgrind_leaks
+	print >>OUTPUT, "exit_status numeric/integer " + `status`;
+
+
+
+##
+## MAIN
+##
+#
+# Setup signal handler
+#
+if sys.version_info[0:2] >= (2,4):
+   signal.signal(signal.SIGTERM, exact.signal_handler)
+   signal.signal(signal.SIGINT, exact.signal_handler)
+#
+# Process factors
+#
+(factor,option,solvers,solver_options) = exact.process_input_file(sys.argv[1],hybrid=True)
+option["seed"] = int(option["seed"])
+#
+# Process the options and setup the command line
+#
+if "EXACT_DRIVER" in os.environ.keys():
+   driver = os.environ["EXACT_DRIVER"]
+else:
+   driver = ""
+cwd =  fullpath + "/" + os.path.dirname(sys.argv[1])
+
+#
+# TODO - setup shell command tests
+#
+##print factor
+##print option
+cmd = "pwd; pushd ../../..; sqa/dakota_test.perl extract " +  option["_factor_1_name"] + ".in " + `option["id"]` +  "; " + driver + " dakota -i " + option["_factor_1_name"] + ".in_ "
+
+print "Command Line: " + cmd
+exact.run_command(cmd,os.path.basename(sys.argv[3]),cwd=cwd)
+#
+# Generate a measurements file (*.out)
+#
+OUTPUT = open(sys.argv[2],"w")
+process_log(OUTPUT,sys.argv[3])
+OUTPUT.close()

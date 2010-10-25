@@ -1,0 +1,16 @@
+# ----------------------------------------------------------------------------
+# Here is the centralized place for defining the release version of the 
+# PLplot package.
+#
+# This is done by the file cf/version.in which is included in configure
+# via the magic of autoconf.  configure then propagates the version
+# information appropriately for Unix/Linux systems.
+#
+# Other operating systems with their own unique plplot
+# configuration (see subdirectories of sys) should use cf/version.in 
+# to obtain the version information directly.
+# ----------------------------------------------------------------------------
+
+MAJOR_VERSION=5
+MINOR_VERSION=3
+RELEASE_VERSION=0

@@ -1,0 +1,121 @@
+# DAKOTA INPUT FILE - dakota_sbo_hierarchical.in
+
+# Demonstrates the use of hierarchical approximations and a trust
+# region optimization strategy in minimizing Rosenbrock's function.
+
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# seperated by a comma.
+
+# These tests exercise each of the surrogate correction approaches
+# (additive and multiplicative; zeroth, first, and second order) from
+# up to three different starting points for the multifidelity (i.e.,
+# hierarchical) variant of surrogate-based optimization.  Note that
+# correction is required for hierarchical SBO.
+
+# The parallel tests exercise the ability to service parallelism in
+# both the high and low fidelity models by managing the active
+# parallel configuration between interface and sub-model.
+
+# Processor specification for parallel tests:
+# p0=2
+
+strategy,
+	single_method
+	graphics tabular_graphics_data
+	method_pointer = 'SBLO'
+
+method,
+	id_method = 'SBLO'
+	surrogate_based_local
+	model_pointer = 'SURROGATE'
+	approx_method_pointer = 'NLP'
+#	soft_convergence_limit = 6		#6,#8
+#	max_iterations = 500			#12,#13,#14
+#	soft_convergence_limit = 20		#10,#12,#13,#14,#15,#16,#17
+#	convergence_tolerance = 1.e-8		#12,#13,#14
+#	max_iterations = 10000			# published 13,14
+#	soft_convergence_limit = 200		# published 13,14
+	trust_region
+	  initial_size = 0.10
+#	  minimum_size = 1.e-10			# published 14
+	  contract_threshold = 0.25
+	  expand_threshold = 0.75
+	  contraction_factor = 0.50
+	  expansion_factor   = 1.50
+
+method,
+	id_method = 'NLP'
+	npsol_sqp
+#	optpp_newton
+	  max_iterations = 50,
+	  convergence_tolerance = 1e-10
+
+model,
+	id_model = 'SURROGATE'
+	surrogate hierarchical
+	  low_fidelity_model  = 'LOFI'
+	  high_fidelity_model = 'HIFI'
+	  correction additive       second_order	#0,#3,#6,#9,#p0
+#	  correction multiplicative second_order	#1,#4,#7,#10
+#	  correction combined       second_order	#2,#5,#8,#11
+#	  correction additive       first_order		#12
+#	  correction multiplicative first_order		#13
+#	  correction combined       first_order		#14
+#	  correction additive       zeroth_order	#15
+#	  correction multiplicative zeroth_order	#16
+#	  correction combined       zeroth_order	#17
+
+variables,
+	continuous_design = 2
+	  initial_point   -1.2      1.0
+	  lower_bounds    -2.0     -2.0
+	  upper_bounds     2.0 	2.0
+	  descriptors      'x1'     'x2'
+
+responses,
+	num_objective_functions = 1
+ 	analytic_gradients
+#	numerical_gradients
+#	  method_source dakota
+#	  interval_type central
+# 	  fd_gradient_step_size = 0.0001
+	analytic_hessians			#0,#1,#2
+#	numerical_hessians			#3,#4,#5,#p0
+#	  fd_hessian_step_size = 0.001		#3,#4,#5,#p0
+#	quasi_hessians bfgs			#6,#7,#8
+#	quasi_hessians sr1			#9,#10,#11
+#	no_hessians				#12,#13,#14,#15,#16,#17
+
+model,
+	id_model = 'LOFI'
+	single
+	  interface_pointer = 'LOFI_FN'
+
+interface,
+	id_interface = 'LOFI_FN'
+	system #asynchronous
+ 	  analysis_driver = 'lf_rosenbrock'
+	  deactivate restart_file
+
+model,
+	id_model = 'HIFI'
+	single
+	  interface_pointer = 'HIFI_FN'
+
+interface,
+	id_interface = 'HIFI_FN'
+	system
+ 	  analysis_driver = 'rosenbrock'
+	  deactivate restart_file

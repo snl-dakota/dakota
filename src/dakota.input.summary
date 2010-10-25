@@ -1,0 +1,1470 @@
+KEYWORD01 strategy
+	[ graphics ]
+	[ tabular_graphics_data
+	  [ tabular_graphics_file STRING ]
+	  ]
+	[ output_precision INTEGER >= 0 ]
+	[ iterator_servers INTEGER ]
+	[ iterator_self_scheduling ]
+	[ iterator_static_scheduling ]
+	( hybrid
+	  ( sequential ALIAS uncoupled
+	    [ num_solutions_transferred INTEGER ]
+	    method_list STRINGLIST
+	    )
+	  |
+	  ( embedded ALIAS coupled
+	    global_method_pointer STRING
+	    local_method_pointer STRING
+	    [ local_search_probability REAL ]
+	    )
+	  |
+	  ( collaborative
+	    method_list STRINGLIST
+	    )
+	  )
+	|
+	( multi_start
+	  method_pointer STRING
+	  [ random_starts INTEGER
+	    [ seed INTEGER ]
+	    ]
+	  [ starting_points REALLIST ]
+	  )
+	|
+	( pareto_set
+	  method_pointer ALIAS opt_method_pointer STRING
+	  [ random_weight_sets INTEGER
+	    [ seed INTEGER ]
+	    ]
+	  [ weight_sets ALIAS multi_objective_weight_sets REALLIST ]
+	  )
+	|
+	( single_method
+	  [ method_pointer STRING ]
+	  )
+
+KEYWORD12 method
+	[ id_method STRING ]
+	[ model_pointer STRING ]
+	[ output
+	  debug
+	  | verbose
+	  | quiet
+	  | silent
+	  ]
+	[ max_iterations INTEGER ]
+	[ max_function_evaluations INTEGER ]
+	[ speculative ]
+	[ convergence_tolerance REAL ]
+	[ constraint_tolerance REAL ]
+	[ scaling ]
+	( surrogate_based_local
+	  approx_method_name STRING
+	  | approx_method_pointer STRING
+	  [ soft_convergence_limit INTEGER ]
+	  [ truth_surrogate_bypass ]
+	  [ trust_region
+	    [ initial_size REAL ]
+	    [ minimum_size REAL ]
+	    [ contract_threshold REAL ]
+	    [ expand_threshold REAL ]
+	    [ contraction_factor REAL ]
+	    [ expansion_factor REAL ]
+	    ]
+	  [ approx_subproblem
+	    original_primary
+	    | single_objective
+	    | augmented_lagrangian_objective
+	    | lagrangian_objective
+	    original_constraints
+	    | linearized_constraints
+	    | no_constraints
+	    ]
+	  [ merit_function
+	    penalty_merit
+	    | adaptive_penalty_merit
+	    | lagrangian_merit
+	    | augmented_lagrangian_merit
+	    ]
+	  [ acceptance_logic
+	    tr_ratio
+	    | filter
+	    ]
+	  [ constraint_relax
+	    homotopy
+	    ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	|
+	( dot_frcg
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	| dot_mmfd
+	| dot_bfgs
+	| dot_slp
+	| dot_sqp
+	|
+	( dot
+	  frcg
+	  | mmfd
+	  | bfgs
+	  | slp
+	  | sqp
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	|
+	( conmin_frcg
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	|
+	( conmin_mfd
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	|
+	( dl_solver STRING
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	|
+	( npsol_sqp
+	  [ verify_level INTEGER ]
+	  [ function_precision REAL ]
+	  [ linesearch_tolerance REAL ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	| nlssol_sqp
+	|
+	( stanford
+	  npsol
+	  | nlssol
+	  [ verify_level INTEGER ]
+	  [ function_precision REAL ]
+	  [ linesearch_tolerance REAL ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	|
+	( nlpql_sqp
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	|
+	( optpp_cg
+	  [ max_step REAL ]
+	  [ gradient_tolerance REAL ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	|
+	( optpp_q_newton
+	  | optpp_fd_newton
+	  | optpp_g_newton
+	  | optpp_newton
+	  [ search_method
+	    value_based_line_search
+	    | gradient_based_line_search
+	    | trust_region
+	    | tr_pds
+	    ]
+	  [ merit_function STRING ]
+	  [ central_path STRING ]
+	  [ steplength_to_boundary REAL ]
+	  [ centering_parameter REAL ]
+	  [ max_step REAL ]
+	  [ gradient_tolerance REAL ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	|
+	( optpp_pds
+	  [ search_scheme_size INTEGER ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	|
+	( asynch_pattern_search ALIAS coliny_apps
+	  [ initial_delta REAL ]
+	  [ contraction_factor REAL ]
+	  [ threshold_delta REAL ]
+	  [ solution_target ALIAS solution_accuracy REAL ]
+	  [ synchronization
+	    blocking
+	    | nonblocking
+	    ]
+	  [ merit_function
+	    merit_max
+	    | merit_max_smooth
+	    | merit1
+	    | merit1_smooth
+	    | merit2
+	    | merit2_smooth
+	    | merit2_squared
+	    ]
+	  [ constraint_penalty REAL ]
+	  [ smoothing_factor REAL ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	|
+	( moga
+	  [ fitness_type
+	    layer_rank
+	    | domination_count
+	    ]
+	  [ replacement_type
+	    elitist
+	    | roulette_wheel
+	    | unique_roulette_wheel
+	    |
+	    ( below_limit REAL
+	      [ shrinkage_fraction ALIAS shrinkage_percentage REAL ]
+	      )
+	    ]
+	  [ niching_type
+	    radial REALLIST
+	    | distance REALLIST
+	    ]
+	  [ convergence_type
+	    metric_tracker
+	    [ percent_change REAL ]
+	    [ num_generations INTEGER >= 0 ]
+	    ]
+	  [ postprocessor_type
+	    orthogonal_distance REALLIST
+	    ]
+	  [ population_size INTEGER ]
+	  [ log_file STRING ]
+	  [ print_each_pop ]
+	  [ initialization_type
+	    simple_random
+	    | unique_random
+	    | flat_file STRING
+	    ]
+	  [ crossover_type
+	    multi_point_binary INTEGER
+	    | multi_point_parameterized_binary INTEGER
+	    | multi_point_real INTEGER
+	    |
+	    ( shuffle_random
+	      [ num_parents INTEGER > 0 ]
+	      [ num_offspring INTEGER > 0 ]
+	      )
+	    [ crossover_rate REAL ]
+	    ]
+	  [ mutation_type
+	    bit_random
+	    | replace_uniform
+	    |
+	    ( offset_normal
+	      | offset_cauchy
+	      | offset_uniform
+	      [ mutation_scale REAL ]
+	      )
+	    [ mutation_rate REAL ]
+	    ]
+	  [ seed INTEGER ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	|
+	( soga
+	  [ fitness_type
+	    merit_function
+	    [ constraint_penalty REAL ]
+	    ]
+	  [ replacement_type
+	    elitist
+	    | favor_feasible
+	    | roulette_wheel
+	    | unique_roulette_wheel
+	    ]
+	  [ convergence_type
+	    ( best_fitness_tracker
+	      [ percent_change REAL ]
+	      [ num_generations INTEGER >= 0 ]
+	      )
+	    |
+	    ( average_fitness_tracker
+	      [ percent_change REAL ]
+	      [ num_generations INTEGER >= 0 ]
+	      )
+	    ]
+	  [ population_size INTEGER ]
+	  [ log_file STRING ]
+	  [ print_each_pop ]
+	  [ initialization_type
+	    simple_random
+	    | unique_random
+	    | flat_file STRING
+	    ]
+	  [ crossover_type
+	    multi_point_binary INTEGER
+	    | multi_point_parameterized_binary INTEGER
+	    | multi_point_real INTEGER
+	    |
+	    ( shuffle_random
+	      [ num_parents INTEGER > 0 ]
+	      [ num_offspring INTEGER > 0 ]
+	      )
+	    [ crossover_rate REAL ]
+	    ]
+	  [ mutation_type
+	    bit_random
+	    | replace_uniform
+	    |
+	    ( offset_normal
+	      | offset_cauchy
+	      | offset_uniform
+	      [ mutation_scale REAL ]
+	      )
+	    [ mutation_rate REAL ]
+	    ]
+	  [ seed INTEGER ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	|
+	( coliny_pattern_search
+	  [ constant_penalty ]
+	  [ no_expansion ]
+	  [ expand_after_success INTEGER ]
+	  [ pattern_basis
+	    coordinate
+	    | simplex
+	    ]
+	  [ stochastic ]
+	  [ total_pattern_size INTEGER ]
+	  [ exploratory_moves
+	    multi_step
+	    | adaptive_pattern
+	    | basic_pattern
+	    ]
+	  [ synchronization
+	    blocking
+	    | nonblocking
+	    ]
+	  [ contraction_factor REAL ]
+	  [ constraint_penalty REAL ]
+	  initial_delta REAL
+	  threshold_delta REAL
+	  [ solution_target ALIAS solution_accuracy REAL ]
+	  [ seed INTEGER ]
+	  [ show_misc_options ]
+	  [ misc_options STRINGLIST ]
+	  )
+	|
+	( coliny_solis_wets
+	  [ contract_after_failure INTEGER ]
+	  [ no_expansion ]
+	  [ expand_after_success INTEGER ]
+	  [ constant_penalty ]
+	  [ contraction_factor REAL ]
+	  [ constraint_penalty REAL ]
+	  initial_delta REAL
+	  threshold_delta REAL
+	  [ solution_target ALIAS solution_accuracy REAL ]
+	  [ seed INTEGER ]
+	  [ show_misc_options ]
+	  [ misc_options STRINGLIST ]
+	  )
+	|
+	( coliny_cobyla
+	  initial_delta REAL
+	  threshold_delta REAL
+	  [ solution_target ALIAS solution_accuracy REAL ]
+	  [ seed INTEGER ]
+	  [ show_misc_options ]
+	  [ misc_options STRINGLIST ]
+	  )
+	|
+	( coliny_direct
+	  [ division
+	    major_dimension
+	    | all_dimensions
+	    ]
+	  [ global_balance_parameter REAL ]
+	  [ local_balance_parameter REAL ]
+	  [ max_boxsize_limit REAL ]
+	  [ min_boxsize_limit REAL ]
+	  [ constraint_penalty REAL ]
+	  [ solution_target ALIAS solution_accuracy REAL ]
+	  [ seed INTEGER ]
+	  [ show_misc_options ]
+	  [ misc_options STRINGLIST ]
+	  )
+	|
+	( coliny_ea
+	  [ population_size INTEGER ]
+	  [ initialization_type
+	    simple_random
+	    | unique_random
+	    | flat_file STRING
+	    ]
+	  [ fitness_type
+	    linear_rank
+	    | merit_function
+	    ]
+	  [ replacement_type
+	    random INTEGER
+	    | chc INTEGER
+	    | elitist INTEGER
+	    [ new_solutions_generated INTEGER ]
+	    ]
+	  [ crossover_rate REAL ]
+	  [ crossover_type
+	    two_point
+	    | blend
+	    | uniform
+	    ]
+	  [ mutation_rate REAL ]
+	  [ mutation_type
+	    replace_uniform
+	    |
+	    ( offset_normal
+	      | offset_cauchy
+	      | offset_uniform
+	      [ mutation_scale REAL ]
+	      [ mutation_range INTEGER ]
+	      )
+	    [ non_adaptive ]
+	    ]
+	  [ constraint_penalty REAL ]
+	  [ solution_target ALIAS solution_accuracy REAL ]
+	  [ seed INTEGER ]
+	  [ show_misc_options ]
+	  [ misc_options STRINGLIST ]
+	  )
+	|
+	( nl2sol
+	  [ function_precision REAL ]
+	  [ absolute_conv_tol REAL ]
+	  [ x_conv_tol REAL ]
+	  [ singular_conv_tol REAL ]
+	  [ singular_radius REAL ]
+	  [ false_conv_tol REAL ]
+	  [ initial_trust_radius REAL ]
+	  [ covariance INTEGER ]
+	  [ regression_diagnostics ]
+	  )
+	|
+	( nonlinear_cg
+	  [ misc_options STRINGLIST ]
+	  )
+	|
+	( surrogate_based_global
+	  approx_method_name STRING
+	  | approx_method_pointer STRING
+	  [ replace_points ]
+	  )
+	|
+	( efficient_global
+	  [ seed INTEGER ]
+	  )
+	|
+	( polynomial_chaos ALIAS nond_polynomial_chaos
+	  [ p_refinement
+	    uniform
+	    |
+	    ( adaptive
+	      [ sobol
+	      | decay
+	      | generalized ]
+	      )
+	    ]
+	  [ askey
+	  | wiener ]
+	  ( quadrature_order INTEGERLIST
+	    [ nested
+	    | non_nested ]
+	    )
+	  |
+	  ( sparse_grid_level INTEGER
+	    [ dimension_preference REALLIST ]
+	    [ nested
+	    | non_nested ]
+	    )
+	  | cubature_integrand INTEGER
+	  |
+	  ( collocation_points INTEGER
+	    | collocation_ratio REAL
+	    [ reuse_points ALIAS reuse_samples ]
+	    [ use_derivatives ]
+	    expansion_order INTEGERLIST
+	    | expansion_terms INTEGER
+	    )
+	  |
+	  ( expansion_samples INTEGER
+	    [ incremental_lhs ]
+	    expansion_order INTEGERLIST
+	    | expansion_terms INTEGER
+	    )
+	  |
+	  ( expansion_import_file STRING
+	    expansion_order INTEGERLIST
+	    | expansion_terms INTEGER
+	    )
+	  [ variance_based_decomp
+	    [ univariate_effects ]
+	    [ drop_tolerance REAL ]
+	    ]
+	  [ sample_refinement
+	    import
+	    | adapt_import
+	    | mm_adapt_import
+	    ]
+	  [ sample_type
+	    lhs
+	    | random
+	    ]
+	  [ all_variables ]
+	  [ fixed_seed ]
+	  [ reliability_levels REALLIST
+	    [ num_reliability_levels INTEGERLIST ]
+	    ]
+	  [ response_levels REALLIST
+	    [ num_response_levels INTEGERLIST ]
+	    [ compute
+	      probabilities
+	      | reliabilities
+	      | gen_reliabilities
+	      ]
+	    ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER ]
+	  )
+	|
+	( stoch_collocation ALIAS nond_stoch_collocation
+	  [ p_refinement
+	    uniform
+	    |
+	    ( adaptive
+	      [ sobol
+	      | generalized ]
+	      )
+	    ]
+	  [ askey
+	  | wiener ]
+	  quadrature_order INTEGERLIST
+	  |
+	  ( sparse_grid_level INTEGER
+	    [ dimension_preference REALLIST ]
+	    )
+	  [ nested
+	  | non_nested ]
+	  [ variance_based_decomp
+	    [ univariate_effects ]
+	    [ drop_tolerance REAL ]
+	    ]
+	  [ sample_refinement
+	    import
+	    | adapt_import
+	    | mm_adapt_import
+	    ]
+	  [ sample_type
+	    lhs
+	    | random
+	    ]
+	  [ all_variables ]
+	  [ fixed_seed ]
+	  [ reliability_levels REALLIST
+	    [ num_reliability_levels INTEGERLIST ]
+	    ]
+	  [ response_levels REALLIST
+	    [ num_response_levels INTEGERLIST ]
+	    [ compute
+	      probabilities
+	      | reliabilities
+	      | gen_reliabilities
+	      ]
+	    ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER ]
+	  )
+	|
+	( sampling ALIAS nond_sampling
+	  [ sample_type
+	    random
+	    | lhs
+	    |
+	    ( incremental_lhs
+	      | incremental_random
+	      previous_samples INTEGER
+	      )
+	    ]
+	  [ variance_based_decomp ]
+	  [ all_variables ]
+	  [ fixed_seed ]
+	  [ reliability_levels REALLIST
+	    [ num_reliability_levels INTEGERLIST ]
+	    ]
+	  [ response_levels REALLIST
+	    [ num_response_levels INTEGERLIST ]
+	    [ compute
+	      probabilities
+	      | reliabilities
+	      | gen_reliabilities
+	      ]
+	    ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER ]
+	  )
+	|
+	( importance_sampling ALIAS nond_importance_sampling
+	  [ response_levels REALLIST
+	    [ num_response_levels INTEGERLIST ]
+	    [ compute
+	      probabilities
+	      | gen_reliabilities
+	      ]
+	    ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER ]
+	  )
+	|
+	( global_evidence ALIAS nond_global_evidence
+	  [ lhs
+	  | ego ]
+	  [ response_levels REALLIST
+	    [ num_response_levels INTEGERLIST ]
+	    [ compute
+	      probabilities
+	      | gen_reliabilities
+	      ]
+	    ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER ]
+	  )
+	|
+	( global_interval_est ALIAS nond_global_interval_est
+	  [ lhs
+	  | ego ]
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER ]
+	  )
+	|
+	( bayes_calibration ALIAS nond_bayes_calibration
+	  queso
+	  | gpmsa
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ x_obs_data_file STRING ]
+	  [ y_obs_data_file STRING ]
+	  [ y_std_data_file STRING ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER ]
+	  )
+	|
+	( dace
+	  grid
+	  | random
+	  | oas
+	  | lhs
+	  | oa_lhs
+	  | box_behnken
+	  | central_composite
+	  [ main_effects ]
+	  [ quality_metrics ]
+	  [ variance_based_decomp ]
+	  [ fixed_seed ]
+	  [ symbols INTEGER ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER ]
+	  )
+	|
+	( fsu_cvt
+	  [ latinize ]
+	  [ quality_metrics ]
+	  [ variance_based_decomp ]
+	  [ fixed_seed ]
+	  [ trial_type
+	    grid
+	    | halton
+	    | random
+	    ]
+	  [ num_trials INTEGER ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER ]
+	  )
+	|
+	( psuade_moat
+	  [ partitions INTEGERLIST ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER ]
+	  )
+	|
+	( ncsu_direct
+	  [ solution_target ALIAS solution_accuracy REAL ]
+	  [ min_boxsize_limit REAL ]
+	  [ volume_boxsize_limit REAL ]
+	  )
+	|
+	( local_evidence ALIAS nond_local_evidence
+	  [ sqp
+	  | nip ]
+	  [ response_levels REALLIST
+	    [ num_response_levels INTEGERLIST ]
+	    [ compute
+	      probabilities
+	      | gen_reliabilities
+	      ]
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  )
+	|
+	( local_interval_est ALIAS nond_local_interval_est
+	  [ sqp
+	  | nip ]
+	  )
+	|
+	( local_reliability ALIAS nond_local_reliability
+	  [ mpp_search
+	    x_taylor_mean
+	    | u_taylor_mean
+	    | x_taylor_mpp
+	    | u_taylor_mpp
+	    | x_two_point
+	    | u_two_point
+	    | no_approx
+	    [ sqp
+	    | nip ]
+	    ]
+	  [ integration
+	    first_order
+	    | second_order
+	    [ sample_refinement
+	      import
+	      | adapt_import
+	      | mm_adapt_import
+	      [ samples INTEGER ]
+	      [ seed INTEGER ]
+	      ]
+	    ]
+	  [ response_levels REALLIST
+	    [ num_response_levels INTEGERLIST ]
+	    [ compute
+	      probabilities
+	      | reliabilities
+	      | gen_reliabilities
+	      ]
+	    ]
+	  [ reliability_levels REALLIST
+	    [ num_reliability_levels INTEGERLIST ]
+	    ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  )
+	|
+	( global_reliability ALIAS nond_global_reliability
+	  x_gaussian_process
+	  | u_gaussian_process
+	  [ all_variables ]
+	  [ seed INTEGER ]
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ response_levels REALLIST
+	    [ num_response_levels INTEGERLIST ]
+	    [ compute
+	      probabilities
+	      | gen_reliabilities
+	      ]
+	    ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  )
+	|
+	( fsu_quasi_mc
+	  halton
+	  | hammersley
+	  [ latinize ]
+	  [ quality_metrics ]
+	  [ variance_based_decomp ]
+	  [ samples INTEGER ]
+	  [ fixed_sequence ]
+	  [ sequence_start INTEGERLIST ]
+	  [ sequence_leap INTEGERLIST ]
+	  [ prime_base INTEGERLIST ]
+	  )
+	|
+	( vector_parameter_study
+	  final_point REALLIST
+	  | step_vector REALLIST
+	  num_steps INTEGER
+	  )
+	|
+	( list_parameter_study
+	  list_of_points REALLIST
+	  )
+	|
+	( centered_parameter_study
+	  step_vector REALLIST
+	  steps_per_variable ALIAS deltas_per_variable INTEGERLIST
+	  )
+	|
+	( multidim_parameter_study
+	  partitions INTEGERLIST
+	  )
+	|
+	( richardson_extrap
+	  estimate_order
+	  | converge_order
+	  | converge_qoi
+	  [ refinement_rate REAL ]
+	  )
+
+KEYWORD model
+	[ id_model STRING ]
+	[ variables_pointer STRING ]
+	[ responses_pointer STRING ]
+	( single
+	  [ interface_pointer STRING ]
+	  )
+	|
+	( surrogate
+	  [ id_surrogates INTEGERLIST ]
+	  ( global
+	    ( gaussian_process
+	      [ point_selection ]
+	      [ trend
+		constant
+		| linear
+		| quadratic
+		]
+	      )
+	    |
+	    ( mars
+	      [ max_bases INTEGER ]
+	      [ interpolation
+		linear
+		| cubic
+		]
+	      )
+	    |
+	    ( moving_least_squares
+	      [ poly_order INTEGER ]
+	      [ weight_function INTEGER ]
+	      )
+	    |
+	    ( neural_network
+	      [ nodes INTEGER ]
+	      [ range REAL ]
+	      [ random_weight INTEGER ]
+	      )
+	    |
+	    ( radial_basis
+	      [ bases INTEGER ]
+	      [ max_pts INTEGER ]
+	      [ min_partition INTEGER ]
+	      [ max_subsets INTEGER ]
+	      )
+	    |
+	    ( polynomial
+	      linear
+	      | quadratic
+	      | cubic
+	      )
+	    |
+	    ( kriging
+	      [ correlations REALLIST ]
+	      [ conmin_seed REALLIST ]
+	      [ max_trials INTEGER ]
+	      [ max_correlations REALLIST ]
+	      [ min_correlations REALLIST ]
+	      )
+	    [ total_points INTEGER
+	    | minimum_points
+	    | recommended_points ]
+	    [ dace_method_pointer STRING ]
+	    [ reuse_points ALIAS reuse_samples
+	      all
+	      | region
+	      | none
+	      ]
+	    [ points_file ALIAS samples_file STRING ]
+	    [ use_derivatives ]
+	    [ correction
+	      zeroth_order
+	      | first_order
+	      | second_order
+	      additive
+	      | multiplicative
+	      | combined
+	      ]
+	    [ diagnostics STRINGLIST ]
+	    )
+	  |
+	  ( multipoint
+	    tana
+	    actual_model_pointer STRING
+	    )
+	  |
+	  ( local
+	    taylor_series
+	    actual_model_pointer STRING
+	    )
+	  |
+	  ( hierarchical
+	    low_fidelity_model_pointer STRING
+	    high_fidelity_model_pointer STRING
+	    ( correction
+	      zeroth_order
+	      | first_order
+	      | second_order
+	      additive
+	      | multiplicative
+	      | combined
+	      )
+	    )
+	  )
+	|
+	( nested
+	  [ optional_interface_pointer STRING
+	    [ optional_interface_responses_pointer STRING ]
+	    ]
+	  ( sub_method_pointer STRING
+	    [ primary_variable_mapping STRINGLIST ]
+	    [ secondary_variable_mapping STRINGLIST ]
+	    [ primary_response_mapping REALLIST ]
+	    [ secondary_response_mapping REALLIST ]
+	    )
+	  )
+
+KEYWORD12 variables
+	[ id_variables STRING ]
+	[ continuous_design INTEGER > 0
+	  [ initial_point ALIAS cdv_initial_point REALLIST ]
+	  [ lower_bounds ALIAS cdv_lower_bounds REALLIST ]
+	  [ upper_bounds ALIAS cdv_upper_bounds REALLIST ]
+	  [ scale_types ALIAS cdv_scale_types STRINGLIST ]
+	  [ scales ALIAS cdv_scales REALLIST ]
+	  [ descriptors ALIAS cdv_descriptors STRINGLIST ]
+	  ]
+	[ discrete_design_range INTEGER > 0
+	  [ initial_point ALIAS ddv_initial_point INTEGERLIST ]
+	  [ lower_bounds ALIAS ddv_lower_bounds INTEGERLIST ]
+	  [ upper_bounds ALIAS ddv_upper_bounds INTEGERLIST ]
+	  [ descriptors ALIAS ddv_descriptors STRINGLIST ]
+	  ]
+	[ discrete_design_set_integer INTEGER > 0
+	  [ initial_point INTEGERLIST ]
+	  [ num_set_values INTEGERLIST ]
+	  set_values INTEGERLIST
+	  [ descriptors STRINGLIST ]
+	  ]
+	[ discrete_design_set_real INTEGER > 0
+	  [ initial_point REALLIST ]
+	  [ num_set_values INTEGERLIST ]
+	  set_values REALLIST
+	  [ descriptors STRINGLIST ]
+	  ]
+	[ normal_uncertain INTEGER > 0
+	  means ALIAS nuv_means REALLIST
+	  std_deviations ALIAS nuv_std_deviations REALLIST
+	  [ lower_bounds ALIAS nuv_lower_bounds REALLIST ]
+	  [ upper_bounds ALIAS nuv_upper_bounds REALLIST ]
+	  [ descriptors ALIAS nuv_descriptors STRINGLIST ]
+	  ]
+	[ lognormal_uncertain INTEGER > 0
+	  ( lambdas ALIAS lnuv_lambdas REALLIST
+	    zetas ALIAS lnuv_zetas REALLIST
+	    )
+	  |
+	  ( means ALIAS lnuv_means REALLIST
+	    std_deviations ALIAS lnuv_std_deviations REALLIST
+	    | error_factors ALIAS lnuv_error_factors REALLIST
+	    )
+	  [ lower_bounds ALIAS lnuv_lower_bounds REALLIST ]
+	  [ upper_bounds ALIAS lnuv_upper_bounds REALLIST ]
+	  [ descriptors ALIAS lnuv_descriptors STRINGLIST ]
+	  ]
+	[ uniform_uncertain INTEGER > 0
+	  lower_bounds ALIAS uuv_lower_bounds REALLIST
+	  upper_bounds ALIAS uuv_upper_bounds REALLIST
+	  [ descriptors ALIAS uuv_descriptors STRINGLIST ]
+	  ]
+	[ loguniform_uncertain INTEGER > 0
+	  lower_bounds ALIAS luuv_lower_bounds REALLIST
+	  upper_bounds ALIAS luuv_upper_bounds REALLIST
+	  [ descriptors ALIAS luuv_descriptors STRINGLIST ]
+	  ]
+	[ triangular_uncertain INTEGER > 0
+	  modes ALIAS tuv_modes REALLIST
+	  lower_bounds ALIAS tuv_lower_bounds REALLIST
+	  upper_bounds ALIAS tuv_upper_bounds REALLIST
+	  [ descriptors ALIAS tuv_descriptors STRINGLIST ]
+	  ]
+	[ exponential_uncertain INTEGER > 0
+	  betas ALIAS euv_betas REALLIST
+	  [ descriptors ALIAS euv_descriptors STRINGLIST ]
+	  ]
+	[ beta_uncertain INTEGER > 0
+	  alphas ALIAS buv_alphas REALLIST
+	  betas ALIAS buv_betas REALLIST
+	  lower_bounds ALIAS buv_lower_bounds REALLIST
+	  upper_bounds ALIAS buv_upper_bounds REALLIST
+	  [ descriptors ALIAS buv_descriptors STRINGLIST ]
+	  ]
+	[ gamma_uncertain INTEGER > 0
+	  alphas ALIAS gauv_alphas REALLIST
+	  betas ALIAS gauv_betas REALLIST
+	  [ descriptors ALIAS gauv_descriptors STRINGLIST ]
+	  ]
+	[ gumbel_uncertain INTEGER > 0
+	  alphas ALIAS guuv_alphas REALLIST
+	  betas ALIAS guuv_betas REALLIST
+	  [ descriptors ALIAS guuv_descriptors STRINGLIST ]
+	  ]
+	[ frechet_uncertain INTEGER > 0
+	  alphas ALIAS fuv_alphas REALLIST
+	  betas ALIAS fuv_betas REALLIST
+	  [ descriptors ALIAS fuv_descriptors STRINGLIST ]
+	  ]
+	[ weibull_uncertain INTEGER > 0
+	  alphas ALIAS wuv_alphas REALLIST
+	  betas ALIAS wuv_betas REALLIST
+	  [ descriptors ALIAS wuv_descriptors STRINGLIST ]
+	  ]
+	[ histogram_bin_uncertain INTEGER > 0
+	  [ num_pairs ALIAS huv_num_bin_pairs INTEGERLIST ]
+	  abscissas ALIAS huv_bin_abscissas REALLIST
+	  ordinates ALIAS huv_bin_ordinates REALLIST
+	  | counts ALIAS huv_bin_counts REALLIST
+	  [ descriptors ALIAS huv_bin_descriptors STRINGLIST ]
+	  ]
+	[ poisson_uncertain INTEGER > 0
+	  lambdas REALLIST
+	  [ descriptors STRINGLIST ]
+	  ]
+	[ binomial_uncertain INTEGER > 0
+	  prob_per_trial REALLIST
+	  num_trials INTEGERLIST
+	  [ descriptors STRINGLIST ]
+	  ]
+	[ negative_binomial_uncertain INTEGER > 0
+	  prob_per_trial REALLIST
+	  num_trials INTEGERLIST
+	  [ descriptors STRINGLIST ]
+	  ]
+	[ geometric_uncertain INTEGER > 0
+	  prob_per_trial REALLIST
+	  [ descriptors STRINGLIST ]
+	  ]
+	[ hypergeometric_uncertain INTEGER > 0
+	  total_population INTEGERLIST
+	  selected_population INTEGERLIST
+	  num_drawn INTEGERLIST
+	  [ descriptors STRINGLIST ]
+	  ]
+	[ histogram_point_uncertain INTEGER > 0
+	  [ num_pairs ALIAS huv_num_point_pairs INTEGERLIST ]
+	  abscissas ALIAS huv_point_abscissas REALLIST
+	  counts ALIAS huv_point_counts REALLIST
+	  [ descriptors ALIAS huv_point_descriptors STRINGLIST ]
+	  ]
+	[ uncertain_correlation_matrix REALLIST ]
+	[ interval_uncertain INTEGER > 0
+	  [ num_intervals ALIAS iuv_num_intervals INTEGERLIST ]
+	  interval_probs ALIAS iuv_interval_probs REALLIST
+	  interval_bounds ALIAS iuv_interval_bounds REALLIST
+	  [ descriptors ALIAS iuv_descriptors STRINGLIST ]
+	  ]
+	[ continuous_state INTEGER > 0
+	  [ initial_state ALIAS csv_initial_state REALLIST ]
+	  [ lower_bounds ALIAS csv_lower_bounds REALLIST ]
+	  [ upper_bounds ALIAS csv_upper_bounds REALLIST ]
+	  [ descriptors ALIAS csv_descriptors STRINGLIST ]
+	  ]
+	[ discrete_state_range INTEGER > 0
+	  [ initial_state ALIAS dsv_initial_state INTEGERLIST ]
+	  [ lower_bounds ALIAS dsv_lower_bounds INTEGERLIST ]
+	  [ upper_bounds ALIAS dsv_upper_bounds INTEGERLIST ]
+	  [ descriptors ALIAS dsv_descriptors STRINGLIST ]
+	  ]
+	[ discrete_state_set_integer INTEGER > 0
+	  [ initial_state INTEGERLIST ]
+	  [ num_set_values INTEGERLIST ]
+	  set_values INTEGERLIST
+	  [ descriptors STRINGLIST ]
+	  ]
+	[ discrete_state_set_real INTEGER > 0
+	  [ initial_state REALLIST ]
+	  [ num_set_values INTEGERLIST ]
+	  set_values REALLIST
+	  [ descriptors STRINGLIST ]
+	  ]
+
+KEYWORD12 interface
+	[ id_interface STRING ]
+	[ algebraic_mappings STRING ]
+	[ analysis_drivers STRINGLIST
+	  [ analysis_components STRINGLIST ]
+	  [ input_filter STRING ]
+	  [ output_filter STRING ]
+	  ( system
+	    | fork
+	    [ parameters_file STRING ]
+	    [ results_file STRING ]
+	    [ allow_existing_results ]
+	    [ verbatim ]
+	    [ aprepro ]
+	    [ file_tag ]
+	    [ file_save ]
+	    [ work_directory
+	      [ named STRING ]
+	      [ directory_tag ALIAS dir_tag ]
+	      [ directory_save ALIAS dir_save ]
+	      [ template_directory STRING
+		| template_files STRINGLIST
+		[ copy ]
+		[ replace ]
+		]
+	      ]
+	    )
+	  |
+	  ( direct
+	    [ processors_per_analysis INTEGER ]
+	    )
+	  | grid
+	  [ failure_capture
+	    abort
+	    | retry INTEGER
+	    | recover REALLIST
+	    | continuation
+	    ]
+	  [ deactivate
+	    [ active_set_vector ]
+	    [ evaluation_cache ]
+	    [ restart_file ]
+	    ]
+	  ]
+	[ asynchronous
+	  [ evaluation_concurrency INTEGER ]
+	  [ local_evaluation_self_scheduling
+	  | local_evaluation_static_scheduling ]
+	  [ analysis_concurrency INTEGER ]
+	  ]
+	[ evaluation_servers INTEGER ]
+	[ evaluation_self_scheduling
+	| evaluation_static_scheduling ]
+	[ analysis_servers INTEGER ]
+	[ analysis_self_scheduling
+	| analysis_static_scheduling ]
+
+KEYWORD12 responses
+	[ id_responses STRING ]
+	[ descriptors ALIAS response_descriptors STRINGLIST ]
+	( num_objective_functions INTEGER >= 0
+	  [ objective_function_scale_types STRINGLIST ]
+	  [ objective_function_scales REALLIST ]
+	  [ multi_objective_weights REALLIST ]
+	  [ num_nonlinear_inequality_constraints INTEGER >= 0
+	    [ nonlinear_inequality_lower_bounds REALLIST ]
+	    [ nonlinear_inequality_upper_bounds REALLIST ]
+	    [ nonlinear_inequality_scale_types STRINGLIST ]
+	    [ nonlinear_inequality_scales REALLIST ]
+	    ]
+	  [ num_nonlinear_equality_constraints INTEGER >= 0
+	    [ nonlinear_equality_targets REALLIST ]
+	    [ nonlinear_equality_scale_types STRINGLIST ]
+	    [ nonlinear_equality_scales REALLIST ]
+	    ]
+	  )
+	|
+	( num_least_squares_terms INTEGER >= 0
+	  [ least_squares_data_file STRING ]
+	  [ least_squares_term_scale_types STRINGLIST ]
+	  [ least_squares_term_scales REALLIST ]
+	  [ least_squares_weights REALLIST ]
+	  [ num_nonlinear_inequality_constraints INTEGER >= 0
+	    [ nonlinear_inequality_lower_bounds REALLIST ]
+	    [ nonlinear_inequality_upper_bounds REALLIST ]
+	    [ nonlinear_inequality_scale_types STRINGLIST ]
+	    [ nonlinear_inequality_scales REALLIST ]
+	    ]
+	  [ num_nonlinear_equality_constraints INTEGER >= 0
+	    [ nonlinear_equality_targets REALLIST ]
+	    [ nonlinear_equality_scale_types STRINGLIST ]
+	    [ nonlinear_equality_scales REALLIST ]
+	    ]
+	  )
+	| num_response_functions INTEGER >= 0
+	no_gradients
+	| analytic_gradients
+	|
+	( mixed_gradients
+	  id_numerical_gradients INTEGERLIST
+	  id_analytic_gradients INTEGERLIST
+	  [ method_source ]
+	  [ ( dakota
+	      [ ignore_bounds ]
+	      )
+	  | vendor ]
+	  [ interval_type ]
+	  [ forward
+	  | central ]
+	  [ fd_step_size ALIAS fd_gradient_step_size REALLIST := 0.001 ]
+	  )
+	|
+	( numerical_gradients
+	  [ method_source ]
+	  [ ( dakota
+	      [ ignore_bounds ]
+	      )
+	  | vendor ]
+	  [ interval_type ]
+	  [ forward
+	  | central ]
+	  [ fd_step_size ALIAS fd_gradient_step_size REALLIST := 0.001 ]
+	  )
+	no_hessians
+	|
+	( numerical_hessians
+	  [ fd_step_size ALIAS fd_hessian_step_size REALLIST ]
+	  [ forward
+	  | central ]
+	  )
+	|
+	( quasi_hessians
+	  ( bfgs
+	    [ damped ]
+	    )
+	  | sr1
+	  )
+	| analytic_hessians
+	|
+	( mixed_hessians
+	  [ id_numerical_hessians INTEGERLIST
+	    [ fd_step_size ALIAS fd_hessian_step_size REALLIST ]
+	    ]
+	  [ forward
+	  | central ]
+	  [ id_quasi_hessians INTEGERLIST
+	    ( bfgs
+	      [ damped ]
+	      )
+	    | sr1
+	    ]
+	  [ id_analytic_hessians INTEGERLIST ]
+	  )

@@ -1,0 +1,29 @@
+This directory contains a striped down version of matwrap, 
+
+	Copyright (c) 1997 Gary R. Holt.  This is distributed under the terms of
+	the  perl artistic license (http://language.perl.com/misc/Artistic.html).
+	
+Excerpts from the package README:
+	
+	Have you ever wanted to call subroutines from a C library from a
+	scripting language like MATLAB or octave or tela?  Have you ever wanted
+	to write your own simulation in C and have its functions be directly
+	callable from MATLAB, instead of going through output files?  It is very
+	tedious and error-prone to write the wrapper functions which convert
+	from MATLAB's types to the float or double or int types that your
+	functions actually want. matwrap is a perl script that generates the
+	wrapper functions for you automatically from your .h files.
+
+   [...]
+	
+	matwrap currently supports the languages Matlab (version 5.0), octave,
+   and tela.  Other languages can be added with a little bit of work.
+	
+	[...]
+	
+	You can pick up the latest distribution from
+	http://LNC.usc.edu/~holt/matwrap/.
+	
+	Gary Holt (holt@klab.caltech.edu)
+	13 Dec 1999
+

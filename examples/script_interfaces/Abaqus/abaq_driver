@@ -1,0 +1,29 @@
+#!/bin/csh -f
+
+# $argv[1] is params.in FROM Dakota
+# $argv[2] is results.out returned to Dakota
+
+# Workdir setup for running in parallel (file_tag option turned on)
+# In this simple case, all templatedir would contain is fe.inp.app
+#set num = `echo $argv[1] | cut -c 11-`
+#cp -r templatedir workdir.$num
+#mv $argv[1] workdir.$num/params.in
+#cd workdir.$num
+
+# Pre-processing
+
+aprepro --nowarning -q fe.inp.app fe.inp
+
+# Run ABAQUS
+
+\rm -f *.com *.done *.dat *.log *.sta *.msg
+/net/troi/apps/abaqus58/abaqus job=fe interactive >>&! abaqus.out
+
+# Post-processing
+
+grep ' MAXIMUM  ' fe.dat | head -n 1 | awk '{print $2}' > $argv[2]
+
+# Results file move and workdir cleanup for running in parallel
+#mv $argv[2] ../.
+#cd ..
+#rm -rf workdir.$num

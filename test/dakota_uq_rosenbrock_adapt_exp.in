@@ -1,0 +1,32 @@
+
+method,
+	nond_polynomial_chaos		#0,#1,#2,#3
+#	nond_stoch_collocation
+	  adaptive p_refinement generalized	
+	    max_iterations  = 20	
+	    convergence_tol = 1.e-4
+	  sparse_grid_level = 1
+#	  non_nested			#2,#3
+# goal-oriented adaptive refinement:
+#	  response_levels = 0.0		#1,#3
+#	  compute reliabilities		#1,#3
+#	  cumulative distribution	#1,#3
+	  variance_based_decomp
+# manually test debug mode (too much output picked up by test script):
+#	  output debug
+
+variables,
+	normal_uncertain = 2
+	  means            0. 0.
+	  std_deviations   1. 1.
+	  descriptors =   'x1' 'x2'
+
+interface,
+        direct
+          analysis_driver = 'rosenbrock'
+
+responses,
+        num_response_functions = 1
+        no_gradients
+        no_hessians
+

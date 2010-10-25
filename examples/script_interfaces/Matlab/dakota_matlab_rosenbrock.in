@@ -1,0 +1,49 @@
+#  DAKOTA INPUT FILE - dakota_matlab_rosenbrock.in
+#  This sample Dakota input file optimizes the Rosenbrock function.
+#  See p. 95 in Practical Optimization by Gill, Murray, and Wright.
+#  
+# Here we use either the 
+#   matlab_rosen_bb_simulator.sh (Unix) or 
+#   matlab_rosen_bb_simulator.vbs (Windows)
+# analysis driver that calls Matlab for each function evaluation
+
+method,                                         
+	conmin_frcg				
+
+variables,					
+	continuous_design = 2			
+	cdv_initial_point   -1.0      1.0	
+	cdv_lower_bounds    -2.0     -2.0	
+	cdv_upper_bounds     2.0      2.0	
+	cdv_descriptor       'x1'     'x2'
+
+interface,					
+
+# common options
+	fork,
+	parameters_file = 'params.in'		
+	results_file    = 'results.out'		
+
+# Use this line for Linux
+	analysis_driver = 'matlab_rosen_bb_simulator.sh'	
+
+# OR use this line for Windows
+##	analysis_driver = 'cscript matlab_rosen_bb_simulator.vbs'	
+
+# POSSIBLY use the following to perform 2 or more simultaneous Matlab
+# evaluations.  I haven't researched whether the automation
+# server supports this asynchronously, or whether one evaluation will
+# block the next (seems to work though)
+##       asynchronous                            
+##       evaluation_concurrency = 2
+##	 file_tag                                
+# use this to keep parameters/results files around if you wish (when
+# using file_tag only)
+##	file_save                               
+
+
+responses,                                      
+	num_objective_functions = 1             
+ 	numerical_gradients			
+ 	  fd_gradient_step_size = .000001	
+	no_hessians

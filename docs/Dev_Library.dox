@@ -1,0 +1,688 @@
+namespace Dakota {
+
+/** \page DakLibrary Interfacing with DAKOTA as a Library
+
+\htmlonly
+<b>DAKOTA Library Table of Contents</b>
+<ul>
+<li> <a href="DakLibrary.html#DakLibraryIntro">Introduction</a> 
+<li> <a href="DakLibrary.html#DakLibraryExampleTest">Quick start: 
+examples and test code</a>
+<li> <a href="DakLibrary.html#DakLibraryRelMainC">Comparison to main.C</a>
+<li> <a href="DakLibrary.html#DakLibraryDB">Problem database population</a>
+     <ul>
+     <li> <a href="DakLibrary.html#DakLibraryDBParse">Input file parsing</a> 
+     <li> <a href="DakLibrary.html#DakLibraryDBNoParse">Data node insertion</a>
+     <li> <a href="DakLibrary.html#DakLibraryDBMixed">Mixed mode</a>
+     </ul>
+<li> <a href="DakLibrary.html#DakLibraryStrat">Instantiating the strategy</a>
+<li> <a href="DakLibrary.html#DakLibraryDirectAppInt">Defining the direct 
+     application interface</a>
+     <ul>
+     <li> <a href="DakLibrary.html#DakLibraryExtendDirectAppInt">Extension</a>
+     <li> <a href="DakLibrary.html#DakLibraryDeriveDirectAppInt">Derivation</a>
+     </ul>
+<li> <a href="DakLibrary.html#DakLibraryAddtlUpdates">Additional updates</a>
+<li> <a href="DakLibrary.html#DakLibraryStratRun">Executing the strategy</a>
+<li> <a href="DakLibrary.html#DakLibraryPostRun">Retrieving data after a run</a>
+<li> <a href="DakLibrary.html#DakLibraryLinking">Linking against the DAKOTA library</a>
+<li> <a href="DakLibrary.html#DakLibrarySummary">Summary</a>
+</ul>
+\endhtmlonly
+
+
+\section DakLibraryIntro Introduction
+
+
+Some users may be interested in linking the DAKOTA toolkit into
+another application for use as an algorithm library.  While this is
+not the primary usage model for DAKOTA, certain facilities are in
+place to allow this type of integration.
+
+As part of the normal DAKOTA build process, where \c Dakota/configure
+\c --prefix=PREFIX has been run prior to \c make and \c make \c
+install, a \c libdakota.a is created and a copy of it is placed in \c
+PREFIX/lib (PREFIX defaults to /usr/local/Dakota).  This library
+contains all source files from \c Dakota/src excepting the main.C,
+restart_util.C, and library_mode.C main programs.  This library may be
+linked with another application through inclusion of \c -ldakota on
+the link line.  Library and header paths may also be specified using
+the \c -L and \c -I compiler options (using \c PREFIX/lib and \c
+PREFIX/include, respectively).  Depending on the configuration used
+when building this library, other libraries for the vendor optimizers
+and vendor packages will also be needed to resolve DAKOTA symbols for
+DOT, NPSOL, OPT++, SGOPT, LHS, Epetra, etc.  Copies of these libraries
+are also placed in \c Dakota/lib.  Refer to \ref DakLibraryLinking for 
+additional information. <!-- A sample XML specification of
+library names and paths is also available in \c
+Dakota/examples/linked_interfaces/linkage_spec. -->
+
+\warning Users may interface to DAKOTA as a library within other 
+software applications provided that they abide by the terms of the 
+GNU Lesser General Public License (LGPL).  Refer to
+http://www.gnu.org/licenses/lgpl.html or contact the DAKOTA team for
+additional information.
+
+\attention The use of DAKOTA as an algorithm library should be
+distinguished from the linking of simulations within DAKOTA using the
+direct application interface (see DirectApplicInterface).  In the
+former, DAKOTA is providing algorithm services to another software
+application, and in the latter, a linked simulation is providing
+analysis services to DAKOTA.  It is not uncommon for these two
+capabilities to be used in combination, where a simulation framework
+provides both the "front end" and the "back end" for DAKOTA.
+
+
+\section DakLibraryExampleTest Quick start: examples and test code
+
+
+To learn by example, refer to the files
+PluginSerialDirectApplicInterface.[CH] and
+PluginParallelDirectApplicInterface.[CH] in Dakota/src for simple
+examples of serial and parallel plug-in interfaces.  The file
+library_mode.C in Dakota/src provides example usage of these plug-ins
+within a mock simulator program that demonstrates the required object
+instantiation syntax in combination with the three problem database
+population approaches (input file parsing, data node insertion, and
+mixed mode).  All of this code may be compiled and tested by
+configuring DAKOTA using the \c --with-plugin option.
+
+
+\section DakLibraryRelMainC Comparison to main.C
+
+
+The procedure for utilizing DAKOTA as a library within another
+application involves a number of steps that are similar to those used
+in the stand-alone DAKOTA application.  The stand-alone procedure can
+be viewed in the file main.C, and the differences for the library
+approach are most easily explained with reference to that file.  The
+basic steps of executing DAKOTA include instantiating the
+ParallelLibrary, CommandLineHandler, and ProblemDescDB objects;
+managing the DAKOTA input file
+(\ref ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()");
+specifying restart files and output streams 
+(\ref ParallelLibrary::specify_outputs_restart "ParallelLibrary::specify_outputs_restart()");
+and instantiating the Strategy and running it 
+(\ref Strategy::run_strategy "Strategy::run_strategy()").  When using 
+DAKOTA as an algorithm library, the operations are quite similar, 
+although command line information (argc, argv, and therefore
+CommandLineHandler) will not in general be accessible.  In particular,
+main.C can pass argc and argv into the ParallelLibrary and 
+CommandLineHandler constructors and then pass the 
+CommandLineHandler object into 
+\ref ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()" and 
+\ref ParallelLibrary::specify_outputs_restart "ParallelLibrary::specify_outputs_restart()".  
+In an algorithm library approach, a CommandLineHandler object is not 
+instantiated and overloaded forms of the ParallelLibrary constructor,
+\ref ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()", and 
+\ref ParallelLibrary::specify_outputs_restart "ParallelLibrary::specify_outputs_restart()" are used.
+
+The overloaded forms of these functions are as follows.  For
+instantiation of the ParallelLibrary object, the default constructor
+may be used.  This constructor assumes that MPI is administered by the
+parent application such that the MPI configuration will be detected
+rather than explicitly created (i.e., DAKOTA will not call MPI_Init or
+MPI_Finalize).  In code, the instantiation
+\code
+  ParallelLibrary parallel_lib(argc, argv);
+\endcode
+
+is replaced with
+\code
+  ParallelLibrary parallel_lib;
+\endcode
+
+In the case of specifying restart files and output streams, the call to
+\code
+  parallel_lib.specify_outputs_restart(cmd_line_handler);
+\endcode
+
+should be replaced with its overloaded form in order to pass the 
+required information through the parameter list
+\code
+  parallel_lib.specify_outputs_restart(std_output_filename, std_error_filename,
+    read_restart_filename, write_restart_filename, stop_restart_evals);
+\endcode
+
+where file names for standard output and error and restart read and
+write as well as the integer number of restart evaluations are passed
+through the parameter list rather than read from the command line of
+the main DAKOTA program.  The definition of these attributes is
+performed elsewhere in the parent application (e.g., specified in the
+parent application input file or GUI).  In this function call, specify
+\c NULL for any files not in use, which will elicit the desired subset
+of the following defaults: standard output and standard error are
+directed to the terminal, no restart input, and restart output to file
+\c dakota.rst.  The \c stop_restart_evals specification is an optional
+parameter with a default of 0, which indicates that restart processing
+should process all records.  If no overrides of these defaults are 
+intended, the call to \c specify_outputs_restart() may be omitted entirely.
+
+With respect to alternate forms of \ref ProblemDescDB::manage_inputs
+"ProblemDescDB::manage_inputs()", the following section describes
+different approaches to populating data within DAKOTA's problem
+description database.  It is this database from which all DAKOTA
+objects draw data upon instantiation.
+
+
+\section DakLibraryDB Problem database population
+
+
+Now that the ProblemDescDB object has been instantiated, we must
+populate it with data, either via parsing an input file, direct data
+insertion, or a mixed approach, as described in the following sections.
+
+
+\subsection DakLibraryDBParse Input file parsing
+
+The simplest approach to linking an application with the DAKOTA
+library is to rely on DAKOTA's normal parsing system to populate
+DAKOTA's problem database (ProblemDescDB) through the reading of an
+input file.  The disadvantage to this approach is the requirement for
+an additional input file beyond those already required by the parent
+application.
+
+In this approach, the main.C call to 
+\code
+  problem_db.manage_inputs(cmd_line_handler);
+\endcode
+
+would be replaced with its overloaded form
+\code
+  problem_db.manage_inputs(dakota_input_file);
+\endcode
+
+where the file name for the DAKOTA input is passed through the
+parameter list rather than read from the command line of the main
+DAKOTA program.  Again, the definition of the DAKOTA input file name
+is performed elsewhere in the parent application (e.g., specified in
+the parent application input file or GUI).  Refer to
+run_dakota_parse() in library_mode.C for a complete example listing.
+
+\ref ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()"
+invokes \ref ProblemDescDB::parse_inputs "ProblemDescDB::parse_inputs()" 
+(which in turn invokes 
+\ref ProblemDescDB::check_input "ProblemDescDB::check_input()"),
+\ref ProblemDescDB::broadcast "ProblemDescDB::broadcast()", and 
+\ref ProblemDescDB::post_process "ProblemDescDB::post_process()", 
+which are lower level functions that will be important in the
+following two sections.  Thus, the input file parsing approach may
+employ a single coarse grain function to coordinate all aspects of
+problem database population, whereas the two approaches to follow will
+use lower level functions to accomplish a finer grain of control.
+
+
+\subsection DakLibraryDBNoParse Data node insertion
+
+This approach is more involved than the previous approach, but it
+allows the application to publish all needed data to DAKOTA's database
+directly, thereby eliminating the need for the parsing of a separate
+DAKOTA input file.  In this case, 
+\ref ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()" is
+not called.  Rather, DataStrategy, DataMethod, DataModel, DataVariables, 
+DataInterface, and DataResponses objects are instantiated and
+populated with the desired problem data.  These objects are then
+published to the problem database using 
+\ref ProblemDescDB::insert_node "ProblemDescDB::insert_node()", e.g.:
+
+\code
+  // instantiate the data object
+  DataMethod data_method;
+
+  // set the attributes within the data object
+  data_method.methodName = "nond_sampling";
+  ...
+
+  // publish the data object to the ProblemDescDB
+  problem_db.insert_node(data_method);
+\endcode
+
+The data objects are populated with their default values upon
+instantiation, so only the non-default values need to be
+specified. Refer to the DataStrategy, DataMethod, DataModel,
+DataVariables, DataInterface, and DataResponses class documentation
+and source code for lists of attributes and their defaults.
+
+The default strategy is \c single_method, which runs a single iterator
+on a single model, and the default model is \c single, so it is not
+necessary to instantiate and publish a DataStrategy or DataModel
+object if advanced multi-component capabilities are not required.
+Rather, instantiation and insertion of a single DataMethod,
+DataVariables, DataInterface, and DataResponses object is sufficient
+for basic DAKOTA capabilities.
+
+Once the data objects have been published to the ProblemDescDB object,
+calls to
+
+\code
+  problem_db.check_input();
+  problem_db.broadcast();
+  problem_db.post_process();
+\endcode
+
+will perform basic database error checking, broadcast a packed MPI
+buffer of the specification data to other processors, and post-process
+specification data to fill in vector defaults (scalar defaults are
+handled in the Data class constructors), respectively.  For parallel
+applications, processor rank 0 should be responsible for Data node
+population and insertion and the call to 
+\ref ProblemDescDB::check_input "ProblemDescDB::check_input()", and all
+processors should participate in 
+\ref ProblemDescDB::broadcast "ProblemDescDB::broadcast()" and 
+\ref ProblemDescDB::post_process "ProblemDescDB::post_process()".
+Moreover, preserving the order shown assures that large default
+vectors are not transmitted by MPI.  Refer to run_dakota_data() in 
+library_mode.C for a complete example listing.
+
+<!-- \attention The use of the insert_node() approach bypasses a
+considerable amount of data consistency enforcement within the keyword
+handler functions of NIDRProblemDescDB.  Application developers should
+study this logic and replicate as needed within their calling code in
+order to avoid run time errors resulting from data inconsistency.
+Abstraction of this consistency enforcement to the base ProblemDescDB
+level will simplify this process in the future. -->
+
+
+\subsection DakLibraryDBMixed Mixed mode
+
+In this case, we will combine the parsing of a DAKOTA input file with
+some direct database updates.  The motivation for this approach arises
+in large-scale applications where large vectors can be awkward to
+specify in a DAKOTA input file.  The first step is to parse the input
+file, but rather than using
+\code
+  problem_db.manage_inputs(dakota_input_file);
+\endcode
+as described in \ref DakLibraryDBParse, we will use the lower level 
+function 
+\code
+  problem_db.parse_inputs(dakota_input_file);
+\endcode
+to provide a finer grain of control.  The passed input file \c
+dakota_input_file must contain all required inputs.  Since vector data
+like variable values/bounds/tags, linear/nonlinear constaint
+coefficients/bounds, etc. are optional, these potentially large vector
+specifications can be omitted from the input file.  Only the 
+variable/response counts, e.g.:
+\code
+method
+	linear_inequality_constraints = 500
+
+variables
+	continuous_design = 1000
+
+responses
+	num_objective_functions = 1
+	num_noninear_inequality_constraints = 100000
+\endcode
+are required in this case.  To update the data omissions from their 
+defaults, one uses the \ref ProblemDescDB::set "ProblemDescDB::set()"
+family of overloaded functions, e.g.
+\code
+  Dakota::RealVector drv(1000, 1.); // vector of length 1000, values initialized to 1.
+  problem_db.set("variables.continuous_design.initial_point", drv);
+\endcode
+where the string identifiers are the same identifiers used when pulling
+information from the database using one of the get_<datatype>() 
+functions (refer to the source code of ProblemDescDB.C for a full list).  
+However, the supported \ref ProblemDescDB::set "ProblemDescDB::set()" 
+options are a restricted subset of the database attributes, focused on 
+vector inputs that can be large scale.
+
+If performing these updates within the constructor of a
+DirectApplicInterface extension/derivation (see \ref
+DakLibraryDirectAppInt), then this code is sufficient since the
+database is unlocked, the active list nodes of the ProblemDescDB have
+been set for you, and the correct
+strategy/method/model/variables/interface/responses specification
+instance will get updated.  The difficulty in this case stems from the
+order of instantiation.  Since the Variables and Response instances
+are constructed in the base Model class, prior to construction of
+Interface instances in derived Model classes, database information
+related to Variables and Response objects will have already been
+extracted by the time the Interface constructor is invoked and the
+database update will not propagate.
+
+Therefore, it is preferred to perform these operations at a higher
+level (e.g., within your main program), prior to Strategy
+instantiation and execution, such that instantiation order is not an
+issue.  However, in this case, it is necessary to explicitly manage
+the list nodes of the ProblemDescDB using a specification instance
+identifier that corresponds to an identifier from the input file, e.g.:
+\code
+  problem_db.set_db_variables_node("MY_VARIABLES_ID");
+  Dakota::RealVector drv(1000, 1.); // vector of length 1000, values initialized to 1.
+  problem_db.set("variables.continuous_design.initial_point", drv);
+\endcode
+Alternatively, rather than setting just a single data node, all data 
+nodes may be set using a method specification identifier:
+\code
+  problem_db.set_db_list_nodes("MY_METHOD_ID");
+\endcode
+since the method specification is responsible for identifying a model
+specification, which in turn identifies variables, interface, and
+responses specifications.  If hardwiring specification identifiers is
+undesirable, then
+\code
+  problem_db.resolve_top_method();
+\endcode
+can also be used to deduce the active method specification and set all
+list nodes based on it.  This is most appropriate in the case where
+only single specifications exist for
+method/model/variables/interface/responses.  In each of these cases,
+setting list nodes unlocks the corresponding portions of the database,
+allowing set/get operations.
+
+<!-- \attention As for \ref DakLibraryDBNoParse, error checking on the
+set(datatype&) updates is currently lacking, and elevation of
+consistency enforcements will render this approach more robust in 
+the future. -->
+
+Once all direct database updates have been performed in this manner,
+calls to \ref ProblemDescDB::broadcast "ProblemDescDB::broadcast()"
+and \ref ProblemDescDB::post_process "ProblemDescDB::post_process()"
+should be used on all processors.  The former will broadcast a packed
+MPI buffer with the aggregated set of specification data from rank 0
+to other processors, and the latter will post-process specification
+data to fill in any vector defaults that have not yet been provided
+through either file parsing or direct updates (Note: scalar defaults
+are handled in the Data class constructors).  Refer to 
+run_dakota_mixed() in library_mode.C for a complete example listing.
+
+
+\section DakLibraryStrat Instantiating the strategy
+
+
+With the ProblemDescDB object populated with problem data, we may now
+instantiate the strategy.
+\code
+  // instantiate the strategy
+  Strategy selected_strategy(problem_db);
+\endcode
+
+Following strategy construction, all MPI communicator partitioning has
+been performed and the ParallelLibrary instance may be interrogated
+for parallel configuration data.  For example, the lowest level
+communicators in DAKOTA's multilevel parallel partitioning are the
+analysis communicators, which can be retrieved using:
+\code
+  // retrieve the set of analysis communicators for simulation initialization:
+  // one analysis comm per ParallelConfiguration (PC), one PC per Model.
+  Array<MPI_Comm> analysis_comms = parallel_lib.analysis_intra_communicators();
+\endcode
+
+These communicators can then be used for initializing parallel
+simulation instances, where the number of MPI communicators in
+the array corresponds to one communicator per ParallelConfiguration 
+instance. <!-- where there may be multiple ParallelConfiguration 
+instances per Model. -->
+
+
+\section DakLibraryDirectAppInt Defining the direct application interface
+
+
+When employing a library interface to DAKOTA, it is frequently
+desirable to also use a direct interface between DAKOTA and the
+simulation.  There are two approaches to defining this direct interface.
+
+\subsection DakLibraryExtendDirectAppInt Extension
+
+The first approach involves extending the existing
+DirectApplicInterface class to support additional direct simulation
+interfaces.  In this case, a new simulation interface function can be
+added to Dakota/src/DirectApplicInterface.[CH] for the simulation of
+interest.  If the new function will not be a member function, then the
+following prototype should be used in order to pass the required data:
+\code
+  int sim(const Dakota::Variables& vars, const Dakota::ActiveSet& set, 
+          Dakota::Response& response);
+\endcode
+If the new function will be a member function, then this can be 
+simplified to
+\code
+  int sim();
+\endcode
+since the data access can be performed through the
+DirectApplicInterface class attributes.
+
+This simulation can then be added to the logic blocks in \ref 
+DirectApplicInterface::derived_map_ac "DirectApplicInterface::derived_map_ac()".  In addition, 
+\ref DirectApplicInterface::derived_map_if "DirectApplicInterface::derived_map_if()" and 
+\ref DirectApplicInterface::derived_map_of "DirectApplicInterface::derived_map_of()"
+can be extended to perform pre- and post-processing tasks if desired,
+but this is not required.
+
+While this approach is the simplest, it has the disadvantage that the
+DAKOTA library may need to be recompiled when the simulation or its
+direct interface is modified.  If it is desirable to maintain the
+independence of the DAKOTA library from the host application, then the
+following derivation approach should be employed.
+
+\subsection DakLibraryDeriveDirectAppInt Derivation
+
+The second approach is to derive a new interface from
+DirectApplicInterface in order to redefine several virtual
+functions.  A typical derived class declaration might be
+
+\code
+namespace SIM {
+
+class SerialDirectApplicInterface: public Dakota::DirectApplicInterface
+{
+public:
+
+  // Constructor and destructor
+
+  SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db);
+  ~SerialDirectApplicInterface();
+
+protected:
+
+  // Virtual function redefinitions
+
+  int derived_map_if(const Dakota::String& if_name);
+  int derived_map_ac(const Dakota::String& ac_name);
+  int derived_map_of(const Dakota::String& of_name);
+
+private:
+
+  // Data
+}
+
+} // namespace SIM
+\endcode
+
+where the new derived class resides in the simulation's namespace.  
+Similar to the case of \ref DakLibraryExtendDirectAppInt, the 
+\ref DirectApplicInterface::derived_map_ac "DirectApplicInterface::derived_map_ac()" function is the required redefinition, and 
+\ref DirectApplicInterface::derived_map_if "DirectApplicInterface::derived_map_if()" and \ref DirectApplicInterface::derived_map_of "DirectApplicInterface::derived_map_of()" are optional.
+
+The new derived interface object (from namespace SIM) must now be 
+plugged into the strategy.  In the simplest case of a single model
+and interface, one could use
+\code
+  // retrieve the interface of interest
+  ModelList& all_models  = problem_db.model_list();
+  Model&     first_model = *all_models.begin();
+  Interface& interface   = first_model.interface();
+  // plug in the new direct interface instance (DB does not need to be set)
+  interface.assign_rep(new SIM::SerialDirectApplicInterface(problem_db), false);
+\endcode
+
+from within the Dakota namespace.  In a more advanced case of multiple 
+models and multiple interface plug-ins, one might use
+\code
+  // retrieve the list of Models from the Strategy
+  ModelList& models = problem_db.model_list();
+  // iterate over the Model list
+  for (ModelLIter ml_iter = models.begin(); ml_iter != models.end(); ml_iter++) {
+    Interface& interface = ml_iter->interface();
+    if (interface.interface_type() == "direct" &&
+	interface.analysis_drivers().contains("SIM") ) {
+      // set the correct list nodes within the DB prior to new instantiations
+      problem_db.set_db_model_nodes(ml_iter->model_id());
+      // plug in the new direct interface instance
+      interface.assign_rep(new SIM::SerialDirectApplicInterface(problem_db), false);
+    }
+  }
+\endcode
+
+In the case where the simulation interface instance should manage
+parallel simulations within the context of an MPI communicator, one
+should pass in the relevant analysis communicator(s) to the derived 
+constructor.  For the latter case of looping over a set of models, 
+the simplest approach of passing a single analysis communicator 
+would use code similar to
+\code
+  const ParallelLevel& ea_level = ml_iter->parallel_configuration_iterator()->ea_parallel_level();
+  const MPI_Comm& analysis_comm = ea_level.server_intra_communicator();
+  interface.assign_rep(new SIM::ParallelDirectApplicInterface(problem_db, analysis_comm), false);
+\endcode
+Since Models may be used in multiple parallel contexts and may 
+therefore have a set of parallel configurations, a more general
+approach would extract and pass an array of analysis communicators
+to allow initialization for each of the parallel configurations.
+
+New derived direct interface instances inherit various attributes of
+use in configuring the simulation.  In particular, the
+ApplicationInterface::parallelLib reference provides access to MPI
+communicator data (e.g., the analysis communicators discussed in \ref
+DakLibraryStrat), DirectApplicInterface::analysisDrivers provides the
+analysis driver names specified by the user in the input file, and
+DirectApplicInterface::analysisComponents provides additional analysis
+component identifiers (such as mesh file names) provided by the user
+which can be used to distinguish different instances of the same
+simulation interface.  It is worth noting that inherited attributes
+that are set as part of the parallel configuration (instead of being
+extracted from the ProblemDescDB) will be set to their defaults
+following construction of the base class instance for the derived
+class plug-in.  It is not until run-time (i.e., within
+derived_map_if/derived_map_ac/derived_map_of) that the parallel
+configuration settings are repropagated to the plug-in instance.  This
+is the reason that the analysis communicator should be passed in to
+the constructor of a parallel plug-in, if the constructor will be
+responsible for parallel application initialization.
+
+
+\section DakLibraryAddtlUpdates Additional updates
+
+
+As part of strategy instantiation, all problem specification data is
+extracted from ProblemDescDB as various objects are constructed.
+Therefore, any updates that need to be performed following strategy
+instantiation must be performed through direct set operations on the
+constructed objects.  In the previous section, the process for updating 
+the \ref Dakota::Interface "Interface" object used within a 
+\ref Dakota::Model "Model" was shown.  To update other data such as
+variable values/bounds/tags or response bounds/targets/tags, refer to 
+the set functions documented in \ref Dakota::Iterator "Iterator" and
+\ref Dakota::Model "Model".  As an example, the following code updates
+the active continuous variable values, which will be employed as the
+initial guess for certain classes of Iterators:
+\code
+  ModelList& all_models  = problem_db.model_list();
+  Model&     first_model = *all_models.begin();
+  Dakota::RealVector drv(1000, 1.); // vector of length 1000, values initialized to 1.
+  first_model.continuous_variables(drv);
+\endcode
+
+
+\section DakLibraryStratRun Executing the strategy
+
+
+Finally, with simulation configuration and plug-ins completed, we
+execute the strategy:
+\code
+  // run the strategy
+  selected_strategy.run_strategy();
+\endcode
+
+
+\section DakLibraryPostRun Retrieving data after a run
+
+
+After executing the strategy, final results can be obtained through
+the use of \ref Strategy::variables_results "Strategy::variables_results()"
+and \ref Strategy::response_results "Strategy::response_results()", e.g.:
+\code
+  // retrieve the final parameter values
+  const Variables& vars = selected_strategy.variables_results();
+
+  // retrieve the final response values
+  const Response& resp  = selected_strategy.response_results();
+\endcode
+
+In the case of optimization, the final design is returned, and in the
+case of uncertainty quantification, the final statistics are returned.
+
+
+\section DakLibraryLinking Linking against the DAKOTA library
+
+
+This section presumes DAKOTA has been compiled and installed to \c PREFIX
+using 'make install'.  While the DAKOTA build system offers the most
+up-to-date guidance for what libraries are needed to link against a
+particular version of DAKOTA, a typical case is presented here.  Note
+that depending on how you configured DAKOTA, some of the following
+libraries may not be available (for example NPSOL, DOT, NLPQL) --
+check which appear in \c $PREFIX/lib.  Also as of DAKOTA 4.2, the link
+process is not as sensitive to order of these libraries, with the
+possible exception of liblhs.a.
+
+As of DAKOTA 5.0, \c -levidence is no longer required and \c -lgsl is
+optional (discouraged due to GPL), depending on how DAKOTA was configured.
+
+Post DAKOTA 5.0, \c -lquadrature has been renamed to \c -lsparsegrid.
+
+\code
+DAKOTA_LIBS = -L$(PREFIX)/lib -ldakota -lteuchos -lpecos -ldfftpack -llhs  \
+              -lsurfpack -lconmin -lddace -ldot -lfsudace    \
+	      -ljega -lcport -lnlpql -lnpsol -lopt -lpsuade -lnewmat    \
+              -lncsuopt -lsparsegrid -lcoliny -lcolin -lpebbl     \
+              -lutilib -l3po -lnappspack -lappspack -lconveyor -lshared \
+	      -lcdd -lamplsolver -llhs -llapack -lblas
+\endcode
+
+You may also need \c funcadd0.o, \c -lfl and, if linking with
+system-provided GSL, \c -lgslcblas. The AMPL solver library may
+require \c -ldl.  If configuring with graphics, you will need to add:
+
+\code 
+-lplplotcxxd -lplplotd -lgd -lpng -ljpeg -lz -lfreetype -lrt -lDGraphics
+\endcode
+
+as well as any system X libraries (partial list here):
+
+\code 
+-lXpm -lXm -lXt -lXmu -lXp -lXext -lX11 -lSM -lICE
+\endcode
+
+We have experienced problems with the creation of \c libamplsolver.a
+on some platforms.  Please use the DAKOTA mailing lists for help with
+any problems.
+
+Finally, it is important to declare the compiler define \c
+-DHAVE_CONFIG_H when including header files from DAKOTA.  This ensures
+that the platform configuration settings are properly propagated.
+
+
+\section DakLibrarySummary Summary
+
+To utilize the DAKOTA library within a parent software application,
+the basic steps of main.C and the order of invocation of these steps
+should be mimicked from within the parent application.  Of these
+steps, ParallelLibrary instantiation, 
+\ref ProblemDescDB::manage_inputs "ProblemDescDB::manage_inputs()" and 
+\ref ParallelLibrary::specify_outputs_restart "ParallelLibrary::specify_outputs_restart()"
+require the use of overloaded forms in order to function in an
+environment without direct command line access and, potentially,
+without file parsing.  Additional optional steps not performed in
+main.C include the extension/derivation of the direct interface and 
+the retrieval of strategy results after a run.
+
+DAKOTA's library mode is now in production use within several Sandia
+and external simulation codes/frameworks.
+
+*/
+
+} // namespace Dakota

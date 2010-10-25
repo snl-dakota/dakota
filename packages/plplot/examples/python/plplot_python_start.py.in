@@ -1,0 +1,16 @@
+# Append to effective python path so that can find plplot modules.
+import sys
+invocation_path = sys.path[0]
+sys.path.insert (0, "@PYTHON_INSTDIR@")
+
+# The following is useful for build tree only!
+# The version with the leading / is required for script execution.
+# (Is this a python bug?).
+# The version without the leading / is required for interactive use
+# from within python.
+sys.path.insert (0, invocation_path + "/@top_srcdir@/bindings/python")
+sys.path.insert (0, invocation_path + "/@top_builddir@/bindings/python")
+sys.path.insert (0, invocation_path + "/@top_builddir@/bindings/python/.libs")
+sys.path.insert (0, invocation_path + "@top_srcdir@/bindings/python")
+sys.path.insert (0, invocation_path + "@top_builddir@/bindings/python")
+sys.path.insert (0, invocation_path + "@top_builddir@/bindings/python/.libs")

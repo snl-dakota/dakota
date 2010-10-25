@@ -1,0 +1,16 @@
+#!/bin/bash
+# PBS submission script for parallel Case 2
+
+# M=6 processors
+#PBS -l nodes=3:ppn=2:compute
+#PBS -l walltime=00:05:00
+#PBS -N DAKOTA_Case2
+
+# for convenience, set DAKOTA and PATH environment variables
+# put . on path to pickup the simulator script
+export DAKOTA=/path/to/dakota
+export PATH=$DAKOTA/bin:$DAKOTA/test:$PATH:.
+
+# Case 2: Run DAKOTA in serial and launch one parallel analysis job at a time
+# that fits in the processor allocation above
+$DAKOTA/bin/dakota -i dakota_pstudy.in

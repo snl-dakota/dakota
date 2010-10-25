@@ -1,0 +1,66 @@
+Running the Tk Demos.
+
+PLplot doesn't need to be installed to run these demos.
+However, different commands might be needed to run the demos when PLplot
+is installed or not; in these cases, the first command must be used for
+the installed situation, while the second, separated by a `|´, is for the
+uninstalled situation.
+
+To run the plot.tcl demo follow the directions in that file to run it
+under plserver using the plframe widget.
+
+Build the xtk?? executables using the 'make' command.
+
+Once the xtk?? executables are built, then you run the examples in the
+following way:
+
+./xtk01 -f tk01
+./xtk02 -f tk02
+./tk03 		# to run this demo in the build tree, change line 11
+		# from "plserver" to "../../bindings/plserver"
+./xtk04 -f tk04
+
+There are two ways to run tkdemos.tcl which exercises all the x??.tcl
+examples using the plframe widget:
+
+(1) 
+plserver | ../../bindings/tk/plserver
+source tkdemos.tcl
+1
+2
+....
+
+Note the plserver command has normal PLplot command-line options (run
+plserver -h to find out what they are).
+
+(2) Note, fill in $prefix below with whatever you configured for the install
+prefix (/usr/local/plplot or whatever) and $VERSION with the plplot VERSION
+you are running at this time (5.2.0 or whatever).
+
+wish
+lappend auto_path $prefix/share/plplot$VERSION | ../../bindings/tk
+package require Pltk
+source tkdemos.tcl
+1
+2
+....
+
+To find out more about the wish command (which comes as part of the tk
+package) use man wish.
+
+Both the plserver and wish methods execute the various x??.tcl examples
+corresponding to the numbers specified by the user. A few of the x??.tcl
+examples will return the message that they have not been implemented, but
+the rest should work smoothly without problems.
+
+
+runAllDemos.tcl now works both under plserver 
+and wish
+
+plserver
+source runAllDemos.tcl
+
+wish
+lappend auto_path $prefix/share/plplot$VERSION | ../../bindings/tk-x-plat
+package require Plplotter
+source runAllDemos.tcl

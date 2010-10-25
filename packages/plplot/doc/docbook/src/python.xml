@@ -1,0 +1,63 @@
+<!--
+    python.xml: "Using PLplot from Python" chapter
+        
+    Copyright (C) 1994  Geoffrey Furnish and Maurice LeBrun
+    Copyright (C) 1999, 2000, 2001, 2002, 2003  Alan W. Irwin and Rafael Laboissiere
+    Copyright (C) 2003  Joao Cardoso
+
+    Redistribution and use in source (XML DocBook) and "compiled" forms
+    (HTML, PDF, PostScript, DVI, TeXinfo and so forth) with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+       1. Redistributions of source code (XML DocBook) must retain the
+          above copyright notice, this list of conditions and the following
+          disclaimer as the first lines of this file unmodified.
+
+       2. Redistributions in compiled form (transformed to other DTDs,
+          converted to HTML, PDF, PostScript, and other formats) must
+          reproduce the above copyright notice, this list of conditions and
+          the following disclaimer in the documentation and/or other
+          materials provided with the distribution.
+
+    Important: THIS DOCUMENTATION IS PROVIDED BY THE PLPLOT PROJECT "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE PLPLOT PROJECT BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS DOCUMENTATION,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<chapter id="python">
+  <title>Using PLplot from Python</title>
+  <para>
+  NEEDS DOCUMENTATION, but here is the short story.  We currently (February,
+2001) have
+switched to dynamic loading of plplot following the generic method given
+in the python documentation.  Most (???) of the PLplot common API
+has been implemented.  (For a complete list see plmodules.c and plmodules2.c).
+With this dynamic method all the xw??.py examples
+work fine and should be consulted for the best way to use PLplot from python.
+You may have to set PYTHONPATH to the path where plmodule.so is located
+(or eventually installed).  For more information see examples/python/README
+</para>
+
+<para>
+pytkdemo and the x??.py examples it loads use the plframe widget.  Thus,
+this method does not currently work under
+dynamic loading.  They have only worked in the past using the static method
+with much hacking and rebuilding of python itself.  We plan to try dynamic
+loading of all of PLplot (not just the plmodule.c and plmodule2.c wrappers)
+including plframe (or a python-variant of this widget) into python at some
+future date to see whether it is possible to get pytkdemo and the
+x??.py examples working
+under dynamic loading, but only the individual stand-alone xw??.py demos
+work at the moment.
+</para>
+
+</chapter> 

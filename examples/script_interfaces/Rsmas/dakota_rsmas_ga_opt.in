@@ -1,0 +1,44 @@
+#  DAKOTA INPUT FILE - dakota_rosenbrock.in
+#  This sample Dakota input file optimizes the Rosenbrock function.
+#  See p. 95 in Practical Optimization by Gill, Murray, and Wright.
+#
+
+strategy,
+        single_method graphics
+
+method,
+        sgopt_pga_real
+  	  seed = 12345
+	  population_size = 50
+	  replacement_type elitist = 10
+	  crossover_type two_point
+
+variables,
+	continuous_design = 3
+	  cdv_initial_point   0.7      0.5	15.
+	  cdv_lower_bounds    0.5       0.1	5.0
+	  cdv_upper_bounds    0.99      0.9	30.0
+	  cdv_descriptor  'enrich' 'mtof_ratio' 'cone_angle'
+        discrete_design = 1
+          ddv_initial_point = 4
+   	  ddv_lower_bounds    1
+	  ddv_upper_bounds    4
+	  ddv_descriptor  'num_turbines'
+
+interface,
+	application system,
+	  analysis_driver = 'rsmas_driver'
+	  parameters_file = 'params.in'
+	  results_file    = 'results.out'
+	  file_tag aprepro
+
+responses,
+	num_objective_functions = 1
+#        num_nonlinear_inequality_constraints = 1
+#        nonlinear_inequality_upper_bounds = 400.
+        no_gradients
+# 	numerical_gradients
+#          method_source dakota
+#          interval_type central
+# 	  fd_step_size = .0001
+	no_hessians

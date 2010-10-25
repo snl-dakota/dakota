@@ -1,0 +1,276 @@
+\chapter{Nonlinear Least Squares Capabilities}\label{nls}
+
+\section{Overview}\label{nls:overview}
+
+Nonlinear least-squares methods are optimization algorithms that
+exploit the special structure of a sum of the squares objective
+function~\cite{Gil81}. These problems commonly arise in parameter
+estimation, system identification, and test/analysis reconciliation.
+To exploit the problem structure, more granularity is needed
+in the response data than is required for a typical optimization
+problem.  That is, rather than using the sum-of-squares objective
+function and its gradient, least-squares iterators require each term
+used in the sum-of-squares formulation along with its gradient. This
+means that the $m$ functions in the DAKOTA response data set consist
+of the individual least-squares terms along with any nonlinear
+inequality and equality constraints. These individual terms are often
+called \emph{residuals} when they denote differences of
+observed quantities from values computed by the model whose parameters
+are being estimated.
+
+The enhanced granularity needed for nonlinear least-squares algorithms
+allows for simplified computation of an approximate Hessian matrix.
+In Gauss-Newton-based methods for example, the true Hessian matrix is
+approximated by neglecting terms in which residuals multiply
+Hessians (matrices of second
+partial derivatives) of residuals,
+under the assumption that the residuals tend towards zero at
+the solution. As a result, residual function value and gradient
+information (first-order information) is sufficient to define the
+value, gradient, and approximate Hessian of the sum-of-squares
+objective function (second-order information). See
+Section~\ref{introduction:background:nonlinear} for additional details
+on this approximation.
+
+In practice, least-squares solvers will tend to be significantly more
+efficient than general-purpose optimization algorithms when the
+Hessian approximation is a good one, e.g., when the residuals tend
+towards zero at the solution. Specifically, they can exhibit the
+quadratic convergence rates of full Newton methods, even though only
+first-order information is used. Gauss-Newton-based least-squares
+solvers may experience difficulty when the residuals at the solution
+are significant.
+
+In order to specify a least-squares problem, the responses section of
+the DAKOTA input should be configured using
+\texttt{num\_least\_squares\_terms} (as opposed to
+\texttt{num\_objective\_functions} in the case of optimization). Any
+linear or nonlinear constraints are handled in an identical way to
+that of optimization (see Section~\ref{opt:overview}; note that
+neither Gauss-Newton nor NLSSOL require any constraint augmentation
+and NL2SOL supports neither linear nor nonlinear constraints).
+Gradients of the least-squares terms and nonlinear constraints are
+required and should be specified using either
+\texttt{numerical\_gradients}, \texttt{analytic\_gradients}, or
+\texttt{mixed\_gradients}. Since explicit second derivatives
+are not used by the least-squares methods,
+the \texttt{no\_hessians} specification should be used.  DAKOTA's
+scaling options, described in Section~\ref{opt:additional:scaling} can
+be used on least-squares problems, using the
+\texttt{least\_squares\_term\_scales} keyword to scale least-squares
+residuals, if desired.
+
+\section{Solution Techniques}\label{nls:solution}
+
+Nonlinear least-squares problems can be solved using the Gauss-Newton
+algorithm, which leverages the full Newton method from OPT++, the
+NLSSOL algorithm, which is closely related to NPSOL, or the NL2SOL
+algorithm, which uses a secant-based algorithm. Details for each are
+provided below.
+
+\subsection{Gauss-Newton}\label{nls:solution:gauss}
+
+DAKOTA's Gauss-Newton algorithm consists of combining an
+implementation of the Gauss-Newton Hessian approximation (see
+Section~\ref{introduction:background:nonlinear}) with full Newton
+optimization algorithms from the OPT++ package~\cite{MeOlHoWi07} (see
+Section~\ref{opt:software:optpp}). This approach can be selected using
+the \texttt{optpp\_g\_newton} method specification. An example
+specification follows:
+\begin{small}
+\begin{verbatim}
+    method,
+          optpp_g_newton
+            max_iterations = 50
+            convergence_tolerance = 1e-4
+            output debug
+\end{verbatim}
+\end{small}
+
+Refer to the DAKOTA Reference Manual~\cite{RefMan} for more detail on the
+input commands for the Gauss-Newton algorithm.
+
+The Gauss-Newton algorithm is gradient-based and is best suited for
+efficient navigation to a local least-squares solution in the vicinity
+of the initial point. Global optima in multimodal design spaces may be
+missed. Gauss-Newton supports bound, linear, and nonlinear
+constraints. For the nonlinearly-constrained case, constraint Hessians
+(required for full-Newton nonlinear interior point optimization
+algorithms) are approximated using quasi-Newton secant updates.  Thus,
+both the objective and constraint Hessians are approximated using
+first-order information.
+
+\subsection{NLSSOL}\label{nls:solution:nlssol}
+
+The NLSSOL algorithm is a commercial software product of Stanford
+University that is bundled with current versions of the NPSOL library
+(see Section~\ref{opt:software:npsol}).  It uses an SQP-based approach
+to solve generally-constrained nonlinear least-squares problems. It
+periodically employs the Gauss-Newton Hessian approximation to
+accelerate the search. Like the Gauss-Newton algorithm of
+Section~\ref{nls:solution:gauss}, its derivative order is balanced in
+that it requires only first-order information for the least-squares
+terms and nonlinear constraints. This approach can be selected using
+the \texttt{nlssol\_sqp} method specification. An example
+specification follows:
+\begin{small}
+\begin{verbatim}
+    method,
+          nlssol_sqp
+            convergence_tolerance = 1e-8
+\end{verbatim}
+\end{small}
+
+Refer to the DAKOTA Reference Manual~\cite{RefMan} for more detail on the
+input commands for NLSSOL.
+
+\subsection{NL2SOL}\label{nls:solution:nl2sol}
+
+The NL2SOL algorithm~\cite{Den81} is a secant-based least-squares
+algorithm that is $q$-superlinearly convergent.  It adaptively chooses
+between the Gauss-Newton Hessian approximation and this approximation
+augmented by a correction term from a secant update.
+NL2SOL is appropriate
+for ``large residual'' problems, i.e., least-squares problems for
+which the residuals do not tend towards zero at the solution.
+
+\subsection{Additional Features and Future plans}\label{nls:solution:future}
+
+In DAKOTA 4.2, the capability to calculate confidence 
+intervals on the estimated parameters was added.  The confidence 
+intervals are determined for individual parameters: 
+these are not joint confidence intervals.  The intervals are 95\% 
+intervals around the estimated parameters, and are calculated as 
+the optimal value of the estimated parameters $+/-$ a 
+t-test statistic times the standard error (SE) of the estimated 
+parameter vector.  
+The SE is based on a linearization approximation involving the 
+matrix of the derivatives of the model with respect to the 
+derivatives of the estimated parameters.  In the case where 
+these gradients are extremely inaccurate or the model is very nonlinear, 
+the confidence intervals reported are likely to be inaccurate as well. 
+Future work on generating confidence intervals on the estimated 
+parameters for nonlinear least-squares methods will involve 
+adding Bonferroni confidence intervals and one or two methods for 
+calculating joint confidence intervals (such as a linear approximation 
+and the F-test method). See~\cite{Seb03} and~\cite{Vug07} for more 
+details about confidence intervals. Note that confidence intervals 
+are not calculated when scaling is used, when the number of 
+least-squares terms is less than the number of parameters to 
+be estimated, or when using numerical gradients. 
+
+Dakota 4.2 also allows a form of weighted least squares. 
+The user can specify a set of weights that are used to 
+weight each residual term using the keyword \texttt{least\_squares\_weights}.
+Note that these weights must be pre-determined by the user 
+and entered in the DAKOTA input file: they are not calculated on-the-fly.
+The user can also specify scaling for the least-squares terms. 
+Scaling is applied before weighting; usually one or the other would be 
+applied but not both.  The Responses section in the DAKOTA
+Reference Manual~\cite{RefMan} has more detail about weighting and scaling
+of the residual terms.
+
+The least-squares branch in DAKOTA is an area of continuing
+enhancements, particularly through the addition of new least-squares
+algorithms. One potential future addition is the orthogonal distance
+regression (ODR) algorithms which estimate values for both independent
+and dependent parameters.
+
+\section{Examples}\label{nls:examples}
+
+Both the Rosenbrock and textbook example problems can be formulated as
+nonlinear least-squares problems. Refer to Chapter~\ref{additional}
+for more information on these formulations.
+%Figure~\ref{nls:figure01}
+%shows an excerpt from output for the Rosenbrock example solved by
+%the Gauss-Newton method.
+%
+%\begin{figure}
+%\begin{bigbox}
+%\begin{small}
+%\begin{verbatim}
+%     Active response data for function evaluation 1:
+%     Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
+%                          -4.4000000000e+00 least_sq_term_1
+%                           2.2000000000e+00 least_sq_term_2
+%      [  2.4000000000e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+%      [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+%\end{verbatim}
+%\end{small}
+%\end{bigbox}
+%\caption{Example of intermediate output from a Gauss-Newton method.}
+%\label{nls:figure01}
+%\end{figure}
+
+Figure~\ref{nls:figure02} shows an excerpt from the output 
+obtained when running NL2SOL on a five-dimensional problem. 
+This input file is named \texttt{dakota\_nl2test.in} found 
+in the \texttt{Dakota/test} directory. 
+Note that the optimal parameter estimates are printed, 
+followed by the residual norm and values of the individual 
+residual terms, followed by the confidence intervals on the parameters. 
+
+\begin{figure}
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+<<<<< Iterator nl2sol completed.
+<<<<< Function evaluation summary: 27 total (26 new, 1 duplicate)
+<<<<< Best parameters          =
+                      3.7541004764e-01 x1
+                      1.9358463401e+00 x2
+                     -1.4646865611e+00 x3
+                      1.2867533504e-02 x4
+                      2.2122702030e-02 x5
+<<<<< Best residual norm =  7.3924926090e-03; 0.5 * norm^2 =  2.7324473487e-05
+<<<<< Best residual terms      =
+                     -2.5698266189e-03
+                      4.4759880011e-03
+                      9.9223430643e-04
+                     -1.0634409194e-03
+
+...
+
+Confidence Interval for x1 is [  3.7116510206e-01,  3.7965499323e-01 ]
+Confidence Interval for x2 is [  1.4845485507e+00,  2.3871441295e+00 ]
+Confidence Interval for x3 is [ -1.9189348458e+00, -1.0104382765e+00 ]
+Confidence Interval for x4 is [  1.1948590669e-02,  1.3786476338e-02 ]
+Confidence Interval for x5 is [  2.0289951664e-02,  2.3955452397e-02 ]
+
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption{Example of confidence intervals on optimal parameters}
+\label{nls:figure02}
+\end{figure}
+
+The analysis driver script (the script being driven by DAKOTA) 
+has to perform several tasks in the case of parameter estimation 
+using nonlinear least-squares methods.  The analysis driver script 
+must: (1) read in the values of the parameters supplied by DAKOTA;
+(2) run the computer simulation with these parameter values;
+(3) retrieve the results from the computer simulation;
+(4) compute the difference between each computed simulation value
+and the corresponding experimental or measured value; and 
+(5) write these residuals (differences)
+to an external file that gets passed back to DAKOTA.  Note there 
+will be one line per residual term, specified with 
+\texttt{num\_least\_squares\_terms}
+in the DAKOTA input file.   It is the last two steps which are different from 
+most other DAKOTA applications.  
+
+To aid the calculation of the residuals, in DAKOTA 4.2
+we have added the capability to have the user specify a 
+data file with the experimental results.  In this case, DAKOTA
+will calculate the residuals 
+(that is, the simulation model results minus the experimental results),
+and the user-provided script can omit this step:
+the script can just return the simulation results. 
+An example of this can be found in the file named   
+\texttt{dakota\_nls\_datafile.in} in the \texttt{Dakota/examples/methods} 
+directory.  In this example, there are 3 residual terms.  
+The data file of experimental results associated with this example
+is \texttt{least\_squares\_test.dat}.  These three values are subtracted 
+from the least-squares terms to produce residuals for the nonlinear 
+least-squares problem. 
+

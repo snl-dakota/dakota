@@ -1,0 +1,113 @@
+C      $Id: x03f.fm4 3186 2006-02-15 18:17:33Z slbrow $
+C      Generates polar plot with, 1-1 scaling
+C
+C      Copyright (C) 2004  Alan W. Irwin
+C
+C      This file is part of PLplot.
+C
+C      PLplot is free software; you can redistribute it and/or modify
+C      it under the terms of the GNU General Library Public License as
+C      published by the Free Software Foundation; either version 2 of the
+C      License, or (at your option) any later version.
+C
+C      PLplot is distributed in the hope that it will be useful,
+C      but WITHOUT ANY WARRANTY; without even the implied warranty of
+C      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+C      GNU Library General Public License for more details.
+C
+C      You should have received a copy of the GNU Library General Public
+C      License along with PLplot; if not, write to the Free Software
+C      Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+      implicit none
+      real*8 PI
+      parameter (PI = 3.1415926535897932384d0)
+
+      character*3 text
+      real*8 x0(0:360), y0(0:360)
+      real*8 x(0:360), y(0:360), dtr, theta, dx, dy, r
+      integer i, j, nsp
+      integer PL_PARSE_FULL
+      parameter(PL_PARSE_FULL = 1)
+C      Process command-line arguments
+      call plparseopts(PL_PARSE_FULL)
+
+
+      dtr = PI/180.0d0
+      do i=0,360
+        x0(i) = cos(dtr * dble (i))
+        y0(i) = sin(dtr * dble (i))
+      enddo
+
+C      Initialize PLplot
+
+      call plinit()
+
+C      Set up viewport and window, but do not draw box
+
+      call plenv(-1.3d0, 1.3d0, -1.3d0, 1.3d0, 1, -2)
+      do i = 1,10
+        do j = 0,360
+          x(j) = 0.1d0*i*x0(j)
+          y(j) = 0.1d0*i*y0(j)
+        enddo
+C        Draw circles for polar grid
+
+        call plline(361,x,y)
+      enddo
+      call plcol0(2)
+      do i = 0,11
+        theta = 30.0d0*i
+        dx = cos(dtr*theta)
+        dy = sin(dtr*theta)
+
+C        Draw radial spokes for polar grid
+
+        call pljoin(0.0d0, 0.0d0, dx, dy)
+        write (text,'(i3)') nint(theta)
+
+C        Write labels for angle
+
+        text = text(nsp(text):)
+C        Slightly off zero to avoid floating point logic flips at
+C        90 and 270 deg.
+        if (dx.ge.-0.00001d0) then
+          call plptex(dx, dy, dx, dy, -0.15d0, text)
+        else
+          call plptex(dx, dy, -dx, -dy, 1.15d0, text)
+        end if
+      enddo
+C      Draw the graph
+
+      do i=0,360
+        r = sin(dtr*dble (5*i))
+        x(i) = x0(i) * r
+        y(i) = y0(i) * r
+      enddo
+      call plcol0(3)
+      call plline(361,x,y)
+
+      call plcol0(4)
+      call plmtex('t', 2.0d0, 0.5d0, 0.5d0,
+     &  '#frPLplot Example 3 - r(#gh)=sin 5#gh')
+
+C      Close the plot at end
+
+      call plend
+      end
+
+      integer function nsp(text)
+C      ==================
+
+C      Find first non-space character
+      implicit none
+
+      character*(*) text
+      integer l, len
+
+      l = len(text)
+      nsp = 1
+      do while(text(nsp:nsp).eq.' ' .and. nsp.lt.l)
+        nsp = nsp+1
+      enddo
+      end

@@ -1,0 +1,1156 @@
+=head1 NAME
+
+matwrap -- Wrap C++ functions/classes for various matrix languages
+
+=head1 FEATURES
+
+matwrap is a script to generate wrapper functions for
+matrix-oriented scripting languages so that C++ subroutines or member
+functions can be called.  It doesn't support non-matrix-oriented
+scripting languages like perl and python and tcl because Dave Bezley's
+program SWIG is such a good wrapper generator for those languages.
+Someday I hope that all of the features in this wrapper generator are
+incorporated into SWIG, but since I don't understand SWIG well enough to
+do it myself, I'm releasing this separately.  SWIG is available from
+http://bifrost.lanl.gov/~dmb/SWIG/ or
+http://www.cs.utah.edu/~beazley/SWIG/.
+
+matwrap can handle the following constructs:
+
+=over 4
+
+=item Ordinary functions
+
+For example, suppose you have some functions defined in an C<.h> file,
+like this:
+
+    float fiddle(double arg);
+    double tweedle(int x, char *name);
+
+You can access these directly from MATLAB by using the following:
+
+  matwrap -language matlab -o myfuncs_wrap.c fiddle.h
+  cmex myfuncs.o myfuncs_wrap.c -o myfuncs_wrap
+
+Then, in MATLAB, you can do the following:
+
+  y = tweedle(3, 'Hello, world');
+  A = fiddle([3, 4; 5, 6];
+
+Note especially the last statement, where instead of passing a scalar as
+the argument, we pass a matrix.  The C function fiddle() is called
+repeatedly on each element of the matrix and the result is returned as a
+2x2 matrix.
+
+Floats, doubles, char *, integer, unsigned, and pointers to structures
+may be used as arugments.  Support for other data types (e.g., various
+C++ classes) is possible and may be easily added since the modules have
+been written for easy extensibility.  Function pointers are not
+currently supported in any form.  C++ operator definitions are not
+supported either.
+
+=item C++ classes
+
+You can access public member functions and simple public data members of
+classes.  For example,
+
+  class ABC {
+  public:
+    ABC(int constructor_arg);
+    void do_something(float number, int idx);
+    double x;
+  };
+
+From MATLAB or a similar language, you would access this structure like
+this:
+
+  ABC_ptr = ABC_new(3);		% Call the constructor and return a pointer.
+  ABC_do_something(ABC_ptr, pi, 4); % Call the member function.
+  abc_x = ABC_get_x(ABC_ptr);	% Get the value of a data member.
+  ABC_set_x(ABC_ptr, 3.4);	% Set the data member.
+  ABC_delete(ABC_ptr);		% Discard the structure.
+
+Accessing data members is often extremely useful when you are attempting
+to figure out why your code returns 27.3421 when it ought to return
+4.367.
+
+The same thing will work for C structs--the only difference is that they
+have only data members and no member functions.
+
+Only public members are accessible from the scripting language.
+Operator overloading and function overloading are not supported.
+Function pointers are not supported.
+
+=item Arrays
+
+You can also call functions that take arrays of data, provided that they
+accept the arrays in a standard format.  For example, suppose you want
+to use the pgplot distribution to make graphs (e.g., if you're using a
+scripting language that doesn't have good graphing capability).  The
+following function generates a histogram of data:
+
+  void cpgbin(int nbin, const float *x, const float *data, Logical center);
+
+Here x[] are the abscissae values and data[] are the data values.  If
+you add to your .h file a simple statement indicating the dimensions of
+the matrices, like this:
+
+  //%input x(nbin), data(nbin)
+
+then from a MATLAB-like language, you can call this function like this:
+
+  cpgbin(X, Data, 1)
+
+where C<X> and C<Data> are vectors.  The C<nbin> argument is determined
+from the length of the C<X> and C<Data> vectors automatically (and the
+wrapper generator makes sure they are of the same length!).
+
+This will also work with multidimensional arrays, provided that the
+function expects the array to be a single one-dimensional array which is
+really the concatenation of the columns of the two-dimensional array.
+(This is normal for Fortran programs.)  The first array dimension varies
+the fastest, the second the next fastest, etc.  (This is column major
+order, as in Fortran, not row-major order, as in C.  Most matlab-like
+languages use the Fortran convention.  Tela is an exception.)
+
+You may only use variable name or a constant for the array dimension.
+You can also use expressions like C<2*nbin> or C<2*nbin+1>.  If the
+expression is sufficiently simple, the wrapper generator will determine
+the values of any integer values (like C<nbin> in this example) from the
+dimension of the input arrays, so they do not have to be specified as an
+argument.
+
+=back
+
+=head1 REQUIREMENTS
+
+=over 4
+
+=item A C++ compiler
+
+In theory, this could be made to work with an ANSI C compiler, but I
+haven't tried to yet.  Currently, you must have a full C++ compiler.
+I've used primarily gcc and I tested very briefly with DEC's cxx.
+
+=item C<alloca()>
+
+If you are using matlab, then you can tell matwrap to use C<mxCalloc>
+instead of C<alloca> by specifying C<-use_mxCalloc> somewhere on the
+command line.  Otherwise, you must have a compiler that supports
+C<alloca()>.  (gcc does.)
+
+C<alloca()> is usually a little more efficient than C<mxCalloc()>.  It
+allocates space on the stack rather than the heap.  Unfortunately, you
+may have a limited stack size, and so C<alloca()> may fail for large
+temporary arrays.  In this case, you may need to issue a command like
+
+   unix('unlimit stacksize')
+
+or else use the C<-use_mxCalloc> option.
+
+=item A relatively recent version of perl
+
+I've tested this only with perl 5.004 and 5.005.  Check out
+http://www.perl.com/ for how to get perl.
+
+=back
+
+=head1 USAGE
+
+  matwrap -language languagename [-options] infile1.h infile2.h
+
+  matwrap -language languagename [-options] \
+    -cpp cxx [-options_to_C_compiler] infile.cxx
+
+=head1 DESCRIPTION
+
+Using the first form, without the C<-cpp> flag, files are parsed in the order
+listed, so you should put any files with required typedefs and other
+definitions first.  These files are C<#include>d by the generated
+wrapper code; in fact, they are the only files which are C<#include>d.
+This form can be used 1) if you don't have any C<#if>s or macros that confuse
+the parser in your code; 2) if you can easily list all of the include files
+that define the relevant structures.
+
+Alternatively, you can use the C<-cpp> flag to have matwrap
+run the C preprocessor on your files.  This means that all of the
+relevent definitions of types will be found, however deeply they are
+nested in the C<#include> hierarchy.  It also means that wrapper
+generation runs considerably slower.  Matwrap will attempt
+to guess which files need to be C<#include>d, but it may guess wrong.
+
+Overloaded functions and definitions of operators are not supported.  C++
+classes are supported (this is the main reason for this script).  Member
+functions may be called, and member fields may be accessed.
+
+=head2 Options
+
+=over 4
+
+=item -cpp
+
+Run the C preprocessor on your file before parsing it.  This is
+necessary if you are using any #ifdefs in your code.  Following the -cpp
+option should be a complete compiler command, e.g.,
+
+  matwrap -language octave -o myfile_wrap.cxx \
+	-cpp g++ -Iextra_includes -Dmy_thingy=3 myfile.cxx
+
+All words after the -cpp option are ignored (and passed verbatim to the
+compiler), so you must supply a C<-o> option before the C<-cpp>.  Note that
+C<-o> and similar compiler options relevant for actual compilation are
+ignored when just running the preprocessor, so you can substitute your
+actual compilation command without modification.  If you do not supply
+the C<-E> flag in the compiler command, it will be inserted for you
+immediately after the name of the compiler.  Also, the C<-C> option is
+added along with the C<-E> option so that any comments can be processed
+and put into the documentation strings.  (As far as I know all compilers
+support C<-C> and C<-E> but undoubtably this won't work well with some.  It
+works fine with gcc.)
+
+When run in this way, C<matwrap> does not generate wrappers for
+any functions or classes defined in files located in C</usr/include> or
+C</usr/local/include> or in subdirectories of C<*/gcc-lib>.  (Most
+likely you don't want to wrap the entire C library!)  You can specify
+additional directories to ignore with the -cpp_ignore option.  If you
+really want to wrap functions in one of those C<.h> files, either copy
+C<.h> file or just the relevant function definitions into a file in
+another directory tree.  You can also restrict the functions which are
+wrapped using the -wrap_only option (see below).
+
+=item -cpp_ignore filename_or_directory
+
+Ignored unless used with the -cpp option.  Causes functions defined in
+the given file name or in include files in the given directory or
+subdirectories of it not to be wrapped.  By default, functions defined
+in C</usr/include>, C</usr/local/include>, or C<*/gcc-lib> are not
+wrapped.
+
+=item C<-o> file
+
+Specify the name of the output file.  If this is not specified, the name is
+inferred from the input files.  Some language modules (e.g., MATLAB)
+will not infer a file name from your source files (this is for your
+protection, so we don't accidentally wipe out a C<.c> file with the same
+name).  If you use the C<-cpp> option, you must also specify the C<-o>
+option before the C<-cpp> option.
+
+=item -language <language_name>
+
+Specify the language.  This option is mandatory.
+
+=item -wraponly <list>
+
+Specify a list of global functions or variables or classes to wrap.  The
+list extends to the end of the command line, so this must be the last
+option.  Definitions of all functions and classes not explictly listed
+are ignored.  This allows you to specify all the C<.h> files that you
+need to define all the types, but only to wrap some of the functions.
+
+Global functions and variables are specified simply by name.  Classes
+are specified by the word 'class' followed by the class name.  For
+example,
+
+  matwrap -language matlab myfile.h \
+	 -wraponly myglobalfunc class myclass
+
+=back
+
+=head1 Input files
+
+Input files are designed to be your ordinary .h files, so your wrapper
+and your C++ sources are never out of date.  In general, the wrapper
+generator does the obvious thing with each different kind of type.  For
+example, consider the function declaration:
+
+  double abcize(float a, int b, char *c, SomeClass *d);
+
+This will pass a single-precision floating point number as argument C<a>
+(probably converting from double precision or integer, depending on what
+the interpreted language stored the value as).  An integer is passed as
+argument C<b> (probably converted from a double precision value).  A
+null-terminated string is passed as argument C<c> (converted from
+whatever weird format the language uses).  The argument C<d> must be a
+pointer value which was returned by another function.
+
+Vectorization is automatically performed, so that if you pass a matrix
+of C<m> by C<n> inputs as argument C<a> and arguments C<b> and C<c> as
+either scalars or C<m> by C<n> matrices, then the function will be
+called C<m*n> times and the result will be an C<m> by C<n> matrix.
+By default, a function is vectorized if it has both inputs and outputs
+(see under C<//%vectorize> below).  Most matrix languages do not support
+vectors of strings in a natural way, so C<char *> arguments are not
+vectorized.
+
+
+Passing arguments by reference is handled in the expected way.  For
+example, given the declaration
+
+  void fortran_sub(double *inarg1, float *inarg2);
+
+pointers to double and single precision numbers will be passed to the
+subroutine instead of the numbers themselves.
+
+This creates an ambiguity for the type C<char *>.  For example, consider
+the following two functions:
+
+	void f1(char *a);
+	void f2(unsigned char *b);
+
+Matwrap assumes that the function C<f1> is passed a null terminated
+string, despite the fact that the argument C<a> could be a pointer to a
+buffer where C<f1> returns a character.  Although this situation can be
+disambiguated with proper use of the C<const> qualifier, matwrap treats
+C<char *> and C<const char *> as identical since many programs don't use
+C<const> properly.  Matwrap assumes, however, that C<unsigned char *>
+is not a null terminated string but an C<unsigned char> variable passed
+by reference.  You can also force it to interpret C<char *> as a signed
+char passed by reference by specifying the qualifier C<//%input a(1)>
+(see below).
+
+If you want to pass arguments as arrays, or if there are outputs other
+than the return value of the function, you must declare these explicitly
+using the C<//%input> or C<//%output> qualifiers.  All qualifiers follow
+the definition of the function (after the C<;> or the closing C<}> if it
+is an inline function).  Valid qualifiers are:
+
+=over 4
+
+=item //%novectorize_type type1, type2, ...
+
+Specifies that all arguments of the given types should not be vectorized
+even if it is possible.  This could be useful if you have a class which
+there will be only one copy of, so it is pointless to vectorize.
+(This qualifier may be present anywhere in the file.)
+
+=item //%novectorize
+
+Following the definition of a global function or member function,
+directs matwrap not to try to vectorize the function.  For
+some functions, vectorization simply doesn't make sense.  By default,
+matwrap won't vectorize a function if it has no output
+arguments or no input arguments.
+
+=item //%vectorize
+
+Following the definition of a global function or member function,
+directs matwrap to vectorize the function.  By default, matwrap won't
+vectorize a function if it has no output arguments or no input
+arguments.  This is normally what you want, but but sometimes it makes
+sense to vectorize a function with no output arguments.
+
+=item //%nowrap
+
+Don't wrap this function.  It will therefore not be callable directly
+from your scripting language.
+
+=item //%name new_name
+
+Specify a different name for the function when it is invoked from the
+scripting language.
+
+=item //%input argname(dim1, dim2, ...), argname(dim)
+
+Following the declaration of a global function or member function,
+declares the dimensions of the input arguments with the given name.
+This declaration must immediately follow the prototype of the function.
+Dimension strings may contain any arbitrary C expression.  If the
+expression is sufficiently simple, e.g., "n" or "n+1" or "2*n", and if
+the expression includes another argument to the function ("n" in this
+case), then the other argument will be calculated from the dimensions of
+the input variable and need not be specified as an argument in the
+scripting language.  
+
+For example, if you have a function which is declared like this:
+
+	void myfunc(int n, double *x, double *y);
+			//%input x(3*n+4)
+			//%output y(n*(n+1)/2)
+
+n would be calculated from the dimension of the variable x and then used
+to compute the size of the output array.  So you would call the function
+like this:
+
+	y = myfunc(x)
+
+On the other hand, if you had a specification like this:
+
+	void return_diag(int n, double *x, double *y);
+			//%input x(n*(n+1)/2)
+			//%output y(n)
+
+then n will have to be explicitly specified because it is too difficult
+to calculate:
+
+	y = myfunc(n, x)
+
+=item //%modify argname(dim1, dim2, ...), argname(dim1)
+
+=item //%output argname(dim1, dim2, ...), argname(dim1)
+
+Same as C<//%input> except that this also tags the variables as modify
+or output variables.  If you don't specify a dimension expression (e.g.,
+"//%output x") then the variable is tagged as a scalar output variable.
+(This is the proper way to tell matwrap to make an argument an
+output argument.)
+
+=back
+
+=head2 Unsupported C++ constructs
+
+=over 4
+
+=item Function overloading
+
+=item Operator definition
+
+=item Function and member function pointers
+
+It would be really nice to support these, but I think it's also really
+hard.  Maybe someday.
+
+=item Two-dimensional arrays using a vector of pointers
+
+You can use two-dimensional arrays as long as they are stored internally
+as a single long vector, as in Fortran.  In this case, the array
+declaration would be C<float *x>, and the C<i,j>'th element is accessed
+by C<x[j*n+i]>.  You cannot use two dimensional arrays if they are
+declared like C<float **x> and accessed like C<x[i][j]>.  Unfortunately,
+the Numerical Recipes library uses this format for all its
+two-dimensional matrices, so at present you can only wrap Numerical
+Recipes functions which take scalars or vectors.  This restriction might
+be lifted in the future.
+
+=item Arrays with an offset
+
+The Numerical Recipes code is written so that most of its indices begin
+at 1 rather than at 0, I guess because its authors are Fortran junkies.
+This causes a problem, because it means that the pointer you pass to the
+subroutine is actually not the beginning of the array but before the
+beginning.  You can get around this restriction by passing an extra
+blank element in your array.  For example, suppose you want to wrap the
+function to return the Savitzky-Golay filter coefficients:
+
+  void savgol(float c[], int np, int nl, int nr, int ld, int m);
+  
+where the index in the array C<c> is declared to run from 1 to np.
+You'd have to declare the array like this:
+
+				//%output c(np+1)
+
+and then ignore the first element.  Thus from MATLAB you'd call it with
+the following sequence:
+
+	savgol_coefs = savgol(np, nl, nr, ld, m);
+	savgol_coefs = savgol_coefs(2:length(savgol_coefs));
+				% Discard the unused first element.
+
+=item Passing structures by value or C++ reference
+
+In other words, if Abc is the name of a class, declarations like
+
+	void myfunc(Abc x);
+
+or
+
+	void myfunc(Abc &x);
+
+won't work.  However, you can pass a pointer to the class:
+
+	void myfunc(Abc *x);
+
+The wrapper generator will do the type checking and it even handles
+inheritance properly.
+
+=back
+
+=head1 Examples
+
+For more examples, see the subdirectories of F<share/matwrap/Examples>
+in the distribution.  This includes a wrapper for the entire PGPLOT
+library (directory F<pgplot>) and a sample C++ simulator for an neuron
+governed by the Hodgkin-Huxley equations (directory F<single_axon>).
+
+=head1 Support for different languages
+
+=head2 MATLAB 5
+
+Currently, you must compile the generated wrapper code using C++, even
+if you are wrapping only C functions with no C++ classes.  You can
+compile your C functions using C as you please; you may have to put a
+C<extern "C" { }> statement in the .h file.  This restriction may be
+lifted in the future.
+
+The default maximum number of dimensions supported is four.  You can
+change this by modifying the $max_dimensions variable near the top of
+the file share/matwrap/wrap_matlab.pl in the distribution.
+
+Specify C<-langauge matlab> on the command line to use the matlab code
+generator.  You MUST also use C<-o> to specify the output file name.
+(This is because matlab wrappers have an extension of C<.c> and if we
+infer the file name from the name of include files, it's quite likely
+that we'll wipe out something that shouldn't be wiped out.)
+
+An annoying restriction of MATLAB is that only one C function can be
+defined per mex file.  To get around this problem, the wrapper generator
+defines a C function which takes an extra parameter, which is a code for
+the function you actually want to call.  It also defines a series of
+MATLAB stub functions to supply the extra parameter.  Each of these must
+be placed into its own separate file (because of another MATLAB design
+inadequacy) so wrapper generation for MATLAB may actually create
+hundreds of files if you have a lot of member functions.
+
+You can specify where you want the C<.m> files to be placed using the
+C<-outdir> option, like this:
+
+  matwrap -language matlab -outdir wrap_m \
+	myfuncs.h -o myfuncs_matlab.c
+
+  mex -f mex_gcc_cxx myfunc
+
+This will create dozens of tiny C<.m> files which are placed into the
+directory C<wrap_m>, and a single mexfile with the name F<myfuncs>.  DO
+NOT CHANGE THE NAME OF THE MEX FILE!  The C<.m> files assume that the
+name of the C subroutine is the name of the file, in this case,
+F<myfuncs>.  (You can move the mex file to a different directory, if you
+want, so long as it is still in your matlabpath).
+
+To wrap C++ functions in MATLAB, you'll probably need to specify the
+C<-f> option to the mex command, as shown above.  You'll need to create
+the mex options file so that the appropriate libraries get linked in for
+C++.  For example, on the machine that I use, I created the file
+F<mex_gcc_cxx> which contains the following instructions:
+
+	. mexopts.sh		# Load the standard definitions.
+	CC='g++'
+	CFLAGS='-Wall'
+	CLIBS='-lg++ -lstdc++ -lgcc -lm -lc'
+	COPTIMFLAGS='-O2 -g'
+	CDEBUGFLAGS='-g'
+
+This works with other C++ compilers if you set C<CC> and C<CLIBS> to use the
+appropriate compiler and libraries (e.g., C<CLIBS=-lcxx> and C<CC=cxx>
+for cxx on Digital Unix).
+
+By default, matwrap uses C<alloca()> to allocate temporary memory.  If
+for some reason you want to use C<mxCalloc()>, specify C<-use_mxCalloc>
+somewhere on the command line.
+
+The following features of matlab are not currently supported:
+
+=over 4
+
+=item Vectors of strings
+
+=item Structures
+
+It would be nice to be able to return whole C++ structures as MATLAB
+structures.  Maybe this will happen in the future.
+
+=item Cell arrays
+
+Do not try to pass a cell array instead of a numeric array to a C++
+function.  It won't work; the wrapper code does not support it.
+
+=back
+
+One quirk of operation which can be annoying is that MATLAB likes to use
+row vectors instead of column vectors.  This can be a problem if you
+write some C code that expects a vector input, like this:
+
+	void myfunc(double *d, int n_d);  //%input d(n_d)
+
+Suppose now you try to invoke it with the following matlab commands:
+
+	>> myfunc(0:0.1:pi)
+
+The range C<0:0.1:pi> is a row vector, not a column vector.  As a
+result, a dimension error will be returned if my_func is not vectorized
+(which would be the default with these arguments), because the function
+is expecting an n_d by 1 array instead of a 1 by n_d array.  If you
+allowed C<myfunc> to be vectorized, then C<myfunc()> will be called once
+for each element of the range, with C<n_d = 1>.  This is almost
+certainly not what you wanted.  I haven't yet figured out a good way to
+handle this.  Anyway, be careful, and always transpose ranges, like
+this:
+
+	>> myfunc((0:0.1:pi)')
+
+=head2 Octave
+
+Octave is much like matlab in that it only allows one callable function
+to be put into a .oct file.  The function in the .oct file therefore
+takes an extra argument which indicates which C++ function you actually
+wanted to call.  Fortunately, unlike matlab, octave can define more than
+one function per file so we don't have to have a separate .m file for
+each function.  Instead, the functions are all placed into a separate
+file whose name you specify on the command line with the -stub option.
+
+To compile an octave module, you would use the following command:
+
+  matwrap -language octave -stub myfuncs_stubs.m \
+	myfuncs.h -o myfuncs_octave.cc
+  mkoctfile myfuncts_octave
+
+Note that you can't do this unless you have the F<mkoctfile> script
+installed.  F<mkoctfile> is not available in some binary distributions.
+
+Then, in octave, you must first load the stub functions:
+
+  octave:1> myfuncs_subs
+  octave:2> # Now you may call the functions.
+
+DO NOT CHANGE THE NAME OF THE .oct FILE!  Its name is written into the
+stub functions.  You can move the file into a different directory,
+however, so long as the directory is in your LOADPATH.
+
+(The F<mkoctfile> script for octave versions below 2.0.8 has an annoying
+restriction that prevents additional libraries from being linked into
+your module if your linker is sensitive to the order of the libraries on
+the command line.  The F<mkoctfile> script for versions 2.0.8 and 2.0.9
+in theory supports libraries on the command line but it doesn't work.
+Patches to fix F<mkoctfile> for these versions of octave are provided in
+F<share/matwrap/mkoctfile_2_0_8_or_9.patch> and
+F<share/matwrap/mkoctfile_before_2_0_8.patch>.)
+
+If you compile your source code to .o or .a files separately, on many
+systems you need to force the compiler to make position-independent code
+(C<-fPIC> option to gcc).  Remember you are making a shared library, so
+follow the rules for making shared libraries on your system.  The
+F<mkoctfile> script should do this for you automatically if you have it
+compile your source files, but if you compile to .o files first and give
+these to F<mkoctfile>, you may have to be careful to specify the
+appropriate flags on the C<cc> or C<c++> command line.
+
+Octave doesn't seem to provide a good way to support modify variables,
+i.e., variables that are taken as input and modified and returned as
+output.  For example, suppose you have the function
+
+	void myfunc(float *a, int a_n); //%modify a(a_n)
+
+which takes the array C<a> as input, does something to it, and returns
+its output in the same place.  In octave, this would be called as:
+
+	a_out = myfunc(a_in);
+
+rather than as
+
+	myfunc(a);
+
+as it might be from other languages.
+
+Octave has the same quirk as MATLAB in the usage of row vectors where
+matwrap expects column variables.  See the end of the section on MATLAB
+for details.
+
+=head2 Tela
+
+Tela (Tensor Language) is a MATLAB clone which is reputed to be considerably
+faster than MATLAB and has a number of other nice features biassed toward PDEs.
+It can be found at http://www.geo.fmi.fi/prog/tela.html.
+
+Specify C<-language tela> to invoke the Tela wrapper generator, like this:
+
+  matwrap -language tela myfuncs.h -o myfuncs.ct
+  telakka myfuncs.ct other_files.o -o tela
+
+That's pretty much all there is to it.  Tela doesn't support arrays of
+strings so C<char *> parameters are not vectorized.  Otherwise, just
+about everything should work as you expect.
+
+WARNING: Tela stores data internally using a row-major scheme instead of
+the usual column-major ordering, so the indexes of Tela arrays are in
+reverse order from the index specification order in the C<%input>,
+C<%output>, and C<%modify> declarations.  Sorry, it wasn't my idea.
+
+The tela code generator does not currently support C<short> or
+C<unsigned short>.
+
+=head2 A note on debugging
+
+Since both MATLAB and Octave use dynamically loadable libraries, it can
+be tricky to debug your C++ code.  MATLAB has a documented way of making
+a standalone program, but I found this extremely inconvenient.  If you
+have gdb, it is sometimes easier to use the "attach" command if your
+operating system supports it.  (Linux and Digital Unix do; I do not know
+about other operating systems.)  Start up MATLAB or octave as you
+normally would, and load the shared library by calling some function in
+it that doesn't cause it to crash.  (Or, put a "sleep(30)" in an
+appropriate place in the code, so there is enough time for you to catch
+it between when it loads the library and when it crashes.)  Then while
+MATLAB or Octave is at the prompt or waiting, attach to the
+octave/MATLAB process using gdb, set your breakpoints, allow the program
+to continue, type the command that fails, and debug away.
+
+=head1 Writing new language support modules
+
+Matlab 5, octave, and Tela are the only language modules that I've
+written so far.  It's not hard to write a language module--most of the
+tricky stuff has been taken care of by the main wrapper generator
+program.  It's just a bit tedious.
+
+The parsing in matwrap is entirely independent of the target language.
+The back end is supplied by one of several language modules, as
+specified by the C<-language> option.
+
+The interface is designed to make it easy to generate automatically
+vectorized functions.  Vectorization is done automatically by the
+matwrap code, independent of the language module.  All subroutines
+except those with no output arguments or no input arguments are
+vectorized except as explicitly requested.
+
+Typically, the function_start() function in the language module will
+output the function header to the file and declare the arguments to the
+function.  After this, the wrapper generator writes C code to check the
+dimensions of the arguments.
+
+After checking the dimensions of all variables, the value of the
+variable is obtained from the function get_c_arg_scalar/get_c_arg_ptr.
+This returns a pointer to the variable, so if it is vectorized we can
+easily step through the pointer array.  Note that if the desired type is
+"float" and the input is an array of "double", then the language module
+will have to make a temporary array of doubles.  Output variables are
+then created by calling make_output_scalar/make_output_ptr.
+
+Next, the C function is called as many times as required.
+
+Next, any modify/output arguments need to have the new values put back
+into the scripting language variables.  This is accomplished by the
+put_val_scalar/put_val_ptr function.  Temporary arrays may be freed
+here.  Note that put_val is not called for input arguments so temporary
+arrays of input arguments will have to be freed some other way.
+
+Finally, the function function_end is called to do any final cleanup and
+terminate the function definition.
+
+The following functions and variables must be supplied by the language
+module.  They should be in a package whose name is the same as the
+argument to the C<-language> option.
+
+=over 4
+
+=item C<$max_dimensions>
+
+A scalar value indicating the maximum number of dimensions this language can
+handle (or, at least, the maximum number of dimensions that our scripts will
+handle).  This is 2 for languages like Matlab or Octave which can only have
+2-dimensional matrices.
+
+=item C<arg_pass(\%function_def, $argname)>
+
+A C or C++ expression used to pass the argument to another function
+which does not know anything about the type of the argument.  For
+example, in the MATLAB module this function returns an expression for
+the mxArray type for a given argument.
+
+=item C<arg_declare(">arg_name_in_arglistC<")>
+
+This returns a C/C++ declaration appropriate for the argument passed
+using arg_pass.  For example, in the MATLAB module this function returns
+"mxArray *arg_name_in_arglist".
+
+=item C<declare_const(">constant nameC<", ">class nameC<", ">typeC<")>
+
+Output routines to make a given constant value accessible from the interpreter.
+If "class name" is blank, this is a global constant.
+
+None of the language modules currently support definition of constants,
+but this function is called.
+
+=item C<error_dimension(\%function_def, $argname)>
+
+A C statement (including the final semicolon, if not surrounded by braces)
+which indicates that an error has occured because the dimension of argument
+$argname was wrong.
+
+=item C<finish()>
+
+Called after all functions have been wrapped, to close the output file and do
+whatever other cleanup is necessary.
+
+=item C<function_start(\%function_def)>
+
+This should prepare a documentation string entry for the function and it should
+set up the definition of the function.  It should return a string rather than
+printing the result.
+
+C<%function_def> is the array defining all the arguments and outputs for this
+function.  See below for its format.
+
+=item C<function_end(\%function_def)>
+
+Returns a string which finishes off the definition of a function wrapper.
+
+=item C<get_outfile(\@files_processed)>
+
+Get the name of an output file.  This subroutine is only called if no output
+file is specified on the command line.  C<\@files_processed> is a list of the
+C<.h> files which were parsed.
+
+=item C<get_c_arg_scalar(\%function_def, $argname)>
+
+Returns C statements to load the current value of the given argument
+into the C variable C<$function_def{args}{$argname}{c_var_name}>.  The
+variable is guaranteed to be either a scalar or an array with dimensions
+1,1,1... (depending on the scripting language, these may be identical).
+
+=item C<get_c_arg_ptr(\%function_def, $argname)>
+
+Returns C statements to set up a pointer which points to the first value
+of a given argument.  It is possible that the argument may be a scalar,
+in which case we just want a pointer to that scalar value.  (This
+happens only for vectorizable arguments when the vectorization is not
+used on this function call.)  The dimensions are guaranteed to be
+correct.  The type of the argument should be checked.  The pointer value
+should be stored in the variable
+C<$function_def{args}{$argname}{c_var_name}>.
+
+The pointer should actually point to the array of all the values of the
+variable.  The array should have the same number of elements as the argument,
+since to vectorize the function, the wrapper function will simply step through
+this array.  If we want a float type and the input vector is double or int,
+then a temporary array must be made which is a copy of the double/int arrays.
+
+=item C<get_size(\%function_def, $argname, $n)>
+
+Returns a C expression which is the size of the C<$n>'th dimension of the given
+argument.  Dimension 0 is the least-significant dimension.
+
+=item C<initialize($outfile, \@files_processed, \@cpp_command, $include_str)>
+
+Write out header information.
+
+  $outfile		The name of the output file.  This file should
+			be opened, and the function should return the
+			name of a file handle (qualified with the
+			package name, e.g., "matlab::OUTFILE").
+
+  @files		A list of files explicitly listed on the command
+			line.  This will be a null array if no files
+			were explicitly listed.
+
+  @cpp_command		The command string words passed to the C
+			preprocessor, if the C preprocessor was run.
+			Otherwise, this will be a null array.
+
+  $include_str		A string of #include statements which represents
+			our best guess as to the proper files to include
+			to make this compilation work.
+
+This function also should write out C++ code to define the following
+functions:
+
+  int _n_dims(argument)		Returns number of dimensions.
+  int _dim(argument, n)		Returns the size in the n'th dimension,
+				where 0 is the first dimension.
+
+=item C<make_output_scalar(\%function_def, $argname)>
+
+Return C code to create the given output variable.  The output variable
+will be a scalar.
+
+=item C<make_output_ptr(\%function_def, $argname, $n_dimensions, @dimensions)>
+
+Return C code to set up a pointer to where to store the values of the output
+variable.  C<$n_dimensions> is a C expression, not necessarily a constant.
+C<@dimensions> is a list of C expressions that are the sizes of each dimension.
+There may be more values in @dimensions than are needed.
+
+=item C<n_dimensions(\%function_def, $argname)>
+
+Returns a C expression which is the number of dimensions of the argument whose
+name is C<$argname>.
+
+=item C<pointer_conversion_functions()>
+
+Returns code to convert to and from pointer types to the languages
+internal representation, if any special code is needed.  If this
+subroutine is not called, then there are no class types and pointers
+will not need to be handled.
+
+=item C<parse_argv(\@ARGV)>
+
+Scan the argument list for language-specific options.  This is called after the
+C<-language> option has been parsed and removed from the C<@ARGV> array.
+
+=item C<put_val_scalar(\%function_def, $argname)>
+
+Returns C code to take the value from the C variable whose name is given
+by C<$function_def{args}{$argname}{c_var_name}> and store it back in the
+scripting language scalar variable.
+
+=item C<put_val_ptr(\%function_def, $argname)>
+
+Returns C code to take the value from the C array whose name is given by
+C<$function_def{args}{$argname}{c_var_name}> and store it back in the
+scripting language array at the specified index.  The pointer
+C<$function_def{args}{$argname}{c_var_name}> was set up by either
+C<get_c_arg> or C<make_output>, depending on whether this is an
+input/modify or an output variable.
+
+=back
+
+=head2 The %function_def array
+
+Many of these arguments require a reference to the %function_def associative
+array.  This array defines everything that is known about the function.
+
+First, there are a few entries that describe the interface to the scripting
+language:
+
+=over 4
+
+=item name
+
+The name of the function.
+
+=item class
+
+The class of which this is a member function.  This element will be blank
+if it is a global function.
+
+=item script_name
+
+The name of the function in the scripting language.  If this field is blank,
+then the name of the function should be generated from the "class" and "name"
+fields.  This field is set by the C<%name> directive.
+
+=item static
+
+True if this is a static member function.  Non-static member functions will
+have the class pointer specified as the first argument in the argument list.
+
+=item inputs
+
+A list of the names of arguments to the scripting language function which are
+only for input.  Argument names are generated from the corresponding argument
+names in the C function prototype.
+
+=item modifies
+
+A list of the names of arguments to the scripting language function which are
+for both input and output.  Argument names are generated from the corresponding
+argument names in the C function prototype.
+
+=item outputs
+
+A list of the names of arguments to the scripting language function which are
+for output.  Argument names are generated from the corresponding argument names
+in the C function prototype.  "retval" is used as the name of the return value
+of the function, if there is a return value.
+
+=item args
+
+An associative array indexed by the argument name which contains information
+about each argument of the function.  Note that there may be more arguments in
+this associative array than in the inputs/modifies/outputs arrays because some
+of the arguments to the function may be merely the dimension of arrays, which
+are not arguments in the scripting language since they can be determined by
+other means.
+
+Note that there will also be an entry in the args array for "retval" if the
+function has a return value, since the return value is treated as an output
+argument.
+
+The fields in this associative array are:
+
+=over 4
+
+=item source
+
+Whether this is an "input", "output", or "modify" variable, or whether
+it can be calculated from the "dimension" of another variable.  These
+are the only legal values for this field.
+
+=item type
+
+The type of this argument, i.e., "float", "double", "int", "char *", or "<class
+name> *" or various combinations involving "&", "*", and "const".  All typedefs
+have been translated to the basic types or class names, and "[]" is translated
+to "*".  Otherwise, no other modifications have been made.
+
+=item basic_type
+
+Same as the "type" field, except that the "const" qualifiers have been
+stripped, a trailing '&' has been deleted, and a trailing '*' has been
+deleted if this is an array type or if it's a basic type like 'double',
+'int', etc., which we recognize.
+
+=item dimension
+
+The dimensions of this array argument.  This is a reference to a list of
+dimensions.  Each element of the list must be the name of an integer argument
+to the C function or else a decimal integer.  If this argument is not an array,
+then this field will still be present but will contain no elements.
+
+=item vectorize
+
+Whether this argument may be supplied as a vector.  If so, the wrapper
+generator will automatically "vectorize" the function in the sense that MATLAB
+functions like "sin" or "cos" are vectorized.
+
+=item c_var_name
+
+The variable name which contains the argument which is passed to the C
+function.  The c_var_name is guaranteed not to be the same as the argument name
+itself, to avoid conflict with the argument declaration of the function.
+
+If the argument is to be vectorized, or if the argument is an array,
+then c_var_name is the name of a pointer to an array of the argument.
+If the argument is not to be vectorized, then c_var_name is the name of
+a variable containing the argument.
+
+=item calculate
+
+A C expression indicating how to calculate this particular variable from
+the dimension of other input/modify variables.  This field will not be
+present if we don't see any way to calculate this variable from the
+other variables.
+
+=back
+
+=back
+
+The remaining elements in the associative array for each function describe the 
+arguments to the C/C++ function and its return type:
+
+=over 4
+
+=item returns
+
+A scalar containing the return type of the function.  This information is also
+contained in the "retval" entry in the "args" array.
+
+=item argnames
+
+A list containing the name of each argument in order in the C function's
+argument list.  If no name was specified in the prototype, a name is generated
+for it, since our entire scheme depends on each argument having a unique name.
+
+=item vectorize
+
+Whether a vectorized wrapper function should be generated at all, i.e., a
+version which calls the C function once for each element of scalar arguments
+which are passed in a vector.  Note that vectors may be supplied for some
+arguments but not others, depending on the "vectorize" field in the args array
+(see above).
+
+=item pass_by_pointer_reference
+
+True if we are supposed to pass a pointer to the argument, not the argument
+itself.  This is used for pass-by-reference when the type is "double *".
+This is always 0 for arrays, which are handled separately.
+
+=item Additional fields
+
+The language module may add additional fields as necessary.  Only those listed
+above are set up or used by the main wrapper generator code.
+
+=back
+
+For example, if the function prototype is
+
+	double atan2(double y, double x)
+
+then 
+
+  $global_functions{'atan2'} = {
+    name	  => 'atan2',
+    class	  => '',
+    static	  => 0,
+    inputs        => ["y", "x"],
+    modifies      => [],
+    outputs       => ["retval"],
+    args	  => { x => { source     => "input",
+			      type       => "double",
+			      basic_type => "double",
+			      dimension  => [],
+			      c_var_name => "_arg_x",
+			      vectorize  => 1,
+			      pass_by_pointer_reference = 0 },
+		       y => { source     => "input",
+			      type       => "double",
+			      basic_type => "double",
+			      dimension  => [],
+			      c_var_name => "_arg_y",
+			      vectorize  => 1,
+			      pass_by_pointer_reference = 0 },
+		       retval => { source     => "output",
+				   type	      => "double",
+			           basic_type => "double",
+				   dimension  => [],
+				   c_var_name => "_arg_retval",
+				   vectorize  => 1,
+				   pass_by_pointer_reference = 0 } },
+    returns       => "double",
+    argnames	  => ["x", "y"],
+    vectorize	  => 1
+  };
+
+This function is sufficiently simple that all of the relevant
+information can be filled out automatically, without any help from the
+user.  For a more complicated function, it may not be possible to do so.
+For example, consider the following function (from the pgplot
+distribution):
+
+  void cpgbin(int nbin, const float *x, const float *data, Logical center);
+
+This function plots a histogram of the given data, where C<x[]> are the
+abscissae values and C<data[]> are the data values.  C<Logical> has been
+defined by a typedef statement earlier in the .h file to be C<int>.
+
+By default, the wrapper generator will interpret the C<float *> as a
+declaration to pass a scalar argument by reference.  In this case, this
+is not what is wanted, so the definition file must contain additional
+information:
+
+  void cpgbin(int nbin, const float *x, const float *data, Logical center);
+  //%input x(nbin)
+  //%input data(nbin)
+
+This tells us that the x and data arrays are the same size, which is given by
+nbin.  With this information, then, the following will be produced:
+
+  $global_functions{'cpgbin'} = {
+    name	  => 'cpgbin',
+    inputs        => ["x", "data", "center" ],
+    modifies      => [],
+    outputs       => [],
+    args	  => { "nbin" => { source     = "dimension",
+				   type	      = "int",
+				   basic_type = "int",
+				   dimension  = [],
+				   vectorize  = 0,
+				   pass_by_pointer_reference = 0 },
+		       "x" => { source     = "input",
+			        type	   = "float *",
+				basic_type = "float",
+				dimension  = ["nbin"],
+				vectorize  = 1,
+				pass_by_pointer_reference = 0 },
+		       "data" => { source     = "input",
+			           type	      = "float *",
+				   basic_type = "float",
+				   dimension  = ["nbin"],
+				   vectorize  = 1,
+				   pass_by_pointer_reference = 0 },
+		       "center" => { source     = "input",
+				     type	= "int",
+				     basic_type = "int",
+				     dimension  = [],
+				     vectorize  = 1,
+				     pass_by_pointer_reference = 0 } },
+    returns	  => "void",
+    argnames      => ["nbin", "x", "data", "center" ],
+    vectorize     => 0
+  };
+
+Note that since this function has no output arguments, we do not attempt
+to provide a vectorized version of it.
+
+=head1 AUTHOR
+
+Gary Holt (holt@LNC.usc.edu).
+
+The latest version of matwrap should be available from
+http://LNC.usc.edu/~holt/matwrap/.

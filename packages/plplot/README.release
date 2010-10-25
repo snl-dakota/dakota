@@ -1,0 +1,217 @@
+PLplot Development Release 5.5.2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is a routine development release of PLplot, and represents the 
+ongoing efforts of the community to improve the PLplot plotting 
+package.  Development releases represent a "work in progress", and 
+we expect to provide installments in the 5.5.x series every few weeks.  
+The next full release will be 5.6.0.
+
+If you encounter a problem that is not already documented in the PROBLEMS
+file then please send bug reports to PLplot developers via the mailing lists
+at http://sourceforge.net/mail/?group_id=2915 .
+
+Please see the license under which this software is distributed, and the
+disclaimer of all warrantees, given in the COPYING.LIB file.
+
+
+INDEX
+
+1. Build Instructions
+2. Changes Relative to PLplot 5.5.1
+  2.1 API
+  2.2 Drivers
+    2.2.1 GCW "Gnome Canvas Widget"
+3. Changes Relative to PLplot 5.3.1
+  3.1 API
+    3.1.1 Unicode
+    3.1.2 Extended cmap0 support
+  3.2 Drivers
+    3.2.1 PostScript
+    3.2.2 GD (png, jpeg, gif)
+    3.2.3 GCW "Gnome Canvas Widget"
+    3.2.4 AquaTerm (Mac OS X)
+    3.2.5 Tk
+
+
+1. Build Instructions
+
+For detailed instructions on how to build and install PLplot from this
+tarball, please read the INSTALL file.  The basic procedure is to execute
+the following commands:
+
+     ./configure
+     make
+     make install
+
+There are a variety of configuration options, and these are explained in the
+INSTALL document, and below as required.  In particular, if you want to
+install the PLplot Programmer's Reference Manual (which is required for
+documentation on any new feature since PLplot 5.3.1), you must use:
+
+     ./configure --with-prebuiltdoc
+
+Note that it is often helpful to use the --with-pkg-config option if your
+system has the pkg-config program (typically *nix systems).
+
+
+2. Changes Relative to our last development release, PLplot 5.5.1
+
+Progress toward our next major release with documentation improvements and a
+substantial number of minor tweaks and bug fixes.
+
+
+2.1 API
+
+plParseOpts deprecated.  Use plparseopts (now documented) instead for all
+language interfaces.
+
+
+2.2 Drivers
+
+
+2.2.1 GCW "Gnome Canvas Widget"
+
+The specialized API for GCW was slightly tweaked.  Arguments to functions
+are now of type PLINT etc instead of the GLib equivalents.  The
+PlplotCanvas still uses GLib types, as is appropriate.  Please
+see the updated documentation for the details.  Most users should not 
+notice any change.  
+
+
+3. Changes Relative to our last stable release, PLplot 5.3.1
+
+plParseOpts deprecated.  Use plparseopts (now documented) instead for all
+language interfaces.
+
+
+3.1 API
+
+
+3.1.1 Unicode
+
+PLplot now allows unicode text, and this is detailed in the PLplot
+Programmers Reference Manual in the section on "Setting Character
+Attributes".  The escape sequence for unicode characters is
+
+     #[nnn]
+
+where nnn can be decimal or hexadecimal.  Escape sequences are also defined
+to change fonts mid-string.
+
+There are known bugs for our unicode font implementation that are listed in
+a special section of the PROBLEMS file, but the current implementation is
+good enough so we turn on unicode support by default for the psc, ps, png,
+gif, jpeg, and gcw devices. Although all examples look better with unicode
+fonts, the new PLplot unicode capabilities are especially demonstrated in
+examples x23 and x24.  (The latter example requires special fonts to be
+installed and at run time environment variables have to be set to access
+them, see the self-documentation of the example 24 source code).  
+
+
+3.1.2 Extended cmap0 support.
+
+There have been many updates to cmap0 handling in the effort to wipe away all
+vestiges of the old 16 color limit.  The theoretical limit should now be 2^15
+colors, since the metafile and tk drivers use a short for communication of the
+cmap0 index.  Should be *plenty* for the given application, i.e. fixing colors
+for lines, points, labels, and such.
+ 
+Since both the metafile & tk data stream formats have changed due to the
+change from U_CHAR -> short for cmap0 index representation, the format
+versions have been upgraded.  If you see something like this:
+ 
+$ x02c -dev tk 
+Error: incapable of reading output of version 2005a. 
+plr_init: Please obtain a newer copy of plserver. 
+Command code: 1, byte count: 14 
+plr_process1: Unrecognized command code 0 
+... 
+ 
+then you know it's using the wrong version of plserver (in which case either 
+you didn't install or your path is wrong). 
+
+The second example program (multiple bindings available) contains a demo of
+the expanded cmap0 capability.
+
+
+3.2 Drivers
+
+Some of the drivers have undergone important revisions in order to provide
+unicode support.  Several now present TrueType or PostScript fonts by
+default, which produces higher-quality output than in the past: see the
+examples from the GD (png) driver on the PLplot Web site at
+http://plplot.sourceforge.net/examples/index.html .
+
+
+3.2.1 PostScript
+
+The PostScript driver is unicode-enabled, and Type 1 PostScript fonts are
+used by default.  Although the Type 1 symbol fonts do have a significant
+number of mathemetical symbols available some key special symbols (squares,
+triangles) are missing so that by default Hershey fonts are used to produce
+the symbols generated by calls to "plpoin" and "plsym" while PostScript
+fonts are used for calls to PLplot routines that plot text strings (e.g.,
+"plmtex").  If you prefer a pure Hershey font environment, specify -drvopt
+text=0, and if you prefer a pure Postscript font environment, specify
+-drvopt hrshsym=0.
+
+Tranforms to the text (i.e., rotations, shears)
+have been dramatically improved, and the PostScript driver now produces
+"publication quality" output with the default PostScript fonts for text
+and Hershey fonts for special symbols.
+
+
+3.2.2 GD (png, jpeg, gif)
+
+The GD driver is unicode-enabled, and uses TrueType fonts by default.  The
+examples on the PLplot Web site at
+http://plplot.sourceforge.net/examples/index.html were produced using this
+driver.
+
+
+3.2.3 GCW "Gnome Canvas Widget"
+
+The GCW "Gnome Canvas Widget" is a new driver that provides PLplot output in
+a tabbed GTK window.  It can alternatively be used to drive a special
+widget called the PlplotCanvas that can be embedded in GTK/Gnome 
+applications.  The driver, associated widget, and specialized API are 
+fully documented in the PLplot Programmer's Reference Manual in the 
+sections titled "The GCW Driver" and "Embedding Plots in Gnome/GTK 
+Applications", respectively.
+
+The GCW driver is unicode-enabled, and uses TrueType fonts by default.
+
+Special examples that demonstrate the use of the PlplotCanvas are provided
+for both the C and Python programming languages.
+
+To install the GCW driver, use the "--enable-gcw" option during the
+configure step of the install process.
+
+For more information on GTK, see http://www.gtk.org/ .
+
+
+3.2.4 AquaTerm (Mac OS X)
+
+AquaTerm is a new driver that provides PLplot output in the AquaTerm
+graphics terminal program. Aquaterm is a native Cocoa graphics terminal 
+program for Mac OS X that provides a familiar look and feel to Mac users. 
+More details about AquaTerm and how to install it can be found at 
+http://aquaterm.sourceforge.net/.
+
+The driver is unicode-enabled, however it currently only supports the 
+default OS X fonts which are not TrueType.
+
+To install the AquaTerm driver, use the options "--disable-dyndrivers" and
+"--disable-f77" during the configure step of the install process.
+ 
+
+3.2.5 Tk
+
+The plframe widget (and by extension, the Tk driver) now saves a plot using the
+correct aspect ratio, as represented by the actual window size.  For complicit
+output drivers only, e.g. png.
+
+
+
+

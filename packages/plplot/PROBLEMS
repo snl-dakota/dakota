@@ -1,0 +1,252 @@
+This file is designed to keep track of various problem fixes and new
+features being worked on for the current PLplot CVS MAIN HEAD version and
+who is taking responsibility for following up on each item.
+
+The items are divided into Essential and "Would be nice" (i.e., release
+critical versus not) with each of those categories further classified into
+minor or major effort required.
+
+N.B. at the end we have an additional section on problems/issues associated
+with the new unicode-aware fonts.
+
+Essential, major effort required.
+********************************
+
+* The new Unix/Linux configuration scheme must be tested for as wide a
+variety of Unix/Linux platforms as possible.  This is the responsibility of
+everybody on the development team with access to different platforms.
+(Several Linux environments, a limited Solaris environment, and a limited
+OSF1 environment completed, but we need much more especially a Solaris
+environment with tcl/tk)
+
+Essential, minor effort required.
+********************************
+
+* PLplot documentation of python, java, etc., interfaces.  Alan
+
+* Build our documentation on RedHat.  Alan
+
+* sort out option implications for --disable-shared.  For example, we
+cannot build dynamic drivers in this case, and this also kills python and
+octave so sysloc.in should be adjusted accordingly.
+
+* If x08.tcl (or any other multi-page example) is executed first, then the
+first page is skipped.
+
+"Would be nice", major effort required.
+***************************************
+
+* Fix bad-looking surface contours for plsurf.  The problem goes away if the
+plP_fill call is commented out in the normal series of alternating calls to 
+plP_fill and plline3 that are used to generate the surface and the surface
+contours.  So I conclude there is some inconsistency between the edge of
+the triangles as defined for the surface contours plotted by plline3
+and the edge of the triangles being filled.  Low resolution devices have
+worse problems than high resolution devices.  Surface contours look bad
+for png, better (but still not acceptable for publication) for psc, better
+still for xwin, and I could not find any problems at all for tk.
+
+* Move from DSSL based docbook stylesheets to XSL.  Rafael, as soon as
+the XSL results look as good (pdf currently a problem) as the DSSL results.
+
+* Maurice's idea of plsopt and plsdopt so that our API doesn't keep
+proliferating.  Example, instead of plenv0 do:
+plsopt("plenv_advance", "0");
+plenv(...)
+
+* Maurice's idea (plplot_devel 8 Jan 2004) of using C-style format specifier
+for familying as in
+
+./x08f -dev png -fam -fflen 2 -o x08f.%02d.png
+
+* -the tk drivers ignore plconfig.tcl if it is in the user directory ~/tcl
+and a tclIndex file is generated. "auto_path" is correctly initialized to
+~/tcl, pwd/tcl, etc, but plconfig is not executed.  Reported by Joao.  Status?
+
+* memory leak problems for -dev xwin, -dev tk, and -dev ntk. The
+valgrind results for these interactive devices typically show lots of
+alloced blocks of memory that have not been freed at exit. This might be
+caused by my rather old versions of the X and Tk libraries not being
+valgrind clean or it may be that our drivers do not properly close those
+libraries.
+
+* Maurice plans to finish his changes to implement handling strings as
+strings in the metafile format.
+
+* Geoffrey plans to at least evaluate remaining fidelity problems caused
+by our 16-bit integer approach.
+
+* Make plframe widget work for python/Tkinter front end.
+
+* Parallelogram problem for rotation which is not multiple of 90 deg. This
+is on the major list because Maurice doesn't think it will be simple to sort
+this out. Once this problem is sorted out, it should be possible to deal
+with the remaining rotation problems for the font handling, but those issues
+should not be tackled until the parallelogram core problem is straightened
+out.
+
+* Put in index limits for the plot3d API's so they can handle
+non-rectangular x,y regions.  This has already been done for plsurf and
+needs to be extended to plot3d.
+
+* Put in variation of "defined" callback function with user-defined data
+for plshade and plshades.  Rafael?
+
+* Put in "defined" callback function with user-defined data for for plcont,
+plot3d, and plsurf.  This will supersede the non-rectangular x,y regions
+change already done for plsurf and planned for plot3d, but this programming
+is harder than those previous or planned changes so it will probably take
+longer. Rafael?
+
+"Would be nice", minor effort required.
+***************************************
+
+* 2003-09-20: The generated info files should have their root name changed
+from plplotdoc (plplotdoc.info, etc.) to plplot$version like the rest of the
+generated files (plplot-5.2.1.cvs.20030915.dvi, etc.) Note this change would
+require that packagers' scripts that execute install-info would need a
+change to use the versioned name, but this should be straightforward to do
+both for RedHat and Debian packages.
+
+* 2003-09-20: References are not there in info bibliography section (chapter
+14).  According to Rafael this problem is caused by docbook2x not currently
+supporting the <bibliomixed> and <bibliomset> tags so we will have to wait
+for that to get sorted out.
+
+* plplot_general list 2003-08-26: Arjen Markus <arjen.markus@wldelft.nl> "I
+have found that with the X Window driver the values returned by plgspa()
+are/can be too small by a factor of approximately 1.4."  This should be
+followed up by an attempt to confirm the bug, and if it is there, fix it.
+
+* Error messages for when the extended search fails in tclAPI.c.  This is
+required when running in tcl-only mode with no plframe or stack trace.
+
+* As part of extended search try the install location.  We know exactly
+where that is relative to our font data, and we know exactly where the font
+data are installed so we know the absolute path to our tcl install location.
+Then, the only way such an extended search would fail is if the packagers
+messed with our tcl install location.
+
+* Better support for "make check" so that uninstalled versions can check for
+drivers, fonts, and tcl support scripts in their uninstalled positions.
+There has been improvement in this area, but can we now run make check
+everywhere when nothing installed?  And when something installed, does
+make check completely ignore it?
+
+* standard octave examples should be made consistent with the C, C++, tcl,
+Java, python, fortran, and even yorick (yplot) examples as a test that the
+API is implemented correctly for octave and as a teaching device of how to
+produce *exactly* the same plot for the octave interface as you can for each
+of the other interfaces. Currently octave examples 2, 6, 7, 10, 12, and 18
+agree with their counterparts from the other interfaces, but octave examples
+1, 3, 4, 5, 8, 9, 11, 13, 15, and 16 are not consistent.
+
+* Use some well-recognized pdf verification tool (similar in spirit to the
+w3c verification tests for web sites) to be sure our results conform to the
+published pdf standards.  Currently there is no idea whether such a pdf
+verification tool exists, but acroread is buggy on Linux so that is not good
+enough as a verification tool.
+
+* Replace all configure-related environment variables, e.g.,
+
+JAVAMDINCDIR
+GDINCDIR
+CDINCDIR
+FREETYPEINCDIR
+TCLINCDIR
+ITCLINCDIR
+TKINCDIR
+TKPRIVATEINCDIR
+TCLPRIVATEINCDIR
+PYTHON_INC_DIR
+
+GDLIBDIR
+PNGLIBDIR
+JPEGLIBDIR
+ZLIBLIBDIR
+CDLIBDIR
+FREETYPELIBDIR
+TCLLIBDIR
+ITCLLIBDIR
+TKLIBDIR
+ITKLIBDIR
+VGALIBDIR
+
+by documented ./configure options.
+
+Collection of problems/issues with new unicode-aware fonts as of 2005-03-21.
+All these are in the would-be-nice category with some/all taking major effort
+to resolve.
+****************************************************************************
+
+I. Font problems associated with plfreetype.c which is called by gd.c which
+   implements the png, gif, or jpeg devices. (These issues were discovered
+   using -dev png).
+
+* The default -drvopt smooth=1 option does not work (lots of cmap0 index
+  errors) if there is any user change to cmap0.  This problem is triggered
+  if you attempt to run example 2 with -dev png.  Andrew Roach thinks he
+  knows a small redesign that will fix it.
+
+* There are still problems with vertical alignment of symbols for
+  plfreetype.c.  See results from 
+
+  examples/c/x06c -dev png -o test.png
+
+  where on line 100 the characters move up or down depending on whether they
+  have an ascender, descender or neither.  There are similar problems for
+  example 7.
+  
+  N.B. This is only a problem for plpoin (example 6) and plsym (example 7),
+  but not a problem for plmtex. So there is probably some issue with the way
+  plhrsh (called by plpoin and plsym) sets up the call to the code in
+  plfreetype.c that is not present for plmtex.
+  
+* The above problem may be related to the xform setting in plhrsh (plsym.c)
+  which is a kludge.  if you define TEST_FOR_MISSING_GLYPHS,
+  it quits working (all the symbols are twisted by 90 deg). 
+
+* -drvopt 24bit problems.  If this option is turned on (and only in this
+  case), Example 9 and 22 second and subsequent pages have rectangular
+  viewports with no box or tick marks.  Furthermore, with Example 19 the
+  second and 3rd pages turn black.  If you use -bg FFFFFF, you can see the
+  problem is a cmap0 one, somehow 24bit turns the default red colour into
+  black which doesn't show against the normal black background, but which
+  does show against a white background as with -bg FFFFFF.
+
+* text clipping does not work (see example 9).  There is a clipping method
+  in libgd, but the preferred solution (since it will apply to every device
+  driver that uses plfreetype.c) is to use the libfreetype clipping
+  method which Andrew Ross found in the freetype documentation.
+
+* We need to build in fontconfig support into plfreetype.c for truetype
+  fonts.  This well-known library by Keith Packard is available for both
+  Linux and windows and should allow truetype font selection by name rather
+  than by filename, and font substitution on both Linux and windows if the
+  requested named font is not available.
+
+II. Font problems associated with ps.c and either -dev psc or -dev ps.
+
+* Bounding box is still too large for ps.c results.  We will need some help
+  from somebody with postscript expertise to get this right.
+
+* The overall size of the text is systematically smaller than for Hershey or
+  TrueType fonts.
+
+* ./x06c -dev psc -o test.ps -drvopt hrshsym=0
+
+  shows that symbols are positioned consistently too high when postscript
+  fonts are used for them (hrshsym=0).  The same problem exists for example
+  7 as well.  At the same time, the two examples show that text positioning
+  (the labels on the outside of the matrix of symbols) are positioned fine.
+
+III. Other font problems/issues.
+
+* Both pstex.c and xfig.c currently use EscText so they presumably need some
+  work to utilize the new core unicode font handling.
+
+* We should enable additional device drivers for unicode.  In particular,
+  our two most heavily used interactive device drivers, xwin and tk, should
+  give some outstanding looking results once they are unicode-enabled.
+  I nominate Maurice to make this happen.... :-)
+

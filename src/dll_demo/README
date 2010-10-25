@@ -1,0 +1,120 @@
+The makefile variants (makefile.* files) in this directory illustrate
+several ways of linking Dakota so some pieces (e.g., the proprietary
+stuff: dot, nlpql, npsol) come from shared libraries that need not be
+present for Dakota uses that do not use those pieces.
+
+On Intel-based Linux systems (i686 or x86_64), objects in shared
+libraries must be compiled with -fPIC, which increases object size and
+probably slows execution a little, which is why -fPIC is not the
+default.  (The story is similar for Solaris Sparc-based systems, where
+the option is -Kpic instead of -fPIC.) No such option is necessary on
+some systems, such as MacOSX (with Intel or PowerPC processors) and
+Microsoft Windows systems.
+
+On Linux systems, if one specifies -rdynamic when linking a program,
+shared libraries loaded explicitly by the program can see symbols in
+the program, which greatly simplifies some uses of shared libraries:
+things just work as expected.  This is not the case on Microsoft
+systems, but if a program and a shared library are both linked with a
+second shared library, both can see symbols in the second shared
+library.  On such systems we can put the dakota core into a shared
+library (dakota.so) and have a very small main program linked with
+dakota.so; by also linking the separate pieces with dakota.so, we can
+easily arrange for them to use some facilities in dakota.so.
+
+On most systems, the suffix on a shared library does not matter when
+the library is explicitly loaded (by a call on dlopen or LoadLibrary)
+by a program; for uniformity, I like to make such shared libraries
+have names ending in ".dll".  For linking, the suffix does matter on
+some systems: it may need to be ".so" (under Linux or Cygwin) or
+".dll" (under MS Windows).
+
+My initial intent was to have all routines related (e.g.) to dot,
+nlpql, or npsol in their own individual shared libraries (dot.dll,
+nlpql.dll, or npsol.dll, respectively), including implementations of
+such derived classes as DOTOptimizer NLPQLOptimzer and
+NPSOLOptimizer.  This is illustrated in makefile.linuxrdy (for linking
+with -dynamic and most compilation without -fPIC), makefile.linux
+(which assumes everything is compiled with -fPIC), makefile.macosx,
+and makefile.cygwin.  This scheme results in a dakota binary (called
+dakdll in the above makefile variants) built with a shorted input
+specification, noj.nspec and noj.desc.  As an initial debugging
+exercise, I first created a separate jega.dll for JEGA, since JEGA has
+the largest of the libraries that are linked into Dakota, so "noj"
+initially meant "no JEGA"; it also omits details of the proprietary
+solvers.  Simple *.nspec files (and sometimes associated *.desc files)
+give input specifications for jega, dot, nlpql, and npsol.  To
+facilitate seeing the changes involved in creating dot.nspec, j.nspec,
+nlpql.nspec, npsol.nspec, the original dakota.input.nspec (and
+dakota.input.desc) from which they were derived is also cached in this
+(dakdll) directory.
+
+With the above scheme, mention of moga or soga in the Dakota input
+causes jega.dll to be loaded (and similarly for the other *.dll
+libraries).  Unfortunately, there are some uses of NPSOL that arise
+(in Dakota source files SurrBasedLocalMinimizer.C,
+NonDLocalReliability.C and NonDLocalInterval.C) without explicit
+mention of npsol in the input file.  An alternative scheme
+accommodates this usage and does not require any modified *.nspec
+files.  This scheme (obtained by compiling Dakota source file
+DakotaIterator.C with -DDAKOTA_SHLIB) replaces the Fortran routines
+provided by dot, nlpql, and npsol by stubs that try to load shared
+libraries libdot.dll, libnplql.dll or libnpsol.dll when the the real
+routines are needed, and arrange for the real routines to be used.
+Sample makefile variants makefile.linuxshl and makefile.linuxshl1
+illustrate this.  They differ in that makefile.linuxshl uses g95 (and
+compiles most things without -fPIC), whereas makefile.linuxshl1 uses
+gfortran (and for convenience in using the same Dakota tree as
+makefile.linux, assume everything is compiled with -fPIC).  The
+resulting Dakota variant is called dakshl.
+
+The naming is such that dakdll and dakshl can reside in the same
+place; dakdll loads dot.dll, jega.dll, nlpql.dll or npsol.dll as
+needed (or complains if it cannot find the desired *.dll file), and
+dakshl similarly loads libdot.dll, libnlpql.dll, or libnpsol.dll if
+needed (complaining if it cannot be found).  An earlier warning of a
+missing library happens with dakdll.
+
+(Creating dakshl variants for other systems, such as MacOSX and
+cygwin, is left as an exercise.)
+
+It should be possible to make MinGW variants of this stuff, but one
+versions of MiNGW gave some surprising error messages at link time,
+and a later version linked without complaint but gave .exe files that
+complain at startup.
+
+I got two failures with the g95 version of dakshl (renamed "dakota"
+for use in $DAKOTA/test):
+
+	dakota_pcbdo_cantilever_trsb.in 0
+	dakota_trsbouu2_cantilever.in 1
+
+The former scribbles something to the screen that messes up an xterm
+session; the latter eventually faults in a g95 support routine (after
+many invocations of npsol routines).  The gfortran variant gave no
+such trouble, producing the same numbers of PASS and DIFF as the
+"original" VOTD Dakota.
+
+The foo?.in files are for testing dakdll and dakshl and are derived
+from files in $DAKOTA/test.
+
+For convenience in debugging, the makefile.* variants used to specify
+(via "-Wl,-rpath,.") looking in the current directory for *.dll files.
+Now that main() initially calls nidr_save_exedir(...), and we use
+nidr_dlopen() to open shared libraries, special linking options are
+not needed.  With Elf binaries (e.g., under Linux), as an alternative
+to nidr_save_exedir and nidr_dlopen, it would probably be possible for
+a little program to adjust a binary's library search rules after the
+binary is built, which could be convenient for deployment.  At any
+rate, a system-dependent environment variable (e.g., LD_LIBRARY_PATH
+for Linux, PATH for MS Windows) affects where dlopen() or
+LoadLibrary() looks for shared libraries.
+
+At the moment, Fortran names for relevant dot, nlpql and npsol
+routines are hard-wired to the f2c naming convention in
+$DAKOTA/src/DakotaIterator.C.  (I tried some preprocessor tricks to
+get the desired spellings from the F77_FUNC results, but failed.)
+Maybe someone can automate this (insertion of correctly decorated
+names, depending on the Fortran compiler used).
+
+-- David M. Gay, 24 May 2010

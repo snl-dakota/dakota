@@ -1,0 +1,48 @@
+# DAKOTA INPUT FILE - dakota_multiobj1.in
+
+# Unconstrained multiobjective optimization using the Textbook problem.
+#
+# The formulation is: minimize F
+#                     s.t. x_l <= x <= x_u
+#
+# where F  = w1*f1 + w2*f2 + w3*f3
+#       f1 = original textbook objective fcn
+#       f2 = original textbook constraint 1
+#       f3 = original textbook constraint 2
+
+strategy,
+	single_method
+#	graphics
+	tabular_graphics_data
+
+method,
+	npsol_sqp		#0
+	  output verbose	#0
+#       optpp_newton		#1
+#	conmin_frcg		#2
+#	dot_bfgs		#3
+# 	dot_frcg		#4
+	  convergence_tolerance = 1.e-8
+
+variables,
+	continuous_design = 2
+	  initial_point    0.9    1.1
+	  upper_bounds     5.8    2.9
+	  lower_bounds     0.5   -2.9
+	  descriptors      'x1'   'x2'
+
+interface,
+	system asynchronous
+	  analysis_driver=  'text_book'
+
+responses,
+	num_objective_functions = 3
+	multi_objective_weights = .7 .2 .1
+#	multi_objective_weights = .333 .333 .333
+	analytic_gradients
+#	numerical_gradients
+#	  method_source vendor
+#	  interval_type forward
+#	  fd_gradient_step_size = 1.e-6
+	no_hessians		#0,#2,#3,#4
+#	analytic_hessians	#1

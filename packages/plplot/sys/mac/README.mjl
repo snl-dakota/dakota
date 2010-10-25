@@ -1,0 +1,28 @@
+Some quick notes:
+
+- There's no Makefile provided.  Could someone add one?
+
+- It might be good to use the native plplot facility for retaining
+the plot buffer instead of whatever's used here.  The driver just needs to
+enable it, then all calls will be routed to the plot buffer driver as well
+as the actual device driver.  If the plot needs to be redrawn,
+plRemakePlot() is called.  One of the nice things about using the built-in
+redisplay code is that then you can save to any of the supported device
+types (although you'd have to support PICT separately).  See the 'cmd save'
+option in plframe.c for an example.
+
+- It would be good to support native fonts.  But this will have to wait
+until I tackle the issue in the core routines, probably starting with
+the postscript driver.
+
+- Ignore the part in Mac_PLplot.txt entitled "Core PLPlot changes".
+
+- This port provided by Mark Franz, mrfranz@afterlife.ncsc.mil.
+
+- There's no one officially in charge of this port.  Does anyone want
+to volunteer?
+
+
+--
+Maurice LeBrun
+mjl@dino.ph.utexas.edu

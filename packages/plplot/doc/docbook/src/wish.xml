@@ -1,0 +1,587 @@
+<!--
+    wish.xml: "Building an Extended WISH" chapter
+        
+    Copyright (C) 1994  Geoffrey Furnish and Maurice LeBrun
+    Copyright (C) 1999, 2000, 2001, 2002, 2003  Alan W. Irwin and Rafael Laboissiere
+    Copyright (C) 2003  Joao Cardoso
+
+    Redistribution and use in source (XML DocBook) and "compiled" forms
+    (HTML, PDF, PostScript, DVI, TeXinfo and so forth) with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+       1. Redistributions of source code (XML DocBook) must retain the
+          above copyright notice, this list of conditions and the following
+          disclaimer as the first lines of this file unmodified.
+
+       2. Redistributions in compiled form (transformed to other DTDs,
+          converted to HTML, PDF, PostScript, and other formats) must
+          reproduce the above copyright notice, this list of conditions and
+          the following disclaimer in the documentation and/or other
+          materials provided with the distribution.
+
+    Important: THIS DOCUMENTATION IS PROVIDED BY THE PLPLOT PROJECT "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE PLPLOT PROJECT BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS DOCUMENTATION,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<chapter id="extended-wish">
+  <title>Building an Extended WISH</title>
+  
+  <para>
+    Beginning with PLplot 5.0, a new and powerful paradigm for interaction
+    with PLplot is introduced.  This new paradigm consists of an
+    integration of PLplot with a powerful scripting language (Tcl), and
+    extensions to that language to support X Windows interface development
+    (Tk) and object oriented programming ([incr Tcl]).  Taken together,
+    these four software systems (Tcl/Tk/itcl/PLplot) comprise a powerful
+    environment for the rapid prototyping and development of sophisticated,
+    flexible, X Windows applications with access to the PLplot API.  Yet
+    that is only the beginning&mdash;Tcl was born to be extended.  The true
+    power of this paradigm is achieved when you add your own, powerful,
+    application specific extensions to the above quartet, thus creating an
+    environment for the development of wholly new applications with only a
+    few keystrokes of shell programming ...
+  </para>
+
+  <sect1 id="intro-tcl">
+    <title>Introduction to Tcl</title>
+    
+    <para>
+      The Tool Command Language, or just Tcl (pronounced
+      <quote>tickle</quote>) is an embeddable script language which can be
+      used to control a wide variety of applications.  Designed by John
+      Ousterhout of UC Berkeley, Tcl is freely available under the standard
+      Berkeley copyright.  Tcl and Tk (described below) are extensively
+      documented in a new book published by Addison Wesley, entitled
+      <quote>Tcl and the Tk toolkit</quote> by John Ousterhout.  This book
+      is a must have for those interested in developing powerful extensible
+      applications with high quality X Windows user interfaces.  The
+      discussion in this chapter cannot hope to approach the level of
+      introduction provided by that book.  Rather we will concentrate on
+      trying to convey some of the excitement, and show the nuts and bolts
+      of using Tcl and some extensions to provide a powerful and flexible
+      interface to the PLplot library within your application.
+    </para>
+
+    <sect2 id="motivation-tcl">
+      <title>Motivation for Tcl</title>
+      
+      <para>
+	The central observation which led Ousterhout to create Tcl was the
+	realization that many applications require the use of some sort of
+	a special purpose, application specific, embedded <quote>macro
+	language</quote>.  Application programmers cobble these <quote>tiny
+	languages</quote> into their codes in order to provide flexibility
+	and some modicum of high level control.  But the end result is
+	frequently a quirky and fragile language.  And each application has
+	a different <quote>tiny language</quote> associated with it.  The
+	idea behind Tcl, then, was to create a single <quote>core
+	language</quote> which could be easily embedded into a wide variety
+	of applications.  Further, it should be easily extensible so that
+	individual applications can easily provide application specific
+	capabilities available in the macro language itself, while still
+	providing a robust, uniform syntax across a variety of
+	applications.  To say that Tcl satisfies these requirements would
+	be a spectacular understatement.
+      </para>
+    </sect2>
+    
+    <sect2 id="capabilities-tcl">
+      <title>Capabilities of Tcl</title>
+      
+      <para>
+	The mechanics of using Tcl are very straightforward.  Basically you
+	just have to include the file <filename>tcl.h</filename>, issue
+	some API calls to create a Tcl interpreter, and then evaluate a
+	script file or perform other operations supported by the Tcl API.
+	Then just link against <filename>libtcl.a</filename> and off you
+	go.
+      </para>
+      
+      <para>
+	Having done this, you have essentially created a shell.  That is, your
+	program can now execute shell scripts in the Tcl language.  Tcl
+	provides support for basic control flow, variable substitution file
+	i/o and subroutines.  In addition to the builtin Tcl commands, you can
+	define your own subroutines as Tcl procedures which effectively
+	become new keywords.
+      </para>
+      
+      <para>
+	But the real power of this approach is to add new commands to the
+	interpreter which are realized by compiled C code in your
+	application.  Tcl provides a straightforward API call which allows
+	you to register a function in your code to be called whenever the
+	interpreter comes across a specific keyword of your choosing in
+	the shell scripts it executes.
+      </para>
+      
+      <para>
+	This facility allows you with tremendous ease, to endow your
+	application with a powerful, robust and full featured macro
+	language, trivially extend that macro language with new keywords
+	which trigger execution of compiled application specific commands,
+	and thereby raise the level of interaction with your code to one of
+	essentially shell programming via script editing.
+      </para>
+    </sect2>
+    
+    <sect2 id="acquiring-tcl">
+      <title>Acquiring Tcl</title>
+      
+      <para>
+	There are several important sources of info and code for Tcl.
+	Definitely get the book mentioned above.  The Tcl and Tk toolkits
+	are distributed by anonymous <command>ftp</command> at <ulink
+	url="ftp://sprite.berkeley.edu/tcl"><filename>sprite.berkeley.edu:/tcl</filename></ulink>.
+	There are several files in there corresponding to Tcl, Tk, and
+	various forms of documentation.  At the time of this writing, the
+	current versions of Tcl and Tk are 7.3 and 3.6 respectively.
+	Retrieve those files, and install using the instructions provided
+	therein.
+      </para>
+      
+      <para>
+	The other major anonymous <command>ftp</command> site for Tcl is
+	<ulink
+	url="ftp://harbor.ecn.purdue.edu/pub/tcl"><filename>harbor.ecn.purdue.edu:/pub/tcl</filename></ulink>.
+	Harbor contains a mirror of <literal>sprite</literal> as well as
+	innumerable extensions, Tcl/Tk packages, tutorials, documentation,
+	etc.  The level of excitement in the Tcl community is
+	extraordinarily high, and this is reflected by the great plethora
+	of available, high quality, packages and extensions available for
+	use with Tcl and Tk.  Explore&mdash;there is definitely something
+	for everyone.
+      </para>
+      
+      <para>
+	Additionally there is a newsgroup, <literal>comp.lang.tcl</literal>
+	which is well read, and an excellent place for people to get
+	oriented, find help, etc.  Highly recommended.
+      </para>
+
+      <para> In any event, in order to use the Tk driver in PLplot, you will
+	need Tcl-8.2 and Tk-8.2 (or higher versions). Additionally, in order
+	to use the extended WISH paradigm (described below) you will need
+	iTcl-3.1 (or a higher version).
+      </para>
+
+      <para>
+	However, you will quite likely find Tcl/Tk to be very addictive,
+	and the great plethora of add-ons available at
+	<literal>harbor</literal> will undoubtedly attract no small amount
+	of your attention.  It has been our experience that all of these
+	extensions fit together very well.  You will find that there are
+	large sectors of the Tcl user community which create so-called
+	<quote>MegaWishes</quote> which combine many of the available
+	extensions into a single, heavily embellished, shell interpreter.
+	The benefits of this approach will become apparent as you gain
+	experience with Tcl and Tk.
+      </para>
+    </sect2>
+  </sect1>
+  
+  <sect1 id="introduction-tk">
+    <title>Introduction to Tk</title>
+    
+    <para>
+      As mentioned above, Tcl is designed to be extensible.  The first and
+      most basic Tcl extension is Tk, an X11 toolkit.  Tk provides the same
+      basic facilities that you may be familiar with from other X11
+      toolkits such as Athena and Motif, except that they are provided in
+      the context of the Tcl language.  There are C bindings too, but these
+      are seldom needed&mdash;the vast majority of useful Tk applications
+      can be coded using Tcl scripts.
+    </para>
+    
+    <para>
+      If it has not become obvious already, it is worth noting at this
+      point that Tcl is one example of a family of languages known
+      generally as <quote>Very High Level Languages</quote>, or VHLL's.
+      Essentially a VHLL raises the level of programming to a very high
+      level, allowing very short token streams to accomplish as much as
+      would be required by many scores of the more primitive actions
+      available in a basic HLL.  Consider, for example, the basic
+      <quote>Hello World!</quote> application written in Tcl/Tk.
+    </para>
+    
+    <para>
+      <programlisting>
+#!/usr/local/bin/wish -f
+
+button .hello -text "Hello World!"  -command "destroy ."
+pack .hello<!--
+      --></programlisting>
+    </para>
+    
+    <para>
+      That's it!  That's all there is to it.  If you have ever programmed X
+      using a traditional toolkit such as Athena or Motif, you can
+      appreciate how amazingly much more convenient this is.  If not, you
+      can either take our word for it that this is 20 times less code than
+      you would need to use a standard toolkit, or you can go write the
+      same program in one of the usual toolkits and see for yourself...
+    </para>
+    
+    <para>
+      We cannot hope to provide a thorough introduction to Tk programming
+      in this section.  Instead, we will just say that immensely complex
+      applications can be constructed merely by programming in exactly the
+      way shown in the above script.  By writing more complex scripts, and
+      by utilizing the additional widgets provided by Tk, one can create
+      beautiful, extensive user interfaces.  Moreover, this can be done in
+      a tiny fraction of the time it takes to do the same work in a
+      conventional toolkit.  Literally minutes versus days.
+    </para>
+    
+    <para>
+      Tk provides widgets for labels, buttons, radio buttons, frames with
+      or without borders, menubars, pull downs, toplevels, canvases, edit
+      boxes, scroll bars, etc.
+    </para>
+    
+    <para>
+      A look at the interface provided by the PLplot Tk driver
+      should help give you a better idea of what you can do with this
+      paradigm.  Also check out some of the contributed Tcl/Tk packages
+      available at harbor.  There are high quality Tk interfaces to a great
+      many familiar Unix utilities ranging from mail to info, to SQL, to
+      news, etc.  The list is endless and growing fast...
+    </para>
+  </sect1>
+  
+  <sect1 id="introduction-itcl">
+    <title>Introduction to [incr Tcl]</title>
+    
+    <para>
+      Another extremely powerful and popular extension to Tcl is [incr
+      Tcl].  [incr Tcl] is to Tcl what C++ is to C.  The analogy is very
+      extensive.  Itcl provides an object oriented extension to Tcl
+      supporting clustering of procedures and data into what is called an
+      <literal>itcl_class</literal>.  An <literal>itcl_class</literal> can
+      have methods as well as instance data.  And they support inheritance.
+      Essentially if you know how C++ relates to C, and if you know Tcl,
+      then you understand the programming model provided by Itcl.
+    </para>
+    
+    <para>
+      In particular, you can use Itcl to implement new widgets which are
+      composed of more basic Tk widgets.  A file selector is an example.
+      Using Tk, one can build up a very nice file selector comprised of
+      more basic Tk widgets such as entries, listboxes, scrollbars, etc.
+    </para>
+    
+    <para>
+      But what if you need two file selectors?  You have to do it all
+      again.  Or what if you need two different kinds of file selectors,
+      you get to do it again and add some incremental code.
+    </para>
+    
+    <para>
+      This is exactly the sort of thing object orientation is intended to
+      assist.  Using Itcl you can create an <literal>itcl_class
+	FileSelector</literal> and then you can instantiate them freely as
+      easily as:
+    </para>
+    
+    <para>
+      <programlisting>
+    FileSelector .fs1
+    .fs1 -dir . -find "*.cc"<!--
+      --></programlisting>
+    </para>
+
+    <para>
+      and so forth.
+    </para>
+
+    <para>
+      These high level widgets composed of smaller Tk widgets, are known as
+      <quote>megawidgets</quote>.  There is a developing subculture of the
+      Tcl/Tk community for designing and implementing megawidgets, and
+      [incr Tcl] is the most popular enabling technology.
+    </para>
+    
+    <para>
+      In particular, it is the enabling technology which is employed for
+      the construction of the PLplot Tcl extensions, described below.
+    </para>
+  </sect1>
+  
+  <sect1 id="extensions-tcl">
+    <title>PLplot Extensions to Tcl</title>
+    
+    <para>
+      Following the paradigm described above, PLplot provides extensions to
+      Tcl as well, designed to allow the use of PLplot from Tcl/Tk
+      programs.  Essentially the idea here is to allow PLplot programmers
+      to achieve two goals:
+    </para>
+    
+    <itemizedlist>
+      <listitem>
+	<para>
+	  To access PLplot facilities from their own extended WISH and/or
+	  Tcl/Tk user interface scripts.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  To have PLplot display its output in a window integrated
+	  directly into the rest of their Tcl/Tk interface.
+	</para>
+      </listitem>
+    </itemizedlist>
+    
+    <para>
+      For instance, prior to PLplot 5.0, if a programmer wanted to use
+      PLplot in a Tcl/Tk application, the best he could manage was to call
+      the PLplot C API from compiled C code, and get the output via the
+      Xwin driver, which would display in it's own toplevel window.  In
+      other words, there was no integration, and the result was pretty
+      sloppy.
+    </para>
+    
+    <para>
+      With PLplot 5.0, there is now a supported Tcl interface to PLplot
+      functionality.  This is provided through a <quote>family</quote> of
+      PLplot megawidgets implemented in [incr Tcl].  Using this interface,
+      a programmer can get a PLplot window/widget into a Tk interface as
+      easily as:
+    </para>
+
+    <para>
+      <programlisting>
+PLWin .plw
+pack .plw<!--
+      --></programlisting>
+    </para>
+
+    <para>
+      Actually, there's the update/init business&mdash;need to clear that up.
+    </para>
+    
+    <para>
+      The <literal>PLWin</literal> class then mirrors much of the PLplot C
+      API, so that a user can generate plots in the PLplot widget entirely
+      from Tcl.  This is demonstrated in the <filename>tk02</filename>
+      demo,
+    </para>
+  </sect1>
+  
+  <sect1 id="custom-extensions-tcl">
+    <title>Custom Extensions to Tcl</title>
+    
+    <para>
+      By this point, you should have a pretty decent understanding of the
+      underlying philosophy of Tcl and Tk, and the whole concept of
+      extensions, of which [incr Tcl] and PLplot are examples.  These alone
+      are enough to allow the rapid prototyping and development of
+      powerful, flexible graphical applications.  Normally the programmer
+      simply writes a shell script to be executed by the Tk windowing
+      shell, <command>wish</command>.  It is in vogue for each Tcl/Tk
+      extension package to build it's own <quote>extended WISH</quote>.
+      There are many examples of this, and indeed even PLplot's
+      <command>plserver</command> program, described in an earlier chapter,
+      could just as easily have been called <command>plwish</command>.
+    </para>
+    
+    <para>
+      In any event, as exciting and useful as these standalone, extended
+      windowing shells may be, they are ultimately only the beginning of
+      what you can do.  The real benefit of this approach is realized when
+      you make your own <quote>extended WISH</quote>, comprised of Tcl, Tk,
+      any of the standard extensions you like, and finally embellished with
+      a smattering of application specific extensions designed to support
+      your own application domain.  In this section we give a detailed
+      introduction to the process of constructing your own WISH.  After
+      that, you're on your own...
+    </para>
+    
+    <sect2 id="wish-construction">
+      <title>WISH Construction</title>
+      
+      <para>
+	The standard way to make your own WISH, as supported by the Tcl/Tk
+	system, is to take a boilerplate file,
+	<filename>tkAppInit.c</filename>, edit to reflect the Tcl/Tk
+	extensions you will be requiring, add some commands to the
+	interpreter, and link it all together.
+      </para>
+      
+      <para>
+	Here for example is the important part of the
+	<filename>tk02</filename> demo, extracted from the file
+	<filename>xtk02.c</filename>, which is effectively the extended
+	WISH definition file for the <filename>tk02</filename> demo.
+	Comments and other miscellany are omitted.
+      </para>
+      
+      <para>
+	<programlisting>
+#include "tk.h"
+#include "itcl.h"
+
+/* ... */
+
+int   myplotCmd        (ClientData, Tcl_Interp *, int, char **);
+
+int
+Tcl_AppInit(interp)
+    Tcl_Interp *interp;		/* Interpreter for application. */
+{
+int   plFrameCmd        (ClientData, Tcl_Interp *, int, char **);
+
+    Tk_Window main;
+
+    main = Tk_MainWindow(interp);
+
+    /*
+     * Call the init procedures for included packages.  Each call should
+     * look like this:
+     *
+     * if (Mod_Init(interp) == TCL_ERROR) {
+     *     return TCL_ERROR;
+     * }
+     *
+     * where "Mod" is the name of the module.
+     */
+
+    if (Tcl_Init(interp) == TCL_ERROR) {
+        return TCL_ERROR;
+    }
+    if (Tk_Init(interp) == TCL_ERROR) {
+        return TCL_ERROR;
+    }
+    if (Itcl_Init(interp) == TCL_ERROR) {
+        return TCL_ERROR;
+    }
+    if (Pltk_Init(interp) == TCL_ERROR) {
+        return TCL_ERROR;
+    }
+
+    /*
+     * Call Tcl_CreateCommand for application-specific commands, if
+     * they weren't already created by the init procedures called above.
+     */
+
+    Tcl_CreateCommand(interp, "myplot", myplotCmd,
+                      (ClientData) main, (void (*)(ClientData)) NULL);
+
+
+    /*
+     * Specify a user-specific startup file to invoke if the
+     * application is run interactively.  Typically the startup
+     * file is "~/.apprc" where "app" is the name of the application.
+     * If this line is deleted then no user-specific startup file
+     * will be run under any conditions.
+     */
+
+    tcl_RcFileName = "~/.wishrc";
+    return TCL_OK;
+}
+
+/* ... myPlotCmd, etc ... */<!--
+      --></programlisting>
+      </para>
+      
+      <para>
+	The calls to <literal>Tcl_Init()</literal> and
+	<literal>Tk_Init()</literal> are in every WISH.  To make an
+	extended WISH, you add calls to the initialization routines for any
+	extension packages you want to use, in this [incr Tcl]
+	(<literal>Itcl_Init()</literal>) and PLplot
+	(<literal>Pltk_Init()</literal>).  Finally you add keywords to the
+	interpreter, associating them with functions in your code using
+	<literal>Tcl_CreateCommand()</literal> as shown.
+      </para>
+      
+      <para>
+	In particular, PLplot has a number of [incr Tcl] classes in its Tcl
+	library.  If you want to be able to use those in your WISH, you
+	need to include the initialization of [incr Tcl].
+      </para>
+    </sect2>
+    
+    <sect2 id="wish-linking">
+      <title>WISH Linking</title>
+      
+      <para>
+	Having constructed your <literal>Tcl_AppInit()</literal> function,
+	you now merely need to link this file with your own private files
+	to provide the code for any functions you registered via
+	<literal>Tcl_CreateCommand()</literal> (and any they depend on),
+	against the Tcl, Tk and extension libraries you are using.
+      </para>
+      
+      <para>
+	<programlisting>
+cc -c tkAppInit.c
+cc -c mycommands.c
+cc -o my_wish tkAppInit.o mycommands.o 
+           -lplplotftk -ltcl -ltk -litcl -lX11 -lm<!--
+      --></programlisting>
+      </para>
+
+      <para>      
+	Add any needed <literal>-L</literal> options as needed.
+      </para>
+      
+      <para>
+	Voila!  You have made a wish.
+      </para>
+    </sect2>
+    
+    <sect2 id="wish-programming">
+      <title>WISH Programming</title>
+      
+      <para>
+	Now you are ready to put the genie to work.  The basic plan here is
+	to write shell scripts which use your new application specific
+	windowing shell as their interpreter, to implement X Windows user
+	interfaces to control and utilize the facilities made available in
+	your extensions.
+      </para>
+      
+      <para>
+	Effectively this just comes down to writing Tcl/Tk code, embellished
+	as appropriate with calls to the extension commands you registered.
+	Additionally, since this wish includes the PLplot extensions, you
+	can instantiate any of the PLplot family of [incr Tcl] classes, and
+	invoke methods on those objects to effect the drawing of graphs.
+	Similarly, you may have your extension commands (which are coded in
+	C) call the PLplot C programmers API to draw into the widget.  In
+	this way you can have the best of both worlds.  Use compiled C code
+	when the computational demands require the speed of compiled code,
+	or use Tcl when your programming convenience is more important than
+	raw speed.
+      </para>
+    </sect2>
+  </sect1>
+</chapter>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document:("plplotdoc.xml" "book" "chapter" "")
+sgml-default-dtd-file:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:("/usr/lib/sgml/catalog")
+sgml-local-ecat-files:nil
+End:
+-->

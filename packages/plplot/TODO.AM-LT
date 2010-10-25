@@ -1,0 +1,90 @@
+File: TODO.AM-LT -*- indented-text -*-
+Description: ToDo list for the PLplot AM-LT branch
+Author: Rafael Laboissière <rafael@debian.org>
+Created on: Fri Apr 20 09:26:39 CEST 2001
+Last modified on: Tue Nov 18 17:39:26 CET 2003
+$Id: TODO.AM-LT 3186 2006-02-15 18:17:33Z slbrow $
+
+This file is here just to get my work organized.  It will hopefully
+disappear when the AM-LT branch will get merged into MAIN.  [N.B.: the
+merge has already be done since a while.  I am keeping old items here that
+do not seem to be fully implemented already.  RL, on 2003-11-28.]
+
+* examples:
+
+    The examples directory must be ported to Automake.  The ultimate goal
+    is to combine Alan's test scripts with the command "make test".
+
+* bindings/tcl, drivers/tk (also iTcl/Tk):
+
+    Just inherit most of what is done already in cf/*.in.  In the Tcl/Tk
+    8.3 tarball there exists a tcl.m4, which tries to read configuration
+    settings from the file tclConfig.sh.  This is a good starting point for
+    a more principled Tcl/Tk configuration.
+
+
+* bindings/python:
+
+    Same comments as for the Tcl/Tk bindings.  In release 1.4d of Automake,
+    there is a python.m4 file that could be useful for us.  Look at :
+    http://sources.redhat.com/cgi-bin/cvsweb.cgi/automake/m4/?cvsroot=automake
+
+* Maurice's user configurability:
+
+    The ability to source the cf_plplot.in file has been added to the
+    AM-LT's configure.in.  However, much of the stuff there must be revised
+    in accordance to how things are set in the new AM/LT scenario.
+
+
+ITEMS BELOW HAVE BEEN COMPLETED OR ARE ABANDONED
+
+* Merge with Geoffrey's dyndrv branch:
+
+    This merge will be less problematic than I have foreseen.  Actually,
+    the branches AM-LT and dyndrv are complementary in this area.  On
+    dyndrv, the important thing is the code in src/.  On AM-LT, there is
+    also provisions for building Litool "modules" (a.k.a. "plug-ins", or
+    dynloaded obhjects).  A big plus here will be the use of Libtool's
+    libltdl library.  Also, Geoffrey has designed a very neat system for
+    driver:device initialization in Autoconf.
+    => DONE
+
+* bindings/perl:
+
+    For this, I will have to integrate ExtUtils::MakeMaker with Automake.
+    I am sure that this can be done without much hassle.
+    => ABANDONED, SINCE PDL BINDINGS ALREADY EXIST.
+
+* Extra distribution files:
+
+    Several files should be included into the distribution tarball by using
+    the Automake variable EXTRA_DIST and *_SCRIPTS.  The hard part of this
+    task is to audit the whole CVS tree to decide which files should be
+    included or not.
+    => DONE
+
+* plplot-config:
+
+    This script has to undergo major changes, since I am planning to
+    deliver a AM-LT branch merged against dyndrv.  Since some drivers may
+    be dynamically loaded in particular installations, some new options
+    should be added, like --with-tk, --with-xwin, etc.  Of course, the
+    script has to behave nicely when drivers are build statically into
+    libplplot.
+    => I OFICIALLY ABANDONED THIS PROJECT, TAKEN OVER BY ALAN.
+
+* Library version:
+
+    This has to be discussed on plplot-devel.  The PLplot project has been
+    using a undesirable approach to determine the soname release number of
+    the libplplot library.  In sum, we are setting the library release
+    number equal to the package version number.  This is plain wrong and we
+    should use the Libtool's system (see the Libtool manual for a
+    justification for that).
+
+    However, Libtool's library version mechanism imposes some constraints
+    here.  In order to increase the library number from 5.0.3 to 5.1.0, I
+    have to use "-version-info 6:0:1".  This works for Linux, but in HP-UX,
+    it produces libplplot6.
+    => NOT A MATTER OF DISCUSSION ANYMORE.  WE ARE FOLLOWING THE "OFFICIAL"
+       RULES, AS PRESENT IN THE LIBTOOL DOCUMENTATION.

@@ -1,0 +1,38 @@
+The makefile compiles and links dakampl, an analysis_driver for
+DAKOTA that uses objectives and constraints expressed in AMPL
+(see http://www.ampl.com).  Student versions of AMPL suffice
+for small examples and can be freely downloaded;
+see http://www.ampl.com/DOWNLOADS .
+
+Files rosenbr.mod and textbook.mod are AMPL versions of the
+"Rosenbrock" and "textbook" example problems.
+
+File dakamplprob.nl comes from invoking
+
+	ampl -ogdakamplprob rosenbr.mod
+
+and file textbook.nl similarly comes from invoking
+
+	ampl -ogtextbook textbook.mod
+
+To run DAKOTA on the Rosenbrock example, invoke
+
+	dakota rosenbrock.in
+
+For the textbook example, it is necessary to set shell
+variable DAKAMPLPROB to textbook.  With the Bourne shell,
+you can invoke
+
+	DAKAMPLPROB=textbook dakota textbook.in
+
+With csh, you can invoke
+
+	setenv DAKAMPLPROB textbook
+	dakota textbook.in
+
+To compile and link dakampl, simply invoke
+
+	make
+
+You may first need to make minor changes to "makefile"
+to adjust it to your system.  See the comments therein.

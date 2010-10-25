@@ -1,0 +1,35 @@
+# -----------------------------------------------------------------------
+# $Id: misc.in 3186 2006-02-15 18:17:33Z slbrow $
+#
+# Maurice LeBrun
+# IFS, University of Texas at Austin
+# 22-Jul-1994
+#
+# Miscellaneous targets.
+# -----------------------------------------------------------------------
+
+# Cleanup
+
+clean:
+	-rm * $(PLLIB_PATH)$(PLLIB_BASE)*
+	
+# re-bind executables with emx options (ie, Dangerous DOS options)
+
+bind:	bind_utils
+
+bind_utils:
+	-$(BIND) plrender$E $(BIND_OPTS)
+	-$(BIND) pltek$E $(BIND_OPTS)
+
+# Autogeneration of dependencies.  Use gcc -MM because X11's "makedepend"
+# includes system headers, and that really sucks.
+
+depend:
+	gcc -MM $(CORE_C) $(DRIVERS_C) $(ADD_DRIVERS_C) \
+	$(UTIL_C) $(FSTUB_C) $(TCL_C) $(TK_C) \
+	| ./cvtdeps 
+	@echo "Rerun configure for the new dependencies to take effect"
+
+# -----------------------------------------------------------------------
+# Auto-generated dependency list follows (warning: it's ugly).
+

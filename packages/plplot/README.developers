@@ -1,0 +1,54 @@
+Information for developers on UNIX/Linux
+----------------------------------------
+
+When you check out the PLplot source tree from CVS, you will need
+to build the ./configure script mentioned in the INSTALL file 
+yourself. Basically, this is done with the cf/bootstrap.sh script:
+
+  > cf/bootstrap.sh
+
+This will invoke the GNU autotools:
+
+   * automake, version 1.8.2 or higher is required
+  
+   * autoconf, version 2.59 (*** earlier versions may work too)
+
+   * libtool, version 1.5.10 (*** earlier versions may work too)
+
+
+Three situations can occur:
+
+Situation 1: 
+If the proper versions are installed and the installation is correct,
+then the end result will be a ./configure file in the Plplot 
+directory.
+
+You can then follow the instructions in the INSTALL file.
+
+
+Situation 2:
+If error messages occur and no ./configure file is created, then:
+
+   * Install the latest versions of the autotools
+
+   * Make sure no caching information is left behind (notably the
+     autom4te.cache directory). One way to do that is to check
+     out PLplot in a new directory - tracing all cache files is
+     cumbersome.
+
+   * Re-run the cf/bootstrap.sh script
+
+
+Situation 3:
+If the script complains about certain macros, like AM_PROG_LIBTOOL, then 
+you may have a somewhat broken installation of the autotools, especially
+of libtool. One way to force the autotools to take a look at the correct
+macros, is:
+
+   * Look for the version of "aclocal.m4" in the libtool directory
+
+   * Specify that directory to the bootstrap script:
+
+     > cf/bootstrap.sh --aclocal-incdir=/that/particular/directory
+
+This ought to work. If not, try re-installing the autotools.

@@ -1,0 +1,45 @@
+# based on dakota_rosenbrock_grad_opt.in
+# includes examples of several DAKOTA + Cygwin interfaces
+
+strategy,
+	single_method
+	  tabular_graphics_data
+
+method,
+	nl2sol					
+	  max_iterations = 100			
+	  convergence_tolerance = 1e-4		
+
+model,
+	single
+
+variables,
+	continuous_design = 2			
+	  initial_point   -1.2	1.0	
+	  lower_bounds    -2.0     -2.0	
+	  upper_bounds     2.0      2.0	
+	  descriptors      'x1'     'x2'	
+
+interface,
+	# fork interface required under Windows
+	fork
+
+	  # example using rosenbrock binary directly
+	  analysis_driver = 'rosenbrock.exe'
+
+	  # example using batch file
+#	  analysis_driver = 'rosenbrock_wrapper.bat'
+
+	  # example using cmd file containing Python
+#	  analysis_driver = 'rosenbrock_wrapper.cmd'
+
+	  # temp files often don't work properly under Windows, so specify
+	  # parameters and results files here
+	  parameters_file = 'params.in'
+	  results_file = 'results.out'
+
+responses,
+	num_least_squares_terms = 2		
+	analytic_gradients			
+	no_hessians
+

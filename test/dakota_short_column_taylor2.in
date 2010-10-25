@@ -1,0 +1,93 @@
+# DAKOTA INPUT FILE : dakota_short_column_taylor2.in
+
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# seperated by a comma.
+
+# This file covers second-order reliability index approach (RIA) CDF
+# mappings from response_levels to probability_levels and second-order
+# performance measure approach (PMA) CDF mappings from these
+# probability_levels back to the original response_levels for MVSOSM,
+# x-/u-space AMV^2, x-/u-space AMV^2+, x-/u-space TANA, and SORM.
+
+strategy,
+	single_method graphics
+
+method,
+	nond_local_reliability
+#	  mpp_search x_taylor_mean			#1
+#	  mpp_search u_taylor_mean			#2
+#	  mpp_search x_taylor_mpp			#3,#8,#10,#12
+#	  mpp_search u_taylor_mpp			#4,#9,#11,#13
+#	  mpp_search x_two_point			#5
+#	  mpp_search u_two_point			#6
+#	  mpp_search no_approx				#7
+#	  nip
+#	  integration second_order #3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13
+	  output verbose
+#	  num_response_levels = 0 43
+#	  response_levels = -9.0 -8.75 -8.5 -8.0 -7.75
+#			    -7.5 -7.25 -7.0 -6.5 -6.0
+#			    -5.5 -5.0 -4.5 -4.0 -3.5
+#			    -3.0 -2.5 -2.0 -1.9 -1.8
+#			    -1.7 -1.6 -1.5 -1.4 -1.3
+#			    -1.2 -1.1 -1.0 -0.9 -0.8
+#			    -0.7 -0.6 -0.5 -0.4 -0.3
+#			    -0.2 -0.1 0.0 0.05 0.1
+#			     0.15 0.2 0.25
+	  num_probability_levels = 0 43
+	  probability_levels =   4.5775061030e-05 6.6993610591e-05
+		9.8098393983e-05 2.1052534295e-04 3.0842681269e-04
+		4.5174059364e-04 6.6130803072e-04 9.6732068457e-04
+		2.0619349322e-03 4.3615036216e-03 9.1182118193e-03
+		1.8743898389e-02 3.7636946073e-02 7.3194210477e-02
+		1.3636513465e-01 2.4003507381e-01 3.9244504880e-01
+		5.8416361282e-01 6.2450777823e-01 6.6456116425e-01
+		7.0385292319e-01 7.4190079553e-01 7.7822897293e-01
+		8.1238818637e-01 8.4397693010e-01 8.7266236379e-01
+		8.9819913823e-01 9.2044423061e-01 9.3936592570e-01
+		9.5504539706e-01 9.6766995866e-01 9.7751794904e-01
+		9.8493629191e-01 9.9031288757e-01 9.9404691166e-01
+		9.9652059448e-01 9.9807593305e-01 9.9899897782e-01
+		9.9929560891e-01 9.9951294625e-01 9.9966933202e-01
+		9.9977974933e-01 9.9985618258e-01
+
+variables,
+        continuous_design = 2
+	  initial_point      =    5.      15.
+	  descriptors        =   'b'      'h'
+	normal_uncertain = 2
+	  means              =  500.0   2000.0
+	  std_deviations     =  100.0    400.0
+	  descriptors        =   'P'      'M'
+	lognormal_uncertain = 1
+       	  means             =    5.0
+	  std_deviations    =    0.5
+	  descriptors       =    'Y'
+	uncertain_correlation_matrix =  1   0.5 0
+					0.5 1   0
+					0   0   1
+
+interface,
+	system asynch
+	  analysis_driver = 'short_column'
+
+responses,
+	num_response_functions = 2
+	analytic_gradients
+	analytic_hessians		#0,#1,#2,#3,#4,#5,#6,#7
+#	quasi_hessians bfgs #damped	#12,#13
+#	quasi_hessians sr1		#10,#11
+#	numerical_hessians		#8,#9
+#	  fd_hessian_step_size = 1.e-5	#8,#9

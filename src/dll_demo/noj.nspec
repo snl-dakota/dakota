@@ -1,0 +1,1007 @@
+KEYWORD01 strategy {NIDRProblemDescDB::strategy_start}
+	[ graphics {N_stm(true,graphicsFlag)} ]
+	[ tabular_graphics_data {N_stm(true,tabularDataFlag)}
+	  [ tabular_graphics_file STRING {N_stm(str,tabularDataFile)} ]
+	  ]
+	[ output_precision INTEGER >= 0 {N_stm(int,outputPrecision)} ]
+	[ iterator_servers INTEGER {N_stm(int,iteratorServers)} ]
+	[ iterator_self_scheduling {N_stm(lit,iteratorScheduling_self)} ]
+	[ iterator_static_scheduling {N_stm(lit,iteratorScheduling_static)} ]
+	( hybrid {N_stm(lit,strategyType_hybrid)}
+	  ( sequential ALIAS uncoupled {N_stm(lit,hybridType_sequential)}
+#	    [ adaptive {N_stm(lit,hybridType_sequential_adaptive)}
+#	      progress_threshold REAL {N_stm(Real,hybridProgThresh)} ]
+	    [ num_solutions_transferred INTEGER {N_stm(int,hybridNumSolnsTrans)} ]
+	    method_list STRINGLIST {N_stm(strL,hybridMethodList)}
+	    )
+	  |
+	  ( embedded ALIAS coupled {N_stm(lit,hybridType_embedded)}
+	    global_method_pointer STRING {N_stm(str,hybridGlobalMethodPointer)}
+	    local_method_pointer STRING {N_stm(str,hybridLocalMethodPointer)}
+	    [ local_search_probability REAL {N_stm(Real,hybridLSProb)} ]
+	    )
+	  |
+	  ( collaborative {N_stm(lit,hybridType_collaborative)}
+#	    abo {N_stm(lit,hybridCollabType_abo)}
+#	    | hops {N_stm(lit,hybridCollabType_hops)}
+	    method_list STRINGLIST {N_stm(strL,hybridMethodList)}
+	    )
+	  )
+	|
+	( multi_start {N_stm(lit,strategyType_multi_start)}
+	  method_pointer STRING {N_stm(str,methodPointer)}
+	  [ random_starts INTEGER {N_stm(int,concurrentRandomJobs)}
+	    [ seed INTEGER {N_stm(int,concurrentSeed)} ]
+	    ]
+	  [ starting_points REALLIST {N_stm(RealL,concurrentParameterSets)} ]
+	  )
+	|
+	( pareto_set {N_stm(lit,strategyType_pareto_set)}
+	  method_pointer ALIAS opt_method_pointer STRING {N_stm(str,methodPointer)}
+	  [ random_weight_sets INTEGER {N_stm(int,concurrentRandomJobs)}
+	    [ seed INTEGER {N_stm(int,concurrentSeed)} ]
+	    ]
+	  [ weight_sets ALIAS multi_objective_weight_sets REALLIST {N_stm(RealL,concurrentParameterSets)} ]
+	  )
+	|
+	( single_method {N_stm(lit,strategyType_single_method)}
+	  [ method_pointer STRING {N_stm(str,methodPointer)} ]
+	  )
+
+KEYWORD12 method {N_mdm3(start,0,stop)}
+	[ id_method STRING {N_mdm(str,idMethod)} ]
+	[ model_pointer STRING {N_mdm(str,modelPointer)} ]
+	[ output {0}
+	  debug {N_mdm(slit,methodOutput_DEBUG_OUTPUT)}
+	  | verbose {N_mdm(slit,methodOutput_VERBOSE_OUTPUT)}
+	  | quiet {N_mdm(slit,methodOutput_QUIET_OUTPUT)}
+	  | silent {N_mdm(slit,methodOutput_SILENT_OUTPUT)}
+	  ]
+	[ max_iterations INTEGER {N_mdm(nnint,maxIterations)} ]
+	[ max_function_evaluations INTEGER {N_mdm(nnint,maxFunctionEvaluations)} ]
+	[ speculative {N_mdm(true,speculativeFlag)} ]
+	[ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
+	[ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
+	[ scaling {N_mdm(true,methodScaling)} ]
+	( ( surrogate_based_local {N_mdm(lit,methodName_surrogate_based_local)}
+	    approx_method_name STRING {N_mdm(str,subMethodName)}
+	    | approx_method_pointer STRING {N_mdm(str,subMethodPointer)}
+	    [ soft_convergence_limit INTEGER {N_mdm(int,surrBasedLocalSoftConvLimit)} ]
+	    [ truth_surrogate_bypass {N_mdm(true,surrBasedLocalLayerBypass)} ]
+	    [ trust_region {0,0,NIDRProblemDescDB::method_tr_final}
+	      [ initial_size REAL {N_mdm(Real,surrBasedLocalTRInitSize)} ]
+	      [ minimum_size REAL {N_mdm(Real,surrBasedLocalTRMinSize)} ]
+	      [ contract_threshold REAL {N_mdm(Real,surrBasedLocalTRContractTrigger)} ]
+	      [ expand_threshold REAL {N_mdm(Real,surrBasedLocalTRExpandTrigger)} ]
+	      [ contraction_factor REAL {N_mdm(Real,surrBasedLocalTRContract)} ]
+	      [ expansion_factor REAL {N_mdm(Real,surrBasedLocalTRExpand)} ]
+	      ]
+	    [ approx_subproblem {0}
+	      original_primary {N_mdm(slit,surrBasedLocalSubProbObj_ORIGINAL_PRIMARY)}
+	      | single_objective {N_mdm(slit,surrBasedLocalSubProbObj_SINGLE_OBJECTIVE)}
+	      | augmented_lagrangian_objective {N_mdm(slit,surrBasedLocalSubProbObj_AUGMENTED_LAGRANGIAN_OBJECTIVE)}
+	      | lagrangian_objective {N_mdm(slit,surrBasedLocalSubProbObj_LAGRANGIAN_OBJECTIVE)}
+	      original_constraints {N_mdm(slit,surrBasedLocalSubProbCon_ORIGINAL_CONSTRAINTS)}
+	      | linearized_constraints {N_mdm(slit,surrBasedLocalSubProbCon_LINEARIZED_CONSTRAINTS)}
+	      | no_constraints {N_mdm(slit,surrBasedLocalSubProbCon_NO_CONSTRAINTS)}
+	      ]
+	    [ merit_function {0}
+	      penalty_merit {N_mdm(slit,surrBasedLocalMeritFn_PENALTY_MERIT)}
+	      | adaptive_penalty_merit {N_mdm(slit,surrBasedLocalMeritFn_ADAPTIVE_PENALTY_MERIT)}
+	      | lagrangian_merit {N_mdm(slit,surrBasedLocalMeritFn_LAGRANGIAN_MERIT)}
+	      | augmented_lagrangian_merit {N_mdm(slit,surrBasedLocalMeritFn_AUGMENTED_LAGRANGIAN_MERIT)}
+	      ]
+	    [ acceptance_logic {0}
+	      tr_ratio {N_mdm(slit,surrBasedLocalAcceptLogic_TR_RATIO)}
+	      | filter {N_mdm(slit,surrBasedLocalAcceptLogic_FILTER)}
+	      ]
+	    [ constraint_relax {0}
+	      homotopy {N_mdm(slit,surrBasedLocalConstrRelax_HOMOTOPY)}
+	      ]
+	    )
+	  | dot ALIAS dot_frcg
+		ALIAS dot_mmfd
+		ALIAS dot_bfgs
+		ALIAS dot_slp
+		ALIAS dot_sqp DYNLIB "dot.dll"
+	  | conmin_frcg {N_mdm(lit,methodName_conmin_frcg)}
+	  | conmin_mfd {N_mdm(lit,methodName_conmin_mfd)}
+	  | dl_solver STRING {N_mdm(slit2,3methodName_dl_solver)}
+	  | stanford ALIAS npsol_sqp ALIAS npsol ALIAS nlssol_sqp ALIAS nlssol DYNLIB "npsol.dll"
+	  | nlpql_sqp DYNLIB "nlpql.dll"
+	  |
+	  ( optpp_cg {N_mdm(lit,methodName_optpp_cg)}
+	    |
+	    ( optpp_q_newton {N_mdf(litpp,methodName_optpp_q_newton)}
+	      | optpp_fd_newton {N_mdf(litpp,methodName_optpp_fd_newton)}
+	      | optpp_g_newton {N_mdf(litpp,methodName_optpp_g_newton)}
+	      | optpp_newton {N_mdf(litpp,methodName_optpp_newton)}
+	      [ search_method {0}
+		value_based_line_search {N_mdm(lit,searchMethod_value_based_line_search)}
+		| gradient_based_line_search {N_mdm(lit,searchMethod_gradient_based_line_search)}
+		| trust_region {N_mdm(lit,searchMethod_trust_region)}
+		| tr_pds {N_mdm(lit,searchMethod_tr_pds)}
+		]
+	      [ merit_function STRING {N_mdm(meritFn,meritFn)} ]
+	      [ central_path STRING {N_mdm(meritFn,centralPath)} ]
+	      [ steplength_to_boundary REAL {N_mdm(Real,stepLenToBoundary)} ]
+	      [ centering_parameter REAL {N_mdm(Real,centeringParam)} ]
+	      )
+	    [ max_step REAL {N_mdm(Real,maxStep)} ]
+	    [ gradient_tolerance REAL {N_mdm(Real,gradientTolerance)} ]
+	    )
+	  |
+	  ( optpp_pds {N_mdm(lit,methodName_optpp_pds)}
+	    [ search_scheme_size INTEGER {N_mdm(int,searchSchemeSize)} ]
+	    )
+	  |
+	  ( asynch_pattern_search ALIAS coliny_apps {N_mdm(lit,methodName_asynch_pattern_search)}
+	    [ initial_delta REAL {N_mdm(Real,initStepLength)} ]
+	    [ contraction_factor REAL {N_mdm(Real,contractStepLength)} ]
+	    [ threshold_delta REAL {N_mdm(Real,threshStepLength)} ]
+	    [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
+	    [ synchronization {0}
+	      blocking {N_mdm(lit,evalSynchronize_blocking)}
+	      | nonblocking {N_mdm(lit,evalSynchronize_nonblocking)}
+	      ]
+	    [ merit_function {0}
+	      merit_max {N_mdm(lit,meritFunction_merit_max)}
+	      | merit_max_smooth {N_mdm(lit,meritFunction_merit_max_smooth)}
+	      | merit1 {N_mdm(lit,meritFunction_merit1)}
+	      | merit1_smooth {N_mdm(lit,meritFunction_merit1_smooth)}
+	      | merit2 {N_mdm(lit,meritFunction_merit2)}
+	      | merit2_smooth {N_mdm(lit,meritFunction_merit2_smooth)}
+	      | merit2_squared {N_mdm(lit,meritFunction_merit2_squared)}
+	      ]
+	    [ constraint_penalty REAL {N_mdm(Real,constrPenalty)} ]
+            [ smoothing_factor REAL {N_mdm(Real,smoothFactor)} ]
+            )
+	  | jega ALIAS moga ALIAS soga DYNLIB "jega.dll"
+	  [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
+	  [ linear_inequality_lower_bounds REALLIST {N_mdm(RealDL,linearIneqLowerBnds)} ]
+	  [ linear_inequality_upper_bounds REALLIST {N_mdm(RealDL,linearIneqUpperBnds)} ]
+	  [ linear_inequality_scale_types STRINGLIST {N_mdm(strL,linearIneqScaleTypes)} ]
+	  [ linear_inequality_scales REALLIST {N_mdm(RealDL,linearIneqScales)} ]
+	  [ linear_equality_constraint_matrix REALLIST {N_mdm(RealDL,linearEqConstraintCoeffs)} ]
+	  [ linear_equality_targets REALLIST {N_mdm(RealDL,linearEqTargets)} ]
+	  [ linear_equality_scale_types STRINGLIST {N_mdm(strL,linearEqScaleTypes)} ]
+	  [ linear_equality_scales REALLIST {N_mdm(RealDL,linearEqScales)} ]
+	  )
+	|
+	( ( ( ( coliny_pattern_search {N_mdm(lit,methodName_coliny_pattern_search)}
+		  [ constant_penalty {N_mdm(true,constantPenalty)} ]
+		  [ no_expansion {N_mdm(false,expansionFlag)} ]
+		  [ expand_after_success INTEGER {N_mdm(int,expandAfterSuccess)} ]
+		  [ pattern_basis {0}
+		    coordinate {N_mdm(lit,patternBasis_coordinate)}
+		    | simplex {N_mdm(lit,patternBasis_simplex)}
+		    ]
+		  [ stochastic {N_mdm(true,randomizeOrderFlag)} ]
+		  [ total_pattern_size INTEGER {N_mdm(int,totalPatternSize)} ]
+		  [ exploratory_moves {0}
+		    multi_step {N_mdm(lit,exploratoryMoves_multi_step)}
+		    | adaptive_pattern {N_mdm(lit,exploratoryMoves_adaptive)}
+		    | basic_pattern {N_mdm(lit,exploratoryMoves_simple)}
+		    ]
+		  [ synchronization {0}
+		    blocking {N_mdm(lit,evalSynchronization_blocking)}
+		    | nonblocking {N_mdm(lit,evalSynchronization_nonblocking)}
+		    ]
+		  )
+		|
+		( coliny_solis_wets {N_mdm(lit,methodName_coliny_solis_wets)}
+		  [ contract_after_failure INTEGER {N_mdm(int,contractAfterFail)} ]
+		  [ no_expansion {N_mdm(false,expansionFlag)} ]
+		  [ expand_after_success INTEGER {N_mdm(int,expandAfterSuccess)} ]
+		  [ constant_penalty {N_mdm(true,constantPenalty)} ]
+		  )
+		[ contraction_factor REAL {N_mdm(Real,contractFactor)} ]
+		[ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
+		)
+	      | coliny_cobyla {N_mdm(lit,methodName_coliny_cobyla)}
+	      initial_delta REAL {N_mdm(Real,initDelta)}
+	      threshold_delta REAL {N_mdm(Real,threshDelta)}
+	      )
+	    |
+	    ( coliny_direct {N_mdm(lit,methodName_coliny_direct)}
+	      [ division {0}
+		major_dimension {N_mdm(lit,boxDivision_major_dimension)}
+		| all_dimensions {N_mdm(lit,boxDivision_all_dimensions)}
+		]
+	      [ global_balance_parameter REAL {N_mdm(Real,globalBalanceParam)} ]
+	      [ local_balance_parameter REAL {N_mdm(Real,localBalanceParam)} ]
+	      [ max_boxsize_limit REAL {N_mdm(Real,maxBoxSize)} ]
+	      [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
+	      [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
+	      )
+	    |
+	    ( coliny_ea {NIDRProblemDescDB::method_coliny_ea}
+	      [ population_size INTEGER {N_mdm(pint,populationSize)} ]
+	      [ initialization_type {0}
+		simple_random {N_mdm(lit,initializationType_random)}
+		| unique_random {N_mdm(lit,initializationType_unique_random)}
+		| flat_file STRING {N_mdm(slit2,3initializationType_flat_file)}
+		]
+	      [ fitness_type {0}
+		linear_rank {N_mdm(lit,fitnessType_linear_rank)}
+		| merit_function {N_mdm(lit,fitnessType_proportional)}
+		]
+	      [ replacement_type {0}
+		random INTEGER {N_mdm(ilit2,3replacementType_random)}
+		| chc INTEGER {N_mdm(ilit2,3replacementType_chc)}
+		| elitist INTEGER {N_mdm(ilit2,3replacementType_elitist)}
+		[ new_solutions_generated INTEGER {N_mdm(int,newSolnsGenerated)} ]
+		]
+	      [ crossover_rate REAL {N_mdm(Real,crossoverRate)} ]
+	      [ crossover_type {0}
+		two_point {N_mdm(lit,crossoverType_two_point)}
+		| blend {N_mdm(lit,crossoverType_blend)}
+		| uniform {N_mdm(lit,crossoverType_uniform)}
+		]
+	      [ mutation_rate REAL {N_mdm(Real,mutationRate)} ]
+	      [ mutation_type {0}
+		replace_uniform {N_mdm(lit,mutationType_replace_uniform)}
+		|
+		( offset_normal {N_mdm(lit,mutationType_offset_normal)}
+		  | offset_cauchy {N_mdm(lit,mutationType_offset_cauchy)}
+		  | offset_uniform {N_mdm(lit,mutationType_offset_uniform)}
+		  [ mutation_scale REAL {N_mdm(Real,mutationScale)} ]
+		  [ mutation_range INTEGER {N_mdm(int,mutationRange)} ]
+		  )
+		[ non_adaptive {N_mdm(false,mutationAdaptive)} ]
+		]
+	      [ constraint_penalty REAL {N_mdm(Real,constraintPenalty)} ]
+	      )
+	    [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
+	    [ seed INTEGER {N_mdm(pint,randomSeed)} ]
+	    [ show_misc_options {N_mdm(true,showMiscOptions)} ]
+	    [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+	    )
+	|
+	( nl2sol {N_mdm(lit,methodName_nl2sol)}
+	  [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
+	  [ absolute_conv_tol REAL {N_mdm(Real,absConvTol)} ]
+	  [ x_conv_tol REAL {N_mdm(Real,xConvTol)} ]
+	  [ singular_conv_tol REAL {N_mdm(Real,singConvTol)} ]
+	  [ singular_radius REAL {N_mdm(Real,singRadius)} ]
+	  [ false_conv_tol REAL {N_mdm(Real,falseConvTol)} ]
+	  [ initial_trust_radius REAL {N_mdm(Real,initTRRadius)} ]
+	  [ covariance INTEGER {N_mdm(int,covarianceType)} ]
+	  [ regression_diagnostics {N_mdm(true,regressDiag)} ]
+	  )
+	|
+	( nonlinear_cg {N_mdm(lit,methodName_nonlinear_cg)}
+	  [ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+	)
+	|
+	( surrogate_based_global {N_mdm(lit,methodName_surrogate_based_global)}
+	  approx_method_name STRING {N_mdm(str,subMethodName)}
+	  | approx_method_pointer STRING {N_mdm(str,subMethodPointer)}
+	  [ replace_points {N_mdm(true,surrBasedGlobalReplacePts)} ]
+	  )
+	|
+	( efficient_global {N_mdm(lit,methodName_efficient_global)}
+	  |
+	  ( ( ( ( ( nond_polynomial_chaos {N_mdm(lit,methodName_nond_polynomial_chaos)}
+		    [ refinement {0}
+		      uniform  {N_mdm(type,refinementType_UNIFORM_REFINEMENT)} |
+		      adaptive {N_mdm(type,refinementType_ADAPTIVE_REFINEMENT)} ]
+		    [ askey {N_mdm(type,expansionType_ASKEY_U)}
+		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)} ]
+		    quadrature_order INTEGERLIST {N_mdm(ushintL,quadratureOrder)}
+		    | cubature_integrand INTEGER {N_mdm(ushint,cubIntOrder)}
+		    | ( sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}
+			[ dimension_preference REALLIST {N_mdm(RealDL,sparseGridDimPref)} ]
+			)
+		    |
+		    ( ( collocation_points INTEGER {N_mdm(int,collocationPoints)}
+		        | collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+		        [ reuse_samples {N_mdm(lit,collocSampleReuse_all)} ]
+		        )
+		      |
+		      ( expansion_samples INTEGER {N_mdm(int,expansionSamples)}
+		        [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
+		        )
+		      | expansion_import_file STRING {N_mdm(str,expansionImportFile)}
+		      expansion_order INTEGERLIST {N_mdm(ushintL,expansionOrder)}
+		      | expansion_terms INTEGER {N_mdm(int,expansionTerms)}
+		
+                      )
+		    [ sample_type {0}
+		      lhs {N_mdm(lit,sampleType_lhs)}
+		      | random {N_mdm(lit,sampleType_random)}
+		      ]
+		    )
+		  |
+		  ( nond_stoch_collocation {N_mdm(lit,methodName_nond_stoch_collocation)}
+		    [ refinement {0}
+		      uniform  {N_mdm(type,refinementType_UNIFORM_REFINEMENT)} |
+		      adaptive {N_mdm(type,refinementType_ADAPTIVE_REFINEMENT)} ]
+		    [ askey {N_mdm(type,expansionType_ASKEY_U)}
+		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)} ]
+		    quadrature_order INTEGERLIST {N_mdm(ushintL,quadratureOrder)}
+		    | ( sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}
+			[ dimension_preference REALLIST {N_mdm(RealDL,sparseGridDimPref)} ]
+			)
+		    [ sample_type {0}
+		      lhs {N_mdm(lit,sampleType_lhs)}
+		      | random {N_mdm(lit,sampleType_random)}
+		      ]
+		    )
+		  |
+		  ( nond_sampling {N_mdm(lit,methodName_nond_sampling)}
+		    [ sample_type {0}
+		      random {N_mdm(lit,sampleType_random)}
+		      | lhs {N_mdm(lit,sampleType_lhs)}
+		      |
+		      ( incremental_lhs {N_mdm(lit,sampleType_incremental_lhs)}
+			| incremental_random {N_mdm(lit,sampleType_incremental_random)}
+			previous_samples INTEGER {N_mdm(int,previousSamples)}
+			)
+		      ]
+		    [ variance_based_decomp {N_mdm(true,varBasedDecompFlag)} ]
+		    )
+		  [ all_variables {N_mdm(true,allVarsFlag)} ]
+		  [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+		  )
+		[ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
+		  [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
+		  ]
+		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+		  [ compute {0}
+		    probabilities {N_mdm(lit,responseLevelMappingType_probabilities)}
+		    | reliabilities {N_mdm(lit,responseLevelMappingType_reliabilities)}
+		    | gen_reliabilities {N_mdm(lit,responseLevelMappingType_gen_reliabilities)}
+		    ]
+		  ]
+		)
+	      |
+	      ( nond_importance {N_mdm(lit,methodName_nond_importance)}
+		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+		  [ compute {0}
+		    probabilities {N_mdm(lit,responseLevelMappingType_probabilities)}
+		    | gen_reliabilities {N_mdm(lit,responseLevelMappingType_gen_reliabilities)}
+		    ]
+		  ]
+		)
+	      |
+	      ( nond_global_evidence {N_mdm(lit,methodName_nond_global_evidence)}
+	        [ lhs {N_mdm(lit,nondOptAlgorithm_lhs)}
+		  | ego {N_mdm(lit,nondOptAlgorithm_ego)} ]
+		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+		  [ compute {0}
+		    probabilities {N_mdm(lit,responseLevelMappingType_probabilities)}
+		    | gen_reliabilities {N_mdm(lit,responseLevelMappingType_gen_reliabilities)}
+		    ]
+		  ]
+		)
+	      [ distribution {0}
+		cumulative {N_mdm(lit,distributionType_cumulative)}
+		| complementary {N_mdm(lit,distributionType_complementary)}
+		]
+	      [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+		[ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+		]
+	      [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+		[ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+		]
+	      [ rng {0}
+		mt19937 {N_mdm(lit,rngName_mt19937)}
+		| rnum2 {N_mdm(lit,rngName_rnum2)} ]
+	      )
+	    |
+            ( nond_global_interval_est {N_mdm(lit,methodName_nond_global_interval_est)}
+	      [ lhs {N_mdm(lit,nondOptAlgorithm_lhs)}
+		| ego {N_mdm(lit,nondOptAlgorithm_ego)} ]
+	      [ rng {0}
+		mt19937 {N_mdm(lit,rngName_mt19937)}
+		| rnum2 {N_mdm(lit,rngName_rnum2)} ]
+	      )
+	    |
+            ( nond_bayes_calib {N_mdm(lit,methodName_nond_bayes_calib)}
+	      [ rng {0}
+		mt19937 {N_mdm(lit,rngName_mt19937)}
+		| rnum2 {N_mdm(lit,rngName_rnum2)} ]
+	      )
+	    |
+	    ( dace {N_mdm(lit,methodName_dace)}
+	      grid {N_mdm(lit,daceMethod_grid)}
+	      | random {N_mdm(lit,daceMethod_random)}
+	      | oas {N_mdm(lit,daceMethod_oas)}
+	      | lhs {N_mdm(lit,daceMethod_lhs)}
+	      | oa_lhs {N_mdm(lit,daceMethod_oa_lhs)}
+	      | box_behnken {N_mdm(lit,daceMethod_box_behnken)}
+	      | central_composite {N_mdm(lit,daceMethod_central_composite)}
+	      [ main_effects {N_mdm(true,mainEffectsFlag)} ]
+	      [ quality_metrics {N_mdm(true,volQualityFlag)} ]
+	      [ variance_based_decomp {N_mdm(true,varBasedDecompFlag)} ]
+	      [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+	      [ symbols INTEGER {N_mdm(int,numSymbols)} ]
+	      )
+	    |
+	    ( fsu_cvt {N_mdm(lit,methodName_fsu_cvt)}
+	      [ latinize {N_mdm(true,latinizeFlag)} ]
+	      [ quality_metrics {N_mdm(true,volQualityFlag)} ]
+	      [ variance_based_decomp {N_mdm(true,varBasedDecompFlag)} ]
+	      [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
+	      [ trial_type {0}
+		grid {N_mdm(lit,trialType_grid)}
+		| halton {N_mdm(lit,trialType_halton)}
+		| random {N_mdm(lit,trialType_random)}
+		]
+	      [ num_trials INTEGER {N_mdm(int,numTrials)} ]
+	      )
+	    |
+	    ( psuade_moat {N_mdm(lit,methodName_psuade_moat)}
+	      [ partitions INTEGERLIST {N_mdm(ushintL,varPartitions)} ]
+	      )
+	    [ samples INTEGER {N_mdm(int,numSamples)} ]
+	    )
+	  [ seed INTEGER {N_mdm(pint,randomSeed)} ]
+	  )
+	|
+#	( coliny_misc_solver
+#	  [ misc_options STRINGLIST ]
+#	  [ show_misc_options ]
+#	  )
+#	|
+	( ncsu_direct {N_mdm(lit,methodName_ncsu_direct)}
+	  [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
+	  [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
+	  [ volume_boxsize_limit REAL {N_mdm(Real,volBoxSize)} ]
+	  )
+	|
+	( nond_local_evidence {N_mdm(lit,methodName_nond_local_evidence)}
+	  [ sqp {N_mdm(lit,nondOptAlgorithm_sqp)}
+	    | nip {N_mdm(lit,nondOptAlgorithm_nip)} ]
+	  [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+	  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+	  [ compute {0}
+	    probabilities {N_mdm(lit,responseLevelMappingType_probabilities)}
+	    | gen_reliabilities {N_mdm(lit,responseLevelMappingType_gen_reliabilities)}
+	    ]
+	  ]
+	  [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+	    [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+	    ]
+	  [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+	    [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+	    ]
+	  [ distribution {0}
+	    cumulative {N_mdm(lit,distributionType_cumulative)}
+	    | complementary {N_mdm(lit,distributionType_complementary)}
+	    ]
+	)
+	|
+        ( nond_local_interval_est {N_mdm(lit,methodName_nond_local_interval_est)}
+	  [ sqp {N_mdm(lit,nondOptAlgorithm_sqp)}
+	    | nip {N_mdm(lit,nondOptAlgorithm_nip)} ]
+	  )
+	|
+	( ( nond_local_reliability {N_mdm(lit2,methodName_nond_local_reliability)}
+	    [ mpp_search {0}
+	      x_taylor_mean {N_mdm(lit,reliabilitySearchType_amv_x)}
+	      | u_taylor_mean {N_mdm(lit,reliabilitySearchType_amv_u)}
+	      | x_taylor_mpp {N_mdm(lit,reliabilitySearchType_amv_plus_x)}
+	      | u_taylor_mpp {N_mdm(lit,reliabilitySearchType_amv_plus_u)}
+	      | x_two_point {N_mdm(lit,reliabilitySearchType_tana_x)}
+	      | u_two_point {N_mdm(lit,reliabilitySearchType_tana_u)}
+	      | no_approx {N_mdm(lit,reliabilitySearchType_no_approx)}
+	      [ sqp {N_mdm(lit,nondOptAlgorithm_sqp)}
+	        | nip {N_mdm(lit,nondOptAlgorithm_nip)} ]
+	      ]
+	    [ integration {0}
+	      first_order {N_mdm(lit,reliabilityIntegration_first_order)}
+	      | second_order {N_mdm(lit,reliabilityIntegration_second_order)}
+	      [ refinement {0}
+		import {N_mdm(lit,reliabilityIntegrationRefine_is)}
+		| adapt_import {N_mdm(lit,reliabilityIntegrationRefine_ais)}
+		| mm_adapt_import {N_mdm(lit,reliabilityIntegrationRefine_mmais)}
+		[ samples INTEGER {N_mdm(int,numSamples)} ]
+		[ seed INTEGER {N_mdm(pint,randomSeed)} ]
+		]
+	      ]
+	    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+	      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+	      [ compute {0}
+		probabilities {N_mdm(lit,responseLevelMappingType_probabilities)}
+		| reliabilities {N_mdm(lit,responseLevelMappingType_reliabilities)}
+		| gen_reliabilities {N_mdm(lit,responseLevelMappingType_gen_reliabilities)}
+		]
+	      ]
+	    [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
+	      [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
+	      ]
+	    )
+	  |
+	  ( nond_global_reliability {N_mdm(lit,methodName_nond_global_reliability)}
+	    x_gaussian_process {N_mdm(lit,reliabilitySearchType_egra_x)}
+	    | u_gaussian_process {N_mdm(lit,reliabilitySearchType_egra_u)}
+	    [ all_variables {N_mdm(true,allVarsFlag)} ]
+	    [ seed INTEGER {N_mdm(pint,randomSeed)} ]
+	    [ rng {0}
+	      mt19937 {N_mdm(lit,rngName_mt19937)}
+	      | rnum2 {N_mdm(lit,rngName_rnum2)} ]
+	    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+	      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+	      [ compute {0}
+		probabilities {N_mdm(lit,responseLevelMappingType_probabilities)}
+		| gen_reliabilities {N_mdm(lit,responseLevelMappingType_gen_reliabilities)}
+		]
+	      ]
+	    )
+	  [ distribution {0}
+	    cumulative {N_mdm(lit,distributionType_cumulative)}
+	    | complementary {N_mdm(lit,distributionType_complementary)}
+	    ]
+	  [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+	    [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+	    ]
+	  [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+	    [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+	    ]
+	  )
+	|
+	( fsu_quasi_mc {0}
+	  halton {N_mdm(lit,methodName_fsu_halton)}
+	  | hammersley {N_mdm(lit,methodName_fsu_hammersley)}
+	  [ latinize {N_mdm(true,latinizeFlag)} ]
+	  [ quality_metrics {N_mdm(true,volQualityFlag)} ]
+	  [ variance_based_decomp {N_mdm(true,varBasedDecompFlag)} ]
+	  [ samples INTEGER {N_mdm(int,numSamples)} ]
+	  [ fixed_sequence {N_mdm(true,fixedSequenceFlag)} ]
+	  [ sequence_start INTEGERLIST {N_mdm(intDL,sequenceStart)} ]
+	  [ sequence_leap INTEGERLIST {N_mdm(intDL,sequenceLeap)} ]
+	  [ prime_base INTEGERLIST {N_mdm(intDL,primeBase)} ]
+	  )
+	|
+	( vector_parameter_study {N_mdm(lit,methodName_vector_parameter_study)}
+	  final_point REALLIST {N_mdm(RealDL,finalPoint)}
+	  | step_vector REALLIST {N_mdm(RealDL,stepVector)}
+	  num_steps INTEGER {N_mdm(int,numSteps)}
+	  )
+	|
+	( list_parameter_study {N_mdm(lit,methodName_list_parameter_study)}
+	  list_of_points REALLIST {N_mdm(RealDL,listOfPoints)}
+	  )
+	|
+	( centered_parameter_study {N_mdm(lit,methodName_centered_parameter_study)}
+	  step_vector REALLIST {N_mdm(RealDL,stepVector)}
+	  steps_per_variable ALIAS deltas_per_variable INTEGERLIST {N_mdm(intDL,stepsPerVariable)}
+	  )
+	|
+	( multidim_parameter_study {N_mdm(lit,methodName_multidim_parameter_study)}
+	  partitions INTEGERLIST {N_mdm(ushintL,varPartitions)}
+	  )
+
+KEYWORD model {N_mom3(start,0,stop)}
+	[ id_model STRING {N_mom(str,idModel)} ]
+	[ variables_pointer STRING {N_mom(str,variablesPointer)} ]
+	[ responses_pointer STRING {N_mom(str,responsesPointer)} ]
+	( single {N_mom(lit,modelType_single)}
+	  [ interface_pointer STRING {N_mom(str,interfacePointer)} ]
+	  )
+	|
+	( surrogate {N_mom(lit,modelType_surrogate)}
+	  [ id_surrogates INTEGERLIST {N_mom(intset,surrogateFnIndices)} ]
+	  ( global {0}
+	    ( gaussian_process {N_mom(lit,surrogateType_global_gaussian)}
+	      [ point_selection {N_mom(true,pointSelection)} ]
+	      [ trend {0}
+		constant {N_mom(order,trendOrder_0)}
+		| linear {N_mom(order,trendOrder_1)}
+		| quadratic {N_mom(order,trendOrder_2)}
+		]
+	      )
+	    |
+	    ( mars {N_mom(lit,surrogateType_global_mars)}
+	      [ max_bases INTEGER {N_mom(shint,marsMaxBases)} ]
+	      [ interpolation {0}
+		linear {N_mom(lit,marsInterpolation_linear)}
+		| cubic {N_mom(lit,marsInterpolation_cubic)}
+		]
+	      )
+	    |
+	    ( moving_least_squares {N_mom(lit,surrogateType_global_moving_least_squares)}
+	      [ poly_order INTEGER {N_mom(shint,mlsPolyOrder)} ]
+	      [ weight_function INTEGER {N_mom(shint,mlsWeightFunction)} ]
+	      )
+	    |
+	    ( neural_network {N_mom(lit,surrogateType_global_neural_network)}
+	      [ nodes INTEGER {N_mom(shint,annNodes)} ]
+	      [ range REAL {N_mom(Real,annRange)} ]
+	      [ random_weight INTEGER {N_mom(shint,annRandomWeight)} ]
+	      )
+#	    | orthogonal_polynomial {N_mom(lit,surrogateType_global_orthogonal_polynomial)}
+#	    | interpolation_polynomial {N_mom(lit,surrogateType_global_interpolation_polynomial)}
+	    |
+	    ( radial_basis {N_mom(lit,surrogateType_global_radial_basis)}
+	      [ bases INTEGER {N_mom(shint,rbfBases)} ]
+	      [ max_pts INTEGER {N_mom(shint,rbfMaxPts)} ]
+	      [ min_partition INTEGER {N_mom(shint,rbfMinPartition)} ]
+	      [ max_subsets INTEGER {N_mom(shint,rbfMaxSubsets)} ]
+	      )
+	    |
+	    ( polynomial {N_mom(lit,surrogateType_global_polynomial)}
+	      linear {N_mom(order,polynomialOrder_1)}
+	      | quadratic {N_mom(order,polynomialOrder_2)}
+	      | cubic {N_mom(order,polynomialOrder_3)}
+	      )
+	    |
+	    ( kriging {N_mom(lit,surrogateType_global_kriging)}
+	      [ correlations REALLIST {N_mom(RealDL,krigingCorrelations)} ]
+	      [ conmin_seed REALLIST {N_mom(RealDL,krigingConminSeed)} ]
+	      [ max_trials INTEGER {N_mom(shint,krigingMaxTrials)} ]
+	      [ max_correlations REALLIST {N_mom(RealDL,krigingMaxCorrelations)} ]
+	      [ min_correlations REALLIST {N_mom(RealDL,krigingMinCorrelations)} ]
+	      )
+            [ total_points INTEGER {N_mom(int,pointsTotal)} | 
+              minimum_points {N_mom(true,pointsMinimum)} | 
+              recommended_points {N_mom(true,pointsRecommended)} ]
+	    [ dace_method_pointer STRING {N_mom(str,subMethodPointer)} ]
+	    [ reuse_points ALIAS reuse_samples {0}
+	      all {N_mom(lit,approxPointReuse_all)}
+	      | region {N_mom(lit,approxPointReuse_region)}
+	      | none {N_mom(lit,approxPointReuse_none)}
+	      ]
+	    [ points_file ALIAS samples_file STRING {N_mom(str,approxPointReuseFile)} ]
+	    [ use_gradients {N_mom(true,approxGradUsageFlag)} ]
+	    [ correction {0}
+	      zeroth_order {N_mom(order,approxCorrectionOrder_0)}
+	      | first_order {N_mom(order,approxCorrectionOrder_1)}
+	      | second_order {N_mom(order,approxCorrectionOrder_2)}
+	      additive {N_mom(lit,approxCorrectionType_additive)}
+	      | multiplicative {N_mom(lit,approxCorrectionType_multiplicative)}
+	      | combined {N_mom(lit,approxCorrectionType_combined)}
+	      ]
+	    [ diagnostics STRINGLIST {N_mom(strL,diagMetrics)} ]
+	    )
+	  |
+	  ( ( multipoint {N_mom(lit,surrogateType_multipoint_tana)}
+	      tana {0}
+	      )
+	    |
+	    ( local {N_mom(lit,surrogateType_local_taylor)}
+	      taylor_series {0}
+	      )
+	    actual_model_pointer STRING {N_mom(str,truthModelPointer)}
+	    )
+	  |
+	  ( hierarchical {N_mom(lit,surrogateType_hierarchical)}
+	    low_fidelity_model_pointer STRING {N_mom(str,lowFidelityModelPointer)}
+	    high_fidelity_model_pointer STRING {N_mom(str,truthModelPointer)}
+	    ( correction {0}
+	      zeroth_order {N_mom(order,approxCorrectionOrder_0)}
+	      | first_order {N_mom(order,approxCorrectionOrder_1)}
+	      | second_order {N_mom(order,approxCorrectionOrder_2)}
+	      additive {N_mom(lit,approxCorrectionType_additive)}
+	      | multiplicative {N_mom(lit,approxCorrectionType_multiplicative)}
+	      | combined {N_mom(lit,approxCorrectionType_combined)}
+	      )
+	    )
+	  )
+	|
+	( nested {N_mom(lit,modelType_nested)}
+	  [ optional_interface_pointer STRING {N_mom(str,interfacePointer)}
+	    [ optional_interface_responses_pointer STRING {N_mom(str,optionalInterfRespPointer)} ]
+	    ]
+	  ( sub_method_pointer STRING {N_mom(str,subMethodPointer)}
+	    [ primary_variable_mapping STRINGLIST {N_mom(strL,primaryVarMaps)} ]
+	    [ secondary_variable_mapping STRINGLIST {N_mom(strL,secondaryVarMaps)} ]
+	    [ primary_response_mapping REALLIST {N_mom(RealDL,primaryRespCoeffs)} ]
+	    [ secondary_response_mapping REALLIST {N_mom(RealDL,secondaryRespCoeffs)} ]
+	    )
+	  )
+
+KEYWORD12 variables {N_vam3(start,0,stop)}
+	[ id_variables STRING {N_vam(str,idVariables)} ]
+	[ continuous_design INTEGER > 0 {N_vam(intz,numContinuousDesVars)}
+	  [ initial_point ALIAS cdv_initial_point REALLIST LEN continuous_design {N_vam(RealLd,continuousDesignVars)} ]
+	  [ lower_bounds ALIAS cdv_lower_bounds REALLIST LEN continuous_design {N_vam(RealLd,continuousDesignLowerBnds)} ]
+	  [ upper_bounds ALIAS cdv_upper_bounds REALLIST LEN continuous_design {N_vam(RealLd,continuousDesignUpperBnds)} ]
+	  [ scale_types ALIAS cdv_scale_types STRINGLIST LEN1 continuous_design {N_vam(strL,continuousDesignScaleTypes)} ]
+	  [ scales ALIAS cdv_scales REALLIST LEN1 continuous_design {N_vam(RealLd,continuousDesignScales)} ]
+	  [ descriptors ALIAS cdv_descriptors STRINGLIST LEN continuous_design {N_vam(strL,continuousDesignLabels)} ]
+	  ]
+	[ discrete_design_range INTEGER > 0 {N_vam(intz,numDiscreteDesRangeVars)}
+	  [ initial_point ALIAS ddv_initial_point INTEGERLIST LEN discrete_design_range {N_vam(intDL,discreteDesignRangeVars)} ]
+	  [ lower_bounds ALIAS ddv_lower_bounds INTEGERLIST LEN discrete_design_range {N_vam(intDL,discreteDesignRangeLowerBnds)} ]
+	  [ upper_bounds ALIAS ddv_upper_bounds INTEGERLIST LEN discrete_design_range {N_vam(intDL,discreteDesignRangeUpperBnds)} ]
+	  [ descriptors ALIAS ddv_descriptors STRINGLIST LEN discrete_design_range {N_vam(strL,discreteDesignRangeLabels)} ]
+	  ]
+	[ discrete_design_set_integer INTEGER > 0 {N_vam(intz,numDiscreteDesSetIntVars)}
+	  [ initial_point INTEGERLIST LEN discrete_design_set_integer {N_vam(intDL,discreteDesignSetIntVars)} ]
+	  [ num_set_values INTEGERLIST LEN discrete_design_set_integer {N_vam(vil,Var_Info_ndsvi)} ]
+	  set_values INTEGERLIST {N_vam(vil,Var_Info_dsvi)}
+	  [ descriptors STRINGLIST LEN discrete_design_set_integer {N_vam(strL,discreteDesignSetIntLabels)} ]
+	  ]
+	[ discrete_design_set_real INTEGER > 0 {N_vam(intz,numDiscreteDesSetRealVars)}
+	  [ initial_point REALLIST LEN discrete_design_set_real {N_vam(RealLd,discreteDesignSetRealVars)} ]
+	  [ num_set_values INTEGERLIST LEN discrete_design_set_real {N_vam(vil,Var_Info_ndsvr)} ]
+	  set_values REALLIST {N_vam(vrl,Var_Info_dsvr)}
+	  [ descriptors STRINGLIST LEN discrete_design_set_real {N_vam(strL,discreteDesignSetRealLabels)} ]
+	  ]
+	[ normal_uncertain INTEGER > 0 {N_vam(intz,numNormalUncVars)}
+	  means ALIAS nuv_means REALLIST LEN normal_uncertain {N_vam(RealLd,normalUncMeans)}
+	  std_deviations ALIAS nuv_std_deviations REALLIST LEN normal_uncertain {N_vam(RealLb,normalUncStdDevs)}
+	  [ lower_bounds ALIAS nuv_lower_bounds REALLIST LEN normal_uncertain {N_vam(RealLd,normalUncLowerBnds)} ]
+	  [ upper_bounds ALIAS nuv_upper_bounds REALLIST LEN normal_uncertain {N_vam(RealLd,normalUncUpperBnds)} ]
+	  [ descriptors ALIAS nuv_descriptors STRINGLIST LEN normal_uncertain {N_vae(caulbl,CAUVar_normal)} ]
+	  ]
+	[ lognormal_uncertain INTEGER > 0 {N_vam(intz,numLognormalUncVars)}
+	  ( lambdas ALIAS lnuv_lambdas REALLIST LEN lognormal_uncertain {N_vam(RealLd,lognormalUncLambdas)}
+	    zetas ALIAS lnuv_zetas REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncZetas)} )
+	  |
+	  ( means ALIAS lnuv_means REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncMeans)}
+	    std_deviations ALIAS lnuv_std_deviations REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncStdDevs)}
+	  | error_factors ALIAS lnuv_error_factors REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncErrFacts)} )
+	  [ lower_bounds ALIAS lnuv_lower_bounds REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncLowerBnds)} ]
+	  [ upper_bounds ALIAS lnuv_upper_bounds REALLIST LEN lognormal_uncertain {N_vam(RealUb,lognormalUncUpperBnds)} ]
+	  [ descriptors ALIAS lnuv_descriptors STRINGLIST LEN lognormal_uncertain {N_vae(caulbl,CAUVar_lognormal)} ]
+	  ]
+	[ uniform_uncertain INTEGER > 0 {N_vam(intz,numUniformUncVars)}
+	  lower_bounds ALIAS uuv_lower_bounds REALLIST LEN uniform_uncertain {N_vam(RealLb,uniformUncLowerBnds)}
+	  upper_bounds ALIAS uuv_upper_bounds REALLIST LEN uniform_uncertain {N_vam(RealUb,uniformUncUpperBnds)}
+	  [ descriptors ALIAS uuv_descriptors STRINGLIST LEN uniform_uncertain {N_vae(caulbl,CAUVar_uniform)} ]
+	  ]
+	[ loguniform_uncertain INTEGER > 0 {N_vam(intz,numLoguniformUncVars)}
+	 lower_bounds ALIAS luuv_lower_bounds REALLIST LEN loguniform_uncertain {N_vam(RealLb,loguniformUncLowerBnds)}
+	 upper_bounds ALIAS luuv_upper_bounds REALLIST LEN loguniform_uncertain {N_vam(RealUb,loguniformUncUpperBnds)}
+	  [ descriptors ALIAS luuv_descriptors STRINGLIST LEN loguniform_uncertain {N_vae(caulbl,CAUVar_loguniform)} ]
+	  ]
+	[ triangular_uncertain INTEGER > 0 {N_vam(intz,numTriangularUncVars)}
+	  modes ALIAS tuv_modes REALLIST LEN triangular_uncertain {N_vam(RealLd,triangularUncModes)}
+	  lower_bounds ALIAS tuv_lower_bounds REALLIST LEN triangular_uncertain {N_vam(RealLb,triangularUncLowerBnds)}
+	  upper_bounds ALIAS tuv_upper_bounds REALLIST LEN triangular_uncertain {N_vam(RealUb,triangularUncUpperBnds)}
+	  [ descriptors ALIAS tuv_descriptors STRINGLIST LEN triangular_uncertain {N_vae(caulbl,CAUVar_triangular)} ]
+	  ]
+	[ exponential_uncertain INTEGER > 0 {N_vam(intz,numExponentialUncVars)}
+	  betas ALIAS euv_betas REALLIST LEN exponential_uncertain {N_vam(RealLb,exponentialUncBetas)}
+	  [ descriptors ALIAS euv_descriptors STRINGLIST LEN exponential_uncertain {N_vae(caulbl,CAUVar_exponential)} ]
+	  ]
+	[ beta_uncertain INTEGER > 0 {N_vam(intz,numBetaUncVars)}
+	  alphas ALIAS buv_alphas REALLIST LEN beta_uncertain {N_vam(RealLb,betaUncAlphas)}
+	  betas ALIAS buv_betas REALLIST LEN beta_uncertain {N_vam(RealLb,betaUncBetas)}
+	  lower_bounds ALIAS buv_lower_bounds REALLIST LEN beta_uncertain {N_vam(RealLd,betaUncLowerBnds)}
+	  upper_bounds ALIAS buv_upper_bounds REALLIST LEN beta_uncertain {N_vam(RealLd,betaUncUpperBnds)}
+	  [ descriptors ALIAS buv_descriptors STRINGLIST LEN beta_uncertain {N_vae(caulbl,CAUVar_beta)} ]
+	  ]
+	[ gamma_uncertain INTEGER > 0 {N_vam(intz,numGammaUncVars)}
+	  alphas ALIAS gauv_alphas REALLIST LEN gamma_uncertain {N_vam(RealLb,gammaUncAlphas)}
+	  betas ALIAS gauv_betas REALLIST LEN gamma_uncertain {N_vam(RealLb,gammaUncBetas)}
+	  [ descriptors ALIAS gauv_descriptors STRINGLIST LEN gamma_uncertain {N_vae(caulbl,CAUVar_gamma)} ]
+	  ]
+	[ gumbel_uncertain INTEGER > 0 {N_vam(intz,numGumbelUncVars)}
+	 alphas ALIAS guuv_alphas REALLIST LEN gumbel_uncertain {N_vam(RealLb,gumbelUncAlphas)}
+	 betas ALIAS guuv_betas REALLIST LEN gumbel_uncertain {N_vam(RealLd,gumbelUncBetas)}
+	  [ descriptors ALIAS guuv_descriptors STRINGLIST LEN gumbel_uncertain {N_vae(caulbl,CAUVar_gumbel)} ]
+	  ]
+	[ frechet_uncertain INTEGER > 0 {N_vam(intz,numFrechetUncVars)}
+	 alphas ALIAS fuv_alphas REALLIST LEN frechet_uncertain {N_vam(RealLb,frechetUncAlphas)}
+	 betas ALIAS fuv_betas REALLIST LEN frechet_uncertain {N_vam(RealLd,frechetUncBetas)}
+	  [ descriptors ALIAS fuv_descriptors STRINGLIST LEN frechet_uncertain {N_vae(caulbl,CAUVar_frechet)} ]
+	  ]
+	[ weibull_uncertain INTEGER > 0 {N_vam(intz,numWeibullUncVars)}
+	 alphas ALIAS wuv_alphas REALLIST LEN weibull_uncertain {N_vam(RealLb,weibullUncAlphas)}
+	 betas ALIAS wuv_betas REALLIST LEN weibull_uncertain {N_vam(RealLb,weibullUncBetas)}
+	  [ descriptors ALIAS wuv_descriptors STRINGLIST LEN weibull_uncertain {N_vae(caulbl,CAUVar_weibull)} ]
+	  ]
+	[ histogram_bin_uncertain INTEGER > 0 {N_vam(intz,numHistogramBinUncVars)}
+	  [ num_pairs ALIAS huv_num_bin_pairs INTEGERLIST LEN histogram_bin_uncertain {N_vam(vil,Var_Info_nbp)} ]
+	  abscissas ALIAS huv_bin_abscissas REALLIST {N_vam(vrl,Var_Info_ba)}
+	  ordinates ALIAS huv_bin_ordinates REALLIST {N_vam(vrl,Var_Info_bo)}
+	  | counts ALIAS huv_bin_counts REALLIST {N_vam(vrl,Var_Info_bc)}
+	  [ descriptors ALIAS huv_bin_descriptors STRINGLIST LEN histogram_bin_uncertain {N_vae(caulbl,CAUVar_histogram_bin)} ]
+	  ]
+	[ poisson_uncertain INTEGER > 0 {N_vam(intz,numPoissonUncVars)}
+	  lambdas REALLIST LEN poisson_uncertain {N_vam(RealLd,poissonUncLambdas)}
+	  [ descriptors STRINGLIST LEN poisson_uncertain {N_vae(dailbl,DAUIVar_poisson)} ]
+	  ]
+	[ binomial_uncertain INTEGER > 0 {N_vam(intz,numBinomialUncVars)}
+	  prob_per_trial REALLIST LEN binomial_uncertain {N_vam(RealLd,binomialUncProbPerTrial)}
+	  num_trials INTEGERLIST LEN binomial_uncertain {N_vam(intDL,binomialUncNumTrials)}
+	  [ descriptors STRINGLIST LEN binomial_uncertain {N_vae(dailbl,DAUIVar_binomial)} ]
+	  ]
+	[ negative_binomial_uncertain INTEGER > 0 {N_vam(intz,numNegBinomialUncVars)}
+	  prob_per_trial REALLIST LEN negative_binomial_uncertain {N_vam(RealLd,negBinomialUncProbPerTrial)}
+	  num_trials INTEGERLIST LEN negative_binomial_uncertain {N_vam(intDL,negBinomialUncNumTrials)}
+	  [ descriptors STRINGLIST LEN negative_binomial_uncertain {N_vae(dailbl,DAUIVar_negative_binomial)} ]
+	  ]
+	[ geometric_uncertain INTEGER > 0 {N_vam(intz,numGeometricUncVars)}
+	  prob_per_trial REALLIST LEN geometric_uncertain {N_vam(RealLd,geometricUncProbPerTrial)}
+	  [ descriptors STRINGLIST LEN geometric_uncertain {N_vae(dailbl,DAUIVar_geometric)} ]
+	  ]
+	[ hypergeometric_uncertain INTEGER > 0 {N_vam(intz,numHyperGeomUncVars)}
+	  total_population INTEGERLIST LEN hypergeometric_uncertain {N_vam(intDL,hyperGeomUncTotalPop)}
+	  selected_population INTEGERLIST LEN hypergeometric_uncertain {N_vam(intDL,hyperGeomUncSelectedPop)}
+	  num_drawn INTEGERLIST LEN hypergeometric_uncertain {N_vam(intDL,hyperGeomUncNumDrawn)}
+	  [ descriptors STRINGLIST LEN hypergeometric_uncertain {N_vae(dailbl,DAUIVar_hypergeometric)} ]
+	  ]
+	[ histogram_point_uncertain INTEGER > 0 {N_vam(intz,numHistogramPtUncVars)}
+	  [ num_pairs ALIAS huv_num_point_pairs INTEGERLIST LEN histogram_point_uncertain {N_vam(vil,Var_Info_npp)} ]
+	  abscissas ALIAS huv_point_abscissas REALLIST {N_vam(vrl,Var_Info_pa)}
+	  counts ALIAS huv_point_counts REALLIST {N_vam(vrl,Var_Info_pc)}
+	  [ descriptors ALIAS huv_point_descriptors STRINGLIST LEN histogram_point_uncertain {N_vae(darlbl,DAURVar_histogram_point)} ]
+	  ]
+	[ uncertain_correlation_matrix REALLIST {N_vam(vrl,Var_Info_ucm)} ]
+	[ interval_uncertain INTEGER > 0 {N_vam(intz,numIntervalUncVars)}
+	  [ num_intervals ALIAS iuv_num_intervals INTEGERLIST LEN interval_uncertain {N_vam(vil,Var_Info_nIv)} ]
+	  interval_probs ALIAS iuv_interval_probs REALLIST {N_vam(vrl,Var_Info_Ivp)}
+	  interval_bounds ALIAS iuv_interval_bounds REALLIST {N_vam(vrl,Var_Info_Ivb)}
+	  [ descriptors ALIAS iuv_descriptors STRINGLIST LEN interval_uncertain {N_vae(ceulbl,CEUVar_interval)} ]
+	  ]
+	[ continuous_state INTEGER > 0 {N_vam(intz,numContinuousStateVars)}
+	  [ initial_state ALIAS csv_initial_state REALLIST LEN continuous_state {N_vam(RealLd,continuousStateVars)} ]
+	  [ lower_bounds ALIAS csv_lower_bounds REALLIST LEN continuous_state {N_vam(RealLd,continuousStateLowerBnds)} ]
+	  [ upper_bounds ALIAS csv_upper_bounds REALLIST LEN continuous_state {N_vam(RealLd,continuousStateUpperBnds)} ]
+	  [ descriptors ALIAS csv_descriptors STRINGLIST LEN continuous_state {N_vam(strL,continuousStateLabels)} ]
+	  ]
+	[ discrete_state_range INTEGER > 0 {N_vam(intz,numDiscreteStateRangeVars)}
+	  [ initial_state ALIAS dsv_initial_state INTEGERLIST LEN discrete_state_range {N_vam(intDL,discreteStateRangeVars)} ]
+	  [ lower_bounds ALIAS dsv_lower_bounds INTEGERLIST LEN discrete_state_range {N_vam(intDL,discreteStateRangeLowerBnds)} ]
+	  [ upper_bounds ALIAS dsv_upper_bounds INTEGERLIST LEN discrete_state_range {N_vam(intDL,discreteStateRangeUpperBnds)} ]
+	  [ descriptors ALIAS dsv_descriptors STRINGLIST LEN discrete_state_range {N_vam(strL,discreteStateRangeLabels)} ]
+	  ]
+	[ discrete_state_set_integer INTEGER > 0 {N_vam(intz,numDiscreteStateSetIntVars)}
+	  [ initial_state INTEGERLIST LEN discrete_state_set_integer {N_vam(intDL,discreteStateSetIntVars)} ]
+	  [ num_set_values INTEGERLIST LEN discrete_state_set_integer {N_vam(vil,Var_Info_nssvi)} ]
+	  set_values INTEGERLIST {N_vam(vil,Var_Info_ssvi)}
+	  [ descriptors STRINGLIST LEN discrete_state_set_integer {N_vam(strL,discreteStateSetIntLabels)} ]
+	  ]
+	[ discrete_state_set_real INTEGER > 0 {N_vam(intz,numDiscreteStateSetRealVars)}
+	  [ initial_state REALLIST LEN discrete_state_set_real {N_vam(RealLd,discreteStateSetRealVars)} ]
+	  [ num_set_values INTEGERLIST LEN discrete_state_set_real {N_vam(vil,Var_Info_nssvr)} ]
+	  set_values REALLIST {N_vam(vrl,Var_Info_ssvr)}
+	  [ descriptors STRINGLIST LEN discrete_state_set_real {N_vam(strL,discreteStateSetRealLabels)} ]
+	  ]
+
+KEYWORD12 interface {N_ifm3(start,0,stop)}
+	[ id_interface STRING {N_ifm(str,idInterface)} ]
+	[ algebraic_mappings STRING {N_ifm(str,algebraicMappings)} ]
+	[ analysis_drivers STRINGLIST {N_ifm(strL,analysisDrivers)}
+	  [ analysis_components STRINGLIST {N_ifm(str2D,analysisComponents)} ]
+	  [ input_filter STRING {N_ifm(str,inputFilter)} ]
+	  [ output_filter STRING {N_ifm(str,outputFilter)} ]
+	  ( system {N_ifm(lit,interfaceType_system)}
+	    | fork {N_ifm(lit,interfaceType_fork)}
+	    [ parameters_file STRING {N_ifm(str,parametersFile)} ]
+	    [ results_file STRING {N_ifm(str,resultsFile)} ]
+	    [ verbatim {N_ifm(true,verbatimFlag)} ]
+	    [ aprepro {N_ifm(true,apreproFlag)} ]
+	    [ file_tag {N_ifm(true,fileTagFlag)} ]
+	    [ file_save {N_ifm(true,fileSaveFlag)} ]
+	    [ work_directory {N_ifm(true,useWorkdir)}
+	        [named STRING {N_ifm(str,workDir)} ]
+	        [directory_tag ALIAS dir_tag {N_ifm(true,dirTag)} ]
+	        [directory_save ALIAS dir_save {N_ifm(true,dirSave)} ]
+	        [ template_directory STRING {N_ifm(str,templateDir)}
+		  | template_files STRINGLIST {N_ifm(strL,templateFiles)}
+	          [ copy {N_ifm(true,templateCopy)} ]
+		  [ replace {N_ifm(true,templateReplace)} ]
+	          ]
+	        ]
+	    )
+	  |
+	  ( direct {N_ifm(lit,interfaceType_direct)}
+	    [ processors_per_analysis INTEGER {N_ifm(int,procsPerAnalysis)} ]
+	    )
+	  | grid {N_ifm(lit,interfaceType_grid)}
+	  [ failure_capture {0}
+	    abort {N_ifm(lit,failAction_abort)}
+	    | retry INTEGER {N_ifm(ilit,3failAction_retry)}
+	    | recover REALLIST {N_ifm(Rlit,3failAction_recover)}
+	    | continuation {N_ifm(lit,failAction_continuation)}
+	    ]
+	  [ deactivate {0}
+	    [ active_set_vector {N_ifm(false,activeSetVectorFlag)} ]
+	    [ evaluation_cache {N_ifm(false,evalCacheFlag)} ]
+	    [ restart_file {N_ifm(false,restartFileFlag)} ]
+	    ]
+	  ]
+	[ asynchronous {N_ifm(lit,interfaceSynchronization_asynchronous)}
+	  [ evaluation_concurrency INTEGER {N_ifm(int,asynchLocalEvalConcurrency)} ]
+	  [ local_evaluation_self_scheduling {N_ifm(lit,asynchLocalEvalScheduling_self)} |
+	    local_evaluation_static_scheduling {N_ifm(lit,asynchLocalEvalScheduling_static)} ]
+	  [ analysis_concurrency INTEGER {N_ifm(int,asynchLocalAnalysisConcurrency)} ]
+	  ]
+	[ evaluation_servers INTEGER {N_ifm(int,evalServers)} ]
+	[ evaluation_self_scheduling {N_ifm(lit,evalScheduling_self)}
+	| evaluation_static_scheduling {N_ifm(lit,evalScheduling_static)} ]
+	[ analysis_servers INTEGER {N_ifm(int,analysisServers)} ]
+	[ analysis_self_scheduling {N_ifm(lit,analysisScheduling_self)}
+	| analysis_static_scheduling {N_ifm(lit,analysisScheduling_static)} ]
+
+KEYWORD12 responses {N_rem3(start,0,stop)}
+	[ id_responses STRING {N_rem(str,idResponses)} ]
+	[ descriptors ALIAS response_descriptors STRINGLIST {N_rem(strL,responseLabels)} ]
+	( num_objective_functions INTEGER >= 0 {N_rem(nnintz,numObjectiveFunctions)}
+	  [ objective_function_scale_types STRINGLIST LEN1 num_objective_functions {N_rem(strL,primaryRespFnScaleTypes)} ]
+	  [ objective_function_scales REALLIST LEN1 num_objective_functions {N_rem(RealDL,primaryRespFnScales)} ]
+	  [ multi_objective_weights REALLIST LEN num_objective_functions {N_rem(RealDL,primaryRespFnWeights)} ]
+	  [ num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearIneqConstraints)}
+	    [ nonlinear_inequality_lower_bounds REALLIST LEN num_nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
+	    [ nonlinear_inequality_upper_bounds REALLIST LEN num_nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
+	    [ nonlinear_inequality_scale_types STRINGLIST LEN1 num_nonlinear_inequality_constraints {N_rem(strL,nonlinearIneqScaleTypes)} ]
+	    [ nonlinear_inequality_scales REALLIST LEN1 num_nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqScales)} ]
+	    ]
+	  [ num_nonlinear_equality_constraints INTEGER >= 0 LEN num_nonlinear_equality_constraints {N_rem(nnintz,numNonlinearEqConstraints)}
+	    [ nonlinear_equality_targets REALLIST LEN num_nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqTargets)} ]
+	    [ nonlinear_equality_scale_types STRINGLIST LEN1 num_nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
+	    [ nonlinear_equality_scales REALLIST LEN1 num_nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
+	    ]
+	  )
+	|
+	( num_least_squares_terms INTEGER >= 0 {N_rem(nnintz,numLeastSqTerms)}
+	  [ least_squares_data_file STRING {N_rem(str,leastSqDataFile)} ]
+	  [ least_squares_term_scale_types STRINGLIST LEN1 num_least_squares_terms {N_rem(strL,primaryRespFnScaleTypes)} ]
+	  [ least_squares_term_scales REALLIST LEN1 num_least_squares_terms {N_rem(RealDL,primaryRespFnScales)} ]
+	  [ least_squares_weights REALLIST LEN num_least_squares_terms {N_rem(RealDL,primaryRespFnWeights)} ]
+	  [ num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearIneqConstraints)}
+	    [ nonlinear_inequality_lower_bounds REALLIST LEN num_nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
+	    [ nonlinear_inequality_upper_bounds REALLIST LEN num_nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
+	    [ nonlinear_inequality_scale_types STRINGLIST LEN1 num_nonlinear_inequality_constraints {N_rem(strL,nonlinearIneqScaleTypes)} ]
+	    [ nonlinear_inequality_scales REALLIST LEN1 num_nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqScales)} ]
+	    ]
+	  [ num_nonlinear_equality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearEqConstraints)}
+	    [ nonlinear_equality_targets REALLIST LEN num_nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqTargets)} ]
+	    [ nonlinear_equality_scale_types STRINGLIST LEN1 num_nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
+	    [ nonlinear_equality_scales REALLIST LEN1 num_nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
+	    ]
+	  )
+	| num_response_functions INTEGER >= 0 {N_rem(nnintz,numResponseFunctions)}
+	no_gradients {N_rem(lit,gradientType_none)}
+	| analytic_gradients {N_rem(lit,gradientType_analytic)}
+	|
+	( ( mixed_gradients {N_rem(lit,gradientType_mixed)}
+	    id_numerical_gradients INTEGERLIST {N_rem(intL,idNumericalGrads)}
+	    id_analytic_gradients INTEGERLIST {N_rem(intL,idAnalyticGrads)}
+	    )
+	  | numerical_gradients {N_rem(lit,gradientType_numerical)}
+	  [ method_source {0} ] # formerly required for dakota | vendor
+	  [ (dakota {N_rem(lit,methodSource_dakota)}
+		[ ignore_bounds {N_rem(true,ignoreBounds)} ]
+		)
+	    | vendor {N_rem(lit,methodSource_vendor)}
+	    ]
+	  [ interval_type {0} ] # formerly required for forward or central
+	  [ forward {N_rem(lit,intervalType_forward)}
+	    | central {N_rem(lit,intervalType_central)}
+	    ]
+	  [ fd_step_size ALIAS fd_gradient_step_size REALLIST := fdGradStepDflt 0.001
+		{N_rem(RealL,fdGradStepSize)} ]
+	  )
+	no_hessians {N_rem(lit,hessianType_none)}
+	|
+	( numerical_hessians {N_rem(lit,hessianType_numerical)}
+	  [ fd_step_size ALIAS fd_hessian_step_size REALLIST {N_rem(RealL,fdHessStepSize)} ]
+	  [ forward  {N_rem(false,centralHess)}
+	    | central {N_rem(true,centralHess)}
+	    ]
+	  )
+	|
+	( quasi_hessians {N_rem(lit,hessianType_quasi)}
+	  ( bfgs {N_rem(lit,quasiHessianType_bfgs)}
+	    [ damped {N_rem(lit,quasiHessianType_damped_bfgs)} ]
+	    )
+	  | sr1 {N_rem(lit,quasiHessianType_sr1)}
+	  )
+	| analytic_hessians {N_rem(lit,hessianType_analytic)}
+	|
+	( mixed_hessians {N_rem(lit,hessianType_mixed)}
+	  [ id_numerical_hessians INTEGERLIST {N_rem(intL,idNumericalHessians)}
+	    [ fd_step_size ALIAS fd_hessian_step_size REALLIST {N_rem(RealL,fdHessStepSize)} ]
+	    ]
+	  [ forward  {N_rem(false,centralHess)}
+	    | central {N_rem(true,centralHess)}
+	    ]
+	  [ id_quasi_hessians INTEGERLIST {N_rem(intL,idQuasiHessians)}
+	    ( bfgs {N_rem(lit,quasiHessianType_bfgs)}
+	      [ damped {N_rem(lit,quasiHessianType_damped_bfgs)} ]
+	      )
+	    | sr1 {N_rem(lit,quasiHessianType_sr1)}
+	    ]
+	  [ id_analytic_hessians INTEGERLIST {N_rem(intL,idAnalyticHessians)} ]
+	  )

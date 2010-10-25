@@ -1,0 +1,18 @@
+#!/bin/bash
+# job submission script for parallel Case 3 OpenMPI relative node scheduling
+
+# M=8 processors
+#PBS -l nodes=4:ppn=2:compute
+#PBS -l walltime=00:05:00
+#PBS -N DAKOTA_Case3_OpenMPI
+
+. $HOME/.bash_profile
+
+# for convenience, set DAKOTA and PATH environment variables
+# put MPI-enabled, simulator executable in $HOME/bin and add to path
+# also, put . on path to pickup the simulator driver script
+export DAKOTA=/path/to/dakota
+export PATH=$HOME/bin:$PATH:.
+
+# Case 3: Run DAKOTA in serial and launch 4 parallel analysis jobs at a time
+$DAKOTA/bin/dakota -i dakota_pstudy.in

@@ -1,0 +1,48 @@
+nn
+Natural Neighbours interpolation library
+Version 1.20
+
+C library functions and two utilities for Natural Neighbours interpolation.
+
+Copyright 2000-2002 CSIRO Marine Research
+GPO 1538 Hobart
+TAS 7001
+Australia
+Please send comments and bugs to Pavel.Sakov@csiro.au
+
+There is no warranty whatsoever.  Use at your own risk. 
+
+These code may be freely redistributed under the condition that the copyright 
+notices are not removed. You may distribute modified versions of this code 
+UNDER THE CONDITION THAT THIS CODE AND ANY MODIFICATIONS MADE TO IT IN THE 
+SAME FILE REMAIN UNDER COPYRIGHT OF CSIRO, BOTH SOURCE AND OBJECT CODE ARE 
+MADE FREELY AVAILABLE WITHOUT CHARGE, AND CLEAR NOTICE IS GIVEN OF THE 
+MODIFICATIONS.
+
+This code has is being developed and used under i386/Linux. I do not think
+there will be major problems for porting it elsewhere. Please let me know if
+you managed to do it.
+
+To compile, run:
+
+configure
+make
+(make install)
+
+For a couple of quick tests, run:
+
+make tests
+./nnphi_test
+./nnai_test
+./ht_test
+
+Apart from the `nn' library, this code contains `nnbathy' -- a simple 
+interpolation utility/example based on `nn'. Look in ./example to try or test 
+it.
+
+Acknowledgments:
+This library uses `Triangle' by Jonathan Richard Shewchuk for Delaunay 
+triangulation -- thanks, Richard, well done!
+
+Good luck!
+Pavel Sakov

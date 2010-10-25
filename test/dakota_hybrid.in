@@ -1,0 +1,101 @@
+# DAKOTA INPUT FILE: dakota_hybrid.in
+
+# Hybrid optimization on the unconstrained Textbook test problem using
+# 3 optimization methods in sequence:
+#    genetic algorithm (in Coliny)
+#    coordinate pattern search (in Coliny)
+#    nonlinear programming (in OPT++)
+# This provides an initial global search using a derivative-free method,
+# followed by a local search using a derivative-free method, with a final
+# local search using a full Newton method.
+
+# Processor specification for automated parallel tests:
+# p0=3
+
+strategy,
+	graphics
+	hybrid sequential
+#	  num_solutions_transferred = 3		#3,#p0
+#	  iterator_servers = 3			#p0
+	  method_list = 'GA' 'PS' 'NLP' 	#0,#3,#p0
+#	  method_list = 'GA' 'PS' 'PS2' 	#1,#2
+
+method,
+	id_method = 'GA'
+	model_pointer = 'M1'
+	coliny_ea
+	  seed = 1234
+	  population_size = 10
+	  verbose output
+
+method,
+	id_method = 'PS'
+	model_pointer = 'M1'
+#	max_function_evaluations = 100		#1
+	coliny_pattern_search stochastic
+	  seed = 1234
+	  initial_delta = 0.1
+	  threshold_delta = 1.e-4
+	  solution_accuracy = 1.e-10
+	  exploratory_moves basic_pattern
+	  verbose output
+
+method,
+	id_method = 'PS2'
+	model_pointer = 'M1'
+	max_function_evaluations = 10
+	coliny_pattern_search stochastic
+	  seed = 1234
+	  initial_delta = 0.1
+	  threshold_delta = 1.e-4
+	  solution_accuracy = 1.e-10
+	  exploratory_moves basic_pattern
+	  verbose output
+
+method,
+	id_method = 'NLP'
+	model_pointer = 'M2'
+        optpp_newton
+	  gradient_tolerance = 1.e-12
+	  convergence_tolerance = 1.e-15
+	  verbose output
+
+model,
+	id_model = 'M1'
+	single
+	  variables_pointer = 'V1'
+	  interface_pointer = 'I1'
+	  responses_pointer = 'R1'
+
+model,
+	id_model = 'M2'
+	single
+	  variables_pointer = 'V1'
+	  interface_pointer = 'I1'
+	  responses_pointer = 'R2'
+
+variables,
+	id_variables = 'V1'
+	continuous_design = 2
+	  initial_point    0.6    0.7
+	  upper_bounds     5.8    2.9
+	  lower_bounds     0.5   -2.9
+	  descriptors      'x1'   'x2'
+
+interface,
+	id_interface = 'I1'
+	direct					#0,#1,#3,#p0
+#       system asynch   			#2
+	  analysis_driver=  'text_book'
+
+responses,
+	id_responses = 'R1'
+	num_objective_functions = 1
+	no_gradients
+	no_hessians
+
+responses,
+	id_responses = 'R2'
+	num_objective_functions = 1
+	analytic_gradients
+	analytic_hessians

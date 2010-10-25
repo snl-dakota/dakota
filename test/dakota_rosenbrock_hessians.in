@@ -1,0 +1,52 @@
+# DAKOTA INPUT FILE - dakota_rosenbrock_hessians.in
+
+# This sample Dakota input file optimizes the Rosenbrock function.
+# See p. 95 in Practical Optimization by Gill, Murray, and Wright.
+
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# separated by a comma.
+
+# This tester executes optpp_newton with a series of Hessian settings:
+# analytic, quasi BFGS, quasi SR1, 1st-order FD, and 2nd-order FD.
+
+method,
+	optpp_newton
+	  max_iterations = 50,
+	  convergence_tolerance = 1e-4
+#	  output debug
+
+variables,
+	continuous_design = 2
+	  initial_point   -1.2    1.0
+	  lower_bounds    -2.0   -2.0
+	  upper_bounds     2.0    2.0
+	  descriptors      'x1'   'x2'
+
+interface,
+	system
+	  analysis_driver = 'rosenbrock'
+
+responses,
+	num_objective_functions = 1
+	analytic_gradients	 		#0,#1,#2,#3
+#	numerical_gradients	        	#4
+#	  method_source dakota	        	#4
+#	  interval_type central	        	#4
+#	  fd_gradient_step_size = 1.e-5 	#4
+	analytic_hessians			#0
+#	quasi_hessians damped bfgs		#1
+#	quasi_hessians sr1			#2
+#	numerical_hessians			#3,#4
+#	  fd_hessian_step_size = 1.e-5		#3,#4

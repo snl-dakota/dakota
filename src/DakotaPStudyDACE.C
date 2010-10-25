@@ -1,0 +1,96 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright (c) 2006, Sandia National Laboratories.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+//- Class:       PStudyDACE
+//- Description: Implementation code for the PStudyDACE class
+//- Owner:       Mike Eldred
+
+#include "system_defs.h"
+#include "DakotaPStudyDACE.H"
+#include "ProblemDescDB.H"
+#include "data_io.h"
+#ifdef DAKOTA_FSUDACE
+#include "fsu.H"
+#endif
+
+static const char rcsId[]="@(#) $Id: DakotaPStudyDACE.C 6492 2009-12-19 00:04:28Z briadam $";
+
+
+namespace Dakota {
+
+PStudyDACE::PStudyDACE(Model& model): Analyzer(model),
+  volQualityFlag(probDescDB.get_bool("method.quality_metrics"))
+{
+  // Check for discrete variable types
+  if ( (numDiscreteIntVars || numDiscreteRealVars) &&
+       !methodName.ends("_parameter_study") )
+    Cerr << "\nWarning: discrete variables are ignored by " << methodName
+       << std::endl;
+
+  // Check for vendor numerical gradients (manage_asv will not work properly)
+  if (gradientType == "numerical" && methodSource == "vendor") {
+    Cerr << "\nError: ParamStudy/DACE do not contain a vendor algorithm for "
+         << "numerical derivatives;\n       please select dakota as the finite "
+	 << "difference method_source." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+PStudyDACE::PStudyDACE(NoDBBaseConstructor, Model& model):
+  Analyzer(NoDBBaseConstructor(), model), volQualityFlag(false)
+{
+  // Check for vendor numerical gradients (manage_asv will not work properly)
+  if (gradientType == "numerical" && methodSource == "vendor") {
+    Cerr << "\nError: ParamStudy/DACE do not contain a vendor algorithm for "
+         << "numerical derivatives;\n       please select dakota as the finite "
+	 << "difference method_source." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+PStudyDACE::~PStudyDACE() { }
+
+
+/** Calculation of volumetric quality measures developed by FSU. */
+void PStudyDACE::
+volumetric_quality(int ndim, int num_samples, double* sample_points)
+{
+  int num_trials = 100000;
+  int seed_init  = 1 + std::rand();
+
+#ifdef DAKOTA_FSUDACE
+  chiMeas = chi_measure(ndim, num_samples, sample_points, num_trials,seed_init);
+  dMeas   = d_measure(ndim, num_samples, sample_points, num_trials, seed_init);
+  hMeas   = h_measure(ndim, num_samples, sample_points, num_trials, seed_init);
+  tauMeas = tau_measure(ndim, num_samples, sample_points, num_trials,seed_init);
+#endif
+}
+
+
+void PStudyDACE::print_results(std::ostream& s)
+{
+  if (volQualityFlag)
+    s << "\nVolumetric uniformity measures (smaller values are better):"
+      << "\n  Chi measure is: " << chiMeas << "\n    D measure is: " << dMeas
+      << "\n    H measure is: " << hMeas   << "\n  Tau measure is: " << tauMeas
+      << "\n\n";
+
+  Analyzer::print_results(s);
+
+  if (pStudyDACESensGlobal.correlations_computed())
+    pStudyDACESensGlobal.print_correlations(s,
+      iteratedModel.continuous_variable_labels(),
+      iteratedModel.discrete_int_variable_labels(),
+      iteratedModel.discrete_real_variable_labels(),
+      iteratedModel.response_labels());
+}
+
+
+} // namespace Dakota

@@ -1,0 +1,83 @@
+pdfutils.o: pdfutils.c \
+  plplotP.h plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plargs.o: plargs.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plbox.o: plbox.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plbuf.o: plbuf.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h drivers.h \
+  metadefs.h
+plcont.o: plcont.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plcore.o: plcore.c plcore.h \
+  plplotP.h plConfig.h plplot.h plstrm.h pdf.h disptab.h drivers.h \
+  plDevs.h pldebug.h
+plctrl.o: plctrl.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plcvt.o: plcvt.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+pldtik.o: pldtik.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plfill.o: plfill.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plhist.o: plhist.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plline.o: plline.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plmap.o: plmap.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plot3d.o: plot3d.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plpage.o: plpage.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plsdef.o: plsdef.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plshade.o: plshade.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plsym.o: plsym.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+pltick.o: pltick.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plvect.o: plvect.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plvpor.o: plvpor.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plwind.o: plwind.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plstripc.o: plstripc.c \
+  plplotP.h plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+plimage.o: plimage.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h
+gnusvga.o: gnusvga.c plDevs.h \
+  plplotP.h plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h \
+  drivers.h plevent.h
+dg300.o: dg300.c plDevs.h
+gd.o: gd.c plDevs.h
+hpgl.o: hpgl.c plDevs.h \
+  plplotP.h plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h \
+  drivers.h
+impress.o: impress.c plDevs.h
+linuxvga.o: linuxvga.c plDevs.h
+ljiip.o: ljiip.c plDevs.h
+ljii.o: ljii.c plDevs.h
+next.o: next.c plDevs.h
+null.o: null.c plDevs.h \
+  plplotP.h plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h \
+  drivers.h
+pbm.o: pbm.c plDevs.h
+plbuf.o: plbuf.c plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h drivers.h \
+  metadefs.h
+plmeta.o: plmeta.c plDevs.h \
+  plplotP.h plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h \
+  drivers.h metadefs.h
+ps.o: ps.c plDevs.h plplotP.h \
+  plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h drivers.h ps.h
+pstex.o: pstex.c plDevs.h
+tek.o: tek.c plDevs.h
+xfig.o: xfig.c plDevs.h
+cgm.o: cgm.c plDevs.h
+xwin.o: xwin.c plDevs.h
+plrender.o: plrender.c \
+  plplotP.h plConfig.h plplot.h plstrm.h pdf.h disptab.h pldebug.h \
+  plevent.h metadefs.h

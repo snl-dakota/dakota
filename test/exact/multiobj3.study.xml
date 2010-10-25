@@ -1,0 +1,35 @@
+<experimental-study name="multiobj3">
+  <tags>
+    <tag>nightly</tag>
+    <tag>coliny</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+  
+      <factor name="dakota_multiobj3">
+        <level>id=0 _value=0.0</level>
+      </factor>
+  
+    </factors>
+    <controls>
+       <executable timelimit="60.0">./dakota_test</executable>
+    </controls>
+  </experiment>
+
+  <analysis name="FinalValue" type="validation">
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=_opttol</options>
+  </analysis>
+
+  <analysis name="ValgrindErrors" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Errors" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+  <analysis name="ValgrindLeaks" type="validation">
+    <category>valgrind</category>
+    <options>_measurement="Valgrind Leaks" _value=0 _cmp_operator='leq'</options>
+  </analysis>
+
+</experimental-study>

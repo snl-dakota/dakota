@@ -1,0 +1,75 @@
+dnl cf/libtool.ac for PLplot  -*- autoconf -*-
+dnl
+dnl Libtool settings
+dnl
+dnl Copyright (C) 1994, 2004  Maurice LeBrun
+dnl Copyright (C) 2002, 2003, 2004  Rafael Laboissiere
+dnl Copyright (C) 2002, 2003, 2004  Alan W. Irwin
+dnl Copyright (C) 2003, 2004  Joao Cardoso
+dnl
+dnl This file is part of PLplot.
+dnl
+dnl PLplot is free software; you can redistribute it and/or modify
+dnl it under the terms of the GNU Library General Public License as published
+dnl by the Free Software Foundation; version 2 of the License.
+dnl
+dnl PLplot is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU Library General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU Library General Public License
+dnl along with the file PLplot; if not, write to the Free Software
+dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+
+dnl We don't want shared libraries; only static!
+
+AC_DISABLE_SHARED
+
+dnl The following line should belong to cf/drivers-pre.ac, but the
+dnl enable_dyndrivers variable is needed here.
+
+PL_ARG_ENABLE(dyndrivers, [enable dynamic loading of drivers], yes)
+
+dnl If the user don't want (or the system is not capable of) to build
+dnl shared libraries, then disable dynamic drivers, as they are
+dnl dynamically loaded objects.
+
+test -z "$enable_shared" && enable_shared=yes
+
+if test "$enable_shared" != yes ; then
+    AC_MSG_WARN([Dynamic drivers require enable-shared=yes,])
+    AC_MSG_WARN([setting enable_dyndrivers=no])
+    enable_dyndrivers=no
+fi
+
+PL_ARG_WITH(ltdlsystem,
+  [Use installed version of libltdl library (if it exists), instead of
+   building the convenience version shipped with the sources],
+  no)
+
+if test "$enable_dyndrivers" = "yes"; then
+  AC_LIBTOOL_DLOPEN
+  AC_CHECK_LIB(ltdl, lt_dlinit, [libltdl_in_system=yes],
+    [libltdl_in_system=no])
+  if test "$with_ltdlsystem" = no -o "$libltdl_in_system" = no ; then
+    with_ltdlsystem=no
+    AC_LIBLTDL_CONVENIENCE
+    AC_CONFIG_SUBDIRS(libltdl)
+  else
+    AC_LIBLTDL_INSTALLABLE
+  fi
+fi
+AC_SUBST(INCLTDL)
+AC_SUBST(LIBLTDL)
+
+dnl This required for dll support under cygwin.  Must occur before
+dnl AM_PROG_LIBTOOL
+
+AC_LIBTOOL_WIN32_DLL
+
+AM_PROG_LIBTOOL
+
+AM_CONDITIONAL(with_ltdlsystem, [test "$with_ltdlsystem" = yes])
+
+

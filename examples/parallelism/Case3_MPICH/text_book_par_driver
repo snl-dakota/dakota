@@ -1,0 +1,136 @@
+#!/bin/sh
+
+# MPI module switch may not be necessary depending on the MPI environment of the
+# parent, job_submission script (and the MPI used to build the simulator exe).
+# . /opt/modules/default/init/bash
+# module switch mpi mpi/mvapich-0.9.8_ofed_intel-10.1-f015-c015
+
+# script to create working directory, populate, and run text_book_simple_par
+# in parallel on a subset of processors
+
+#-----------------------------------
+# CREATE TEMPORARY WORKING DIRECTORY
+#
+# This prevents file trampling when running concurrent jobs.
+#-----------------------------------
+
+num=$(echo $1 | awk -F. '{print $NF}')
+topdir=`pwd`
+workdir=$topdir/workdir.$num
+
+mkdir workdir.$num
+cp $topdir/$1 $workdir/dakota_vars
+cd $workdir
+
+
+# -------------------------
+# INPUT FILE PRE-PROCESSING
+# -------------------------
+
+# This demo does not need file pre-processing, but normally (see
+# below) APREPRO or DPREPRO is used to "cut-and-paste" data from the
+# params.in.# file written by DAKOTA into the template input file for
+# the user's simulation code.
+
+# aprepro run6crh_rigid_template.i temp_rigid.new
+# grep -vi aprepro temp_rigid.new > run6crh_rigid.i
+
+# dprepro $1 application_input.template application.in 
+
+# For this example we just prepare the application input by copying
+# the parameters:
+cp dakota_vars application.in
+
+
+# -------------------
+# RUN SIMULATION CODE
+# TODO: instead of repeating the driver in every directory, could we just have
+#       a separate mpi_launch_app.sh in each dir?
+# -------------------
+
+echo "$0 running text_book_simple_par on 2 processors."
+
+
+### --- BEGIN MPIEXEC --- ###
+
+# Should work for any number of processors. This mpiexec will contact
+# the master (server) mpiexec process started in the submission to
+# determine nodes on which to run.
+mpiexec -n 2 text_book_simple_par application.in application.out
+
+# in this case you can't reserve a node for DAKOTA
+
+### --- END MPIEXEC --- ###
+
+
+### --- BEGIN SRUN --- ###
+
+# !!! Requires that ncpu either divide into ppn or be a multiple of it
+
+# number of concurrent jobs (must agree with DAKOTA evaluation_concurrency)
+# CONCURRENCY=`grep concurr dakota_pstudy.in | cut -d "=" -f2`
+CONCURRENCY=3
+
+# number of processors per node (on TLCC, aka $SLURM_CPUS_ON_NODE)
+PPN=16
+
+# number of processors per application job
+APPLIC_PROCS=2
+
+# nodes per application job = ceil(ncpu/ppn) (emulate ceil with integer arith)
+NUM_NODES=$(( (APPLIC_PROCS + PPN - 1) / PPN )) 
+
+# relative node on which the job should schedule (floor)
+RELATIVE_NODE=$(( (num - 1) % CONCURRENCY * APPLIC_PROCS / PPN ))
+
+# RESERVE a node for DAKOTA (recommended, but assumes DAKOTA starts on
+# the zeroth node in the allocation; some MPI start DAKOTA on the last
+# node in which case you need not do anything special to these calcs)
+
+# NOTE: it's not trivial to reserve a processor for DAKOTA in this
+# case (due to -N1-1), though easy to reserve a _node_.  (must allow
+# one extra node in submission).  It is easy to reserve one CPU for
+# DAKOTA if the analysis requries only one CPU.
+##RELATIVE_NODE=$(( (num - 1) % CONCURRENCY * APPLIC_PROCS / PPN + 1 ))
+
+
+# constrain each application instance to run on nnodes nodes, ncpu
+# processes, and start allocating with (zero-based) relnode
+srun -N ${NUM_NODES}-${NUM_NODES} -n $APPLIC_PROCS -r $RELATIVE_NODE \
+  text_book_simple_par application.in application.out
+
+### --- END SRUN --- ###
+
+# use sleep command if file I/O timing is a problem
+#sleep 10
+
+
+# ---------------------------
+# OUTPUT FILE POST PROCESSING
+# ---------------------------
+
+# Normally any application-specific post-processing to prepare the
+# results.out file for DAKOTA would go here. Here we'll substitute a
+# copy command:
+
+cp application.out results2dakota
+
+# for demo, append the node name to see on which node this task ran
+# (comment out for actual application)
+uname -n >> results2dakota
+
+# When using DAKOTA's fork interface, the application can directly
+# write its output (if in the right format) to results.out.$num
+# (../$2) for DAKOTA, however for the system interface, use the
+# following move to avoid a race condition:
+
+mv results2dakota ../$2
+cd ..
+
+# -------------
+# CLEANUP
+# -------------
+
+# uncomment to cleanup work directories as evaluations progress
+#rm -rf ./workdir.$num
+#rm ./results.out.$num

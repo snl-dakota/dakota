@@ -1,0 +1,139 @@
+<!--
+    plplotdoc-print.dsl.in: DSSSL customization for the PDF/PS PLplot docs
+        
+    Copyright (C) 1994  Geoffrey Furnish and Maurice LeBrun
+    Copyright (C) 1999, 2000, 2001, 2002, 2003  Alan W. Irwin and Rafael Laboissiere
+    Copyright (C) 2003  Joao Cardoso
+
+    Redistribution and use in source (XML DocBook) and "compiled" forms
+    (HTML, PDF, PostScript, DVI, TeXinfo and so forth) with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+       1. Redistributions of source code (XML DocBook) must retain the
+          above copyright notice, this list of conditions and the following
+          disclaimer as the first lines of this file unmodified.
+
+       2. Redistributions in compiled form (transformed to other DTDs,
+          converted to HTML, PDF, PostScript, and other formats) must
+          reproduce the above copyright notice, this list of conditions and
+          the following disclaimer in the documentation and/or other
+          materials provided with the distribution.
+
+    Important: THIS DOCUMENTATION IS PROVIDED BY THE PLPLOT PROJECT "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE PLPLOT PROJECT BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS DOCUMENTATION,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<!DOCTYPE style-sheet PUBLIC "@DSSSL_DTD_PUBID@" [
+<!ENTITY dbstyle 
+  PUBLIC "@DB_SS_PRINT_PUBID@"
+  CDATA DSSSL>
+]>
+
+<style-sheet>
+<style-specification use="docbook">
+<style-specification-body>
+
+(define %two-side% #t)
+(define %default-quadding% 'justify)
+
+(element lineannotation
+  (make sequence
+    font-posture: 'italic
+    (literal "\U-2329")
+    (process-children)
+    (literal "\U-232A")))
+
+(define %title-font-family% "cmss")
+
+(define %body-font-family% "cmr")
+
+(define %mono-font-family% "cmtt")
+
+(define %admon-font-family% "cmss")
+
+(define %guilabel-font-family% "cmss")
+
+(define %footnote-ulinks% #t)
+(define bop-footnotes #t)
+
+(element funcprototype 
+  (make paragraph
+    first-line-start-indent: %para-indent-firstpara%
+    space-before: %para-sep%
+    font-family-name: %mono-font-family%
+    font-weight: 'medium
+    font-posture: 'upright
+    start-indent: 0pt
+    (make box
+      display?: #f
+      box-type: 'border
+      line-thickness: 0.7pt
+      start-indent: %body-start-indent%
+      end-indent: 0pt
+      (process-children))))
+
+(define %block-sep% %para-sep%)
+
+(define ($section-title$)
+  (let* ((sect (current-node))
+         (info (info-element))
+         (exp-children (if (node-list-empty? info)
+                           (empty-node-list)
+                           (expand-children (children info) 
+                                            (list (normalize "bookbiblio") 
+                                                  (normalize "bibliomisc")
+                                                  (normalize "biblioset")))))
+         (parent-titles (select-elements (children sect) (normalize "title")))
+         (info-titles   (select-elements exp-children (normalize "title")))
+         (titles        (if (node-list-empty? parent-titles)
+                            info-titles
+                            parent-titles))
+         (subtitles     (select-elements exp-children (normalize "subtitle")))
+         (renderas (inherited-attribute-string (normalize "renderas") sect))
+         (hlevel                          ;; the apparent section level;
+          (if renderas                    ;; if not real section level,
+              (string->number             ;;   then get the apparent level
+               (substring renderas 4 5))  ;;   from "renderas",
+              (SECTLEVEL)))               ;; else use the real level
+         (hs (HSIZE (- 4 hlevel))))
+    (make sequence
+      (make paragraph
+        font-family-name: %title-font-family%
+        font-weight:  (if (< hlevel 5) 'bold 'medium)
+        font-posture: (if (< hlevel 5) 'upright 'italic)
+        font-size: hs
+        line-spacing: (* hs %line-spacing-factor%)
+        space-before: (* hs %head-before-factor%)
+        space-after: (if (node-list-empty? subtitles)
+                         (* hs %head-after-factor%)
+                         0pt)
+        start-indent: 0pt
+        first-line-start-indent: 0pt
+        quadding: %section-title-quadding%
+        keep-with-next?: #t
+        heading-level: (if %generate-heading-level% (+ hlevel 1) 0)
+        ;; SimpleSects are never AUTO numbered...they aren't hierarchical
+        (if (string=? (element-label (current-node)) "")
+            (empty-sosofo)
+            (literal (element-label (current-node)) 
+                     (gentext-label-title-sep (gi sect))))
+        (element-title-sosofo (current-node)))
+      (with-mode section-title-mode
+        (process-node-list subtitles))
+      ($section-info$ info))))
+
+
+</style-specification-body>
+</style-specification>
+<external-specification id="docbook" document="dbstyle">
+</style-sheet>

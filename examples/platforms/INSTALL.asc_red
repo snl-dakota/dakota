@@ -1,0 +1,34 @@
+========================================
+ASC Red (SNL Internal) Cross Compilation
+========================================
+
+For cross-compiling DAKOTA for the janus service and compute nodes,
+the procedure is as follows:
+
+  ./configure --target=tflop
+  make
+
+For cross-compiling DAKOTA for the janus compute nodes, the procedure
+is similar:
+
+  ./configure --target=cougar
+  make
+
+The build of the parser in Dakota/packages/idr currently
+requires some manual intervention in order for the code generator to
+succeed in a cross-compilation environment.  After the make fails at
+the execution of idr-gen, you can do either of the following:
+1.) scp idr-gen to janus, execute it (see generated_code target in 
+    IDR Makefile for steps), and then copy the generated files back 
+    to idr/pentium-intel-tflop or idr/pentium-intel-cougar.
+2.) copy keywordtable.C, idr-gen-code.C, & idr-keyword.h from another
+    up-to-date build directory (these files should be identical for
+    the same dakota.input.spec version).
+and then add a softlink to the idr-keyword.h file in the build
+directory at the Dakota/packages/idr level, e.g.:
+
+  cd Dakota/packages/idr
+  ln -s pentium-intel-cougar/idr-keyword.h idr-keyword.h
+
+Execute make again and the parser build process should now complete.
+

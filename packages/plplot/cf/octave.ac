@@ -1,0 +1,169 @@
+dnl cf/octave.ac for PLplot  -*- autoconf -*-
+dnl
+dnl Octave support
+dnl
+dnl Copyright (C) 1994, 2004  Maurice LeBrun
+dnl Copyright (C) 2002, 2003, 2004  Rafael Laboissiere
+dnl Copyright (C) 2002, 2003, 2004  Alan W. Irwin
+dnl Copyright (C) 2003, 2004  Joao Cardoso
+dnl
+dnl This file is part of PLplot.
+dnl
+dnl PLplot is free software; you can redistribute it and/or modify
+dnl it under the terms of the GNU Library General Public License as published
+dnl by the Free Software Foundation; version 2 of the License.
+dnl
+dnl PLplot is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU Library General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU Library General Public License
+dnl along with the file PLplot; if not, write to the Free Software
+dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+
+PL_ARG_ENABLE(octave, [compile Octave interface code], no)
+
+if test "$enable_octave" = "yes"; then
+
+# Check that plplot was built with shared libs
+    if test "$enable_shared" != "yes"; then
+        AC_MSG_WARN([Octave support requires enable_shared=yes,])
+        AC_MSG_WARN([setting enable_octave=no]);
+        enable_octave=no;
+    fi
+
+# check for matwrap
+    if test "$enable_octave" = "yes"; then
+        AC_CHECK_PROG(has_matwrap, matwrap, yes, no)
+        if test "$has_matwrap" = "yes"; then
+	    MATWRAP=`which matwrap`
+	else
+            MATWRAP=`pwd`"/bindings/octave/matwrap/matwrap"
+            AC_MSG_WARN([Using builtin matwrap.]);
+        fi
+    fi
+
+# check for user supplied mkoctfile
+    if test "$enable_octave" = "yes"; then
+        PL_ARG_WITH(mkoctfile, [Specify mkoctfile], mkoctfile)
+        MKOCTFILE=`basename $with_mkoctfile`
+        AC_CHECK_PROG(has_mkoctfile, $MKOCTFILE, yes, no)
+        if test "$has_mkoctfile" = "no"; then
+            AC_MSG_WARN([$MKOCTFILE not found, disabling Octave support.]);
+            enable_octave=no;
+        fi
+    fi
+
+# check for user supplied Octave
+    if test "$enable_octave" = "yes"; then
+        PL_ARG_WITH(octavex, [Specify Octave], octave)
+        OCTAVE=`basename $with_octavex`
+        AC_CHECK_PROG(has_octave, $OCTAVE, yes, no)
+        if test "$has_octave" = "no"; then
+            AC_MSG_WARN([$OCTAVE not found, disabling Octave support.]);
+            enable_octave=no;
+        fi
+    fi
+
+AC_SUBST(OCTAVE)
+
+# Set Octave installation directories
+    if test "$enable_octave" = "yes"; then
+
+        # Get Octave version
+        AC_MSG_CHECKING([Octave version])
+        OCTAVE_VERSION=`$OCTAVE --version | sed 's/^.*version //;q' \
+                        | sed 's/ .*$//'`
+        AC_MSG_RESULT($OCTAVE_VERSION)
+
+	# This is the directory for installation of the PLplot_Octave
+        # specific m files
+        PLPLOT_OCTAVE_DIR=${prefix}/share/plplot_octave
+
+	# Get Configuration default values for Octave
+        AC_MSG_CHECKING([Octave prefix])
+        PL_OCTAVE_CONFIG_INFO(OCTAVE_PREFIX, prefix)
+        AC_MSG_RESULT($OCTAVE_PREFIX)
+
+        AC_MSG_CHECKING([Octave m dir])
+	if test -n "`echo $OCTAVE_VERSION | sed 's/^2.1//p;d;q'`" ; then
+            # Octave version 2.1
+            PL_OCTAVE_CONFIG_INFO(OCTAVE_M_DIR, localfcnfiledir)
+        else
+            # Octave version 2.0
+            PL_OCTAVE_CONFIG_INFO(OCTAVE_M_DIR, localfcnfilepath)
+            [OCTAVE_M_DIR=`echo $OCTAVE_M_DIR | sed 's/[^:]*://g;s://$::'`]
+        fi
+
+	# If the Octave prefix does not coincide with the PLplot one, then
+	# install the .oct file in the same directory of the .m scripts,
+        # with the Octave prefix being replaced by the PLplot one.
+	if test "$OCTAVE_PREFIX" != "$prefix" ; then
+            OCTAVE_M_DIR=${prefix}/`echo $OCTAVE_M_DIR \
+                                   | sed "s:$OCTAVE_PREFIX/*::"`
+	fi
+        AC_MSG_RESULT($OCTAVE_M_DIR)
+
+        AC_MSG_CHECKING([Octave oct dir])
+	if test -n "`echo $OCTAVE_VERSION | sed 's/^2.1//p;d;q'`" ; then
+            # Octave version 2.1
+            PL_OCTAVE_CONFIG_INFO(OCTAVE_OCT_DIR, localoctfiledir)
+        else
+            # Octave version 2.0
+            PL_OCTAVE_CONFIG_INFO(OCTAVE_OCT_DIR, localoctfilepath)
+            [OCTAVE_OCT_DIR=`echo $OCTAVE_OCT_DIR | sed 's/[^:]*://g;s://$::'`]
+        fi
+	if test "$OCTAVE_PREFIX" != "$prefix" ; then
+  	    OCTAVE_OCT_DIR=$PLPLOT_OCTAVE_DIR
+	fi
+        AC_MSG_RESULT($OCTAVE_OCT_DIR)
+
+    fi
+fi
+
+AC_SUBST(MATWRAP)
+AC_SUBST(MKOCTFILE)
+AC_SUBST(OCTAVE_VERSION)
+AC_SUBST(OCTAVE_OCT_DIR)
+AC_SUBST(OCTAVE_M_DIR)
+AC_SUBST(PLPLOT_OCTAVE_DIR)
+AC_SUBST(enable_octave)
+
+AM_CONDITIONAL(enable_octave, [test "$enable_octave" = yes])
+
+AC_CONFIG_FILES([
+    bindings/octave/Makefile
+    bindings/octave/plplot_octave.h
+    bindings/octave/PLplot/Makefile
+    bindings/octave/PLplot/plplot_octave_path.m
+    bindings/octave/PLplot/support/Makefile
+    bindings/octave/demos/Makefile
+    bindings/octave/misc/Makefile
+])
+
+dnl The following is for use in bindings/octave/plplot_octave.h.in (RL)
+
+DEFINE_PL_DOUBLE=
+test "$with_double" = yes && DEFINE_PL_DOUBLE="#define PL_DOUBLE"
+AC_SUBST(DEFINE_PL_DOUBLE)
+
+dnl Variables for mkoctfile
+dnl ******************************************************************
+dnl WARNING: The stuff below is just transient and should disappear as
+dnl soon as the brokenness of NetBSD is fixed.
+dnl ******************************************************************
+dnl Variables are set only if the C++ compiler is g++
+
+MKOCTFILE_VARS=
+case "$host_os" in
+    netbsd* )
+        if test "$CXX" = g++ ; then
+            MKOCTFILE_VARS='SH_LD="g++" SH_LDFLAGS="-shared"'
+	    AC_MSG_WARN([Setting mkoctfile variables for broken NetBSD system])
+        fi
+    ;;
+esac
+AC_SUBST(MKOCTFILE_VARS)
+
+

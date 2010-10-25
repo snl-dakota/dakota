@@ -1,0 +1,77 @@
+C      $Id: x06f.fm4 3186 2006-02-15 18:17:33Z slbrow $
+C      Displays the plotter symbols for PLPOIN
+C
+C      Copyright (C) 2004  Alan W. Irwin
+C
+C      This file is part of PLplot.
+C
+C      PLplot is free software; you can redistribute it and/or modify
+C      it under the terms of the GNU General Library Public License as
+C      published by the Free Software Foundation; either version 2 of the
+C      License, or (at your option) any later version.
+C
+C      PLplot is distributed in the hope that it will be useful,
+C      but WITHOUT ANY WARRANTY; without even the implied warranty of
+C      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+C      GNU Library General Public License for more details.
+C
+C      You should have received a copy of the GNU Library General Public
+C      License along with PLplot; if not, write to the Free Software
+C      Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+      implicit none
+      integer i, j, k
+      real*8 x, y
+
+      character*3 text
+      integer PL_PARSE_FULL
+      parameter(PL_PARSE_FULL = 1)
+C      Process command-line arguments
+      call plparseopts(PL_PARSE_FULL)
+
+
+C      Full sized page for display
+
+      call plinit()
+      call pladv(0)
+
+      call plcol0(2)
+
+C      Set up viewport and window
+
+      call plvpor(0.1d0, 1.0d0, 0.1d0, 0.9d0)
+      call plwind(0.0d0, 1.0d0, 0.0d0, 1.3d0)
+
+C      Draw the grid using plbox
+
+      call plbox('bcg', 0.1d0, 0, 'bcg', 0.1d0, 0)
+      call plcol0(15)
+
+C      Write the digits below the frame
+
+      do i=0,9
+        write (text,'(i1)') i
+        call plmtex('b', 1.5d0, (0.1d0*i+0.05d0), 0.5d0, text)
+      enddo
+      k=0
+      do i=0,12
+
+C        Write the digits to the left of the frame
+
+        write (text,'(i3)') 10*i
+        call plmtex('lv', 1.0d0, (1.0d0-(2*i+1)/26.0d0),
+     &    1.0d0, text)
+        do j=0,9
+          x=0.1d0*j+0.05d0
+          y=1.25d0-0.1d0*i
+
+C          Display the symbols
+
+          if (k.lt.128) call plpoin(1,x,y,k)
+          k=k+1
+        enddo
+      enddo
+      call plmtex('t', 1.5d0, 0.5d0, 0.5d0,
+     &  'PLplot Example 6 - plpoin symbols')
+      call plend
+      end

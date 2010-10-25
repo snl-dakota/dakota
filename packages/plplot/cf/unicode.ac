@@ -1,0 +1,42 @@
+dnl cf/unicode.ac for PLplot  -*- autoconf -*-
+dnl
+dnl -------------------------------------------------------------------------
+dnl Checks for libunicode
+dnl -------------------------------------------------------------------------
+dnl
+dnl Copyright (C) 2005  Rafael Laboissiere
+dnl
+dnl This file is part of PLplot.
+dnl
+dnl PLplot is free software; you can redistribute it and/or modify
+dnl it under the terms of the GNU Library General Public License as published
+dnl by the Free Software Foundation; version 2 of the License.
+dnl
+dnl PLplot is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU Library General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU Library General Public License
+dnl along with the file PLplot; if not, write to the Free Software
+dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+
+PL_ARG_WITH(libunicode, [Use libunicode for decoding UTF-8 strings], [yes])
+
+UNICODEINCS=
+UNICODELIBS=
+
+if test "$with_libunicode" = yes ; then
+    AC_CHECK_PROGS(UNICODE_CONFIG, unicode-config, no)
+    if test "$UNICODE_CONFIG" = no ; then
+        AC_MSG_WARN([unicode-config not found, setting with_libunicode=no])
+        with_libunicode=no
+    else
+        UNICODEINCS=`$UNICODE_CONFIG --cflags`
+        UNICODELIBS=`$UNICODE_CONFIG --libs`
+        AC_DEFINE(HAVE_LIBUNICODE, [], [Define if libunicode is available])
+    fi
+fi
+
+AC_SUBST(UNICODEINCS)
+AC_SUBST(UNICODELIBS)

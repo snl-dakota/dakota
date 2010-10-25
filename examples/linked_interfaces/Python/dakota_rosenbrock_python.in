@@ -1,0 +1,30 @@
+# DAKOTA INPUT FILE - dakota_python_rosenbrock.in
+# demonstrate the Python interface using list or numpy
+
+method,						
+#	optpp_q_newton				#0,#1
+	optpp_newton				#2,#3
+	  max_iterations = 50			
+	  convergence_tolerance = 1e-4
+
+variables,					
+	continuous_design = 2			
+	  cdv_initial_point  -1.2  1.0		
+	  cdv_lower_bounds   -2.0 -2.0		
+	  cdv_upper_bounds    2.0  2.0		
+	  cdv_descriptor      'x1' 'x2'
+
+interface,							
+	direct							
+	  analysis_drivers = 'python'				
+# the current analysis component format is module:function	
+# use this for the list method of passing the data		
+#	  analysis_components = 'rosenbrock:rosenbrock_list'	#0,#2
+# use this for the numpy array method of passing the data	
+	  analysis_components = 'rosenbrock:rosenbrock_numpy' 	#1,#3
+
+responses,				
+	num_objective_functions = 1	
+	analytic_gradients		
+#	no_hessians				#0,#1
+	analytic_hessians			#2,#3

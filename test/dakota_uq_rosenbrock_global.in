@@ -1,0 +1,30 @@
+# DAKOTA INPUT FILE : dakota_uq_rosenbrock_global.in
+
+# timeout overrides: 0=TD180
+
+strategy,
+	single_method #graphics
+
+method,
+	nond_global_reliability
+	  x_gaussian_process
+#	  u_gaussian_process
+	  response_levels = .5 1. 5. 10. 50. 100. 500. 1000.
+	  seed = 123457
+
+variables,
+	normal_uncertain = 2
+       	  means             =  0.   0.
+	  std_deviations    =  1.   1.
+	  descriptors       =  'x1' 'x2'
+#	uncertain_correlation_matrix =  1   0.3
+#					0.3 1
+
+interface,
+	direct
+	  analysis_driver = 'rosenbrock'
+
+responses,
+	num_response_functions = 1
+	no_gradients
+	no_hessians

@@ -1,0 +1,122 @@
+# Example for Linux with -rdyamic linking of Dakota, which does not require
+# dakota to be compiled with -fPIC.  For testing I (dmg)configured with
+# ./configure F77=g95 FC=g95 FCLIBS=' ' CPPFLAGS=-DMPICH_IGNORE_CXX_SEEK FLIBS='/home/dmgay/h/bin/g95-install/lib/gcc-lib/x86_64-unknown-linux-gnu/4.1.2/libf95.a /usr/lib/gcc/x86_64-redhat-linux/3.4.6/libg2c.a -lm' --prefix=`pwd`/local --with-dl_solver --with-plugin --enable-docs --with-blas=`pwd`/blas.a
+
+
+PATH=:/usr/kerberos/bin:/home/dmgay/h/bin:/usr/local/gcc-4.4.2/bin:/usr/local/bin:/usr/bin:/bin:/usr/X11R6/bin
+
+CC = g++
+FC = g95
+CFLAGS = -O2 -fPIC
+D = ..
+# D = Dakota directory
+
+Inc = \
+	-DHAVE_CONFIG_H \
+	-I$D/src \
+	-I$D \
+	-I$D/packages/teuchos/src \
+	-I$D/packages/Pecos \
+	-I$D/packages/Pecos/src \
+	-I$D/packages \
+	-I$D/packages/plplot/include \
+	-I$D/packages/motif/include \
+	-I$D/packages/motif/src/Widgets \
+	-I$D/packages/boost \
+	-I$D/packages/Pecos/packages/VPISparseGrid/src \
+	-I$D/packages/Surfpack \
+	-I$D/packages/Surfpack/src \
+	-I$D/packages/Surfpack/src/interpreter \
+	-I$D/packages/Surfpack/src/surfaces \
+	-I$D/methods/acro/include \
+	-I$D/methods/acro/include/tinyxml \
+	-I$D/methods/DDACE \
+	-I$D/methods/DDACE/include \
+	-I$D/methods/FSUDace \
+	-I$D/methods/hopspack/src-appspack \
+	-I$D/methods/hopspack/src-cddlib \
+	-I$D/methods/hopspack/src-conveyor \
+	-I$D/methods/hopspack/src-nappspack \
+	-I$D/methods/hopspack/src-shared \
+	-I$D/methods/JEGA \
+	-I$D/methods/JEGA/eddy \
+	-I$D/methods/JEGA/include \
+	-I$D/methods/OPTPP/include \
+	-I$D/methods/OPTPP/newmat11 \
+	-I$D/methods/PSUADE \
+	-DMPICH_IGNORE_CXX_SEEK
+
+#Rpath = -Wl,-rpath,.,-rpath,/usr/local/gcc-4.4.2/lib64
+Rpath = -Wl,-rpath,/usr/local/gcc-4.4.2/lib64
+
+L1 = $(Rpath) $D/src/.libs/libdakota.a $D/packages/teuchos/src/.libs/libteuchos.a $D/packages/Pecos/.libs/libpecos.a $D/packages/teuchos/src/.libs/libteuchos.a $D/packages/plplot/src/.libs/libplplotd.a $D/packages/motif/src/.libs/libDGraphics.a $D/packages/Surfpack/src/.libs/libsurfpack.a $D/methods/CONMIN/src/.libs/libconmin.a $D/methods/DDACE/src/.libs/libddace.a $D/methods/FSUDace/.libs/libfsudace.a $D/methods/NL2SOL/.libs/libcport.a $D/methods/NPSOL/.libs/libnpsol.a $D/methods/OPTPP/lib/.libs/libopt.a $D/methods/PSUADE/.libs/libpsuade.a $D/methods/OPTPP/lib/.libs/libnewmat.a $D/packages/Pecos/packages/LHS/.libs/liblhs.a $D/packages/Pecos/packages/VPISparseGrid/src/.libs/libsparsegrid.a $D/methods/NCSUOpt/libncsuopt.a $D/methods/acro/packages/coliny/src/libcoliny.a $D/methods/acro/packages/utilib/src/.libs/libutilib.a $D/methods/acro/packages/colin/src/libcolin.a $D/methods/acro/packages/pebbl/src/libpebbl.a $D/methods/acro/packages/utilib/src/.libs/libutilib.a $D/methods/acro/packages/tpl/3po/lib3po.a $D/methods/hopspack/src-nappspack/libnappspack.a $D/methods/hopspack/src-appspack/libappspack.a $D/methods/hopspack/src-conveyor/libconveyor.a $D/methods/hopspack/src-shared/libshared.a $D/methods/hopspack/src-cddlib/libcdd.a -lgd -lfreetype -lXpm -lXm -ljpeg -lpng -lXmu -lXt -lXp -lXext -lX11 -lSM -lICE $D/packages/ampl/funcadd0.o $D/packages/ampl/amplsolver.a $D/lapack.a $D/blas.a /home/dmgay/h/bin/g95-install/lib/gcc-lib/x86_64-unknown-linux-gnu/4.1.2/libf95.a /usr/lib/gcc/x86_64-redhat-linux/3.4.6/libg2c.a -lm -ldl
+
+.C.o:
+	$(CC) -c $(CFLAGS) $(Inc) $*.C
+
+# for testing "nidrgen -lp noj.nspec"
+
+L = $D/lapack.a $D/blas.a
+
+all: NIDR_keywds.H dakdll dot.dll jega.dll nlpql.dll npsol.dll
+
+dakdll = $D/src/main.o DakotaIterator1.o NIDRProblemDescDB1.o $D/src/.libs/libdakota.a
+dakdll: $(dakdll)
+	mpic++ -pthread -rdynamic -o dakdll $(Rpath) $(dakdll) $(L1)
+
+#main1.o: $D/src/main.C
+#	$(CC) -c -o main1.o -Dmain=main1 $(CFLAGS) $(Inc) $D/src/main.C
+
+DakotaIterator1.o: $D/src/DakotaIterator.C
+	$(CC) -c -o DakotaIterator1.o -DDAKOTA_DYNLIB $(CFLAGS) $(Inc) $D/src/DakotaIterator.C
+
+# Must have NIDRProblemDescDB1.C here so it includes the
+# right NIDR_keywds.H
+
+NIDRProblemDescDB1.C: $D/src/NIDRProblemDescDB.C
+	ln $D/src/NIDRProblemDescDB.C NIDRProblemDescDB1.C || \
+	cp $D/src/NIDRProblemDescDB.C NIDRProblemDescDB1.C
+
+DOTOptimizer.o: $D/src/DOTOptimizer.C
+	$(CC) -c -o DOTOptimizer.o $(CFLAGS) $(Inc) $D/src/DOTOptimizer.C
+
+JEGAOptimizer.o: $D/src/JEGAOptimizer.C
+	$(CC) -c -o JEGAOptimizer.o $(CFLAGS) $(Inc) $D/src/JEGAOptimizer.C
+
+NLPQLPOptimizer.o: $D/src/NLPQLPOptimizer.C
+	$(CC) -c -o NLPQLPOptimizer.o $(CFLAGS) $(Inc) $D/src/NLPQLPOptimizer.C
+
+NPSOLOptimizer.o: $D/src/NPSOLOptimizer.C
+	$(CC) -c -o NPSOLOptimizer.o $(CFLAGS) $(Inc) $D/src/NPSOLOptimizer.C
+
+NLSSOLLeastSq.o: $D/src/NLSSOLLeastSq.C
+	$(CC) -c -o NLSSOLLeastSq.o $(CFLAGS) $(Inc) $D/src/NLSSOLLeastSq.C
+
+SOLBase.o: $D/src/SOLBase.C
+	$(CC) -c -o SOLBase.o $(CFLAGS) $(Inc) $D/src/SOLBase.C
+
+npoptn_wrapper.o: $D/src/npoptn_wrapper.f
+	$(FC) -c $(CFLAGS) -o npoptn_wrapper.o $D/src/npoptn_wrapper.f
+
+dot_dll = dot.o DOTOptimizer.o $D/methods/DOT/libdot.a
+dot.dll: $(dot_dll)
+	$(FC) $(CFLAGS) -shared $(Rpath) -o dot.dll $(dot_dll) $L
+
+jega_dll = jega.o JEGAOptimizer.o $D/methods/JEGA/src/.libs/libjega.a
+jega.dll: $(jega_dll)
+	$(FC) $(CFLAGS) -shared $(Rpath) -o jega.dll $(jega_dll) $L
+
+nlpql_dll = nlpql.o NLPQLPOptimizer.o $D/methods/NLPQL/libnlpql.a
+nlpql.dll: $(nlpql_dll)
+	$(FC) $(CFLAGS) -shared $(Rpath) -o nlpql.dll $(nlpql_dll) $L
+
+npsol_dll = npsol.o NPSOLOptimizer.o NLSSOLLeastSq.o SOLBase.o npoptn_wrapper.o \
+	$D/methods/NPSOL/libnpsol.a
+npsol.dll: $(npsol_dll)
+	$(FC) $(CFLAGS) -shared $(Rpath) -o npsol.dll $(npsol_dll) $L
+
+NIDR_keywds.H: noj.nspec noj.desc
+	nidrgen noj.nspec noj.desc >NIDR_keywds.H
+
+clean:
+	rm -f dakdll *.dll *.o *.so NIDRProblemDescDB1.C

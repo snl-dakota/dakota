@@ -1,0 +1,9 @@
+This machinefile management approach will work in any environment
+supporting specification of machinefiles to the mpirun wrapper.
+
+* MPICH, MVAPICH, M*PICH typically support this.
+
+* OpenMPI typically supports this, with at least one known EXCEPTION:
+OpenMPI version < 1.3 in a a torque-managed environment or other
+situation where the resource manager is tightly integrated with
+OpenMPI, orterun will ignore machinefiles or error.

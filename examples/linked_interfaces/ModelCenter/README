@@ -1,0 +1,68 @@
+1. INTRODUCTION
+
+This library allows DAKOTA to use ModelCenter to perform computational
+simulations for optimization and uncertainy estimation. The library is
+a wrapper for a subset of ModelCenter's COM API.  The ModelCenter
+interface can be selected using the direct application interface
+within the DAKOTA input file. An example can be found at
+Dakota/tutorial/Examples/dakota_rosen_suzuki_conmin.in.
+Currently the library can only be used with a DAKOTA Cygwin build on
+a Windows platform.  ModelCenter 4.1 or higher is required.  The library
+has also been ported to SGI to be used with ModelCenter 4.0 SGI release.
+If you need this capability, please contact Phoenix Integration, Inc.
+
+2. TERMS AND CONDITIONS
+
+ModelCenter is a registered trademark of Phoenix Integration, Inc.
+The ModelCenter API library distributed with DAKOTA is provided under
+the following terms.
+
+Phoenix Integration grants you ("Licensee") a non-exclusive, royalty
+free, license to use and redistribute this software in binary and
+source code form, provided that i) this copyright notice and license
+appear on all copies of the software; and ii) Licensee does not
+utilize the software in a manner which is disparaging to Phoenix.
+
+This software is provided "AS IS," without a warranty of any kind. ALL
+EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES,
+INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE OR NON-INFRINGEMENT, ARE HEREBY EXCLUDED. PHOENIX
+INTEGRATION AND ITS LICENSORS SHALL NOT BE LIABLE FOR ANY DAMAGES
+SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
+THE SOFTWARE OR ITS DERIVATIVES. IN NO EVENT WILL PHOENIX INTEGRATION
+OR ITS LICENSORS BE LIABLE FOR ANY LOST REVENUE, PROFIT OR DATA, OR
+FOR DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE
+DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY,
+ARISING OUT OF THE USE OF OR INABILITY TO USE SOFTWARE, EVEN IF
+PHOENIX INTEGRATION HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH
+DAMAGES.
+
+This software is not designed or intended for use in on-line control
+of aircraft, air traffic, aircraft navigation or aircraft
+communications; or in the design, construction, operation or
+maintenance of any nuclear facility. Licensee represents and warrants
+that it will not use or redistribute the Software for such purposes.
+
+3. CONTENTS
+
+  PHXCppApi.h    : library header file
+  PHXCppApi.dll  : Win32 DLL 
+  libPHXCppApi.a : Stub library of the DLL
+
+4. INSTALL
+
+  o Users need to build cygwin port of DAKOTA with ModelCenter option.
+    A typical Cygwin configuration would be:
+  
+     % configure --with-modelcenter --without-mpi --without-npsol --without-dot --without-graphics
+     
+  o PATH environment variable needs to include the PHXCppApi.dll directory
+
+
+5. CONTACT INFORMATION
+
+Please contact Phoenix Integration, Inc. for more information.
+
+Email: support@phoenix-int.com
+Web:   www.phoenix-int.com
+Phone: 540-961-7215

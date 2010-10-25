@@ -1,0 +1,930 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright (c) 2006, Sandia National Laboratories.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+//- Class:	 NonDSampling
+//- Description: Implementation code for NonDSampling class
+//- Owner:       Mike Eldred
+//- Checked by:
+//- Version:
+
+#include "data_types.h"
+#include "system_defs.h"
+#include "DakotaModel.H"
+#include "DakotaResponse.H"
+#include "NonDSampling.H"
+#include "ProblemDescDB.H"
+#include "SensAnalysisGlobal.H"
+#ifdef DAKOTA_DDACE
+#include "Distribution.h"
+#elif defined(DAKOTA_UTILIB)
+#include <utilib/seconds.h>
+#endif
+#include "pecos_data_types.hpp"
+#include "pecos_stat_util.hpp"
+#include <algorithm>
+
+#include <boost/math/special_functions/fpclassify.hpp>
+
+static const char rcsId[]="@(#) $Id: NonDSampling.C 7036 2010-10-22 23:20:24Z mseldre $";
+
+
+namespace Dakota {
+
+
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation.  In this case, set_db_list_nodes has been called and
+    probDescDB can be queried for settings from the method specification. */
+NonDSampling::NonDSampling(Model& model): NonD(model),
+  seedSpec(probDescDB.get_int("method.random_seed")), randomSeed(seedSpec),
+  samplesSpec(probDescDB.get_int("method.samples")), numSamples(samplesSpec),
+  rngName(probDescDB.get_string("method.random_number_generator")),
+  sampleType(probDescDB.get_string("method.sample_type")),
+  statsFlag(true), allDataFlag(false), sampleRanksMode(IGNORE_RANKS),
+  varyPattern(!probDescDB.get_bool("method.fixed_seed")), numLHSRuns(0)
+{
+  if (numEpistemicUncVars && totalLevelRequests) {
+    Cerr << "\nError: nond_sampling does not support level requests for "
+	 << "analyses containing epistemic uncertainties." << std::endl;
+    abort_handler(-1);
+  }
+
+  // Since the sampleType is shared with other iterators for other purposes, its
+  // default in DataMethod.C is the NULL string.  Explicitly enforce the LHS
+  // default here.
+  if (sampleType.empty())
+    sampleType = "lhs";
+
+  // initialize finalStatistics using the default statistics set
+  initialize_final_statistics();
+
+  // update concurrency
+  if (numSamples) // samples is now optional (default = 0)
+    maxConcurrency *= numSamples;
+}
+
+
+/** This alternate constructor is used for generation and evaluation
+    of on-the-fly sample sets. */
+NonDSampling::
+NonDSampling(NoDBBaseConstructor, Model& model, int samples, int seed,
+	     const String& rng):
+  NonD(NoDBBaseConstructor(), model), seedSpec(seed), randomSeed(seed),
+  samplesSpec(samples), numSamples(samples), rngName(rng), sampleType("lhs"),
+  statsFlag(false), allDataFlag(true), sampleRanksMode(IGNORE_RANKS),
+  varyPattern(false), numLHSRuns(0)
+{
+  subIteratorFlag = true; // suppress some output
+  // not used but included for completeness
+  if (numSamples) // samples is now optional (default = 0)
+    maxConcurrency *= numSamples;
+}
+
+
+/** This alternate constructor is used by ConcurrentStrategy for
+    generation of uniform, uncorrelated sample sets. */
+NonDSampling::
+NonDSampling(NoDBBaseConstructor, int samples, int seed, const String& rng,
+	     const RealVector& lower_bnds, const RealVector& upper_bnds):
+  NonD(NoDBBaseConstructor(), lower_bnds, upper_bnds), seedSpec(seed),
+  randomSeed(seed), samplesSpec(samples), numSamples(samples), rngName(rng),
+  sampleType("lhs"), statsFlag(false), allDataFlag(true),
+  sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0)
+{
+  subIteratorFlag = true; // suppress some output
+
+  // not used but included for completeness
+  if (numSamples) // samples is now optional (default = 0)
+    maxConcurrency *= numSamples;
+}
+
+
+NonDSampling::~NonDSampling()
+{ }
+
+
+/** This version of get_parameter_sets() extracts data from the
+    user-defined model in any of the four sampling modes. */
+void NonDSampling::get_parameter_sets(Model& model)
+{
+  initialize_lhs(true);
+
+  short model_view = model.current_variables().view().first;
+  if (samplingVarsMode == UNCERTAIN_UNIFORM ||
+      samplingVarsMode == ACTIVE_UNIFORM    ||
+      samplingVarsMode == ALL_UNIFORM) {
+    if ( samplingVarsMode == ACTIVE_UNIFORM ||
+	 ( samplingVarsMode == ALL_UNIFORM && 
+	   ( model_view == MERGED_ALL || model_view == MIXED_ALL ) ) ||
+	 ( samplingVarsMode == UNCERTAIN_UNIFORM && 
+	   ( model_view == MERGED_DISTINCT_UNCERTAIN           ||
+	     model_view == MERGED_DISTINCT_ALEATORY_UNCERTAIN  ||
+	     model_view == MERGED_DISTINCT_EPISTEMIC_UNCERTAIN ||
+	     model_view == MIXED_DISTINCT_UNCERTAIN            ||
+	     model_view == MIXED_DISTINCT_ALEATORY_UNCERTAIN   ||
+	     model_view == MIXED_DISTINCT_EPISTEMIC_UNCERTAIN ) ) ) {
+      // sample uniformly from ACTIVE lower/upper bounds (regardless of model
+      // view), from UNCERTAIN lower/upper bounds (with model in DISTINCT view),
+      // or from ALL lower/upper bounds (with model in ALL view).
+      // TO DO: verify loss of sampleRanks control is OK
+      // TO DO: add support for uniform discrete design/uncertain/state
+      //        (must manage ordering: discrete int/real among cdv/cuv/csv)
+      lhsDriver.generate_uniform_samples(model.continuous_lower_bounds(),
+					 model.continuous_upper_bounds(),
+					 numSamples, allSamples);
+      // compactMode: finalize_lhs() not used
+    }
+    else if (samplingVarsMode == ALL_UNIFORM) {
+      // sample uniformly from ALL lower/upper bounds with model using
+      // a DISTINCT view
+      // TO DO: verify loss of sampleRanks control is OK
+      // TO DO: add support for uniform discrete design/uncertain/state
+      //        (must manage ordering: discrete int/real among cdv/cuv/csv)
+      lhsDriver.generate_uniform_samples(model.all_continuous_lower_bounds(),
+					 model.all_continuous_upper_bounds(),
+					 numSamples, allSamples);
+      // not compactMode, at least for now,  due to all mapping
+      finalize_lhs(); // allSamples -> allVariables
+    }
+    else if (samplingVarsMode == UNCERTAIN_UNIFORM) {
+      // sample uniformly from UNCERTAIN lower/upper bounds with model
+      // using a view other than
+      // {MERGED,MIXED}_DISTINCT_{,_ALEATORY,_EPISTEMIC}UNCERTAIN
+      RealVector uncertain_l_bnds, uncertain_u_bnds;
+      size_t num_cuv = numContAleatUncVars + numContEpistUncVars;
+      if (model_view == MERGED_ALL || model_view == MIXED_ALL) {
+	const RealVector& c_l_bnds = model.continuous_lower_bounds();
+	const RealVector& c_u_bnds = model.continuous_upper_bounds();
+	uncertain_l_bnds = RealVector(Teuchos::View,
+	  const_cast<Real*>(&c_l_bnds[numContDesVars]), num_cuv);
+	uncertain_u_bnds = RealVector(Teuchos::View,
+	  const_cast<Real*>(&c_u_bnds[numContDesVars]), num_cuv);
+      }
+      else { // MERGED/MIXED_DISTINCT_DESIGN or MERGED/MIXED_DISTINCT_STATE
+	// This case should not occur; if it does, numContDesVars may not be set
+	const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
+	const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
+	uncertain_l_bnds = RealVector(Teuchos::View,
+	  const_cast<Real*>(&all_c_l_bnds[numContDesVars]), num_cuv);
+	uncertain_u_bnds = RealVector(Teuchos::View,
+	  const_cast<Real*>(&all_c_u_bnds[numContDesVars]), num_cuv);
+      }
+      // TO DO: verify loss of sampleRanks control is OK
+      // TO DO: add support for uniform discrete design/uncertain/state
+      //        (must manage ordering: discrete int/real among cdv/cuv/csv)
+      lhsDriver.generate_uniform_samples(uncertain_l_bnds, uncertain_u_bnds,
+					 numSamples, allSamples);
+
+      // not compactMode, at least for now,  due to uncertain mapping
+      finalize_lhs(); // allSamples -> allVariables
+    }
+  }
+  else { // UNCERTAIN || ACTIVE || ALL
+
+    // extract design and state bounds
+    RealVector  cdv_l_bnds,   cdv_u_bnds,   csv_l_bnds,   csv_u_bnds;
+    IntVector ddriv_l_bnds, ddriv_u_bnds, dsriv_l_bnds, dsriv_u_bnds;
+    size_t num_ddsiv = model.discrete_design_set_int_values().size(),
+      num_ddsrv = model.discrete_design_set_real_values().size(),
+      num_ddriv = numDiscIntDesVars - num_ddsiv,
+      num_cuv   = numContAleatUncVars + numContEpistUncVars,
+      num_diuv  = numDiscIntAleatUncVars + numDiscIntEpistUncVars,
+      num_dssiv = model.discrete_state_set_int_values().size(),
+      num_dssrv = model.discrete_state_set_real_values().size(),
+      num_dsriv = numDiscIntStateVars - num_dssiv;
+    if ( samplingVarsMode == ACTIVE || ( samplingVarsMode == ALL && 
+	 ( model_view == MERGED_ALL || model_view == MIXED_ALL ) ) ) {
+      const RealVector& c_l_bnds = model.continuous_lower_bounds();
+      const RealVector& c_u_bnds = model.continuous_upper_bounds();
+      cdv_l_bnds = RealVector(Teuchos::View, c_l_bnds.values(), numContDesVars);
+      cdv_u_bnds = RealVector(Teuchos::View, c_u_bnds.values(), numContDesVars);
+      csv_l_bnds = RealVector(Teuchos::View,
+	const_cast<Real*>(&c_l_bnds[numContDesVars+num_cuv]), numContStateVars);
+      csv_u_bnds  = RealVector(Teuchos::View,
+	const_cast<Real*>(&c_u_bnds[numContDesVars+num_cuv]), numContStateVars);
+      const IntVector& di_l_bnds = model.discrete_int_lower_bounds();
+      const IntVector& di_u_bnds = model.discrete_int_upper_bounds();
+      ddriv_l_bnds = IntVector(Teuchos::View, di_l_bnds.values(), num_ddriv);
+      ddriv_u_bnds = IntVector(Teuchos::View, di_u_bnds.values(), num_ddriv);
+      dsriv_l_bnds = IntVector(Teuchos::View,
+	const_cast<int*>(&di_l_bnds[numDiscIntDesVars+num_diuv]), num_dsriv);
+      dsriv_u_bnds = IntVector(Teuchos::View,
+	const_cast<int*>(&di_u_bnds[numDiscIntDesVars+num_diuv]), num_dsriv);
+    }
+    else if (samplingVarsMode == ALL) {
+      const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
+      const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
+      cdv_l_bnds = RealVector(Teuchos::View, all_c_l_bnds.values(),
+	numContDesVars);
+      cdv_u_bnds = RealVector(Teuchos::View, all_c_u_bnds.values(),
+	numContDesVars);
+      csv_l_bnds = RealVector(Teuchos::View,
+	const_cast<Real*>(&all_c_l_bnds[numContDesVars+num_cuv]),
+	numContStateVars);
+      csv_u_bnds  = RealVector(Teuchos::View,
+	const_cast<Real*>(&all_c_u_bnds[numContDesVars+num_cuv]),
+	numContStateVars);
+      const IntVector& all_di_l_bnds = model.all_discrete_int_lower_bounds();
+      const IntVector& all_di_u_bnds = model.all_discrete_int_upper_bounds();
+      ddriv_l_bnds = IntVector(Teuchos::View, all_di_l_bnds.values(),num_ddriv);
+      ddriv_u_bnds = IntVector(Teuchos::View, all_di_u_bnds.values(),num_ddriv);
+      dsriv_l_bnds = IntVector(Teuchos::View,
+	const_cast<int*>(&all_di_l_bnds[numDiscIntDesVars+num_diuv]),num_dsriv);
+      dsriv_u_bnds = IntVector(Teuchos::View,
+	const_cast<int*>(&all_di_u_bnds[numDiscIntDesVars+num_diuv]),num_dsriv);
+    }
+
+    // Call LHS to generate the specified samples within the specified
+    // distributions.  Moved from constructors to allow publication of changes
+    // after construction (e.g., sampling_reset() or change in UQ samples as OUU
+    // progresses).  Note that this requires LHS to be more stable than before
+    // (i.e., needs to be reentrant so that the same set of samples is generated
+    // if nothing changes between quantify_uncertainty calls -->> important for
+    // finite difference accuracy in OUU).
+    lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
+      ddriv_u_bnds, model.discrete_design_set_int_values(),
+      model.discrete_design_set_real_values(), csv_l_bnds, csv_u_bnds,
+      dsriv_l_bnds, dsriv_u_bnds, model.discrete_state_set_int_values(),
+      model.discrete_state_set_real_values(), model.distribution_parameters(),
+      numSamples, allSamples, sampleRanks);
+
+    // not compactMode, at least for now
+    finalize_lhs(); // allSamples -> allVariables
+  }
+}
+
+
+/** This version of get_parameter_sets() does not extract data from the
+    user-defined model, but instead relies on the incoming bounded region
+    definition.  It only support a UNIFORM sampling mode, where the
+    distinction of ACTIVE_UNIFORM vs. ALL_UNIFORM is handled elsewhere. */
+void NonDSampling::
+get_parameter_sets(const RealVector& lower_bnds,
+		   const RealVector& upper_bnds)
+{
+  initialize_lhs(true);
+  lhsDriver.generate_uniform_samples(lower_bnds, upper_bnds,
+				     numSamples, allSamples);
+  // compactMode: finalize_lhs() not used
+}
+
+
+void NonDSampling::initialize_lhs(bool write_message)
+{
+  // keep track of number of LHS executions for this object
+  numLHSRuns++;
+  compactMode = true; // reset to false in finalize_lhs() if called
+
+  // Set seed value for input to LHS's random number generator.  Emulate DDACE
+  // behavior in which a user-specified seed gives you repeatable behavior but
+  // no specification gives you random behavior.  A system clock is used to
+  // randomize in the no user specification case.  For cases where
+  // get_parameter_sets() may be called multiple times for the same sampling
+  // iterator (e.g., SBO), support a deterministic sequence of seed values.
+  // This renders the study repeatable but the sampling pattern varies from
+  // one run to the next.
+  if (numLHSRuns == 1) { // set initial seed
+    lhsDriver.rng(rngName);
+    if (!seedSpec) { // no user specification: nonrepeatable behavior
+      // Generate initial seed from a system clock.  NOTE: the system clock
+      // should not used for multiple LHS calls since (1) clock granularity can
+      // be too coarse (can repeat on subsequent runs for inexpensive test fns)
+      // and (2) seed progression can be highly structured, which could induce
+      // correlation between sample sets.  Instead, the clock-generated case
+      // varies the seed below using the same approach as the user-specified
+      // case.  This has the additional benefit that a random run can be
+      // recreated by specifying the clock-generated seed in the input file.
+      randomSeed = 1;
+#ifdef DAKOTA_DDACE
+      randomSeed += DistributionBase::timeSeed(); // microsecs, time of day
+#elif defined(DAKOTA_UTILIB)
+      randomSeed += (int)CurrentTime();           // secs, time of day
+#else
+      randomSeed += (int)clock();                 // clock ticks, exec time
+#endif
+    }
+    lhsDriver.seed(randomSeed);
+  }
+  else if (varyPattern) // define sequence of seed values for numLHSRuns > 1
+    lhsDriver.advance_seed_sequence();
+  else // fixed_seed
+    lhsDriver.seed(randomSeed); // reset original/machine-generated seed
+
+  // Needed a way to turn this off when LHS sampling is being used in
+  // NonDAdaptImpSampling because it gets written a _LOT_
+  if (write_message) {
+    Cout << "\nNonD " << sampleType << " Samples = " << numSamples;
+    if (numLHSRuns == 1 || !varyPattern) {
+      if (seedSpec) Cout << " Seed (user-specified) = ";
+      else          Cout << " Seed (system-generated) = ";
+      Cout << randomSeed << '\n';
+    }
+    else if (rngName == "rnum2") {
+      if (seedSpec) Cout << " Seed (sequence from user-specified) = ";
+      else          Cout << " Seed (sequence from system-generated) = ";
+      Cout << lhsDriver.seed() << '\n';
+    }
+    else // default Boost Mersenne twister
+      Cout << " Seed not reset from previous LHS execution\n";
+  }
+
+  lhsDriver.initialize(sampleType, sampleRanksMode, !subIteratorFlag);
+}
+
+
+void NonDSampling::finalize_lhs()
+{
+  if (allSamples.empty()) {
+    Cerr << "Error: empty allSamples in NonDSampling::finalize_lhs()."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  // override setting in initialize_lhs()
+  compactMode = false;
+
+  size_t i, j, num_samp_rows = allSamples.numRows();
+  std::pair<short,short> vars_view;
+  size_t cv_start = 0, div_start = 0, drv_start = 0,
+         num_cv   = 0, num_div   = 0, num_drv   = 0,
+         num_acv  = 0, num_adiv  = 0, num_adrv  = 0;
+  bool propagate_inactive = false;
+  switch (samplingVarsMode) { // TO DO: add additional sampling modes?
+  case UNCERTAIN:
+    vars_view.first  = MIXED_DISTINCT_UNCERTAIN; // TO DO: aleatory/epist flags?
+    vars_view.second = EMPTY;
+    if (iteratedModel.is_null())
+      num_acv = num_cv = num_samp_rows;
+    else {
+      if (numDesignVars || numStateVars)
+	propagate_inactive = true;
+      cv_start  = numContDesVars;
+      num_cv    = numContAleatUncVars + numContEpistUncVars;
+      num_acv   = cv_start + num_cv + numContStateVars;
+      div_start = numDiscIntDesVars;
+      num_div   = numDiscIntAleatUncVars + numDiscIntEpistUncVars;
+      num_adiv  = div_start + num_div + numDiscIntStateVars;
+      drv_start = numDiscRealDesVars;
+      num_drv   = numDiscRealAleatUncVars + numDiscRealEpistUncVars;
+      num_adrv  = drv_start + num_drv + numDiscRealStateVars;
+    }
+    break;
+  case UNCERTAIN_UNIFORM:
+    vars_view.first  = MIXED_DISTINCT_UNCERTAIN; // TO DO: aleatory/epist flags?
+    vars_view.second = EMPTY;
+    if (iteratedModel.is_null())
+      num_acv = num_cv = num_samp_rows;
+    else {
+      if (numDesignVars || numStateVars)
+	propagate_inactive = true;
+      cv_start = numContDesVars;
+      num_cv   = numContAleatUncVars + numContEpistUncVars;
+      num_acv  = cv_start + num_cv + numContStateVars;
+    }
+    // UNIFORM views do not currently support discrete
+    break;
+  case ACTIVE:
+    if (iteratedModel.is_null()) {
+      vars_view.first  = MIXED_DISTINCT_UNCERTAIN;
+      vars_view.second = EMPTY;
+      num_acv = num_cv = num_samp_rows;
+    }
+    else {
+      const Variables& vars = iteratedModel.current_variables();
+      vars_view = vars.view();
+      cv_start  = vars.cv_start();  num_cv  = vars.cv();
+      num_acv   = vars.acv();
+      div_start = vars.div_start(); num_div = vars.div();
+      num_adiv  = vars.adiv();
+      drv_start = vars.drv_start(); num_drv = vars.drv();
+      num_adrv  = vars.adrv();
+      propagate_inactive = true;
+    }
+    break;
+  case ACTIVE_UNIFORM:
+    if (iteratedModel.is_null()) {
+      vars_view.first  = MIXED_DISTINCT_UNCERTAIN;
+      vars_view.second = EMPTY;
+      num_acv = num_cv = num_samp_rows;
+    }
+    else {
+      const Variables& vars = iteratedModel.current_variables();
+      vars_view = vars.view();
+      cv_start  = vars.cv_start(); num_cv = vars.cv(); num_acv = vars.acv();
+      propagate_inactive = true;
+    }
+    // UNIFORM views do not currently support discrete
+    break;
+  case ALL:
+    vars_view.first  = MIXED_ALL;
+    vars_view.second = EMPTY;
+    num_acv  = num_cv  = iteratedModel.acv();
+    num_adiv = num_div = iteratedModel.adiv();
+    num_adrv = num_drv = iteratedModel.adrv();
+    break;
+  case ALL_UNIFORM:
+    vars_view.first  = MIXED_ALL;
+    vars_view.second = EMPTY;
+    num_acv = num_cv = iteratedModel.acv();
+    // UNIFORM views do not currently support discrete
+    break;
+  }
+
+  SizetArray null_vc_totals;
+  if (iteratedModel.is_null()) {
+    null_vc_totals.resize(12, 0);
+    null_vc_totals[3] = num_samp_rows;// = null_vc_totals[3][3] -> uniform uv
+  }
+  const SizetArray& vc_totals = (iteratedModel.is_null()) ? null_vc_totals :
+    iteratedModel.current_variables().variables_components_totals();
+
+  SharedVariablesData svd(vars_view, vc_totals);
+
+  RealVector empty_rv; IntVector empty_iv;
+  const RealVector& model_ac_vars  = (iteratedModel.is_null()) ? empty_rv :
+    iteratedModel.all_continuous_variables();
+  const IntVector&  model_adi_vars = (iteratedModel.is_null()) ? empty_iv :
+    iteratedModel.all_discrete_int_variables();
+  const RealVector& model_adr_vars = (iteratedModel.is_null()) ? empty_rv :
+    iteratedModel.all_discrete_real_variables();
+
+  //Cout << "allSamples:\n" << allSamples << std::endl;
+
+  // avoid unnecessary copying as much as possible (may be large sample sets)
+  RealVector c_vars(num_cv), dr_vars(num_drv); IntVector di_vars(num_div);
+  if (allVariables.size() != numSamples)
+    allVariables.resize(numSamples);
+  for (i=0; i<numSamples; i++) {
+    Variables& all_vars_i = allVariables[i];
+    if (all_vars_i.is_null() || vars_view != all_vars_i.view())
+      all_vars_i = Variables(svd);
+
+    if (propagate_inactive) {// propagate inactive vars from model to all_vars_i
+      // leading continuous unsampled
+      for (j=0; j<cv_start; ++j)
+	all_vars_i.all_continuous_variable(model_ac_vars[j], j);
+      // trailing continuous unsampled
+      for (j=cv_start+num_cv; j<num_acv; ++j)
+	all_vars_i.all_continuous_variable(model_ac_vars[j], j);
+      // leading discrete int unsampled
+      for (j=0; j<div_start; ++j)
+	all_vars_i.all_discrete_int_variable(model_adi_vars[j], j);
+      // trailing discrete int unsampled
+      for (j=div_start+num_div; j<num_adiv; ++j)
+	all_vars_i.all_discrete_int_variable(model_adi_vars[j], j);
+      // leading discrete real unsampled
+      for (j=0; j<drv_start; ++j)
+	all_vars_i.all_discrete_real_variable(model_adr_vars[j], j);
+      // trailing discrete real unsampled
+      for (j=drv_start+num_drv; j<num_adrv; ++j)
+	all_vars_i.all_discrete_real_variable(model_adr_vars[j], j);
+    }
+
+    Real* samples_col_i = allSamples[i];
+    // sampled continuous vars
+    for (j=0; j<num_cv; j++)
+      all_vars_i.continuous_variable(samples_col_i[j], j); // [i][j] or (j,i)
+    // sampled discrete int vars
+    for (j=0; j<num_div; j++)
+      all_vars_i.discrete_int_variable((int)samples_col_i[j+num_cv], j);
+    // sampled discrete real vars
+    for (j=0; j<num_drv; j++)
+      all_vars_i.discrete_real_variable(samples_col_i[j+num_cv+num_div], j);
+
+    //Cout << "all_vars_i:\n" << all_vars_i << std::endl;
+  }
+
+  // now that data is fully migrated to allVariables, clear allSamples
+  allSamples.shapeUninitialized(0,0);
+}
+
+
+void NonDSampling::
+compute_statistics(const VariablesArray& vars_samples,
+		   const ResponseArray&  resp_samples)
+{
+  if (numEpistemicUncVars) // Epistemic/mixed
+    compute_intervals(resp_samples); // compute min/max response intervals
+  else { // Aleatory
+    // compute means and std deviations with confidence intervals
+    compute_moments(resp_samples);
+    // compute CDF/CCDF mappings of z to p/beta and p/beta to z
+    if (totalLevelRequests)
+      compute_distribution_mappings(resp_samples);
+  }
+  if (!subIteratorFlag)
+    nonDSampCorr.compute_correlations(vars_samples, resp_samples);
+  if (!finalStatistics.is_null())
+    update_final_statistics();
+}
+
+
+void NonDSampling::compute_intervals(const ResponseArray& samples)
+{
+  // For the samples array, calculate min/max response intervals
+
+  using boost::math::isfinite;
+  size_t i, j, num_obs = samples.size(), num_samp;
+  const StringArray& resp_labels = iteratedModel.response_labels();
+
+  if (minValues.empty()) minValues.resize(numFunctions);
+  if (maxValues.empty()) maxValues.resize(numFunctions);
+  for (i=0; i<numFunctions; i++) {
+    num_samp = 0;
+    Real min = DBL_MAX, max = -DBL_MAX;
+    for (j=0; j<num_obs; j++) {
+      const Real& sample = samples[j].function_value(i);
+      if (isfinite(sample)) { // neither NaN nor +/-Inf
+	if (sample < min) min = sample;
+	if (sample > max) max = sample;
+	num_samp++;
+      }
+    }
+    minValues[i] = min;
+    maxValues[i] = max;
+    if (num_samp != num_obs)
+      Cerr << "Warning: sampling statistics for " << resp_labels[i] << " omit "
+	   << num_obs-num_samp << " failed evaluations out of " << num_obs
+	   << " samples.\n";
+  }
+}
+
+
+void NonDSampling::compute_moments(const ResponseArray& samples)
+{
+  // For the samples array, calculate means and standard deviations
+  // with confidence intervals
+
+  using boost::math::isfinite;
+  size_t i, j, num_obs = samples.size(), num_samp;
+  Real sum, var;
+  const StringArray& resp_labels = iteratedModel.response_labels();
+
+  if (meanStats.empty())           meanStats.resize(numFunctions);
+  if (stdDevStats.empty())         stdDevStats.resize(numFunctions);
+  if (mean95CIDeltas.empty())      mean95CIDeltas.resize(numFunctions);
+  if (stdDev95CILowerBnds.empty()) stdDev95CILowerBnds.resize(numFunctions);
+  if (stdDev95CIUpperBnds.empty()) stdDev95CIUpperBnds.resize(numFunctions);
+
+  for (i=0; i<numFunctions; i++) {
+
+    num_samp  = 0;
+    sum = var = 0.;
+    // means
+    for (j=0; j<num_obs; j++) {
+      const Real& sample = samples[j].function_value(i);
+      if (isfinite(sample)) { // neither NaN nor +/-Inf
+	sum += sample;
+	num_samp++;
+      }
+    }
+
+    if (num_samp != num_obs)
+      Cerr << "Warning: sampling statistics for " << resp_labels[i] << " omit "
+	   << num_obs-num_samp << " failed evaluations out of " << num_obs
+	   << " samples.\n";
+    if (!num_samp) {
+      Cerr << "Error: Number of samples for " << resp_labels[i]
+	   << " must be nonzero for moment calculation in NonDSampling::"
+	   << "compute_statistics()." << std::endl;
+      abort_handler(-1);
+    }
+
+    meanStats[i] = sum/((Real)num_samp);
+    // standard deviations
+    for (j=0; j<num_obs; j++) {
+      const Real& sample = samples[j].function_value(i);
+      if (isfinite(sample)) // neither NaN nor +/-Inf
+	var += std::pow(sample - meanStats[i], 2);
+    }
+    stdDevStats[i] = (num_samp > 1) ? std::sqrt(var/(Real)(num_samp-1)) : 0.;
+
+    if (num_samp > 1) {
+      // 95% confidence intervals (2-sided interval, not 1-sided limit)
+      Real dof = num_samp - 1, s = stdDevStats[i];
+//#ifdef HAVE_BOOST
+      // mean: the better formula does not assume known variance but requires
+      // a function for the Student's t-distr. with (num_samp-1) degrees of
+      // freedom (Haldar & Mahadevan, p. 127).
+      Pecos::students_t_dist t_dist(dof);
+      mean95CIDeltas[i]
+	= s*(bmth::quantile(t_dist,0.975))/std::sqrt((Real)num_samp);
+      // std dev: chi-square distribution with (num_samp-1) degrees of freedom
+      // (Haldar & Mahadevan, p. 132).
+      Pecos::chi_squared_dist chisq(dof);
+      stdDev95CILowerBnds[i] = s*std::sqrt(dof/bmth::quantile(chisq,0.975));
+      stdDev95CIUpperBnds[i] = s*std::sqrt(dof/bmth::quantile(chisq,0.025));
+/*
+#elif HAVE_GSL
+      // mean: the better formula does not assume known variance but requires
+      // a function for the Student's t-distr. with (num_samp-1) degrees of
+      // freedom (Haldar & Mahadevan, p. 127).
+      mean95CIDeltas[i]
+	= s*gsl_cdf_tdist_Pinv(0.975,dof)/std::sqrt((Real)num_samp);
+      // std dev: chi-square distribution with (num_samp-1) degrees of freedom
+      // (Haldar & Mahadevan, p. 132).
+      stdDev95CILowerBnds[i] = s*std::sqrt(dof/gsl_cdf_chisq_Pinv(0.975, dof));
+      stdDev95CIUpperBnds[i] = s*std::sqrt(dof/gsl_cdf_chisq_Pinv(0.025, dof));
+#else
+      // mean: k_(alpha/2) = Phi^(-1)(0.975) = 1.96 (Haldar & Mahadevan,
+      // p. 123).  This simple formula assumes a known variance, which
+      // requires a sample of sufficient size (i.e., greater than 10).
+      mean95CIDeltas[i] = 1.96*stdDevStats[i]/std::sqrt((Real)num_samp);
+#endif // HAVE_BOOST
+*/
+    }
+    else {
+      mean95CIDeltas = 0.;
+      stdDev95CILowerBnds = stdDev95CIUpperBnds = stdDevStats;
+    }
+  }
+}
+
+
+void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
+{
+  // For the samples array, calculate the following statistics:
+  // > CDF/CCDF mappings of response levels to probability/reliability levels
+  // > CDF/CCDF mappings of probability/reliability levels to response levels
+
+  // Size the output arrays here instead of in the ctor in order to support
+  // alternate sampling ctors.  Sizing is done in a minimal way for sampling
+  // methods since there is no distinction between requested and computed levels
+  // for the same measure (the request is always achieved) and since probability
+  // (computed by binning) and reliability (computed using mu,sigma,target) are
+  // not directly related.  [In NonDReliability, a requested level may differ
+  // from that computed/achieved and probability and reliability are carried
+  // along in parallel.]
+  if (computedRespLevels.empty() || computedProbLevels.empty() ||
+      computedRelLevels.empty()  || computedGenRelLevels.empty()) {
+    computedRespLevels.resize(numFunctions);
+    computedProbLevels.resize(numFunctions);
+    computedRelLevels.resize(numFunctions);
+    computedGenRelLevels.resize(numFunctions);
+    for (size_t i=0; i<numFunctions; i++) {
+      size_t num_levels = requestedRespLevels[i].length();
+      switch (respLevelTarget) {
+      case PROBABILITIES:
+	computedProbLevels[i].resize(num_levels);   break;
+      case RELIABILITIES:
+	computedRelLevels[i].resize(num_levels);    break;
+      case GEN_RELIABILITIES:
+	computedGenRelLevels[i].resize(num_levels); break;
+      }
+      num_levels = requestedProbLevels[i].length() +
+	requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
+      computedRespLevels[i].resize(num_levels);
+    }
+  }
+
+  using boost::math::isfinite;
+  size_t i, j, k, num_obs = samples.size(), num_samp;
+  const StringArray& resp_labels = iteratedModel.response_labels();
+  RealArray sorted_samples; // STL-based array for sorting
+
+  for (i=0; i<numFunctions; i++) {
+
+    num_samp = 0;
+    for (j=0; j<num_obs; j++)
+      if(isfinite(samples[j].function_value(i))) // neither NaN nor +/-Inf
+	num_samp++;
+
+    // CDF/CCDF mappings: z -> p/beta/beta* and p/beta/beta* -> z
+    size_t rl_len = requestedRespLevels[i].length(),
+           pl_len = requestedProbLevels[i].length(),
+           bl_len = requestedRelLevels[i].length(),
+           gl_len = requestedGenRelLevels[i].length();
+    for (j=0; j<rl_len; j++) {
+      const Real& z = requestedRespLevels[i][j];
+      switch (respLevelTarget) {
+      case PROBABILITIES: case GEN_RELIABILITIES: {
+	// z -> p/beta* (based on binning)
+	size_t less_eq_z = 0;
+	for (k=0; k<num_obs; k++) {
+	  const Real& sample = samples[k].function_value(i);
+	  if (isfinite(sample)) // neither NaN nor +/-Inf
+	    less_eq_z += (sample <= z) ? 1 : 0;
+	}
+	Real cdf_prob = (Real)less_eq_z/(Real)num_samp;
+	Real computed_prob = (cdfFlag) ? cdf_prob : 1. - cdf_prob;
+	if (respLevelTarget == PROBABILITIES)
+	  computedProbLevels[i][j] = computed_prob;
+	else
+	  computedGenRelLevels[i][j] = -Pecos::Phi_inverse(computed_prob);
+	break;
+      }
+      case RELIABILITIES: // z -> beta (based on moment projection)
+	if (stdDevStats[i] > 1.e-25) {
+	  Real ratio = (meanStats[i] - z)/stdDevStats[i];
+	  computedRelLevels[i][j] = (cdfFlag) ? ratio : -ratio;
+	}
+	else
+	  computedRelLevels[i][j] = ( (cdfFlag && meanStats[i] <= z) ||
+	    (!cdfFlag && meanStats[i] > z) ) ? -1.e50 : 1.e50;
+	break;
+      }
+    }
+    if (pl_len || gl_len) { // sort samples array for p/beta* -> z mappings
+      sorted_samples.resize(num_samp);
+      size_t cntr = 0;
+      for (j=0; j<num_obs; j++) {
+	const Real& sample = samples[j].function_value(i);
+	if (isfinite(sample))
+	  sorted_samples[cntr++] = sample;
+      }
+      std::sort(sorted_samples.begin(),sorted_samples.end()); // ascending order
+    }
+    for (j=0; j<pl_len+gl_len; j++) { // p/beta* -> z
+      Real p = (j<pl_len) ? requestedProbLevels[i][j] :
+	Pecos::Phi(-requestedGenRelLevels[i][j-pl_len]);
+      // since each sample has 1/N probability, a probability level can be
+      // directly converted to an index within a sorted array (index =~ p * N)
+      Real cdf_p_x_obs = (cdfFlag) ? p*(Real)num_samp : (1.-p)*(Real)num_samp;
+      // convert to an int and round down using std::floor().  Apply a small
+      // numerical adjustment so that probabilities on the boundaries
+      // (common with round probabilities and factor of 10 samples)
+      // are consistently rounded down (consistent with CDF p(g<=z)).
+      Real order = (cdf_p_x_obs > .9)
+	         ? std::pow(10., ceil(std::log10(cdf_p_x_obs))) : 0.;
+      int index = (int)std::floor(cdf_p_x_obs - order*DBL_EPSILON);
+      // clip at array ends due to possible roundoff effects
+      if (index < 0)         index = 0;
+      if (index >= num_samp) index = num_samp - 1;
+      if (j<pl_len)
+	computedRespLevels[i][j] = sorted_samples[index];
+      else
+	computedRespLevels[i][j+bl_len] = sorted_samples[index];
+    }
+    for (j=0; j<bl_len; j++) { // beta -> z
+      const Real& beta = requestedRelLevels[i][j];
+      computedRespLevels[i][j+pl_len] = (cdfFlag) ?
+	meanStats[i] - beta * stdDevStats[i] :
+	meanStats[i] + beta * stdDevStats[i];
+    }
+  }
+}
+
+
+
+void NonDSampling::update_final_statistics()
+{
+  //if (finalStatistics.is_null())
+  //  initialize_final_statistics();
+
+  size_t i, j, cntr = 0;
+  if (numEpistemicUncVars) {
+    for (i=0; i<numFunctions; i++) {
+      finalStatistics.function_value(minValues[i], cntr++);
+      finalStatistics.function_value(maxValues[i], cntr++);
+    }
+  }
+  else {
+    for (i=0; i<numFunctions; i++) {
+      // final stats from compute_moments()
+      if (!meanStats.empty() && !stdDevStats.empty()) {
+	finalStatistics.function_value(meanStats[i],   cntr++);
+	finalStatistics.function_value(stdDevStats[i], cntr++);
+      }
+      else
+	cntr += 2;
+      // final stats from compute_distribution_mappings()
+      size_t rl_len = requestedRespLevels[i].length();
+      for (j=0; j<rl_len; j++)
+	switch (respLevelTarget) {
+	case PROBABILITIES:
+	  finalStatistics.function_value(computedProbLevels[i][j], cntr++);
+	  break;
+	case RELIABILITIES:
+	  finalStatistics.function_value(computedRelLevels[i][j], cntr++);
+	  break;
+	case GEN_RELIABILITIES:
+	  finalStatistics.function_value(computedGenRelLevels[i][j], cntr++);
+	  break;
+	}
+      size_t pl_bl_gl_len = requestedProbLevels[i].length() +
+	requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
+      for (j=0; j<pl_bl_gl_len; j++)
+	finalStatistics.function_value(computedRespLevels[i][j], cntr++);
+    }
+  }
+}
+
+
+void NonDSampling::print_statistics(std::ostream& s) const
+{
+  if (numEpistemicUncVars) // output only min & max values in the epistemic case
+    print_intervals(s);
+  else {
+    print_moments(s);
+    if (totalLevelRequests)
+      print_distribution_mappings(s);
+  }
+  if (!subIteratorFlag)
+    nonDSampCorr.print_correlations(s,
+      iteratedModel.continuous_variable_labels(),
+      iteratedModel.discrete_int_variable_labels(),
+      iteratedModel.discrete_real_variable_labels(),
+      iteratedModel.response_labels());
+}
+
+
+void NonDSampling::print_intervals(std::ostream& s) const
+{
+  const StringArray& resp_labels = iteratedModel.response_labels();
+
+  s.setf(std::ios::scientific);
+  s << std::setprecision(write_precision)
+    << "\nMin and Max values for each response function:\n";
+  for (size_t i=0; i<numFunctions; i++)
+    s << resp_labels[i] << ":  Min = " << minValues[i]
+      << "  Max = " << maxValues[i] << '\n';
+}
+
+
+void NonDSampling::print_moments(std::ostream& s) const
+{
+  const StringArray& resp_labels = iteratedModel.response_labels();
+
+  s.setf(std::ios::scientific);
+  s << std::setprecision(write_precision)
+    << "\nMoments for each response function:\n";
+  size_t i;
+  for (i=0; i<numFunctions; i++) {
+    s << resp_labels[i] << ":  Mean = " << meanStats[i]
+      << "  Std. Dev. = " << stdDevStats[i] << "  Coeff. of Variation = ";
+    if (std::fabs(meanStats[i]) > 1.e-25)
+      s << stdDevStats[i]/meanStats[i] << '\n';
+    else
+      s << "Undefined\n";
+  }
+
+  if (numSamples > 1) {
+    // output 95% confidence intervals as (,) interval
+    s << "\n95% confidence intervals for each response function:\n";
+    for (i=0; i<numFunctions; i++) {
+      s << resp_labels[i] << ":  Mean = ( " << meanStats[i] - mean95CIDeltas[i]
+	<< ", " << meanStats[i] + mean95CIDeltas[i] << " )";
+      s << ", Std Dev = ( " << stdDev95CILowerBnds[i] << ", "
+	<< stdDev95CIUpperBnds[i] << " )";
+      s << '\n';
+    }
+  }
+}
+
+
+void NonDSampling::print_distribution_mappings(std::ostream& s) const
+{
+  const StringArray& resp_labels = iteratedModel.response_labels();
+
+  // output CDF/CCDF probabilities resulting from binning or CDF/CCDF
+  // reliabilities resulting from number of std devs separating mean & target
+  s.setf(std::ios::scientific);
+  s << std::setprecision(write_precision)
+    << "\nProbabilities for each response function:\n";
+  size_t i, j;
+  for (i=0; i<numFunctions; i++) {
+    if (!requestedRespLevels[i].empty() || !requestedProbLevels[i].empty() ||
+	!requestedRelLevels[i].empty()  || !requestedGenRelLevels[i].empty()) {
+      if (cdfFlag)
+	s << "Cumulative Distribution Function (CDF) for ";
+      else
+	s << "Complementary Cumulative Distribution Function (CCDF) for ";
+      s << resp_labels[i] << ":\n     Response Level  Probability Level  "
+	<< "Reliability Index  General Rel Index\n     --------------  "
+	<< "-----------------  -----------------  -----------------\n";
+      size_t num_resp_levels = requestedRespLevels[i].length();
+      for (j=0; j<num_resp_levels; j++) {
+	s << "  " << std::setw(17) << requestedRespLevels[i][j] << "  ";
+	switch (respLevelTarget) {
+	case PROBABILITIES:
+	  s << std::setw(17) << computedProbLevels[i][j]   << '\n'; break;
+	case RELIABILITIES:
+	  s << std::setw(36) << computedRelLevels[i][j]    << '\n'; break;
+	case GEN_RELIABILITIES:
+	  s << std::setw(55) << computedGenRelLevels[i][j] << '\n'; break;
+	}
+      }
+      size_t num_prob_levels = requestedProbLevels[i].length();
+      for (j=0; j<num_prob_levels; j++)
+	s << "  " << std::setw(17) << computedRespLevels[i][j] << "  "
+	  << std::setw(17) << requestedProbLevels[i][j] << '\n';
+      size_t num_rel_levels = requestedRelLevels[i].length();
+      for (j=0; j<num_rel_levels; j++)
+	s << "  " << std::setw(17) << computedRespLevels[i][j+num_prob_levels]
+	  << "  " << std::setw(36) << requestedRelLevels[i][j] << '\n';
+      size_t num_gen_rel_levels = requestedGenRelLevels[i].length();
+      for (j=0; j<num_gen_rel_levels; j++)
+	s << "  " << std::setw(17)
+	  << computedRespLevels[i][j+num_prob_levels+num_rel_levels] << "  "
+	  << std::setw(55) << requestedGenRelLevels[i][j] << '\n';
+    }
+  }
+}
+
+
+} // namespace Dakota
+

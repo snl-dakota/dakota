@@ -1,0 +1,244 @@
+===========================================
+Cygwin (PC Windows) Platform-specific Notes
+===========================================
+
+If you wish to use DAKOTA on the PC Windows platform, you have two
+primary options:
+
+    1. Installing the binary distribution of DAKOTA (recommended)
+    2. Building the DAKOTA source distribution using Cygwin
+
+*** Once installed, see Windows Usage Notes at the end of this file.
+
+Option 1a: Installing the DAKOTA binary without Cygwin
+
+When installing the DAKOTA binary distribution for Windows on a system
+without a Cygwin installation, you will need the cygwin1.dll binary
+file which is included in Dakota/bin in the distribution.  The Cygwin
+environment (and by extension cygwin1.dll) is licensed under the GPL,
+and source code for building cygwin1.dll is available from
+http://sources.redhat.com/cygwin/
+
+The cygwin1.dll file defines a UNIX emulation layer for Windows, and
+must be in a directory included in your PATH environment variable to
+run DAKOTA jobs from the command (DOS) prompt.  One option is to place
+cygwin1.dll in C:\WINDOWS\system32, since that is typically already
+included in the PATH.  Alternately, you can leave it in Dakota\bin and
+add that directory to the PATH.  In order to run DAKOTA as well as the
+test problems in Dakota\test, you will likely want to add Dakota\bin
+and Dakota\test to your Windows PATH.  To do this via the GUI in
+Windows 2000/XP: right click on My Computer, go to Properties,
+Advanced, Environment Variables, System Variables, and edit PATH.  For
+other Windows versions, consult the documentation for your particular
+variant.  To set the PATH at the command prompt, e.g., assuming the
+DAKOTA binary package has been unzipped to C:\Dakota, you can prepend
+the PATH as follows:
+
+set PATH=C:\Dakota\bin;C:\Dakota\test;%PATH%
+
+Option 1b: Installing the DAKOTA binary with Cygwin
+
+If you already have a Cygwin installation, you can use the cygwin1.dll
+in the cygwin\bin directory (and should probably delete or rename the
+one supplied in Dakota\bin to avoid conflicts).  To run DAKOTA inside
+the Cygwin environment, nothing additional should be required, though
+you may wish to add DAKOTA to your PATH, e.g.:
+
+export PATH=/cygdrive/c/Dakota/bin:/cygdrive/c/Dakota/test:$PATH # sh/bash
+setenv PATH /cygdrive/c/Dakota/bin:/cygdrive/c/Dakota/test:$PATH # csh/tcsh
+
+To run DAKOTA outside of the Cygwin environment (using the command/DOS
+prompt), you will need the cygwin\bin, Dakota\bin, and Dakota\test
+directories in your Windows PATH to locate the necessary files (see
+above).
+
+While not required, there are several advantages to running DAKOTA in
+the Cygwin environment (instead of at the command prompt):
+
+*. Availability of editors (emacs, vi, nedit, etc.) designed for
+editing and writing UNIX-formatted files.
+
+*. Ability to use temporary file names instead of named parameter
+files.
+
+*. Availability of several scripting languages to interface DAKOTA to
+your simulation, including Perl, Python, Bash, CSH.
+
+Option 1 notes:
+
+Some versions of DAKOTA for Windors are built with experimental MPI
+support via the MPICH package.  In this case, to experiment with
+DAKOTA's MPI capability, you may optionally download and install the
+binary distribution of MPICH for recent versions of Windows from
+http://www-unix.mcs.anl.gov/mpi/mpich1/mpich-nt/
+
+There are several additional DLLs from the MPICH-NT binary
+distribution and from the Phoenix Integration ModelCenter API provided
+in the Dakota/bin directory (along with cygwin1.dll), which are needed
+for DAKOTA to execute under Windows.  The same instructions given
+above concerning use of the cygwin1.dll file apply here (either move
+the DLLs to a folder in the PATH, or add Dakota/bin to the PATH).
+
+
+Option 2: Building the DAKOTA source distribution using Cygwin
+
+Several packages are needed for building DAKOTA from source on PC
+Windows under Cygwin.  The following sections describe installation of
+the Cygwin environment (http://www.cygwin.com), installation of the
+G95 Fortran compiler (http://www.g95.org), and issues related to other
+packages.
+
+Section 2a: Cygwin
+
+When you install Cygwin, be sure to choose the 'Install' option rather
+than the 'Default' option in the Cygwin installer, as the latter only
+installs some of the packages you will need for a successful build.
+Packages required include, but are not limited to: BLAS, LAPACK,
+bison, flex, and, if graphics support is desired, lesstif (or other
+Motif libraries) and X Windows development (e.g., X11 or Xorg).  See
+specific pakage notes in sections following.
+
+Additionally, you may need to (probably should )turn case-sensitivity
+on _after_ you unpack the DAKOTA source tarball.  These commands
+accomplish this:
+
+  export CYGWIN=check_case:strict # for sh/bash
+  setenv CYGWIN check_case:strict # for csh/tcsh
+
+When choosing a directory to build DAKOTA in, it should be noted that
+the absolute path of any directory that DAKOTA depends on cannot have
+any spaces in it (e.g., the default "Documents and Settings" $HOME
+location in Cygwin will cause problems).
+
+Section 2b: BLAS/LAPACK
+
+Recent versions of Cygwin install BLAS and LAPACK by default, but it
+may be necessary to make some local Cygwin PATH modifications to
+complete the build process.  When dakota.exe is run from the command
+line, if there is no output, chances are good that Cygwin cannot find
+one of the BLAS and/or LAPACK DLL support libraries; it is possible to
+check this by using the cygcheck utility:
+
+  cygcheck ./dakota.exe
+
+If the result of running cygcheck returns 'Error: could not find
+cygblas.dll' or 'Error: could not find cyglapack.dll', it will be
+necessary to modify your PATH to include the directory where those
+DLL's reside (most likely in C:\cygwin\lib\lapack, seen by the Cygwin
+filesystem as /lib/lapack).  Add this to the front of your PATH:
+
+  export PATH=/lib/lapack:$PATH # for sh/bash
+  setenv PATH /lib/lapack:$PATH # for csh/tcsh
+
+Executables that depend on BLAS and LAPACK should now run.
+
+Section 2c: C++ and Fortran compiler choices
+
+Due to Windows' case-insensitivity and variations in installed Cygwin
+compiler locations and shortcuts, it may be necessary to specify the
+C++ compiler explicitly before running configure:
+
+  export CXX=g++ # for sh/bash
+  setenv CXX g++ # for csh/tcsh
+
+Dakota requires a Fortran 90 compiler for full UQ functionality. On
+Cygwin, g95 is the recommended Fortran compiler.  A binary tarball of
+g95 is available (from http://ftp.g95.org/g95-x86-cygwin.tgz) for
+Cygwin, and will be installed under /usr/local when the tarball is
+unpacked at the root level.  When configuring, the g95 compiler will
+not be auto-detected by the DAKOTA configure script.  To help find it:
+
+  ./configure FC=g95
+
+If you do not require Fortran 90 support, or if you cannot get a
+Fortran 90 compiler running with your Cygwin installation, it may be
+disabled with:
+
+  ./configure --disable-f90
+
+Section 2d: Other packages
+
+X11 support for building Dakota under Cygwin with graphics capability
+exists; to enable X11 graphics to display when running Dakota from the
+Cygwin command line, you must set the DISPLAY environment variable:
+
+  export DISPLAY=$(hostname):0.0
+
+as well as start the X11 server.  There should be a link on the
+Desktop from when Cygwin was installed on the machine; it will be
+named something like 'Start X Server'.  If dakota.exe fails to run
+with graphics enabled, check that the DISPLAY environment variable has
+been set, and that all the X11 DLL's pointed to by the dakota.exe
+binary are in the PATH (use cygcheck as for BLAS/LAPACK above).
+
+MPI support for Cygwin builds of DAKOTA is experimental and optional,
+and can be obtained by installing the binary distribution of MPICH for
+Windows (from http://www-unix.mcs.anl.gov/mpi/mpich1/mpich-nt/).  If
+your installation of MPICH is located in C:\MPICH, be sure to add the
+following directory to your PATH in Cygwin: /cygdrive/c/MPICH/SDK.gcc
+before compiling.
+
+
+===================
+Windows Usage Notes
+===================
+
+Here are some issues to be aware of when running DAKOTA in the Windows
+environment.  Most of these are integrated into a demonstration
+package available in Dakota/examples/platforms/cygwin_demo.
+
+*. PATH: See notes in Section 1 above about proper augmentation of the PATH
+environment variable.
+
+*. Editing inputs: DAKOTA versions 4.1 and earlier do not correctly
+process the Windows CR/LF combination used as a line terminator in DOS
+or Windows-formatted text files.  Either edit DAKOTA input files with
+an editor that supports LF-only line termination, e.g.,
+
+  - any Cygwin editor, or 
+
+  - Microsoft Word with the "save as plain text" option. When saving a
+    txt document, a dialog will appear with line feed options.  Choose
+    "Insert line breaks" and select the "LF only" options.  
+
+or use a Windows editor such as notepad or Wordpad, and a DOS to UNIX
+file format conversion utility (such as
+http://www.bastet.com/uddu.zip) before running an edited file.
+
+*. When running DAKOTA on Windows systems without Cygwin installed,
+the interface option 'system' may not work correctly.  Several users
+have reported that the 'fork' alternative works correctly in this
+case.
+
+*. Parameters/results files: When running at the command prompt
+(instead of in a Cygwin environment), automatically-generated
+temporary file names may not work when using the system or fork
+interface.  Two workarounds have been reported to work
+
+  - specify parameters and results file names in the interface section:
+
+  	parameters_file='params.in'
+	results_file='results.out'
+
+  - or, create a directory C:\tmp
+
+*. Graphics: When running DAKOTA without graphics support, remove or
+comment out the graphics keyword from any input deck before running.
+
+*. Scripting languages: To interface DAKOTA to your simulation code in
+a native Windows environment, you may use any Windows-executable code,
+including binary files that directly accept parameter and response
+files, command (.cmd) files, DOS batch (.bat) files, Visual Basic
+Script (.vbs), Python, or Perl.  The easiest way to use Python or Perl
+is to write a script but save it as a .cmd file and then include the
+followin command as the first line in the file to tell Windows to run
+it using Python (or Perl):
+
+@setlocal enableextensions & python -x %~f0 %* & goto :EOF
+
+File permissions: For DAKOTA to properly fork some types of script
+files under Windows, the file execute permission must be set in the
+file properties and security dialog.
+
+When running DAKOTA in the Cygwin environment, you may use any native
+Cygwin executable, including binaries, BASH, CSH, Python, Perl, etc.

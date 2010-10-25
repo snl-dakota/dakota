@@ -1,0 +1,43 @@
+These java examples are designed to mimic the results of the equivalent
+C, Tcl, and Python examples.  
+
+Here is the cookbook for compiling and running these examples.
+
+(1) Install a Java SDK (Software Development Kit).  I use
+IBMJava2-SDK-14.tgz which is freely downloadable from IBM.  (See
+http://www-106.ibm.com/developerworks/java/jdk/linux/tested.html for product
+description.) Plplot is also known to work with the Sun JDK, gcj/gij and 
+jikes/sablevm. Ensure that java and javac are in your PATH.
+
+(2) If the java include files are not in a default include directory then 
+you need to tell configure where they are. You can either use the 
+--with-java-home option to set the SDK directory e.g.
+./configure --with-java-home=/home/software/java/IBMJava2-14/
+Previously this was done via the environment variables JAVA_HOME, which 
+still works for backwards compatibility.
+
+(3) Run java demos
+
+All the plplot java bindings and default examples are contained in the 
+jar file plplot.jar. This needs to be accessible to java either by setting 
+CLASSPATH or by using the -classpath option to java. For example :-
+
+# For newer jdk's can use the plplot/examples/x?? notation, but the dot
+# notation works for all jdk's.
+
+# This location will depend on your install prefix:
+setenv CLASSPATH /usr/local/share/java/plplot.jar
+java plplot.examples.x01 .....
+
+If you want to see the source code for the examples it can be found in
+the jar file /usr/local/share/java/plplot.jar and also in
+/usr/local/share/plplot5.3.1/examples/java/
+
+(4) Changing and recompiling java demos
+
+If you want to alter and recompile the examples you can use the version in
+e.g. /usr/local/share/plplot5.3.1/examples/java. After altering the java
+file run "make" to rebuild the classes. When you run these examples you
+need to ensure that the examples/java directory appears _before_ the 
+plplot.jar file in your class path otherwise java will use the default 
+version and not your modified version.

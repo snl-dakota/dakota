@@ -1,0 +1,30 @@
+#!/bin/bash
+# job submission script for parallel Case 3 MPICH with mpiexec -server or srun
+
+###--- BEGIN PBS/mpiexec ---###
+# M=8 processors
+#PBS -l nodes=4:ppn=2:compute
+#PBS -l walltime=00:05:00
+#PBS -N DAKOTA_Case3_MPICH
+###--- END PBS/mpiexec ---###
+
+###--- TODO: SLURM/srun init ---###
+
+. $HOME/.bash_profile
+. /opt/modules/default/init/bash
+module switch mpi mpi/mvapich-0.9.8_ofed_intel-10.1-f015-c015
+
+# for convenience, set DAKOTA and PATH environment variables
+# put MPI-enabled, simulator executable in $HOME/bin and add to path
+# also, put . on path to pickup the simulator driver script
+export DAKOTA=/path/to/dakota
+export PATH=$HOME/bin:$PATH:.
+
+###--- BEGIN PBS/mpiexec ---###
+# start the mpiexec server to service requests for node subsets
+mpiexec -server &
+###--- END PBS/mpiexec ---###
+
+# Case 3: Run DAKOTA in serial and launch three parallel analysis job at a 
+# time, each on 2 processors
+$DAKOTA/bin/dakota -i dakota_pstudy.in

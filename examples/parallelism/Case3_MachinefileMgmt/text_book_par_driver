@@ -1,0 +1,110 @@
+#!/bin/sh
+
+# script to create working directory, populate, and run text_book_simple_par
+# in parallel on a subset of processors
+#
+# ensure that proper MPI module is loaded for the application and 'mpirun' below
+#. /usr/share/Modules/init/sh
+#module switch mpi mpi/openmpi-1.3_mx_intel-10.1-f015-c015
+
+#-----------------------------------
+# CREATE TEMPORARY WORKING DIRECTORY
+#
+# This prevents file trampling when running concurrent jobs.
+#-----------------------------------
+
+num=$(echo $1 | awk -F. '{print $NF}')
+topdir=`pwd`
+workdir=$topdir/workdir.$num
+
+mkdir workdir.$num
+cp $topdir/$1 $workdir/dakota_vars
+cd $workdir
+
+# -------------------------
+# INPUT FILE PRE-PROCESSING
+# -------------------------
+
+# This demo does not need file pre-processing, but normally (see
+# below) APREPRO or DPREPRO is used to "cut-and-paste" data from the
+# params.in.# file written by DAKOTA into a template input file for
+# the user's simulation code.
+
+# aprepro run6crh_rigid_template.i temp_rigid.new
+# grep -vi aprepro temp_rigid.new > run6crh_rigid.i
+
+# dprepro $1 application_input.template application.in 
+
+# For this example we just prepare the application input by copying
+# the parameters:
+cp dakota_vars application.in
+
+
+# -------------------
+# RUN SIMULATION CODE
+# -------------------
+
+# Managing machine files for the current simulation can be tricky due
+# to file race conditions and scheduling.  This approach is dynamic,
+# but could hang.  An alternate approach could assume static
+# scheduling and reserve machine files for particular evaluation
+# numbers.
+
+# Grab one of these node files and move it to the working directory in
+# order to specify a unique subset of nodes on which the application
+# analysis is to run.  The move must be successful, or the run will
+# fail, so check for success.  The most likely situation in which a
+# move will fail occurs when another copy of the script (running
+# concurrently in order to perform multiple function evaluations
+# simultaneously) grabs a node file out from under this one.
+
+nodeFile=`ls ../applicNodeFile.* | sed -n '1p'` && mv $nodeFile ./machines
+mvSuccess=$?
+while [ $mvSuccess -ne 0 ]; do
+  nodeFile=`ls ../applicNodeFile.* | sed -n '1p'` && mv $nodeFile ./machines
+  mvSuccess=$?
+done
+if [ $mvSuccess -eq 0 ]; then
+  echo "Job $num acquired $nodeFile"
+fi
+
+# run the MPI application
+echo "$0 running text_book_simple_par on $APPLIC_PROCS processors."
+mpirun -np $APPLIC_PROCS -machinefile machines $topdir/text_book_simple_par application.in application.out
+
+# use sleep command if file I/O timing is a problem
+sleep 1
+
+
+# ---------------------------
+# OUTPUT FILE POST PROCESSING
+# ---------------------------
+
+# Normally any application-specific post-processing to prepare the
+# results.out file for DAKOTA would go here. Here we'll substitute a
+# copy command:
+
+cp application.out results2dakota
+
+# for demo, append the node name to see on which node this task ran
+# (comment out for actual application)
+uname -n >> results2dakota
+
+# move the nodefile back up for use by another evaluation
+mv machines $nodeFile
+
+# When using DAKOTA's fork interface, the application can directly
+# write its output (if in the right format) to results.out.$num
+# (../$2) for DAKOTA, however for the system interface, use the
+# following move to avoid a race condition:
+
+mv results2dakota ../$2
+cd ..
+
+# -------------
+# CLEANUP
+# -------------
+
+# uncomment to cleanup work directories as evaluations progress
+#rm -rf ./workdir.$num
+#rm ./results.out.$num

@@ -1,0 +1,42 @@
+The makefile compiles and links dakmatlab, an analysis_driver for
+DAKOTA that uses MATLAB to evaluate a function expressed in f.m,
+possibly using gradients computed by fp.m and Hessians computed by
+fpp.m.  When first invoked (e.g., explicitly by "./dakmatlab -s", or
+implicitly when used by DAKOTA as an analysis_driver), dakmatlab
+starts a copy of itself that talks with MATLAB and talks with the
+copies of dakmatlab that DAKOTA invokes over named pipes.  This way,
+MATLAB is kept alive, and the large startup cost of invoking MATLAB is
+only paid by the initial "dakmatlab -s" invocation.  If shell variable
+$DAKMATLAB_PIPE is set to a nonempty value, the named pipes are called
+${DAKMATLAB_PIPE}1 and ${MATLAB_PIPE}2, i.e., their names are obtained
+by appending "1" and "2" to $DAKMATLAB_PIPE.  If $DAKMATLAB_PIPE is
+not set, the named pipes are called dakmatlab_pipe1 and
+dakmatlab_pipe2.
+
+When done with the named pipes, invoke
+
+	echo quit >dakmatlab_pipe1
+
+or
+	echo quit >${DAKMATLAB_PIPE}1
+
+to make the copy of dakmatlab that talks with MATLAB quit
+and remove the named pipes.
+
+To compile and link dakmatlab, you will probably need to adjust one or
+more of the "E =", "B =", "L =", and "W =" lines in the makefile to
+accord with your system.  It should be clear from looking at the
+makefile that $E/extern/include (or, more specifically, $I) should be
+the relevant "include" directory provided with your MATLAB
+installation, and that $B should be a corresponding directory
+containing shared libraries of your MATLAB installation.
+
+DAKOTA input file rosenbrock.in illustrates use of dakmatlab.
+Try invoking "dakota rosenbrock.in", possibly after an initial
+"./dakmatlab -s".
+
+Invoking
+
+	./dakmatlab --help
+
+causes dakmatlab to print a message about its use.

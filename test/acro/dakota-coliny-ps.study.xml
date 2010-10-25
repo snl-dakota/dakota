@@ -1,0 +1,68 @@
+<experimental-study name="dakota-coliny-ps">
+  <tags>
+    <tag>smoke</tag>
+    <tag>nightly</tag>
+    <tag>coliny</tag>
+  </tags>
+
+  <experiment>
+    <factors>
+  
+      <factor name="test" filename="dakota-ps_problems"/>
+
+      <factor name="method:base">
+          <level>coliny_pattern_search max_function_evaluations=20000</level>
+      </factor>
+
+      <factor name="method:required">
+          <level>initial_delta=1.0 threshold_delta=1.e-5</level>
+      </factor>
+
+      <factor name="method:output">
+          <level>output silent</level>
+      </factor>
+
+      <factor name="method:misc_options">
+          <level>"'output_header=verbose' 'max_iterations=0' 'function_value_tolerance=0' 'max_success=5' 'debug=0'"</level>
+      </factor>
+
+      <factor name="method:seed">
+          <level>seed 100</level>
+          <level>seed 101</level>
+          <level>seed 102</level>
+          <level>seed 103</level>
+          <level>seed 104</level>
+      </factor>
+
+      <factor name="strategy:base">
+          <level>single_method</level>
+       </factor>
+
+      <factor name="interface:base">
+          <level>algebraic_mappings</level>
+       </factor>
+
+    </factors>
+    <controls>
+       <executable>python dakota_test --ampl</executable>
+       <replication>5
+          <seeds>100 101 102 103 104</seeds>
+       </replication>
+    </controls>
+  </experiment>
+
+  <analysis name="Termination" type="validation">
+    <category>validation</category>
+    <options>_measurement='TerminationStatus' _value='Step-Length'</options>
+  </analysis>
+
+  <analysis name="ConstraintViolation" type="validation">
+    <category>validation</category>
+    <options>_measurement='ConstraintViolation' _value=0.0 _tolerance=0.001</options>
+  </analysis>
+
+  <analysis name="FinalValue" type="validation">
+    <category>validation</category>
+    <options>_measurement='Value' _tolerance=_opttol</options>
+  </analysis>
+</experimental-study>

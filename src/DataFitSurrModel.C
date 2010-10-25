@@ -1,0 +1,1516 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright (c) 2006, Sandia National Laboratories.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+//- Class:       DataFitSurrModel
+//- Description: Implementation code for the DataFitSurrModel class
+//- Owner:       Mike Eldred
+//- Checked by:
+
+#include "DataFitSurrModel.H"
+#include "ApproximationInterface.H"
+#include "ParamResponsePair.H"
+#include "ProblemDescDB.H"
+#include "PRPMultiIndex.H"
+#include "data_io.h"
+
+static const char rcsId[]="@(#) $Id: DataFitSurrModel.C 7034 2010-10-22 20:16:32Z mseldre $";
+
+
+namespace Dakota {
+
+// define special values for componentParallelMode
+#define APPROX_INTERFACE 1
+#define ACTUAL_MODEL     2
+
+
+DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
+  SurrogateModel(problem_db), surrModelEvals(0),
+  pointsTotal(problem_db.get_int("model.surrogate.points_total")),
+  pointsMinimum(problem_db.get_bool("model.surrogate.points_minimum")),
+  pointsRecommended(problem_db.get_bool("model.surrogate.points_recommended")),
+  pointReuse(problem_db.get_string("model.surrogate.point_reuse")),
+  pointReuseFile(problem_db.get_string("model.surrogate.point_reuse_file"))
+{
+  // ignore bounds when finite differencing on data fits, since the bounds are
+  // artificial in this case (and reflecting the stencil degrades accuracy)
+  ignoreBounds = true;
+
+  if (pointsTotal <= 0 && !pointsMinimum)
+    pointsRecommended = true;
+
+  if (pointReuse.empty()) // assign default
+    pointReuse = (pointReuseFile.empty()) ? "none" : "all";
+
+  // DataFitSurrModel is allowed to set the db list nodes, so long as it 
+  // restores the list nodes to their previous setting.  This removes the need
+  // to continuously reset at the strategy level (which would be wasteful
+  // since the type of derived model may not be known at the strategy level).
+  const String& dace_method_pointer
+    = problem_db.get_string("model.surrogate.dace_method_pointer");
+  const String& actual_model_pointer
+    = problem_db.get_string("model.surrogate.actual_model_pointer");
+  if (!dace_method_pointer.empty()) { // global DACE approximations
+    size_t method_index = problem_db.get_db_method_node(); // for restoration
+    size_t model_index  = problem_db.get_db_model_node();  // for restoration
+    problem_db.set_db_list_nodes(dace_method_pointer);
+    // instantiate the actual model
+    actualModel = problem_db.get_model();
+    check_submodel_compatibility(actualModel);
+    // if outer level output is verbose/debug and actualModel verbosity is
+    // defined by the DACE method spec, request fine-grained evaluation
+    // reporting for purposes of the final output summary.  This allows verbose
+    // final summaries without verbose output on every dace-iterator completion.
+    if (outputLevel > NORMAL_OUTPUT)
+      actualModel.fine_grained_evaluation_counters();
+    // instantiate the DACE iterator
+    daceIterator = problem_db.get_iterator(actualModel);
+    daceIterator.sub_iterator_flag(true);
+    problem_db.set_db_method_node(method_index); // restore method only
+    problem_db.set_db_model_nodes(model_index);  // restore all model nodes
+  }
+  else if (!actual_model_pointer.empty()) { // local/multipoint approximation
+    size_t model_index = problem_db.get_db_model_node(); // for restoration
+    problem_db.set_db_model_nodes(actual_model_pointer);
+    actualModel = problem_db.get_model();
+    check_submodel_compatibility(actualModel);
+    problem_db.set_db_model_nodes(model_index); // restore
+  }
+  // else global approx. built solely from reuse_points: daceIterator/
+  // actualModel remain empty envelopes.  Verify that there is a data source:
+  // this basic check is augmented with a build_global() check which enforces
+  // that the total points from both sources be >= minimum required.
+  else if ( pointReuse == "none" ) {
+    Cerr << "Error: to build an data fit surrogate model, either a global "
+	 << "approximation\n       must be specified with reuse_points or "
+	 << "dace_method_pointer, or a\n       local/multipoint approximation "
+	 << "must be specified with an actual_model_pointer." << std::endl;
+    abort_handler(-1);
+  }
+
+  // assign the ApproximationInterface instance which manages the
+  // local/multipoint/global approximation.  By instantiating with assign_rep(),
+  // Interface::get_interface() does not need special logic for approximations.
+  // The number of approximation variables is defined by the active variable set
+  // in the sub-model, and any conversions based on differing variable views
+  // must be performed in ApproximationInterface::map().
+  const Variables& vars = (actualModel.is_null()) ? currentVariables :
+    actualModel.current_variables();
+  approxInterface.assign_rep(new
+    ApproximationInterface(problem_db, vars, numFns), false);
+
+  // read the points_file once and then reuse this data as appropriate
+  // within build_global()
+  if (!pointReuseFile.empty()) {
+    std::ifstream point_stream(pointReuseFile);
+    if (!point_stream) {
+      Cerr << "Error: point reuse file " << pointReuseFile << " not found."
+	   << std::endl;
+      abort_handler(-1);
+    }
+    else
+      Cout << "Retrieving points from " << pointReuseFile << '\n';
+    const SharedVariablesData& svd = (actualModel.is_null()) ?
+      currentVariables.shared_data() :
+      actualModel.current_variables().shared_data();
+    size_t num_c_vars = (actualModel.is_null()) ? currentVariables.cv() :
+      actualModel.cv();
+    ActiveSet temp_set(numFns, num_c_vars); // function values only
+    while (!point_stream.eof()) {
+      // reuse_file_vars/responses must already be sized for istream read
+      RealVector reuse_file_c_vars(num_c_vars);
+      Response   reuse_file_responses(temp_set);
+      try {
+	// read_data() lacks eof checks
+	read_data_tabular(point_stream, reuse_file_c_vars);
+	reuse_file_responses.read_tabular(point_stream);
+      }
+      catch(String& err_msg) {
+	//Cerr << "Warning: " << err_msg << std::endl;
+	break; // out of while loop
+      }
+      Variables reuse_file_vars(svd); // instantiate-on-the-fly
+      reuse_file_vars.continuous_variables(reuse_file_c_vars);
+      if (outputLevel > NORMAL_OUTPUT)
+	Cout << "Point read:\n" << reuse_file_c_vars << reuse_file_responses;
+      reuseFileVars.push_back(reuse_file_vars);           // shallow copy
+      reuseFileResponses.push_back(reuse_file_responses); // shallow copy
+    }
+  }
+}
+
+
+DataFitSurrModel::
+DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
+		 //const SharedVariablesData& svd, const ActiveSet& set,
+		 const String& approx_type, const UShortArray& approx_order,
+		 const String& corr_type, short corr_order,
+		 const String& point_reuse):
+  SurrogateModel(actual_model.parallel_library(), //view, vars_comps, set,
+		 actual_model.current_variables().shared_data(),
+		 actual_model.current_response().active_set(), corr_type,
+		 corr_order),
+  daceIterator(dace_iterator), actualModel(actual_model), surrModelEvals(0),
+  pointsTotal(0), pointsMinimum(false), pointsRecommended(true),
+  pointReuse(point_reuse)
+{
+  // dace_iterator may be an empty envelope (local, multipoint approx),
+  // but actual_model must be defined.
+  if (actualModel.is_null()) {
+    Cerr << "Error: actualModel is empty envelope in alternate "
+	 << "DataFitSurrModel constructor." << std::endl;
+    abort_handler(-1);
+  }
+
+  surrogateType = approx_type;
+
+  // update constraint counts in userDefinedConstraints.
+  userDefinedConstraints.reshape(actualModel.num_nonlinear_ineq_constraints(),
+				 actualModel.num_nonlinear_eq_constraints(),
+				 actualModel.num_linear_ineq_constraints(),
+				 actualModel.num_linear_eq_constraints());
+  update_from_actual_model();
+  check_submodel_compatibility(actualModel);
+
+  // use response specification from truth model for approximation data order.
+  // There are currently two derivative cases of interest: (1) derivatives used
+  // as additional data for forming the approximation (derivatives w.r.t. the
+  // expansion variables), and (2) derivatives that will be approximation
+  // separately (derivatives w.r.t. auxilliary variables).  The useDerivsFlag
+  // is used at a lower level to differentiate these cases.
+  unsigned short data_order
+    = actualModel.current_response().active_set().request_vector()[0];
+  // assign the ApproximationInterface instance which manages the
+  // local/multipoint/global approximation.  By instantiating with assign_rep(),
+  // Interface::get_interface() does not need special logic for approximations.
+  approxInterface.assign_rep(new ApproximationInterface(approx_type,
+    approx_order, actualModel.current_variables(), numFns, data_order), false);
+
+  if (!daceIterator.is_null()) // global DACE approximations
+    daceIterator.sub_iterator_flag(true);
+  //else { // local/multipoint approximation
+  //}
+
+  // ignore bounds when finite differencing on data fits, since the bounds are
+  // artificial in this case (and reflecting the stencil degrades accuracy)
+  ignoreBounds = true;
+
+  // for construction on the fly, we cannot support a separate derivative
+  // specification for the surrogate, so we link to the actual_model settings.
+  // TO DO: could base this of of incoming ASV content.
+  if (actual_model.gradient_type() == "none")
+    gradType = "none";
+  else
+    gradType = (approx_type == "global_polynomial" ||
+		approx_type == "global_orthogonal_polynomial" ||
+		approx_type.begins("local_") ||
+		approx_type.begins("multipoint_")) ? "analytic" : "numerical";
+  if (actual_model.hessian_type() == "none")
+    hessType = "none";
+  else
+    hessType = (approx_type == "global_polynomial" ||
+		approx_type.begins("local_"))      ? "analytic" : "numerical";
+
+  // Promote fdGradSS/fdHessByFnSS/fdHessByGradSS to defaults if needed.
+  if (gradType == "numerical") { // mixed not supported for this Model
+    methodSrc    = "dakota";
+    intervalType = "central";
+    fdGradSS.resize(1);
+    fdGradSS[0] = 0.001;
+  }
+  if (hessType == "numerical") { // mixed not supported for this Model
+    if (gradType == "numerical") {
+      fdHessByFnSS.resize(1);
+      fdHessByFnSS[0] = 0.002;
+    }
+    else {
+      fdHessByGradSS.resize(1);
+      fdHessByGradSS[0] = 0.001;
+    }
+  }
+}
+
+
+/** This function constructs a new approximation, discarding any
+    previous data.  It constructs any required currentPoints and does
+    not define an anchorPoint. */
+void DataFitSurrModel::build_approximation()
+{
+  Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
+
+  // clear out previous anchor/data points, but preserve history (if multipoint)
+  approxInterface.clear_current();
+  // update actualModel w/ variable values/bounds/labels
+  update_actual_model();
+
+  // build a local, multipoint, or global data fit approximation.
+  if (surrogateType.begins("local_") || surrogateType.begins("multipoint_")) {
+    // NOTE: branch used by SBO
+    update_local_multipoint();
+    build_local_multipoint();
+  }
+  else { // global approximation.  NOTE: branch not used by SBO.
+    update_global();
+    build_global();
+    //compute_correction(...need data...);
+    // could add compute_correction() here and in
+    // HierarchSurrModel::build_approximation if global approximations had
+    // easy access to the truth/approx responses.  Instead, it is called
+    // from SBOStrategy using data from the center of the trust region.
+  }
+  BoolDeque rebuild_deque;
+  if (actualModel.is_null())
+    approxInterface.build_approximation(rebuild_deque,
+      userDefinedConstraints.continuous_lower_bounds(),
+      userDefinedConstraints.continuous_upper_bounds());
+  else // employ sub-model vars view, if available
+    approxInterface.build_approximation(rebuild_deque,
+      actualModel.continuous_lower_bounds(),
+      actualModel.continuous_upper_bounds());
+  approxBuilds++;
+
+  Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
+}
+
+
+/** This function constructs a new approximation, discarding any
+    previous data.  It uses the passed data to populate the
+    anchorPoint and constructs any required currentPoints. */
+bool DataFitSurrModel::
+build_approximation(const Variables& vars, const Response& response)
+{
+  Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
+
+  // clear out previous anchor/data points, but preserve history (if multipoint)
+  approxInterface.clear_current();
+  // update actualModel w/ variable values/bounds/labels
+  update_actual_model();
+  // populate/replace the anchor point for the approximation.  When supported by
+  // the surrogate type (local, multipoint, global polynomial regression), this
+  // is enforced as a hard constraint. Otherwise, it is just another data point.
+  approxInterface.update_approximation(vars, response);
+
+  // build a local, multipoint, or global data fit approximation.
+  if (surrogateType.begins("local_") || surrogateType.begins("multipoint_"))
+    // NOTE: branch not used by SBO
+    update_local_multipoint();
+  else { // global approximation.  NOTE: branch used by SBO.
+    update_global();
+    build_global();
+    //compute_correction(...need data...);
+    // could add compute_correction() here and in
+    // HierarchSurrModel::build_approximation if global approximations had
+    // easy access to the truth/approx responses.  Instead, it is called
+    // from SBOStrategy using data from the center of the trust region.
+  }
+  BoolDeque rebuild_deque;
+  if (actualModel.is_null())
+    approxInterface.build_approximation(rebuild_deque,
+      userDefinedConstraints.continuous_lower_bounds(),
+      userDefinedConstraints.continuous_upper_bounds());
+  else // employ sub-model vars view, if available
+    approxInterface.build_approximation(rebuild_deque,
+      actualModel.continuous_lower_bounds(),
+      actualModel.continuous_upper_bounds());
+  approxBuilds++;
+
+  Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
+
+  // return a bool indicating whether the incoming data defines an embedded
+  // correction (hard constraint) or just another data point.  It would be
+  // preferable to flow this up from the surrogate, but keep it simple for now.
+#ifdef DAKOTA_SURFPACK
+  return (surrogateType.begins("local_") ||
+	  surrogateType.begins("multipoint_") ||
+	  surrogateType == "global_polynomial");
+#else
+  return (surrogateType.begins("local_") ||
+	  surrogateType.begins("multipoint_"));
+#endif // DAKOTA_SURFPACK
+}
+
+
+/** This function populates/replaces Approximation::anchorPoint and
+    rebuilds the approximation, if requested.  It does not clear other
+    data (i.e., Approximation::currentPoints) and does not update the
+    actualModel with revised bounds, labels, etc.  Thus, it updates
+    data from a previous call to build_approximation(), and is not
+    intended to be used in isolation. */
+void DataFitSurrModel::update_approximation(bool rebuild_flag)
+{
+  Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
+
+  // replace the current points for each approximation
+  //daceIterator.run_iterator(Cout);
+  if (daceIterator.compact_mode())
+    approxInterface.update_approximation(daceIterator.all_samples(),
+					 daceIterator.all_responses());
+  else
+    approxInterface.update_approximation(daceIterator.all_variables(),
+					 daceIterator.all_responses());
+
+  if (rebuild_flag) { // update the coefficients for each approximation
+    BoolDeque rebuild_deque;
+    approxInterface.rebuild_approximation(rebuild_deque);
+    approxBuilds++;
+  }
+
+  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+}
+
+
+/** This function populates/replaces Approximation::anchorPoint and
+    rebuilds the approximation, if requested.  It does not clear other
+    data (i.e., Approximation::currentPoints) and does not update the
+    actualModel with revised bounds, labels, etc.  Thus, it updates
+    data from a previous call to build_approximation(), and is not
+    intended to be used in isolation. */
+void DataFitSurrModel::
+update_approximation(const Variables& vars, const Response& response,
+		     bool rebuild_flag)
+{
+  Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
+
+  // populate/replace the anchor point for each approximation
+  approxInterface.update_approximation(vars, response); // update anchorPoint
+
+  if (rebuild_flag) { // find the coefficients for each approximation
+    // decide which surrogates to rebuild based on response content
+    BoolDeque rebuild_deque(numFns);
+    const ShortArray& asv = response.active_set_request_vector();
+    for (size_t i=0; i<numFns; ++i)
+      rebuild_deque[i] = (asv[i]) ? true : false;
+    // rebuild the designated surrogates, employing the sub-model bounds,
+    // if available
+    if (actualModel.is_null())
+      approxInterface.build_approximation(rebuild_deque,
+        userDefinedConstraints.continuous_lower_bounds(),
+        userDefinedConstraints.continuous_upper_bounds());
+    else
+      approxInterface.build_approximation(rebuild_deque,
+	actualModel.continuous_lower_bounds(),
+        actualModel.continuous_upper_bounds());
+    approxBuilds++;
+  }
+
+  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+}
+
+
+/** This function populates/replaces Approximation::currentPoints and
+    rebuilds the approximation, if requested.  It does not clear other
+    data (i.e., Approximation::anchorPoint) and does not update the
+    actualModel with revised bounds, labels, etc.  Thus, it updates
+    data from a previous call to build_approximation(), and is not
+    intended to be used in isolation. */
+void DataFitSurrModel::
+update_approximation(const VariablesArray& vars_array,
+		     const ResponseArray&  resp_array, bool rebuild_flag)
+{
+  Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
+
+  // populate/replace the current points for each approximation
+  approxInterface.update_approximation(vars_array, resp_array);
+
+  if (rebuild_flag) { // find the coefficients for each approximation
+    // decide which surrogates to rebuild based on resp_array content
+    BoolDeque rebuild_deque(numFns, false);
+    size_t i, j, num_resp = resp_array.size();
+    for (i=0; i<num_resp; ++i) {
+      const ShortArray& asv_i = resp_array[i].active_set_request_vector();
+      for (j=0; j<numFns; ++j)
+	if (asv_i[j])
+	  rebuild_deque[j] = true;
+    }
+    // rebuild the designated surrogates, employing the sub-model bounds,
+    // if available
+    if (actualModel.is_null())
+      approxInterface.build_approximation(rebuild_deque,
+        userDefinedConstraints.continuous_lower_bounds(),
+        userDefinedConstraints.continuous_upper_bounds());
+    else
+      approxInterface.build_approximation(rebuild_deque,
+	actualModel.continuous_lower_bounds(),
+        actualModel.continuous_upper_bounds());
+    approxBuilds++;
+  }
+
+  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+}
+
+
+/** This function appends one point to Approximation::currentPoints
+    and rebuilds the approximation, if requested.  It does not modify
+    other data (i.e., Approximation::anchorPoint) and does not update
+    the actualModel with revised bounds, labels, etc.  Thus, it
+    appends to data from a previous call to build_approximation(), and
+    is not intended to be used in isolation. */
+void DataFitSurrModel::append_approximation(bool rebuild_flag)
+{
+  Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
+
+  // append to the current points for each approximation
+  //daceIterator.run_iterator(Cout);
+  if (daceIterator.compact_mode())
+    approxInterface.append_approximation(daceIterator.all_samples(),
+					 daceIterator.all_responses());
+  else
+    approxInterface.append_approximation(daceIterator.all_variables(),
+					 daceIterator.all_responses());
+
+  if (rebuild_flag) { // update the coefficients for each approximation
+    BoolDeque rebuild_deque; // empty array rebuilds all fns
+    approxInterface.rebuild_approximation(rebuild_deque);
+    approxBuilds++;
+  }
+
+  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+}
+
+
+/** This function appends one point to Approximation::currentPoints
+    and rebuilds the approximation, if requested.  It does not modify
+    other data (i.e., Approximation::anchorPoint) and does not update
+    the actualModel with revised bounds, labels, etc.  Thus, it
+    appends to data from a previous call to build_approximation(), and
+    is not intended to be used in isolation. */
+void DataFitSurrModel::
+append_approximation(const Variables& vars, const Response& response,
+		     bool rebuild_flag)
+{
+  Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.append_approximation(vars, response);
+
+  if (rebuild_flag) { // find the coefficients for each approximation
+    // decide which surrogates to rebuild based on response content
+    BoolDeque rebuild_deque(numFns);
+    const ShortArray& asv = response.active_set_request_vector();
+    for (size_t i=0; i<numFns; ++i)
+      rebuild_deque[i] = (asv[i]) ? true : false;
+    // rebuild the designated surrogates, employing the sub-model vars
+    // view, if available
+    if (actualModel.is_null())
+      approxInterface.build_approximation(rebuild_deque,
+        userDefinedConstraints.continuous_lower_bounds(),
+        userDefinedConstraints.continuous_upper_bounds());
+    else
+      approxInterface.build_approximation(rebuild_deque,
+	actualModel.continuous_lower_bounds(),
+	actualModel.continuous_upper_bounds());
+    approxBuilds++;
+  }
+
+  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+}
+
+
+/** This function appends multiple points to Approximation::currentPoints
+    and rebuilds the approximation, if requested.  It does not modify
+    other data (i.e., Approximation::anchorPoint) and does not update the
+    actualModel with revised bounds, labels, etc.  Thus, it appends to
+    data from a previous call to build_approximation(), and is not
+    intended to be used in isolation. */
+void DataFitSurrModel::
+append_approximation(const VariablesArray& vars_array,
+		     const ResponseArray&  resp_array, bool rebuild_flag)
+{
+  Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.append_approximation(vars_array, resp_array);
+
+  if (rebuild_flag) { // find the coefficients for each approximation
+    // decide which surrogates to rebuild based on resp_array content
+    BoolDeque rebuild_deque(numFns, false);
+    size_t i, j, num_resp = resp_array.size();
+    for (i=0; i<num_resp; ++i) {
+      const ShortArray& asv_i = resp_array[i].active_set_request_vector();
+      for (j=0; j<numFns; ++j)
+	if (asv_i[j])
+	  rebuild_deque[j] = true;
+    }
+    // rebuild the designated surrogates, employing the sub-model vars
+    // view, if available
+    if (actualModel.is_null())
+      approxInterface.build_approximation(rebuild_deque,
+        userDefinedConstraints.continuous_lower_bounds(),
+        userDefinedConstraints.continuous_upper_bounds());
+    else
+      approxInterface.build_approximation(rebuild_deque,
+	actualModel.continuous_lower_bounds(),
+        actualModel.continuous_upper_bounds());
+    approxBuilds++;
+  }
+
+  Cout << "\n<<<<< " << surrogateType << " approximation updates completed.\n";
+}
+
+
+void DataFitSurrModel::pop_approximation()//(bool rebuild_flag)
+{
+  Cout << "\n>>>>> Popping data from " << surrogateType << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.pop_approximation();
+
+  /* 
+  if (rebuild_flag) { // update the coefficients for each approximation
+    BoolDeque rebuild_deque;
+    approxInterface.rebuild_approximation(rebuild_deque);
+    approxBuilds++;
+  }
+  */
+
+  Cout << "\n<<<<< " << surrogateType
+       << " approximation data removal completed.\n";
+}
+
+
+void DataFitSurrModel::restore_approximation()//(bool rebuild_flag)
+{
+  Cout << "\n>>>>> Restoring " << surrogateType << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.restore_approximation();
+
+  /*
+  if (rebuild_flag) { // update the coefficients for each approximation
+    BoolDeque rebuild_deque;
+    approxInterface.rebuild_approximation(rebuild_deque);
+    approxBuilds++;
+  }
+  */
+
+  Cout << "\n<<<<< " << surrogateType << " approximation restored.\n";
+}
+
+
+void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
+{
+  Cout << "\n>>>>> Finalizing " << surrogateType << " approximations.\n";
+
+  // append to the current points for each approximation
+  approxInterface.finalize_approximation();
+
+  /*
+  if (rebuild_flag) { // update the coefficients for each approximation
+    BoolDeque rebuild_deque;
+    approxInterface.rebuild_approximation(rebuild_deque);
+    approxBuilds++;
+  }
+  */
+
+  Cout << "\n<<<<< " << surrogateType << " approximation finalized.\n";
+}
+
+
+void DataFitSurrModel::update_local_multipoint()
+{
+  // Store the actualModel inactive variable values for use in force_rebuild()
+  // for determining whether an automatic approximation rebuild is required.
+
+  // the actualModel data has been updated by update_actual_model(), which
+  // precedes update_local_multipoint()
+
+  const Variables& actual_vars = actualModel.current_variables();
+  if (actual_vars.view().first >= MERGED_DISTINCT_DESIGN) { // Distinct view
+    copy_data(actual_vars.inactive_continuous_variables(),    referenceICVars);
+    copy_data(actual_vars.inactive_discrete_int_variables(),  referenceIDIVars);
+    copy_data(actual_vars.inactive_discrete_real_variables(), referenceIDRVars);
+  }
+}
+
+
+void DataFitSurrModel::update_global()
+{
+  // Store the actualModel active variable bounds and inactive variable values
+  // for use in force_rebuild() to determine whether an automatic approximation
+  // rebuild is required.
+
+  // the actualModel data has been updated by update_actual_model(),
+  // which precedes update_global().
+
+  const Variables& vars = (actualModel.is_null()) ? currentVariables :
+    actualModel.current_variables();
+  if (vars.view().first >= MERGED_DISTINCT_DESIGN) { // Distinct view
+    copy_data(vars.inactive_continuous_variables(),    referenceICVars);
+    copy_data(vars.inactive_discrete_int_variables(),  referenceIDIVars);
+    copy_data(vars.inactive_discrete_real_variables(), referenceIDRVars);
+  }
+
+  if (!actualModel.is_null() && actualModel.model_type() == "recast") {
+    // dive through Model recursion to bypass recasting
+    Model sub_model = actualModel.subordinate_model();
+    while (sub_model.model_type() == "recast")
+      sub_model = sub_model.subordinate_model();
+    // update referenceCLBnds/referenceCUBnds/referenceDLBnds/referenceDUBnds
+    copy_data(sub_model.continuous_lower_bounds(),    referenceCLBnds);
+    copy_data(sub_model.continuous_upper_bounds(),    referenceCUBnds);
+    copy_data(sub_model.discrete_int_lower_bounds(),  referenceDILBnds);
+    copy_data(sub_model.discrete_int_upper_bounds(),  referenceDIUBnds);
+    copy_data(sub_model.discrete_real_lower_bounds(), referenceDRLBnds);
+    copy_data(sub_model.discrete_real_upper_bounds(), referenceDRUBnds);
+  }
+  else {
+    const Constraints& cons = (actualModel.is_null()) ? userDefinedConstraints :
+      actualModel.user_defined_constraints();
+    copy_data(cons.continuous_lower_bounds(),    referenceCLBnds);
+    copy_data(cons.continuous_upper_bounds(),    referenceCUBnds);
+    copy_data(cons.discrete_int_lower_bounds(),  referenceDILBnds);
+    copy_data(cons.discrete_int_upper_bounds(),  referenceDIUBnds);
+    copy_data(cons.discrete_real_lower_bounds(), referenceDRLBnds);
+    copy_data(cons.discrete_real_upper_bounds(), referenceDRUBnds);
+  }
+}
+
+
+/** Evaluate the value, gradient, and possibly Hessian needed for a
+    local or multipoint approximation using actualModel. */
+void DataFitSurrModel::build_local_multipoint()
+{
+  // set DataFitSurrModel parallelism mode to actualModel
+  component_parallel_mode(ACTUAL_MODEL);
+
+  // Define the data requests
+  short asv_value = 3;
+  if (surrogateType.begins("local_") && actualModel.hessian_type() != "none")
+    asv_value += 4;
+  ShortArray orig_asv(numFns, asv_value), actual_asv, approx_asv;
+  asv_mapping(orig_asv, actual_asv, approx_asv, true);
+
+  // Evaluate value and derivatives using actualModel
+  ActiveSet set = actualModel.current_response().active_set(); // copy
+  set.request_vector(actual_asv);
+  set.derivative_vector(actualModel.continuous_variable_ids());
+  actualModel.compute_response(set);
+
+  approxInterface.update_approximation(actualModel.current_variables(),
+    actualModel.current_response());
+}
+
+
+/** Determine points to use in building the approximation and
+    then evaluate them on actualModel using daceIterator.  Any changes
+    to the bounds should be performed by setting them at a higher
+    level (e.g., SurrBasedOptStrategy). */
+void DataFitSurrModel::build_global()
+{
+  // build_global() follows update_actual_model() so we may use
+  // actualModel.continuous_(lower/upper)_bounds() to avoid view
+  // conversions and allow pass-by-reference.
+
+  // **************************************************************************
+  // Check data_pairs and pointReuseFile for any existing evaluations to reuse
+  // **************************************************************************
+  size_t i, j, reuse_points = 0;
+  if (pointReuse == "all" || pointReuse == "region") {
+
+    VariablesArray reuse_vars;
+    ResponseArray  reuse_responses;
+
+    size_t num_c_vars, num_di_vars, num_dr_vars;
+    if (actualModel.is_null()) {
+      num_c_vars  = currentVariables.cv();
+      num_di_vars = currentVariables.div();
+      num_dr_vars = currentVariables.drv();
+    }
+    else {
+      num_c_vars  = actualModel.cv();
+      num_di_vars = actualModel.div();
+      num_dr_vars = actualModel.drv();
+    }
+
+    // since SurrBasedLocalMinimizer currently evaluates the trust region center
+    // first, we must take care to not include this point in the point reuse,
+    // since this would cause it to be used twice.
+    const Pecos::SurrogateDataPoint& anchor_pt = approxInterface.anchor_point();
+
+    // Process the PRPCache
+    extern PRPCache data_pairs;
+    PRPCacheCIter prp_iter, prp_end_iter = data_pairs.end();
+    for (prp_iter = data_pairs.begin(); prp_iter != prp_end_iter; ++prp_iter) {
+      const Variables&  db_vars    = prp_iter->prp_parameters();
+      const RealVector& db_c_vars  = db_vars.continuous_variables();
+      const IntVector&  db_di_vars = db_vars.discrete_int_variables();
+      const RealVector& db_dr_vars = db_vars.discrete_real_variables();
+      if ( db_c_vars.length()  == num_c_vars &&
+	   db_di_vars.length() == num_di_vars &&
+	   db_dr_vars.length() == num_dr_vars &&
+	   prp_iter->interface_id() == actualModel.interface_id() &&
+	   ( anchor_pt.is_null() || 
+	     db_c_vars != anchor_pt.continuous_variables() ) &&
+	   inside(db_c_vars, db_di_vars, db_dr_vars) ) {
+	reuse_vars.push_back(db_vars);
+	reuse_responses.push_back(prp_iter->prp_response());
+      }
+    }
+
+    // Process the points_file
+    if (!pointReuseFile.empty()) {
+      VarsLIter v_it; RespLIter r_it;
+      for (v_it  = reuseFileVars.begin(), r_it = reuseFileResponses.begin();
+	   v_it != reuseFileVars.end();   v_it++, r_it++) {
+	if (inside(v_it->continuous_variables(), v_it->discrete_int_variables(),
+		   v_it->discrete_real_variables())) {
+	  reuse_vars.push_back(*v_it);
+	  reuse_responses.push_back(*r_it);
+	}
+      }
+    }
+
+    // replace any previous data
+    reuse_points = reuse_vars.size();
+    approxInterface.append_approximation(reuse_vars, reuse_responses);
+  }
+
+  // *******************************************
+  // Evaluate new data points using daceIterator
+  // *******************************************
+  // minimum and preferred points wanted by the surrogate model
+  int min_points = approxInterface.minimum_points(true);// incl constraints
+  int rec_points = approxInterface.recommended_points(true);
+
+  size_t dace_samples = 0;
+  if (!daceIterator.is_null()) { // else use rst info only (no new data)
+
+    // set DataFitSurrModel parallelism mode to actualModel
+    component_parallel_mode(ACTUAL_MODEL);
+
+    // determine total number of points requested to build surrogate 
+    // (min, recommended, or spec)
+    int points_requested = 0;                                
+
+    // after construction, only one should be true
+    if (pointsMinimum) 
+      points_requested = min_points;
+    else if (pointsRecommended)
+      points_requested = rec_points;
+    else { // total points must be defined
+      if (pointsTotal < min_points) {
+	if (outputLevel >= NORMAL_OUTPUT) 
+	  Cout << "\nDataFitSurrModel: Total points specified " << pointsTotal
+	       << " is less than minimum required;\nincreasing to "
+	       << min_points << std::endl;
+	points_requested = min_points;
+      }
+      else 
+	points_requested = pointsTotal;
+    }
+
+    // number of additional samples needed to build the surrogate
+    int samples_needed = std::max(0, points_requested - (int)reuse_points);
+
+    if (outputLevel > NORMAL_OUTPUT && reuse_points > 0)
+      Cout << "DataFitSurrModel: Reusing " << reuse_points << " points.\n";
+
+    // daceIterator must generate at least samples_needed samples,
+    // should populate allData lists (allDataFlag = true), and should bypass 
+    // statistics computation (statsFlag = false).
+    //
+    // NOTE: the iterator's samplesSpec will always be a hard lower bound on 
+    // the number of samples generated, so might need to be set to zero
+    daceIterator.sampling_reset(samples_needed, true, false);
+    
+    // only run the iterator if work to do
+    if (daceIterator.num_samples()) {
+      // Define the data requests
+      ActiveSet set = daceIterator.active_set(); // copy
+      ShortArray actual_asv, approx_asv;
+      asv_mapping(set.request_vector(), actual_asv, approx_asv, true);
+      set.request_vector(actual_asv);
+      daceIterator.active_set(set);
+      daceIterator.run_iterator(Cout);
+      const ResponseArray& all_resp = daceIterator.all_responses();
+      dace_samples = all_resp.size();
+      if (daceIterator.compact_mode())
+	approxInterface.append_approximation(daceIterator.all_samples(),
+					     all_resp);
+      else
+	approxInterface.append_approximation(daceIterator.all_variables(),
+					     all_resp);
+    }
+    else if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "DataFitSurrModel: No samples needed from DACE iterator."
+	   << std::endl;
+  }
+
+  // **********************************************************
+  // Verify union of reuse vars/response and dace vars/response
+  // **********************************************************
+  size_t total_points = reuse_points + dace_samples;
+  if (total_points < min_points) {
+    Cerr << "Error: a minimum of " << min_points << " points is required by "
+	 << "DataFitSurrModel::build_global.\n" << total_points
+	 << " were provided." << std::endl;
+    abort_handler(-1);
+  }
+  String anchor = (approxInterface.anchor()) ? "one" : "no";
+  Cout << "Constructing global approximations with " << anchor << " anchor, "
+       << dace_samples << " DACE samples, and " << reuse_points
+       << " reused points.\n";
+}
+
+
+/** Compute the response synchronously using actualModel, approxInterface,
+    or both (mixed case).  For the approxInterface portion, build the
+    approximation if needed, evaluate the approximate response, and apply 
+    correction (if active) to the results. */
+void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
+{
+  surrModelEvals++;
+
+  ShortArray actual_asv, approx_asv;
+  asv_mapping(set.request_vector(), actual_asv, approx_asv, false);
+  bool actual_eval = !actual_asv.empty(), approx_eval = !approx_asv.empty(),
+    mixed_eval = (actual_eval && approx_eval);
+  Response actual_response, approx_response; // empty handles
+
+  if (actual_eval) { // rare case: use actualModel i/o approxInterface
+    component_parallel_mode(ACTUAL_MODEL);
+    update_actual_model(); // update variables/bounds/labels in actualModel
+    ActiveSet actual_set = set;
+    actual_set.request_vector(actual_asv);
+    actualModel.compute_response(actual_set);
+    if (mixed_eval)
+      actual_response = actualModel.current_response(); // shared rep
+    else {
+      currentResponse.active_set(actual_set);
+      currentResponse.update(actualModel.current_response());
+    }
+  }
+
+  if (approx_eval) { // normal case: evaluation of approxInterface
+
+    // if build_approximation has not yet been called, call it now
+    if (!approxBuilds || force_rebuild()) {
+      //if (!approxBuilds && !correctionType.empty())
+      //  autoCorrection = true; // default if stand-alone use
+      build_approximation();
+    }
+
+    //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
+    ActiveSet approx_set = set;
+    approx_set.request_vector(approx_asv);
+    approx_response = (mixed_eval) ? currentResponse.copy() : currentResponse;
+    approxInterface.map(currentVariables, approx_set, approx_response);
+
+    if (autoCorrection && !correctionType.empty()) {
+      //if (!correctionComputed)
+      //  compute_correction(centerResponse, approx_response,
+      //                     currentVariables.continuous_variables());
+      apply_correction(approx_response,currentVariables.continuous_variables());
+    }
+  }
+
+  if (mixed_eval) {
+    currentResponse.active_set(set);
+    response_mapping(actual_response, approx_response, currentResponse);
+  }
+}
+
+
+/** Compute the response asynchronously using actualModel,
+    approxInterface, or both (mixed case).  For the approxInterface
+    portion, build the approximation if needed and evaluate the
+    approximate response in a quasi-asynchronous approach
+    (ApproximationInterface::map() performs the map synchronously and
+    bookkeeps the results for return in derived_synchronize() below). */
+void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
+{
+  surrModelEvals++;
+
+  ShortArray actual_asv, approx_asv;
+  asv_mapping(set.request_vector(), actual_asv, approx_asv, false);
+
+  if (!actual_asv.empty()) { // rare case: use actualModel i/o approxInterface
+    // don't need to set component parallel mode since this only queues the job
+    update_actual_model(); // update variables/bounds/labels in actualModel
+    ActiveSet actual_set = set;
+    actual_set.request_vector(actual_asv);
+    actualModel.asynch_compute_response(actual_set);
+    // store mapping from actualModel eval id to DataFitSurrModel id
+    truthIdMap[actualModel.evaluation_id()] = surrModelEvals;
+  }
+
+  if (!approx_asv.empty()) { // normal case: evaluation of approxInterface
+
+    // if build_approximation has not yet been called, call it now
+    if (!approxBuilds || force_rebuild()) {
+      //if (!approxBuilds && !correctionType.empty())
+      //  autoCorrection = true; // default if stand-alone use
+      build_approximation();
+    }
+
+    // don't need to set component parallel mode since this only queues the job
+    ActiveSet approx_set = set;
+    approx_set.request_vector(approx_asv);
+    approxInterface.map(currentVariables, approx_set, currentResponse, true);
+
+    if (autoCorrection && !correctionType.empty())
+      copy_data(currentVariables.continuous_variables(),
+		rawCVarsMap[surrModelEvals]);
+    // store map from approxInterface eval id to DataFitSurrModel id
+    surrIdMap[approxInterface.evaluation_id()] = surrModelEvals;
+  }
+}
+
+
+/** Blocking retrieval of asynchronous evaluations from actualModel,
+    approxInterface, or both (mixed case).  For the approxInterface
+    portion, apply correction (if active) to each response in the array.
+    derived_synchronize() is designed for the general case where
+    derived_asynch_compute_response() may be inconsistent in its use
+    of actual evaluations, approximate evaluations, or both. */
+const IntResponseMap& DataFitSurrModel::derived_synchronize()
+{
+  surrResponseMap.clear();
+  bool actual_evals = !truthIdMap.empty(), approx_evals = !surrIdMap.empty();
+
+  // synchronize actualModel evals
+  IntResponseMap actual_resp_map_rekey;
+  if (actual_evals) {
+    component_parallel_mode(ACTUAL_MODEL);
+    const IntResponseMap& actual_resp_map = actualModel.synchronize();
+
+    // update map keys to use surrModelEvals counter (proxy simplifies logic)
+    IntResponseMap& actual_resp_map_proxy
+      = (approx_evals) ? actual_resp_map_rekey : surrResponseMap;
+    for (IntRespMCIter r_cit = actual_resp_map.begin();
+	 r_cit != actual_resp_map.end(); r_cit++)
+      actual_resp_map_proxy[truthIdMap[r_cit->first]] = r_cit->second;
+    truthIdMap.clear();
+
+    if (!approx_evals)        // return ref to non-temporary
+      return surrResponseMap; // rekeyed by proxy
+  }
+
+  // synchronize approxInterface evals
+  IntResponseMap approx_resp_map_rekey;
+  if (approx_evals) {
+    //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
+    const IntResponseMap& approx_resp_map = approxInterface.synch();
+    // derived_synchronize() and derived_synchronize_nowait() share code since
+    // approx_resp_map is complete in both cases
+    derived_synchronize_approx(approx_resp_map, approx_resp_map_rekey);
+    surrIdMap.clear();
+    if (!actual_evals)        // return ref to non-temporary
+      return surrResponseMap; // rekeyed and corrected by proxy
+  }
+
+  // mixed actualModel and approxInterface evals
+  Response empty_resp;
+  IntRespMCIter actual_it = actual_resp_map_rekey.begin(),
+                approx_it = approx_resp_map_rekey.begin();
+  bool actual_complete = false, approx_complete = false;
+  // process any combination of actual and approx completions
+  while (!actual_complete || !approx_complete) {
+    if (actual_it == actual_resp_map_rekey.end())
+      actual_complete = true;
+    if (approx_it == approx_resp_map_rekey.end())
+      approx_complete = true;
+
+    int act_dfs_model_eval_id = (actual_complete) ? INT_MAX : actual_it->first;
+    int app_dfs_model_eval_id = (approx_complete) ? INT_MAX : approx_it->first;
+
+    if (act_dfs_model_eval_id < app_dfs_model_eval_id) { // only actual
+      // there is no approx component to this response
+      response_mapping(actual_it->second, empty_resp,
+		       surrResponseMap[act_dfs_model_eval_id]);
+      ++actual_it;
+    }
+    else if (app_dfs_model_eval_id < act_dfs_model_eval_id) { // only approx
+      response_mapping(empty_resp, approx_it->second, 
+		       surrResponseMap[app_dfs_model_eval_id]);
+      ++approx_it;
+    }
+    else if (!actual_complete && !approx_complete) { // both actual and approx
+      response_mapping(actual_it->second, approx_it->second,
+		       surrResponseMap[act_dfs_model_eval_id]);
+      ++actual_it;
+      ++approx_it;
+    }
+  }
+
+  return surrResponseMap;
+}
+
+
+/** Nonblocking retrieval of asynchronous evaluations from
+    actualModel, approxInterface, or both (mixed case).  For the
+    approxInterface portion, apply correction (if active) to each
+    response in the map.  derived_synchronize_nowait() is designed for
+    the general case where derived_asynch_compute_response() may be
+    inconsistent in its use of actual evals, approx evals, or both. */
+const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
+{
+  surrResponseMap.clear();
+  bool actual_evals = !truthIdMap.empty(), approx_evals = !surrIdMap.empty();
+
+  // synchronize actualModel evals
+  IntResponseMap actual_resp_map_rekey;
+  if (actual_evals) {
+    component_parallel_mode(ACTUAL_MODEL);
+    const IntResponseMap& actual_resp_map = actualModel.synchronize_nowait();
+
+    // update map keys to use surrModelEvals counter
+    for (IntRespMCIter r_cit = actual_resp_map.begin();
+	 r_cit != actual_resp_map.end(); r_cit++) {
+      int am_eval_id = r_cit->first;
+      if (approx_evals)
+	actual_resp_map_rekey[truthIdMap[am_eval_id]] = r_cit->second;
+      else {
+	surrResponseMap[truthIdMap[am_eval_id]] = r_cit->second;
+	truthIdMap.erase(am_eval_id); // erase now prior to return below
+      }
+    }
+
+    if (!approx_evals)
+      return surrResponseMap;
+  }
+
+  // synchronize approxInterface evals
+  IntResponseMap approx_resp_map_rekey;
+  if (approx_evals) {
+    //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
+    const IntResponseMap& approx_resp_map = approxInterface.synch_nowait();
+    // derived_synchronize() and derived_synchronize_nowait() share code since
+    // approx_resp_map is complete in both cases
+    derived_synchronize_approx(approx_resp_map, approx_resp_map_rekey);
+    if (!actual_evals) {      // return ref to non-temporary
+      surrIdMap.clear();      // approx_resp_map is complete
+      return surrResponseMap; // rekeyed and corrected by proxy
+    }
+  }
+
+  // mixed actualModel and approxInterface evals:
+  // > actual_resp_map_rekey may be a partial set of evals
+  // > approx_resp_map_rekey is a complete set of evals
+  Response empty_resp;
+  IntRespMCIter actual_it = actual_resp_map_rekey.begin(),
+                approx_it = approx_resp_map_rekey.begin();
+  bool actual_complete = false, approx_complete = false;
+  // invert truthIdMap and surrIdMap
+  IntIntMap inverse_truth_id_map, inverse_surr_id_map;
+  for (IntIntMCIter tim_it=truthIdMap.begin();
+       tim_it!=truthIdMap.end(); ++tim_it)
+    inverse_truth_id_map[tim_it->second] = tim_it->first;
+  for (IntIntMCIter sim_it=surrIdMap.begin();
+       sim_it!=surrIdMap.end(); ++sim_it)
+    inverse_surr_id_map[sim_it->second] = sim_it->first;
+  // process any combination of actual and approx completions
+  while (!actual_complete || !approx_complete) {
+    if (actual_it == actual_resp_map_rekey.end())
+      actual_complete = true;
+    if (approx_it == approx_resp_map_rekey.end())
+      approx_complete = true;
+
+    int act_dfs_model_eval_id = (actual_complete) ? INT_MAX : actual_it->first;
+    int app_dfs_model_eval_id = (approx_complete) ? INT_MAX : approx_it->first;
+
+    if (act_dfs_model_eval_id < app_dfs_model_eval_id) { // only actual
+      // there is no approx component to this response
+      response_mapping(actual_it->second, empty_resp,
+		       surrResponseMap[act_dfs_model_eval_id]);
+      truthIdMap.erase(inverse_truth_id_map[act_dfs_model_eval_id]);
+      ++actual_it;
+    }
+    else if (app_dfs_model_eval_id < act_dfs_model_eval_id) { // only approx
+      if (inverse_truth_id_map.count(app_dfs_model_eval_id))
+	// response not complete: actual contribution not yet available
+	cachedApproxRespMap[app_dfs_model_eval_id] = approx_it->second;
+      else { // response complete: there is no actual contribution
+	response_mapping(empty_resp, approx_it->second, 
+			 surrResponseMap[app_dfs_model_eval_id]);
+	surrIdMap.erase(inverse_surr_id_map[app_dfs_model_eval_id]);
+      }
+      ++approx_it;
+    }
+    else if (!actual_complete && !approx_complete) { // both actual and approx
+      response_mapping(actual_it->second, approx_it->second,
+		       surrResponseMap[act_dfs_model_eval_id]);
+      truthIdMap.erase(inverse_truth_id_map[act_dfs_model_eval_id]);
+      surrIdMap.erase(inverse_surr_id_map[app_dfs_model_eval_id]);
+      ++actual_it;
+      ++approx_it;
+    }
+  }
+
+  return surrResponseMap;
+}
+
+
+void DataFitSurrModel::
+derived_synchronize_approx(const IntResponseMap& approx_resp_map,
+			   IntResponseMap& approx_resp_map_rekey)
+{
+  // update map keys to use surrModelEvals counter
+  bool actual_evals = !truthIdMap.empty();
+  IntResponseMap& approx_resp_map_proxy
+    = (actual_evals) ? approx_resp_map_rekey : surrResponseMap;
+  for (IntRespMCIter r_cit = approx_resp_map.begin();
+       r_cit != approx_resp_map.end(); ++r_cit)
+    approx_resp_map_proxy[surrIdMap[r_cit->first]] = r_cit->second;
+
+  if (autoCorrection && !correctionType.empty()) {
+    // Interface::rawResponseMap can be corrected directly in the case of an
+    // ApproximationInterface since data_pairs is not used (not true for
+    // HierarchSurrModel::derived_synchronize()/derived_synchronize_nowait()).
+    // The response map from ApproximationInterface's quasi-asynch mode is
+    // complete and in order.
+
+    //if (!correctionComputed && !approx_resp_map_proxy.empty())
+    //  compute_correction(..., approx_resp_map_proxy.begin()->second,
+    //                     rawCVarsMap.begin()->second);
+    IntRDVMIter v_it; IntRespMIter r_it;
+    for (r_it  = approx_resp_map_proxy.begin(), v_it = rawCVarsMap.begin();
+	 r_it != approx_resp_map_proxy.end(); ++r_it, ++v_it)
+      apply_correction(r_it->second, v_it->second);//rawCVarsMap[r_it->first]
+    rawCVarsMap.clear();
+  }
+
+  // add cached evals (synchronized approx evals that could not be returned
+  // since truth eval portions were still pending) for processing.  Do not
+  // correct them a second time.
+  for (IntRespMCIter r_cit = cachedApproxRespMap.begin();
+       r_cit != cachedApproxRespMap.end(); r_cit++)
+    approx_resp_map_proxy[r_cit->first] = r_cit->second;
+  cachedApproxRespMap.clear();
+}
+
+
+void DataFitSurrModel::component_parallel_mode(short mode)
+{
+  // mode may be correct, but can't guarantee active parallel configuration is
+  // in synch
+  //if (componentParallelMode == mode)
+  //  return; // already in correct parallel mode
+
+  if (mode == ACTUAL_MODEL)
+    parallelLib.parallel_configuration_iterator(
+      actualModel.parallel_configuration_iterator());
+  else if (mode == APPROX_INTERFACE)
+    parallelLib.parallel_configuration_iterator(modelPCIter);
+  //else if (mode == 0)
+
+  componentParallelMode = mode;
+}
+
+
+/** Update variables and constraints data within actualModel using
+    values and labels from currentVariables and bound/linear/nonlinear
+    constraints from userDefinedConstraints. */
+void DataFitSurrModel::update_actual_model()
+{
+  if (actualModel.is_null())
+    return;
+
+  // linear constraints
+
+  if (userDefinedConstraints.num_linear_ineq_constraints()) {
+    // the views don't necessarily have to be the same, but the number of
+    // active continuous and active discrete variables have to be consistent.
+    if (currentVariables.cv()  == actualModel.cv()  &&
+	currentVariables.div() == actualModel.div() &&
+	currentVariables.drv() == actualModel.drv()) {
+      actualModel.linear_ineq_constraint_coeffs(
+        userDefinedConstraints.linear_ineq_constraint_coeffs());
+      actualModel.linear_ineq_constraint_lower_bounds(
+        userDefinedConstraints.linear_ineq_constraint_lower_bounds());
+      actualModel.linear_ineq_constraint_upper_bounds(
+        userDefinedConstraints.linear_ineq_constraint_upper_bounds());
+    }
+    else {
+      Cerr << "Error: cannot update linear inequality constraints in "
+	   << "DataFitSurrModel::update_actual_model() due to inconsistent "
+	   << "active variables." << std::endl;
+      abort_handler(-1);
+    }
+  }
+  if (userDefinedConstraints.num_linear_eq_constraints()) {
+    // the views don't necessarily have to be the same, but the number of
+    // active continuous and active discrete variables have to be consistent.
+    if (currentVariables.cv()  == actualModel.cv()  &&
+	currentVariables.div() == actualModel.div() &&
+	currentVariables.drv() == actualModel.drv()) {
+      actualModel.linear_eq_constraint_coeffs(
+        userDefinedConstraints.linear_eq_constraint_coeffs());
+      actualModel.linear_eq_constraint_targets(
+        userDefinedConstraints.linear_eq_constraint_targets());
+    }
+    else {
+      Cerr << "Error: cannot update linear equality constraints in "
+	   << "DataFitSurrModel::update_actual_model() due to inconsistent "
+	   << "active variables." << std::endl;
+      abort_handler(-1);
+    }
+  }
+
+  // nonlinear constraints
+
+  if (userDefinedConstraints.num_nonlinear_ineq_constraints()) {
+    actualModel.nonlinear_ineq_constraint_lower_bounds(
+      userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds());
+    actualModel.nonlinear_ineq_constraint_upper_bounds(
+      userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds());
+  }
+  if (userDefinedConstraints.num_nonlinear_eq_constraints())
+    actualModel.nonlinear_eq_constraint_targets(
+      userDefinedConstraints.nonlinear_eq_constraint_targets());
+
+  // vars/bounds/labels
+
+  short approx_active_view = currentVariables.view().first,
+        actual_active_view = actualModel.current_variables().view().first;
+  // Update actualModel variables, bounds, and labels in all view cases.
+  // Note 1: bounds updating isn't strictly required for local/multipoint, but
+  // is needed for global and could be relevant in cases where actualModel
+  // involves additional surrogates/nestings.
+  // Note 2: label updating eliminates the need to replicate variable
+  // descriptors, e.g., in SBOUU input files.  It only needs to be performed
+  // once (as opposed to the update of vars and bounds).  However, performing
+  // this updating in the constructor does not propagate properly for multiple
+  // surrogates/nestings since the sub-model construction (and therefore any
+  // sub-sub-model constructions) must finish before calling any set functions
+  // on it.  That is, after-the-fact updating in constructors only propagates
+  // one level, whereas before-the-fact updating in compute/build functions
+  // propagates multiple levels.
+  if (approx_active_view == actual_active_view) {
+    // update active actualModel vars/cons with active currentVariables data
+    actualModel.continuous_variables(currentVariables.continuous_variables());
+    actualModel.discrete_int_variables(
+      currentVariables.discrete_int_variables());
+    actualModel.discrete_real_variables(
+      currentVariables.discrete_real_variables());
+    actualModel.continuous_lower_bounds(
+      userDefinedConstraints.continuous_lower_bounds());
+    actualModel.continuous_upper_bounds(
+      userDefinedConstraints.continuous_upper_bounds());
+    actualModel.discrete_int_lower_bounds(
+      userDefinedConstraints.discrete_int_lower_bounds());
+    actualModel.discrete_int_upper_bounds(
+      userDefinedConstraints.discrete_int_upper_bounds());
+    actualModel.discrete_real_lower_bounds(
+      userDefinedConstraints.discrete_real_lower_bounds());
+    actualModel.discrete_real_upper_bounds(
+      userDefinedConstraints.discrete_real_upper_bounds());
+
+    // update actualModel variable descriptors with currentVariables descriptors
+    if (!approxBuilds) {
+      // active not currently necessary for local/multipt, but needed for global
+      actualModel.continuous_variable_labels(
+        currentVariables.continuous_variable_labels());
+      actualModel.discrete_int_variable_labels(
+        currentVariables.discrete_int_variable_labels());
+      actualModel.discrete_real_variable_labels(
+        currentVariables.discrete_real_variable_labels());
+      if (approx_active_view >= MERGED_DISTINCT_DESIGN) {
+	// inactive needed for Nested/Surrogate propagation
+	actualModel.inactive_continuous_variable_labels(
+          currentVariables.inactive_continuous_variable_labels());
+	actualModel.inactive_discrete_int_variable_labels(
+          currentVariables.inactive_discrete_int_variable_labels());
+	actualModel.inactive_discrete_real_variable_labels(
+          currentVariables.inactive_discrete_real_variable_labels());
+      }
+    }
+  }
+  else if ( approx_active_view >= MERGED_DISTINCT_DESIGN &&
+	    ( actual_active_view == MERGED_ALL ||
+	      actual_active_view == MIXED_ALL ) ) {
+    // update active actualModel vars/cons using "All" view of
+    // currentVariables/userDefinedConstraints data.
+    actualModel.continuous_variables(
+      currentVariables.all_continuous_variables());
+    actualModel.discrete_int_variables(
+      currentVariables.all_discrete_int_variables());
+    actualModel.discrete_real_variables(
+      currentVariables.all_discrete_real_variables());
+    actualModel.continuous_lower_bounds(
+      userDefinedConstraints.all_continuous_lower_bounds());
+    actualModel.continuous_upper_bounds(
+      userDefinedConstraints.all_continuous_upper_bounds());
+    actualModel.discrete_int_lower_bounds(
+      userDefinedConstraints.all_discrete_int_lower_bounds());
+    actualModel.discrete_int_upper_bounds(
+      userDefinedConstraints.all_discrete_int_upper_bounds());
+    actualModel.discrete_real_lower_bounds(
+      userDefinedConstraints.all_discrete_real_lower_bounds());
+    actualModel.discrete_real_upper_bounds(
+      userDefinedConstraints.all_discrete_real_upper_bounds());
+    if (!approxBuilds) { // only performed once
+      actualModel.continuous_variable_labels(
+        currentVariables.all_continuous_variable_labels());
+      actualModel.discrete_int_variable_labels(
+        currentVariables.all_discrete_int_variable_labels());
+      actualModel.discrete_real_variable_labels(
+        currentVariables.all_discrete_real_variable_labels());
+    }
+  }
+  else if ( actual_active_view >= MERGED_DISTINCT_DESIGN &&
+	    ( approx_active_view == MERGED_ALL ||
+	      approx_active_view == MIXED_ALL ) ) {
+    // update "All" view of actualModel vars/cons using active
+    // currentVariables/userDefinedConstraints data.
+    actualModel.all_continuous_variables(
+      currentVariables.continuous_variables());
+    actualModel.all_discrete_int_variables(
+      currentVariables.discrete_int_variables());
+    actualModel.all_discrete_real_variables(
+      currentVariables.discrete_real_variables());
+    actualModel.all_continuous_lower_bounds(
+      userDefinedConstraints.continuous_lower_bounds());
+    actualModel.all_continuous_upper_bounds(
+      userDefinedConstraints.continuous_upper_bounds());
+    actualModel.all_discrete_int_lower_bounds(
+      userDefinedConstraints.discrete_int_lower_bounds());
+    actualModel.all_discrete_int_upper_bounds(
+      userDefinedConstraints.discrete_int_upper_bounds());
+    actualModel.all_discrete_real_lower_bounds(
+      userDefinedConstraints.discrete_real_lower_bounds());
+    actualModel.all_discrete_real_upper_bounds(
+      userDefinedConstraints.discrete_real_upper_bounds());
+    if (!approxBuilds) { // only performed once
+      actualModel.all_continuous_variable_labels(
+        currentVariables.continuous_variable_labels());
+      actualModel.all_discrete_int_variable_labels(
+        currentVariables.discrete_int_variable_labels());
+      actualModel.all_discrete_real_variable_labels(
+        currentVariables.discrete_real_variable_labels());
+    }
+  }
+  // TO DO: extend for aleatory/epistemic uncertain views
+  else {
+    Cerr << "Error: unsupported variable view differences in "
+	 << "DataFitSurrModel::update_actual_model()" << std::endl;
+    abort_handler(-1);
+  }
+
+  if (!approxBuilds)
+    actualModel.response_labels(currentResponse.function_labels());
+
+  if (!discreteDesignSetIntValues.empty())
+    actualModel.discrete_design_set_int_values(discreteDesignSetIntValues);
+  if (!discreteDesignSetRealValues.empty())
+    actualModel.discrete_design_set_real_values(discreteDesignSetRealValues);
+
+  // uncertain variable distribution data
+  actualModel.distribution_parameters().update(distParams);
+
+  if (!discreteStateSetIntValues.empty())
+    actualModel.discrete_state_set_int_values(discreteStateSetIntValues);
+  if (!discreteStateSetRealValues.empty())
+    actualModel.discrete_state_set_real_values(discreteStateSetRealValues);
+}
+
+
+/** Update values and labels in currentVariables and
+    bound/linear/nonlinear constraints in userDefinedConstraints from
+    variables and constraints data within actualModel. */
+void DataFitSurrModel::update_from_actual_model()
+{
+  // vars/bounds/labels
+
+  // update vars/bounds/labels with actualModel data using All view for both
+  // (since approx arrays are sized but otherwise uninitialized)
+  currentVariables.all_continuous_variables(
+    actualModel.all_continuous_variables());
+  currentVariables.all_discrete_int_variables(
+    actualModel.all_discrete_int_variables());
+  currentVariables.all_discrete_real_variables(
+    actualModel.all_discrete_real_variables());
+  userDefinedConstraints.all_continuous_lower_bounds(
+    actualModel.all_continuous_lower_bounds());
+  userDefinedConstraints.all_continuous_upper_bounds(
+    actualModel.all_continuous_upper_bounds());
+  userDefinedConstraints.all_discrete_int_lower_bounds(
+    actualModel.all_discrete_int_lower_bounds());
+  userDefinedConstraints.all_discrete_int_upper_bounds(
+    actualModel.all_discrete_int_upper_bounds());
+  userDefinedConstraints.all_discrete_real_lower_bounds(
+    actualModel.all_discrete_real_lower_bounds());
+  userDefinedConstraints.all_discrete_real_upper_bounds(
+    actualModel.all_discrete_real_upper_bounds());
+  if (!approxBuilds) {
+    currentVariables.all_continuous_variable_labels(
+      actualModel.all_continuous_variable_labels());
+    currentVariables.all_discrete_int_variable_labels(
+      actualModel.all_discrete_int_variable_labels());
+    currentVariables.all_discrete_real_variable_labels(
+      actualModel.all_discrete_real_variable_labels());
+    currentResponse.function_labels(actualModel.response_labels());
+  }
+
+  if (!actualModel.discrete_design_set_int_values().empty())
+    discreteDesignSetIntValues = actualModel.discrete_design_set_int_values();
+  if (!actualModel.discrete_design_set_real_values().empty())
+    discreteDesignSetRealValues = actualModel.discrete_design_set_real_values();
+
+  // uncertain variable distribution data
+  distParams.update(actualModel.distribution_parameters());
+
+  if (!actualModel.discrete_state_set_int_values().empty())
+    discreteStateSetIntValues = actualModel.discrete_state_set_int_values();
+  if (!actualModel.discrete_state_set_real_values().empty())
+    discreteStateSetRealValues = actualModel.discrete_state_set_real_values();
+
+  // linear constraints
+
+  if (actualModel.num_linear_ineq_constraints()) {
+    // the views don't necessarily have to be the same, but the number of
+    // active continuous and active discrete variables have to be consistent.
+    if (actualModel.cv()  == currentVariables.cv()  &&
+	actualModel.div() == currentVariables.div() &&
+	actualModel.drv() == currentVariables.drv()) {
+      userDefinedConstraints.linear_ineq_constraint_coeffs(
+        actualModel.linear_ineq_constraint_coeffs());
+      userDefinedConstraints.linear_ineq_constraint_lower_bounds(
+        actualModel.linear_ineq_constraint_lower_bounds());
+      userDefinedConstraints.linear_ineq_constraint_upper_bounds(
+        actualModel.linear_ineq_constraint_upper_bounds());
+    }
+    else {
+      Cerr << "Error: cannot update linear inequality constraints in "
+	   << "DataFitSurrModel::update_from_actual_model() due to "
+	   << "inconsistent active variables." << std::endl;
+      abort_handler(-1);
+    }
+  }
+  if (actualModel.num_linear_eq_constraints()) {
+    // the views don't necessarily have to be the same, but the number of
+    // active continuous and active discrete variables have to be consistent.
+    if (actualModel.cv()  == currentVariables.cv()  &&
+	actualModel.div() == currentVariables.div() &&
+	actualModel.drv() == currentVariables.drv()) {
+      userDefinedConstraints.linear_eq_constraint_coeffs(
+        actualModel.linear_eq_constraint_coeffs());
+      userDefinedConstraints.linear_eq_constraint_targets(
+        actualModel.linear_eq_constraint_targets());
+    }
+    else {
+      Cerr << "Error: cannot update linear equality constraints in "
+	   << "DataFitSurrModel::update_from_actual_model() due to "
+	   << "inconsistent active variables." << std::endl;
+      abort_handler(-1);
+    }
+  }
+
+  // nonlinear constraints
+
+  if (actualModel.num_nonlinear_ineq_constraints()) {
+    userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds(
+      actualModel.nonlinear_ineq_constraint_lower_bounds());
+    userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds(
+      actualModel.nonlinear_ineq_constraint_upper_bounds());
+  }
+  if (actualModel.num_nonlinear_eq_constraints())
+    userDefinedConstraints.nonlinear_eq_constraint_targets(
+      actualModel.nonlinear_eq_constraint_targets());
+}
+
+} // namespace Dakota

@@ -1,0 +1,39 @@
+# Support files for font generators.
+
+FONT_OBJ = \
+	font01.obj \
+	font02.obj \
+	font03.obj \
+	font04.obj \
+	font05.obj \
+	font06.obj \
+	font07.obj \
+	font08.obj \
+	font09.obj \
+	font10.obj \
+	font11.obj
+
+#----------------------------------------------------------------------#
+# Font files.
+# Note 6 font files actually created.
+# sfont - standard font
+# xfont - extended fonts
+
+fonts:  sfont xfont
+	@echo $(PLDIR)
+	@echo $(PLFONT_DIR)
+	copy *.fnt $(PLFONT_DIR)
+	@echo Put this in autoexec.bat !!
+	set PLFONTS=$(PLFONT_DIR)
+
+sfont:  $(PLFONT_DIR)plstnd.fnt
+xfont:  $(PLFONT_DIR)plxtnd.fnt
+
+$(PLFONT_DIR)plstnd.fnt:
+	$(CC) $(CFLAGS:ml=mh) -Ff=16 stndfont.c font*.c pdfutils.c
+	-stndfont
+
+$(PLFONT_DIR)plxtnd.fnt:
+	$(CC) $(CFLAGS:ml=mh) -Ff=16 xtndfont.c font*.c pdfutils.c 
+	-xtndfont
+

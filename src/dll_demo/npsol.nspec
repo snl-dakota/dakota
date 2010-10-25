@@ -1,0 +1,6 @@
+KEYWORD stanford {stanford_start}
+	    npsol ALIAS npsol_sqp {N_mdm(lit,methodName_npsol_sqp)}
+	    | nlssol ALIAS nlssol_sqp {N_mdm(lit,methodName_nlssol_sqp)}
+	    [ verify_level INTEGER {N_mdm(int,verifyLevel)} ]
+	    [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
+	    [ linesearch_tolerance REAL {N_mdm(Real,lineSearchTolerance)} ]

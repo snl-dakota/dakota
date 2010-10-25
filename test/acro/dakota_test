@@ -1,0 +1,160 @@
+#!/usr/bin/python
+##
+## DAKOTA/EXACT Test Driver
+## 20061115: Derived from ACRO/packages/coliny/test/coliny_test
+##
+## BUG: this script cannot correctly handle AMPL option values that contain a white space.
+##
+
+import signal
+import sys
+import re
+import os
+import random
+import math
+import types
+pathname = os.path.dirname(sys.argv[0])
+fullpath = os.path.abspath(pathname)
+os.sys.path = os.sys.path + [fullpath + "/../../methods/acro/packages/exact/src"]
+import exact
+
+#
+# Process the output log
+#
+def process_log(OUTPUT,logfile):
+	INPUT = open(logfile,"r")
+	status = 1
+	for line in INPUT:
+	  #print "LINE",line
+	  words = re.split('[ \t]+',line.strip())
+	  if len(words) < 2:
+	     continue
+
+	  if words[0] == "Final-Value:":
+	     status = 0
+	     print >>OUTPUT, "Value numeric/double " + words[1]
+
+	  elif words[0] == "Final-Point:":
+	     print >>OUTPUT, "Final-Point text/string \""," ".join(words[1:]),"\""
+
+	  elif words[0] == "Final-Stats:":
+	     print >>OUTPUT, "Num-Evaluations numeric/integer " + words[2]
+	     print >>OUTPUT, "ConstraintViolation numeric/double " + words[4]
+
+	  elif words[0] == "Termination:":
+	     print >>OUTPUT, "TerminationStatus text/string \"" + words[1] + "\""
+
+	  elif words[0] == "ModelStatus:":
+	     print >>OUTPUT, "ModelStatus text/string \"" + words[1] + "\""
+
+	  elif words[0] == "SolverStatus:":
+	     print >>OUTPUT, "SolverStatus text/string \"" + words[1] + "\""
+
+	  elif words[0] == "Coliny:" and words[1] == "Solver:":
+	     print >>OUTPUT, "Coliny-Solver text/string \"" + words[2] + "\""
+
+          elif words[0] == "CPU" and words[1] == "RunTime=":
+             print >>OUTPUT, "\"CPU RunTime\" numeric/double " + words[2]
+
+          elif words[0] == "CPU" and words[1] == "TotalTime=":
+             print >>OUTPUT, "\"CPU TotalTime\" numeric/double " + words[2]
+
+          elif words[0] == "WallClock" and words[1] == "TotalTime=":
+             print >>OUTPUT, "\"WallClock TotalTime\" numeric/double " + words[2]
+
+          elif words[0] == "Seed:":
+             print >>OUTPUT, "Seed numeric/integer",eval("int(" + words[1] + ")")
+
+	  elif words[1] == "Error":
+	     print >>OUTPUT, "Valgrind Errors numeric/integer " + words[4]
+	print >>OUTPUT, "exit_status numeric/integer " + `status`;
+
+
+
+##
+## MAIN
+##
+#
+# Setup signal handler
+#
+signal.signal(signal.SIGTERM, exact.signal_handler)
+signal.signal(signal.SIGINT, exact.signal_handler)
+#
+# Process factors
+#
+(factor,option) = exact.process_input_file(sys.argv[2])
+option["seed"] = int(option["seed"])
+#
+# Generate log file
+#
+#
+# Compute a simple randomized scalar, and evaluate it with (x-1)^2
+#
+if "EXACT_DRIVER" in os.environ.keys():
+   driver = os.environ["EXACT_DRIVER"]
+else:
+   driver = ""
+
+#
+# Get test file and name
+#
+words = re.split('[ \t]+',option["_data"])
+testdata = words[0]
+testname = os.path.basename(testdata)
+#
+# DAKOTA command line
+#
+inputdeck = os.path.splitext(sys.argv[2])[0] + ".din"
+cmd = "(cd " + fullpath + "/ampl; ampl -og" + testname + " " + testname + ".mod; cd " + fullpath + "/" + os.path.dirname(sys.argv[2]) + "; " + fullpath + "/../dakota -i " + os.path.basename(inputdeck) + " )"
+#
+# DAKOTA input deck creation
+#
+Dstrategy = ""
+Dmethod = ""
+Dinterface = ""
+Dvariables = ""
+Dresponses = ""
+for key in factor.keys():
+   words = re.split(':',key)
+   if words[0] == "strategy":
+      if words[1] == "base":
+         Dstrategy = "strategy, " + factor[key] + " " + Dstrategy
+      else:
+         Dstrategy += factor[key] + " "
+   elif words[0] == "method":
+      if words[1] == "base":
+         Dmethod = "method, " + factor[key] + " " + Dmethod
+      elif words[1] == "misc_options":
+         Dmethod = Dmethod + "misc_options "
+         misc_options = re.split(" ",factor[key])
+	 for mo in misc_options:
+           Dmethod = Dmethod + mo + " "
+      else:
+         Dmethod += factor[key] + " "
+   elif words[0] == "interface":
+      if words[1] == "base":
+         Dinterface = "interface, " + factor[key] + "=\'" + fullpath + "/" + testdata + "\'" + Dinterface
+      else:
+         Dinterface = Dinterface + factor[key] + " "
+OUTPUT = open(inputdeck,"w")
+print >>OUTPUT, Dstrategy + "\n"
+print >>OUTPUT, Dmethod + "\n"
+print >>OUTPUT, Dinterface + "\n"
+filename = fullpath + "/ampl/" + testname + ".var"
+VARIABLES = open(filename,"r")
+line = VARIABLES.readline()
+print >>OUTPUT, "variables, " + line
+filename = fullpath + "/ampl/" + testname + ".res"
+RESPONSES = open(filename,"r")
+line = RESPONSES.readline()
+print >>OUTPUT, "responses, " + line
+OUTPUT.close()
+
+print "Command Line: " + cmd
+exact.run_command(cmd,sys.argv[4])
+#
+# Generate a measurements file (*.out)
+#
+OUTPUT = open(sys.argv[3],"w")
+process_log(OUTPUT,sys.argv[4])
+OUTPUT.close()

@@ -1,0 +1,12 @@
+#!/bin/csh
+#
+# This script launches 'exact' on all relevant study files.
+#
+
+if ("$1" == "--valgrind") then
+   setenv EXACT_DRIVER ./dakota_valgrind
+endif
+
+./doit -f coliny.study.xml 
+./doit -f multiobj3.study.xml 
+./doit -f multilevel.study.xml 

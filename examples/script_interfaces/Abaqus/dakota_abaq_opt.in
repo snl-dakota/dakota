@@ -1,0 +1,27 @@
+strategy,
+	single_method graphics
+
+method,
+	dot_mmfd
+
+variables,
+	continuous_design = 3
+	  cdv_initial_point =  4.0  2.0  6.66667
+	  cdv_lower_bounds  =  2.0  1.0  4.0
+	  cdv_upper_bounds  =  6.0  3.0  10.0
+	  cdv_descriptor    =  'S' 'B' 'P'
+
+interface,
+	application system #asynch evaluation_concurrency = 5
+	  analysis_driver = 'abaq_driver'
+	  parameters_file = 'params.in'
+	  results_file = 'results.out'
+	  aprepro
+
+responses,
+	num_objective_functions = 1
+	numerical_gradients
+	  method_source dakota
+	  interval_type central
+	  fd_step_size = .01
+	no_hessians

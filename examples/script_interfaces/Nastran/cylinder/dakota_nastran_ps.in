@@ -1,0 +1,27 @@
+strategy,
+	single_method graphics
+
+method,
+	vector_parameter_study
+	  step_vector = .1
+	  num_steps = 7
+
+variables,
+	continuous_design = 1
+	  cdv_initial_point = .2
+	  cdv_lower_bounds = .05
+	  cdv_upper_bounds = 100.
+	  cdv_descriptor = 'shell_thick'
+
+interface,
+	application system asynch evaluation_concurrency = 4
+	  analysis_driver = 'nastran_script'
+	  parameters_file = 'params.in'
+	  results_file = 'results.out'
+	  file_tag file_save aprepro
+
+responses,
+	num_objective_functions = 1
+	num_nonlinear_inequality_constraints = 1
+	no_gradients
+	no_hessians

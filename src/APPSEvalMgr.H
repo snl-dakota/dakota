@@ -1,0 +1,139 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale
+    Applications Copyright (c) 2006, Sandia National Laboratories.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota
+    directory.
+    _______________________________________________________________________ */
+
+//- Class:       APPSEvalMgr
+//- Description: Specialized evaluation manager class derived from
+//-              APPSPACK's Executor class which redefines virtual
+//-              evaluation functions with DAKOTA's response
+//-              computation procedures
+//- Owner:       Patty Hough
+//- Checked by:
+//- Version: $Id$
+
+#ifndef APPSEvalMgr_H
+#define APPSEvalMgr_H
+
+#include "APPSPACK_Executor_Interface.hpp"
+#include "APPSPACK_Vector.hpp"
+
+#include "DakotaModel.H"
+#include "data_types.h"
+
+namespace Dakota {
+
+/// Evaluation manager class for APPSPACK 
+
+/** The APPSEvalMgr class is derived from APPSPACK's Executor class.
+    It implements the methods of that class in such away that allows
+    DAKOTA to manage the computation of responses instead of APPS.
+    Iterate and response values are passed between Dakota and APPSPACK
+    via this interface. */
+
+class APPSEvalMgr : public APPSPACK::Executor::Interface
+{
+
+public:
+  
+  //
+  //- Heading: Constructor and destructor
+  //
+
+  /// constructor
+  APPSEvalMgr(Model& model);
+
+  /// destructor
+  ~APPSEvalMgr() {};
+    
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  /// tells APPS whether or not there is a processor available to perform a function evaluation
+  bool isWaiting() const;
+
+  /// performs a function evaluation at APPS-provided x_in
+  bool spawn(const APPSPACK::Vector& x_in, int tag_in);
+
+  /// returns a function value to APPS
+  int recv(int& tag_out, APPSPACK::Vector& f_out, string& msg_out);
+
+  /// currently does nothing but is needed to complete the interface
+  void print() const {};
+
+  //
+  //- Heading: Convenience functions
+  //
+
+  /// publishes whether or not to do asynchronous evaluations
+  void set_asynch_flag(const bool dakotaAsynchFlag)
+  {modelAsynchFlag = dakotaAsynchFlag;}
+
+  /// publishes whether or not APPS is operating synchronously
+  void set_blocking_synch(const bool blockingSynchFlag)
+  {blockingSynch = blockingSynchFlag;}
+
+  /// publishes the number of processors available for function evaluations
+  void set_total_workers(const int numDakotaWorkers)
+  {numWorkersTotal = numDakotaWorkers;}
+
+  /// publishes constraint transformation
+  void set_constraint_map(std::vector<int> constraintMapIndices,
+			  std::vector<double> constraintMapMultipliers,
+			  std::vector<double> constraintMapOffsets)
+  {constrMapIndices = constraintMapIndices;
+   constrMapMultipliers = constraintMapMultipliers;
+   constrMapOffsets = constraintMapOffsets;}
+
+private:
+
+  //
+  //- Heading: Private data
+  //
+
+  /// reference to the APPSOptimizer's model passed in the constructor
+  Model& iteratedModel;
+
+  /// flag for asynchronous function evaluations
+  bool modelAsynchFlag;
+
+  /// flag for APPS synchronous behavior
+  bool blockingSynch;
+
+  /// number of processors actively performing function evaluations
+  int numWorkersUsed;
+
+  /// total number of processors available for performing function evaluations
+  int numWorkersTotal;
+
+  /// map from Dakota constraint number to APPS constraint number
+  std::vector<int> constrMapIndices;
+
+  /// multipliers for constraint transformations
+  std::vector<double> constrMapMultipliers;
+
+  /// offsets for constraint transformations
+  std::vector<double> constrMapOffsets;
+
+  /// trial iterate
+  RealVector xTrial;
+
+  /// map of DAKOTA eval id to APPS eval id (for asynchronous evaluations)
+  std::map<int,int> tagList;
+
+  /// map of APPS eval id to responses (for synchronous evaluations)
+  std::map<int,RealVector> functionList;
+
+  /// map of DAKOTA responses returned by synchronize_nowait()
+  IntResponseMap dakotaResponseMap;
+
+};
+
+} //namespace Dakota
+
+#endif

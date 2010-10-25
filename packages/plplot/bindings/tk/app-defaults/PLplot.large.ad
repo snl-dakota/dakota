@@ -1,0 +1,40 @@
+! -*- xrdb -*-
+! PLplot resource settings appropriate for a high res display
+! or just to be easy on the eyes. :)
+
+! Color settings.  Use these to get "classic" plplot/tk fg/bg colors.
+! Otherwise your system (theme) colors are used.
+*background: lightgray
+*foreground: black
+
+!----------------------------------------------------------------------------
+! Plotting window size.
+
+! This gives the specified geometry.
+! This suggestion is same as "auto" for a 1280x1024 screen.
+*geometry:		800x704
+
+! This is the default if geometry is unspecified.
+! It corresponds to 10/16 x 11/16 of the root window size.
+!*geometry:		auto
+
+! This is how to specify using plframe width & height.  Note -- for some
+! window managers this may cause the window to appear partially off-screen.
+!*geometry:
+!*plwin.width:		800
+!*plwin.height:		634
+
+!----------------------------------------------------------------------------
+! General font settings
+
+*font:			-*-helvetica-medium-r-normal-*-*-180-*
+*Entry.font:		-*-helvetica-medium-r-normal-*-*-180-*
+*Menu.font:		-*-helvetica-medium-r-normal-*-*-180-*
+*Menubutton.font:	-*-helvetica-medium-r-normal-*-*-180-*
+*Scale.font:		-*-helvetica-bold-r-normal-*-*-120-*
+*color.font:		-*-courier-medium-r-normal-*-*-180-*
+
+! fileselectiondialog fonts
+
+*Font:			-*-helvetica-medium-r-normal-*-*-180-*
+

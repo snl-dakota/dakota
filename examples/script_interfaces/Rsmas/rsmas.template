@@ -1,0 +1,4 @@
+enrich=       {enrich}
+m-to-f r=     {mtof_ratio}
+cn-1/2ang=    {cone_angle}
+num. turb=    {num_turbines}

@@ -1,0 +1,185 @@
+------------------------------------------------------------------------------
+
+DAKOTA:
+A Multilevel Parallel Object-Oriented Framework for Design Optimization,
+Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis 
+
+------------------------------------------------------------------------------
+
+					Sandia National Laboratories
+
+Brian M. Adams      (Project Lead)                      _/_/_/       
+Michael S. Eldred   (Research Lead)           	         _/_/    
+William J. Bohnhoff (Support Manager, acting) 	    _/_/_/_/_/_/ 
+James R. Stewart    (Business Manager)        	   _/  _/_/  _/  
+Keith R. Dalbey                                   _/  _/_/  _/   
+John P. Eddy                                  	    _/_/_/       
+David M. Gay	    		               
+Karen Haskell    			P.O. Box 5800, Mail Stop 1318
+Laura P. Swiler				Albuquerque, NM 87185-1318
+
+Patty D. Hough				P.O. Box 969, MS 9217
+                 			Livermore, CA 94551-0969
+
+Email: dakota-developers@development.sandia.gov
+
+------------------------------------------------------------------------------
+License.
+
+DAKOTA is distributed under the GNU Lesser General Public License.  It
+is free software; you can redistribute it and/or modify it under the
+terms of the GNU Lesser General Public License as published by the
+Free Software Foundation; either version 2.1 of the License, or (at
+your option) any later version.  A copy of this license is included in
+the LICENSE file, and is also available online from
+http://www.gnu.org/licenses/lgpl.html.  Also refer to the COPYRIGHT
+file for important U.S. Government legal notices.
+
+The DAKOTA distribution contains libraries which are available
+separately under compatible licensing terms.  In particular, many of
+the libraries in methods and packages are available separately under
+the GNU Lesser General Public License (LGPL).  DAKOTA source
+distributions include optional GNU GPL-licensed components, which are
+disabled by default, resulting in an LGPL-compatible DAKOTA.
+
+------------------------------------------------------------------------------
+Overview.
+
+The DAKOTA (Design Analysis Kit for Optimization and Terascale Applications) 
+toolkit provides a flexible, extensible interface between analysis codes and 
+iteration methods. DAKOTA contains algorithms for optimization with gradient 
+and nongradient-based methods; uncertainty quantification with sampling, 
+reliability, stochastic expansion, and epistemic methods; parameter estimation 
+with nonlinear least squares methods; and sensitivity/variance analysis with 
+design of experiments and parameter study capabilities.  These capabilities 
+may be used on their own or as components within advanced strategies such as 
+surrogate-based optimization, mixed integer nonlinear programming, or 
+optimization under uncertainty.
+
+Refer to http://www.cs.sandia.gov/dakota/software.html for additional 
+information.  For help using DAKOTA, email dakota-users@software.sandia.gov.
+
+------------------------------------------------------------------------------
+Distribution.
+
+The directories contained in DAKOTA distributions include (bin denotes
+binary distributions, src denotes source distributions):
+
+bin		    Binary files for DAKOTA, restart utility, dprepro, and 
+(bin)		    various TPLs.
+
+examples            Example problems from the Users Manual, examples of
+(bin/src)           interfacing with other codes using script-based or direct
+		    linkage-based interfaces, parallel computing examples, and
+		    platform installation examples.
+
+test                Files for regression and unit testing of the DAKOTA system.
+(bin/src)           Test simulator programs and DAKOTA input files are
+                    provided for testing different capabilities.
+
+include (bin)	    Include files for DAKOTA and it's associated TPLs.
+
+lib (bin)	    Library files for DAKOTA and it's associated TPLs.
+
+share (bin)	    Miscellaneous files installed by DAKOTA TPLs.
+
+methods             Libraries of iterative algorithms provided by commercial
+(src)               vendors and related Sandia projects.
+
+packages            Other libraries for parsing (nidr), vector/matrix utilities
+(src)               (Trilinos Teuchos), Boost C++ libraries, stochastic 
+		     utilities (Pecos), algebraic interface (AMPL), graphics 
+		    (PLplot, SciPlot), surface fitting (Surfpack), etc.
+
+m4 (src)            m4 macros used for supporting autoconf.
+
+docs                The Users, Reference, and Developers Manuals are 
+(src)               maintained here.  Other references are available from
+                    the DAKOTA Web site (http://www.cs.sandia.gov/DAKOTA).
+
+src (src)           The main source code repository for the DAKOTA system.
+
+------------------------------------------------------------------------------
+Installation.
+
+Installation from binary packages is recommended when possible.  This
+typically involves unpacking an archive and setting appropriate PATH
+additions.  Compiling DAKOTA from source is based on GNU Autoconf
+(configure/make).  For both paths, see the INSTALL file for detailed
+instructions.
+
+------------------------------------------------------------------------------
+Platforms.
+
+DAKOTA is actively supported with nightly build and regression test 
+verifications on the following platforms for the given operating systems, 
+C++ compilers, and MPI libraries:
+
+  PC        RHEL 4 Update 8          g++-3.4.6            MPICH1
+  	    64-bit (x86_64)   	     gfortran-4.1.2
+
+  PC        RHEL 4 Update 8          g++-4.1.2            MPICH1
+  	    32-bit (i686)
+
+  PC        Linux (various)          Intel                OpenMPI, MVAPICH
+
+  Mac 	    OS X 10.5.4		     g++-4.3.2		  openmpi-1.3.3	  
+
+  SUN       Solaris 10 (SunOS 5.10)  CC v5.9              SUNWhpc
+
+  IBM       AIX 5.3                  xlC v8.0             POE MPI
+
+Ports to the following platforms are supported manually on an as-needed basis:
+
+  PC        Windows (Cygwin 1.5.24)  g++-4.3.2            NONE/MPICH
+
+  PC        Windows (Msys 1.0.11)    g++-3.4.5 (MinGW-5.1.6)  NONE
+  	    	    	  	     g95-0.92 (gcc-4.1.2)
+
+  Red Storm                          PGI                  Cray MPI
+
+Ports to the following platforms have been supported in the past although
+they are no longer maintained:
+
+  SGI       IRIX 6.5                 CC v7.4.2m           SGI MPI
+
+  DEC       OSF 5.1                  cxx v6.3-002         Digital MPI
+
+  HP        HP-UX 10.20              CC                   -
+
+------------------------------------------------------------------------------
+Versions.
+
+Versions of the DAKOTA software have been tagged as follows:
+
+Version_5_0        12/21/09 (refer to svn externals for TPL tags)
+Version_4_2        11/05/08 (refer to svn externals for TPL tags)
+Version_4_1         9/21/07 (refer to svn externals for TPL tags)
+Version_4_0         5/12/06 (acro-coliny, opt++, DDace, and Surfpack tagged
+                             Dakota_Version_4_0 4/28/06)
+Version-3-3        12/23/04 (acro-pub-coliny tagged Dakota_Version_3_3 12/23/04)
+Version-3-2         7/21/04 (acro-pub-coliny tagged Dakota_Version_3_2  7/21/04)
+Version-3-1-2       7/09/03 (uses Dakota_Version_3_1 of sgopt/pico/utilib)
+Version-3-1-1       5/21/03 (uses Dakota_Version_3_1 of sgopt/pico/utilib)
+Version-3-1         4/04/03 (sgopt/pico/utilib tagged Dakota_Version_3_1
+                             4/04/03)
+Version-3-0         3/30/02 (sgopt/pico/utilib tagged Dakota_Version_3_0
+                             3/30/02)
+Version-3-0-beta   11/30/01 (sgopt/utilib tagged Dakota_Version_3_0_beta
+                             11/30/01; pico: use cvs-p co -r osi -D 11/30/01)
+Version-2-1-preansi 9/17/01 (last non-ANSI; same sgopt/utilib/pico as below)
+Version-2-1         7/09/01 (sgopt/utilib/pico tagged Dakota_Version_2_1
+                             6/22/01)
+Version-2-0         3/14/00 (sgopt/utilib/pico tagged Dakota_Version_2_0 3/7/00)
+Version-1-1         4/15/99
+Version-1-0         2/18/99
+
+------------------------------------------------------------------------------
+Contributing enhancements.
+
+DAKOTA is both a research and a production code and is the subject of active
+continuing development.  Bug reports, suggestions for improvement, and required 
+changes for other platforms/compilers are welcome.  Direct messages to
+dakota-developers@development.sandia.gov.
+
+------------------------------------------------------------------------------

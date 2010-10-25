@@ -1,0 +1,223 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright (c) 2006, Sandia National Laboratories.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+//- Class:	 NonDSampling
+//- Description: Wrapper class for Fortran 90 LHS library
+//- Owner:       Mike Eldred
+//- Checked by:
+//- Version:
+
+#ifndef NOND_SAMPLING_H
+#define NOND_SAMPLING_H
+
+#include "data_types.h"
+#include "DakotaNonD.H"
+#ifdef DAKOTA_PECOS
+#include "LHSDriver.hpp"
+#endif // DAKOTA_PECOS
+#include "SensAnalysisGlobal.H"
+
+namespace Dakota {
+
+
+/// Base class for common code between NonDLHSSampling,
+/// NonDIncremLHSSampling, and NonDAdaptImpSampling
+
+/** This base class provides common code for sampling methods which
+    employ the Latin Hypercube Sampling (LHS) package from Sandia
+    Albuquerque's Risk and Reliability organization. NonDSampling now
+    exclusively utilizes the 1998 Fortran 90 LHS version as documented
+    in SAND98-0210, which was converted to a UNIX link library in
+    2001.  The 1970's vintage LHS (that had been f2c'd and converted
+    to incomplete classes) has been removed. */
+
+class NonDSampling: public NonD
+{
+public:
+
+  //
+  //- Heading: Public member functions
+  //
+
+  /// called by compute_statistics() to calculate CDF/CCDF mappings of
+  /// z to p/beta and of p/beta to z
+  void compute_distribution_mappings(const ResponseArray& samples);
+
+  /// update finalStatistics from minValues/maxValues, meanStats/stdDevStats,
+  /// and computedProbLevels/computedRelLevels/computedRespLevels
+  void update_final_statistics();
+
+  /// prints the p/beta/z mappings computed in compute_distribution_mappings()
+  void print_distribution_mappings(std::ostream& s) const;
+
+protected:
+
+  //
+  //- Heading: Constructors and destructor
+  //
+
+  NonDSampling(Model& model); ///< constructor
+
+  /// alternate constructor for sample generation and evaluation "on the fly"
+  NonDSampling(NoDBBaseConstructor, Model& model, int samples, int seed,
+	       const String& rng);
+
+  /// alternate constructor for sample generation "on the fly"
+  NonDSampling(NoDBBaseConstructor, int samples, int seed, const String& rng,
+	       const RealVector& lower_bnds, const RealVector& upper_bnds);
+
+  ~NonDSampling(); ///< destructor
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  int num_samples() const;
+
+  /// resets number of samples and sampling flags
+  void sampling_reset(int min_samples, bool all_data_flag, bool stats_flag);
+
+  /// return sampleType: "lhs" or "random"
+  const String& sampling_scheme() const; // returns sampling method
+
+  /// set varyPattern
+  void vary_pattern(bool pattern_flag);
+
+  /// Uses lhsDriver to generate a set of samples from the
+  /// distributions/bounds defined in the incoming model.
+  void get_parameter_sets(Model& model);
+
+  /// Uses lhsDriver to generate a set of uniform samples over
+  /// lower_bnds/upper_bnds.
+  void get_parameter_sets(const RealVector& lower_bnds,
+			  const RealVector& upper_bnds);
+
+  //
+  //- Heading: Convenience member functions for derived classes
+  //
+
+  /// increments numLHSRuns, sets random seed, and initializes lhsDriver
+  void initialize_lhs(bool write_message);
+  /// converts allSamples into allVariables
+  void finalize_lhs();
+
+  /// For the input sample set, computes mean, standard deviation, and
+  /// probability/reliability/response levels (aleatory uncertainties)
+  /// or intervals (epsitemic or mixed uncertainties)
+  void compute_statistics(const VariablesArray& vars_samples,
+			  const ResponseArray& resp_samples);
+  /// called by compute_statistics() to calculate min/max intervals
+  void compute_intervals(const ResponseArray& samples);
+  /// called by compute_statistics() to calculate means, std
+  /// deviations, and confidence intervals
+  void compute_moments(const ResponseArray& samples);
+
+  /// prints the statistics computed in compute_statistics()
+  void print_statistics(std::ostream& s) const;
+  /// prints the intervals computed in compute_intervals()
+  void print_intervals(std::ostream& s) const;
+  /// prints the moments computed in compute_moments()
+  void print_moments(std::ostream& s) const;
+
+  //
+  //- Heading: Data members
+  //
+
+  const int seedSpec;     ///< the user seed specification (default is 0)
+  int       randomSeed;   ///< the current seed
+  const int samplesSpec;  ///< initial specification of number of samples
+  int       numSamples;   ///< the current number of samples to evaluate
+  String    rngName;	  ///< name of the random number generator
+  String    sampleType;   ///< the sample type: random, lhs, or incremental_lhs
+
+  Pecos::LHSDriver lhsDriver; ///< the C++ wrapper for the F90 LHS library
+
+  bool statsFlag;   ///< flags computation/output of statistics
+  bool allDataFlag; ///< flags update of allVariables/allResponses
+
+  /// the sampling mode: ACTIVE, ACTIVE_UNIFORM, ALL, or ALL_UNIFORM
+  short samplingVarsMode;
+  /// mode for input/output of LHS sample ranks: IGNORE_RANKS, GET_RANKS,
+  /// SET_RANKS, or SET_GET_RANKS
+  short sampleRanksMode;
+
+  /// flag for generating a sequence of seed values within multiple
+  /// get_parameter_sets() calls so that these executions (e.g., for
+  /// SBO/SBNLS) are not repeated, but are still repeatable
+  bool varyPattern;
+  /// data structure to hold the sample ranks
+  RealMatrix sampleRanks;
+
+  /// Plus/minus deltas on response function means for 95% confidence
+  /// intervals (calculated in compute_moments())
+  RealVector mean95CIDeltas;
+  /// Lower bound for 95% confidence interval on std deviation
+  /// (calculated in compute_moments())
+  RealVector stdDev95CILowerBnds;
+  /// Upper bound for 95% confidence interval on std deviation
+  /// (calculated in compute_moments())
+  RealVector stdDev95CIUpperBnds;  
+  /// initialize statistical post processing
+  SensAnalysisGlobal nonDSampCorr;
+
+private:
+
+  //
+  //- Heading: Data
+  //
+
+  /// counter for number of executions of get_parameter_sets() for this object
+  size_t numLHSRuns;
+
+  /// Min values of response functions for epistemic calculations
+  /// (calculated in compute_intervals())
+  RealVector minValues;
+  /// Max values of response functions for epistemic calculations
+  /// (calculated in compute_intervals())
+  RealVector maxValues;
+};
+
+
+inline int NonDSampling::num_samples() const
+{ return numSamples; }
+
+
+/** used by DataFitSurrModel::build_global() to publish the minimum
+    number of samples needed from the sampling routine (to build a
+    particular global approximation) and to set allDataFlag and
+    statsFlag.  In this case, allDataFlag is set to true (vectors of
+    variable and response sets must be returned to build the global
+    approximation) and statsFlag is set to false (statistics
+    computations are not needed). */
+inline void NonDSampling::
+sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+{
+  // allow sample reduction relative to previous sampling_reset() calls
+  // (that is, numSamples may be increased or decreased to match min_samples),
+  // but not relative to the original user specification (samplesSpec is a hard
+  // lower bound).  maxConcurrency must not be updated since parallel config
+  // management depends on having the same value at ctor/run/dtor times.
+  numSamples = (min_samples > samplesSpec) ? min_samples : samplesSpec;
+  // note that previous value of numSamples is irrelevant: may increase or
+  // decrease relative to previous value
+
+  allDataFlag = all_data_flag;
+  statsFlag   = stats_flag;
+}
+
+
+inline const String& NonDSampling::sampling_scheme() const
+{ return sampleType; }
+
+
+inline void NonDSampling::vary_pattern(bool pattern_flag)
+{ varyPattern = pattern_flag; }
+
+} // namespace Dakota
+
+#endif

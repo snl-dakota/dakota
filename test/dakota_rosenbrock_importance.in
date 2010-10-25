@@ -1,0 +1,37 @@
+# DAKOTA INPUT FILE - dakota_rosenbrock_importance.in
+# This file tests the importance sampling capabilities based on LHS. 
+# It is may be integrated into another rosenbrock file but for now 
+# it is cleanest to have a simple, standalone file. 
+# Note the idea is that the 50 sample probability of failure 
+# with standard normal inputs and a response level of 3 is 0.1, 
+# but the "true" probability of failure is 0.0675, which is 
+# what we are trying to attain with the importance sampling.
+
+strategy,
+	single_method
+	  tabular_graphics_data
+
+method,
+	nond_importance
+	  response_levels = 3.0
+          samples = 50
+	  seed = 1234567
+          output debug
+
+variables,
+#	uniform_uncertain = 2
+#	  lower_bounds   -2.0 -2.0
+#	  upper_bounds    2.0  2.0
+        normal_uncertain = 2
+         means = 0. 0. 
+         std_deviations = 1. 1.
+	  descriptors     'x1' 'x2'
+
+interface,
+        direct	
+	  analysis_driver = 'rosenbrock'
+
+responses,
+	num_response_functions = 1
+	no_gradients
+	no_hessians

@@ -1,0 +1,206 @@
+# -----------------------------------------------------------------------
+# $Id: djgpp.in 3186 2006-02-15 18:17:33Z slbrow $
+#
+# Changed by Andrew Roach
+# 12/02/01 5:23 PM
+# 20/01/01 11:50 AM
+#
+# Paul Kirschner
+# pek@utrc.utc.com
+# 14-Jul-1994
+#
+# copy source files into the tmp directory
+# -----------------------------------------------------------------------
+
+# First time only, should be executed from $(PLTMP)
+
+# The following lines can be changed to add optional features to the DJGPP
+# GNUSVGA driver running under GRX20 (23 actually)
+# What they do is allow you to dump the image on the screen to a graphics
+# file.
+
+# With GRX23, Windows bitmap support comes standard, but it is bugged.
+# You have to set the number of colours in the "grx20drv" environmental
+# variable to "nc 256". Then it will work, otherwise a 16.5 million colour
+# map is made, and all colours are black (not good).
+# It makes bitmaps that are *fat*. Not nice. It's here because its easy and
+# costs nothing, and if your too lazy to download and compile the TIFF
+# library, then its the next best thing. Just hit "F12" when the
+# image is on screen, and it will be dumped to a file with an odd name
+# in the current directory. If you have the TIFF library, I would
+# personally turn off bitmap support.
+# To Turn on support for dumping as bitmaps,
+# make sure the next line is uncommented
+
+GRX_DO_BMP = 1
+
+# If you want to add a "stand alone" BMP device driver (in addition to or
+# instead of the screen-dump) edit "pldev.h" and make sure "PLD_bmp" is
+# defined.
+
+
+# The Windows bitmaps are FAT and ugly. TIFF files are much smaller and
+# nicer. GRX23 sort of has support for TIFFLIB, if you compile an extra
+# module in your build. TIFFLIB is available from:
+#        ftp://ftp.sgi.com/graphics/tiff
+#        http://www.earthlink.net/~ritter/tiff/
+# There is one small error in the compile. I can't remember what, but it is
+# easy to fix in the makefile. It is just an incorrectly set flag. Other
+# versions of TIFFLIB than the one I used might even have it fixed.
+# If you want to go to the trouble of downloading and compiling the library
+# (and it IS worth it), then your in for a treat.
+# This library works like a charm, and saves some very nice small screen
+# images. Just hit "F10" to make it work if there is an image on screen
+# To Turn on support for dumping as TIFFs,
+# make sure the next line is uncommented
+
+#GRX_DO_TIFF = 1
+
+# If you want to add a "stand alone" TIFF device driver (in addition to or
+# instead of the screen-dump) edit "pldev.h" and make sure "PLD_tiff" is
+# defined, then make sure the next line is uncommented
+
+#LDC_LIBS_TIFF =-ltiff
+
+# Well, you can save them babies as JPEGs as well. Why ? Well, you can.
+# I would seriously recommend you downloading the TIFF library and using that
+# instead though. PLPLOT only really uses 16/256 colours most of the time
+# and even though the JPEG support works, and will save the image as a JPEG,
+# it will be big (lots bigger than the TIFF) and ugly ! I only did this
+# because I have the JPEG library on my system; didn't have the TIFF lib
+# (then); and, was lazy. It was an unsuccessful experiment, but since I
+# did it, I kept it. It uses the Independent JPEG Group's libjpeg library
+#            ftp://ftp.uu.net/graphics/jpeg/jpegsrc.v6b.tar.gz
+# Just hit "F11" while an image is on the screen, and it will dump the file.
+# To Turn on support for saving as JPEGs, make sure the
+# next line is uncommented
+
+#GRX_DO_JPEG = 1
+
+# If you want to add a "stand alone" JPEG device driver (in addition to or
+# instead of the screen-dump) then you have two choices.
+# First, there is the GRX23 JPEG driver. That is has a small amount
+# of overhead on top of the screen dump feature. It is the better of
+# the two JPEG drivers for DOS, so if you want that driver make sure
+# "PLD_jpg" is defined in "pldev.h". The second JPEG driver is part of GD,
+# which itself is used by the PNG driver. If you *really* want to use
+# GD's JPEG driver (ie if you are also using the PNG driver), then make
+# sure "PLD_jpeg" is defined in "pldev.h". If you are using GD's JPEG
+# driver, you will have to activate and install the PNG libraries as well.
+# Regardless of which JPEG driver you select (and if you *really* want, you
+# can have both), make sure the next line is uncommented
+
+#LDC_LIBS_JPEG =-ljpeg
+
+# If you want to use the PNG device driver, or the JPEG driver that runs
+# from GD (ie PLD_jpeg), you will need to make sure that you have
+# compiled and installed libpng, libgd, and libz.
+# Details about obtaining these libraries can be found at:
+#               http://www.boutell.com/gd/    ;  and
+#               http://www.libpng.org
+# Even if you are NOT using the PNG driver, its library is needed if
+# you want to use GD's JPEG driver rather than GRX23's JPEG driver.
+# To activate the PNG driver, edit "pldev.h" and define "PLD_png".
+# Then make sure the next line is uncommented
+
+#LDC_LIBS_PNG=-lgd -lpng -lz
+
+# If you want to use the CGM device driver, you will need to make
+# sure that you have compiled and installed libcd. Details about
+# obtaining libcd can be found at:
+#  http://sourceforge.net/project/showfiles.php?group_id=2915
+#                        or
+#  http://www.pa.msu.edu/reference/cgmdraw_ref.html
+#
+# To activate the CGM driver, edit "pldev.h" and define "PLD_cgm".
+# Then make sure the next line is uncommented:
+
+#LDC_LIBS_CGM=-lcd
+
+# If you want freetype compliant drivers (including the screen driver)
+# activated, then make sure you have compiled and built freetype, which is
+# available from www.freetype.org, then uncomment the next line:
+
+#HAVE_FREETYPE=1
+
+# If your freetype library has some other name, naturally change it !
+
+ifdef HAVE_FREETYPE
+LDC_LIBS_FREETYPE :=-lfreetype
+CC_FLAGS :=-DHAVE_FREETYPE
+endif
+
+
+
+links: linkmain
+
+linkmain:
+#	mkdir plplot
+	copy ..\..\..\..\src\*.c .
+	copy ..\..\..\..\include\*.h .
+	copy ..\..\..\..\drivers\*.c .
+#	copy ..\..\..\..\fonts\*.* .
+	copy ..\..\..\..\utils\*.* .
+	copy ..\..\..\..\data\*.fnt .
+	copy ..\src\*.* .
+	copy ..\cf\*.h .
+
+	copy ..\cf\plconfig.in .\plconfig.h
+	echo >>.\plconfig.h #define VERSION "$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)"
+	echo >>.\plconfig.h #endif
+	echo >>.\plconfig.h #endif	/* __PLCONFIG_H__ */
+
+	utod *.c
+	utod *.h
+
+linkexamples:
+	copy ..\..\..\..\examples\c\*.c .
+	utod x*.c
+	copy ..\..\..\..\examples\c\*.h .
+	utod *.h
+#	copy ..\..\..\..\examples\f77\*.f .
+
+install_includes:
+	mkdir ..\..\..\..\include\plplot
+	copy .\plplot\*.h ..\..\..\..\include\plplot
+
+move: movemain
+
+movemain:
+	move ../../../../src/*.c .
+	copy ..\..\..\..\include\*.h .
+	move ../../../../drivers/*.c .
+	move ../../../../utils/*.* .
+	copy ..\..\..\..\data\*.fnt .
+	move ../src/*.* .
+	copy ..\cf\*.h .
+
+	copy ..\cf\plconfig.in .\plconfig.h
+	echo >>.\plconfig.h #define VERSION "$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)"
+	echo >>.\plconfig.h #endif
+	echo >>.\plconfig.h #endif	/* __PLCONFIG_H__ */
+
+	utod *.c
+	utod *.h
+
+moveexamples:
+	move ../../../../examples/c/*.c .
+	utod x*.c
+	move ../../../../examples/c/*.h .
+	utod *.h
+
+ifdef GRX_DO_BMP
+CC_FLAGS_GNUSVGA_BMP =-DGRX_DO_BMP
+endif
+
+ifdef GRX_DO_TIFF
+LDC_LIBS_TIFF ?=-ltiff
+CC_FLAGS_GNUSVGA_TIFF =-DGRX_DO_TIFF
+endif
+
+ifdef GRX_DO_JPEG
+LDC_LIBS_JPEG ?=-ljpeg
+CC_FLAGS_GNUSVGA_JPEG =-DGRX_DO_JPEG
+endif
+
+

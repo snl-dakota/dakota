@@ -1,0 +1,257 @@
+namespace Dakota {
+
+/** \page RecommPract Recommended Practices for DAKOTA Development
+
+\htmlonly
+<b>Recommended Practices Table of Contents</b>
+<ul>
+<li> <a href="RecommPract.html#RecommPractIntro">Introduction</a>
+<li> <a href="RecommPract.html#RecommPractStyleGuide">Style Guidelines</a>
+  <ul>
+  <li> <a href="RecommPract.html#StyleGuideCV">Class and variable styles</a>
+  <li> <a href="RecommPract.html#StyleGuideFn">Function styles</a>
+  <li> <a href="RecommPract.html#StyleGuideMisc">Miscellaneous</a>
+  </ul>
+<li> <a href="RecommPract.html#RecommPractFile">File Naming Conventions</a>
+<li> <a href="RecommPract.html#RecommPractDox">
+     Class Documentation Conventions</a>
+</ul>
+\endhtmlonly
+
+
+\section RecommPractIntro Introduction
+
+
+Common code development practices can be extremely useful in multiple
+developer environments.  Particular styles for code components lead to
+improved readability of the code and can provide important visual cues
+to other developers.
+
+Much of this recommended practices document is borrowed from the CUBIT
+mesh generation project, which in turn borrows its recommended
+practices from other projects.  As a result, C++ coding styles are
+fairly standard across a variety of Sandia software projects in the
+engineering and computational sciences.
+
+
+\section RecommPractStyleGuide Style Guidelines
+
+
+Style guidelines involve the ability to discern at a glance the type
+and scope of a variable or function.
+
+
+\subsection StyleGuideCV Class and variable styles
+
+Class names should be composed of two or more descriptive words, with
+the first character of each word capitalized, e.g.:
+\code
+class ClassName;
+\endcode
+
+Class member variables should be composed of two or more descriptive
+words, with the first character of the second and succeeding words
+capitalized, e.g.:
+\code
+double classMemberVariable;
+\endcode
+
+Temporary (i.e. local) variables are lower case, with underscores
+separating words in a multiple word temporary variable, e.g.:
+\code
+int temporary_variable;
+\endcode
+
+Constants (i.e. parameters) and enumeration values are upper case, 
+with underscores separating words, e.g.:
+\code
+const double CONSTANT_VALUE;
+\endcode
+
+
+\subsection StyleGuideFn Function styles
+
+Function names are lower case, with underscores separating words, e.g.:
+\code
+int function_name();
+\endcode
+There is no need to distinguish between member and non-member
+functions by style, as this distinction is usually clear by context.
+This style convention allows member function names which set and
+return the value of a similarly-named private member variable, e.g.:
+\code
+int memberVariable;
+void member_variable(int a) { // set
+  memberVariable = a;
+}
+int member_variable() const { // get
+  return memberVariable;
+}
+\endcode
+
+In cases where the data to be set or returned is more than a few bytes,
+it is highly desirable to employ const references to avoid unnecessary 
+copying, e.g.:
+\code
+void continuous_variables(const RealVector& c_vars) { // set
+  continuousVariables = c_vars;
+}
+const RealVector& continuous_variables() const {      // get
+  return continuousVariables;
+}
+\endcode
+
+Note that it is not necessary to always accept the returned data as a
+const reference.  If it is desired to be able change this data, then
+accepting the result as a new variable will generate a copy, e.g.:
+\code
+const RealVector& c_vars = model.continuous_variables(); // reference to continuousVariables cannot be changed
+RealVector c_vars = model.continuous_variables();        // local copy of continuousVariables can be changed
+\endcode
+
+
+\subsection StyleGuideMisc Miscellaneous
+
+Appearance of typedefs to redefine or alias basic types is isolated to
+a few header files (\c data_types.h, \c template_defs.h), so that
+issues like program precision can be changed by changing a few lines
+of typedefs rather than many lines of code, e.g.:
+\code
+typedef double Real;
+\endcode
+
+\c xemacs is the preferred source code editor, as it has C++ modes for
+enhancing readability through color (turn on "Syntax highlighting").
+Other helpful features include "Paren highlighting" for matching
+parentheses and the "New Frame" utility to have more than one window
+operating on the same set of files (note that this is still the same
+edit session, so all windows are synchronized with each other).
+Window width should be set to 80 internal columns, which can be
+accomplished by manual resizing, or preferably, using the following
+alias in your shell resource file (e.g., \c .cshrc):
+\verbatim
+alias xemacs "xemacs -g 81x63"
+\endverbatim
+where an external width of 81 gives 80 columns internal to the window
+and the desired height of the window will vary depending on monitor
+size.  This window width imposes a coding standard since you should
+avoid line wrapping by continuing anything over 80 columns onto the
+next line.
+
+Indenting increments are 2 spaces per indent and comments are
+aligned with the code they describe, e.g.:
+\code
+void abort_handler(int code)
+{
+  int initialized = 0;
+  MPI_Initialized(&initialized);
+  if (initialized) {
+    // comment aligned to block it describes
+    int size;
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    if (size>1)
+      MPI_Abort(MPI_COMM_WORLD, code);
+    else
+      exit(code);
+  }
+  else
+    exit(code);
+}
+\endcode
+
+Also, the continuation of a long command is indented 2 spaces, e.g.:
+\code
+  const String& iterator_scheduling
+    = problem_db.get_string("strategy.iterator_scheduling");
+\endcode
+
+and similar lines are aligned for readability, e.g.:
+\code
+  cout << "Numerical gradients using " << finiteDiffStepSize*100. << "%"
+       << finiteDiffType << " differences\nto be calculated by the "
+       << methodSource << " finite difference routine." << endl;
+\endcode
+
+Lastly, \#ifdef's are not indented (to make use of syntax highlighting
+in xemacs).
+
+
+\section RecommPractFile File Naming Conventions
+
+
+In addition to the style outlined above, the following file naming
+conventions have been established for the DAKOTA project.
+
+File names for C++ classes should, in general, use the same name as
+the class defined by the file.  Exceptions include: 
+<ul>
+<li> with the introduction of the Dakota namespace, base classes which
+previously utilized prepended %Dakota identifiers can now safely omit
+the identifiers.  However, since file names do not have namespace
+protection from name collisions, they retain the prepended %Dakota
+identifier.  For example, a class previously named DakotaModel which
+resided in DakotaModel.[CH], is now Dakota::Model (class Model in
+namespace %Dakota) residing in the same filenames.  The retention of
+the previous filenames reduces the possibility of multiple instances
+of a Model.H causing problems.  Derived classes (e.g., NestedModel) do
+not require a prepended %Dakota identifier for either the class or file
+names.
+<li> in a few cases, it is convenient to maintain several closely
+related classes in a single file, in which case the file name may
+reflect the top level class or some generalization of the set of
+classes (e.g., DakotaResponse.[CH] files contain Dakota::Response and
+Dakota::ResponseRep classes, and DakotaBinStream.[CH] files contain 
+the Dakota::BiStream and Dakota::BoStream classes).
+</ul>
+
+The type of file is determined by one of the four file name extensions
+listed below:
+<ul>
+<li> <b>.H</b> A class header file ends in the suffix .H. The header
+file provides the class declaration. This file does not contain code
+for implementing the methods, except for the case of inline
+functions. Inline functions are to be placed at the bottom of the file
+with the keyword inline preceding the function name.
+
+<li> <b>.C</b> A class implementation file ends in the suffix .C. An
+implementation file contains the definitions of the members of the
+class.
+
+<li> <b>.h</b> A header file ends in the suffix .h. The header file
+contains information usually associated with procedures. Defined
+constants, data structures and function prototypes are typical
+elements of this file.
+
+<li> <b>.c</b> A procedure file ends in the suffix .c. The procedure
+file contains the actual procedures.
+</ul>
+
+
+\section RecommPractDox Class Documentation Conventions
+
+
+Class documentation uses the doxygen tool available from
+http://www.doxygen.org and employs the JAVA-doc comment style.  Brief
+comments appear in header files next to the attribute or function
+declaration.  Detailed descriptions for functions should appear
+alongside their implementations (i.e., in the .C files for
+non-inlined, or in the headers next to the function definition for
+inlined).  Detailed comments for a class or a class attribute must go
+in the header file as this is the only option.
+
+NOTE: Previous class documentation utilities (class2frame and class2html)
+used the "//-" comment style and comment blocks such as this:
+\code
+//- Class:       Model
+//- Description: The model to be iterated by the Iterator.  Contains Variables, Interface, and Response objects.
+//- Owner:       Mike Eldred
+//- Version: $Id: Dev_Recomm_Pract.dox 4549 2007-09-20 18:25:03Z mseldre $
+\endcode
+
+These tools are no longer used, so remaining comment blocks of this
+type are informational only and will not appear in the documentation
+generated by doxygen.
+
+*/
+
+} // namespace Dakota

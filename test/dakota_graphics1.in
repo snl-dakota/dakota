@@ -1,0 +1,41 @@
+# This Dakota input file provides a stress test for the 2D graphics.  It
+# derives from a nonlinear parameter estimation of plasticity material
+# properties my minizing the difference between an experimental and a fea
+# engineering stress-strain curve.
+
+strategy,
+	single_method
+	  graphics tabular_graphics_data
+
+method,
+	centered_parameter_study
+          step_vector = 1000. 1000. 1000. 1000. 1000.
+			1000. 1000. 1000. 1000. 1000.
+	  steps_per_variable = 1 1 1 1 1 1 1 1 1 1
+
+variables
+	continuous_design = 10
+	initial_point 132671. 137171. 140171. 143171. 147671.
+                          162671. 177671. 192671. 222671. 297671.
+	lower_bounds  117670.88 117670.88 117670.88 117670.88 117670.88
+                          117670.88 117670.88 117670.88 117670.88 117670.88
+	upper_bounds  132671. 137171. 140171. 143171. 147671.
+                          162671. 177671. 192671. 222671. 297671
+	descriptors   'y1'    'y2'    'y3'    'y4'    'y5'
+                          'y6'    'y7'    'y8'    'y9'    'y10'
+
+interface,
+	system
+	  analysis_driver = 'text_book'
+          parameters_file = 'params.in'
+          results_file    = 'results.out'
+#         aprepro
+
+responses,
+	num_objective_functions = 1
+        num_nonlinear_inequality_constraints = 4
+# 	num_least_squares_terms = 2
+# 	analytic_gradients
+# 	analytic_hessians
+	no_gradients
+	no_hessians

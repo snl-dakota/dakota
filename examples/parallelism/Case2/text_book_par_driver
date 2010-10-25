@@ -1,0 +1,91 @@
+#!/bin/sh
+
+# script to create working directory, populate, and run text_book_simple_par
+# on 6 processors
+
+# the "text_book" simulator is too trivial to justify a module to ensure
+# consistent MPI is used to build the app and invoke 'mpiexec' (see below),
+# BUT, for a real parallel application, this would be a logical location
+# to load its module file
+#
+# . /opt/modules/default/init/sh
+# module load text_book
+
+#-----------------------------------
+# CREATE TEMPORARY WORKING DIRECTORY
+#
+# This prevents file trampling when running concurrent jobs.
+#-----------------------------------
+
+num=$(echo $1 | awk -F. '{print $NF}')
+topdir=`pwd`
+workdir=$topdir/workdir.$num
+
+mkdir workdir.$num
+cp $topdir/$1 $workdir/dakota_vars
+cd $workdir
+
+
+# -------------------------
+# INPUT FILE PRE-PROCESSING
+# -------------------------
+
+# This demo does not need file pre-processing, but normally (see
+# below) APREPRO or DPREPRO is used to "cut-and-paste" data from the
+# params.in.# file written by DAKOTA into a template input file for
+# the user's simulation code.
+
+# aprepro run6crh_rigid_template.i temp_rigid.new
+# grep -vi aprepro temp_rigid.new > run6crh_rigid.i
+
+# dprepro $1 application_input.template application.in 
+
+# For this example we just prepare the application input by copying
+# the parameters:
+cp dakota_vars application.in
+
+
+# -------------------
+# RUN SIMULATION CODE
+# -------------------
+
+echo "$0 running text_book_simple_par on 6 processors."
+
+# NOTE: for simple, parallel apps, the "/path/to" might simply be $topdir
+#       (see comments at top of this file regarding modules and consistent MPI)
+mpiexec -n 6 /path/to/text_book_simple_par application.in application.out
+
+# use sleep command if file I/O timing is a problem
+#sleep 10
+
+
+# ---------------------------
+# OUTPUT FILE POST PROCESSING
+# ---------------------------
+
+# Normally any application-specific post-processing to prepare the
+# results.out file for DAKOTA would go here. Here we'll substitute a
+# copy command:
+
+cp application.out results2dakota
+
+# for demo, append the node name to see on which node this task ran
+# (comment out for actual application)
+uname -n >> results2dakota
+
+# When using DAKOTA's fork interface, the application can directly
+# write its output (if in the right format) to results.out.$num
+# (../$2) for DAKOTA, however for the system interface, use the
+# following move to avoid a race condition:
+
+mv results2dakota ../$2
+cd ..
+
+# -------------
+# CLEANUP
+# -------------
+
+# uncomment to cleanup work directories as evaluations progress
+#rm -rf ./workdir.$num
+#rm ./results.out.$num
+

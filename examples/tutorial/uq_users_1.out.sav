@@ -1,0 +1,179 @@
+Running MPI executable in serial mode.
+DAKOTA version 4.0+ developmental release.
+Writing new restart file dakota.rst
+Constructing Single Method Strategy...
+methodName = nond_sampling
+gradientType = none
+hessianType = none
+
+>>>>> Running Single Method Strategy.
+
+>>>>> Running nond_sampling iterator.
+
+NonD lhs Samples = 5 Seed (user-specified) = 98765
+
+------------------------------
+Begin Function Evaluation    1
+------------------------------
+Parameters for function evaluation 1:
+                      1.1534456914e-01 x1
+                      4.1075750961e-01 x2
+
+(Asynchronous job 1 added to queue)
+
+------------------------------
+Begin Function Evaluation    2
+------------------------------
+Parameters for function evaluation 2:
+                      9.1116679472e-01 x1
+                      3.6693359687e-01 x2
+
+(Asynchronous job 2 added to queue)
+
+------------------------------
+Begin Function Evaluation    3
+------------------------------
+Parameters for function evaluation 3:
+                      4.6488733546e-01 x1
+                      8.2905611442e-01 x2
+
+(Asynchronous job 3 added to queue)
+
+------------------------------
+Begin Function Evaluation    4
+------------------------------
+Parameters for function evaluation 4:
+                      3.2146083734e-01 x1
+                      7.8746802302e-02 x2
+
+(Asynchronous job 4 added to queue)
+
+------------------------------
+Begin Function Evaluation    5
+------------------------------
+Parameters for function evaluation 5:
+                      6.9716761792e-01 x1
+                      7.0189788616e-01 x2
+
+(Asynchronous job 5 added to queue)
+
+Blocking synchronize of 5 asynchronous evaluations
+First pass: initiating 5 asynchronous jobs
+Initiating function evaluation 1
+(text_book /tmp/fileo2WFpL /tmp/fileNklzjk) &
+Initiating function evaluation 2
+(text_book /tmp/fileymo8dT /tmp/filek2JH8r) &
+Initiating function evaluation 3
+(text_book /tmp/fileWppY30 /tmp/file1Y9eZz) &
+Initiating function evaluation 4
+(text_book /tmp/file3OJCV8 /tmp/fileHNy0RH) &
+Initiating function evaluation 5
+(text_book /tmp/filequF4Og /tmp/file9HY8LP) &
+Waiting on completed jobs
+Function evaluation 1 has completed
+Function evaluation 2 has completed
+Function evaluation 3 has completed
+Function evaluation 4 has completed
+Waiting on completed jobs
+Function evaluation 5 has completed
+
+Active response data for function evaluation 1:
+Active set vector = { 1 1 1 }
+                      7.3303910154e-01 response_fn_1
+                     -1.9207438518e-01 response_fn_2
+                      1.1104944713e-01 response_fn_3
+
+
+Active response data for function evaluation 2:
+Active set vector = { 1 1 1 }
+                      1.6068132747e-01 response_fn_1
+                      6.4675812936e-01 response_fn_2
+                     -3.2094313285e-01 response_fn_3
+
+
+Active response data for function evaluation 3:
+Active set vector = { 1 1 1 }
+                      8.2847696175e-02 response_fn_1
+                     -1.9840782253e-01 response_fn_2
+                      4.5489037312e-01 response_fn_3
+
+
+Active response data for function evaluation 4:
+Active set vector = { 1 1 1 }
+                      9.3228667913e-01 response_fn_1
+                      6.3963668789e-02 response_fn_2
+                     -1.5452935979e-01 response_fn_3
+
+
+Active response data for function evaluation 5:
+Active set vector = { 1 1 1 }
+                      1.6307221854e-02 response_fn_1
+                      1.3509374440e-01 response_fn_2
+                      1.4407683364e-01 response_fn_3
+
+
+<<<<< Iterator nond_sampling completed.
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+
+Statistics based on 5 samples:
+
+Moments for each response function:
+response_fn_1:  Mean = 3.85032e-01  Std. Dev. = 4.17793e-01  Coeff. of Variation = 1.08508e+00
+response_fn_2:  Mean = 9.10667e-02  Std. Dev. = 3.44757e-01  Coeff. of Variation = 3.78577e+00
+response_fn_3:  Mean = 4.69088e-02  Std. Dev. = 2.98286e-01  Coeff. of Variation = 6.35883e+00
+
+95% confidence intervals for each response function:
+response_fn_1:  Mean = ( -1.33726e-01, 9.03791e-01 ), Std Dev = ( 2.50313e-01, 1.20055e+00 )
+response_fn_2:  Mean = ( -3.37006e-01, 5.19139e-01 ), Std Dev = ( 2.06556e-01, 9.90679e-01 )
+response_fn_3:  Mean = ( -3.23462e-01, 4.17279e-01 ), Std Dev = ( 1.78713e-01, 8.57140e-01 )
+
+Probabilities for each response function:
+Cumulative Distribution Function (CDF) for response_fn_1:
+     Response Level  Probability Level  Reliability Index
+     --------------  -----------------  -----------------
+   1.0000000000e-01   4.0000000000e-01
+   2.0000000000e-01   6.0000000000e-01
+   6.0000000000e-01   6.0000000000e-01
+Cumulative Distribution Function (CDF) for response_fn_2:
+     Response Level  Probability Level  Reliability Index
+     --------------  -----------------  -----------------
+   1.0000000000e-01   6.0000000000e-01
+   2.0000000000e-01   8.0000000000e-01
+   6.0000000000e-01   8.0000000000e-01
+Cumulative Distribution Function (CDF) for response_fn_3:
+     Response Level  Probability Level  Reliability Index
+     --------------  -----------------  -----------------
+   1.0000000000e-01   4.0000000000e-01
+   2.0000000000e-01   8.0000000000e-01
+   6.0000000000e-01   1.0000000000e+00
+
+Simple Correlation Matrix between input and output:
+                       x1           x2 response_fn_1 response_fn_2 response_fn_3 
+          x1  1.00000e+00 
+          x2  2.25892e-01  1.00000e+00 
+response_fn_1 -7.40499e-01 -8.20957e-01  1.00000e+00 
+response_fn_2  8.39638e-01 -3.03215e-01 -2.89502e-01  1.00000e+00 
+response_fn_3 -3.63163e-01  7.99287e-01 -3.30004e-01 -8.04522e-01  1.00000e+00 
+
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          x1 -9.97880e-01  9.78284e-01 -9.28768e-01 
+          x2 -9.98470e-01 -9.31538e-01  9.71002e-01 
+
+Simple Rank Correlation Matrix between input and output:
+                       x1           x2 response_fn_1 response_fn_2 response_fn_3 
+          x1  1.00000e+00 
+          x2  1.00000e-01  1.00000e+00 
+response_fn_1 -6.00000e-01 -8.00000e-01  1.00000e+00 
+response_fn_2  7.00000e-01 -5.00000e-01 -1.00000e-01  1.00000e+00 
+response_fn_3 -2.00000e-01  9.00000e-01 -6.00000e-01 -7.00000e-01  1.00000e+00 
+
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3 
+          x1 -8.71033e-01  8.70388e-01 -6.68657e-01 
+          x2 -9.29660e-01 -8.02181e-01  9.43701e-01 
+
+<<<<< Single Method Strategy completed.
+DAKOTA execution time in seconds:
+  Total CPU        =      0.01 [parent =  0.009998, child =     2e-06]
+  Total wall clock =   0.02879

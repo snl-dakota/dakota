@@ -1,0 +1,118 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright (c) 2006, Sandia National Laboratories.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+//- Class:        TANA3Approximation
+//- Description:  Class for TANA-3 two-point exponential approximation.
+//-               
+//- Owner:        Mike Eldred, Sandia National Laboratories
+ 
+#ifndef TANA3_APPROXIMATION_H
+#define TANA3_APPROXIMATION_H
+
+#include "DakotaApproximation.H"
+
+
+namespace Dakota {
+
+/// Derived approximation class for TANA-3 two-point exponential
+/// approximation (a multipoint approximation).
+
+/** The TANA3Approximation class provides a multipoint approximation
+    based on matching value and gradient data from two points (typically
+    the current and previous iterates) in parameter space.  It forms an
+    exponential approximation in terms of intervening variables. */
+
+class TANA3Approximation: public Approximation
+{
+public:
+
+  //
+  //- Heading: Constructor and destructor
+  //
+
+  /// default constructor
+  TANA3Approximation();
+  /// standard constructor
+  TANA3Approximation(const ProblemDescDB& problem_db, size_t num_vars);
+  /// alternate constructor
+  TANA3Approximation(const UShortArray& approx_order, size_t num_vars,
+		     unsigned short data_order);
+  /// destructor
+  ~TANA3Approximation();
+
+protected:
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  int min_coefficients() const;
+
+  int num_constraints()  const;
+
+  void build();
+
+  const Real& get_value(const RealVector& x);
+
+  const RealVector& get_gradient(const RealVector& x);
+
+  //const RealMatrix& get_hessian(const RealVector& x);
+
+  void clear_current();
+
+private:
+
+  //
+  //- Heading: Convenience functions
+  //
+
+  /// compute TANA coefficients based on scaled inputs
+  void find_scaled_coefficients();
+
+  /// based on minX, apply offset scaling to x to define s
+  void offset(const RealVector& x, RealVector& s);
+
+  //
+  //- Heading: Data
+  //
+
+  RealVector pExp; ///< vector of exponent values
+  RealVector minX; ///< vector of minimum parameter values used in scaling
+  RealVector scX1; ///< vector of scaled x1 values
+  RealVector scX2; ///< vector of scaled x2 values
+  Real H; ///< the scalar Hessian value in the TANA-3 approximation
+};
+
+
+inline TANA3Approximation::TANA3Approximation()
+{ }
+
+
+inline TANA3Approximation::
+TANA3Approximation(const UShortArray& approx_order, size_t num_vars,
+		   unsigned short data_order)
+{ approxOrder = approx_order; numVars = num_vars; dataOrder = data_order; }
+
+
+inline TANA3Approximation::~TANA3Approximation()
+{ }
+
+
+/** Redefine default implementation to support history mechanism. */
+inline void TANA3Approximation::clear_current()
+{
+  currentPoints.clear();
+  if (!anchorPoint.is_null()) {
+    currentPoints.push_back(anchorPoint);  // store 1 previous expansion point
+    anchorPoint = Pecos::SurrogateDataPoint(); // clear
+  }
+}
+
+} // namespace Dakota
+
+#endif

@@ -1,0 +1,282 @@
+C      $Id: x15f.fm4 3186 2006-02-15 18:17:33Z slbrow $
+C      Shade plot demo.
+C      Does a variety of shade plots.
+C
+C      Copyright (C) 2004  Alan W. Irwin
+C
+C      This file is part of PLplot.
+C
+C      PLplot is free software; you can redistribute it and/or modify
+C      it under the terms of the GNU General Library Public License as
+C      published by the Free Software Foundation; either version 2 of the
+C      License, or (at your option) any later version.
+C
+C      PLplot is distributed in the hope that it will be useful,
+C      but WITHOUT ANY WARRANTY; without even the implied warranty of
+C      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+C      GNU Library General Public License for more details.
+C
+C      You should have received a copy of the GNU Library General Public
+C      License along with PLplot; if not, write to the Free Software
+C      Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+      implicit none
+
+      integer  xdim, ydim, XPTS, YPTS
+C      xdim and ydim are the static dimensions of the 2D arrays while
+C      NX and NY are the defined area.
+      parameter( xdim = 99, XPTS = 35, ydim = 100, YPTS = 46 )
+
+      integer i,  j
+      real*8  xx, yy
+      real*8  z(xdim, ydim), zmin, zmax
+
+      integer PL_PARSE_FULL
+      parameter(PL_PARSE_FULL = 1)
+C      Process command-line arguments
+      call plparseopts(PL_PARSE_FULL)
+
+C      Set up color map 1 (but comment out because this makes
+C      no difference for the current cmap0 plshade calls in plot1 and plot2.)
+
+!      call cmap1_init2()
+
+C      Initialize plplot
+
+      call plinit()
+
+C      Set up data array
+
+      do i = 1,XPTS
+        xx = dble(i-1 - (XPTS / 2)) / dble(XPTS / 2)
+        do j = 1,YPTS
+          yy = dble(j-1 - (YPTS / 2)) / dble(YPTS / 2) - 1.0d0
+          z(i,j) = xx*xx - yy*yy + (xx - yy)/(xx*xx+yy*yy + 0.1d0)
+        enddo
+      enddo
+
+      call a2mnmx(z, XPTS, YPTS, zmin, zmax, xdim)
+
+      call plot1(z, XPTS, YPTS, zmin, zmax, xdim)
+      call plot2(z, XPTS, YPTS, zmin, zmax, xdim)
+
+      call plend()
+      end
+
+C -------------------------------------------------------------------------
+C      cmap1_init1
+C
+C      Initializes color map 1 in HLS space.
+C -------------------------------------------------------------------------
+
+      subroutine cmap1_init1()
+      implicit none
+      real*8   i(4), h(4), l(4), s(4)
+      integer rev(4)
+
+      i(1) = 0.0d0    ! left boundary
+      i(2) = 0.45d0   ! just before center
+      i(3) = 0.55d0   ! just after center
+      i(4) = 1.0d0    ! right boundary
+
+      h(1) = 260.0d0  ! hue -- low: blue-violet
+      h(2) = 260.0d0  ! only change as we go over vertex
+      h(3) = 20.0d0   ! hue -- high: red
+      h(4) = 20.0d0   ! keep fixed
+
+
+      l(1) = 0.5d0    ! lightness -- low
+      l(2) = 0.0d0    ! lightness -- center
+      l(3) = 0.0d0    ! lightness -- center
+      l(4) = 0.5d0    ! lightness -- high
+
+!     call plscolbg(255,255,255)
+!     l(1) = 0.5d0    ! lightness -- low
+!     l(2) = 1.0d0    ! lightness -- center
+!     l(3) = 1.0d0    ! lightness -- center
+!     l(4) = 0.5d0    ! lightness -- high
+
+      s(1) = 1.0d0    ! maximum saturation
+      s(2) = 1.0d0    ! maximum saturation
+      s(3) = 1.0d0    ! maximum saturation
+      s(4) = 1.0d0    ! maximum saturation
+
+      rev(1) = 0
+      rev(2) = 0
+      rev(3) = 0
+      rev(4) = 0
+
+      call plscmap1l(0, 4, i, h, l, s, rev)
+      end
+
+C -------------------------------------------------------------------------
+C      cmap1_init2
+C
+C      Initializes color map 1 in HLS space.
+C -------------------------------------------------------------------------
+
+      subroutine cmap1_init2()
+      implicit none
+      real*8 i(4), h(4), l(4), s(4)
+      integer rev(4)
+
+      i(1) = 0.0d0    ! left boundary
+      i(2) = 0.45d0   ! just before center
+      i(3) = 0.55d0   ! just after center
+      i(4) = 1.0d0    ! right boundary
+
+      h(1) = 260.0d0  ! hue -- low: blue-violet
+      h(2) = 260.0d0  ! only change as we go over vertex
+      h(3) = 20.0d0   ! hue -- high: red
+      h(4) = 20.0d0   ! keep fixed
+
+
+      l(1) = 0.6d0    ! lightness -- low
+      l(2) = 0.0d0    ! lightness -- center
+      l(3) = 0.0d0    ! lightness -- center
+      l(4) = 0.6d0    ! lightness -- high
+
+!     call plscolbg(255,255,255)
+!     l(1) = 0.5d0    ! lightness -- low
+!     l(2) = 1.0d0    ! lightness -- center
+!     l(3) = 1.0d0    ! lightness -- center
+!     l(4) = 0.5d0    ! lightness -- high
+
+      s(1) = 1.0d0    ! maximum saturation
+      s(2) = 0.5d0    ! maximum saturation
+      s(3) = 0.5d0    ! maximum saturation
+      s(4) = 1.0d0    ! maximum saturation
+
+      rev(1) = 0
+      rev(2) = 0
+      rev(3) = 0
+      rev(4) = 0
+
+      call plscmap1l(0, 4, i, h, l, s, rev)
+      end
+
+C -------------------------------------------------------------------------
+C      plot1
+C
+C      Illustrates a single shaded region.
+C -------------------------------------------------------------------------
+
+      subroutine plot1(z, XPTS, YPTS, zmin, zmax, xdim)
+      implicit none
+
+      integer xdim, XPTS, YPTS
+      real*8  z(xdim,YPTS), zmin, zmax
+
+      character*1 undefined
+      real*8  shade_min, shade_max, sh_color
+      integer sh_cmap, sh_width
+      integer min_color, min_width, max_color, max_width
+
+      sh_cmap   = 0
+      min_color = 0
+      min_width = 0
+      max_color = 0
+      max_width = 0
+
+      call pladv(0)
+      call plvpor( 0.1d0, 0.9d0,  0.1d0, 0.9d0)
+      call plwind(-1.0d0, 1.0d0, -1.0d0, 1.0d0)
+
+C      Plot using identity transform
+
+      shade_min = zmin + (zmax-zmin)*0.4d0
+      shade_max = zmin + (zmax-zmin)*0.6d0
+      sh_color  = 7
+      sh_width  = 2
+      min_color = 9
+      max_color = 2
+      min_width = 2
+      max_width = 2
+
+      call plpsty(8)
+
+C      Use plshade0 instead of plshade1 - identity mapping
+      call plshade0(z, XPTS, YPTS, undefined,
+     &  -1.d0, 1.d0, -1.d0, 1.d0,
+     &  shade_min, shade_max,
+     &  sh_cmap, sh_color, sh_width,
+     &  min_color, min_width, max_color, max_width, xdim)
+
+      call plcol0(1)
+      call plbox('bcnst', 0.0d0, 0, 'bcnstv', 0.0d0, 0)
+      call plcol0(2)
+      call pllab('distance', 'altitude', 'Bogon flux')
+
+      end
+
+C -------------------------------------------------------------------------
+C      plot2
+C
+C      Illustrates multiple adjacent shaded regions, using different fill
+C      patterns for each region.
+C -------------------------------------------------------------------------
+
+      subroutine plot2(z, XPTS, YPTS, zmin, zmax, xdim)
+      implicit none
+
+      integer xdim, XPTS, YPTS
+      real*8  z(xdim,YPTS), zmin, zmax
+
+      character*1 undefined
+      real*8  shade_min, shade_max, sh_color
+      integer sh_cmap, sh_width
+      integer min_color, min_width, max_color, max_width
+      integer i
+
+      sh_cmap   = 0
+      min_color = 0
+      min_width = 0
+      max_color = 0
+      max_width = 0
+      sh_width  = 2
+
+      call pladv(0)
+      call plvpor( 0.1d0, 0.9d0,  0.1d0, 0.9d0)
+      call plwind(-1.0d0, 1.0d0, -1.0d0, 1.0d0)
+
+C      Plot using identity transform
+
+      do  i = 1,10
+        shade_min = zmin + (zmax - zmin) * (i-1) / 10.0d0
+        shade_max = zmin + (zmax - zmin) * i / 10.0d0
+        sh_color = i+5
+        call plpsty(mod((i + 1),8) + 1)
+C        Use plshade0 instead of plshade1 - identity mapping
+        call plshade0(z, XPTS, YPTS, undefined,
+     &    -1.d0, 1.d0, -1.d0, 1.d0,
+     &    shade_min, shade_max,
+     &    sh_cmap, sh_color, sh_width,
+     &    min_color, min_width, max_color, max_width, xdim)
+      enddo
+
+      call plcol0(1)
+      call plbox('bcnst', 0.0d0, 0, 'bcnstv', 0.0d0, 0)
+      call plcol0(2)
+      call pllab('distance', 'altitude', 'Bogon flux')
+
+      end
+
+C----------------------------------------------------------------------------
+C      Subroutine a2mnmx
+C      Minimum and the maximum elements of a 2-d array.
+
+      subroutine a2mnmx(f, nx, ny, fmin, fmax, xdim)
+      implicit none
+
+      integer   i, j, nx, ny, xdim
+      real*8    f(xdim, ny), fmin, fmax
+
+      fmax = f(1, 1)
+      fmin = fmax
+      do j = 1, ny
+        do  i = 1, nx
+          fmax = max(fmax, f(i, j))
+          fmin = min(fmin, f(i, j))
+        enddo
+      enddo
+      end

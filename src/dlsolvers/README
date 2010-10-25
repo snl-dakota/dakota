@@ -1,0 +1,109 @@
+This directory contains some examples of providing nonlinear
+programming solvers ("iterators") via shared libraries.  The idea is
+to permit using Dakota with optionally available solvers.  For
+simplicity in this initial demonstration, everything about such a
+solver is supplied in a string specified with the dl_solver keyword in
+the Dakota input file.  For example,
+
+	dl_solver = './dl_snopt.dll outlev = 1'
+
+indicates file dl_snopt.dll in the current directory with parameter
+setting "outlev = 1".  (No such settings are required; on the other
+hand, further assignments could follow, separated by white space.)
+
+The shared library must provide one routine,
+
+ void *dl_constructor(Optimizer1 *D, dl_find_optimum_t *find_opt, dl_destructor_t *cleanup);
+
+(with types given in DLSolver.H, i.e., Dakota/src/DLSolver.H).  The
+first argument is input, a pointer to an Optimizer object with details
+about the problem to be solved.  The type is Optimizer1 to make some
+details about the problem available via little inline functions
+declared in DLSolver.H.  The dl_constructor function must assign
+function pointers to the other two arguments, providing a "find_opt"
+function to solve the problem and a cleanup function that is called
+just before the shared library is unloaded; dl_constructor returns a
+void* value that is passed to find_opt and cleanup to give those
+functions access to things that dl_constructor may have set up.  Thus,
+the void* value is, in effect, a "this" pointer.  In more detail, the
+find_opt and cleanup invocations have the form
+
+	find_opt(v, D)
+and
+	cleanup(&v)
+
+where v is the return value from dl_constructor and D is the same
+Optimizer1 pointer passed to dl_constructor.
+
+File dl_npsol.C is the simplest example.  It does not really provide
+NPSOL via a shared library, but simply creates an NPSOLOptimizer
+object using existing Dakota facilities.  Because it thus creates a
+second Optimizer object, it must copy the solution it has found back
+to the first (i.e., to *D).
+
+File dl_npsol1.C dispenses with the second NPSOLOptimizer object, but
+still uses some facilities of SOLBase, the Dakota machinery that
+supports NPSOL.  It still uses NPSOL routines that are built into
+Dakota and is based partly on Dakota/src/NPSOLOptimizer.[CH].  This
+example also uses dlsolver_option, a routine described in DLSolver.H,
+to extract keyword phrases from the dl_solver string.  The basic usage
+is
+
+	Opt_Info OI(D->options);
+	// ...
+	while(dlsolver_option(&OI))
+		npoptn_(OI.name, OI.all_len);
+
+where npoptn_ is an NPSOL routine that accepts name-value phrases.
+
+Finally, dl_snopt.C provides SNOPT in its entirety to Dakota, without
+using the SOLBase machinery, but simply getting problem information
+from the Dakota Optimizer object.  It records the last vector of
+decision variables seen and asks Dakota to do a new evaluation when
+this vector changes.
+
+SNOPT is really a sparse solver; since (as far as I know) we can only
+get sparsity details for linear constraints in Dakota (by checking for
+explictly zero coefficients), it's necessary for dl_snopt.C to pretend
+that the problem is dense.
+
+Like NPSOL, SNOPT accepts name-value phrases (passed to snset_()).  An
+added wrinkle in dl_snopt.C is recognition of "outlev = n" to control
+which of SNOPT's detailed or summary output to request (including
+neither or both):  for 0 <= n <= 3,
+
+	0 ==> neither
+	1 ==> detailed
+	2 ==> summary
+	3 ==> both
+
+By specifying 6 as unit number when calling sninit_(), we get this
+output included in the standard output (at least when, as on my Linux
+box, dl_snopt.dll is linked with libf2c).
+
+The mkfile is what I use, with the plan-9 "mk" program, to create
+shared libraries dl_npsol.dll, dl_npsol1.dll, and dl_snopt.dll on my
+Linux box.  (The usual practice would be to use extension .so rather
+than .dll, but in fact the extension does not matter under Linux.  It
+does matter under MS Windows, so I usually use names that work both
+places.)
+
+Files foo*.in are Dakota inputs I've used in testing.  They are variants
+of Dakota/test/dakota_cantilever.in, and Dakota/test/cantilever must
+be linked to this directory before one can invoke, say,
+
+	../dakota -i foo2.in
+
+to run SNOPT with Dakota.
+
+Some of the simpler examples, dl_npsol.dll, dl_npsol1.dll, and
+dl_snopt.dll, require that DAKOTA be linked to share objects
+with dynamically loaded libraries; under at least some versions
+of Linux, this means linking with -rdynamic, which requires
+manual adjustment to $DAKOTA/src/Makefile.  The more elaborate
+examples (dl_snopt1.dll and dl_snopt72.dll, which are for SNOPT
+versions 6.2 and 7.2, resp[ectively) do not need DAKOTA to be
+linked this way.  
+
+-- David M. Gay (dmgay@sandia.gov)
+March, 2007

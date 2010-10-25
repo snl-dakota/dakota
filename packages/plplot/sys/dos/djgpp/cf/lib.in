@@ -1,0 +1,73 @@
+# -----------------------------------------------------------------------
+# $Id: lib.in 3186 2006-02-15 18:17:33Z slbrow $
+#
+# Maurice LeBrun
+# IFS, University of Texas at Austin
+# 14-Jul-1994
+#
+# PLplot build rule for library under Unix.
+# -----------------------------------------------------------------------
+
+# -----------------------------------------------------------------------
+# Set up inference rules appropriate for building archive libraries.
+# -----------------------------------------------------------------------
+
+.c$O:
+	$(CC) $(CC_FLAGS) $*.c
+
+.f$O:
+#	$(F77) $(F77_FLAGS) $*.f
+	f2c -A $*.f
+	$(CC) $(CC_FLAGS) $*.c
+	del $*.c
+
+# -----------------------------------------------------------------------
+# Library dependency list and targets
+# -----------------------------------------------------------------------
+
+PLLIBS = $(PLLIB_AR)
+
+libs:	$(PLLIBS)
+
+$(PLLIB_AR):	$(LIB_OBJS)
+	-rm $(PLLIB_AR)
+	@echo .
+	@echo "Building archive library"
+	@echo .
+	$(ARLIB_BUILD) $(PLLIB_AR) $(LIB_OBJS)
+	$(RANLIB) $(PLLIB_AR)
+	@echo .
+
+# -----------------------------------------------------------------------
+# Sick hacks.
+# -----------------------------------------------------------------------
+
+# Needs to be compiled using K&R C.
+
+tcpip$O:	plserver.h plplotTK.h plplotX.h plplotP.h plplot.h pdf.h \
+		plstream.h tcpip.c
+	$(OCC) $(CC_FLAGS) tcpip.c
+
+# Optimizer under AIX 3.2.3 bogues out here.
+
+#xwin$O:		plplotP.h plplot.h drivers.h pdf.h plstream.h plplotX.h xwin.c
+#	$(CC) $(CC_FLAGS_XWIN) xwin.c
+
+# Optimizer on SX-3 makes bogus code here.
+
+sccont$O:	plstubs.h plplotP.h plplot.h sccont.c
+	$(CC) $(CC_FLAGS_SCCONT) sccont.c
+
+# Special stuff here to define the "extra" graphics library defines
+# for TIF, bitmap, and JPEG
+
+gnusvga$O:	gnusvga.c plDevs.h plplotP.h \
+ plConfig.h plplot.h plstrm.h pdf.h \
+ pldebug.h drivers.h
+	$(CC) $(CC_FLAGS) $(CC_FLAGS_GNUSVGA_BMP) $(CC_FLAGS_GNUSVGA_TIFF) $(CC_FLAGS_GNUSVGA_JPEG) gnusvga.c
+
+plcore$O:	plcore.c plcore.h plplotP.h plConfig.h \
+ plplot.h plstrm.h pdf.h drivers.h \
+ plDevs.h pldebug.h
+	$(CC) $(CC_FLAGS) $(CC_FLAGS_GNUSVGA_BMP) $(CC_FLAGS_GNUSVGA_TIFF) $(CC_FLAGS_GNUSVGA_JPEG) plcore.c
+

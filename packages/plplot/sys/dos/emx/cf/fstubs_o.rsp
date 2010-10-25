@@ -1,0 +1,5 @@
+sc3d.o
+sccont.o
+scstubs.o
+sfstubs.o
+strutil.o

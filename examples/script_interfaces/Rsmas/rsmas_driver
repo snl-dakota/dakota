@@ -1,0 +1,28 @@
+#!/bin/csh -f
+# Sample simulator to Dakota system call script
+# See User Manual for instructions
+
+# $argv[1] is params.in.(fn_eval_num) FROM Dakota
+# $argv[2] is results.out.(fn_eval_num) returned to Dakota
+
+# --------------
+# PRE-PROCESSING
+# --------------
+# Use the following line if SNL's APREPRO utility is used instead
+# of transfer_perl.
+# ../aprepro -c '*' -q --nowarning ros.template ros.in
+
+dprepro $argv[1] rsmas.template rsmas.in
+
+# --------
+# ANALYSIS
+# --------
+
+rsmas
+
+# ---------------
+# POST-PROCESSING
+# ---------------
+
+grep 'TTOTAL WEIGHT-Kg' rsmas.out | cut -c 42- >! $argv[2]
+grep 'TOTAL COST-M' rsmas.out | cut -c 42- >> $argv[2]

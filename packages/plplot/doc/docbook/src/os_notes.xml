@@ -1,0 +1,255 @@
+<!--
+    os_notes.xml: "Notes for each Operating System that We Support" chapter
+        
+    Copyright (C) 1994  Geoffrey Furnish and Maurice LeBrun
+    Copyright (C) 1999, 2000, 2001, 2002, 2003  Alan W. Irwin and Rafael Laboissiere
+    Copyright (C) 2003  Joao Cardoso
+
+    Redistribution and use in source (XML DocBook) and "compiled" forms
+    (HTML, PDF, PostScript, DVI, TeXinfo and so forth) with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+       1. Redistributions of source code (XML DocBook) must retain the
+          above copyright notice, this list of conditions and the following
+          disclaimer as the first lines of this file unmodified.
+
+       2. Redistributions in compiled form (transformed to other DTDs,
+          converted to HTML, PDF, PostScript, and other formats) must
+          reproduce the above copyright notice, this list of conditions and
+          the following disclaimer in the documentation and/or other
+          materials provided with the distribution.
+
+    Important: THIS DOCUMENTATION IS PROVIDED BY THE PLPLOT PROJECT "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE PLPLOT PROJECT BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS DOCUMENTATION,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<chapter id="os-notes">
+  <title>Notes for each Operating System that We Support</title>
+  
+  <para>
+  The purpose of this Chapter is to present notes for
+  each operating system that we support.  Although we have some
+  support for a number of operating systems,
+  we only have notes for Linux/Unix systems at this point.
+  NEEDS DOCUMENTATION
+  </para>
+
+  <sect1 id="linux-unix-notes">
+    <title>Linux/Unix Notes</title>
+    <sect2>
+    <title>Linux/Unix Configure, Build, and Installation</title>
+    <para>
+    Here is the short story:
+<programlisting>
+./configure
+make
+make install
+</programlisting>
+    </para>
+    <para>
+    The longer story is there are a lot of possible configure options.
+    Two of the more important configure options are 
+    <literal>--prefix</literal> and <literal>--with-double</literal>.
+    Here is the complete list of configuration options:
+<screen>
+./configure --help
+No defaults file found, performing full configure.
+Usage: configure [options] [host]
+Options: [defaults in brackets after descriptions]
+Configuration:
+  --cache-file=FILE       cache test results in FILE
+  --help                  print this message
+  --no-create             do not create output files
+  --quiet, --silent       do not print `checking...' messages
+  --version               print the version of autoconf that created configure
+Directory and file names:
+  --prefix=PREFIX         install architecture-independent files in PREFIX
+                          [/usr/local/plplot]
+  --exec-prefix=EPREFIX   install architecture-dependent files in EPREFIX
+                          [same as prefix]
+  --bindir=DIR            user executables in DIR [EPREFIX/bin]
+  --sbindir=DIR           system admin executables in DIR [EPREFIX/sbin]
+  --libexecdir=DIR        program executables in DIR [EPREFIX/libexec]
+  --datadir=DIR           read-only architecture-independent data in DIR
+                          [PREFIX/share]
+  --sysconfdir=DIR        read-only single-machine data in DIR [PREFIX/etc]
+  --sharedstatedir=DIR    modifiable architecture-independent data in DIR
+                          [PREFIX/com]
+  --localstatedir=DIR     modifiable single-machine data in DIR [PREFIX/var]
+  --libdir=DIR            object code libraries in DIR [EPREFIX/lib]
+  --includedir=DIR        C header files in DIR [PREFIX/include]
+  --oldincludedir=DIR     C header files for non-gcc in DIR [/usr/include]
+  --infodir=DIR           info documentation in DIR [PREFIX/info]
+  --mandir=DIR            man documentation in DIR [PREFIX/man]
+  --srcdir=DIR            find the sources in DIR [configure dir or ..]
+  --program-prefix=PREFIX prepend PREFIX to installed program names
+  --program-suffix=SUFFIX append SUFFIX to installed program names
+  --program-transform-name=PROGRAM
+                          run sed PROGRAM on installed program names
+Host type:
+  --build=BUILD           configure for building on BUILD [BUILD=HOST]
+  --host=HOST             configure for HOST [guessed]
+  --target=TARGET         configure for TARGET [TARGET=HOST]
+Features and packages:
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --x-includes=DIR        X include files are in DIR
+  --x-libraries=DIR       X library files are in DIR
+--enable and --with options recognized:
+  --with-defaults         source defaults file at startup (yes)
+  --with-debug            compile with debugging (no)
+  --with-opt              compile with optimization (yes)
+  --with-double           use double precision floats (no)
+  --with-profile          turn on profiling option (no)
+  --with-shlib            build shared libraries (yes)
+  --with-gcc              use gcc to compile C and C++ code (yes)
+  --with-warn             enable all compilation warnings (no)
+  --with-dbmalloc         link with libdbmalloc (no)
+  --with-pkgdir=DIR       locate libraries and includes under DIR
+  --with-fseek            use fseek/ftell rather than fsetpos/fgetpos (no)
+  --with-rpath            link libraries with -rpath option (yes)
+  --enable-f77            compile Fortran-77 interface code (yes)
+  --enable-cxx            compile C++ interface code (yes)
+  --enable-python         compile python interface code (yes)
+  --enable-tcl            compile Tcl interface code (yes)
+  --enable-itcl           enable incr Tcl interface code (yes)
+  --with-x                use the X Window System
+  --with-gtk-prefix=PFX   Prefix where GTK is installed (optional)
+  --with-gtk-exec-prefix=PFX Exec prefix where GTK is installed (optional)
+  --disable-gtktest       Do not try to compile and run a test GTK program
+  --with-gnome-includes   Specify location of GNOME headers
+  --with-gnome-libs       Specify location of GNOME libs
+  --with-gnome            Specify prefix for GNOME files
+  --enable-plmeta         enable plmeta device driver ()
+  --enable-null           enable null device driver ()
+  --enable-xterm          enable xterm device driver ()
+  --enable-tek4010        enable tek4010 device driver ()
+  --enable-tek4107        enable tek4107 device driver ()
+  --enable-mskermit       enable mskermit device driver ()
+  --enable-conex          enable conex device driver ()
+  --enable-linuxvga       enable linuxvga device driver ()
+  --enable-vlt            enable vlt device driver ()
+  --enable-versaterm      enable versaterm device driver ()
+  --enable-dg300          enable dg300 device driver ()
+  --enable-ps             enable ps device driver ()
+  --enable-xfig           enable xfig device driver ()
+  --enable-ljii           enable ljii device driver ()
+  --enable-hp7470         enable hp7470 device driver ()
+  --enable-hp7580         enable hp7580 device driver ()
+  --enable-lj_hpgl        enable lj_hpgl device driver ()
+  --enable-imp            enable imp device driver ()
+  --enable-xwin           enable xwin device driver (yes)
+  --enable-tk             enable tk device driver (yes)
+  --enable-pbm            enable pbm device driver ()
+  --enable-gnome          enable gnome device driver (no)
+</screen>
+    </para>
+
+    <para>
+    The configure script looks for default
+    configuration options first in <filename>./cf_plplot.in</filename>.
+    If that file is not found, the script then looks in
+    <filename>$HOME/config/cf_plplot.in</filename>.
+    Finally, if neither file is found or if the found file
+    does not have a particular default option, then the script
+    uses the above defaults.  Here is one example of a default
+    configuration file.  Adapt this for your needs or else use
+    the command-line parameters for the configuration file.
+<programlisting>
+# --*-sh-*---------------------------------------------------------------
+#
+# PLplot configure script default variables.
+#
+#
+# Note: the internal representation of the --with-&lt;option> and
+# --enable-&lt;option> command line switches actually uses an underscore,
+# e.g. with_&lt;option> and enable_&lt;option>.  Don't forget!
+#
+# -----------------------------------------------------------------------
+
+# Method to turn off Fortran and C++ bindings.
+ 
+enable_cxx="no" 
+enable_f77="no" 
+  
+# Devices are selected by --enable or --disable on the command line, but 
+# only shell variables of the form enable_&lt;option> are recognized here. 
+   
+enable_tek4010="no" 
+enable_mskermit="no" 
+enable_conex="no" 
+enable_vlt="no" 
+enable_versaterm="no" 
+enable_xfig="no" 
+    
+enable_dg300="no" 
+enable_imp="no" 
+enable_tek4107="no" 
+enable_hp7470="no" 
+enable_hp7580="no"
+</programlisting>
+    </para>
+    
+    </sect2>
+
+    <sect2> 
+    <title>Linux/Unix Building of C Programmes that Use the 
+    Installed PLplot Libraries</title> 
+    
+    <para> This is incomplete.  NEEDS DOCUMENTATION. 
+    <filename>$prefix/bin/plplot-config</filename> is a
+    useful tool for helping with building of C programmes that use 
+    the PLplot libraries.
+<screen>
+./plplot-config --help
+Usage: plplot-config [OPTIONS]
+Options:
+        [--prefix[=DIR]]
+	[--version]
+	[--libs]
+	[--cflags]
+	[--with-c++]
+	[--help]
+</screen>
+
+For example, the <literal>--cflags</literal> parameter displays the
+flags for compiling, and the <literal>--libs</literal> parameter
+displays the flags for linking your application.  The displayed flags
+are exactly consistent with the configuration specified when PLplot
+was last built and installed.
+    </para>
+
+    </sect2>
+
+  </sect1>
+
+</chapter>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document: ("plplotdoc.xml" "book" "chapter" "")
+sgml-default-dtd-file:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:("/usr/lib/sgml/catalog")
+sgml-local-ecat-files:nil
+End:
+-->

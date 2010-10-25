@@ -1,0 +1,132 @@
+# DAKOTA INPUT FILE - dakota_sbo_textbook.in
+
+# Demonstrates the use of approximation models and a trust region
+# optimization strategy in performing constrained minimization on
+# the textbook test function.
+#
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# seperated by a comma.
+
+# These tests exercise the "correction" capabilities of the surrogate
+# based optimization strategy. Here, the options are "none," "additive
+# zeroth_order," "multiplicative zeroth_order," "additive first_order,"
+# and "multiplicative first_order."  The "none" case is the default
+# setting which is invoked if the "correction" keyword is omitted.
+
+# Processor specification for parallel tests:
+# p0=2
+
+strategy,
+	single_method
+#	graphics
+	method_pointer = 'SBLO'
+
+method,
+	id_method = 'SBLO'
+	surrogate_based_local
+	model_pointer = 'SURROGATE'
+	approx_method_pointer = 'NLP'
+	max_iterations = 50
+	trust_region
+	  initial_size = 0.10
+	  contraction_factor = 0.5
+	  expansion_factor   = 1.50
+
+method,
+	id_method = 'NLP'
+	conmin_mfd
+#	optpp_cg
+#	npsol
+#	dot_bfgs
+#	dot_fr
+#	dot_mmfd
+	  max_iterations = 50
+	  convergence_tolerance = 1e-4
+
+model,
+	id_model = 'SURROGATE'
+	responses_pointer = 'SURROGATE_RESP'
+	surrogate global
+	  dace_method_pointer = 'SAMPLING'
+#	  reuse_samples region
+#	  correction additive       zeroth_order #1
+#	  correction multiplicative zeroth_order #2
+#	  correction additive       first_order	 #3,#p0
+#	  correction multiplicative first_order	 #4
+#	  use_derivatives
+#	  neural_network
+	  polynomial quadratic
+#	  kriging correlations = 1.0 1.0
+#	  mars
+# 	surrogate local taylor_series
+#	  actual_model_pointer = 'TRUTH'
+
+variables,
+	continuous_design = 2
+	  initial_point    2.0    2.0
+	  upper_bounds     5.8    2.9
+	  lower_bounds     0.5   -2.9
+	  descriptors      'x1'   'x2'
+
+responses,
+	id_responses = 'SURROGATE_RESP'
+	num_objective_functions = 1
+	num_nonlinear_inequality_constraints = 2
+#	analytic_gradients
+#	no_gradients
+  	numerical_gradients
+  	  method_source dakota
+  	  interval_type forward
+  	  fd_gradient_step_size = .0001
+#	analytic_hessians
+	no_hessians
+
+###############################################
+# SAMPLING method specifications for building #
+# surrogate function(s)			      #
+###############################################
+method,
+	id_method = 'SAMPLING'
+	model_pointer = 'TRUTH'
+#	dace central_composite
+#	dace box_behnken
+	dace lhs
+	  seed = 12345
+	  samples = 10
+#	dace oas seed = 5
+#	  samples = 49 symbols = 7
+
+model,
+	id_model = 'TRUTH'
+	single
+	  interface_pointer = 'TRUE_FN'
+	  responses_pointer = 'TRUE_RESP'
+
+interface,
+	system #asynchronous
+	id_interface = 'TRUE_FN'
+ 	  analysis_driver = 'text_book'
+
+responses,
+	id_responses = 'TRUE_RESP'
+	num_objective_functions = 1
+	num_nonlinear_inequality_constraints = 2
+#	analytic_gradients		#3,#4
+	no_gradients		 	#0,#1,#2
+#  	numerical_gradients		#p0
+#  	  method_source dakota		#p0
+#  	  interval_type central		#p0
+#  	  fd_gradient_step_size = 1.e-9	#p0
+	no_hessians

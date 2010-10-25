@@ -1,0 +1,13 @@
+This file briefly describes how to add PLplot API to Tcl.
+
+The two important files are plapi.tpl (for simple wrappers for the PLplot
+API) and tclAPI.c (for more complicated cases).  Add additional API by
+editing these files appropriately using other APIs defined within these
+files as a guide.  If plapi.tpl has been changed, then the Makefile
+generates the files tclgen.c, tclgen.h, tclgen_s.h using the command
+
+perl pltclgen
+
+tclAPI.c includes the generated files tclgen.c, tclgen.h, tclgen_s.h
+where appropriate and also adds additional more complicated API as required
+to define the overall PLplot API for Tcl.

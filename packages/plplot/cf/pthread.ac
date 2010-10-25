@@ -1,0 +1,50 @@
+dnl cf/pthread.ac for PLplot  -*- autoconf -*-
+dnl
+dnl ------------------------------------------------------------------------
+dnl Check for pthreads
+dnl ------------------------------------------------------------------------
+dnl 
+dnl Copyright (C) 1994, 2004  Maurice LeBrun
+dnl Copyright (C) 2002, 2003, 2004  Rafael Laboissiere
+dnl Copyright (C) 2002, 2003, 2004  Alan W. Irwin
+dnl Copyright (C) 2003, 2004  Joao Cardoso
+dnl
+dnl This file is part of PLplot.
+dnl
+dnl PLplot is free software; you can redistribute it and/or modify
+dnl it under the terms of the GNU Library General Public License as published
+dnl by the Free Software Foundation; version 2 of the License.
+dnl
+dnl PLplot is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU Library General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU Library General Public License
+dnl along with the file PLplot; if not, write to the Free Software
+dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+
+PL_ARG_WITH(pthreads, [use pthreads with the xwin driver], no)
+
+PTHREADLIBS=""
+
+if test "$with_pthreads" = "yes" -a "$enable_xwin" = "yes"; then
+    AC_CHECK_LIB(pthread, pthread_create, [
+        AC_DEFINE(HAVE_PTHREAD, [], [Define if pthreads is available])
+        PTHREADLIBS="-lpthread" ], [ with_pthreads="no"])
+
+    case "$host_os" in
+        linux*)
+            PLPLOT_MUTEX_RECURSIVE=PTHREAD_MUTEX_RECURSIVE_NP
+	;;
+	*)
+            PLPLOT_MUTEX_RECURSIVE=PTHREAD_MUTEX_RECURSIVE
+        ;;
+    esac
+
+    AC_DEFINE_UNQUOTED(PLPLOT_MUTEX_RECURSIVE, $PLPLOT_MUTEX_RECURSIVE,
+              [Portable definition for PTHREAD_MUTEX_RECURSIVE])
+
+fi
+
+AC_SUBST(PTHREADLIBS)

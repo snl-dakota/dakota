@@ -1,0 +1,283 @@
+		PLPLOT DOCUMENTATION IN THE DOCBOOK FORMAT
+		    (Notes for contributors/developers)
+
+	      Authors: Rafael Laboissière <rafael@icp.inpg.fr>
+	              Alan W. Irwin <irwin@beluga.phys.uvic.ca>
+     $Id: README.developers 3186 2006-02-15 18:17:33Z slbrow $
+
+
+
+Introduction
+============
+
+You will find in this directory tree the latest PLplot documentation in
+DocBook 4.1 XML format.  You will find in the current file
+(README.developers) instructions for building the documentation from the
+DocBook source files in this directory. The documentation that is built
+includes man pages of the API as well as complete versions of the
+documentation in html, dvi, postscript, pdf, and info form.
+
+This documentation project started as a conversion (under the direction of
+Rafael Laboissière) of the old (1995 or earlier) version of the PLplot
+documentation in latexinfo format to DocBook SGML.  Since that conversion,
+there has been a lot of work by RL to upgrade to DocBook 4.1 XML, improve
+the configuration of the documentation builds, and to extend the output
+forms to many different formats. The build system has now been essentially
+stabilized.
+
+Another aspect of this project (under the direction of Alan W. Irwin) has
+been to improve the content of the documentation that was converted from the
+1995 version.
+
+The content improvement that has occurred includes a complete API
+description.  This XML source for the API has been parsed both to generate
+man pages and perl wrappers.  We have also revised some sections and added
+several others.  Despite this extensive effort there is still quite a bit to
+do as evidenced by the many times the string "NEEDS DOCUMENTATION" appears
+in the results.  Thus, AWI asks for your help to address some of these
+remaining documentation issues.
+
+Configuring and Building
+========================
+
+If you help with improving the content, you will want to build the
+documentation from the DocBook source so you can immediately see and
+evaluate the results of your efforts.
+
+Here is how.  It is assumed you have the appropriate automake, autoconf, and
+DocBook software packages loaded on your machine (see Package Lists, below).
+Although in the past we built the documentation successfully on RH 6.2, that
+distribution is now so outdated (and no longer available to us) that
+we have removed those instructions.  Here we concentrate on the Debian
+woody instructions.  Until we gain experience ourselves with other
+modern versions of distributions, you will have to infer what to do for them
+based on our Debian woody experience.
+
+A. Package Lists.
+
+Debian woody: I am not sure all of these are required, but this is what
+I have on my system.  I am positive the -doc packages are not required, but
+it is nice to have them.
+
+(1) docbook-xml docbook docbook-dsssl docbook-xsl-stylesheets (docbook-doc)
+
+(2) tetex-extra (tetex-doc)
+
+(3) jadetex
+
+(4) sp
+
+(5) tidy
+
+(6) Additional packages (mostly perl modules) required by docbook2x:
+libxml2
+libxml-parser-perl  (XML::Parser)
+libxml-writer-perl  (XML::Writer)
+libxml-catalog-perl  (XML::Catalog)
+libxml-dom-perl  (XML::Dom)
+libxml-perl (XML::Parser::PerlSAX)
+libtext-wrapi18n-perl (Text::Wrap)
+sgmlspl (which brought in libsgmls-perl)
+libxslt1-dev (which brought in libxslt1)
+
+B. docbook2X.
+
+Use at least version 0.8.2 available at http://docbook2x.sourceforge.net.
+This upstream version has bugs that are fixed in the Debian package
+available at http://packages.debian.org/docbook2x.
+
+C. Configuration
+
+Within this current directory execute
+
+setenv YOUR_SHELL1_USERNAME airwin
+
+but you will want to adjust to the location of the docbook2X perl
+subdirectory on your own machine and your own shell1 username as well.
+YOUR_SHELL1_USERNAME is only used if you are updating the live website (see
+below).
+
+Now execute:
+
+./bootstrap.sh #if you are using a fresh copy
+rm -f config.cache #if you are rebuilding with new configuration from old copy
+
+Now execute:
+
+./configure --with-www-user=$YOUR_SHELL1_USERNAME
+
+The configure script checks for the following programs: jade, jadetex,
+pdfjadetex, perl, and dvips. You should have them installed (see package list
+above) and present in the path in order to build the varous versions of the
+output documentation.  You may also specify the locations of these programs
+with the configure options --with-<prog>.  Type `./configure --help' for
+details.
+
+The jade program needs to access several DTDs (Document Type Definition).
+The availability of the DTDs in the system is checked as well by the
+configure script.  If they are not found, it is possible to specify them
+with the option `--with-sgml-catalogs=CATALOGS', where `CATALOGS' must be a
+colon (:) separated list of files.  These files must exist in the systems
+and contain entries mapping DTD public identifiers into system identifiers.
+
+On Debian, the default catalog is /etc/sgml/catalog, and it is set up
+perfectly to find all the DTD's required.  Our catalog experience with RH
+6.2 was terrible, but it now looks like RedHat 7.x has a similar catalog
+setup to Debian.
+
+On SuSE-8.1, the configure options must be:
+--with-sgml-catalogs=/etc/sgml/catalog:/usr/share/sgml/CATALOG.db42xml \
+--with-xml-declaration=/usr/share/sgml/openjade/xml.dcl
+
+The configure script also checks for certain essential perl modules (see
+package list above).
+
+If the ./configure completes normally without warning messages or error
+messages, then that is a sign you can at least try the next step. But if
+there are any problems in the ./configure step, then you probably have to
+add packages that you are missing and/or sort out catalog problems
+(see note on SGML Catalogs, below).
+
+D. Tex resources
+
+If you run out of tex resources (which happened to me with default resources
+with Debian woody) then you must add to them.  Here is the way to do it with
+Debian woody.
+
+cd /etc/texmf
+edit texmf.cnf
+
+typically the resource that is exhausted is save_size, and in fact
+the default 5000 is a ridiculously small value.  So change all variations
+(save_size, save_size.context, save_size.jadetex, and save_size.pdfjadetex)
+to 50000.
+
+To make these new values available:
+dpkg-reconfigure tetex-bin
+dpkg-reconfigure jadetex
+
+[Under SuSE-8.1 and some other distributions, that's enough to execute
+"texconfig init" after editing /etc/texmf/texmf.cnf]
+
+E. Build documentation
+
+If you don't run out of tex resources, then
+
+make
+
+builds all forms of the documentation.
+
+(To just build the html part use the command
+
+make plplotdoc-html-0.4.3.tar.gz
+
+)
+
+F. Test documentation
+
+cd src
+
+1.  man pages.
+
+These are the tcsh commands to check the man pages. Do the bash command
+equivalent if that is your shell of choice
+
+foreach tmp (*.3plplot)
+nroff -man $tmp |less
+end
+
+2. info pages.
+
+info --file plplotdoc.info
+
+3. web pages.
+
+Browse with your favorite browser the index.html file within the current src
+directory.  Looks good!  Mozilla has all the greek letters in Table 3.3.
+Konqueror probably would as well if I loaded international support for it.
+
+4. dvi file
+
+xdvi plplotdoc-0.4.3.dvi
+
+(Note, there is an xdvi facility to follow cross-references, and that works
+well [unlike current info results])
+
+5. postscript file
+
+gv plplotdoc-0.4.3.ps.gz
+
+Looks good!
+
+6. pdf file
+
+acroread plplotdoc-0.4.3.pdf
+
+Some problems (ff and fi get translated into weird character strings), but
+on the whole not too bad.  For example, cross references seem to work well.
+
+G. Installing at the live site for plplot.sf.net
+
+After the output results are tested (see under previous heading), the
+results should be copied (assuming you have made a significant change to the
+documentation) to the plplot live web site if you have an account on
+shell1.sourceforge.net.
+
+The following command uses ssh a lot so you will be entering your password
+a lot at shell1 unless you remember to execute ssh-agent and ssh-add
+first.  It is only this command which uses your login id at shell1
+which you entered (didn't you?) in the ./configure step above.
+
+To copy all results to the live website use:
+
+make www-install
+
+(You should use this command with discretion after you have carefully
+checked all the documentation forms you have created since it completely
+removes the old documentation from the live web site and replaces it with
+exactly what you have created.)
+
+Congratulations!  You are done (at least until you add some more
+documentation to the src/*.xml files, the DocBook source files for all the
+PLplot documentation).
+
+Appendix: Note on SGML Catalogs
+
+The jade program, as well as the programs in the sp suite
+(http://www.jclark.com/sp), work by loading the definitions of DTDs, which
+are files present in the system.  These files are referred to as "system
+identifiers" in the SGML jargon.
+
+The PLplot DocBook XML sources uses "public identifiers" for declaring the
+included DTDs.  Here is the complete list that is currently needed by
+the PLplot documentation project:
+
+"-//James Clark//DTD DSSSL Style Sheet//EN"
+"-//Norman Walsh//DOCUMENT DocBook HTML Stylesheet//EN"
+"-//Norman Walsh//DOCUMENT DocBook Print Stylesheet//EN"
+"-//OASIS//DTD DocBook XML V4.1//EN"
+
+You will find where these public identifiers are used in the XML source by:
+
+find src -type f | xargs grep PUBLIC
+src/plplotdoc-html.dsl.in:<!DOCTYPE style-sheet PUBLIC "@DSSSL_DTD_PUBID@" [
+src/plplotdoc-html.dsl.in:  PUBLIC "@DB_SS_HTML_PUBID@"
+src/plplotdoc-print.dsl.in:<!DOCTYPE style-sheet PUBLIC "@DSSSL_DTD_PUBID@" [
+src/plplotdoc-print.dsl.in:  PUBLIC "@DB_SS_PRINT_PUBID@"
+src/plplotdoc.xml.in:<!DOCTYPE book PUBLIC "@DOCBOOK_DTD_PUBID@" [
+
+where the various symbols are defined in configure
+grep PUBID= configure
+DSSSL_DTD_PUBID="-//James Clark//DTD DSSSL Style Sheet//EN"
+DB_SS_HTML_PUBID="-//Norman Walsh//DOCUMENT DocBook HTML Stylesheet//EN"
+DB_SS_PRINT_PUBID="-//Norman Walsh//DOCUMENT DocBook Print Stylesheet//EN"
+DOCBOOK_DTD_PUBID="-//OASIS//DTD DocBook XML V4.1//EN"
+
+**the key on any Linux/Unix docbook system is to find the catalog file(s)
+with the correct mapping between the required pubid's and the system files.**
+
+On Debian GNU/Linux (version woody) systems, the actual files (system
+identifiers) that corresponds to the above 4 public identifiers are properly
+identified with the default catalog file: /usr/lib/sgml/catalog.  This
+may be true on other distributions as well, but if not, the above
+information may help to sort out the problem.

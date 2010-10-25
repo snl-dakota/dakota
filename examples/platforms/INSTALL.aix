@@ -1,0 +1,32 @@
+===============================
+IBM AIX Platform-specific Notes
+===============================
+
+--------------------------
+configure-time environment
+--------------------------
+  setenv CC "xlc"
+  setenv CXX "xlC"
+  setenv F77 "xlf"
+  setenv FC "xlf90"
+  setenv LAPACK_LIBS "/usr/netpub/LAPACK/liblapack.a"
+
+--------------------
+run-time environment
+--------------------
+Serial executions of parallel-enabled DAKOTA executables (i.e.,
+executables built with MPI) requires certain environment variables to
+be set.  In particular, the following should be set (at a minimum):
+
+  setenv MP_EUILIB ip # Or 'us', depending on your comm. subsystem.
+  setenv MP_HOSTFILE machines # See below.
+  setenv MP_NODES 1 # Or more; this is the minimum.
+  setenv MP_RESD no # Shuts LoadLeveler off
+
+Where the 'machines' file contains the nodes you wish DAKOTA to use
+for parallel runs.  In the case that your POE environment has been
+customized by your system administrator (e.g., for ASC White) to use
+pools, you would set MP_RMPOOL to be an integer representing the
+resource pool you want DAKOTA to use.  Be aware that MP_RMPOOL and
+MP_HOSTFILE are mutally exclusive.  For more information, refer to the
+IBM Parallel Environment documentation.

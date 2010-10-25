@@ -1,0 +1,33 @@
+====================================
+32-bit Linux Platform-specific Notes
+====================================
+
+--------------------------
+configure-time environment
+--------------------------
+
+Paths for mpi on Linux, i686 architecture (likely also needed at run-time): 
+  set path = (/usr/local/mpi/mpich/32Bit/1.2.7/gcc-3.4.3/sbin $path)
+  set path = (/usr/local/mpi/mpich/32Bit/1.2.7/gcc-3.4.3/bin $path)
+
+  setenv LDFLAGS "-static-libgcc"   
+
+RPM downloads such as
+
+  blas-3.0-9.i386.rpm       
+  f2c-20000510-5.i386.rpm    
+  lapack-3.0-9.i386.rpm
+  mpich-1.2.0-12.i386.rpm
+
+that may be needed to build DAKOTA (see Basic Installation above) are
+available from http://rpmfind.net, among other sites.  RPMs are
+installed as root with the command:
+
+  rpm -i <rpm_file_name>
+
+--------------------
+run-time environment
+--------------------
+
+
+

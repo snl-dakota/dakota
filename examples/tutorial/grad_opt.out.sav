@@ -1,0 +1,2530 @@
+Running MPI executable in serial mode.
+DAKOTA version 4.2+ developmental release.
+Subversion revision 6339M built Dec 10 2009 11:55:20.
+Constructing Single Method Strategy...
+Writing new restart file dakota.rst
+methodName = conmin_frcg
+gradientType = numerical
+Numerical gradients using forward differences
+to be calculated by the dakota finite difference routine.
+hessianType = none
+
+>>>>> Running Single Method Strategy.
+
+>>>>> Running conmin_frcg iterator.
+
+------------------------------
+Begin Function Evaluation    1
+------------------------------
+Parameters for function evaluation 1:
+                     -1.2000000000e+00 x1
+                      1.0000000000e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 1:
+Active set vector = { 1 }
+                      2.4200000000e+01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation    2
+------------------------------
+Parameters for function evaluation 2:
+                     -1.2000120000e+00 x1
+                      1.0000000000e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 2:
+Active set vector = { 1 }
+                      2.4202587296e+01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation    3
+------------------------------
+Parameters for function evaluation 3:
+                     -1.2000000000e+00 x1
+                      1.0000100000e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 3:
+Active set vector = { 1 }
+                      2.4199120010e+01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -2.1560798007e+02 -8.7999000000e+01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation    4
+------------------------------
+Parameters for function evaluation 4:
+                     -1.1903786595e+00 x1
+                      1.0039268878e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 4:
+Active set vector = { 1 }
+                      2.1860810042e+01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation    5
+------------------------------
+Parameters for function evaluation 5:
+                     -1.1518932973e+00 x1
+                      1.0196344390e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 5:
+Active set vector = { 1 }
+                      1.4069286748e+01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation    6
+------------------------------
+Parameters for function evaluation 6:
+                     -1.0278992922e+00 x1
+                      1.0702417888e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 6:
+Active set vector = { 1 }
+                      4.1310483078e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation    7
+------------------------------
+Parameters for function evaluation 7:
+                     -1.0279095712e+00 x1
+                      1.0702417888e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 7:
+Active set vector = { 1 }
+                      4.1310322900e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation    8
+------------------------------
+Parameters for function evaluation 8:
+                     -1.0278992922e+00 x1
+                      1.0702524912e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 8:
+Active set vector = { 1 }
+                      4.1310775686e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  1.5583042126e+00  2.7340370259e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation    9
+------------------------------
+Parameters for function evaluation 9:
+                     -1.1078744635e+00 x1
+                      9.2713465299e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 9:
+Active set vector = { 1 }
+                      1.3458211491e+01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   10
+------------------------------
+Parameters for function evaluation 10:
+                     -1.0299950889e+00 x1
+                      1.0664915815e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 10:
+Active set vector = { 1 }
+                      4.1240179634e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   11
+------------------------------
+Parameters for function evaluation 11:
+                     -1.0300811773e+00 x1
+                      1.0663375354e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 11:
+Active set vector = { 1 }
+                      4.1240071964e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   12
+------------------------------
+Parameters for function evaluation 12:
+                     -1.0300914781e+00 x1
+                      1.0663375354e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 12:
+Active set vector = { 1 }
+                      4.1240266958e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   13
+------------------------------
+Parameters for function evaluation 13:
+                     -1.0300811773e+00 x1
+                      1.0663481988e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 13:
+Active set vector = { 1 }
+                      4.1240184476e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.8929975820e+00  1.0551270509e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   14
+------------------------------
+Parameters for function evaluation 14:
+                     -9.9344159937e-01 x1
+                      9.9309286899e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 14:
+Active set vector = { 1 }
+                      3.9776121767e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   15
+------------------------------
+Parameters for function evaluation 15:
+                     -8.4688328766e-01 x1
+                      7.0011420342e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 15:
+Active set vector = { 1 }
+                      3.4402089594e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   16
+------------------------------
+Parameters for function evaluation 16:
+                     -6.3529108056e-01 x1
+                      2.7712896458e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 16:
+Active set vector = { 1 }
+                      4.2735365845e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   17
+------------------------------
+Parameters for function evaluation 17:
+                     -8.4689175650e-01 x1
+                      7.0011420342e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 17:
+Active set vector = { 1 }
+                      3.4402893111e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   18
+------------------------------
+Parameters for function evaluation 18:
+                     -8.4688328766e-01 x1
+                      7.0012120456e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 18:
+Active set vector = { 1 }
+                      3.4401850244e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -9.4879327382e+00 -3.4187197861e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   19
+------------------------------
+Parameters for function evaluation 19:
+                     -8.2000390886e-01 x1
+                      7.0979946013e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 19:
+Active set vector = { 1 }
+                      3.4522382440e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   20
+------------------------------
+Parameters for function evaluation 20:
+                     -8.3398219219e-01 x1
+                      7.0476276403e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 20:
+Active set vector = { 1 }
+                      3.3720219138e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   21
+------------------------------
+Parameters for function evaluation 21:
+                     -8.3407992126e-01 x1
+                      7.0472755000e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 21:
+Active set vector = { 1 }
+                      3.3720181267e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   22
+------------------------------
+Parameters for function evaluation 22:
+                     -8.3408826206e-01 x1
+                      7.0472755000e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 22:
+Active set vector = { 1 }
+                      3.3720235902e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   23
+------------------------------
+Parameters for function evaluation 23:
+                     -8.3407992126e-01 x1
+                      7.0473459728e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 23:
+Active set vector = { 1 }
+                      3.3720308706e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -6.5503005376e-01  1.8083517172e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   24
+------------------------------
+Parameters for function evaluation 24:
+                     -7.6894857772e-01 x1
+                      5.9505793832e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 24:
+Active set vector = { 1 }
+                      3.1306049057e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   25
+------------------------------
+Parameters for function evaluation 25:
+                     -5.0842320352e-01 x1
+                      1.5637949160e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 25:
+Active set vector = { 1 }
+                      3.3180809862e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   26
+------------------------------
+Parameters for function evaluation 26:
+                     -6.3882699304e-01 x1
+                      3.7595630638e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 26:
+Active set vector = { 1 }
+                      2.7890751481e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   27
+------------------------------
+Parameters for function evaluation 27:
+                     -6.3883338131e-01 x1
+                      3.7595630638e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 27:
+Active set vector = { 1 }
+                      2.7891485648e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   28
+------------------------------
+Parameters for function evaluation 28:
+                     -6.3882699304e-01 x1
+                      3.7596006594e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 28:
+Active set vector = { 1 }
+                      2.7890509803e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.1492429289e+01 -6.4283481770e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   29
+------------------------------
+Parameters for function evaluation 29:
+                     -5.6220685854e-01 x1
+                      2.8077999596e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 29:
+Active set vector = { 1 }
+                      2.5650749542e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   30
+------------------------------
+Parameters for function evaluation 30:
+                     -4.0864444819e-01 x1
+                      9.0027216295e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 30:
+Active set vector = { 1 }
+                      2.5766105764e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   31
+------------------------------
+Parameters for function evaluation 31:
+                     -4.8352704323e-01 x1
+                      1.8304518286e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 31:
+Active set vector = { 1 }
+                      2.4584414085e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   32
+------------------------------
+Parameters for function evaluation 32:
+                     -4.8353187850e-01 x1
+                      1.8304518286e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 32:
+Active set vector = { 1 }
+                      2.4585032216e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   33
+------------------------------
+Parameters for function evaluation 33:
+                     -4.8352704323e-01 x1
+                      1.8304701332e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 33:
+Active set vector = { 1 }
+                      2.4584228286e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.2783781702e+01 -1.0150460689e+01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   34
+------------------------------
+Parameters for function evaluation 34:
+                     -4.6634062310e-01 x1
+                      1.9669138600e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 34:
+Active set vector = { 1 }
+                      2.1933447682e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   35
+------------------------------
+Parameters for function evaluation 35:
+                     -4.5047203020e-01 x1
+                      2.0929122008e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 35:
+Active set vector = { 1 }
+                      2.1079219226e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   36
+------------------------------
+Parameters for function evaluation 36:
+                     -4.4917010030e-01 x1
+                      2.1032496648e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 36:
+Active set vector = { 1 }
+                      2.1074405051e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   37
+------------------------------
+Parameters for function evaluation 37:
+                     -4.4917459200e-01 x1
+                      2.1032496648e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 37:
+Active set vector = { 1 }
+                      2.1074466081e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   38
+------------------------------
+Parameters for function evaluation 38:
+                     -4.4917010030e-01 x1
+                      2.1032706973e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 38:
+Active set vector = { 1 }
+                      2.1074441110e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.3587310274e+00  1.7144478207e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   39
+------------------------------
+Parameters for function evaluation 39:
+                     -3.5776629208e-01 x1
+                      1.2215387328e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 39:
+Active set vector = { 1 }
+                      1.8469431894e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   40
+------------------------------
+Parameters for function evaluation 40:
+                      7.8489408130e-03 x1
+                     -2.3053049954e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 40:
+Active set vector = { 1 }
+                      6.3016356320e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   41
+------------------------------
+Parameters for function evaluation 41:
+                     -3.0403304137e-01 x1
+                      7.0321027928e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 41:
+Active set vector = { 1 }
+                      1.7494097711e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   42
+------------------------------
+Parameters for function evaluation 42:
+                     -3.0403608170e-01 x1
+                      7.0321027928e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 42:
+Active set vector = { 1 }
+                      1.7494258778e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   43
+------------------------------
+Parameters for function evaluation 43:
+                     -3.0403304137e-01 x1
+                      7.0321731138e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 43:
+Active set vector = { 1 }
+                      1.7494066609e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -5.2976788487e+00 -4.4229421428e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   44
+------------------------------
+Parameters for function evaluation 44:
+                     -2.1374272897e-01 x1
+                      2.4007617328e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 44:
+Active set vector = { 1 }
+                      1.5201664410e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   45
+------------------------------
+Parameters for function evaluation 45:
+                     -2.4976480074e-02 x1
+                     -7.2817928630e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 45:
+Active set vector = { 1 }
+                      1.5899458958e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   46
+------------------------------
+Parameters for function evaluation 46:
+                     -1.2713227538e-01 x1
+                     -2.0418250663e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 46:
+Active set vector = { 1 }
+                      1.4042431427e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   47
+------------------------------
+Parameters for function evaluation 47:
+                     -1.2713354670e-01 x1
+                     -2.0418250663e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 47:
+Active set vector = { 1 }
+                      1.4042483736e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   48
+------------------------------
+Parameters for function evaluation 48:
+                     -1.2713227538e-01 x1
+                     -2.0418454846e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 48:
+Active set vector = { 1 }
+                      1.4042446366e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -4.1145268403e+00 -7.3161936392e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   49
+------------------------------
+Parameters for function evaluation 49:
+                     -1.1207629276e-01 x1
+                      6.3533536053e-03 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 49:
+Active set vector = { 1 }
+                      1.2405672867e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   50
+------------------------------
+Parameters for function evaluation 50:
+                     -1.0651560380e-01 x1
+                      1.6241022037e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 50:
+Active set vector = { 1 }
+                      1.2267733227e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   51
+------------------------------
+Parameters for function evaluation 51:
+                     -1.0618276816e-01 x1
+                      1.6832849507e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 51:
+Active set vector = { 1 }
+                      1.2267295300e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   52
+------------------------------
+Parameters for function evaluation 52:
+                     -1.0618382999e-01 x1
+                      1.6832849507e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 52:
+Active set vector = { 1 }
+                      1.2267316284e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   53
+------------------------------
+Parameters for function evaluation 53:
+                     -1.0618276816e-01 x1
+                      1.6833017835e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 53:
+Active set vector = { 1 }
+                      1.2267297171e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.9763017350e+00  1.1116306832e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   54
+------------------------------
+Parameters for function evaluation 54:
+                     -1.8263905436e-02 x1
+                     -5.4788360176e-03 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 54:
+Active set vector = { 1 }
+                      1.0402397878e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   55
+------------------------------
+Parameters for function evaluation 55:
+                      3.3341154546e-01 x1
+                     -9.4725578114e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 55:
+Active set vector = { 1 }
+                      4.6833614778e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   56
+------------------------------
+Parameters for function evaluation 56:
+                      2.7584944178e-02 x1
+                     -1.7114167533e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 56:
+Active set vector = { 1 }
+                      9.7754294892e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   57
+------------------------------
+Parameters for function evaluation 57:
+                      2.7585220027e-02 x1
+                     -1.7114167533e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 57:
+Active set vector = { 1 }
+                      9.7754246684e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   58
+------------------------------
+Parameters for function evaluation 58:
+                      2.7584944178e-02 x1
+                     -1.7114338675e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 58:
+Active set vector = { 1 }
+                      9.7754356075e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.7475953478e+00 -3.5750364497e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   59
+------------------------------
+Parameters for function evaluation 59:
+                      9.2519432460e-02 x1
+                     -3.8018356114e-03 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 59:
+Active set vector = { 1 }
+                      8.3880209616e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   60
+------------------------------
+Parameters for function evaluation 60:
+                      2.6177393728e-01 x1
+                      3.0897323603e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 60:
+Active set vector = { 1 }
+                      6.8656639479e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   61
+------------------------------
+Parameters for function evaluation 61:
+                      2.6248994301e-01 x1
+                      3.1044113178e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 61:
+Active set vector = { 1 }
+                      6.8723524639e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> Initial map for analytic portion of response
+      augmented with data requirements for differencing:
+
+------------------------------
+Begin Function Evaluation   62
+------------------------------
+Parameters for function evaluation 62:
+                      2.6177393728e-01 x1
+                      3.0897323603e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 62:
+Active set vector = { 1 }
+                      6.8656639479e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   63
+------------------------------
+Parameters for function evaluation 63:
+                      2.6177655502e-01 x1
+                      3.0897323603e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 63:
+Active set vector = { 1 }
+                      6.8657284407e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   64
+------------------------------
+Parameters for function evaluation 64:
+                      2.6177393728e-01 x1
+                      3.0897632576e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 64:
+Active set vector = { 1 }
+                      6.8656406958e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  2.4636821693e+00 -7.5256232307e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   65
+------------------------------
+Parameters for function evaluation 65:
+                      2.5637886970e-01 x1
+                      4.7377227713e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 65:
+Active set vector = { 1 }
+                      5.8665526868e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   66
+------------------------------
+Parameters for function evaluation 66:
+                      2.5187057165e-01 x1
+                      6.1148384141e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 66:
+Active set vector = { 1 }
+                      5.6022223511e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   67
+------------------------------
+Parameters for function evaluation 67:
+                      2.5181779325e-01 x1
+                      6.1309602332e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 67:
+Active set vector = { 1 }
+                      5.6021870661e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   68
+------------------------------
+Parameters for function evaluation 68:
+                      2.5182031143e-01 x1
+                      6.1309602332e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 68:
+Active set vector = { 1 }
+                      5.6021547199e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   69
+------------------------------
+Parameters for function evaluation 69:
+                      2.5181779325e-01 x1
+                      6.1310215428e-02 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 69:
+Active set vector = { 1 }
+                      5.6021844883e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.2845082600e+00 -4.2045842338e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   70
+------------------------------
+Parameters for function evaluation 70:
+                      3.2620153197e-01 x1
+                      1.0054586277e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 70:
+Active set vector = { 1 }
+                      4.5744018366e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   71
+------------------------------
+Parameters for function evaluation 71:
+                      6.2373648683e-01 x1
+                      2.5749090450e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 71:
+Active set vector = { 1 }
+                      1.8722802515e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   72
+------------------------------
+Parameters for function evaluation 72:
+                      3.7535640919e-01 x1
+                      1.2647429279e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 72:
+Active set vector = { 1 }
+                      4.1096789490e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   73
+------------------------------
+Parameters for function evaluation 73:
+                      3.7536016276e-01 x1
+                      1.2647429279e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 73:
+Active set vector = { 1 }
+                      4.1097133209e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   74
+------------------------------
+Parameters for function evaluation 74:
+                      3.7535640919e-01 x1
+                      1.2647555754e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 74:
+Active set vector = { 1 }
+                      4.1096424801e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  9.1571560991e-01 -2.8835017514e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   75
+------------------------------
+Parameters for function evaluation 75:
+                      4.0841551440e-01 x1
+                      1.6547767430e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 75:
+Active set vector = { 1 }
+                      3.5014791403e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   76
+------------------------------
+Parameters for function evaluation 76:
+                      4.3892188948e-01 x1
+                      2.0146932557e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 76:
+Active set vector = { 1 }
+                      3.2258241956e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   77
+------------------------------
+Parameters for function evaluation 77:
+                      4.5434671306e-01 x1
+                      2.1966764870e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 77:
+Active set vector = { 1 }
+                      3.1525856673e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   78
+------------------------------
+Parameters for function evaluation 78:
+                      4.5435125653e-01 x1
+                      2.1966764870e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 78:
+Active set vector = { 1 }
+                      3.1524268021e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   79
+------------------------------
+Parameters for function evaluation 79:
+                      4.5434671306e-01 x1
+                      2.1966984538e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 79:
+Active set vector = { 1 }
+                      3.1526438256e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -3.4965617125e+00  2.6475622735e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   80
+------------------------------
+Parameters for function evaluation 80:
+                      4.6580801475e-01 x1
+                      2.1098926335e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 80:
+Active set vector = { 1 }
+                      2.8894650379e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   81
+------------------------------
+Parameters for function evaluation 81:
+                      4.6418151950e-01 x1
+                      2.1222082962e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 81:
+Active set vector = { 1 }
+                      2.8815357280e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   82
+------------------------------
+Parameters for function evaluation 82:
+                      4.6414333828e-01 x1
+                      2.1224974006e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 82:
+Active set vector = { 1 }
+                      2.8815315575e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   83
+------------------------------
+Parameters for function evaluation 83:
+                      4.6414797971e-01 x1
+                      2.1224974006e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 83:
+Active set vector = { 1 }
+                      2.8815092300e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   84
+------------------------------
+Parameters for function evaluation 84:
+                      4.6414333828e-01 x1
+                      2.1225186256e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 84:
+Active set vector = { 1 }
+                      2.8815180659e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -4.8104569669e-01 -6.3564743143e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   85
+------------------------------
+Parameters for function evaluation 85:
+                      5.0727438818e-01 x1
+                      2.5188351816e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 85:
+Active set vector = { 1 }
+                      2.4574200995e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   86
+------------------------------
+Parameters for function evaluation 86:
+                      6.7979858780e-01 x1
+                      4.1041863057e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 86:
+Active set vector = { 1 }
+                      3.6989539050e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   87
+------------------------------
+Parameters for function evaluation 87:
+                      5.6906705925e-01 x1
+                      3.0866574393e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 87:
+Active set vector = { 1 }
+                      2.0872086516e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   88
+------------------------------
+Parameters for function evaluation 88:
+                      5.6907274992e-01 x1
+                      3.0866574393e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 88:
+Active set vector = { 1 }
+                      2.0873561738e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   89
+------------------------------
+Parameters for function evaluation 89:
+                      5.6906705925e-01 x1
+                      3.0866883059e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 89:
+Active set vector = { 1 }
+                      2.0871150023e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  2.5923514229e+00 -3.0340061328e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   90
+------------------------------
+Parameters for function evaluation 90:
+                      5.9380976778e-01 x1
+                      3.4224594209e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 90:
+Active set vector = { 1 }
+                      1.7573195794e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   91
+------------------------------
+Parameters for function evaluation 91:
+                      6.6732489308e-01 x1
+                      4.4201887004e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 91:
+Active set vector = { 1 }
+                      1.1176413240e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   92
+------------------------------
+Parameters for function evaluation 92:
+                      7.2286776502e-01 x1
+                      5.1740029580e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 92:
+Active set vector = { 1 }
+                      7.9441676469e-02 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   93
+------------------------------
+Parameters for function evaluation 93:
+                      7.2287499370e-01 x1
+                      5.1740029580e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 93:
+Active set vector = { 1 }
+                      7.9448419071e-02 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   94
+------------------------------
+Parameters for function evaluation 94:
+                      7.2286776502e-01 x1
+                      5.1740546980e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 94:
+Active set vector = { 1 }
+                      7.9436362848e-02 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  9.3275722609e-01 -1.0269845812e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   95
+------------------------------
+Parameters for function evaluation 95:
+                      7.1516801814e-01 x1
+                      5.2587787292e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 95:
+Active set vector = { 1 }
+                      1.0190150050e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   96
+------------------------------
+Parameters for function evaluation 96:
+                      7.2127269288e-01 x1
+                      5.1915650250e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 96:
+Active set vector = { 1 }
+                      7.7805075938e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   97
+------------------------------
+Parameters for function evaluation 97:
+                      7.2128034505e-01 x1
+                      5.1914807731e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 97:
+Active set vector = { 1 }
+                      7.7805043753e-02 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   98
+------------------------------
+Parameters for function evaluation 98:
+                      7.2128755785e-01 x1
+                      5.1914807731e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 98:
+Active set vector = { 1 }
+                      7.7803317317e-02 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   99
+------------------------------
+Parameters for function evaluation 99:
+                      7.2128034505e-01 x1
+                      5.1915326879e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 99:
+Active set vector = { 1 }
+                      7.7803907168e-02 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -2.3935703325e-01 -2.1893262072e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  100
+------------------------------
+Parameters for function evaluation 100:
+                      7.4911386077e-01 x1
+                      5.5979465252e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 100:
+Active set vector = { 1 }
+                      6.3133446794e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  101
+------------------------------
+Parameters for function evaluation 101:
+                      8.6044792367e-01 x1
+                      7.2238095336e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 101:
+Active set vector = { 1 }
+                      5.1837626213e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  102
+------------------------------
+Parameters for function evaluation 102:
+                      8.2066763373e-01 x1
+                      6.6428794912e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 102:
+Active set vector = { 1 }
+                      4.0637748399e-02 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  103
+------------------------------
+Parameters for function evaluation 103:
+                      8.2067584041e-01 x1
+                      6.6428794912e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 103:
+Active set vector = { 1 }
+                      4.0659627897e-02 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  104
+------------------------------
+Parameters for function evaluation 104:
+                      8.2066763373e-01 x1
+                      6.6429459200e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 104:
+Active set vector = { 1 }
+                      4.0625520061e-02 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  2.6660607690e+00 -1.8408188977e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  105
+------------------------------
+Parameters for function evaluation 105:
+                      8.3267606607e-01 x1
+                      6.8609496132e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 105:
+Active set vector = { 1 }
+                      3.3260031901e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  106
+------------------------------
+Parameters for function evaluation 106:
+                      8.8070979542e-01 x1
+                      7.7332301012e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 106:
+Active set vector = { 1 }
+                      1.4771521850e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  107
+------------------------------
+Parameters for function evaluation 107:
+                      9.0704923007e-01 x1
+                      8.2115476338e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 107:
+Active set vector = { 1 }
+                      8.8906062815e-03 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  108
+------------------------------
+Parameters for function evaluation 108:
+                      9.0705830056e-01 x1
+                      8.2115476338e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 108:
+Active set vector = { 1 }
+                      8.8941586115e-03 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  109
+------------------------------
+Parameters for function evaluation 109:
+                      9.0704923007e-01 x1
+                      8.2116297493e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 109:
+Active set vector = { 1 }
+                      8.8880123577e-03 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  3.9163585331e-01 -3.1588732394e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  110
+------------------------------
+Parameters for function evaluation 110:
+                      9.0395529324e-01 x1
+                      8.2365028420e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 110:
+Active set vector = { 1 }
+                      1.3469254166e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  111
+------------------------------
+Parameters for function evaluation 111:
+                      9.0657893027e-01 x1
+                      8.2153409981e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 111:
+Active set vector = { 1 }
+                      8.7398344176e-03 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  112
+------------------------------
+Parameters for function evaluation 112:
+                      9.0658239087e-01 x1
+                      8.2153130854e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 112:
+Active set vector = { 1 }
+                      8.7398329543e-03 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  113
+------------------------------
+Parameters for function evaluation 113:
+                      9.0659145669e-01 x1
+                      8.2153130854e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 113:
+Active set vector = { 1 }
+                      8.7393508332e-03 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  114
+------------------------------
+Parameters for function evaluation 114:
+                      9.0658239087e-01 x1
+                      8.2153952386e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 114:
+Active set vector = { 1 }
+                      8.7392476704e-03 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -5.3180063355e-02 -7.1243047348e-02 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  115
+------------------------------
+Parameters for function evaluation 115:
+                      9.1687725626e-01 x1
+                      8.4191952108e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 115:
+Active set vector = { 1 }
+                      7.0670481928e-03 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  116
+------------------------------
+Parameters for function evaluation 116:
+                      9.3804445183e-01 x1
+                      8.8383957209e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 116:
+Active set vector = { 1 }
+                      5.3690039949e-03 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  117
+------------------------------
+Parameters for function evaluation 117:
+                      9.4911837364e-01 x1
+                      9.0577064773e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 117:
+Active set vector = { 1 }
+                      5.0342033809e-03 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  118
+------------------------------
+Parameters for function evaluation 118:
+                      9.4912786483e-01 x1
+                      9.0577064773e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 118:
+Active set vector = { 1 }
+                      5.0154517981e-03 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  119
+------------------------------
+Parameters for function evaluation 119:
+                      9.4911837364e-01 x1
+                      9.0577970544e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 119:
+Active set vector = { 1 }
+                      5.0431695854e-03 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.9756843176e+00  9.8989787982e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  120
+------------------------------
+Parameters for function evaluation 120:
+                      9.5947169560e-01 x1
+                      9.2441387974e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 120:
+Active set vector = { 1 }
+                      3.1078598156e-03 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  121
+------------------------------
+Parameters for function evaluation 121:
+                      1.0008849834e+00 x1
+                      9.9898680776e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 121:
+Active set vector = { 1 }
+                      7.7581664954e-04 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  122
+------------------------------
+Parameters for function evaluation 122:
+                      9.8896626761e-01 x1
+                      9.7752477027e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 122:
+Active set vector = { 1 }
+                      1.4978114418e-04 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  123
+------------------------------
+Parameters for function evaluation 123:
+                      9.8897615727e-01 x1
+                      9.7752477027e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 123:
+Active set vector = { 1 }
+                      1.5167282760e-04 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  124
+------------------------------
+Parameters for function evaluation 124:
+                      9.8896626761e-01 x1
+                      9.7753454552e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 124:
+Active set vector = { 1 }
+                      1.4875548495e-04 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  1.9127886230e-01 -1.0492411591e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  125
+------------------------------
+Parameters for function evaluation 125:
+                      9.8092877895e-01 x1
+                      9.8193365467e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 125:
+Active set vector = { 1 }
+                      3.9221524898e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  126
+------------------------------
+Parameters for function evaluation 126:
+                      9.8877057374e-01 x1
+                      9.7763211620e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 126:
+Active set vector = { 1 }
+                      1.2622343496e-04 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  127
+------------------------------
+Parameters for function evaluation 127:
+                      9.8877665586e-01 x1
+                      9.7762877991e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 127:
+Active set vector = { 1 }
+                      1.2621843087e-04 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  128
+------------------------------
+Parameters for function evaluation 128:
+                      9.8878654363e-01 x1
+                      9.7762877991e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 128:
+Active set vector = { 1 }
+                      1.2623228936e-04 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  129
+------------------------------
+Parameters for function evaluation 129:
+                      9.8877665586e-01 x1
+                      9.7763855620e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 129:
+Active set vector = { 1 }
+                      1.2612925720e-04 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  1.4015797391e-03 -9.1214243439e-03 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  130
+------------------------------
+Parameters for function evaluation 130:
+                      9.8103924320e-01 x1
+                      1.0189336278e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 130:
+Active set vector = { 1 }
+                      3.1953514334e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  131
+------------------------------
+Parameters for function evaluation 131:
+                      9.8869928174e-01 x1
+                      9.7804182838e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 131:
+Active set vector = { 1 }
+                      1.5428630793e-04 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  132
+------------------------------
+Parameters for function evaluation 132:
+                      9.8877196157e-01 x1
+                      9.7765383957e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 132:
+Active set vector = { 1 }
+                      1.2609493705e-04 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  133
+------------------------------
+Parameters for function evaluation 133:
+                      9.8878184929e-01 x1
+                      9.7765383957e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 133:
+Active set vector = { 1 }
+                      1.2597439660e-04 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  134
+------------------------------
+Parameters for function evaluation 134:
+                      9.8877196157e-01 x1
+                      9.7766361611e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 134:
+Active set vector = { 1 }
+                      1.2607291217e-04 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.2190925172e-02 -2.2528294795e-03 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  135
+------------------------------
+Parameters for function evaluation 135:
+                      9.9858137600e-01 x1
+                      9.9831932272e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 135:
+Active set vector = { 1 }
+                      1.3531296422e-04 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  136
+------------------------------
+Parameters for function evaluation 136:
+                      9.9341884597e-01 x1
+                      9.8744342609e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 136:
+Active set vector = { 1 }
+                      7.4943502239e-05 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  137
+------------------------------
+Parameters for function evaluation 137:
+                      9.9401208948e-01 x1
+                      9.8869321157e-01 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 137:
+Active set vector = { 1 }
+                      7.5946452397e-05 obj_fn
+
+
+<<<<< Function evaluation summary: 137 total (137 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9341884597e-01 x1
+                      9.8744342609e-01 x2
+<<<<< Best objective function  =
+                      7.4943502239e-05
+<<<<< Best data captured at function evaluation 136
+
+<<<<< Iterator conmin_frcg completed.
+<<<<< Single Method Strategy completed.
+DAKOTA execution time in seconds:
+  Total CPU        =       0.06 [parent =   0.056992, child =   0.003008]
+  Total wall clock =  0.0719569
+Exit graphics window to terminate DAKOTA.
+1
+
+
+
+            * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+            *                                                   *
+            *                    C O N M I N                    *
+            *                                                   *
+            *                FORTRAN PROGRAM FOR                *
+            *                                                   *
+            *         CONSTRAINED FUNCTION MINIMIZATION         *
+            *                                                   *
+            * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+
+     INITIAL FUNCTION INFORMATION
+
+     OBJ =   0.242000E+02
+
+     DECISION VARIABLES (X-VECTOR)
+       1)   -0.12000E+01  0.10000E+01
+1
+
+
+
+    FINAL OPTIMIZATION INFORMATION
+
+     OBJ =   0.749435E-04
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.99342E+00  0.98744E+00
+
+     THERE ARE    0 ACTIVE SIDE CONSTRAINTS
+
+     TERMINATION CRITERION
+          ABS(OBJ(I)-OBJ(I-1))   LESS THAN DABFUN FOR  3 ITERATIONS
+
+     NUMBER OF ITERATIONS =   27
+
+     OBJECTIVE FUNCTION WAS EVALUATED           82  TIMES
+
+     GRADIENT OF OBJECTIVE WAS CALCULATED       27  TIMES

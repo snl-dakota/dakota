@@ -1,0 +1,353 @@
+<!--
+    cplus.xml: "A C++ Interface for PLplot" chapter
+        
+    Copyright (C) 1994  Geoffrey Furnish and Maurice LeBrun
+    Copyright (C) 1999, 2000, 2001, 2002, 2003  Alan W. Irwin and Rafael Laboissiere
+    Copyright (C) 2003  Joao Cardoso
+
+    Redistribution and use in source (XML DocBook) and "compiled" forms
+    (HTML, PDF, PostScript, DVI, TeXinfo and so forth) with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+       1. Redistributions of source code (XML DocBook) must retain the
+          above copyright notice, this list of conditions and the following
+          disclaimer as the first lines of this file unmodified.
+
+       2. Redistributions in compiled form (transformed to other DTDs,
+          converted to HTML, PDF, PostScript, and other formats) must
+          reproduce the above copyright notice, this list of conditions and
+          the following disclaimer in the documentation and/or other
+          materials provided with the distribution.
+
+    Important: THIS DOCUMENTATION IS PROVIDED BY THE PLPLOT PROJECT "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE PLPLOT PROJECT BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS DOCUMENTATION,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<chapter id="cplusplus">
+  <title>A C++ Interface for PLplot</title>
+  
+    <para>
+PLplot has long had C and Fortran bindings, presenting a fairly
+conventional API to the applications programmer.  Recently (1994
+onwards) PLplot has been growing interfaces (language bindings) to a
+variety of other languages.  In this chapter we discuss the PLplot C++
+support provided in the PLplot distribution.  Of course many other
+approaches are possible, perhaps even in use by PLplot users around
+the world.  The purpose of this chapter then is to explain the
+rationale and intended usage for the bundled C++ language support.
+    </para>
+
+  <sect1 id="cplusplus-motivation">
+    <title>Motivation for the C++ Interface</title>
+    
+    <para>
+PLplot has a fairly complex C API.  There are lots of functions, and
+several facilities have multiple entry points with similar names but
+different argument lists.  (Think contouring, shading).  Often these
+differing argument lists are to accommodate a variety of data storage
+paradigms, one of which you are expected to be using!
+    </para>
+
+    <para>
+Especially in the case of the 2-d API's for contouring and shading,
+sophisticated C++ users may feel a special sense of exasperation with
+the data layout prescriptions, since they are extremely primitive,
+pointer rich, and prone to a wide class of memory leaks and other
+sorts of programming errors.  Many C++ users know good and well that
+better ways exist (templated matrix classes, etc), but historically
+have not been able to use these more sophisticated techniques if the
+contained data ever needed to get plotted.
+    </para>
+
+    <para>
+Besides the 2-d API functions, there is also the multiple output
+stream capability of PLplot.  Anyone who knows C++ well, and who has
+used multiple output streams in PLplot, has probably noticed striking
+similarities between the PLplot <literal>PLStream</literal> pointer and the C++ 
+<literal>this</literal> pointer.  Although multiple output streams have not been 
+widely used in PLplot applications in the past, the availability of
+the plframe Tk widget, and the extended wish concept, is making it
+much more attractive to use multiple output streams.
+    </para>
+
+    <para>
+Unfortunately, if you do write a Tk extended wish application, and
+endow your interface with multiple plframes, the event driven
+character of X applications makes it difficult to ensure that PLplot
+output shows up in the right plframe window.  If a plot is generated
+to one plframe, the PLplot <literal>PLStream</literal> pointer is directed to that
+stream.  If a user then pushes a Tk button which should generate a
+plot to a different plframe, the plot goes to the old plframe instead!
+Schemes for controlling this can be imagined, but the logic can be
+complex, especially in the face of the ability to /also/ make plots to
+the same plframe from either Tcl or C++.
+    </para>
+
+    <para>
+Beyond this, the C API is downright "ugly" for a significant number of
+the functions, particularly those which return values by accepting
+pointers to variables in their argument lists, and then changing them
+in that way.  Sophisticated C++ users generally take considerable
+pride in banishing the offensive bare pointer from their code, and
+consider it disgusting to have to insert &amp;'s just in order to make a
+call to an API function.
+    </para>
+
+    <para>
+In order to address these issues (and more), I have begun constructing
+a C++ interface to PLplot.  The purpose of this missive is to describe
+its architecture and usage.
+    </para>
+
+</sect1>
+<sect1 id="cpluscplus-design">
+  <title>Design of the PLplot C++ Interface</title>
+
+<sect2 id="cpluscplus-stream">
+  <title>Stream/Object Identity</title>
+
+    <para>
+A C++ class named <literal>plstream</literal> has been introduced.  It's central
+purpose is provide a specific, object based encapsulation of the
+concept of a PLplot output stream.  Any output produced using a
+<literal>plstream</literal> object, will go to the PLplot output stream associated with
+that object, regardless of what stream may have been active before.  
+    </para>
+
+    <para>
+In order to write a multiple output stream PLplot application, a C++
+program can declare <literal>plstream</literal> objects, and invoke drawing methods on
+those objects, without regard to ordering considerations or other
+coherency considerations.  Although this has obvious simplification
+benefit even for simple programs, the full benefit is most easily
+appreciated in the context of Tk extended wish applications in which a
+<literal>plstream</literal> can be associated with each plframe.
+    </para>
+</sect2>
+
+<sect2 id="cpluscplus-namespace">
+  <title>Namespace Management</title>
+
+    <para>
+The PLplot C API is composed of a set of drawing functions, all
+prefixed with "pl", in an effort to prevent namespace collision.
+However, the prefix "pl" is gratuitous, and in particular is
+unnecessary in a C++ context.  The <literal>plstream</literal> class mirrors most
+of the PLplot C API, but does so by dropping the "pl" prefix.  The
+<literal>plstream</literal> class thus serves to collect the PLplot drawing
+functions into a scope in which collisions with other similarly named
+functions is not a concern.  So, where a C programmer might write:
+</para>
+<programlisting>
+        plsstrm( 1 );
+	plenv( ... );
+	plline( ... );
+</programlisting>
+<para>
+The C++ programmer can write:
+</para>
+<programlisting>
+	plstream p( ... );
+	p.env( ... );
+	p.line( ... );
+</programlisting>
+
+    <para>
+Is that an important benefit?  The utility varies with the number of
+output streams in use in the program.
+    </para>
+
+    <para>
+plmkstrm() is replaced by object declaration.  plsstrm() is replaced by
+method invocation on the desired output stream object.  plgstrm() is
+rendered irrelevant.
+    </para>
+
+    <para>
+The skeptic may say, "But you have to type the same number of
+characters!  You've replaced 'pl' with 'p.', except it could be worse
+for a longer object name."  True.  BUT, in this new scheme, most plots
+will not be generated by invoking methods on a specific stream object,
+but rather by deriving from <literal>plstream</literal>, and invoking methods of
+"this" object.  See the section on derivation below.
+    </para>
+</sect2>
+
+<sect2 id="cpluscplus-abstraction">
+  <title>Abstraction of Data Layout</title>
+
+    <para>
+The <literal>plstream</literal> class will provide an abstract interface to the
+2-d drawing functions.  Instead of forcing the C++ user to organize
+data in one of a small set of generally braindead data layouts with
+poor memory management properties, potentially forcing the C++ user to
+not use a superior method, or to copy data computed in one layout
+format to another for plotting (with consequent bug production), the
+<literal>plstream</literal> 2-d plotting functions will accept an abstract layout
+specification.  The only thing which is important to the 2-d drawing
+functions is that the data be "indexable".  They should not care about
+data layout.
+    </para>
+
+    <para>
+Consequently, an abstract class, "Contourable_Data" is provided.  This
+class provides a pure virtual method which accepts indexes, and is to
+be made to produce a function value for the user's 2-d data field.  It
+is of no concern to PLplot how the user does this.  Any mapping
+between index and data which the user wishes to use, may be used.
+    </para>
+
+    <para>
+This methodology allows the C++ user to compute data using whatever
+storage mechanism he wants.  Then, by deriving a class from PLplot's
+Contourable_Data abstract class, he can provide a mapping to his own
+data layout.
+    </para>
+
+    <para>
+Note that this does /not/ mean that the C++ user's internal data
+layout must be derived from PLplot's Contourable_Data class.  Suppose
+for example that the user data is stored in a C++ "matrix" class.
+To make this data contourable, the user may define a class which
+specializes the indexing concept of the PLplot Contourable_Data class
+to his matrix class.  For example:
+</para>
+<programlisting>
+class Matrix { ... };
+class Contourable_Matrix : public Contourable_Data {
+    Matrix&amp; m;
+  public:
+    Contourable_Matrix( Matrix&amp; _m ) : m(_m) {}
+    PLFLT  operator()( int i, int j ) const { return m(i,j); }
+};
+
+plstream p( ... );
+Matrix m;
+// Code to fill m with data
+Contourable_Matrix cm(m);
+p.shade( cm, ... );
+</programlisting>
+
+    <para>
+In this way the C++ user is completely freed from the tyranny of
+moronic data layout constraints imposed by PLplot's C or Fortran API.
+    </para>
+</sect2>
+
+<sect2 id="cpluscplus-collapsing">
+  <title>Collapsing the API</title>
+
+    <para>
+Use of abstraction as in C) above will allow a single method in
+<literal>plstream</literal> to perform the services of multiple functions in the C API.
+In those cases where multiple functions were provided with different
+data layout specifications, but similar functionality, these can all
+be collapsed into one, through the use of the abstract interface
+technique described above.
+
+Moreover, function name overloading can be used to simplify the
+namespace for those cases where multiple functions were used to get
+variations on a basic capability.  For example, a single name such as
+contour or shade can be used for multiple methods taking different
+argument sets, so that for example, one can make simple plots of
+rectangular data sets, or more complex generalized coordinate
+mappings.
+    </para>
+</sect2>
+
+</sect1>
+<sect1 id="cpluscplus-specializing">
+  <title>Specializing the PLplot C++ Interface</title>
+
+    <para>
+The <literal>plstream</literal> class is an ideal candidate for derivation.  By
+inheriting from <literal>plstream</literal>, the user can construct a new class
+which is automatically endowed with the ability to plot to a specific
+PLplot output stream in a coherent manner without having to worry
+about interplay with other <literal>plstream</literal> (or derived type) objects.
+Moreover, new, higher level, plotting functionality can be constructed
+to provide even more simplicity and ease of use than the PLplot API.
+    </para>
+
+    <para>
+The PLplot maintainers (Geoff and Maurice) expect to introduce a class
+plxstream in the future which provides superior support for
+constructing graphics with multiple plots per page, easier
+specification of plot adornments, etc.  This should significantly ease
+one aspect of PLplot usage which we regard as being clumsy at this
+time.
+    </para>
+
+    <para>
+Beyond that, users may find it useful to derive from
+<literal>plstream</literal>
+(or later plxstream whenever it finally makes its appearance) for the
+purpose of making "application specific" output streams.  For example,
+a C++ program will normally have a variety of objects which constitute
+the fundamental entities in the code.  These could all be made to be
+"atomically plotted" by providing suitable methods.  For example:
+    </para>
+<programlisting>
+class Cat { ... };
+class Dog { ... };
+class Bear { ... };
+class Fish { ... };
+
+class zoostream : public plstream {
+  public:
+    void plot( const Cat&amp; c ) { ... }
+    void plot( const Dog&amp; d ) { ... }
+    void plot( const Bear&amp; b ) { ... }
+    void plot( const Fish&amp; f ) { ... }
+};
+</programlisting>
+
+    <para>
+Presumably the PLplot user community can think of even more
+imaginative uses...  :-).
+    </para>
+
+</sect1>
+<sect1 id="cpluscplus-status">
+  <title>Status of the C++ Interface</title>
+
+    <para>
+The class <literal>plstream</literal> (and the other abstraction classes in
+<filename>plstream.h</filename>) provided in PLplot 4.99j (alpha) are to be
+considered as works in progress.  By the standards outlined above, the
+work has barely begun.  At this time, <literal>plstream</literal> is mostly a one
+to one mirror of the C API, which is to say, it is still far from the
+goals of simplification and abstraction outlined above.  As such, it
+can be expected to change radically over the course of time.  (We
+don't quote schedules--how long have you been waiting for 5.0?  :-).
+    </para>
+
+    <para>
+In any event, we would welcome improvement submissions along the lines
+of those above, but we would strongly discourage people from using
+<literal>plstream</literal> if they are expecting it to be rock solid.  It
+<emphasis>will</emphasis>
+be changing, to become more like the design goals elucidated above.
+    </para>
+
+    <para>
+So, if you like the ideas described above, and are willing to accept
+the burden of "upgrading" your code as the class <literal>plstream</literal>
+evolves, then feel free to use it.  Just don't whine when I fix some
+of the methods to take references instead of pointers, when I
+eliminate some of the redundant methods to use the collapsed form,
+etc.
+    </para>
+
+</sect1>
+</chapter>

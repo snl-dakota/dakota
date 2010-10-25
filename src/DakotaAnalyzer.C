@@ -1,0 +1,877 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright (c) 2006, Sandia National Laboratories.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+//- Class:       Analyzer
+//- Description: Implementation code for the Analyzer class
+//- Owner:       Mike Eldred
+//- Checked by:
+
+#include <stdexcept>
+#include "system_defs.h"
+#include "data_io.h"
+#include "DakotaModel.H"
+#include "DakotaAnalyzer.H"
+#include "ProblemDescDB.H"
+#include "ParallelLibrary.H"
+#include "PRPMultiIndex.H"
+
+static const char rcsId[]="@(#) $Id: DakotaAnalyzer.C 7035 2010-10-22 21:45:39Z mseldre $";
+
+//#define DEBUG
+
+namespace Dakota {
+
+Analyzer::Analyzer(Model& model):
+  Iterator(BaseConstructor(), model), compactMode(false), numBest(1)
+{
+  iteratedModel = model;
+  if (probDescDB.get_sizet("responses.num_response_functions"))
+    numObjFns = numLSqTerms = 0; // no best data tracking
+  else {
+    numObjFns   = probDescDB.get_sizet("responses.num_objective_functions");
+    numLSqTerms = probDescDB.get_sizet("responses.num_least_squares_terms");
+    size_t num_solns
+      = probDescDB.get_sizet("strategy.hybrid.num_solutions_transferred");
+    if (num_solns > numBest)
+      numBest = num_solns;
+  }
+}
+
+
+Analyzer::Analyzer(NoDBBaseConstructor, Model& model):
+  Iterator(NoDBBaseConstructor(), model), compactMode(false),
+  numObjFns(0), numLSqTerms(0) // no best data tracking
+{ iteratedModel = model; }
+
+
+Analyzer::Analyzer(NoDBBaseConstructor): Iterator(NoDBBaseConstructor()),
+  compactMode(false), numObjFns(0), numLSqTerms(0) // no best data tracking
+{ }
+
+
+/** Convenience function for derived classes with sets of function
+    evaluations to perform (e.g., NonDSampling, DDACEDesignCompExp,
+    FSUDesignCompExp, ParamStudy). */
+void Analyzer::
+evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
+{
+  // This function does not need an iteratorRep fwd because it is a
+  // protected fn only called by letter classes.
+
+  // allVariables or allSamples defines the set of fn evals to be performed
+  size_t i, num_evals = (compactMode) ?
+    allSamples.numCols() : allVariables.size();
+  bool header_flag = (allHeaders.size() == num_evals);
+  if (log_resp_flag && !asynchFlag)
+    allResponses.resize(num_evals);
+
+  // Loop over parameter sets and compute responses.  Collect data
+  // and track best evaluations based on flags.
+  for (i=0; i<num_evals; i++) {
+    // output the evaluation header (if present)
+    if (header_flag)
+      Cout << allHeaders[i];
+
+    if (compactMode) {
+      update_model_from_sample(model, allSamples[i]);
+      //if (log_vars_flag) // TO DO?
+      //  update_variables_from_sample(allVariables[i], allSamples[i]);
+    }
+    else
+      update_model_from_variables(model, allVariables[i]);
+
+    // compute the response
+    if (asynchFlag)
+      model.asynch_compute_response(activeSet);
+    else {
+      model.compute_response(activeSet);
+      const Response& local_response = model.current_response();
+      if (log_best_flag) // update best variables/response
+        update_best(model.current_variables(), model.evaluation_id(),
+		    local_response);
+      if (log_resp_flag) // log response data
+        allResponses[i] = local_response.copy();
+    }
+  }
+
+  // synchronize asynchronous evaluations
+  if (asynchFlag) {
+    const IntResponseMap& resp_map = model.synchronize();
+    if (log_resp_flag) // log response data
+      copy_data(resp_map, allResponses); // discards integer keys
+    if (log_best_flag) { // update best variables/response
+      IntRespMCIter r_cit;
+      if (compactMode)
+	for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+	  update_best(allSamples[i], r_cit->first, r_cit->second);
+      else
+	for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+	  update_best(allVariables[i], r_cit->first, r_cit->second);
+    }
+  }
+}
+
+
+void Analyzer::update_model_from_variables(Model& model, const Variables& vars)
+{
+  // set the variables, accounting for differences in view
+  // Note: allow allVariables to be used as a partial container,
+  // by only setting variables that are present within the model.
+  short vars_view = vars.view().first, 
+       model_view = model.current_variables().view().first;
+  if (vars_view == model_view)
+    model.active_variables(vars);
+  else if ( vars_view >= MERGED_DISTINCT_DESIGN &&
+	    vars_view <= MERGED_DISTINCT_STATE  && model_view == MERGED_ALL )
+    model.continuous_variables(vars.all_continuous_variables());
+  else if ( vars_view == MERGED_ALL && model_view >= MERGED_DISTINCT_DESIGN &&
+	    model_view <= MERGED_DISTINCT_STATE )
+    model.all_continuous_variables(vars.continuous_variables());
+  else if ( vars_view >= MIXED_DISTINCT_DESIGN && model_view == MIXED_ALL ) {
+    if (vars.acv())
+      model.continuous_variables(vars.all_continuous_variables());
+    if (vars.adiv())
+      model.discrete_int_variables(vars.all_discrete_int_variables());
+    if (vars.adrv())
+      model.discrete_real_variables(vars.all_discrete_real_variables());
+  }
+  else if ( vars_view == MIXED_ALL && model_view >= MIXED_DISTINCT_DESIGN ) {
+    if (vars.cv())
+      model.all_continuous_variables(vars.continuous_variables());
+    if (vars.div())
+      model.all_discrete_int_variables(vars.discrete_int_variables());
+    if (vars.drv())
+      model.all_discrete_real_variables(vars.discrete_real_variables());
+  }
+  else if ( ( vars_view  == MERGED_DISTINCT_UNCERTAIN &&
+	      model_view == MERGED_DISTINCT_ALEATORY_UNCERTAIN ) || 
+	    ( vars_view  == MIXED_DISTINCT_UNCERTAIN &&
+	      model_view == MIXED_DISTINCT_ALEATORY_UNCERTAIN ) ) {
+    const RealVector& cuv  = vars.continuous_variables();
+    const IntVector&  duiv = vars.discrete_int_variables();
+    const RealVector& durv = vars.discrete_real_variables();
+    size_t num_cauv = model.cv(), num_ceuv = cuv.length() - num_cauv,
+      num_dauiv = model.div(), num_deuiv = duiv.length() - num_dauiv,
+      num_daurv = model.drv(), num_deurv = durv.length() - num_daurv;
+    if (num_ceuv) {
+      RealVector cauv(Teuchos::View, cuv.values(), num_cauv);
+      model.continuous_variables(cauv);
+    }
+    else if (num_cauv)
+      model.continuous_variables(cuv);
+    if (num_deuiv) {
+      IntVector dauiv(Teuchos::View, duiv.values(), num_dauiv);
+      model.discrete_int_variables(dauiv);
+    }
+    else if (num_dauiv)
+      model.discrete_int_variables(duiv);
+    if (num_deurv) {
+      RealVector daurv(Teuchos::View, durv.values(), num_daurv);
+      model.discrete_real_variables(daurv);
+    }
+    else if (num_daurv)
+      model.discrete_real_variables(durv);
+  }
+  else if ( ( vars_view  == MERGED_DISTINCT_UNCERTAIN &&
+	      model_view == MERGED_DISTINCT_EPISTEMIC_UNCERTAIN ) || 
+	    ( vars_view  == MIXED_DISTINCT_UNCERTAIN &&
+	      model_view == MIXED_DISTINCT_EPISTEMIC_UNCERTAIN ) ) {
+    const RealVector& cuv  = vars.continuous_variables();
+    const IntVector&  duiv = vars.discrete_int_variables();
+    const RealVector& durv = vars.discrete_real_variables();
+    size_t num_ceuv = model.cv(), num_cauv = cuv.length() - num_ceuv,
+      num_deuiv = model.div(), num_dauiv = duiv.length() - num_deuiv,
+      num_deurv = model.drv(), num_daurv = durv.length() - num_deurv;
+    if (num_cauv) {
+      RealVector ceuv(Teuchos::View, const_cast<Real*>(&cuv[num_cauv]),
+		      num_ceuv);
+      model.continuous_variables(ceuv);
+    }
+    else if (num_ceuv)
+      model.continuous_variables(cuv);
+    if (num_dauiv) {
+      IntVector deuiv(Teuchos::View, const_cast<int*>(&duiv[num_dauiv]),
+		      num_deuiv);
+      model.discrete_int_variables(deuiv);
+    }
+    else if (num_deuiv)
+      model.discrete_int_variables(duiv);
+    if (num_daurv) {
+      RealVector deurv(Teuchos::View, const_cast<Real*>(&durv[num_daurv]),
+		       num_deurv);
+      model.discrete_real_variables(deurv);
+    }
+    else if (num_deurv)
+      model.discrete_real_variables(durv);
+  }
+  else if ( ( model_view == MERGED_DISTINCT_UNCERTAIN &&
+	      vars_view  == MERGED_DISTINCT_ALEATORY_UNCERTAIN ) || 
+	    ( model_view == MIXED_DISTINCT_UNCERTAIN &&
+	      vars_view  == MIXED_DISTINCT_ALEATORY_UNCERTAIN ) ) {
+    const RealVector& cauv  = vars.continuous_variables();
+    const IntVector&  dauiv = vars.discrete_int_variables();
+    const RealVector& daurv = vars.discrete_real_variables();
+    size_t i, num_cuv = model.cv(), num_cauv = cauv.length(),
+      num_ceuv = num_cuv - num_cauv, num_duiv = model.div(),
+      num_dauiv = dauiv.length(), num_deuiv = num_duiv - num_dauiv,
+      num_durv = model.drv(), num_daurv = daurv.length(),
+      num_deurv = num_durv - num_daurv;
+    if (num_ceuv)
+      for (i=0; i<num_cauv; ++i)
+	model.continuous_variable(cauv[i], i);
+    else if (num_cauv)
+      model.continuous_variables(cauv);
+    if (num_deuiv)
+      for (i=0; i<num_dauiv; ++i)
+	model.discrete_int_variable(dauiv[i], i);
+    else if (num_dauiv)
+      model.discrete_int_variables(dauiv);
+    if (num_deurv)
+      for (i=0; i<num_daurv; ++i)
+	model.discrete_real_variable(daurv[i], i);
+    else if (num_daurv)
+      model.discrete_real_variables(daurv);
+  }
+  else if ( ( model_view == MERGED_DISTINCT_UNCERTAIN &&
+	      vars_view  == MERGED_DISTINCT_EPISTEMIC_UNCERTAIN ) || 
+	    ( model_view == MIXED_DISTINCT_UNCERTAIN &&
+	      vars_view  == MIXED_DISTINCT_EPISTEMIC_UNCERTAIN ) ) {
+    const RealVector& ceuv  = vars.continuous_variables();
+    const IntVector&  deuiv = vars.discrete_int_variables();
+    const RealVector& deurv = vars.discrete_real_variables();
+    size_t i, num_cuv = model.cv(), num_ceuv = ceuv.length(),
+      num_cauv = num_cuv - num_ceuv, num_duiv = model.div(),
+      num_deuiv = deuiv.length(), num_dauiv = num_duiv - num_deuiv,
+      num_durv = model.drv(), num_deurv = deurv.length(),
+      num_daurv = num_durv - num_deurv;
+    if (num_cauv)
+      for (i=0; i<num_ceuv; ++i)
+	model.continuous_variable(ceuv[i], i+num_cauv);
+    else if (num_ceuv)
+      model.continuous_variables(ceuv);
+    if (num_dauiv)
+      for (i=0; i<num_deuiv; ++i)
+	model.discrete_int_variable(deuiv[i], i+num_dauiv);
+    else if (num_deuiv)
+      model.discrete_int_variables(deuiv);
+    if (num_daurv)
+      for (i=0; i<num_deurv; ++i)
+	model.discrete_real_variable(deurv[i], i+num_daurv);
+    else if (num_deurv)
+      model.discrete_real_variables(deurv);
+  }
+  else {
+    Cerr << "Error: unsupported view mapping in Analyzer::"
+	 << "evaluate_parameter_sets()" << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Analyzer::update_model_from_sample(Model& model, const Real* sample_c_vars)
+{
+  // quick first cut good enough for NonD{Quadrature,SparseGrid,Cubature}
+  // and FSUDesignCompExp, but NonDSampling has sampling modes to manage.
+  size_t i, num_cv = model.cv();
+  for (i=0; i<num_cv; ++i)
+    model.continuous_variable(sample_c_vars[i], i);
+}
+
+
+void Analyzer::
+sample_to_variables(const Real* sample_c_vars, Variables& vars)
+{
+  // pack sample_matrix into vars_array
+  const Variables& model_vars = iteratedModel.current_variables();
+  size_t i, j, num_adiv = model_vars.adiv(), num_adrv = model_vars.adrv();
+  if (vars.is_null()) // use minimal data ctor
+    vars = Variables(model_vars.shared_data());
+  for (j=0; j<numContinuousVars; ++j)
+    vars.continuous_variable(sample_c_vars[j], j); // jth row
+  // preserve any active discrete vars (unsupported by sample_matrix)
+  if (num_adiv)
+    vars.all_discrete_int_variables(model_vars.all_discrete_int_variables());
+  if (num_adrv)
+    vars.all_discrete_real_variables(model_vars.all_discrete_real_variables());
+}
+
+
+void Analyzer::
+samples_to_variables_array(const RealMatrix& sample_matrix,
+			   VariablesArray& vars_array)
+{
+  // pack sample_matrix into vars_array
+  size_t num_samples = sample_matrix.numCols(); // #vars by #samples
+  if (vars_array.size() != num_samples)
+    vars_array.resize(num_samples);
+  for (size_t i=0; i<num_samples; ++i)
+    sample_to_variables(sample_matrix[i], vars_array[i]);
+}
+
+
+void Analyzer::
+variables_array_to_samples(const VariablesArray& vars_array,
+			   RealMatrix& sample_matrix)
+{
+  // pack vars_array into sample_matrix
+  size_t i, j, num_samples = vars_array.size();
+  if (sample_matrix.numRows() != numContinuousVars ||
+      sample_matrix.numCols() != num_samples)
+    sample_matrix.reshape(numContinuousVars, num_samples); // #vars by #samples
+  const Variables& vars = iteratedModel.current_variables();
+  for (i=0; i<num_samples; ++i) {
+    const RealVector& c_vars_i = vars_array[i].continuous_variables();
+    Real* sample_c_vars = sample_matrix[i]; // ith column
+    for (j=0; j<numContinuousVars; ++j)
+      sample_c_vars[j] = c_vars_i[j]; // jth row
+  }
+}
+
+
+/** Calculation of sensitivity indices obtained by variance based
+    decomposition.  These indices are obtained by the Saltelli version
+    of the Sobol VBD which uses (K+2)*N function evaluations, where K
+    is the number of dimensions (uncertain vars) and N is the number
+    of samples.  */
+void Analyzer::
+variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
+{
+  using boost::multi_array;
+  using boost::extents;
+  // run whatever sampling routine twice to generate two sets of 
+  // input matrices, M1 and M2
+
+  size_t i, j, k;
+  if (compactMode && (ndiscreal || ndiscint)) {
+    Cerr << "Error: discrete variables not supported in compactMode within "
+	 << "Analyzer::variance_based_decomp()." << std::endl;
+    abort_handler(-1);
+  }
+  int ndimtotal = ncont + ndiscreal + ndiscint;
+
+  // WJB - ToDo: confer with MSE: RealVector2DArray total_c_vars(ncont+2);
+  multi_array<RealVector, 2> total_c_vars(extents[ndimtotal+2][num_samples]);
+  
+  multi_array<RealVector, 2> total_dr_vars = (ndiscreal > 0 ) ? 
+    multi_array<RealVector, 2>(extents[ndimtotal+2][num_samples]):
+    multi_array<RealVector, 2>();
+
+  multi_array<IntVector, 2> total_di_vars = (ndiscint > 0) ?
+    multi_array<IntVector, 2>(extents[ndimtotal+2][num_samples]):
+    multi_array<IntVector, 2>();
+ 
+  // get first sample block
+  vary_pattern(true);
+  get_parameter_sets(iteratedModel);
+  if (compactMode)
+    for (j=0; j<num_samples; ++j)
+      copy_data(allSamples[j], ndimtotal, total_c_vars[0][j]);
+  else
+    for (j=0; j<num_samples; ++j) {
+      const Variables& all_vars_j = allVariables[j];
+      copy_data(all_vars_j.continuous_variables(),      total_c_vars[0][j]);
+      if (ndiscreal > 0)
+	copy_data(all_vars_j.discrete_real_variables(), total_dr_vars[0][j]);
+      if (ndiscint > 0) 
+	copy_data(all_vars_j.discrete_int_variables(),  total_di_vars[0][j]);
+    }
+
+  // get second sample block
+  get_parameter_sets(iteratedModel);
+  if (compactMode)
+    for (j=0; j<num_samples; ++j)
+      copy_data(allSamples[j], ndimtotal, total_c_vars[1][j]);
+  else
+    for (j=0; j<num_samples; ++j) {
+      const Variables& all_vars_j = allVariables[j];
+      copy_data(all_vars_j.continuous_variables(),      total_c_vars[1][j]);
+      if (ndiscreal > 0) 
+	copy_data(all_vars_j.discrete_real_variables(), total_dr_vars[1][j]);
+      if (ndiscint > 0)
+	copy_data(all_vars_j.discrete_int_variables(),  total_di_vars[1][j]);
+    }
+
+  for (i=2; i<ndimtotal+2; ++i) {
+    total_c_vars[i]  = total_c_vars[1];
+    total_dr_vars[i] = total_dr_vars[1];
+    total_di_vars[i] = total_di_vars[1];
+  }
+ 
+  for (i=0; i<ncont; ++i)
+    for (j=0; j<num_samples; ++j)   
+      total_c_vars[i+2][j][i] = total_c_vars[0][j][i];
+
+  for (i=0; i<ndiscreal; ++i)
+    for (j=0; j<num_samples; ++j)   
+      total_dr_vars[ncont+i+2][j][i] = total_dr_vars[0][j][i];
+  
+  for (i=0; i<ndiscint; ++i)
+    for (j=0; j<num_samples; ++j)   
+      total_di_vars[ncont+ndiscreal+i+2][j][i] = total_di_vars[0][j][i];
+  
+  // call evaluate parameter sets (ncont)*num_samples to get data
+  //WJB - ToDo: confer with MSE: Array<Real2DArray> total_fn_vals(numFunctions);
+  multi_array<Real,3> total_fn_vals(extents[numFunctions][ndimtotal+2][num_samples]);
+
+  for (i=0; i<ndimtotal+2; ++i) {
+    if (compactMode)
+      for (j=0; j<num_samples; ++j)
+	copy_data(total_c_vars[i][j], allSamples[j], ndimtotal);
+    else
+      for (j=0; j<num_samples; ++j) {   
+	Variables& all_vars_j = allVariables[j];
+	all_vars_j.continuous_variables(total_c_vars[i][j]);
+	if (ndiscreal > 0)
+	  all_vars_j.discrete_real_variables(total_dr_vars[i][j]);
+	if (ndiscint > 0)
+	  all_vars_j.discrete_int_variables(total_di_vars[i][j]);
+      }
+
+    // evaluate each of the parameter sets in allVariables
+    evaluate_parameter_sets(iteratedModel, true, false);
+    for (k=0; k<numFunctions; ++k)
+      for (j=0; j<num_samples; ++j)
+	total_fn_vals[k][i][j] = allResponses[j].function_value(k);
+  }
+  
+  RealVectorArray S1(numFunctions), T1(numFunctions);
+  RealVectorArray S2(numFunctions), T2(numFunctions);
+  RealVectorArray S3(numFunctions), T3(numFunctions);
+  RealVectorArray S4(numFunctions), T4(numFunctions);
+  for (k=0; k<numFunctions; ++k){
+    S1[k].resize(ndimtotal);
+    T1[k].resize(ndimtotal);
+    S2[k].resize(ndimtotal);
+    T2[k].resize(ndimtotal);
+    S3[k].resize(ndimtotal);
+    T3[k].resize(ndimtotal);
+    S4[k].resize(ndimtotal);
+    T4[k].resize(ndimtotal);
+  }
+  multi_array<Real,3> total_norm_vals(extents[numFunctions][ndimtotal+2][num_samples]);
+
+  // Loop over number of responses to obtain sensitivity indices for each
+  for (k=0; k<numFunctions; ++k) {
+ 
+#ifdef DEBUG
+    Cout << "Total Samples\n"; 
+    for (i=0; i<ndimtotal+2; ++i) {
+      for (j=0; j<num_samples; ++j) {
+	Cout << "Cvar " << j << '\n' << total_c_vars[i][j] << " " ;
+	Cout << "DRVar " << j << '\n' << total_dr_vars[i][j] << " " ;
+	Cout << "DIVar " << j << '\n' << total_di_vars[i][j] << " " ;
+	Cout << "Response " << i << '\n' << total_fn_vals[k][i][j] << '\n';
+      }
+    }
+#endif
+
+    // calculate expected value of Y
+    Real mean_hatY = 0., var_hatYS = 0., var_hatYT = 0.,
+      mean_sq1=0., mean_sq2 = 0., var_hatYnom = 0., 
+      overall_mean = 0., mean_hatB=0., var_hatYC= 0., mean_C=0., 
+      mean_A_norm = 0., mean_B_norm = 0., var_A_norm = 0., var_B_norm=0., 
+      var_AB_norm = 0.;
+    // mean estimate of Y (possibly average over matrices later)
+    for (j=0; j<num_samples; j++)
+      mean_hatY += total_fn_vals[k][0][j];
+    mean_hatY /= (Real)num_samples;
+    mean_sq1 = mean_hatY*mean_hatY;
+    for (j=0; j<num_samples; j++)
+      mean_hatB += total_fn_vals[k][1][j];
+    mean_hatB /= (Real)(num_samples);
+    mean_sq2 = mean_hatY*mean_hatB;
+    //mean_sq2 += total_fn_vals[k][0][j]*total_fn_vals[k][1][j];
+    //mean_sq2 /= (Real)(num_samples);
+    // variance estimate of Y for S indices
+    for (j=0; j<num_samples; j++)
+      var_hatYS += std::pow(total_fn_vals[k][0][j], 2.);
+    var_hatYnom = var_hatYS/(Real)(num_samples) - mean_sq1;
+    var_hatYS = var_hatYS/(Real)(num_samples) - mean_sq2;
+    // variance estimate of Y for T indices
+    for (j=0; j<num_samples; j++)
+      var_hatYT += std::pow(total_fn_vals[k][1][j], 2.);
+    var_hatYT = var_hatYT/(Real)(num_samples) - (mean_hatB*mean_hatB);
+    for (j=0; j<num_samples; j++){
+      for(i=0; i<(ndimtotal+2); i++){ 
+        total_norm_vals[k][i][j]=total_fn_vals[k][i][j];
+        overall_mean += total_norm_vals[k][i][j];
+      } 
+    }
+   
+    overall_mean /= Real((num_samples)* (ndimtotal+2));
+    for (j=0; j<num_samples; j++)
+      for(i=0; i<(ndimtotal+2); i++)
+        total_norm_vals[k][i][j]-=overall_mean;
+    mean_C=mean_hatB*(Real)(num_samples)+mean_hatY*(Real)(num_samples);
+    mean_C=mean_C/(2*(Real)(num_samples));
+    for (j=0; j<num_samples; j++)
+      var_hatYC += std::pow(total_fn_vals[k][0][j],2);
+    for (j=0; j<num_samples; j++)
+      var_hatYC += std::pow(total_fn_vals[k][1][j],2);
+    var_hatYC = var_hatYC/((Real)(num_samples)*2)-mean_C*mean_C;
+
+    for (j=0; j<num_samples; j++)
+      mean_A_norm += total_norm_vals[k][0][j];
+    mean_A_norm /= (Real)num_samples;
+    for (j=0; j<num_samples; j++)
+      mean_B_norm += total_norm_vals[k][1][j];
+    mean_B_norm /= (Real)(num_samples);
+    for (j=0; j<num_samples; j++)
+      var_A_norm += std::pow(total_norm_vals[k][0][j], 2.);
+    var_AB_norm = var_A_norm/(Real)(num_samples) - (mean_A_norm*mean_B_norm);
+    var_A_norm = var_A_norm/(Real)(num_samples) - (mean_A_norm*mean_A_norm);
+    // variance estimate of Y for T indices
+    for (j=0; j<num_samples; j++)
+      var_B_norm += std::pow(total_norm_vals[k][1][j], 2.);
+    var_B_norm = var_B_norm/(Real)(num_samples) - (mean_B_norm*mean_B_norm);
+
+
+#ifdef DEBUG
+    Cout << "\nVariance of Yhat for S " << var_hatYS 
+	 << "\nVariance of Yhat for T " << var_hatYT
+	 << "\nMeanSq1 " << mean_sq1 << "\nMeanSq2 " << mean_sq2 << '\n';
+#endif
+
+  // calculate first order sensitivity indices and first order total indices
+
+    for(i=0; i<ndimtotal; i++) {
+      Real sum_S = 0., sum_T = 0., sum_J = 0., sum_J2 = 0., sum_3 = 0., sum_32=0.,sum_5=0, sum_6=0;
+      for (j=0; j<num_samples; j++) {
+	sum_S += total_fn_vals[k][0][j]*total_fn_vals[k][i+2][j];
+	sum_T += total_fn_vals[k][1][j]*total_fn_vals[k][i+2][j];
+        sum_5 += total_norm_vals[k][0][j]*total_norm_vals[k][i+2][j];
+	sum_6 += total_norm_vals[k][1][j]*total_norm_vals[k][i+2][j];
+	sum_J += std::pow((total_fn_vals[k][0][j]-total_fn_vals[k][i+2][j]),2.);
+	sum_J2 += std::pow((total_norm_vals[k][1][j]-total_norm_vals[k][i+2][j]),2.);
+	sum_3 += total_norm_vals[k][0][j]*(total_norm_vals[k][i+2][j]-total_norm_vals[k][1][j]);
+	sum_32 += total_fn_vals[k][1][j]*(total_fn_vals[k][1][j]-total_fn_vals[k][i+2][j]);
+      }
+
+      //S1[k][i] = (sum_S/(Real)(num_samples-1) - mean_sq2)/var_hatYS;  
+      S1[k][i] = (sum_S/(Real)(num_samples) - mean_sq2)/var_hatYS;  
+      //T1[k][i] = 1. - (sum_T/(Real)(num_samples-1) - mean_sq2)/var_hatYS;
+      T1[k][i] = 1. - (sum_T/(Real)(num_samples) - (mean_hatB*mean_hatB))/var_hatYT;
+      // S2[k][i] = (sum_S/(Real)(num_samples) - mean_sq1)/var_hatYnom;     
+      // T2[k][i] = 1. - (sum_T/(Real)(num_samples) - mean_sq1)/var_hatYnom;
+      S2[k][i] = (sum_5/(Real)(num_samples) - (mean_A_norm*mean_B_norm))/var_AB_norm;  
+      T2[k][i] = 1. - (sum_6/(Real)(num_samples) - (mean_B_norm*mean_B_norm))/var_B_norm;
+      S3[k][i] = ((sum_5/(Real)(num_samples)) - (mean_A_norm*mean_A_norm))/var_A_norm;  
+      T3[k][i] = 1. - (sum_6/(Real)(num_samples) - (mean_A_norm*mean_B_norm))/var_AB_norm;
+      // S3[k][i] = (sum_3/(Real)(num_samples))/var_hatYC;    
+      //T3[k][i] = (sum_32/(Real)(num_samples))/var_hatYnom;
+      //S4[k][i] = (var_hatYnom - (sum_J/(Real)(2*num_samples)))/var_hatYnom;
+      S4[k][i] = (sum_3/(Real)(num_samples))/var_hatYC;    
+      T4[k][i] = (sum_J2/(Real)(2*num_samples))/var_hatYC;
+    }
+  }
+  print_vbd(Cout, S1, T1, S2, T2, S3, T3, S4, T4);
+}
+
+
+/// read num_evals variables/responses from file
+void Analyzer::read_variables_responses(int num_evals)
+{
+  // distinguish between defaulted post-run and user-specified
+  if (!iteratedModel.parallel_library().command_line_user_modes())
+    return;
+
+  const String& filename = 
+    iteratedModel.parallel_library().command_line_post_run_input();
+  if (filename.empty()) {
+    if (outputLevel > QUIET_OUTPUT)
+      Cout << "\nPost-run phase initialized: no input requested.\n" 
+	   << std::endl;
+    return;
+  }
+
+  if (num_evals == 0) {
+    if (outputLevel > QUIET_OUTPUT)
+      Cout << "\nPost-run phase initialized: zero samples specified.\n" 
+	   << std::endl;
+    return;
+  }
+
+  std::ifstream tabular_file(filename);
+  if (!tabular_file.good()) {
+    Cerr << "\nError: could not open post-run input file " 
+	 << filename << "." << std::endl;
+    abort_handler(-1);
+  }
+  tabular_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "\nAttempting to read " << num_evals << " samples from file "
+	 << filename << "..." << std::endl;
+
+  // discard % and labels
+  char discard_percent;
+  tabular_file >> discard_percent; // matlab comment syntax
+  String discard_labels;
+  getline(tabular_file, discard_labels);
+  // now read variables and responses (minimal error checking for now)
+  allVariables.resize(num_evals);
+  allResponses.resize(num_evals);
+  for (size_t i=0; i<num_evals; ++i) {
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "   reading sample " << i << std::endl;
+    allVariables[i] = iteratedModel.current_variables().copy();
+    allResponses[i] = iteratedModel.current_response().copy();
+    try {
+      allVariables[i].read_tabular(tabular_file);
+      allResponses[i].read_tabular(tabular_file);
+    }
+    catch (const std::ios_base::failure& failorbad_except) {
+      Cerr << "\nError: insufficient data in post-run input file;\n"
+	   << "       expected " << num_evals << " samples, read " << i 
+	   << std::endl;
+      abort_handler(-1);
+    }
+    update_best(allVariables[i], i, allResponses[i]);
+  }
+  tabular_file.close();
+  if (outputLevel > QUIET_OUTPUT)
+    Cout << "\nPost-run phase initialized: variables / responses read from "
+	 << "tabular file " << filename << ".\n" << std::endl;
+}
+
+
+/** printing of variance based decomposition indices. */
+void Analyzer::
+print_vbd(std::ostream& s, const RealVectorArray& S1,
+          const RealVectorArray& T1, const RealVectorArray& S2, 
+          const RealVectorArray& T2, const RealVectorArray& S3, 
+          const RealVectorArray& T3, const RealVectorArray& S4, 
+          const RealVectorArray& T4) const
+{
+  StringMultiArrayConstView cv_labels
+    = iteratedModel.continuous_variable_labels();
+  StringMultiArrayConstView drv_labels
+    = iteratedModel.discrete_real_variable_labels();
+  StringMultiArrayConstView div_labels
+    = iteratedModel.discrete_int_variable_labels();
+  const StringArray& resp_labels = iteratedModel.response_labels();
+  // output explanatory info
+  s.setf(std::ios::scientific);
+  s << "Variance Based Decomposition Sensitivity Indices\n"
+    << "These indices measure the importance of the uncertain input\n"
+    << "variables in determining the uncertainty (variance) of the output.\n"
+    << "Si measures the main effect for variable i itself, while Ti\n"
+    << "measures the total effect (including the interaction effects\n" 
+    << "of variable i with other uncertain variables.)\n" << std::endl;
+  s <<  std::setprecision(5);
+  
+  for (size_t k=0; k<numFunctions; k++){
+    s << std::setw(12) << resp_labels[k] << ' ';
+    s << '\n';	
+    for(size_t i=0; i<numContinuousVars; i++) {
+    s << std::setw(12) << cv_labels[i] << ":  Si = " << S1[k][i] << "  Ti = " 
+      << T1[k][i]  << '\n'; 
+    s << std::setw(12) << cv_labels[i] << ":  S2i = " << S2[k][i] << "  T2i = "
+      << T2[k][i]  << '\n'; 
+    s << std::setw(12) << cv_labels[i] << ":  S3i = " << S3[k][i] << "  T3i = "
+      << T3[k][i]  << '\n'; 
+    s << std::setw(12) << cv_labels[i] << ":  S4i = " << S4[k][i] << "  T4i = "
+      << T4[k][i]  << '\n'; 
+    s << '\n';
+    }
+    for(size_t i=0; i<numDiscreteRealVars; i++) {
+    s << std::setw(12) << drv_labels[i] << ":  Si = " 
+      << S1[k][i+numContinuousVars] << "  Ti = " 
+      << T1[k][i+numContinuousVars]  << '\n';
+    }
+    for(size_t i=0; i<numDiscreteIntVars; i++) {
+    s << std::setw(12) << div_labels[i] << ":  Si = " 
+      << S1[k][i+numContinuousVars+numDiscreteRealVars] << "  Ti = " 
+      << T1[k][i+numContinuousVars+numDiscreteRealVars]  << '\n';
+    }
+  }
+}
+
+
+void Analyzer::compute_best_metrics(const Response& response,
+				    std::pair<Real,Real>& metrics)
+{
+  size_t i, constr_offset;
+  const RealVector& fn_vals = response.function_values();
+  const RealVector& primary_wts
+    = iteratedModel.primary_response_fn_weights();
+  Real& obj_fn = metrics.second; obj_fn = 0.0;
+  if (numObjFns) {
+    constr_offset = numObjFns;
+    if (primary_wts.empty()) {
+      for (i=0; i<numObjFns; i++)
+	obj_fn += fn_vals[i];
+      if (numObjFns > 1)
+	obj_fn /= (Real)numObjFns;
+    }
+    else
+      for (i=0; i<numObjFns; i++)
+	obj_fn += primary_wts[i] * fn_vals[i];
+  }
+  else if (numLSqTerms) {
+    constr_offset = numLSqTerms;
+    if (primary_wts.empty())
+      for (i=0; i<numLSqTerms; i++)
+	obj_fn += std::pow(fn_vals[i], 2);
+    else
+      for (i=0; i<numLSqTerms; i++)
+	obj_fn += std::pow(primary_wts[i]*fn_vals[i], 2);
+  }
+  else // no "best" metric currently defined for generic response fns
+    return;
+  Real& constr_viol   = metrics.first; constr_viol= 0.0;
+  size_t num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
+         num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints();
+  const RealVector& nln_ineq_lwr_bnds
+    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
+  const RealVector& nln_ineq_upr_bnds
+    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
+  const RealVector& nln_eq_targets
+    = iteratedModel.nonlinear_eq_constraint_targets();
+  for (i=0; i<num_nln_ineq; i++) { // ineq constraint violation
+    size_t index = i + constr_offset;
+    Real ineq_con = fn_vals[index];
+    if (ineq_con > nln_ineq_upr_bnds[i])
+      constr_viol += std::pow(ineq_con - nln_ineq_upr_bnds[i],2);
+    else if (ineq_con < nln_ineq_lwr_bnds[i])
+      constr_viol += std::pow(nln_ineq_lwr_bnds[i] - ineq_con,2);
+  }
+  for (i=0; i<num_nln_eq; i++) { // eq constraint violation
+    size_t index = i + constr_offset + num_nln_ineq;
+    Real eq_con = fn_vals[index];
+    if (std::fabs(eq_con - nln_eq_targets[i]) > 0.)
+      constr_viol += std::pow(eq_con - nln_eq_targets[i], 2);
+  }
+}
+
+void Analyzer::
+update_best(const Real* sample_c_vars, int eval_id, const Response& response)
+{
+  RealRealPair metrics; 
+  compute_best_metrics(response, metrics);
+
+  size_t num_best_map = bestVarsRespMap.size();
+  if (num_best_map < numBest) { // initialization of best map
+    Variables vars = iteratedModel.current_variables().copy();
+    sample_to_variables(sample_c_vars, vars); // copy sample only when needed
+    Response copy_resp = response.copy();
+    ParamResponsePair prp(vars, iteratedModel.interface_id(), copy_resp,
+			  eval_id, false); // shallow copy since previous deep
+    std::pair<RealRealPair, ParamResponsePair> new_pr(metrics, prp);
+    bestVarsRespMap.insert(new_pr);
+  }
+  else {
+    RealPairPRPMultiMap::iterator it = --bestVarsRespMap.end();
+    //   Primary criterion: constraint violation must be <= stored violation
+    // Secondary criterion: for equal (or zero) constraint violation, objective
+    //                      must be < stored objective
+    if (metrics < it->first) { // new best
+      bestVarsRespMap.erase(it);
+      Variables vars = iteratedModel.current_variables().copy();
+      sample_to_variables(sample_c_vars, vars); // copy sample only when needed
+      Response copy_resp = response.copy();
+      ParamResponsePair prp(vars, iteratedModel.interface_id(), copy_resp,
+			    eval_id, false); // shallow copy since previous deep
+      std::pair<RealRealPair, ParamResponsePair> new_pr(metrics, prp);
+      bestVarsRespMap.insert(new_pr);
+    }
+  }
+}
+
+
+void Analyzer::
+update_best(const Variables& vars, int eval_id, const Response& response)
+{
+  RealRealPair metrics; 
+  compute_best_metrics(response, metrics);
+
+  size_t num_best_map = bestVarsRespMap.size();
+  if (num_best_map < numBest) { // initialization of best map
+    ParamResponsePair prp(vars, iteratedModel.interface_id(),
+			  response, eval_id); // deep copy
+    std::pair<RealRealPair, ParamResponsePair> new_pr(metrics, prp);
+    bestVarsRespMap.insert(new_pr);
+  }
+  else {
+    RealPairPRPMultiMap::iterator it = --bestVarsRespMap.end();
+    //   Primary criterion: constraint violation must be <= stored violation
+    // Secondary criterion: for equal (or zero) constraint violation, objective
+    //                      must be < stored objective
+    if (metrics < it->first) { // new best
+      bestVarsRespMap.erase(it);
+      ParamResponsePair prp(vars, iteratedModel.interface_id(),
+			    response, eval_id); // deep copy
+      std::pair<RealRealPair, ParamResponsePair> new_pr(metrics, prp);
+      bestVarsRespMap.insert(new_pr);
+    }
+  }
+}
+
+
+void Analyzer::print_results(std::ostream& s)
+{
+  if (!numObjFns && !numLSqTerms) {
+    s << "<<<<< Best data metrics not defined for generic response functions\n";
+    return;
+  }
+
+  // -------------------------------------
+  // Single and Multipoint results summary
+  // -------------------------------------
+  RealPairPRPMultiMap::iterator it = bestVarsRespMap.begin();
+  size_t i, offset, num_fns, num_best_map = bestVarsRespMap.size();
+  for (i=1; it!=bestVarsRespMap.end(); ++i, ++it) {
+    const ParamResponsePair& best_pr = it->second;
+    const Variables&  best_vars = best_pr.prp_parameters();
+    const RealVector& best_fns  = best_pr.prp_response().function_values();
+    s << "<<<<< Best parameters          ";
+    if (num_best_map > 1) s << "(set " << i << ") ";
+    s << "=\n" << best_vars;
+    num_fns = best_fns.length();
+    if (numObjFns) {
+      if (numObjFns > 1) s << "<<<<< Best objective functions ";
+      else               s << "<<<<< Best objective function  ";
+      if (num_best_map > 1) s << "(set " << i << ") "; s << "=\n";
+      write_data_partial(s, 0, numObjFns, best_fns);
+      offset = numObjFns;
+    }
+    else if (numLSqTerms) {
+      s << "<<<<< Best residual terms      ";
+      if (num_best_map > 1) s << "(set " << i << ") "; s << "=\n";
+      write_data_partial(s, 0, numLSqTerms, best_fns);
+      offset = numLSqTerms;
+    }
+    if (num_fns > offset) {
+      s << "<<<<< Best constraint values   ";
+      if (num_best_map > 1) s << "(set " << i << ") "; s << "=\n";
+      write_data_partial(s, offset, num_fns - offset, best_fns);
+    }
+    s << "<<<<< Best data captured at function evaluation "
+      << best_pr.eval_id() << std::endl;
+  }
+}
+
+
+void Analyzer::vary_pattern(bool pattern_flag)
+{
+  Cerr << "Error: Analyzer lacking redefinition of virtual vary_pattern() "
+       << "function.\n       This analyzer does not support pattern variance."
+       << std::endl;
+  abort_handler(-1);
+}
+
+
+void Analyzer::get_parameter_sets(Model& model)
+{
+  Cerr << "Error: Analyzer lacking redefinition of virtual get_parameter_sets()"
+       << " function.\n       This analyzer does not support parameter sets."
+       << std::endl;
+  abort_handler(-1);
+}
+
+} // namespace Dakota

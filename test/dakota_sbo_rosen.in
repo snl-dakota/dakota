@@ -1,0 +1,135 @@
+# DAKOTA INPUT FILE - dakota_sbo_rosen.in
+
+# Surrogate-based optimization to minimize Rosenbrock's function.
+
+# Note on testing in this file:
+# These tests exercise the various surrogate model types that are
+# available in the surrogate based optimization strategy. Here, the
+# options are "polynomial," "neural network," "mars," "kriging,"
+# and "taylor_series". See the DAKOTA Users Manual for a description of
+# these surrogate model types.
+
+strategy,
+	single_method
+	graphics
+	tabular_graphics_data
+	method_pointer = 'SBLO'
+
+method,
+	id_method = 'SBLO'
+	surrogate_based_local
+	model_pointer = 'SURROGATE'
+	approx_method_pointer = 'NLP'
+	max_iterations = 500
+#	soft_convergence_limit = 10
+###############################################
+# the trust region (TR) commands specify the
+# size of the first trust region, plus the
+# scaling factors that are applied to the TR
+# on subsequent interations
+###############################################
+	trust_region
+	  initial_size = 0.10
+	  minimum_size = 1.0e-6
+	  contract_threshold = 0.25
+	  expand_threshold   = 0.75
+	  contraction_factor = 0.50
+	  expansion_factor   = 1.50
+
+###############################################
+# begin opt specification
+###############################################
+method,
+	id_method = 'NLP'
+#	output verbose
+	conmin_frcg,
+#	optpp_q_newton,
+#	npsol_sqp,
+#	dot_bfgs,
+#	dot_frcg,
+	  max_iterations = 50,
+	  convergence_tolerance = 1e-8
+
+model,
+	id_model = 'SURROGATE'
+	surrogate global		      	#0,#1,#2,#3,#4,#7,#8
+	  responses_pointer = 'SURROGATE_RESP'
+	  dace_method_pointer = 'SAMPLING' 	#0,#1,#2,#3,#4,#7,#8
+#	  reuse_samples region
+#	  use_derivatives
+	  correction additive zeroth_order 	#0,#1,#2,#3,#4,#7,#8
+### Section to specify surface fit method.
+	  polynomial quadratic 			#0
+#	  neural_network			#1
+#	  kriging				#2,#3
+#	   correlations =  1.0 1.0		#3
+#	  mars					#4
+#	  moving_least_squares			#7
+#	  radial_basis				#8
+# 	surrogate local taylor_series		#5,#6
+#	  actual_model_pointer = 'TRUTH' 	#5,#6
+
+variables,
+	continuous_design = 2
+	  initial_point   -1.2	1.0
+	  lower_bounds    -2.0     -2.0
+	  upper_bounds     2.0 	2.0
+	  descriptors      'x1'     'x2'
+
+responses,
+	id_responses = 'SURROGATE_RESP'
+	num_objective_functions = 1
+#	analytic_gradients			#7,#8
+  	numerical_gradients			#0,#1,#2,#3,#4,#5,#6
+  	  method_source dakota			#0,#1,#2,#3,#4,#5,#6
+  	  interval_type central			#0,#1,#2,#3,#4,#5,#6
+ 	  fd_gradient_step_size = 1.e-6		#0,#1,#2,#3,#4,#5,#6
+	no_hessians
+
+###############################################
+# Sampling method specifications for sampling in
+# the trust regions of the SBO strategy
+###############################################
+method,
+	id_method = 'SAMPLING'
+	model_pointer = 'TRUTH'
+#	dace box_behnken
+#	dace central_composite
+#	dace oas #seed = 5
+#	  samples = 49 symbols = 7
+#	dace lhs #seed = 5
+#	  samples = 10 symbols = 10
+# To switch from the LHS code (used in the
+# nond_sampling method) to DDACE, comment out
+# the four lines below and comment out the two
+# lines starting with 'dace lhs' above.
+	nond_sampling
+	  samples = 10		#0,#1,#2,#3,#5,#6,#7,#8
+#	  samples = 30		#4
+	  seed = 531 rng rnum2
+	  sample_type lhs
+	  all_variables
+
+model,
+	id_model = 'TRUTH'
+	single
+	  interface_pointer = 'TRUE_FN'
+	  responses_pointer = 'TRUE_RESP'
+
+interface,
+	direct
+	id_interface = 'TRUE_FN'
+ 	  analysis_driver = 'rosenbrock'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	id_responses = 'TRUE_RESP'
+	num_objective_functions = 1
+	no_gradients		#0,#1,#2,#3,#4,#7,#8
+#	analytic_gradients	#5,#6
+#	numerical_gradients
+#	  method_source dakota
+#	  interval_type central
+#	  fd_gradient_step_size = 1.e-6
+	no_hessians		#0,#1,#2,#3,#4,#5,#7,#8
+#	analytic_hessians	#6

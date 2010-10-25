@@ -1,0 +1,79 @@
+# -----------------------------------------------------------------------
+# $Id: install.in 3186 2006-02-15 18:17:33Z slbrow $
+#
+# Maurice LeBrun
+# IFS, University of Texas at Austin
+# 14-Jul-1994
+#
+# Make assignments and targets for installation under Unix.
+#
+# It is recommended that you use a dedicated directory such as
+# /usr/local/plplot (read the FAQ on this topic).  The install directory
+# will be created if necessary, as will subdirectories bin, doc, examples,
+# include, lib, man (eventually), and tcl.
+#
+# Notes: 
+#	if Tk support is not included, TK_INSTALL will be null.
+#	if Tcl support is not included, TCL_INSTALL will be null.
+#
+# -----------------------------------------------------------------------
+
+install: install_lib install_utils install_demos
+
+install_lib:
+	-if not exist $(INCLUDE_DIR) mkdir $(INCLUDE_DIR)
+	-if not exist $(LIB_DIR) mkdir $(LIB_DIR)
+	-if not exist $(DOC_DIR) mkdir $(DOC_DIR)
+	-if not exist $(BIN_DIR) mkdir $(BIN_DIR)
+	-if not exist $(INFO_DIR) mkdir $(INFO_DIR)
+	-copy $(PLLIB_DIR)\$(PLLIB_BASE)*$A $(LIB_DIR)
+	-copy $(PLFNT_DIR)\*.fnt $(LIB_DIR)
+	-echo $(LIB_DIR)
+	-echo $(LIB_DIR)\*$A
+	-$(RANLIB) $(LIB_DIRF)/$(PLLIB_BASE)*$A
+#	-cd ..\..\..\..
+#	-for %i in (README README.1st Changes.log COPYRIGHTS FAQ ToDo mklinks) do copy %i $(DOC_DIR)
+	-copy ..\..\..\..\README	$(DOC_DIR)
+	-copy ..\..\..\..\README.1st	$(DOC_DIR)
+	-copy ..\..\..\..\Changes.log	$(DOC_DIR)
+	-copy ..\..\..\..\COPYRIGHTS	$(DOC_DIR)
+	-copy ..\..\..\..\FAQ		$(DOC_DIR)
+	-copy ..\..\..\..\ToDo		$(DOC_DIR)
+	-copy ..\..\..\..\mklinks	$(DOC_DIR)
+	-if not exist $(DOC_DIR)\README.local do copy README.local $(DOC_DIR)
+	-copy ..\..\..\..\doc\*.info $(INFO_DIR)
+	-copy ..\..\..\..\scripts\pl*.* $(BIN_DIR)
+#	-cd include
+#	-for %i in (plplotP.h plplot.h plplotX.h plplotTK.h plevent.h plstream.h pdf.h tclMatrix.h) do copy %i $(INCLUDE_DIR)
+	copy plplotP.h		$(INCLUDE_DIR)
+	copy plplot.h		$(INCLUDE_DIR)
+	copy plplotX.h		$(INCLUDE_DIR)
+	copy plplotTK.h		$(INCLUDE_DIR)
+	copy plevent.h		$(INCLUDE_DIR)
+	copy plstream.h		$(INCLUDE_DIR)
+	copy pdf.h		$(INCLUDE_DIR)
+	copy tclMatrix.h	$(INCLUDE_DIR)
+
+install_demos:
+	-if not exist $(DEMOS_DIR) mkdir $(DEMOS_DIR)
+	-copy Makedemo $(DEMOS_DIR)\Makefile
+# C examples	
+	-if not exist $(DEMOS_DIR)\C mkdir $(DEMOS_DIR)\C
+	-copy $(DEMOS_DIR)\Makefile $(DEMOS_DIR)\C
+	-copy ..\..\..\..\examples\C\*.* $(DEMOS_DIR)\C
+# f77 examples
+#	-if not exist $(DEMOS_DIR)\f77 mkdir $(DEMOS_DIR)\f77
+#	-copy $(DEMOS_DIR)\Makefile $(DEMOS_DIR)\f77
+#	-copy ..\..\..\..\examples\f77\*.* $(DEMOS_DIR)\f77
+
+install_utils:
+	$(LDC) $(LDC_FLAGS) plrender$O $(LIB_INSTALL) \
+		-o plrender$E $(LDC_LIBS)
+	$(LDC) $(LDC_FLAGS) pltek$O $(LIB_INSTALL) \
+		-o pltek$E $(LDC_LIBS)
+	-$(BIND) plrender$E $(BIND_OPTS)
+	-$(STRIP) plrender$E
+	-$(BIND) pltek$E $(BIND_OPTS)
+	-$(STRIP) pltek$E
+	-copy plrender$E $(BIN_DIR)
+	-copy pltek$E $(BIN_DIR)

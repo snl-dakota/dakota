@@ -1,0 +1,51 @@
+C      $Id: x05f.fm4 3186 2006-02-15 18:17:33Z slbrow $
+C      Draws a histogram from sample data
+C
+C      Copyright (C) 2004  Alan W. Irwin
+C
+C      This file is part of PLplot.
+C
+C      PLplot is free software; you can redistribute it and/or modify
+C      it under the terms of the GNU General Library Public License as
+C      published by the Free Software Foundation; either version 2 of the
+C      License, or (at your option) any later version.
+C
+C      PLplot is distributed in the hope that it will be useful,
+C      but WITHOUT ANY WARRANTY; without even the implied warranty of
+C      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+C      GNU Library General Public License for more details.
+C
+C      You should have received a copy of the GNU Library General Public
+C      License along with PLplot; if not, write to the Free Software
+C      Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+      implicit none
+      real*8 PI
+      parameter (PI = 3.1415926535897932384d0)
+
+      integer i
+      integer NPTS
+      parameter ( NPTS = 2047 )
+      real*8 data(NPTS), delta
+      integer PL_PARSE_FULL
+      parameter(PL_PARSE_FULL = 1)
+C      Process command-line arguments
+      call plparseopts(PL_PARSE_FULL)
+
+C      Initialize plplot
+      call plinit()
+C      Fill up data points
+
+      delta = 2.0d0 * PI / dble (NPTS)
+      do i=1,NPTS
+        data(i)=sin(delta*dble (i-1))
+      enddo
+
+      call plcol0(1)
+      call plhist(NPTS, data, -1.1d0, 1.1d0, 44, 0)
+      call plcol0(2)
+      call pllab('#frValue','#frFrequency',
+     &  '#frPLplot Example 5 - Probability function of Oscillator')
+
+      call plend
+      end

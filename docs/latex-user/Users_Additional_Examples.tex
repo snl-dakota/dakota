@@ -1,0 +1,1228 @@
+\chapter{Additional Examples}\label{additional}
+
+This chapter contains additional examples of DAKOTA methods and
+verification test problems.  While the test problems and binary
+analysis drivers are principally managed in {\tt Dakota/test}, many
+extracted input files are also included in {\tt
+Dakota/examples/tutorial} and {\tt Dakota/examples/methods} for user
+convenience.
+
+\section{Textbook Example}\label{additional:textbook}
+
+Equation~\ref{tutorial:textbook_f} presents the 2-dimensional
+form of the textbook problem.  An extended formulation is stated as
+\begin{eqnarray}
+\texttt{minimize }   & & f = \sum_{i=1}^{n}(x_i-1)^4 \nonumber\\
+\texttt{subject to } & & g_1 = x_1^2-\frac{x_2}{2} \leq 0
+  \label{additional:tbe}\\
+  & & g_2=x_2^2-\frac{x_1}{2} \leq 0\nonumber\\
+  & & 0.5 \leq x_1 \leq 5.8\nonumber\\
+  & & -2.9 \leq x_2 \leq 2.9\nonumber
+\end{eqnarray}
+where $n$ is the number of design variables. The objective function is
+designed to accommodate an arbitrary number of design variables in
+order to allow flexible testing of a variety of data sets. Contour
+plots for the $n=2$ case have been shown previously in
+Figure~\ref{tutorial:textbook_prob}.
+
+This example problem may also be used to exercise least squares
+solution methods by modifying the problem formulation to:
+\begin{equation}
+\texttt{minimize } (f)^2+(g_1)^2+(g_2)^2 \label{additional:tbls}
+\end{equation}
+
+This modification is performed by simply changing the responses
+specification for the three functions from
+\texttt{num\_objective\_functions = 1} and
+\texttt{num\_nonlinear\_inequality\_constraints = 2} to \\
+\texttt{num\_least\_squares\_terms = 3}. Note that the two problem
+formulations are not equivalent and have different solutions.
+
+Another way to exercise the least squares methods which would be
+equivalent to the optimization formulation would be to select the
+residual functions to be $(x_{i}-1)^2$. However, this formulation
+requires modification to \texttt{Dakota/test/text\_book.C} and will
+not be presented here. Equation~\ref{additional:tbls}, on the other
+hand, can use the existing \texttt{text\_book.C} without modification.
+Refer to Section~\ref{additional:rosenbrock} for an example of
+minimizing the same objective function using both optimization and
+least squares approaches.
+
+\subsection{Methods}\label{additional:textbook:methods}
+
+The \texttt{dakota\_textbook.in} file provided in the
+\texttt{Dakota/examples/tutorial} directory selects a \\
+\texttt{conmin\_mfd}
+%\texttt{dot\_mmfd} 
+optimizer to perform constrained minimization using
+the \texttt{text\_book} simulator.  Additional gradient-based methods
+that can be used include methods from 
+DOT, 
+%CONMIN, 
+NPSOL, NLPQL, and OPT++.
+In addition the unconstrained least squares formulation of
+Equation~\ref{additional:tbls} can be solved using OPT++ Gauss-Newton,
+NLSSOL, and NL2SOL methods.
+
+A hybrid optimization can also be demonstrated on the
+\texttt{text\_book} problem. The \texttt{dakota\_hybrid.in} file
+provided in {\tt Dakota/examples/methods} starts with a
+\texttt{coliny\_ea} solution which feeds its best point into a
+\texttt{coliny\_pattern\_search} optimization which feeds its best
+point into \texttt{optpp\_newton}. While this approach is overkill for
+such a simple problem, it is useful for demonstrating the coordination
+between multiple methods in the hybrid strategy.
+
+In addition, \texttt{Dakota/test/dakota\_textbook\_3pc.in}
+demonstrates the use of a 3-piece interface to perform the parameter
+to response mapping, and \texttt{Dakota/test/dakota\_textbook\_lhs.in}
+demonstrates the use of Latin hypercube Monte Carlo sampling for
+assessing probability of failure as measured by specified response
+levels.
+
+\subsection{Optimization Results}\label{additional:textbook:results}
+
+For the optimization problem given in Equation~\ref{additional:tbe}, the
+unconstrained solution\\(\texttt{num\_nonlinear\_inequality\_constraints} 
+set to zero) for two design variables is:
+\begin{eqnarray*}
+    x_1 &=& 1.0 \\
+    x_2 &=& 1.0
+\end{eqnarray*}
+with
+\begin{eqnarray*}
+    f^{\ast} &=& 0.0
+\end{eqnarray*}
+
+The solution for the optimization problem constrained by $g_1$\\
+(\texttt{num\_nonlinear\_inequality\_constraints} set to one) is:
+\begin{eqnarray*}
+    x_1 &=& 0.763 \\
+    x_2 &=& 1.16
+\end{eqnarray*}
+with
+\begin{eqnarray*}
+      f^{\ast} &=& 0.00388 \\
+    g_1^{\ast} &=& 0.0 ~~\mathrm{(active)}
+\end{eqnarray*}
+
+The solution for the optimization problem constrained by $g_1$ and $g_2$\\
+(\texttt{num\_nonlinear\_inequality\_constraints} set to two) is:
+\begin{eqnarray*}
+    x_1 &=& 0.500 \\
+    x_2 &=& 0.500
+\end{eqnarray*}
+with
+\begin{eqnarray*}
+      f^{\ast} &=& 0.125 \\
+    g_1^{\ast} &=& 0.0 ~~\mathrm{(active)} \\
+    g_2^{\ast} &=& 0.0 ~~\mathrm{(active)}
+\end{eqnarray*}
+
+Note that as constraints are added, the design freedom is restricted
+(the additional constraints are active at the solution) and an
+increase in the optimal objective function is observed.
+
+\subsection{Least Squares Results}\label{additional:textbook:least}
+
+The solution for the least squares problem given in 
+Equation~\ref{additional:tbls} is:
+\begin{eqnarray*}
+    x_1 &=& 0.566 \\
+    x_2 &=& 0.566
+\end{eqnarray*}
+with the residual functions equal to
+\begin{eqnarray*}
+      f^{\ast} &=& 0.0713 \\
+    g_1^{\ast} &=& 0.0371 \\
+    g_2^{\ast} &=& 0.0371
+\end{eqnarray*}
+and a minimal sum of the squares of $0.00783$.
+
+This study requires selection of \texttt{num\_least\_squares\_terms = 3} 
+in the responses specification and selection of either 
+\texttt{optpp\_g\_newton}, \texttt{nlssol\_sqp}, or \texttt{nl2sol} in 
+the method specification.
+
+\section{Rosenbrock Example}\label{additional:rosenbrock}
+
+The Rosenbrock function~\cite{Gil81} is a well known benchmark problem
+for optimization algorithms. Its standard two-dimensional formulation
+can be stated as
+\begin{equation}
+\texttt{minimize } f=100(x_2-x_1^2)^2+(1-x_1)^2 \label{additional:rosenstd}
+\end{equation}
+Two $n$-dimensional formulations are present in the literature.
+First, \cite{Noc99} formulates an ``extended Rosenbrock'' as:
+\begin{equation}
+f = \sum_{i=1}^{n/2} \left[ \alpha (x_{2i}-x_{2i-1}^2)^2+(1-x_{2i-1})^2 \right]
+\label{additional:rosenexd}
+\end{equation}
+Second, \cite{Sch87} formulates a ``generalized Rosenbrock'' as:
+\begin{equation}
+f = \sum_{i=1}^{n-1} \left[ 100 (x_{i+1}-x_i^2)^2+(1-x_i)^2 \right]
+\label{additional:rosengen}
+\end{equation}
+These formulations are not currently supported in DAKOTA's
+system/fork/direct interfaces.
+
+Surface and contour plots for this function have been shown previously
+in Figure~\ref{tutorial:rosenbrock_prob}. This example problem
+may also be used to exercise least squares solution methods by
+recasting the problem formulation into:
+\begin{equation}
+\texttt{minimize } f = (f_1)^2+(f_2)^2 \label{additional:rosenls}
+\end{equation}
+where
+\begin{equation}
+f_1 = 10 (x_2 - x_1^2) \label{additional:rosenr1}
+\end{equation}
+and
+\begin{equation}
+f_2 = 1 - x_1 \label{additional:rosenr2}
+\end{equation}
+are residual terms. In this case (unlike the least squares
+modification in Section~\ref{additional:textbook}), the two problem
+formulations are equivalent and have identical solutions.
+
+\subsection{Methods}\label{additional:rosenbrock:methods}
+
+In the \texttt{Dakota/test} directory, the \texttt{rosenbrock}
+executable (compiled from \texttt{rosenbrock.C}) checks the number of
+response functions passed in the parameters file and returns either an
+objective function (as computed from
+Equation~\ref{additional:rosenstd}) for use with optimization methods
+or two least squares terms (as computed from
+Equations~\ref{additional:rosenr1}-\ref{additional:rosenr2}) for use
+with least squares methods.  Both cases support analytic gradients of
+the function set with respect to the design variables. The
+\texttt{dakota\_rosenbrock.in} input file can be used to solve both
+problems by toggling settings in the method and responses
+specifications. To run the optimization solution, select
+\texttt{num\_objective\_functions = 1} in the responses specification,
+and select an optimizer (e.g., \texttt{optpp\_q\_newton}) in the
+method specification, e.g., as shown in \\ {\tt
+Dakota/examples/methods/dakota\_addtnl\_rosen\_opt.in}:
+\begin{center}
+  \begin{small}
+    \begin{bigbox}
+      \verbatimtabinput[8]{dakota_addtnl_rosen_opt.in}
+    \end{bigbox}
+  \end{small}
+\end{center}
+
+To run the least squares solution, the responses specification is
+changed to \texttt{num\_least\_squares\_terms = 2} and the method
+specification is changed to a least squares method, e.g.,
+\texttt{optpp\_g\_newton}, as shown in {\tt
+Dakota/examples/methods/dakota\_addtnl\_rosen\_ls.in}:
+\begin{center}
+  \begin{small}
+    \begin{bigbox}
+      \verbatimtabinput[8]{dakota_addtnl_rosen_ls.in}
+    \end{bigbox}
+  \end{small}
+\end{center}
+
+\subsection{Results}\label{additional:rosenbrock:results}
+
+The optimal solution, solved either as a least squares problem or an
+optimization problem, is:
+\begin{eqnarray*}
+    x_1 &=& 1.0 \\
+    x_2 &=& 1.0
+\end{eqnarray*}
+with
+\begin{eqnarray*}
+    f^{\ast} &=& 0.0
+\end{eqnarray*}
+
+In comparing the two approaches, one would expect the Gauss-Newton
+approach to be more efficient since it exploits the special-structure
+of a least squares objective function and, in this problem, the
+Gauss-Newton Hessian is a good approximation since the least squares
+residuals are zero at the solution.  From a good initial guess, this
+expected behavior is clearly demonstrated. Starting from
+\texttt{cdv\_initial\_point = 0.8, 0.7}, the \texttt{optpp\_g\_newton}
+method converges in only 3 function and gradient evaluations while the
+\texttt{optpp\_q\_newton} method requires 27 function and gradient
+evaluations to achieve similar accuracy. Starting from a poorer
+initial guess (e.g., \texttt{cdv\_initial\_point = -1.2, 1.0}), the
+trend is less obvious since both methods spend several evaluations
+finding the vicinity of the minimum (total function and gradient
+evaluations = 45 for \texttt{optpp\_q\_newton} and 29 for
+\texttt{optpp\_g\_newton}).  However, once the vicinity is located and
+the Hessian approximation becomes accurate, convergence is much more
+rapid with the Gauss-Newton approach.
+
+Shown below is the complete DAKOTA version 4.2 output for the
+\texttt{optpp\_g\_newton} method starting from\\
+\texttt{cdv\_initial\_point = 0.8, 0.7}:
+\begin{small}
+\begin{verbatim}
+    Running MPI executable in serial mode.
+    DAKOTA version 4.2 released 11/05/2008.
+    Constructing Single Method Strategy...
+    Writing new restart file dakota.rst
+    methodName = optpp_g_newton
+    gradientType = analytic
+    hessianType = none
+    
+    >>>>> Running Single Method Strategy.
+    
+    >>>>> Running optpp_g_newton iterator.
+    
+    ------------------------------
+    Begin Function Evaluation    1
+    ------------------------------
+    Parameters for function evaluation 1:
+                          8.0000000000e-01 x1
+                          7.0000000000e-01 x2
+    
+    (rosenbrock /tmp/fileZZrtxQ /tmp/file2iKA3U)
+    
+    Active response data for function evaluation 1:
+    Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
+                          6.0000000000e-01 least_sq_term_1
+                          2.0000000000e-01 least_sq_term_2
+     [ -1.6000000000e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+     [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+    
+    
+    
+    
+    ------------------------------
+    Begin Function Evaluation    2
+    ------------------------------
+    Parameters for function evaluation 2:
+                          9.9999528206e-01 x1
+                          9.5999243139e-01 x2
+    
+    (rosenbrock /tmp/fileb3UDCZ /tmp/file6nnHb4)
+    
+    Active response data for function evaluation 2:
+    Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
+                         -3.9998132761e-01 least_sq_term_1
+                          4.7179363810e-06 least_sq_term_2
+     [ -1.9999905641e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+     [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+    
+    
+    
+    
+    ------------------------------
+    Begin Function Evaluation    3
+    ------------------------------
+    Parameters for function evaluation 3:
+                          9.9999904377e-01 x1
+                          9.9999808276e-01 x2
+    
+    (rosenbrock /tmp/file12UjN8 /tmp/fileWSJWod)
+    
+    Active response data for function evaluation 3:
+    Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
+                         -4.7950734494e-08 least_sq_term_1
+                          9.5622502239e-07 least_sq_term_2
+     [ -1.9999980875e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+     [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+    
+    
+    
+    
+    <<<<< Iterator optpp_g_newton completed.
+    
+    ------------------------------
+    Begin Function Evaluation    4
+    ------------------------------
+    Parameters for function evaluation 4:
+                          9.9999904377e-01 x1
+                          9.9999808276e-01 x2
+    
+    Duplication detected: analysis_drivers not invoked.
+    
+    Active response data retrieved from database:
+    Active set vector = { 2 2 } Deriv vars vector = { 1 2 }
+     [ -1.9999980875e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+     [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+    
+    
+    <<<<< Function evaluation summary: 4 total (3 new, 1 duplicate)
+    <<<<< Best parameters          =
+                          9.9999904377e-01 x1
+                          9.9999808276e-01 x2
+    <<<<< Best residual norm =  9.5742653315e-07; 0.5 * norm^2 =  4.5833278319e-13
+    <<<<< Best residual terms      =
+                         -4.7950734494e-08
+                          9.5622502239e-07
+    <<<<< Best data captured at function evaluation 3
+    Confidence Interval for x1 is [  9.9998687852e-01,  1.0000112090e+00 ]
+    Confidence Interval for x2 is [  9.9997372187e-01,  1.0000224436e+00 ]
+    <<<<< Single Method Strategy completed.
+    DAKOTA execution time in seconds:
+      Total CPU        =       0.01 [parent =   0.008999, child =   0.001001]
+      Total wall clock =   0.039669
+\end{verbatim}
+\end{small}
+
+\section{Cylinder Head Example}\label{additional:cylinder}
+
+The cylinder head example problem is stated as:
+\begin{eqnarray}
+\texttt{minimize }   & & f=-1\bigg(\frac{\mathtt{horsepower}}{250}+
+  \frac{\mathtt{warranty}}{100000}\bigg) \nonumber\\
+\texttt{subject to } & & \sigma_{max} \leq 0.5 \sigma_{yield}
+  \label{additional:cylhead}\\
+                     & & \mathtt{warranty} \geq 100000          \nonumber\\
+                     & & \mathtt{time_{cycle}} \leq 60          \nonumber\\
+                     & & 1.5 \leq \mathtt{d_{intake}} \leq 2.164\nonumber\\
+                     & & 0.0 \leq \mathtt{flatness} \leq 4.0    \nonumber
+\end{eqnarray}
+
+This formulation seeks to simultaneously maximize normalized engine
+horsepower and engine warranty over variables of valve intake diameter
+($\mathtt{d_{intake}}$) in inches and overall head flatness
+($\mathtt{flatness}$) in thousandths of an inch subject to inequality
+constraints that the maximum stress cannot exceed half of yield, that
+warranty must be at least 100000 miles, and that manufacturing cycle
+time must be less than 60 seconds. Since the constraints involve
+different scales, they should be nondimensionalized (note: the
+nonlinear constraint scaling described in
+Section~\ref{opt:additional:scaling} can now do this
+automatically). In addition, they can be converted to the standard
+1-sided form $g(\mathbf{x}) \leq 0$ as follows:
+\begin{eqnarray}
+  & & g_1=\frac{2\sigma_{\mathtt{max}}}{\sigma_{\mathtt{yield}}}-1 \leq 0
+  \nonumber\\
+  & & g_2=1-\frac{\mathtt{warranty}}{100000} \leq 0
+  \label{additional:cylheadaltg}\\
+  & & g_3=\frac{\mathtt{time_{cycle}}}{60}-1 \leq 0\nonumber
+\end{eqnarray}
+
+The objective function and constraints are related analytically to the
+design variables according to the following simple expressions:
+\begin{eqnarray}
+\mathtt{warranty}     &=& 100000+15000(4-\mathtt{flatness})\nonumber\\
+\mathtt{time_{cycle}} &=& 45+4.5(4-\mathtt{flatness})^{1.5}\nonumber\\
+\mathtt{horsepower}   &=& 250+200\bigg(\frac{\mathtt{d_{intake}}}{1.833}-1\bigg)
+  \label{additional:cylheadexp}\\
+\sigma_{\mathtt{max}} &=& 750+\frac{1}{(\mathtt{t_{wall}})^{2.5}}\nonumber\\
+\mathtt{t_{wall}}     &=& \mathtt{offset_{intake}-offset_{exhaust}}-
+  \frac{(\mathtt{d_{intake}-d_{exhaust}})}{2}\nonumber
+\end{eqnarray}
+
+where the constants in Equation~\ref{additional:cylheadaltg} and
+Equation~\ref{additional:cylheadexp} assume the following values:
+$\sigma_{\mathtt{yield}}=3000$, $\mathtt{offset_{intake}}=3.25$,
+$\mathtt{offset_{exhaust}}=1.34$, and $\mathtt{d_{exhaust}}=1.556$.
+
+\subsection{Methods}\label{additional:cylinder:methods}
+
+In the \texttt{Dakota/test} directory, the
+\texttt{dakota\_cyl\_head.in} input file is used to execute a variety
+of tests using the cylinder head example. One of these tests is shown
+below and is available directly in \\ {\tt
+Dakota/examples/methods/dakota\_addtnl\_cylhead.in}:
+\begin{center}
+  \begin{small}
+    \begin{bigbox}
+      \verbatimtabinput[8]{dakota_addtnl_cylhead.in}
+    \end{bigbox}
+  \end{small}
+\end{center}
+
+The interface keyword specifies use of the \texttt{cyl\_head}
+executable (compiled from \texttt{Dakota/test/cyl\_head.C}) as the
+simulator. The variables and responses keywords specify the data sets
+to be used in the iteration by providing the initial point,
+descriptors, and upper and lower bounds for two continuous design
+variables and by specifying the use of one objective function, three
+inequality constraints, and numerical gradients in the problem. The
+method keyword specifies the use of the \texttt{npsol\_sqp} method to
+solve this constrained optimization problem. No strategy keyword is
+specified, so the default \texttt{single\_method} strategy is used.
+
+\subsection{Optimization Results}\label{additional:cylinder:results}
+
+The solution for the constrained optimization problem is:
+\begin{eqnarray*}
+    \mathrm{intake\_dia} &=& 2.122 \\
+    \mathrm{flatness}    &=& 1.769
+\end{eqnarray*}
+with
+\begin{eqnarray*}
+      f^{\ast} &=& -2.461 \\
+    g_1^{\ast} &=&  0.0    ~~\mathrm{(active)} \\
+    g_2^{\ast} &=& -0.3347 ~~\mathrm{(inactive)} \\
+    g_3^{\ast} &=&  0.0    ~~\mathrm{(active)}
+\end{eqnarray*}
+which corresponds to the following optimal response quantities:
+\begin{eqnarray*}
+    \mathrm{warranty}        &=& 133472 \\
+    \mathrm{cycle\_time}     &=& 60 \\
+    \mathrm{wall\_thickness} &=& 0.0707906 \\
+    \mathrm{horse\_power}    &=& 281.579 \\
+    \mathrm{max\_stress}     &=& 1500
+\end{eqnarray*}
+
+The final report from the DAKOTA output is as follows:
+\begin{small}
+\begin{verbatim}
+    <<<<< Iterator npsol_sqp completed.					 
+    <<<<< Function evaluation summary: 55 total (55 new, 0 duplicate)	 
+    <<<<< Best parameters          =					 
+                          2.1224188322e+00 intake_dia			 
+                          1.7685568331e+00 flatness
+    <<<<< Best objective function  =					 
+                         -2.4610312954e+00
+    <<<<< Best constraint values   =		 
+                          1.8407497748e-13
+                         -3.3471647504e-01
+                          0.0000000000e+00
+    <<<<< Best data captured at function evaluation 51
+    <<<<< Single Method Strategy completed.
+    DAKOTA execution time in seconds:					 
+      Total CPU        =       0.04 [parent =   0.031995, child =   0.008005]
+      Total wall clock =   0.232134
+\end{verbatim}
+\end{small}
+
+\section{Container Example}\label{additional:container}
+
+For this example, suppose that a high-volume manufacturer of light
+weight steel containers wants to minimize the amount of raw sheet
+material that must be used to manufacture a 1.1 quart
+cylindrical-shaped can, including waste material. Material for the
+container walls and end caps is stamped from stock sheet material of
+constant thickness. The seal between the end caps and container wall
+is manufactured by a press forming operation on the end caps. The end
+caps can then be attached to the container wall forming a seal through
+a crimping operation.
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.4]{images/end_cap}
+  \caption{Container wall-to-end-cap seal}
+  \label{additional:figure01}
+\end{figure}
+
+For preliminary design purposes, the extra material that would
+normally go into the container end cap seals is approximated by
+increasing the cut dimensions of the end cap diameters by 12\% and the
+height of the container wall by 5\%, and waste associated with
+stamping the end caps in a specialized pattern from sheet stock is
+estimated as 15\% of the cap area. The equation for the area of the
+container materials including waste is
+
+\[
+A=2 \times \left(\begin{array}{c}
+    \mathtt{end\hbox{ }cap}\\
+    \mathtt{waste}\\
+    \mathtt{material}\\
+    \mathtt{factor}
+  \end{array} \right)
+\times \left(\begin{array}{c}
+    \mathtt{end\hbox{ }cap}\\
+    \mathtt{seal}\\
+    \mathtt{material}\\
+    \mathtt{factor}
+  \end{array} \right)
+\times \left(\begin{array}{c}
+    \mathtt{nominal}\\
+    \mathtt{end\hbox{ }cap}\\
+    \mathtt{area}
+  \end{array} \right)
++ \left(\begin{array}{c}
+    \mathtt{container}\\
+    \mathtt{wall\hbox{ }seal}\\
+    \mathtt{material}\\
+    \mathtt{factor}
+  \end{array} \right)
+\times \left(\begin{array}{c}
+    \mathtt{nominal}\\
+    \mathtt{container}\\
+    \mathtt{wall\hbox{ }area}
+  \end{array} \right)
+\]
+
+or
+\begin{equation}
+A=2(1.15)(1.12)\pi\frac{D^2}{4}+(1.05)\pi DH \label{additional:contA}
+\end{equation}
+
+where $D$ and $H$ are the diameter and height of the finished product
+in units of inches, respectively. The volume of the finished product
+is specified to be
+\begin{equation}
+  V=\pi\frac{D^2H}{4}=(1.1\mathtt{qt})(57.75 \mathtt{in}^3/\mathtt{qt})
+  \label{additional:contV}
+\end{equation}
+
+The equation for area is the objective function for this problem; it
+is to be minimized. The equation for volume is an equality constraint;
+it must be satisfied at the conclusion of the optimization problem.
+Any combination of $D$ and $H$ that satisfies the volume constraint is
+a \textbf{feasible} solution (although not necessarily the optimal
+solution) to the area minimization problem, and any combination that
+does not satisfy the volume constraint is an \textbf{infeasible}
+solution. The area that is a minimum subject to the volume constraint
+is the \textbf{optimal} area, and the corresponding values for the
+parameters $D$ and $H$ are the optimal parameter values.
+
+It is important that the equations supplied to a numerical
+optimization code be limited to generating only physically realizable
+values, since an optimizer will not have the capability to
+differentiate between meaningful and nonphysical parameter values. It
+is often up to the engineer to supply these limits, usually in the
+form of parameter bound constraints. For example, by observing the
+equations for the area objective function and the volume constraint,
+it can be seen that by allowing the diameter, $D$, to become negative,
+it is algebraically possible to generate relatively small values for
+the area that also satisfy the volume constraint. Negative values for
+$D$ are of course physically meaningless. Therefore, to ensure that
+the numerically-solved optimization problem remains meaningful, a
+bound constraint of $-D \leq 0$ must be included in the optimization
+problem statement. A positive value for $H$ is implied since the
+volume constraint could never be satisfied if $H$ were negative.
+However, a bound constraint of $-H \leq 0$ can be added to the
+optimization problem if desired. The optimization problem can then be
+stated in a standardized form as
+\begin{eqnarray}
+\texttt{minimize}   & & 2(1.15)(1.12)\pi\frac{D^2}{4}+(1.05)^2\pi DH\nonumber\\
+\texttt{subject to} & & \pi\frac{D^2H}{4}=
+  (1.1\mathtt{qt})(57.75 \mathtt{in}^3/\mathtt{qt}) \label{additional:contFH}\\
+                    & & -D \leq 0\hbox{, }-H \leq 0\nonumber
+\end{eqnarray}
+
+A graphical view of the container optimization problem appears in
+Figure~\ref{additional:figure02}. The 3-D surface defines the area,
+$A$, as a function of diameter and height. The curved line that
+extends across the surface defines the areas that satisfy the volume
+equality constraint, $V$. Graphically, the container optimization
+problem can be viewed as one of finding the point along the constraint
+line with the smallest 3-D surface height in
+Figure~\ref{additional:figure02}. This point corresponds to the
+optimal values for diameter and height of the final product.
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.5]{images/graphical_container_opt}
+  \caption{A graphical representation of the container optimization
+    problem.}
+  \label{additional:figure02}
+\end{figure}
+
+The input file for this test problem is named
+\texttt{dakota\_container.in} in the directory \\
+\texttt{Dakota/examples/methods}.  The solution to this example
+problem is $(H,D)=(4.99,4.03)$, with a minimum area of 98.43
+$\mathtt{in}^2$ .
+
+The final report from the DAKOTA output is as follows:
+\begin{small}
+\begin{verbatim}
+    <<<<< Iterator npsol_sqp completed.
+    <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
+    <<<<< Best parameters          =
+                          4.9873894231e+00 H
+                          4.0270846274e+00 D
+    <<<<< Best objective function  =
+                          9.8432498116e+01
+    <<<<< Best constraint values   =
+                         -9.6301439045e-12
+    <<<<< Best data captured at function evaluation 36
+    <<<<< Single Method Strategy completed.
+    DAKOTA execution time in seconds:
+      Total CPU        =      0.18 [parent =      0.18, child =         0]
+      Total wall clock =  0.809126
+\end{verbatim}
+\end{small}
+
+% Begin UQ testers
+
+\section{Log Ratio Example}\label{additional:logratio}
+
+This test problem, mentioned previously in
+Section~\ref{uq:reliability:ex}, has a limit state function defined by
+the ratio of two lognormally-distributed random variables.
+\begin{equation}
+g({\bf x}) = \frac{x_1}{x_2}
+\end{equation}
+The distributions for both $x_1$ and $x_2$ are Lognormal(1, 0.5) with
+a correlation coefficient between the two variables of 0.3.
+
+First-order and second-order reliability analysis are performed in the
+\texttt{dakota\_logratio.in} and \\
+\texttt{dakota\_logratio\_taylor2.in} input files in {\tt
+Dakota/test}, respectively.  For RIA, 24 response levels (.4, .5, .55,
+.6, .65, .7, .75, .8, .85, .9, 1, 1.05, 1.15, 1.2, 1.25, 1.3, 1.35,
+1.4, 1.5, 1.55, 1.6, 1.65, 1.7, and 1.75) are mapped into the
+corresponding cumulative probability levels.  For PMA, these 24
+probability levels (the fully converged results from RIA FORM) are
+mapped back into the original response levels.
+Figure~\ref{fig:log_ratio_cdf} overlays the computed CDF values for a
+number of first-order reliability method variants as well as a Latin
+Hypercube reference solution of $10^6$ samples.
+\begin{figure}
+\centering
+\centerline{\includegraphics[scale=0.5]{images/log_ratio_cdf_ria}
+            \includegraphics[scale=0.5]{images/log_ratio_cdf_pma}}
+(a) RIA methods\hspace{2.5in}(b) PMA methods
+\caption{Lognormal ratio cumulative distribution function, RIA/PMA methods.}
+\label{fig:log_ratio_cdf}
+\end{figure}
+
+\section{Steel Section Example}\label{additional:steel_section}
+
+This test problem is used extensively in~\cite{Hal00}.  It involves a
+W16x31 steel section of A36 steel that must carry an applied
+deterministic bending moment of 1140 kip-in.  For DAKOTA, it has been
+used as a verification test for second-order integrations in
+reliability methods.  The limit state function is defined as:
+\begin{equation}
+g({\bf x}) = F_y Z - 1140
+\end{equation}
+where $F_y$ is Lognormal(38., 3.8), $Z$ is Normal(54., 2.7), and the
+variables are uncorrelated.
+
+The \texttt{Dakota/test/dakota\_steel\_section.in} input file computes
+a first-order CDF probability of $p(g \leq 0.)$ = 1.297e-07 and a
+second-order CDF probability of $p(g \leq 0.)$ = 1.375e-07.  This
+second-order result differs from that reported in~\cite{Hal00}, since
+DAKOTA uses the Nataf nonlinear transformation to u-space (see
+Equations~\ref{eq:trans_zx}-\ref{eq:trans_zu}) and \cite{Hal00} uses a
+linearized transformation.
+
+\section{Portal Frame Example}\label{additional:portal_frame}
+
+This test problem is taken from~\cite{Tve90,Hon99}.  It involves a
+plastic collapse mechanism of a simple portal frame.  It also has been
+used as a verification test for second-order integrations in 
+reliability methods.  The limit state function is defined as:
+\begin{equation}
+g({\bf x}) = x_1 + 2 x_2 + 2 x_3 + x_4 - 5 x_5 - 5 x_6
+\end{equation}
+where $x_1 - x_4$ are Lognormal(120., 12.), $x_5$ is Lognormal(50.,
+15.), $x_6$ is Lognormal(40., 12.), and the variables are uncorrelated.
+
+While the limit state is linear in x-space, the nonlinear
+transformation of lognormals to u-space induces curvature.  The
+\texttt{Dakota/test/dakota\_portal\_frame.in} input file computes a
+first-order CDF probability of $p(g \leq 0.)$ = 9.433e-03 and a
+second-order CDF probability of $p(g \leq 0.)$ = 1.201e-02.  These
+results agree with the published results from the literature.
+
+% Begin UQ/OUU testers
+
+\section{Short Column Example}\label{additional:short_column}
+
+This test problem involves the plastic analysis and design of a short
+column with rectangular cross section (width $b$ and depth $h$) having
+uncertain material properties (yield stress $Y$) and subject to
+uncertain loads (bending moment $M$ and axial force $P$)~\cite{Kus97}.
+The limit state function is defined as:
+\begin{equation}
+g({\bf x}) = 1 - \frac{4M}{b h^2 Y} - \frac{P^2}{b^2 h^2 Y^2}
+\end{equation}
+
+The distributions for $P$, $M$, and $Y$ are Normal(500, 100),
+Normal(2000, 400), and Lognormal(5, 0.5), respectively, with a
+correlation coefficient of 0.5 between $P$ and $M$ (uncorrelated
+otherwise).  The nominal values for $b$ and $h$ are 5 and 15,
+respectively.
+
+\subsection{Uncertainty Quantification}
+
+First-order and second-order reliability analysis are performed in the
+\texttt{dakota\_short\_column.in} and \\
+\texttt{dakota\_short\_column\_taylor2.in} input files in {\tt
+Dakota/test}, respectively.  For RIA, 43 response levels (-9.0, -8.75,
+-8.5, -8.0, -7.75, -7.5, -7.25, -7.0, -6.5, -6.0, -5.5, -5.0, -4.5,
+-4.0, -3.5, -3.0, -2.5, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4,
+-1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3,
+-0.2, -0.1, 0.0, 0.05, 0.1, 0.15, 0.2, 0.25) are mapped into the
+corresponding cumulative probability levels.  For PMA, these 43
+probability levels (the fully converged results from RIA FORM) are
+mapped back into the original response levels.
+Figure~\ref{fig:short_col_cdf} overlays the computed CDF values for
+several first-order reliability method variants as well as a Latin
+Hypercube reference solution of $10^6$ samples.
+
+\begin{figure}
+\centering
+\centerline{\includegraphics[scale=0.5]{images/short_col_cdf_ria}
+            \includegraphics[scale=0.5]{images/short_col_cdf_pma}}
+(a) RIA methods\hspace{2.75in}(b) PMA methods
+\caption{Short column cumulative distribution function, RIA/PMA methods.}
+\label{fig:short_col_cdf}
+\end{figure}
+
+\subsection{Reliability-Based Design Optimization}
+
+The short column example problem is also amenable to RBDO.  An
+objective function of cross-sectional area and a target reliability
+index of 2.5 (cumulative failure probability $p(g \le 0) \le 0.00621$) 
+are used in the design problem:
+\begin{eqnarray}
+\min       & & bh \nonumber \\
+{\rm s.t.} & & \beta \geq 2.5 \nonumber \\
+           & &  5.0 \leq b \leq 15.0 \nonumber \\
+           & & 15.0 \leq h \leq 25.0
+\end{eqnarray}
+As is evident from the UQ results shown in
+Figure~\ref{fig:short_col_cdf}, the initial design of $(b, h) = (5,
+15)$ is infeasible and the optimization must add material to obtain
+the target reliability at the optimal design $(b, h) = (8.68, 25.0)$.
+Simple bi-level, fully analytic bi-level, and sequential RBDO methods
+are explored in {\tt Dakota/test} inputs \\
+\texttt{dakota\_rbdo\_short\_column.in},
+\texttt{dakota\_rbdo\_short\_column\_analytic.in}, and\\
+\texttt{dakota\_rbdo\_short\_column\_trsb.in}, with results as
+described in~\cite{Eld05,Eld06a}.
+
+\section{Cantilever Example}\label{additional:cantilever}
+
+This test problem is adapted from the reliability-based design
+optimization literature~\cite{Sue01},~\cite{Wu01} and involves a simple
+uniform cantilever beam as shown in Figure~\ref{additional:figure03}.
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.5]{images/cantilever_beam}
+  \caption{Cantilever beam test problem.}
+  \label{additional:figure03}
+\end{figure}
+
+The design problem is to minimize the weight (or, equivalently, the
+cross-sectional area) of the beam subject to a displacement constraint
+and a stress constraint. Random variables in the problem include the
+yield stress $R$ of the beam material, the Young's modulus $E$ of the
+material, and the horizontal and vertical loads, $X$ and $Y$, which
+are modeled with normal distributions using $N(40000, 2000)$,
+$N(2.9E7, 1.45E6)$, $N(500, 100)$, and $N(1000, 100)$, respectively.
+Problem constants include $L = 100\mathtt{in}$ and $D_{0} = 2.2535
+\mathtt{in}$. The constraints have the following analytic form:
+\begin{eqnarray}
+\mathtt{stress}&=&\frac{600}{w t^2}Y+\frac{600}{w^2t}X \leq R
+  \label{additional:cant}\\
+\mathtt{displacement}&=&\frac{4L^3}{E w t}
+  \sqrt{\bigg(\frac{Y}{t^2}\bigg)^2+\bigg(\frac{X}{w^2}\bigg)^2}
+  \leq D_{0} \nonumber
+\end{eqnarray}
+or when scaled:
+\begin{eqnarray}
+  g_{S}&=&\frac{\mathtt{stress}}{R}-1 \leq 0\label{additional:cantscale}\\
+  g_{D}&=&\frac{\mathtt{displacement}}{D_{0}}-1 \leq 0\nonumber\\
+\end{eqnarray}
+
+\subsection{Deterministic Optimization Results}\label{additional:cantilever:deterministic}
+
+If the random variables $E$, $R$, $X$, and $Y$ are fixed at their
+means, the resulting deterministic design problem can be formulated as
+\begin{eqnarray}
+\texttt{minimize }   & & f = w t            \nonumber\\
+\texttt{subject to } & & g_{S} \leq 0 \label{additional:cantopt}\\
+                     & & g_{D} \leq 0       \nonumber\\
+                     & & 1.0 \leq w \leq 4.0\nonumber\\
+                     & & 1.0 \leq t \leq 4.0\nonumber
+\end{eqnarray}
+and can be solved using the \texttt{Dakota/test/dakota\_cantilever.in}
+file. This input file manages a variety of tests, of which a sample is
+shown below \\
+(\texttt{Dakota/examples/methods/dakota\_addtnl\_cantilever.in}):
+\begin{center}
+  \begin{small}
+    \begin{bigbox}
+      \verbatimtabinput[8]{dakota_addtnl_cantilever.in}
+    \end{bigbox}
+  \end{small}
+\end{center}
+
+The deterministic solution is $(w,t)=(2.35,3.33)$ with an objective
+function of $7.82$. The final report from the DAKOTA output is as
+follows:
+\begin{small}
+\begin{verbatim}
+    <<<<< Iterator npsol_sqp completed.
+    <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
+    <<<<< Best parameters          =
+                          2.3520341271e+00 beam_width
+                          3.3262784077e+00 beam_thickness
+                          4.0000000000e+04 R
+                          2.9000000000e+07 E
+                          5.0000000000e+02 X
+                          1.0000000000e+03 Y
+    <<<<< Best objective function  =
+                          7.8235203313e+00
+    <<<<< Best constraint values   =
+                         -1.6009000260e-02
+                         -3.7083558446e-11
+    <<<<< Best data captured at function evaluation 31
+    <<<<< Single Method Strategy completed.
+    DAKOTA execution time in seconds:
+      Total CPU        =       0.03 [parent =   0.027995, child =   0.002005]
+      Total wall clock =   0.281375
+\end{verbatim}
+\end{small}
+
+\subsection{Stochastic Optimization Results}\label{additional:cantilever:stochastic}
+
+If the normal distributions for the random variables $E$, $R$, $X$,
+and $Y$ are included, a stochastic design problem can be formulated as
+\begin{eqnarray}
+\texttt{minimize }   & & f = w t            \nonumber\\
+\texttt{subject to } & & \beta_{D} \geq 3   \label{additional:cantouu}\\
+                     & & \beta_{S} \geq 3   \nonumber\\
+                     & & 1.0 \leq w \leq 4.0\nonumber\\
+                     & & 1.0 \leq t \leq 4.0\nonumber
+\end{eqnarray}
+where a 3-sigma reliability level (probability of failure = 0.00135 if
+responses are normally-distributed) is being sought on the scaled
+constraints. Optimization under uncertainty solutions to the
+stochastic problem are described in~\cite{Eld02,Eld05,Eld06a}, for
+which the solution is $(w,t)=(2.45,3.88)$ with an objective function
+of $9.52$.  This demonstrates that a more conservative design is
+needed to satisfy the probabilistic constraints.
+
+\section{Steel Column Example}\label{additional:steel_column}
+
+This test problem involves the trade-off between cost and
+reliability for a steel column~\cite{Kus97}.  The cost is defined as
+\begin{equation}
+Cost = b d + 5 h
+\end{equation}
+where $b$, $d$, and $h$ are the means of the flange breadth, flange
+thickness, and profile height, respectively.  Nine uncorrelated random
+variables are used in the problem to define the yield stress $F_s$
+(lognormal with $\mu/\sigma$ = 400/35 MPa), dead weight load $P_1$
+(normal with $\mu/\sigma$ = 500000/50000 N), variable load $P_2$
+(gumbel with $\mu/\sigma$ = 600000/90000 N), variable load $P_3$
+(gumbel with $\mu/\sigma$ = 600000/90000 N), flange breadth $B$
+(lognormal with $\mu/\sigma$ = $b$/3 mm), flange thickness $D$
+(lognormal with $\mu/\sigma$ = $d$/2 mm), profile height $H$
+(lognormal with $\mu/\sigma$ = $h$/5 mm), initial deflection $F_0$
+(normal with $\mu/\sigma$ = 30/10 mm), and Young's modulus $E$ (Weibull
+with $\mu/\sigma$ = 21000/4200 MPa).  The limit state has the
+following analytic form:
+\begin{equation}
+g = F_s - P \left( \frac{1}{2 B D} + 
+\frac{F_0}{B D H} \frac{E_b}{E_b - P} \right)\\
+\end{equation}
+where
+\begin{eqnarray}
+P   & = & P_1 + P_2 + P_3 \\
+E_b & = & \frac{\pi^2 E B D H^2}{2 L^2}
+\end{eqnarray}
+and the column length $L$ is 7500 mm.
+
+This design problem (\texttt{dakota\_rbdo\_steel\_column.in} in
+\texttt{Dakota/test}) demonstrates design variable insertion into
+random variable distribution parameters through the design of the mean
+flange breadth, flange thickness, and profile height.  The RBDO
+formulation maximizes the reliability subject to a cost constraint:
+\begin{eqnarray}
+{\rm maximize }   & & \beta                   \nonumber \\
+{\rm subject to } & & Cost  \leq 4000.        \nonumber \\
+                  & & 200.0 \leq b \leq 400.0 \\
+                  & &  10.0 \leq d \leq  30.0 \nonumber \\
+                  & & 100.0 \leq h \leq 500.0 \nonumber
+\end{eqnarray}
+which has the solution ($b$, $d$, $h$) = (200.0, 17.50, 100.0) with a
+maximal reliability of 3.132.
+
+\section{Multiobjective Examples}\label{additional:multiobjective}
+
+There are three examples in the test directory ({\tt
+Dakota/test/dakota\_mogatest.in}) that are taken from a multiobjective
+evolutionary algorithm (MOEA) test suite described by Van Veldhuizen
+et. al. in~\cite{Coe02}.  These three problems are good examples to
+illustrate the different forms that the Pareto set may take. For each
+problem, we describe the DAKOTA input and show a graph of the Pareto
+front.  These problems are all solved with the \texttt{moga} method.
+In Van Veldhuizen's notation, the set of all Pareto optimal design
+configurations (design variable values only) is denoted $\mathtt{P^*}$
+or $\mathtt{P_{true}}$ and is defined as:
+\begin{eqnarray*}
+  P^*:=\{x\in\Omega\,|\,\neg\exists\,\,
+  x^\prime\in\Omega\quad\bar{f}(x^\prime)\preceq\bar{f}(x)\}
+\end{eqnarray*}
+
+The Pareto front, which is the set of objective function values
+associated with the Pareto optimal design configurations, is denoted
+$\mathtt{PF^*}$ or $\mathtt{PF_{true}}$ and is defined as:
+\begin{eqnarray*}
+  PF^*:=\{\bar{u}=\bar{f}=(f_1(x),\ldots,f_k(x))\,|\, x\in P^*\}
+\end{eqnarray*}
+
+The values calculated for the Pareto set and the Pareto front using
+the moga method are close to but not always exactly the true values,
+depending on the number of generations the moga is run, the various
+settings governing the GA, and the complexity of the Pareto set.
+
+\subsection{Multiobjective Test Problem 1}\label{additional:multiobjective:problem1}
+
+The first test problem is a case where $P_{true}$ is connected and
+$PF_{true}$ is concave.  The problem is to simultaneously optimize
+$f_1$ and $f_2$ given three input variables, $x_1$, $x_2$, and
+$x_3$, where the inputs are bounded by $-4 \leq x_{i} \leq 4$:
+
+\begin{eqnarray*}
+f_1(x)=1-\exp\Bigg(-\sum_{i=1}^3 \bigg(x_{i}-\frac{1}{\sqrt{3}}\bigg)^2\Bigg) \\
+f_2(x)=1-\exp\Bigg(-\sum_{i=1}^3 \bigg(x_{i}+\frac{1}{\sqrt{3}}\bigg)^2\Bigg)
+\end{eqnarray*}
+
+The input file for this example is shown in
+Figure~\ref{additional:moga1inp} and provided in \\ {\tt
+Dakota/examples/tutorial/dakota\_mogatest1.in}.  The interface keyword
+specifies the use of the \texttt{mogatest1} executable (compiled from
+\texttt{Dakota/test/mogatest1.C}) as the simulator.  The Pareto front
+is shown in Figure~\ref{additional:moga1front}.
+
+\begin{figure}
+  \centering
+  \begin{small}
+    \begin{bigbox}
+      \verbatimtabinput[8]{dakota_mogatest1.in}
+    \end{bigbox}
+  \end{small}
+  \caption{DAKOTA input file specifying the use of MOGA on mogatest1}
+  \label{additional:moga1inp}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.75]{images/dakota_mogatest1_pareto_front}
+  \caption{Pareto Front showing Tradeoffs between Function F1 and
+    Function F2 for mogatest1}
+  \label{additional:moga1front}
+\end{figure}
+
+\subsection{Multiobjective Test Problem 2}\label{additional:multiobjective:problem2}
+
+The second test problem is a case where both $\mathtt{P_{true}}$ and
+$\mathtt{PF_{true}}$ are disconnected.  $\mathtt{PF_{true}}$ has four
+separate Pareto curves.  The problem is to simultaneously optimize
+$f_1$ and $f_2$ given two input variables, $x_1$ and $x_2$,
+where the inputs are bounded by $0 \leq x_{i} \leq 1$, and:
+\begin{eqnarray*}
+f_1(x) &=& x_1 \\
+f_2(x) &=& (1+10x_2) \times \left[1-\bigg(\frac{x_1}{1+10x_2}\bigg)^2-
+\frac{x_1}{1+10x_2}\sin(8\pi x_1)\right]
+\end{eqnarray*}
+
+The input file for this example is shown in
+Figure~\ref{additional:moga2inp} and provided in \\ {\tt
+Dakota/examples/methods/dakota\_mogatest2.in} .  It differs from
+Figure~\ref{additional:moga1inp} in the variables specification, in
+the use of the \texttt{mogatest2} executable (compiled from
+\texttt{Dakota/test/mogatest2.C}) as the simulator, and in the
+\texttt{max\_function\_evaluations} and \texttt{crossover\_type} MOGA
+controls.  The Pareto front is shown in
+Figure~\ref{additional:moga2front}.  Note the discontinuous nature of
+the front in this example.
+
+\begin{figure}
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_mogatest2.in}
+    \end{small}
+  \end{bigbox}
+  \caption{DAKOTA input file specifying the use of MOGA on mogatest2}
+  \label{additional:moga2inp}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.75]{images/dakota_mogatest2_pareto_front}
+  \caption{Pareto Front showing Tradeoffs between Function F1 and
+    Function F2 for mogatest2}
+  \label{additional:moga2front}
+\end{figure}
+
+\subsection{Multiobjective Test Problem 3}\label{additional:multiobjective:problem3}
+
+The third test problem is a case where $\mathtt{P_{true}}$ is
+disconnected but $\mathtt{PF_{true}}$ is connected.  It is called the
+Srinivas problem in the literature (cite).  This problem also has two
+nonlinear constraints.  The problem is to simultaneously optimize
+$f_1$ and $f_2$ given two input variables, $x_1$ and $x_2$,
+where the inputs are bounded by $-20 \leq x_{i} \leq 20$, and:
+\begin{eqnarray*}
+f_1(x) &=& (x_1-2)^2+(x_2-1)^2+2 \\
+f_2(x) &=& 9x_1-(x_2-1)^2
+\end{eqnarray*}
+
+The constraints are:
+\begin{eqnarray*}
+0 &\leq& x_1^2+x_2^2-225 \\
+0 &\leq& x_1-3x_2+10
+\end{eqnarray*}
+
+The input file for this example is shown in
+Figure~\ref{additional:moga3inp} and provided in \\ {\tt
+Dakota/examples/methods/dakota\_mogatest3.in}.  It differs from
+Figure~\ref{additional:moga2inp} in the variables and responses
+specifications, in the use of the \texttt{mogatest3} executable
+(compiled from \texttt{Dakota/test/mogatest3.C}) as the simulator, and
+in the \texttt{max\_function\_evaluations} and \texttt{mutation\_type}
+MOGA controls.  The Pareto set is shown in
+Figure~\ref{additional:moga3set}.  Note the discontinuous nature of the
+Pareto set (in the design space) in this example.  The Pareto front is
+shown in Figure~\ref{additional:moga3front}.
+%Again, note the unusual nature of this Pareto example (these figures 
+%agree reasonably well with the Srinivas problem results shown in the 
+%literature).
+
+\begin{figure}
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_mogatest3.in}
+    \end{small}
+  \end{bigbox}
+  \caption{DAKOTA input file specifying the use of MOGA on mogatest3}
+  \label{additional:moga3inp}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.75]{images/dakota_mogatest3_pareto_set}
+  \caption{Pareto Set of Design Variables corresponding to the Pareto
+    front for mogatest3}
+  \label{additional:moga3set}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.75]{images/dakota_mogatest3_pareto_front}
+  \caption{Pareto Front showing Tradeoffs between Function F1 and
+    Function F2 for mogatest3}
+  \label{additional:moga3front}
+\end{figure}
+
+\section{Morris example}\label{additional:morris}
+
+Morris~\cite{Mor91} includes a screening design test problem with a
+single-output analytical test function.  The output depends on 20
+inputs with first- through fourth-order interaction terms, some having
+large fixed coefficients and others small random coefficients.  Thus
+the function values generated depend on the random number generator
+employed in the function evaluator.  The computational model is:
+
+\begin{align*}
+y = &\;\beta_0 + \sum_{i=1}^{20}{\beta_i w_i} + \sum_{i<j}^{20}{\beta_{i,j} w_i w_j} + \sum_{i<j<l}^{20}{\beta_{i,j,l} w_i w_j w_l} \\
+    &+  \sum_{i<j<l<s}^{20}{\beta_{i,j,l,s} w_i w_j w_l w_s},
+\end{align*}
+where $w_i = 2(x_i-0.5)$ except for $i=3, 5, \mbox{ and } 7$, where $w_i=2(1.1x_i/(x_i+0.1) - 0.5)$.  Large-valued coefficients are assigned as 
+\begin{align*}
+&\beta_i = +20 & &i=1,\ldots,10; \;&\beta_{i,j} = -15& &i,j = 1, \ldots, 6; \\
+&\beta_{i,j,l} = -10& &i,j,l=1,\ldots,5; \;&\beta_{i,j,l,s} = +5& &i,j,l,s = 1, \ldots, 4.
+\end{align*}
+The remaining first- and second-order coefficients $\beta_i$ and
+$\beta_{i,j}$, respectively, are independently generated from a
+standard normal distribution (zero mean and unit standard deviation);
+the remaining third- and fourth-order coefficients are set to zero.
+
+Examination of the test function reveals that one should be able to
+conclude the following (stated and verified computationally
+in~\cite{Sal04}) for this test problem:
+\begin{enumerate}
+\item the first ten factors are important;
+\item of these, the first seven have significant effects involving
+      either interactions or curvatures; and
+\item the other three are important mainly because of their first-order
+      effect.
+\end{enumerate}
+
+The dakota test input {\tt Dakota/test/dakota\_psuade.in} exercises
+the MOAT algorithm described in Section~\ref{dace:psuade} on the
+Morris problem.  The DAKOTA output obtained is shown in
+Figures~\ref{FIG:moat:out_preamble} and~\ref{FIG:moat:out_results}.
+\begin{figure}[ht!]
+\centering
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+Running MPI executable in serial mode.
+DAKOTA version 4.2 released 11/05/2008.
+Constructing Single Method Strategy...
+Writing new restart file dakota.rst
+methodName = psuade_moat
+gradientType = none
+hessianType = none
+
+>>>>> Running Single Method Strategy.
+
+>>>>> Running psuade_moat iterator.
+
+PSUADE DACE method = psuade_moat Samples = 84 Seed (user-specified) = 5
+            Partitions = 3 (Levels = 4)
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption[DAKOTA initialization output for PSUADE
+MOAT.]{\label{FIG:moat:out_preamble} DAKOTA initialization output for
+the PSUADE MOAT method on the Morris test problem showing the study
+parameters.}
+\end{figure}
+\begin{figure}[ht!]
+\centering
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+>>>>>> PSUADE MOAT output for function 0:
+
+*************************************************************
+*********************** MOAT Analysis ***********************
+-------------------------------------------------------------
+Input   1 (mod. mean & std) =   5.4366e+01   4.2009e+01 
+Input   2 (mod. mean & std) =   5.9188e+01   4.7141e+01 
+Input   3 (mod. mean & std) =   5.0663e+01   3.8542e+01 
+Input   4 (mod. mean & std) =   8.1390e+01   1.0680e+02 
+Input   5 (mod. mean & std) =   8.0589e+01   7.1954e+01 
+Input   6 (mod. mean & std) =   4.5300e+01   3.4398e+01 
+Input   7 (mod. mean & std) =   3.8168e+01   3.1680e+01 
+Input   8 (mod. mean & std) =   4.2193e+01   5.6885e+00 
+Input   9 (mod. mean & std) =   4.3802e+01   4.5875e+00 
+Input  10 (mod. mean & std) =   3.6465e+01   3.9676e+00 
+Input  11 (mod. mean & std) =   5.3103e+00   8.1196e+00 
+Input  12 (mod. mean & std) =   9.7212e+00   1.1345e+01 
+Input  13 (mod. mean & std) =   8.0135e+00   1.0811e+01 
+Input  14 (mod. mean & std) =   2.4124e+00   3.5811e+00 
+Input  15 (mod. mean & std) =   5.5727e+00   1.6122e+00 
+Input  16 (mod. mean & std) =   6.8377e+00   8.6817e+00 
+Input  17 (mod. mean & std) =   7.8375e+00   9.9676e+00 
+Input  18 (mod. mean & std) =   4.0741e+00   4.8117e+00 
+Input  19 (mod. mean & std) =   7.7200e+00   9.0583e+00 
+Input  20 (mod. mean & std) =   6.6671e+00   9.7375e+00 
+
+<<<<< Iterator psuade_moat completed.
+<<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption[DAKOTA analysis output for PSUADE
+MOAT.]{\label{FIG:moat:out_results} DAKOTA analysis output for the
+PSUADE MOAT method on the Morris problem showing the modified
+mean and standard deviation of the elementary effect corresponding to
+each input factor.}
+\end{figure}
+The MOAT analysis output reveals that each of the desired observations
+can be made for the test problem.  These are also reflected in
+Figure~\ref{FIG:mustar_sigma}.  The modified mean (based on averaging
+absolute values of elementary effects) shows a clear difference in
+inputs 1--10 as compared to inputs 11--20.  The standard deviation of
+the (signed) elementary effects indicates correctly that inputs 1--7
+have substantial interaction-based or nonlinear effect on the output,
+while the others have less.  While some of inputs 11--20 have
+nontrivial values of $\sigma$, their relatively small modified means
+$\mu^*$ indicate they have little overall influence.
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=\textwidth]{images/moat_mustar_sigma}
+\caption{\label{FIG:mustar_sigma} Standard deviation of elementary
+effects plotted against modified mean for Morris for each of 20
+inputs. Red circles 1--7 correspond to inputs having interactions or
+nonlinear effects, blue squares 8--10 indicate those with mainly
+linear effects, and black Xs denote insignificant inputs.}
+\end{figure}

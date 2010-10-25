@@ -1,0 +1,19 @@
+#!/bin/sh
+#--------------------------------*- Tcl -*------------------------------------#
+# $Id: x13 3186 2006-02-15 18:17:33Z slbrow $
+#
+# Maurice LeBrun
+# 12/24/02
+#
+# A front-end to x13.tcl for running directly from the command line, locating
+# pltcl via PATH.
+# Handles all usual plplot command arguments.  See "pltcl -h" for info.
+#-----------------------------------------------------------------------------#
+#\
+exec pltcl -f "$0" ${1+"$@"}
+
+source x13.tcl
+
+plinit
+x13
+plend

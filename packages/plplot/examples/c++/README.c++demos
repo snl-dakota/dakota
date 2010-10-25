@@ -1,0 +1,18 @@
+These C++ examples exactly replicate the C examples but using the C++
+plstream class.
+
+The examples are written to work on a fairly modern C++ compiler. They
+are known to work with gcc 2.95 and gcc 3.3.3 for example.
+
+The examples make use of the std namespace feature. This may cause some 
+difficulties on older compilers. You may need to comment out the line 
+"using namespace std;" near the top of the file in this case.
+
+We have had reports of other problems on some versions of the IRIX
+compilers because they do not include the standard header file
+cstdlib. In this case you may need to include stdlib.h instead.
+
+If you encounter any other problems please report them.
+
+Andrew Ross <andrewross@users.sourceforge.net>
+March 2004.

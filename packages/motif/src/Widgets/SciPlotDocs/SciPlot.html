@@ -1,0 +1,193 @@
+<html><head><title>SciPlot Widget Web Page</title></head><body>
+<h1><a name="top">SciPlot Widget <img src=SciPlotTitle.gif></a></h1>
+
+<p>A full-featured Xt widget to display 2D data in a graph.  
+It is intended to display scientific data, and can format the data in polar or
+cartesian plots (log axes available for cartesian plots).
+
+
+
+
+
+
+<ul>
+<li><a href="#lesstif"><img src=new.gif> Works with LessTif!</a>
+<li><a href="#current"><img src=new.gif> Current Version</a>
+<li><a href="#screen">Screen Shots</a>
+<li><a href="#overview">Overview</a>
+
+<li><a href="#feat">Features</a>
+
+<li><a href="#reqs">Requirements</a>
+<li><a href="#history">History</a>
+<li><a href="#note">Author's Note</a>
+<li><a href="#thanks">Thanks</a>
+<li><a href="#copyright">Copyright</a>
+</ul>
+
+
+<ul>
+<li>
+<a href="SciPlotProg.html">Programmer's Documentation</a>
+<li>
+<a href="SciPlotDemo.html">Demo Program Information</a>
+</ul>
+
+<p><hr><h2><a name="lesstif"><img src=new.gif> Works with LessTif!</a></h2>
+<p>The SciPlot demo programs can now be built with
+<a href=ftp://ftp.hungry.com/pub/hungry/lesstif/>LessTif</a>
+
+<p><hr><h2><a name="current"><img src=new.gif> Current Version</a></h2>
+<p>The current version is 1.36.  Source is available at
+<a href=ftp://ftp.x.org/contrib/widgets/SciPlot-1.36.tar.gz>ftp.x.org</a>.
+
+<p><img src=new.gif> Note my new licencing policy -- the GNU <b>Library</b>
+General Public Licence.  This is not the standard GPL; it is a less
+restrictive version.  <a href="gpl.html">Read this</a> for more info and
+background on why I moved to this licence.
+
+<p><hr><h2><a name="screen">Screen Shots</a></h2>
+
+<img src=SciPlotExample.gif alt="A few images showing the format and capabilities of the SciPlot widget.">
+
+
+<p><hr><h2><a name="overview">Overview</a></h2>
+
+<p>The SciPlot Widget is a widget capable of plotting cartesian or polar graphs,
+including logarithmic axes in cartesian plots.  The widget is subclassed
+directly from the Core widget class, which means that it does not depend upon
+any other widget set.  It may be freely used with Athena, Motif, or the
+Open Look/Xview widget sets.  (There is optional Motif support that causes
+the widget to be subclassed from XmPrimitive.  See the 
+<a href="SciPlotProg.html">Programmer's Reference</a>
+for more information.)
+
+<p>Features provided in the widget include automatic scaling, legend drawing,
+axis labeling, PostScript output, multiple plotted lines, color support, user
+font specification, dashed lines, symbols drawn at points, logarithmic scales
+on one or both axes in cartesian plots, and degrees or radians as angles in
+polar plots.
+
+<p><hr><h2><a name="feat">Features</a></h2>
+<p>Features provided in the widget include the following:
+
+<ul>
+<li>Cartesian or Polar plots
+<li>Automatic or manual axis scales
+<li>Logarithmic scales for cartesian plot
+<li>Degrees or radians for polar angles
+<li>Axis labeling
+<li>Legend drawing
+<li>Multiple lines per plot
+<li>Noncontinuous (broken) line segments
+<li>Various symbols and line styles
+<li>Color support
+<li>User font selection
+<li>PostScript (EPS) output in color or black & white
+<li>Real time updates
+<li>Vertical or horizontal y axis label numbers
+</ul>
+
+<p>See the
+<a href="SciPlotDemo.html">demo program information</a>
+page for compilation instructions and sample programs.
+
+<p><hr><h2><a name="reqs">Requirements</a></h2>
+
+<p>The SciPlot code requires X11R5 or later and a C compiler.  The code was
+designed using ANSI C, but compiles fine with a non-ANSI compiler if the
+compiler can understand new-style function definitions.  The demo programs
+also require Motif 1.2 or later.
+
+<p><hr><h2><a name="history">History</a></h2>
+
+<p>This code was originally developed on an IBM RS/6000 running AIX 3.2.4 and
+X11R5.  Currently, it is maintained on a Linux machine running kernel
+1.3.* and XFree86 3.1.2 (X11R6).  It is regularly tested by myself on an
+IBM RS/6000 running AIX 4.1 and a DEC Alpha/AXP running Digital UNIX
+(formarly OSF/1) 3.2 with X11R5.  I have had reports of the widget running
+successfully on many machines, including SGI, HP, Sun, Dec Ultrix, and even
+a Dec OpenVMS machine.
+
+<p>The vertical text drawing routine is based on the "fill stippled" idea that
+I first saw in the code xvertext-5.0 by Alan Richardson
+<tt>&lt;mppa3@syma.sussex.ac.uk&gt;</tt>.
+
+<p>The first X11 plotting widget that I saw was the libXG package written by
+Sundar Narasimhan <tt>&lt;sundar@ai.mit.edu&gt;</tt>.  The libXG plotting
+widget Graph is based on a much more general widget called Display, which
+provides device independent 2D (and 3D) graphics.
+
+<p>My attempts to change the Graph widget to do what I liked it to do led me to
+start from scratch and write this SciPlot widget.  I didn't need (or want) to
+include the sort of functionality present in the Display widget, so I wrote
+the SciPlot widget as a self-contained widget that uses printer points as
+the basis of the graphics.  Nevertheless, some of the techniques that I used
+are similar to those found in the Graph widget, so Sundar Narasimhan does
+deserve mention for the excellent libXG package.
+
+<p><hr><h2><a name="note">Author's Note</a></h2>
+
+<p>This widget is supplied as freeware, in the hope that it will be useful for
+developers in the X community.  If you do use this widget, I do request that
+you include mention of the SciPlot widget in the documentation.  Also,
+remember to include a copy of the entire copyright and permission notice!
+Thanks.
+
+<p>Patches, improvements, suggestions, bug reports, job offers, volleyball
+games, and money you love donating to programmers who make your life <b>so</b>
+much easier are welcome at <tt>&lt;rwmcm@orion.ae.utexas.edu&gt;</tt>.
+I will periodically post patches and improvements to ftp.x.org and the
+SciPlot web page at http://www.ae.utexas.edu/~rwmcm/SciPlot.html
+
+<p><hr><h2><a name="thanks">Thanks</a></h2>
+
+<p>Thanks to the following people for providing fixes and suggestions:
+
+<ul>
+<li>Todd Smith <tt>&lt;mtsmith@vision1.engr.utk.edu&gt;</tt>
+<li>Walter Underwood <tt>&lt;wunder@msd.hpl.hp.com&gt;</tt>
+<li>Michael Katzmann <tt>&lt;michael%vk2bea@secondsource.com&gt;</tt>
+<li>John Moyer <tt>&lt;jrm@questconsult.com&gt;</tt>
+<li>Mike Kienenberger <tt>&lt;FXMLK@aurora.alaska.edu&gt;</tt>
+<li>Glenn Golden <tt>&lt;gdg@big.att.com&gt;</tt>
+<li><tt>&lt;SATCHELL%CCF.dnet@hermes.dra.hmg.gb&gt;</tt>
+<li>Derrick Bass <tt>&lt;derrick@frank.harvard.edu&gt;</tt>
+<li>Santeri Paavolainen <tt>&lt;santtu@bank.cs.hut.fi&gt;</tt>
+<li>Nicolas EERTMANS <tt>&lt;ne@spirou.eatchip.eurocontrol.be&gt;</tt>
+<li>Carlos Baumann <tt>&lt;carlosb@ticam.utexas.edu&gt;</tt>
+</ul>
+
+<p><hr><h2><a name="copyright">Copyright</a></h2>
+
+<p>Copyright (c) 1996 Robert W. McMullen
+
+<p>Portions of the SciPlot Widget source code, as marked, are
+Copyright (c) 1993 Alan Richardson <tt>&lt;mppa3@syma.sussex.ac.uk&gt;</tt>
+
+<p><h6><small>
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+</small></h6>
+
+<p><h6><small>
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Library General Public License for more details.
+</small></h6>
+
+<p><h6><small>
+You should have received a copy of the GNU Library General Public
+License along with this library; if not, write to the Free
+Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+</small></h6>
+
+<hr>
+
+<br>	<a href=SciPlot.html>SciPlot</a> :
+	<a href=SciPlotProg.html>Programmer's Reference</a> |
+	<a href=SciPlotDemo.html>Demo Programs</a>
+<br><hr>Web Page Design by <a href="http://www.ae.utexas.edu/~rwmcm">Rob McMullen</a><br>E-mail: <a href="mailto:rwmcm@mail.ae.utexas.edu">rwmcm@mail.ae.utexas.edu</a><br>Updated: 4 Sep 96<br></body></html>

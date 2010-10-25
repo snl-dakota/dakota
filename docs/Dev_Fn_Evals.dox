@@ -1,0 +1,132 @@
+namespace Dakota {
+
+/** \page FnEvals Performing Function Evaluations
+
+\htmlonly
+<b>Performing Function Evaluations Table of Contents</b>
+<ul>
+<li> <a href="FnEvals.html#FnEvalsSynch">Synchronous function evaluations</a> 
+<li> <a href="FnEvals.html#FnEvalsAsynch">Asynchronous function evaluations</a> 
+<li> <a href="FnEvals.html#FnEvalsAnalyses">Analyses within each function 
+evaluation</a>
+</ul>
+\endhtmlonly
+
+
+Performing function evaluations is one of the most critical functions
+of the DAKOTA software.  It can also be one of the most complicated,
+as a variety of scheduling approaches and parallelism levels are
+supported.  This complexity manifests itself in the code through a
+series of cascaded member functions, from the top level model
+evaluation functions, through various scheduling routines, to the low
+level details of performing a system call, fork, or direct function
+invocation.  This section provides an overview of the primary classes
+and member functions involved.
+
+
+\section FnEvalsSynch Synchronous function evaluations
+
+
+For a synchronous (i.e., blocking) mapping of parameters to responses,
+an iterator invokes 
+\ref Model::compute_response "Model::compute_response()" to 
+perform a function evaluation.  This function is all that is seen from the
+iterator level, as underlying complexities are isolated.  The binding
+of this top level function with lower level functions is as follows:
+<ul>
+<li> \ref Model::compute_response "Model::compute_response()" utilizes 
+\ref Model::derived_compute_response "Model::derived_compute_response()"
+for portions of the response computation specific to derived model classes.
+<li> \ref 
+Model::derived_compute_response "Model::derived_compute_response()" 
+directly or indirectly invokes \ref Interface::map "Interface::map()".
+<li> \ref Interface::map "Interface::map()" utilizes \ref 
+ApplicationInterface::derived_map "ApplicationInterface::derived_map()"
+for portions of the mapping specific to derived application interface classes.
+</ul>
+
+
+\section FnEvalsAsynch Asynchronous function evaluations
+
+
+For an asynchronous (i.e., nonblocking) mapping of parameters to
+responses, an iterator invokes \ref 
+Model::asynch_compute_response "Model::asynch_compute_response()"
+multiple times to queue asynchronous jobs and then invokes either
+\ref Model::synchronize "Model::synchronize()" or \ref
+Model::synchronize_nowait "Model::synchronize_nowait()" to
+schedule the queued jobs in blocking or nonblocking fashion.  Again,
+these functions are all that is seen from the iterator level, as
+underlying complexities are isolated.  The binding of these top level
+functions with lower level functions is as follows:
+<ul>
+<li> \ref Model::asynch_compute_response "Model::asynch_compute_response()"
+utilizes \ref
+Model::derived_asynch_compute_response "Model::derived_asynch_compute_response()"
+for portions of the response computation specific to derived model classes.
+<li> This derived model class function directly or indirectly 
+invokes \ref Interface::map "Interface::map()" in asynchronous mode, 
+which adds the job to a scheduling queue.
+<li> \ref Model::synchronize "Model::synchronize()" or \ref
+Model::synchronize_nowait "Model::synchronize_nowait()"
+utilize \ref Model::derived_synchronize "Model::derived_synchronize()"
+or \ref 
+Model::derived_synchronize_nowait "Model::derived_synchronize_nowait()"
+for portions of the scheduling process specific to derived model classes.
+<li> These derived model class functions directly or indirectly invoke 
+\ref Interface::synch "Interface::synch()" or 
+\ref Interface::synch_nowait "Interface::synch_nowait()".
+<li> For application interfaces, these interface synchronization
+functions are responsible for performing evaluation scheduling in 
+one of the following modes:
+  <ul>
+  <li> asynchronous local mode (using 
+\ref ApplicationInterface::asynchronous_local_evaluations "ApplicationInterface::asynchronous_local_evaluations()" or 
+\ref ApplicationInterface::asynchronous_local_evaluations_nowait "ApplicationInterface::asynchronous_local_evaluations_nowait()")
+  <li> message passing mode (using
+\ref ApplicationInterface::self_schedule_evaluations "ApplicationInterface::self_schedule_evaluations()" or 
+\ref ApplicationInterface::static_schedule_evaluations "ApplicationInterface::static_schedule_evaluations()"
+  on the iterator master and 
+\ref ApplicationInterface::serve_evaluations_synch "ApplicationInterface::serve_evaluations_synch()" or 
+\ref ApplicationInterface::serve_evaluations_peer "ApplicationInterface::serve_evaluations_peer()" on the servers)
+  <li> hybrid mode (using 
+\ref ApplicationInterface::self_schedule_evaluations "ApplicationInterface::self_schedule_evaluations()" or 
+\ref ApplicationInterface::static_schedule_evaluations "ApplicationInterface::static_schedule_evaluations()"
+  on the iterator master and 
+\ref ApplicationInterface::serve_evaluations_asynch "ApplicationInterface::serve_evaluations_asynch()"
+  on the servers)
+  </ul>
+<li> These scheduling functions utilize
+\ref ApplicationInterface::derived_map "ApplicationInterface::derived_map()" and
+\ref ApplicationInterface::derived_map_asynch "ApplicationInterface::derived_map_asynch()"
+for portions of asynchronous job launching specific to derived application 
+interface classes, as well as 
+\ref ApplicationInterface::derived_synch "ApplicationInterface::derived_synch()" and
+\ref ApplicationInterface::derived_synch_nowait "ApplicationInterface::derived_synch_nowait()"
+for portions of job capturing specific to derived application interface classes.
+</ul>
+
+
+\section FnEvalsAnalyses Analyses within each function evaluation
+
+
+The discussion above covers the parallelism level of concurrent 
+function evaluations serving an iterator.  For the parallelism 
+level of concurrent analyses serving a function evaluation, similar 
+schedulers are involved (\ref 
+ForkApplicInterface::synchronous_local_analyses "ForkApplicInterface::synchronous_local_analyses()",
+\ref ForkApplicInterface::asynchronous_local_analyses "ForkApplicInterface::asynchronous_local_analyses()",
+\ref ApplicationInterface::self_schedule_analyses "ApplicationInterface::self_schedule_analyses()",
+\ref ApplicationInterface::serve_analyses_synch "ApplicationInterface::serve_analyses_synch()",
+\ref ForkApplicInterface::serve_analyses_asynch "ForkApplicInterface::serve_analyses_asynch()")
+to support synchronous local, asynchronous local, message passing, and
+hybrid modes.  Not all of the schedulers are elevated to the
+ApplicationInterface level since the system call and direct function
+interfaces do not yet support nonblocking local analyses (and
+therefore support synchronous local and message passing modes, but not
+asynchronous local or hybrid modes).  Fork interfaces, however,
+support all modes of analysis parallelism.
+
+*/
+
+} // namespace Dakota

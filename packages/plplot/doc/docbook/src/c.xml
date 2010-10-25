@@ -1,0 +1,148 @@
+<!--
+    c.xml: "C Language" chapter
+
+    Copyright (C) 1994  Geoffrey Furnish and Maurice LeBrun
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  Alan W. Irwin
+    Copyright (C) 1999, 2000, 2001, 2002, 2003  Rafael Laboissiere
+    Copyright (C) 2003  Joao Cardoso
+
+    Redistribution and use in source (XML DocBook) and "compiled" forms
+    (HTML, PDF, PostScript, DVI, TeXinfo and so forth) with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+       1. Redistributions of source code (XML DocBook) must retain the
+          above copyright notice, this list of conditions and the following
+          disclaimer as the first lines of this file unmodified.
+
+       2. Redistributions in compiled form (transformed to other DTDs,
+          converted to HTML, PDF, PostScript, and other formats) must
+          reproduce the above copyright notice, this list of conditions and
+          the following disclaimer in the documentation and/or other
+          materials provided with the distribution.
+
+    Important: THIS DOCUMENTATION IS PROVIDED BY THE PLPLOT PROJECT "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE PLPLOT PROJECT BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS DOCUMENTATION,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<chapter id="c">
+  <title>C Language</title>
+  <para>
+(OLD, NEEDS DOCUMENTATION UPDATING)
+The argument types given in this manual (PLFLT and PLINT) are typedefs for
+the actual argument type.  A PLINT is actually a type
+<literal>long</literal> and should not be changed.  A PLFLT can be either a
+<literal>float</literal> or <literal>double</literal>; this choice is made
+when the package is installed and on a Unix system (for example) may result
+in a PLplot library named <filename>libplplot.a</filename> in single
+precision and <filename>libplplotd.a</filename> in double precision.
+  </para>
+  <para>
+These and other constants used by PLplot are defined in the main header file
+<filename>plplot.h</filename>, which must be included by the user program.  This file also
+contains all of the function prototypes, machine dependent defines, and
+redefinition of the C-language bindings that conflict with the Fortran names
+(more on this later).  <filename>plplot.h</filename> obtains its values for PLFLT, PLINT,
+and PLARGS (a macro for conditionally generating prototype argument lists)
+from FLOAT (typedef), INT (typedef), and PROTO (macro), respectively.
+The latter are defined in the file
+<filename>chdr.h</filename>.  The user is encouraged to use FLOAT, INT, and PROTO in
+his/her own code, and modify <filename>chdr.h</filename> according to taste.  It is not
+actually necessary to declare variables as FLOAT and INT except when they
+are pointers, as automatic conversion to the right type will otherwise occur
+(if using a Standard C compiler; else K&amp;R style automatic promotion will
+occur).  The only code in <filename>plplot.h</filename> that directly depends on these
+settings is as follows:
+<programlisting>
+#include "plplot/chdr.h"
+
+/* change from chdr.h conventions to plplot ones */
+
+typedef FLOAT PLFLT;
+typedef INT   PLINT;
+#define PLARGS(a) PROTO(a)
+</programlisting>
+  </para>
+  <para>
+PLplot is capable of being compiled with Standard C (ANSI) mode on or off.
+This is toggled via the macro PLSTDC, and set automatically if __STDC__
+is defined.  If PLSTDC is defined, all functions are prototyped as allowed
+under Standard C, and arguments passed exactly as specified in the
+prototype.  If PLSTDC is not defined, however, function prototypes are
+turned off and K&amp;R automatic argument promotion will occur, e.g.
+<literal> float &amp;rarr; double, int &amp;rarr; long</literal>.
+There is no middle ground!  A PLplot
+library built with PLSTDC defined will not work (in general) with a program
+built with PLSTDC undefined, and vice versa.  It is possible in principle to
+build a library that will work under both Standard C and K&amp;R compilers
+simultaneously (i.e.  by duplicating the K&amp;R promotion with the Standard C
+prototype), but this seems to violate the spirit of the C standard and can
+be confusing.  Eventually we will drop support for non-standard C compilers
+but for now have adopted this compromise.
+  </para>
+  <para>
+In summary, PLplot will work using either a Standard or non-standard C
+compiler, provided that you :
+<itemizedlist>
+<listitem><para>
+Include the PLplot main header file <filename>plplot.h</filename>.
+</para></listitem>
+<listitem><para>
+Make sure all pointer arguments are of the correct type
+(the compiler should warn you if you forget, so don't worry, be happy).
+</para></listitem>
+<listitem><para>
+Do not link a code compiled with PLSTDC defined to a PLplot library
+compiled with PLSTDC undefined, or vice versa.
+</para></listitem>
+<listitem><para>
+Use prototypes whenever possible to reduce type errors.
+</para></listitem>
+</itemizedlist>
+  </para>
+  <para>
+Note that some Standard C compilers will give warnings when converting a
+constant function argument to whatever is required by the prototype.  These
+warnings can be ignored.
+  </para>
+  <para>
+The one additional complicating factor concerns the use of stub routines to
+interface with Fortran (see the following section for more explanation).  On
+some systems, the Fortran and C namespaces are set up to clobber each other.
+More reasonable (from our viewpoint) is to agree on a standard map between
+namespaces, such as the appending of an underscore to Fortran routine names
+as is common on many Unix-like systems.  The only case where the shared
+Fortran/C namespaces do any good is when passing a pointer to a like data
+type, which represents only a small fraction of the cases that need to
+be handled (which includes constant values passed on the stack, strings, and
+two-dimensional arrays).
+  </para>
+  <para>
+There are several ways to deal with this situation, but the least messy from
+a user's perspective is to redefine those PLplot C function names which
+conflict with the Fortran-interface stub routines.  The actual function
+names are the same as those described in this document, but with a
+<quote>c_</quote>
+prepended.  These macro definitions appear in the
+<filename>plplot.h</filename> header file
+and are otherwise harmless.  Therefore you can (and should) forget that most
+of the names are being redefined to avoid the conflict and simply adhere to
+the bindings as described in this manual.  Codes written under old versions
+of PLplot (previous to 5.0) will require a recompile, however.
+  </para>
+  <para>
+For more information on calling PLplot from C, please see the example C
+programs (<filename>x01c.c</filename> through <filename>x19c.c</filename>)
+distributed with PLplot.
+  </para>
+
+</chapter>

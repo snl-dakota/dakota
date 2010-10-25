@@ -1,0 +1,68 @@
+BUILTINS =
+NPROC = 1
+PATH=/home/dmgay/h/bin:/usr/local/gcc-4.3.1/bin:/usr/bin:/bin:/usr/X11R6/bin:/usr/java/j2sdk1.4.2_07/bin
+LC_ALL=en_US.UTF-8
+
+CC = g++
+CFLAGS = -g
+SNLLIB72 = /home/dmgay/h/src/solvers/snopt/sys.x86_64.Linux/src
+SNLLIB62 = /home/dmgay/h/src/solvers/snopt62/SNsrc/libsnopt.a
+INC = -DHAVE_CONFIG_H \
+	-I.. \
+	-I../.. \
+	-I../../packages/teuchos/src \
+	-I../../packages/Pecos \
+	-I../../packages/Pecos/src \
+	-I../../packages \
+	-I../../packages/plplot/include \
+	-I../../packages/motif/include \
+	-I../../packages/motif/src/Widgets \
+	-I../../packages/boost \
+	-I../../packages/quadrature \
+	-I../../packages/quadrature/rules \
+	-I../../packages/quadrature/sparse_grid \
+	-I../../packages/Surfpack \
+	-I../../packages/Surfpack/src \
+	-I../../packages/Surfpack/src/interpreter \
+	-I../../packages/Surfpack/src/surfaces \
+	-I../../methods/acro/include \
+	-I../../methods/acro/include/tinyxml \
+	-I../../methods/DDACE \
+	-I../../methods/DDACE/include \
+	-I../../methods/FSUDace \
+	-I../../methods/hopspack/src-appspack \
+	-I../../methods/hopspack/src-cddlib \
+	-I../../methods/hopspack/src-conveyor \
+	-I../../methods/hopspack/src-nappspack \
+	-I../../methods/hopspack/src-shared \
+	-I../../methods/JEGA \
+	-I../../methods/JEGA/eddy \
+	-I../../methods/JEGA/include \
+	-I../../methods/JEGA/eddy \
+	-I../../methods/OPTPP/include \
+	-I../../methods/OPTPP/newmat11 \
+	-I../../methods/PSUADE \
+	-DMPICH_IGNORE_CXX_SEEK
+
+%.o: %.C
+	$CC -c -fPIC $CFLAGS $INC $stem.C
+
+%.i: %.C
+	$CC -E -fPIC $CFLAGS $INC $stem.C >$target
+
+all:V: dl_npsol.dll dl_npsol1.dll dl_snopt.dll dl_snopt1.dll dl_snopt72.dll
+
+dl_snopt1.dll: dl_snopt1.o
+	$CC -shared -o $target $prereq $SNLLIB62 -lf2c -lm
+
+dl_snopt.dll: dl_snopt.o
+	$CC -shared -o $target $prereq $SNLLIB62 -lf2c -lm
+
+dl_npsol1.dll: dl_npsol1.o
+	$CC -shared -o $target $prereq -lf2c -lm
+
+dl_npsol.dll: dl_npsol.o
+	$CC -shared -o $target $prereq -lm
+
+dl_snopt72.dll: dl_snopt72.o
+	$CC -shared -o $target $prereq -L$SNLLIB72 -lsnopt -lsnprint -lf2c -lm

@@ -1,0 +1,89 @@
+# DAKOTA Input File: dakota_uq_cantilever_taylor2.in
+
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# seperated by a comma.
+
+# This file covers second-order reliability index approach (RIA) CDF
+# mappings from response_levels to probability_levels and second-order
+# performance measure approach (PMA) CDF mappings from these
+# probability_levels back to the original response_levels for MVSOSM,
+# x-/u-space AMV^2, x-/u-space AMV^2+, x-/u-space TANA, and SORM.
+
+strategy
+	single_method graphics
+
+method,
+	id_method = 'UQ'
+	model_pointer = 'UQ_M'
+	nond_local_reliability
+#	  mpp_search x_taylor_mean			#1
+#	  mpp_search u_taylor_mean			#2
+#	  mpp_search x_taylor_mpp			#3,#8,#10,#12
+#	  mpp_search u_taylor_mpp			#4,#9,#11,#13
+#	  mpp_search x_two_point			#5
+#	  mpp_search u_two_point			#6
+#	  mpp_search no_approx				#7
+#	  nip
+#	  integration second_order #3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13
+	  output verbose
+#	  num_response_levels = 0 11 11
+#	  response_levels =
+#	  0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+#	  0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+	  num_probability_levels = 0 11 11
+	  probability_levels = 1.1781223736e-03 1.0140642250e-02
+	      5.2949484412e-02 1.7616121376e-01 3.9671123925e-01
+	      6.5056238575e-01 8.4502957725e-01 9.4772602285e-01
+	      9.8645187403e-01 9.9724902938e-01 9.9955171208e-01
+	      1.8778485062e-06 3.5070625918e-05 4.2337800071e-04
+	      3.3703369003e-03 1.8132996308e-02 6.7904417790e-02
+	      1.8323547399e-01 3.7103484006e-01 5.8954258193e-01
+	      7.7938164844e-01 9.0286739571e-01
+	  cumulative distribution
+
+model,
+	id_model = 'UQ_M'
+	single
+	  variables_pointer = 'UQ_V'
+	  interface_pointer = 'UQ_I'
+	  responses_pointer = 'UQ_R'
+
+variables,
+	id_variables = 'UQ_V'
+	continuous_design = 2
+	  initial_point    2.5    2.5
+	  upper_bounds    10.0   10.0
+	  lower_bounds     1.0    1.0
+	  descriptors 'beam_width' 'beam_thickness'
+	normal_uncertain = 4
+	  means             =  40000. 29.E+6 500. 1000.
+	  std_deviations    =  2000. 1.45E+6 100. 100.
+	  descriptors       =  'R' 'E' 'X' 'Y'
+
+interface,
+	id_interface = 'UQ_I'
+	direct
+	  analysis_driver = 'cantilever'
+#	  deactivate evaluation_cache restart_file
+
+responses,
+	id_responses = 'UQ_R'
+	num_response_functions = 3
+	analytic_gradients
+	analytic_hessians		#0,#1,#2,#3,#4,#5,#6,#7
+#	quasi_hessians bfgs #damped	#12,#13
+#	quasi_hessians sr1		#10,#11
+#	numerical_hessians		#8,#9
+#	  fd_hessian_step_size = 1.e-5	#8,#9

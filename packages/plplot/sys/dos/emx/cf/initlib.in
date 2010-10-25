@@ -1,0 +1,82 @@
+# -----------------------------------------------------------------------
+# $Id: initlib.in 3186 2006-02-15 18:17:33Z slbrow $
+#
+# Maurice LeBrun
+# IFS, University of Texas at Austin
+# 24-Jul-1994
+#
+# Initializations for building PLplot library.
+# -----------------------------------------------------------------------
+
+# Package major/minor version number, for shared libraries on some systems
+# (e.g. SunOS).  Warning: apps linked to it may fail on major version
+# changes (depending on OS).
+
+MAJOR_VERSION	= 4
+MINOR_VERSION	= 99
+
+# Utilities
+
+RANLIB		= ar s
+ARLIB_BUILD	= ar q
+SHLIB_BUILD	= @SHLIB_BUILD@
+
+# Flags and other miscellanea
+
+CC_FLAGS	= -c -O -Wall -I.
+CC_FLAGS_DEMOS	= $(CC_FLAGS)
+SHLIB_CCFLAGS	= @SHLIB_CCFLAGS@
+SHLIB_F77FLAGS	= @SHLIB_F77FLAGS@
+SHLIB_SUFFIX	= @SHLIB_SUFFIX@
+SALIB_SUFFIX	= @SALIB_SUFFIX@
+
+# Hacks to deal with optimizer failures.
+
+CC_FLAGS_SCCONT = $(CC_FLAGS)
+CC_FLAGS_XWIN	= $(CC_FLAGS)
+
+# Dependent directories (use forward-slashes with `F')
+
+PLLIB_DIR	= .
+PLLIB_DIRF	= .
+PLFNT_DIR	= .
+PLFNT_DIRF	= .
+PLLIB_PATH	= $(PLLIB_DIRF)/
+PLFNT_PATH	= $(PLFNT_DIRF)/
+
+# The library components
+
+LIB_OBJS_SO	= $(CORE_OBJ) $(TCL_OBJ) $(TK_OBJ) $(DRIVERS_OBJ) $(ADD_DRIVERS_OBJ) $(FSTUB_OBJ)
+LIB_OBJS_SA	= $(TCL_OBJ_SA) $(TK_OBJ_SA) $(FSTUB_OBJ_SA)
+LIB_OBJS	= $(LIB_OBJS_SO) $(LIB_OBJS_SA)
+
+# Library names
+
+PLLIB_AR	= $(PLLIB_PATH)$(PLLIB_BASE)$(LIB_TAG)$A
+PLLIB_SH	= $(PLLIB_PATH)$(PLLIB_BASE)$(LIB_TAG)$(SHLIB_SUFFIX)
+PLLIB_SA	= $(PLLIB_PATH)$(PLLIB_BASE)$(LIB_TAG)$(SALIB_SUFFIX)
+
+# This is used for making the install versions of plrender & plserver
+# (Must relink after installing shared library!)
+
+LIB_INSTALL	= -L$(LIB_DIRF) -l$(PLLIB_NAME)$(LIB_TAG)
+
+# These are what we link against.
+
+PLLIB_LDC	= -L$(PLLIB_DIRF) -l$(PLLIB_NAME)$(LIB_TAG)
+PLLIB_LDF	= -L$(PLLIB_DIRF) -l$(PLLIB_NAME)$(LIB_TAG)
+
+# Default is to build library(s) and utils.
+
+everything: libs plrender$E pltek$E $(TCL_EXE) $(TK_EXE)
+
+# Clear the suffix list to prevent problems.
+
+.SUFFIXES:
+.SUFFIXES: $O .cc .c .f .h .fm4
+
+# Inference rules, not specific to archive or shared libraries.
+
+.fm4.f:
+	$(M4) $(M4_FLAGS) $< >$*.f
+

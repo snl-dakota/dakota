@@ -1,0 +1,148 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright (c) 2006, Sandia National Laboratories.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+//- Class:        SurfpackApproximation 
+//- Description:  Class for polynomial response surface approximation
+//-               
+//- Owner:        Mark Richards, Sandia National Laboratories
+ 
+
+#ifndef SURFPACK_APPROXIMATION_H 
+#define SURFPACK_APPROXIMATION_H 
+
+#include "DakotaApproximation.H"
+
+
+// Pertinent classes from Surfpack
+class SurfData;
+class SurfpackModel;
+class SurfpackModelFactory;
+
+namespace Dakota {
+
+
+/// Derived approximation class for Surfpack approximation classes.
+/// Interface between Surfpack and Dakota.
+
+/** The SurfpackApproximation class is the interface between Dakota
+    and Surfpack.  Based on the information in the ProblemDescDB that
+    is passed in through the constructor, SurfpackApproximation builds
+    a Surfpack Surface object that corresponds to one of the following
+    data-fitting techniques: polynomial regression, kriging,
+    artificial neural networks, radial basis function network, or
+    multivariate adaptaive regression splines (MARS). */
+
+class SurfpackApproximation: public Approximation
+{
+public:
+
+  //
+  //- Heading: Constructor and destructor
+  //
+
+  /// default constructor
+  SurfpackApproximation();
+  /// alternate constructor
+  SurfpackApproximation(const String& approx_type,
+			const UShortArray& approx_order, size_t num_vars,
+			unsigned short data_order);
+  /// standard constructor: Surfpack surface of appropriate type will be created
+  SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv);
+  /// destructor
+  ~SurfpackApproximation();
+
+protected:
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  int min_coefficients() const;
+  int recommended_coefficients() const;
+  //int num_constraints() const; // use default implementation
+
+  /// SurfData object will be created from Dakota's SurrogateDataPoints,
+  /// and the appropriate Surfpack build method will be invoked
+  void build();
+
+  // return #coefficients
+  //const RealVector& approximation_coefficients() const;
+  // set #coefficients
+  //void approximation_coefficients(const RealVector& approx_coeffs);
+
+  /// Return the value of the Surfpack surface for a given parameter vector x
+  const Real& get_value(const RealVector& x);
+  /// retrieve the approximate function gradient for a given parameter vector x
+  const RealVector& get_gradient(const RealVector& x);
+  /// retrieve the approximate function Hessian for a given parameter vector x
+  const RealSymMatrix& get_hessian(const RealVector& x);
+  /// retrieve the diagnostic metric for the diagnostic type specified
+  const Real& get_diagnostic(const String& metric_type);
+  /// check if the diagnostics are available (true for the Surfpack types)
+  const bool diagnostics_available();
+
+private:
+
+  //
+  //- Heading: Convenience functions
+  //
+
+  /// If anchor_point is present, create equality constraints from a particular
+  /// point, gradient, and/or hessian
+  void checkForEqualityConstraints();
+
+  /// copy from SurrogateDataPoint to SurfPoint/SurfData
+  SurfData* surrogates_to_surf_data();
+
+  //
+  //- Heading: Data
+  //
+
+  // Vector representation of the Approximation (e.g., polynomial coefficients
+  // for linear regression or trained neural network weights).  The format of
+  // such a vector has not been defined for all Surfpack classes
+  //RealVector coefficients;
+
+  /// The native Surfpack approximation
+  SurfpackModel* model;
+  /// factory for the SurfpackModel instance
+  SurfpackModelFactory* factory;
+  /// The data used to build the approximation, in Surfpack format
+  SurfData* surfData;
+};
+
+
+inline SurfpackApproximation::SurfpackApproximation():
+  surfData(NULL), model(NULL), factory(NULL)
+{ }
+
+
+inline SurfpackApproximation::
+SurfpackApproximation(const String& approx_type,
+		      const UShortArray& approx_order, size_t num_vars,
+		      unsigned short data_order):
+  surfData(NULL), model(NULL), factory(NULL)
+{
+  approxType = approx_type; approxOrder = approx_order;
+  numVars    = num_vars;    dataOrder   = data_order;
+}
+
+
+/* The value returned from this function is currently meaningless.
+   \todo: Provide an appropriate list of coefficients for each surface type */
+//inline const RealVector& SurfpackApproximation::
+//approximation_coefficients() const
+//{ return coefficients; }
+
+
+//inline void SurfpackApproximation::
+//approximation_coefficients(const RealVector& approx_coeffs)
+//{ coefficients = approx_coeffs; }
+
+} // namespace Dakota
+#endif

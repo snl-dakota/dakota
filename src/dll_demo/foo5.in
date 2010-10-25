@@ -1,0 +1,24 @@
+
+
+
+method,
+	nlpql_sqp
+	  max_iterations = 50
+	  convergence_tolerance = 1e-4
+
+variables,
+	continuous_design = 2
+	  initial_point  -1.2  1.0
+	  lower_bounds   -2.0 -2.0	
+	  upper_bounds    2.0  2.0	
+	  descriptors     'x1' 'x2'
+
+interface,
+	system
+	  analysis_driver = 'rosenbrock'
+
+responses,
+	num_least_squares_terms = 2	
+	analytic_gradients		
+	no_hessians		
+

@@ -1,0 +1,131 @@
+namespace Dakota {
+
+/** \page SoftwareTools Software Tools for DAKOTA Development
+
+\htmlonly
+<b>Software Tools Table of Contents</b>
+<ul>
+<li> <a href="SoftwareTools.html#SoftwareToolsIntro">Introduction</a>
+<li> <a href="SoftwareTools.html#SoftwareToolsSVN">Subversion for Version 
+	Control</a>
+<li> <a href="SoftwareTools.html#SoftwareToolsAutotools">GNU Autotools for
+	Configuration Management</a>
+</ul>
+\endhtmlonly
+
+
+\section SoftwareToolsIntro Introduction
+
+DAKOTA development relies on Subversion for revision control and the
+GNU Autotools for configuration management.  This section lists these
+tools, where to acquire recommended versions, and how to configure
+them.
+
+\section SoftwareToolsSVN Subversion for Version Control
+
+The DAKOTA project uses Subversion (http://subversion.apache.org/) for
+software revision control.  To checkout DAKOTA it may be necessary to
+install or upgrade the Subversion client on your system.
+
+As of October 2010, we require Subversion client version 1.6 or newer,
+due to need for file-based externals.  We recommend using 1.6.13
+source from
+http://subversion.tigris.org/downloads/subversion-1.6.13.tar.gz or
+binary packages available from
+http://subversion.apache.org/packages.html
+
+To configure and build from source on your machine, the following
+settings should be used, since DAKOTA is hosted as a FSFS-type
+repository and depends on the external acro which is stored in a
+repository requiring SSL certificate handling:
+
+\code
+SVNVER=1.6.13
+wget http://subversion.tigris.org/downloads/subversion-$SVNVER.tar.gz
+wget http://subversion.tigris.org/downloads/subversion-deps-$SVNVER.tar.gz
+tar xzf subversion-$SVNVER.tar.gz 
+tar xzf subversion-deps-$SVNVER.tar.gz
+
+cd subversion-$SVNVER
+./configure --prefix=/apps/subversion/$SVNVER --with-ssl --without-berkeley-db CC=gcc CFLAGS=-O2 CXX=g++ CXXFLAGS=-O2 F77=gfortran FFLAGS=-O2
+make -j 4 && make install
+# ALT: make -j 4 && make check && make install
+\endcode
+
+Once Subversion is working, DAKOTA (including externals) can be
+checked out with the single command
+\code 
+svn checkout svn+ssh://development.sandia.gov/usr/local/svn/Dakota/trunk Dakota
+\endcode
+
+If you experience server timeouts when SVN attempts to fetch external
+packages through a proxy server, you might need to make a change to
+your $HOME/.subversion/servers file (generated for you the first time
+you run svn) by adding
+
+\code 
+[global]
+http-proxy-exceptions = localhost, *.intranet.mydomain.com
+http-proxy-host = wwwproxy.mydomain.com
+\endcode 
+
+to the bottom of the file.  You should no longer get server timeouts
+when getting acro from software.sandia.gov.  If you find that checking
+these three packages out from software is unacceptably slow, you may
+add your hostname to the end of the http-proxy-exceptions line.
+Finally, svn will prompt you as to whether you wish to accept the SSL
+certificate from software; type 'p' for permanent.
+
+To set the default editor for Subversion commits, you may add the
+following to .cshrc (or similar for .bashrc):
+\code
+  setenv EDITOR "xemacs -g 81X50"
+\endcode
+
+Version Control with Subversion (http://svnbook.red-bean.com) is a
+great resource on SVN.
+
+\section SoftwareToolsAutotools GNU Autotools for Configuration Management
+
+DAKOTA uses the GNU Autotools (http://www.gnu.org/software/autoconf/)
+for configuration management.  Autoconf-2.60 or newer is required.
+Developers are currently using the following versions (it is important
+to use compatible versions of all these tools), though some newer
+versions are reported to work as well:
+
+<ol>
+<li> m4-1.4.4 (http://ftp.gnu.org/gnu/m4/m4-1.4.4.tar.gz)
+<li> autoconf-2.60 (http://ftp.gnu.org/gnu/autoconf/autoconf-2.60.tar.gz)
+<li> automake-1.10.3 (http://ftp.gnu.org/gnu/automake/automake-1.10.3.tar.gz)
+<li> libtool-1.5.24 (http://ftp.gnu.org/gnu/libtool/libtool-1.5.24.tar.gz)
+</ol>
+
+The following alternate tools versions may also work (use compatible
+versions as listed in a particular row):
+\code
+autoconf           m4      automake  libtool
+2.65  21-Nov-2009  1.4.13  1.11.1    2.2.6b
+2.64  26-Jul-2009  1.4.13  1.11.1    2.2.6b
+2.63  09-Sep-2008  1.4.11  1.11.1    2.2.6b
+2.62  08-Apr-2008  1.4.11  1.11.1    2.2.4
+2.61  17-Nov-2006  1.4.7   1.11.1    1.5.24
+2.60  26-Jun-2006  1.4.4   1.10.3    1.5.24
+\endcode
+
+Building the tools in the order listed above (m4, autoconf, automake,
+libtool) should satisfy dependencies if the newly installed tools are
+on your PATH.  For each PACKAGE the following build process should
+suffice:
+
+\code
+tar xzf $PACKAGE.tar.gz
+cd $PACKAGE
+./configure --prefix=$HOME/local
+make
+[make check]
+make install
+\endcode
+
+*/
+
+} // namespace Dakota

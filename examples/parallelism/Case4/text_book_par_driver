@@ -1,0 +1,84 @@
+#!/bin/sh
+
+# script to create working directory, populate, and submit each
+# analysis job to qsub on 6 processors 
+# (also see examples/script_interfaces/generic for another example)
+
+
+#-----------------------------------
+# CREATE TEMPORARY WORKING DIRECTORY
+#
+# Notes:
+# 1. This prevents file trampling when running concurrent jobs.
+# 2. See examples/script_interfaces/generic for an example where template
+#    and data files aren't replicated in each working directory
+#-----------------------------------
+
+num=$(echo $1 | awk -F. '{print $NF}')
+topdir=`pwd`
+workdir=$topdir/workdir.$num
+
+mkdir workdir.$num
+cp $topdir/$1 $workdir/dakota_vars
+cd $workdir
+
+
+# -------------------------
+# INPUT FILE PRE-PROCESSING
+# -------------------------
+
+# This demo does not need file pre-processing, but normally (see
+# below) APREPRO or DPREPRO is used to "cut-and-paste" data from the
+# params.in.# file written by DAKOTA into a template input file for
+# the user's simulation code.
+
+# aprepro run6crh_rigid_template.i temp_rigid.new
+# grep -vi aprepro temp_rigid.new > run6crh_rigid.i
+
+# dprepro $1 application_input.template application.in 
+
+# For this example we just prepare the application input by copying
+# the parameters:
+cp dakota_vars application.in
+
+
+# -------------------
+# RUN SIMULATION CODE
+# -------------------
+
+echo "$0 submitting pbs_submission to qsub with 6 processors."
+
+# Instead of running the simulation, generate a PBS submission script for 
+# this function evaluation and submit it to the queue
+
+echo "#!/bin/bash" > pbs_submission
+echo "#PBS -l nodes=3:ppn=2:compute" >> pbs_submission
+echo "#PBS -l walltime=00:05:00" >> pbs_submission
+echo "#PBS -N DAKOTA_Case4_$num" >> pbs_submission
+
+echo "cd $workdir" >> pbs_submission
+
+echo "mpiexec -n 6 text_book_simple_par application.in application.out" >> pbs_submission
+
+chmod a+x pbs_submission
+qsub pbs_submission
+
+
+# ---------------------------
+# OUTPUT FILE POST PROCESSING
+# ---------------------------
+
+# Need to write a results file so DAKOTA will proceed with the next
+# job generation:
+
+echo "                     9.999999999999999e-01 f" > $topdir/$2
+echo "                     9.999999999999999e-01 c1" >> $topdir/$2
+
+cd ..
+
+# -------------
+# CLEANUP
+# -------------
+
+# Do not want to cleanup in this case!
+

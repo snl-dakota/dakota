@@ -1,0 +1,868 @@
+<!--
+    tcl.xml: "Using PLplot from Tcl" chapter
+        
+    Copyright (C) 1994  Geoffrey Furnish and Maurice LeBrun
+    Copyright (C) 1999, 2000, 2001, 2002, 2003  Alan W. Irwin and Rafael Laboissiere
+    Copyright (C) 2003  Joao Cardoso
+
+    Redistribution and use in source (XML DocBook) and "compiled" forms
+    (HTML, PDF, PostScript, DVI, TeXinfo and so forth) with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+       1. Redistributions of source code (XML DocBook) must retain the
+          above copyright notice, this list of conditions and the following
+          disclaimer as the first lines of this file unmodified.
+
+       2. Redistributions in compiled form (transformed to other DTDs,
+          converted to HTML, PDF, PostScript, and other formats) must
+          reproduce the above copyright notice, this list of conditions and
+          the following disclaimer in the documentation and/or other
+          materials provided with the distribution.
+
+    Important: THIS DOCUMENTATION IS PROVIDED BY THE PLPLOT PROJECT "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE PLPLOT PROJECT BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS DOCUMENTATION,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<chapter id="tcl">
+  <title>Using PLplot from Tcl</title>
+<para>
+PLplot has historically had C and Fortran language bindings.  PLplot
+version 5.0 introduces a plethora of new programming options including
+C++ (described earlier) and several script language bindings.  The Tcl
+interface to PLplot (which the PLplot maintainers regard as the
+<quote>primary</quote> script language binding) is described in this chapter,
+with further discussion of Tcl related issues following in additional
+chapters.  But Tcl is certainly not the only script language option.
+Bindings to Perl, Python, and Scheme (which is actually another
+compiled language, but still has some of the flavor of a VHLL) are in
+various stages of completion, and are described in separate chapters.
+Use the one that suits you best--or try them all!
+</para>
+
+<sect1 id="tcl-motivation">
+  <title>Motivation for the Tcl Interface to PLplot</title>
+
+<para>
+The recent emergence of several high quality VHLL script languages
+such as Tcl, Perl, Python and arguably even some Lisp variants, is
+having a profound effect upon the art of computer programming.  Tasks
+which have traditionally been handled by C or Fortran, are beginning
+to be seen in a new light.  With relatively fast processors now widely
+available, many programming jobs are no longer bound by execution
+time, but by <quote>human time</quote>.  Rapidity of initial development and
+continued maintenance, for a surprisingly wide class of applications,
+is far more important than execution time.  Result: in a very short
+period of time, say from 1993 to 1995, script languages have exploded
+onto the scene, becoming essential tools for any serious programmer.
+</para>
+
+<para>
+Moreover, the entire concept of <quote>speed of execution</quote> needs revising
+in the face of the gains made in computer hardware in recent years.
+Saying that script language processing is slower than compiled
+language processing may be undeniable and simultaneously irrelevant.
+If the script language processing is fast enough, then it is fast
+enough.  Increasingly, computational researchers are finding that
+script based tools are indeed fast enough.  And if their run time is
+fast enough, and their development and maintenance time is much much
+better, then why indeed should they not be used?
+</para>
+
+<para>
+Even in a field with several high visibility players, Tcl has
+distinguished itself as a leading contender.  There are many reasons
+for this, but perhaps the most important, at least as it relates to
+the PLplot user community, is that Tcl was designed to be extensible
+and embeddable.  The whole purpose of Tcl, as it name (Tool Command
+Language) indicates, is to be a command language for other tools.  In
+other words, the fact that Tcl is capable of being a standalone shell
+is interesting, even useful, but nonetheless incidental.  The real
+attraction of Tcl is that it can be the shell language for
+<emphasis>your</emphasis>
+code.  Tcl can easily be embedded into your code, endowing it
+immediately with a full featured, consistent and well documented
+script programming language, providing all the core features you need
+in a programming language: variables, procedures, control structures,
+error trapping and recovery, tracing, etc.  But that is only the
+beginning!  After that, you can easily extend Tcl by adding commands
+to the core language, which invoke the capabilities of your tool.  It
+is in this sense that Tcl is a tool command language.  It is a command
+language which you can augment to provide access to the facilities of
+your tool.
+</para>
+
+<para>
+But Tcl is more than just an embeddable, extensible script language
+for personal use.  Tcl is an industry, an internet phenomenon.  There
+are currently at least two high quality books, with more on the way.
+There is an industry of service providers and educators.  Furthermore,
+literally hundreds of Tcl extensions exist, and are readily available
+over the net.  Perhaps the most notable extension, Tk, provides a
+fantastic interface to X Windows widget programming, permitting the
+construction of Motif like user interfaces, with none of the hassles
+of actually using Motif.  Some of these extensions endow Tcl with
+object oriented facilities philosophically similar to C++ or other
+object oriented languages.  Other extensions provide script level
+access to system services.  Others provide a script interface to
+sockets, RPC, and other network programming protocols.  The list goes
+on and on.  Dive into the Tcl archive, and see what it has for you!
+</para>
+
+<para>
+So, the answer to the question <quote>Why do we want a Tcl interface to
+PLplot?</quote> is very simple.  <quote>Because we we are using Tcl anyway, as
+the command language for our project, and would like to be able to do
+plotting in the command language just as we do so many other things.</quote>
+</para>
+
+<para>
+But there is more than just the aesthetics of integration to consider.
+There are also significant pragmatic considerations.  If you generate
+your PLplot output via function calls from a compiled language, then
+in order to add new diagnostics to your code, or to refine or
+embellish existing ones, you have to edit the source, recompile,
+relink, and rerun the code.  If many iterations are required to get
+the plot right, significant time can be wasted.  This can be
+especially true in the case of C++ code making heavy use of templates,
+for which many C++ compilers will have program link times measured in
+minutes rather than seconds, even for trivial program changes.
+</para>
+
+<para>
+In contrast, if the diagnostic plot is generated from Tcl, the
+development cycle looks more like: start the shell (command line or
+windowing), source a Tcl script, issue the command to generate the
+plot, notice a bug, edit the Tcl script, resource the script, and
+regenerate the plot.   Notice that compiling, linking, and restarting
+the program, have all been dropped from the development cycle.  The
+time savings from such a development cycle can be amazing!
+</para>
+
+</sect1>
+<sect1 id="tcl-overview">
+  <title>Overview of the Tcl Language Binding</title>
+
+<para>
+Each of the PLplot calls available to the C or Fortran programmer are
+also available from Tcl, with the same name and generally the same
+arguments.  Thus for instance, whereas in C you can write:
+<!--Insert a few more calls to make this a more realistic example.-->
+</para>
+<programlisting>
+plenv( 0., 1., 0., 1., 0, 0 );
+pllab( "(x)", "(y)", "The title of the graph" );
+</programlisting>
+<para>
+you can now write in Tcl:
+</para>
+<programlisting>
+plenv 0 1 0 1 0 0
+pllab "(x)" "(y)" "The title of the graph"
+</programlisting>
+<para>
+All the normal Tcl rules apply, there is nothing special about the
+PLplot extension commands.  So, you could write the above as:
+</para>
+<programlisting>
+set xmin 0; set xmax 1; set ymin 0; set ymax 1
+set just 0; set axis 0
+set xlab (x)
+set ylab (y)
+set title "The title of the graph"
+plenv $xmin $xmax $ymin $ymax $just $axis
+pllab $xlab $ylab $title
+</programlisting>
+<para>
+for example.  Not that there is any reason to be loquacious for its
+own sake, of course.  The point is that you might have things like the
+plot bounds or axis labels stored in Tcl variables for some other
+reason (tied to a Tk entry widget maybe, or provided as the result of
+one of your application specific Tcl extension commands, etc), and
+just want to use standard Tcl substitution to make the PLplot calls.
+</para>
+
+<para>
+Go ahead and try it!  Enter <literal>pltcl</literal> to start up the PLplot
+extended Tcl shell, and type (or paste) in the commands.  Or put them
+in a file and source it.  By this point it should be clear how
+incredibly easy it is to use the PLplot Tcl language binding.
+</para>
+
+<para>
+In order to accommodate the ubiquitous requirement for matrix oriented
+data in scientific applications, and in the PLplot API in particular,
+PLplot 5.0 includes a Tcl extension for manipulating matrices in Tcl.
+This Tcl Matrix Extension provides a straightforward and direct means
+of representing one and two dimensional matrices in Tcl.  The Tcl
+Matrix Extension is described in detail in the next section, but we
+mention its existence now just so that we can show how the PLplot Tcl
+API works.  Many of the PLplot Tcl API functions accept Tcl matrices
+as arguments.  For instance, in C you might write:
+</para>
+<programlisting>
+float x[100], y[100];
+
+/* code to initialize x and y */
+
+plline( 100, x, y );
+</programlisting>
+<para>
+In Tcl you can write:
+</para>
+<programlisting>
+matrix x f 100
+matrix y f 100
+
+# code to initialize x and y
+
+plline 100 x y
+</programlisting>
+
+<para>
+Some of the PLplot C function calls use pointer arguments to allow
+retrieval of PLplot settings.  These are implemented in Tcl by
+changing the value of the variable whose name you provide.  For
+example:
+</para>
+<programlisting>
+pltcl> plgxax
+wrong # args: should be "plgxax digmax digits  "
+pltcl> set digmax 0
+0
+pltcl> set digits 0
+0
+pltcl> plgxax digmax digits
+pltcl> puts "digmax=$digmax digits=$digits"
+digmax=4 digits=0
+</programlisting>
+<para>
+This example shows that each PLplot Tcl command is designed to issue
+an error if you invoke it incorrectly, which in this case was used to
+remind us of the correct arguments.  We then create two Tcl variables
+to hold the results.  Then we invoke the PLplot <literal>plgxax</literal> function
+to obtain the label formatting information for the x axis.  And
+finally we print the results.
+</para>
+
+<para>
+People familiar with Tcl culture may wonder why the <literal>plg*</literal> series
+functions don't just pack their results into the standard Tcl result
+string.  The reason is that the user would then have to extract the
+desired field with either <literal>lindex</literal> or
+<literal>regexp</literal>, which seems
+messy.  So instead, we designed the PLplot Tcl API to look and feel as
+much like the C API as could reasonably be managed.
+</para>
+
+<para>
+In general then, you can assume that each C function is provided in
+Tcl with the same name and same arguments (and one or two dimensional
+arrays in C are replaced by Tcl matrices).  There are only a few
+exceptions to this rule, generally resulting from the complexity of
+the argument types which are passed to some functions in the C API.
+Those exceptional functions are described below, all others work in
+the obvious way (analogous to the examples above).  
+</para>
+
+<para>
+See the Tcl example programs for extensive demonstrations of the usage
+of the PLplot Tcl API.  To run the Tcl demos:
+</para>
+<programlisting>
+% pltcl
+pltcl> source tcldemos.tcl
+pltcl> 1
+pltcl> 2
+</programlisting>
+<para>
+Alternatively, you can run <literal>plserver</literal> and source
+<filename>tkdemos.tcl</filename>.
+</para>
+
+<para>
+In any event, the Tcl demos provide very good coverage of the Tcl API,
+and consequently serve as excellent examples of usage.  For the most
+part they draw the same plots as their C counterpart.  Moreover, many
+of them were constructed by literally inserting the C code into the
+Tcl source file, and performing fairly mechanical transformations on
+the source.  This should provide encouragement to anyone used to using
+PLplot through one of the compiled interfaces, that they can easily
+and rapidly become productive with PLplot in Tcl.
+</para>
+
+</sect1>
+<sect1 id="tcl-extension">
+  <title>The PLplot Tcl Matrix Extension</title>
+
+<para>
+Tcl does many things well, but handling collections of numbers is not
+one of them.   You could make lists, but for data sets of sizes
+relevant to scientific graphics which is the primary domain of
+applicability for PLplot, the extraction time is excessive and
+burdensome.  You could use Tcl arrays, but the storage overhead is
+astronomical and the lookup time, while better than list manipulation,
+is still prohibitive.  
+</para>
+
+<para>
+To cope with this, a Tcl Matrix extension was created for the
+purpose of making it feasible to work with large collections of
+numbers in Tcl, in a way which is storage efficient, reasonably 
+efficient for accesses from Tcl, and reasonably compatible with
+practices used in compiled code.
+</para>
+
+<sect2 id="tcl-using-tcl">
+  <title>Using Tcl Matrices from Tcl</title>
+
+<para>
+Much like the Tk widget creation commands, the Tcl <literal>matrix</literal>
+command considers its first argument to be the name of a new command
+to be created, and the rest of the arguments to be modifiers.  After
+the name, the next argument can be <literal>float</literal> or
+<literal>int</literal> or
+contractions thereof.  Next follow a variable number of size arguments
+which determine the size of the matrix in each of its dimensions.  For
+example: 
+</para>
+<programlisting>
+matrix x f 100
+matrix y i 64 64
+</programlisting>
+<para>
+constructs two matrices.  <literal>x</literal> is a float matrix, with one
+dimension and 100 elements.  <literal>y</literal> is an integer matrix, and has 2
+dimensions each of size 64.
+</para>
+
+<para>
+Additionally, an initializer may be specified, with a syntax familiar
+from C.  For example:
+</para>
+<programlisting>
+matrix x f 4 = { 1.5, 2.5, 3.5, 4.5 }
+</programlisting>
+
+<para>
+A Tcl matrix is a command, and as longtime Tcl users know, Tcl
+commands are globally accessible.  The PLplot Tcl Matrix extension
+attempts to lessen the impact of this by registering a variable in the
+local scope, and tracing it for insets, and deleting the actual
+matrix command when the variable goes out of scope.  In this way, a
+Tcl matrix appears to work sort of like a variable.  It is, however,
+just an illusion, so you have to keep this in mind.  In particular,
+you may want the matrix to outlive the scope in which it was created.
+For example, you may want to create a matrix, load it with data, and
+then pass it off to a Tk megawidget for display in a spreadsheet like
+form.  The proc which launches the Tk megawidget will complete, but
+the megawidget, and the associated Tcl matrix are supposed to hang
+around until they are explicitly destroyed.  To achieve this effect,
+create the Tcl matrix with the <literal>-persist</literal> flag.  If present
+(can be anywhere on the line), the matrix is not automatically deleted
+when the scope of the current proc (method) ends.  Instead, you must
+explicitly clean up by using either the 'delete' matrix command or renaming
+the matrix command name to {}.  Now works correctly from within [incr Tcl].
+</para>
+
+<para>
+As mentioned above, the result of creating a matrix is that a new
+command of the given name is added to the interpreter.  You can then
+evaluate the command, providing indices as arguments, to extract the
+data.  For example:
+</para>
+<programlisting>
+pltcl> matrix x f = {1.5, 2.5, 3.5, 4.5}
+insufficient dimensions given for Matrix operator "x"
+pltcl> matrix x f 4 = {1.5, 2.5, 3.5, 4.5}
+pltcl> x 0
+1.500000
+pltcl> x 1
+2.500000
+pltcl> x 3
+4.500000
+pltcl> x *
+1.500000 2.500000 3.500000 4.500000
+pltcl> puts "x\[1\]=[x 1]"
+x[1]=2.500000
+pltcl> puts "x\[*\] = :[x *]:"
+x[*] = :1.500000 2.500000 3.500000 4.500000:
+pltcl> foreach v [x *] { puts $v }
+1.500000
+2.500000
+3.500000
+4.500000
+pltcl> for {set i 0} {$i &lt; 4} {incr i} {
+           if {[x $i] &lt; 3} {puts [x $i]} }
+1.500000
+2.500000
+</programlisting>
+<para>
+Note from the above that the output of evaluating a matrix indexing
+operation is suitable for use in condition processing, list
+processing, etc.
+</para>
+
+<para>
+You can assign to matrix locations in a similar way:
+</para>
+<programlisting>
+pltcl> x 2 = 7
+pltcl> puts ":[x *]:"
+:1.500000 2.500000 7.000000 4.500000:
+pltcl> x * = 3
+pltcl> puts ":[x *]:"
+</programlisting>
+<para>
+Note that the * provides a means of obtaining an index range, and that
+it must be separated from the = by a space.  Future versions of the
+Tcl Matrix extension may allow alternative ways of specifying index
+ranges and may assign the obvious meaning to an expression of the
+form:
+</para>
+<programlisting>
+x *= 3
+</programlisting>
+<para>
+However this has not been implemented yet...
+</para>
+
+<para>
+In any event, the <literal>matrix</literal> command also supports an
+<literal>info</literal>
+subcommand which reports the number of elements in each dimension:
+</para>
+<programlisting>
+pltcl> x info
+4 
+pltcl> matrix y i 8 10
+pltcl> y info
+8 10 
+</programlisting>
+
+</sect2>
+<sect2 id="tcl-using-c">
+  <title>Using Tcl Matrices from C</title>
+
+<para>
+Normally you will create a matrix in Tcl, and then want to pass it to
+C in order to have the data filled in, or existing data to be used in
+a computation, etc.  To do this, pass the name of the matrix command
+as an argument to your C Tcl command procedure.  The C code should
+include <filename>tclMatrix.h</filename>, which has a definition for the
+<literal>tclMatrix</literal> structure.  You fetch a pointer to the
+<literal>tclMatrix</literal> structure using the
+<literal>Tcl_GetMatrixPtr</literal> function.
+</para>
+
+<para>
+For example, in Tcl:
+</para>
+<programlisting>
+matrix x f 100
+wacky x
+</programlisting>
+<para>
+and in C:
+</para>
+<programlisting>
+int wackyCmd( ClientData clientData, Tcl_Interp *interp,
+              int argc, char *argv[] )
+{
+    tclMatrix *w;
+
+    w = Tcl_GetMatrixPtr( interp, argv[1] );
+    ...
+</programlisting>
+
+<para>
+To learn about what else you can do with the matrix once inside
+compiled code, read <filename>tclMatrix.h</filename> to learn the definition of the
+<literal>tclMatrix</literal> structure, and see the examples in files like
+<filename>tclAPI.c</filename> which show many various uses of the Tcl matrix.
+</para>
+
+</sect2>
+<sect2 id="tcl-using-cplusplus">
+  <title>Using Tcl Matrices from C++</title>
+
+<para>
+Using a Tcl matrix from C++ is very much like using it from C, except
+that <filename>tclMatrix.h</filename> contains some C++ wrapper classes which are
+somewhat more convenient than using the indexing macros which one has
+to use in C.  For example, here is a tiny snippet from one of the
+authors codes in which Tcl matrices are passed in from Tcl to a C++
+routine which is supposed to fill them in with values from some
+matrices used in the compiled side of the code:
+</para>
+
+<programlisting>
+...
+if (item == "vertex_coords") {
+    tclMatrix *matxg = Tcl_GetMatrixPtr( interp, argv[1] );
+    tclMatrix *matyg = Tcl_GetMatrixPtr( interp, argv[2] );
+
+    Mat2&lt;float> xg(ncu, ncv), yg(ncu, ncv);
+    cg->Get_Vertex_Coords( xg, yg );
+
+    TclMatFloat txg( matxg ), tyg( matyg );
+
+    for( i=0; i &lt; ncu; i++ )
+        for( j=0; j &lt; ncv; j++ ) {
+            txg(i,j) = xg(i,j);
+            tyg(i,j) = yg(i,j);
+        }
+</programlisting>
+<para>
+There are other things you can do too, see the definitions of the
+<literal>TclMatFloat</literal> and <literal>TclMatInt</literal> classes in
+<filename>tclMatrix.h</filename>. 
+</para>
+
+</sect2>
+<sect2 id="tcl-extending">
+  <title>Extending the Tcl Matrix facility</title>
+
+<para>
+The Tcl matrix facility provides creation, indexing, and information
+gathering facilities.  However, considering the scientifically
+inclined PLplot user base, it is clear that some users will demand
+more.  Consequently there is a mechanism for augmenting the Tcl matrix
+facility with your own, user defined, extension subcommands.  Consider
+<filename>xtk04.c</filename>.  In this extended wish, we want to be able to
+determine the minimum and maximum values stored in a matrix.  Doing
+this in Tcl would involve nested loops, which in Tcl would be
+prohibitively slow.  We could register a Tcl extension command to do
+it, but since the only sensible data for such a command would be a
+Tcl matrix, it seems nice to provide this facility as an actual
+subcommand of the matrix.  However, the PLplot maintainers cannot
+foresee every need, so a mechanism is provided to register subcommands
+for use with matrix objects.
+</para>
+
+<para>
+The way to register matrix extension subcommands is to call
+<literal>Tcl_MatrixInstallXtnsn</literal>: 
+</para>
+<programlisting>
+typedef int (*tclMatrixXtnsnProc) ( tclMatrix *pm, Tcl_Interp *interp,
+                                    int argc, char *argv[] );
+
+int Tcl_MatrixInstallXtnsn( char *cmd, tclMatrixXtnsnProc proc );
+</programlisting>
+<para>
+In other words, make a function for handling the matrix extension
+subcommand, with the same function signature (prototype) as
+<literal>tclMatrixXtnsnProc</literal>, and register the subcommand name along with
+the function pointer.  For example, xtk04.c has:
+</para>
+<programlisting>
+int mat_max( tclMatrix *pm, Tcl_Interp *interp,
+             int argc, char *argv[] )
+{
+    float max = pm->fdata[0];
+    int i;
+    for( i=1; i &lt; pm->len; i++ )
+        if (pm->fdata[i] > max)
+            max = pm->fdata[i];
+
+    sprintf( interp->result, "%f", max );
+    return TCL_OK;
+}
+
+int mat_min( tclMatrix *pm, Tcl_Interp *interp,
+             int argc, char *argv[] )
+{
+    float min = pm->fdata[0];
+    int i;
+    for( i=1; i &lt; pm->len; i++ )
+        if (pm->fdata[i] &lt; min)
+            min = pm->fdata[i];
+
+    sprintf( interp->result, "%f", min );
+    return TCL_OK;
+}
+</programlisting>
+<para>
+Then, inside the application initialization function
+(<literal>Tcl_AppInit()</literal> to long time Tcl users):
+</para>
+<programlisting>
+Tcl_MatrixInstallXtnsn( "max", mat_max );
+Tcl_MatrixInstallXtnsn( "min", mat_min );
+</programlisting>
+<para>
+Then we can do things like:
+</para>
+<programlisting>
+dino 65: xtk04
+% matrix x f 4 = {1, 2, 3, 1.5}
+% x min
+1.000000
+% x max
+3.000000
+</programlisting>
+
+<para>
+Your imagination is your only limit for what you can do with this.
+You could add an FFT subcommand, matrix math, BLAS, whatever.  
+</para>
+</sect2>
+</sect1>
+
+<sect1 id="tcl-contouring">
+  <title>Contouring and Shading from Tcl</title>
+
+<para>
+Contouring and shading has traditionally been one of the
+messier things to do in PLplot.  The C API has many parameters, with
+complex setup and tear down properties.  Of special concern is that
+some of the parameters do not have a natural representation in script
+languages like Tcl.  In this section we describe how the Tcl
+interface to these facilities is provided, and how to use it.
+</para>
+
+<sect2 id="tcl-drawing-contour">
+  <title>Drawing a Contour Plot from Tcl</title>
+
+<para>
+By way of reference, the primary C function call for contouring is:
+</para>
+<programlisting>
+void plcont( PLFLT **f, PLINT nx, PLINT ny, PLINT kx, PLINT lx,
+             PLINT ky, PLINT ly, PLFLT *clevel, PLINT nlevel,
+             void (*pltr) (PLFLT, PLFLT, PLFLT *, PLFLT *, PLPointer),
+             PLPointer pltr_data);
+</programlisting>
+<para>
+</para>
+
+<para>
+This is a fairly complex argument list, and so for this function (and
+for plshade, described below) we dispense with trying to exactly
+mirror the C API, and just concentrate on capturing the functionality
+within a Tcl context.  To begin with, the data is provided through a
+2-d Tcl matrix.  The Tcl matrix carries along its size information
+with it, so <literal>nx</literal> and <literal>ny</literal> are no longer needed.  The
+<literal>kx</literal>, <literal>lx</literal>, <literal>ky</literal> and
+<literal>ly</literal> variables are
+potentially still  useful for plotting a subdomain of the full data
+set, so they may be specified in the natural way, but we make this
+optional since they are frequently not used to convey anything more
+than what could be inferred from <literal>nx</literal> and
+<literal>ny</literal>.  However, to
+simplify processing, they must be supplied or omitted as a set (all of
+them, or none of them).  <literal>clevel</literal> is supplied as a 1-d Tcl
+matrix, and so <literal>nlevel</literal> can be omitted.  
+</para>
+
+<para>
+Finally, we have no way to support function pointers from Tcl, so
+instead we provide token based support for accessing the three
+coordinate transformation routines which are provided by PLplot, and
+which many PLplot users use.  There are thus three courses of action:
+<itemizedlist>
+  <listitem>
+  <para>
+  Provide no pltr specification.  In this case, <literal>pltr0</literal> is
+  used by default.
+  </para>
+  </listitem>
+
+  <listitem>
+  <para>
+  Specify <literal>pltr1 x y</literal> where x and y are 1-d Tcl matrices.
+  In this case <literal>pltr1</literal> will be used, and the 1-d arrays which it
+  needs will be supplied from the Tcl matrices <literal>x</literal> and
+  <literal>y</literal>.
+  </para>
+  </listitem>
+
+
+  <listitem>
+  <para>
+  Specify <literal>pltr2 x y</literal> where x and y are 2-d Tcl matrices.
+  In this case <literal>pltr2</literal> will be used, and the 2-d arrays which it
+  needs will be supplied from the Tcl matrices <literal>x</literal> and
+  <literal>y</literal>.
+  </para>
+  </listitem>
+</itemizedlist>
+
+</para>
+
+<para>
+Now, there can be no question that this is both more concise and less
+powerful than what you could get in C.  The loss of the ability to
+provide a user specified transformation function is regrettable.  If
+you really do need that functionality, you will have to implement your
+own Tcl extension command to do pretty much the same thing as the
+provided Tcl extension command <literal>plcont</literal> (which is in
+<filename>tclAPI.c</filename> in function <literal>plcontCmd()</literal>), except specify the C
+transformation function of your choice.
+</para>
+
+<para>
+However, that having been said, we recognize that one common use for
+this capability is to provide a special version of <literal>pltr2</literal> which
+knows how to implement a periodic boundary condition, so that polar
+plots, for example, can be implemented cleanly.  That is, if you want
+to draw contours of a polar data set defined on a 64 x 64 grid,
+ensuring that contour lines would actually go all the way around the
+origin rather than breaking off like a silly pacman figure, then you
+had basically two choices in C.  You could copy the data to a 65 x 64
+grid, and replicate one row of data into the spare slot, and then plot
+the larger data set (taking care to replicate the coordinate arrays
+you passed to pltr2 in the same way), <emphasis>or</emphasis> you could make a
+special version of <literal>pltr2</literal> which would understand that one of the
+coordinates was wrapped, and perform transformations accordingly
+without actually making you replicate the data.
+</para>
+
+<para>
+Since the former option is ugly in general, and hard to do in Tcl in
+particular, and since the second option is even more difficult to do
+in Tcl (requiring you do make a special Tcl extension command as
+described above), we provide special, explicit support for this common
+activity.  This is provided through the use of a new, optional
+parameter <literal>wrap</literal> which may be specified as the last parameter to
+the Tcl command, only if you are using <literal>pltr2</literal>.  Supplying
+<literal>1</literal> will wrap in the first coordinate, <literal>2</literal> will wrap in the
+second coordinate.
+</para>
+
+<para>
+The resultant Tcl command is:
+</para>
+<programlisting>
+plcont f [kx lx ky ly] clev [pltr x y] [wrap]
+</programlisting>
+<para>
+Note that the brackets here are used to signify optional arguments,
+<emphasis>not</emphasis> to represent Tcl command substitution!
+</para>
+
+<para>
+The Tcl demo <filename>x09.tcl</filename> provides examples of all the capabilities
+of this interface to contouring from Tcl.  Note in particular,
+<literal>x09_polar</literal> which does a polar contour without doing anything
+complicated in the way of setup, and without getting a pacman as the
+output. 
+</para>
+
+</sect2>
+<sect2 id="tcl-drawing-shaded">
+  <title>Drawing a Shaded Plot from Tcl</title>
+
+<para>
+The Tcl interface to shading works very much like the one for
+contouring.  The command is:
+</para>
+<programlisting>
+plshade z xmin xmax ymin ymax \
+    sh_min sh_max sh_cmap sh_color sh_width \
+    min_col min_wid max_col max_wid \
+    rect [pltr x y] [wrap]
+</programlisting>
+<para>
+where <literal>nx</literal> and <literal>ny</literal> were dropped since they are inferred
+from the Tcl matrix <literal>z</literal>, <literal>defined</literal> was dropped since it
+isn't supported anyway, and <literal>plfill</literal> was dropped since it was the
+only valid choice anyway.  The <literal>pltr</literal> spec and
+<literal>wrap</literal> work
+exactly as described for the Tcl <literal>plcont</literal> described above.
+</para>
+
+<para>
+The Tcl demo <filename>x16.tcl</filename> contains extensive demonstrations of use,
+including a shaded polar plot which connects in the desirable way
+without requiring special data preparation, again just like for
+<literal>plcont</literal> described previously.
+</para>
+</sect2>
+
+</sect1>
+<sect1 id="tcl-understanding">
+  <title>Understanding the Performance Characteristics of Tcl</title>
+
+<para>
+Newcomers to Tcl, and detractors (read, <quote>proponents of other
+paradigms</quote>) often do not have a clear (newcomers) or truthful
+(detractors) perspective on Tcl performance.  In this section we try
+to convey a little orientation which may be helpful in working with
+the PLplot Tcl interface.
+</para>
+
+<para>
+<quote>Tcl is slow!</quote>  <quote>Yeah, so what?</quote>
+</para>
+
+<para>
+Debates of this form frequently completely miss the point.  Yes, Tcl
+is definitely slow.  It is fundamentally a string processing language,
+is interpreted, and must perform substitutions and so forth on a
+continual basis.  All of that takes time.  Think milliseconds instead
+of microseconds for comparing Tcl code to equivalent C code.  On the
+other hand, this does not have to be problematic, even for time
+critical (interactive) applications, if the division of labor is done
+correctly.  Even in an interactive program, you can use Tcl fairly
+extensively for high level control type operations, as long as you do
+the real work in a compiled Tcl command procedure.  If the high level
+control code is slow, so what?  So it takes 100 milliseconds over the
+life the process, as compared to the 100 microseconds it could have
+taken if it were in C.  Big deal.  On an absolute time scale, measured
+in units meaningful to humans, it's just not a lot of time.
+</para>
+
+<para>
+The problem comes when you try to do too much in Tcl.  For instance,
+an interactive process should not be trying to evaluate a
+mathematical expression inside a doubly nested loop structure, if
+performance is going to be a concern.
+</para>
+
+<para>
+Case in point:  Compare x16.tcl to x16c.c.  The code looks very
+similar, and the output looks very similar.  What is not so similar is
+the execution time.  The Tcl code, which sets up the data entirely in
+Tcl, takes a while to do so.  On the other hand, the actual plotting
+of the data proceeds at a rate which is effectively indistinguishable
+from that of the compiled example.  On human time scales, the
+difference is not meaningful.  Conclusion:  If the computation of the
+data arrays could be moved to compiled code, the two programs would
+have performance close enough to identical that it really wouldn't be
+an issue.  We left the Tcl demos coded in Tcl for two reasons.  First
+because they provide some examples and tests of the use of the Tcl
+Matrix extension, and secondly because they allow the Tcl demos to be
+coded entirely in Tcl, without requiring special customized extended
+shells for each one of them.  They are not, however, a good example of
+you should do things in practice.
+</para>
+
+<para>
+Now look at <filename>tk04</filename> and <filename>xtk04.c</filename>, you will see
+that if the data is computed in compiled code, and shuffled into the
+Tcl matrix and then plotted from Tcl, the performance is fine.  Almost
+all the time is spent in plshade, in compiled code.  The time taken to
+do the small amount of Tcl processing involved with plotting is
+dwarfed by the time spent doing the actual drawing in C.  So using Tcl
+cost almost nothing in this case.
+</para>
+
+<para>
+So, the point is, do your heavy numerics in a compiled language, and
+feel free to use Tcl for the plotting, if you want to.  You can of
+course mix it up so that some plotting is done from Tcl and some from
+a compiled language.  
+</para>
+</sect1>
+</chapter>

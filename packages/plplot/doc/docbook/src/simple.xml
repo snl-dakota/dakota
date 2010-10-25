@@ -1,0 +1,810 @@
+<!--
+    simple.xml: "Simple Use of PLplot" chapter
+
+    Copyright (C) 1994  Geoffrey Furnish and Maurice LeBrun
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  Alan W. Irwin
+    Copyright (C) 1999, 2000, 2001, 2002, 2003  Rafael Laboissiere
+    Copyright (C) 2003  Joao Cardoso
+
+    Redistribution and use in source (XML DocBook) and "compiled" forms
+    (HTML, PDF, PostScript, DVI, TeXinfo and so forth) with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+       1. Redistributions of source code (XML DocBook) must retain the
+          above copyright notice, this list of conditions and the following
+          disclaimer as the first lines of this file unmodified.
+
+       2. Redistributions in compiled form (transformed to other DTDs,
+          converted to HTML, PDF, PostScript, and other formats) must
+          reproduce the above copyright notice, this list of conditions and
+          the following disclaimer in the documentation and/or other
+          materials provided with the distribution.
+
+    Important: THIS DOCUMENTATION IS PROVIDED BY THE PLPLOT PROJECT "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE PLPLOT PROJECT BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS DOCUMENTATION,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<chapter id="simple">
+  <title>Simple Use of PLplot</title>
+
+  <sect1 id="simple-graph">
+    <title>Plotting a Simple Graph</title>
+
+    <para>
+      We shall first consider plotting simple graphs showing the dependence
+      of one variable upon another.  Such a graph may be composed of
+      several elements:
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>
+	  A box which defines the ranges of the variables, perhaps with
+	  axes and numeric labels along its edges.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  A set of points or lines within the box showing the functional
+	  dependence.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  A set of labels for the variables and a title for the graph.
+	</para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      In order to draw such a graph, it is necessary to call at least four
+      of the PLplot functions:
+    </para>
+
+    <orderedlist>
+      <listitem>
+	<para>
+	  &plinit;, to initialize PLplot.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  &plenv;, to define the range and scale of the
+	  graph, and draw labels, axes, etc.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  One or more calls to &plline; or &plpoin; to draw lines or points
+	  as needed.  Other more complex routines include &plbin; and
+	  &plhist; to draw histograms, &plerrx; and &plerry; to draw
+	  error-bars.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  &plend;, to close the plot.
+	</para>
+      </listitem>
+    </orderedlist>
+
+    <para>
+      More than one graph can be drawn on a single set of axes by making
+      repeated calls to the routines listed in item 3 above.  PLplot only
+      needs to be initialized once unless plotting to multiple output
+      devices.
+    </para>
+
+  </sect1>
+
+  <sect1 id="initializing">
+    <title>Initializing PLplot</title>
+
+    <para>
+      Before any actual plotting calls are made, a graphics program must
+      call &plinit;, is the main initialization routine for PLplot.  It
+      sets up all internal data structures necessary for plotting and
+      initializes the output device driver.  If the output device has not
+      already been specified when &plinit; is called, a list of valid
+      output devices is given and the user is prompted for a choice.
+      Either the device number or a device keyword is accepted.
+    </para>
+
+    <para>
+      There are several routines affecting the initialization that must
+      be called <emphasis>before</emphasis> &plinit;, if they are used.  The
+      function &plsdev; allows you to set the device explicitly.  The
+      function &plsetopt; allows you to set any command-line option
+      internally in your code.  The function &plssub; may be called to
+      divide the output device plotting area into several subpages of equal
+      size, each of which can be used separately. </para>
+
+    <para>
+      One advances to the next page (or screen) via &pladv;.  If subpages
+      are used, this can be used to advance to the next subpage or to a
+      particular subpage.
+    </para>
+  </sect1>
+
+
+  <sect1 id="scales">
+    <title>Defining Plot Scales and Axes</title>
+
+    <para>
+      The function &plenv; is used to define the scales and axes for simple
+      graphs.  &plenv; starts a new picture on the next subpage (or a new
+      page if necessary), and defines the ranges of the variables required.
+      The routine will also draw a box, axes, and numeric labels if
+      requested.  The syntax for &plenv; is:
+    </para>
+
+    <!-- ============================================================= -->
+    <para>
+      <funcsynopsis>
+      <funcprototype>
+	<funcdef>
+	  <function>plenv</function>
+	</funcdef>
+ 	<paramdef><parameter>xmin</parameter></paramdef>
+	<paramdef><parameter>xmax</parameter></paramdef>
+	<paramdef><parameter>ymin</parameter></paramdef>
+	<paramdef><parameter>ymax</parameter></paramdef>
+	<paramdef><parameter>just</parameter></paramdef>
+	<paramdef><parameter>axis</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+    </para>
+
+    <variablelist>
+      <varlistentry>
+	<term>
+	  <parameter>xmin, xmax</parameter>
+	  (<literal>PLFLT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+	    The left and right limits for the horizontal axis.
+	  </para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
+	<term>
+	  <parameter>ymin, ymax</parameter>
+	  (<literal>PLFLT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+	    The bottom and top limits for the vertical axis.
+	  </para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
+	<term>
+	  <parameter>just</parameter>
+	  (<literal>PLINT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+	    This should be zero or one.  If <parameter>just</parameter> is
+	    one, the scales of the x-axis and y-axis will be the same (in
+	    units per millimeter); otherwise the axes are scaled
+	    independently.  This parameter is useful for ensuring that
+	    objects such as circles have the correct aspect ratio in the
+	    final plot.
+	  </para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
+	<term>
+	  <parameter>axis</parameter>
+	  (<literal>PLINT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+	    <parameter>axis</parameter> controls whether a box, tick marks,
+	    labels, axes, and/or a grid are drawn.
+	  </para>
+
+	  <itemizedlist>
+	    <listitem>
+	      <para>
+		<parameter>axis</parameter> = -2: No box or annotation.
+	      </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>
+		<parameter>axis</parameter> = -1: Draw box only.
+	      </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>
+		<parameter>axis</parameter> = 0: Draw box, labeled with
+		coordinate values around edge.
+	      </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>
+		<parameter>axis</parameter> = 1: In addition to box and labels,
+		draw the two axes X = 0 and Y = 0.
+	      </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>
+		<parameter>axis</parameter> = 2: Same as
+		<parameter>axis</parameter> = 1, but also draw a grid at the
+		major tick interval.
+	      </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>
+		<parameter>axis</parameter> = 10: Logarithmic X axis, linear Y
+		axis.
+	      </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>
+		<parameter>axis</parameter> = 11: Logarithmic X axis, linear Y
+		axis and draw line Y = 0.
+	      </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>
+		<parameter>axis</parameter> = 20: Linear X axis,
+		logarithmic Y axis.
+	      </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>
+		<parameter>axis</parameter> = 21: Linear X axis, logarithmic Y
+		axis and draw line X = 0.
+	      </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>
+		<parameter>axis</parameter> = 30: Logarithmic X and Y axes.
+	      </para>
+	    </listitem>
+	  </itemizedlist>
+	</listitem>
+      </varlistentry>
+
+    </variablelist>
+    <!-- ============================================================= -->
+
+    <para>
+      Note: Logarithmic axes only affect the appearance of the axes and
+      their labels, so it is up to the user to compute the logarithms prior
+      to passing them to &plenv; and any of the other routines.  Thus, if a
+      graph has a 3-cycle logarithmic axis from 1 to 1000, we need to set
+      <parameter>xmin</parameter> =
+      <function>log<subscript>10</subscript></function>(1) = 0.0, and
+      <parameter>xmax</parameter> =
+      <function>log<subscript>10</subscript></function>(1000) = 3.0.
+    </para>
+
+    <para>
+      For greater control over the size of the plots, axis labeling and
+      tick intervals, more complex graphs should make use of the functions
+      &plvpor;, &plvasp;, &plvpas;, &plwind;, &plbox;, and routines for
+      manipulating axis labeling &plgxax; through &plszax;.
+    </para>
+  </sect1>
+
+  <sect1 id="labelling">
+    <title>Labeling the Graph</title>
+
+    <para>
+      The function &pllab; may be called after &plenv; to write labels on
+      the x and y axes, and at the top of the picture.  All the variables
+      are character variables or constants.  Trailing spaces are removed
+      and the label is centered in the appropriate field.  The syntax for
+      &pllab; is:
+    </para>
+
+    <!-- ============================================================= -->
+    <para>
+      <funcsynopsis>
+      <funcprototype>
+	<funcdef>
+	  <function>pllab</function>
+	</funcdef>
+	<paramdef><parameter>xlbl</parameter></paramdef>
+	<paramdef><parameter>ylbl</parameter></paramdef>
+	<paramdef><parameter>toplbl</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+    </para>
+
+    <variablelist>
+      <varlistentry>
+	<term>
+	<parameter>xlbl</parameter> (<literal>char *</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+	    Pointer to string with label for the X-axis (bottom of graph).
+	  </para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
+	<term>
+	<parameter>ylbl</parameter> (<literal>char *</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+	    Pointer to string with label for the Y-axis (left of graph).
+	  </para>
+	</listitem>
+      </varlistentry>
+
+      <varlistentry>
+	<term>
+	<parameter>toplbl</parameter> (<literal>char *</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+	    Pointer to string with label for the plot (top of picture).}
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+
+
+    <!-- ============================================================= -->
+
+    <para>
+      More complex labels can be drawn using the function &plmtex;.  For
+      discussion of writing text in a plot see <xref linkend="text"/>, and
+      for more detailed discussion about label generation see <xref
+      linkend="text"/>.
+    </para>
+
+  </sect1>
+  <sect1 id="drawing">
+    <title>Drawing the Graph</title>
+
+    <para>
+      PLplot can draw graphs consisting of points with optional error bars,
+      line segments or histograms.  Functions which perform each of these
+      actions may be called after setting up the plotting environment using
+      &plenv;.  All of the following functions draw within the box defined
+      by &plenv;, and any lines crossing the boundary are clipped.
+      Functions are also provided for drawing surface and contour
+      representations of multi-dimensional functions.  See <xref
+	linkend="advanced"/> for discussion of finer control of plot
+	generation.
+    </para>
+
+    <sect2 id="points">
+      <title>Drawing Points</title>
+
+      <para>
+	&plpoin; and &plsym; mark out <literal>n</literal> points
+	<literal>(x[i], y[i])</literal> with the specified symbol.  The
+	routines differ only in the interpretation of the symbol codes.
+	&plpoin; uses an extended ASCII representation, with the printable
+	ASCII codes mapping to the respective characters in the current
+	font, and the codes from 0&ndash;31 mapping to various useful
+	symbols.  In &plsym; however, the code is a Hershey font code
+	number.  Example programs are provided which display each of the
+	symbols available using these routines.
+      </para>
+
+      <!-- ============================================================= -->
+
+      <para>
+	<funcsynopsis>
+	<funcprototype>
+	  <funcdef>
+	    <function>plpoin</function></funcdef>
+	  <paramdef><parameter>n</parameter></paramdef>
+	  <paramdef><parameter>x</parameter></paramdef>
+	  <paramdef><parameter>y</parameter></paramdef>
+	  <paramdef><parameter>code</parameter></paramdef>
+	</funcprototype>
+	</funcsynopsis>
+      </para>
+      <para>
+	<funcsynopsis>
+	<funcprototype>
+	  <funcdef>
+	    <function>plsym</function>
+	  </funcdef>
+	  <paramdef><parameter>n</parameter></paramdef>
+	  <paramdef><parameter>x</parameter></paramdef>
+	  <paramdef><parameter>y</parameter></paramdef>
+	  <paramdef><parameter>code</parameter></paramdef>
+	</funcprototype>
+	</funcsynopsis>
+      </para>
+
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <parameter>n</parameter> (<literal>PLINT</literal>, input)
+	  </term>
+	  <listitem>
+	    <para>
+	      The number of points to plot.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
+	    <parameter>x, y</parameter> (<literal>PLFLT *</literal>, input)
+	  </term>
+	  <listitem>
+	    <para>
+	      Pointers to arrays of the coordinates of the
+	      <literal>n</literal> points.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term> <parameter>code</parameter> (<literal>PLINT</literal>,
+	    input)
+	  </term>
+	  <listitem>
+	    <para>
+	      Code number of symbol to draw
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+
+      <!-- ============================================================= -->
+
+    </sect2>
+
+    <sect2 id="lines">
+      <title>Drawing Lines or Curves</title>
+
+      <para>
+	PLplot provides two functions for drawing line graphs.  All lines are
+	drawn in the currently selected color, style and width.  See <xref
+	  linkend="line-attributes"/> for information about changing these
+	  parameters.
+      </para>
+
+      <para>
+	&plline; draws a line or curve.  The curve consists of
+	<literal>n-1</literal> line segments joining the <literal>n</literal>
+	points in the input arrays.  For single line segments, &pljoin; is
+	used to join two points.
+      </para>
+
+      <!-- ============================================================= -->
+
+      <para>
+	<funcsynopsis>
+	<funcprototype>
+	  <funcdef>
+	    <function>plline</function>
+	  </funcdef>
+	  <paramdef><parameter>n</parameter></paramdef>
+	  <paramdef><parameter>x</parameter></paramdef>
+	  <paramdef><parameter>y</parameter></paramdef>
+	</funcprototype>
+	</funcsynopsis>
+      </para>
+
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <parameter>n</parameter> (<literal>PLINT</literal>, input)
+	  </term>
+	  <listitem>
+	    <para>
+	      The number of points.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
+	    <parameter>x, y</parameter> (<literal>PLFLT *</literal>, input)
+	  </term>
+	  <listitem>
+	    <para>
+	      Pointers to arrays with coordinates of the <literal>n</literal>
+	      points.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+
+      <!-- ============================================================= -->
+
+      <!-- ============================================================= -->
+      <para>
+	<funcsynopsis>
+	<funcprototype>
+	  <funcdef>
+	    <function>pljoin</function>
+	  </funcdef>
+	  <paramdef><parameter>x1</parameter></paramdef>
+	  <paramdef><parameter>y1</parameter></paramdef>
+	  <paramdef><parameter>x2</parameter></paramdef>
+	  <paramdef><parameter>y2</parameter></paramdef>
+	</funcprototype>
+	</funcsynopsis>
+      </para>
+
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <parameter>x1, y1</parameter> (<literal>PLFLT</literal>, input)
+	  </term>
+	  <listitem>
+	    <para>
+	      Coordinates of the first point.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
+	    <parameter>x2, y2</parameter> (<literal>PLFLT</literal>, input)
+	  </term>
+	  <listitem>
+	    <para>
+	      Coordinates of the second point.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+
+      <!-- ============================================================= -->
+
+    </sect2>
+
+    <sect2 id="text">
+      <title>Writing Text on a Graph</title>
+
+      <para>
+	&plptex; allows text to be written within the limits set by &plenv;.
+	The reference point of a text string may be located anywhere along an
+	imaginary horizontal line passing through the string at half the
+	height of a capital letter.  The parameter
+	<parameter>just</parameter> specifies where along this line the
+	reference point is located.  The string is then rotated about the
+	reference point through an angle specified by the parameters
+	<parameter>dx</parameter> and <parameter>dy</parameter>, so that the
+	string becomes parallel to a line joining <literal>(x, y)</literal>
+	to <literal>(x+dx, y+dy)</literal>.
+      </para>
+
+      <!-- ============================================================= -->
+
+      <para>
+	<funcsynopsis>
+	<funcprototype>
+	  <funcdef>
+	    <function>plptex</function>
+	  </funcdef>
+	  <paramdef><parameter>x</parameter></paramdef>
+	  <paramdef><parameter>y</parameter></paramdef>
+	  <paramdef><parameter>dx</parameter></paramdef>
+	  <paramdef><parameter>dy</parameter></paramdef>
+	  <paramdef><parameter>just</parameter></paramdef>
+	  <paramdef><parameter>text</parameter></paramdef>
+	</funcprototype>
+	</funcsynopsis>
+      </para>
+
+      <variablelist>
+
+	<varlistentry>
+	  <term>
+	    <parameter>x, y</parameter> (<literal>PLFLT</literal>, input)
+	  </term>
+	  <listitem>
+	    <para>
+	      Coordinates of the reference point.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
+	    <parameter>dx, dy</parameter> (<literal>PLFLT</literal>, input)
+	  </term>
+	  <listitem>
+	    <para>
+	      These specify the angle at which the text is to be printed.
+	      The text is written parallel to a line joining the points
+	      <literal>(x, y)</literal> to <literal>(x+dx, y+dy)</literal>
+	      on the graph.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
+	    <parameter>dx, dy</parameter> (<literal>PLFLT</literal>, input)
+	  </term>
+	  <listitem>
+	    <para>
+	      These specify the angle at which the text is to be printed.
+	      The text is written parallel to a line joining the points
+	      <literal>(x, y)</literal> to <literal>(x+dx, y+dy)</literal> on
+	      the graph.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
+	    <parameter>just</parameter> (<literal>PLFLT</literal>, input)
+	  </term>
+	  <listitem>
+	    <para>
+	      Determines justification of the string by specifying which
+	      point within the string is placed at the reference point
+	      <literal>(x, y)</literal>.  This parameter is a fraction of the
+	      distance along the string.  Thus if
+	      <literal><parameter>just</parameter> = 0.0</literal>, the
+	      reference point is at the left-hand edge of the string.  If
+	      <literal><parameter>just</parameter> = 0.5</literal>, it is at
+	      the center and if <literal><parameter>just</parameter> =
+		1.0</literal>, it is at the right-hand edge.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
+	    <parameter>text</parameter> (<literal>char *</literal>, input)
+	  </term>
+	  <listitem>
+	    <para>
+	      Pointer to the string of characters to be written.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+      </variablelist>
+
+      <!-- ============================================================= -->
+
+
+
+    </sect2>
+
+    <sect2 id="fills">
+      <title>Area Fills</title>
+
+      <para>
+	Area fills are done in the currently selected color, line style, line
+	width and pattern style.
+      </para>
+
+      <para>
+	&plfill; fills a polygon.  The polygon consists of
+	<literal>n</literal> vertices which define the polygon.
+      </para>
+
+      <!-- ============================================================= -->
+      <para>
+	<funcsynopsis>
+	<funcprototype>
+	  <funcdef>
+	    <function>plfill</function>
+	  </funcdef>
+	  <paramdef><parameter>n</parameter></paramdef>
+	  <paramdef><parameter>x</parameter></paramdef>
+	  <paramdef><parameter>y</parameter></paramdef>
+	</funcprototype>
+	</funcsynopsis>
+      </para>
+
+      <variablelist>
+	<varlistentry>
+	  <term>
+	    <parameter>n</parameter> (<literal>PLINT</literal>, input)
+	  </term>
+	  <listitem>
+	    <para>
+	      The number of vertices.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>
+	    <parameter>x, y</parameter> (<literal>PLFLT *</literal>, input)
+	  </term>
+	  <listitem>
+	    <para>
+	      Pointers to arrays with coordinates of the <literal>n</literal>
+	      vertices.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+      </variablelist>
+
+      <!-- ============================================================= -->
+
+
+    </sect2>
+
+    <sect2 id="complex">
+      <title>More Complex Graphs</title>
+
+      <para>
+	Functions &plbin; and &plhist; are provided for drawing histograms,
+	and functions &plerrx; and &plerry; draw error bars about specified
+	points.  There are lots more too (see <xref linkend="API"/>).
+      </para>
+
+    </sect2>
+
+  </sect1>
+
+  <sect1 id="finishing">
+    <title>Finishing Up</title>
+
+    <para>
+      Before the end of the program, <emphasis>always</emphasis> call
+      &plend; to close any output plot files and to free up resources.  For
+      devices that have separate graphics and text modes, &plend; resets
+      the device to text mode.
+    </para>
+
+  </sect1>
+
+  <sect1 id="error">
+    <title>In Case of Error</title>
+    <para>
+      If a fatal error is encountered during execution of a PLplot routine
+      then &plexit; is called.  This routine prints an error message,
+      does resource recovery, and then exits.  The user may specify an error
+      handler via <function>plsexit</function> that gets called before anything else is
+      done, allowing either the user to abort the error termination, or
+      clean up user-specific data structures before exit.
+    </para>
+  </sect1>
+
+</chapter>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document: ("plplotdoc.xml" "book" "chapter" "")
+sgml-doctype:"plplotdoc.xml"
+sgml-default-dtd-file:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:("/usr/lib/sgml/catalogs")
+sgml-local-ecat-files:nil
+End:
+-->

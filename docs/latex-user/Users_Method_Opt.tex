@@ -1,0 +1,821 @@
+\chapter{Optimization Capabilities}\label{opt}
+
+\section{Overview}\label{opt:overview}
+
+DAKOTA's optimization capabilities include a variety of gradient-based
+and nongradient-based optimization methods. Numerous packages are
+available, some of which are commercial packages, some of which are
+developed internally to Sandia, and some of which are free software
+packages from the open source community. The downloaded version of
+DAKOTA excludes the commercially developed packages but includes
+APPSPACK, COLINY, CONMIN, JEGA, OPT++, and PICO. Interfaces to DOT,
+NPSOL, and NLPQL are provided with DAKOTA, but to use these commercial
+optimizers, the user must obtain a software license and the source
+code for these packages separately. The commercial software can then
+be compiled into DAKOTA by following DAKOTA's installation procedures
+(see notes in \texttt{Dakota/INSTALL}).
+
+DAKOTA's input commands permit the user to specify two-sided nonlinear
+inequality constraints of the form $g_{L_{i}} \leq g_{i}(\mathbf{x})
+\leq g_{U_{i}}$, as well as nonlinear equality constraints of the form
+$h_{j}(\mathbf{x}) = h_{t_{j}}$ (see also
+Section~\ref{introduction:background:optimization}). Some optimizers
+(e.g., NPSOL, OPT++, JEGA) can handle these constraint forms directly,
+whereas other optimizers (e.g., APPSPACK, DOT, CONMIN) require DAKOTA
+to perform an internal conversion of all constraints to one-sided
+inequality constraints of the form $g_{i}(\mathbf{x}) \leq 0$. In the
+latter case, the two-sided inequality constraints are treated as
+$g_{i}(\mathbf{x}) - g_{U_{i}} \leq 0$ and $g_{L_{i}} -
+g_{i}(\mathbf{x}) \leq 0$ and the equality constraints are treated as
+$h_{j}(\mathbf{x}) - h_{t_{j}} \leq 0$ and $h_{t_{j}} -
+h_{j}(\mathbf{x}) \leq 0$. The situation is similar for linear
+constraints: APPSPACK, NPSOL, OPT++, and JEGA support them directly,
+whereas DOT and CONMIN do not.  For linear inequalities of the form
+$a_{L_{i}} \leq \mathbf{a}_{i}^{T}\mathbf{x} \leq a_{U_{i}}$ and
+linear equalities of the form $\mathbf{a}_{i}^{T}\mathbf{x} =
+a_{t_{j}}$, the nonlinear constraint arrays in DOT and CONMIN are
+further augmented to include $\mathbf{a}_{i}^{T}\mathbf{x} - a_{U_{i}}
+\leq 0$ and $a_{L_{i}} - \mathbf{a}_{i}^{T}\mathbf{x} \leq 0$ in the
+inequality case and $\mathbf{a}_{i}^{T}\mathbf{x} - a_{t_{j}} \leq 0$
+and $a_{t_{j}} - \mathbf{a}_{i}^{T}\mathbf{x} \leq 0$ in the equality
+case. Awareness of these constraint augmentation procedures can be
+important for understanding the diagnostic data returned from the DOT
+and CONMIN algorithms.  Other optimizers fall somewhere in between.
+NLPQL supports nonlinear equality constraints $h_{j}(\mathbf{x}) = 0$
+and nonlinear one-sided inequalities $g_{i}(\mathbf{x}) \geq 0$, but
+does not natively support linear constraints.  Constraint mappings are
+used with NLPQL for both linear and nonlinear cases.  Most COLINY
+methods now support two-sided nonlinear inequality constraints and
+nonlinear constraints with targets, but do not natively support linear
+constraints.  Constraint augmentation is not currently used with
+COLINY, since linear constraints will soon be supported natively.
+
+When gradient and Hessian information is used in the optimization,
+derivative components are most commonly computed with respect to the
+active continuous variables, which in this case are the
+\emph{continuous design variables}. This differs from parameter study
+methods (for which all continuous variables are active) and from
+nondeterministic analysis methods (for which the uncertain variables
+are active).  Refer to Section~\ref{responses:active} for additional
+information on derivative components and active continuous variables.
+
+\section{Optimization Software Packages}\label{opt:software}
+
+\subsection{APPSPACK Library}\label{opt:software:apps}
+
+Asynchronous Parallel Pattern Search (APPS)~\cite{GrKo06} is available
+as method \texttt{asynch\_pattern\_search}.  It is an asynchronous
+implementation of generating set search.  APPSPACK can handle
+unconstrained problems as well as those with bound constraints, linear
+constraints~\cite{GrKoLe08}, and general nonlinear
+constraints~\cite{GrKo07}.  APPSPACK is best suited for
+simulation-based problems with less than 100 variables.  It has
+significant advantages over gradient-based methods when the function
+is noisy and/or discontinuous.  APPSPACK leverages the cddlib
+software~\cite{Fu05} to handle degeneracy in linear constraints.
+
+An example specification for APPSPACK with nonlinear constraints is:
+\begin{small}
+\begin{verbatim}
+    method,
+          asynch_pattern_search
+             initial_delta = .5
+             contraction_factor = 0.25
+             threshold_delta = 1.e-4
+             merit_function merit_max
+             smoothing_factor = 10.0
+\end{verbatim}
+\end{small} % Could instead extract dakota_apps.in:5 to get most of this.
+
+See the DAKOTA Reference Manual~\cite{RefMan} for additional detail on the
+APPSPACK commands and sample input specifications in {\tt Dakota/test/dakota\_apps.in}.
+
+\subsection{COLINY Library}\label{opt:software:coliny}
+
+The COLINY library~\cite{Har06} supersedes the SGOPT library and contains
+a variety of nongradient-based optimization algorithms. The suite of
+COLINY optimizers available in DAKOTA currently include the following:
+
+\begin{itemize}
+
+\item {\bf Global Optimization Methods}
+\begin{itemize}
+\item Several evolutionary algorithms, including genetic algorithms
+      (\texttt{coliny\_ea})
+\item DIRECT~\cite{Per93} (\texttt{coliny\_direct})
+\end{itemize}
+
+\item {\bf Local Optimization Methods}
+\begin{itemize}
+\item Solis-Wets (\texttt{coliny\_solis\_wets})
+\item Pattern Search (\texttt{coliny\_pattern\_search})
+\end{itemize}
+
+\item {\bf Interfaces to Third-Party Local Optimization Methods}
+\begin{itemize}
+\item COBYLA2 (\texttt{coliny\_cobyla})
+\end{itemize}
+
+\end{itemize}
+
+For expensive optimization problems, COLINY's global optimizers are
+best suited for identifying promising regions in the global design
+space. In multimodal design spaces, the combination of global
+identification (from COLINY) with efficient local convergence (from
+CONMIN, DOT, NLPQL, NPSOL, or OPT++) can be highly effective. None of
+the COLINY methods are gradient-based, which makes them appropriate
+for problems for which gradient information is unavailable or is of
+questionable accuracy due to numerical noise. The COLINY methods
+support bound constraints and nonlinear constraints, but not linear
+constraints.  The nonlinear constraints in COLINY are currently
+satisfied using penalty function formulations~\cite{Pon96}. Support
+for methods which manage constraints internally is currently being
+developed and will be incorporated into future versions of DAKOTA.
+\emph{Note that one observed drawback to \texttt{coliny\_solis\_wets}
+is that it does a poor job solving problems with nonlinear
+constraints}.  Refer to Table 17.1 for additional method
+classification information.
+
+An example specification for a simplex-based pattern search algorithm
+from COLINY is:
+\begin{small}
+\begin{verbatim}
+    method,
+          coliny_pattern_search
+            max_function_evaluations = 2000
+            solution_accuracy = 1.0e-4
+            initial_delta = 0.05
+            threshold_delta = 1.0e-8
+            pattern_basis simplex
+            exploratory_moves adaptive_pattern
+            contraction_factor = 0.75
+\end{verbatim}
+\end{small}
+
+The DAKOTA Reference Manual~\cite{RefMan} contains additional information
+on the COLINY options and settings.
+
+\subsection{Constrained Minimization (CONMIN) Library}\label{opt:software:conmin}
+
+The CONMIN library~\cite{Van78} contains two methods for gradient-based
+nonlinear optimization. For constrained optimization, the Method of
+Feasible Directions (DAKOTA's \texttt{conmin\_mfd} method selection)
+is available, while for unconstrained optimization, the
+Fletcher-Reeves conjugate gradient method (DAKOTA's
+\texttt{conmin\_frcg} method selection) is available. Both of these
+methods are most efficient at finding a local minimum in the vicinity
+of the starting point. The methods in CONMIN can be applied to global
+optimization problems, but there is no guarantee that they will find
+the globally optimal design point.
+
+\emph{One observed drawback to CONMIN's Method of Feasible Directions
+is that it does a poor job handling equality constraints}. This is the
+case even if the equality constraint is formulated as two inequality
+constraints. This problem is what motivates the modifications to MFD
+that are present in DOT's MMFD algorithm. For problems with equality
+constraints, it is better to use the OPT++ nonlinear interior point
+methods, NPSOL, NLPQL, or one of DOT's constrained optimization
+methods (see below).
+
+An example specification for CONMIN's Method of Feasible Directions
+algorithm is:
+\begin{small}
+\begin{verbatim}
+    method,
+          conmin_mfd
+            convergence_tolerance = 1.0e-4
+            max_iterations = 100
+            output quiet
+\end{verbatim}
+\end{small}
+
+Refer to the DAKOTA Reference Manual~\cite{RefMan} for more information on
+the settings that can be used with CONMIN methods.
+
+\subsection{Design Optimization Tools (DOT) Library}\label{opt:software:dot}
+
+The DOT library~\cite{Van95} contains nonlinear programming optimizers,
+specifically the Broyden-Fletcher-Goldfarb-Shanno (DAKOTA's
+\texttt{dot\_bfgs} method selection) and Fletcher-Reeves conjugate
+gradient (DAKOTA's \texttt{dot\_frcg} method selection) methods for
+unconstrained optimization, and the modified method of feasible
+directions (DAKOTA's \texttt{dot\_mmfd} method selection), sequential
+linear programming (DAKOTA's \texttt{dot\_slp} method selection), and
+sequential quadratic programming (DAKOTA's \texttt{dot\_sqp} method
+selection) methods for constrained optimization.
+
+All DOT methods are local gradient-based optimizers which are best
+suited for efficient navigation to a local minimum in the vicinity of
+the initial point. Global optima in nonconvex design spaces may be
+missed. Other gradient based optimizers for constrained optimization
+include the NPSOL, NLPQL, CONMIN, and OPT++ libraries.
+
+Through the \texttt{optimization\_type} specification, DOT can be used
+to solve either minimization or maximization problems. For all other
+optimizer libraries, it is up to the user to reformulate a
+maximization problem as a minimization problem by negating the
+objective function (i.e., maximize $f(x)$ is equivalent to minimize
+$-f(x)$). An example specification for DOT's BFGS quasi-Newton
+algorithm is:
+\begin{small}
+\begin{verbatim}
+    method,
+          dot_bfgs
+            optimization_type maximize
+            convergence_tolerance = 1.0e-4
+            max_iterations = 100
+            output quiet
+\end{verbatim}
+\end{small}
+
+See the DAKOTA Reference Manual~\cite{RefMan} for additional detail on the
+DOT commands. More information on DOT can be obtained by contacting
+Vanderplaats Research and Development at \url{http://www.vrand.com}.
+
+\subsection{dl\_solver --- Solvers via Shared Libraries}\label{opt:software:dlsolver}
+
+On computer systems that permit use of shared libraries (most modern systems),
+DAKOTA can avail itself of optimization solvers contained in shared libraries.
+This is a first step toward allowing optional parts of DAKOTA, such as
+proprietary solvers, to be accessed from shared libraries.  For example,
+the DAKOTA source distributions illustrate making
+a sample shared-library interface to SNOPT~\cite{GilMS05},
+whose use would be specified by
+\begin{small}
+\begin{verbatim}
+    method,
+          dl_solver = 'dl_snopt.dll'
+\end{verbatim}
+\end{small}
+The quoted string contains the name of the shared library, optionally
+followed by keyword assignments known to the library, such as
+\begin{small}
+\begin{verbatim}
+    method,
+          dl_solver = 'dl_snopt.dll outlev = 1'
+\end{verbatim}
+\end{small}
+which would turn on some diagnostic printing in the SNOPT example.
+
+\subsection{JEGA}\label{opt:software:jega}
+
+The JEGA (John Eddy's Genetic Algorithms) library contains two global
+optimization methods. The first is a Multi-objective Genetic Algorithm
+(MOGA) which performs Pareto optimization. The second is a
+Single-objective Genetic Algorithm (SOGA) which performs optimization
+on a single objective function.  These functions are accessed as
+(\texttt{moga} and \texttt{soga}) within DAKOTA.
+
+The \texttt{moga} algorithm directly creates a population of Pareto
+optimal solutions.  Over time, the selection operators of a genetic
+algorithm act to efficiently select non-dominated solutions along the
+Pareto front.  Because a GA involves a population of solutions, many
+points along the Pareto front can be computed in a single study. Thus,
+although GAs are computationally expensive when compared to
+gradient-based methods, the advantage in the multiobjective setting is
+that one can obtain an entire Pareto set at the end of one genetic
+algorithm run, as compared with having to run the ``weighted sum''
+single objective problem multiple times with different weights.
+
+The DAKOTA Reference Manual~\cite{RefMan} contains additional
+information on the JEGA options and settings.
+Section~\ref{opt:additional} discusses additional multiobjective
+optimization capabilities, and there are MOGA examples in
+Chapters~\ref{tutorial} and~\ref{additional}.
+
+%\subsection{MOOCHO Library}\label{opt:software:moocho}
+
+%The MOOCHO (Multifunctional Object-Oriented arCHitecture for
+%Optimization) library, formerly known as rSQP++, is a new addition to
+%DAKOTA that is not yet publicly available. It provides both
+%general-purpose sequential quadratic programming (SQP) algorithms for
+%nested analysis and design (NAND) as well as reduced-space SQP
+%algorithms for simultaneous analysis and design (SAND). Additional
+%information on SAND is provided in Section~\ref{opt:additional:sand}.
+%MOOCHO algorithm capabilities are available using the
+%\texttt{reduced\_sqp} method selection.
+
+\subsection{NCSU DIRECT}\label{opt:software:ncsu}
+
+We have an implementation of the global optimization method called
+DIRECT (DIviding RECTangles algorithm) that is detailed in
+~\cite{Gab01}. DIRECT is a derivative free global optimization method
+that balances local search in promising regions of the design space
+with global search in unexplored regions.  DIRECT adaptively
+subdivides the space of feasible design points to guarantee that
+iterates are generated in the neighborhood of a global minimum in
+finitely many iterations.  In practice, DIRECT has proven an effective
+heuristic for many applications.
+
+NCSU DIRECT is specified with \texttt{ncsu\_direct}. One of the
+controls is \texttt{volume\_boxsize\_limit}, which terminates the
+optimization when the volume of the particular rectangle which contains
+the minimum function value found thus far
+is less than a certain percentage (given by the volume boxsize limit) of
+the whole volume of the hyperrectangle defined by the variable bounds.
+An example specification is given below:
+\begin{small}
+\begin{verbatim}
+    method,
+          ncsu_direct
+          volume_boxsize_limit = 1.e-8
+\end{verbatim}
+\end{small}
+
+The DAKOTA Reference Manual~\cite{RefMan} contains additional
+information on the NCSU DIRECT options and settings.
+
+\subsection{NLPQL Library}\label{opt:software:nlpql}
+
+The NLPQL library contains a sequential quadratic programming (SQP)
+implementation (DAKOTA's \texttt{nlpql\_sqp} method selection).  The
+particular implementation used is NLPQLP~\cite{Sch04}, a variant with
+distributed and non-monotone line search.  SQP is a nonlinear
+programming approach for constrained minimization which solves a
+series of quadratic programming (QP) subproblems, where each QP
+minimizes a quadratic approximation to the Lagrangian subject to
+linearized constraints. It uses an augmented Lagrangian merit function
+and a BFGS approximation to the Hessian of the Lagrangian. It is an
+infeasible method in that constraints will be satisfied at the final
+solution, but not necessarily during the solution process.  The
+non-monotone line search used in NLPQLP is designed to be more robust
+in the presence of inaccurate or noisy gradients common in many
+engineering applications.
+
+NLPQL's gradient-based approach is best suited for efficient
+navigation to a local minimum in the vicinity of the initial point.
+Global optima in nonconvex design spaces may be missed. Other gradient
+based optimizers for constrained optimization include the DOT, CONMIN,
+NPSOL, and OPT++ libraries.
+
+See the DAKOTA Reference Manual~\cite{RefMan} for additional detail on
+the NLPQL commands. More information on NLPQL can be obtained from
+Prof. Klaus Schittkowski at
+\url{http://www.uni-bayreuth.de/departments/math/~kschittkowski/nlpqlp20.htm}.
+
+\subsection{NPSOL Library}\label{opt:software:npsol}
+
+The NPSOL library~\cite{Gil86} contains a sequential quadratic
+programming (SQP) implementation (DAKOTA's \texttt{npsol\_sqp} method
+selection).  Like NLPQL, it solves a series of QP subproblems, uses an
+augmented Lagrangian merit function and a BFGS approximation to the
+Hessian of the Lagrangian, and will not necessarily satisfy the
+constraints until the final solution.  It uses a sufficient-decrease
+line search approach, which is a gradient-based line search for
+analytic, mixed, or DAKOTA-supplied numerical gradients and is a
+value-based line search in the vendor numerical case.
+
+NPSOL's gradient-based approach is best suited for efficient
+navigation to a local minimum in the vicinity of the initial point.
+Global optima in nonconvex design spaces may be missed. Other gradient
+based optimizers for constrained optimization include the DOT, CONMIN,
+NLPQL, and OPT++ libraries. For least squares methods based on NPSOL,
+refer to Section~\ref{nls:solution:nlssol}.
+
+An example of an NPSOL specification is:
+\begin{small}
+\begin{verbatim}
+    method,
+          npsol_sqp
+            convergence_tolerance = 1.0e-6
+            max_iterations = 100
+            output quiet
+\end{verbatim}
+\end{small}
+
+See the DAKOTA Reference Manual~\cite{RefMan} for additional detail on the
+NPSOL commands. More information on NPSOL can be obtained by
+contacting Stanford Business Software at \url{http://www.sbsi-sol-optimize.com}.
+
+The NPSOL library generates diagnostics in addition to those appearing
+in the DAKOTA output stream. These diagnostics are written to the
+default FORTRAN device 9 file (e.g., \texttt{ftn09} or \texttt{fort.9},
+depending on the architecture) in the working directory.
+
+\subsection{OPT++ Library}\label{opt:software:optpp}
+
+The OPT++ library~\cite{MeOlHoWi07} contains primarily nonlinear programming
+optimizers for unconstrained, bound constrained, and nonlinearly
+constrained minimization: Polak-Ribiere conjugate gradient (DAKOTA's
+\texttt{optpp\_cg} method selection), quasi-Newton (DAKOTA's
+\texttt{optpp\_q\_newton} method selection), finite difference Newton
+(DAKOTA's \texttt{optpp\_fd\_newton} method selection), and full
+Newton (DAKOTA's \texttt{optpp\_newton} method selection). The library
+also contains the parallel direct search nongradient-based
+method~\cite{Den94b} (specified as DAKOTA's \texttt{optpp\_pds} method
+selection).
+
+OPT++'s gradient-based optimizers are best suited for efficient
+navigation to a local minimum in the vicinity of the initial point.
+Global optima in nonconvex design spaces may be missed. OPT++'s PDS
+method does not use gradients and has some limited global
+identification abilities; it is best suited for problems for which
+gradient information is unavailable or is of questionable accuracy due
+to numerical noise. Some OPT++ methods are strictly unconstrained
+(\texttt{optpp\_cg}) and some support bound constraints
+(\texttt{optpp\_pds}), whereas the Newton-based methods
+(\texttt{optpp\_q\_newton}, \texttt{optpp\_fd\_newton}, and
+\texttt{optpp\_newton}) all support general linear and nonlinear
+constraints (refer to Table~\ref{usage:guideopt}). Other
+gradient-based optimizers include the DOT, CONMIN, NLPQL, and NPSOL
+libraries. For least squares methods based on OPT++, refer to
+Section~\ref{nls:solution:gauss}.
+
+An example specification for the OPT++ quasi-Newton algorithm is:
+\begin{small}
+\begin{verbatim}
+    method,
+          optpp_q_newton
+            max_iterations = 50
+            convergence_tolerance = 1e-4
+            output debug
+\end{verbatim}
+\end{small}
+
+See the DAKOTA Reference Manual~\cite{RefMan} for additional detail on the
+OPT++ commands.
+
+The OPT++ library generates diagnostics in addition to those appearing
+in the DAKOTA output stream. These diagnostics are written to the file
+\texttt{OPT\_DEFAULT.out} in the working directory.
+
+\subsection{Parallel Integer Combinatorial Optimization (PICO)}\label{opt:software:pico}
+
+\emph{For DAKOTA 5.0, branch and bound is currently inoperative due to 
+ongoing restructuring of PICO and its incorporation into COLINY.
+This will be supported again in future releases.}
+
+DAKOTA employs the branch and bound capabilities of the PICO library
+for solving discrete and mixed continuous/discrete constrained
+nonlinear optimization problems. This capability is implemented in
+DAKOTA as a strategy and is discussed further in
+Section~\ref{strat:minlp}.
+
+\subsection{SGOPT}\label{opt:software:sgopt}
+
+The SGOPT library has been deprecated, and all methods have been
+migrated to the COLINY library.
+
+\section{Additional Optimization Capabilities}\label{opt:additional}
+
+DAKOTA provides several capabilities which extend the services
+provided by the optimization software packages described in
+Section~\ref{opt:software}. First, any of the optimization algorithms
+can be used for multiobjective optimization problems through the use
+of multiobjective transformation techniques (e.g., weighted sums). 
+%Second, large-scale optimization algorithms (e.g., MOOCHO) can be
+%used for simultaneous analysis and design through the use of a
+%fully-intrusive interface to internal simulation residual vectors 
+%and Jacobian matrices.  
+Finally, with any optimizer (or least squares solver described in
+Section~\ref{nls:solution}), user-specified (and in some cases
+automatic or logarithmic) scaling may be applied to continuous design
+variables, objective functions (or least squares terms), and constraints.
+
+\subsection{Multiobjective Optimization}\label{opt:additional:multiobjective}
+
+Multiobjective optimization means that there are two or more objective
+functions that you wish to optimize simultaneously.  Often these are
+conflicting objectives, such as cost and performance.  The answer to a
+multi-objective problem is usually not a single point.  Rather, it is
+a set of points called the Pareto front.  Each point on the Pareto
+front satisfies the Pareto optimality criterion, which is stated as
+follows: a feasible vector $X^{*}$ is Pareto optimal if there
+exists no other feasible vector $X$ which would improve some
+objective without causing a simultaneous worsening in at least one
+other objective.  Thus, if a feasible point $X'$ exists that
+CAN be improved on one or more objectives simultaneously, it is not
+Pareto optimal: it is said to be ``dominated'' and the points along
+the Pareto front are said to be ``non-dominated.''
+
+There are three capabilities for multiobjective optimization in
+DAKOTA.  First, there is the MOGA capability described previously in
+Section~\ref{opt:software:jega}.  This is a specialized algorithm
+capability.  The second capability involves the use of response data
+transformations to recast a multiobjective problem as a
+single-objective problem.  Currently, DAKOTA supports the simple
+weighted sum approach for this transformation, in which a composite
+objective function is constructed from a set of individual objective
+functions using a user-specified set of weighting factors.  This
+approach is optimization algorithm independent, in that it works with
+any of the optimization methods listed previously in this chapter.
+The third capability is the Pareto-set optimization strategy described
+in Section~\ref{strat:pareto}.  This capability also utilizes the
+multiobjective response data transformations to allow optimization
+algorithm independence; however, it builds upon the basic approach by
+computing sets of optima in order to generate a Pareto trade-off
+surface.
+
+In the multiobjective transformation approach in which multiple
+objectives are combined into one, an appropriate single-objective
+optimization technique is used to solve the problem.  The advantage of
+this approach is that one can use any number of optimization methods
+that are especially suited for the particular problem class. One
+disadvantage of the weighted sum transformation approach is that a
+linear weighted sum objective cannot locate all optimal solutions in
+the Pareto set if the Pareto front is nonconvex.  Also, if one wants
+to understand the effects of changing weights, this method can become
+computationally expensive.  Since each optimization of a single
+weighted objective will find only one point near or on the Pareto
+front, many optimizations need to be performed to get a good
+parametric understanding of the influence of the weights.
+
+The selection of a multiobjective optimization problem is made through
+the specification of multiple objective functions in the responses
+keyword block (i.e., the \texttt{num\_objective\_functions}
+specification is greater than \texttt{1}). The weighting factors on
+these objective functions can be optionally specified using the
+\texttt{multi\_objective\_weights} keyword (the default is equal
+weightings). The composite objective function for this optimization
+problem, $F$, is formed using these weights as follows:
+$F=\sum_{k=1}^{R}w_{k}f_{k}$, where the $f_{k}$ terms are the
+individual objective function values, the $w_{k}$ terms are the
+weights, and $R$ is the number of objective functions. The weighting
+factors stipulate the relative importance of the design concerns
+represented by the individual objective functions; the higher the
+weighting factor, the more dominant a particular objective function
+will be in the optimization process.  Constraints are not affected by
+the weighting factor mapping; therefore, both constrained and
+unconstrained multiobjective optimization problems can be formulated
+and solved with DAKOTA, assuming selection of an appropriate
+constrained or unconstrained single-objective optimization algorithm.
+Future multiobjective response data transformations for goal
+programming, normal boundary intersection, etc. are planned.
+
+Figure~\ref{opt:figure01} shows a DAKOTA input file for a
+multiobjective optimization problem based on the ``textbook'' test
+problem. This input file is named \texttt{dakota\_multiobj1.in} in the
+\texttt{Dakota/test} directory. In the standard textbook formulation,
+there is one objective function and two constraints. In the
+multiobjective textbook formulation, all three of these functions are
+treated as objective functions (\texttt{num\_objective\_functions =
+  3}), with weights given by the \texttt{multi\_objective\_weights}
+keyword.  Note that it is not required that the weights sum to a value
+of one.  The multiobjective optimization capability also allows any
+number of constraints, although none are included in this example.
+
+\begin{figure}
+\centering
+\begin{bigbox}
+\begin{small}
+\verbatimtabinput[8]{dakota_multiobj1.in}
+\end{small}
+\end{bigbox}
+\caption{Example DAKOTA input file for multiobjective optimization.}
+\label{opt:figure01}
+\end{figure}
+
+Figure~\ref{opt:figure02} shows an excerpt of the results for this
+multiobjective optimization problem, with output in verbose mode. The
+data for function evaluation 9 show that the simulator is returning
+the values and gradients of the three objective functions and that
+this data is being combined by DAKOTA into the value and gradient of
+the composite objective function, as identified by the header
+``\texttt{Multiobjective transformation:}''. This combination of value
+and gradient data from the individual objective functions employs the
+user-specified weightings of \texttt{.7}, \texttt{.2}, and
+\texttt{.1}. Convergence to the optimum of the multiobjective problem
+is indicated in this case by the gradient of the composite objective
+function going to zero (no constraints are active).
+
+\begin{figure}
+\centering
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+   ------------------------------
+   Begin Function Evaluation    9
+   ------------------------------
+   Parameters for function evaluation 9:
+                         5.9388064483e-01 x1
+                         7.4158741198e-01 x2
+
+   (text_book /tmp/fileFNNH3v /tmp/fileRktLe9)
+   Removing /tmp/fileFNNH3v and /tmp/fileRktLe9
+
+   Active response data for function evaluation 9:
+   Active set vector = { 3 3 3 } Deriv vars vector = { 1 2 }
+                         3.1662048106e-02 obj_fn_1
+                        -1.8099485683e-02 obj_fn_2
+                         2.5301156719e-01 obj_fn_3
+    [ -2.6792982175e-01 -6.9024137415e-02 ] obj_fn_1 gradient
+    [  1.1877612897e+00 -5.0000000000e-01 ] obj_fn_2 gradient
+    [ -5.0000000000e-01  1.4831748240e+00 ] obj_fn_3 gradient
+
+
+
+   -----------------------------------
+   Post-processing Function Evaluation
+   -----------------------------------
+   Multiobjective transformation:
+                         4.3844693257e-02 obj_fn
+    [  1.3827084219e-06  5.8620632776e-07  ] obj_fn gradient
+
+       7    1 1.0E+00    9  4.38446933E-02 1.5E-06    2 T TT     
+
+    Exit NPSOL - Optimal solution found.
+
+    Final nonlinear objective value =   0.4384469E-01
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption{DAKOTA results for the multiobjective optimization example.}
+\label{opt:figure02}
+\end{figure}
+
+By performing multiple optimizations for different sets of weights, a
+family of optimal solutions can be generated which define the
+trade-offs that result when managing competing design concerns. This
+set of solutions is referred to as the Pareto set.
+Section~\ref{strat:pareto} describes a solution strategy used for
+directly generating the Pareto set in order to investigate the
+trade-offs in multiobjective optimization problems.
+
+%\subsection{Simultaneous Analysis and Design (SAND) Optimization}\label{opt:additional:sand}
+
+%DAKOTA was originally developed as a ``black box'' optimization tool
+%that employs non-intrusive interfaces with simulation codes. While
+%this approach is useful for many engineering design applications, it
+%can become prohibitively expensive when there is a large design space
+%(i.e., $O(10^{2}-10^{6})$ design parameters) and when the
+%computational simulation is highly nonlinear. Current research and
+%development activities are investigating simultaneous analysis and
+%design (SAND) methods, and these algorithms may be supported in DAKOTA
+%in future releases. These ``all at once'' approaches are considerably
+%more intrusive to a simulation code than any current interfacing
+%capability in DAKOTA. But in some large-scale applications, the SAND
+%method may be the only viable alternative for optimization.
+
+%The basic idea behind SAND is to converge a nonlinear simulation code
+%at the same time that the optimality conditions are being converged.
+%This amounts to applying the nonlinear simulation residual equations
+%as equality constraints in the optimization problem and then using an
+%infeasible optimization method (e.g., sequential quadratic
+%programming) which only satisfies these equality constraints in the
+%limit (i.e., at the final optimal solution). This can result in a
+%significant computational savings over black-box optimization
+%approaches which require a nonlinear simulation to be fully-converged
+%on every function evaluation.
+
+%To implement a SAND technique, modifications to the simulation package
+%are necessary so that the optimization software may have access to the
+%internal residual vector and state Jacobian matrix used by the
+%simulation solver. The SAND techniques can then leverage the internal
+%linear algebra of the simulation package as appropriate in performing
+%the search direction calculations. A SAND-type optimization does make
+%certain assumptions about the simulation package, such as there is
+%access to the state Jacobian matrix (although matrix free methods can
+%be interfaced as well), exact values are used in the state Jacobian,
+%an implicit numerical solution scheme is used, there are no
+%discontinuities in the system, and steady state solutions are to be
+%obtained (although SAND transient solution capabilities are under
+%development). Many single physics, PDE-based simulation codes fall in
+%this category. SAND approaches can be applied to more complex
+%simulation codes, such as multi-physics packages, but substantial
+%modifications are often needed to make SAND feasible in these cases.
+
+%Details on SAND-type optimization approaches may be found
+%in~\cite{Bar01a,Bir00}.  Additional details on the SAND implementation
+%in DAKOTA will appear in future releases of this Users Manual.
+
+\subsection{Optimization with User-specified or Automatic Scaling}\label{opt:additional:scaling}
+
+Some optimization problems involving design variables, objective
+functions, or constraints on vastly different scales may be solved
+more efficiently if these quantities are adjusted to a common scale
+(typically on the order of unity).  With any optimizer (or least
+squares solver described in Section~\ref{nls:solution}),
+user-specified characteristic value scaling may be applied to any of
+continuous design variables, functions/residuals, nonlinear inequality
+and equality constraints, and linear inequality and equality
+constraints.  Automatic scaling is available for variables or
+responses with one- or two-sided bounds or equalities and may be
+combined with user-specified scaling values.  Logarithmic
+($\log_{10}$) scaling is available and may also be combined with
+characteristic values.  Log scaling is not available for linear
+constraints.  Moreover, when continuous design variables are log
+scaled, linear constraints are not permitted in the problem
+formulation.  Discrete variable scaling is not supported.
+
+Scaling is enabled on a per-method basis for optimizers and least
+squares minimizers by including the {\tt scaling} keyword in the
+relevant {\tt method} specification in the DAKOTA input deck.  When
+scaling is enabled, variables, functions, gradients, Hessians, etc.,
+are transformed such that the optimizer iterates in scaled variable
+space, whereas evaluations of the computational model as specified in
+the interface are performed on the original problem scale.  Therefore
+using scaling does not require rewriting the interface to the
+simulation code.  When the {\tt scaling} keyword is omitted, all {\tt
+*\_scale\_types} and {\tt *\_scales} specifications described below
+are ignored in the corresponding method, variables, and responses
+sections. When the method {\tt output\_level} is set above normal,
+scaling initialization and diagnostic information will be printed.
+
+Scaling for a particular variable or response type is enabled through
+the {\tt *\_scale\_types} specification (see the Reference Manual
+method section and references contained therein for a complete keyword
+list).  Valid options for this string specification include {\tt
+'none'} (default), {\tt 'value'}, {\tt 'auto'}, or {\tt 'log'}, for
+no, characteristic value, automatic, or logarithmic scaling,
+respectively (although not all types are valid for scaling all
+entities).  If a single string is specified with any of these keywords
+it will apply to each component of the relevant vector, e.g., {\tt
+cdv\_scale\_types = 'value'} will enable characteristic value scaling
+for each continuous design variable.
+
+The user may additionally specify no, one, or a vector of
+characteristic scale values through the {\tt *\_scales} specification.
+These characteristic values are ignored for scaling type {\tt 'none'},
+required for {\tt 'value'}, and optional for {\tt 'auto'} and {\tt
+'log'}. If a single value is specified with any of these keywords it
+will apply to each component of the relevant vector, e.g., {\tt
+cdv\_scales = 3.0} will apply a characteristic scaling value of 3.0 to
+each continuous design variable.
+
+When scaling is enabled, the following procedures determine the
+transformations used to scale each component of a variables or
+response vector. In all cases, if scaling would result in division by
+a value smaller in magnitude than 1.0e-3, a warning is issued and no
+scaling performed for that component.
+
+\begin{itemize}
+
+\item None ({\tt 'none'}): no scaling performed ({\tt *\_scales}
+ignored) on this component.
+
+\item Characteristic value ({\tt 'value'}): the corresponding quantity
+      is scaled (divided) by the required characteristic value
+      provided in the {\tt *\_scales} specification, and bounds are
+      adjusted as necessary. If the value is negative, the sense of
+      inequalities are changed accordingly.
+
+\item Automatic ({\tt 'auto'}): First, any characteristic values from
+      the optional {\tt *\_scales} specification are applied. Then,
+      automatic scaling will be attempted according to the following
+      scheme:
+
+  \begin{itemize}
+  
+  \item two-sided bounds scaled into the interval [0,1];
+	
+  \item one-sided bounds or targets are scaled by a characteristic
+    value to move the bound or target to 1, and the sense of
+    inequalities are changed if necessary;
+
+  \item no bounds or targets: no automatic scaling possible for this component
+    
+  \end{itemize}
+
+  Automatic scaling is not available for objective functions nor least
+  squares terms since they lack bound constraints. Further, when
+  automatically scaled, linear constraints are scaled by
+  characteristic values only, not affinely scaled into [0,1].
+
+\item Logarithmic ({\tt 'log'}): First, any characteristic values from
+the optional {\tt *\_scales} specification are applied. Then,
+$\log_{10}$ scaling is applied. Logarithmic scaling is not available
+for linear constraints. Further, when continuous design variables are
+log scaled, linear constraints are not allowed.
+
+\end{itemize}
+
+Scaling for linear constraints specified through {\tt
+linear\_inequality\_scales} or {\tt linear\_equality\_scales} is
+applied {\em after} any (user-specified or automatic) continuous
+variable scaling.  For example, for scaling mapping unscaled
+continuous design variables $x$ to scaled variables $\tilde{x}$:
+\[ \tilde{x}^j = \frac{x^j - x^j_O}{x^j_M}, \]
+where $x^j_M$ is the final component multiplier and $x^j_O$ the
+offset, we have the following matrix system for linear inequality
+constraints
+\begin{eqnarray*}
+& a_L \leq A_i x \leq a_U \\
+& a_L \leq A_i \left( \mathrm{diag}(x_M) \tilde{x} + x_O \right) \leq a_U \\
+& a_L - A_i x_O \leq A_i \mathrm{diag}(x_M) \tilde{x} \leq a_U - A_i x_O \\
+& \tilde{a}_L \leq \tilde{A}_i \tilde{x} \leq \tilde{a}_U,
+\end{eqnarray*}
+and user-specified or automatically computed scaling multipliers are
+applied to this final transformed system, which accounts for any
+continuous design variable scaling.  When automatic scaling is in use
+for linear constraints they are linearly scaled by characteristic
+values only, not affinely scaled into the interval $[0,1]$.
+
+Figure~\ref{opt:additional:scaling:figure01} demonstrates the use of
+several scaling keywords for the textbook optimization problem.  The
+continuous design variable {\tt x1} is scaled by a characteristic
+value of 4.0, whereas {\tt x2} is scaled automatically into $[0,1]$
+based on its bounds.  The objective function will be scaled by a
+factor of 50.0, then logarithmically, the first nonlinear constraint
+by a factor of 15.0, and the second nonlinear constraint is not
+scaled.
+
+\begin{figure}
+\centering
+\begin{bigbox}
+\begin{small}
+\verbatimtabinput[8]{dakota_rosenbrock_scaled.in}
+\end{small}
+\end{bigbox}
+\caption{Sample usage of scaling keywords in DAKOTA input specification.}
+\label{opt:additional:scaling:figure01}
+\end{figure}

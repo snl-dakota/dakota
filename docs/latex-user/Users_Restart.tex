@@ -1,0 +1,401 @@
+\chapter{Restart Capabilities and Utilities}\label{restart}
+
+\section{Restart Management}\label{restart:management}
+
+DAKOTA was developed for solving problems that require multiple calls
+to computationally expensive simulation codes. In some cases you may
+want to conduct the same optimization, but to a tighter final
+convergence tolerance. This would be costly if the entire optimization
+analysis had to be repeated. Interruptions imposed by computer usage
+policies, power outages, and system failures could also result in
+costly delays. However, DAKOTA automatically records the variable and
+response data from all function evaluations so that new executions of
+DAKOTA can pick up where previous executions left off.
+
+The DAKOTA restart file (e.g., \texttt{dakota.rst}) is written in a
+portable binary format. The portability derives from use of the XDR
+standard.  As shown in Section~\ref{tutorial:installation:running}, 
+the primary restart commands for DAKOTA are \texttt{-read\_restart}, 
+\texttt{-write\_restart}, and \texttt{-stop\_restart}.
+
+To write a restart file using a particular name, the
+\texttt{-write\_restart} command line input (may be abbreviated as
+\texttt{-w}) is used:
+\begin{small}
+\begin{verbatim}
+    dakota -i dakota.in -write_restart my_restart_file
+\end{verbatim}
+\end{small}
+If no \texttt{-write\_restart} specification is used, then DAKOTA will
+still write a restart file, but using the default name
+\texttt{dakota.rst} instead of a user-specified name.  To turn restart
+recording off, the user may select \texttt{deactivate restart\_file}
+in the \texttt{interface} specification (refer to the Interface
+Commands chapter in the DAKOTA Reference Manual~\cite{RefMan} for
+additional information).  This can increase execution speed and reduce
+disk storage requirements, but at the expense of a loss in the ability
+to recover and continue a run that terminates prematurely.  Obviously,
+this option is not recommended when function evaluations are costly or
+prone to failure.
+
+To restart DAKOTA from a restart file, the \texttt{-read\_restart}
+command line input (may be abbreviated as \texttt{-r}) is used:
+\begin{small}
+\begin{verbatim}
+    dakota -i dakota.in -read_restart my_restart_file
+\end{verbatim}
+\end{small}
+
+If no \texttt{-read\_restart} specification is used, then DAKOTA will
+not read restart information from any file (i.e., the default is no
+restart processing).
+
+If the \texttt{-write\_restart} and \texttt{-read\_restart}
+specifications identify the same file (including the case where
+\texttt{-write\_restart} is not specified and \texttt{-read\_restart}
+identifies \texttt{dakota.rst}), then new evaluations will be appended
+to the existing restart file. If the \texttt{-write\_restart} and
+\texttt{-read\_restart} specifications identify different files, then
+the evaluations read from the file identified by
+\texttt{-read\_restart} are first written to the
+\texttt{-write\_restart} file. Any new evaluations are then appended
+to the \texttt{-write\_restart} file. In this way, restart operations
+can be chained together indefinitely with the assurance that all of
+the relevant evaluations are present in the latest restart file.
+
+To read in only a portion of a restart file, the
+\texttt{-stop\_restart} control (may be abbreviated as \texttt{-s}) is
+used to specify the number of entries to be read from the
+database. Note that this integer value corresponds to the restart
+record processing counter (as can be seen when using the
+\texttt{print} utility; see Section~\ref{restart:utility:print} below),
+which may differ from the evaluation numbers used in the previous run
+if, for example, any duplicates were detected (since these duplicates
+are not recorded in the restart file).  In the case of a
+\texttt{-stop\_restart} specification, it is usually desirable to
+specify a new restart file using \texttt{-write\_restart} so as to
+remove the records of erroneous or corrupted function evaluations. For
+example, to read in the first 50 evaluations from
+\texttt{dakota.rst}:
+\begin{small}
+\begin{verbatim}
+    dakota -i dakota.in -r dakota.rst -s 50 -w dakota_new.rst
+\end{verbatim}
+\end{small}
+
+The \texttt{dakota\_new.rst} file will contain the 50 processed
+evaluations from \texttt{dakota.rst} as well as any new evaluations.
+All evaluations following the 50$^{\mathrm{th}}$ in \texttt{dakota.rst}
+have been removed from the latest restart record.
+
+DAKOTA's restart algorithm relies on its duplicate detection
+capabilities. Processing a restart file populates the list of function
+evaluations that have been performed. Then, when the study is
+restarted, it is started from the beginning (not a ``warm'' start) and
+many of the function evaluations requested by the iterator are
+intercepted by the duplicate detection code. This approach has the
+primary advantage of restoring the complete state of the iteration
+(including the ability to correctly detect subsequent duplicates) for
+all iterators and multi-iterator strategies without the need for
+iterator-specific restart code. However, the possibility exists for
+numerical round-off error to cause a divergence between the
+evaluations performed in the previous and restarted studies. This has
+been extremely rare to date.
+
+\section{The DAKOTA Restart Utility}\label{restart:utility}
+
+The DAKOTA restart utility program provides a variety of facilities
+for managing restart files from DAKOTA executions. The executable
+program name is \texttt{dakota\_restart\_util} and it has the
+following options, as shown by the usage message returned when
+executing the utility without any options:
+\begin{small}
+\begin{verbatim}
+Usage: "dakota_restart_util print <restart_file>"
+       "dakota_restart_util to_neutral <restart_file> <neutral_file>"
+       "dakota_restart_util from_neutral <neutral_file> <restart_file>"
+       "dakota_restart_util to_pdb <restart_file> <pdb_file>"
+       "dakota_restart_util to_tabular <restart_file> <text_file>"
+       "dakota_restart_util remove <double> <old_restart_file>
+          <new_restart_file>"
+       "dakota_restart_util remove_ids <int_1> ... <int_n> <old_restart_file>
+          <new_restart_file>"
+       "dakota_restart_util cat <restart_file_1> ... <restart_file_n>
+          <new_restart_file>"
+\end{verbatim}
+\end{small}
+
+Several of these functions involve format conversions. In particular,
+the binary format used for restart files can be converted to ASCII
+text and printed to the screen, converted to and from a neutral file
+format, converted to a PDB format for use at Lawrence Livermore
+National Laboratory, or converted to a tabular format for importing
+into 3rd-party graphics programs. In addition, a restart file with
+corrupted data can be repaired by value or id, and multiple restart
+files can be combined to create a master database.
+
+\subsection{Print}\label{restart:utility:print}
+
+The \texttt{print} option is quite useful for interrogating the
+contents of a particular restart file, since the binary format is not
+convenient for direct inspection. The restart data is printed in full
+precision, so that exact matching of points is possible for restarted
+runs or corrupted data removals. For example, the following command
+\begin{small}
+\begin{verbatim}
+    dakota_restart_util print dakota.rst
+\end{verbatim}
+\end{small}
+
+results in output similar to the following (from the
+\texttt{Dakota/test/dakota\_cyl\_head.in} example problem):
+\begin{small}
+\begin{verbatim}
+    ------------------------------------------
+    Restart record    1  (evaluation id    1):
+    ------------------------------------------
+    Parameters:
+                          1.8000000000000000e+00 intake_dia
+                          1.0000000000000000e+00 flatness
+
+    Active response data:
+    Active set vector = { 3 3 3 3 }
+                         -2.4355973813420619e+00 obj_fn
+                         -4.7428486677140930e-01 nln_ineq_con_1
+                         -4.5000000000000001e-01 nln_ineq_con_2
+                          1.3971143170299741e-01 nln_ineq_con_3
+     [ -4.3644298963447897e-01  1.4999999999999999e-01 ] obj_fn gradient
+     [  1.3855136437818300e-01  0.0000000000000000e+00 ] nln_ineq_con_1 gradient
+     [  0.0000000000000000e+00  1.4999999999999999e-01 ] nln_ineq_con_2 gradient
+     [  0.0000000000000000e+00 -1.9485571585149869e-01 ] nln_ineq_con_3 gradient
+
+    ------------------------------------------
+    Restart record    2  (evaluation id    2):
+    ------------------------------------------
+    Parameters:
+                          2.1640000000000001e+00 intake_dia
+                          1.7169994018008317e+00 flatness
+
+    Active response data:
+    Active set vector = { 3 3 3 3 }
+                         -2.4869127192988878e+00 obj_fn
+                          6.9256958799989843e-01 nln_ineq_con_1
+                         -3.4245008972987528e-01 nln_ineq_con_2
+                          8.7142207937157910e-03 nln_ineq_con_3
+     [ -4.3644298963447897e-01  1.4999999999999999e-01 ] obj_fn gradient
+     [  2.9814239699997572e+01  0.0000000000000000e+00 ] nln_ineq_con_1 gradient
+     [  0.0000000000000000e+00  1.4999999999999999e-01 ] nln_ineq_con_2 gradient
+     [  0.0000000000000000e+00 -1.6998301774282701e-01 ] nln_ineq_con_3 gradient
+
+    ...<snip>...
+
+    Restart file processing completed: 11 evaluations retrieved.
+\end{verbatim}
+\end{small}
+
+\subsection{To/From Neutral File Format}\label{restart:utility:neutral}
+
+A DAKOTA restart file can be converted to a neutral file format using
+a command like the following:
+\begin{small}
+\begin{verbatim}
+    dakota_restart_util to_neutral dakota.rst dakota.neu
+\end{verbatim}
+\end{small}
+which results in a report similar to the following:
+\begin{small}
+\begin{verbatim}
+    Writing neutral file dakota.neu
+    Restart file processing completed: 11 evaluations retrieved.
+\end{verbatim}
+\end{small}
+
+Similarly, a neutral file can be returned to binary format using a
+command like the following:
+\begin{small}
+\begin{verbatim}
+    dakota_restart_util from_neutral dakota.neu dakota.rst
+\end{verbatim}
+\end{small}
+which results in a report similar to the following:
+\begin{small}
+\begin{verbatim}
+    Reading neutral file dakota.neu
+    Writing new restart file dakota.rst
+    Neutral file processing completed: 11 evaluations retrieved.
+\end{verbatim}
+\end{small}
+
+The contents of the generated neutral file are similar to the 
+following (from the first two records for the\\
+\texttt{Dakota/test/dakota\_cyl\_head.in} example problem):
+\begin{small}
+\begin{verbatim}
+    6 7 2 1.8000000000000000e+00 intake_dia 1.0000000000000000e+00 flatness 0 0 0 0
+    NULL 4 2 1 0 3 3 3 3 1 2 obj_fn nln_ineq_con_1 nln_ineq_con_2 nln_ineq_con_3
+      -2.4355973813420619e+00 -4.7428486677140930e-01 -4.5000000000000001e-01
+       1.3971143170299741e-01 -4.3644298963447897e-01  1.4999999999999999e-01
+       1.3855136437818300e-01  0.0000000000000000e+00  0.0000000000000000e+00
+       1.4999999999999999e-01  0.0000000000000000e+00 -1.9485571585149869e-01 1
+    6 7 2 2.1640000000000001e+00 intake_dia 1.7169994018008317e+00 flatness 0 0 0 0
+    NULL 4 2 1 0 3 3 3 3 1 2 obj_fn nln_ineq_con_1 nln_ineq_con_2 nln_ineq_con_3
+      -2.4869127192988878e+00 6.9256958799989843e-01 -3.4245008972987528e-01
+       8.7142207937157910e-03 -4.3644298963447897e-01  1.4999999999999999e-01
+       2.9814239699997572e+01  0.0000000000000000e+00  0.0000000000000000e+00
+       1.4999999999999999e-01  0.0000000000000000e+00 -1.6998301774282701e-01 2
+\end{verbatim}
+\end{small}
+
+This format is not intended for direct viewing (\texttt{print} should
+be used for this purpose). Rather, the neutral file capability has
+been used in the past for managing portability of restart data across
+platforms (recent use of the XDR standard for portable binary formats
+has eliminated this need) or for advanced repair of restart records
+(in cases where the techniques of Section~\ref{restart:utility:removal} 
+were insufficient).
+
+\subsection{To Tabular Format}\label{restart:utility:tabular}
+
+Conversion of a binary restart file to a tabular format enables
+convenient import of this data into 3rd-party post-processing tools
+such as Matlab, TECplot, Excel, etc. This facility is nearly identical
+to the \texttt{tabular\_graphics\_data} option in the DAKOTA input
+file specification (described in Section~\ref{output:tabular}), but
+with two important differences:
+\begin{enumerate}
+\item No function evaluations are suppressed as they are with
+  \texttt{tabular\_graphics\_data} (i.e., any internal finite
+  difference evaluations are included).
+\item The conversion can be performed posthumously, i.e., for DAKOTA
+  runs executed previously.
+\end{enumerate}
+
+An example command for converting a restart file to tabular format is:
+\begin{verbatim}
+    dakota_restart_util to_tabular dakota.rst dakota.m
+\end{verbatim}
+which results in a report similar to the following:
+\begin{verbatim}
+    Writing tabular text file dakota.m
+    Restart file processing completed: 10 evaluations tabulated.
+\end{verbatim}
+
+The contents of the generated tabular file are similar to the following 
+(from the \\
+\texttt{Dakota/test/dakota\_textbook.in} example problem). Note that,
+while evaluations resulting from numerical derivative offsets would be
+reported (as described above), derivatives returned as part of the
+evaluations are not reported (since they do not readily fit within a
+compact tabular format):
+\begin{small}
+\begin{verbatim}
+%eval_id             x1             x2         obj_fn nln_ineq_con_1 nln_ineq_con_2
+       1            0.9            1.1         0.0002           0.26           0.76
+       2   0.6433962264   0.6962264151   0.0246865569  0.06584549662   0.1630331079
+       3   0.5310576935   0.5388046558  0.09360081618  0.01261994597  0.02478161031
+       4    0.612538853   0.6529854907  0.03703861037  0.04871110113   0.1201206246
+       5   0.5209215947   0.5259311717   0.1031862798  0.00839372202  0.01614279999
+       6   0.5661606434   0.5886684401  0.06405197568  0.02620365411  0.06345021064
+       7   0.5083873357    0.510239856   0.1159458957 0.003337755086 0.006151042802
+       8   0.5001577143   0.5001800249   0.1248312163 6.772666885e-05 0.0001012002012
+       9   0.5000000547   0.5000000598   0.1249999428 2.485652461e-08 3.238746073e-08
+      10            0.5            0.5          0.125 2.942091015e-15 3.60822483e-15
+\end{verbatim}
+\end{small}
+
+\subsection{Concatenation of Multiple Restart Files}\label{restart:utility:concatenation}
+
+In some instances, it is useful to combine restart files into a single
+master function evaluation database. For example, when constructing a
+data fit surrogate model, data from previous studies can be pulled in
+and reused to create a combined data set for the surrogate fit. An
+example command for concatenating multiple restart files is:
+\begin{small}
+\begin{verbatim}
+    dakota_restart_util cat dakota.rst.1 dakota.rst.2 dakota.rst.3 dakota.rst.all
+\end{verbatim}
+\end{small}
+which results in a report similar to the following:
+\begin{verbatim}
+    Writing new restart file dakota.rst.all
+    dakota.rst.1 processing completed: 10 evaluations retrieved.
+    dakota.rst.2 processing completed: 110 evaluations retrieved.
+    dakota.rst.3 processing completed: 65 evaluations retrieved.
+\end{verbatim}
+
+The \texttt{dakota.rst.all} database now contains 185 evaluations and
+can be read in for use in a subsequent DAKOTA study using the
+\texttt{-read\_restart} option to the \texttt{dakota} executable (see
+Section~\ref{restart:management}).
+
+\subsection{Removal of Corrupted Data}\label{restart:utility:removal}
+
+On occasion, a simulation or computer system failure may cause a
+corruption of the DAKOTA restart file. For example, a simulation crash
+may result in failure of a post-processor to retrieve meaningful data.
+If 0's (or other erroneous data) are returned from the user's
+\texttt{analysis\_driver}, then this bad data will get recorded in the
+restart file. If there is a clear demarcation of where corruption
+initiated (typical in a process with feedback, such as gradient-based
+optimization), then use of the \texttt{-stop\_restart} option for the
+\texttt{dakota} executable can be effective in continuing the study
+from the point immediately prior to the introduction of bad data. If,
+however, there are interspersed corruptions throughout the restart
+database (typical in a process without feedback, such as sampling),
+then the \texttt{remove} and \texttt{remove\_ids} options of
+\texttt{dakota\_restart\_util} can be useful.
+
+An example of the command syntax for the \texttt{remove} option is:
+\begin{small}
+\begin{verbatim}
+    dakota_restart_util remove 2.e-04 dakota.rst dakota.rst.repaired
+\end{verbatim}
+\end{small}
+which results in a report similar to the following:
+\begin{small}
+\begin{verbatim}
+    Writing new restart file dakota.rst.repaired
+    Restart repair completed: 65 evaluations retrieved, 2 removed, 63 saved.
+\end{verbatim}
+\end{small}
+where any evaluations in \texttt{dakota.rst} having an active response
+function value that matches \texttt{2.e-04} within machine precision
+are discarded when creating \texttt{dakota.rst.repaired}.
+
+An example of the command syntax for the \texttt{remove\_ids} option is:
+\begin{small}
+\begin{verbatim}
+    dakota_restart_util remove_ids 12 15 23 44 57 dakota.rst dakota.rst.repaired
+\end{verbatim}
+\end{small}
+which results in a report similar to the following:
+\begin{small}
+\begin{verbatim}
+    Writing new restart file dakota.rst.repaired
+    Restart repair completed: 65 evaluations retrieved, 5 removed, 60 saved.
+\end{verbatim}
+\end{small}
+where evaluation ids \texttt{12}, \texttt{15}, \texttt{23},
+\texttt{44}, and \texttt{57} have been discarded when creating
+\texttt{dakota.rst.repaired}. An important detail is that, unlike the 
+\texttt{-stop\_restart} option which operates on restart record numbers 
+(see Section~\ref{restart:management})), the \texttt{remove\_ids}
+option operates on evaluation ids.  Thus, removal is not necessarily
+based on the order of appearance in the restart file. This distinction
+is important when removing restart records for a run that contained
+either asynchronous or duplicate evaluations, since the restart
+insertion order and evaluation ids may not correspond in these cases
+(asynchronous evaluations have ids assigned in the order of job
+creation but are inserted in the restart file in the order of job
+completion, and duplicate evaluations are not recorded which
+introduces offsets between evaluation id and record number). This can
+also be important if removing records from a concatenated restart
+file, since the same evaluation id could appear more than once. In
+this case, all evaluation records with ids matching the
+\texttt{remove\_ids} list will be removed.
+
+If neither of these removal options is sufficient to handle a
+particular restart repair need, then the fallback position is to
+resort to direct editing of a neutral file (refer to
+Section~\ref{restart:utility:neutral}) to perform the necessary
+modifications.

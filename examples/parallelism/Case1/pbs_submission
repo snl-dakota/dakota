@@ -1,0 +1,24 @@
+#!/bin/bash
+# PBS submission script for parallel Case 1
+
+# M=6 processors
+#PBS -l nodes=3:ppn=2:compute
+#PBS -l walltime=00:05:00
+#PBS -N DAKOTA_Case1
+
+# load dakota module; 'mpiexec' (invoked below) should be compatible
+# with MPI environment used to build the dakota executable
+# . /opt/modules/default/init/bash
+# module load dakota
+
+# for convenience, set DAKOTA and PATH environment variables
+# put . on path to pickup the simulator script
+export DAKOTA=/path/to/dakota
+export PATH=$DAKOTA/bin:$DAKOTA/test:$PATH:.
+
+# Case 1: Run DAKOTA in parallel and launch M-1 = 5 parallel analysis
+# jobs at once (use default self_scheduling; to run M = 6 jobs, see
+# dakota_pstudy.in for static_scheduling)
+
+mpiexec -n 6 $DAKOTA/bin/dakota -i dakota_pstudy.in
+

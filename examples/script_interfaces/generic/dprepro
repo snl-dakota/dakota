@@ -1,0 +1,250 @@
+#!/usr/bin/perl
+#
+# DPREPRO: A Perl pre-processor for manipulating input files with DAKOTA.
+# ______________________________________________________________________
+#
+# Copyright (c) 2001, Sandia National Laboratories.
+# This software is distributed with DAKOTA under the GNU GPL.
+# For more information, see the README file in the top Dakota directory.
+#
+# Usage: dprepro parameters_file template_input_file new_input_file
+#
+# Reads the variable tags and values from the parameters_file and then
+# replaces each appearance of "{tag}" in the template_input_file with
+# its associated value in order to create the new_input_file.  The
+# parameters_file written by DAKOTA may either be in standard format
+# (using "value tag" constructs) or in "aprepro" format (using
+# "{ tag = value }" constructs), and the variable tags used inside
+# template_input_file must match the variable descriptors specified in
+# the DAKOTA input file.  Supports assignments and numerical expressions
+# in the template file, and the parameters file takes precedence in
+# the case of duplicate assignments (so that template file assignments
+# can be treated as defaults to be overridden).
+# ______________________________________________________________________
+
+# Check for correct number of command line arguments and store the filenames.
+if( @ARGV != 3 ) {
+  print STDERR "Usage: dprepro parameters_file template_input_file ",
+    "new_input_file\n";
+  exit(-1);
+}
+$params_file   = $ARGV[0]; # DAKOTA parameters file (aprepro or standard format)
+$template_file = $ARGV[1]; # template simulation input file
+$new_file      = $ARGV[2]; # new simulation input file with insertions
+
+# Regular expressions for numeric fields
+$e  = "-?(?:\\d+\\.?\\d*|\\.\\d+)[eEdD](?:\\+|-)?\\d+"; # exponential notation
+$f  = "-?\\d+\\.\\d*|-?\\.\\d+";                        # floating point
+$i  = "-?\\d+";                                         # integer
+$ui = "\\d+";                                           # unsigned integer
+# Note: these should be protected within () due to OR's
+$v  = "$e|$f|$i";       # value (numeric field: exponential, float, or int)
+$t  = "\\w+(?::\\w+)*"; # tag (colon separated alphanumeric blocks:)
+
+################################
+# Process DAKOTA parameters file
+################################
+
+# Open parameters file for input.
+open (DAKOTA_PARAMS, "<$params_file") || die "Can't open $params_file: $!";
+
+# Read parameters file, extract tags and corresponding values in either aprepro
+# "{ tag = value }" format or standard "value tag" format, and store the
+# tag/value pairs in %values_p1.  Numeric fields from DAKOTA are either integral
+# or exponential notation and there is only one tag/value pair per line
+# (exception: standard format up to DAKOTA v3.3 uses "# variables # functions"
+# on the first line).  However, to accomodate the possibility that parameters
+# files may be generated from other sources, floats are also supported and
+# multiple tag/value pairs are allowed per line.  Compound expressions are not
+# currently allowed.
+while (<DAKOTA_PARAMS>) { # read each line of file, one at a time
+  # extract tag/value fields allowing multiple matches per line in either format
+  foreach $field (m/(?:$v)\s+(?:$t)|\{\s*(?:$t)\s*=\s*(?:$v)\s*\}/go) {
+    # extract tag/value pair from each field
+    if ( ( ($value, $tag) = ($field =~ m/^($v)\s+($t)$/o) ) ||       # Standard
+         ( ($tag, $value) = ($field =~ m/^\{\s*($t)\s*=\s*($v)\s*\}$/o))){# Apr
+      $value =~ s/[dD]/e/o;      # convert any F77 dbl prec exponents
+      $values_p1{$tag} = $value; # store in hash
+    }
+  }
+}
+close (DAKOTA_PARAMS);
+
+#################################################################
+# Process template simulation file and create new simulation file
+#################################################################
+
+# Open the template simulation file for input.
+open (TEMPLATE_SIMULATION, "<$template_file") ||
+  die "Can't open $template_file: $!";
+# Open the new simulation file for output.
+open (NEW_SIMULATION, ">$new_file") || die "Can't create $new_file: $!";
+
+# Read each line of template_file, find the {} fields, process any
+# assignments or expressions, and substitute the corresponding values.
+# Print each line with substitution to new_file.  The DAKOTA parameters
+# file assignments (%values_p1 = precedence 1) take precedence over any
+# duplicate template file assignments (%values_p2 = precedence 2) in
+# order to allow the flexibility to define defaults in the template
+# file which can then be overridden by a particular parameters file.
+while (<TEMPLATE_SIMULATION>) {
+
+  # Extract each {} match from this line
+  foreach $field (m/\{\s*(.+?)\s*\}/go) { # ".+?" provides a minimal match
+
+    # Case 1: test for simple tag match "{tag}"
+    if ($field =~ m/^($t)$/o) {
+      if ( defined ( $value = $values_p1{$field} ) ||
+           defined ( $value = $values_p2{$field} ) ) { # or exists $values{$tag}
+        s/\{\s*$field\s*\}/$value/;
+      }
+    }
+
+    # Case 2: test for assignment "{tag = field}"
+    elsif ( ($tag, $assign) = ($field =~ m/^($t)\s*=\s*(.+?)$/o) ) {
+
+      # Case 2a: assignment of numerical value
+      # ($v = exponential notation $e, floating point $f, or integer $i)
+      if ($assign =~ m/^($v)$/o) {
+        $assign =~ s/[dD]/e/o;               # convert F77 dbl prec exponents
+        $values_p2{$tag} = $assign;          # store in priority 2 hash
+        s/\{\s*$tag\s*=\s*.+?\s*\}/$assign/; # replace assignment with value
+      }
+
+      # Case 2b: assignment of expression.  Evaluate $assign by replacing any
+      # known tags with their values and then eval the remaining expression.
+      else {
+        foreach $exptag ($assign =~ m/\b(\w*[a-zA-Z_]+\w*)\b/go) {
+          if ( defined ( $value = $values_p1{$exptag} ) ||
+               defined ( $value = $values_p2{$exptag} ) ) {
+            $assign =~ s/$exptag/$value/;
+          }
+        }
+        $value = eval $assign;
+        if ($@) { die "Eval error: $@"; }
+        $values_p2{$tag} = $value;          # store in priority 2 hash
+        s/\{\s*$tag\s*=\s*.+?\s*\}/$value/; # replace assignment with value
+      }
+    }
+
+    # Case 3: assume general expression in all remaining $field matches.
+    # Evaluate $field by replacing any known tags with their values and
+    # then eval the remaining expression.
+    else {
+      foreach $tag ($field =~ m/\b(\w*[a-zA-Z_]+\w*)\b/go) {
+        if ( defined ( $value = $values_p1{$tag} ) ||
+             defined ( $value = $values_p2{$tag} ) ) {
+          $field =~ s/$tag/$value/;
+        }
+      }
+      s/\{\s*.+?\s*\}/eval $field/e;
+      if ($@) { die "Eval error: $@"; }
+    }
+  }
+  # output the processed line to the new simulation file
+  print NEW_SIMULATION $_;
+}
+close (TEMPLATE_SIMULATION);
+close (NEW_SIMULATION);
+
+# Print %values for debugging purposes.
+#foreach $tag (sort keys %values_p1) {
+#  print $tag, " ", $values_p1{$tag}, "\n";
+#}
+
+##########################################
+# End script, begin subroutine definitions
+##########################################
+
+# Intrinsic numeric operators include +,-,*,/,**,%,<<,>>,sqrt(),abs(),
+# sin(),cos(),atan2(),exp(),log(),int(),hex(),oct(),rand(),srand().
+
+# Augment these with others (adapted/extended from bprepro by Bob Walton).
+# NOTE: convert from degs to rads by pi/180 = (pi/4)/45 = atan2(1,1)/45
+#       convert from rads to degs by 180/pi = 45/atan2(1,1)
+
+# additional logarithmic functions
+
+sub log10 { log($_[0])/log(10) }
+
+# additional trigonometric functions with radian input
+
+sub tan { sin($_[0])/cos($_[0]) }
+
+sub cot { cos($_[0])/sin($_[0]) }
+
+sub csc { 1/sin($_[0]) }
+
+sub sec { 1/cos($_[0]) }
+
+# trigonometric functions with degree input
+
+sub sind { sin($_[0]*atan2(1,1)/45) }
+
+sub cosd { cos($_[0]*atan2(1,1)/45) }
+
+sub tand { tan($_[0]*atan2(1,1)/45) }
+
+sub cotd { cot($_[0]*atan2(1,1)/45) }
+
+sub cscd { 1/sin($_[0]*atan2(1,1)/45) }
+
+sub secd { 1/cos($_[0]*atan2(1,1)/45) }
+
+# inverse trigonometric functions returning radians
+
+sub asin {
+  if (abs($_[0]) > 1) { die "input out of range in asin()\n"; }
+  atan2($_[0],sqrt(1-$_[0]**2));
+}
+
+sub acos {
+  if (abs($_[0]) > 1) { die "input out of range in acos()\n"; }
+  atan2(sqrt(1-$_[0]**2),$_[0]);
+}
+
+sub atan { atan2($_[0],1) }
+
+# inverse trigonometric functions returning degrees
+
+sub asind { asin($_[0])*45/atan2(1,1) }
+
+sub acosd { acos($_[0])*45/atan2(1,1) }
+
+sub atand { atan2($_[0],1)*45/atan2(1,1) }
+
+sub atan2d { atan2($_[0],$_[1])*45/atan2(1,1) }
+
+# hyperbolic functions
+
+sub sinh { (exp($_[0]) - exp(-$_[0]))/2 }
+
+sub cosh { (exp($_[0]) + exp(-$_[0]))/2 }
+
+sub tanh { sinh($_[0])/cosh($_[0]) }
+
+sub coth {
+  if ($_[0] == 0) { die "input out of range in coth()\n"; }
+  cosh($_[0])/sinh($_[0]);
+}
+
+sub csch {
+  if ($_[0] == 0) { die "input out of range in csch()\n"; }
+  1/sinh($_[0]);
+}
+
+sub sech { 1/cosh($_[0]) }
+
+# inverse hyperbolic functions
+
+sub asinh { log($_[0] + sqrt($_[0]**2 + 1)) }
+
+sub acosh {
+  if ($_[0] < 1) { die "input out of range in acosh()\n"; }
+  log($_[0] + sqrt($_[0]**2 - 1));
+}
+
+sub atanh {
+  if (abs($_[0]) >= 1) { die "input out of range in atanh()\n"; }
+  log((1+$_[0])/(1-$_[0]))/2;
+}

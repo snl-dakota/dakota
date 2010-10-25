@@ -1,0 +1,36 @@
+These fortran examples (double-precision source files stored in x*.fm4
+files) are designed to mimic the results of the equivalent standard C, Tcl,
+Java, and Python examples except for x16a.fm4 which is a unique fortran
+example which exercises plshade in cmap1 mode.  Depending on whether PLplot
+has been built with single-precision libraries or double-precision libraries
+(the default), these x*.fm4 files are either processed with the simple sed
+script double2single.sed to produce the equivalent single-precision x*.f
+files or simply copied to a double-precision form of the x*.f files.
+
+The .fm4 suffix is left over from the days when we used m4 processing to
+process mixed m4 and fortran-like code into either double- or
+single-precision fortran source.  The new method of using either cp or a sed
+script to convert double precision source code (which follows the standard
+below) is much easier to understand and maintain.
+
+N.B. that maintenance consists of making sure no non-standard number or
+single-precision construct of any kind gets into the double-precision source
+code, the x*.fm4 files.  The rules are simple for what is allowed in x*.fm4
+files (see double2single.sed for more commentary):
+
+* Always use lower case
+
+* Always use implicit none
+
+* Always use floating-point numbers in standard form consisting of optional
+  sign, one or more digits, a decimal point, zero or more digits, "d", an
+  optional sign and one or more digits.  1.d0 and 1.d-10 are OK, but 1.,
+  1.e0, 1.D0, etc. are NOT OK.
+
+* Always use dble to convert from integer to double precision.  float is
+archaic and actually returns a single-precision result.
+
+N.B. If/when the x*.fm4 files require more complexity we may have to extend
+these rules and adjust double2single.sed accordingly to convert to the
+single-precision form.  But for now, the rules above are religiously
+followed, and double2single.sed is correspondingly simple.

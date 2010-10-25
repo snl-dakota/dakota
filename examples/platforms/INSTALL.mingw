@@ -1,0 +1,69 @@
+==========================================
+MinGW (PC Windows) Platform-specific Notes
+==========================================
+
+MinGW versions of DAKOTA do not support graphics, but have the benefit
+of not depending on Cygwin DLLs for interfacing with the Windows
+system.  Option (I.) describes running a pre-compiled binary
+(recommended) and option (II.) describes one way to compile from
+source, without need for Cygwin.
+
+I.  Running MinGW builds of DAKOTA should be the same as for Cygwin,
+but without need for any Cygwin components.
+
+II. Building with MinGW on Windows (without need for any Cygwin
+install) can be accomplished as follows:
+
+A. Install MinGW, MSYS, MSYS DTK (http://www.mingw.org/wiki/MSYS), and
+g95:
+
+1. Install MinGW with Automated MinGW Installer
+(http://downloads.sourceforge.net/mingw/MinGW-5.1.4.exe or newer) to
+C:\MinGW, selecting at least the g77, gcc, and make components.
+
+2. Install MSYS
+(http://downloads.sourceforge.net/mingw/MSYS-1.0.10.exe or newer) in
+C:\msys\1.0, referencing c:/mingw when prompted in the post-install.
+
+3. Install MSYS DTK
+(http://downloads.sourceforge.net/mingw/msysDTK-1.0.1.exe or newer) to resolve
+Perl for export-makefiles and acro cp_u (could install Perl to resolve
+export-makefiles)
+
+4. Install g95-MinGW041 (http://ftp.g95.org/g95-MinGW-41.exe) in
+C:\MinGW
+
+B. Download and build BLAS and LAPACK (MinGW may inadvertently pick up Cygwin
+libs for these if installed, so it may be necessary to hide them).
+
+1. Download LAPACK
+(http://www.netlib.org/lapack/lapack-lite-3.1.1.tgz) to c:\
+
+2. Open an MSYS terminal, extract, compile, install:
+  cd /c
+  tar xzf lapack-lite-3.1.1.tgz
+  cd lapack-lite-3.1.1
+  cp make.inc.example make.inc
+  make FORTRAN=g95 LOADER=g95 TIMER=EXT_ETIME OPTS="-funroll-all-loops -O3" blaslib lapacklib
+  cp blas_LINUX.a /mingw/lib/libblas_ref.a
+  cp lapack_LINUX.a /mingw/lib/liblapack_ref.a
+
+C. Build DAKOTA from source
+
+1. Assuming DAKOTA lives in C:\:
+  cd /c
+  tar xzf Dakota_votd.src.tar.gz
+  cd Dakota
+
+2. Build
+
+./configure F77=g95 FC=g95 CFLAGS=-O2 CXXFLAGS=-O2 FFLAGS=-O2 FCFLAGS=-O2 FLIBS=/mingw/lib/gcc/mingw32/3.4.5/libgcc.a FCLIBS=/mingw/lib/gcc/mingw32/3.4.5/libgcc.a BLAS_LIBS="/mingw/lib/libblas_ref.a /mingw/lib/gcc-lib/i686-pc-mingw32/4.1.2/libf95.a" LAPACK_LIBS="/mingw/lib/liblapack_ref.a /mingw/lib/gcc-lib/i686-pc-mingw32/4.1.2/libf95.a" --disable-mpi --without-graphics --prefix=/c/DakotaInstall
+
+[Optionally: --with-dll --with-modelcenter --with-plugin]
+
+make -j NCPU (where NCPU is the number of cores on your system)
+
+make install
+
+Dakota/test/sqa/finish_install.sh
+

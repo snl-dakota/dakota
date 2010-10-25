@@ -1,0 +1,60 @@
+# DAKOTA INPUT FILE : dakota_cantilever.in
+
+# The cantilever test problem is primarily used in OUU testers.  This
+# input file computes the deterministic solution to the cantilever
+# problem when uncertainties are neglected.
+
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# seperated by a comma.
+
+# This tester populates a test matrix of NPSOL/DOT/CONMIN/OPT++ vs.
+# dakota/vendor numerical gradients vs. forward/central differences.
+
+strategy,
+	single_method
+#	  graphics
+	  tabular_graphics_data
+
+method,
+	dl_solver = './dl_npsol1.dll print_file=6  MA_PR = 1'			#0,#1,#2
+#	dot_sqp				#3,#4,#5,#6
+#	conmin_mfd			#7,#8,#9
+#	optpp_q_newton			#10,#11,#12,#13
+	  convergence_tolerance = 1.e-8
+
+variables,
+	continuous_design = 2
+	  cdv_initial_point    4.0          4.0
+	  cdv_upper_bounds    10.0         10.0
+	  cdv_lower_bounds     1.0          1.0
+	  cdv_descriptor      'beam_width' 'beam_thickness'
+        continuous_state = 4
+          csv_initial_state   40000.  29.E+6  500.  1000.
+	  csv_descriptor        'R'    'E'    'X'    'Y'
+
+interface,
+	system asynchronous evaluation_concurrency = 2
+	  analysis_driver = './cantilever'
+
+responses,
+	num_objective_functions = 1
+	num_nonlinear_inequality_constraints = 2
+	numerical_gradients
+	  method_source dakota		#0,#1,#3,#4,#7,#8,#10,#11
+#	  method_source vendor		#2,#5,#6,#9,#12,#13
+	  interval_type forward		#0,#3,#5,#7,#9,#10,#12
+#	  interval_type central		#1,#4,#6,#8,#11,#13
+	  fd_gradient_step_size = 1.e-4
+	no_hessians

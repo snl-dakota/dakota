@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<!DOCTYPE sierraProduct SYSTEM "SIERRA_INSTALL/Src/scms/Dtd/dependency.dtd">
+<sierraProduct name="Dakota" version="3.0">
+
+<!--    Copyright 2002 Sandia Corporation.                              -->
+<!--    Under the terms of Contract DE-AC04-94AL85000, there is a       -->
+<!--    non-exclusive license for use of this work by or on behalf      -->
+<!--    of the U.S. Government.  Export of this program may require     -->
+<!--    a license from the United States Government.                    -->
+
+  <vendor>Sandia National Laboratories</vendor>
+  <group>9211</group>
+  <contact>Mike Eldred</contact>
+  <url>http://endo.sandia.gov/DAKOTA/</url>
+  <summary/>
+  <description/>
+
+  <supports>
+    <platform>sparc-sun-solaris2.8</platform>
+    <platform>mips-sgi-irix6.5</platform>
+    <platform>i686-intel-cougar</platform>
+    <platform>i686-pc-linux</platform>
+    <platform>rs6000-ibm-aix4.3.2.0</platform>
+    <platform>alphaev67-dec-osf5.1</platform>
+  </supports>
+
+<!-- ##################################################################### -->
+<!-- # NOTES:                                                            # -->
+<!-- #                                                                   # -->
+<!-- # Future XML specs will use:                                        # -->
+<!-- # <include_directory></include_directory>                           # -->
+<!-- # <library_directory></library_directory>                           # -->
+<!-- #                                                                   # -->
+<!-- # Right now, the tools team copies the libraries from their         # -->
+<!-- # build locations into a new directory structure for SIERRA         # -->
+<!-- # (root/lib and root/libdebug) so -L paths are not necessary.       # -->
+<!-- #                                                                   # -->
+<!-- # <interface></interface> is currently used to provide the -I path. # -->
+<!-- ##################################################################### -->
+
+  <provides>
+
+<!-- ################## -->
+<!-- # DAKOTA library # -->
+<!-- ################## -->
+
+<!-- library name: libdakota.a -->
+<!-- -L: src/$(target_canonical) -->
+<!-- -I: src -->
+    <library name="dakota">
+      <interface>src</interface>
+    </library>
+
+<!-- #################### -->
+<!-- # VendorOptimizers # -->
+<!-- #################### -->
+
+<!-- library name: libdot.a -->
+<!-- -L: VendorOptimizers/DOT/$(target_canonical) -->
+<!-- -I: none -->
+    <library name="dot"/>
+
+<!-- library name: libnpsol.a -->
+<!-- -L: VendorOptimizers/NPSOL/$(target_canonical) -->
+<!-- -I: none -->
+    <library name="npsol"/>
+
+<!-- library name: libconmin.a -->
+<!-- -L: VendorOptimizers/CONMIN/$(target_canonical) -->
+<!-- -I: none -->
+    <library name="conmin"/>
+
+<!-- library name: liboptpp.a -->
+<!-- -L: VendorOptimizers/opt++/$(target_canonical) -->
+<!-- -I: VendorOptimizers/opt++/include -->
+    <library name="optpp">
+      <interface>VendorOptimizers/opt++/include</interface>
+    </library>
+
+<!-- library name: libnewmat.a -->
+<!-- -L: VendorOptimizers/opt++/$(target_canonical) -->
+<!-- -I: VendorOptimizers/opt++/newmat09 -->
+    <library name="newmat">
+      <interface>VendorOptimizers/opt++/newmat09</interface>
+    </library>
+
+<!-- library name: libddace.a -->
+<!-- -L: VendorOptimizers/DDace/$(target_canonical) -->
+<!-- -I: VendorOptimizers/DDace/include -->
+<!--     VendorOptimizers/DDace/CPPUtilities/src/PMachine -->
+<!--     VendorOptimizers/DDace/CPPUtilities/src/Utils -->
+    <library name="ddace">
+      <interface>VendorOptimizers/DDace/include</interface>
+      <interface>VendorOptimizers/DDace/CPPUtilities/src/PMachine</interface>
+      <interface>VendorOptimizers/DDace/CPPUtilities/src/Utils</interface>
+    </library>
+
+<!-- library name: liblhs.a -->
+<!-- -L: VendorOptimizers/LHS/$(target_canonical) -->
+<!-- -I: none -->
+    <library name="lhs"/>
+
+<!-- library names: libsgopt.a and libISGOpt.a -->
+<!-- -L: VendorOptimizers/sgopt/lib/$(target_canonical)-$(CCC) -->
+<!-- -I: VendorOptimizers/sgopt/include -->
+    <library name="sgopt">
+      <interface>VendorOptimizers/sgopt/include</interface>
+    </library>
+    <library name="ISGOpt">
+      <interface>VendorOptimizers/sgopt/include</interface>
+    </library>
+
+<!-- library name: libpico.a -->
+<!-- -L: VendorOptimizers/pico/lib/$(target_canonical)-$(CCC) -->
+<!-- -I: VendorOptimizers/pico/include -->
+    <library name="pico">
+      <interface>VendorOptimizers/pico/include</interface>
+    </library>
+
+<!-- ################## -->
+<!-- # VendorPackages # -->
+<!-- ################## -->
+
+<!-- library name: libutilib.a -->
+<!-- -L: VendorPackages/utilib/lib/$(target_canonical)-$(CCC) -->
+<!-- -I: VendorPackages/utilib/include -->
+    <library name="utilib">
+      <interface>VendorPackages/utilib/include</interface>
+    </library>
+
+<!-- library name: libidr.a -->
+<!-- -L: VendorPackages/idr/$(target_canonical) -->
+<!-- -I: VendorPackages/idr -->
+    <library name="idr">
+      <interface>VendorPackages/idr</interface>
+    </library>
+
+<!-- library name: libkriging.a -->
+<!-- -L: VendorPackages/kriging/$(target_canonical) -->
+<!-- -I: none -->
+    <library name="kriging"/>
+
+<!-- library name: libDGraphics.a -->
+<!-- -L: VendorPackages/motif/$(target_canonical) -->
+<!-- -I: VendorPackages/motif/include -->
+    <library name="DGraphics">
+      <interface>VendorPackages/motif/include</interface>
+    </library>
+
+<!-- library name: libplplotfX.a -->
+<!-- -L: VendorPackages/plplot/$(target_canonical)/lib -->
+<!-- -I: VendorPackages/plplot/include -->
+    <library name="plplotfX">
+      <interface>VendorPackages/plplot/include</interface>
+    </library>
+
+<!-- library name: libann.a -->
+<!-- -L: VendorPackages/ann/$(target_canonical) -->
+<!-- -I: VendorPackages/ann/include -->
+    <library name="ann">
+      <interface>VendorPackages/ann/include</interface>
+    </library>
+
+<!-- library name: libepetra.a -->
+<!-- -L: VendorPackages/epetra/$(target_canonical) -->
+<!-- -I: VendorPackages/epetra -->
+<!-- Commented out since dakota.xml specifies the version from Trilinos -->
+<!-- <library name="epetra"> -->
+<!--   <interface>VendorPackages/epetra</interface> -->
+<!-- </library> -->
+
+  </provides>
+
+</sierraProduct>

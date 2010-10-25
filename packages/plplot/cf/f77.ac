@@ -1,0 +1,85 @@
+dnl cf/f77.ac for PLplot  -*- autoconf -*-
+dnl
+dnl Fortran 77 binding
+dnl
+dnl Copyright (C) 1994, 2004  Maurice LeBrun
+dnl Copyright (C) 2002, 2003, 2004  Rafael Laboissiere
+dnl Copyright (C) 2002, 2003, 2004  Alan W. Irwin
+dnl Copyright (C) 2003, 2004  Joao Cardoso
+dnl
+dnl This file is part of PLplot.
+dnl
+dnl PLplot is free software; you can redistribute it and/or modify
+dnl it under the terms of the GNU Library General Public License as published
+dnl by the Free Software Foundation; version 2 of the License.
+dnl
+dnl PLplot is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU Library General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU Library General Public License
+dnl along with the file PLplot; if not, write to the Free Software
+dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+
+PL_ARG_ENABLE(f77, [compile Fortran-77 interface code], no)
+
+if test "$enable_f77" = yes ; then
+  AC_PROG_F77
+  # If no F77 compiler is found, then disable f77 bindings building
+  if test -z "$F77" ; then
+    enable_f77=no
+    AC_MSG_WARN([Disabling F77 bindings building because no compiler was found])
+  fi
+fi
+if test "$enable_f77" = yes ; then
+  HAVE_F77PARSE_CL=yes
+  AC_LANG_PUSH([Fortran 77])
+  AC_MSG_CHECKING([if fortran command-line parsing is possible])
+  AC_RUN_IFELSE([
+      implicit none
+      character*100 command
+      integer narg, iargc
+c      get number of command-line arguments
+      narg = iargc()
+c      get command name.  Apparently this does not always give back the
+c      command name on all systems, but all that is required for the
+c      getarg(0 call by the interface logic is that a valid string is
+c      returned.  (All we are really interested in is the subsequent
+c      arguments.)
+      call getarg(0, command)
+      if(narg.gt.0) call getarg(1, command)
+c     ran into one case (Cygwin) where under certain badly linked
+c     circumstances, iargc() could return -1
+      if(narg.lt.0) then
+        call exit(1)
+      else
+        call exit(0)
+      endif
+      stop
+      end],
+  AC_MSG_RESULT(yes),
+  AC_MSG_RESULT(no); HAVE_F77PARSE_CL=no)
+  AC_LANG_POP([Fortran 77])
+  if test "$HAVE_F77PARSE_CL" = yes ; then
+    HAVE_F77PARSE_CL_TRUE=""
+    HAVE_F77PARSE_CL_FALSE="C "
+  else
+    HAVE_F77PARSE_CL_TRUE="C "
+    HAVE_F77PARSE_CL_FALSE=""
+  fi
+fi
+
+AC_SUBST(HAVE_F77PARSE_CL_TRUE)
+AC_SUBST(HAVE_F77PARSE_CL_FALSE)
+
+AC_SUBST(enable_f77)
+
+AM_CONDITIONAL(enable_f77, [test "$enable_f77" = yes])
+
+AC_CONFIG_FILES([
+    bindings/f77/Makefile
+    bindings/f77/configurable.f
+    examples/f77/Makefile
+    examples/f77/Makefile.examples
+])

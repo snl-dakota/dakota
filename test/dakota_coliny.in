@@ -1,0 +1,184 @@
+# DAKOTA INPUT FILE - dakota_coliny.in
+
+# Each DAKOTA test file is capable of running multiple tests. The
+# manual process for doing this is to add or uncomment specific lines
+# needed for a test and comment out other lines which are not needed
+# for that specific test.  Within the automatic test script, a special
+# syntax is used to automatically determine which lines are to be used
+# for a specific test. A #n (0 - 9) is used to associate lines in the
+# test file with a specific test.  The #0 is used to designate lines
+# which are to be run as part of the baseline test but not part of the
+# other tests. To add multiple tests to a file add the #n to the
+# trailing comment of a line, the dakota_test script will parse
+# through the file uncommenting the lines marked for a specific test,
+# and commenting out unneeded lines marked with the #0. Specific lines
+# can be included in multiple tests by adding multiple #n designaters
+# seperated by a comma.
+
+# Tests:
+# EVEN=unconstrained; ODD=constrained
+# 0-5   coliny_direct
+# 6-13  coliny_pattern_search
+# 14-19 coliny_solis_wets
+# 20-21 coliny_cobyla
+# 22-31 coliny_ea
+
+strategy,
+	single_method
+#	tabular_graphics_data
+	#graphics
+
+method,
+#	DEFAULTS FOR ALL TESTS
+	max_iterations 100
+	solution_accuracy = 1.e-6
+	seed = 1234
+#       FOR DEBUGGING: MUST COMMENT OUT 'misc_options' BELOW
+#	misc_options = 	'output_header=verbose'
+	max_function_evaluations 1000
+#
+	coliny_direct				#0,#1,#2,#3,#4,#5
+#         EXPLICIT DEFAULT OPTIONS
+#	    global_balance_parameter = 0.0	#2,#3
+#	    local_balance_parameter = 1.e-8	#2,#3
+#	    max_boxsize_limit = 0.0		#2,#3
+#	    min_boxsize_limit = 0.0001		#2,#3
+#	    constraint_penalty = 1000.0		#2,#3
+#	    division major_dimension		#2,#3
+#	  OPTION TESTING 1
+#	    division major_dimension		#4,#5
+#
+#	coliny_pattern_search			#6,#7,#8,#9
+#	coliny_pattern_search			#10,#11,#12,#13
+#	  REQUIRED
+#	    initial_delta = .2			#6,#7,#8,#9
+#	    initial_delta = .2			#10,#11,#12,#13
+#	    threshold_delta = 1.e-4		#6,#7,#8,#9
+#	    threshold_delta = 1.e-4		#10,#11,#12,#13
+#         EXPLICIT DEFAULT OPTIONS
+#	    constraint_penalty = 1.0		#8,#9
+#	    expand_after_success = 1		#8,#9
+#	    contraction_factor = 0.5		#8,#9
+#	    exploratory_moves basic_pattern	#8,#9
+#	    synchronization nonblocking		#8,#9
+#	  OPTION TESTING 1
+#	    synchronization blocking		#10,#11
+#	    pattern_basis simplex		#10,#11
+#	    stochastic				#10,#11
+#	    constant_penalty			#10,#11
+#	    no_expansion			#10,#11
+#	    total_pattern_size = 6		#10,#11
+#	    exploratory_moves multi_step	#10,#11
+#	  OPTION TESTING 2
+#	    synchronization blocking		#12,#13
+#	    exploratory_moves adaptive_pattern	#12,#13
+#
+#	coliny_solis_wets			#14,#15,#16,#17,#18,#19
+#	  REQUIRED
+#	    initial_delta = 0.2 		#14,#15,#16,#17,#18,#19
+#           threshold_delta = 1.e-4		#14,#15,#16,#17,#18,#19
+#         EXPLICIT DEFAULT OPTIONS
+#	    expand_after_success = 5		#16,#17
+#	    contract_after_failure = 3		#16,#17
+#	    contraction_factor = 0.5		#16,#17
+#	    constraint_penalty = 1.0		#16,#17
+#	  OPTION TESTING 1
+#	    no_expansion			#18,#19
+#	    constant_penalty			#18,#19
+#	    misc_options  = 'max_failure=6'	#18,#19
+#
+#	coliny_cobyla				#20,#21
+#	  REQUIRED
+# 	    initial_delta = .2			#20,#21
+# 	    threshold_delta = 1.e-4		#20,#21
+#
+#	coliny_ea 				#22,#23,#24,#25,#26
+#	coliny_ea 				#27,#28,#29,#30,#31,#32
+#         DEFAULT OPTIONS
+#	    population_size = 5			#24,#25
+#	    crossover_rate 0.0			#24,#25
+### mutation_rate and mutation_scale are only relevent to tests 32-37
+### but were marked for 30 and 31
+#	    mutation_rate 1.0			#24,#25
+#	    mutation_scale = 0.1
+#	    mutation_range = 2
+#	    fitness_type linear_rank		#24,#25
+#	    crossover_type uniform		#24,#25
+#	    replacement_type random = 0		#24,#25
+#	    new_solutions_generated = 50	#24,#25
+#	    initialization_type unique_random	#24,#25
+#	    mutation_type replace_uniform	#24,#25
+#	  OPTION TESTING 1
+#	    fitness_type merit_function		#26,#27
+#	    crossover_type two_point		#26,#27
+#	    crossover_rate 1.00			#26,#27
+#	    replacement_type random = 2		#26,#27
+#	    new_solutions_generated = 48	#26,#27
+#	    initialization_type simple_random	#26,#27
+#	    mutation_type offset_normal 	#26,#27
+#	    non_adaptive			#26,#27
+#	  OPTION TESTING 2
+#	    crossover_type blend 		#28,#29
+#	    replacement_type chc = 3		#28,#29
+#	    initialization_type 		#28,#29
+#	      flat_file = 'dakota_coliny.dat'	#28,#29
+#	    mutation_type offset_cauchy 	#28,#29
+#	  OPTION TESTING 3
+#	    mutation_type offset_uniform 	#30,#31
+
+variables,
+	continuous_design = 3
+	  initial_point   -1.0    1.5   2.0
+	  upper_bounds    10.0   10.0  10.0	#0,#1
+#	  upper_bounds    10.0   10.0  10.0	#2,#3,#4,#5,#6,#7
+#	  upper_bounds    10.0   10.0  10.0	#8,#9,#12,#13,#14,#15
+#	  upper_bounds    10.0   10.0  10.0	#16,#17,#18,#19,#20,#21
+#	  upper_bounds    10.0   10.0  10.0	#22,#23,#24,#25,#26,#27
+#	  upper_bounds    10.0   10.0  10.0	#28,#29,#30,#31,#32
+	  lower_bounds   -10.0  -10.0 -10.0	#0,#1,#2,#3
+#	  lower_bounds   -10.0  -10.0 -10.0	#6,#7,#8,#9
+#	  lower_bounds   -10.0  -10.0 -10.0	#14,#15,#16,#17,#20,#21
+#	  lower_bounds   -10.0  -10.0 -10.0	#22,#23,#24,#25,#26,#27
+#	  lower_bounds   -10.0  -10.0 -10.0 #28,#29
+#         lower_bounds     0.0    0.0   0.0	#4,#5,#12
+#         lower_bounds     0.0    0.0   0.0	#13,#18,#19,#30,#31,#32
+	  descriptors      'x1'  'x2'  'x3'
+#	discrete_design_range = 2		#22,#23,#24,#25,#26
+#	discrete_design_range = 2		#27,#28,#29,#30,#31
+#	  initial_point      2     2	#22,#23,#24,#25,#26
+#	  initial_point      2     2	#27,#28,#29,#30,#31
+#	  lower_bounds       1     1	#22,#23,#24,#25,#26
+#	  lower_bounds       1     1	#27,#28,#29,#30,#31
+#	  upper_bounds       4     9	#22,#23,#24,#25,#26
+#	  upper_bounds       4     9	#27,#28,#29,#30,#31
+#	  descriptors      'y1'   'y2'	#22,#23,#24,#25,#26
+#	  descriptors      'y1'   'y2'	#27,#28,#29,#30,#31
+#       discrete_design_set_real = 2                          #32
+#         num_set_values = 4 5                                #32
+#         set_values = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7    #32
+#         descriptors      'y1'   'y2'                        #32
+#       discrete_design_set_int = 2                           #32
+#         num_set_values = 2 2                                #32
+#         set_values = 4 7 8 9                                #32
+#         descriptors      'z1'   'z2'                        #32
+
+interface,
+	system asynch				#0,#1
+#	system asynch				#6,#7,#10,#11
+#	system asynch				#14,#15,#20
+#	system asynch				#22,#23,#26,#27
+#	system asynch				#28,#29,#32
+#       direct                                  #2,#3,#8,#9
+#	direct					#16,#17,#21,#24,#25
+#	fork asynch evaluation_concurrency 100	#4,#5,#12,#13
+#	fork asynch evaluation_concurrency 100	#18,#19,#30,#31
+	  analysis_driver = 'text_book'
+
+responses,
+	num_objective_functions = 1
+#	num_nonlinear_inequality_constraints = 2 #1,#3,#5,#7
+#	num_nonlinear_inequality_constraints = 2 #9,#11,#13,#15,#17
+#	num_nonlinear_inequality_constraints = 2 #19,#21,#23,#25,#27
+#	num_nonlinear_inequality_constraints = 2 #29,#31
+	no_gradients
+	no_hessians

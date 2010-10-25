@@ -1,0 +1,353 @@
+namespace Dakota {
+
+/** \page SpecChange Instructions for Modifying DAKOTA's Input Specification
+
+\htmlonly
+<b>Specification Change Table of Contents</b>
+<ul>
+<li> <a href="SpecChange.html#ModSpec">Modify dakota.input.nspec</a>
+<li> <a href="SpecChange.html#Rebuild">Rebuild NIDR_keywds.H</a>
+<li> <a href="SpecChange.html#UpdateIDRPDDB">
+     Update NIDRProblemDescDB.C in Dakota/src</a>
+<li> <a href="SpecChange.html#UpdatePDDB">
+     Update ProblemDescDB.C in Dakota/src</a>
+  <ul>
+  <li> <a href="SpecChange.html#UpdatePDDBp1">
+       Augment/update get_&lt;data_type&gt;() functions</a>
+  </ul>
+<li> <a href="SpecChange.html#UpdateData">
+     Update Corresponding Data Classes</a>
+  <ul>
+  <li> <a href="SpecChange.html#UpdateDatap1">
+       Update the Data class header file</a>
+  <li> <a href="SpecChange.html#UpdateDatap2">Update the .C file</a>
+  </ul>
+<li> <a href="SpecChange.html#UseFns">
+     Use get_&lt;data_type&gt;() Functions</a>
+<li> <a href="SpecChange.html#UpdateDocs">Update the Documentation</a>
+</ul>
+\endhtmlonly
+
+
+\section ModSpec Modify dakota.input.nspec
+
+
+The master input specification resides in dakota.input.nspec in 
+Dakota/src.  The master input specification uses
+the following syntactic elements:
+\li () for required group specifications
+\li [] for optional specifications
+\li |  for alternatives
+\li {} for functions to process keywords
+
+to express logical relationships.
+These syntactic elements can be used to express various dependency
+relationships in the input specification.  It is recommended that you
+review the existing specification and have an understanding of the
+constructs in use before attempting to add new ones.
+
+\warning 
+\li Do \e not skip this step.  Attempts to modify the 
+NIDR_keywds.H file in Dakota/src without
+using the NIDR table generator are very error-prone.
+Moreover, the input specification provides a reference to the
+allowable inputs of a particular executable and should be kept in
+synch with the parser files; modifying the parser files independent of
+the input specification creates, at a minimum, undocumented features.
+\li All keywords in dakota.input.nspec are lower case by
+convention.  All user inputs are converted to lower case by the parser
+prior to keyword match testing, resulting in case insensitive parsing.
+\li Since the NIDR parser allows abbreviation of
+keywords, you \e must avoid adding a keyword that could be
+misinterpreted as an abbreviation for a different keyword within the
+same top-level keyword, such as "strategy" and "method".  For example, 
+adding the keyword "expansion" within the method specification would 
+be a mistake if the keyword "expansion_factor" already was being used 
+in this specification.
+\li The NIDR input is somewhat order-dependent, allowing the same keyword to be
+reused multiple times in the specification.  This often happens with
+aliases, such as \c lower_bounds, \c upper_bounds and \c initial_point.
+Ambiguities are resolved by attaching a keyword to the most recently
+seen context in which it could appear, if such exists, or to the first
+relevant context that subsequently comes along in the input file.
+With the earlier IDR parser, non-exclusive specifications (those not
+in mutually exclusive blocks) were required to be unique.
+That is why there are such aliases for \c initial_point as \c cdv_initial_point
+and \c ddv_initial_point: so older input files can be used with no or fewer changes.
+
+
+\section Rebuild Rebuild NIDR_keywds.H
+
+
+\verbatim
+cd Dakota/packages/nidr
+make
+\endverbatim
+
+These steps regenerate NIDR_keywds.H and dakota.input.summary
+in the Dakota/src directory.
+As described in more detail in the
+next section, you must manually update NIDRProblemDescDB.C in Dakota/src
+to accord with changes to dakota.input.nspec.
+If you commit changes to a source
+repository, be sure to commit the updated Dakota/src/NIDR_keywds.H,
+Dakota/src/dakota.input.nspec, Dakota/src/dakota.input.summary,
+and your manually updated Dakota/src/NIDRProblemDescDB.C.
+
+
+\section UpdateIDRPDDB Update NIDRProblemDescDB.C in Dakota/src
+
+
+Many keywords have data associated with them:  an integer,
+a floating-point number, a string, or arrays of such entities.
+Data requirements are specified in dakota.input.nspec
+by the tokens INTEGER, REAL, STRING, INTERLIST, REALLIST, STRINGLIST.
+(Some keywords have no associated data and hence no such token.)
+After each keyword and data token, the dakota.input.nspec file specifies
+functions that the NIDR parser should call to record the appearance of the keyword
+and deal with any associated data.  The general form of this specification is
+
+{ startfcn, startdata, stopfcn, stopdata }
+
+i.e., a brace-enclosed list of one to four functions and data pointers,
+with trailing entities taken to be zero if not present; zero for a
+function means no function will be called.  The startfcn must deal
+with any associated data.  Otherwise, the distinction between
+startfcn and stopfcn is relevant only to keywords that begin a group
+of keywords (enclosed in parentheses or square brackets).  The startfcn
+is called before other entities in the group are processed, and the
+stop function is called after they are processed.  Top-level keywords
+often have both startfcn and stopfcn; stopfcn is uncommon but possible
+for lower-level keywords.  The startdata and (if needed) stopdata
+values are usually pointers to little structures that provide keyword-specific
+details to generic functions for startfcn and stopfcn.  Some keywords that
+begin groups (such as "approx_problem" within the top-level "strategy" keyword)
+have no need of either a startfcn or a stopfcn; this is indicated by "{0}".
+
+Most of the things within braces in dakota.input.nspec are invocations
+of macros defined in NIDRProblemDescDB.C.  The macros simplify
+writing dakota.input.nspec and make it more readable.
+Most macro invocations refer to little structures defined in
+NIDRProblemDescDB.C, usually with the help of other macros,
+some of which have different definitions in different parts
+of NIDRProblemDescDB.C.
+When adding a keyword to dakota.input.nspec, you may need to
+add a structure definition or even introduce a new data type.
+NIDRProblemDescDB.C has sections corresponding to each top-level
+keyword.  The top-level keywords are in alphabetical order, and
+most entites in the section for a top-level keyword are also
+in alphabetical order.  While not required, it is probably good
+practice to maintain this structure, as it makes things easier to find.
+
+
+Any integer, real, or string data associated with a keyword
+are provided to the keyword's startfcn, whose second argument
+is a pointer to a \c Values structure, defined in header file \c nidr.h.
+
+<b>Example 1:</b> if you added the specification:
+\verbatim
+    [method_setting REAL {method_setting_start, &method_setting_details} ]
+\endverbatim
+you would provide a function
+\code
+        void NIDRProblemDescDB::
+    method_setting_start(const char *keyname, Values *val, void **g, void *v)
+    { ... }
+\endcode
+in NIDRProblemDescDB.C.  In this example, argument \c &method_setting_details
+would be passed as \c v, \c val->n (the number of values) would be 1 and \c *val->r
+would be the REAL value given for the \c method_setting keyword.  The
+\c method_setting_start function would suitably store this value with the
+help of \c method_setting_details.
+
+For some top-level keywords, \c g
+(the third argument to the startfcn and stopfcn) provides access to a relevant context.
+For example, \c method_start (the startfcn for the top-level \c method keyword)
+executes
+\code
+    DataMethod *dm = new DataMethod;
+    *g = (void*)dm;
+\endcode
+(and supplies a couple of default values to \c dm).  The start functions for
+lower-level keywords within the \c method keyword get access to \c dm
+through their \c g arguments.  Here is an example:
+\code
+ void NIDRProblemDescDB::
+method_str(const char *keyname, Values *val, void **g, void *v)
+{
+	(*(DataMethod**)g)->**(String DataMethod::**)v = *val->s;
+	}
+\endcode
+In this example, \c v points to a pointer-to-member, and an assignment is made
+to one of the components of the DataMethod object pointed to by \c *g.
+The corresponding stopfcn for the top-level \c method keyword is
+\code
+ void NIDRProblemDescDB::
+method_stop(const char *keyname, Values *val, void **g, void *v)
+{
+	DataMethod *p = *(DataMethod**)g;
+	pDDBInstance->dataMethodList.insert(*p);
+	delete p;
+	}
+\endcode
+which copies the now populated DataMethod object to the right place
+and cleans up.
+
+
+<b>Example 2:</b> if you added the specification
+\verbatim
+    [method_setting REALLIST {{N_mdm(RealL,methodCoeffs)}
+\endverbatim
+then method_RealL (defined in NIDRProblemDescDB.C) would be called
+as the startfcn, and methodCoeffs would be the name of a
+(currently nonexistent) component of DataMethod.  The N_mdm macro
+is defined in NIDRProblemDescDB.C; among other things, it turns
+\c RealL into \c NIDRProblemDescDB::method_RealL.  This function is
+used to process lists of REAL values for several keywords.  By looking
+at the source, you can see that the list values are val->r[i]
+for 0 <= \c i < val->n.
+
+\section UpdatePDDB Update ProblemDescDB.C in Dakota/src
+
+
+\subsection UpdatePDDBp1 Augment/update get_<data_type>() functions
+
+The next update step involves extending the database retrieval
+functions in ProblemDescDB.C.  These retrieval functions accept an
+identifier string and return a database attribute of a particular
+type, e.g., a RealVector:
+\code
+    const RealVector& get_rdv(const String& entry_name);
+\endcode
+The implementation of each of these functions contains tables of
+possible entry_name values and associated pointer-to-member values.
+There is one table for each relevant top-level keyword, with the
+top-level keyword omitted from the names in the table.  Since binary
+search is used to look for names in these tables, each table
+must be kept in alphabetical order of its entry names.  For example,
+\code
+  ...
+  else if ((L = Begins(entry_name, "model."))) {
+    if (dbRep->methodDBLocked)
+	Locked_db();
+
+    #define P &DataModelRep::
+    static KW<RealVector, DataModelRep> RVdmo[] = {	// must be sorted
+	{"nested.primary_response_mapping", P primaryRespCoeffs},
+	{"nested.secondary_response_mapping", P secondaryRespCoeffs},
+	{"surrogate.kriging_conmin_seed", P krigingConminSeed},
+	{"surrogate.kriging_correlations", P krigingCorrelations},
+	{"surrogate.kriging_max_correlations", P krigingMaxCorrelations},
+	{"surrogate.kriging_min_correlations", P krigingMinCorrelations}};
+    #undef P
+
+    KW<RealVector, DataModelRep> *kw;
+    if ((kw = (KW<RealVector, DataModelRep>*)Binsearch(RVdmo, L)))
+	return dbRep->dataModelIter->dataModelRep->*kw->p;
+  }
+\endcode
+is the "model" portion of \ref 
+ProblemDescDB::get_rdv "ProblemDescDB::get_rdv()".  Based on
+entry_name, it returns the relevant attribute
+from a \ref DataModel "DataModel" object.  
+Since there may be multiple model
+specifications, the \c dataModelIter list iterator identifies which 
+node in the list of \ref DataModel "DataModel" objects is used.
+In particular, \c dataModelList contains a list of all of the \c
+data_model objects, one for each time a top-level \c model keyword
+was seen by the parser.  The particular model object used for
+the data retrieval is managed by \c dataModelIter, which is set in 
+a \c set_db_list_nodes() operation that will not be described here.
+
+There may be multiple \ref DataMethod "DataMethod", 
+\ref DataModel "DataModel", \ref DataVariables "DataVariables", 
+\ref DataInterface "DataInterface", and/or 
+\ref DataResponses "DataResponses" objects.  However, only one 
+strategy specification is currently allowed so a list of 
+\ref DataStrategy "DataStrategy" objects is not needed.  Rather, 
+\ref ProblemDescDB::strategySpec "ProblemDescDB::strategySpec" 
+is the lone \ref DataStrategy "DataStrategy" object.
+
+To augment the get_<data_type>() functions, add table entries with
+new identifier strings and pointer-to-member values that address the appropriate data attributes
+from the Data class object.  The style for the identifier strings is a
+top-down hierarchical description, with specification levels separated
+by periods and words separated with underscores, e.g., \c
+"keyword.group_specification.individual_specification".  Use the \c
+dbRep->listIter->attribute syntax for variables, interface,
+responses, and method specifications.  For example, the \c
+method_setting example attribute would be added to \c get_drv() as:
+\code
+  {"method_name.method_setting", P methodSetting},
+\endcode
+inserted at the beginning of the \c RVdmo array shown above (since the name in the
+existing first entry, i.e., "nested.primary_response_mapping", comes
+alphabetically after "method_name.method_setting").
+
+
+\section UpdateData Update Corresponding Data Classes
+
+
+In this step, we extend the Data class definitions 
+(\ref DataStrategy "DataStrategy", \ref DataMethod "DataMethod",
+\ref DataModel "DataModel", \ref DataVariables "DataVariables", 
+\ref DataInterface "DataInterface", and/or
+\ref DataResponses "DataResponses") to
+include the new attributes referenced in \ref UpdateIDRPDDB and 
+\ref UpdatePDDBp1.
+
+
+\subsection UpdateDatap1 Update the Data class header file
+
+Add a new attribute to the public data for each of the new
+specifications.  Follow the style guide for class attribute naming
+conventions (or mimic the existing code).
+
+
+\subsection UpdateDatap2 Update the .C file
+
+Define defaults for the new attributes in the constructor
+initialization list.  Add the new attributes to the assign() function
+for use by the copy constructor and assignment operator.  Add the new
+attributes to the write(MPIPackBuffer&), read(MPIUnpackBuffer&), and
+write(ostream&) functions, paying careful attention to the use of a
+consistent ordering.
+
+
+\section UseFns Use get_<data_type>() Functions
+
+
+At this point, the new specifications have been mapped through all of
+the database classes.  The only remaining step is to retrieve the new
+data within the constructors of the classes that need it.  This is
+done by invoking the get_<data_type>() function on the 
+\ref ProblemDescDB "ProblemDescDB"
+object using the identifier string you selected in \ref UpdatePDDBp1.
+For example:
+\code
+  const String& interface_type = problem_db.get_string("interface.type");
+\endcode
+passes the \c "interface.type" identifier string to the
+\ref ProblemDescDB::get_string "ProblemDescDB::get_string()" 
+retrieval function, which returns the desired attribute from the active 
+\ref DataInterface "DataInterface" object.
+
+\warning Use of the get_<data_type>() functions is restricted to class
+constructors, since only in class constructors are the data list
+iterators (i.e., \c dataMethodIter, \c dataModelIter, \c
+dataVariablesIter, \c dataInterfaceIter, and \c dataResponsesIter)
+guaranteed to be set correctly.  Outside of the constructors, the
+database list nodes will correspond to the last set operation, and may
+not return data from the desired list node.
+
+
+\section UpdateDocs Update the Documentation
+
+
+Doxygen comments should be added to the Data class headers for the new
+attributes, and the reference manual sections describing the portions
+of dakota.input.nspec that have been modified should be updated.
+
+*/
+
+} // namespace Dakota

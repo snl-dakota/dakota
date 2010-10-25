@@ -1,0 +1,193 @@
+The Autotools configuration scheme for PLplot
+=============================================
+
+
+Introduction
+------------
+
+PLplot is a complex piece of software.  It includes a core library, which
+may use external libraries like FreeType and Qhull, as well as several
+language bindings and drivers for a large number of devices and file
+formats.  This complexity reflects on its configuration system, which can be
+considered a separate project in itself. 
+
+
+History
+-------
+
+Versions of PLplot prior to 5.0.0 already used Autoconf for its
+configuration.  At that time a home-brew technique for generating the
+Makefile from small fragments were used.  The main drawbacks of this
+technique were the lack of portability in the generated Makefiles and the
+cross-platform problems for generating shared libraries, let alone 
+dynamically loadable drivers.
+
+At the end of 2001, a new effort started to port the configuration scheme to
+Automake and Libtool.  It appeared in release 5.2.1, in April 2003.  This
+was a huge overhaul of the PLplot configuration and we had to abandon the
+"flat" build paradigm where all the source files were copied to a temporary
+directory and compiled there.  Automake needed to have the source code
+organized hierarchically with separate Makefile.am's for each directory.
+
+Although the port to Automake/Libtool was a huge step forward, many legacy
+code were kept in the configure.in file (renamed to configure.ac later).
+Some of this legacy code related to old necessities, like diverting the
+initial portion of configure.in to set default values correctly.  Also, a
+sysloc.in file in top-level directory was used, but there was no logic
+behind the division of code between it and configure.in.
+
+In sum, the situation until the release of version 5.3.0 was quite
+unsatisfactory, even if the configuration scheme has been continuously
+improved since version 5.2.1.  The code in configure.ac and sysloc.in was
+way too convoluted, besided being not very robust and daunting for the
+beginners. We then decided to reorganize the configuration code to addresses
+those issues.
+
+
+The new configuration scheme
+----------------------------
+
+The main changes of the new configuration scheme involved the following:
+
+    * Port to Automake 1.8.2 and Libtool 1.5.2
+
+    * Modernization of many Autotools constructs
+
+    * Resurrection of the cf/, which is used both for the Autotools
+      generated files and the new modular *.ac files.
+    
+The most visible change is that the top directory is now quite clean.  After
+a fresh cvs checkout, only the configure.ac file is now present.  All the
+other configuration files are in the cf directory and are called *.ac.  The
+bootstrap.sh script, which also used to be in the top directory is now in
+cf. In the tarball, all the files that used to be in the top dir
+(config.guess, config.sub, depcomp, missing, mkinstalldirs, ltmain.sh, etc)
+are now in cf.
+
+Also in cf are files *.m4 which contain only calls to the AC_DEFUN macro.
+There are both imported files from third party projects (such as
+ac_pkg_swig.m4 and ac_python_devel.m4 from the GNU Autoconf Macro Archive
+and gtk.m4) and our own files (like acinclude.m4 and docbook.m4). They are
+scanned by aclocal and the needed macros are included in aclocal.m4.
+
+The configure.ac script is quite clean and small now.  It contains
+essentially calls to m4_include(cf/*.ac).  Its clear structure can help new
+maintainers to understand the PLplot configuration scheme better.  One of
+the big improvements now is that there is not diverted material at the
+beginning of the file.  It starts in the canonical way, with AC_INIT.
+
+The diverted stuff at the beginning of configure.ac have served many
+purposes in the past:
+
+    (1) Allow default settings of the enable_* and with_* configuration
+        variables.
+
+    (2) Allow sourceing of user configuration files.
+
+    (3) Define all the driver/device options and variables through a
+        non-recursive m4 macro.
+
+    (4) Set the $system variable and fix it for braindead Cray.
+
+My changes regarding (1) may be a matter of debate. People get used to have
+all the default values for the enable_* and with_* variables to be
+concentrated at the beginning of the configure.ac.  That could be handy for
+the experienced developer, but is pretty non-maintainable and confusing for
+the new developers.
+
+I think it is better to have the definition of default values close to
+where the definition is actually defined.  For that, two new macros were
+created:
+
+    PL_ARG_WITH(option, [help string], default)
+    PL_ARG_ENABLE(option, [help string], default)
+
+These macros are now used uniformly throughout the project (well,
+cf/docbook.m4 has not yet been ported).  Notice that the help string should
+not contain --with-* or --enable-* at the beginning.  PL_ARG_* take care of
+this, by using the nice AS_HELP_STRING macro.
+
+The very nice side effect of these changes is that ./configure --help shows
+now (at last!) the default values for all options.  The problem before was
+that we tried to use the shell variables in the help string, but they were
+not being interpolated.  Only for this reason, my changes are already worth.
+
+
+Drivers configuration
+---------------------
+
+The previous system for setting driver/device options and variables was
+quite convoluted.  It contained three redundant lists: PL_DRIVER_LIST,
+PL_DYNAMIC_DRIVER_LIST, and PL_device_driver_pair_list.  This has been
+overly simplified now.  In cf/drives-pre.ac, there is a single
+comma-separated list (PL_DEVICE_DRIVER_LIST) whose components are like:
+
+    device:driver:default
+
+Notice that the default value is now set here, as either "yes" or "no".
+This list is called in two places:
+
+    PL_ARG_ENABLE_DRIVERS(PL_DRIVERS_DEVICE_LIST)
+    [...]
+    PL_ADD_DRIVERS(PL_DRIVERS_DEVICE_LIST)
+
+Between the two calls above, driver specific configurations are included.
+
+
+Bootstrapping PLplot
+--------------------
+
+Developers can bootstrap the PLplot package by launching the following
+command from the top-level directory:
+
+    cf/bootstrap.sh
+
+Automake >= 1.8.2 is mandated and Autoconf >= 2.59 and Libtool >= 1.5.2 or
+later of Libtool are recommended.  The bootstrap.sh script will check the
+Automake version and will abort if the requirement above is not met.
+
+The aclocal command will scan the cf directory for m4 macro definitions and
+will create an appropriate aclocal.m4.  Notice that aclocal-1.7 had a
+different behavior and required the acinclude.m4 file to be present at the
+top level, which is not the case anymore.
+
+After running bootstrap.sh, the configuration goes further with the usual:
+
+    ./configure
+
+and everything should work as before.
+
+
+Overriding default values
+-------------------------
+
+Loading of user configuration files is possible through the environment
+variable CONFIG_SITE, which contains the name of the init file.
+Default options can be overridden like this:
+
+    if test -z "$enable_octave" ; then enable_octave=yes ; fi
+
+A shell function can also be used for that:
+
+    my_default() { eval "if test -z \"\$$1\"; then $1=$2 ; fi" ; }
+    my_default enable_octave no
+    my_default enable_f77 yes
+    # etc.
+
+[This is plain Bourne shell, no bashisms here.]
+
+
+Using a configuration cache file
+--------------------------------
+
+Since configure does a lot of tests, it takes quite a long time to complete.
+Developers may find interesting to use a cache file.  This can be done like
+this:
+
+    ./configure --cache-file=config.cache
+    
+(Notice that the above is equivalent to "./configure -C".)
+
+
+ -- Rafael Laboissiere <rafael@users.sf.net> Sat Feb 21 18:42:18 CET 2004
+

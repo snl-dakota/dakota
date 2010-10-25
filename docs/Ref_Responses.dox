@@ -1,0 +1,1210 @@
+namespace Dakota {
+
+/** \page RespCommands Responses Commands
+
+\htmlonly
+<b>Responses Commands Table of Contents</b>
+<ul>
+<li> <a href="RespCommands.html#RespDescr">Responses Description</a>
+<li> <a href="RespCommands.html#RespSpec">Responses Specification</a>
+<li> <a href="RespCommands.html#RespSetId">Responses Set Identifier</a>
+<li> <a href="RespCommands.html#RespLabels">Response Labels</a>
+<li> <a href="RespCommands.html#RespFn">Function Specification</a>
+  <ul>
+  <li> <a href="RespCommands.html#RespFnOpt">Objective and constraint 
+       functions (optimization data set)</a>
+  <li> <a href="RespCommands.html#RespFnLS">Least squares terms and 
+       constraint functions (least squares data set)</a>
+  <li> <a href="RespCommands.html#RespFnGen">Response functions 
+       (generic data set)</a>
+  </ul>
+<li> <a href="RespCommands.html#RespGrad">Gradient Specification</a>
+  <ul>
+  <li> <a href="RespCommands.html#RespGradNone">No gradients</a>
+  <li> <a href="RespCommands.html#RespGradNum">Numerical gradients</a>
+  <li> <a href="RespCommands.html#RespGradAnalytic">Analytic gradients</a>
+  <li> <a href="RespCommands.html#RespGradMixed">Mixed gradients</a>
+  </ul>
+<li> <a href="RespCommands.html#RespHess">Hessian Specification</a>
+  <ul>
+  <li> <a href="RespCommands.html#RespHessNone">No Hessians</a>
+  <li> <a href="RespCommands.html#RespHessNum">Numerical Hessians</a>
+  <li> <a href="RespCommands.html#RespHessQuasi">Quasi Hessians</a>
+  <li> <a href="RespCommands.html#RespHessAnalytic">Analytic Hessians</a>
+  <li> <a href="RespCommands.html#RespHessMixed">Mixed Hessians</a>
+  </ul>
+</ul>
+\endhtmlonly
+
+
+\section RespDescr Responses Description
+
+
+The responses specification in a DAKOTA input file specifies the data
+set that can be recovered from the interface after the completion of a
+"function evaluation."  Here, the term function evaluation is used
+somewhat loosely to denote a data request from an iterator that is
+mapped through an interface in a single pass.  Strictly speaking, this
+data request may actually involve multiple response functions and
+their derivatives, but the term function evaluation is widely used for
+this purpose.  The data set is made up of a set of functions, their
+first derivative vectors (gradients), and their second derivative
+matrices (Hessians). This abstraction provides a generic data
+container (the Response class) whose contents are interpreted
+differently depending upon the type of iteration being performed. In
+the case of optimization, the set of functions consists of one or more
+objective functions, nonlinear inequality constraints, and nonlinear
+equality constraints. Linear constraints are not part of a response
+set since their coefficients can be communicated to an optimizer at
+start up and then computed internally for all function evaluations
+(see \ref MethodIndControl). In the case of least squares iterators,
+the functions consist of individual residual terms or model responses
+and an observed data file for comparison (as opposed to a sum of the
+squares objective function) as well as nonlinear inequality and
+equality constraints. In the case of nondeterministic iterators, the
+function set is made up of generic response functions for which the
+effect of parameter uncertainty is to be quantified. Lastly, parameter
+study and design of experiments iterators may be used with any of the
+response data set types. Within the C++ implementation, the same data
+structures are reused for each of these cases; only the interpretation
+of the data varies from iterator branch to iterator branch.
+
+Gradient availability may be described by \c no_gradients, \c
+numerical_gradients, \c analytic_gradients, or \c mixed_gradients. The
+\c no_gradients selection means that gradient information is not
+needed in the study. The \c numerical_gradients selection means that
+gradient information is needed and will be computed with finite
+differences using either the native or one of the vendor finite
+differencing routines. The \c analytic_gradients selection means that
+gradient information is available directly from the simulation (finite
+differencing is not required). And the \c mixed_gradients selection
+means that some gradient information is available directly from the
+simulation whereas the rest will have to be estimated with finite
+differences.
+
+Hessian availability may be described by \c no_hessians, \c
+numerical_hessians, \c quasi_hessians, \c analytic_hessians, or \c
+mixed_hessians.  As for the gradient specification, the \c no_hessians
+selection indicates that Hessian information is not needed/available in
+the study, and the \c analytic_hessians selection indicates that
+Hessian information is available directly from the simulation.  The \c
+numerical_hessians selection indicates that Hessian information is
+needed and will be estimated with finite differences using either
+first-order differences of gradients (for analytic gradients) or
+second-order differences of function values (for non-analytic
+gradients).  The \c quasi_hessians specification means that Hessian
+information is needed and will be accumulated over time using
+secant updates based on the existing gradient
+evaluations.  Finally, the \c mixed_hessians selection allows for a
+mixture of analytic, numerical, and quasi Hessian response data.
+
+The responses specification provides a description of the \e total
+data set that is available for use by the iterator during the course
+of its iteration. This should be distinguished from the data \e subset
+described in an active set vector (see DAKOTA File Data Formats in the
+Users Manual [\ref UsersMan "Adams et al., 2010"]) which describes the
+particular subset of the response data needed for an individual
+function evaluation. In other words, the responses specification is a
+broad description of the data to be used during a study whereas the
+active set vector describes the particular subset of the available
+data that is currently needed.
+
+Several examples follow. The first example shows an optimization data
+set containing an objective function and two nonlinear inequality
+constraints. These three functions have analytic gradient availability
+and no Hessian availability.
+
+\verbatim
+responses,
+	num_objective_functions = 1
+	num_nonlinear_inequality_constraints = 2
+	analytic_gradients
+	no_hessians
+\endverbatim
+
+The next example shows a typical specification for a least squares data
+set. The six residual functions will have numerical gradients computed
+using the dakota finite differencing routine with central differences
+of 0.1% (plus/minus delta value = .001*value).
+
+\verbatim
+responses,
+	num_least_squares_terms = 6
+	numerical_gradients
+	  method_source dakota
+	  interval_type central
+	  fd_gradient_step_size = .001
+	no_hessians
+\endverbatim
+
+The last example shows a specification that could be used with a
+nondeterministic sampling iterator. The three response functions have no
+gradient or Hessian availability; therefore, only function values will
+be used by the iterator.
+
+\verbatim
+responses,
+	num_response_functions = 3
+	no_gradients
+	no_hessians
+\endverbatim
+
+Parameter study and design of experiments iterators are not restricted
+in terms of the response data sets which may be catalogued; they may
+be used with any of the function specification examples shown above.
+
+
+\section RespSpec Responses Specification
+
+
+The responses specification has the following structure:
+
+\verbatim
+responses,
+	<set identifier>
+	<response descriptors>
+	<function specification>
+	<gradient specification>
+	<Hessian specification>
+\endverbatim
+
+Referring to <a href="dakota.input.summary">dakota.input.summary</a>, it is
+evident from the enclosing brackets that the set identifier and
+response descriptors are optional. However, the function, gradient,
+and Hessian specifications are all required specifications, each of
+which contains several possible specifications separated by logical
+OR's. The function specification must be one of three types:
+\li objective and constraint functions
+\li least squares terms and constraint functions
+\li generic response functions
+
+The gradient specification must be one of four types:
+\li no gradients
+\li numerical gradients
+\li analytic gradients
+\li mixed gradients
+
+And the Hessian specification must be one of five types:
+\li no Hessians
+\li numerical Hessians
+\li quasi Hessians
+\li analytic Hessians
+\li mixed Hessians
+
+The following sections describe each of these specification
+components in additional detail.
+
+
+\section RespSetId Responses Set Identifier
+
+
+The optional set identifier specification uses the keyword \c
+id_responses to input a string for use in identifying a particular
+responses specification.  A model can then identify the use of this
+response set by specifying the same string in its \c responses_pointer
+specification (see \ref ModelIndControl). For example, a model whose
+specification contains <tt>responses_pointer = 'R1'</tt> will use a
+responses set with <tt>id_responses = 'R1'</tt>.
+
+If the \c id_responses specification is omitted, a particular
+responses specification will be used by a model only if that model
+omits specifying a \c responses_pointer and if the responses set was
+the last set parsed (or is the only set parsed). In common practice,
+if only one responses set exists, then \c id_responses can be safely
+omitted from the responses specification and \c responses_pointer can
+be omitted from the model specification(s), since there is no
+potential for ambiguity in this case. \ref T9d1 "Table 9.1" summarizes
+the set identifier input.
+
+\anchor T9d1
+<table>
+<caption align = "top">
+\htmlonly
+Table 9.1
+\endhtmlonly
+Specification detail for set identifier
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Responses set identifier
+<td>\c id_responses
+<td>string
+<td>Optional
+<td>use of last responses parsed
+</table>
+
+
+\section RespLabels Response Labels
+
+
+The optional response labels specification uses the keyword \c
+response_descriptors to input a list of strings which will be
+replicated through the DAKOTA output to help identify the numerical
+values for particular response functions.  The default descriptor
+strings use a root string plus a numeric identifier.  This root string
+is \c "obj_fn" for objective functions, \c "least_sq_term" for least 
+squares terms, \c "response_fn" for generic response functions, \c 
+"nln_ineq_con" for nonlinear inequality constraints, and \c "nln_eq_con" 
+for nonlinear equality constraints.  \ref T9d2 "Table 9.2" summarizes 
+the response descriptors input.
+
+\anchor T9d2
+<table>
+<caption align = "top">
+\htmlonly
+Table 9.2
+\endhtmlonly
+Specification detail for response labels
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>%Response labels
+<td>\c descriptors
+<td>list of strings
+<td>Optional
+<td>root strings plus numeric identifiers
+</table>
+
+
+\section RespFn Function Specification
+
+
+The function specification must be one of three types: 1) a group
+containing objective and constraint functions, 2) a group containing
+least squares terms and constraint functions, or 3) a generic response
+functions specification. These function sets correspond to
+optimization, least squares, and uncertainty quantification iterators,
+respectively. Parameter study and design of experiments iterators may
+be used with any of the three function specifications.
+
+
+\subsection RespFnOpt Objective and constraint functions (optimization data set)
+
+An optimization data set is specified using \c num_objective_functions
+and optionally \c objective_function_scale_types, \c
+objective_function_scales, \c multi_objective_weights, \c
+num_nonlinear_inequality_constraints, \c
+nonlinear_inequality_lower_bounds, \c
+nonlinear_inequality_upper_bounds, \c
+nonlinear_inequality_scale_types, \c nonlinear_inequality_scales, \c
+num_nonlinear_equality_constraints, \c nonlinear_equality_targets, \c
+nonlinear_equality_scale_types, and \c nonlinear_equality_scales.  The
+\c num_objective_functions, \c num_nonlinear_inequality_constraints,
+and \c num_nonlinear_equality_constraints inputs specify the number of
+objective functions, nonlinear inequality constraints, and nonlinear
+equality constraints, respectively.  The number of objective functions
+must be 1 or greater, and the number of inequality and equality
+constraints must be 0 or greater.  The \c
+objective_function_scale_types specification includes strings
+specifying the scaling type for each objective function value in
+methods that support scaling, when scaling is enabled (see \ref
+MethodIndControl for details). Each entry in \c
+objective_function_scale_types may be selected from <tt>'none'</tt>,
+<tt>'value'</tt>, or <tt>'log'</tt>, to select no, characteristic
+value, or logarithmic scaling, respectively.  Automatic scaling is not
+available for objective functions.  If a single string is specified it
+will apply to each objective function.  Each entry in \c
+objective_function_scales may be a user-specified nonzero
+characteristic value to be used in scaling each objective function.
+These values are ignored for scaling type <tt>'none'</tt>, required
+for <tt>'value'</tt>, and optional for <tt>'log'</tt>.  If a single
+real value is specified it will apply to each function.  If the number
+of objective functions is greater than 1, then a \c
+multi_objective_weights specification provides a simple weighted-sum
+approach to combining multiple objectives: \f[f = \sum_{i=1}^{n}
+w_{i}f_{i}\f] If this is not specified, then each objective function
+is given equal weighting: \f[f = \sum_{i=1}^{n} \frac{f_i}{n}\f] If
+scaling is specified, it is applied before multi-objective weighted
+sums are formed.
+
+The \c nonlinear_inequality_lower_bounds and \c
+nonlinear_inequality_upper_bounds specifications provide the lower and
+upper bounds for 2-sided nonlinear inequalities of the form
+\f[g_l \leq g(x) \leq g_u\f]
+The defaults for the inequality constraint bounds are selected so that 
+one-sided inequalities of the form
+\f[g(x) \leq 0.0\f]
+result when there are no user constraint bounds specifications (this
+provides backwards compatibility with previous DAKOTA versions). In a
+user bounds specification, any upper bound values greater than \c
++bigRealBoundSize (1.e+30, as defined in Minimizer)
+are treated as +infinity and any lower bound values less than \c 
+-bigRealBoundSize are treated as -infinity.  This feature is commonly 
+used to drop one of the bounds in order to specify a 1-sided constraint 
+(just as the default lower bounds drop out since \c -DBL_MAX < \c 
+-bigRealBoundSize).  The same approach is used for nonexistent linear 
+inequality bounds as described in \ref MethodIndControl and for 
+nonexistent design variable bounds as described in \ref VarDV.
+
+The \c nonlinear_equality_targets specification provides the targets 
+for nonlinear equalities of the form
+\f[g(x) = g_t\f]
+and the defaults for the equality targets enforce a value of \c 0. 
+for each constraint
+\f[g(x) = 0.0\f]
+
+The \c nonlinear_inequality_scale_types and \c
+nonlinear_equality_scale_types specifications include strings
+specifying the scaling type for each nonlinear inequality or equality
+constraint, respectively, in methods that support scaling, when scaling
+is enabled (see \ref MethodIndControl for details). Each entry in \c
+objective_function_scale_types may be selected from <tt>'none'</tt>,
+<tt>'value'</tt>, <tt>'auto'</tt>, or <tt>'log'</tt>, to select no,
+characteristic value, automatic, or logarithmic scaling, respectively.
+If a single string is specified it will apply to all components of the
+relevant nonlinear constraint vector.  Each entry in \c
+nonlinear_inequality_scales and \c nonlinear_equality_scales may be a
+user-specified nonzero characteristic value to be used in scaling each
+constraint component.  These values are ignored for scaling type
+<tt>'none'</tt>, required for <tt>'value'</tt>, and optional for
+<tt>'auto'</tt> and <tt>'log'</tt>.  If a single real value is
+specified it will apply to each constraint.
+
+Any linear constraints present in an application need only be input to
+an optimizer at start up and do not need to be part of the data
+returned on every function evaluation (see the linear constraints
+description in \ref MethodIndControl). \ref T9d3 "Table 9.3"
+summarizes the optimization data set specification.
+
+\anchor T9d3
+<table>
+<caption align = "top">
+\htmlonly
+Table 9.3
+\endhtmlonly
+Specification detail for optimization data sets
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Number of objective functions
+<td>\c num_objective_functions
+<td>integer
+<td>Required group
+<td>N/A
+<tr>
+<td>Objective function scaling types
+<td>\c objective_function_scale_types
+<td>list of strings
+<td>Optional
+<td>vector values = <tt>'none'</tt>
+<tr>
+<td>Objective function scales
+<td>\c objective_function_scales
+<td>list of reals
+<td>Optional
+<td>vector values = \c 1. (no scaling)
+<tr>
+<td>Multiobjective weightings
+<td>\c multi_objective_weights
+<td>list of reals
+<td>Optional
+<td>equal weightings
+<tr>
+<td>Number of nonlinear inequality constraints
+<td>\c num_nonlinear_inequality_constraints
+<td>integer
+<td>Optional
+<td>\c 0
+<tr>
+<td>Nonlinear inequality constraint lower bounds
+<td>\c nonlinear_inequality_lower_bounds
+<td>list of reals
+<td>Optional
+<td>vector values = \c -DBL_MAX
+<tr>
+<td>Nonlinear inequality constraint upper bounds
+<td>\c nonlinear_inequality_upper_bounds
+<td>list of reals
+<td>Optional
+<td>vector values = \c 0.
+<tr>
+<td>Nonlinear inequality constraint scaling types
+<td>\c nonlinear_inequality_scale_types
+<td>list of strings
+<td>Optional
+<td>vector values = <tt>'none'</tt>
+<tr>
+<td>Nonlinear inequality constraint scales
+<td>\c nonlinear_inequality_scales
+<td>list of reals
+<td>Optional
+<td>vector values = \c 1. (no scaling)
+<tr>
+<td>Number of nonlinear equality constraints
+<td>\c num_nonlinear_equality_constraints
+<td>integer
+<td>Optional
+<td>\c 0
+<tr>
+<td>Nonlinear equality constraint targets
+<td>\c nonlinear_equality_targets
+<td>list of reals
+<td>Optional
+<td>vector values = \c 0.
+<tr>
+<td>Nonlinear equality constraint scaling types
+<td>\c nonlinear_equality_scale_types
+<td>list of strings
+<td>Optional
+<td>vector values = <tt>'none'</tt>
+<tr>
+<td>Nonlinear equality constraint scales
+<td>\c nonlinear_equality_scales
+<td>list of reals
+<td>Optional
+<td>vector values = \c 1. (no scaling)
+</table>
+
+
+\subsection RespFnLS Least squares terms and constraint functions (least squares data set)
+
+A least squares data set is specified using \c num_least_squares_terms
+and optionally \c least_squares_data_file \c
+least_squares_term_scales, \c least_squares_weights \c
+num_nonlinear_inequality_constraints, \c
+nonlinear_inequality_lower_bounds, \c
+nonlinear_inequality_upper_bounds, \c nonlinear_inequality_scales, \c
+num_nonlinear_equality_constraints, \c nonlinear_equality_targets, and
+\c nonlinear_equality_scales.  Each of the least squares terms is a
+residual function to be driven toward zero, and the nonlinear
+inequality and equality constraint specifications have identical
+meanings to those described in \ref RespFnOpt.  These types of
+problems are commonly encountered in parameter estimation, system
+identification, and model calibration. Least squares problems are most
+efficiently solved using special-purpose least squares solvers such as
+Gauss-Newton or Levenberg-Marquardt; however, they may also be solved
+using general-purpose optimization algorithms.
+
+It is important to realize that, while DAKOTA can solve these problems
+with either least squares or optimization algorithms, the response
+data sets to be returned from the simulator are different. Least
+squares involves a set of residual functions whereas optimization
+involves a single objective function (sum of the squares of the
+residuals), i.e., \f[f = \sum_{i=1}^{n} (R_i)^2\f] where \e f is the
+objective function and the set of \f$R_i\f$ are the residual
+functions.  Therefore, function values and derivative data in the
+least squares case involve the values and derivatives of the residual
+functions, whereas the optimization case involves values and
+derivatives of the sum of squares objective function. Switching
+between the two approaches will likely require different simulation
+interfaces capable of returning the different granularity of response
+data required.  The specification \c least_squares_data_file may be
+used to specify a text file containing \c num_least_squares_terms
+observed data values (one per line) to be used in computing the
+residuals \f[R_i = y^M_i - y^O_i \f] where \e M denotes model and \e
+O, observation.  In this case the simulator should return the actual
+model response, as DAKOTA will compute the residual internally using
+the supplied data.
+
+The \c least_squares_term_scale_types specification includes strings
+specifying the scaling type for each least squares term in methods
+that support scaling, when scaling is enabled (see \ref
+MethodIndControl for details). Each entry in \c
+least_squares_term_scale_types may be selected from <tt>'none'</tt>,
+<tt>'value'</tt>, or <tt>'log'</tt>, to select no, characteristic
+value, or logarithmic scaling, respectively.  Automatic scaling is not
+available for least squares terms.  If a single string is specified it
+will apply to each least squares terms.  Each entry in \c
+least_squares_term_scales may be a user-specified nonzero
+characteristic value to be used in scaling each term.  These values
+are ignored for scaling type <tt>'none'</tt>, required for
+<tt>'value'</tt>, and optional for <tt>'log'</tt>.  If a single real
+value is specified it will apply to each term.  The \c
+least_squares_weights specification provides a means to
+multiplicatively weight the vector of least squares residuals with a
+vector of weights.  If scaling is specified, it is applied before term
+weighting.
+
+\ref T9d4 "Table 9.4" summarizes the least squares
+data set specification.
+
+\anchor T9d4
+<table>
+<caption align = "top">
+\htmlonly
+Table 9.4
+\endhtmlonly
+Specification detail for nonlinear least squares data sets
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Number of least squares terms
+<td>\c num_least_squares_terms
+<td>integer
+<td>Required
+<td>N/A
+<tr>
+<td>Least squares data source file
+<td>\c least_squares_data_file
+<td>string
+<td>Optional
+<td>none
+<tr>
+<td>Least squares term scaling types
+<td>\c least_squares_term_scale_types
+<td>list of strings
+<td>Optional
+<td>vector values = <tt>'none'</tt>
+<tr>
+<td>Least squares terms scales
+<td>\c least_squares_term_scales
+<td>list of reals
+<td>Optional
+<td>no scaling (vector values = \c 1.)
+<tr>
+<td>Least squares terms weightings
+<td>\c least_squares_weights
+<td>list of reals
+<td>Optional
+<td>equal weightings
+<tr>
+<td>Number of nonlinear inequality constraints
+<td>\c num_nonlinear_inequality_constraints
+<td>integer
+<td>Optional
+<td>\c 0
+<tr>
+<td>Nonlinear inequality constraint lower bounds
+<td>\c nonlinear_inequality_lower_bounds
+<td>list of reals
+<td>Optional
+<td>vector values = \c -DBL_MAX
+<tr>
+<td>Nonlinear inequality constraint upper bounds
+<td>\c nonlinear_inequality_upper_bounds
+<td>list of reals
+<td>Optional
+<td>vector values = \c 0.
+<tr>
+<td>Nonlinear inequality scaling types
+<td>\c nonlinear_inequality_scale_types
+<td>list of strings
+<td>Optional
+<td>vector values = <tt>'none'</tt>
+<tr>
+<td>Nonlinear inequality constraint scales
+<td>\c nonlinear_inequality_scales
+<td>list of reals
+<td>Optional
+<td>no scaling (vector values = \c 1.)
+<tr>
+<td>Number of nonlinear equality constraints
+<td>\c num_nonlinear_equality_constraints
+<td>integer
+<td>Optional
+<td>\c 0
+<tr>
+<td>Nonlinear equality constraint targets
+<td>\c nonlinear_equality_targets
+<td>list of reals
+<td>Optional
+<td>vector values = \c 0.
+<tr>
+<td>Nonlinear equality scaling types
+<td>\c nonlinear_equality_scale_types
+<td>list of strings
+<td>Optional
+<td>vector values = <tt>'none'</tt>
+<tr>
+<td>Nonlinear equality constraint scales
+<td>\c nonlinear_equality_scales
+<td>list of reals
+<td>Optional
+<td>no scaling (vector values = \c 1.)
+</table>
+
+
+\subsection RespFnGen Response functions (generic data set)
+
+A generic response data set is specified using \c
+num_response_functions. Each of these functions is simply a response
+quantity of interest with no special interpretation taken by the
+method in use. This type of data set is used by uncertainty
+quantification methods, in which the effect of parameter uncertainty
+on response functions is quantified, and can also be used in parameter
+study and design of experiments methods (although these methods are
+not restricted to this data set), in which the effect of parameter
+variations on response functions is evaluated. Whereas objective,
+constraint, and residual functions have special meanings for
+optimization and least squares algorithms, the generic response
+function data set need not have a specific interpretation and the user
+is free to define whatever functional form is convenient. 
+\ref T9d5 "Table 9.5" summarizes the generic response function data 
+set specification.
+
+\anchor T9d5
+<table>
+<caption align = "top">
+\htmlonly
+Table 9.5
+\endhtmlonly
+Specification detail for generic response function data sets
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Number of response functions
+<td>\c num_response_functions
+<td>integer
+<td>Required
+<td>N/A
+</table>
+
+
+\section RespGrad Gradient Specification
+
+
+The gradient specification must be one of four types: 1) no gradients,
+2) numerical gradients, 3) analytic gradients, or 4) mixed gradients.
+
+
+\subsection RespGradNone No gradients
+
+The \c no_gradients specification means that gradient information is
+not needed in the study. Therefore, it will neither be retrieved from
+the simulation nor computed with finite differences. The \c
+no_gradients keyword is a complete specification for this case.
+
+
+\subsection RespGradNum Numerical gradients
+
+The \c numerical_gradients specification means that gradient
+information is needed and will be computed with finite differences
+using either the native or one of the vendor finite differencing
+routines.
+
+The \c method_source setting specifies the source of the finite
+differencing routine that will be used to compute the numerical
+gradients: \c dakota denotes DAKOTA's internal finite differencing
+algorithm and \c vendor denotes the finite differencing algorithm
+supplied by the iterator package in use (DOT, CONMIN, NPSOL, NL2SOL, NLSSOL,
+and OPT++ each have their own internal finite differencing
+routines). The \c dakota routine is the default since it can execute
+in parallel and exploit the concurrency in finite difference
+evaluations (see Exploiting Parallelism in the Users Manual 
+[\ref UsersMan "Adams et al., 2010"]).
+However, the \c vendor setting can be desirable in some cases since
+certain libraries will modify their algorithm when the finite
+differencing is performed internally. Since the selection of the \c
+dakota routine hides the use of finite differencing from the
+optimizers (the optimizers are configured to accept user-supplied
+gradients, which some algorithms assume to be of analytic accuracy),
+the potential exists for the \c vendor setting to trigger the use of
+an algorithm more optimized for the higher expense and/or lower
+accuracy of finite-differencing.  For example, NPSOL uses gradients in
+its line search when in user-supplied gradient mode (since it assumes
+they are inexpensive), but uses a value-based line search procedure
+when internally finite differencing.  The use of a value-based line
+search will often reduce total expense in serial operations. However,
+in parallel operations, the use of gradients in the NPSOL line search
+(user-supplied gradient mode) provides excellent load balancing
+without need to resort to speculative optimization approaches.  In
+summary, then, the \c dakota routine is preferred for parallel
+optimization, and the \c vendor routine may be preferred for serial
+optimization in special cases.
+
+The \c interval_type setting is used to select between \c forward and
+\c central differences in the numerical gradient calculations. The \c
+dakota, DOT \c vendor, and OPT++ \c vendor routines have both forward
+and central differences available, the CONMIN and NL2SOL \c vendor routines
+support forward differences only, and the NPSOL and NLSSOL \c vendor
+routines start with forward differences and automatically switch to
+central differences as the iteration progresses (the user has no
+control over this).  The following forward difference expression
+\f[
+\nabla f ({\bf x}) \cong 
+\frac{f ({\bf x} + h {\bf e}_i) - f ({\bf x})}{h}
+\f]
+and the following central difference expression
+\f[
+\nabla f ({\bf x}) \cong 
+\frac{f ({\bf x} + h {\bf e}_i) - f ({\bf x} - h {\bf e}_i)}{2h}
+\f]
+are used to estimate the \f$i^{th}\f$ component of the gradient vector.  
+
+Lastly, \c fd_gradient_step_size specifies the relative finite difference step
+size to be used in the computations.  Either a single value may be
+entered for use with all parameters, or a list of step sizes may be
+entered, one for each parameter.  The latter option of a list of step
+sizes is only valid for use with the DAKOTA finite differencing
+routine.  For DAKOTA, DOT, CONMIN, and OPT++, the differencing
+intervals are computed by multiplying the \c fd_gradient_step_size with the
+current parameter value.  In this case, a minimum absolute
+differencing interval is needed when the current parameter value is
+close to zero.  This prevents finite difference intervals for the
+parameter which are too small to distinguish differences in the
+response quantities being computed. DAKOTA, DOT, CONMIN, and OPT++ all
+use <tt>.01*fd_gradient_step_size</tt> as their minimum absolute differencing
+interval.  With a <tt>fd_gradient_step_size = .001</tt>, for example, DAKOTA,
+DOT, CONMIN, and OPT++ will use intervals of .001*current value with a
+minimum interval of 1.e-5.  NPSOL and NLSSOL use a different formula
+for their finite difference intervals: <tt>fd_gradient_step_size*(1+|current
+parameter value|)</tt>.  This definition has the advantage of
+eliminating the need for a minimum absolute differencing interval
+since the interval no longer goes to zero as the current parameter
+value goes to zero.
+
+When DAKOTA computes gradients or Hessians by finite differences and the
+variables in question have bounds, by default DAKOTA 5.0 chooses finite-differencing
+steps that keep the variables within their specified bounds.  Older versions
+of DAKOTA generally ignored bounds when computing finite differences.
+To restore the older behavior, one can add keyword <tt>ignore_bounds</tt>
+to the <tt>response</tt> specification when <tt>method_source dakota</tt>
+(or just <tt>dakota</tt>) is also specified.
+In forward difference or backward difference computations, honoring
+bounds is straightforward.
+To honor bounds when approximating \f$\partial f / \partial x_i\f$, i.e., component \f$i\f$
+of the gradient of \f$f\f$, by central differences, DAKOTA chooses two steps
+\f$h_1\f$ and \f$h_2\f$ with \f$h_1 \ne h_2\f$, such that \f$x + h_1 e_i\f$
+and \f$x + h_2 e_i\f$ both satisfy the bounds, and then computes
+\f[
+\frac{\partial f}{\partial x_i} \cong
+\frac{h_2^2(f_1 - f_0) - h_1^2(f_2 - f_0)}{h_1 h_2 (h_2 - h_1)} ,
+\f]
+with \f$f_0 = f(x)\f$, \f$f_1 = f(x + h_1 e_i)\f$, and
+\f$f_2 = f(x + h_2 e_i)\f$.
+
+  \ref T9d6 "Table 9.6" summarizes the numerical
+gradient specification.
+
+\anchor T9d6
+<table>
+<caption align = "top">
+\htmlonly
+Table 9.6
+\endhtmlonly
+Specification detail for numerical gradients
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Numerical gradients
+<td>\c numerical_gradients
+<td>none
+<td>Required group
+<td>N/A
+<tr>
+<td>Method source
+<td>\c method_source
+<td>\c dakota | \c vendor
+<td>Optional group
+<td>\c dakota
+<tr>
+<td>Interval type
+<td>\c interval_type
+<td>\c forward | \c central
+<td>Optional group
+<td>\c forward
+<tr>
+<td>Finite difference step size
+<td>\c fd_gradient_step_size
+<td>list of reals
+<td>Optional
+<td><tt>0.001</tt>
+<tr>
+<td>Ignore variable bounds
+<td>ignore_bounds
+<td>none
+<td>Optional
+<td>bounds respected
+</table>
+
+
+\subsection RespGradAnalytic Analytic gradients
+
+The \c analytic_gradients specification means that gradient
+information is available directly from the simulation (finite
+differencing is not required). The simulation must return the gradient
+data in the DAKOTA format (enclosed in single brackets; see DAKOTA
+File Data Formats in the Users Manual [\ref UsersMan "Adams et al., 2010"]) 
+for the case of file transfer of data. The \c analytic_gradients keyword 
+is a complete specification for this case.
+
+
+\subsection RespGradMixed Mixed gradients
+
+The \c mixed_gradients specification means that some gradient
+information is available directly from the simulation (analytic)
+whereas the rest will have to be finite differenced (numerical). This
+specification allows the user to make use of as much analytic gradient
+information as is available and then finite difference for the
+rest. For example, the objective function may be a simple analytic
+function of the design variables (e.g., weight) whereas the
+constraints are nonlinear implicit functions of complex analyses
+(e.g., maximum stress). The \c id_analytic_gradients list specifies by
+number the functions which have analytic gradients, and the \c
+id_numerical_gradients list specifies by number the functions which
+must use numerical gradients. Each function identifier, from 1 through
+the total number of functions, must appear once and only once within
+the union of the \c id_analytic_gradients and \c
+id_numerical_gradients lists.  The \c method_source, \c interval_type,
+and \c fd_gradient_step_size specifications are as described
+previously in \ref RespGradNum and pertain to those functions listed
+by the \c id_numerical_gradients list. \ref T9d7 "Table 9.7"
+summarizes the mixed gradient specification.
+
+\anchor T9d7
+<table>
+<caption align = "top">
+\htmlonly
+Table 9.7
+\endhtmlonly
+Specification detail for mixed gradients
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Mixed gradients
+<td>\c mixed_gradients
+<td>none
+<td>Required group
+<td>N/A
+<tr>
+<td>Analytic derivatives function list
+<td>\c id_analytic_gradients
+<td>list of integers
+<td>Required
+<td>N/A
+<tr>
+<td>Numerical derivatives function list
+<td>\c id_numerical_gradients
+<td>list of integers
+<td>Required
+<td>N/A
+<tr>
+<td>Method source
+<td>\c method_source
+<td>\c dakota | \c vendor
+<td>Optional group
+<td>\c dakota
+<tr>
+<td>Interval type
+<td>\c interval_type
+<td>\c forward | \c central
+<td>Optional group
+<td>\c forward
+<tr>
+<td>Finite difference step size
+<td>\c fd_step_size
+<td>list of reals
+<td>Optional
+<td><tt>0.001</tt>
+<tr>
+<td>Ignore variable bounds
+<td>\c ignore_bounds
+<td>none
+<td>Optional
+<td>bounds respected
+</table>
+
+
+\section RespHess Hessian Specification
+
+
+Hessian availability must be specified with either \c no_hessians, \c
+numerical_hessians, \c quasi_hessians, \c analytic_hessians, or \c
+mixed_hessians.
+
+
+\subsection RespHessNone No Hessians
+
+The \c no_hessians specification means that the method does not
+require DAKOTA to manage the computation of any Hessian
+information. Therefore, it will neither be retrieved from the
+simulation nor computed by DAKOTA. The \c no_hessians keyword is a
+complete specification for this case.  Note that, in some cases,
+Hessian information may still be being approximated internal to an
+algorithm (e.g., within a quasi-Newton optimizer such as \c
+optpp_q_newton); however, DAKOTA has no direct involvement in this
+process and the responses specification need not include it.
+
+
+\subsection RespHessNum Numerical Hessians
+
+The \c numerical_hessians specification means that Hessian information
+is needed and will be computed with finite differences using either
+first-order gradient differencing (for the cases of \c
+analytic_gradients or for the functions identified by \c
+id_analytic_gradients in the case of \c mixed_gradients) or
+first- or second-order function value differencing (all other gradient
+specifications).  In the former case, the following expression
+\f[
+\nabla^2 f ({\bf x})_i \cong 
+\frac{\nabla f ({\bf x} + h {\bf e}_i) - \nabla f ({\bf x})}{h}
+\f]
+estimates the \f$i^{th}\f$ Hessian column, and in the latter case, the
+following expressions
+\f[
+\nabla^2 f ({\bf x})_{i,j} \cong \frac{f({\bf x} + h_i {\bf e}_i + h_j {\bf e}_j) - 
+f({\bf x} + h_i {\bf e}_i) - 
+f({\bf x} - h_j {\bf e}_j) + 
+f({\bf x})}{h_i h_j}
+\f]
+and
+\f[
+\nabla^2 f ({\bf x})_{i,j} \cong \frac{f({\bf x} + h {\bf e}_i + h {\bf e}_j) - 
+f({\bf x} + h {\bf e}_i - h {\bf e}_j) - 
+f({\bf x} - h {\bf e}_i + h {\bf e}_j) + 
+f({\bf x} - h {\bf e}_i - h {\bf e}_j)}{4h^2}
+\f]
+provide first- and second-order estimates of the \f$ij^{th}\f$ Hessian term.
+Prior to DAKOTA 5.0, DAKOTA always used second-order estimates.
+Starting in DAKOTA 5.0, the default is to use first-order estimates
+(which honor bounds on the variables and
+require only about a quarter as many function evaluations
+as do the second-order estimates), but specifying <tt>central</tt>
+after <tt>numerical_hessians</tt> causes DAKOTA to use the old second-order
+estimates, which do not honor bounds.  In optimization algorithms that
+use Hessians, there is little reason to use second-order differences in
+computing Hessian approximations.
+
+The \c fd_hessian_step_size specifies the relative finite difference
+step size to be used in these differences.  Either a single value may
+be entered for use with all parameters, or a list of step sizes may be
+entered, one for each parameter.  The differencing intervals are
+computed by multiplying the \c fd_hessian_step_size with the current
+parameter value.  A minimum absolute differencing interval of
+<tt>.01*fd_hessian_step_size</tt> is used when the current parameter
+value is close to zero.  \ref T9d8 "Table 9.8" summarizes the
+numerical Hessian specification.
+
+\anchor T9d8
+<table>
+<caption align = "top">
+\htmlonly
+Table 9.8
+\endhtmlonly
+Specification detail for numerical Hessians
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Numerical Hessians
+<td>\c numerical_hessians
+<td>none
+<td>Required group
+<td>N/A
+<tr>
+<td>Finite difference step size
+<td>\c fd_step_size
+<td>list of reals
+<td>Optional
+<td><tt>0.001</tt> (1st-order), <tt>0.002</tt> (2nd-order)
+<tr>
+<td>Difference order
+<td>\c forward | \c central
+<td>none
+<td>Optional
+<td>forward
+</table>
+
+
+\subsection RespHessQuasi Quasi Hessians
+
+The \c quasi_hessians specification means that Hessian information is
+needed and will be approximated using secant updates (sometimes called
+``quasi-Newton updates", though any algorithm that approximates
+Newton's method is a quasi-Newton method).
+Compared to finite difference numerical Hessians, secant
+approximations do not expend additional function evaluations in
+estimating all of the second-order information for every point of
+interest.  Rather, they accumulate approximate curvature information
+over time using the existing gradient evaluations.  The supported
+secant approximations include the
+Broyden-Fletcher-Goldfarb-Shanno (BFGS) update (specified with the
+keyword \c bfgs)
+
+\f[
+B_{k+1} = B_{k} - \frac{B_k s_k s_k^T B_k}{s_k^T B_k s_k} + 
+\frac{y_k y_k^T}{y_k^T s_k}
+\f]
+
+and the Symmetric Rank 1 (SR1) update (specified with the keyword \c sr1)
+
+\f[
+B_{k+1} = B_k + \frac{(y_k - B_k s_k)(y_k - B_k s_k)^T}{(y_k - B_k s_k)^T s_k}
+\f]
+
+where \f$B_k\f$ is the \f$k^{th}\f$ approximation to the Hessian, 
+\f$s_k = x_{k+1} - x_k\f$ is the step and 
+\f$y_k = \nabla f_{k+1} - \nabla f_k\f$ is the corresponding yield 
+in the gradients.  In both cases, an initial scaling of 
+\f$\frac{y_k^T y_k}{y_k^T s_k} I\f$ is used for \f$B_0\f$ prior to the first 
+update.  In addition, both cases employ basic numerical safeguarding 
+to protect against numerically small denominators within the updates.  
+This safeguarding skips the update if 
+\f$|y_k^T s_k| < 10^{-6} s_k^T B_k s_k\f$ in the BFGS case or if 
+\f$|(y_k - B_k s_k)^T s_k| < 10^{-6} ||s_k||_2 ||y_k - B_k s_k||_2\f$ 
+in the SR1 case.  In the BFGS case, additional safeguarding can be 
+added using the \c damped option, which utilizes an alternative 
+damped BFGS update when the curvature condition \f$y_k^T s_k > 0\f$ 
+is nearly violated.  \ref T9d9 "Table 9.9" summarizes the quasi 
+Hessian specification.
+
+\anchor T9d9
+<table>
+<caption align = "top">
+\htmlonly
+Table 9.9
+\endhtmlonly
+Specification detail for quasi Hessians
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Quasi Hessians
+<td>\c quasi_hessians
+<td>\c bfgs | \c sr1
+<td>Required group
+<td>N/A
+<tr>
+<td>Numerical safeguarding of BFGS update
+<td>\c damped
+<td>none
+<td>Optional
+<td>undamped BFGS
+</table>
+
+
+\subsection RespHessAnalytic Analytic Hessians
+
+The \c analytic_hessians specification means that Hessian information
+is available directly from the simulation. The simulation must return
+the Hessian data in the DAKOTA format (enclosed in double brackets; see
+DAKOTA File Data Formats in Users Manual 
+[\ref UsersMan "Adams et al., 2010"]) for the case of file transfer of 
+data. The \c analytic_hessians keyword is a complete specification for 
+this case.
+
+
+\subsection RespHessMixed Mixed Hessians
+
+The \c mixed_hessians specification means that some Hessian
+information is available directly from the simulation (analytic)
+whereas the rest will have to be estimated by finite differences
+(numerical) or approximated by secant updating. As for
+mixed gradients, this specification allows the user to make use of as
+much analytic information as is available and then
+estimate/approximate the rest. The \c id_analytic_hessians list
+specifies by number the functions which have analytic Hessians, and
+the \c id_numerical_hessians and \c id_quasi_hessians lists specify by
+number the functions which must use numerical Hessians and
+secant Hessian updates, respectively. Each function identifier,
+from 1 through the total number of functions, must appear once and
+only once within the union of the \c id_analytic_hessians, \c
+id_numerical_hessians, and \c id_quasi_hessians lists.  The \c
+fd_hessian_step_size and \c bfgs, \c damped \c bfgs, or \c sr1
+secant update selections are as described previously in \ref
+RespHessNum and \ref RespHessQuasi and pertain to those functions
+listed by the \c id_numerical_hessians and \c id_quasi_hessians
+lists. \ref T9d10 "Table 9.10" summarizes the mixed Hessian
+specification.
+
+\anchor T9d10
+<table>
+<caption align = "top">
+\htmlonly
+Table 9.10
+\endhtmlonly
+Specification detail for mixed Hessians
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Mixed Hessians
+<td>\c mixed_hessians
+<td>none
+<td>Required group
+<td>N/A
+<tr>
+<td>Analytic Hessians function list
+<td>\c id_analytic_hessians
+<td>list of integers
+<td>Required
+<td>N/A
+<tr>
+<td>Numerical Hessians function list
+<td>\c id_numerical_hessians
+<td>list of integers
+<td>Required
+<td>N/A
+<tr>
+<td>Finite difference step size
+<td>\c fd_step_size
+<td>list of reals
+<td>Optional
+<td><tt>0.001</tt> (1st-order), <tt>0.002</tt> (2nd-order)
+<tr>
+<td>Quasi Hessians function list
+<td>\c id_quasi_hessians
+<td>list of integers
+<td>Required
+<td>N/A
+<tr>
+<td>Quasi-Hessian update
+<td>\c bfgs | \c sr1
+<td>none
+<td>Required
+<td>N/A
+<tr>
+<td>Numerical safeguarding of BFGS update
+<td>\c damped
+<td>none
+<td>Optional
+<td>undamped BFGS
+</table>
+
+\htmlonly
+<hr>
+<br><b><a href="InterfCommands.html#InterfCommands">Previous chapter</a></b>
+<br>
+<br><b><a href="Bibliography.html#Bibliography">Next chapter</a></b>
+\endhtmlonly
+
+*/
+
+} // namespace Dakota

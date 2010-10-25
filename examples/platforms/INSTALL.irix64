@@ -1,0 +1,10 @@
+==================================
+SGI IRIX64 Platform-specific Notes
+==================================
+
+--------------------------
+configure-time environment
+--------------------------
+  setenv EDG_PRELINK_INPUT_LINE_SIZE 65536
+  setenv SGI_ABI "-64"
+  setenv YACC "/usr/bin/yacc"

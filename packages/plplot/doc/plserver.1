@@ -1,0 +1,25 @@
+.\" -*- nroff -*-
+.TH PLSERVER 1
+.SH NAME
+plserver \- PLplot graphics server
+.SH SYNOPSIS
+.B plserver 
+.I "[args]"
+.SH "DESCRIPTION"
+This manual page documents briefly the
+.BR plserver ,
+command.
+.PP
+.B plserver
+is just a front-end to the pltkMain() function.  Structured along the
+preferred lines for extended wish'es.  It typically runs as a child
+process from the PLplot TK driver to render output.  Can use either TK
+send or Tcl-DP RPC for communication, depending on how it is invoked.
+.PP
+Note that plserver can be used the same way as wish or dpwish, as it
+contains the functionality of each of these (except the -notk Tcl-DP
+command-line option is not supported).  
+.SH "SEE ALSO"
+See /usr/share/doc/plplot/plplot.ps.gz for more details.
+.SH AUTHOR
+This manual page was written by Rafael Laboissiere <rafael@debian.org>.

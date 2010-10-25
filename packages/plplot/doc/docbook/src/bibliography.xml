@@ -1,0 +1,122 @@
+<!--
+    bilbiograpy.xml: "Bibliography" chapter
+        
+    Copyright (C) 1994  Geoffrey Furnish and Maurice LeBrun
+    Copyright (C) 1999, 2000, 2001, 2002, 2003  Alan W. Irwin and Rafael Laboissiere
+    Copyright (C) 2003  Joao Cardoso
+
+    Redistribution and use in source (XML DocBook) and "compiled" forms
+    (HTML, PDF, PostScript, DVI, TeXinfo and so forth) with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+       1. Redistributions of source code (XML DocBook) must retain the
+          above copyright notice, this list of conditions and the following
+          disclaimer as the first lines of this file unmodified.
+
+       2. Redistributions in compiled form (transformed to other DTDs,
+          converted to HTML, PDF, PostScript, and other formats) must
+          reproduce the above copyright notice, this list of conditions and
+          the following disclaimer in the documentation and/or other
+          materials provided with the distribution.
+
+    Important: THIS DOCUMENTATION IS PROVIDED BY THE PLPLOT PROJECT "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE PLPLOT PROJECT BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS DOCUMENTATION,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<chapter id="BIBLIOGRAPHY">
+  <title>Bibliography</title>
+<para>
+These articles are descriptions of PLplot itself or else scientific
+publications whose figures were generated with PLplot.
+</para>
+
+<bibliography><title>References</title>
+<bibliomixed>
+  <bibliomset relation="article">
+      <surname>Furnish</surname> <firstname>G.</firstname>,
+      <title role="article">Das Graphikpaket PLplot (in German)
+(http://www.linux-magazin.de/ausgabe/1996/12/Plplot/plplot.html)</title>,
+  </bibliomset>
+  <bibliomset relation="journal">
+      <title>Linux Magazin</title>,
+      <pubdate>1996 December</pubdate>
+  </bibliomset>
+</bibliomixed>
+	
+<bibliomixed>
+  <bibliomset relation="article">
+      <surname>Furnish</surname> <firstname>G.</firstname>,
+      <surname>Horton</surname> <firstname>W.</firstname>,
+      <surname>Kishimoto</surname> <firstname>Y.</firstname>,
+      <surname>LeBrun</surname> <firstname>M.</firstname>,
+      <surname>Tajima</surname> <firstname>T.</firstname>,
+      <title role="article">Global Gyrokinetic Simulation of Tokamak
+Transport</title>,
+  </bibliomset>
+  <bibliomset relation="journal">
+      <title>Physics of Plasmas</title>,
+      <volumenum>6</volumenum>,
+      <pagenums>1</pagenums>,
+      <pubdate>1999</pubdate>
+  </bibliomset>
+</bibliomixed>
+
+<bibliomixed>
+  <bibliomset relation="article">
+      <surname>Irwin</surname> <firstname>A.W.</firstname>,
+      <surname>Fukushima</surname> <firstname>T.</firstname>,
+      <title role="article">A Numerical Time Ephemeris of the Earth</title>,
+  </bibliomset>
+  <bibliomset relation="journal">
+      <title>Astronomy and Astrophysics</title>,
+      <volumenum>348</volumenum>,
+      <pagenums>642</pagenums>,
+      <pubdate>1999</pubdate>
+  </bibliomset>
+</bibliomixed>
+	
+<bibliomixed>
+  <bibliomset relation="article">
+      <surname>LeBrun</surname> <firstname>M.J.</firstname>,
+      <surname>Tajima</surname> <firstname>T.</firstname>,
+      <surname>Gray</surname> <firstname>M.</firstname>,
+      <surname>Furnish</surname> <firstname>G.</firstname>,
+      <surname>Horton</surname> <firstname>W.</firstname>,
+      <title role="article">Toroidal Effects on Drift-Wave Turbulence</title>,
+  </bibliomset>
+  <bibliomset relation="journal">
+      <title>Physics of Fluids</title>,
+      <volumenum>B5</volumenum>,
+      <pagenums>752</pagenums>,
+      <pubdate>1993</pubdate>
+  </bibliomset>
+</bibliomixed>
+</bibliography>
+</chapter>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document: ("plplotdoc.xml" "book" "chapter" "")
+sgml-default-dtd-file:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:("/usr/lib/sgml/catalog")
+sgml-local-ecat-files:nil
+End:
+-->

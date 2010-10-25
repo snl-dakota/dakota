@@ -1,0 +1,1 @@
+continuous_design=1 cdv_lower_bounds -2.0 cdv_upper_bounds -1.0 cdv_initial_point -1.1 cdv_descriptor 'x[1]'

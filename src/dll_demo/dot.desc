@@ -1,0 +1,14 @@
+TAG "dot/frcg" GROUP "Optimization: Local, Derivative-based"
+TAG "dot/mmfd" GROUP "Optimization: Local, Derivative-based"
+TAG "dot/bfgs" GROUP "Optimization: Local, Derivative-based"
+TAG "dot/slp" GROUP "Optimization: Local, Derivative-based"
+TAG "dot/sqp" GROUP "Optimization: Local, Derivative-based"
+TAG "dot/optimization_type"
+	DESC "{Optimization type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodDOTDC"
+
+TAG "dot/optimization_type/minimize"
+	DESC "@"
+
+TAG "dot/optimization_type/maximize"
+	DESC "[CHOOSE optimization sense]"
+

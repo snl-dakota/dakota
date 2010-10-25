@@ -1,0 +1,31 @@
+Application-defaults files (to set X resources) for use with PLplot & Tk.
+
+To use:
+
+1. Create a directory for holding app-defaults files.  $HOME/app-defaults/
+   is a good choice.  Then set the XAPPLRESDIR environmental to this
+   pathname (keep trailing slash).
+
+2. Copy an appropriate PLplot.*.ap file to the file PLplot under $XAPPLRESDIR.
+   Then modify to taste.  Note -- future versions of PLplot are likely to
+   break compatibility with the old app-defaults files periodically.
+
+These files use the standard X11 resource syntax.
+
+Suggested uses:
+ - on a 1024x768 display (such as on a portable computer), use the small
+   settings. 
+ - on a 1280x1024 workstation for most people, use the medium settings.
+ - for the latter, use the large settings for something very easy to see.
+   (PLplot classic settings)
+
+Feel free to add more customized versions.
+
+------------------------------------------------------------------------------
+Guide to resources:
+
+ width		Width of widget, in usual Tk units.  I.e. if an integer it's
+		in pixels, an appended "c" means centimeters, etc.
+
+ height		Height of widget, as above.
+

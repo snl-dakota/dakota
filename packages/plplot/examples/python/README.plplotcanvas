@@ -1,0 +1,17 @@
+
+PLPLOTCANVAS EXAMPLES
+~~~~~~~~~~~~~~~~~~~~~
+
+The PlplotCanvas examples are:
+
+  plplotcanvas_demo.py
+  plplotcanvas_animation.py
+
+The are not part of the general PLplot testbed of examples, but are 
+instead designed to demonstrate the use of the GCW "Gnome Canvas 
+Widget" driver to embed plots in Gnome/GTK applications.
+
+PlplotCanvas is a special GnomeCanvas-based widget that provides an 
+easy-to-use object-oriented interface for this task.  Both GCW and
+PlplotCanvas are described in detail in the PLplot Programmer's 
+Reference Manual.

@@ -1,0 +1,35 @@
+# dakota_library_split: tests for DAKOTA's library mode, with various
+# input and parallelism specifications (requires dakota_library_split binary)
+
+# serial test 0 only present to satisfy test harness
+
+# --------------------------
+# parallel tests (text_book)
+# --------------------------
+
+# change binary; input will be ignored (input strings hardwired in binary)
+# p0=D'dakota_library_split'
+# p1=D'dakota_library_split'
+
+# Processor counts:
+# p0=4,p1=6
+
+method,
+	optpp_q_newton
+	  max_iterations = 50
+	  convergence_tolerance = 1e-5
+
+variables,
+	continuous_design = 2
+	  descriptors     'x1' 'x2'
+
+interface,
+	direct
+	  analysis_driver = 'text_book' #0
+#	  analysis_driver = 'plugin_text_book' #p0,#p1
+
+responses,
+	num_objective_functions = 1
+	num_nonlinear_inequality_constraints = 2
+	analytic_gradients
+	no_hessians

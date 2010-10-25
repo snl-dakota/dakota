@@ -1,0 +1,197 @@
+This directory contains the source needed to compile plplot under DJGPP
+V2+, the gcc for DOS and 386+ machines.
+
+It should be possible to compile the "gnusvga" driver for X11 or Linux, as
+the GRX20 driver it is built around is apparently portable to these
+platforms; however, doing so may present some minor problems with the
+keyboard-codes used by the driver, which are non-ANSI codes. With that
+said, it should not be too hard for someone to change it appropriately if
+they felt so inclined.
+
+I have made numerous changes to get the code to work with newer versions
+of DJGPP, GRX, and PLPLOT. I have also updated and revamped the graphics
+driver, which has been extensively rewritten now (although it is based on
+the old one). New features of the driver include:
+   o  Support for different line widths;
+   o  Ability to dump the screen to a TIFF at the press of a key (F10)%;
+   o  Ability to dump the screen to a JPEG at the press of a key (F11)^;
+   o  Ability to dump the screen to a windows bitmap at the press of a
+      key (F12)*;
+   o  Support for double buffering (like the X-win driver);
+   o  Support for "plGetCursor" and related commands (like the X-win
+      driver);
+   o  Supports "XOR" drawing mode (like the X-win driver) for simple
+      animations etc...;
+   o  A "locate" mode (like the X-win driver) that translates the mouse
+      position to world coordinates (just press 'l' to activate);
+   o  Support for cross hairs (press 'x' to toggle on or off);
+   o  Switching between text and graphics modes now works (contents
+      preserved at least for GFX screen); and,
+   o  "Stand-alone" TIFF%, JPEG^, and BITMAP drivers.
+
+% - optional, requires third-party "TIFFLIB" library
+^ - optional, requires Independent JPEG Group's libjpeg library
+* - optional, can be enabled or disabled at compile-time
+
+Getting DJGPP
+¯¯¯¯¯¯¯¯¯¯¯¯¯
+DJGPP is available from <http://www.delorie.com/djgpp/> or any simtel
+mirrors. This version uses the GRX 2 library for the SVGA functions. It
+should be available from the same repository as DJGPP, but its official
+site is: <http://www.gnu.de/software/GRX/>. The library was only tested
+with version 2.3 of GRX (ie GRX23). A precompiled version of this library
+for DJGPP is available, but the source code file is needed for "grx20.h",
+so "gnusvga.c" can compile.
+
+Running on XP, 2k and NT
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+There are some serious limitations using the this driver under XP, Win 2k,
+and NT. To cut a long story short, you're limited to resolutions of 640x480
+or smaller, and it is to do with accessing video memory and the VESA modes
+from a DOS application under NT etc… rather than a problem with either the
+driver, GRX20, or plplot.
+
+Activating Screen Dump Features of Driver
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+Support for screen dumping BMP, TIFF, and JPEG images is provided by
+editing the "djgpp.in" file in the "cf" directory before building the
+library. BMP support is native to GRX23, but can be turned on or off if
+you like before building.
+
+TIFF support comes with the addition of the "TIFFLIB" library available
+from:
+        ftp://ftp.sgi.com/graphics/tiff
+        http://www.earthlink.net/~ritter/tiff/
+There is one small error in the compile. I can't remember what, but it is
+easy enough to fix. It is just an incorrectly set "#define". Other
+versions of TIFFLIB than the one I used (3.2b) might even have it fixed.
+
+TIFF support has to be turned on in the "djgpp.in" file (it is off by
+default).
+
+
+JPEG support comes from the Independent JPEG Group's libjpeg library:
+        ftp://ftp.uu.net/graphics/jpeg/jpegsrc.v6b.tar.gz
+I would seriously recommend downloading the TIFF library and using that
+instead though. PLPLOT only really uses 16 or 256 colours most of the time
+and even though the JPEG support works, and will save the image as a JPEG,
+it will be big (lots bigger than the TIFF) and ugly ! I only did this
+because I: had the JPEG library on my system; didn't have the TIFF lib
+(then); and, was lazy.
+
+JPEG support has to be turned on in the "djgpp.in" file (it is off by
+default).
+
+Making plplot device drivers for TIFF, BMP, or JPEG
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+It is also possible to also create "stand-alone" BMP, JPEG, and TIFF
+drivers that look and work just like any other plplot driver. These
+drivers respond to many command line toggles to automate file creation.
+
+For example, if you use the "-o name" command line option to set file
+names, and include a "0" or "00" in the file name, ie "-o image00.tif",
+the driver will automatically expand the zeros incrementally to allow a
+new file for each new page. Alternately, if you use the special name of
+"auto" (ie "-o auto"),  the file names will be generated the same way they
+are generated for the screen-dump feature.
+
+The size of the screens can be set with the "-geo" option, for example,
+"-geo 100x200", which would set image size to 100 pixels wide by 200 high.
+To create these "stand alone" drivers, before compiling it is necessary to
+edit "pldevs.h" to make sure the drivers are defined, and to edit
+"djgpp.in" to turn on and off features.
+
+Processor Optimizations
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+There are no processor optimizations defined in the makefile, but it is
+quite simple to add them yourself by either editing the makefile if you
+have already run "mkmf.bat", or "cf/initlib.in" (if you have not). For
+example, I change
+
+CC_FLAGS	:= $(CC_FLAGS) -c -O -I.
+CC_FLAGS_DEMOS	= -c -O -I.
+
+to
+
+CC_FLAGS	:= $(CC_FLAGS) -c -O -I. -march=athlon-xp
+CC_FLAGS_DEMOS	= -c -O -I. -march=athlon-xp
+
+to create code optimized for my machine, which you have probably guessed is 
+an Athlon XP.
+
+Building the Library
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+I really do not like to dictate to people where to unzip things, or where
+to install or build files, so if you want to go off and build the library
+in some other place, don't let me stop you. I certainly do not like being
+told where or where not to build things. With that said, I would recommend
+that you expand the plplot archive in the "contrib" directory of DJGPP,
+and build it from there.
+
+To compile core library plplot under DJGPP V2+, with GRX20+, after
+editing cf/djgpp.in and cf/pldev.h to select drivers that you want, and 
+cf/initlib.in to add any compiler optimizations, "cd" to "sys/dos/djgpp"
+(if you followed my recommendation, that will be 
+"%DJDIR%/CONTRIB/PLPLOT/SYS/DOS/DJGPP").
+
+Then:
+1) mkmf
+2) cd tmp
+3) make links
+4) make
+
+TIP: If you are strapped for hard disk space, or just want a smaller
+     footprint for the install, use "make move" in step 3 instead of
+     "make links". SORRY, BUT THIS WONT WORK ON NT, 2K, OR XP DUE TO 
+     SUBTLE DIFFERENCES IN THE COMMAND SHELL - just use "make links".
+
+You can finish off by:
+
+6) make install_includes
+7) make clean
+
+Doing that, the library will be installed into the tree you expanded it 
+out from. If you like, you can now move the files elsewhere.
+
+To make examples, assuming you have followed steps 1-4 above:
+1) make linkexamples
+2) "make cdemos" or "make x01c", "make x02c" etc.. to make individual demos
+
+TIP: If you are strapped for hard disk space, or just want a smaller
+     footprint for the install, use "make moveexamples" in step 3 
+     instead of "make moveexamples". The wont work with NT, 2K, or XP
+     any more than "make move" though !
+
+Installing the Library
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+To make everything nice and neat, you probably should set a few
+environmental variables pointing to where things were finally installed.
+This isn't necessary, but will make life a little easier. Add the
+following entries to your "djgpp.env" file:
+
++PLPLOT_LIB=%DJDIR%/CONTRIB/PLPLOT/lib
++PLPLOT_HOME=%DJDIR%/CONTRIB/PLPLOT
++PLPLOT_BIN=%DJDIR%/CONTRIB/PLPLOT/bin
+
+The "plplot" may be different depending on the version of plplot your 
+compiling, and if you did not install it into contrib, then it will be 
+something else entirely, but you should get the idea of what I mean.
+
+Then if you want things *really* nice and transparent, in the "[cpp]" 
+entry of "djgpp.env", look for "C_INCLUDE_PATH=" and the 
+"CPLUS_INCLUDE_PATH=" entries, and add to the end of the lines: 
+
+;%PLPLOT_HOME%/include
+
+Next, look for the "[gcc]" entry in "djgpp.env", find the "LIBRARY_PATH=", 
+and add to the end of it:
+
+;%PLPLOT_LIB%
+
+With that done, you should be able to compile and build DJGPP apps from 
+any directory of your choosing.
+
+Andrew Roach
+aroach@geocities.com
+
+

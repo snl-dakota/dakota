@@ -1,0 +1,775 @@
+\chapter{Advanced Simulation Code Interfaces}\label{advint}
+
+\section{Building an Interface to a Engineering Simulation Code}\label{advint:building}
+
+To interface an engineering simulation package to DAKOTA using one of
+the black-box interfaces (system call or fork), pre- and
+post-processing functionality typically needs to be supplied (or
+developed) in order to transfer the parameters from DAKOTA to the
+simulator input file and to extract the response values of interest
+from the simulator's output file for return to DAKOTA (see
+Figures~\ref{introduction:bbinterface}
+and~\ref{interfaces:bbinterfacecomp}). This is often managed through
+the use of scripting languages, such as C-shell~\cite{And86}, Bourne
+shell~\cite{Bli96}, Perl~\cite{Wal96}, or Python~\cite{Mar03}. While
+these are common and convenient choices for simulation
+drivers/filters, it is important to recognize that any executable file
+can be used. If the user prefers, the desired pre- and post-processing
+functionality may also be compiled or interpreted from any number of
+programming languages (C, C++, F77, F95, JAVA, Basic, etc.).
+
+In the \texttt{Dakota/examples/script\_interfaces/generic} directory, a
+simple example uses the Rosenbrock test function as a mock engineering
+simulation code. Several scripts have been included to demonstrate
+ways to accomplish the pre- and post-processing needs. Actual
+simulation codes will, of course, have different pre- and
+post-processing requirements, and as such, this example serves only to
+demonstrate the issues associated with interfacing a
+simulator. Modifications will almost surely be required for new
+applications.
+
+\subsection{Generic Script Interface Files} 
+
+The {\tt generic} directory contains four important files:
+\texttt{dakota\_rosenbrock.in} (the DAKOTA input file),
+\texttt{simulator\_script} (the simulation driver script),
+\texttt{dprepro} (a pre-processing utility), and \\
+\texttt{templatedir/ros.template} (a template simulation input file).
+
+The \texttt{dakota\_rosenbrock.in} file specifies the study that
+DAKOTA will perform and, in the interface section, describes the
+components to be used in performing function evaluations. In
+particular, it identifies \\ \texttt{simulator\_script} as its
+\texttt{analysis\_driver}, as shown in Figure~\ref{advint:figure01}.
+\begin{figure}
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dakota_rosenbrock.in}
+    \end{small}
+  \end{bigbox}
+  \caption{The \texttt{dakota\_rosenbrock.in} input file.}
+  \label{advint:figure01}
+\end{figure}
+
+The \texttt{simulator\_script} listed in Figure~\ref{advint:figure02}
+is a short C-shell driver script that DAKOTA executes to perform each
+function evaluation. The names of the parameters and results files are
+passed to the script on its command line; they are
+referenced in the script by \texttt{\$argv[1]}
+and \texttt{\$argv[2]}, respectively. The \texttt{simulator\_script}
+is divided into three parts: pre-processing, analysis, and post-processing.
+% is divided into five parts: set up, pre-processing, analysis,
+% post-processing, and clean up.
+
+\begin{figure}
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{simulator_script}
+    \end{small}
+  \end{bigbox}
+  \caption{The \texttt{simulator\_script} sample driver script.}
+  \label{advint:figure02}
+\end{figure}
+
+% The set up portion strips the function evaluation number from
+% \texttt{\$argv[1]}and assigns it to the shell variable \texttt{\$num},
+% which is then used to create a tagged working directory for a
+% particular evaluation. For example, on the first evaluation,
+% ``\texttt{1}'' is stripped from ``\texttt{params.in.1}'' in order to
+% create ``\texttt{workdir.1}''. The primary reason for creating
+% separate working directories is so that the files associated with one
+% simulation do not conflict with those for another simulation. This is
+% particularly important when executing concurrent simulations in
+% parallel (to actually execute function evaluations concurrently,
+% uncomment the \texttt{asynchronous} line in \texttt{dakota\_rosenbrock.in}).
+% %Once executing within the confines of the working directory, tags on the 
+% %files are no longer necessary, and for this reason, the tagged parameters
+% %file is moved to a more convenient name of ``\texttt{dakota\_vars}''.
+
+In the pre-processing portion, the \texttt{simulator\_script} uses
+\texttt{dprepro}, a parsing utility, to extract the
+current variable values from a parameters file (\texttt{\$argv[1]})
+and combine them with the simulator template input file
+(\texttt{ros.template}) to create a new input file (\texttt{ros.in})
+for the simulator. Internal to Sandia, the APREPRO utility is often
+used for this purpose. For external sites where APREPRO is not
+available, the DPrePro utility mentioned above is an alternative with
+many of the capabilities of APREPRO that is specifically tailored for
+use with DAKOTA and is distributed with it (in
+\\ \texttt{Dakota/examples/script\_interfaces/generic/dprepro}, or {\tt
+Dakota/bin} in a binary distribution).  Additionally, the BPREPRO
+utility is another alternative to APREPRO (see~\cite{WalXX}), and at
+Lockheed Martin sites, the JPrePost utility is available as a JAVA
+pre- and post-processor~\cite{Fla}.  The \texttt{dprepro} script
+partially listed in Figure~\ref{advint:figure03} will be used here for
+simplicity of discussion. It can use either DAKOTA's \texttt{aprepro}
+parameters file format (see
+Section~\ref{variables:parameters:aprepro}) or DAKOTA's standard
+format (see Section~\ref{variables:parameters:standard}), so either
+option may be selected in the interface section of the DAKOTA input
+file. The \texttt{ros.template} file listed in
+Figure~\ref{advint:figure04} is a template simulation input file which
+contains targets for the incoming variable values, identified by the
+strings ``\texttt{\{x1\}}'' and ``\texttt{\{x2\}}''.  These
+identifiers match the variable descriptors specified in
+\texttt{dakota\_rosenbrock.in}. The template input file is contrived
+as Rosenbrock has nothing to do with finite element analysis; it only
+mimics a finite element code to demonstrate the simulator
+template process. The \texttt{dprepro} script will search the
+simulator template input file for fields marked with curly
+brackets and then create a new file (\texttt{ros.in}) by replacing
+these targets with the corresponding numerical values for the
+variables.  As noted in the usage information for \texttt{dprepro} and
+shown in \texttt{simulator\_script}, the names for the DAKOTA
+parameters file (\texttt{\$argv[1]}), template file
+(\texttt{ros.template}), and generated input file (\texttt{ros.in})
+must be specified in the \texttt{dprepro} command line arguments.
+
+\begin{figure}
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{dprepro_head}
+    \end{small}
+  \end{bigbox}
+  \caption{Partial listing of the \texttt{dprepro} script.}
+  \label{advint:figure03}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \begin{bigbox}
+    \begin{small}
+      \verbatimtabinput[8]{ros.template}
+    \end{small}
+  \end{bigbox}
+  \caption{Listing of the \texttt{ros.template} file}
+  \label{advint:figure04}
+\end{figure}
+
+The second part of the script executes the \texttt{rosenbrock\_bb}
+simulator. The input and output file names, \texttt{ros.in} and
+\texttt{ros.out}, respectively, are hard-coded into the FORTRAN 77
+program \texttt{rosenbrock\_bb.f}. When the \texttt{rosenbrock\_bb}
+simulator is executed, the values for \texttt{x1} and \texttt{x2} are
+read in from \texttt{ros.in}, the Rosenbrock function is evaluated,
+and the function value is written out to \texttt{ros.out}.
+
+The third part performs the post-processing and writes the response
+results to a file for DAKOTA to read. Using the UNIX ``\texttt{grep}'' utility, the
+particular response values of interest are extracted from the raw
+simulator output and saved to a temporary file (\texttt{results.tmp}).
+When complete, this file is renamed \texttt{\$argv[2]}, which in this
+example is always ``\texttt{results.out}''.
+Note that moving or renaming the completed results file
+avoids any problems with read race
+conditions (see Section~\ref{parallel:SLP:local:system}).
+
+% Finally, in the clean up phase, the working directory is removed to
+% reduce the amount of disk storage required to execute the study. If
+% data from each simulation needs to be saved, this step can be
+% commented out by inserting a ``\texttt{\#}'' character before
+% ``\texttt{$\backslash$rm -rf}''.
+
+Because the DAKOTA input file \texttt{dakota\_rosenbrock.in}
+(Figure~\ref{advint:figure01}) specifies
+\texttt{work\_directory} and \texttt{directory\_tag} in its interface
+section, each invocation of \texttt{simulator\_script} wakes up in
+its own temporary directory, which DAKOTA has populated with the
+contents of directory \texttt{templatedir}.  Having a separate directory
+for each invocation of \texttt{simulator\_script} simplifies the script
+when the DAKOTA input file specifies \texttt{asynchronous} (so
+several instances of \texttt{simulator\_script} might run simultaneously),
+as fixed names such as \texttt{ros.in}, \texttt{ros.out}, and \texttt{results.tmp}
+can be used for intermediate files.  If neither \texttt{asynchronous} nor
+\texttt{file\_tag} is specified, and if there is no need (e.g., for debugging)
+to retain intermediate files having fixed names, then \texttt{directory\_tag}
+offers no benefit and can be omitted.  An alternative to \texttt{directory\_tag}
+is to proceed as earlier versions of this chapter --- prior to DAKOTA 5.0's
+introduction of \texttt{work\_directory} --- recommended:  add two more
+steps to the \texttt{simulator\_script},
+an initial one to create a temporary directory explicitly and
+copy \texttt{templatedir} to it if needed, and a final step to remove the temporary
+directory and any files in it.
+
+When \texttt{work\_directory} is specified, DAKOTA adjusts the \texttt{\$PATH} seen
+by \texttt{simulator\_script} so that simple program names
+%in the \texttt{simulator\_script}
+(i.e., names not containing a slash) that
+are visible in DAKOTA's directory will also be visible in the work directory.
+Relative path names ---
+involving an intermediate slash but not an initial one,
+such as \texttt{./rosenbrock\_bb} or \texttt{a/bc/rosenbrock\_bb} ---
+will only be visible in the work directory if a \texttt{template\_directory}
+or \texttt{template\_files} specification (see \S\ref{interfaces:workdir})
+has made them visible there.
+
+As an example of the data flow on a particular function evaluation,
+consider evaluation 60. The parameters file for this evaluation consists of:
+\begin{small}
+\begin{verbatim}
+    { DAKOTA_VARS     =                      2 }
+    { x1              =  1.638247697999295e-01 }
+    { x2              =  2.197298209103481e-02 }
+    { DAKOTA_FNS      =                      1 }
+    { ASV_1           =                      1 }
+    { DAKOTA_DER_VARS =                      2 }
+    { DVV_1           =                      1 }
+    { DVV_2           =                      2 }
+    { DAKOTA_AN_COMPS =                      0 }
+\end{verbatim}
+\end{small}
+
+This file is called \texttt{workdir/workdir.60/params.in} if the line
+\begin{small}
+\begin{verbatim}
+ 	  named 'workdir' file_save  directory_save
+\end{verbatim}
+\end{small}
+in Figure~\ref{advint:figure01} is uncommented.
+The first portion of the file indicates that there are two variables,
+followed by new values for variables \texttt{x1} and \texttt{x2}, and
+one response function (an objective function), followed by an active
+set vector (ASV) value of \texttt{1}. The ASV indicates the need to
+return the value of the objective function for these parameters (see
+Section~\ref{variables:asv}).  The \texttt{dprepro} script reads the
+variable values from this file, namely \texttt{1.638247697999295e-01}
+and \texttt{2.197298209103481e-02} for \texttt{x1} and \texttt{x2}
+respectively, and substitutes them in the \texttt{\{x1\}} and
+\texttt{\{x2\}} fields of the \texttt{ros.template} file. The final
+three lines of the resulting input file (\texttt{ros.in}) then appear
+as follows:
+\begin{small}
+\begin{verbatim}
+    variable 1 1.638247697999295e-01
+    variable 2 2.197298209103481e-02
+    end
+\end{verbatim}
+\end{small}
+
+where all other lines are identical to the template file. The
+\texttt{rosenbrock\_bb} simulator accepts \texttt{ros.in} as its input
+file and generates the following output to the file \texttt{ros.out}:
+\begin{small}
+\begin{verbatim}
+    Beginning execution of model: Rosenbrock black box
+    Set up complete.
+    Reading nodes.
+    Reading elements.
+    Reading materials.
+    Checking connectivity...OK
+    *****************************************************
+
+    Input value for x1 =  0.1638247697999295E+00
+    Input value for x2 =  0.2197298209103481E-01
+
+    Computing solution...Done
+    *****************************************************
+    Function value =  0.7015563957680092E+00
+    Function gradient = [ -0.1353509902591768E+01 -0.9731146217930163E+00 ]
+\end{verbatim}
+\end{small}
+
+Next, the appropriate values are extracted from the raw simulator output
+and returned in the results file. This post-processing is relatively
+trivial in this case, and the \texttt{simulator\_script} uses the
+\texttt{grep} and \texttt{cut} utilities to extract the value from the
+``\texttt{Function value}" line of the \texttt{ros.out} output file and save it to
+\texttt{\$argv[2]}, which is the \texttt{results.out} file for this
+evaluation. This single value provides the objective function value
+requested by the ASV.
+
+After 132 of these function evaluations, the following DAKOTA output
+shows the final solution using the \\ \texttt{rosenbrock\_bb} simulator:
+\begin{small}
+\begin{verbatim}
+    Exit NPSOL - Optimal solution found.
+
+    Final nonlinear objective value =   0.1165704E-06
+
+   NPSOL exits with INFORM code = 0 (see "Interpretation of output" section in NPSOL manual)
+
+   NOTE: see Fortran device 9 file (fort.9 or ftn09)
+         for complete NPSOL iteration history.
+
+   <<<<< Iterator npsol_sqp completed.
+   <<<<< Function evaluation summary: 132 total (132 new, 0 duplicate)
+   <<<<< Best parameters          =
+                         9.9965861667e-01 x1
+                         9.9931682203e-01 x2
+   <<<<< Best objective function  =
+                      1.1657044253e-07
+   <<<<< Best data captured at function evaluation 130
+
+   <<<<< Iterator npsol_sqp completed.
+   <<<<< Single Method Strategy completed.
+   DAKOTA execution time in seconds:
+     Total CPU        =       0.12 [parent =   0.116982, child =   0.003018]
+     Total wall clock =    1.47497
+\end{verbatim}
+\end{small}
+
+\subsection{Adapting These Scripts to Another Simulation}
+
+To adapt this approach for use with another simulator, several steps
+need to be performed:
+
+\begin{enumerate}
+\item Create a template simulation input file by identifying the fields
+  in an existing input file that correspond to the variables of
+  interest and then replacing them with \texttt{\{\}} identifiers
+  (e.g. \texttt{\{cdv\_1\}}, \texttt{\{cdv\_2\}}, etc.) which match
+  the DAKOTA variable descriptors. Copy this template input file to a
+  templatedir that will be used to create working directories for the
+  simulation.
+
+\item Modify the \texttt{dprepro} arguments in
+  \texttt{simulator\_script} to reflect names of the DAKOTA parameters
+  file (previously ``\texttt{\$argv[1]}''), template file name
+  (previously ``\texttt{ros.template}'') and generated input file
+  (previously ``\texttt{ros.in}''). Alternatively, use APREPRO,
+  BPREPRO, or JPrePost to perform this step (and adapt the syntax
+  accordingly).
+
+\item Modify the analysis section of \texttt{simulator\_script} to
+  replace the \texttt{rosenbrock\_bb} function call with the new
+  simulator name and command line syntax (typically including the
+  input and output file names).
+
+\item Change the post-processing section in \texttt{simulator\_script}
+  to reflect the revised extraction process. At a minimum, this would
+  involve changing the \texttt{grep} command to reflect the name of
+  the output file, the string to search for, and the characters to cut
+  out of the captured output line. For more involved post-processing
+  tasks, invocation of additional tools may have to be added to the
+  script.
+
+\item Modify the \texttt{dakota\_rosenbrock.in} input file to reflect,
+  at a minimum, updated variables and responses specifications.
+\end{enumerate}
+
+These nonintrusive interfacing approaches can be used to rapidly
+interface with simulation codes. While generally custom for each new
+application, typical interface development time is on the order of an
+hour or two. Thus, this approach is scalable when dealing with many
+different application codes. Weaknesses of this approach include the
+potential for loss of data precision (if care is not taken to preserve
+precision in pre- and post-processing file I/O), a lack of robustness
+in post-processing (if the data capture is too simplistic), and
+scripting overhead (only noticeable if the simulation time is on the
+order of a second or less).
+
+If the application scope at a particular site is more focused and only
+a small number of simulation codes are of interest, then more
+sophisticated interfaces may be warranted. For example, the economy of
+scale afforded by a common simulation framework justifies additional
+effort in the development of a high quality DAKOTA interface. In these
+cases, more sophisticated interfacing approaches could involve a more
+thoroughly developed black box interface with robust support of a
+variety of inputs and outputs, or it might involve intrusive
+interfaces such as the direct simulation interface discussed below in
+Section~\ref{advint:direct} or the SAND interface described in
+Section~\ref{introduction:how}.
+
+\subsection{Additional Examples}
+
+A variety of additional examples of black-box interfaces to simulation
+codes are maintained in the\\
+\texttt{Dakota/examples/script\_interfaces} directory in the source
+code distribution.
+
+
+\section{Developing a Direct Simulation Interface}\label{advint:direct}
+
+If a more efficient interface to a simulation is desired (e.g., to
+eliminate process creation and file I/O overhead) or if a targeted
+computer architecture cannot accommodate separate optimization and
+simulation processes (e.g., due to lightweight operating systems on
+compute nodes of large parallel computers), then linking a simulation
+code directly with DAKOTA may be desirable. This is an advanced
+capability of DAKOTA, and it requires a user to have access to (and
+knowledge of) the DAKOTA source code, as well as the source code of
+the simulation code.
+
+Three approaches are outlined below for developing direct linking
+between DAKOTA and a simulation: extension, derivation, and
+sandwich. For additional information, refer to ``Interfacing with
+DAKOTA as a Library'' in the DAKOTA Developers Manual~\cite{DevMan}.
+
+Once performed, DAKOTA can bind with the new direct simulation
+interface using the \texttt{direct} interface specification in
+combination with an \texttt{analysis\_driver}, \texttt{input\_filter}
+or \texttt{output\_filter} specification that corresponds to the name
+of the new subroutine.
+
+\subsection{Extension}\label{advint:direct:extension}
+
+The first approach to using the direct function capability with a new
+simulation (or new internal test function) involves \emph{extension}
+of the existing \textbf{DirectFnApplicInterface} class to include new
+simulation member functions.  In this case, the following steps are
+performed:
+\begin{enumerate}
+\item The functions to be invoked (analysis programs, input and
+  output filters, internal testers) must have their main programs
+  changed into callable functions/subroutines.
+
+\item The resulting callable function can then be added directly
+  to the private member functions in \textbf{DirectFnApplicInterface}
+  if this function will directly access the DAKOTA data structures
+  (variables, active set, and response attributes of the class). It is
+  more common to add a wrapper function to
+  \textbf{DirectFnApplicInterface} which manages the DAKOTA data
+  structures, but allows the simulator subroutine to retain a level of
+  independence from DAKOTA (see Salinas, ModelCenter, and Matlab
+  wrappers as examples).
+
+\item The if-else blocks in the \textbf{derived\_map\_if()},
+  \textbf{derived\_map\_ac()}, and \textbf{derived\_map\_of()} member
+  functions of the \textbf{DirectFnApplicInterface} class must be
+  extended to include the new function names as options. If the new
+  functions are class member functions, then DAKOTA data access may be
+  performed through the existing class member attributes and data
+  objects do not need to be passed through the function parameter
+  list. In this case, the following function prototype is appropriate:
+\begin{small}
+\begin{verbatim}
+    int function_name();
+\end{verbatim}
+\end{small}
+  If, however, the new function names are not members of the
+  \textbf{DirectFnApplicInterface} class, then an \texttt{extern}
+  declaration may additionally be needed and the function prototype
+  should include passing of the Variables, ActiveSet, and Response
+  data members:
+\begin{small}
+\begin{verbatim}
+    int function_name(const Dakota::Variables& vars,
+                      const Dakota::ActiveSet& set, Dakota::Response& response);
+\end{verbatim}
+\end{small}
+
+\item The DAKOTA system must be recompiled and linked with the new
+  function object files or libraries.
+\end{enumerate}
+
+Various header files may have to be included, particularly within the
+\textbf{DirectFnApplicInterface} class, in order to recognize new
+external functions and compile successfully. Refer to the DAKOTA
+Developers Manual~\cite{DevMan} for additional information on the
+\textbf{DirectFnApplicInterface} class and the DAKOTA data types.
+
+\subsection{Derivation}\label{advint:direct:derivation}
+
+As described in ``Interfacing with DAKOTA as a Library'' in the DAKOTA
+Developers Manual~\cite{DevMan}, a derivation approach can be employed
+to further increase the level of independence between DAKOTA and the
+host application.  In this case, rather than \emph{adding} a new
+function to the existing \textbf{DirectFnApplicInterface} class, a new
+interface class is derived from \textbf{DirectFnApplicInterface} which
+\emph{redefines} the \textbf{derived\_map\_if()},
+\textbf{derived\_map\_ac()}, and \textbf{derived\_map\_of()} virtual 
+functions.
+
+% Note: this approach has benefits primarily in library mode
+In the approach of Section~\ref{advint:direct:sandwich} below, the 
+class derivation approach avoids the need to recompile the DAKOTA 
+library when the simulation or its direct interface class is modified.
+
+\subsection{Sandwich}\label{advint:direct:sandwich}
+
+In a ``sandwich'' implementation, a simulator provides both the
+``front end'' and ``back end'' with DAKOTA sandwiched in the middle.
+To accomplish this approach, the simulation code is responsible for
+interacting with the user (the front end), links DAKOTA in as a
+library (refer to ``Interfacing with DAKOTA as a Library'' in the
+DAKOTA Developers Manual~\cite{DevMan}), and plugs in a derived direct
+interface class to provide a closely-coupled mechanism for performing
+function evaluations (the back end).  This approach makes DAKOTA
+services available to other codes and frameworks and is currently used
+by Sandia codes such as Xyce (electrical simulation), Sage (CFD), and
+SIERRA (multiphysics).
+
+
+\section{Existing Direct Interfaces to External Simulators}\label{advint:existingdirect}
+
+In addition to built-in polynomial test functions described in
+Section~\ref{interfaces:direct}, DAKOTA includes direct interfaces to
+Sandia's Salinas code for structural dynamics, Phoenix Integration's
+ModelCenter framework, and The Mathworks' Matlab scientific computing
+environment.
+
+\subsection{Matlab}\label{advint:existingdirect:matlab} 
+
+DAKOTA's direct function interface includes the capability to invoke
+Matlab for function evaluations, using the Matlab engine API.  When
+using this close-coupling, the Matlab engine is started once when
+DAKOTA initializes, and then during analysis function evaluations are
+performed exchanging parameters and results through the Matlab C API.
+This eliminates the need to use the file system and the expense of
+initializing the Matlab engine for each function evaluation.
+
+To use the DAKOTA/Matlab interface, DAKOTA must be configured and
+compiled with the Matlab feature enabled; see the INSTALL file
+included with the DAKOTA distribution for more information.  The
+DAKOTA/Matlab interface has been built and tested on 32-bit Linux with
+Matlab 7.0 (R14) and on 64-bit Linux with Matlab 7.1 (R14SP3).
+Configuration support for Solaris is included, but is untested.
+Builds on other platforms or with other versions of Matlab may require
+modifications to the DAKOTA build system as described in INSTALL.
+
+Since the Matlab libraries are linked dynamically, they must be
+accessible at run time.  Before running a DAKOTA binary that includes
+Matlab support, make sure the path to the Matlab shared object
+libraries is included in your {\tt LD\_LIBRARY\_PATH} environment
+variable.  For example to accomplish this in BASH on 32-bit Linux, one
+might type
+\begin{small}
+\begin{verbatim}
+    export LD_LIBRARY_PATH=/usr/local/matlab/bin/glnx86:$LD_LIBRARY_PATH
+\end{verbatim}
+\end{small}
+or add such a command to the .bashrc file.
+
+Example files corresponding to the following tutorial are available in \\ {\tt Dakota/examples/linked\_interfaces/Matlab}.
+
+\subsubsection{DAKOTA/Matlab input file specification}
+
+The use of the Matlab direct interface is specified through the
+combination of the {\tt direct} and {\tt analysis\_driver} keywords in
+an interface specification.  The Matlab m-file which performs the
+analysis is specified through the {\tt analysis\_components} keyword.
+Here is a sample DAKOTA {\tt interface} specification:
+\begin{small}
+\begin{verbatim}
+interface,
+  direct
+    analysis_driver = 'matlab'
+    analysis_components = 'myanalysis.m'
+\end{verbatim} 
+\end{small}
+
+Multiple Matlab analysis drivers are supported and may be specified in
+combination with other direct analysis drivers.  Multiple analysis
+components are supported as for other interfaces as described in
+Section~\ref{interfaces:components}.  The {\tt .m} extension in the
+{\tt analysis\_component} specification is optional; in fact any
+characters following the first period in the {\tt analysis\_component}
+specification will be stripped off by the interface, so {\tt
+myanalysis}, {\tt myanalysis.m}, and {\tt myanalysis.fun.m} will all
+cause the interface to attempt to execute a Matlab script called {\tt
+myanalysis.m} for the function evaluation.
+
+\subsubsection{Matlab .m file specification}
+
+The Matlab analysis file {\tt myanalysis.m} must define a Matlab
+function that accepts a Matlab structure as its sole argument and
+returns the same structure in a variable called {\tt Dakota}.  A
+manual execution of the call to the analysis in Matlab should
+therefore look like:
+\begin{small}
+\begin{verbatim}
+    >> Dakota = myanalysis(Dakota)
+\end{verbatim} 
+\end{small}
+Note that the structure named Dakota will be pushed into the Matlab
+workspace before the analysis function is called.  The structure
+passed from DAKOTA to the analysis m-function contains essentially the
+same information that would be passed to a DAKOTA direct function
+included in {\tt DirectFnApplicInterface.C}, with fields shown in
+Figure~\ref{advint:figure:matlabparams}.
+
+\begin{figure}
+\centering
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+Dakota.
+  numFns              number of functions (responses, constraints)
+  numVars             total number of variables
+  numACV              number active continuous variables
+  numADV              number active discrete variables
+  numDerivVars        number of derivative variables specified in directFnDVV
+  xC                  continuous variable values ([1 x numACV]) 
+  xD                  discrete variable values ([1 x numADV])
+  xCLabels            continuous variable labels (cell array of numACV strings)
+  xDLabels            discrete variable labels (cell array of  numADV strings)
+  directFnASV         active set vector ([1 x numFns])
+  directFnASM         active set matrix ([3 x numFns]) -- see below
+  directFnDVV         derivative variables vector ([1 x numDerivVars])
+  directFnDVV_bool    boolean DVV ([1 x numVars]) -- see below
+  fnFlag              nonzero if function values requested
+  gradFlag            nonzero if gradients requested
+  hessFlag            nonzero if hessians requested
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption{DAKOTA/Matlab parameter data
+structure.\label{advint:figure:matlabparams}}
+\end{figure}
+
+The {\tt directFnASM} field is a boolean matrix version of the active
+set vector, designed to make it easier for the Matlab user to
+determine which responses Dakota requires.  Its rows 1, 2, and 3
+correspond to functions, gradients, and Hessians, respectively, and
+its columns to each function (response, constraint) from 1--{\tt
+numFns}.  A {\tt directFnASM} matrix entry contains a 1 if the
+response is needed for that function and a 0 otherwise.  For example,
+for the fictitious
+\begin{small}
+\begin{verbatim}
+  directFnASV = [ 1, 2, 3, 4, 5, 6, 7 ],
+\end{verbatim}
+\end{small}
+the corresponding 
+\begin{small}
+\begin{verbatim}
+  directFnASM = [ 1, 0, 1, 0, 1, 0, 1     (functions)
+                  0, 1, 1, 0, 0, 1, 1     (gradients)
+                  0, 0 ,0 ,1, 1, 1, 1 ]   (hessians).
+\end{verbatim}
+\end{small}
+The {\tt directFnDVV\_bool} field is a similar boolean structure for
+the {\tt directFnDVV}.  It is a {\tt [1 x numVars]} vector with entry
+1 if a derivative with respect to that variable is requested and a 0
+otherwise.  So for an example with 6 functions if
+\begin{small}
+\begin{verbatim}
+  directFnDVV = [ 1, 3, 4, 6 ],
+\end{verbatim}
+\end{small}
+the corresponding 
+\begin{small}
+\begin{verbatim}
+  directFnDVV_bool = [ 1, 0, 1, 1, 0, 1 ].
+\end{verbatim}
+\end{small}
+
+The structure {\tt Dakota} returned from the analysis must contain a
+subset of the fields shown in
+Figure~\ref{advint:figure:matlabresponse}.  It may contain additional
+fields and in fact is permitted to be the structure passed in,
+augmented with any required outputs.
+\begin{figure} \centering
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+Dakota.
+  fnVals      ([1 x numFns], required if function values requested)
+  fnGrads     ([numFns x numDerivVars], required if gradients  requested)
+  fnHessians  ([numFns x numDerivVars x numDerivVars], 
+               required if hessians requested)
+  fnLabels    (cell array of numFns strings, optional)
+  failure     (optional: zero indicates success, nonzero failure
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption{DAKOTA/Matlab response data
+structure.\label{advint:figure:matlabresponse}}
+\end{figure}
+
+An example Matlab analysis driver {\tt rosenbrock.m} for the
+Rosenbrock function is shown in Figure
+~\ref{advint:figure:matlabrosen}.
+\begin{figure} \centering
+\begin{bigbox}
+\begin{tiny}
+\begin{verbatim}
+function Dakota = rosenbrock(Dakota)
+
+  Dakota.failure = 0;
+
+  if ( Dakota.numVars ~= 2 | Dakota.numADV | ...
+      ( ~isempty( find(Dakota.directFnASM(2,:)) | ...
+      find(Dakota.directFnASM(3,:)) ) & Dakota.numDerivVars ~= 2 ) )
+    
+    sprintf('Error: Bad number of variables in rosenbrock.m fn.\n');
+    Dakota.failure = 1;
+
+  elseif (Dakota.numFns > 2) 
+  
+    % 1 fn -> opt, 2 fns -> least sq
+    sprintf('Error: Bad number of functions in rosenbrock.m fn.\n');
+    Dakota.failure = 1;
+
+  else
+ 
+    if Dakota.numFns > 1 
+      least_sq_flag = true;
+    else
+      least_sq_flag = false;
+    end
+
+    f0 = Dakota.xC(2)-Dakota.xC(1)*Dakota.xC(1);
+    f1 = 1.-Dakota.xC(1);
+  
+    % **** f:
+    if (least_sq_flag) 
+      if Dakota.directFnASM(1,1)
+        Dakota.fnVals(1) = 10*f0;
+      end
+      if Dakota.directFnASM(1,2)
+        Dakota.fnVals(2) = f1;
+      end
+    else
+      if Dakota.directFnASM(1,1)
+        Dakota.fnVals(1) = 100.*f0*f0+f1*f1;
+      end
+    end
+  
+    % **** df/dx:
+    if (least_sq_flag)
+      if Dakota.directFnASM(2,1)
+        Dakota.fnGrads(1,1) = -20.*Dakota.xC(1);
+        Dakota.fnGrads(1,2) =  10.;
+      end
+      if Dakota.directFnASM(2,2)
+        Dakota.fnGrads(2,1) = -1.;
+        Dakota.fnGrads(2,2) =  0.;
+      end
+  
+    else 
+  
+      if Dakota.directFnASM(2,1)
+        Dakota.fnGrads(1,1) = -400.*f0*Dakota.xC(1) - 2.*f1;
+        Dakota.fnGrads(1,2) =  200.*f0;
+      end
+      
+    end
+
+    % **** d^2f/dx^2:
+    if (least_sq_flag)
+     
+      if Dakota.directFnASM(3,1)
+        Dakota.fnHessians(1,1,1) = -20.;
+        Dakota.fnHessians(1,1,2) = 0.;
+        Dakota.fnHessians(1,2,1) = 0.;
+        Dakota.fnHessians(1,2,2) = 0.;
+      end
+      if Dakota.directFnASM(3,2)
+        Dakota.fnHessians(2,1:2,1:2) = 0.;
+      end
+      
+    else
+    
+      if Dakota.directFnASM(3,1) 
+        fx = Dakota.xC(2) - 3.*Dakota.xC(1)*Dakota.xC(1);
+        Dakota.fnHessians(1,1,1) = -400.*fx + 2.0;
+        Dakota.fnHessians(1,1,2) = -400.*Dakota.xC(1); 
+        Dakota.fnHessians(1,2,1) = -400.*Dakota.xC(1);
+        Dakota.fnHessians(1,2,2) =  200.;
+      end
+    
+    end
+  
+    Dakota.fnLabels = {'f1'};
+   
+  end
+\end{verbatim}
+\end{tiny}
+\end{bigbox}
+\caption{Sample Matlab implementation of the Rosenbrock test function
+for the DAKOTA/Matlab interface.\label{advint:figure:matlabrosen}}
+\end{figure}

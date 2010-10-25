@@ -1,0 +1,29 @@
+.\" -*- nroff -*-
+.TH PLM2GIF 1
+.SH NAME
+plm2gif \- converts PLplot metafiles to GIF files
+.SH SYNOPSIS
+.B plm2gif
+.I "[files]"
+.SH "DESCRIPTION"
+This manual page documents briefly the
+.BR plm2gif
+command.
+.PP
+.B plm2gif
+is a program that Converts specified PLplot metafiles to GIF format
+files.  This is a two-step process: 1. process into postscript (with
+custom flags); and 2. convert to GIF using ghostscript (more custom
+flags).  
+.PP
+Each input file must end with 
+.I ".plm" 
+, and a corresponding family of GIF
+files ending with 
+.I "<number>.gif"
+(one for each page) is created.
+.PP
+.SH "SEE ALSO"
+See /usr/share/doc/plplot/plplot.ps.gz for more details.
+.SH AUTHOR
+This manual page was written by Rafael Laboissiere <rafael@debian.org>.

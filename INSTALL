@@ -1,0 +1,682 @@
+==============
+DAKOTA INSTALL
+==============
+
+The Design Analysis Kit for Optimization and Terascale Applications
+(DAKOTA) is a framework which provides access to a broad variety of
+algorithms and services.  Downloading pre-built binaries from the
+DAKOTA web site or accessing a site-supported installation are the
+simplest routes to access DAKOTA.
+
+For more experienced users, building DAKOTA from source allows
+customization with additional packages and porting to additional
+platforms or operating systems.  This INSTALL file, in conjunction
+with platform-specific INSTALL.* files in Dakota/examples/platforms,
+describe how to install pre-built binaries and configure the
+environment, as well as how to compile from source code.
+
+
+=================
+Table of Contents
+=================
+
+Binary Distributions
+Quick Start
+Distributions and Checkouts
+Basic Installation
+Installation Details
+Useful Environment Settings
+Installing Commercial Libraries
+Generating Local Documentation
+Library Notes
+
+
+====================
+Binary Distributions
+====================
+
+DAKOTA binary distributions are provided in archive format (either
+tar.gz or zip).  To get started, unpack the archive into a suitable
+install location, e.g., /usr/local/Dakota or C:\Program Files\Dakota.
+
+Make sure the dakota executable (and optionally test files and current
+directory) are available on the PATH, e.g.:
+  export PATH=/usr/local/Dakota/bin:/usr/local/Dakota/test:$PATH:.:
+
+For more details, see the Distributions and Checkouts section.
+
+
+===========
+Quick Start
+===========
+
+For DAKOTA source distributions, the basic source-based install
+procedure is to 'configure' for the build platform to generate
+Makefiles, and then to execute 'make'.  Given the large number of
+supported packages, specifying a few configuration options and
+environment variables may be required.  Building the software with all
+packages may take from 15 minutes to over an hour.  Typical process:
+
+  1) gunzip Dakota_releasename.tar.gz
+  2) tar xvf Dakota_releasename.tar
+  3) cd Dakota
+  4) export PATH=$PATH:.
+  5) configure [--disable-mpi] [--disable-f90]
+  6) make [-j#]
+  [optional] 7) make install
+     * requires write privilege in $prefix (see "Installation Details" below).
+
+where support for the message-passing interface (MPI) and Fortran 90
+compilation may not be available on all platforms.
+
+Some packages (DOT, NPSOL, and NLPQL, in particular) are optional
+commercial extensions which can be licensed separately and are not
+included with the downloadable distributions.  These are disabled by
+default.
+
+The following sections explain the quick start steps in more detail.
+The first two steps are described in the "Distributions and Checkouts"
+section.  All subsequent steps are overviewed in the "Basic Installation" 
+section, with additional details in the "Installation Details" section.
+
+
+===========================
+Distributions and Checkouts
+===========================
+
+Installation of DAKOTA can be done from a source distribution tar
+file, a binary distribution tar file, or a checkout from the
+Subversion repository.  Most users will install via one of the first
+two methods, although developers with Subversion repository access
+will employ the last.
+
+For source or binary distribution tar files, the following steps are
+needed to uncompress the tar file and extract the files:
+
+   1) gunzip Dakota_releasename.tar.gz
+   2) tar xvf Dakota_releasename.tar
+
+These steps will create a distribution directory with the name Dakota.
+For the binary distribution tar file, the executables are in
+Dakota/bin.  If you have root privilege, you may want to post these to
+a shared location (e.g., /usr/local/dakota/bin).  Refer to the "Getting
+Started" section of the Users Manual for instructions on using the
+executables.  For the source distribution tar file, refer to the "Basic
+Installation" section below for instructions on building the source.
+
+To access DAKOTA and associated packages directly from the Subversion
+repositories, you must have access to the Sandia SRN and have
+accounts on development.sandia.gov and software.sandia.gov. You will
+also need specific developer group permissions to be set for your
+accounts on these systems.  The table below shows the system, group and
+contact information for Dakota and associated package repositories
+currently available. (All contact e-mail addresses end with @sandia.gov.)
+
+Package    System                  Group         Contact
+---------  ----------------------  ------------  -------------
+Dakota     development.sandia.gov  svn           Mike Eldred (mseldre)
+ampl       software.sandia.gov     svn           David Gay (dmgay)
+boost      software.sandia.gov     svn           Bill Bohnhoff (wjbohnh)
+Pecos      development.sandia.gov  svn           Mike Eldred (mseldre)
+Surfpack   development.sandia.gov  svn           Brian Adams (briadam)
+teuchos    software.sandia.gov     svn           Bill Bohnhoff (wjbohnh)
+Acro       software.sandia.gov     svn           Bill Hart (wehart)
+DDACE      software.sandia.gov     apache        Patty Hough (pdhough)
+hopspack   development.sandia.gov  svn           Patty Hough (pdhough)
+JEGA       software.sandia.gov     svn           John Eddy (jpeddy) 
+OPT++      software.sandia.gov     apache        Patty Hough (pdhough)
+
+For DAKOTA checkout from development.sandia.gov, you will need to set
+the Subversion URL target to the repository directory where DAKOTA
+resides (i.e., svn+ssh://development.sandia.gov/usr/local/svn).  Refer
+to the DAKOTA Developers Manual for help installing and configuring
+Subversion, and to the Subversion man pages for additional information
+on svn (the checkout, diff, update, and commit commands are the
+essential subset).  The following steps can then be executed:
+
+   1) cd $HOME (or other appropriate directory)
+   2) export SVNROOT=svn+ssh://development.sandia.gov/usr/local/svn # SH/BASH
+   3) svn checkout $SVNROOT/Dakota/trunk Dakota
+   4) cd Dakota
+   5) autoreconf -i -v   
+
+It is no longer necessary to check out the libraries associated with
+DAKOTA separately from their repositories, as Subversion externals
+have been defined in DAKOTA for that purpose.  They will be checked
+out as part of the DAKOTA checkout.  Command 5) creates the GNU
+Autotools-generated files that are necessary to configure DAKOTA.
+Following these steps, your subversion distribution will have the same
+files as the source distribution tar file.  For further information on
+installing the versions of the Autotools used to develop DAKOTA,
+consult the DAKOTA Developers Manual.
+
+
+==================
+Basic Installation
+==================
+
+For both the source distribution tar file and version control checkout 
+cases, there should now be a Dakota directory containing the
+autoconf-generated scripts to enable configuration.  External tools
+acro, hopspack, DDACE, JEGA, and OPTPP will appear in Dakota/methods;
+ampl, boost, Pecos, Surfpack, and teuchos in Dakota/packages.
+
+To build DAKOTA with all possible packages, some platform-dependent
+software dependencies exist.  These include the Message Passing
+Interface (MPI) library, the Basic Linear Algebra Subprograms (BLAS)
+and Linear Algebra PACKage (LAPACK) libraries, support for lex and
+yacc (or flex and bison), X11 graphics libraries, and availability of
+a Fortran 90 compiler.  Of these, support for MPI, X11 graphics, and
+Fortran 90 are not strict requirements since they can be optionally
+omitted from the build by configuring with --disable-mpi,
+--without-graphics, and --disable-f90, respectively (see "Installation
+Details" below).  However, BLAS/LAPACK and lex/yacc support are
+currently required.  To the extent possible, autoconf will
+automatically locate the required software for the build; however, in
+some cases, it will need some assistance to supplement or override the
+automatic detection capabilities.  See INSTALL.* files in the directory 
+Dakota/examples/platforms for examples of this, and for help installing 
+and running DAKOTA on specific operating systems or platforms.
+
+With respect to the MPI software, installation directories will vary
+from platform to platform.  To utilize message-passing parallelism
+within DAKOTA, it may be necessary to locate an MPI installation or
+download and build your own.  DAKOTA will look for C++ wrapper scripts
+provided by the MPI installation (such as mpiCC or mpCC) to build
+sources requiring MPI headers and to link executables requiring MPI
+libraries.  In some cases (e.g., Sun, IBM, Red Storm), a
+platform-optimized implementation of MPI is already provided as part
+of the environment.  If the MPI libraries and header files are in  
+standard locations searched by the compilers (e.g., /usr/lib and
+/usr/include), then no additional setup is typically needed.
+
+In cases where MPI is not a standard part of the environment (e.g.,
+Mac OSX, Cygwin, Linux), you will either need to locate an MPI
+distribution installed by someone else (look for mpi or similar in
+/usr/local, /usr/netpub, /usr/share, etc.) or you will need to
+download MPI and build/install it yourself (MPICH downloads are
+available from http://www-unix.mcs.anl.gov/mpi/mpich1/download.html 
+and Sun HPC ClusterTools downloads are available from
+http://www.sun.com/products/hpc/communitysource/download.html).
+
+If the MPI installation is not in a default search location, then the
+environment variable MPICXX must be set to the C++ wrapper script
+provided by the local MPI installation prior to or at configuration-
+time.  Examples of doing this are shown below:
+
+   1) Setting the variable prior to running configure:
+      setenv MPICXX <path_to_C++_mpi_wrapper> # CSH/TCSH
+      export MPICXX=<path_to_C++_mpi_wrapper> # SH/BASH
+      configure
+
+   2) Setting the variable in the configure command:
+      configure MPICXX=<path_to_C++_mpi_wrapper>
+
+With respect to BLAS and LAPACK, these libraries are often optimized
+for performance on particular chip architectures and are usually
+provided as part of the environment.  In a few instances (Cygwin for
+Windows, older Red Hat Linux, and some other Linux vendors), it may be
+necessary to download and install BLAS/LAPACK (see
+http://www.netlib.org/blas and http://www.netlib.org/lapack).  If
+these libraries are not installed in a location normally searched by
+the compilers (e.g., /usr/lib), or have non-standard library names (e.g.,
+Intel MKL, AMD Core Math Library, or Sun Performance Library) then 
+the path to these must be added to either the $BLAS_LIBS and $LAPACK_LIBS 
+environment variables or to the --with-blas and --with-lapack configure 
+options (see "Installation Details" below for information about environment
+variables and Cygwin (PC Windows) for an example).
+
+Most platforms provide the X11 graphics libraries needed to compile
+and link DAKOTA with graphics.  In some cases (e.g., older Red Hat
+Linux, Mac OSX, Cygwin), it may be necessary to download and install
+free implementations of X11 such as XFree86 (http://www.xfree86.org/)
+or OpenMOTIF (http://www.opengroup.org/openmotif/).
+
+Finally, use of Lawson/Hanson methods and the full features of the LHS
+package require a Fortran 90 compiler.  If the compiler is in a
+nonstandard location, it may be necessary to specify it at configure
+time, e.g., for the Portland Group compilers:
+
+  configure FC=pgf90 
+
+(or via the full path if it's not on your current path).  See
+"Installation Details" for more information, or the MPICXX example  
+above for examples of doing this by setting an environment variable.  
+DAKOTA has been successfully built with the Intel, Portland Group, g95, 
+and gfortran Fortran 90 compilers.  gfortran is preferred to g95 at this
+time.  If no Fortran 90 compiler is available, DAKOTA features that
+require it can be disabled with
+
+  configure --disable-f90
+
+At this point, the preliminaries have been completed and you are ready
+to configure and build the software.  First, the platform-specific
+Makefiles must be generated using the configure script.  Running
+configure without any options will result in an attempt to build with
+as many vendor algorithms and packages as are available in the
+distribution.  Finally, the Makefiles are executed by typing make.
+The DAKOTA build process supports parallel make using multiple
+processors by passing the -j option (for example, 'make -j4' compiles
+4 source files concurrently during the build).  These steps are
+summarized as follows:
+
+   1) cd Dakota [if needed]
+   2) configure [config options] [environment variables]
+   3) make [-j#]
+
+Once make has successfully completed, the generated DAKOTA executables
+(dakota and dakota_restart_util) will reside in Dakota/src.  Copies
+of the executables will be placed in $prefix/bin and copies of the
+libraries (libdakota.a et al.) are placed in $prefix/lib, where
+$prefix is specified as a path argument to the --prefix configure
+option (see "Installation Details" below).  Softlinks to executables
+are also created in Dakota/test, Dakota/examples/tutorial, 
+Dakota/examples/methods, Dakota/examples/script_interfaces/generic.
+
+
+====================
+Installation Details 
+====================
+
+The 'configure' shell script attempts to guess correct values for
+various system-dependent variables used during compilation.  It uses
+those values to create a 'Makefile' in each directory of the package.
+It may also create one or more *.h files containing system-dependent
+definitions.  Finally, it creates a shell script 'config.status' that
+can be run in the future to recreate the current configuration, and a
+file 'config.log' containing compiler output (useful mainly for
+debugging 'configure').
+
+It can also use an optional file (typically called 'config.cache' and
+enabled with '--cache-file=config.cache' or simply '-C') that saves
+the results of its tests to speed up reconfiguring.  (Caching is
+disabled by default to prevent problems with accidental use of stale
+cache files.)  If at some point 'config.cache' contains results you 
+don't want to keep, the file may be removed or edited. 
+
+If you need to do unusual things to compile the package, please try to
+figure out how 'configure' could check whether to do them, and mail
+diffs or instructions to the address given in the README file so they 
+can be considered for the next release.  
+
+The file 'configure.ac' (or 'configure.in') is used to create
+'configure' by a program called 'autoconf'.  You only need
+'configure.ac' if you want to change it or regenerate 'configure' using
+a recent version of 'autoconf' (2.60 or greater).
+
+The simplest way to compile a package is:
+
+  1. 'cd' to the directory containing the package's source code and type
+     './configure' to configure the package for your system.  If you're
+     using 'csh' on an old version of System V, you might need to type
+     'sh ./configure' instead to prevent 'csh' from trying to execute
+     'configure' itself.
+
+     Running 'configure' can take awhile.  While running, it prints some
+     messages telling which features it is checking for.
+
+  2. Type 'make' to compile the package.
+
+  3. Type 'make install' to install the programs and any data files and
+     documentation.
+
+     If you used the --prefix=DIR option to configure, the executables
+     will be installed in the bin/ subdirectory of the prefix directory
+     specified. (Default prefix is /usr/local/dakota; see "Installation Names"
+     below.)
+
+  4. The program binaries and object files can be removed from the
+     source code directory by typing 'make clean'.  There is
+     also a 'make maintainer-clean' target, but that is intended mainly
+     for the package's developers.  If you use it, you may have to get
+     all sorts of other programs in order to regenerate build files that
+     came with the distribution, therefore it is discouraged.
+
+
+=====================
+Compilers and Options
+=====================
+
+Some systems require unusual options for compilation or linking that
+the 'configure' script does not know about.  Run 'configure --help'
+for details on some of the pertinent environment variables.
+
+Initial values for configuration parameters can be passed to 'configure' 
+by setting variables in the command line or in the environment.  Here
+is a command-line example:
+
+  configure CC=c89 CFLAGS=-O2 LIBS=-lposix
+
+
+====================================
+Compiling For Multiple Architectures
+====================================
+
+The package can be compiled for more than one kind of computer at the
+same time, by placing the object files for each architecture in their
+own directory.  To do this, you must use a version of 'make' that
+supports the 'VPATH' variable, such as GNU 'make'.  The use of a 'make'
+that does not support the 'VPATH' variable is NOT SUPPORTED by DAKOTA.
+
+Prior to building DAKOTA in an empty build directory, locations of pre-
+requisite third-party libaries (aka TPLs, i.e. Teuchos and Boost) must be
+identified.  If Teuchos and Boost are already installed on the system,
+then it is easy to inform DAKOTA's configure of their respective locations.
+However, more typically, Teuchos has NOT been pre-built/installed, and
+therefore it MUST be built prior to building DAKOTA. Please ensure that a binary
+compatible version of the Teuchos libaray is avaiable PRIOR to building DAKOTA.
+
+To build Teuchos you must first obtain the Teuchos source code. For convenience,
+DAKOTA provides the teuchos source code in the Dakota/packages directory.
+Teuchos is a foundation library that has a similar autotools build harness
+as DAKOTA.  Please follow the typical configure/make/(optional)make install
+steps expected for a classic, autoconf-based library build to create the
+teuchos library (similar to "Installing Commercial Libs" below, but note,
+Teuchos is NOT a commercial library, it is just one of many core libraries
+that composes Sandia's Trilinos product).
+
+The Boost dependency is a bit different (for now), since DAKOTA uses a
+header-only subset of Boost (for convenience, provided in Dakota/packages),
+so therefore there is currently no prerequisite Boost build step necessary.
+Please note that many system Boost installations DO NOT meet the minimum 
+minimum version requirement for DAKOTA (Boost 1.37 or higher).  Attempting
+to configure with a Boost installation earlier than 1.37 will result in a
+configure error.
+
+Once the locations locations of the TPLs have been identified, 'cd' to the
+directory where you want the object files and executables to go and run
+the 'configure' script.  'configure' automatically checks for the
+source code in the directory that 'configure' is in.  Locations of Boost
+and Teuchos must be provided as command line arguments to configure, e.g.
+
+  $DAKSRC_ROOT/configure --with-boost=<dirpath_to_boost> \
+    --with-teuchos=<dirpath_to_teuchos>
+
+Run 'configure --help' for additional options, especially those pertinent
+to Teuchos installations in which the library (--with-teuchos-lib=DIR_LIB) is
+in a different location than the header files (--with-teuchos-include=DIR_INC).
+
+
+==================
+Installation Names
+==================
+
+By default, 'make install' will try to install the package's files in
+'$prefix/bin', '$prefix/man', etc.  Please note DAKOTA's default prefix is
+/usr/local/dakota.  An alternate installation prefix can be specified by 
+giving 'configure' the option '--prefix=DIR'.
+
+Separate installation prefixes for architecture-specific files and 
+architecture-independent files can be specified.  If you
+give 'configure' the option '--exec-prefix=DIR', the package will use
+DIR as the prefix for installing programs and libraries.
+Documentation and other data files will still be installed using the 
+regular prefix.
+
+In addition, an unusual directory layout can be specified with options 
+like '--bindir=DIR' to specify different values for particular
+kinds of files.  Run 'configure --help' for a list of the directories
+that can be set and what kinds of files go in them.
+
+
+==================
+Defining Variables
+==================
+
+Variables not defined in a site shell script can be set in the
+environment passed to 'configure'.  However, some packages may run
+configure again during the build, and the customized values of these
+variables may be lost.  In order to avoid this problem, it is preferable
+to set them in the 'configure' command line, using 'VAR=value'.  For 
+example:
+
+  configure CC=/usr/local2/bin/gcc
+
+will cause the specified gcc to be used as the C compiler (unless it is
+overridden in the site shell script).
+
+
+======================
+'configure' Invocation
+======================
+
+'configure' recognizes the following options to control its operation.
+
+--help
+-h
+     Print a summary of the options to 'configure', and exit.
+
+--version
+-V
+     Print the version of Autoconf used to generate the 'configure'
+     script, and exit.
+
+--cache-file=FILE
+     Enable the cache: use and save the results of the tests in FILE,
+     traditionally 'config.cache'.  FILE defaults to '/dev/null' to
+     disable caching.
+
+--config-cache
+-C
+     Alias for '--cache-file=config.cache'.
+
+--quiet
+--silent
+-q
+     Do not print messages saying which checks are being made.  To
+     suppress all normal output, redirect it to '/dev/null' (any error
+     messages will still be shown).
+
+--srcdir=DIR
+     Look for the package's source code in directory DIR.  Usually
+     'configure' can determine that directory automatically.
+
+'configure' also accepts some other, not widely useful, options.  Run
+'configure --help' for more details.
+
+
+===========================
+Useful Environment Settings
+===========================
+
+The following environment settings are useful additions to your
+.bashrc file (or equivalent 'setenv' commands in .cshrc file).  
+
+For most platforms, the compiler option flags should be set to: 
+     export CFLAGS="-O2"
+     export CXXFLAGS="-O2"
+     export FFLAGS="-O2"
+     export FCFLAGS="-O2"
+Note that "-O2" can be switched to "-g -O0" for compiling in debug mode.
+
+Add man page paths for MPI and DAKOTA Manuals:
+  export MANPATH=<your_default_man_paths>:<path_to_mpi_installation>/man:<path_to_your_dakota>/docs/man-dev:<path_to_your_dakota>/docs/man-ref
+
+If you encounter difficulties with missing shared object libraries
+when trying to run a dakota executable, additions to your
+$LD_LIBRARY_PATH environment variable can instruct the run-time linker
+where to find the missing libraries, e.g.,
+
+Add search paths for shared object libraries:
+  export LD_LIBRARY_PATH=/usr/local/X11R5/lib:$LD_LIBRARY_PATH
+
+
+========================================
+DAKOTA and standard GNU Makefile targets
+========================================
+
+One might expect that a software package shipped with a GNU autotools-based 
+build system to support many targets beyond the basic ones mentioned in this
+in this INSTALL file.  Unfortunately however, DAKOTA cannot guarantee support
+for some standard GNU Makefile targets such as 'make check' and 
+'make distclean'.  This is due to DAKOTA's approach of NOT imposing strict,
+build-system requirements upon the many third-party libraries that provide
+lower-level functionality for DAKOTA.  The DAKOTA team works with many code
+teams providing third-party libraries to ensure that, at the top-level of a
+DAKOTA build, you can expect 'make', 'make clean', and 'make install' all to
+work as designed.  At this time, DAKOTA cannot commit to supporting targets
+beyond those explicitly mentioned in this INSTALL guide.  We are hopeful
+that by encouraging our third-party providers to support targets such as
+'make check', we will be able to provide support for a more complete list
+of standard targets in future releases.
+
+
+===============================
+Installing Commercial Libraries
+===============================
+
+DOT, NPSOL, and NLPQL are commercial optimization libraries that are optional
+extensions to the DAKOTA toolkit.  DOT is licensed by Vanderplaats Research and
+Development (http://www.vrand.com/dot.htm); NPSOL is licensed by Stanford
+Business Software (http://www.sbsi-sol-optimize.com/NPSOL.htm); and NLPQL is
+licensed by Prof. Klaus Schittkowski
+(http://www.uni-bayreuth.de/departments/math/~kschittkowski/nlpqlp.htm).  Refer
+to these sites for licensing fees and policies.
+
+It is preferable to license the source code, although target platform
+object libraries may also be workable with configuration modifications.  
+These distributions should be installed in the Dakota/methods/DOT,
+Dakota/methods/NPSOL, and Dakota/methods/NLPQL directories prior to 
+building DAKOTA.  
+
+In a DOT source distribution, the files of interest are DDOT1.FOR through 
+DDOT6.FOR, which should be renamed dot1.f through dot6.f and placed in the 
+Dakota/methods/DOT/dbl_prec directory.  
+
+In NPSOL 5.0 source distributions, the required Fortran files are 
+npUnix/src/*.f and npUnix/examples/*.f.  These files should be copied to the 
+Dakota/methods/NPSOL directory.  For older NPSOL versions, refer to 
+the comments in Dakota/methods/NPSOL/Makefile.in for the required 
+Fortran files.  In a NLPQL distribution, the required Fortran files are
+NLPQLP20.FOR and QL.FOR, which should be renamed to NLPQLP20.f and QL.f and 
+placed in the Dakota/methods/NLPQL directory.
+
+DOT source modifications: In dot1.f, modify the parameter list of
+SUBROUTINE DOT to pass the parameter NGOTOZ as its second parameter.
+This allows DAKOTA to monitor when DOT is performing finite
+differencing, versus when DOT is performing the line search.  If this
+modification to DOT cannot be performed, then Dakota/src/DOTOptimizer.C 
+must be modified to be consistent with the unmodified DOT parameter list.
+
+NPSOL _required_ source modifications: 
+Version 4: In f06subs.f, comment out the "ENTRY" statements which alias the
+           supplied NAG F06 routines to BLAS level 1 and level 2 routines
+           (the ENTRY statements with names DAXPY, DCOPY, DDOT, DNRM2,
+           DSCAL, DSWAP, IDAMAX, DROT, DGEMV, DGER, DSYMV, DSYR, DTRMV, and
+           DTRSV, as listed in the f06subs.f header).  This modification 
+           prevents use of BLAS routines elsewhere in DAKOTA from picking
+           up the NAG f06 routines (which allows consistent usage of the 
+           latest platform-optimized BLAS).  In addition, replace the 
+           NPSRC, NPOBJ, MAINSRC, MAINOBJ, and PGMS Makefile macros as 
+           documented in Dakota/methods/NPSOL/Makefile.in.
+Version 5: No modifications necessary.
+
+NPSOL _optional_ source modifications: 
+Versions 4 and 5 (line numbers are for Version 5):
+           In lssolsubs.f, subroutine lscrsh, change line #1979 to
+              if(wx(j) .le. b1) then is = 1
+           and change line #1982 to
+              if(wx(j) .ge. b2) then is = 2
+           This source code modification alleviates a problem in which 
+           NPSOL evaluates a different initial point than is specified 
+           by the user in the DAKOTA input file.
+
+
+The Mathworks' Matlab:  To use the DAKOTA/Matlab interface described in
+Advanced Simulation Code Interfaces in the DAKOTA User's Manual,
+DAKOTA must be configured and compiled with the Matlab feature
+enabled.  The DAKOTA/Matlab interface has been built and tested on
+32-bit Linux with Matlab 7.0 (R14) and on 64-bit Linux with Matlab 7.1
+(R14SP3).  Configuration support for Solaris is included, but is
+untested.  Builds on other platforms or with other versions of Matlab
+may require modifications to the DAKOTA build system, including the
+Matlab section of m4/dak_options.m4 (please send feedback on what
+modifications were necessary for your platform and environment to
+dakota-developers@development.sandia.gov).
+
+The Mathworks only provides shared object libraries for its engine
+API, so DAKOTA must be dynamically linked to at least the Matlab
+libraries.  To build Dakota with the Matlab interface enabled:
+
+  1. Configure Dakota with (at minimum) the following directive:
+
+       configure --with-matlab=$MATLAB_ROOT
+
+     where $MATLAB_ROOT is the root of your Matlab installation (it
+     should be a directory containing directories bin/YOURPLATFORM and
+     extern/include).
+
+  2. Make sure the path to the appropriate Matlab shared object
+     libraries is on your {\tt LD\_LIBRARY\_PATH}.  For example to
+     accomplish this in BASH on 32-bit Linux, one might type
+
+       export LD_LIBRARY_PATH=/usr/local/matlab/bin/glnx86:$LD_LIBRARY_PATH
+
+     or add such a command to the .bashrc file.
+
+  3. Make Dakota:
+
+      make
+
+The Matlab shared object libraries must also be on the library path at
+run-time.
+
+
+==============================
+Generating Local Documentation
+==============================
+
+The DAKOTA Users, Developers, and Reference Manuals are maintained in
+Dakota/docs.  
+
+To build a local copy of the Users Manual, include the --enable-docs switch
+when configuring DAKOTA and then execute one or more of the following make
+commands:
+
+  cd Dakota/docs/latex-user
+  make dvi               [generates Users_Main.dvi]
+  make ps                [generates Users_Main.ps]
+  make pdf               [generates Users_Main.pdf]
+
+To build a local copy of the Developers and Reference manuals in HTML,
+LaTeX, and man page formats, you will need the doxygen tool available for
+download from http://www.doxygen.org under GNU GPL terms.  Once doxygen is
+downloaded and installed, the commands are:
+
+  cd Dakota/docs
+  doxygen Doxyfile       [Developers Manual]
+  doxygen Doxyfile-ref   [Reference Manual]
+
+These steps generate HTML, man pages and raw LaTeX source.  To process the
+LaTeX source and convert it to a Postscript or PDF manual for printing, a
+Makefile is provided for which you can use one or more of the following
+make commands:
+
+  cd latex-dev           [Developers Manual]
+  make                   [generates refman.dvi]
+  make ps                [generates refman.ps]
+  make pdf               [generates refman.pdf]
+
+These same commands can be replicated for the Reference Manual latex
+source in Dakota/docs/latex-ref.  For the highest quality Postscript 
+or PDF manual, Dakota/docs/README.latex provides instructions for
+fine-tuning of chapter numbering and Dakota/docs/latex_modify.perl
+provides a Perl utility for automating these modifications.
+
+To access the man pages with the man command, add the Dakota/docs/man
+and Dakota/docs/man-ref directories to your $MANPATH as described in
+the Useful Environment Settings section.
+
+
+=============
+Library Notes
+=============
+
+Library versions that are distributed with DAKOTA have been tested for
+a particular DAKOTA release.  Links to the latest versions of these
+libraries can be found at
+http://www.cs.sandia.gov/dakota/packages.html.  When upgrading to the
+latest libraries, modifications to the supporting DAKOTA code (e.g.,
+the wrapper class) may be required. Sharing upgrades of this type with
+the development team is greatly appreciated.  Direct messages to
+dakota-developers@development.sandia.gov.

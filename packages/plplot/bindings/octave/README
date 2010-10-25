@@ -1,0 +1,22 @@
+
+This package enables you to use PLplot from within Octave.
+
+You have several advantages over Octave default plotter:
+
+	Use a superior plotting package, having access to dozens
+	of plotting commands, enabling you to customize your plots
+	at your will,
+
+	Still use the same plot commands that you are familiarized,
+	if you really want to,
+
+	Have some new and long waited plotting command scripts.
+
+If you build the Tcl/Tk driver, optional, you have a menu driven
+way to plot to a file, choose the output device, zoom, pan, change
+colors, etc.
+
+Besides having access to all PLplot API commands, and all Octave usual
+commands, some with some improvements, new plot commands are available.
+
+Read the INSTALL file to continue.

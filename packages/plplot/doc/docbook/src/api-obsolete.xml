@@ -1,0 +1,436 @@
+<!--
+    api-obsolete.xml: "The Obsolete/Deprecated API for PLplot" chapter
+
+    Copyright (C) 1994  Geoffrey Furnish and Maurice LeBrun
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  Alan W. Irwin
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  Rafael Laboissiere
+    Copyright (C) 2003  Joao Cardoso
+    Copyright (C) 2004  Andrew Ross
+
+    Redistribution and use in source (XML DocBook) and "compiled" forms
+    (HTML, PDF, PostScript, DVI, TeXinfo and so forth) with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+       1. Redistributions of source code (XML DocBook) must retain the
+          above copyright notice, this list of conditions and the following
+          disclaimer as the first lines of this file unmodified.
+
+       2. Redistributions in compiled form (transformed to other DTDs,
+          converted to HTML, PDF, PostScript, and other formats) must
+          reproduce the above copyright notice, this list of conditions and
+          the following disclaimer in the documentation and/or other
+          materials provided with the distribution.
+
+    Important: THIS DOCUMENTATION IS PROVIDED BY THE PLPLOT PROJECT "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+    THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE PLPLOT PROJECT BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS DOCUMENTATION,
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<chapter id="API-OBSOLETE">
+  <title>Obsolete/Deprecated API for PLplot</title>
+
+  <para>
+  The purpose of this chapter is to provide minimal documentation for
+  obsolete/deprecated API that appears in our C library to provide backwards
+  compatibility until our next major release, PLplot-6, where these functions
+  will disappear.  Do not use these functions, and if you already use them
+  in legacy PLplot applications, replace them by the suggested
+  equivalents so you won't be caught out by the next major PLplot release.
+  </para>
+
+  <sect1 id="plclr" renderas="sect3">
+    <title>
+      <function>plclr</function>: Eject current page
+    </title>
+
+    <para>
+      <funcsynopsis>
+      <funcprototype>
+	<funcdef>
+	  <function>plclr</function>
+	</funcdef>
+        <paramdef></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+    </para>
+
+    <para>
+      Deprecated.  Use the new name, &pleop;, for this function instead.
+    </para>
+
+  </sect1>
+
+  <sect1 id="plcol" renderas="sect3">
+    <title>
+      <function>plcol</function>: Set color
+    </title>
+
+    <para>
+      <funcsynopsis>
+      <funcprototype>
+	<funcdef>
+	  <function>plcol</function>
+	</funcdef>
+        <paramdef><parameter>color</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+    </para>
+
+    <para>
+      Deprecated.  Use the new name, &plcol0;, for this function instead.
+    </para>
+
+    <variablelist>
+      <varlistentry>
+	<term>
+	  <parameter>color</parameter>
+	  (<literal>PLINT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+            See &plcol0;.
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+
+
+  </sect1>
+
+  <sect1 id="plhls" renderas="sect3">
+    <title>
+      <function>plhls</function>: Set current color by HLS
+    </title>
+
+    <para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>
+           <function>plhls</function>
+        </funcdef>
+        <paramdef><parameter>h</parameter></paramdef>
+        <paramdef><parameter>l</parameter></paramdef>
+        <paramdef><parameter>s</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+    </para>
+
+    <para>
+      Set current color by hue, lightness, and saturation.
+      Convert hls color coordinates to rgb, then call plrgb.
+      Do <emphasis>not</emphasis> use this.  Only retained for backward compatibility.
+      Use &plhlsrgb; and &plscol0; instead.
+    </para>
+<!-- TODO: find out what to do exactly -->
+
+    <variablelist>
+      <varlistentry>
+	<term>
+	  <parameter>h</parameter>
+	  (<literal>PLFLT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+            NEEDS DOCUMENTATION
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>
+	  <parameter>l</parameter>
+	  (<literal>PLFLT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+            NEEDS DOCUMENTATION
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>
+	  <parameter>s</parameter>
+	  (<literal>PLFLT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+            NEEDS DOCUMENTATION
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+
+  </sect1>
+
+  <sect1 id="plHLS_RGB" renderas="sect3">
+    <title>
+      <function>plHLS_RGB</function>: Convert HLS color to RGB
+    </title>
+
+    <para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>
+           <function>plHLS_RGB</function>
+        </funcdef>
+        <paramdef><parameter>h</parameter></paramdef>
+        <paramdef><parameter>l</parameter></paramdef>
+        <paramdef><parameter>s</parameter></paramdef>
+        <paramdef><parameter>p_r</parameter></paramdef>
+        <paramdef><parameter>p_g</parameter></paramdef>
+        <paramdef><parameter>p_b</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+    </para>
+
+    <para>
+      Use &plhlsrgb; from the common API instead of this deprecated C-only
+      function.
+    </para>
+
+    <variablelist>
+      <varlistentry>
+	<term>
+	  <parameter>h</parameter>
+	  (<literal>PLFLT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+            Hue, in degrees on the colour cone (0.0-360.0)
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>
+	  <parameter>l</parameter>
+	  (<literal>PLFLT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+            Lightness, expressed as a fraction of the axis of the colour
+            cone (0.0-1.0)
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>
+	  <parameter>s</parameter>
+	  (<literal>PLFLT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+            Saturation, expressed as a fraction of the radius of the
+            colour cone (0.0-1.0)
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>
+	  <parameter>p_r</parameter>
+	  (<literal>PLFLT *</literal>, output)
+	</term>
+	<listitem>
+	  <para>
+            Pointer to red intensity (0.0-1.0) of the colour
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>
+	  <parameter>p_g</parameter>
+	  (<literal>PLFLT *</literal>, output)
+	</term>
+	<listitem>
+	  <para>
+            Pointer to green intensity (0.0-1.0) of the colour
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>
+	  <parameter>p_b</parameter>
+	  (<literal>PLFLT *</literal>, output)
+	</term>
+	<listitem>
+	  <para>
+            Pointer to blue intensity (0.0-1.0) of the colour
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+
+  </sect1>
+
+  <sect1 id="plpage" renderas="sect3">
+    <title>
+      <function>plpage</function>: Begin a new page
+    </title>
+
+    <para>
+      <funcsynopsis>
+      <funcprototype>
+	<funcdef>
+	  <function>plpage</function>
+	</funcdef>
+        <paramdef></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+    </para>
+
+    <para>
+      Deprecated.  Use the new name, &plbop;, for this function instead.
+    </para>
+
+  </sect1>
+
+  <sect1 id="plrgb" renderas="sect3">
+    <title>
+      <function>plrgb</function>: Set line color by red, green
+    </title>
+
+    <para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>
+           <function>plrgb</function>
+        </funcdef>
+        <paramdef><parameter>r</parameter></paramdef>
+        <paramdef><parameter>g</parameter></paramdef>
+        <paramdef><parameter>b</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+    </para>
+
+    <para>
+      Set line color by red, green, blue from  0. to 1.  Do
+<emphasis>not</emphasis> use this.
+Only retained for backward compatibility. Use the function &plscol0;
+instead.
+    </para>
+
+    <variablelist>
+      <varlistentry>
+	<term>
+	  <parameter>r</parameter>
+	  (<literal>PLFLT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+            NEEDS DOCUMENTATION
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>
+	  <parameter>g</parameter>
+	  (<literal>PLFLT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+            NEEDS DOCUMENTATION
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>
+	  <parameter>b</parameter>
+	  (<literal>PLFLT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+            NEEDS DOCUMENTATION
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+
+  </sect1>
+
+  <sect1 id="plrgb1" renderas="sect3">
+    <title>
+      <function>plrgb1</function>: Set line color by 8-bit RGB values
+    </title>
+
+    <para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>
+           <function>plrgb1</function>
+        </funcdef>
+        <paramdef><parameter>r</parameter></paramdef>
+        <paramdef><parameter>g</parameter></paramdef>
+        <paramdef><parameter>b</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+    </para>
+
+    <para>
+      Set line color by 8-bit RGB values.  Do <emphasis>not</emphasis> use this.
+Only retained for backward compatibility. Use the function &plscol0;
+instead.
+    </para>
+
+    <variablelist>
+      <varlistentry>
+	<term>
+	  <parameter>r</parameter>
+	  (<literal>PLINT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+            NEEDS DOCUMENTATION
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>
+	  <parameter>g</parameter>
+	  (<literal>PLINT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+            NEEDS DOCUMENTATION
+	  </para>
+	</listitem>
+      </varlistentry>
+      <varlistentry>
+	<term>
+	  <parameter>b</parameter>
+	  (<literal>PLINT</literal>, input)
+	</term>
+	<listitem>
+	  <para>
+            NEEDS DOCUMENTATION
+	  </para>
+	</listitem>
+      </varlistentry>
+    </variablelist>
+
+  </sect1>
+
+</chapter>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document: ("plplotdoc.xml" "book" "chapter" "")
+sgml-default-dtd-file:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:("/usr/lib/sgml/catalog")
+sgml-local-ecat-files:nil
+End:
+-->

@@ -1,0 +1,252 @@
+<!-- <!DOCTYPE Product SYSTEM "product.dtd"> -->
+<!-- 
+This is the Dakota_sn.xml files for the new SNTools.
+
+It should exist in the top-level directory of the Dakota/<version> package
+system until such time as the two are separated.
+
+-->
+<product name="Dakota" version="3.1.2">
+
+   <use product="Trilinos|epetra" version="3.1.0"/>
+
+<!-- ################## -->
+<!-- # DAKOTA library # -->
+<!-- ################## -->
+
+<!-- library name: libdakota.a -->
+<!-- -L: src/$(target_canonical) -->
+<!-- -I: src -->
+    <provides name="dakota" type="library">
+        <libs> </libs>
+        <include>src</include>
+        <requires product="Dakota|dot"/>
+        <requires product="Dakota|npsol"/>
+        <requires product="Dakota|conmin"/>
+        <requires product="Dakota|nl2sol"/>
+        <requires product="Dakota|optpp"/>
+        <requires product="Dakota|ddace"/>
+        <requires product="Dakota|lhs"/>
+        <requires product="Dakota|sgopt" if_option="gnu3.2.2gm or gnu3.2.2ip or dec or janus2"/>
+        <requires product="Dakota|pico" if_option="gnu3.2.2gm or gnu3.2.2ip or dec or sgi2 or sun7 or janus2"/>
+        <requires product="Dakota|jega"/>
+        <requires product="Dakota|idr"/>
+        <requires product="Dakota|kriging"/>
+        <requires product="Dakota|ann"/>
+        <!-- <requires product="Dakota|DGraphics" if_option="gnu3.2.2gm or gnu3.2.2ip or ibm or sgi2 or dec or sun7"/> -->
+        <!-- <requires product="Dakota|plplotfX"  if_option="gnu3.2.2gm or gnu3.2.2ip or ibm or sgi2 or dec or sun7"/> -->
+        <requires product="Trilinos|epetra"/>
+        <!-- <requires product="lapack|lapack"/> -->
+        <!-- <requires product="lapack|blas"/> -->
+    </provides>
+
+<!-- #################### -->
+<!-- # Dependency notes # -->
+<!-- #################### -->
+<!-- use <sys_libs></sys_libs> if -L is standard -->
+<!-- use <libs> </libs> if need to specify a -L -->
+
+<!-- #################### -->
+<!-- # VendorOptimizers # -->
+<!-- #################### -->
+
+<!-- library name: libdot.a -->
+<!-- -L: VendorOptimizers/DOT/$(target_canonical) -->
+<!-- -I: none -->
+    <provides name="dot" type="library">
+        <libs> </libs>
+    </provides>
+
+<!-- library name: libnpsol.a -->
+<!-- -L: VendorOptimizers/NPSOL/$(target_canonical) -->
+<!-- -I: none -->
+    <provides name="npsol" type="library">
+        <libs> </libs>
+        <requires product="lapack|blas"/>
+    </provides>
+
+<!-- library name: libconmin.a -->
+<!-- -L: VendorOptimizers/CONMIN/$(target_canonical) -->
+<!-- -I: none -->
+    <provides name="conmin" type="library">
+        <libs> </libs>
+    </provides>
+
+<!-- library name: libcport.a -->
+<!-- -L: VendorOptimizers/NL2SOL/$(target_canonical) -->
+<!-- -I: none -->
+    <provides name="nl2sol" type="library">
+        <libs>-lcport</libs>
+    </provides>
+
+<!-- library name: liboptpp.a -->
+<!-- -L: VendorOptimizers/opt++/$(target_canonical) -->
+<!-- -I: VendorOptimizers/opt++/include -->
+    <provides name="optpp" type="library">
+        <libs> </libs>
+        <include>VendorOptimizers/opt++/include</include>
+        <requires product="Dakota|newmat"/>
+    </provides>
+
+<!-- library name: libnewmat.a -->
+<!-- -L: VendorOptimizers/opt++/$(target_canonical) -->
+<!-- -I: VendorOptimizers/opt++/newmat09 -->
+    <provides name="newmat" type="library">
+        <libs> </libs>
+        <include>VendorOptimizers/opt++/newmat09</include>
+    </provides>
+
+<!-- library name: libddace.a -->
+<!-- -L: VendorOptimizers/DDace/$(target_canonical) -->
+<!-- -I: VendorOptimizers/DDace/include -->
+<!--     VendorOptimizers/DDace/CPPUtilities/src/PMachine -->
+<!--     VendorOptimizers/DDace/CPPUtilities/src/Utils -->
+    <provides name="ddace" type="library">
+        <libs> </libs>
+        <include>VendorOptimizers/DDace/include</include>
+        <include>VendorOptimizers/DDace/CPPUtilities/src/PMachine</include>
+        <include>VendorOptimizers/DDace/CPPUtilities/src/Utils</include>
+    </provides>
+
+<!-- library name: liblhs.a -->
+<!-- -L: VendorOptimizers/LHS/$(target_canonical) -->
+<!-- -I: none -->
+    <provides name="lhs" type="library">
+        <libs if_option="dec or sgi2 or ibm or sun7 or janus2"></libs>
+        <libs if_option="gnu3.2.2gm or gnu3.2.2ip">
+           -L/usr/local/pgi_5.0/linux86/5.0/lib
+           -llhs -lpgf90 -lpgftnrtl -lpgf90_rpm1 -lpgc -lpgf902
+        </libs>
+        <sys_libs if_option="janus2">
+           -lpgf90_cgr -lpgf90_rpm1_cgr -lpgf902_cgr
+        </sys_libs>
+        <sys_libs if_option="sgi2">-lfortran</sys_libs>
+    </provides>
+
+<!-- library names: libsgopt.a -->
+<!-- -L: VendorOptimizers/sgopt/lib/$(target_canonical)-$(CCC) -->
+<!-- -I: VendorOptimizers/sgopt/include -->
+    <provides name="sgopt" type="library">
+        <libs> </libs>
+        <include>VendorOptimizers/sgopt</include>
+        <requires product="Dakota|utilib"/>
+    </provides>
+
+<!-- library name: libpico.a -->
+<!-- -L: VendorOptimizers/pico/lib/$(target_canonical)-$(CCC) -->
+<!-- -I: VendorOptimizers/pico/include -->
+    <provides name="pico" type="library">
+        <libs> </libs>
+        <include>VendorOptimizers/pico</include>
+        <requires product="Dakota|utilib"/>
+    </provides>
+
+<!-- library name: libjega.a -->
+<!-- -L: VendorOptimizers/jega/lib/$(target_canonical) -->
+<!-- -I: VendorOptimizers/jega/include -->
+<!-- -I: VendorOptimizers/jega/Utilities/include -->
+<!-- -I: VendorOptimizers/jega/MOGA/include -->
+<!-- -I: VendorOptimizers/jega/SOGA/include -->
+    <provides name="jega" type="library">
+        <libs> </libs>
+        <include>VendorOptimizers/jega/include</include>
+        <include>VendorOptimizers/jega/Utilities/include</include>
+        <include>VendorOptimizers/jega/MOGA/include</include>
+        <include>VendorOptimizers/jega/SOGA/include</include>
+    </provides>
+
+<!-- ################## -->
+<!-- # VendorPackages # -->
+<!-- ################## -->
+
+<!-- library name: libidr.a -->
+<!-- -L: VendorPackages/idr/$(target_canonical) -->
+<!-- -I: VendorPackages/idr -->
+    <provides name="idr" type="library">
+        <libs>-lidr -ldakota</libs>
+        <sys_libs if_option="ibm or sgi2 or dec or sun7 or janus2">-ll
+        </sys_libs>
+        <sys_libs if_option="gnu3.2.2gm or gnu3.2.2ip">-lfl -llapack -lblas
+        </sys_libs>
+        <include>VendorPackages/idr</include>
+    </provides>
+
+<!-- library name: libutilib.a -->
+<!-- -L: VendorPackages/utilib/lib/$(target_canonical)-$(CCC) -->
+<!-- -I: VendorPackages/utilib/include -->
+    <provides name="utilib" type="library">
+        <libs> </libs>
+        <include>VendorPackages/utilib</include>
+    </provides>
+
+<!-- library name: libkriging.a -->
+<!-- -L: VendorPackages/kriging/$(target_canonical) -->
+<!-- -I: none -->
+    <provides name="kriging" type="library">
+        <libs> </libs>
+        <requires product="lapack|lapack"/>
+    </provides>
+
+<!-- library name: libDGraphics.a -->
+<!-- -L: VendorPackages/motif/$(target_canonical) -->
+<!-- -I: VendorPackages/motif/include -->
+    <provides name="DGraphics" type="library">
+        <libs 
+           if_option="gnu3.2.2gm or gnu3.2.2ip or ibm or sgi2 or dec or sun7">
+           -lXm -lXt -lXpm -lXmu -lX11 -lpthread
+        </libs>
+        <libs if_option="gnu3.2.2gm or gnu3.2.2ip">
+           -L/usr/X11R6/lib
+           -lXp -lXext -lSM -lICE -ldl
+        </libs>
+        <libs if_option="ibm">
+           -L/home/mseldre/lib/aix/xpm-3.4k/lib
+        </libs>
+        <libs if_option="dec">
+           -L/usr/X11R6/lib -L/usr/local/lib
+           -L/home/mseldre/lib/osf/xpm-3.4k/lib
+           -lXaw -lXau -lSM -lICE -ldnet_stub
+        </libs>
+        <libs if_option="sun7">
+           -L/usr/X11R6/lib -L/usr/local/lib
+           -mt -lXaw -lXau
+        </libs>
+        <include>VendorPackages/motif/include</include>
+        <include>/usr/X11R6/include
+                 if_option="gnu3.2.2gm or gnu3.2.2ip"</include>
+        <include>/usr/X11R6/include/X11
+                 if_option="gnu3.2.2gm or gnu3.2.2ip"</include>
+        <include>/usr/include/X11 if_option="ibm or sgi2"</include>
+        <include>/usr/include/X11R5 if_option="ibm"</include>
+        <include>/home/mseldre/lib/aix/xpm-3.4k/X11 if_option="ibm"</include>
+        <include>/usr/local/include if_option="dec or sun7"</include>
+        <include>/home/mseldre/lib/osf/xpm-3.4k/lib if_option="dec"</include>
+        <include>/usr/local/include/X11 if_option="dec"</include>
+    </provides>
+
+<!-- library name: libplplotfX.a -->
+<!-- -L: VendorPackages/plplot/$(target_canonical)/lib -->
+<!-- -I: VendorPackages/plplot/include -->
+    <provides name="plplotfX" type="library">
+        <libs> </libs>
+        <include>VendorPackages/plplot/include</include>
+    </provides>
+
+<!-- library name: libann.a -->
+<!-- -L: VendorPackages/ann/$(target_canonical) -->
+<!-- -I: VendorPackages/ann/include -->
+    <provides name="ann" type="library">
+        <libs> </libs>
+        <include>VendorPackages/ann/include</include>
+    </provides>
+
+<!-- library name: libepetra.a -->
+<!-- -L: VendorPackages/epetra/$(target_canonical) -->
+<!-- -I: VendorPackages/epetra -->
+<!-- Commented out since referencing the version from Trilinos -->
+<!--     <provides name="epetra" type="library"> -->
+<!--         <libs> </libs> -->
+<!--         <include>VendorPackages/epetra</include> -->
+<!--     </provides> -->
+
+</product>

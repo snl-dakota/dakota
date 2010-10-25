@@ -1,0 +1,44 @@
+#!/bin/csh -f
+# Sample simulator to Dakota system call script
+# See User Manual for instructions
+
+# $argv[1] is params.in.(fn_eval_num) FROM Dakota
+# $argv[2] is results.out.(fn_eval_num) returned to Dakota
+
+# ------------------------
+# Set up working directory
+# ------------------------
+
+set num = `echo $argv[1] | cut -c 11-`
+
+cp -r templatedir workdir.$num
+mv $argv[1] workdir.$num/params.in
+cd workdir.$num
+
+# --------------
+# PRE-PROCESSING
+# --------------
+# Use the following line if SNL's APREPRO utility is used instead
+# of transfer_perl.
+aprepro -q --nowarning modal.bdf.template modal.bdf
+
+# --------
+# ANALYSIS
+# --------
+
+nast707 jid=modal.bdf mem=2m scr=yes bat=no >&! nastran.out
+
+# ---------------
+# POST-PROCESSING
+# ---------------
+
+grep '                                  X           ' modal.f06 | cut -c 46-60 > $argv[2]
+grep '        7        ' modal.f06 | cut -c 66-80 >> $argv[2]
+mv $argv[2] ../.
+
+# --------
+# Clean up
+# --------
+
+cd ..
+#\rm -rf workdir.$num

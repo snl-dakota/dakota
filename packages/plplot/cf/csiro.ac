@@ -1,0 +1,122 @@
+dnl cf/csiro.ac for PLplot  -*- autoconf -*-
+dnl
+dnl Configuration settings for the imported CSIRO libraries
+dnl
+dnl Copyright (C) 1994, 2004  Maurice LeBrun
+dnl Copyright (C) 2002, 2003, 2004  Rafael Laboissiere
+dnl Copyright (C) 2002, 2003, 2004  Alan W. Irwin
+dnl Copyright (C) 2003, 2004  Joao Cardoso
+dnl
+dnl This file is part of PLplot.
+dnl
+dnl PLplot is free software; you can redistribute it and/or modify
+dnl it under the terms of the GNU Library General Public License as published
+dnl by the Free Software Foundation; version 2 of the License.
+dnl
+dnl PLplot is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU Library General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU Library General Public License
+dnl along with the file PLplot; if not, write to the Free Software
+dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+
+PL_ARG_WITH(qhull, [enable use of the Qhull library], no)
+PL_ARG_WITH(csa, [enable use of the csa library], no)
+
+QHULLLIBS=""
+NNLIBS=""
+CSALIBS=""
+
+# ----------------------------------------------------------------------------
+# C(XX)FLAGS to use ieee because of NaN issues in libcsironn and libcsirocsa
+# this must be done prior to the NaN awarenedd test that follows
+# ----------------------------------------------------------------------------
+
+if test "$with_qhull" = "yes" -o "$with_csa" = "yes"; then
+    case "$host_cpu" in
+	i*86 )
+            CFLAGS="$CFLAGS -mieee-fp"
+            CXXFLAGS="$CXXFLAGS -mieee-fp"
+	;;
+	alpha* )
+            if test "$GCC" = yes; then
+                CFLAGS="$CFLAGS -mieee"
+                CXXFLAGS="$CXXFLAGS -mieee"
+            else
+		CFLAGS="$CFLAGS -ieee"
+                CXXFLAGS="$CXXFLAGS -ieee"
+            fi
+	;;
+    esac
+fi
+
+# ----------------------------------------------------------------------------
+# Check for NaN awareness
+# this must be done prior to the following csa and qhull test
+# ----------------------------------------------------------------------------
+
+# make test on simple NaN operations
+
+AC_MSG_CHECKING([for NaN awareness in C compiler])
+AC_RUN_IFELSE(
+    [AC_LANG_PROGRAM([[
+	#include <stdio.h>
+	#if defined(__GNUC__)
+	static const double NaN = 0.0 / 0.0;
+	#elif defined(BIG_ENDIAN) || defined(_BIG_ENDIAN)
+	static const long long lNaN = 0x7fffffffffffffff;
+	#define NaN (*(double*)&lNaN)
+	#else
+	static const long long lNaN = 0xfff8000000000000;
+	#define NaN (*(double*)&lNaN)
+	#endif
+    ]],[[
+	double x = NaN;
+	if (x != x) return 0;
+	else return 1;
+    ]])],
+    [AC_MSG_RESULT(yes)],
+    [AC_MSG_RESULT(no)
+     AC_MSG_WARN([System is not NaN aware, setting with_csa=no and with_qhull=no]);
+     with_csa="no";
+     with_qhull="no";])
+
+# ----------------------------------------------------------------------------
+# Check for csa
+# ----------------------------------------------------------------------------
+
+if test "$with_csa" = "yes"; then
+	AC_DEFINE(WITH_CSA, [], [Define if csa is desired])
+	CSALIBS='$(top_builddir)/lib/csa/libcsirocsa.la'
+fi
+
+# ----------------------------------------------------------------------------
+# Check for QHull
+# ----------------------------------------------------------------------------
+
+if test "$with_qhull" = "yes"; then
+    AC_CHECK_LIB(qhull, qh_new_qhull, [
+        AC_DEFINE(HAVE_QHULL, [], [Define if Qhull is available])
+        QHULLLIBS="-lqhull"
+        NNLIBS='$(top_builddir)/lib/nn/libcsironn.la' ], [ with_qhull="no" ])
+fi
+
+# ----------------------------------------------------------------------------
+# Automake conditionals for the qhull and csa libraries (to be used
+# primarily in bindings/octave/Makefile.am)
+# ----------------------------------------------------------------------------
+
+AC_SUBST(QHULLLIBS)
+AC_SUBST(NNLIBS)
+AC_SUBST(CSALIBS)
+
+AM_CONDITIONAL(with_csa, [test "$with_csa" = yes])
+AM_CONDITIONAL(with_qhull, [test "$with_qhull" = yes])
+
+AC_CONFIG_FILES([
+    lib/Makefile
+    lib/nn/Makefile
+    lib/csa/Makefile
+])

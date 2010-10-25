@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN"> <!-- -*- html -*- -->
+<html>
+  <head>
+    <title>PLplot Documentation</title>
+  </head>
+
+  <body>
+    <h1>PLplot Documentation</h1>
+    <ul>
+      <li> <a href="@BASE_HTML@">Browse the latest on-line documentation</a>
+      <li> <a href="@BASE@.ps.gz">PostScript form of documentation @SIZE@</a>
+      <li> <a href="@BASE@.pdf">PDF form of documentation @SIZE@</a>
+      <li> <a href="@BASE@.dvi">DVI form of documentation @SIZE@</a>
+      <li> <a href="@BASE_INFO@.tar.gz">Info form of documentation @SIZE@</a>
+      <li> <a href="@BASE_MAN@.tar.gz">Man pages tarball (API chapter in nroff format) @SIZE@</a>
+      <li> <a href="@BASE_HTML@.tar.gz">HTML results tarball @SIZE@</a>
+    </ul>
+    <h2>The Current PLplot Documentation Project</h2>
+
+    <P>
+      The previous form of the <a href="http://plplot.sf.net">PLplot</a>
+      documentation was quite extensive but had two issues.  (1) It was
+      written in LaTeXinfo form which is no longer supported.  (2) It was
+      dated (no documentation updates since 1995 because of issue [1]).  To
+      address issue (1) <a
+      href="mailto:rafael_at_debian_dot_org_REMOVE_THE_UNDERSCORES">Rafael
+      Laboissiere</a> with some help from <a
+      href="mailto:irwin_at_beluga_dot_phys_dot_uvic_dot_ca_REMOVE_THE_UNDERSCORES">Alan
+      W. Irwin</a> converted the existing documentation from LaTeXinfo to
+      DocBook 4.1 XML form.  As a result of this conversion project all
+      chapters of the <a
+      href="ftp://dino.ph.utexas.edu/plplot/docs/plplot.ps.gz">original
+      documentation</a> are now available in the above different forms
+      resulting from processing the DocBook source. Issue (2) is being
+      addressed by <a
+      href="mailto:irwin_at_beluga_dot_phys_dot_uvic_dot_ca_REMOVE_THE_UNDERSCORES">Alan
+      W. Irwin</a> with some help from <a
+      href="mailto:rafael_at_debian_dot_org_REMOVE_THE_UNDERSCORES">Rafael
+      Laboissiere</a>, and others are encouraged to participate as well.
+      Descriptions of each function in the API have been greatly improved
+      as a first step in this aspect of the project.
+    </P>
+    <P>
+      The DocBook source of the documentation is now under cvs control at
+      the <a href=http://sourceforge.net/projects/plplot/> PLplot
+      sourceforge project site</a>.  To build the documentation, follow the
+      cvs instructions at that site to synchronise your local PLplot
+      directory tree with the cvs repository (using cvs checkout or cvs
+      update as appropriate).  Then follow the directions in
+      plplot/doc/docbook/README.developers to build the above results.  If
+      you do not have cvs write access, please post your suggested
+      documentation changes to <a
+      href="mailto:irwin@beluga.phys.uvic.ca">Alan W. Irwin</a> as a patch
+      file on one of the *.xml DocBook source files.  The XML (Extensible
+      Markup Language) syntax for DocBook is straightforward and can easily
+      be inferred from the existing DocBook XML files, but there is <a
+      href="http://www.oasis-open.org/docbook/documentation/reference/index.html">excellent
+      documentation</a> of DocBook as well, if you really need it.
+
+    </P>
+    <hr>
+    <h2>Motivation for using DocBook</h2>
+
+    <P> It is
+    <a href="http://www.oasis-open.org/docbook/documentation/reference/index.html">well
+    documented!</a> ;-)
+    </P>
+
+    <P> <a href="http://www.oreilly.com/davenport/">DocBook</a> fulfils
+    documentation needs using industry-standard DTD's (Document Type
+    Definition's) based on XML. The idea is that the documenter uses
+    logical markup, and the typesetting details (fonts, spacing, layout,
+    etc.) are taken care of by the DTD's. This important and powerful
+    distinction between logical markup and typesetting allows documenters
+    to concentrate on producing documentation while the look and feel of
+    the results can be adjusted afterward by adjusting the DTD's through
+    so-called driver files.
+    </P>
+
+    <P>
+      DocBook is gaining a lot of momentum now: <a
+      href="http://www.ora.com">O'Reilly</a> uses it to compose their
+      books, the <a href="http://www.linuxdoc.org/">Linux Documentation
+      Project</a> uses it (<a
+      href="http://www.linuxdoc.org/LDP/LDP-Author-Guide/index.html">see
+      this</a>), the <a href="http://www.kde.org">KDE project</a> uses it
+      (<a href="http://i18n.kde.org/teams/en/">see this</a>), the <a
+      href="http://www.gnome.org">Gnome project</a> uses it (<a
+      href="http://developer.gnome.org/projects/gdp/handbook/gdp-handbook/">see
+      this</a>), and the latest version of <a
+      href="http://www.sgmltools.org">SGML-Tools</a> is based on
+      DocBook. Another big project that will use DocBook for <a
+      href="ftp://ftp.ggi-project.org/pub/ggi/doc/">its documentation</a>
+      is the <a href="http://www.ggi-project.org/">General Graphics
+      Interface (GGI) Project</a>.
+    </P>
+
+    <P>
+      DocBook is just a DT definition.  The <a
+      href="http://www.jclark.com/jade/">jade</a> suite or the <a
+      href="http://openjade.sourceforge.net">OpenJade</a> suite and
+      appropriate perl extension modules can be used to convert from the
+      XML sources using several different back ends (currently for the
+      PLplot project, man pages corresponding to each function documented
+      in the API chapter and the complete PLplot documentation in HTML,
+      dvi, postscript, pdf, and info forms).
+    </P>
+
+    <P>
+      There are at least two nice aspects to using DocBook.  First, the
+      source is suitable for CVS control (see above).  Second, it is
+      possible to parse the source with existing XML parsers.  Thus, for
+      example, we process the XML form of the API chapter (api.xml) with a
+      perl script to generate our man pages for each function in the API.
+    </P>
+
+    <hr>
+    <address> If you are interested in contributing to this project, please
+    contact <a
+    href="mailto:rafael_at_debian_dot_org_REMOVE_THE_UNDERSCORES">Rafael
+    Laboissiere</a> or <a
+    href="mailto:mailto:irwin_at_beluga_dot_phys_dot_uvic_dot_ca_REMOVE_THE_UNDERSCORES">Alan
+    W. Irwin</a>
+    </address>
+
+<!-- hhmts start -->
+Last modified: Wed Aug 27 23:46:13 CEST 2003
+<!-- hhmts end -->
+
+  </body>
+</html>

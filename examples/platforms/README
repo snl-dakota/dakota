@@ -1,0 +1,45 @@
+This directory (platform/) contains platform-specific information for
+building, installing, and running DAKOTA.  
+
+-------------
+INSTALL files
+-------------
+
+Files INSTALL.* contain general guidance for configuring, installing,
+and initially running DAKOTA on various platforms.  Information in
+these files is not specific to a machine, but rather to specific
+operating systems.
+
+
+--------------
+Config scripts
+--------------
+
+Scripts config.* contain example invocations of the Dakota configure
+script on various specific platforms.  These scripts may not always be
+kept up to date with Dakota, nor with individual operating
+system/platform settings.
+
+Naming conventions:  When posible, each script should be named 
+  OS_options_platform
+or
+  OS_options
+where platform is included when the configure is for a particular
+target platform; OS includes 32 or 64 bit; and one or more options,
+separated by underscores, include items such as mpi, packages
+included/excluded, debug/optimization.
+
+The script body should include comments detailing
+- platform (if unique to a particular machine)
+- operating systems tested on
+- options included 
+- date last tested and with which versions of Dakota and packages
+  (acro, DDACE, OPTPP, Surfpack)
+
+Scripts should be portable, i.e., independent of the particular shell
+in use when invoked.  To invoke a configure script, cd to the dakota
+top level directory Dakota/ and use
+
+  sh ./platform/config.MYPLATFORM
+
+where sh is your preferred shell executable.

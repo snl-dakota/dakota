@@ -1,0 +1,2026 @@
+TAG "strategy"
+	DESC "{Strategy} The strategy specifies the top level technique which will govern the management of iterators and models in the solution of the problem of interest. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/StratCommands.html"
+
+TAG "strategy/graphics"
+	DESC "{Graphics flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratIndControl"
+
+TAG "strategy/tabular_graphics_data"
+	DESC "{Tabulation of graphics data} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratIndControl"
+
+TAG "strategy/tabular_graphics_data/tabular_graphics_file"
+	DESC "{File name for tabular graphics data} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratIndControl"
+
+TAG "strategy/output_precision"
+TAG "strategy/iterator_servers"
+	DESC "{Number of iterator servers} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratIndControl"
+
+TAG "strategy/iterator_self_scheduling"
+	DESC "{Self-scheduling of iterator jobs} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratIndControl"
+
+TAG "strategy/iterator_static_scheduling"
+	DESC "{Static scheduling of iterator jobs} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratIndControl"
+
+TAG "strategy/hybrid"
+	DESC "[CHOOSE strategy type]{Hybrid strategy} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratHybrid"
+
+TAG "strategy/hybrid/sequential"
+	DESC "{Sequential hybrid} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratHybrid"
+
+TAG "strategy/hybrid/sequential/num_solutions_transferred"
+	DESC "{Number of Solutions Transferred } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratHybrid"
+
+TAG "strategy/hybrid/sequential/method_list"
+	DESC "{List of methods} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratHybrid"
+
+TAG "strategy/hybrid/embedded"
+	DESC "{Embedded hybrid} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratHybrid"
+
+TAG "strategy/hybrid/embedded/global_method_pointer"
+	DESC "{Pointer to the global method specification} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratHybrid"
+
+TAG "strategy/hybrid/embedded/local_method_pointer"
+	DESC "{Pointer to the local method specification} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratHybrid"
+
+TAG "strategy/hybrid/embedded/local_search_probability"
+	DESC "{Probability of executing local searches} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratHybrid"
+
+TAG "strategy/hybrid/collaborative"
+	DESC "[CHOOSE hybrid type]{Collaborative hybrid} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratHybrid"
+
+TAG "strategy/hybrid/collaborative/method_list"
+	DESC "{List of methods} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratHybrid"
+
+TAG "strategy/multi_start"
+	DESC "{Multi-start iteration strategy} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratMultiStart"
+
+TAG "strategy/multi_start/method_pointer"
+	DESC "{Method pointer} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratMultiStart"
+
+TAG "strategy/multi_start/random_starts"
+	DESC "{Number of random starting points} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratMultiStart"
+
+TAG "strategy/multi_start/random_starts/seed"
+	DESC "{Seed for random starting points} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratMultiStart"
+
+TAG "strategy/multi_start/starting_points"
+	DESC "{List of user-specified starting points} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratMultiStart"
+
+TAG "strategy/pareto_set"
+	DESC "{Pareto set optimization strategy} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratParetoSet"
+
+TAG "strategy/pareto_set/method_pointer"
+	DESC "{Optimization method pointer} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratParetoSet"
+
+TAG "strategy/pareto_set/random_weight_sets"
+	DESC "{Number of random weighting sets} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratParetoSet"
+
+TAG "strategy/pareto_set/random_weight_sets/seed"
+	DESC "{Seed for random weighting sets} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratParetoSet"
+
+TAG "strategy/pareto_set/weight_sets"
+	DESC "{List of user-specified weighting sets} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratParetoSet"
+
+TAG "strategy/single_method"
+	DESC "@{Single method strategy} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratSingle"
+
+TAG "strategy/single_method/method_pointer"
+	DESC "{Method pointer} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratSingle"
+
+TAG "method"
+	DESC "{Method} A method specifies the name and controls of an iterative procedure, e.g., a sensitivity analysis, uncertainty quantification, or optimization method. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/MethodCommands.html"
+
+TAG "method/id_method"
+	DESC "{Method set identifier} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/model_pointer"
+	DESC "{Model pointer} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/output"
+	DESC "{Output verbosity} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/output/debug"
+	DESC "[CHOOSE output level]"
+
+TAG "method/output/verbose"
+TAG "method/output/quiet"
+TAG "method/output/silent"
+TAG "method/max_iterations"
+	DESC "{Maximum iterations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/max_function_evaluations"
+	DESC "{Maximum function evaluations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/speculative"
+	DESC "{Speculative gradients and Hessians} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/convergence_tolerance"
+	DESC "{Convergence tolerance} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/constraint_tolerance"
+	DESC "{Constraint tolerance} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/scaling"
+	DESC "{Scaling flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/surrogate_based_local" GROUP "Surrogate-based Methods"
+	DESC "{Surrogate-based local method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/approx_method_name"
+	DESC "[CHOOSE sub-method ref.]{Approximate sub-problem minimization method name} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/approx_method_pointer"
+	DESC "{Approximate sub-problem minimization method pointer} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/soft_convergence_limit"
+	DESC "{Soft convergence limit for SBL iterations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/truth_surrogate_bypass"
+	DESC "{Flag for bypassing lower level surrogates in truth verifications} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/trust_region"
+	DESC "{Trust region group specification} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/trust_region/initial_size"
+	DESC "{Trust region initial size (relative to bounds)} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/trust_region/minimum_size"
+	DESC "{Trust region minimum size} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/trust_region/contract_threshold"
+	DESC "{Shrink trust region if trust region ratio is below this value} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/trust_region/expand_threshold"
+	DESC "{Expand trust region if trust region ratio is above this value} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/trust_region/contraction_factor"
+	DESC "{Pattern contraction factor} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodAPPSDC"
+
+TAG "method/surrogate_based_local/trust_region/expansion_factor"
+	DESC "{Trust region expansion factor} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/approx_subproblem"
+	DESC "{Approximate subproblem formulation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/approx_subproblem/original_primary"
+	DESC "@"
+
+TAG "method/surrogate_based_local/approx_subproblem/single_objective"
+TAG "method/surrogate_based_local/approx_subproblem/augmented_lagrangian_objective"
+	DESC "[CHOOSE objective formulation]"
+
+TAG "method/surrogate_based_local/approx_subproblem/lagrangian_objective"
+TAG "method/surrogate_based_local/approx_subproblem/original_constraints"
+	DESC "@"
+
+TAG "method/surrogate_based_local/approx_subproblem/linearized_constraints"
+	DESC "[CHOOSE constraint formulation]"
+
+TAG "method/surrogate_based_local/approx_subproblem/no_constraints"
+TAG "method/surrogate_based_local/merit_function"
+	DESC "{Merit function} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodOPTPPDC"
+
+TAG "method/surrogate_based_local/merit_function/penalty_merit"
+TAG "method/surrogate_based_local/merit_function/adaptive_penalty_merit"
+	DESC "[CHOOSE merit function]"
+
+TAG "method/surrogate_based_local/merit_function/lagrangian_merit"
+TAG "method/surrogate_based_local/merit_function/augmented_lagrangian_merit"
+	DESC "@"
+
+TAG "method/surrogate_based_local/acceptance_logic"
+	DESC "{SBL iterate acceptance logic} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/acceptance_logic/tr_ratio"
+TAG "method/surrogate_based_local/acceptance_logic/filter"
+	DESC "@[CHOOSE acceptance logic]"
+
+TAG "method/surrogate_based_local/constraint_relax"
+	DESC "{SBL constraint relaxation method for infeasible iterates} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/surrogate_based_local/constraint_relax/homotopy"
+TAG "method/dot_frcg" GROUP "Optimization: Local, Derivative-based"
+TAG "method/dot_mmfd" GROUP "Optimization: Local, Derivative-based"
+TAG "method/dot_bfgs" GROUP "Optimization: Local, Derivative-based"
+TAG "method/dot_slp" GROUP "Optimization: Local, Derivative-based"
+TAG "method/dot_sqp" GROUP "Optimization: Local, Derivative-based"
+TAG "method/dot"
+TAG "method/dot/frcg"
+TAG "method/dot/mmfd"
+TAG "method/dot/bfgs"
+TAG "method/dot/slp"
+TAG "method/dot/sqp"
+TAG "method/dot/optimization_type"
+	DESC "{Optimization type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodDOTDC"
+
+TAG "method/dot/optimization_type/minimize"
+TAG "method/dot/optimization_type/maximize"
+TAG "method/conmin_frcg" GROUP "Optimization: Local, Derivative-based"
+	DESC "[CHOOSE OPT method]"
+
+TAG "method/conmin_mfd" GROUP "Optimization: Local, Derivative-based"
+TAG "method/dl_solver" GROUP "Optimization: Plug-in"
+TAG "method/npsol_sqp" GROUP "Optimization: Local, Derivative-based"
+TAG "method/nlssol_sqp" GROUP "Nonlinear Least Squares"
+TAG "method/stanford"
+TAG "method/stanford/npsol"
+TAG "method/stanford/nlssol"
+TAG "method/stanford/verify_level"
+	DESC "{Gradient verification level} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNPSOLDC"
+
+TAG "method/stanford/function_precision"
+	DESC "{Function precision} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNPSOLDC"
+
+TAG "method/stanford/linesearch_tolerance"
+	DESC "{Line search tolerance} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNPSOLDC"
+
+TAG "method/nlpql_sqp" GROUP "Optimization: Local, Derivative-based"
+TAG "method/optpp_cg" GROUP "Optimization: Local, Derivative-based"
+TAG "method/optpp_q_newton" GROUP "Optimization: Local, Derivative-based"
+TAG "method/optpp_fd_newton" GROUP "Optimization: Local, Derivative-based"
+TAG "method/optpp_g_newton" GROUP "Nonlinear Least Squares"
+TAG "method/optpp_newton" GROUP "Optimization: Local, Derivative-based"
+TAG "method/optpp_q_newton/search_method"
+TAG "method/optpp_q_newton/search_method/value_based_line_search"
+TAG "method/optpp_q_newton/search_method/gradient_based_line_search"
+	DESC "[CHOOSE line search type]"
+
+TAG "method/optpp_q_newton/search_method/trust_region"
+TAG "method/optpp_q_newton/search_method/tr_pds"
+TAG "method/optpp_q_newton/merit_function"
+	DESC "{Merit function} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodAPPSDC"
+
+TAG "method/optpp_q_newton/central_path"
+	DESC "{Central path} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodOPTPPDC"
+
+TAG "method/optpp_q_newton/steplength_to_boundary"
+	DESC "{Steplength to boundary} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodOPTPPDC"
+
+TAG "method/optpp_q_newton/centering_parameter"
+	DESC "{Centering parameter} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodOPTPPDC"
+
+TAG "method/optpp_q_newton/max_step"
+	DESC "{Maximum step size} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodOPTPPDC"
+
+TAG "method/optpp_q_newton/gradient_tolerance"
+	DESC "{Gradient tolerance} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodOPTPPDC"
+
+TAG "method/optpp_pds" GROUP "Optimization: Local, Derivative-free"
+TAG "method/optpp_pds/search_scheme_size"
+	DESC "{Search scheme size} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodOPTPPDC"
+
+TAG "method/asynch_pattern_search" GROUP "Optimization: Local, Derivative-free"
+	DESC "[CHOOSE OPT method]{APPS method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodAPPSDC"
+
+TAG "method/asynch_pattern_search/initial_delta"
+	DESC "{Initial offset value} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodAPPSDC"
+
+TAG "method/asynch_pattern_search/contraction_factor"
+	DESC "{Pattern contraction factor} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+
+TAG "method/asynch_pattern_search/threshold_delta"
+	DESC "{Threshold for offset values} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodAPPSDC"
+
+TAG "method/asynch_pattern_search/solution_target"
+	DESC "{Solution target} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodAPPSDC"
+
+TAG "method/asynch_pattern_search/synchronization"
+	DESC "{Evaluation synchronization} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodAPPSDC"
+
+TAG "method/asynch_pattern_search/synchronization/blocking"
+	DESC "[CHOOSE synchronization]"
+
+TAG "method/asynch_pattern_search/synchronization/nonblocking"
+	DESC "@"
+
+TAG "method/asynch_pattern_search/merit_function"
+	DESC "{SBL merit function} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
+
+TAG "method/asynch_pattern_search/merit_function/merit_max"
+TAG "method/asynch_pattern_search/merit_function/merit_max_smooth"
+TAG "method/asynch_pattern_search/merit_function/merit1"
+	DESC "[CHOOSE merit function]"
+
+TAG "method/asynch_pattern_search/merit_function/merit1_smooth"
+TAG "method/asynch_pattern_search/merit_function/merit2"
+TAG "method/asynch_pattern_search/merit_function/merit2_smooth"
+	DESC "@"
+
+TAG "method/asynch_pattern_search/merit_function/merit2_squared"
+TAG "method/asynch_pattern_search/constraint_penalty"
+	DESC "{Constraint penalty} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodAPPSDC"
+
+TAG "method/asynch_pattern_search/smoothing_factor"
+	DESC "{Smoothing factor} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodAPPSDC"
+
+TAG "method/moga" GROUP "Optimization: Global"
+TAG "method/moga/fitness_type"
+	DESC "{Fitness type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/moga/fitness_type/layer_rank"
+TAG "method/moga/fitness_type/domination_count"
+TAG "method/moga/replacement_type"
+	DESC "{Replacement type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/moga/replacement_type/elitist"
+	DESC "{Elitist replacement type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/moga/replacement_type/roulette_wheel"
+TAG "method/moga/replacement_type/unique_roulette_wheel"
+TAG "method/moga/replacement_type/below_limit"
+	DESC "{Below limit selection} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/moga/replacement_type/below_limit/shrinkage_fraction"
+TAG "method/moga/niching_type"
+	DESC "{Niche pressure type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "method/moga/niching_type/radial"
+TAG "method/moga/niching_type/distance"
+TAG "method/moga/convergence_type"
+	DESC "{Convergence type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGASOGA"
+
+TAG "method/moga/convergence_type/metric_tracker"
+	DESC "{Convergence type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "method/moga/convergence_type/percent_change"
+	DESC "{Percent change limit for metric_tracker converger} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "method/moga/convergence_type/num_generations"
+	DESC "{Number generations for metric_tracker converger} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "method/moga/postprocessor_type"
+	DESC "{Post_processor type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "method/moga/postprocessor_type/orthogonal_distance"
+	DESC "{Post_processor distance} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "method/soga" GROUP "Optimization: Global"
+TAG "method/soga/fitness_type"
+	DESC "{Fitness type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGAMOGA"
+
+TAG "method/soga/fitness_type/merit_function"
+TAG "method/soga/fitness_type/constraint_penalty"
+	DESC "{Constraint penalty} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"
+
+TAG "method/soga/replacement_type"
+	DESC "{Replacement type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/soga/replacement_type/elitist"
+TAG "method/soga/replacement_type/favor_feasible"
+TAG "method/soga/replacement_type/roulette_wheel"
+TAG "method/soga/replacement_type/unique_roulette_wheel"
+TAG "method/soga/convergence_type"
+TAG "method/soga/convergence_type/best_fitness_tracker"
+TAG "method/soga/convergence_type/best_fitness_tracker/percent_change"
+	DESC "{Percent change in fitness} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGASOGA"
+
+TAG "method/soga/convergence_type/best_fitness_tracker/num_generations"
+	DESC "{Number of generations (for convergence test) } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGASOGA"
+
+TAG "method/soga/convergence_type/average_fitness_tracker"
+TAG "method/soga/convergence_type/average_fitness_tracker/percent_change"
+TAG "method/soga/convergence_type/average_fitness_tracker/num_generations"
+TAG "method/moga/population_size"
+	DESC "{Number of population members} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/moga/log_file"
+	DESC "{Log file} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/moga/print_each_pop"
+	DESC "{Population output} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/moga/initialization_type"
+	DESC "{Initialization type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/moga/initialization_type/simple_random"
+TAG "method/moga/initialization_type/unique_random"
+TAG "method/moga/initialization_type/flat_file"
+TAG "method/moga/crossover_type"
+	DESC "{Crossover type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/moga/crossover_type/multi_point_binary"
+	DESC "{Multi point binary crossover} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/moga/crossover_type/multi_point_parameterized_binary"
+	DESC "{Multi point parameterized binary crossover} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/moga/crossover_type/multi_point_real"
+	DESC "{Multi point real crossover} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/moga/crossover_type/shuffle_random"
+	DESC "{Random shuffle crossover} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/moga/crossover_type/shuffle_random/num_parents"
+	DESC "{Number of parents in random shuffle crossover} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/moga/crossover_type/shuffle_random/num_offspring"
+	DESC "{Number of offspring in random shuffle crossover} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/moga/crossover_type/crossover_rate"
+	DESC "{Crossover rate} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/moga/mutation_type"
+	DESC "{Mutation type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/moga/mutation_type/bit_random"
+TAG "method/moga/mutation_type/replace_uniform"
+TAG "method/moga/mutation_type/offset_normal"
+TAG "method/moga/mutation_type/offset_cauchy"
+TAG "method/moga/mutation_type/offset_uniform"
+TAG "method/moga/mutation_type/offset_normal/mutation_scale"
+	DESC "{Mutation scale} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/moga/mutation_type/mutation_rate"
+	DESC "{Mutation rate} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/moga/seed"
+	DESC "{Random seed} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/surrogate_based_local/linear_inequality_constraint_matrix"
+	DESC "{Linear inequality coefficient matrix} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/surrogate_based_local/linear_inequality_lower_bounds"
+	DESC "{Linear inequality lower bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/surrogate_based_local/linear_inequality_upper_bounds"
+	DESC "{Linear inequality upper bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/surrogate_based_local/linear_inequality_scale_types"
+	DESC "{Linear inequality scaling types} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/surrogate_based_local/linear_inequality_scales"
+	DESC "{Linear inequality scales} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/surrogate_based_local/linear_equality_constraint_matrix"
+	DESC "{Linear equality coefficient matrix} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/surrogate_based_local/linear_equality_targets"
+	DESC "{Linear equality targets} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/surrogate_based_local/linear_equality_scale_types"
+	DESC "{Linear equality scaling types} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/surrogate_based_local/linear_equality_scales"
+	DESC "{Linear equality scales} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
+TAG "method/coliny_pattern_search" GROUP "Optimization: Local, Derivative-free"
+	DESC "{Coliny pattern search method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+
+TAG "method/coliny_pattern_search/constant_penalty"
+	DESC "{Control of dynamic penalty} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+
+TAG "method/coliny_pattern_search/no_expansion"
+	DESC "{No expansion flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+
+TAG "method/coliny_pattern_search/expand_after_success"
+	DESC "{Number of consecutive improvements before expansion} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+
+TAG "method/coliny_pattern_search/pattern_basis"
+	DESC "{Pattern basis selection} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+
+TAG "method/coliny_pattern_search/pattern_basis/coordinate"
+TAG "method/coliny_pattern_search/pattern_basis/simplex"
+TAG "method/coliny_pattern_search/stochastic"
+	DESC "{Stochastic pattern search} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+
+TAG "method/coliny_pattern_search/total_pattern_size"
+	DESC "{Total number of points in pattern} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+
+TAG "method/coliny_pattern_search/exploratory_moves"
+	DESC "{Exploratory moves selection} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+
+TAG "method/coliny_pattern_search/exploratory_moves/multi_step"
+TAG "method/coliny_pattern_search/exploratory_moves/adaptive_pattern"
+TAG "method/coliny_pattern_search/exploratory_moves/basic_pattern"
+TAG "method/coliny_pattern_search/synchronization"
+	DESC "{Evaluation synchronization} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+
+TAG "method/coliny_pattern_search/synchronization/blocking"
+TAG "method/coliny_pattern_search/synchronization/nonblocking"
+TAG "method/coliny_solis_wets" GROUP "Optimization: Local, Derivative-free"
+	DESC "{Coliny Solis-Wets method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"
+
+TAG "method/coliny_solis_wets/contract_after_failure"
+	DESC "{Number of consecutive failures before contraction} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"
+
+TAG "method/coliny_solis_wets/no_expansion"
+	DESC "{No expansion flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"
+
+TAG "method/coliny_solis_wets/expand_after_success"
+	DESC "{Number of consecutive improvements before expansion} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"
+
+TAG "method/coliny_solis_wets/constant_penalty"
+	DESC "{Control of dynamic penalty} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"
+
+TAG "method/coliny_pattern_search/contraction_factor"
+	DESC "{Pattern contraction factor} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"
+
+TAG "method/coliny_pattern_search/constraint_penalty"
+	DESC "{Constraint penalty} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+
+TAG "method/coliny_cobyla" GROUP "Optimization: Local, Derivative-free"
+	DESC "{COBYLA method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYCOB"
+
+TAG "method/coliny_pattern_search/initial_delta"
+	DESC "{Initial offset value} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYCOB"
+
+TAG "method/coliny_pattern_search/threshold_delta"
+	DESC "{Threshold for offset values} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYCOB"
+
+TAG "method/coliny_direct" GROUP "Optimization: Global"
+	DESC "[CHOOSE OPT method]{DIRECT method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"
+
+TAG "method/coliny_direct/division"
+	DESC "{Box subdivision approach} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"
+
+TAG "method/coliny_direct/division/major_dimension"
+TAG "method/coliny_direct/division/all_dimensions"
+TAG "method/coliny_direct/global_balance_parameter"
+	DESC "{Global search balancing parameter} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"
+
+TAG "method/coliny_direct/local_balance_parameter"
+	DESC "{Local search balancing parameter} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"
+
+TAG "method/coliny_direct/max_boxsize_limit"
+	DESC "{Maximum boxsize limit} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"
+
+TAG "method/coliny_direct/min_boxsize_limit"
+	DESC "{Minimum boxsize limit} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"
+
+TAG "method/coliny_direct/constraint_penalty"
+	DESC "{Constraint penalty} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"
+
+TAG "method/coliny_ea" GROUP "Optimization: Global"
+	DESC "{EA selection} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/coliny_ea/population_size"
+	DESC "{Number of population members} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/coliny_ea/initialization_type"
+	DESC "{Initialization type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/coliny_ea/initialization_type/simple_random"
+TAG "method/coliny_ea/initialization_type/unique_random"
+TAG "method/coliny_ea/initialization_type/flat_file"
+TAG "method/coliny_ea/fitness_type"
+	DESC "{Fitness type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGASOGA"
+
+TAG "method/coliny_ea/fitness_type/linear_rank"
+TAG "method/coliny_ea/fitness_type/merit_function"
+TAG "method/coliny_ea/replacement_type"
+	DESC "{Replacement type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGASOGA"
+
+TAG "method/coliny_ea/replacement_type/random"
+	DESC "{Random replacement type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/coliny_ea/replacement_type/chc"
+	DESC "{CHC replacement type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/coliny_ea/replacement_type/elitist"
+TAG "method/coliny_ea/replacement_type/new_solutions_generated"
+	DESC "{New solutions generated} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/coliny_ea/crossover_rate"
+	DESC "{Crossover rate} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/coliny_ea/crossover_type"
+	DESC "{Crossover type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/coliny_ea/crossover_type/two_point"
+TAG "method/coliny_ea/crossover_type/blend"
+TAG "method/coliny_ea/crossover_type/uniform"
+TAG "method/coliny_ea/mutation_rate"
+	DESC "{Mutation rate} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/coliny_ea/mutation_type"
+	DESC "{Mutation type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/coliny_ea/mutation_type/replace_uniform"
+TAG "method/coliny_ea/mutation_type/offset_normal"
+TAG "method/coliny_ea/mutation_type/offset_cauchy"
+TAG "method/coliny_ea/mutation_type/offset_uniform"
+TAG "method/coliny_ea/mutation_type/offset_normal/mutation_scale"
+	DESC "{Mutation scale} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/coliny_ea/mutation_type/offset_normal/mutation_range"
+	DESC "{Mutation range} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/coliny_ea/mutation_type/non_adaptive"
+	DESC "{Non-adaptive mutation flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+
+TAG "method/coliny_ea/constraint_penalty"
+	DESC "{Constraint penalty in merit function} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGASOGA"
+
+TAG "method/coliny_pattern_search/solution_target"
+	DESC "{Desired solution target} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"
+
+TAG "method/coliny_pattern_search/seed"
+	DESC "{Random seed for stochastic pattern search} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+
+TAG "method/coliny_pattern_search/show_misc_options"
+	DESC "{Show miscellaneous options} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"
+
+TAG "method/coliny_pattern_search/misc_options"
+	DESC "{Specify miscellaneous options} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"
+
+TAG "method/nl2sol" GROUP "Nonlinear Least Squares"
+	DESC "[CHOOSE LSQ method]"
+
+TAG "method/nl2sol/function_precision"
+	DESC "{Relative precision in least squares terms} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodLSNL2SOL"
+
+TAG "method/nl2sol/absolute_conv_tol"
+	DESC "{Absolute function convergence tolerance} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodLSNL2SOL"
+
+TAG "method/nl2sol/x_conv_tol"
+	DESC "{Convergence tolerance for change in parameter vector} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodLSNL2SOL"
+
+TAG "method/nl2sol/singular_conv_tol"
+	DESC "{Singular convergence tolerance} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodLSNL2SOL"
+
+TAG "method/nl2sol/singular_radius"
+	DESC "{Step limit for sctol} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodLSNL2SOL"
+
+TAG "method/nl2sol/false_conv_tol"
+	DESC "{False convergence tolerance} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodLSNL2SOL"
+
+TAG "method/nl2sol/initial_trust_radius"
+	DESC "{Initial trust region radius} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodLSNL2SOL"
+
+TAG "method/nl2sol/covariance"
+	DESC "{Covariance post-processing} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodLSNL2SOL"
+
+TAG "method/nl2sol/regression_diagnostics"
+	DESC "{Regression diagnostics post-processing} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodLSNL2SOL"
+
+TAG "method/nonlinear_cg" GROUP "Optimization: Local, Derivative-based"
+TAG "method/nonlinear_cg/misc_options"
+TAG "method/surrogate_based_global" GROUP "Surrogate-based Methods"
+	DESC "{Surrogate-based global method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBG"
+
+TAG "method/surrogate_based_global/approx_method_name"
+	DESC "[CHOOSE sub-method ref.]{Approximate sub-problem minimization method name} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBG"
+
+TAG "method/surrogate_based_global/approx_method_pointer"
+	DESC "{Approximate sub-problem minimization method pointer} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBG"
+
+TAG "method/surrogate_based_global/replace_points"
+	DESC "{Replace points used in surrogate construction with best points from previous iteration} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBG"
+
+TAG "method/efficient_global" GROUP "Surrogate-based Methods"
+	DESC "[CHOOSE SB method]{Efficient global method } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodEG"
+
+TAG "method/nond_polynomial_chaos"
+	DESC "{Polynomial chaos expansion method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_polynomial_chaos/refinement"
+	DESC "{Refinement method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"
+
+TAG "method/nond_polynomial_chaos/refinement/uniform"
+TAG "method/nond_polynomial_chaos/refinement/adaptive"
+TAG "method/nond_polynomial_chaos/askey"
+TAG "method/nond_polynomial_chaos/wiener"
+TAG "method/nond_polynomial_chaos/quadrature_order"
+	DESC "{Quadrature order for PCE coefficient estimation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_polynomial_chaos/cubature_integrand"
+	DESC "{Cubature integrand order for PCE coefficient estimation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_polynomial_chaos/sparse_grid_level"
+	DESC "{Sparse grid level for PCE coefficient estimation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_polynomial_chaos/sparse_grid_level/dimension_preference"
+	DESC "{Sparse grid dimension preference} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_polynomial_chaos/collocation_points"
+	DESC "[CHOOSE PC control type]{Number of collocation points for PCE coefficient estimation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_polynomial_chaos/collocation_ratio"
+	DESC "{Collocation point oversampling ratio for PCE coefficient estimation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_polynomial_chaos/collocation_points/reuse_samples"
+	DESC "{Reuse samples flag for PCE coefficient estimation by collocation_points or collocation_ratio} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_polynomial_chaos/expansion_samples"
+	DESC "{Number of simulation samples for PCE coefficient estimation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_polynomial_chaos/expansion_samples/incremental_lhs"
+	DESC "{Incremental LHS flag for PCE coefficient estimation by expansion_samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_polynomial_chaos/expansion_import_file"
+	DESC "{File name for import of PCE coefficients} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_polynomial_chaos/collocation_points/expansion_order"
+	DESC "{Expansion order} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_polynomial_chaos/collocation_points/expansion_terms"
+	DESC "{Expansion terms} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_polynomial_chaos/sample_type"
+	DESC "{Sampling type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"
+
+TAG "method/nond_polynomial_chaos/sample_type/lhs"
+	DESC "@[CHOOSE sample type]"
+
+TAG "method/nond_polynomial_chaos/sample_type/random"
+TAG "method/nond_stoch_collocation"
+	DESC "{Stochastic collocation method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"
+
+TAG "method/nond_stoch_collocation/refinement"
+TAG "method/nond_stoch_collocation/refinement/uniform"
+TAG "method/nond_stoch_collocation/refinement/adaptive"
+TAG "method/nond_stoch_collocation/askey"
+TAG "method/nond_stoch_collocation/wiener"
+TAG "method/nond_stoch_collocation/quadrature_order"
+	DESC "[CHOOSE accuracy control]{Quadrature order for collocation points} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"
+
+TAG "method/nond_stoch_collocation/sparse_grid_level"
+	DESC "{Sparse grid level for collocation points} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"
+
+TAG "method/nond_stoch_collocation/sparse_grid_level/dimension_preference"
+	DESC "{Sparse grid dimension preference} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"
+
+TAG "method/nond_stoch_collocation/sample_type"
+	DESC "{Sampling type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/nond_stoch_collocation/sample_type/lhs"
+	DESC "@[CHOOSE sample type]"
+
+TAG "method/nond_stoch_collocation/sample_type/random"
+TAG "method/nond_sampling"
+	DESC "{Nondeterministic sampling method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"
+
+TAG "method/nond_sampling/sample_type"
+	DESC "{Sampling type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"
+
+TAG "method/nond_sampling/sample_type/random"
+TAG "method/nond_sampling/sample_type/lhs"
+	DESC "@"
+
+TAG "method/nond_sampling/sample_type/incremental_lhs"
+	DESC "[CHOOSE sample type]"
+
+TAG "method/nond_sampling/sample_type/incremental_random"
+TAG "method/nond_sampling/sample_type/incremental_lhs/previous_samples"
+	DESC "{Previous samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"
+
+TAG "method/nond_sampling/variance_based_decomp"
+	DESC "{Variance based decomposition} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"
+
+TAG "method/nond_polynomial_chaos/all_variables"
+	DESC "{All variables flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"
+
+TAG "method/nond_polynomial_chaos/fixed_seed"
+	DESC "{Fixed seed flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"
+
+TAG "method/nond_polynomial_chaos/reliability_levels"
+	DESC "{Reliability levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"
+
+TAG "method/nond_polynomial_chaos/reliability_levels/num_reliability_levels"
+	DESC "{Number of reliability levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"
+
+TAG "method/nond_polynomial_chaos/response_levels"
+	DESC "{Response levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"
+
+TAG "method/nond_polynomial_chaos/response_levels/num_response_levels"
+	DESC "{Number of response levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"
+
+TAG "method/nond_polynomial_chaos/response_levels/compute"
+	DESC "{Target statistics for response levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"
+
+TAG "method/nond_polynomial_chaos/response_levels/compute/probabilities"
+	DESC "@"
+
+TAG "method/nond_polynomial_chaos/response_levels/compute/reliabilities"
+TAG "method/nond_polynomial_chaos/response_levels/compute/gen_reliabilities"
+	DESC "[CHOOSE statistic]"
+
+TAG "method/nond_importance"
+TAG "method/nond_importance/response_levels"
+TAG "method/nond_importance/response_levels/num_response_levels"
+TAG "method/nond_importance/response_levels/compute"
+TAG "method/nond_importance/response_levels/compute/probabilities"
+	DESC "@"
+
+TAG "method/nond_importance/response_levels/compute/gen_reliabilities"
+	DESC "[CHOOSE statistic]"
+
+TAG "method/nond_global_evidence"
+	DESC "[CHOOSE UQ method]{Nondeterministic global evidence method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalEvid"
+
+TAG "method/nond_global_evidence/lhs"
+TAG "method/nond_global_evidence/ego"
+TAG "method/nond_global_evidence/response_levels"
+TAG "method/nond_global_evidence/response_levels/num_response_levels"
+TAG "method/nond_global_evidence/response_levels/compute"
+TAG "method/nond_global_evidence/response_levels/compute/probabilities"
+	DESC "@"
+
+TAG "method/nond_global_evidence/response_levels/compute/gen_reliabilities"
+	DESC "[CHOOSE statistic]"
+
+TAG "method/nond_polynomial_chaos/distribution"
+	DESC "{Distribution type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"
+
+TAG "method/nond_polynomial_chaos/distribution/cumulative"
+	DESC "@"
+
+TAG "method/nond_polynomial_chaos/distribution/complementary"
+	DESC "[CHOOSE distribution type]"
+
+TAG "method/nond_polynomial_chaos/probability_levels"
+	DESC "{Probability levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"
+
+TAG "method/nond_polynomial_chaos/probability_levels/num_probability_levels"
+	DESC "{Number of probability levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"
+
+TAG "method/nond_polynomial_chaos/gen_reliability_levels"
+	DESC "{Generalized reliability levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"
+
+TAG "method/nond_polynomial_chaos/gen_reliability_levels/num_gen_reliability_levels"
+	DESC "{Number of generalized reliability levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"
+
+TAG "method/nond_polynomial_chaos/rng"
+	DESC "{Random seed generator} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalIntervalEst"
+
+TAG "method/nond_polynomial_chaos/rng/mt19937"
+TAG "method/nond_polynomial_chaos/rng/rnum2"
+TAG "method/nond_global_interval_est"
+	DESC "{Nondeterministic interval estimation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalIntervalEst"
+
+TAG "method/nond_global_interval_est/lhs"
+TAG "method/nond_global_interval_est/ego"
+TAG "method/nond_global_interval_est/rng"
+	DESC "{Random seed generator} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalEvid"
+
+TAG "method/nond_global_interval_est/rng/mt19937"
+TAG "method/nond_global_interval_est/rng/rnum2"
+TAG "method/nond_bayes_calib" GROUP "Nonlinear Least Squares"
+TAG "method/nond_bayes_calib/rng"
+TAG "method/nond_bayes_calib/rng/mt19937"
+TAG "method/nond_bayes_calib/rng/rnum2"
+TAG "method/dace" GROUP "[CHOOSE method category]DACE"
+	DESC "[CHOOSE DACE method]{Design of experiments method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodDDACE"
+
+TAG "method/dace/grid"
+TAG "method/dace/random"
+TAG "method/dace/oas"
+TAG "method/dace/lhs"
+TAG "method/dace/oa_lhs"
+TAG "method/dace/box_behnken"
+	DESC "[CHOOSE DACE type]"
+
+TAG "method/dace/central_composite"
+TAG "method/dace/main_effects"
+TAG "method/dace/quality_metrics"
+	DESC "{Quality metrics} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodDDACE"
+
+TAG "method/dace/variance_based_decomp"
+	DESC "{Variance based decomposition} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodDDACE"
+
+TAG "method/dace/fixed_seed"
+	DESC "{Fixed seed flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/dace/symbols"
+	DESC "{Number of symbols} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodDDACE"
+
+TAG "method/fsu_cvt" GROUP "DACE"
+	DESC "{FSU CVT sampling} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/fsu_cvt/latinize"
+	DESC "{Latinization of samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/fsu_cvt/quality_metrics"
+	DESC "{Quality metrics} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/fsu_cvt/variance_based_decomp"
+	DESC "{Variance based decomposition} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/fsu_cvt/fixed_seed"
+	DESC "{Fixed seed flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"
+
+TAG "method/fsu_cvt/trial_type"
+	DESC "{Trial type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/fsu_cvt/trial_type/grid"
+	DESC "[CHOOSE trial type]"
+
+TAG "method/fsu_cvt/trial_type/halton"
+TAG "method/fsu_cvt/trial_type/random"
+	DESC "@"
+
+TAG "method/fsu_cvt/num_trials"
+	DESC "{Number of trials  } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/psuade_moat" GROUP "DACE"
+	DESC "{PSUADE MOAT method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSUADE"
+
+TAG "method/psuade_moat/partitions"
+	DESC "{Number of partitions} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSUADE"
+
+TAG "method/nond_polynomial_chaos/samples"
+	DESC "{Number of samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"
+
+TAG "method/nond_polynomial_chaos/seed"
+	DESC "{Random seed for stochastic pattern search} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"
+
+TAG "method/ncsu_direct" GROUP "Optimization: Global"
+TAG "method/ncsu_direct/solution_target"
+	DESC "{Solution Target } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNCSUDC"
+
+TAG "method/ncsu_direct/min_boxsize_limit"
+	DESC "{Min boxsize limit} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNCSUDC"
+
+TAG "method/ncsu_direct/volume_boxsize_limit"
+TAG "method/nond_local_evidence"
+	DESC "{Nondeterministic local evidence method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalEvid"
+
+TAG "method/nond_local_evidence/sqp"
+TAG "method/nond_local_evidence/nip"
+TAG "method/nond_local_evidence/response_levels"
+TAG "method/nond_local_evidence/response_levels/num_response_levels"
+TAG "method/nond_local_evidence/response_levels/compute"
+TAG "method/nond_local_evidence/response_levels/compute/probabilities"
+	DESC "@"
+
+TAG "method/nond_local_evidence/response_levels/compute/gen_reliabilities"
+	DESC "[CHOOSE statistic]"
+
+TAG "method/nond_local_evidence/probability_levels"
+TAG "method/nond_local_evidence/probability_levels/num_probability_levels"
+TAG "method/nond_local_evidence/gen_reliability_levels"
+TAG "method/nond_local_evidence/gen_reliability_levels/num_gen_reliability_levels"
+TAG "method/nond_local_evidence/distribution"
+TAG "method/nond_local_evidence/distribution/cumulative"
+	DESC "@"
+
+TAG "method/nond_local_evidence/distribution/complementary"
+	DESC "[CHOOSE distribution type]"
+
+TAG "method/nond_local_interval_est"
+	DESC "{Nondeterministic interval estimation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalIntervalEst"
+
+TAG "method/nond_local_interval_est/sqp"
+TAG "method/nond_local_interval_est/nip"
+TAG "method/nond_local_reliability"
+	DESC "{Reliability method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"
+
+TAG "method/nond_local_reliability/mpp_search"
+	DESC "{MPP search type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"
+
+TAG "method/nond_local_reliability/mpp_search/x_taylor_mean"
+TAG "method/nond_local_reliability/mpp_search/u_taylor_mean"
+TAG "method/nond_local_reliability/mpp_search/x_taylor_mpp"
+TAG "method/nond_local_reliability/mpp_search/u_taylor_mpp"
+TAG "method/nond_local_reliability/mpp_search/x_two_point"
+TAG "method/nond_local_reliability/mpp_search/u_two_point"
+TAG "method/nond_local_reliability/mpp_search/no_approx"
+	DESC "[CHOOSE MPP search method]"
+
+TAG "method/nond_local_reliability/mpp_search/sqp"
+TAG "method/nond_local_reliability/mpp_search/nip"
+TAG "method/nond_local_reliability/integration"
+	DESC "{Integration method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"
+
+TAG "method/nond_local_reliability/integration/first_order"
+	DESC "@[CHOOSE integration order]"
+
+TAG "method/nond_local_reliability/integration/second_order"
+TAG "method/nond_local_reliability/integration/refinement"
+TAG "method/nond_local_reliability/integration/refinement/import"
+TAG "method/nond_local_reliability/integration/refinement/adapt_import"
+	DESC "[CHOOSE refinement type]"
+
+TAG "method/nond_local_reliability/integration/refinement/mm_adapt_import"
+TAG "method/nond_local_reliability/integration/refinement/samples"
+	DESC "{Refinement samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"
+
+TAG "method/nond_local_reliability/integration/refinement/seed"
+	DESC "{Random seed} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"
+
+TAG "method/nond_local_reliability/response_levels"
+TAG "method/nond_local_reliability/response_levels/num_response_levels"
+TAG "method/nond_local_reliability/response_levels/compute"
+TAG "method/nond_local_reliability/response_levels/compute/probabilities"
+	DESC "@"
+
+TAG "method/nond_local_reliability/response_levels/compute/reliabilities"
+TAG "method/nond_local_reliability/response_levels/compute/gen_reliabilities"
+	DESC "[CHOOSE statistic]"
+
+TAG "method/nond_local_reliability/reliability_levels"
+TAG "method/nond_local_reliability/reliability_levels/num_reliability_levels"
+TAG "method/nond_global_reliability"
+	DESC "{Global reliability method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalRel"
+
+TAG "method/nond_global_reliability/x_gaussian_process"
+TAG "method/nond_global_reliability/u_gaussian_process"
+	DESC "[CHOOSE approx. type]"
+
+TAG "method/nond_global_reliability/all_variables"
+	DESC "{All variables flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalRel"
+
+TAG "method/nond_global_reliability/seed"
+	DESC "{Random seed} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodEG"
+
+TAG "method/nond_global_reliability/rng"
+TAG "method/nond_global_reliability/rng/mt19937"
+TAG "method/nond_global_reliability/rng/rnum2"
+TAG "method/nond_global_reliability/response_levels"
+TAG "method/nond_global_reliability/response_levels/num_response_levels"
+TAG "method/nond_global_reliability/response_levels/compute"
+TAG "method/nond_global_reliability/response_levels/compute/probabilities"
+	DESC "@"
+
+TAG "method/nond_global_reliability/response_levels/compute/gen_reliabilities"
+	DESC "[CHOOSE statistic]"
+
+TAG "method/nond_local_reliability/distribution"
+TAG "method/nond_local_reliability/distribution/cumulative"
+	DESC "@"
+
+TAG "method/nond_local_reliability/distribution/complementary"
+	DESC "[CHOOSE distribution type]"
+
+TAG "method/nond_local_reliability/probability_levels"
+TAG "method/nond_local_reliability/probability_levels/num_probability_levels"
+TAG "method/nond_local_reliability/gen_reliability_levels"
+TAG "method/nond_local_reliability/gen_reliability_levels/num_gen_reliability_levels"
+TAG "method/fsu_quasi_mc" GROUP "DACE"
+	DESC "{FSU Quasi-Monte Carlo} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/fsu_quasi_mc/halton"
+	DESC "[CHOOSE sequence type]"
+
+TAG "method/fsu_quasi_mc/hammersley"
+TAG "method/fsu_quasi_mc/latinize"
+	DESC "{Latinization of samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/fsu_quasi_mc/quality_metrics"
+	DESC "{Quality metrics} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/fsu_quasi_mc/variance_based_decomp"
+	DESC "{Variance based decomposition} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/fsu_quasi_mc/samples"
+	DESC "{Number of samples on PCE for generating statistics} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+
+TAG "method/fsu_quasi_mc/fixed_sequence"
+	DESC "{Fixed sequence flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/fsu_quasi_mc/sequence_start"
+	DESC "{Sequence starting indices} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/fsu_quasi_mc/sequence_leap"
+	DESC "{Sequence leaping indices} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/fsu_quasi_mc/prime_base"
+	DESC "{Prime bases for sequences} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+
+TAG "method/vector_parameter_study" GROUP "Parameter Studies"
+	DESC "{Vector parameter study} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSVPS"
+
+TAG "method/vector_parameter_study/final_point"
+	DESC "[CHOOSE final pt or increment]{Termination point of vector} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSVPS"
+
+TAG "method/vector_parameter_study/step_vector"
+	DESC "{Step vector} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSVPS"
+
+TAG "method/vector_parameter_study/num_steps"
+	DESC "{Number of steps along vector} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSVPS"
+
+TAG "method/list_parameter_study" GROUP "Parameter Studies"
+	DESC "{List parameter study} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSLPS"
+
+TAG "method/list_parameter_study/list_of_points"
+	DESC "{List of points to evaluate} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSLPS"
+
+TAG "method/centered_parameter_study" GROUP "Parameter Studies"
+	DESC "[CHOOSE PSTUDY method]{Centered parameter study} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSCPS"
+
+TAG "method/centered_parameter_study/step_vector"
+	DESC "{Step vector} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSCPS"
+
+TAG "method/centered_parameter_study/steps_per_variable"
+	DESC "{Number of steps per variable} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSCPS"
+
+TAG "method/multidim_parameter_study" GROUP "Parameter Studies"
+	DESC "{Multidimensional parameter study} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSMPS"
+
+TAG "method/multidim_parameter_study/partitions"
+	DESC "{Partitions per variable} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSMPS"
+
+TAG "model"
+	DESC "{Model} A model consists of a model type and maps specified variables through an interface to generate responses. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/ModelCommands.html"
+
+TAG "model/id_model"
+	DESC "{Model set identifier} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelIndControl"
+
+TAG "model/variables_pointer"
+	DESC "{Variables set pointer} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelIndControl"
+
+TAG "model/responses_pointer"
+	DESC "{Responses set pointer} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelIndControl"
+
+TAG "model/single"
+	DESC "@"
+
+TAG "model/single/interface_pointer"
+	DESC "{Interface set pointer} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSingle"
+
+TAG "model/surrogate"
+TAG "model/surrogate/id_surrogates"
+	DESC "{Surrogate response ids} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrogate"
+
+TAG "model/surrogate/global"
+	DESC "[CHOOSE surrogate category]{Global approximations } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/gaussian_process"
+	DESC "[CHOOSE surrogate type]{Gaussian process} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/gaussian_process/point_selection"
+	DESC "{GP point selection} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/gaussian_process/trend"
+	DESC "{GP trend function} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/gaussian_process/trend/constant"
+	DESC "[CHOOSE trend type]"
+
+TAG "model/surrogate/global/gaussian_process/trend/linear"
+TAG "model/surrogate/global/gaussian_process/trend/quadratic"
+	DESC "@"
+
+TAG "model/surrogate/global/mars"
+	DESC "{Multivariate adaptive regression splines} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/mars/max_bases"
+	DESC "{MARS maximum bases} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/mars/interpolation"
+	DESC "{MARS interpolation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/mars/interpolation/linear"
+TAG "model/surrogate/global/mars/interpolation/cubic"
+TAG "model/surrogate/global/moving_least_squares"
+	DESC "{Moving least squares} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/moving_least_squares/poly_order"
+	DESC "{MLS polynomial order} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/moving_least_squares/weight_function"
+	DESC "{MLS weight function} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/neural_network"
+	DESC "{Artificial neural network} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/neural_network/nodes"
+	DESC "{ANN number nodes} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/neural_network/range"
+	DESC "{ANN range} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/neural_network/random_weight"
+	DESC "{ANN random weight} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/radial_basis"
+TAG "model/surrogate/global/radial_basis/bases"
+	DESC "{RBF number of bases} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/radial_basis/max_pts"
+	DESC "{RBF maximum points} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/radial_basis/min_partition"
+	DESC "{RBF minimum partitions} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/radial_basis/max_subsets"
+TAG "model/surrogate/global/polynomial"
+	DESC "{Polynomial} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/polynomial/linear"
+TAG "model/surrogate/global/polynomial/quadratic"
+TAG "model/surrogate/global/polynomial/cubic"
+	DESC "[CHOOSE polynomial order]"
+
+TAG "model/surrogate/global/kriging"
+	DESC "{Kriging interpolation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/kriging/correlations"
+	DESC "{Kriging correlations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/kriging/conmin_seed"
+	DESC "{Kriging inital correlations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/kriging/max_trials"
+	DESC "{Kriging maximum trials} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/kriging/max_correlations"
+	DESC "{Kriging maximum correlations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/kriging/min_correlations"
+	DESC "{Kriging minimum correlations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/total_points"
+TAG "model/surrogate/global/minimum_points"
+TAG "model/surrogate/global/recommended_points"
+TAG "model/surrogate/global/dace_method_pointer"
+	DESC "{Design of experiments method pointer} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/reuse_points"
+TAG "model/surrogate/global/reuse_points/all"
+TAG "model/surrogate/global/reuse_points/region"
+TAG "model/surrogate/global/reuse_points/none"
+TAG "model/surrogate/global/points_file"
+TAG "model/surrogate/global/use_gradients"
+	DESC "{Use of gradient data in global approximation builds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/correction"
+	DESC "{Surrogate correction approach} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/correction/zeroth_order"
+TAG "model/surrogate/global/correction/first_order"
+	DESC "[CHOOSE correction order]"
+
+TAG "model/surrogate/global/correction/second_order"
+TAG "model/surrogate/global/correction/additive"
+	DESC "[CHOOSE correction type]"
+
+TAG "model/surrogate/global/correction/multiplicative"
+TAG "model/surrogate/global/correction/combined"
+TAG "model/surrogate/global/diagnostics"
+	DESC "{Print diagnostic metrics about the surrogate goodness of fit} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/multipoint"
+	DESC "{Multipoint approximation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrMP"
+
+TAG "model/surrogate/multipoint/tana"
+	DESC "{Two-point adaptive nonlinear approximation } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrMP"
+
+TAG "model/surrogate/local"
+	DESC "{Local approximation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrL"
+
+TAG "model/surrogate/local/taylor_series"
+	DESC "{Taylor series local approximation } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrL"
+
+TAG "model/surrogate/multipoint/actual_model_pointer"
+	DESC "{Pointer to the truth model specification} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrMP"
+
+TAG "model/surrogate/hierarchical"
+	DESC "{Hierarchical approximation } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrH"
+
+TAG "model/surrogate/hierarchical/low_fidelity_model_pointer"
+	DESC "{Pointer to the low fidelity model specification} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrH"
+
+TAG "model/surrogate/hierarchical/high_fidelity_model_pointer"
+	DESC "{Pointer to the high fidelity model specification} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrH"
+
+TAG "model/surrogate/hierarchical/correction"
+	DESC "{Surrogate correction approach} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrH"
+
+TAG "model/surrogate/hierarchical/correction/zeroth_order"
+TAG "model/surrogate/hierarchical/correction/first_order"
+	DESC "[CHOOSE correction order]"
+
+TAG "model/surrogate/hierarchical/correction/second_order"
+TAG "model/surrogate/hierarchical/correction/additive"
+	DESC "[CHOOSE correction type]"
+
+TAG "model/surrogate/hierarchical/correction/multiplicative"
+TAG "model/surrogate/hierarchical/correction/combined"
+TAG "model/nested"
+	DESC "[CHOOSE model type]"
+
+TAG "model/nested/optional_interface_pointer"
+	DESC "{Optional interface set pointer} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelNested"
+
+TAG "model/nested/optional_interface_pointer/optional_interface_responses_pointer"
+	DESC "{Responses pointer for nested model optional interfaces} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelNested"
+
+TAG "model/nested/sub_method_pointer"
+	DESC "{Sub-method pointer for nested models} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelNested"
+
+TAG "model/nested/sub_method_pointer/primary_variable_mapping"
+	DESC "{Primary variable mappings for nested models} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelNested"
+
+TAG "model/nested/sub_method_pointer/secondary_variable_mapping"
+	DESC "{Secondary variable mappings for nested models} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelNested"
+
+TAG "model/nested/sub_method_pointer/primary_response_mapping"
+	DESC "{Primary response mappings for nested models} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelNested"
+
+TAG "model/nested/sub_method_pointer/secondary_response_mapping"
+	DESC "{Secondary response mappings for nested models} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelNested"
+
+TAG "variables"
+	DESC "{Variables} A variables object specifies the parameter set to be iterated by a particular method. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/VarCommands.html"
+
+TAG "variables/id_variables"
+	DESC "{Variables set identifier} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarSetId"
+
+TAG "variables/continuous_design" GROUP "Design Variables"
+	DESC "{Continuous design variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCDV"
+
+TAG "variables/continuous_design/initial_point"
+	DESC "{Initial point} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCDV"
+
+TAG "variables/continuous_design/lower_bounds"
+	DESC "{Lower bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCDV"
+
+TAG "variables/continuous_design/upper_bounds"
+	DESC "{Upper bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCDV"
+
+TAG "variables/continuous_design/scale_types"
+	DESC "{Scaling types} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCDV"
+
+TAG "variables/continuous_design/scales"
+	DESC "{Scales} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCDV"
+
+TAG "variables/continuous_design/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCDV"
+
+TAG "variables/discrete_design_range" GROUP "Design Variables"
+	DESC "{Discrete design range variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDRIV"
+
+TAG "variables/discrete_design_range/initial_point"
+	DESC "{Initial point} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDRIV"
+
+TAG "variables/discrete_design_range/lower_bounds"
+	DESC "{Lower bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDRIV"
+
+TAG "variables/discrete_design_range/upper_bounds"
+	DESC "{Upper bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDRIV"
+
+TAG "variables/discrete_design_range/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDRIV"
+
+TAG "variables/discrete_design_set_integer" GROUP "Design Variables"
+	DESC "{Discrete design set of integer variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDSIV"
+
+TAG "variables/discrete_design_set_integer/initial_point"
+	DESC "{Initial point} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDSIV"
+
+TAG "variables/discrete_design_set_integer/num_set_values"
+	DESC "{Number of values for each variable} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDSIV"
+
+TAG "variables/discrete_design_set_integer/set_values"
+	DESC "{Set values} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDSIV"
+
+TAG "variables/discrete_design_set_integer/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDSIV"
+
+TAG "variables/discrete_design_set_real" GROUP "Design Variables"
+	DESC "{Discrete design set of real variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDSRV"
+
+TAG "variables/discrete_design_set_real/initial_point"
+	DESC "{Initial point} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDSRV"
+
+TAG "variables/discrete_design_set_real/num_set_values"
+	DESC "{Number of values for each variable} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDSRV"
+
+TAG "variables/discrete_design_set_real/set_values"
+	DESC "{Set values} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDSRV"
+
+TAG "variables/discrete_design_set_real/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDDSRV"
+
+TAG "variables/normal_uncertain" GROUP "Continuous Aleatory Uncertain"
+	DESC "{normal uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Normal"
+
+TAG "variables/normal_uncertain/means"
+	DESC "{normal uncertain means} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Normal"
+
+TAG "variables/normal_uncertain/std_deviations"
+	DESC "{normal uncertain standard deviations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Normal"
+
+TAG "variables/normal_uncertain/lower_bounds"
+	DESC "{Distribution lower bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Normal"
+
+TAG "variables/normal_uncertain/upper_bounds"
+	DESC "{Distribution upper bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Normal"
+
+TAG "variables/normal_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Normal"
+
+TAG "variables/lognormal_uncertain" GROUP "Continuous Aleatory Uncertain"
+	DESC "{lognormal uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal"
+
+TAG "variables/lognormal_uncertain/lambdas"
+	DESC "[CHOOSE characterization]{lognormal uncertain lambdas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal"
+
+TAG "variables/lognormal_uncertain/lambdas/zetas"
+	DESC "{lognormal uncertain zetas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal"
+
+TAG "variables/lognormal_uncertain/means"
+	DESC "@{lognormal uncertain means} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal"
+
+TAG "variables/lognormal_uncertain/means/std_deviations"
+	DESC "@{lognormal uncertain standard deviations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal"
+
+TAG "variables/lognormal_uncertain/means/error_factors"
+	DESC "[CHOOSE variance spec.]{lognormal uncertain error factors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal"
+
+TAG "variables/lognormal_uncertain/lower_bounds"
+	DESC "{Distribution lower bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal"
+
+TAG "variables/lognormal_uncertain/upper_bounds"
+	DESC "{Distribution upper bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal"
+
+TAG "variables/lognormal_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal"
+
+TAG "variables/uniform_uncertain" GROUP "Continuous Aleatory Uncertain"
+	DESC "{uniform uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Uniform"
+
+TAG "variables/uniform_uncertain/lower_bounds"
+	DESC "{Distribution lower bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Uniform"
+
+TAG "variables/uniform_uncertain/upper_bounds"
+	DESC "{Distribution upper bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Uniform"
+
+TAG "variables/uniform_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Uniform"
+
+TAG "variables/loguniform_uncertain" GROUP "Continuous Aleatory Uncertain"
+	DESC "{loguniform uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Loguniform"
+
+TAG "variables/loguniform_uncertain/lower_bounds"
+	DESC "{Distribution lower bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Loguniform"
+
+TAG "variables/loguniform_uncertain/upper_bounds"
+	DESC "{Distribution upper bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Loguniform"
+
+TAG "variables/loguniform_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Loguniform"
+
+TAG "variables/triangular_uncertain" GROUP "Continuous Aleatory Uncertain"
+	DESC "{triangular uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Triangular"
+
+TAG "variables/triangular_uncertain/modes"
+	DESC "{triangular uncertain modes} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Triangular"
+
+TAG "variables/triangular_uncertain/lower_bounds"
+	DESC "{Distribution lower bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Triangular"
+
+TAG "variables/triangular_uncertain/upper_bounds"
+	DESC "{Distribution upper bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Triangular"
+
+TAG "variables/triangular_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Triangular"
+
+TAG "variables/exponential_uncertain" GROUP "Continuous Aleatory Uncertain"
+	DESC "{exponential uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Exponential"
+
+TAG "variables/exponential_uncertain/betas"
+	DESC "{exponential uncertain betas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Exponential"
+
+TAG "variables/exponential_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Exponential"
+
+TAG "variables/beta_uncertain" GROUP "Continuous Aleatory Uncertain"
+	DESC "{beta uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Beta"
+
+TAG "variables/beta_uncertain/alphas"
+	DESC "{beta uncertain alphas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Beta"
+
+TAG "variables/beta_uncertain/betas"
+	DESC "{beta uncertain betas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Beta"
+
+TAG "variables/beta_uncertain/lower_bounds"
+	DESC "{Distribution lower bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Beta"
+
+TAG "variables/beta_uncertain/upper_bounds"
+	DESC "{Distribution upper bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Beta"
+
+TAG "variables/beta_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Beta"
+
+TAG "variables/gamma_uncertain" GROUP "Continuous Aleatory Uncertain"
+	DESC "{gamma uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gamma"
+
+TAG "variables/gamma_uncertain/alphas"
+	DESC "{gamma uncertain alphas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gamma"
+
+TAG "variables/gamma_uncertain/betas"
+	DESC "{gamma uncertain betas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gamma"
+
+TAG "variables/gamma_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gamma"
+
+TAG "variables/gumbel_uncertain" GROUP "Continuous Aleatory Uncertain"
+	DESC "{gumbel uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gumbel"
+
+TAG "variables/gumbel_uncertain/alphas"
+	DESC "{gumbel uncertain alphas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gumbel"
+
+TAG "variables/gumbel_uncertain/betas"
+	DESC "{gumbel uncertain betas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gumbel"
+
+TAG "variables/gumbel_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gumbel"
+
+TAG "variables/frechet_uncertain" GROUP "Continuous Aleatory Uncertain"
+	DESC "{frechet uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Frechet"
+
+TAG "variables/frechet_uncertain/alphas"
+	DESC "{frechet uncertain alphas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Frechet"
+
+TAG "variables/frechet_uncertain/betas"
+	DESC "{frechet uncertain betas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Frechet"
+
+TAG "variables/frechet_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Frechet"
+
+TAG "variables/weibull_uncertain" GROUP "Continuous Aleatory Uncertain"
+	DESC "{weibull uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Weibull"
+
+TAG "variables/weibull_uncertain/alphas"
+	DESC "{weibull uncertain alphas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Weibull"
+
+TAG "variables/weibull_uncertain/betas"
+	DESC "{weibull uncertain betas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Weibull"
+
+TAG "variables/weibull_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Weibull"
+
+TAG "variables/histogram_bin_uncertain" GROUP "Continuous Aleatory Uncertain"
+	DESC "{histogram bin uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Bin_Histogram"
+
+TAG "variables/histogram_bin_uncertain/num_pairs"
+	DESC "{key to apportionment among bin-based histogram variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Bin_Histogram"
+
+TAG "variables/histogram_bin_uncertain/abscissas"
+	DESC "{sets of abscissas for bin-based histogram variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Bin_Histogram"
+
+TAG "variables/histogram_bin_uncertain/ordinates"
+	DESC "{sets of ordinates for bin-based histogram variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Bin_Histogram"
+
+TAG "variables/histogram_bin_uncertain/counts"
+	DESC "{sets of counts for bin-based histogram variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Bin_Histogram"
+
+TAG "variables/histogram_bin_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCAUV_Bin_Histogram"
+
+TAG "variables/poisson_uncertain" GROUP "Discrete Aleatory Uncertain"
+	DESC "{poisson uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Poisson"
+
+TAG "variables/poisson_uncertain/lambdas"
+	DESC "{poisson uncertain lambdas} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Poisson"
+
+TAG "variables/poisson_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Poisson"
+
+TAG "variables/binomial_uncertain" GROUP "Discrete Aleatory Uncertain"
+	DESC "{binomial uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Binomial"
+
+TAG "variables/binomial_uncertain/prob_per_trial"
+	DESC "{binomial uncertain prob_per_trial} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Binomial"
+
+TAG "variables/binomial_uncertain/num_trials"
+	DESC "{binomial uncertain num_trials} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Binomial"
+
+TAG "variables/binomial_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Binomial"
+
+TAG "variables/negative_binomial_uncertain" GROUP "Discrete Aleatory Uncertain"
+	DESC "{negative binomial uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Negative_Binomial"
+
+TAG "variables/negative_binomial_uncertain/prob_per_trial"
+	DESC "{negative binomial uncertain success prob_per_trial} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Negative_Binomial"
+
+TAG "variables/negative_binomial_uncertain/num_trials"
+	DESC "{negative binomial uncertain success num_trials} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Negative_Binomial"
+
+TAG "variables/negative_binomial_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Negative_Binomial"
+
+TAG "variables/geometric_uncertain" GROUP "Discrete Aleatory Uncertain"
+	DESC "{geometric uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Geometric"
+
+TAG "variables/geometric_uncertain/prob_per_trial"
+	DESC "{geometric uncertain prob_per_trial} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Geometric"
+
+TAG "variables/geometric_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Geometric"
+
+TAG "variables/hypergeometric_uncertain" GROUP "Discrete Aleatory Uncertain"
+	DESC "{hypergeometric uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Hypergeometric"
+
+TAG "variables/hypergeometric_uncertain/total_population"
+	DESC "{hypergeometric uncertain total_population} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Hypergeometric"
+
+TAG "variables/hypergeometric_uncertain/selected_population"
+	DESC "{hypergeometric uncertain selected_population} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Hypergeometric"
+
+TAG "variables/hypergeometric_uncertain/num_drawn"
+	DESC "{hypergeometric uncertain num_drawn } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Hypergeometric"
+
+TAG "variables/hypergeometric_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Hypergeometric"
+
+TAG "variables/histogram_point_uncertain" GROUP "Discrete Aleatory Uncertain"
+	DESC "{histogram point uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Point_Histogram"
+
+TAG "variables/histogram_point_uncertain/num_pairs"
+	DESC "{key to apportionment among point-based histogram variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Point_Histogram"
+
+TAG "variables/histogram_point_uncertain/abscissas"
+	DESC "{sets of abscissas for point-based histogram variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Point_Histogram"
+
+TAG "variables/histogram_point_uncertain/counts"
+	DESC "{sets of counts for point-based histogram variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Point_Histogram"
+
+TAG "variables/histogram_point_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDAUV_Point_Histogram"
+
+TAG "variables/uncertain_correlation_matrix" GROUP "Aleatory Uncertain Correlations"
+	DESC "{correlations in aleatory uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarAUV_Correlations"
+
+TAG "variables/interval_uncertain" GROUP "Epistemic Uncertain"
+	DESC "{interval uncertain variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCEUV_Interval"
+
+TAG "variables/interval_uncertain/num_intervals"
+	DESC "{number of intervals defined for each interval variable} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCEUV_Interval"
+
+TAG "variables/interval_uncertain/interval_probs"
+	DESC "{basic probability assignments per interval} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCEUV_Interval"
+
+TAG "variables/interval_uncertain/interval_bounds"
+	DESC "{bounds per interval} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCEUV_Interval"
+
+TAG "variables/interval_uncertain/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCEUV_Interval"
+
+TAG "variables/continuous_state" GROUP "State Variables"
+	DESC "{Continuous state variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCSV"
+
+TAG "variables/continuous_state/initial_state"
+	DESC "{Initial states} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCSV"
+
+TAG "variables/continuous_state/lower_bounds"
+	DESC "{Lower bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCSV"
+
+TAG "variables/continuous_state/upper_bounds"
+	DESC "{Upper bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCSV"
+
+TAG "variables/continuous_state/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarCSV"
+
+TAG "variables/discrete_state_range" GROUP "State Variables"
+	DESC "{Discrete state range variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSRIV"
+
+TAG "variables/discrete_state_range/initial_state"
+	DESC "{Initial states} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSRIV"
+
+TAG "variables/discrete_state_range/lower_bounds"
+	DESC "{Lower bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSRIV"
+
+TAG "variables/discrete_state_range/upper_bounds"
+	DESC "{Upper bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSRIV"
+
+TAG "variables/discrete_state_range/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSRIV"
+
+TAG "variables/discrete_state_set_integer" GROUP "State Variables"
+	DESC "{Discrete state set of integer variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSSIV"
+
+TAG "variables/discrete_state_set_integer/initial_state"
+	DESC "{Initial state} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSSIV"
+
+TAG "variables/discrete_state_set_integer/num_set_values"
+	DESC "{Number of values for each variable} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSSIV"
+
+TAG "variables/discrete_state_set_integer/set_values"
+	DESC "{Set values} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSSIV"
+
+TAG "variables/discrete_state_set_integer/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSSIV"
+
+TAG "variables/discrete_state_set_real" GROUP "State Variables"
+	DESC "{Discrete state set of real variables} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSSRV"
+
+TAG "variables/discrete_state_set_real/initial_state"
+	DESC "{Initial state} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSSRV"
+
+TAG "variables/discrete_state_set_real/num_set_values"
+	DESC "{Number of values for each variable} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSSRV"
+
+TAG "variables/discrete_state_set_real/set_values"
+	DESC "{Set values} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSSRV"
+
+TAG "variables/discrete_state_set_real/descriptors"
+	DESC "{Descriptors} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/VarCommands.html#VarDSSRV"
+
+TAG "interface"
+	DESC "{Interface} An interface specifies how function evaluations will be performed in order to map a set of parameters into a set of responses. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/InterfCommands.html"
+
+TAG "interface/id_interface"
+	DESC "{Interface set identifier} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfIndControl"
+
+TAG "interface/algebraic_mappings"
+	DESC "{Algebraic mappings file} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfAlgebraic"
+
+TAG "interface/analysis_drivers"
+	DESC "{Analysis drivers} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplic"
+
+TAG "interface/analysis_drivers/analysis_components"
+	DESC "{Additional identifiers for use by the analysis_drivers} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplic"
+
+TAG "interface/analysis_drivers/input_filter"
+	DESC "{Input filter} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplic"
+
+TAG "interface/analysis_drivers/output_filter"
+	DESC "{Output filter} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplic"
+
+TAG "interface/analysis_drivers/system"
+	DESC "{System call interface } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/fork"
+	DESC "@"
+
+TAG "interface/analysis_drivers/system/parameters_file"
+	DESC "{Parameters file name} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/system/results_file"
+	DESC "{Results file name} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/system/verbatim"
+	DESC "{Verbatim driver/filter invocation syntax} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/system/aprepro"
+	DESC "{Aprepro parameters file format} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/system/file_tag"
+	DESC "{Parameters and results file tagging} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/system/file_save"
+	DESC "{Parameters and results file saving} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/system/work_directory"
+	DESC "{Create work directory} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/system/work_directory/named"
+	DESC "{Name of work directory} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/system/work_directory/directory_tag"
+	DESC "{Tag work directory} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/system/work_directory/directory_save"
+	DESC "{Save work directory} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/system/work_directory/template_directory"
+	DESC "{Template directory} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/system/work_directory/template_files"
+	DESC "{Template files} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/system/work_directory/template_directory/copy"
+	DESC "{Copy template files} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/system/work_directory/template_directory/replace"
+	DESC "{Replace existing files} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicSC"
+
+TAG "interface/analysis_drivers/direct"
+	DESC "[CHOOSE interface type]{Direct function interface } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicDF"
+
+TAG "interface/analysis_drivers/direct/processors_per_analysis"
+	DESC "{Number of processors per analysis} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicDF"
+
+TAG "interface/analysis_drivers/grid"
+	DESC "{Grid interface } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplicG"
+
+TAG "interface/analysis_drivers/failure_capture"
+	DESC "{Failure capturing} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplic"
+
+TAG "interface/analysis_drivers/failure_capture/abort"
+	DESC "@[CHOOSE failure mitigation]"
+
+TAG "interface/analysis_drivers/failure_capture/retry"
+TAG "interface/analysis_drivers/failure_capture/recover"
+TAG "interface/analysis_drivers/failure_capture/continuation"
+TAG "interface/analysis_drivers/deactivate"
+	DESC "{Feature deactivation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfApplic"
+
+TAG "interface/analysis_drivers/deactivate/active_set_vector"
+TAG "interface/analysis_drivers/deactivate/evaluation_cache"
+TAG "interface/analysis_drivers/deactivate/restart_file"
+TAG "interface/asynchronous"
+	DESC "{Asynchronous interface usage} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfIndControl"
+
+TAG "interface/asynchronous/evaluation_concurrency"
+	DESC "{Asynchronous evaluation concurrency} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfIndControl"
+
+TAG "interface/asynchronous/local_evaluation_self_scheduling"
+	DESC "{Self-schedule local evals} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfIndControl"
+
+TAG "interface/asynchronous/local_evaluation_static_scheduling"
+	DESC "{Static-schedule local evals} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfIndControl"
+
+TAG "interface/asynchronous/analysis_concurrency"
+	DESC "{Asynchronous analysis concurrency} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfIndControl"
+
+TAG "interface/evaluation_servers"
+	DESC "{Number of evaluation servers} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfIndControl"
+
+TAG "interface/evaluation_self_scheduling"
+	DESC "[CHOOSE evaluation sched.]{Self scheduling of evaluations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfIndControl"
+
+TAG "interface/evaluation_static_scheduling"
+	DESC "{Static scheduling of evaluations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfIndControl"
+
+TAG "interface/analysis_servers"
+	DESC "{Number of analysis servers} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfIndControl"
+
+TAG "interface/analysis_self_scheduling"
+	DESC "[CHOOSE analysis sched.]{Self scheduling of analyses} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfIndControl"
+
+TAG "interface/analysis_static_scheduling"
+	DESC "{Static scheduling of analyses} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/InterfCommands.html#InterfIndControl"
+
+TAG "responses"
+	DESC "{Responses} A responses object specifies the data that can be returned to DAKOTA through the interface after the completion of a function evaluation. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/RespCommands.html"
+
+TAG "responses/id_responses"
+	DESC "{Responses set identifier} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespSetId"
+
+TAG "responses/descriptors"
+	DESC "{Response labels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespLabels"
+
+TAG "responses/num_objective_functions"
+	DESC "{{Optimization} Number of objective functions} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
+TAG "responses/num_objective_functions/objective_function_scale_types"
+	DESC "{Objective function scaling types} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
+TAG "responses/num_objective_functions/objective_function_scales"
+	DESC "{Objective function scales} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
+TAG "responses/num_objective_functions/multi_objective_weights"
+	DESC "{Multiobjective weightings} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
+TAG "responses/num_objective_functions/num_nonlinear_inequality_constraints"
+	DESC "{Number of nonlinear inequality constraints} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
+TAG "responses/num_objective_functions/num_nonlinear_inequality_constraints/nonlinear_inequality_lower_bounds"
+	DESC "{Nonlinear inequality constraint lower bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
+TAG "responses/num_objective_functions/num_nonlinear_inequality_constraints/nonlinear_inequality_upper_bounds"
+	DESC "{Nonlinear inequality constraint upper bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
+TAG "responses/num_objective_functions/num_nonlinear_inequality_constraints/nonlinear_inequality_scale_types"
+	DESC "{Nonlinear inequality constraint scaling types} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
+TAG "responses/num_objective_functions/num_nonlinear_inequality_constraints/nonlinear_inequality_scales"
+	DESC "{Nonlinear inequality constraint scales} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
+TAG "responses/num_objective_functions/num_nonlinear_equality_constraints"
+	DESC "{Number of nonlinear equality constraints} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
+TAG "responses/num_objective_functions/num_nonlinear_equality_constraints/nonlinear_equality_targets"
+	DESC "{Nonlinear equality constraint targets} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
+TAG "responses/num_objective_functions/num_nonlinear_equality_constraints/nonlinear_equality_scale_types"
+	DESC "{Nonlinear equality constraint scaling types} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
+TAG "responses/num_objective_functions/num_nonlinear_equality_constraints/nonlinear_equality_scales"
+	DESC "{Nonlinear equality constraint scales} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
+TAG "responses/num_least_squares_terms"
+	DESC "[CHOOSE response type]{{Least squares (calibration)} Number of least squares terms} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_least_squares_terms/least_squares_data_file"
+	DESC "{Least squares data source file} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_least_squares_terms/least_squares_term_scale_types"
+	DESC "{Least squares term scaling types} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_least_squares_terms/least_squares_term_scales"
+	DESC "{Least squares terms scales} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_least_squares_terms/least_squares_weights"
+	DESC "{Least squares terms weightings} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_least_squares_terms/num_nonlinear_inequality_constraints"
+	DESC "{Number of nonlinear inequality constraints} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_least_squares_terms/num_nonlinear_inequality_constraints/nonlinear_inequality_lower_bounds"
+	DESC "{Nonlinear inequality constraint lower bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_least_squares_terms/num_nonlinear_inequality_constraints/nonlinear_inequality_upper_bounds"
+	DESC "{Nonlinear inequality constraint upper bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_least_squares_terms/num_nonlinear_inequality_constraints/nonlinear_inequality_scale_types"
+	DESC "{Nonlinear inequality scaling types} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_least_squares_terms/num_nonlinear_inequality_constraints/nonlinear_inequality_scales"
+	DESC "{Nonlinear inequality constraint scales} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_least_squares_terms/num_nonlinear_equality_constraints"
+	DESC "{Number of nonlinear equality constraints} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_least_squares_terms/num_nonlinear_equality_constraints/nonlinear_equality_targets"
+	DESC "{Nonlinear equality constraint targets} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_least_squares_terms/num_nonlinear_equality_constraints/nonlinear_equality_scale_types"
+	DESC "{Nonlinear equality scaling types} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_least_squares_terms/num_nonlinear_equality_constraints/nonlinear_equality_scales"
+	DESC "{Nonlinear equality constraint scales} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/num_response_functions"
+	DESC "{{Generic responses} Number of response functions} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespFnGen"
+
+TAG "responses/no_gradients"
+	DESC "@"
+
+TAG "responses/analytic_gradients"
+	DESC "[CHOOSE gradient type]"
+
+TAG "responses/mixed_gradients"
+	DESC "{Mixed gradients} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespGradMixed"
+
+TAG "responses/mixed_gradients/id_numerical_gradients"
+	DESC "{Numerical derivatives function list} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespGradMixed"
+
+TAG "responses/mixed_gradients/id_analytic_gradients"
+	DESC "{Analytic derivatives function list} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespGradMixed"
+
+TAG "responses/numerical_gradients"
+	DESC "{Numerical gradients} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespGradNum"
+
+TAG "responses/mixed_gradients/method_source"
+	DESC "{Method source} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespGradNum"
+
+TAG "responses/mixed_gradients/dakota"
+	DESC "@[CHOOSE gradient source]"
+
+TAG "responses/mixed_gradients/dakota/ignore_bounds"
+	DESC "{Ignore variable bounds} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespGradMixed"
+
+TAG "responses/mixed_gradients/vendor"
+TAG "responses/mixed_gradients/interval_type"
+	DESC "{Interval type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespGradNum"
+
+TAG "responses/mixed_gradients/forward"
+	DESC "@"
+
+TAG "responses/mixed_gradients/central"
+	DESC "[CHOOSE difference interval]"
+
+TAG "responses/mixed_gradients/fd_step_size"
+	DESC "{Finite difference step size} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespGradMixed"
+
+TAG "responses/no_hessians"
+	DESC "@"
+
+TAG "responses/numerical_hessians"
+	DESC "{Numerical Hessians} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespHessNum"
+
+TAG "responses/numerical_hessians/fd_step_size"
+	DESC "{Finite difference step size} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespHessNum"
+
+TAG "responses/numerical_hessians/forward"
+	DESC "@"
+
+TAG "responses/numerical_hessians/central"
+	DESC "[CHOOSE difference interval]"
+
+TAG "responses/quasi_hessians"
+	DESC "{Quasi Hessians} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespHessQuasi"
+
+TAG "responses/quasi_hessians/bfgs"
+	DESC "[CHOOSE Hessian approx.]"
+
+TAG "responses/quasi_hessians/bfgs/damped"
+	DESC "{Numerical safeguarding of BFGS update} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespHessQuasi"
+
+TAG "responses/quasi_hessians/sr1"
+TAG "responses/analytic_hessians"
+	DESC "[CHOOSE Hessian type]"
+
+TAG "responses/mixed_hessians"
+	DESC "{Mixed Hessians} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespHessMixed"
+
+TAG "responses/mixed_hessians/id_numerical_hessians"
+	DESC "{Numerical Hessians function list} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespHessMixed"
+
+TAG "responses/mixed_hessians/id_numerical_hessians/fd_step_size"
+	DESC "{Finite difference step size} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespHessMixed"
+
+TAG "responses/mixed_hessians/forward"
+	DESC "@"
+
+TAG "responses/mixed_hessians/central"
+	DESC "[CHOOSE difference interval]"
+
+TAG "responses/mixed_hessians/id_quasi_hessians"
+	DESC "{Quasi Hessians function list} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespHessMixed"
+
+TAG "responses/mixed_hessians/id_quasi_hessians/bfgs"
+	DESC "[CHOOSE Hessian approx.]"
+
+TAG "responses/mixed_hessians/id_quasi_hessians/bfgs/damped"
+	DESC "{Numerical safeguarding of BFGS update} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespHessMixed"
+
+TAG "responses/mixed_hessians/id_quasi_hessians/sr1"
+TAG "responses/mixed_hessians/id_analytic_hessians"
+	DESC "{Analytic Hessians function list} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/RespCommands.html#RespHessMixed"
+

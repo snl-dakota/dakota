@@ -1,0 +1,4323 @@
+$ dakota -i dakota_matlab_rosenbrock.in 
+Running MPI executable in serial mode.
+DAKOTA version 4.2 released 11/05/2008.
+Constructing Single Method Strategy...
+Writing new restart file dakota.rst
+methodName = conmin_mfd
+gradientType = numerical
+Numerical gradients using forward differences
+to be calculated by the dakota finite difference routine.
+hessianType = none
+
+>>>>> Running Single Method Strategy.
+
+Warning: for no constraints, conmin_mfd request will be changed
+         to conmin_frcg.
+
+
+>>>>> Running conmin_frcg iterator.
+1
+
+
+
+            * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+            *                                                   *
+            *                    C O N M I N                    *
+            *                                                   *
+            *                FORTRAN PROGRAM FOR                *
+            *                                                   *
+            *         CONSTRAINED FUNCTION MINIMIZATION         *
+            *                                                   *
+            * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+------------------------------
+Begin Function Evaluation    1
+------------------------------
+Parameters for function evaluation 1:
+                     -1.0000000000e+00 x1
+                      1.0000000000e+00 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.1 results.out.1
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 1:
+Active set vector = { 1 }
+                      4.0000000000e+00 obj_fn
+
+
+
+
+     INITIAL FUNCTION INFORMATION
+
+     OBJ =   0.400000E+01
+
+     DECISION VARIABLES (X-VECTOR)
+       1)   -0.10000E+01  0.10000E+01
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation    2
+------------------------------
+Parameters for function evaluation 2:
+                     -1.0000010000e+00 x1
+                      1.0000000000e+00 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.2 results.out.2
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 2:
+Active set vector = { 1 }
+                      4.0000040004e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation    3
+------------------------------
+Parameters for function evaluation 3:
+                     -1.0000000000e+00 x1
+                      1.0000010000e+00 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.3 results.out.3
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 3:
+Active set vector = { 1 }
+                      4.0000000001e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -4.0003999997e+00  1.0000000827e-04 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation    4
+------------------------------
+Parameters for function evaluation 4:
+                     -9.0000999906e-01 x1
+                      9.9999750050e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.4 results.out.4
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 4:
+Active set vector = { 1 }
+                      7.2192591183e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation    5
+------------------------------
+Parameters for function evaluation 5:
+                     -9.9447455970e-01 x1
+                      9.9999986188e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.5 results.out.5
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 5:
+Active set vector = { 1 }
+                      3.9900732765e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation    6
+------------------------------
+Parameters for function evaluation 6:
+                     -9.9497526079e-01 x1
+                      9.9999987439e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.6 results.out.6
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 6:
+Active set vector = { 1 }
+                      3.9899745589e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation    7
+------------------------------
+Parameters for function evaluation 7:
+                     -9.9497625576e-01 x1
+                      9.9999987439e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.7 results.out.7
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 7:
+Active set vector = { 1 }
+                      3.9899745597e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation    8
+------------------------------
+Parameters for function evaluation 8:
+                     -9.9497526079e-01 x1
+                      1.0000008744e+00 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.8 results.out.8
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 8:
+Active set vector = { 1 }
+                      3.9899765638e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -8.0403971197e-04  2.0049002516e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation    9
+------------------------------
+Parameters for function evaluation 9:
+                     -9.6863028267e-01 x1
+                      9.4747482363e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.9 results.out.9
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 9:
+Active set vector = { 1 }
+                      3.8840248474e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   10
+------------------------------
+Parameters for function evaluation 10:
+                     -8.6325037019e-01 x1
+                      7.3737462057e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.10 results.out.10
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 10:
+Active set vector = { 1 }
+                      3.4778274791e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   11
+------------------------------
+Parameters for function evaluation 11:
+                     -6.8185888123e-01 x1
+                      3.7572705634e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.11 results.out.11
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 11:
+Active set vector = { 1 }
+                      3.6243931782e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   12
+------------------------------
+Parameters for function evaluation 12:
+                     -8.6325123344e-01 x1
+                      7.3737462057e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.12 results.out.12
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 12:
+Active set vector = { 1 }
+                      3.4778330292e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   13
+------------------------------
+Parameters for function evaluation 13:
+                     -8.6325037019e-01 x1
+                      7.3737535795e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.13 results.out.13
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 13:
+Active set vector = { 1 }
+                      3.4778263250e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -6.4293050912e+00 -1.5651474404e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   14
+------------------------------
+Parameters for function evaluation 14:
+                     -8.1382165308e-01 x1
+                      6.7972533651e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.14 results.out.14
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 14:
+Active set vector = { 1 }
+                      3.3202934220e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   15
+------------------------------
+Parameters for function evaluation 15:
+                     -7.8293940859e-01 x1
+                      6.4370701783e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.15 results.out.15
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 15:
+Active set vector = { 1 }
+                      3.2732011592e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   16
+------------------------------
+Parameters for function evaluation 16:
+                     -7.6154196264e-01 x1
+                      6.1875092932e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.16 results.out.16
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 16:
+Active set vector = { 1 }
+                      3.2536110916e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   17
+------------------------------
+Parameters for function evaluation 17:
+                     -7.6154272418e-01 x1
+                      6.1875092932e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.17 results.out.17
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 17:
+Active set vector = { 1 }
+                      3.2536047728e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   18
+------------------------------
+Parameters for function evaluation 18:
+                     -7.6154196264e-01 x1
+                      6.1875154807e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.18 results.out.18
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 18:
+Active set vector = { 1 }
+                      3.2536158937e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  8.2973759946e+00  7.7609580411e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   19
+------------------------------
+Parameters for function evaluation 19:
+                     -7.8170671218e-01 x1
+                      5.9988981284e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.19 results.out.19
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 19:
+Active set vector = { 1 }
+                      3.1869681470e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   20
+------------------------------
+Parameters for function evaluation 20:
+                     -7.7434408638e-01 x1
+                      6.0677645146e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.20 results.out.20
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 20:
+Active set vector = { 1 }
+                      3.1534345111e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   21
+------------------------------
+Parameters for function evaluation 21:
+                     -7.7435397732e-01 x1
+                      6.0676719995e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.21 results.out.21
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 21:
+Active set vector = { 1 }
+                      3.1534344500e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   22
+------------------------------
+Parameters for function evaluation 22:
+                     -7.7435475167e-01 x1
+                      6.0676719995e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.22 results.out.22
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 22:
+Active set vector = { 1 }
+                      3.1534354848e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   23
+------------------------------
+Parameters for function evaluation 23:
+                     -7.7435397732e-01 x1
+                      6.0676780672e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.23 results.out.23
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 23:
+Active set vector = { 1 }
+                      3.1534353168e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.3363397499e+00  1.4285544774e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   24
+------------------------------
+Parameters for function evaluation 24:
+                     -7.3155558054e-01 x1
+                      5.4166343225e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.24 results.out.24
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 24:
+Active set vector = { 1 }
+                      3.0024965631e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   25
+------------------------------
+Parameters for function evaluation 25:
+                     -5.6036199344e-01 x1
+                      2.8124836145e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.25 results.out.25
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 25:
+Active set vector = { 1 }
+                      2.5420329804e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   26
+------------------------------
+Parameters for function evaluation 26:
+                     -5.1165243114e-01 x1
+                      2.0715268807e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.26 results.out.26
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 26:
+Active set vector = { 1 }
+                      2.5835971014e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   27
+------------------------------
+Parameters for function evaluation 27:
+                     -5.6036255380e-01 x1
+                      2.8124836145e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.27 results.out.27
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 27:
+Active set vector = { 1 }
+                      2.5420388436e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   28
+------------------------------
+Parameters for function evaluation 28:
+                     -5.6036199344e-01 x1
+                      2.8124864269e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.28 results.out.28
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 28:
+Active set vector = { 1 }
+                      2.5420311379e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.0463236387e+01 -6.5511492783e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   29
+------------------------------
+Parameters for function evaluation 29:
+                     -4.7192964691e-01 x1
+                      1.8359761934e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.29 results.out.29
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 29:
+Active set vector = { 1 }
+                      2.3196141086e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   30
+------------------------------
+Parameters for function evaluation 30:
+                     -3.6040113655e-01 x1
+                      6.0443115028e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.30 results.out.30
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 30:
+Active set vector = { 1 }
+                      2.3329640577e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   31
+------------------------------
+Parameters for function evaluation 31:
+                     -4.1736568198e-01 x1
+                      1.2334577851e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.31 results.out.31
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 31:
+Active set vector = { 1 }
+                      2.2674807833e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   32
+------------------------------
+Parameters for function evaluation 32:
+                     -4.1736609934e-01 x1
+                      1.2334577851e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.32 results.out.32
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 32:
+Active set vector = { 1 }
+                      2.2674855094e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   33
+------------------------------
+Parameters for function evaluation 33:
+                     -4.1736568198e-01 x1
+                      1.2334590186e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.33 results.out.33
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 33:
+Active set vector = { 1 }
+                      2.2674795289e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.1323643041e+01 -1.0169784609e+01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   34
+------------------------------
+Parameters for function evaluation 34:
+                     -4.0063489823e-01 x1
+                      1.3837172612e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.34 results.out.34
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 34:
+Active set vector = { 1 }
+                      2.0107810044e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   35
+------------------------------
+Parameters for function evaluation 35:
+                     -3.8390344042e-01 x1
+                      1.5339827910e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.35 results.out.35
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 35:
+Active set vector = { 1 }
+                      1.9188084724e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   36
+------------------------------
+Parameters for function evaluation 36:
+                     -3.8251913251e-01 x1
+                      1.5464152857e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.36 results.out.36
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 36:
+Active set vector = { 1 }
+                      1.9182824598e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   37
+------------------------------
+Parameters for function evaluation 37:
+                     -3.8251951503e-01 x1
+                      1.5464152857e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.37 results.out.37
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 37:
+Active set vector = { 1 }
+                      1.9182830305e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   38
+------------------------------
+Parameters for function evaluation 38:
+                     -3.8251913251e-01 x1
+                      1.5464168322e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.38 results.out.38
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 38:
+Active set vector = { 1 }
+                      1.9182827172e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.4919515173e+00  1.6644946708e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   39
+------------------------------
+Parameters for function evaluation 39:
+                     -2.9518296289e-01 x1
+                      8.1946134208e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.39 results.out.39
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 39:
+Active set vector = { 1 }
+                      1.6801892459e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   40
+------------------------------
+Parameters for function evaluation 40:
+                      5.4161715618e-02 x1
+                     -2.0883544326e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.40 results.out.40
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 40:
+Active set vector = { 1 }
+                      5.3792182306e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   41
+------------------------------
+Parameters for function evaluation 41:
+                     -2.3978847148e-01 x1
+                      3.5837810297e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.41 results.out.41
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 41:
+Active set vector = { 1 }
+                      1.5839940498e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   42
+------------------------------
+Parameters for function evaluation 42:
+                     -2.3978871127e-01 x1
+                      3.5837810297e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.42 results.out.42
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 42:
+Active set vector = { 1 }
+                      1.5839951425e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   43
+------------------------------
+Parameters for function evaluation 43:
+                     -2.3978847148e-01 x1
+                      3.5837846134e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.43 results.out.43
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 43:
+Active set vector = { 1 }
+                      1.5839938945e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -4.5569330055e+00 -4.3334120775e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   44
+------------------------------
+Parameters for function evaluation 44:
+                     -1.4934294368e-01 x1
+                      7.2285762009e-04 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.44 results.out.44
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 44:
+Active set vector = { 1 }
+                      1.3675608155e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   45
+------------------------------
+Parameters for function evaluation 45:
+                      3.0163138934e-02 x1
+                     -6.8969339985e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.45 results.out.45
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 45:
+Active set vector = { 1 }
+                      1.4288931665e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   46
+------------------------------
+Parameters for function evaluation 46:
+                     -6.7135840791e-02 x1
+                     -3.1193574267e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.46 results.out.46
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 46:
+Active set vector = { 1 }
+                      1.2662335818e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   47
+------------------------------
+Parameters for function evaluation 47:
+                     -6.7135907927e-02 x1
+                     -3.1193574267e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.47 results.out.47
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 47:
+Active set vector = { 1 }
+                      1.2662337895e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   48
+------------------------------
+Parameters for function evaluation 48:
+                     -6.7135840791e-02 x1
+                     -3.1193605461e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.48 results.out.48
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 48:
+Active set vector = { 1 }
+                      1.2662338045e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -3.0937275476e+00 -7.1392908709e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   49
+------------------------------
+Parameters for function evaluation 49:
+                     -5.5007497605e-02 x1
+                     -3.2054051553e-03 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.49 results.out.49
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 49:
+Active set vector = { 1 }
+                      1.1169236427e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   50
+------------------------------
+Parameters for function evaluation 50:
+                     -5.0785783799e-02 x1
+                      6.5369016155e-03 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.50 results.out.50
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 50:
+Active set vector = { 1 }
+                      1.1057171069e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   51
+------------------------------
+Parameters for function evaluation 51:
+                     -5.0618521942e-02 x1
+                      6.9228861684e-03 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.51 results.out.51
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 51:
+Active set vector = { 1 }
+                      1.1057008067e+00 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   52
+------------------------------
+Parameters for function evaluation 52:
+                     -5.0618572561e-02 x1
+                      6.9228861684e-03 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.52 results.out.52
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 52:
+Active set vector = { 1 }
+                      1.1057009086e+00 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   53
+------------------------------
+Parameters for function evaluation 53:
+                     -5.0618521942e-02 x1
+                      6.9228961684e-03 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.53 results.out.53
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 53:
+Active set vector = { 1 }
+                      1.1057008154e+00 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -2.0130971052e+00  8.7000000537e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   54
+------------------------------
+Parameters for function evaluation 54:
+                      3.4366636832e-02 x1
+                     -4.4708832745e-03 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.54 results.out.54
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 54:
+Active set vector = { 1 }
+                      9.3564224482e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   55
+------------------------------
+Parameters for function evaluation 55:
+                      3.7430727193e-01 x1
+                     -5.0045961046e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.55 results.out.55
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 55:
+Active set vector = { 1 }
+                      4.0072657020e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   56
+------------------------------
+Parameters for function evaluation 56:
+                      8.1704521788e-02 x1
+                     -1.0817367236e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.56 results.out.56
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 56:
+Active set vector = { 1 }
+                      8.7386707662e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   57
+------------------------------
+Parameters for function evaluation 57:
+                      8.1704603493e-02 x1
+                     -1.0817367236e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.57 results.out.57
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 57:
+Active set vector = { 1 }
+                      8.7386697327e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   58
+------------------------------
+Parameters for function evaluation 58:
+                      8.1704521788e-02 x1
+                     -1.0817378053e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.58 results.out.58
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 58:
+Active set vector = { 1 }
+                      8.7386711446e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.2649238713e+00 -3.4980785248e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   59
+------------------------------
+Parameters for function evaluation 59:
+                      1.4174394738e-01 x1
+                      9.4970555938e-03 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.59 results.out.59
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 59:
+Active set vector = { 1 }
+                      7.4782735209e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   60
+------------------------------
+Parameters for function evaluation 60:
+                      2.9218266612e-01 x1
+                      6.0398204499e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.60 results.out.60
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 60:
+Active set vector = { 1 }
+                      5.6336798315e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   61
+------------------------------
+Parameters for function evaluation 61:
+                      3.6474966567e-01 x1
+                      8.4951349330e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.61 results.out.61
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 61:
+Active set vector = { 1 }
+                      6.3481711986e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> Initial map for analytic portion of response
+      augmented with data requirements for differencing:
+
+------------------------------
+Begin Function Evaluation   62
+------------------------------
+Parameters for function evaluation 62:
+                      2.9218266612e-01 x1
+                      6.0398204499e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.62 results.out.62
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 62:
+Active set vector = { 1 }
+                      5.6336798315e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   63
+------------------------------
+Parameters for function evaluation 63:
+                      2.9218295831e-01 x1
+                      6.0398204499e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.63 results.out.63
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 63:
+Active set vector = { 1 }
+                      5.6336842230e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   64
+------------------------------
+Parameters for function evaluation 64:
+                      2.9218266612e-01 x1
+                      6.0398264897e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.64 results.out.64
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 64:
+Active set vector = { 1 }
+                      5.6336768149e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  1.5029981270e+00 -4.9945193319e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   65
+------------------------------
+Parameters for function evaluation 65:
+                      2.8595759644e-01 x1
+                      8.1084345319e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.65 results.out.65
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 65:
+Active set vector = { 1 }
+                      5.0990380619e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   66
+------------------------------
+Parameters for function evaluation 66:
+                      2.8625961380e-01 x1
+                      8.0080730254e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.66 results.out.66
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 66:
+Active set vector = { 1 }
+                      5.0977272745e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   67
+------------------------------
+Parameters for function evaluation 67:
+                      2.8625149919e-01 x1
+                      8.0107695418e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.67 results.out.67
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 67:
+Active set vector = { 1 }
+                      5.0977262739e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   68
+------------------------------
+Parameters for function evaluation 68:
+                      2.8625178544e-01 x1
+                      8.0107695418e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.68 results.out.68
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 68:
+Active set vector = { 1 }
+                      5.0977227883e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   69
+------------------------------
+Parameters for function evaluation 69:
+                      2.8625149919e-01 x1
+                      8.0107775525e-02 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.69 results.out.69
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 69:
+Active set vector = { 1 }
+                      5.0977259804e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.2176704785e+00 -3.6638177934e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   70
+------------------------------
+Parameters for function evaluation 70:
+                      3.5739749379e-01 x1
+                      1.2192786928e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.70 results.out.70
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 70:
+Active set vector = { 1 }
+                      4.1630789876e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   71
+------------------------------
+Parameters for function evaluation 71:
+                      6.4198147218e-01 x1
+                      2.8920856474e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.71 results.out.71
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 71:
+Active set vector = { 1 }
+                      1.6393962222e+00 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   72
+------------------------------
+Parameters for function evaluation 72:
+                      4.0606750970e-01 x1
+                      1.5053648652e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.72 results.out.72
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 72:
+Active set vector = { 1 }
+                      3.7336049898e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   73
+------------------------------
+Parameters for function evaluation 73:
+                      4.0606791576e-01 x1
+                      1.5053648652e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.73 results.out.73
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 73:
+Active set vector = { 1 }
+                      3.7336096340e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   74
+------------------------------
+Parameters for function evaluation 74:
+                      4.0606750970e-01 x1
+                      1.5053663706e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.74 results.out.74
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 74:
+Active set vector = { 1 }
+                      3.7336006682e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  1.1437014509e+00 -2.8707990335e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   75
+------------------------------
+Parameters for function evaluation 75:
+                      4.3444255387e-01 x1
+                      1.8542806623e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.75 results.out.75
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 75:
+Active set vector = { 1 }
+                      3.2095233574e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   76
+------------------------------
+Parameters for function evaluation 76:
+                      4.6883358847e-01 x1
+                      2.2771725237e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.76 results.out.76
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 76:
+Active set vector = { 1 }
+                      2.8839823545e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   77
+------------------------------
+Parameters for function evaluation 77:
+                      4.8463115067e-01 x1
+                      2.4714283977e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.77 results.out.77
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 77:
+Active set vector = { 1 }
+                      2.8067381038e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   78
+------------------------------
+Parameters for function evaluation 78:
+                      4.8463163530e-01 x1
+                      2.4714283977e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.78 results.out.78
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 78:
+Active set vector = { 1 }
+                      2.8067215763e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   79
+------------------------------
+Parameters for function evaluation 79:
+                      4.8463115067e-01 x1
+                      2.4714308691e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.79 results.out.79
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 79:
+Active set vector = { 1 }
+                      2.8067441714e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -3.4103255594e+00  2.4550984386e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   80
+------------------------------
+Parameters for function evaluation 80:
+                      4.9547267707e-01 x1
+                      2.3933800880e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.80 results.out.80
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 80:
+Active set vector = { 1 }
+                      2.5833642510e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   81
+------------------------------
+Parameters for function evaluation 81:
+                      4.9363460828e-01 x1
+                      2.4066123725e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.81 results.out.81
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 81:
+Active set vector = { 1 }
+                      2.5731426276e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   82
+------------------------------
+Parameters for function evaluation 82:
+                      4.9360675931e-01 x1
+                      2.4068128577e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.82 results.out.82
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 82:
+Active set vector = { 1 }
+                      2.5731403571e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   83
+------------------------------
+Parameters for function evaluation 83:
+                      4.9360725292e-01 x1
+                      2.4068128577e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.83 results.out.83
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 83:
+Active set vector = { 1 }
+                      2.5731382491e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   84
+------------------------------
+Parameters for function evaluation 84:
+                      4.9360675931e-01 x1
+                      2.4068152645e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.84 results.out.84
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 84:
+Active set vector = { 1 }
+                      2.5731389293e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -4.2706060246e-01 -5.9323266258e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   85
+------------------------------
+Parameters for function evaluation 85:
+                      5.3593024700e-01 x1
+                      2.8210211903e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.85 results.out.85
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 85:
+Active set vector = { 1 }
+                      2.1798126501e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   86
+------------------------------
+Parameters for function evaluation 86:
+                      7.0522419775e-01 x1
+                      4.4778545207e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.86 results.out.86
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 86:
+Active set vector = { 1 }
+                      3.3246968257e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   87
+------------------------------
+Parameters for function evaluation 87:
+                      5.9660789416e-01 x1
+                      3.4148566332e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.87 results.out.87
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 87:
+Active set vector = { 1 }
+                      1.8362080728e-01 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   88
+------------------------------
+Parameters for function evaluation 88:
+                      5.9660849077e-01 x1
+                      3.4148566332e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.88 results.out.88
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 88:
+Active set vector = { 1 }
+                      1.8362238410e-01 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   89
+------------------------------
+Parameters for function evaluation 89:
+                      5.9660789416e-01 x1
+                      3.4148600481e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.89 results.out.89
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 89:
+Active set vector = { 1 }
+                      1.8361982004e-01 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  2.6429754206e+00 -2.8910144877e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   90
+------------------------------
+Parameters for function evaluation 90:
+                      6.2009562018e-01 x1
+                      3.7469635529e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.90 results.out.90
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 90:
+Active set vector = { 1 }
+                      1.5397494402e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   91
+------------------------------
+Parameters for function evaluation 91:
+                      6.8952149413e-01 x1
+                      4.7286172531e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.91 results.out.91
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 91:
+Active set vector = { 1 }
+                      9.7061596372e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   92
+------------------------------
+Parameters for function evaluation 92:
+                      7.4089074524e-01 x1
+                      5.4549576296e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.92 results.out.92
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 92:
+Active set vector = { 1 }
+                      6.8309527075e-02 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   93
+------------------------------
+Parameters for function evaluation 93:
+                      7.4089148614e-01 x1
+                      5.4549576296e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.93 results.out.93
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 93:
+Active set vector = { 1 }
+                      6.8309894906e-02 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   94
+------------------------------
+Parameters for function evaluation 94:
+                      7.4089074524e-01 x1
+                      5.4549630846e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.94 results.out.94
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 94:
+Active set vector = { 1 }
+                      6.8309153622e-02 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  4.9647131153e-01 -6.8461210032e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation   95
+------------------------------
+Parameters for function evaluation 95:
+                      7.3140674402e-01 x1
+                      5.5857378348e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.95 results.out.95
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 95:
+Active set vector = { 1 }
+                      1.2792313248e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   96
+------------------------------
+Parameters for function evaluation 96:
+                      7.4000661951e-01 x1
+                      5.4671493346e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.96 results.out.96
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 96:
+Active set vector = { 1 }
+                      6.7676635959e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation   97
+------------------------------
+Parameters for function evaluation 97:
+                      7.4001174384e-01 x1
+                      5.4670786724e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.97 results.out.97
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 97:
+Active set vector = { 1 }
+                      6.7676614874e-02 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   98
+------------------------------
+Parameters for function evaluation 98:
+                      7.4001248385e-01 x1
+                      5.4670786724e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.98 results.out.98
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 98:
+Active set vector = { 1 }
+                      6.7676429432e-02 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   99
+------------------------------
+Parameters for function evaluation 99:
+                      7.4001174384e-01 x1
+                      5.4670841395e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.99 results.out.99
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 99:
+Active set vector = { 1 }
+                      6.7676515456e-02 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -2.5059332036e-01 -1.8184848976e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  100
+------------------------------
+Parameters for function evaluation 100:
+                      7.6599390974e-01 x1
+                      5.8533544101e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.100 results.out.100
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 100:
+Active set vector = { 1 }
+                      5.4958006938e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  101
+------------------------------
+Parameters for function evaluation 101:
+                      8.6992257335e-01 x1
+                      7.3984573607e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.101 results.out.101
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 101:
+Active set vector = { 1 }
+                      4.5547245880e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  102
+------------------------------
+Parameters for function evaluation 102:
+                      8.3232873388e-01 x1
+                      6.8395513739e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.102 results.out.102
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 102:
+Active set vector = { 1 }
+                      3.5885810615e-02 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  103
+------------------------------
+Parameters for function evaluation 103:
+                      8.3232956621e-01 x1
+                      6.8395513739e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.103 results.out.103
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 103:
+Active set vector = { 1 }
+                      3.5887974677e-02 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  104
+------------------------------
+Parameters for function evaluation 104:
+                      8.3232873388e-01 x1
+                      6.8395582135e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.104 results.out.104
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 104:
+Active set vector = { 1 }
+                      3.5884604714e-02 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  2.6000087608e+00 -1.7631287991e+00 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  105
+------------------------------
+Parameters for function evaluation 105:
+                      8.4375110372e-01 x1
+                      7.0486990204e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.105 results.out.105
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 105:
+Active set vector = { 1 }
+                      2.9378361585e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  106
+------------------------------
+Parameters for function evaluation 106:
+                      8.8944058308e-01 x1
+                      7.8852896065e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.106 results.out.106
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 106:
+Active set vector = { 1 }
+                      1.2886751148e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  107
+------------------------------
+Parameters for function evaluation 107:
+                      9.1596929867e-01 x1
+                      8.3710398061e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.107 results.out.107
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 107:
+Active set vector = { 1 }
+                      7.4205552362e-03 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  108
+------------------------------
+Parameters for function evaluation 108:
+                      9.1597021464e-01 x1
+                      8.3710398061e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.108 results.out.108
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 108:
+Active set vector = { 1 }
+                      7.4210378019e-03 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  109
+------------------------------
+Parameters for function evaluation 109:
+                      9.1596929867e-01 x1
+                      8.3710481772e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.109 results.out.109
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 109:
+Active set vector = { 1 }
+                      7.4202379140e-03 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  5.2683610761e-01 -3.7907142643e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  110
+------------------------------
+Parameters for function evaluation 110:
+                      9.1346800815e-01 x1
+                      8.3890372013e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.110 results.out.110
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 110:
+Active set vector = { 1 }
+                      9.4947523336e-03 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  111
+------------------------------
+Parameters for function evaluation 111:
+                      9.1535536408e-01 x1
+                      8.3754572152e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.111 results.out.111
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 111:
+Active set vector = { 1 }
+                      7.1755859859e-03 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  112
+------------------------------
+Parameters for function evaluation 112:
+                      9.1535636431e-01 x1
+                      8.3754500183e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.112 results.out.112
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 112:
+Active set vector = { 1 }
+                      7.1755855214e-03 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  113
+------------------------------
+Parameters for function evaluation 113:
+                      9.1535727966e-01 x1
+                      8.3754500183e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.113 results.out.113
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 113:
+Active set vector = { 1 }
+                      7.1755422061e-03 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  114
+------------------------------
+Parameters for function evaluation 114:
+                      9.1535636431e-01 x1
+                      8.3754583938e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.114 results.out.114
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 114:
+Active set vector = { 1 }
+                      7.1755299330e-03 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -4.7320695731e-02 -6.6370642627e-02 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  115
+------------------------------
+Parameters for function evaluation 115:
+                      9.2709266958e-01 x1
+                      8.5931109897e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.115 results.out.115
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 115:
+Active set vector = { 1 }
+                      5.3190781598e-03 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  116
+------------------------------
+Parameters for function evaluation 116:
+                      9.7403789067e-01 x1
+                      9.4637548750e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.116 results.out.116
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 116:
+Active set vector = { 1 }
+                      1.2377730243e-03 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  117
+------------------------------
+Parameters for function evaluation 117:
+                      9.8106111209e-01 x1
+                      9.5940072124e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.117 results.out.117
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 117:
+Active set vector = { 1 }
+                      1.3074350701e-03 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  118
+------------------------------
+Parameters for function evaluation 118:
+                      9.7403886471e-01 x1
+                      9.4637548750e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.118 results.out.118
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 118:
+Active set vector = { 1 }
+                      1.2386238657e-03 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  119
+------------------------------
+Parameters for function evaluation 119:
+                      9.7403789067e-01 x1
+                      9.4637643388e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.119 results.out.119
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 119:
+Active set vector = { 1 }
+                      1.2373237133e-03 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  8.7351981699e-01 -4.7477032735e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  120
+------------------------------
+Parameters for function evaluation 120:
+                      9.8362002045e-01 x1
+                      9.6821800722e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.120 results.out.120
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 120:
+Active set vector = { 1 }
+                      3.1866582837e-04 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  121
+------------------------------
+Parameters for function evaluation 121:
+                      9.8290290467e-01 x1
+                      9.6658333769e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.121 results.out.121
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 121:
+Active set vector = { 1 }
+                      3.1585428813e-04 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  122
+------------------------------
+Parameters for function evaluation 122:
+                      9.8307871819e-01 x1
+                      9.6698410562e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.122 results.out.122
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 122:
+Active set vector = { 1 }
+                      3.1552645060e-04 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  123
+------------------------------
+Parameters for function evaluation 123:
+                      9.8307970127e-01 x1
+                      9.6698410562e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.123 results.out.123
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 123:
+Active set vector = { 1 }
+                      3.1528467209e-04 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  124
+------------------------------
+Parameters for function evaluation 124:
+                      9.8307871819e-01 x1
+                      9.6698507261e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.124 results.out.124
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 124:
+Active set vector = { 1 }
+                      3.1563104404e-04 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -2.4594013229e-01  1.0816459070e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  125
+------------------------------
+Parameters for function evaluation 125:
+                      9.8989277346e-01 x1
+                      9.6398728078e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.125 results.out.125
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 125:
+Active set vector = { 1 }
+                      2.5384498523e-02 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  126
+------------------------------
+Parameters for function evaluation 126:
+                      9.8333044756e-01 x1
+                      9.6687339492e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.126 results.out.126
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 126:
+Active set vector = { 1 }
+                      2.7830135682e-04 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  127
+------------------------------
+Parameters for function evaluation 127:
+                      9.8333234854e-01 x1
+                      9.6687255887e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.127 results.out.127
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 127:
+Active set vector = { 1 }
+                      2.7829988884e-04 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  128
+------------------------------
+Parameters for function evaluation 128:
+                      9.8333333188e-01 x1
+                      9.6687255887e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.128 results.out.128
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 128:
+Active set vector = { 1 }
+                      2.7829453873e-04 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  129
+------------------------------
+Parameters for function evaluation 129:
+                      9.8333234854e-01 x1
+                      9.6687352574e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.129 results.out.129
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 129:
+Active set vector = { 1 }
+                      2.7828645601e-04 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -5.4407952794e-03 -1.3893071922e-02 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  130
+------------------------------
+Parameters for function evaluation 130:
+                      9.9715257891e-01 x1
+                      9.9710119122e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.130 results.out.130
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 130:
+Active set vector = { 1 }
+                      7.8536071195e-04 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  131
+------------------------------
+Parameters for function evaluation 131:
+                      9.8674638483e-01 x1
+                      9.7433999211e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.131 results.out.131
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 131:
+Active set vector = { 1 }
+                      2.2075815463e-04 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  132
+------------------------------
+Parameters for function evaluation 132:
+                      9.8658112073e-01 x1
+                      9.7397851424e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.132 results.out.132
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 132:
+Active set vector = { 1 }
+                      2.2054218492e-04 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  133
+------------------------------
+Parameters for function evaluation 133:
+                      9.8658210732e-01 x1
+                      9.7397851424e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.133 results.out.133
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 133:
+Active set vector = { 1 }
+                      2.2026838845e-04 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  134
+------------------------------
+Parameters for function evaluation 134:
+                      9.8658112073e-01 x1
+                      9.7397948821e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.134 results.out.134
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 134:
+Active set vector = { 1 }
+                      2.2066621007e-04 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -2.7752048387e-01  1.2733869196e-01 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  135
+------------------------------
+Parameters for function evaluation 135:
+                      9.9630209807e-01 x1
+                      9.9275688960e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.135 results.out.135
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 135:
+Active set vector = { 1 }
+                      1.5607105991e-05 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  136
+------------------------------
+Parameters for function evaluation 136:
+                      1.0012435177e+00 x1
+                      1.0023024146e+00 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.136 results.out.136
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 136:
+Active set vector = { 1 }
+                      5.0121554368e-06 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  137
+------------------------------
+Parameters for function evaluation 137:
+                      9.9952354896e-01 x1
+                      9.9897988671e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.137 results.out.137
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 137:
+Active set vector = { 1 }
+                      6.8179689571e-07 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  138
+------------------------------
+Parameters for function evaluation 138:
+                      9.9952454848e-01 x1
+                      9.9897988671e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.138 results.out.138
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 138:
+Active set vector = { 1 }
+                      7.0819428663e-07 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  139
+------------------------------
+Parameters for function evaluation 139:
+                      9.9952354896e-01 x1
+                      9.9898088569e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.139 results.out.139
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 139:
+Active set vector = { 1 }
+                      6.6842280746e-07 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [  2.6409973980e-02 -1.3387745267e-02 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  140
+------------------------------
+Parameters for function evaluation 140:
+                      9.7738061691e-01 x1
+                      1.0102045829e+00 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.140 results.out.140
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 140:
+Active set vector = { 1 }
+                      3.0226094115e-01 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  141
+------------------------------
+Parameters for function evaluation 141:
+                      9.9930211964e-01 x1
+                      9.9909213367e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.141 results.out.141
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 141:
+Active set vector = { 1 }
+                      2.4243628761e-05 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  142
+------------------------------
+Parameters for function evaluation 142:
+                      9.9949722649e-01 x1
+                      9.9899323010e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.142 results.out.142
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 142:
+Active set vector = { 1 }
+                      2.5299896214e-07 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  143
+------------------------------
+Parameters for function evaluation 143:
+                      9.9949822598e-01 x1
+                      9.9899323010e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.143 results.out.143
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 143:
+Active set vector = { 1 }
+                      2.5298378519e-07 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  144
+------------------------------
+Parameters for function evaluation 144:
+                      9.9949722649e-01 x1
+                      9.9899422909e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.144 results.out.144
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 144:
+Active set vector = { 1 }
+                      2.5280392699e-07 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -1.5184584407e-05 -1.9523170340e-04 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  145
+------------------------------
+Parameters for function evaluation 145:
+                      1.0002909709e+00 x1
+                      1.0100719765e+00 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.145 results.out.145
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 145:
+Active set vector = { 1 }
+                      9.0059997885e-03 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  146
+------------------------------
+Parameters for function evaluation 146:
+                      9.9950516393e-01 x1
+                      9.9910401756e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.146 results.out.146
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 146:
+Active set vector = { 1 }
+                      1.1180564871e-06 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  147
+------------------------------
+Parameters for function evaluation 147:
+                      9.9949732384e-01 x1
+                      9.9899458889e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.147 results.out.147
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 147:
+Active set vector = { 1 }
+                      2.5269302523e-07 obj_fn
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> map at X performed previously and results retrieved
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation  148
+------------------------------
+Parameters for function evaluation 148:
+                      9.9949832334e-01 x1
+                      9.9899458889e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.148 results.out.148
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 148:
+Active set vector = { 1 }
+                      2.5221283555e-07 obj_fn
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation  149
+------------------------------
+Parameters for function evaluation 149:
+                      9.9949732384e-01 x1
+                      9.9899558789e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.149 results.out.149
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 149:
+Active set vector = { 1 }
+                      2.5273059352e-07 obj_fn
+
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 2 } Deriv vars vector = { 1 2 }
+ [ -4.8043118130e-04  3.7606099590e-05 ] obj_fn gradient
+
+
+
+------------------------------
+Begin Function Evaluation  150
+------------------------------
+Parameters for function evaluation 150:
+                      1.0022251433e+00 x1
+                      1.0045346490e+00 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.150 results.out.150
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 150:
+Active set vector = { 1 }
+                      5.5818755223e-06 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  151
+------------------------------
+Parameters for function evaluation 151:
+                      9.9973106665e-01 x1
+                      9.9946930844e-01 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.151 results.out.151
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 151:
+Active set vector = { 1 }
+                      7.7370147242e-08 obj_fn
+
+
+
+------------------------------
+Begin Function Evaluation  152
+------------------------------
+Parameters for function evaluation 152:
+                      1.0006660379e+00 x1
+                      1.0013681866e+00 x2
+
+blocking fork: matlab_rosen_bb_simulator.sh params.in.152 results.out.152
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2008 The MathWorks, Inc.
+                         Version 7.7.0.471 (R2008b)
+                             September 17, 2008
+
+ 
+  To get started, type one of these: helpwin, helpdesk, or demo.
+  For product information, visit www.mathworks.com.
+ 
+
+Active response data for function evaluation 152:
+Active set vector = { 1 }
+                      5.7082166325e-07 obj_fn
+
+
+1
+
+
+
+    FINAL OPTIMIZATION INFORMATION
+
+     OBJ =   0.773701E-07
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.99973E+00  0.99947E+00
+
+     THERE ARE    0 ACTIVE SIDE CONSTRAINTS
+
+     TERMINATION CRITERION
+          ABS(OBJ(I)-OBJ(I-1))   LESS THAN DABFUN FOR  3 ITERATIONS
+
+     NUMBER OF ITERATIONS =   30
+
+     OBJECTIVE FUNCTION WAS EVALUATED           91  TIMES
+
+     GRADIENT OF OBJECTIVE WAS CALCULATED       30  TIMES
+
+<<<<< Iterator conmin_frcg completed.
+<<<<< Function evaluation summary: 152 total (152 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9973106665e-01 x1
+                      9.9946930844e-01 x2
+<<<<< Best objective function  =
+                      7.7370147242e-08
+<<<<< Best data not found in evaluation cache
+<<<<< Single Method Strategy completed.
+DAKOTA execution time in seconds:
+  Total CPU        =       0.08 [parent =   0.090986, child =  -0.010986]
+  Total wall clock =    145.047

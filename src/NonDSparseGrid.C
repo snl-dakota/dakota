@@ -1,0 +1,175 @@
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright (c) 2001, Sandia National Laboratories.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+//- Class:	 NonDSparseGrid
+//- Description: Implementation code for NonDSparseGrid class
+//- Owner:       Mike Eldred
+//- Revised by:  
+//- Version:
+
+#include "data_io.h"
+#include "system_defs.h"
+#include "NonDSparseGrid.H"
+#include "DakotaModel.H"
+#include "ProblemDescDB.H"
+
+static const char rcsId[]="@(#) $Id: NonDSparseGrid.C,v 1.57 2004/06/21 19:57:32 mseldre Exp $";
+
+//#define DEBUG
+
+namespace Dakota {
+
+
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation.  In this case, set_db_list_nodes has been called
+    and probDescDB can be queried for settings from the method
+    specification.  It is not currently used, as there is not a
+    separate nond_sparse_grid method specification. */
+NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
+  ssgLevelRef(probDescDB.get_ushort("method.nond.sparse_grid_level"))
+{
+  // initialize the numerical integration driver
+  numIntDriver = Pecos::IntegrationDriver(Pecos::SPARSE_GRID);
+  ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
+
+  // initialize_random_variables() called in NonDIntegration ctor
+  check_variables(natafTransform.x_types());
+  bool store_1d_gauss = false; // no 1D Gauss pts/wts storage
+  bool nested_rules   = true;
+  // moderate growth is helpful for iso and aniso sparse grids, but
+  // not necessary for generalized grids
+  short growth_rate =
+    (probDescDB.get_short("method.nond.expansion_refinement_type")
+     == Pecos::ADAPTIVE_P_REFINEMENT &&
+     probDescDB.get_short("method.nond.expansion_refinement_control")
+     == Pecos::GENERALIZED_SPARSE) ?
+    Pecos::UNRESTRICTED_GROWTH : Pecos::MODERATE_RESTRICTED_GROWTH;
+  short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
+  ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelRef,
+    probDescDB.get_rdv("method.nond.sparse_grid_dimension_preference"),
+    store_1d_gauss, nested_rules, growth_rate, nested_uniform_rule);
+  ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
+    iteratedModel.distribution_parameters());
+  maxConcurrency *= ssgDriver->grid_size(); // requires polyParams
+}
+
+
+/** This alternate constructor is used for on-the-fly generation and
+    evaluation of sparse grids within PCE and SC. */
+NonDSparseGrid::
+NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
+	       unsigned short ssg_level, const RealVector& dim_pref,
+	       //const String& sparse_grid_usage,
+	       bool nested_rules, short refine_type, short refine_control): 
+  NonDIntegration(NoDBBaseConstructor(), model), ssgLevelRef(ssg_level)
+{
+  // initialize the numerical integration driver
+  numIntDriver = Pecos::IntegrationDriver(Pecos::SPARSE_GRID);
+  ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
+
+  // local natafTransform not yet updated: x_types would have to be passed in
+  // from NonDExpansion if check_variables() needed to be called here.  Instead,
+  // it is deferred until run time in NonDIntegration::quantify_uncertainty().
+  //check_variables(x_types);
+  bool store_1d_gauss = true; //(sparse_grid_usage == "interpolation");
+  short growth_rate = (refine_type    == Pecos::ADAPTIVE_P_REFINEMENT &&
+		       refine_control == Pecos::GENERALIZED_SPARSE) ?
+    Pecos::UNRESTRICTED_GROWTH : Pecos::MODERATE_RESTRICTED_GROWTH;
+  short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
+  ssgDriver->initialize_grid(u_types, ssg_level, dim_pref, store_1d_gauss,
+    nested_rules, growth_rate, nested_uniform_rule);
+  ssgDriver->
+    initialize_grid_parameters(u_types, model.distribution_parameters());
+  maxConcurrency *= ssgDriver->grid_size(); // requires polyParams
+}
+
+
+NonDSparseGrid::~NonDSparseGrid()
+{ }
+
+
+void NonDSparseGrid::get_parameter_sets(Model& model)
+{
+  // capture any run-time updates to distribution parameters
+  if (subIteratorFlag)
+    ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
+      iteratedModel.distribution_parameters());
+
+  // compute grid and retrieve point/weight sets
+  ssgDriver->compute_grid();
+  Cout << "\nSparse grid level = " << ssgDriver->level()
+       << "\nTotal number of integration points: "
+       << ssgDriver->weight_sets().length() << '\n';
+  const Pecos::RealMatrix& var_sets = ssgDriver->variable_sets();
+  //samples_to_variables_array(var_sets, allVariables);
+  allSamples = RealMatrix(Teuchos::View, var_sets, var_sets.numRows(),
+			  var_sets.numCols());
+}
+
+
+/** used by DataFitSurrModel::build_global() to publish the minimum
+    number of points needed from the sparse grid routine in order to
+    build a particular global approximation. */
+void NonDSparseGrid::
+sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
+{
+  // sparse grid level may be increased ***or decreased*** to provide at least
+  // min_samples, but the original user specification (ssgLevelSpec) is a hard
+  // lower bound.  With the introduction of uniform/adaptive refinements,
+  // ssgLevelRef (which is incremented from ssgLevelSpec) replaces ssgLevelSpec
+  // as the lower bound.
+
+  // should be ssgLevelRef already, unless min_level previous enforced
+  ssgDriver->level(ssgLevelRef);
+  if (min_samples > ssgDriver->grid_size()) { // reference grid size
+    // determine minimum sparse grid level that provides at least min_samples
+    unsigned short min_level = ssgLevelRef + 1;
+    ssgDriver->level(min_level);
+    while (ssgDriver->grid_size() < min_samples)
+      ssgDriver->level(++min_level);
+    // leave ssgDriver at min_level; do not update ssgLevelRef
+
+    // maxConcurrency must not be updated since parallel config management
+    // depends on having the same value at ctor/run/dtor times.
+  }
+
+  // not currently used by this class:
+  //allDataFlag = all_data_flag;
+  //statsFlag   = stats_flag;
+}
+
+
+void NonDSparseGrid::increment_grid()
+{
+  int orig_ssg_size = ssgDriver->grid_size();
+  ssgDriver->level(++ssgLevelRef);
+  // with "slow growth" nested rules, an increment in level will not always
+  // change the grid.  Anisotropy (if present) is fixed.
+  while (ssgDriver->grid_size() == orig_ssg_size)
+    ssgDriver->level(++ssgLevelRef);
+}
+
+
+void NonDSparseGrid::increment_grid(const RealVector& dim_pref)
+{
+  // define reference points
+  int orig_ssg_size = ssgDriver->grid_size();
+  ssgDriver->update_axis_lower_bounds();
+  // initial increment and anisotropy update
+  ssgDriver->level(++ssgLevelRef);
+  ssgDriver->dimension_preference(dim_pref); // enforce axis LB's --> wt UB's
+  // Enforce constraints of retaining all previous collocation sets and adding
+  // at least one new set.  Given the former constraint, the same grid size
+  // must logically be the same grid irregardless of changes in anisotropy.
+  while (ssgDriver->grid_size() == orig_ssg_size) {
+    ssgDriver->level(++ssgLevelRef);
+    ssgDriver->dimension_preference(dim_pref); // re-enforce LB's for new level
+  }
+}
+
+} // namespace Dakota

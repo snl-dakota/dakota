@@ -1,0 +1,431 @@
+2003-09-01  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Commit (with a few changes) C++ interface upgrade (at least 13 new
+	  PLplot library calls are now available) donated by Andrew Ross
+	  <andrewr@coriolis.greenend.org.uk> under the LGPL. The Plplot
+	  initialization has now been separated which allows plplot commands
+	  that are supposed to be done before init (such as command-line
+	  option processing) to work for the first time.  This constitutes a
+	  backwards-incompatible change that will be signalled by a new
+	  libplplotcxx library major version number.
+
+	* Commit (with a few changes) extended set of C++ examples donated
+	  by Andrew Ross <andrewr@coriolis.greenend.org.uk> under the LGPL.
+	  These examples test the interface by attempting to mimic the
+	  results of the corresponding C examples.
+
+	* x01cc.c: Change this one old (but still interesting) C++ example
+	  to use the updated interface.
+
+	* examples/c++/Makefile.am: extend the install to the new examples,
+	  create symlink for lena.pgm (so x20 works), and use install-hook
+	  (no more .samename) for post-install changes.
+
+2003-02-01  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* sysloc.in: Remove unneeded cruft.  This is a substantial (28 per
+	  cent) reduction in the size of this large file.  The result has
+	  been tested with essentially all drivers both for the dynamic
+	  driver and static driver case. scripts/make_tarball.sh:
+
+2003-01-19  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* scripts/make_tarball.sh: new script for preparing release tarball
+	  tree.
+
+	* rpm/plplot_redhat7.3.spec: update to plplot-5.2.0.
+	
+	* plplot-5.2.0 release!
+
+
+2003-01-15  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Cleaned out hundreds of zombied files that were in the Attic
+	  with wrong state information that screwed up cvs -D option
+	  cvs merges, etc.
+
+	* Make 8th, 9th and 11th Python examples consistent with recently
+	  changed C examples.  This concludes the Python consistency effort
+	  (at least until the next change in the C examples).
+
+	* Make 8th, 9th and 11th Tcl examples consistent with recently
+	  changed C examples.  This concludes the Tcl consistency effort (at
+	  least until the next change in the C examples). All python and
+	  java examples now agree exactly in their results, and tcl examples
+	  agree quite closely also with java and python.  The long-standing
+	  discrepancy in the last page of example 9 between the C example
+	  and now all of the java, python, and tcl examples persists both
+	  for single and double precision libplplot (and C example 9). So
+	  this suggests there may be some problem with the C example 9, but
+	  I cannot find it!
+	  
+
+2003-01-04  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Make 9th and 11th Java examples consistent with recently changed C
+	  examples.  This concludes the Java consistency effort (at least
+	  until the next change in the C examples).  Most java examples
+	  agree exactly with their C counterpart.  The worst difference is a
+	  long-standing discrepancy in the last page of example 9 where the
+	  potential plot contours are slightly but visibly different between
+	  C and Java no matter what I try.  The two other example
+	  discrepancies that show up with diff are quite minor and don't
+	  seem to correspond to anything visible.
+	  
+
+2003-01-02  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Make 8th Java example give the same result (to 1 unit in last
+	  digit of postscript file) as new 8th C example.  This involved
+	  defining some additional constants for the swig java interface
+	  file as well as substantial changes in x08.java.
+
+2002-12-31  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Changed version number of PLplot package *and* associated
+	  libraries to 5.2.0 in anticipation of the forthcoming release.  To
+	  get this to work properly must have a fresh checkout or else run
+	  'make distclean' before trying this change.
+
+	* test/plplot-test.sh.in test/test_java.sh : Added the java examples
+	  to our test procedure which builds all of our non-interactive
+	  example plots.  Also tweaked most of the remaining scripts in
+	  test.
+
+2002-12-31  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Finished Java swig-based interface to Plplot for now.  Current
+	  limitations are detailed in bindings/java/README.javaAPI.
+
+	* Made the appropriate python interface changes so we are now
+	  uniformly based on swig version 1.3.17 for both our java and
+	  python interfaces!  The required changes turned out to be minimal,
+	  but absolutely necessary because of a paradigm shift that occurred
+	  in the swig approach for earlier versions of the unstable swig
+	  1.3.x series.
+
+2002-12-30  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Implement plParseOpts for new Java interface and change all
+	  examples to use it again.
+
+2002-12-29   Maurice LeBrun <mlebrun@users.sourceforge.net>
+
+	* bindings/tk: added sample app-defaults files, howto on their
+	  use, and code to suck the app-defaults file "PLplot" into the
+	  options db, which is then used to set geometry, fonts, colors,
+	  etc.
+
+2002-12-29  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Implement additional 2-d arrays for the swig-based Java API. These
+	  new typemaps allow plcont (and x09.java) to work.  Note, only the
+	  2-d version is implemented, there is no angle wrap code, and kx,
+	  lx, ky, ly always have to be in the argument list.  In other words
+	  this is the raw java interface to PLplot.  Thus, a number of
+	  adjustments had to be made to x09.java to work with this raw
+	  interface.  However, once the user-friendly interface is done, it
+	  should be possible to overload 1-d arrays when needed for xg0
+	  through yg1, have angle wrap code, and also drop kx, lx, ky, ly.
+
+	* Implement typemaps for defined_func and fill_func which allow
+	  x15.java and x16.java to work properly.  Note, I removed the
+	  local versions of plshades from x16.java since plshades is now
+	  defined in the PLplot java interface API.  
+
+2002-12-28  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Implement the simpler 2-d arrays for the swig-based Java API.  This
+	  means all examples work other than x09 (contours), x15 (shade plots
+	  with plshade), and x16 (shade plots with plshades).
+
+2002-12-27  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Implement new swig-based Java API.  Two-dimensional arrays are
+	  not implemented yet which means 6 of the examples do not work,
+	  but the rest do work, and in fact example 18 works completely
+	  for the first time ever because all PLplot functions in the common
+	  API that have variable or one-dimensional array arguments have been 
+	  completely implemented in Java.
+
+2002-12-24  Maurice LeBrun <mlebrun@users.sourceforge.net>
+
+	* examples/tcl/x??: Added script file front-ends to Tcl example
+	  programs.  Locates pltcl via PATH.
+	* examples/tcl/Makefile.am: install rule for these
+	
+	* examples/*/Makefile.examples.in: Explicitly specify --mode=link
+	  to plplot_libtool in order to correctly work with vendor compilers.
+
+	* src/plctrl.c: Fix to 'Bug in library: Segmentation fault if "Q" hit'
+
+2002-12-24  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* examples/*/Makefile.examples.in: clean target
+
+	* examples/*/Makefile.am: implement install of Makefile.examples
+	  renamed to Makefile for user convenience.
+
+	* bindings/octave/Makefile.am: implement separate creation of
+	  plplot_octave.oct for build area and install area.
+
+2002-12-23  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* examples/*/Makefile.examples.in: use CC, CXX, and F77 symbols to
+	  avoid hard-coded compiler names.
+
+2002-12-22  Maurice LeBrun <mlebrun@users.sourceforge.net>
+
+	* configure.ac: AM_CONFIG_HEADER must be called *before* AC_DEFINE's
+	  This solves infamous -dev tk problem and also problems with
+	  ./xtk?? -f tk??
+
+2002-12-12  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Implement autotools support for building and installing java
+	  plplot wrapper library, libplplotjava, java/plplot/core classes,
+	  and installing java source for examples in java/plplot/examples.
+
+2002-12-13  "[iso-8859-1] João Cardoso" <jcard@users.sourceforge.net>
+
+	* Fixed p7 and p15 problem.  This finishes the last of the problems
+	  with the octave examples.  (x example segfaults solved earlier
+	  by plend ==> plend1 change in those examples.)
+
+2002-12-12  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* configure.ac: Drop ".so" suffix from records in created drivers.db.
+	  Apparently, this makes libtldl work properly on OSF1, and it
+	  still also works properly on Linux with this change.
+
+2002-12-11  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* src/plcore.c: reactivate release of libltdl resources in plend.
+
+	* bindings/octave/demos/x??c.m: plend ==> plend1.
+
+	* drivers/Makefile.am, configure.ac: xflags and lmflag activated for
+	  drivers which need linking to X libraries or the math library.
+	  Additional AM_CONDITIONALS were done in configure.ac to help
+	  implement this.
+
+2002-12-09  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* configure.ac: only run AM_PATH_PYTHON(1.5) if python is enabled.
+
+	* bindings/Makefile.am: if enable_tcl is not yes, then no attempt is
+	  made to create pkgIndex.tcl. This should fix the problems Joao was
+	  having in an environment without tcl.  Later this should be
+	  changed to depend on the more general has_tcl instead, but AWI's
+	  opinion is that has_tcl is broken in sysloc.in at the moment so we
+	  will stick with depending on enable_tcl for a while.
+
+	* src/plcore.c: Change from lt_dlopen to lt_dlopenext for more
+	  cross-platform suffix generality.
+
+	* sysloc.in: has_tcl is now set to enable_tcl.
+
+	* bindings/Makefile.am: pkgIndex.tcl now only built if tcl enabled.
+
+	* utils/Makefile.am: pltcl now only built if tcl enabled.
+
+	* src/plcore.c: Comment out premature removal of libltdl resources
+	  in plend since plinit may be called again after a call to plend.  In
+	  fact there is no way to guarantee any particular call to plend is
+	  the last so these libltdl resources must always remain allocated
+	  until the overall programme exits.
+
+2002-12-07  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* drivers/Makefile.am: Make tk and tkwin static drivers work. This
+	  completes the static drivers configuration.
+
+	* bindings/t*/pkgIndex.tcl.in: search for Pltk and Plplotter entry
+	  points in libplplot if a search in the dynamic drivers fails.
+	  This is required for static drivers since in that case the entry 
+	  points (and drivers) are put in libplplot.
+	  
+	* PROBLEMS: reorganization and updating to help set our priorities
+	  for what must be accomplished before the next release.
+
+2002-12-06  Alan W. Irwin <airwin@users.sourceforge.net>
+
+        * Configure test executables in examples for c++, f77, and tk.  make
+	  check builds the uninstalled c, c++, f77, and tk examples fine,
+	  and plplot-test.sh works with these uninstalled examples with some
+	  limitations that are discussed on list.
+
+	* Make all static drivers (except for tk and tkwin whose
+	  implementation will be more complicated) work using the automake
+	  convenience library approach.
+
+2002-12-05  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Configure test executables in examples/c/Makefile.am
+	
+	* Clean up Makefile.am files and also switch from LIBADD to LDFLAGS
+	  for interlibrary dependencies as suggested by documentation.
+	  
+	* Change fortran and C++ driver names to libplplotf77 and libplplotcxx
+	  because of name-clash concerns.
+
+2002-12-04  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Begin configuration of octave using autotools.  plplot_octave.oct
+	  builds and installs, but no other part of octave is done yet.
+	  Note this and all future autotools work is being done on the MAIN
+	  branch.
+	  
+	* plplot_octave.oct build with Joao's recent gcc 3.2.x fix.
+
+	* (mostly) finish configuration of octave using autotools.  Over
+	  to Joao now to sort out why the installed p7.m and p15.m examples
+	  don't work and why none of the x??.m examples work.
+
+
+2002-12-03  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* With a lot of work required to work around state problems in the
+	  repository, merged the AT branch into MAIN.  Welcome to the world
+	  of autotools configuration on our MAIN branch!
+
+2002-12-02  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* drivers/Makefile.am for AT branch: instead of using the
+	  concatanation of all compiler flags for all dynamic drivers, apply
+	  only those compiler flags that are appropriate to each dynamic
+	  driver.  This makes a huge reduction in the command line when
+	  gnome driver flags are involved, and probably saves significant
+	  computer time as well when you avoid searching all those gnome
+	  header directories for each dynamic driver.
+	  
+	* test/Makefile.am, etc for AT branch.  Bring test directory under
+	  autotools control. Result is that plplot-test.sh runs in the
+	  installed examples directory and gives identical results with the
+	  MAIN branch (except in a few cases where there is version skew
+	  between the examples since AT was branched from MAIN).
+
+2002-12-01  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Finish (nearly) all the dynamic driver builds for AT. Checked that
+	  gnome, png, xfig, ntk all worked.  Also, package require Plplotter
+	  (which accesses the tkwin_drv.so shared object) also works, and
+	  -dev tkwin works (although it simply returns the usual error
+	  message about no widget being available since this is not a
+	  stand-alone driver).  As far as I know, the only driver that still
+	  has errors under AT is tk.
+
+2002-11-30  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Finish AT libplplottcltk.so* build when itcl and tk are enabled.
+
+	* bindings/tk for AT: build and install plserver and *.tcl, *.itk,
+	  and palette (*.pal) files.
+
+	* acinclude.m4 copied (again) from cf/aclocal.m4 for AT branch to
+	  pick up all the autoconf 2.5.3 changes.
+
+2002-11-29  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Finish AT tcl binding.  These are only small fairly
+	  non-consequential refinements that I did while trying to debug the
+	  extended search problem (which had a simple solution which I will
+	  discuss on list).
+
+	* Prepare for the AT change in bindings/tk and bindings/tk-x-plat 
+	  by dropping "plplot/" from the #include statements in the 
+	  source files.
+	
+2002-11-28  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* AT build of libplplottcl (including a substantial reorganization
+	  of configure.in).
+
+	* AT build of utilities plrender, pltek, and pltcl.
+
+	* AT reorganize src/Makefile.am, but no substantive changes.
+
+2002-11-27  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Creation of python extension modules now works.  Replaced the
+	  setup.py method (which had some cross-platform question marks)
+	  with a libtools method.
+
+	* Fixed build of xwin_drv.so so it links to libplplot.  Without this
+	  the python examples won't work with the xwin driver.
+	
+	* Install of python examples including new plplot_python_start.py
+	  which is configured to make accessible to python the
+	  directory which contains the installed plplot python extensions
+	  (assuming that might not be in the standard system location).
+
+	* Fixed single precision bugs in bindings/c++/Makefile.am and
+	  bindings/f77/Makefile.am.
+
+2002-11-26  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Support for examples/c examples/c++ and examples/f77 on AT
+	  branch.
+	* Adopt Maurice's idea of initializing libltdl in pllib_init().
+	* Makefile.examples using plplot_libtool, c works
+	* c++ works (required a fix to linking of libplcxx consistent
+	  with hierarchical linking model.)
+	* f77 works (required a fix to linking of libplf77 consistent
+	  with hierarchical linking model.)
+
+2002-11-25  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Makefile.am files: some reorganization, but mostly adding
+	  EXTRA_DIST macros so the distributed tarball generated by
+	  make dist has everything it needs.
+	* configure.in and /bindings/f77/Makefile.am: Cross-platform 
+	  glitches fixed for solaris.
+
+2002-11-24  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Add plConfig.h to installed headers.
+	* Remove aclocal.m4 from cvs control (was stale cvs deleted file which
+	  is automatically generated in any case with an up-to-date version
+	  using ./bootstrap.sh).
+	* Makefile.am files: add support for libltdl.
+	* include/disptab.h: New PLDispatchInit typedef consistent with lt_ptr.
+	* include/plcore.h: Change dlhand type.
+	* src/plcore.c: Switch from dlopen API to libltdl API (a fair number
+	  of changes because of new types for dlopen and dlsym equivalents,
+	  and need for lt_dlinit() and lt_dlexit() calls which I chose to
+	  make for each stream created and destroyed.)
+
+2002-11-23  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* FREETYPEINCCMD and FREETYPELIBCMD
+
+2002-11-22  Alan W. Irwin <airwin@users.sourceforge.net>
+
+	* Initial creation (from resurrected AM-LT merged into 20021122
+	  MAIN HEAD) and checkin of AT branch.  Details given on plplot_devel 
+	  list.
+	* .cvsignore files: convenience changes.
+	* Makefile.am: reorder src first, then drivers (since dynamic 
+	  drivers depend on src).  Will take care of static drivers later.
+	* acconfig.h: ENABLE_DYNDRIVERS DRIVERS_DB, and switch the old
+	  drivers list to a new complete devices list.
+	* acconfig.h: ENABLE_DYNDRIVERS DRIVERS_DB, and switch drivers list
+	  to complete devices list.
+	* configure.in: incorporate HEAD static and dynamic driver handling
+	  from old cf/configure.in. Changed DATA_DIR back to current standard
+	  ENABLE_DYNDRIVERS, DRIVERS_DB. Current standard for dynamic driver
+	  names.
+	* drivers/Makefile.am: Current static drivers don't work, but
+	  added working versions of xwin and ps dynamic drivers.
+	* drivers/ps.c: PLPLOT_VERSION ==> VERSION
+	* examples/c/*.c examples/c/*.h: change to old include style without
+	  the "plplot/".
+	* src/Makefile.am: completed list of files to include in libplplot;
+	  hacked in -lm -ldl -lfreetype (freetype should be option); and
+	  disabled use of convenience library for static drivers (to be
+	  revisited later).
+	* */Makefile.am: change to LGPL license as agreed with Rafael
+	* COPYING: copy from COPYING.LIB, the text of the LGPL   Otherwise, 
+	  automake generates a GPL License file which is not appropriate for 
+	  LGPLed PLplot.
+	

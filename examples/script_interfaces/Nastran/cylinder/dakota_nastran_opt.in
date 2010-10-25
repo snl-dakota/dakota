@@ -1,0 +1,30 @@
+strategy,
+	single_method graphics
+
+method,
+	dot_sqp
+
+variables,
+	continuous_design = 1
+	  cdv_initial_point = .2
+	  cdv_lower_bounds = .05
+	  cdv_upper_bounds = 100.
+	  cdv_descriptor = 'shell_thick'
+
+interface,
+	application system asynch evaluation_concurrency = 4
+	  analysis_driver = 'nastran_script'
+	  parameters_file = 'params.in'
+	  results_file = 'results.out'
+	  file_tag file_save aprepro
+
+responses,
+	num_objective_functions = 1
+	num_nonlinear_inequality_constraints = 1
+	nonlinear_inequality_lower_bounds = 3000.
+	nonlinear_inequality_upper_bounds = 10000.
+	numerical_gradients
+	  method_source dakota
+	  interval_type central
+	  fd_step_size = .005
+	no_hessians

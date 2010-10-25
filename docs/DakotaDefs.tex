@@ -1,0 +1,121 @@
+% Shortcuts for DAKOTA information incorporated in multiple versions of manuals
+%
+% This file is includeded in all top-level .tex files
+
+% When using this command, likely follow with a forced space, e.g., one of
+% Version \DakotaVersion\ Manual
+% Version \DakotaVersion\space Manual
+% Version \DakotaVersion{} Manual
+\newcommand{\DakotaVersion}{5.0+}
+
+
+% Most recent SAND report numbers and report date based on
+\newcommand{\DakotaSANDDate}{December 2009}
+\newcommand{\DakotaSANDDev}{SAND2010-2185}
+\newcommand{\DakotaSANDRef}{SAND2010-2184}
+\newcommand{\DakotaSANDUsers}{SAND2010-2183}
+
+
+% Need to manually break line or Eldred gets incorrectly split
+\newcommand{\DakotaAuthorSAND}{
+Brian~M.~Adams, William~J.~Bohnhoff, Keith~R.~Dalbey, John~P.~Eddy,\\
+Michael~S.~Eldred, David~M.~Gay, Karen~Haskell, Patricia~D.~Hough,
+Laura~P.~Swiler
+}
+
+\newcommand{\DakotaAuthorLong}{
+Brian~M.~Adams, Keith~R.~Dalbey, Michael~S.~Eldred, David~M.~Gay, 
+Laura~P.~Swiler\\
+Optimization and Uncertainty Quantification Department\\
+\\
+William~J.~Bohnhoff\\
+Radiation Transport Department\\
+\\
+John~P.~Eddy\\
+System Readiness and Sustainment Technologies Department\\
+\\
+Karen~Haskell\\
+Scientific Applications and User Support Department\\
+\\
+Sandia National Laboratories\\
+P.O. Box 5800\\
+Albuquerque, NM 87185\\
+\\
+Patricia~D.~Hough\\
+Informatics and Decision Sciences Department\\
+\\
+Sandia National Laboratories\\
+P.O. Box 969\\
+Livermore, CA 94551
+}
+
+\newcommand{\DakotaAuthorFormatted}{
+{\large \bf Brian M. Adams, Keith R. Dalbey, Michael S. Eldred, David
+M. Gay, Laura P. Swiler}\\ 
+{\large Optimization and Uncertainty Quantification Department}\\
+\vspace*{0.5cm}
+{\large \bf William J. Bohnhoff}\\
+{\large Radiation Transport Department}\\
+\vspace*{0.5cm}
+{\large \bf John P. Eddy}\\
+{\large System Readiness and Sustainment Technologies Department}\\
+\vspace*{0.5cm}
+{\large \bf Karen Haskell}\\
+{\large Scientific Applications and User Support Department}\\
+\vspace*{0.5cm}
+{\large Sandia National Laboratories}\\
+{\large P.O. Box 5800}\\
+{\large Albuquerque, New Mexico 87185}\\
+\vspace*{1cm}
+{\large \bf Patricia D. Hough}\\
+{\large Informatics and Decision Sciences Department}\\
+\vspace*{0.5cm}
+{\large Sandia National Laboratories}\\
+{\large P.O. Box 969}\\
+{\large Livermore, CA 94551}\\
+}
+
+
+% Fragments which together comprise abstracts
+
+\newcommand{\DakotaAbstractShared}{
+The DAKOTA (Design Analysis Kit for Optimization and Terascale
+Applications) toolkit provides a flexible and extensible interface
+between simulation codes and iterative analysis methods. DAKOTA
+contains algorithms for optimization with gradient and
+nongradient-based methods; uncertainty quantification with sampling,
+reliability, and stochastic finite element methods; parameter
+estimation with nonlinear least squares methods; and
+sensitivity/variance analysis with design of experiments and parameter
+study methods. These capabilities may be used on their own or as
+components within advanced strategies such as surrogate-based
+optimization, mixed integer nonlinear programming, or optimization
+under uncertainty. By employing object-oriented design to implement
+abstractions of the key components required for iterative systems
+analyses, the DAKOTA toolkit provides a flexible and extensible
+problem-solving environment for design and performance analysis of
+computational models on high performance computers.
+% blank line intended
+
+% blank line intended
+}
+
+\newcommand{\DakotaAbstractDev}{
+This report serves as a developers manual for the DAKOTA software and
+describes the DAKOTA class hierarchies and their interrelationships.
+It derives directly from annotation of the actual source code and
+provides detailed class documentation, including all member functions
+and attributes.
+}
+
+\newcommand{\DakotaAbstractRef}{
+This report serves as a reference manual for the commands specification
+for the DAKOTA software, providing input overviews, option descriptions,
+and example specifications.
+}
+
+\newcommand{\DakotaAbstractUsers}{
+This report serves as a user's manual for the DAKOTA software and
+provides capability overviews and procedures for software execution,
+as well as a variety of example studies.
+}

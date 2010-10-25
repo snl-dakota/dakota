@@ -1,0 +1,85 @@
+# -----------------------------------------------------------------------
+# $Id: install.in 3186 2006-02-15 18:17:33Z slbrow $
+#
+# Maurice LeBrun
+# IFS, University of Texas at Austin
+# 14-Jul-1994
+#
+# Make assignments and targets for installation under Unix.
+#
+# It is recommended that you use a dedicated directory such as
+# /usr/local/plplot (read the FAQ on this topic).  The install directory
+# will be created if necessary, as will subdirectories bin, doc, examples,
+# include, lib, man (eventually), and tcl.
+#
+# Notes: 
+#	if Tk support is not included, TK_INSTALL will be null.
+#	if Tcl support is not included, TCL_INSTALL will be null.
+#
+# -----------------------------------------------------------------------
+
+install: install_lib install_utils $(TCL_INSTALL) $(TK_INSTALL) install_demos
+
+install_lib:
+	-if not exist $(INCLUDE_DIR) mkdir $(INCLUDE_DIR)
+	-if not exist $(LIB_DIR) mkdir $(LIB_DIR)
+	-if not exist $(DOC_DIR) mkdir $(DOC_DIR)
+	-if not exist $(BIN_DIR) mkdir $(BIN_DIR)
+	-if not exist $(INFO_DIR) mkdir $(INFO_DIR)
+	-copy ..\..\..\..\lib\libplplt.a $(LIB_DIR)
+	-copy ..\..\..\..\lib\*.fnt $(LIB_DIR)
+	-copy ..\..\..\..\lib\*.map $(LIB_DIR)
+#	-echo $(LIB_DIR)
+#	-echo $(LIB_DIR)\libplplt.a
+	-$(RANLIB) $(LIB_DIR2)/libplplt.a
+#	-cd ..\..\..\..
+#	-for %i in (README README.1st Changes.log COPYRIGHTS FAQ ToDo mklinks) do copy %i $(DOC_DIR)
+	copy ..\..\..\..\*.*  $(DOC_DIR)
+	-if not exist $(DOC_DIR)\README.local do copy README.local $(DOC_DIR)
+	-copy ..\..\..\..\doc\*.info $(INFO_DIR)
+	-copy ..\..\..\..\scripts\pl*.* $(BIN_DIR)
+#	-cd include
+#	-for %i in (plplotP.h plplot.h plplotX.h plplotTK.h plevent.h plstream.h pdf.h tclMatrix.h) do copy %i $(INCLUDE_DIR)
+	copy ..\..\..\..\include\*.h $(INCLUDE_DIR)
+
+install_demos:
+	-if not exist $(DEMOS_DIR) mkdir $(DEMOS_DIR)
+	-if not exist $(DEMOS_DIR)\C mkdir $(DEMOS_DIR)\C
+	-if not exist $(DEMOS_DIR)\f77 mkdir $(DEMOS_DIR)\f77
+	-if not exist $(DEMOS_DIR)\tcl mkdir $(DEMOS_DIR)\tcl
+	-if not exist $(DEMOS_DIR)\tk mkdir $(DEMOS_DIR)\tk
+	-copy Makedemo $(DEMOS_DIR)\Makefile
+	-copy $(DEMOS_DIR)\Makefile $(DEMOS_DIR)\C
+	-copy $(DEMOS_DIR)\Makefile $(DEMOS_DIR)\f77
+	-copy $(DEMOS_DIR)\Makefile $(DEMOS_DIR)\tk
+	-copy ..\..\..\..\examples\C\*.* $(DEMOS_DIR)\C
+	-copy ..\..\..\..\examples\f77\*.* $(DEMOS_DIR)\f77
+	-copy ..\..\..\..\examples\tcl\*.* $(DEMOS_DIR)\tcl
+	-copy ..\..\..\..\examples\tk\*.* $(DEMOS_DIR)\tk
+
+install_utils:
+	$(LDC) $(LDC_FLAGS) plrender$O $(LIB_INSTALL) \
+		-o plrender$E $(LDC_LIBS)
+	$(LDC) $(LDC_FLAGS) pltek$O $(LIB_INSTALL) \
+		-o pltek$E $(LDC_LIBS)
+	-strip plrender
+	coff2exe plrender
+	-strip pltek
+	coff2exe pltek
+	-copy plrender.exe $(BIN_DIR)
+	-copy pltek.exe $(BIN_DIR)
+
+install_tcl:
+	$(LDC) $(LDC_FLAGS) pltcl$O $(LIB_INSTALL) \
+		-o pltcl$E $(LDC_LIBS)
+	-strip pltcl$E
+	-cp pltcl$E $(BIN_DIR)
+
+install_tk:
+	-if [ ! -d $(TCL_DIR) ] ; then mkdir -p $(TCL_DIR); fi
+	$(LDC) $(LDC_FLAGS) plserver$O $(LIB_INSTALL) \
+		-o plserver$E $(LDC_LIBS)
+	-strip plserver$E
+	-cp plserver$E $(BIN_DIR)
+	-cd ..\drivers\tk; cp *.tcl *.pal tclIndex $(TCL_DIR)
+

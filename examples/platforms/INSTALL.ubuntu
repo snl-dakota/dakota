@@ -1,0 +1,17 @@
+Compilation of Dakota on Linux Ubuntu 9.04
+10/14/2009
+
+Installed the following packages using the Synaptic Package Manager
+
+gfortran-4.3 -- Fortran 95 compiler
+mpich-bin -- Message Passing Interface
+blacs1gf-mpich -- basic linear algebra based on MPI
+libblas-dev -- development library for blas
+liblapack3gf -- lapack version 3.0
+liblapack-dev -- development library for lapack
+flex -- tool for generating scanners, prog to recognize lexical patterns in text
+bison -- gen purpose parser converts a grammar desc for LALR into c prog to parse the grammar
+g++ -- gnu cpp compiler
+
+Configure/make/make install per usual:
+  ./configure --without-graphics --disable-mpi
