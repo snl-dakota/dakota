@@ -22,8 +22,8 @@ TEUCHOS_INCL	= @TEUCHOS_CPPFLAGS@
 TEUCHOS_ARCHIVE	= @TEUCHOS_LDFLAGS@ -lteuchos
 
 ##if WITH_PECOS
-PECOS_ROOT    = $(top_srcdir)/packages/Pecos
-PECOS_BUILD   = $(top_builddir)/packages/Pecos
+PECOS_ROOT    = $(top_srcdir)/packages/pecos
+PECOS_BUILD   = $(top_builddir)/packages/pecos
 PECOS_INCL    = -I$(PECOS_BUILD) -I$(PECOS_ROOT)/src
 PECOS_ARCHIVE = $(PECOS_BUILD)/libpecos.la
 ##if WITH_SPARSE_GRID
@@ -59,8 +59,8 @@ GRAPHICS_ARCHIVE  = $(PLPLOT_ARCHIVE) $(MOTIF_ARCHIVE)
 endif
 
 if WITH_SURFPACK
-SP_BUILDDIR  = $(top_builddir)/packages/Surfpack
-SP_SRCDIR    = $(top_srcdir)/packages/Surfpack
+SP_BUILDDIR  = $(top_builddir)/packages/surfpack
+SP_SRCDIR    = $(top_srcdir)/packages/surfpack
 SP_SRC       = $(SP_SRCDIR)/src
 SP_INCL      = -I$(SP_BUILDDIR) -I$(SP_SRCDIR) -I$(SP_SRCDIR)/src \
 	       -I$(SP_SRCDIR)/src/interpreter -I$(SP_SRCDIR)/src/surfaces

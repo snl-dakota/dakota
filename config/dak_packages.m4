@@ -360,7 +360,7 @@ AC_DEFUN([DAK_PACKAGES],[
   AC_ARG_WITH([surfpack],AS_HELP_STRING([--without-surfpack],
 					[turn SURFPACK support off]),
 	      [with_surfpack=$withval],[with_surfpack=yes])
-  if test "x$with_surfpack" = xyes -a -d $srcdir/packages/Surfpack; then
+  if test "x$with_surfpack" = xyes -a -d $srcdir/packages/surfpack; then
     AC_CONFIG_SUBDIRS([packages/surfpack])
     AC_DEFINE([DAKOTA_SURFPACK],[1],
 	      [Macro to handle code which depends on SURFPACK.])
