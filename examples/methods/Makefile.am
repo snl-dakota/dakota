@@ -31,7 +31,7 @@ METHODS_INPUTS = dakota_uq_sampling.in \
 		 dakota_surr_uq.in \
 		 dakota_nls_datafile.in
 
-DAKOTA_TEST_PERL = $(METHODS_TEST_PATH)/sqa/dakota_test.perl
+DAKOTA_TEST_PERL = $(METHODS_TEST_PATH)/dakota_test.perl
 
 ## Anywhere there's a chance of extracting two or more tests from the
 ## same input file, disable parallel make.

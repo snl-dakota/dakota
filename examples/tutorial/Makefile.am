@@ -19,7 +19,7 @@ USERS_TEST_INPUTS = dakota_rosenbrock_2d.in \
                     dakota_uq_interval.in \
                     dakota_rosenbrock_syscall.in
 
-DAKOTA_TEST_PERL = $(USERS_TEST_PATH)/sqa/dakota_test.perl
+DAKOTA_TEST_PERL = $(USERS_TEST_PATH)/dakota_test.perl
 
 ## Anywhere there's a chance of extracting two or more tests from the
 ## same input file, disable parallel make.

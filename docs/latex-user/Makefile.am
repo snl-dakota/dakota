@@ -51,7 +51,7 @@ USERS_GENERIC_INPUTS = dakota_rosenbrock.in \
 		       dprepro_head \
 		       ros.template
 
-DAKOTA_TEST_PERL = $(USERS_TEST_PATH)/sqa/dakota_test.perl
+DAKOTA_TEST_PERL = $(USERS_TEST_PATH)/dakota_test.perl
 
 # LaTeX sources and dependencies for the User's Manual.
 USERS_SOURCES = Users_Preface.tex \
