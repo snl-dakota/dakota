@@ -248,7 +248,7 @@ file( WRITE ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
       #include \"DakotaBuildInfo.H\"
       std::string Dakota::DakotaBuildInfo::rev =" )
 
-file(READ ${Dakota_SOURCE_DIR}/cmake/DakotaBuildInfo.C.in build-info-contents)
+file(READ ${Dakota_SOURCE_DIR}/config/DakotaBuildInfo.C.in build-info-contents)
 string(REGEX MATCH "Dakota\\^([0-9]+)" notused ${build-info-contents})
 file( APPEND ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
       " \"${CMAKE_MATCH_1}\"; " )
