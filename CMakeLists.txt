@@ -40,10 +40,10 @@ find_package(Boost 1.40 REQUIRED)
 include(CTest)
 
 set( CMAKE_MODULE_PATH
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/share
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/share/utils
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/share/package_arch
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/share/config_tests
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/share
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/share/utils
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/share/package_arch
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/share/config_tests
   ${CMAKE_MODULE_PATH}
 )
 
@@ -93,14 +93,13 @@ endif()
 set(SUBLIBS dakota_src)
 
 add_subdirectory(packages)
-add_subdirectory(methods)
 add_subdirectory(src)
 #add_subdirectory(test)
 
 # Package-specific configuration options
 include_directories(${Dakota_BINARY_DIR})
 
-configure_file("${Dakota_SOURCE_DIR}/cmake/dakota_config.h.in"
+configure_file("${Dakota_SOURCE_DIR}/config/dakota_config.h.in"
   "${Dakota_BINARY_DIR}/dakota_config.h"
   @ONLY
 )
