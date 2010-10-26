@@ -10,10 +10,10 @@
 #
 # (2) $ export DAKOTA_SRC=$HOME/Dakota    # for example (path will likely vary)
 #
-# (3) $ vi $DAKOTA_SRC/cmake/BuildSetup.cmake  # or your BFF editor if not 'vi'
+# (3) $ vi $DAKOTA_SRC/config/BuildSetup.cmake  # or your BFF editor if not 'vi'
 #       - verify paths to boost and teuchos, ~line 52, or tweak as necessary
 #
-# (4) $ $CMAKEHOME/bin/cmake -C $DAKOTA_SRC/cmake/BuildSetup.cmake $DAKOTA_SRC
+# (4) $ $CMAKEHOME/bin/cmake -C $DAKOTA_SRC/config/BuildSetup.cmake $DAKOTA_SRC
 #
 # (5) $ make -j8 dakota     # number of jobs specified will likely vary
 #     NOTE: parallel build WILL FAIL if the 'dakota' target is NOT specified!
