@@ -37,5 +37,8 @@
 
 // WJB - ToDo: verify that settings is consistent with Pecos and Teuchos headers
 /* Define if you have LAPACK library. */
+#ifdef HAVE_LAPACK
+#undef HAVE_LAPACK
 #define HAVE_LAPACK @LAPACK_lapack_WORKS@
+#endif
 

@@ -113,11 +113,9 @@ set(iterator_src DakotaIterator.C DakotaAnalyzer.C DakotaPStudyDACE.C
     EffGlobalMinimizer.C
 )
 
+CheckPackage(CONMIN)
 if(HAVE_CONMIN)
-  add_definitions("-DDAKOTA_CONMIN")
   set(iterator_src ${iterator_src} CONMINOptimizer.C)
-  #link_directories(${Dakota_BINARY_DIR}/packages/CONMIN)
-  set(TPL_LIBS ${TPL_LIBS} conmin)
 endif(HAVE_CONMIN)
 
 if(HAVE_DDACE)

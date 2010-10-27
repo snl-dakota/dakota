@@ -44,7 +44,7 @@ AC_DEFUN([DAK_METHODS],[
 	      [with_conmin=$withval],[with_conmin=yes])
   if test "x$with_conmin" = xyes; then
     AC_CONFIG_SUBDIRS([packages/CONMIN])
-    AC_DEFINE([DAKOTA_CONMIN],[1],
+    AC_DEFINE([HAVE_CONMIN],[1],
 	      [Macro to handle code which depends on CONMIN.])
   fi
   AM_CONDITIONAL([WITH_CONMIN],[test "x$with_conmin" = xyes])

@@ -45,7 +45,7 @@
 #ifdef DAKOTA_DOT
 #include "DOTOptimizer.H"
 #endif
-#ifdef DAKOTA_CONMIN
+#ifdef HAVE_CONMIN
 #include "CONMINOptimizer.H"
 #endif
 #ifdef DAKOTA_DL_SOLVER
@@ -839,7 +839,7 @@ Iterator* Iterator::get_iterator(Model& model)
   else if (method_name.begins("dot_"))
     return new_DOTOptimizer(model);
 #endif
-#ifdef DAKOTA_CONMIN
+#ifdef HAVE_CONMIN
   else if (method_name.begins("conmin_"))
     return new CONMINOptimizer(model);
 #endif
@@ -966,7 +966,7 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
   else if (method_name.begins("dot_"))
     return new_DOTOptimizer1(NoDBBaseConstructor(), model);
 #endif
-#ifdef DAKOTA_CONMIN
+#ifdef HAVE_CONMIN
   else if (method_name.begins("conmin_"))
     return new CONMINOptimizer(NoDBBaseConstructor(), model);
 #endif
