@@ -212,6 +212,14 @@ if(HAVE_PSUADE)
 endif(HAVE_PSUADE)
 
 
+CheckPackage(SURFPACK)
+if(HAVE_SURFPACK)
+  include_directories(${Surfpack_BINARY_DIR} ${Surfpack_SOURCE_DIR}/src
+                      ${Surfpack_SOURCE_DIR}/src/surfaces)
+  set(TPL_LIBS ${TPL_LIBS} mars surfaces)
+endif(HAVE_SURFPACK)
+
+
 ## AGGREGATED source code spec for full-up libdakota.
 set(Dakota_src ${Dakota_src} ${util_src} ${evaldata_src} ${db_src}
     ${model_src} ${constraint_src} ${interface_src} ${strategy_src}
