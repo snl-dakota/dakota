@@ -28,9 +28,9 @@ endif() #sh
 
 # WJB - ToDo: refactor directory hierarchy (dependency-oriented rather than
 # logically-oriented) so that DAKOTA and Surfpack can "share" CONMIN
-#if(HAVE_SURFPACK)
-#  add_subdirectory(surfpack)
-#endif(HAVE_SURFPACK)
+if(HAVE_SURFPACK)
+  add_subdirectory(surfpack)
+endif(HAVE_SURFPACK)
 
 if(HAVE_AMPL)
   add_subdirectory(ampl)
