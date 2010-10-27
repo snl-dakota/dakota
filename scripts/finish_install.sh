@@ -118,38 +118,13 @@ for f in INSTALL \
          LICENSE \
 	 COPYRIGHT \
 	 README \
+         examples \
 	 test; do
   cp -rf $f $prefix
 done
-# handle applications separately since need subdirs
-at_pre="examples/script_interfaces"
-for f in examples/compiled_interfaces \
-         examples/linked_interfaces \
-	 examples/methods \
-	 examples/parallelism \
- 	 examples/platforms \
-         examples/README \
-	 $at_pre/Abaqus \
-	 $at_pre/Cask/filters \
-	 $at_pre/Matlab \
-	 $at_pre/Nastran/cylinder \
-	 $at_pre/Qtran/scripts \
-	 $at_pre/Salinas/aff_all_fns.C \
-	 $at_pre/Salinas/dakota_aff_lhs.in \
-	 $at_pre/Salinas/salinas_script_asv \
-	 $at_pre/Rsmas \
-         $at_pre/generic \
-         examples/tutorial; do
-  tar cf - $f | (cd $prefix; tar xf -)
-done
 
-# removals from extract_bin.csh
-if [ "$distro_name" = "ext_web" ]; then
-  echo "Removing test/sqa/snl from binary distribution"
-  rm -rf $prefix/test/sqa/snl
-fi
 cd $prefix
-for d in test examples; do
+for d in examples test; do
   # TODO: this doesn't seem to work correctly on Solaris (sass9000), nor AIX
   #foreach f ( Makefile\* config\* \*.\[Cc\] \*.\[Ff\] \*.m4 \*.o )
   #  find $d -name "$f" -exec rm -f '{}' \;
@@ -220,7 +195,7 @@ $ln -s ../../../test/rosenbrock$exeext rosenbrock$exeext
 if [ "$distro_name" = "int_supervised" -o "$distro_name" = "int_full" ]; then
   echo "Setting permissions on supervised distribution"
   cd $prefix/bin
-  chmod -f o-r dakota$exeext dakota_restart_util$exeext
+  chmod -f o-r dakota$exeext dakota_restart_util$exeext dakota_library_mode$exeext dakota_library_split$exeext
   cd $prefix/lib
   chmod -f o-r libdakota.a libdakota.la libdot.a libdot.la
 fi
