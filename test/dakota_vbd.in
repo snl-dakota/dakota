@@ -23,10 +23,10 @@ method,
 	fsu_quasi_mc halton			#0
 #       dace lhs				#1
 #	fsu_cvt					#2
-#	nond_sampling				#3, #4
+#	nond_sampling				#3,#4
 	  variance_based_decomp
 	  samples = 100
-#         sample_type lhs			#3, #4
+#         sample_type lhs			#3,#4
 #         seed = 44691				#1,#2,#3,#4
 #	  num_trials = 1000			#2
 #	  max_iterations = 100			#2
@@ -36,11 +36,11 @@ variables,
 	  lower_bounds = 0 0
 	  upper_bounds =  1 1
 #       histogram_point_uncertain = 2		#4      
-#        num_pairs = 2 3 			#4
-#        abscissas = 1.2 1.4 0 1 2		#4
-#        counts = 1 1 1 1 1                     #4
-#       geometric_uncertain = 1                 #4
-#        prob_per_trial = 0.95                   #4
+#	  num_pairs = 2 3 			#4
+#	  abscissas = 1.2 1.4 0 1 2		#4
+#	  counts = 1 1 1 1 1  	  		#4
+#	geometric_uncertain = 1			#4
+#	  prob_per_trial = 0.95			#4
 
 interface,
 	direct
