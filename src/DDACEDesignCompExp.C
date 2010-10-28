@@ -42,6 +42,9 @@ DDACEDesignCompExp::DDACEDesignCompExp(Model& model): PStudyDACE(model),
   varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp")),
   mainEffectsFlag(probDescDB.get_bool("method.main_effects"))
 {
+  // use allVariables instead of default allSamples
+  compactMode = false;
+
   if (daceMethod == "box_behnken")
     maxConcurrency *= 1 + 4*numContinuousVars*(numContinuousVars-1)/2;
   else if (daceMethod == "central_composite")
@@ -72,6 +75,9 @@ DDACEDesignCompExp(Model& model, int samples, int symbols, int seed,
   numDACERuns(0), varyPattern(true), varBasedDecompFlag(false),
   mainEffectsFlag(false)
 {
+  // use allVariables instead of default allSamples
+  compactMode = false;
+
   // Verify symbol & sample input.  The experimental design may not use exactly
   // the requests passed in, but it always will use >= the incoming requests.
   resolve_samples_symbols();

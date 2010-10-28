@@ -401,10 +401,8 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     RealMatrix sample_ranks_second = sampleRanks;
 
 #ifdef DEBUG
-    cout << "lhs2 test\n";
-    cout << "sample2\n";
-    for (i=0; i<numSamples; i++)
-      Cout << '\n' << allVariables[i].continuous_variables();
+    Cout << "lhs2 test\nsample2\n";
+    write_data(Cout, allSamples, false, true, true);
     Cout << "rank2\n" << sample_ranks_second;
 #endif // DEBUG
 
@@ -448,19 +446,18 @@ void NonDIncremLHSSampling::quantify_uncertainty()
 
   // need to put the first set back  
   for (i=0; i<previousSamples; i++)
-    allVariables[i].continuous_variables(sample_values_first[i]);
+    copy_data(sample_values_first[i], allSamples[i], (int)numContinuousVars);
   
 #ifdef DEBUG
-  cout <<"\nallVariables\n";
   numSamples = samplesSpec;
-  for (i=0; i<numSamples; i++)
-    Cout << '\n' << allVariables[i].continuous_variables();
+  Cout <<"\nallSamples\n";
+  write_data(Cout, allSamples, false, true, true);
 #endif //DEBUG
 
   // evaluate full parameter set of size samplesSpec, where the first half
   // should be intercepted via restart file duplication detection
   evaluate_parameter_sets(iteratedModel, true, false);
-  compute_statistics(allVariables, allResponses);
+  compute_statistics(allSamples, allResponses);
 }
 
 

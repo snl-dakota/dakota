@@ -139,8 +139,9 @@ public:
 				    bool rebuild_flag);
 
   /// remove the previous data set addition to a surrogate (e.g., due
-  /// to a previous append_approximation() call)
-  virtual void pop_approximation();
+  /// to a previous append_approximation() call); flag manages saving
+  /// of SurrogateDataPoint set for use in restore_approximation()
+  virtual void pop_approximation(bool save_sdp_set);
 
   /// restore a previous approximation data state within a surrogate
   virtual void restore_approximation();

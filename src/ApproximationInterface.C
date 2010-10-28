@@ -497,11 +497,11 @@ rebuild_approximation(const BoolDeque& rebuild_deque)
 
 /** This function removes data provided by a previous call to
     append_approximation(). */
-void ApproximationInterface::pop_approximation()
+void ApproximationInterface::pop_approximation(bool save_sdp_set)
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     // remove entries from Approximation::currentPoints
-    functionSurfaces[*it].pop();
+    functionSurfaces[*it].pop(save_sdp_set);
 }
 
 

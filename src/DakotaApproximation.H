@@ -70,7 +70,7 @@ public:
   /// rebuilds the approximation incrementally
   virtual void rebuild();
   /// removes entries from end of currentPoints (last points appended)
-  virtual void pop();
+  virtual void pop(bool save_sdp_set);
   /// returns number of entries to pop from end of currentPoints,
   /// based on size of last data set appended
   virtual size_t pop_count();
@@ -287,6 +287,8 @@ private:
   /// bookkeeping for saving data popped from currentPoints (in pop())
   /// that is later restored (in restore() and finalize())
   SDP2DArray savedSDPSets;
+  /// number of points previously added by append() to be removed by pop()
+  size_t popCount;
 
   /// approximation lower bounds (used only by 3D graphics)
   RealVector approxLowerBounds;
@@ -378,48 +380,27 @@ update(const RealVector& c_vars,  const Real& fn_val,
 
 
 inline void Approximation::
-update(const RealMatrix& samples, const ResponseArray& resp_array, int fn_index)
-{
-  if (approxRep)
-    approxRep->update(samples, resp_array, fn_index);
-  else { // not virtual: all derived classes use following definition:
-    currentPoints.clear(); // replace currentPoints with incoming samples
-    append(samples, resp_array, fn_index);
-  }
-}
-
-
-inline void Approximation::
-update(const VariablesArray& vars_array, const ResponseArray& resp_array,
-       int fn_index)
-{
-  if (approxRep)
-    approxRep->update(vars_array, resp_array, fn_index);
-  else { // not virtual: all derived classes use following definition:
-    currentPoints.clear(); // replace currentPoints with incoming samples
-    append(vars_array, resp_array, fn_index);
-  }
-}
-
-
-inline void Approximation::
 append(const Variables& vars, const Response& response, int fn_index)
 {
   if (approxRep)
     approxRep->add(vars, response, fn_index, false);
-  else
+  else {
+    popCount = 1;
     add(vars, response, fn_index, false); // append new point to currentPoints
+  }
 }
 
 
 inline void Approximation::
-append(const RealVector& c_vars, const Real& fn_val,
+append(const RealVector& c_vars,  const Real& fn_val,
        const RealVector& fn_grad, const RealSymMatrix& fn_hess)
 {
   if (approxRep)
     approxRep->add_point(c_vars, fn_val, fn_grad, fn_hess);
-  else
+  else {
+    popCount = 1;
     add_point(c_vars, fn_val, fn_grad, fn_hess); // append new pt to currentPts
+  }
 }
 
 

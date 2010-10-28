@@ -36,6 +36,8 @@ PSUADEDesignCompExp::PSUADEDesignCompExp(Model& model): PStudyDACE(model),
   allDataFlag(false), numDACERuns(0), varyPattern(false), 
   seedSpec(probDescDB.get_int("method.random_seed")), randomSeed(seedSpec)
 {
+  // use allVariables instead of default allSamples
+  compactMode = false;
 
   if (methodName != "psuade_moat") {
     Cerr << "Error: PSUADE method \"" << methodName << "\" is not an option."

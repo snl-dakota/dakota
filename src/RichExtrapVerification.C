@@ -64,12 +64,8 @@ void RichExtrapVerification::pre_run()
   }
 
   size_t i, num_vars = numContinuousVars+numDiscreteIntVars+numDiscreteRealVars;
-  if (allVariables.size() != numEvals)
-    allVariables.resize(numEvals);
-  const Variables& vars = iteratedModel.current_variables();
-  for (size_t i=0; i<numEvals; ++i)
-    if (allVariables[i].is_null()) // use minimal data ctor
-      allVariables[i] = Variables(vars.view(), vars.variables_components());
+  if (allSamples.empty())
+    allSamples.shapeUninitialized(num_vars, numEvals);
   if ( outputLevel > SILENT_OUTPUT &&
        ( studyType == VECTOR_SV || studyType == VECTOR_FP ||
 	 studyType == CENTERED ) )
@@ -195,7 +191,6 @@ void RichExtrapVerification::estimate_order()
 
 /** This algorithm continues to refine until the convergence order
     estimate converges. */
-
 void RichExtrapVerification::converge_order()
 {
   RealVector refine_triple(3, false), prev_order(numFunctions),
@@ -238,7 +233,6 @@ void RichExtrapVerification::converge_order()
 
 /** This algorithm continues to refine until the discretization error
     lies within a prescribed tolerance. */
-
 void RichExtrapVerification::converge_qoi()
 { 
   RealVector refine_triple(3, false), err_qoi_rv;

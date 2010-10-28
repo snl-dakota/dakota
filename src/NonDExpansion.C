@@ -896,7 +896,7 @@ Real NonDExpansion::increment_sets()
     Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
 
     // restore previous state (destruct order is reversed from construct order)
-    uSpaceModel.pop_approximation();
+    uSpaceModel.pop_approximation(true); // store SDP set for use in restore
     nond_sparse->decrement_set();
   }
   Cout << "\n<<<<< Evaluation of active index sets completed.\n"
@@ -1229,8 +1229,8 @@ void NonDExpansion::update_expansion()
   // settings as set previously by compute_expansion(); there should
   // be no need to update for an expansion refinement.
 
-  // Ultimately want to be more hierarchical than this; this is just
-  // a first step for now:
+  // Ultimately want to be more incremental than this, but need
+  // incremental support from sgmg/sgmga before this can be implemented.
   uSpaceModel.build_approximation();
   //u_space_sampler->run_iterator(Cout);
   //uSpaceModel.update_approximation(true); // append_approximation() ?

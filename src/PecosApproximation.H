@@ -141,7 +141,7 @@ protected:
 
   void build();
   void rebuild();
-  void pop();
+  void pop(bool save_sdp_set);
   size_t pop_count();
   void restore();
   bool restore_available();
@@ -358,10 +358,10 @@ inline void PecosApproximation::rebuild()
 }
 
 
-inline void PecosApproximation::pop()
+inline void PecosApproximation::pop(bool save_sdp_set)
 {
   // base class implementation removes data from currentPoints
-  Approximation::pop();
+  Approximation::pop(save_sdp_set);
   // synchronize Pecos dataPoints with Approximation currentPoints
   polyApproxRep->pop(polyApproxRep->data_size() - currentPoints.size());
 

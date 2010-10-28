@@ -138,7 +138,7 @@ protected:
 			    const ResponseArray& resp_array, bool rebuild_flag);
 
   /// remove approximation data added on previous append_approximation() call
-  void pop_approximation();
+  void pop_approximation(bool save_sdp_set);
 
   /// restore a previous approximation data state
   void restore_approximation();

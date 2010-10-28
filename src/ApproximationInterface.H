@@ -91,7 +91,7 @@ protected:
 			   const RealVector& upper_bnds);
 
   void rebuild_approximation(const BoolDeque& rebuild_deque);
-  void pop_approximation();
+  void pop_approximation(bool save_sdp_set);
   void restore_approximation();
   bool restore_available();
   void finalize_approximation();

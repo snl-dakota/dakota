@@ -97,19 +97,20 @@ protected:
   void get_parameter_sets(const RealVector& lower_bnds,
 			  const RealVector& upper_bnds);
 
+  /// Override default update of continuous vars only
+  void update_model_from_sample(Model& model, const Real* sample_vars);
+
   //
   //- Heading: Convenience member functions for derived classes
   //
 
   /// increments numLHSRuns, sets random seed, and initializes lhsDriver
   void initialize_lhs(bool write_message);
-  /// converts allSamples into allVariables
-  void finalize_lhs();
 
   /// For the input sample set, computes mean, standard deviation, and
   /// probability/reliability/response levels (aleatory uncertainties)
   /// or intervals (epsitemic or mixed uncertainties)
-  void compute_statistics(const VariablesArray& vars_samples,
+  void compute_statistics(const RealMatrix&    vars_samples,
 			  const ResponseArray& resp_samples);
   /// called by compute_statistics() to calculate min/max intervals
   void compute_intervals(const ResponseArray& samples);
@@ -138,7 +139,8 @@ protected:
   Pecos::LHSDriver lhsDriver; ///< the C++ wrapper for the F90 LHS library
 
   bool statsFlag;   ///< flags computation/output of statistics
-  bool allDataFlag; ///< flags update of allVariables/allResponses
+  bool allDataFlag; ///< flags update of allResponses
+                    ///< (allVariables or allSamples already defined)
 
   /// the sampling mode: ACTIVE, ACTIVE_UNIFORM, ALL, or ALL_UNIFORM
   short samplingVarsMode;

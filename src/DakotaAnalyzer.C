@@ -26,8 +26,9 @@ static const char rcsId[]="@(#) $Id: DakotaAnalyzer.C 7035 2010-10-22 21:45:39Z 
 
 namespace Dakota {
 
+
 Analyzer::Analyzer(Model& model):
-  Iterator(BaseConstructor(), model), compactMode(false), numBest(1)
+  Iterator(BaseConstructor(), model), compactMode(true), numBest(1)
 {
   iteratedModel = model;
   if (probDescDB.get_sizet("responses.num_response_functions"))
@@ -44,13 +45,13 @@ Analyzer::Analyzer(Model& model):
 
 
 Analyzer::Analyzer(NoDBBaseConstructor, Model& model):
-  Iterator(NoDBBaseConstructor(), model), compactMode(false),
+  Iterator(NoDBBaseConstructor(), model), compactMode(true),
   numObjFns(0), numLSqTerms(0) // no best data tracking
 { iteratedModel = model; }
 
 
 Analyzer::Analyzer(NoDBBaseConstructor): Iterator(NoDBBaseConstructor()),
-  compactMode(false), numObjFns(0), numLSqTerms(0) // no best data tracking
+  compactMode(true), numObjFns(0), numLSqTerms(0) // no best data tracking
 { }
 
 
@@ -77,11 +78,8 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
     if (header_flag)
       Cout << allHeaders[i];
 
-    if (compactMode) {
+    if (compactMode)
       update_model_from_sample(model, allSamples[i]);
-      //if (log_vars_flag) // TO DO?
-      //  update_variables_from_sample(allVariables[i], allSamples[i]);
-    }
     else
       update_model_from_variables(model, allVariables[i]);
 
@@ -90,12 +88,11 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
       model.asynch_compute_response(activeSet);
     else {
       model.compute_response(activeSet);
-      const Response& local_response = model.current_response();
+      const Response& resp = model.current_response();
       if (log_best_flag) // update best variables/response
-        update_best(model.current_variables(), model.evaluation_id(),
-		    local_response);
+        update_best(model.current_variables(), model.evaluation_id(), resp);
       if (log_resp_flag) // log response data
-        allResponses[i] = local_response.copy();
+        allResponses[i] = resp.copy();
     }
   }
 
@@ -273,13 +270,13 @@ void Analyzer::update_model_from_variables(Model& model, const Variables& vars)
 }
 
 
-void Analyzer::update_model_from_sample(Model& model, const Real* sample_c_vars)
+void Analyzer::update_model_from_sample(Model& model, const Real* sample_vars)
 {
-  // quick first cut good enough for NonD{Quadrature,SparseGrid,Cubature}
-  // and FSUDesignCompExp, but NonDSampling has sampling modes to manage.
+  // default implementation is sufficient for FSUDesignCompExp and
+  // NonD{Quadrature,SparseGrid,Cubature}, but NonDSampling overrides.
   size_t i, num_cv = model.cv();
   for (i=0; i<num_cv; ++i)
-    model.continuous_variable(sample_c_vars[i], i);
+    model.continuous_variable(sample_vars[i], i);
 }
 
 
@@ -416,7 +413,8 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
   
   // call evaluate parameter sets (ncont)*num_samples to get data
   //WJB - ToDo: confer with MSE: Array<Real2DArray> total_fn_vals(numFunctions);
-  multi_array<Real,3> total_fn_vals(extents[numFunctions][ndimtotal+2][num_samples]);
+  multi_array<Real,3>
+    total_fn_vals(extents[numFunctions][ndimtotal+2][num_samples]);
 
   for (i=0; i<ndimtotal+2; ++i) {
     if (compactMode)
@@ -537,9 +535,8 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
 	 << "\nMeanSq1 " << mean_sq1 << "\nMeanSq2 " << mean_sq2 << '\n';
 #endif
 
-  // calculate first order sensitivity indices and first order total indices
-
-    for(i=0; i<ndimtotal; i++) {
+    // calculate first order sensitivity indices and first order total indices
+    for (i=0; i<ndimtotal; i++) {
       Real sum_S = 0., sum_T = 0., sum_J = 0., sum_J2 = 0., sum_3 = 0., sum_32=0.,sum_5=0, sum_6=0;
       for (j=0; j<num_samples; j++) {
 	sum_S += total_fn_vals[k][0][j]*total_fn_vals[k][i+2][j];
@@ -754,6 +751,10 @@ update_best(const Real* sample_c_vars, int eval_id, const Response& response)
 {
   RealRealPair metrics; 
   compute_best_metrics(response, metrics);
+#ifdef DEBUG
+  Cout << "Best metrics: " << metrics.first << ' ' << metrics.second
+       << std::endl;
+#endif
 
   size_t num_best_map = bestVarsRespMap.size();
   if (num_best_map < numBest) { // initialization of best map
@@ -789,6 +790,10 @@ update_best(const Variables& vars, int eval_id, const Response& response)
 {
   RealRealPair metrics; 
   compute_best_metrics(response, metrics);
+#ifdef DEBUG
+  Cout << "Best metrics: " << metrics.first << ' ' << metrics.second
+       << std::endl;
+#endif
 
   size_t num_best_map = bestVarsRespMap.size();
   if (num_best_map < numBest) { // initialization of best map

@@ -40,7 +40,7 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
   // verbosity.  For approximations, verbose adds quad poly coeff reporting.
   outputLevel(problem_db.get_short("method.output")),
   numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
-  dataOrder(1), approxRep(NULL), referenceCount(1)
+  dataOrder(1), popCount(1), approxRep(NULL), referenceCount(1)
 {
   if (problem_db.get_bool("model.surrogate.derivative_usage") &&
       approxType != "global_polynomial"                     &&
@@ -61,7 +61,7 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
     This makes it necessary to check for NULL in the copy constructor,
     assignment operator, and destructor. */
 Approximation::Approximation(): dataOrder(1), outputLevel(NORMAL_OUTPUT),
-  approxRep(NULL), referenceCount(1)
+  popCount(1), approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation() called to build empty approximation "
@@ -288,24 +288,26 @@ void Approximation::rebuild()
 }
 
 
-void Approximation::pop()
+void Approximation::pop(bool save_sdp_set)
 {
   if (approxRep)
-    approxRep->pop();
+    approxRep->pop(save_sdp_set);
   else  {
     // virtual fn: this is the common base class portion and is
     // insufficient on its own; derived implementations should
     // explicitly invoke (or reimplement) this base class contribution.
     size_t curr_size = currentPoints.size(), num_pop = pop_count();
     if (curr_size >= num_pop) {
-      // save currentPoints data within instance of savedSDPSets
-      SDPArray sdp; savedSDPSets.push_back(sdp); // copy empty
-      SDPArray& last_sdp = savedSDPSets.back();  // update in place
-      // prevent underflow portability issue with compiler coercion of -num_pop
-      SDPLDiffT reverse_advance = -(SDPLDiffT)num_pop;
-      SDPLIter it = currentPoints.end(); std::advance(it, reverse_advance);
-      for (; it!=currentPoints.end(); ++it)
-	last_sdp.push_back(*it);
+      // save currentPoints data within savedSDPSets instance
+      if (save_sdp_set) {
+	SDPArray sdp; savedSDPSets.push_back(sdp); // copy empty
+	SDPArray& last_sdp = savedSDPSets.back();  // update in place
+	// prevent underflow portability issue w/ compiler coercion of -num_pop
+	SDPLDiffT reverse_advance = -(SDPLDiffT)num_pop;
+	SDPLIter it = currentPoints.end(); std::advance(it, reverse_advance);
+	for (; it!=currentPoints.end(); ++it)
+	  last_sdp.push_back(*it);
+      }
       // drop num_data_pts off of end of currentPoints
       currentPoints.resize(curr_size - num_pop);
     }
@@ -320,13 +322,8 @@ void Approximation::pop()
 
 size_t Approximation::pop_count()
 {
-  if (!approxRep) { // virtual fn: no default, error if not supplied by derived
-    Cerr << "Error: pop_count() not available for this approximation type."
-	 << std::endl;
-    abort_handler(-1);
-  }
-
-  return approxRep->pop_count();
+  return (approxRep) ? approxRep->pop_count() // derived class redefinition
+                     : popCount; // default definition
 }
 
 
@@ -563,14 +560,44 @@ int Approximation::recommended_points(bool constraint_flag) const
 }
 
 
+
+void Approximation::
+update(const RealMatrix& samples, const ResponseArray& resp_array, int fn_index)
+{
+  if (approxRep)
+    approxRep->update(samples, resp_array, fn_index);
+  else { // not virtual: all derived classes use following definition:
+    currentPoints.clear(); // replace currentPoints with incoming samples
+    size_t num_points = std::min((size_t)samples.numCols(), resp_array.size());
+    for (size_t i=0; i<num_points; ++i)
+      add(samples[i], resp_array[i], fn_index, false);
+  }
+}
+
+
+void Approximation::
+update(const VariablesArray& vars_array, const ResponseArray& resp_array,
+       int fn_index)
+{
+  if (approxRep)
+    approxRep->update(vars_array, resp_array, fn_index);
+  else { // not virtual: all derived classes use following definition:
+    currentPoints.clear(); // replace currentPoints with incoming samples
+    size_t i, num_points = std::min(vars_array.size(), resp_array.size());
+    for (i=0; i<num_points; ++i)
+      add(vars_array[i], resp_array[i], fn_index, false);
+  }
+}
+
+
 void Approximation::
 append(const RealMatrix& samples, const ResponseArray& resp_array, int fn_index)
 {
   if (approxRep)
     approxRep->append(samples, resp_array, fn_index);
   else { // not virtual: all derived classes use following definition
-    size_t num_points = std::min((size_t)samples.numCols(), resp_array.size());
-    for (size_t i=0; i<num_points; ++i)
+    popCount = std::min((size_t)samples.numCols(), resp_array.size());
+    for (size_t i=0; i<popCount; ++i)
       add(samples[i], resp_array[i], fn_index, false);
   }
 }
@@ -583,8 +610,8 @@ append(const VariablesArray& vars_array, const ResponseArray& resp_array,
   if (approxRep)
     approxRep->append(vars_array, resp_array, fn_index);
   else { // not virtual: all derived classes use following definition
-    size_t i, num_points = std::min(vars_array.size(), resp_array.size());
-    for (i=0; i<num_points; ++i)
+    popCount = std::min(vars_array.size(), resp_array.size());
+    for (size_t i=0; i<popCount; ++i)
       add(vars_array[i], resp_array[i], fn_index, false);
   }
 }

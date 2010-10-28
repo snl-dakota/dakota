@@ -111,10 +111,8 @@ void NonDLHSSampling::post_run(std::ostream& s)
 {
   //Statistics are generated here and output in NonDLHSSampling's
   // redefinition of print_results().
-  if (statsFlag && !varBasedDecompFlag) {
-    // calculate statistics on the set of responses
-    compute_statistics(allVariables, allResponses);
-  }
+  if (statsFlag && !varBasedDecompFlag) // calculate statistics on allResponses
+    compute_statistics(allSamples, allResponses);
 
   Iterator::post_run(s);
 }

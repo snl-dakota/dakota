@@ -36,8 +36,6 @@ NonDIntegration::NonDIntegration(Model& model): NonD(model), numIntegrations(0)
   //natafTransform.initialize_random_variable_correlations(
   //  model.uncertain_correlations());
 
-  compactMode = true;
-
   // Check for suitable distribution types.
   if (numDiscreteIntVars || numDiscreteRealVars) {
     Cerr << "\nError: discrete random variables are not currently supported in "
@@ -58,8 +56,6 @@ NonDIntegration::NonDIntegration(NoDBBaseConstructor, Model& model):
 
   // initialize_random_variables(natafTransform) is called externally (e.g.,
   // NonDExpansion::initialize_expansion()) and passed data from outer context.
-
-  compactMode = true;
 }
 
 

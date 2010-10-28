@@ -30,6 +30,9 @@ enum { LIST=1, VECTOR_SV, VECTOR_FP, CENTERED, MULTIDIM };
 
 ParamStudy::ParamStudy(Model& model): PStudyDACE(model), pStudyType(0)
 {
+  // use allVariables instead of default allSamples
+  compactMode = false;
+
   // Set pStudyType
   const RealVector& step_vector
     = probDescDB.get_rdv("method.parameter_study.step_vector");

@@ -552,12 +552,12 @@ append_approximation(const VariablesArray& vars_array,
 }
 
 
-void DataFitSurrModel::pop_approximation()//(bool rebuild_flag)
+void DataFitSurrModel::pop_approximation(bool save_sdp_set)//,bool rebuild_flag)
 {
   Cout << "\n>>>>> Popping data from " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
-  approxInterface.pop_approximation();
+  approxInterface.pop_approximation(save_sdp_set);
 
   /* 
   if (rebuild_flag) { // update the coefficients for each approximation

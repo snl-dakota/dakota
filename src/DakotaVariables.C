@@ -22,7 +22,7 @@
 
 //#define REFCOUNT_DEBUG
 
-static const char rcsId[]="@(#) $Id: DakotaVariables.C 7038 2010-10-24 16:18:37Z mseldre $";
+static const char rcsId[]="@(#) $Id: DakotaVariables.C 7037 2010-10-23 01:18:08Z mseldre $";
 
 namespace Dakota {
 

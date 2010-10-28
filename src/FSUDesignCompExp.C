@@ -33,7 +33,6 @@ FSUDesignCompExp::FSUDesignCompExp(Model& model): PStudyDACE(model),
   latinizeFlag(probDescDB.get_bool("method.latinize")),
   varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp"))
 {
-  compactMode = true;
   if (methodName == "fsu_cvt") {
     // CVT inputs
     randomSeed   = seedSpec =  probDescDB.get_int("method.random_seed");
@@ -124,7 +123,6 @@ FSUDesignCompExp(Model& model, int samples, int seed,
   varBasedDecompFlag(false), varyPattern(true)
 {
   methodName  = sampling_method;
-  compactMode = true;
 
   if (methodName == "fsu_cvt") {
     // CVT inputs and defaults
@@ -356,28 +354,6 @@ void FSUDesignCompExp::get_parameter_sets(Model& model)
 
   if (volQualityFlag)
     volumetric_quality(numContinuousVars, numSamples, allSamples.values());
-
-  /*
-  // Convert from sample_points on [0,1] to allVariables on [lower,upper]
-  if (allVariables.size() != numSamples)
-    allVariables.resize(numSamples);
-  const Variables& vars = iteratedModel.current_variables();
-  RealVector c_vars(numContinuousVars, false);
-  size_t cntr = 0, num_div = vars.div(), num_drv = vars.drv();
-  for (i=0; i<numSamples; ++i) {
-    if (allVariables[i].is_null()) // use minimal data ctor
-      allVariables[i] = Variables(vars.view(), vars.variables_components());
-    for (j=0; j<numContinuousVars; ++j, ++cntr)
-      c_vars[j] = c_l_bnds[j] + sample_points[cntr] * c_bnds_range[j];
-    allVariables[i].continuous_variables(c_vars);
-    // preserve any active discrete variables, even though FSUDace
-    // doesn't support them
-    if (num_div)
-      allVariables[i].discrete_int_variables(vars.discrete_int_variables());
-    if (num_drv)
-      allVariables[i].discrete_real_variables(vars.discrete_real_variables());
-  }
-  */
 
   // Convert from [0,1] to [lower,upper]
   for (i=0; i<numSamples; ++i) {

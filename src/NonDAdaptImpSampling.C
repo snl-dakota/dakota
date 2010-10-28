@@ -142,13 +142,13 @@ void NonDAdaptImpSampling::quantify_uncertainty()
     get_parameter_sets(iteratedModel);
     bool log_resp_flag = (allDataFlag || statsFlag);
     evaluate_parameter_sets(iteratedModel, log_resp_flag, false);
-    compute_statistics(allVariables, allResponses);
+    compute_statistics(allSamples, allResponses);
     //Cout << "computed respprob" << computedProbLevels[0][0] << "\n";
 
     RealVectorArray lhs_inputs(numSamples);
     size_t i,j;
     for (i=0; i<numSamples; i++)
-      lhs_inputs[i]=allVariables[i].continuous_variables();
+      copy_data(allSamples[i], (int)numContinuousVars, lhs_inputs[i]);
 #ifdef DEBUG
     for (i=0; i<numSamples; i++) { 
       for (j=0; j<numContinuousVars; j++)
@@ -685,9 +685,6 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& samples)
   lhsDriver.generate_normal_samples(n_means, n_std_devs, n_l_bnds, n_u_bnds,
 				    numSamples, lhs_samples_array);
 #endif // DAKOTA_PECOS
-  // allVariables does not appear to be needed for evaluate_parameter_sets(),
-  // so update samples directly from lhs_samples_array
-  //finalize_lhs(lhs_samples_array); // lhs_samples_array -> allVariables
 
   for (i=0; i<numRepPoints; i++) {
     int num_samples = int(repWeights[i]*numSamples);
@@ -695,8 +692,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& samples)
       num_samples = 1;
     const RealVector& rep_pt_i = repPoints[i];
     for (j=0; j<num_samples; j++) {
-      //const RealVector& c_vars
-      //  = allVariables[sample_counter+j].continuous_variables();
+      //const Real* c_vars = allSamples[sample_counter+j];
       // WJB -- ToDo: use NumericalType vector ops
       Real* lhs_samples_col_j = lhs_samples_array[sample_counter+j];
       samples[sample_counter+j].sizeUninitialized(numUncertainVars);

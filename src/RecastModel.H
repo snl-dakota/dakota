@@ -161,7 +161,7 @@ protected:
   void append_approximation(const VariablesArray& vars_array,
 			    const ResponseArray& resp_array, bool rebuild_flag);
 
-  void pop_approximation();
+  void pop_approximation(bool save_sdp_set);
   void restore_approximation();
   bool restore_available();
   void finalize_approximation();
@@ -418,8 +418,8 @@ append_approximation(const VariablesArray& vars_array,
 { subModel.append_approximation(vars_array, resp_array, rebuild_flag); }
 
 
-inline void RecastModel::pop_approximation()
-{ subModel.pop_approximation(); }
+inline void RecastModel::pop_approximation(bool save_sdp_set)
+{ subModel.pop_approximation(save_sdp_set); }
 
 
 inline void RecastModel::restore_approximation()

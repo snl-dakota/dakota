@@ -2557,14 +2557,14 @@ append_approximation(const VariablesArray& vars_array,
 }
 
 
-void Model::pop_approximation()
+void Model::pop_approximation(bool save_sdp_set)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->pop_approximation();
+    modelRep->pop_approximation(save_sdp_set);
   else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual pop_approximation() "
-	 << "function.\nThis model does not support approximation data removal."
-	 << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
+	 << "(bool) function.\nThis model does not support approximation data "
+	 << "removal." << std::endl;
     abort_handler(-1);
   }
 }

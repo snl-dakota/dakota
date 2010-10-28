@@ -69,6 +69,9 @@ protected:
   /// Returns one block of samples (ndim * num_samples)
   virtual void get_parameter_sets(Model& model);
 
+  /// update model's current variables with data from sample
+  virtual void update_model_from_sample(Model& model, const Real* sample_vars);
+
   //
   //- Heading: Virtual member function redefinitions
   //
@@ -143,8 +146,6 @@ private:
 
   /// update model's current variables with data from vars
   void update_model_from_variables(Model& model, const Variables& vars);
-  /// update model's current variables with data from sample
-  void update_model_from_sample(Model& model, const Real* sample_c_vars);
 
   /// compares current evaluation to best evaluation and updates best
   void compute_best_metrics(const Response& response,

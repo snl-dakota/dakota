@@ -79,6 +79,7 @@ NonDSampling(NoDBBaseConstructor, Model& model, int samples, int seed,
   varyPattern(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
+
   // not used but included for completeness
   if (numSamples) // samples is now optional (default = 0)
     maxConcurrency *= numSamples;
@@ -136,7 +137,6 @@ void NonDSampling::get_parameter_sets(Model& model)
       lhsDriver.generate_uniform_samples(model.continuous_lower_bounds(),
 					 model.continuous_upper_bounds(),
 					 numSamples, allSamples);
-      // compactMode: finalize_lhs() not used
     }
     else if (samplingVarsMode == ALL_UNIFORM) {
       // sample uniformly from ALL lower/upper bounds with model using
@@ -147,8 +147,6 @@ void NonDSampling::get_parameter_sets(Model& model)
       lhsDriver.generate_uniform_samples(model.all_continuous_lower_bounds(),
 					 model.all_continuous_upper_bounds(),
 					 numSamples, allSamples);
-      // not compactMode, at least for now,  due to all mapping
-      finalize_lhs(); // allSamples -> allVariables
     }
     else if (samplingVarsMode == UNCERTAIN_UNIFORM) {
       // sample uniformly from UNCERTAIN lower/upper bounds with model
@@ -178,9 +176,6 @@ void NonDSampling::get_parameter_sets(Model& model)
       //        (must manage ordering: discrete int/real among cdv/cuv/csv)
       lhsDriver.generate_uniform_samples(uncertain_l_bnds, uncertain_u_bnds,
 					 numSamples, allSamples);
-
-      // not compactMode, at least for now,  due to uncertain mapping
-      finalize_lhs(); // allSamples -> allVariables
     }
   }
   else { // UNCERTAIN || ACTIVE || ALL
@@ -251,9 +246,6 @@ void NonDSampling::get_parameter_sets(Model& model)
       dsriv_l_bnds, dsriv_u_bnds, model.discrete_state_set_int_values(),
       model.discrete_state_set_real_values(), model.distribution_parameters(),
       numSamples, allSamples, sampleRanks);
-
-    // not compactMode, at least for now
-    finalize_lhs(); // allSamples -> allVariables
   }
 }
 
@@ -269,7 +261,61 @@ get_parameter_sets(const RealVector& lower_bnds,
   initialize_lhs(true);
   lhsDriver.generate_uniform_samples(lower_bnds, upper_bnds,
 				     numSamples, allSamples);
-  // compactMode: finalize_lhs() not used
+}
+
+
+void NonDSampling::
+update_model_from_sample(Model& model, const Real* sample_vars)
+{
+  size_t i, cv_start = 0, num_cv = 0, div_start = 0, num_div = 0,
+    drv_start = 0, num_drv = 0;
+  switch (samplingVarsMode) {
+  case UNCERTAIN:
+    cv_start  = numContDesVars;
+    num_cv    = numContAleatUncVars + numContEpistUncVars;
+    div_start = numDiscIntDesVars;
+    num_div   = numDiscIntAleatUncVars + numDiscIntEpistUncVars;
+    drv_start = numDiscRealDesVars;
+    num_drv   = numDiscRealAleatUncVars + numDiscRealEpistUncVars;
+    break;
+  case UNCERTAIN_UNIFORM:
+    cv_start = numContDesVars;
+    num_cv   = numContAleatUncVars + numContEpistUncVars;
+    // UNIFORM views do not currently support discrete
+    break;
+  case ACTIVE: {
+    const Variables& vars = model.current_variables();
+    cv_start  = vars.cv_start();  num_cv  = vars.cv();
+    div_start = vars.div_start(); num_div = vars.div();
+    drv_start = vars.drv_start(); num_drv = vars.drv();
+    break;
+  }
+  case ACTIVE_UNIFORM: {
+    const Variables& vars = model.current_variables();
+    cv_start = vars.cv_start(); num_cv = vars.cv();
+    // UNIFORM views do not currently support discrete
+    break;
+  }
+  case ALL:
+    num_cv = model.acv(); num_div = model.adiv(); num_drv = model.adrv();
+    break;
+  case ALL_UNIFORM:
+    num_cv = model.acv();
+    // UNIFORM views do not currently support discrete
+    break;
+  }
+
+  // sampled continuous vars
+  for (i=0; i<num_cv; ++i)
+    model.all_continuous_variable(sample_vars[i], cv_start+i);
+  // sampled discrete int vars
+  size_t offset = num_cv;
+  for (i=0; i<num_div; ++i)
+    model.all_discrete_int_variable((int)sample_vars[i+offset], div_start+i);
+  // sampled discrete real vars
+  offset += num_div;
+  for (i=0; i<num_drv; ++i)
+    model.all_discrete_real_variable(sample_vars[i+offset], drv_start+i);
 }
 
 
@@ -277,7 +323,6 @@ void NonDSampling::initialize_lhs(bool write_message)
 {
   // keep track of number of LHS executions for this object
   numLHSRuns++;
-  compactMode = true; // reset to false in finalize_lhs() if called
 
   // Set seed value for input to LHS's random number generator.  Emulate DDACE
   // behavior in which a user-specified seed gives you repeatable behavior but
@@ -336,176 +381,9 @@ void NonDSampling::initialize_lhs(bool write_message)
 }
 
 
-void NonDSampling::finalize_lhs()
-{
-  if (allSamples.empty()) {
-    Cerr << "Error: empty allSamples in NonDSampling::finalize_lhs()."
-	 << std::endl;
-    abort_handler(-1);
-  }
-
-  // override setting in initialize_lhs()
-  compactMode = false;
-
-  size_t i, j, num_samp_rows = allSamples.numRows();
-  std::pair<short,short> vars_view;
-  size_t cv_start = 0, div_start = 0, drv_start = 0,
-         num_cv   = 0, num_div   = 0, num_drv   = 0,
-         num_acv  = 0, num_adiv  = 0, num_adrv  = 0;
-  bool propagate_inactive = false;
-  switch (samplingVarsMode) { // TO DO: add additional sampling modes?
-  case UNCERTAIN:
-    vars_view.first  = MIXED_DISTINCT_UNCERTAIN; // TO DO: aleatory/epist flags?
-    vars_view.second = EMPTY;
-    if (iteratedModel.is_null())
-      num_acv = num_cv = num_samp_rows;
-    else {
-      if (numDesignVars || numStateVars)
-	propagate_inactive = true;
-      cv_start  = numContDesVars;
-      num_cv    = numContAleatUncVars + numContEpistUncVars;
-      num_acv   = cv_start + num_cv + numContStateVars;
-      div_start = numDiscIntDesVars;
-      num_div   = numDiscIntAleatUncVars + numDiscIntEpistUncVars;
-      num_adiv  = div_start + num_div + numDiscIntStateVars;
-      drv_start = numDiscRealDesVars;
-      num_drv   = numDiscRealAleatUncVars + numDiscRealEpistUncVars;
-      num_adrv  = drv_start + num_drv + numDiscRealStateVars;
-    }
-    break;
-  case UNCERTAIN_UNIFORM:
-    vars_view.first  = MIXED_DISTINCT_UNCERTAIN; // TO DO: aleatory/epist flags?
-    vars_view.second = EMPTY;
-    if (iteratedModel.is_null())
-      num_acv = num_cv = num_samp_rows;
-    else {
-      if (numDesignVars || numStateVars)
-	propagate_inactive = true;
-      cv_start = numContDesVars;
-      num_cv   = numContAleatUncVars + numContEpistUncVars;
-      num_acv  = cv_start + num_cv + numContStateVars;
-    }
-    // UNIFORM views do not currently support discrete
-    break;
-  case ACTIVE:
-    if (iteratedModel.is_null()) {
-      vars_view.first  = MIXED_DISTINCT_UNCERTAIN;
-      vars_view.second = EMPTY;
-      num_acv = num_cv = num_samp_rows;
-    }
-    else {
-      const Variables& vars = iteratedModel.current_variables();
-      vars_view = vars.view();
-      cv_start  = vars.cv_start();  num_cv  = vars.cv();
-      num_acv   = vars.acv();
-      div_start = vars.div_start(); num_div = vars.div();
-      num_adiv  = vars.adiv();
-      drv_start = vars.drv_start(); num_drv = vars.drv();
-      num_adrv  = vars.adrv();
-      propagate_inactive = true;
-    }
-    break;
-  case ACTIVE_UNIFORM:
-    if (iteratedModel.is_null()) {
-      vars_view.first  = MIXED_DISTINCT_UNCERTAIN;
-      vars_view.second = EMPTY;
-      num_acv = num_cv = num_samp_rows;
-    }
-    else {
-      const Variables& vars = iteratedModel.current_variables();
-      vars_view = vars.view();
-      cv_start  = vars.cv_start(); num_cv = vars.cv(); num_acv = vars.acv();
-      propagate_inactive = true;
-    }
-    // UNIFORM views do not currently support discrete
-    break;
-  case ALL:
-    vars_view.first  = MIXED_ALL;
-    vars_view.second = EMPTY;
-    num_acv  = num_cv  = iteratedModel.acv();
-    num_adiv = num_div = iteratedModel.adiv();
-    num_adrv = num_drv = iteratedModel.adrv();
-    break;
-  case ALL_UNIFORM:
-    vars_view.first  = MIXED_ALL;
-    vars_view.second = EMPTY;
-    num_acv = num_cv = iteratedModel.acv();
-    // UNIFORM views do not currently support discrete
-    break;
-  }
-
-  SizetArray null_vc_totals;
-  if (iteratedModel.is_null()) {
-    null_vc_totals.resize(12, 0);
-    null_vc_totals[3] = num_samp_rows;// = null_vc_totals[3][3] -> uniform uv
-  }
-  const SizetArray& vc_totals = (iteratedModel.is_null()) ? null_vc_totals :
-    iteratedModel.current_variables().variables_components_totals();
-
-  SharedVariablesData svd(vars_view, vc_totals);
-
-  RealVector empty_rv; IntVector empty_iv;
-  const RealVector& model_ac_vars  = (iteratedModel.is_null()) ? empty_rv :
-    iteratedModel.all_continuous_variables();
-  const IntVector&  model_adi_vars = (iteratedModel.is_null()) ? empty_iv :
-    iteratedModel.all_discrete_int_variables();
-  const RealVector& model_adr_vars = (iteratedModel.is_null()) ? empty_rv :
-    iteratedModel.all_discrete_real_variables();
-
-  //Cout << "allSamples:\n" << allSamples << std::endl;
-
-  // avoid unnecessary copying as much as possible (may be large sample sets)
-  RealVector c_vars(num_cv), dr_vars(num_drv); IntVector di_vars(num_div);
-  if (allVariables.size() != numSamples)
-    allVariables.resize(numSamples);
-  for (i=0; i<numSamples; i++) {
-    Variables& all_vars_i = allVariables[i];
-    if (all_vars_i.is_null() || vars_view != all_vars_i.view())
-      all_vars_i = Variables(svd);
-
-    if (propagate_inactive) {// propagate inactive vars from model to all_vars_i
-      // leading continuous unsampled
-      for (j=0; j<cv_start; ++j)
-	all_vars_i.all_continuous_variable(model_ac_vars[j], j);
-      // trailing continuous unsampled
-      for (j=cv_start+num_cv; j<num_acv; ++j)
-	all_vars_i.all_continuous_variable(model_ac_vars[j], j);
-      // leading discrete int unsampled
-      for (j=0; j<div_start; ++j)
-	all_vars_i.all_discrete_int_variable(model_adi_vars[j], j);
-      // trailing discrete int unsampled
-      for (j=div_start+num_div; j<num_adiv; ++j)
-	all_vars_i.all_discrete_int_variable(model_adi_vars[j], j);
-      // leading discrete real unsampled
-      for (j=0; j<drv_start; ++j)
-	all_vars_i.all_discrete_real_variable(model_adr_vars[j], j);
-      // trailing discrete real unsampled
-      for (j=drv_start+num_drv; j<num_adrv; ++j)
-	all_vars_i.all_discrete_real_variable(model_adr_vars[j], j);
-    }
-
-    Real* samples_col_i = allSamples[i];
-    // sampled continuous vars
-    for (j=0; j<num_cv; j++)
-      all_vars_i.continuous_variable(samples_col_i[j], j); // [i][j] or (j,i)
-    // sampled discrete int vars
-    for (j=0; j<num_div; j++)
-      all_vars_i.discrete_int_variable((int)samples_col_i[j+num_cv], j);
-    // sampled discrete real vars
-    for (j=0; j<num_drv; j++)
-      all_vars_i.discrete_real_variable(samples_col_i[j+num_cv+num_div], j);
-
-    //Cout << "all_vars_i:\n" << all_vars_i << std::endl;
-  }
-
-  // now that data is fully migrated to allVariables, clear allSamples
-  allSamples.shapeUninitialized(0,0);
-}
-
-
 void NonDSampling::
-compute_statistics(const VariablesArray& vars_samples,
-		   const ResponseArray&  resp_samples)
+compute_statistics(const RealMatrix&    vars_samples,
+		   const ResponseArray& resp_samples)
 {
   if (numEpistemicUncVars) // Epistemic/mixed
     compute_intervals(resp_samples); // compute min/max response intervals
@@ -533,7 +411,7 @@ void NonDSampling::compute_intervals(const ResponseArray& samples)
 
   if (minValues.empty()) minValues.resize(numFunctions);
   if (maxValues.empty()) maxValues.resize(numFunctions);
-  for (i=0; i<numFunctions; i++) {
+  for (i=0; i<numFunctions; ++i) {
     num_samp = 0;
     Real min = DBL_MAX, max = -DBL_MAX;
     for (j=0; j<num_obs; j++) {
@@ -570,7 +448,7 @@ void NonDSampling::compute_moments(const ResponseArray& samples)
   if (stdDev95CILowerBnds.empty()) stdDev95CILowerBnds.resize(numFunctions);
   if (stdDev95CIUpperBnds.empty()) stdDev95CIUpperBnds.resize(numFunctions);
 
-  for (i=0; i<numFunctions; i++) {
+  for (i=0; i<numFunctions; ++i) {
 
     num_samp  = 0;
     sum = var = 0.;
@@ -665,7 +543,7 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
     computedProbLevels.resize(numFunctions);
     computedRelLevels.resize(numFunctions);
     computedGenRelLevels.resize(numFunctions);
-    for (size_t i=0; i<numFunctions; i++) {
+    for (size_t i=0; i<numFunctions; ++i) {
       size_t num_levels = requestedRespLevels[i].length();
       switch (respLevelTarget) {
       case PROBABILITIES:
@@ -686,7 +564,7 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
   const StringArray& resp_labels = iteratedModel.response_labels();
   RealArray sorted_samples; // STL-based array for sorting
 
-  for (i=0; i<numFunctions; i++) {
+  for (i=0; i<numFunctions; ++i) {
 
     num_samp = 0;
     for (j=0; j<num_obs; j++)
@@ -777,13 +655,13 @@ void NonDSampling::update_final_statistics()
 
   size_t i, j, cntr = 0;
   if (numEpistemicUncVars) {
-    for (i=0; i<numFunctions; i++) {
+    for (i=0; i<numFunctions; ++i) {
       finalStatistics.function_value(minValues[i], cntr++);
       finalStatistics.function_value(maxValues[i], cntr++);
     }
   }
   else {
-    for (i=0; i<numFunctions; i++) {
+    for (i=0; i<numFunctions; ++i) {
       // final stats from compute_moments()
       if (!meanStats.empty() && !stdDevStats.empty()) {
 	finalStatistics.function_value(meanStats[i],   cntr++);
@@ -839,7 +717,7 @@ void NonDSampling::print_intervals(std::ostream& s) const
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision)
     << "\nMin and Max values for each response function:\n";
-  for (size_t i=0; i<numFunctions; i++)
+  for (size_t i=0; i<numFunctions; ++i)
     s << resp_labels[i] << ":  Min = " << minValues[i]
       << "  Max = " << maxValues[i] << '\n';
 }
@@ -853,7 +731,7 @@ void NonDSampling::print_moments(std::ostream& s) const
   s << std::setprecision(write_precision)
     << "\nMoments for each response function:\n";
   size_t i;
-  for (i=0; i<numFunctions; i++) {
+  for (i=0; i<numFunctions; ++i) {
     s << resp_labels[i] << ":  Mean = " << meanStats[i]
       << "  Std. Dev. = " << stdDevStats[i] << "  Coeff. of Variation = ";
     if (std::fabs(meanStats[i]) > 1.e-25)
@@ -865,7 +743,7 @@ void NonDSampling::print_moments(std::ostream& s) const
   if (numSamples > 1) {
     // output 95% confidence intervals as (,) interval
     s << "\n95% confidence intervals for each response function:\n";
-    for (i=0; i<numFunctions; i++) {
+    for (i=0; i<numFunctions; ++i) {
       s << resp_labels[i] << ":  Mean = ( " << meanStats[i] - mean95CIDeltas[i]
 	<< ", " << meanStats[i] + mean95CIDeltas[i] << " )";
       s << ", Std Dev = ( " << stdDev95CILowerBnds[i] << ", "
@@ -886,7 +764,7 @@ void NonDSampling::print_distribution_mappings(std::ostream& s) const
   s << std::setprecision(write_precision)
     << "\nProbabilities for each response function:\n";
   size_t i, j;
-  for (i=0; i<numFunctions; i++) {
+  for (i=0; i<numFunctions; ++i) {
     if (!requestedRespLevels[i].empty() || !requestedProbLevels[i].empty() ||
 	!requestedRelLevels[i].empty()  || !requestedGenRelLevels[i].empty()) {
       if (cdfFlag)
