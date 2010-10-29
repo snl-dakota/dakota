@@ -78,7 +78,7 @@ inline Verification::~Verification() { }
 
 
 inline void Verification::run()
-{ perform_verification(); }
+{ /* bestVarsRespMap.clear(); */ perform_verification(); }
 
 } // namespace Dakota
 

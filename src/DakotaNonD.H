@@ -336,7 +336,7 @@ inline void NonD::initialize_run()
 
 
 inline void NonD::run()
-{ quantify_uncertainty(); }
+{ bestVarsRespMap.clear(); quantify_uncertainty(); }
 
 
 inline void NonD::finalize_run()

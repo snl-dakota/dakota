@@ -125,6 +125,9 @@ protected:
   //- Heading: Data
   //
 
+  /// switch for allSamples (compact mode) instead of allVariables (normal mode)
+  bool compactMode;
+
   /// array of all variables to be evaluated in evaluate_parameter_sets()
   VariablesArray allVariables;
   /// compact alternative to allVariables
@@ -134,11 +137,16 @@ protected:
   /// array of headers to insert into output while evaluating allVariables
   StringArray allHeaders;
 
+  // Data needed for update_best() so that param studies can be used in
+  // strategies such as MultilevelOptStrategy
+
   size_t numObjFns;   ///< number of objective functions
   size_t numLSqTerms; ///< number of least squares terms
 
-  /// switch for allSamples (compact mode) instead of allVariables (normal mode)
-  bool compactMode;
+  /// number of solutions to retain in best variables/response arrays
+  size_t numBest;
+  /// map which stores best set of solutions
+  RealPairPRPMultiMap bestVarsRespMap;
 
 private:
 
@@ -159,14 +167,6 @@ private:
   //
   //- Heading: Data
   //
-
-  // Data needed for update_best() so that param studies can be used in
-  // strategies such as MultilevelOptStrategy
-
-  /// number of solutions to retain in best variables/response arrays
-  size_t numBest;
-  /// map which stores best set of solutions
-  RealPairPRPMultiMap bestVarsRespMap;
 };
 
 

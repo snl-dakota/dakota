@@ -95,7 +95,7 @@ private:
 
 
 inline void PStudyDACE::run()
-{ extract_trends(); }
+{ bestVarsRespMap.clear(); extract_trends(); }
 
 } // namespace Dakota
 
