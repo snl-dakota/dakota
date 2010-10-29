@@ -267,8 +267,29 @@ get_parameter_sets(const RealVector& lower_bnds,
 void NonDSampling::
 update_model_from_sample(Model& model, const Real* sample_vars)
 {
-  size_t i, cv_start = 0, num_cv = 0, div_start = 0, num_div = 0,
-    drv_start = 0, num_drv = 0;
+  size_t i, cv_start, num_cv, div_start, num_div, drv_start, num_drv;
+  view_counts(model, cv_start, num_cv, div_start, num_div, drv_start, num_drv);
+
+  // sampled continuous vars
+  for (i=0; i<num_cv; ++i)
+    model.all_continuous_variable(sample_vars[i], cv_start+i);
+  // sampled discrete int vars
+  size_t offset = num_cv;
+  for (i=0; i<num_div; ++i)
+    model.all_discrete_int_variable((int)sample_vars[i+offset], div_start+i);
+  // sampled discrete real vars
+  offset += num_div;
+  for (i=0; i<num_drv; ++i)
+    model.all_discrete_real_variable(sample_vars[i+offset], drv_start+i);
+}
+
+
+void NonDSampling::
+view_counts(const Model& model, size_t& cv_start, size_t& num_cv,
+	    size_t& div_start, size_t& num_div,
+	    size_t& drv_start, size_t& num_drv) const
+{
+  cv_start = num_cv = div_start = num_div = drv_start = num_drv = 0;
   switch (samplingVarsMode) {
   case UNCERTAIN:
     cv_start  = numContDesVars;
@@ -304,18 +325,6 @@ update_model_from_sample(Model& model, const Real* sample_vars)
     // UNIFORM views do not currently support discrete
     break;
   }
-
-  // sampled continuous vars
-  for (i=0; i<num_cv; ++i)
-    model.all_continuous_variable(sample_vars[i], cv_start+i);
-  // sampled discrete int vars
-  size_t offset = num_cv;
-  for (i=0; i<num_div; ++i)
-    model.all_discrete_int_variable((int)sample_vars[i+offset], div_start+i);
-  // sampled discrete real vars
-  offset += num_div;
-  for (i=0; i<num_drv; ++i)
-    model.all_discrete_real_variable(sample_vars[i+offset], drv_start+i);
 }
 
 
@@ -701,12 +710,24 @@ void NonDSampling::print_statistics(std::ostream& s) const
     if (totalLevelRequests)
       print_distribution_mappings(s);
   }
-  if (!subIteratorFlag)
-    nonDSampCorr.print_correlations(s,
-      iteratedModel.continuous_variable_labels(),
-      iteratedModel.discrete_int_variable_labels(),
-      iteratedModel.discrete_real_variable_labels(),
+  if (!subIteratorFlag) {
+    StringMultiArrayConstView
+      acv_labels  = iteratedModel.all_continuous_variable_labels(),
+      adiv_labels = iteratedModel.all_discrete_int_variable_labels(),
+      adrv_labels = iteratedModel.all_discrete_real_variable_labels();
+    size_t cv_start, num_cv, div_start, num_div, drv_start, num_drv;
+    view_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
+		drv_start, num_drv);
+    StringMultiArrayConstView
+      cv_labels  =
+      acv_labels[boost::indices[idx_range(cv_start, cv_start+num_cv)]],
+      div_labels =
+      adiv_labels[boost::indices[idx_range(div_start, div_start+num_div)]],
+      drv_labels =
+      adrv_labels[boost::indices[idx_range(drv_start, drv_start+num_drv)]];
+    nonDSampCorr.print_correlations(s, cv_labels, div_labels, drv_labels,
       iteratedModel.response_labels());
+  }
 }
 
 

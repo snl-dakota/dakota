@@ -179,9 +179,9 @@ void FSUDesignCompExp::extract_trends()
   // specified by the user
   else {
     // evaluate the sample set to obtain the corresponding set of results
-    bool compute_corr_flag = (!subIteratorFlag);
-    bool log_resp_flag = (allDataFlag || compute_corr_flag);
-    bool log_best_flag = (numObjFns || numLSqTerms); // opt or NLS data set
+    bool compute_corr_flag = (!subIteratorFlag),
+      log_resp_flag = (allDataFlag || compute_corr_flag),
+      log_best_flag = (numObjFns || numLSqTerms); // opt or NLS data set
     evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
   }
 }

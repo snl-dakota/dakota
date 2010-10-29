@@ -84,12 +84,22 @@ void PStudyDACE::print_results(std::ostream& s)
 
   Analyzer::print_results(s);
 
-  if (pStudyDACESensGlobal.correlations_computed())
-    pStudyDACESensGlobal.print_correlations(s,
-      iteratedModel.continuous_variable_labels(),
-      iteratedModel.discrete_int_variable_labels(),
-      iteratedModel.discrete_real_variable_labels(),
-      iteratedModel.response_labels());
+  if (pStudyDACESensGlobal.correlations_computed()) {
+    if (compactMode) { // FSU, DDACE, PSUADE ignore active discrete vars
+      StringMultiArray empty;
+      StringMultiArrayConstView empty_view
+	= empty[boost::indices[idx_range(0, 0)]];
+      pStudyDACESensGlobal.print_correlations(s,
+	iteratedModel.continuous_variable_labels(), empty_view, empty_view,
+        iteratedModel.response_labels());
+    }
+    else // ParamStudy includes active discrete vars
+      pStudyDACESensGlobal.print_correlations(s,
+        iteratedModel.continuous_variable_labels(),
+        iteratedModel.discrete_int_variable_labels(),
+        iteratedModel.discrete_real_variable_labels(),
+        iteratedModel.response_labels());
+  }
 }
 
 

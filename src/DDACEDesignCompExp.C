@@ -42,9 +42,6 @@ DDACEDesignCompExp::DDACEDesignCompExp(Model& model): PStudyDACE(model),
   varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp")),
   mainEffectsFlag(probDescDB.get_bool("method.main_effects"))
 {
-  // use allVariables instead of default allSamples
-  compactMode = false;
-
   if (daceMethod == "box_behnken")
     maxConcurrency *= 1 + 4*numContinuousVars*(numContinuousVars-1)/2;
   else if (daceMethod == "central_composite")
@@ -75,9 +72,6 @@ DDACEDesignCompExp(Model& model, int samples, int symbols, int seed,
   numDACERuns(0), varyPattern(true), varBasedDecompFlag(false),
   mainEffectsFlag(false)
 {
-  // use allVariables instead of default allSamples
-  compactMode = false;
-
   // Verify symbol & sample input.  The experimental design may not use exactly
   // the requests passed in, but it always will use >= the incoming requests.
   resolve_samples_symbols();
@@ -107,17 +101,11 @@ void DDACEDesignCompExp::extract_trends()
   // if VBD has not been selected, evaluate a single parameter set of the size
   // specified by the user
   else {
-    bool log_best_flag = (numObjFns || numLSqTerms); // opt or NLS data set
-    // evaluate each of the parameter sets in allVariables
-    if (mainEffectsFlag) { // need allResponses
-      evaluate_parameter_sets(iteratedModel, true, log_best_flag);
-    }
-    else {
-      // evaluate allVariables to obtain the corresponding set of results
-      bool compute_corr_flag = (!subIteratorFlag),
-	log_resp_flag = (allDataFlag || compute_corr_flag);
-      evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
-    }
+    // evaluate each of the parameter sets in allSamples
+    bool log_best_flag  = (numObjFns || numLSqTerms), // opt or NLS data set
+      compute_corr_flag = (!subIteratorFlag),
+      log_resp_flag     = (mainEffectsFlag || allDataFlag || compute_corr_flag);
+    evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
   }
 }
 
@@ -139,7 +127,7 @@ void DDACEDesignCompExp::post_run(std::ostream& s)
       // compute correlation statistics if (compute_corr_flag)
       bool compute_corr_flag = (!subIteratorFlag);
       if (compute_corr_flag)
-	pStudyDACESensGlobal.compute_correlations(allVariables, allResponses);
+	pStudyDACESensGlobal.compute_correlations(allSamples, allResponses);
     }
   }
 
@@ -195,7 +183,7 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model)
          << "\n       bounds arrays in DDACEDesignCompExp." << std::endl;
     abort_handler(-1);
   }
-  int i;
+  int i, j;
   for (i=0; i<numContinuousVars; i++) {
     if (c_l_bnds[i] <= -DBL_MAX || c_u_bnds[i] >= DBL_MAX) {
       Cerr << "\nError: DDACEDesignCompExp requires specification of variable "
@@ -264,32 +252,23 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model)
     abort_handler(-1);
   }
 
-  // copy the DDace sample array to allVariables
-  if (allVariables.size() != numSamples)
-    allVariables.resize(numSamples);
-  const Variables& vars = iteratedModel.current_variables();
-  size_t num_div = vars.div(), num_drv = vars.drv();
-  RealVector c_vars(numContinuousVars, false);
-  for (i=0; i<numSamples; i++) {
-    copy_data(sample_points[i], c_vars);
-    if (allVariables[i].is_null()) // use minimal data ctor
-      allVariables[i] = Variables(vars.shared_data());
-    allVariables[i].continuous_variables(c_vars);
-    // preserve any active discrete variables, even though DDACE
-    // doesn't support them
-    if (num_div)
-      allVariables[i].discrete_int_variables(vars.discrete_int_variables());
-    if (num_drv)
-      allVariables[i].discrete_real_variables(vars.discrete_real_variables());
+  // copy the DDace sample array to allSamples
+  if (allSamples.empty())
+    allSamples.shapeUninitialized(numContinuousVars, numSamples);
+  for (i=0; i<numSamples; ++i) {
+    Real* all_samp_i = allSamples[i];
+    const DDaceSamplePoint& sample_pt_i = sample_points[i];
+    for (j=0; j<numContinuousVars; ++j)
+      all_samp_i[j] = sample_pt_i[j];
   }
 
   if (volQualityFlag) {
     double* dace_points = new double [numContinuousVars*numSamples];
     copy_data(sample_points, dace_points, numContinuousVars*numSamples);
-    for (int i=0; i<numContinuousVars; i++) {
+    for (i=0; i<numContinuousVars; i++) {
       const double& offset = c_l_bnds[i];
       double norm = 1. / (c_u_bnds[i] - c_l_bnds[i]);
-      for (int j=0; j<numSamples; j++)
+      for (j=0; j<numSamples; j++)
         dace_points[i+j*numContinuousVars]
 	  = (dace_points[i+j*numContinuousVars] - offset) * norm;
     }

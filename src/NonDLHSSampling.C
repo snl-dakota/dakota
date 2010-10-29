@@ -100,7 +100,6 @@ void NonDLHSSampling::quantify_uncertainty()
   else {
     // NOTE: Invoked from Analyzer::run().  This assumes the pre/post
     // are invoked separately
-    // convenience function from Analyzer for evaluating parameter sets
     bool log_resp_flag = (allDataFlag || statsFlag);
     bool log_best_flag = (!numResponseFunctions); // DACE mode w/ opt or NLS
     evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);

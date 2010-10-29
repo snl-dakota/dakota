@@ -36,9 +36,6 @@ PSUADEDesignCompExp::PSUADEDesignCompExp(Model& model): PStudyDACE(model),
   allDataFlag(false), numDACERuns(0), varyPattern(false), 
   seedSpec(probDescDB.get_int("method.random_seed")), randomSeed(seedSpec)
 {
-  // use allVariables instead of default allSamples
-  compactMode = false;
-
   if (methodName != "psuade_moat") {
     Cerr << "Error: PSUADE method \"" << methodName << "\" is not an option."
 	 << std::endl;
@@ -76,6 +73,7 @@ void PSUADEDesignCompExp::extract_trends()
   evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
 }
 
+
 void PSUADEDesignCompExp::post_run(std::ostream& s)
 {
   // Perform post-processing with MOAT Analyzer
@@ -98,7 +96,7 @@ void PSUADEDesignCompExp::post_run(std::ostream& s)
 
   psuade_adata.sampleInputs_ = new double [numSamples*numContinuousVars];
   for (int i=0; i<numSamples; i++) {
-    const RealVector c_vars = allVariables[i].continuous_variables();
+    const Real* c_vars = allSamples[i];
     for (int j=0; j<numContinuousVars; j++)
       psuade_adata.sampleInputs_[i*numContinuousVars+j]	= c_vars[j];
   }
@@ -224,7 +222,7 @@ void PSUADEDesignCompExp::get_parameter_sets(Model& model)
 
     psuade_sdata.iLowerB_ = new double [numContinuousVars];
     psuade_sdata.iUpperB_ = new double [numContinuousVars];
-    for (int i=0; i<numContinuousVars; i++) {
+    for (i=0; i<numContinuousVars; i++) {
       psuade_sdata.iLowerB_[i] = c_l_bnds[i];
       psuade_sdata.iUpperB_[i] = c_u_bnds[i];
     }
@@ -235,23 +233,12 @@ void PSUADEDesignCompExp::get_parameter_sets(Model& model)
     psuadeSampler->initialize(psuade_sdata);
 
     // extract samples from MOAT (could move this into a copy_data function)
-    if (allVariables.size() != numSamples)
-      allVariables.resize(numSamples);
-    const Variables& vars = iteratedModel.current_variables();
-    size_t num_div = vars.div(), num_drv = vars.drv();
-    RealVector c_vars(numContinuousVars, false);
-    for (int i=0; i<numSamples; ++i) {
-      if (allVariables[i].is_null()) // use minimal data ctor
-	allVariables[i] = Variables(vars.shared_data());
-      for (int j=0; j<numContinuousVars; ++j)
-	c_vars[j] = psuadeSampler->sample_matrix(i,j);
-      allVariables[i].continuous_variables(c_vars);
-      // preserve any active discrete variables, even though PSUADE
-      // doesn't support them
-      if (num_div)
-	allVariables[i].discrete_int_variables(vars.discrete_int_variables());
-      if (num_drv)
-	allVariables[i].discrete_real_variables(vars.discrete_real_variables());
+    if (allSamples.empty())
+      allSamples.shapeUninitialized(numContinuousVars, numSamples);
+    for (i=0; i<numSamples; ++i) {
+      Real* all_samp_i = allSamples[i];
+      for (j=0; j<numContinuousVars; ++j)
+	all_samp_i[j] = psuadeSampler->sample_matrix(i,j);
     }
 
     // no longer need the sampler
@@ -262,10 +249,10 @@ void PSUADEDesignCompExp::get_parameter_sets(Model& model)
 
 #ifdef DAKOTA_DEBUG
     Cout << "PSUADE MOAT Sample Points \n";
-    for (int i=0; i<numSamples; i++) {
+    for (i=0; i<numSamples; i++) {
       if (i>0 && i%(numContinuousVars+1) == 0)
 	Cout << "   new replicate --------------------------\n";
-      Cout << allVariables[i].continuous_variables() << "\n";
+      write_data(Cout, allSamples[i], numContinuousVars); Cout << '\n';
     }
 #endif
   }

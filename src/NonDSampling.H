@@ -170,6 +170,15 @@ protected:
 private:
 
   //
+  //- Heading: Convenience functions
+  //
+
+  /// compute sampled subsets of all cv/div/drv from samplingVarsMode and model
+  void view_counts(const Model& model, size_t& cv_start, size_t& num_cv,
+		   size_t& div_start, size_t& num_div,
+		   size_t& drv_start, size_t& num_drv) const;
+
+  //
   //- Heading: Data
   //
 

@@ -71,6 +71,8 @@ protected:
 
   /// update model's current variables with data from sample
   virtual void update_model_from_sample(Model& model, const Real* sample_vars);
+  /// update model's current variables with data from vars
+  virtual void update_model_from_variables(Model& model, const Variables& vars);
 
   //
   //- Heading: Virtual member function redefinitions
@@ -143,9 +145,6 @@ private:
   //
   //- Heading: Convenience functions
   //
-
-  /// update model's current variables with data from vars
-  void update_model_from_variables(Model& model, const Variables& vars);
 
   /// compares current evaluation to best evaluation and updates best
   void compute_best_metrics(const Response& response,
