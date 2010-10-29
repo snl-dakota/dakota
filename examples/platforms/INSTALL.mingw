@@ -18,12 +18,25 @@ A. Install MinGW, MSYS, MSYS DTK (http://www.mingw.org/wiki/MSYS), and
 g95:
 
 1. Install MinGW with Automated MinGW Installer
-(http://downloads.sourceforge.net/mingw/MinGW-5.1.4.exe or newer) to
-C:\MinGW, selecting at least the g77, gcc, and make components.
+(http://downloads.sourceforge.net/mingw/MinGW-5.1.6.exe or newer) to
+C:\MinGW, selecting at least the g77, g++, and MinGWMake components.
 
 2. Install MSYS
 (http://downloads.sourceforge.net/mingw/MSYS-1.0.10.exe or newer) in
 C:\msys\1.0, referencing c:/mingw when prompted in the post-install.
+
+NOTE 1: If you install MSYS-1.0.10.exe and you are using Win7 or Vista 
+you must apply two patches: install.exe.manifest and install-info.exe.manifest
+Go to: 
+http://sourceforge.net/tracker/index.php?func=detail&aid=1711379&group_id=2435&atid=102435
+and download the two patches by clicking on Attached Files. Then:
+  cp install.exe.manifest /c/msys/1.0/bin
+  cp install-info.exe.manifest /c/msys/1.0/bin
+  touch /c/msys/1.0/bin/install.exe
+  touch /c/msys/1.0/bin/install-info.exe
+
+NOTE 2: MSYS-1.0.11.exe has been patched and should work as is
+(http://downloads.sourceforge.net/mingw/MSYS-1.0.11.exe)
 
 3. Install MSYS DTK
 (http://downloads.sourceforge.net/mingw/msysDTK-1.0.1.exe or newer) to resolve
