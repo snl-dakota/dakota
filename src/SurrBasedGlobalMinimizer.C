@@ -135,6 +135,38 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
   // of the surrogate.
   while (sbIterNum < maxIterations) {
 
+    // Test how well the surrogate matches up with the truth model.  For this
+    // test, we currently use R-squared as a measure of goodness of fit,
+    // although we can easily generalize it.  Also, currently we state that if
+    // R-squared is < 0.5 or > 1.1 (R-squared can be greater than one in
+    // abnormal cases for surrogates that are not polynomial regression models),
+    // we stop the surrogate-based global minimization process because it will
+    // not work with such an inaccurate model.
+    std::vector<Approximation>& approxs
+      = approx_model.interface().approximations();
+    std::vector<Approximation>::iterator it;
+    for (it=approxs.begin(); it!=approxs.end(); ++it) {
+      if (it->diagnostics_available()) {
+
+	// Start the check with the r-squared value.
+	Real r2_diagnostic = it->get_diagnostic("rsquared");
+	if (outputLevel > NORMAL_OUTPUT)
+	  Cout << "R-squared = " << r2_diagnostic << std::endl;
+
+	// If outside of tolerable range, report and abort.
+	// TODO: report function index along with diagnostic.
+	if (r2_diagnostic < 0.5 || r2_diagnostic > 1.1) {
+	  Cerr << "Surrogate approximation is not accurate enough for " 
+	       << "surrogate-based global optimization strategy." 
+	       << "The strategy has quit before the requested number " 
+	       << "of iterations due to poor surrogate fit." << std::endl;
+	  abort_handler(-1);
+	}
+
+	// Add some additional diagnostics?
+      }
+    }
+
     // use the iterator to solve the approximate model.  At the first iteration,
     // this is the surrogate built using only the original truth samples.  At
     // each subsequent iteration, the surrogate includes additional truth
@@ -148,12 +180,6 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
     else
       vars_results.push_back(approxSubProbMinimizer.variables_results());
     size_t i, num_results = vars_results.size();
-
-    // beyond this point, we will want to know if this is the last iteration.
-    // We will use this information to prevent updating of the surrogate since
-    // it will not be used again.  We don't simply exit here because we want
-    // our truth values computed.
-    bool last_iter = ++sbIterNum >= maxIterations;
 
     // Variable/response results were generated using the current approximate
     // model.  For appending to the current approximate model, we must evaluate
@@ -177,6 +203,11 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
     // until all the results are available and then store these responses.
     if (truth_asynch_flag)
       copy_data(truth_model.synchronize(), truth_resp_results); // discards keys
+
+    // Beyond this point, we will want to know if this is the last iteration.
+    // We will use this information to prevent updating of the surrogate since
+    // it will not be used again.
+    bool last_iter = ++sbIterNum >= maxIterations;
 
     if (outputLevel > QUIET_OUTPUT) {
       // In here we want to write the truth values into a simple tab delimited
@@ -217,40 +248,6 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
 	approx_model.pop_approximation(false);// don't store SDP set; no restore
       // update the data set and rebuild the approximation
       approx_model.append_approximation(vars_results, truth_resp_results, true);
-
-      // The next section tests how well the surrogate matches up with the truth
-      // model (assuming that if the surrogate matches the truth, then the
-      // approximate solution is the true solution).  For this test, we are
-      // currently using R-squared as a measure of goodness of fit, although we
-      // can easily generalize it.  Also, currently we state that if R-squared
-      // is less than 0.5 or greater than 1.1 (R-squared can be greater than one
-      // in abnormal cases for surrogates that are not polynomial regression
-      // models), we stop the surrogate-based global minimization process
-      // because it will not work with such an inaccurate model.
-      std::vector<Approximation>& approxs
-	= approx_model.interface().approximations();
-      std::vector<Approximation>::iterator it;
-      for (it=approxs.begin(); it!=approxs.end(); ++it) {
-	if (it->diagnostics_available()) {
-
-	  // Start the check with the r-squared value.
-	  Real r2_diagnostic = it->get_diagnostic("rsquared");
-	  if (outputLevel > NORMAL_OUTPUT)
-	    Cout << "R-squared = " << r2_diagnostic << std::endl;
-
-	  // If outside of tolerable range, report and abort.
-	  // TODO: report function index along with diagnostic.
-	  if ((r2_diagnostic < 0.5) || (r2_diagnostic > 1.1)) {
-	    Cerr << "Surrogate approximation is not accurate enough for " 
-		 << "surrogate-based global optimization strategy." 
-		 << "The strategy has quit before the requested number " 
-		 << "of iterations due to poor surrogate fit." << std::endl;
-	    abort_handler(-1);
-	  }
-
-	  // Add some additional diagnostics?
-	}
-      }
 
       // pass iterator's final vars for use as next set of initial points
       if (accepts_multipoint)
