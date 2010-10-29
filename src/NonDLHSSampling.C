@@ -90,16 +90,15 @@ void NonDLHSSampling::post_input()
     statistics on the set of responses if statsFlag is set. */
 void NonDLHSSampling::quantify_uncertainty()
 {
-  // if VBD has been selected, evaluate a series of parameter sets
+  // If VBD has been selected, evaluate a series of parameter sets
   // (each of the size specified by the user) in order to compute VBD metrics.
+  // If there are active discrete vars, they are included within allSamples.
   if (varBasedDecompFlag)
     variance_based_decomp(numContinuousVars, numDiscreteRealVars,
 			  numDiscreteIntVars, numSamples);
   // if VBD has not been selected, evaluate a single parameter set of the size
-  // specified by the user
+  // specified by the user and stored in allSamples
   else {
-    // NOTE: Invoked from Analyzer::run().  This assumes the pre/post
-    // are invoked separately
     bool log_resp_flag = (allDataFlag || statsFlag);
     bool log_best_flag = (!numResponseFunctions); // DACE mode w/ opt or NLS
     evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);

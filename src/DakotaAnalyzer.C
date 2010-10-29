@@ -193,16 +193,10 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
 {
   using boost::multi_array;
   using boost::extents;
-  // run whatever sampling routine twice to generate two sets of 
-  // input matrices, M1 and M2
-
   size_t i, j, k;
-  if (compactMode && (ndiscreal || ndiscint)) {
-    Cerr << "Error: discrete variables not supported in compactMode within "
-	 << "Analyzer::variance_based_decomp()." << std::endl;
-    abort_handler(-1);
-  }
   int ndimtotal = ncont + ndiscreal + ndiscint;
+
+  // run derived sampling routine twice to generate input matrices, M1 and M2
 
   // WJB - ToDo: confer with MSE: RealVector2DArray total_c_vars(ncont+2);
   multi_array<RealVector, 2> total_c_vars(extents[ndimtotal+2][num_samples]);
@@ -219,31 +213,53 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
   vary_pattern(true);
   get_parameter_sets(iteratedModel);
   if (compactMode)
-    for (j=0; j<num_samples; ++j)
-      copy_data(allSamples[j], ndimtotal, total_c_vars[0][j]);
+    for (j=0; j<num_samples; ++j) {
+      const Real* sample_j = allSamples[j];
+      if (ncont)
+	copy_data(sample_j, ncont, total_c_vars[0][j]);
+      if (ndiscint) {
+	IntVector& t_div_0j = total_di_vars[0][j];
+	for (k=0; k<ndiscint; ++k)
+	  t_div_0j[k] = (int)sample_j[ncont+k];
+      }
+      if (ndiscreal)
+	copy_data(&sample_j[ncont+ndiscint], ndiscreal, total_dr_vars[0][j]);
+    }
   else
     for (j=0; j<num_samples; ++j) {
       const Variables& all_vars_j = allVariables[j];
-      copy_data(all_vars_j.continuous_variables(),      total_c_vars[0][j]);
-      if (ndiscreal > 0)
-	copy_data(all_vars_j.discrete_real_variables(), total_dr_vars[0][j]);
-      if (ndiscint > 0) 
+      if (ncont)
+	copy_data(all_vars_j.continuous_variables(),    total_c_vars[0][j]);
+      if (ndiscint)
 	copy_data(all_vars_j.discrete_int_variables(),  total_di_vars[0][j]);
+      if (ndiscreal)
+	copy_data(all_vars_j.discrete_real_variables(), total_dr_vars[0][j]);
     }
 
   // get second sample block
   get_parameter_sets(iteratedModel);
   if (compactMode)
-    for (j=0; j<num_samples; ++j)
-      copy_data(allSamples[j], ndimtotal, total_c_vars[1][j]);
+    for (j=0; j<num_samples; ++j) {
+      const Real* sample_j = allSamples[j];
+      if (ncont)
+	copy_data(sample_j, ncont, total_c_vars[1][j]);
+      if (ndiscint) {
+	IntVector& t_div_1j = total_di_vars[1][j];
+	for (k=0; k<ndiscint; ++k)
+	  t_div_1j[k] = (int)sample_j[ncont+k];
+      }
+      if (ndiscreal)
+	copy_data(&sample_j[ncont+ndiscint], ndiscreal, total_dr_vars[1][j]);
+    }
   else
     for (j=0; j<num_samples; ++j) {
       const Variables& all_vars_j = allVariables[j];
-      copy_data(all_vars_j.continuous_variables(),      total_c_vars[1][j]);
-      if (ndiscreal > 0) 
-	copy_data(all_vars_j.discrete_real_variables(), total_dr_vars[1][j]);
-      if (ndiscint > 0)
+      if (ncont)
+	copy_data(all_vars_j.continuous_variables(),    total_c_vars[1][j]);
+      if (ndiscint)
 	copy_data(all_vars_j.discrete_int_variables(),  total_di_vars[1][j]);
+      if (ndiscreal)
+	copy_data(all_vars_j.discrete_real_variables(), total_dr_vars[1][j]);
     }
 
   for (i=2; i<ndimtotal+2; ++i) {
@@ -271,16 +287,27 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
 
   for (i=0; i<ndimtotal+2; ++i) {
     if (compactMode)
-      for (j=0; j<num_samples; ++j)
-	copy_data(total_c_vars[i][j], allSamples[j], ndimtotal);
+      for (j=0; j<num_samples; ++j) {
+	Real* sample_j = allSamples[j];
+	if (ncont)
+	  copy_data(total_c_vars[i][j],  sample_j,                  ncont);
+	if (ndiscint) {
+	  const IntVector& t_div_ij = total_di_vars[i][j];
+	  for (k=0; k<ndiscint; ++k)
+	    sample_j[ncont+k] = (Real)t_div_ij[k];
+	}
+	if (ndiscreal)
+	  copy_data(total_dr_vars[i][j], &sample_j[ncont+ndiscint], ndiscreal);
+      }
     else
       for (j=0; j<num_samples; ++j) {   
 	Variables& all_vars_j = allVariables[j];
-	all_vars_j.continuous_variables(total_c_vars[i][j]);
-	if (ndiscreal > 0)
-	  all_vars_j.discrete_real_variables(total_dr_vars[i][j]);
-	if (ndiscint > 0)
+	if (ncont)
+	  all_vars_j.continuous_variables(total_c_vars[i][j]);
+	if (ndiscint)
 	  all_vars_j.discrete_int_variables(total_di_vars[i][j]);
+	if (ndiscreal)
+	  all_vars_j.discrete_real_variables(total_dr_vars[i][j]);
       }
 
     // evaluate each of the parameter sets in allVariables

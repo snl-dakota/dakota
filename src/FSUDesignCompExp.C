@@ -171,14 +171,14 @@ void FSUDesignCompExp::pre_run()
 
 void FSUDesignCompExp::extract_trends()
 {
-  // if VBD has been selected, evaluate a series of parameter sets
+  // If VBD has been selected, evaluate a series of parameter sets
   // (each of the size specified by the user) in order to compute VBD metrics.
+  // If there are active discrete variables, FSUDace currently ignores them.
   if (varBasedDecompFlag)
-    variance_based_decomp(numContinuousVars, 0, 0,  numSamples);
+    variance_based_decomp(numContinuousVars, 0, 0, numSamples);
   // if VBD has not been selected, evaluate a single parameter set of the size
-  // specified by the user
+  // specified by the user and stored in allSamples
   else {
-    // evaluate the sample set to obtain the corresponding set of results
     bool compute_corr_flag = (!subIteratorFlag),
       log_resp_flag = (allDataFlag || compute_corr_flag),
       log_best_flag = (numObjFns || numLSqTerms); // opt or NLS data set
