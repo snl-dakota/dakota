@@ -65,11 +65,8 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
     if (approxType == "global_polynomial") {
       args["type"] = "polynomial";
 
-      short poly_order
-	= problem_db.get_short("model.surrogate.polynomial_order");
-      approxOrder.resize(1);
-      approxOrder[0] = poly_order;
-      args["order"] = toString<short>(poly_order);
+      approxOrder = problem_db.get_short("model.surrogate.polynomial_order");
+      args["order"] = toString<unsigned short>(approxOrder);
 
       // TO DO: activate derivative-based regression
       dataOrder = 1;
@@ -222,10 +219,9 @@ SurfpackApproximation::~SurfpackApproximation()
 
 int SurfpackApproximation::min_coefficients() const
 {
-
   if (approxType == "global_polynomial") {
     // bypass eqConRHS in Surfpack PolynomialSurface::minPointsRequired()
-    switch (approxOrder[0]) {
+    switch (approxOrder) {
     case 3:
       return (numVars*(numVars*(numVars + 6) + 11) + 6)/6;
       break;

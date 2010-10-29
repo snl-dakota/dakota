@@ -41,8 +41,7 @@ public:
   /// standard constructor
   TaylorApproximation(ProblemDescDB& problem_db, size_t num_vars);
   /// alternate constructor
-  TaylorApproximation(const UShortArray& approx_order, size_t num_vars,
-		      unsigned short data_order);
+  TaylorApproximation(size_t num_vars, unsigned short data_order);
   /// destructor
   ~TaylorApproximation();
 
@@ -78,9 +77,8 @@ inline TaylorApproximation::TaylorApproximation()
 
 
 inline TaylorApproximation::
-TaylorApproximation(const UShortArray& approx_order, size_t num_vars,
-		    unsigned short data_order)
-{ approxOrder = approx_order; numVars = num_vars; dataOrder = data_order; }
+TaylorApproximation(size_t num_vars, unsigned short data_order)
+{ numVars = num_vars; dataOrder = data_order; }
 
 
 inline TaylorApproximation::~TaylorApproximation()

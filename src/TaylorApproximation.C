@@ -28,13 +28,9 @@ TaylorApproximation(ProblemDescDB& problem_db, size_t num_vars):
     = problem_db.get_string("model.surrogate.actual_model_pointer");
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_ptr);
-  // set the approximation order based on the Hessian specification
-  // for the actual model
-  approxOrder.resize(1);
-  if (problem_db.get_string("responses.hessian_type") == "none")
-    { approxOrder[0] = 1; dataOrder = 3; }
-  else
-    { approxOrder[0] = 2; dataOrder = 7; }
+  // set the data order based on the Hessian specification for the actual model
+  dataOrder
+    = (problem_db.get_string("responses.hessian_type") == "none") ? 3 : 7;
   // restore the specification
   problem_db.set_db_model_nodes(model_index);
 }

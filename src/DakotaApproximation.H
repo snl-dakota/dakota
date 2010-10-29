@@ -135,9 +135,6 @@ public:
   /// return the number of variables used in the approximation
   int num_variables() const;
 
-  // set approxOrder
-  //void approximation_order(const UShortArray& approx_order);
-
   /// return currentPoints
   const SDPList& current_points() const;
   /// return anchorPoint
@@ -209,9 +206,6 @@ protected:
 
   /// approximation type identifier
   String approxType;
-  /// order of approximation (used by regression polynomials,
-  /// orthogonal polynomials, and Taylor series)
-  UShortArray approxOrder;
   /// order of the data used for surrogate construction, in ActiveSet
   /// request vector 3-bit format.
   /** This setting should not be inferred from the responses specification,
@@ -402,16 +396,6 @@ append(const RealVector& c_vars,  const Real& fn_val,
     add_point(c_vars, fn_val, fn_grad, fn_hess); // append new pt to currentPts
   }
 }
-
-
-//inline void Approximation::
-//approximation_order(const UShortArray& approx_order)
-//{
-//  if (approxRep) // envelope fwd to letter
-//    approxRep->approxOrder = approx_order;
-//  else
-//    approxOrder = approx_order;
-//}
 
 
 /** Clears out any history (e.g., TANA3Approximation use for a

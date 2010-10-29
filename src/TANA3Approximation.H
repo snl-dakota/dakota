@@ -40,8 +40,7 @@ public:
   /// standard constructor
   TANA3Approximation(const ProblemDescDB& problem_db, size_t num_vars);
   /// alternate constructor
-  TANA3Approximation(const UShortArray& approx_order, size_t num_vars,
-		     unsigned short data_order);
+  TANA3Approximation(size_t num_vars, unsigned short data_order);
   /// destructor
   ~TANA3Approximation();
 
@@ -94,9 +93,8 @@ inline TANA3Approximation::TANA3Approximation()
 
 
 inline TANA3Approximation::
-TANA3Approximation(const UShortArray& approx_order, size_t num_vars,
-		   unsigned short data_order)
-{ approxOrder = approx_order; numVars = num_vars; dataOrder = data_order; }
+TANA3Approximation(size_t num_vars, unsigned short data_order)
+{ numVars = num_vars; dataOrder = data_order; }
 
 
 inline TANA3Approximation::~TANA3Approximation()

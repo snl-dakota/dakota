@@ -103,6 +103,9 @@ private:
   //- Heading: Data
   //
 
+  /// order of polynomial approximation
+  unsigned short approxOrder;
+
   // Vector representation of the Approximation (e.g., polynomial coefficients
   // for linear regression or trained neural network weights).  The format of
   // such a vector has not been defined for all Surfpack classes
@@ -128,8 +131,8 @@ SurfpackApproximation(const String& approx_type,
 		      unsigned short data_order):
   surfData(NULL), model(NULL), factory(NULL)
 {
-  approxType = approx_type; approxOrder = approx_order;
-  numVars    = num_vars;    dataOrder   = data_order;
+  approxType  = approx_type; numVars = num_vars; dataOrder = data_order;
+  approxOrder = (approx_order.empty()) ? 2 : approx_order[0];
 }
 
 

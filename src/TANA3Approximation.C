@@ -21,7 +21,7 @@ TANA3Approximation::
 TANA3Approximation(const ProblemDescDB& problem_db, size_t num_vars):
   Approximation(BaseConstructor(), problem_db, num_vars)
 {
-  approxOrder.resize(1); approxOrder[0] = 1; dataOrder = 3;
+  dataOrder = 3;
   pExp.sizeUninitialized(numVars);
   minX.sizeUninitialized(numVars);
 }
@@ -65,7 +65,7 @@ void TANA3Approximation::build()
 	 << std::endl;
     abort_handler(-1);
   }
-  if (anchorPoint.response_gradient().length() != numVars) {
+  if (dataOrder != 3 || anchorPoint.response_gradient().length() != numVars) {
     Cerr << "Error: gradients required in TANA3Approximation::build."
 	 << std::endl;
     abort_handler(-1);

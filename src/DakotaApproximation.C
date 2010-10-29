@@ -161,15 +161,15 @@ get_approx(const String& approx_type, const UShortArray& approx_order,
 
   Approximation* approx;
   if (approx_type == "local_taylor")
-    approx = new TaylorApproximation(approx_order, num_vars, data_order);
+    approx = new TaylorApproximation(num_vars, data_order);
   else if (approx_type == "multipoint_tana")
-    approx = new TANA3Approximation(approx_order, num_vars, data_order);
+    approx = new TANA3Approximation(num_vars, data_order);
   else if (approx_type == "global_orthogonal_polynomial" ||
 	   approx_type == "global_interpolation_polynomial")
     approx = new PecosApproximation(approx_type, approx_order, num_vars,
 				    data_order);
   else if (approx_type == "global_gaussian")
-    approx = new GaussProcApproximation(approx_order, num_vars, data_order);
+    approx = new GaussProcApproximation(num_vars, data_order);
 #ifdef DAKOTA_SURFPACK
   else if (approx_type == "global_polynomial"     ||
 	   approx_type == "global_kriging"        ||
