@@ -582,7 +582,7 @@ update(const VariablesArray& vars_array, const ResponseArray& resp_array,
   if (approxRep)
     approxRep->update(vars_array, resp_array, fn_index);
   else { // not virtual: all derived classes use following definition:
-    currentPoints.clear(); // replace currentPoints with incoming samples
+    currentPoints.clear(); // replace currentPoints with incoming arrays
     size_t i, num_points = std::min(vars_array.size(), resp_array.size());
     for (i=0; i<num_points; ++i)
       add(vars_array[i], resp_array[i], fn_index, false);
@@ -621,8 +621,10 @@ void Approximation::
 add(const Real* sample_c_vars, const Response& response, int fn_index,
     bool anchor_flag)
 {
+  // create view of first numVars entries within column of sample Matrix
+  // --> any discrete {int,real} vars (e.g., from NonDSampling) are ignored.
   RealVector c_vars(Teuchos::View, (Real*)sample_c_vars, numVars);
-  add_core(c_vars, response, fn_index, anchor_flag);
+  add(c_vars, response, fn_index, anchor_flag);
 }
 
 
@@ -645,13 +647,13 @@ add(const Variables& vars, const Response& response, int fn_index,
   const RealVector& c_vars = (active_vars) ? vars.continuous_variables() :
     vars.all_continuous_variables();
 
-  add_core(c_vars, response, fn_index, anchor_flag);
+  add(c_vars, response, fn_index, anchor_flag);
 }
 
 
 void Approximation::
-add_core(const RealVector& c_vars, const Response& response, int fn_index,
-	 bool anchor_flag)
+add(const RealVector& c_vars, const Response& response, int fn_index,
+    bool anchor_flag)
 {
   // private fn used only by build() and update() functions -> approxRep
   // forward not needed.  Recomputing coefficients, if needed, is managed

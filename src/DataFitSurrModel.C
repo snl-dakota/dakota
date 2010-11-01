@@ -764,7 +764,8 @@ void DataFitSurrModel::build_global()
       }
     }
 
-    // replace any previous data
+    // append any reused data points (previous data cleared prior to
+    // build_global() call).
     reuse_points = reuse_vars.size();
     approxInterface.append_approximation(reuse_vars, reuse_responses);
   }

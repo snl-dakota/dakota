@@ -256,19 +256,17 @@ private:
 			    const UShortArray& approx_order, size_t num_vars,
 			    unsigned short data_order);
 
-  /// add a new data point by either appending to currentPoints or assigning
-  /// to anchorPoint, as dictated by anchor_flag.  Uses add_point() and
-  /// add_anchor().
+  /// extract the relevant RealVector from Variables and invoke add(RealVector&)
   void add(const Variables& vars, const Response& response,
 	   int fn_index, bool anchor_flag);
-  /// add a new data point by either appending to currentPoints or assigning
-  /// to anchorPoint, as dictated by anchor_flag.  Uses add_point() and
-  /// add_anchor().
+  /// create a RealVector view and invoke add(RealVector&)
   void add(const Real* sample_c_vars, const Response& response,
 	   int fn_index, bool anchor_flag);
-  /// shared code among overloaded add() variants
-  void add_core(const RealVector& sample_c_vars, const Response& response,
-		int fn_index, bool anchor_flag);
+  /// shared code among add(Variables&) and add(Real*); adds a new data point
+  /// by either appending to currentPoints or assigning to anchorPoint, as
+  /// dictated by anchor_flag.  Uses add_point() and add_anchor().
+  void add(const RealVector& sample_c_vars, const Response& response,
+	   int fn_index, bool anchor_flag);
 
   /// add a new data point by appending to currentPoints
   void add_point(const RealVector& x, const Real& fn_val,
