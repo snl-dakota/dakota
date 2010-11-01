@@ -82,6 +82,8 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
     else if (approxType == "global_kriging") {
       args["type"] = "kriging";
       // NIDR support for RealArray (aka std::vector) would eliminate xtra copy!
+      // old parameters
+
       const RealVector& conmin_seed 
 	= problem_db.get_rdv("model.surrogate.kriging_conmin_seed");
       RealArray conmin_seed_ra; //std::vector<double>
@@ -119,7 +121,65 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
       if (max_iter > 0) {
         args["max_iter"] = toString<short>(max_iter);
       }
-   } //
+
+
+      // new parameters (will be ignored if not needed)
+
+      // trend: constant | linear | reduced_quadratic | quadratic
+      short order = 0;
+//       short order = problem_db.get_short("model.surrogate.trend_order");
+      if (order >= 0) {
+	args["order"] = toString<short>(order);
+      }
+      // to toggle omission of mixed terms
+      args["reduced"] = toString<bool>(false);
+      
+      // options are none | sample | local | global
+      String optimization_method("global");
+//       const String& optimization_method = 
+// 	problem_db.get_string("model.surrogate.kriging_optimization_method");
+      if (!optimization_method.empty())
+	args["optimization_method"] = optimization_method;
+
+      short max_trials
+	= problem_db.get_short("model.surrogate.kriging_max_trials");
+      if (max_iter > 0) {
+        args["max_trials"] = toString<short>(max_iter);
+      }
+
+      // specified correlation lengths otherwise intial iterate
+      RealVector correlation_lengths;
+//       const RealVector& correlation_lengths
+//         = problem_db.get_rdv("model.surrogate.kriging_correlation_lengths");
+      if (!correlation_lengths.empty()) {
+	RealArray cl; //std::vector<double>
+	copy_data(correlation_lengths, cl);
+        Cout << "There are specified correlation values" << std::endl;
+        args["correlations"] = fromVec<Real>(cl);
+      }
+      
+      if (!approxLowerBounds.empty()) {
+	RealArray alb;
+	copy_data(approxLowerBounds, alb);
+	args["lower_bounds"] = fromVec<Real>(alb);
+      }
+
+      if (!approxUpperBounds.empty()) {
+	RealArray aub;
+	copy_data(approxUpperBounds, aub);
+	args["upper_bounds"] = fromVec<Real>(aub);
+      }
+
+      IntVector dimension_groups;
+//       const IntVector& dimension_groups 
+//         = problem_db.get_idv("model.surrogate.kriging_dimension_groups");
+      if (!dimension_groups.empty()) {
+	IntArray dg;
+	copy_data(dimension_groups, dg);
+	args["dimension_groups"] = fromVec<int>(dg);
+      }
+
+    } //
 
     // For ANN surface fits
     else if (approxType == "global_neural_network") {
@@ -206,6 +266,54 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
   //  abort_handler(-1);
   //}
 }
+
+
+/// On-the-fly constructor which uses mostly Surfpack model defaults
+SurfpackApproximation::
+SurfpackApproximation(const String& approx_type,
+		      const UShortArray& approx_order, size_t num_vars,
+		      unsigned short data_order):
+  surfData(NULL), model(NULL), factory(NULL)
+{
+  approxType  = approx_type; numVars = num_vars; dataOrder = data_order;
+  approxOrder = (approx_order.empty()) ? 2 : approx_order[0];
+
+  ParamMap args;
+
+  args["ndims"] = toString<size_t>(num_vars);
+  args["seed"] = "8147";
+
+  if (approxType == "global_polynomial") {
+    args["type"] = "polynomial";
+    args["order"] = toString<unsigned short>(approxOrder);
+  }
+  else if (approxType == "global_kriging") {
+
+    args["order"] = toString<unsigned int>(2);
+    args["type"] = "kriging";
+    if (!approxLowerBounds.empty()) {
+      RealArray alb;
+      copy_data(approxLowerBounds, alb);
+      args["lower_bounds"] = fromVec<Real>(alb);
+    }
+    if (!approxUpperBounds.empty()) {
+      RealArray aub;
+      copy_data(approxUpperBounds, aub);
+      args["upper_bounds"] = fromVec<Real>(aub);
+    }
+  }
+  else if (approxType == "global_neural_network")
+    args["type"] = "ann";
+  else if (approxType == "global_moving_least_squares")
+    args["type"] = "mls";
+  else if (approxType == "global_radial_basis")
+    args["type"] = "rbf";
+  else if (approxType == "global_mars")
+    args["type"] = "mars";
+  
+  factory = ModelFactory::createModelFactory(args);
+}
+
 
 
 // Embedded Surfpack objects will need to be deleted
@@ -337,6 +445,22 @@ const Real& SurfpackApproximation::get_value(const RealVector& x)
   //Cout << "SurfpackApproximation::get_value times called " << ++times_called
   //     << std::endl; 
   return approxValue;
+}
+  
+
+const Real& SurfpackApproximation::get_prediction_variance(const RealVector& x)
+{
+  try {
+    RealArray x_vec;
+    copy_data(x, x_vec);
+    approxVariance = model->variance(x_vec);
+  }
+  catch (...) {
+    Cerr << "Error: get_prediction_variance not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(-1);
+  }
+  return approxVariance;
 }
 
 

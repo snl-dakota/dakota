@@ -234,6 +234,12 @@ protected:
   /// least squares regression).
   Pecos::SurrogateDataPoint anchorPoint;
 
+  /// approximation lower bounds (used by 3D graphics and Surfpack KrigingModel)
+  RealVector approxLowerBounds;
+  /// approximation upper bounds (used by 3D graphics and Surfpack KrigingModel)
+  RealVector approxUpperBounds;
+
+
 private:
 
   //
@@ -283,11 +289,6 @@ private:
   SDP2DArray savedSDPSets;
   /// number of points previously added by append() to be removed by pop()
   size_t popCount;
-
-  /// approximation lower bounds (used only by 3D graphics)
-  RealVector approxLowerBounds;
-  /// approximation upper bounds (used only by 3D graphics)
-  RealVector approxUpperBounds;
 
   /// pointer to the letter (initialized only for the envelope)
   Approximation* approxRep;

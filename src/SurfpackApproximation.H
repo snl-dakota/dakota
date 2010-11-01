@@ -77,6 +77,9 @@ protected:
 
   /// Return the value of the Surfpack surface for a given parameter vector x
   const Real& get_value(const RealVector& x);
+  /// retrieve the variance of the predicted value for a given parameter set x
+  /// (KrigingModel only)
+  const Real& get_prediction_variance(const RealVector& x);
   /// retrieve the approximate function gradient for a given parameter vector x
   const RealVector& get_gradient(const RealVector& x);
   /// retrieve the approximate function Hessian for a given parameter vector x
@@ -123,17 +126,6 @@ private:
 inline SurfpackApproximation::SurfpackApproximation():
   surfData(NULL), model(NULL), factory(NULL)
 { }
-
-
-inline SurfpackApproximation::
-SurfpackApproximation(const String& approx_type,
-		      const UShortArray& approx_order, size_t num_vars,
-		      unsigned short data_order):
-  surfData(NULL), model(NULL), factory(NULL)
-{
-  approxType  = approx_type; numVars = num_vars; dataOrder = data_order;
-  approxOrder = (approx_order.empty()) ? 2 : approx_order[0];
-}
 
 
 /* The value returned from this function is currently meaningless.
