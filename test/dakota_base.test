@@ -2645,7 +2645,7 @@ Test Number 4 succeeded
                       6.0000000000e+00
 <<<<< Best constraint values   =
                       2.4000000000e+01
-<<<<< Best data not found in evaluation cache
+<<<<< Best data captured at function evaluation 2
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -2670,7 +2670,7 @@ Test Number 6 succeeded
                       6.0000000000e+00
 <<<<< Best constraint values   =
                       2.4000000000e+01
-<<<<< Best data not found in evaluation cache
+<<<<< Best data captured at function evaluation 2
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
 <<<<< Best parameters          =
