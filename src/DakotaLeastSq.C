@@ -371,45 +371,51 @@ void LeastSq::initialize_run()
     post_run() (which would otherwise hide it). */
 void LeastSq::post_run(std::ostream& s)
 {
-  Variables& best_vars = bestVariablesArray.front();
-  Response&  best_resp = bestResponseArray.front();
+  // scaling transformation needs to be performed on each best point
+  size_t num_points = bestVariablesArray.size();
+  for (size_t point_index = 0; point_index < num_points; ++point_index) {
+    
+    Variables& best_vars = bestVariablesArray[point_index];
+    Response&  best_resp = bestResponseArray[point_index];
 
-  if (varsScaleFlag)
-    best_vars.continuous_variables(
-      modify_s2n(best_vars.continuous_variables(), cvScaleTypes,
-		 cvScaleMultipliers, cvScaleOffsets));
+    if (varsScaleFlag)
+      best_vars.continuous_variables(
+        modify_s2n(best_vars.continuous_variables(), cvScaleTypes,
+		   cvScaleMultipliers, cvScaleOffsets));
 
-  // Unweight and unscale residuals. If this class applied an observed
-  // data transformation to a user model, we leave that in place,
-  // reporting residuals.
-  // TO DO: add support for bestResponseArray derivative scaling
-  if (weightFlag) {
-    const RealVector& lsq_weights
-      = iteratedModel.subordinate_model().primary_response_fn_weights();
-    const RealVector& fn_vals = best_resp.function_values();
-    for (size_t i=0; i<numLeastSqTerms; i++)
-      best_resp.function_value(fn_vals[i]/lsq_weights[i],i);
-  }
+    // Unweight and unscale residuals. If this class applied an observed
+    // data transformation to a user model, we leave that in place,
+    // reporting residuals.
+    // TO DO: add support for bestResponseArray derivative scaling
+    if (weightFlag) {
+      const RealVector& lsq_weights
+	= iteratedModel.subordinate_model().primary_response_fn_weights();
+      const RealVector& fn_vals = best_resp.function_values();
+      for (size_t i=0; i<numLeastSqTerms; i++)
+	best_resp.function_value(fn_vals[i]/lsq_weights[i],i);
+    }
   
-  // TODO: need to transform back if gradients and CDV scaled
-  if (primaryRespScaleFlag || secondaryRespScaleFlag) {
+    // TODO: need to transform back if gradients and CDV scaled
+    if (primaryRespScaleFlag || secondaryRespScaleFlag) {
 
-    Response tmp_response = best_resp.copy();
-    if (primaryRespScaleFlag || 
-	need_resp_trans_byvars(tmp_response.active_set_request_vector(), 0,
-			       numLeastSqTerms)) {
-      response_modify_s2n(best_vars, best_resp, tmp_response, 0, 0,
-			  numLeastSqTerms);
-      best_resp.update_partial(0, numLeastSqTerms, tmp_response, 0);
+      Response tmp_response = best_resp.copy();
+      if (primaryRespScaleFlag || 
+	  need_resp_trans_byvars(tmp_response.active_set_request_vector(), 0,
+				 numLeastSqTerms)) {
+	response_modify_s2n(best_vars, best_resp, tmp_response, 0, 0,
+			    numLeastSqTerms);
+	best_resp.update_partial(0, numLeastSqTerms, tmp_response, 0);
+      }
+      if (secondaryRespScaleFlag || 
+	  need_resp_trans_byvars(tmp_response.active_set_request_vector(),
+				 numLeastSqTerms, numNonlinearConstraints)) {
+	response_modify_s2n(best_vars, best_resp, tmp_response, numLeastSqTerms,
+			    numLeastSqTerms, numNonlinearConstraints);
+	best_resp.update_partial(numLeastSqTerms, numNonlinearConstraints,
+				 tmp_response, numLeastSqTerms);
+      }
     }
-    if (secondaryRespScaleFlag || 
-	need_resp_trans_byvars(tmp_response.active_set_request_vector(),
-			       numLeastSqTerms, numNonlinearConstraints)) {
-      response_modify_s2n(best_vars, best_resp, tmp_response, numLeastSqTerms,
-			  numLeastSqTerms, numNonlinearConstraints);
-      best_resp.update_partial(numLeastSqTerms, numNonlinearConstraints,
-			       tmp_response, numLeastSqTerms);
-    }
+
   }
 
   Iterator::post_run(s);

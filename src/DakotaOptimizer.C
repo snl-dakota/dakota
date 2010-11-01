@@ -511,37 +511,44 @@ void Optimizer::initialize_run()
     implementations of post_run() (which would otherwise hide it). */
 void Optimizer::post_run(std::ostream& s)
 {
-  Variables& best_vars = bestVariablesArray.front();
-  Response&  best_resp = bestResponseArray.front();
+   // scaling transformation needs to be performed on each best point
+  size_t num_points = bestVariablesArray.size();
+  for (size_t point_index = 0; point_index < num_points; ++point_index) {
 
-  // transform variables back to user space (for multiobj or scaling)
-  if (varsScaleFlag)
-    best_vars.continuous_variables(
-      modify_s2n(best_vars.continuous_variables(), cvScaleTypes,
-		 cvScaleMultipliers, cvScaleOffsets));
+    Variables& best_vars = bestVariablesArray[point_index];
+    Response&  best_resp = bestResponseArray[point_index];
 
-  // transform responses back to user space (for multiobj or scaling)
-  if (multiObjFlag && methodName != "moga")
-    multi_objective_retrieve(best_vars, best_resp);
-  else if (primaryRespScaleFlag || secondaryRespScaleFlag) {
+    // transform variables back to user space (for multiobj or scaling)
+    if (varsScaleFlag)
+      best_vars.continuous_variables(
+        modify_s2n(best_vars.continuous_variables(), cvScaleTypes,
+		   cvScaleMultipliers, cvScaleOffsets));
 
-    Response tmp_response = best_resp.copy();
-    if (primaryRespScaleFlag || 
-	need_resp_trans_byvars(tmp_response.active_set_request_vector(), 0,
-			       numUserObjectiveFns)) {
-      response_modify_s2n(best_vars, best_resp, tmp_response, 0, 0,
-			  numUserObjectiveFns);
-      best_resp.update_partial(0, numUserObjectiveFns, tmp_response, 0 );
+    // transform responses back to user space (for multiobj or scaling)
+    if (multiObjFlag && methodName != "moga")
+      multi_objective_retrieve(best_vars, best_resp);
+    else if (primaryRespScaleFlag || secondaryRespScaleFlag) {
+
+      Response tmp_response = best_resp.copy();
+      if (primaryRespScaleFlag || 
+	  need_resp_trans_byvars(tmp_response.active_set_request_vector(), 0,
+				 numUserObjectiveFns)) {
+	response_modify_s2n(best_vars, best_resp, tmp_response, 0, 0,
+			    numUserObjectiveFns);
+	best_resp.update_partial(0, numUserObjectiveFns, tmp_response, 0 );
+      }
+      if (secondaryRespScaleFlag || 
+	  need_resp_trans_byvars(tmp_response.active_set_request_vector(),
+				 numUserObjectiveFns, 
+				 numNonlinearConstraints)) {
+	response_modify_s2n(best_vars, best_resp, tmp_response,
+			    numUserObjectiveFns, numUserObjectiveFns,
+			    numNonlinearConstraints);
+	best_resp.update_partial(numUserObjectiveFns, numNonlinearConstraints,
+				 tmp_response, numUserObjectiveFns);
+      }
     }
-    if (secondaryRespScaleFlag || 
-	need_resp_trans_byvars(tmp_response.active_set_request_vector(),
-			       numUserObjectiveFns, numNonlinearConstraints)) {
-      response_modify_s2n(best_vars, best_resp, tmp_response,
-			  numUserObjectiveFns, numUserObjectiveFns,
-			  numNonlinearConstraints);
-      best_resp.update_partial(numUserObjectiveFns, numNonlinearConstraints,
-			       tmp_response, numUserObjectiveFns);
-    }
+
   }
 
   Iterator::post_run(s);
