@@ -29,6 +29,11 @@ TaylorApproximation(ProblemDescDB& problem_db, size_t num_vars):
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_ptr);
   // set the data order based on the Hessian specification for the actual model
+  if (problem_db.get_string("responses.gradient_type") == "none") {
+    Cerr << "Error: response gradients required in TaylorApproximation."
+	 << std::endl;
+    abort_handler(-1);
+  }
   dataOrder
     = (problem_db.get_string("responses.hessian_type") == "none") ? 3 : 7;
   // restore the specification

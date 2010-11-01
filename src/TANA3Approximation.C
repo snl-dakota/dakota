@@ -18,12 +18,29 @@
 namespace Dakota {
 
 TANA3Approximation::
-TANA3Approximation(const ProblemDescDB& problem_db, size_t num_vars):
+TANA3Approximation(ProblemDescDB& problem_db, size_t num_vars):
   Approximation(BaseConstructor(), problem_db, num_vars)
 {
   dataOrder = 3;
   pExp.sizeUninitialized(numVars);
   minX.sizeUninitialized(numVars);
+
+  // retrieve actual_model_pointer specification and set the DB
+  const String& actual_model_ptr
+    = problem_db.get_string("model.surrogate.actual_model_pointer");
+  size_t model_index = problem_db.get_db_model_node(); // for restoration
+  problem_db.set_db_model_nodes(actual_model_ptr);
+  // sanity checks on actual model data
+  if (problem_db.get_string("responses.gradient_type") == "none") {
+    Cerr << "Error: response gradients required in TANA3Approximation."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  if (problem_db.get_string("responses.hessian_type") != "none")
+    Cerr << "Warning: response Hessians not used within TANA3Approximation."
+	 << std::endl;
+  // restore the specification
+  problem_db.set_db_model_nodes(model_index);
 }
 
 
@@ -65,8 +82,13 @@ void TANA3Approximation::build()
 	 << std::endl;
     abort_handler(-1);
   }
-  if (dataOrder != 3 || anchorPoint.response_gradient().length() != numVars) {
-    Cerr << "Error: gradients required in TANA3Approximation::build."
+  if (!(dataOrder & 1)) {
+    Cerr << "Error: response values required in TANA3Approximation::build."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  if (!(dataOrder & 2) || anchorPoint.response_gradient().length() != numVars) {
+    Cerr << "Error: response gradients required in TANA3Approximation::build."
 	 << std::endl;
     abort_handler(-1);
   }

@@ -38,7 +38,7 @@ public:
   /// default constructor
   TANA3Approximation();
   /// standard constructor
-  TANA3Approximation(const ProblemDescDB& problem_db, size_t num_vars);
+  TANA3Approximation(ProblemDescDB& problem_db, size_t num_vars);
   /// alternate constructor
   TANA3Approximation(size_t num_vars, unsigned short data_order);
   /// destructor
@@ -94,7 +94,12 @@ inline TANA3Approximation::TANA3Approximation()
 
 inline TANA3Approximation::
 TANA3Approximation(size_t num_vars, unsigned short data_order)
-{ numVars = num_vars; dataOrder = data_order; }
+{
+  numVars = num_vars;
+  // as Hessian data cannot be used, do not accept 4 bit since it could
+  // affect data requirement estimations in Approximation base class
+  dataOrder = (data_order & 3);
+}
 
 
 inline TANA3Approximation::~TANA3Approximation()
