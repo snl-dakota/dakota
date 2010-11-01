@@ -22,6 +22,7 @@
 #include "COLINApplication.H"
 #include "ProblemDescDB.H"
 #include "ParamResponsePair.H"
+#include "PRPMultiIndex.H"
 #ifdef DAKOTA_UTILIB
 #include "utilib/seconds.h"
 #endif // DAKOTA_UTILIB
@@ -132,6 +133,9 @@ protected:
   /// \c nonblocking
   bool blockingSynch;
 
+  /// number of solutions to retain in best variables/response arrays
+  size_t numBest;
+
 #ifdef DAKOTA_UTILIB
   /// Start time for keeping track of time for solver to run
   Real solverStartTime;
@@ -148,7 +152,7 @@ protected:
 
 template <class OptimizerT>
 inline COLINOptimizer<OptimizerT>::COLINOptimizer(Model& model):
-  Optimizer(model)
+  Optimizer(model), numBest(1)
 {
   // (iteratedModel initialized in Optimizer(Model&))
   application = new COLINApplication(iteratedModel);
@@ -165,12 +169,17 @@ inline COLINOptimizer<OptimizerT>::COLINOptimizer(Model& model):
   // matching free_communicators() appears in the Optimizer destructor.
   if (scaleFlag || multiObjFlag)
     iteratedModel.init_communicators(maxConcurrency);
+
+  size_t num_solns
+    = probDescDB.get_sizet("strategy.hybrid.num_solutions_transferred");
+  if (num_solns > numBest)
+    numBest = num_solns;
 }
 
 
 template <class OptimizerT>
 inline COLINOptimizer<OptimizerT>::COLINOptimizer(Model& model, int seed):
-  Optimizer(NoDBBaseConstructor(), model), blockingSynch(false)
+  Optimizer(NoDBBaseConstructor(), model), blockingSynch(false), numBest(1)
 {
   // (iteratedModel initialized in Optimizer(Model&))
   application = new COLINApplication(iteratedModel);
@@ -187,7 +196,8 @@ inline COLINOptimizer<OptimizerT>::COLINOptimizer(Model& model, int seed):
 template <class OptimizerT>
 inline COLINOptimizer<OptimizerT>::
 COLINOptimizer(NoDBBaseConstructor, Model& model):
-  Optimizer(NoDBBaseConstructor(), model), rng(NULL), blockingSynch(false)
+  Optimizer(NoDBBaseConstructor(), model), rng(NULL), blockingSynch(false),
+  numBest(1)
 {
   // (iteratedModel initialized in Optimizer(Model&))
   application = new COLINApplication(iteratedModel);
@@ -340,27 +350,64 @@ inline void COLINOptimizer<OptimizerT>::find_optimum()
     optimizer->print_stats(Cout);
 #endif // DAKOTA_UTILIB
 
-    // Retrieve the best vars for use at the strategy level.
-    // COLIN methods do a func->set_vars(best_pt) at the end of minimize, so
-    // just retrieve this data and copy it into the best variables array.
-    get_min_point(point);
-    colin::map_domain(bestVariablesArray.front(),
-		      iteratedModel.discrete_design_set_int_values(),
-		      iteratedModel.discrete_design_set_real_values(), point);
 
-    // Retrieve the best responses for use at the strategy level.
-    if (!multiObjFlag) { // else multi_objective_retrieve() is used in
-                         // Optimizer::post_run()
-      RealVector best_fns(numFunctions);
-      best_fns[0] = optimizer->opt_response().response.function_value();
-      for (i=0; i<numNonlinearConstraints; ++i)
-        best_fns[i+1]
-	  = optimizer->opt_response().response.constraint_values()[i];
-      bestResponseArray.front().function_values(best_fns);
+    // Get the best points from the solver
+    if (numBest > 1) {
+
+      // For multi-point returns, retrieve the best vars for use at
+      // the strategy level.  This retrieval, including DB lookup is a
+      // workaround until COLIN-3.x.  Empirical evidence indicates the
+      // points are returned sorted first by L2 constraint violation,
+      // then by objective value, but the API docs don't guarantee it.
+      // For now, we presume this will put the single best point at
+      // front.
+      
+      // populate bestVariablesArray
+      get_final_points();
+
+      // try to retrieve corresponding results from DB (will fail if Recast)
+      extern PRPCache data_pairs; // global container
+      const String& interface_id = iteratedModel.interface_id();
+      ActiveSet search_set(numFunctions, numContinuousVars); // asv = 1's
+   
+      size_t num_points = bestVariablesArray.size();
+      for (size_t point_index = 0; point_index < num_points; ++point_index) {
+
+	Variables& best_vars = bestVariablesArray[point_index];
+	Response& best_response = bestResponseArray[point_index];
+	// array already sized; if not found, reset data in the response
+	if (!lookup_by_val(data_pairs, interface_id, best_vars, search_set,
+			   best_response))
+	  best_response.reset();
+
+      }
+
+    }
+    else {
+
+      // For single-point returns, leverage fact that COLIN methods do
+      // a func->set_vars(best_pt) at the end of minimize, so just
+      // retrieve this data and copy it into the front of the best
+      // arrays.
+
+      get_min_point(point);
+      colin::map_domain(bestVariablesArray.front(),
+			iteratedModel.discrete_design_set_int_values(),
+			iteratedModel.discrete_design_set_real_values(), point);
+
+      // Retrieve the best responses for use at the strategy level.
+      if (!multiObjFlag) { // else multi_objective_retrieve() is used in
+	                   // Optimizer::post_run()
+	RealVector best_fns(numFunctions);
+	best_fns[0] = optimizer->opt_response().response.function_value();
+	for (i=0; i<numNonlinearConstraints; ++i)
+	  best_fns[i+1]
+	    = optimizer->opt_response().response.constraint_values()[i];
+	bestResponseArray.front().function_values(best_fns);
+      }
+
     }
 
-    /// Get the best points from the solver
-    get_final_points();
   }
   catch(const std::runtime_error &exception) {
     Cerr << "***COLINY run-time exception*** " << exception.what() << std::endl;
@@ -399,6 +446,18 @@ inline void COLINOptimizer<OptimizerT>::resize_final_points(size_t newsize)
     for (size_t i=curr_size; i<newsize; ++i)
       bestVariablesArray.push_back(iteratedModel.current_variables().copy());
   }
+
+  curr_size = bestResponseArray.size();
+  if (newsize < curr_size) // if reduction in size, use the standard resize
+    bestResponseArray.resize(newsize);
+  else if (newsize > curr_size) {
+    // Otherwise, we have to do the iteration ourselves so that we make use
+    // of the model's current variables for envelope-letter requirements.
+    bestResponseArray.reserve(newsize);
+    for (size_t i=curr_size; i<newsize; ++i)
+      bestResponseArray.push_back(iteratedModel.current_response().copy());
+  }
+
 }
 
 
@@ -1079,9 +1138,43 @@ inline void COLINOptimizer<coliny::EAminlp>::get_final_points()
   optimizer->get_final_points(points);
   resize_final_points(points.size());
 
-  for (size_t i=0; i<points.size(); ++i)
+  const IntSetArray& ddsiv_values
+    = iteratedModel.discrete_design_set_int_values();
+  const RealSetArray& ddsrv_values
+    = iteratedModel.discrete_design_set_real_values();
+  size_t  num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
+    num_ddrv  = numDiscreteIntVars - num_ddsiv, offset;
+
+  for (size_t i=0; i<points.size(); ++i) {
+
+    // continuous variables
     for (size_t j=0; j<numContinuousVars; ++j)
       bestVariablesArray[i].continuous_variable(points[i].Real()[j], j);
+
+    // range of int variables; direct mappng of value
+    for (size_t j=0; j<num_ddrv; ++j)
+      bestVariablesArray[i].discrete_int_variable(points[i].Integer()[j], j);
+
+    // set of integer variables; map from index back to integer value
+    offset = num_ddrv;
+    for (size_t j=0; j<num_ddsiv; ++j) {
+      int colin_index = points[i].Integer()[offset + j];
+      int dakota_value = 
+	Dakota::set_index_to_value(colin_index, ddsiv_values[j]);
+      bestVariablesArray[i].discrete_int_variable(dakota_value, offset+j);
+    }
+
+    // set of real variables; map from index back to real value
+    offset += num_ddsiv;
+    for (size_t j=0; j<num_ddsrv; ++j) {
+      int colin_index = points[i].Integer()[offset + j];
+      double dakota_value = 
+	Dakota::set_index_to_value(colin_index, ddsrv_values[j]);
+      bestVariablesArray[i].discrete_real_variable(dakota_value, j);
+    }
+
+  }
+
 }
 
 } // namespace Dakota
