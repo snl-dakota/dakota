@@ -102,7 +102,11 @@ AC_DEFUN([DAK_METHODS],[
           -e $srcdir/packages/DOT/dbl_prec/dot1.f; then
     AC_CONFIG_SUBDIRS([packages/DOT])
     AC_DEFINE([DAKOTA_DOT],[1],[Macro to handle code which depends on DOT.])
+    MAYBE_DOT=DOT
+  else 
+    MAYBE_DOT=
   fi
+  AC_SUBST([MAYBE_DOT])
   AM_CONDITIONAL([WITH_DOT],
                  [test "x$with_dot" = xyes -a \
                        -e $srcdir/packages/DOT/dbl_prec/dot1.f])
@@ -220,7 +224,11 @@ AC_DEFUN([DAK_METHODS],[
     AC_CONFIG_SUBDIRS([packages/NLPQL])
     AC_DEFINE([DAKOTA_NLPQL],[1],
 	      [Macro to handle code which depends on NLPQL.])
+    MAYBE_NLPQL=NLPQL
+  else
+    MAYBE_NLPQL=
   fi
+  AC_SUBST([MAYBE_NLPQL])
   AM_CONDITIONAL([WITH_NLPQL],
                  [test "x$with_nlpql" = xyes -a \
 	               -e $srcdir/packages/NLPQL/NLPQLP.f])
@@ -234,7 +242,11 @@ AC_DEFUN([DAK_METHODS],[
     AC_CONFIG_SUBDIRS([packages/NPSOL])
     AC_DEFINE([DAKOTA_NPSOL],[1],
     [Macro to handle code which depends on NPSOL.])
+    MAYBE_NPSOL=NPSOL
+  else
+    MAYBE_NPSOL=
   fi
+  AC_SUBST([MAYBE_NPSOL])
   AM_CONDITIONAL([WITH_NPSOL],
                  [test "x$with_npsol" = xyes -a \
                        -e $srcdir/packages/NPSOL/npsolsubs.f])

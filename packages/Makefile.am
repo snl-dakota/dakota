@@ -34,7 +34,7 @@ endif
 SUBDIRS += $(MAYBE_DDACE)
 
 if WITH_DOT
-SUBDIRS += DOT
+SUBDIRS += $(MAYBE_DOT)
 endif
 
 if WITH_FSUDACE
@@ -56,11 +56,11 @@ SUBDIRS += NL2SOL
 endif
 
 if WITH_NLPQL
-SUBDIRS += NLPQL
+SUBDIRS += $(MAYBE_NLPQL)
 endif
 
 if WITH_NPSOL
-SUBDIRS += NPSOL
+SUBDIRS += $(MAYBE_NPSOL)
 endif
 
 ## Need some AC_SUBST magic to handle optional directories like OPTPP.
