@@ -457,6 +457,10 @@ build_approximation(const BoolDeque& rebuild_deque,
     int index = *it;
     // check for rebuild request (defaults to true if no deque defined)
     if (rebuild_deque.empty() || rebuild_deque[index]) {
+
+      // always set bounds since needed for some approximation models
+      functionSurfaces[index].set_bounds(lower_bnds, upper_bnds);
+
       functionSurfaces[index].build();
       if (functionSurfaces[index].diagnostics_available()) {
 	if (!diag_list.empty()) {
@@ -470,13 +474,13 @@ build_approximation(const BoolDeque& rebuild_deque,
 	  functionSurfaces[index].get_diagnostic("mean_abs");
 	}
       }
+
     }
   }
-  // if graphics is on for 2 variables, plot first functionSurface in 3D
   int index = *approxFnIndices.begin();
+  // if graphics is on for 2 variables, plot first functionSurface in 3D
   if (graph3DFlag && ( rebuild_deque.empty() || rebuild_deque[index] ) &&
       functionSurfaces[index].num_variables() == 2) {
-    functionSurfaces[index].set_bounds(lower_bnds, upper_bnds);
     functionSurfaces[index].draw_surface();
   }
 }

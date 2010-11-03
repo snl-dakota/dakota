@@ -391,6 +391,19 @@ void SurfpackApproximation::build()
     surfData = surrogates_to_surf_data();
     if (approxType == "global_polynomial")
       checkForEqualityConstraints();
+ 
+    // send any late updates to bounds (as in SBO); will overwrite existing
+    if (!approxLowerBounds.empty()) {
+      RealArray alb;
+      copy_data(approxLowerBounds, alb);
+      factory->add("lower_bounds", fromVec<Real>(alb));
+    }
+    if (!approxUpperBounds.empty()) {
+      RealArray aub;
+      copy_data(approxUpperBounds, aub);
+      factory->add("upper_bounds", fromVec<Real>(aub));
+    }
+
     model = factory->Build(*surfData); 
     if (outputLevel > NORMAL_OUTPUT) { 
 
