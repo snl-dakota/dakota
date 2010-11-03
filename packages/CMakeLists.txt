@@ -1,9 +1,10 @@
 add_subdirectory(nidr)
-add_subdirectory(pecos)
 
-if(NOT USE_SYSTEM_TEUCHOS)
-  add_subdirectory(teuchos)
-endif()
+#if(NOT USE_SYSTEM_TEUCHOS)
+#  add_subdirectory(teuchos)
+#endif()
+
+add_subdirectory(pecos)
 
 include(ExternalProject)
 
@@ -26,8 +27,7 @@ else()
 endif() #sh
 
 
-# WJB - ToDo: refactor directory hierarchy (dependency-oriented rather than
-# logically-oriented) so that DAKOTA and Surfpack can "share" CONMIN
+
 if(HAVE_SURFPACK)
   add_subdirectory(surfpack)
 endif(HAVE_SURFPACK)
@@ -37,9 +37,6 @@ if(HAVE_AMPL)
 endif(HAVE_AMPL)
 
 
-if(HAVE_CONMIN)
-  add_subdirectory(CONMIN)
-endif(HAVE_CONMIN)
 
 if(HAVE_DDACE)
   add_subdirectory(DDACE)

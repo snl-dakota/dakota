@@ -73,19 +73,58 @@ option(USE_SYSTEM_TEUCHOS
   "If false, DAKOTA will use the included version of Teuchos."
   OFF)
 
-if(USE_SYSTEM_TEUCHOS)
-  # WJB: suspect SYSTEM_TEUCHOS settings specify incorrect paths -- try to get
-  #      a review from someone interested in this case being enabled
-  find_package(Trilinos REQUIRED)
-  ## Kitware version -- include(${Trilinos_DIR}/TrilinosConfig.cmake)
-  include(${Trilinos_DIR}/TeuchosConfig.cmake)
-  ##set(Teuchos_INCLUDE_DIRS ${Trilinos_INCLUDE_DIRS} CACHE FILEPATH "include dir for Teuchos" FORCE)
-  ##set(Teuchos_LIBRARY_DIRS ${Trilinos_LIBRARY_DIRS} CACHE FILEPATH "library dir for Teuchos" FORCE)
+#if(USE_SYSTEM_TEUCHOS)
+#  # WJB: suspect SYSTEM_TEUCHOS settings specify incorrect paths -- try to get
+#  #      a review from someone interested in this case being enabled
+#  find_package(Trilinos REQUIRED)
+#  ## Kitware version -- include(${Trilinos_DIR}/TrilinosConfig.cmake)
+#  include(${Trilinos_DIR}/TeuchosConfig.cmake)
+#  ##set(Teuchos_INCLUDE_DIRS ${Trilinos_INCLUDE_DIRS} CACHE FILEPATH "include dir for Teuchos" FORCE)
+#  ##set(Teuchos_LIBRARY_DIRS ${Trilinos_LIBRARY_DIRS} CACHE FILEPATH "library dir for Teuchos" FORCE)
+#else()
+#  set(Teuchos_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/packages/teuchos/src
+#                           ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos/src)
+#  set(Teuchos_LIBRARY_DIRS ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos/src)
+#endif()
+
+# first probe for system-installed Trilinos
+# this will respect Trilinos_DIR if already set
+find_package(Trilinos QUIET)
+if ( NOT Trilinos_DIR )
+
+  # if no one has configured a local src Teuchos, do so
+  # this will respect Teuchos_DIR if already set
+  if( NOT Teuchos_DIR )
+    set( Teuchos_DIR ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos )
+    message( "Setting Teuchos_DIR to ${Teuchos_DIR}" )
+    add_subdirectory(packages/teuchos)
+  else()
+    message( "in ${CMAKE_CURRENT_BINARY_DIR} Teuchos_DIR already set to ${Teuchos_DIR}" )
+  endif()
+  find_package( Teuchos NO_MODULE REQUIRED )
 else()
-  set(Teuchos_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/packages/teuchos/src
-                           ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos/src)
-  set(Teuchos_LIBRARY_DIRS ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos/src)
+  message( "Using system trilinos in ${Trilinos_DIR}" )
 endif()
+
+# WJB - ToDo: refactor directory hierarchy (dependency-oriented rather than
+# logically-oriented) so that DAKOTA and Surfpack can "share" CONMIN
+if(HAVE_CONMIN)
+
+  if ( NOT CONMIN_DIR )
+    set( CONMIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/packages/CONMIN )
+    message( "Setting CONMIN_DIR to ${CONMIN_DIR}" )
+    add_subdirectory(packages/CONMIN)
+
+#    SET(SUBLIBS ${SUBLIBS} conmin)
+
+  else()
+    message( "in ${CMAKE_CURRENT_BINARY_DIR} CONMIN_DIR already set to ${CONMIN_DIR}" )
+  endif()
+  find_package( CONMIN NO_MODULE REQUIRED )
+
+endif(HAVE_CONMIN)
+
+
 
 
 #Keep track of what libraries should be included in libdakota

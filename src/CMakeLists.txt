@@ -115,6 +115,7 @@ set(iterator_src DakotaIterator.C DakotaAnalyzer.C DakotaPStudyDACE.C
 
 CheckPackage(CONMIN)
 if(HAVE_CONMIN)
+  link_directories ( ${link_directories} ${CONMIN_LIB_DIRS} )
   set(iterator_src ${iterator_src} CONMINOptimizer.C)
 endif(HAVE_CONMIN)
 
