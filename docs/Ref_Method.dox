@@ -1021,8 +1021,8 @@ essentially identical to those for DOT.  Therefore, the discussion in
 CONMIN does not currently support any method dependent controls. 
 
 
-\subsection MethodOPTPP OPT++ Methods
-
+\subsection MethodOPTPP OPT++ Methods\
+<!-- dakota subcat optpp -->
 
 The OPT++ library [\ref MeOlHoWi07 "Meza et al., 2007"] contains primarily
 gradient-based nonlinear programming optimizers for unconstrained,
@@ -1044,6 +1044,7 @@ Laboratories - Livermore.
 
 
 \subsubsection MethodOPTPPIC OPT++ method independent controls
+<!-- dakota subcat optpp_ic -->
 
 The method independent controls for \c max_iterations and \c
 max_function_evaluations limit the number of major iterations and the
@@ -1084,6 +1085,7 @@ for the method independent controls is provided in Tables
 
 
 \subsubsection MethodOPTPPDC OPT++ method dependent controls
+<!-- dakota subcat optpp_dc -->
 
 OPT++'s method dependent controls are \c max_step, \c
 gradient_tolerance, \c search_method, \c merit_function, \c
@@ -1315,6 +1317,7 @@ Specification detail for the OPT++ PDS method
 
 
 \subsection MethodAPPS Asynchronous Parallel Pattern Search (APPS)
+<!-- dakota subcat asynch_pattern_search -->
 
 The asynchronous parallel pattern search algorithm
 [\ref GrKo06 "Gray and Kolda, 2006"]
@@ -1581,6 +1584,7 @@ with controls which are specific to its particular class of method.
 
 
 \subsubsection MethodCOLINYCOB COBYLA
+<!-- dakota subcat coliny_cobyla -->
 
 The Constrained Optimization BY Linear Approximations (COBYLA)
 algorithm is an extension to the Nelder-Mead simplex algorithm for
@@ -1638,6 +1642,7 @@ Specification detail for the COBYLA method
 
 
 \subsubsection MethodCOLINYDIR DIRECT
+<!-- dakota subcat coliny_direct -->
 
 The DIviding RECTangles (DIRECT) optimization algorithm is a
 derivative free global optimization method that balances local search
@@ -1749,6 +1754,7 @@ Specification detail for the DIRECT method
 
 
 \subsubsection MethodCOLINYEA Evolutionary Algorithms
+<!-- dakota subcat coliny_ea -->
 
 DAKOTA currently provides several variants of evolutionary algorithms,
 invoked through the \c coliny_ea group specification.
@@ -2039,6 +2045,7 @@ the self-adaptation, which may facilitate a more global search.
 
 
 \subsubsection MethodCOLINYPS Pattern Search
+<!-- dakota subcat coliny_pattern_search -->
 
 Pattern search techniques are nongradient-based optimization methods
 which use a set of offsets from the current iterate to locate improved
@@ -2289,6 +2296,7 @@ detail for this method and its method dependent controls.
 Table 5.16
 \endhtmlonly
 Specification detail for the Coliny Solis-Wets method
+<!-- dakota subcat coliny_solis_wets -->
 </caption>
 <tr>
 <td><b>Description</b>
@@ -2897,7 +2905,7 @@ Specification detail for JEGA method dependent controls: crossover
 </table>
 
 \subsubsection MethodJEGAMOGA Multi-objective Evolutionary Algorithms
-
+<!-- dakota subcat moga -->
 The specification for controls specific to Multi-objective
 Evolutionary algorithms are described here.  These controls will be
 appropriate to use if the user has specified \c moga as the method.
@@ -3133,6 +3141,7 @@ Specification detail for MOGA method controls
 
 
 \subsubsection MethodJEGASOGA Single-objective Evolutionary Algorithms
+<!-- dakota subcat soga -->
 
 The specification for controls specific to Single-objective
 Evolutionary algorithms are described here.  These controls will be
@@ -3457,6 +3466,7 @@ noisy data with an easily navigated analytic function.
 
 
 \subsection MethodSBL Surrogate-Based Local Method
+<!-- dakota subcat surrogate_based_local -->
 
 In the surrogate-based local (SBL) method, a trust region approach is
 used to manage the minimization process to maintain acceptable
@@ -3720,6 +3730,7 @@ Specification detail for constraint management in surrogate-based local methods
 
 
 \subsection MethodSBG Surrogate-Based Global Method
+<!-- dakota subcat surrogate_based_global -->
 
 The \c surrogate_based_global method differs from the \c
 surrogate_based_local method in a few ways.  First, \c
@@ -3822,6 +3833,7 @@ then a larger number (used in combination with restart) may be needed.
 
 
 \subsection MethodEG Efficient Global Method
+<!-- dakota subcat efficient_global -->
 
 The Efficient Global Optimization (EGO) method was first developed by
 Jones, Schonlau, and Welch [\ref Jones1998 "Jones et al., 1998"].  In
@@ -4813,6 +4825,7 @@ Specification detail for local reliability methods
 
 
 \subsubsection MethodNonDGlobalRel Global reliability methods
+<!-- dakota subcat global_reliability -->
 
 Global reliability methods are selected using the \c
 nond_global_reliability specification and are implemented within the
@@ -4878,7 +4891,7 @@ Specification detail for global reliability methods
 
 
 \subsubsection MethodNonDPCE Polynomial chaos expansion method
-
+<!-- dakota subcat polynomial_chaos -->
 
 The polynomial chaos expansion (PCE) is a general framework for
 the approximate representation of random response functions in terms
@@ -5208,7 +5221,7 @@ Specification detail for polynomial chaos expansion method
 
 
 \subsubsection MethodNonDSC Stochastic collocation method
-
+<!-- dakota subcat stoch_collocation -->
 
 The stochastic collocation (SC) method is very similar to the PCE
 method described above, with the key difference that the orthogonal
@@ -5435,6 +5448,7 @@ can be found in [\ref Eldred2009 "Eldred and Swiler, 2009"].
 
 
 \subsubsection MethodNonDLocalIntervalEst Local Interval Estimation
+<!-- dakota subcat local_interval_est -->
 
 In interval analysis, one assumes that nothing is known about
 an epistemic uncertain variable except that its value lies
@@ -5492,6 +5506,7 @@ Specification detail for local interval estimation used in epistemic uncertainty
 </table>
 
 \subsubsection MethodNonDGlobalIntervalEst Global Interval Estimation
+<!-- dakota subcat global_interval_est -->
 
 As mentioned above, when performing interval analysis, 
 one assumes that nothing is known about
@@ -5564,6 +5579,7 @@ Specification detail for global interval estimation used in epistemic uncertaint
 
 
 \subsubsection MethodNonDLocalEvid Local Evidence Theory (Dempster-Shafer) Methods
+<!-- dakota subcat nond_local_evidence -->
 
 The above section discussed a pure interval approach. 
 This section discusses Dempster-Shafer evidence theory. 
@@ -5753,6 +5769,7 @@ currently make use of any of the method independent controls.
 
 
 \subsection MethodDDACE DDACE
+<!-- dakota subcat dace -->
 
 The Distributed Design and Analysis of Computer Experiments (DDACE)
 library provides the following DACE techniques: grid sampling (\c
@@ -5985,6 +6002,7 @@ better (the smaller the metric, the better the uniformity of the point
 distribution).  Complete explanation of these measures can be found in 
 [\ref Gunzburger2004 "Gunzburger and Burkardt, 2004."].
 
+<!-- dakota subcat fsu_quasi_mc -->
 \anchor T5d40
 <table>
 <caption align = "top">
@@ -6124,6 +6142,7 @@ QMC methods.
 The specification detail for the FSU CVT method is given in 
 \ref T5d41 "Table 5.41".
 
+<!-- dakota subcat fsu_cvt -->
 \anchor T5d41
 <table>
 <caption align = "top">
