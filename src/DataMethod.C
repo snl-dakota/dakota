@@ -199,10 +199,10 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag << previousSamples
-    << vbdFlag;
+    << vbdFlag << vbdDropTolerance;
 
   // NonD
-  s << vbdControl << vbdDropTolerance << rngName << refinementType
+  s << vbdControl << rngName << refinementType
     << refinementControl << nestingOverride << expansionType << expansionTerms
     << expansionOrder << expansionSamples << expansionSampleType
     << quadratureOrder << sparseGridLevel << cubIntOrder << collocationPoints
@@ -300,10 +300,10 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // NonD & DACE
   s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag >> previousSamples
-    >> vbdFlag;
+    >> vbdFlag >> vbdDropTolerance;
 
   // NonD
-  s >> vbdControl >> vbdDropTolerance >> rngName >> refinementType
+  s >> vbdControl >> rngName >> refinementType
     >> refinementControl >> nestingOverride >> expansionType >> expansionTerms
     >> expansionOrder >> expansionSamples >> expansionSampleType
     >> quadratureOrder >> sparseGridLevel >> cubIntOrder >> collocationPoints
@@ -401,10 +401,10 @@ void DataMethodRep::write(std::ostream& s) const
 
   // NonD & DACE
   s << numSamples << fixedSeedFlag << fixedSequenceFlag << previousSamples
-    << vbdFlag;
+    << vbdFlag << vbdDropTolerance;
 
   // NonD
-  s << vbdControl << vbdDropTolerance << rngName << refinementType
+  s << vbdControl << rngName << refinementType
     << refinementControl << nestingOverride << expansionType << expansionTerms
     << expansionOrder << expansionSamples << expansionSampleType
     << quadratureOrder << sparseGridLevel << cubIntOrder << collocationPoints

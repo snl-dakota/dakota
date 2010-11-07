@@ -477,7 +477,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 			previous_samples INTEGER {N_mdm(int,previousSamples)}
 			)
 		      ]
-		    [ variance_based_decomp {N_mdm(true,vbdFlag)} ]
+		    [ variance_based_decomp {N_mdm(true,vbdFlag)} 
+		      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+                    ]
 		    )
 		  [ all_variables {N_mdm(true,allVarsFlag)} ]
 		  [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
@@ -560,7 +562,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      | central_composite {N_mdm(lit,subMethodName_central_composite)}
 	      [ main_effects {N_mdm(true,mainEffectsFlag)} ]
 	      [ quality_metrics {N_mdm(true,volQualityFlag)} ]
-	      [ variance_based_decomp {N_mdm(true,vbdFlag)} ]
+	      [ variance_based_decomp {N_mdm(true,vbdFlag)} 
+	         [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+              ]
 	      [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
 	      [ symbols INTEGER {N_mdm(int,numSymbols)} ]
 	      )
@@ -568,7 +572,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    ( fsu_cvt {N_mdm(lit,methodName_fsu_cvt)}
 	      [ latinize {N_mdm(true,latinizeFlag)} ]
 	      [ quality_metrics {N_mdm(true,volQualityFlag)} ]
-	      [ variance_based_decomp {N_mdm(true,vbdFlag)} ]
+	      [ variance_based_decomp {N_mdm(true,vbdFlag)} 
+         	 [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+              ]
 	      [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
 	      [ trial_type {0}
 		grid {N_mdm(lit,trialType_grid)}
@@ -693,7 +699,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  | hammersley {N_mdm(lit,methodName_fsu_hammersley)}
 	  [ latinize {N_mdm(true,latinizeFlag)} ]
 	  [ quality_metrics {N_mdm(true,volQualityFlag)} ]
-	  [ variance_based_decomp {N_mdm(true,vbdFlag)} ]
+	  [ variance_based_decomp {N_mdm(true,vbdFlag)} 
+	     [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]  
+          ]
 	  [ samples INTEGER {N_mdm(int,numSamples)} ]
 	  [ fixed_sequence {N_mdm(true,fixedSequenceFlag)} ]
 	  [ sequence_start INTEGERLIST {N_mdm(intDL,sequenceStart)} ]

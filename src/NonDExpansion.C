@@ -63,7 +63,7 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
 
   if (probDescDB.get_bool("method.variance_based_decomp")) {
     vbdControl = probDescDB.get_short("method.nond.vbd_control");
-    vbdDropTol = probDescDB.get_real("method.nond.vbd_drop_tolerance");
+    vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
   }
   else
     vbdControl = Pecos::NO_VBD;

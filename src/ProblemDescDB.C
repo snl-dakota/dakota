@@ -1834,7 +1834,6 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"nl2sol.singular_radius", P singRadius},
 	{"nl2sol.x_conv_tol", P xConvTol},
 	{"nond.collocation_ratio", P collocationRatio},
-	{"nond.vbd_drop_tolerance", P vbdDropTolerance},
 	{"npsol.linesearch_tolerance", P lineSearchTolerance},
 	{"optpp.centering_parameter", P centeringParam},
 	{"optpp.gradient_tolerance", P gradientTolerance},
@@ -1847,6 +1846,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 	{"sbl.trust_region.initial_size", P surrBasedLocalTRInitSize},
 	{"sbl.trust_region.minimum_size", P surrBasedLocalTRMinSize},
 	{"solution_target", P solnTarget},
+	{"vbd_drop_tolerance", P vbdDropTolerance},
 	{"verification.refinement_rate", P refinementRate},
 	{"volume_boxsize_limit", P volBoxSize}};
     #undef P

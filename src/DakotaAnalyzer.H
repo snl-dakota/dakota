@@ -106,11 +106,8 @@ protected:
   void read_variables_responses(int num_evals);
 
   /// Printing of VBD results
-  void print_vbd(std::ostream& s, const RealVectorArray& S1,
-		 const RealVectorArray& T1, const RealVectorArray& S2, 
-		 const RealVectorArray& T2, const RealVectorArray& S3, 
-		 const RealVectorArray& T3, const RealVectorArray& S4,
-                 const RealVectorArray& T4) const;
+  void print_vbd(std::ostream& s, const RealVectorArray& S,
+		 const RealVectorArray& T) const;
 
   /// convert samples array to variables array; e.g., allSamples to allVariables
   void sample_to_variables(const Real* sample_c_vars, Variables& vars);
@@ -167,6 +164,8 @@ private:
   //
   //- Heading: Data
   //
+  /// tolerance for omitting output of small VBD indices  Real vbdDropTol;
+  Real vbdDropTol;
 };
 
 

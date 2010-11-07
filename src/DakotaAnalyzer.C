@@ -41,6 +41,8 @@ Analyzer::Analyzer(Model& model):
     if (num_solns > numBest)
       numBest = num_solns;
   }
+   if (probDescDB.get_bool("method.variance_based_decomp")) 
+    vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
 }
 
 
@@ -316,20 +318,34 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
       for (j=0; j<num_samples; ++j)
 	total_fn_vals[k][i][j] = allResponses[j].function_value(k);
   }
-  
-  RealVectorArray S1(numFunctions), T1(numFunctions);
-  RealVectorArray S2(numFunctions), T2(numFunctions);
-  RealVectorArray S3(numFunctions), T3(numFunctions);
+  // There are four versions of the indices being calculated. 
+  // S1 is a corrected version from Saltelli's 2004 "Sensitivity 
+  // Analysis in Practice" book.  S1 does not have scaled output Y, 
+  // but S2 and S3 do (where scaled refers to subtracting the overall mean 
+  // from all of the output samples).  S2 and S3 have different ways of 
+  // calculating the overal variance.  S4 uses the scaled Saltelli 
+  // formulas from the following paper:  Saltelli, A., Annoni, P., Azzini, I.,   // Campolongo, F., Ratto, M., Tarantola, S.. Variance based sensitivity 
+  // analysis of model output.  Design and estimator for the total sensitivity   // index. Comp Physics Comm 2010;181:259--270.   
+  // We decided to use formulas S4 and T4 
+  // based on testing with a shock physics problem that had significant 
+  // nonlinearities, interactions, and several response functions. 
+  // The results are documented in a paper by Weirs et al. that will 
+  // be forthcoming in RESS in 2011. For now we are leaving the different 
+  // implementations in if further testing is needed. 
+
+//  RealVectorArray S1(numFunctions), T1(numFunctions);
+//  RealVectorArray S2(numFunctions), T2(numFunctions);
+//  RealVectorArray S3(numFunctions), T3(numFunctions);
   RealVectorArray S4(numFunctions), T4(numFunctions);
   for (k=0; k<numFunctions; ++k){
-    S1[k].resize(ndimtotal);
-    T1[k].resize(ndimtotal);
-    S2[k].resize(ndimtotal);
-    T2[k].resize(ndimtotal);
-    S3[k].resize(ndimtotal);
-    T3[k].resize(ndimtotal);
-    S4[k].resize(ndimtotal);
-    T4[k].resize(ndimtotal);
+//    S1[k].resize(ndimtotal);
+//    T1[k].resize(ndimtotal);
+//    S2[k].resize(ndimtotal);
+//    T2[k].resize(ndimtotal);
+//    S3[k].resize(ndimtotal);
+//    T3[k].resize(ndimtotal);
+      S4[k].resize(ndimtotal);
+      T4[k].resize(ndimtotal);
   }
   multi_array<Real,3> total_norm_vals(extents[numFunctions][ndimtotal+2][num_samples]);
 
@@ -393,20 +409,20 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
       var_hatYC += std::pow(total_fn_vals[k][1][j],2);
     var_hatYC = var_hatYC/((Real)(num_samples)*2)-mean_C*mean_C;
 
-    for (j=0; j<num_samples; j++)
-      mean_A_norm += total_norm_vals[k][0][j];
-    mean_A_norm /= (Real)num_samples;
-    for (j=0; j<num_samples; j++)
-      mean_B_norm += total_norm_vals[k][1][j];
-    mean_B_norm /= (Real)(num_samples);
-    for (j=0; j<num_samples; j++)
-      var_A_norm += std::pow(total_norm_vals[k][0][j], 2.);
-    var_AB_norm = var_A_norm/(Real)(num_samples) - (mean_A_norm*mean_B_norm);
-    var_A_norm = var_A_norm/(Real)(num_samples) - (mean_A_norm*mean_A_norm);
+  //  for (j=0; j<num_samples; j++)
+  //    mean_A_norm += total_norm_vals[k][0][j];
+  //  mean_A_norm /= (Real)num_samples;
+  //  for (j=0; j<num_samples; j++)
+  //    mean_B_norm += total_norm_vals[k][1][j];
+  //  mean_B_norm /= (Real)(num_samples);
+  //  for (j=0; j<num_samples; j++)
+  //    var_A_norm += std::pow(total_norm_vals[k][0][j], 2.);
+  //  var_AB_norm = var_A_norm/(Real)(num_samples) - (mean_A_norm*mean_B_norm);
+  //  var_A_norm = var_A_norm/(Real)(num_samples) - (mean_A_norm*mean_A_norm);
     // variance estimate of Y for T indices
-    for (j=0; j<num_samples; j++)
-      var_B_norm += std::pow(total_norm_vals[k][1][j], 2.);
-    var_B_norm = var_B_norm/(Real)(num_samples) - (mean_B_norm*mean_B_norm);
+  //  for (j=0; j<num_samples; j++)
+  //    var_B_norm += std::pow(total_norm_vals[k][1][j], 2.);
+  //  var_B_norm = var_B_norm/(Real)(num_samples) - (mean_B_norm*mean_B_norm);
 
 
 #ifdef DEBUG
@@ -419,26 +435,26 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
     for (i=0; i<ndimtotal; i++) {
       Real sum_S = 0., sum_T = 0., sum_J = 0., sum_J2 = 0., sum_3 = 0., sum_32=0.,sum_5=0, sum_6=0;
       for (j=0; j<num_samples; j++) {
-	sum_S += total_fn_vals[k][0][j]*total_fn_vals[k][i+2][j];
-	sum_T += total_fn_vals[k][1][j]*total_fn_vals[k][i+2][j];
-        sum_5 += total_norm_vals[k][0][j]*total_norm_vals[k][i+2][j];
-	sum_6 += total_norm_vals[k][1][j]*total_norm_vals[k][i+2][j];
-	sum_J += std::pow((total_fn_vals[k][0][j]-total_fn_vals[k][i+2][j]),2.);
+	//sum_S += total_fn_vals[k][0][j]*total_fn_vals[k][i+2][j];
+	//sum_T += total_fn_vals[k][1][j]*total_fn_vals[k][i+2][j];
+        //sum_5 += total_norm_vals[k][0][j]*total_norm_vals[k][i+2][j];
+	//sum_6 += total_norm_vals[k][1][j]*total_norm_vals[k][i+2][j];
+	//sum_J += std::pow((total_fn_vals[k][0][j]-total_fn_vals[k][i+2][j]),2.);
 	sum_J2 += std::pow((total_norm_vals[k][1][j]-total_norm_vals[k][i+2][j]),2.);
 	sum_3 += total_norm_vals[k][0][j]*(total_norm_vals[k][i+2][j]-total_norm_vals[k][1][j]);
-	sum_32 += total_fn_vals[k][1][j]*(total_fn_vals[k][1][j]-total_fn_vals[k][i+2][j]);
+	//sum_32 += total_fn_vals[k][1][j]*(total_fn_vals[k][1][j]-total_fn_vals[k][i+2][j]);
       }
 
       //S1[k][i] = (sum_S/(Real)(num_samples-1) - mean_sq2)/var_hatYS;  
-      S1[k][i] = (sum_S/(Real)(num_samples) - mean_sq2)/var_hatYS;  
+      //S1[k][i] = (sum_S/(Real)(num_samples) - mean_sq2)/var_hatYS;  
       //T1[k][i] = 1. - (sum_T/(Real)(num_samples-1) - mean_sq2)/var_hatYS;
-      T1[k][i] = 1. - (sum_T/(Real)(num_samples) - (mean_hatB*mean_hatB))/var_hatYT;
+      //T1[k][i] = 1. - (sum_T/(Real)(num_samples) - (mean_hatB*mean_hatB))/var_hatYT;
       // S2[k][i] = (sum_S/(Real)(num_samples) - mean_sq1)/var_hatYnom;     
       // T2[k][i] = 1. - (sum_T/(Real)(num_samples) - mean_sq1)/var_hatYnom;
-      S2[k][i] = (sum_5/(Real)(num_samples) - (mean_A_norm*mean_B_norm))/var_AB_norm;  
-      T2[k][i] = 1. - (sum_6/(Real)(num_samples) - (mean_B_norm*mean_B_norm))/var_B_norm;
-      S3[k][i] = ((sum_5/(Real)(num_samples)) - (mean_A_norm*mean_A_norm))/var_A_norm;  
-      T3[k][i] = 1. - (sum_6/(Real)(num_samples) - (mean_A_norm*mean_B_norm))/var_AB_norm;
+      //S2[k][i] = (sum_5/(Real)(num_samples) - (mean_A_norm*mean_B_norm))/var_AB_norm;  
+      //T2[k][i] = 1. - (sum_6/(Real)(num_samples) - (mean_B_norm*mean_B_norm))/var_B_norm;
+      //S3[k][i] = ((sum_5/(Real)(num_samples)) - (mean_A_norm*mean_A_norm))/var_A_norm;  
+      //T3[k][i] = 1. - (sum_6/(Real)(num_samples) - (mean_A_norm*mean_B_norm))/var_AB_norm;
       // S3[k][i] = (sum_3/(Real)(num_samples))/var_hatYC;    
       //T3[k][i] = (sum_32/(Real)(num_samples))/var_hatYnom;
       //S4[k][i] = (var_hatYnom - (sum_J/(Real)(2*num_samples)))/var_hatYnom;
@@ -446,7 +462,7 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
       T4[k][i] = (sum_J2/(Real)(2*num_samples))/var_hatYC;
     }
   }
-  print_vbd(Cout, S1, T1, S2, T2, S3, T3, S4, T4);
+  print_vbd(Cout,S4,T4);
 }
 
 
@@ -519,11 +535,8 @@ void Analyzer::read_variables_responses(int num_evals)
 
 /** printing of variance based decomposition indices. */
 void Analyzer::
-print_vbd(std::ostream& s, const RealVectorArray& S1,
-          const RealVectorArray& T1, const RealVectorArray& S2, 
-          const RealVectorArray& T2, const RealVectorArray& S3, 
-          const RealVectorArray& T3, const RealVectorArray& S4, 
-          const RealVectorArray& T4) const
+print_vbd(std::ostream& s, const RealVectorArray& S,
+          const RealVectorArray& T) const
 {
   StringMultiArrayConstView cv_labels
     = iteratedModel.continuous_variable_labels();
@@ -535,36 +548,39 @@ print_vbd(std::ostream& s, const RealVectorArray& S1,
   // output explanatory info
   s.setf(std::ios::scientific);
   s << "Variance Based Decomposition Sensitivity Indices\n"
-    << "These indices measure the importance of the uncertain input\n"
+    << "These Sobol' indices measure the importance of the uncertain input\n"
     << "variables in determining the uncertainty (variance) of the output.\n"
     << "Si measures the main effect for variable i itself, while Ti\n"
     << "measures the total effect (including the interaction effects\n" 
-    << "of variable i with other uncertain variables.)\n" << std::endl;
+    << "of variable i with other uncertain variables.)\n";
+
+  s << "\nGlobal sensitivity indices for each response function:\n";
   s <<  std::setprecision(5);
   
   for (size_t k=0; k<numFunctions; k++){
-    s << std::setw(12) << resp_labels[k] << ' ';
-    s << '\n';	
+    s << resp_labels[k] << " Sobol indices:\n"; 
+    s << std::setw(12) << ' ' << std::setw(18) << "Main effects" << std::setw(18)
+      << "Total effects" << std::endl;
+
     for(size_t i=0; i<numContinuousVars; i++) {
-    s << std::setw(12) << cv_labels[i] << ":  Si = " << S1[k][i] << "  Ti = " 
-      << T1[k][i]  << '\n'; 
-    s << std::setw(12) << cv_labels[i] << ":  S2i = " << S2[k][i] << "  T2i = "
-      << T2[k][i]  << '\n'; 
-    s << std::setw(12) << cv_labels[i] << ":  S3i = " << S3[k][i] << "  T3i = "
-      << T3[k][i]  << '\n'; 
-    s << std::setw(12) << cv_labels[i] << ":  S4i = " << S4[k][i] << "  T4i = "
-      << T4[k][i]  << '\n'; 
-    s << '\n';
+      if ((S[k][i]>vbdDropTol) && (T[k][i]>vbdDropTol)){
+        s << std::setw(12) << cv_labels[i] << std::setw(18) 
+	  << S[k][i] << std::setw(18) << T[k][i]  << '\n';
+      } 
     }
     for(size_t i=0; i<numDiscreteRealVars; i++) {
-    s << std::setw(12) << drv_labels[i] << ":  Si = " 
-      << S1[k][i+numContinuousVars] << "  Ti = " 
-      << T1[k][i+numContinuousVars]  << '\n';
+      if ((S[k][i]>vbdDropTol) && (T[k][i]>vbdDropTol)){
+        s << std::setw(12) << drv_labels[i] << std::setw(18)
+	  << S[k][i+numContinuousVars] << std::setw(18) 
+          << T[k][i+numContinuousVars]  << '\n';
+      } 
     }
     for(size_t i=0; i<numDiscreteIntVars; i++) {
-    s << std::setw(12) << div_labels[i] << ":  Si = " 
-      << S1[k][i+numContinuousVars+numDiscreteRealVars] << "  Ti = " 
-      << T1[k][i+numContinuousVars+numDiscreteRealVars]  << '\n';
+      if ((S[k][i]>vbdDropTol) && (T[k][i]>vbdDropTol)){
+        s << std::setw(12) << div_labels[i] << std::setw(18) 
+        << S[k][i+numContinuousVars+numDiscreteRealVars] << std::setw(18) 
+        << T[k][i+numContinuousVars+numDiscreteRealVars]  << '\n';
+      }
     }
   }
 }

@@ -736,6 +736,7 @@ TAG "method/sampling/sample_type/incremental_lhs/previous_samples"
 	DESC "{Previous samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"
 
 TAG "method/sampling/variance_based_decomp"
+TAG "method/sampling/variance_based_decomp/drop_tolerance"
 TAG "method/polynomial_chaos/all_variables"
 	DESC "{All variables flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"
 
@@ -828,6 +829,7 @@ TAG "method/dace/quality_metrics"
 TAG "method/dace/variance_based_decomp"
 	DESC "{Variance based decomposition} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodDDACE"
 
+TAG "method/dace/variance_based_decomp/drop_tolerance"
 TAG "method/dace/fixed_seed"
 	DESC "{Fixed seed flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodDDACE"
 
@@ -844,6 +846,7 @@ TAG "method/fsu_cvt/quality_metrics"
 TAG "method/fsu_cvt/variance_based_decomp"
 	DESC "{Variance based decomposition} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
 
+TAG "method/fsu_cvt/variance_based_decomp/drop_tolerance"
 TAG "method/fsu_cvt/fixed_seed"
 	DESC "{Fixed seed flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
 
@@ -972,6 +975,7 @@ TAG "method/fsu_quasi_mc/quality_metrics"
 TAG "method/fsu_quasi_mc/variance_based_decomp"
 	DESC "{Variance based decomposition} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
 
+TAG "method/fsu_quasi_mc/variance_based_decomp/drop_tolerance"
 TAG "method/fsu_quasi_mc/samples"
 	DESC "{Number of samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
 

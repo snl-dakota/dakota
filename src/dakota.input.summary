@@ -739,7 +739,9 @@ KEYWORD12 method
 	      previous_samples INTEGER
 	      )
 	    ]
-	  [ variance_based_decomp ]
+	  [ variance_based_decomp
+	    [ drop_tolerance REAL ]
+	    ]
 	  [ all_variables ]
 	  [ fixed_seed ]
 	  [ reliability_levels REALLIST
@@ -860,7 +862,9 @@ KEYWORD12 method
 	  | central_composite
 	  [ main_effects ]
 	  [ quality_metrics ]
-	  [ variance_based_decomp ]
+	  [ variance_based_decomp
+	    [ drop_tolerance REAL ]
+	    ]
 	  [ fixed_seed ]
 	  [ symbols INTEGER ]
 	  [ samples INTEGER ]
@@ -870,7 +874,9 @@ KEYWORD12 method
 	( fsu_cvt
 	  [ latinize ]
 	  [ quality_metrics ]
-	  [ variance_based_decomp ]
+	  [ variance_based_decomp
+	    [ drop_tolerance REAL ]
+	    ]
 	  [ fixed_seed ]
 	  [ trial_type
 	    grid
@@ -1000,7 +1006,9 @@ KEYWORD12 method
 	  | hammersley
 	  [ latinize ]
 	  [ quality_metrics ]
-	  [ variance_based_decomp ]
+	  [ variance_based_decomp
+	    [ drop_tolerance REAL ]
+	    ]
 	  [ samples INTEGER ]
 	  [ fixed_sequence ]
 	  [ sequence_start INTEGERLIST ]
