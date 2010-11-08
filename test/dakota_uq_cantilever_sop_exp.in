@@ -1,5 +1,7 @@
 # DAKOTA INPUT FILE - dakota_uq_cantilever_sop_exp.in
 
+# timeout overrides: 1=TA1500
+
 strategy,
 	single_method
 	  tabular_graphics_data #output_precision = 16
