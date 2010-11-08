@@ -10,22 +10,22 @@ typedef int integer;
 typedef double doublereal;
 typedef int /* Unknown procedure type */ (*U_fp)();
 
-extern void testj_(integer *n, integer *p, doublereal *x, integer *nfcall,
+extern int testj_(integer *n, integer *p, doublereal *x, integer *nfcall,
 	doublereal *j, integer *uiparm, doublereal *urparm, U_fp ufparm);
 
-extern void testr_(integer *n, integer *p, doublereal *x, integer *nfcall,
+extern int testr_(integer *n, integer *p, doublereal *x, integer *nfcall,
 	doublereal *R, integer *uiparm, doublereal *urparm, U_fp ufparm);
 
  static void
 BadRead(int n, char *fname)
 {
-	fprintf(stderr, "Unable to read line %d of file \"%s\"\n", n, fname);
+	std::fprintf(stderr, "Unable to read line %d of file \"%s\"\n", n, fname);
 	}
 
  static void
 BadFmt(int n, char *fname, char *Line)
 {
-	fprintf(stderr, "Bad format, line %d of file \"%s\":\n%s\n", n, fname, Line);
+	std::fprintf(stderr, "Bad format, line %d of file \"%s\":\n%s\n", n, fname, Line);
 	}
 
  typedef struct
@@ -91,8 +91,8 @@ Bsearch(int p, int n)
 		}
 	while (kp > Probs && kp[-1].p == p && kp[-1].n == n)
 		--kp;
-	if ((b = getenv("ProbName"))) {
-		while(strcmp(b,kp->name)) {
+	if ((b = std::getenv("ProbName"))) {
+		while(std::strcmp(b,kp->name)) {
 			++kp;
 			if (kp->p != p || kp->n != n)
 				return 0;
@@ -105,11 +105,11 @@ Bsearch(int p, int n)
 Bad_pn(int p, int n)
 {
 	KnownProbs *kp;
-	fprintf(stderr, "Unexpected combination of %d variables and %d responses.\n",
+	std::fprintf(stderr, "Unexpected combination of %d variables and %d responses.\n",
 		p, n);
-	fprintf(stderr, "Acceptable combinations:\n\tvars\tresps\t$ProbName\n");
+	std::fprintf(stderr, "Acceptable combinations:\n\tvars\tresps\t$ProbName\n");
 	for(kp = Probs; kp->name; kp++)
-		fprintf(stderr, "\t%d\t%d\t%s\n", kp->p, kp->n, kp->name);
+		std::fprintf(stderr, "\t%d\t%d\t%s\n", kp->p, kp->n, kp->name);
 	}
 
  int
@@ -122,13 +122,13 @@ main(int argc, char **argv)
 	double J[65*11], R[65], x[20];
 
 	if (argc != 3) {
-		fprintf(stderr, "%s: %s,\nbut got %d args\n",
+		std::fprintf(stderr, "%s: %s,\nbut got %d args\n",
 			argv[0], "Expected two args, the input and output file names", argc);
 		return 1;
 		}
-	f = fopen(argv[1], "r");
+	f = std::fopen(argv[1], "r");
 	if (!f) {
-		fprintf(stderr, "%s: could not open \"%s\"\n", argv[0], argv[1]);
+		std::fprintf(stderr, "%s: could not open \"%s\"\n", argv[0], argv[1]);
 		return 1;
 		}
 	rc = 1;
@@ -136,7 +136,7 @@ main(int argc, char **argv)
 		BadRead(1, argv[1]);
 		goto done;
 		}
-	p = strtol(buf, &b, 10);
+	p = std::strtol(buf, &b, 10);
 	if (b <= buf || *b > ' ' || p <= 0) {
 		BadFmt(1, argv[1], buf);
 		goto done;
@@ -144,7 +144,7 @@ main(int argc, char **argv)
 	/*
 	while(*b && *b <= ' ')
 		b++;
-	if (strncmp(b,"variables ",10)) {
+	if (std::strncmp(b,"variables ",10)) {
 		BadFmt(1, argv[1], buf);
 		goto done;
 		}
@@ -154,7 +154,7 @@ main(int argc, char **argv)
 			BadRead(i+2, argv[1]);
 			goto done;
 			}
-		x[i] = strtod(buf, &b);
+		x[i] = std::strtod(buf, &b);
 		if (b <= buf || *b > ' ') {
 			BadFmt(i+2, argv[1], buf);
 			goto done;
@@ -164,7 +164,7 @@ main(int argc, char **argv)
 		BadRead(p + 2, argv[1]);
 		goto done;
 		}
-	n = strtol(buf, &b, 10);
+	n = std::strtol(buf, &b, 10);
 	if (b <= buf || *b > ' ' || n <= 0) {
 		BadFmt(p + 2, argv[1], buf);
 		goto done;
@@ -174,7 +174,7 @@ main(int argc, char **argv)
 			BadRead(i+p+3, argv[1]);
 			goto done;
 			}
-		j = asv[i] = strtol(buf, &b, 10);
+		j = asv[i] = std::strtol(buf, &b, 10);
 		if (b <= buf || *b > ' ' || j < 1 || j > 3) {
 			BadFmt(i+p+3, argv[1], buf);
 			goto done;
@@ -188,28 +188,28 @@ main(int argc, char **argv)
 		if (asv[i] != j)
 			k = asv[i];
 	if (k) {
-		fprintf(stderr, "Got varying ASV values, including %d and %d\n", j, k);
+		std::fprintf(stderr, "Got varying ASV values, including %d and %d\n", j, k);
 		goto done;
 		}
-	fclose(f);
-	f = fopen(argv[2], "w");
+	std::fclose(f);
+	f = std::fopen(argv[2], "w");
 	if (!f) {
-		fprintf(stderr, "%s: could not open \"%s\"\n", argv[0], argv[2]);
+		std::fprintf(stderr, "%s: could not open \"%s\"\n", argv[0], argv[2]);
 		return 1;
 		}
 	nf = 1;
 	if (j & 1) {
 		testr_(&n, &p, x, &nf, R, &nex, 0, 0);
 		for(i = 0; i < n; i++)
-			fprintf(f, " %.17g\n", R[i]);
+			std::fprintf(f, " %.17g\n", R[i]);
 		}
 	if (j & 2) {
 		testj_(&n, &p, x, &nf, J, &nex, 0, 0);
 		for(i = 0; i < n; i++) {
-			fprintf(f, "[ %.17g", J[i]);
+			std::fprintf(f, "[ %.17g", J[i]);
 			for(k = 1; k < p; k++)
-				fprintf(f, " %.17g", J[i+n*k]);
-			fprintf(f, " ]\n");
+				std::fprintf(f, " %.17g", J[i+n*k]);
+			std::fprintf(f, " ]\n");
 			}
 		}
 	rc = 0;

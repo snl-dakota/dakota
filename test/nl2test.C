@@ -4,7 +4,6 @@
 */
 
 #include <cmath>
-using namespace std;
 
 /* #include "f2c.h" */
 typedef int integer;
@@ -34,10 +33,6 @@ static integer c__5 = 5;
     /* System generated locals */
     integer j_dim1, j_offset, i__1, i__2;
     doublereal d__1, d__2;
-
-    /* Builtin functions */
-    //double sqrt(doublereal), exp(doublereal), sin(doublereal), cos(doublereal)
-	    //, log(doublereal);
 
     /* Local variables */
     static doublereal e;
@@ -200,7 +195,7 @@ L200:
     t = d__1 * d__1 + d__2 * d__2;
     ti = 100. / (twopi * t);
     j[j_dim1 + 1] = ti * x[2];
-    t = 10. / sqrt(t);
+    t = 10. / std::sqrt(t);
     j[j_dim1 + 2] = x[1] * t;
     j[j_dim1 + 3] = 0.;
     j[(j_dim1 << 1) + 1] = -ti * x[1];
@@ -220,11 +215,11 @@ L300:
     }
     j[j_dim1 + 1] = 1.;
     j[(j_dim1 << 1) + 1] = 10.;
-    j[j_dim1 * 3 + 2] = sqrt(5.);
+    j[j_dim1 * 3 + 2] = std::sqrt(5.);
     j[(j_dim1 << 2) + 2] = -j[j_dim1 * 3 + 2];
     j[(j_dim1 << 1) + 3] = (x[2] - x[3] * 2.) * 2.;
     j[j_dim1 * 3 + 3] = j[(j_dim1 << 1) + 3] * -2.;
-    j[j_dim1 + 4] = sqrt(40.) * (x[1] - x[4]);
+    j[j_dim1 + 4] = std::sqrt(40.) * (x[1] - x[4]);
     j[(j_dim1 << 2) + 4] = -j[j_dim1 + 4];
     goto L9999;
 /*  ***  woods  *** */
@@ -238,12 +233,12 @@ L400:
     j[j_dim1 + 1] = x[1] * -20.;
     j[(j_dim1 << 1) + 1] = 10.;
     j[j_dim1 + 2] = -1.;
-    j[(j_dim1 << 2) + 3] = sqrt(90.);
+    j[(j_dim1 << 2) + 3] = std::sqrt(90.);
     j[j_dim1 * 3 + 3] = x[3] * -2. * j[(j_dim1 << 2) + 3];
     j[j_dim1 * 3 + 4] = -1.;
-    j[(j_dim1 << 1) + 5] = sqrt(9.9);
+    j[(j_dim1 << 1) + 5] = std::sqrt(9.9);
     j[(j_dim1 << 2) + 5] = j[(j_dim1 << 1) + 5];
-    j[(j_dim1 << 1) + 6] = sqrt(.2);
+    j[(j_dim1 << 1) + 6] = std::sqrt(.2);
     j[(j_dim1 << 2) + 7] = j[(j_dim1 << 1) + 6];
     goto L9999;
 /*  ***  zangwill  *** */
@@ -312,7 +307,7 @@ L900:
 	    j[i__ + k * j_dim1] = 0.;
 	}
     }
-    t = exp(x[1]);
+    t = std::exp(x[1]);
     j[(j_dim1 << 1) + 1] = (t - x[2]) * -2.;
     j[j_dim1 + 1] = -t * j[(j_dim1 << 1) + 1];
 /* Computing 2nd power */
@@ -320,8 +315,8 @@ L900:
     j[(j_dim1 << 1) + 2] = d__1 * d__1 * 30.;
     j[j_dim1 * 3 + 2] = -j[(j_dim1 << 1) + 2];
 /* Computing 3rd power */
-    d__1 = cos(x[3] - x[4]);
-    j[j_dim1 * 3 + 3] = sin(x[3] - x[4]) * 2. / (d__1 * (d__1 * d__1));
+    d__1 = std::cos(x[3] - x[4]);
+    j[j_dim1 * 3 + 3] = std::sin(x[3] - x[4]) * 2. / (d__1 * (d__1 * d__1));
     j[(j_dim1 << 2) + 3] = -j[j_dim1 * 3 + 3];
 /* Computing 3rd power */
     d__1 = x[1];
@@ -331,23 +326,23 @@ L900:
 /*  ***  box  *** */
 L1000:
     if (expmin == zero) {
-	expmin = log(rmdcon_(&c__2)) * 1.999;
+	expmin = std::log(rmdcon_(&c__2)) * 1.999;
     }
     for (i__ = 1; i__ <= 10; ++i__) {
 	ti = (doublereal) ((real) i__) * -.1;
 	e = zero;
 	t = x[1] * ti;
 	if (t >= expmin) {
-	    e = exp(t);
+	    e = std::exp(t);
 	}
 	j[i__ + j_dim1] = ti * e;
 	e = zero;
 	t = x[2] * ti;
 	if (t >= expmin) {
-	    e = exp(t);
+	    e = std::exp(t);
 	}
 	j[i__ + (j_dim1 << 1)] = -ti * e;
-	j[i__ + j_dim1 * 3] = exp(ti * 10.) - exp(ti);
+	j[i__ + j_dim1 * 3] = std::exp(ti * 10.) - std::exp(ti);
 /* L1001: */
     }
     goto L9999;
@@ -446,10 +441,10 @@ L1800:
     i__1 = *n;
     for (i__ = 1; i__ <= i__1; ++i__) {
 	ti = (doublereal) ((real) i__) * .2;
-	j[i__ + j_dim1] = (x[1] + x[2] * ti - exp(ti)) * 2.;
+	j[i__ + j_dim1] = (x[1] + x[2] * ti - std::exp(ti)) * 2.;
 	j[i__ + (j_dim1 << 1)] = ti * j[i__ + j_dim1];
-	t = sin(ti);
-	j[i__ + j_dim1 * 3] = (x[3] + x[4] * t - cos(ti)) * 2.;
+	t = std::sin(ti);
+	j[i__ + j_dim1 * 3] = (x[3] + x[4] * t - std::cos(ti)) * 2.;
 	j[i__ + (j_dim1 << 2)] = t * j[i__ + j_dim1 * 3];
 /* L1801: */
     }
@@ -473,8 +468,8 @@ L1900:
 L2000:
     for (i__ = 1; i__ <= 10; ++i__) {
 	ti = (doublereal) ((real) i__);
-	j[i__ + j_dim1] = -ti * exp(ti * x[1]);
-	j[i__ + (j_dim1 << 1)] = -ti * exp(ti * x[2]);
+	j[i__ + j_dim1] = -ti * std::exp(ti * x[1]);
+	j[i__ + (j_dim1 << 1)] = -ti * std::exp(ti * x[2]);
 /* L2001: */
     }
     goto L9999;
@@ -500,8 +495,8 @@ L2200:
 	i__1 = 1 - i__;
 	ti = (doublereal) ((real) i__1) * 10.;
 	j[i__ + j_dim1] = -1.;
-	j[i__ + (j_dim1 << 1)] = -exp(x[4] * ti);
-	j[i__ + j_dim1 * 3] = -exp(x[5] * ti);
+	j[i__ + (j_dim1 << 1)] = -std::exp(x[4] * ti);
+	j[i__ + j_dim1 * 3] = -std::exp(x[5] * ti);
 	j[i__ + (j_dim1 << 2)] = ti * x[2] * j[i__ + (j_dim1 << 1)];
 	j[i__ + j_dim1 * 5] = ti * x[3] * j[i__ + j_dim1 * 3];
 /* L2201: */
@@ -512,19 +507,19 @@ L2200:
 /*     ***  larger than the log of the smallest positive machine number. */
 L2300:
     if (uftolg == 0.) {
-	uftolg = log(rmdcon_(&c__2)) * 1.999;
+	uftolg = std::log(rmdcon_(&c__2)) * 1.999;
     }
     for (i__ = 1; i__ <= 65; ++i__) {
 	i__1 = 1 - i__;
 	ti = (doublereal) ((real) i__1) * .1;
-	j[i__ + j_dim1] = -exp(x[5] * ti);
+	j[i__ + j_dim1] = -std::exp(x[5] * ti);
 	j[i__ + j_dim1 * 5] = x[1] * ti * j[i__ + j_dim1];
 	for (k = 2; k <= 4; ++k) {
 	    t = x[k + 7] + ti;
 	    r2 = 0.;
 	    theta = -x[k + 4] * t * t;
 	    if (theta > uftolg) {
-		r2 = -exp(theta);
+		r2 = -std::exp(theta);
 	    }
 	    j[i__ + k * j_dim1] = r2;
 	    r2 = -t * r2 * x[k];
@@ -539,10 +534,10 @@ L2300:
 L2400:
     j[j_dim1 + 1] = x[1] * 2. + x[2];
     j[(j_dim1 << 1) + 1] = x[2] * 2. + x[1];
-    j[j_dim1 + 2] = cos(x[1]);
+    j[j_dim1 + 2] = std::cos(x[1]);
     j[(j_dim1 << 1) + 2] = 0.;
     j[j_dim1 + 3] = 0.;
-    j[(j_dim1 << 1) + 3] = -sin(x[2]);
+    j[(j_dim1 << 1) + 3] = -std::sin(x[2]);
     goto L9999;
 /*  ***  meyer  *** */
 L2500:
@@ -550,7 +545,7 @@ L2500:
 	i__1 = i__ * 5 + 45;
 	ti = (doublereal) ((real) i__1);
 	u = ti + x[3];
-	t = exp(x[2] / u);
+	t = std::exp(x[2] / u);
 	j[i__ + j_dim1] = t;
 	j[i__ + (j_dim1 << 1)] = x[1] * t / u;
 	j[i__ + j_dim1 * 3] = -x[1] * x[2] * t / (u * u);
@@ -625,10 +620,6 @@ L9999:
     /* System generated locals */
     integer i__1, i__2;
     doublereal d__1, d__2, d__3;
-
-    /* Builtin functions */
-    double atan2(doublereal, doublereal), sqrt(doublereal), exp(doublereal),
-	    sin(doublereal), cos(doublereal), log(doublereal);
 
     /* Local variables */
     static integer i__, j;
@@ -776,7 +767,7 @@ L100:
     goto L9999;
 /*  ***  helix   *** */
 L200:
-    theta = atan2(x[2], x[1]) / twopi;
+    theta = std::atan2(x[2], x[1]) / twopi;
     if (x[1] <= 0. && x[2] <= 0.) {
 	theta += 1.;
     }
@@ -785,19 +776,19 @@ L200:
     d__1 = x[1];
 /* Computing 2nd power */
     d__2 = x[2];
-    r__[2] = (sqrt(d__1 * d__1 + d__2 * d__2) - 1.) * 10.;
+    r__[2] = (std::sqrt(d__1 * d__1 + d__2 * d__2) - 1.) * 10.;
     r__[3] = x[3];
     goto L9999;
 /*  ***  singular   *** */
 L300:
     r__[1] = x[1] + x[2] * 10.;
-    r__[2] = sqrt(5.) * (x[3] - x[4]);
+    r__[2] = std::sqrt(5.) * (x[3] - x[4]);
 /* Computing 2nd power */
     d__1 = x[2] - x[3] * 2.;
     r__[3] = d__1 * d__1;
 /* Computing 2nd power */
     d__1 = x[1] - x[4];
-    r__[4] = sqrt(10.) * (d__1 * d__1);
+    r__[4] = std::sqrt(10.) * (d__1 * d__1);
     goto L9999;
 /*  ***  woods   *** */
 L400:
@@ -807,10 +798,10 @@ L400:
     r__[2] = 1. - x[1];
 /* Computing 2nd power */
     d__1 = x[3];
-    r__[3] = sqrt(90.) * (x[4] - d__1 * d__1);
+    r__[3] = std::sqrt(90.) * (x[4] - d__1 * d__1);
     r__[4] = 1. - x[3];
-    r__[5] = sqrt(9.9) * (x[2] + x[4] - 2.);
-    t = sqrt(.2);
+    r__[5] = std::sqrt(9.9) * (x[2] + x[4] - 2.);
+    t = std::sqrt(.2);
     r__[6] = t * (x[2] - 1.);
     r__[7] = t * (x[4] - 1.);
     goto L9999;
@@ -868,13 +859,13 @@ L800:
 /*  ***  cragg and levy  *** */
 L900:
 /* Computing 2nd power */
-    d__1 = exp(x[1]) - x[2];
+    d__1 = std::exp(x[1]) - x[2];
     r__[1] = d__1 * d__1;
 /* Computing 3rd power */
     d__1 = x[2] - x[3];
     r__[2] = d__1 * (d__1 * d__1) * 10.;
 /* Computing 2nd power */
-    d__1 = sin(x[3] - x[4]) / cos(x[3] - x[4]);
+    d__1 = std::sin(x[3] - x[4]) / std::cos(x[3] - x[4]);
     r__[3] = d__1 * d__1;
 /* Computing 4th power */
     d__1 = x[1], d__1 *= d__1;
@@ -886,8 +877,8 @@ L1000:
     if (expmax > 0.) {
 	goto L1001;
     }
-    expmax = log(rmdcon_(&c__5)) * 1.999;
-    expmin = log(rmdcon_(&c__2)) * 1.999;
+    expmax = std::log(rmdcon_(&c__5)) * 1.999;
+    expmin = std::log(rmdcon_(&c__2)) * 1.999;
 L1001:
 /* Computing MIN */
     d__1 = min(x[1],x[2]);
@@ -899,14 +890,14 @@ L1001:
 	t1 = ti * x[1];
 	e1 = 0.;
 	if (t1 > expmin) {
-	    e1 = exp(t1);
+	    e1 = std::exp(t1);
 	}
 	t2 = ti * x[2];
 	e2 = 0.;
 	if (t2 > expmin) {
-	    e2 = exp(t2);
+	    e2 = std::exp(t2);
 	}
-	r__[i__] = e1 - e2 - x[3] * (exp(ti) - exp(ti * 10.));
+	r__[i__] = e1 - e2 - x[3] * (std::exp(ti) - std::exp(ti * 10.));
 /* L1002: */
     }
     goto L9999;
@@ -1018,9 +1009,9 @@ L1800:
     for (i__ = 1; i__ <= i__2; ++i__) {
 	ti = (doublereal) ((real) i__) * .2;
 /* Computing 2nd power */
-	d__1 = x[1] + x[2] * ti - exp(ti);
+	d__1 = x[1] + x[2] * ti - std::exp(ti);
 /* Computing 2nd power */
-	d__2 = x[3] + x[4] * sin(ti) - cos(ti);
+	d__2 = x[3] + x[4] * std::sin(ti) - std::cos(ti);
 	r__[i__] = d__1 * d__1 + d__2 * d__2;
 /* L1801: */
     }
@@ -1042,7 +1033,7 @@ L1900:
 L2000:
     for (i__ = 1; i__ <= 10; ++i__) {
 	ti = (doublereal) ((real) i__);
-	r__[i__] = ti * 2. + 2. - (exp(ti * x[1]) + exp(ti * x[2]));
+	r__[i__] = ti * 2. + 2. - (std::exp(ti * x[1]) + std::exp(ti * x[2]));
 /* L2001: */
     }
     goto L9999;
@@ -1066,8 +1057,8 @@ L2200:
     for (i__ = 1; i__ <= 33; ++i__) {
 	i__2 = 1 - i__;
 	ti = (doublereal) ((real) i__2) * 10.;
-	r__[i__] = yosb1[i__ - 1] - (x[1] + x[2] * exp(x[4] * ti) + x[3] *
-		exp(x[5] * ti));
+	r__[i__] = yosb1[i__ - 1] - (x[1] + x[2] * std::exp(x[4] * ti) + x[3] *
+		std::exp(x[5] * ti));
 /* L2201: */
     }
     goto L9999;
@@ -1076,19 +1067,19 @@ L2200:
 /*     ***  larger than the log of the smallest positive machine number. */
 L2300:
     if (uftolg == 0.) {
-	uftolg = log(rmdcon_(&c__2)) * 1.999;
+	uftolg = std::log(rmdcon_(&c__2)) * 1.999;
     }
     for (i__ = 1; i__ <= 65; ++i__) {
 	i__2 = 1 - i__;
 	ti = (doublereal) ((real) i__2) * .1;
-	ri = x[1] * exp(x[5] * ti);
+	ri = x[1] * std::exp(x[5] * ti);
 	for (j = 2; j <= 4; ++j) {
 	    t = 0.;
 /* Computing 2nd power */
 	    d__1 = ti + x[j + 7];
 	    theta = -x[j + 4] * (d__1 * d__1);
 	    if (theta > uftolg) {
-		t = exp(theta);
+		t = std::exp(theta);
 	    }
 	    ri += x[j] * t;
 /* L2301: */
@@ -1104,15 +1095,15 @@ L2400:
 /* Computing 2nd power */
     d__2 = x[2];
     r__[1] = d__1 * d__1 + d__2 * d__2 + x[1] * x[2];
-    r__[2] = sin(x[1]);
-    r__[3] = cos(x[2]);
+    r__[2] = std::sin(x[1]);
+    r__[3] = std::cos(x[2]);
     goto L9999;
 /*  ***  meyer  *** */
 L2500:
     for (i__ = 1; i__ <= 16; ++i__) {
 	i__2 = i__ * 5 + 45;
 	ti = (doublereal) ((real) i__2);
-	r__[i__] = x[1] * exp(x[2] / (ti + x[3])) - ymeyer[i__ - 1];
+	r__[i__] = x[1] * std::exp(x[2] / (ti + x[3])) - ymeyer[i__ - 1];
 	if (nex == 32) {
 	    r__[i__] += 10.;
 	}
@@ -1418,10 +1409,6 @@ doublereal rmdcon_(integer *k)
     /* System generated locals */
     doublereal ret_val;
 
-    /* Builtin functions */
-    double sqrt(doublereal);
-
-
 /*  ***  return machine dependent constants used by nl2sol  *** */
 
 /* +++  comments below contain data statements for various machines.  +++ */
@@ -1518,7 +1505,7 @@ L10:
     goto L999;
 
 L20:
-    ret_val = sqrt(one001 * eta);
+    ret_val = std::sqrt(one001 * eta);
     goto L999;
 
 L30:
@@ -1526,11 +1513,11 @@ L30:
     goto L999;
 
 L40:
-    ret_val = sqrt(pt999 * machep);
+    ret_val = std::sqrt(pt999 * machep);
     goto L999;
 
 L50:
-    ret_val = sqrt(pt999 * big);
+    ret_val = std::sqrt(pt999 * big);
     goto L999;
 
 L60:
