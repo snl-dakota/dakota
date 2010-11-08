@@ -3,6 +3,9 @@
 	-lf2c -lm   (in that order)
 */
 
+#include <cmath>
+using namespace std;
+
 /* #include "f2c.h" */
 typedef int integer;
 typedef float real;
@@ -33,8 +36,8 @@ static integer c__5 = 5;
     doublereal d__1, d__2;
 
     /* Builtin functions */
-    double sqrt(doublereal), exp(doublereal), sin(doublereal), cos(doublereal)
-	    , log(doublereal);
+    //double sqrt(doublereal), exp(doublereal), sin(doublereal), cos(doublereal)
+	    //, log(doublereal);
 
     /* Local variables */
     static doublereal e;

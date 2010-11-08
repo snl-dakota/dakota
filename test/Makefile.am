@@ -192,7 +192,7 @@ mogatest2_LDADD = $(TESTERLDADD)
 mogatest3_SOURCES = mogatest3.C
 mogatest3_LDADD = $(TESTERLDADD)
 
-nl2func_SOURCES = nl2func.c nl2test.c
+nl2func_SOURCES = nl2func.C nl2test.C
 nl2func_LDADD = $(TESTERLDADD)
 
 morris_SOURCES = morris.C
