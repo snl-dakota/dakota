@@ -873,8 +873,10 @@ Real NonDExpansion::increment_sets()
     // increment grid with current candidate
     Cout << "\n>>>>> Evaluating trial index set:\n" << *cit;
     nond_sparse->increment_set(*cit);
-    if (uSpaceModel.restore_available())      // has been active previously
+    if (uSpaceModel.restore_available()) {    // has been active previously
+      nond_sparse->restore_set();
       uSpaceModel.restore_approximation();
+    }
     else {                                    // a new active set
       nond_sparse->evaluate_set();
       uSpaceModel.append_approximation(true); // rebuild

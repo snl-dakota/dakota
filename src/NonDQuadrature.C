@@ -126,12 +126,8 @@ void NonDQuadrature::get_parameter_sets(Model& model)
     Cout << quad_order[i] << ' ';
   Cout << "}\nTotal number of integration points: " << num_quad_points << '\n';
 
-  // Compute the tensor-product grid and retrieve the variable sets
-  tpqDriver->compute_grid();
-  const Pecos::RealMatrix& var_sets = tpqDriver->variable_sets();
-  //samples_to_variables_array(var_sets, allVariables);
-  allSamples = RealMatrix(Teuchos::View, var_sets, var_sets.numRows(),
-			  var_sets.numCols());
+  // Compute the tensor-product grid and store in allSamples
+  tpqDriver->compute_grid(allSamples);
 }
 
 

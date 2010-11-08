@@ -145,12 +145,8 @@ void NonDCubature::get_parameter_sets(Model& model)
   Cout << "\nCubature integrand order = " << cubDriver->integrand_order()
        << "\nTotal number of integration points: " << num_cub_points << '\n';
 
-  // Compute the tensor-product grid and retrieve the variable sets
-  cubDriver->compute_grid();
-  const Pecos::RealMatrix& var_sets = cubDriver->variable_sets();
-  //samples_to_variables_array(var_sets, allVariables);
-  allSamples = RealMatrix(Teuchos::View, var_sets, var_sets.numRows(),
-			  var_sets.numCols());
+  // Compute the cubature grid and store in allSamples
+  cubDriver->compute_grid(allSamples);
 }
 
 

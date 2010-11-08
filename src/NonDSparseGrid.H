@@ -72,7 +72,9 @@ public:
   void update_reference();
   /// invokes SparseGridDriver::push_trial_set()
   void increment_set(const UShortArray& set);
-  /// invokes SparseGridDriver::compute_trial_grid
+  /// invokes SparseGridDriver::restore_set()
+  void restore_set();
+  /// invokes SparseGridDriver::compute_trial_grid()
   void evaluate_set();
   /// invokes SparseGridDriver::pop_trial_set()
   void decrement_set();
@@ -145,13 +147,13 @@ inline void NonDSparseGrid::increment_set(const UShortArray& set)
 { ssgDriver->push_trial_set(set); }
 
 
+inline void NonDSparseGrid::restore_set()
+{ ssgDriver->restore_set(); }
+
+
 inline void NonDSparseGrid::evaluate_set()
 {
-  ssgDriver->compute_trial_grid();
-  const Pecos::RealMatrix& var_sets = ssgDriver->variable_sets();
-  //samples_to_variables_array(var_sets, allVariables);
-  allSamples = RealMatrix(Teuchos::View, var_sets, var_sets.numRows(),
-			  var_sets.numCols());
+  ssgDriver->compute_trial_grid(allSamples);
   evaluate_parameter_sets(iteratedModel, true, false);
   ++numIntegrations;
 }

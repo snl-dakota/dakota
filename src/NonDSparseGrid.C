@@ -39,20 +39,22 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
 
   // initialize_random_variables() called in NonDIntegration ctor
   check_variables(natafTransform.x_types());
-  bool store_1d_gauss = false; // no 1D Gauss pts/wts storage
-  bool nested_rules   = true;
+  bool store_colloc = false; // no collocIndices/gauss{Pts,Wts}1D storage
+  bool nested_rules = true;
   // moderate growth is helpful for iso and aniso sparse grids, but
   // not necessary for generalized grids
-  short growth_rate =
-    (probDescDB.get_short("method.nond.expansion_refinement_type")
-     == Pecos::ADAPTIVE_P_REFINEMENT &&
-     probDescDB.get_short("method.nond.expansion_refinement_control")
-     == Pecos::GENERALIZED_SPARSE) ?
+  short refine_type
+    = probDescDB.get_short("method.nond.expansion_refinement_type");
+  short refine_control
+    = probDescDB.get_short("method.nond.expansion_refinement_control");
+  short growth_rate = (refine_type    == Pecos::ADAPTIVE_P_REFINEMENT &&
+		       refine_control == Pecos::GENERALIZED_SPARSE) ?
     Pecos::UNRESTRICTED_GROWTH : Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
   ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelRef,
     probDescDB.get_rdv("method.nond.sparse_grid_dimension_preference"),
-    store_1d_gauss, nested_rules, growth_rate, nested_uniform_rule);
+    refine_type, refine_control, store_colloc, nested_rules, growth_rate,
+    nested_uniform_rule);
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
     iteratedModel.distribution_parameters());
   maxConcurrency *= ssgDriver->grid_size(); // requires polyParams
@@ -76,13 +78,14 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
-  bool store_1d_gauss = true; //(sparse_grid_usage == "interpolation");
+  bool store_colloc = true; //(sparse_grid_usage == "interpolation");
   short growth_rate = (refine_type    == Pecos::ADAPTIVE_P_REFINEMENT &&
 		       refine_control == Pecos::GENERALIZED_SPARSE) ?
     Pecos::UNRESTRICTED_GROWTH : Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
-  ssgDriver->initialize_grid(u_types, ssg_level, dim_pref, store_1d_gauss,
-    nested_rules, growth_rate, nested_uniform_rule);
+  ssgDriver->initialize_grid(u_types, ssg_level, dim_pref, refine_type,
+    refine_control, store_colloc, nested_rules, growth_rate,
+    nested_uniform_rule);
   ssgDriver->
     initialize_grid_parameters(u_types, model.distribution_parameters());
   maxConcurrency *= ssgDriver->grid_size(); // requires polyParams
@@ -101,14 +104,9 @@ void NonDSparseGrid::get_parameter_sets(Model& model)
       iteratedModel.distribution_parameters());
 
   // compute grid and retrieve point/weight sets
-  ssgDriver->compute_grid();
-  Cout << "\nSparse grid level = " << ssgDriver->level()
-       << "\nTotal number of integration points: "
-       << ssgDriver->weight_sets().length() << '\n';
-  const Pecos::RealMatrix& var_sets = ssgDriver->variable_sets();
-  //samples_to_variables_array(var_sets, allVariables);
-  allSamples = RealMatrix(Teuchos::View, var_sets, var_sets.numRows(),
-			  var_sets.numCols());
+  ssgDriver->compute_grid(allSamples);
+  Cout << "\nSparse grid level = " << ssgDriver->level() << "\nTotal number "
+       << "of integration points: " << allSamples.numCols() << '\n';
 }
 
 
