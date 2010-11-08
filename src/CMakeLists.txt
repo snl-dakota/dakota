@@ -268,10 +268,15 @@ file( APPEND ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
 
 ## DAKOTA executables.
 add_executable(dakota main.C)
-#target_link_libraries(dakota dakota_src pecos ${TPL_LIBS} ${CURL_LIBRARIES} ${LAPACK_LIBS} ${BLAS_LIBS} ${FLIBS} ${FCLIBS})
+#target_link_libraries(dakota dakota_src ${TPL_LIBS} ${CURL_LIBRARIES} ${LAPACK_LIBS} ${BLAS_LIBS} ${FLIBS} ${FCLIBS})
 
 ## WJB: request macro from Kitware? FindLibDL.cmake (e.g. digidoc++)
-target_link_libraries(dakota dakota_src ${TPL_LIBS} ${CURL_LIBRARIES} dl)
+target_link_libraries(dakota dakota_src ${TPL_LIBS} ${LAPACK_LIBS}
+                      ${CURL_LIBRARIES} dl)
+
+if(Teuchos_TPL_LIST MATCHES "LAPACK;BLAS")
+  message(STATUS "Building against pre-installed Teuchos WITH own lapack: ${Teuchos_TPL_LIST}")
+endif()
 
 message(STATUS "TPL LIBS: ${TPL_LIBS}")
 
