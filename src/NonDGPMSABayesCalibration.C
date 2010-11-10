@@ -20,15 +20,15 @@
 #include "NonDLHSSampling.H"
 // includes from gpmsa TPL
 #ifdef DAKOTA_GPMSA
-#include "GPmodel.h"
-//#include "rawData.h"
-//#include "optParms.h"
-//#include "Defaults.h"
-//#include "preProcessData.h"
-#include "Prior.h"
-#include "setupModel.h"
-#include "LAmodel.h"
-#include "LAmodelMCMC.h"
+#include "GPmodel.H"
+#include "rawData.H"
+#include "covMat.H"
+#include "Init.H"
+#include "Prior.H"
+#include "LAparams.H"
+#include "LAdata.H"
+#include "LAmodel.H"
+#include "LAmodelMCMC.H"
 #endif
 
 static const char rcsId[]="@(#) $Id$";
@@ -80,11 +80,30 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
  
   const RealMatrix&    all_samples = lhsSampler.all_samples();
   const ResponseArray& all_resp    = lhsSampler.all_responses();
+  double **zt_raw;
+  double **ysim;
+  double **x_obs;
+  double **y_obs;
+  double **y_std;
 
   size_t num_problem_vars = iteratedModel.acv(); 
   Cout << "num_problem_vars " << num_problem_vars << '\n';
   size_t num_resp = iteratedModel.num_functions();
   Cout << "num_responses " << num_resp << '\n';
+  
+  zt_raw=new double*[numSamples];
+  for (int i=0; i<numSamples; ++i)
+    zt_raw[i]=new double[num_problem_vars];
+  for (int i=0; i<num_problem_vars; ++i)
+   for (int j=0; j<numSamples; ++j)
+     zt_raw[j][i]=all_samples(i,j);
+  
+  ysim=new double*[1];
+  for (int i=0; i<1; ++i)
+    ysim[i]=new double[numSamples];
+  for (int i=0; i<1; ++i)
+   for (int j=0; j<numSamples; ++j)
+     ysim[i][j]=all_resp[j].function_value(0);
 
  // We read in the experimental data.  
  // We assume for now that the number of calibration 
@@ -106,12 +125,15 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
     xObsData.resize(num_obs_data);
     yObsData.resize(num_obs_data);
     yStdData.resize(num_obs_data);
+       
     data_file1.clear();
     data_file1.seekg(0, std::ios::beg);
 
     i=0;
     while ((i<num_obs_data) && (data_file1 >> xObsData[i]))
-      i++;
+    //while (i<num_obs_data) {
+    // data_file1 >> *xObsData[i];
+     i++;
     data_file1.close();
   }
 
@@ -137,7 +159,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   }
   else {
     i = 0;
-    while ((i<num_obs_data) && (data_file3 >> yStdData[i]))
+    while ((i<num_obs_data) &&  (data_file3 >> yStdData[i]))
       i++;
     data_file3.close();
   }
@@ -170,9 +192,9 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
  for (int i=0; i<numSamples;i++)
    fprintf(fp_new,"%f ",all_resp[i].function_value(0));
  // Ksim [ lsim x pu ]
- fprintf (fp_new,"\n%f \n",1.0);
+ //fprintf (fp_new,"\n%f \n",1.0);
  // Dsim [ lsim x pv ]
- fprintf(fp_new,"%f \n",1.0);
+ //fprintf(fp_new,"%f \n",1.0);
    // for ii = 0, n-1
     //   x (ii,jj), jj=0, p-1
     //   lobs[ii] (element ii of vector lobs)
@@ -186,11 +208,27 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
    fprintf(fp_new,"%d \n",1);
    fprintf(fp_new,"%f \n",yObsData[j]);
    fprintf(fp_new,"%f \n",yStdData[j]);
-   fprintf(fp_new,"%f \n",1.0);
-   fprintf(fp_new,"%f \n",1.0);
+   //fprintf(fp_new,"%f \n",1.0);
+   //fprintf(fp_new,"%f \n",1.0);
  }  
  fclose(fp_new); 
 
+    x_obs=  new double*[num_obs_data];
+    y_obs= new double*[num_obs_data];
+    y_std = new double*[num_obs_data];
+    for (i=0; i<num_obs_data; ++i) {
+      x_obs[i] = new double[1];
+      y_obs[i] = new double[1];
+      y_std[i] = new double[1];
+     }
+    for (int j=0; j<num_obs_data; j++){
+      for (int i=0; i<1; ++i) {
+        x_obs[j][i] = xObsData[j];
+        y_obs[j][i] = yObsData[j];
+        y_std[j][i] = yStdData[j];
+      }
+    }
+     
  fp_new=fopen("gpmsa.optparms.dat","w");
  // Opt Parms just for scalar data - will need to be updated for functional data
  fprintf(fp_new, "%d\n",0);
@@ -198,22 +236,52 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
  fclose(fp_new);
 
  fp_raw=fopen("gpmsa.rawinfo.dat","r");
- fp_optparms=fopen("gpmsa.optparms.dat","r");
+
+ if (verbose) printf("main: calling rawData\n");
+ rawData *raw = new rawData(fp_raw);
+
+ fclose(fp_raw);
+
+  // setup some optional parameters
+  //  optional parms data consists of
+  //  scOut - scalar output
+  //  lamVzGroup - see p. 31 of GPMSA Command Reference
+ int scOut_raw = 0, lamVzGnum_raw = 1, *lamVzGroup_raw;
+ lamVzGroup_raw = new int[raw->pv_raw];
+ for (int ii=0; ii<raw->pv_raw; ii++) lamVzGroup_raw[ii] = 1;
+
+ Init *params = new Init();
+ int a[num_obs_data];
+ float y1[num_obs_data];
+ for(int j=0; j<num_obs_data; j++){
+  a[j]=1;
+  y1[j]=yStdData[0];
+ }
  
+ if (verbose) printf("main: calling setProbDims\n");
+ params->setProbDims(num_obs_data, numSamples, 1, num_cal_parameters, 1, 1);
+ params->showProbDims();
+ if (verbose) printf("main: calling setSimData\n");
+ params->setSimData(zt_raw,1,ysim);
+ params->showSimData();
+ if (verbose) printf("main: calling setObsData\n");
+ params->setObsData(&x_obs[0],&a[0],&y_obs[0],&y1[0]);
+ params->showObsData();
+ if (verbose) printf("main: calling setOptions\n");
+ params->setOptions(scOut_raw, lamVzGnum_raw, lamVzGroup_raw);
+
+
+ // type = scalar, functional, multivariate (1, 2, or 3)
+ // flag = no calibration, calibration (0 or 1)
+ int type = 1;
+ int flag = 1;
+ if (verbose) printf("main: calling preProcess\n");
+ params->preProcess(type,flag);
  if (verbose) printf("main: calling setupModel\n");
+ params->setupModel();
 
-  setupModel *params=new setupModel(fp_raw,fp_optparms);
-//    read raw data
-//    read optional parameters
-//    set defaults
-//    preProcessData
-//  ... note that optional parameters should override defaults at some point
-//  ... it may be best to setDefaults and then read in optional parameters
-  fclose(fp_raw);
-  fclose(fp_optparms);
-
-  if (verbose) printf("main: returned from setupModel\n");
-
+ if (verbose) printf("main: returned from setupModel\n");
+ 
   if (verbose) printf("main: calling LAdata copy constructor\n");
   LAdata *dat=new LAdata(params);
   if (verbose) printf("main: returned from LAdata copy constructor\n");

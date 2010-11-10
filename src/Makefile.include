@@ -147,8 +147,9 @@ endif
 
 if WITH_GPMSA
 GPMSA_SRC     = $(top_srcdir)/packages/gpmsa
-##GPMSA_BUILD   = $(top_builddir)/packages/gpmsa
+GPMSA_BUILD   = $(top_builddir)/packages/gpmsa
 GPMSA_INCL    = -I$(GPMSA_SRC)
+GPMSA_ARCHIVE = $(GPMSA_BUILD)/libgpmsa.a
 GPMSA_H       = NonDGPMSABayesCalibration.H
 GPMSA_S       = NonDGPMSABayesCalibration.C
 endif
@@ -305,6 +306,7 @@ ARCHIVES = $(NIDR_ARCHIVE) \
 	   $(DDACE_ARCHIVE) \
 	   $(DOT_ARCHIVE) \
 	   $(FSUD_ARCHIVE) \
+	   $(GPMSA_ARCHIVE) \
 	   $(QUESO_ARCHIVE) \
 	   $(JEGA_ARCHIVE) \
 	   $(NL2SOL_ARCHIVE) \
