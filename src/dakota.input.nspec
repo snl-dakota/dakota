@@ -563,7 +563,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      [ main_effects {N_mdm(true,mainEffectsFlag)} ]
 	      [ quality_metrics {N_mdm(true,volQualityFlag)} ]
 	      [ variance_based_decomp {N_mdm(true,vbdFlag)} 
-	         [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+	        [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
               ]
 	      [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
 	      [ symbols INTEGER {N_mdm(int,numSymbols)} ]
@@ -573,7 +573,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      [ latinize {N_mdm(true,latinizeFlag)} ]
 	      [ quality_metrics {N_mdm(true,volQualityFlag)} ]
 	      [ variance_based_decomp {N_mdm(true,vbdFlag)} 
-         	 [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+         	[ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
               ]
 	      [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
 	      [ trial_type {0}
@@ -700,7 +700,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  [ latinize {N_mdm(true,latinizeFlag)} ]
 	  [ quality_metrics {N_mdm(true,volQualityFlag)} ]
 	  [ variance_based_decomp {N_mdm(true,vbdFlag)} 
-	     [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]  
+	    [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]  
           ]
 	  [ samples INTEGER {N_mdm(int,numSamples)} ]
 	  [ fixed_sequence {N_mdm(true,fixedSequenceFlag)} ]

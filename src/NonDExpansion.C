@@ -846,7 +846,6 @@ void NonDExpansion::initialize_sets()
   NonDSparseGrid* nond_sparse
     = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
   nond_sparse->initialize_sets();
-  nond_sparse->update_reference();
 }
 
 
