@@ -127,8 +127,8 @@ AC_DEFUN([DAK_METHODS],[
 				       [turn GPL package GPMSA on]),
 	      [with_gpmsa=$withval],[with_gpmsa=no])
   if test "x$with_gpmsa" = xyes; then
-    if test ! -f $srcdir/packages/gpmsa/GPmodel.h; then
-      AC_MSG_ERROR([Could not find packages/gpmsa/GPmodel.h])
+    if test ! -f $srcdir/packages/gpmsa/GPmodel.H; then
+      AC_MSG_ERROR([Could not find packages/gpmsa/GPmodel.H])
     fi
     if test "x$acx_gsl_ok" != xyes; then
       AC_MSG_ERROR([GPMSA requires configuring --with-gsl])
@@ -138,7 +138,7 @@ AC_DEFUN([DAK_METHODS],[
     AC_DEFINE([DAKOTA_GPMSA],[1],
     	      [Macro to handle code which depends on GPMSA.])
     dnl Nothing to do in GPMSA for now
-    dnl AC_CONFIG_SUBDIRS([packages/gpmsa])
+    AC_CONFIG_SUBDIRS([packages/gpmsa])
   fi
   AM_CONDITIONAL([WITH_GPMSA],[test "x$with_gpmsa" = xyes])
 
