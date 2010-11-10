@@ -105,7 +105,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
     sd_iter = driverTypeMap.find(analysisDrivers[i]);//toLower(Drivers[i]));
     if (sd_iter == driverTypeMap.end()) {
 #ifdef DAKOTA_PLUGIN
-      if (outputLevel >= NORMAL_OUTPUT)
+      if (outputLevel > NORMAL_OUTPUT)
 	Cerr << "Warning: analysis_driver \"" << analysisDrivers[i] << "\" not "
 	     << "available at construct time in DirectApplicInterface.\n       "
 	     << "  Subsequent interface plug-in may resolve." << std::endl;
@@ -122,7 +122,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   sd_iter = driverTypeMap.find(iFilterName);//toLower(iFilterName));
   if (sd_iter == driverTypeMap.end()) {
 #ifdef DAKOTA_PLUGIN
-    if (outputLevel >= NORMAL_OUTPUT)
+    if (outputLevel > NORMAL_OUTPUT)
       Cerr << "Warning: input filter \"" << iFilterName << "\" not available at"
 	   << " construct time in DirectApplicInterface.\n         Subsequent "
 	   << "interface plug-in may resolve." << std::endl;
@@ -138,7 +138,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   sd_iter = driverTypeMap.find(oFilterName);//toLower(oFilterName));
   if (sd_iter == driverTypeMap.end()) {
 #ifdef DAKOTA_PLUGIN
-    if (outputLevel >= NORMAL_OUTPUT)
+    if (outputLevel > NORMAL_OUTPUT)
       Cerr << "Warning: output filter \"" << oFilterName << "\" not available "
 	   << "at construct time in DirectApplicInterface.\n         Subsequent"
 	   << " interface plug-in may resolve." << std::endl;

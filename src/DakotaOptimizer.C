@@ -513,6 +513,12 @@ void Optimizer::post_run(std::ostream& s)
 {
    // scaling transformation needs to be performed on each best point
   size_t num_points = bestVariablesArray.size();
+  if (num_points != bestResponseArray.size()) {
+    Cerr << "\nError: mismatch in lengths of bestVariables and bestResponses."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
   for (size_t point_index = 0; point_index < num_points; ++point_index) {
 
     Variables& best_vars = bestVariablesArray[point_index];
