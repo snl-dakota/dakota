@@ -23,7 +23,7 @@ DataStrategyRep::DataStrategyRep():
   strategyType("single_method"), graphicsFlag(false), tabularDataFlag(false),
   tabularDataFile("dakota_tabular.dat"), outputPrecision(0), iteratorServers(0),
   //hybridProgThresh(0.5),
-  hybridLSProb(0.1), hybridNumSolnsTrans(1),
+  hybridLSProb(0.1), hybridNumSolnsTrans(0),
   concurrentRandomJobs(0), concurrentSeed(0), referenceCount(1)
 { }
 

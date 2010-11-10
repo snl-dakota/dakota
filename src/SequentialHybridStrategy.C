@@ -25,10 +25,12 @@ namespace Dakota {
 
 SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
   HybridStrategy(problem_db), 
-  hybridType(problem_db.get_string("strategy.hybrid.type")),
-  numSolnsTransferred(
-    problem_db.get_sizet("strategy.hybrid.num_solutions_transferred"))
+  hybridType(problem_db.get_string("strategy.hybrid.type"))
 {
+  size_t num_solutions = 
+    problem_db.get_sizet("strategy.hybrid.num_solutions_transferred");
+  numSolnsTransferred = (num_solutions > 0) ? num_solutions : 1;
+
   if (worldRank == 0)
     cout << "Constructing Sequential Hybrid Optimizer Strategy...\n";
 

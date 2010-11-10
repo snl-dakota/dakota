@@ -830,39 +830,40 @@ JEGAOptimizer::find_optimum(
             << bests.size() << " solutions found. Passing them back to DAKOTA."
         )
 
-    // Return the correct values to DAKOTA
+    // Return up to _numBest solutions to DAKOTA, sorted first by L2
+    // constraint violation, then (utopia distance or weighted sum
+    // objective value).  So the single "best" will be at the front.
+    //
+    // Load up to _numBest solutions into the arrays of best responses
+    // and variables.  If this is MOGA, the array will then contain
+    // the Pareto set.  If it is SOGA, it will contain all the
+    // solutions with the same best "fitness".
+      
+    // populate the sorted map of best solutions (fairly lightweight
+    // map) key is pair<constraintViolation, fitness>, where fitness
+    // is either utopia distance (MOGA) or objective value (SOGA)
+    std::multimap<RealRealPair, Design*> designSortMap;
+    this->GetBestSolutions(bests, designSortMap);
 
-    /* single best deactivated; we now rely on best{Variables,Response}Array
-
-    // Begin by returning the "Best" solution as the single best iterator
-    // solution.
-    const Design* bestOne = this->GetBestSolution(bests);
-
-    // If we were unable to find a best for some reason, issue a warning and
-    // skip the dakota load.
-    JEGAIFLOG_II_G(bestOne == 0x0, lquiet(), this,
-        text_entry(lquiet(), name + ": was unable to identify a best "
-            "solution.  The Dakota best variables and best responses "
-            "objects will not be loaded.\n\n")
+    JEGAIFLOG_II_G(designSortMap.size() == 0, lquiet(), this,
+        text_entry(lquiet(), name + ": was unable to identify at least one "
+            "best solution.  The Dakota best variables and best responses "
+            "objects will be empty.\n\n")
         )
 
-    if(bestOne != 0x0)
-        this->LoadDakotaResponses(*bestOne, bestVariables, bestResponse);
-    */
-
-    // Now add the entire solution set into the arrays of best responses and
-    // variables.  If this is the MOGA, the array will then contain the Pareto
-    // set.  If it is a SOGA, it will contain all the solutions with the same
-    // best "fitness".
-    resize_response_results_array(bests.size());
-    resize_variables_results_array(bests.size());
-
+    // load the map into the DAKOTA vectors
+    resize_response_results_array(designSortMap.size());
+    resize_variables_results_array(designSortMap.size());
+    
+    std::multimap<RealRealPair, Design*>::const_iterator best_it = 
+        designSortMap.begin(); 
+    const std::multimap<RealRealPair, Design*>::const_iterator best_end = 
+        designSortMap.end(); 
     ResponseArray::size_type index = 0;
-    for(DesignOFSortSet::const_iterator it(bests.begin()); it!=bests.end();
-        ++it, ++index)
+    for( ; best_it != best_end; ++best_it, ++index)
     {
         this->LoadDakotaResponses(
-            **it,
+  	    *(best_it->second),
             this->bestVariablesArray[index],
             this->bestResponseArray[index]
             );
@@ -1121,12 +1122,13 @@ JEGAOptimizer::LoadTheParameterDatabase(
 
     // now get all the strings.
     
-    // Dakota does not expose the ability to specify the ability to specify the
-    // weighted sum only fitness assessor b/c it is only for use with the
-    // favor feasible selector.  Likewise, the favor feasible selector can only
-    // be used with the weighted sum fitness asessor.  Because of this, we will
-    // detect use of the the favor feasible and enforce the use of the weighted
-    // sum only.  We will write a log message about it.
+    // Dakota does not expose the ability to specify the weighted sum
+    // only fitness assessor b/c it is only for use with the favor
+    // feasible selector.  Likewise, the favor feasible selector can
+    // only be used with the weighted sum fitness asessor.  Because of
+    // this, we will detect use of the the favor feasible and enforce
+    // the use of the weighted sum only.  We will write a log message
+    // about it.
     const string& selector =
         this->probDescDB.get_string("method.replacement_type");
 
@@ -1237,6 +1239,21 @@ JEGAOptimizer::LoadTheParameterDatabase(
         "method.jega.distance_vector",
         distance_vector
         );
+ 
+    dak_rdv = 
+        &this->probDescDB.get_rdv("responses.primary_response_fn_weights");
+    // BMA  why needed; discuss with JE; otherwise get seg fault in GetBestSO
+    if (!dak_rdv->empty()) {
+        JEGA::DoubleVector mow_vector(
+            dak_rdv->values(),
+	    dak_rdv->values() + dak_rdv->length()
+            );
+
+         this->_theParamDB->AddDoubleVectorParam(
+            "responses.multi_objective_weights",
+            mow_vector
+            );
+    }
 
     // Dakota does not expose a capability to enter multiple flat file names
     // as a vector (can delimit them in the single string and JEGA will parse
@@ -1501,18 +1518,19 @@ JEGAOptimizer::LoadTheConstraints(
         this->numNonlinearEqConstraints + this->numLinearEqConstraints));
 }
 
-const Design*
-JEGAOptimizer::GetBestSolution(
-    const JEGA::Utilities::DesignOFSortSet& from
+void
+JEGAOptimizer::GetBestSolutions(
+    const JEGA::Utilities::DesignOFSortSet& from,
+    std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
     )
 {
     EDDY_FUNC_DEBUGSCOPE
 
     if(this->methodName == MOGA_METHOD_TXT)
-        return this->GetBestMOSolution(from);
+        this->GetBestMOSolutions(from, designSortMap);
 
     else if(this->methodName == SOGA_METHOD_TXT)
-        return this->GetBestSOSolution(from);
+        this->GetBestSOSolutions(from, designSortMap);
 
     else
     {
@@ -1520,120 +1538,188 @@ JEGAOptimizer::GetBestSolution(
             text_entry(lfatal(), "JEGA Error: \"" + this->methodName +
                 "\" is an invalid method specification.")
             )
-        return 0x0;
     }
 }
 
-const Design*
-JEGAOptimizer::GetBestMOSolution(
-    const JEGA::Utilities::DesignOFSortSet& from
+
+void
+JEGAOptimizer::GetBestMOSolutions(
+    const JEGA::Utilities::DesignOFSortSet& from,
+    std::multimap<RealRealPair, Design*>& designSortMap
     )
 {
     EDDY_FUNC_DEBUGSCOPE
+
+    if(from.empty())
+        return;
 
     // Start by removing any infeasible from "from".
     DesignOFSortSet feasible(DesignStatistician::GetFeasible(from));
 
-    // If we were unable to find a feasible solution, return a null pointer.
-    if(feasible.empty()) return 0x0;
-
-    // We now need the extremes of the feasible solutions.
+    // We need the extremes of the feasible solutions; if no feasible
+    // designs, this will be empty and unused below.
     DoubleExtremes extremeSet(
         MultiObjectiveStatistician::FindParetoExtremes(feasible)
         );
 
-    //get number of objective functions
-    const eddy::utilities::uint64_t nof =
-        from.front()->GetDesignTarget().GetNOF();
-    EDDY_ASSERT(nof == extremeSet.size());
+    const DesignTarget& design_target = from.front()->GetDesignTarget();
+    const ConstraintInfoVector& constraint_info_vector = 
+      design_target.GetConstraintInfos();
 
-    // This will store the minimum squared deviation from the
-    // utopia point.  Initialize it to a very large number.
-    double minDistance = DBL_MAX;
+    // get number of objective functions
+    const eddy::utilities::uint64_t nof = design_target.GetNOF();
 
-    // Create a pointer to store the best design as each is
-    // considered.  Initialize it to the null pointer.
-    const Design* bestDesign = 0x0;
+    // get total number of constraints (nonlinear and linear)
+    const eddy::utilities::uint64_t noc = design_target.GetNCN();
 
-    // prepare to iterate the designs by objective function
-    // and find the best.
-    DesignOFSortSet::const_iterator it(feasible.begin());
-    const DesignOFSortSet::const_iterator e(feasible.end());
+    // iterate the designs and sort first by constraint violation,
+    // then objective function
+    DesignOFSortSet::const_iterator design_it(from.begin());
+    const DesignOFSortSet::const_iterator design_end(from.end());
 
-    for (; it!=e; ++it)
+    for (; design_it != design_end; ++design_it)
     {
-        // prepare a place to store sum-of-squared distance
-        // for this Design as we traverse the objective functions.
-        double tempDistance = 0.0;
+        // L2 constraint violation for this design
+        double constraintViolation = 0.0;
+        for (size_t i=0; i<noc; ++i)
+  	    constraintViolation +=
+	        Math::Pow(
+                    constraint_info_vector[i]->GetViolationAmount(**design_it),
+		    2 
+		    );
 
-        // compute the sum-of-squares between the current point and
-        // the utopia point.  Store it as tempDistance.
-        for (size_t i=0; i<nof;++i)
-            tempDistance +=
-                Math::Pow(((*it)->GetObjective(i)-extremeSet.get_min(i)),2);
+	// sum-of-squared distance for this Design over objective functions.
+	double utopiaDistance = 0.0;
+	if (constraintViolation > 0.0)
+	    utopiaDistance = DBL_MAX;
+	else 
+	{
+	    // compute the sum-of-squares between the current point
+	    // and the utopia point; if the feasible set is empty,
+	    // we should never reach this block,
+	    for (size_t i=0; i<nof; ++i)
+	        utopiaDistance +=
+	            Math::Pow(
+		        (*design_it)->GetObjective(i) - extremeSet.get_min(i),
+			2
+			);
+	}
 
-        // now, if this Design turns out to be closer to the utopia
-        // point than any previously considered Design, take it as
-        // the best and update our current minimum distance.
-        if (tempDistance < minDistance)
-        {
-            bestDesign = *it;
-            minDistance = tempDistance;
-        }
+	// insert the design into the map, keeping only _numBest
+	RealRealPair metrics(constraintViolation, utopiaDistance);
+	if (designSortMap.size() < this->_numBest)
+	    designSortMap.insert(
+	        std::pair<RealRealPair, Design*>(metrics, *design_it)
+		);
+	else 
+	{
+	    // if this Design is better than the worst, remove worst
+	    // and insert this one
+	    std::multimap<RealRealPair, Design*>::iterator worst_it = 
+	        --designSortMap.end();
+	    if (metrics < worst_it->first)
+	    {
+  	        designSortMap.erase(worst_it);
+		designSortMap.insert(
+                    std::pair<RealRealPair, Design*>(metrics, *design_it)
+		    );
+	    }
+
+	}
     }
-
-    // now return our best Design.  The only way this value
-    // could be null at this point is if every Design in our feasible
-    // set has sum-of-squares distance from the utopia point == DBL_MAX.
-    return bestDesign;
+    
 }
 
-const Design*
-JEGAOptimizer::GetBestSOSolution(
-    const JEGA::Utilities::DesignOFSortSet& from
+
+void
+JEGAOptimizer::GetBestSOSolutions(
+    const JEGA::Utilities::DesignOFSortSet& from,
+    std::multimap<RealRealPair, Design*>& designSortMap
     )
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    if(from.empty()) return 0x0;
+    if (from.empty())
+        return;
 
-    // This is the case where there are some feasible designs.
-    if(DesignStatistician::FindFeasible(from) != from.end())
+    const DesignTarget& design_target = from.front()->GetDesignTarget();
+    const ConstraintInfoVector& constraint_info_vector = 
+      design_target.GetConstraintInfos();
+
+    // get number of objective functions
+    const eddy::utilities::uint64_t nof = design_target.GetNOF();
+
+    // get total number of constraints (nonlinear and linear)
+    const eddy::utilities::uint64_t noc = design_target.GetNCN();
+
+    // in order to order the points, need the weights.
+    JEGA::DoubleVector weights;
+
+    bool success = ParameterExtractor::GetDoubleVectorFromDB(
+        *this->_theParamDB,
+	"responses.multi_objective_weights",
+	weights
+        );
+
+    // if we could not get them and there are multiple objectives,
+    // then we have to abort without an answer.
+    // Otherwise if we did not succeed and there is a single objective,
+    // then we will assume a single weight of value 1.
+    if(!success)
     {
-        // in order to get the best, we need the weights.
-        JEGA::DoubleVector weights;
-
-        bool success = ParameterExtractor::GetDoubleVectorFromDB(
-            *this->_theParamDB,
-            "responses.multi_objective_weights",
-            weights
-            );
-
-        // if we could not get them and there are multiple objectives,
-        // then we have to abort without an answer.
-        // Otherwise if we did not succeed and there is a single objective,
-        // then we will assume a single weight of value 1.
-
-        // get number of objective functions
-        const eddy::utilities::uint64_t nof =
-            from.front()->GetDesignTarget().GetNOF();
-        if(!success)
-        {
-            if(nof > 1) return 0x0;
-            weights.assign(1, 1.0);
-        }
-
-        // Now we want to locate the design(s) with the best weighted sum.
-        std::pair<double, std::vector<DesignOFSortSet::const_iterator> > bests(
-            SingleObjectiveStatistician::FindMinSumFeasibleDesigns(
-                from, weights
-                )
-            );
-
-        return bests.second.empty() ? 0x0 : *bests.second.front();
+        if(nof > 1) 
+	    return;
+	weights.assign(1, 1.0);
     }
-    return 0x0;
+
+    // iterate the designs and sort first by constraint violation,
+    // then objective function
+    DesignOFSortSet::const_iterator design_it(from.begin());
+    const DesignOFSortSet::const_iterator design_end(from.end());
+
+    for (; design_it != design_end; ++design_it)
+    {
+        // L2 constraint violation for this design
+        double constraintViolation = 0.0;
+        for (size_t i=0; i<noc; ++i)
+  	    constraintViolation +=
+	        Math::Pow(
+                    constraint_info_vector[i]->GetViolationAmount(**design_it),
+		    2 
+		    );
+
+	// Multi-objective sum for this Design over objective
+	// functions.  In the single objective case we can store
+	// objective even if there's a constraint violation.
+	double objectiveFunction = 
+	    SingleObjectiveStatistician::
+	    ComputeWeightedSum(**design_it, weights);
+
+	// insert the design into the map, keeping only _numBest
+	RealRealPair metrics(constraintViolation, objectiveFunction);
+	if (designSortMap.size() < this->_numBest)
+	    designSortMap.insert(
+	        std::pair<RealRealPair, Design*>(metrics, *design_it)
+		);
+	else 
+	{
+	    // if this Design is better than the worst, remove worst
+	    // and insert this one
+	    std::multimap<RealRealPair, Design*>::iterator worst_it = 
+	        --designSortMap.end();
+	    if (metrics < worst_it->first)
+	    {
+  	        designSortMap.erase(worst_it);
+		designSortMap.insert(
+                    std::pair<RealRealPair, Design*>(metrics, *design_it)
+		    );
+	    }
+
+	}
+    }
+    
 }
+
 
 JEGA::DoubleMatrix
 JEGAOptimizer::ToDoubleMatrix(
@@ -1696,7 +1782,8 @@ JEGAOptimizer::JEGAOptimizer(
     ) :
         Optimizer(model),
         _theParamDB(0x0),
-        _theEvalCreator(0x0)
+        _theEvalCreator(0x0),
+	_numBest(std::numeric_limits<std::size_t>::max()) // return all designs
 {
     EDDY_FUNC_DEBUGSCOPE
 
@@ -1758,6 +1845,11 @@ JEGAOptimizer::JEGAOptimizer(
     // iterations, so this is only an initial estimate.
     int pop_size = this->probDescDB.get_int("method.population_size");
     this->maxConcurrency *= pop_size;
+
+    size_t num_solns
+      = probDescDB.get_sizet("strategy.hybrid.num_solutions_transferred");
+    if (num_solns > 0)
+      this->_numBest = num_solns;
 
     // We only ever need one EvaluatorCreator so we can create it now.
     this->_theEvalCreator = new EvaluatorCreator(iteratedModel);
