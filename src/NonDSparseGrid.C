@@ -39,8 +39,9 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
 
   // initialize_random_variables() called in NonDIntegration ctor
   check_variables(natafTransform.x_types());
-  bool store_colloc = false; // no collocIndices/gauss{Pts,Wts}1D storage
-  bool nested_rules = true;
+  bool store_colloc       = false; // no collocIndices/gauss{Pts,Wts}1D storage
+  bool track_ensemble_wts = false;
+  bool nested_rules       = true;
   // moderate growth is helpful for iso and aniso sparse grids, but
   // not necessary for generalized grids
   short refine_type
@@ -53,8 +54,8 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
   ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelRef,
     probDescDB.get_rdv("method.nond.sparse_grid_dimension_preference"),
-    refine_type, refine_control, store_colloc, nested_rules, growth_rate,
-    nested_uniform_rule);
+    refine_type, refine_control, store_colloc, track_ensemble_wts,
+    nested_rules, growth_rate, nested_uniform_rule);
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
     iteratedModel.distribution_parameters());
   maxConcurrency *= ssgDriver->grid_size(); // requires polyParams
@@ -66,8 +67,9 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
 NonDSparseGrid::
 NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
 	       unsigned short ssg_level, const RealVector& dim_pref,
-	       //const String& sparse_grid_usage,
-	       bool nested_rules, short refine_type, short refine_control): 
+	       //short sparse_grid_usage,
+	       short refine_type, short refine_control,
+	       bool track_ensemble_wts, bool nested_rules): 
   NonDIntegration(NoDBBaseConstructor(), model), ssgLevelRef(ssg_level)
 {
   // initialize the numerical integration driver
@@ -78,14 +80,14 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
-  bool store_colloc = true; //(sparse_grid_usage == "interpolation");
-  short growth_rate = (refine_type    == Pecos::ADAPTIVE_P_REFINEMENT &&
-		       refine_control == Pecos::GENERALIZED_SPARSE) ?
+  bool  store_colloc = true; //(sparse_grid_usage == Pecos::INTERPOLATION);
+  short growth_rate  = (refine_type    == Pecos::ADAPTIVE_P_REFINEMENT &&
+			refine_control == Pecos::GENERALIZED_SPARSE) ?
     Pecos::UNRESTRICTED_GROWTH : Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
   ssgDriver->initialize_grid(u_types, ssg_level, dim_pref, refine_type,
-    refine_control, store_colloc, nested_rules, growth_rate,
-    nested_uniform_rule);
+    refine_control, store_colloc, track_ensemble_wts, nested_rules,
+    growth_rate, nested_uniform_rule);
   ssgDriver->
     initialize_grid_parameters(u_types, model.distribution_parameters());
   maxConcurrency *= ssgDriver->grid_size(); // requires polyParams

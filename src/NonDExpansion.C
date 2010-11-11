@@ -456,18 +456,22 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
       stochExpRefineControl == Pecos::TOTAL_SOBOL)
     vbdControl = Pecos::UNIVARIATE_VBD;
 
-  //String sparse_grid_usage;
-  //if (methodName == "nond_polynomial_chaos")
-  //  sparse_grid_usage = "integration";
+  //short sparse_grid_usage;
+  //if (methodName == "nond_polynomial_chaos") // && TENSOR_INT_TENSOR_SUM_EXP
+  //  sparse_grid_usage = Pecos::INTEGRATION;
   //else if (methodName == "nond_stoch_collocation")
-  //  sparse_grid_usage = "interpolation";
-
+  //  sparse_grid_usage = Pecos::INTERPOLATION;
+  bool track_wts
+    = (methodName == "nond_polynomial_chaos")
+    // && popa_rep->sparse_grid_expansion() == TENSOR_INT_TENSOR_SUM_EXP)
+    ? false : true;
   bool nested_rules = (ruleNestingOverride != Pecos::NON_NESTED);
 
   u_space_sampler.assign_rep(
     new NonDSparseGrid(g_u_model, natafTransform.u_types(), ssg_level,
-		       ssg_dim_pref, /* sparse_grid_usage, */ nested_rules,
-		       stochExpRefineType, stochExpRefineControl), false);
+		       ssg_dim_pref, //sparse_grid_usage,
+		       stochExpRefineType, stochExpRefineControl,
+		       track_wts, nested_rules), false);
 
   numSamplesOnModel = u_space_sampler.maximum_concurrency()
                     / g_u_model.derivative_concurrency();

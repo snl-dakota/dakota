@@ -43,10 +43,10 @@ public:
   // alternate constructor for instantiations "on the fly"
   NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
 		 unsigned short ssg_level, const RealVector& dim_pref,
-		 //const String& sparse_grid_usage,
-		 bool  nested_rules   = true,
+		 //short sparse_grid_usage,
 		 short refine_type    = Pecos::NO_REFINEMENT,
-		 short refine_control = Pecos::GENERALIZED_SPARSE);
+		 short refine_control = Pecos::GENERALIZED_SPARSE,
+		 bool track_ensemble_wts = true, bool nested_rules = true);
 
   //
   //- Heading: Virtual function redefinitions
