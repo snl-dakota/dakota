@@ -539,9 +539,10 @@ void GaussProcApproximation::get_beta_coefficients()
 
 void GaussProcApproximation::get_process_variance()
 {
-  RealMatrix YFb(numObs, 1, false), Rinv_YFb(numObs, 1, false),
+  RealMatrix YFb(numObs, 1, false),
     temphold3(1, 1, false);
 
+  Rinv_YFb.shape(numObs, 1); 
   YFb.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., trendFunction,
 	       betaCoeffs, 0.);
   YFb.scale(-1);
@@ -553,19 +554,26 @@ void GaussProcApproximation::get_process_variance()
   temphold3.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., YFb, Rinv_YFb, 0.);
  
   procVar = temphold3(0,0)/double(numObs);
+ 
 }
 
 
 void GaussProcApproximation::get_cov_vector()
 {
   covVector.shapeUninitialized(numObs,1);
-
-  for (size_t j=0; j<numObs; j++){
+  size_t i,j;
+  RealVector expThetaParms(numVars);
+  
+  for (i=0; i<numVars; i++){
+    expThetaParms[i]=std::exp(thetaParams[i]);
+  }
+  for (j=0; j<numObs; j++){
     Real sume = 0.;    
-    for (size_t i=0; i<numVars; i++){
+    for (i=0; i<numVars; i++){
       //sume += thetaParams[i]*std::pow((normTrainPoints(j,i)-approxPoint(0,i)),2);
       sume +=
-	std::exp(thetaParams[i])*std::pow((normTrainPoints(j,i)-approxPoint(0,i)),2);
+	expThetaParms[i]*(normTrainPoints(j,i)-approxPoint(0,i))*
+	  (normTrainPoints(j,i)-approxPoint(0,i));
     }
     covVector(j,0) = std::exp(-1.*sume);
   }
@@ -603,19 +611,9 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
     break;
   }
 
-  RealMatrix YFb(numObs, 1, false);
-  YFb.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., trendFunction,
-	       betaCoeffs, 0.);
-  YFb.scale(-1);
-  YFb += trainValues;
-
-  RealMatrix Rinv_covvector(numObs, 1, false);
-  covSlvr.setVectors( rcp(&Rinv_covvector, false), rcp(&covVector, false) );
-  covSlvr.solve();
-
   RealMatrix approx_val(1, 1, false);
-  approx_val.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., Rinv_covvector,
-		      YFb, 0.);
+  approx_val.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., covVector,
+		      Rinv_YFb, 0.);
 
   RealMatrix f_beta(1, 1, false);
   f_beta.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., f_xstar, 
@@ -638,10 +636,6 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
     // Construct the global matrix of derivatives, gradCovVector
     get_grad_cov_vector();
 
-    // I'll reuse Rinv_covvector to store inv(R)*YFb
-    covSlvr.setVectors( rcp(&Rinv_covvector, false), rcp(&YFb, false) );
-    covSlvr.solve();
-
     RealMatrix gradPred(numVars, 1, false), dotProd(1, 1, false),
       gradCovVector_i(numObs, 1, false);
     approxGradient.sizeUninitialized(numVars);
@@ -649,10 +643,10 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
       // First set up gradCovVector_i to be the ith column of the matrix
       // gradCovVector -- Teuchos allow for a more elegant way of doing this...
       for (j=0; j<numObs; j++) 
-	gradCovVector_i(j,0) = gradCovVector(j,i);
-      // Grad_i = dot_prod(gradCovVector_i, inv(R)*YFb)
-      dotProd.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., Rinv_covvector,
-		       gradCovVector_i, 0.);
+    	gradCovVector_i(j,0) = gradCovVector(j,i);
+        // Grad_i = dot_prod(gradCovVector_i, inv(R)*YFb)
+      dotProd.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., Rinv_YFb,
+	       gradCovVector_i, 0.);
       approxGradient[i] = gradPred(i,0) = dotProd(0,0);
     }
   }
@@ -660,8 +654,6 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
   
 
   if (variance_flag) {
-    //RealMatrix var_predicted(1,1);
-
     RealMatrix Rinv_covvec(numObs, 1, false), rT_Rinv_r(1, 1, false);
 
     covSlvr.setVectors( rcp(&Rinv_covvec, false), rcp(&covVector, false) );
@@ -670,8 +662,6 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
     rT_Rinv_r.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., covVector,
 		       Rinv_covvec, 0.);
 
-    //var_predicted(0,0) = procVar*(1.0-rT_Rinv_r(0,0));
-    //approxVariance = var_predicted(0,0);
     approxVariance = procVar*(1.- rT_Rinv_r(0,0));
 
 #ifdef DEBUG_FULL

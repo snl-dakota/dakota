@@ -149,7 +149,7 @@ if WITH_GPMSA
 GPMSA_SRC     = $(top_srcdir)/packages/gpmsa
 GPMSA_BUILD   = $(top_builddir)/packages/gpmsa
 GPMSA_INCL    = -I$(GPMSA_SRC)
-GPMSA_ARCHIVE = $(GPMSA_BUILD)/libgpmsa.la
+GPMSA_ARCHIVE = $(GPMSA_BUILD)/libgpmsa.a
 GPMSA_H       = NonDGPMSABayesCalibration.H
 GPMSA_S       = NonDGPMSABayesCalibration.C
 endif

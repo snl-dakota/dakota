@@ -227,6 +227,8 @@ private:
   RealMatrix trainValuesAll;
   /// Trend function values corresponding to all original samples
   RealMatrix trendFunctionAll;
+  /// Matrix for storing inverse of correlation matrix Rinv*(Y-FB)
+  RealMatrix Rinv_YFb;
 
   /// The number of observations on which the GP surface is built.
   size_t numObs;
