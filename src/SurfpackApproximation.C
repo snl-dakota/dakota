@@ -126,13 +126,15 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
       // new parameters (will be ignored if not needed)
 
       // trend: constant | linear | reduced_quadratic | quadratic
-      short order = 0;
+      short order = 2;
+      //short order = 1;
 //       short order = problem_db.get_short("model.surrogate.trend_order");
       if (order >= 0) {
 	args["order"] = toString<short>(order);
       }
       // to toggle omission of mixed terms
-      args["reduced"] = toString<bool>(false);
+      //args["reduced"] = toString<bool>(false);
+      args["reduced"] = toString<bool>(true);
       
       // options are none | sample | local | global
       String optimization_method("global");
@@ -290,6 +292,7 @@ SurfpackApproximation(const String& approx_type,
   else if (approxType == "global_kriging") {
 
     args["order"] = toString<unsigned int>(2);
+    args["reduced"] = toString<bool>(true);
     args["type"] = "kriging";
     if (!approxLowerBounds.empty()) {
       RealArray alb;
