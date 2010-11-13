@@ -1750,7 +1750,8 @@ void NonDExpansion::print_global_sensitivity(std::ostream& s)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   PecosApproximation* poly_approx_rep
     = (PecosApproximation*)poly_approxs[0].approx_rep();
-  size_t i, num_indices = poly_approx_rep->sobol_indices().length(); 
+  size_t i,num_indices = poly_approx_rep->sobol_indices().length(); 
+  int j,k;
   const Pecos::IntIntMap& s_index_map = poly_approx_rep->sobol_index_map();
   Pecos::IntIntMCIter map_cit;
   StringMultiArray sobol_labels(boost::extents[num_indices]);
@@ -1764,10 +1765,40 @@ void NonDExpansion::print_global_sensitivity(std::ostream& s)
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep->expansion_coefficient_flag()) {
       // UNIVARIATE_VBD: main effects only; ALL_VBD: main+interaction effects
-      s << fn_labels[i] << " Sobol indices:\n";
-      //write_data(s, poly_approx_rep->sobol_indices()); // if no label array
-      write_data_partial(s, 1, num_indices-1, poly_approx_rep->sobol_indices(),
-			 sobol_labels);
+      //s << fn_labels[i] << " Sobol indices:\n";
+      s << fn_labels[i] << "\n";
+      s << "New way of printing indices\n";
+      s << std::setw(12) << ' ' << std::setw(18) << "Main effects" 
+	<< std::setw(20) << "Total effects" << std::endl;
+      IntVector index_in(numContinuousVars);
+      for (k=0; k<numContinuousVars; k++){
+	index_in[k] = int(pow(2.,k));
+      }
+      const RealVector main_indices = poly_approx_rep->sobol_indices();
+      const RealVector total_indices = poly_approx_rep->total_sobol_indices(); 
+      for (k=0; k<numContinuousVars; k++){
+        s << "              " << std::setw(write_precision+7) 
+          << main_indices[index_in[k]] << "   "
+          << total_indices[k] << "   "
+          << cv_labels[k] << '\n';
+      }
+      s << "Interaction Terms\n";
+      for (j=0; j<num_indices; j++){
+        // I wasn't able to have find work on an IntVector, but we can modify 
+        // that if we need to, for now search brute force
+        bool interaction = true ;
+        for (k=0; k<numContinuousVars; k++){
+	  if (j == index_in[k])
+            interaction = false;
+        }
+        if (interaction)
+          s << "              " << std::setw(write_precision+7) 
+          << main_indices[j] << ' '
+          << sobol_labels[j] << '\n';
+       }
+      
+      s << "Old way of printing indices\n";
+      write_data(s, poly_approx_rep->sobol_indices(),sobol_labels); // if no label array
       // total effects are always printed (UNIVARIATE_VBD or ALL_VBD)
       s << fn_labels[i] << " total Sobol indices:\n";
       write_data(s, poly_approx_rep->total_sobol_indices(), cv_labels);
