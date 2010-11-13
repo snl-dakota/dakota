@@ -43,7 +43,7 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
   dataOrder(1), popCount(1), approxRep(NULL), referenceCount(1)
 {
   if (problem_db.get_bool("model.surrogate.derivative_usage") &&
-      approxType != "global_polynomial"                     &&
+      approxType != "global_polynomial"                       &&
       approxType != "global_orthogonal_polynomial")
     Cerr << "\nWarning: use_derivatives is not currently supported by "
 	 << approxType << ".\n\n";

@@ -23324,6 +23324,52 @@ response_fn_1 total Sobol indices:
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      3.8287346525e-01
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 43 total (43 new, 0 duplicate)
+response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
+response_fn_1 Sobol indices:
+                      8.7300504533e-01 x1 
+                      5.4426409145e-02 x2 
+                      7.2568545527e-02 x1 x2 
+response_fn_1 total Sobol indices:
+                      9.4557359085e-01 x1
+                      1.2699495467e-01 x2
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 43 total (43 new, 0 duplicate)
+response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
+response_fn_1 Sobol indices:
+                      8.7300504533e-01 x1 
+                      5.4426409145e-02 x2 
+                      7.2568545527e-02 x1 x2 
+response_fn_1 total Sobol indices:
+                      9.4557359085e-01 x1
+                      1.2699495467e-01 x2
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      3.8287346525e-01
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
+response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
+response_fn_1 Sobol indices:
+                      8.7300504533e-01 x1 
+                      5.4426409145e-02 x2 
+                      7.2568545527e-02 x1 x2 
+response_fn_1 total Sobol indices:
+                      9.4557359085e-01 x1
+                      1.2699495467e-01 x2
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
+response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
+response_fn_1 Sobol indices:
+                      8.7300504533e-01 x1 
+                      5.4426409145e-02 x2 
+                      7.2568545527e-02 x1 x2 
+response_fn_1 total Sobol indices:
+                      9.4557359085e-01 x1
+                      1.2699495467e-01 x2
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      3.8287346525e-01
 dakota_uq_rosenbrock_global.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 51 total (51 new, 0 duplicate)
