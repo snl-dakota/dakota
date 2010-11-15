@@ -7,11 +7,11 @@ ACLOCAL_AMFLAGS = -I config
 SUBDIRS = packages src
 if ENABLE_TESTS
 SUBDIRS += test
+SUBDIRS += examples
 endif
 if ENABLE_DOCS
 SUBDIRS += docs
 endif
-SUBDIRS += examples
 
 ## Conditionally configured subdirectories should _not_ be recursed into
 ## during 'make distclean' or 'make maintainer-clean'.
