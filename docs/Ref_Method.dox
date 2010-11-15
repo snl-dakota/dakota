@@ -472,9 +472,11 @@ method, variables, and responses sections.
 
 When scaling is enabled, the following procedures determine the
 transformations used to scale each component of a variables or
-response vector.  In all cases, if scaling would result in division by
-a value smaller in magnitude than <tt>1.0e-3</tt>, a warning is issued
-and no scaling performed for that component.
+response vector.  A warning is issued if scaling would result in
+division by a value smaller in magnitude than <tt>1.0e10*DBL_MIN</tt>.
+User-provided values violating this lower bound are accepted
+unaltered, whereas for automatically calculated scaling, the lower
+bound is enforced.
 
 <ul> 
 <li> None (<tt>'none'</tt>): no scaling performed (\c *_scales ignored)
@@ -492,7 +494,7 @@ automatic scaling will be attempted according to the following scheme:
   <ul> 
   <li> two-sided bounds scaled into the interval [0,1]; 
   <li> one-sided bound or targets are scaled by the characteristic
-value, moving the bound or target to 1. and changing the sense of
+value, moving the bound or target to 1 and changing the sense of
 inequalities where necessary;
   <li> no bounds or targets: no automatic scaling possible, therefore no 
        scaling for this component 

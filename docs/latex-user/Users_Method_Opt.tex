@@ -734,9 +734,12 @@ each continuous design variable.
 
 When scaling is enabled, the following procedures determine the
 transformations used to scale each component of a variables or
-response vector. In all cases, if scaling would result in division by
-a value smaller in magnitude than 1.0e-3, a warning is issued and no
-scaling performed for that component.
+response vector. A warning is issued if scaling would result in
+division by a value smaller in magnitude than {\tt 1.0e10*DBL\_MIN}.
+User-provided values violating this lower bound are accepted
+unaltered, whereas for automatically calculated scaling, the lower
+bound is enforced.
+
 
 \begin{itemize}
 

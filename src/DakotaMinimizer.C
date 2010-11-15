@@ -587,12 +587,9 @@ compute_scaling(int object_type, // type of object being scaled
 	// indicate that scale values are active, update bounds, poss. negating
 	scale_types[i] |= SCALE_VALUE;
 	scale_mults[i] = (num_scales == 1) ? scales[0] : scales[i];
-	if (std::fabs(scale_mults[i]) < SCALING_MIN_SCALE) {
-	  scale_mults[i] = (scale_mults[i] >= 0) ? SCALING_MIN_SCALE :
-	    -(SCALING_MIN_SCALE); 
+	if (std::fabs(scale_mults[i]) < SCALING_MIN_SCALE)
 	  Cout << "Warning: abs(scale) < " << SCALING_MIN_SCALE
-	       << " provided; resetting scale = " << scale_mults[i] << ".\n";
-	}
+	       << " provided; carefully verify results.\n";
 	// adjust bounds or targets
 	if (!lbs.empty()) {
 	  // don't scale bounds if the user intended no bound
@@ -1174,7 +1171,7 @@ bool Minimizer::compute_scale_factor(const Real lower_bound,
   if (std::fabs(*multiplier) < SCALING_MIN_SCALE) {
     *multiplier = (*multiplier >= 0.0) ? SCALING_MIN_SCALE :
       -(SCALING_MIN_SCALE); 
-    Cout << "Warning: in auto-scaling abs(scale) < " 
+    Cout << "Warning: in auto-scaling abs(computed scale) < " 
 	 << SCALING_MIN_SCALE << "; resetting scale = " 
 	 << *multiplier << ".\n";
   }
@@ -1200,7 +1197,7 @@ bool Minimizer::compute_scale_factor(const Real target, Real *multiplier)
   if (std::fabs(*multiplier) < SCALING_MIN_SCALE) {
     *multiplier = (*multiplier >= 0.0) ? SCALING_MIN_SCALE :
       -(SCALING_MIN_SCALE); 
-    Cout << "Warning: in auto-scaling abs(scale) < " 
+    Cout << "Warning: in auto-scaling abs(computed scale) < " 
 	 << SCALING_MIN_SCALE << "; resetting scale = " 
 	 << *multiplier << ".\n";
   }
