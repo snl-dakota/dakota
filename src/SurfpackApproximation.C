@@ -134,7 +134,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
       }
       // to toggle omission of mixed terms
       //args["reduced"] = toString<bool>(false);
-      args["reduced"] = toString<bool>(true);
+      args["reduced_polynomial"] = toString<bool>(true);
       
       // options are none | sample | local | global
       String optimization_method("global");
@@ -292,7 +292,7 @@ SurfpackApproximation(const String& approx_type,
   else if (approxType == "global_kriging") {
 
     args["order"] = toString<unsigned int>(2);
-    args["reduced"] = toString<bool>(true);
+    args["reduced_polynomial"] = toString<bool>(true);
     args["type"] = "kriging";
     if (!approxLowerBounds.empty()) {
       RealArray alb;
