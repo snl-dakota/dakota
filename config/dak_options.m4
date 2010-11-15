@@ -19,6 +19,7 @@ AC_DEFUN([DAK_OPTIONS],[
 	  	[enable_tests=$enableval],[enable_tests=yes])
   if test "x$enable_tests" = xyes; then
     AC_CONFIG_SUBDIRS([test])
+    AC_CONFIG_SUBDIRS([examples])
   fi
   AM_CONDITIONAL([ENABLE_TESTS],[test "x$enable_tests" = xyes])
 
