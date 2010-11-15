@@ -1184,7 +1184,6 @@ const RealVector& ProblemDescDB::get_rdv(const String& entry_name) const
     static KW<RealVector, DataModelRep> RVdmo[] = {	// must be sorted
 	{"nested.primary_response_mapping", P primaryRespCoeffs},
 	{"nested.secondary_response_mapping", P secondaryRespCoeffs},
-	{"surrogate.kriging_conmin_seed", P krigingConminSeed},
 	{"surrogate.kriging_correlations", P krigingCorrelations},
 	{"surrogate.kriging_max_correlations", P krigingMaxCorrelations},
 	{"surrogate.kriging_min_correlations", P krigingMinCorrelations}};
@@ -1722,6 +1721,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"surrogate.correction_type", P approxCorrectionType},
 	{"surrogate.dace_method_pointer", P subMethodPointer},
 	{"surrogate.high_fidelity_model_pointer", P truthModelPointer},
+	{"surrogate.kriging_opt_method", P krigingOptMethod},
 	{"surrogate.low_fidelity_model_pointer", P lowFidelityModelPointer},
 	{"surrogate.mars_interpolation", P marsInterpolation},
 	{"surrogate.point_reuse", P approxPointReuse},

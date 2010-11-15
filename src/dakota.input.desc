@@ -1122,20 +1122,23 @@ TAG "model/surrogate/global/polynomial/cubic"
 TAG "model/surrogate/global/kriging"
 	DESC "{Kriging interpolation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
-TAG "model/surrogate/global/kriging/correlations"
-	DESC "{Kriging correlations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
-
-TAG "model/surrogate/global/kriging/conmin_seed"
-	DESC "{Kriging inital correlations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
-
+TAG "model/surrogate/global/kriging/trend"
+TAG "model/surrogate/global/kriging/trend/constant"
+TAG "model/surrogate/global/kriging/trend/linear"
+TAG "model/surrogate/global/kriging/trend/reduced_quadratic"
+TAG "model/surrogate/global/kriging/trend/quadratic"
+TAG "model/surrogate/global/kriging/optimization_method"
 TAG "model/surrogate/global/kriging/max_trials"
 	DESC "{Kriging maximum trials} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
-TAG "model/surrogate/global/kriging/max_correlations"
-	DESC "{Kriging maximum correlations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+TAG "model/surrogate/global/kriging/correlations"
+	DESC "{Kriging correlations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/kriging/min_correlations"
 	DESC "{Kriging minimum correlations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
+TAG "model/surrogate/global/kriging/max_correlations"
+	DESC "{Kriging maximum correlations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/total_points"
 TAG "model/surrogate/global/minimum_points"

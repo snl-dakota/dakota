@@ -1095,11 +1095,17 @@ KEYWORD model
 	      )
 	    |
 	    ( kriging
-	      [ correlations REALLIST ]
-	      [ conmin_seed REALLIST ]
+	      [ trend
+		constant
+		| linear
+		| reduced_quadratic
+		| quadratic
+		]
+	      [ optimization_method STRING ]
 	      [ max_trials INTEGER ]
-	      [ max_correlations REALLIST ]
+	      [ correlations REALLIST ]
 	      [ min_correlations REALLIST ]
+	      [ max_correlations REALLIST ]
 	      )
 	    [ total_points INTEGER
 	    | minimum_points

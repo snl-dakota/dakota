@@ -139,7 +139,8 @@ GaussProcApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
   usePointSelection(problem_db.get_bool("model.surrogate.point_selection"))
 {
 
-  const String& trend_string = problem_db.get_string("model.surrogate.trend_order");
+  const String& trend_string = 
+    problem_db.get_string("model.surrogate.trend_order");
   if (trend_string == "constant")
     trendOrder = 0;
   else if (trend_string == "linear")

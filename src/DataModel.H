@@ -127,10 +127,9 @@ public:
   /// vector of correlations used in building a kriging approximation 
   /// (from the \c correlations specification in \ref ModelSurrG)
   RealVector krigingCorrelations;
-  /// vector of initial correlation values to use with conmin
-  /// when building a  kriging approximation
-  /// (from the \c correlations specification in \ref ModelSurrG)
-  RealVector krigingConminSeed;
+  /// optimization method to use in finding optimal correlation parameters:
+  /// none, sampling, local, global
+  String krigingOptMethod;
   /// maximum number of trials in optimization of kriging correlations
   short krigingMaxTrials;
   /// upper bound on kriging correlation vector

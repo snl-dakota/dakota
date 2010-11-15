@@ -35,7 +35,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << pointsTotal << pointsMinimum << pointsRecommended
     << approxPointReuse << approxPointReuseFile << approxCorrectionType
     << approxCorrectionOrder << approxDerivUsageFlag << polynomialOrder
-    << krigingCorrelations << krigingConminSeed << krigingMaxTrials
+    << krigingCorrelations << krigingOptMethod << krigingMaxTrials
     << krigingMaxCorrelations << krigingMinCorrelations << mlsPolyOrder 
     << mlsWeightFunction << rbfBases << rbfMaxPts << rbfMaxSubsets
     << rbfMinPartition << marsMaxBases << marsInterpolation << annRandomWeight
@@ -53,7 +53,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> pointsTotal >> pointsMinimum >> pointsRecommended
     >> approxPointReuse >> approxPointReuseFile >> approxCorrectionType
     >> approxCorrectionOrder >> approxDerivUsageFlag >> polynomialOrder
-    >> krigingCorrelations >> krigingConminSeed >> krigingMaxTrials
+    >> krigingCorrelations >> krigingOptMethod >> krigingMaxTrials
     >> krigingMaxCorrelations >> krigingMinCorrelations >> mlsPolyOrder 
     >> mlsWeightFunction >> rbfBases >> rbfMaxPts >> rbfMaxSubsets
     >> rbfMinPartition >> marsMaxBases >> marsInterpolation >> annRandomWeight
@@ -71,7 +71,7 @@ void DataModelRep::write(std::ostream& s) const
     << pointsTotal << pointsMinimum << pointsRecommended
     << approxPointReuse << approxPointReuseFile << approxCorrectionType
     << approxCorrectionOrder << approxDerivUsageFlag << polynomialOrder
-    << krigingCorrelations << krigingConminSeed << krigingMaxTrials
+    << krigingCorrelations << krigingOptMethod << krigingMaxTrials
     << krigingMaxCorrelations << krigingMinCorrelations << mlsPolyOrder 
     << mlsWeightFunction << rbfBases << rbfMaxPts << rbfMaxSubsets
     << rbfMinPartition << marsMaxBases << marsInterpolation << annRandomWeight

@@ -790,11 +790,18 @@ KEYWORD model {N_mom3(start,0,stop)}
 	      )
 	    |
 	    ( kriging {N_mom(lit,surrogateType_global_kriging)}
-	      [ correlations REALLIST {N_mom(RealDL,krigingCorrelations)} ]
-	      [ conmin_seed REALLIST {N_mom(RealDL,krigingConminSeed)} ]
+	      [ trend {0}
+                constant {N_mom(lit,trendOrder_constant)}
+		| linear {N_mom(lit,trendOrder_linear)}
+		| reduced_quadratic {N_mom(lit,trendOrder_reduced_quadratic)}
+		| quadratic {N_mom(lit,trendOrder_quadratic)}
+		]
+              # using generic STRING to avoid collision with local/global below
+              [ optimization_method STRING {N_mom(str,krigingOptMethod)} ]
 	      [ max_trials INTEGER {N_mom(shint,krigingMaxTrials)} ]
-	      [ max_correlations REALLIST {N_mom(RealDL,krigingMaxCorrelations)} ]
+	      [ correlations REALLIST {N_mom(RealDL,krigingCorrelations)} ]
 	      [ min_correlations REALLIST {N_mom(RealDL,krigingMinCorrelations)} ]
+	      [ max_correlations REALLIST {N_mom(RealDL,krigingMaxCorrelations)} ]
 	      )
             [ total_points INTEGER {N_mom(int,pointsTotal)} | 
               minimum_points {N_mom(true,pointsMinimum)} | 

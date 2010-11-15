@@ -80,108 +80,99 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
 
     // For Kriging surface fits
     else if (approxType == "global_kriging") {
+
       args["type"] = "kriging";
-      // NIDR support for RealArray (aka std::vector) would eliminate xtra copy!
-      // old parameters
 
-      const RealVector& conmin_seed 
-	= problem_db.get_rdv("model.surrogate.kriging_conmin_seed");
-      RealArray conmin_seed_ra; //std::vector<double>
-      copy_data(conmin_seed, conmin_seed_ra);
-      if (!conmin_seed.empty()) {
-        Cout << "There are conmin_seed values" << std::endl;
-        args["conmin_seed"] = fromVec<Real>(conmin_seed_ra);
-      }
-      const RealVector& correlation_vector
-        = problem_db.get_rdv("model.surrogate.kriging_correlations");
-      RealArray correlation_ra; //std::vector<double>
-      copy_data(correlation_vector, correlation_ra);
-      if (!correlation_vector.empty()) {
-        Cout << "There are correlation values" << std::endl;
-        args["correlations"] = fromVec<Real>(correlation_ra);
-      }
-     
-      const RealVector& max_correlations 
-        = problem_db.get_rdv("model.surrogate.kriging_max_correlations");
-      RealArray max_correlation_ra; //std::vector<double>
-      copy_data(max_correlations, max_correlation_ra);
-      if (!max_correlations.empty()) {
-        Cout << "There are max_correlation values" << std::endl;
-        args["max_correlations"] = fromVec<Real>(max_correlation_ra);
-      }
-      const RealVector& min_correlations 
-        = problem_db.get_rdv("model.surrogate.kriging_min_correlations");
-      RealArray min_correlation_ra; //std::vector<double>
-      copy_data(min_correlations, min_correlation_ra);
-      if (!min_correlations.empty()) {
-        args["min_correlations"] = fromVec<Real>(min_correlation_ra);
-      }
-      short max_iter
-	= problem_db.get_short("model.surrogate.kriging_max_trials");
-      if (max_iter > 0) {
-        args["max_iter"] = toString<short>(max_iter);
-      }
-
-
-      // new parameters (will be ignored if not needed)
-
-      // trend: constant | linear | reduced_quadratic | quadratic
-      short order = 2;
-      //short order = 1;
-//       short order = problem_db.get_short("model.surrogate.trend_order");
-      if (order >= 0) {
-	args["order"] = toString<short>(order);
-      }
-      // to toggle omission of mixed terms
-      //args["reduced"] = toString<bool>(false);
+      args["order"] = toString<int>(2);
       args["reduced_polynomial"] = toString<bool>(true);
-      
-      // options are none | sample | local | global
-      String optimization_method("global");
-//       const String& optimization_method = 
-// 	problem_db.get_string("model.surrogate.kriging_optimization_method");
-      if (!optimization_method.empty())
-	args["optimization_method"] = optimization_method;
+      const String& trend_string = 
+	problem_db.get_string("model.surrogate.trend_order");
+      if (!trend_string.empty()) {
+	if (trend_string == "constant")
+	  args["order"] = toString<unsigned int>(0);
+	else if (trend_string == "linear")
+	  args["order"] = toString<unsigned int>(1);
+	else if (trend_string == "reduced_quadratic") {
+	  args["order"] = toString<unsigned int>(2);
+	  args["reduced_polynomial"] = toString<bool>(true);
+	}
+	else if (trend_string == "quadratic") {
+	  args["order"] = toString<unsigned int>(2);
+	  args["reduced_polynomial"] = toString<bool>(false);
+	}
+      }
+
+      // optimization options are none | sample | local | global (default)
+      args["optimization_method"] = "global";
+      const String& optimization_method = 
+ 	problem_db.get_string("model.surrogate.kriging_opt_method");
+      if (!optimization_method.empty()) {
+	if (optimization_method == "none" || optimization_method == "sampling" 
+	    || optimization_method == "local" 
+	    || optimization_method == "global")
+	  args["optimization_method"] = optimization_method;
+	else {
+	  Cerr << "Error (global_kriging): invalid optimization method "
+	       << optimization_method << "; valid options are " 
+	       << "none, sampling, local, or global" << std::endl;
+	  abort_handler(-1);
+	}
+      }
 
       short max_trials
 	= problem_db.get_short("model.surrogate.kriging_max_trials");
-      if (max_iter > 0) {
-        args["max_trials"] = toString<short>(max_iter);
+      if (max_trials > 0) {
+        args["max_trials"] = toString<short>(max_trials);
       }
 
-      // specified correlation lengths otherwise intial iterate
-      RealVector correlation_lengths;
-//       const RealVector& correlation_lengths
-//         = problem_db.get_rdv("model.surrogate.kriging_correlation_lengths");
-      if (!correlation_lengths.empty()) {
-	RealArray cl; //std::vector<double>
-	copy_data(correlation_lengths, cl);
-        Cout << "There are specified correlation values" << std::endl;
-        args["correlations"] = fromVec<Real>(cl);
+      // NIDR support for RealArray (aka std::vector) would eliminate xtra copy!
+      // old parameters
+
+      const RealVector& correlation_rv
+        = problem_db.get_rdv("model.surrogate.kriging_correlations");
+      if (!correlation_rv.empty()) {
+	RealArray correlation_ra; //std::vector<double>
+	copy_data(correlation_rv, correlation_ra);
+        args["correlations"] = fromVec<Real>(correlation_ra);
       }
-      
+     
+      const RealVector& max_correlations_rv 
+        = problem_db.get_rdv("model.surrogate.kriging_max_correlations");
+      if (!max_correlations_rv.empty()) {
+	RealArray max_correlation_ra; //std::vector<double>
+	copy_data(max_correlations_rv, max_correlation_ra);
+        args["max_correlations"] = fromVec<Real>(max_correlation_ra);
+      }
+
+      const RealVector& min_correlations_rv 
+        = problem_db.get_rdv("model.surrogate.kriging_min_correlations");
+      if (!min_correlations_rv.empty()) {
+	RealArray min_correlation_ra; //std::vector<double>
+	copy_data(min_correlations_rv, min_correlation_ra);
+        args["min_correlations"] = fromVec<Real>(min_correlation_ra);
+      }
+
       if (!approxLowerBounds.empty()) {
-	RealArray alb;
-	copy_data(approxLowerBounds, alb);
-	args["lower_bounds"] = fromVec<Real>(alb);
+	RealArray alb_ra;
+	copy_data(approxLowerBounds, alb_ra);
+	args["lower_bounds"] = fromVec<Real>(alb_ra);
       }
 
       if (!approxUpperBounds.empty()) {
-	RealArray aub;
-	copy_data(approxUpperBounds, aub);
-	args["upper_bounds"] = fromVec<Real>(aub);
+	RealArray aub_ra;
+	copy_data(approxUpperBounds, aub_ra);
+	args["upper_bounds"] = fromVec<Real>(aub_ra);
       }
 
-      IntVector dimension_groups;
-//       const IntVector& dimension_groups 
-//         = problem_db.get_idv("model.surrogate.kriging_dimension_groups");
-      if (!dimension_groups.empty()) {
-	IntArray dg;
-	copy_data(dimension_groups, dg);
-	args["dimension_groups"] = fromVec<int>(dg);
+      // unused for now
+      IntVector dimension_groups_iv;
+      if (!dimension_groups_iv.empty()) {
+	IntArray dg_ra;
+	copy_data(dimension_groups_iv, dg_ra);
+	args["dimension_groups"] = fromVec<int>(dg_ra);
       }
 
-    } //
+    }
 
     // For ANN surface fits
     else if (approxType == "global_neural_network") {
@@ -295,14 +286,14 @@ SurfpackApproximation(const String& approx_type,
     args["reduced_polynomial"] = toString<bool>(true);
     args["type"] = "kriging";
     if (!approxLowerBounds.empty()) {
-      RealArray alb;
-      copy_data(approxLowerBounds, alb);
-      args["lower_bounds"] = fromVec<Real>(alb);
+      RealArray alb_ra;
+      copy_data(approxLowerBounds, alb_ra);
+      args["lower_bounds"] = fromVec<Real>(alb_ra);
     }
     if (!approxUpperBounds.empty()) {
-      RealArray aub;
-      copy_data(approxUpperBounds, aub);
-      args["upper_bounds"] = fromVec<Real>(aub);
+      RealArray aub_ra;
+      copy_data(approxUpperBounds, aub_ra);
+      args["upper_bounds"] = fromVec<Real>(aub_ra);
     }
   }
   else if (approxType == "global_neural_network")

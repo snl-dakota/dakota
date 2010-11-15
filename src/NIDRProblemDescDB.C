@@ -4450,7 +4450,6 @@ static Real
 	MP_(annRange);
 
 static RealVector
-	MP_(krigingConminSeed),
 	MP_(krigingCorrelations),
 	MP_(krigingMaxCorrelations),
 	MP_(krigingMinCorrelations),
@@ -4461,6 +4460,7 @@ static String
 	MP_(approxPointReuseFile),
 	MP_(idModel),
 	MP_(interfacePointer),
+	MP_(krigingOptMethod),
 	MP_(lowFidelityModelPointer),
 	MP_(optionalInterfRespPointer),
 	MP_(responsesPointer),
