@@ -78,6 +78,8 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
+  void pre_output();
+
   void print_results(std::ostream& s);
 
   const Variables&      variables_results() const;
@@ -103,7 +105,7 @@ protected:
  
   /// convenience function for reading variables/responses (used in
   /// derived classes post_input)
-  void read_variables_responses(int num_evals);
+  void read_variables_responses(int num_evals, size_t num_vars);
 
   /// Printing of VBD results
   void print_vbd(std::ostream& s, const RealVectorArray& S,

@@ -346,7 +346,7 @@ private:
   Iterator* get_iterator(const String& method_name, Model& model);
 
   /// convenience function to write variables to file, following pre-run
-  void pre_output();
+  virtual void pre_output();
 
   /// read tabular data for post-run mode
   virtual void post_input();

@@ -60,7 +60,7 @@ void PSUADEDesignCompExp::pre_run()
 void PSUADEDesignCompExp::post_input()
 {
   // call convenience function from Analyzer
-  read_variables_responses(numSamples);
+  read_variables_responses(numSamples, numContinuousVars);
 }
 
 

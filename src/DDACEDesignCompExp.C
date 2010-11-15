@@ -113,7 +113,7 @@ void DDACEDesignCompExp::extract_trends()
 void DDACEDesignCompExp::post_input()
 {
   // call convenience function from Analyzer
-  read_variables_responses(numSamples);
+  read_variables_responses(numSamples, numContinuousVars);
 }
 
 

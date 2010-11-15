@@ -466,8 +466,105 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
 }
 
 
+void Analyzer::pre_output()
+{
+
+  // distinguish between defaulted pre-run and user-specified
+  if (!iteratedModel.parallel_library().command_line_user_modes())
+    return;
+
+  const String& filename =
+    iteratedModel.parallel_library().command_line_pre_run_output();
+  if (filename.empty()) {
+    if (outputLevel > QUIET_OUTPUT)
+      Cout << "\nPre-run phase complete: no output requested.\n" << std::endl;
+    return;
+  }
+
+  size_t num_evals = compactMode ? allSamples.numCols() : allVariables.size();
+  if (num_evals == 0) {
+    if (outputLevel > QUIET_OUTPUT)
+      Cout << "\nPre-run phase complete: no variables to output.\n"
+	   << std::endl;
+    return;
+  }
+
+  std::ofstream tabular_file(filename);
+  if (!tabular_file.good()) {
+    Cerr << "\nError: could not open pre-run output file" << std::endl;
+    abort_handler(-1);
+  }
+
+  // try to mitigate errors resulting from lack of precision in output
+  // the full 17 digits might surprise users, but will reduce
+  // numerical errors between pre/post phases
+  int save_precision;
+  if (writePrecision == 0) {
+    save_precision = write_precision;
+    write_precision = 17;
+  }
+  tabular_file << '%'; // matlab comment syntax
+
+  // BMA TODO: Need to review and resolve whether we want to output
+  // only the active variables or all the variables.  We currently
+  // don't have use cases with inactive, but could reasonably have
+  // them.  This implementation is currently incorrect as it uses all
+  // labels, but outputs either active variables from allSamples
+  // (compactMode case) or all variables (otherwise)
+
+  if (compactMode) {
+    // active only
+    write_data_tabular(tabular_file,
+		       iteratedModel.continuous_variable_labels());
+    write_data_tabular(tabular_file,
+		       iteratedModel.discrete_int_variable_labels());
+    write_data_tabular(tabular_file,
+		       iteratedModel.discrete_real_variable_labels());
+
+    tabular_file << std::setprecision(write_precision) 
+		 << std::resetiosflags(std::ios::floatfield);
+  }
+  else {
+    // all
+    write_data_tabular(tabular_file,
+		       iteratedModel.all_continuous_variable_labels());
+    write_data_tabular(tabular_file,
+		       iteratedModel.all_discrete_int_variable_labels());
+    write_data_tabular(tabular_file,
+		       iteratedModel.all_discrete_real_variable_labels());
+  }
+  tabular_file << '\n';
+  
+  
+  size_t num_active_vars = 
+    iteratedModel.cv() + iteratedModel.div() + iteratedModel.drv();
+
+  for (size_t eval_index = 0; eval_index < num_evals; eval_index++) {
+    
+    // output cv, div, drv in that order
+    // compactMode only outputs active variables (could supplement
+    // with inactive from the model), whereas write_tabular outputs
+    // all variables;
+    if (compactMode)
+      for (size_t var_index = 0; var_index < num_active_vars; ++var_index)
+	tabular_file << std::setw(write_precision+4) 
+		     << allSamples(var_index, eval_index) << " ";
+    else
+      allVariables[eval_index].write_tabular(tabular_file);
+    tabular_file << '\n';
+  }
+  tabular_file.flush();
+  tabular_file.close();
+  if (writePrecision == 0)
+    write_precision = save_precision;
+  if (outputLevel > QUIET_OUTPUT)
+    Cout << "\nPre-run phase complete: variables written to tabular file "
+	 << filename << ".\n" << std::endl;
+}
+
+
 /// read num_evals variables/responses from file
-void Analyzer::read_variables_responses(int num_evals)
+  void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 {
   // distinguish between defaulted post-run and user-specified
   if (!iteratedModel.parallel_library().command_line_user_modes())
@@ -506,16 +603,28 @@ void Analyzer::read_variables_responses(int num_evals)
   tabular_file >> discard_percent; // matlab comment syntax
   String discard_labels;
   getline(tabular_file, discard_labels);
-  // now read variables and responses (minimal error checking for now)
-  allVariables.resize(num_evals);
+
+  if (compactMode)
+    allSamples.shapeUninitialized(num_vars, num_evals);
+  else 
+    allVariables.resize(num_evals);
   allResponses.resize(num_evals);
+
+  // now read variables and responses (minimal error checking for now)
   for (size_t i=0; i<num_evals; ++i) {
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "   reading sample " << i << std::endl;
-    allVariables[i] = iteratedModel.current_variables().copy();
+
+    if (!compactMode)
+      allVariables[i] = iteratedModel.current_variables().copy();
     allResponses[i] = iteratedModel.current_response().copy();
+
     try {
-      allVariables[i].read_tabular(tabular_file);
+      if (compactMode)
+	for (size_t var_index=0; var_index<num_vars; ++var_index) 
+	  tabular_file >> allSamples(var_index, i);
+      else
+	allVariables[i].read_tabular(tabular_file);
       allResponses[i].read_tabular(tabular_file);
     }
     catch (const std::ios_base::failure& failorbad_except) {
@@ -524,8 +633,12 @@ void Analyzer::read_variables_responses(int num_evals)
 	   << std::endl;
       abort_handler(-1);
     }
-    update_best(allVariables[i], i, allResponses[i]);
+    if (compactMode)
+      update_best(allSamples[i], i+1, allResponses[i]);
+    else
+      update_best(allVariables[i], i+1, allResponses[i]);
   }
+  
   tabular_file.close();
   if (outputLevel > QUIET_OUTPUT)
     Cout << "\nPost-run phase initialized: variables / responses read from "

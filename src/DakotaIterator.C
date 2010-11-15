@@ -1490,60 +1490,25 @@ void Iterator::sub_iterator_flag(bool si_flag)
 //void Iterator::pre_output(const String& filename)
 void Iterator::pre_output()
 {
-  // distinguish between defaulted pre-run and user-specified
-  if (!iteratedModel.parallel_library().command_line_user_modes())
-    return;
+  if (iteratorRep)
+    iteratorRep->pre_output();
+  else {
+    // distinguish between defaulted pre-run and user-specified
+    if (!iteratedModel.parallel_library().command_line_user_modes())
+      return;
 
-  const String& filename =
-    iteratedModel.parallel_library().command_line_pre_run_output();
-  if (filename.empty()) {
-    if (outputLevel > QUIET_OUTPUT)
-      Cout << "\nPre-run phase complete: no output requested.\n" << std::endl;
-    return;
-  }
+    const String& filename =
+      iteratedModel.parallel_library().command_line_pre_run_output();
+    if (filename.empty()) {
+      if (outputLevel > QUIET_OUTPUT)
+	Cout << "\nPre-run phase complete: no output requested.\n" << std::endl;
+      return;
+    }
 
-  const VariablesArray& vars = all_variables();
-  size_t i, num_evals = vars.size();
-  if (num_evals == 0) {
-    if (outputLevel > QUIET_OUTPUT)
-      Cout << "\nPre-run phase complete: no variables to output.\n"
-	   << std::endl;
-    return;
+    Cerr << "Error: letter class does not redefine pre_output() virtual fn."
+	 << "\n        This iterator does not support pre-run output."
+	 << std::endl;
   }
-
-  // for now just preserve the previous dry_run capability
-  std::ofstream tabular_file(filename);
-  if (!tabular_file.good()) {
-    Cerr << "\nError: could not open pre-run output file" << std::endl;
-    abort_handler(-1);
-  }
-
-  // try to mitigate errors resulting from lack of precision in output
-  // could do full double precision (16), but might surprise users
-  int save_precision;
-  if (writePrecision == 0) {
-    save_precision = write_precision;
-    write_precision = 16;
-  }
-  tabular_file << '%'; // matlab comment syntax
-  write_data_tabular(tabular_file,
-		     iteratedModel.all_continuous_variable_labels());
-  write_data_tabular(tabular_file,
-		     iteratedModel.all_discrete_int_variable_labels());
-  write_data_tabular(tabular_file,
-		     iteratedModel.all_discrete_real_variable_labels());
-  tabular_file << '\n';
-  for (i=0; i<num_evals; i++) {
-    vars[i].write_tabular(tabular_file); // outputs acv,adiv,adrv in that order
-    tabular_file << '\n';
-  }
-  tabular_file.flush();
-  tabular_file.close();
-  if (writePrecision == 0)
-    write_precision = save_precision;
-  if (outputLevel > QUIET_OUTPUT)
-    Cout << "\nPre-run phase complete: variables written to tabular file "
-	 << filename << ".\n" << std::endl;
 }
 
 

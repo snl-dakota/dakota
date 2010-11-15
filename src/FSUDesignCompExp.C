@@ -190,7 +190,7 @@ void FSUDesignCompExp::extract_trends()
 void FSUDesignCompExp::post_input()
 {
   // call convenience function from Analyzer
-  read_variables_responses(numSamples);
+  read_variables_responses(numSamples, numContinuousVars);
 }
 
 

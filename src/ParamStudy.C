@@ -211,7 +211,8 @@ void ParamStudy::extract_trends()
 void ParamStudy::post_input()
 {
   // call convenience function from Analyzer
-  read_variables_responses(numEvals);
+  read_variables_responses(numEvals, numContinuousVars + numDiscreteIntVars + 
+    numDiscreteRealVars);
 }
 
 
