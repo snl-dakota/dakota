@@ -1069,7 +1069,7 @@ static GuiKeyWord
 	kw_147[3] = {
 		{"constant",8,0,1,1,1087,0,0.,0.,0.,0,"[CHOOSE trend type]"},
 		{"linear",8,0,1,1,1089},
-		{"quadratic",8,0,1,1,1091,0,0.,0.,0.,0,"@"}
+		{"reduced_quadratic",8,0,1,1,1091}
 		},
 	kw_148[2] = {
 		{"point_selection",8,0,1,0,1083,0,0.,0.,0.,0,"{GP point selection} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},

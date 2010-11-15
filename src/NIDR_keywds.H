@@ -970,9 +970,9 @@ static KeyWord
 		{"zeroth_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_0)}
 		},
 	kw_159[3] = {
-		{"constant",8,0,1,1,0,0.,0.,0,N_mom(order,trendOrder_0)},
-		{"linear",8,0,1,1,0,0.,0.,0,N_mom(order,trendOrder_1)},
-		{"quadratic",8,0,1,1,0,0.,0.,0,N_mom(order,trendOrder_2)}
+		{"constant",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_constant)},
+		{"linear",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_linear)},
+		{"reduced_quadratic",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_reduced_quadratic)}
 		},
 	kw_160[2] = {
 		{"point_selection",8,0,1,0,0,0.,0.,0,N_mom(true,pointSelection)},

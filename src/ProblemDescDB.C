@@ -1726,6 +1726,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"surrogate.mars_interpolation", P marsInterpolation},
 	{"surrogate.point_reuse", P approxPointReuse},
 	{"surrogate.point_reuse_file", P approxPointReuseFile},
+        {"surrogate.trend_order", P trendOrder},
 	{"surrogate.type", P surrogateType},
 	{"type", P modelType}};
     #undef P
@@ -1996,8 +1997,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"rbf_bases", P rbfBases},
 	{"rbf_max_pts", P rbfMaxPts},
 	{"rbf_max_subsets", P rbfMaxSubsets},
-	{"rbf_min_partition", P rbfMinPartition},
-	{"trend_order", P trendOrder}};
+	{"rbf_min_partition", P rbfMinPartition}};
     #undef P
 
     KW<short, DataModelRep> *kw;

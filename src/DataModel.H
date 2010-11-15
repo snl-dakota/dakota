@@ -162,7 +162,7 @@ public:
   /// scalar integer indicating the order of the Gaussian process mean
   /// (0= constant, 1=linear, 2=quadratic, 3=cubic); from the
   /// \c gaussian_process specification  in \ref ModelSurrG)
-  short trendOrder;
+  String trendOrder;
   /// flag indicating the use of point selection in the Gaussian process
   bool pointSelection;
   /// List of diagnostic metrics the user requests to assess the 

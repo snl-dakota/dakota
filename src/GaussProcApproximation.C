@@ -136,9 +136,23 @@ Real getRmax(const RealMatrix& xset)
 GaussProcApproximation::
 GaussProcApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
   Approximation(BaseConstructor(), problem_db, num_acv),
-  usePointSelection(problem_db.get_bool("model.surrogate.point_selection")),
-  trendOrder(problem_db.get_short("model.surrogate.trend_order"))
+  usePointSelection(problem_db.get_bool("model.surrogate.point_selection"))
 {
+
+  const String& trend_string = problem_db.get_string("model.surrogate.trend_order");
+  if (trend_string == "constant")
+    trendOrder = 0;
+  else if (trend_string == "linear")
+    trendOrder = 1;
+  else if (trend_string == "reduced_quadratic")
+    trendOrder = 2;
+  else {
+    Cerr << "\nError (global_gaussian): unsupported trend " << trend_string 
+	 << "; valid options are constant, linear, or reduced_quadratic"
+	 << std::endl;
+    abort_handler(-1);
+  }
+
   dataOrder = 1; // TO DO: support dataOrder = 3
 
 #ifdef DAKOTA_NCSU

@@ -22,7 +22,7 @@ DataModelRep::DataModelRep():
   approxCorrectionOrder(0), approxDerivUsageFlag(false), polynomialOrder(2),
   krigingMaxTrials(0), mlsPolyOrder(0), mlsWeightFunction(0), rbfBases(0),
   rbfMaxPts(0), rbfMaxSubsets(0), rbfMinPartition(0), marsMaxBases(0),
-  annRandomWeight(0), annNodes(0), annRange(0.0), trendOrder(2),
+  annRandomWeight(0), annNodes(0), annRange(0.0), trendOrder("reduced_quadratic"),
   pointSelection(false), referenceCount(1)
 { }
 

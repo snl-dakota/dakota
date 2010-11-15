@@ -4432,7 +4432,11 @@ static Model_mp_lit
 	MP2(surrogateType,global_polynomial),
 	MP2(surrogateType,global_radial_basis),
 	MP2(surrogateType,local_taylor),
-	MP2(surrogateType,multipoint_tana);
+        MP2(surrogateType,multipoint_tana),
+        MP2(trendOrder,constant),
+        MP2(trendOrder,linear),
+        MP2(trendOrder,reduced_quadratic),
+        MP2(trendOrder,quadratic);
 
 static Model_mp_ord
 	MP2s(approxCorrectionOrder,0),
@@ -4440,10 +4444,7 @@ static Model_mp_ord
 	MP2s(approxCorrectionOrder,2),
 	MP2s(polynomialOrder,1),
 	MP2s(polynomialOrder,2),
-	MP2s(polynomialOrder,3),
-	MP2s(trendOrder,0),
-	MP2s(trendOrder,1),
-	MP2s(trendOrder,2);
+        MP2s(polynomialOrder,3);
 
 static Real
 	MP_(annRange);

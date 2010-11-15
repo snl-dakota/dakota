@@ -1058,7 +1058,7 @@ KEYWORD model
 	      [ trend
 		constant
 		| linear
-		| quadratic
+		| reduced_quadratic
 		]
 	      )
 	    |

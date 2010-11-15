@@ -749,9 +749,9 @@ KEYWORD model {N_mom3(start,0,stop)}
 	    ( gaussian_process {N_mom(lit,surrogateType_global_gaussian)}
 	      [ point_selection {N_mom(true,pointSelection)} ]
 	      [ trend {0}
-		constant {N_mom(order,trendOrder_0)}
-		| linear {N_mom(order,trendOrder_1)}
-		| quadratic {N_mom(order,trendOrder_2)}
+                constant {N_mom(lit,trendOrder_constant)}
+		| linear {N_mom(lit,trendOrder_linear)}
+		| reduced_quadratic {N_mom(lit,trendOrder_reduced_quadratic)}
 		]
 	      )
 	    |
