@@ -1,69 +1,22 @@
 dnl Packages
 
 AC_DEFUN([DAK_PACKAGES],[
-  dnl Boost package check.
-  AC_ARG_WITH([boost],
-              AC_HELP_STRING([--with-boost=DIR],
-                             [use Boost headers in specified DIR]),
-              [],[with_boost="yes"])
-  case $with_boost in
-  no)
-    dnl BOOST package is needed unconditionally.
-    dnl DAKOTA provides a header-only subset of the Boost 1.40 release.
-    AC_MSG_ERROR([DAKOTA cannot be configured without Boost. Please specify
-                  directory to boost headers OR simply, --with-boost=yes
-                  to get the default path to the DAKOTA provided boost subset.])
-    ;;
 
-  dnl For yes, check BOOST_ROOT, otherwise fallback to local Boost
-  yes | "")
-    AC_MSG_CHECKING([for Boost])
-    if test -n "$BOOST_ROOT" -a -d "$BOOST_ROOT"; then
+  dnl -------------------
+  dnl Boost package check
+  dnl -------------------
+  AX_BOOST_BASE([1.37], [required], [packages/boost])
 
-      AC_MSG_RESULT([using Boost in BOOST_ROOT: $BOOST_ROOT])
-
-    elif test -d `pwd`/packages/boost; then
-
-      dnl Use local Boost and instruct subpackages to do so as well
-      export BOOST_ROOT=`pwd`/packages/boost
-
-      dnl Nothing to config/build; DAKOTA provides a header-only subset
-      dnl AC_CONFIG_SUBDIRS([packages/boost])
-      AC_MSG_RESULT([using local Boost in $BOOST_ROOT])
-
-    else
-      AC_MSG_NOTICE([could not find Boost directory.])
-      AC_MSG_NOTICE([need help locating boost!])
-      AC_MSG_ERROR([PLEASE PROVIDE full path to boost, --with-boost=<DIR>])
-    fi
-    ;;
-
-  dnl Otherwise, user should have provided an explicit path to Boost
-  *)
-    AC_MSG_CHECKING([for specified Boost])
-    BOOST_ROOT=$withval
-    if test -n "$BOOST_ROOT" -a -d "$BOOST_ROOT"; then
-      AC_MSG_RESULT([using: $BOOST_ROOT])
-    else
-      AC_MSG_ERROR([could not locate $BOOST_ROOT])
-    fi
-    ;;
-
-  esac
-
-  boost_version_req=103700
-  boost_version=`grep 'define BOOST_VERSION 1' $BOOST_ROOT/boost/version.hpp | cut -d' ' -f3`
-  if test $boost_version -ge $boost_version_req; then
-    AC_MSG_RESULT([Boost meets DAKOTA min version: $boost_version >= $boost_version_req])
+  if test "$ac_boost_build_tpl" = "yes"; then
+    AC_MSG_NOTICE([will build bundled boost TPL.])
+    AC_CONFIG_SUBDIRS([packages/boost])
   else
-    AC_MSG_ERROR([OLD Boost: $boost_version needs to be $boost_version_req or later])
+    AC_MSG_NOTICE([skipping bundled boost TPL.])
   fi
 
   AC_DEFINE([BOOST_MULTI_INDEX_DISABLE_SERIALIZATION],[1],
             [Macro to disable dependency on the Boost serialization library.])
-  BOOST_CPPFLAGS="-I$BOOST_ROOT"
-  AC_SUBST(BOOST_CPPFLAGS)
-  AC_ARG_VAR(BOOST_ROOT, [Path to header-only subset of Boost, a C++ foundation package])
+
 
 
   dnl -------------------------
