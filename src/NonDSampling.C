@@ -291,19 +291,40 @@ view_counts(const Model& model, size_t& cv_start, size_t& num_cv,
 {
   cv_start = num_cv = div_start = num_div = drv_start = num_drv = 0;
   switch (samplingVarsMode) {
-  case UNCERTAIN:
-    cv_start  = numContDesVars;
-    num_cv    = numContAleatUncVars + numContEpistUncVars;
-    div_start = numDiscIntDesVars;
-    num_div   = numDiscIntAleatUncVars + numDiscIntEpistUncVars;
-    drv_start = numDiscRealDesVars;
-    num_drv   = numDiscRealAleatUncVars + numDiscRealEpistUncVars;
+  case UNCERTAIN: {
+    const Variables& vars = model.current_variables();
+    short active_view = vars.view().first;
+    bool all_vars = (active_view == MERGED_ALL || active_view == MIXED_ALL);
+    if (all_vars) { // UNCERTAIN is a subset of ACTIVE
+      cv_start  = numContDesVars;
+      num_cv    = numContAleatUncVars + numContEpistUncVars;
+      div_start = numDiscIntDesVars;
+      num_div   = numDiscIntAleatUncVars + numDiscIntEpistUncVars;
+      drv_start = numDiscRealDesVars;
+      num_drv   = numDiscRealAleatUncVars + numDiscRealEpistUncVars;
+    }
+    else { // UNCERTAIN is the same as ACTIVE
+      cv_start  = vars.cv_start();  num_cv  = vars.cv();
+      div_start = vars.div_start(); num_div = vars.div();
+      drv_start = vars.drv_start(); num_drv = vars.drv();
+    }
     break;
-  case UNCERTAIN_UNIFORM:
-    cv_start = numContDesVars;
-    num_cv   = numContAleatUncVars + numContEpistUncVars;
+  }
+  case UNCERTAIN_UNIFORM: {
+    const Variables& vars = model.current_variables();
+    short active_view = vars.view().first;
+    bool all_vars = (active_view == MERGED_ALL || active_view == MIXED_ALL);
+    if (all_vars) { // UNCERTAIN is a subset of ACTIVE
+      cv_start = numContDesVars;
+      num_cv   = numContAleatUncVars + numContEpistUncVars;
+    }
+    else { // UNCERTAIN is the same as ACTIVE
+      cv_start = vars.cv_start();
+      num_cv   = vars.cv();
+    }
     // UNIFORM views do not currently support discrete
     break;
+  }
   case ACTIVE: {
     const Variables& vars = model.current_variables();
     cv_start  = vars.cv_start();  num_cv  = vars.cv();
@@ -428,7 +449,7 @@ void NonDSampling::compute_intervals(const ResponseArray& samples)
       if (isfinite(sample)) { // neither NaN nor +/-Inf
 	if (sample < min) min = sample;
 	if (sample > max) max = sample;
-	num_samp++;
+	++num_samp;
       }
     }
     minValues[i] = min;
@@ -466,7 +487,7 @@ void NonDSampling::compute_moments(const ResponseArray& samples)
       const Real& sample = samples[j].function_value(i);
       if (isfinite(sample)) { // neither NaN nor +/-Inf
 	sum += sample;
-	num_samp++;
+	++num_samp;
       }
     }
 
@@ -575,55 +596,76 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
 
   for (i=0; i<numFunctions; ++i) {
 
-    num_samp = 0;
-    for (j=0; j<num_obs; j++)
-      if(isfinite(samples[j].function_value(i))) // neither NaN nor +/-Inf
-	num_samp++;
-
     // CDF/CCDF mappings: z -> p/beta/beta* and p/beta/beta* -> z
     size_t rl_len = requestedRespLevels[i].length(),
            pl_len = requestedProbLevels[i].length(),
            bl_len = requestedRelLevels[i].length(),
            gl_len = requestedGenRelLevels[i].length();
-    for (j=0; j<rl_len; j++) {
-      const Real& z = requestedRespLevels[i][j];
+
+    num_samp = 0;
+    if (rl_len) {
       switch (respLevelTarget) {
       case PROBABILITIES: case GEN_RELIABILITIES: {
 	// z -> p/beta* (based on binning)
-	size_t less_eq_z = 0;
-	for (k=0; k<num_obs; k++) {
-	  const Real& sample = samples[k].function_value(i);
-	  if (isfinite(sample)) // neither NaN nor +/-Inf
-	    less_eq_z += (sample <= z) ? 1 : 0;
+	SizetArray less_eq_z(rl_len, 0);
+	for (j=0; j<num_obs; ++j) {
+	  const Real& sample = samples[j].function_value(i);
+	  if (isfinite(sample)) {
+	    ++num_samp;
+	    const RealVector& req_rl_i = requestedRespLevels[i];
+	    for (k=0; k<rl_len; ++k)
+	      if (sample < req_rl_i[k])
+		less_eq_z[k] += 1;
+	  }
 	}
-	Real cdf_prob = (Real)less_eq_z/(Real)num_samp;
-	Real computed_prob = (cdfFlag) ? cdf_prob : 1. - cdf_prob;
-	if (respLevelTarget == PROBABILITIES)
-	  computedProbLevels[i][j] = computed_prob;
-	else
-	  computedGenRelLevels[i][j] = -Pecos::Phi_inverse(computed_prob);
+	for (j=0; j<rl_len; ++j) {
+	  Real cdf_prob = (Real)less_eq_z[j]/(Real)num_samp;
+	  Real computed_prob = (cdfFlag) ? cdf_prob : 1. - cdf_prob;
+	  if (respLevelTarget == PROBABILITIES)
+	    computedProbLevels[i][j] = computed_prob;
+	  else
+	    computedGenRelLevels[i][j] = -Pecos::Phi_inverse(computed_prob);
+	}
 	break;
       }
       case RELIABILITIES: // z -> beta (based on moment projection)
-	if (stdDevStats[i] > 1.e-25) {
-	  Real ratio = (meanStats[i] - z)/stdDevStats[i];
-	  computedRelLevels[i][j] = (cdfFlag) ? ratio : -ratio;
+	for (j=0; j<rl_len; j++) {
+	  const Real& z = requestedRespLevels[i][j];
+	  if (stdDevStats[i] > 1.e-25) {
+	    Real ratio = (meanStats[i] - z)/stdDevStats[i];
+	    computedRelLevels[i][j] = (cdfFlag) ? ratio : -ratio;
+	  }
+	  else
+	    computedRelLevels[i][j] = ( (cdfFlag && meanStats[i] <= z) ||
+	      (!cdfFlag && meanStats[i] > z) ) ? -1.e50 : 1.e50;
 	}
-	else
-	  computedRelLevels[i][j] = ( (cdfFlag && meanStats[i] <= z) ||
-	    (!cdfFlag && meanStats[i] > z) ) ? -1.e50 : 1.e50;
 	break;
       }
     }
     if (pl_len || gl_len) { // sort samples array for p/beta* -> z mappings
-      sorted_samples.resize(num_samp);
-      size_t cntr = 0;
-      for (j=0; j<num_obs; j++) {
-	const Real& sample = samples[j].function_value(i);
-	if (isfinite(sample))
-	  sorted_samples[cntr++] = sample;
+      // create array of finite samples for sorting
+      if (rl_len && respLevelTarget != RELIABILITIES) { // num_samp available
+	sorted_samples.resize(num_samp);
+	size_t cntr = 0;
+	for (j=0; j<num_obs; j++) {
+	  const Real& sample = samples[j].function_value(i);
+	  if (isfinite(sample))
+	    sorted_samples[cntr++] = sample;
+	}
       }
-      std::sort(sorted_samples.begin(),sorted_samples.end()); // ascending order
+      else { // num_samp not yet available
+	sorted_samples.clear();
+	sorted_samples.reserve(num_obs);
+	for (j=0; j<num_obs; j++) {
+	  const Real& sample = samples[j].function_value(i);
+	  if (isfinite(sample)) {
+	    ++num_samp;
+	    sorted_samples.push_back(sample);
+	  }
+	}
+      }
+      // sort in ascending order
+      std::sort(sorted_samples.begin(),sorted_samples.end());
     }
     for (j=0; j<pl_len+gl_len; j++) { // p/beta* -> z
       Real p = (j<pl_len) ? requestedProbLevels[i][j] :

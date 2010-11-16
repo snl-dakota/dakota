@@ -1469,7 +1469,7 @@ void NonDExpansion::compute_statistics()
       // since importanceSampler uses an UNCERTAIN sampling mode, we must set
       // the unsampled variables to their u-space values.
       //if (numContDesVars || numContEpistUncVars || numContStateVars)
-      //uSpaceModel.continuous_variables(initialPtU);
+      //  uSpaceModel.continuous_variables(initialPtU);
       // response fn is active for z->p, z->beta*, p->z, or beta*->z
       //ActiveSet sampler_set = importanceSampler.active_set(); // copy
       //ShortArray sampler_asv(numFunctions, 0);
@@ -1750,15 +1750,14 @@ void NonDExpansion::print_global_sensitivity(std::ostream& s)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   PecosApproximation* poly_approx_rep
     = (PecosApproximation*)poly_approxs[0].approx_rep();
-  size_t i,num_indices = poly_approx_rep->sobol_indices().length(); 
-  int j,k;
+  size_t i, j, k, num_indices = poly_approx_rep->sobol_indices().length(); 
   const Pecos::IntIntMap& s_index_map = poly_approx_rep->sobol_index_map();
   Pecos::IntIntMCIter map_cit;
   StringMultiArray sobol_labels(boost::extents[num_indices]);
   // Convert numbers to binary and create labels
   for (map_cit=s_index_map.begin(); map_cit!=s_index_map.end(); ++map_cit)
     // Convert i to binary and then use binary representation to create labels
-    for (int k=0; k<std::numeric_limits<int>::digits; ++k)
+    for (k=0; k<std::numeric_limits<int>::digits; ++k)
       if (map_cit->first & (1 << k))
 	sobol_labels[map_cit->second] += cv_labels[k] + " ";
   for (i=0; i<numFunctions; ++i) {
@@ -1771,31 +1770,27 @@ void NonDExpansion::print_global_sensitivity(std::ostream& s)
       s << std::setw(12) << ' ' << std::setw(18) << "Main effects" 
 	<< std::setw(20) << "Total effects" << std::endl;
       IntVector index_in(numContinuousVars);
-      for (k=0; k<numContinuousVars; k++){
+      for (k=0; k<numContinuousVars; k++)
 	index_in[k] = int(pow(2.,k));
-      }
-      const RealVector main_indices = poly_approx_rep->sobol_indices();
-      const RealVector total_indices = poly_approx_rep->total_sobol_indices(); 
+      const RealVector& sobol_indices = poly_approx_rep->sobol_indices();
+      const RealVector& total_indices = poly_approx_rep->total_sobol_indices(); 
       for (k=0; k<numContinuousVars; k++){
         s << "              " << std::setw(write_precision+7) 
-          << main_indices[index_in[k]] << "   "
-          << total_indices[k] << "   "
-          << cv_labels[k] << '\n';
+          << sobol_indices[index_in[k]] << "   "
+          << total_indices[k] << "   " << cv_labels[k] << '\n';
       }
       s << "Interaction Terms\n";
       for (j=0; j<num_indices; j++){
         // I wasn't able to have find work on an IntVector, but we can modify 
         // that if we need to, for now search brute force
-        bool interaction = true ;
-        for (k=0; k<numContinuousVars; k++){
+        bool interaction = true;
+        for (k=0; k<numContinuousVars; k++)
 	  if (j == index_in[k])
             interaction = false;
-        }
         if (interaction)
           s << "              " << std::setw(write_precision+7) 
-          << main_indices[j] << ' '
-          << sobol_labels[j] << '\n';
-       }
+	    << sobol_indices[j] << ' ' << sobol_labels[j] << '\n';
+      }
       
       s << "Old way of printing indices\n";
       write_data(s, poly_approx_rep->sobol_indices(),sobol_labels); // if no label array
