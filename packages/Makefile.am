@@ -13,7 +13,7 @@ SUBDIRS += ampl
 endif
 
 if WITH_GRAPHICS
-SUBDIRS += motif plplot
+SUBDIRS += motif
 endif
 
 ##if WITH_PECOS

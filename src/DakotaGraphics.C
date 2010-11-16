@@ -15,7 +15,7 @@
 #endif
 
 #ifdef DAKOTA_GRAPHICS
-#include "plplot.h" 
+//#include "plplot.h" 
 #include "Graphics.H"
 #endif // DAKOTA_GRAPHICS
 #include "data_io.h"

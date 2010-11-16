@@ -11,9 +11,9 @@ if ENABLE_MPI
 ALL_LOCAL_LINKS += dakota_library_split$(EXEEXT)
 endif
 endif
-if WITH_GRAPHICS
-ALL_LOCAL_LINKS += plxtnd5.fnt
-endif
+#if WITH_GRAPHICS
+#ALL_LOCAL_LINKS += plxtnd5.fnt
+#endif
 all-local: $(ALL_LOCAL_LINKS)
 
 dakota$(EXEEXT): $(top_builddir)/src/dakota$(EXEEXT)
@@ -31,10 +31,10 @@ dakota_library_split$(EXEEXT): $(top_builddir)/src/dakota_library_split$(EXEEXT)
 endif
 endif
 
-if WITH_GRAPHICS
-plxtnd5.fnt: $(top_srcdir)/packages/plplot/data/plxtnd5.fnt
-	$(LN_S) $(top_srcdir)/packages/plplot/data/plxtnd5.fnt plxtnd5.fnt
-endif
+#if WITH_GRAPHICS
+#plxtnd5.fnt: $(top_srcdir)/packages/plplot/data/plxtnd5.fnt
+#	$(LN_S) $(top_srcdir)/packages/plplot/data/plxtnd5.fnt plxtnd5.fnt
+#endif
 
 ## Define the unit test sources and library dependencies.
 ## NOTE: Extra Dakota library linked in to resolve circular references.
