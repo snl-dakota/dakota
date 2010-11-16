@@ -40,22 +40,14 @@ AMPL_INCL	= -I$(top_builddir)/packages
 endif
 
 if WITH_GRAPHICS
-PLPLOT_SRC        = $(top_srcdir)/packages/plplot/src
-PLPLOT_BIND_SRC   = $(top_srcdir)/packages/plplot/bindings/c++
-PLPLOT_INCL       = -I$(top_builddir)/packages/plplot/include \
-		    -I$(top_srcdir)/packages/plplot/include
-PLPLOT_BUILD      = $(top_builddir)/packages/plplot/src
-PLPLOT_BIND_BUILD = $(top_builddir)/packages/plplot/bindings/c++
-PLPLOT_ARCHIVE    = $(PLPLOT_BIND_BUILD)/libplplotcxxd.la \
-		    $(PLPLOT_BUILD)/libplplotd.la
 MOTIF_SRC         = $(top_srcdir)/packages/motif/src
 MOTIF_INCL        = -I$(top_builddir)/packages/motif/include \
 		    -I$(top_srcdir)/packages/motif/include \
 		    -I$(top_srcdir)/packages/motif/src/Widgets
 MOTIF_BUILD       = $(top_builddir)/packages/motif/src
 MOTIF_ARCHIVE     = $(MOTIF_BUILD)/libDGraphics.la
-GRAPHICS_INCL     = $(PLPLOT_INCL) $(MOTIF_INCL)
-GRAPHICS_ARCHIVE  = $(PLPLOT_ARCHIVE) $(MOTIF_ARCHIVE)
+GRAPHICS_INCL     = $(MOTIF_INCL)
+GRAPHICS_ARCHIVE  = $(MOTIF_ARCHIVE)
 endif
 
 if WITH_SURFPACK

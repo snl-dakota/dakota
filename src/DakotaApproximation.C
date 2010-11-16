@@ -704,6 +704,7 @@ add(const RealVector& c_vars, const Response& response, int fn_index,
 }
 
 
+/* Old 3D graphics capability:
 void Approximation::draw_surface()
 {
   if (approxRep)
@@ -743,5 +744,6 @@ void Approximation::draw_surface()
     dakota_graphics.show_data_3d(X, Y, F);
   }
 }
+*/
 
 } // namespace Dakota

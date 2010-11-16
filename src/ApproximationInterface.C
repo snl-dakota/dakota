@@ -24,7 +24,7 @@ ApproximationInterface(ProblemDescDB& problem_db,
 		       const Variables& actual_model_vars, size_t num_fns):
   Interface(BaseConstructor(), problem_db), 
   approxFnIndices(problem_db.get_dis("model.surrogate.function_indices")),
-  graph3DFlag(problem_db.get_bool("strategy.graphics")),
+  //graph3DFlag(problem_db.get_bool("strategy.graphics")),
   diag_list(problem_db.get_dsa("model.diagnostics")),
   actualModelVars(actual_model_vars.copy())
 {
@@ -113,7 +113,7 @@ ApproximationInterface(const String& approx_type,
 		       const UShortArray& approx_order,
 		       const Variables& actual_model_vars, size_t num_fns,
 		       unsigned short data_order):
-  Interface(NoDBBaseConstructor(), num_fns), graph3DFlag(false),
+  Interface(NoDBBaseConstructor(), num_fns), //graph3DFlag(false),
   actualModelVars(actual_model_vars.copy())
 {
   idInterface   = "APPROX_INTERFACE";
@@ -477,12 +477,14 @@ build_approximation(const BoolDeque& rebuild_deque,
 
     }
   }
+  /* Old 3D graphics capability:
   int index = *approxFnIndices.begin();
   // if graphics is on for 2 variables, plot first functionSurface in 3D
   if (graph3DFlag && ( rebuild_deque.empty() || rebuild_deque[index] ) &&
       functionSurfaces[index].num_variables() == 2) {
     functionSurfaces[index].draw_surface();
   }
+  */
 }
 
 

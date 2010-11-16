@@ -174,9 +174,8 @@ public:
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector& lower, const RealVector& upper);
 
-  /// render the approximate surface using the 3D graphics (2 variable
-  /// problems only)
-  void draw_surface();
+  // render the approximate surface using the 3D graphics (2 variables only)
+  //void draw_surface();
 
   /// returns approxRep for access to derived class member functions
   /// that are not mapped to the top Approximation level

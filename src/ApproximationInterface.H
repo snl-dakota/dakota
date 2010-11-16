@@ -150,7 +150,7 @@ private:
   // a capability to reuse existing surrogates with modified design goals.
   //RealVector approxOffset;
 
-  bool graph3DFlag; ///< controls 3D graphics of approximation surfaces
+  //bool graph3DFlag; // controls 3D graphics of approximation surfaces
 
   /// List of diagnostic metrics
   StringArray diag_list;

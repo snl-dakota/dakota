@@ -60,28 +60,25 @@ public:
   /// for a single window in the 2d graphics
   void new_dataset(int i);
 
-  /// generate a new 3d plot for F(X,Y)
-  void show_data_3d(const RealVector& X, const RealVector& Y,
-		    const RealMatrix& F);
+  // generate a new 3d plot for F(X,Y)
+  //void show_data_3d(const RealVector& X, const RealVector& Y,
+  //		      const RealMatrix& F);
 
   /// close graphics windows and tabular datastream
   void close();
 
   /// set x label for each plot equal to x_label
   void set_x_labels2d(const char* x_label);
-
   /// set y label for each plot equal to y_label
   void set_y_labels2d(const char* y_label);
 
   /// set x label for ith plot equal to x_label
   void set_x_label2d(int i, const char* x_label);
-
   /// set y label for ith plot equal to y_label
   void set_y_label2d(int i, const char* y_label);
 
   /// set graphicsCntr equal to cntr
   void graphics_counter(int cntr);
-
   /// return graphicsCntr
   int graphics_counter() const;
 
@@ -95,7 +92,7 @@ private:
 #endif // DAKOTA_GRAPHICS
 
   bool win2dOn; ///< flag to indicate if 2D graphics window is active
-  bool win3dOn; ///< flag to indicate if 3D graphics window is active
+  //bool win3dOn; // flag to indicate if 3D graphics window is active
   bool tabularDataFlag; ///< flag to indicate if tabular data stream is active
 
   /// used for x axis values in 2D graphics and for 1st column in tabular data

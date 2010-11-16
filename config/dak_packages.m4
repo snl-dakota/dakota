@@ -262,8 +262,8 @@ AC_DEFUN([DAK_PACKAGES],[
 	      [with_graphics=$withval],[with_graphics=yes])
   if test "x$with_graphics" = xyes; then
     dnl on most platforms, when linking dynamically, it suffices to link
-    dnl against pthreads, Xpm, Xt, and Xm (the direct dependencies of plplot
-    dnl motif), however exceptions for static linking or specific platforms are
+    dnl against pthreads, Xpm, Xt, and Xm (the direct dependencies of motif),
+    dnl however exceptions for static linking or specific platforms are
     dnl indicated below
     AC_MSG_NOTICE([DAKOTA graphics: begin checking for dependencies.])
     dakota_graphics_ok=yes
@@ -324,9 +324,8 @@ AC_DEFUN([DAK_PACKAGES],[
     fi
     AC_MSG_NOTICE([DAKOTA graphics: enabled.])
     AC_CONFIG_SUBDIRS([packages/motif])
-    AC_CONFIG_SUBDIRS([packages/plplot])
     AC_DEFINE([DAKOTA_GRAPHICS],[1],
-	      [Macro to handle code which depends on motif and plplot.])
+	      [Macro to handle code which depends on motif.])
 
   fi
   AM_CONDITIONAL([WITH_GRAPHICS],[test "x$with_graphics" = xyes])

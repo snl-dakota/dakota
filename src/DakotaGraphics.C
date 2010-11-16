@@ -31,8 +31,8 @@ Graphics::Graphics():
 #ifdef DAKOTA_GRAPHICS
   graphics2D(NULL), 
 #endif
-  win2dOn(false), win3dOn(false), tabularDataFlag(false), graphicsCntr(1),
-  tabularCntrLabel("eval_id")
+  win2dOn(false), //win3dOn(false),
+  tabularDataFlag(false), graphicsCntr(1), tabularCntrLabel("eval_id")
 { }
 
 
@@ -306,11 +306,11 @@ void Graphics::new_dataset(int i)
 }
 
 
-/** 3D plotting clears data set and builds from scratch each time show_data3d
-    is called.  This still involves an event loop waiting for a mouse click
-    (right button) to continue.  X = 1-D x grid values only and 
-    Y = 1-D Y grid values only [X and Y are _not_ (X,Y) pairs].
-    F = 2-d grid of values for a single function for all (X,Y) combinations. */
+/* 3D plotting clears data set and builds from scratch each time show_data3d
+   is called.  This still involves an event loop waiting for a mouse click
+   (right button) to continue.  X = 1-D x grid values only and 
+   Y = 1-D Y grid values only [X and Y are _not_ (X,Y) pairs].
+   F = 2-d grid of values for a single function for all (X,Y) combinations.
 void Graphics::
 show_data_3d(const RealVector& X, const RealVector& Y,
 	     const RealMatrix& F)
@@ -384,13 +384,14 @@ show_data_3d(const RealVector& X, const RealVector& Y,
   delete [] y;
 #endif // DAKOTA_GRAPHICS
 }
+*/
 
 
 void Graphics::close()
 {
 #ifdef DAKOTA_GRAPHICS
-  if (win3dOn)
-    plend(); // 3D
+  //if (win3dOn)
+  //  plend(); // 3D
   if (win2dOn) {
     // hold for user action so graphics don't close too quickly
     Cout << "Exit graphics window to terminate DAKOTA." << std::endl;
