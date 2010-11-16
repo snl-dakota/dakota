@@ -180,14 +180,14 @@ inline Analyzer::~Analyzer() { }
 
 inline const VariablesArray& Analyzer::all_variables()
 {
-  if (compactMode) samples_to_variables_array(allSamples, allVariables);
+  //  if (compactMode) samples_to_variables_array(allSamples, allVariables);
   return allVariables;
 }
 
 
 inline const RealMatrix& Analyzer::all_samples()
 {
-  if (!compactMode) variables_array_to_samples(allVariables, allSamples);
+  //  if (!compactMode) variables_array_to_samples(allVariables, allSamples);
   return allSamples;
 }
 

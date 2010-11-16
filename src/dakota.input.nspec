@@ -799,9 +799,9 @@ KEYWORD model {N_mom3(start,0,stop)}
               # using generic STRING to avoid collision with local/global below
               [ optimization_method STRING {N_mom(str,krigingOptMethod)} ]
 	      [ max_trials INTEGER {N_mom(shint,krigingMaxTrials)} ]
-	      [ correlations REALLIST {N_mom(RealDL,krigingCorrelations)} ]
-	      [ min_correlations REALLIST {N_mom(RealDL,krigingMinCorrelations)} ]
-	      [ max_correlations REALLIST {N_mom(RealDL,krigingMaxCorrelations)} ]
+	      [ correlation_lengths REALLIST {N_mom(RealDL,krigingCorrelations)} ]
+#	      [ min_correlations REALLIST {N_mom(RealDL,krigingMinCorrelations)} ]
+#	      [ max_correlations REALLIST {N_mom(RealDL,krigingMaxCorrelations)} ]
 	      )
             [ total_points INTEGER {N_mom(int,pointsTotal)} | 
               minimum_points {N_mom(true,pointsMinimum)} | 

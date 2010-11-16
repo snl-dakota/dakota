@@ -1103,9 +1103,7 @@ KEYWORD model
 		]
 	      [ optimization_method STRING ]
 	      [ max_trials INTEGER ]
-	      [ correlations REALLIST ]
-	      [ min_correlations REALLIST ]
-	      [ max_correlations REALLIST ]
+	      [ correlation_lengths REALLIST ]
 	      )
 	    [ total_points INTEGER
 	    | minimum_points

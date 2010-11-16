@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 864 distinct keywords (plus 103 aliases) **/
+/** 862 distinct keywords (plus 103 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -984,11 +984,9 @@ static KeyWord
 		{"quadratic",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_quadratic)},
 		{"reduced_quadratic",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_reduced_quadratic)}
 		},
-	kw_162[6] = {
-		{"correlations",14,0,4,0,0,0.,0.,0,N_mom(RealDL,krigingCorrelations)},
-		{"max_correlations",14,0,6,0,0,0.,0.,0,N_mom(RealDL,krigingMaxCorrelations)},
+	kw_162[4] = {
+		{"correlation_lengths",14,0,4,0,0,0.,0.,0,N_mom(RealDL,krigingCorrelations)},
 		{"max_trials",9,0,3,0,0,0.,0.,0,N_mom(shint,krigingMaxTrials)},
-		{"min_correlations",14,0,5,0,0,0.,0.,0,N_mom(RealDL,krigingMinCorrelations)},
 		{"optimization_method",11,0,2,0,0,0.,0.,0,N_mom(str,krigingOptMethod)},
 		{"trend",8,4,1,0,kw_161}
 		},
@@ -1030,7 +1028,7 @@ static KeyWord
 		{"dace_method_pointer",11,0,3,0,0,0.,0.,0,N_mom(str,subMethodPointer)},
 		{"diagnostics",15,0,8,0,0,0.,0.,0,N_mom(strL,diagMetrics)},
 		{"gaussian_process",8,2,1,1,kw_160,0.,0.,0,N_mom(lit,surrogateType_global_gaussian)},
-		{"kriging",8,6,1,1,kw_162,0.,0.,0,N_mom(lit,surrogateType_global_kriging)},
+		{"kriging",8,4,1,1,kw_162,0.,0.,0,N_mom(lit,surrogateType_global_kriging)},
 		{"mars",8,2,1,1,kw_164,0.,0.,0,N_mom(lit,surrogateType_global_mars)},
 		{"minimum_points",8,0,2,0,0,0.,0.,0,N_mom(true,pointsMinimum)},
 		{"moving_least_squares",8,2,1,1,kw_165,0.,0.,0,N_mom(lit,surrogateType_global_moving_least_squares)},

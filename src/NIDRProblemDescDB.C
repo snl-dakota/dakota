@@ -4451,8 +4451,8 @@ static Real
 
 static RealVector
 	MP_(krigingCorrelations),
-	MP_(krigingMaxCorrelations),
-	MP_(krigingMinCorrelations),
+//	MP_(krigingMaxCorrelations),
+//	MP_(krigingMinCorrelations),
 	MP_(primaryRespCoeffs),
 	MP_(secondaryRespCoeffs);
 

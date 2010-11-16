@@ -1131,15 +1131,7 @@ TAG "model/surrogate/global/kriging/optimization_method"
 TAG "model/surrogate/global/kriging/max_trials"
 	DESC "{Kriging maximum trials} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
-TAG "model/surrogate/global/kriging/correlations"
-	DESC "{Kriging correlations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
-
-TAG "model/surrogate/global/kriging/min_correlations"
-	DESC "{Kriging minimum correlations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
-
-TAG "model/surrogate/global/kriging/max_correlations"
-	DESC "{Kriging maximum correlations} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
-
+TAG "model/surrogate/global/kriging/correlation_lengths"
 TAG "model/surrogate/global/total_points"
 TAG "model/surrogate/global/minimum_points"
 TAG "model/surrogate/global/recommended_points"
