@@ -108,7 +108,7 @@ protected:
   void read_variables_responses(int num_evals, size_t num_vars);
 
   /// Printing of VBD results
-  void print_vbd(std::ostream& s, const RealVectorArray& S,
+  void print_sobol_indices(std::ostream& s, const RealVectorArray& S,
 		 const RealVectorArray& T) const;
 
   /// convert samples array to variables array; e.g., allSamples to allVariables

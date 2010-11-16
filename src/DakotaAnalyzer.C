@@ -462,7 +462,7 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
       T4[k][i] = (sum_J2/(Real)(2*num_samples))/var_hatYC;
     }
   }
-  print_vbd(Cout,S4,T4);
+  print_sobol_indices(Cout,S4,T4);
 }
 
 
@@ -648,7 +648,7 @@ void Analyzer::pre_output()
 
 /** printing of variance based decomposition indices. */
 void Analyzer::
-print_vbd(std::ostream& s, const RealVectorArray& S,
+print_sobol_indices(std::ostream& s, const RealVectorArray& S,
           const RealVectorArray& T) const
 {
   StringMultiArrayConstView cv_labels
@@ -668,31 +668,32 @@ print_vbd(std::ostream& s, const RealVectorArray& S,
     << "of variable i with other uncertain variables.)\n";
 
   s << "\nGlobal sensitivity indices for each response function:\n";
-  s <<  std::setprecision(5);
   
   for (size_t k=0; k<numFunctions; k++){
     s << resp_labels[k] << " Sobol indices:\n"; 
-    s << std::setw(12) << ' ' << std::setw(18) << "Main effects" << std::setw(18)
-      << "Total effects" << std::endl;
-
+    s << std::setw(33) << "Main" << std::setw(20) << "Total" << std::endl;
+    
     for(size_t i=0; i<numContinuousVars; i++) {
       if ((S[k][i]>vbdDropTol) && (T[k][i]>vbdDropTol)){
-        s << std::setw(12) << cv_labels[i] << std::setw(18) 
-	  << S[k][i] << std::setw(18) << T[k][i]  << '\n';
+        s <<"                     " << std::setw(write_precision+7) 
+	  << S[k][i] << ' ' <<  std::setw(write_precision+7) << T[k][i] 
+	  << ' ' << cv_labels[i] << '\n';
       } 
     }
     for(size_t i=0; i<numDiscreteRealVars; i++) {
       if ((S[k][i]>vbdDropTol) && (T[k][i]>vbdDropTol)){
-        s << std::setw(12) << drv_labels[i] << std::setw(18)
-	  << S[k][i+numContinuousVars] << std::setw(18) 
-          << T[k][i+numContinuousVars]  << '\n';
+	s <<"                     " << std::setw(write_precision+7) 
+	  << S[k][i+numContinuousVars] << ' ' <<  std::setw(write_precision+7)
+          << T[k][i+numContinuousVars]  << ' ' << cv_labels[i] << '\n';
       } 
     }
     for(size_t i=0; i<numDiscreteIntVars; i++) {
       if ((S[k][i]>vbdDropTol) && (T[k][i]>vbdDropTol)){
-        s << std::setw(12) << div_labels[i] << std::setw(18) 
-        << S[k][i+numContinuousVars+numDiscreteRealVars] << std::setw(18) 
-        << T[k][i+numContinuousVars+numDiscreteRealVars]  << '\n';
+	s <<"                     " << std::setw(write_precision+7) 
+	  << S[k][i+numContinuousVars+numDiscreteRealVars] 
+	  << ' ' <<  std::setw(write_precision+7) 
+	  << T[k][i+numContinuousVars+numDiscreteRealVars] 
+	  << ' ' << cv_labels[i]<< '\n';
       }
     }
   }

@@ -153,7 +153,7 @@ private:
   /// print respCovariance
   void print_covariance(std::ostream& s);
   /// print global sensitivity indices
-  void print_global_sensitivity(std::ostream& s);
+  void print_sobol_indices(std::ostream& s);
   /// print local sensitivities evaluated at initialPtU
   void print_local_sensitivity(std::ostream& s);
 
