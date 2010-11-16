@@ -129,9 +129,9 @@ while ( $test_found == 0 && defined ($base = <DAKOTA_BASE>) ) {
 	}
       }
 
-      # UQ sampling/reliability
-      while ( ($base =~ /^(\s+Response Level\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:)$/o) &&
-	      ($test =~ /^(\s+Response Level\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:)$/o) ) {
+      # UQ mappings and indices
+      while ( ($base =~ /^(\s+Response Level\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol indices:)$/o) &&
+	      ($test =~ /^(\s+Response Level\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol indices:)$/o) ) {
 	$b_hdr1 = $base;         # save headers in case of diffs
 	$b_hdr2 = <DAKOTA_BASE>; # save headers in case of diffs
 	$t_hdr1 = $test;         # save headers in case of diffs
@@ -347,16 +347,17 @@ while ( $test_found == 0 && defined ($base = <DAKOTA_BASE>) ) {
           push @test_diffs, $test;
         }
       }
-      elsif ( ( ($t_si, $t_ti)
-		= $test =~ /^\s+\w+:\s+Si =\s+($e)\s+Ti =\s+($e)$/ ) &&
-	      ( ($b_si, $b_ti)
-		= $base =~ /^\s+\w+:\s+Si =\s+($e)\s+Ti =\s+($e)$/ ) ) {
-        if ( diff($t_si, $b_si) || diff($t_ti, $b_ti) ) {
-          $test_diff = 1;
-          push @base_diffs, $base;
-          push @test_diffs, $test;
-        }
-      }
+      # Sampling-based VBD
+      #elsif ( ( ($t_si, $t_ti)
+      #		= $test =~ /^\s+\w+:\s+Si =\s+($e)\s+Ti =\s+($e)$/ ) &&
+      #	      ( ($b_si, $b_ti)
+      #		= $base =~ /^\s+\w+:\s+Si =\s+($e)\s+Ti =\s+($e)$/ ) ) {
+      #  if ( diff($t_si, $b_si) || diff($t_ti, $b_ti) ) {
+      #    $test_diff = 1;
+      #    push @base_diffs, $base;
+      #    push @test_diffs, $test;
+      #  }
+      #}
       # SBO
       #elsif ( ( ($t_iter) = $test =~ /^SBO Iterations =\s+(\d+)$/ ) &&
       #        ( ($b_iter) = $base =~ /^SBO Iterations =\s+(\d+)$/ ) ) {

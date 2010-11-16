@@ -567,14 +567,23 @@ foreach $file (@testin) {
 	    print TEST_OUT;
 	  }
 
-	  while (/^response_fn_(\d+) Sobol|total Sobol /) {
+	  while (/^\w+ Sobol indices:/) {
 	    print;
 	    print TEST_OUT;
 	    $_ = <OUTPUT>; # grab next line (header)
+	    $_ = <OUTPUT>; # grab next line (table data)
 	    while (/^\s+$e/) {
 	      print;
 	      print TEST_OUT;
 	      $_ = <OUTPUT>; # grab next line
+	    }
+	    if (/Interaction/) { # header of optional section
+	      $_ = <OUTPUT>; # grab next line (table data)
+	      while (/^\s+$e/) {
+	        print;
+	        print TEST_OUT;
+	        $_ = <OUTPUT>; # grab next line
+	      }
 	    }
 	  }
 
