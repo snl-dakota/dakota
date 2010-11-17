@@ -670,24 +670,24 @@ print_sobol_indices(std::ostream& s, const RealVectorArray& S,
   s << "\nGlobal sensitivity indices for each response function:\n";
 
   size_t i, k, offset;
-  for (k=0; k<numFunctions; ++k){
+  for (k=0; k<numFunctions; ++k) {
     s << resp_labels[k] << " Sobol indices:\n"; 
     s << std::setw(38) << "Main" << std::setw(19) << "Total\n";
     
     for (i=0; i<numContinuousVars; ++i)
-      if (std::abs(S[k][i]) > vbdDropTol && std::abs(T[k][i]) > vbdDropTol)
+      if (std::abs(S[k][i]) > vbdDropTol || std::abs(T[k][i]) > vbdDropTol)
         s << "                     " << std::setw(write_precision+7) << S[k][i]
 	  << ' ' << std::setw(write_precision+7) << T[k][i] << ' '
 	  << cv_labels[i] << '\n';
     offset = numContinuousVars;
     for (i=0; i<numDiscreteRealVars; ++i)
-      if (std::abs(S[k][i]) > vbdDropTol && std::abs(T[k][i]) > vbdDropTol)
+      if (std::abs(S[k][i]) > vbdDropTol || std::abs(T[k][i]) > vbdDropTol)
 	s << "                     " << std::setw(write_precision+7) 
 	  << S[k][i+offset] << ' ' << std::setw(write_precision+7)
           << T[k][i+offset] << ' ' << cv_labels[i] << '\n';
     offset += numDiscreteRealVars;
     for (i=0; i<numDiscreteIntVars; ++i)
-      if (std::abs(S[k][i]) > vbdDropTol && std::abs(T[k][i]) > vbdDropTol)
+      if (std::abs(S[k][i]) > vbdDropTol || std::abs(T[k][i]) > vbdDropTol)
 	s << "                     " << std::setw(write_precision+7) 
 	  << S[k][i+offset] << ' ' << std::setw(write_precision+7)
 	  << T[k][i+offset] << ' ' << cv_labels[i]<< '\n';
