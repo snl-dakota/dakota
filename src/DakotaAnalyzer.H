@@ -100,7 +100,7 @@ protected:
   void evaluate_parameter_sets(Model& model, bool log_resp_flag,
 			       bool log_best_flag);
 
-  void variance_based_decomp(int ncont, int ndiscreal, int ndiscint,
+  void variance_based_decomp(int ncont, int ndiscint, int ndiscreal,
 			     int num_samples);
  
   /// convenience function for reading variables/responses (used in

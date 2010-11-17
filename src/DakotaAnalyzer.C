@@ -191,7 +191,7 @@ variables_array_to_samples(const VariablesArray& vars_array,
     is the number of dimensions (uncertain vars) and N is the number
     of samples.  */
 void Analyzer::
-variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
+variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
 {
   using boost::multi_array;
   using boost::extents;
@@ -203,14 +203,14 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
   // WJB - ToDo: confer with MSE: RealVector2DArray total_c_vars(ncont+2);
   multi_array<RealVector, 2> total_c_vars(extents[ndimtotal+2][num_samples]);
   
-  multi_array<RealVector, 2> total_dr_vars = (ndiscreal > 0 ) ? 
-    multi_array<RealVector, 2>(extents[ndimtotal+2][num_samples]):
-    multi_array<RealVector, 2>();
-
   multi_array<IntVector, 2> total_di_vars = (ndiscint > 0) ?
     multi_array<IntVector, 2>(extents[ndimtotal+2][num_samples]):
     multi_array<IntVector, 2>();
  
+  multi_array<RealVector, 2> total_dr_vars = (ndiscreal > 0 ) ? 
+    multi_array<RealVector, 2>(extents[ndimtotal+2][num_samples]):
+    multi_array<RealVector, 2>();
+
   // get first sample block
   vary_pattern(true);
   get_parameter_sets(iteratedModel);
@@ -266,21 +266,21 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
 
   for (i=2; i<ndimtotal+2; ++i) {
     total_c_vars[i]  = total_c_vars[1];
-    total_dr_vars[i] = total_dr_vars[1];
     total_di_vars[i] = total_di_vars[1];
+    total_dr_vars[i] = total_dr_vars[1];
   }
  
   for (i=0; i<ncont; ++i)
     for (j=0; j<num_samples; ++j)   
       total_c_vars[i+2][j][i] = total_c_vars[0][j][i];
 
-  for (i=0; i<ndiscreal; ++i)
-    for (j=0; j<num_samples; ++j)   
-      total_dr_vars[ncont+i+2][j][i] = total_dr_vars[0][j][i];
-  
   for (i=0; i<ndiscint; ++i)
     for (j=0; j<num_samples; ++j)   
-      total_di_vars[ncont+ndiscreal+i+2][j][i] = total_di_vars[0][j][i];
+      total_di_vars[ncont+i+2][j][i] = total_di_vars[0][j][i];
+  
+  for (i=0; i<ndiscreal; ++i)
+    for (j=0; j<num_samples; ++j)   
+      total_dr_vars[ncont+ndiscint+i+2][j][i] = total_dr_vars[0][j][i];
   
   // call evaluate parameter sets (ncont)*num_samples to get data
   //WJB - ToDo: confer with MSE: Array<Real2DArray> total_fn_vals(numFunctions);
@@ -347,7 +347,8 @@ variance_based_decomp(int ncont, int ndiscreal, int ndiscint, int num_samples)
       S4[k].resize(ndimtotal);
       T4[k].resize(ndimtotal);
   }
-  multi_array<Real,3> total_norm_vals(extents[numFunctions][ndimtotal+2][num_samples]);
+  multi_array<Real,3>
+    total_norm_vals(extents[numFunctions][ndimtotal+2][num_samples]);
 
   // Loop over number of responses to obtain sensitivity indices for each
   for (k=0; k<numFunctions; ++k) {
@@ -653,10 +654,10 @@ print_sobol_indices(std::ostream& s, const RealVectorArray& S,
 {
   StringMultiArrayConstView cv_labels
     = iteratedModel.continuous_variable_labels();
-  StringMultiArrayConstView drv_labels
-    = iteratedModel.discrete_real_variable_labels();
   StringMultiArrayConstView div_labels
     = iteratedModel.discrete_int_variable_labels();
+  StringMultiArrayConstView drv_labels
+    = iteratedModel.discrete_real_variable_labels();
   const StringArray& resp_labels = iteratedModel.response_labels();
   // output explanatory info
   s.setf(std::ios::scientific);
@@ -680,17 +681,17 @@ print_sobol_indices(std::ostream& s, const RealVectorArray& S,
 	  << ' ' << std::setw(write_precision+7) << T[k][i] << ' '
 	  << cv_labels[i] << '\n';
     offset = numContinuousVars;
-    for (i=0; i<numDiscreteRealVars; ++i)
-      if (std::abs(S[k][i]) > vbdDropTol || std::abs(T[k][i]) > vbdDropTol)
-	s << "                     " << std::setw(write_precision+7) 
-	  << S[k][i+offset] << ' ' << std::setw(write_precision+7)
-          << T[k][i+offset] << ' ' << cv_labels[i] << '\n';
-    offset += numDiscreteRealVars;
     for (i=0; i<numDiscreteIntVars; ++i)
       if (std::abs(S[k][i]) > vbdDropTol || std::abs(T[k][i]) > vbdDropTol)
 	s << "                     " << std::setw(write_precision+7) 
 	  << S[k][i+offset] << ' ' << std::setw(write_precision+7)
-	  << T[k][i+offset] << ' ' << cv_labels[i]<< '\n';
+	  << T[k][i+offset] << ' ' << div_labels[i]<< '\n';
+    offset += numDiscreteIntVars;
+    for (i=0; i<numDiscreteRealVars; ++i)
+      if (std::abs(S[k][i]) > vbdDropTol || std::abs(T[k][i]) > vbdDropTol)
+	s << "                     " << std::setw(write_precision+7) 
+	  << S[k][i+offset] << ' ' << std::setw(write_precision+7)
+          << T[k][i+offset] << ' ' << drv_labels[i] << '\n';
   }
 }
 

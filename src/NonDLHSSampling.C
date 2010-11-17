@@ -98,8 +98,8 @@ void NonDLHSSampling::quantify_uncertainty()
   // (each of the size specified by the user) in order to compute VBD metrics.
   // If there are active discrete vars, they are included within allSamples.
   if (varBasedDecompFlag)
-    variance_based_decomp(numContinuousVars, numDiscreteRealVars,
-			  numDiscreteIntVars, numSamples);
+    variance_based_decomp(numContinuousVars, numDiscreteIntVars,
+			  numDiscreteRealVars, numSamples);
   // if VBD has not been selected, evaluate a single parameter set of the size
   // specified by the user and stored in allSamples
   else {
