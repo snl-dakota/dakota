@@ -407,8 +407,10 @@ sub gui_groups {
     }                                                                                                                                        
                                                                                                                                              
     # UQ methods (omit bayes_cal)"
-    $desc =~ s/(\/nond_[c-z_]*")/$1 GROUP "Uncertainty Quantification"/g;                                                                    
-                                                                                                                                             
+    @methods = ("global_evidence", "global_interval_est", "global_reliability", "importance_sampling", "local_evidence", "local_interval_est", "local_reliability", "polynomial_chaos", "sampling", "stoch_collocation" );
+    foreach (@methods) {
+	$desc =~ s/(method\/$_")/$1 GROUP "Uncertainty Quantification"/g;                                                                    
+    }                                                                                                                                     
                                                                                                                                              
     # Add response data set groups                                                                                                           
     kw_nest_desc("responses/num_objective_functions", "{Optimization} ");                                                                    
