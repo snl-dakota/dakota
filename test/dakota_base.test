@@ -97,8 +97,8 @@ Test Number 0 succeeded
                      -4.8437161350e+00 cdv_93
                       4.1451795036e+00 cdv_94
                       3.5954148073e+00 cdv_95
-                      4.1230485806e+00 cdv_96
-<<<<< Best objective function  =
+                      4.1230485806e+00 cdv_96 
+<<<<< Best objective function  = 
                       1.7123442915e+04
 <<<<< Best constraint values   =
                       1.4218529325e+01
@@ -197,7 +197,7 @@ Test Number 0 succeeded
                       6.7624664196e-01 cdv_89
                      -1.5194424494e+00 cdv_90
                      -3.2754934613e+00 cdv_91
-                     -1.2125435505e+00 cdv_92
+                     -1.2125435505e+00 cdv_92 
                      -2.9922806971e+00 cdv_93
                      -3.7798474624e+00 cdv_94
                       2.9754280262e+00 cdv_95
@@ -397,7 +397,7 @@ Test Number 0 succeeded
                       1.5718832050e+00 cdv_81
                       2.5196994051e+00 cdv_82
                       4.9695595492e-01 cdv_83
-                     -6.1307854917e-01 cdv_84
+                     -6.1307854917e-01 cdv_84 
                      -2.4320137990e+00 cdv_85
                       3.3863603883e+00 cdv_86
                      -1.9193852055e+00 cdv_87
@@ -1000,7 +1000,7 @@ Test Number 0 succeeded
                       4.3005394371e+00 cdv_60
                       4.3285979496e+00 cdv_61
                      -3.5329791589e+00 cdv_62
-                     -3.6589524124e+00 cdv_63
+                     -3.6589524124e+00 cdv_63 
                      -3.9997768407e-01 cdv_64
                       4.6032858555e+00 cdv_65
                       1.7778681734e+00 cdv_66
@@ -5162,12 +5162,9 @@ Polynomial Chaos coefficients for response_fn_1:
    1.2845892529e-01  He0  He2
 response_fn_1:  Mean =  1.1640987765e+00  Std. Dev. = 7.1379361307e-01  Coeff. of Variation =  6.1317271995e-01
 response_fn_1 Sobol indices:
-                      3.0877942643e-01 TF1ln 
-                      6.0499772983e-01 TF2ln 
+                      3.0877942643e-01  3.9500227017e-01 TF1ln
+                      6.0499772983e-01  6.9122057357e-01 TF2ln
                       8.6222843737e-02 TF1ln TF2ln 
-response_fn_1 total Sobol indices:
-                      3.9500227017e-01 TF1ln
-                      6.9122057357e-01 TF2ln
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000000e-01   2.4000000000e-03
@@ -5209,12 +5206,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -2.4941524742e-02  He0  He3
 response_fn_1:  Mean =  1.1640987765e+00  Std. Dev. = 7.2550487140e-01  Coeff. of Variation =  6.2323308473e-01
 response_fn_1 Sobol indices:
-                      3.0146445780e-01 TF1ln 
-                      5.9271451200e-01 TF2ln 
+                      3.0146445780e-01  4.0728548800e-01 TF1ln
+                      5.9271451200e-01  6.9853554220e-01 TF2ln
                       1.0582103020e-01 TF1ln TF2ln 
-response_fn_1 total Sobol indices:
-                      4.0728548800e-01 TF1ln
-                      6.9853554220e-01 TF2ln
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000000e-01   2.9400000000e-02
@@ -5255,12 +5249,9 @@ Polynomial Chaos coefficients for response_fn_1:
    5.4864756254e-03  He2  He2
 response_fn_1:  Mean =  1.1627075482e+00  Std. Dev. = 6.8486344984e-01  Coeff. of Variation =  5.8902468718e-01
 response_fn_1 Sobol indices:
-                      3.0775732954e-01 TF1ln 
-                      6.2545844963e-01 TF2ln 
+                      3.0775732954e-01  3.7454155037e-01 TF1ln
+                      6.2545844963e-01  6.9224267046e-01 TF2ln
                       6.6784220835e-02 TF1ln TF2ln 
-response_fn_1 total Sobol indices:
-                      3.7454155037e-01 TF1ln
-                      6.9224267046e-01 TF2ln
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000000e-01   4.5100000000e-02
@@ -5298,12 +5289,9 @@ Polynomial Chaos coefficients for response_fn_1:
    8.5562490278e-02  He0  He2
 response_fn_1:  Mean =  1.1461957102e+00  Std. Dev. = 6.3550320481e-01  Coeff. of Variation =  5.5444563191e-01
 response_fn_1 Sobol indices:
-                      3.4224022091e-01 TF1ln 
-                      6.1988568361e-01 TF2ln 
+                      3.4224022091e-01  3.8011431639e-01 TF1ln
+                      6.1988568361e-01  6.5775977909e-01 TF2ln
                       3.7874095473e-02 TF1ln TF2ln 
-response_fn_1 total Sobol indices:
-                      3.8011431639e-01 TF1ln
-                      6.5775977909e-01 TF2ln
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000000e-01   5.1100000000e-02
@@ -5341,12 +5329,9 @@ Polynomial Chaos coefficients for response_fn_1:
    8.6063965888e-02  He0  He2
 response_fn_1:  Mean =  1.4369738202e+00  Std. Dev. = 7.6492860141e-01  Coeff. of Variation =  5.3231909354e-01
 response_fn_1 Sobol indices:
-                      3.3385547503e-01 TF1ln 
-                      6.1190315594e-01 TF2ln 
+                      3.3385547503e-01  3.8809684406e-01 TF1ln
+                      6.1190315594e-01  6.6614452497e-01 TF2ln
                       5.4241369032e-02 TF1ln TF2ln 
-response_fn_1 total Sobol indices:
-                      3.8809684406e-01 TF1ln
-                      6.6614452497e-01 TF2ln
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000000e-01   5.3000000000e-03
@@ -15942,68 +15927,53 @@ response_fn_1:  Mean =  6.2500000000e+00  Std. Dev. = 5.1678181080e-14  Coeff. o
 response_fn_2:  Mean =  4.4362728260e-01  Std. Dev. = 1.5447232545e-01  Coeff. of Variation =  3.4820294312e-01
 response_fn_3:  Mean =  7.6331165581e-01  Std. Dev. = 1.8036558489e-01  Coeff. of Variation =  2.3629350282e-01
 response_fn_1 Sobol indices:
-                      9.2166978091e-02 R 
-                      9.1806716822e-02 E 
-                      4.1330793023e-01 R E 
-                      1.8546680651e-02 X 
-                      4.3152244368e-02 R X 
-                      2.2477258613e-02 E X 
-                      7.3147941037e-03 R E X 
-                      2.8167340126e-02 Y 
-                      9.3886601091e-02 R Y 
-                      6.9850715956e-02 E Y 
-                      3.4319058390e-02 R E Y 
-                      3.2040003487e-02 X Y 
-                      6.7393518794e-03 R X Y 
-                      4.5181537730e-02 E X Y 
-                      1.0427884614e-03 R E X Y 
-response_fn_1 total Sobol indices:
-                      6.9192974662e-01 R
-                      6.8530080031e-01 E
-                      1.7649465929e-01 X
-                      3.1122739712e-01 Y
+                      6.9100505850e-02  4.6160693333e-01 R
+                      8.0130753853e-02  4.9985448868e-01 E
+                      4.5567374999e-02  3.6392704043e-01 X
+                      1.1916632681e-01  4.6310909101e-01 Y
+                      1.7725671977e-01 R E
+                      8.1713208990e-02 R X
+                      5.1411246351e-02 E X
+                      3.1711099182e-02 R E X
+                      5.2097716647e-02 R Y
+                      1.2236618753e-01 E Y
+                      1.5954749109e-02 R E Y
+                      1.0253875043e-01 X Y
+                      2.9961627594e-02 R X Y
+                      1.7212426698e-02 E X Y
+                      3.8113061883e-03 R E X Y
 response_fn_2 Sobol indices:
-                      2.2168484909e-01 R 
-                      1.2294470523e-10 E 
-                      6.2689753435e-11 R E 
-                      3.8816914561e-01 X 
-                      9.8445144575e-04 R X 
-                      1.2879240196e-10 E X 
-                      1.3235440638e-10 R E X 
-                      3.8817582351e-01 Y 
-                      9.8572865081e-04 R Y 
-                      2.1178689911e-10 E Y 
-                      2.8201335134e-10 R E Y 
-                      2.0610715586e-10 X Y 
-                      2.7350071787e-10 R X Y 
-                      7.5484944157e-11 E X Y 
-                      1.8525581105e-10 R E X Y 
-response_fn_2 total Sobol indices:
-                      2.2365503013e-01 R
-                      1.2013222727e-09 E
-                      3.8915359806e-01 X
-                      3.8916155340e-01 Y
+                      2.2168484909e-01  2.2365503013e-01 R
+                      1.2294470524e-10  1.2013222728e-09 E
+                      3.8816914561e-01  3.8915359806e-01 X
+                      3.8817582351e-01  3.8916155340e-01 Y
+                      6.2689753378e-11 R E
+                      9.8445144575e-04 R X
+                      1.2879240196e-10 E X
+                      1.3235440641e-10 R E X
+                      9.8572865081e-04 R Y
+                      2.1178689914e-10 E Y
+                      2.8201335139e-10 R E Y
+                      2.0610715595e-10 X Y
+                      2.7350071790e-10 R X Y
+                      7.5484944173e-11 E X Y
+                      1.8525581105e-10 R E X Y
 response_fn_3 Sobol indices:
-                      1.0759206874e-09 R 
-                      2.4259681240e-01 E 
-                      6.5130440341e-10 R E 
-                      1.5241499873e-01 X 
-                      5.4966995642e-09 R X 
-                      3.8667352577e-04 E X 
-                      9.8969782761e-10 R E X 
-                      6.0211143264e-01 Y 
-                      9.5431283343e-10 R Y 
-                      1.5277222169e-03 E Y 
-                      1.8466245861e-09 R E Y 
-                      9.5986944458e-04 X Y 
-                      1.0765963041e-09 R X Y 
-                      2.4789403625e-06 E X Y 
-                      8.6277852469e-12 R E X Y 
-response_fn_3 total Sobol indices:
-                      1.2099783991e-08 R
-                      2.4451369058e-01 E
-                      1.5376402821e-01 X
-                      6.0460150713e-01 Y
+                      1.0759206873e-09  1.2099783992e-08 R
+                      2.4259681240e-01  2.4451369058e-01 E
+                      1.5241499873e-01  1.5376402821e-01 X
+                      6.0211143264e-01  6.0460150713e-01 Y
+                      6.5130440335e-10 R E
+                      5.4966995649e-09 R X
+                      3.8667352577e-04 E X
+                      9.8969782780e-10 R E X
+                      9.5431283335e-10 R Y
+                      1.5277222169e-03 E Y
+                      1.8466245864e-09 R E Y
+                      9.5986944458e-04 X Y
+                      1.0765963041e-09 R X Y
+                      2.4789403625e-06 E X Y
+                      8.6277852419e-12 R E X Y
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00   9.0000000000e-04
@@ -16691,218 +16661,197 @@ response_fn_1:  Mean =  6.2500000000e+00  Std. Dev. = 3.1642390460e-13  Coeff. o
 response_fn_2:  Mean =  1.0194907921e+00  Std. Dev. = 7.0071307469e-01  Coeff. of Variation =  6.8731672724e-01
 response_fn_3:  Mean =  3.0356974103e+00  Std. Dev. = 2.5735288664e+00  Coeff. of Variation =  8.4775539804e-01
 response_fn_1 Sobol indices:
-                      4.4981412639e-01 beam_width 
-                      4.4981412639e-01 beam_thickness 
-                      1.0037174721e-01 beam_width beam_thickness 
-                      3.7014482628e-30 R 
-                      6.3872305658e-30 beam_width R 
-                      1.4052139337e-30 beam_thickness R 
-                      6.1049014636e-31 beam_width beam_thickness R 
-                      1.1465809640e-29 E 
-                      8.9767884895e-30 beam_width E 
-                      3.4775888328e-30 beam_thickness E 
-                      6.3691913199e-31 beam_width beam_thickness E 
-                      4.2302534147e-30 R E 
-                      1.9601816964e-30 beam_width R E 
-                      2.8815959513e-30 beam_thickness R E 
-                      1.5423891882e-32 beam_width beam_thickness R E 
-                      2.0909012704e-29 X 
-                      4.7023837323e-30 beam_width X 
-                      1.2098797471e-30 beam_thickness X 
-                      5.1501920477e-31 beam_width beam_thickness X 
-                      5.8911915476e-30 R X 
-                      1.2250231139e-30 beam_width R X 
-                      4.5631725252e-31 beam_thickness R X 
-                      2.3898018994e-32 beam_width beam_thickness R X 
-                      5.5160095589e-30 E X 
-                      1.4108378497e-30 beam_width E X 
-                      3.8333289175e-31 beam_thickness E X 
-                      1.3368604925e-31 beam_width beam_thickness E X 
-                      1.6003005359e-29 R E X 
-                      4.7903708806e-32 beam_width R E X 
-                      1.0463114489e-32 beam_thickness R E X 
-                      0.0000000000e+00 beam_width beam_thickness R E X 
-                      2.9778695573e-29 Y 
-                      1.4651335468e-30 beam_width Y 
-                      6.0391359362e-30 beam_thickness Y 
-                      1.1430175655e-30 beam_width beam_thickness Y 
-                      7.2324682407e-30 R Y 
-                      2.5552331621e-30 beam_width R Y 
-                      6.3631571638e-31 beam_thickness R Y 
-                      7.5426142513e-31 beam_width beam_thickness R Y 
-                      2.2400347607e-29 E Y 
-                      1.3964741302e-31 beam_width E Y 
-                      1.7785435978e-30 beam_thickness E Y 
-                      4.2724384165e-32 beam_width beam_thickness E Y 
-                      9.5379011029e-30 R E Y 
-                      2.1049550722e-33 beam_width R E Y 
-                      1.0594312136e-30 beam_thickness R E Y 
-                      0.0000000000e+00 beam_width beam_thickness R E Y 
-                      1.8921623796e-29 X Y 
-                      2.1752162776e-30 beam_width X Y 
-                      6.0564895830e-31 beam_thickness X Y 
-                      4.2904086949e-32 beam_width beam_thickness X Y 
-                      2.3077183627e-30 R X Y 
-                      2.8717914495e-31 beam_width R X Y 
-                      2.3680546568e-31 beam_thickness R X Y 
-                      0.0000000000e+00 beam_width beam_thickness R X Y 
-                      4.4749333608e-30 E X Y 
-                      7.0092005714e-32 beam_width E X Y 
-                      1.0071158047e-31 beam_thickness E X Y 
-                      0.0000000000e+00 beam_width beam_thickness E X Y 
-                      3.3381831091e-32 R E X Y 
-                      0.0000000000e+00 beam_width R E X Y 
-                      0.0000000000e+00 beam_thickness R E X Y 
-                      0.0000000000e+00 beam_width beam_thickness R E X Y 
-response_fn_1 total Sobol indices:
-                      5.5018587361e-01 beam_width
-                      5.5018587361e-01 beam_thickness
-                      6.9492440599e-29 R
-                      9.6789618632e-29 E
-                      8.7694178724e-29 X
-                      1.1382117631e-28 Y
+                      4.4981412639e-01  5.5018587361e-01 beam_width
+                      4.4981412639e-01  5.5018587361e-01 beam_thickness
+                      5.5812522224e-30  1.0761048744e-28 R
+                      3.7708737789e-30  9.0203353740e-29 E
+                      4.4052921103e-30  8.5652086651e-29 X
+                      1.4987273118e-29  1.1226498985e-28 Y
+                      1.0037174721e-01 beam_width beam_thickness
+                      5.9474112381e-30 beam_width R
+                      6.1995522752e-30 beam_thickness R
+                      2.0652251059e-30 beam_width beam_thickness R
+                      4.5973973161e-30 beam_width E
+                      7.4220561390e-31 beam_thickness E
+                      6.2538673880e-31 beam_width beam_thickness E
+                      9.2929404743e-30 R E
+                      9.2609625462e-31 beam_width R E
+                      1.1570386935e-30 beam_thickness R E
+                      2.4984155446e-32 beam_width beam_thickness R E
+                      3.1492934944e-30 beam_width X
+                      2.7208007253e-30 beam_thickness X
+                      2.3216543796e-31 beam_width beam_thickness X
+                      1.5040242668e-29 R X
+                      1.9364799109e-30 beam_width R X
+                      1.3951700361e-31 beam_thickness R X
+                      1.3052946519e-31 beam_width beam_thickness R X
+                      6.3375843054e-30 E X
+                      1.8346854313e-30 beam_width E X
+                      7.1610098492e-31 beam_thickness E X
+                      9.8109819469e-31 beam_width beam_thickness E X
+                      1.1210365861e-29 R E X
+                      6.4102429880e-31 beam_width R E X
+                      4.7258023313e-31 beam_thickness R E X
+                      0.0000000000e+00 beam_width beam_thickness R E X
+                      2.0867546741e-30 beam_width Y
+                      3.6928244972e-30 beam_thickness Y
+                      7.0432697884e-31 beam_width beam_thickness Y
+                      1.3818810294e-29 R Y
+                      5.0386788707e-30 beam_width R Y
+                      1.6634665818e-30 beam_thickness R Y
+                      1.1043141525e-30 beam_width beam_thickness R Y
+                      1.6786997122e-29 E Y
+                      2.7769629032e-30 beam_width E Y
+                      3.1761935483e-30 beam_thickness E Y
+                      1.8473559390e-32 beam_width beam_thickness E Y
+                      1.0185899444e-29 R E Y
+                      3.8689594667e-31 beam_width R E Y
+                      1.3279163662e-31 beam_thickness R E Y
+                      0.0000000000e+00 beam_width beam_thickness R E Y
+                      7.3541568236e-30 X Y
+                      1.0603975780e-30 beam_width X Y
+                      5.7400621834e-31 beam_thickness X Y
+                      8.8221433329e-32 beam_width beam_thickness X Y
+                      1.3017012856e-29 R X Y
+                      2.3082662393e-32 beam_width R X Y
+                      1.7867170917e-31 beam_thickness R X Y
+                      0.0000000000e+00 beam_width beam_thickness R X Y
+                      1.2036699771e-29 E X Y
+                      9.2683643920e-33 beam_width E X Y
+                      6.7185680288e-32 beam_thickness E X Y
+                      0.0000000000e+00 beam_width beam_thickness E X Y
+                      1.2956234294e-30 R E X Y
+                      0.0000000000e+00 beam_width R E X Y
+                      0.0000000000e+00 beam_thickness R E X Y
+                      0.0000000000e+00 beam_width beam_thickness R E X Y
 response_fn_2 Sobol indices:
-                      2.1343121652e-01 beam_width 
-                      3.5908257520e-01 beam_thickness 
-                      2.2946491853e-01 beam_width beam_thickness 
-                      3.7152435929e-03 R 
-                      1.3290565308e-03 beam_width R 
-                      2.7466483015e-03 beam_thickness R 
-                      5.9243453349e-04 beam_width beam_thickness R 
-                      1.8113008944e-03 E 
-                      3.5651394736e-03 beam_width E 
-                      2.7116075404e-03 beam_thickness E 
-                      2.0715936692e-03 beam_width beam_thickness E 
-                      8.6137862672e-03 R E 
-                      2.5160415013e-03 beam_width R E 
-                      4.8496474841e-03 beam_thickness R E 
-                      2.0957227187e-03 beam_width beam_thickness R E 
-                      3.5303272573e-03 X 
-                      1.0825550614e-03 beam_width X 
-                      1.7455392715e-03 beam_thickness X 
-                      3.3561972383e-03 beam_width beam_thickness X 
-                      1.2697388560e-02 R X 
-                      3.6880670468e-03 beam_width R X 
-                      2.0085742218e-03 beam_thickness R X 
-                      4.3661180597e-03 beam_width beam_thickness R X 
-                      1.5461368950e-02 E X 
-                      4.0517401081e-03 beam_width E X 
-                      6.6244222055e-04 beam_thickness E X 
-                      7.2971089580e-03 beam_width beam_thickness E X 
-                      3.1156281717e-03 R E X 
-                      2.7513344360e-04 beam_width R E X 
-                      7.6378978914e-03 beam_thickness R E X 
-                      0.0000000000e+00 beam_width beam_thickness R E X 
-                      1.8670233344e-03 Y 
-                      5.3418897699e-03 beam_width Y 
-                      9.0493116096e-04 beam_thickness Y 
-                      6.0883163557e-04 beam_width beam_thickness Y 
-                      1.3350097655e-02 R Y 
-                      5.6476111776e-03 beam_width R Y 
-                      5.2085756369e-03 beam_thickness R Y 
-                      3.6661611784e-03 beam_width beam_thickness R Y 
-                      3.4666501122e-03 E Y 
-                      2.5956216360e-03 beam_width E Y 
-                      6.2502608240e-03 beam_thickness E Y 
-                      1.2632649747e-03 beam_width beam_thickness E Y 
-                      1.3377415350e-03 R E Y 
-                      2.3204774796e-03 beam_width R E Y 
-                      5.3999663489e-03 beam_thickness R E Y 
-                      0.0000000000e+00 beam_width beam_thickness R E Y 
-                      3.5427665055e-03 X Y 
-                      6.3725708346e-03 beam_width X Y 
-                      3.9224241615e-03 beam_thickness X Y 
-                      7.3289393531e-05 beam_width beam_thickness X Y 
-                      4.4612881776e-03 R X Y 
-                      4.3851395898e-06 beam_width R X Y 
-                      3.8698133622e-03 beam_thickness R X Y 
-                      0.0000000000e+00 beam_width beam_thickness R X Y 
-                      2.9617979020e-03 E X Y 
-                      4.4032573044e-05 beam_width E X Y 
-                      1.6032329409e-03 beam_thickness E X Y 
-                      0.0000000000e+00 beam_width beam_thickness E X Y 
-                      4.3422753363e-03 R E X Y 
-                      0.0000000000e+00 beam_width R E X Y 
-                      0.0000000000e+00 beam_thickness R E X Y 
-                      0.0000000000e+00 beam_width beam_thickness R E X Y 
-response_fn_2 total Sobol indices:
-                      5.0712117918e-01 beam_width
-                      6.6345977746e-01 beam_thickness
-                      1.0985578135e-01 R
-                      9.8321480955e-02 E
-                      1.0217396279e-01 X
-                      9.0426980786e-02 Y
+                      2.1343121652e-01  5.0712117918e-01 beam_width
+                      3.5908257520e-01  6.6345977746e-01 beam_thickness
+                      3.7152435929e-03  1.0985578135e-01 R
+                      1.8113008944e-03  9.8321480955e-02 E
+                      3.5303272573e-03  1.0217396279e-01 X
+                      1.8670233344e-03  9.0426980786e-02 Y
+                      2.2946491853e-01 beam_width beam_thickness
+                      1.3290565308e-03 beam_width R
+                      2.7466483015e-03 beam_thickness R
+                      5.9243453349e-04 beam_width beam_thickness R
+                      3.5651394736e-03 beam_width E
+                      2.7116075404e-03 beam_thickness E
+                      2.0715936692e-03 beam_width beam_thickness E
+                      8.6137862672e-03 R E
+                      2.5160415013e-03 beam_width R E
+                      4.8496474841e-03 beam_thickness R E
+                      2.0957227187e-03 beam_width beam_thickness R E
+                      1.0825550614e-03 beam_width X
+                      1.7455392715e-03 beam_thickness X
+                      3.3561972383e-03 beam_width beam_thickness X
+                      1.2697388560e-02 R X
+                      3.6880670468e-03 beam_width R X
+                      2.0085742218e-03 beam_thickness R X
+                      4.3661180597e-03 beam_width beam_thickness R X
+                      1.5461368950e-02 E X
+                      4.0517401081e-03 beam_width E X
+                      6.6244222055e-04 beam_thickness E X
+                      7.2971089580e-03 beam_width beam_thickness E X
+                      3.1156281717e-03 R E X
+                      2.7513344360e-04 beam_width R E X
+                      7.6378978914e-03 beam_thickness R E X
+                      0.0000000000e+00 beam_width beam_thickness R E X
+                      5.3418897699e-03 beam_width Y
+                      9.0493116096e-04 beam_thickness Y
+                      6.0883163557e-04 beam_width beam_thickness Y
+                      1.3350097655e-02 R Y
+                      5.6476111776e-03 beam_width R Y
+                      5.2085756369e-03 beam_thickness R Y
+                      3.6661611784e-03 beam_width beam_thickness R Y
+                      3.4666501122e-03 E Y
+                      2.5956216360e-03 beam_width E Y
+                      6.2502608240e-03 beam_thickness E Y
+                      1.2632649747e-03 beam_width beam_thickness E Y
+                      1.3377415350e-03 R E Y
+                      2.3204774796e-03 beam_width R E Y
+                      5.3999663489e-03 beam_thickness R E Y
+                      0.0000000000e+00 beam_width beam_thickness R E Y
+                      3.5427665055e-03 X Y
+                      6.3725708346e-03 beam_width X Y
+                      3.9224241615e-03 beam_thickness X Y
+                      7.3289393531e-05 beam_width beam_thickness X Y
+                      4.4612881776e-03 R X Y
+                      4.3851395898e-06 beam_width R X Y
+                      3.8698133622e-03 beam_thickness R X Y
+                      0.0000000000e+00 beam_width beam_thickness R X Y
+                      2.9617979020e-03 E X Y
+                      4.4032573044e-05 beam_width E X Y
+                      1.6032329409e-03 beam_thickness E X Y
+                      0.0000000000e+00 beam_width beam_thickness E X Y
+                      4.3422753363e-03 R E X Y
+                      0.0000000000e+00 beam_width R E X Y
+                      0.0000000000e+00 beam_thickness R E X Y
+                      0.0000000000e+00 beam_width beam_thickness R E X Y
 response_fn_3 Sobol indices:
-                      1.3676781565e-01 beam_width 
-                      3.3752230328e-01 beam_thickness 
-                      1.9397013262e-01 beam_width beam_thickness 
-                      7.3400470803e-03 R 
-                      3.3491693565e-03 beam_width R 
-                      5.0117516558e-03 beam_thickness R 
-                      2.4530750310e-03 beam_width beam_thickness R 
-                      1.3982890768e-03 E 
-                      5.7444867649e-03 beam_width E 
-                      8.1006308525e-03 beam_thickness E 
-                      5.1221422120e-03 beam_width beam_thickness E 
-                      1.4026851918e-02 R E 
-                      1.5186678145e-03 beam_width R E 
-                      6.7320642761e-03 beam_thickness R E 
-                      1.8415788932e-03 beam_width beam_thickness R E 
-                      6.1845928224e-03 X 
-                      3.0046631513e-03 beam_width X 
-                      5.0818419038e-03 beam_thickness X 
-                      7.0292073721e-03 beam_width beam_thickness X 
-                      1.8694408408e-02 R X 
-                      3.7798164284e-03 beam_width R X 
-                      3.4374903184e-03 beam_thickness R X 
-                      4.8103222185e-03 beam_width beam_thickness R X 
-                      1.6103406864e-02 E X 
-                      3.0072165212e-03 beam_width E X 
-                      2.9542169754e-03 beam_thickness E X 
-                      1.0372545873e-02 beam_width beam_thickness E X 
-                      4.9507400645e-03 R E X 
-                      4.9828610991e-05 beam_width R E X 
-                      1.2917217251e-02 beam_thickness R E X 
-                      0.0000000000e+00 beam_width beam_thickness R E X 
-                      2.7683310137e-03 Y 
-                      1.0692627502e-02 beam_width Y 
-                      1.9206145031e-03 beam_thickness Y 
-                      3.1874546947e-03 beam_width beam_thickness Y 
-                      2.9139281983e-02 R Y 
-                      7.0540988583e-03 beam_width R Y 
-                      1.2328120623e-02 beam_thickness R Y 
-                      1.0510024120e-02 beam_width beam_thickness R Y 
-                      5.1263946988e-03 E Y 
-                      2.1194853026e-03 beam_width E Y 
-                      1.2263331066e-02 beam_thickness E Y 
-                      4.2159956224e-03 beam_width beam_thickness E Y 
-                      3.5972434143e-03 R E Y 
-                      1.3766763832e-03 beam_width R E Y 
-                      8.8663158794e-03 beam_thickness R E Y 
-                      0.0000000000e+00 beam_width beam_thickness R E Y 
-                      5.1730634401e-03 X Y 
-                      1.2600158194e-02 beam_width X Y 
-                      1.0755450629e-02 beam_thickness X Y 
-                      5.3956879146e-05 beam_width beam_thickness X Y 
-                      5.5594527313e-03 R X Y 
-                      1.3433950120e-04 beam_width R X Y 
-                      6.7474894566e-03 beam_thickness R X Y 
-                      0.0000000000e+00 beam_width beam_thickness R X Y 
-                      3.4713227676e-03 E X Y 
-                      1.0868894664e-04 beam_width E X Y 
-                      1.2405051338e-03 beam_thickness E X Y 
-                      0.0000000000e+00 beam_width beam_thickness E X Y 
-                      5.7130553901e-03 R E X Y 
-                      0.0000000000e+00 beam_width R E X Y 
-                      0.0000000000e+00 beam_thickness R E X Y 
-                      0.0000000000e+00 beam_width beam_thickness R E X Y 
-response_fn_3 total Sobol indices:
-                      4.3487417452e-01 beam_width
-                      6.7944577934e-01 beam_thickness
-                      1.8193912767e-01 R
-                      1.4293889857e-01 E
-                      1.5393499785e-01 X
-                      1.6672347873e-01 Y
+                      1.3676781565e-01  4.3487417452e-01 beam_width
+                      3.3752230328e-01  6.7944577934e-01 beam_thickness
+                      7.3400470803e-03  1.8193912767e-01 R
+                      1.3982890768e-03  1.4293889857e-01 E
+                      6.1845928224e-03  1.5393499785e-01 X
+                      2.7683310137e-03  1.6672347873e-01 Y
+                      1.9397013262e-01 beam_width beam_thickness
+                      3.3491693565e-03 beam_width R
+                      5.0117516558e-03 beam_thickness R
+                      2.4530750310e-03 beam_width beam_thickness R
+                      5.7444867649e-03 beam_width E
+                      8.1006308525e-03 beam_thickness E
+                      5.1221422120e-03 beam_width beam_thickness E
+                      1.4026851918e-02 R E
+                      1.5186678145e-03 beam_width R E
+                      6.7320642761e-03 beam_thickness R E
+                      1.8415788932e-03 beam_width beam_thickness R E
+                      3.0046631513e-03 beam_width X
+                      5.0818419038e-03 beam_thickness X
+                      7.0292073721e-03 beam_width beam_thickness X
+                      1.8694408408e-02 R X
+                      3.7798164284e-03 beam_width R X
+                      3.4374903184e-03 beam_thickness R X
+                      4.8103222185e-03 beam_width beam_thickness R X
+                      1.6103406864e-02 E X
+                      3.0072165212e-03 beam_width E X
+                      2.9542169754e-03 beam_thickness E X
+                      1.0372545873e-02 beam_width beam_thickness E X
+                      4.9507400645e-03 R E X
+                      4.9828610991e-05 beam_width R E X
+                      1.2917217251e-02 beam_thickness R E X
+                      0.0000000000e+00 beam_width beam_thickness R E X
+                      1.0692627502e-02 beam_width Y
+                      1.9206145031e-03 beam_thickness Y
+                      3.1874546947e-03 beam_width beam_thickness Y
+                      2.9139281983e-02 R Y
+                      7.0540988583e-03 beam_width R Y
+                      1.2328120623e-02 beam_thickness R Y
+                      1.0510024120e-02 beam_width beam_thickness R Y
+                      5.1263946988e-03 E Y
+                      2.1194853026e-03 beam_width E Y
+                      1.2263331066e-02 beam_thickness E Y
+                      4.2159956224e-03 beam_width beam_thickness E Y
+                      3.5972434143e-03 R E Y
+                      1.3766763832e-03 beam_width R E Y
+                      8.8663158794e-03 beam_thickness R E Y
+                      0.0000000000e+00 beam_width beam_thickness R E Y
+                      5.1730634401e-03 X Y
+                      1.2600158194e-02 beam_width X Y
+                      1.0755450629e-02 beam_thickness X Y
+                      5.3956879146e-05 beam_width beam_thickness X Y
+                      5.5594527313e-03 R X Y
+                      1.3433950120e-04 beam_width R X Y
+                      6.7474894566e-03 beam_thickness R X Y
+                      0.0000000000e+00 beam_width beam_thickness R X Y
+                      3.4713227676e-03 E X Y
+                      1.0868894664e-04 beam_width E X Y
+                      1.2405051338e-03 beam_thickness E X Y
+                      0.0000000000e+00 beam_width beam_thickness E X Y
+                      5.7130553901e-03 R E X Y
+                      0.0000000000e+00 beam_width R E X Y
+                      0.0000000000e+00 beam_thickness R E X Y
+                      0.0000000000e+00 beam_width beam_thickness R E X Y
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00   3.7500000000e-02
@@ -17170,68 +17119,53 @@ response_fn_1:  Mean =  6.2500000000e+00  Std. Dev. = 2.0514407533e-14  Coeff. o
 response_fn_2:  Mean =  4.3439123565e-01  Std. Dev. = 2.6233860151e-01  Coeff. of Variation =  6.0392240907e-01
 response_fn_3:  Mean =  7.4767735402e-01  Std. Dev. = 2.8480567385e-01  Coeff. of Variation =  3.8092055660e-01
 response_fn_1 Sobol indices:
-                      7.1050317924e-02 R 
-                      5.0167359116e-02 E 
-                      6.0061874737e-02 R E 
-                      6.7412206472e-02 X 
-                      1.9314345736e-02 R X 
-                      1.4112712441e-01 E X 
-                      3.0461361548e-02 R E X 
-                      4.9502296005e-02 Y 
-                      5.9764273868e-02 R Y 
-                      7.7095664950e-02 E Y 
-                      4.3618073921e-02 R E Y 
-                      1.1785164596e-01 X Y 
-                      3.7267771186e-02 R X Y 
-                      1.2476793643e-01 E X Y 
-                      5.0537747742e-02 R E X Y 
-response_fn_1 total Sobol indices:
-                      3.7207576666e-01 R
-                      5.7783714285e-01 E
-                      5.8874013948e-01 X
-                      5.6040541006e-01 Y
+                      4.4014671386e-03  5.2240726884e-01 R
+                      6.2099192697e-02  4.7594911832e-01 E
+                      1.3432379837e-02  5.9854536842e-01 X
+                      7.4001738800e-02  4.7314986345e-01 Y
+                      1.1849146787e-01 R E
+                      1.9181075431e-01 R X
+                      5.6714180727e-02 E X
+                      7.9900693978e-02 R E X
+                      4.7099152602e-02 R Y
+                      9.1918167079e-02 E Y
+                      3.4434454003e-03 R E Y
+                      1.2739732157e-01 X Y
+                      6.5908067417e-02 R X Y
+                      5.2029750450e-02 E X Y
+                      1.1352220126e-02 R E X Y
 response_fn_2 Sobol indices:
-                      1.4904206493e-01 R 
-                      3.5275791303e-02 E 
-                      4.9775040182e-02 R E 
-                      1.9830614826e-02 X 
-                      5.3657933774e-02 R X 
-                      9.8560398253e-02 E X 
-                      3.5131680783e-02 R E X 
-                      6.0457161936e-02 Y 
-                      1.0444570805e-01 R Y 
-                      5.6018107512e-02 E Y 
-                      4.4772028110e-02 R E Y 
-                      9.8972050730e-02 X Y 
-                      1.2904147513e-01 R X Y 
-                      4.3878830405e-02 E X Y 
-                      2.1141114080e-02 R E X Y 
-response_fn_2 total Sobol indices:
-                      5.8700704503e-01 R
-                      3.8455299063e-01 E
-                      5.0021409798e-01 X
-                      5.5872647595e-01 Y
+                      1.4904206493e-01  5.8700704503e-01 R
+                      3.5275791303e-02  3.8455299063e-01 E
+                      1.9830614826e-02  5.0021409798e-01 X
+                      6.0457161936e-02  5.5872647595e-01 Y
+                      4.9775040182e-02 R E
+                      5.3657933774e-02 R X
+                      9.8560398253e-02 E X
+                      3.5131680783e-02 R E X
+                      1.0444570805e-01 R Y
+                      5.6018107512e-02 E Y
+                      4.4772028110e-02 R E Y
+                      9.8972050730e-02 X Y
+                      1.2904147513e-01 R X Y
+                      4.3878830405e-02 E X Y
+                      2.1141114080e-02 R E X Y
 response_fn_3 Sobol indices:
-                      4.7586045967e-02 R 
-                      1.0988879817e-01 E 
-                      6.5032941942e-02 R E 
-                      2.6069729200e-02 X 
-                      5.2016252775e-02 R X 
-                      1.0845316151e-01 E X 
-                      7.5195180872e-02 R E X 
-                      7.3039062767e-02 Y 
-                      6.2086293123e-02 R Y 
-                      4.6094876372e-02 E Y 
-                      3.6106402204e-02 R E Y 
-                      1.0649446942e-01 X Y 
-                      1.1284595487e-01 R X Y 
-                      7.5746271531e-02 E X Y 
-                      3.3445592750e-03 R E X Y 
-response_fn_3 total Sobol indices:
-                      4.5421363103e-01 R
-                      5.1986219187e-01 E
-                      5.6016557945e-01 X
-                      5.1575788957e-01 Y
+                      4.7586045967e-02  4.5421363103e-01 R
+                      1.0988879817e-01  5.1986219187e-01 E
+                      2.6069729200e-02  5.6016557945e-01 X
+                      7.3039062767e-02  5.1575788957e-01 Y
+                      6.5032941942e-02 R E
+                      5.2016252775e-02 R X
+                      1.0845316151e-01 E X
+                      7.5195180872e-02 R E X
+                      6.2086293123e-02 R Y
+                      4.6094876372e-02 E Y
+                      3.6106402204e-02 R E Y
+                      1.0649446942e-01 X Y
+                      1.1284595487e-01 R X Y
+                      7.5746271531e-02 E X Y
+                      3.3445592750e-03 R E X Y
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00   2.7200000000e-02
@@ -17919,218 +17853,197 @@ response_fn_1:  Mean =  6.2500000000e+00  Std. Dev. = 2.3748801939e-13  Coeff. o
 response_fn_2:  Mean =  8.1691707793e-01  Std. Dev. = 2.3405069444e+00  Coeff. of Variation =  2.8650483722e+00
 response_fn_3:  Mean =  2.6241816412e+00  Std. Dev. = 8.9267758366e+00  Coeff. of Variation =  3.4017370202e+00
 response_fn_1 Sobol indices:
-                      4.4981412639e-01 beam_width 
-                      4.4981412639e-01 beam_thickness 
-                      1.0037174721e-01 beam_width beam_thickness 
-                      2.6507363766e-30 R 
-                      3.4211180823e-31 beam_width R 
-                      7.2581592090e-31 beam_thickness R 
-                      4.9031423919e-31 beam_width beam_thickness R 
-                      2.3581566992e-30 E 
-                      6.2762826610e-31 beam_width E 
-                      6.0189226490e-31 beam_thickness E 
-                      1.6999515950e-31 beam_width beam_thickness E 
-                      1.0678132825e-30 R E 
-                      3.6173147324e-31 beam_width R E 
-                      3.1600740686e-31 beam_thickness R E 
-                      1.3950819319e-32 beam_width beam_thickness R E 
-                      1.5130744101e-29 X 
-                      1.6312346276e-30 beam_width X 
-                      1.8759265959e-30 beam_thickness X 
-                      1.0748185481e-30 beam_width beam_thickness X 
-                      5.2249171924e-30 R X 
-                      5.1986265638e-31 beam_width R X 
-                      4.5717610759e-31 beam_thickness R X 
-                      6.4752589086e-32 beam_width beam_thickness R X 
-                      2.1225074564e-30 E X 
-                      2.9838539714e-31 beam_width E X 
-                      8.1663359620e-31 beam_thickness E X 
-                      6.4982038063e-31 beam_width beam_thickness E X 
-                      8.3920356657e-31 R E X 
-                      5.6110912448e-31 beam_width R E X 
-                      1.3954946396e-32 beam_thickness R E X 
-                      0.0000000000e+00 beam_width beam_thickness R E X 
-                      3.3454088864e-30 Y 
-                      1.0272881882e-30 beam_width Y 
-                      4.8499706789e-31 beam_thickness Y 
-                      6.8287369257e-31 beam_width beam_thickness Y 
-                      1.7494554695e-30 R Y 
-                      4.6608407647e-31 beam_width R Y 
-                      3.2576943167e-31 beam_thickness R Y 
-                      8.7977052627e-33 beam_width beam_thickness R Y 
-                      1.7558746128e-30 E Y 
-                      1.1845046538e-30 beam_width E Y 
-                      1.0710837794e-30 beam_thickness E Y 
-                      2.8250409121e-31 beam_width beam_thickness E Y 
-                      5.0280823049e-30 R E Y 
-                      3.1129450540e-31 beam_width R E Y 
-                      4.7411128954e-32 beam_thickness R E Y 
-                      0.0000000000e+00 beam_width beam_thickness R E Y 
-                      1.7663111473e-30 X Y 
-                      1.1661795444e-30 beam_width X Y 
-                      7.0253534566e-31 beam_thickness X Y 
-                      1.3178757324e-31 beam_width beam_thickness X Y 
-                      6.3201583411e-30 R X Y 
-                      1.1866267019e-31 beam_width R X Y 
-                      1.7236985496e-31 beam_thickness R X Y 
-                      0.0000000000e+00 beam_width beam_thickness R X Y 
-                      6.5777489703e-30 E X Y 
-                      3.2171390882e-31 beam_width E X Y 
-                      6.5860655689e-31 beam_thickness E X Y 
-                      0.0000000000e+00 beam_width beam_thickness E X Y 
-                      3.7868510688e-31 R E X Y 
-                      0.0000000000e+00 beam_width R E X Y 
-                      0.0000000000e+00 beam_thickness R E X Y 
-                      0.0000000000e+00 beam_width beam_thickness R E X Y 
-response_fn_1 total Sobol indices:
-                      5.5018587361e-01 beam_width
-                      5.5018587361e-01 beam_thickness
-                      2.8576228105e-29 R
-                      2.8436299459e-29 E
-                      4.9595805906e-29 X
-                      3.6086188614e-29 Y
+                     4.4981412639e-01  5.5018587361e-01 beam_width
+                      4.4981412639e-01  5.5018587361e-01 beam_thickness
+                      4.7347946360e-30  3.4518305443e-29 R
+                      1.7100132303e-30  3.2297786665e-29 E
+                      7.4473186000e-30  4.0607176865e-29 X
+                      2.2413783361e-30  3.2999644152e-29 Y
+                      1.0037174721e-01 beam_width beam_thickness
+                      2.5191518667e-30 beam_width R
+                      1.2777497358e-30 beam_thickness R
+                      8.7141149945e-31 beam_width beam_thickness R
+                      2.7272688482e-30 beam_width E
+                      1.5206272376e-30 beam_thickness E
+                      8.8505620177e-31 beam_width beam_thickness E
+                      4.0750753549e-30 R E
+                      2.0754619419e-31 beam_width R E
+                      1.4607154983e-31 beam_thickness R E
+                      4.2724384165e-32 beam_width beam_thickness R E
+                      2.4095603593e-30 beam_width X
+                      2.2462717688e-31 beam_thickness X
+                      4.9112103493e-31 beam_width beam_thickness X
+                      1.7509469979e-30 R X
+                      9.3705155253e-31 beam_width R X
+                      1.5504272014e-30 beam_thickness R X
+                      3.9900429389e-32 beam_width beam_thickness R X
+                      6.4389036965e-30 E X
+                      1.8316279289e-30 beam_width E X
+                      3.7668479321e-31 beam_thickness E X
+                      1.4573084995e-32 beam_width beam_thickness E X
+                      2.3297626899e-30 R E X
+                      2.5850952676e-31 beam_width R E X
+                      2.4343938348e-31 beam_thickness R E X
+                      0.0000000000e+00 beam_width beam_thickness R E X
+                      3.9971815277e-30 beam_width Y
+                      5.0676454753e-31 beam_thickness Y
+                      2.8264347872e-31 beam_width beam_thickness Y
+                      1.6790311880e-30 R Y
+                      3.1314300490e-30 beam_width R Y
+                      3.8724384975e-31 beam_thickness R Y
+                      1.3950819319e-32 beam_width beam_thickness R Y
+                      4.2484227327e-31 E Y
+                      1.1137514715e-30 beam_width E Y
+                      3.8543498000e-31 beam_thickness E Y
+                      1.6745357899e-32 beam_width beam_thickness E Y
+                      4.3730030081e-30 R E Y
+                      6.1185686806e-33 beam_width R E Y
+                      1.7740228719e-31 beam_thickness R E Y
+                      0.0000000000e+00 beam_width beam_thickness R E Y
+                      1.7213226261e-30 X Y
+                      5.2649016338e-30 beam_width X Y
+                      3.5999630662e-31 beam_thickness X Y
+                      1.7962283283e-31 beam_width beam_thickness X Y
+                      3.4660786462e-30 R X Y
+                      1.8768437894e-31 beam_width R X Y
+                      9.0511371015e-32 beam_thickness R X Y
+                      0.0000000000e+00 beam_width beam_thickness R X Y
+                      2.5489450260e-30 E X Y
+                      8.8710194732e-32 beam_width E X Y
+                      3.3366111811e-31 beam_thickness E X Y
+                      0.0000000000e+00 beam_width beam_thickness E X Y
+                      2.1288274463e-32 R E X Y
+                      0.0000000000e+00 beam_width R E X Y
+                      0.0000000000e+00 beam_thickness R E X Y
+                      0.0000000000e+00 beam_width beam_thickness R E X Y
 response_fn_2 Sobol indices:
-                      9.5124019350e-02 beam_width 
-                      1.0728457599e-01 beam_thickness 
-                      1.0920064130e-01 beam_width beam_thickness 
-                      1.9204424835e-02 R 
-                      9.5889872041e-03 beam_width R 
-                      6.3601318777e-03 beam_thickness R 
-                      1.2479431319e-02 beam_width beam_thickness R 
-                      1.3196470781e-02 E 
-                      1.4633257659e-02 beam_width E 
-                      2.1891369344e-02 beam_thickness E 
-                      5.5762659505e-03 beam_width beam_thickness E 
-                      2.6931814512e-02 R E 
-                      2.9308786457e-03 beam_width R E 
-                      6.0981941289e-03 beam_thickness R E 
-                      1.5164978077e-04 beam_width beam_thickness R E 
-                      1.5875673736e-03 X 
-                      3.0913810211e-02 beam_width X 
-                      2.0641360126e-02 beam_thickness X 
-                      3.7504244511e-02 beam_width beam_thickness X 
-                      2.2155877128e-02 R X 
-                      7.2702293245e-03 beam_width R X 
-                      4.9098067105e-03 beam_thickness R X 
-                      3.6453453598e-04 beam_width beam_thickness R X 
-                      1.7338932181e-02 E X 
-                      1.4542797083e-02 beam_width E X 
-                      2.5298076358e-02 beam_thickness E X 
-                      1.8383841665e-03 beam_width beam_thickness E X 
-                      1.5768301978e-02 R E X 
-                      3.2397205082e-03 beam_width R E X 
-                      2.1332077545e-03 beam_thickness R E X 
-                      0.0000000000e+00 beam_width beam_thickness R E X 
-                      4.2099571635e-02 Y 
-                      1.2777593208e-02 beam_width Y 
-                      1.8539445277e-02 beam_thickness Y 
-                      1.1213911419e-02 beam_width beam_thickness Y 
-                      2.7823877772e-02 R Y 
-                      1.4615274200e-02 beam_width R Y 
-                      6.5734120399e-03 beam_thickness R Y 
-                      5.7911151849e-03 beam_width beam_thickness R Y 
-                      3.2479300401e-02 E Y 
-                      6.5420984102e-03 beam_width E Y 
-                      5.0861115530e-03 beam_thickness E Y 
-                      7.1697913980e-03 beam_width beam_thickness E Y 
-                      4.1360210405e-02 R E Y 
-                      6.0796042430e-03 beam_width R E Y 
-                      8.0364532136e-03 beam_thickness R E Y 
-                      0.0000000000e+00 beam_width beam_thickness R E Y 
-                      1.4868738275e-02 X Y 
-                      1.5470319386e-02 beam_width X Y 
-                      9.3184211939e-03 beam_thickness X Y 
-                      4.2478599809e-03 beam_width beam_thickness X Y 
-                      1.4496821868e-02 R X Y 
-                      6.4304777929e-03 beam_width R X Y 
-                      1.8851499435e-02 beam_thickness R X Y 
-                      0.0000000000e+00 beam_width beam_thickness R X Y 
-                      9.1514671262e-03 E X Y 
-                      1.9335195958e-03 beam_width E X Y 
-                      2.1523935368e-03 beam_thickness E X Y 
-                      0.0000000000e+00 beam_width beam_thickness E X Y 
-                      7.3174882838e-04 R E X Y 
-                      0.0000000000e+00 beam_width R E X Y 
-                      0.0000000000e+00 beam_thickness R E X Y 
-                      0.0000000000e+00 beam_width beam_thickness R E X Y 
-response_fn_2 total Sobol indices:
-                      4.3763041636e-01 beam_width
-                      4.5871228808e-01 beam_thickness
-                      2.9037768523e-01 R
-                      2.9229201954e-01 E
-                      3.0316011697e-01 X
-                      3.4384103738e-01 Y
+                     9.5124019350e-02  4.3763041636e-01 beam_width
+                      1.0728457599e-01  4.5871228808e-01 beam_thickness
+                      1.9204424835e-02  2.9037768523e-01 R
+                      1.3196470781e-02  2.9229201954e-01 E
+                      1.5875673736e-03  3.0316011697e-01 X
+                      4.2099571635e-02  3.4384103738e-01 Y
+                      1.0920064130e-01 beam_width beam_thickness
+                      9.5889872041e-03 beam_width R
+                      6.3601318777e-03 beam_thickness R
+                      1.2479431319e-02 beam_width beam_thickness R
+                      1.4633257659e-02 beam_width E
+                      2.1891369344e-02 beam_thickness E
+                      5.5762659505e-03 beam_width beam_thickness E
+                      2.6931814512e-02 R E
+                      2.9308786457e-03 beam_width R E
+                      6.0981941289e-03 beam_thickness R E
+                      1.5164978077e-04 beam_width beam_thickness R E
+                      3.0913810211e-02 beam_width X
+                      2.0641360126e-02 beam_thickness X
+                      3.7504244511e-02 beam_width beam_thickness X
+                      2.2155877128e-02 R X
+                      7.2702293245e-03 beam_width R X
+                      4.9098067105e-03 beam_thickness R X
+                      3.6453453598e-04 beam_width beam_thickness R X
+                      1.7338932181e-02 E X
+                      1.4542797083e-02 beam_width E X
+                      2.5298076358e-02 beam_thickness E X
+                      1.8383841665e-03 beam_width beam_thickness E X
+                      1.5768301978e-02 R E X
+                      3.2397205082e-03 beam_width R E X
+                      2.1332077545e-03 beam_thickness R E X
+                      0.0000000000e+00 beam_width beam_thickness R E X
+                      1.2777593208e-02 beam_width Y
+                      1.8539445277e-02 beam_thickness Y
+                      1.1213911419e-02 beam_width beam_thickness Y
+                      2.7823877772e-02 R Y
+                      1.4615274200e-02 beam_width R Y
+                      6.5734120399e-03 beam_thickness R Y
+                      5.7911151849e-03 beam_width beam_thickness R Y
+                      3.2479300401e-02 E Y
+                      6.5420984102e-03 beam_width E Y
+                      5.0861115530e-03 beam_thickness E Y
+                      7.1697913980e-03 beam_width beam_thickness E Y
+                      4.1360210405e-02 R E Y
+                      6.0796042430e-03 beam_width R E Y
+                      8.0364532136e-03 beam_thickness R E Y
+                      0.0000000000e+00 beam_width beam_thickness R E Y
+                      1.4868738275e-02 X Y
+                      1.5470319386e-02 beam_width X Y
+                      9.3184211939e-03 beam_thickness X Y
+                      4.2478599809e-03 beam_width beam_thickness X Y
+                      1.4496821868e-02 R X Y
+                      6.4304777929e-03 beam_width R X Y
+                      1.8851499435e-02 beam_thickness R X Y
+                      0.0000000000e+00 beam_width beam_thickness R X Y
+                      9.1514671262e-03 E X Y
+                      1.9335195958e-03 beam_width E X Y
+                      2.1523935368e-03 beam_thickness E X Y
+                      0.0000000000e+00 beam_width beam_thickness E X Y
+                      7.3174882838e-04 R E X Y
+                      0.0000000000e+00 beam_width R E X Y
+                      0.0000000000e+00 beam_thickness R E X Y
+                      0.0000000000e+00 beam_width beam_thickness R E X Y
 response_fn_3 Sobol indices:
-                      4.7517550286e-02 beam_width 
-                      6.8984994543e-02 beam_thickness 
-                      5.7380609793e-02 beam_width beam_thickness 
-                      1.7909805350e-02 R 
-                      1.5897129329e-02 beam_width R 
-                      3.3375359231e-02 beam_thickness R 
-                      1.8460141521e-02 beam_width beam_thickness R 
-                      1.7070693427e-02 E 
-                      2.3708984023e-02 beam_width E 
-                      1.3531169026e-02 beam_thickness E 
-                      4.0280854527e-03 beam_width beam_thickness E 
-                      3.8659102156e-02 R E 
-                      1.6703175853e-02 beam_width R E 
-                      1.5704341541e-02 beam_thickness R E 
-                      4.1830225119e-05 beam_width beam_thickness R E 
-                      2.8047780873e-03 X 
-                      3.7475482936e-02 beam_width X 
-                      1.4372700674e-02 beam_thickness X 
-                      2.4159614175e-02 beam_width beam_thickness X 
-                      1.9892351136e-02 R X 
-                      1.2824697381e-02 beam_width R X 
-                      3.5247044345e-03 beam_thickness R X 
-                      8.0684481537e-04 beam_width beam_thickness R X 
-                      5.4553247763e-02 E X 
-                      2.1411894356e-02 beam_width E X 
-                      2.5002628257e-02 beam_thickness E X 
-                      1.7551486025e-03 beam_width beam_thickness E X 
-                      3.8746807154e-02 R E X 
-                      1.3711969263e-03 beam_width R E X 
-                      9.1377140625e-03 beam_thickness R E X 
-                      0.0000000000e+00 beam_width beam_thickness R E X 
-                      2.7229222891e-02 Y 
-                      1.3745594825e-02 beam_width Y 
-                      1.6833779314e-02 beam_thickness Y 
-                      1.6076150729e-02 beam_width beam_thickness Y 
-                      1.2950858661e-02 R Y 
-                      1.7493078475e-02 beam_width R Y 
-                      6.0437725667e-03 beam_thickness R Y 
-                      6.9480420442e-03 beam_width beam_thickness R Y 
-                      4.3801246906e-02 E Y 
-                      1.6217477777e-02 beam_width E Y 
-                      1.5100950999e-02 beam_thickness E Y 
-                      5.3650862180e-03 beam_width beam_thickness E Y 
-                      4.7482416848e-02 R E Y 
-                      7.2426576370e-03 beam_width R E Y 
-                      2.6413067205e-03 beam_thickness R E Y 
-                      0.0000000000e+00 beam_width beam_thickness R E Y 
-                      2.0172679253e-02 X Y 
-                      1.1031313680e-02 beam_width X Y 
-                      4.5278228435e-03 beam_thickness X Y 
-                      1.3167991600e-03 beam_width beam_thickness X Y 
-                      1.8438915403e-02 R X Y 
-                      2.3374593076e-03 beam_width R X Y 
-                      7.4669660321e-03 beam_thickness R X Y 
-                      0.0000000000e+00 beam_width beam_thickness R X Y 
-                      1.5011743929e-02 E X Y 
-                      9.4799511408e-04 beam_width E X Y 
-                      6.6561344318e-03 beam_thickness E X Y 
-                      0.0000000000e+00 beam_width beam_thickness E X Y 
-                      1.0774571626e-04 R E X Y 
-                      0.0000000000e+00 beam_width R E X Y 
-                      0.0000000000e+00 beam_thickness R E X Y 
-                      0.0000000000e+00 beam_width beam_thickness R E X Y 
-response_fn_3 total Sobol indices:
-                      3.8226404064e-01 beam_width
-                      3.7924269741e-01 beam_thickness
-                      3.7220842053e-01 R
-                      4.4200078112e-01 E
-                      3.5585538563e-01 X
-                      3.4318721748e-01 Y
+                      4.7517550286e-02  3.8226404064e-01 beam_width
+                      6.8984994543e-02  3.7924269741e-01 beam_thickness
+                      1.7909805350e-02  3.7220842053e-01 R
+                      1.7070693427e-02  4.4200078112e-01 E
+                      2.8047780873e-03  3.5585538563e-01 X
+                      2.7229222891e-02  3.4318721748e-01 Y
+                      5.7380609793e-02 beam_width beam_thickness
+                      1.5897129329e-02 beam_width R
+                      3.3375359231e-02 beam_thickness R
+                      1.8460141521e-02 beam_width beam_thickness R
+                      2.3708984023e-02 beam_width E
+                      1.3531169026e-02 beam_thickness E
+                      4.0280854527e-03 beam_width beam_thickness E
+                      3.8659102156e-02 R E
+                      1.6703175853e-02 beam_width R E
+                      1.5704341541e-02 beam_thickness R E
+                      4.1830225119e-05 beam_width beam_thickness R E
+                      3.7475482936e-02 beam_width X
+                      1.4372700674e-02 beam_thickness X
+                      2.4159614175e-02 beam_width beam_thickness X
+                      1.9892351136e-02 R X
+                      1.2824697381e-02 beam_width R X
+                      3.5247044345e-03 beam_thickness R X
+                      8.0684481537e-04 beam_width beam_thickness R X
+                      5.4553247763e-02 E X
+                      2.1411894356e-02 beam_width E X
+                      2.5002628257e-02 beam_thickness E X
+                      1.7551486025e-03 beam_width beam_thickness E X
+                      3.8746807154e-02 R E X
+                      1.3711969263e-03 beam_width R E X
+                      9.1377140625e-03 beam_thickness R E X
+                      0.0000000000e+00 beam_width beam_thickness R E X
+                      1.3745594825e-02 beam_width Y
+                      1.6833779314e-02 beam_thickness Y
+                      1.6076150729e-02 beam_width beam_thickness Y
+                      1.2950858661e-02 R Y
+                      1.7493078475e-02 beam_width R Y
+                      6.0437725667e-03 beam_thickness R Y
+                      6.9480420442e-03 beam_width beam_thickness R Y
+                      4.3801246906e-02 E Y
+                      1.6217477777e-02 beam_width E Y
+                      1.5100950999e-02 beam_thickness E Y
+                      5.3650862180e-03 beam_width beam_thickness E Y
+                      4.7482416848e-02 R E Y
+                      7.2426576370e-03 beam_width R E Y
+                      2.6413067205e-03 beam_thickness R E Y
+                      0.0000000000e+00 beam_width beam_thickness R E Y
+                      2.0172679253e-02 X Y
+                      1.1031313680e-02 beam_width X Y
+                      4.5278228435e-03 beam_thickness X Y
+                      1.3167991600e-03 beam_width beam_thickness X Y
+                      1.8438915403e-02 R X Y
+                      2.3374593076e-03 beam_width R X Y
+                      7.4669660321e-03 beam_thickness R X Y
+                      0.0000000000e+00 beam_width beam_thickness R X Y
+                      1.5011743929e-02 E X Y
+                      9.4799511408e-04 beam_width E X Y
+                      6.6561344318e-03 beam_thickness E X Y
+                      0.0000000000e+00 beam_width beam_thickness E X Y
+                      1.0774571626e-04 R E X Y
+                      0.0000000000e+00 beam_width R E X Y
+                      0.0000000000e+00 beam_thickness R E X Y
+                      0.0000000000e+00 beam_width beam_thickness R E X Y
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00   2.5660000000e-01
@@ -18266,15 +18179,18 @@ Polynomial Chaos coefficients for ccdf_beta_d:
 mean_wt:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
 ccdf_beta_s:  Mean =  1.1355549360e+01  Std. Dev. = 8.3388342712e+00  Coeff. of Variation =  7.3434001359e-01
 ccdf_beta_d:  Mean =  1.5418231185e+02  Std. Dev. = 2.4250941828e+02  Coeff. of Variation =  1.5728744456e+00
-mean_wt total Sobol indices:
-                      5.5018587361e-01 uuv_1
-                      5.5018587361e-01 uuv_2
-ccdf_beta_s total Sobol indices:
-                      4.2459209553e-01 uuv_1
-                      6.0987344765e-01 uuv_2
-ccdf_beta_d total Sobol indices:
-                      6.2924094035e-01 uuv_1
-                      6.9874466386e-01 uuv_2
+mean_wt Sobol indices:
+                      4.4981412639e-01  5.5018587361e-01 uuv_1
+                      4.4981412639e-01  5.5018587361e-01 uuv_2
+                      1.0037174721e-01 uuv_1 uuv_2
+ccdf_beta_s Sobol indices:
+                      3.9012655235e-01  4.2459209553e-01 uuv_1
+                      5.7540790447e-01  6.0987344765e-01 uuv_2
+                      3.4465543187e-02 uuv_1 uuv_2
+ccdf_beta_d Sobol indices:
+                      3.0125533614e-01  6.2924094035e-01 uuv_1
+                      3.7075905965e-01  6.9874466386e-01 uuv_2
+                      3.2798560422e-01 uuv_1 uuv_2
 Test Number 1 succeeded
 <<<<< Function evaluation summary (INNER_I): 30869 total (30869 new, 0 duplicate)
          weight: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -18586,15 +18502,17 @@ Polynomial Chaos coefficients for ccdf_beta_d:
 mean_wt:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
 ccdf_beta_s:  Mean =  1.1360547475e+01  Std. Dev. = 8.2909818982e+00  Coeff. of Variation =  7.2980478416e-01
 ccdf_beta_d:  Mean =  1.5011968343e+02  Std. Dev. = 2.4353088343e+02  Coeff. of Variation =  1.6222448506e+00
-mean_wt total Sobol indices:
-                      5.5018587361e-01 uuv_1
-                      5.5018587361e-01 uuv_2
-ccdf_beta_s total Sobol indices:
-                      4.2476044284e-01 uuv_1
-                      6.1003900259e-01 uuv_2
-ccdf_beta_d total Sobol indices:
-                      6.6107337448e-01 uuv_1
-                      7.1344557205e-01 uuv_2
+mean_wt Sobol indices:
+                      4.4981412639e-01  5.5018587361e-01 uuv_1
+                      4.4981412639e-01  5.5018587361e-01 uuv_2
+                      1.0037174721e-01 uuv_1 uuv_2
+ccdf_beta_s Sobol indices:
+                      3.8996099741e-01  4.2476044284e-01 uuv_1
+                      5.7523955716e-01  6.1003900259e-01 uuv_2
+                      3.4799445424e-02 uuv_1 uuv_2
+ccdf_beta_d Sobol indices:
+                      2.8655442795e-01  6.6107337448e-01 uuv_1
+                      3.3892662552e-01  7.1344557205e-01 uuv_2
 Test Number 2 succeeded
 <<<<< Function evaluation summary (INNER_I): 17025 total (17025 new, 0 duplicate)
          weight: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -18603,15 +18521,18 @@ Test Number 2 succeeded
 mean_wt:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
 ccdf_beta_s:  Mean =  1.1355549360e+01  Std. Dev. = 8.3388342712e+00  Coeff. of Variation =  7.3434001359e-01
 ccdf_beta_d:  Mean =  1.5418231202e+02  Std. Dev. = 2.4250941883e+02  Coeff. of Variation =  1.5728744475e+00
-mean_wt total Sobol indices:
-                      5.5018587361e-01 uuv_1
-                      5.5018587361e-01 uuv_2
-ccdf_beta_s total Sobol indices:
-                      4.2459209553e-01 uuv_1
-                      6.0987344765e-01 uuv_2
-ccdf_beta_d total Sobol indices:
-                      6.2924094067e-01 uuv_1
-                      6.9874466414e-01 uuv_2
+mean_wt Sobol indices:
+                      4.4981412639e-01  5.5018587361e-01 uuv_1
+                      4.4981412639e-01  5.5018587361e-01 uuv_2
+                      1.0037174721e-01 uuv_1 uuv_2
+ccdf_beta_s Sobol indices:
+                      3.9012655235e-01  4.2459209553e-01 uuv_1
+                      5.7540790447e-01  6.0987344765e-01 uuv_2
+                      3.4465543187e-02 uuv_1 uuv_2
+ccdf_beta_d Sobol indices:
+                      3.0125533586e-01  6.2924094067e-01 uuv_1
+                      3.7075905933e-01  6.9874466414e-01 uuv_2
+                      3.2798560481e-01 uuv_1 uuv_2
 Test Number 3 succeeded
 <<<<< Function evaluation summary (INNER_I): 30869 total (30869 new, 0 duplicate)
          weight: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -18620,15 +18541,18 @@ Test Number 3 succeeded
 mean_wt:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
 ccdf_beta_s:  Mean =  1.1361191109e+01  Std. Dev. = 8.2932170753e+00  Coeff. of Variation =  7.2996017719e-01
 ccdf_beta_d:  Mean =  2.1167144784e+49  Std. Dev. = 4.0849314071e+49  Coeff. of Variation =  1.9298452620e+00
-mean_wt total Sobol indices:
-                      5.5018587361e-01 uuv_1
-                      5.5018587361e-01 uuv_2
-ccdf_beta_s total Sobol indices:
-                      4.2483278425e-01 uuv_1
-                      6.1015859346e-01 uuv_2
-ccdf_beta_d total Sobol indices:
-                      8.3000847951e-01 uuv_1
-                      8.4839157451e-01 uuv_2
+mean_wt Sobol indices:
+                      4.4981412639e-01  5.5018587361e-01 uuv_1
+                      4.4981412639e-01  5.5018587361e-01 uuv_2
+                      1.0037174721e-01 uuv_1 uuv_2
+ccdf_beta_s Sobol indices:
+                      3.8984140654e-01  4.2483278425e-01 uuv_1
+                      5.7516721575e-01  6.1015859346e-01 uuv_2
+                      3.4991377713e-02 uuv_1 uuv_2
+ccdf_beta_d Sobol indices:
+                      1.5160842549e-01  8.3000847951e-01 uuv_1
+                      1.6999152049e-01  8.4839157451e-01 uuv_2
+                      6.7840005402e-01 uuv_1 uuv_2
 dakota_uq_cantilever_sop_rel.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 903 total (903 new, 0 duplicate)
@@ -23205,12 +23129,9 @@ Polynomial Chaos coefficients for response_fn_1:
    6.6367915856e-18 He14  He0
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 43 total (43 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -23252,12 +23173,9 @@ Polynomial Chaos coefficients for response_fn_1:
    6.6367915856e-18 He14  He0
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      3.8287346525e-01
@@ -23285,12 +23203,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -3.5527136788e-15  He4  He2
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -23315,12 +23230,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -3.5527136788e-15  He4  He2
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      3.8287346525e-01
@@ -23328,22 +23240,16 @@ Test Number 4 succeeded
 <<<<< Function evaluation summary: 43 total (43 new, 0 duplicate)
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 43 total (43 new, 0 duplicate)
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      3.8287346525e-01
@@ -23351,22 +23257,16 @@ Test Number 6 succeeded
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      3.8287346525e-01
@@ -23404,12 +23304,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -3.5527136788e-15  He4  He2
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.2000000000e-03
@@ -23438,12 +23335,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -2.8477220582e-13   P4   P2
 response_fn_1:  Mean =  4.5566666667e+02  Std. Dev. = 6.0656024184e+02  Coeff. of Variation =  1.3311490311e+00
 response_fn_1 Sobol indices:
-                      4.9746891383e-01 x1 
-                      2.9636448672e-01 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
                       2.0616659946e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.0363551328e-01 x1
-                      5.0253108617e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -23472,12 +23366,9 @@ Polynomial Chaos coefficients for response_fn_1:
    1.8189894035e-12   L4   L2
 response_fn_1:  Mean =  3.6005000000e+04  Std. Dev. = 3.1371446924e+05  Coeff. of Variation =  8.7130806620e+00
 response_fn_1 Sobol indices:
-                      9.9944724867e-01 x1 
-                      3.2514784404e-05 x2 
+                      9.9944724867e-01  9.9996748522e-01 x1
+                      3.2514784404e-05  5.5275133486e-04 x2
                       5.2023655046e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9996748522e-01 x1
-                      5.5275133486e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.9000000000e-03
@@ -23506,12 +23397,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.3829924860e-15 Pab4 Pab2
 response_fn_1:  Mean =  3.3706545835e+02  Std. Dev. = 4.6075688193e+02  Coeff. of Variation =  1.3669655864e+00
 response_fn_1 Sobol indices:
-                      5.9549858715e-01 x1 
-                      2.4998938646e-01 x2 
+                      5.9549858715e-01  7.5001061354e-01 x1
+                      2.4998938646e-01  4.0450141285e-01 x2
                       1.5451202640e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.5001061354e-01 x1
-                      4.0450141285e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.7000000000e-03
@@ -23540,12 +23428,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.1795600698e-11  La4  La2
 response_fn_1:  Mean =  3.1502600000e+05  Std. Dev. = 1.3982261168e+06  Coeff. of Variation =  4.4384467212e+00
 response_fn_1 Sobol indices:
-                      9.9937985805e-01 x1 
-                      1.6183842942e-04 x2 
+                      9.9937985805e-01  9.9983816157e-01 x1
+                      1.6183842942e-04  6.2014194637e-04 x2
                       4.5830351694e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9983816157e-01 x1
-                      6.2014194637e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-04
@@ -26684,14 +26569,15 @@ Polynomial Chaos coefficients for response_fn_1:
   -8.1635675997e-13  He4   P4   L4 Pab4  La4
 response_fn_1:  Mean =  4.2716738928e+04  Std. Dev. = 3.2090144104e+05  Coeff. of Variation =  7.5123113117e+00
 response_fn_1 Sobol indices:
-                      9.3457678135e-06 x1 
-                      6.9919654268e-07 x2 
+                      9.3457678135e-06  1.0381590429e-05 x1
+                      6.9919654268e-07  3.9447740713e-06 x2
+                      9.9968624656e-01  9.9979668921e-01 x3
+                      1.9316958971e-05  1.3120807402e-04 x4
+                      1.6925482466e-04  1.7291304601e-04 x5
                       1.0358226155e-06 x1 x2 
-                      9.9968624656e-01 x3 
                       3.0818532665e-32 x1 x3 
                       2.2097549131e-06 x2 x3 
                       2.9161941498e-33 x1 x2 x3 
-                      1.9316958971e-05 x4 
                       3.0359455332e-35 x1 x4 
                       3.7457102661e-35 x2 x4 
                       1.7866937213e-35 x1 x2 x4 
@@ -26699,7 +26585,6 @@ response_fn_1 Sobol indices:
                       1.3643764104e-33 x1 x3 x4 
                       3.5637798249e-33 x2 x3 x4 
                       2.6211666772e-33 x1 x2 x3 x4 
-                      1.6925482466e-04 x5 
                       2.3889654007e-35 x1 x5 
                       3.2787459681e-35 x2 x5 
                       1.9394280986e-35 x1 x2 x5 
@@ -26715,12 +26600,6 @@ response_fn_1 Sobol indices:
                       8.2431804940e-34 x1 x3 x4 x5 
                       3.9808139617e-33 x2 x3 x4 x5 
                       2.1163302933e-33 x1 x2 x3 x4 x5 
-response_fn_1 total Sobol indices:
-                      1.0381590429e-05 x1
-                      3.9447740713e-06 x2
-                      9.9979668921e-01 x3
-                      1.3120807402e-04 x4
-                      1.7291304601e-04 x5
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -26753,12 +26632,9 @@ Polynomial Chaos coefficients for response_fn_1:
    0.0000000000e+00  He0  He7
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.2000000000e-03
@@ -26787,12 +26663,9 @@ Polynomial Chaos coefficients for response_fn_1:
    0.0000000000e+00   P0   P5
 response_fn_1:  Mean =  4.5566666667e+02  Std. Dev. = 6.0656024184e+02  Coeff. of Variation =  1.3311490311e+00
 response_fn_1 Sobol indices:
-                      4.9746891383e-01 x1 
-                      2.9636448672e-01 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
                       2.0616659946e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.0363551328e-01 x1
-                      5.0253108617e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -26819,12 +26692,9 @@ Polynomial Chaos coefficients for response_fn_1:
    1.1368683772e-13   L0   L4
 response_fn_1:  Mean =  3.6005000000e+04  Std. Dev. = 3.1371446924e+05  Coeff. of Variation =  8.7130806620e+00
 response_fn_1 Sobol indices:
-                      9.9944724867e-01 x1 
-                      3.2514784404e-05 x2 
+                      9.9944724867e-01  9.9996748522e-01 x1
+                      3.2514784404e-05  5.5275133486e-04 x2
                       5.2023655046e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9996748522e-01 x1
-                      5.5275133486e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.9000000000e-03
@@ -26851,12 +26721,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -7.1125327850e-14 Pab0 Pab4
 response_fn_1:  Mean =  3.3706545835e+02  Std. Dev. = 4.6075688193e+02  Coeff. of Variation =  1.3669655864e+00
 response_fn_1 Sobol indices:
-                      5.9549858715e-01 x1 
-                      2.4998938646e-01 x2 
+                      5.9549858715e-01  7.5001061354e-01 x1
+                      2.4998938646e-01  4.0450141285e-01 x2
                       1.5451202640e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.5001061354e-01 x1
-                      4.0450141285e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.7000000000e-03
@@ -26883,12 +26750,9 @@ Polynomial Chaos coefficients for response_fn_1:
    3.6718387830e-12  La0  La4
 response_fn_1:  Mean =  3.1502600000e+05  Std. Dev. = 1.3982261168e+06  Coeff. of Variation =  4.4384467212e+00
 response_fn_1 Sobol indices:
-                      9.9937985805e-01 x1 
-                      1.6183842942e-04 x2 
+                      9.9937985805e-01  9.9983816157e-01 x1
+                      1.6183842942e-04  6.2014194637e-04 x2
                       4.5830351694e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9983816157e-01 x1
-                      6.2014194637e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-04
@@ -26967,14 +26831,15 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0583211075e-12  He0   P0   L0 Pab0  La4
 response_fn_1:  Mean =  4.2716738928e+04  Std. Dev. = 3.2090144104e+05  Coeff. of Variation =  7.5123113117e+00
 response_fn_1 Sobol indices:
-                      9.3457678135e-06 x1 
-                      6.9919654268e-07 x2 
+                      9.3457678135e-06  1.0381590429e-05 x1
+                      6.9919654268e-07  3.9447740713e-06 x2
+                      9.9968624656e-01  9.9979668921e-01 x3
+                      1.9316958971e-05  1.3120807402e-04 x4
+                      1.6925482466e-04  1.7291304601e-04 x5
                       1.0358226155e-06 x1 x2 
-                      9.9968624656e-01 x3 
                       5.6549617449e-33 x1 x3 
                       2.2097549131e-06 x2 x3 
                       0.0000000000e+00 x1 x2 x3 
-                      1.9316958971e-05 x4 
                       8.8562730408e-37 x1 x4 
                       1.4289194746e-36 x2 x4 
                       0.0000000000e+00 x1 x2 x4 
@@ -26982,7 +26847,6 @@ response_fn_1 Sobol indices:
                       0.0000000000e+00 x1 x3 x4 
                       0.0000000000e+00 x2 x3 x4 
                       0.0000000000e+00 x1 x2 x3 x4 
-                      1.6925482466e-04 x5 
                       3.6146772517e-36 x1 x5 
                       2.0619438688e-37 x2 x5 
                       0.0000000000e+00 x1 x2 x5 
@@ -26998,12 +26862,6 @@ response_fn_1 Sobol indices:
                       0.0000000000e+00 x1 x3 x4 x5 
                       0.0000000000e+00 x2 x3 x4 x5 
                       0.0000000000e+00 x1 x2 x3 x4 x5 
-response_fn_1 total Sobol indices:
-                      1.0381590429e-05 x1
-                      3.9447740713e-06 x2
-                      9.9979668921e-01 x3
-                      1.3120807402e-04 x4
-                      1.7291304601e-04 x5
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -27642,14 +27500,14 @@ Polynomial Chaos coefficients for response_fn_1:
   -3.9655778661e-15   P4   P4  He4  He4
 response_fn_1:  Mean =  2.4270000000e+03  Std. Dev. = 1.2518410442e+03  Coeff. of Variation =  5.1579771085e-01
 response_fn_1 Sobol indices:
-                      8.5444725000e-02 x1 
-                      1.8267308490e-01 x2 
+                      8.5444725000e-02  1.2085567814e-01 x1
+                      1.8267308490e-01  2.4464225289e-01 x2
+                      6.0455491525e-01  6.6846061974e-01 x3
+                      2.8010617227e-02  6.5358106864e-02 x4
                       3.5410953137e-02 x1 x2 
-                      6.0455491525e-01 x3 
                       1.1165278083e-31 x1 x3 
                       2.6558214853e-02 x2 x3 
                       1.2266619349e-32 x1 x2 x3 
-                      2.8010617227e-02 x4 
                       7.8859969242e-33 x1 x4 
                       5.3097595953e-32 x2 x4 
                       3.3819401379e-33 x1 x2 x4 
@@ -27657,11 +27515,6 @@ response_fn_1 Sobol indices:
                       8.0215922241e-33 x1 x3 x4 
                       1.5962604595e-32 x2 x3 x4 
                       5.8030580307e-33 x1 x2 x3 x4 
-response_fn_1 total Sobol indices:
-                      1.2085567814e-01 x1
-                      2.4464225289e-01 x2
-                      6.6846061974e-01 x3
-                      6.5358106864e-02 x4
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e+01                      1.9307563138e+00
@@ -27695,12 +27548,9 @@ Polynomial Chaos coefficients for response_fn_1:
    0.0000000000e+00  He4  He4
 response_fn_1:  Mean =  2.4270000000e+03  Std. Dev. = 1.2518410442e+03  Coeff. of Variation =  5.1579771085e-01
 response_fn_1 Sobol indices:
-                      9.1066335015e-01 x3 
-                      3.8287135650e-02 x4 
+                      9.1066335015e-01  9.6171286435e-01 x3
+                      3.8287135650e-02  8.9336649850e-02 x4
                       5.1049514200e-02 x3 x4 
-response_fn_1 total Sobol indices:
-                      9.6171286435e-01 x3
-                      8.9336649850e-02 x4
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e+01                      1.9307563138e+00
@@ -27721,12 +27571,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -3.8369307731e-13  He2  He2
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.2000000000e-03
@@ -27752,12 +27599,9 @@ Polynomial Chaos coefficients for response_fn_1:
    1.4868106746e-12   P2   P2
 response_fn_1:  Mean =  4.5566666667e+02  Std. Dev. = 6.0656024184e+02  Coeff. of Variation =  1.3311490311e+00
 response_fn_1 Sobol indices:
-                      4.9746891383e-01 x1 
-                      2.9636448672e-01 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
                       2.0616659946e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.0363551328e-01 x1
-                      5.0253108617e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -27783,12 +27627,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -2.7284841053e-10   L2   L2
 response_fn_1:  Mean =  3.6005000000e+04  Std. Dev. = 3.1371446924e+05  Coeff. of Variation =  8.7130806620e+00
 response_fn_1 Sobol indices:
-                      9.9944724867e-01 x1 
-                      3.2514784404e-05 x2 
+                      9.9944724867e-01  9.9996748522e-01 x1
+                      3.2514784404e-05  5.5275133486e-04 x2
                       5.2023655046e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9996748522e-01 x1
-                      5.5275133486e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.9000000000e-03
@@ -27814,12 +27655,9 @@ Polynomial Chaos coefficients for response_fn_1:
    2.5579538487e-13 Pab2 Pab2
 response_fn_1:  Mean =  3.3706545835e+02  Std. Dev. = 4.6075688193e+02  Coeff. of Variation =  1.3669655864e+00
 response_fn_1 Sobol indices:
-                      5.9549858715e-01 x1 
-                      2.4998938646e-01 x2 
+                      5.9549858715e-01  7.5001061354e-01 x1
+                      2.4998938646e-01  4.0450141285e-01 x2
                       1.5451202640e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.5001061354e-01 x1
-                      4.0450141285e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.7000000000e-03
@@ -27845,12 +27683,9 @@ Polynomial Chaos coefficients for response_fn_1:
    9.3859853223e-10  La2  La2
 response_fn_1:  Mean =  3.1502600000e+05  Std. Dev. = 1.3982261168e+06  Coeff. of Variation =  4.4384467212e+00
 response_fn_1 Sobol indices:
-                      9.9937985805e-01 x1 
-                      1.6183842942e-04 x2 
+                      9.9937985805e-01  9.9983816157e-01 x1
+                      1.6183842942e-04  6.2014194637e-04 x2
                       4.5830351694e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9983816157e-01 x1
-                      6.2014194637e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-04
@@ -27990,14 +27825,15 @@ Polynomial Chaos coefficients for response_fn_1:
    3.1263880373e-11  He0   P0   L0 Pab0  La4
 response_fn_1:  Mean =  4.2716738928e+04  Std. Dev. = 3.2090144104e+05  Coeff. of Variation =  7.5123113117e+00
 response_fn_1 Sobol indices:
-                      9.3457678135e-06 x1 
-                      6.9919654268e-07 x2 
+                      9.3457678135e-06  1.0381590429e-05 x1
+                      6.9919654268e-07  3.9447740713e-06 x2
+                      9.9968624656e-01  9.9979668921e-01 x3
+                      1.9316958971e-05  1.3120807402e-04 x4
+                      1.6925482466e-04  1.7291304601e-04 x5
                       1.0358226155e-06 x1 x2 
-                      9.9968624656e-01 x3 
                       1.3389122674e-30 x1 x3 
                       2.2097549131e-06 x2 x3 
                       1.4097887907e-30 x1 x2 x3 
-                      1.9316958971e-05 x4 
                       9.3663325915e-31 x1 x4 
                       5.4466914069e-32 x2 x4 
                       3.1298886111e-31 x1 x2 x4 
@@ -28005,7 +27841,6 @@ response_fn_1 Sobol indices:
                       5.7698639923e-31 x1 x3 x4 
                       8.1192484805e-32 x2 x3 x4 
                       1.5605141829e-32 x1 x2 x3 x4 
-                      1.6925482466e-04 x5 
                       2.3642265265e-30 x1 x5 
                       7.7199708035e-32 x2 x5 
                       5.0232395268e-31 x1 x2 x5 
@@ -28021,12 +27856,6 @@ response_fn_1 Sobol indices:
                       1.9520010217e-31 x1 x3 x4 x5 
                       5.3997030551e-32 x2 x3 x4 x5 
                       0.0000000000e+00 x1 x2 x3 x4 x5 
-response_fn_1 total Sobol indices:
-                      1.0381590429e-05 x1
-                      3.9447740713e-06 x2
-                      9.9979668921e-01 x3
-                      1.3120807402e-04 x4
-                      1.7291304601e-04 x5
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -28055,12 +27884,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.0410453784e-13 Num4 Num2
 response_fn_1:  Mean =  2.2076678414e+02  Std. Dev. = 3.6038533339e+02  Coeff. of Variation =  1.6324255245e+00
 response_fn_1 Sobol indices:
-                      5.9957913777e-01 x1 
-                      2.0560850581e-01 x2 
+                      5.9957913777e-01  7.9439149419e-01 x1
+                      2.0560850581e-01  4.0042086223e-01 x2
                       1.9481235642e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.9439149419e-01 x1
-                      4.0042086223e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.6000000000e-03
@@ -28089,12 +27915,9 @@ Polynomial Chaos coefficients for response_fn_1:
    5.3069045767e-14 Num4 Num2
 response_fn_1:  Mean =  2.5671972656e+02  Std. Dev. = 2.0484189184e+03  Coeff. of Variation =  7.9792034130e+00
 response_fn_1 Sobol indices:
-                      9.9391978710e-01 x1 
-                      7.1275222945e-04 x2 
+                      9.9391978710e-01  9.9928724777e-01 x1
+                      7.1275222945e-04  6.0802128961e-03 x2
                       5.3674606667e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9928724777e-01 x1
-                      6.0802128961e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.8100000000e-02
@@ -28114,21 +27937,18 @@ Polynomial Chaos coefficients for response_fn_1:
    7.7020430083e+00 Num0 Num1
   -4.6905599683e+02 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-   2.9397985182e-12 Num3 Num1
-   5.9837596192e-11 Num4 Num1
+  -3.3513703107e-12 Num3 Num1
+  -1.3069551071e-11 Num4 Num1
    1.0000000000e+02 Num0 Num2
-  -2.5633164304e-12 Num1 Num2
-  -5.9617660692e-12 Num2 Num2
-  -6.0324724366e-12 Num3 Num2
-  -3.0822937379e-11 Num4 Num2
+   3.0258697713e-12 Num1 Num2
+   4.3680266250e-12 Num2 Num2
+   5.7623617305e-12 Num3 Num2
+   6.0669582625e-12 Num4 Num2
 response_fn_1:  Mean =  1.3103015876e+02  Std. Dev. = 3.1329459406e+02  Coeff. of Variation =  2.3910113292e+00
 response_fn_1 Sobol indices:
-                      9.0985004966e-01 x1 
-                      6.3621970120e-03 x2 
+                      9.0985004966e-01  9.9363780299e-01 x1
+                      6.3621970120e-03  9.0149950343e-02 x2
                       8.3787753331e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9363780299e-01 x1
-                      9.0149950343e-02 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-02
@@ -28148,21 +27968,18 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.3846408620e+03 Num0 Num1
   -1.5732288005e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-  -7.6589105284e-13 Num3 Num1
-  -6.8139404900e-13 Num4 Num1
+   2.2976731585e-13 Num3 Num1
+  -1.6353457176e-12 Num4 Num1
    1.0000000000e+02 Num0 Num2
-   1.7851873022e-12 Num1 Num2
-   5.6754950962e-13 Num2 Num2
-   3.6523990305e-14 Num3 Num2
-  -3.5448520988e-14 Num4 Num2
+  -9.5209989452e-13 Num1 Num2
+  -2.2701980385e-13 Num2 Num2
+   6.0873317175e-14 Num3 Num2
+   3.5448520988e-14 Num4 Num2
 response_fn_1:  Mean =  5.0712321400e+04  Std. Dev. = 1.4762267916e+05  Coeff. of Variation =  2.9109824809e+00
 response_fn_1 Sobol indices:
-                      9.9456967798e-01 x1 
-                      5.6651744605e-04 x2 
+                      9.9456967798e-01  9.9943348255e-01 x1
+                      5.6651744605e-04  5.4303220172e-03 x2
                       4.8638045711e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9943348255e-01 x1
-                      5.4303220172e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.1000000000e-03
@@ -28191,12 +28008,9 @@ Polynomial Chaos coefficients for response_fn_1:
    0.0000000000e+00 Num4 Num2
 response_fn_1:  Mean =  1.7499985321e+02  Std. Dev. = 2.8371786303e+02  Coeff. of Variation =  1.6212462915e+00
 response_fn_1 Sobol indices:
-                      5.6933651533e-01 x1 
-                      2.2453411984e-01 x2 
+                      5.6933651533e-01  7.7546588016e-01 x1
+                      2.2453411984e-01  4.3066348467e-01 x2
                       2.0612936483e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.7546588016e-01 x1
-                      4.3066348467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -28225,12 +28039,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -2.7626600990e-13 Num4 Num2
 response_fn_1:  Mean =  6.8592841460e+03  Std. Dev. = 1.8881359921e+04  Coeff. of Variation =  2.7526720747e+00
 response_fn_1 Sobol indices:
-                      9.9702954299e-01 x1 
-                      1.3597811787e-03 x2 
+                      9.9702954299e-01  9.9864021882e-01 x1
+                      1.3597811787e-03  2.9704570066e-03 x2
                       1.6106758279e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9864021882e-01 x1
-                      2.9704570066e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -28259,12 +28070,9 @@ Polynomial Chaos coefficients for response_fn_1:
    3.6012743532e-17 Num4 Num2
 response_fn_1:  Mean =  2.6812277931e+07  Std. Dev. = 3.6506392074e+09  Coeff. of Variation =  1.3615550371e+02
 response_fn_1 Sobol indices:
-                      9.9999998955e-01 x1 
-                      5.8704852817e-11 x2 
+                      9.9999998955e-01  9.9999999994e-01 x1
+                      5.8704852817e-11  1.0449787843e-08 x2
                       1.0391082990e-08 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9999999994e-01 x1
-                      1.0449787843e-08 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -28293,12 +28101,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -4.4913135485e-14 Num4 Num2
 response_fn_1:  Mean =  1.2619676674e+04  Std. Dev. = 5.0592760790e+04  Coeff. of Variation =  4.0090377986e+00
 response_fn_1 Sobol indices:
-                      9.9634440797e-01 x1 
-                      5.9654501566e-04 x2 
+                      9.9634440797e-01  9.9940345498e-01 x1
+                      5.9654501566e-04  3.6555920264e-03 x2
                       3.0590470108e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9940345498e-01 x1
-                      3.6555920264e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-03
@@ -28318,21 +28123,18 @@ Polynomial Chaos coefficients for response_fn_1:
   -2.9261060529e+03 Num0 Num1
   -1.4384436010e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-  -8.4000206205e-12 Num3 Num1
-  -1.6887928867e-11 Num4 Num1
+   1.2880031618e-11 Num3 Num1
+  -4.7176062160e-11 Num4 Num1
    1.0000000000e+02 Num0 Num2
-   2.1906307438e-11 Num1 Num2
-   7.0818790914e-12 Num2 Num2
-   2.3210921414e-12 Num3 Num2
-   1.6484810293e-12 Num4 Num2
+  -1.0431574971e-12 Num1 Num2
+   0.0000000000e+00 Num2 Num2
+   3.8684869023e-13 Num3 Num2
+   1.5216747962e-12 Num4 Num2
 response_fn_1:  Mean =  3.2488855020e+04  Std. Dev. = 3.2856399563e+04  Coeff. of Variation =  1.0113129423e+00
 response_fn_1 Sobol indices:
-                      9.9298831703e-01 x1 
-                      4.6306088552e-03 x2 
+                      9.9298831703e-01  9.9536939114e-01 x1
+                      4.6306088552e-03  7.0116829693e-03 x2
                       2.3810741141e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9536939114e-01 x1
-                      7.0116829693e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-04
@@ -28359,12 +28161,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -3.6021976343e-13 Num0 Num4
 response_fn_1:  Mean =  2.2076678414e+02  Std. Dev. = 3.6038533339e+02  Coeff. of Variation =  1.6324255245e+00
 response_fn_1 Sobol indices:
-                      5.9957913777e-01 x1 
-                      2.0560850581e-01 x2 
+                      5.9957913777e-01  7.9439149419e-01 x1
+                      2.0560850581e-01  4.0042086223e-01 x2
                       1.9481235642e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.9439149419e-01 x1
-                      4.0042086223e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.6000000000e-03
@@ -28391,12 +28190,9 @@ Polynomial Chaos coefficients for response_fn_1:
    2.5176466026e-14 Num0 Num4
 response_fn_1:  Mean =  2.5671972656e+02  Std. Dev. = 2.0484189184e+03  Coeff. of Variation =  7.9792034130e+00
 response_fn_1 Sobol indices:
-                      9.9391978710e-01 x1 
-                      7.1275222945e-04 x2 
+                      9.9391978710e-01  9.9928724777e-01 x1
+                      7.1275222945e-04  6.0802128961e-03 x2
                       5.3674606667e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9928724777e-01 x1
-                      6.0802128961e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.8100000000e-02
@@ -28417,18 +28213,15 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num4 Num0
   -4.6905599683e+02 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-  -2.4091319835e-12 Num1 Num2
-  -6.0207934560e-12 Num2 Num2
-  -4.6386666493e-13 Num0 Num3
-  -1.3395744086e-11 Num0 Num4
+   2.8909583802e-12 Num1 Num2
+   4.6631635591e-12 Num2 Num2
+   7.9519999702e-13 Num0 Num3
+   1.5568489296e-12 Num0 Num4
 response_fn_1:  Mean =  1.3103015876e+02  Std. Dev. = 3.1329459406e+02  Coeff. of Variation =  2.3910113292e+00
 response_fn_1 Sobol indices:
-                      9.0985004966e-01 x1 
-                      6.3621970120e-03 x2 
+                      9.0985004966e-01  9.9363780299e-01 x1
+                      6.3621970120e-03  9.0149950343e-02 x2
                       8.3787753331e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9363780299e-01 x1
-                      9.0149950343e-02 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-02
@@ -28449,18 +28242,15 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num4 Num0
   -1.5732288005e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-   1.5471623286e-12 Num1 Num2
-   4.1620297372e-13 Num2 Num2
-   1.1937978699e-13 Num0 Num3
-   3.8621527470e-14 Num0 Num4
+  -3.5703746044e-13 Num1 Num2
+   0.0000000000e+00 Num2 Num2
+   3.1710255919e-14 Num0 Num3
+   1.5810687808e-13 Num0 Num4
 response_fn_1:  Mean =  5.0712321400e+04  Std. Dev. = 1.4762267916e+05  Coeff. of Variation =  2.9109824809e+00
 response_fn_1 Sobol indices:
-                      9.9456967798e-01 x1 
-                      5.6651744605e-04 x2 
+                      9.9456967798e-01  9.9943348255e-01 x1
+                      5.6651744605e-04  5.4303220172e-03 x2
                       4.8638045711e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9943348255e-01 x1
-                      5.4303220172e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.1000000000e-03
@@ -28487,12 +28277,9 @@ Polynomial Chaos coefficients for response_fn_1:
    9.4086736049e-14 Num0 Num4
 response_fn_1:  Mean =  1.7499985321e+02  Std. Dev. = 2.8371786303e+02  Coeff. of Variation =  1.6212462915e+00
 response_fn_1 Sobol indices:
-                      5.6933651533e-01 x1 
-                      2.2453411984e-01 x2 
+                      5.6933651533e-01  7.7546588016e-01 x1
+                      2.2453411984e-01  4.3066348467e-01 x2
                       2.0612936483e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.7546588016e-01 x1
-                      4.3066348467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -28519,12 +28306,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.3126765236e-10 Num0 Num4
 response_fn_1:  Mean =  6.8592841460e+03  Std. Dev. = 1.8881359921e+04  Coeff. of Variation =  2.7526720747e+00
 response_fn_1 Sobol indices:
-                      9.9702954299e-01 x1 
-                      1.3597811787e-03 x2 
+                      9.9702954299e-01  9.9864021882e-01 x1
+                      1.3597811787e-03  2.9704570066e-03 x2
                       1.6106758279e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9864021882e-01 x1
-                      2.9704570066e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -28551,12 +28335,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -2.2863277275e-17 Num0 Num4
 response_fn_1:  Mean =  2.6812277931e+07  Std. Dev. = 3.6506392074e+09  Coeff. of Variation =  1.3615550371e+02
 response_fn_1 Sobol indices:
-                      9.9999998955e-01 x1 
-                      5.8704852817e-11 x2 
+                      9.9999998955e-01  9.9999999994e-01 x1
+                      5.8704852817e-11  1.0449787843e-08 x2
                       1.0391082990e-08 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9999999994e-01 x1
-                      1.0449787843e-08 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -28583,12 +28364,9 @@ Polynomial Chaos coefficients for response_fn_1:
    1.4554283422e-13 Num0 Num4
 response_fn_1:  Mean =  1.2619676674e+04  Std. Dev. = 5.0592760790e+04  Coeff. of Variation =  4.0090377986e+00
 response_fn_1 Sobol indices:
-                      9.9634440797e-01 x1 
-                      5.9654501566e-04 x2 
+                      9.9634440797e-01  9.9940345498e-01 x1
+                      5.9654501566e-04  3.6555920264e-03 x2
                       3.0590470108e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9940345498e-01 x1
-                      3.6555920264e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-03
@@ -28609,18 +28387,15 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num4 Num0
   -1.4384436010e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-   1.8776834947e-11 Num1 Num2
-   6.4380719013e-12 Num2 Num2
-  -1.1555773380e-10 Num0 Num3
-   1.2145463015e-09 Num0 Num4
+  -2.0863149941e-12 Num1 Num2
+   1.2876143803e-12 Num2 Num2
+   2.2249932078e-10 Num0 Num3
+  -3.2906404931e-09 Num0 Num4
 response_fn_1:  Mean =  3.2488855020e+04  Std. Dev. = 3.2856399563e+04  Coeff. of Variation =  1.0113129423e+00
 response_fn_1 Sobol indices:
-                      9.9298831703e-01 x1 
-                      4.6306088552e-03 x2 
+                      9.9298831703e-01  9.9536939114e-01 x1
+                      4.6306088552e-03  7.0116829693e-03 x2
                       2.3810741141e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9536939114e-01 x1
-                      7.0116829693e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-04
@@ -28648,12 +28423,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.3322676296e-14  He2  He2
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.2000000000e-03
@@ -28685,12 +28457,9 @@ Polynomial Chaos coefficients for response_fn_1:
    3.6637359813e-13   P2   P2
 response_fn_1:  Mean =  4.5566666667e+02  Std. Dev. = 6.0656024184e+02  Coeff. of Variation =  1.3311490311e+00
 response_fn_1 Sobol indices:
-                      4.9746891383e-01 x1 
-                      2.9636448672e-01 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
                       2.0616659946e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.0363551328e-01 x1
-                      5.0253108617e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -28717,12 +28486,9 @@ Polynomial Chaos coefficients for response_fn_1:
    3.6379788071e-12   L2   L2
 response_fn_1:  Mean =  3.6005000000e+04  Std. Dev. = 3.1371446924e+05  Coeff. of Variation =  8.7130806620e+00
 response_fn_1 Sobol indices:
-                      9.9944724867e-01 x1 
-                      3.2514784404e-05 x2 
+                      9.9944724867e-01  9.9996748522e-01 x1
+                      3.2514784404e-05  5.5275133486e-04 x2
                       5.2023655046e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9996748522e-01 x1
-                      5.5275133486e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.9000000000e-03
@@ -28749,12 +28515,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -7.1393494683e-14 Pab2 Pab2
 response_fn_1:  Mean =  3.3706545835e+02  Std. Dev. = 4.6075688193e+02  Coeff. of Variation =  1.3669655864e+00
 response_fn_1 Sobol indices:
-                      5.9549858715e-01 x1 
-                      2.4998938646e-01 x2 
+                      5.9549858715e-01  7.5001061354e-01 x1
+                      2.4998938646e-01  4.0450141285e-01 x2
                       1.5451202640e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.5001061354e-01 x1
-                      4.0450141285e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.7000000000e-03
@@ -28781,12 +28544,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.5205266524e-11  La2  La2
 response_fn_1:  Mean =  3.1502600000e+05  Std. Dev. = 1.3982261168e+06  Coeff. of Variation =  4.4384467212e+00
 response_fn_1 Sobol indices:
-                      9.9937985805e-01 x1 
-                      1.6183842942e-04 x2 
+                      9.9937985805e-01  9.9983816157e-01 x1
+                      1.6183842942e-04  6.2014194637e-04 x2
                       4.5830351694e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9983816157e-01 x1
-                      6.2014194637e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-04
@@ -28813,12 +28573,9 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0299402527e-13 Num2 Num2
 response_fn_1:  Mean =  2.2076678414e+02  Std. Dev. = 3.6038533339e+02  Coeff. of Variation =  1.6324255245e+00
 response_fn_1 Sobol indices:
-                      5.9957913777e-01 x1 
-                      2.0560850581e-01 x2 
+                      5.9957913777e-01  7.9439149419e-01 x1
+                      2.0560850581e-01  4.0042086223e-01 x2
                       1.9481235642e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.9439149419e-01 x1
-                      4.0042086223e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.6000000000e-03
@@ -28845,12 +28602,9 @@ Polynomial Chaos coefficients for response_fn_1:
    4.2385525174e-13 Num2 Num2
 response_fn_1:  Mean =  2.5671972656e+02  Std. Dev. = 2.0484189184e+03  Coeff. of Variation =  7.9792034130e+00
 response_fn_1 Sobol indices:
-                      9.9391978710e-01 x1 
-                      7.1275222945e-04 x2 
+                      9.9391978710e-01  9.9928724777e-01 x1
+                      7.1275222945e-04  6.0802128961e-03 x2
                       5.3674606667e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9928724777e-01 x1
-                      6.0802128961e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.8100000000e-02
@@ -28867,22 +28621,19 @@ Polynomial Chaos coefficients for response_fn_1:
    8.4226533917e+02 Num2 Num0
    5.1555911835e+02 Num3 Num0
    1.0000000000e+02 Num4 Num0
-  -3.8080278762e-10 Num5 Num0
-   4.2687718171e-09 Num6 Num0
+   7.8588494760e-11 Num5 Num0
+   4.7741486504e-09 Num6 Num0
    7.7020430083e+00 Num0 Num1
   -4.6905599683e+02 Num1 Num1
   -2.0000000000e+02 Num2 Num1
    1.0000000000e+02 Num0 Num2
-  -2.4091319835e-12 Num1 Num2
-  -6.0207934560e-12 Num2 Num2
+   2.8909583802e-12 Num1 Num2
+   4.6631635591e-12 Num2 Num2
 response_fn_1:  Mean =  1.3103015876e+02  Std. Dev. = 3.1329459406e+02  Coeff. of Variation =  2.3910113292e+00
 response_fn_1 Sobol indices:
-                      9.0985004966e-01 x1 
-                      6.3621970120e-03 x2 
+                      9.0985004966e-01  9.9363780299e-01 x1
+                      6.3621970120e-03  9.0149950343e-02 x2
                       8.3787753331e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9363780299e-01 x1
-                      9.0149950343e-02 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-02
@@ -28899,22 +28650,19 @@ Polynomial Chaos coefficients for response_fn_1:
    1.3123303936e+04 Num2 Num0
    1.8114990419e+03 Num3 Num0
    1.0000000000e+02 Num4 Num0
-   1.2179612173e-10 Num5 Num0
-   1.7745380253e-10 Num6 Num0
+  -4.0097488636e-13 Num5 Num0
+   1.7185034117e-11 Num6 Num0
   -1.3846408620e+03 Num0 Num1
   -1.5732288005e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
    1.0000000000e+02 Num0 Num2
-   1.5471623286e-12 Num1 Num2
-   4.1620297372e-13 Num2 Num2
+  -3.5703746044e-13 Num1 Num2
+   0.0000000000e+00 Num2 Num2
 response_fn_1:  Mean =  5.0712321400e+04  Std. Dev. = 1.4762267916e+05  Coeff. of Variation =  2.9109824809e+00
 response_fn_1 Sobol indices:
-                      9.9456967798e-01 x1 
-                      5.6651744605e-04 x2 
+                      9.9456967798e-01  9.9943348255e-01 x1
+                      5.6651744605e-04  5.4303220172e-03 x2
                       4.8638045711e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9943348255e-01 x1
-                      5.4303220172e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.1000000000e-03
@@ -28941,12 +28689,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.0653199554e-13 Num2 Num2
 response_fn_1:  Mean =  1.7499985321e+02  Std. Dev. = 2.8371786303e+02  Coeff. of Variation =  1.6212462915e+00
 response_fn_1 Sobol indices:
-                      5.6933651533e-01 x1 
-                      2.2453411984e-01 x2 
+                      5.6933651533e-01  7.7546588016e-01 x1
+                      2.2453411984e-01  4.3066348467e-01 x2
                       2.0612936483e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.7546588016e-01 x1
-                      4.3066348467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -28973,12 +28718,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -7.5841091978e-12 Num2 Num2
 response_fn_1:  Mean =  6.8592841460e+03  Std. Dev. = 1.8881359921e+04  Coeff. of Variation =  2.7526720747e+00
 response_fn_1 Sobol indices:
-                      9.9702954299e-01 x1 
-                      1.3597811787e-03 x2 
+                      9.9702954299e-01  9.9864021882e-01 x1
+                      1.3597811787e-03  2.9704570066e-03 x2
                       1.6106758279e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9864021882e-01 x1
-                      2.9704570066e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -29005,12 +28747,9 @@ Polynomial Chaos coefficients for response_fn_1:
    7.0409758474e-13 Num2 Num2
 response_fn_1:  Mean =  2.6812277931e+07  Std. Dev. = 3.6506392074e+09  Coeff. of Variation =  1.3615550371e+02
 response_fn_1 Sobol indices:
-                      9.9999998955e-01 x1 
-                      5.8704852817e-11 x2 
+                      9.9999998955e-01  9.9999999994e-01 x1
+                      5.8704852817e-11  1.0449787843e-08 x2
                       1.0391082990e-08 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9999999994e-01 x1
-                      1.0449787843e-08 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -29037,12 +28776,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -3.0769017707e-12 Num2 Num2
 response_fn_1:  Mean =  1.2619676674e+04  Std. Dev. = 5.0592760790e+04  Coeff. of Variation =  4.0090377986e+00
 response_fn_1 Sobol indices:
-                      9.9634440797e-01 x1 
-                      5.9654501566e-04 x2 
+                      9.9634440797e-01  9.9940345498e-01 x1
+                      5.9654501566e-04  3.6555920264e-03 x2
                       3.0590470108e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9940345498e-01 x1
-                      3.6555920264e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-03
@@ -29059,22 +28795,19 @@ Polynomial Chaos coefficients for response_fn_1:
    7.7875409265e+03 Num2 Num0
    1.4225935100e+03 Num3 Num0
    1.0000000000e+02 Num4 Num0
-   1.4198877502e-09 Num5 Num0
-   1.5853457244e-08 Num6 Num0
+   1.0829652332e-08 Num5 Num0
+   2.0906261686e-09 Num6 Num0
   -2.9261060529e+03 Num0 Num1
   -1.4384436010e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
    1.0000000000e+02 Num0 Num2
-   1.8776834947e-11 Num1 Num2
-   6.4380719013e-12 Num2 Num2
+  -2.0863149941e-12 Num1 Num2
+   1.2876143803e-12 Num2 Num2
 response_fn_1:  Mean =  3.2488855020e+04  Std. Dev. = 3.2856399563e+04  Coeff. of Variation =  1.0113129423e+00
 response_fn_1 Sobol indices:
-                      9.9298831703e-01 x1 
-                      4.6306088552e-03 x2 
+                      9.9298831703e-01  9.9536939114e-01 x1
+                      4.6306088552e-03  7.0116829693e-03 x2
                       2.3810741141e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9536939114e-01 x1
-                      7.0116829693e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-04
@@ -29094,12 +28827,9 @@ Polynomial Chaos coefficients for response_fn_1:
    2.0630295165e+02  He0  He2
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 8.2767122419e+02  Coeff. of Variation =  2.0588836423e+00
 response_fn_1 Sobol indices:
-                      7.5136755294e-01 x1 
-                      1.8264901126e-01 x2 
+                      7.5136755294e-01  8.1735098874e-01 x1
+                      1.8264901126e-01  2.4863244706e-01 x2
                       6.5983435803e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      8.1735098874e-01 x1
-                      2.4863244706e-01 x2
 Test Number 53 succeeded
 <<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -29111,12 +28841,9 @@ Polynomial Chaos coefficients for response_fn_1:
    2.6666666667e+02   P0   P2
 response_fn_1:  Mean =  4.5566666667e+02  Std. Dev. = 4.3777443879e+02  Coeff. of Variation =  9.6073395492e-01
 response_fn_1 Sobol indices:
-                      4.3105112686e-01 x1 
-                      5.6894887314e-01 x2 
+                      4.3105112686e-01  4.3105112686e-01 x1
+                      5.6894887314e-01  5.6894887314e-01 x2
                       0.0000000000e+00 x1 x2 
-response_fn_1 total Sobol indices:
-                      4.3105112686e-01 x1
-                      5.6894887314e-01 x2
 Test Number 54 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -29125,12 +28852,9 @@ Polynomial Chaos coefficients for response_fn_1:
    3.8627416998e+03   L0   L1
 response_fn_1:  Mean =  6.6795166004e+03  Std. Dev. = 6.0057570569e+03  Coeff. of Variation =  8.9913049345e-01
 response_fn_1 Sobol indices:
-                      5.8632829583e-01 x1 
-                      4.1367170417e-01 x2 
+                      5.8632829583e-01  5.8632829583e-01 x1
+                      4.1367170417e-01  4.1367170417e-01 x2
                       0.0000000000e+00 x1 x2 
-response_fn_1 total Sobol indices:
-                      5.8632829583e-01 x1
-                      4.1367170417e-01 x2
 Test Number 55 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -29139,12 +28863,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -2.6966083707e+02 Pab0 Pab1
 response_fn_1:  Mean =  2.4356707753e+02  Std. Dev. = 2.2423156229e+02  Coeff. of Variation =  9.2061523489e-01
 response_fn_1 Sobol indices:
-                      3.5835777534e-02 x1 
-                      9.6416422247e-01 x2 
+                      3.5835777534e-02  3.5835777534e-02 x1
+                      9.6416422247e-01  9.6416422247e-01 x2
                       0.0000000000e+00 x1 x2 
-response_fn_1 total Sobol indices:
-                      3.5835777534e-02 x1
-                      9.6416422247e-01 x2
 Test Number 56 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -29153,12 +28874,9 @@ Polynomial Chaos coefficients for response_fn_1:
    1.8944271910e+04  La0  La1
 response_fn_1:  Mean =  1.5130464045e+05  Std. Dev. = 1.0958528746e+05  Coeff. of Variation =  7.2426917727e-01
 response_fn_1 Sobol indices:
-                      9.2528783122e-01 x1 
-                      7.4712168777e-02 x2 
+                      9.2528783122e-01  9.2528783122e-01 x1
+                      7.4712168777e-02  7.4712168777e-02 x2
                       0.0000000000e+00 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.2528783122e-01 x1
-                      7.4712168777e-02 x2
 Test Number 57 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -29167,12 +28885,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -7.7374130355e+01 Num0 Num1
 response_fn_1:  Mean =  1.6894921238e+02  Std. Dev. = 8.4397913517e+01  Coeff. of Variation =  4.9954606078e-01
 response_fn_1 Sobol indices:
-                      3.4968477434e-01 x1 
-                      6.5031522566e-01 x2 
+                      3.4968477434e-01  3.4968477434e-01 x1
+                      6.5031522566e-01  6.5031522566e-01 x2
                       0.0000000000e+00 x1 x2 
-response_fn_1 total Sobol indices:
-                      3.4968477434e-01 x1
-                      6.5031522566e-01 x2
 Test Number 58 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -29181,12 +28896,9 @@ Polynomial Chaos coefficients for response_fn_1:
    1.1642135624e+02 Num0 Num1
 response_fn_1:  Mean =  1.6998033906e+02  Std. Dev. = 1.5093497001e+02  Coeff. of Variation =  8.8795545909e-01
 response_fn_1 Sobol indices:
-                      8.5126075537e-01 x1 
-                      1.4873924463e-01 x2 
+                      8.5126075537e-01  8.5126075537e-01 x1
+                      1.4873924463e-01  1.4873924463e-01 x2
                       0.0000000000e+00 x1 x2 
-response_fn_1 total Sobol indices:
-                      8.5126075537e-01 x1
-                      1.4873924463e-01 x2
 Test Number 59 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -29195,12 +28907,9 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0576179503e+02 Num0 Num1
 response_fn_1:  Mean =  1.1684246816e+02  Std. Dev. = 9.7178177161e+01  Coeff. of Variation =  8.3170253668e-01
 response_fn_1 Sobol indices:
-                      7.7750695458e-01 x1 
-                      2.2249304542e-01 x2 
+                      7.7750695458e-01  7.7750695458e-01 x1
+                      2.2249304542e-01  2.2249304542e-01 x2
                       0.0000000000e+00 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.7750695458e-01 x1
-                      2.2249304542e-01 x2
 Test Number 60 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -29209,12 +28918,9 @@ Polynomial Chaos coefficients for response_fn_1:
    4.0043897239e+02 Num0 Num1
 response_fn_1:  Mean =  3.1146694153e+04  Std. Dev. = 4.2169864176e+04  Coeff. of Variation =  1.3539113965e+00
 response_fn_1 Sobol indices:
-                      9.9943779841e-01 x1 
-                      5.6220158655e-04 x2 
+                      9.9943779841e-01  9.9943779841e-01 x1
+                      5.6220158655e-04  5.6220158655e-04 x2
                       0.0000000000e+00 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9943779841e-01 x1
-                      5.6220158655e-04 x2
 Test Number 61 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -29223,12 +28929,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -6.6666666676e+01 Num0 Num1
 response_fn_1:  Mean =  1.3500000003e+02  Std. Dev. = 6.2281266493e+01  Coeff. of Variation =  4.6134271467e-01
 response_fn_1 Sobol indices:
-                      2.3614424990e-01 x1 
-                      7.6385575010e-01 x2 
+                      2.3614424990e-01  2.3614424990e-01 x1
+                      7.6385575010e-01  7.6385575010e-01 x2
                       0.0000000000e+00 x1 x2 
-response_fn_1 total Sobol indices:
-                      2.3614424990e-01 x1
-                      7.6385575010e-01 x2
 Test Number 62 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -29237,12 +28940,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -4.6291003775e+02 Num0 Num1
 response_fn_1:  Mean =  6.8527466785e+03  Std. Dev. = 8.7851499754e+03  Coeff. of Variation =  1.2819896003e+00
 response_fn_1 Sobol indices:
-                      9.9797016464e-01 x1 
-                      2.0298353581e-03 x2 
+                      9.9797016464e-01  9.9797016464e-01 x1
+                      2.0298353581e-03  2.0298353581e-03 x2
                       0.0000000000e+00 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9797016464e-01 x1
-                      2.0298353581e-03 x2
 Test Number 63 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -29251,12 +28951,9 @@ Polynomial Chaos coefficients for response_fn_1:
    3.9016731363e+02 Num0 Num1
 response_fn_1:  Mean =  6.4727628989e+05  Std. Dev. = 9.0993845078e+05  Coeff. of Variation =  1.4057960488e+00
 response_fn_1 Sobol indices:
-                      9.9999574338e-01 x1 
-                      4.2566172744e-06 x2 
+                      9.9999574338e-01  9.9999574338e-01 x1
+                      4.2566172744e-06  4.2566172744e-06 x2
                       0.0000000000e+00 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9999574338e-01 x1
-                      4.2566172744e-06 x2
 Test Number 64 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -29265,12 +28962,9 @@ Polynomial Chaos coefficients for response_fn_1:
    1.7602936305e+02 Num0 Num1
 response_fn_1:  Mean =  1.0283085941e+04  Std. Dev. = 1.3937394627e+04  Coeff. of Variation =  1.3553708203e+00
 response_fn_1 Sobol indices:
-                      9.9962544377e-01 x1 
-                      3.7455622894e-04 x2 
+                      9.9962544377e-01  9.9962544377e-01 x1
+                      3.7455622894e-04  3.7455622894e-04 x2
                       0.0000000000e+00 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9962544377e-01 x1
-                      3.7455622894e-04 x2
 Test Number 65 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -29279,23 +28973,17 @@ Polynomial Chaos coefficients for response_fn_1:
   -2.6840121268e+02 Num0 Num1
 response_fn_1:  Mean =  3.7305232910e+03  Std. Dev. = 4.9002978655e+03  Coeff. of Variation =  1.3135684952e+00
 response_fn_1 Sobol indices:
-                      9.9824993199e-01 x1 
-                      1.7500680132e-03 x2 
+                      9.9824993199e-01  9.9824993199e-01 x1
+                      1.7500680132e-03  1.7500680132e-03 x2
                       0.0000000000e+00 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9824993199e-01 x1
-                      1.7500680132e-03 x2
 dakota_uq_rosenbrock_sc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.2000000000e-03
@@ -29308,12 +28996,9 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  4.5566666667e+02  Std. Dev. = 6.0656024184e+02  Coeff. of Variation =  1.3311490311e+00
 response_fn_1 Sobol indices:
-                      4.9746891383e-01 x1 
-                      2.9636448672e-01 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
                       2.0616659946e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.0363551328e-01 x1
-                      5.0253108617e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -29326,12 +29011,9 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  3.6005000000e+04  Std. Dev. = 3.1371446924e+05  Coeff. of Variation =  8.7130806620e+00
 response_fn_1 Sobol indices:
-                      9.9944724867e-01 x1 
-                      3.2514784404e-05 x2 
+                      9.9944724867e-01  9.9996748522e-01 x1
+                      3.2514784404e-05  5.5275133486e-04 x2
                       5.2023655046e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9996748522e-01 x1
-                      5.5275133486e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.9000000000e-03
@@ -29344,12 +29026,9 @@ Test Number 3 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  3.3706545835e+02  Std. Dev. = 4.6075688193e+02  Coeff. of Variation =  1.3669655864e+00
 response_fn_1 Sobol indices:
-                      5.9549858715e-01 x1 
-                      2.4998938646e-01 x2 
+                      5.9549858715e-01  7.5001061354e-01 x1
+                      2.4998938646e-01  4.0450141285e-01 x2
                       1.5451202640e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.5001061354e-01 x1
-                      4.0450141285e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.7000000000e-03
@@ -29362,12 +29041,9 @@ Test Number 4 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  3.1502600000e+05  Std. Dev. = 1.3982261168e+06  Coeff. of Variation =  4.4384467212e+00
 response_fn_1 Sobol indices:
-                      9.9937985805e-01 x1 
-                      1.6183842942e-04 x2 
+                      9.9937985805e-01  9.9983816157e-01 x1
+                      1.6183842942e-04  6.2014194637e-04 x2
                       4.5830351694e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9983816157e-01 x1
-                      6.2014194637e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-04
@@ -29380,14 +29056,15 @@ Test Number 5 succeeded
 <<<<< Function evaluation summary: 3125 total (3125 new, 0 duplicate)
 response_fn_1:  Mean =  4.2716738928e+04  Std. Dev. = 3.2090144104e+05  Coeff. of Variation =  7.5123113117e+00
 response_fn_1 Sobol indices:
-                      9.3457678135e-06 x1 
-                      6.9919654268e-07 x2 
+                      9.3457678135e-06  1.0381590427e-05 x1
+                      6.9919654268e-07  3.9447740698e-06 x2
+                      9.9968624656e-01  9.9979668921e-01 x3
+                      1.9316958971e-05  1.3120807402e-04 x4
+                      1.6925482466e-04  1.7291304600e-04 x5
                       1.0358226155e-06 x1 x2 
-                      9.9968624656e-01 x3 
                       1.3335805234e-15 x1 x3 
                       2.2097549143e-06 x2 x3 
                      -1.6299317509e-15 x1 x2 x3 
-                      1.9316958971e-05 x4 
                      -3.9359147393e-17 x1 x4 
                      -2.3152439643e-18 x2 x4 
                       6.9457318929e-18 x1 x2 x4 
@@ -29395,7 +29072,6 @@ response_fn_1 Sobol indices:
                      -1.5905726035e-15 x1 x3 x4 
                      -1.3312652795e-15 x2 x3 x4 
                       2.2156884738e-15 x1 x2 x3 x4 
-                      1.6925482466e-04 x5 
                      -2.3152439643e-18 x1 x5 
                       3.0098171536e-17 x2 x5 
                      -2.7782927572e-17 x1 x2 x5 
@@ -29411,12 +29087,6 @@ response_fn_1 Sobol indices:
                       1.3312652795e-15 x1 x3 x4 x5 
                       1.3613634510e-15 x2 x3 x4 x5 
                      -3.2876464293e-15 x1 x2 x3 x4 x5 
-response_fn_1 total Sobol indices:
-                      1.0381590427e-05 x1
-                      3.9447740698e-06 x2
-                      9.9979668921e-01 x3
-                      1.3120807402e-04 x4
-                      1.7291304600e-04 x5
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -29429,12 +29099,9 @@ Test Number 6 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.2000000000e-03
@@ -29447,12 +29114,9 @@ Test Number 7 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 response_fn_1:  Mean =  4.5566666667e+02  Std. Dev. = 6.0656024184e+02  Coeff. of Variation =  1.3311490311e+00
 response_fn_1 Sobol indices:
-                      4.9746891383e-01 x1 
-                      2.9636448672e-01 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
                       2.0616659946e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.0363551328e-01 x1
-                      5.0253108617e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -29465,12 +29129,9 @@ Test Number 8 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 response_fn_1:  Mean =  3.6005000000e+04  Std. Dev. = 3.1371446924e+05  Coeff. of Variation =  8.7130806620e+00
 response_fn_1 Sobol indices:
-                      9.9944724867e-01 x1 
-                      3.2514784404e-05 x2 
+                      9.9944724867e-01  9.9996748522e-01 x1
+                      3.2514784404e-05  5.5275133486e-04 x2
                       5.2023655046e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9996748522e-01 x1
-                      5.5275133486e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.9000000000e-03
@@ -29483,12 +29144,9 @@ Test Number 9 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 response_fn_1:  Mean =  3.3706545835e+02  Std. Dev. = 4.6075688193e+02  Coeff. of Variation =  1.3669655864e+00
 response_fn_1 Sobol indices:
-                      5.9549858715e-01 x1 
-                      2.4998938646e-01 x2 
+                      5.9549858715e-01  7.5001061354e-01 x1
+                      2.4998938646e-01  4.0450141285e-01 x2
                       1.5451202640e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.5001061354e-01 x1
-                      4.0450141285e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.7000000000e-03
@@ -29501,12 +29159,9 @@ Test Number 10 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 response_fn_1:  Mean =  3.1502600000e+05  Std. Dev. = 1.3982261168e+06  Coeff. of Variation =  4.4384467212e+00
 response_fn_1 Sobol indices:
-                      9.9937985805e-01 x1 
-                      1.6183842942e-04 x2 
+                      9.9937985805e-01  9.9983816157e-01 x1
+                      1.6183842942e-04  6.2014194637e-04 x2
                       4.5830351694e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9983816157e-01 x1
-                      6.2014194637e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-04
@@ -29519,14 +29174,15 @@ Test Number 11 succeeded
 <<<<< Function evaluation summary: 106 total (106 new, 0 duplicate)
 response_fn_1:  Mean =  4.2716738928e+04  Std. Dev. = 3.2090144104e+05  Coeff. of Variation =  7.5123113117e+00
 response_fn_1 Sobol indices:
-                      9.3457678135e-06 x1 
-                      6.9919654268e-07 x2 
+                      9.3457678135e-06  1.0381590429e-05 x1
+                      6.9919654268e-07  3.9447740712e-06 x2
+                      9.9968624656e-01  9.9979668921e-01 x3
+                      1.9316958971e-05  1.3120807402e-04 x4
+                      1.6925482466e-04  1.7291304601e-04 x5
                       1.0358226155e-06 x1 x2 
-                      9.9968624656e-01 x3 
                       1.0372292960e-15 x1 x3 
                       2.2097549136e-06 x2 x3 
                      -5.9270245486e-16 x1 x2 x3 
-                      1.9316958971e-05 x4 
                       4.6304879286e-18 x1 x4 
                       0.0000000000e+00 x2 x4 
                       0.0000000000e+00 x1 x2 x4 
@@ -29534,7 +29190,6 @@ response_fn_1 Sobol indices:
                      -1.5280610164e-16 x1 x3 x4 
                      -2.9635122743e-16 x2 x3 x4 
                       2.9635122743e-16 x1 x2 x3 x4 
-                      1.6925482466e-04 x5 
                       4.6304879286e-18 x1 x5 
                       0.0000000000e+00 x2 x5 
                       0.0000000000e+00 x1 x2 x5 
@@ -29550,12 +29205,6 @@ response_fn_1 Sobol indices:
                       0.0000000000e+00 x1 x3 x4 x5 
                       0.0000000000e+00 x2 x3 x4 x5 
                       0.0000000000e+00 x1 x2 x3 x4 x5 
-response_fn_1 total Sobol indices:
-                      1.0381590429e-05 x1
-                      3.9447740712e-06 x2
-                      9.9979668921e-01 x3
-                      1.3120807402e-04 x4
-                      1.7291304601e-04 x5
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -29568,12 +29217,9 @@ Test Number 12 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  2.2076678414e+02  Std. Dev. = 3.6038533339e+02  Coeff. of Variation =  1.6324255245e+00
 response_fn_1 Sobol indices:
-                      5.9957913777e-01 x1 
-                      2.0560850581e-01 x2 
+                      5.9957913777e-01  7.9439149419e-01 x1
+                      2.0560850581e-01  4.0042086223e-01 x2
                       1.9481235642e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.9439149419e-01 x1
-                      4.0042086223e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.6000000000e-03
@@ -29586,12 +29232,9 @@ Test Number 13 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  2.5671972656e+02  Std. Dev. = 2.0484189184e+03  Coeff. of Variation =  7.9792034130e+00
 response_fn_1 Sobol indices:
-                      9.9391978710e-01 x1 
-                      7.1275222945e-04 x2 
+                      9.9391978710e-01  9.9928724777e-01 x1
+                      7.1275222945e-04  6.0802128961e-03 x2
                       5.3674606667e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9928724777e-01 x1
-                      6.0802128961e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.8100000000e-02
@@ -29604,12 +29247,9 @@ Test Number 14 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  1.3103015876e+02  Std. Dev. = 3.1329459406e+02  Coeff. of Variation =  2.3910113292e+00
 response_fn_1 Sobol indices:
-                      9.0985004966e-01 x1 
-                      6.3621970120e-03 x2 
+                      9.0985004966e-01  9.9363780299e-01 x1
+                      6.3621970120e-03  9.0149950343e-02 x2
                       8.3787753331e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9363780299e-01 x1
-                      9.0149950343e-02 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-02
@@ -29622,12 +29262,9 @@ Test Number 15 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  5.0712321400e+04  Std. Dev. = 1.4762267916e+05  Coeff. of Variation =  2.9109824809e+00
 response_fn_1 Sobol indices:
-                      9.9456967798e-01 x1 
-                      5.6651744605e-04 x2 
+                      9.9456967798e-01  9.9943348255e-01 x1
+                      5.6651744605e-04  5.4303220172e-03 x2
                       4.8638045711e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9943348255e-01 x1
-                      5.4303220172e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.1000000000e-03
@@ -29640,12 +29277,9 @@ Test Number 16 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  1.7499985321e+02  Std. Dev. = 2.8371786303e+02  Coeff. of Variation =  1.6212462915e+00
 response_fn_1 Sobol indices:
-                      5.6933651533e-01 x1 
-                      2.2453411984e-01 x2 
+                      5.6933651533e-01  7.7546588016e-01 x1
+                      2.2453411984e-01  4.3066348467e-01 x2
                       2.0612936483e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.7546588016e-01 x1
-                      4.3066348467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -29658,12 +29292,9 @@ Test Number 17 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  6.8592841460e+03  Std. Dev. = 1.8881359921e+04  Coeff. of Variation =  2.7526720747e+00
 response_fn_1 Sobol indices:
-                      9.9702954299e-01 x1 
-                      1.3597811787e-03 x2 
+                      9.9702954299e-01  9.9864021882e-01 x1
+                      1.3597811787e-03  2.9704570066e-03 x2
                       1.6106758279e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9864021882e-01 x1
-                      2.9704570066e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -29676,12 +29307,9 @@ Test Number 18 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  2.6812277931e+07  Std. Dev. = 3.6506392074e+09  Coeff. of Variation =  1.3615550371e+02
 response_fn_1 Sobol indices:
-                      9.9999998955e-01 x1 
-                      5.8704852841e-11 x2 
+                      9.9999998955e-01  9.9999999994e-01 x1
+                      5.8704852841e-11  1.0449788198e-08 x2
                       1.0391083345e-08 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9999999994e-01 x1
-                      1.0449788198e-08 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -29694,12 +29322,9 @@ Test Number 19 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  1.2619676674e+04  Std. Dev. = 5.0592760790e+04  Coeff. of Variation =  4.0090377986e+00
 response_fn_1 Sobol indices:
-                      9.9634440797e-01 x1 
-                      5.9654501566e-04 x2 
+                      9.9634440797e-01  9.9940345498e-01 x1
+                      5.9654501566e-04  3.6555920264e-03 x2
                       3.0590470108e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9940345498e-01 x1
-                      3.6555920264e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-03
@@ -29712,12 +29337,9 @@ Test Number 20 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  3.2488855020e+04  Std. Dev. = 3.2856399563e+04  Coeff. of Variation =  1.0113129423e+00
 response_fn_1 Sobol indices:
-                      9.9298831703e-01 x1 
-                      4.6306088552e-03 x2 
+                      9.9298831703e-01  9.9536939114e-01 x1
+                      4.6306088552e-03  7.0116829693e-03 x2
                       2.3810741141e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9536939114e-01 x1
-                      7.0116829693e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-04
@@ -29730,12 +29352,9 @@ Test Number 21 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
 response_fn_1:  Mean =  2.2076678414e+02  Std. Dev. = 3.6038533339e+02  Coeff. of Variation =  1.6324255245e+00
 response_fn_1 Sobol indices:
-                      5.9957913777e-01 x1 
-                      2.0560850581e-01 x2 
+                      5.9957913777e-01  7.9439149419e-01 x1
+                      2.0560850581e-01  4.0042086223e-01 x2
                       1.9481235642e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.9439149419e-01 x1
-                      4.0042086223e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.6000000000e-03
@@ -29748,12 +29367,9 @@ Test Number 22 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 response_fn_1:  Mean =  2.5671972656e+02  Std. Dev. = 2.0484189184e+03  Coeff. of Variation =  7.9792034130e+00
 response_fn_1 Sobol indices:
-                      9.9391978710e-01 x1 
-                      7.1275222945e-04 x2 
+                      9.9391978710e-01  9.9928724777e-01 x1
+                      7.1275222945e-04  6.0802128961e-03 x2
                       5.3674606667e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9928724777e-01 x1
-                      6.0802128961e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.8100000000e-02
@@ -29766,12 +29382,9 @@ Test Number 23 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 response_fn_1:  Mean =  1.3103015876e+02  Std. Dev. = 3.1329459406e+02  Coeff. of Variation =  2.3910113292e+00
 response_fn_1 Sobol indices:
-                      9.0985004966e-01 x1 
-                      6.3621970120e-03 x2 
+                      9.0985004966e-01  9.9363780299e-01 x1
+                      6.3621970120e-03  9.0149950343e-02 x2
                       8.3787753331e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9363780299e-01 x1
-                      9.0149950343e-02 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-02
@@ -29784,12 +29397,9 @@ Test Number 24 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 response_fn_1:  Mean =  5.0712321400e+04  Std. Dev. = 1.4762267916e+05  Coeff. of Variation =  2.9109824809e+00
 response_fn_1 Sobol indices:
-                      9.9456967798e-01 x1 
-                      5.6651744605e-04 x2 
+                      9.9456967798e-01  9.9943348255e-01 x1
+                      5.6651744605e-04  5.4303220172e-03 x2
                       4.8638045711e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9943348255e-01 x1
-                      5.4303220172e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.1000000000e-03
@@ -29802,12 +29412,9 @@ Test Number 25 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 response_fn_1:  Mean =  1.7499985321e+02  Std. Dev. = 2.8371786303e+02  Coeff. of Variation =  1.6212462915e+00
 response_fn_1 Sobol indices:
-                      5.6933651533e-01 x1 
-                      2.2453411984e-01 x2 
+                      5.6933651533e-01  7.7546588016e-01 x1
+                      2.2453411984e-01  4.3066348467e-01 x2
                       2.0612936483e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.7546588016e-01 x1
-                      4.3066348467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -29820,12 +29427,9 @@ Test Number 26 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 response_fn_1:  Mean =  6.8592841460e+03  Std. Dev. = 1.8881359921e+04  Coeff. of Variation =  2.7526720747e+00
 response_fn_1 Sobol indices:
-                      9.9702954299e-01 x1 
-                      1.3597811787e-03 x2 
+                      9.9702954299e-01  9.9864021882e-01 x1
+                      1.3597811787e-03  2.9704570066e-03 x2
                       1.6106758279e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9864021882e-01 x1
-                      2.9704570066e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -29838,12 +29442,9 @@ Test Number 27 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 response_fn_1:  Mean =  2.6812277931e+07  Std. Dev. = 3.6506392074e+09  Coeff. of Variation =  1.3615550371e+02
 response_fn_1 Sobol indices:
-                      9.9999998955e-01 x1 
-                      5.8704852794e-11 x2 
+                      9.9999998955e-01  9.9999999994e-01 x1
+                      5.8704852794e-11  1.0449787890e-08 x2
                       1.0391083037e-08 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9999999994e-01 x1
-                      1.0449787890e-08 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -29856,12 +29457,9 @@ Test Number 28 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 response_fn_1:  Mean =  1.2619676674e+04  Std. Dev. = 5.0592760790e+04  Coeff. of Variation =  4.0090377986e+00
 response_fn_1 Sobol indices:
-                      9.9634440797e-01 x1 
-                      5.9654501566e-04 x2 
+                      9.9634440797e-01  9.9940345498e-01 x1
+                      5.9654501566e-04  3.6555920264e-03 x2
                       3.0590470108e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9940345498e-01 x1
-                      3.6555920264e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-03
@@ -29874,12 +29472,9 @@ Test Number 29 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 response_fn_1:  Mean =  3.2488855020e+04  Std. Dev. = 3.2856399563e+04  Coeff. of Variation =  1.0113129423e+00
 response_fn_1 Sobol indices:
-                      9.9298831703e-01 x1 
-                      4.6306088552e-03 x2 
+                      9.9298831703e-01  9.9536939114e-01 x1
+                      4.6306088552e-03  7.0116829693e-03 x2
                       2.3810741141e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9536939114e-01 x1
-                      7.0116829693e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-04
@@ -29892,12 +29487,9 @@ Test Number 30 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
-                      8.7300504533e-01 x1 
-                      5.4426409145e-02 x2 
+                      8.7300504533e-01  9.4557359085e-01 x1
+                      5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.4557359085e-01 x1
-                      1.2699495467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.2000000000e-03
@@ -29910,12 +29502,9 @@ Test Number 31 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
 response_fn_1:  Mean =  4.5566666667e+02  Std. Dev. = 6.0656024184e+02  Coeff. of Variation =  1.3311490311e+00
 response_fn_1 Sobol indices:
-                      4.9746891383e-01 x1 
-                      2.9636448672e-01 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
                       2.0616659946e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.0363551328e-01 x1
-                      5.0253108617e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -29928,12 +29517,9 @@ Test Number 32 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 response_fn_1:  Mean =  3.6005000000e+04  Std. Dev. = 3.1371446924e+05  Coeff. of Variation =  8.7130806620e+00
 response_fn_1 Sobol indices:
-                      9.9944724867e-01 x1 
-                      3.2514784404e-05 x2 
+                      9.9944724867e-01  9.9996748522e-01 x1
+                      3.2514784404e-05  5.5275133486e-04 x2
                       5.2023655046e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9996748522e-01 x1
-                      5.5275133486e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.9000000000e-03
@@ -29946,12 +29532,9 @@ Test Number 33 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 response_fn_1:  Mean =  3.3706545835e+02  Std. Dev. = 4.6075688193e+02  Coeff. of Variation =  1.3669655864e+00
 response_fn_1 Sobol indices:
-                      5.9549858715e-01 x1 
-                      2.4998938646e-01 x2 
+                      5.9549858715e-01  7.5001061354e-01 x1
+                      2.4998938646e-01  4.0450141285e-01 x2
                       1.5451202640e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.5001061354e-01 x1
-                      4.0450141285e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.7000000000e-03
@@ -29964,12 +29547,9 @@ Test Number 34 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 response_fn_1:  Mean =  3.1502600000e+05  Std. Dev. = 1.3982261168e+06  Coeff. of Variation =  4.4384467212e+00
 response_fn_1 Sobol indices:
-                      9.9937985805e-01 x1 
-                      1.6183842942e-04 x2 
+                      9.9937985805e-01  9.9983816157e-01 x1
+                      1.6183842942e-04  6.2014194637e-04 x2
                       4.5830351694e-04 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9983816157e-01 x1
-                      6.2014194637e-04 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-04
@@ -29982,12 +29562,9 @@ Test Number 35 succeeded
 <<<<< Function evaluation summary: 16 total (16 new, 0 duplicate)
 response_fn_1:  Mean =  2.2076678414e+02  Std. Dev. = 3.6038533339e+02  Coeff. of Variation =  1.6324255245e+00
 response_fn_1 Sobol indices:
-                      5.9957913777e-01 x1 
-                      2.0560850581e-01 x2 
+                      5.9957913777e-01  7.9439149419e-01 x1
+                      2.0560850581e-01  4.0042086223e-01 x2
                       1.9481235642e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.9439149419e-01 x1
-                      4.0042086223e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.6000000000e-03
@@ -30000,12 +29577,9 @@ Test Number 36 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 response_fn_1:  Mean =  2.5671972656e+02  Std. Dev. = 2.0484189184e+03  Coeff. of Variation =  7.9792034130e+00
 response_fn_1 Sobol indices:
-                      9.9391978710e-01 x1 
-                      7.1275222945e-04 x2 
+                      9.9391978710e-01  9.9928724777e-01 x1
+                      7.1275222945e-04  6.0802128961e-03 x2
                       5.3674606667e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9928724777e-01 x1
-                      6.0802128961e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.8100000000e-02
@@ -30018,12 +29592,9 @@ Test Number 37 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 response_fn_1:  Mean =  1.3103015876e+02  Std. Dev. = 3.1329459406e+02  Coeff. of Variation =  2.3910113292e+00
 response_fn_1 Sobol indices:
-                      9.0985004966e-01 x1 
-                      6.3621970120e-03 x2 
+                      9.0985004966e-01  9.9363780299e-01 x1
+                      6.3621970120e-03  9.0149950343e-02 x2
                       8.3787753331e-02 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9363780299e-01 x1
-                      9.0149950343e-02 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-02
@@ -30036,12 +29607,9 @@ Test Number 38 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 response_fn_1:  Mean =  5.0712321400e+04  Std. Dev. = 1.4762267916e+05  Coeff. of Variation =  2.9109824809e+00
 response_fn_1 Sobol indices:
-                      9.9456967798e-01 x1 
-                      5.6651744605e-04 x2 
+                      9.9456967798e-01  9.9943348255e-01 x1
+                      5.6651744605e-04  5.4303220172e-03 x2
                       4.8638045711e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9943348255e-01 x1
-                      5.4303220172e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.1000000000e-03
@@ -30054,12 +29622,9 @@ Test Number 39 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 response_fn_1:  Mean =  1.7499985321e+02  Std. Dev. = 2.8371786303e+02  Coeff. of Variation =  1.6212462915e+00
 response_fn_1 Sobol indices:
-                      5.6933651533e-01 x1 
-                      2.2453411984e-01 x2 
+                      5.6933651533e-01  7.7546588016e-01 x1
+                      2.2453411984e-01  4.3066348467e-01 x2
                       2.0612936483e-01 x1 x2 
-response_fn_1 total Sobol indices:
-                      7.7546588016e-01 x1
-                      4.3066348467e-01 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -30072,12 +29637,9 @@ Test Number 40 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 response_fn_1:  Mean =  6.8592841460e+03  Std. Dev. = 1.8881359921e+04  Coeff. of Variation =  2.7526720747e+00
 response_fn_1 Sobol indices:
-                      9.9702954299e-01 x1 
-                      1.3597811787e-03 x2 
+                      9.9702954299e-01  9.9864021882e-01 x1
+                      1.3597811787e-03  2.9704570066e-03 x2
                       1.6106758279e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9864021882e-01 x1
-                      2.9704570066e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -30090,12 +29652,9 @@ Test Number 41 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 response_fn_1:  Mean =  2.6812277931e+07  Std. Dev. = 3.6506392074e+09  Coeff. of Variation =  1.3615550371e+02
 response_fn_1 Sobol indices:
-                      9.9999998955e-01 x1 
-                      5.8704852813e-11 x2 
+                      9.9999998955e-01  9.9999999994e-01 x1
+                      5.8704852813e-11  1.0449788044e-08 x2
                       1.0391083191e-08 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9999999994e-01 x1
-                      1.0449788044e-08 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -30108,12 +29667,9 @@ Test Number 42 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 response_fn_1:  Mean =  1.2619676674e+04  Std. Dev. = 5.0592760790e+04  Coeff. of Variation =  4.0090377986e+00
 response_fn_1 Sobol indices:
-                      9.9634440797e-01 x1 
-                      5.9654501566e-04 x2 
+                      9.9634440797e-01  9.9940345498e-01 x1
+                      5.9654501566e-04  3.6555920264e-03 x2
                       3.0590470108e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9940345498e-01 x1
-                      3.6555920264e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-03
@@ -30126,12 +29682,9 @@ Test Number 43 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 response_fn_1:  Mean =  3.2488855020e+04  Std. Dev. = 3.2856399563e+04  Coeff. of Variation =  1.0113129423e+00
 response_fn_1 Sobol indices:
-                      9.9298831703e-01 x1 
-                      4.6306088552e-03 x2 
+                      9.9298831703e-01  9.9536939114e-01 x1
+                      4.6306088552e-03  7.0116829693e-03 x2
                       2.3810741141e-03 x1 x2 
-response_fn_1 total Sobol indices:
-                      9.9536939114e-01 x1
-                      7.0116829693e-03 x2
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-04
@@ -30440,11 +29993,13 @@ Polynomial Chaos coefficients for cdf_beta:
 mean_area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
 cdf_beta:  Mean =  2.0377948711e+00  Std. Dev. = 2.8391913582e+00  Coeff. of Variation =  1.3932665149e+00
 mean_area total Sobol indices:
-                      8.0327868852e-01 uuv_1
-                      2.1311475410e-01 uuv_2
-cdf_beta total Sobol indices:
-                      6.8945667373e-01 uuv_1
-                      3.7036885965e-01 uuv_2
+                      7.8688524590e-01  8.0327868852e-01 uuv_1
+                      1.9672131148e-01  2.1311475410e-01 uuv_2
+                      1.6393442623e-02 uuv_1 uuv_2
+cdf_beta Sobol indices:
+                      6.2963114035e-01  6.8945667373e-01 uuv_1
+                      3.1054332627e-01  3.7036885965e-01 uuv_2
+                      5.9825533376e-02 uuv_1 uuv_2
 Test Number 1 succeeded
 <<<<< Function evaluation summary (INNER_I): 13683 total (13683 new, 0 duplicate)
 Polynomial Chaos coefficients for mean_area:
@@ -30652,31 +30207,37 @@ Polynomial Chaos coefficients for cdf_beta:
 mean_area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
 cdf_beta:  Mean =  2.0377948653e+00  Std. Dev. = 2.8391913958e+00  Coeff. of Variation =  1.3932665373e+00
 mean_area total Sobol indices:
-                      8.0327868852e-01 uuv_1
-                      2.1311475410e-01 uuv_2
-cdf_beta total Sobol indices:
-                      6.8945668266e-01 uuv_1
-                      3.7036885221e-01 uuv_2
+                      7.8688524590e-01  8.0327868852e-01 uuv_1
+                      1.9672131148e-01  2.1311475410e-01 uuv_2
+                      1.6393442623e-02 uuv_1 uuv_2
+cdf_beta Sobol indices:
+                      6.2963114779e-01  6.8945668266e-01 uuv_1
+                      3.1054331734e-01  3.7036885221e-01 uuv_2
+                      5.9825534867e-02 uuv_1 uuv_2
 Test Number 2 succeeded
 <<<<< Function evaluation summary (INNER_I): 7425 total (7425 new, 0 duplicate)
 mean_area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
 cdf_beta:  Mean =  2.0377948711e+00  Std. Dev. = 2.8391913582e+00  Coeff. of Variation =  1.3932665149e+00
 mean_area total Sobol indices:
-                      8.0327868852e-01 uuv_1
-                      2.1311475410e-01 uuv_2
-cdf_beta total Sobol indices:
-                      6.8945667373e-01 uuv_1
-                      3.7036885965e-01 uuv_2
+                      7.8688524590e-01  8.0327868852e-01 uuv_1
+                      1.9672131148e-01  2.1311475410e-01 uuv_2
+                      1.6393442623e-02 uuv_1 uuv_2
+cdf_beta Sobol indices:
+                      6.2963114035e-01  6.8945667373e-01 uuv_1
+                      3.1054332627e-01  3.7036885965e-01 uuv_2
+                      5.9825533376e-02 uuv_1 uuv_2
 Test Number 3 succeeded
 <<<<< Function evaluation summary (INNER_I): 13683 total (13683 new, 0 duplicate)
 mean_area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
 cdf_beta:  Mean =  2.0377949123e+00  Std. Dev. = 2.8391915252e+00  Coeff. of Variation =  1.3932665687e+00
 mean_area total Sobol indices:
-                      8.0327868852e-01 uuv_1
-                      2.1311475410e-01 uuv_2
-cdf_beta total Sobol indices:
-                      6.8945667658e-01 uuv_1
-                      3.7036887815e-01 uuv_2
+                      7.8688524590e-01  8.0327868852e-01 uuv_1
+                      1.9672131148e-01  2.1311475410e-01 uuv_2
+                      1.6393442623e-02 uuv_1 uuv_2
+cdf_beta Sobol indices:
+                      6.2963112185e-01  6.8945667658e-01 uuv_1
+                      3.1054332342e-01  3.7036887815e-01 uuv_2
+                      5.9825554729e-02 uuv_1 uuv_2
 dakota_uq_textbook_dste.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
@@ -31685,26 +31246,17 @@ response_fn_1:  Mean =  1.9890470739e+01  Std. Dev. = 7.0991282981e+01  Coeff. o
 response_fn_2:  Mean =  9.9235394361e-01  Std. Dev. = 1.9372374580e+00  Coeff. of Variation =  1.9521638126e+00
 response_fn_3:  Mean =  1.0098052212e+00  Std. Dev. = 2.1494260439e+00  Coeff. of Variation =  2.1285550903e+00
 response_fn_1 Sobol indices:
-                      1.5293093580e-01 TF1ln 
-                      1.7412093210e-01 TF2ln 
-                      6.7294813210e-01 TF1ln TF2ln 
-response_fn_1 total Sobol indices:
-                      8.2587906790e-01 TF1ln
-                      8.4706906420e-01 TF2ln
+                      1.5293093580e-01  8.2587906790e-01 TF1ln
+                      1.7412093210e-01  8.4706906420e-01 TF2ln
+                      6.7294813210e-01 TF1ln TF2ln
 response_fn_2 Sobol indices:
-                      5.2925316227e-01 TF1ln 
-                      1.2696849066e-01 TF2ln 
-                      3.4377834707e-01 TF1ln TF2ln 
-response_fn_2 total Sobol indices:
-                      8.7303150934e-01 TF1ln
-                      4.7074683773e-01 TF2ln
+                      5.2925316227e-01  8.7303150934e-01 TF1ln
+                      1.2696849066e-01  4.7074683773e-01 TF2ln
+                      3.4377834707e-01 TF1ln TF2ln
 response_fn_3 Sobol indices:
-                      5.3119141939e-02 TF1ln 
-                      4.9567476197e-01 TF2ln 
-                      4.5120609609e-01 TF1ln TF2ln 
-response_fn_3 total Sobol indices:
-                      5.0432523803e-01 TF1ln
-                      9.4688085806e-01 TF2ln
+                      5.3119141939e-02  5.0432523803e-01 TF1ln
+                      4.9567476197e-01  9.4688085806e-01 TF2ln
+                      4.5120609609e-01 TF1ln TF2ln
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000000e-01   2.9280000000e-01
@@ -31819,26 +31371,17 @@ response_fn_1:  Mean =  2.0000000000e+01  Std. Dev. = 3.6441734317e+01  Coeff. o
 response_fn_2:  Mean =  1.0000000000e+00  Std. Dev. = 1.5000000000e+00  Coeff. of Variation =  1.5000000000e+00
 response_fn_3:  Mean =  1.0000000000e+00  Std. Dev. = 1.5000000000e+00  Coeff. of Variation =  1.5000000000e+00
 response_fn_1 Sobol indices:
-                      5.0000000000e-01 TF1ln 
-                      5.0000000000e-01 TF2ln 
-                      1.0107119149e-31 TF1ln TF2ln 
-response_fn_1 total Sobol indices:
-                      5.0000000000e-01 TF1ln
-                      5.0000000000e-01 TF2ln
+                      5.0000000000e-01  5.0000000000e-01 TF1ln
+                      5.0000000000e-01  5.0000000000e-01 TF2ln
+                      3.7284703334e-32 TF1ln TF2ln
 response_fn_2 Sobol indices:
-                      8.8888888889e-01 TF1ln 
-                      1.1111111111e-01 TF2ln 
-                      1.0280394107e-31 TF1ln TF2ln 
-response_fn_2 total Sobol indices:
-                      8.8888888889e-01 TF1ln
-                      1.1111111111e-01 TF2ln
+                      8.8888888889e-01  8.8888888889e-01 TF1ln
+                      1.1111111111e-01  1.1111111111e-01 TF2ln
+                      4.5743808293e-32 TF1ln TF2ln
 response_fn_3 Sobol indices:
-                      1.1111111111e-01 TF1ln 
-                      8.8888888889e-01 TF2ln 
-                      9.8288408097e-32 TF1ln TF2ln 
-response_fn_3 total Sobol indices:
-                      1.1111111111e-01 TF1ln
-                      8.8888888889e-01 TF2ln
+                      1.1111111111e-01  1.1111111111e-01 TF1ln
+                      8.8888888889e-01  8.8888888889e-01 TF2ln
+                      4.5603524507e-32 TF1ln TF2ln
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000000e-01   1.3880000000e-01
@@ -31923,26 +31466,17 @@ response_fn_1:  Mean =  2.0000000000e+01  Std. Dev. = 3.6441734317e+01  Coeff. o
 response_fn_2:  Mean =  1.0000000000e+00  Std. Dev. = 1.5000000000e+00  Coeff. of Variation =  1.5000000000e+00
 response_fn_3:  Mean =  1.0000000000e+00  Std. Dev. = 1.5000000000e+00  Coeff. of Variation =  1.5000000000e+00
 response_fn_1 Sobol indices:
-                      5.0000000000e-01 TF1ln 
-                      5.0000000000e-01 TF2ln 
-                      2.7413227390e-29 TF1ln TF2ln 
-response_fn_1 total Sobol indices:
-                      5.0000000000e-01 TF1ln
-                      5.0000000000e-01 TF2ln
+                      5.0000000000e-01  5.0000000000e-01 TF1ln
+                      5.0000000000e-01  5.0000000000e-01 TF2ln
+                      2.7413227390e-29 TF1ln TF2ln
 response_fn_2 Sobol indices:
-                      8.8888888889e-01 TF1ln 
-                      1.1111111111e-01 TF2ln 
-                      1.5631457306e-29 TF1ln TF2ln 
-response_fn_2 total Sobol indices:
-                      8.8888888889e-01 TF1ln
-                      1.1111111111e-01 TF2ln
+                      8.8888888889e-01  8.8888888889e-01 TF1ln
+                      1.1111111111e-01  1.1111111111e-01 TF2ln
+                      1.5631457306e-29 TF1ln TF2ln
 response_fn_3 Sobol indices:
-                      1.1111111111e-01 TF1ln 
-                      8.8888888889e-01 TF2ln 
-                      5.9398916117e-30 TF1ln TF2ln 
-response_fn_3 total Sobol indices:
-                      1.1111111111e-01 TF1ln
-                      8.8888888889e-01 TF2ln
+                      1.1111111111e-01  1.1111111111e-01 TF1ln
+                      8.8888888889e-01  8.8888888889e-01 TF2ln
+                      5.9398916117e-30 TF1ln TF2ln
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000000e-01   1.3880000000e-01
@@ -32262,25 +31796,25 @@ Partial Rank Correlation Matrix between input and output:
           x2 -8.41553e-01 -9.11376e-01  9.73051e-01
 dakota_vbd.in 
 Test Number 0 succeeded
-       uuv_1       1.26751e-01       1.33890e-01
-       uuv_2       6.50642e-01       6.82637e-01
+		      1.2675065262e-01  1.3388988794e-01 uuv_1
+                      6.5064160621e-01  6.8263661288e-01 uuv_2
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 Test Number 1 succeeded
-       uuv_1       4.45928e-01       3.38346e-01
-       uuv_2       6.86276e-01       4.59709e-01
+                      4.4592839286e-01  3.3834610573e-01 uuv_1
+                      6.8627551554e-01  4.5970914139e-01 uuv_2
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 Test Number 2 succeeded
-       uuv_1       4.75089e-01       5.32422e-01
-       uuv_2       3.81124e-01       4.99125e-01
+                      4.7508913283e-01  5.3242162037e-01 uuv_1
+                      3.8112392892e-01  4.9912486515e-01 uuv_2
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 Test Number 3 succeeded
-       uuv_1       4.87206e-01       4.86532e-01
-       uuv_2       5.38331e-01       4.78145e-01
+                      4.8720635019e-01  4.8653182270e-01 uuv_1
+                      5.3833096458e-01  4.7814488670e-01 uuv_2
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 Test Number 4 succeeded
-       uuv_1       1.57100e-01       2.70918e-01
-       uuv_2       1.98053e-01       2.29951e-01
-      hpuv_1      -1.15937e-02       5.97167e-02
-      hpuv_2       5.22209e-01       6.17355e-01
-      geuv_1       1.50926e-01       9.49778e-02
+                      1.5709989209e-01  2.7091791165e-01 uuv_1
+                      1.9805333912e-01  2.2995061564e-01 uuv_2
+                      1.5092623811e-01  9.4977768750e-02 geuv_1
+                     -1.1593701690e-02  5.9716702235e-02 hpuv_1
+                      5.2220935349e-01  6.1735549688e-01 hpuv_2
 <<<<< Function evaluation summary: 700 total (531 new, 169 duplicate)
