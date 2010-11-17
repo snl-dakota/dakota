@@ -649,7 +649,7 @@ void Analyzer::pre_output()
 /** printing of variance based decomposition indices. */
 void Analyzer::
 print_sobol_indices(std::ostream& s, const RealVectorArray& S,
-          const RealVectorArray& T) const
+		    const RealVectorArray& T) const
 {
   StringMultiArrayConstView cv_labels
     = iteratedModel.continuous_variable_labels();
@@ -668,34 +668,29 @@ print_sobol_indices(std::ostream& s, const RealVectorArray& S,
     << "of variable i with other uncertain variables.)\n";
 
   s << "\nGlobal sensitivity indices for each response function:\n";
-  
-  for (size_t k=0; k<numFunctions; k++){
+
+  size_t i, k, offset;
+  for (k=0; k<numFunctions; ++k){
     s << resp_labels[k] << " Sobol indices:\n"; 
-    s << std::setw(33) << "Main" << std::setw(20) << "Total" << std::endl;
+    s << std::setw(38) << "Main" << std::setw(19) << "Total\n";
     
-    for(size_t i=0; i<numContinuousVars; i++) {
-      if ((S[k][i]>vbdDropTol) && (T[k][i]>vbdDropTol)){
-        s <<"                     " << std::setw(write_precision+7) 
-	  << S[k][i] << ' ' <<  std::setw(write_precision+7) << T[k][i] 
-	  << ' ' << cv_labels[i] << '\n';
-      } 
-    }
-    for(size_t i=0; i<numDiscreteRealVars; i++) {
-      if ((S[k][i]>vbdDropTol) && (T[k][i]>vbdDropTol)){
-	s <<"                     " << std::setw(write_precision+7) 
-	  << S[k][i+numContinuousVars] << ' ' <<  std::setw(write_precision+7)
-          << T[k][i+numContinuousVars]  << ' ' << cv_labels[i] << '\n';
-      } 
-    }
-    for(size_t i=0; i<numDiscreteIntVars; i++) {
-      if ((S[k][i]>vbdDropTol) && (T[k][i]>vbdDropTol)){
-	s <<"                     " << std::setw(write_precision+7) 
-	  << S[k][i+numContinuousVars+numDiscreteRealVars] 
-	  << ' ' <<  std::setw(write_precision+7) 
-	  << T[k][i+numContinuousVars+numDiscreteRealVars] 
-	  << ' ' << cv_labels[i]<< '\n';
-      }
-    }
+    for (i=0; i<numContinuousVars; ++i)
+      if (std::abs(S[k][i]) > vbdDropTol && std::abs(T[k][i]) > vbdDropTol)
+        s << "                     " << std::setw(write_precision+7) << S[k][i]
+	  << ' ' << std::setw(write_precision+7) << T[k][i] << ' '
+	  << cv_labels[i] << '\n';
+    offset = numContinuousVars;
+    for (i=0; i<numDiscreteRealVars; ++i)
+      if (std::abs(S[k][i]) > vbdDropTol && std::abs(T[k][i]) > vbdDropTol)
+	s << "                     " << std::setw(write_precision+7) 
+	  << S[k][i+offset] << ' ' << std::setw(write_precision+7)
+          << T[k][i+offset] << ' ' << cv_labels[i] << '\n';
+    offset += numDiscreteRealVars;
+    for (i=0; i<numDiscreteIntVars; ++i)
+      if (std::abs(S[k][i]) > vbdDropTol && std::abs(T[k][i]) > vbdDropTol)
+	s << "                     " << std::setw(write_precision+7) 
+	  << S[k][i+offset] << ' ' << std::setw(write_precision+7)
+	  << T[k][i+offset] << ' ' << cv_labels[i]<< '\n';
   }
 }
 
