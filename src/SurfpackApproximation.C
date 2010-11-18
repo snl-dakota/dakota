@@ -134,6 +134,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
 	RealArray correlation_ra; //std::vector<double>
 	copy_data(correlation_rv, correlation_ra);
         args["correlation_lengths"] = fromVec<Real>(correlation_ra);
+	args["optimization_method"] = "none";
       }
      
 //       const RealVector& max_correlations_rv 
