@@ -405,17 +405,17 @@ class JEGAOptimizer :
          *
          * \param from The full set of designs returned by the solver.
          *
-	 * \param designSortMap Map of best solutions with key
-	 *                      pair<constraintViolation, fitness>
-	 * 
+	     * \param designSortMap Map of best solutions with key
+	     *                      pair<constraintViolation, fitness>
+	     * 
          * eventually this functionality must be moved into a separate
          * post-processing application for MO datasets.
          */
         void
         GetBestSolutions(
-  	    const JEGA::Utilities::DesignOFSortSet& from,
+  	        const JEGA::Utilities::DesignOFSortSet& from,
             std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
-	    );
+	        );
 
         /**
          * \brief Retreive the best Designs from a set of solutions assuming
@@ -426,8 +426,8 @@ class JEGAOptimizer :
          */
         void
         GetBestMOSolutions(
-	    const JEGA::Utilities::DesignOFSortSet& from,
-	    std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
+	        const JEGA::Utilities::DesignOFSortSet& from,
+	        std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
             );
 
         /**
@@ -439,8 +439,8 @@ class JEGAOptimizer :
          */
         void
         GetBestSOSolutions(
-	    const JEGA::Utilities::DesignOFSortSet& from,
-	    std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
+	        const JEGA::Utilities::DesignOFSortSet& from,
+	        std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
             );
 
         /**

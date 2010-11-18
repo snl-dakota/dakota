@@ -863,7 +863,7 @@ JEGAOptimizer::find_optimum(
     for( ; best_it != best_end; ++best_it, ++index)
     {
         this->LoadDakotaResponses(
-  	    *(best_it->second),
+        *(best_it->second),
             this->bestVariablesArray[index],
             this->bestResponseArray[index]
             );
@@ -926,17 +926,17 @@ JEGAOptimizer::resize_variables_results_array(
     size_t curr_size = this->bestVariablesArray.size();
     
     // if reduction in size, use the standard resize
-    if (newsize < curr_size)
+    if(newsize < curr_size)
         this->bestVariablesArray.resize(newsize);
-    else if (newsize > curr_size)
+    else if(newsize > curr_size)
     {
         // Otherwise, we have to do the iteration ourselves so that we make use
         // of the model's current variables for envelope-letter requirements.
         this->bestVariablesArray.reserve(newsize);
 
-        for (size_t i=curr_size; i<newsize; ++i)
+        for(size_t i=curr_size; i<newsize; ++i)
             this->bestVariablesArray.push_back(
-	            this->iteratedModel.current_variables().copy()
+                this->iteratedModel.current_variables().copy()
                 );
     }
 }
@@ -950,7 +950,7 @@ JEGAOptimizer::resize_response_results_array(
 
     if(newsize < curr_size) // if reduction in size, use the standard resize
         this->bestResponseArray.resize(newsize);
-    else if (newsize > curr_size)
+    else if(newsize > curr_size)
     {
         // Otherwise, we have to do the iteration ourselves so that we make use
         // of the model's current response for envelope-letter requirements.
@@ -958,7 +958,7 @@ JEGAOptimizer::resize_response_results_array(
 
         for(size_t i=curr_size; i<newsize; ++i)
             this->bestResponseArray.push_back(
-	            this->iteratedModel.current_response().copy()
+                this->iteratedModel.current_response().copy()
                 );
     }
 }
@@ -1243,13 +1243,14 @@ JEGAOptimizer::LoadTheParameterDatabase(
     dak_rdv = 
         &this->probDescDB.get_rdv("responses.primary_response_fn_weights");
     // BMA  why needed; discuss with JE; otherwise get seg fault in GetBestSO
-    if (!dak_rdv->empty()) {
+    if(!dak_rdv->empty())
+    {
         JEGA::DoubleVector mow_vector(
             dak_rdv->values(),
-	    dak_rdv->values() + dak_rdv->length()
+            dak_rdv->values() + dak_rdv->length()
             );
 
-         this->_theParamDB->AddDoubleVectorParam(
+        this->_theParamDB->AddDoubleVectorParam(
             "responses.multi_objective_weights",
             mow_vector
             );
@@ -1562,72 +1563,63 @@ JEGAOptimizer::GetBestMOSolutions(
         MultiObjectiveStatistician::FindParetoExtremes(feasible)
         );
 
-    const DesignTarget& design_target = from.front()->GetDesignTarget();
-    const ConstraintInfoVector& constraint_info_vector = 
-      design_target.GetConstraintInfos();
+    const DesignTarget& target = from.front()->GetDesignTarget();
+    const ConstraintInfoVector& cnInfos = target.GetConstraintInfos();
 
     // get number of objective functions
-    const eddy::utilities::uint64_t nof = design_target.GetNOF();
+    const eddy::utilities::uint64_t nof = target.GetNOF();
 
     // get total number of constraints (nonlinear and linear)
-    const eddy::utilities::uint64_t noc = design_target.GetNCN();
+    const eddy::utilities::uint64_t noc = target.GetNCN();
 
     // iterate the designs and sort first by constraint violation,
     // then objective function
     DesignOFSortSet::const_iterator design_it(from.begin());
     const DesignOFSortSet::const_iterator design_end(from.end());
 
-    for (; design_it != design_end; ++design_it)
+    for(; design_it != design_end; ++design_it)
     {
         // L2 constraint violation for this design
         double constraintViolation = 0.0;
-        for (size_t i=0; i<noc; ++i)
-  	    constraintViolation +=
-	        Math::Pow(
-                    constraint_info_vector[i]->GetViolationAmount(**design_it),
-		    2 
-		    );
 
-	// sum-of-squared distance for this Design over objective functions.
-	double utopiaDistance = 0.0;
-	if (constraintViolation > 0.0)
-	    utopiaDistance = DBL_MAX;
-	else 
-	{
-	    // compute the sum-of-squares between the current point
-	    // and the utopia point; if the feasible set is empty,
-	    // we should never reach this block,
-	    for (size_t i=0; i<nof; ++i)
-	        utopiaDistance +=
-	            Math::Pow(
-		        (*design_it)->GetObjective(i) - extremeSet.get_min(i),
-			2
-			);
-	}
+        for(size_t i=0; i<noc; ++i)
+            constraintViolation +=
+                Math::Pow(cnInfos[i]->GetViolationAmount(**design_it), 2);
 
-	// insert the design into the map, keeping only numBest
-	RealRealPair metrics(constraintViolation, utopiaDistance);
-	if (designSortMap.size() < this->num_best())
-	    designSortMap.insert(
-	        std::pair<RealRealPair, Design*>(metrics, *design_it)
-		);
-	else 
-	{
-	    // if this Design is better than the worst, remove worst
-	    // and insert this one
-	    std::multimap<RealRealPair, Design*>::iterator worst_it = 
-	        --designSortMap.end();
-	    if (metrics < worst_it->first)
-	    {
-  	        designSortMap.erase(worst_it);
-		designSortMap.insert(
-                    std::pair<RealRealPair, Design*>(metrics, *design_it)
-		    );
-	    }
+        // sum-of-squared distance for this Design over objective functions.
+        double utopiaDistance = 0.0;
+        if(constraintViolation > 0.0)
+            utopiaDistance = DBL_MAX;
+        else 
+        {
+            // compute the sum-of-squares between the current point
+            // and the utopia point; if the feasible set is empty,
+            // we should never reach this block,
+            for(size_t i=0; i<nof; ++i)
+                utopiaDistance += Math::Pow(
+                    (*design_it)->GetObjective(i) - extremeSet.get_min(i), 2
+                    );
+        }
 
-	}
+        // insert the design into the map, keeping only numBest
+        RealRealPair metrics(constraintViolation, utopiaDistance);
+
+        if(designSortMap.size() < this->numBest)
+            designSortMap.insert(std::make_pair(metrics, *design_it));
+        else 
+        {
+            // if this Design is better than the worst, remove worst
+            // and insert this one
+            std::multimap<RealRealPair, Design*>::iterator worst_it = 
+                --designSortMap.end();
+
+            if(metrics < worst_it->first)
+            {
+                designSortMap.erase(worst_it);
+                designSortMap.insert(std::make_pair(metrics, *design_it));
+            }
+        }
     }
-    
 }
 
 
@@ -1639,37 +1631,34 @@ JEGAOptimizer::GetBestSOSolutions(
 {
     EDDY_FUNC_DEBUGSCOPE
 
-    if (from.empty())
-        return;
+    if(from.empty()) return;
 
-    const DesignTarget& design_target = from.front()->GetDesignTarget();
-    const ConstraintInfoVector& constraint_info_vector = 
-      design_target.GetConstraintInfos();
+    const DesignTarget& target = from.front()->GetDesignTarget();
+    const ConstraintInfoVector& cnInfos = target.GetConstraintInfos();
 
     // get number of objective functions
-    const eddy::utilities::uint64_t nof = design_target.GetNOF();
+    const eddy::utilities::uint64_t nof = target.GetNOF();
 
     // get total number of constraints (nonlinear and linear)
-    const eddy::utilities::uint64_t noc = design_target.GetNCN();
+    const eddy::utilities::uint64_t noc = target.GetNCN();
 
     // in order to order the points, need the weights.
     JEGA::DoubleVector weights;
 
     bool success = ParameterExtractor::GetDoubleVectorFromDB(
         *this->_theParamDB,
-	"responses.multi_objective_weights",
-	weights
+        "responses.multi_objective_weights",
+        weights
         );
 
-    // if we could not get them and there are multiple objectives,
-    // then we have to abort without an answer.
+    // if we could not get them and there are multiple objectives, then we have
+    // to abort without an answer.
     // Otherwise if we did not succeed and there is a single objective,
     // then we will assume a single weight of value 1.
     if(!success)
     {
-        if(nof > 1) 
-	    return;
-	weights.assign(1, 1.0);
+        if(nof > 1) return;
+        weights.assign(1, 1.0);
     }
 
     // iterate the designs and sort first by constraint violation,
@@ -1677,47 +1666,42 @@ JEGAOptimizer::GetBestSOSolutions(
     DesignOFSortSet::const_iterator design_it(from.begin());
     const DesignOFSortSet::const_iterator design_end(from.end());
 
-    for (; design_it != design_end; ++design_it)
+    for(; design_it != design_end; ++design_it)
     {
         // L2 constraint violation for this design
         double constraintViolation = 0.0;
-        for (size_t i=0; i<noc; ++i)
-  	    constraintViolation +=
-	        Math::Pow(
-                    constraint_info_vector[i]->GetViolationAmount(**design_it),
-		    2 
-		    );
 
-	// Multi-objective sum for this Design over objective
-	// functions.  In the single objective case we can store
-	// objective even if there's a constraint violation.
-	double objectiveFunction = 
-	    SingleObjectiveStatistician::
-	    ComputeWeightedSum(**design_it, weights);
+        for(size_t i=0; i<noc; ++i)
+            constraintViolation +=
+                Math::Pow(cnInfos[i]->GetViolationAmount(**design_it), 2);
 
-	// insert the design into the map, keeping only numBest
-	RealRealPair metrics(constraintViolation, objectiveFunction);
-	if (designSortMap.size() < this->num_best())
-	    designSortMap.insert(
-	        std::pair<RealRealPair, Design*>(metrics, *design_it)
-		);
-	else 
-	{
-	    // if this Design is better than the worst, remove worst
-	    // and insert this one
-	    std::multimap<RealRealPair, Design*>::iterator worst_it = 
-	        --designSortMap.end();
-	    if (metrics < worst_it->first)
-	    {
-  	        designSortMap.erase(worst_it);
-		designSortMap.insert(
-                    std::pair<RealRealPair, Design*>(metrics, *design_it)
-		    );
-	    }
+        // Multi-objective sum for this Design over objective functions.
+        // In the single objective case we can store
+        // objective even if there's a constraint violation.
+        double objectiveFunction = 
+            SingleObjectiveStatistician::ComputeWeightedSum(
+                **design_it, weights
+                );
 
-	}
+        // insert the design into the map, keeping only numBest
+        RealRealPair metrics(constraintViolation, objectiveFunction);
+
+        if(designSortMap.size() < this->numBest)
+            designSortMap.insert(std::make_pair(metrics, *design_it));
+        else 
+        {
+            // if this Design is better than the worst, remove worst
+            // and insert this one
+            std::multimap<RealRealPair, Design*>::iterator worst_it =
+                --designSortMap.end();
+
+            if(metrics < worst_it->first)
+            {
+                designSortMap.erase(worst_it);
+                designSortMap.insert(std::make_pair(metrics, *design_it));
+            }
+        }
     }
-    
 }
 
 
@@ -1853,7 +1837,7 @@ JEGAOptimizer::JEGAOptimizer(
     // The following is not performed in the Optimizer constructor since
     // maxConcurrency is updated above. The matching free_communicators()
     // appears in the Optimizer destructor.
-    if (this->scaleFlag || this->multiObjFlag)
+    if(this->scaleFlag || this->multiObjFlag)
       this->iteratedModel.init_communicators(this->maxConcurrency);
 }
 
@@ -2066,7 +2050,7 @@ JEGAOptimizer::Evaluator::Evaluate(
         this->_model.discrete_real_variables(discRealVars);
 
         // now request the evaluation in synchronous or asyncronous mode.
-        if (this->_model.asynch_flag())
+        if(this->_model.asynch_flag())
         {
             // The following method call will use the default
             // Active set vector which is to just compute
@@ -2118,7 +2102,7 @@ JEGAOptimizer::Evaluator::Evaluate(
     // until all the results are available.  We can then record the
     // responses in the same fashion as above.  Note that the linear
     // constraints have already been computed!!
-    if (this->_model.asynch_flag())
+    if(this->_model.asynch_flag())
     {
         // Wait for the responses.
         const IntResponseMap& response_map = this->_model.synchronize();
