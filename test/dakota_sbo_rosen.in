@@ -62,7 +62,7 @@ model,
 	  polynomial quadratic 			#0
 #	  neural_network			#1
 #	  kriging				#2,#3
-#	   correlations =  1.0 1.0		#3
+#	   correlation_lengths =  0.79 0.76	#3
 #	  mars					#4
 #	  moving_least_squares			#7
 #	  radial_basis				#8
@@ -79,11 +79,11 @@ variables,
 responses,
 	id_responses = 'SURROGATE_RESP'
 	num_objective_functions = 1
-#	analytic_gradients			#7,#8
-  	numerical_gradients			#0,#1,#2,#3,#4,#5,#6
-  	  method_source dakota			#0,#1,#2,#3,#4,#5,#6
-  	  interval_type central			#0,#1,#2,#3,#4,#5,#6
- 	  fd_gradient_step_size = 1.e-6		#0,#1,#2,#3,#4,#5,#6
+#	analytic_gradients			#2,#3,#7,#8
+  	numerical_gradients			#0,#1,#4,#5,#6
+  	  method_source dakota			#0,#1,#4,#5,#6
+  	  interval_type central			#0,#1,#4,#5,#6
+ 	  fd_gradient_step_size = 1.e-6		#0,#1,#4,#5,#6
 	no_hessians
 
 ###############################################
