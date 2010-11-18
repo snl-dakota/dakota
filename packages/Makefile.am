@@ -7,6 +7,10 @@ if BUILD_TEUCHOS
 SUBDIRS += teuchos
 endif
 
+if BUILD_BOOST_TPL
+SUBDIRS += boost
+endif
+
 ## Package subdirectories to recurse into.
 if WITH_AMPL
 SUBDIRS += ampl
