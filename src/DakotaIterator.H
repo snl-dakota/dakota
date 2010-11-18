@@ -180,6 +180,11 @@ public:
   /// set the maximum concurrency supported by the iterator
   void maximum_concurrency(int max_conc);
 
+  /// return the number of solutions to retain in best variables/response arrays
+  size_t num_best() const;
+  /// set the number of solutions to retain in best variables/response arrays
+  void num_best(size_t number_best);
+
   /// set the default active set vector (for use with iterators that
   /// employ evaluate_parameter_sets())
   void active_set(const ActiveSet& set);
@@ -263,6 +268,9 @@ protected:
   size_t numContinuousVars;   ///< number of active continuous vars
   size_t numDiscreteIntVars;  ///< number of active discrete integer vars
   size_t numDiscreteRealVars; ///< number of active discrete real vars
+
+  ///  number of solutions to retain in best variables/response arrays
+  size_t numBest;
 
   /// tracks the response data requirements on each function evaluation
   ActiveSet activeSet;
@@ -416,6 +424,16 @@ inline void Iterator::maximum_concurrency(int max_conc)
     maxConcurrency = max_conc;
 }
 
+inline size_t Iterator::num_best() const
+{ return (iteratorRep) ? iteratorRep->numBest : numBest; }
+
+inline void Iterator::num_best(size_t number_best)
+{ 
+  if (iteratorRep)
+    iteratorRep->numBest = number_best;
+  else
+    numBest = number_best; 
+}
 
 inline void Iterator::active_set(const ActiveSet& set)
 {

@@ -28,7 +28,7 @@ namespace Dakota {
 
 
 Analyzer::Analyzer(Model& model):
-  Iterator(BaseConstructor(), model), compactMode(true), numBest(1)
+  Iterator(BaseConstructor(), model), compactMode(true)
 {
   iteratedModel = model;
   if (probDescDB.get_sizet("responses.num_response_functions"))
@@ -36,10 +36,6 @@ Analyzer::Analyzer(Model& model):
   else {
     numObjFns   = probDescDB.get_sizet("responses.num_objective_functions");
     numLSqTerms = probDescDB.get_sizet("responses.num_least_squares_terms");
-    size_t num_solns
-      = probDescDB.get_sizet("strategy.hybrid.num_solutions_transferred");
-    if (num_solns > numBest)
-      numBest = num_solns;
   }
    if (probDescDB.get_bool("method.variance_based_decomp")) 
     vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");

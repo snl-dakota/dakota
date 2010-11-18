@@ -104,6 +104,8 @@ void SequentialHybridStrategy::run_sequential()
     Model&    curr_model         = userDefinedModels[seqCount];
     bool      curr_accepts_multi = curr_iterator.accepts_multiple_points();
     bool      curr_returns_multi = curr_iterator.returns_multiple_points();
+ 
+    curr_iterator.num_best(numSolnsTransferred);
 
     if (worldRank == 0) {
       cout << "\n>>>>> Running Sequential Hybrid Optimizer Strategy with "

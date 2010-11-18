@@ -142,8 +142,6 @@ protected:
   size_t numObjFns;   ///< number of objective functions
   size_t numLSqTerms; ///< number of least squares terms
 
-  /// number of solutions to retain in best variables/response arrays
-  size_t numBest;
   /// map which stores best set of solutions
   RealPairPRPMultiMap bestVarsRespMap;
 

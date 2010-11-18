@@ -241,9 +241,6 @@ class JEGAOptimizer :
          */
         VariablesArray _initPts;
  
-        /// number of solutions to retain in best variables/response arrays
-        size_t _numBest;
-
 
     /*
     ===========================================================================

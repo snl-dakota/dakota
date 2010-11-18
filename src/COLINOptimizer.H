@@ -133,9 +133,6 @@ protected:
   /// \c nonblocking
   bool blockingSynch;
 
-  /// number of solutions to retain in best variables/response arrays
-  size_t numBest;
-
 #ifdef DAKOTA_UTILIB
   /// Start time for keeping track of time for solver to run
   Real solverStartTime;
@@ -152,7 +149,7 @@ protected:
 
 template <class OptimizerT>
 inline COLINOptimizer<OptimizerT>::COLINOptimizer(Model& model):
-  Optimizer(model), numBest(1)
+  Optimizer(model)
 {
   // (iteratedModel initialized in Optimizer(Model&))
   application = new COLINApplication(iteratedModel);
@@ -169,17 +166,12 @@ inline COLINOptimizer<OptimizerT>::COLINOptimizer(Model& model):
   // matching free_communicators() appears in the Optimizer destructor.
   if (scaleFlag || multiObjFlag)
     iteratedModel.init_communicators(maxConcurrency);
-
-  size_t num_solns
-    = probDescDB.get_sizet("strategy.hybrid.num_solutions_transferred");
-  if (num_solns > numBest)
-    numBest = num_solns;
 }
 
 
 template <class OptimizerT>
 inline COLINOptimizer<OptimizerT>::COLINOptimizer(Model& model, int seed):
-  Optimizer(NoDBBaseConstructor(), model), blockingSynch(false), numBest(1)
+  Optimizer(NoDBBaseConstructor(), model), blockingSynch(false)
 {
   // (iteratedModel initialized in Optimizer(Model&))
   application = new COLINApplication(iteratedModel);
@@ -196,8 +188,7 @@ inline COLINOptimizer<OptimizerT>::COLINOptimizer(Model& model, int seed):
 template <class OptimizerT>
 inline COLINOptimizer<OptimizerT>::
 COLINOptimizer(NoDBBaseConstructor, Model& model):
-  Optimizer(NoDBBaseConstructor(), model), rng(NULL), blockingSynch(false),
-  numBest(1)
+  Optimizer(NoDBBaseConstructor(), model), rng(NULL), blockingSynch(false)
 {
   // (iteratedModel initialized in Optimizer(Model&))
   application = new COLINApplication(iteratedModel);

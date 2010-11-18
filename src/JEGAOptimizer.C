@@ -830,11 +830,11 @@ JEGAOptimizer::find_optimum(
             << bests.size() << " solutions found. Passing them back to DAKOTA."
         )
 
-    // Return up to _numBest solutions to DAKOTA, sorted first by L2
+    // Return up to numBest solutions to DAKOTA, sorted first by L2
     // constraint violation, then (utopia distance or weighted sum
     // objective value).  So the single "best" will be at the front.
     //
-    // Load up to _numBest solutions into the arrays of best responses
+    // Load up to numBest solutions into the arrays of best responses
     // and variables.  If this is MOGA, the array will then contain
     // the Pareto set.  If it is SOGA, it will contain all the
     // solutions with the same best "fitness".
@@ -1605,9 +1605,9 @@ JEGAOptimizer::GetBestMOSolutions(
 			);
 	}
 
-	// insert the design into the map, keeping only _numBest
+	// insert the design into the map, keeping only numBest
 	RealRealPair metrics(constraintViolation, utopiaDistance);
-	if (designSortMap.size() < this->_numBest)
+	if (designSortMap.size() < this->num_best())
 	    designSortMap.insert(
 	        std::pair<RealRealPair, Design*>(metrics, *design_it)
 		);
@@ -1695,9 +1695,9 @@ JEGAOptimizer::GetBestSOSolutions(
 	    SingleObjectiveStatistician::
 	    ComputeWeightedSum(**design_it, weights);
 
-	// insert the design into the map, keeping only _numBest
+	// insert the design into the map, keeping only numBest
 	RealRealPair metrics(constraintViolation, objectiveFunction);
-	if (designSortMap.size() < this->_numBest)
+	if (designSortMap.size() < this->num_best())
 	    designSortMap.insert(
 	        std::pair<RealRealPair, Design*>(metrics, *design_it)
 		);
@@ -1782,8 +1782,7 @@ JEGAOptimizer::JEGAOptimizer(
     ) :
         Optimizer(model),
         _theParamDB(0x0),
-        _theEvalCreator(0x0),
-	_numBest(std::numeric_limits<std::size_t>::max()) // return all designs
+        _theEvalCreator(0x0)
 {
     EDDY_FUNC_DEBUGSCOPE
 
@@ -1846,10 +1845,7 @@ JEGAOptimizer::JEGAOptimizer(
     int pop_size = this->probDescDB.get_int("method.population_size");
     this->maxConcurrency *= pop_size;
 
-    size_t num_solns
-      = probDescDB.get_sizet("strategy.hybrid.num_solutions_transferred");
-    if (num_solns > 0)
-      this->_numBest = num_solns;
+    this->num_best(std::numeric_limits<std::size_t>::max()); // return all designs
 
     // We only ever need one EvaluatorCreator so we can create it now.
     this->_theEvalCreator = new EvaluatorCreator(iteratedModel);
