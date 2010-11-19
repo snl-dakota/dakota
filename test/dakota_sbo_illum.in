@@ -56,7 +56,7 @@ model,
 #	  neural_network
 #	  polynomial quadratic
 	  kriging
-	   correlation_lengths =  0.5 0.5 0.5 0.5 0.5 0.5 0.5
+	   correlation_lengths =  0.707106781186547 0.707106781186547 0.707106781186547 0.707106781186547 0.707106781186547 0.707106781186547 0.707106781186547
            trend constant
 #	  mars
 # 	surogate local taylor_series
