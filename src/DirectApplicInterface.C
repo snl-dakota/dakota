@@ -2480,7 +2480,7 @@ int DirectApplicInterface::salinas()
   char* argv[3];
   argv[0] = "salinas"; // should be ignored
   char si[32];
-  sprintf(si,"salinas%d.inp", evalServerId); // tag root name in root.inp
+  std::sprintf(si,"salinas%d.inp", evalServerId); // tag root name in root.inp
   argv[1] = si;
   argv[2] = NULL; // standard requires this, see Kern.&Ritchie, p. 115
 
@@ -2508,7 +2508,7 @@ int DirectApplicInterface::salinas()
       // 3.) could modify salinas to use (tagged) root.inp i/o root.exo in 
       //   creating root-out.exo, thereby removing the need to tag Exodus input
       char se[32];
-      sprintf(se,"'./salinas%d.exo' ", evalServerId); // tag root in root.exo
+      std::sprintf(se,"'./salinas%d.exo' ", evalServerId); // tag root in root.exo
       fout << se;
     }
     else if (localDataView & VARIABLES_MAP) {
@@ -2580,7 +2580,7 @@ int DirectApplicInterface::salinas()
 
   // Retrieve data from salinas#.rslt
   char so[32];
-  sprintf(so,"salinas%d.rslt",evalServerId);
+  std::sprintf(so,"salinas%d.rslt",evalServerId);
   std::ifstream f2in(so);
   while (f2in) {
     f2in >> token;

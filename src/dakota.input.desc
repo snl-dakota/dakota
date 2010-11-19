@@ -1123,15 +1123,21 @@ TAG "model/surrogate/global/kriging"
 	DESC "{Kriging interpolation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/kriging/trend"
+	DESC "{Kriging trend function} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/kriging/trend/constant"
 TAG "model/surrogate/global/kriging/trend/linear"
 TAG "model/surrogate/global/kriging/trend/reduced_quadratic"
 TAG "model/surrogate/global/kriging/trend/quadratic"
 TAG "model/surrogate/global/kriging/optimization_method"
+	DESC "{Kriging optimization method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/kriging/max_trials"
 	DESC "{Kriging maximum trials} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/kriging/correlation_lengths"
+	DESC "{Kriging correlation lengths} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/total_points"
 TAG "model/surrogate/global/minimum_points"
 TAG "model/surrogate/global/recommended_points"

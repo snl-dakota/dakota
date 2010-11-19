@@ -133,6 +133,7 @@ NonDUnilevelRBDO::NonDUnilevelRBDO(DakotaModel& model): DakotaNonD(model),
   size_t num_levels, cntr = 0;
   char tag_string[10], lev_string[10];
   DakotaStringArray stats_tags(num_final_stats);
+  using std::sprintf;
   for (i=0; i<numFunctions; i++) {
     sprintf(tag_string, "_r%i", i+1);
     stats_tags[cntr++] = DakotaString("mean")    + DakotaString(tag_string);

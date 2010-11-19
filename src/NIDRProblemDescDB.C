@@ -43,6 +43,8 @@ namespace Dakota {
 extern "C" FILE *nidrin;
 extern "C" int nidr_parse(const char*, FILE*);
 
+using std::sprintf;
+
 int NIDRProblemDescDB::nerr = 0;
 NIDRProblemDescDB* NIDRProblemDescDB::pDDBInstance(NULL);
 

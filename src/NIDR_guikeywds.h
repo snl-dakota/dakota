@@ -1082,10 +1082,10 @@ static GuiKeyWord
 		{"reduced_quadratic",8,0,1,1,1143}
 		},
 	kw_150[4] = {
-		{"correlation_lengths",14,0,4,0,1151},
+		{"correlation_lengths",14,0,4,0,1151,0,0.,0.,0.,0,"{Kriging correlation lengths} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
 		{"max_trials",0x19,0,3,0,1149,0,0.,0.,0.,0,"{Kriging maximum trials} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"optimization_method",11,0,2,0,1147},
-		{"trend",8,4,1,0,1137,kw_149}
+		{"optimization_method",11,0,2,0,1147,0,0.,0.,0.,0,"{Kriging optimization method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"trend",8,4,1,0,1137,kw_149,0.,0.,0.,0,"{Kriging trend function} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
 		},
 	kw_151[2] = {
 		{"cubic",8,0,1,1,1101},

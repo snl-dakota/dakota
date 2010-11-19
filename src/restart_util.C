@@ -277,7 +277,7 @@ void print_restart_tabular(int argc, char** argv, String print_dest)
     //       vector.  const char* and const double* are passed to PDB_Write.
 
     char *tag, cdim[6];
-    sprintf(cdim, "(%d)", num_evals);
+    std::sprintf(cdim, "(%d)", num_evals);
 
     String tag_name, snum_evals(cdim);
 

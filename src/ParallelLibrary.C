@@ -1225,7 +1225,7 @@ manage_outputs_restart(const ParallelLevel& pl)
     // could change to numServers>0 since it would still be nice to organize
     // the output for 1 server in BranchBndStrategy/ConcurrentStrategy
     char si[16];
-    sprintf(si, ".%d", pl.serverId);
+    std::sprintf(si, ".%d", pl.serverId);
     String ctr_tag(si);
     std_output_filename += ctr_tag;     // e.g., "dakota.out.#"
     if (stdErrorFlag)

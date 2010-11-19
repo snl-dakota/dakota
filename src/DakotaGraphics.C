@@ -52,6 +52,8 @@ Graphics::~Graphics()
 void Graphics::create_plots_2d(const Variables& vars, const Response& response)
 {
 #ifdef DAKOTA_GRAPHICS
+  using std::sprintf;
+  using std::strcpy;
   StringMultiArrayConstView cv_labels  = vars.continuous_variable_labels();
   StringMultiArrayConstView div_labels = vars.discrete_int_variable_labels();
   StringMultiArrayConstView drv_labels = vars.discrete_real_variable_labels();
