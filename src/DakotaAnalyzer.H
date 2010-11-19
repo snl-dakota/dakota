@@ -90,7 +90,7 @@ protected:
   void response_results_active_set(const ActiveSet& set);
 
   bool compact_mode() const;
-
+  bool returns_multiple_points() const;
   //
   //- Heading: Member functions
   //
@@ -223,6 +223,8 @@ inline const ResponseArray& Analyzer::response_array_results()
   return bestResponseArray;
 }
 
+inline bool Analyzer::returns_multiple_points() const
+{ return true; }
 
 inline void Analyzer::response_results_active_set(const ActiveSet& set)
 { bestVarsRespMap.begin()->second.active_set(set); }

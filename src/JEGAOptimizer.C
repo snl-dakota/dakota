@@ -1829,7 +1829,7 @@ JEGAOptimizer::JEGAOptimizer(
     int pop_size = this->probDescDB.get_int("method.population_size");
     this->maxConcurrency *= pop_size;
 
-    this->num_best(std::numeric_limits<std::size_t>::max()); // return all designs
+    this->numBest = std::numeric_limits<std::size_t>::max(); // return all designs
 
     // We only ever need one EvaluatorCreator so we can create it now.
     this->_theEvalCreator = new EvaluatorCreator(iteratedModel);
