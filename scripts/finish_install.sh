@@ -142,11 +142,8 @@ done
 
 cd $prefix/test
 rm -rf .deps .libs
-rm -f plxtnd5.fnt dakota$exeext dakota_library_mode$exeext \
+rm -f dakota$exeext dakota_library_mode$exeext \
     dakota_restart_util$exeext dakota_library_split$exeext
-if [ -f  ../share/plplot5.5.2/plxtnd5.fnt ]; then
-  $ln -s ../share/plplot5.5.2/plxtnd5.fnt plxtnd5.fnt
-fi
 $ln -s ../bin/dakota$exeext dakota$exeext
 $ln -s ../bin/dakota_restart_util$exeext dakota_restart_util$exeext
 # dakota_library_mode only built in int_full
