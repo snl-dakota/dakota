@@ -36,6 +36,7 @@ method,
 
 method,
 	id_method = 'NLP'
+#	optpp_newton,
 #	optpp_cg,
 #	npsol,
 #	dot_bfgs,
@@ -55,7 +56,8 @@ model,
 #	  neural_network
 #	  polynomial quadratic
 	  kriging
-	   correlations =  1.0 1.0 1.0 1.0 1.0 1.0 1.0
+	   correlation_lengths =  0.5 0.5 0.5 0.5 0.5 0.5 0.5
+           trend constant
 #	  mars
 # 	surogate local taylor_series
 #	  actual_model_pointer = 'TRUTH'
@@ -70,11 +72,11 @@ variables,
 responses,
 	id_responses = 'SURROGATE_RESP'
 	num_objective_functions = 1
-# 	analytic_gradients
-  	numerical_gradients
-  	  method_source dakota
-  	  interval_type central
-  	  fd_gradient_step_size = .00001
+ 	analytic_gradients
+#  	numerical_gradients
+#  	  method_source dakota
+#  	  interval_type central
+#  	  fd_gradient_step_size = .00001
 #	analytic_hessians
 	no_hessians
 
