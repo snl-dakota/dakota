@@ -81,7 +81,8 @@ snll_pre_instantiate(const String& merit_fn, bool bound_constr_flag,
   else if (searchMethod == "tr_pds") {
     if (bound_constr_flag || num_constr) {
       Cerr << "Warning: tr_pds is only available for unconstrained problems.\n"
-           << "         search_method will be set to trust_region." << endl;
+           << "         search_method will be set to trust_region." 
+	   << std::endl;
       searchStrat = TrustRegion;
     }
     else

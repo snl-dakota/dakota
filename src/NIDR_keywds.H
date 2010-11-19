@@ -986,7 +986,7 @@ static KeyWord
 		},
 	kw_162[4] = {
 		{"correlation_lengths",14,0,4,0,0,0.,0.,0,N_mom(RealDL,krigingCorrelations)},
-		{"max_trials",9,0,3,0,0,0.,0.,0,N_mom(shint,krigingMaxTrials)},
+		{"max_trials",0x19,0,3,0,0,0.,0.,0,N_mom(shint,krigingMaxTrials)},
 		{"optimization_method",11,0,2,0,0,0.,0.,0,N_mom(str,krigingOptMethod)},
 		{"trend",8,4,1,0,kw_161}
 		},

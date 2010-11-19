@@ -1102,7 +1102,7 @@ KEYWORD model
 		| quadratic
 		]
 	      [ optimization_method STRING ]
-	      [ max_trials INTEGER ]
+	      [ max_trials INTEGER > 0 ]
 	      [ correlation_lengths REALLIST ]
 	      )
 	    [ total_points INTEGER

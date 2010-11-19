@@ -36,6 +36,7 @@
 #include "OptppArray.h"
 
 using namespace OPTPP;
+using std::endl;
 
 static const char rcsId[]="@(#) $Id: SNLLOptimizer.C 7029 2010-10-22 00:17:02Z mseldre $";
 
