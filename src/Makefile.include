@@ -63,16 +63,23 @@ endif
 
 ## Methods;
 if WITH_ACRO
-ACRO_ROOT       = $(top_srcdir)/packages/acro
-ACRO_BUILD      = $(top_builddir)/packages/acro
-ACRO_INCL       = -I$(ACRO_BUILD)/include -I$(ACRO_BUILD)/include/tinyxml
-ACRO_ARCHIVE    = $(ACRO_BUILD)/packages/coliny/src/libcoliny.a \
-		  $(ACRO_BUILD)/packages/colin/src/libcolin.a \
-		  $(ACRO_BUILD)/packages/pebbl/src/libpebbl.a \
-		  $(ACRO_BUILD)/packages/utilib/src/libutilib.la \
-		  $(ACRO_BUILD)/packages/tpl/3po/lib3po.a
-COLINY_OPT_H    = COLINApplication.H COLINOptimizer.H
-COLINY_OPT_S    = COLINApplication.C
+ACRO_ROOT	= $(top_srcdir)/packages/acro
+ACRO_BUILD	= $(top_builddir)/packages/acro
+ACRO_INCL	= -I$(ACRO_BUILD)/include	          \
+		  -I$(ACRO_BUILD)/packages/colin/src      \
+		  -I$(ACRO_BUILD)/packages/interfaces/src \ 
+		  -I$(ACRO_BUILD)/packages/scolib/src 
+ACRO_ARCHIVE	= $(ACRO_BUILD)/lib/libcolin.a      \
+		  $(ACRO_BUILD)/lib/libinterfaces.a \
+		  $(ACRO_BUILD)/lib/libmomh.a       \
+		  $(ACRO_BUILD)/lib/libscolib.a     \
+		  $(ACRO_BUILD)/lib/libpebbl.a      \
+		  $(ACRO_BUILD)/lib/libtinyxml.a    \
+		  $(ACRO_BUILD)/lib/libutilib.a     \
+		  $(ACRO_BUILD)/lib/lib3po.a        \
+		  $(top_builddir)/packages/boost/libs/libboost_signals.la
+COLINY_OPT_H	= COLINApplication.H COLINEvaluator.H COLINOptimizer.H
+COLINY_OPT_S	= COLINApplication.C COLINEvaluator.C COLINOptimizer.C
 endif
 
 if WITH_AMPL

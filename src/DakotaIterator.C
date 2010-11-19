@@ -792,23 +792,8 @@ Iterator* Iterator::get_iterator(Model& model)
     return new APPSOptimizer(model);
 #endif
 #ifdef DAKOTA_COLINY
-#ifdef DAKOTA_3PO
-  else if (method_name == "coliny_cobyla")
-    return new COLINOptimizer<coliny::Cobyla>(model);
-#endif
-  else if (method_name == "coliny_direct")
-    return new COLINOptimizer<coliny::DIRECT>(model);
-  else if (method_name == "coliny_pattern_search")
-    return new COLINOptimizer<coliny::PatternSearch>(model);
-  else if (method_name == "coliny_multi_start")
-    return new
-      COLINOptimizer<coliny::MultiStart<utilib::BasicArray<double> > >(model);
-  else if (method_name == "coliny_solis_wets")
-    return new COLINOptimizer<coliny::SolisWets>(model);
-  //else if (method_name == "coliny_pga_real")
-  //  return new COLINOptimizer<coliny::PEAreal>(model);
-  else if (method_name == "coliny_ea")
-    return new COLINOptimizer<coliny::EAminlp>(model);
+  else if (method_name.begins("coliny_"))
+    return new COLINOptimizer(model);
 #endif
 #ifdef DAKOTA_JEGA
   else if (method_name == "moga" || method_name == "soga")
@@ -921,25 +906,8 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
     return new APPSOptimizer(NoDBBaseConstructor(), model);
 #endif
 #ifdef DAKOTA_COLINY
-#ifdef DAKOTA_3PO
-  else if (method_name == "coliny_cobyla")
-    return new COLINOptimizer<coliny::Cobyla>(NoDBBaseConstructor(), model);
-#endif
-  else if (method_name == "coliny_direct")
-    return new COLINOptimizer<coliny::DIRECT>(NoDBBaseConstructor(), model);
-  else if (method_name == "coliny_pattern_search")
-    return new COLINOptimizer<coliny::PatternSearch>(NoDBBaseConstructor(),
-    model);
-  else if (method_name == "coliny_multi_start")
-    return new
-      COLINOptimizer<coliny::MultiStart<utilib::BasicArray<double> > >(
-      NoDBBaseConstructor(), model);
-  else if (method_name == "coliny_solis_wets")
-    return new COLINOptimizer<coliny::SolisWets>(NoDBBaseConstructor(), model);
-  //else if (method_name == "coliny_pga_real")
-  //  return new COLINOptimizer<coliny::PEAreal>(NoDBBaseConstructor(), model);
-  else if (method_name == "coliny_ea")
-    return new COLINOptimizer<coliny::EAminlp>(NoDBBaseConstructor(), model);
+  else if (method_name.begins("coliny_"))
+    return new COLINOptimizer(NoDBBaseConstructor(), model);
 #endif
 #ifdef DAKOTA_JEGA
   //else if (method_name == "moga" || method_name == "soga")

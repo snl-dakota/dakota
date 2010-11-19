@@ -2,413 +2,354 @@
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
     Copyright (c) 2006, Sandia National Laboratories.
-    This software is distributed under the GNU Lesser General Public License.
+    This software is distributed under the GNU General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
 //- Class:       COLINApplication
-//- Description: Specialized application class derived from COLIN's 
-//-              application class which redefines virtual evaluation functions
-//-              with DAKOTA's response computation procedures
-//- Owner:       Jean-Paul Watson/Bill Hart
+//- Description: Implementation of the COLINApplication class, a
+//-              specialized application class derived from COLIN's
+//-              application class which redefines virtual evaluation
+//-              functions with DAKOTA's response computation
+//-              procedures.
+//- Owner:       Patty Hough/John Siirola/Brian Adams
 //- Checked by:
-//- Version: $Id
+//- Version: $Id: COLINApplication.C 6829 2010-06-18 23:10:23Z pdhough $
+//
+
+#include "system_defs.h"
+#include "DakotaModel.H"
+
+#include <utilib/TypeManager.h>
+using utilib::TypeManager;
+#include <utilib/Any.h>
+using utilib::Any;
+#include <utilib/MixedIntVars.h>
+using utilib::MixedIntVars;
+
+
+#include <colin/AppResponseInfo.h>
+using colin::mf_info;
+using colin::nlcf_info;
+
+#include <colin/AppRequest.h>
+using colin::AppRequest;
+#include <colin/AppResponse.h>
+using colin::AppResponse;
+
+using std::make_pair;
+
+// implementation of COLINApplication class
 
 #include "COLINApplication.H"
 
-//#define DEBUG_COLIN
-
 namespace Dakota {
 
-COLINApplication::
-COLINApplication(Model& model) :
-  iteratedModel(model), activeSet(model.current_response().active_set()),
-  blockingSynch(false)
-{
-  // don't use the probDescDB so that this ctor may be used with both
-  // the standard and on-the-fly COLINOptimizer ctors
+COLINApplication::COLINApplication(Model& model) :
+  blockingSynch(0)
+{ set_problem(model);}
 
-  this->num_ineq_constr = model.num_nonlinear_ineq_constraints();
-  this->num_eq_constr   = model.num_nonlinear_eq_constraints();
-  numNonlinCons = this->num_ineq_constr + this->num_eq_constr;
+
+void COLINApplication::set_problem(Model& model) {
+
+  iteratedModel = model;
+  activeSet = model.current_response().active_set();
+
+  // BMA NOTE: For COLIN to relax integer variables, must hand COLIN a
+  // relaxed problem with continuous vars; see
+  // Application_IntDomain::relaxed_application
+
+  // set problem properties (problem size, constraints, etc); avoid
+  // probDescDB so this function may be used with both the standard
+  // and on-the-fly COLINOptimizer ctors
+
+  _num_real_vars = model.cv();
+  if (num_real_vars > 0)
+  {
+    _real_lower_bounds = model.continuous_lower_bounds();
+    _real_upper_bounds = model.continuous_upper_bounds();
+  }
+
+  // discrete vars
+  _num_int_vars = model.div();
+  if (num_int_vars > 0)
+  {
+    _int_lower_bounds = model.discrete_int_lower_bounds();
+    _int_upper_bounds = model.discrete_int_upper_bounds();
+  }
+
+  _num_nonlinear_constraints = model.num_nonlinear_ineq_constraints() +
+    model.num_nonlinear_eq_constraints();
 
   // for multiobjective, this will be taken from the RecastModel and will be
   // consistent with the COLIN iterator's view
-  numObjFns = model.num_functions() - numNonlinCons;
+  _num_objectives = 
+    model.num_functions() - num_nonlinear_constraints.as<size_t>();
 
-  //num_real_params    = model.cv();
-  //num_integer_params = model.div()+model.drv();
-}
+  // nonlinear constraint bounds: assemble nonlinear inequality
+  // followed by equality constraints
+  if (num_nonlinear_constraints > 0) {
 
+    RealVector bounds(num_nonlinear_constraints.as<size_t>());
 
-/** Converts the ColinPoint variables and request vector to DAKOTA variables
-    and active set vector, performs a DAKOTA function evaluation with
-    synchronization governed by synch_flag, and then copies the
-    Response data to the ColinResponse response (synchronous) or
-    bookkeeps the response object (asynchronous). */
-void COLINApplication::
-DoEval(ColinPoint& pt, int& priority, ColinResponse* prob_response,
-       bool synch_flag)
-{
-#ifdef DEBUG_COLIN
-cerr << "Entering COLINApplication::DoEval" << '\n' << std::flush;
-#endif
+    const RealVector& ineq_lower
+      = model.nonlinear_ineq_constraint_lower_bounds();
+    const RealVector& ineq_upper
+      = model.nonlinear_ineq_constraint_upper_bounds();
+    const RealVector& eq_targets
+      = model.nonlinear_eq_constraint_targets();
 
- // Shouldn't we verify?
-  //verify(prob_response->info->mode);
+    for (size_t i=0; i<model.num_nonlinear_ineq_constraints(); i++)
+      bounds[i] = ineq_lower[i];
 
-  //
-  // Do something intelligent eventually
-  if (response_exists(pt,*prob_response)) {
+    size_t ndx = model.num_nonlinear_ineq_constraints();
+    for (size_t i=0; i<model.num_nonlinear_eq_constraints(); i++, ndx++)
+      bounds[ndx] = eq_targets[i];
+
+    _nonlinear_constraint_lower_bounds = bounds;
+
+    for (size_t i=0; i<model.num_nonlinear_ineq_constraints(); i++)
+      bounds[i] = ineq_upper[i];
+
+    _nonlinear_constraint_upper_bounds = bounds;
   }
 
-  //
-  // Map variables
-  //
-  colin::map_domain(iteratedModel,pt); // pt -> active contin/discrete vars
+  // PDH  Double check with Bill to see which (if any) algs support linear constraints.
+  //      May want to make this a helper function called from COLINOptimizer.
 
-  //
-  // Assign COLIN obj fn request to all DAKOTA obj fns:
-  //
-  size_t i;
-  std::vector<int>& colin_request_vector = prob_response->request_vector();
-  ShortArray asv(numObjFns + numNonlinCons);
-  for(i=0; i<numObjFns; i++)
-    asv[i] = colin_request_vector[0];
-  for(i=0; i<numNonlinCons; i++)
-    asv[i+numObjFns] = colin_request_vector[i+1];
-  activeSet.request_vector(asv);
+  _num_linear_constraints = model.num_linear_ineq_constraints() +
+    model.num_linear_eq_constraints();
 
-  //
-  // Compute response
-  //
-  //Cout << "DoEval synch_flag = " << synch_flag << " dakotaModelAsynchFlag = "
-  //     << dakotaModelAsynchFlag << std::endl;
+  // linear constraint bounds: assemble linear inequality
+  // followed by equality constraints
+  if (num_linear_constraints > 0) {
 
-  if (!synch_flag && dakotaModelAsynchFlag) {
-    // Asynch is requested by COLIN and it is allowed by Model
-    iteratedModel.asynch_compute_response(activeSet);
-    prob_response->info->id = iteratedModel.evaluation_id();
-    this->response_list.push_back(prob_response);
-#ifdef DEBUG_COLIN
-    Cout << "ADDING COLIN ID: " << prob_response->info->id << " "
-	 << prob_response << std::endl;
-#endif
-    if (!synch_flag)
-      this->async_request_ids.push_back(prob_response->info->id);
-#ifdef DEBUG_COLIN
-    {
-      Cout << "COLIN List: ";
-      std::list<ColinResponse*>::iterator curr = this->response_list.begin();
-      std::list<ColinResponse*>::iterator end  = this->response_list.end();
-      while (curr != end) {
-        Cout << (*curr)->info->id << " ";
-	curr++;
-      }
-      Cout << std::endl;
+    RealMatrix linear_coeffs( num_linear_constraints.as<size_t>(), 
+                              domain_size.as<size_t>() );
+
+    const RealMatrix& linear_ineq_coeffs = iteratedModel.linear_ineq_constraint_coeffs();
+    const RealMatrix& linear_eq_coeffs = iteratedModel.linear_eq_constraint_coeffs();
+
+    size_t ndx = 0;
+    size_t ndy = 0;
+    for (int i=0; i<model.num_linear_ineq_constraints(); i++) {
+      for (int j=0; domain_size>j; j++)
+	linear_coeffs[ndx][ndy++] = linear_ineq_coeffs[i][j];
+      ndx++;
     }
-#endif
-  }
-  else {
-    // When asynch is requested by COLIN but not allowed by Model, COLIN
-    // will still call synchronize and the if (!response_list) check will cause
-    // an immediate return from the function.  Thus, it is assumed that COLIN
-    // allocates space for each prob_response such that the copy above is 
-    // sufficient (i.e., a response_list.add(prob_response) is not needed).
-    iteratedModel.compute_response(activeSet);
-    map_response(*prob_response, iteratedModel.current_response());
-    prob_response->init();
-    update_response(pt,*prob_response);
-    if (!synch_flag)
-      this->async_completed_ids.push_back(prob_response->info->id);
-  }
-}
 
-
-/** Blocking synchronize of asynchronous DAKOTA jobs followed by
-    conversion of the Response objects to ColinResponse response objects. */
-void COLINApplication::synchronize()
-{
-#ifdef DEBUG_COLIN
-cerr << "Entering COLINApplication::synchronize" << '\n' << std::flush;
-#endif
-
-  //
-  // We've queued up async evaluations, which need to be
-  // processed explicitly, or else COLIN solvers will get confused
-  //
-  //while (this->async_ids.size() > 0) {
-  //  COLINApplication::next_eval();
-  //}
-
-  if (this->response_list.size() == 0) // return if no pending jobs
-    return;
-
-  // Blocking synchronization
-  const IntResponseMap& dakota_resp_map = iteratedModel.synchronize();
-  size_t num_resp = dakota_resp_map.size();
-  if (num_resp != this->response_list.size()) {
-    Cout << "Error: there are " << this->response_list.size() << " queued "
-	 << "evaluation but only " << num_resp << " were returned." << std::endl;
-    abort_handler(-1);
-  }
-
-  // since DAKOTA's jobs are returned in the order of asynch calls, can do a 
-  // simple item to item copy.
-  IntRespMCIter r_it = dakota_resp_map.begin();
-  std::list<ColinResponse*>::iterator curr = this->response_list.begin();
-  std::list<ColinResponse*>::iterator end  = this->response_list.end();
-  while (curr != end) {
-    map_response(*(*curr), r_it->second);
-    (*curr)->init();
-    // pointer now populated, remove from pending list
-    //delete *curr;		// BUG??? DO THIS?
-    ++r_it;
-    ++curr;
-  }
-  this->response_list.clear();
-
-  colin::OptApplicationBase::synchronize();
-}
+    for (int i=0; i<model.num_linear_eq_constraints(); i++) {
+      for (int j=0; domain_size>j; j++)
+	linear_coeffs[ndx][ndy++] = linear_ineq_coeffs[i][j];
+      ndx++;
+    }
  
+   _linear_constraint_matrix = linear_coeffs;
 
-/** Nonblocking job retrieval. Finds a completion (if available),
-    populates the COLIN response, and sets id to the completed job's
-    id.  Else set id = -1. */
-int COLINApplication::next_eval()
-{
-#ifdef DEBUG_COLIN
-  Cerr << "Entering COLINApplication::next_eval" << '\n' << std::flush;
-#endif
+   RealVector bounds(num_linear_constraints.as<size_t>());
 
-#ifdef DEBUG_COLIN
-  {
-    std::list<int>::iterator curr = this->async_completed_ids.begin();
-    std::list<int>::iterator end  = this->async_completed_ids.end();
-    Cout << "ASYNC IDS:";
-    while (curr != end) {
-      Cout << " " << *curr;
-      curr++;
-    }
-    Cout << std::endl;
+   const RealVector& lin_ineq_lower
+     = model.linear_ineq_constraint_lower_bounds();
+   const RealVector& lin_ineq_upper
+     = model.linear_ineq_constraint_upper_bounds();
+   const RealVector& lin_eq_targets
+     = model.linear_eq_constraint_targets();
+
+   for (size_t i=0; i<model.num_linear_ineq_constraints(); i++) 
+     bounds[i] = lin_ineq_lower[i];
+
+   ndx = model.num_linear_ineq_constraints();
+   for (size_t i=0; i<model.num_linear_eq_constraints(); i++, ndx++)
+     bounds[ndx] = lin_eq_targets[i];
+
+   _linear_constraint_lower_bounds = bounds;
+
+   for (size_t i=0; i<model.num_linear_ineq_constraints(); i++) 
+     bounds[i] = lin_ineq_upper[i];
+
+   _linear_constraint_upper_bounds = bounds;
   }
-  {
-    std::list<int>::iterator curr = async_request_ids.begin();
-    std::list<int>::iterator end  = async_request_ids.end();
-    Cout << "REQUEST IDS:";
-    while (curr != end) {
-      Cout << " " << *curr;
-      curr++;
-    }
-    Cout << std::endl;
-  }
-  {
-    std::list<ColinResponse*>::iterator curr = this->response_list.begin();
-    std::list<ColinResponse*>::iterator end  = this->response_list.end();
-    Cout << "Response List IDs:";
-    while (curr != end) {
-      Cout << " " << (*curr)->info->id;
-      curr++;
-    }
-    Cout << std::endl;
-  }
-#endif
-
-  // COLIN only wants one completion, so buffer multiple DAKOTA completions in
-  // dakotaResponseMap and only call DAKOTA synchronize functions when the 
-  // list has been exhausted.  Each call to synchronize_nowait returns a fresh
-  // set of jobs (i.e., returned completions are removed from DAKOTA's lists).
-  if (dakotaResponseMap.empty() && (this->response_list.size() > 0)) {
-    // APPS will call next_eval() even for blocking synchronization
-    if (blockingSynch) {
-      dakotaResponseMap = iteratedModel.synchronize();
-      size_t i, num_jobs = dakotaResponseMap.size();
-      for (i=0; i<num_jobs; i++) {
-        int tmp_id = -1;
-        if (this->async_request_ids.size() > 0) {
-	  tmp_id = this->async_request_ids.front();
-	  this->async_request_ids.pop_front();
-	  this->async_completed_ids.push_back(tmp_id);
-	}
-        if (tmp_id == -1) {
-	  Cerr << "Error: DAKOTA has a response, but no corresponding"
-	       << " asynchronous evaluation was performed by COLIN!" << std::endl;
-	  abort_handler(-1);
-	}
-      }
-    }
-    else {// nonblocking
-      dakotaResponseMap = iteratedModel.synchronize_nowait();
-      //Cerr << "HERE " << dakotaResponseMap.size() << " "
-      //     << dakotaResponseMap.empty() << std::endl;
-      //
-      // Remove the id's from async_ids and dead_ids that have been returned
-      //
-      int ctr=0;
-      {
-	std::list<int>::iterator curr = this->async_request_ids.begin();
-	std::list<int>::iterator end  = this->async_request_ids.end();
-	while (curr != end) {
-	  if (dakotaResponseMap.find(*curr) != dakotaResponseMap.end()) {
-	    //Cerr << "HERE X:" << (*curr) << std::endl;
-#ifdef DEBUG_COLIN
-	    Cout << "Y " << *curr << std::endl;
-#endif
-	    this->async_completed_ids.push_back(*curr);
-	    curr = this->async_request_ids.erase(curr);
-	    ctr++;
-	  }
-	  else
-	    curr++;
-	}
-      }
-      {
-	std::set<int>::iterator curr = this->dead_ids.begin();
-	std::set<int>::iterator end  = this->dead_ids.end();
-	while (curr != end) {
-	  IntRespMIter dak_curr = dakotaResponseMap.find(*curr);
-	  if (dak_curr != dakotaResponseMap.end()) {
-	    //Cerr << "HERE Y:" << (*curr) << std::endl;
-	    dakotaResponseMap.erase(dak_curr);
-	    dead_ids.erase(curr++);
-	  }
-	  else
-	    curr++;
-	}
-      }
-#if 0
-      //
-      // This is not an error.  When Dakota runs two COLIN optimizers
-      // in sequence, it does not guarantee that it clears the queue
-      // before the second optimizer is run.  Thus, this condition may
-      // arise.
-      //
-      if (ctr != dakotaResponseMap.size()) {
-	Cerr << "Error: synchronize_nowait() returned " << 
-	  dakotaResponseMap.size() << " evaluations, but only " <<
-	  ctr << " had valid COLIN ids." << std::endl;
-	abort_handler(-1);
-      }
-#endif
-    }
-  }
-
-  // TO DO: manage terminated evaluations (new COLIN feature).  One simple way
-  // to do this (prior to DAKOTA support of job termination) would be to get
-  // any terminated eval ids from COLIN and check them here against
-  // dakotaCompletionList.  If present, these evals could be deleted from the 
-  // dakota lists.  This would not improve efficiency any (since the 
-  // evaluations are still performed by DAKOTA), but it would quiet COLIN 
-  // warnings for returning evaluations that it has terminated.
-
-  if (!dakotaResponseMap.empty()) { // synchronize_nowait may return none
-
-    IntRespMCIter map_iter = dakotaResponseMap.begin();
-    int dak_id = map_iter->first;
-
-    // find corresponding id in COLIN's response_list and copy DAKOTA's
-    // response to COLIN's
-    bool found = false;
-    {
-    std::list<ColinResponse*>::iterator curr = this->response_list.begin();
-    std::list<ColinResponse*>::iterator end  = this->response_list.end();
-    while (curr != end) {
-      //Cout << "COLIN id = " << (*curr)->info->id
-      //     << " DAKOTA completion list id = " << dak_id << std::endl;
-      if ((*curr)->info->id == dak_id) {
-        map_response(*(*curr), map_iter->second);
-        (*curr)->init();
-        // pointer now populated, remove from pending list
-        this->response_list.erase(curr);
-        //delete *curr;		// BUG???  DO THIS????
-        found = true;
-	dakotaResponseMap.erase(dak_id);
-        break;
-      }
-      curr++;
-    }
-    }
-    if (!found) {
-      dakotaResponseMap.clear();
-      return -1;
-#if 0
-      //
-      // This is not an error.  See note above.
-      //
-      Cerr << "Error: no matching COLIN id to DAKOTA's evaluation id in "
-	   << "COLINApplication::next_eval." << std::endl;
-      Cerr << "COLIN List: ";
-      std::list<ColinResponse*>::iterator curr = this->response_list.begin();
-      std::list<ColinResponse*>::iterator end  = this->response_list.end();
-      while (curr != end) {
-        Cerr << (*curr)->info->id << " ";
-	curr++;
-        }
-      Cerr << "DAKOTA ID: " << dak_id << std::endl;
-      abort_handler(-1);
-#endif
-    }
-
-    std::list<int>::iterator curr = async_completed_ids.begin();
-    std::list<int>::iterator end  = async_completed_ids.end();
-    while (curr != end) {
-      //Cout << "HERE " << *curr << std::endl;
-      if (*curr == dak_id)
-	 break;
-      curr++;
-      }
-    if (curr != end)
-       async_completed_ids.erase(curr);
-
-    return dak_id;
-  }
-  else
-    return OptApplicationBase::next_eval();
 }
 
+/** Schedule one or more requests at specified domain point, returning
+    a DAKOTA-specific evaluation tracking ID.  The domain point is
+    guaranteed to be compatible with data type specified by
+    map_domain(...) */
+utilib::Any COLINApplication::
+spawn_evaluation_impl(const utilib::Any &domain,
+		 const colin::AppRequest::request_map_t &requests,
+		 utilib::seed_t &seed)
+{
+  colin_request_to_dakota_request(domain, requests, seed);
 
-/** map_response
- * Maps a Response object into a ColinResponse class that is
- * compatable with COLIN.
- */
+  // When the Model supports asynch evals, use them, otherwise
+  // maintain backward behavior and block with compute_response
+
+  iteratedModel.asynch_compute_response(activeSet);
+
+  return(iteratedModel.evaluation_id());
+}
+
 void COLINApplication::
-map_response(ColinResponse& colin_response, const Response& dakota_response)
+perform_evaluation_impl(const utilib::Any &domain,
+                   const colin::AppRequest::request_map_t &requests,
+                   utilib::seed_t &seed,
+                   AppResponse::response_map_t &colin_responses)
 {
-  size_t dakota_num_funs = dakota_response.num_functions();
-  const ShortArray& dakota_asv   = dakota_response.active_set_request_vector();
-  const RealVector& dakota_fns   = dakota_response.function_values();
-  const RealMatrix& dakota_grads = dakota_response.function_gradients();
-  const RealSymMatrixArray& dakota_hessians = dakota_response.function_hessians();
+  colin_request_to_dakota_request(domain, requests, seed);
 
-  // colin response vector is separate from COLIN request vector
-  std::vector<int>& colin_asv = colin_response.response_vector();
+  iteratedModel.compute_response(activeSet);
 
-  for (size_t i=0; i<dakota_num_funs; i++) {
+  dakota_response_to_colin_response(iteratedModel.current_response(), colin_responses);
+}
 
-    // update colin response vector with actual results to be returned
-    colin_asv[i] = dakota_asv[i];
 
-    if (dakota_asv[i] & 1) {
-      if (i)
-	colin_response.constraint_values()[i-1] = dakota_fns[i];
-      else {
-	colin_response.function_value(i) = dakota_fns[i];
-	this->neval_ctr++;
-      }
+bool COLINApplication::
+evaluation_available()
+{
+  if (completedEvals.empty()) {
+    if (iteratedModel.asynch_flag()) {
+
+      // PDH  This will change when John is done with the COLIN concurrent evaluator.
+      //      In particular, we don't want to call iteratedModel.synchronize().
+
+      dakota_responses = (blockingSynch) ?
+	iteratedModel.synchronize() : iteratedModel.synchronize_nowait();
+
+      if (dakota_responses.empty())
+	return false;
+      else
+	return true;
     }
-#if 0
-    if (dakota_asv[i] & 2) {
-      // TO DO: CONVERT OVER THE GRADIENT (ONCE DERIVATIVE-BASED ALGS ARE USED)
-      //colin_response.function_gradient();
-      //colin_response.constraint_gradients()
+    return false;
+  }
+
+  return true;
+}
+
+/** Collect a completed evaluation from DAKOTA.  Either specified
+    spawned evalid or, if empty, the next available evaluation. Always
+    returns the evalid of the response returned. */
+
+utilib::Any COLINApplication::
+collect_evaluation_impl(AppResponse::response_map_t &colin_responses,
+		   utilib::seed_t &seed)
+{
+  int dakota_id = dakota_responses.begin()->first;
+  Response first_response = dakota_responses.begin()->second;
+
+  dakota_response_to_colin_response(first_response, colin_responses);
+  dakota_responses.erase(dakota_id);
+
+  return(dakota_id);
+}
+
+void COLINApplication::
+colin_request_to_dakota_request(const utilib::Any &domain,
+                   const colin::AppRequest::request_map_t &requests,
+                   utilib::seed_t &seed)
+{
+  // Map COLIN info requests to DAKOTA objectives and constraints.
+
+  const utilib::MixedIntVars& miv = domain.expose<MixedIntVars>();
+
+  RealVector cdv;
+  TypeManager()->lexical_cast(miv.Real(), cdv);
+  iteratedModel.continuous_variables(cdv);
+
+  IntVector ddv;
+  TypeManager()->lexical_cast(miv.Integer(), ddv);
+  iteratedModel.discrete_int_variables(ddv);
+
+  // Map COLIN info requests (pair<ResponseInfo, *>) to DAKOTA
+  // objectives and constraints; COLIN will always request ALL
+  // functions or ALL constraints
+  // BMA TODO: gradient information
+  ShortArray asv(iteratedModel.num_functions());
+
+  AppRequest::request_map_t::const_iterator req_it  = requests.begin();
+  AppRequest::request_map_t::const_iterator req_end = requests.end();
+  size_t numObj = num_objectives;
+  size_t numCons = num_nonlinear_constraints;
+  for (; req_it != req_end; ++req_it) {
+    
+    // mf_info: all multiobjective functions
+    if (req_it->first == mf_info)
+      for(size_t i=0; i<numObj; i++)
+	asv[i] = 1;    
+  
+    // nlcf_info (lb <= g(x) <= ub)
+    else if (req_it->first == nlcf_info)
+      for(size_t i=0; i<numCons; i++)
+	asv[i+numObj] = 1;
+
+    else
+      // no linear constraints since we'll send A and bounds
+      // no gradients/Hessians for now
+      EXCEPTION_MNGR(std::runtime_error,"invalid request from COLIN:"  
+		     << colin::AppResponseInfo().name(req_it->first) );
+  }
+
+  // BMA TODO: track the scheduled evaluations; could always do
+  // compute_response in serial case, but do asynch for simplicity
+  activeSet.request_vector(asv);
+}
+
+void COLINApplication::
+dakota_response_to_colin_response(const Response &dakota_response,
+				  AppResponse::response_map_t &colin_responses)
+{
+  // Map DAKOTA objective and constraint values to COLIN response.
+
+  const ShortArray& asv = dakota_response.active_set_request_vector();
+
+  // if the DAKOTA response included functions, return them (colin
+  // will always expect a full set of functions, so break as soon as
+  // any is missing); may want to store a short-hand request vector
+  // locally
+  bool fns = true;
+  size_t numObj = num_objectives;
+  utilib::Any fnvals;
+  RealVector &fnvals_v = fnvals.set<RealVector>();
+  fnvals_v.resize(numObj);
+  for(size_t i=0; i<numObj; i++) {
+    if ( ! (asv[i] & 1) ) {
+      fns = false;
+      break;
     }
-    if (dakota_asv[i] & 4) {
-      // TO DO: CONVERT OVER THE HESSIAN (ONCE DERIVATIVE-BASED ALGS ARE USED)
-      //colin_response.function_hessian();
-      //colin_response.constraint_hessians()
+    fnvals_v[i] = dakota_response.function_value(i);
+  }
+  if (fns) {
+    colin_responses.insert(make_pair(mf_info, fnvals));
+  }
+
+  // if the DAKOTA response included constraints, return them
+  bool cons= true;
+  size_t numCons = num_nonlinear_constraints;
+  RealVector &cons_v = fnvals.set<RealVector>();
+  cons_v.resize(numCons);
+  for(size_t i=0; i<numCons; i++) {
+    if ( ! (asv[i+numObj] & 1) ) {
+      cons = false;
+      break;
     }
-#endif
+    cons_v[i] = dakota_response.function_value(i+numObj);
+  }
+  if (cons) {
+    colin_responses.insert(make_pair(nlcf_info, fnvals));
   }
 }
+
+/** Map the domain point into data type desired by this application
+    context (utilib::MixedIntVars).  This data type can be exposed
+    from the Any &domain presented to spawn and collect. */
+bool COLINApplication::map_domain (const utilib::Any &src, utilib::Any &native,
+				   bool forward) const 
+{ 
+  //assert(forward == true); (seems a backward mapping is requested at the 
+  //start and end of iteration)
+  TypeManager()->lexical_cast(src, native, typeid(MixedIntVars));
+}
+
 
 } // namespace Dakota
