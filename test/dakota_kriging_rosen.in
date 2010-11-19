@@ -1,0 +1,65 @@
+strategy
+	single_method
+	  tabular_graphics_data
+          method_pointer = 'UQ'
+
+method,
+	id_method = 'UQ'                        
+#        model_pointer = 'SURR'	                #2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+	nond_sampling,
+	  sample_type lhs			
+#          samples = 10000                      #1,#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#          seed = 98765 rng rnum2               #1,#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+          samples = 100                         #0  
+          seed = 5034 rng rnum2                 #0
+	  response_levels = 0.1 1.0 10.0 100.0
+	  distribution cumulative
+
+#model,                                         #2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#        id_model = 'SURR'    			#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#        surrogate global,			#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#          dace_method_pointer = 'DACE'		#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16 
+#          reuse_samples all			#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#          kriging                      	#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16	 
+#	     trend reduced_quadratic            #3
+#	     trend constant                     #4
+#            trend linear                       #5
+#            trend quadratic                    #6
+#            max_trials -5                      #16
+#            max_trials 100                     #7,#8,#9
+#            optimization_method 'sampling'     #8
+#            optimization_method 'local'        #9
+#            optimization_method 'none'         #10
+#            optimization_method 'error'        #15 
+#            correlation_lengths  0.79 0.76     #11
+#            correlation_lengths  100000 100000 #12
+#            correlation_lengths -0.79 0.76     #13
+#            correlation_lengths  0.79 0.00     #14
+#method,                                        #2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#        id_method = 'DACE'			#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#        model_pointer = 'DACE_M'		#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#        nond_sampling                          #2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#          sample_type lhs		        #2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#          samples = 100                        #2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#          seed = 5034 rng rnum2	        #2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#model,						#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#        id_model = 'DACE_M'			#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#        single					#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+#          interface_pointer = 'I1'		#2,#3,#4,#5,#6,#7,#8,#9,#10,#11,#12,#13,#14,#15,#16
+
+variables,
+	uniform_uncertain = 2
+	  lower_bounds = -2.0   -2.0
+	  upper_bounds =  2.0    2.0
+	  descriptors  = 'x1' 'x2'
+
+interface,
+	direct
+	id_interface = 'I1'
+ 	  analysis_driver = 'rosenbrock'
+
+responses,
+	num_response_functions = 1
+	no_gradients
+	no_hessians
+
