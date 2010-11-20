@@ -147,6 +147,7 @@ protected:
   bool restore_available();
   size_t restoration_index();
   void finalize();
+  size_t finalization_index(size_t i);
 
   void print_coefficients(std::ostream& s) const;
 
@@ -402,6 +403,10 @@ inline void PecosApproximation::finalize()
   // map to Pecos::BasisApproximation
   pecosBasisApprox.finalize_coefficients();
 }
+
+
+inline size_t PecosApproximation::finalization_index(size_t i)
+{ return pecosBasisApprox.finalization_index(i); }
 
 
 inline void PecosApproximation::print_coefficients(std::ostream& s) const

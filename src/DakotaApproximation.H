@@ -82,6 +82,8 @@ public:
   virtual size_t restoration_index();
   /// finalize approximation by applying all remaining trial sets
   virtual void finalize();
+  /// return index of i-th trailing trial set within restorable bookkeeping sets
+  virtual size_t finalization_index(size_t i);
 
   /// retrieve the approximate function value for a given parameter vector
   virtual const Real& get_value(const RealVector& x);

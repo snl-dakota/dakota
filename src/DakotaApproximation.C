@@ -24,6 +24,8 @@
 #endif // DAKOTA_SURFPACK
 #include "DakotaGraphics.H"
 
+#define DEBUG
+
 
 namespace Dakota {
 
@@ -373,10 +375,26 @@ void Approximation::finalize()
   else { // virtual fn: this is the common base class portion and is
          // insufficient on its own; derived implementations should
          // explicitly invoke (or reimplement) this base class contribution.
-    for (SDP2AIter it=savedSDPSets.begin(); it!=savedSDPSets.end(); ++it)
-      currentPoints.insert(currentPoints.end(), it->begin(), it->end());
+    size_t i, index, num_restore = savedSDPSets.size();
+    for (i=0; i<num_restore; ++i) {
+      index = finalization_index(i);
+      currentPoints.insert(currentPoints.end(), savedSDPSets[index].begin(),
+			   savedSDPSets[index].end());
+    }
     savedSDPSets.clear();
   }
+}
+
+
+size_t Approximation::finalization_index(size_t i)
+{
+  if (!approxRep) { // virtual fn: no default, error if not supplied by derived
+    Cerr << "Error: finalization_index(size_t) not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(-1);
+  }
+
+  return approxRep->finalization_index(i);
 }
 
 
