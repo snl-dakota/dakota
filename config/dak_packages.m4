@@ -351,12 +351,16 @@ AC_DEFUN([DAK_PACKAGES],[
   dnl no granularity to notify user which used
   if test "x$acx_gsl_ok" = xwant; then
 
+    AC_MSG_NOTICE([checking for GSL...])
+
+
+    save_CPPFLAGS="$CPPFLAGS"
+    save_LDFLAGS="$LDFLAGS"
     if test -n $GSL_CPPFLAGS; then
       CPPFLAGS="$CPPFLAGS $GSL_CPPFLAGS"
       LDFLAGS="$LDFLAGS $GSL_LDFLAGS"
     fi
 
-    AC_MSG_NOTICE([checking for GSL...])
     acx_gsl_ok=yes;
     AC_CHECK_LIB([m],[cos],,acx_gsl_ok=no)
     AC_CHECK_LIB([gslcblas],[cblas_dgemm],,acx_gsl_ok=no)
@@ -373,6 +377,10 @@ AC_DEFUN([DAK_PACKAGES],[
       AC_MSG_ERROR([GSL requested but not found])
     fi
 
+    CPPFLAGS="$save_CPPFLAGS"
+    LDFLAGS="$save_LDFLAGS"
+
   fi
-  dnl AM_CONDITIONAL([WITH_GSL], [test "x$acx_gsl_ok" = xyes])
+  AM_CONDITIONAL([WITH_GSL], [test "x$acx_gsl_ok" = xyes])
+
 ])

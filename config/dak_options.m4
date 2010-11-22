@@ -17,10 +17,6 @@ AC_DEFUN([DAK_OPTIONS],[
   AC_ARG_ENABLE([tests],AS_HELP_STRING([--enable-tests],
 				       [turn testing on]),
 	  	[enable_tests=$enableval],[enable_tests=yes])
-  if test "x$enable_tests" = xyes; then
-    AC_CONFIG_SUBDIRS([test])
-    AC_CONFIG_SUBDIRS([examples])
-  fi
   AM_CONDITIONAL([ENABLE_TESTS],[test "x$enable_tests" = xyes])
 
   dnl Documentation option check.

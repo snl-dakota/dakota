@@ -42,6 +42,10 @@ CPPFLAGS += $(PYTHON_CPPFLAGS)
 LOCALLDFLAGS += $(PYTHON_EXTRA_LDFLAGS)
 endif
 
+if WITH_GSL
+LOCALLDFLAGS += $(GSL_LDFLAGS)
+endif
+
 if ENABLE_F90
 LOCALLDADD += $(FCLIBS)
 endif
@@ -53,6 +57,11 @@ endif
 
 if WITH_PYTHON
 LOCALLDADD += $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LIBS)
+endif
+
+if WITH_ACRO
+LOCALLDFLAGS += @BOOST_LDFLAGS@
+LOCALLDADD += -lboost_signals
 endif
 
 ## The sense of NIDR's DYNLIB flag is opposite: if no DL_SOLVER, use the 
@@ -162,12 +171,14 @@ bin_PROGRAMS += dakreorder
 dakreorder_SOURCES = dakreorder.c NIDR_keywds0.h
 #dakreorder.$(OBJEXT): NIDR_keywds0.h
 dakreorder_INCLUDES = $(NIDR_INCL)
+dakreorder_LDFLAGS = $(LOCALLDFLAGS)
 dakreorder_LDADD = $(NIDR_ARCHIVE) -ldl
 
 bin_PROGRAMS += dakreord
 dakreord_SOURCES = dakreorder.c
 dakreord_CFLAGS = -DNO_NIDR_keywds0
 dakreord_INCLUDES = $(NIDR_INCL)
+dakreord_LDFLAGS = $(LOCALLDFLAGS)
 dakreord_LDADD = $(NIDR_ARCHIVE) -ldl
 
 endif

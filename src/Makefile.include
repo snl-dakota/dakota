@@ -67,7 +67,7 @@ ACRO_ROOT	= $(top_srcdir)/packages/acro
 ACRO_BUILD	= $(top_builddir)/packages/acro
 ACRO_INCL	= -I$(ACRO_BUILD)/include	          \
 		  -I$(ACRO_BUILD)/packages/colin/src      \
-		  -I$(ACRO_BUILD)/packages/interfaces/src \ 
+		  -I$(ACRO_BUILD)/packages/interfaces/src \
 		  -I$(ACRO_BUILD)/packages/scolib/src 
 ACRO_ARCHIVE	= $(ACRO_BUILD)/lib/libcolin.a      \
 		  $(ACRO_BUILD)/lib/libinterfaces.a \
@@ -76,8 +76,7 @@ ACRO_ARCHIVE	= $(ACRO_BUILD)/lib/libcolin.a      \
 		  $(ACRO_BUILD)/lib/libpebbl.a      \
 		  $(ACRO_BUILD)/lib/libtinyxml.a    \
 		  $(ACRO_BUILD)/lib/libutilib.a     \
-		  $(ACRO_BUILD)/lib/lib3po.a        \
-		  $(top_builddir)/packages/boost/libs/libboost_signals.la
+		  $(ACRO_BUILD)/lib/lib3po.a
 COLINY_OPT_H	= COLINApplication.H COLINEvaluator.H COLINOptimizer.H
 COLINY_OPT_S	= COLINApplication.C COLINEvaluator.C COLINOptimizer.C
 endif
@@ -152,6 +151,11 @@ GPMSA_ARCHIVE = $(GPMSA_BUILD)/libgpmsa.la
 GPMSA_H       = NonDGPMSABayesCalibration.H
 GPMSA_S       = NonDGPMSABayesCalibration.C
 endif
+
+if WITH_GSL  	 	 
+GSL_INCL      = @GSL_CPPFLAGS@  	 	 
+GSL_ARCHIVE   = @GSL_LDFLAGS@ -lgsl  	 	 
+endif 
 
 if WITH_QUESO
 QUESO_BUILD   = $(top_builddir)/packages/queso
@@ -282,6 +286,7 @@ INCLUDES = $(NIDR_INCL) \
 	   $(DOT_INCL) \
 	   $(FSUD_INCL) \
 	   $(GPMSA_INCL) \
+	   $(GSL_INCL) \
 	   $(QUESO_INCL) \
 	   $(HOPSPACK_INCL) \
 	   $(JEGA_INCL) \
@@ -306,6 +311,7 @@ ARCHIVES = $(NIDR_ARCHIVE) \
 	   $(DOT_ARCHIVE) \
 	   $(FSUD_ARCHIVE) \
 	   $(GPMSA_ARCHIVE) \
+	   $(GSL_ARCHIVE) \
 	   $(QUESO_ARCHIVE) \
 	   $(JEGA_ARCHIVE) \
 	   $(NL2SOL_ARCHIVE) \
