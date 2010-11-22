@@ -41473,13 +41473,9 @@ Polynomial Chaos coefficients for response_fn_1:
    1.1640822101e-15  P11  P23   P2
 response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.4625211893e+00  Coeff. of Variation =  9.8929176838e-01
 response_fn_1 Sobol indices:
-                      3.6248801543e-01 x1 
-                      5.1088272000e-01 x2 
-                      9.7050502037e-32 x3 
-response_fn_1 total Sobol indices:
-                      4.8911728000e-01 x1
-                      5.1088272000e-01 x2
-                      1.2662926457e-01 x3
+                      3.6248801543e-01  4.8911728000e-01 x1
+                      5.1088272000e-01  5.1088272000e-01 x2
+                      9.7050502037e-32  1.2662926457e-01 x3
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      1.0108241390e+00
@@ -41806,13 +41802,9 @@ Polynomial Chaos coefficients for response_fn_1:
    0.0000000000e+00   P0   P0  P11
 response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7207267681e+00  Coeff. of Variation =  1.0630647909e+00
 response_fn_1 Sobol indices:
-                      3.1392288332e-01 x1 
-                      4.4243504321e-01 x2 
-                      2.8863871115e-32 x3 
-response_fn_1 total Sobol indices:
-                      5.5756495679e-01 x1
-                      4.4243504321e-01 x2
-                      2.4364207347e-01 x3
+                      3.1392288332e-01  5.5756495679e-01 x1
+                      4.4243504321e-01  4.4243504321e-01 x2
+                      2.8863871115e-32  2.4364207347e-01 x3
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4067643720e-01
@@ -41820,13 +41812,9 @@ Test Number 6 succeeded
 <<<<< Function evaluation summary: 2610 total (1395 new, 1215 duplicate)
 response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.4625211893e+00  Coeff. of Variation =  9.8929176838e-01
 response_fn_1 Sobol indices:
-                      3.6248801543e-01 x1 
-                      5.1088272000e-01 x2 
-                     -4.7412768068e-15 x3 
-response_fn_1 total Sobol indices:
-                      4.8911728000e-01 x1
-                      5.1088272000e-01 x2
-                      1.2662926457e-01 x3
+                      3.6248801543e-01  4.8911728000e-01 x1
+                      5.1088272000e-01  5.1088272000e-01 x2
+                     -4.7412768068e-15  1.2662926457e-01 x3
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      1.0108241390e+00
@@ -41834,13 +41822,9 @@ Test Number 7 succeeded
 <<<<< Function evaluation summary: 1116 total (463 new, 653 duplicate)
 response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7206792854e+00  Coeff. of Variation =  1.0630512244e+00
 response_fn_1 Sobol indices:
-                      3.1393089584e-01 x1 
-                      4.4244755877e-01 x2 
-                     -2.0530792910e-15 x3 
-response_fn_1 total Sobol indices:
-                      5.5755244123e-01 x1
-                      4.4244755877e-01 x2
-                      2.4362154539e-01 x3
+                      3.1393089584e-01  5.5755244123e-01 x1
+                      4.4244755877e-01  4.4244755877e-01 x2
+                     -2.0530792910e-15  2.4362154539e-01 x3
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4068844196e-01

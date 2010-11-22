@@ -1773,7 +1773,7 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
       s << fn_labels[i] << " Sobol indices:\n" << std::setw(38) << "Main"
 	<< std::setw(19) << "Total\n";
       for (k=0; k<numContinuousVars; ++k) {
-	index = (vbdControl == Pecos::ALL_VBD) ? main_index[k] : k;
+	index = (vbdControl == Pecos::ALL_VBD) ? main_index[k] : k+1;
 	if (std::abs(sobol_indices[index]) > vbdDropTol ||
 	    std::abs(total_indices[k])     > vbdDropTol)
 	  s << "                     " << std::setw(write_precision+7) 
