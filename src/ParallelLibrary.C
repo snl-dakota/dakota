@@ -265,9 +265,9 @@ bool ParallelLibrary::detect_parallel_launch(int& argc, char**& argv)
 
 #ifdef OPEN_MPI
   // run-time test for OpenMPI v1.2 or greater
-  char* ompi_1_2_test = getenv("OMPI_MCA_universe");
+  char* ompi_1_2_test = std::getenv("OMPI_MCA_universe");
   // run-time test for OpenMPI v1.3 or greater
-  char* ompi_1_3_test = getenv("OMPI_COMM_WORLD_SIZE");
+  char* ompi_1_3_test = std::getenv("OMPI_COMM_WORLD_SIZE");
   if (ompi_1_2_test || ompi_1_3_test) {
 #ifdef MPI_DEBUG
     Cout << "Parallel run detected via OpenMPI test" <<endl;
@@ -282,7 +282,7 @@ bool ParallelLibrary::detect_parallel_launch(int& argc, char**& argv)
   // MPICH_NAME = 2 || MPICH2
   //
   // test for p4 device
-  //char* test = getenv("MPIRUN_DEVICE"); // no good: only set on master
+  //char* test = std::getenv("MPIRUN_DEVICE"); // no good: only set on master
   for (int i=0; i<argc; i++) {
     String test(argv[i]);
     if (test=="-p4pg" || test=="-p4amslave") {
@@ -294,16 +294,16 @@ bool ParallelLibrary::detect_parallel_launch(int& argc, char**& argv)
     }
   }
   // test for gm device (no command line content, so use GMPI_NP)
-  char* gm_test = getenv("GMPI_NP"); // returns NULL if not set
+  char* gm_test = std::getenv("GMPI_NP"); // returns NULL if not set
   // alternate test for mpirun needed on some platforms with myrinet
-  char* mpirun_test = getenv("MPIRUN_NPROCS"); // returns NULL if not set
+  char* mpirun_test = std::getenv("MPIRUN_NPROCS"); // returns NULL if not set
   // alternate test for MPICH2
   if (!mpirun_test)
-	mpirun_test = getenv("MPICH_INTERFACE_HOSTNAME");
+	mpirun_test = std::getenv("MPICH_INTERFACE_HOSTNAME");
   // alternate test for MPICH shmem comm
   // options for testing: MPICH_NP, MPIRUN_DEVICE=ch_shmem (master only?)
   if (!mpirun_test)
-	mpirun_test = getenv("MPICH_NP");
+	mpirun_test = std::getenv("MPICH_NP");
   if (gm_test || mpirun_test) { // && atoi(gm_test) > 1)
 #ifdef MPI_DEBUG
     Cout << "Parallel run detected via MPICH env test" <<endl;
@@ -312,23 +312,23 @@ bool ParallelLibrary::detect_parallel_launch(int& argc, char**& argv)
   }
 
 #elif defined(HAVE_OSF_MPI) // Digital MPI sets env vars. on all procs.
-  char* dec_test = getenv("DIGITALMPI_ENV_MAGIC"); // returns NULL if not set
+  char* dec_test = std::getenv("DIGITALMPI_ENV_MAGIC"); // returns NULL if not set
   if (dec_test) // non-NULL
     mpi_launch = true;
 
 #elif defined(HAVE_SGI_MPI) // SGI MPI sets env vars. on all procs.
-  char* sgi_test = getenv("MPI_ENVIRONMENT"); // returns NULL if not set
+  char* sgi_test = std::getenv("MPI_ENVIRONMENT"); // returns NULL if not set
   if (sgi_test) // non-NULL
     mpi_launch = true;
 
 #elif defined(HAVE_SOLARIS64_MPI) // Sun MPI sets env vars. on all procs.
-  char* sun_test = getenv("SUNHPC_PROC_RANK"); // returns NULL if not set
+  char* sun_test = std::getenv("SUNHPC_PROC_RANK"); // returns NULL if not set
   if (sun_test) // non-NULL
     mpi_launch = true;
 
 #elif defined(HAVE_AIX_MPI)
   // check to see if MP_PROCS is set, if so check if greater than 1.
-  char* aix_test = getenv("MP_PROCS"); // returns NULL if not set
+  char* aix_test = std::getenv("MP_PROCS"); // returns NULL if not set
   if (aix_test) // && atoi(aix_test) > 1)
     mpi_launch = true;
 
