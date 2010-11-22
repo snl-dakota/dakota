@@ -165,6 +165,9 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
 	       int *iisize, double ddata[], int *idsize, char cdata[],
 	       int *icsize)
 {
+  // TODO: set to 1 if a constraint violated 
+  int feasible = 0;  // 0: no violation of hidden constraints
+
   int cnt = *start-1; // starting index into fvec
   int nx  = *n;       // dimension of design vector x.
   
@@ -172,8 +175,9 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
   // if initial point, we have a single point to evaluate
   int np = (*start == 1) ? 1 : *maxI*2;
 
-  // loop over trial points, lift scaling, and either submit for asynch
-  // evaluation or compute synchronously
+  // loop over trial points, lift internal DIRECT scaling (mimics
+  // DIRinfcn), and either submit for asynch evaluation or compute
+  // synchronously
   RealVector local_des_vars(nx, false);
   int pos = *start-1; // only used for second eval and beyond
   for (int j=0; j<np; j++) {
@@ -184,13 +188,17 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
     else {
       for (int i=0; i<nx; i++) {
 	// c[pos+i*maxfunc] = c(pos,i) in Fortran.
+	// we believe c should be sized maxfunc by nx
 	double ci=c[pos+i*(*maxfunc)];
 	local_des_vars[i] = (ci + u[i])*l[i];
       }
       pos = point[pos]-1;
     }
 
-    // below, use default ASV (function values, no gradients or hessians)
+    // below, use default ASV (function values, no gradients or
+    // hessians); we assume fvec is sized maxfunc by 2 with a column
+    // for function values and a column for constraints
+
     if (ncsudirectInstance->setUpType == SETUP_MODEL) {
 
       ncsudirectInstance->iteratedModel.continuous_variables(local_des_vars);
@@ -204,13 +212,13 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
 	const Response& local_response 
 	  = ncsudirectInstance->iteratedModel.current_response();
 	fvec[cnt+j] = local_response.function_values()[0];
-	fvec[cnt+(*maxfunc)-1+j] = 0; // TODO: flag if error in eval
+	fvec[cnt+j+(*maxfunc)] = feasible;
       }
 
     }
     else {
       fvec[cnt+j] = ncsudirectInstance->userObjectiveEval(local_des_vars);
-      fvec[cnt+(*maxfunc)-1+j] = 0; // TODO: flag if error in eval
+      fvec[cnt+j+(*maxfunc)] = feasible;
     }
 
   } // end evaluation loop over points
@@ -227,7 +235,7 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
     IntRespMCIter r_cit = response_map.begin();
     for (int j=0; j<np; ++j, ++r_cit) {
       fvec[cnt+j] = r_cit->second.function_values()[0];
-      fvec[cnt+(*maxfunc)-1+j] = 0; // TODO: flag if error in eval
+      fvec[cnt+j+(*maxfunc)] = feasible;
     }
   }
 
