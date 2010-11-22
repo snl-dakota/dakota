@@ -46327,14 +46327,14 @@ Polynomial Chaos coefficients for response_fn_1:
   -2.0000000000e+00  He1  He0
   -2.0000000000e+02  He0  He1
    6.0100000000e+02  He2  He0
-   1.2505552149e-12  He1  He1
+   9.0949470177e-13  He1  He1
    1.0000000000e+02  He0  He2
-   1.0516032489e-12  He3  He0
+   1.3073986338e-12  He3  He0
   -2.0000000000e+02  He2  He1
-  -1.1191048088e-12  He1  He2
+  -6.0751403907e-13  He1  He2
    1.0000000000e+02  He4  He0
-   1.0942358131e-12  He3  He1
-  -3.8369307731e-13  He2  He2
+   8.1001871877e-13  He3  He1
+  -7.6738615462e-13  He2  He2
 response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
 response_fn_1 Sobol indices:
                       8.7300504533e-01  9.4557359085e-01 x1
@@ -46355,14 +46355,14 @@ Polynomial Chaos coefficients for response_fn_1:
   -4.0000000000e+00   P1   P0
   -5.3333333333e+02   P0   P1
    9.1695238095e+02   P2   P0
-  -6.7262861947e-13   P1   P1
+   2.9526381340e-13   P1   P1
    2.6666666667e+02   P0   P2
-   3.2462921240e-13   P3   P0
+  -6.1772809090e-13   P3   P0
   -1.0666666667e+03   P2   P1
-  -6.1284310959e-14   P1   P2
+   2.7107205369e-12   P1   P2
    3.6571428571e+02   P4   P0
-  -1.2478906797e-13   P3   P1
-   1.4868106746e-12   P2   P2
+   5.6843418861e-14   P3   P1
+   6.0929039591e-13   P2   P2
 response_fn_1:  Mean =  4.5566666667e+02  Std. Dev. = 6.0656024184e+02  Coeff. of Variation =  1.3311490311e+00
 response_fn_1 Sobol indices:
                       4.9746891383e-01  7.0363551328e-01 x1
@@ -46387,10 +46387,10 @@ Polynomial Chaos coefficients for response_fn_1:
    8.0000000000e+02   L0   L2
   -1.5360000000e+05   L3   L0
    3.2000000000e+03   L2   L1
-   3.6379788071e-11   L1   L2
+  -3.7107383832e-10   L1   L2
    3.8400000000e+04   L4   L0
-  -4.2564352043e-10   L3   L1
-  -2.7284841053e-10   L2   L2
+  -6.9121597335e-10   L3   L1
+   5.8571458794e-10   L2   L2
 response_fn_1:  Mean =  3.6005000000e+04  Std. Dev. = 3.1371446924e+05  Coeff. of Variation =  8.7130806620e+00
 response_fn_1 Sobol indices:
                       9.9944724867e-01  9.9996748522e-01 x1
@@ -46415,10 +46415,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.2929292929e+02 Pab0 Pab2
   -6.0301803460e+01 Pab3 Pab0
   -2.9552669553e+02 Pab2 Pab1
-  -3.5882408156e-13 Pab1 Pab2
+  -2.0250467969e-13 Pab1 Pab2
    1.5607525601e+02 Pab4 Pab0
-   7.6383344094e-13 Pab3 Pab1
-   2.5579538487e-13 Pab2 Pab2
+   6.3948846218e-13 Pab3 Pab1
+   6.3948846218e-13 Pab2 Pab2
 response_fn_1:  Mean =  3.3706545835e+02  Std. Dev. = 4.6075688193e+02  Coeff. of Variation =  1.3669655864e+00
 response_fn_1 Sobol indices:
                       5.9549858715e-01  7.5001061354e-01 x1
@@ -46443,10 +46443,10 @@ Polynomial Chaos coefficients for response_fn_1:
    8.0000000000e+02  La0  La2
   -2.1120000000e+05  La3  La0
    3.2000000000e+03  La2  La1
-  -1.4188117348e-09  La1  La2
+  -2.5465851650e-10  La1  La2
    3.8400000000e+04  La4  La0
-   3.0831870390e-10  La3  La1
-   9.3859853223e-10  La2  La2
+  -2.8194335755e-11  La3  La1
+   3.0559021980e-10  La2  La2
 response_fn_1:  Mean =  3.1502600000e+05  Std. Dev. = 1.3982261168e+06  Coeff. of Variation =  4.4384467212e+00
 response_fn_1 Sobol indices:
                       9.9937985805e-01  9.9983816157e-01 x1
@@ -46464,131 +46464,131 @@ Test Number 19 succeeded
 <<<<< Function evaluation summary: 252 total (252 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
    4.2716738928e+04  He0   P0   L0 Pab0  La0
-  -1.9999999999e+00  He1   P0   L0 Pab0  La0
+  -2.0000000000e+00  He1   P0   L0 Pab0  La0
   -4.0400000000e+02  He0   P1   L0 Pab0  La0
   -1.5559295238e+05  He0   P0   L1 Pab0  La0
   -1.5851188811e+03  He0   P0   L0 Pab1  La0
   -2.4190476190e+03  He0   P0   L0 Pab0  La1
    6.0100000000e+02  He2   P0   L0 Pab0  La0
-  -2.6375346351e-10  He1   P1   L0 Pab0  La0
+   2.3646862246e-11  He1   P1   L0 Pab0  La0
    1.1695238095e+02  He0   P2   L0 Pab0  La0
-  -3.0559021980e-10  He1   P0   L1 Pab0  La0
-  -1.8781065592e-10  He0   P1   L1 Pab0  La0
+  -2.6921043172e-10  He1   P0   L1 Pab0  La0
+  -2.0463630790e-11  He0   P1   L1 Pab0  La0
    2.3166514286e+05  He0   P0   L2 Pab0  La0
-  -2.9194779927e-10  He1   P0   L0 Pab1  La0
-   6.0026650317e-11  He0   P1   L0 Pab1  La0
+   1.4551915228e-11  He1   P0   L0 Pab1  La0
+  -1.7280399334e-10  He0   P1   L0 Pab1  La0
    3.6571428571e+03  He0   P0   L1 Pab1  La0
   -7.8511229947e+02  He0   P0   L0 Pab2  La0
-  -4.3200998334e-11  He1   P0   L0 Pab0  La1
-  -1.8189894035e-12  He0   P1   L0 Pab0  La1
-   5.0204107538e-10  He0   P0   L1 Pab0  La1
+  -5.3205440054e-11  He1   P0   L0 Pab0  La1
+   1.1914380593e-10  He0   P1   L0 Pab0  La1
+  -1.1641532183e-10  He0   P0   L1 Pab0  La1
   -1.6623376623e+02  He0   P0   L0 Pab1  La1
    8.0000000000e+02  He0   P0   L0 Pab0  La2
-   8.5407236838e-11  He3   P0   L0 Pab0  La0
+   2.0463630790e-11  He3   P0   L0 Pab0  La0
   -4.0000000000e+02  He2   P1   L0 Pab0  La0
-  -7.8131279224e-11  He1   P2   L0 Pab0  La0
-   5.4797055782e-11  He0   P3   L0 Pab0  La0
-   6.6847860580e-11  He2   P0   L1 Pab0  La0
-   2.6193447411e-10  He1   P1   L1 Pab0  La0
+  -1.1260681276e-10  He1   P2   L0 Pab0  La0
+  -2.0628476705e-10  He0   P3   L0 Pab0  La0
+  -7.5715433923e-11  He2   P0   L1 Pab0  La0
+  -8.0035533756e-11  He1   P1   L1 Pab0  La0
    1.0666666667e+03  He0   P2   L1 Pab0  La0
-  -3.6379788071e-11  He1   P0   L2 Pab0  La0
-   1.5279510990e-10  He0   P1   L2 Pab0  La0
+   3.1286617741e-10  He1   P0   L2 Pab0  La0
+   1.2369127944e-10  He0   P1   L2 Pab0  La0
   -1.5360000000e+05  He0   P0   L3 Pab0  La0
-   7.6852302300e-11  He2   P0   L0 Pab1  La0
-  -3.1150193536e-10  He1   P1   L0 Pab1  La0
-  -9.3223206932e-11  He0   P2   L0 Pab1  La0
-   1.7098500393e-10  He1   P0   L1 Pab1  La0
-  -1.2369127944e-10  He0   P1   L1 Pab1  La0
+   4.9567461247e-11  He2   P0   L0 Pab1  La0
+   8.1854523160e-11  He1   P1   L0 Pab1  La0
+  -1.8098944565e-10  He0   P2   L0 Pab1  La0
+  -7.0940586738e-11  He1   P0   L1 Pab1  La0
+   4.2564352043e-10  He0   P1   L1 Pab1  La0
   -1.8285714286e+03  He0   P0   L2 Pab1  La0
-   5.7752913563e-11  He1   P0   L0 Pab2  La0
-  -4.8203219194e-11  He0   P1   L0 Pab2  La0
-  -9.2768459581e-11  He0   P0   L1 Pab2  La0
+   8.5037754616e-11  He1   P0   L0 Pab2  La0
+  -5.9799276642e-11  He0   P1   L0 Pab2  La0
+  -9.6406438388e-11  He0   P0   L1 Pab2  La0
   -6.0301803460e+01  He0   P0   L0 Pab3  La0
-   4.7180037654e-11  He2   P0   L0 Pab0  La1
-   1.0641088011e-10  He1   P1   L0 Pab0  La1
-  -3.0013325159e-11  He0   P2   L0 Pab0  La1
-   4.6384229790e-11  He1   P0   L1 Pab0  La1
-   6.1845639721e-11  He0   P1   L1 Pab0  La1
-  -9.7497832030e-10  He0   P0   L2 Pab0  La1
-  -7.9580786405e-13  He1   P0   L0 Pab1  La1
-  -2.4192559067e-10  He0   P1   L0 Pab1  La1
-  -4.3542058847e-10  He0   P0   L1 Pab1  La1
+   5.4342308431e-11  He2   P0   L0 Pab0  La1
+  -1.6825651983e-11  He1   P1   L0 Pab0  La1
+   3.1832314562e-11  He0   P2   L0 Pab0  La1
+   3.8016878534e-10  He1   P0   L1 Pab0  La1
+   1.3824319467e-10  He0   P1   L1 Pab0  La1
+  -2.5465851650e-11  He0   P0   L2 Pab0  La1
+  -6.0140337155e-11  He1   P0   L0 Pab1  La1
+   4.8203219194e-11  He0   P1   L0 Pab1  La1
+  -1.3324097381e-10  He0   P0   L1 Pab1  La1
    5.1717171717e+02  He0   P0   L0 Pab2  La1
-   2.0804691303e-10  He1   P0   L0 Pab0  La2
-   3.8880898501e-11  He0   P1   L0 Pab0  La2
-   2.1782398107e-10  He0   P0   L1 Pab0  La2
-  -1.9099388737e-11  He0   P0   L0 Pab1  La2
-   1.8388846001e-10  He0   P0   L0 Pab0  La3
+   1.3392309484e-10  He1   P0   L0 Pab0  La2
+  -1.2596501620e-10  He0   P1   L0 Pab0  La2
+  -1.8189894035e-11  He0   P0   L1 Pab0  La2
+   4.0017766878e-11  He0   P0   L0 Pab1  La2
+  -1.9269918994e-11  He0   P0   L0 Pab0  La3
    1.0000000000e+02  He4   P0   L0 Pab0  La0
-  -4.2916781240e-11  He3   P1   L0 Pab0  La0
-  -2.2964741220e-11  He2   P2   L0 Pab0  La0
-  -1.4142642613e-10  He1   P3   L0 Pab0  La0
+   6.0026650317e-11  He3   P1   L0 Pab0  La0
+  -1.3142198441e-10  He2   P2   L0 Pab0  La0
+   1.0766143532e-10  He1   P3   L0 Pab0  La0
    3.6571428571e+02  He0   P4   L0 Pab0  La0
-  -7.5189632298e-11  He3   P0   L1 Pab0  La0
-  -4.2746250983e-10  He2   P1   L1 Pab0  La0
-   3.2287061913e-11  He1   P2   L1 Pab0  La0
-   1.7972467958e-10  He0   P3   L1 Pab0  La0
-  -7.0485839387e-12  He2   P0   L2 Pab0  La0
-  -2.9103830457e-11  He1   P1   L2 Pab0  La0
-  -3.1559466152e-10  He0   P2   L2 Pab0  La0
-  -1.4551915228e-11  He1   P0   L3 Pab0  La0
-  -4.3655745685e-11  He0   P1   L3 Pab0  La0
+  -2.8180124900e-11  He3   P0   L1 Pab0  La0
+  -1.2187229004e-10  He2   P1   L1 Pab0  La0
+   6.5028871177e-11  He1   P2   L1 Pab0  La0
+   2.6287239052e-10  He0   P3   L1 Pab0  La0
+   4.9567461247e-11  He2   P0   L2 Pab0  La0
+   1.0913936421e-10  He1   P1   L2 Pab0  La0
+  -2.3192114895e-10  He0   P2   L2 Pab0  La0
+  -1.4915713109e-10  He1   P0   L3 Pab0  La0
+   2.9103830457e-11  He0   P1   L3 Pab0  La0
    3.8400000000e+04  He0   P0   L4 Pab0  La0
-  -4.9453774409e-11  He3   P0   L0 Pab1  La0
-   1.2528289517e-10  He2   P1   L0 Pab1  La0
-   1.2641976355e-10  He1   P2   L0 Pab1  La0
-  -6.7927885539e-11  He0   P3   L0 Pab1  La0
-  -1.3335466065e-10  He2   P0   L1 Pab1  La0
-  -8.5037754616e-11  He1   P1   L1 Pab1  La0
-  -2.2737367544e-13  He0   P2   L1 Pab1  La0
-  -1.3005774235e-10  He1   P0   L2 Pab1  La0
-   0.0000000000e+00  He0   P1   L2 Pab1  La0
-   1.7735146685e-10  He0   P0   L3 Pab1  La0
-   1.4188117348e-10  He2   P0   L0 Pab2  La0
-  -9.7315933090e-11  He1   P1   L0 Pab2  La0
-   1.0595613276e-10  He0   P2   L0 Pab2  La0
-  -9.9930730357e-11  He1   P0   L1 Pab2  La0
-  -1.7348611436e-10  He0   P1   L1 Pab2  La0
-  -8.2764017861e-11  He0   P0   L2 Pab2  La0
-  -3.2486013879e-11  He1   P0   L0 Pab3  La0
-  -1.1459633242e-10  He0   P1   L0 Pab3  La0
-   1.0459189070e-11  He0   P0   L1 Pab3  La0
+  -9.0835783340e-11  He3   P0   L0 Pab1  La0
+   1.0220446711e-10  He2   P1   L0 Pab1  La0
+   6.2300387071e-11  He1   P2   L0 Pab1  La0
+   7.0372152550e-11  He0   P3   L0 Pab1  La0
+   1.7007550923e-10  He2   P0   L1 Pab1  La0
+  -3.5834091250e-10  He1   P1   L1 Pab1  La0
+  -1.7780621420e-10  He0   P2   L1 Pab1  La0
+   6.0026650317e-11  He1   P0   L2 Pab1  La0
+  -4.0017766878e-11  He0   P1   L2 Pab1  La0
+   7.6306605479e-10  He0   P0   L3 Pab1  La0
+   6.4574123826e-11  He2   P0   L0 Pab2  La0
+   1.1050360627e-10  He1   P1   L0 Pab2  La0
+   2.1327650757e-10  He0   P2   L0 Pab2  La0
+  -1.4728129827e-10  He1   P0   L1 Pab2  La0
+  -9.7088559414e-11  He0   P1   L1 Pab2  La0
+   1.4733814169e-10  He0   P0   L2 Pab2  La0
+  -5.2693849284e-11  He1   P0   L0 Pab3  La0
+  -2.6830093702e-11  He0   P1   L0 Pab3  La0
+  -4.0927261580e-12  He0   P0   L1 Pab3  La0
    1.5607525601e+02  He0   P0   L0 Pab4  La0
-  -1.4352963262e-11  He3   P0   L0 Pab0  La1
-  -9.3564267445e-11  He2   P1   L0 Pab0  La1
-   4.9681148084e-11  He1   P2   L0 Pab0  La1
-   1.7280399334e-11  He0   P3   L0 Pab0  La1
-  -1.6936141378e-10  He2   P0   L1 Pab0  La1
-   2.7284841053e-12  He1   P1   L1 Pab0  La1
-   2.2100721253e-10  He0   P2   L1 Pab0  La1
-  -7.0485839387e-11  He1   P0   L2 Pab0  La1
-   7.2759576142e-11  He0   P1   L2 Pab0  La1
-   6.0572347138e-10  He0   P0   L3 Pab0  La1
-   2.8194335755e-11  He2   P0   L0 Pab1  La1
-   1.5870682546e-10  He1   P1   L0 Pab1  La1
-   1.0868461686e-10  He0   P2   L0 Pab1  La1
-  -1.0982148524e-10  He1   P0   L1 Pab1  La1
-   1.0004441720e-10  He0   P1   L1 Pab1  La1
-   2.8285285225e-10  He0   P0   L2 Pab1  La1
-  -6.5938365879e-12  He1   P0   L0 Pab2  La1
-   2.0645529730e-10  He0   P1   L0 Pab2  La1
-   7.1395334089e-11  He0   P0   L1 Pab2  La1
-   9.5894847618e-11  He0   P0   L0 Pab3  La1
-   3.8767211663e-11  He2   P0   L0 Pab0  La2
-  -1.3471890270e-10  He1   P1   L0 Pab0  La2
-  -2.8649083106e-11  He0   P2   L0 Pab0  La2
-  -4.6384229790e-11  He1   P0   L1 Pab0  La2
-  -5.6388671510e-11  He0   P1   L1 Pab0  La2
-  -6.9348971010e-11  He0   P0   L2 Pab0  La2
-   7.1310068961e-11  He1   P0   L0 Pab1  La2
-   2.6739144232e-10  He0   P1   L0 Pab1  La2
-   2.2089352569e-10  He0   P0   L1 Pab1  La2
-   5.0022208598e-11  He0   P0   L0 Pab2  La2
-  -5.7980287238e-11  He1   P0   L0 Pab0  La3
-   4.5190517994e-11  He0   P1   L0 Pab0  La3
-  -2.3646862246e-11  He0   P0   L1 Pab0  La3
-  -2.8649083106e-11  He0   P0   L0 Pab1  La3
-   3.1263880373e-11  He0   P0   L0 Pab0  La4
+  -1.0857093002e-10  He3   P0   L0 Pab0  La1
+   2.3874235922e-11  He2   P1   L0 Pab0  La1
+   3.0809133023e-11  He1   P2   L0 Pab0  La1
+   6.9121597335e-11  He0   P3   L0 Pab0  La1
+  -6.8173022783e-11  He2   P0   L1 Pab0  La1
+  -9.7315933090e-11  He1   P1   L1 Pab0  La1
+  -6.2755134422e-11  He0   P2   L1 Pab0  La1
+  -2.3510438041e-10  He1   P0   L2 Pab0  La1
+  -1.7098500393e-10  He0   P1   L2 Pab0  La1
+   1.1823431123e-10  He0   P0   L3 Pab0  La1
+  -1.7280399334e-11  He2   P0   L0 Pab1  La1
+   7.6397554949e-11  He1   P1   L0 Pab1  La1
+   1.1868905858e-10  He0   P2   L0 Pab1  La1
+  -2.2851054382e-11  He1   P0   L1 Pab1  La1
+   5.8207660913e-11  He0   P1   L1 Pab1  La1
+   1.7871570890e-10  He0   P0   L2 Pab1  La1
+   1.1118572729e-10  He1   P0   L0 Pab2  La1
+   1.1777956388e-10  He0   P1   L0 Pab2  La1
+   6.8212102633e-12  He0   P0   L1 Pab2  La1
+  -3.4333424992e-11  He0   P0   L0 Pab3  La1
+   1.3636736185e-10  He2   P0   L0 Pab0  La2
+   6.1390892370e-11  He1   P1   L0 Pab0  La2
+  -1.1823431123e-11  He0   P2   L0 Pab0  La2
+   2.6830093702e-11  He1   P0   L1 Pab0  La2
+   1.8326318241e-10  He0   P1   L1 Pab0  La2
+  -9.8225427791e-11  He0   P0   L2 Pab0  La2
+   1.2352074918e-10  He1   P0   L0 Pab1  La2
+   1.4324541553e-10  He0   P1   L0 Pab1  La2
+   2.1941559680e-10  He0   P0   L1 Pab1  La2
+   6.0936145019e-11  He0   P0   L0 Pab2  La2
+   1.8792434275e-10  He1   P0   L0 Pab0  La3
+   1.6211743059e-10  He0   P1   L0 Pab0  La3
+   6.0708771343e-11  He0   P0   L1 Pab0  La3
+   1.4551915228e-11  He0   P0   L0 Pab1  La3
+   1.1380052456e-10  He0   P0   L0 Pab0  La4
 response_fn_1:  Mean =  4.2716738928e+04  Std. Dev. = 3.2090144104e+05  Coeff. of Variation =  7.5123113117e+00
 response_fn_1 Sobol indices:
                       9.3457678135e-06  1.0381590429e-05 x1
@@ -46597,30 +46597,30 @@ response_fn_1 Sobol indices:
                       1.9316958971e-05  1.3120807402e-04 x4
                       1.6925482466e-04  1.7291304601e-04 x5
                       1.0358226155e-06 x1 x2 
-                      1.3389122674e-30 x1 x3 
+                      2.0757068359e-30 x1 x3 
                       2.2097549131e-06 x2 x3 
-                      1.4097887907e-30 x1 x2 x3 
-                      9.3663325915e-31 x1 x4 
-                      5.4466914069e-32 x2 x4 
-                      3.1298886111e-31 x1 x2 x4 
+                      1.6366013540e-31 x1 x2 x3 
+                      4.3903172376e-31 x1 x4 
+                      1.6175666772e-31 x2 x4 
+                      8.4113364455e-32 x1 x2 x4 
                       1.0823289370e-04 x3 x4 
-                      5.7698639923e-31 x1 x3 x4 
-                      8.1192484805e-32 x2 x3 x4 
-                      1.5605141829e-32 x1 x2 x3 x4 
-                      2.3642265265e-30 x1 x5 
-                      7.7199708035e-32 x2 x5 
-                      5.0232395268e-31 x1 x2 x5 
-                      4.0359348450e-29 x3 x5 
-                      1.6569466868e-30 x1 x3 x5 
-                      3.5598144837e-31 x2 x3 x5 
-                      6.0244620862e-35 x1 x2 x3 x5 
+                      5.3459569415e-31 x1 x3 x4 
+                      4.5044216213e-31 x2 x3 x4 
+                      2.7710026560e-31 x1 x2 x3 x4 
+                      6.5217825296e-30 x1 x5 
+                      9.2055189822e-31 x2 x5 
+                      6.9497671670e-32 x1 x2 x5 
+                      1.3429701074e-30 x3 x5 
+                      5.1068622202e-30 x1 x3 x5 
+                      8.8598776773e-31 x2 x3 x5 
+                      7.6637851584e-32 x1 x2 x3 x5 
                       3.6582213489e-06 x4 x5 
-                      1.7029078370e-31 x1 x4 x5 
-                      1.1995784420e-30 x2 x4 x5 
-                      1.3588620492e-31 x1 x2 x4 x5 
-                      5.8065496223e-30 x3 x4 x5 
-                      1.9520010217e-31 x1 x3 x4 x5 
-                      5.3997030551e-32 x2 x3 x4 x5 
+                      6.4875357692e-31 x1 x4 x5 
+                      3.0737054867e-31 x2 x4 x5 
+                      3.1487855171e-32 x1 x2 x4 x5 
+                      2.1683907740e-30 x3 x4 x5 
+                      8.4511907203e-33 x1 x3 x4 x5 
+                      1.8278664226e-32 x2 x3 x4 x5 
                       0.0000000000e+00 x1 x2 x3 x4 x5 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
@@ -46703,13 +46703,13 @@ Polynomial Chaos coefficients for response_fn_1:
    7.7020430083e+00 Num0 Num1
   -4.6905599683e+02 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-  -3.3513703107e-12 Num3 Num1
-  -1.3069551071e-11 Num4 Num1
+   2.9397985182e-12 Num3 Num1
+   5.9837596192e-11 Num4 Num1
    1.0000000000e+02 Num0 Num2
-   3.0258697713e-12 Num1 Num2
-   4.3680266250e-12 Num2 Num2
-   5.7623617305e-12 Num3 Num2
-   6.0669582625e-12 Num4 Num2
+  -2.5633164304e-12 Num1 Num2
+  -5.9617660692e-12 Num2 Num2
+  -6.0324724366e-12 Num3 Num2
+  -3.0822937379e-11 Num4 Num2
 response_fn_1:  Mean =  1.3103015876e+02  Std. Dev. = 3.1329459406e+02  Coeff. of Variation =  2.3910113292e+00
 response_fn_1 Sobol indices:
                       9.0985004966e-01  9.9363780299e-01 x1
@@ -46734,13 +46734,13 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.3846408620e+03 Num0 Num1
   -1.5732288005e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-   2.2976731585e-13 Num3 Num1
-  -1.6353457176e-12 Num4 Num1
+  -7.6589105284e-13 Num3 Num1
+  -6.8139404900e-13 Num4 Num1
    1.0000000000e+02 Num0 Num2
-  -9.5209989452e-13 Num1 Num2
-  -2.2701980385e-13 Num2 Num2
-   6.0873317175e-14 Num3 Num2
-   3.5448520988e-14 Num4 Num2
+   1.7851873022e-12 Num1 Num2
+   5.6754950962e-13 Num2 Num2
+   3.6523990305e-14 Num3 Num2
+  -3.5448520988e-14 Num4 Num2
 response_fn_1:  Mean =  5.0712321400e+04  Std. Dev. = 1.4762267916e+05  Coeff. of Variation =  2.9109824809e+00
 response_fn_1 Sobol indices:
                       9.9456967798e-01  9.9943348255e-01 x1
@@ -46889,13 +46889,13 @@ Polynomial Chaos coefficients for response_fn_1:
   -2.9261060529e+03 Num0 Num1
   -1.4384436010e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-   1.2880031618e-11 Num3 Num1
-  -4.7176062160e-11 Num4 Num1
+  -8.4000206205e-12 Num3 Num1
+  -1.6887928867e-11 Num4 Num1
    1.0000000000e+02 Num0 Num2
-  -1.0431574971e-12 Num1 Num2
-   0.0000000000e+00 Num2 Num2
-   3.8684869023e-13 Num3 Num2
-   1.5216747962e-12 Num4 Num2
+   2.1906307438e-11 Num1 Num2
+   7.0818790914e-12 Num2 Num2
+   2.3210921414e-12 Num3 Num2
+   1.6484810293e-12 Num4 Num2
 response_fn_1:  Mean =  3.2488855020e+04  Std. Dev. = 3.2856399563e+04  Coeff. of Variation =  1.0113129423e+00
 response_fn_1 Sobol indices:
                       9.9298831703e-01  9.9536939114e-01 x1
@@ -46979,10 +46979,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num4 Num0
   -4.6905599683e+02 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-   2.8909583802e-12 Num1 Num2
-   4.6631635591e-12 Num2 Num2
-   7.9519999702e-13 Num0 Num3
-   1.5568489296e-12 Num0 Num4
+  -2.4091319835e-12 Num1 Num2
+  -6.0207934560e-12 Num2 Num2
+  -4.6386666493e-13 Num0 Num3
+  -1.3395744086e-11 Num0 Num4
 response_fn_1:  Mean =  1.3103015876e+02  Std. Dev. = 3.1329459406e+02  Coeff. of Variation =  2.3910113292e+00
 response_fn_1 Sobol indices:
                       9.0985004966e-01  9.9363780299e-01 x1
@@ -47008,10 +47008,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num4 Num0
   -1.5732288005e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-  -3.5703746044e-13 Num1 Num2
-   0.0000000000e+00 Num2 Num2
-   3.1710255919e-14 Num0 Num3
-   1.5810687808e-13 Num0 Num4
+   1.5471623286e-12 Num1 Num2
+   4.1620297372e-13 Num2 Num2
+   1.1937978699e-13 Num0 Num3
+   3.8621527470e-14 Num0 Num4
 response_fn_1:  Mean =  5.0712321400e+04  Std. Dev. = 1.4762267916e+05  Coeff. of Variation =  2.9109824809e+00
 response_fn_1 Sobol indices:
                       9.9456967798e-01  9.9943348255e-01 x1
@@ -47153,10 +47153,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num4 Num0
   -1.4384436010e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-  -2.0863149941e-12 Num1 Num2
-   1.2876143803e-12 Num2 Num2
-   2.2249932078e-10 Num0 Num3
-  -3.2906404931e-09 Num0 Num4
+   1.8776834947e-11 Num1 Num2
+   6.4380719013e-12 Num2 Num2
+  -1.1555773380e-10 Num0 Num3
+   1.2145463015e-09 Num0 Num4
 response_fn_1:  Mean =  3.2488855020e+04  Std. Dev. = 3.2856399563e+04  Coeff. of Variation =  1.0113129423e+00
 response_fn_1 Sobol indices:
                       9.9298831703e-01  9.9536939114e-01 x1
@@ -47387,14 +47387,14 @@ Polynomial Chaos coefficients for response_fn_1:
    8.4226533917e+02 Num2 Num0
    5.1555911835e+02 Num3 Num0
    1.0000000000e+02 Num4 Num0
-   7.8588494760e-11 Num5 Num0
-   4.7741486504e-09 Num6 Num0
+  -3.8080278762e-10 Num5 Num0
+   4.2687718171e-09 Num6 Num0
    7.7020430083e+00 Num0 Num1
   -4.6905599683e+02 Num1 Num1
   -2.0000000000e+02 Num2 Num1
    1.0000000000e+02 Num0 Num2
-   2.8909583802e-12 Num1 Num2
-   4.6631635591e-12 Num2 Num2
+  -2.4091319835e-12 Num1 Num2
+  -6.0207934560e-12 Num2 Num2
 response_fn_1:  Mean =  1.3103015876e+02  Std. Dev. = 3.1329459406e+02  Coeff. of Variation =  2.3910113292e+00
 response_fn_1 Sobol indices:
                       9.0985004966e-01  9.9363780299e-01 x1
@@ -47416,14 +47416,14 @@ Polynomial Chaos coefficients for response_fn_1:
    1.3123303936e+04 Num2 Num0
    1.8114990419e+03 Num3 Num0
    1.0000000000e+02 Num4 Num0
-  -4.0097488636e-13 Num5 Num0
-   1.7185034117e-11 Num6 Num0
+   1.2179612173e-10 Num5 Num0
+   1.7745380253e-10 Num6 Num0
   -1.3846408620e+03 Num0 Num1
   -1.5732288005e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
    1.0000000000e+02 Num0 Num2
-  -3.5703746044e-13 Num1 Num2
-   0.0000000000e+00 Num2 Num2
+   1.5471623286e-12 Num1 Num2
+   4.1620297372e-13 Num2 Num2
 response_fn_1:  Mean =  5.0712321400e+04  Std. Dev. = 1.4762267916e+05  Coeff. of Variation =  2.9109824809e+00
 response_fn_1 Sobol indices:
                       9.9456967798e-01  9.9943348255e-01 x1
@@ -47561,14 +47561,14 @@ Polynomial Chaos coefficients for response_fn_1:
    7.7875409265e+03 Num2 Num0
    1.4225935100e+03 Num3 Num0
    1.0000000000e+02 Num4 Num0
-   1.0829652332e-08 Num5 Num0
-   2.0906261686e-09 Num6 Num0
+   1.4198877502e-09 Num5 Num0
+   1.5853457244e-08 Num6 Num0
   -2.9261060529e+03 Num0 Num1
   -1.4384436010e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
    1.0000000000e+02 Num0 Num2
-  -2.0863149941e-12 Num1 Num2
-   1.2876143803e-12 Num2 Num2
+   1.8776834947e-11 Num1 Num2
+   6.4380719013e-12 Num2 Num2
 response_fn_1:  Mean =  3.2488855020e+04  Std. Dev. = 3.2856399563e+04  Coeff. of Variation =  1.0113129423e+00
 response_fn_1 Sobol indices:
                       9.9298831703e-01  9.9536939114e-01 x1
