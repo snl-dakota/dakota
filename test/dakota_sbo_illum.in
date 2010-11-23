@@ -72,11 +72,11 @@ variables,
 responses,
 	id_responses = 'SURROGATE_RESP'
 	num_objective_functions = 1
-# 	analytic_gradients
-  	numerical_gradients
-  	  method_source dakota
-  	  interval_type central
-  	  fd_gradient_step_size = .00001
+ 	analytic_gradients
+#  	numerical_gradients
+#  	  method_source dakota
+#  	  interval_type central
+# 	  fd_gradient_step_size = .00001
 #	analytic_hessians
 	no_hessians
 
