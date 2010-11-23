@@ -324,7 +324,7 @@ void DDACEDesignCompExp::resolve_samples_symbols()
 	   << "samples should be an\n         integer multiple of "
 	   << "(num_symbols)^2, and num_symbols should be\n         either 4 "
 	   << "or a prime number.\n";
-      numSymbols = (int)ceil(sqrt((double)numSamples)); // round up
+      numSymbols = (int)std::ceil(std::sqrt((double)numSamples)); // round up
 
       // Verify that numSymbols equals 4, or is prime.  If not, increase
       // numSymbols until it is prime.
@@ -351,7 +351,7 @@ void DDACEDesignCompExp::resolve_samples_symbols()
       Cout << "\n\nWarning: For Latin hypercube sampling the number of samples"
 	   << " should be an\n        integer multiple of the number of "
 	   << "symbols.\n";
-      int replications = (int)ceil((double)numSamples/(double)numSymbols);
+      int replications = (int)std::ceil((double)numSamples/(double)numSymbols);
       numSamples = replications*numSymbols;
     }
   }
@@ -406,7 +406,7 @@ void DDACEDesignCompExp::resolve_samples_symbols()
       Cout << "\n\nWarning: For grid sampling the number of samples should "
     	   << "be\n         (num_symbols)^(num_variables).\n";
       numSymbols
-	= (int)ceil(std::pow((double)numSamples, 1./(double)numContinuousVars));
+	= (int)std::ceil(std::pow((double)numSamples, 1./(double)numContinuousVars));
       numSamples = (int)std::pow((double)numSymbols,(double)numContinuousVars);
     }
   }

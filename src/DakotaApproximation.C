@@ -555,7 +555,7 @@ int Approximation::min_points(bool constraint_flag) const
     if (dataOrder & 2) data_per_pt += numVars;
     if (dataOrder & 4) data_per_pt += numVars*(numVars + 1)/2;
     return (data_per_pt > 1) ?
-      (int)ceil((Real)coeffs/(Real)data_per_pt) : coeffs;
+      (int)std::ceil((Real)coeffs/(Real)data_per_pt) : coeffs;
   }
 }
 
@@ -573,7 +573,7 @@ int Approximation::recommended_points(bool constraint_flag) const
     if (dataOrder & 2) data_per_pt += numVars;
     if (dataOrder & 4) data_per_pt += numVars*(numVars + 1)/2;
     return (data_per_pt > 1) ?
-      (int)ceil((Real)coeffs/(Real)data_per_pt) : coeffs;
+      (int)std::ceil((Real)coeffs/(Real)data_per_pt) : coeffs;
   }
 }
 
