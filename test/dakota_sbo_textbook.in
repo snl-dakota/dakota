@@ -68,7 +68,7 @@ model,
 #	  use_derivatives
 #	  neural_network
 	  polynomial quadratic
-#	  kriging correlations = 1.0 1.0
+#	  kriging correlation_lengths =  0.707106781186547 0.707106781186547
 #	  mars
 # 	surrogate local taylor_series
 #	  actual_model_pointer = 'TRUTH'

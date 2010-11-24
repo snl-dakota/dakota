@@ -54354,31 +54354,31 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 10 total (10 new, 0 duplicate)
-response_fn_1:  Mean = 2.8118146395e-05  Std. Dev. = 6.5871278981e-05  Coeff. of Variation = 2.3426607876e+00
-response_fn_1:  Mean = ( 2.6291879070e-05, 2.9944413721e-05 ), Std Dev = ( 6.4605126526e-05, 6.7188413744e-05 )
+response_fn_1:  Mean = 3.8972209045e-05  Std. Dev. = 6.3841210784e-05  Coeff. of Variation = 1.6381214293e+00
+response_fn_1:  Mean = ( 3.7202224933e-05, 4.0742193158e-05 ), Std Dev = ( 6.2614079522e-05, 6.5117753146e-05 )
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-05   5.7780000000e-01
-   3.0000000000e-05   6.5260000000e-01
-   4.0000000000e-05   7.1620000000e-01
+   2.0000000000e-05   5.3220000000e-01
+   3.0000000000e-05   6.2680000000e-01
+   4.0000000000e-05   6.9740000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
-       TF1ln  1.00000e+00
-       TF1ln -3.37845e-05  1.00000e+00
-response_fn_1 -9.10557e-02  4.83948e-01  1.00000e+00
+                    TF1ln        TF1ln response_fn_1 
+       TF1ln  1.00000e+00 
+       TF1ln -3.37845e-05  1.00000e+00 
+response_fn_1  3.50548e-02  3.48644e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
-             response_fn_1
-       TF1ln -1.04033e-01
-       TF1ln  4.85964e-01
+             response_fn_1 
+       TF1ln  3.74141e-02 
+       TF1ln  3.48859e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
-       TF1ln  1.00000e+00
-       TF1ln  3.43526e-03  1.00000e+00
-response_fn_1 -5.35771e-02  3.82783e-01  1.00000e+00
+                    TF1ln        TF1ln response_fn_1 
+       TF1ln  1.00000e+00 
+       TF1ln  3.43526e-03  1.00000e+00 
+response_fn_1  2.25735e-02  1.75231e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-             response_fn_1
-       TF1ln -5.94177e-02
-       TF1ln  3.83520e-01
+             response_fn_1 
+       TF1ln  2.23170e-02 
+       TF1ln  1.75199e-01
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 20 total (20 new, 0 duplicate)
