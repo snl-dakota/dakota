@@ -9,6 +9,46 @@ SUBDIRS = latex-user
 ## These files should be deleted on 'make maintainer-clean'.
 MAINTAINERCLEANFILES = aclocal.m4 configure install-sh missing Makefile.in
 
+
+## Builds reference and developer html, latex, and man
+doxygen-dev-ref: Dev_*.dox Ref_*.dox
+	doxygen Doxyfile && \
+	doxygen Doxyfile-ref && \
+	doxygen Doxyfile && \
+	doxygen Doxyfile-ref && \
+	./latex_modify.perl
+
+## Modification to prevent buffer overrun with references
+## Increase save_size by a factor of 10
+texmf.cnf:
+	texmf_cnf_src=/usr/share/texmf/web2c/texmf.cnf ; \
+	if [ ! -f $@ -a -f $$texmf_cnf_src ]; then \
+	  curr_save_size=`grep -o "save_size = [0-9]*" $$texmf_cnf_src | cut -f2 -d'='` ; \
+	  new_save_size=`expr 10 \* $$curr_save_size` ; \
+	  sed -e "s/save_size = [0-9]\+/save_size = $$new_save_size/g" $$texmf_cnf_src > $@ ; \
+	fi
+
+
+## Couldn't get explicit deps on latex-ref and latex-dev working here;
+## challenging due to cyclic deps in doxygen refs
+pdf-local: texmf.cnf doxygen-dev-ref
+	export TEXMFCNF=`pwd`:$$TEXMFCNF && \
+	cd latex-dev && make && cd .. && \
+	cd latex-ref && make && cd ..
+
+
+## Requires latex-user/Users_Main.pdf
+SAND-shell: pdf-local
+	export TEXINPUTS=`pwd`:`pwd`/SANDreport:$$TEXINPUTS && \
+	cd latex-user && make pdf && cd .. && \
+	$(pdflatex) SAND-shell-dev && \
+	$(pdflatex) SAND-shell-ref && \
+	$(pdflatex) SAND-shell-users
+
+
+clean-local:
+	-rm -rf html-dev html-ref latex-dev latex-ref man-dev man-ref texmf.cnf
+
 ## This action should take place on 'make distclean'.
 distclean-local:
 	-rm -fr .dvips/
