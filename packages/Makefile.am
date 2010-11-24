@@ -46,7 +46,7 @@ SUBDIRS += FSUDace
 endif
 
 ## Need some AC_SUBST magic to handle optional directories like HOPSPACK.
-SUBDIRS += $(MAYBE_APPSPACK)
+SUBDIRS += $(MAYBE_HOPSPACK)
 
 ## Need some AC_SUBST magic to handle optional directories like DDACE.
 SUBDIRS += $(MAYBE_JEGA)
