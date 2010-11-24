@@ -215,7 +215,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
     engine_cmd = env_engine_cmd ? env_engine_cmd :
       "matlab -nodesktop -nosplash";
 #endif
-    if (matlabEngine = engOpen(engine_cmd)) {
+    if (matlabEngine = engOpen(engine_cmd.c_str())) {
       if (outputLevel >= NORMAL_OUTPUT)
 	Cout << "Matlab engine initialized for direct function evaluation."
 	     << std::endl;
@@ -3000,7 +3000,7 @@ int DirectApplicInterface::matlab_engine_run()
     size_t pos = analysisComponents[analysisDriverIndex][aci].find(".");
     analysis_command = "Dakota = " + 
       analysisComponents[analysisDriverIndex][aci].substr(0,pos) + "(Dakota);";
-    engEvalString(matlabEngine, analysis_command);
+    engEvalString(matlabEngine, analysis_command.c_str());
   }
   buffer_string = buffer_char;
   if (outputLevel > SILENT_OUTPUT && buffer_string.length() > 3)
