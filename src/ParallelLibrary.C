@@ -1383,13 +1383,13 @@ void ParallelLibrary::close_streams()
   if (mc_ptr_int)
     mc_release_com(ireturn, iprint, mc_ptr_int);
   if (ireturn == -1) {
-    cerr << "Error: mc_release of API pointer unsuccessful." << endl;
+    std::cerr << "Error: mc_release of API pointer unsuccessful." << endl;
     abort_handler(-1);
   }
   if (dc_ptr_int)
     mc_release_com(ireturn, iprint, dc_ptr_int);
   if (ireturn == -1) {
-    cerr << "Error: mc_release of DC pointer unsuccessful." << endl;
+    std::cerr << "Error: mc_release of DC pointer unsuccessful." << endl;
     abort_handler(-1);
   }
 #endif // DAKOTA_MODELCENTER

@@ -195,6 +195,9 @@ int not_executable(const char *dname, const char *tdir)
 	static gid_t mygid;
 #endif
 
+	// declaring this here instead of just-in-time due to goto/_WIN32
+	std::string cwdir;
+
 	/* allow shell assignments and quotes around executable names */
 	/* that may involve blanks */
 	a2[0] = dname;
@@ -245,7 +248,6 @@ int not_executable(const char *dname, const char *tdir)
 	if (!stat(dname, &sb))
 		goto ret;
 #endif
-	std::string cwdir;
 	if (!Filesys_buf::dakpath) {
 	  cwdir = get_dakpath();
 	}
@@ -1313,8 +1315,8 @@ void workdir_adjust(const char* workdir)
   size_t appdrive = 0;
 
 #ifdef _WIN32
-  if (wd && wd[0] && wd[1] == ':') {
-    appdrive = Map(wd[0] & 0xff);
+  if (workdir && workdir[0] && workdir[1] == ':') {
+    appdrive = Map(workdir[0] & 0xff);
     if (appdrive >= 'A' && appdrive <= 'Z')
       appdrive += 1 - 'A';
     else
