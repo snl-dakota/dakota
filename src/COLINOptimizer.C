@@ -758,7 +758,7 @@ void COLINOptimizer::set_solver_parameters()
     if (solution_accuracy != -1.e+25 && colinSolver->has_property("sufficient_objective_value"))
       colinSolver->property("sufficient_objective_value") = solution_accuracy;
 
-    const bool blocking_synch = (probDescDB.get_string("method.asynch_pattern_search.synchronization")
+    const bool blocking_synch = (probDescDB.get_string("method.coliny.synchronization")
 				 == "blocking") ? true : false;
     if (blocking_synch) {
       //	params.sublist("Solver").setParameter("Synchronous", true);
