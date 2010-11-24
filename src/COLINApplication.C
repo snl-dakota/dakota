@@ -346,9 +346,8 @@ dakota_response_to_colin_response(const Response &dakota_response,
 bool COLINApplication::map_domain (const utilib::Any &src, utilib::Any &native,
 				   bool forward) const 
 { 
-  //assert(forward == true); (seems a backward mapping is requested at the 
-  //start and end of iteration)
-  TypeManager()->lexical_cast(src, native, typeid(MixedIntVars));
+  static_cast<void>(forward);
+  return TypeManager()->lexical_cast(src, native, typeid(MixedIntVars)) == 0;
 }
 
 
