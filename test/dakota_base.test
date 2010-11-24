@@ -12070,19 +12070,19 @@ Test Number 17 succeeded
 <<<<< Best data captured at function evaluation 1
 dakota_sbo_illum.in 
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 6069 total (6069 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 1190 total (1190 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 995 total (995 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 739 total (739 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0000000000e-00 x1
-                      2.8144982017e-01 x2
-                      5.1183096141e-15 x3
-                      1.0642166945e-15 x4
-                      2.1080168564e-16 x5
-                      7.5673355314e-01 x6
+                      1.0000000000e+00 x1
+                      2.8175263720e-01 x2
+                      2.5474715256e-15 x3
+                      2.2448241855e-16 x4
+                      8.9560128244e-17 x5
+                      7.5578238405e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.0759889118e+00
-<<<<< Best data captured at function evaluation 1190
+                      1.0759890012e+00
+<<<<< Best data captured at function evaluation 739
 dakota_sbo_rosen.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 2363 total (2363 new, 0 duplicate)
@@ -12103,22 +12103,22 @@ Test Number 1 succeeded
                       3.3804721067e-03
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 2124 total (2124 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 419 total (419 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1125 total (1125 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 353 total (353 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0022939120e+00 x1
-                      1.0045711496e+00 x2
+                      9.9899661943e-01 x1
+                      9.9799783481e-01 x2
 <<<<< Best objective function  =
-                      5.3101528083e-06
+                      1.0080607940e-06
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 1836 total (1836 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 331 total (331 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 874 total (874 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 320 total (320 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9569691080e-01 x1
-                      9.9141321811e-01 x2
+                      1.0002165162e+00 x1
+                      1.0004343526e+00 x2
 <<<<< Best objective function  =
-                      1.8516654052e-05
+                      4.7041399035e-08
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 21216 total (21216 new, 0 duplicate)
