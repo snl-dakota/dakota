@@ -71,7 +71,7 @@
 #ifdef DAKOTA_COLINY
 #include "COLINOptimizer.H"
 #endif
-#ifdef DAKOTA_APPS
+#ifdef DAKOTA_HOPS
 #include "APPSOptimizer.H"
 #endif
 #ifdef DAKOTA_NCSU
@@ -787,7 +787,7 @@ Iterator* Iterator::get_iterator(Model& model)
   else if (method_name == "optpp_g_newton")
     return new SNLLLeastSq(model);
 #endif
-#ifdef DAKOTA_APPS
+#ifdef DAKOTA_HOPS
   else if (method_name == "asynch_pattern_search")
     return new APPSOptimizer(model);
 #endif
@@ -901,7 +901,7 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
   else if (method_name == "optpp_g_newton")
     return new SNLLLeastSq(method_name, model);
 #endif
-#ifdef DAKOTA_APPS
+#ifdef DAKOTA_HOPS
   else if (method_name == "asynch_pattern_search")
     return new APPSOptimizer(NoDBBaseConstructor(), model);
 #endif

@@ -14,7 +14,7 @@
 
 #include "ProblemDescDB.H"
 #include "APPSOptimizer.H"
-#include "APPSPACK_Float.hpp"
+#include "HOPSPACK_float.hpp"
 
 namespace Dakota {
 
@@ -61,8 +61,8 @@ APPSOptimizer::APPSOptimizer(NoDBBaseConstructor, Model& model):
 {
   // (iteratedModel initialized in Optimizer(Model&))
 
-  set_apps_parameters(); // set specification values using DB
   evalMgr = new APPSEvalMgr(iteratedModel);
+  set_apps_parameters(); // set specification values using DB
 
   // The following is not performed in the Optimizer constructor since
   // maxConcurrency is updated within set_method_parameters().  The
@@ -82,60 +82,44 @@ void APPSOptimizer::find_optimum()
   evalMgr->set_total_workers(iteratedModel.evaluation_capacity());
   initialize_variables_and_constraints();
 
-  APPSPACK::Constraints::Linear linear(params.sublist("Linear"));
+  // Instantiate optimizer and solve.
 
-  if (numNonlinearConstraints > 0) {
-    // If there are nonlinear constraints, use NAPPSPACK.
+  HOPSPACK::Hopspack optimizer(evalMgr);
+  optimizer.setInputParameters(params);
+  optimizer.solve();
 
-    // Instantiate optimizer and solve.
-    NAPPSPACK::NLSolver optimizer(params, *evalMgr, linear);
-    NAPPSPACK::NLSolver::State final_state = optimizer.solve();
+  // Retrieve best iterate and convert from APPS vector to DAKOTA
+  // vector.
+  std::vector<double> bestX(numContinuousVars);
+  bool state = optimizer.getBestX(bestX);
+  RealVector variableHolder(numContinuousVars, false);
+  for (int i=0; i<numContinuousVars; i++)
+    variableHolder[i] = bestX[i];
+  bestVariablesArray.front().continuous_variables(variableHolder);
 
-    // Retrieve best iterate and convert from APPS vector to DAKOTA
-    // vector.
-    const std::vector<Real>& bestX = optimizer.getBestX();
-    RealVector variableHolder(numContinuousVars, false);
-    for (int i=0; i<numContinuousVars; i++)
-      variableHolder[i] = bestX[i];
-    bestVariablesArray.front().continuous_variables(variableHolder);
-
-    // Retrieve the best responses and convert from APPS vector to
-    // DAKOTA vector.
-    if (!multiObjFlag) { // else multi_objective_retrieve() is used in
-      // Optimizer::post_run()
-      RealVector best_fns(numFunctions);
-      const std::vector<Real>& best_fc = optimizer.getBestFC();
-      best_fns[0] = best_fc[0];
-      for (int i=0; i<constraintMapIndices.size(); i++)
-	best_fns[constraintMapIndices[i]+1] = (best_fc[i] -
+  // Retrieve the best responses and convert from APPS vector to
+  // DAKOTA vector.
+  if (!multiObjFlag) { // else multi_objective_retrieve() is used in
+                       // Optimizer::post_run()
+    std::vector<double> bestEqs(numNonlinearEqConstraints);
+    std::vector<double> bestIneqs(constraintMapIndices.size()-numNonlinearEqConstraints);
+    RealVector best_fns(numFunctions);
+    best_fns[0] = optimizer.getBestF();
+    if (numNonlinearEqConstraints > 0) {
+      optimizer.getBestNonlEqs(bestEqs);
+      for (int i=0; i<numNonlinearEqConstraints; i++)
+	best_fns[constraintMapIndices[i]+1] = (bestEqs[i] -
 					       constraintMapOffsets[i]) /
 	                                       constraintMapMultipliers[i];
-      bestResponseArray.front().function_values(best_fns);
     }
-  }
-  else {
-    // Otherwise, use APPSPACK.
-
-    // Instantiate optimizer and solve.
-    APPSPACK::Solver optimizer(params.sublist("Solver"), *evalMgr, linear);
-    APPSPACK::Solver::State final_state = optimizer.solve();
-
-    // Retrieve best iterate and convert from APPS vector to DAKOTA
-    // vector.
-    const std::vector<Real>& bestX = optimizer.getBestX();
-    RealVector variableHolder(numContinuousVars, false);
-    for (int i=0; i<numContinuousVars; i++)
-      variableHolder[i] = bestX[i];
-    bestVariablesArray.front().continuous_variables(variableHolder);
-
-    // Retrieve the best responses and convert from APPS vector to
-    // DAKOTA vector.
-    if (!multiObjFlag) { // else multi_objective_retrieve() is used in
-      // Optimizer::post_run()
-      RealVector best_fns(numFunctions);
-      best_fns[0] = optimizer.getBestF();
-      bestResponseArray.front().function_values(best_fns);
+    if (numNonlinearIneqConstraints > 0) {
+      optimizer.getBestNonlIneqs(bestIneqs);
+      for (int i=0; i<bestIneqs.size(); i++)
+	best_fns[constraintMapIndices[i+numNonlinearEqConstraints]+1] = (bestIneqs[i] -
+				       constraintMapOffsets[i+numNonlinearEqConstraints]) /
+                                       constraintMapMultipliers[i+numNonlinearEqConstraints];
     }
+    bestResponseArray.front().function_values(best_fns);
   }
 }
 
@@ -145,29 +129,80 @@ void APPSOptimizer::set_apps_parameters()
 {
   // Set APPS parameters from DAKOTA input deck values.
 
-  APPSPACK::Vector scales(numContinuousVars);
+  HOPSPACK::Vector scales(numContinuousVars);
+
+  problemParams = &(params.getOrSetSublist("Problem Definition"));
+  linearParams = &(params.getOrSetSublist("Linear Constraints"));
+  mediatorParams = &(params.getOrSetSublist("Mediator"));
+  citizenParams = &(params.getOrSetSublist("Citizen 1"));
 
   switch (outputLevel) {
   case DEBUG_OUTPUT:
-    params.sublist("Solver").setParameter("Debug", 7);
+    problemParams->setParameter("Display", 2);
+    linearParams->setParameter("Display", 2);
+    mediatorParams->setParameter("Display", 5);
+    if (numNonlinearConstraints > 0) {
+      citizenParams->setParameter("Display", 2);
+      citizenParams->setParameter("Display Subproblem", 3);
+    }
+    else
+      citizenParams->setParameter("Display", 3);
   case VERBOSE_OUTPUT:
-    params.sublist("Solver").setParameter("Debug", 4);
+    problemParams->setParameter("Display", 2);
+    linearParams->setParameter("Display", 2);
+    mediatorParams->setParameter("Display", 4);
+    if (numNonlinearConstraints > 0) {
+      citizenParams->setParameter("Display", 2);
+      citizenParams->setParameter("Display Subproblem", 3);
+    }
+    else
+      citizenParams->setParameter("Display", 3);
   case NORMAL_OUTPUT:
-    params.sublist("Solver").setParameter("Debug", 3);
+    problemParams->setParameter("Display", 1);
+    linearParams->setParameter("Display", 1);
+    mediatorParams->setParameter("Display", 3);
+    if (numNonlinearConstraints > 0) {
+      citizenParams->setParameter("Display", 1);
+      citizenParams->setParameter("Display Subproblem", 2);
+    }
+    else
+      citizenParams->setParameter("Display", 2);
   case QUIET_OUTPUT:
-    params.sublist("Solver").setParameter("Debug", 2);
+    problemParams->setParameter("Display", 1);
+    linearParams->setParameter("Display", 1);
+    mediatorParams->setParameter("Display", 2);
+    if (numNonlinearConstraints > 0) {
+      citizenParams->setParameter("Display", 1);
+      citizenParams->setParameter("Display Subproblem", 1);
+    }
+    else
+      citizenParams->setParameter("Display", 1);
   case SILENT_OUTPUT:
-    params.sublist("Solver").setParameter("Debug", 1);
+    problemParams->setParameter("Display", 0);
+    linearParams->setParameter("Display", 0);
+    mediatorParams->setParameter("Display", 1);
+    if (numNonlinearConstraints > 0) {
+      citizenParams->setParameter("Display", 0);
+      citizenParams->setParameter("Display Subproblem", 0);
+    }
+    else
+      citizenParams->setParameter("Display", 0);
   }
 
-  params.sublist("Solver").setParameter("Maximum Evaluations", maxFunctionEvals);
+  mediatorParams->setParameter("Citizen Count", 1);
   if (numNonlinearConstraints > 0)
-    params.sublist("Nonlinear").setParameter("Maximum Total Evaluations", maxFunctionEvals);
+    citizenParams->setParameter("Type", "GSS-NLC");
+  else
+    citizenParams->setParameter("Type", "GSS");
+
+  citizenParams->setParameter("Maximum Evaluations", maxFunctionEvals);
+  if (numNonlinearConstraints > 0)
+    citizenParams->setParameter("Maximum Evaluations", maxFunctionEvals);
 
   if (constraintTol > 0.0) {
-    params.sublist("Solver").setParameter("Bounds Tolerance", constraintTol);
-    params.sublist("Linear").setParameter("Machine Epsilon", constraintTol);
-    params.sublist("Nonlinear").setParameter("Constraint Tolerance", constraintTol);
+    //    params.sublist("Solver").setParameter("Bounds Tolerance", constraintTol);
+    linearParams->setParameter("Active Tolerance", constraintTol);
+    citizenParams->setParameter("Nonlinear Active Tolerance", constraintTol);
   }
 
   if (probDescDB.is_null()) { // instantiate on-the-fly
@@ -179,21 +214,21 @@ void APPSOptimizer::set_apps_parameters()
     const Real& init_step_length
       = probDescDB.get_real("method.asynch_pattern_search.initial_delta");
     if (init_step_length >= 0.0)
-      params.sublist("Solver").setParameter("Initial Step", init_step_length);
+      citizenParams->setParameter("Initial Step", init_step_length);
 
     const Real& contract_step_length
       = probDescDB.get_real("method.asynch_pattern_search.contraction_factor");
-    params.sublist("Solver").setParameter("Contraction Factor", contract_step_length);
+    citizenParams->setParameter("Contraction Factor", contract_step_length);
 
     const Real& thresh_step_length
       = probDescDB.get_real("method.asynch_pattern_search.threshold_delta");
     if (thresh_step_length >= 0.0)
-      params.sublist("Solver").setParameter("Step Tolerance", thresh_step_length);
+      citizenParams->setParameter("Step Tolerance", thresh_step_length);
 
     const Real& solution_target
       = probDescDB.get_real("method.solution_target");
     if (solution_target!=-1.e+25)
-      params.sublist("Solver").setParameter("Function Tolerance", solution_target);
+      problemParams->setParameter("Objective Target", solution_target);
 
     // A null string is the DB default and nonblocking is the APPS default, so
     // the flag is true only for an explicit blocking user specification.
@@ -201,11 +236,11 @@ void APPSOptimizer::set_apps_parameters()
     const bool blocking_synch = (probDescDB.get_string("method.asynch_pattern_search.synchronization")
 		     == "blocking") ? true : false;
     if (blocking_synch) {
-      params.sublist("Solver").setParameter("Synchronous", true);
+      mediatorParams->setParameter("Synchronous Evaluations", true);
       evalMgr->set_blocking_synch(true);
     }
     else
-      params.sublist("Solver").setParameter("Synchronous", false);
+      mediatorParams->setParameter("Synchronous Evaluations", false);
 
     //const RealVector& variable_scales = probDescDB.get_rdv("variables.continuous_design.scales");
     const RealVector& lower_bnds
@@ -216,32 +251,32 @@ void APPSOptimizer::set_apps_parameters()
     if (lower_bnds[0]<=-bigRealBoundSize || upper_bnds[0]>=bigRealBoundSize) {
       for (int i=0; i<numContinuousVars; i++)
 	scales[i] = 1.0;
-      params.sublist("Linear").setParameter("Scaling", scales);
+      problemParams->setParameter("Scaling", scales);
     }
 
     const String merit_function = probDescDB.get_string("method.asynch_pattern_search.merit_function");
     if (merit_function == "merit_max")
-      params.sublist("Nonlinear").setParameter("Method", "Merit Max");
+      citizenParams->setParameter("Penalty Function", "L_inf");
     else if (merit_function == "merit_max_smooth")
-      params.sublist("Nonlinear").setParameter("Method", "Merit Max Smooth");
+      citizenParams->setParameter("Penalty Function", "L_inf (smoothed)");
     else if (merit_function == "merit1")
-      params.sublist("Nonlinear").setParameter("Method", "Merit One");
+      citizenParams->setParameter("Penalty Function", "L1");
     else if (merit_function == "merit1_smooth")
-      params.sublist("Nonlinear").setParameter("Method", "Merit One Smooth");
+      citizenParams->setParameter("Penalty Function", "L1 (smoothed)");
     else if (merit_function == "merit2")
-      params.sublist("Nonlinear").setParameter("Method", "Merit Two");
+      citizenParams->setParameter("Penalty Function", "L2");
     else if (merit_function == "merit2_smooth")
-      params.sublist("Nonlinear").setParameter("Method", "Merit Two Smooth");
+      citizenParams->setParameter("Penalty Function", "L2 (smoothed)");
     else if (merit_function == "merit2_squared")
-      params.sublist("Nonlinear").setParameter("Method", "Merit Two Squared");
+      citizenParams->setParameter("Penalty Function", "L2 Squared");
 
     Real constr_penalty = probDescDB.get_real("method.asynch_pattern_search.constraint_penalty");
     if (constr_penalty >= 0.)
-      params.sublist("Nonlinear").setParameter("Initial Penalty Value", constr_penalty);
+      citizenParams->setParameter("Penalty Parameter", constr_penalty);
 
-    Real smooth_factor = probDescDB.get_real("method.asynch_pattern_search.smoothing_factor");
+    /*    Real smooth_factor = probDescDB.get_real("method.asynch_pattern_search.smoothing_factor");
     if (smooth_factor >= 0.)
-      params.sublist("Nonlinear").setParameter("Initial Smoothing Value", smooth_factor);
+    citizenParams->setParameter("Penalty Smoothing Value", smooth_factor); */
 
     maxConcurrency *= 2*numContinuousVars;
 
@@ -270,12 +305,12 @@ void APPSOptimizer::initialize_variables_and_constraints()
   // in order to capture any reassignment at the strategy layer (after
   // iterator construction).  
 
-  APPSPACK::Vector init_point(numContinuousVars), tmp_vector(numContinuousVars);
-  APPSPACK::Vector lower(numContinuousVars), upper(numContinuousVars);
-  APPSPACK::Vector lin_ineq_lower_bnds(numLinearIneqConstraints);
-  APPSPACK::Vector lin_ineq_upper_bnds(numLinearIneqConstraints);
-  APPSPACK::Vector lin_eq_targets(numLinearEqConstraints);
-  APPSPACK::Matrix lin_ineq_coeffs, lin_eq_coeffs;
+  HOPSPACK::Vector init_point(numContinuousVars), tmp_vector(numContinuousVars);
+  HOPSPACK::Vector lower(numContinuousVars), upper(numContinuousVars);
+  HOPSPACK::Vector lin_ineq_lower_bnds(numLinearIneqConstraints);
+  HOPSPACK::Vector lin_ineq_upper_bnds(numLinearIneqConstraints);
+  HOPSPACK::Vector lin_eq_targets(numLinearEqConstraints);
+  HOPSPACK::Matrix lin_ineq_coeffs, lin_eq_coeffs;
 
   const RealVector& init_pt
     = iteratedModel.continuous_variables();
@@ -289,16 +324,17 @@ void APPSOptimizer::initialize_variables_and_constraints()
     if (lower_bnds[i] > -bigRealBoundSize)
       lower[i] = lower_bnds[i];
     else
-      lower[i] = APPSPACK::dne();
+      lower[i] = HOPSPACK::dne();
     if (upper_bnds[i] < bigRealBoundSize)
       upper[i] = upper_bnds[i];
     else
-      upper[i] = APPSPACK::dne();
+      upper[i] = HOPSPACK::dne();
   }
 
-  params.sublist("Solver").setParameter("Initial X", init_point);
-  params.sublist("Linear").setParameter("Lower", lower);
-  params.sublist("Linear").setParameter("Upper", upper);
+  problemParams->setParameter("Number Unknowns", (int) numContinuousVars);
+  problemParams->setParameter("Initial X", init_point);
+  problemParams->setParameter("Lower Bounds", lower);
+  problemParams->setParameter("Upper Bounds", upper);
 
   const RealMatrix& linear_ineq_coeffs = iteratedModel.linear_ineq_constraint_coeffs();
   const RealVector& linear_ineq_lower_bnds = iteratedModel.linear_ineq_constraint_lower_bounds();
@@ -313,11 +349,11 @@ void APPSOptimizer::initialize_variables_and_constraints()
     if (linear_ineq_lower_bnds[i] > -bigRealBoundSize)
       lin_ineq_lower_bnds[i] = linear_ineq_lower_bnds[i];
     else
-      lin_ineq_lower_bnds[i] = APPSPACK::dne();
+      lin_ineq_lower_bnds[i] = HOPSPACK::dne();
     if (linear_ineq_upper_bnds[i] < bigRealBoundSize)
       lin_ineq_upper_bnds[i] = linear_ineq_upper_bnds[i];
     else
-      lin_ineq_upper_bnds[i] = APPSPACK::dne();
+      lin_ineq_upper_bnds[i] = HOPSPACK::dne();
   }
   for (int i=0; i<numLinearEqConstraints; i++) {
     for (int j=0; j<numContinuousVars; j++)
@@ -326,11 +362,11 @@ void APPSOptimizer::initialize_variables_and_constraints()
     lin_eq_targets[i] = linear_eq_targets[i];
   }
 
-  params.sublist("Linear").setParameter("Inequality Matrix", lin_ineq_coeffs);
-  params.sublist("Linear").setParameter("Inequality Lower", lin_ineq_lower_bnds);
-  params.sublist("Linear").setParameter("Inequality Upper", lin_ineq_upper_bnds);
-  params.sublist("Linear").setParameter("Equality Matrix", lin_eq_coeffs);
-  params.sublist("Linear").setParameter("Equality Bound", lin_eq_targets);
+  linearParams->setParameter("Inequality Matrix", lin_ineq_coeffs);
+  linearParams->setParameter("Inequality Lower", lin_ineq_lower_bnds);
+  linearParams->setParameter("Inequality Upper", lin_ineq_upper_bnds);
+  linearParams->setParameter("Equality Matrix", lin_eq_coeffs);
+  linearParams->setParameter("Equality Bounds", lin_eq_targets);
 
   const RealVector& nln_ineq_lwr_bnds
     = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
@@ -372,8 +408,8 @@ void APPSOptimizer::initialize_variables_and_constraints()
 
   evalMgr->set_constraint_map(constraintMapIndices, constraintMapMultipliers, constraintMapOffsets);
 
-  params.sublist("Nonlinear").setParameter("Number Equality", (int) numNonlinearEqConstraints);
-  params.sublist("Nonlinear").setParameter("Number Inequality", (int) numAPPSNonlinearIneqConstraints);
+  problemParams->setParameter("Number Nonlinear Eqs", (int) numNonlinearEqConstraints);
+  problemParams->setParameter("Number Nonlinear Ineqs", (int) numAPPSNonlinearIneqConstraints);
 }
 
 } // namespace Dakota

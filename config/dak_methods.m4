@@ -161,20 +161,20 @@ AC_DEFUN([DAK_METHODS],[
   fi
   AM_CONDITIONAL([WITH_QUESO],[test "x$with_queso" = xyes])
 
-  dnl HOPSPACK/APPSPACK package check.
-  AC_ARG_WITH([appspack],AS_HELP_STRING([--without-appspack],
-				        [turn APPSPACK support off]),
-	      [with_appspack=$withval],[with_appspack=yes])
-  if test "x$with_appspack" = xyes -a -d $srcdir/packages/hopspack; then
-    AC_CONFIG_SUBDIRS([packages/hopspack])
-    AC_DEFINE([DAKOTA_APPS],[1],
-	      [Macro to handle code which depends on APPSPACK.])
-    MAYBE_APPSPACK=hopspack
+  dnl HOPSPACK package check.
+  AC_ARG_WITH([hopspack],AS_HELP_STRING([--without-hopspack],
+				        [turn HOPSPACK support off]),
+	      [with_hopspack=$withval],[with_hopspack=yes])
+  if test "x$with_hopspack" = xyes -a -d $srcdir/packages/hopspack; then
+    AC_CONFIG_SUBDIRS([packages/hopspack/dakota_build])
+    AC_DEFINE([DAKOTA_HOPS],[1],
+	      [Macro to handle code which depends on HOPSPACK.])
+    MAYBE_HOPSPACK=hopspack/dakota_build
   else
-    MAYBE_APPSPACK=
+    MAYBE_HOPSPACK=
   fi
-  AC_SUBST([MAYBE_APPSPACK])
-  AM_CONDITIONAL([WITH_APPSPACK],[test "x$with_appspack" = xyes -a \
+  AC_SUBST([MAYBE_HOPSPACK])
+  AM_CONDITIONAL([WITH_HOPSPACK],[test "x$with_hopspack" = xyes -a \
 				    -d $srcdir/packages/hopspack])
 
   dnl JEGA package check.

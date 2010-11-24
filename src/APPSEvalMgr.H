@@ -19,8 +19,8 @@
 #ifndef APPSEvalMgr_H
 #define APPSEvalMgr_H
 
-#include "APPSPACK_Executor_Interface.hpp"
-#include "APPSPACK_Vector.hpp"
+#include "HOPSPACK_Executor.hpp"
+#include "HOPSPACK_Vector.hpp"
 
 #include "DakotaModel.H"
 #include "data_types.h"
@@ -35,7 +35,7 @@ namespace Dakota {
     Iterate and response values are passed between Dakota and APPSPACK
     via this interface. */
 
-class APPSEvalMgr : public APPSPACK::Executor::Interface
+class APPSEvalMgr : public HOPSPACK::Executor
 {
 
 public:
@@ -55,16 +55,20 @@ public:
   //
 
   /// tells APPS whether or not there is a processor available to perform a function evaluation
-  bool isWaiting() const;
+  bool isReadyForWork() const;
 
   /// performs a function evaluation at APPS-provided x_in
-  bool spawn(const APPSPACK::Vector& x_in, int tag_in);
+  bool submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial,
+	      HOPSPACK::EvalRequestType apps_request);
 
   /// returns a function value to APPS
-  int recv(int& tag_out, APPSPACK::Vector& f_out, string& msg_out);
+  int recv(int& apps_tag, HOPSPACK::Vector& apps_f,
+	   HOPSPACK::Vector& apps_cEqs, HOPSPACK::Vector& apps_cIneqs,
+	   string& apps_msg);
 
-  /// currently does nothing but is needed to complete the interface
-  void print() const {};
+  /// currently do nothing but are needed to complete the interface
+  void printDebugInfo(void) const {};
+  void printTimingInfo(void) const {};
 
   //
   //- Heading: Convenience functions

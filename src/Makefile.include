@@ -86,20 +86,17 @@ AMPL_ARCHIVE	= $(top_builddir)/packages/ampl/funcadd0.o \
 		  $(top_builddir)/packages/ampl/amplsolver.a
 endif
 
-if WITH_APPSPACK
-HOPSPACK_ROOT    = $(top_srcdir)/packages/hopspack
-HOPSPACK_BUILD   = $(top_builddir)/packages/hopspack
-HOPSPACK_INCL    = -I$(HOPSPACK_ROOT)/src-appspack  \
-		   -I$(HOPSPACK_ROOT)/src-cddlib    \
-		   -I$(HOPSPACK_ROOT)/src-conveyor  \
-		   -I$(HOPSPACK_ROOT)/src-nappspack \
-		   -I$(HOPSPACK_ROOT)/src-shared \
-		   -I$(HOPSPACK_BUILD)/src-shared
-HOPSPACK_ARCHIVE = $(HOPSPACK_BUILD)/src-nappspack/libnappspack.a   \
-		   $(HOPSPACK_BUILD)/src-appspack/libappspack.a          \
-		   $(HOPSPACK_BUILD)/src-conveyor/libconveyor.a   \
-		   $(HOPSPACK_BUILD)/src-shared/libshared.a \
-		   $(HOPSPACK_BUILD)/src-cddlib/libcdd.a
+if WITH_HOPSPACK
+HOPSPACK_SRC     = $(top_srcdir)/packages/hopspack
+HOPSPACK_BUILD   = $(top_builddir)/packages/hopspack/dakota_build
+HOPSPACK_INCL    = -I$(HOPSPACK_SRC)/src/src-citizens  \
+		   -I$(HOPSPACK_SRC)/src/src-evaluator \
+		   -I$(HOPSPACK_SRC)/src/src-executor  \
+		   -I$(HOPSPACK_SRC)/src/src-framework \
+		   -I$(HOPSPACK_SRC)/src/src-main      \
+		   -I$(HOPSPACK_SRC)/src/src-shared    \
+		   -I$(HOPSPACK_BUILD)/include
+HOPSPACK_ARCHIVE = $(HOPSPACK_BUILD)/libhopspack.la
 HOPSPACK_OPT_H   = APPSEvalMgr.H APPSOptimizer.H
 HOPSPACK_OPT_S   = APPSEvalMgr.C APPSOptimizer.C
 endif

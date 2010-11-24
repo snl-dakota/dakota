@@ -39,7 +39,7 @@ APPSEvalMgr::APPSEvalMgr(Model& model) :
 
 /** Check to see if all processors available for function evaluations
     are being used.  If not, tell APPS that one is available. */
-bool APPSEvalMgr::isWaiting() const
+bool APPSEvalMgr::isReadyForWork() const
 {
   if (numWorkersUsed < numWorkersTotal) return true;
 
@@ -51,7 +51,8 @@ bool APPSEvalMgr::isWaiting() const
     in the DAKOTA input deck.  If evaluation is asynchronous, map the
     dakota id to the APPS tag.  If evaluation is synchronous, map the
     responses to the APPS tag. */
-bool APPSEvalMgr::spawn(const APPSPACK::Vector& apps_xtrial, int apps_tag)
+bool APPSEvalMgr::submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial,
+			 HOPSPACK::EvalRequestType apps_request)
 {
   if (numWorkersUsed < numWorkersTotal) {
     for (int i=0; i<xTrial.length(); i++)
@@ -89,13 +90,17 @@ bool APPSEvalMgr::spawn(const APPSPACK::Vector& apps_xtrial, int apps_tag)
     and return them to APPS.  APPS tags are tied to corresponding
     responses using the appropriate (i.e., asynchronous or
     synchronous) map. */
-int APPSEvalMgr::recv(int& apps_tag, APPSPACK::Vector& apps_f, string& apps_msg)
+int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
+		      HOPSPACK::Vector& apps_cEqs, HOPSPACK::Vector& apps_cIneqs,
+		      string& apps_msg)
 {
   // APPSPACK only wants one completion, so buffer multiple DAKOTA
   // completions in dakotaResponseMap and only call DAKOTA synchronize
   // functions when the list has been exhausted.  Each call to
   // synchronize_nowait returns a fresh set of jobs (i.e., returned
   // completions are removed from DAKOTA's lists).
+
+  size_t numNonlinearEqConstraints = iteratedModel.num_nonlinear_eq_constraints();
 
   if (modelAsynchFlag) {
 
@@ -116,11 +121,17 @@ int APPSEvalMgr::recv(int& apps_tag, APPSPACK::Vector& apps_f, string& apps_msg)
       if (find_tag != tagList.end()) {
 	const RealVector& local_fn_vals
 	  = response_iter->second.function_values();
-	apps_f.resize(constrMapIndices.size()+1);
+	apps_f.resize(1);
+	apps_cEqs.resize(numNonlinearEqConstraints);
+	apps_cIneqs.resize(constrMapIndices.size()-numNonlinearEqConstraints);
 	apps_f[0] = local_fn_vals[0];
-	for (int i=0; i<constrMapIndices.size(); i++)
-	  apps_f[i+1] = constrMapOffsets[i] +
+	for (int i=0; i<apps_cEqs.size(); i++)
+	  apps_cEqs[i] = constrMapOffsets[i] +
 	    constrMapMultipliers[i]*local_fn_vals[constrMapIndices[i]+1];
+	for (int i=0; i<apps_cIneqs.size(); i++)
+	  apps_cIneqs[i] = constrMapOffsets[i+numNonlinearEqConstraints] +
+	    constrMapMultipliers[i+numNonlinearEqConstraints] * 
+	    local_fn_vals[constrMapIndices[i+numNonlinearEqConstraints]+1];
 	apps_tag = (*find_tag).second;
 	apps_msg = "success";
 	dakotaResponseMap.erase(dakota_id);
@@ -144,11 +155,17 @@ int APPSEvalMgr::recv(int& apps_tag, APPSPACK::Vector& apps_f, string& apps_msg)
     if (!functionList.empty()) {
       std::map<int, RealVector>::iterator f_iter = functionList.begin();
       const RealVector& local_fn_vals = f_iter->second;
-      apps_f.resize(constrMapIndices.size()+1);
+      apps_f.resize(1);
+      apps_cEqs.resize(numNonlinearEqConstraints);
+      apps_cIneqs.resize(constrMapIndices.size()-numNonlinearEqConstraints);
       apps_f[0] = local_fn_vals[0];
-      for (int i=0; i<constrMapIndices.size(); i++)
-	apps_f[i+1] = constrMapOffsets[i] +
+      for (int i=0; i<apps_cEqs.size(); i++)
+	apps_cEqs[i] = constrMapOffsets[i] +
 	  constrMapMultipliers[i]*local_fn_vals[constrMapIndices[i]+1];
+      for (int i=0; i<apps_cIneqs.size(); i++)
+	apps_cIneqs[i] = constrMapOffsets[i+numNonlinearEqConstraints] +
+	  constrMapMultipliers[i+numNonlinearEqConstraints] * 
+	  local_fn_vals[constrMapIndices[i+numNonlinearEqConstraints]+1];
       apps_tag = (*f_iter).first;
       apps_msg = "success";
       functionList.erase(f_iter);

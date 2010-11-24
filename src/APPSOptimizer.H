@@ -19,10 +19,9 @@
 #include "DakotaOptimizer.H"
 #include "APPSEvalMgr.H"
 
-#include "APPSPACK_Parameter_List.hpp"
-#include "APPSPACK_Constraints_Linear.hpp"
-#include "APPSPACK_Solver.hpp"
-#include "NAPPSPACK_NLSolver.hpp"
+#include "HOPSPACK_ParameterList.hpp"
+#include "HOPSPACK_LinConstr.hpp"
+#include "HOPSPACK_Hopspack.hpp"
 
 namespace Dakota {
 
@@ -88,7 +87,11 @@ protected:
   //
 
   /// Pointer to APPS parameter list
-  APPSPACK::Parameter::List params;
+  HOPSPACK::ParameterList  params;
+  HOPSPACK::ParameterList* problemParams;
+  HOPSPACK::ParameterList* linearParams;
+  HOPSPACK::ParameterList* mediatorParams;
+  HOPSPACK::ParameterList* citizenParams;
 
   /// Pointer to the APPSApplication object
   APPSEvalMgr* evalMgr;
