@@ -336,16 +336,21 @@ a much smaller "feasible region" of correlation lengths.  If the
 \c 'none' option is selected, and \c correlation_lengths are not 
 directly specified, then the center (in log scale) of the feasible region 
 will be selected. This center is also used as the starting point for 
-\c 'local' optimization.  Although the small feasible region is not 
-guaranteed to contain the globally optimal correlation parameters, it 
-should at least contain a near optimal solution.  Restricting the search 
-to this region is usually sufficient to avoid ill-conditioning of the 
-covariance matrix.  The gaussian process approximation has an option for 
-\c point_selection to avoid covariance matrix ill-conditioning when the 
-number of points becomes large.  This option calls a greedy algorithm 
-that chooses a subset of points with which to build the gaussian process.  
-These points are "optimal" in terms of creating a gaussian process with 
-low prediction error.  As a default, there is no point selection.  Note 
+\c 'local' optimization.  The small feasible region typically
+contains small/large enough correlation lengths to include both well 
+conditioned correlation matrices and either the globally optimal, or at 
+least a near optimal, correlation matrix. Ill-conditioned correlation 
+matrices are explicitly excluded from consideration based on (an estimate 
+of) their condition number. The gaussian process deals with ill 
+conditioning in 2 ways.  First, when it encounters a non-invertible 
+correlation matrix it iteratively increases the size of the "nugget," 
+but in such cases the gaussian process will approximate (smooth) rather 
+than interpolate the data. Second, the GP also has an option for 
+\c point_selection to avoid ill-conditioning when the number of points 
+becomes large.  This option calls a greedy algorithm that chooses a 
+subset of points with which to build the gaussian process.  These points 
+are "optimal" in terms of creating a gaussian process with low 
+prediction error.  As a default, there is no point selection.  Note 
 that in general, one would not need point selection in trust-region 
 methods because only a small number of points are used to develop a 
 surrogate within each trust region.  The point selection option will be 
@@ -353,12 +358,12 @@ most useful in cases where the gaussian process is built on a "large"
 number of points, where large is more than a hundred or a few hundred 
 points, depending on the number of variables and the spacing of the 
 sample points.  The user can specify the trend function of the kriging 
-and gaussian process approximations using the \c trend keyword.  For 
+and gaussian process models using the \c trend keyword.  For 
 both models, the trend type can be \c constant, \c linear, or 
 \c reduced_quadratic; the default for both is \c reduced_quadratic.  The 
 kriging approximation has the additional option of \c quadratic.  The 
 \c reduced_quadratic trend function includes the main effects but not 
-mixed/interation terms; prior to Dakota 5.1, it was selected for the 
+mixed/interaction terms; prior to Dakota 5.1, it was selected for the 
 gaussian process via the \c quadratic option.
 
 For each of the global surrogates, \c dace_method_pointer, \c
