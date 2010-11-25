@@ -555,40 +555,13 @@ void NonDSampling::compute_moments(const ResponseArray& samples)
 
 void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
 {
+  // Size the output arrays here instead of in the ctor in order to support
+  // alternate sampling ctors.
+  initialize_distribution_mappings();
+
   // For the samples array, calculate the following statistics:
   // > CDF/CCDF mappings of response levels to probability/reliability levels
   // > CDF/CCDF mappings of probability/reliability levels to response levels
-
-  // Size the output arrays here instead of in the ctor in order to support
-  // alternate sampling ctors.  Sizing is done in a minimal way for sampling
-  // methods since there is no distinction between requested and computed levels
-  // for the same measure (the request is always achieved) and since probability
-  // (computed by binning) and reliability (computed using mu,sigma,target) are
-  // not directly related.  [In NonDReliability, a requested level may differ
-  // from that computed/achieved and probability and reliability are carried
-  // along in parallel.]
-  if (computedRespLevels.empty() || computedProbLevels.empty() ||
-      computedRelLevels.empty()  || computedGenRelLevels.empty()) {
-    computedRespLevels.resize(numFunctions);
-    computedProbLevels.resize(numFunctions);
-    computedRelLevels.resize(numFunctions);
-    computedGenRelLevels.resize(numFunctions);
-    for (size_t i=0; i<numFunctions; ++i) {
-      size_t num_levels = requestedRespLevels[i].length();
-      switch (respLevelTarget) {
-      case PROBABILITIES:
-	computedProbLevels[i].resize(num_levels);   break;
-      case RELIABILITIES:
-	computedRelLevels[i].resize(num_levels);    break;
-      case GEN_RELIABILITIES:
-	computedGenRelLevels[i].resize(num_levels); break;
-      }
-      num_levels = requestedProbLevels[i].length() +
-	requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
-      computedRespLevels[i].resize(num_levels);
-    }
-  }
-
   using boost::math::isfinite;
   size_t i, j, k, num_obs = samples.size(), num_samp;
   const StringArray& resp_labels = iteratedModel.response_labels();
@@ -815,57 +788,6 @@ void NonDSampling::print_moments(std::ostream& s) const
     }
   }
 }
-
-
-void NonDSampling::print_distribution_mappings(std::ostream& s) const
-{
-  const StringArray& resp_labels = iteratedModel.response_labels();
-
-  // output CDF/CCDF probabilities resulting from binning or CDF/CCDF
-  // reliabilities resulting from number of std devs separating mean & target
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision)
-    << "\nProbabilities for each response function:\n";
-  size_t i, j;
-  for (i=0; i<numFunctions; ++i) {
-    if (!requestedRespLevels[i].empty() || !requestedProbLevels[i].empty() ||
-	!requestedRelLevels[i].empty()  || !requestedGenRelLevels[i].empty()) {
-      if (cdfFlag)
-	s << "Cumulative Distribution Function (CDF) for ";
-      else
-	s << "Complementary Cumulative Distribution Function (CCDF) for ";
-      s << resp_labels[i] << ":\n     Response Level  Probability Level  "
-	<< "Reliability Index  General Rel Index\n     --------------  "
-	<< "-----------------  -----------------  -----------------\n";
-      size_t num_resp_levels = requestedRespLevels[i].length();
-      for (j=0; j<num_resp_levels; j++) {
-	s << "  " << std::setw(17) << requestedRespLevels[i][j] << "  ";
-	switch (respLevelTarget) {
-	case PROBABILITIES:
-	  s << std::setw(17) << computedProbLevels[i][j]   << '\n'; break;
-	case RELIABILITIES:
-	  s << std::setw(36) << computedRelLevels[i][j]    << '\n'; break;
-	case GEN_RELIABILITIES:
-	  s << std::setw(55) << computedGenRelLevels[i][j] << '\n'; break;
-	}
-      }
-      size_t num_prob_levels = requestedProbLevels[i].length();
-      for (j=0; j<num_prob_levels; j++)
-	s << "  " << std::setw(17) << computedRespLevels[i][j] << "  "
-	  << std::setw(17) << requestedProbLevels[i][j] << '\n';
-      size_t num_rel_levels = requestedRelLevels[i].length();
-      for (j=0; j<num_rel_levels; j++)
-	s << "  " << std::setw(17) << computedRespLevels[i][j+num_prob_levels]
-	  << "  " << std::setw(36) << requestedRelLevels[i][j] << '\n';
-      size_t num_gen_rel_levels = requestedGenRelLevels[i].length();
-      for (j=0; j<num_gen_rel_levels; j++)
-	s << "  " << std::setw(17)
-	  << computedRespLevels[i][j+num_prob_levels+num_rel_levels] << "  "
-	  << std::setw(55) << requestedGenRelLevels[i][j] << '\n';
-    }
-  }
-}
-
 
 } // namespace Dakota
 

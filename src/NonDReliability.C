@@ -82,8 +82,6 @@ NonDReliability::NonDReliability(Model& model): NonD(model),
   if (err_flag)
     abort_handler(-1);
 
-  meanStats.size(numFunctions);
-  stdDevStats.size(numFunctions);
   computedRespLevels.resize(numFunctions);
   computedProbLevels.resize(numFunctions);
   computedGenRelLevels.resize(numFunctions);

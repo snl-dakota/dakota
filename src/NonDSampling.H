@@ -44,6 +44,9 @@ public:
   //- Heading: Public member functions
   //
 
+  /// set meanStats and stdDevStats
+  void moments(const RealVector& means, const RealVector& std_devs);
+
   /// called by compute_statistics() to calculate CDF/CCDF mappings of
   /// z to p/beta and of p/beta to z
   void compute_distribution_mappings(const ResponseArray& samples);
@@ -51,9 +54,6 @@ public:
   /// update finalStatistics from minValues/maxValues, meanStats/stdDevStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
   void update_final_statistics();
-
-  /// prints the p/beta/z mappings computed in compute_distribution_mappings()
-  void print_distribution_mappings(std::ostream& s) const;
 
 protected:
 
@@ -182,6 +182,11 @@ private:
   /// counter for number of executions of get_parameter_sets() for this object
   size_t numLHSRuns;
 
+  /// means of response functions (calculated in compute_moments())
+  RealVector meanStats;
+  /// std deviations of response functions (calculated in compute_moments())
+  RealVector stdDevStats;
+
   /// Min values of response functions for epistemic calculations
   /// (calculated in compute_intervals())
   RealVector minValues;
@@ -225,6 +230,11 @@ inline const String& NonDSampling::sampling_scheme() const
 
 inline void NonDSampling::vary_pattern(bool pattern_flag)
 { varyPattern = pattern_flag; }
+
+
+inline void NonDSampling::
+moments(const RealVector& means, const RealVector& std_devs)
+{ meanStats = means; stdDevStats = std_devs; }
 
 } // namespace Dakota
 

@@ -43,11 +43,11 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  // form an interpolant expansion using SC methods
+  //void initialize_expansion();
   //void compute_expansion();
 
-  // print the final statistics and SC coefficient array
-  //void print_results(ostream& s);
+  /// print the final SC statistics
+  void print_results(std::ostream& s);
 
 private:
 

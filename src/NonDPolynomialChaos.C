@@ -251,29 +251,69 @@ void NonDPolynomialChaos::compute_expansion()
 
 void NonDPolynomialChaos::print_results(std::ostream& s)
 {
-  using std::setw;
-  s << "-------------------------------------------------------------------\n";
-
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
-  size_t i, j, num_cuv = numContAleatUncVars+numContEpistUncVars;
-  char tag[10];
-  const StringArray& fn_labels = iteratedModel.response_labels();
+
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  const StringArray& fn_labels = iteratedModel.response_labels();
+
+  size_t i, j,  width = write_precision+7,
+    num_cuv = numContAleatUncVars+numContEpistUncVars;
+  char tag[10];
+
+  s << "-------------------------------------------------------------------\n";
   for (i=0; i<numFunctions; i++) {
     s << "Polynomial Chaos coefficients for " << fn_labels[i] << ":\n";
     // header
-    s << "  " << setw(17) << "coefficient";
+    s << "  " << std::setw(width) << "coefficient";
     for (j=0; j<numContDesVars; j++)
-      { std::sprintf(tag, "d%i", j+1); s << setw(5) << tag; }
+      { std::sprintf(tag, "d%i", j+1); s << std::setw(5) << tag; }
     for (j=0; j<num_cuv; j++)
-      { std::sprintf(tag, "u%i", j+1); s << setw(5) << tag; }
+      { std::sprintf(tag, "u%i", j+1); s << std::setw(5) << tag; }
     for (j=0; j<numContStateVars; j++)
-      { std::sprintf(tag, "s%i", j+1); s << setw(5) << tag; }
-    s << "\n  " << setw(17) << "-----------";
+      { std::sprintf(tag, "s%i", j+1); s << std::setw(5) << tag; }
+    s << "\n  " << std::setw(width) << "-----------";
     for (j=0; j<numContinuousVars; j++)
       s << " ----";
     poly_approxs[i].print_coefficients(s);
+  }
+
+  s << "-------------------------------------------------------------------"
+    << "\nStatistics derived analytically from polynomial expansion:\n";
+
+  s << "\nCentral moments for each response function:\n"
+    << std::setw(width+16)    << "Mean" << std::setw(width+2) << "Variance"
+    << std::setw(width+2) << "Skewness" << std::setw(width+3) << "Kurtosis\n";
+  PecosApproximation* pa_rep; size_t exp_mom, num_mom;
+  for (i=0; i<numFunctions; ++i) {
+    pa_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    const RealVector& exp_moments = pa_rep->central_expansion_moments();
+    const RealVector& num_moments = pa_rep->central_numerical_moments();
+    exp_mom = exp_moments.length(); num_mom = num_moments.length();
+
+    if (num_mom) { // TPQ, SSG, or Cubature: report both moment sets
+      s << fn_labels[i] << '\n' << std::setw(14) << "expansion:  ";
+      for (j=0; j<exp_mom; ++j)
+	s << "  " << std::setw(width) << exp_moments[j];
+      s << '\n' << std::setw(14) << "numerical:  ";
+      for (j=0; j<num_mom; ++j)
+	s << "  " << std::setw(width) << num_moments[j];
+      s << '\n';
+    }
+    else { // regression, sampling: only expansion moments available
+      s << std::setw(14) << fn_labels[i];
+      for (j=0; j<exp_mom; ++j)
+	s << "  " << std::setw(width) << exp_moments[j];
+      s << '\n';
+    }
+
+    //Real mean = exp_moments[0], std_dev = std::sqrt(exp_moments[1]);
+    //s << "  Std. Dev. = " << std::setw(width-1) << std_dev
+    //  << "  Coeff. of Variation = ";
+    //if (std::abs(mean) > 1.e-25)
+    //  s << std::setw(width) << std_dev/mean << '\n';
+    //else
+    //  s << "Undefined\n";
   }
 
   NonDExpansion::print_results(s);

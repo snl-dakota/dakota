@@ -200,8 +200,6 @@ private:
   /// symmetric matrix of analytic response covariance
   RealSymMatrix respCovariance;
 
-  /// flag to indicate calculation of reliability indices by moment projection
-  bool betaMappings;
   /// flag to indicate calculation of numerical statistics by sampling
   /// on the expansion
   bool expSampling;

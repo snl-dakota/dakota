@@ -57,9 +57,6 @@ public:
 			const RealVectorArray& req_gen_rel_levels,
 			short resp_lev_target, bool cdf_flag);
 
-  /// set meanStats and stdDevStats
-  void moments(const RealVector& means, const RealVector& std_devs);
-
   /// set distParamDerivs
   void distribution_parameter_derivatives(bool dist_param_derivs);
 
@@ -131,6 +128,12 @@ protected:
 				  const Variables& u_vars,
 				  const Response& x_response,
 				  Response& u_response);
+
+  /// size computed{Resp,Prob,Rel,GenRel}Levels
+  void initialize_distribution_mappings();
+  /// prints the z/p/beta/beta* mappings reflected in
+  /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels
+  void print_distribution_mappings(std::ostream& s) const;
 
   //
   //- Heading: Data members
@@ -247,12 +250,6 @@ protected:
 
   size_t numResponseFunctions; ///< number of response functions
 
-  /// means of response functions (calculated in compute_statistics())
-  RealVector meanStats;
-
-  /// std deviations of response functions (calculated in compute_statistics())
-  RealVector stdDevStats;
-
   // map response level z -> probability level p, reliability level beta,
   // or generalized reliability level beta*
 
@@ -316,11 +313,6 @@ private:
 
 inline NonD::~NonD()
 { }
-
-
-inline void NonD::
-moments(const RealVector& means, const RealVector& std_devs)
-{ meanStats = means; stdDevStats = std_devs; }
 
 
 inline void NonD::distribution_parameter_derivatives(bool dist_param_derivs)

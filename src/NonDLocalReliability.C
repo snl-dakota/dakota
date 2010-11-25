@@ -601,6 +601,7 @@ void NonDLocalReliability::initial_taylor_series()
     // variable correlations.  Second-order variance requires skewness/kurtosis
     // of the inputs and is not practical.  NOTE: if fnGradsMeanX is zero, then
     // stdDevStats will be zero --> bad for MV CDF estimates.
+    stdDevStats.size(numFunctions);
     for (i=0; i<numFunctions; i++) {
       if (asrv[i]) {
 	Real val = 0.;

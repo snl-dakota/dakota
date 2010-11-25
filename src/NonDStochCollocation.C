@@ -16,6 +16,7 @@
 #include "DakotaResponse.H"
 #include "ProblemDescDB.H"
 #include "DataFitSurrModel.H"
+#include "PecosApproximation.H"
 
 
 namespace Dakota {
@@ -85,6 +86,44 @@ NonDStochCollocation::~NonDStochCollocation()
 {
   uSpaceModel.free_communicators(
     numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
+}
+
+
+void NonDStochCollocation::print_results(std::ostream& s)
+{
+  s.setf(std::ios::scientific);
+  s << std::setprecision(write_precision);
+  s << "-------------------------------------------------------------------"
+    << "\nStatistics derived analytically from polynomial expansion:\n";
+
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  const StringArray& fn_labels = iteratedModel.response_labels();
+  size_t i, j, width = write_precision+7;
+
+  s << "\nCentral numerical moments for each response function:\n"
+    << std::setw(width+16)    << "Mean" << std::setw(width+2) << "Variance"
+    << std::setw(width+2) << "Skewness" << std::setw(width+3) << "Kurtosis\n";
+  PecosApproximation* pa_rep; size_t num_mom;
+  for (i=0; i<numFunctions; ++i) {
+    pa_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    const RealVector& num_moments = pa_rep->central_numerical_moments();
+    num_mom = num_moments.length();
+
+    s << std::setw(14) << fn_labels[i];
+    for (j=0; j<num_mom; ++j)
+      s << "  " << std::setw(width) << num_moments[j];
+    s << '\n';
+
+    //Real mean = num_moments[0], std_dev = std::sqrt(num_moments[1]);
+    //s << "  Std. Dev. = " << std::setw(width-1) << std_dev
+    //  << "  Coeff. of Variation = ";
+    //if (std::abs(mean) > 1.e-25)
+    //  s << std::setw(width) << std_dev/mean << '\n';
+    //else
+    //  s << "Undefined\n";
+  }
+
+  NonDExpansion::print_results(s);
 }
 
 } // namespace Dakota

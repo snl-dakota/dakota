@@ -44,13 +44,13 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  void initialize_expansion();
+
   /// form or import an orthogonal polynomial expansion using PCE methods
   void compute_expansion();
 
-  /// print the final statistics and PCE coefficient array
+  /// print the final PCE statistics and PCE coefficient array
   void print_results(std::ostream& s);
-
-  void initialize_expansion();
 
 private:
 

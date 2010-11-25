@@ -41,7 +41,7 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
     probDescDB.get_short("method.nond.expansion_refinement_type")),
   stochExpRefineControl(
     probDescDB.get_short("method.nond.expansion_refinement_control")),
-  betaMappings(false), expSampling(false)
+  expSampling(false), impSampling(false)
 {
   // Re-assign defaults specialized to refinement of stochastic expansions
   if (maxIterations < 0) // ctor chain picks up DataMethod default of -1
@@ -83,9 +83,7 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
 	numContAleatUncVars, numContEpistUncVars+numContStateVars);
   }
 
-  // initialize meanStats, stdDevStats, and finalStatistics
-  meanStats.size(numFunctions);
-  stdDevStats.size(numFunctions);
+  // initialize finalStatistics
   initialize_final_statistics();
 
   // -----------------------------------------------------------------
@@ -145,7 +143,6 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
     }
   }
   
-  impSampling = false;
   if (err_flag)
     abort_handler(-1);
 }
@@ -539,43 +536,42 @@ void NonDExpansion::initialize_u_space_model()
 
 void NonDExpansion::construct_expansion_sampler()
 {
-  if (totalLevelRequests) {
-    //expSampling = false;
+  //expSampling = impSampling = false; // initialized in ctor
+  if (totalLevelRequests)
     for (size_t i=0; i<numFunctions; ++i)
       if ( requestedProbLevels[i].length() || requestedGenRelLevels[i].length()
 	   || ( requestedRespLevels[i].length() &&
 		respLevelTarget != RELIABILITIES ) )
 	{ expSampling = true; break; }
 
-    if (expSampling && !numSamplesOnExpansion) {
-      Cerr << "\nError: number of samples must be specified for evaluating "
-	   << "probabilities." << std::endl;
+  if (expSampling) {
+    // sanity check for samples spec
+    if (!numSamplesOnExpansion) {
+      Cerr << "\nError: number of samples must be specified for numerically "
+	   << "evaluating statistics on a stochastic expansion." << std::endl;
       abort_handler(-1);
     }
 
-    // even if !expSampling, expansionSampler needed for moment projections
     int orig_seed = probDescDB.get_int("method.random_seed");
     const String& rng = probDescDB.get_string("method.random_number_generator");
     expansionSampler.assign_rep(new NonDLHSSampling(uSpaceModel,
       numSamplesOnExpansion, orig_seed, rng, UNCERTAIN), false);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
     NonD* exp_sampler_rep = (NonD*)expansionSampler.iterator_rep();
-    exp_sampler_rep->requested_levels(requestedRespLevels, requestedProbLevels,
-      requestedRelLevels, requestedGenRelLevels, respLevelTarget, cdfFlag);
+    // publish level mappings to expansion sampler, but suppress reliability
+    // moment mappings, which are performed locally within compute_statistics()
+    RealVectorArray empty_rv_array(numFunctions); // array of empty vectors
+    RealVectorArray& req_resp_levs = (respLevelTarget == RELIABILITIES) ?
+      empty_rv_array : requestedRespLevels;
+    exp_sampler_rep->requested_levels(req_resp_levs, requestedProbLevels,
+      empty_rv_array, requestedGenRelLevels, respLevelTarget, cdfFlag);
 
     const String& integration_refine
       = probDescDB.get_string("method.nond.integration_refinement");
-    if (!integration_refine.empty()) {
-      impSampling = true;
-      for (size_t i=0; i<numFunctions; i++) {
-	if (!requestedProbLevels[i].empty() || !requestedRelLevels[i].empty() ||
-	    !requestedGenRelLevels[i].empty()) {
-	  Cerr << "\nError: importance sampling methods only supported for "
-	       << "forward CDF/CCDF level mappings.\n\n";
-	  abort_handler(-1);
-	}
-      }
-    }
+    if (!integration_refine.empty())
+      for (size_t i=0; i<numFunctions; ++i)
+	if (requestedRespLevels[i].length() && respLevelTarget != RELIABILITIES)
+	  { impSampling = true; break; }
 
     if (impSampling) {
       short int_refine_type;
@@ -595,9 +591,8 @@ void NonDExpansion::construct_expansion_sampler()
  
       NonDAdaptImpSampling* imp_sampler_rep = 
         (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
-      imp_sampler_rep->requested_levels(requestedRespLevels,
-	requestedProbLevels, requestedRelLevels, requestedGenRelLevels,
-	respLevelTarget, cdfFlag);
+      imp_sampler_rep->requested_levels(req_resp_levs, empty_rv_array,
+	empty_rv_array, empty_rv_array, respLevelTarget, cdfFlag);
     }
   }
 }
@@ -1259,11 +1254,10 @@ void NonDExpansion::compute_covariance()
       abort_handler(-1);
     }
 
-    if (all_vars) { // TO DO: for now, define diagonal only
-      respCovariance(i,i) = poly_approx_rep_i->get_variance(initialPtU);
-      for (j=0; j<i; ++j) // TO DO: compute all_vars covariance at initialPtU
-	respCovariance(i,j) = 0.;
-    }
+    if (all_vars)
+      for (j=0; j<=i; ++j)
+	respCovariance(i,j) = poly_approx_rep_i->get_covariance(initialPtU,
+	  poly_approxs[j].approximation_coefficients());
     else
       for (j=0; j<=i; ++j)
 	respCovariance(i,j) = poly_approx_rep_i->get_covariance(
@@ -1276,105 +1270,174 @@ void NonDExpansion::compute_covariance()
     log results within final_stats for use in OUU. */
 void NonDExpansion::compute_statistics()
 {
-  // -----------------------------
-  // Calculate analytic statistics
-  // -----------------------------
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-  size_t i, j, k, cntr = 0, num_final_grad_vars = final_dvv.size();
-
-  // initialize expGradsMeanX
-  if (!subIteratorFlag && expGradsMeanX.empty())
-    expGradsMeanX.shapeUninitialized(numContinuousVars, numFunctions);
-
-  // compute response covariance
   bool covariance_flag = (!subIteratorFlag || (stochExpRefineType &&
 			  stochExpRefineControl != Pecos::GENERALIZED_SPARSE));
+  size_t i, j, k, cntr = 0, sampler_cntr = 0,
+    num_final_grad_vars = final_dvv.size();
+
+  // initialize computed*Levels, expGradsMeanX and respCovariance
+  if (totalLevelRequests)
+    initialize_distribution_mappings();
+  if (!subIteratorFlag && expGradsMeanX.empty())
+    expGradsMeanX.shapeUninitialized(numContinuousVars, numFunctions);
   if (covariance_flag)
-    compute_covariance();
+    respCovariance.shapeUninitialized(numFunctions);
+
+  // -----------------------------
+  // Calculate analytic statistics
+  // -----------------------------
 
   // loop over response fns and compute/store analytic stats/stat grads
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  betaMappings = false;
+  Real mu, sigma, beta, gen_beta, z;
+  RealVector mu_grad, sigma_grad, final_stat_grad;
+  PecosApproximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
-    PecosApproximation* poly_approx_rep
-      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    size_t rl_len = requestedRespLevels[i].length(),
+	   pl_len = requestedProbLevels[i].length(),
+	   bl_len = requestedRelLevels[i].length(),
+	   gl_len = requestedGenRelLevels[i].length();
 
-    // store mean/std dev grads in finalStatistics if needed for beta mappings
-    bool beta_mapping_flag = false, beta_mapping_grad_flag = false;
-    if (respLevelTarget == RELIABILITIES && !requestedRespLevels[i].empty()) {
-      size_t rl_len = requestedRespLevels[i].length();
-      for (j=0; j<rl_len; ++j) {
-	short asv_j = final_asv[cntr+2+j];
-	if (asv_j & 3) beta_mapping_flag      = true;
-	if (asv_j & 2) beta_mapping_grad_flag = true;
-      }
-    }
-    if (!requestedRelLevels[i].empty()) {
-      size_t bl_len = requestedRelLevels[i].length(),
-	     pl_len = requestedProbLevels[i].length();
-      for (j=0; j<bl_len; ++j) {
-	short asv_j = final_asv[cntr+2+pl_len+j];
-	if (asv_j & 1) beta_mapping_flag      = true;
-	if (asv_j & 2) beta_mapping_grad_flag = true;
-      }
-    }
-    if (beta_mapping_flag)
-      betaMappings = true;
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (all_vars)
+      poly_approx_rep->compute_central_moments(initialPtU);
+    else
+      poly_approx_rep->compute_central_moments();
 
-    // *** analytic mean
-    if (final_asv[cntr] & 1 || beta_mapping_flag) {
-      meanStats[i] = (all_vars) ? 
-	poly_approx_rep->get_mean(initialPtU) :
-	poly_approx_rep->get_mean();
-      if (final_asv[cntr] & 1)
-	finalStatistics.function_value(meanStats[i], cntr);
+    const RealVector& moments = poly_approx_rep->central_moments();
+    const Real& mu = moments[0]; const Real& var = moments[1];
+    if (covariance_flag) {
+      respCovariance(i,i) = var;
+      if (all_vars)
+	for (j=0; j<i; ++j)
+	  respCovariance(i,j) = poly_approx_rep->get_covariance(initialPtU,
+	    poly_approxs[j].approximation_coefficients());
+      else
+	for (j=0; j<i; ++j)
+	  respCovariance(i,j) = poly_approx_rep->get_covariance(
+	    poly_approxs[j].approximation_coefficients());
     }
-    // *** analytic mean gradient
-    if (final_asv[cntr] & 2 || beta_mapping_grad_flag) {
-      const RealVector& final_stat_grad = (all_vars) ?
+    if (var >= 0.)
+      sigma = std::sqrt(var);
+    else { // negative variance can happen with SC on sparse grids
+      Cerr << "Warning: stochastic expansion variance is negative in "
+	   << "computation of std deviation.\n         Setting std deviation "
+	   << "to zero." << std::endl;
+      sigma = 0.;
+    }
+
+    // compute moments if needed for beta mappings
+    bool moment_grad_mapping_flag = false;
+    if (respLevelTarget == RELIABILITIES)
+      for (j=0; j<rl_len; ++j) // dbeta/ds requires mu,sigma,dmu/ds,dsigma/ds
+	if (final_asv[cntr+2+j] & 2)
+	  { moment_grad_mapping_flag = true; break; }
+    if (!moment_grad_mapping_flag)
+      for (j=0; j<bl_len; ++j)   // dz/ds requires dmu/ds,dsigma/ds
+	if (final_asv[cntr+2+pl_len+j] & 2)
+	  { moment_grad_mapping_flag = true; break; }
+
+    // *** mean
+    if (final_asv[cntr] & 1)
+      finalStatistics.function_value(mu, cntr);
+    // *** mean gradient
+    if (final_asv[cntr] & 2 || moment_grad_mapping_flag) {
+      const RealVector& grad = (all_vars) ?
 	poly_approx_rep->get_mean_gradient(initialPtU, final_dvv) :
 	poly_approx_rep->get_mean_gradient();
-      finalStatistics.function_gradient(final_stat_grad, cntr);
+      if (final_asv[cntr] & 2)
+	finalStatistics.function_gradient(grad, cntr);
+      if (moment_grad_mapping_flag)
+	mu_grad = grad; // transfer to code below
     }
-    cntr++;
+    ++cntr;
 
-    // *** analytic std deviation
-    if (final_asv[cntr] & 1 || beta_mapping_flag) {
-      const Real& variance = (covariance_flag) ? respCovariance(i,i) :
-	((all_vars) ? poly_approx_rep->get_variance(initialPtU)
-	            : poly_approx_rep->get_variance());
-      if (variance >= 0.)
-	stdDevStats[i] = std::sqrt(variance);
-      else { // negative variance can happen with SC on sparse grids
-	Cerr << "Warning: stochastic expansion variance is negative in "
-	     << "computation of std deviation.\n         Setting std deviation "
-	     << "to zero." << std::endl;
-	stdDevStats[i] = 0.;
-      }
-      if (final_asv[cntr] & 1)
-	finalStatistics.function_value(stdDevStats[i], cntr);
-    }
-    // *** analytic std deviation gradient
-    if (final_asv[cntr] & 2 || beta_mapping_grad_flag) {
-      RealVector final_stat_grad = (all_vars) ?
+    // *** std deviation
+    if (final_asv[cntr] & 1)
+      finalStatistics.function_value(sigma, cntr);
+    // *** std deviation gradient
+    if (final_asv[cntr] & 2 || moment_grad_mapping_flag) {
+      sigma_grad = (all_vars) ?
 	poly_approx_rep->get_variance_gradient(initialPtU, final_dvv) :
 	poly_approx_rep->get_variance_gradient();
-      const Real& sigma = stdDevStats[i];
       if (sigma > 0.)
 	for (j=0; j<num_final_grad_vars; ++j)
-	  final_stat_grad[j] /= 2.*sigma;
+	  sigma_grad[j] /= 2.*sigma;
       else {
 	Cerr << "Warning: stochastic expansion std deviation is zero in "
 	     << "computation of std deviation gradient.\n         Setting "
 	     << "gradient to zero." << std::endl;
-	final_stat_grad = 0.;
+	sigma_grad = 0.;
       }
-      finalStatistics.function_gradient(final_stat_grad, cntr);
+      if (final_asv[cntr] & 2)
+	finalStatistics.function_gradient(sigma_grad, cntr);
     }
-    cntr++;
+    ++cntr;
 
+    if (respLevelTarget == RELIABILITIES) {
+      for (j=0; j<rl_len; ++j, ++cntr) {
+	// *** beta
+	if (final_asv[cntr] & 1) {
+	  const Real& z_bar = requestedRespLevels[i][j];
+	  if (sigma > 1.e-25) {
+	    Real ratio = (mu - z_bar)/sigma;
+	    computedRelLevels[i][j] = beta = (cdfFlag) ? ratio : -ratio;
+	  }
+	  else
+	    computedRelLevels[i][j] = beta = ( (cdfFlag && mu <= z_bar) ||
+	      (!cdfFlag && mu > z_bar) ) ? -1.e50 : 1.e50;
+	  finalStatistics.function_value(beta, cntr);
+	}
+	// *** beta gradient
+	if (final_asv[cntr] & 2) {
+	  if (final_stat_grad.empty())
+	    final_stat_grad.sizeUninitialized(num_final_grad_vars);
+	  if (sigma > 1.e-25) {
+	    const Real& z_bar = requestedRespLevels[i][j];
+	    for (k=0; k<num_final_grad_vars; ++k) {
+	      Real dratio_dx = (sigma*mu_grad[k] - (mu - z_bar)*
+				sigma_grad[k]) / std::pow(sigma, 2);
+	      final_stat_grad[k] = (cdfFlag) ? dratio_dx : -dratio_dx;
+	    }
+	  }
+	  else
+	    final_stat_grad = 0.;
+	  finalStatistics.function_gradient(final_stat_grad, cntr);
+	}
+      }
+    }
+    else
+      cntr += rl_len;
+
+    // no analytic mappings for probability levels
+    cntr += pl_len;
+
+    for (j=0; j<bl_len; ++j, ++cntr) {
+      const Real& beta_bar = requestedRelLevels[i][j];
+      if (final_asv[cntr] & 1) {
+	// *** z
+	computedRespLevels[i][j+pl_len] = z = (cdfFlag) ?
+	  mu - beta_bar * sigma : mu + beta_bar * sigma;
+	finalStatistics.function_value(z, cntr);
+      }
+      if (final_asv[cntr] & 2) {
+	// *** z gradient
+	if (final_stat_grad.empty())
+	  final_stat_grad.sizeUninitialized(num_final_grad_vars);
+	for (k=0; k<num_final_grad_vars; ++k)
+	  final_stat_grad[k] = (cdfFlag) ?
+	    mu_grad[k] - beta_bar * sigma_grad[k] :
+	    mu_grad[k] + beta_bar * sigma_grad[k];
+	finalStatistics.function_gradient(final_stat_grad, cntr);
+      }
+    }
+
+    // no analytic mappings for generalized reliability levels
+    cntr += gl_len;
+ 
     // *** local sensitivities
     if (!subIteratorFlag && poly_approx_rep->expansion_coefficient_flag()) {
       // expansion sensitivities are defined from the coefficients and basis
@@ -1392,79 +1455,68 @@ void NonDExpansion::compute_statistics()
     }
 
     // *** global sensitivities
-    // Note: VBD needed for sub-iterator with Sobol refinement
     if (vbdControl && poly_approx_rep->expansion_coefficient_flag()) {
       poly_approx_rep->compute_component_effects();
       poly_approx_rep->compute_total_effects();
     }
-
-    cntr += requestedRespLevels[i].length() + requestedProbLevels[i].length()
-         +  requestedRelLevels[i].length()  + requestedGenRelLevels[i].length();
   }
 
   // ------------------------------
   // Calculate numerical statistics
   // ------------------------------
+
   // Estimate CDF/CCDF statistics by sampling on the expansion
-  if (totalLevelRequests) {
+  if (expSampling) {
     NonDSampling* exp_sampler_rep
       = (NonDSampling*)expansionSampler.iterator_rep();
-    
-    NonDAdaptImpSampling* imp_sampler_rep
-      = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
-  
-    if (expSampling) { // sample on expansion to generate probability mappings
-      // pass x-space data so that u-space Models can perform inverse transforms
-      exp_sampler_rep->initialize_random_variables(natafTransform);
-      // since expansionSampler uses an UNCERTAIN sampling mode, we must set the
-      // unsampled variables to their u-space values.
-      if (numContDesVars || numContEpistUncVars || numContStateVars)
-	uSpaceModel.continuous_variables(initialPtU);
-      // response fn is active for z->p, z->beta*, p->z, or beta*->z
-      ActiveSet sampler_set = expansionSampler.active_set(); // copy
-      ShortArray sampler_asv(numFunctions, 0);
-      cntr = 0;
-      for (i=0; i<numFunctions; ++i) {
-	cntr += 2;
-	size_t rl_len = requestedRespLevels[i].length();
-	if (respLevelTarget != RELIABILITIES)
-	  for (j=0; j<rl_len; ++j)
-	    if (final_asv[cntr+j] & 1)
-	      { sampler_asv[i] |= 1; break; }
-	cntr += rl_len;
-	size_t pl_len = requestedProbLevels[i].length();
-	for (j=0; j<pl_len; ++j)
-	  if (final_asv[cntr+j] & 1)
-	    { sampler_asv[i] |= 1; break; }
-	cntr += pl_len + requestedRelLevels[i].length();
-	size_t gl_len = requestedGenRelLevels[i].length();
-	for (j=0; j<gl_len; ++j)
-	  if (final_asv[cntr+j] & 1)
-	    { sampler_asv[i] |= 1; break; }
-	cntr += gl_len;
-      }
-      sampler_set.request_vector(sampler_asv);
-      expansionSampler.active_set(sampler_set);
-      // no summary output since on-the-fly constructed:
-      expansionSampler.run_iterator(Cout);
-    }
 
-    if (betaMappings)
-      exp_sampler_rep->moments(meanStats, stdDevStats); // for beta mappings
-    if (betaMappings || expSampling) {
-      exp_sampler_rep->
-	compute_distribution_mappings(expansionSampler.all_responses());
-      exp_sampler_rep->update_final_statistics();
+    // pass x-space data so that u-space Models can perform inverse transforms
+    exp_sampler_rep->initialize_random_variables(natafTransform);
+    // since expansionSampler uses an UNCERTAIN sampling mode, we must set the
+    // unsampled variables to their u-space values.
+    if (numContDesVars || numContEpistUncVars || numContStateVars)
+      uSpaceModel.continuous_variables(initialPtU);
+
+    // response fn is active for z->p, z->beta*, p->z, or beta*->z
+    ShortArray sampler_asv(numFunctions, 0);
+    cntr = 0;
+    for (i=0; i<numFunctions; ++i) {
+      cntr += 2;
+      size_t rl_len = requestedRespLevels[i].length();
+      if (respLevelTarget != RELIABILITIES)
+	for (j=0; j<rl_len; ++j)
+	  if (final_asv[cntr+j] & 1)
+	    { sampler_asv[i] |= 1; break; }
+      cntr += rl_len;
+      size_t pl_len = requestedProbLevels[i].length();
+      for (j=0; j<pl_len; ++j)
+	if (final_asv[cntr+j] & 1)
+	  { sampler_asv[i] |= 1; break; }
+      cntr += pl_len + requestedRelLevels[i].length();
+      size_t gl_len = requestedGenRelLevels[i].length();
+      for (j=0; j<gl_len; ++j)
+	if (final_asv[cntr+j] & 1)
+	  { sampler_asv[i] |= 1; break; }
+      cntr += gl_len;
     }
-    // sample correlations are superceded by analytic VBD
-    //if (!subIteratorFlag && expSampling)
-    //  exp_sampler_rep->compute_correlations(expansionSampler.all_variables(),
-    //					      expansionSampler.all_responses());
-    const RealVector& sampler_final_stats
+    ActiveSet sampler_set = expansionSampler.active_set(); // copy
+    sampler_set.request_vector(sampler_asv);
+    expansionSampler.active_set(sampler_set);
+
+    // no summary output since on-the-fly constructed:
+    expansionSampler.run_iterator(Cout);
+    exp_sampler_rep->
+      compute_distribution_mappings(expansionSampler.all_responses());
+    exp_sampler_rep->update_final_statistics();
+    const RealVector& exp_sampler_stats
       = expansionSampler.response_results().function_values();
  
-    RealVectorArray imp_final_stats(numFunctions);
+    // Update probability estimates with importance sampling, if requested.
+    RealVectorArray imp_sampler_stats;
     if (impSampling) {
+      NonDAdaptImpSampling* imp_sampler_rep
+	= (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+
       //imp_sampler_rep->initialize_random_variables(natafTransform);
       // since importanceSampler uses an UNCERTAIN sampling mode, we must set
       // the unsampled variables to their u-space values.
@@ -1473,180 +1525,113 @@ void NonDExpansion::compute_statistics()
       // response fn is active for z->p, z->beta*, p->z, or beta*->z
       //ActiveSet sampler_set = importanceSampler.active_set(); // copy
       //ShortArray sampler_asv(numFunctions, 0);
-      cntr = 0;
 
       const RealMatrix&    exp_vars      = expansionSampler.all_samples();
       const ResponseArray& exp_responses = expansionSampler.all_responses();
       int exp_cv = exp_vars.numRows();
 
+      sampler_cntr = 0;
+      imp_sampler_stats.resize(numFunctions);
       for (i=0; i<numFunctions; ++i) {
-	cntr += 2;
-	int rl_len = requestedRespLevels[i].length();
-        imp_final_stats[i].resize(rl_len);
-	if (respLevelTarget != RELIABILITIES)
-	  for (j=0; j<rl_len; j++) {
+	sampler_cntr += 2;
+	size_t rl_len = requestedRespLevels[i].length();
+	if (respLevelTarget != RELIABILITIES) {
+	  imp_sampler_stats[i].resize(rl_len);
+	  for (j=0; j<rl_len; ++j, ++sampler_cntr) {
             // Currently initializing importance sampling with both 
             // original build points and LHS expansion sampler points
 	    const SDPList& expansion_data = uSpaceModel.approximation_data(i);
-	    size_t num_data_pts = expansion_data.size();
-            size_t num_to_is = numSamplesOnExpansion + num_data_pts;
+	    size_t m, num_data_pts = expansion_data.size(),
+	      num_to_is = numSamplesOnExpansion + num_data_pts;
            
             RealVectorArray initial_points(num_to_is);
-	    //RealPRPMultiMap bestMap;
-            
-            //for (int k = 0; k<numSamplesOnExpansion;k++) {
-	      //ParamResponsePair curr_prp(exp_vars[k],
-	      //  iteratedModel.interface_id(), exp_responses[k],k);
-	      //Real fn_value = exp_responses[k].function_values()[i];
-	      //Real closeThreshold = fabs(fn_value-requestedRespLevels[i][j]);
-	      //Cout << "fn_value " << fn_value << "\ncloseThreshold "
-	      //     << closeThreshold << '\n';
-
-	      //if (k < numImpStartPoints) {
-	        //bestMap.insert(
-	        //  std::pair<Real,ParamResponsePair>(closeThreshold,curr_prp));
-	      //}
-	      //else {
-	        //RealPRPMultiMap::iterator last_iter = --bestMap.end();
-	        //if (closeThreshold < last_iter->first){
-	        //  bestMap.erase(last_iter);
-	        //  bestMap.insert(std::pair<Real,ParamResponsePair>(
-	        //                 closeThreshold, curr_prp));
-	        //}
-	      //}
-	    //}
-	    //RealPRPMultiMap::iterator iter;
-            size_t m;
-
-	    //for (m=0, iter=bestMap.begin();
-	    //     m<numImpStartPoints && iter!=bestMap.end(); ++iter, ++m)
 	    SDPLCIter cit = expansion_data.begin();
-	    for (m=0; m<num_data_pts; ++m, ++cit) {
+	    for (m=0; m<num_data_pts; ++m, ++cit)
 	      initial_points[m] = cit->continuous_variables(); // view OK
-	      //Cout << "InitialPoint M" << initial_points[m];  
-	    }
-
-            for (m=0; m<numSamplesOnExpansion; m++) {
-	      // ParamResponsePair prp = iter->second;
-	      //initial_points[m]=prp.prp_parameters().continuous_variables();
+            for (m=0; m<numSamplesOnExpansion; ++m)
               copy_data(exp_vars[m], exp_cv, initial_points[m+num_data_pts]);
-	      //Cout << "InitialPoint M + buildpoints"
-	      //     << initial_points[m+num_data_pts] << "Responses at M"
-	      //     << prp.prp_response() << "\nResponses at M"
-	      //     << exp_responses[m] << '\n';
-	    }
 
-            Cout << "Initial estimate of p to seed  "
-		 << sampler_final_stats[cntr+j] << "\n";
-
+            //Cout << "Initial estimate of p to seed "
+	    //     << exp_sampler_stats[sampler_cntr] << '\n';
 	    imp_sampler_rep->initialize(initial_points, i, 
-              sampler_final_stats[cntr+j], requestedRespLevels[i][j]);
+	      exp_sampler_stats[sampler_cntr], requestedRespLevels[i][j]);
           
 	    // no summary output since on-the-fly constructed:
-            importanceSampler.run_iterator(Cout); 
-            const Real& p = imp_sampler_rep->get_probability();
+            importanceSampler.run_iterator(Cout);
+
+            //const Real& p = imp_sampler_rep->get_probability();
             //Cout << "importance sampling estimate for function " << i 
             //     << " level " << j << " = " << p << "\n";
-	    imp_final_stats[i][j]=p;
-
-	    //bestMap.clear();
-        }
+	    imp_sampler_stats[i][j] = imp_sampler_rep->get_probability();
+	  }
+	}
+	// sampler_cntr offset by moments, rl_len for p, pl_len, and gl_len
+	sampler_cntr += requestedProbLevels[i].length()
+	             +  requestedGenRelLevels[i].length();
       }
     }
  
-    RealVector final_stat_grad;
-    if (!finalStatistics.function_gradients().empty())
-      final_stat_grad.sizeUninitialized(num_final_grad_vars);
-    cntr = 0;
-    for (i=0; i<numFunctions; ++i) {//level stats provided from expansionSampler
-      size_t rl_len = requestedRespLevels[i].length(),
-	     pl_len = requestedProbLevels[i].length(),
-	     bl_len = requestedRelLevels[i].length(),
-	     gl_len = requestedGenRelLevels[i].length();
+    // Update finalStatistics from {exp,imp}_sampler_stats.  Moment mappings
+    // are not recomputed since empty level arrays are passed in construct_
+    // expansion_sampler() and these levels are omitting from sampler_cntr.
+    cntr = sampler_cntr = 0;
+    for (i=0; i<numFunctions; ++i) {
+      cntr += 2; sampler_cntr += 2;
 
-      bool beta_mapping_grad_flag = false;
       if (respLevelTarget == RELIABILITIES)
-	for (j=0; j<rl_len; ++j)
-	  if (final_asv[cntr+2+j] & 2)
-	    { beta_mapping_grad_flag = true; break; }
-      for (j=0; j<bl_len; ++j)
-	if (final_asv[cntr+2+pl_len+j] & 2)
-	  { beta_mapping_grad_flag = true; break; }
-      RealVector empty_rv;
-      RealVector mean_grad    = (beta_mapping_grad_flag) ?
-	finalStatistics.function_gradient(cntr) : empty_rv;
-      RealVector std_dev_grad = (beta_mapping_grad_flag) ?
-	finalStatistics.function_gradient(cntr+1) : empty_rv;
-      cntr += 2;
-
-      for (j=0; j<rl_len; j++, cntr++) {
-	if (final_asv[cntr] & 1) {
-          if (impSampling)
-	    finalStatistics.function_value(imp_final_stats[i][j], cntr);
-	  else
-            finalStatistics.function_value(sampler_final_stats[cntr], cntr);
-        }
-	if (final_asv[cntr] & 2) {
-	  switch (respLevelTarget) {
-	  case PROBABILITIES: // TO DO: z->p sampling sensitivity analysis
-	    Cerr << "\nError: analytic response probability sensitivity not "
-		 << "yet supported." << std::endl;
-	    abort_handler(-1);
-	    break;
-	  case RELIABILITIES: {
-	    const Real& std_dev = stdDevStats[i];
-	    if (std_dev > 1.e-25) {
-	      const Real& z_bar = requestedRespLevels[i][j];
-	      const Real& mean  = meanStats[i];
-	      for (k=0; k<num_final_grad_vars; ++k) {
-		//Real ratio = (meanStats[i] - z_bar)/stdDevStats[i];
-		Real dratio_dx = (std_dev*mean_grad[k] - (mean - z_bar)*
-				  std_dev_grad[k]) / std::pow(std_dev, 2);
-		final_stat_grad[k] = (cdfFlag) ? dratio_dx : -dratio_dx;
-	      }
+	cntr += requestedRespLevels[i].length();
+      else {
+	size_t rl_len = requestedRespLevels[i].length();
+	for (j=0; j<rl_len; ++j, ++cntr, ++sampler_cntr) {
+	  if (final_asv[cntr] & 1) {
+	    const Real& p = (impSampling) ? imp_sampler_stats[i][j]
+	                                  : exp_sampler_stats[sampler_cntr];
+	    if (respLevelTarget == PROBABILITIES) {
+	      computedProbLevels[i][j] = p;
+	      finalStatistics.function_value(p, cntr);
 	    }
-	    else
-	      final_stat_grad = 0.;
-	    break;
+	    else if (respLevelTarget == GEN_RELIABILITIES) {
+	      computedGenRelLevels[i][j] = gen_beta = -Pecos::Phi_inverse(p);
+	      finalStatistics.function_value(gen_beta, cntr);
+	    }
 	  }
-	  case GEN_RELIABILITIES: // TO DO: z->p->beta* sampling SA
-	    Cerr << "\nError: analytic response generalized reliability "
-		 << "sensitivity not yet supported." << std::endl;
+	  if (final_asv[cntr] & 2) { // TO DO: sampling sensitivity analysis
+	    Cerr << "\nError: analytic sensitivity of response ";
+	    if (respLevelTarget == PROBABILITIES)
+	      Cerr << "probability";
+	    else if (respLevelTarget == GEN_RELIABILITIES)
+	      Cerr << "generalized reliability";
+	    Cerr << " not yet supported." << std::endl;
 	    abort_handler(-1);
-	    break;
 	  }
-	  finalStatistics.function_gradient(final_stat_grad, cntr);
 	}
       }
-      for (j=0; j<pl_len; j++, cntr++) {
-	if (final_asv[cntr] & 1)
-	  finalStatistics.function_value(sampler_final_stats[cntr], cntr);
-	if (final_asv[cntr] & 2) {
-	  // TO DO: p->z sampling sensitivity analysis
-	  Cerr << "\nError: analytic response level sensitivity not yet "
+
+      size_t pl_len = requestedProbLevels[i].length();
+      for (j=0; j<pl_len; ++j, ++cntr, ++sampler_cntr) {
+	if (final_asv[cntr] & 1) {
+	  computedRespLevels[i][j] = z = exp_sampler_stats[sampler_cntr];
+	  finalStatistics.function_value(z, cntr);
+	}
+	if (final_asv[cntr] & 2) { // TO DO: p->z sampling sensitivity analysis
+	  Cerr << "\nError: analytic sensitivity of response level not yet "
 	       << "supported for mapping from probability." << std::endl;
 	  abort_handler(-1);
 	}
       }
-      for (j=0; j<bl_len; j++, cntr++) {
-	if (final_asv[cntr] & 1)
-	  finalStatistics.function_value(sampler_final_stats[cntr], cntr);
-	if (final_asv[cntr] & 2) {
-	  const Real& beta_bar = requestedRelLevels[i][j];
-	  for (k=0; k<num_final_grad_vars; ++k)
-	    final_stat_grad[k] = (cdfFlag) ?
-	      mean_grad[k] - beta_bar * std_dev_grad[k] :
-	      mean_grad[k] + beta_bar * std_dev_grad[k];
 
-	  finalStatistics.function_gradient(final_stat_grad, cntr);
+      size_t bl_len = requestedRelLevels[i].length();
+      cntr += bl_len;
+
+      size_t gl_len = requestedGenRelLevels[i].length();
+      for (j=0; j<gl_len; ++j, ++cntr, ++sampler_cntr) {
+	if (final_asv[cntr] & 1) {
+	  computedRespLevels[i][j+pl_len+bl_len] = z
+	    = exp_sampler_stats[sampler_cntr];
+	  finalStatistics.function_value(z, cntr);
 	}
-      }
-      for (j=0; j<gl_len; j++, cntr++) {
-	if (final_asv[cntr] & 1)
-	  finalStatistics.function_value(sampler_final_stats[cntr], cntr);
-	if (final_asv[cntr] & 2) {
-	  // TO DO: beta*->p->z sampling sensitivity analysis
-	  Cerr << "\nError: analytic response level sensitivity not yet "
+	if (final_asv[cntr] & 2) { // TO DO: beta*->p->z sampling SA
+	  Cerr << "\nError: analytic sensitivity of response level not yet "
 	       << "supported for mapping from generalized reliability."
 	       << std::endl;
 	  abort_handler(-1);
@@ -1837,23 +1822,7 @@ void NonDExpansion::print_results(std::ostream& s)
 {
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
-  const StringArray& fn_labels = iteratedModel.response_labels();
   size_t i, j, cntr;
-
-  s << "-------------------------------------------------------------------"
-    << "\nStatistics derived analytically from polynomial expansion:\n";
-
-  s << "\nMoments for each response function:\n";
-  for (i=0; i<numFunctions; ++i) {
-    s << fn_labels[i]
-      << ":  Mean = "     << std::setw(write_precision+7) << meanStats[i]
-      << "  Std. Dev. = " << std::setw(write_precision+6) << stdDevStats[i]
-      << "  Coeff. of Variation = ";
-    if (std::fabs(meanStats[i]) > 1.e-25)
-      s << std::setw(write_precision+7) << stdDevStats[i]/meanStats[i] << '\n';
-    else
-      s << "Undefined\n";
-  }
 
   if ( ( !subIteratorFlag && outputLevel >= NORMAL_OUTPUT ) ||
        (  subIteratorFlag && outputLevel >= DEBUG_OUTPUT ) ) {
@@ -1863,33 +1832,14 @@ void NonDExpansion::print_results(std::ostream& s)
   if (vbdControl)
     print_sobol_indices(s);
 
-  if ( totalLevelRequests && ( betaMappings || expSampling ) ) {
-    // match compute_distribution_mappings
+  if (totalLevelRequests) {
     s << "\nStatistics based on ";
     if (expSampling)
       s << numSamplesOnExpansion << " samples performed on polynomial "
 	<< "expansion:\n";
     else
       s << "projection of analytic moments:\n";
-    NonDSampling* exp_sampler_rep
-      = (NonDSampling*)expansionSampler.iterator_rep();
-    exp_sampler_rep->print_distribution_mappings(s);
-    // sample correlations are superceded by analytic VBD
-    //if (!subIteratorFlag && expSampling)
-    //  exp_sampler_rep->print_correlations(s);
-    if (impSampling) {
-      s << "Importance Sampling estimates:\n";
-      cntr=0;
-      for (i=0; i<numFunctions; i++){
-        s << "Response Function " << i << "\n";
-        cntr +=2;
-	size_t rl_len = requestedRespLevels[i].length();
-	for (j=0; j<rl_len; j++, cntr++) {
-	    s << "   " << requestedRespLevels[i][j] << "   "
-	      <<  finalStatistics.function_value(cntr) << "\n";
-        }
-      }
-    }
+    print_distribution_mappings(s);
   } 
   s << "-------------------------------------------------------------------"
     << std::endl;
