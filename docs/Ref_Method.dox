@@ -1023,7 +1023,7 @@ essentially identical to those for DOT.  Therefore, the discussion in
 CONMIN does not currently support any method dependent controls. 
 
 
-\subsection MethodOPTPP OPT++ Methods\
+\subsection MethodOPTPP OPT++ Methods
 <!-- dakota subcat optpp -->
 
 The OPT++ library [\ref MeOlHoWi07 "Meza et al., 2007"] contains primarily
