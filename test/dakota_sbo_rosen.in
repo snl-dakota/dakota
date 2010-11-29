@@ -62,7 +62,7 @@ model,
 	  polynomial quadratic 			#0
 #	  neural_network			#1
 #	  kriging				#2,#3
-#	   correlation_lengths =  0.79 0.76	#3
+#	   correlation_lengths 0.79 0.76	#3
 #	  mars					#4
 #	  moving_least_squares			#7
 #	  radial_basis				#8
