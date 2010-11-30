@@ -567,10 +567,38 @@ foreach $file (@testin) {
 	    print TEST_OUT;
 	  }
 
+	  if (/moments for each response function:/) {
+	    print;
+	    print TEST_OUT;
+	    $_ = <OUTPUT>; # grab next line (Mean/Var/Skew/Kurt header)
+	    print;
+	    print TEST_OUT;
+	    $_ = <OUTPUT>; # grab next line (secondary tag header or table data)
+	    if (/^\s*\w+$/) { # PCE w/ expansion _and_ numerical moments
+	      while (/^\s*\w+$/) {
+	        $_ = <OUTPUT>; # grab next line (table data)
+	        while (/\s+$e/) {
+		  print;
+		  print TEST_OUT;
+		  $_ = <OUTPUT>; # grab next line
+	        }
+	      }
+	    }
+	    else { # PCE/SC w/ expansion _or_ numerical moments
+	      while (/\s+$e/) {
+		print;
+	        print TEST_OUT;
+	        $_ = <OUTPUT>; # grab next line
+	      }
+	    }
+	  }
+
 	  while (/^\w+ Sobol indices:/) {
 	    print;
 	    print TEST_OUT;
 	    $_ = <OUTPUT>; # grab next line (header)
+	    print;
+	    print TEST_OUT;
 	    $_ = <OUTPUT>; # grab next line (table data)
 	    while (/^\s+$e/) {
 	      print;
@@ -578,6 +606,8 @@ foreach $file (@testin) {
 	      $_ = <OUTPUT>; # grab next line
 	    }
 	    if (/Interaction/) { # header of optional section
+	      #print;          # process as one big table in dakota_diff.perl
+	      #print TEST_OUT; # process as one big table in dakota_diff.perl
 	      $_ = <OUTPUT>; # grab next line (table data)
 	      while (/^\s+$e/) {
 	        print;
