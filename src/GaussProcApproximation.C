@@ -421,14 +421,19 @@ void GaussProcApproximation::get_cov_matrix()
 
   size_t i,j,k;
   covMatrix.shape(numObs);
+  RealVector expThetaParms(numVars);
+  
+  for (i=0; i<numVars; i++){
+    expThetaParms[i]=std::exp(thetaParams[i]);
+  }
   Real sume, delta;
   for (j=0; j<numObs; j++){
     for (k=j; k<numObs; k++){
       sume = 0.;
       for (i=0; i<numVars; i++){
 	Real pt_diff = normTrainPoints(j,i) - normTrainPoints(k,i);
-	//sume += thetaParams[i]*pt_diff*pt_diff;
-	sume += std::exp(thetaParams[i])*pt_diff*pt_diff;
+	sume += expThetaParms[i]*pt_diff*pt_diff;
+	//sume += std::exp(thetaParams[i])*pt_diff*pt_diff;
       }
       covMatrix(k,j) = std::exp(-1.*sume);
     }
@@ -472,9 +477,9 @@ int GaussProcApproximation::get_cholesky_factor()
       ok = covSlvr.factor();
       nugget *= 3.0;
     } while (ok > 0);
-#ifdef DEBUG_FULL
+//#ifdef DEBUG_FULL
     Cout << "COV matrix corrected with nugget: " << nugget/3. << endl;
-#endif
+//#endif
     cholFlag = 1;
     return 1;
   }
@@ -586,9 +591,9 @@ void GaussProcApproximation::get_cov_vector()
     Real sume = 0.;    
     for (i=0; i<numVars; i++){
       //sume += thetaParams[i]*std::pow((normTrainPoints(j,i)-approxPoint(0,i)),2);
-      sume +=
-	expThetaParms[i]*(normTrainPoints(j,i)-approxPoint(0,i))*
-	  (normTrainPoints(j,i)-approxPoint(0,i));
+      
+      sume += expThetaParms[i]*(normTrainPoints(j,i)-approxPoint(0,i))*
+	(normTrainPoints(j,i)-approxPoint(0,i));
     }
     covVector(j,0) = std::exp(-1.*sume);
   }

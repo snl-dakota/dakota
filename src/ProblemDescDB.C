@@ -2033,11 +2033,19 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 
   if (!dbRep)
 	Null_rep("get_sizet");
-  if (entry_name.begins("strategy.")) {
-    if (entry_name == "strategy.hybrid.num_solutions_transferred")
-      return dbRep->strategySpec.dataStratRep->hybridNumSolnsTrans;
+  if ((L = Begins(entry_name, "method."))) {
+    if (dbRep->methodDBLocked)
+	Locked_db();
+    #define P &DataMethodRep::
+    static KW<size_t, DataMethodRep> Szdmo[] = {	// must be sorted
+	{"final_solutions", P numFinalSolutions}};
+    #undef P
+
+    KW<size_t, DataMethodRep> *kw;
+    if ((kw = (KW<size_t, DataMethodRep>*)Binsearch(Szdmo, L)))
+	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
   }
-  else if ((L = Begins(entry_name, "method.jega.num_"))) {
+  if ((L = Begins(entry_name, "method.jega.num_"))) {
     if (dbRep->methodDBLocked)
 	Locked_db();
     #define P &DataMethodRep::

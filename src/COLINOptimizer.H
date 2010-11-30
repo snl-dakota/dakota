@@ -136,8 +136,6 @@ protected:
   /// \c nonblocking
   bool blockingSynch;
 
-  /// number of solutions to retain in best variables/response arrays 
-  size_t numBest;
 
    /// Buffer to hold problem constraint_penalty parameter
    Real constraint_penalty;

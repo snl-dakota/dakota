@@ -11,7 +11,6 @@ KEYWORD01 strategy {NIDRProblemDescDB::strategy_start}
 	  ( sequential ALIAS uncoupled {N_stm(lit,hybridType_sequential)}
 #	    [ adaptive {N_stm(lit,hybridType_sequential_adaptive)}
 #	      progress_threshold REAL {N_stm(Real,hybridProgThresh)} ]
-	    [ num_solutions_transferred INTEGER {N_stm(int,hybridNumSolnsTrans)} ]
 	    method_list STRINGLIST {N_stm(strL,hybridMethodList)}
 	    )
 	  |
@@ -63,6 +62,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	[ convergence_tolerance REAL {N_mdm(Real,convergenceTolerance)} ]
 	[ constraint_tolerance REAL {N_mdm(Real,constraintTolerance)} ]
 	[ scaling {N_mdm(true,methodScaling)} ]
+	[ final_solutions INTEGER >= 0 {N_mdm(nnintz,numFinalSolutions)} ]
 	( ( surrogate_based_local {N_mdm(lit,methodName_surrogate_based_local)}
 	    approx_method_name STRING {N_mdm(str,subMethodName)}
 	    | approx_method_pointer STRING {N_mdm(str,subMethodPointer)}

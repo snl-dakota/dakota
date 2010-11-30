@@ -527,7 +527,8 @@ Iterator::Iterator(BaseConstructor, Model& model):
   intervalType(probDescDB.get_string("responses.interval_type")),
   hessianType(probDescDB.get_string("responses.hessian_type")),
   fdGradStepSize(fdGradStepDflt), fdHessByGradStepSize(0.001),
-  fdHessByFnStepSize(0.002),numBest(1),
+  fdHessByFnStepSize(0.002),
+  numFinalSolutions(probDescDB.get_sizet("method.final_solutions")),
   // Output verbosity is observed within Iterator (algorithm verbosity),
   // Model (synchronize/estimate_derivatives verbosity), Interface
   // (map/synch verbosity), Approximation (global data fit coefficient
@@ -630,7 +631,7 @@ Iterator::Iterator(NoDBBaseConstructor, Model& model):
   gradientType(model.gradient_type()), methodSource(model.method_source()),
   intervalType(model.interval_type()), hessianType(model.hessian_type()),
   fdGradStepSize(0.001), fdHessByGradStepSize(0.001), 
-  fdHessByFnStepSize(0.002),numBest(1),
+  fdHessByFnStepSize(0.002),numFinalSolutions(1),
   outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false), 
   writePrecision(0), idMethod("NO_DB_METHOD"),
   iteratorRep(NULL), referenceCount(1)
@@ -651,7 +652,7 @@ Iterator::Iterator(NoDBBaseConstructor): probDescDB(dummy_db),
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxConcurrency(1), subIteratorFlag(false), gradientType("none"),
   hessianType("none"), fdGradStepSize(0.001), fdHessByGradStepSize(0.001),
-  fdHessByFnStepSize(0.002), numBest(1),outputLevel(NORMAL_OUTPUT),
+  fdHessByFnStepSize(0.002), numFinalSolutions(1),outputLevel(NORMAL_OUTPUT),
   summaryOutputFlag(false), writePrecision(0),
   idMethod("NO_DB_METHOD"), iteratorRep(NULL), referenceCount(1)
 {

@@ -1604,7 +1604,7 @@ JEGAOptimizer::GetBestMOSolutions(
         // insert the design into the map, keeping only numBest
         RealRealPair metrics(constraintViolation, utopiaDistance);
 
-        if(designSortMap.size() < this->numBest)
+        if(designSortMap.size() < this->numFinalSolutions)
             designSortMap.insert(std::make_pair(metrics, *design_it));
         else 
         {
@@ -1686,7 +1686,7 @@ JEGAOptimizer::GetBestSOSolutions(
         // insert the design into the map, keeping only numBest
         RealRealPair metrics(constraintViolation, objectiveFunction);
 
-        if(designSortMap.size() < this->numBest)
+        if(designSortMap.size() < this->numFinalSolutions)
             designSortMap.insert(std::make_pair(metrics, *design_it));
         else 
         {
@@ -1829,7 +1829,7 @@ JEGAOptimizer::JEGAOptimizer(
     int pop_size = this->probDescDB.get_int("method.population_size");
     this->maxConcurrency *= pop_size;
 
-    this->numBest = std::numeric_limits<std::size_t>::max(); // return all designs
+    this->numFinalSolutions = std::numeric_limits<std::size_t>::max(); // return all designs
 
     // We only ever need one EvaluatorCreator so we can create it now.
     this->_theEvalCreator = new EvaluatorCreator(iteratedModel);

@@ -65,6 +65,8 @@ class ProblemDescDB
   friend class SingleMethodStrategy;
   /// HybridStrategy requires access to get_model()
   friend class HybridStrategy;
+ /// SequentialStrategy requires access to get_iterator()
+  friend class SequentialHybridStrategy;
   /// ConcurrentStrategy requires access to get_model()
   friend class ConcurrentStrategy;
 

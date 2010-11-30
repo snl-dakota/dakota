@@ -4381,6 +4381,7 @@ static int
 	MP_(verifyLevel);
 
 static size_t
+        MP_(numFinalSolutions),
 	MP_(numGenerations),
 	MP_(numOffspring),
 	MP_(numParents);
@@ -4605,9 +4606,6 @@ static int
 	MP_(concurrentSeed),
         MP_(iteratorServers),
         MP_(outputPrecision);
-
-static size_t
-        MP_(hybridNumSolnsTrans);
 
 #undef MP2
 #undef MP_

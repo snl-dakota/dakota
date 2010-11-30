@@ -759,7 +759,7 @@ update_best(const Real* sample_c_vars, int eval_id, const Response& response)
 #endif
 
   size_t num_best_map = bestVarsRespMap.size();
-  if (num_best_map < numBest) { // initialization of best map
+  if (num_best_map < numFinalSolutions) { // initialization of best map
     Variables vars = iteratedModel.current_variables().copy();
     sample_to_variables(sample_c_vars, vars); // copy sample only when needed
     Response copy_resp = response.copy();
@@ -798,7 +798,7 @@ update_best(const Variables& vars, int eval_id, const Response& response)
 #endif
 
   size_t num_best_map = bestVarsRespMap.size();
-  if (num_best_map < numBest) { // initialization of best map
+  if (num_best_map < numFinalSolutions) { // initialization of best map
     ParamResponsePair prp(vars, iteratedModel.interface_id(),
 			  response, eval_id); // deep copy
     std::pair<RealRealPair, ParamResponsePair> new_pr(metrics, prp);

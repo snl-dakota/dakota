@@ -175,6 +175,8 @@ public:
   /// flag indicating scaling status (from the \c scaling specification in 
   /// \ref MethodIndControl)
   bool methodScaling;
+  /// number of final solutions returned from the iterator
+  size_t numFinalSolutions;
   /// coefficient matrix for the linear inequality constraints (from
   /// the \c linear_inequality_constraint_matrix specification in \ref
   /// MethodIndControl)

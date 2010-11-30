@@ -26,9 +26,6 @@ TAG "strategy/hybrid"
 TAG "strategy/hybrid/sequential"
 	DESC "{Sequential hybrid} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratHybrid"
 
-TAG "strategy/hybrid/sequential/num_solutions_transferred"
-	DESC "{Number of Solutions Transferred } http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratHybrid"
-
 TAG "strategy/hybrid/sequential/method_list"
 	DESC "{List of methods} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratHybrid"
 
@@ -122,6 +119,7 @@ TAG "method/constraint_tolerance"
 TAG "method/scaling"
 	DESC "{Scaling flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
 
+TAG "method/final_solutions"
 TAG "method/surrogate_based_local" GROUP "Surrogate-based Methods"
 TAG "method/surrogate_based_local/approx_method_name"
 	DESC "[CHOOSE sub-method ref.]{Approximate sub-problem minimization method name} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
@@ -793,6 +791,8 @@ TAG "method/polynomial_chaos/gen_reliability_levels/num_gen_reliability_levels"
 	DESC "{Number of generalized reliability levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"
 
 TAG "method/polynomial_chaos/rng"
+	DESC "{Random seed generator} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGPMSA"
+
 TAG "method/polynomial_chaos/rng/mt19937"
 TAG "method/polynomial_chaos/rng/rnum2"
 TAG "method/global_interval_est" GROUP "Uncertainty Quantification"
@@ -806,11 +806,17 @@ TAG "method/global_interval_est/rng/rnum2"
 TAG "method/bayes_calibration"
 TAG "method/bayes_calibration/queso"
 TAG "method/bayes_calibration/gpmsa"
+	DESC "{Method type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGPMSA"
+
 TAG "method/bayes_calibration/rng"
 TAG "method/bayes_calibration/rng/mt19937"
 TAG "method/bayes_calibration/rng/rnum2"
 TAG "method/bayes_calibration/x_obs_data_file"
+	DESC "{Experimental data file - input} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGPMSA"
+
 TAG "method/bayes_calibration/y_obs_data_file"
+	DESC "{Experimental data file - outputs} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGPMSA"
+
 TAG "method/bayes_calibration/y_std_data_file"
 TAG "method/dace" GROUP "[CHOOSE method category]DACE"
 TAG "method/dace/grid"
@@ -977,7 +983,7 @@ TAG "method/fsu_quasi_mc/variance_based_decomp"
 
 TAG "method/fsu_quasi_mc/variance_based_decomp/drop_tolerance"
 TAG "method/fsu_quasi_mc/samples"
-	DESC "{Number of samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"
+	DESC "{Number of samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGPMSA"
 
 TAG "method/fsu_quasi_mc/fixed_sequence"
 	DESC "{Fixed sequence flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"

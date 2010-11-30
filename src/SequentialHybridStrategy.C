@@ -27,10 +27,6 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
   HybridStrategy(problem_db), 
   hybridType(problem_db.get_string("strategy.hybrid.type"))
 {
-  size_t num_solutions = 
-    problem_db.get_sizet("strategy.hybrid.num_solutions_transferred");
-  numSolnsTransferred = (num_solutions > 0) ? num_solutions : 1;
-
   if (worldRank == 0)
     cout << "Constructing Sequential Hybrid Optimizer Strategy...\n";
 
@@ -54,6 +50,26 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
   }
 
   // TO DO: define this on a per-iterator basis for allocate_methods()
+
+  //userDefinedModels.resize(numIterators);
+  selectedIterators.resize(numIterators); // slaves also need for run_iterator
+
+  for (size_t i=0; i<numIterators; ++i) {
+    if (worldRank == 0)
+      Cout << "calling set_db_list_nodes with " << methodList[i] << std::endl;
+    problem_db.set_db_list_nodes(methodList[i]);
+
+    // Instantiate the i-th userDefinedModel and selectedIterator
+    //userDefinedModels[i] = probDescDB.get_model();
+    //selectedIterators[i]= probDescDB.get_iterator(userDefinedModels[i]);
+  }
+  
+  numSolnsTransferred = 1;
+  for (seqCount=0; seqCount<numIterators; seqCount++) {
+    Iterator& curr_iterator      = selectedIterators[seqCount];
+    if (curr_iterator.num_final_solutions() > numSolnsTransferred) 
+      numSolnsTransferred = curr_iterator.num_final_solutions();
+  }
   maxConcurrency = numSolnsTransferred;
   init_iterator_parallelism();
   // Adaptive hybrid does not support iterator concurrency --> verify settings.
@@ -96,6 +112,8 @@ void SequentialHybridStrategy::run_strategy()
 void SequentialHybridStrategy::run_sequential()
 {
   //size_t iterator_capacity = 1, max_instances = 10;
+  Cout << "MaxConcurrency " << maxConcurrency << '\n';
+  Cout << "Num Solutions Transferred " << numSolnsTransferred << '\n';
 
   for (seqCount=0; seqCount<numIterators; seqCount++) {
 
@@ -105,7 +123,7 @@ void SequentialHybridStrategy::run_sequential()
     bool      curr_accepts_multi = curr_iterator.accepts_multiple_points();
     bool      curr_returns_multi = curr_iterator.returns_multiple_points();
  
-    curr_iterator.num_best(numSolnsTransferred);
+    //curr_iterator.num_final_solutions(numSolnsTransferred);
 
     if (worldRank == 0) {
       cout << "\n>>>>> Running Sequential Hybrid Optimizer Strategy with "

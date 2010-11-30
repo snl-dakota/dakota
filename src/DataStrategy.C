@@ -23,7 +23,7 @@ DataStrategyRep::DataStrategyRep():
   strategyType("single_method"), graphicsFlag(false), tabularDataFlag(false),
   tabularDataFile("dakota_tabular.dat"), outputPrecision(0), iteratorServers(0),
   //hybridProgThresh(0.5),
-  hybridLSProb(0.1), hybridNumSolnsTrans(0),
+  hybridLSProb(0.1), 
   concurrentRandomJobs(0), concurrentSeed(0), referenceCount(1)
 { }
 
@@ -35,7 +35,7 @@ void DataStrategyRep::write(MPIPackBuffer& s) const
     << iteratorServers << iteratorScheduling << methodPointer
     << hybridMethodList << hybridType //<< hybridProgThresh
     << hybridGlobalMethodPointer << hybridLocalMethodPointer << hybridLSProb
-    << hybridNumSolnsTrans << concurrentRandomJobs << concurrentSeed
+    << concurrentRandomJobs << concurrentSeed
     << concurrentParameterSets;
 }
 
@@ -47,7 +47,7 @@ void DataStrategyRep::read(MPIUnpackBuffer& s)
     >> iteratorServers >> iteratorScheduling >> methodPointer
     >> hybridMethodList >> hybridType //>> hybridProgThresh
     >> hybridGlobalMethodPointer >> hybridLocalMethodPointer >> hybridLSProb
-    >> hybridNumSolnsTrans >> concurrentRandomJobs >> concurrentSeed
+    >> concurrentRandomJobs >> concurrentSeed
     >> concurrentParameterSets;
 }
 
@@ -59,7 +59,7 @@ void DataStrategyRep::write(std::ostream& s) const
     << iteratorServers << iteratorScheduling << methodPointer
     << hybridMethodList << hybridType //<< hybridProgThresh
     << hybridGlobalMethodPointer << hybridLocalMethodPointer << hybridLSProb
-    << hybridNumSolnsTrans << concurrentRandomJobs << concurrentSeed
+    << concurrentRandomJobs << concurrentSeed
     << concurrentParameterSets;
 }
 

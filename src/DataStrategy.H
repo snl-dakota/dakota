@@ -93,9 +93,6 @@ public:
   /// local search probability for embedded hybrids (from the \c
   /// local_search_probability specification in \ref StratHybrid)
   Real hybridLSProb;
-  /// Maximum number of solutions to be transferred from one method to a
-  /// subsequent method in the sequential hybrid optimization strategy
-  size_t hybridNumSolnsTrans;
 
   /// number of random jobs to perform in the concurrent strategy
   /// (from the \c random_starts and \c random_weight_sets specifications

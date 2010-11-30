@@ -9,7 +9,6 @@ KEYWORD01 strategy
 	[ iterator_static_scheduling ]
 	( hybrid
 	  ( sequential ALIAS uncoupled
-	    [ num_solutions_transferred INTEGER ]
 	    method_list STRINGLIST
 	    )
 	  |
@@ -59,6 +58,7 @@ KEYWORD12 method
 	[ convergence_tolerance REAL ]
 	[ constraint_tolerance REAL ]
 	[ scaling ]
+	[ final_solutions INTEGER >= 0 ]
 	( surrogate_based_local
 	  approx_method_name STRING
 	  | approx_method_pointer STRING

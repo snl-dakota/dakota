@@ -209,10 +209,6 @@ COLINOptimizer::COLINOptimizer(Model& model):
   if (scaleFlag || multiObjFlag)
     iteratedModel.init_communicators(maxConcurrency);
  
-  size_t num_solns 
-    = probDescDB.get_sizet("strategy.hybrid.num_solutions_transferred"); 
-  if (num_solns > numBest) 
-    numBest = num_solns; 
 }
 
 
