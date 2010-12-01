@@ -186,6 +186,10 @@ private:
   RealVector meanStats;
   /// std deviations of response functions (calculated in compute_moments())
   RealVector stdDevStats;
+  /// skewness of response functions (calculated in compute_moments())
+  RealVector skewnessStats;
+  /// kurtosis of response functions (calculated in compute_moments())
+  RealVector kurtosisStats;
 
   /// Min values of response functions for epistemic calculations
   /// (calculated in compute_intervals())

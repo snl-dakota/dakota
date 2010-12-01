@@ -469,11 +469,13 @@ void NonDSampling::compute_moments(const ResponseArray& samples)
 
   using boost::math::isfinite;
   size_t i, j, num_obs = samples.size(), num_samp;
-  Real sum, var;
+  Real sum, var, skew, kurt;
   const StringArray& resp_labels = iteratedModel.response_labels();
 
   if (meanStats.empty())           meanStats.resize(numFunctions);
   if (stdDevStats.empty())         stdDevStats.resize(numFunctions);
+  if (skewnessStats.empty())       skewnessStats.resize(numFunctions);
+  if (kurtosisStats.empty())       kurtosisStats.resize(numFunctions);
   if (mean95CIDeltas.empty())      mean95CIDeltas.resize(numFunctions);
   if (stdDev95CILowerBnds.empty()) stdDev95CILowerBnds.resize(numFunctions);
   if (stdDev95CIUpperBnds.empty()) stdDev95CIUpperBnds.resize(numFunctions);
@@ -481,7 +483,7 @@ void NonDSampling::compute_moments(const ResponseArray& samples)
   for (i=0; i<numFunctions; ++i) {
 
     num_samp  = 0;
-    sum = var = 0.;
+    sum = var = skew = kurt = 0.;
     // means
     for (j=0; j<num_obs; j++) {
       const Real& sample = samples[j].function_value(i);
@@ -510,6 +512,32 @@ void NonDSampling::compute_moments(const ResponseArray& samples)
 	var += std::pow(sample - meanStats[i], 2);
     }
     stdDevStats[i] = (num_samp > 1) ? std::sqrt(var/(Real)(num_samp-1)) : 0.;
+
+    // skewness
+    for (j=0; j<num_obs; j++) {
+      const Real& sample = samples[j].function_value(i);
+      if (isfinite(sample)) // neither NaN nor +/-Inf
+	skew += std::pow(sample - meanStats[i], 3);
+    }
+    // sample skewness
+    skewnessStats[i] = (num_samp > 3) ? 
+      skew/((Real)num_samp)/std::pow(var/((Real)num_samp),1.5) : 0.;
+    // population skewness 
+    skewnessStats[i] = (std::sqrt((Real)num_samp*((Real)num_samp-1))/
+	((Real)num_samp-2))*skewnessStats[i];
+
+    // kurtosis
+    for (j=0; j<num_obs; j++) {
+      const Real& sample = samples[j].function_value(i);
+      if (isfinite(sample)) // neither NaN nor +/-Inf
+	kurt += std::pow(sample - meanStats[i], 4);
+    }
+    kurtosisStats[i] = (num_samp > 4) ? (((Real)num_samp+1)*(Real)num_samp*
+	((Real)num_samp-1)*kurt)/(((Real)num_samp-2)*((Real)num_samp-3)
+	*std::pow(var,2)) : 0.;
+    // population kurtosis
+    kurtosisStats[i] = kurtosisStats[i]-(3*pow(((Real)num_samp-1),2)/
+			       (((Real)num_samp-2)*((Real)num_samp-3)));
 
     if (num_samp > 1) {
       // 95% confidence intervals (2-sided interval, not 1-sided limit)
@@ -764,27 +792,34 @@ void NonDSampling::print_moments(std::ostream& s) const
   const StringArray& resp_labels = iteratedModel.response_labels();
 
   s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision)
-    << "\nMoments for each response function:\n";
-  size_t i;
+  s << std::setprecision(write_precision);
+
+  size_t i, j, width = write_precision+7;
+ 
+  s << "\nMoment-based statistics for each response function:\n"
+    << std::setw(width+15) << "Mean"     << std::setw(width+1) << "Std Dev"
+    << std::setw(width+1)  << "Skewness" << std::setw(width+2) << "Kurtosis\n";
+  //<< std::setw(width+2)  << "Coeff of Var\n";
   for (i=0; i<numFunctions; ++i) {
-    s << resp_labels[i] << ":  Mean = " << meanStats[i]
-      << "  Std. Dev. = " << stdDevStats[i] << "  Coeff. of Variation = ";
-    if (std::fabs(meanStats[i]) > 1.e-25)
-      s << stdDevStats[i]/meanStats[i] << '\n';
-    else
-      s << "Undefined\n";
+    s << std::setw(14) << resp_labels[i];
+    s << ' ' << std::setw(width) << meanStats[i];
+    s << ' ' << std::setw(width) << stdDevStats[i];
+    s << ' ' << std::setw(width) << skewnessStats[i];
+    s << ' ' << std::setw(width) << kurtosisStats[i] << '\n';
   }
 
   if (numSamples > 1) {
     // output 95% confidence intervals as (,) interval
-    s << "\n95% confidence intervals for each response function:\n";
+    s << "\n95% confidence intervals for each response function:\n"
+      << std::setw(width+15) << "LowerCI_mean"     << std::setw(width+1)
+      << "UpperCI_mean" << std::setw(width+1)  << "LowerCI_StdDev" 
+      << std::setw(width+2) << "UpperCI_StdDev\n";
     for (i=0; i<numFunctions; ++i) {
-      s << resp_labels[i] << ":  Mean = ( " << meanStats[i] - mean95CIDeltas[i]
-	<< ", " << meanStats[i] + mean95CIDeltas[i] << " )";
-      s << ", Std Dev = ( " << stdDev95CILowerBnds[i] << ", "
-	<< stdDev95CIUpperBnds[i] << " )";
-      s << '\n';
+      s << std::setw(14) << resp_labels[i];
+      s << ' ' << std::setw(width) << meanStats[i] - mean95CIDeltas[i];
+      s	<< ' ' << std::setw(width) << meanStats[i] + mean95CIDeltas[i];
+      s << ' ' << std::setw(width) << stdDev95CILowerBnds[i];
+      s	<< ' ' << std::setw(width) << stdDev95CIUpperBnds[i] << '\n';
     }
   }
 }
