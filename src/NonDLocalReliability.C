@@ -628,8 +628,8 @@ void NonDLocalReliability::initial_taylor_series()
     //Cout << "\nvariance = " << variance << "\nstdDevStats = " << stdDevStats;
   }
   else {
-    meanStats   = 0.;
-    stdDevStats = 0.;
+    meanStats.size(numFunctions);   // init to 0
+    stdDevStats.size(numFunctions); // init to 0
   }
 }
 
