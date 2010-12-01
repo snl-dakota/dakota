@@ -5,7 +5,7 @@ AC_DEFUN([DAK_PACKAGES],[
   dnl -------------------
   dnl Boost package check
   dnl -------------------
-  AX_BOOST_BASE([1.37], [required], [packages/boost])
+  AX_BOOST_BASE([1.37], [required], [$srcdir/packages/boost], [packages/boost])
 
   if test "$ac_boost_build_tpl" = "yes"; then
     AC_MSG_NOTICE([will build bundled boost TPL.])

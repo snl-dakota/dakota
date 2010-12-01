@@ -6,7 +6,8 @@
 #
 #   AX_BOOST_BASE( [MINIMUM-VERSION], 
 #		   [available|optional|normal||required],
-#		   [local boost snapshot] )
+#		   [local boost snapshot | header location[, 
+#                   object location ]] )
 #
 # DESCRIPTION
 #
@@ -327,13 +328,25 @@ if test "x$want_boost" = "xyes"; then
 				fi
 			done
 
-			with_boost="$pwd/$best_tpl_path"
+			case "$best_tpl_path" in
+				"") ;;
+				/*) with_boost="$best_tpl_path" ;;
+				*)  with_boost="$pwd/$best_tpl_path" ;;
+			esac
 			BOOST_CPPFLAGS="$with_boost"
 			BOOST_LDFLAGS="$with_boost/stage/lib"
 		fi
 
+		dnl if we have a separate library path (specified or
+                dnl out-of-source build), override
 		if test "${ac_boost_lib_path+def}" = "def"; then
 			BOOST_LDFLAGS="${ac_boost_lib_path}"
+		else
+			case "$4" in
+				"") ;;
+				/*) BOOST_LDFLAGS="$4/stage/lib" ;;
+				*)  BOOST_LDFLAGS="$pwd/$4/stage/lib" ;;
+			esac
 		fi
 
 		if test -n "$with_boost"; then
