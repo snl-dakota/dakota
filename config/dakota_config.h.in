@@ -1,13 +1,10 @@
 // $Header
 
-// pecos_config.h.in.  Originally generated from configure.ac by autoheader.
-// Bares little resemblence with the original, now that the CMake build is
+// dakota_config.h.in.  Originally generated from configure.ac by autoheader.
+// Bares little resemblance with the original, now that the CMake build is
 // becoming less-and-less like an autotools build.
 #include <Teuchos_config.h>
 #include <pecos_config.h>
-
-// Macro to disable Boost asserts. (WJB - ToDo: set on the compile line instead)
-//wjbPOUND cmakedefine BOOST_DISABLE_ASSERTS 1
 
 // Macro to enable fork
 #cmakedefine HAVE_WORKING_FORK 1

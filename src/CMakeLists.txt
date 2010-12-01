@@ -60,11 +60,12 @@ set(util_src ParallelLibrary.C MPIPackBuffer.C
     SensAnalysisGlobal.C)
 
 if(HAVE_XDR)
-  set(util_src ${util_src} dak_xdr_interface.c)
+  list(APPEND util_src dak_xdr_interface.c)
 endif(HAVE_XDR)
 
 if(HAVE_TRACKING)
-  set(util_src ${util_src} TrackerHTTP.C)
+  list(APPEND util_src TrackerHTTP.C)
+  #WJB set(util_src ${util_src} TrackerHTTP.C)
 endif(HAVE_TRACKING)
 
 ## EVALDATA sources.
@@ -121,6 +122,20 @@ set(iterator_src DakotaIterator.C DakotaAnalyzer.C DakotaPStudyDACE.C
     EffGlobalMinimizer.C
 )
 
+if(HAVE_ACRO)
+  add_definitions("-DDAKOTA_COLINY")
+  #include_directories(${Acro_BINARY_DIR} ${Acro_SOURCE_DIR}/include
+  #                    ${Acro_BINARY_DIR}/src ${Acro_SOURCE_DIR}/src)
+  include_directories(${Acro_BINARY_DIR}/include
+                      ${Acro_BINARY_DIR}/packages/colin/src
+                      ${Acro_BINARY_DIR}/packages/interfaces/src
+                      ${Acro_BINARY_DIR}/scolib/interfaces/src)
+  list(APPEND interface_src COLINApplication.C COLINEvaluator.C)
+  list(APPEND iterator_src COLINOptimizer.C)
+  #link_directories(${Dakota_BINARY_DIR}/packages/acro)
+  #list(APPEND TPL_LIBS colin tinyxml 3po)
+endif(HAVE_ACRO)
+
 CheckPackage(CONMIN)
 if(HAVE_CONMIN)
   link_directories ( ${link_directories} ${CONMIN_LIB_DIRS} )
@@ -152,8 +167,8 @@ if(HAVE_GPMSA)
   add_definitions("-DDAKOTA_GPMSA")
   include_directories(${GPMSA_SOURCE_DIR})
   set(iterator_src ${iterator_src} NonDBayesCal.C)
-  #link_directories(${Dakota_BINARY_DIR}/methods/GPMSA)
-  # WJB: verify header-only!? set(TPL_LIBS ${TPL_LIBS} gpmsa)
+  #link_directories(${Dakota_BINARY_DIR}/packages/GPMSA)
+  # WJB: verify no longer HEADER-ONLY! set(TPL_LIBS ${TPL_LIBS} gpmsa)
 endif(HAVE_GPMSA)
 
 if(HAVE_JEGA)
@@ -162,7 +177,7 @@ if(HAVE_JEGA)
                       ${JEGA_SOURCE_DIR}/src ${JEGA_SOURCE_DIR}/eddy
                       ${JEGA_BINARY_DIR}/src ${JEGA_BINARY_DIR}/eddy)
   set(iterator_src ${iterator_src} JEGAOptimizer.C)
-  #link_directories(${Dakota_BINARY_DIR}/methods/JEGA)
+  #link_directories(${Dakota_BINARY_DIR}/packages/JEGA)
   # WJB: "jega_link_libs: looks fishy; confer with Zack about JEGA commit 692
   set(TPL_LIBS ${TPL_LIBS} jega jega_fe moga soga eutils)
 endif(HAVE_JEGA)
@@ -170,7 +185,7 @@ endif(HAVE_JEGA)
 if(HAVE_NCSUOPT)
   add_definitions("-DDAKOTA_NCSU")
   set(iterator_src ${iterator_src} NCSUOptimizer.C)
-  #link_directories(${Dakota_BINARY_DIR}/methods/NCSUOpt)
+  #link_directories(${Dakota_BINARY_DIR}/packages/NCSUOpt)
   set(TPL_LIBS ${TPL_LIBS} ncsuopt)
 endif(HAVE_NCSUOPT)
 
@@ -200,9 +215,9 @@ if(HAVE_OPTPP)
   # WJB - ToDo: FY11 contract - "pair-program" a FINAL iteration with Zack
   include_directories(${optpp_BINARY_DIR}/config ${optpp_SOURCE_DIR}/include
                       ${optpp_SOURCE_DIR}/newmat11)
-  #include_directories(${PROJECT_BINARY_DIR}/methods/OPTPP/include
-  #                    ${PROJECT_SOURCE_DIR}/methods/OPTPP/include
-  #                    ${PROJECT_SOURCE_DIR}/methods/OPTPP/newmat11)
+  #include_directories(${PROJECT_BINARY_DIR}/packages/OPTPP/include
+  #                    ${PROJECT_SOURCE_DIR}/packages/OPTPP/include
+  #                    ${PROJECT_SOURCE_DIR}/packages/OPTPP/newmat11)
 
   add_definitions("-DDAKOTA_OPTPP")
   add_definitions("-DDAKOTA_NEWMAT")
@@ -214,7 +229,7 @@ if(HAVE_PSUADE)
   add_definitions("-DHAVE_PSUADE")
   include_directories(${PSUADE_SOURCE_DIR})
   set(iterator_src ${iterator_src} PSUADEDesignCompExp.C)
-  #link_directories(${Dakota_BINARY_DIR}/methods/PSUADE)
+  #link_directories(${Dakota_BINARY_DIR}/packages/PSUADE)
   set(TPL_LIBS ${TPL_LIBS} psuade)
 endif(HAVE_PSUADE)
 

@@ -38,6 +38,10 @@ endif(HAVE_AMPL)
 
 
 
+if(HAVE_ACRO)
+  add_subdirectory(acro)
+endif(HAVE_ACRO)
+
 if(HAVE_DDACE)
   add_subdirectory(DDACE)
 endif(HAVE_DDACE)

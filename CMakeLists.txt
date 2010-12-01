@@ -47,12 +47,12 @@ set( CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH}
 )
 
-set(BOOST_DISABLE_ASSERTS 1)
 # WJB: Request a probe from Kitware to manage the OS/fork setting
 set(HAVE_WORKING_FORK 1)
 
 
 option(HAVE_PECOS "Build the Pecos package." ON)
+# WJB - ToDo with Zack - ASAP: option(HAVE_ACRO "Build the ACRO package." ON)
 option(HAVE_AMPL "Build the AMPL package." ON)
 option(HAVE_DDACE "Build the DDACE package." ON)
 option(HAVE_DOT "Build the DOT package." ON)
