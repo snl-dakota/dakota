@@ -46,8 +46,10 @@ public:
   //void initialize_expansion();
   //void compute_expansion();
 
-  /// print the final SC statistics
-  void print_results(std::ostream& s);
+  // print the SC coefficient array using a monomial basis
+  //void print_coefficients(std::ostream& s);
+  /// print the numerical moments
+  void print_moments(std::ostream& s);
 
 private:
 

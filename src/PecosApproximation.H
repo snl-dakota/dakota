@@ -127,18 +127,18 @@ public:
   Real get_covariance(const Pecos::RealVector& x,
 		      const Pecos::RealVector& exp_coeffs_2);
 
-  /// compute central moments up to the order supported by the Pecos
+  /// compute moments up to the order supported by the Pecos
   /// polynomial approximation
-  void compute_central_moments();
-  /// compute central moments in all-variables mode up to the order
-  /// supported by the Pecos polynomial approximation
-  void compute_central_moments(const RealVector& x);
-  /// return virtual Pecos::PolynomialApproximation::central_moments()
-  const RealVector& central_moments() const;
-  /// return Pecos::PolynomialApproximation::centralExpMoments
-  const RealVector& central_expansion_moments() const;
-  /// return Pecos::PolynomialApproximation::centralNumMoments
-  const RealVector& central_numerical_moments() const;
+  void compute_moments();
+  /// compute moments in all-variables mode up to the order supported
+  /// by the Pecos polynomial approximation
+  void compute_moments(const RealVector& x);
+  /// return virtual Pecos::PolynomialApproximation::moments()
+  const RealVector& moments() const;
+  /// return Pecos::PolynomialApproximation::expansionMoments
+  const RealVector& expansion_moments() const;
+  /// return Pecos::PolynomialApproximation::numericalMoments
+  const RealVector& numerical_moments() const;
 
   /// return pecosBasisApprox
   Pecos::BasisApproximation& pecos_basis_approximation();
@@ -314,25 +314,24 @@ get_covariance(const Pecos::RealVector& x,
 { return polyApproxRep->get_covariance(x, exp_coeffs_2); }
 
 
-inline void PecosApproximation::compute_central_moments()
-{ polyApproxRep->compute_central_moments(); }
+inline void PecosApproximation::compute_moments()
+{ polyApproxRep->compute_moments(); }
 
 
-inline void PecosApproximation::
-compute_central_moments(const Pecos::RealVector& x)
-{ polyApproxRep->compute_central_moments(x); }
+inline void PecosApproximation::compute_moments(const Pecos::RealVector& x)
+{ polyApproxRep->compute_moments(x); }
 
 
-inline const RealVector& PecosApproximation::central_moments() const
-{ return polyApproxRep->central_moments(); }
+inline const RealVector& PecosApproximation::moments() const
+{ return polyApproxRep->moments(); }
 
 
-inline const RealVector& PecosApproximation::central_expansion_moments() const
-{ return polyApproxRep->central_expansion_moments(); }
+inline const RealVector& PecosApproximation::expansion_moments() const
+{ return polyApproxRep->expansion_moments(); }
 
 
-inline const RealVector& PecosApproximation::central_numerical_moments() const
-{ return polyApproxRep->central_numerical_moments(); }
+inline const RealVector& PecosApproximation::numerical_moments() const
+{ return polyApproxRep->numerical_moments(); }
 
 
 inline Pecos::BasisApproximation& PecosApproximation::

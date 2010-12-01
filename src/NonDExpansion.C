@@ -987,7 +987,6 @@ void NonDExpansion::average_total_sobol(RealVector& avg_sobol)
     avg_sobol += approx_rep->total_sobol_indices();
   }
   avg_sobol.scale(1./(Real)numFunctions);
-  //print_total_effects(Cout);
   // manage small values that are not 0 (SGMGA has special handling for 0)
   Real pref_tol = 1.e-2; // TO DO
   for (i=0; i<numContinuousVars; ++i)
@@ -1250,7 +1249,7 @@ void NonDExpansion::compute_covariance()
       = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (!poly_approx_rep_i->expansion_coefficient_flag()) {
       Cerr << "Error: expansion coefficients required in NonDExpansion::"
-	   << "compute_moments()." << std::endl;
+	   << "compute_covariance()." << std::endl;
       abort_handler(-1);
     }
 
@@ -1281,7 +1280,7 @@ void NonDExpansion::compute_statistics()
   // initialize computed*Levels, expGradsMeanX and respCovariance
   if (totalLevelRequests)
     initialize_distribution_mappings();
-  if (!subIteratorFlag && expGradsMeanX.empty())
+  if (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT && expGradsMeanX.empty())
     expGradsMeanX.shapeUninitialized(numContinuousVars, numFunctions);
   if (covariance_flag)
     respCovariance.shapeUninitialized(numFunctions);
@@ -1303,11 +1302,11 @@ void NonDExpansion::compute_statistics()
 
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (all_vars)
-      poly_approx_rep->compute_central_moments(initialPtU);
+      poly_approx_rep->compute_moments(initialPtU);
     else
-      poly_approx_rep->compute_central_moments();
+      poly_approx_rep->compute_moments();
 
-    const RealVector& moments = poly_approx_rep->central_moments();
+    const RealVector& moments = poly_approx_rep->moments(); // virtual
     const Real& mu = moments[0]; const Real& var = moments[1];
     if (covariance_flag) {
       respCovariance(i,i) = var;
@@ -1439,7 +1438,8 @@ void NonDExpansion::compute_statistics()
     cntr += gl_len;
  
     // *** local sensitivities
-    if (!subIteratorFlag && poly_approx_rep->expansion_coefficient_flag()) {
+    if (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT &&
+	poly_approx_rep->expansion_coefficient_flag()) {
       // expansion sensitivities are defined from the coefficients and basis
       // polynomial derivatives.  They are computed for the means of the
       // uncertain varables and are intended to serve as importance factors.
@@ -1783,24 +1783,6 @@ void NonDExpansion::print_sobol_indices(std::ostream& s)
 }
 
 
-/*
-void NonDExpansion::print_total_effects(std::ostream& s)
-{
-  const StringArray& fn_labels = iteratedModel.response_labels();
-  StringMultiArrayConstView cv_labels
-    = iteratedModel.continuous_variable_labels();
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  for (size_t i=0; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-    if (poly_approx_rep->expansion_coefficient_flag()) {
-      s << fn_labels[i] << " total Sobol indices:\n";
-      write_data(s, poly_approx_rep->total_sobol_indices(), cv_labels);
-    }
-  }
-}
-*/
-
-
 void NonDExpansion::print_local_sensitivity(std::ostream& s)
 {
   const StringArray& fn_labels = iteratedModel.response_labels();
@@ -1822,13 +1804,15 @@ void NonDExpansion::print_results(std::ostream& s)
 {
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
-  size_t i, j, cntr;
 
-  if ( ( !subIteratorFlag && outputLevel >= NORMAL_OUTPUT ) ||
-       (  subIteratorFlag && outputLevel >= DEBUG_OUTPUT ) ) {
-    print_covariance(s);
+  print_coefficients(s);
+  s << "-------------------------------------------------------------------"
+    << "\nStatistics derived analytically from polynomial expansion:\n";
+  print_moments(s);
+  print_covariance(s);
+
+  if (!subIteratorFlag && outputLevel >= NORMAL_OUTPUT)
     print_local_sensitivity(s);
-  }
   if (vbdControl)
     print_sobol_indices(s);
 

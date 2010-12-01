@@ -56,6 +56,10 @@ protected:
   virtual void initialize_expansion();
   /// form the expansion by calling uSpaceModel.build_approximation()
   virtual void compute_expansion();
+  /// print expansion coefficients, as supported by derived instance
+  virtual void print_coefficients(std::ostream& s);
+  /// print expansion and numerical moments, as supported by derived instance
+  virtual void print_moments(std::ostream& s);
 
   //
   //- Heading: Member function definitions
@@ -210,6 +214,14 @@ private:
   /// tolerance for omitting output of small VBD indices
   Real vbdDropTol;
 };
+
+
+inline void NonDExpansion::print_coefficients(std::ostream& s)
+{ /* default is no-op */ }
+
+
+inline void NonDExpansion::print_moments(std::ostream& s)
+{ /* default is no-op */ }
 
 } // namespace Dakota
 

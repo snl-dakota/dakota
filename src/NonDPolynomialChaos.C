@@ -249,7 +249,7 @@ void NonDPolynomialChaos::compute_expansion()
 }
 
 
-void NonDPolynomialChaos::print_results(std::ostream& s)
+void NonDPolynomialChaos::print_coefficients(std::ostream& s)
 {
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
@@ -257,7 +257,7 @@ void NonDPolynomialChaos::print_results(std::ostream& s)
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const StringArray& fn_labels = iteratedModel.response_labels();
 
-  size_t i, j,  width = write_precision+7,
+  size_t i, j, width = write_precision+7,
     num_cuv = numContAleatUncVars+numContEpistUncVars;
   char tag[10];
 
@@ -277,46 +277,52 @@ void NonDPolynomialChaos::print_results(std::ostream& s)
       s << " ----";
     poly_approxs[i].print_coefficients(s);
   }
+}
 
-  s << "-------------------------------------------------------------------"
-    << "\nStatistics derived analytically from polynomial expansion:\n";
 
-  s << "\nCentral moments for each response function:\n"
-    << std::setw(width+16)    << "Mean" << std::setw(width+2) << "Variance"
-    << std::setw(width+2) << "Skewness" << std::setw(width+3) << "Kurtosis\n";
+void NonDPolynomialChaos::print_moments(std::ostream& s)
+{
+  s.setf(std::ios::scientific);
+  s << std::setprecision(write_precision);
+
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  const StringArray& fn_labels = iteratedModel.response_labels();
+
+  size_t i, j, width = write_precision+7;
+
+  s << "\nMoment-based statistics for each response function:\n"
+    << std::setw(width+15) << "Mean"     << std::setw(width+1) << "Std Dev"
+    << std::setw(width+1)  << "Skewness" << std::setw(width+2) << "Kurtosis\n";
+  //<< std::setw(width+2)  << "Coeff of Var\n";
   PecosApproximation* pa_rep; size_t exp_mom, num_mom;
   for (i=0; i<numFunctions; ++i) {
     pa_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-    const RealVector& exp_moments = pa_rep->central_expansion_moments();
-    const RealVector& num_moments = pa_rep->central_numerical_moments();
+    const RealVector& exp_moments = pa_rep->expansion_moments();
+    const RealVector& num_moments = pa_rep->numerical_moments();
     exp_mom = exp_moments.length(); num_mom = num_moments.length();
 
-    if (num_mom) { // TPQ, SSG, or Cubature: report both moment sets
+    if (num_mom) // TPQ, SSG, or Cubature: report both moment sets
       s << fn_labels[i] << '\n' << std::setw(14) << "expansion:  ";
-      for (j=0; j<exp_mom; ++j)
-	s << "  " << std::setw(width) << exp_moments[j];
+    else // regression, sampling: only expansion moments available
+      s << std::setw(14) << fn_labels[i];
+    for (j=0; j<exp_mom; ++j)
+      if (j==1) s << ' ' << std::setw(width) << std::sqrt(exp_moments[j]);
+      else      s << ' ' << std::setw(width) << exp_moments[j];
+    if (num_mom) {
       s << '\n' << std::setw(14) << "numerical:  ";
       for (j=0; j<num_mom; ++j)
-	s << "  " << std::setw(width) << num_moments[j];
-      s << '\n';
+	if (j==1) s << ' ' << std::setw(width) << std::sqrt(num_moments[j]);
+	else      s << ' ' << std::setw(width) << num_moments[j];
     }
-    else { // regression, sampling: only expansion moments available
-      s << std::setw(14) << fn_labels[i];
-      for (j=0; j<exp_mom; ++j)
-	s << "  " << std::setw(width) << exp_moments[j];
-      s << '\n';
-    }
+    s << '\n';
 
-    //Real mean = exp_moments[0], std_dev = std::sqrt(exp_moments[1]);
-    //s << "  Std. Dev. = " << std::setw(width-1) << std_dev
-    //  << "  Coeff. of Variation = ";
-    //if (std::abs(mean) > 1.e-25)
-    //  s << std::setw(width) << std_dev/mean << '\n';
-    //else
-    //  s << "Undefined\n";
+    /* COV has been removed:
+    if (std::abs(mean) > 1.e-25)
+      s << "  " << std::setw(width)   << std_dev/mean << '\n';
+    else
+      s << "  " << std::setw(width+1) << "Undefined\n";
+    */
   }
-
-  NonDExpansion::print_results(s);
 }
 
 } // namespace Dakota

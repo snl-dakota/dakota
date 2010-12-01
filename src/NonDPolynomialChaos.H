@@ -49,8 +49,10 @@ public:
   /// form or import an orthogonal polynomial expansion using PCE methods
   void compute_expansion();
 
-  /// print the final PCE statistics and PCE coefficient array
-  void print_results(std::ostream& s);
+  /// print the PCE coefficient array for the orthogonal basis
+  void print_coefficients(std::ostream& s);
+  /// print the expansion/numerical moments
+  void print_moments(std::ostream& s);
 
 private:
 
