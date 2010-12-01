@@ -353,7 +353,6 @@ AC_DEFUN([DAK_PACKAGES],[
 
     AC_MSG_NOTICE([checking for GSL...])
 
-
     save_CPPFLAGS="$CPPFLAGS"
     save_LDFLAGS="$LDFLAGS"
     if test -n $GSL_CPPFLAGS; then
@@ -361,10 +360,12 @@ AC_DEFUN([DAK_PACKAGES],[
       LDFLAGS="$LDFLAGS $GSL_LDFLAGS"
     fi
 
+    dnl use GSL_LIBS, so we don't pollute $LIBS with AC_CHECK_LIB
     acx_gsl_ok=yes;
-    AC_CHECK_LIB([m],[cos],,acx_gsl_ok=no)
-    AC_CHECK_LIB([gslcblas],[cblas_dgemm],,acx_gsl_ok=no)
-    AC_CHECK_LIB([gsl],[gsl_ran_fdist_pdf],,acx_gsl_ok=no)
+    GSL_LIBS=
+    AC_CHECK_LIB([m],[cos], [GSL_LIBS="-lm $GSL_LIBS"], acx_gsl_ok=no)
+    AC_CHECK_LIB([gslcblas],[cblas_dgemm], [GSL_LIBS="-lgslcblas $GSL_LIBS"], acx_gsl_ok=no, [$GSL_LIBS])
+    AC_CHECK_LIB([gsl],[gsl_ran_fdist_pdf], [GSL_LIBS="-lgsl $GSL_LIBS"], acx_gsl_ok=no, [$GSL_LIBS])
     AC_CHECK_HEADERS([gsl/gsl_randist.h],,acx_gsl_ok=no)
 
     if test "x$acx_gsl_ok" = xyes; then
@@ -373,6 +374,7 @@ AC_DEFUN([DAK_PACKAGES],[
       dnl AC_DEFINE([HAVE_GSL],[1],[Macro to handle code which depends on GSL.])
       AC_SUBST(GSL_CPPFLAGS)
       AC_SUBST(GSL_LDFLAGS)
+      AC_SUBST(GSL_LIBS)
     else
       AC_MSG_ERROR([GSL requested but not found])
     fi
