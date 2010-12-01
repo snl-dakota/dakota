@@ -4,7 +4,15 @@ include_directories(${Dakota_BINARY_DIR} ${Dakota_SOURCE_DIR}/src
                     ${Teuchos_INCLUDE_DIRS})
 
 add_definitions("-DHAVE_CONFIG_H")
+add_definitions("-DBOOST_MULTI_INDEX_DISABLE_SERIALIZATION")
 
+option(BOOST_DISABLE_ASSERTS "Toggle BoostAssert, default is AssertDisabled" ON)
+if (BOOST_DISABLE_ASSERTS)
+  add_definitions("-DBOOST_DISABLE_ASSERTS")
+endif (BOOST_DISABLE_ASSERTS)
+
+
+# Check already done in Teuchos.  Setting the macro again leads to redef warning
 check_include_files(unistd.h HAVE_UNISTD_H)
 if(HAVE_UNISTD_H)
   add_definitions("-DHAVE_UNISTD_H")
