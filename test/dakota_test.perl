@@ -567,10 +567,10 @@ foreach $file (@testin) {
 	    print TEST_OUT;
 	  }
 
-	  if (/moments for each response function:/) {
+	  if (/Moment-based statistics for each response function:/) {
 	    print;
 	    print TEST_OUT;
-	    $_ = <OUTPUT>; # grab next line (Mean/Var/Skew/Kurt header)
+	    $_ = <OUTPUT>; # grab next line (Mean/StdDev/Skew/Kurt header)
 	    print;
 	    print TEST_OUT;
 	    $_ = <OUTPUT>; # grab next line (secondary tag header or table data)

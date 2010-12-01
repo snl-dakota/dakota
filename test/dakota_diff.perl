@@ -130,8 +130,8 @@ while ( $test_found == 0 && defined ($base = <DAKOTA_BASE>) ) {
       }
 
       # UQ mappings and indices
-      while ( ($base =~ /^(\s+Response Level\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol indices:|Central(\s\w+)? moments for each response function:)$/o) &&
-	      ($test =~ /^(\s+Response Level\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol indices:|Central(\s\w+)? moments for each response function:)$/o) ) {
+      while ( ($base =~ /^(\s+Response Level\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol indices:|Moment-based statistics for each response function:)$/o) &&
+	      ($test =~ /^(\s+Response Level\s+Probability Level\s+Reliability Index\s+General Rel Index|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:|\w+ Sobol indices:|Moment-based statistics for each response function:)$/o) ) {
 	$b_hdr1 = $base;         # save headers in case of diffs
 	$b_hdr2 = <DAKOTA_BASE>; # save headers in case of diffs
 	$t_hdr1 = $test;         # save headers in case of diffs

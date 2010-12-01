@@ -5507,9 +5507,9 @@ Polynomial Chaos coefficients for response_fn_1:
    8.4100532404e-02  He2  He0
   -2.0959640473e-01  He1  He1
    1.2845892529e-01  He0  He2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.1640987765e+00   5.0950132206e-01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.1640987765e+00  7.1379361307e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       3.0877942643e-01  3.9500227017e-01 TF1ln
@@ -5554,9 +5554,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -2.5109091997e-02  He2  He1
    7.2484783961e-02  He1  He2
   -2.4941524742e-02  He0  He3
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.1640987765e+00   5.2635731843e-01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.1640987765e+00  7.2550487140e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       3.0146445780e-01  4.0728548800e-01 TF1ln
@@ -5600,10 +5600,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.1042457897e-01  He0  He2
    3.5238969007e-02  He1  He2
    5.4864756254e-03  He2  He2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.1627075482e+00   4.6903794493e-01
-  numerical:     1.1627075482e+00   4.6903794493e-01   5.4233746444e-01   1.4682657875e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.1627075482e+00  6.8486344984e-01
+  numerical:    1.1627075482e+00  6.8486344984e-01  1.6883311713e+00  3.6740387303e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       3.0775732954e-01  3.7454155037e-01 TF1ln
@@ -5644,9 +5644,9 @@ Polynomial Chaos coefficients for response_fn_1:
    7.1345130484e-02  He2  He0
   -1.2367698225e-01  He1  He1
    8.5562490278e-02  He0  He2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.1461957102e+00   4.0386432332e-01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.1461957102e+00  6.3550320481e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       3.4224022091e-01  3.8011431639e-01 TF1ln
@@ -5687,9 +5687,9 @@ Polynomial Chaos coefficients for response_fn_1:
    4.6925001562e-02  He2  He0
   -1.7815016180e-01  He1  He1
    8.6063965888e-02  He0  He2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.4369738202e+00   5.8511576525e-01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.4369738202e+00  7.6492860141e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       3.3385547503e-01  3.8809684406e-01 TF1ln
@@ -34505,11 +34505,11 @@ Polynomial Chaos coefficients for response_fn_3:
    5.9474204052e-06  He0  He1  He0  He3
   -2.1596290553e-05  He0  He0  He1  He3
    9.0362796383e-06  He0  He0  He0  He4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   6.2500000000e+00   2.6706343997e-27
- response_fn_2   4.4362728260e-01   2.3861699330e-02
- response_fn_3   7.6331165581e-01   3.2531744213e-02
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.2500000000e+00  5.1678181080e-14
+ response_fn_2  4.4362728260e-01  1.5447232545e-01
+ response_fn_3  7.6331165581e-01  1.8036558489e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.2166978091e-02  6.9192974662e-01 R
@@ -35244,11 +35244,11 @@ Polynomial Chaos coefficients for response_fn_3:
    6.8599163340e-02   P0   P0  He0  He1  He0  He3
    1.7267716264e-02   P0   P0  He0  He0  He1  He3
   -2.6191751070e-02   P0   P0  He0  He0  He0  He4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   6.2500000000e+00   1.4711190806e-25
- response_fn_2   1.0194907921e+00   4.9099881305e-01
- response_fn_3   3.0356974103e+00   6.6230508260e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.2500000000e+00  3.8355170194e-13
+ response_fn_2  1.0194907921e+00  7.0071307469e-01
+ response_fn_3  3.0356974103e+00  2.5735288664e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       4.4981412639e-01  5.5018587361e-01 beam_width
@@ -35707,11 +35707,11 @@ Polynomial Chaos coefficients for response_fn_3:
    2.9989963032e-03  He0  He1  He0  He3
    6.3189888779e-03  He0  He0  He1  He3
   -6.8257206441e-03  He0  He0  He0  He4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   6.2500000000e+00   4.2084091642e-28
- response_fn_2   4.3439123565e-01   6.8821541843e-02
- response_fn_3   7.4767735402e-01   8.1114271857e-02
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.2500000000e+00  2.0514407533e-14
+ response_fn_2  4.3439123565e-01  2.6233860151e-01
+ response_fn_3  7.4767735402e-01  2.8480567385e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       7.1050317924e-02  3.7207576666e-01 R
@@ -36446,11 +36446,11 @@ Polynomial Chaos coefficients for response_fn_3:
    1.3289671199e-01   P0   P0  He0  He1  He0  He3
    1.3431224984e-01   P0   P0  He0  He0  He1  He3
    1.0349533526e-01   P0   P0  He0  He0  He0  He4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   6.2500000000e+00   3.1703492254e-26
- response_fn_2   8.1691707793e-01   5.4779727566e+00
- response_fn_3   2.6241816412e+00   7.9687326838e+01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.2500000000e+00  1.7805474510e-13
+ response_fn_2  8.1691707793e-01  2.3405069444e+00
+ response_fn_3  2.6241816412e+00  8.9267758366e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       4.4981412639e-01  5.5018587361e-01 beam_width
@@ -42451,10 +42451,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -7.1054273576e-14  He2  He2
    2.3684757859e-15  He3  He2
   -3.5527136788e-15  He4  He2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     4.0200000000e+02   1.1024060000e+06
-  numerical:     4.0200000000e+02   1.1024060000e+06   7.0309160320e+09   5.3239141815e+13
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  numerical:    4.0200000000e+02  1.0499552371e+03  6.0743464592e+00  4.0807443521e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
@@ -42486,10 +42486,10 @@ Polynomial Chaos coefficients for response_fn_1:
    4.8849813084e-13   P2   P2
    2.8754776338e-13   P3   P2
   -2.8477220582e-13   P4   P2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     4.5566666667e+02   3.6791532698e+05
-  numerical:     4.5566666667e+02   3.6791532698e+05   4.3814191050e+08   8.6135868898e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.5566666667e+02  6.0656024184e+02
+  numerical:    4.5566666667e+02  6.0656024184e+02  1.9633285271e+00  3.3633861456e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
@@ -42521,10 +42521,10 @@ Polynomial Chaos coefficients for response_fn_1:
    9.0949470177e-12   L2   L2
   -1.4551915228e-11   L3   L2
    1.8189894035e-12   L4   L2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.6005000000e+04   9.8416768208e+10
-  numerical:     3.6005000000e+04   9.8416768208e+10   1.7780200261e+18   6.4130258225e+25
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.6005000000e+04  3.1371446924e+05
+  numerical:    3.6005000000e+04  3.1371446924e+05  5.7588132963e+01  6.6180183168e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9944724867e-01  9.9996748522e-01 x1
@@ -42556,10 +42556,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.7070876948e-13 Pab2 Pab2
    7.7860680866e-14 Pab3 Pab2
   -1.3829924860e-15 Pab4 Pab2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.3706545835e+02   2.1229690424e+05
-  numerical:     3.3706545835e+02   2.1229690424e+05   2.1661925945e+08   3.5858107410e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.3706545835e+02  4.6075688193e+02
+  numerical:    3.3706545835e+02  4.6075688193e+02  2.2145300353e+00  4.9560964859e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.9549858715e-01  7.5001061354e-01 x1
@@ -42591,10 +42591,10 @@ Polynomial Chaos coefficients for response_fn_1:
    0.0000000000e+00  La2  La2
    6.0821066097e-12  La3  La2
   -1.1795600698e-11  La4  La2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.1502600000e+05   1.9550362737e+12
-  numerical:     3.1502600000e+05   1.9550362737e+12   6.3808252323e+19   4.3277399642e+27
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.1502600000e+05  1.3982261168e+06
+  numerical:    3.1502600000e+05  1.3982261168e+06  2.3342352335e+01  1.1292739574e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9937985805e-01  9.9983816157e-01 x1
@@ -45736,10 +45736,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.7251693407e-12  He2   P4   L4 Pab4  La4
   -7.4578565545e-14  He3   P4   L4 Pab4  La4
   -8.1635675997e-13  He4   P4   L4 Pab4  La4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     4.2716738928e+04   1.0297773486e+11
-  numerical:     4.2716738928e+04   1.0297773486e+11   1.8359030147e+18   6.6394310650e+25
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.2716738928e+04  3.2090144104e+05
+  numerical:    4.2716738928e+04  3.2090144104e+05  5.5556481462e+01  6.2580071066e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.3457678135e-06  1.0381590429e-05 x1
@@ -45803,10 +45803,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.1842378929e-16  He0  He5
   -5.1316975360e-16  He0  He6
    0.0000000000e+00  He0  He7
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     4.0200000000e+02   1.1024060000e+06
-  numerical:     4.0200000000e+02   1.1024060000e+06   9.5894360320e+09   1.8471101106e+14
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  numerical:    4.0200000000e+02  1.0499552371e+03  8.2847749200e+00  1.4898812206e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
@@ -45838,10 +45838,10 @@ Polynomial Chaos coefficients for response_fn_1:
    0.0000000000e+00   P0   P3
    4.7961634664e-14   P0   P4
    0.0000000000e+00   P0   P5
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     4.5566666667e+02   3.6791532698e+05
-  numerical:     4.5566666667e+02   3.6791532698e+05   2.5599544106e+08   3.1519282159e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.5566666667e+02  6.0656024184e+02
+  numerical:    4.5566666667e+02  6.0656024184e+02  1.1471241171e+00 -6.7147686588e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
@@ -45871,10 +45871,10 @@ Polynomial Chaos coefficients for response_fn_1:
    3.6379788071e-12   L2   L2
    1.1368683772e-13   L0   L3
    1.1368683772e-13   L0   L4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.6005000000e+04   9.8416768208e+10
-  numerical:     3.6005000000e+04   9.8416768208e+10   1.7777968152e+18   6.4112189694e+25
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.6005000000e+04  3.1371446924e+05
+  numerical:    3.6005000000e+04  3.1371446924e+05  5.7580903406e+01  6.6161528624e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9944724867e-01  9.9996748522e-01 x1
@@ -45904,10 +45904,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -7.1393494683e-14 Pab2 Pab2
    2.7178259643e-13 Pab0 Pab3
   -7.1125327850e-14 Pab0 Pab4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.3706545835e+02   2.1229690424e+05
-  numerical:     3.3706545835e+02   2.1229690424e+05   1.4492676440e+08   1.4009687787e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.3706545835e+02  4.6075688193e+02
+  numerical:    3.3706545835e+02  4.6075688193e+02  1.4816072841e+00  1.0843030546e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.9549858715e-01  7.5001061354e-01 x1
@@ -45937,10 +45937,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.5205266524e-11  La2  La2
    4.6568294194e-12  La0  La3
    3.6718387830e-12  La0  La4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.1502600000e+05   1.9550362737e+12
-  numerical:     3.1502600000e+05   1.9550362737e+12   6.3801147423e+19   4.3262671167e+27
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.1502600000e+05  1.3982261168e+06
+  numerical:    3.1502600000e+05  1.3982261168e+06  2.3339753219e+01  1.1288886138e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9937985805e-01  9.9983816157e-01 x1
@@ -46022,10 +46022,10 @@ Polynomial Chaos coefficients for response_fn_1:
    2.1019433108e-13  He0   P0   L0 Pab2  La2
    2.0788450326e-13  He0   P0   L0 Pab0  La3
    1.0583211075e-12  He0   P0   L0 Pab0  La4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     4.2716738928e+04   1.0297773486e+11
-  numerical:     4.2716738928e+04   1.0297773486e+11   1.8365657006e+18   6.6427627921e+25
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.2716738928e+04  3.2090144104e+05
+  numerical:    4.2716738928e+04  3.2090144104e+05  5.5576535080e+01  6.2611489371e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.3457678135e-06  1.0381590429e-05 x1
@@ -46695,9 +46695,9 @@ Polynomial Chaos coefficients for response_fn_1:
   -5.0567189325e-15   P2   P4  He4  He4
   -2.1978946441e-15   P3   P4  He4  He4
   -3.9655778661e-15   P4   P4  He4  He4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   2.4270000000e+03   1.5671060000e+06
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.4270000000e+03  1.2518410442e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       8.5444725000e-02  1.2085567814e-01 x1
@@ -46746,10 +46746,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.2730557349e-14  He2  He4
   -4.5395785896e-15  He3  He4
    0.0000000000e+00  He4  He4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     2.4270000000e+03   1.5671060000e+06
-  numerical:     2.4270000000e+03   1.5671060000e+06   1.0212766632e+10   8.8824129238e+13
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.4270000000e+03  1.2518410442e+03
+  numerical:    2.4270000000e+03  1.2518410442e+03  5.2059003179e+00  3.3168809312e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.1066335015e-01  9.6171286435e-01 x3
@@ -46773,9 +46773,9 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02  He4  He0
    8.1001871877e-13  He3  He1
   -7.6738615462e-13  He2  He2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   4.0200000000e+02   1.1024060000e+06
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
@@ -46804,9 +46804,9 @@ Polynomial Chaos coefficients for response_fn_1:
    3.6571428571e+02   P4   P0
    5.6843418861e-14   P3   P1
    6.0929039591e-13   P2   P2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   4.5566666667e+02   3.6791532698e+05
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  6.0656024184e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
@@ -46835,9 +46835,9 @@ Polynomial Chaos coefficients for response_fn_1:
    3.8400000000e+04   L4   L0
   -6.9121597335e-10   L3   L1
    5.8571458794e-10   L2   L2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.6005000000e+04   9.8416768208e+10
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6005000000e+04  3.1371446924e+05
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9944724867e-01  9.9996748522e-01 x1
@@ -46866,9 +46866,9 @@ Polynomial Chaos coefficients for response_fn_1:
    1.5607525601e+02 Pab4 Pab0
    6.3948846218e-13 Pab3 Pab1
    6.3948846218e-13 Pab2 Pab2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.3706545835e+02   2.1229690424e+05
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.3706545835e+02  4.6075688193e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.9549858715e-01  7.5001061354e-01 x1
@@ -46897,9 +46897,9 @@ Polynomial Chaos coefficients for response_fn_1:
    3.8400000000e+04  La4  La0
   -2.8194335755e-11  La3  La1
    3.0559021980e-10  La2  La2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.1502600000e+05   1.9550362737e+12
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.1502600000e+05  1.3982261168e+06
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9937985805e-01  9.9983816157e-01 x1
@@ -47042,9 +47042,9 @@ Polynomial Chaos coefficients for response_fn_1:
    6.0708771343e-11  He0   P0   L1 Pab0  La3
    1.4551915228e-11  He0   P0   L0 Pab1  La3
    1.1380052456e-10  He0   P0   L0 Pab0  La4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   4.2716738928e+04   1.0297773486e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.2716738928e+04  3.2090144104e+05
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.3457678135e-06  1.0381590429e-05 x1
@@ -47104,10 +47104,10 @@ Polynomial Chaos coefficients for response_fn_1:
    0.0000000000e+00 Num2 Num2
   -1.0004772359e-14 Num3 Num2
   -1.0410453784e-13 Num4 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     2.2076678414e+02   1.2987758852e+05
-  numerical:     2.2076678414e+02   1.2987758852e+05   1.3783279474e+08   2.1685013855e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.2076678414e+02  3.6038533339e+02
+  numerical:    2.2076678414e+02  3.6038533339e+02  2.9447690340e+00  9.8555680395e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.9957913777e-01  7.9439149419e-01 x1
@@ -47139,10 +47139,10 @@ Polynomial Chaos coefficients for response_fn_1:
    3.2377831730e-13 Num2 Num2
   -6.4764217770e-14 Num3 Num2
    5.3069045767e-14 Num4 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     2.5671972656e+02   4.1960200651e+06
-  numerical:     2.5671972656e+02   4.1960200651e+06   1.7693397989e+12   2.2416409036e+18
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.5671972656e+02  2.0484189184e+03
+  numerical:    2.5671972656e+02  2.0484189184e+03  2.0585191525e+02  1.2731532900e+05
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9391978710e-01  9.9928724777e-01 x1
@@ -47174,10 +47174,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -5.9617660692e-12 Num2 Num2
   -6.0324724366e-12 Num3 Num2
   -3.0822937379e-11 Num4 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.3103015876e+02   9.8153502668e+04
-  numerical:     1.3103015876e+02   9.8153502668e+04   1.5070757860e+08   3.0211231247e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.3103015876e+02  3.1329459406e+02
+  numerical:    1.3103015876e+02  3.1329459406e+02  4.9009061800e+00  2.8358611202e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.0985004966e-01  9.9363780299e-01 x1
@@ -47209,10 +47209,10 @@ Polynomial Chaos coefficients for response_fn_1:
    5.6754950962e-13 Num2 Num2
    3.6523990305e-14 Num3 Num2
   -3.5448520988e-14 Num4 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     5.0712321400e+04   2.1792455403e+10
-  numerical:     5.0712321400e+04   2.1792455403e+10   1.2233371992e+16   8.4215968217e+21
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    5.0712321400e+04  1.4762267916e+05
+  numerical:    5.0712321400e+04  1.4762267916e+05  3.8026550677e+00  1.4732995923e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9456967798e-01  9.9943348255e-01 x1
@@ -47244,10 +47244,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -2.2940941167e-13 Num2 Num2
   -6.9023896933e-14 Num3 Num2
    0.0000000000e+00 Num4 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.7499985321e+02   8.0495825802e+04
-  numerical:     1.7499985321e+02   8.0495825802e+04   6.9203167642e+07   8.9253210659e+10
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.7499985321e+02  2.8371786303e+02
+  numerical:    1.7499985321e+02  2.8371786303e+02  3.0301626008e+00  1.0774540726e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.6933651533e-01  7.7546588016e-01 x1
@@ -47279,10 +47279,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -9.8724180075e-12 Num2 Num2
   -1.7215950966e-12 Num3 Num2
   -2.7626600990e-13 Num4 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     6.8592841460e+03   3.5650575248e+08
-  numerical:     6.8592841460e+03   3.5650575248e+08   1.0425487672e+14   7.6511859562e+19
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    6.8592841460e+03  1.8881359921e+04
+  numerical:    6.8592841460e+03  1.8881359921e+04  1.5488043731e+01  5.9899886642e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9702954299e-01  9.9864021882e-01 x1
@@ -47314,10 +47314,10 @@ Polynomial Chaos coefficients for response_fn_1:
    7.4677016563e-13 Num2 Num2
    4.2764382948e-15 Num3 Num2
    3.6012743532e-17 Num4 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     2.6812277931e+07   1.3327166623e+19
-  numerical:     2.6812277931e+07   1.3327166623e+19   1.3794348669e+31   1.6387229652e+43
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.6812277931e+07  3.6506392074e+09
+  numerical:    2.6812277931e+07  3.6506392074e+09  2.8352702299e+02  9.2260491392e+04
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9999998955e-01  9.9999999994e-01 x1
@@ -47349,10 +47349,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -3.7179229730e-12 Num2 Num2
   -7.1332019410e-13 Num3 Num2
   -4.4913135485e-14 Num4 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.2619676674e+04   2.5596274444e+09
-  numerical:     1.2619676674e+04   2.5596274444e+09   1.9066145600e+15   2.5571869811e+21
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.2619676674e+04  5.0592760790e+04
+  numerical:    1.2619676674e+04  5.0592760790e+04  1.4723049363e+01  3.8730936219e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9634440797e-01  9.9940345498e-01 x1
@@ -47384,10 +47384,10 @@ Polynomial Chaos coefficients for response_fn_1:
    7.0818790914e-12 Num2 Num2
    2.3210921414e-12 Num3 Num2
    1.6484810293e-12 Num4 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.2488855020e+04   1.0795429923e+09
-  numerical:     3.2488855020e+04   1.0795429923e+09   2.8948566709e+13   2.8743426590e+18
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.2488855020e+04  3.2856399563e+04
+  numerical:    3.2488855020e+04  3.2856399563e+04  8.1614467636e-01 -5.3362758003e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9298831703e-01  9.9536939114e-01 x1
@@ -47417,10 +47417,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0299402527e-13 Num2 Num2
    2.4537110005e-14 Num0 Num3
   -3.6021976343e-13 Num0 Num4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     2.2076678414e+02   1.2987758852e+05
-  numerical:     2.2076678414e+02   1.2987758852e+05   8.0540794311e+07   6.3275988901e+10
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.2076678414e+02  3.6038533339e+02
+  numerical:    2.2076678414e+02  3.6038533339e+02  1.7207373434e+00  7.5120249418e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.9957913777e-01  7.9439149419e-01 x1
@@ -47450,10 +47450,10 @@ Polynomial Chaos coefficients for response_fn_1:
    4.2385525174e-13 Num2 Num2
   -9.6055327869e-14 Num0 Num3
    2.5176466026e-14 Num0 Num4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     2.5671972656e+02   4.1960200651e+06
-  numerical:     2.5671972656e+02   4.1960200651e+06   1.7686350052e+12   2.2404484083e+18
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.5671972656e+02  2.0484189184e+03
+  numerical:    2.5671972656e+02  2.0484189184e+03  2.0576991680e+02  1.2724759893e+05
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9391978710e-01  9.9928724777e-01 x1
@@ -47483,10 +47483,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -6.0207934560e-12 Num2 Num2
   -4.6386666493e-13 Num0 Num3
   -1.3395744086e-11 Num0 Num4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.3103015876e+02   9.8153502668e+04
-  numerical:     1.3103015876e+02   9.8153502668e+04   1.4829865280e+08   2.7165540918e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.3103015876e+02  3.1329459406e+02
+  numerical:    1.3103015876e+02  3.1329459406e+02  4.8225695797e+00  2.5197249851e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.0985004966e-01  9.9363780299e-01 x1
@@ -47516,10 +47516,10 @@ Polynomial Chaos coefficients for response_fn_1:
    4.1620297372e-13 Num2 Num2
    1.1937978699e-13 Num0 Num3
    3.8621527470e-14 Num0 Num4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     5.0712321400e+04   2.1792455403e+10
-  numerical:     5.0712321400e+04   2.1792455403e+10   1.2220015511e+16   8.3566537378e+21
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    5.0712321400e+04  1.4762267916e+05
+  numerical:    5.0712321400e+04  1.4762267916e+05  3.7985033023e+00  1.4596248051e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9456967798e-01  9.9943348255e-01 x1
@@ -47549,10 +47549,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.0653199554e-13 Num2 Num2
   -2.8836582233e-13 Num0 Num3
    9.4086736049e-14 Num0 Num4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.7499985321e+02   8.0495825802e+04
-  numerical:     1.7499985321e+02   8.0495825802e+04   4.0130532815e+07   2.5469712051e+10
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.7499985321e+02  2.8371786303e+02
+  numerical:    1.7499985321e+02  2.8371786303e+02  1.7571744738e+00  9.3076712130e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.6933651533e-01  7.7546588016e-01 x1
@@ -47582,10 +47582,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -7.5841091978e-12 Num2 Num2
    3.8973842368e-11 Num0 Num3
   -1.3126765236e-10 Num0 Num4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     6.8592841460e+03   3.5650575248e+08
-  numerical:     6.8592841460e+03   3.5650575248e+08   1.0423005879e+14   7.6429834814e+19
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    6.8592841460e+03  1.8881359921e+04
+  numerical:    6.8592841460e+03  1.8881359921e+04  1.5484356793e+01  5.9835349190e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9702954299e-01  9.9864021882e-01 x1
@@ -47615,10 +47615,10 @@ Polynomial Chaos coefficients for response_fn_1:
    7.0409758474e-13 Num2 Num2
    7.7642091277e-17 Num0 Num3
   -2.2863277275e-17 Num0 Num4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     2.6812277931e+07   1.3327166623e+19
-  numerical:     2.6812277931e+07   1.3327166623e+19   1.3794348575e+31   1.6387229259e+43
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.6812277931e+07  3.6506392074e+09
+  numerical:    2.6812277931e+07  3.6506392074e+09  2.8352702105e+02  9.2260489183e+04
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9999998955e-01  9.9999999994e-01 x1
@@ -47648,10 +47648,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -3.0769017707e-12 Num2 Num2
    2.5772959683e-14 Num0 Num3
    1.4554283422e-13 Num0 Num4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.2619676674e+04   2.5596274444e+09
-  numerical:     1.2619676674e+04   2.5596274444e+09   1.9049993071e+15   2.5492685436e+21
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.2619676674e+04  5.0592760790e+04
+  numerical:    1.2619676674e+04  5.0592760790e+04  1.4710576234e+01  3.8610075276e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9634440797e-01  9.9940345498e-01 x1
@@ -47681,10 +47681,10 @@ Polynomial Chaos coefficients for response_fn_1:
    6.4380719013e-12 Num2 Num2
   -1.1555773380e-10 Num0 Num3
    1.2145463015e-09 Num0 Num4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.2488855020e+04   1.0795429923e+09
-  numerical:     3.2488855020e+04   1.0795429923e+09   2.8931125039e+13   2.8559616534e+18
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.2488855020e+04  3.2856399563e+04
+  numerical:    3.2488855020e+04  3.2856399563e+04  8.1565294471e-01 -5.4939967495e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9298831703e-01  9.9536939114e-01 x1
@@ -47715,10 +47715,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02  He0  He2
    2.3092638912e-14  He1  He2
   -1.3322676296e-14  He2  He2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     4.0200000000e+02   1.1024060000e+06
-  numerical:     4.0200000000e+02   1.1024060000e+06   9.5834360320e+09   1.8471283506e+14
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  numerical:    4.0200000000e+02  1.0499552371e+03  8.2795912315e+00  1.4898962293e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
@@ -47753,10 +47753,10 @@ Polynomial Chaos coefficients for response_fn_1:
    2.6666666667e+02   P0   P2
   -1.0325074129e-13   P1   P2
    3.6637359813e-13   P2   P2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     4.5566666667e+02   3.6791532698e+05
-  numerical:     4.5566666667e+02   3.6791532698e+05   2.5395780835e+08   3.1395546047e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.5566666667e+02  6.0656024184e+02
+  numerical:    4.5566666667e+02  6.0656024184e+02  1.1379934169e+00 -6.8061801312e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
@@ -47786,10 +47786,10 @@ Polynomial Chaos coefficients for response_fn_1:
    8.0000000000e+02   L0   L2
   -5.4569682106e-12   L1   L2
    3.6379788071e-12   L2   L2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.6005000000e+04   9.8416768208e+10
-  numerical:     3.6005000000e+04   9.8416768208e+10   1.9077944649e+18   1.3338163311e+26
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.6005000000e+04  3.1371446924e+05
+  numerical:    3.6005000000e+04  3.1371446924e+05  6.1791385754e+01  1.3767757524e+04
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9944724867e-01  9.9996748522e-01 x1
@@ -47819,10 +47819,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.2929292929e+02 Pab0 Pab2
    6.2638783049e-14 Pab1 Pab2
   -7.1393494683e-14 Pab2 Pab2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.3706545835e+02   2.1229690424e+05
-  numerical:     3.3706545835e+02   2.1229690424e+05   1.5331234429e+08   1.6705468281e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.3706545835e+02  4.6075688193e+02
+  numerical:    3.3706545835e+02  4.6075688193e+02  1.5673342808e+00  7.0656253447e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.9549858715e-01  7.5001061354e-01 x1
@@ -47852,10 +47852,10 @@ Polynomial Chaos coefficients for response_fn_1:
    8.0000000000e+02  La0  La2
    1.0643686567e-11  La1  La2
   -1.5205266524e-11  La2  La2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.1502600000e+05   1.9550362737e+12
-  numerical:     3.1502600000e+05   1.9550362737e+12   6.6217582613e+19   7.0225545687e+27
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.1502600000e+05  1.3982261168e+06
+  numerical:    3.1502600000e+05  1.3982261168e+06  2.4223734202e+01  1.8343228795e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9937985805e-01  9.9983816157e-01 x1
@@ -47885,10 +47885,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num0 Num2
    1.2988267512e-14 Num1 Num2
    1.0299402527e-13 Num2 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     2.2076678414e+02   1.2987758852e+05
-  numerical:     2.2076678414e+02   1.2987758852e+05   8.8722279362e+07   8.4695474574e+10
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.2076678414e+02  3.6038533339e+02
+  numerical:    2.2076678414e+02  3.6038533339e+02  1.8955330724e+00  2.0210179403e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.9957913777e-01  7.9439149419e-01 x1
@@ -47918,10 +47918,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num0 Num2
    5.1740143034e-14 Num1 Num2
    4.2385525174e-13 Num2 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     2.5671972656e+02   4.1960200651e+06
-  numerical:     2.5671972656e+02   4.1960200651e+06   2.3567405439e+12   3.4499393228e+19
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.5671972656e+02  2.0484189184e+03
+  numerical:    2.5671972656e+02  2.0484189184e+03  2.7419241630e+02  1.9594567379e+06
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9391978710e-01  9.9928724777e-01 x1
@@ -47951,10 +47951,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num0 Num2
   -2.4091319835e-12 Num1 Num2
   -6.0207934560e-12 Num2 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.3103015876e+02   9.8153502668e+04
-  numerical:     1.3103015876e+02   9.8153502668e+04   1.4851015198e+08   2.7895461997e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.3103015876e+02  3.1329459406e+02
+  numerical:    1.3103015876e+02  3.1329459406e+02  4.8294473868e+00  2.5954892303e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.0985004966e-01  9.9363780299e-01 x1
@@ -47984,10 +47984,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num0 Num2
    1.5471623286e-12 Num1 Num2
    4.1620297372e-13 Num2 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     5.0712321400e+04   2.1792455403e+10
-  numerical:     5.0712321400e+04   2.1792455403e+10   1.2233952664e+16   8.4875017893e+21
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    5.0712321400e+04  1.4762267916e+05
+  numerical:    5.0712321400e+04  1.4762267916e+05  3.8028355654e+00  1.4871769192e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9456967798e-01  9.9943348255e-01 x1
@@ -48017,10 +48017,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num0 Num2
   -4.2287701765e-14 Num1 Num2
   -1.0653199554e-13 Num2 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.7499985321e+02   8.0495825802e+04
-  numerical:     1.7499985321e+02   8.0495825802e+04   4.4500699943e+07   3.5281412952e+10
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.7499985321e+02  2.8371786303e+02
+  numerical:    1.7499985321e+02  2.8371786303e+02  1.9485286768e+00  2.4450171148e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.6933651533e-01  7.7546588016e-01 x1
@@ -48050,10 +48050,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num0 Num2
   -1.3045404744e-11 Num1 Num2
   -7.5841091978e-12 Num2 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     6.8592841460e+03   3.5650575248e+08
-  numerical:     6.8592841460e+03   3.5650575248e+08   1.0577500662e+14   1.0318994408e+20
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    6.8592841460e+03  1.8881359921e+04
+  numerical:    6.8592841460e+03  1.8881359921e+04  1.5713873343e+01  8.0890327509e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9702954299e-01  9.9864021882e-01 x1
@@ -48083,10 +48083,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num0 Num2
    1.2383707408e-11 Num1 Num2
    7.0409758474e-13 Num2 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     2.6812277931e+07   1.3327166623e+19
-  numerical:     2.6812277931e+07   1.3327166623e+19   1.3909729002e+31   1.7524907993e+43
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.6812277931e+07  3.6506392074e+09
+  numerical:    2.6812277931e+07  3.6506392074e+09  2.8589853345e+02  9.8665855699e+04
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9999998955e-01  9.9999999994e-01 x1
@@ -48116,10 +48116,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num0 Num2
   -6.7468701999e-12 Num1 Num2
   -3.0769017707e-12 Num2 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.2619676674e+04   2.5596274444e+09
-  numerical:     1.2619676674e+04   2.5596274444e+09   1.9489117234e+15   3.4662873852e+21
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.2619676674e+04  5.0592760790e+04
+  numerical:    1.2619676674e+04  5.0592760790e+04  1.5049671868e+01  5.2606745908e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9634440797e-01  9.9940345498e-01 x1
@@ -48149,10 +48149,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0000000000e+02 Num0 Num2
    1.8776834947e-11 Num1 Num2
    6.4380719013e-12 Num2 Num2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.2488855020e+04   1.0795429923e+09
-  numerical:     3.2488855020e+04   1.0795429923e+09   2.8942687747e+13   2.8790019594e+18
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.2488855020e+04  3.2856399563e+04
+  numerical:    3.2488855020e+04  3.2856399563e+04  8.1597893123e-01 -5.2962959805e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9298831703e-01  9.9536939114e-01 x1
@@ -48175,10 +48175,10 @@ Polynomial Chaos coefficients for response_fn_1:
    5.0730295165e+02  He2  He0
    2.1260590331e+02  He1  He1
    2.0630295165e+02  He0  He2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     4.0200000000e+02   6.8503965536e+05
-  numerical:     4.0200000000e+02   8.5008201668e+05   6.2864629559e+09   6.6446204665e+13
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  8.2767122419e+02
+  numerical:    4.0200000000e+02  9.2199892445e+02  8.0207525392e+00  8.8949320005e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       7.5136755294e-01  8.1735098874e-01 x1
@@ -48193,10 +48193,10 @@ Polynomial Chaos coefficients for response_fn_1:
    6.4266666667e+02   P2   P0
    0.0000000000e+00   P1   P1
    2.6666666667e+02   P0   P2
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     4.5566666667e+02   1.9164645926e+05
-  numerical:     4.5566666667e+02   2.6749831111e+05   1.8054763103e+08   2.4428729922e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.5566666667e+02  4.3777443879e+02
+  numerical:    4.5566666667e+02  5.1720238893e+02  1.3049991471e+00  4.1396291617e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       4.3105112686e-01  4.3105112686e-01 x1
@@ -48208,10 +48208,10 @@ Polynomial Chaos coefficients for response_fn_1:
    6.6795166004e+03   L0   L0
   -4.5987329111e+03   L1   L0
    3.8627416998e+03   L0   L1
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     6.6795166004e+03   3.6069117827e+07
-  numerical:     6.6795166004e+03   3.6069117827e+07   7.6787814204e+10   1.9514718912e+15
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    6.6795166004e+03  6.0057570569e+03
+  numerical:    6.6795166004e+03  6.0057570569e+03  3.5447778606e-01 -1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.8632829583e-01  5.8632829583e-01 x1
@@ -48223,10 +48223,10 @@ Polynomial Chaos coefficients for response_fn_1:
    2.4356707753e+02 Pab0 Pab0
   -5.1987722041e+01 Pab1 Pab0
   -2.6966083707e+02 Pab0 Pab1
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     2.4356707753e+02   5.0279793529e+04
-  numerical:     2.4356707753e+02   5.0279793529e+04   4.3111360392e+06   3.7920864560e+09
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.4356707753e+02  2.2423156229e+02
+  numerical:    2.4356707753e+02  2.2423156229e+02  3.8238557344e-01 -1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       3.5835777534e-02  3.5835777534e-02 x1
@@ -48238,10 +48238,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.5130464045e+05  La0  La0
   -6.6668498202e+04  La1  La0
    1.8944271910e+04  La0  La1
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.5130464045e+05   1.2008935227e+10
-  numerical:     1.5130464045e+05   1.2008935227e+10  -6.2761301346e+14   2.1632178792e+20
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.5130464045e+05  1.0958528746e+05
+  numerical:    1.5130464045e+05  1.0958528746e+05 -4.7690863564e-01 -1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.2528783122e-01  9.2528783122e-01 x1
@@ -48253,10 +48253,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.6894921238e+02 Num0 Num0
    5.6737759394e+01 Num1 Num0
   -7.7374130355e+01 Num0 Num1
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.6894921238e+02   7.1230078060e+03
-  numerical:     1.6894921238e+02   7.1230078060e+03  -4.0251363258e+05   7.6105860307e+07
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.6894921238e+02  8.4397913517e+01
+  numerical:    1.6894921238e+02  8.4397913517e+01 -6.6955377578e-01 -1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       3.4968477434e-01  3.4968477434e-01 x1
@@ -48268,10 +48268,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.6998033906e+02 Num0 Num0
    2.7851665748e+02 Num1 Num0
    1.1642135624e+02 Num0 Num1
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.6998033906e+02   2.2781365171e+04
-  numerical:     1.6998033906e+02   2.2781365171e+04   9.0863001875e+05   7.7848589855e+08
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.6998033906e+02  1.5093497001e+02
+  numerical:    1.6998033906e+02  1.5093497001e+02  2.6425150067e-01 -1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       8.5126075537e-01  8.5126075537e-01 x1
@@ -48283,10 +48283,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.1684246816e+02 Num0 Num0
    1.9770731317e+02 Num1 Num0
    1.0576179503e+02 Num0 Num1
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.1684246816e+02   9.4435981164e+03
-  numerical:     1.1684246816e+02   9.4435981164e+03   6.2957270408e+04   1.3377231808e+08
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.1684246816e+02  9.7178177161e+01
+  numerical:    1.1684246816e+02  9.7178177161e+01  6.8602453017e-02 -1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       7.7750695458e-01  7.7750695458e-01 x1
@@ -48298,10 +48298,10 @@ Polynomial Chaos coefficients for response_fn_1:
    3.1146694153e+04 Num0 Num0
    1.6883721895e+04 Num1 Num0
    4.0043897239e+02 Num0 Num1
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.1146694153e+04   1.7782974447e+09
-  numerical:     3.1146694153e+04   1.7782974447e+09   5.2892214434e+13   4.7435127025e+18
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.1146694153e+04  4.2169864176e+04
+  numerical:    3.1146694153e+04  4.2169864176e+04  7.0531828580e-01 -1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9943779841e-01  9.9943779841e-01 x1
@@ -48313,10 +48313,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.3500000003e+02 Num0 Num0
    3.7067368231e+01 Num1 Num0
   -6.6666666676e+01 Num0 Num1
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.3500000003e+02   3.8789561560e+03
-  numerical:     1.3500000003e+02   3.8789561560e+03  -1.7062678504e+05   2.2569451291e+07
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.3500000003e+02  6.2281266493e+01
+  numerical:    1.3500000003e+02  6.2281266493e+01 -7.0627673664e-01 -1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       2.3614424990e-01  2.3614424990e-01 x1
@@ -48328,10 +48328,10 @@ Polynomial Chaos coefficients for response_fn_1:
    6.8527466785e+03 Num0 Num0
    1.0264196801e+04 Num1 Num0
   -4.6291003775e+02 Num0 Num1
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     6.8527466785e+03   7.7178860090e+07
-  numerical:     6.8527466785e+03   7.7178860090e+07   4.7506249203e+11   8.9348646672e+15
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    6.8527466785e+03  8.7851499754e+03
+  numerical:    6.8527466785e+03  8.7851499754e+03  7.0065334992e-01 -1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9797016464e-01  9.9797016464e-01 x1
@@ -48343,10 +48343,10 @@ Polynomial Chaos coefficients for response_fn_1:
    6.4727628989e+05 Num0 Num0
    1.8911137727e+05 Num1 Num0
    3.9016731363e+02 Num0 Num1
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     6.4727628989e+05   8.2798798421e+11
-  numerical:     6.4727628989e+05   8.2798798421e+11   5.3273684550e+17   1.0283461530e+24
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    6.4727628989e+05  9.0993845078e+05
+  numerical:    6.4727628989e+05  9.0993845078e+05  7.0709323674e-01 -1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9999574338e-01  9.9999574338e-01 x1
@@ -48358,10 +48358,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.0283085941e+04 Num0 Num0
    9.0937970258e+03 Num1 Num0
    1.7602936305e+02 Num0 Num1
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     1.0283085941e+04   1.9425096898e+08
-  numerical:     1.0283085941e+04   1.9425096898e+08   1.9111610472e+12   5.6600158423e+16
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.0283085941e+04  1.3937394627e+04
+  numerical:    1.0283085941e+04  1.3937394627e+04  7.0591513658e-01 -1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9962544377e-01  9.9962544377e-01 x1
@@ -48373,10 +48373,10 @@ Polynomial Chaos coefficients for response_fn_1:
    3.7305232910e+03 Num0 Num0
    6.4102749071e+03 Num1 Num0
   -2.6840121268e+02 Num0 Num1
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     3.7305232910e+03   2.4012919171e+07
-  numerical:     3.7305232910e+03   2.4012919171e+07   8.2550786402e+10   8.6493043067e+14
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.7305232910e+03  4.9002978655e+03
+  numerical:    3.7305232910e+03  4.9002978655e+03  7.0154216118e-01 -1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9824993199e-01  9.9824993199e-01 x1
@@ -48385,9 +48385,9 @@ response_fn_1 Sobol indices:
 dakota_uq_rosenbrock_sc.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   4.0200000000e+02   1.1024060000e+06   7.0309160320e+09   5.3239141815e+13
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03  6.0743464592e+00  4.0807443521e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
@@ -48403,9 +48403,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.0600000000e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   4.5566666667e+02   3.6791532698e+05   4.3814191050e+08   8.6135868898e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  6.0656024184e+02  1.9633285271e+00  3.3633861456e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
@@ -48421,9 +48421,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   8.5240000000e-01
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.6005000000e+04   9.8416768208e+10   1.7780200261e+18   6.4130258225e+25
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6005000000e+04  3.1371446924e+05  5.7588132963e+01  6.6180183168e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9944724867e-01  9.9996748522e-01 x1
@@ -48439,9 +48439,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   5.7810000000e-01
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.3706545835e+02   2.1229690424e+05   2.1661925945e+08   3.5858107410e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.3706545835e+02  4.6075688193e+02  2.2145300353e+00  4.9560964859e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.9549858715e-01  7.5001061354e-01 x1
@@ -48457,9 +48457,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.0980000000e-01
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.1502600000e+05   1.9550362737e+12   6.3808252323e+19   4.3277399642e+27
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.1502600000e+05  1.3982261168e+06  2.3342352335e+01  1.1292739574e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9937985805e-01  9.9983816157e-01 x1
@@ -48475,9 +48475,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   1.8450000000e-01
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 3125 total (3125 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   4.2716738928e+04   1.0297773486e+11   1.8359030147e+18   6.6394310650e+25
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.2716738928e+04  3.2090144104e+05  5.5556481462e+01  6.2580071066e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.3457678135e-06  1.0381590427e-05 x1
@@ -48521,9 +48521,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   1.2780000000e-01
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   4.0200000000e+02   1.1024060000e+06   9.5894360320e+09   1.8471101106e+14
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03  8.2847749200e+00  1.4898812206e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
@@ -48539,9 +48539,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.0600000000e-01
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   4.5566666667e+02   3.6791532698e+05   2.5599544106e+08   3.1519282159e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  6.0656024184e+02  1.1471241171e+00 -6.7147686588e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
@@ -48557,9 +48557,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   8.5240000000e-01
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.6005000000e+04   9.8416768208e+10   1.7777968152e+18   6.4112189694e+25
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6005000000e+04  3.1371446924e+05  5.7580903406e+01  6.6161528624e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9944724867e-01  9.9996748522e-01 x1
@@ -48575,9 +48575,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   5.7810000000e-01
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.3706545835e+02   2.1229690424e+05   1.4492676440e+08   1.4009687787e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.3706545835e+02  4.6075688193e+02  1.4816072841e+00  1.0843030546e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.9549858715e-01  7.5001061354e-01 x1
@@ -48593,9 +48593,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.0980000000e-01
 Test Number 10 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.1502600000e+05   1.9550362737e+12   6.3801147423e+19   4.3262671167e+27
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.1502600000e+05  1.3982261168e+06  2.3339753219e+01  1.1288886138e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9937985805e-01  9.9983816157e-01 x1
@@ -48611,9 +48611,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   1.8450000000e-01
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 106 total (106 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   4.2716738928e+04   1.0297773486e+11   1.8365657006e+18   6.6427627921e+25
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.2716738928e+04  3.2090144104e+05  5.5576535080e+01  6.2611489371e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.3457678135e-06  1.0381590429e-05 x1
@@ -48657,9 +48657,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   1.2780000000e-01
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   2.2076678414e+02   1.2987758852e+05   1.3783279474e+08   2.1685013855e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.2076678414e+02  3.6038533339e+02  2.9447690340e+00  9.8555680395e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.9957913777e-01  7.9439149419e-01 x1
@@ -48675,9 +48675,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.5310000000e-01
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   2.5671972656e+02   4.1960200651e+06   1.7693397989e+12   2.2416409036e+18
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.5671972656e+02  2.0484189184e+03  2.0585191525e+02  1.2731532900e+05
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9391978710e-01  9.9928724777e-01 x1
@@ -48693,9 +48693,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.5660000000e-01
 Test Number 14 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.3103015876e+02   9.8153502668e+04   1.5070757860e+08   3.0211231247e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.3103015876e+02  3.1329459406e+02  4.9009061800e+00  2.8358611202e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.0985004966e-01  9.9363780299e-01 x1
@@ -48711,9 +48711,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.7110000000e-01
 Test Number 15 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   5.0712321400e+04   2.1792455403e+10   1.2233371992e+16   8.4215968217e+21
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  5.0712321400e+04  1.4762267916e+05  3.8026550677e+00  1.4732995923e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9456967798e-01  9.9943348255e-01 x1
@@ -48729,9 +48729,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   5.3200000000e-01
 Test Number 16 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.7499985321e+02   8.0495825802e+04   6.9203167642e+07   8.9253210659e+10
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.7499985321e+02  2.8371786303e+02  3.0301626008e+00  1.0774540726e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.6933651533e-01  7.7546588016e-01 x1
@@ -48747,9 +48747,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.7430000000e-01
 Test Number 17 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   6.8592841460e+03   3.5650575248e+08   1.0425487672e+14   7.6511859562e+19
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.8592841460e+03  1.8881359921e+04  1.5488043731e+01  5.9899886642e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9702954299e-01  9.9864021882e-01 x1
@@ -48765,9 +48765,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   3.8500000000e-01
 Test Number 18 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   2.6812277931e+07   1.3327166623e+19   1.3794348669e+31   1.6387229652e+43
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6812277931e+07  3.6506392074e+09  2.8352702299e+02  9.2260491392e+04
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9999998955e-01  9.9999999994e-01 x1
@@ -48783,9 +48783,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   1.7120000000e-01
 Test Number 19 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.2619676674e+04   2.5596274444e+09   1.9066145600e+15   2.5571869811e+21
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.2619676674e+04  5.0592760790e+04  1.4723049363e+01  3.8730936219e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9634440797e-01  9.9940345498e-01 x1
@@ -48801,9 +48801,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   5.3710000000e-01
 Test Number 20 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.2488855020e+04   1.0795429923e+09   2.8948566709e+13   2.8743426590e+18
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.2488855020e+04  3.2856399563e+04  8.1614467636e-01 -5.3362758003e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9298831703e-01  9.9536939114e-01 x1
@@ -48819,9 +48819,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   2.0550000000e-01
 Test Number 21 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   2.2076678414e+02   1.2987758852e+05   8.0540794311e+07   6.3275988901e+10
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.2076678414e+02  3.6038533339e+02  1.7207373434e+00  7.5120249418e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.9957913777e-01  7.9439149419e-01 x1
@@ -48837,9 +48837,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.5310000000e-01
 Test Number 22 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   2.5671972656e+02   4.1960200651e+06   1.7686350052e+12   2.2404484083e+18
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.5671972656e+02  2.0484189184e+03  2.0576991680e+02  1.2724759893e+05
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9391978710e-01  9.9928724777e-01 x1
@@ -48855,9 +48855,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.5660000000e-01
 Test Number 23 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.3103015876e+02   9.8153502668e+04   1.4829865280e+08   2.7165540918e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.3103015876e+02  3.1329459406e+02  4.8225695797e+00  2.5197249851e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.0985004966e-01  9.9363780299e-01 x1
@@ -48873,9 +48873,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.7110000000e-01
 Test Number 24 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   5.0712321400e+04   2.1792455403e+10   1.2220015511e+16   8.3566537378e+21
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  5.0712321400e+04  1.4762267916e+05  3.7985033023e+00  1.4596248051e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9456967798e-01  9.9943348255e-01 x1
@@ -48891,9 +48891,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   5.3200000000e-01
 Test Number 25 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.7499985321e+02   8.0495825802e+04   4.0130532815e+07   2.5469712051e+10
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.7499985321e+02  2.8371786303e+02  1.7571744738e+00  9.3076712130e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.6933651533e-01  7.7546588016e-01 x1
@@ -48909,9 +48909,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.7430000000e-01
 Test Number 26 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   6.8592841460e+03   3.5650575248e+08   1.0423005879e+14   7.6429834814e+19
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.8592841460e+03  1.8881359921e+04  1.5484356793e+01  5.9835349190e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9702954299e-01  9.9864021882e-01 x1
@@ -48927,9 +48927,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   3.8500000000e-01
 Test Number 27 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   2.6812277931e+07   1.3327166623e+19   1.3794348575e+31   1.6387229259e+43
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6812277931e+07  3.6506392074e+09  2.8352702105e+02  9.2260489183e+04
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9999998955e-01  9.9999999994e-01 x1
@@ -48945,9 +48945,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   1.7120000000e-01
 Test Number 28 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.2619676674e+04   2.5596274444e+09   1.9049993071e+15   2.5492685436e+21
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.2619676674e+04  5.0592760790e+04  1.4710576234e+01  3.8610075276e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9634440797e-01  9.9940345498e-01 x1
@@ -48963,9 +48963,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   5.3710000000e-01
 Test Number 29 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.2488855020e+04   1.0795429923e+09   2.8931125039e+13   2.8559616534e+18
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.2488855020e+04  3.2856399563e+04  8.1565294471e-01 -5.4939967495e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9298831703e-01  9.9536939114e-01 x1
@@ -48981,9 +48981,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   2.0550000000e-01
 Test Number 30 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   4.0200000000e+02   1.1024060000e+06   9.5834360320e+09   1.8471283506e+14
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03  8.2795912315e+00  1.4898962293e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
@@ -48999,9 +48999,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.0600000000e-01
 Test Number 31 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   4.5566666667e+02   3.6791532698e+05   2.5395780835e+08   3.1395546047e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  6.0656024184e+02  1.1379934169e+00 -6.8061801312e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       4.9746891383e-01  7.0363551328e-01 x1
@@ -49017,9 +49017,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   8.5240000000e-01
 Test Number 32 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.6005000000e+04   9.8416768208e+10   1.9077944649e+18   1.3338163311e+26
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.6005000000e+04  3.1371446924e+05  6.1791385754e+01  1.3767757524e+04
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9944724867e-01  9.9996748522e-01 x1
@@ -49035,9 +49035,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   5.7810000000e-01
 Test Number 33 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.3706545835e+02   2.1229690424e+05   1.5331234429e+08   1.6705468281e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.3706545835e+02  4.6075688193e+02  1.5673342808e+00  7.0656253447e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.9549858715e-01  7.5001061354e-01 x1
@@ -49053,9 +49053,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.0980000000e-01
 Test Number 34 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.1502600000e+05   1.9550362737e+12   6.6217582613e+19   7.0225545687e+27
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.1502600000e+05  1.3982261168e+06  2.4223734202e+01  1.8343228795e+03
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9937985805e-01  9.9983816157e-01 x1
@@ -49071,9 +49071,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   1.8450000000e-01
 Test Number 35 succeeded
 <<<<< Function evaluation summary: 16 total (16 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   2.2076678414e+02   1.2987758852e+05   8.8722279362e+07   8.4695474574e+10
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.2076678414e+02  3.6038533339e+02  1.8955330724e+00  2.0210179403e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.9957913777e-01  7.9439149419e-01 x1
@@ -49089,9 +49089,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.5310000000e-01
 Test Number 36 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   2.5671972656e+02   4.1960200651e+06   2.3567405439e+12   3.4499393228e+19
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.5671972656e+02  2.0484189184e+03  2.7419241630e+02  1.9594567379e+06
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9391978710e-01  9.9928724777e-01 x1
@@ -49107,9 +49107,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.5660000000e-01
 Test Number 37 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.3103015876e+02   9.8153502668e+04   1.4851015198e+08   2.7895461997e+11
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.3103015876e+02  3.1329459406e+02  4.8294473868e+00  2.5954892303e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.0985004966e-01  9.9363780299e-01 x1
@@ -49125,9 +49125,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.7110000000e-01
 Test Number 38 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   5.0712321400e+04   2.1792455403e+10   1.2233952664e+16   8.4875017893e+21
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  5.0712321400e+04  1.4762267916e+05  3.8028355654e+00  1.4871769192e+01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9456967798e-01  9.9943348255e-01 x1
@@ -49143,9 +49143,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   5.3200000000e-01
 Test Number 39 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.7499985321e+02   8.0495825802e+04   4.4500699943e+07   3.5281412952e+10
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.7499985321e+02  2.8371786303e+02  1.9485286768e+00  2.4450171148e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.6933651533e-01  7.7546588016e-01 x1
@@ -49161,9 +49161,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   9.7430000000e-01
 Test Number 40 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   6.8592841460e+03   3.5650575248e+08   1.0577500662e+14   1.0318994408e+20
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.8592841460e+03  1.8881359921e+04  1.5713873343e+01  8.0890327509e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9702954299e-01  9.9864021882e-01 x1
@@ -49179,9 +49179,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   3.8500000000e-01
 Test Number 41 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   2.6812277931e+07   1.3327166623e+19   1.3909729002e+31   1.7524907993e+43
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.6812277931e+07  3.6506392074e+09  2.8589853345e+02  9.8665855699e+04
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9999998955e-01  9.9999999994e-01 x1
@@ -49197,9 +49197,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   1.7120000000e-01
 Test Number 42 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.2619676674e+04   2.5596274444e+09   1.9489117234e+15   3.4662873852e+21
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.2619676674e+04  5.0592760790e+04  1.5049671868e+01  5.2606745908e+02
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9634440797e-01  9.9940345498e-01 x1
@@ -49215,9 +49215,9 @@ response_fn_1 Sobol indices:
    1.0000000000e+03   5.3710000000e-01
 Test Number 43 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
-Central numerical moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   3.2488855020e+04   1.0795429923e+09   2.8942687747e+13   2.8790019594e+18
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.2488855020e+04  3.2856399563e+04  8.1597893123e-01 -5.2962959805e-01
 response_fn_1 Sobol indices:
                                   Main             Total
                       9.9298831703e-01  9.9536939114e-01 x1
@@ -54883,11 +54883,11 @@ Polynomial Chaos coefficients for response_fn_3:
    3.2124715128e-01  He2  He2
    4.2261459806e-01  He1  He3
    3.9537100766e-02  He0  He4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   1.9890470739e+01   5.0397622593e+03
- response_fn_2   9.9235394361e-01   3.7528889687e+00
- response_fn_3   1.0098052212e+00   4.6200323180e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.9890470739e+01  7.0991282981e+01
+ response_fn_2  9.9235394361e-01  1.9372374580e+00
+ response_fn_3  1.0098052212e+00  2.1494260439e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       1.5293093580e-01  8.2587906790e-01 TF1ln
@@ -55013,14 +55013,14 @@ Polynomial Chaos coefficients for response_fn_3:
   -5.2041704279e-18  He2  He4
   -3.8549410577e-18  He3  He4
    2.7948322669e-18  He4  He4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
-  expansion:     2.0000000000e+01   1.3280000000e+03
-  numerical:     2.0000000000e+01   1.3280000000e+03   2.1518400000e+05   4.7622768000e+07
-  expansion:     1.0000000000e+00   2.2500000000e+00
-  numerical:     1.0000000000e+00   2.2500000000e+00   8.0000000000e+00   6.3187500000e+01
-  expansion:     1.0000000000e+00   2.2500000000e+00
-  numerical:     1.0000000000e+00   2.2500000000e+00   8.0000000000e+00   6.3187500000e+01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.0000000000e+01  3.6441734317e+01
+  numerical:    2.0000000000e+01  3.6441734317e+01  4.4464443753e+00  2.4003402163e+01
+  expansion:    1.0000000000e+00  1.5000000000e+00
+  numerical:    1.0000000000e+00  1.5000000000e+00  2.3703703704e+00  9.4814814815e+00
+  expansion:    1.0000000000e+00  1.5000000000e+00
+  numerical:    1.0000000000e+00  1.5000000000e+00  2.3703703704e+00  9.4814814815e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.0000000000e-01  5.0000000000e-01 TF1ln
@@ -55116,11 +55116,11 @@ Polynomial Chaos coefficients for response_fn_3:
    2.2204460493e-16  He2  He2
    8.9511731360e-16  He1  He3
    4.4582393333e-16  He0  He4
-Central moments for each response function:
-                             Mean           Variance           Skewness           Kurtosis
- response_fn_1   2.0000000000e+01   1.3280000000e+03
- response_fn_2   1.0000000000e+00   2.2500000000e+00
- response_fn_3   1.0000000000e+00   2.2500000000e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.0000000000e+01  3.6441734317e+01
+ response_fn_2  1.0000000000e+00  1.5000000000e+00
+ response_fn_3  1.0000000000e+00  1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
                       5.0000000000e-01  5.0000000000e-01 TF1ln
