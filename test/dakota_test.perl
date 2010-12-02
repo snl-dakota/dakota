@@ -601,10 +601,10 @@ foreach $file (@testin) {
 	    print TEST_OUT;
 	    $_ = <OUTPUT>; # grab next line (secondary tag header or table data)
 	    while (/\s+$e/) {
-		print;
-	        print TEST_OUT;
-	        $_ = <OUTPUT>; # grab next line
-	      }
+	      print;
+	      print TEST_OUT;
+	      $_ = <OUTPUT>; # grab next line
+	    }
 	  }
 
 	  while (/^\w+ Sobol indices:/) {
