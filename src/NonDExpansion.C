@@ -973,19 +973,31 @@ void NonDExpansion::average_total_sobol(RealVector& avg_sobol)
   // over the response fn set.  [Addition of interaction effects based on
   // individual Sobol indices would require a nonlinear index set constraint
   // within anisotropic sparse grids.]
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  size_t i;
+
   if (avg_sobol.empty())
     avg_sobol.sizeUninitialized(numContinuousVars);
   avg_sobol = 0.;
+
+  size_t i;
+  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  PecosApproximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
-    PecosApproximation* approx_rep
-      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+
+    // InterpPolyApproximation::compute_*_effects() assumes moments are
+    // available and compute_statistics() has not been called if !DEBUG_OUTPUT
+    if (outputLevel < DEBUG_OUTPUT) {
+      if (all_vars) poly_approx_rep->compute_moments(initialPtU);
+      else          poly_approx_rep->compute_moments();
+    }
+
     if (vbdControl == Pecos::ALL_VBD)
-      approx_rep->compute_component_effects(); // needed for total effects sum
-    approx_rep->compute_total_effects();
-    avg_sobol += approx_rep->total_sobol_indices();
+      poly_approx_rep->compute_component_effects(); // needed w/i total effects
+    poly_approx_rep->compute_total_effects();
+    avg_sobol += poly_approx_rep->total_sobol_indices();
   }
+
   avg_sobol.scale(1./(Real)numFunctions);
   // manage small values that are not 0 (SGMGA has special handling for 0)
   Real pref_tol = 1.e-2; // TO DO

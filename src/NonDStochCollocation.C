@@ -101,24 +101,26 @@ void NonDStochCollocation::print_moments(std::ostream& s)
   s << "\nMoment-based statistics for each response function:\n"
     << std::setw(width+15) << "Mean"     << std::setw(width+1) << "Std Dev"
     << std::setw(width+1)  << "Skewness" << std::setw(width+2) << "Kurtosis\n";
-  PecosApproximation* pa_rep; size_t num_mom;
+  PecosApproximation* poly_approx_rep; size_t num_mom;
   for (i=0; i<numFunctions; ++i) {
-    pa_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-    const RealVector& num_moments = pa_rep->numerical_moments();
-    num_mom = num_moments.length();
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (poly_approx_rep->expansion_coefficient_flag()) {
+      const RealVector& num_moments = poly_approx_rep->numerical_moments();
+      num_mom = num_moments.length();
 
-    s << std::setw(14) << fn_labels[i];
-    for (j=0; j<num_mom; ++j)
-      if (j==1) s << ' ' << std::setw(width) << std::sqrt(num_moments[j]);
-      else      s << ' ' << std::setw(width) << num_moments[j];
-    s << '\n';
+      s << std::setw(14) << fn_labels[i];
+      for (j=0; j<num_mom; ++j)
+	if (j==1) s << ' ' << std::setw(width) << std::sqrt(num_moments[j]);
+	else      s << ' ' << std::setw(width) << num_moments[j];
+      s << '\n';
 
-    /* COV has been removed:
-    if (std::abs(mean) > 1.e-25)
-      s << "  " << std::setw(width)   << std_dev/mean << '\n';
-    else
-      s << "  " << std::setw(width+1) << "Undefined\n";
-    */
+      /* COV has been removed:
+      if (std::abs(mean) > 1.e-25)
+        s << "  " << std::setw(width)   << std_dev/mean << '\n';
+      else
+        s << "  " << std::setw(width+1) << "Undefined\n";
+      */
+    }
   }
 }
 

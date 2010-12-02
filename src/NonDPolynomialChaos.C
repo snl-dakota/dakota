@@ -294,34 +294,36 @@ void NonDPolynomialChaos::print_moments(std::ostream& s)
     << std::setw(width+15) << "Mean"     << std::setw(width+1) << "Std Dev"
     << std::setw(width+1)  << "Skewness" << std::setw(width+2) << "Kurtosis\n";
   //<< std::setw(width+2)  << "Coeff of Var\n";
-  PecosApproximation* pa_rep; size_t exp_mom, num_mom;
+  PecosApproximation* poly_approx_rep; size_t exp_mom, num_mom;
   for (i=0; i<numFunctions; ++i) {
-    pa_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-    const RealVector& exp_moments = pa_rep->expansion_moments();
-    const RealVector& num_moments = pa_rep->numerical_moments();
-    exp_mom = exp_moments.length(); num_mom = num_moments.length();
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (poly_approx_rep->expansion_coefficient_flag()) {
+      const RealVector& exp_moments = poly_approx_rep->expansion_moments();
+      const RealVector& num_moments = poly_approx_rep->numerical_moments();
+      exp_mom = exp_moments.length(); num_mom = num_moments.length();
 
-    if (num_mom) // TPQ, SSG, or Cubature: report both moment sets
-      s << fn_labels[i] << '\n' << std::setw(14) << "expansion:  ";
-    else // regression, sampling: only expansion moments available
-      s << std::setw(14) << fn_labels[i];
-    for (j=0; j<exp_mom; ++j)
-      if (j==1) s << ' ' << std::setw(width) << std::sqrt(exp_moments[j]);
-      else      s << ' ' << std::setw(width) << exp_moments[j];
-    if (num_mom) {
-      s << '\n' << std::setw(14) << "numerical:  ";
-      for (j=0; j<num_mom; ++j)
-	if (j==1) s << ' ' << std::setw(width) << std::sqrt(num_moments[j]);
-	else      s << ' ' << std::setw(width) << num_moments[j];
+      if (num_mom) // TPQ, SSG, or Cubature: report both moment sets
+	s << fn_labels[i] << '\n' << std::setw(14) << "expansion:  ";
+      else // regression, sampling: only expansion moments available
+	s << std::setw(14) << fn_labels[i];
+      for (j=0; j<exp_mom; ++j)
+	if (j==1) s << ' ' << std::setw(width) << std::sqrt(exp_moments[j]);
+	else      s << ' ' << std::setw(width) << exp_moments[j];
+      if (num_mom) {
+	s << '\n' << std::setw(14) << "numerical:  ";
+	for (j=0; j<num_mom; ++j)
+	  if (j==1) s << ' ' << std::setw(width) << std::sqrt(num_moments[j]);
+	  else      s << ' ' << std::setw(width) << num_moments[j];
+      }
+      s << '\n';
+
+      /* COV has been removed:
+      if (std::abs(mean) > 1.e-25)
+        s << "  " << std::setw(width)   << std_dev/mean << '\n';
+      else
+        s << "  " << std::setw(width+1) << "Undefined\n";
+      */
     }
-    s << '\n';
-
-    /* COV has been removed:
-    if (std::abs(mean) > 1.e-25)
-      s << "  " << std::setw(width)   << std_dev/mean << '\n';
-    else
-      s << "  " << std::setw(width+1) << "Undefined\n";
-    */
   }
 }
 
