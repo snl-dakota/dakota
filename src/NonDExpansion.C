@@ -458,10 +458,12 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   //  sparse_grid_usage = Pecos::INTEGRATION;
   //else if (methodName == "nond_stoch_collocation")
   //  sparse_grid_usage = Pecos::INTERPOLATION;
-  bool track_wts
-    = (methodName == "nond_polynomial_chaos")
-    // && popa_rep->sparse_grid_expansion() == TENSOR_INT_TENSOR_SUM_EXP)
-    ? false : true;
+
+  // tracking of ensemble weights needed for PCE and SC standard modes since
+  // both employ Pecos::PolynomialApproximation::compute_numerical_moments(4).
+  // Neither PCE nor SC require ensemble wts for all_vars mode, since moment
+  // calculations must employ gauss_wts_1d.
+  bool track_wts = !(numContDesVars || numContEpistUncVars || numContStateVars);
   bool nested_rules = (ruleNestingOverride != Pecos::NON_NESTED);
 
   u_space_sampler.assign_rep(
