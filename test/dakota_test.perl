@@ -593,6 +593,20 @@ foreach $file (@testin) {
 	    }
 	  }
 
+	  if (/95% confidence intervals for each response function:/) {
+	    print;
+	    print TEST_OUT;
+	    $_ = <OUTPUT>; #grab next line(LowerCI_mean/UpperCI_mean/LowerCI_stdev/UpperCI_stdev)
+	    print;
+	    print TEST_OUT;
+	    $_ = <OUTPUT>; # grab next line (secondary tag header or table data)
+	    while (/\s+$e/) {
+		print;
+	        print TEST_OUT;
+	        $_ = <OUTPUT>; # grab next line
+	      }
+	  }
+
 	  while (/^\w+ Sobol indices:/) {
 	    print;
 	    print TEST_OUT;
