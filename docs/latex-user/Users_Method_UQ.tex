@@ -2531,21 +2531,125 @@ Reference~\cite{Tang10b} provides more details about
 the implementation of the optimization methods to perform 
 Dempster-Shafer calculations, as well as comparisons on test problems.
 
-\section{Future Nondeterministic Methods}\label{uq:future}
+\section{Bayesian Calibration Methods}\label{uq:bayesian}
+We are currently investigating Bayesian methods,specifically focusing on 
+Bayesian calibration, where a ``prior distribution'' on a parameter is 
+updated through a Bayesian framework involving experimental data and 
+a likelihood function. The first DAKOTA implementation of a Bayesian 
+calibration capability uses the GPMSA code developed at 
+Los Alamos National Laboratory.
 
-Uncertainty analysis methods under investigation for future inclusion
-into the DAKOTA framework include extensions to the stochastic
-expansion methods and sampling capabilities currently supported.
-Advanced ``smart sampling'' techniques such as bootstrap sampling (BS)
-and Markov chain Monte Carlo simulation (McMC) are being considered.
-We also have an active research focus on adaptive sparse grid methods,
-to more efficiently construct stochastic expansions.  Efforts have
-been initiated to allow for the possibility of non-traditional
-representations of uncertainty.  We have implemented Dempster-Shafer
-theory of evidence.  We are currently pursuing Bayesian methods,
-specifically focusing on Bayesian calibration, where a ``prior
-distribution'' on a parameter is updated through a Bayesian framework
-involving experimental data and a likelihood function.
+GPMSA is a code that provides the capability for Bayesian calibration:  
+given a computational simulation model with unknown parameters and 
+prior distributions on those parameters, along with observational data 
+(e.g. from experiments),  GPMSA uses a Monte Carlo Markov Chain (MCMC) 
+algorithm to produce posterior distributions on the parameters.  
+When the computational simulation is then executed using samples from 
+the posterior distributions of the parameters, the simulation model results 
+that are produced are consistent with (``agree with'') the experimental data.  
+A key part of GPMSA is the construction of an emulator from simulation runs 
+collected at various settings of input parameters.  The emulator is a 
+statistical model of the system response, and it is used to incorporate 
+the observational data to improve system predictions and constrain or 
+calibrate the unknown parameters. The GPMSA code draws heavily 
+on the theory developed in the seminal Bayesian calibration paper 
+by Kennedy and O'Hagan~\cite{Kenn01}. The particular approach developed 
+by the Los Alamos group is provided in~\cite{Hig08}.  Note that there are two 
+manuals that are provided in the directory where gpmsa is located 
+(e.g. /DAKOTA/packages/gpmsa).  These manuals are a Commands manual and 
+a User's Example manual.  They were written for the Matlab version of 
+GPMSA, but provide much useful information about the code and its 
+capabilities.
+ 
+At this point, the GPMSA library is a standalone C++ library which has 
+its own methods to create Gaussian process models, perform MCMC updating, 
+etc. The GPMSA C++ library is an alpha-version and undergoing development, 
+so a user is cautioned to obtain the latest version (e.g. Version-of-the-Day)
+to have the latest updates.  We expect that future DAKOTA-GPMSA integration 
+will involve more interoperability and sharing of optimization 
+algorithms and surrogate models between DAKOTA and GPMSA, for example. 
+
+The process of running GPMSA from DAKOTA is as follows.  The user will create 
+a DAKOTA input file such as the one shown in~\ref{uq:figure18}. 
+Note that the method is \texttt{bayes\_calibration gpmsa}, 
+specifying the GPMSA algorithm. The number of 
+samples indicates the number of Latin Hypercube samples (LHS) that 
+DAKOTA will perform on the user's simulation.  Three input files must be 
+specified, the 
+\texttt{x\_obs\_data\_file} 
+(file containing observed data for the x inputs), 
+\texttt{y\_obs\_data\_file} 
+(file containing observed data for the y outputs), and 
+\texttt{y\_std\_data\_file}
+(file containing the standard deviations of each observation).   
+This particular input file and the associated data files can be found in 
+the DAKOTA/test/gpmsa directory.
+
+\begin{figure}
+\centering
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+
+strategy,
+        single_method
+        tabular_graphics_data
+
+method,
+        bayes_calibration gpmsa,
+        x_obs_data_file = 'x.dat'
+        y_obs_data_file = 'y.dat'
+        y_std_data_file = 'ystd.dat'
+        output verbose
+          samples = 25 seed = 1833
+
+variables,
+         uniform_uncertain = 2
+         lower_bounds = 0. 0.
+         upper_bounds = 2. 2.
+
+interface,
+          system
+           analysis_driver = 'text_book'
+
+responses,
+        num_response_functions = 1
+        no_gradients
+        no_hessians
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption{DAKOTA input file for UQ example using Bayesian Calibration}
+\label{uq:figure18}
+\end{figure}
+
+When the input file shown in~\ref{uq:figure18} is run, 
+DAKOTA will generate an LHS sample of the specified size and run the 
+simulation at the sample points.  DAKOTA will then collect the simulation 
+results, and pass the simulation inputs and outputs, the observed data 
+inputs, outputs, and standard deviations (as specified in the observed 
+data files), and some other necessary information 
+to GPMSA.  GPMSA then sets up the model,and performs the Markov Chain Monte 
+Carlo sampling to generate the posterior samples on the calibration parameters 
+and compute the log likelihood calculations. The posterior sample values of 
+the parameters are written to a file called ``gpmsa.pvals.out'' in the 
+working directory from which the user is running DAKOTA.
+
+%\section{Future Nondeterministic Methods}\label{uq:future}
+
+%Uncertainty analysis methods under investigation for future inclusion
+%into the DAKOTA framework include extensions to the stochastic
+%expansion methods and sampling capabilities currently supported.
+%Advanced ``smart sampling'' techniques such as bootstrap sampling (BS)
+%and Markov chain Monte Carlo simulation (McMC) are being considered.
+%We also have an active research focus on adaptive sparse grid methods,
+%to more efficiently construct stochastic expansions.  Efforts have
+%been initiated to allow for the possibility of non-traditional
+%representations of uncertainty.  We have implemented Dempster-Shafer
+%theory of evidence.  We are currently pursuing Bayesian methods,
+%specifically focusing on Bayesian calibration, where a ``prior
+%distribution'' on a parameter is updated through a Bayesian framework
+%involving experimental data and a likelihood function.
 %Finally, the tractability and efficacy of the more intrusive
 %variant of stochastic finite element/polynomial chaos expansion
 %methods, previously mentioned, is being assessed for possible
