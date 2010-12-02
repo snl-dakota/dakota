@@ -4597,8 +4597,12 @@ Test Number 4 succeeded
 dakota_kriging_rosen.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 4.2651069467e+02  Std. Dev. = 5.7951546146e+02  Coeff. of Variation = 1.3587360615e+00
-response_fn_1:  Mean = ( 3.1152225443e+02, 5.4149913490e+02 ), Std Dev = ( 5.0881854218e+02, 6.7320877164e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.2651069467e+02  5.7951546146e+02  2.0446575393e+00  4.1634117831e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.1152225443e+02  5.4149913490e+02  5.0881854218e+02  6.7320877164e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -4625,8 +4629,12 @@ Partial Rank Correlation Matrix between input and output:
           x2 -5.09602e-01 
 Test Number 1 succeeded
 <<<<< Function evaluation summary (I1): 10000 total (10000 new, 0 duplicate)
-response_fn_1:  Mean = 4.5328767649e+02  Std. Dev. = 6.0727455110e+02  Coeff. of Variation = 1.3397111428e+00
-response_fn_1:  Mean = ( 4.4138387307e+02, 4.6519147991e+02 ), Std Dev = ( 5.9897385949e+02, 6.1581018890e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5328767649e+02  6.0727455110e+02  2.0389170104e+00  4.1037429849e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.4138387307e+02  4.6519147991e+02  5.9897385949e+02  6.1581018890e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.6000000000e-03
@@ -4654,8 +4662,12 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10000 total (10000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 4.5310009671e+02  Std. Dev. = 6.0654592370e+02  Coeff. of Variation = 1.3386576787e+00
-response_fn_1:  Mean = ( 4.4121057585e+02, 4.6498961758e+02 ), Std Dev = ( 5.9825519152e+02, 6.1507132017e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5310009671e+02  6.0654592370e+02  2.0323155759e+00  4.0561509589e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.4121057585e+02  4.6498961758e+02  5.9825519152e+02  6.1507132017e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.2000000000e-03
@@ -4683,8 +4695,12 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10000 total (10000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 4.5310009671e+02  Std. Dev. = 6.0654592370e+02  Coeff. of Variation = 1.3386576787e+00
-response_fn_1:  Mean = ( 4.4121057585e+02, 4.6498961758e+02 ), Std Dev = ( 5.9825519152e+02, 6.1507132017e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5310009671e+02  6.0654592370e+02  2.0323155759e+00  4.0561509589e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.4121057585e+02  4.6498961758e+02  5.9825519152e+02  6.1507132017e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.2000000000e-03
@@ -4712,8 +4728,12 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10000 total (10000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 4.5295144447e+02  Std. Dev. = 6.0589274452e+02  Coeff. of Variation = 1.3376549560e+00
-response_fn_1:  Mean = ( 4.4107472723e+02, 4.6482816170e+02 ), Std Dev = ( 5.9761094050e+02, 6.1440896013e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5295144447e+02  6.0589274452e+02  2.0265877019e+00  4.0142280013e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.4107472723e+02  4.6482816170e+02  5.9761094050e+02  6.1440896013e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.8000000000e-03
@@ -4741,8 +4761,12 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10000 total (10000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 4.5283635276e+02  Std. Dev. = 6.0590431575e+02  Coeff. of Variation = 1.3380204837e+00
-response_fn_1:  Mean = ( 4.4095940871e+02, 4.6471329681e+02 ), Std Dev = ( 5.9762235356e+02, 6.1442069401e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5283635276e+02  6.0590431575e+02  2.0266629280e+00  4.0154693202e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.4095940871e+02  4.6471329681e+02  5.9762235356e+02  6.1442069401e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -4770,8 +4794,12 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 6 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10000 total (10000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 4.5310040011e+02  Std. Dev. = 6.0654728289e+02  Coeff. of Variation = 1.3386597821e+00
-response_fn_1:  Mean = ( 4.4121085261e+02, 4.6498994761e+02 ), Std Dev = ( 5.9825653214e+02, 6.1507269847e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5310040011e+02  6.0654728289e+02  2.0323150041e+00  4.0561718147e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.4121085261e+02  4.6498994761e+02  5.9825653214e+02  6.1507269847e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.2000000000e-03
@@ -4799,8 +4827,12 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 7 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10000 total (10000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 4.5312750546e+02  Std. Dev. = 6.0656791647e+02  Coeff. of Variation = 1.3386252416e+00
-response_fn_1:  Mean = ( 4.4123755349e+02, 4.6501745742e+02 ), Std Dev = ( 5.9827688368e+02, 6.1509362206e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5312750546e+02  6.0656791647e+02  2.0326136776e+00  4.0597025125e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.4123755349e+02  4.6501745742e+02  5.9827688368e+02  6.1509362206e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.6000000000e-03
@@ -4828,8 +4860,12 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 8 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10000 total (10000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 4.5327331137e+02  Std. Dev. = 6.0722403675e+02  Coeff. of Variation = 1.3396421574e+00
-response_fn_1:  Mean = ( 4.4137049813e+02, 4.6517612461e+02 ), Std Dev = ( 5.9892403560e+02, 6.1575896453e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5327331137e+02  6.0722403675e+02  2.0384683485e+00  4.1004605622e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.4137049813e+02  4.6517612461e+02  5.9892403560e+02  6.1575896453e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.6000000000e-03
@@ -4857,8 +4893,12 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 9 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10000 total (10000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 4.5300139216e+02  Std. Dev. = 6.0632278029e+02  Coeff. of Variation = 1.3384567703e+00
-response_fn_1:  Mean = ( 4.4111624536e+02, 4.6488653896e+02 ), Std Dev = ( 5.9803509821e+02, 6.1484504033e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5300139216e+02  6.0632278029e+02  2.0304205324e+00  4.0421546099e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.4111624536e+02  4.6488653896e+02  5.9803509821e+02  6.1484504033e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.5000000000e-03
@@ -4886,8 +4926,12 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 10 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10000 total (10000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 4.5050094483e+02  Std. Dev. = 5.9684914191e+02  Coeff. of Variation = 1.3248565819e+00
-response_fn_1:  Mean = ( 4.3880150041e+02, 4.6220038925e+02 ), Std Dev = ( 5.8869095274e+02, 6.0523824382e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5050094483e+02  5.9684914191e+02  1.9627222088e+00  3.5954391367e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.3880150041e+02  4.6220038925e+02  5.8869095274e+02  6.0523824382e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.4500000000e-02
@@ -4915,8 +4959,12 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 11 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10000 total (10000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 4.5240834492e+02  Std. Dev. = 6.0371090556e+02  Coeff. of Variation = 1.3344380411e+00
-response_fn_1:  Mean = ( 4.4057439612e+02, 4.6424229372e+02 ), Std Dev = ( 5.9545892458e+02, 6.1219645401e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5240834492e+02  6.0371090556e+02  2.0122028437e+00  3.9185550583e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.4057439612e+02  4.6424229372e+02  5.9545892458e+02  6.1219645401e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   6.5000000000e-03
@@ -6133,8 +6181,12 @@ Test Number 13 succeeded
 dakota_logratio_verify.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 100000 total (100000 new, 0 duplicate)
-response_fn_1:  Mean = 1.1687791338e+00  Std. Dev. = 7.0541125955e-01  Coeff. of Variation = 6.0354539124e-01
-response_fn_1:  Mean = ( 1.1644069769e+00, 1.1731512906e+00 ), Std Dev = ( 7.0233328715e-01, 7.0851651712e-01 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.1687791338e+00  7.0541125955e-01  2.0070910897e+00  8.0790796020e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  1.1644069769e+00  1.1731512906e+00  7.0233328715e-01  7.0851651712e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.0000000000e-01   5.0050000000e-02
@@ -11340,8 +11392,12 @@ Test Number 5 succeeded
 <<<<< Best data captured at function evaluation 1972
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 200 total (200 new, 0 duplicate)
-response_fn_1:  Mean = 4.5540183516e+02  Std. Dev. = 5.3682678089e+02  Coeff. of Variation = 1.1787980185e+00
-response_fn_1:  Mean = ( 3.8054757609e+02, 5.3025609422e+02 ), Std Dev = ( 4.8886795789e+02, 5.9530059589e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5540183516e+02  5.3682678089e+02  1.6661798252e+00  2.7925726822e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.8054757609e+02  5.3025609422e+02  4.8886795789e+02  5.9530059589e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e+02   3.4000000000e-01
@@ -14909,10 +14965,14 @@ Test Number 13 succeeded
 dakota_short_column_verify.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 100000 total (100000 new, 0 duplicate)
-response_fn_1:  Mean = 7.5000000000e+01  Std. Dev. = 0.0000000000e+00  Coeff. of Variation = 0.0000000000e+00
-response_fn_2:  Mean = -2.3413946117e+00  Std. Dev. = 1.0706795645e+00  Coeff. of Variation = -4.5728283440e-01
-response_fn_1:  Mean = ( 7.5000000000e+01, 7.5000000000e+01 ), Std Dev = ( 0.0000000000e+00, 0.0000000000e+00 )
-response_fn_2:  Mean = ( -2.3480307108e+00, -2.3347585126e+00 ), Std Dev = ( 1.0660077902e+00, 1.0753927524e+00 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  7.5000000000e+01  0.0000000000e+00               nan               nan
+ response_fn_2 -2.3413946117e+00  1.0706795645e+00 -7.8081580484e-01  1.1150791229e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  7.5000000000e+01  7.5000000000e+01  0.0000000000e+00  0.0000000000e+00
+ response_fn_2 -2.3480307108e+00 -2.3347585126e+00  1.0660077902e+00  1.0753927524e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -9.0000000000e+00   3.0000000000e-05
@@ -37674,12 +37734,16 @@ Test Number 13 succeeded
 dakota_uq_cantilever_verify.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 100000 total (100000 new, 0 duplicate)
-response_fn_1:  Mean = 6.2500000000e+00  Std. Dev. = 0.0000000000e+00  Coeff. of Variation = 0.0000000000e+00
-response_fn_2:  Mean = 4.4362644920e-01  Std. Dev. = 1.5448154942e-01  Coeff. of Variation = 3.4822438945e-01
-response_fn_3:  Mean = 7.6330949366e-01  Std. Dev. = 1.8023379300e-01  Coeff. of Variation = 2.3612151362e-01
-response_fn_1:  Mean = ( 6.2500000000e+00, 6.2500000000e+00 ), Std Dev = ( 0.0000000000e+00, 0.0000000000e+00 )
-response_fn_2:  Mean = ( 4.4266896864e-01, 4.4458392976e-01 ), Std Dev = ( 1.5380748880e-01, 1.5516158534e-01 )
-response_fn_3:  Mean = ( 7.6219240004e-01, 7.6442658727e-01 ), Std Dev = ( 1.7944736575e-01, 1.8102719167e-01 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  6.2500000000e+00  0.0000000000e+00               nan               nan
+ response_fn_2  4.4362644920e-01  1.5448154942e-01  1.3467075304e-01  4.3369834779e-02
+ response_fn_3  7.6330949366e-01  1.8023379300e-01  1.3597955733e-01  5.6840148880e-02
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  6.2500000000e+00  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00
+ response_fn_2  4.4266896864e-01  4.4458392976e-01  1.5380748880e-01  1.5516158534e-01
+ response_fn_3  7.6219240004e-01  7.6442658727e-01  1.7944736575e-01  1.8102719167e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00   1.0300000000e-03
@@ -37761,10 +37825,14 @@ Partial Rank Correlation Matrix between input and output:
 dakota_uq_incremental.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
-response_fn_1:  Mean = 1.4287830993e+04  Std. Dev. = 2.4634899685e+04  Coeff. of Variation = 1.7241875059e+00
-response_fn_2:  Mean = 1.1476813318e+02  Std. Dev. = 8.1263100781e+01  Coeff. of Variation = 7.0806327964e-01
-response_fn_1:  Mean = ( -3.3349146239e+03, 3.1910576611e+04 ), Std Dev = ( 1.6944751318e+04, 4.4973723710e+04 )
-response_fn_2:  Mean = ( 5.6636012840e+01, 1.7290025353e+02 ), Std Dev = ( 5.5895621727e+01, 1.4835474425e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.4287830993e+04  2.4634899685e+04  2.9795822444e+00  9.1505304198e+00
+ response_fn_2  1.1476813318e+02  8.1263100781e+01  2.0443394484e+00  5.5104428322e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1 -3.3349146239e+03  3.1910576611e+04  1.6944751318e+04  4.4973723710e+04
+ response_fn_2  5.6636012840e+01  1.7290025353e+02  5.5895621727e+01  1.4835474425e+02
 Simple Correlation Matrix among all inputs and outputs:
                     nuv_1        nuv_2        uuv_1        uuv_2 response_fn_1 response_fn_2 
        nuv_1  1.00000e+00 
@@ -37791,10 +37859,14 @@ Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 20 total (10 new, 10 duplicate)
-response_fn_1:  Mean = 1.1320120298e+04  Std. Dev. = 1.7800645436e+04  Coeff. of Variation = 1.5724784690e+00
-response_fn_2:  Mean = 1.0909030134e+02  Std. Dev. = 6.1988013730e+01  Coeff. of Variation = 5.6822662480e-01
-response_fn_1:  Mean = ( 2.9891617908e+03, 1.9651078806e+04 ), Std Dev = ( 1.3537219867e+04, 2.5999117829e+04 )
-response_fn_2:  Mean = ( 8.0079017892e+01, 1.3810158479e+02 ), Std Dev = ( 4.7141289006e+01, 9.0537934634e+01 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.1320120298e+04  1.7800645436e+04  3.8208556292e+00  1.5813569315e+01
+ response_fn_2  1.0909030134e+02  6.1988013730e+01  2.1936756907e+00  7.2055275702e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  2.9891617908e+03  1.9651078806e+04  1.3537219867e+04  2.5999117829e+04
+ response_fn_2  8.0079017892e+01  1.3810158479e+02  4.7141289006e+01  9.0537934634e+01
 Simple Correlation Matrix among all inputs and outputs:
                     nuv_1        nuv_2        uuv_1        uuv_2 response_fn_1 response_fn_2 
        nuv_1  1.00000e+00 
@@ -49234,8 +49306,12 @@ response_fn_1 Sobol indices:
 dakota_uq_rosenbrock_verify.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 10000 total (10000 new, 0 duplicate)
-response_fn_1:  Mean = 3.9387850999e+02  Std. Dev. = 9.9444778285e+02  Coeff. of Variation = 2.5247576540e+00
-response_fn_1:  Mean = ( 3.7438533199e+02, 4.1337168800e+02 ), Std Dev = ( 9.8085491229e+02, 1.0084253916e+03 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.9387850999e+02  9.9444778285e+02  7.7948512449e+00  9.6952479901e+01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.7438533199e+02  4.1337168800e+02  9.8085491229e+02  1.0084253916e+03
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -49245,27 +49321,31 @@ response_fn_1:  Mean = ( 3.7438533199e+02, 4.1337168800e+02 ), Std Dev = ( 9.808
    5.0000000000e+02   8.2050000000e-01
    1.0000000000e+03   9.1060000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1
-          x1  1.00000e+00
-          x2 -9.84276e-05  1.00000e+00
-response_fn_1 -1.51341e-03 -1.75621e-01  1.00000e+00
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2 -9.84276e-05  1.00000e+00 
+response_fn_1 -1.51341e-03 -1.75621e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
-             response_fn_1
-          x1 -1.55487e-03
-          x2 -1.75622e-01
+             response_fn_1 
+          x1 -1.55487e-03 
+          x2 -1.75622e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1
-          x1  1.00000e+00
-          x2  5.14253e-03  1.00000e+00
-response_fn_1 -2.03685e-02 -3.62984e-01  1.00000e+00
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  5.14253e-03  1.00000e+00 
+response_fn_1 -2.03685e-02 -3.62984e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-             response_fn_1
-          x1 -1.98564e-02
-          x2 -3.62960e-01
+             response_fn_1 
+          x1 -1.98564e-02 
+          x2 -3.62960e-01 
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 10000 total (10000 new, 0 duplicate)
-response_fn_1:  Mean = 4.5023637347e+02  Std. Dev. = 5.9216468225e+02  Coeff. of Variation = 1.3152306591e+00
-response_fn_1:  Mean = ( 4.3862875389e+02, 4.6184399306e+02 ), Std Dev = ( 5.8407052384e+02, 6.0048794104e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5023637347e+02  5.9216468225e+02  2.0340296901e+00  4.1864569193e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  4.3862875389e+02  4.6184399306e+02  5.8407052384e+02  6.0048794104e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.8000000000e-03
@@ -49275,27 +49355,31 @@ response_fn_1:  Mean = ( 4.3862875389e+02, 4.6184399306e+02 ), Std Dev = ( 5.840
    5.0000000000e+02   7.1500000000e-01
    1.0000000000e+03   8.5530000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1
-          x1  1.00000e+00
-          x2  5.14154e-03  1.00000e+00
-response_fn_1 -2.92091e-03 -5.01590e-01  1.00000e+00
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  5.14154e-03  1.00000e+00 
+response_fn_1 -2.92091e-03 -5.01590e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
-             response_fn_1
-          x1 -3.95291e-04
-          x2 -5.01584e-01
+             response_fn_1 
+          x1 -3.95291e-04 
+          x2 -5.01584e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1
-          x1  1.00000e+00
-          x2  5.14253e-03  1.00000e+00
-response_fn_1 -1.18995e-02 -5.20981e-01  1.00000e+00
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  5.14253e-03  1.00000e+00 
+response_fn_1 -1.18995e-02 -5.20981e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-             response_fn_1
-          x1 -1.08022e-02
-          x2 -5.20963e-01
+             response_fn_1 
+          x1 -1.08022e-02 
+          x2 -5.20963e-01 
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 10000 total (10000 new, 0 duplicate)
-response_fn_1:  Mean = 3.5552289770e+04  Std. Dev. = 2.7932006373e+05  Coeff. of Variation = 7.8565984225e+00
-response_fn_1:  Mean = ( 3.0077054352e+04, 4.1027525189e+04 ), Std Dev = ( 2.7550210411e+05, 2.8324608844e+05 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5552289770e+04  2.7932006373e+05  2.8458055446e+01  1.2175621202e+03
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.0077054352e+04  4.1027525189e+04  2.7550210411e+05  2.8324608844e+05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.4000000000e-03
@@ -49305,27 +49389,31 @@ response_fn_1:  Mean = ( 3.0077054352e+04, 4.1027525189e+04 ), Std Dev = ( 2.755
    5.0000000000e+02   4.8370000000e-01
    1.0000000000e+03   5.7940000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1
-          x1  1.00000e+00
-          x2  1.18383e-02  1.00000e+00
-response_fn_1  5.09616e-01  1.01154e-02  1.00000e+00
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  1.18383e-02  1.00000e+00 
+response_fn_1  5.09616e-01  1.01154e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
-             response_fn_1
-          x1  5.09558e-01
-          x2  4.74514e-03
+             response_fn_1 
+          x1  5.09558e-01 
+          x2  4.74514e-03 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1
-          x1  1.00000e+00
-          x2  5.14253e-03  1.00000e+00
-response_fn_1  6.77822e-01  2.31553e-01  1.00000e+00
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  5.14253e-03  1.00000e+00 
+response_fn_1  6.77822e-01  2.31553e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-             response_fn_1
-          x1  6.95544e-01
-          x2  3.10204e-01
+             response_fn_1 
+          x1  6.95544e-01 
+          x2  3.10204e-01 
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 10000 total (10000 new, 0 duplicate)
-response_fn_1:  Mean = 3.3382448163e+02  Std. Dev. = 4.4952397982e+02  Coeff. of Variation = 1.3465878165e+00
-response_fn_1:  Mean = ( 3.2501290689e+02, 3.4263605636e+02 ), Std Dev = ( 4.4337954330e+02, 4.5584233100e+02 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.3382448163e+02  4.4952397982e+02  2.2470270984e+00  5.7287367963e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.2501290689e+02  3.4263605636e+02  4.4337954330e+02  4.5584233100e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.3000000000e-03
@@ -49335,27 +49423,31 @@ response_fn_1:  Mean = ( 3.2501290689e+02, 3.4263605636e+02 ), Std Dev = ( 4.433
    5.0000000000e+02   7.8280000000e-01
    1.0000000000e+03   9.0950000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1
-          x1  1.00000e+00
-          x2  4.58110e-03  1.00000e+00
-response_fn_1 -2.79469e-01 -4.54698e-01  1.00000e+00
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  4.58110e-03  1.00000e+00 
+response_fn_1 -2.79469e-01 -4.54698e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
-             response_fn_1
-          x1 -3.11447e-01
-          x2 -4.72239e-01
+             response_fn_1 
+          x1 -3.11447e-01 
+          x2 -4.72239e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1
-          x1  1.00000e+00
-          x2  5.14253e-03  1.00000e+00
-response_fn_1 -2.90595e-01 -5.78455e-01  1.00000e+00
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  5.14253e-03  1.00000e+00 
+response_fn_1 -2.90595e-01 -5.78455e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-             response_fn_1
-          x1 -3.52604e-01
-          x2 -6.02990e-01
+             response_fn_1 
+          x1 -3.52604e-01 
+          x2 -6.02990e-01 
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 10000 total (10000 new, 0 duplicate)
-response_fn_1:  Mean = 3.0751300879e+05  Std. Dev. = 1.5463848169e+06  Coeff. of Variation = 5.0286809750e+00
-response_fn_1:  Mean = ( 2.7720075407e+05, 3.3782526351e+05 ), Std Dev = ( 1.5252476501e+06, 1.5681202587e+06 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.0751300879e+05  1.5463848169e+06  3.2132282164e+01  1.7745061728e+03
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  2.7720075407e+05  3.3782526351e+05  1.5252476501e+06  1.5681202587e+06
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-04
@@ -49365,27 +49457,31 @@ response_fn_1:  Mean = ( 2.7720075407e+05, 3.3782526351e+05 ), Std Dev = ( 1.525
    5.0000000000e+02   1.4080000000e-01
    1.0000000000e+03   1.9690000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1
-          x1  1.00000e+00
-          x2  2.72059e-03  1.00000e+00
-response_fn_1  5.40341e-01 -6.00904e-03  1.00000e+00
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2  2.72059e-03  1.00000e+00 
+response_fn_1  5.40341e-01 -6.00904e-03  1.00000e+00 
 Partial Correlation Matrix between input and output:
-             response_fn_1
-          x1  5.40369e-01
-          x2 -8.88841e-03
+             response_fn_1 
+          x1  5.40369e-01 
+          x2 -8.88841e-03 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1
-          x1  1.00000e+00
-          x2 -2.95225e-03  1.00000e+00
-response_fn_1  9.46505e-01 -5.42614e-02  1.00000e+00
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2 -2.95225e-03  1.00000e+00 
+response_fn_1  9.46505e-01 -5.42614e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-             response_fn_1
-          x1  9.47745e-01
-          x2 -1.59495e-01
+             response_fn_1 
+          x1  9.47745e-01 
+          x2 -1.59495e-01 
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 10000 total (10000 new, 0 duplicate)
-response_fn_1:  Mean = 4.3222200017e+04  Std. Dev. = 3.4101736662e+05  Coeff. of Variation = 7.8898660060e+00
-response_fn_1:  Mean = ( 3.6537573288e+04, 4.9906826747e+04 ), Std Dev = ( 3.3635608123e+05, 3.4581058695e+05 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.3222200017e+04  3.4101736662e+05  4.2233366133e+01  2.6567566895e+03
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.6537573288e+04  4.9906826747e+04  3.3635608123e+05  3.4581058695e+05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   0.0000000000e+00
@@ -49395,35 +49491,35 @@ response_fn_1:  Mean = ( 3.6537573288e+04, 4.9906826747e+04 ), Std Dev = ( 3.363
    5.0000000000e+02   4.8800000000e-02
    1.0000000000e+03   1.2880000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2           x3           x4           x5 response_fn_1
-          x1  1.00000e+00
-          x2  1.38566e-03  1.00000e+00
-          x3 -3.06643e-03  5.75479e-04  1.00000e+00
-          x4 -1.64495e-03 -5.77622e-03 -1.36274e-03  1.00000e+00
-          x5  2.74410e-03 -4.96581e-04 -4.23822e-03 -2.15552e-03  1.00000e+00
-response_fn_1 -1.29871e-02  1.44740e-05  4.73220e-01 -5.44164e-03  4.05594e-02  1.00000e+00
+                       x1           x2           x3           x4           x5 response_fn_1 
+          x1  1.00000e+00 
+          x2  1.38566e-03  1.00000e+00 
+          x3 -3.06643e-03  5.75479e-04  1.00000e+00 
+          x4 -1.64495e-03 -5.77622e-03 -1.36274e-03  1.00000e+00 
+          x5  2.74410e-03 -4.96581e-04 -4.23822e-03 -2.15552e-03  1.00000e+00 
+response_fn_1 -1.29871e-02  1.44740e-05  4.73220e-01 -5.44164e-03  4.05594e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
-             response_fn_1
-          x1 -1.32512e-02
-          x2 -2.81783e-04
-          x3  4.73789e-01
-          x4 -5.37064e-03
-          x5  4.83469e-02
+             response_fn_1 
+          x1 -1.32512e-02 
+          x2 -2.81783e-04 
+          x3  4.73789e-01 
+          x4 -5.37064e-03 
+          x5  4.83469e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2           x3           x4           x5 response_fn_1
-          x1  1.00000e+00
-          x2  4.02276e-03  1.00000e+00
-          x3  2.96564e-03 -1.15429e-03  1.00000e+00
-          x4 -4.05515e-03 -6.94741e-03 -4.36148e-03  1.00000e+00
-          x5  3.32781e-03 -3.02824e-03 -3.51362e-04  1.73321e-04  1.00000e+00
-response_fn_1  8.26647e-03 -4.17192e-02  7.08179e-01 -4.20866e-02  4.51257e-01  1.00000e+00
+                       x1           x2           x3           x4           x5 response_fn_1 
+          x1  1.00000e+00 
+          x2  4.02276e-03  1.00000e+00 
+          x3  2.96564e-03 -1.15429e-03  1.00000e+00 
+          x4 -4.05515e-03 -6.94741e-03 -4.36148e-03  1.00000e+00 
+          x5  3.32781e-03 -3.02824e-03 -3.51362e-04  1.73321e-04  1.00000e+00 
+response_fn_1  8.26647e-03 -4.17192e-02  7.08179e-01 -4.20866e-02  4.51257e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-             response_fn_1
-          x1  8.64013e-03
-          x2 -7.35648e-02
-          x3  7.95216e-01
-          x4 -7.26591e-02
-          x5  6.41404e-01
+             response_fn_1 
+          x1  8.64013e-03 
+          x2 -7.35648e-02 
+          x3  7.95216e-01 
+          x4 -7.26591e-02 
+          x5  6.41404e-01 
 dakota_uq_short_column_adapt_gsg.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 887 total (887 new, 0 duplicate)
@@ -54039,12 +54135,16 @@ Test Number 5 succeeded
 dakota_uq_textbook_lhs.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 3.8168454875e+11  Std. Dev. = 6.6923021702e+10  Coeff. of Variation = 1.7533594672e-01
-response_fn_2:  Mean = 6.1791347600e+04  Std. Dev. = 6.1426765735e+03  Coeff. of Variation = 9.9409979101e-02
-response_fn_3:  Mean = 3.5243745292e+05  Std. Dev. = 3.5957710811e+04  Coeff. of Variation = 1.0202579355e-01
-response_fn_1:  Mean = ( 3.6840556934e+11, 3.9496352816e+11 ), Std Dev = ( 5.8758871169e+10, 7.7742818321e+10 )
-response_fn_2:  Mean = ( 6.0572507301e+04, 6.3010187898e+04 ), Std Dev = ( 5.3933120806e+03, 7.1357953767e+03 )
-response_fn_3:  Mean = ( 3.4530266299e+05, 3.5957224285e+05 ), Std Dev = ( 3.1571116237e+04, 4.1771182886e+04 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.8168454875e+11  6.6923021702e+10  3.2538688799e-01 -8.8632865437e-01
+ response_fn_2  6.1791347600e+04  6.1426765735e+03  1.2619015132e-01 -9.7944997689e-02
+ response_fn_3  3.5243745292e+05  3.5957710811e+04 -7.9683460229e-02  3.4031655353e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.6840556934e+11  3.9496352816e+11  5.8758871169e+10  7.7742818321e+10
+ response_fn_2  6.0572507301e+04  6.3010187898e+04  5.3933120806e+03  7.1357953767e+03
+ response_fn_3  3.4530266299e+05  3.5957224285e+05  3.1571116237e+04  4.1771182886e+04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    3.6000000000e+11   5.5000000000e-01
@@ -54112,12 +54212,16 @@ Partial Rank Correlation Matrix between input and output:
         TF3h -1.16281e-01  7.25993e-03  2.75669e-02 
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 3.7506252278e+11  Std. Dev. = 6.7208560605e+10  Coeff. of Variation = 1.7919295190e-01
-response_fn_2:  Mean = 6.1700755224e+04  Std. Dev. = 6.7495722593e+03  Coeff. of Variation = 1.0939205257e-01
-response_fn_3:  Mean = 3.5315648209e+05  Std. Dev. = 3.3872883172e+04  Coeff. of Variation = 9.5914657921e-02
-response_fn_1:  Mean = ( 3.6172688625e+11, 3.8839815930e+11 ), Std Dev = ( 5.9009576281e+10, 7.8074521798e+10 )
-response_fn_2:  Mean = ( 6.0361493655e+04, 6.3040016793e+04 ), Std Dev = ( 5.9261706472e+03, 7.8408110774e+03 )
-response_fn_3:  Mean = ( 3.4643536719e+05, 3.5987759698e+05 ), Std Dev = ( 2.9740623299e+04, 3.9349290206e+04 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.7506252278e+11  6.7208560605e+10  3.5879756861e-01 -8.1995982275e-01
+ response_fn_2  6.1700755224e+04  6.7495722593e+03  2.4904247599e-01  7.6310242549e-01
+ response_fn_3  3.5315648209e+05  3.3872883172e+04 -2.6250040185e-01 -2.3251821949e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.6172688625e+11  3.8839815930e+11  5.9009576281e+10  7.8074521798e+10
+ response_fn_2  6.0361493655e+04  6.3040016793e+04  5.9261706472e+03  7.8408110774e+03
+ response_fn_3  3.4643536719e+05  3.5987759698e+05  2.9740623299e+04  3.9349290206e+04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    3.6000000000e+11   5.3000000000e-01
@@ -54185,12 +54289,16 @@ Partial Rank Correlation Matrix between input and output:
         TF3h -1.13311e-01  9.13641e-02  1.31324e-01 
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 3.8168454875e+11  Std. Dev. = 6.6923021702e+10  Coeff. of Variation = 1.7533594672e-01
-response_fn_2:  Mean = 6.1791347600e+04  Std. Dev. = 6.1426765735e+03  Coeff. of Variation = 9.9409979101e-02
-response_fn_3:  Mean = 3.5243745292e+05  Std. Dev. = 3.5957710811e+04  Coeff. of Variation = 1.0202579355e-01
-response_fn_1:  Mean = ( 3.6840556934e+11, 3.9496352816e+11 ), Std Dev = ( 5.8758871169e+10, 7.7742818321e+10 )
-response_fn_2:  Mean = ( 6.0572507301e+04, 6.3010187898e+04 ), Std Dev = ( 5.3933120806e+03, 7.1357953767e+03 )
-response_fn_3:  Mean = ( 3.4530266299e+05, 3.5957224285e+05 ), Std Dev = ( 3.1571116237e+04, 4.1771182886e+04 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.8168454875e+11  6.6923021702e+10  3.2538688799e-01 -8.8632865437e-01
+ response_fn_2  6.1791347600e+04  6.1426765735e+03  1.2619015132e-01 -9.7944997689e-02
+ response_fn_3  3.5243745292e+05  3.5957710811e+04 -7.9683460229e-02  3.4031655353e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.6840556934e+11  3.9496352816e+11  5.8758871169e+10  7.7742818321e+10
+ response_fn_2  6.0572507301e+04  6.3010187898e+04  5.3933120806e+03  7.1357953767e+03
+ response_fn_3  3.4530266299e+05  3.5957224285e+05  3.1571116237e+04  4.1771182886e+04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    3.6000000000e+11                     -3.2402226014e-01
@@ -54258,12 +54366,16 @@ Partial Rank Correlation Matrix between input and output:
         TF3h -1.16281e-01  7.25993e-03  2.75669e-02 
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 3.7506252278e+11  Std. Dev. = 6.7208560605e+10  Coeff. of Variation = 1.7919295190e-01
-response_fn_2:  Mean = 6.1700755224e+04  Std. Dev. = 6.7495722593e+03  Coeff. of Variation = 1.0939205257e-01
-response_fn_3:  Mean = 3.5315648209e+05  Std. Dev. = 3.3872883172e+04  Coeff. of Variation = 9.5914657921e-02
-response_fn_1:  Mean = ( 3.6172688625e+11, 3.8839815930e+11 ), Std Dev = ( 5.9009576281e+10, 7.8074521798e+10 )
-response_fn_2:  Mean = ( 6.0361493655e+04, 6.3040016793e+04 ), Std Dev = ( 5.9261706472e+03, 7.8408110774e+03 )
-response_fn_3:  Mean = ( 3.4643536719e+05, 3.5987759698e+05 ), Std Dev = ( 2.9740623299e+04, 3.9349290206e+04 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.7506252278e+11  6.7208560605e+10  3.5879756861e-01 -8.1995982275e-01
+ response_fn_2  6.1700755224e+04  6.7495722593e+03  2.4904247599e-01  7.6310242549e-01
+ response_fn_3  3.5315648209e+05  3.3872883172e+04 -2.6250040185e-01 -2.3251821949e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.6172688625e+11  3.8839815930e+11  5.9009576281e+10  7.8074521798e+10
+ response_fn_2  6.0361493655e+04  6.3040016793e+04  5.9261706472e+03  7.8408110774e+03
+ response_fn_3  3.4643536719e+05  3.5987759698e+05  2.9740623299e+04  3.9349290206e+04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    3.6000000000e+11                     -2.2411613404e-01
@@ -54331,12 +54443,16 @@ Partial Rank Correlation Matrix between input and output:
         TF3h -1.13311e-01  9.13641e-02  1.31324e-01 
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 3.8168454875e+11  Std. Dev. = 6.6923021702e+10  Coeff. of Variation = 1.7533594672e-01
-response_fn_2:  Mean = 6.1791347600e+04  Std. Dev. = 6.1426765735e+03  Coeff. of Variation = 9.9409979101e-02
-response_fn_3:  Mean = 3.5243745292e+05  Std. Dev. = 3.5957710811e+04  Coeff. of Variation = 1.0202579355e-01
-response_fn_1:  Mean = ( 3.6840556934e+11, 3.9496352816e+11 ), Std Dev = ( 5.8758871169e+10, 7.7742818321e+10 )
-response_fn_2:  Mean = ( 6.0572507301e+04, 6.3010187898e+04 ), Std Dev = ( 5.3933120806e+03, 7.1357953767e+03 )
-response_fn_3:  Mean = ( 3.4530266299e+05, 3.5957224285e+05 ), Std Dev = ( 3.1571116237e+04, 4.1771182886e+04 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.8168454875e+11  6.6923021702e+10  3.2538688799e-01 -8.8632865437e-01
+ response_fn_2  6.1791347600e+04  6.1426765735e+03  1.2619015132e-01 -9.7944997689e-02
+ response_fn_3  3.5243745292e+05  3.5957710811e+04 -7.9683460229e-02  3.4031655353e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.6840556934e+11  3.9496352816e+11  5.8758871169e+10  7.7742818321e+10
+ response_fn_2  6.0572507301e+04  6.3010187898e+04  5.3933120806e+03  7.1357953767e+03
+ response_fn_3  3.4530266299e+05  3.5957224285e+05  3.1571116237e+04  4.1771182886e+04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    2.7604749078e+11   1.0000000000e+00
@@ -54407,12 +54523,16 @@ Partial Rank Correlation Matrix between input and output:
         TF3h -1.16281e-01  7.25993e-03  2.75669e-02 
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 3.8168454875e+11  Std. Dev. = 6.6923021702e+10  Coeff. of Variation = 1.7533594672e-01
-response_fn_2:  Mean = 6.1791347600e+04  Std. Dev. = 6.1426765735e+03  Coeff. of Variation = 9.9409979101e-02
-response_fn_3:  Mean = 3.5243745292e+05  Std. Dev. = 3.5957710811e+04  Coeff. of Variation = 1.0202579355e-01
-response_fn_1:  Mean = ( 3.6840556934e+11, 3.9496352816e+11 ), Std Dev = ( 5.8758871169e+10, 7.7742818321e+10 )
-response_fn_2:  Mean = ( 6.0572507301e+04, 6.3010187898e+04 ), Std Dev = ( 5.3933120806e+03, 7.1357953767e+03 )
-response_fn_3:  Mean = ( 3.4530266299e+05, 3.5957224285e+05 ), Std Dev = ( 3.1571116237e+04, 4.1771182886e+04 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.8168454875e+11  6.6923021702e+10  3.2538688799e-01 -8.8632865437e-01
+ response_fn_2  6.1791347600e+04  6.1426765735e+03  1.2619015132e-01 -9.7944997689e-02
+ response_fn_3  3.5243745292e+05  3.5957710811e+04 -7.9683460229e-02  3.4031655353e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.6840556934e+11  3.9496352816e+11  5.8758871169e+10  7.7742818321e+10
+ response_fn_2  6.0572507301e+04  6.3010187898e+04  5.3933120806e+03  7.1357953767e+03
+ response_fn_3  3.4530266299e+05  3.5957224285e+05  3.1571116237e+04  4.1771182886e+04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    4.4860757045e+11                      1.0000000000e+00
@@ -54483,172 +54603,184 @@ Partial Rank Correlation Matrix between input and output:
         TF3h -1.16281e-01  7.25993e-03  2.75669e-02 
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 9.1325938000e+05  Std. Dev. = 1.1821260526e+06  Coeff. of Variation = 1.2944034067e+00
-response_fn_2:  Mean = -1.9500000000e+00  Std. Dev. = 9.9112220857e-01  Coeff. of Variation = -5.0826779927e-01
-response_fn_3:  Mean = 1.9795000000e+01  Std. Dev. = 1.7729176860e+01  Coeff. of Variation = 8.9563914421e-01
-response_fn_1:  Mean = ( 6.7869992474e+05, 1.1478188353e+06 ), Std Dev = ( 1.0379147664e+06, 1.3732465840e+06 )
-response_fn_2:  Mean = ( -2.1466601487e+00, -1.7533398513e+00 ), Std Dev = ( 8.7021208376e-01, 1.1513621447e+00 )
-response_fn_3:  Mean = ( 1.6277146674e+01, 2.3312853326e+01 ), Std Dev = ( 1.5566338646e+01, 2.0595546055e+01 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  9.1325938000e+05  1.1821260526e+06  3.3335624950e+00  1.3781370048e+01
+ response_fn_2 -1.9500000000e+00  9.9112220857e-01 -3.8747009748e-01 -1.7931746560e-01
+ response_fn_3  1.9795000000e+01  1.7729176860e+01  1.4259760449e+00  2.0057769086e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  6.7869992474e+05  1.1478188353e+06  1.0379147664e+06  1.3732465840e+06
+ response_fn_2 -2.1466601487e+00 -1.7533398513e+00  8.7021208376e-01  1.1513621447e+00
+ response_fn_3  1.6277146674e+01  2.3312853326e+01  1.5566338646e+01  2.0595546055e+01
 Simple Correlation Matrix among all inputs and outputs:
-                     TF1p         TF2p        TF1bi        TF2bi        TF1nb      TF2nb        TF1ge        TF2ge        TF1hg        TF2hg response_fn_1 response_fn_2 response_fn_3
-        TF1p  1.00000e+00
-        TF2p  7.04276e-02  1.00000e+00
-       TF1bi -6.07457e-02  1.78257e-02  1.00000e+00
-       TF2bi  2.03984e-03 -4.54925e-03  6.07165e-03  1.00000e+00
-       TF1nb -5.61078e-02 -1.11099e-02  5.78775e-02 -1.13403e-02  1.00000e+00
-       TF2nb  1.41651e-01 -3.83665e-02 -2.35017e-02 -3.27270e-02 -2.91045e-02  1.00000e+00
-       TF1ge -5.78610e-02 -3.33541e-02  4.98328e-02 -4.27978e-02 -1.31465e-02 -2.23839e-02  1.00000e+00
-       TF2ge -3.07541e-02  5.91276e-03 -8.05893e-02  8.62712e-02 -3.41589e-02 -2.58645e-02  9.68253e-04  1.00000e+00
-       TF1hg -4.53234e-02  1.44401e-02  3.94625e-02 -3.75576e-02  2.75882e-02 -5.84320e-02  8.54977e-02  4.57051e-02  1.00000e+00
-       TF2hg  1.33979e-01 -3.78229e-02  2.07072e-02 -2.29395e-02 -8.73561e-03  4.49009e-02  2.05721e-02 -8.50878e-03 -5.57056e-02  1.00000e+00
-response_fn_1 -4.05043e-02 -8.90036e-02  4.07294e-02 -3.73806e-02  6.51744e-01 1.27222e-01  3.49401e-01  6.06307e-02  1.26039e-02  1.01315e-01  1.00000e+00
-response_fn_2  1.51214e-01 -9.75397e-01 -3.10897e-02  4.95895e-03 -1.39067e-03 6.93254e-02  2.02651e-02 -1.26561e-02 -2.43263e-02  6.70910e-02  7.92475e-02  1.00000e+00
-response_fn_3  4.03811e-02  9.60767e-01  4.80286e-02  2.35866e-02 -1.29267e-02 -5.76974e-02  3.92682e-02 -3.01234e-02  8.37552e-03 -6.61262e-02 -5.24464e-02 -9.43159e-01  1.00000e+00
+                     TF1p         TF2p        TF1bi        TF2bi        TF1nb        TF2nb        TF1ge        TF2ge        TF1hg        TF2hg response_fn_1 response_fn_2 response_fn_3 
+        TF1p  1.00000e+00 
+        TF2p  7.04276e-02  1.00000e+00 
+       TF1bi -6.07457e-02  1.78257e-02  1.00000e+00 
+       TF2bi  2.03984e-03 -4.54925e-03  6.07165e-03  1.00000e+00 
+       TF1nb -5.61078e-02 -1.11099e-02  5.78775e-02 -1.13403e-02  1.00000e+00 
+       TF2nb  1.41651e-01 -3.83665e-02 -2.35017e-02 -3.27270e-02 -2.91045e-02  1.00000e+00 
+       TF1ge -5.78610e-02 -3.33541e-02  4.98328e-02 -4.27978e-02 -1.31465e-02 -2.23839e-02  1.00000e+00 
+       TF2ge -3.07541e-02  5.91276e-03 -8.05893e-02  8.62712e-02 -3.41589e-02 -2.58645e-02  9.68253e-04  1.00000e+00 
+       TF1hg -4.53234e-02  1.44401e-02  3.94625e-02 -3.75576e-02  2.75882e-02 -5.84320e-02  8.54977e-02  4.57051e-02  1.00000e+00 
+       TF2hg  1.33979e-01 -3.78229e-02  2.07072e-02 -2.29395e-02 -8.73561e-03  4.49009e-02  2.05721e-02 -8.50878e-03 -5.57056e-02  1.00000e+00 
+response_fn_1 -4.05043e-02 -8.90036e-02  4.07294e-02 -3.73806e-02  6.51744e-01  1.27222e-01  3.49401e-01  6.06307e-02  1.26039e-02  1.01315e-01  1.00000e+00 
+response_fn_2  1.51214e-01 -9.75397e-01 -3.10897e-02  4.95895e-03 -1.39067e-03  6.93254e-02  2.02651e-02 -1.26561e-02 -2.43263e-02  6.70910e-02  7.92475e-02  1.00000e+00 
+response_fn_3  4.03811e-02  9.60767e-01  4.80286e-02  2.35866e-02 -1.29267e-02 -5.76974e-02  3.92682e-02 -3.01234e-02  8.37552e-03 -6.61262e-02 -5.24464e-02 -9.43159e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
-             response_fn_1 response_fn_2 response_fn_3
-        TF1p -1.59713e-02  1.00000e+00 -6.67679e-02
-        TF2p -9.34450e-02 -1.00000e+00  9.65308e-01
-       TF1bi -8.01529e-03 -4.02702e-02  9.14653e-02
-       TF2bi -2.58079e-02 -3.86930e-02  1.23578e-01
-       TF1nb  7.21802e-01  2.95550e-02 -1.89847e-02
-       TF2nb  2.26816e-01  4.38484e-02 -5.91764e-02
-       TF1ge  4.89352e-01 -5.81605e-02  2.65388e-01
-       TF2ge  1.39005e-01 -3.39348e-02 -1.42062e-01
-       TF1hg -4.16430e-02 -7.64986e-02 -4.91704e-02
-       TF2hg  1.40479e-01 -1.43249e-01 -1.09643e-01
+             response_fn_1 response_fn_2 response_fn_3 
+        TF1p -1.59713e-02  1.00000e+00 -6.67679e-02 
+        TF2p -9.34450e-02 -1.00000e+00  9.65308e-01 
+       TF1bi -8.01529e-03 -4.02702e-02  9.14653e-02 
+       TF2bi -2.58079e-02 -3.86930e-02  1.23578e-01 
+       TF1nb  7.21802e-01  2.95550e-02 -1.89847e-02 
+       TF2nb  2.26816e-01  4.38484e-02 -5.91764e-02 
+       TF1ge  4.89352e-01 -5.81605e-02  2.65388e-01 
+       TF2ge  1.39005e-01 -3.39348e-02 -1.42062e-01 
+       TF1hg -4.16430e-02 -7.64986e-02 -4.91704e-02 
+       TF2hg  1.40479e-01 -1.43249e-01 -1.09643e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                     TF1p         TF2p        TF1bi        TF2bi        TF1nb      TF2nb        TF1ge        TF2ge        TF1hg        TF2hg response_fn_1 response_fn_2 response_fn_3
-        TF1p  1.00000e+00
-        TF2p  1.32805e-01  1.00000e+00
-       TF1bi -2.44824e-02 -5.36454e-03  1.00000e+00
-       TF2bi -3.32073e-02 -5.59016e-02 -3.72037e-02  1.00000e+00
-       TF1nb  1.39214e-01 -1.97300e-02  9.20372e-02 -2.19622e-03  1.00000e+00
-       TF2nb  1.01662e-01 -4.62526e-02  1.27093e-02 -8.40084e-03  6.72427e-02  1.00000e+00
-       TF1ge -8.00120e-02  2.19862e-02  1.72097e-02 -4.17642e-03  2.90309e-02 -4.48125e-02  1.00000e+00
-       TF2ge -1.07195e-01  1.88419e-02 -1.23972e-02 -1.96580e-02  1.23612e-02 -5.82538e-02 -3.51515e-02  1.00000e+00
-       TF1hg  1.58296e-02  2.66307e-02  2.03180e-02 -4.61686e-02  8.83768e-02 -5.87339e-02 -6.33663e-03 -4.35404e-02  1.00000e+00
-       TF2hg  1.11995e-01 -9.25893e-02 -8.66487e-03 -2.06181e-02  8.89169e-02  6.85269e-02 -2.52865e-02 -1.64536e-02 -4.76088e-02  1.00000e+00
-response_fn_1  1.34341e-01 -8.62886e-02  7.38194e-02 -3.71917e-02  7.54551e-01 4.03048e-01  1.97984e-01  5.79418e-02  6.48305e-02  1.58860e-01  1.00000e+00
-response_fn_2 -1.73657e-02 -9.37642e-01 -7.00870e-03 -8.20882e-03  3.72157e-02 1.12223e-01 -1.34173e-02 -3.57156e-02 -3.82838e-02  1.04758e-01  8.78968e-02  1.00000e+00
-response_fn_3  9.42574e-02  9.89427e-01 -3.58836e-03 -5.38614e-02 -7.84878e-03 -6.70507e-02  3.30273e-02  1.56616e-02  2.74947e-02 -1.17120e-01 -7.93879e-02 -9.57840e-01  1.00000e+00
+                     TF1p         TF2p        TF1bi        TF2bi        TF1nb        TF2nb        TF1ge        TF2ge        TF1hg        TF2hg response_fn_1 response_fn_2 response_fn_3 
+        TF1p  1.00000e+00 
+        TF2p  1.32805e-01  1.00000e+00 
+       TF1bi -2.44824e-02 -5.36454e-03  1.00000e+00 
+       TF2bi -3.32073e-02 -5.59016e-02 -3.72037e-02  1.00000e+00 
+       TF1nb  1.39214e-01 -1.97300e-02  9.20372e-02 -2.19622e-03  1.00000e+00 
+       TF2nb  1.01662e-01 -4.62526e-02  1.27093e-02 -8.40084e-03  6.72427e-02  1.00000e+00 
+       TF1ge -8.00120e-02  2.19862e-02  1.72097e-02 -4.17642e-03  2.90309e-02 -4.48125e-02  1.00000e+00 
+       TF2ge -1.07195e-01  1.88419e-02 -1.23972e-02 -1.96580e-02  1.23612e-02 -5.82538e-02 -3.51515e-02  1.00000e+00 
+       TF1hg  1.58296e-02  2.66307e-02  2.03180e-02 -4.61686e-02  8.83768e-02 -5.87339e-02 -6.33663e-03 -4.35404e-02  1.00000e+00 
+       TF2hg  1.11995e-01 -9.25893e-02 -8.66487e-03 -2.06181e-02  8.89169e-02  6.85269e-02 -2.52865e-02 -1.64536e-02 -4.76088e-02  1.00000e+00 
+response_fn_1  1.34341e-01 -8.62886e-02  7.38194e-02 -3.71917e-02  7.54551e-01  4.03048e-01  1.97984e-01  5.79418e-02  6.48305e-02  1.58860e-01  1.00000e+00 
+response_fn_2 -1.73657e-02 -9.37642e-01 -7.00870e-03 -8.20882e-03  3.72157e-02  1.12223e-01 -1.34173e-02 -3.57156e-02 -3.82838e-02  1.04758e-01  8.78968e-02  1.00000e+00 
+response_fn_3  9.42574e-02  9.89427e-01 -3.58836e-03 -5.38614e-02 -7.84878e-03 -6.70507e-02  3.30273e-02  1.56616e-02  2.74947e-02 -1.17120e-01 -7.93879e-02 -9.57840e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-             response_fn_1 response_fn_2 response_fn_3
-        TF1p  4.30378e-02  2.92828e-01 -2.49629e-01
-        TF2p -1.17610e-01 -9.46239e-01  9.90407e-01
-       TF1bi  1.06414e-03 -3.99282e-02 -8.49214e-03
-       TF2bi -5.91583e-02 -1.80163e-01 -3.53812e-03
-       TF1nb  8.09813e-01  7.01034e-03  1.43587e-01
-       TF2nb  5.78726e-01  1.73802e-01 -1.27487e-01
-       TF1ge  3.70462e-01  5.54778e-02  4.43973e-02
-       TF2ge  1.61098e-01 -1.50960e-02 -6.18145e-02
-       TF1hg  6.17874e-02 -4.32944e-02 -1.85150e-02
-       TF2hg  1.36228e-01 -1.55597e-03 -1.56624e-01
+             response_fn_1 response_fn_2 response_fn_3 
+        TF1p  4.30378e-02  2.92828e-01 -2.49629e-01 
+        TF2p -1.17610e-01 -9.46239e-01  9.90407e-01 
+       TF1bi  1.06414e-03 -3.99282e-02 -8.49214e-03 
+       TF2bi -5.91583e-02 -1.80163e-01 -3.53812e-03 
+       TF1nb  8.09813e-01  7.01034e-03  1.43587e-01 
+       TF2nb  5.78726e-01  1.73802e-01 -1.27487e-01 
+       TF1ge  3.70462e-01  5.54778e-02  4.43973e-02 
+       TF2ge  1.61098e-01 -1.50960e-02 -6.18145e-02 
+       TF1hg  6.17874e-02 -4.32944e-02 -1.85150e-02 
+       TF2hg  1.36228e-01 -1.55597e-03 -1.56624e-01 
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 3.8168546506e+11  Std. Dev. = 6.8946538024e+10  Coeff. of Variation = 1.8063705416e-01
-response_fn_2:  Mean = 6.1791347600e+04  Std. Dev. = 6.1425067225e+03  Coeff. of Variation = 9.9407230317e-02
-response_fn_3:  Mean = 3.5243745292e+05  Std. Dev. = 3.5957666015e+04  Coeff. of Variation = 1.0202566645e-01
-response_fn_1:  Mean = ( 3.6800497611e+11, 3.9536595401e+11 ), Std Dev = ( 6.0535532352e+10, 8.0093487161e+10 )
-response_fn_2:  Mean = ( 6.0572541003e+04, 6.3010154196e+04 ), Std Dev = ( 5.3931629503e+03, 7.1355980650e+03 )
-response_fn_3:  Mean = ( 3.4530267187e+05, 3.5957223396e+05 ), Std Dev = ( 3.1571076906e+04, 4.1771130848e+04 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.8168546506e+11  6.8946538024e+10  3.5342934937e-01 -7.1657953295e-01
+ response_fn_2  6.1791347600e+04  6.1425067225e+03  1.2485254594e-01 -1.0391027249e-01
+ response_fn_3  3.5243745292e+05  3.5957666015e+04 -7.9680327008e-02  3.4026627189e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.6800497611e+11  3.9536595401e+11  6.0535532352e+10  8.0093487161e+10
+ response_fn_2  6.0572541003e+04  6.3010154196e+04  5.3931629503e+03  7.1355980650e+03
+ response_fn_3  3.4530267187e+05  3.5957223396e+05  3.1571076906e+04  4.1771130848e+04
 Simple Correlation Matrix among all inputs and outputs:
-                     TF1n         TF2n         TF1u         TF2u         TF1w       TF2w         TF1h         TF2h         TF1p         TF2p        TF1bi    TF2bi        TF1nb        TF2nb        TF1ge        TF2ge        TF1hg  TF2hg         TF3h response_fn_1 response_fn_2 response_fn_3
-        TF1n  1.00000e+00
-        TF2n  2.45994e-02  1.00000e+00
-        TF1u -3.99266e-04 -2.69246e-03  1.00000e+00
-        TF2u -4.73804e-03  2.80240e-02  2.35243e-04  1.00000e+00
-        TF1w -5.77303e-04 -3.23343e-02 -3.65374e-02  1.12472e-02  1.00000e+00
-        TF2w -5.24066e-02  3.93461e-02  2.49600e-02  2.96918e-02 -1.18481e-02  1.00000e+00
-        TF1h -1.09777e-02  3.38107e-02 -6.43616e-03 -1.14411e-02 -4.00359e-04  5.22465e-02  1.00000e+00
-        TF2h  2.07895e-02  3.32862e-03 -2.20527e-02  2.02726e-03 -5.12060e-04  2.56692e-02 -2.01708e-02  1.00000e+00
-        TF1p -7.52780e-02  3.88576e-02 -1.09114e-01 -1.74349e-01  9.57347e-02 -6.23630e-02 -1.01290e-02  1.15793e-01  1.00000e+00
-        TF2p  1.83850e-02 -1.44858e-02 -3.25322e-02 -2.08916e-03  2.00213e-02  3.08699e-02  9.90638e-04  1.28810e-02 -4.75786e-02  1.00000e+00
-       TF1bi -1.29505e-02  2.33201e-02  3.05916e-02  2.39002e-02  2.30514e-02  9.27425e-02  1.45770e-02  7.92168e-03 -1.27931e-01 -1.42777e-02  1.00000e+00
-       TF2bi  5.71335e-03  3.52517e-03 -1.17869e-02 -4.59777e-02 -2.78160e-02  1.16834e-03  1.31879e-02 -3.19988e-02  1.20069e-01 -3.42041e-02  4.53868e-02  1.00000e+00
-       TF1nb  1.47976e-03  1.50469e-03  6.08828e-03 -1.66826e-02 -2.81995e-02 -3.14220e-02 -1.64137e-03  8.49534e-03 -1.18196e-01  7.12321e-03 -2.15178e-02 -1.62640e-02  1.00000e+00
-       TF2nb -4.29039e-03  3.05485e-02  3.20037e-02  5.92552e-02 -1.04805e-02 -4.39161e-02 -2.79173e-02  1.97090e-02 -2.07272e-02  1.33838e-02  7.22404e-02  4.26020e-02  1.01961e-02  1.00000e+00
-       TF1ge  9.92692e-02 -8.82393e-03  8.42056e-02  2.67322e-02  9.63738e-03  3.20288e-03 -1.93859e-02  8.51522e-02 -3.48270e-02 -1.58510e-02  5.58554e-02  2.36276e-02 -1.20939e-02  1.89064e-02  1.00000e+00
-       TF2ge -4.77052e-02 -9.13582e-02 -1.46465e-03 -5.77203e-02 -3.25760e-02  7.54029e-03  2.30232e-02 -8.71019e-02 -3.08665e-02  5.32050e-02 -4.08025e-02  7.12180e-02  2.14871e-02 -2.57684e-02  1.08278e-02  1.00000e+00
-       TF1hg  2.43681e-02 -9.13633e-03 -7.12656e-03  8.62279e-02 -2.70619e-02  2.58166e-02 -3.65511e-02 -2.40625e-02 -4.45657e-02 -1.51076e-02 -4.01206e-02  8.54350e-03  3.44727e-02  6.26812e-03 -5.11974e-03  8.19521e-02  1.00000e+00
-       TF2hg -1.10213e-02 -8.18093e-03 -1.03467e-02  1.16850e-02  5.09465e-03 -2.71930e-02 -1.65359e-02  1.94647e-02 -1.03452e-01 -7.66558e-03 -5.08927e-05 -9.78615e-03 -2.56446e-02  8.39633e-03  1.09074e-01  1.18172e-02  7.18015e-03  1.00000e+00
-        TF3h  1.08289e-01  1.52167e-02 -6.97221e-02  7.80811e-02 -1.65856e-02  3.34474e-02  3.63768e-02  5.18872e-03 -4.58831e-02 -9.33257e-02  6.88445e-03  4.39804e-03 -4.57959e-02 -6.45343e-02  5.27110e-02  2.28040e-03  3.88514e-02 -7.39241e-03  1.00000e+00
-response_fn_1 -2.06765e-02  4.05649e-01  1.30332e-02  8.75583e-01 -5.80731e-03 3.02735e-01  1.69575e-02 -7.52860e-03 -1.67385e-01  2.92940e-02  3.08156e-02 -5.24755e-02  3.67346e-03  3.37173e-02  1.70868e-03 -7.05761e-02  8.62099e-02  3.82076e-03  7.78742e-02  1.00000e+00
-response_fn_2  9.99439e-01  2.15925e-02 -1.12274e-03 -3.01264e-03 -8.60677e-04 -5.21503e-02 -6.28640e-03  1.75513e-02 -7.55462e-02  1.66131e-02 -1.07168e-02  1.02414e-03 -2.37256e-03 -9.64219e-03  1.03253e-01 -4.89545e-02  2.83331e-02 -1.12720e-02  1.09158e-01 -2.02129e-02  1.00000e+00
-response_fn_3  1.99477e-02  9.99186e-01 -2.53045e-03  3.36422e-02 -3.22253e-02 4.06908e-02  3.19656e-02 -2.75137e-03  3.52291e-02 -6.25721e-03  2.54414e-02  6.17104e-03 -3.42940e-03  2.54654e-02 -8.58941e-03 -9.28417e-02 -7.17024e-03 -1.27588e-02  1.88762e-02  4.12567e-01  1.69996e-02  1.00000e+00
+                     TF1n         TF2n         TF1u         TF2u         TF1w         TF2w         TF1h         TF2h         TF1p         TF2p        TF1bi        TF2bi        TF1nb        TF2nb        TF1ge        TF2ge        TF1hg        TF2hg         TF3h response_fn_1 response_fn_2 response_fn_3 
+        TF1n  1.00000e+00 
+        TF2n  2.45994e-02  1.00000e+00 
+        TF1u -3.99266e-04 -2.69246e-03  1.00000e+00 
+        TF2u -4.73804e-03  2.80240e-02  2.35243e-04  1.00000e+00 
+        TF1w -5.77303e-04 -3.23343e-02 -3.65374e-02  1.12472e-02  1.00000e+00 
+        TF2w -5.24066e-02  3.93461e-02  2.49600e-02  2.96918e-02 -1.18481e-02  1.00000e+00 
+        TF1h -1.09777e-02  3.38107e-02 -6.43616e-03 -1.14411e-02 -4.00359e-04  5.22465e-02  1.00000e+00 
+        TF2h  2.07895e-02  3.32862e-03 -2.20527e-02  2.02726e-03 -5.12060e-04  2.56692e-02 -2.01708e-02  1.00000e+00 
+        TF1p -7.52780e-02  3.88576e-02 -1.09114e-01 -1.74349e-01  9.57347e-02 -6.23630e-02 -1.01290e-02  1.15793e-01  1.00000e+00 
+        TF2p  1.83850e-02 -1.44858e-02 -3.25322e-02 -2.08916e-03  2.00213e-02  3.08699e-02  9.90638e-04  1.28810e-02 -4.75786e-02  1.00000e+00 
+       TF1bi -1.29505e-02  2.33201e-02  3.05916e-02  2.39002e-02  2.30514e-02  9.27425e-02  1.45770e-02  7.92168e-03 -1.27931e-01 -1.42777e-02  1.00000e+00 
+       TF2bi  5.71335e-03  3.52517e-03 -1.17869e-02 -4.59777e-02 -2.78160e-02  1.16834e-03  1.31879e-02 -3.19988e-02  1.20069e-01 -3.42041e-02  4.53868e-02  1.00000e+00 
+       TF1nb  1.47976e-03  1.50469e-03  6.08828e-03 -1.66826e-02 -2.81995e-02 -3.14220e-02 -1.64137e-03  8.49534e-03 -1.18196e-01  7.12321e-03 -2.15178e-02 -1.62640e-02  1.00000e+00 
+       TF2nb -4.29039e-03  3.05485e-02  3.20037e-02  5.92552e-02 -1.04805e-02 -4.39161e-02 -2.79173e-02  1.97090e-02 -2.07272e-02  1.33838e-02  7.22404e-02  4.26020e-02  1.01961e-02  1.00000e+00 
+       TF1ge  9.92692e-02 -8.82393e-03  8.42056e-02  2.67322e-02  9.63738e-03  3.20288e-03 -1.93859e-02  8.51522e-02 -3.48270e-02 -1.58510e-02  5.58554e-02  2.36276e-02 -1.20939e-02  1.89064e-02  1.00000e+00 
+       TF2ge -4.77052e-02 -9.13582e-02 -1.46465e-03 -5.77203e-02 -3.25760e-02  7.54029e-03  2.30232e-02 -8.71019e-02 -3.08665e-02  5.32050e-02 -4.08025e-02  7.12180e-02  2.14871e-02 -2.57684e-02  1.08278e-02  1.00000e+00 
+       TF1hg  2.43681e-02 -9.13633e-03 -7.12656e-03  8.62279e-02 -2.70619e-02  2.58166e-02 -3.65511e-02 -2.40625e-02 -4.45657e-02 -1.51076e-02 -4.01206e-02  8.54350e-03  3.44727e-02  6.26812e-03 -5.11974e-03  8.19521e-02  1.00000e+00 
+       TF2hg -1.10213e-02 -8.18093e-03 -1.03467e-02  1.16850e-02  5.09465e-03 -2.71930e-02 -1.65359e-02  1.94647e-02 -1.03452e-01 -7.66558e-03 -5.08927e-05 -9.78615e-03 -2.56446e-02  8.39633e-03  1.09074e-01  1.18172e-02  7.18015e-03  1.00000e+00 
+        TF3h  1.08289e-01  1.52167e-02 -6.97221e-02  7.80811e-02 -1.65856e-02  3.34474e-02  3.63768e-02  5.18872e-03 -4.58831e-02 -9.33257e-02  6.88445e-03  4.39804e-03 -4.57959e-02 -6.45343e-02  5.27110e-02  2.28040e-03  3.88514e-02 -7.39241e-03  1.00000e+00 
+response_fn_1 -2.06765e-02  4.05649e-01  1.30332e-02  8.75583e-01 -5.80731e-03  3.02735e-01  1.69575e-02 -7.52860e-03 -1.67385e-01  2.92940e-02  3.08156e-02 -5.24755e-02  3.67346e-03  3.37173e-02  1.70868e-03 -7.05761e-02  8.62099e-02  3.82076e-03  7.78742e-02  1.00000e+00 
+response_fn_2  9.99439e-01  2.15925e-02 -1.12274e-03 -3.01264e-03 -8.60677e-04 -5.21503e-02 -6.28640e-03  1.75513e-02 -7.55462e-02  1.66131e-02 -1.07168e-02  1.02414e-03 -2.37256e-03 -9.64219e-03  1.03253e-01 -4.89545e-02  2.83331e-02 -1.12720e-02  1.09158e-01 -2.02129e-02  1.00000e+00 
+response_fn_3  1.99477e-02  9.99186e-01 -2.53045e-03  3.36422e-02 -3.22253e-02  4.06908e-02  3.19656e-02 -2.75137e-03  3.52291e-02 -6.25721e-03  2.54414e-02  6.17104e-03 -3.42940e-03  2.54654e-02 -8.58941e-03 -9.28417e-02 -7.17024e-03 -1.27588e-02  1.88762e-02  4.12567e-01  1.69996e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
-             response_fn_1 response_fn_2 response_fn_3
-        TF1n -9.22154e-02  9.99501e-01 -1.52949e-01
-        TF2n  9.46994e-01 -1.02602e-01  9.99320e-01
-        TF1u  7.08315e-02 -3.47985e-02  7.23672e-03
-        TF2u  9.88785e-01  4.52858e-02  1.26452e-01
-        TF1w  1.46418e-02 -2.76792e-02  1.84576e-03
-        TF2w  8.99348e-01 -1.46719e-02 -4.53121e-03
-        TF1h -1.66794e-03  1.56471e-01 -6.20448e-02
-        TF2h -1.08241e-01 -1.16654e-01 -1.51993e-01
-        TF1p -8.60985e-02  3.01020e-02 -8.47305e-02
-        TF2p  2.12029e-01 -4.93629e-02  2.38106e-01
-       TF1bi -1.58828e-01  8.77488e-02  4.57787e-02
-       TF2bi -8.32315e-02 -1.56435e-01  9.73727e-02
-       TF1nb  1.80634e-01 -1.18512e-01 -1.35063e-01
-       TF2nb -1.20502e-01 -1.64292e-01 -1.49063e-01
-       TF1ge -1.22231e-01  1.46036e-01  3.65287e-02
-       TF2ge  4.73557e-02 -5.80441e-02 -7.76438e-02
-       TF1hg  5.35171e-02  1.40047e-01  4.95732e-02
-       TF2hg  4.28463e-02 -2.22922e-02 -1.35039e-01
-        TF3h  1.12313e-02 -1.14042e-02  1.05129e-01
+             response_fn_1 response_fn_2 response_fn_3 
+        TF1n -9.22154e-02  9.99501e-01 -1.52949e-01 
+        TF2n  9.46994e-01 -1.02602e-01  9.99320e-01 
+        TF1u  7.08315e-02 -3.47985e-02  7.23672e-03 
+        TF2u  9.88785e-01  4.52858e-02  1.26452e-01 
+        TF1w  1.46418e-02 -2.76792e-02  1.84576e-03 
+        TF2w  8.99348e-01 -1.46719e-02 -4.53121e-03 
+        TF1h -1.66794e-03  1.56471e-01 -6.20448e-02 
+        TF2h -1.08241e-01 -1.16654e-01 -1.51993e-01 
+        TF1p -8.60985e-02  3.01020e-02 -8.47305e-02 
+        TF2p  2.12029e-01 -4.93629e-02  2.38106e-01 
+       TF1bi -1.58828e-01  8.77488e-02  4.57787e-02 
+       TF2bi -8.32315e-02 -1.56435e-01  9.73727e-02 
+       TF1nb  1.80634e-01 -1.18512e-01 -1.35063e-01 
+       TF2nb -1.20502e-01 -1.64292e-01 -1.49063e-01 
+       TF1ge -1.22231e-01  1.46036e-01  3.65287e-02 
+       TF2ge  4.73557e-02 -5.80441e-02 -7.76438e-02 
+       TF1hg  5.35171e-02  1.40047e-01  4.95732e-02 
+       TF2hg  4.28463e-02 -2.22922e-02 -1.35039e-01 
+        TF3h  1.12313e-02 -1.14042e-02  1.05129e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                     TF1n         TF2n         TF1u         TF2u         TF1w       TF2w         TF1h         TF2h         TF1p         TF2p        TF1bi    TF2bi        TF1nb        TF2nb        TF1ge        TF2ge        TF1hg  TF2hg         TF3h response_fn_1 response_fn_2 response_fn_3
-        TF1n  1.00000e+00
-        TF2n -5.24812e-02  1.00000e+00
-        TF1u  2.76148e-02  7.52475e-03  1.00000e+00
-        TF2u  6.85269e-03  3.65197e-02  1.92019e-04  1.00000e+00
-        TF1w -9.43294e-03  1.56016e-02  1.57216e-03  3.37234e-03  1.00000e+00
-        TF2w -1.65617e-03 -2.87429e-02 -6.56586e-02  2.73507e-02  4.50045e-03  1.00000e+00
-        TF1h -1.14491e-02 -2.63426e-02 -1.24572e-02 -2.58986e-02  5.87699e-02 -3.76838e-03  1.00000e+00
-        TF2h  6.18422e-02 -1.01650e-02 -1.51455e-02 -2.88029e-03  1.43894e-02  1.95740e-02 -3.37834e-02  1.00000e+00
-        TF1p  4.06001e-02 -1.13075e-01 -8.06241e-02 -1.00294e-01  5.90459e-02 -1.03666e-01  9.80018e-02  1.71965e-01  1.00000e+00
-        TF2p -3.20072e-02 -4.66847e-03 -2.84188e-02 -5.89859e-02  5.31533e-02  3.61956e-02  5.01650e-03  9.15692e-03  4.99130e-02  1.00000e+00
-       TF1bi  3.90879e-02  5.38974e-02  2.03180e-02 -7.22472e-03  5.04290e-02  5.38974e-02  5.55416e-02  1.24932e-02 -3.73117e-02 -1.24572e-02  1.00000e+00
-       TF2bi -1.27453e-02  3.73357e-02  2.19502e-02 -8.56886e-02 -8.14881e-03 -2.85629e-02  3.10351e-02  1.08011e-03  1.28461e-01  1.89619e-03  4.31443e-02  1.00000e+00
-       TF1nb  2.41104e-02 -9.92499e-03 -2.67147e-02  2.11941e-02 -1.83738e-02  9.73297e-03 -1.82778e-02 -1.71977e-02 -1.41410e-01 -3.86079e-02 -1.03090e-02 -1.25653e-02  1.00000e+00
-       TF2nb  2.47585e-02 -1.56136e-02  1.64296e-02  6.51185e-02  2.08941e-02 -1.57816e-02  7.15272e-03 -8.88089e-04  1.58536e-02  3.08671e-02  4.87489e-02 -4.42964e-02  2.20822e-02  1.00000e+00
-       TF1ge  4.33963e-02  9.84098e-03  3.83318e-02  3.92439e-03  1.82178e-02 -8.11281e-03 -2.28503e-02  1.07291e-02  3.18992e-02 -2.11821e-02  8.32883e-02 -3.76718e-02  9.27693e-03  3.88839e-03  1.00000e+00
-       TF2ge -2.48665e-02 -3.03270e-02  7.15272e-03 -3.70597e-02 -5.07171e-02 -1.10051e-02 -2.80948e-02 -3.21032e-02 -1.19892e-02 -3.97600e-02 -5.12091e-02  3.51875e-02  1.40414e-02 -6.81668e-03  4.95290e-02  1.00000e+00
-       TF1hg  4.65887e-02 -1.38614e-02  9.96100e-04  4.95770e-02 -3.83198e-02  3.10351e-02 -9.39334e-02 -2.05821e-02  9.00090e-04  3.51515e-02 -3.73237e-02  9.02490e-03 -2.16022e-02 -1.76898e-02 -6.46865e-03 -1.87819e-02  1.00000e+00
-       TF2hg  1.69937e-02  2.04980e-02 -2.64146e-02  1.00810e-03  1.61416e-02 -4.36844e-02 -3.92199e-02  1.77498e-02  9.40774e-02 -3.57636e-03 -3.96160e-02 -8.14401e-02 -9.04770e-02  3.09391e-02  5.35614e-02  1.27213e-03  2.21542e-02  1.00000e+00
-        TF3h  1.46283e-01  3.84038e-03 -2.02460e-02  5.45095e-02  6.44584e-02 -1.43174e-02  5.66457e-02  2.44824e-02 -1.31833e-01 -1.53759e-01  6.04260e-02 -1.20252e-02 -2.50105e-02 -9.58176e-02  8.07801e-02  5.20612e-02  3.62676e-02 -1.03330e-02  1.00000e+00
-response_fn_1  3.24032e-04  3.78602e-01  6.45665e-03  8.80648e-01  3.90039e-02 2.77660e-01 -5.89259e-03  1.01410e-02 -1.52715e-01  1.56016e-03 -5.88059e-03 -9.97540e-02  3.12031e-02  2.56826e-02  2.36664e-02 -2.08341e-02  5.12331e-02 -3.11791e-02  3.31233e-02  1.00000e+00
-response_fn_2  1.00000e+00 -5.24812e-02  2.76148e-02  6.85269e-03 -9.43294e-03 -1.65617e-03 -1.14491e-02  6.18422e-02  4.06001e-02 -3.20072e-02  3.90879e-02 -1.27453e-02  2.41104e-02  2.47585e-02  4.33963e-02 -2.48665e-02  4.65887e-02  1.69937e-02  1.46283e-01  3.24032e-04  1.00000e+00
-response_fn_3 -5.24812e-02  1.00000e+00  7.52475e-03  3.65197e-02  1.56016e-02 -2.87429e-02 -2.63426e-02 -1.01650e-02 -1.13075e-01 -4.66847e-03  5.38974e-02  3.73357e-02 -9.92499e-03 -1.56136e-02  9.84098e-03 -3.03270e-02 -1.38614e-02  2.04980e-02  3.84038e-03  3.78602e-01 -5.24812e-02  1.00000e+00
+                     TF1n         TF2n         TF1u         TF2u         TF1w         TF2w         TF1h         TF2h         TF1p         TF2p        TF1bi        TF2bi        TF1nb        TF2nb        TF1ge        TF2ge        TF1hg        TF2hg         TF3h response_fn_1 response_fn_2 response_fn_3 
+        TF1n  1.00000e+00 
+        TF2n -5.24812e-02  1.00000e+00 
+        TF1u  2.76148e-02  7.52475e-03  1.00000e+00 
+        TF2u  6.85269e-03  3.65197e-02  1.92019e-04  1.00000e+00 
+        TF1w -9.43294e-03  1.56016e-02  1.57216e-03  3.37234e-03  1.00000e+00 
+        TF2w -1.65617e-03 -2.87429e-02 -6.56586e-02  2.73507e-02  4.50045e-03  1.00000e+00 
+        TF1h -1.14491e-02 -2.63426e-02 -1.24572e-02 -2.58986e-02  5.87699e-02 -3.76838e-03  1.00000e+00 
+        TF2h  6.18422e-02 -1.01650e-02 -1.51455e-02 -2.88029e-03  1.43894e-02  1.95740e-02 -3.37834e-02  1.00000e+00 
+        TF1p  4.06001e-02 -1.13075e-01 -8.06241e-02 -1.00294e-01  5.90459e-02 -1.03666e-01  9.80018e-02  1.71965e-01  1.00000e+00 
+        TF2p -3.20072e-02 -4.66847e-03 -2.84188e-02 -5.89859e-02  5.31533e-02  3.61956e-02  5.01650e-03  9.15692e-03  4.99130e-02  1.00000e+00 
+       TF1bi  3.90879e-02  5.38974e-02  2.03180e-02 -7.22472e-03  5.04290e-02  5.38974e-02  5.55416e-02  1.24932e-02 -3.73117e-02 -1.24572e-02  1.00000e+00 
+       TF2bi -1.27453e-02  3.73357e-02  2.19502e-02 -8.56886e-02 -8.14881e-03 -2.85629e-02  3.10351e-02  1.08011e-03  1.28461e-01  1.89619e-03  4.31443e-02  1.00000e+00 
+       TF1nb  2.41104e-02 -9.92499e-03 -2.67147e-02  2.11941e-02 -1.83738e-02  9.73297e-03 -1.82778e-02 -1.71977e-02 -1.41410e-01 -3.86079e-02 -1.03090e-02 -1.25653e-02  1.00000e+00 
+       TF2nb  2.47585e-02 -1.56136e-02  1.64296e-02  6.51185e-02  2.08941e-02 -1.57816e-02  7.15272e-03 -8.88089e-04  1.58536e-02  3.08671e-02  4.87489e-02 -4.42964e-02  2.20822e-02  1.00000e+00 
+       TF1ge  4.33963e-02  9.84098e-03  3.83318e-02  3.92439e-03  1.82178e-02 -8.11281e-03 -2.28503e-02  1.07291e-02  3.18992e-02 -2.11821e-02  8.32883e-02 -3.76718e-02  9.27693e-03  3.88839e-03  1.00000e+00 
+       TF2ge -2.48665e-02 -3.03270e-02  7.15272e-03 -3.70597e-02 -5.07171e-02 -1.10051e-02 -2.80948e-02 -3.21032e-02 -1.19892e-02 -3.97600e-02 -5.12091e-02  3.51875e-02  1.40414e-02 -6.81668e-03  4.95290e-02  1.00000e+00 
+       TF1hg  4.65887e-02 -1.38614e-02  9.96100e-04  4.95770e-02 -3.83198e-02  3.10351e-02 -9.39334e-02 -2.05821e-02  9.00090e-04  3.51515e-02 -3.73237e-02  9.02490e-03 -2.16022e-02 -1.76898e-02 -6.46865e-03 -1.87819e-02  1.00000e+00 
+       TF2hg  1.69937e-02  2.04980e-02 -2.64146e-02  1.00810e-03  1.61416e-02 -4.36844e-02 -3.92199e-02  1.77498e-02  9.40774e-02 -3.57636e-03 -3.96160e-02 -8.14401e-02 -9.04770e-02  3.09391e-02  5.35614e-02  1.27213e-03  2.21542e-02  1.00000e+00 
+        TF3h  1.46283e-01  3.84038e-03 -2.02460e-02  5.45095e-02  6.44584e-02 -1.43174e-02  5.66457e-02  2.44824e-02 -1.31833e-01 -1.53759e-01  6.04260e-02 -1.20252e-02 -2.50105e-02 -9.58176e-02  8.07801e-02  5.20612e-02  3.62676e-02 -1.03330e-02  1.00000e+00 
+response_fn_1  3.24032e-04  3.78602e-01  6.45665e-03  8.80648e-01  3.90039e-02  2.77660e-01 -5.89259e-03  1.01410e-02 -1.52715e-01  1.56016e-03 -5.88059e-03 -9.97540e-02  3.12031e-02  2.56826e-02  2.36664e-02 -2.08341e-02  5.12331e-02 -3.11791e-02  3.31233e-02  1.00000e+00 
+response_fn_2  1.00000e+00 -5.24812e-02  2.76148e-02  6.85269e-03 -9.43294e-03 -1.65617e-03 -1.14491e-02  6.18422e-02  4.06001e-02 -3.20072e-02  3.90879e-02 -1.27453e-02  2.41104e-02  2.47585e-02  4.33963e-02 -2.48665e-02  4.65887e-02  1.69937e-02  1.46283e-01  3.24032e-04  1.00000e+00 
+response_fn_3 -5.24812e-02  1.00000e+00  7.52475e-03  3.65197e-02  1.56016e-02 -2.87429e-02 -2.63426e-02 -1.01650e-02 -1.13075e-01 -4.66847e-03  5.38974e-02  3.73357e-02 -9.92499e-03 -1.56136e-02  9.84098e-03 -3.03270e-02 -1.38614e-02  2.04980e-02  3.84038e-03  3.78602e-01 -5.24812e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-             response_fn_1 response_fn_2 response_fn_3
-        TF1n  1.09535e-01  1.00000e+00  2.29614e-02
-        TF2n  9.14045e-01  2.39444e-02  1.00000e+00
-        TF1u  1.37858e-01 -1.84834e-02  5.10045e-03
-        TF2u  9.83197e-01  1.73990e-03 -2.01407e-02
-        TF1w  1.85722e-01  1.39130e-02 -1.33353e-02
-        TF2w  8.54321e-01 -2.77602e-03  3.04531e-02
-        TF1h  1.89562e-01  1.14160e-02  9.82808e-03
-        TF2h  8.10567e-02 -2.35326e-02 -9.90078e-03
-        TF1p -1.70777e-03 -3.13266e-02  8.60907e-02
-        TF2p  2.62302e-01  3.55845e-03 -7.76126e-04
-       TF1bi -2.11463e-01 -1.74703e-02 -3.62442e-02
-       TF2bi -2.13118e-01  7.37126e-03 -3.74758e-02
-       TF1nb  8.20874e-02 -2.11864e-02  1.59323e-02
-       TF2nb -1.49335e-01 -1.99355e-02  1.22486e-02
-       TF1ge  1.31653e-01 -1.08983e-02 -8.78676e-03
-       TF2ge  1.78178e-01  1.83420e-02  1.54154e-02
-       TF1hg  5.02524e-02 -1.80200e-02  8.34052e-03
-       TF2hg -1.88390e-01 -6.72969e-03 -2.52716e-02
-        TF3h -9.06116e-02 -8.76904e-02  9.08642e-03
+             response_fn_1 response_fn_2 response_fn_3 
+        TF1n  1.09535e-01  1.00000e+00  2.29614e-02 
+        TF2n  9.14045e-01  2.39444e-02  1.00000e+00 
+        TF1u  1.37858e-01 -1.84834e-02  5.10045e-03 
+        TF2u  9.83197e-01  1.73990e-03 -2.01407e-02 
+        TF1w  1.85722e-01  1.39130e-02 -1.33353e-02 
+        TF2w  8.54321e-01 -2.77602e-03  3.04531e-02 
+        TF1h  1.89562e-01  1.14160e-02  9.82808e-03 
+        TF2h  8.10567e-02 -2.35326e-02 -9.90078e-03 
+        TF1p -1.70777e-03 -3.13266e-02  8.60907e-02 
+        TF2p  2.62302e-01  3.55845e-03 -7.76126e-04 
+       TF1bi -2.11463e-01 -1.74703e-02 -3.62442e-02 
+       TF2bi -2.13118e-01  7.37126e-03 -3.74758e-02 
+       TF1nb  8.20874e-02 -2.11864e-02  1.59323e-02 
+       TF2nb -1.49335e-01 -1.99355e-02  1.22486e-02 
+       TF1ge  1.31653e-01 -1.08983e-02 -8.78676e-03 
+       TF2ge  1.78178e-01  1.83420e-02  1.54154e-02 
+       TF1hg  5.02524e-02 -1.80200e-02  8.34052e-03 
+       TF2hg -1.88390e-01 -6.72969e-03 -2.52716e-02 
+        TF3h -9.06116e-02 -8.76904e-02  9.08642e-03 
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
-response_fn_1:  Mean = 1.2857197377e+11  Std. Dev. = 2.5212504318e+10  Coeff. of Variation = 1.9609642427e-01
-response_fn_2:  Mean = 7.9100000000e+00  Std. Dev. = 9.0214055211e+00  Coeff. of Variation = 1.1405063870e+00
-response_fn_3:  Mean = 7.9100000000e+00  Std. Dev. = 9.0258830957e+00  Coeff. of Variation = 1.1410724520e+00
-response_fn_1:  Mean = ( 1.2356926593e+11, 1.3357468162e+11 ), Std Dev = ( 2.2136751381e+10, 2.9288742390e+10 )
-response_fn_2:  Mean = ( 6.1199574238e+00, 9.7000425762e+00 ), Std Dev = ( 7.9208558027e+00, 1.0479943562e+01 )
-response_fn_3:  Mean = ( 6.1190689759e+00, 9.7009310241e+00 ), Std Dev = ( 7.9247871438e+00, 1.0485145049e+01 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  1.2857197377e+11  2.5212504318e+10  2.6443359729e-01  1.8078721015e-01
+ response_fn_2  7.9100000000e+00  9.0214055211e+00  6.9136795593e-01 -9.0596621139e-01
+ response_fn_3  7.9100000000e+00  9.0258830957e+00  6.8052955570e-01 -9.1738789975e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  1.2356926593e+11  1.3357468162e+11  2.2136751381e+10  2.9288742390e+10
+ response_fn_2  6.1199574238e+00  9.7000425762e+00  7.9208558027e+00  1.0479943562e+01
+ response_fn_3  6.1190689759e+00  9.7009310241e+00  7.9247871438e+00  1.0485145049e+01
 Simple Correlation Matrix among all inputs and outputs:
                      TF1n         TF2n      ddriv_1      ddriv_2      ddsiv_1      ddsiv_2      dsriv_1      dsriv_2      dssiv_1      dssiv_2      ddsrv_1      ddsrv_2      dssrv_1      dssrv_2 response_fn_1 response_fn_2 response_fn_3 
         TF1n  1.00000e+00 
@@ -54723,8 +54855,12 @@ dakota_uq_textbook_lhs_approx.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 6 total (6 new, 0 duplicate)
-response_fn_1:  Mean = 8.5672865092e-05  Std. Dev. = 2.3321707752e-04  Coeff. of Variation = 2.7221813730e+00
-response_fn_1:  Mean = ( 7.9206970775e-05, 9.2138759410e-05 ), Std Dev = ( 2.2873426833e-04, 2.3788038944e-04 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  8.5672865092e-05  2.3321707752e-04  5.0540242994e-02  4.8865690512e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  7.9206970775e-05  9.2138759410e-05  2.2873426833e-04  2.3788038944e-04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    2.0000000000e-05   2.9300000000e-01
@@ -54751,36 +54887,44 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 10 total (10 new, 0 duplicate)
-response_fn_1:  Mean = 3.1839185394e-05  Std. Dev. = 4.8967725458e-05  Coeff. of Variation = 1.5379704239e+00
-response_fn_1:  Mean = ( 3.0481565527e-05, 3.3196805261e-05 ), Std Dev = ( 4.8026486625e-05, 4.9946863778e-05 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.1839185394e-05  4.8967725458e-05  1.4937077822e+00  1.1880496643e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.0481565527e-05  3.3196805261e-05  4.8026486625e-05  4.9946863778e-05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    2.0000000000e-05   6.0600000000e-01
    3.0000000000e-05   6.7500000000e-01
    4.0000000000e-05   7.2600000000e-01
 Simple Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
-       TF1ln  1.00000e+00
-       TF1ln -3.37845e-05  1.00000e+00
-response_fn_1 -6.07487e-02  2.59464e-01  1.00000e+00
+                    TF1ln        TF1ln response_fn_1 
+       TF1ln  1.00000e+00 
+       TF1ln -3.37845e-05  1.00000e+00 
+response_fn_1 -6.07487e-02  2.59464e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
-             response_fn_1
-       TF1ln -6.28939e-02
-       TF1ln  2.59942e-01
+             response_fn_1 
+       TF1ln -6.28939e-02 
+       TF1ln  2.59942e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    TF1ln        TF1ln response_fn_1
-       TF1ln  1.00000e+00
-       TF1ln  3.43526e-03  1.00000e+00
-response_fn_1 -7.01116e-02  3.25963e-01  1.00000e+00
+                    TF1ln        TF1ln response_fn_1 
+       TF1ln  1.00000e+00 
+       TF1ln  3.43526e-03  1.00000e+00 
+response_fn_1 -7.01116e-02  3.25963e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-             response_fn_1
-       TF1ln -7.53471e-02
-       TF1ln  3.27010e-01
+             response_fn_1 
+       TF1ln -7.53471e-02 
+       TF1ln  3.27010e-01 
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 10 total (10 new, 0 duplicate)
-response_fn_1:  Mean = 3.8972209045e-05  Std. Dev. = 6.3841210784e-05  Coeff. of Variation = 1.6381214293e+00
-response_fn_1:  Mean = ( 3.7202224933e-05, 4.0742193158e-05 ), Std Dev = ( 6.2614079522e-05, 6.5117753146e-05 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.8972209045e-05  6.3841210784e-05  4.1347057828e+00  2.8942379926e+01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.7202224933e-05  4.0742193158e-05  6.2614079522e-05  6.5117753146e-05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    2.0000000000e-05   5.3220000000e-01
@@ -54803,7 +54947,7 @@ response_fn_1  2.25735e-02  1.75231e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
        TF1ln  2.23170e-02 
-       TF1ln  1.75199e-01
+       TF1ln  1.75199e-01 
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 20 total (20 new, 0 duplicate)
@@ -55228,13 +55372,17 @@ Test Number 4 succeeded
 <<<<< Best data captured at function evaluation 4
 dakota_uq_users.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
-response_fn_1:  Mean = 3.83840e-01  Std. Dev. = 4.02815e-01  Coeff. of Variation = 1.04944e+00
-response_fn_2:  Mean = 7.47987e-02  Std. Dev. = 3.46861e-01  Coeff. of Variation = 4.63726e+00
-response_fn_3:  Mean = 7.09462e-02  Std. Dev. = 3.41532e-01  Coeff. of Variation = 4.81397e+00
-response_fn_1:  Mean = ( 9.56831e-02, 6.71997e-01 ), Std Dev = ( 2.77071e-01, 7.35384e-01 )
-response_fn_2:  Mean = ( -1.73331e-01, 3.22928e-01 ), Std Dev = ( 2.38583e-01, 6.33233e-01 )
-response_fn_3:  Mean = ( -1.73371e-01, 3.15264e-01 ), Std Dev = ( 2.34918e-01, 6.23505e-01 )
+<<<<< Function evaluation summary (I1): 10 total (10 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.8383990322e-01  4.0281539886e-01  1.2404952971e+00  6.5529797327e-01
+ response_fn_2  7.4798705803e-02  3.4686110941e-01  4.5716015887e-01 -5.8418924529e-01
+ response_fn_3  7.0946176558e-02  3.4153246532e-01  5.2851897926e-01 -8.2527332042e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  9.5683125821e-02  6.7199668063e-01  2.7707061315e-01  7.3538389383e-01
+ response_fn_2 -1.7333078422e-01  3.2292819583e-01  2.3858328290e-01  6.3323317325e-01
+ response_fn_3 -1.7337143113e-01  3.1526378424e-01  2.3491805390e-01  6.2350514636e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.0000000000e-01
@@ -55273,13 +55421,17 @@ Partial Rank Correlation Matrix between input and output:
           x1 -8.20657e-01  9.74896e-01 -9.41760e-01 
           x2 -7.62704e-01 -9.50799e-01  9.65145e-01 
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
-response_fn_1:  Mean = 3.85032e-01  Std. Dev. = 4.17793e-01  Coeff. of Variation = 1.08508e+00
-response_fn_2:  Mean = 9.10667e-02  Std. Dev. = 3.44757e-01  Coeff. of Variation = 3.78577e+00
-response_fn_3:  Mean = 4.69088e-02  Std. Dev. = 2.98286e-01  Coeff. of Variation = 6.35883e+00
-response_fn_1:  Mean = ( -1.33726e-01, 9.03791e-01 ), Std Dev = ( 2.50313e-01, 1.20055e+00 )
-response_fn_2:  Mean = ( -3.37006e-01, 5.19139e-01 ), Std Dev = ( 2.06556e-01, 9.90679e-01 )
-response_fn_3:  Mean = ( -3.23462e-01, 4.17279e-01 ), Std Dev = ( 1.78713e-01, 8.57140e-01 )
+<<<<< Function evaluation summary (I1): 5 total (5 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.8503240524e-01  4.1779276152e-01  6.6862549690e-01 -2.5140538176e+00
+ response_fn_2  9.1066666969e-02  3.4475726712e-01  1.2680211051e+00  1.6274153528e+00
+ response_fn_3  4.6908832250e-02  2.9828551344e-01  1.7488956975e-01 -4.5744499840e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1 -1.3372582545e-01  9.0379063593e-01  2.5031348872e-01  1.2005507437e+00
+ response_fn_2 -3.3700601973e-01  5.1913935367e-01  2.0655550369e-01  9.9067918731e-01
+ response_fn_3 -3.2346155097e-01  4.1727921547e-01  1.7871273602e-01  8.5714001770e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-01
@@ -55318,13 +55470,17 @@ Partial Rank Correlation Matrix between input and output:
           x1 -8.71033e-01  8.70388e-01 -6.68657e-01 
           x2 -9.29660e-01 -8.02181e-01  9.43701e-01 
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
-response_fn_1:  Mean = 4.39496e-01  Std. Dev. = 4.51217e-01  Coeff. of Variation = 1.02667e+00
-response_fn_2:  Mean = 1.83396e-02  Std. Dev. = 2.69340e-01  Coeff. of Variation = 1.46862e+01
-response_fn_3:  Mean = 7.44282e-02  Std. Dev. = 3.01948e-01  Coeff. of Variation = 4.05690e+00
-response_fn_1:  Mean = ( 1.16715e-01, 7.62277e-01 ), Std Dev = ( 3.10363e-01, 8.23746e-01 )
-response_fn_2:  Mean = ( -1.74335e-01, 2.11014e-01 ), Std Dev = ( 1.85262e-01, 4.91711e-01 )
-response_fn_3:  Mean = ( -1.41572e-01, 2.90429e-01 ), Std Dev = ( 2.07690e-01, 5.51239e-01 )
+<<<<< Function evaluation summary (I1): 10 total (10 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.3949646994e-01  4.5121669163e-01  1.0888767782e+00  1.5519786426e-01
+ response_fn_2  1.8339643333e-02  2.6934043835e-01  1.2945834810e+00  2.1714557279e+00
+ response_fn_3  7.4428187276e-02  3.0194793348e-01 -7.9644247087e-02 -1.1468229235e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  1.1671549349e-01  7.6227744638e-01  3.1036272637e-01  8.2374578676e-01
+ response_fn_2 -1.7433489930e-01  2.1101418596e-01  1.8526183610e-01  4.9171064681e-01
+ response_fn_3 -1.4157235218e-01  2.9042872674e-01  2.0769041926e-01  5.5123922196e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.0000000000e-01
@@ -55363,13 +55519,17 @@ Partial Rank Correlation Matrix between input and output:
           x1 -8.01863e-01  9.73235e-01 -6.77062e-01 
           x2 -8.63548e-01 -9.76918e-01  9.49206e-01 
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
-response_fn_1:  Mean = 3.80400e-01  Std. Dev. = 3.44356e-01  Coeff. of Variation = 9.05247e-01
-response_fn_2:  Mean = 7.66394e-02  Std. Dev. = 1.79093e-01  Coeff. of Variation = 2.33682e+00
-response_fn_3:  Mean = -2.79583e-02  Std. Dev. = 2.78285e-01  Coeff. of Variation = -9.95357e+00
-response_fn_1:  Mean = ( -4.71743e-02, 8.07975e-01 ), Std Dev = ( 2.06315e-01, 9.89527e-01 )
-response_fn_2:  Mean = ( -1.45733e-01, 2.99012e-01 ), Std Dev = ( 1.07300e-01, 5.14633e-01 )
-response_fn_3:  Mean = ( -3.73495e-01, 3.17579e-01 ), Std Dev = ( 1.66730e-01, 7.99668e-01 )
+<<<<< Function evaluation summary (I1): 5 total (5 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.8040048042e-01  3.4435627249e-01  6.1100358818e-01 -9.1188561298e-01
+ response_fn_2  7.6639411119e-02  1.7909265042e-01  1.3137534359e-01 -2.4053036665e+00
+ response_fn_3 -2.7958349089e-02  2.7828533015e-01  1.2202122282e+00  1.5968056293e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1 -4.7174305690e-02  8.0797526652e-01  2.0631525452e-01  9.8952690694e-01
+ response_fn_2 -1.4573348525e-01  2.9901230749e-01  1.0730034184e-01  5.1463269465e-01
+ response_fn_3 -3.7349522476e-01  3.1757852659e-01  1.6672996343e-01  7.9966837833e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-01
