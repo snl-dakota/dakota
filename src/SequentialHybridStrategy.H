@@ -103,9 +103,6 @@ private:
 
   /// hybrid sequence counter: 0 to numIterators-1
   size_t seqCount;
-  /// the maximum number of solutions transferred from one iterator 
-  /// to the next iterator
-  size_t numSolnsTransferred; 
   /// the amount of progress made in a single iterator++ cycle within
   /// a sequential adaptive hybrid
   Real progressMetric;
@@ -200,8 +197,8 @@ update_local_results(PRPArray& partial_prp_results, int job_id)
       = curr_iterator.variables_array_results();
     const ResponseArray& resp_results = curr_iterator.response_array_results();
     // workaround: some methods define vars_results, but not resp_results
-    size_t num_vars_results = std::min(vars_results.size(),numSolnsTransferred),
-           num_resp_results = std::min(resp_results.size(),numSolnsTransferred),
+    size_t num_vars_results = vars_results.size(),
+           num_resp_results = resp_results.size(),
            num_results      = std::max(num_vars_results, num_resp_results);
     partial_prp_results.resize(num_results);
     Variables dummy_vars; Response dummy_resp;

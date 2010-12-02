@@ -49,28 +49,45 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
     }
   }
 
-  // TO DO: define this on a per-iterator basis for allocate_methods()
+  // define maxConcurrency without access to selectedIterators
+  // (init_iterator_parallelism() requires maxConcurrency and
+  // init_iterator_parallelism() must precede allocate_methods()).
+  maxConcurrency = 1;
+  size_t i, sizet_max = std::numeric_limits<std::size_t>::max();
+  problem_db.set_db_list_nodes(methodList[0]);
+  String curr_method = problem_db.get_string("method.algorithm");
+  for (i=0; i<numIterators; ++i) {
+    // current method data
+    size_t num_curr_final = problem_db.get_sizet("method.final_solutions");
+    if (!num_curr_final) // manually replicate iterator-specific defaults
+      num_curr_final = (curr_method == "moga") ? INT_MAX : 1;
+    else if (num_curr_final > INT_MAX)
+      num_curr_final = INT_MAX; // maxConcurrency is int
 
-  //userDefinedModels.resize(numIterators);
-  selectedIterators.resize(numIterators); // slaves also need for run_iterator
+    if (i < numIterators-1) {
+      // look ahead method data
+      problem_db.set_db_list_nodes(methodList[i+1]);
+      const String& next_method = problem_db.get_string("method.algorithm");
+      // manually replicate accepts_multiple_points() support
+      bool next_single = (next_method != "moga" && next_method != "soga");
+      if (next_single && num_curr_final > maxConcurrency)
+	maxConcurrency = num_curr_final;
 
-  for (size_t i=0; i<numIterators; ++i) {
-    if (worldRank == 0)
-      Cout << "calling set_db_list_nodes with " << methodList[i] << std::endl;
-    problem_db.set_db_list_nodes(methodList[i]);
+      // updates for next iteration
+      curr_method = next_method;
+    }
 
-    // Instantiate the i-th userDefinedModel and selectedIterator
-    //userDefinedModels[i] = probDescDB.get_model();
-    //selectedIterators[i]= probDescDB.get_iterator(userDefinedModels[i]);
+    /* Cannot use this logic since selectedIterators not available
+    bool next_single = (i < numIterators-1 &&
+			!selectedIterators[i+1].accepts_multiple_points());
+    if (next_single) {
+      size_t num_curr_final = selectedIterators[i].num_final_solutions();
+      if (num_curr_final > maxConcurrency) 
+	maxConcurrency = num_curr_final;
+    }
+    */
   }
-  
-  numSolnsTransferred = 1;
-  for (seqCount=0; seqCount<numIterators; seqCount++) {
-    Iterator& curr_iterator      = selectedIterators[seqCount];
-    if (curr_iterator.num_final_solutions() > numSolnsTransferred) 
-      numSolnsTransferred = curr_iterator.num_final_solutions();
-  }
-  maxConcurrency = numSolnsTransferred;
+
   init_iterator_parallelism();
   // Adaptive hybrid does not support iterator concurrency --> verify settings.
   if ( ( stratIterDedMaster || numIteratorServers > 1 ) && 
@@ -81,11 +98,30 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
   }
   allocate_methods();
 
-  // all iterator masters bookkeep on the full results list, even if only some
-  // entries are defined locally (prior to All-Reduce at end of each cycle in
-  // run_sequential())
-  if (iteratorCommRank == 0)
-    prpResults.resize(numSolnsTransferred);
+  // size prpResults: all iterator masters bookkeep on the full results list,
+  // even if only some entries are defined locally (prior to All-Reduce at end
+  // of each cycle in run_sequential())
+  if (iteratorCommRank == 0) {
+    size_t i, num_final_solns, max_final_solns = 1,
+      sizet_max = std::numeric_limits<std::size_t>::max();
+    bool reassign = false;
+    for (i=0; i<numIterators; ++i) {
+      num_final_solns = selectedIterators[i].num_final_solutions();
+      if (num_final_solns == sizet_max) { // JEGA default
+	// pick a reasonable heuristic now that partitioning has occurred
+	num_final_solns = numIteratorServers;
+	reassign = true;
+      }
+      if (num_final_solns > max_final_solns)
+	max_final_solns = num_final_solns;
+    }
+    prpResults.resize(max_final_solns);
+    // override any sizet_max instances
+    if (reassign)
+      for (i=0; i<numIterators; ++i)
+	if (selectedIterators[i].num_final_solutions() == sizet_max)
+	  selectedIterators[i].num_final_solutions(max_final_solns);
+  }
 }
 
 
@@ -113,7 +149,6 @@ void SequentialHybridStrategy::run_sequential()
 {
   //size_t iterator_capacity = 1, max_instances = 10;
   Cout << "MaxConcurrency " << maxConcurrency << '\n';
-  Cout << "Num Solutions Transferred " << numSolnsTransferred << '\n';
 
   for (seqCount=0; seqCount<numIterators; seqCount++) {
 
@@ -123,8 +158,6 @@ void SequentialHybridStrategy::run_sequential()
     bool      curr_accepts_multi = curr_iterator.accepts_multiple_points();
     bool      curr_returns_multi = curr_iterator.returns_multiple_points();
  
-    //curr_iterator.num_final_solutions(numSolnsTransferred);
-
     if (worldRank == 0) {
       cout << "\n>>>>> Running Sequential Hybrid Optimizer Strategy with "
 	   << "iterator " << methodList[seqCount] << ".\n";

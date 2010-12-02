@@ -1829,7 +1829,10 @@ JEGAOptimizer::JEGAOptimizer(
     int pop_size = this->probDescDB.get_int("method.population_size");
     this->maxConcurrency *= pop_size;
 
-    this->numFinalSolutions = std::numeric_limits<std::size_t>::max(); // return all designs
+    // Assign iterator-specific default for numFinalSolutions
+    if (methodName == MOGA_METHOD_TXT && !this->numFinalSolutions)
+      this->numFinalSolutions
+	= std::numeric_limits<std::size_t>::max(); // moga returns all Pareto
 
     // We only ever need one EvaluatorCreator so we can create it now.
     this->_theEvalCreator = new EvaluatorCreator(iteratedModel);

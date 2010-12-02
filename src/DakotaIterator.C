@@ -621,7 +621,10 @@ Iterator::Iterator(BaseConstructor, Model& model):
 /** This alternate constructor builds base class data for inherited
     iterators.  It is used for on-the-fly instantiations for which DB
     queries cannot be used.  Therefore it only sets attributes taken
-    from the incoming model. */
+    from the incoming model.  Since there are no iterator-specific
+    redefinitions of maxIterations or numFinalSolutions in
+    NoDBBaseConstructor mode, go ahead and assign default value for
+    all iterators. */
 Iterator::Iterator(NoDBBaseConstructor, Model& model):
   probDescDB(dummy_db), convergenceTol(0.0001), maxIterations(100),
   maxFunctionEvals(1000), maxConcurrency(model.derivative_concurrency()),
@@ -631,9 +634,8 @@ Iterator::Iterator(NoDBBaseConstructor, Model& model):
   gradientType(model.gradient_type()), methodSource(model.method_source()),
   intervalType(model.interval_type()), hessianType(model.hessian_type()),
   fdGradStepSize(0.001), fdHessByGradStepSize(0.001), 
-  fdHessByFnStepSize(0.002),numFinalSolutions(1),
-  outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false), 
-  writePrecision(0), idMethod("NO_DB_METHOD"),
+  fdHessByFnStepSize(0.002), numFinalSolutions(1), outputLevel(NORMAL_OUTPUT),
+  summaryOutputFlag(false), writePrecision(0), idMethod("NO_DB_METHOD"),
   iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -647,14 +649,17 @@ Iterator::Iterator(NoDBBaseConstructor, Model& model):
     iterators.  It is used for on-the-fly instantiations for which DB
     queries cannot be used. It has no incoming model, so only sets up
     a minimal set of defaults. However, its use is preferable to the
-    default constructor, which should remain as minimal as possible. */
+    default constructor, which should remain as minimal as
+    possible. Since there are no iterator-specific redefinitions of
+    maxIterations or numFinalSolutions in NoDBBaseConstructor mode, go
+    ahead and assign default value for all iterators.*/
 Iterator::Iterator(NoDBBaseConstructor): probDescDB(dummy_db),
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxConcurrency(1), subIteratorFlag(false), gradientType("none"),
   hessianType("none"), fdGradStepSize(0.001), fdHessByGradStepSize(0.001),
-  fdHessByFnStepSize(0.002), numFinalSolutions(1),outputLevel(NORMAL_OUTPUT),
-  summaryOutputFlag(false), writePrecision(0),
-  idMethod("NO_DB_METHOD"), iteratorRep(NULL), referenceCount(1)
+  fdHessByFnStepSize(0.002), numFinalSolutions(1), outputLevel(NORMAL_OUTPUT),
+  summaryOutputFlag(false), writePrecision(0), idMethod("NO_DB_METHOD"),
+  iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Iterator::Iterator(NoDBBaseConstructor) called to build letter base "

@@ -20,7 +20,7 @@ namespace Dakota {
 DataMethodRep::DataMethodRep():
   methodOutput(NORMAL_OUTPUT), maxIterations(-1), maxFunctionEvaluations(1000),
   speculativeFlag(false), convergenceTolerance(0.0001), constraintTolerance(0.),
-  methodScaling(false),numFinalSolutions(1),
+  methodScaling(false), numFinalSolutions(0),
   // Local surrogate-based opt/NLS
   surrBasedLocalSoftConvLimit(5),        surrBasedLocalLayerBypass(false),
   surrBasedLocalTRInitSize(0.4),         surrBasedLocalTRMinSize(1.0e-6),

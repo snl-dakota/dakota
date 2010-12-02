@@ -37,8 +37,11 @@ Analyzer::Analyzer(Model& model):
     numObjFns   = probDescDB.get_sizet("responses.num_objective_functions");
     numLSqTerms = probDescDB.get_sizet("responses.num_least_squares_terms");
   }
-   if (probDescDB.get_bool("method.variance_based_decomp")) 
+  if (probDescDB.get_bool("method.variance_based_decomp")) 
     vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
+
+  if (!numFinalSolutions)  // default is zero
+    numFinalSolutions = 1; // iterator-specific default assignment
 }
 
 
@@ -465,7 +468,6 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
 
 void Analyzer::pre_output()
 {
-
   // distinguish between defaulted pre-run and user-specified
   if (!iteratedModel.parallel_library().command_line_user_modes())
     return;

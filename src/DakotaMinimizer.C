@@ -50,6 +50,10 @@ Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
   // Re-assign Iterator defaults specialized to Minimizer branch
   if (maxIterations < 0) // DataMethod default set to -1
     maxIterations = 100;
+  // Minimizer default number of final solution is 1, unless a
+  // multi-objective frontier-based method
+  if (!numFinalSolutions && methodName != "moga")
+    numFinalSolutions = 1;
 
   // Check for active design variables
   size_t num_ddrv = probDescDB.get_sizet("variables.discrete_design_range"),
@@ -198,6 +202,7 @@ Minimizer::Minimizer(NoDBBaseConstructor, Model& model):
   secondaryRespScaleFlag(false)
 {
   iteratedModel = model;
+
   // set boundConstraintFlag
   size_t i;
   const RealVector&  c_l_bnds = model.continuous_lower_bounds();

@@ -2038,22 +2038,11 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	Locked_db();
     #define P &DataMethodRep::
     static KW<size_t, DataMethodRep> Szdmo[] = {	// must be sorted
-	{"final_solutions", P numFinalSolutions}};
-    #undef P
-
-    KW<size_t, DataMethodRep> *kw;
-    if ((kw = (KW<size_t, DataMethodRep>*)Binsearch(Szdmo, L)))
-	return dbRep->dataMethodIter->dataMethodRep->*kw->p;
-  }
-  if ((L = Begins(entry_name, "method.jega.num_"))) {
-    if (dbRep->methodDBLocked)
-	Locked_db();
-    #define P &DataMethodRep::
-    static KW<size_t, DataMethodRep> Szdmo[] = {	// must be sorted
-	{"cross_points", P numCrossPoints},
-	{"generations", P numGenerations},
-	{"offspring", P numOffspring},
-	{"parents", P numParents}};
+	{"final_solutions", P numFinalSolutions},
+	{"jega.num_cross_points", P numCrossPoints},
+	{"jega.num_generations", P numGenerations},
+	{"jega.num_offspring", P numOffspring},
+	{"jega.num_parents", P numParents}};
     #undef P
 
     KW<size_t, DataMethodRep> *kw;

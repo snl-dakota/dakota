@@ -183,7 +183,7 @@ public:
   /// return the number of solutions to retain in best variables/response arrays
   size_t num_final_solutions() const;
   /// set the number of solutions to retain in best variables/response arrays
-  void num_final_solutions(size_t number_best);
+  void num_final_solutions(size_t num_final);
 
   /// set the default active set vector (for use with iterators that
   /// employ evaluate_parameter_sets())
@@ -424,16 +424,19 @@ inline void Iterator::maximum_concurrency(int max_conc)
     maxConcurrency = max_conc;
 }
 
+
 inline size_t Iterator::num_final_solutions() const
 { return (iteratorRep) ? iteratorRep->numFinalSolutions : numFinalSolutions; }
 
-inline void Iterator::num_final_solutions(size_t number_final)
+
+inline void Iterator::num_final_solutions(size_t num_final)
 { 
   if (iteratorRep)
-    iteratorRep->numFinalSolutions = number_final;
+    iteratorRep->numFinalSolutions = num_final;
   else
-    numFinalSolutions = number_final; 
+    numFinalSolutions = num_final;
 }
+
 
 inline void Iterator::active_set(const ActiveSet& set)
 {

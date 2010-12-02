@@ -22,8 +22,7 @@ namespace Dakota {
 DataStrategyRep::DataStrategyRep():
   strategyType("single_method"), graphicsFlag(false), tabularDataFlag(false),
   tabularDataFile("dakota_tabular.dat"), outputPrecision(0), iteratorServers(0),
-  //hybridProgThresh(0.5),
-  hybridLSProb(0.1), 
+  hybridLSProb(0.1), //hybridProgThresh(0.5),
   concurrentRandomJobs(0), concurrentSeed(0), referenceCount(1)
 { }
 
@@ -31,36 +30,30 @@ DataStrategyRep::DataStrategyRep():
 void DataStrategyRep::write(MPIPackBuffer& s) const
 {
   s << strategyType << graphicsFlag << tabularDataFlag << tabularDataFile
-    << outputPrecision
-    << iteratorServers << iteratorScheduling << methodPointer
+    << outputPrecision << iteratorServers << iteratorScheduling << methodPointer
     << hybridMethodList << hybridType //<< hybridProgThresh
     << hybridGlobalMethodPointer << hybridLocalMethodPointer << hybridLSProb
-    << concurrentRandomJobs << concurrentSeed
-    << concurrentParameterSets;
+    << concurrentRandomJobs << concurrentSeed << concurrentParameterSets;
 }
 
 
 void DataStrategyRep::read(MPIUnpackBuffer& s)
 {
   s >> strategyType >> graphicsFlag >> tabularDataFlag >> tabularDataFile
-    >> outputPrecision
-    >> iteratorServers >> iteratorScheduling >> methodPointer
+    >> outputPrecision >> iteratorServers >> iteratorScheduling >> methodPointer
     >> hybridMethodList >> hybridType //>> hybridProgThresh
     >> hybridGlobalMethodPointer >> hybridLocalMethodPointer >> hybridLSProb
-    >> concurrentRandomJobs >> concurrentSeed
-    >> concurrentParameterSets;
+    >> concurrentRandomJobs >> concurrentSeed >> concurrentParameterSets;
 }
 
 
 void DataStrategyRep::write(std::ostream& s) const
 {
   s << strategyType << graphicsFlag << tabularDataFlag << tabularDataFile
-    << outputPrecision
-    << iteratorServers << iteratorScheduling << methodPointer
+    << outputPrecision << iteratorServers << iteratorScheduling << methodPointer
     << hybridMethodList << hybridType //<< hybridProgThresh
     << hybridGlobalMethodPointer << hybridLocalMethodPointer << hybridLSProb
-    << concurrentRandomJobs << concurrentSeed
-    << concurrentParameterSets;
+    << concurrentRandomJobs << concurrentSeed << concurrentParameterSets;
 }
 
 
