@@ -1301,31 +1301,34 @@ void NonDExpansion::compute_statistics()
 	   gl_len = requestedGenRelLevels[i].length();
 
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-    if (all_vars)
-      poly_approx_rep->compute_moments(initialPtU);
-    else
-      poly_approx_rep->compute_moments();
 
-    const RealVector& moments = poly_approx_rep->moments(); // virtual
-    const Real& mu = moments[0]; const Real& var = moments[1];
-    if (covariance_flag) {
-      respCovariance(i,i) = var;
+    if (poly_approx_rep->expansion_coefficient_flag()) {
       if (all_vars)
-	for (j=0; j<i; ++j)
-	  respCovariance(i,j) = poly_approx_rep->get_covariance(initialPtU,
-	    poly_approxs[j].approximation_coefficients());
+	poly_approx_rep->compute_moments(initialPtU);
       else
-	for (j=0; j<i; ++j)
-	  respCovariance(i,j) = poly_approx_rep->get_covariance(
-	    poly_approxs[j].approximation_coefficients());
-    }
-    if (var >= 0.)
-      sigma = std::sqrt(var);
-    else { // negative variance can happen with SC on sparse grids
-      Cerr << "Warning: stochastic expansion variance is negative in "
-	   << "computation of std deviation.\n         Setting std deviation "
-	   << "to zero." << std::endl;
-      sigma = 0.;
+	poly_approx_rep->compute_moments();
+
+      const RealVector& moments = poly_approx_rep->moments(); // virtual
+      mu = moments[0]; const Real& var = moments[1];
+      if (covariance_flag) {
+	respCovariance(i,i) = var;
+	if (all_vars)
+	  for (j=0; j<i; ++j)
+	    respCovariance(i,j) = poly_approx_rep->get_covariance(initialPtU,
+	      poly_approxs[j].approximation_coefficients());
+	else
+	  for (j=0; j<i; ++j)
+	    respCovariance(i,j) = poly_approx_rep->get_covariance(
+	      poly_approxs[j].approximation_coefficients());
+      }
+      if (var >= 0.)
+	sigma = std::sqrt(var);
+      else { // negative variance can happen with SC on sparse grids
+	Cerr << "Warning: stochastic expansion variance is negative in "
+	     << "computation of std deviation.\n         Setting std deviation "
+	     << "to zero." << std::endl;
+	sigma = 0.;
+      }
     }
 
     // compute moments if needed for beta mappings

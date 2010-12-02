@@ -2246,7 +2246,7 @@ void NonDLocalReliability::principal_curvatures()
 
 void NonDLocalReliability::print_results(std::ostream& s)
 {
-  size_t i, j;
+  size_t i, j, width = write_precision+7;
   StringMultiArrayConstView uv_labels
     = iteratedModel.continuous_variable_labels();
   const StringArray& fn_labels = iteratedModel.response_labels();
@@ -2275,10 +2275,9 @@ void NonDLocalReliability::print_results(std::ostream& s)
     if (!mppSearchType) {
       s << "MV Statistics for " << fn_labels[i] << ":\n";
       // approximate response means and std deviations and importance factors
-      s << "  Approximate Mean Response                  = "
-	<< std::setw(write_precision+7) << meanStats[i]
-	<< "\n  Approximate Standard Deviation of Response = "
-	<< std::setw(write_precision+7)<< stdDevStats[i] << '\n';
+      s << "  Approximate Mean Response                  = " << std::setw(width)
+	<< meanStats[i]	<< "\n  Approximate Standard Deviation of Response = "
+	<< std::setw(width)<< stdDevStats[i] << '\n';
       if (natafTransform.x_correlation() || stdDevStats[i] <= 1.e-25)
 	s << "  Importance Factors not available.\n";
       else
@@ -2287,7 +2286,7 @@ void NonDLocalReliability::print_results(std::ostream& s)
 	    << std::setiosflags(std::ios::left) << std::setw(11)
 	    << uv_labels[j].data() << " = "
 	    << std::resetiosflags(std::ios::adjustfield)
-	    << std::setw(write_precision+7) << impFactor(j,i) << '\n';
+	    << std::setw(width) << impFactor(j,i) << '\n';
     }
 
     // output CDF/CCDF response/probability pairs
@@ -2305,11 +2304,10 @@ void NonDLocalReliability::print_results(std::ostream& s)
 	<< "Reliability Index  General Rel Index\n     --------------  "
 	<< "-----------------  -----------------  -----------------\n";
       for (j=0; j<num_levels; j++)
-        s << "  "
-	  << std::setw(write_precision+7) << computedRespLevels[i][j]   << "  "
-	  << std::setw(write_precision+7) << computedProbLevels[i][j]   << "  "
-	  << std::setw(write_precision+7) << computedRelLevels[i][j]    << "  "
-	  << std::setw(write_precision+7) << computedGenRelLevels[i][j] << '\n';
+        s << "  " << std::setw(width) << computedRespLevels[i][j]
+	  << "  " << std::setw(width) << computedProbLevels[i][j]
+	  << "  " << std::setw(width) << computedRelLevels[i][j]
+	  << "  " << std::setw(width) << computedGenRelLevels[i][j] << '\n';
     }
   }
 
