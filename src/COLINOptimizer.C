@@ -359,10 +359,16 @@ bool COLINOptimizer::returns_multiple_points() const
 // convenience function to be called by constructors
 void COLINOptimizer::solver_setup(Model& model)
 {
-  static_cast<void>
-    (interfaces::StaticInitializers::static_interfaces_registrations);
-  static_cast<void>
-    (scolib::StaticInitializers::static_scolib_registrations);
+   // This exception should never be thrown.  Normally, static_casting
+   // the registration indicators to void is sufficient to have the
+   // linker include the respective static libraries, but some compilers
+   // (PGI 9.x) appear to be "smart" enough to recognize the no-op and
+   // not link in the library.
+   if ( ! ( interfaces::StaticInitializers::static_interfaces_registrations
+            && scolib::StaticInitializers::static_scolib_registrations ) )
+      EXCEPTION_MNGR(std::runtime_error, "COLINOptimizer::solver_setup(): "
+                     "error: Acro incompletely registered (likely an issue "
+                     "with the library link step.");
 
   // initialize some buffer variables
   constraint_penalty = 0.;
