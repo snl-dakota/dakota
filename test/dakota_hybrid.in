@@ -15,7 +15,6 @@
 strategy,
 	graphics
 	hybrid sequential
-#	  num_solutions_transferred = 3		#3,#p0
 #	  iterator_servers = 3			#p0
 	  method_list = 'GA' 'PS' 'NLP' 	#0,#3,#p0
 #	  method_list = 'GA' 'PS' 'PS2' 	#1,#2
@@ -24,6 +23,7 @@ method,
 	id_method = 'GA'
 	model_pointer = 'M1'
 	coliny_ea
+#	  final_solutions = 3			#3,#p0
 	  seed = 1234
 	  population_size = 10
 	  verbose output

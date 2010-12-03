@@ -49,46 +49,45 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
     }
   }
 
-  // TO DO: factor in point growth
-
   // define maxConcurrency without access to selectedIterators
   // (init_iterator_parallelism() requires maxConcurrency and
   // init_iterator_parallelism() must precede allocate_methods()).
   maxConcurrency = 1;
-  size_t i, sizet_max = std::numeric_limits<size_t>::max();
+  size_t i, curr_final, next_concurrency = 1, sizet_max_replace = 0;
   problem_db.set_db_list_nodes(methodList[0]);
   String curr_method = problem_db.get_string("method.algorithm");
   for (i=0; i<numIterators; ++i) {
     // current method data
-    size_t num_curr_final = problem_db.get_sizet("method.final_solutions");
-    if (!num_curr_final) // manually replicate iterator-specific defaults
-      num_curr_final = (curr_method == "moga") ? INT_MAX : 1;
+    curr_final = problem_db.get_sizet("method.final_solutions");
+    // manually replicate iterator-specific defaults, except replace
+    // sizet_max with something more useful for concurrency estimation
+    if (!curr_final) {
+      if (curr_method == "moga")
+	curr_final = sizet_max_replace
+	  = problem_db.get_int("method.population_size");
+      else
+	curr_final = 1;
+    }
 
     if (i < numIterators-1) {
       // look ahead method data
       problem_db.set_db_list_nodes(methodList[i+1]);
       const String& next_method = problem_db.get_string("method.algorithm");
       // manually replicate accepts_multiple_points() support
-      bool next_single = (next_method != "moga" && next_method != "soga");
-      if (next_single && num_curr_final > maxConcurrency)
-	maxConcurrency = num_curr_final;
+      bool next_multi_pt = (next_method == "moga" || next_method == "soga");
+      // allow for multiplicative point growth
+      if (next_multi_pt) next_concurrency  = 1;
+      else               next_concurrency *= curr_final;
+      if (next_concurrency > maxConcurrency)
+	maxConcurrency = next_concurrency;
       // updates for next iteration
       curr_method = next_method;
     }
-
-    /* Cannot use this logic since selectedIterators not available
-    bool next_single = (i < numIterators-1 &&
-			!selectedIterators[i+1].accepts_multiple_points());
-    if (next_single) {
-      size_t num_curr_final = selectedIterators[i].num_final_solutions();
-      if (num_curr_final > maxConcurrency) 
-	maxConcurrency = num_curr_final;
-    }
-    */
   }
+  std::cout << "maxConcurrency = " << maxConcurrency << '\n';
 
   init_iterator_parallelism();
-  // Adaptive hybrid does not support iterator concurrency --> verify settings.
+  // verify settings: adaptive hybrid does not support iterator concurrency
   if ( ( stratIterDedMaster || numIteratorServers > 1 ) && 
        hybridType.ends("_adaptive") ) {
     std::cerr << "Error: adaptive Sequential Hybrid Strategy does not support "
@@ -98,25 +97,13 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
   allocate_methods();
 
   // now that parallel paritioning and iterator allocation has occurred,
-  // manage acceptable values for iterator.num_final_solutions()
-  if (iteratorCommRank == 0) {
-    size_t num_final_solns, max_final_solns = 1;
-    bool reassign = false;
-    for (i=0; i<numIterators; ++i) {
-      num_final_solns = selectedIterators[i].num_final_solutions();
-      if (num_final_solns == sizet_max) { // moga default
-	// pick a reasonable heuristic now that partitioning has occurred
-	num_final_solns = numIteratorServers;
-	reassign = true;
-      }
-      if (num_final_solns > max_final_solns)
-	max_final_solns = num_final_solns;
-    }
-    // override any sizet_max instances
-    if (reassign)
-      for (i=0; i<numIterators; ++i)
-	if (selectedIterators[i].num_final_solutions() == sizet_max)
-	  selectedIterators[i].num_final_solutions(max_final_solns);
+  // manage acceptable values for Iterator::numFinalSolutions (needed for
+  // resultsMsgLen estimation in run function)
+  if (iteratorCommRank == 0 && sizet_max_replace) {
+    size_t sizet_max = std::numeric_limits<size_t>::max();
+    for (i=0; i<numIterators; ++i)
+      if (selectedIterators[i].num_final_solutions() == sizet_max)
+	selectedIterators[i].num_final_solutions(sizet_max_replace);
   }
 }
 
@@ -143,9 +130,6 @@ void SequentialHybridStrategy::run_strategy()
     satisfied.  Status: fully operational. */
 void SequentialHybridStrategy::run_sequential()
 {
-  //size_t iterator_capacity = 1, max_instances = 10;
-  std::cout << "maxConcurrency " << maxConcurrency << '\n';
-
   for (seqCount=0; seqCount<numIterators; seqCount++) {
 
     // each of these is safe for all processors
@@ -228,7 +212,7 @@ void SequentialHybridStrategy::run_sequential()
       // arrays will be empty), but should be reliable.
       ParamResponsePair prp_star(curr_iterator.variables_results(),
         curr_model.interface_id(), curr_iterator.response_results()); // shallow
-      // Note that num_final_solutions() has been bounded in ctor
+      // Note: max size_t removed from Iterator::numFinalSolutions in ctor
       size_t prp_return_size = curr_iterator.num_final_solutions();
       results_buffer << prp_return_size;
       for (size_t i=0; i<prp_return_size; ++i)
