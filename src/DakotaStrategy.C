@@ -612,7 +612,7 @@ static_schedule_iterators(Iterator& the_iterator, Model& the_model)
     // Run the iterator on the model for this iterator job
     run_iterator(the_iterator, the_model);
 
-    // collect prpResults on peer 1
+    // collect results on peer 1
     if (iteratorCommRank == 0) {
       // report iterator timings (to tagged output if concurrent iterators)
       if (stratIterMessagePass) {

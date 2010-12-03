@@ -112,7 +112,7 @@ protected:
   /// unpack a recv_buffer for accepting iterator results from a server
   virtual void unpack_results_buffer(MPIUnpackBuffer& recv_buffer,
 				     int job_index);
-  /// update local prpResults with current iteration results
+  /// update local PRP results arrays with current iteration results
   virtual void update_local_results(int job_index);
 
   //
@@ -162,8 +162,8 @@ protected:
   bool stratIterMessagePass; ///< flag for message passing at si level
   bool stratIterDedMaster;   ///< flag for dedicated master part. at si level
 
-  int worldRank;          ///< processor rank in MPI_COMM_WORLD
-  int worldSize;          ///< size of MPI_COMM_WORLD
+  int worldRank; ///< processor rank in MPI_COMM_WORLD
+  int worldSize; ///< size of MPI_COMM_WORLD
 
   int iteratorCommRank;   ///< processor rank in iteratorComm
   int iteratorCommSize;   ///< number of processors in iteratorComm
@@ -174,12 +174,11 @@ protected:
   bool   tabularDataFlag; ///< flag for file tabulation of graphics data
   String tabularDataFile; ///< filename for tabulation of graphics data
 
-  int maxConcurrency;     ///< maximum iterator concurrency possible in Strategy
-  int numIteratorJobs;    ///< number of iterator executions to schedule
-  PRPArray prpResults;    ///< array of results corresponding to numIteratorJobs
+  int maxConcurrency;  ///< maximum iterator concurrency possible in Strategy
+  int numIteratorJobs; ///< number of iterator executions to schedule
 
-  int  paramsMsgLen; ///< length of MPI buffer for parameterSets instance(s)
-  int resultsMsgLen; ///< length of MPI buffer for prpResults instance(s)
+  int  paramsMsgLen; ///< length of MPI buffer for parameter input instance(s)
+  int resultsMsgLen; ///< length of MPI buffer for results output instance(s)
 
 private:
 

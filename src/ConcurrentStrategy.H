@@ -94,6 +94,8 @@ private:
   /// sets or pareto multi-objective/least squares weighting sets) to
   /// be performed.
   RealVectorArray parameterSets;
+  /// 1-d array of ParamResponsePair results corresponding to numIteratorJobs
+  PRPArray prpResults;
 };
 
 

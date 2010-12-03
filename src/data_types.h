@@ -89,6 +89,7 @@ typedef std::vector<IntVector>         IntVectorArray;
 typedef std::vector<Variables>         VariablesArray;
 typedef std::vector<Response>          ResponseArray;
 typedef std::vector<ParamResponsePair> PRPArray;
+typedef std::vector<PRPArray>          PRP2DArray;
 typedef std::vector<Pecos::SurrogateDataPoint> SDPArray;
 typedef std::vector<SDPArray>          SDP2DArray;
 typedef std::vector<Model>             ModelArray;

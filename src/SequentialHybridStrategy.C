@@ -19,8 +19,6 @@
 static const char rcsId[]="@(#) $Id: SequentialHybridStrategy.C 6972 2010-09-17 22:18:50Z briadam $";
 
 
-using namespace std;
-
 namespace Dakota {
 
 SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
@@ -28,32 +26,36 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
   hybridType(problem_db.get_string("strategy.hybrid.type"))
 {
   if (worldRank == 0)
-    cout << "Constructing Sequential Hybrid Optimizer Strategy...\n";
+    std::cout << "Constructing Sequential Hybrid Optimizer Strategy...\n";
 
   methodList = problem_db.get_dsa("strategy.hybrid.method_list");
   numIterators = methodList.size();
   if (!numIterators) { // verify at least one method in list
-    cerr << "Error: method_list must have a least one entry." << endl;
+    std::cerr << "Error: method_list must have a least one entry." << std::endl;
     abort_handler(-1);
   }
   if (hybridType.ends("_adaptive") && worldRank == 0) {
     progressThreshold
       = problem_db.get_real("strategy.hybrid.progress_threshold");
     if (progressThreshold > 1.) {
-      cerr << "Warning: progress_threshold should be <= 1.  Setting to 1.\n";
+      std::cerr << "Warning: progress_threshold should be <= 1.  "
+		<< "Setting to 1.\n";
       progressThreshold = 1.;
     }
     else if (progressThreshold < 0.) {
-      cerr << "Warning: progress_threshold should be >= 0.  Setting to 0.\n";
+      std::cerr << "Warning: progress_threshold should be >= 0.  "
+		<< "Setting to 0.\n";
       progressThreshold = 0.;
     }
   }
+
+  // TO DO: factor in point growth
 
   // define maxConcurrency without access to selectedIterators
   // (init_iterator_parallelism() requires maxConcurrency and
   // init_iterator_parallelism() must precede allocate_methods()).
   maxConcurrency = 1;
-  size_t i, sizet_max = std::numeric_limits<std::size_t>::max();
+  size_t i, sizet_max = std::numeric_limits<size_t>::max();
   problem_db.set_db_list_nodes(methodList[0]);
   String curr_method = problem_db.get_string("method.algorithm");
   for (i=0; i<numIterators; ++i) {
@@ -61,8 +63,6 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
     size_t num_curr_final = problem_db.get_sizet("method.final_solutions");
     if (!num_curr_final) // manually replicate iterator-specific defaults
       num_curr_final = (curr_method == "moga") ? INT_MAX : 1;
-    else if (num_curr_final > INT_MAX)
-      num_curr_final = INT_MAX; // maxConcurrency is int
 
     if (i < numIterators-1) {
       // look ahead method data
@@ -72,7 +72,6 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
       bool next_single = (next_method != "moga" && next_method != "soga");
       if (next_single && num_curr_final > maxConcurrency)
 	maxConcurrency = num_curr_final;
-
       // updates for next iteration
       curr_method = next_method;
     }
@@ -92,22 +91,20 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
   // Adaptive hybrid does not support iterator concurrency --> verify settings.
   if ( ( stratIterDedMaster || numIteratorServers > 1 ) && 
        hybridType.ends("_adaptive") ) {
-    cerr << "Error: Adaptive Sequential Hybrid Strategy does not support "
-	 << "concurrent iterator parallelism." << endl;
+    std::cerr << "Error: adaptive Sequential Hybrid Strategy does not support "
+	      << "concurrent iterator parallelism." << std::endl;
     abort_handler(-1);
   }
   allocate_methods();
 
-  // size prpResults: all iterator masters bookkeep on the full results list,
-  // even if only some entries are defined locally (prior to All-Reduce at end
-  // of each cycle in run_sequential())
+  // now that parallel paritioning and iterator allocation has occurred,
+  // manage acceptable values for iterator.num_final_solutions()
   if (iteratorCommRank == 0) {
-    size_t i, num_final_solns, max_final_solns = 1,
-      sizet_max = std::numeric_limits<std::size_t>::max();
+    size_t num_final_solns, max_final_solns = 1;
     bool reassign = false;
     for (i=0; i<numIterators; ++i) {
       num_final_solns = selectedIterators[i].num_final_solutions();
-      if (num_final_solns == sizet_max) { // JEGA default
+      if (num_final_solns == sizet_max) { // moga default
 	// pick a reasonable heuristic now that partitioning has occurred
 	num_final_solns = numIteratorServers;
 	reassign = true;
@@ -115,7 +112,6 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
       if (num_final_solns > max_final_solns)
 	max_final_solns = num_final_solns;
     }
-    prpResults.resize(max_final_solns);
     // override any sizet_max instances
     if (reassign)
       for (i=0; i<numIterators; ++i)
@@ -148,7 +144,7 @@ void SequentialHybridStrategy::run_strategy()
 void SequentialHybridStrategy::run_sequential()
 {
   //size_t iterator_capacity = 1, max_instances = 10;
-  Cout << "MaxConcurrency " << maxConcurrency << '\n';
+  std::cout << "maxConcurrency " << maxConcurrency << '\n';
 
   for (seqCount=0; seqCount<numIterators; seqCount++) {
 
@@ -159,8 +155,8 @@ void SequentialHybridStrategy::run_sequential()
     bool      curr_returns_multi = curr_iterator.returns_multiple_points();
  
     if (worldRank == 0) {
-      cout << "\n>>>>> Running Sequential Hybrid Optimizer Strategy with "
-	   << "iterator " << methodList[seqCount] << ".\n";
+      std::cout << "\n>>>>> Running Sequential Hybrid Optimizer Strategy with "
+		<< "iterator " << methodList[seqCount] << ".\n";
       // set up plots and tabular data file
       curr_iterator.initialize_graphics(graph2DFlag, tabularDataFlag,
 					tabularDataFile);
@@ -174,28 +170,41 @@ void SequentialHybridStrategy::run_sequential()
     // > In the future, we may support concurrent multipoint iterators, but
     //   prior to additional specification data, we either have a single
     //   multipoint iterator or concurrent single-point iterators.
-    if (seqCount == 0)
+    if (seqCount == 0) // initialize numIteratorJobs
       numIteratorJobs = 1;
-    else if (stratIterDedMaster) {
-      // send curr_accepts_multi from 1st iterator master to strategy master
-      if (iteratorCommRank == 0 && iteratorServerId == 1) {
-	int multi_flag = (int)curr_accepts_multi; // bool -> int
-        parallelLib.send_si(multi_flag, 0, 0);
+    else {
+      // update numIteratorJobs
+      if (stratIterDedMaster) {
+	// send curr_accepts_multi from 1st iterator master to strategy master
+	if (iteratorCommRank == 0 && iteratorServerId == 1) {
+	  int multi_flag = (int)curr_accepts_multi; // bool -> int
+	  parallelLib.send_si(multi_flag, 0, 0);
+	}
+	else if (worldRank == 0) {
+	  int multi_flag; MPI_Status status;
+	  parallelLib.recv_si(multi_flag, 1, 0, status);
+	  curr_accepts_multi = (bool)multi_flag; // int -> bool
+	  numIteratorJobs = (curr_accepts_multi) ? 1 : parameterSets.size();
+	}
       }
-      else if (worldRank == 0) {
-	int multi_flag; MPI_Status status;
-	parallelLib.recv_si(multi_flag, 1, 0, status);
-	curr_accepts_multi = (bool)multi_flag; // int -> bool
-	numIteratorJobs = (curr_accepts_multi) ? 1 : prpResults.size();
+      else { // static scheduling
+	if (iteratorCommRank == 0)
+	  numIteratorJobs = (curr_accepts_multi) ? 1 : parameterSets.size();
+	// bcast numIteratorJobs over iteratorComm
+	if (iteratorCommSize > 1)
+	  parallelLib.bcast_i(numIteratorJobs);
       }
     }
-    else { // static scheduling
-      if (iteratorCommRank == 0)
-	numIteratorJobs = (curr_accepts_multi) ? 1 : prpResults.size();
-      // bcast numIteratorJobs over iteratorComm
-      if (iteratorCommSize > 1)
-	parallelLib.bcast_i(numIteratorJobs);
-    }
+    // --------------------------
+    // size prpResults (2D array)
+    // --------------------------
+    // The total aggregated set of results:
+    // > can grow if multiple iterator jobs return multiple points or if
+    //   single instance returns more than used for initialization
+    // > can only shrink in the case where single instance returns fewer
+    //   than used for initialization
+    if (iteratorCommRank == 0)
+      prpResults.resize(numIteratorJobs);
 
     // -----------------------------------------
     // Define buffer lengths for message passing
@@ -219,10 +228,10 @@ void SequentialHybridStrategy::run_sequential()
       // arrays will be empty), but should be reliable.
       ParamResponsePair prp_star(curr_iterator.variables_results(),
         curr_model.interface_id(), curr_iterator.response_results()); // shallow
-      size_t start_index, job_size;
-      partition_results(0, start_index, job_size);
-      results_buffer << job_size;
-      for (size_t i=0; i<job_size; i++)
+      // Note that num_final_solutions() has been bounded in ctor
+      size_t prp_return_size = curr_iterator.num_final_solutions();
+      results_buffer << prp_return_size;
+      for (size_t i=0; i<prp_return_size; ++i)
 	results_buffer << prp_star;
       resultsMsgLen = results_buffer.size();
     }
@@ -235,53 +244,70 @@ void SequentialHybridStrategy::run_sequential()
     // ---------------------------------
     // Post-process the iterator results
     // ---------------------------------
-    // migrate results among procs as required for parallel scheduling, e.g.,
-    // from multiple single-point iterators to a single multi-point iterator
-    // > for dedicated master self-scheduling, all results data resides on the
-    //   dedicated master and no additional migration is required.
-    // > for peer partition static scheduling, the full prpResults array needs
-    //   to be propagated back to peers 2 though n (like an All-Reduce, except
-    //   that Strategy::static_schedule_iterators() enforces the reduction to
-    //   peer 1 and the code below enforces repropagation from 1 to 2-n).
-    if ( !stratIterDedMaster    && iteratorCommRank == 0 &&
-	 numIteratorServers > 1 && seqCount+1 < numIterators) {
-      if (worldRank == 0) { // send complete list
-	MPIPackBuffer send_buffer;
-	send_buffer << prpResults;
-	int buffer_len = send_buffer.size();
-	parallelLib.bcast_si(buffer_len);
-	parallelLib.bcast_si(send_buffer);
+    // convert prpResults to parameterSets for next iteration
+    if (iteratorCommRank == 0 && seqCount+1 < numIterators) {
+      size_t i, j, num_param_sets = 0, cntr = 0, num_prp_i;
+      for (i=0; i<numIteratorJobs; ++i)
+	num_param_sets += prpResults[i].size();
+      parameterSets.resize(num_param_sets);
+      for (i=0; i<numIteratorJobs; ++i) {
+	const PRPArray& prp_results_i = prpResults[i];
+	num_prp_i = prp_results_i.size();
+	for (j=0; j<num_prp_i; ++j, ++cntr)
+	  parameterSets[cntr] = prp_results_i[j].prp_parameters();
       }
-      else { // replace partial list
-	int buffer_len;
-	parallelLib.bcast_si(buffer_len);
-	MPIUnpackBuffer recv_buffer(buffer_len);
-	parallelLib.bcast_si(recv_buffer);
-	recv_buffer >> prpResults;
+      // migrate results among procs as required for parallel scheduling, e.g.,
+      // from multiple single-point iterators to a single multi-point iterator
+      // > for dedicated master self-scheduling, all results data resides on
+      //   the dedicated master and no additional migration is required.
+      // > for peer partition static scheduling, the full parameterSets array
+      //   needs to be propagated back to peers 2 though n (like an All-Reduce,
+      //   except that Strategy::static_schedule_iterators() enforces reduction
+      //   to peer 1 and the code below enforces repropagation from 1 to 2-n).
+      if ( !stratIterDedMaster && numIteratorServers > 1) {
+	if (worldRank == 0) { // send complete list
+	  MPIPackBuffer send_buffer;
+	  send_buffer << parameterSets;
+	  int buffer_len = send_buffer.size();
+	  parallelLib.bcast_si(buffer_len);
+	  parallelLib.bcast_si(send_buffer);
+	}
+	else { // replace partial list
+	  int buffer_len;
+	  parallelLib.bcast_si(buffer_len);
+	  MPIUnpackBuffer recv_buffer(buffer_len);
+	  parallelLib.bcast_si(recv_buffer);
+	  recv_buffer >> parameterSets;
+	}
       }
     }
   }
 
-  // Output final results
+  // ---------------------------------------
+  // Sequence complete: output final results
+  // ---------------------------------------
   if (worldRank == 0) {
-    cout << "\n<<<<< Sequential Hybrid Optimizer Strategy completed.\n";
+    std::cout << "\n<<<<< Sequential Hybrid Optimizer Strategy completed.\n";
     // provide a final summary in cases where the default iterator output
     // is insufficient
     if (stratIterDedMaster || numIteratorServers > 1) {// || numIteratorJobs > 1
-      size_t num_instances = prpResults.size();
-      cout << "\n<<<<< Sequential hybrid generated " << num_instances
-	   << " final solution sets:\n";
-      for (size_t i=0; i<num_instances; ++i) {
-	const ParamResponsePair&  prp_i = prpResults[i];
-	const Variables&         vars_i = prp_i.prp_parameters();
-	const Response&          resp_i = prp_i.prp_response();
-	if (!vars_i.is_null())
-	  cout << "<<<<< Best parameters          (set " << i+1 << ") =\n"
-	       << vars_i;
-	if (!resp_i.is_null()) {
-	  cout << "<<<<< Best response functions  (set " << i+1 << ") =\n";
-	  write_data(cout, resp_i.function_values());
-        }
+      size_t i, j, cntr = 0, num_prp_res = prpResults.size(), num_prp_i;
+      std::cout << "\n<<<<< Sequential hybrid final solution sets:\n";
+      for (i=0; i<num_prp_res; ++i) {
+	const PRPArray& prp_i = prpResults[i];
+	num_prp_i = prp_i.size();
+	for (j=0; j<num_prp_i; ++j, ++cntr) {
+	  const Variables& vars = prp_i[j].prp_parameters();
+	  const Response&  resp = prp_i[j].prp_response();
+	  if (!vars.is_null())
+	    std::cout << "<<<<< Best parameters          (set " << cntr+1
+		      << ") =\n" << vars;
+	  if (!resp.is_null()) {
+	    std::cout << "<<<<< Best response functions  (set " << cntr+1
+		      << ") =\n";
+	    write_data(std::cout, resp.function_values());
+	  }
+	}
       }
     }
   }
@@ -305,8 +331,8 @@ void SequentialHybridStrategy::run_sequential_adaptive()
   for (seqCount=0; seqCount<numIterators; seqCount++) {
 
     if (worldRank == 0) {
-      cout << "\n>>>>> Running adaptive Sequential Hybrid Optimizer Strategy "
-	   << "with iterator " << methodList[seqCount] << endl;
+      std::cout << "\n>>>>> Running adaptive Sequential Hybrid Optimizer "
+		<< "Strategy with iterator " << methodList[seqCount] << '\n';
 
       // set up plots and tabular data file
       selectedIterators[seqCount].initialize_graphics(graph2DFlag,
@@ -320,8 +346,8 @@ void SequentialHybridStrategy::run_sequential_adaptive()
         //progressMetric = compute_progress(resp_star);
       }
       selectedIterators[seqCount].finalize_run();
-      cout << "\n<<<<< Iterator " << methodList[seqCount]
-	   << " completed.  Progress metric has fallen below threshold.\n";
+      std::cout << "\n<<<<< Iterator " << methodList[seqCount] << " completed."
+		<< "  Progress metric has fallen below threshold.\n";
 
       // Set the starting point for the next iterator.
       if (seqCount+1 < numIterators) {// prevent index out of range on last pass
@@ -340,8 +366,47 @@ void SequentialHybridStrategy::run_sequential_adaptive()
 
   // Output interesting iterator statistics/progress metrics...
   if (worldRank == 0)
-    cout << "\n<<<<< adaptive Sequential Hybrid Optimizer Strategy completed."
-	 << endl;
+    std::cout << "\n<<<<< adaptive Sequential Hybrid Optimizer Strategy "
+	      << "completed." << std::endl;
+}
+
+
+void SequentialHybridStrategy::
+update_local_results(PRPArray& prp_results, int job_id)
+{
+  Iterator& curr_iterator = selectedIterators[seqCount];
+  Model&    curr_model    = userDefinedModels[seqCount];
+  // Analyzers do not currently support returns_multiple_points() since the
+  // distinction between Hybrid sampling and Multistart sampling is that
+  // the former performs fn evals and processes the data (and current
+  // implementations of update_best() only log a single best point).
+  if (curr_iterator.returns_multiple_points()) {
+    const VariablesArray& vars_results
+      = curr_iterator.variables_array_results();
+    const ResponseArray& resp_results = curr_iterator.response_array_results();
+    // workaround: some methods define vars_results, but not resp_results
+    size_t num_vars_results = vars_results.size(),
+           num_resp_results = resp_results.size(),
+           num_results      = std::max(num_vars_results, num_resp_results);
+    prp_results.resize(num_results);
+    Variables dummy_vars; Response dummy_resp;
+    for (size_t i=0; i<num_results; ++i) {
+      const Variables& vars = (num_vars_results) ? vars_results[i] : dummy_vars;
+      const Response&  resp = (num_resp_results) ? resp_results[i] : dummy_resp;
+      // need a deep copy for case where multiple instances of
+      // best{Variables,Response}Array will be assimilated
+      prp_results[i] = ParamResponsePair(vars, curr_model.interface_id(),
+					 resp, job_id);
+    }
+  }
+  else {
+    // need a deep copy for case where multiple instances of
+    // best{Variables,Response}Array.front() will be assimilated
+    prp_results.resize(1);
+    prp_results[0] = ParamResponsePair(curr_iterator.variables_results(),
+				       curr_model.interface_id(),
+				       curr_iterator.response_results(),job_id);
+  }
 }
 
 } // namespace Dakota
