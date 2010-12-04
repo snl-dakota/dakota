@@ -23,6 +23,7 @@ method,
         vector_parameter_study
 	  step_vector = -.1 -.1 -.1 -.1
 	  num_steps = 8
+#	final_solutions = 3			#1
 
 method,
 	id_method = 'CPS'
