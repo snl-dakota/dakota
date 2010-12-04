@@ -1256,7 +1256,7 @@ occurs in the responses section, where
 the keyword \texttt{num\_response\_functions} is used in place of
 \texttt{num\_objective\_functions}. The final changes to the input
 file occur in the method section, where the keyword
-\texttt{nond\_sampling} is used; ``nond'' is an abbreviation for 
+\texttt{sampling} is used; ``nond'' is an abbreviation for 
 nondeterministic.
 The other keywords in the methods section of the input file
 specify the number of samples (200), the seed for the random number
@@ -1409,7 +1409,7 @@ Figure~\ref{tutorial:textbook_mv} shows the DAKOTA input file for
 an example problem that demonstrates the simplest reliability method, 
 called the mean value method (also referred to as the Mean Value 
 First Order Second Moment method).  It is specified with method 
-keyword \texttt{nond\_local\_reliability}.  
+keyword \texttt{local\_reliability}.  
 This method calculates the mean 
 and variance of the response function based on information about the 
 mean and variance of the inputs and gradient information at the mean 
@@ -1631,7 +1631,7 @@ that falls within the output interval is a possible output
 with no frequency information assigned to it.
 
 We can do interval analysis using either
-\texttt{nond\_global\_interval\_est} or \texttt{nond\_local\_interval\_est}.
+\texttt{global\_interval\_est} or \texttt{local\_interval\_est}.
 In the global approach, one uses either a global optimization 
 method or a sampling method to assess the bounds, whereas the 
 local method uses gradient information in a derivative-based 

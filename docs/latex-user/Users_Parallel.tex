@@ -218,16 +218,16 @@ parallelism) may still be available.
   parallelism.
 
 \item Uncertainty quantification: all nondeterministic methods
-  (\texttt{nond\_sampling}, \texttt{nond\_local\_reliability},
-  \texttt{nond\_global\_reliability}, \texttt{nond\_polynomial\_chaos},
-  \texttt{nond\_stoch\_collocation},\texttt{nond\_local\_interval\_est}, 
-  \texttt{nond\_global\_interval\_est},\texttt{nond\_local\_evidence} and 
-  \texttt{nond\_global\_evidence})
+  (\texttt{sampling}, \texttt{local\_reliability},
+  \texttt{global\_reliability}, \texttt{polynomial\_chaos},
+  \texttt{stoch\_collocation},\texttt{local\_interval\_est}, 
+  \texttt{global\_interval\_est},\texttt{local\_evidence} and 
+  \texttt{global\_evidence})
   support parallelism. In the case of
-  \texttt{nond\_local\_reliability}, gradient-based optimization is
+  \texttt{local\_reliability}, gradient-based optimization is
   involved and parallelism can be exploited through the use of
   DAKOTA's native finite differencing routine.  In the case of
-  \texttt{nond\_global\_reliability}, EGRA methods support parallelism
+  \texttt{global\_reliability}, EGRA methods support parallelism
   in the initial surrogate construction, but subsequently only
   generate a single point for evaluation per cycle.
 \end{itemize}

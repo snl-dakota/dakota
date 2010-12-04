@@ -297,10 +297,10 @@ epistemic uncertainties, or uncertainties resulting from a lack of
 knowledge.  In these problems, the assignment of input probability
 distributions when data is sparse can be somewhat suspect.  One
 approach to handling epistemic uncertainties is Dempster-Shafer theory
-of evidence (DAKOTA methods \texttt{nond\_local\_evidence} and 
-\texttt{nond\_global\_evidence}). Another method is pure interval 
-analysis (\texttt{nond\_local\_interval\_est} and 
-\texttt{nond\_global\_interval\_est}), where intervals on inputs are 
+of evidence (DAKOTA methods \texttt{local\_evidence} and 
+\texttt{global\_evidence}). Another method is pure interval 
+analysis (\texttt{local\_interval\_est} and 
+\texttt{global\_interval\_est}), where intervals on inputs are 
 mapped to intervals on outputs using optimization methods 
 
 For problems with a mixture of epistemic and aleatoric uncertainties, 
@@ -312,13 +312,13 @@ variables) and/or realizations of random variable distribution
 parameters (inserted variables) from intervals.  These realizations
 define the probability distributions for an inner aleatoric level
 performing probabilistic analyses.  In the case where the outer loop
-is an interval propagation approach (\texttt{nond\_local\_interval\_est} or 
-\texttt{nond\_global\_interval\_est}), the nested approach is
+is an interval propagation approach (\texttt{local\_interval\_est} or 
+\texttt{global\_interval\_est}), the nested approach is
 known as second-order probability (see also Section~\ref{models:nested})
 and the study generates a family of CDF/CCDF respresentations known as a 
 ``horse tail'' plot.  In the case where the outer loop is an 
-evidence-based approach (\texttt{nond\_local\_evidence} or 
-\texttt{nond\_global\_evidence}), the approach generates epistemic belief 
+evidence-based approach (\texttt{local\_evidence} or 
+\texttt{global\_evidence}), the approach generates epistemic belief 
 and plausibility bounds on aleatory statistics.
 
 The recommendations for UQ methods are summarized in Table~\ref{usage:guideuq}.
@@ -331,35 +331,35 @@ The recommendations for UQ methods are summarized in Table~\ref{usage:guideuq}.
 \textbf{Method} & \textbf{Desired Problem} & \textbf{Applicable Methods} \\
 \textbf{Classification} & \textbf{Characteristics} & \\
 \hline
-Sampling & nonsmooth, multimodal response functions;       & nond\_sampling 
+Sampling & nonsmooth, multimodal response functions;       & sampling 
 (Monte Carlo or LHS) \\
          & response evaluations are relatively inexpensive & \\
 \hline
-Local       & smooth, unimodal response functions; & nond\_local\_reliability
+Local       & smooth, unimodal response functions; & local\_reliability
 (MV, AMV/AMV$^2$,\\
 reliability & larger sets of random variables & AMV+/AMV$^2$+, TANA, 
 FORM/SORM) \\
 \hline
 Global      & nonsmooth, multimodal response functions; & 
-nond\_global\_reliability \\
+global\_reliability \\
 reliability & low dimensional     & \\
 \hline
 Stochastic & nonsmooth, multimodal response functions; & 
-nond\_polynomial\_chaos, \\
+polynomial\_chaos, \\
 expansions & low dimensional; capture of functional    & 
-nond\_stoch\_collocation\\
+stoch\_collocation\\
            & form useful for subsequent analyses       & \\
 \hline
 Epistemic & uncertainties are poorly characterized &
-interval: nond\_local\_interval\_est, \\
- & & nond\_global\_interval\_est, nond\_sampling; \\
- & & BPA: nond\_local\_evidence, \\
- & & nond\_global\_evidence \\
+interval: local\_interval\_est, \\
+ & & global\_interval\_est, sampling; \\
+ & & BPA: local\_evidence, \\
+ & & global\_evidence \\
 \hline
 Mixed UQ  & some uncertainties are poorly characterized &
 nested UQ (second-order probability, \\
  & & mixed evidence) with epistemic outer loop \\
- & & and aleatory inner loop, nond\_sampling \\
+ & & and aleatory inner loop, sampling \\
 \hline
 \end{tabular}
 \end{table}
@@ -387,7 +387,7 @@ distinction between DOE/DACE and sampling is drawn based on the
 distributions of the parameters.  DOE/DACE methods typically assume
 uniform distributions, whereas the sampling approaches in DAKOTA
 support a broad range of probability distributions. To use
-\texttt{nond\_sampling} in a design of experiments mode (as opposed to
+\texttt{sampling} in a design of experiments mode (as opposed to
 an uncertainty quantification mode), the \texttt{all\_variables} flag
 should be included in the method specification of the DAKOTA input
 file.
@@ -422,7 +422,7 @@ experiments        & space filling designs  & fsu\_quasi\_mc (halton,
                    & (parameters are        & fsu\_cvt, psuade\_moat \\
                    & uniformly distributed) & \\
 \hline
-sampling           & space filling designs      & nond\_sampling
+sampling           & space filling designs      & sampling
                                                   (Monte Carlo or LHS) \\
                    & (parameters have general   & with all\_variables flag \\
                    & probability distributions) & \\
