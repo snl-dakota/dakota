@@ -3176,34 +3176,34 @@ Test Number 13 succeeded
 <<<<< Best data captured at function evaluation 121
 dakota_cantilever_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 23 total (23 new, 0 duplicate)
+<<<<< Function evaluation summary: 22 total (22 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3882792257e+00 beam_width
-                      3.2773205304e+00 beam_thickness
+                      2.3142841821e+00 beam_width
+                      3.3862187900e+00 beam_thickness
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.8271565388e+00
+                      7.8366725828e+00
 <<<<< Best constraint values   =
-                     -1.4042207340e-02
-                     -2.2643558209e-05
-<<<<< Best data captured at function evaluation 23
+                     -2.1209259306e-02
+                     -2.1991697299e-03
+<<<<< Best data captured at function evaluation 22
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.7038815221e+00 beam_width
-                      2.6864722519e+00 beam_thickness
+                      1.7261680977e+00 beam_width
+                      2.5445562160e+00 beam_thickness
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best residual terms      =
-                      4.5774304296e+00
-                      1.1814083782e+00
-                      1.9556759076e+00
-<<<<< Best data captured at function evaluation 18
+                      4.3923317629e+00
+                      1.3312950893e+00
+                      2.1780483446e+00
+<<<<< Best data captured at function evaluation 17
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 57 total (57 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
@@ -6328,7 +6328,7 @@ Test Number 4 succeeded
 <<<<< Best objective functions =
                       6.3212055883e-01
                       6.3212055883e-01
-<<<<< Best data captured at function evaluation 68
+<<<<< Best data captured at function evaluation 57 
 dakota_multiobj1.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
@@ -6419,7 +6419,7 @@ Test Number 0 succeeded
                      -2.6571982250e-01
                      -5.9998828125e-01
                       3.4998242196e-01
-<<<<< Best data captured at function evaluation 135
+<<<<< Best data captured at function evaluation 171
 dakota_multistart.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
@@ -11345,13 +11345,13 @@ Test Number 14 succeeded
 <<<<< Best data captured at function evaluation 36
 dakota_rosenbrock_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 28 total (28 new, 0 duplicate)
+<<<<< Function evaluation summary: 27 total (27 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.8765432099e-01 x1
-                      9.7546356667e-01 x2
+                      9.8846720520e-01 x1
+                      9.7796745076e-01 x2
 <<<<< Best objective function  =
-                      1.5241641973e-04
-<<<<< Best data captured at function evaluation 25
+                      2.1401165605e-04
+<<<<< Best data captured at function evaluation 23
 dakota_rosenbrock_hessians.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 74 total (74 new, 0 duplicate)
@@ -15179,211 +15179,204 @@ Test Number 3 succeeded
   -2.2737367544e-13   1.3783736922e-07   5.1507850307e+00   5.1393607209e+00
 dakota_su_mogatest1.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 16494 total (16494 new, 0 duplicate)
-       obj_fn_1: 16494 val (16494 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-       obj_fn_2: 16494 val (16494 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (TRUE_FN): 217 total (194 new, 23 duplicate)
-       obj_fn_1: 217 val (194 n, 23 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-       obj_fn_2: 217 val (194 n, 23 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Best parameters          =
-                     -2.0748807127e-02 x1
-                     -4.5512763805e-02 x2
-                      2.7571396915e-02 x3
-<<<<< Best objective functions =
-                      6.4926607759e-01
-                      6.1649052628e-01
-<<<<< Best data captured at function evaluation 206
+<<<<< Function evaluation summary (APPROX_INTERFACE): 15267 total (15267 new, 0 duplicate)
+       obj_fn_1: 15267 val (15267 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+       obj_fn_2: 15267 val (15267 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (TRUE_FN): 216 total (204 new, 12 duplicate)
+       obj_fn_1: 216 val (204 n, 12 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+       obj_fn_2: 216 val (204 n, 12 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          (set 1) =
-                      5.9216428017e-01 x1
-                      6.4232348867e-01 x2
-                      6.2099167175e-01 x3
+                     -2.2116126503e-02 x1
+                     -4.5333286768e-02 x2
+                     -2.0009363079e-02 x3
 <<<<< Best objective functions (set 1) =
-                      6.3254557272e-03
-                      9.8631413546e-01
-<<<<< Best data captured at function evaluation 123
+                      6.6843562684e-01
+                      5.9422477610e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 2) =
-                      4.7196529641e-01 x1
-                      3.9029347728e-01 x2
-                      3.7406085263e-01 x3
+                     -2.2116126503e-02 x1
+                      2.0932214344e-02 x2
+                      4.8840118595e-02 x3
 <<<<< Best objective functions (set 2) =
-                      8.3710414387e-02
-                      9.4727052590e-01
-<<<<< Best data captured at function evaluation 195
+                      6.1259475557e-01
+                      6.5296904137e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 3) =
-                      3.1690900601e-01 x1
-                      3.9029347728e-01 x2
-                      3.7406085263e-01 x3
+                     -1.6116532877e-01 x1
+                     -1.2488758384e-01 x2
+                     -1.5348230868e-01 x3
 <<<<< Best objective functions (set 3) =
-                      1.3423907949e-01
-                      9.2872553812e-01
-<<<<< Best data captured at function evaluation 196
+                      7.9250738857e-01
+                      4.2741634629e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 4) =
-                      3.1690900601e-01 x1
-                      2.7239928221e-01 x2
-                      3.7406085263e-01 x3
+                     -1.6116532877e-01 x1
+                     -4.5333286768e-02 x2
+                     -1.3972391753e-01 x3
 <<<<< Best objective functions (set 4) =
-                      1.8302872423e-01
-                      9.1169486986e-01
-<<<<< Best data captured at function evaluation 197
+                      7.6480386327e-01
+                      4.7678813319e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 5) =
-                      2.2298186842e-01 x1
-                      2.5827891578e-01 x2
-                      3.7406085263e-01 x3
+                     -1.6116532877e-01 x1
+                     -4.5333286768e-02 x2
+                     -2.9508192106e-03 x3
 <<<<< Best objective functions (set 5) =
-                      2.3563517100e-01
-                      8.9396550232e-01
-<<<<< Best data captured at function evaluation 198
+                      7.1913733127e-01
+                      5.4442125550e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 6) =
-                      1.9559149267e-01 x1
-                      3.9029347728e-01 x2
-                      1.6238441140e-01 x3
+                     -1.6116532877e-01 x1
+                     -2.3449908767e-01 x2
+                     -1.5348230868e-01 x3
 <<<<< Best objective functions (set 6) =
-                      2.9737128474e-01
-                      8.7519225741e-01
-<<<<< Best data captured at function evaluation 199
+                      8.2423737635e-01
+                      3.7526073060e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 7) =
-                      2.2298186842e-01 x1
-                      1.7645644218e-01 x2
-                      1.9933301033e-01 x3
+                     -4.8297120281e-02 x1
+                      2.0932214344e-02 x2
+                      1.9165345477e-01 x3
 <<<<< Best objective functions (set 7) =
-                      3.4896369611e-01
-                      8.3667170195e-01
-<<<<< Best data captured at function evaluation 200
+                      5.7249861052e-01
+                      7.0747521824e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 8) =
-                      1.1222521780e-01 x1
-                      2.0146002816e-01 x2
-                      1.8922968776e-01 x3
+                      6.3406800881e-02 x1
+                      8.4557620848e-02 x2
+                      2.6323483710e-01 x3
 <<<<< Best objective functions (set 8) =
-                      3.9846609182e-01
-                      8.1169732962e-01
-<<<<< Best data captured at function evaluation 201
+                      4.5428094533e-01
+                      7.8886868617e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 9) =
-                      1.2443017407e-01 x1
-                      2.7239928221e-01 x2
-                      2.7571396915e-02 x3
+                     -1.6116532877e-01 x1
+                     -2.3449908767e-01 x2
+                     -2.5806614955e-01 x3
 <<<<< Best objective functions (set 9) =
-                      4.5140154976e-01
-                      7.9412792799e-01
-<<<<< Best data captured at function evaluation 202
+                      8.5079368395e-01
+                      3.2476816401e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 10) =
-                      1.2443017407e-01 x1
-                      2.0146002816e-01 x2
-                     -2.4703672167e-02 x3
+                      2.4521811132e-01 x1
+                      2.0932214344e-02 x2
+                      4.8840118595e-02 x3
 <<<<< Best objective functions (set 10) =
-                      5.0781422100e-01
-                      7.5450029442e-01
-<<<<< Best data captured at function evaluation 203
+                      5.0303506134e-01
+                      7.5989406867e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 11) =
-                     -2.0748807127e-02 x1
-                      1.7645644218e-01 x2
-                      2.7571396915e-02 x3
+                      6.3406800881e-02 x1
+                      2.0936380895e-01 x2
+                      2.6323483710e-01 x3
 <<<<< Best objective functions (set 11) =
-                      5.5987441574e-01
-                      7.1175946827e-01
-<<<<< Best data captured at function evaluation 204
+                      3.9238901446e-01
+                      8.2378879668e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 12) =
-                      1.1222521780e-01 x1
-                     -7.3551556130e-02 x2
-                      2.7571396915e-02 x3
+                      3.1738790326e-01 x1
+                      2.0936380895e-01 x2
+                      1.3494357287e-01 x3
 <<<<< Best objective functions (set 12) =
-                      6.1025839395e-01
-                      6.6554659871e-01
-<<<<< Best data captured at function evaluation 205
+                      3.2882015432e-01
+                      8.5439211004e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 13) =
-                     -2.0748807127e-02 x1
-                     -4.5512763805e-02 x2
-                      2.7571396915e-02 x3
+                     -3.4701368415e-01 x1
+                     -1.8487630979e-01 x2
+                     -2.5830912416e-01 x3
 <<<<< Best objective functions (set 13) =
-                      6.4933981956e-01
-                      6.1656552828e-01
-<<<<< Best data captured at function evaluation 206
+                      8.8160925155e-01
+                      2.6572965698e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 14) =
-                     -3.8591852430e-02 x1
-                     -7.3551556130e-02 x2
-                     -4.0718602036e-02 x3
+                      3.4706285053e-01 x1
+                      1.7645644218e-01 x2
+                      2.6323483710e-01 x3
 <<<<< Best objective functions (set 14) =
-                      6.9427430877e-01
-                      5.6484253335e-01
-<<<<< Best data captured at function evaluation 207
+                      2.6832339596e-01
+                      8.8108513891e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 15) =
-                     -3.8591852430e-02 x1
-                     -9.7862331242e-02 x2
-                     -1.3972391753e-01 x3
+                     -4.2813428698e-01 x1
+                     -2.3449908767e-01 x2
+                     -2.5806614955e-01 x3
 <<<<< Best objective functions (set 15) =
-                      7.4062804874e-01
-                      5.0918408397e-01
-<<<<< Best data captured at function evaluation 184
+                      9.0633392018e-01
+                      2.1475121754e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 16) =
-                     -2.0042771669e-01 x1
-                     -4.5512763805e-02 x2
-                     -1.3972391753e-01 x3
+                      4.6566661655e-01 x1
+                      2.0936380895e-01 x2
+                      2.6323483710e-01 x3
 <<<<< Best objective functions (set 16) =
-                      7.7844675673e-01
-                      4.6013629335e-01
-<<<<< Best data captured at function evaluation 209
+                      2.1851222939e-01
+                      9.1048835815e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 17) =
-                     -1.5720933497e-01 x1
-                     -9.7862331242e-02 x2
-                     -2.2878119919e-01 x3
+                      3.4706285053e-01 x1
+                      4.2440428046e-01 x2
+                      2.5443520595e-01 x3
 <<<<< Best objective functions (set 17) =
-                      8.0705262818e-01
-                      4.1017387199e-01
-<<<<< Best data captured at function evaluation 210
+                      1.6531336227e-01
+                      9.2191199900e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 18) =
-                     -1.5720933497e-01 x1
-                     -1.7458093361e-01 x2
-                     -2.4986018066e-01 x3
+                     -4.2551794109e-01 x1
+                     -2.3449908767e-01 x2
+                     -3.8539322297e-01 x3
 <<<<< Best objective functions (set 18) =
-                      8.3291547788e-01
-                      3.5981065856e-01
-<<<<< Best data captured at function evaluation 211
+                      9.2510881286e-01
+                      1.6259503481e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 19) =
-                     -1.5720933497e-01 x1
-                     -3.4329566189e-01 x2
-                     -2.1351617026e-01 x3
+                      3.1738790326e-01 x1
+                      4.2440428046e-01 x2
+                      4.1330575776e-01 x3
 <<<<< Best objective functions (set 19) =
-                      8.6636411685e-01
-                      3.0488307861e-01
-<<<<< Best data captured at function evaluation 212
+                      1.1120041618e-01
+                      9.3829978964e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 20) =
-                     -3.4602612459e-01 x1
-                     -1.7458093361e-01 x2
-                     -3.1287662886e-01 x3
+                     -4.3189293725e-01 x1
+                     -3.8247831370e-01 x2
+                     -4.4057204781e-01 x3
 <<<<< Best objective functions (set 20) =
-                      8.9035730510e-01
-                      2.4849717000e-01
-<<<<< Best data captured at function evaluation 213
+                      9.4900402657e-01
+                      7.4888674015e-02
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 21) =
-                     -4.5263896345e-01 x1
-                     -3.4329566189e-01 x2
-                     -2.2878119919e-01 x3
+                     -4.3189293725e-01 x1
+                     -4.9845762015e-01 x2
+                     -5.8800853630e-01 x3
 <<<<< Best objective functions (set 21) =
-                      9.2256486758e-01
-                      1.7455683365e-01
-<<<<< Best data captured at function evaluation 214
+                      9.7081194154e-01
+                      2.7120924075e-02
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 22) =
-                     -3.4602612459e-01 x1
-                     -4.8037164494e-01 x2
-                     -3.1287662886e-01 x3
+                      4.1783231330e-01 x1
+                      3.9332751389e-01 x2
+                      6.3476290770e-01 x3
 <<<<< Best objective functions (set 22) =
-                      9.3695481215e-01
-                      1.2441410276e-01
-<<<<< Best data captured at function evaluation 215
+                      6.0687039258e-02
+                      9.6668748360e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 23) =
-                     -4.5263896345e-01 x1
-                     -4.9235936836e-01 x2
-                     -3.5015110129e-01 x3
+                     -5.9188977843e-01 x1
+                     -5.7868446250e-01 x2
+                     -6.1595408088e-01 x3
 <<<<< Best objective functions (set 23) =
-                      9.5336553040e-01
-                      7.1695824796e-02
-<<<<< Best data captured at function evaluation 216
+                      9.8387708717e-01
+                      1.7019816617e-03
+<<<<< Best data not found in evaluation cache
 <<<<< Best parameters          (set 24) =
-                     -5.0188444764e-01 x1
-                     -5.1795190783e-01 x2
-                     -6.3608647726e-01 x3
+                      5.9050490548e-01 x1
+                      5.7517467652e-01 x2
+                      5.9073744556e-01 x3
 <<<<< Best objective functions (set 24) =
-                      9.7843887104e-01
-                      1.2593230891e-02
+                      3.5693043570e-04
+                      9.8269272540e-01
+<<<<< Best data not found in evaluation cache
 <<<<< Best data captured at function evaluation 193
 dakota_textbook.in 
 Test Number 0 succeeded
@@ -42467,8 +42460,8 @@ Test Number 0 succeeded
    5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
    1.0000000000e+02   5.0000000000e-01   7.5000000000e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 10700 total (9900 new, 800 duplicate)
-  response_fn_1: 10700 val (9900 n, 800 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 15100 total (14300 new, 800 duplicate)
+  response_fn_1: 15100 val (14300 n, 800 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
@@ -42695,17 +42688,17 @@ response_fn_1 Sobol indices:
    0.0000000000e+00                      3.8287346525e-01
 dakota_uq_rosenbrock_global.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 51 total (51 new, 0 duplicate)
+<<<<< Function evaluation summary: 54 total (54 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   5.0000000000e-01   9.9434367014e-03                      2.3284754116e+00
-   1.0000000000e+00   2.1915793578e-02                      2.0156977872e+00
-   5.0000000000e+00   1.0727091355e-01                      1.2411730532e+00
-   1.0000000000e+01   1.6656025833e-01                      9.6784754116e-01
-   5.0000000000e+01   3.6534768699e-01                      3.4420067596e-01
-   1.0000000000e+02   4.9961195012e-01                      9.7269694649e-04
-   5.0000000000e+02   8.1767645296e-01                     -9.0654568767e-01
-   1.0000000000e+03   9.0605214590e-01                     -1.3168297205e+00
+   5.0000000000e-01   1.0178278203e-02                      2.3197102606e+00
+   1.0000000000e+00   2.4974046684e-02                      1.9604082413e+00
+   5.0000000000e+00   1.0704803824e-01                      1.2423808535e+00
+   1.0000000000e+01   1.6656326558e-01                      9.6783550008e-01
+   5.0000000000e+01   3.6964907201e-01                      3.3278293055e-01
+   1.0000000000e+02   5.0018484368e-01                     -4.6333441445e-04
+   5.0000000000e+02   8.1732232018e-01                     -9.0520770704e-01
+   1.0000000000e+03   9.0583432912e-01                     -1.3155314887e+00
 dakota_uq_rosenbrock_pce.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
@@ -54327,9 +54320,9 @@ Test Number 3 succeeded
    0.0000000000e+00   1.2189499948e-01   6.7590202943e-01
    2.5000000000e-01   1.2189499948e-01   6.7590202943e-01
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 77 total (69 new, 8 duplicate)
-  response_fn_1: 53 val (52 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 30 val (23 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 122 total (116 new, 6 duplicate)  
+  response_fn_1: 98 val (98 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)  
+  response_fn_2: 30 val (24 n, 6 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e-03   0.0000000000e+00   0.0000000000e+00
@@ -54340,7 +54333,7 @@ Test Number 4 succeeded
   -----------------  -----------------   ----------------
    2.5000000000e-01   2.6569900873e-01   6.2500094084e-02
    5.0000000000e-01   3.0259950662e-01   6.2600095213e-02
-   7.5000000000e-01   6.8169656331e-01   6.4115730759e-02
+   7.5000000000e-01   6.8169656331e-01   6.4100194189e-02
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e-03   3.0000000000e-02   6.5000000000e-01
