@@ -20,7 +20,7 @@ strategy,
         tabular_graphics_data
 
 method,
-        nond_sampling,
+        sampling,
 	  samples = 10 seed = 1833 			       	#0
 #	  samples = 20 seed = 1833 			 	#1
           sample_type lhs                                       #0

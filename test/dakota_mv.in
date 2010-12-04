@@ -44,4 +44,4 @@ strategy,
 	single_method #graphics
 
 method,
-        nond_local_reliability
+        local_reliability

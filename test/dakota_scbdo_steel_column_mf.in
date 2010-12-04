@@ -91,7 +91,7 @@ model,
 method,
 	id_method = 'UQ_MV'
 	model_pointer = 'UQ_M_LO_FI'
-	nond_local_reliability
+	local_reliability
 	  response_levels = 0.0
 	  compute reliabilities
 	  cumulative distribution
@@ -116,7 +116,7 @@ model,
 method,
 	id_method = 'UQ_UNCERTAIN_EXP'
 	model_pointer = 'UQ_M_HI_FI'
-	nond_stoch_collocation askey
+	stoch_collocation askey
 	  sparse_grid_level = 2 non_nested
 	  response_levels = 0.0
 	  compute reliabilities

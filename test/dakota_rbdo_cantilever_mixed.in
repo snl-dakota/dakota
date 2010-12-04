@@ -63,7 +63,7 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-	nond_local_reliability
+	local_reliability
 	  mpp_search no_approx
 	  num_response_levels = 0 1 1		#0,#1
 	  response_levels = 0.0 0.0		#0,#1

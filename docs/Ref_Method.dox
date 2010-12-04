@@ -206,7 +206,7 @@ The next example shows a specification for a nondeterministic method
 with several method dependent controls (refer to \ref MethodNonDMC).
 \verbatim
 method,
-	nond_sampling
+	sampling
 	  samples = 100	seed = 12345
 	  sample_type lhs
 	  response_levels = 1000. 500.
@@ -244,11 +244,11 @@ optpp_newton, \c optpp_pds, \c asynch_pattern_search, \c
 coliny_cobyla, \c coliny_direct, \c coliny_pattern_search, \c
 coliny_solis_wets, \c coliny_ea, \c moga, \c soga, \c ncsu_direct, \c
 dl_solver, \c surrogate_based_local, \c surrogate_based_global, \c
-efficient_global, \c nond_polynomial_chaos, \c nond_stoch_collocation,
-\c nond_sampling, \c nond_importance, \c nond_local_reliability, \c
-nond_global_reliability, \c nond_local_evidence, \c
-nond_global_evidence, \c nond_local_interval_est, \c
-nond_global_interval_est, \c nond_bayes_calib, \c dace, \c
+efficient_global, \c polynomial_chaos, \c stoch_collocation,
+\c sampling, \c importance, \c local_reliability, \c
+global_reliability, \c local_evidence, \c
+global_evidence, \c local_interval_est, \c
+global_interval_est, \c bayes_calib, \c dace, \c
 fsu_quasi_mc, \c fsu_cvt, \c psuade_moat, \c vector_parameter_study,
 \c list_parameter_study, \c centered_parameter_study, or \c
 multidim_parameter_study.
@@ -565,8 +565,8 @@ scaling
 <td>\c max_iterations
 <td>integer
 <td>Optional
-<td>100 (exceptions: \c fsu_cvt/nond_local_reliability: 25,
-\c nond_global_{reliability,\c interval_est,\c evidence}/efficient_global: 25*n)
+<td>100 (exceptions: \c fsu_cvt/local_reliability: 25,
+\c global_{reliability,\c interval_est,\c evidence}/efficient_global: 25*n)
 <tr>
 <td>Maximum function evaluations
 <td>\c max_function_evaluations
@@ -3960,16 +3960,16 @@ Bayesian updating process.
 DAKOTA's nondeterministic methods do not make use of many method
 independent controls.  Only the \c x_taylor_mpp, \c u_taylor_mpp, \c
 x_two_point, and \c u_two_point methods within \c
-nond_local_reliability use method independent convergence controls
+local_reliability use method independent convergence controls
 (see \ref MethodNonDLocalRel).  As such, the nondeterministic branch
 documentation which follows is primarily limited to the method
 dependent controls for the sampling, reliability, stochastic
 expansion, and epistemic methods.
 
-With a few exceptions (\c nond_global_reliability, \c nond_importance,
-\c nond_local_evidence, and \c nond_global_evidence do not support
-mappings involving \c reliability_levels, and \c nond_local_interval_est
-and \c nond_global_interval_est do not support any level mappings),
+With a few exceptions (\c global_reliability, \c importance,
+\c local_evidence, and \c global_evidence do not support
+mappings involving \c reliability_levels, and \c local_interval_est
+and \c global_interval_est do not support any level mappings),
 each of these techniques supports \c response_levels, \c
 probability_levels, \c reliability_levels, and \c
 gen_reliability_levels specifications along with optional \c
@@ -4119,13 +4119,13 @@ notes include:
   MethodNonDPCE and \ref MethodNonDSC for additional information on 
   these three options.  
 - methods supporting the epistemic interval distributions have differing
-  approaches: \c nond_sampling and the \c lhs option of \c 
-  nond_global_interval_est model the interval basic probability
+  approaches: \c sampling and the \c lhs option of \c 
+  global_interval_est model the interval basic probability
   assignments (BPAs) as continuous histogram bin distributions for
-  purposes of generating samples; \c nond_local_interval_est and the 
-  \c ego option of \c nond_global_interval_est ignore the BPA details 
+  purposes of generating samples; \c local_interval_est and the 
+  \c ego option of \c global_interval_est ignore the BPA details 
   and models these variables as simple bounded regions defined by the 
-  cell extremes; and \c nond_local_evidence and \c nond_global_evidence
+  cell extremes; and \c local_evidence and \c global_evidence
   model the interval specifications as true BPAs.
 <!-- could go into more detail on sub-options of local/global evidence, 
      but I think that's probably overkill. -->
@@ -4515,7 +4515,7 @@ VarDAUV_Hypergeometric, and/or \ref VarDAUV_Point_Histogram.
 \subsubsection MethodNonDMC Nondeterministic sampling method
 
 The nondeterministic sampling method is selected using the \c
-nond_sampling specification. This method draws samples from the
+sampling specification. This method draws samples from the
 specified uncertain variable probability distributions and propagates
 them through the model to obtain statistics on the output response
 functions of interest.  DAKOTA provides access to nondeterministic
@@ -4577,7 +4577,7 @@ future releases.
 
 The nondeterministic sampling method also supports a design of
 experiments mode through the \c all_variables flag.  Normally, \c
-nond_sampling generates samples only for the uncertain variables, and
+sampling generates samples only for the uncertain variables, and
 treats any design or state variables as constants.  The \c
 all_variables flag alters this behavior by instructing the sampling
 algorithm to treat any continuous design or continuous state variables
@@ -4590,7 +4590,7 @@ generate samples over all continuous design, uncertain, and state
 variables in the variables specification.  However, the design of
 experiments methods will treat all variables as being uniformly
 distributed between their upper and lower bounds, whereas the \c
-nond_sampling method will sample the uncertain variables within
+sampling method will sample the uncertain variables within
 their specified probability distributions.  
 
 Finally, the nondeterministic sampling method supports two types of
@@ -4642,7 +4642,7 @@ Specification detail for nondeterministic sampling method
 <td><b>Default</b>
 <tr>
 <td>Nondeterministic sampling method
-<td>\c nond_sampling
+<td>\c sampling
 <td>none
 <td>Required group
 <td>N/A
@@ -4694,7 +4694,7 @@ Specification detail for nondeterministic sampling method
 \subsubsection MethodNonDLocalRel Local reliability methods
 
 Local reliability methods are selected using the \c
-nond_local_reliability specification and are implemented within the
+local_reliability specification and are implemented within the
 NonDLocalReliability class. These methods compute approximate response
 function distribution statistics based on specified uncertain variable
 probability distributions.  Each of the local reliability methods can
@@ -4809,7 +4809,7 @@ Specification detail for local reliability methods
 <td><b>Default</b>
 <tr>
 <td>Reliability method
-<td>\c nond_local_reliability
+<td>\c local_reliability
 <td>none
 <td>Required group
 <td>N/A
@@ -4857,7 +4857,7 @@ Specification detail for local reliability methods
 <!-- dakota subcat global_reliability -->
 
 Global reliability methods are selected using the \c
-nond_global_reliability specification and are implemented within the
+global_reliability specification and are implemented within the
 NonDGlobalReliability class.  These methods do not support
 forward/inverse mappings involving \c reliability_levels, since they
 never form a reliability index based on distance in u-space.  Rather
@@ -4894,7 +4894,7 @@ Specification detail for global reliability methods
 <td><b>Default</b>
 <tr>
 <td>Global reliability method
-<td>\c nond_global_reliability
+<td>\c global_reliability
 <td>none
 <td>Required group
 <td>N/A
@@ -5128,7 +5128,7 @@ Specification detail for polynomial chaos expansion method
 <td><b>Default</b>
 <tr>
 <td>Polynomial chaos expansion method
-<td>\c nond_polynomial_chaos
+<td>\c polynomial_chaos
 <td>none
 <td>Required group
 <td>N/A
@@ -5362,7 +5362,7 @@ Specification detail for stochastic collocation method
 <td><b>Default</b>
 <tr>
 <td>Stochastic collocation method
-<td>\c nond_stoch_collocation
+<td>\c stoch_collocation
 <td>none
 <td>Required group
 <td>N/A
@@ -5449,9 +5449,9 @@ through use of nested UQ (refer to the Users Manual
 [\ref UsersMan "Adams et al., 2010"] for %NestedModel
 discussion and examples); in this case, epistemic and aleatory
 analyses can be segregated and intervals on probabilistic results can
-be reported.  A subtle distinction exists between \c nond_sampling for
+be reported.  A subtle distinction exists between \c sampling for
 epistemic intervals and the \c lhs option of \c
-nond_global_interval_est: the former allows mixed aleatory-epistemic
+global_interval_est: the former allows mixed aleatory-epistemic
 uncertainty within a single level, whereas the latter supports only
 epistemic variables and relies on nesting to address mixed
 uncertainty.  In each of these cases, the \ref VarCEUV_Interval
@@ -5460,7 +5460,7 @@ either simple intervals or basic probability assignments.
 Note that for mixed UQ problems with both aleatory and epistemic 
 variables, if the user defines the epistemic variables as intervals 
 and aleatory variables as probability distribution types, 
-the method \c nond_sampling (in a simple, single-level study) will 
+the method \c sampling (in a simple, single-level study) will 
 result in intervals only on the output.  Although the aleatory variables 
 will be sampled according to their distributions, the output will only be 
 reported as an interval given the presence of interval variables.  
@@ -5493,12 +5493,12 @@ that falls within the output interval is a possible output
 with no frequency information assigned to it.
  
 We have the capability to perform interval analysis using either
-local methods (\c nond_local_interval_est) or global methods
-(\c nond_global_interval_est).
+local methods (\c local_interval_est) or global methods
+(\c global_interval_est).
 If the problem is amenable to local optimization
 methods (e.g. can provide derivatives or use finite difference
 method to calculate derivatives), then one can use local
-methods to calculate these bounds.  \c nond_local_interval_est
+methods to calculate these bounds.  \c local_interval_est
 allows the user to specify either \c sqp which is sequential
 quadratic programming, or \c nip which is a nonlinear interior point
 method.  
@@ -5522,7 +5522,7 @@ Specification detail for local interval estimation used in epistemic uncertainty
 <td><b>Default</b>
 <tr>
 <td>Nondeterministic interval estimation
-<td>\c nond_local_interval_est
+<td>\c local_interval_est
 <td>none
 <td>Required group
 <td>N/A
@@ -5547,7 +5547,7 @@ given interval bounds on the inputs.
 
 In the global approach, one uses either a global optimization
 method or a sampling method to assess the bounds.
-\c nond_global_interval_est
+\c global_interval_est
 allows the user to specify either \c lhs, which performs
 Latin Hypercube Sampling and takes the minimum and maximum of
 the samples as the bounds (no optimization is
@@ -5576,7 +5576,7 @@ Specification detail for global interval estimation used in epistemic uncertaint
 <td><b>Default</b>
 <tr>
 <td>Nondeterministic interval estimation
-<td>\c nond_global_interval_est
+<td>\c global_interval_est
 <td>none
 <td>Required group
 <td>N/A
@@ -5608,7 +5608,7 @@ Specification detail for global interval estimation used in epistemic uncertaint
 
 
 \subsubsection MethodNonDLocalEvid Local Evidence Theory (Dempster-Shafer) Methods
-<!-- dakota subcat nond_local_evidence -->
+<!-- dakota subcat local_evidence -->
 
 The above section discussed a pure interval approach. 
 This section discusses Dempster-Shafer evidence theory. 
@@ -5650,7 +5650,7 @@ if the user specifies distribution of type complementary, a
 complementary plausibility and belief function will be generated 
 for the evidence methods (as
 opposed to a complementary distribution function in the \c
-nond_sampling case).  If the user specifies a set of responses levels,
+sampling case).  If the user specifies a set of responses levels,
 both the belief and plausibility will be calculated for each response
 level. Likewise, if the user specifies a probability level, the
 probability level will be interpreted both as a belief and
@@ -5663,7 +5663,7 @@ probability levels and the same probability-based mappings described
 above are performed.
 
 \ref T5d37 "Table 5.37" provides the specification for the \c
-nond_local_evidence method. Note that two local optimization methods 
+local_evidence method. Note that two local optimization methods 
 are available:  \c sqp (sequential quadratic programming or \c nip
 (nonlinear interior point method). 
 
@@ -5683,7 +5683,7 @@ Specification detail for local evidence theory method for epistemic uncertainty
 <td><b>Default</b>
 <tr>
 <td>Nondeterministic local evidence method
-<td>\c nond_local_evidence
+<td>\c local_evidence
 <td>none
 <td>Required group
 <td>N/A
@@ -5708,8 +5708,8 @@ for each "interval cell combination."    These
 bounds are aggregated into belief and plausibility. 
 
 \ref T5d38 "Table 5.38" provides the 
-specification for the \c nond_global_evidence method.
-\c nond_global_evidence allows the user to specify either \c lhs or \c ego. 
+specification for the \c global_evidence method.
+\c global_evidence allows the user to specify either \c lhs or \c ego. 
 \c lhs performs Latin Hypercube Sampling and takes the minimum and maximum of
 the samples as the bounds per "interval cell combination."
 In the case of \c ego,
@@ -5731,7 +5731,7 @@ number of samples relatively high: the default is 10,000 and we
 recommend at least that number.  If the model you are running is a
 simulation that is computationally quite expensive, we recommend that
 you set up a surrogate model within the DAKOTA input file so that \c
-nond_global_evidence performs its sampling and calculations on the surrogate
+global_evidence performs its sampling and calculations on the surrogate
 and not on the original model. If one uses optimization methods 
 instead to find the minimum and maximum sample values within each 
 cell, this can also be computationally expensive.
@@ -5753,7 +5753,7 @@ Specification detail for global evidence theory method for epistemic uncertainty
 <td><b>Default</b>
 <tr>
 <td>Nondeterministic global evidence method
-<td>\c nond_global_evidence
+<td>\c global_evidence
 <td>none
 <td>Required group
 <td>N/A
@@ -5854,7 +5854,7 @@ in the DAKOTA/packages/gpmsa directory.
 
 \ref T5d39 "Table 5.39" provides the 
 specification for the \c bayes_calibration method (note this 
-can also be specified as \c nond_bayes_calibration).
+can also be specified as \c bayes_calibration).
 The keyword \c gpmsa specifies the type of Bayesian calibration 
 method.  There are three data files which are required: 
 \c x_obs_data_file, \c y_obs_data_file, and \c y_std_data_file. 
@@ -5896,7 +5896,7 @@ Specification detail for GPMSA method for Bayesian Calibration
 <td><b>Default</b>
 <tr>
 <td>Nondeterministic Bayesian Calibration
-<td>\c nond_bayes_calibration | \c bayes_calibration 
+<td>\c bayes_calibration | \c bayes_calibration 
 <td>none
 <td>Required group
 <td>N/A
@@ -5977,7 +5977,7 @@ sets used in building global approximations (see \ref ModelSurrG),
 but are not currently suited for assessing the effect of
 uncertainties. If a design of experiments over both design/state
 variables (treated as uniform) and uncertain variables (with
-probability distributions) is desired, then \c nond_sampling can
+probability distributions) is desired, then \c sampling can
 support this with its \c all_variables option (see \ref MethodNonDMC).
 DAKOTA provides access to the DDACE library through the
 DDACEDesignCompExp class.

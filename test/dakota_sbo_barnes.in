@@ -86,7 +86,7 @@ responses,
 method,
 	id_method = 'SAMPLING'
 	model_pointer = 'TRUTH'
-	nond_sampling all_variables
+	sampling all_variables
 	  seed = 12345 rng rnum2 samples = 10
 
 model,

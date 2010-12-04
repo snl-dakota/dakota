@@ -1862,12 +1862,12 @@ Aleatory uncertain variables may have correlations specified through
 use of an \c uncertain_correlation_matrix specification.  This
 specification is generalized in the sense that its specific meaning
 depends on the nondeterministic method in use.  When the method is a
-nondeterministic sampling method (i.e., \c nond_sampling), then the
+nondeterministic sampling method (i.e., \c sampling), then the
 correlation matrix specifies <i>rank correlations</i> 
 [\ref Iman1982 "Iman and Conover, 1982"].  When the method is 
-instead a reliability (i.e., \c nond_local_reliability or \c
-nond_global_reliability) or stochastic expansion (i.e., \c
-nond_polynomial_chaos or \c nond_stoch_collocation) method, then the
+instead a reliability (i.e., \c local_reliability or \c
+global_reliability) or stochastic expansion (i.e., \c
+polynomial_chaos or \c stoch_collocation) method, then the
 correlation matrix specifies <i>correlation coefficients</i>
 (normalized covariance) [\ref Haldar2000 "Haldar and Mahadevan, 2000"].
 In either of these cases, specifying the identity matrix results in
@@ -1937,7 +1937,7 @@ represents the smallest possible probability that is consistent
 with the evidence, while plausibility represents the largest 
 possible probability that is consistent with the evidence.  
 For more information about the Dempster-Shafer approach, 
-see the nondeterministic evidence method, \c nond_evidence, 
+see the nondeterministic evidence method, \c evidence, 
 in the Methods section of this Reference manual. 
 As an example, in the following specification:
 \verbatim

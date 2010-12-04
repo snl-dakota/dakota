@@ -4,7 +4,7 @@ strategy,
 	single_method #graphics
 
 method,
-	nond_stoch_collocation
+	stoch_collocation
 #	  all_variables			
 	  quadrature_order = 5 3		#0,#1,#2,#3,#4,#12,#13,#14,#15,#16,#17,#18,#19,#20
 #	  quadrature_order = 5			#5

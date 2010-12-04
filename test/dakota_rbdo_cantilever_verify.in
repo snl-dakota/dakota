@@ -1,7 +1,7 @@
 # Reliability analysis using the cantilever test function.
 
 method,
-	nond_local_reliability
+	local_reliability
 	  mpp_search no_approx
 	  num_response_levels = 0 1 1		#0,#1,#2,#3
 	  response_levels = 0.0 0.0		#0,#1,#2,#3

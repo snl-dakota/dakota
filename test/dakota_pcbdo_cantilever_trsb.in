@@ -85,7 +85,7 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-	nond_polynomial_chaos
+	polynomial_chaos
  	  expansion_order = 2					#0,#1
 	  collocation_ratio = 2 seed = 12347 rng rnum2		#0,#1
 #	  sparse_grid_level = 2 non_nested			#2,#3

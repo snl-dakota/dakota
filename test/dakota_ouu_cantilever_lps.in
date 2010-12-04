@@ -76,7 +76,7 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-        nond_sampling
+        sampling
 	  samples = 50000 sample_type lhs
 	  seed = 12347 rng rnum2 fixed_seed
 	  output silent

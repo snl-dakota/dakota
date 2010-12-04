@@ -2,13 +2,13 @@
 # Note: currently this test file performs three different tests:
 # (1) efficient_global for constrained, global opt. with mean random vars
 # (2) efficient_global for constrained, global NLS  with mean random vars
-# (3) nond_global_reliability for UQ at the nominal design
+# (3) global_reliability for UQ at the nominal design
 
 # timeout overrides: 0=TD120, 1=TD120, 2=TD300
 
 method,
 	efficient_global					#0,#1
-#	nond_global_reliability x_gaussian_process		#2
+#	global_reliability x_gaussian_process		#2
 #	  num_response_levels = 0 2 2				#2
 #	  response_levels = 0.2 0.6 0.2 0.6			#2
 	  seed = 123457

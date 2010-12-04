@@ -168,6 +168,10 @@ foreach $file (@testin) {
       print "Replacing nond_reliability with nond_local_reliability\n";
       s/nond_reliability/nond_local_reliability/g;
     }
+    elsif (/nond_\w+/) { # remove prepend
+      print "Removing nond_ method name prepend\n";
+      s/nond_//g;
+    }
     #elsif (//) {
     #  print "Replacing  with ";
     #  s///;

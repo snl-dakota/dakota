@@ -96,7 +96,7 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-        nond_sampling
+        sampling
 	  samples = 50000 sample_type lhs
 	  response_levels = 4.2e+11 1.6e+05 7.5e+05
 	  complementary distribution

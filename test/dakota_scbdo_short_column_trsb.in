@@ -87,7 +87,7 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-	nond_stoch_collocation askey
+	stoch_collocation askey
 	  quadrature_order = 3			#0,#1
 #	  sparse_grid_level = 2 non_nested	#2,#3
 	  num_response_levels = 0 1

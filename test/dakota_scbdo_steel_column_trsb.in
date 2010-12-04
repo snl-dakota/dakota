@@ -99,7 +99,7 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-	nond_stoch_collocation askey
+	stoch_collocation askey
 	  sparse_grid_level = 2 non_nested
 	  seed = 12347
 	  response_levels = 0.0

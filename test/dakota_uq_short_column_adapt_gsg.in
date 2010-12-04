@@ -3,8 +3,8 @@ strategy,
 #	output_precision = 16
 
 method,
-	nond_polynomial_chaos  askey			#0,#1,#2,#3
-#	nond_stoch_collocation askey			#4,#5,#6,#7
+	polynomial_chaos  askey			#0,#1,#2,#3
+#	stoch_collocation askey			#4,#5,#6,#7
 	  adaptive p_refinement generalized
 #	    max_iterations  = 10
 	    convergence_tol = 1.e-6

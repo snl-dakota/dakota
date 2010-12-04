@@ -4,7 +4,7 @@ strategy,
 	single_method #graphics
 
 method,
-	nond_polynomial_chaos
+	polynomial_chaos
 #	  all_variables			#12
 # 	  expansion_order    = 4 2	#14,#15,#16,#17,#18
 # 	  expansion_order    = 4	#19

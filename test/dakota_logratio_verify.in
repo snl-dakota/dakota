@@ -1,5 +1,5 @@
 method,
-	nond_sampling
+	sampling
 	  samples = 100000 seed = 1234567
 	  output silent
 	  response_levels = .4 .5 .55 .6 .65 .7

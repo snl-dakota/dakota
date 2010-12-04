@@ -12,7 +12,7 @@ strategy,
 	  tabular_graphics_data
 
 method,
-	nond_importance
+	importance
 	  response_levels = 3.0
           samples = 50
 	  seed = 1234567

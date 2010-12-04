@@ -66,7 +66,7 @@ responses,
 method,
     id_method = 'SAMPLING'
     model_pointer = 'TRUTH'
-    nond_sampling
+    sampling
       samples = 100
       seed = 531
       sample_type lhs

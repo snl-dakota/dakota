@@ -27,7 +27,7 @@ strategy
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-	nond_local_reliability
+	local_reliability
 #	  mpp_search x_taylor_mean			#1
 #	  mpp_search u_taylor_mean			#2
 #	  mpp_search x_taylor_mpp			#3,#8,#10,#12

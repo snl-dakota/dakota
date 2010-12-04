@@ -87,7 +87,7 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-	nond_polynomial_chaos askey
+	polynomial_chaos askey
  	  expansion_order = 2			#0,#1
 	  collocation_ratio = 2.		#0,#1
 	  seed = 12347 rng rnum2		#0,#1

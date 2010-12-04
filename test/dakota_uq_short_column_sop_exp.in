@@ -10,8 +10,8 @@ strategy,
 method,									 
         id_method = 'OUTER'
         model_pointer = 'OUTER_M'
-	nond_polynomial_chaos  askey		#0,#1
-#	nond_stoch_collocation askey		#2,#3
+	polynomial_chaos  askey		#0,#1
+#	stoch_collocation askey		#2,#3
 	  quadrature_order = 5			#0,#2
 #	  quadrature_order = 10			#1,#3
 	  variance_based_decomp
@@ -46,8 +46,8 @@ responses,
 method,
         id_method = 'INNER'
         model_pointer = 'INNER_M'
-	nond_polynomial_chaos		#0,#1
-#	nond_stoch_collocation		#2,#3
+	polynomial_chaos		#0,#1
+#	stoch_collocation		#2,#3
 	  askey non_nested
 #	  all_variables			#1,#3
 	  sparse_grid_level = 4		#0,#2

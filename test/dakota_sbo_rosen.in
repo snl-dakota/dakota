@@ -100,10 +100,10 @@ method,
 #	dace lhs #seed = 5
 #	  samples = 10 symbols = 10
 # To switch from the LHS code (used in the
-# nond_sampling method) to DDACE, comment out
+# sampling method) to DDACE, comment out
 # the four lines below and comment out the two
 # lines starting with 'dace lhs' above.
-	nond_sampling
+	sampling
 	  samples = 10		#0,#1,#2,#3,#5,#6,#7,#8
 #	  samples = 30		#4
 	  seed = 531 rng rnum2

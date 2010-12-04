@@ -21,7 +21,7 @@ strategy,
 	single_method #graphics
 
 method,
-	nond_local_reliability
+	local_reliability
 #	  mpp_search x_taylor_mpp
 #	  mpp_search u_taylor_mpp
 	  mpp_search no_approx

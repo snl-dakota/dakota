@@ -80,8 +80,8 @@ model,
 method,
 	id_method = 'UQ_COMBINED_EXP'
 	model_pointer = 'UQ_M_LO_FI'
-	nond_stoch_collocation all_variables	#0,#1,#4,#5
-#	nond_local_reliability			#2,#3,#6,#7
+	stoch_collocation all_variables	#0,#1,#4,#5
+#	local_reliability			#2,#3,#6,#7
 	  quadrature_order = 5			#0,#1
 #	  sparse_grid_level = 2 non_nested	#4,#5
 	  response_levels = 10.
@@ -102,7 +102,7 @@ model,
 method,
 	id_method = 'UQ_UNCERTAIN_EXP'
 	model_pointer = 'UQ_M_HI_FI'
-	nond_stoch_collocation
+	stoch_collocation
 	  quadrature_order = 5			#0,#1,#2,#3
 #	  sparse_grid_level = 1			#4,#5,#6,#7
 	  response_levels = 10.

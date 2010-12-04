@@ -293,7 +293,7 @@ strategy,
         single_method
 
 method,
-        nond_sampling,
+        sampling,
           samples = 100 seed = 1
           complementary distribution
           response_levels = 3.6e+11 4.0e+11 4.4e+11

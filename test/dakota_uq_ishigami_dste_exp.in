@@ -11,8 +11,8 @@ strategy,
 method,									 
         id_method = 'EPISTEMIC'
         model_pointer = 'EPIST_M'
-     	nond_local_evidence		#0
-#	nond_global_evidence ego	#1,#2
+     	local_evidence		#0
+#	global_evidence ego	#1,#2
 #	  seed = 627431			#1,#2
           response_levels = 1. 5. 100.
 	  output verbose
@@ -46,7 +46,7 @@ responses,
 method,
         id_method = 'ALEATORY'
         model_pointer = 'ALEAT_M'
-	nond_stoch_collocation askey
+	stoch_collocation askey
 	  quadrature_order = 10
 #         all_variables			#2
 

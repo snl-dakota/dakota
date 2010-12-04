@@ -2,8 +2,8 @@
 # Second-order probability (SOP) for the cantilever test function using
 # reliability methods on the inner loop.
 
-# Combines EPISTEMIC UQ using nond_sampling with ALEATORY UQ using
-# nond_local_reliability.  Note that test 0 is the test where the outer loop is
+# Combines EPISTEMIC UQ using sampling with ALEATORY UQ using
+# local_reliability.  Note that test 0 is the test where the outer loop is
 # treated as an interval variable, and test 1 is the case where the outer loop
 # is treated as uniform.  For test 0, the outer loop statistics are reported as
 # intervals on the inner loop statistics, where in test 1 they are treated as a
@@ -23,7 +23,7 @@ strategy,
 method,
 	id_method = 'EPISTEMIC'
 	model_pointer = 'EPIST_M'
-	nond_sampling
+	sampling
 	  samples = 50 seed = 12347
 #	  response_levels = 9.52 3.0 3.0 #1
 
@@ -69,7 +69,7 @@ responses,
 method,
 	id_method = 'ALEATORY'
 	model_pointer = 'ALEAT_M'
-	nond_local_reliability
+	local_reliability
 	  mpp_search no_approx
 	  num_response_levels = 0 1 1
 	  response_levels = 0.0 0.0

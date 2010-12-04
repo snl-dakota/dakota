@@ -60,7 +60,7 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-	nond_polynomial_chaos
+	polynomial_chaos
 #	  all_variables						#1,#3,#5,#7
  	  expansion_order = 2					#0,#2
 # 	  expansion_order = 4					#1,#3

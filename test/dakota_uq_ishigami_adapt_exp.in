@@ -1,7 +1,7 @@
 
 method,
-	nond_polynomial_chaos		#0,#1,#4,#5
-#	nond_stoch_collocation		#2,#3,#6,#7
+	polynomial_chaos		#0,#1,#4,#5
+#	stoch_collocation		#2,#3,#6,#7
 	  uniform p_refinement		#0,#1,#2,#3
 #	  adaptive p_refinement sobol	#4,#5,#6,#7
 	    max_iterations  = 2		#0,#2

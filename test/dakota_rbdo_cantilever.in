@@ -61,7 +61,7 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-	nond_local_reliability #nip
+	local_reliability #nip
 #	  mpp_search x_taylor_mean		#1,#5,#9,#13
 #	  mpp_search x_taylor_mpp		#2,#6,#10,#14
 #	  mpp_search no_approx			#3,#7,#11,#15

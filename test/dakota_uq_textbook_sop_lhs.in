@@ -22,7 +22,7 @@ method,
 #	centered_parameter_study			#1
 #	  step_vector = 1 1				#1
 #	  steps_per_variable = 2			#1
-#	nond_sampling all_variables			#2
+#	sampling all_variables			#2
 #	  samples = 10 seed = 12347			#2
 
 model,
@@ -81,7 +81,7 @@ responses,
 method,
 	id_method = 'ALEATORY'
 	model_pointer = 'ALEAT_M'
-	nond_sampling samples = 50 seed = 12347
+	sampling samples = 50 seed = 12347
 	  num_response_levels = 0 1 1
 	  response_levels = 10000. 10000.
 	  compute reliabilities

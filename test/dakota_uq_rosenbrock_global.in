@@ -6,7 +6,7 @@ strategy,
 	single_method #graphics
 
 method,
-	nond_global_reliability
+	global_reliability
 	  x_gaussian_process
 #	  u_gaussian_process
 	  response_levels = .5 1. 5. 10. 50. 100. 500. 1000.

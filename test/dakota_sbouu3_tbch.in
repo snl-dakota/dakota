@@ -74,7 +74,7 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-        nond_sampling,
+        sampling,
 	  output quiet
 	  samples = 5000 sample_type lhs
 	  seed = 12347 rng rnum2
@@ -123,7 +123,7 @@ responses,
 method,
 	id_method = 'DACE'
 	model_pointer = 'DACE_M'
-        nond_sampling all_variables
+        sampling all_variables
 	  seed = 12347 rng rnum2
 	  sample_type lhs #samples = 68
 #	dace lhs seed = 5

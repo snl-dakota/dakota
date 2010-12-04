@@ -31,7 +31,7 @@ strategy,
 	single_method #graphics
 
 method,
-	nond_local_reliability
+	local_reliability
 #	  mpp_search x_taylor_mean			#1,#7
 #	  mpp_search u_taylor_mean			#2,#8
 #	  mpp_search x_taylor_mpp			#3,#9

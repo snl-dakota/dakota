@@ -23,7 +23,7 @@ strategy,
 	  graphics
 
 method,
-        nond_sampling,
+        sampling,
 	  samples = 100 seed = 1
 	  complementary distribution
 #         all_variables                                 #8

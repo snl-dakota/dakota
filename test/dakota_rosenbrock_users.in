@@ -55,7 +55,7 @@ method,
 #	  crossover_type two_point		#5
 #	  crossover_rate 0.0			#5
 #	  replacement_type chc = 10		#5
-#	nond_sampling				#6
+#	sampling				#6
 #	  samples = 200	seed = 17		#6
 #	  sample_type random			#6
 #	  response_levels = 100.0		#6
@@ -72,8 +72,8 @@ variables,
 #	  lower_bounds    -2.0      0.001	#9
 	  upper_bounds     2.0      2.0	#0,#2,#3,#4,#5,#7,#8,#9
 	  descriptors      'x1'     "x2"	#0,#1,#2,#3,#4,#5,#7,#8,#9
-#	  cdv_scale_types = 'value' 'log'	#9
-#	  cdv_scales = 4.0 0.1			#9
+#	  scale_types = 'value' 'log'	#9
+#	  scales = 4.0 0.1			#9
 #	uniform_uncertain = 2			#6
 #	  lower_bounds -2.0  -2.0	#6
 #	  upper_bounds  2.0   2.0	#6

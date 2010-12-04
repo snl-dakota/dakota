@@ -7,11 +7,11 @@ strategy,
 	single_method tabular_graphics_data    
 
 method,									 
-	nond_global_interval_est ego		#0,#p0
-#	nond_global_interval_est lhs		#1
+	global_interval_est ego		#0,#p0
+#	global_interval_est lhs		#1
 	  seed = 1234567 rng rnum2		#0,#1,#p0
-#	nond_local_interval_est sqp		#2,#p1
-#	nond_local_interval_est nip		#3
+#	local_interval_est sqp		#2,#p1
+#	local_interval_est nip		#3
 	  output verbose
 
 variables,

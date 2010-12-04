@@ -4,7 +4,7 @@ strategy,
 	single_method #graphics
 
 method,
-	nond_polynomial_chaos askey
+	polynomial_chaos askey
  	  expansion_order = 2				#0,#3,#4
 #	  expansion_terms = 10				#1
 	  expansion_samples  = 250			#0,#1

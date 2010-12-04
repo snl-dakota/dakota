@@ -23,7 +23,7 @@ method,
 	fsu_quasi_mc halton			#0
 #       dace lhs				#1
 #	fsu_cvt					#2
-#	nond_sampling				#3,#4
+#	sampling				#3,#4
 	  variance_based_decomp
 	  samples = 100
 #         sample_type lhs			#3,#4

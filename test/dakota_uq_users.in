@@ -7,7 +7,7 @@ strategy
 method,
 	id_method = 'UQ'
 #       model_pointer = 'SURR'			#4
-	nond_sampling,
+	sampling,
 	  samples = 10				#0,#2
 #	  samples = 5				#1,#3
 #         samples = 1000			#4
@@ -32,7 +32,7 @@ method,
 # method,                                        #4
 #        id_method = 'DACE'			 #4
 #        model_pointer = 'DACE_M'		 #4
-#        nond_sampling sample_type lhs		 #4
+#        sampling sample_type lhs		 #4
 #        samples = 121 seed = 5034 rng rnum2	 #4
 
 #model,						#4

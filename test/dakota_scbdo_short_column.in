@@ -60,7 +60,7 @@ responses,
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-	nond_stoch_collocation askey
+	stoch_collocation askey
 #	  all_variables				#1,#3,#5,#7
 	  quadrature_order = 3			#0,#2
 #	  quadrature_order = 4			#1,#3

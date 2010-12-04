@@ -5,9 +5,9 @@ strategy,
 	  tabular_graphics_data
 
 method,
-        nond_global_evidence lhs	#0,#1,#2,#3
-#       nond_global_evidence ego	#4
-#	nond_local_evidence  sqp	#5
+        global_evidence lhs	#0,#1,#2,#3
+#       global_evidence ego	#4
+#	local_evidence  sqp	#5
 	  samples = 1000		#0,#1,#2,#3
 	  seed = 59334 rng rnum2	#0,#1,#2,#3,#4
           response_levels = 0.001 0.03 0.2 0.8 0.001 0.2 0.6 0.8

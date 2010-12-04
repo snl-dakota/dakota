@@ -4,7 +4,7 @@ strategy,
 	single_method #graphics
 
 method,
-	nond_sampling
+	sampling
 	  samples = 10000 seed = 12347
 	  response_levels = .1 1. 50. 100. 500. 1000.
 	  output silent

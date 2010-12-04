@@ -7,7 +7,7 @@ strategy,
 	  tabular_graphics_data
 
 method,
-	nond_sampling
+	sampling
           seed = 234
 	  sample_type lhs samples = 10		#0
 #         sample_type incremental_lhs		#1

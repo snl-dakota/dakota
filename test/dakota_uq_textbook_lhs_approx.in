@@ -22,7 +22,7 @@ strategy,
 method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
-	nond_sampling
+	sampling
 	  samples = 5000 seed = 5
 	  sample_type lhs
 	  response_levels = 2.e-5 3.e-5 4.e-5
@@ -58,7 +58,7 @@ responses,
 method,
 	id_method = 'DACE'
 	model_pointer = 'DACE_M'
-	nond_sampling
+	sampling
 	  samples = 2			#0
 #	  samples = 20			#3
 	  seed = 50
