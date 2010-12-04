@@ -507,13 +507,14 @@ void NonDSampling::compute_moments(const ResponseArray& samples)
     meanStats[i] = sum/((Real)num_samp);
 
     // accumulate variance, skewness, and kurtosis
+    Real centered_fn, pow_fn;
     for (j=0; j<num_obs; ++j) {
       const Real& sample = samples[j].function_value(i);
       if (isfinite(sample)) { // neither NaN nor +/-Inf
-	Real mean_diff = sample - meanStats[i], val = mean_diff;
-	val *= mean_diff; var  += val;
-	val *= mean_diff; skew += val;
-	val *= mean_diff; kurt += val;
+	pow_fn  = centered_fn = sample - meanStats[i];
+	pow_fn *= centered_fn; var  += pow_fn;
+	pow_fn *= centered_fn; skew += pow_fn;
+	pow_fn *= centered_fn; kurt += pow_fn;
       }
     }
     // sample std deviation

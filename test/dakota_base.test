@@ -12961,12 +12961,12 @@ Test Number 1 succeeded
   response_fn_3: 3564 val (3564 n, 0 d), 324 grad (324 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       1.0000000000e+00 beam_width
-                      4.7930623341e+00 beam_thickness
+                      4.7930205315e+00 beam_thickness
 <<<<< Best objective function  =
-                      4.7930623341e+00
+                      4.7930205315e+00
 <<<<< Best constraint values   =
-                     -3.7632094092e+00
-                     -4.1212562421e+00
+                     -3.7632534084e+00
+                     -4.1212640847e+00
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 489 total (478 new, 11 duplicate)
@@ -12987,22 +12987,22 @@ Test Number 2 succeeded
                       3.2770376748e+00
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (UQ_I): 6255 total (6223 new, 32 duplicate)
-  response_fn_1: 6255 val (6223 n, 32 d), 5850 grad (5823 n, 27 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 6255 val (6223 n, 32 d), 5850 grad (5823 n, 27 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 6255 val (6223 n, 32 d), 5850 grad (5823 n, 27 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 6255 total (6223 new, 32 duplicate)
-  response_fn_1: 6255 val (6223 n, 32 d), 5850 grad (5823 n, 27 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 6255 val (6223 n, 32 d), 5850 grad (5823 n, 27 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 6255 val (6223 n, 32 d), 5850 grad (5823 n, 27 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 7137 total (7105 new, 32 duplicate)
+  response_fn_1: 7137 val (7105 n, 32 d), 6732 grad (6705 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 7137 val (7105 n, 32 d), 6732 grad (6705 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 7137 val (7105 n, 32 d), 6732 grad (6705 n, 27 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 7137 total (7105 new, 32 duplicate)
+  response_fn_1: 7137 val (7105 n, 32 d), 6732 grad (6705 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 7137 val (7105 n, 32 d), 6732 grad (6705 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 7137 val (7105 n, 32 d), 6732 grad (6705 n, 27 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459341285e+00 beam_width
-                      3.8922746328e+00 beam_thickness
+                      2.4459904724e+00 beam_width
+                      3.8921850072e+00 beam_thickness
 <<<<< Best objective function  =
-                      9.5202473619e+00
+                      9.5202474446e+00
 <<<<< Best constraint values   =
-                      3.0000003039e+00
-                      3.2767755607e+00
+                      3.0000004385e+00
+                      3.2770395996e+00
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
 <<<<< Function evaluation summary (UQ_I): 12346 total (12346 new, 0 duplicate)
@@ -13014,13 +13014,13 @@ Test Number 4 succeeded
   response_fn_2: 12346 val (12346 n, 0 d), 196 grad (196 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 12346 val (12346 n, 0 d), 196 grad (196 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4948052728e+00 beam_width
+                      2.4948052727e+00 beam_width
                       3.8179299273e+00 beam_thickness
 <<<<< Best objective function  =
                       9.5249917136e+00
 <<<<< Best constraint values   =
                       3.0052944599e+00
-                      3.5033955143e+00
+                      3.5033955140e+00
 <<<<< Best data not found in evaluation cache
 Test Number 5 succeeded
 <<<<< Function evaluation summary (UQ_I): 14874 total (14874 new, 0 duplicate)
@@ -13032,13 +13032,13 @@ Test Number 5 succeeded
   response_fn_2: 14874 val (14874 n, 0 d), 294 grad (294 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 14874 val (14874 n, 0 d), 294 grad (294 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.3983650061e+00 beam_width
-                      3.9036464994e+00 beam_thickness
+                      2.3983647702e+00 beam_width
+                      3.9036468533e+00 beam_thickness
 <<<<< Best objective function  =
-                      9.3623691606e+00
+                      9.3623690884e+00
 <<<<< Best constraint values   =
-                      2.7483070241e+00
-                      2.8068903523e+00
+                      2.7483069031e+00
+                      2.8068891643e+00
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
 <<<<< Function evaluation summary (UQ_I): 329 total (318 new, 11 duplicate)
@@ -13059,22 +13059,22 @@ Test Number 6 succeeded
                       3.2769835554e+00
 <<<<< Best data not found in evaluation cache
 Test Number 7 succeeded
-<<<<< Function evaluation summary (UQ_I): 5309 total (5277 new, 32 duplicate)
-  response_fn_1: 5309 val (5277 n, 32 d), 5064 grad (5037 n, 27 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 5309 val (5277 n, 32 d), 5064 grad (5037 n, 27 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 5309 val (5277 n, 32 d), 5064 grad (5037 n, 27 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 5309 total (5277 new, 32 duplicate)
-  response_fn_1: 5309 val (5277 n, 32 d), 5064 grad (5037 n, 27 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 5309 val (5277 n, 32 d), 5064 grad (5037 n, 27 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 5309 val (5277 n, 32 d), 5064 grad (5037 n, 27 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 5120 total (5088 new, 32 duplicate)
+  response_fn_1: 5120 val (5088 n, 32 d), 4875 grad (4848 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 5120 val (5088 n, 32 d), 4875 grad (4848 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 5120 val (5088 n, 32 d), 4875 grad (4848 n, 27 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 5120 total (5088 new, 32 duplicate)
+  response_fn_1: 5120 val (5088 n, 32 d), 4875 grad (4848 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 5120 val (5088 n, 32 d), 4875 grad (4848 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 5120 val (5088 n, 32 d), 4875 grad (4848 n, 27 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4458943598e+00 beam_width
-                      3.8923379128e+00 beam_thickness
+                      2.4458871340e+00 beam_width
+                      3.8923494006e+00 beam_thickness
 <<<<< Best objective function  =
-                      9.5202473474e+00
+                      9.5202473199e+00
 <<<<< Best constraint values   =
-                      3.0000002749e+00
-                      3.2765354373e+00
+                      3.0000002297e+00
+                      3.2765015666e+00
 <<<<< Best data not found in evaluation cache
 dakota_scbdo_cantilever_mixed.in
 Test Number 0 succeeded
@@ -13131,10 +13131,10 @@ Test Number 3 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_scbdo_cantilever_trsb.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 16 total (16 new, 0 duplicate)
-         obj_fn: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_2: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 15 total (15 new, 0 duplicate)
+         obj_fn: 15 val (15 n, 0 d), 15 grad (15 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 15 val (15 n, 0 d), 15 grad (15 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 15 val (15 n, 0 d), 15 grad (15 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 810 total (810 new, 0 duplicate)
   response_fn_1: 810 val (810 n, 0 d), 405 grad (405 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 810 val (810 n, 0 d), 405 grad (405 n, 0 d), 0 Hess (0 n, 0 d)
@@ -13167,10 +13167,10 @@ Test Number 1 succeeded
                       3.2769530510e+00
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 16 total (16 new, 0 duplicate)
-         obj_fn: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_2: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 18 total (18 new, 0 duplicate)
+         obj_fn: 18 val (18 n, 0 d), 18 grad (18 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 18 val (18 n, 0 d), 18 grad (18 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 18 val (18 n, 0 d), 18 grad (18 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 490 total (490 new, 0 duplicate)
   response_fn_1: 490 val (490 n, 0 d), 245 grad (245 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 490 val (490 n, 0 d), 245 grad (245 n, 0 d), 0 Hess (0 n, 0 d)
@@ -13533,19 +13533,19 @@ Test Number 2 succeeded
                       2.4999916629e+00
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (UQ_I): 414 total (355 new, 59 duplicate)
-  response_fn_1: 414 val (355 n, 59 d), 252 grad (220 n, 32 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 414 val (355 n, 59 d), 252 grad (220 n, 32 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 414 total (355 new, 59 duplicate)
-  response_fn_1: 414 val (355 n, 59 d), 252 grad (220 n, 32 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 414 val (355 n, 59 d), 252 grad (220 n, 32 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 375 total (268 new, 107 duplicate)
+  response_fn_1: 375 val (268 n, 107 d), 240 grad (187 n, 53 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 375 val (268 n, 107 d), 240 grad (187 n, 53 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 375 total (268 new, 107 duplicate)
+  response_fn_1: 375 val (268 n, 107 d), 240 grad (187 n, 53 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 375 val (268 n, 107 d), 240 grad (187 n, 53 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      8.1144666237e+00 b
+                      8.1108010892e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.0286166559e+02
+                      2.0277002723e+02
 <<<<< Best constraint values   =
-                      2.5000000000e+00
+                      2.4958900119e+00
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
 <<<<< Function evaluation summary (UQ_I): 1674 total (1333 new, 341 duplicate)
@@ -13570,12 +13570,12 @@ Test Number 5 succeeded
   response_fn_1: 992 val (992 n, 0 d), 155 grad (155 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 992 val (992 n, 0 d), 155 grad (155 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      8.1145833714e+00 b
+                      8.1145833976e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.0286458428e+02
+                      2.0286458494e+02
 <<<<< Best constraint values   =
-                      2.5000000000e+00
+                      2.5000000294e+00
 <<<<< Best data not found in evaluation cache
 Test Number 6 succeeded
 <<<<< Function evaluation summary (UQ_I): 332 total (281 new, 51 duplicate)
@@ -13600,12 +13600,12 @@ Test Number 7 succeeded
   response_fn_1: 411 val (296 n, 115 d), 256 grad (203 n, 53 d), 0 Hess (0 n, 0 d)
   response_fn_2: 411 val (296 n, 115 d), 256 grad (203 n, 53 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      8.1115462861e+00 b
+                      8.1105308755e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.0278865715e+02
+                      2.0276327189e+02
 <<<<< Best constraint values   =
-                      2.4965947153e+00
+                      2.4954563674e+00
 <<<<< Best data not found in evaluation cache
 dakota_scbdo_short_column_trsb.in
 Test Number 0 succeeded
@@ -13699,14 +13699,14 @@ Test Number 1 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_scbdo_steel_column_mf.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 37 total (25 new, 12 duplicate)
- nln_ineq_con_1: 37 val (25 n, 12 d), 34 grad (25 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1411 total (1369 new, 42 duplicate)
-  response_fn_1: 1411 val (1369 n, 42 d), 814 grad (772 n, 42 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 37 total (25 new, 12 duplicate)
- nln_ineq_con_1: 37 val (25 n, 12 d), 34 grad (25 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1411 total (1369 new, 42 duplicate)
-  response_fn_1: 1411 val (1369 n, 42 d), 814 grad (772 n, 42 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 38 total (26 new, 12 duplicate)
+ nln_ineq_con_1: 38 val (26 n, 12 d), 35 grad (26 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1418 total (1376 new, 42 duplicate)
+  response_fn_1: 1418 val (1376 n, 42 d), 821 grad (779 n, 42 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 38 total (26 new, 12 duplicate)
+ nln_ineq_con_1: 38 val (26 n, 12 d), 35 grad (26 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1418 total (1376 new, 42 duplicate)
+  response_fn_1: 1418 val (1376 n, 42 d), 821 grad (779 n, 42 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7500000000e+01 d
@@ -13727,18 +13727,18 @@ Test Number 1 succeeded
   response_fn_1: 1439 val (1404 n, 35 d), 842 grad (807 n, 35 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
-                      1.7499916897e+01 d
+                      1.7499982447e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                     -3.2361984947e+00
+                     -3.2362277854e+00
 <<<<< Best constraint values   =
-                      3.9999833795e+03
+                      3.9999964895e+03
 <<<<< Best data not found in evaluation cache
 dakota_scbdo_steel_column_trsb.in 
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 20 total (20 new, 0 duplicate)
-         obj_fn: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 20 val (20 n, 0 d), 20 grad (20 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 17 total (17 new, 0 duplicate)
+         obj_fn: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (OPTIONAL_I): 6 total (5 new, 1 duplicate)
  nln_ineq_con_1: 6 val (5 n, 1 d), 3 grad (3 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 1194 total (995 new, 199 duplicate)
@@ -13753,9 +13753,9 @@ Test Number 0 succeeded
                       4.0000000000e+03
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 31 total (31 new, 0 duplicate)
-         obj_fn: 31 val (31 n, 0 d), 31 grad (31 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 31 val (31 n, 0 d), 31 grad (31 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 28 total (28 new, 0 duplicate)
+         obj_fn: 28 val (28 n, 0 d), 28 grad (28 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 28 val (28 n, 0 d), 28 grad (28 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (OPTIONAL_I): 6 total (6 new, 0 duplicate)
  nln_ineq_con_1: 6 val (6 n, 0 d), 3 grad (3 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 1194 total (1194 new, 0 duplicate)
@@ -28581,9 +28581,14 @@ Polynomial Chaos coefficients for response_fn_3:
   -5.7824115866e-19  He5  He0  He0  He0   P0   P0
    6.0908068712e-18  He6  He0  He0  He0   P0   P0
    2.2028234616e-20  He7  He0  He0  He0   P0   P0
-response_fn_1:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
-response_fn_2:  Mean = -1.6974149070e+04  Std. Dev. = 4.7481050841e+04  Coeff. of Variation = -2.7972566192e+00
-response_fn_3:  Mean =  2.4199954314e-01  Std. Dev. = 6.8896204425e+00  Coeff. of Variation =  2.8469559707e+01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.0250000000e+01  2.1305809067e+01
+  numerical:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872942e-02
+  expansion:   -1.6974149070e+04  4.7481050841e+04
+  numerical:   -1.6974149070e+04  4.7481050841e+04  6.0776155317e+00  5.4992216747e+01
+  expansion:    2.4199954314e-01  6.8896204425e+00
+  numerical:    2.4199954314e-01  6.8894741950e+00  7.1050805696e+00  7.5495934037e+01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 3875 total (3875 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -30308,9 +30313,14 @@ Polynomial Chaos coefficients for response_fn_3:
    0.0000000000e+00  He2  He0  He2  He0   P0   P0
    0.0000000000e+00  He3  He0  He0  He0   P0   P0
    3.9320398789e-17  He4  He0  He0  He0   P0   P0
-response_fn_1:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
-response_fn_2:  Mean = -1.6974149444e+04  Std. Dev. = 4.7480545795e+04  Coeff. of Variation = -2.7972268037e+00
-response_fn_3:  Mean =  2.4199895375e-01  Std. Dev. = 6.8896714781e+00  Coeff. of Variation =  2.8469839936e+01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.0250000000e+01  2.1305809067e+01
+  numerical:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  expansion:   -1.6974149444e+04  4.7480545795e+04
+  numerical:   -1.6974149444e+04  4.7480506810e+04  6.0744035679e+00  5.4776443662e+01
+  expansion:    2.4199895375e-01  6.8896714781e+00
+  numerical:    2.4199895375e-01  6.8892383823e+00  7.0967062007e+00  7.4932107021e+01
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 993 total (993 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -32386,9 +32396,14 @@ Polynomial Chaos coefficients for response_fn_3:
   -5.7824115866e-19  He5  He0  He0  He0   P0   P0
    6.0908068712e-18  He6  He0  He0  He0   P0   P0
    2.2028234616e-20  He7  He0  He0  He0   P0   P0
-response_fn_1:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
-response_fn_2:  Mean = -1.6974149317e+04  Std. Dev. = 4.7480854109e+04  Coeff. of Variation = -2.7972449884e+00
-response_fn_3:  Mean =  2.4785261705e-01  Std. Dev. = 6.9160729147e+00  Coeff. of Variation =  2.7903973728e+01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.0250000000e+01  2.1305809067e+01
+  numerical:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  expansion:   -1.6974149317e+04  4.7480854109e+04
+  numerical:   -1.6974149317e+04  4.7481150426e+04  6.0775319265e+00  5.4950724494e+01
+  expansion:    2.4785261705e-01  6.9160729147e+00
+  numerical:    2.4785261705e-01  6.9163666973e+00  7.1298610803e+00  7.6119950065e+01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      3.5749460778e-01
@@ -34281,9 +34296,14 @@ Polynomial Chaos coefficients for response_fn_3:
    0.0000000000e+00  He2  He2  He0  He0   P0   P0
    0.0000000000e+00  He3  He0  He0  He0   P0   P0
    3.9320398789e-17  He4  He0  He0  He0   P0   P0
-response_fn_1:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
-response_fn_2:  Mean = -1.6974153589e+04  Std. Dev. = 4.7480256803e+04  Coeff. of Variation = -2.7972090952e+00
-response_fn_3:  Mean =  2.4783063695e-01  Std. Dev. = 6.9151025218e+00  Coeff. of Variation =  2.7902532984e+01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.0250000000e+01  2.1305809067e+01
+  numerical:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  expansion:   -1.6974153589e+04  4.7480256803e+04
+  numerical:   -1.6974153589e+04  4.7480144140e+04  6.0731962471e+00  5.4695610822e+01
+  expansion:    2.4783063695e-01  6.9151025218e+00
+  numerical:    2.4783063695e-01  6.9139593321e+00  7.0893180438e+00  7.4130761483e+01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      3.5749919507e-01
@@ -34292,19 +34312,25 @@ response_fn_3:  Mean =  2.4783063695e-01  Std. Dev. = 6.9151025218e+00  Coeff. o
    0.0000000000e+00                     -3.5839040154e-02
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 4777 total (4777 new, 0 duplicate)
-response_fn_1:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
-response_fn_2:  Mean = -1.6974149070e+04  Std. Dev. = 4.7481050841e+04  Coeff. of Variation = -2.7972566192e+00
-response_fn_3:  Mean =  2.4785183579e-01  Std. Dev. = 6.9166881370e+00  Coeff. of Variation =  2.7906543903e+01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+ response_fn_2 -1.6974149070e+04  4.7481050841e+04  6.0776155317e+00  5.4986228365e+01
+ response_fn_3  2.4785183579e-01  6.9166881370e+00  7.1313020386e+00  7.6207393566e+01
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 3875 total (3875 new, 0 duplicate)
-response_fn_1:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
-response_fn_2:  Mean = -1.6974149444e+04  Std. Dev. = 4.7480506810e+04  Coeff. of Variation = -2.7972245070e+00
-response_fn_3:  Mean =  2.4199895375e-01  Std. Dev. = 6.8892383823e+00  Coeff. of Variation =  2.8468050277e+01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+ response_fn_2 -1.6974149444e+04  4.7480506810e+04  6.0744035679e+00  5.4776443662e+01
+ response_fn_3  2.4199895375e-01  6.8892383823e+00  7.0967062007e+00  7.4932107021e+01
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 993 total (993 new, 0 duplicate)
-response_fn_1:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
-response_fn_2:  Mean = -1.6974149317e+04  Std. Dev. = 4.7481150426e+04  Coeff. of Variation = -2.7972624453e+00
-response_fn_3:  Mean =  2.4785261705e-01  Std. Dev. = 6.9163666973e+00  Coeff. of Variation =  2.7905159040e+01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+ response_fn_2 -1.6974149317e+04  4.7481150426e+04  6.0775319265e+00  5.4950724494e+01
+ response_fn_3  2.4785261705e-01  6.9163666973e+00  7.1298610803e+00  7.6119950065e+01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      3.5749237676e-01
@@ -34313,9 +34339,11 @@ response_fn_3:  Mean =  2.4785261705e-01  Std. Dev. = 6.9163666973e+00  Coeff. o
    0.0000000000e+00                     -3.5835667468e-02
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 2757 total (2757 new, 0 duplicate)
-response_fn_1:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
-response_fn_2:  Mean = -1.6974153524e+04  Std. Dev. = 4.7476146930e+04  Coeff. of Variation = -2.7969669806e+00
-response_fn_3:  Mean =  2.4785984834e-01  Std. Dev. = 6.9125132514e+00  Coeff. of Variation =  2.7888798035e+01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+ response_fn_2 -1.6974153524e+04  4.7476146930e+04  6.0592983701e+00  5.4128657548e+01
+ response_fn_3  2.4785984834e-01  6.9125132514e+00  7.0690380763e+00  7.3466616470e+01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      3.5753014138e-01
@@ -36834,29 +36862,29 @@ Test Number 0 succeeded
 Polynomial Chaos coefficients for mean_wt:
    3.0250000000e+01   P0   P0
    2.4750000000e+01   P1   P0
-   3.7914116291e-13   P2   P0
-   5.7043259005e-13   P3   P0
-   3.7819747334e-13   P4   P0
+   2.1815882434e-13   P2   P0
+   2.7200464103e-13   P3   P0
+   1.1340928197e-13   P4   P0
    2.4750000000e+01   P0   P1
    2.0250000000e+01   P1   P1
-  -1.0824674490e-13   P2   P1
-  -2.1216362001e-13   P3   P1
-   5.6954441163e-14   P4   P1
-   3.8025138593e-13   P0   P2
-  -1.0491607583e-13   P1   P2
-  -1.2656542481e-12   P2   P2
-  -8.8012930277e-13   P3   P2
-  -1.5612511284e-13   P4   P2
-   5.7198690229e-13   P0   P3
-  -2.1449508836e-13   P1   P3
-  -8.8207219306e-13   P2   P3
-   1.0444978216e-12   P3   P3
-   1.4845624730e-12   P4   P3
-   3.8019587478e-13   P0   P4
-   5.9952043330e-14   P1   P4
-  -1.5862311464e-13   P2   P4
-   1.4863110742e-12   P3   P4
-   1.5119155927e-12   P4   P4
+  -1.7319479184e-13   P2   P1
+  -3.8935521474e-13   P3   P1
+  -1.6936452241e-13   P4   P1
+   2.1871393585e-13   P0   P2
+  -1.7152945730e-13   P1   P2
+  -8.6319840165e-13   P2   P2
+  -4.0606407126e-13   P3   P2
+  -7.4940054162e-15   P4   P2
+   2.7433610938e-13   P0   P3
+  -3.8702374638e-13   P1   P3
+  -4.0800696155e-13   P2   P3
+   1.4497847367e-12   P3   P3
+   1.4251100300e-12   P4   P3
+   1.1191048088e-13   P0   P4
+  -1.6936452241e-13   P1   P4
+  -7.4940054162e-15   P2   P4
+   1.4233614287e-12   P3   P4
+   1.1499551311e-12   P4   P4
 Polynomial Chaos coefficients for ccdf_beta_s:
    1.1355549360e+01   P0   P0
    8.0415587261e+00   P1   P0
@@ -36897,7 +36925,7 @@ Polynomial Chaos coefficients for ccdf_beta_d:
    8.2139858535e+01   P0   P2
    1.6946707207e+02   P1   P2
    1.0304386832e+02   P2   P2
-  -9.4801051305e+00   P3   P2
+  -9.4801051306e+00   P3   P2
   -4.3890836248e+01   P4   P2
   -1.0732688567e+01   P0   P3
    4.5648683933e+00   P1   P3
@@ -36909,21 +36937,29 @@ Polynomial Chaos coefficients for ccdf_beta_d:
   -2.1843616526e+00   P2   P4
    1.8789309684e+01   P3   P4
    1.4838493438e+01   P4   P4
-mean_wt:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
-ccdf_beta_s:  Mean =  1.1355549360e+01  Std. Dev. = 8.3388342712e+00  Coeff. of Variation =  7.3434001359e-01
-ccdf_beta_d:  Mean =  1.5418231185e+02  Std. Dev. = 2.4250941828e+02  Coeff. of Variation =  1.5728744456e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.0250000000e+01  2.1305809067e+01
+  numerical:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  expansion:    1.1355549360e+01  8.3388342712e+00
+  numerical:    1.1355549360e+01  8.3388342712e+00 -9.4592705415e-01 -4.5029589380e-01
+  expansion:    1.5418231185e+02  2.4250941828e+02
+  numerical:    1.5418231185e+02  2.4250941828e+02  2.1602067044e+00  4.5560700205e+00
 mean_wt Sobol indices:
+                                  Main             Total
                       4.4981412639e-01  5.5018587361e-01 uuv_1
                       4.4981412639e-01  5.5018587361e-01 uuv_2
-                      1.0037174721e-01 uuv_1 uuv_2
+                      1.0037174721e-01 uuv_1 uuv_2 
 ccdf_beta_s Sobol indices:
+                                  Main             Total
                       3.9012655235e-01  4.2459209553e-01 uuv_1
                       5.7540790447e-01  6.0987344765e-01 uuv_2
-                      3.4465543187e-02 uuv_1 uuv_2
+                      3.4465543187e-02 uuv_1 uuv_2 
 ccdf_beta_d Sobol indices:
+                                  Main             Total
                       3.0125533614e-01  6.2924094035e-01 uuv_1
                       3.7075905965e-01  6.9874466386e-01 uuv_2
-                      3.2798560422e-01 uuv_1 uuv_2
+                      3.2798560422e-01 uuv_1 uuv_2 
 Test Number 1 succeeded
 <<<<< Function evaluation summary (INNER_I): 30869 total (30869 new, 0 duplicate)
          weight: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -36932,107 +36968,107 @@ Test Number 1 succeeded
 Polynomial Chaos coefficients for mean_wt:
    3.0250000000e+01   P0   P0
    2.4750000000e+01   P1   P0
-  -3.1273594825e-13   P2   P0
-   1.6456280783e-13   P3   P0
-  -2.5042468099e-13   P4   P0
-  -3.8560821203e-13   P5   P0
-  -3.1896707497e-13   P6   P0
-  -3.7470027081e-15   P7   P0
-  -3.6497194156e-13   P8   P0
-  -1.0239604303e-12   P9   P0
+   1.3877787808e-16   P2   P0
+  -1.2045919817e-13   P3   P0
+  -4.6188053382e-13   P4   P0
+  -1.6227297284e-13   P5   P0
+  -1.7996021340e-13   P6   P0
+  -1.9984014443e-14   P7   P0
+  -2.5461924236e-13   P8   P0
+  -1.0313763732e-12   P9   P0
    2.4750000000e+01   P0   P1
    2.0250000000e+01   P1   P1
-  -6.8903216466e-14   P2   P1
-   1.4629963907e-13   P3   P1
-   1.0154377339e-13   P4   P1
-  -8.7471696553e-14   P5   P1
-  -1.3530843113e-14   P6   P1
-   2.8102520311e-14   P7   P1
-  -4.3509987280e-13   P8   P1
-  -1.4029975098e-12   P9   P1
-  -1.4870049636e-13   P0   P2
-  -3.2120139881e-13   P1   P2
-   3.2300551123e-13   P2   P2
-   5.4886650780e-14   P3   P2
-   7.3815953350e-13   P4   P2
-   1.2670420269e-13   P5   P2
-   5.9986737799e-14   P6   P2
-   3.7990444124e-14   P7   P2
-   2.0643209364e-14   P8   P2
-   1.4172690799e-14   P9   P2
-   1.6465995234e-13   P0   P3
-   7.4315553711e-14   P1   P3
-   1.7437440381e-13   P2   P3
-   6.5281113848e-14   P3   P3
-   1.9234613902e-13   P4   P3
-  -5.3429483060e-15   P5   P3
-   9.4715901788e-15   P6   P3
-  -8.0144224590e-15   P7   P3
-   0.0000000000e+00   P8   P3
+  -6.2450045135e-16   P2   P1
+   4.5638492985e-13   P3   P1
+   8.8803964182e-14   P4   P1
+  -1.4288570327e-13   P5   P1
+  -9.6068986100e-14   P6   P1
+   2.9663771439e-14   P7   P1
+  -4.2536807410e-13   P8   P1
+  -1.4074470756e-12   P9   P1
+  -5.6205040622e-14   P0   P2
+  -3.8156977578e-13   P1   P2
+   4.2604808570e-13   P2   P2
+   1.1511624987e-13   P3   P2
+   4.6275483445e-13   P4   P2
+   1.2288781104e-13   P5   P2
+   7.2164496601e-15   P6   P2
+   3.8510861167e-14   P7   P2
+   1.9758500391e-14   P8   P2
+   1.1041514925e-14   P9   P2
+  -1.2541356842e-13   P0   P3
+   5.8636429046e-13   P1   P3
+  -4.1772141302e-14   P2   P3
+  -9.5881635964e-14   P3   P3
+   6.1201044232e-14   P4   P3
+   2.8851920852e-14   P5   P3
+   3.5992042680e-14   P6   P3
+   1.4571677198e-15   P7   P3
+   7.8444195584e-15   P8   P3
    3.4607733346e-15   P9   P3
-  -2.9901081611e-13   P0   P4
-  -4.6462833581e-14   P1   P4
-   7.2566952447e-13   P2   P4
-   1.8535173396e-13   P3   P4
-   4.4177161929e-13   P4   P4
-  -1.0304257447e-14   P5   P4
-   7.8749506915e-14   P6   P4
-  -9.3675067703e-16   P7   P4
-   1.4863110742e-14   P8   P4
-   9.1957691462e-15   P9   P4
-  -4.1934511419e-13   P0   P5
-  -1.0395850847e-13   P1   P5
-   1.2899403767e-13   P2   P5
-  -1.6563139749e-14   P3   P5
-   1.1678158440e-14   P4   P5
-  -7.5564554614e-15   P5   P5
-   7.9380946261e-15   P6   P5
-   3.0340313595e-14   P7   P5
-   1.8814810820e-14   P8   P5
-   1.8852974737e-14   P9   P5
-  -3.2654434712e-13   P0   P6
-  -6.3865579492e-14   P1   P6
-   8.2989171091e-14   P2   P6
-  -9.4715901788e-15   P3   P6
-   7.5502104568e-14   P4   P6
-  -4.9613091413e-15   P5   P6
-   2.8730490209e-14   P6   P6
-   4.8711035205e-14   P7   P6
-   2.6069424397e-14   P8   P6
-   3.4278135885e-15   P9   P6
-  -1.6757428778e-14   P0   P7
-   2.6853519408e-14   P1   P7
-   3.0184188482e-14   P2   P7
-   2.1857515797e-15   P3   P7
-  -4.6837533851e-15   P4   P7
-   1.0304257447e-14   P5   P7
-   1.9619722513e-14   P6   P7
-   2.1857515797e-14   P7   P7
-  -1.3270634591e-15   P8   P7
-  -1.9775847626e-15   P9   P7
-  -3.5341174431e-13   P0   P8
-  -4.3120715332e-13   P1   P8
-   2.9490299092e-14   P2   P8
-   9.0830121202e-15   P3   P8
-  -1.0616507673e-15   P4   P8
-   5.8390792201e-15   P5   P8
-   1.1501216646e-14   P6   P8
-  -3.0964814046e-14   P7   P8
-  -2.5818756855e-14   P8   P8
-   0.0000000000e+00   P9   P8
-  -1.0237626719e-12   P0   P9
-  -1.4093257811e-12   P1   P9
-   1.5491080640e-14   P2   P9
-   1.0382320004e-14   P3   P9
-   4.4495657159e-15   P4   P9
-   9.0639301620e-15   P5   P9
-  -1.2425824258e-14   P6   P9
-  -5.1911600019e-14   P7   P9
-  -2.3253100834e-14   P8   P9
-   1.2289865306e-14   P9   P9
+  -5.0472126478e-13   P0   P4
+   3.3348324102e-14   P1   P4
+   5.1333937101e-13   P2   P4
+   3.4972025276e-14   P3   P4
+   3.2205488276e-13   P4   P4
+   2.8164970356e-14   P5   P4
+   2.5979218776e-14   P6   P4
+   9.3675067703e-15   P7   P4
+   2.5479618415e-14   P8   P4
+  -7.7125805742e-15   P9   P4
+  -1.3006262733e-13   P0   P5
+  -1.6853185514e-13   P1   P5
+   9.0066842873e-14   P2   P5
+   3.4729163989e-14   P3   P5
+  -2.1295465391e-14   P4   P5
+  -1.0075273948e-14   P5   P5
+  -1.3891665596e-14   P6   P5
+   8.5868812061e-15   P7   P5
+   2.0761170560e-14   P8   P5
+   1.0514158988e-14   P9   P5
+  -1.4947071358e-13   P0   P6
+  -9.7422070411e-14   P1   P6
+  -5.3221316243e-14   P2   P6
+   1.8943180358e-14   P3   P6
+   4.4651782272e-14   P4   P6
+   1.4883927424e-14   P5   P6
+   2.1694451791e-14   P6   P6
+   6.7654215563e-16   P7   P6
+   2.7986293838e-14   P8   P6
+   1.6282114546e-14   P9   P6
+  -2.1649348980e-14   P0   P7
+   2.9663771439e-14   P1   P7
+   3.0704605525e-14   P2   P7
+   1.0200174039e-14   P3   P7
+   7.4940054162e-15   P4   P7
+   1.3739009930e-14   P5   P7
+   8.7950480232e-15   P6   P7
+   4.6837533851e-15   P7   P7
+  -2.2117724319e-14   P8   P7
+  -3.0158167630e-14   P9   P7
+  -2.5485516475e-13   P0   P8
+  -4.1439768284e-13   P1   P8
+   5.5146859301e-14   P2   P8
+   2.1056073551e-14   P3   P8
+   2.4417967648e-14   P4   P8
+   1.8166024240e-14   P5   P8
+   6.9007299874e-15   P6   P8
+  -3.4503649937e-14   P7   P8
+  -8.2469621410e-14   P8   P8
+  -6.7518039770e-14   P9   P8
+  -1.0305194198e-12   P0   P9
+  -1.3955815670e-12   P1   P9
+   3.7409311759e-14   P2   P9
+   3.0916241789e-14   P3   P9
+   1.4535248005e-14   P4   P9
+   1.5589959879e-14   P5   P9
+  -7.7125805742e-15   P6   P9
+  -4.2518072396e-14   P7   P9
+  -6.3315672150e-14   P8   P9
+  -3.6399919537e-14   P9   P9
 Polynomial Chaos coefficients for ccdf_beta_s:
    1.1360547475e+01   P0   P0
-   8.0364451641e+00   P1   P0
+   8.0364451640e+00   P1   P0
   -4.7695754824e+00   P2   P0
    2.1774610099e+00   P3   P0
   -6.1232018457e-01   P4   P0
@@ -37077,9 +37113,9 @@ Polynomial Chaos coefficients for ccdf_beta_s:
    7.8007414231e-01   P3   P4
   -3.2645627713e-01   P4   P4
   -3.2398988898e-02   P5   P4
-   7.4241686377e-02   P6   P4
+   7.4241686378e-02   P6   P4
   -7.6500238497e-02   P7   P4
-  -5.6724554667e-03   P8   P4
+  -5.6724554668e-03   P8   P4
    1.7056803332e-02   P9   P4
   -1.3017710402e-01   P0   P5
    6.0474428287e-01   P1   P5
@@ -37134,158 +37170,177 @@ Polynomial Chaos coefficients for ccdf_beta_s:
 Polynomial Chaos coefficients for ccdf_beta_d:
    1.5011968343e+02   P0   P0
    2.0331264899e+02   P1   P0
-   7.5801698254e+00   P2   P0
-  -4.5297807268e+01   P3   P0
-   2.5010814437e+01   P4   P0
-   3.1588360581e+01   P5   P0
-  -3.4057895881e+01   P6   P0
-  -2.9546182735e+01   P7   P0
+   7.5801698248e+00   P2   P0
+  -4.5297807269e+01   P3   P0
+   2.5010814436e+01   P4   P0
+   3.1588360580e+01   P5   P0
+  -3.4057895882e+01   P6   P0
+  -2.9546182736e+01   P7   P0
    1.1414228275e+02   P8   P0
    1.8684630118e+02   P9   P0
    2.0862447624e+02   P0   P1
    2.7530288965e+02   P1   P1
-   6.4488309761e+00   P2   P1
-  -7.3285088855e+01   P3   P1
-   3.8605267542e+01   P4   P1
-   5.8128286439e+01   P5   P1
-  -4.8027308304e+01   P6   P1
-  -4.1131006508e+01   P7   P1
+   6.4488309747e+00   P2   P1
+  -7.3285088857e+01   P3   P1
+   3.8605267540e+01   P4   P1
+   5.8128286437e+01   P5   P1
+  -4.8027308307e+01   P6   P1
+  -4.1131006510e+01   P7   P1
    1.9244155931e+02   P8   P1
    3.0732295901e+02   P9   P1
-  -7.6480408007e-02   P0   P2
-  -6.2046029397e+00   P1   P2
-  -2.7924008229e+01   P2   P2
-  -2.6086954738e+01   P3   P2
-   8.7102249591e+00   P4   P2
-   2.0042682210e+01   P5   P2
-  -4.7854450575e+00   P6   P2
-  -3.2871113451e+00   P7   P2
+  -7.6480407891e-02   P0   P2
+  -6.2046029400e+00   P1   P2
+  -2.7924008230e+01   P2   P2
+  -2.6086954739e+01   P3   P2
+   8.7102249585e+00   P4   P2
+   2.0042682209e+01   P5   P2
+  -4.7854450590e+00   P6   P2
+  -3.2871113467e+00   P7   P2
    4.7372770552e+01   P8   P2
-   6.8594731694e+01   P9   P2
+   6.8594731695e+01   P9   P2
   -6.8371690823e+01   P0   P3
   -1.2842375153e+02   P1   P3
   -7.3996298570e+01   P2   P3
-  -1.2503370103e+01   P3   P3
-  -1.7279122084e+00   P4   P3
-  -1.1207947438e+01   P5   P3
-  -6.4316517444e-01   P6   P3
+  -1.2503370102e+01   P3   P3
+  -1.7279122062e+00   P4   P3
+  -1.1207947435e+01   P5   P3
+  -6.4316517334e-01   P6   P3
   -1.3444841953e+01   P7   P3
-  -9.6691646446e+01   P8   P3
+  -9.6691646445e+01   P8   P3
   -1.3149788087e+02   P9   P3
-  -1.8451952023e+00   P0   P4
-  -4.1826946224e+01   P1   P4
-  -8.7362234948e+01   P2   P4
-  -4.9092075931e+01   P3   P4
-   1.9253131673e+01   P4   P4
-   2.1698410194e+01   P5   P4
-  -2.6203900892e+01   P6   P4
-  -7.3449178291e+01   P7   P4
+  -1.8451952015e+00   P0   P4
+  -4.1826946222e+01   P1   P4
+  -8.7362234946e+01   P2   P4
+  -4.9092075928e+01   P3   P4
+   1.9253131678e+01   P4   P4
+   2.1698410199e+01   P5   P4
+  -2.6203900889e+01   P6   P4
+  -7.3449178289e+01   P7   P4
   -1.1639469368e+02   P8   P4
-  -1.0781086372e+02   P9   P4
-  -9.0831208548e+00   P0   P5
-  -3.1549402673e+01   P1   P5
-  -4.5244933397e+01   P2   P5
-  -2.1903724088e+01   P3   P5
-   1.8238180921e+01   P4   P5
-   3.0779575553e+01   P5   P5
-   8.8456247994e+00   P6   P5
-  -5.2798148257e+01   P7   P5
+  -1.0781086371e+02   P9   P4
+  -9.0831208541e+00   P0   P5
+  -3.1549402671e+01   P1   P5
+  -4.5244933395e+01   P2   P5
+  -2.1903724085e+01   P3   P5
+   1.8238180925e+01   P4   P5
+   3.0779575557e+01   P5   P5
+   8.8456248030e+00   P6   P5
+  -5.2798148255e+01   P7   P5
   -1.2474711372e+02   P8   P5
   -1.1798981018e+02   P9   P5
   -9.4715511146e+01   P0   P6
   -1.2935518426e+02   P1   P6
    3.3748192084e+01   P2   P6
    1.0094590375e+02   P3   P6
-  -1.7424922959e+01   P4   P6
-  -4.9775671863e+01   P5   P6
-   8.6123123781e+01   P6   P6
-   9.1408467455e+01   P7   P6
+  -1.7424922958e+01   P4   P6
+  -4.9775671862e+01   P5   P6
+   8.6123123782e+01   P6   P6
+   9.1408467456e+01   P7   P6
   -1.3946554309e+02   P8   P6
   -2.4768235553e+02   P9   P6
   -6.4856232259e+01   P0   P7
-  -5.0872663341e+01   P1   P7
+  -5.0872663342e+01   P1   P7
    1.2680525775e+02   P2   P7
    1.5332525446e+02   P3   P7
-  -4.5165696427e+01   P4   P7
-  -1.1030867883e+02   P5   P7
-   9.5979227550e+01   P6   P7
+  -4.5165696431e+01   P4   P7
+  -1.1030867884e+02   P5   P7
+   9.5979227547e+01   P6   P7
    2.0547693104e+02   P7   P7
-   8.0023883679e+00   P8   P7
+   8.0023883664e+00   P8   P7
   -1.5518518920e+02   P9   P7
    1.3896533334e+02   P0   P8
    2.8608092183e+02   P1   P8
    2.0286358689e+02   P2   P8
-   3.6981055677e+01   P3   P8
-  -5.6330786665e+01   P4   P8
-  -5.9684492186e+01   P5   P8
-   1.4165997774e+01   P6   P8
+   3.6981055672e+01   P3   P8
+  -5.6330786672e+01   P4   P8
+  -5.9684492193e+01   P5   P8
+   1.4165997769e+01   P6   P8
    1.6053959042e+02   P7   P8
    2.8742573611e+02   P8   P8
    2.4341517019e+02   P9   P8
    2.3108770258e+02   P0   P9
    4.1535008310e+02   P1   P9
    1.7570940527e+02   P2   P9
-  -6.7901915449e+01   P3   P9
-  -4.8066976305e+01   P4   P9
-   8.5292031352e+00   P5   P9
-  -4.4084205941e+01   P6   P9
-   4.8674882706e+01   P7   P9
+  -6.7901915452e+01   P3   P9
+  -4.8066976311e+01   P4   P9
+   8.5292031297e+00   P5   P9
+  -4.4084205945e+01   P6   P9
+   4.8674882703e+01   P7   P9
    3.4402241948e+02   P8   P9
    4.0855780421e+02   P9   P9
-mean_wt:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
-ccdf_beta_s:  Mean =  1.1360547475e+01  Std. Dev. = 8.2909818982e+00  Coeff. of Variation =  7.2980478416e-01
-ccdf_beta_d:  Mean =  1.5011968343e+02  Std. Dev. = 2.4353088343e+02  Coeff. of Variation =  1.6222448506e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.0250000000e+01  2.1305809067e+01
+  numerical:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  expansion:    1.1360547475e+01  8.2909818982e+00
+  numerical:    1.1360547475e+01  8.2909818982e+00 -9.4496902929e-01 -3.9960985820e-01
+  expansion:    1.5011968343e+02  2.4353088343e+02
+  numerical:    1.5011968343e+02  2.4353088343e+02  2.3214281423e+00  5.9428327157e+00
 mean_wt Sobol indices:
+                                  Main             Total
                       4.4981412639e-01  5.5018587361e-01 uuv_1
                       4.4981412639e-01  5.5018587361e-01 uuv_2
-                      1.0037174721e-01 uuv_1 uuv_2
+                      1.0037174721e-01 uuv_1 uuv_2 
 ccdf_beta_s Sobol indices:
+                                  Main             Total
                       3.8996099741e-01  4.2476044284e-01 uuv_1
                       5.7523955716e-01  6.1003900259e-01 uuv_2
-                      3.4799445424e-02 uuv_1 uuv_2
+                      3.4799445424e-02 uuv_1 uuv_2 
 ccdf_beta_d Sobol indices:
+                                  Main             Total
                       2.8655442795e-01  6.6107337448e-01 uuv_1
                       3.3892662552e-01  7.1344557205e-01 uuv_2
+                      3.7451894653e-01 uuv_1 uuv_2 
 Test Number 2 succeeded
 <<<<< Function evaluation summary (INNER_I): 17025 total (17025 new, 0 duplicate)
          weight: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_wt:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
-ccdf_beta_s:  Mean =  1.1355549360e+01  Std. Dev. = 8.3388342712e+00  Coeff. of Variation =  7.3434001359e-01
-ccdf_beta_d:  Mean =  1.5418231202e+02  Std. Dev. = 2.4250941883e+02  Coeff. of Variation =  1.5728744475e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+       mean_wt  3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+   ccdf_beta_s  1.1355549360e+01  8.3388342712e+00 -9.4592705415e-01 -4.5029589380e-01
+   ccdf_beta_d  1.5418231184e+02  2.4250941828e+02  2.1602067045e+00  4.5560700207e+00
 mean_wt Sobol indices:
+                                  Main             Total
                       4.4981412639e-01  5.5018587361e-01 uuv_1
                       4.4981412639e-01  5.5018587361e-01 uuv_2
-                      1.0037174721e-01 uuv_1 uuv_2
+                      1.0037174721e-01 uuv_1 uuv_2 
 ccdf_beta_s Sobol indices:
+                                  Main             Total
                       3.9012655235e-01  4.2459209553e-01 uuv_1
                       5.7540790447e-01  6.0987344765e-01 uuv_2
-                      3.4465543187e-02 uuv_1 uuv_2
+                      3.4465543187e-02 uuv_1 uuv_2 
 ccdf_beta_d Sobol indices:
-                      3.0125533586e-01  6.2924094067e-01 uuv_1
-                      3.7075905933e-01  6.9874466414e-01 uuv_2
-                      3.2798560481e-01 uuv_1 uuv_2
+                                  Main             Total
+                      3.0125533615e-01  6.2924094039e-01 uuv_1
+                      3.7075905961e-01  6.9874466385e-01 uuv_2
+                      3.2798560424e-01 uuv_1 uuv_2 
 Test Number 3 succeeded
 <<<<< Function evaluation summary (INNER_I): 30869 total (30869 new, 0 duplicate)
          weight: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_wt:  Mean =  3.0250000000e+01  Std. Dev. = 2.1305809067e+01  Coeff. of Variation =  7.0432426668e-01
-ccdf_beta_s:  Mean =  1.1361191109e+01  Std. Dev. = 8.2932170753e+00  Coeff. of Variation =  7.2996017719e-01
-ccdf_beta_d:  Mean =  2.1167144784e+49  Std. Dev. = 4.0849314071e+49  Coeff. of Variation =  1.9298452620e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+       mean_wt  3.0250000000e+01  2.1305809067e+01  8.5504718745e-01 -4.9753872938e-02
+   ccdf_beta_s  1.1361191109e+01  8.2932170753e+00 -9.4534207172e-01 -3.9932323451e-01
+   ccdf_beta_d  2.1167144784e+49  4.0849314071e+49  1.4116690021e+00 -7.1906284056e-03
 mean_wt Sobol indices:
+                                  Main             Total
                       4.4981412639e-01  5.5018587361e-01 uuv_1
                       4.4981412639e-01  5.5018587361e-01 uuv_2
-                      1.0037174721e-01 uuv_1 uuv_2
+                      1.0037174721e-01 uuv_1 uuv_2 
 ccdf_beta_s Sobol indices:
+                                  Main             Total
                       3.8984140654e-01  4.2483278425e-01 uuv_1
                       5.7516721575e-01  6.1015859346e-01 uuv_2
-                      3.4991377713e-02 uuv_1 uuv_2
+                      3.4991377714e-02 uuv_1 uuv_2 
 ccdf_beta_d Sobol indices:
+                                  Main             Total
                       1.5160842549e-01  8.3000847951e-01 uuv_1
                       1.6999152049e-01  8.4839157451e-01 uuv_2
-                      6.7840005402e-01 uuv_1 uuv_2
+                      6.7840005402e-01 uuv_1 uuv_2 
 dakota_uq_cantilever_sop_rel.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 903 total (903 new, 0 duplicate)
@@ -37293,35 +37348,39 @@ mean_wt:  Min = 9.5209117200e+00  Max = 9.5209117200e+00
 ccdf_beta_s:  Min = 1.7627715524e+00  Max = 4.2949468386e+00
 ccdf_beta_d:  Min = 2.0125192955e+00  Max = 3.9385559339e+00
 Simple Correlation Matrix among all inputs and outputs:
-                   X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d
-      X_mean  1.00000e+00
-      Y_mean -4.15171e-03  1.00000e+00
-     mean_wt  0.00000e+00  0.00000e+00  1.00000e+00
- ccdf_beta_s -6.19328e-01 -7.82554e-01  0.00000e+00  1.00000e+00
- ccdf_beta_d -9.13854e-01 -4.01386e-01  0.00000e+00  8.84098e-01  1.00000e+00
+                   X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d 
+      X_mean  1.00000e+00 
+      Y_mean -4.15171e-03  1.00000e+00 
+     mean_wt  0.00000e+00  0.00000e+00  1.00000e+00 
+ ccdf_beta_s -6.19328e-01 -7.82554e-01  0.00000e+00  1.00000e+00 
+ ccdf_beta_d -9.13854e-01 -4.01386e-01  0.00000e+00  8.84098e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
-                  mean_wt  ccdf_beta_s  ccdf_beta_d
-      X_mean -0.00000e+00 -1.00000e+00 -9.99584e-01
-      Y_mean -0.00000e+00 -1.00000e+00 -9.97881e-01
+                  mean_wt  ccdf_beta_s  ccdf_beta_d 
+      X_mean -0.00000e+00 -1.00000e+00 -9.99584e-01 
+      Y_mean -0.00000e+00 -1.00000e+00 -9.97881e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                   X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d
-      X_mean  1.00000e+00
-      Y_mean -2.06483e-03  1.00000e+00
-     mean_wt -9.12845e-02  8.07203e-02  1.00000e+00
- ccdf_beta_s -5.97983e-01 -7.89388e-01 -2.13685e-02  1.00000e+00
- ccdf_beta_d -9.19616e-01 -3.73349e-01  2.82833e-02  8.48451e-01  1.00000e+00
+                   X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d 
+      X_mean  1.00000e+00 
+      Y_mean -2.06483e-03  1.00000e+00 
+     mean_wt -9.12845e-02  8.07203e-02  1.00000e+00 
+ ccdf_beta_s -5.97983e-01 -7.89388e-01 -2.13685e-02  1.00000e+00 
+ ccdf_beta_d -9.19616e-01 -3.73349e-01  2.82833e-02  8.48451e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-                  mean_wt  ccdf_beta_s  ccdf_beta_d
-      X_mean -9.14163e-02 -9.76738e-01 -9.92129e-01
-      Y_mean  8.08696e-02 -9.86420e-01 -9.55272e-01
+                  mean_wt  ccdf_beta_s  ccdf_beta_d 
+      X_mean -9.14163e-02 -9.76738e-01 -9.92129e-01 
+      Y_mean  8.08696e-02 -9.86420e-01 -9.55272e-01 
 Test Number 1 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 903 total (903 new, 0 duplicate)
-mean_wt:  Mean = 9.5209117200e+00  Std. Dev. = 5.3831741441e-15  Coeff. of Variation = 5.6540532066e-16
-ccdf_beta_s:  Mean = 2.9985433150e+00  Std. Dev. = 6.6105285294e-01  Coeff. of Variation = 2.2045799693e-01
-ccdf_beta_d:  Mean = 2.9990233766e+00  Std. Dev. = 5.5096520701e-01  Coeff. of Variation = 1.8371487575e-01
-mean_wt:  Mean = ( 9.5209117200e+00, 9.5209117200e+00 ), Std Dev = ( 4.4967484460e-15, 6.7081528841e-15 )
-ccdf_beta_s:  Mean = ( 2.8106741729e+00, 3.1864124571e+00 ), Std Dev = ( 5.5219993068e-01, 8.2376001284e-01 )
-ccdf_beta_d:  Mean = ( 2.8424407973e+00, 3.1556059559e+00 ), Std Dev = ( 4.6023997592e-01, 6.8657612472e-01 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+       mean_wt  9.5209117200e+00  5.3831741441e-15 -1.0311973892e+00 -2.0851063830e+00
+   ccdf_beta_s  2.9985433150e+00  6.6105285294e-01 -3.5226295680e-02 -7.2208427499e-01
+   ccdf_beta_d  2.9990233766e+00  5.5096520701e-01  2.9005798756e-02 -8.7818256959e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+       mean_wt  9.5209117200e+00  9.5209117200e+00  4.4967484460e-15  6.7081528841e-15
+   ccdf_beta_s  2.8106741729e+00  3.1864124571e+00  5.5219993068e-01  8.2376001284e-01
+   ccdf_beta_d  2.8424407973e+00  3.1556059559e+00  4.6023997592e-01  6.8657612472e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    9.5200000000e+00   0.0000000000e+00
@@ -37335,13 +37394,13 @@ Simple Correlation Matrix among all inputs and outputs:
                    X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d 
       X_mean  1.00000e+00 
       Y_mean -4.15171e-03  1.00000e+00 
-     mean_wt -2.28983e-16  2.01228e-16  1.00000e+00 
- ccdf_beta_s -6.19328e-01 -7.82554e-01  8.25728e-16  1.00000e+00 
- ccdf_beta_d -9.13854e-01 -4.01386e-01  2.42861e-16  8.84098e-01  1.00000e+00 
+     mean_wt  0.00000e+00  0.00000e+00  1.00000e+00 
+ ccdf_beta_s -6.19328e-01 -7.82554e-01  0.00000e+00  1.00000e+00 
+ ccdf_beta_d -9.13854e-01 -4.01386e-01  0.00000e+00  8.84098e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
                   mean_wt  ccdf_beta_s  ccdf_beta_d 
-      X_mean -2.28150e-16          nan -9.99584e-01 
-      Y_mean  2.00279e-16          nan -9.97881e-01 
+      X_mean -0.00000e+00 -5.28522e-01 -9.99584e-01 
+      Y_mean -0.00000e+00 -6.17538e-01 -9.97881e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                    X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d 
       X_mean  1.00000e+00 
@@ -38147,7 +38206,10 @@ Polynomial Chaos coefficients for response_fn_1:
   -1.2143064332e-16   P3   P2   P0
    1.4051260155e-15   P4   P2   P0
   -1.9081958236e-16   P5   P2   P0
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7208316195e+00  Coeff. of Variation =  1.0630947484e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.5000000000e+00  3.7208316195e+00
+  numerical:    3.5000000000e+00  3.7208316195e+00 -1.2586928469e+00  1.3893646876e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 283 total (283 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -38248,7 +38310,10 @@ Polynomial Chaos coefficients for response_fn_1:
    5.6205040622e-16   P4   P1   P0
    1.2143064332e-16   P3   P2   P0
   -4.2153780466e-15   P4   P2   P0
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7208315048e+00  Coeff. of Variation =  1.0630947157e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.5000000000e+00  3.7208315048e+00
+  numerical:    3.5000000000e+00  3.7208314943e+00 -1.2602312502e+00  1.2022976328e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 207 total (207 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
@@ -38405,7 +38470,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.3865230968e-14  P21   P0   P0
   -9.1155568201e-17  P22   P0   P0
    3.8562885930e-15  P23   P0   P0
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7208316195e+00  Coeff. of Variation =  1.0630947484e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.5000000000e+00  3.7208316195e+00
+  numerical:    3.5000000000e+00  3.7208316195e+00 -1.2586928469e+00  1.3893646876e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4064992935e-01
@@ -38507,25 +38575,36 @@ Polynomial Chaos coefficients for response_fn_1:
   -4.2153780466e-15   P4   P2   P0
    6.8194688988e-04   P9   P0   P0
    1.6563898690e-16  P10   P0   P0
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7208315060e+00  Coeff. of Variation =  1.0630947160e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.5000000000e+00  3.7208315060e+00
+  numerical:    3.5000000000e+00  3.7208314955e+00 -1.2602423677e+00  1.2046327444e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4064995805e-01
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 239 total (239 new, 0 duplicate)
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7208316195e+00  Coeff. of Variation =  1.0630947484e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5000000000e+00  3.7208316195e+00 -1.2586928469e+00  1.3893646876e+00
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 283 total (283 new, 0 duplicate)
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7208314943e+00  Coeff. of Variation =  1.0630947127e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5000000000e+00  3.7208314943e+00 -1.2602312502e+00  1.2022976328e+00
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 207 total (207 new, 0 duplicate)
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7208316195e+00  Coeff. of Variation =  1.0630947484e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5000000000e+00  3.7208316195e+00 -1.2586928469e+00  1.3893646876e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4064992935e-01
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 267 total (267 new, 0 duplicate)
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7208314955e+00  Coeff. of Variation =  1.0630947130e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5000000000e+00  3.7208314955e+00 -1.2602423677e+00  1.2046327444e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4064996069e-01
@@ -40261,7 +40340,10 @@ Polynomial Chaos coefficients for response_fn_1:
    1.6614682286e-16   P9  P11  P11
   -3.9800043989e-16  P10  P11  P11
   -1.1036115950e-15  P11  P11  P11
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7208296912e+00  Coeff. of Variation =  1.0630941975e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.5000000000e+00  3.7208296912e+00
+  numerical:    3.5000000000e+00  3.7208319662e+00 -3.6626951017e-04  5.2329258539e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4065041683e-01
@@ -41114,19 +41196,26 @@ Polynomial Chaos coefficients for response_fn_1:
    0.0000000000e+00   P0   P0  P21
    0.0000000000e+00   P0   P0  P22
    0.0000000000e+00   P0   P0  P23
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7208316195e+00  Coeff. of Variation =  1.0630947484e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.5000000000e+00  3.7208316195e+00
+  numerical:    3.5000000000e+00  3.7208316195e+00 -2.4573294578e-04  5.7023403745e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4064992935e-01
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 3745 total (3375 new, 370 duplicate)
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7208319662e+00  Coeff. of Variation =  1.0630948475e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5000000000e+00  3.7208319662e+00 -3.6626951017e-04  5.2329258539e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4064984171e-01
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 2514 total (1375 new, 1139 duplicate)
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7208316195e+00  Coeff. of Variation =  1.0630947484e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5000000000e+00  3.7208316195e+00 -2.4573294578e-04  5.7023403745e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      9.4064992935e-01
@@ -41997,8 +42086,12 @@ Polynomial Chaos coefficients for response_fn_1:
    5.7710988440e-16   P9  P23   P2
    8.9676370743e-16  P10  P23   P2
    1.1640822101e-15  P11  P23   P2
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.4625211893e+00  Coeff. of Variation =  9.8929176838e-01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.5000000000e+00  3.4625211893e+00
+  numerical:    3.5000000000e+00  3.4625211893e+00 -6.2925731555e-15 -5.1014160930e-01
 response_fn_1 Sobol indices:
+                                  Main             Total
                       3.6248801543e-01  4.8911728000e-01 x1
                       5.1088272000e-01  5.1088272000e-01 x2
                       9.7050502037e-32  1.2662926457e-01 x3
@@ -42326,8 +42419,12 @@ Polynomial Chaos coefficients for response_fn_1:
    0.0000000000e+00   P0   P0   P9
    0.0000000000e+00   P0   P0  P10
    0.0000000000e+00   P0   P0  P11
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7207267681e+00  Coeff. of Variation =  1.0630647909e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.5000000000e+00  3.7207267681e+00
+  numerical:    3.5000000000e+00  3.7206792854e+00 -2.9584831435e-01  1.1954628627e+00
 response_fn_1 Sobol indices:
+                                  Main             Total
                       3.1392288332e-01  5.5756495679e-01 x1
                       4.4243504321e-01  4.4243504321e-01 x2
                       2.8863871115e-32  2.4364207347e-01 x3
@@ -42336,8 +42433,11 @@ response_fn_1 Sobol indices:
    0.0000000000e+00                      9.4067643720e-01
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 2610 total (1395 new, 1215 duplicate)
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.4625211893e+00  Coeff. of Variation =  9.8929176838e-01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5000000000e+00  3.4625211893e+00 -6.2925731555e-15 -5.1014160930e-01
 response_fn_1 Sobol indices:
+                                  Main             Total
                       3.6248801543e-01  4.8911728000e-01 x1
                       5.1088272000e-01  5.1088272000e-01 x2
                      -4.7412768068e-15  1.2662926457e-01 x3
@@ -42346,8 +42446,11 @@ response_fn_1 Sobol indices:
    0.0000000000e+00                      1.0108241390e+00
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 1116 total (463 new, 653 duplicate)
-response_fn_1:  Mean =  3.5000000000e+00  Std. Dev. = 3.7206792854e+00  Coeff. of Variation =  1.0630512244e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.5000000000e+00  3.7206792854e+00 -2.9584831435e-01  1.1954628627e+00
 response_fn_1 Sobol indices:
+                                  Main             Total
                       3.1393089584e-01  5.5755244123e-01 x1
                       4.4244755877e-01  4.4244755877e-01 x2
                      -2.0530792910e-15  2.4362154539e-01 x3
@@ -42419,8 +42522,12 @@ Polynomial Chaos coefficients for response_fn_1:
   -5.9711260633e-17 He12  He0
   -2.6173262591e-19 He13  He0
    6.6367915856e-18 He14  He0
-response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
 response_fn_1 Sobol indices:
+                                  Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
                       5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
@@ -42463,8 +42570,12 @@ Polynomial Chaos coefficients for response_fn_1:
   -5.9711260633e-17 He12  He0
   -2.6173262591e-19 He13  He0
    6.6367915856e-18 He14  He0
-response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
 response_fn_1 Sobol indices:
+                                  Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
                       5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
@@ -42493,8 +42604,12 @@ Polynomial Chaos coefficients for response_fn_1:
    4.7369515717e-14  He4  He1
    2.3684757859e-15  He3  He2
   -3.5527136788e-15  He4  He2
-response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.4279111568e+02
 response_fn_1 Sobol indices:
+                                  Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
                       5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
@@ -42520,8 +42635,12 @@ Polynomial Chaos coefficients for response_fn_1:
    4.7369515717e-14  He4  He1
    2.3684757859e-15  He3  He2
   -3.5527136788e-15  He4  He2
-response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.0200000000e+02  1.0499552371e+03
+  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.4279111568e+02
 response_fn_1 Sobol indices:
+                                  Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
                       5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
@@ -42530,15 +42649,21 @@ response_fn_1 Sobol indices:
    0.0000000000e+00                      3.8287346525e-01
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 43 total (43 new, 0 duplicate)
-response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
 response_fn_1 Sobol indices:
+                                  Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
                       5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 43 total (43 new, 0 duplicate)
-response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
 response_fn_1 Sobol indices:
+                                  Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
                       5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
@@ -42547,15 +42672,21 @@ response_fn_1 Sobol indices:
    0.0000000000e+00                      3.8287346525e-01
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
-response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.4279111568e+02
 response_fn_1 Sobol indices:
+                                  Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
                       5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
-response_fn_1:  Mean =  4.0200000000e+02  Std. Dev. = 1.0499552371e+03  Coeff. of Variation =  2.6118289481e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.4279111568e+02
 response_fn_1 Sobol indices:
+                                  Main             Total
                       8.7300504533e-01  9.4557359085e-01 x1
                       5.4426409145e-02  1.2699495467e-01 x2
                       7.2568545527e-02 x1 x2 
@@ -50956,8 +51087,12 @@ Polynomial Chaos coefficients for limit_state:
    1.7636355339e-18  He5  He0  He0   P0   P0
   -6.3606527452e-19  He6  He0  He0   P0   P0
    7.9852350481e-20  He7  He0  He0   P0   P0
-area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
-limit_state:  Mean =  1.4558893249e-01  Std. Dev. = 5.7584950683e-01  Coeff. of Variation =  3.9553110046e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.0000000000e+02  6.5085413966e+01
+  numerical:    2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+  expansion:    1.4558893249e-01  5.7584950683e-01
+  numerical:    1.4558893249e-01  5.7584915375e-01 -2.0096214948e+00  6.0142010295e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 939 total (939 new, 0 duplicate)
 Polynomial Chaos coefficients for area:
@@ -51852,8 +51987,12 @@ Polynomial Chaos coefficients for limit_state:
   -1.3010426070e-17  He2  He2  He0   P0   P0
    5.2041704279e-18  He3  He0  He0   P0   P0
   -1.0408340856e-17  He4  He0  He0   P0   P0
-area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
-limit_state:  Mean =  1.4558893310e-01  Std. Dev. = 5.7584935724e-01  Coeff. of Variation =  3.9553099606e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.0000000000e+02  6.5085413966e+01
+  numerical:    2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+  expansion:    1.4558893310e-01  5.7584935724e-01
+  numerical:    1.4558893310e-01  5.7584891879e-01 -2.0095367685e+00  6.0107068719e+00
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 679 total (679 new, 0 duplicate)
 Polynomial Chaos coefficients for area:
@@ -52920,8 +53059,12 @@ Polynomial Chaos coefficients for limit_state:
    1.7636355339e-18  He5  He0  He0   P0   P0
   -6.3606527452e-19  He6  He0  He0   P0   P0
    7.9852350481e-20  He7  He0  He0   P0   P0
-area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
-limit_state:  Mean =  1.4558893720e-01  Std. Dev. = 5.7584826939e-01  Coeff. of Variation =  3.9553023771e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.0000000000e+02  6.5085413966e+01
+  numerical:    2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+  expansion:    1.4558893720e-01  5.7584826939e-01
+  numerical:    1.4558893720e-01  5.7584730755e-01 -2.0091562517e+00  6.0002528703e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      2.5282517104e-01
@@ -53667,30 +53810,42 @@ Polynomial Chaos coefficients for limit_state:
   -1.3010426070e-17  He2  He2  He0   P0   P0
    5.2041704279e-18  He3  He0  He0   P0   P0
   -1.0408340856e-17  He4  He0  He0   P0   P0
-area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
-limit_state:  Mean =  1.4558895193e-01  Std. Dev. = 5.7584711623e-01  Coeff. of Variation =  3.9552940563e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.0000000000e+02  6.5085413966e+01
+  numerical:    2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+  expansion:    1.4558895193e-01  5.7584711623e-01
+  numerical:    1.4558895193e-01  5.7584550674e-01 -2.0087383955e+00  5.9850653359e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      2.5282570291e-01
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 887 total (887 new, 0 duplicate)
-area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
-limit_state:  Mean =  1.4558893249e-01  Std. Dev. = 5.7584915375e-01  Coeff. of Variation =  3.9553085793e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+          area  2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+   limit_state  1.4558893249e-01  5.7584915375e-01 -2.0096214948e+00  6.0142010295e+00
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 939 total (939 new, 0 duplicate)
-area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
-limit_state:  Mean =  1.4558893310e-01  Std. Dev. = 5.7584891879e-01  Coeff. of Variation =  3.9553069490e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+          area  2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+   limit_state  1.4558893310e-01  5.7584891879e-01 -2.0095367685e+00  6.0107068719e+00
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 679 total (679 new, 0 duplicate)
-area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
-limit_state:  Mean =  1.4558893720e-01  Std. Dev. = 5.7584730755e-01  Coeff. of Variation =  3.9552957705e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+          area  2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+   limit_state  1.4558893720e-01  5.7584730755e-01 -2.0091562517e+00  6.0002528703e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      2.5282559334e-01
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 713 total (713 new, 0 duplicate)
-area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
-limit_state:  Mean =  1.4558895193e-01  Std. Dev. = 5.7584550674e-01  Coeff. of Variation =  3.9552830013e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+          area  2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+   limit_state  1.4558895193e-01  5.7584550674e-01 -2.0087383955e+00  5.9850653359e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      2.5282640956e-01
@@ -53749,29 +53904,29 @@ Test Number 0 succeeded
 Polynomial Chaos coefficients for mean_area:
    2.0000000000e+02   P0   P0
    1.0000000000e+02   P1   P0
-   2.2204460493e-15   P2   P0
-   6.2172489379e-15   P3   P0
-  -1.8585133432e-13   P4   P0
+   3.4638958368e-13   P2   P0
+   1.2123635429e-13   P3   P0
+  -3.2374103398e-13   P4   P0
    5.0000000000e+01   P0   P1
    2.5000000000e+01   P1   P1
-   3.4638958368e-13   P2   P1
-   4.4764192353e-13   P3   P1
-   3.2374103398e-13   P4   P1
-   4.3520742565e-13   P0   P2
-   7.4606987255e-13   P1   P2
-   1.0880185641e-12   P2   P2
-   1.3755663275e-12   P3   P2
-   4.9960036108e-13   P4   P2
-  -1.3988810110e-13   P0   P3
-  -4.8494541716e-13   P1   P3
-  -3.4194869158e-13   P2   P3
-  -1.0880185641e-14   P3   P3
-   7.6938455607e-14   P4   P3
-  -4.4564352208e-13   P0   P4
-  -3.5371705565e-13   P1   P4
-  -2.3980817332e-13   P2   P4
-   4.8960835386e-13   P3   P4
-   9.7571950519e-13   P4   P4
+   6.6613381478e-13   P2   P1
+   5.5022653100e-13   P3   P1
+   1.1990408666e-13   P4   P1
+   4.3076653355e-13   P0   P2
+   6.3282712404e-13   P1   P2
+   6.3282712404e-13   P2   P2
+   6.4503957731e-13   P3   P2
+  -7.9936057773e-14   P4   P2
+  -1.1812772982e-13   P0   P3
+  -3.4505731605e-13   P1   P3
+  -3.0309088572e-13   P2   P3
+  -1.7408297026e-13   P3   P3
+   2.2382096176e-13   P4   P3
+  -5.7553961597e-13   P0   P4
+  -5.1558757264e-13   P1   P4
+  -5.1958437552e-13   P2   P4
+   1.2589929099e-13   P3   P4
+   1.0701439734e-12   P4   P4
 Polynomial Chaos coefficients for cdf_beta:
    2.0377948711e+00   P0   P0
    3.8917456258e+00   P1   P0
@@ -53788,137 +53943,143 @@ Polynomial Chaos coefficients for cdf_beta:
    1.2113629403e-02   P2   P2
   -1.9152241460e-03   P3   P2
    2.4211007211e-04   P4   P2
-  -5.9258153939e-15   P0   P3
-  -1.1074474671e-14   P1   P3
-   1.7000290065e-15   P2   P3
-   1.6660284263e-14   P3   P3
-   1.4863110742e-14   P4   P3
-  -6.8695049649e-15   P0   P4
-  -2.4355517603e-15   P1   P4
-   9.6797569960e-15   P2   P4
-   5.2458037914e-15   P3   P4
-   6.7446048746e-15   P4   P4
-mean_area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
-cdf_beta:  Mean =  2.0377948711e+00  Std. Dev. = 2.8391913582e+00  Coeff. of Variation =  1.3932665149e+00
-mean_area total Sobol indices:
+  -1.1657341759e-15   P0   P3
+  -2.3314683517e-15   P1   P3
+   1.0200174039e-14   P2   P3
+   1.9040324872e-14   P3   P3
+   6.7758298972e-15   P4   P3
+   2.8727020762e-15   P0   P4
+   1.7798262864e-14   P1   P4
+   2.6385144070e-14   P2   P4
+   8.7430063189e-15   P3   P4
+  -5.9015292653e-15   P4   P4
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.0000000000e+02  6.5085413966e+01
+  numerical:    2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+  expansion:    2.0377948711e+00  2.8391913582e+00
+  numerical:    2.0377948711e+00  2.8391913582e+00  8.1335499002e-01  1.9480384247e-02
+mean_area Sobol indices:
+                                  Main             Total
                       7.8688524590e-01  8.0327868852e-01 uuv_1
                       1.9672131148e-01  2.1311475410e-01 uuv_2
-                      1.6393442623e-02 uuv_1 uuv_2
+                      1.6393442623e-02 uuv_1 uuv_2 
 cdf_beta Sobol indices:
+                                  Main             Total
                       6.2963114035e-01  6.8945667373e-01 uuv_1
                       3.1054332627e-01  3.7036885965e-01 uuv_2
-                      5.9825533376e-02 uuv_1 uuv_2
+                      5.9825533376e-02 uuv_1 uuv_2 
 Test Number 1 succeeded
 <<<<< Function evaluation summary (INNER_I): 13683 total (13683 new, 0 duplicate)
 Polynomial Chaos coefficients for mean_area:
    2.0000000000e+02   P0   P0
    1.0000000000e+02   P1   P0
-   6.0562665993e-13   P2   P0
-  -1.1836087666e-12   P3   P0
-  -1.2724821197e-12   P4   P0
-  -8.4265927569e-14   P5   P0
-   5.8561488991e-13   P6   P0
-   5.5372373353e-14   P7   P0
-  -9.8898667034e-13   P8   P0
-  -4.3464676303e-12   P9   P0
+   4.5380366132e-13   P2   P0
+  -1.0643153026e-12   P3   P0
+  -1.1495804308e-12   P4   P0
+  -5.4345417055e-14   P5   P0
+   5.2535753525e-13   P6   P0
+  -2.9143354396e-14   P7   P0
+  -1.0972750486e-12   P8   P0
+  -4.3392164861e-12   P9   P0
    5.0000000000e+01   P0   P1
    2.5000000000e+01   P1   P1
-   4.6712633761e-13   P2   P1
-  -2.3198110100e-13   P3   P1
-   6.7446048746e-13   P4   P1
-   3.6637359813e-13   P5   P1
-   3.1391556021e-14   P6   P1
-  -2.6229018957e-14   P7   P1
-  -8.1747109082e-13   P8   P1
-  -1.8826606940e-12   P9   P1
-  -3.0919711236e-13   P0   P2
-  -8.3683060481e-13   P1   P2
-   3.2612801348e-13   P2   P2
-   1.1404766020e-12   P3   P2
-   2.5104918144e-12   P4   P2
-   5.9535709696e-14   P5   P2
-  -2.3814283878e-13   P6   P2
-  -6.4531713306e-14   P7   P2
-   0.0000000000e+00   P8   P2
-   3.4937330806e-14   P9   P2
-   2.4208413052e-13   P0   P3
-  -3.9285241726e-13   P1   P3
-   8.0435658134e-13   P2   P3
-   1.9584334154e-13   P3   P3
-   2.5529578451e-13   P4   P3
-  -3.8469227803e-14   P5   P3
-   7.5772721431e-15   P6   P3
-   1.4571677198e-14   P7   P3
-  -2.9726221484e-14   P8   P3
-   1.5781126406e-13   P9   P3
-  -1.2140288774e-12   P0   P4
-   8.8279383803e-13   P1   P4
-   3.2199243272e-12   P2   P4
-   1.8535173396e-13   P3   P4
-   1.6389389845e-12   P4   P4
-   1.0716427745e-13   P5   P4
-  -2.9551361358e-13   P6   P4
-  -5.0584536559e-14   P7   P4
-   4.0342729157e-14   P8   P4
-   7.1193051454e-15   P9   P4
-   4.6163073364e-13   P0   P5
-   3.4072744626e-13   P1   P5
-   3.4500180490e-13   P2   P5
-  -8.1212814251e-14   P3   P5
-   9.3425267522e-14   P4   P5
-  -1.3433698598e-14   P5   P5
-  -2.5401902803e-13   P6   P5
-  -2.2898349883e-15   P7   P5
-   7.7854389602e-14   P8   P5
-  -2.1898455271e-13   P9   P5
-   6.2386207311e-13   P0   P6
-  -4.4381165409e-14   P1   P6
-   1.0824674490e-14   P2   P6
-  -8.5875750955e-14   P3   P6
-  -5.8453242247e-14   P4   P6
-  -1.1113332476e-13   P5   P6
-  -2.7909619060e-13   P6   P6
-   2.7061686225e-14   P7   P6
-   1.8095247523e-13   P8   P6
-  -7.1984085359e-14   P9   P6
-   2.5479618415e-13   P0   P7
-   4.6213033400e-14   P1   P7
-   0.0000000000e+00   P2   P7
-  -1.2823075934e-13   P3   P7
-  -1.2177758801e-13   P4   P7
-  -4.5796699766e-15   P5   P7
-   2.7061686225e-15   P6   P7
-   4.9960036108e-14   P7   P7
-   3.7157776855e-14   P8   P7
-   1.2854300957e-13   P9   P7
-  -6.4123706345e-13   P0   P8
-  -1.4473838794e-12   P1   P8
-   8.7291285311e-14   P2   P8
-  -6.6058269965e-15   P3   P8
-   3.6096126088e-14   P4   P8
-   7.2664096962e-14   P5   P8
-   2.1468937739e-14   P6   P8
-   4.7774284528e-14   P7   P8
-   1.0528036776e-13   P8   P8
-  -5.1549042812e-14   P9   P8
-  -2.2663121380e-12   P0   P9
-  -1.8146317782e-12   P1   P9
-  -2.7026991756e-14   P2   P9
-  -1.8457457784e-14   P3   P9
-  -1.3052059433e-14   P4   P9
-   1.0586670429e-13   P5   P9
-  -4.4561576651e-14   P6   P9
-   1.4831885720e-14   P7   P9
-  -1.1654566201e-13   P8   P9
-  -4.6529273490e-13   P9   P9
+   2.9892754938e-13   P2   P1
+  -1.1727285809e-12   P3   P1
+   2.7428059823e-13   P4   P1
+   3.7003733411e-13   P5   P1
+  -3.5721425817e-14   P6   P1
+  -1.2490009027e-14   P7   P1
+  -8.9603324760e-13   P8   P1
+  -1.6762008448e-12   P9   P1
+  -1.4341305921e-12   P0   P2
+  -1.1315948178e-12   P1   P2
+  -8.6874951677e-13   P2   P2
+   5.3623772089e-13   P3   P2
+   1.4038770146e-12   P4   P2
+  -1.1143863610e-13   P5   P2
+  -3.3556490919e-13   P6   P2
+   4.5796699766e-14   P7   P2
+   6.2519434074e-14   P8   P2
+   3.2959746044e-14   P9   P2
+   6.5902838742e-13   P0   P3
+  -6.0151883474e-13   P1   P3
+   5.3818061119e-13   P2   P3
+   3.7536640463e-13   P3   P3
+  -8.3932860662e-14   P4   P3
+  -4.4880765770e-14   P5   P3
+   1.5154544286e-14   P6   P3
+   1.1657341759e-14   P7   P3
+  -5.1195159223e-14   P8   P3
+   1.2920220449e-14   P9   P3
+  -4.4264591992e-13   P0   P4
+   8.7380103153e-13   P1   P4
+   2.8727020762e-12   P2   P4
+   8.8828944200e-13   P3   P4
+   9.9145691657e-13   P4   P4
+   4.1217029789e-14   P5   P4
+  -7.4690253982e-14   P6   P4
+  -3.3723024373e-14   P7   P4
+   2.9726221484e-14   P8   P4
+  -9.0177865175e-14   P9   P4
+   1.9845236565e-13   P0   P5
+  -1.4654943925e-13   P1   P5
+   2.8546609521e-13   P2   P5
+  -1.7952306308e-13   P3   P5
+  -4.6712633761e-14   P4   P5
+   4.0301095794e-14   P5   P5
+  -4.7628567756e-14   P6   P5
+  -8.2434059578e-14   P7   P5
+  -6.2283511681e-14   P8   P5
+  -1.3052059433e-13   P9   P5
+   4.6365689066e-13   P0   P6
+   6.6030514390e-14   P1   P6
+  -1.0103029524e-13   P2   P6
+   6.8195449288e-14   P3   P6
+  -6.8195449288e-14   P4   P6
+  -4.3659520443e-14   P5   P6
+  -1.3133938381e-13   P6   P6
+   4.0592529338e-14   P7   P6
+   2.0548840407e-13   P8   P6
+  -4.4561576651e-14   P9   P6
+   3.1891156382e-13   P0   P7
+   2.4980018054e-14   P1   P7
+  -8.5348395018e-14   P2   P7
+  -4.3715031595e-14   P3   P7
+  -9.3675067703e-15   P4   P7
+  -3.4347524824e-14   P5   P7
+  -2.7061686225e-14   P6   P7
+   3.4347524824e-14   P7   P7
+   7.0776717820e-14   P8   P7
+  -6.1305127641e-14   P9   P7
+  -6.7969241346e-13   P0   P8
+  -1.5103751583e-12   P1   P8
+   7.4315553711e-14   P2   P8
+  -3.1377678233e-14   P3   P8
+  -1.9109713811e-14   P4   P8
+  -8.8234974882e-14   P5   P8
+  -6.4406813216e-14   P6   P8
+  -5.3082538365e-15   P7   P8
+   6.3168220654e-14   P8   P8
+   6.8358513294e-14   P9   P8
+  -2.2603793837e-12   P0   P9
+  -1.6967677263e-12   P1   P9
+   1.0678957718e-13   P2   P9
+   1.0059314492e-13   P3   P9
+  -4.8648585160e-14   P4   P9
+  -1.0731693312e-13   P5   P9
+  -6.8556271771e-14   P6   P9
+   3.6585318108e-14   P7   P9
+  -8.1806089680e-14   P8   P9
+  -8.1410572728e-15   P9   P9
 Polynomial Chaos coefficients for cdf_beta:
    2.0377948653e+00   P0   P0
    3.8917456815e+00   P1   P0
    3.6358552587e-01   P2   P0
   -5.6476886844e-02   P3   P0
    7.0374978305e-03   P4   P0
-  -6.9138427547e-04   P5   P0
-   7.3738028116e-05   P6   P0
+  -6.9138427548e-04   P5   P0
+   7.3738028114e-05   P6   P0
    7.6692983134e-05   P7   P0
    1.1405438520e-04   P8   P0
    1.5558764078e-04   P9   P0
@@ -53930,122 +54091,136 @@ Polynomial Chaos coefficients for cdf_beta:
   -2.7786873515e-04   P5   P1
    1.4561039539e-04   P6   P1
    2.1368032270e-04   P7   P1
-   4.2713249628e-04   P8   P1
+   4.2713249629e-04   P8   P1
    3.5019270948e-04   P9   P1
    2.2789366002e-01   P0   P2
    1.7299185623e-01   P1   P2
    1.2113502385e-02   P2   P2
-  -1.9137247311e-03   P3   P2
-   2.6034900202e-04   P4   P2
-   2.4327166343e-05   P5   P2
-   1.1918293879e-04   P6   P2
-   2.3184782442e-04   P7   P2
-   2.3531501844e-04   P8   P2
-   2.6689639330e-04   P9   P2
-  -1.3134196057e-09   P0   P3
-   6.3870289963e-08   P1   P3
-  -1.5133547337e-07   P2   P3
-   7.4118162119e-06   P3   P3
-   5.5819927759e-05   P4   P3
-   9.7811687039e-05   P5   P3
-   2.0470642102e-04   P6   P3
+  -1.9137247310e-03   P3   P2
+   2.6034900203e-04   P4   P2
+   2.4327166351e-05   P5   P2
+   1.1918293881e-04   P6   P2
+   2.3184782443e-04   P7   P2
+   2.3531501845e-04   P8   P2
+   2.6689639331e-04   P9   P2
+  -1.3133926967e-09   P0   P3
+   6.3870337613e-08   P1   P3
+  -1.5133544314e-07   P2   P3
+   7.4118162219e-06   P3   P3
+   5.5819927761e-05   P4   P3
+   9.7811687047e-05   P5   P3
+   2.0470642103e-04   P6   P3
    2.0726525103e-04   P7   P3
    1.5869796518e-04   P8   P3
-   5.9240749957e-05   P9   P3
-  -1.9606976261e-08   P0   P4
-   2.8015174807e-07   P1   P4
-   3.6267549888e-06   P2   P4
-   1.2631701063e-05   P3   P4
-   4.0307627184e-05   P4   P4
-   8.6378727655e-05   P5   P4
-   9.7315466891e-05   P6   P4
+   5.9240749963e-05   P9   P3
+  -1.9606973670e-08   P0   P4
+   2.8015174891e-07   P1   P4
+   3.6267549883e-06   P2   P4
+   1.2631701068e-05   P3   P4
+   4.0307627186e-05   P4   P4
+   8.6378727654e-05   P5   P4
+   9.7315466892e-05   P6   P4
    1.2242963902e-04   P7   P4
-   5.6579940837e-05   P8   P4
-  -2.0799848652e-06   P9   P4
-  -5.1049272178e-08   P0   P5
-   1.1753874185e-06   P1   P5
-   1.1489317028e-05   P2   P5
-   2.2208229231e-05   P3   P5
-   5.4021269219e-05   P4   P5
-   6.0704453724e-05   P5   P5
-   4.9409583750e-05   P6   P5
-   2.3497909785e-05   P7   P5
-   2.7029533421e-06   P8   P5
-  -2.2854814789e-06   P9   P5
-   2.5834903670e-07   P0   P6
-   1.4929803231e-06   P1   P6
-   7.3802359943e-06   P2   P6
+   5.6579940835e-05   P8   P4
+  -2.0799848648e-06   P9   P4
+  -5.1049275231e-08   P0   P5
+   1.1753874094e-06   P1   P5
+   1.1489317023e-05   P2   P5
+   2.2208229234e-05   P3   P5
+   5.4021269218e-05   P4   P5
+   6.0704453717e-05   P5   P5
+   4.9409583743e-05   P6   P5
+   2.3497909783e-05   P7   P5
+   2.7029533403e-06   P8   P5
+  -2.2854814757e-06   P9   P5
+   2.5834903435e-07   P0   P6
+   1.4929803156e-06   P1   P6
+   7.3802359844e-06   P2   P6
    1.8171019064e-05   P3   P6
-   2.3726593729e-05   P4   P6
-   3.3030850397e-05   P5   P6
-   1.5872851619e-05   P6   P6
-  -5.8478705433e-07   P7   P6
-  -1.8732512165e-06   P8   P6
-  -3.2587755129e-07   P9   P6
-   8.7109863398e-07   P0   P7
-   2.4329367957e-06   P1   P7
-   8.6936552700e-06   P2   P7
-   1.1515562043e-05   P3   P7
-   1.0295560877e-05   P4   P7
-   5.9891627717e-06   P5   P7
-   9.7832631244e-07   P6   P7
-  -6.5619775590e-07   P7   P7
-  -2.9746558450e-07   P8   P7
-  -2.5953357043e-08   P9   P7
-   4.9441738537e-07   P0   P8
-   1.9086877700e-06   P1   P8
-   3.5662004441e-06   P2   P8
-   6.0997524506e-06   P3   P8
+   2.3726593731e-05   P4   P6
+   3.3030850394e-05   P5   P6
+   1.5872851616e-05   P6   P6
+  -5.8478705636e-07   P7   P6
+  -1.8732512081e-06   P8   P6
+  -3.2587754184e-07   P9   P6
+   8.7109863429e-07   P0   P7
+   2.4329367959e-06   P1   P7
+   8.6936552709e-06   P2   P7
+   1.1515562044e-05   P3   P7
+   1.0295560876e-05   P4   P7
+   5.9891627705e-06   P5   P7
+   9.7832630982e-07   P6   P7
+  -6.5619775678e-07   P7   P7
+  -2.9746558328e-07   P8   P7
+  -2.5953348886e-08   P9   P7
+   4.9441738468e-07   P0   P8
+   1.9086877744e-06   P1   P8
+   3.5662004507e-06   P2   P8
+   6.0997524581e-06   P3   P8
    3.0764675119e-06   P4   P8
-  -1.4360126783e-07   P5   P8
-  -4.0375369637e-07   P6   P8
-  -8.1150653720e-08   P7   P8
-  -9.0994792876e-09   P8   P8
-  -2.0773189673e-09   P9   P8
-   5.1645452141e-07   P0   P9
-   1.0602500522e-06   P1   P9
-   1.2678194395e-06   P2   P9
-   1.0577279345e-06   P3   P9
-   2.1867288189e-07   P4   P9
-  -1.4315025255e-07   P5   P9
-  -6.6872793597e-08   P6   P9
-  -5.4098548590e-09   P7   P9
-   2.9375339363e-10   P8   P9
-  -3.2106145889e-10   P9   P9
-mean_area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
-cdf_beta:  Mean =  2.0377948653e+00  Std. Dev. = 2.8391913958e+00  Coeff. of Variation =  1.3932665373e+00
-mean_area total Sobol indices:
+  -1.4360127408e-07   P5   P8
+  -4.0375369785e-07   P6   P8
+  -8.1150646365e-08   P7   P8
+  -9.0994698249e-09   P8   P8
+  -2.0773094419e-09   P9   P8
+   5.1645452084e-07   P0   P9
+   1.0602500525e-06   P1   P9
+   1.2678194418e-06   P2   P9
+   1.0577279376e-06   P3   P9
+   2.1867287648e-07   P4   P9
+  -1.4315026211e-07   P5   P9
+  -6.6872800185e-08   P6   P9
+  -5.4098530977e-09   P7   P9
+   2.9376134310e-10   P8   P9
+  -3.2105840599e-10   P9   P9
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    2.0000000000e+02  6.5085413966e+01
+  numerical:    2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+  expansion:    2.0377948653e+00  2.8391913958e+00
+  numerical:    2.0377948653e+00  2.8391913958e+00  8.1335489452e-01  1.9480829034e-02
+mean_area Sobol indices:
+                                  Main             Total
                       7.8688524590e-01  8.0327868852e-01 uuv_1
                       1.9672131148e-01  2.1311475410e-01 uuv_2
-                      1.6393442623e-02 uuv_1 uuv_2
+                      1.6393442623e-02 uuv_1 uuv_2 
 cdf_beta Sobol indices:
+                                  Main             Total
                       6.2963114779e-01  6.8945668266e-01 uuv_1
                       3.1054331734e-01  3.7036885221e-01 uuv_2
-                      5.9825534867e-02 uuv_1 uuv_2
+                      5.9825534867e-02 uuv_1 uuv_2 
 Test Number 2 succeeded
 <<<<< Function evaluation summary (INNER_I): 7425 total (7425 new, 0 duplicate)
-mean_area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
-cdf_beta:  Mean =  2.0377948711e+00  Std. Dev. = 2.8391913582e+00  Coeff. of Variation =  1.3932665149e+00
-mean_area total Sobol indices:
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+     mean_area  2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+      cdf_beta  2.0377948711e+00  2.8391913582e+00  8.1335499002e-01  1.9480384247e-02
+mean_area Sobol indices:
+                                  Main             Total
                       7.8688524590e-01  8.0327868852e-01 uuv_1
                       1.9672131148e-01  2.1311475410e-01 uuv_2
-                      1.6393442623e-02 uuv_1 uuv_2
+                      1.6393442623e-02 uuv_1 uuv_2 
 cdf_beta Sobol indices:
+                                  Main             Total
                       6.2963114035e-01  6.8945667373e-01 uuv_1
                       3.1054332627e-01  3.7036885965e-01 uuv_2
-                      5.9825533376e-02 uuv_1 uuv_2
+                      5.9825533376e-02 uuv_1 uuv_2 
 Test Number 3 succeeded
 <<<<< Function evaluation summary (INNER_I): 13683 total (13683 new, 0 duplicate)
-mean_area:  Mean =  2.0000000000e+02  Std. Dev. = 6.5085413966e+01  Coeff. of Variation =  3.2542706983e-01
-cdf_beta:  Mean =  2.0377949123e+00  Std. Dev. = 2.8391915252e+00  Coeff. of Variation =  1.3932665687e+00
-mean_area total Sobol indices:
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+     mean_area  2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+      cdf_beta  2.0377949123e+00  2.8391915252e+00  8.1335518962e-01  1.9482550875e-02
+mean_area Sobol indices:
+                                  Main             Total
                       7.8688524590e-01  8.0327868852e-01 uuv_1
                       1.9672131148e-01  2.1311475410e-01 uuv_2
-                      1.6393442623e-02 uuv_1 uuv_2
+                      1.6393442623e-02 uuv_1 uuv_2 
 cdf_beta Sobol indices:
+                                  Main             Total
                       6.2963112185e-01  6.8945667658e-01 uuv_1
                       3.1054332342e-01  3.7036887815e-01 uuv_2
-                      5.9825554729e-02 uuv_1 uuv_2
+                      5.9825554728e-02 uuv_1 uuv_2 
 dakota_uq_textbook_dste.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
