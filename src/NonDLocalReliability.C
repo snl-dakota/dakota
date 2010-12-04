@@ -58,7 +58,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
 {
   // check for suitable gradient and variables specifications
   if ( gradientType == "none" ) {
-    Cerr << "\nError: nond_local_reliability requires a gradient specification."
+    Cerr << "\nError: local_reliability requires a gradient specification."
 	 << std::endl;
     abort_handler(-1);
   }
@@ -88,8 +88,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
   else if (mpp_search_type == "no_approx")
     mppSearchType = NO_APPROX;
   else {
-    Cerr << "Error: bad mpp_search type in nond_local_reliability."
-         << std::endl;
+    Cerr << "Error: bad mpp_search type in local_reliability." << std::endl;
     abort_handler(-1); 
   }
 
@@ -110,7 +109,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       npsolFlag = true;
 #else
       Cerr << "\nError: this executable not configured with NPSOL SQP.\n"
-	   << "         Please select OPT++ NIP within nond_local_reliability."
+	   << "         Please select OPT++ NIP within local_reliability."
 	   << std::endl;
       abort_handler(-1);
 #endif
@@ -120,7 +119,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       npsolFlag = false;
 #else
       Cerr << "\nError: this executable not configured with OPT++ NIP.\n"
-	   << "         please select NPSOL SQP within nond_local_reliability."
+	   << "         please select NPSOL SQP within local_reliability."
 	   << std::endl;
       abort_handler(-1);
 #endif

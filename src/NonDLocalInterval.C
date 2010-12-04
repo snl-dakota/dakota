@@ -52,7 +52,7 @@ NonDLocalInterval::NonDLocalInterval(Model& model): NonDInterval(model)
     npsolFlag = true;
 #else
     Cerr << "\nError: this executable not configured with NPSOL SQP.\n"
-	 << "         Please select OPT++ NIP within nond_local_interval_est."
+	 << "         Please select OPT++ NIP within local_interval_est."
 	 << std::endl;
     abort_handler(-1);
 #endif
@@ -62,7 +62,7 @@ NonDLocalInterval::NonDLocalInterval(Model& model): NonDInterval(model)
     npsolFlag = false;
 #else
     Cerr << "\nError: this executable not configured with OPT++ NIP.\n"
-	 << "         please select NPSOL SQP within nond_local_interval_est."
+	 << "         please select NPSOL SQP within local_interval_est."
 	 << std::endl;
     abort_handler(-1);
 #endif

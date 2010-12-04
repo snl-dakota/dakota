@@ -68,7 +68,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     mppSearchType = EGRA_U;
   else {
     Cerr << "Error: only x-space and u-space EGRA are currently supported in "
-	 << "global nond_global_reliability."<< std::endl;
+	 << "global_reliability."<< std::endl;
     abort_handler(-1); 
   }
 
@@ -87,14 +87,14 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   if (!probDescDB.get_rdva("method.nond.probability_levels").empty() ||
       !probDescDB.get_rdva("method.nond.gen_reliability_levels").empty()) {
     Cerr << "Error: Inverse reliability mappings not currently supported in "
-	 << "nond_global_reliability."<< std::endl;
+	 << "global_reliability."<< std::endl;
     abort_handler(-1); 
   }
 
 #ifndef DAKOTA_F90
   if (meritFunctionType == LAGRANGIAN_MERIT) {
     Cerr << "Error: F90 required for standard Lagrangian merit function in "
-	 << "global nond_global_reliability."<< std::endl;
+	 << "global_reliability."<< std::endl;
     abort_handler(-1); 
   }
 #endif // DAKOTA_F90

@@ -29,7 +29,7 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there is not a
-    separate nond_sparse_grid method specification. */
+    separate sparse_grid method specification. */
 NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   ssgLevelRef(probDescDB.get_ushort("method.nond.sparse_grid_level"))
 {

@@ -48,7 +48,7 @@ NonDSampling::NonDSampling(Model& model): NonD(model),
   varyPattern(!probDescDB.get_bool("method.fixed_seed")), numLHSRuns(0)
 {
   if (numEpistemicUncVars && totalLevelRequests) {
-    Cerr << "\nError: nond_sampling does not support level requests for "
+    Cerr << "\nError: sampling does not support level requests for "
 	 << "analyses containing epistemic uncertainties." << std::endl;
     abort_handler(-1);
   }

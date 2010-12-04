@@ -71,7 +71,7 @@ NonDUnilevelRBDO::NonDUnilevelRBDO(DakotaModel& model): DakotaNonD(model),
     mppSearchFlag = 4;
   else {
     Cerr << "Error: only MV, AMV, AMV+, transformed AMV+, and FORM are "
-         << "currently supported in nond_reliability." << std::endl;
+         << "currently supported in unilevel_reliability." << std::endl;
     abort_handler(-1); 
   }
 

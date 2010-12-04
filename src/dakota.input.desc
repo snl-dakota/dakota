@@ -725,6 +725,8 @@ TAG "method/stoch_collocation/sample_type"
 TAG "method/stoch_collocation/sample_type/lhs"
 TAG "method/stoch_collocation/sample_type/random"
 TAG "method/sampling" GROUP "Uncertainty Quantification"
+	DESC "{Nondeterministic sampling method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"
+
 TAG "method/sampling/sample_type"
 TAG "method/sampling/sample_type/random"
 TAG "method/sampling/sample_type/lhs"
@@ -908,6 +910,8 @@ TAG "method/local_interval_est" GROUP "Uncertainty Quantification"
 TAG "method/local_interval_est/sqp"
 TAG "method/local_interval_est/nip"
 TAG "method/local_reliability" GROUP "Uncertainty Quantification"
+	DESC "{Reliability method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"
+
 TAG "method/local_reliability/mpp_search"
 	DESC "{MPP search type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"
 
