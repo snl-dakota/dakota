@@ -8,7 +8,7 @@ available, some of which are commercial packages, some of which are
 developed internally to Sandia, and some of which are free software
 packages from the open source community. The downloaded version of
 DAKOTA excludes the commercially developed packages but includes
-APPSPACK, COLINY, CONMIN, JEGA, OPT++, and PICO. Interfaces to DOT,
+HOPSPACK, COLINY, CONMIN, JEGA, OPT++, and PICO. Interfaces to DOT,
 NPSOL, and NLPQL are provided with DAKOTA, but to use these commercial
 optimizers, the user must obtain a software license and the source
 code for these packages separately. The commercial software can then
@@ -21,7 +21,7 @@ inequality constraints of the form $g_{L_{i}} \leq g_{i}(\mathbf{x})
 $h_{j}(\mathbf{x}) = h_{t_{j}}$ (see also
 Section~\ref{introduction:background:optimization}). Some optimizers
 (e.g., NPSOL, OPT++, JEGA) can handle these constraint forms directly,
-whereas other optimizers (e.g., APPSPACK, DOT, CONMIN) require DAKOTA
+whereas other optimizers (e.g., HOPSPACK, DOT, CONMIN) require DAKOTA
 to perform an internal conversion of all constraints to one-sided
 inequality constraints of the form $g_{i}(\mathbf{x}) \leq 0$. In the
 latter case, the two-sided inequality constraints are treated as
@@ -29,7 +29,7 @@ $g_{i}(\mathbf{x}) - g_{U_{i}} \leq 0$ and $g_{L_{i}} -
 g_{i}(\mathbf{x}) \leq 0$ and the equality constraints are treated as
 $h_{j}(\mathbf{x}) - h_{t_{j}} \leq 0$ and $h_{t_{j}} -
 h_{j}(\mathbf{x}) \leq 0$. The situation is similar for linear
-constraints: APPSPACK, NPSOL, OPT++, and JEGA support them directly,
+constraints: HOPSPACK, NPSOL, OPT++, and JEGA support them directly,
 whereas DOT and CONMIN do not.  For linear inequalities of the form
 $a_{L_{i}} \leq \mathbf{a}_{i}^{T}\mathbf{x} \leq a_{U_{i}}$ and
 linear equalities of the form $\mathbf{a}_{i}^{T}\mathbf{x} =
@@ -61,20 +61,21 @@ information on derivative components and active continuous variables.
 
 \section{Optimization Software Packages}\label{opt:software}
 
-\subsection{APPSPACK Library}\label{opt:software:apps}
+\subsection{HOPSPACK Library}\label{opt:software:apps}
 
-Asynchronous Parallel Pattern Search (APPS)~\cite{GrKo06} is available
-as method \texttt{asynch\_pattern\_search}.  It is an asynchronous
-implementation of generating set search.  APPSPACK can handle
+The HOPSPACK library~\cite{Plantenga2009} provides access to
+Asynchronous Parallel Pattern Search (APPS)~\cite{GrKo06}, which is
+available as method \texttt{asynch\_pattern\_search}.  It is an
+asynchronous implementation of generating set search.  APPS can handle
 unconstrained problems as well as those with bound constraints, linear
 constraints~\cite{GrKoLe08}, and general nonlinear
-constraints~\cite{GrKo07}.  APPSPACK is best suited for
-simulation-based problems with less than 100 variables.  It has
-significant advantages over gradient-based methods when the function
-is noisy and/or discontinuous.  APPSPACK leverages the cddlib
+constraints~\cite{GrKo07}.  APPS is best suited for simulation-based
+problems with less than 100 variables.  It has significant advantages
+over gradient-based methods when the function is noisy and/or
+discontinuous.  APPS and HOPSPACK leverage the cddlib
 software~\cite{Fu05} to handle degeneracy in linear constraints.
 
-An example specification for APPSPACK with nonlinear constraints is:
+An example specification for APPS with nonlinear constraints is:
 \begin{small}
 \begin{verbatim}
     method,
@@ -87,8 +88,9 @@ An example specification for APPSPACK with nonlinear constraints is:
 \end{verbatim}
 \end{small} % Could instead extract dakota_apps.in:5 to get most of this.
 
-See the DAKOTA Reference Manual~\cite{RefMan} for additional detail on the
-APPSPACK commands and sample input specifications in {\tt Dakota/test/dakota\_apps.in}.
+See the DAKOTA Reference Manual~\cite{RefMan} for additional detail on
+the APPS commands and sample input specifications in {\tt
+Dakota/test/dakota\_apps.in}.
 
 \subsection{COLINY Library}\label{opt:software:coliny}
 

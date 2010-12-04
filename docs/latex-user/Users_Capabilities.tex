@@ -265,16 +265,17 @@ provide the DAKOTA user with access to well-tested, proven methods for
 use in engineering design applications, as well as access to some of
 the newest developments in optimization algorithm research.
 
-\textbf{APPSPACK}: is a derivative-free optimization
-library~\cite{GrKo06}.  More specifically, it is an asynchronous
-implementation of generating set search.  APPSPACK can handle
-unconstrained problems as well as those with bound constraints, linear
-constraints~\cite{GrKoLe08}, and general nonlinear
-constraints~\cite{GrKo07}.  APPSPACK was previously integrated with
-DAKOTA via COLINY, but is now directly integrated.  APPSPACK is
-available to the public under the GNU LGPL and the source code is
-included with DAKOTA (web page:
-\url{http://software.sandia.gov/appspack}).
+\textbf{HOPSPACK}: is a library that enables the implementation of
+hybrid optimization algorithms~\cite{Plantenga2009}.  Currently the
+only method exposed is an asynchronous implementation of generating
+set search known as asynchronous parallel pattern search
+(APPS)~\cite{GrKo06}.  It can handle unconstrained problems as well as
+those with bound constraints, linear constraints~\cite{GrKoLe08}, and
+general nonlinear constraints~\cite{GrKo07}.  APPS was previously
+integrated with DAKOTA via the APPSPACK software, but is now
+integrated through it's successor (HOPSPACK).  HOPSPACK is available
+to the public under the GNU LGPL and the source code is included with
+DAKOTA (web page: \url{https://software.sandia.gov/trac/hopspack}).
 
 \textbf{COLINY}: Methods for nongradient-based local and global
 optimization which utilize the Common Optimization Library INterface

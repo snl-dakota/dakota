@@ -39,7 +39,6 @@ method,
 #	constraint_tolerance	1.e-6		#p14,#p16,#p18,#p20
 #
 	asynch_pattern_search
-#		output debug
 #		initial_delta = .5		#4,#9,#10,#11,#12,#13
 #		initial_delta = .5		#15,#16,#19,#20
 #		initial_delta = .5		#p4,#p9,#p10,#p11,#p12,#p13
@@ -107,10 +106,10 @@ method,
 #		constraint_penalty = 1000.0		#17,#18,#19
 #		constraint_penalty = 1000.0		#p5,#p7,#p9,#p13,#p15
 #		constraint_penalty = 1000.0		#p17,#p18,#p19
-#		smoothing_factor = 10.0			#4,#5,#6,#7,#9
-#		smoothing_factor = 10.0			#11,#14,#15,#17
-#		smoothing_factor = 10.0			#p4,#p5,#p6,#p7,#p9
-#		smoothing_factor = 10.0			#p11,#p14,#p15,#p17
+#		smoothing_factor = 1.0			#4,#5,#6,#7,#9
+#		smoothing_factor = 1.0			#11,#14,#15,#17
+#		smoothing_factor = 1.0			#p4,#p5,#p6,#p7,#p9
+#		smoothing_factor = 1.0			#p11,#p14,#p15,#p17
 
 variables,
 	continuous_design = 3

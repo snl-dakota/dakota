@@ -6,8 +6,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:       APPSOptimizer
-//- Description: Wrapper class for APPSPACK
+//- Class:       HOPSOptimizer
+//- Description: Wrapper class for HOPSPACK
 //- Owner:       Patty Hough
 //- Checked by:
 //- Version: $Id
@@ -18,11 +18,11 @@
 
 namespace Dakota {
 
-/// Wrapper class for APPSPACK 
+/// Wrapper class for HOPSPACK 
 
-/** The APPSOptimizer class provides a wrapper for APPSPACK, a
+/** The APPSOptimizer class provides a wrapper for HOPSPACK, a
     Sandia-developed C++ library for generalized pattern search.
-    APPSPACK defaults to a coordinate pattern search but also allows
+    HOPSPACK defaults to a coordinate pattern search but also allows
     for augmented search patterns.  It can solve problems with bounds,
     linear constraints, and general nonlinear constraints.
     APPSOptimizer uses an APPSEvalMgr object to manage the function
@@ -32,14 +32,13 @@ namespace Dakota {
     max_function_evaluations, \c constraint_tol \c initial_delta, \c
     contraction_factor, \c threshold_delta, \c solution_target, \c
     synchronization, \c merit_function, \c constraint_penalty, and \c
-    smoothing_factor are mapped into APPS's \c "Debug", "Maximum
-    Evaluations", "Bounds Tolerance"/"Machine Epsilon"/"Constraint
-    Tolerance", "Initial Step", "Contraction Factor", "Step
-    Tolerance", "Function Tolerance", "Synchronous", "Method",
-    "Initial Penalty Value", and "Initial Smoothing Value" data
-    attributes.  Refer to the APPS web site
-    (http://software.sandia.gov/appspack) for additional information
-    on APPS objects and controls. */
+    smoothing_factor are mapped into HOPS's \c "Display", "Maximum
+    Evaluations", "Active Tolerance"/"Nonlinear Active Tolerance",
+    "Initial Step", "Contraction Factor", "Step Tolerance", "Objective
+    Target", "Synchronous Evaluations", "Penalty Function", "Penalty
+    Parameter", and "Penalty Smoothing Value" data attributes.  Refer
+    to the HOPS web site (https://software.sandia.gov/trac/hopspack)
+    for additional information on HOPS objects and controls. */
 
 APPSOptimizer::APPSOptimizer(Model& model): Optimizer(model)
 {
@@ -49,7 +48,7 @@ APPSOptimizer::APPSOptimizer(Model& model): Optimizer(model)
   set_apps_parameters(); // set specification values using DB
 
   // The following is not performed in the Optimizer constructor since
-  // maxConcurrency is updated within set_method_parameters().  The
+  // maxConcurrency is updated within set_apps_parameters().  The
   // matching free_communicators() appears in the Optimizer destructor.
 
   if (scaleFlag || multiObjFlag)
@@ -65,7 +64,7 @@ APPSOptimizer::APPSOptimizer(NoDBBaseConstructor, Model& model):
   set_apps_parameters(); // set specification values using DB
 
   // The following is not performed in the Optimizer constructor since
-  // maxConcurrency is updated within set_method_parameters().  The
+  // maxConcurrency is updated within set_apps_parameters().  The
   // matching free_communicators() appears in the Optimizer destructor.
 
   if (scaleFlag || multiObjFlag)
@@ -73,23 +72,32 @@ APPSOptimizer::APPSOptimizer(NoDBBaseConstructor, Model& model):
 }
 
 /** find_optimum redefines the Optimizer virtual function to perform
-    the optimization using APPS. It first sets up the problem data,
-    then executes minimize() on the APPS optimizer, and finally
+    the optimization using HOPS. It first sets up the problem data,
+    then executes minimize() on the HOPS optimizer, and finally
     catalogues the results. */
+
 void APPSOptimizer::find_optimum()
 {
+  // Tell the evalMgr whether or not to do asynchronous evaluations
+  // and maximum available concurrency.
+
   evalMgr->set_asynch_flag(iteratedModel.asynch_flag());
   evalMgr->set_total_workers(iteratedModel.evaluation_capacity());
+
+  // Initialize variable values and define constraints.
+
   initialize_variables_and_constraints();
 
   // Instantiate optimizer and solve.
 
   HOPSPACK::Hopspack optimizer(evalMgr);
   optimizer.setInputParameters(params);
+
   optimizer.solve();
 
-  // Retrieve best iterate and convert from APPS vector to DAKOTA
+  // Retrieve best iterate and convert from HOPS vector to DAKOTA
   // vector.
+
   std::vector<double> bestX(numContinuousVars);
   bool state = optimizer.getBestX(bestX);
   RealVector variableHolder(numContinuousVars, false);
@@ -97,13 +105,16 @@ void APPSOptimizer::find_optimum()
     variableHolder[i] = bestX[i];
   bestVariablesArray.front().continuous_variables(variableHolder);
 
-  // Retrieve the best responses and convert from APPS vector to
+  // Retrieve the best responses and convert from HOPS vector to
   // DAKOTA vector.
-  if (!multiObjFlag) { // else multi_objective_retrieve() is used in
-                       // Optimizer::post_run()
+
+  if (!multiObjFlag) {
+    // else multi_objective_retrieve() is used in
+    // Optimizer::post_run()
+
+    RealVector best_fns(numFunctions);
     std::vector<double> bestEqs(numNonlinearEqConstraints);
     std::vector<double> bestIneqs(constraintMapIndices.size()-numNonlinearEqConstraints);
-    RealVector best_fns(numFunctions);
     best_fns[0] = optimizer.getBestF();
     if (numNonlinearEqConstraints > 0) {
       optimizer.getBestNonlEqs(bestEqs);
@@ -123,18 +134,19 @@ void APPSOptimizer::find_optimum()
   }
 }
 
-/** Set all of the APPS algorithmic parameters as specified in the
+/** Set all of the HOPS algorithmic parameters as specified in the
     DAKOTA input deck.  This is called at construction time. */
+
 void APPSOptimizer::set_apps_parameters()
 {
-  // Set APPS parameters from DAKOTA input deck values.
-
-  HOPSPACK::Vector scales(numContinuousVars);
+  // Get pointers to parameter sublists.
 
   problemParams = &(params.getOrSetSublist("Problem Definition"));
   linearParams = &(params.getOrSetSublist("Linear Constraints"));
   mediatorParams = &(params.getOrSetSublist("Mediator"));
   citizenParams = &(params.getOrSetSublist("Citizen 1"));
+
+  // Set amount of output to display.
 
   switch (outputLevel) {
   case DEBUG_OUTPUT:
@@ -147,36 +159,40 @@ void APPSOptimizer::set_apps_parameters()
     }
     else
       citizenParams->setParameter("Display", 3);
+    break;
   case VERBOSE_OUTPUT:
-    problemParams->setParameter("Display", 2);
-    linearParams->setParameter("Display", 2);
-    mediatorParams->setParameter("Display", 4);
-    if (numNonlinearConstraints > 0) {
-      citizenParams->setParameter("Display", 2);
-      citizenParams->setParameter("Display Subproblem", 3);
-    }
-    else
-      citizenParams->setParameter("Display", 3);
-  case NORMAL_OUTPUT:
     problemParams->setParameter("Display", 1);
     linearParams->setParameter("Display", 1);
-    mediatorParams->setParameter("Display", 3);
+    mediatorParams->setParameter("Display", 4);
     if (numNonlinearConstraints > 0) {
       citizenParams->setParameter("Display", 1);
       citizenParams->setParameter("Display Subproblem", 2);
     }
     else
       citizenParams->setParameter("Display", 2);
-  case QUIET_OUTPUT:
-    problemParams->setParameter("Display", 1);
-    linearParams->setParameter("Display", 1);
-    mediatorParams->setParameter("Display", 2);
+    break;
+  case NORMAL_OUTPUT:
+    problemParams->setParameter("Display", 0);
+    linearParams->setParameter("Display", 0);
+    mediatorParams->setParameter("Display", 3);
     if (numNonlinearConstraints > 0) {
-      citizenParams->setParameter("Display", 1);
+      citizenParams->setParameter("Display", 0);
       citizenParams->setParameter("Display Subproblem", 1);
     }
     else
       citizenParams->setParameter("Display", 1);
+    break;
+  case QUIET_OUTPUT:
+    problemParams->setParameter("Display", 0);
+    linearParams->setParameter("Display", 0);
+    mediatorParams->setParameter("Display", 2);
+    if (numNonlinearConstraints > 0) {
+      citizenParams->setParameter("Display", 0);
+      citizenParams->setParameter("Display Subproblem", 0);
+    }
+    else
+      citizenParams->setParameter("Display", 0);
+    break;
   case SILENT_OUTPUT:
     problemParams->setParameter("Display", 0);
     linearParams->setParameter("Display", 0);
@@ -189,48 +205,38 @@ void APPSOptimizer::set_apps_parameters()
       citizenParams->setParameter("Display", 0);
   }
 
+  // Set number of citizens (i.e. algorithms) and maximum total number
+  // of evaluations.  Not doing hybrid at this point, so only one
+  // citizen (generalized set search, formerly APPS).
+
   mediatorParams->setParameter("Citizen Count", 1);
+  mediatorParams->setParameter("Maximum Evaluations", maxFunctionEvals);
+
+  // Set GSS variant based on presence or not of nonlinear
+  // constraints.
+
   if (numNonlinearConstraints > 0)
     citizenParams->setParameter("Type", "GSS-NLC");
   else
     citizenParams->setParameter("Type", "GSS");
 
-  citizenParams->setParameter("Maximum Evaluations", maxFunctionEvals);
-  if (numNonlinearConstraints > 0)
-    citizenParams->setParameter("Maximum Evaluations", maxFunctionEvals);
+  // Set linear and nonlinear constraint tolerances.  DAKOTA does not
+  // distinguish between the two, so we use the same value for both.
 
   if (constraintTol > 0.0) {
-    //    params.sublist("Solver").setParameter("Bounds Tolerance", constraintTol);
     linearParams->setParameter("Active Tolerance", constraintTol);
     citizenParams->setParameter("Nonlinear Active Tolerance", constraintTol);
   }
 
-  if (probDescDB.is_null()) { // instantiate on-the-fly
-    // rely on internal APPS defaults for the most part, but set any
-    // default overrides (including enforcement of DAKOTA defaults) here
+  if (probDescDB.is_null()) {
+    // Instantiate on-the-fly.
+    // Rely on internal HOPS defaults for the most part, but set any
+    // default overrides (including enforcement of DAKOTA defaults).
   }
   else {
 
-    const Real& init_step_length
-      = probDescDB.get_real("method.asynch_pattern_search.initial_delta");
-    if (init_step_length >= 0.0)
-      citizenParams->setParameter("Initial Step", init_step_length);
-
-    const Real& contract_step_length
-      = probDescDB.get_real("method.asynch_pattern_search.contraction_factor");
-    citizenParams->setParameter("Contraction Factor", contract_step_length);
-
-    const Real& thresh_step_length
-      = probDescDB.get_real("method.asynch_pattern_search.threshold_delta");
-    if (thresh_step_length >= 0.0)
-      citizenParams->setParameter("Step Tolerance", thresh_step_length);
-
-    const Real& solution_target
-      = probDescDB.get_real("method.solution_target");
-    if (solution_target!=-1.e+25)
-      problemParams->setParameter("Objective Target", solution_target);
-
-    // A null string is the DB default and nonblocking is the APPS default, so
+    // Set synchronous or asynchronouse GSS behavior.
+    // A null string is the DB default and nonblocking is the HOPS default, so
     // the flag is true only for an explicit blocking user specification.
 
     const bool blocking_synch = (probDescDB.get_string("method.asynch_pattern_search.synchronization")
@@ -242,52 +248,84 @@ void APPSOptimizer::set_apps_parameters()
     else
       mediatorParams->setParameter("Synchronous Evaluations", false);
 
-    //const RealVector& variable_scales = probDescDB.get_rdv("variables.continuous_design.scales");
-    const RealVector& lower_bnds
-      = iteratedModel.continuous_lower_bounds();
-    const RealVector& upper_bnds
-      = iteratedModel.continuous_upper_bounds();
+    // Set GSS algorithm control parameters.
 
-    if (lower_bnds[0]<=-bigRealBoundSize || upper_bnds[0]>=bigRealBoundSize) {
-      for (int i=0; i<numContinuousVars; i++)
-	scales[i] = 1.0;
-      problemParams->setParameter("Scaling", scales);
+    const Real& init_step_length
+      = probDescDB.get_real("method.asynch_pattern_search.initial_delta");
+    if (init_step_length > 0.0)
+      citizenParams->setParameter("Initial Step", init_step_length);
+    else
+      Cout << "\nWarning: initial_delta must be greater than 0.0."
+	   << "\n         Using default value of 1.0.\n\n";
+
+    const Real& contract_step_length
+      = probDescDB.get_real("method.asynch_pattern_search.contraction_factor");
+    if (contract_step_length > 0.0 && contract_step_length < 1.0)
+      citizenParams->setParameter("Contraction Factor", contract_step_length);
+    else
+      Cout << "\nWarning: contraction_factor must be between 0.0 and 1.0, noninclusive."
+	   << "\n         Using default value of 0.5.\n\n";
+
+    const Real& thresh_step_length
+      = probDescDB.get_real("method.asynch_pattern_search.threshold_delta");
+    if (thresh_step_length >= 4.4e-16)
+      citizenParams->setParameter("Step Tolerance", thresh_step_length);
+    else
+      Cout << "\nWarning: threshold_delta must be between greater than or equal to 4.4e-16."
+	   << "\n         Using default value of 0.01.\n\n";
+
+    const Real& solution_target
+      = probDescDB.get_real("method.solution_target");
+    if (solution_target > -DBL_MAX)
+      problemParams->setParameter("Objective Target", solution_target);
+
+    // For nonlinearly constrained problems, set penalty-related parameters.
+
+    if (numNonlinearConstraints > 0) {
+      const String merit_function = probDescDB.get_string("method.asynch_pattern_search.merit_function");
+      if (merit_function == "merit_max")
+	citizenParams->setParameter("Penalty Function", "L_inf");
+      else if (merit_function == "merit_max_smooth")
+	citizenParams->setParameter("Penalty Function", "L_inf (smoothed)");
+      else if (merit_function == "merit1")
+	citizenParams->setParameter("Penalty Function", "L1");
+      else if (merit_function == "merit1_smooth")
+	citizenParams->setParameter("Penalty Function", "L1 (smoothed)");
+      else if (merit_function == "merit2")
+	citizenParams->setParameter("Penalty Function", "L2");
+      else if (merit_function == "merit2_smooth")
+	citizenParams->setParameter("Penalty Function", "L2 (smoothed)");
+      else if (merit_function == "merit2_squared")
+	citizenParams->setParameter("Penalty Function", "L2 Squared");
+      else
+	Cout << "\nWarning: merit_function invalid."
+	     << "\n         Using default L2 Squared.\n\n";
+
+      Real constr_penalty = probDescDB.get_real("method.asynch_pattern_search.constraint_penalty");
+      if (constr_penalty >= 0.0)
+	citizenParams->setParameter("Penalty Parameter", constr_penalty);
+      else
+	Cout << "\nWarning: constraint_penalty must be between greater than or equal to 0.0."
+	     << "\n         Using default value of 1.0.\n\n";
+
+      Real smooth_factor = probDescDB.get_real("method.asynch_pattern_search.smoothing_factor");
+      if (smooth_factor >= 0.0 && smooth_factor <= 1.0)
+	citizenParams->setParameter("Penalty Smoothing Value", smooth_factor);
+      else
+	Cout << "\nWarning: smoothing_factor must be between 0.0 and 1.0, inclusive."
+	     << "\n         Using default value of 0.0.\n\n";
     }
-
-    const String merit_function = probDescDB.get_string("method.asynch_pattern_search.merit_function");
-    if (merit_function == "merit_max")
-      citizenParams->setParameter("Penalty Function", "L_inf");
-    else if (merit_function == "merit_max_smooth")
-      citizenParams->setParameter("Penalty Function", "L_inf (smoothed)");
-    else if (merit_function == "merit1")
-      citizenParams->setParameter("Penalty Function", "L1");
-    else if (merit_function == "merit1_smooth")
-      citizenParams->setParameter("Penalty Function", "L1 (smoothed)");
-    else if (merit_function == "merit2")
-      citizenParams->setParameter("Penalty Function", "L2");
-    else if (merit_function == "merit2_smooth")
-      citizenParams->setParameter("Penalty Function", "L2 (smoothed)");
-    else if (merit_function == "merit2_squared")
-      citizenParams->setParameter("Penalty Function", "L2 Squared");
-
-    Real constr_penalty = probDescDB.get_real("method.asynch_pattern_search.constraint_penalty");
-    if (constr_penalty >= 0.)
-      citizenParams->setParameter("Penalty Parameter", constr_penalty);
-
-    /*    Real smooth_factor = probDescDB.get_real("method.asynch_pattern_search.smoothing_factor");
-    if (smooth_factor >= 0.)
-    citizenParams->setParameter("Penalty Smoothing Value", smooth_factor); */
 
     maxConcurrency *= 2*numContinuousVars;
 
     // ----------------------------------------------------------------
-    // Current APPS is hardwired for coordinate bases, no expansion,
+    // Current HOPS is hardwired for coordinate bases, no expansion,
     // and no pattern augmentation.
     //
     // See http://software.sandia.gov/appspack/pageParameters.html
     // for valid specification options.
     //
-    // APPS wish list:
+    // HOPS wish list:
     //   basis control (only coordinate now supported due to simplified
     //     constraint management)
     //   some form of load balancing (total size preferred; Tammy says 
@@ -299,6 +337,7 @@ void APPSOptimizer::set_apps_parameters()
 
 /** Set the variables and constraints as specified in the DAKOTA input
     deck.  This is done at run time. */
+
 void APPSOptimizer::initialize_variables_and_constraints()
 {
   // Initialize variables and bounds.  This is performed in find_optimum
@@ -318,23 +357,39 @@ void APPSOptimizer::initialize_variables_and_constraints()
     = iteratedModel.continuous_lower_bounds();
   const RealVector& upper_bnds
     = iteratedModel.continuous_upper_bounds();
+  bool setScales = false;
 
   for (int i=0; i<numContinuousVars; i++) {
     init_point[i] = init_pt[i];
     if (lower_bnds[i] > -bigRealBoundSize)
       lower[i] = lower_bnds[i];
-    else
+    else {
       lower[i] = HOPSPACK::dne();
+      setScales = true;
+    }
     if (upper_bnds[i] < bigRealBoundSize)
       upper[i] = upper_bnds[i];
-    else
+    else {
       upper[i] = HOPSPACK::dne();
+      setScales = true;
+    }
   }
 
   problemParams->setParameter("Number Unknowns", (int) numContinuousVars);
   problemParams->setParameter("Initial X", init_point);
   problemParams->setParameter("Lower Bounds", lower);
   problemParams->setParameter("Upper Bounds", upper);
+
+  // If there are no bound constraints, HOPSPACK requires that scaling be provided.
+
+  if (setScales) {
+    HOPSPACK::Vector scales(numContinuousVars);
+    for (int i=0; i<numContinuousVars; i++)
+      scales[i] = 1.0;
+    problemParams->setParameter("Scaling", scales);
+  }
+
+  // Define linear equality and inequality constraints.
 
   const RealMatrix& linear_ineq_coeffs = iteratedModel.linear_ineq_constraint_coeffs();
   const RealVector& linear_ineq_lower_bnds = iteratedModel.linear_ineq_constraint_lower_bounds();
@@ -368,6 +423,8 @@ void APPSOptimizer::initialize_variables_and_constraints()
   linearParams->setParameter("Equality Matrix", lin_eq_coeffs);
   linearParams->setParameter("Equality Bounds", lin_eq_targets);
 
+  // Define nonlinear equality and inequality constraints.
+
   const RealVector& nln_ineq_lwr_bnds
     = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
   const RealVector& nln_ineq_upr_bnds
@@ -377,13 +434,13 @@ void APPSOptimizer::initialize_variables_and_constraints()
 
   int numAPPSNonlinearIneqConstraints = 0;
 
-  // APPSPACK expects nonlinear equality constraints to be of the form
+  // HOPSPACK expects nonlinear equality constraints to be of the form
   // c(x) = 0 and nonlinear inequality constraints to be of the form
-  // c(x) <= 0.  Compute the number of 1-sided nonlinear inequality
-  // constraints to pass to APPSPACK (numAPPSNonlinearIneqConstraints)
+  // c(x) >= 0.  Compute the number of 1-sided nonlinear inequality
+  // constraints to pass to HOPSPACK (numAPPSNonlinearIneqConstraints)
   // as well as the mappings for both equalities and inequalities
   // (indices, multipliers, offsets) between the DAKOTA constraints
-  // and the APPSPACK constraints.
+  // and the HOPSPACK constraints.
 
   for (int i=0; i<numNonlinearEqConstraints; i++) {
     constraintMapIndices.push_back(i+numNonlinearIneqConstraints);
@@ -395,14 +452,14 @@ void APPSOptimizer::initialize_variables_and_constraints()
     if (nln_ineq_lwr_bnds[i] > -bigRealBoundSize) {
       numAPPSNonlinearIneqConstraints++;
       constraintMapIndices.push_back(i);
-      constraintMapMultipliers.push_back(-1.0);
-      constraintMapOffsets.push_back(nln_ineq_lwr_bnds[i]);
+      constraintMapMultipliers.push_back(1.0);
+      constraintMapOffsets.push_back(-nln_ineq_lwr_bnds[i]);
     }
     if (nln_ineq_upr_bnds[i] < bigRealBoundSize) {
       numAPPSNonlinearIneqConstraints++;
       constraintMapIndices.push_back(i);
-      constraintMapMultipliers.push_back(1.0);
-      constraintMapOffsets.push_back(-nln_ineq_upr_bnds[i]);
+      constraintMapMultipliers.push_back(-1.0);
+      constraintMapOffsets.push_back(nln_ineq_upr_bnds[i]);
     }
   }
 

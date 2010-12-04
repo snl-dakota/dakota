@@ -88,12 +88,20 @@ protected:
 
   /// Pointer to APPS parameter list
   HOPSPACK::ParameterList  params;
+
+  /// Pointer to APPS problem parameter sublist
   HOPSPACK::ParameterList* problemParams;
+
+  /// Pointer to APPS linear constraint parameter sublist
   HOPSPACK::ParameterList* linearParams;
+
+  /// Pointer to APPS mediator parameter sublist
   HOPSPACK::ParameterList* mediatorParams;
+
+  /// Pointer to APPS citizen/algorithm parameter sublist
   HOPSPACK::ParameterList* citizenParams;
 
-  /// Pointer to the APPSApplication object
+  /// Pointer to the APPS evaluation manager object
   APPSEvalMgr* evalMgr;
 
   /// map from Dakota constraint number to APPS constraint number

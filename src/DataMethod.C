@@ -55,7 +55,7 @@ DataMethodRep::DataMethodRep():
   // APPSPACK
   initStepLength(1.0), contractStepLength(0.5), threshStepLength(0.01),
   evalSynchronize("nonblocking"),
-  meritFunction("merit2_smooth"), constrPenalty(1.0), smoothFactor(1.0),
+  meritFunction("merit2_squared"), constrPenalty(1.0), smoothFactor(0.0),
   // COLINY
   //evalSynchronization("nonblocking"), // leave empty string as default
   constraintPenalty(-1.), constantPenalty(false), globalBalanceParam(-1.),

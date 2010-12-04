@@ -1325,37 +1325,46 @@ Specification detail for the OPT++ PDS method
 \subsection MethodAPPS Asynchronous Parallel Pattern Search (APPS)
 <!-- dakota subcat asynch_pattern_search -->
 
-The asynchronous parallel pattern search algorithm
-[\ref GrKo06 "Gray and Kolda, 2006"]
-is a fully asynchronous pattern search technique in
-that the search along each offset direction continues without waiting
-for searches along other directions to finish.  APPSPACK can handle
-unconstrained problems as well as those with bound constraints, linear
-constraints, and general nonlinear constraints.  APPSPACK is available
-to the public under the GNU LGPL and the source code is included with
-DAKOTA.  APPS-specific software documentation is available from
-http://software.sandia.gov/appspack.
-
+The asynchronous parallel pattern search (APPS) algorithm [\ref GrKo06
+"Gray and Kolda, 2006"] is a fully asynchronous pattern search
+technique in that the search along each offset direction continues
+without waiting for searches along other directions to finish.  It is
+now made available in DAKOTA through the HOPSPACK software [\ref
+Plantenga2009 "Plantenga, 2009"].  It can handle unconstrained
+problems as well as those with bound constraints, linear constraints,
+and general nonlinear constraints.  HOPSPACK is available to the
+public under the GNU LGPL and the source code is included with DAKOTA.
+HOPSPACK-specific software documentation is available from
+https://software.sandia.gov/trac/hopspack.
 
 \subsubsection MethodAPPSIC APPS method independent controls
 
 The only method independent controls that are currently mapped to APPS
 are \c max_function_evaluations, \c constraint_tolerance, and the \c
-output verbosity control.  The APPS internal "debug" level is mapped
-to the DAKOTA \c debug, \c verbose, \c normal, \c quiet, and \c silent
+output verbosity control.  We note that while APPS treats the
+constraint tolerance separately for linear and nonlinear constraints,
+we apply the same value to both if the user specifies \c
+constraint_tolerance.  The APPS internal "display" level is mapped to
+the DAKOTA \c debug, \c verbose, \c normal, \c quiet, and \c silent
 settings as follows:
 
-\li DAKOTA "debug":   APPS debug level = 7
-\li DAKOTA "verbose": APPS debug level = 4
-\li DAKOTA "normal":  APPS debug level = 3
-\li DAKOTA "quiet":   APPS debug level = 2
-\li DAKOTA ""silent": APPS debug level = 1
+\li DAKOTA "debug":   display final solution, all input parameters,
+variable and constraint info, trial points, search directions, and
+execution details
+\li DAKOTA "verbose": display final solution, all input parameters,
+variable and constraint info, and trial points
+\li DAKOTA "normal":  display final solution, all input parameters,
+variable and constraint summaries, and new best points
+\li DAKOTA "quiet":   display final solution and all input parameters
+\li DAKOTA ""silent": display final solution
 
 APPS exploits parallelism through the use of DAKOTA's concurrent
-function evaluations.  The nature of the algorithm, however, limits
-the amount of concurrency that can be exploited.  In particular, APPS
-can leverage an evaluation concurrency level of at most twice the
-number of variables.
+function evaluations.  The variant of the algorithm that is currently
+exposed, however, limits the amount of concurrency that can be
+exploited.  In particular, APPS can leverage an evaluation concurrency
+level of at most twice the number of variables.  More options that
+allow for greater evaluation concurrency may be exposed in future
+releases.
 
 \subsubsection MethodAPPSDC APPS method dependent controls
 
@@ -1363,16 +1372,17 @@ The APPS method is invoked using a \c asynch_pattern_search group
 specification.  Some of the method dependent controls are similar to
 the Coliny controls for \c coliny_pattern_search described in \ref
 MethodCOLINYPS.  In particular, APPS supports the following step
-length control parameters
+length control parameters:
 
-\li \c initial_delta: the initial step length
-\li \c threshold_delta: step length used to determine convergence
+\li \c initial_delta: the initial step length, must be positive
+\li \c threshold_delta: step length used to determine convergence,
+must be greater than or equal to 4.4e-16
 \li \c contraction_factor: amount by which step length is rescaled
-after unsuccesful iterates
+after unsuccesful iterates, must be strictly between 0 and 1
 
-When the solution to the optimization problem is known to be zero, the
-user may specify a value for \c solution_target as a termination
-criteria.  APPS will terminate when the function value falls below \c
+When the solution to the optimization problem is known, the user may
+specify a value for \c solution_target as a termination criteria.
+APPS will terminate when the function value falls below \c
 solution_target.
 
 Currently, APPS only supports coordinate bases with a total of \e 2n
@@ -1397,9 +1407,14 @@ follows:
 \li \c merit2_smooth: based on smoothed \f$ \ell_2\f$ norm
 \li \c merit2_squared: based on \f$ \ell_2^2\f$ norm
 
-The user can also specify a \c constraint_penalty and \c
-smoothing_parameter.  \ref T5d8 "Table 5.8" summarizes the APPS
-specification.
+The user can also specify the following:
+
+\li \c constraint_penalty: the initial multiplier for the penalty
+function, must be nonnegative
+\li \c smoothing_parameter: initial smoothing value for smoothed
+penalty functions, must be between 0 and 1 (inclusive)
+
+\ref T5d8 "Table 5.8" summarizes the APPS specification.
 
 \anchor T5d8
 <table>
@@ -1457,7 +1472,7 @@ Specification detail for the APPS method
 <td>\c merit_max | \c merit_max_smooth | \c merit1 | \c merit1_smooth | 
 \c merit2 | \c merit2_smooth | \c merit2_squared
 <td>Optional
-<td>\c merit2_smooth
+<td>\c merit2_squared
 <tr>
 <td>Constraint penalty
 <td>\c constraint_penalty
@@ -1469,7 +1484,7 @@ Specification detail for the APPS method
 <td>\c smoothing_factor
 <td>real
 <td>Optional
-<td>1.0
+<td>0.0
 </table>
 
 
