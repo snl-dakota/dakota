@@ -14,7 +14,6 @@
 //- Version: $Id$
 
 #include "COLINApplication.H"
-#include "COLINEvaluator.H"
 #include "COLINOptimizer.H"
 #include "ProblemDescDB.H"
 #include "ParamResponsePair.H"
@@ -62,28 +61,11 @@ using std::runtime_error;
 
 namespace Dakota {
 
-// reference to the Dakota evaluator so that it gets registered with the
-// factory
-extern const volatile bool dakota_evaluator_registered;
-
-
 //
 // - TypeManager registrations
 //
 
 namespace {
-
-// BMA TODO: register conversion functions for utilib::MixedIntVars or equiv.
-
-// bi-directional conversion between Dakota *Vector and std::vector<*>
-// (for double and int)
-/* template<typename FROM, typename TO>
-int cast_dakota_standard(const Any &src, Any &dest)
-{ 
-  const FROM& tmp = src.expose<FROM>();
-  dest.set<TO>().assign(tmp.begin(), tmp.end());
-  return 0;
-  } */
 
 int cast_from_realvector_to_vector(const Any& src, Any& dest)
 {
@@ -152,15 +134,10 @@ int cast_from_charconst_to_string(const Any& src, Any& dest)
   char const* tmp = src.expose<char const*>();
   string& ans = dest.set<string>();
   ans = tmp;
-  //  return static_cast<char const*>(ans) == tmp 
-  //     ? 0 : utilib::Type_Manager::CastWarning::ValueOutOfRange;
   return 0;
 }
 
 bool register_dakota_cast(){
-  // reference to the Dakota evaluator so that it gets registered with
-  // the factory
-  static_cast<void>(dakota_evaluator_registered);
 
   TypeManager()->register_lexical_cast
     ( typeid(RealVector), typeid(vector<double>), 
@@ -190,10 +167,8 @@ const volatile bool dakota_cast_registered = register_dakota_cast();
 
 } // private namespace
 
-
 // used to enumerate the solverType
 enum { COBYLA, DIRECT, EA, MS, PS, SW };
-
 
 COLINOptimizer::COLINOptimizer(Model& model):
   Optimizer(model)
@@ -211,7 +186,6 @@ COLINOptimizer::COLINOptimizer(Model& model):
  
 }
 
-
 COLINOptimizer::COLINOptimizer(Model& model, int seed):
   Optimizer(NoDBBaseConstructor(), model), blockingSynch(false)
 {
@@ -220,7 +194,6 @@ COLINOptimizer::COLINOptimizer(Model& model, int seed):
   set_solver_parameters(); // DB is null: set inherited attributes and defaults
 }
 
-
 COLINOptimizer::COLINOptimizer(NoDBBaseConstructor, Model& model):
   Optimizer(NoDBBaseConstructor(), model), rng(NULL), blockingSynch(false)
 {
@@ -228,58 +201,35 @@ COLINOptimizer::COLINOptimizer(NoDBBaseConstructor, Model& model):
   set_solver_parameters(); // DB is null: set inherited attributes and defaults
 }
 
-
 /** find_optimum redefines the Optimizer virtual function to perform
     the optimization using COLIN. It first sets up the problem data,
     then executes optimize() on the COLIN solver and finally
     catalogues the results. */
 void COLINOptimizer::find_optimum()
 {
-
   // Much of this is performed in find_optimum in order to capture any
   // reassignment at the strategy layer (after iterator construction).
   try {
      colinEvalMgr = colin::EvalManagerFactory()
-        .create(iteratedModel.asynch_flag() ? "Dakota" : "Serial");
+        .create(iteratedModel.asynch_flag() ? "Concurrent" : "Serial");
+     if (colinEvalMgr->has_property("max_concurrency"))
+       colinEvalMgr->property("max_concurrency") = iteratedModel.evaluation_capacity();
      colinSolver->set_evaluation_manager(colinEvalMgr);
      colinProblem.second->set_evaluation_manager(colinEvalMgr);
-
-    set_runtime_parameters();
 
     // Initialize the COLINApplication with the appropriate model
     // this will initialize functions, constraints, and bounds
     colinProblem.second->set_problem(iteratedModel);
-    
-    // BMA TODO: revisit
-    /*
-    application->dakota_asynch_flag(asynchFlag);
-    problem.reset_neval(iteratedModel.evaluation_id());
-    problem.reset_neval_request_id(iteratedModel.evaluation_id());
-    */
+    colinSolver->set_problem(colinProblem.first);
 
-    // Inform the solver of the application it's working on
-    // PDH Note: For now, may have to set constraint penalty by
-    // explicitly creating object.  Compilation barfs on some
-    // incompatibilities in COLIN, so code is still commented out.
-
-    //    const Real& constraint_penalty = probDescDB.get_real("method.constraint_penalty");
-    //    if (constraint_penalty >= 0.) {
-    //      ConstraintPenaltyApplication<colin::MO_MINLP2_problem> colinProblemCP(colinProblem.first);
-    //      colinProblemCP.set_penalty(constraint_penalty);
-      //      colinSolver->set_problem(colinProblemCP);
-    //    }
-    //    else
-      colinSolver->set_problem(colinProblem.first);
-
-      // JDS: We need to wait to set the constraint penalty until after
-      // the problem is handed to the solver and all reformulations have
-      // taken place.
-      colin::ApplicationHandle problem = colinSolver->get_problem_handle();
-      if ( constraint_penalty >= 0. )
-         problem->property("constraint_penalty") = constraint_penalty;
-      if ( problem->has_property("apply_convergence_factor") )
-         problem->property("apply_convergence_factor") = !constant_penalty;
-
+    // JDS: We need to wait to set the constraint penalty until after
+    // the problem is handed to the solver and all reformulations have
+    // taken place.
+    colin::ApplicationHandle problem = colinSolver->get_problem_handle();
+    if ( constraint_penalty >= 0. )
+      problem->property("constraint_penalty") = constraint_penalty;
+    if ( problem->has_property("apply_convergence_factor") )
+      problem->property("apply_convergence_factor") = !constant_penalty;
 
     // Set initial point; the following discards any initial point
     // data existing in the cache 
@@ -287,37 +237,22 @@ void COLINOptimizer::find_optimum()
     // ask for MixedIntVars set functions; consider convenience function
     const RealVector& cv_init = iteratedModel.continuous_variables();
     const IntVector&  dv_init = iteratedModel.discrete_int_variables();
-
     MixedIntVars miv_init(0, dv_init.length(), cv_init.length());
     TypeManager()->lexical_cast(cv_init, miv_init.Real());
     TypeManager()->lexical_cast(dv_init, miv_init.Integer());
 
-    /* JDS: This should be taken care of by the TypeManager
-    //miv_init.Real().assign(cv_init.begin(), cv_init.end());
-    //miv_init.Integer().assign(dv_init.begin(), dv_init.end());
-    utilib::MixedIntVars::real_iterator real_it = miv_init.Real().begin(); 
-    utilib::MixedIntVars::real_iterator real_end = miv_init.Real().end();
-    for (size_t i = 0; real_it != real_end; ++real_it, ++i)
-      (*real_it) = cv_init[i];
-    utilib::MixedIntVars::integer_iterator int_it = miv_init.Integer().begin(); 
-    utilib::MixedIntVars::integer_iterator int_end = miv_init.Integer().end();
-    for (size_t i = 0; int_it != int_end; ++int_it, ++i)
-      (*int_it) = dv_init[i];
-    */
- 
     PointSet ps;  // allocates ResponseCache_local
     ps.add_point(colinProblem.first, miv_init);
     colinSolver->set_initial_points(ps);
 
-    // Solve the optimization problem
-    colinSolver->reset(); // only call once just before optimize
     if (outputLevel == DEBUG_OUTPUT) {
       Cout << "COLIN Solver initial status and options:" << endl;
       utilib::PropertyDict_YamlPrinter printer;
-      printer.print(Cout, colinSolver->results());
-      //      colinSolver->options().write(Cout);
+      printer.print(Cout, colinSolver->Properties());
     }
 
+    // Solve the optimization problem
+    colinSolver->reset(); // only call once just before optimize
     colinSolver->optimize();
 
     if (outputLevel == DEBUG_OUTPUT) {
@@ -376,12 +311,11 @@ void COLINOptimizer::solver_setup(Model& model)
 
   string solverstr;
   string method_name = probDescDB.get_string("method.algorithm");
-#ifdef DAKOTA_3PO
+
   if (method_name == "coliny_cobyla") {
     solverType = COBYLA;
     solverstr = "cobyla:Cobyla";
   }
-#endif
   else if (method_name == "coliny_direct") {
     solverType = DIRECT;
     solverstr = "sco:DIRECT";
@@ -422,39 +356,25 @@ void COLINOptimizer::solver_setup(Model& model)
 void COLINOptimizer::set_rng(int seed)
 {
   try {
-
-    // BMA TODO: Right now, all solvers appear to accept seed
-    //           How to test?
-    //    
-
-    
-    // if (colinSolver->options().exists("seed")) {
-
-    utilib::seed_t stupid = seed;
-
-    // TODO: API to support simple seeding
-    colinSolver->property("seed") = stupid;
-
-    if (true) {
-       //
-       // Instantiate random number generator (RNG). Can either pass the RNG in
-       // the constructor or use optimizer->set_rng(RNG) prior to 
-       // interface->setup (NOTE: passing it to the SWOpt constructor has 
-       // failed, so use set_rng).  LCG = a portable linear congruential 
-       // generator (better than Unix RAND).
-       //
-       PM_LCG* prng = new PM_LCG(seed);
-       if (seed != 0) // default is zero if no spec.
-         Cout << "\nSeed (user-specified) = " << seed << '\n';
-       else
-         Cout << "\nSeed (system-generated) = " << prng->get_seed() <<'\n';
-       colinSolver->set_rng(prng);
-       // BMA TODO: some solvers want unsigned int seed, some int seed
-       //colinSolver->options().set_parameter("seed", (utilib::seed_t)seed);
-       rng = prng;
+    if (colinSolver->has_property("seed")) {
+      //
+      // Instantiate random number generator (RNG). Can either pass the RNG in
+      // the constructor or use optimizer->set_rng(RNG) prior to 
+      // interface->setup (NOTE: passing it to the SWOpt constructor has 
+      // failed, so use set_rng).  LCG = a portable linear congruential 
+      // generator (better than Unix RAND).
+      //
+      PM_LCG* prng = new PM_LCG(seed);
+      if (seed != 0) // default is zero if no spec.
+	Cout << "\nSeed (user-specified) = " << seed << '\n';
+      else
+	Cout << "\nSeed (system-generated) = " << prng->get_seed() <<'\n';
+      colinSolver->set_rng(prng);
+      colinSolver->property("seed") = (utilib::seed_t)seed;
+      rng = prng;
     }
-  else 
-    rng = 0;
+    else 
+      rng = 0;
   }
   catch(const runtime_error &exception) {
     Cerr << "***COLINY run-time exception*** " << exception.what() << endl;
@@ -535,11 +455,8 @@ void COLINOptimizer::set_solver_parameters()
       colinSolver->property("min_boxsize_limit") = min_box;
 
     pop_size = probDescDB.get_int("method.population_size");
-    if (colinSolver->has_property("population_size")) {
-      if (!pop_size)
-	pop_size = 100;
-      colinSolver->property("population_size") = pop_size;
-    }
+    if (!pop_size)
+      pop_size = 100;
 
     const String& pop_init_type =
       probDescDB.get_string("method.initialization_type");
@@ -630,14 +547,6 @@ void COLINOptimizer::set_solver_parameters()
       colinSolver->property("intarray_mutation_range") = tmp;
     }
 
-    // WEH - this is only meaningful if we use allele mutation rates less
-    // than one.
-    //
-    //double mutation_ratio = 
-    //  probDescDB.get_real("method.coliny.mutation_ratio");
-    //WEH, what does this map to? This is DMD's guess:
-    //colinSolver->options().set_parameter("mutation_ratio",mutation_ratio);
-
     const bool& mutation_adaptive = 
       probDescDB.get_bool("method.mutation_adaptive");
     if (colinSolver->has_property("realarray_mutation_selfadaptation")) {
@@ -650,7 +559,6 @@ void COLINOptimizer::set_solver_parameters()
     // previous pattern search and solis-wets parameters
     // A null string is the DB default and nonblocking is the PS default, so
     // the flag is true only for an explicit blocking user specification.
-    // mapped to "batch_eval" within set_runtime_parameters().
     blockingSynch = (probDescDB.get_string("method.coliny.synchronization")
 		     == "blocking") ? true : false;
 
@@ -709,73 +617,13 @@ void COLINOptimizer::set_solver_parameters()
     else // enforce lower bound of basic pattern
       total_pattern_size = basic_pattern_size;
 
-    // previous parameters for all algorithms
-    //
-    // Inherited attributes
-    //
-
-    if (solverType != COBYLA) {
-      if (colinSolver->has_property("max_function_evaluations"))
-	colinSolver->property("max_function_evaluations") = maxFunctionEvals;
-      if (colinSolver->has_property("max_iterations"))
-	colinSolver->property("max_iterations") = maxIterations;
-    }
-    if (colinSolver->has_property("function_value_tolerance"))
-      colinSolver->property("function_value_tolerance") = convergenceTol;
-
-    switch (outputLevel) {
-
-    case DEBUG_OUTPUT:
-      
-      if (colinSolver->has_property("output_level"))
-	colinSolver->property("output_level") = (string)"verbose";
-      if (colinSolver->has_property("debug"))
-	colinSolver->property("debug") = 10000;
-      break;
-
-    case VERBOSE_OUTPUT:
-      
-      if (colinSolver->has_property("output_level"))
-	colinSolver->property("output_level") = (string)"summary";
-      break;
-
-    case NORMAL_OUTPUT:
-    case QUIET_OUTPUT:
-
-      if (colinSolver->has_property("output_level"))
-	colinSolver->property("output_level") = (string)"normal";
-      break;
-
-    case SILENT_OUTPUT:
-      if (colinSolver->has_property("output_level"))
-	colinSolver->property("output_level") = (string)"none";
-
-    }
-
     //
     // COLINY specification attributes from database
     //
     const Real& solution_accuracy
       = probDescDB.get_real("method.solution_target");
-    if (solution_accuracy != -1.e+25 && colinSolver->has_property("sufficient_objective_value"))
+    if (solution_accuracy > -DBL_MAX && colinSolver->has_property("sufficient_objective_value"))
       colinSolver->property("sufficient_objective_value") = solution_accuracy;
-
-    const bool blocking_synch = (probDescDB.get_string("method.coliny.synchronization")
-				 == "blocking") ? true : false;
-    if (blocking_synch) {
-      //	params.sublist("Solver").setParameter("Synchronous", true);
-      colinProblem.second->set_blocking_synch(true);
-    }
-    else {
-      //	params.sublist("Solver").setParameter("Synchronous", false);
-      colinProblem.second->set_blocking_synch(false);
-    }
-
-    // BMA TODO: remove?
-    //const Real& max_cpu_time
-    //  = probDescDB.get_real("method.coliny.max_cpu_time");
-    //if (max_cpu_time >= 0.0)
-    //  optimizer->set_parameter("max_time", max_cpu_time);
 
     // JDS: buffer the constraint_penalty here: in DAKOTA, this is a
     // property of the solver; in COLIN it is a property of the
@@ -812,48 +660,64 @@ void COLINOptimizer::set_solver_parameters()
 
   if (solverType == DIRECT)
     maxConcurrency *= 2*numContinuousVars;
-  else if (solverType == EA)
+  else if (solverType == EA) {
     maxConcurrency *= pop_size;
+    if (colinSolver->has_property("population_size")) {
+      colinSolver->property("population_size") = pop_size;
+    }
+  }
   else if (solverType == PS) {
     if (!pattern_basis.empty() && colinSolver->has_property("basis"))
       colinSolver->property("basis") = (string)pattern_basis;
     maxConcurrency *= total_pattern_size;
+    if (!blockingSynch)
+      Cout << "\n Coliny Asynchronous Pattern Search temporarily not supported."
+	   << "\n Will return in future releases.  Running synchronously.\n\n";
   }
 
+  // previous parameters for all algorithms
+  //
+  // Inherited attributes
+  //
+
+  if (solverType != COBYLA) {
+    if (colinSolver->has_property("max_function_evaluations"))
+      colinSolver->property("max_function_evaluations") = maxFunctionEvals;
+    if (colinSolver->has_property("max_iterations"))
+      colinSolver->property("max_iterations") = maxIterations;
+  }
+  if (colinSolver->has_property("function_value_tolerance"))
+    colinSolver->property("function_value_tolerance") = convergenceTol;
+
+  switch (outputLevel) {
+
+  case DEBUG_OUTPUT:
+      
+    if (colinSolver->has_property("output_level"))
+      colinSolver->property("output_level") = (string)"verbose";
+    if (colinSolver->has_property("debug"))
+      colinSolver->property("debug") = 10000;
+    break;
+
+  case VERBOSE_OUTPUT:
+      
+    if (colinSolver->has_property("output_level"))
+      colinSolver->property("output_level") = (string)"summary";
+    break;
+
+  case NORMAL_OUTPUT:
+  case QUIET_OUTPUT:
+
+    if (colinSolver->has_property("output_level"))
+      colinSolver->property("output_level") = (string)"normal";
+    break;
+
+  case SILENT_OUTPUT:
+    if (colinSolver->has_property("output_level"))
+      colinSolver->property("output_level") = (string)"none";
+
+  }
 }
-
-void COLINOptimizer::set_runtime_parameters()
-{
-  try {
-
-    // presently only have runtime parameters for PatternSearch
-    //    if (solverType == PS) {
-    // BMA TODO: should not need this going forward
-    if (false) {
-
-
-      // This parameter assignment must occur at runtime since evaluation
-      // capacity is set within Model::init_communicators(), which is called
-      // between iterator construction and execution.
-      if (blockingSynch)
-	colinSolver->property("batch_eval") = (string)"all";
-      else { // nonblocking (default)
-	// BMA TODO: iteratedModel.evaluation_capacity()
-	//	if (problem.num_evaluation_servers() > 1) // parallel PS
-	if (iteratedModel.evaluation_capacity() > 1) // parallel PS
-	  colinSolver->property("batch_eval") = (string)"async";
-	else                                      // serial PS
-	  colinSolver->property("batch_eval") = (string)"sequential";
-      }
-
-    }
-
-  }
-  catch(const runtime_error &exception) {
-    Cerr << "***COLINY run-time exception*** " << exception.what() << endl;
-  }
-}
-
 
 void COLINOptimizer::get_final_points()
 {

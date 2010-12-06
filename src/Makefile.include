@@ -77,8 +77,8 @@ ACRO_ARCHIVE	= $(ACRO_BUILD)/packages/colin/src/libcolin.a           \
                   $(ACRO_BUILD)/tpl/tinyxml/libtinyxml.a                \
                   $(ACRO_BUILD)/packages/utilib/src/libutilib.la        \
                   $(ACRO_BUILD)/tpl/3po/lib3po.a                        
-COLINY_OPT_H	= COLINApplication.H COLINEvaluator.H COLINOptimizer.H
-COLINY_OPT_S	= COLINApplication.C COLINEvaluator.C COLINOptimizer.C
+COLINY_OPT_H	= COLINApplication.H COLINOptimizer.H
+COLINY_OPT_S	= COLINApplication.C COLINOptimizer.C
 endif
 
 if WITH_AMPL

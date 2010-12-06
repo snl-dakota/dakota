@@ -22,7 +22,6 @@
 
 // forward declarations
 class COLINApplication;
-class COLINEvaluator;
 
 namespace Dakota {
 
@@ -101,10 +100,6 @@ protected:
   //- Heading: runtime convenience member functions
   //
 
-  /// sets method parameters for specific methods using data that is
-  /// not available until run time
-  void set_runtime_parameters();
-
   /// Get the set of best points from the solver
   void get_final_points();
 
@@ -127,7 +122,7 @@ protected:
   /// handle and pointer to the COLINApplication object
   std::pair<colin::ApplicationHandle, COLINApplication*> colinProblem;
 
-   colin::EvaluationManager_Base* colinEvalMgr;
+  colin::EvaluationManager_Base* colinEvalMgr;
 
   /// random number generator pointer
   utilib::RNG* rng;
@@ -136,12 +131,10 @@ protected:
   /// \c nonblocking
   bool blockingSynch;
 
-
-   /// Buffer to hold problem constraint_penalty parameter
-   Real constraint_penalty;
-   /// Buffer to hold problem constant_penalty parameter
-   bool constant_penalty;
-
+  /// Buffer to hold problem constraint_penalty parameter
+  Real constraint_penalty;
+  /// Buffer to hold problem constant_penalty parameter
+  bool constant_penalty;
 };
 
 } // namespace Dakota

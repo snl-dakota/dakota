@@ -207,23 +207,16 @@ perform_evaluation_impl(const utilib::Any &domain,
 bool COLINApplication::
 evaluation_available()
 {
-  if (completedEvals.empty()) {
-    if (iteratedModel.asynch_flag()) {
+  if (dakota_responses.empty()) {
 
-      // PDH  This will change when John is done with the COLIN concurrent evaluator.
-      //      In particular, we don't want to call iteratedModel.synchronize().
+    dakota_responses = iteratedModel.synchronize();
+    //    dakota_responses = (blockingSynch) ?
+    //      iteratedModel.synchronize() : iteratedModel.synchronize_nowait();
 
-      dakota_responses = (blockingSynch) ?
-	iteratedModel.synchronize() : iteratedModel.synchronize_nowait();
-
-      if (dakota_responses.empty())
-	return false;
-      else
-	return true;
-    }
-    return false;
+    if (dakota_responses.empty())
+      return false;
   }
-
+  
   return true;
 }
 

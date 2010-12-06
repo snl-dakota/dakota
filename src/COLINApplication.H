@@ -117,8 +117,6 @@ protected:
   std::vector<int> requestedEvals;
 
   /// eval_id to Response mapping to cache completed jobs
-  IntResponseMap completedEvals;
-
   IntResponseMap dakota_responses;
 
 }; // class COLINApplication
