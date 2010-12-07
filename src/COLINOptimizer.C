@@ -249,7 +249,7 @@ void COLINOptimizer::find_optimum()
       Cout << "COLIN Solver initial status and options:" << endl;
       utilib::PropertyDict_YamlPrinter printer;
       printer.print(Cout, colinSolver->Properties());
-      problem->PrintProperties(Cout);
+      //      problem->PrintProperties(Cout);
     }
 
     // Solve the optimization problem
@@ -655,7 +655,7 @@ void COLINOptimizer::set_solver_parameters()
       else {
 	string option(thisOption.substr(0, equalPos));
 	string value(thisOption.substr(equalPos+1, thisOption.size()-1));
-	colinSolver->property(option) = value;
+	colinSolver->property_as_string(option) = value;
       }
     }
   }
