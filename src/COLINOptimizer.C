@@ -249,6 +249,7 @@ void COLINOptimizer::find_optimum()
       Cout << "COLIN Solver initial status and options:" << endl;
       utilib::PropertyDict_YamlPrinter printer;
       printer.print(Cout, colinSolver->Properties());
+      problem->PrintProperties(Cout);
     }
 
     // Solve the optimization problem
@@ -579,7 +580,7 @@ void COLINOptimizer::set_solver_parameters()
     if (expansion_flag) {
       const int& expand_after_success
 	= probDescDB.get_int("method.coliny.expand_after_success");
-      if (expand_after_success>=0 && colinSolver->has_property("max_success"))
+      if (expand_after_success>0 && colinSolver->has_property("max_success"))
 	colinSolver->property("max_success") = expand_after_success;
       if (colinSolver->has_property("expansion_factor"))
 	colinSolver->property("expansion_factor") = 1.0/contraction_factor;
@@ -630,6 +631,7 @@ void COLINOptimizer::set_solver_parameters()
     // reformulated application.  Unfortunately, the probDescDB is
     // locked by the time we hit find_optimum().
     constraint_penalty = probDescDB.get_real("method.constraint_penalty");
+    constant_penalty = probDescDB.get_bool("method.coliny.constant_penalty");
 
     const bool& show_misc_options
       = probDescDB.get_bool("method.coliny.show_misc_options");
