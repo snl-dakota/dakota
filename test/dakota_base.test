@@ -55190,8 +55190,12 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 20 total (20 new, 0 duplicate)
-response_fn_1:  Mean = 5.6324853358e-05  Std. Dev. = 7.2629784793e-05  Coeff. of Variation = 1.2894802288e+00
-response_fn_1:  Mean = ( 5.4311207883e-05, 5.8338498833e-05 ), Std Dev = ( 7.1233722933e-05, 7.4082059834e-05 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  5.6324853358e-05  7.2629784793e-05  1.6408152802e+00  2.8214743952e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  5.4311207883e-05  5.8338498833e-05  7.1233722933e-05  7.4082059834e-05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    2.0000000000e-05   4.4780000000e-01
@@ -55809,12 +55813,16 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1000 total (1000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 121 total (121 new, 0 duplicate)
-response_fn_1:  Mean = 4.0003472105e-01  Std. Dev. = 3.7941108263e-01  Coeff. of Variation = 9.4844537901e-01
-response_fn_2:  Mean = 8.3344188933e-02  Std. Dev. = 3.3113653227e-01  Coeff. of Variation = 3.9731208200e+00
-response_fn_3:  Mean = 8.3326491877e-02  Std. Dev. = 3.3353143438e-01  Coeff. of Variation = 4.0027058246e+00
-response_fn_1:  Mean = ( 3.7649048559e-01, 4.2357895652e-01 ), Std Dev = ( 3.6348050255e-01, 3.9681290753e-01 )
-response_fn_2:  Mean = ( 6.2795615518e-02, 1.0389276235e-01 ), Std Dev = ( 3.1723288716e-01, 3.4632422767e-01 )
-response_fn_3:  Mean = ( 6.2629303565e-02, 1.0402368019e-01 ), Std Dev = ( 3.1952723296e-01, 3.4882897282e-01 )
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.0003472105e-01  3.7941108263e-01  9.9041058431e-01  4.4785393223e-01
+ response_fn_2  8.3344188933e-02  3.3113653227e-01  4.2887161397e-01 -6.1766439510e-01
+ response_fn_3  8.3326491877e-02  3.3353143438e-01  5.2503047941e-01 -5.5251785323e-01
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.7649048559e-01  4.2357895652e-01  3.6348050255e-01  3.9681290753e-01
+ response_fn_2  6.2795615518e-02  1.0389276235e-01  3.1723288716e-01  3.4632422767e-01 
+response_fn_3  6.2629303565e-02  1.0402368019e-01  3.1952723296e-01  3.4882897282e-01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   3.0200000000e-01
