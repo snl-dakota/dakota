@@ -108,8 +108,7 @@ protected:
   void read_variables_responses(int num_evals, size_t num_vars);
 
   /// Printing of VBD results
-  void print_sobol_indices(std::ostream& s, const RealVectorArray& S,
-		 const RealVectorArray& T) const;
+  void print_sobol_indices(std::ostream& s) const;
 
   /// convert samples array to variables array; e.g., allSamples to allVariables
   void sample_to_variables(const Real* sample_c_vars, Variables& vars);
@@ -164,8 +163,12 @@ private:
   //
   //- Heading: Data
   //
-  /// tolerance for omitting output of small VBD indices  Real vbdDropTol;
+  /// tolerance for omitting output of small VBD indices
   Real vbdDropTol;
+  /// VBD main effect indices
+  RealVectorArray S4;
+  /// VBD total effect indices
+  RealVectorArray T4;
 };
 
 

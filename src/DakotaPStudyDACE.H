@@ -65,17 +65,18 @@ protected:
   /// Calculation of volumetric quality measures
   void volumetric_quality(int ndim, int num_samples, double* sample_points);
 
-  /// initialize statistical post processing
-  SensAnalysisGlobal pStudyDACESensGlobal;
-
-protected:
-
   //
   //- Heading: Data
   //
 
+  /// initialize statistical post processing
+  SensAnalysisGlobal pStudyDACESensGlobal;
+
   /// flag which specifies evaluation of volumetric quality measures
   bool volQualityFlag;
+  /// flag which specifies calculating variance based decomposition 
+  /// sensitivity analysis metrics
+  bool varBasedDecompFlag;
 
 private:
 

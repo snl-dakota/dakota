@@ -323,20 +323,21 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
   // but S2 and S3 do (where scaled refers to subtracting the overall mean 
   // from all of the output samples).  S2 and S3 have different ways of 
   // calculating the overal variance.  S4 uses the scaled Saltelli 
-  // formulas from the following paper:  Saltelli, A., Annoni, P., Azzini, I.,   // Campolongo, F., Ratto, M., Tarantola, S.. Variance based sensitivity 
-  // analysis of model output.  Design and estimator for the total sensitivity   // index. Comp Physics Comm 2010;181:259--270.   
-  // We decided to use formulas S4 and T4 
-  // based on testing with a shock physics problem that had significant 
+  // formulas from the following paper:  Saltelli, A., Annoni, P., Azzini, I.,
+  // Campolongo, F., Ratto, M., Tarantola, S.. Variance based sensitivity 
+  // analysis of model output.  Design and estimator for the total sensitivity
+  // index. Comp Physics Comm 2010;181:259--270.  We decided to use formulas S4
+  // and T4 based on testing with a shock physics problem that had significant 
   // nonlinearities, interactions, and several response functions. 
   // The results are documented in a paper by Weirs et al. that will 
   // be forthcoming in RESS in 2011. For now we are leaving the different 
   // implementations in if further testing is needed. 
 
-//  RealVectorArray S1(numFunctions), T1(numFunctions);
-//  RealVectorArray S2(numFunctions), T2(numFunctions);
-//  RealVectorArray S3(numFunctions), T3(numFunctions);
-  RealVectorArray S4(numFunctions), T4(numFunctions);
-  for (k=0; k<numFunctions; ++k){
+  //RealVectorArray S1(numFunctions), T1(numFunctions);
+  //RealVectorArray S2(numFunctions), T2(numFunctions);
+  //RealVectorArray S3(numFunctions), T3(numFunctions);
+  S4.resize(numFunctions); T4.resize(numFunctions);
+  for (k=0; k<numFunctions; ++k) {
 //    S1[k].resize(ndimtotal);
 //    T1[k].resize(ndimtotal);
 //    S2[k].resize(ndimtotal);
@@ -462,7 +463,6 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
       T4[k][i] = (sum_J2/(Real)(2*num_samples))/var_hatYC;
     }
   }
-  print_sobol_indices(Cout,S4,T4);
 }
 
 
@@ -646,9 +646,7 @@ void Analyzer::pre_output()
 
 
 /** printing of variance based decomposition indices. */
-void Analyzer::
-print_sobol_indices(std::ostream& s, const RealVectorArray& S,
-		    const RealVectorArray& T) const
+void Analyzer::print_sobol_indices(std::ostream& s) const
 {
   StringMultiArrayConstView cv_labels
     = iteratedModel.continuous_variable_labels();
@@ -659,13 +657,12 @@ print_sobol_indices(std::ostream& s, const RealVectorArray& S,
   const StringArray& resp_labels = iteratedModel.response_labels();
   // output explanatory info
   s.setf(std::ios::scientific);
-  s << "Variance Based Decomposition Sensitivity Indices\n"
-    << "These Sobol' indices measure the importance of the uncertain input\n"
-    << "variables in determining the uncertainty (variance) of the output.\n"
-    << "Si measures the main effect for variable i itself, while Ti\n"
-    << "measures the total effect (including the interaction effects\n" 
-    << "of variable i with other uncertain variables.)\n";
-
+  //s << "Variance Based Decomposition Sensitivity Indices\n"
+  //  << "These Sobol' indices measure the importance of the uncertain input\n"
+  //  << "variables in determining the uncertainty (variance) of the output.\n"
+  //  << "Si measures the main effect for variable i itself, while Ti\n"
+  //  << "measures the total effect (including the interaction effects\n" 
+  //  << "of variable i with other uncertain variables.)\n";
   s << "\nGlobal sensitivity indices for each response function:\n";
 
   size_t i, k, offset;
@@ -674,22 +671,22 @@ print_sobol_indices(std::ostream& s, const RealVectorArray& S,
     s << std::setw(38) << "Main" << std::setw(19) << "Total\n";
     
     for (i=0; i<numContinuousVars; ++i)
-      if (std::abs(S[k][i]) > vbdDropTol || std::abs(T[k][i]) > vbdDropTol)
-        s << "                     " << std::setw(write_precision+7) << S[k][i]
-	  << ' ' << std::setw(write_precision+7) << T[k][i] << ' '
+      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol)
+        s << "                     " << std::setw(write_precision+7) << S4[k][i]
+	  << ' ' << std::setw(write_precision+7) << T4[k][i] << ' '
 	  << cv_labels[i] << '\n';
     offset = numContinuousVars;
     for (i=0; i<numDiscreteIntVars; ++i)
-      if (std::abs(S[k][i]) > vbdDropTol || std::abs(T[k][i]) > vbdDropTol)
+      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol)
 	s << "                     " << std::setw(write_precision+7) 
-	  << S[k][i+offset] << ' ' << std::setw(write_precision+7)
-	  << T[k][i+offset] << ' ' << div_labels[i]<< '\n';
+	  << S4[k][i+offset] << ' ' << std::setw(write_precision+7)
+	  << T4[k][i+offset] << ' ' << div_labels[i] << '\n';
     offset += numDiscreteIntVars;
     for (i=0; i<numDiscreteRealVars; ++i)
-      if (std::abs(S[k][i]) > vbdDropTol || std::abs(T[k][i]) > vbdDropTol)
+      if (std::abs(S4[k][i]) > vbdDropTol || std::abs(T4[k][i]) > vbdDropTol)
 	s << "                     " << std::setw(write_precision+7) 
-	  << S[k][i+offset] << ' ' << std::setw(write_precision+7)
-          << T[k][i+offset] << ' ' << drv_labels[i] << '\n';
+	  << S4[k][i+offset] << ' ' << std::setw(write_precision+7)
+          << T4[k][i+offset] << ' ' << drv_labels[i] << '\n';
   }
 }
 

@@ -39,7 +39,6 @@ DDACEDesignCompExp::DDACEDesignCompExp(Model& model): PStudyDACE(model),
   seedSpec(probDescDB.get_int("method.random_seed")), randomSeed(seedSpec),
   allDataFlag(false), numDACERuns(0),
   varyPattern(!probDescDB.get_bool("method.fixed_seed")),
-  varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp")),
   mainEffectsFlag(probDescDB.get_bool("method.main_effects"))
 {
   if (daceMethod == "box_behnken")
@@ -69,8 +68,7 @@ DDACEDesignCompExp(Model& model, int samples, int symbols, int seed,
   PStudyDACE(NoDBBaseConstructor(), model), daceMethod(sampling_method),
   samplesSpec(samples), numSamples(samples), symbolsSpec(symbols),
   numSymbols(symbols), seedSpec(seed), randomSeed(seed), allDataFlag(true),
-  numDACERuns(0), varyPattern(true), varBasedDecompFlag(false),
-  mainEffectsFlag(false)
+  numDACERuns(0), varyPattern(true), mainEffectsFlag(false)
 {
   // Verify symbol & sample input.  The experimental design may not use exactly
   // the requests passed in, but it always will use >= the incoming requests.

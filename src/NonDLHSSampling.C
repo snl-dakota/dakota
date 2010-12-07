@@ -124,7 +124,10 @@ void NonDLHSSampling::print_results(std::ostream& s)
 {
   if (!numResponseFunctions) // DACE usage
     Analyzer::print_results(s);
-  else if (statsFlag && !varBasedDecompFlag) {
+
+  if (varBasedDecompFlag)
+    print_sobol_indices(s);
+  else if (statsFlag) {
     s << "\nStatistics based on " << numSamples << " samples:\n";
     print_statistics(s);
   }

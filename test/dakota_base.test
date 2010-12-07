@@ -55854,25 +55854,35 @@ Partial Rank Correlation Matrix between input and output:
           x2 -8.41553e-01 -9.11376e-01  9.73051e-01
 dakota_vbd.in 
 Test Number 0 succeeded
-		      1.2675065262e-01  1.3388988794e-01 uuv_1
-                      6.5064160621e-01  6.8263661288e-01 uuv_2
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      1.2675065262e-01  1.3388988794e-01 uuv_1
+                      6.5064160621e-01  6.8263661288e-01 uuv_2
 Test Number 1 succeeded
+<<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
+response_fn_1 Sobol indices:
+                                  Main             Total
                       4.4592839286e-01  3.3834610573e-01 uuv_1
                       6.8627551554e-01  4.5970914139e-01 uuv_2
-<<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 Test Number 2 succeeded
+<<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
+response_fn_1 Sobol indices:
+                                  Main             Total
                       4.7508913283e-01  5.3242162037e-01 uuv_1
                       3.8112392892e-01  4.9912486515e-01 uuv_2
-<<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 Test Number 3 succeeded
+<<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
+response_fn_1 Sobol indices:
+                                  Main             Total
                       4.8720635019e-01  4.8653182270e-01 uuv_1
                       5.3833096458e-01  4.7814488670e-01 uuv_2
-<<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 Test Number 4 succeeded
+<<<<< Function evaluation summary: 700 total (531 new, 169 duplicate)
+response_fn_1 Sobol indices:
+                                  Main             Total
                       1.5709989209e-01  2.7091791165e-01 uuv_1
                       1.9805333912e-01  2.2995061564e-01 uuv_2
                       1.5092623811e-01  9.4977768750e-02 geuv_1
                      -1.1593701690e-02  5.9716702235e-02 hpuv_1
                       5.2220935349e-01  6.1735549688e-01 hpuv_2
-<<<<< Function evaluation summary: 700 total (531 new, 169 duplicate)

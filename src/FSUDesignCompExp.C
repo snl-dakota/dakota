@@ -30,8 +30,7 @@ namespace Dakota {
 FSUDesignCompExp::FSUDesignCompExp(Model& model): PStudyDACE(model),
   samplesSpec(probDescDB.get_int("method.samples")), numSamples(samplesSpec),
   allDataFlag(false), numDACERuns(0),
-  latinizeFlag(probDescDB.get_bool("method.latinize")),
-  varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp"))
+  latinizeFlag(probDescDB.get_bool("method.latinize"))
 {
   if (methodName == "fsu_cvt") {
     // CVT inputs
@@ -120,7 +119,7 @@ FSUDesignCompExp(Model& model, int samples, int seed,
 		 const String& sampling_method):
   PStudyDACE(NoDBBaseConstructor(), model), samplesSpec(samples),
   numSamples(samples), allDataFlag(true), numDACERuns(0), latinizeFlag(false),
-  varBasedDecompFlag(false), varyPattern(true)
+  varyPattern(true)
 {
   methodName  = sampling_method;
 

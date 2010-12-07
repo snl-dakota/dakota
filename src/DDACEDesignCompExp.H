@@ -107,8 +107,6 @@ private:
   /// run() execution (e.g., for surrogate-based optimization) so that
   /// multiple executions are repeatable but not correlated.
   bool varyPattern;
-  /// flag which specifies variance based decomposition
-  bool varBasedDecompFlag;
   /// flag which specifies main effects
   bool mainEffectsFlag;
   /// mapping of symbols for main effects calculations 

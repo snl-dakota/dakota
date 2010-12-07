@@ -83,9 +83,6 @@ private:
   size_t numDACERuns;
   /// flag which specifies latinization of QMC or CVT sample sets
   bool latinizeFlag;
-  /// flag which specifies calculating variance based decomposition 
-  /// sensitivity analysis metrics
-  bool varBasedDecompFlag;
 
   // QMC data
 

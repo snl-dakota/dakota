@@ -24,7 +24,8 @@ static const char rcsId[]="@(#) $Id: DakotaPStudyDACE.C 6492 2009-12-19 00:04:28
 namespace Dakota {
 
 PStudyDACE::PStudyDACE(Model& model): Analyzer(model),
-  volQualityFlag(probDescDB.get_bool("method.quality_metrics"))
+  volQualityFlag(probDescDB.get_bool("method.quality_metrics")),
+  varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp"))
 {
   // Check for discrete variable types
   if ( (numDiscreteIntVars || numDiscreteRealVars) &&
@@ -43,7 +44,8 @@ PStudyDACE::PStudyDACE(Model& model): Analyzer(model),
 
 
 PStudyDACE::PStudyDACE(NoDBBaseConstructor, Model& model):
-  Analyzer(NoDBBaseConstructor(), model), volQualityFlag(false)
+  Analyzer(NoDBBaseConstructor(), model), volQualityFlag(false),
+  varBasedDecompFlag(false)
 {
   // Check for vendor numerical gradients (manage_asv will not work properly)
   if (gradientType == "numerical" && methodSource == "vendor") {
@@ -82,7 +84,11 @@ void PStudyDACE::print_results(std::ostream& s)
       << "\n    H measure is: " << hMeas   << "\n  Tau measure is: " << tauMeas
       << "\n\n";
 
-  Analyzer::print_results(s);
+  if (numObjFns || numLSqTerms) // DACE usage
+    Analyzer::print_results(s);
+
+  if (varBasedDecompFlag)
+    print_sobol_indices(s);
 
   if (pStudyDACESensGlobal.correlations_computed()) {
     if (compactMode) { // FSU, DDACE, PSUADE ignore active discrete vars
