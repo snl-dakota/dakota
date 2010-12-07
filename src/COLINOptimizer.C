@@ -655,7 +655,7 @@ void COLINOptimizer::set_solver_parameters()
       else {
 	string option(thisOption.substr(0, equalPos));
 	string value(thisOption.substr(equalPos+1, thisOption.size()-1));
-	colinSolver->property_as_string(option) = value;
+	colinSolver->property(option) = value;
       }
     }
   }
