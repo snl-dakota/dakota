@@ -334,19 +334,20 @@ if test "x$want_boost" = "xyes"; then
 				*)  with_boost="$pwd/$best_tpl_path" ;;
 			esac
 			BOOST_CPPFLAGS="$with_boost"
-			BOOST_LDFLAGS="$with_boost/stage/lib"
+			dnl The 4th parameter requires the presence & use of the 3rd: don't
+			dnl allow the presence of a 4th parameter override --with-boost 
+			dnl (here defined as ac_boost_path)
+			case "$4" in
+				"") BOOST_LDFLAGS="$with_boost/stage/lib" ;;
+				/*) BOOST_LDFLAGS="$4/stage/lib" ;;
+				*)  BOOST_LDFLAGS="$pwd/$4/stage/lib" ;;
+			esac
 		fi
 
 		dnl if we have a separate library path (specified or
                 dnl out-of-source build), override
 		if test "${ac_boost_lib_path+def}" = "def"; then
 			BOOST_LDFLAGS="${ac_boost_lib_path}"
-		else
-			case "$4" in
-				"") ;;
-				/*) BOOST_LDFLAGS="$4/stage/lib" ;;
-				*)  BOOST_LDFLAGS="$pwd/$4/stage/lib" ;;
-			esac
 		fi
 
 		if test -n "$with_boost"; then
@@ -363,24 +364,31 @@ if test "x$want_boost" = "xyes"; then
 fi
 
 if test "$succeeded" = "yes" -a "$want_boost" = "yes"; then
-	dnl pwd=`pwd`
-	case $BOOST_CPPFLAGS in
+	case "$BOOST_CPPFLAGS" in
 		"") ;;
 		/*) BOOST_CPPFLAGS="-I$BOOST_CPPFLAGS" ;;
-		dnl *)  BOOST_CPPFLAGS="-I$pwd/$BOOST_CPPFLAGS" ;;
+		 *) BOOST_CPPFLAGS="-I$BOOST_CPPFLAGS" ;
+		    AC_MSG_WARN([BOOST_CPPFLAGS being set to a relative path ($BOOST_CPPFLAGS).]) ;
+		    AC_MSG_WARN([   This likely indicates problems with ax_boost_base.m4]) ;;
 	esac
-	case $BOOST_LDFLAGS in
+	case "$BOOST_LDFLAGS" in
 		"") ;;
 		/*) BOOST_LIB="$BOOST_LDFLAGS";
 		    BOOST_LDFLAGS="-L$BOOST_LDFLAGS" ;;
-		dnl *)  BOOST_LIB="$pwd/$BOOST_LDFLAGS";
-		dnl    BOOST_LDFLAGS="-L$pwd/$BOOST_LDFLAGS" ;;
+		 *) BOOST_LIB="$BOOST_LDFLAGS";
+		    BOOST_LDFLAGS="-L$BOOST_LDFLAGS" ;
+		    AC_MSG_WARN([BOOST_LDFLAGS being set to a relative path ($BOOST_LDFLAGS).]) ;
+		    AC_MSG_WARN([   This likely indicates problems with ax_boost_base.m4]) ;;
 	esac
-	case $BOOST_ROOT in
+	case "$BOOST_ROOT" in
 		"")  ;;
 		/*)  ;;
-		dnl *)   BOOST_ROOT="$pwd/$BOOST_ROOT" ;;
+		 *) AC_MSG_WARN([BOOST_ROOT being set to a relative path ($BOOST_ROOT).]) ;
+		    AC_MSG_WARN([   This likely indicates problems with ax_boost_base.m4]) ;;
 	esac
+	#AC_MSG_NOTICE([configuring without boost support: BOOST_ROOT     = $BOOST_ROOT])
+	#AC_MSG_NOTICE([configuring without boost support: BOOST_CPPFLAGS = $BOOST_CPPFLAGS])
+	#AC_MSG_NOTICE([configuring without boost support: BOOST_LDFLAGS  = $BOOST_LDFLAGS])
 	AC_SUBST(BOOST_CPPFLAGS)
 	AC_SUBST(BOOST_LDFLAGS)
 	AC_DEFINE(HAVE_BOOST,,[define if the Boost library is available])
