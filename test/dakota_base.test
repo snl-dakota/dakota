@@ -11249,21 +11249,21 @@ Test Number 3 succeeded
                       1.7092499149e-05
 <<<<< Best data captured at function evaluation 195
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 169 total (169 new, 0 duplicate)
-<<<<< Best parameters         =
-                      9.2379284576e-01 x1
-                      8.5317515508e-01 x2
-<<<<< Best objective function =
-                      5.8122856702e-03
-<<<<< Best data captured at function evaluation 169
+<<<<< Function evaluation summary: 234 total (234 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.8392605885e-01 x1
+                      9.6808828989e-01 x2
+<<<<< Best objective function  =
+                      2.5842086529e-04
+<<<<< Best data captured at function evaluation 234
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 540 total (540 new, 0 duplicate)
-<<<<< Best parameters         =
-                      9.7056303771e-01 x1
-                      9.4185339192e-01 x2
-<<<<< Best objective function =
-                      8.6847292094e-04
-<<<<< Best data captured at function evaluation 538
+<<<<< Function evaluation summary: 582 total (582 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9728292030e-01 x1
+                      9.9455495646e-01 x2
+<<<<< Best objective function  =
+                      7.4158891952e-06
+<<<<< Best data captured at function evaluation 580
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 74 total (74 new, 0 duplicate)
 <<<<< Best parameters          =
