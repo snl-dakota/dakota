@@ -31,7 +31,10 @@ namespace Dakota {
     specification.  It is not currently used, as there is not a
     separate sparse_grid method specification. */
 NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
-  ssgLevelRef(probDescDB.get_ushort("method.nond.sparse_grid_level"))
+  ssgLevelSpec(probDescDB.get_ushort("method.nond.sparse_grid_level")),
+  dimPrefSpec(
+    probDescDB.get_rdv("method.nond.sparse_grid_dimension_preference")),
+  ssgLevelRef(ssgLevelSpec)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::SPARSE_GRID);
@@ -52,9 +55,8 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
 		       refine_control == Pecos::GENERALIZED_SPARSE) ?
     Pecos::UNRESTRICTED_GROWTH : Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
-  ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelRef,
-    probDescDB.get_rdv("method.nond.sparse_grid_dimension_preference"),
-    refine_type, refine_control, store_colloc, track_ensemble_wts,
+  ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelSpec,
+    dimPrefSpec, refine_type, refine_control, store_colloc, track_ensemble_wts,
     nested_rules, growth_rate, nested_uniform_rule);
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
     iteratedModel.distribution_parameters());
@@ -70,7 +72,8 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
 	       //short sparse_grid_usage,
 	       short refine_type, short refine_control,
 	       bool track_ensemble_wts, bool nested_rules): 
-  NonDIntegration(NoDBBaseConstructor(), model), ssgLevelRef(ssg_level)
+  NonDIntegration(NoDBBaseConstructor(), model), ssgLevelSpec(ssg_level),
+  dimPrefSpec(dim_pref), ssgLevelRef(ssg_level)  
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::SPARSE_GRID);

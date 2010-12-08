@@ -70,23 +70,22 @@ public:
   /// utility function to perform common operations prior to pre_run();
   /// typically memory initialization; setting of instance pointers
   virtual void initialize_run();
-
   /// pre-run portion of run_iterator (optional); re-implemented by Iterators
   /// which can generate all Variables (parameter sets) a priori
   virtual void pre_run();
-
   /// run portion of run_iterator; implemented by all derived classes
   /// and may include pre/post steps in lieu of separate pre/post
   virtual void run();
-
   /// post-run portion of run_iterator (optional); verbose to print results;
   /// re-implemented by Iterators that can read all Variables/Responses and
   /// perform final analysis phase in a standalone way
   virtual void post_run(std::ostream& s);
-
   /// utility function to perform common operations following post_run();
   /// deallocation and resetting of instance pointers
   virtual void finalize_run();
+
+  /// restore initial state for repeated sub-iterator executions
+  virtual void reset();
 
   /// return a single final iterator solution (variables)
   virtual const Variables& variables_results() const;

@@ -1059,6 +1059,11 @@ void NonDExpansion::initialize_expansion()
     ((NonD*)u_space_sampler.iterator_rep())->
       initialize_random_variables(natafTransform);
 
+  // if a sub-iterator, reset any refinements that may have occurred
+  if (subIteratorFlag && numUncertainQuant && stochExpRefineType &&
+      !u_space_sampler.is_null())
+    u_space_sampler.reset();
+
   // store the current design/state vars in u-space
   size_t i, j, cntr = 0;
   RealVector initial_pt_x;
@@ -1841,7 +1846,7 @@ void NonDExpansion::print_results(std::ostream& s)
     else
       s << "projection of analytic moments:\n";
     print_distribution_mappings(s);
-  } 
+  }
   s << "-------------------------------------------------------------------"
     << std::endl;
 }

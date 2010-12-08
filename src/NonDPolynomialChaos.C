@@ -152,8 +152,8 @@ void NonDPolynomialChaos::initialize_expansion()
   const Pecos::ShortArray& u_types = natafTransform.u_types();
 
   PecosApproximation *poly_approx_rep, *poly_approx_rep0;
-  NonDIntegration* u_space_sampler_rep = NULL;
-  Pecos::IntegrationDriver* driver_rep = NULL;
+  NonDIntegration *u_space_sampler_rep = NULL;
+  Pecos::IntegrationDriver *driver_rep = NULL;
   if (num_int) {
     u_space_sampler_rep
       = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
@@ -163,14 +163,14 @@ void NonDPolynomialChaos::initialize_expansion()
   const Pecos::IntArray& int_rules = (num_int) ?
     driver_rep->integration_rules() : empty_array;
 
+  // reuse polynomial bases since they are the same for all response fns
+  // (efficiency becomes more important for numerically-generated polynomials).
   bool first = true;
   for (size_t i=0; i<numFunctions; i++) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep) { // may be NULL based on approxFnIndices
-      if (num_int) { // reuse driver basis
+      if (num_int) {    // reuse driver basis
 	poly_approx_rep->distribution_types(u_types, int_rules);
-	// reuse polynomial bases since they are the same for all response fns
-	// (efficiency becomes more important for numerically-generated polys).
         poly_approx_rep->polynomial_basis(driver_rep->polynomial_basis());
       }
       else if (first) { // construct a new basis for rep0
@@ -179,7 +179,7 @@ void NonDPolynomialChaos::initialize_expansion()
 	poly_approx_rep0 = poly_approx_rep;
 	first = false;
       }
-      else {             // reuse rep0 basis
+      else {            // reuse rep0 basis
         poly_approx_rep->distribution_types(u_types, int_rules);
 	poly_approx_rep->polynomial_basis(poly_approx_rep0->polynomial_basis());
       }
@@ -217,18 +217,17 @@ void NonDPolynomialChaos::compute_expansion()
       abort_handler(-1);
     }
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-    RealVectorArray chaos_coeffs_array(numFunctions);
+    RealVectorArray chaos_coeffs(numFunctions);
     PecosApproximation* poly_approx_rep;
     for (size_t i=0; i<numFunctions; i++) {
       poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
       if (poly_approx_rep) { // may be NULL based on approxFnIndices
 	poly_approx_rep->allocate_arrays();
-	chaos_coeffs_array[i].sizeUninitialized(
-	  poly_approx_rep->expansion_terms());
+	chaos_coeffs[i].sizeUninitialized(poly_approx_rep->expansion_terms());
       }
     }
-    read_data(import_stream, chaos_coeffs_array);
-    uSpaceModel.approximation_coefficients(chaos_coeffs_array);
+    read_data(import_stream, chaos_coeffs);
+    uSpaceModel.approximation_coefficients(chaos_coeffs);
   }
 }
 

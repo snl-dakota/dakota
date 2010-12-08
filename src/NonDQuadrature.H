@@ -71,6 +71,8 @@ protected:
 
   void get_parameter_sets(Model& model);
 
+  void reset();
+
   void sampling_reset(int min_samples,bool all_data_flag, bool stats_flag);
 
   void increment_grid();
@@ -111,8 +113,8 @@ private:
   /// quadrature rules such as Gauss-Patterson
   bool nestedRules;
 
-  // the user specification for the number of Gauss points per dimension
-  //UShortArray quadOrderSpec;
+  /// the user specification for the number of Gauss points per dimension
+  UShortArray quadOrderSpec;
   /// reference point for Pecos::TensorProductDriver::quadOrder: the original
   /// user specification for the number of Gauss points per dimension, plus
   /// any refinements posted by increment_grid()
@@ -121,11 +123,11 @@ private:
 
 
 inline const Pecos::UShortArray& NonDQuadrature::quadrature_order() const
-{
-  Pecos::TensorProductDriver* tpq_driver
-    = (Pecos::TensorProductDriver*)numIntDriver.driver_rep();
-  return tpq_driver->quadrature_order();
-}
+{ return tpqDriver->quadrature_order(); }
+
+
+inline void NonDQuadrature::reset()
+{ quadOrderRef = quadOrderSpec; tpqDriver->quadrature_order(quadOrderSpec); }
 
 
 inline size_t NonDQuadrature::reference_grid_size()

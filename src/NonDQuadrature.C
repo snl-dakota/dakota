@@ -82,13 +82,15 @@ void NonDQuadrature::check_integration(const UShortArray& quad_order_spec)
   bool err_flag = false;
 
   // Update quadOrderRef from quad_order_spec (the original user specification)
-  quadOrderRef.resize(numContinuousVars);
   size_t quad_spec_len = quad_order_spec.size();
   if (quad_spec_len == numContinuousVars)
-    quadOrderRef = quad_order_spec;
+    quadOrderRef = quadOrderSpec = quad_order_spec;
   else if (quad_spec_len == 1) {
     unsigned short quad_order = quad_order_spec[0];
-    quadOrderRef.assign(quadOrderRef.size(), quad_order);
+    quadOrderRef.reserve(numContinuousVars);
+    quadOrderRef.assign(numContinuousVars, quad_order);
+    quadOrderSpec.reserve(numContinuousVars);
+    quadOrderSpec.assign(numContinuousVars, quad_order);
   }
   else {
     err_flag = true;

@@ -1228,6 +1228,14 @@ void Iterator::finalize_run()
 }
 
 
+void Iterator::reset()
+{
+  if (iteratorRep)
+    iteratorRep->reset(); // envelope fwd to letter
+  // else base class default behavior is no-op
+}
+
+
 const Variables& Iterator::variables_results() const
 {
   return (iteratorRep) ?

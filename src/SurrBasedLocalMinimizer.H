@@ -41,6 +41,15 @@ public:
   SurrBasedLocalMinimizer(Model& model); ///< constructor
   ~SurrBasedLocalMinimizer();            ///< destructor
 
+protected:
+
+  //
+  //- Heading: Virtual function redefinitions
+  //
+
+  /// reset convergence controls in case of multiple SBLM executions
+  void reset();
+
 private:
 
   //
@@ -50,9 +59,6 @@ private:
   /// Performs local surrogate-based minimization by minimizing local,
   /// global, or hierarchical surrogates over a series of trust regions.
   void minimize_surrogates();
-
-  /// reset convergence controls in case of multiple SBLM executions
-  void reset();
 
   /// compute current trust region bounds
   bool tr_bounds(const RealVector& global_lower_bnds,
@@ -218,7 +224,7 @@ private:
   /// pointer to SBLM instance used in static member functions
   static SurrBasedLocalMinimizer* sblmInstance;
 
-  Variables varsCenter; ///< variables at the trust region center
+  Variables varsCenter;          ///< variables at the trust region center
 
   Response responseCenterApprox; ///< approx response at trust region center
   Response responseStarApprox;   ///< approx response at SBLM cycle minimum

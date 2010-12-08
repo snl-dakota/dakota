@@ -100,6 +100,8 @@ protected:
 
   //void check_variables(const Pecos::ShortArray& x_types);
 
+  void reset();
+
   void sampling_reset(int min_samples, bool all_data_flag, bool stats_flag);
 
 private:
@@ -111,12 +113,23 @@ private:
   /// convenience pointer to the numIntDriver representation
   Pecos::SparseGridDriver* ssgDriver;
 
-  // the user specification for the Smolyak sparse grid level
-  //unsigned short ssgLevelSpec;
+  /// the user specification for the Smolyak sparse grid level
+  unsigned short ssgLevelSpec;
+  /// the user specification for anisotropic dimension preference
+  RealVector dimPrefSpec;
+
   /// reference point (e.g., lower bound) for the Smolyak sparse grid level
   /// maintained within ssgDriver
   unsigned short ssgLevelRef;
 };
+
+
+inline void NonDSparseGrid::reset()
+{
+  // restore user specification state prior to any uniform/adaptive refinement
+  ssgLevelRef = ssgLevelSpec; ssgDriver->level(ssgLevelSpec);
+  ssgDriver->dimension_preference(dimPrefSpec);
+}
 
 
 inline const std::set<UShortArray>& NonDSparseGrid::active_multi_index() const

@@ -656,9 +656,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 
 void SurrBasedLocalMinimizer::reset()
 {
-  convergenceFlag   = 0;
-  softConvCount     = 0;
-  sbIterNum         = 0;
+  convergenceFlag = softConvCount = sbIterNum = 0;
 
   penaltyIterOffset = -200;
   penaltyParameter  = 5.;
