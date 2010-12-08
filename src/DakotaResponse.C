@@ -290,7 +290,7 @@ void ResponseRep::read(std::istream& s)
   //       file having less than four characters.
   size_t i;
   int fail_code = 1;
-  char fail_chars[4];
+  char fail_chars[4] = {0,0,0,0};
   std::string fail_string("fail");
   // Old version failed for fewer than 4 characters in results file:
   //s >> fail_chars[0] >> fail_chars[1] >> fail_chars[2] >> fail_chars[3];
