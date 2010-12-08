@@ -6247,38 +6247,88 @@ Partial Rank Correlation Matrix between input and output:
              response_fn_1 
        TF1ln  9.41109e-01 
        TF2ln -9.41111e-01 
-dakota_mogatest.in 
-Test Number 0 succeeded
+dakota_mogatest.in
+ Test Number 0 succeeded
 <<<<< Function evaluation summary: 2500 total (2500 new, 0 duplicate)
-<<<<< Best parameters          =
+<<<<< Best parameters          (set 1) =
                       1.1940041563e-02 x1
                      -1.4729406691e-03 x2
                      -2.4703672167e-02 x3
-<<<<< Best objective functions =
+<<<<< Best objective functions (set 1) =
                       6.3839180302e-01
                       6.2630526411e-01
 <<<<< Best data captured at function evaluation 2455
+<<<<< Best parameters          (set 2) =
+                      2.9630174874e-02 x1
+                     -1.4729406691e-03 x2
+                     -2.3805001762e-02 x3
+<<<<< Best objective functions (set 2) =
+                      6.3080165897e-01
+                      6.3449390351e-01
+<<<<< Best data captured at function evaluation 2334
+<<<<< Best parameters          (set 3) =
+                      1.1940041563e-02 x1
+                      5.4304683606e-02 x2
+                     -2.3805001762e-02 x3
+<<<<< Best objective functions (set 3) =
+                      6.1505432937e-01
+                      6.5099303949e-01
+<<<<< Best data captured at function evaluation 2219
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 3000 total (3000 new, 0 duplicate)
-<<<<< Best parameters          =
+<<<<< Best parameters          (set 1) =
                       5.5333600000e-01 x1
                       1.1910000000e-03 x2
-<<<<< Best objective functions =
+<<<<< Best objective functions (set 1) =
                       5.5333600000e-01
                       1.7060824064e-01
 <<<<< Best data captured at function evaluation 749
+<<<<< Best parameters          (set 2) =
+                      7.9954000000e-01 x1
+                      4.2530000000e-03 x2
+<<<<< Best objective functions (set 2) =
+                      7.9954000000e-01
+                     -3.2815600087e-01
+<<<<< Best data captured at function evaluation 2648
+<<<<< Best parameters          (set 3) =
+                      7.9982600000e-01 x1
+                      4.3420000000e-03 x2
+<<<<< Best objective functions (set 3) =
+                      7.9982600000e-01
+                     -3.2927239897e-01
+<<<<< Best data captured at function evaluation 1926
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Best parameters          =
+<<<<< Best parameters          (set 1) =
                      -2.4967045086e+00 x1
                       1.0553883775e+01 x2
-<<<<< Best objective functions =
+<<<<< Best objective functions (set 1) =
                       1.1349704663e+02
                      -1.1374703577e+02
-<<<<< Best constraint values   =
+<<<<< Best constraint values   (set 1) =
                      -1.0738200386e+02
                      -2.4158355834e+01
 <<<<< Best data captured at function evaluation 973
+<<<<< Best parameters          (set 2) =
+                     -2.1766160000e+00 x1
+                      1.0648300000e+01 x2
+<<<<< Best objective functions (set 2) =
+                      1.1253381410e+02
+                     -1.1267923689e+02
+<<<<< Best constraint values   (set 2) =
+                     -1.0687604990e+02
+                     -2.4121516000e+01
+<<<<< Best data captured at function evaluation 1727
+<<<<< Best parameters          (set 3) =
+                     -2.8905245076e+00 x1
+                      1.0547867915e+01 x2
+<<<<< Best objective functions (set 3) =
+                      1.1707901169e+02
+                     -1.1717650230e+02
+<<<<< Best constraint values   (set 3) =
+                     -1.0538735051e+02
+                     -2.4534128254e+01
+<<<<< Best data captured at function evaluation 1622
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 3000 total (3000 new, 0 duplicate)
 <<<<< Best parameters          =
