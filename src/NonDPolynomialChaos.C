@@ -18,7 +18,6 @@
 #include "DataFitSurrModel.H"
 #include "NonDIntegration.H"
 #include "PecosApproximation.H"
-#include "OrthogPolyApproximation.hpp"
 #include "SparseGridDriver.hpp"
 #include "TensorProductDriver.hpp"
 #include "CubatureDriver.hpp"
@@ -149,12 +148,10 @@ void NonDPolynomialChaos::initialize_expansion()
   bool num_int = (expansionCoeffsApproach == Pecos::QUADRATURE ||
 		  expansionCoeffsApproach == Pecos::CUBATURE ||
 		  expansionCoeffsApproach == Pecos::SPARSE_GRID);
-  std::vector<Approximation>& orthog_poly_approxs
-    = uSpaceModel.approximations();
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const Pecos::ShortArray& u_types = natafTransform.u_types();
 
-  PecosApproximation* pa_rep;
-  Pecos::OrthogPolyApproximation *popa_rep, *popa_rep0;
+  PecosApproximation *poly_approx_rep, *poly_approx_rep0;
   NonDIntegration* u_space_sampler_rep = NULL;
   Pecos::IntegrationDriver* driver_rep = NULL;
   if (num_int) {
@@ -163,49 +160,35 @@ void NonDPolynomialChaos::initialize_expansion()
     driver_rep = u_space_sampler_rep->driver().driver_rep();
   }
   Pecos::IntArray empty_array;
+  const Pecos::IntArray& int_rules = (num_int) ?
+    driver_rep->integration_rules() : empty_array;
 
+  bool first = true;
   for (size_t i=0; i<numFunctions; i++) {
-    // TO DO: consider delegating to pa_rep/u_space_sampler_rep levels
-    pa_rep   = (PecosApproximation*)orthog_poly_approxs[i].approx_rep();
-    popa_rep = (Pecos::OrthogPolyApproximation*)pa_rep->
-      pecos_basis_approximation().approx_rep();
-    if (popa_rep) { // may be NULL based on approxFnIndices
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (poly_approx_rep) { // may be NULL based on approxFnIndices
       if (num_int) { // reuse driver basis
-	switch (expansionCoeffsApproach) {
-	case Pecos::QUADRATURE:
-	  popa_rep->distribution_types(u_types,
-	    ((Pecos::TensorProductDriver*)driver_rep)->integration_rules());
-	  break;
-	case Pecos::SPARSE_GRID:
-	  popa_rep->distribution_types(u_types,
-	    ((Pecos::SparseGridDriver*)driver_rep)->integration_rules());
-	  break;
-	case Pecos::CUBATURE: { // TO DO: clean up this temporary hack
-	  int rule = ((Pecos::CubatureDriver*)driver_rep)->integration_rule();
-	  IntArray rules(numContinuousVars, rule);
-	  popa_rep->distribution_types(u_types, rules);
-	  break;
-	}
-	}
+	poly_approx_rep->distribution_types(u_types, int_rules);
 	// reuse polynomial bases since they are the same for all response fns
 	// (efficiency becomes more important for numerically-generated polys).
-        popa_rep->polynomial_basis(driver_rep->polynomial_basis());
+        poly_approx_rep->polynomial_basis(driver_rep->polynomial_basis());
       }
-      else if (i == 0) { // construct a new basis for rep0
-	popa_rep->distributions(u_types, empty_array,
-				iteratedModel.distribution_parameters());
-	popa_rep0 = popa_rep;
+      else if (first) { // construct a new basis for rep0
+	poly_approx_rep->distributions(u_types, int_rules,
+				       iteratedModel.distribution_parameters());
+	poly_approx_rep0 = poly_approx_rep;
+	first = false;
       }
       else {             // reuse rep0 basis
-        popa_rep->distribution_types(u_types, empty_array);
-	popa_rep->polynomial_basis(popa_rep0->polynomial_basis());
+        poly_approx_rep->distribution_types(u_types, int_rules);
+	poly_approx_rep->polynomial_basis(poly_approx_rep0->polynomial_basis());
       }
       // NumerGenOrthogPolynomial instances need to compute polyCoeffs and
       // orthogPolyNormsSq in addition to gaussPoints and gaussWeights
-      popa_rep->coefficients_norms_flag(true);
+      poly_approx_rep->coefficients_norms_flag(true);
       // transfer an expansionTerms spec to the OrthogPolyApproximation
       if (expansionTerms)
-	popa_rep->expansion_terms(expansionTerms);
+	poly_approx_rep->expansion_terms(expansionTerms);
     }
   }
 }
@@ -235,13 +218,14 @@ void NonDPolynomialChaos::compute_expansion()
     }
     std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
     RealVectorArray chaos_coeffs_array(numFunctions);
-    PecosApproximation* pa_rep; Pecos::OrthogPolyApproximation* popa_rep;
+    PecosApproximation* poly_approx_rep;
     for (size_t i=0; i<numFunctions; i++) {
-      pa_rep   = (PecosApproximation*)poly_approxs[i].approx_rep();
-      popa_rep = (Pecos::OrthogPolyApproximation*)pa_rep->
-	pecos_basis_approximation().approx_rep();
-      popa_rep->allocate_arrays();
-      chaos_coeffs_array[i].sizeUninitialized(popa_rep->expansion_terms());
+      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+      if (poly_approx_rep) { // may be NULL based on approxFnIndices
+	poly_approx_rep->allocate_arrays();
+	chaos_coeffs_array[i].sizeUninitialized(
+	  poly_approx_rep->expansion_terms());
+      }
     }
     read_data(import_stream, chaos_coeffs_array);
     uSpaceModel.approximation_coefficients(chaos_coeffs_array);
@@ -297,7 +281,7 @@ void NonDPolynomialChaos::print_moments(std::ostream& s)
   PecosApproximation* poly_approx_rep; size_t exp_mom, num_mom;
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-    if (poly_approx_rep->expansion_coefficient_flag()) {
+    if (poly_approx_rep && poly_approx_rep->expansion_coefficient_flag()) {
       const RealVector& exp_moments = poly_approx_rep->expansion_moments();
       const RealVector& num_moments = poly_approx_rep->numerical_moments();
       exp_mom = exp_moments.length(); num_mom = num_moments.length();

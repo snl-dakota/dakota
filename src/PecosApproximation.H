@@ -15,7 +15,7 @@
 #define PECOS_APPROXIMATION_H
 
 #include "DakotaApproximation.H"
-#include "PolynomialApproximation.hpp"
+#include "OrthogPolyApproximation.hpp"
 
 
 namespace Dakota {
@@ -50,29 +50,29 @@ public:
   //- Heading: Member functions
   //
 
-  /// set pecosBasisApprox::configOptions::expCoeffsSolnApproach
+  /// set pecosBasisApprox.configOptions.expCoeffsSolnApproach
   void solution_approach(short soln_approach);
-  /// get pecosBasisApprox::configOptions::expCoeffsSolnApproach
+  /// get pecosBasisApprox.configOptions.expCoeffsSolnApproach
   short solution_approach() const;
 
-  /// set pecosBasisApprox::configOptions::expansionCoeffFlag
+  /// set pecosBasisApprox.configOptions.expansionCoeffFlag
   void expansion_coefficient_flag(bool coeff_flag);
-  /// get pecosBasisApprox::configOptions::expansionCoeffFlag
+  /// get pecosBasisApprox.configOptions.expansionCoeffFlag
   bool expansion_coefficient_flag() const;
 
-  /// set pecosBasisApprox::configOptions::expansionGradFlag
+  /// set pecosBasisApprox.configOptions.expansionGradFlag
   void expansion_gradient_flag(bool grad_flag);
-  /// get pecosBasisApprox::configOptions::expansionGradFlag
+  /// get pecosBasisApprox.configOptions.expansionGradFlag
   bool expansion_gradient_flag() const;
 
-  /// set pecosBasisApprox::configOptions::refinementControl
+  /// set pecosBasisApprox.configOptions.refinementControl
   void refinement_control(short refine_cntl);
-  /// get pecosBasisApprox::configOptions::refinementControl
+  /// get pecosBasisApprox.configOptions.refinementControl
   short refinement_control() const;
 
-  /// set pecosBasisApprox::configOptions::vbdControl
+  /// set pecosBasisApprox.configOptions.vbdControl
   void vbd_control(short vbd_cntl);
-  /// get pecosBasisApprox::configOptions::vbdControl
+  /// get pecosBasisApprox.configOptions.vbdControl
   short vbd_control() const;
 
   /// Performs global sensitivity analysis using Sobol' Indices by
@@ -81,18 +81,38 @@ public:
   /// Performs global sensitivity analysis using Sobol' Indices by
   /// computing total effects
   void compute_total_effects();
-  /// return pecosBasisApprox::sobol_index_map
+  /// return pecosBasisApprox.sobol_index_map
   const Pecos::IntIntMap& sobol_index_map() const;
-  /// return pecosBasisApprox::sobolIndices
+  /// return pecosBasisApprox.sobolIndices
   const Pecos::RealVector& sobol_indices() const;
-  /// return pecosBasisApprox::totalSobolIndices
+  /// return pecosBasisApprox.totalSobolIndices
   const Pecos::RealVector& total_sobol_indices() const;
 
-  /// set pecosBasisApprox::randomVarsKey
+  /// set pecosBasisApprox.randomVarsKey
   void random_variables_key(const Pecos::BoolDeque& random_vars_key);
 
-  /// set pecosBasisApprox::driverRep
+  /// set pecosBasisApprox.driverRep
   void integration_iterator(const Iterator& iterator);
+
+  /// invoke Pecos::OrthogPolyApproximation::distribution_types()
+  void distribution_types(const Pecos::ShortArray& u_types,
+			  const Pecos::IntArray& rules);
+  /// invoke Pecos::OrthogPolyApproximation::polynomial_basis()
+  void polynomial_basis(const std::vector<Pecos::BasisPolynomial>& poly_basis);
+  /// return Pecos::OrthogPolyApproximation::polynomial_basis()
+  const std::vector<Pecos::BasisPolynomial>& polynomial_basis() const;
+  /// invoke Pecos::OrthogPolyApproximation::distributions()
+  void distributions(const Pecos::ShortArray& u_types,
+		     const Pecos::IntArray& int_rules,
+		     const Pecos::DistributionParams& dp);
+  /// invoke Pecos::OrthogPolyApproximation::coefficients_norms_flag()
+  void coefficients_norms_flag(bool flag);
+  /// invoke Pecos::OrthogPolyApproximation::expansion_terms()
+  void expansion_terms(size_t terms);
+  /// return Pecos::OrthogPolyApproximation::expansion_terms()
+  size_t expansion_terms() const;
+  /// invoke Pecos::PolynomialApproximation::allocate_arrays()
+  void allocate_arrays();
 
   /// return the mean of the expansion, treating all variables as random
   const Real& get_mean();
@@ -267,6 +287,57 @@ inline const Pecos::RealVector& PecosApproximation::total_sobol_indices() const
 inline void PecosApproximation::
 random_variables_key(const Pecos::BoolDeque& random_vars_key)
 { polyApproxRep->random_variables_key(random_vars_key); }
+
+
+inline void PecosApproximation::
+distribution_types(const Pecos::ShortArray& u_types,
+		   const Pecos::IntArray& rules)
+{
+  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
+    distribution_types(u_types, rules);
+}
+
+
+inline void PecosApproximation::
+polynomial_basis(const std::vector<Pecos::BasisPolynomial>& poly_basis)
+{
+  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
+    polynomial_basis(poly_basis);
+}
+
+
+inline const std::vector<Pecos::BasisPolynomial>& PecosApproximation::
+polynomial_basis() const
+{ return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->polynomial_basis(); }
+
+
+inline void PecosApproximation::
+distributions(const Pecos::ShortArray& u_types,
+	      const Pecos::IntArray& int_rules,
+	      const Pecos::DistributionParams& dp)
+{
+  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
+    distributions(u_types, int_rules, dp);
+}
+
+
+inline void PecosApproximation::coefficients_norms_flag(bool flag)
+{
+  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
+    coefficients_norms_flag(flag);
+}
+
+
+inline void PecosApproximation::expansion_terms(size_t terms)
+{ ((Pecos::OrthogPolyApproximation*)polyApproxRep)->expansion_terms(terms); }
+
+
+inline size_t PecosApproximation::expansion_terms() const
+{ return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->expansion_terms(); }
+
+
+inline void PecosApproximation::allocate_arrays()
+{ polyApproxRep->allocate_arrays(); }
 
 
 inline const Real& PecosApproximation::get_mean()
