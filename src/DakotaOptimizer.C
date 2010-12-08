@@ -218,73 +218,44 @@ Optimizer(NoDBBaseConstructor, size_t num_cv, size_t num_div, size_t num_drv,
     optimization results (objective functions and constraints). */
 void Optimizer::print_results(std::ostream& s)
 {
-  const String& interface_id = iteratedModel.interface_id();
-  ParamResponsePair desired_pair;
+  size_t i, num_best 
+    = std::min(bestVariablesArray.size(), bestResponseArray.size()); 
   extern PRPCache data_pairs; // global container
-  // ----------------------------
-  // Single point results summary
-  // ----------------------------
-  // Print best parameters
-  const Variables& best_vars = bestVariablesArray.front();
-  s << "<<<<< Best parameters          =\n" << best_vars;
-
-  // Print best response functions
-  const RealVector& fn_vals_star = bestResponseArray.front().function_values();
-  if (numUserObjectiveFns > 1)
-    s << "<<<<< Best objective functions =\n";
-  else
-    s << "<<<<< Best objective function  =\n";
-  write_data_partial(s, 0, numUserObjectiveFns, fn_vals_star);
-  size_t num_cons = numFunctions - numUserObjectiveFns;
-  if (num_cons) {
-    s << "<<<<< Best constraint values   =\n";
-    write_data_partial(s, numUserObjectiveFns, num_cons, fn_vals_star);
-  }
-
-  // Print fn. eval. number where best occurred.  This cannot be catalogued 
-  // directly because the optimizers track the best iterate internally and 
-  // return the best results after iteration completion.  Therfore, perform a
-  // search in data_pairs to extract the evalId for the best fn. eval.
-  extern PRPCache data_pairs; // global container
-  int eval_id;
-  // For multiobjective, activeSet is wrong size -> instantiate new ActiveSet
+  const String& interface_id = iteratedModel.interface_id(); 
+  int eval_id; 
   ActiveSet search_set(numFunctions, numContinuousVars); // asv = 1's
-  search_set.derivative_vector(activeSet.derivative_vector());
-  if (lookup_by_val(data_pairs, interface_id, best_vars, search_set, eval_id))
-    s << "<<<<< Best data captured at function evaluation " << eval_id
-      << std::endl;
-  else
-    s << "<<<<< Best data not found in evaluation cache" << std::endl;
-
-  size_t num_instances = bestVariablesArray.size();
-  if (num_instances > 1 && outputLevel > NORMAL_OUTPUT &&
-      !methodName.begins("coliny_")) { // hack: coliny needs bestResponseArray
-    // ------------------------------
-    // Multiple point results summary
-    // ------------------------------
-    s << '\n';//<<<<< Optimizer generated "<<num_instances<<" solution sets:\n";
-    for (size_t i=1; i<num_instances; i++) {
-      s << "<<<<< Best parameters          (set " << i+1 << ") =\n"
-	<< bestVariablesArray[i];
-      const RealVector& fn_vals_star = bestResponseArray[i].function_values();
-      if (numUserObjectiveFns > 1)
-	s << "<<<<< Best objective functions (set " << i+1 << ") =\n";
-      else
-	s << "<<<<< Best objective function  (set " << i+1 << ") =\n";
-      write_data_partial(s, 0, numUserObjectiveFns, fn_vals_star);
-      size_t num_cons = numFunctions - numUserObjectiveFns;
-      if (num_cons) {
-	s << "<<<<< Best constraint values   (set " << i+1 << ") =\n";
-	write_data_partial(s, numUserObjectiveFns, num_cons, fn_vals_star);
-      }
-      if (lookup_by_val(data_pairs, interface_id, bestVariablesArray[i],
-      			search_set, eval_id))
-	s << "<<<<< Best data captured at function evaluation " << eval_id
-	  << "\n\n";
-      else
-	s << "<<<<< Best data not found in evaluation cache\n\n";
-    }
-  }
+ 
+  // -------------------------------------
+  // Single and Multipoint results summary
+  // -------------------------------------
+  for (i=0; i<num_best; ++i) { 
+    // output best variables
+    s << "<<<<< Best parameters          "; 
+    if (num_best > 1) s << "(set " << i+1 << ") "; 
+    s << "=\n" << bestVariablesArray[i]; 
+    // output best response
+    const RealVector& best_fns = bestResponseArray[i].function_values(); 
+    if (numUserObjectiveFns > 1) s << "<<<<< Best objective functions "; 
+    else                       s << "<<<<< Best objective function  "; 
+    if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
+    write_data_partial(s, 0, numUserObjectiveFns, best_fns); 
+    size_t num_cons = numFunctions - numUserObjectiveFns; 
+    if (num_cons) { 
+      s << "<<<<< Best constraint values   "; 
+      if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
+      write_data_partial(s, numUserObjectiveFns, num_cons, best_fns); 
+    } 
+    // lookup evaluation id where best occurred.  This cannot be catalogued
+    // directly because the optimizers track the best iterate internally and
+    // return the best results after iteration completion.  Therfore, perform a
+    // search in data_pairs to extract the evalId for the best fn eval.
+    if (lookup_by_val(data_pairs, interface_id, bestVariablesArray[i], 
+                      search_set, eval_id))
+      s << "<<<<< Best data captured at function evaluation " << eval_id
+        << "\n\n";
+    else 
+      s << "<<<<< Best data not found in evaluation cache\n\n"; 
+  } 
 }
 
 
