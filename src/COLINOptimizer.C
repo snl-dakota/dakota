@@ -303,7 +303,10 @@ void COLINOptimizer::solver_setup(Model& model)
             && scolib::StaticInitializers::static_scolib_registrations ) )
       EXCEPTION_MNGR(std::runtime_error, "COLINOptimizer::solver_setup(): "
                      "error: Acro incompletely registered (likely an issue "
-                     "with the library link step.");
+                     "with the library link step ("
+                     << scolib::StaticInitializers::static_scolib_registrations
+                     << interfaces::StaticInitializers::static_interfaces_registration
+                     << ").");
 
   // initialize some buffer variables
   constraint_penalty = 0.;
