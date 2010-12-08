@@ -4397,137 +4397,105 @@ Test Number 0 succeeded
    1.5000000000e+00   8.2526852037e-01  -9.3563148261e-01  -9.3563148261e-01
 dakota_hybrid.in 
 Test Number 0 succeeded
-<<<<< Function evaluation summary (I1): 910 total (910 new, 0 duplicate)
-         obj_fn: 910 val (910 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (I1): 405 total (405 new, 0 duplicate)
+         obj_fn: 405 val (405 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.1164025322e+00 x1
-                      1.1242787261e+00 x2
+                      8.4110830721e-01 x1
+                      1.1570664716e+00 x2
 <<<<< Best objective function  =
-                      4.2214454871e-04
-<<<<< Best data captured at function evaluation 792
-<<<<< Function evaluation summary (I1): 301 total (241 new, 60 duplicate)
-         obj_fn: 301 val (241 n, 60 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+                      1.2459921055e-03
+<<<<< Best data captured at function evaluation 291
+<<<<< Function evaluation summary (I1): 409 total (239 new, 170 duplicate)
+         obj_fn: 409 val (239 n, 170 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.0166134697e+00 x1
-                      1.0150756011e+00 x2
+                      9.8768643221e-01 x1
+                      1.0120664716e+00 x2
 <<<<< Best objective function  =
-                      1.2783342705e-07
-<<<<< Best data captured at function evaluation 1200
-<<<<< Function evaluation summary (I1): 39 total (39 new, 0 duplicate)
-         obj_fn: 14 val (14 n, 0 d), 14 grad (14 n, 0 d), 13 Hess (13 n, 0 d)
+                      4.4189106229e-08
+<<<<< Best data captured at function evaluation 814
+<<<<< Function evaluation summary (I1): 36 total (36 new, 0 duplicate)
+         obj_fn: 13 val (13 n, 0 d), 13 grad (13 n, 0 d), 12 Hess (12 n, 0 d)
 <<<<< Best parameters          =
-                      1.0000853639e+00 x1
-                      1.0000774619e+00 x2
+                      9.9990509505e-01 x1
+                      1.0000930005e+00 x2
 <<<<< Best objective function  =
-                      8.9104436231e-17
-<<<<< Best data captured at function evaluation 1249
+                      1.5593194632e-16
+<<<<< Best data captured at function evaluation 849
 Test Number 1 succeeded
-<<<<< Function evaluation summary (I1): 910 total (910 new, 0 duplicate)
-         obj_fn: 910 val (910 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (I1): 405 total (405 new, 0 duplicate)
+         obj_fn: 405 val (405 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.1164025322e+00 x1
-                      1.1242787261e+00 x2
+                      8.4110830721e-01 x1
+                      1.1570664716e+00 x2
 <<<<< Best objective function  =
-                      4.2214454871e-04
-<<<<< Best data captured at function evaluation 792
-<<<<< Function evaluation summary (I1): 102 total (78 new, 24 duplicate)
-         obj_fn: 102 val (78 n, 24 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+                      1.2459921055e-03
+<<<<< Best data captured at function evaluation 291
+<<<<< Function evaluation summary (I1): 102 total (66 new, 36 duplicate)
+         obj_fn: 102 val (66 n, 36 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.0302775322e+00 x1
-                      1.0282162261e+00 x2
+                      9.7360830721e-01 x1
+                      1.0265664716e+00 x2
 <<<<< Best objective function  =
-                      1.4742554179e-06
-<<<<< Best data captured at function evaluation 1008
-<<<<< Function evaluation summary (I1): 13 total (12 new, 1 duplicate)
-         obj_fn: 13 val (12 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+                      9.8326388634e-07
+<<<<< Best data captured at function evaluation 505
+<<<<< Function evaluation summary (I1): 11 total (8 new, 3 duplicate)
+         obj_fn: 11 val (8 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.0302775322e+00 x1
-                      1.0282162261e+00 x2
+                      9.7360830721e-01 x1
+                      1.0265664716e+00 x2
 <<<<< Best objective function  =
-                      1.4742554179e-06
-<<<<< Best data captured at function evaluation 1008
+                      9.8326388634e-07
+<<<<< Best data captured at function evaluation 505
 Test Number 2 succeeded
-<<<<< Function evaluation summary (I1): 910 total (910 new, 0 duplicate)
-         obj_fn: 910 val (910 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (I1): 405 total (405 new, 0 duplicate)
+         obj_fn: 405 val (405 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.1164025322e+00 x1
-                      1.1242787261e+00 x2
+                      8.4110830721e-01 x1
+                      1.1570664716e+00 x2
 <<<<< Best objective function  =
-                      4.2214454871e-04
-<<<<< Best data captured at function evaluation 792
-<<<<< Function evaluation summary (I1): 401 total (270 new, 131 duplicate)
-         obj_fn: 401 val (270 n, 131 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+                      1.2459921055e-03
+<<<<< Best data captured at function evaluation 291
+<<<<< Function evaluation summary (I1): 409 total (239 new, 170 duplicate)
+         obj_fn: 409 val (239 n, 170 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.0166134697e+00 x1
-                      1.0150756011e+00 x2
+                      9.8768643221e-01 x1
+                      1.0120664716e+00 x2
 <<<<< Best objective function  =
-                      1.2783342705e-07
-<<<<< Best data captured at function evaluation 1308
-<<<<< Function evaluation summary (I1): 13 total (12 new, 1 duplicate)
-         obj_fn: 13 val (12 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+                      4.4189106229e-08
+<<<<< Best data captured at function evaluation 814
+<<<<< Function evaluation summary (I1): 11 total (8 new, 3 duplicate)
+         obj_fn: 11 val (8 n, 3 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.0166134697e+00 x1
-                      1.0150756011e+00 x2
+                      9.8768643221e-01 x1
+                      1.0120664716e+00 x2
 <<<<< Best objective function  =
-                      1.2783342705e-07
-<<<<< Best data captured at function evaluation 1308
+                      4.4189106229e-08
+<<<<< Best data captured at function evaluation 814
 Test Number 3 succeeded
-<<<<< Function evaluation summary (I1): 910 total (910 new, 0 duplicate)
-         obj_fn: 910 val (910 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (I1): 405 total (405 new, 0 duplicate)
+         obj_fn: 405 val (405 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.1164025322e+00 x1
-                      1.1242787261e+00 x2
+                      8.4110830721e-01 x1
+                      1.1570664716e+00 x2
 <<<<< Best objective function  =
-                      4.2214454871e-04
-<<<<< Best data captured at function evaluation 792
-<<<<< Function evaluation summary (I1): 301 total (241 new, 60 duplicate)
-         obj_fn: 301 val (241 n, 60 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+                      1.2459921055e-03
+<<<<< Best data captured at function evaluation 291
+<<<<< Function evaluation summary (I1): 409 total (239 new, 170 duplicate)
+         obj_fn: 409 val (239 n, 170 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.0166134697e+00 x1
-                      1.0150756011e+00 x2
+                      9.8768643221e-01 x1
+                      1.0120664716e+00 x2
 <<<<< Best objective function  =
-                      1.2783342705e-07
-<<<<< Best data captured at function evaluation 1200
-<<<<< Function evaluation summary (I1): 305 total (244 new, 61 duplicate)
-         obj_fn: 305 val (244 n, 61 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+                      4.4189106229e-08
+<<<<< Best data captured at function evaluation 814
+<<<<< Function evaluation summary (I1): 36 total (36 new, 0 duplicate)
+         obj_fn: 13 val (13 n, 0 d), 13 grad (13 n, 0 d), 12 Hess (12 n, 0 d)
 <<<<< Best parameters          =
-                      1.0145329133e+00 x1
-                      9.8525768004e-01 x2
+                      9.9990509505e-01 x1
+                      1.0000930005e+00 x2
 <<<<< Best objective function  =
-                      9.1842727849e-08
-<<<<< Best data captured at function evaluation 1512
-<<<<< Function evaluation summary (I1): 293 total (226 new, 67 duplicate)
-         obj_fn: 293 val (226 n, 67 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Best parameters          =
-                      1.0176137355e+00 x1
-                      9.8348331658e-01 x2
-<<<<< Best objective function  =
-                      1.7067143247e-07
-<<<<< Best data captured at function evaluation 1809
-<<<<< Function evaluation summary (I1): 39 total (39 new, 0 duplicate)
-         obj_fn: 14 val (14 n, 0 d), 14 grad (14 n, 0 d), 13 Hess (13 n, 0 d)
-<<<<< Best parameters          =
-                      1.0000853639e+00 x1
-                      1.0000774619e+00 x2
-<<<<< Best objective function  =
-                      8.9104436231e-17
-<<<<< Best data captured at function evaluation 1847
-<<<<< Function evaluation summary (I1): 39 total (39 new, 0 duplicate)
-         obj_fn: 14 val (14 n, 0 d), 14 grad (14 n, 0 d), 13 Hess (13 n, 0 d)
-<<<<< Best parameters          =
-                      1.0000746735e+00 x1
-                      9.9992425054e-01 x2
-<<<<< Best objective function  =
-                      6.4017637762e-17
-<<<<< Best data captured at function evaluation 1886
-<<<<< Function evaluation summary (I1): 39 total (39 new, 0 duplicate)
-         obj_fn: 14 val (14 n, 0 d), 14 grad (14 n, 0 d), 13 Hess (13 n, 0 d)
-<<<<< Best parameters          =
-                      1.0000905035e+00 x1
-                      9.9991513345e-01 x2
-<<<<< Best objective function  =
-                      1.1896404412e-16
-<<<<< Best data captured at function evaluation 1925
+                      1.5593194632e-16
+<<<<< Best data captured at function evaluation 849
 dakota_illum.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 256 total (256 new, 0 duplicate)
@@ -6419,7 +6387,7 @@ Test Number 0 succeeded
                      -2.6571982250e-01
                      -5.9998828125e-01
                       3.4998242196e-01
-<<<<< Best data captured at function evaluation 171
+<<<<< Best data captured at function evaluation 143
 dakota_multistart.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
@@ -12320,7 +12288,7 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 210
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 476 total (476 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 210 total (206 new, 4 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 210 total (207 new, 3 duplicate)
 <<<<< Best parameters          =
                       1.7708636248e-01 x1
                       1.7708257602e-01 x2
@@ -12328,7 +12296,7 @@ Test Number 1 succeeded
                       6.0247197395e-02
 <<<<< Best data captured at function evaluation 144
 Test Number 2 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 287 total (287 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 290 total (290 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 155 total (155 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.7188934174e-01 x1

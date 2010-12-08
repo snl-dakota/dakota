@@ -25,7 +25,7 @@ method,
 	coliny_ea
 #	  final_solutions = 3			#3,#p0
 	  seed = 1234
-	  population_size = 10
+	  population_size = 5 
 	  verbose output
 
 method,
