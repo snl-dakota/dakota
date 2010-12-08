@@ -600,20 +600,32 @@ The calculation of $S_{i}$ and $T_{i}$ requires the evaluation of
 m-dimensional integrals which are typically approximated by Monte-Carlo 
 sampling. More details on the
 calculations and interpretation of the sensitivity indices can be
-found in~\cite{Sal04}. VBD can be specified for any of the sampling 
-methods using the command \texttt{variance\_based\_decomposition}.
-Note that VBD is extremely computationally
-intensive since replicated sets of sample values are evaluated. If the
+found in~\cite{Sal04}. In DAKOTA version 5.1, we have 
+improved calculations for the calculation of the $S_{i}$ and $T_{i}$ 
+indices when using sampling.  The implementation details of these 
+calculatiosn are provided in~\cite{Weirs10}. 
+VBD can be specified for any of the sampling or DACE methods using the 
+command \texttt{variance\_based\_decomposition}.
+Note that VBD is extremely computationally intensive when using sampling 
+since replicated sets of sample values are evaluated. If the
 user specified a number of samples, $N$, and a number of
 nondeterministic variables, $M$, variance-based decomposition
 requires the evaluation of $N(M+2)$ samples. To obtain
 sensitivity indices that are reasonably accurate, we recommend that
 $N$, the number of samples, be at least one hundred and
 preferably several hundred or thousands. Because of the computational
-cost, variance-based decomposition is turned off as a default.
+cost, variance-based decomposition is turned off as a default
+for sampling or DACE.  Another alternative, however, is to obtain 
+these indices using one of the stochastic expansion methods 
+described in Section~\ref{uq:expansion:vbd}. The calculation 
+of the indices using expansion methods is much more efficient 
+since the VBD indices are analytic functions of the coefficients 
+in the stochastic expansion. The paper by Weirs et al.~\cite{Weirs10}
+compares different methods for calculating the sensitivity 
+indices for nonlinear problems with significant interaction effects.
 
 In terms of interpretation of the sensitivity indices, a larger value of
-the sensitivity index, $S_{i}$ (\texttt{Si} in the DAKOTA output),
+the sensitivity index, $S_{i}$,
 means that the uncertainty in the input variable $i$ has a
 larger effect on the variance of the output. Note that the 
 sum of the main effect indices will be less than or equal to one. 
@@ -622,7 +634,26 @@ it indicates that there are significant two-way, three-way, or higher
 order interactions that contribute significantly to the variance. 
 There is no requirement that the sum of the total effect indices 
 is one:  in most cases, the sum of the total effect indices will be 
-greater than one. 
+greater than one.  An example of the Main and Total effects 
+indices as calculated by DAKOTA using sampling is shown 
+in Figure~\ref{fig:dace:vbd}
+
+\begin{figure}[ht!]
+\centering
+\begin{bigbox}
+\begin{small}
+\begin{verbatim}
+Global sensitivity indices for each response function:
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.7508913283e-01  5.3242162037e-01 uuv_1
+                      3.8112392892e-01  4.9912486515e-01 uuv_2
+\end{verbatim}
+\end{small}
+\end{bigbox}
+\caption{DAKOTA output for Variance-based Decomposition} 
+\label{fig:dace:vbd}
+\end{figure}
 
 Finally, we have the capability to calculate a set of quality metrics 
 for a particular input sample.  These quality metrics measure 
