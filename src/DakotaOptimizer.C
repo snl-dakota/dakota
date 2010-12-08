@@ -218,8 +218,13 @@ Optimizer(NoDBBaseConstructor, size_t num_cv, size_t num_div, size_t num_drv,
     optimization results (objective functions and constraints). */
 void Optimizer::print_results(std::ostream& s)
 {
-  size_t i, num_best 
-    = std::min(bestVariablesArray.size(), bestResponseArray.size()); 
+  size_t i, num_best = bestVariablesArray.size();
+  if (num_best != bestResponseArray.size()) {
+    Cerr << "\nError: mismatch in lengths of bestVariables and bestResponses."
+         << std::endl;
+    abort_handler(-1); 
+  } 
+
   extern PRPCache data_pairs; // global container
   const String& interface_id = iteratedModel.interface_id(); 
   int eval_id; 
