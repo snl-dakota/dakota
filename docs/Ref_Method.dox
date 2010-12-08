@@ -4613,7 +4613,8 @@ variable. A larger value of the sensitivity index, Si, means that the
 uncertainty in the input variable i has a larger effect on the
 variance of the output.  More details on the calculations and
 interpretation of the sensitivity indices can be found in [\ref
-Saltelli2004 "Saltelli et al., 2004"].  Note that \c
+Saltelli2004 "Saltelli et al., 2004"] and 
+[\ref Weirs2010 "Weirs et al., 2010"].  Note that \c
 variance_based_decomp is extremely computationally intensive since
 replicated sets of sample values are evaluated. If the user specified
 a number of samples, N, and a number of nondeterministic variables, M,
@@ -5473,7 +5474,8 @@ by using nested approaches with interval estimation or evidence methods
 in the outer loop and aleatory UQ methods on the 
 inner loop such as stochastic expansion or reliability methods. 
 More detail about these "intervals on statistics" approaches 
-can be found in [\ref Eldred2009 "Eldred and Swiler, 2009"]. 
+can be found in [\ref Eldred2009 "Eldred and Swiler, 2009"] 
+and [\ref Eldred2011 "Eldred et al., 2011"]. 
 
 
 \subsubsection MethodNonDLocalIntervalEst Local Interval Estimation

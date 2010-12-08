@@ -524,10 +524,10 @@ Additional development resources include:
     involving several class hierarchies.  An overview of the classes and
     member functions involved in performing these evaluations is provided
     in \ref FnEvals.
-\li Project web pages are maintained at http://www.cs.sandia.gov/dakota with
+\li Project web pages are maintained at http://dakota.sandia.gov/dakota with
     documentation pointers provided at
-    http://www.cs.sandia.gov/dakota/documentation.html, and a list of 
-    publications provided at http://www.cs.sandia.gov/dakota/publications.html
+    http://dakota.sandia.gov/dakota/documentation.html, and a list of 
+    publications provided at http://dakota.sandia.gov/dakota/publications.html
 
 */
 

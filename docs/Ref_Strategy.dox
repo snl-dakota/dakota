@@ -255,10 +255,10 @@ Specification detail for strategy independent controls
 \section StratHybrid Hybrid Minimization Commands
 
 
-The hybrid minimization strategy has \c sequential, \c sequential \c
-adaptive, \c embedded, and \c collaborative approaches (see the Users
+The hybrid minimization strategy has \c sequential,\c embedded, and 
+\c collaborative approaches (see the Users
 Manual [\ref UsersMan "Adams et al., 2010"] for more information on
-the algorithms employed).  In the sequential approaches, best
+the algorithms employed).  In the sequential approach, the best
 solutions are transferred from one method to the next through a
 specified sequence.  In the embedded approach, a tightly-coupled
 hybrid is employed in which a subordinate local method provides
@@ -266,19 +266,14 @@ periodic refinements to a top-level global method.  And in the
 collaborative approach, multiple methods work together and share
 solutions while executing concurrently.
 
-In the two \c sequential approaches, a list of method strings supplied
+In the \c sequential approach, a list of method strings supplied
 with the \c method_list specification specifies the identity and
 sequence of iterators to be used. Any number of iterators may be
-specified. The sequential adaptive approach may be specified by
-turning on the \c adaptive flag. If this flag in specified, then \c
-progress_threshold must also be specified since it is a required part
-of adaptive specification. In the nonadaptive case, method switching
+specified. In the sequential approach, method switching
 is managed through the separate convergence controls of each
-method. In the adaptive case, however, method switching occurs when
-the internal progress metric (normalized between 0.0 and 1.0) falls
-below the user specified \c progress_threshold.  The number of
-solutions transferred between methods is specified by \c
-num_solutions_transferred.  For example, if one sets up a two-level
+method.  The number of solutions transferred between methods is specified 
+by the particular method through its \c final_solutions method 
+control.  For example, if one sets up a two-level
 strategy with a first method that generates multiple solutions such as
 a genetic algorithm, followed by a second method that is initialized
 only at a single point such as a gradient-based algorithm, it is
@@ -292,9 +287,8 @@ accept multiple solutions as input (for example, as a genetic
 algorithm population), then one instance of method B is initialized
 with multiple solutions.  If multiple solutions are returned from
 method A but method B only can accept one initial starting point, then
-method B is run \c num_solutions_transferred times, each one with a
-separate starting point.  The default number of solutions transferred
-is one.  \ref T4d2 "Table 4.2" summarizes the sequential hybrid
+method B is run several times, each one with a separate starting point from 
+the results of method A. \ref T4d2 "Table 4.2" summarizes the sequential hybrid
 strategy inputs.
 
 \anchor T4d2
@@ -323,24 +317,6 @@ Specification detail for sequential hybrid strategies
 <td>none
 <td>Required group (1 of 3 selections)
 <td>N/A
-<tr>
-<td>Adaptive flag
-<td>\c adaptive
-<td>none
-<td>Optional group
-<td>nonadaptive hybrid
-<tr>
-<td>Adaptive progress threshold
-<td>\c progress_threshold
-<td>real
-<td>Required
-<td>N/A
-<tr>
-<td>Number of Solutions Transferred 
-<td>\c num_solutions_transferred 
-<td>integer 
-<td>Optional
-<td>1
 <tr>
 <td>%List of methods
 <td>\c method_list

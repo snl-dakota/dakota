@@ -46,6 +46,12 @@ Quantification with Application to Radiation-Hardened Electronics.
 Part 1:  Algorithms and Benchmark Results," Sandia
 Technical report SAND2009-5805.
 
+\li \anchor Eldred2011 Eldred, M.S. and Swiler, L.P. and Tang, G., 2011.
+"Mixed Aleatory-Epistemic Uncertainty Quantification with 
+Stochastic Expansions and Optimization-Based Interval Estimation." 
+Revised paper accepted by Reliability Engineering and System Safety, 
+publication in 2011. 
+
 \li \anchor Eldred2006a Eldred, M.S. and Dunlavy, D.M., 2006. 
 "Formulations for Surrogate-Based Optimization with Data Fit,
 Multifidelity, and Reduced-Order Models," paper AIAA-2006-7117 in the
@@ -236,6 +242,12 @@ Program for Constrained Function Minimization," NASA TM X-62282.
 \li \anchor Vrand1995 Vanderplaats Research and Development, Inc.,
 1995.  "DOT Users Manual, Version 4.20," Colorado Springs.
 
+\li \anchor Weirs2010 Weirs, V. G. and Kamm, J. R. and Swiler, L. P. and 
+Ratto, M. and Tarantola, S. and Adams, B. M. and Rider, W. J. and 
+Eldred, M. S, 2010.  "Sensitivity Analysis Techniques Applied to a 
+System of Hyperbolic Conservation Laws."  Submitted to Reliability 
+Engineering and System Safety, Oct. 2010. 
+ 
 \li \anchor Wright1 Wright, S. J., 1997. "Primal-Dual Interior-Point 
 Methods", SIAM.
 
