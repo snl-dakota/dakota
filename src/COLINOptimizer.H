@@ -133,6 +133,7 @@ protected:
 
   /// Buffer to hold problem constraint_penalty parameter
   Real constraint_penalty;
+
   /// Buffer to hold problem constant_penalty parameter
   bool constant_penalty;
 };

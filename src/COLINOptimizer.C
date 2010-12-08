@@ -183,7 +183,6 @@ COLINOptimizer::COLINOptimizer(Model& model):
   // matching free_communicators() appears in the Optimizer destructor.
   if (scaleFlag || multiObjFlag)
     iteratedModel.init_communicators(maxConcurrency);
- 
 }
 
 COLINOptimizer::COLINOptimizer(Model& model, int seed):
@@ -438,13 +437,13 @@ void COLINOptimizer::set_solver_parameters()
 
     const Real& global_bal_param
       = probDescDB.get_real("method.coliny.global_balance_parameter");
-    if (global_bal_param >= 0. && colinSolver->has_property("global_search_balance"))
-      colinSolver->property("global_search_balance") = global_bal_param;
+    if (global_bal_param >= 0. && colinSolver->has_property("min_improvement"))
+      colinSolver->property("min_improvement") = global_bal_param;
 
     const Real& local_bal_param
       = probDescDB.get_real("method.coliny.local_balance_parameter");
-    if (local_bal_param >= 0. && colinSolver->has_property("local_search_balance"))
-      colinSolver->property("local_search_balance") = local_bal_param;
+    if (local_bal_param >= 0. && colinSolver->has_property("max_boxsize_ratio"))
+      colinSolver->property("max_boxsize_ratio") = local_bal_param;
 
     const Real& max_box
       = probDescDB.get_real("method.coliny.max_boxsize_limit");
@@ -488,15 +487,13 @@ void COLINOptimizer::set_solver_parameters()
 
     int keep_num = probDescDB.get_int("method.coliny.number_retained");
     if (keep_num >= 0 && colinSolver->has_property("keep_num")) {
-      unsigned int tmp = static_cast<unsigned int>(keep_num);
-      colinSolver->property("keep_num") = tmp;
+      colinSolver->property("keep_num") = keep_num;
     }
 
     int new_solutions = 
       probDescDB.get_int("method.coliny.new_solutions_generated");
     if (new_solutions >= 0 && colinSolver->has_property("num_trial_points")) {
-      unsigned int tmp = static_cast<unsigned int>(new_solutions);
-      colinSolver->property("num_trial_points") = tmp;
+      colinSolver->property("num_trial_points") = new_solutions;
     }
 
     double crossover_rate  = probDescDB.get_real("method.crossover_rate");
@@ -544,8 +541,7 @@ void COLINOptimizer::set_solver_parameters()
 
     int mutation_range = probDescDB.get_int("method.coliny.mutation_range");
     if (mutation_range >= 0 && colinSolver->has_property("intarray_mutation_range")) {
-      unsigned int tmp = static_cast<unsigned int>(mutation_range);
-      colinSolver->property("intarray_mutation_range") = tmp;
+      colinSolver->property("intarray_mutation_range") = mutation_range;
     }
 
     const bool& mutation_adaptive = 
@@ -655,7 +651,7 @@ void COLINOptimizer::set_solver_parameters()
       else {
 	string option(thisOption.substr(0, equalPos));
 	string value(thisOption.substr(equalPos+1, thisOption.size()-1));
-	colinSolver->property(option) = value;
+	//	colinSolver->property(option) = value;
       }
     }
   }
