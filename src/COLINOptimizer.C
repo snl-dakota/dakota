@@ -305,7 +305,7 @@ void COLINOptimizer::solver_setup(Model& model)
                      "error: Acro incompletely registered (likely an issue "
                      "with the library link step ("
                      << scolib::StaticInitializers::static_scolib_registrations
-                     << interfaces::StaticInitializers::static_interfaces_registration
+                     << interfaces::StaticInitializers::static_interfaces_registrations
                      << ").");
 
   // initialize some buffer variables
