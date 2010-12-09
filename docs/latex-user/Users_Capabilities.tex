@@ -96,8 +96,7 @@ and parallel function evaluations, sampling and analysis methods, an
 integrated design and analysis framework, global optimization,
 numerical integration, response surfaces (MARS and higher order
 regressions), graphical output with Pgplot or Matlab, and fault
-tolerance~\cite{Ton05}.  \emph{While PSUADE is only available
-internally at LLNL,} DAKOTA includes a prototype interface to its MOAT
+tolerance~\cite{Ton05}. DAKOTA includes a prototype interface to its MOAT
 sampling method, a valuable tool for global sensitivity analysis.
 
 Additional information on these methods is provided in Chapter~\ref{dace}.
@@ -737,15 +736,21 @@ that are inherent variabilities).  Mixed UQ approaches employ nested
 models to embed one uncertainty quantification
 within another.  The outer level UQ is commonly linked to epistemic
 uncertainties, and the inner UQ is commonly linked to aleatory
-uncertainties.  We have two 
-main approaches: second-order probability and nested Dempster-Shafer. 
-In second-order probability, the outer level generates sets of realizations,
+uncertainties.  We have three main approaches: interval-valued 
+probability, second-order probability, and nested Dempster-Shafer. 
+In interval-valued probability, the outer level generates sets of realizations,
 typically from sampling within interval distributions.  These
-realizations define values for distribution parameters used in a
-probabilistic analysis for the inner level UQ.  The term
+realizations define values for the epistemic variables used in a
+probabilistic analysis for the inner level UQ (e.g. which may involve 
+sampling over aleatory variables).  In interval-valued 
+probability, we generate intervals on statistics from the inner loop. 
+In second-order probability, the outer level also generates 
+sets of realizations, from sampling from distributions on the epistemic
+variables.  These outer loop values then define values for 
+distribution parameters used in the inner level UQ.  The term
 ``second-order'' derives from this use of distributions on
 distributions and the generation of statistics on statistics.
-In DAKOTA release 5.0, we have the capability to use interval 
+Starting with DAKOTA release 5.0, we have the capability to use interval 
 analysis to perform the outer loop calculations (e.g. find intervals 
 on inner loop statistics).  Interval analysis can use efficient optimization 
 methods to obtain interval bound estimates.  Nested 
@@ -754,6 +759,8 @@ outer loop, and an aleatory UQ method such as sampling or
 stochastic expansions on the inner loop.  Evidence theory 
 results in measures of belief and plausbility, so in a nested context, 
 this produces belief and plausibility bounds on inner loop statistics.
+More on mixed UQ approaches can be found in~\cite{Eldred09} and 
+~\cite{Eldred11}.
 
 \textbf{Optimization Under Uncertainty (OUU)}: Many real-world
 engineering design problems contain stochastic features and must be

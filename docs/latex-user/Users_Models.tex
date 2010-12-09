@@ -693,7 +693,7 @@ The surrogate and nested model constructs admit a wide variety of
 multi-iterator, multi-model solution approaches.  For example,
 optimization within optimization (for hierarchical multidisciplinary
 optimization), uncertainty quantification within uncertainty
-quantification (for second-order probability), uncertainty
+quantification (for interval-valued or second-order probability), uncertainty
 quantification within optimization (for optimization under
 uncertainty), and optimization within uncertainty quantification (for
 uncertainty of optima) are all supported, with and without surrogate
@@ -702,20 +702,18 @@ second-order probability, optimization under uncertainty, and surrogate-based
 uncertainty quantification.
 
 
-\subsection{Second-order probability} \label{models:ex:sop}
+\subsection{Interval-valued probability} \label{models:ex:sop}
 
-Second-order probability approaches employ nested models to embed one
+Interval valued probability approaches employ nested models to embed one
 uncertainty quantification (UQ) within another.  The outer level UQ is
 commonly linked to epistemic uncertainties (also known as reducible
 uncertainties) resulting from a lack of knowledge, and the inner UQ is
 commonly linked to aleatory uncertainties (also known as irreducible
 uncertainties) that are inherent in nature. The outer level generates
 sets of realizations, typically from sampling within interval
-distributions.  These realizations define values for distribution
+distributions.  These realizations define values for epistemic 
 parameters used in a probabilistic analysis for the inner level UQ.
-The term ``second-order'' derives from this use of distributions on
-distributions and the generation of statistics on statistics.  These
-approaches can be considered to be a special case of imprecise
+These approaches can be considered to be a special case of imprecise
 probability theory.
 
 A sample input file is shown in Figure~\ref{models:ex:2ndprob}, in
@@ -751,6 +749,9 @@ process of generating the epistemic values is essentially the
 same in both cases.  However, if the outer loop variables are 
 defined to be uniform, the outer loop results will be reported as 
 statistics (such as mean and standard deviation) and not merely intervals. 
+This case is called second-order probability. 
+The term ``second-order'' derives from this use of distributions on
+distributions and the generation of statistics on statistics. 
 It is important to note that these outer level
 statistics are only meaningful to the extent that the outer level
 probabilities are meaningful (which would not be the case for sampling
@@ -766,7 +767,7 @@ in the problem.
       \verbatimtabinput[8]{dakota_uq_cantilever_sop_rel.in}
     \end{tiny}
   \end{bigbox}
-  \caption{DAKOTA input file for the second-order probability example.}
+  \caption{DAKOTA input file for the interval-valued probability example.}
   \label{models:ex:2ndprob}
 \end{figure}
 

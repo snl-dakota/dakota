@@ -51,19 +51,22 @@ not fully functional at this time.
 
 In the \texttt{sequential} hybrid minimization approach, a sequence
 of minimization methods is invoked in the order specified in the
-DAKOTA input file. In the default mode, 
-the best solution from each method is used as the
-starting point for the following method. If the user specifies
-\texttt{num\_solutions\_transferred} and the method returns multiple 
-optimal solutions (for example, with an evolutionary algorithm or DIRECT or 
-a sampline method), then the specified number of solutions from the previous 
+DAKOTA input file. After each method completes execution, 
+the best solution or solutions from that method are used as the
+starting point for the following method. The number of solutions transferred 
+is defined by how many that method can generate and how many the 
+user specifies with the method keyword \texttt{final\_solutions}. 
+For example, currently only a few of the global optimization methods such as 
+genetic algorithms (e.g. \texttt{moga} and \texttt{coliny\_ea}) and 
+sampling methods return multiple solutions.  In this case, 
+the specified number of solutions from the previous 
 method will be used to initialize the subsequent method.  If the subsequent 
 method cannot accept multiple input points (currently only a few methods 
 such as the genetic algorithms in JEGA allow multiple input points), then 
 multiple instances of the subsequent method are generated, each one 
 initialized by one of the optimal solutions from the previous method. 
 For example, if LHS sampling were run as the first method and 
-the number of solutions transferred was 10 and the DOT conjugate gradient 
+the number of final solutions was 10 and the DOT conjugate gradient 
 was the second method, there would be 10 instances of \texttt{dot\_frcg} 
 started, each with a separate LHS sample solution as its initial point. 
 Method switching is governed
@@ -72,10 +75,12 @@ by the separate convergence controls of each method; that is,
 completion without interference}. Individual method completion may be
 determined by convergence criteria (e.g.,
 \texttt{convergence\_tolerance}) or iteration limits (e.g.,
-\texttt{max\_iterations}).  The \texttt{adaptive} option
-is similar, with the difference that the progress of each method is
-monitored and method switching is enforced according to
-externally-defined relative progress metrics.  
+\texttt{max\_iterations}).  
+
+%The \texttt{adaptive} option
+%is similar, with the difference that the progress of each method is
+%monitored and method switching is enforced according to
+%externally-defined relative progress metrics.  
 
 %The \texttt{embedded} approach is restricted to special tightly-coupled
 %hybrid algorithms in which local searches are used periodically to
