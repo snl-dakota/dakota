@@ -4648,6 +4648,24 @@ Specification detail for nondeterministic sampling method
 <td>Required group
 <td>N/A
 <tr>
+<td>Sampling type
+<td>\c sample_type
+<td>\c random | \c lhs | \c incremental_random |\c incremental_lhs
+<td>Optional group
+<td>\c lhs
+<tr>
+<td>Number of samples
+<td>\c samples
+<td>integer
+<td>Optional
+<td>minimum required
+<tr>
+<td>Previous samples for incremental approaches
+<td>\c previous_samples
+<td>integer
+<td>Optional
+<td>0 (no previous_samples)
+<tr>
 <td>Random seed
 <td>\c seed
 <td>integer
@@ -4660,17 +4678,11 @@ Specification detail for nondeterministic sampling method
 <td>Optional
 <td>seed not fixed: sampling patterns are variable among multiple runs
 <tr>
-<td>Number of samples
-<td>\c samples
-<td>integer
+<td>Random number generator
+<td>\c rng
+<td>\c mt19937 | \c rnum2
 <td>Optional
-<td>minimum required
-<tr>
-<td>Sampling type
-<td>\c sample_type
-<td>\c random | \c lhs | \c incremental_random |\c incremental_lhs
-<td>Optional group
-<td>\c lhs
+<td>Mersenne twister (\c mt19937)
 <tr>
 <td>All variables flag
 <td>\c all_variables
@@ -4678,17 +4690,17 @@ Specification detail for nondeterministic sampling method
 <td>Optional
 <td>sampling only over uncertain variables
 <tr>
-<td>Variance based decomposition
+<td>Variance based decomposition (VBD)
 <td>\c variance_based_decomp
 <td>none
 <td>Optional
-<td>No variance_based_decomp
+<td>No VBD analysis
 <tr>
-<td>Previous samples
-<td>\c previous_samples
-<td>integer
+<td>VBD tolerance for omitting small indices
+<td>\c drop_tolerance
+<td>none
 <td>Optional
-<td>0 (no previous_samples)
+<td>All VBD indices displayed
 </table>
 
 
@@ -5140,11 +5152,17 @@ Specification detail for polynomial chaos expansion method
 <td>Optional
 <td>Extended basis of orthogonal polynomials (Askey + numerically generated)
 <tr>
-<td>p-refinement
+<td>Automated polynomial order refinement
+<td>\c p_refinement
 <td>\c uniform | \c adaptive
+<td>Optional group
+<td>No p-refinement
+<tr>
+<td>Adaptive refinement control
+<td>\c sobol | \c decay | \c generalized
 <td>none
-<td>Optional
-<td>No refinement
+<td>Optional group
+<td>\c generalized
 <tr>
 <td>Quadrature order for PCE coefficient estimation
 <td>\c quadrature_order
@@ -5170,11 +5188,23 @@ Specification detail for polynomial chaos expansion method
 <td>Optional
 <td>isotropic sparse grid
 <tr>
+<td>Integration rule point nesting for \c quadrature_order or \c sparse_grid_level
+<td>\c nested | \c non_nested
+<td>None
+<td>Optional
+<td>quadrature: \c non_nested unless \c p_refinement; sparse grids: \c nested
+<tr>
 <td>Number of simulation samples for PCE coefficient estimation
 <td>\c expansion_samples
 <td>integer
 <td>Required (1 of 7 selections)
 <td>N/A
+<tr>
+<td>Incremental LHS flag for PCE coefficient estimation by \c expansion_samples
+<td>\c incremental_lhs
+<td>none
+<td>Optional
+<td>coefficient estimation does not reuse previous samples
 <tr>
 <td>Number of collocation points for PCE coefficient estimation
 <td>\c collocation_points
@@ -5187,6 +5217,18 @@ Specification detail for polynomial chaos expansion method
 <td>real
 <td>Required (1 of 7 selections)
 <td>N/A
+<tr>
+<td>Derivative usage flag for PCE coefficient estimation by \c collocation_points or \c collocation_ratio
+<td>\c use_derivatives
+<td>none
+<td>Optional
+<td>coefficient estimation by function values alone
+<tr>
+<td>Reuse points flag for PCE coefficient estimation by \c collocation_points or \c collocation_ratio
+<td>\c reuse_points
+<td>none
+<td>Optional
+<td>coefficient estimation does not reuse previous samples
 <tr>
 <td>File name for import of PCE coefficients
 <td>\c expansion_import_file
@@ -5206,17 +5248,17 @@ Specification detail for polynomial chaos expansion method
 <td>Required (1 of 2 selections) for \c expansion_samples, \c collocation_points, \c collocation_ratio, or \c expansion_import_file
 <td>N/A
 <tr>
-<td>Incremental LHS flag for PCE coefficient estimation by \c expansion_samples
-<td>\c incremental_lhs
-<td>none
-<td>Optional
-<td>coefficient estimation does not reuse previous samples
+<td>Sampling type
+<td>\c sample_type
+<td>\c random | \c lhs
+<td>Optional group
+<td>\c lhs
 <tr>
-<td>Reuse samples flag for PCE coefficient estimation by \c collocation_points or \c collocation_ratio
-<td>\c reuse_samples
-<td>none
-<td>Optional
-<td>coefficient estimation does not reuse previous samples
+<td>Number of samples on PCE for generating statistics
+<td>\c samples
+<td>integer
+<td>Optional (required if sampling-based statistics are requested)
+<td>0
 <tr>
 <td>Random seed
 <td>\c seed
@@ -5230,17 +5272,35 @@ Specification detail for polynomial chaos expansion method
 <td>Optional
 <td>seed not fixed: sampling patterns are variable among multiple PCE runs
 <tr>
-<td>Number of samples on PCE for generating statistics
-<td>\c samples
-<td>integer
+<td>Random number generator
+<td>\c rng
+<td>\c mt19937 | \c rnum2
 <td>Optional
-<td>0 (will result in error if sampling-based statistics are requested)
+<td>Mersenne twister (\c mt19937)
 <tr>
-<td>Sampling type
-<td>\c sample_type
-<td>\c random | \c lhs
+<td>Importance sampling refinement
+<td>\c sample_refinement
+<td>\c import | \c adapt_import | \c mm_adapt_import
 <td>Optional group
-<td>\c lhs
+<td>No sampling refinement
+<tr>
+<td>Variance-based decomposition (VBD)
+<td>\c variance_based_decomp
+<td>none
+<td>Optional group
+<td>VBD indices not computed/printed
+<tr>
+<td>Restriction of VBD indices to main/total
+<td>\c univariate_effects
+<td>none
+<td>Optional
+<td>Unrestricted: interaction effects included
+<tr>
+<td>VBD tolerance for omitting small indices
+<td>\c drop_tolerance
+<td>real
+<td>Optional
+<td>All VBD indices displayed
 <tr>
 <td>All variables flag
 <td>\c all_variables
@@ -5374,11 +5434,17 @@ Specification detail for stochastic collocation method
 <td>Optional
 <td>Extended basis of orthogonal polynomials (Askey + numerically generated)
 <tr>
-<td>p-refinement
+<td>Automated polynomial order refinement
 <td>\c uniform | \c adaptive
 <td>none
 <td>Optional
-<td>No refinement
+<td>No p-refinement
+<tr>
+<td>Adaptive refinement control
+<td>\c sobol | \c generalized
+<td>none
+<td>Optional group
+<td>\c generalized
 <tr>
 <td>Quadrature order for collocation points
 <td>\c quadrature_order
@@ -5398,6 +5464,24 @@ Specification detail for stochastic collocation method
 <td>Optional
 <td>isotropic sparse grid
 <tr>
+<td>Integration rule point nesting
+<td>\c nested | \c non_nested
+<td>None
+<td>Optional
+<td>quadrature: \c non_nested unless \c p_refinement; sparse grids: \c nested
+<tr>
+<td>Sampling type
+<td>\c sample_type
+<td>\c random | \c lhs
+<td>Optional group
+<td>\c lhs
+<tr>
+<td>Number of samples on interpolant for generating statistics
+<td>\c samples
+<td>integer
+<td>Optional
+<td>0 (will result in error if sampling-based statistics are requested)
+<tr>
 <td>Random seed
 <td>\c seed
 <td>integer
@@ -5410,17 +5494,35 @@ Specification detail for stochastic collocation method
 <td>Optional
 <td>seed not fixed: sampling patterns are variable among multiple SC runs
 <tr>
-<td>Number of samples on interpolant for generating statistics
-<td>\c samples
-<td>integer
+<td>Random number generator
+<td>\c rng
+<td>\c mt19937 | \c rnum2
 <td>Optional
-<td>0 (will result in error if sampling-based statistics are requested)
+<td>Mersenne twister (\c mt19937)
 <tr>
-<td>Sampling type
-<td>\c sample_type
-<td>\c random | \c lhs
+<td>Importance sampling refinement
+<td>\c sample_refinement
+<td>\c import | \c adapt_import | \c mm_adapt_import
 <td>Optional group
-<td>\c lhs
+<td>No sampling refinement
+<tr>
+<td>Variance-based decomposition (VBD)
+<td>\c variance_based_decomp
+<td>none
+<td>Optional group
+<td>VBD indices not computed/printed
+<tr>
+<td>Restriction of VBD indices to main/total
+<td>\c univariate_effects
+<td>none
+<td>Optional
+<td>Unrestricted: interaction effects included
+<tr>
+<td>VBD tolerance for omitting small indices
+<td>\c drop_tolerance
+<td>real
+<td>Optional
+<td>All VBD indices displayed
 <tr>
 <td>All variables flag
 <td>\c all_variables
@@ -5593,7 +5695,7 @@ Specification detail for global interval estimation used in epistemic uncertaint
 <td>\c rng
 <td>\c mt19937 | \c rnum2
 <td>Optional
-<td>\c mt19937
+<td>Mersenne twister (\c mt19937)
 <tr>
 <td>Random seed
 <td>\c seed
@@ -5770,7 +5872,7 @@ Specification detail for global evidence theory method for epistemic uncertainty
 <td>\c rng
 <td>\c mt19937 or \c rnum2
 <td>Optional
-<td>\c mt19937
+<td>Mersenne twister (\c mt19937)
 <tr>
 <td>Random seed
 <td>\c seed
@@ -5931,7 +6033,7 @@ Specification detail for GPMSA method for Bayesian Calibration
 <td>\c rng
 <td>\c mt19937 or \c rnum2
 <td>Optional
-<td>\c mt19937
+<td>Mersenne twister (\c mt19937)
 <tr>
 <td>Random seed
 <td>\c seed
