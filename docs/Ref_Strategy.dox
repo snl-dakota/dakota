@@ -26,23 +26,22 @@ The strategy section in a DAKOTA input file specifies the top level
 technique which will govern the management of iterators and models in
 the solution of the problem of interest. Four strategies currently
 exist: \c hybrid, \c multi_start, \c pareto_set, and \c single_method.
-These algorithms are implemented within the Strategy "Strategy" class
-hierarchy in the CollaborativeHybridStrategy, EmbeddedHybridStrategy,
+These algorithms are implemented within the Strategy class hierarchy
+in the CollaborativeHybridStrategy, EmbeddedHybridStrategy,
 SequentialHybridStrategy, ConcurrentStrategy, and SingleMethodStrategy
 classes.  For each of the strategies, a brief algorithm description is
 given below.  Additional information on the algorithm logic is
 available in the Users Manual [\ref UsersMan "Adams et al., 2010"].
 
-In a hybrid minimization strategy (\c hybrid), a set of methods is
-specified which will be used synergistically in seeking an optimal
-design.  The relationships among the methods are categorized as
-collaborative, embedded, or sequential.  The goal in each case is to
-exploit the strengths of different optimization and nonlinear least
-squares algorithms through different stages of the minimization
-process. Global/local hybrids (e.g., genetic algorithms combined with
-nonlinear programming) are a common example in which the desire for
-identification of a global optimum is balanced with the need for
-efficient navigation to a local optimum.
+In a hybrid minimization strategy (\c hybrid), a set of methods
+synergistically seek an optimal design.  The relationships among the
+methods are categorized as collaborative, embedded, or sequential.
+The goal in each case is to exploit the strengths of different
+optimization and nonlinear least squares algorithms through different
+stages of the minimization process. Global/local hybrids (e.g.,
+genetic algorithms combined with nonlinear programming) are a common
+example in which the desire for identification of a global optimum is
+balanced with the need for efficient navigation to a local optimum.
 
 In the multi-start iteration strategy (\c multi_start), a series of
 iterator runs are performed for different values of parameters in the
@@ -62,10 +61,13 @@ multi-start strategy discussed above.  The code is similar enough to
 the \c multi_start technique that both strategies are implemented in
 the same ConcurrentStrategy class.
 
-Lastly, the \c single_method strategy is a "fall through" strategy in
-that it does not provide control over multiple iterators or multiple
+Lastly, the \c single_method strategy is the default strategy in that
+it does not provide control over multiple iterators or multiple
 models.  Rather, it provides the means for simple execution of a
-single iterator on a single model.
+single iterator on a single model.  It is most commonly used when
+specifying other strategy-independent controls, e.g., tabular output,
+where the existence of the \c strategy block mandates selection of a
+strategy.
 
 Each of the strategy specifications identifies one or more method
 pointers (e.g., \c method_list, \c method_pointer) to identify the
@@ -166,38 +168,41 @@ their corresponding strategy dependent controls.
 \section StratIndControl Strategy Independent Controls
 
 
-The strategy independent controls include \c graphics, \c
-tabular_graphics_data, \c tabular_graphics_file, \c iterator_servers,
-\c iterator_self_scheduling, and \c iterator_static_scheduling.  The
-\c graphics flag activates a 2D graphics window containing history
-plots for the variables and response functions in the study.  This
-window is updated in an event loop with approximately a 2 second cycle
-time.  For applications utilizing approximations over 2 variables, a
-3D graphics window containing a surface plot of the approximation will
-also be activated.  The \c tabular_graphics_data flag activates file
-tabulation of the same variables and response function history data
-that gets passed to graphics windows with use of the \c graphics flag.
-The \c tabular_graphics_file specification optionally specifies a name
-to use for this file (\c dakota_tabular.dat is the default).  Within
-the file, the variables and response functions appear as columns and
-each function evaluation provides a new table row.  This capability is
-most useful for post-processing of DAKOTA results with 3rd party
-graphics tools such as MATLAB, Tecplot, etc.  There is no dependence
-between the \c graphics flag and the \c tabular_graphics_data flag;
-they may be used independently or concurrently.  The \c
-iterator_servers, \c iterator_self_scheduling, and \c
-iterator_static_scheduling specifications provide manual overrides for
-the number of concurrent iterator partitions and the scheduling policy
-for concurrent iterator jobs.  These settings are normally determined
-automatically in the parallel configuration routines (see
-ParallelLibrary) but can be overridden with user inputs if
-desired. The \c graphics, \c tabular_graphics_data, and \c
+The strategy independent controls are summarized in \ref T4d1 
+"Table 4.1", including graphics, output data, and iterator scheduling
+controls.  The \c graphics flag activates a 2D graphics window
+containing history plots for the variables and response functions in
+the study.  This window is updated in an event loop with approximately
+a 2 second cycle time.  The \c tabular_graphics_data flag activates
+file tabulation of the same variables and response function history
+data that gets passed to graphics windows with use of the \c graphics
+flag.  The \c tabular_graphics_file specification optionally specifies
+a name to use for this file (\c dakota_tabular.dat is the default).
+Within the file, the variables and response functions appear as
+columns and each function evaluation provides a new table row.  This
+capability is most useful for post-processing of DAKOTA results with
+3rd party graphics tools such as MATLAB, Tecplot, etc.  There is no
+dependence between the \c graphics flag and the \c
+tabular_graphics_data flag; they may be used independently or
+concurrently.  Numeric output precision (as passed to the C++ control
+std::setprecision) can be controlled with \c output_precision with an
+upper limit of 16 enforced at run-time.  When this control is not
+specified, most DAKOTA output will default to a precision of 10,
+though filesystem interfaces and pre-run output use higher precision
+for accuracy and better results reproducibility.
+
+The \c iterator_servers, \c iterator_self_scheduling,
+and \c iterator_static_scheduling specifications provide manual
+overrides for the number of concurrent iterator partitions and the
+scheduling policy for concurrent iterator jobs.  These settings are
+normally determined automatically in the parallel configuration
+routines (see ParallelLibrary) but can be overridden with user inputs
+if desired. The \c graphics, \c tabular_graphics_data, and \c
 tabular_graphics_file specifications are valid for all strategies.
 However, the \c iterator_servers, \c iterator_self_scheduling, and \c
 iterator_static_scheduling overrides are only useful inputs for those
-strategies supporting concurrency in iterators, i.e., \c multi_start 
-and \c pareto_set.  \ref T4d1 "Table 4.1" summarizes the strategy 
-independent controls.
+strategies supporting concurrency in iterators, i.e., \c multi_start
+and \c pareto_set.
 
 \anchor T4d1
 <table>
@@ -231,6 +236,12 @@ Specification detail for strategy independent controls
 <td>string
 <td>Optional
 <td>\c dakota_tabular.dat
+<tr>
+<td>Numeric output precision
+<td>\c output_precision
+<td>integer
+<td>Optional
+<td>10 (for most output)
 <tr>
 <td>Number of iterator servers
 <td>\c iterator_servers
@@ -603,4 +614,3 @@ Specification detail for single method strategies
 */
 
 } // namespace Dakota
-
