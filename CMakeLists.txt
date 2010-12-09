@@ -37,6 +37,36 @@ endif()
 
 find_package(Boost 1.40 REQUIRED)
 
+# check for a MPI-enabled build
+if(CMAKE_CXX_COMPILER MATCHES mpicxx)
+
+  find_program(mpicxx mpicxx)
+  if(${mpicxx} MATCHES "mpicxx-NOTFOUND")
+    message(FATAL_ERROR "Cannot build parallel configuration without mpicxx")
+  endif()
+
+  message(" ****      dakota build    ****    MPIHOME is: " $ENV{MPIHOME})
+  set(MPI_INCLUDE_PATH "$ENV{MPIHOME}/include"
+      CACHE PATH "Always use $MPIHOME to find MessagePassing header files" FORCE)
+  
+  find_package(MPI REQUIRED)
+  if(MPI_FOUND)
+    #message("MPI found - path to include is: ${MPI_INCLUDE_PATH}")
+    set(HAVE_MPI "ON")
+    add_definitions(-DHAVE_MPI)
+    include_directories(${MPI_INCLUDE_PATH})
+
+    # Some TPLs have manage the setting with USE_MPI rather than HAVE_MPI
+    set(USE_MPI "ON")
+
+  else()
+    message(FATAL_ERROR
+            "Cannot find MPI.  Please build a serial configuration instead")
+  endif(MPI_FOUND)
+
+endif()
+
+
 include(CTest)
 
 set( CMAKE_MODULE_PATH

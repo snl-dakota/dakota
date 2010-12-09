@@ -23,8 +23,11 @@ if(HAVE_SYSTEM)
   add_definitions("-DHAVE_SYSTEM")
 endif(HAVE_SYSTEM)
 
-####set(Dakota_libs teuchos lapack)
 set(TPL_LIBS teuchos nidr)
+
+if(HAVE_MPI)
+  list(APPEND TPL_LIBS ${MPI_LIBRARIES})
+endif(HAVE_MPI)
 
 link_directories(${Teuchos_LIBRARY_DIRS})
 
