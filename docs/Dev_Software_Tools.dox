@@ -52,11 +52,19 @@ make -j 4 && make install
 # ALT: make -j 4 && make check && make install
 \endcode
 
-Once Subversion is working, DAKOTA (including externals) can be
+If you are an external developer, once Subversion is working, DAKOTA (including externals) can be
 checked out with the single command
 \code 
-svn checkout svn+ssh://development.sandia.gov/usr/local/svn/Dakota/trunk Dakota
+svn checkout https://software.sandia.gov/svn/public/dakota/public/trunk Dakota 
 \endcode
+
+If you are an internal developer, DAKOTA can be
+checked out with the single command
+\code 
+svn checkout https://software.sandia.gov/svn/public/dakota/private/trunk Dakota 
+\endcode
+
+Note that authentication is required to check out the DAKOTA repository.  Contact a member of the DAKOTA development team for more information. 
 
 If you experience server timeouts when SVN attempts to fetch external
 packages through a proxy server, you might need to make a change to
