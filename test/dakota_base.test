@@ -13787,6 +13787,127 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                       3.9999975034e+03
 <<<<< Best data not found in evaluation cache
+dakota_sebdo_short_column_adapt.in 
+Test Number 0 succeeded
+<<<<< Function evaluation summary (UQ_I): 1485 total (1485 new, 0 duplicate)
+  response_fn_1: 1485 val (1485 n, 0 d), 1485 grad (1485 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 1485 val (1485 n, 0 d), 1485 grad (1485 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.1146866706e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0286716676e+02
+<<<<< Best constraint values   =
+                      2.5000915238e+00
+<<<<< Best data not found in evaluation cache
+Test Number 1 succeeded
+<<<<< Function evaluation summary (UQ_I): 2442 total (2442 new, 0 duplicate)
+  response_fn_1: 2442 val (2442 n, 0 d), 2442 grad (2442 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 2442 val (2442 n, 0 d), 2442 grad (2442 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.1146880907e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0286720227e+02
+<<<<< Best constraint values   =
+                      2.5000915276e+00
+<<<<< Best data not found in evaluation cache
+Test Number 2 succeeded
+<<<<< Function evaluation summary (UQ_I): 1485 total (1485 new, 0 duplicate)
+  response_fn_1: 1485 val (1485 n, 0 d), 1485 grad (1485 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 1485 val (1485 n, 0 d), 1485 grad (1485 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.1146866706e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0286716676e+02
+<<<<< Best constraint values   =
+                      2.5000915238e+00
+<<<<< Best data not found in evaluation cache
+Test Number 3 succeeded
+<<<<< Function evaluation summary (UQ_I): 2442 total (2442 new, 0 duplicate)
+  response_fn_1: 2442 val (2442 n, 0 d), 2442 grad (2442 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 2442 val (2442 n, 0 d), 2442 grad (2442 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.1146880905e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0286720226e+02
+<<<<< Best constraint values   =
+                      2.5000915276e+00
+<<<<< Best data not found in evaluation cache
+Test Number 4 succeeded
+<<<<< Function evaluation summary (UQ_I): 464 total (464 new, 0 duplicate)
+  response_fn_1: 464 val (464 n, 0 d), 464 grad (464 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 464 val (464 n, 0 d), 464 grad (464 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.1064350162e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0266087541e+02
+<<<<< Best constraint values   =
+                      2.5021391720e+00
+<<<<< Best data not found in evaluation cache
+Test Number 5 succeeded
+<<<<< Function evaluation summary (UQ_I): 240 total (240 new, 0 duplicate)
+  response_fn_1: 240 val (240 n, 0 d), 240 grad (240 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 240 val (240 n, 0 d), 240 grad (240 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.0527532186e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0131883047e+02
+<<<<< Best constraint values   =
+                      2.5000311390e+00
+<<<<< Best data not found in evaluation cache
+Test Number 6 succeeded
+<<<<< Function evaluation summary (UQ_I): 540 total (540 new, 0 duplicate)
+  response_fn_1: 540 val (540 n, 0 d), 540 grad (540 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 540 val (540 n, 0 d), 540 grad (540 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.1046092804e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0261523201e+02
+<<<<< Best constraint values   =
+                      2.5000847456e+00
+<<<<< Best data not found in evaluation cache
+Test Number 7 succeeded
+<<<<< Function evaluation summary (UQ_I): 240 total (240 new, 0 duplicate)
+  response_fn_1: 240 val (240 n, 0 d), 240 grad (240 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 240 val (240 n, 0 d), 240 grad (240 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.0475152926e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0118788232e+02
+<<<<< Best constraint values   =
+                      2.5000242326e+00
+<<<<< Best data not found in evaluation cache
+Test Number 8 succeeded
+<<<<< Function evaluation summary (UQ_I): 795 total (795 new, 0 duplicate)
+  response_fn_1: 795 val (795 n, 0 d), 795 grad (795 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 795 val (795 n, 0 d), 795 grad (795 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.1146880907e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0286720227e+02
+<<<<< Best constraint values   =
+                      2.5000915276e+00
+<<<<< Best data not found in evaluation cache
+Test Number 9 succeeded
+<<<<< Function evaluation summary (UQ_I): 795 total (795 new, 0 duplicate)
+  response_fn_1: 795 val (795 n, 0 d), 795 grad (795 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 795 val (795 n, 0 d), 795 grad (795 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      8.1146880905e+00 b
+                      2.5000000000e+01 h
+<<<<< Best objective function  =
+                      2.0286720226e+02
+<<<<< Best constraint values   =
+                      2.5000915276e+00
+<<<<< Best data not found in evaluation cache
 dakota_short_column.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1 total (1 new, 0 duplicate)

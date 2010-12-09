@@ -422,7 +422,8 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 {
   expansionCoeffsApproach = Pecos::QUADRATURE;
   // define integration-dependent default refinement control
-  if (stochExpRefineControl == Pecos::DEFAULT_CONTROL)
+  if (stochExpRefineControl == Pecos::DEFAULT_CONTROL &&
+      stochExpRefineType    >= Pecos::ADAPTIVE_P_REFINEMENT)
     stochExpRefineControl = Pecos::TOTAL_SOBOL;
   // enforce minimum required VBD control
   if (!vbdControl && stochExpRefineType == Pecos::ADAPTIVE_P_REFINEMENT &&
@@ -446,7 +447,8 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 {
   expansionCoeffsApproach = Pecos::SPARSE_GRID;
   // define integration-dependent default refinement control
-  if (stochExpRefineControl == Pecos::DEFAULT_CONTROL)
+  if (stochExpRefineControl == Pecos::DEFAULT_CONTROL &&
+      stochExpRefineType    >= Pecos::ADAPTIVE_P_REFINEMENT)
     stochExpRefineControl = Pecos::GENERALIZED_SPARSE;
   // enforce minimum required VBD control
   if (!vbdControl && stochExpRefineType == Pecos::ADAPTIVE_P_REFINEMENT &&
