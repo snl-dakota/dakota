@@ -21,8 +21,14 @@ $file2  = @ARGV[2]; # reduced test results file name, e.g. dakota_dace.tst
 open (DAKOTA_BASE, $file1) || die "cannot open file $!" ;
 open (DAKOTA_TEST, $file2) || die "cannot open file $!" ;
 
-$e = "-?\\d\\.\\d+e(?:\\+|-)\\d+"; # numerical field in exponential notation
-$i = "-?\\d+";                     # numerical field in integer notation
+# numerical field in exponential notation
+$expo = "-?\\d\\.\\d+e(?:\\+|-)\\d+"; 
+# invalid numerical field
+$naninf = "-?([Nn][Aa][Nn]|[Ii][Nn][Ff])";
+# numerical field printed as exponential (may contain NaN/Inf)
+$e = "($expo|$naninf)";
+# numerical field in integer notation
+$i = "-?\\d+";                     
 $test_num = 0;
 $test_found = 0;
 $test_diff = 0;
@@ -421,6 +427,16 @@ sub diff {
   # $_[1] = baseline value
 
   #print "Diffing $_[0] and $_[1]\n";
+
+  # for nan or inf, require exact string match
+  if ( $_[0] =~ /$naninf/ || $_[1] =~ /$naninf/ ) {
+    if ( $_[0] ne $_[1] ) {
+      return 1;
+    }
+    else {
+      return 0;
+    }
+  }
 
   $SMALL       = 1.e-8; # use absolute difference for small values
   $ABS_EPSILON = 5.e-9; # allow up to a quarter of the total abs() interval
