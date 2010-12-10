@@ -152,8 +152,8 @@ while ( $test_found == 0 && defined ($base = <DAKOTA_BASE>) ) {
 	    exit(-1);
 	  }
 	  $row_diff = 0;
-	  for ($i=0; $i<=$#t_val; $i++) {
-	    if (diff($t_val[$i], $b_val[$i])) {
+	  for ($count=0; $count<=$#t_val; $count++) {
+	    if (diff($t_val[$count], $b_val[$count])) {
 	      $test_diff = 1;
 	      $row_diff = 1;
 	    }
