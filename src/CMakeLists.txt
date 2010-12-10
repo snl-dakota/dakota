@@ -177,14 +177,12 @@ endif(HAVE_GPMSA)
 if(HAVE_HOPSPACK)
   #add_definitions("-DHAVE_HOPSPACK") # WJB: use convention?
   add_definitions("-DDAKOTA_HOPS")
-  include_directories(${HOPSPACK_BINARY_DIR}/dakota_build/include
-                      ${HOPSPACK_SOURCE_DIR}/dakota_build/include
+  include_directories(${HOPSPACK_SOURCE_DIR}/src/src-shared
                       ${HOPSPACK_SOURCE_DIR}/src/src-citizens
                       ${HOPSPACK_SOURCE_DIR}/src/src-evaluator
                       ${HOPSPACK_SOURCE_DIR}/src/src-executor
                       ${HOPSPACK_SOURCE_DIR}/src/src-framework
-                      ${HOPSPACK_SOURCE_DIR}/src/src-main
-                      ${HOPSPACK_SOURCE_DIR}/src/src-shared)
+                      ${HOPSPACK_SOURCE_DIR}/src/src-main)
   list(APPEND iterator_src APPSOptimizer.C APPSEvalMgr.C)
   #link_directories(${Dakota_BINARY_DIR}/packages/hopspack)
   list(APPEND TPL_LIBS executor evaluator framework citizens shared)

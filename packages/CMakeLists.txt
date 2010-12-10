@@ -58,6 +58,11 @@ if(HAVE_FSUDACE)
 endif(HAVE_FSUDACE)
 
 if(HAVE_HOPSPACK)
+  # WJB:  can't explain why hopspack/ConfigureLapack.cmake does NOT work on Mac
+  # ToDo: address issue post 5.1 release
+  if(CMAKE_SYSTEM_NAME MATCHES Darwin)
+    set(LAPACK_ADD_LIBS ${BLAS_LIBS})
+  endif()
   add_subdirectory(hopspack)
 endif(HAVE_HOPSPACK)
 
