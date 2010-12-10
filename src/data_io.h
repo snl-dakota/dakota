@@ -373,6 +373,33 @@ void write_data(std::ostream& s,
 }
 
 
+#ifdef __SUNPRO_CC
+// custom func needed for SunPro CC 5.10
+/* WJB - ToDo (after 1.5 release):  Dig deeper into this new "ambiguity" that
+         has surprisingly cropped up on Solaris
+"DakotaMinimizer.C", line 691: Could not find a match for Dakota::write_data ...
+*/
+/// standard ostream insertion operator for full SerialDenseVector with labels
+template <typename OrdinalType, typename ScalarType>
+void write_data(std::ostream& s,
+		const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
+		StringMultiArrayConstView& label_array)
+{
+  OrdinalType len = v.length();
+  if (label_array.size() != len) {
+    Cerr << "Error: size of label_array in write_data(std::ostream) does not "
+	 << "equal length of SerialDenseVector." << std::endl;
+    abort_handler(-1);
+  }
+  s.setf(std::ios::scientific);
+  s << std::setprecision(write_precision);
+  for (OrdinalType i=0; i<len; i++)
+    s << "                     " << std::setw(write_precision+7) << v[i] << ' '
+      << label_array[i] << '\n';
+}
+#endif
+
+
 /// standard ostream insertion operator for full SerialDenseVector
 /// with alternate labels
 template <typename OrdinalType, typename ScalarType>
