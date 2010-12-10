@@ -1332,47 +1332,47 @@ function for this example.
 \begin{figure}
 \centering
 \begin{bigbox}
-\begin{small}
+\begin{footnotesize}
 \begin{verbatim}
 Statistics based on 200 samples:
 
-Moments for each response function:
-response_fn_1:  Mean = 4.5540183516e+02  Std. Dev. = 5.3682678089e+02  
-Coeff. of Variation = 1.1787980185e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5540183516e+02  5.3682678089e+02  1.6661798252e+00  2.7925726822e+00
 
 95% confidence intervals for each response function:
-response_fn_1:  Mean = ( 3.8054757609e+02, 5.3025609422e+02 ), 
-Std Dev = ( 4.8886795789e+02, 5.9530059589e+02 )
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.8054757609e+02  5.3025609422e+02  4.8886795789e+02  5.9530059589e+02
 
-Probabilities for each response function:
+Level mappings for each response function:
 Cumulative Distribution Function (CDF) for response_fn_1:
-  Response Level  Probability Level  Reliability Index  General Rel Index     
- --------------  -----------------  -----------------  -----------------   
-1.0000000000e+02  3.4000000000e-01
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e+02   3.4000000000e-01
 
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1
-          x1  1.00000e+00
-          x2 -5.85097e-03  1.00000e+00
-response_fn_1 -9.57746e-02 -5.08193e-01  1.00000e+00
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2 -5.85097e-03  1.00000e+00 
+response_fn_1 -9.57746e-02 -5.08193e-01  1.00000e+00 
 
 Partial Correlation Matrix between input and output:
-             response_fn_1
-          x1 -1.14659e-01
-          x2 -5.11111e-01
+             response_fn_1 
+          x1 -1.14659e-01 
+          x2 -5.11111e-01 
 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2 response_fn_1
-          x1  1.00000e+00
-          x2 -6.03315e-03  1.00000e+00
-response_fn_1 -1.15360e-01 -5.04661e-01  1.00000e+00
+                       x1           x2 response_fn_1 
+          x1  1.00000e+00 
+          x2 -6.03315e-03  1.00000e+00 
+response_fn_1 -1.15360e-01 -5.04661e-01  1.00000e+00 
 
 Partial Rank Correlation Matrix between input and output:
-             response_fn_1
-          x1 -1.37154e-01
-          x2 -5.08762e-01
+             response_fn_1 
+          x1 -1.37154e-01 
+          x2 -5.08762e-01 
 \end{verbatim}
-\end{small}
+\end{footnotesize}
 \end{bigbox}
 \caption{Results of Monte Carlo Sampling on the Rosenbrock Function}
 \label{tutorial:results_mc}
@@ -1554,7 +1554,7 @@ fewer function evaluations.
 \begin{figure}
 \centering
 \begin{bigbox}
-\begin{small}
+\begin{footnotesize}
 \begin{verbatim}
 Polynomial Chaos coefficients for response_fn_1:
         coefficient   u1   u2
@@ -1562,41 +1562,45 @@ Polynomial Chaos coefficients for response_fn_1:
    4.5566666667e+02   P0   P0
   -4.0000000000e+00   P1   P0
    9.1695238095e+02   P2   P0
-  -4.9737991503e-14   P3   P0
+  -9.9475983006e-14   P3   P0
    3.6571428571e+02   P4   P0
   -5.3333333333e+02   P0   P1
-   2.3980817332e-14   P1   P1
+  -3.9968028887e-14   P1   P1
   -1.0666666667e+03   P2   P1
-  -2.6112445539e-13   P3   P1
-   1.3069545446e-12   P4   P1
+  -3.3573144265e-13   P3   P1
+   1.2829737273e-12   P4   P1
    2.6666666667e+02   P0   P2
-   2.1982415888e-13   P1   P2
-   4.6629367034e-13   P2   P2
-   2.7977620221e-13   P3   P2
-  -2.6478819137e-13   P4   P2
+   2.2648549702e-13   P1   P2
+   4.8849813084e-13   P2   P2
+   2.8754776338e-13   P3   P2
+  -2.8477220582e-13   P4   P2
 -------------------------------------------------------------------
 Statistics derived analytically from polynomial expansion:
 
-Moments for each response function:
-response_fn_1:  Mean =  4.5566666667e+02  Std. Dev. = 6.0656024184e+02  
-Coeff. of Variation =  1.3311490311e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+response_fn_1
+  expansion:    4.5566666667e+02  6.0656024184e+02
+  numerical:    4.5566666667e+02  6.0656024184e+02  1.9633285271e+00  3.3633861456e+00
+
+Covariance among response functions:
+[[  3.6791532698e+05 ]] 
+
+Local sensitivities for each response function evaluated at uncertain variable means:
+response_fn_1:
+ [ -2.0000000000e+00  2.4055757386e-13 ] 
 
 Global sensitivity indices for each response function:
 response_fn_1 Sobol indices:
-                      4.9746891383e-01 x1
-                      2.9636448672e-01 x2
-                      2.0616659946e-01 x1 x2
-response_fn_1 total Sobol indices:
-                      7.0363551328e-01 x1
-                      5.0253108617e-01 x2
-
-Local sensitivities for each response function evaluated at uncertain 
-variable means:
-response_fn_1:
- [ -2.0000000000e+00  2.4505397711e-13 ]
+                                  Main             Total
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                           Interaction
+                      2.0616659946e-01 x1 x2 
 
 Statistics based on 10000 samples performed on polynomial expansion:
-Probabilities for each response function:
+
+Level mappings for each response function:
 Cumulative Distribution Function (CDF) for response_fn_1:
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
@@ -1608,7 +1612,7 @@ Cumulative Distribution Function (CDF) for response_fn_1:
    1.0000000000e+03   8.5240000000e-01
 -------------------------------------------------------------------
 \end{verbatim}
-\end{small}
+\end{footnotesize}
 \end{bigbox}
 \caption{Excerpt of UQ output for polynomial chaos example.}
 \label{tutorial:pce_out}
