@@ -2531,6 +2531,7 @@ Reference~\cite{Tang10b} provides more details about
 the implementation of the optimization methods to perform 
 Dempster-Shafer calculations, as well as comparisons on test problems.
 
+\begin{comment}
 \section{Bayesian Calibration Methods}\label{uq:bayesian}
 We are currently investigating Bayesian methods,specifically focusing on 
 Bayesian calibration, where a ``prior distribution'' on a parameter is 
@@ -2634,23 +2635,24 @@ Carlo sampling to generate the posterior samples on the calibration parameters
 and compute the log likelihood calculations. The posterior sample values of 
 the parameters are written to a file called ``gpmsa.pvals.out'' in the 
 working directory from which the user is running DAKOTA.
+\end{comment}
 
-%\section{Future Nondeterministic Methods}\label{uq:future}
+\section{Future Nondeterministic Methods}\label{uq:future}
 
-%Uncertainty analysis methods under investigation for future inclusion
-%into the DAKOTA framework include extensions to the stochastic
-%expansion methods and sampling capabilities currently supported.
-%Advanced ``smart sampling'' techniques such as bootstrap sampling (BS)
-%and Markov chain Monte Carlo simulation (McMC) are being considered.
-%We also have an active research focus on adaptive sparse grid methods,
-%to more efficiently construct stochastic expansions.  Efforts have
-%been initiated to allow for the possibility of non-traditional
-%representations of uncertainty.  We have implemented Dempster-Shafer
-%theory of evidence.  We are currently pursuing Bayesian methods,
-%specifically focusing on Bayesian calibration, where a ``prior
-%distribution'' on a parameter is updated through a Bayesian framework
-%involving experimental data and a likelihood function.
-%Finally, the tractability and efficacy of the more intrusive
-%variant of stochastic finite element/polynomial chaos expansion
-%methods, previously mentioned, is being assessed for possible
-%implementation in DAKOTA.
+Uncertainty analysis methods under investigation for future inclusion
+into the DAKOTA framework include extensions to the stochastic
+expansion methods and sampling capabilities currently supported.
+Advanced ``smart sampling'' techniques such as bootstrap sampling (BS)
+and Markov chain Monte Carlo simulation (McMC) are being considered.
+We also have an active research focus on adaptive sparse grid methods,
+to more efficiently construct stochastic expansions.  Efforts have
+been initiated to allow for the possibility of non-traditional
+representations of uncertainty.  We have implemented Dempster-Shafer
+theory of evidence.  We are currently pursuing Bayesian methods,
+specifically focusing on Bayesian calibration, where a ``prior
+distribution'' on a parameter is updated through a Bayesian framework
+involving experimental data and a likelihood function.
+Finally, the tractability and efficacy of the more intrusive
+variant of stochastic finite element/polynomial chaos expansion
+methods, previously mentioned, is being assessed for possible
+implementation in DAKOTA.

@@ -53,9 +53,10 @@ In the \texttt{sequential} hybrid minimization approach, a sequence
 of minimization methods is invoked in the order specified in the
 DAKOTA input file. After each method completes execution, 
 the best solution or solutions from that method are used as the
-starting point for the following method. The number of solutions transferred 
+starting point(s) for the following method. 
+The number of solutions transferred 
 is defined by how many that method can generate and how many the 
-user specifies with the method keyword \texttt{final\_solutions}. 
+user specifies with the individual method keyword \texttt{final\_solutions}. 
 For example, currently only a few of the global optimization methods such as 
 genetic algorithms (e.g. \texttt{moga} and \texttt{coliny\_ea}) and 
 sampling methods return multiple solutions.  In this case, 
@@ -105,8 +106,13 @@ to \texttt{model} and from \texttt{model} to \texttt{variables},
 \texttt{interface}, and \texttt{responses}, it is easy to see the
 specification linkages for this problem. The GA optimizer runs first
 and uses model `\texttt{M1}' which includes variables `\texttt{V1}',
-interface `\texttt{I1}', and responses `\texttt{R1}'. Once the GA is
-complete, the PS optimizer starts from the best GA result and again
+interface `\texttt{I1}', and responses `\texttt{R1}'. 
+Note that in the specification, \texttt{final\_solutions=1}, 
+so only one (the best) solution is returned from the GA.  
+However, it is possible to change this to \texttt{final\_solutions=5}
+and get five solutions passed from the GA to the Pattern Search
+(for example).  Once the GA is complete, the PS optimizer starts from the 
+best GA result and again
 uses model `\texttt{M1}'. Since both GA and PS are nongradient-based
 optimization methods, there is no need for gradient or Hessian
 information in the `\texttt{R1}' response keyword block. The NLP

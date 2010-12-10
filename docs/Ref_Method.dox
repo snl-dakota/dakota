@@ -118,10 +118,6 @@ namespace Dakota {
     <li> <a href="MethodCommands.html#MethodNonDLocalEvid">Local Evidence theory (Dempster-Shafer) methods</a>
     <li> <a href="MethodCommands.html#MethodNonDGlobalEvid">Global Evidence theory (Dempster-Shafer) methods</a>
     </ul>
-  <li> <a href="MethodCommands.html#MethodNonDBayesCalib">Bayesian Calibration Methods</a>
-    <ul>
-    <li> <a href="MethodCommands.html#MethodNonDGPMSA">GPMSA methods</a>       
-    </ul>
   </ul>
 <li> <a href="MethodCommands.html#MethodDACE">Design of Computer Experiments Methods</a>
   <ul>
@@ -3948,14 +3944,6 @@ general, we refer to both classes of uncertainty quantification
 methods in DAKOTA as nondeterministic methods.  In the descriptions
 below, we described the issues and specification controls that are
 common to both aleatory and epistemic uncertainty quantification.
-Finally, we are including Bayesian calibration under the uncertainty 
-quantification methods.  This approach is described in 
-\ref MethodNonDBayesCalib.   The idea in Bayesian calibration 
-is to assign a prior distribution on uncertain model parameters 
-and use experimental data observations on model output to update or 
-inform the model parameters:  the prior distributions on model 
-parameters are transformed to posterior distributions through the 
-Bayesian updating process. 
 
 DAKOTA's nondeterministic methods do not make use of many method
 independent controls.  Only the \c x_taylor_mpp, \c u_taylor_mpp, \c
@@ -5916,164 +5904,6 @@ Specification detail for global evidence theory method for epistemic uncertainty
 <td>10,000 for LHS, approximately numVars^2 for EGO
 </table>
 
-\subsection MethodNonDBayesCalib Bayesian Calibration
-This section covers Bayesian calibration methods.  This is a new capability 
-in DAKOTA 5.1 that we plan on extending.  The idea in Bayesian calibration 
-is to assign a prior distribution on uncertain model parameters 
-and use experimental data observations on model output to update or 
-inform the model parameters.  The prior distributions on model 
-parameters are transformed to posterior distributions through the 
-Bayesian updating process.  Typically, this process relies on a 
-sampling method called Monte Carlo Markov Chain (MCMC).  Note that 
-Bayesian calibration can be thought of both as an optimization 
-process and as an uncertainty quantification process.  It is 
-an optimization process in the sense of modifying model parameters 
-based on experimental data (e.g. use experimental observations to 
-improve the "fit" of the model similar to the approach used in 
-least-squares methods which minimize the sum-of-squares of the residual terms, 
-or errors, where error = model prediction - experimental observations).
-However, Bayesian calibration can also be thought of as an uncertainty 
-quantification process since prior distribution on parameters
-are transformed to posterior distributions using Bayes' formula 
-and a likelihood function.  We have classified Bayesian calibration 
-as a nondeterministic method in DAKOTA because of the probabilistic 
-treatment of inputs and the statistical approaches underpinning 
-Bayesian methods. Currently, we only have one Bayesian calibration 
-method, GPMSA, but we are planning to incorporate additional 
-libraries and Bayesian capabilities in DAKOTA.
-
-\subsubsection MethodNonDGPMSA GPMSA Methods
-The Gaussian Process Models for Simulation Analysis (GPMSA) code has
-been developed at Los Alamos National Laboratory.  The original version
-was developed in Matlab, and was translated to a C++ library in 2010. 
-
-GPMSA provides capabilities for the analysis of computer
-models, specifically the analysis of systems that have both computer
-simulations and observed data.  The underlying assumption is that
-experimental results are expensive or difficult to collect, though it
-is possible to get simulation studies of the experimental problem in
-comparatively large, but still restricted, quantities. Therefore a
-statistical model of system responses is to be constructed, which is
-called a surrogate or emulator.
-
-In GPM/SA, the emulator involves Gaussian Process models.
-The emulator is constructed from an ensemble of simulation responses
-collected at various settings of input parameters. The statistical model
-may be extended to incorporate system observations to improve system
-predictions and constrain, or calibrate, unknown parameters. The statistical
-model accounts for the discrepancy between the system observations and
-the simulation output. Parameters of the statistical model are determined
-through sampling their posterior probability with MCMC. The statistical
-model can then be used in several ways. Statistical prediction of
-simulation and observation response is relatively fast and includes
-uncertainty. Examination and analysis of the model parameters can be
-used for calibration, screening, and analysis of model properties.
-
-At this point, the interface between DAKOTA and GPMSA supports 
-the calibration of scalar data (e.g. a set of output values 
-at specific values of inputs). In the input specification for 
-GPMSA, the user assigns prior parameter distributions using 
-the uncertain variable types available.  DAKOTA then generates a  
-Latin Hypercube Sample (LHS) for the model parameters and runs 
-the simulation model at these points.  DAKOTA sends the simulation 
-model results and the experimental data results (which are specified by 
-three data files as described below) to the GPMSA code which 
-performs the MCMC and generates posterior samples on 
-the model parameters, based on a Gaussian Process emulator, a 
-likelihood function, and other assumptions involving 
-the formulation of a discrepancy term.  For more information 
-about GPMSA, see the GPMSA Command manual and Examples manual 
-in the DAKOTA/packages/gpmsa directory.
-
-\ref T5d39 "Table 5.39" provides the specification for the \c
-bayes_calibration method (note this can also be specified as \c
-bayes_calibration).  The keyword \c gpmsa specifies the type of
-Bayesian calibration method.  There are three data files which are
-required: \c x_obs_data_file, \c y_obs_data_file, and \c
-y_std_data_file.  The \c x_obs_data_file has a listing of input points
-at which the experimental data is taken, one per line.  Note that
-there can be multiple X inputs, but the X inputs specified in this
-data file are assumed to be "configuration" parameters.  They are not
-the same as uncertain parameters of the simulation.  The \c
-y_obs_data_file has the responses corresponding to the input points
-specified in the \c x_obs_data_file, and the \c y_std_data_file has
-the experimental errors for each of the data points.  Note that in
-some cases, the experimental error will be the same for all of the
-data, and in other cases, it may not be. Finally, there are three
-specification items relating to the initial LHS sampling which is
-performed on the simulation.  \c rng specifies which random number
-generator is used, \c seed specifies the random seed, and \c samples
-specifies the number of samples at which the simulation will be run.
-The number of samples should be large enough to generate a reasonable
-Gaussian process estimate for the calibration process.  At a minimum,
-we recommend the number of samples be at least the number of input
-variables squared, but we are not providing a default setting at this
-time.  After running GPMSA, the posterior samples are written to a
-file called gpmsa.pvals.out in the directory in which DAKOTA was run.
-
-\anchor T5d39
-<table>
-<caption align = "top">
-\htmlonly
-Table 5.39
-\endhtmlonly
-Specification detail for GPMSA method for Bayesian Calibration
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Nondeterministic Bayesian Calibration
-<td>\c bayes_calibration | \c bayes_calibration 
-<td>none
-<td>Required group
-<td>N/A
-<tr>
-<td>Method type
-<td>\c gpmsa
-<td>none
-<td>Required group
-<td>N/A
-<tr>
-<td>Experimental data file - input
-<td>\c x_obs_data_file 
-<td>none
-<td>Required group
-<td>N/A
-<tr>
-<td>Experimental data file - outputs
-<td>\c y_obs_data_file 
-<td>none
-<td>Required group
-<td>N/A
-<tr>
-<td>Experimental data file - std. dev. of outputs
-<td>\c y_std_data_file 
-<td>none
-<td>Required group
-<td>N/A
-<tr>
-<td>Random seed generator
-<td>\c rng
-<td>\c mt19937 or \c rnum2
-<td>Optional
-<td>Mersenne twister (\c mt19937)
-<tr>
-<td>Random seed
-<td>\c seed
-<td>integer
-<td>Optional
-<td>randomly generated seed
-<tr>
-<td>Number of samples
-<td>\c samples
-<td>integer
-<td>Required
-<td>N/A
-</table>
 
 
 \section MethodDACE Design of Computer Experiments Methods
@@ -6125,7 +5955,11 @@ samples), and for the number of symbols to use (\c symbols).  The \c
 seed control is used to make sample sets repeatable, and the \c
 symbols control is related to the number of replications in the sample
 set (a larger number of symbols equates to more stratification and
-fewer replications).  The \c quality_metrics control is available 
+fewer replications).  The \c main_effects control prints Analysis-of-Variance
+main effects results (e.g. ANOVA tables with p-values per variable). 
+The \c main_effects control is only operational with the 
+orthogonal arrays or Latin Hypercube designs, not for Box Behnken or 
+Central Composite designs.  The \c quality_metrics control is available 
 for the DDACE library.  
 This control turns on calculation of volumetric quality measures 
 which measure the uniformity of the point samples. 
@@ -6136,13 +5970,13 @@ indices which indicate how important the uncertainty in each input
 variable is in contributing to the output variance.  More details 
 on variance based decomposition are given in \ref MethodNonDMC.
 Design of experiments specification detail is
-given in \ref T5d40 "Table 5.40".
+given in \ref T5d39 "Table 5.39".
 
-\anchor T5d40
+\anchor T5d39
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.40
+Table 5.39
 \endhtmlonly
 Specification detail for design of experiments methods
 </caption>
@@ -6188,6 +6022,12 @@ Specification detail for design of experiments methods
 <td>integer
 <td>Optional
 <td>default for sampling algorithm
+<tr>
+<td>Main effects
+<td>\c main_effects
+<td>none
+<td>Optional
+<td>No main_effects
 <tr>
 <td>Quality metrics
 <td>\c quality_metrics
@@ -6323,11 +6163,11 @@ distribution).  Complete explanation of these measures can be found in
 [\ref Gunzburger2004 "Gunzburger and Burkardt, 2004."].
 
 <!-- dakota subcat fsu_quasi_mc -->
-\anchor T5d41
+\anchor T5d40
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.41
+Table 5.40
 \endhtmlonly
 Specification detail for FSU Quasi-Monte Carlo sequences 
 </caption>
@@ -6460,14 +6300,14 @@ More details on the quality measures are given under the description of the
 QMC methods. 
 
 The specification detail for the FSU CVT method is given in 
-\ref T5d42 "Table 5.42".
+\ref T5d41 "Table 5.41".
 
 <!-- dakota subcat fsu_cvt -->
-\anchor T5d42
+\anchor T5d41
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.42
+Table 5.41
 \endhtmlonly
 Specification detail for FSU Centroidal Voronoi Tesselation sampling
 </caption>
@@ -6563,13 +6403,13 @@ partitions) applies to each variable being studied and must be odd
 also be adjusted at runtime as necessary.  For information on
 practical use of this method, see 
 [\ref Saltelli2004 "Saltelli, et al., 2004"].  The specification detail
-for the PSUADE MOAT method is given in \ref T5d43 "Table 5.43".
+for the PSUADE MOAT method is given in \ref T5d42 "Table 5.42".
 
-\anchor T5d43
+\anchor T5d42
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.43
+Table 5.42
 \endhtmlonly
 Specification detail for PSUADE methods
 </caption>
@@ -6664,13 +6504,13 @@ and discrete set variables.  A \c num_steps specification must result
 in discrete range and set index steps that are integral: no remainder
 is currently permitted in the integer step calculation and no rounding
 to integer steps will occur.  The \c final_point specification detail
-is given in \ref T5d44 "Table 5.44".
+is given in \ref T5d43 "Table 5.43".
 
-\anchor T5d44
+\anchor T5d43
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.44
+Table 5.43
 \endhtmlonly
 final_point specification detail for the vector parameter study
 </caption>
@@ -6708,13 +6548,13 @@ state; real or integer), the steps are set index offsets, not steps
 between the actual set values.  This increment process is performed \c
 num_steps times, and since the initial values are included, the total
 number of simulations is again equal to \c num_steps+1. The \c
-step_vector specification detail is given in \ref T5d45 "Table 5.45".
+step_vector specification detail is given in \ref T5d44 "Table 5.44".
 
-\anchor T5d45
+\anchor T5d44
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.45
+Table 5.44
 \endhtmlonly
 step_vector specification detail for the vector parameter study
 </caption>
@@ -6763,13 +6603,13 @@ specification will not be used, they need not be specified. For
 discrete set types, the actual values should be specified, not the set
 indices, although the values will be validated for membership within
 the set value specifications.  The list parameter study specification
-detail is given in \ref T5d46 "Table 5.46".
+detail is given in \ref T5d45 "Table 5.45".
 
-\anchor T5d46
+\anchor T5d45
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.46
+Table 5.45
 \endhtmlonly
 Specification detail for the list parameter study
 </caption>
@@ -6811,14 +6651,14 @@ MethodPSVPS) in either actual values (continuous and discrete range)
 or index offsets (discrete set). The \c steps_per_variable
 specification provides the number of increments per variable (again,
 employed sequentially) in each of the plus and minus directions. The
-centered parameter study specification detail is given in \ref T5d47
-"Table 5.47".
+centered parameter study specification detail is given in \ref T5d46
+"Table 5.46".
 
-\anchor T5d47
+\anchor T5d46
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.47
+Table 5.46
 \endhtmlonly
 Specification detail for the centered parameter study
 </caption>
@@ -6870,13 +6710,13 @@ occurs, so the partitions specification must be carefully selected in
 the presence of these types.  Since the initial values from the
 variables specification will not be used, they need not be
 specified. The multidimensional parameter study specification detail
-is given in \ref T5d48 "Table 5.48".
+is given in \ref T5d47 "Table 5.47".
 
-\anchor T5d48
+\anchor T5d47
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.48
+Table 5.47
 \endhtmlonly
 Specification detail for the multidimensional parameter study
 </caption>
