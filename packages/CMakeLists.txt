@@ -37,6 +37,9 @@ if(HAVE_AMPL)
 endif(HAVE_AMPL)
 
 
+if(HAVE_ACRO)
+  add_subdirectory(acro)
+endif(HAVE_ACRO)
 
 if(HAVE_ACRO)
   add_subdirectory(acro)
@@ -53,6 +56,10 @@ endif(HAVE_DOT)
 if(HAVE_FSUDACE)
   add_subdirectory(FSUDace)
 endif(HAVE_FSUDACE)
+
+if(HAVE_HOPSPACK)
+  add_subdirectory(hopspack)
+endif(HAVE_HOPSPACK)
 
 if(HAVE_JEGA)
   add_subdirectory(JEGA)
