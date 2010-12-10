@@ -488,7 +488,7 @@ optimization method called DIRECT, although they search regions with
 different extents. For the \texttt{gaussian\_process} model, this is the
 only option.  The \texttt{kriging} model has several options for the 
 optimization method used.  These are specified by the 
-\texttt{optimization\_method} keyword followed by one of the strings:
+\texttt{optimization\_method} keyword followed by one of these strings:
 \begin{itemize}
 \item \texttt{'global'} which uses the default DIRECT optimizer,
 \item \texttt{'local'} which uses the CONMIN optimizer,
@@ -502,7 +502,7 @@ of the of small feasible region.  However, these can also be user
 specified with the \texttt{correlation\_lengths} keyword followed by 
 a list of $n$ real numbers.  The total number of evaluations of the 
 \texttt{kriging} model's likelihood function can be controlled using
-the \texttt{max\_trials} keyword followed by a non negative integer.
+the \texttt{max\_trials} keyword followed by a positive integer.
 Note that we have found the \texttt{'global'} optimization method to be 
 the most robust.
 
