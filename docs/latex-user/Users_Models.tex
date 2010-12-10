@@ -393,69 +393,73 @@ information on polynomial models.
 
 \subsubsection{Kriging Spatial Interpolation Models}\label{models:surf:kriging}
 
-In DAKOTA 4.2, we have 2 versions of spatial interpolation models.
+In DAKOTA 5.1, we have 2 versions of spatial interpolation models.
 They are denoted by \texttt{kriging} and \texttt{gaussian\_process},
-respectively.  We are in the process of migrating from the \texttt{kriging}
-model to the \texttt{gaussian\_process} model.  For now, both are supported.
+ respectively.  We are in the process of merging the \texttt{kriging}
+and \texttt{gaussian\_process} models.  For now, both are supported.
 They are very similar:  the differences are explained in more detail below.
 
-The kriging method uses techniques developed in the geostatistics and
+The Kriging method uses techniques developed in the geostatistics and
 spatial statistics communities (~\cite{Cre91},~\cite{Koe96}) to produce
 smooth, $C^{2}$-continuous surface fit models of the response values
-from a set of data points. The form of the kriging model is
+from a set of data points. The form of the Kriging model is
 
 \begin{equation}
-  \hat{f}(\mathbf{x}) \approx \beta +
-  \mathbf{r}^{T}\mathbf{R}^{-1}(\mathbf{f}-\beta\mathbf{e})
+  \hat{f}(\underline{x}) \approx \underline{g}(\underline{x})^T\underline{\beta} +
+  \underline{r}(\underline{x})^{T}\underline{\underline{R}}^{-1}(\underline{f}-\underline{\underline{G}}\ \underline{\beta})
   \label{models:surf:equation08}
 \end{equation}
 
-where $\mathbf{x}$ is the current point in $n$-dimensional parameter
-space; $\beta$ is the estimate of the mean response value, $r$ is the
-correlation vector of terms between $\mathbf{x}$ and the data points,
-$\mathbf{R}$ is the correlation matrix for all of the data points,
-$\mathbf{f}$ is the vector of response values, and $\mathbf{e}$ is a
-vector with all values set to one. The terms in the correlation vector
-and matrix are computed using a Gaussian correlation function and are
-dependent on an $n$-dimensional vector of correlation parameters,
-$\Theta = \{\theta_{1},\ldots,\theta_{n}\}$.  In DAKOTA, a Maximum
-Likelihood Estimation procedure is performed to compute the
-correlation parameters for the kriging model. More detail on this
-kriging approach may be found in~\cite{Giu98}.
+where $\underline{x}$ is the current point in $n$-dimensional parameter
+space; $\underline{g}(\underline{x})$ is the vector of trend basis 
+functions evaluated at $\underline{x}$; $\underline{\beta}$ is a vector
+containing the generalized least squares estimates of the trend basis 
+function coefficients; $\underline{r}(\underline{x})$ is the correlation 
+vector of terms between $\underline{x}$ and the data points;
+$\underline{\underline{R}}$ is the correlation matrix for all of the 
+data points; $\underline{f}$ is the vector of response values; and 
+$\underline{\underline{G}}$ is the matrix containing the trend basis 
+functions evaluated at all data points.  The terms in the correlation 
+vector and matrix are computed using a Gaussian correlation function 
+and are dependent on an $n$-dimensional vector of correlation parameters,
+$\underline{\theta} = \{\theta_{1},\ldots,\theta_{n}\}^T$. By default, 
+DAKOTA determines the value of $\underline{\theta}$ using a Maximum
+Likelihood Estimation (MLE) procedure.  However, the user can also opt 
+to manually set them in the Kriging model by specifying a vector of 
+correlation lengths, $\underline{l}=\{\l_{1},\ldots,\l_{n}\}^T$ where 
+$\theta_i=1/(2 l_i^2)$. This definition of correlation lengths makes 
+their effect on the Kriging model's behavior directly analogous to the 
+role played by the standard deviation in a normal (a.k.a. Gaussian) 
+distribution.  We used this analogy to define a small feasible region
+in which to search for correlation lengths.  This region should 
+(almost) always contain some correlation matrices that are well 
+conditioned and some that are optimal, or at least near optimal. 
+More details on Kriging models may be found in~\cite{Giu98}.
 
-The kriging interpolation model is a nonparametric surface fitting
-approach. That is, the kriging surface does not assume that there is
-an underlying trend in the response data. This is in contrast to the
-quadratic polynomial model and the linear Taylor series model. Since
-the kriging model is nonparametric, it can be used to model surfaces
-with slope discontinuities along with multiple local minima and
-maxima. Kriging interpolation is useful for both SBO and OUU, as well
-as for studying the global response value trends in the parameter
-space. This surface fitting method can be constructed using a minimum
-of $n_{c_{linear}}$ design points, but it is recommended to use at
-least $n_{c_{quad}}$ design points when possible (refer to
-Section~\ref{models:surf:polynomial} for $n_{c}$ definitions).
+Since Kriging has a hyper-parametric error model, it can be used 
+to model surfaces with slope discontinuities along with multiple 
+local minima and maxima. Kriging interpolation is useful for both 
+SBO and OUU, as well as for studying the global response value trends 
+in the parameter space. This surface fitting method needs a 
+minimum number of design points equal to the sum of the number of 
+basis functions and the number of dimensions, $n$, but it is 
+recommended to use at least double this amount.
+%$n_{c_{quad}}$ design points when possible (refer to
+%Section~\ref{models:surf:polynomial} for $n_{c}$ definitions).
 
-The kriging model is guaranteed to pass through all of the response
+The Kriging model is guaranteed to pass through all of the response 
 data values that are used to construct the model. Generally, this is a
 desirable feature. However, if there is considerable numerical noise
 in the response data, then a surface fitting method that provides some
 data smoothing (e.g., quadratic polynomial, MARS) may be a better
-choice for SBO and OUU applications. Another feature of the kriging
-model is that the predicted response values, $\hat{f}(\mathbf{x})$,
-decay to the mean value, $\beta$, when $\mathbf{x}$ is far from any of
-the data points from which the kriging model was constructed (i.e.,
-when the model is used for extrapolation). This is neither a positive
-nor a negative aspect of kriging, but rather a different behavior than
-is exhibited by the other surface fitting methods. One drawback to the
-kriging model is that data points in close proximity lead to
-ill-conditioning in the numerical procedure and the kriging software
-will terminate if such a situation occurs. For this reason, the user
-is advised to avoid sample reuse (\texttt{reuse\_samples = region} and
-\texttt{reuse\_samples = all} specifications) when performing
-surrogate-based optimization.
+choice for SBO and OUU applications. Another feature of the Kriging
+model is that the predicted response values, $\hat{f}(\underline{x})$,
+decay to the trend function, 
+$\underline{g}(\underline{x})^T\underline{\beta}$, when $\underline{x}$ 
+is far from any of the data points from which the Kriging model was 
+constructed (i.e., when the model is used for extrapolation). 
 
-As mentioned above, there are two surrogate models in DAKOTA 4.2 
+As mentioned above, there are two surrogate models in DAKOTA 5.1
 which provide Gaussian process surrogates, the \texttt{kriging} 
 model and the \texttt{gaussian\_process} model.  More details on 
 the \texttt{gaussian\_process} model can be found in~\cite{McF08}. 
@@ -463,36 +467,57 @@ The differences between these models are as follows:
 
 \begin{itemize}
 
-\item Trend Function:  In general, a GP model may incorporate a parametric
-trend function whose purpose is to capture large-scale variations. 
-The trend function in the \texttt{kriging} model is a constant, 
-whereas the trend function in the \texttt{gaussian\_process} model 
-can be specified as a constant, linear,or quadratic trend function.  
-This is specified by the keyword \texttt{trend}
-followed by one of \texttt{constant}, \texttt{linear}, or \texttt{quadratic}.
+\item Trend Function:  The Kriging and GP models may incorporate 
+a parametric trend function whose purpose is to capture large-scale 
+variations. In both models, the trend function can be a constant, 
+linear,or reduced quadratic (main effects only, no interaction 
+terms) polynomial.  This is specified by the keyword \texttt{trend}
+followed by one of \texttt{constant}, \texttt{linear}, or 
+\texttt{reduced\_quadratic} (in DAKOTA 5.0 and earlier, the reduced 
+quadratic option for the GP was selected using the keyword, 
+\texttt{quadratic}). The \texttt{kriging} model has the additional 
+option of a full (i.e. it includes interaction terms) quadratic 
+polynomial; this is accessed by folliwing the \texttt{trend} keyword
+with \texttt{quadratic}.
 
-\item Correlation Parameter Determination: Both the kriging and 
-Gaussian process model use a Maximum Likelihood Estimation (MLE) approach 
-to find the optimal values of the hyper-parameters governing the 
-mean and correlation functions. The \texttt{kriging} model using a 
-CONMIN local optimizer while the \texttt{gaussian\_process} model uses 
-a global optimization method called DIRECT.
-Also, the \texttt{gaussian\_process} model has an iterative solution approach
-where the coefficients defining the trend function and the process variance
-are determined, then these values are used when determining the optimal values
-for the correlation coefficients, and the process iterates.  
-We have found the optimization of the
-correlation parameters to be more robust in the \texttt{gaussian\_process}
-model. Note that one can pre-define the correlation parameters in 
-\texttt{kriging} but not in the \texttt{gaussian\_process}.  
+\item Correlation Parameter Determination: Both the Kriging and 
+Gaussian process model use a Maximum Likelihood Estimation (MLE) 
+approach to find the optimal values of the hyper-parameters governing the 
+mean and correlation functions. By default both models use the global 
+optimization method called DIRECT, although they search regions with
+different extents. For the \texttt{gaussian\_process} model, this is the
+only option.  The \texttt{kriging} model has several options for the 
+optimization method used.  These are specified by the 
+\texttt{optimization\_method} keyword followed by one of the strings:
+\begin{itemize}
+\item \texttt{'global'} which uses the default DIRECT optimizer,
+\item \texttt{'local'} which uses the CONMIN optimizer,
+\item \texttt{'sampling'} which generates several random guesses and 
+picks the candidate with greatest likelihood, and
+\item \texttt{'none'} 
+\end{itemize} 
+The \texttt{'none'} option, and the starting location of the \texttt{'local'}
+optimization, default to the center, in log(correlation length) scale, 
+of the of small feasible region.  However, these can also be user 
+specified with the \texttt{correlation\_lengths} keyword followed by 
+a list of $n$ real numbers.  The total number of evaluations of the 
+\texttt{kriging} model's likelihood function can be controlled using
+the \texttt{max\_trials} keyword followed by a non negative integer.
+Note that we have found the \texttt{'global'} optimization method to be 
+the most robust.
 
 \item Ill-conditioning.  One of the major problems in determining 
-the governing values for a Gaussian process or kriging model is the fact 
+the governing values for a Gaussian process or Kriging model is the fact 
 that the correlation matrix can easily become ill-conditioned when there 
 are too many input points close together.  Since the predictions from 
 the Gaussian process model involve inverting the correlation matrix, 
-ill-conditioning can lead to poor predictive capability and should be avoided. 
-The \texttt{gaussian\_process} model has two features to overcome
+ill-conditioning can lead to poor predictive capability and should be 
+avoided. The \texttt{kriging} model's definition of a small feasible search 
+region for correlation lengths, which should (almost) always contain some well 
+conditioned correlation matrices, allows ill-conditioning to be avoided by 
+explicitly excluding poorly conditioned $\underline{\underline{R}}$ from 
+consideration on the basis of their having a large (estimate of) condition 
+number.  The \texttt{gaussian\_process} model has two features to overcome
 ill-conditioning.  The first is that the algorithm will add a small amount 
 of noise to the diagonal elements of the matrix (this is often referred to 
 as a ``nugget'') and sometimes this is enough to improve the conditioning. 
@@ -501,8 +526,6 @@ of points.  The algorithm chooses an optimal subset of points (with
 respect to predictive capability on the remaining unchosen points) using a 
 greedy heuristic. This option is specified with the keyword 
 \texttt{point\_selection} in the input file.  
-The \texttt{kriging} model does not have provisions 
-to deal with ill-conditioning:  it stops if the problem is too ill-conditioned.
 
 \end{itemize}
 
