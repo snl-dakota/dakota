@@ -271,6 +271,12 @@ colin_request_to_dakota_request(const utilib::Any &domain,
                    utilib::seed_t &seed)
 {
   // Map COLIN info requests to DAKOTA objectives and constraints.
+  const IntSetArray& ddsiv_values
+    = iteratedModel.discrete_design_set_int_values();
+  const RealSetArray& ddsrv_values
+    = iteratedModel.discrete_design_set_real_values();
+  size_t  num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
+    num_ddrv  = iteratedModel.div() - num_ddsiv, offset;
 
   const utilib::MixedIntVars& miv = domain.expose<MixedIntVars>();
 
@@ -280,7 +286,28 @@ colin_request_to_dakota_request(const utilib::Any &domain,
 
   IntVector ddv;
   TypeManager()->lexical_cast(miv.Integer(), ddv);
-  iteratedModel.discrete_int_variables(ddv);
+
+  IntVector intVariableHolder(iteratedModel.div());
+  RealVector realVariableHolder(iteratedModel.drv());
+
+  for (size_t j=0; j<num_ddrv; j++)
+    intVariableHolder[j] = ddv[j];
+
+  offset = num_ddrv;
+  for (size_t j=0; j<num_ddsiv; j++) {
+    int colin_index = ddv[j+offset];
+    intVariableHolder[j+offset] = set_index_to_value(colin_index, ddsiv_values[j]);
+  }
+
+  iteratedModel.discrete_int_variables(intVariableHolder);
+
+  offset += num_ddsiv;
+  for (size_t j=0; j<num_ddsrv; j++) {
+    int colin_index = ddv[j+offset];
+    realVariableHolder[j] = set_index_to_value(colin_index, ddsrv_values[j]);
+  }
+
+  iteratedModel.discrete_real_variables(realVariableHolder);
 
   // Map COLIN info requests (pair<ResponseInfo, *>) to DAKOTA
   // objectives and constraints; COLIN will always request ALL

@@ -809,7 +809,7 @@ void COLINOptimizer::post_run(std::ostream& s)
     for (size_t j=0; j<num_ddsrv; j++) {
       int colin_index = ddv[j+offset];
       double dakota_value = set_index_to_value(colin_index, ddsrv_values[j]);
-      tmpVariableHolder.discrete_real_variable(dakota_value, j+offset);
+      tmpVariableHolder.discrete_real_variable(dakota_value, j);
     }
 
     // transform variables back to user/native for lookup
@@ -830,21 +830,24 @@ void COLINOptimizer::post_run(std::ostream& s)
 
       double constraintViolation = 0.0;
       for(size_t j=0; j<num_nln_ineq; j++) {
-	if (fn_vals[j+numObjectiveFns] > nln_ineq_upr_bnds[j])
-	  constraintViolation += std::pow(fn_vals[j+numObjectiveFns]-nln_ineq_upr_bnds[j],2);
-	else if (fn_vals[j+numObjectiveFns] < nln_ineq_lwr_bnds[j])
-	  constraintViolation += std::pow(nln_ineq_lwr_bnds[j]-fn_vals[j+numObjectiveFns],2);
+	if (fn_vals[j+numUserObjectiveFns] > nln_ineq_upr_bnds[j])
+	  constraintViolation += std::pow(fn_vals[j+numUserObjectiveFns]-nln_ineq_upr_bnds[j],2);
+	else if (fn_vals[j+numUserObjectiveFns] < nln_ineq_lwr_bnds[j])
+	  constraintViolation += std::pow(nln_ineq_lwr_bnds[j]-fn_vals[j+numUserObjectiveFns],2);
       }
       for (size_t j=0; j<num_nln_eq; j++) {
-	if (std::fabs(fn_vals[j+numObjectiveFns+num_nln_ineq] - nln_eq_targets[j]) > 0.)
-	  constraintViolation += std::pow(fn_vals[j+numObjectiveFns+num_nln_ineq]-nln_eq_targets[j], 2);
+	if (std::fabs(fn_vals[j+numUserObjectiveFns+num_nln_ineq] - nln_eq_targets[j]) > 0.)
+	  constraintViolation += std::pow(fn_vals[j+numUserObjectiveFns+num_nln_ineq]-nln_eq_targets[j], 2);
       }
+
+      std::cout << "nof = " << numObjectiveFns << std::endl;
+      std::cout << "nuof = " << numUserObjectiveFns << std::endl;
 
       double utopiaDistance = 0.0;
       if (constraintViolation > 0.0)
 	utopiaDistance = DBL_MAX;
       else {
-	for (size_t j=0; j<numObjectiveFns; j++)
+	for (size_t j=0; j<numUserObjectiveFns; j++)
 	  utopiaDistance += std::pow(fn_vals[j],2);
       }
 
