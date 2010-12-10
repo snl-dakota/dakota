@@ -169,20 +169,36 @@ endif(HAVE_FSUDACE)
 if(HAVE_GPMSA)
   add_definitions("-DDAKOTA_GPMSA")
   include_directories(${GPMSA_SOURCE_DIR})
-  set(iterator_src ${iterator_src} NonDBayesCal.C)
-  #link_directories(${Dakota_BINARY_DIR}/packages/GPMSA)
-  # WJB: verify no longer HEADER-ONLY! set(TPL_LIBS ${TPL_LIBS} gpmsa)
+  list(APPEND iterator_src NonDGPMSABayesCalibration.C)
+  #link_directories(${Dakota_BINARY_DIR}/packages/gpmsa)
+  list(APPEND TPL_LIBS gpmsa)
 endif(HAVE_GPMSA)
+
+if(HAVE_HOPSPACK)
+  #add_definitions("-DHAVE_HOPSPACK") # WJB: use convention?
+  add_definitions("-DDAKOTA_HOPS")
+  include_directories(${HOPSPACK_BINARY_DIR}/dakota_build/include
+                      ${HOPSPACK_SOURCE_DIR}/dakota_build/include
+                      ${HOPSPACK_SOURCE_DIR}/src/src-citizens
+                      ${HOPSPACK_SOURCE_DIR}/src/src-evaluator
+                      ${HOPSPACK_SOURCE_DIR}/src/src-executor
+                      ${HOPSPACK_SOURCE_DIR}/src/src-framework
+                      ${HOPSPACK_SOURCE_DIR}/src/src-main
+                      ${HOPSPACK_SOURCE_DIR}/src/src-shared)
+  list(APPEND iterator_src APPSOptimizer.C APPSEvalMgr.C)
+  #link_directories(${Dakota_BINARY_DIR}/packages/hopspack)
+  list(APPEND TPL_LIBS executor evaluator framework citizens shared)
+endif(HAVE_HOPSPACK)
 
 if(HAVE_JEGA)
   add_definitions("-DDAKOTA_JEGA")
   include_directories(${JEGA_BINARY_DIR} ${JEGA_SOURCE_DIR}/include
                       ${JEGA_SOURCE_DIR}/src ${JEGA_SOURCE_DIR}/eddy
                       ${JEGA_BINARY_DIR}/src ${JEGA_BINARY_DIR}/eddy)
-  set(iterator_src ${iterator_src} JEGAOptimizer.C)
+  list(APPEND iterator_src JEGAOptimizer.C)
   #link_directories(${Dakota_BINARY_DIR}/packages/JEGA)
   # WJB: "jega_link_libs: looks fishy; confer with Zack about JEGA commit 692
-  set(TPL_LIBS ${TPL_LIBS} jega jega_fe moga soga eutils)
+  list(APPEND TPL_LIBS jega jega_fe moga soga eutils)
 endif(HAVE_JEGA)
 
 if(HAVE_NCSUOPT)
