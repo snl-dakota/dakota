@@ -763,24 +763,28 @@ void COLINOptimizer::post_run(std::ostream& s)
   RealVector cdv;
   IntVector ddv;
 
+  Model& model_for_sort(iteratedModel);
+  if (scaleFlag || multiObjFlag)
+    model_for_sort = iteratedModel.subordinate_model();
+
   extern PRPCache data_pairs; // global container
   ActiveSet search_set(numFunctions, numContinuousVars); // asv = 1's
-  Variables tmpVariableHolder = iteratedModel.current_variables();
-  Response tmpResponseHolder = iteratedModel.current_response();
+  Variables tmpVariableHolder = model_for_sort.current_variables().copy();
+  Response tmpResponseHolder = model_for_sort.current_response().copy();
 
-  size_t num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
-         num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints();
+  size_t num_nln_ineq = model_for_sort.num_nonlinear_ineq_constraints(),
+         num_nln_eq   = model_for_sort.num_nonlinear_eq_constraints();
   const RealVector& nln_ineq_lwr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
+    = model_for_sort.nonlinear_ineq_constraint_lower_bounds();
   const RealVector& nln_ineq_upr_bnds
-    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
+    = model_for_sort.nonlinear_ineq_constraint_upper_bounds();
   const RealVector& nln_eq_targets
-    = iteratedModel.nonlinear_eq_constraint_targets();
+    = model_for_sort.nonlinear_eq_constraint_targets();
 
   const IntSetArray& ddsiv_values
-    = iteratedModel.discrete_design_set_int_values();
+    = model_for_sort.discrete_design_set_int_values();
   const RealSetArray& ddsrv_values
-    = iteratedModel.discrete_design_set_real_values();
+    = model_for_sort.discrete_design_set_real_values();
   size_t  num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
     num_ddrv  = numDiscreteIntVars - num_ddsiv, offset;
 
@@ -824,7 +828,7 @@ void COLINOptimizer::post_run(std::ostream& s)
     // the cache)
     // there are three possible courses here: DAKOTA cache, DAKOTA model eval, COLIN model eval, all of which ultimately results in a cache lookup, but only the first won't increment eval duplicates.
 
-    if (lookup_by_val(data_pairs, iteratedModel.interface_id(), 
+    if (lookup_by_val(data_pairs, model_for_sort.interface_id(), 
 		      tmpVariableHolder, search_set, tmpResponseHolder)) {
       const RealVector& fn_vals = tmpResponseHolder.function_values();
 
@@ -840,18 +844,28 @@ void COLINOptimizer::post_run(std::ostream& s)
 	  constraintViolation += std::pow(fn_vals[j+numUserObjectiveFns+num_nln_ineq]-nln_eq_targets[j], 2);
       }
 
-      std::cout << "nof = " << numObjectiveFns << std::endl;
-      std::cout << "nuof = " << numUserObjectiveFns << std::endl;
-
-      double utopiaDistance = 0.0;
+      double obj_fn_metric = 0.0;
       if (constraintViolation > 0.0)
-	utopiaDistance = DBL_MAX;
+	obj_fn_metric = DBL_MAX;
       else {
-	for (size_t j=0; j<numUserObjectiveFns; j++)
-	  utopiaDistance += std::pow(fn_vals[j],2);
+	if (multiObjFlag) {
+	  const RealVector& mo_weights = model_for_sort.primary_response_fn_weights();
+	  size_t constraint_offset = numUserObjectiveFns;
+	  if (mo_weights.empty()) {
+	    for (size_t j=0; j<numUserObjectiveFns; j++)
+	      obj_fn_metric += fn_vals[j];
+	    if (numUserObjectiveFns > 1)
+	      obj_fn_metric /= (double)numUserObjectiveFns;
+	  }
+	  else
+	    for (size_t j=0; j<numUserObjectiveFns; j++)
+	      obj_fn_metric += mo_weights[j] * fn_vals[j];
+	}
+	else
+	  obj_fn_metric = fn_vals[0];
       }
 
-      RealRealPair metrics(constraintViolation, utopiaDistance);
+      RealRealPair metrics(constraintViolation, obj_fn_metric);
 
       if (variableSortMap.size() < numFinalSolutions) {
 	variableSortMap.insert(std::make_pair(metrics, tmpVariableHolder.copy()));
@@ -884,19 +898,18 @@ void COLINOptimizer::post_run(std::ostream& s)
   resize_final_responses(numFinalSolutions);
 
   // this stinks, but COLIN doesn't return a best point anymore
-  if (!multiObjFlag) {
-    std::multimap<RealRealPair, Variables>::const_iterator var_best_it = 
-      variableSortMap.begin(); 
-    const std::multimap<RealRealPair, Variables>::const_iterator var_best_end = 
-      variableSortMap.end(); 
-    std::multimap<RealRealPair, Response>::const_iterator resp_best_it = 
-      responseSortMap.begin(); 
-    ResponseArray::size_type index = 0;
-    for( ; var_best_it != var_best_end; ++var_best_it, ++resp_best_it, ++index) {
-      bestVariablesArray[index] = var_best_it->second.copy();
-      bestResponseArray[index] = resp_best_it->second.copy();
-    }
+  std::multimap<RealRealPair, Variables>::const_iterator var_best_it = 
+    variableSortMap.begin(); 
+  const std::multimap<RealRealPair, Variables>::const_iterator var_best_end = 
+    variableSortMap.end(); 
+  std::multimap<RealRealPair, Response>::const_iterator resp_best_it = 
+    responseSortMap.begin(); 
+  ResponseArray::size_type index = 0;
+  for( ; var_best_it != var_best_end; ++var_best_it, ++resp_best_it, ++index) {
+    bestVariablesArray[index] = var_best_it->second.copy();
+    bestResponseArray[index] = resp_best_it->second.copy();
   }
+
   Iterator::post_run(s);
 }
 
