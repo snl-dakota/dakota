@@ -4534,19 +4534,20 @@ for specified CDF/CCDF reliabilities by projecting out the prescribed
 number of sample standard deviations from the sample mean.
 
 The \c seed integer specification specifies the seed for the random
-number generator which is used to make sampling studies
-repeatable. The \c fixed_seed flag is relevant if multiple sampling
-sets will be generated during the course of a strategy (e.g.,
-surrogate-based optimization, optimization under uncertainty).
-Specifying this flag results in the reuse of the same seed value for
-each of these multiple sampling sets, which can be important for
-reducing variability in the sampling results.  However, this behavior
-is not the default as the repetition of the same sampling pattern can
-result in a modeling weakness that an optimizer could potentially
-exploit (resulting in actual reliabilities that are lower than the
-estimated reliabilities).  In either case (\c fixed_seed or not), the
-study is repeatable if the user specifies a \c seed and the study is
-random is the user omits a \c seed specification.
+number generator which is used to make sampling studies repeatable,
+and \c rng specifies which random number generator is used.  The \c
+fixed_seed flag is relevant if multiple sampling sets will be
+generated during the course of a strategy (e.g., surrogate-based
+optimization, optimization under uncertainty).  Specifying this flag
+results in the reuse of the same seed value for each of these multiple
+sampling sets, which can be important for reducing variability in the
+sampling results.  However, this behavior is not the default as the
+repetition of the same sampling pattern can result in a modeling
+weakness that an optimizer could potentially exploit (resulting in
+actual reliabilities that are lower than the estimated reliabilities).
+In either case (\c fixed_seed or not), the study is repeatable if the
+user specifies a \c seed and the study is random is the user omits a
+\c seed specification.
 
 The number of samples to be evaluated is selected with the
 \c samples integer specification. The algorithm used to generate the
@@ -4609,9 +4610,9 @@ capability to calculate sensitivity indices through variance based
 decomposition using the keyword \c variance_based_decomp.  Variance 
 based decomposition is a way of using sets of samples to understand
 how the variance of the output behaves, with respect to each input
-variable. A larger value of the sensitivity index, Si, means that the
-uncertainty in the input variable i has a larger effect on the
-variance of the output.  More details on the calculations and
+variable. A larger value of the sensitivity index, \f$S_i\f$, means 
+that the uncertainty in the input variable i has a larger effect on 
+the variance of the output.  More details on the calculations and
 interpretation of the sensitivity indices can be found in [\ref
 Saltelli2004 "Saltelli et al., 2004"] and 
 [\ref Weirs2010 "Weirs et al., 2010"].  Note that \c
@@ -4992,61 +4993,71 @@ will exit with an error.  Additional details include:
 To obtain the coefficients \f$\alpha_i\f$ of the expansion, six
 options are provided:
 
--# multidimensional integration by a tensor-product of Gaussian quadrature 
-   rules (specified with \c quadrature_order, where the order per variable
-   may be anisotropic), where supported rules include Gauss-Hermite, 
-   Gauss-Legendre (Clenshaw-Curtis is not supported for tensor grids since
-   Gauss-Legendre is preferred when nesting cannot be exploited), 
-   Gauss-Jacobi, Gauss-Laguerre, generalized Gauss-Laguerre, and 
-   numerically-generated Gauss rules.  To synchronize with tensor-product
-   integration, a tensor-product expansion is used, where the order \f$p_i\f$ 
-   of the expansion in each dimension is one less than the quadrature order 
-   \f$m_i\f$ in each dimension.  The total number of terms, \e N, in a 
-   tensor-product expansion involving \e n uncertain input variables is
+-# multidimensional integration by a tensor-product of Gaussian
+   quadrature rules (specified with \c quadrature_order, where the
+   order per variable may be anisotropic).  The default rule selection
+   is to employ \c non_nested Gauss rules including Gauss-Hermite (for
+   normals or transformed normals), Gauss-Legendre (for uniforms or
+   transformed uniforms), Gauss-Jacobi (for betas), Gauss-Laguerre
+   (for exponentials), generalized Gauss-Laguerre (for gammas), and
+   numerically-generated Gauss rules (for other distributions when
+   using an Extended basis).  For the case of \c p_refinement or the
+   case of an explicit \c nested override, Gauss-Hermite rules are
+   replaced with Genz-Keister nested rules and Gauss-Legendre rules
+   are replaced with Gauss-Patterson nested rules, both of which
+   exchange lower integrand precision for greater point reuse.  To
+   synchronize with tensor-product integration, a tensor-product
+   expansion is used, where the order \f$p_i\f$ of the expansion in
+   each dimension is selected to be half of the integrand precision
+   available from the rule in use, rounded down.  In the case of
+   non-nested Gauss rules with integrand precision \f$2m_i-1\f$,
+   \f$p_i\f$ is one less than the quadrature order \f$m_i\f$ in each
+   dimension.  The total number of terms, \e N, in a tensor-product
+   expansion involving \e n uncertain input variables is 
    \f[N ~=~ 1 + P ~=~ \prod_{i=1}^{n} (p_i + 1)\f]
--# multidimensional integration by the Smolyak sparse grid method 
+-# multidimensional integration by the Smolyak sparse grid method
    (specified with \c sparse_grid_level and, optionally, \c
-   dimension_preference) employing weakly-nested Gauss-Hermite and 
-   Gauss-Legendre rules, and non-nested Gauss-Jacobi, Gauss-Laguerre, 
-   generalized Gauss-Laguerre, and numerically-generated Gauss rules.  
-   Both the rule type and the dimension emphasis (specified with \c
+   dimension_preference).  The underlying one-dimensional integration
+   rules are the same as for the tensor-product quadrature case;
+   however, the default rule selection is \c nested for sparse grids
+   (Genz-Keister for normals/transformed normals and Gauss-Patterson
+   for uniforms/transformed uniforms).  This default can be overriden
+   with an explicit \c non_nested specification (resulting in
+   Gauss-Hermite for normals/transformed normals and Gauss-Legendre
+   for uniforms/transformed uniforms).  By specifying a \c
    dimension_preference, where higher preference leads to higher order
-   resolution) may be anisotropic.  For PCE with isotropic Smolyak, a 
-   total-order expansion is used, where the isotropic order \e p of the 
-   expansion is rigorously estimated from the set of monomials integrable 
-   by a particular sparse grid construction.  The total number of terms 
-   \e N for an isotropic total-order expansion of order \e p over \e n 
-   variables is given by \f[N~=~1 + P
-    ~=~1 + \sum_{s=1}^{p} {\frac{1}{s!}} \prod_{r=0}^{s-1} (n + r)
-    ~=~\frac{(n+p)!}{n!p!}\f]
-   Since fully nested Clenshaw-Curtis integration requires exponential 
-   growth rules (relating quadrature order \e m from level \e l)
-   leading to an irregular set of resolvable monomials known as the 
-   "hyperbolic cross," the use of a total-order expansion leads to a 
-   poor synchronization between resolvable monomial set and chaos 
-   expansion.  For this reason, Clenshaw-Curtis integration is disabled
-   for PCE and weakly-/non-nested rules with linear growth (and a regular 
-   set of resolvable monomials) are employed exclusively.   For PCE with 
-   anisotropic Smolyak, a custom anisotropic expansion is estimated 
-   (based again on the set of monomials that are resolvable by the 
-   anisotropic sparse grid).
+   polynomial resolution, the sparse grid may be rendered anisotropic
+   (refer to the PCE description in the Theory Manual for the
+   anisotropic index set constraint definition).  For PCE with either
+   isotropic or anisotropic sparse grids, a summation of
+   tensor-product expansions is used, where each anisotropic
+   tensor-product quadrature rule underlying the sparse grid
+   construction results in its own anisotropic tensor-product
+   expansion as described in case 1.  These anisotropic tensor-product 
+   expansions are summed into a sparse PCE using the standard Smolyak 
+   summation (again, refer to the Theory Manual for additional details).
 -# multidimensional integration by Stroud cubature rules 
    [\ref Stroud1971 "Stroud, 1971"] and extensions [\ref Xiu2008 "Xiu, 2008"],
    as specified with \c cubature_integrand.  A total-order expansion is 
    used, where the isotropic order \e p of the expansion is half of the 
-   integrand order (rounded down).  Since the maximum integrand order 
-   is currently five for normal and uniform and two for all other types,
-   at most second- and first-order expansions, respectively, will be used.
-   As a result, cubature is primarily useful for global sensitivity 
-   analysis, where the Sobol' indices will provide main effects and,
-   at most, two-way interactions.  In addition, the random variable set 
-   must be independent and identically distributed (\e iid), so the use 
-   of \c askey or \c wiener transformations may be required to create 
-   \e iid variable sets in the transformed space (as well as to allow 
-   usage of the higher order cubature rules for normal and uniform).  Note
-   that global sensitivity analysis often assumes uniform bounded regions, 
-   rather than precise probability distributions, so the \e iid restriction
-   would not be problematic in that case.
+   integrand order, rounded down.  The total number of terms \e N for an 
+   isotropic total-order expansion of order \e p over \e n variables is 
+   given by 
+   \f[N~=~1 + P ~=~1 + \sum_{s=1}^{p} {\frac{1}{s!}} \prod_{r=0}^{s-1} (n + r)
+    ~=~\frac{(n+p)!}{n!p!}\f]
+   Since the maximum integrand order is currently five for normal and
+   uniform and two for all other types, at most second- and
+   first-order expansions, respectively, will be used.  As a result,
+   cubature is primarily useful for global sensitivity analysis, where
+   the Sobol' indices will provide main effects and, at most, two-way
+   interactions.  In addition, the random variable set must be
+   independent and identically distributed (\e iid), so the use of \c
+   askey or \c wiener transformations may be required to create \e iid
+   variable sets in the transformed space (as well as to allow usage
+   of the higher order cubature rules for normal and uniform).  Note
+   that global sensitivity analysis often assumes uniform bounded
+   regions, rather than precise probability distributions, so the \e
+   iid restriction would not be problematic in that case.
 -# multidimensional integration by random sampling (specified with \c
    expansion_samples).  In this case, the expansion order \e p cannot
    be inferred from the numerical integration specification and it is
@@ -5064,7 +5075,15 @@ options are provided:
    easily satisfy this requirement (i.e., to avoid requiring the user to 
    calculate \e N from \e n and \e p), \c collocation_ratio allows for 
    specification of a constant oversampling factor applied to \e N (e.g., 
-   \c collocation_ratio = \c 2. for factor of 2 oversampling).
+   \c collocation_ratio = \c 2. for factor of 2 oversampling).  The
+   \c use_derivatives flag informs the regression approach to include
+   derivative matching equations (limited to gradients at present) in the 
+   least squares solutions, enabling the use of fewer collocation points
+   for a given expansion order and dimension (number of points required 
+   becomes \f$\frac{rN}{n+1}\f$, where \f$r\f$ is the \c collocation_ratio).  
+   When admissible, a constrained least squares approach is employed in 
+   which response values are first reproduced exactly and error in
+   reproducing response derivatives is minimized.
 -# coefficient import from a file (specified with \c expansion_import_file). 
    A total-order expansion is assumed and must be specified using
    either \c expansion_order or \c expansion_terms.
@@ -5095,25 +5114,35 @@ are evaluated, only the aleatory random variable domain is integrated,
 leaving behind a polynomial relationship between the statistics and
 the remaining design/state/epistemic variables.
 
-The \c refinement keyword can be specified as either \c uniform or \c
-adaptive in order to select optional polynomial order refinement
-("p-refinement").  This is currently supported for the tensor-product
-quadrature and Smolyak sparse grid options, and makes use of the \c
-max_iterations and \c convergence_tolerance method independent
-controls (see Table \ref T5d1 "5.1").  The former control limits the
-number of refinement iterations, and the latter control terminates
-refinement when the two-norm of the change in the response covariance
-matrix falls below the tolerance.  In the case of either \c uniform or
-\c adaptive \c refinement, the \c quadrature_order or \c
-sparse_grid_level are ramped by one on each refinement iteration until
-either of the convergence controls is satisfied.  For the case of \c
-adaptive \c refinement, the dimension preference vector (updating \c
-dimension_preference for sparse grids and resulting in anisotropic \c
-quadrature_order for tensor grids) is also updated on every iteration
-using analytic Sobol' indices formed from variance-based decomposition
-of the polynomial chaos expansions, leading to anisotropic
-integrations/expansions with differing refinement levels for different
-random dimensions.
+The \c p_refinement keyword specifies the usage of automated
+polynomial order refinement ("p-refinement"), which can be either \c
+uniform or \c adaptive.  This is currently supported for the
+tensor-product quadrature and Smolyak sparse grid options, and makes
+use of the \c max_iterations and \c convergence_tolerance method
+independent controls (see Table \ref T5d1 "5.1").  The former control
+limits the number of refinement iterations, and the latter control
+terminates refinement when the two-norm of the change in the response
+covariance matrix falls below the tolerance.  The \c adaptive case can
+be further specified to utilize \c sobol, \c decay, or \c generalized
+refinement controls.  The former two adaptive cases employ anisotropic
+tensor/sparse grids in which the anisotropic dimension preference
+(leading to anisotropic integrations/expansions with differing
+refinement levels for different random dimensions) is determined from
+either total Sobol' indices from variance-based decomposition (\c
+sobol case: high indices result in high dimension preference) or from
+spectral coefficient decay rates from Richardson extrapolation (\c
+decay case: low decay rates result in high dimension preference).  In
+these two cases as well as the \c uniform refinement case, the \c
+quadrature_order or \c sparse_grid_level are ramped by one on each
+refinement iteration until either of the two convergence controls is
+satisfied.  Finally, the \c generalized \c adaptive case is the
+default adaptive approach; it refers to the generalized sparse grid
+algorithm, in which candidate index sets are evaluated for their impact
+on the statistical quantities of interest, the most influential sets
+are selected and used to generate additional candidates, and the index
+set frontier of a sparse grid is evolved in an unstructured and
+goal-oriented manner (refer to Theory Manual PCE descriptions for 
+additional specifics).
 
 Additional specifications include the level mappings described in \ref
 MethodNonD and the \c seed, \c fixed_seed, \c samples, and \c
@@ -5956,33 +5985,31 @@ the formulation of a discrepancy term.  For more information
 about GPMSA, see the GPMSA Command manual and Examples manual 
 in the DAKOTA/packages/gpmsa directory.
 
-\ref T5d39 "Table 5.39" provides the 
-specification for the \c bayes_calibration method (note this 
-can also be specified as \c bayes_calibration).
-The keyword \c gpmsa specifies the type of Bayesian calibration 
-method.  There are three data files which are required: 
-\c x_obs_data_file, \c y_obs_data_file, and \c y_std_data_file. 
-The \c x_obs_data_file has a listing of input points at which 
-the experimental data is taken, one per line.  Note that there 
-can be multiple X inputs, but the X inputs specified in this data 
-file are assumed to be "configuration" parameters.  They are not 
-the same as uncertain parameters of the simulation.  The 
-\c y_obs_data_file has the responses corresponding to the 
-input points specified in the \c x_obs_data_file, and the 
-\c y_std_data_file has the experimental errors for each of the 
-data points.  Note that in some cases, the experimental error
-will be the same for all of the data, and in other cases, it may 
-not be. Finally, there are three specification items relating 
-to the initial LHS sampling which is performed on the simulation. 
-\c rng specifies which random number is used, \c seed specifies 
-the random seed, and \c samples specifies the number of samples 
-at which the simulation will be run.  The number of samples should be 
-large enough to generate a reasonable Gaussian process estimate 
-for the calibration process.  At a minimum, we recommend 
-the number of samples be at least the number of input variables squared, 
-but we are not providing a default setting at this time. 
-After running GPMSA, the posterior samples are written to 
-a file called gpmsa.pvals.out in the directory in which DAKOTA was run.     
+\ref T5d39 "Table 5.39" provides the specification for the \c
+bayes_calibration method (note this can also be specified as \c
+bayes_calibration).  The keyword \c gpmsa specifies the type of
+Bayesian calibration method.  There are three data files which are
+required: \c x_obs_data_file, \c y_obs_data_file, and \c
+y_std_data_file.  The \c x_obs_data_file has a listing of input points
+at which the experimental data is taken, one per line.  Note that
+there can be multiple X inputs, but the X inputs specified in this
+data file are assumed to be "configuration" parameters.  They are not
+the same as uncertain parameters of the simulation.  The \c
+y_obs_data_file has the responses corresponding to the input points
+specified in the \c x_obs_data_file, and the \c y_std_data_file has
+the experimental errors for each of the data points.  Note that in
+some cases, the experimental error will be the same for all of the
+data, and in other cases, it may not be. Finally, there are three
+specification items relating to the initial LHS sampling which is
+performed on the simulation.  \c rng specifies which random number
+generator is used, \c seed specifies the random seed, and \c samples
+specifies the number of samples at which the simulation will be run.
+The number of samples should be large enough to generate a reasonable
+Gaussian process estimate for the calibration process.  At a minimum,
+we recommend the number of samples be at least the number of input
+variables squared, but we are not providing a default setting at this
+time.  After running GPMSA, the posterior samples are written to a
+file called gpmsa.pvals.out in the directory in which DAKOTA was run.
 
 \anchor T5d39
 <table>
