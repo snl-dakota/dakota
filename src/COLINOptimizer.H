@@ -101,7 +101,8 @@ protected:
   //
 
   /// Get the set of best points from the solver
-  void get_final_points();
+  //  void get_final_points();
+  void post_run(std::ostream& s);
 
   /// resize bestVariablesArray
   void resize_final_points(size_t newsize);

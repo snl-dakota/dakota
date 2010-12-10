@@ -70,12 +70,40 @@ void COLINApplication::set_problem(Model& model) {
     _real_upper_bounds = model.continuous_upper_bounds();
   }
 
+  const IntSetArray& ddsiv_values
+    = iteratedModel.discrete_design_set_int_values();
+  const RealSetArray& ddsrv_values
+    = iteratedModel.discrete_design_set_real_values();
+  size_t i, num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
+    num_ddrv  = model.div() - num_ddsiv;
+
   // discrete vars
-  _num_int_vars = model.div();
+  _num_int_vars = model.div()+model.drv();
   if (num_int_vars > 0)
   {
-    _int_lower_bounds = model.discrete_int_lower_bounds();
-    _int_upper_bounds = model.discrete_int_upper_bounds();
+    const IntVector& lower_bnds = iteratedModel.discrete_int_lower_bounds();
+    const IntVector& upper_bnds = iteratedModel.discrete_int_upper_bounds();
+    IntVector lower(model.div()+model.drv());
+    IntVector upper(model.div()+model.drv());
+
+    for (i=0; i<num_ddrv; ++i) {
+      lower[i] = lower_bnds[i];
+      upper[i] = upper_bnds[i];
+    }
+    // integer set: map to integer index sequence [0,num_items-1]
+    size_t offset = num_ddrv;
+    for (i=0; i<num_ddsiv; ++i) {
+      lower[i+offset] = 0;
+      upper[i+offset] = ddsiv_values[i].size() - 1;
+    }
+    // real set: map to integer index sequence [0,num_items-1]
+    offset += num_ddsiv;
+    for (i=0; i<num_ddsrv; ++i) {
+      lower[i+offset] = 0;
+      upper[i+offset] = ddsrv_values[i].size() - 1;
+    }
+    _int_lower_bounds = lower;
+    _int_upper_bounds = upper;
   }
 
   _num_nonlinear_constraints = model.num_nonlinear_ineq_constraints() +

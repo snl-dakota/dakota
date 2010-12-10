@@ -236,9 +236,34 @@ void COLINOptimizer::find_optimum()
     // BMA TODO: handle multiple intial  points, check memory mngmnt/efficiency
     // ask for MixedIntVars set functions; consider convenience function
     const RealVector& cv_init = iteratedModel.continuous_variables();
-    const IntVector&  dv_init = iteratedModel.discrete_int_variables();
-    MixedIntVars miv_init(0, dv_init.length(), cv_init.length());
+    const IntVector&  div_init = iteratedModel.discrete_int_variables();
+    const RealVector& drv_init = iteratedModel.discrete_real_variables();
+    IntVector dv_init(numDiscreteIntVars+numDiscreteRealVars);
+    const IntSetArray& ddsiv_values
+      = iteratedModel.discrete_design_set_int_values();
+    const RealSetArray& ddsrv_values
+      = iteratedModel.discrete_design_set_real_values();
+    size_t  num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
+      num_ddrv  = numDiscreteIntVars - num_ddsiv, offset;
+
+    MixedIntVars miv_init(0, numDiscreteIntVars+numDiscreteRealVars, cv_init.length());
     TypeManager()->lexical_cast(cv_init, miv_init.Real());
+
+    for (size_t i=0; i<num_ddrv; i++)
+      dv_init[i] = div_init[i];
+
+    offset = num_ddrv;
+    for (size_t i=0; i<num_ddsiv; i++) {
+      size_t index = set_value_to_index(div_init[i+offset], ddsiv_values[i]);
+      dv_init[i+offset] = (int)index;
+    }
+
+    offset += num_ddsiv;
+    for (size_t i=0; i<num_ddsrv; i++) {
+      size_t index = set_value_to_index(drv_init[i], ddsrv_values[i]);
+      dv_init[i+offset] = (int)index;
+    }
+
     TypeManager()->lexical_cast(dv_init, miv_init.Integer());
 
     PointSet ps;  // allocates ResponseCache_local
@@ -267,7 +292,7 @@ void COLINOptimizer::find_optimum()
     // manage ourselves.  OLD COMMENT: COLIN methods do a
     // func->set_vars(best_pt) at the end of minimize, so just
     // retrieve this data and copy it into bestVariables.
-    get_final_points();
+    //    get_final_points();
 
   }
   catch(const runtime_error &exception) {
@@ -655,7 +680,7 @@ void COLINOptimizer::set_solver_parameters()
       else {
 	string option(thisOption.substr(0, equalPos));
 	string value(thisOption.substr(equalPos+1, thisOption.size()-1));
-        //colinSolver->property(option) = colin::parse_data(value);
+        colinSolver->property(option) = colin::parse_data(value);
       }
     }
   }
@@ -721,22 +746,43 @@ void COLINOptimizer::set_solver_parameters()
   }
 }
 
-void COLINOptimizer::get_final_points()
+void COLINOptimizer::post_run(std::ostream& s)
 {
   // retreive the COLIN points (local cache) in the right Application context
   list<Any> points;
   PointSet ps = colinSolver->get_final_points();
   ps.get_points(colinProblem.second, points);
 
-  // prepare to receive them on the DAKOTA side
-  resize_final_points(points.size());
-  resize_final_responses(points.size());
-
   // crude tracking of best function value and its index for now
-  Real min_fn = DBL_MAX;
-  size_t best_idx = 0;
+
   list<Any>::iterator pt_it = points.begin();
   list<Any>::iterator pt_end = points.end();
+  std::multimap<RealRealPair, Variables> variableSortMap;
+  std::multimap<RealRealPair, Response> responseSortMap;
+
+  RealVector cdv;
+  IntVector ddv;
+
+  extern PRPCache data_pairs; // global container
+  ActiveSet search_set(numFunctions, numContinuousVars); // asv = 1's
+  Variables tmpVariableHolder = iteratedModel.current_variables();
+  Response tmpResponseHolder = iteratedModel.current_response();
+
+  size_t num_nln_ineq = iteratedModel.num_nonlinear_ineq_constraints(),
+         num_nln_eq   = iteratedModel.num_nonlinear_eq_constraints();
+  const RealVector& nln_ineq_lwr_bnds
+    = iteratedModel.nonlinear_ineq_constraint_lower_bounds();
+  const RealVector& nln_ineq_upr_bnds
+    = iteratedModel.nonlinear_ineq_constraint_upper_bounds();
+  const RealVector& nln_eq_targets
+    = iteratedModel.nonlinear_eq_constraint_targets();
+
+  const IntSetArray& ddsiv_values
+    = iteratedModel.discrete_design_set_int_values();
+  const RealSetArray& ddsrv_values
+    = iteratedModel.discrete_design_set_real_values();
+  size_t  num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
+    num_ddrv  = numDiscreteIntVars - num_ddsiv, offset;
 
   for(size_t i=0; pt_it!=pt_end; i++, pt_it++) {
 
@@ -744,41 +790,84 @@ void COLINOptimizer::get_final_points()
     TypeManager()->lexical_cast(*pt_it, tmp, typeid(utilib::MixedIntVars));
     utilib::MixedIntVars& miv = tmp.expose<utilib::MixedIntVars>();
 
-    RealVector cdv;
     TypeManager()->lexical_cast(miv.Real(), cdv);
-    bestVariablesArray[i].continuous_variables(cdv);
-    IntVector ddv;
-    TypeManager()->lexical_cast(miv.Integer(), ddv);
-    bestVariablesArray[i].discrete_int_variables(ddv);
+    tmpVariableHolder.continuous_variables(cdv);
 
+    TypeManager()->lexical_cast(miv.Integer(), ddv);
+
+    for (size_t j=0; j<num_ddrv; j++)
+      tmpVariableHolder.discrete_int_variable(ddv[j], j);
+
+    offset = num_ddrv;
+    for (size_t j=0; j<num_ddsiv; j++) {
+      int colin_index = ddv[j+offset];
+      int dakota_value = set_index_to_value(colin_index, ddsiv_values[j]);
+      tmpVariableHolder.discrete_int_variable(dakota_value, j+offset);
+    }
+
+    offset += num_ddsiv;
+    for (size_t j=0; j<num_ddsrv; j++) {
+      int colin_index = ddv[j+offset];
+      double dakota_value = set_index_to_value(colin_index, ddsrv_values[j]);
+      tmpVariableHolder.discrete_real_variable(dakota_value, j+offset);
+    }
+
+    // transform variables back to user/native for lookup
+    // Default unscaling does not apply in this case, so can't use
+    // implementation in LeastSq::post_run
+    if (varsScaleFlag)
+      tmpVariableHolder.continuous_variables(
+			modify_s2n(tmpVariableHolder.continuous_variables(), 
+				   cvScaleTypes, cvScaleMultipliers, cvScaleOffsets));
 
     // get the optimal response and constraint values (presumably from
     // the cache)
     // there are three possible courses here: DAKOTA cache, DAKOTA model eval, COLIN model eval, all of which ultimately results in a cache lookup, but only the first won't increment eval duplicates.
 
-    // BMA TODO: use DAKOTA PRP cache; utlimately want to store gradients in
-    // BestReponses too; what if there was a recast?!?
-    //    RealVector fn_vals(numFunctions);
-    ShortArray search_asv(numFunctions, 1);
-    for (size_t j=numObjectiveFns; j<numFunctions; j++)
-      search_asv[j] = 0; // assuming we don't need constraints for now
-    ActiveSet search_set;
-    // BMA TODO: might not have evaluated both functions and
-    // constraints at this point
-
-    search_set.request_vector(search_asv);
-    extern PRPCache data_pairs; // global container
-    Response desired_resp;
     if (lookup_by_val(data_pairs, iteratedModel.interface_id(), 
-		      bestVariablesArray[i], activeSet, desired_resp)) {
-      const RealVector& fn_vals = desired_resp.function_values();
-      bestResponseArray[i].function_values(fn_vals);
+		      tmpVariableHolder, search_set, tmpResponseHolder)) {
+      const RealVector& fn_vals = tmpResponseHolder.function_values();
 
-      // save best response in single objective case
-      if (!multiObjFlag && fn_vals[0] < min_fn) {
-	best_idx = i;
-	min_fn = fn_vals[0];
+      double constraintViolation = 0.0;
+      for(size_t j=0; j<num_nln_ineq; j++) {
+	if (fn_vals[j+numObjectiveFns] > nln_ineq_upr_bnds[j])
+	  constraintViolation += std::pow(fn_vals[j+numObjectiveFns]-nln_ineq_upr_bnds[j],2);
+	else if (fn_vals[j+numObjectiveFns] < nln_ineq_lwr_bnds[j])
+	  constraintViolation += std::pow(nln_ineq_lwr_bnds[j]-fn_vals[j+numObjectiveFns],2);
+      }
+      for (size_t j=0; j<num_nln_eq; j++) {
+	if (std::fabs(fn_vals[j+numObjectiveFns+num_nln_ineq] - nln_eq_targets[j]) > 0.)
+	  constraintViolation += std::pow(fn_vals[j+numObjectiveFns+num_nln_ineq]-nln_eq_targets[j], 2);
+      }
 
+      double utopiaDistance = 0.0;
+      if (constraintViolation > 0.0)
+	utopiaDistance = DBL_MAX;
+      else {
+	for (size_t j=0; j<numObjectiveFns; j++)
+	  utopiaDistance += std::pow(fn_vals[j],2);
+      }
+
+      RealRealPair metrics(constraintViolation, utopiaDistance);
+
+      if (variableSortMap.size() < numFinalSolutions) {
+	variableSortMap.insert(std::make_pair(metrics, tmpVariableHolder.copy()));
+	responseSortMap.insert(std::make_pair(metrics, tmpResponseHolder.copy()));
+      }
+      else {
+	std::multimap<RealRealPair, Variables>::iterator var_worst_it = 
+	  --variableSortMap.end();
+	std::multimap<RealRealPair, Response>::iterator resp_worst_it = 
+	  --responseSortMap.end();
+
+ 	if(metrics < var_worst_it->first) {
+	  variableSortMap.erase(var_worst_it);
+	  variableSortMap.insert(std::make_pair(metrics, tmpVariableHolder.copy()));
+	}
+	if(metrics < resp_worst_it->first) {
+	  responseSortMap.erase(resp_worst_it);
+	  responseSortMap.insert(std::make_pair(metrics, tmpResponseHolder.copy()));
+	}
       }
     }
     else {
@@ -786,19 +875,26 @@ void COLINOptimizer::get_final_points()
 	   <<endl;
       //abort_handler(-1);
     }
-
-    //    for(size_t j=0; j<numNonlinearConstraints; j++)
-    //  fn_vals[j+numObjectiveFns] = fc[j];
-
-
   }
-  
+
+  resize_final_points(numFinalSolutions);
+  resize_final_responses(numFinalSolutions);
+
   // this stinks, but COLIN doesn't return a best point anymore
   if (!multiObjFlag) {
-    //    bestVariables = bestVariablesArray[best_idx].copy();
-    //    bestResponse = bestResponseArray[best_idx].copy();
+    std::multimap<RealRealPair, Variables>::const_iterator var_best_it = 
+      variableSortMap.begin(); 
+    const std::multimap<RealRealPair, Variables>::const_iterator var_best_end = 
+      variableSortMap.end(); 
+    std::multimap<RealRealPair, Response>::const_iterator resp_best_it = 
+      responseSortMap.begin(); 
+    ResponseArray::size_type index = 0;
+    for( ; var_best_it != var_best_end; ++var_best_it, ++resp_best_it, ++index) {
+      bestVariablesArray[index] = var_best_it->second.copy();
+      bestResponseArray[index] = resp_best_it->second.copy();
+    }
   }
-
+  Iterator::post_run(s);
 }
 
 
