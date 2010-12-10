@@ -58,6 +58,7 @@ method,
 #       moga     						#12,#13
 #	output silent						#12,#13
 #       seed = 10983                              		#12,#13
+#       final_solutions = 2					#12,#13
 #	max_function_evaluations = 2000				#12,#13
 #	initialization_type unique_random			#12,#13
 #	crossover_type						#12,#13

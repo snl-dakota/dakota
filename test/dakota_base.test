@@ -12770,28 +12770,48 @@ Test Number 11 succeeded
 <<<<< Best data captured at function evaluation 336
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Best parameters          =
+<<<<< Best parameters          (set 1) =
                      -2.8103050000e+00 x1
                       1.3631520000e+01 x2
-<<<<< Best objective functions =
+<<<<< Best objective functions (set 1) =
                       1.8469433170e+02
                      -1.8484804251e+02
-<<<<< Best constraint values   =
+<<<<< Best constraint values   (set 1) =
                      -3.1283848297e+01
                      -3.3704865000e+01
 <<<<< Best data captured at function evaluation 1218
+<<<<< Best parameters          (set 2) =
+                     -2.9125900000e+00 x1
+                      1.3581360000e+01 x2
+<<<<< Best objective functions (set 2) =
+                      1.8442415996e+02
+                     -1.8450392945e+02
+<<<<< Best constraint values   (set 2) =
+                     -3.2063480042e+01
+                     -3.3656670000e+01
+<<<<< Best data captured at function evaluation 1209
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
-<<<<< Best parameters          =
+<<<<< Best parameters          (set 1) =
                      -2.4208200000e+00 x1
                       1.2843715000e+01 x2
-<<<<< Best objective functions =
+<<<<< Best objective functions (set 1) =
                       1.6181723447e+02
                      -1.6206096500e+02
-<<<<< Best constraint values   =
+<<<<< Best constraint values   (set 1) =
                      -5.4178615526e+01
                      -3.0951965000e+01
 <<<<< Best data captured at function evaluation 792
+<<<<< Best parameters          (set 2) =
+                     -2.4209700000e+00 x1
+                      1.2827331000e+01 x2
+<<<<< Best objective functions (set 2) =
+                      1.6143073432e+02
+                     -1.6167448858e+02
+<<<<< Best constraint values   (set 2) =
+                     -5.4598483676e+01
+                     -3.0902963000e+01
+<<<<< Best data captured at function evaluation 1305
 Test Number 14 succeeded
 <<<<< Function evaluation summary: 7 total (7 new, 0 duplicate)
 <<<<< Best parameters          =
