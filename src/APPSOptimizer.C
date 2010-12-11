@@ -276,8 +276,14 @@ void APPSOptimizer::set_apps_parameters()
 
     const Real& solution_target
       = probDescDB.get_real("method.solution_target");
-    if (solution_target > -DBL_MAX)
+    if (solution_target > -DBL_MAX) {
       problemParams->setParameter("Objective Target", solution_target);
+      Cout << "\nWarning: There is a rarely-occurring known issue with using\n"
+	   << "solution_target as a stopping criteria for APPS.  In some\n"
+	   << "very unusual circumstances, it may seg fault during cleanup\n"
+	   << "at the end.  This issue is being corrected.  You should still\n"
+	   << "be able to extract your solution from the output.\n\n";
+    }
 
     // For nonlinearly constrained problems, set penalty-related parameters.
 

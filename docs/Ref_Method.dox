@@ -1379,7 +1379,11 @@ after unsuccesful iterates, must be strictly between 0 and 1
 When the solution to the optimization problem is known, the user may
 specify a value for \c solution_target as a termination criteria.
 APPS will terminate when the function value falls below \c
-solution_target.
+solution_target.  We note that there is a rarely-occurring known issue
+with using \c solution_target as a stopping criteria.  In some very
+unusual circumstances, it may seg fault during cleanup at the end.
+This issue is being corrected.  You should still be able to extract
+your solution from the output.
 
 Currently, APPS only supports coordinate bases with a total of \e 2n
 function evaluations in the pattern, and these patterns may only
