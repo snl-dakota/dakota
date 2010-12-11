@@ -23,6 +23,13 @@ if(HAVE_SYSTEM)
   add_definitions("-DHAVE_SYSTEM")
 endif(HAVE_SYSTEM)
 
+check_function_exists(fork HAVE_FORK)
+if(HAVE_FORK)
+  set(HAVE_WORKING_FORK ${HAVE_FORK})
+  add_definitions("-DHAVE_WORKING_FORK")
+endif(HAVE_FORK)
+
+
 set(TPL_LIBS teuchos nidr)
 
 if(HAVE_MPI)
@@ -185,7 +192,19 @@ if(HAVE_HOPSPACK)
                       ${HOPSPACK_SOURCE_DIR}/src/src-main)
   list(APPEND iterator_src APPSOptimizer.C APPSEvalMgr.C)
   #link_directories(${Dakota_BINARY_DIR}/packages/hopspack)
+
+  # WJB: request and additional library target be added to HOPSPACK
+  #add_library(hopspack SHARED
+  #            ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
+  #add_library(hopspack-static STATIC
+  #            ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
+
+  ### Ensure both the shared and static libraries have the same root name
+  #set_target_properties(hopspack-static PROPERTIES OUTPUT_NAME "hopspack")
+  #set_target_properties(hopspack-static PROPERTIES PREFIX "lib")
+
   list(APPEND TPL_LIBS executor evaluator framework citizens shared)
+  #list(APPEND TPL_LIBS hopspack executor evaluator framework citizens shared)
 endif(HAVE_HOPSPACK)
 
 if(HAVE_JEGA)
@@ -307,7 +326,12 @@ file( APPEND ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
 
 
 ## DAKOTA executables.
-add_executable(dakota main.C)
+if(HAVE_HOPSPACK)
+  add_executable(dakota main.C
+                 ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
+else()
+  add_executable(dakota main.C)
+endif(HAVE_HOPSPACK)
 #target_link_libraries(dakota dakota_src ${TPL_LIBS} ${CURL_LIBRARIES} ${LAPACK_LIBS} ${BLAS_LIBS} ${FLIBS} ${FCLIBS})
 
 ## WJB: request macro from Kitware? FindLibDL.cmake (e.g. digidoc++)

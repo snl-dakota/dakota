@@ -77,9 +77,6 @@ set( CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH}
 )
 
-# WJB: Request a probe from Kitware to manage the OS/fork setting
-set(HAVE_WORKING_FORK 1)
-
 
 option(HAVE_PECOS "Build the Pecos package." ON)
 # WJB - ToDo with Zack - ASAP: option(HAVE_ACRO "Build the ACRO package." ON)
@@ -137,8 +134,6 @@ else()
   message( "Using system trilinos in ${Trilinos_DIR}" )
 endif()
 
-# WJB - ToDo: refactor directory hierarchy (dependency-oriented rather than
-# logically-oriented) so that DAKOTA and Surfpack can "share" CONMIN
 if(HAVE_CONMIN)
 
   if ( NOT CONMIN_DIR )
@@ -146,16 +141,12 @@ if(HAVE_CONMIN)
     message( "Setting CONMIN_DIR to ${CONMIN_DIR}" )
     add_subdirectory(packages/CONMIN)
 
-#    SET(SUBLIBS ${SUBLIBS} conmin)
-
   else()
     message( "in ${CMAKE_CURRENT_BINARY_DIR} CONMIN_DIR already set to ${CONMIN_DIR}" )
   endif()
+
   find_package( CONMIN NO_MODULE REQUIRED )
-
 endif(HAVE_CONMIN)
-
-
 
 
 #Keep track of what libraries should be included in libdakota
@@ -203,13 +194,4 @@ ADD_CUSTOM_COMMAND(
 
 #clean up binary dir
 #file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/docs)
-
-
-# WJB - ToDo: delete here to bottom once I am done debugging the build settings
-FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/AllVariables.txt "")
-GET_CMAKE_PROPERTY(res VARIABLES)
-FOREACH(var ${res})
-  FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/AllVariables.txt
-             "${var} \"${${var}}\"\n")
-ENDFOREACH(var ${res})
 
