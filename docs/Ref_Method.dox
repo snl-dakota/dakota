@@ -5977,10 +5977,13 @@ iterative procedures.  Three algorithm options are currently provided:
    of the response discretization errors (computed from extrapolation)
    must be less than the convergence tolerance.
 
-In each of these case, a uniform refinement rate (specified by \c
+In each of these case, a uniform refinement rate \f$r\f$ (specified by \c
 refinement_rate) is applied to each of the refinement factors provided
-in the continuous state variable specification.  \ref T5d39 "Table 5.39" 
-provides the specification details for the \c richardson_extrap method.
+in the continuous state variable specification, and convergence order 
+for a response quantity of interest (QOI) is estimated from
+\f[p = ln(\frac{QOI_3 - QOI_2}{QOI_2 - QOI_1})/ln(r)\f]
+\ref T5d39 "Table 5.39" provides the specification details for the \c
+richardson_extrap method.
 
 \anchor T5d39
 <table>
