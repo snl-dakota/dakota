@@ -5085,62 +5085,91 @@ may begin to suffer from ill-conditioning and sparse grids are
 generally recommended.  Random sampling for coefficient estimation is
 generally not recommended, although it does hold the advantage that
 the simulation budget is more flexible than that required by the other
-approaches.  For incremental studies, approaches 3 and 4 support reuse
+approaches.  For incremental studies, approaches 4 and 5 support reuse
 of previous samples through the \c incremental_lhs (refer to \ref
 MethodNonDMC for description of incremental LHS) and \c reuse_samples
 (refer to \ref ModelSurrG for description of the "all" option of
-sample reuse) specifications, respectively.  As for \ref MethodNonDMC
-and \ref MethodNonDGlobalRel, the \c all_variables flag can be used to
-form expansions over all continuous variables, rather than just the
-default aleatory uncertain variables.  For continuous design,
-continuous state, and epistemic interval variables included in \c
-all_variables mode, Legendre chaos bases are used to model the bounded
-intervals for these variables.  However, these variables are not
-assumed to have any particular probability distribution, only that
-they are independent variables.  Moreover, when probability integrals
-are evaluated, only the aleatory random variable domain is integrated,
-leaving behind a polynomial relationship between the statistics and
-the remaining design/state/epistemic variables.
+sample reuse) specifications, respectively.  The \c sample_refinement
+specification is similar to that of \ref MethodNonDLocalRel, with the
+difference that the number of refinement samples is not under the
+user's control.  This option allows for refinement of probability and
+generalized reliability results using importance sampling.  As for
+\ref MethodNonDMC and \ref MethodNonDGlobalRel, the \c all_variables
+flag can be used to form expansions over all continuous variables,
+rather than just the default aleatory uncertain variables.  For
+continuous design, continuous state, and epistemic interval variables
+included in \c all_variables mode, Legendre chaos bases are used to
+model the bounded intervals for these variables.  However, these
+variables are not assumed to have any particular probability
+distribution, only that they are independent variables.  Moreover,
+when probability integrals are evaluated, only the aleatory random
+variable domain is integrated, leaving behind a polynomial
+relationship between the statistics and the remaining
+design/state/epistemic variables.
+
+In the quadrature and sparse grid cases, growth rates for nested and
+non-nested rules are synchronized for consistency.  For a non-nested
+Gauss rule used within a sparse grid, linear one-dimensional growth
+rules of \f$m=2l+1\f$ are used to enforce odd quadrature orders, where
+\f$l\f$ is the grid level and \f$m\f$ is the number of points in the
+rule.  The precision of this Gauss rule is then \f$i=2m-1=4l+1\f$.
+For nested rules, order growth with level is typically exponential;
+however, we restrict the number of points to be the lowest order rule
+that is available that meets the one-dimensional precision requirement
+implied by either a level \f$l\f$ for a sparse grid (\f$i=4l+1\f$) or
+an order \f$m\f$ for a tensor grid (\f$i=2m-1\f$).  The sole exception
+to this logic is the \c p_refinement \c adaptive \c generalized case
+described below, since the ability to evolve the index sets of a
+sparse grid in an unstructured manner removes the need to restrict the
+exponential growth of nested rules.
 
 The \c p_refinement keyword specifies the usage of automated
-polynomial order refinement ("p-refinement"), which can be either \c
-uniform or \c adaptive.  This is currently supported for the
-tensor-product quadrature and Smolyak sparse grid options, and makes
-use of the \c max_iterations and \c convergence_tolerance method
-independent controls (see Table \ref T5d1 "5.1").  The former control
-limits the number of refinement iterations, and the latter control
-terminates refinement when the two-norm of the change in the response
-covariance matrix falls below the tolerance.  The \c adaptive case can
-be further specified to utilize \c sobol, \c decay, or \c generalized
-refinement controls.  The former two adaptive cases employ anisotropic
-tensor/sparse grids in which the anisotropic dimension preference
-(leading to anisotropic integrations/expansions with differing
-refinement levels for different random dimensions) is determined from
-either total Sobol' indices from variance-based decomposition (\c
-sobol case: high indices result in high dimension preference) or from
-spectral coefficient decay rates from Richardson extrapolation (\c
-decay case: low decay rates result in high dimension preference).  In
-these two cases as well as the \c uniform refinement case, the \c
-quadrature_order or \c sparse_grid_level are ramped by one on each
-refinement iteration until either of the two convergence controls is
-satisfied.  Finally, the \c generalized \c adaptive case is the
-default adaptive approach; it refers to the generalized sparse grid
-algorithm, in which candidate index sets are evaluated for their impact
-on the statistical quantities of interest, the most influential sets
-are selected and used to generate additional candidates, and the index
-set frontier of a sparse grid is evolved in an unstructured and
-goal-oriented manner (refer to Theory Manual PCE descriptions for 
-additional specifics).
+polynomial order refinement, which can be either \c uniform or \c
+adaptive.  This is currently supported for the tensor-product
+quadrature and Smolyak sparse grid options, and makes use of the \c
+max_iterations and \c convergence_tolerance method independent
+controls (see Table \ref T5d1 "5.1").  The former control limits the
+number of refinement iterations, and the latter control terminates
+refinement when the two-norm of the change in the response covariance
+matrix (or, in goal-oriented approaches, the two-norm of change in the
+statistical quantities of interest (QOI)) falls below the tolerance.
+The \c adaptive case can be further specified to utilize \c sobol, \c
+decay, or \c generalized refinement controls.  The former two adaptive
+cases employ anisotropic tensor/sparse grids in which the anisotropic
+dimension preference (leading to anisotropic integrations/expansions
+with differing refinement levels for different random dimensions) is
+determined from either total Sobol' indices from variance-based
+decomposition (\c sobol case: high indices result in high dimension
+preference) or from spectral coefficient decay rates from Richardson
+extrapolation (\c decay case: low decay rates result in high dimension
+preference).  In these two cases as well as the \c uniform refinement
+case, the \c quadrature_order or \c sparse_grid_level are ramped by
+one on each refinement iteration until either of the two convergence
+controls is satisfied.  Finally, the \c generalized \c adaptive case
+is the default adaptive approach; it refers to the generalized sparse
+grid algorithm, in which candidate index sets are evaluated for their
+impact on the statistical QOI, the most influential sets are selected
+and used to generate additional candidates, and the index set frontier
+of a sparse grid is evolved in an unstructured and goal-oriented
+manner (refer to Theory Manual PCE descriptions for additional
+specifics).
 
 Additional specifications include the level mappings described in \ref
-MethodNonD and the \c seed, \c fixed_seed, \c samples, and \c
-sample_type specifications described in \ref MethodNonDMC.  These
-latter sampling specifications refer to sampling on the PCE
+MethodNonD and the \c sample_type, \c samples, \c seed, \c fixed_seed,
+and \c rng specifications described in \ref MethodNonDMC, where the \c
+sample_type options are restricted to \c random and \c lhs.  Each of
+these sampling specifications refer to sampling on the PCE
 approximation for the purposes of generating approximate statistics,
 which should be distinguished from simulation sampling for generating
-the chaos coefficients as described in the previous paragraph.  \ref
-T5d33 "Table 5.33" provides details of the polynomial chaos expansion
-specifications beyond those of \ref T5d28 "Table 5.28".
+the chaos coefficients as described in options 4 and 5 above.  The \c
+variance_based_decomp and \c drop_tolerance are also the same as those
+described in \ref MethodNonDMC, but since PCE outputs main,
+interaction, and total effects by default, the \c univariate_effects
+option has been added to allow suppression of the interaction effects
+since the output volume of these results can be prohibitive for high
+dimensional problems.  \ref T5d33 "Table 5.33" provides details of the
+polynomial chaos expansion specifications beyond those of 
+\ref T5d28 "Table 5.28".
 
 \anchor T5d33
 <table>
@@ -5356,73 +5385,75 @@ two options are provided:
 
 -# interpolation on a tensor-product of Gaussian quadrature points
    (specified with \c quadrature_order, where the order per variable
-   may be anisotropic).  As for PCE, Gauss-Hermite, Gauss-Legendre, 
-   Gauss-Jacobi, Gauss-Laguerre, generalized Gauss-Laguerre, and 
-   numerically-generated Gauss rules are supported.
+   may be anisotropic).  As for PCE, non-nested Gauss rules are
+   employed by default, although the presence of \c p_refinement or
+   an explicit \c nested override will result in the use of nested
+   rules for normal or uniform variables after any variable 
+   transformations have been applied.
+
 -# interpolation on a Smolyak sparse grid (specified with \c
-   sparse_grid_level and, optionally, \c dimension_preference) 
-   defined from fully-nested Clenshaw-Curtis and weakly-/non-nested
-   Gaussian rules.  Both the rule type and dimension emphasis may be 
-   anisotropic.  Unlike PCE, expansion synchronization is not an issue 
-   and both fully-nested Clenshaw-Curtis rules and anisotropic sparse 
-   grids are readily employed without concern over irregular sets of 
-   resolvable monomials.  For self-consistency in growth rules, however, 
-   the grids are either fully nested using exponential growth rules or 
-   weakly-/non-nested using linear growth rules -- these two approaches 
-   are not mixed.  
+   sparse_grid_level and, optionally, \c dimension_preference) defined
+   from Gaussian rules.  With the specification of \c
+   dimension_preference, the sparse grid can be rendered anisotropic.
+   As for sparse PCE, nested rules are employed unless specifically
+   overriden with the \c non_nested option.
 
 As for \ref MethodNonDPCE, the orthogonal polynomials used in defining
 the Gauss points that make up the interpolation grid are governed by
 one of three options: Wiener, Askey, or Extended.  The Wiener option
-uses interpolation points from Gauss-Hermite quadrature for all random
-variables and employs the same nonlinear variable transformation as
-the local and global reliability methods (and therefore has the same
-variable support).  The Askey option, however, employs interpolation
-points from Gauss-Hermite, Gauss-Legendre, Gauss-Laguerre,
-Gauss-Jacobi, and generalized Gauss-Laguerre quadrature.  The Extended
-option avoids the use of any nonlinear variable transformations by
-augmenting the Askey approach with Gauss points from
-numerically-generated orthogonal polynomials for non-Askey probability
-density functions.  As for PCE, the Wiener/Askey/Extended selection
-defaults to Extended, can be overridden by the user using the keywords
-\c askey or \c wiener, and automatically falls back from
-Extended/Askey to Wiener on a per variable basis as needed to support
-prescribed correlations. <!-- Since, at most, linear transformations
-are used in the Extended case, no correlation warping is induced and
-all desired correlation cases are readily supported. -->
+uses interpolation points from Gauss-Hermite (non-nested) or
+Genz-Keister (nested) integration rules for all random variables and
+employs the same nonlinear variable transformation as the local and
+global reliability methods (and therefore has the same variable
+support).  The Askey option, however, employs interpolation points
+from Gauss-Hermite (Genz-Keister if nested), Gauss-Legendre
+(Gauss-Patterson if nested), Gauss-Laguerre, Gauss-Jacobi, and
+generalized Gauss-Laguerre quadrature.  The Extended option avoids the
+use of any nonlinear variable transformations by augmenting the Askey
+approach with Gauss points from numerically-generated orthogonal
+polynomials for non-Askey probability density functions.  As for PCE,
+the Wiener/Askey/Extended selection defaults to Extended, can be
+overridden by the user using the keywords \c askey or \c wiener, and
+automatically falls back from Extended/Askey to Wiener on a per
+variable basis as needed to support prescribed correlations. 
 
 If \e n is small, then tensor-product Gaussian quadrature is again the
 preferred choice.  For larger \e n, tensor-product quadrature quickly
-becomes too expensive and the sparse grid approach is preferred.
-Similar to the approach decribed previously in \ref MethodNonDPCE, the
-\c all_variables flag can be used to expand the dimensionality of the
+becomes too expensive and the sparse grid approach is preferred.  For
+self-consistency in growth rates, nested rules employ restricted
+exponential growth for consistency with the linear growth used for
+non-nested Gauss rules (integrand precision \f$i=4l+1\f$ for sparse
+grid level and \f$i=2m-1\f$ for tensor grid order), with the exception
+of the \c p_refinement \c adaptive \c generalized case.  Similar to
+the approach decribed previously in \ref MethodNonDPCE, the \c
+all_variables flag can be used to expand the dimensionality of the
 interpolation to include continuous design and state variables and
 epistemic uncertain variables, in addition to the default aleatory
 uncertain variables.  Interpolation points for these dimensions are
-based on Gauss-Legendre rules for tensor-product quadrature or Smolyak
-sparse grids that are anisotropic in rule, or Clenshaw-Curtis rules
-for Smolyak sparse grids that are isotropic in rule.  Again, when
-probability integrals are evaluated, only the aleatory random variable
-domain is integrated, leaving behind a polynomial relationship between
-the statistics and the remaining design/state/epistemic variables.
+based on Gauss-Legendre rules if non-nested and Gauss-Patterson rules
+if nested.  Again, when probability integrals are evaluated, only the
+aleatory random variable domain is integrated, leaving behind a
+polynomial relationship between the statistics and the remaining
+design/state/epistemic variables.
 
-The \c refinement keyword can be specified as either \c uniform or \c
-adaptive in order to select optional polynomial order refinement
-("p-refinement").  This is currently supported for the tensor-product
-quadrature and Smolyak sparse grid options, and makes use of the \c
-max_iterations and \c convergence_tolerance iteration controls (see
-Table \ref T5d1 "5.1").  The details of these specifications are
+The \c p_refinement keyword can again be specified as either \c
+uniform or \c adaptive, and the \c adaptive case may be \c sobol or \c
+generalized (\c decay not supported).  These automated refinement
+approaches makes use of the \c max_iterations and \c
+convergence_tolerance iteration controls (see Table \ref T5d1 "5.1").
+In addition, \c variance_based_decomp and \c sample_refinement options
+are also supported, and the details of these specifications are
 identical to those described in \ref MethodNonDPCE.
 
 Additional specifications include the level mappings described in \ref
-MethodNonD and the \c seed, \c fixed_seed, \c samples, and \c
-sample_type specifications described in \ref MethodNonDMC.  These
+MethodNonD and the \c sample_type, \c samples, \c seed, \c fixed_seed,
+and \c rng specifications described in \ref MethodNonDMC.  These
 latter sampling specifications refer to sampling on the interpolant
 for the purposes of generating approximate statistics, which should
-not be confused with simulation evaluations used for forming the
-interpolant as described in the previous paragraph.  
-\ref T5d34 "Table 5.34" provides details of the stochastic collocation 
-specifications beyond those of \ref T5d28 "Table 5.28".
+not be confused with collocation evaluations used for forming the
+interpolant.  \ref T5d34 "Table 5.34" provides details of the
+stochastic collocation specifications beyond those of \ref T5d28
+"Table 5.28".
 
 \anchor T5d34
 <table>
@@ -5452,9 +5483,9 @@ Specification detail for stochastic collocation method
 <td>Extended basis of orthogonal polynomials (Askey + numerically generated)
 <tr>
 <td>Automated polynomial order refinement
+<td>\c p_refinement
 <td>\c uniform | \c adaptive
-<td>none
-<td>Optional
+<td>Optional group
 <td>No p-refinement
 <tr>
 <td>Adaptive refinement control
