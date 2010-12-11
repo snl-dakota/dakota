@@ -119,6 +119,10 @@ namespace Dakota {
     <li> <a href="MethodCommands.html#MethodNonDGlobalEvid">Global Evidence theory (Dempster-Shafer) methods</a>
     </ul>
   </ul>
+<li> <a href="MethodCommands.html#MethodSoln">Solution Verification Methods</a>
+  <ul>
+  <li> <a href="MethodCommands.html#MethodSolnRichardson">Richardson Extrapolation</a>
+  </ul>
 <li> <a href="MethodCommands.html#MethodDACE">Design of Computer Experiments Methods</a>
   <ul>
   <li> <a href="MethodCommands.html#MethodDDACE">DDACE</a>
@@ -5941,15 +5945,85 @@ Specification detail for global evidence theory method for epistemic uncertainty
 
 
 
+\section MethodSoln Solution Verification Methods
+
+
+Solution verification procedures estimate the order of convergence of
+the simulation response data during the course of a refinement study.
+This branch of methods is new and currently only contains one algorithm:
+Richardson extrapolation.
+
+
+\subsection MethodSolnRichardson Richardson Extrapolation
+
+
+This method utilizes the \c max_iterations and \c
+convergence_tolerance method independent controls to manage the
+iterative procedures.  Three algorithm options are currently provided:
+
+-# The \c estimate_order option is the simplest option.  For each of
+   the refinement factors, it evaluates three points along the
+   refinement path and uses these results to perform an estimate of
+   the convergence order for each response function.
+
+-# The \c converge_order option is initialized using the \c
+   estimate_order aproach, and additional refinements are performed
+   along the refinement path until the convergence order estimates
+   converge (two-norm of the change in response orders is less than
+   the convergence tolerance).
+
+-# The \c converge_qoi option is similar to the \c converge_order
+   option, except that the convergence criterion is that the two-norm
+   of the response discretization errors (computed from extrapolation)
+   must be less than the convergence tolerance.
+
+In each of these case, a uniform refinement rate (specified by \c
+refinement_rate) is applied to each of the refinement factors provided
+in the continuous state variable specification.  \ref T5d39 "Table 5.39" 
+provides the specification details for the \c richardson_extrap method.
+
+\anchor T5d39
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.39
+\endhtmlonly
+Specification detail for Richardson extrapolation method for solution verification
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Richardson extrapolation
+<td>\c richardson_extrap
+<td>none
+<td>Required group
+<td>N/A
+<tr>
+<td>Order estimation approach
+<td>\c estimate_order | \c converge_order | \c converge_qoi
+<td>none
+<td>Required
+<td>N/A
+<tr>
+<td>Refinement rate
+<td>\c refinement_rate
+<td>real
+<td>Optional
+<td>2.
+</table>
+
+
 \section MethodDACE Design of Computer Experiments Methods
 
 
 Design and Analysis of Computer Experiments (DACE) methods compute
 response data sets at a selection of points in the parameter space.
-Two libraries are provided for performing these studies: DDACE and
-FSUDace.  A DAKOTA interface to Lawrence Livermore National
-Laboratory's PSUADE library is provided, but this package is currently
-only available within LLNL.  The design of experiments methods do not
+Three libraries are provided for performing these studies: DDACE, 
+FSUDace, and PSUADE.  The design of experiments methods do not
 currently make use of any of the method independent controls.
 
 
@@ -6005,13 +6079,13 @@ indices which indicate how important the uncertainty in each input
 variable is in contributing to the output variance.  More details 
 on variance based decomposition are given in \ref MethodNonDMC.
 Design of experiments specification detail is
-given in \ref T5d39 "Table 5.39".
+given in \ref T5d40 "Table 5.40".
 
-\anchor T5d39
+\anchor T5d40
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.39
+Table 5.40
 \endhtmlonly
 Specification detail for design of experiments methods
 </caption>
@@ -6198,11 +6272,11 @@ distribution).  Complete explanation of these measures can be found in
 [\ref Gunzburger2004 "Gunzburger and Burkardt, 2004."].
 
 <!-- dakota subcat fsu_quasi_mc -->
-\anchor T5d40
+\anchor T5d41
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.40
+Table 5.41
 \endhtmlonly
 Specification detail for FSU Quasi-Monte Carlo sequences 
 </caption>
@@ -6335,14 +6409,14 @@ More details on the quality measures are given under the description of the
 QMC methods. 
 
 The specification detail for the FSU CVT method is given in 
-\ref T5d41 "Table 5.41".
+\ref T5d42 "Table 5.42".
 
 <!-- dakota subcat fsu_cvt -->
-\anchor T5d41
+\anchor T5d42
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.41
+Table 5.42
 \endhtmlonly
 Specification detail for FSU Centroidal Voronoi Tesselation sampling
 </caption>
@@ -6418,9 +6492,7 @@ function evaluations, sampling and analysis methods, an integrated
 design and analysis framework, global optimization, numerical
 integration, response surfaces (MARS and higher order regressions),
 graphical output with Pgplot or Matlab, and fault tolerance [\ref
-Tong2005 "C.H. Tong, 2005"].  While PSUADE is only available
-internally at LLNL, DAKOTA includes a prototype interface to its MOAT
-sampling method.
+Tong2005 "C.H. Tong, 2005"].
 
 The Morris One-At-A-Time (MOAT) method, originally proposed by Morris
 [\ref Morris1991 "M.D. Morris, 1991"], is a screening method, designed
@@ -6438,13 +6510,13 @@ partitions) applies to each variable being studied and must be odd
 also be adjusted at runtime as necessary.  For information on
 practical use of this method, see 
 [\ref Saltelli2004 "Saltelli, et al., 2004"].  The specification detail
-for the PSUADE MOAT method is given in \ref T5d42 "Table 5.42".
+for the PSUADE MOAT method is given in \ref T5d43 "Table 5.43".
 
-\anchor T5d42
+\anchor T5d43
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.42
+Table 5.43
 \endhtmlonly
 Specification detail for PSUADE methods
 </caption>
@@ -6539,13 +6611,13 @@ and discrete set variables.  A \c num_steps specification must result
 in discrete range and set index steps that are integral: no remainder
 is currently permitted in the integer step calculation and no rounding
 to integer steps will occur.  The \c final_point specification detail
-is given in \ref T5d43 "Table 5.43".
+is given in \ref T5d44 "Table 5.44".
 
-\anchor T5d43
+\anchor T5d44
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.43
+Table 5.44
 \endhtmlonly
 final_point specification detail for the vector parameter study
 </caption>
@@ -6583,13 +6655,13 @@ state; real or integer), the steps are set index offsets, not steps
 between the actual set values.  This increment process is performed \c
 num_steps times, and since the initial values are included, the total
 number of simulations is again equal to \c num_steps+1. The \c
-step_vector specification detail is given in \ref T5d44 "Table 5.44".
+step_vector specification detail is given in \ref T5d45 "Table 5.45".
 
-\anchor T5d44
+\anchor T5d45
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.44
+Table 5.45
 \endhtmlonly
 step_vector specification detail for the vector parameter study
 </caption>
@@ -6638,13 +6710,13 @@ specification will not be used, they need not be specified. For
 discrete set types, the actual values should be specified, not the set
 indices, although the values will be validated for membership within
 the set value specifications.  The list parameter study specification
-detail is given in \ref T5d45 "Table 5.45".
+detail is given in \ref T5d46 "Table 5.46".
 
-\anchor T5d45
+\anchor T5d46
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.45
+Table 5.46
 \endhtmlonly
 Specification detail for the list parameter study
 </caption>
@@ -6686,14 +6758,14 @@ MethodPSVPS) in either actual values (continuous and discrete range)
 or index offsets (discrete set). The \c steps_per_variable
 specification provides the number of increments per variable (again,
 employed sequentially) in each of the plus and minus directions. The
-centered parameter study specification detail is given in \ref T5d46
-"Table 5.46".
+centered parameter study specification detail is given in \ref T5d47
+"Table 5.47".
 
-\anchor T5d46
+\anchor T5d47
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.46
+Table 5.47
 \endhtmlonly
 Specification detail for the centered parameter study
 </caption>
@@ -6745,13 +6817,13 @@ occurs, so the partitions specification must be carefully selected in
 the presence of these types.  Since the initial values from the
 variables specification will not be used, they need not be
 specified. The multidimensional parameter study specification detail
-is given in \ref T5d47 "Table 5.47".
+is given in \ref T5d48 "Table 5.48".
 
-\anchor T5d47
+\anchor T5d48
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.47
+Table 5.48
 \endhtmlonly
 Specification detail for the multidimensional parameter study
 </caption>
