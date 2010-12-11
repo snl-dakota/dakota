@@ -255,112 +255,113 @@ evaluations = 45 for \texttt{optpp\_q\_newton} and 29 for
 the Hessian approximation becomes accurate, convergence is much more
 rapid with the Gauss-Newton approach.
 
-Shown below is the complete DAKOTA version 4.2 output for the
+Shown below is the complete DAKOTA version 5.1 output for the
 \texttt{optpp\_g\_newton} method starting from\\
 \texttt{cdv\_initial\_point = 0.8, 0.7}:
 \begin{small}
 \begin{verbatim}
-    Running MPI executable in serial mode.
-    DAKOTA version 4.2 released 11/05/2008.
-    Constructing Single Method Strategy...
-    Writing new restart file dakota.rst
-    methodName = optpp_g_newton
-    gradientType = analytic
-    hessianType = none
-    
-    >>>>> Running Single Method Strategy.
-    
-    >>>>> Running optpp_g_newton iterator.
-    
-    ------------------------------
-    Begin Function Evaluation    1
-    ------------------------------
-    Parameters for function evaluation 1:
-                          8.0000000000e-01 x1
-                          7.0000000000e-01 x2
-    
-    (rosenbrock /tmp/fileZZrtxQ /tmp/file2iKA3U)
-    
-    Active response data for function evaluation 1:
-    Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
-                          6.0000000000e-01 least_sq_term_1
-                          2.0000000000e-01 least_sq_term_2
-     [ -1.6000000000e+01  1.0000000000e+01 ] least_sq_term_1 gradient
-     [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
-    
-    
-    
-    
-    ------------------------------
-    Begin Function Evaluation    2
-    ------------------------------
-    Parameters for function evaluation 2:
-                          9.9999528206e-01 x1
-                          9.5999243139e-01 x2
-    
-    (rosenbrock /tmp/fileb3UDCZ /tmp/file6nnHb4)
-    
-    Active response data for function evaluation 2:
-    Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
-                         -3.9998132761e-01 least_sq_term_1
-                          4.7179363810e-06 least_sq_term_2
-     [ -1.9999905641e+01  1.0000000000e+01 ] least_sq_term_1 gradient
-     [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
-    
-    
-    
-    
-    ------------------------------
-    Begin Function Evaluation    3
-    ------------------------------
-    Parameters for function evaluation 3:
-                          9.9999904377e-01 x1
-                          9.9999808276e-01 x2
-    
-    (rosenbrock /tmp/file12UjN8 /tmp/fileWSJWod)
-    
-    Active response data for function evaluation 3:
-    Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
-                         -4.7950734494e-08 least_sq_term_1
-                          9.5622502239e-07 least_sq_term_2
-     [ -1.9999980875e+01  1.0000000000e+01 ] least_sq_term_1 gradient
-     [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
-    
-    
-    
-    
-    <<<<< Iterator optpp_g_newton completed.
-    
-    ------------------------------
-    Begin Function Evaluation    4
-    ------------------------------
-    Parameters for function evaluation 4:
-                          9.9999904377e-01 x1
-                          9.9999808276e-01 x2
-    
-    Duplication detected: analysis_drivers not invoked.
-    
-    Active response data retrieved from database:
-    Active set vector = { 2 2 } Deriv vars vector = { 1 2 }
-     [ -1.9999980875e+01  1.0000000000e+01 ] least_sq_term_1 gradient
-     [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
-    
-    
-    <<<<< Function evaluation summary: 4 total (3 new, 1 duplicate)
-    <<<<< Best parameters          =
-                          9.9999904377e-01 x1
-                          9.9999808276e-01 x2
-    <<<<< Best residual norm =  9.5742653315e-07; 0.5 * norm^2 =  4.5833278319e-13
-    <<<<< Best residual terms      =
-                         -4.7950734494e-08
-                          9.5622502239e-07
-    <<<<< Best data captured at function evaluation 3
-    Confidence Interval for x1 is [  9.9998687852e-01,  1.0000112090e+00 ]
-    Confidence Interval for x2 is [  9.9997372187e-01,  1.0000224436e+00 ]
-    <<<<< Single Method Strategy completed.
-    DAKOTA execution time in seconds:
-      Total CPU        =       0.01 [parent =   0.008999, child =   0.001001]
-      Total wall clock =   0.039669
+Running MPI executable in serial mode.
+DAKOTA version 5.0+ developmental release.
+Subversion revision 172 built Dec  8 2010 17:35:13.
+Constructing Single Method Strategy...
+Writing new restart file dakota.rst
+methodName = optpp_g_newton
+gradientType = analytic
+hessianType = none
+
+>>>>> Running Single Method Strategy.
+
+>>>>> Running optpp_g_newton iterator.
+
+------------------------------
+Begin Function Evaluation    1
+------------------------------
+Parameters for function evaluation 1:
+                      8.0000000000e-01 x1
+                      7.0000000000e-01 x2
+
+rosenbrock /tmp/file4t29aW /tmp/filezGeFpF
+
+Active response data for function evaluation 1:
+Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
+                      6.0000000000e-01 least_sq_term_1
+                      2.0000000000e-01 least_sq_term_2
+ [ -1.6000000000e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+ [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+
+
+
+
+------------------------------
+Begin Function Evaluation    2
+------------------------------
+Parameters for function evaluation 2:
+                      9.9999528206e-01 x1
+                      9.5999243139e-01 x2
+
+rosenbrock /tmp/fileSaxQHo /tmp/fileHnU1Z7
+
+Active response data for function evaluation 2:
+Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
+                     -3.9998132761e-01 least_sq_term_1
+                      4.7179363810e-06 least_sq_term_2
+ [ -1.9999905641e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+ [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+
+
+
+
+------------------------------
+Begin Function Evaluation    3
+------------------------------
+Parameters for function evaluation 3:
+                      9.9999904377e-01 x1
+                      9.9999808276e-01 x2
+
+rosenbrock /tmp/filedtRtlR /tmp/file3kUVGA
+
+Active response data for function evaluation 3:
+Active set vector = { 3 3 } Deriv vars vector = { 1 2 }
+                     -4.7950734494e-08 least_sq_term_1
+                      9.5622502239e-07 least_sq_term_2
+ [ -1.9999980875e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+ [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+
+
+
+
+------------------------------
+Begin Function Evaluation    4
+------------------------------
+Parameters for function evaluation 4:
+                      9.9999904377e-01 x1
+                      9.9999808276e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 2 2 } Deriv vars vector = { 1 2 }
+ [ -1.9999980875e+01  1.0000000000e+01 ] least_sq_term_1 gradient
+ [ -1.0000000000e+00  0.0000000000e+00 ] least_sq_term_2 gradient
+
+
+<<<<< Function evaluation summary: 4 total (3 new, 1 duplicate)
+<<<<< Best parameters          =
+                      9.9999904377e-01 x1
+                      9.9999808276e-01 x2
+<<<<< Best residual norm =  9.5742653315e-07; 0.5 * norm^2 =  4.5833278319e-13
+<<<<< Best residual terms      =
+                     -4.7950734494e-08
+                      9.5622502239e-07
+<<<<< Best data captured at function evaluation 3
+Confidence Interval for x1 is [  9.9998687852e-01,  1.0000112090e+00 ]
+Confidence Interval for x2 is [  9.9997372187e-01,  1.0000224436e+00 ]
+
+<<<<< Iterator optpp_g_newton completed.
+<<<<< Single Method Strategy completed.
+DAKOTA execution time in seconds:
+  Total CPU        =       0.01 [parent =   0.017997, child =  -0.007997]
+  Total wall clock =  0.0672231
 \end{verbatim}
 \end{small}
 
@@ -1143,7 +1144,8 @@ Figures~\ref{FIG:moat:out_preamble} and~\ref{FIG:moat:out_results}.
 \begin{small}
 \begin{verbatim}
 Running MPI executable in serial mode.
-DAKOTA version 4.2 released 11/05/2008.
+DAKOTA version 5.0+ developmental release.
+Subversion revision 172 built Dec  8 2010 17:35:13.
 Constructing Single Method Strategy...
 Writing new restart file dakota.rst
 methodName = psuade_moat
@@ -1154,7 +1156,7 @@ hessianType = none
 
 >>>>> Running psuade_moat iterator.
 
-PSUADE DACE method = psuade_moat Samples = 84 Seed (user-specified) = 5
+PSUADE DACE method = psuade_moat Samples = 84 Seed (user-specified) = 500
             Partitions = 3 (Levels = 4)
 \end{verbatim}
 \end{small}
@@ -1174,28 +1176,26 @@ parameters.}
 *************************************************************
 *********************** MOAT Analysis ***********************
 -------------------------------------------------------------
-Input   1 (mod. mean & std) =   5.4366e+01   4.2009e+01 
-Input   2 (mod. mean & std) =   5.9188e+01   4.7141e+01 
-Input   3 (mod. mean & std) =   5.0663e+01   3.8542e+01 
-Input   4 (mod. mean & std) =   8.1390e+01   1.0680e+02 
-Input   5 (mod. mean & std) =   8.0589e+01   7.1954e+01 
-Input   6 (mod. mean & std) =   4.5300e+01   3.4398e+01 
-Input   7 (mod. mean & std) =   3.8168e+01   3.1680e+01 
-Input   8 (mod. mean & std) =   4.2193e+01   5.6885e+00 
-Input   9 (mod. mean & std) =   4.3802e+01   4.5875e+00 
-Input  10 (mod. mean & std) =   3.6465e+01   3.9676e+00 
-Input  11 (mod. mean & std) =   5.3103e+00   8.1196e+00 
-Input  12 (mod. mean & std) =   9.7212e+00   1.1345e+01 
-Input  13 (mod. mean & std) =   8.0135e+00   1.0811e+01 
-Input  14 (mod. mean & std) =   2.4124e+00   3.5811e+00 
-Input  15 (mod. mean & std) =   5.5727e+00   1.6122e+00 
-Input  16 (mod. mean & std) =   6.8377e+00   8.6817e+00 
-Input  17 (mod. mean & std) =   7.8375e+00   9.9676e+00 
-Input  18 (mod. mean & std) =   4.0741e+00   4.8117e+00 
-Input  19 (mod. mean & std) =   7.7200e+00   9.0583e+00 
-Input  20 (mod. mean & std) =   6.6671e+00   9.7375e+00 
-
-<<<<< Iterator psuade_moat completed.
+Input   1 (mod. mean & std) =   9.5329e+01   9.0823e+01 
+Input   2 (mod. mean & std) =   6.7297e+01   9.5242e+01 
+Input   3 (mod. mean & std) =   1.0648e+02   1.5479e+02 
+Input   4 (mod. mean & std) =   6.6231e+01   7.5895e+01 
+Input   5 (mod. mean & std) =   9.5717e+01   1.2733e+02 
+Input   6 (mod. mean & std) =   8.0394e+01   9.9959e+01 
+Input   7 (mod. mean & std) =   3.2722e+01   2.7947e+01 
+Input   8 (mod. mean & std) =   4.2013e+01   7.6090e+00 
+Input   9 (mod. mean & std) =   4.1965e+01   7.8535e+00 
+Input  10 (mod. mean & std) =   3.6809e+01   3.6151e+00 
+Input  11 (mod. mean & std) =   8.2655e+00   1.0311e+01 
+Input  12 (mod. mean & std) =   4.9299e+00   7.0591e+00 
+Input  13 (mod. mean & std) =   3.5455e+00   4.4025e+00 
+Input  14 (mod. mean & std) =   3.4151e+00   2.4905e+00 
+Input  15 (mod. mean & std) =   2.5143e+00   5.5168e-01 
+Input  16 (mod. mean & std) =   9.0344e+00   1.0115e+01 
+Input  17 (mod. mean & std) =   6.4357e+00   8.3820e+00 
+Input  18 (mod. mean & std) =   9.1886e+00   2.5373e+00 
+Input  19 (mod. mean & std) =   2.4105e+00   3.1102e+00 
+Input  20 (mod. mean & std) =   5.8234e+00   7.2403e+00 
 <<<<< Function evaluation summary: 84 total (84 new, 0 duplicate)
 \end{verbatim}
 \end{small}
