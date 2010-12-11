@@ -64,12 +64,13 @@ protected:
   NonDSampling(Model& model); ///< constructor
 
   /// alternate constructor for sample generation and evaluation "on the fly"
-  NonDSampling(NoDBBaseConstructor, Model& model, int samples, int seed,
-	       const String& rng);
+  NonDSampling(NoDBBaseConstructor, Model& model, const String& sample_type,
+	       int samples, int seed, const String& rng);
 
   /// alternate constructor for sample generation "on the fly"
-  NonDSampling(NoDBBaseConstructor, int samples, int seed, const String& rng,
-	       const RealVector& lower_bnds, const RealVector& upper_bnds);
+  NonDSampling(NoDBBaseConstructor, const String& sample_type, int samples,
+	       int seed, const String& rng, const RealVector& lower_bnds,
+	       const RealVector& upper_bnds);
 
   ~NonDSampling(); ///< destructor
 

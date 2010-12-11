@@ -38,9 +38,9 @@ NonDLHSSampling::NonDLHSSampling(Model& model): NonDSampling(model),
     It's purpose is to avoid the need for a separate LHS specification
     within methods that use LHS sampling. */
 NonDLHSSampling::
-NonDLHSSampling(Model& model, int samples, int seed, const String& rng,
-		short sampling_vars_mode): 
-  NonDSampling(NoDBBaseConstructor(), model, samples, seed, rng),
+NonDLHSSampling(Model& model, const String& sample_type, int samples, int seed,
+		const String& rng, short sampling_vars_mode): 
+  NonDSampling(NoDBBaseConstructor(), model, sample_type, samples, seed, rng),
   varBasedDecompFlag(false)
 { samplingVarsMode = sampling_vars_mode; }
 
@@ -55,9 +55,10 @@ NonDLHSSampling(Model& model, int samples, int seed, const String& rng,
     multiobjective weights).  In this case, a Model is not used and 
     the object must only be used for sample generation (no evaluation). */
 NonDLHSSampling::
-NonDLHSSampling(int samples, int seed, const String& rng,
-		const RealVector& lower_bnds, const RealVector& upper_bnds): 
-  NonDSampling(NoDBBaseConstructor(), samples, seed, rng,
+NonDLHSSampling(const String& sample_type, int samples, int seed,
+		const String& rng, const RealVector& lower_bnds,
+		const RealVector& upper_bnds): 
+  NonDSampling(NoDBBaseConstructor(), sample_type, samples, seed, rng,
 	       lower_bnds, upper_bnds), varBasedDecompFlag(false)
 {
   samplingVarsMode = ACTIVE_UNIFORM; // not used but included for completeness

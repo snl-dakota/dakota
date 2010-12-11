@@ -44,14 +44,16 @@ public:
   NonDLHSSampling(Model& model); ///< standard constructor
 
   /// alternate constructor for sample generation and evaluation "on the fly"
-  NonDLHSSampling(Model& model, int samples, int seed, const String& rng,
+  NonDLHSSampling(Model& model, const String& sample_type,
+		  int samples, int seed, const String& rng,
 		  short sampling_vars_mode = ACTIVE);
 
   /// alternate constructor for sample generation "on the fly"
-  NonDLHSSampling(int samples, int seed, const String& rng,
-		  const RealVector& lower_bnds, const RealVector& upper_bnds);
+  NonDLHSSampling(const String& sample_type, int samples, int seed,
+		  const String& rng, const RealVector& lower_bnds,
+		  const RealVector& upper_bnds);
 
-  ~NonDLHSSampling();            ///< destructor
+  ~NonDLHSSampling(); ///< destructor
 
 protected:
 

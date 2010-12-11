@@ -43,15 +43,16 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   // Use a hardwired minimal initial samples
   if (!numSamples) // use a default of #terms in a quadratic polynomial
     numSamples = (numContinuousVars+1)*(numContinuousVars+2)/2;
-  String approx_type = "global_gaussian", corr_type, sample_reuse = "none";
+  String approx_type = "global_gaussian", corr_type, sample_type,
+    sample_reuse = "none";
   UShortArray approx_order; 
   short corr_order = -1;
 
   // instantiate the Gaussian Process DataFit recursions
 
   // The following uses on the fly derived ctor:
-  daceIterator.assign_rep(new NonDLHSSampling(iteratedModel, numSamples,
-			  seedSpec, rngName, ACTIVE_UNIFORM), false);
+  daceIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
+    numSamples, seedSpec, rngName, ACTIVE_UNIFORM), false);
 
   // Construct fHatModel using a GP approximation over the active/uncertain
   // vars (same view as iteratedModel: not the typical All view for DACE).

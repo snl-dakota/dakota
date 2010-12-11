@@ -108,13 +108,13 @@ static GuiKeyWord
 		{"rnum2",8,0,1,1,801}
 		},
 	kw_14[8] = {
-		{"gpmsa",8,0,1,1,795,0,0.,0.,0.,0,"{Method type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGPMSA"},
+		{"gpmsa",8,0,1,1,795},
 		{"queso",8,0,1,1,793},
-		{"rng",8,2,2,0,797,kw_13,0.,0.,0.,0,"{Random seed generator} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGPMSA"},
+		{"rng",8,2,2,0,797,kw_13},
 		{"samples",9,0,7,0,863,0,0.,0.,0.,0,"{Number of samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
 		{"seed",9,0,6,0,865,0,0.,0.,0.,0,"{Random seed} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
-		{"x_obs_data_file",11,0,3,0,803,0,0.,0.,0.,0,"{Experimental data file - input} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGPMSA"},
-		{"y_obs_data_file",11,0,4,0,805,0,0.,0.,0.,0,"{Experimental data file - outputs} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGPMSA"},
+		{"x_obs_data_file",11,0,3,0,803},
+		{"y_obs_data_file",11,0,4,0,805},
 		{"y_std_data_file",11,0,5,0,807}
 		},
 	kw_15[3] = {
@@ -262,7 +262,7 @@ static GuiKeyWord
 		{"fixed_seed",8,0,5,0,833,0,0.,0.,0.,0,"{Fixed seed flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodDDACE"},
 		{"grid",8,0,1,1,811},
 		{"lhs",8,0,1,1,817},
-		{"main_effects",8,0,2,0,825},
+		{"main_effects",8,0,2,0,825,0,0.,0.,0.,0,"{Main effects} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodDDACE"},
 		{"oa_lhs",8,0,1,1,819},
 		{"oas",8,0,1,1,815},
 		{"quality_metrics",8,0,3,0,827,0,0.,0.,0.,0,"{Quality metrics} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodDDACE"},
@@ -336,7 +336,7 @@ static GuiKeyWord
 		{"latinize",8,0,2,0,1013,0,0.,0.,0.,0,"{Latinization of samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
 		{"prime_base",13,0,9,0,1029,0,0.,0.,0.,0,"{Prime bases for sequences} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
 		{"quality_metrics",8,0,3,0,1015,0,0.,0.,0.,0,"{Quality metrics} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
-		{"samples",9,0,5,0,1021,0,0.,0.,0.,0,"{Number of samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDGPMSA"},
+		{"samples",9,0,5,0,1021,0,0.,0.,0.,0,"{Number of samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
 		{"sequence_leap",13,0,8,0,1027,0,0.,0.,0.,0,"{Sequence leaping indices} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
 		{"sequence_start",13,0,7,0,1025,0,0.,0.,0.,0,"{Sequence starting indices} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
 		{"variance_based_decomp",8,1,4,0,1017,kw_41,0.,0.,0.,0,"{Variance based decomposition} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"}
@@ -623,9 +623,9 @@ static GuiKeyWord
 	kw_95[5] = {
 		{"expansion_order",13,0,3,1,623,0,0.,0.,0.,0,"{Expansion order} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
 		{"expansion_terms",9,0,3,1,625,0,0.,0.,0.,0,"{Expansion terms} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"reuse_points",8,0,1,0,613},
+		{"reuse_points",8,0,1,0,613,0,0.,0.,0.,0,"{Reuse points flag for PCE coefficient estimation by collocation_points or collocation_ratio} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
 		{"reuse_samples",0,0,1,0,612},
-		{"use_derivatives",8,0,2,0,615}
+		{"use_derivatives",8,0,2,0,615,0,0.,0.,0.,0,"{Derivative usage flag for PCE coefficient estimation by collocation_points or collocation_ratio} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
 		},
 	kw_96[2] = {
 		{"expansion_order",13,0,3,1,623,0,0.,0.,0.,0,"{Expansion order} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
@@ -664,7 +664,7 @@ static GuiKeyWord
 		{"non_nested",8,0,2,0,605}
 		},
 	kw_104[2] = {
-		{"drop_tolerance",10,0,2,0,631,0,0.,0.,0.,0,"{VBD index drop tolerance} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"drop_tolerance",10,0,2,0,631,0,0.,0.,0.,0,"{VBD tolerance for omitting small indices} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
 		{"univariate_effects",8,0,1,0,629,0,0.,0.,0.,0,"{Restriction of VBD indices to main/total} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
 		},
 	kw_105[23] = {
@@ -689,11 +689,11 @@ static GuiKeyWord
 		{"samples",9,0,8,0,863,0,0.,0.,0.,0,"{Number of samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
 		{"seed",9,0,7,0,865,0,0.,0.,0.,0,"{Random seed} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
 		{"sparse_grid_level",9,3,3,1,599,kw_103,0.,0.,0.,0,"{Sparse grid level for PCE coefficient estimation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"variance_based_decomp",8,2,4,0,627,kw_104,0.,0.,0.,0,"{Variance based decomposition} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
+		{"variance_based_decomp",8,2,4,0,627,kw_104,0.,0.,0.,0,"{Variance based decomposition (VBD)} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
 		{"wiener",8,0,2,0,595}
 		},
 	kw_106[1] = {
-		{"previous_samples",9,0,1,1,705,0,0.,0.,0.,0,"{Previous samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"}
+		{"previous_samples",9,0,1,1,705,0,0.,0.,0.,0,"{Previous samples for incremental approaches} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"}
 		},
 	kw_107[4] = {
 		{"incremental_lhs",8,1,1,1,701,kw_106},
@@ -739,8 +739,8 @@ static GuiKeyWord
 		{"dimension_preference",14,0,1,0,667,0,0.,0.,0.,0,"{Sparse grid dimension preference} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"}
 		},
 	kw_115[2] = {
-		{"drop_tolerance",10,0,2,0,677},
-		{"univariate_effects",8,0,1,0,675}
+		{"drop_tolerance",10,0,2,0,677,0,0.,0.,0.,0,"{VBD tolerance for omitting small indices} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"},
+		{"univariate_effects",8,0,1,0,675,0,0.,0.,0.,0,"{Restriction of VBD indices to main/total} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"}
 		},
 	kw_116[20] = {
 		{"all_variables",8,0,16,0,711,0,0.,0.,0.,0,"{All variables flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
@@ -756,12 +756,12 @@ static GuiKeyWord
 		{"reliability_levels",14,1,14,0,715,kw_92,0.,0.,0.,0,"{Reliability levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"},
 		{"response_levels",14,2,15,0,719,kw_94,0.,0.,0.,0,"{Response levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"},
 		{"rng",8,2,13,0,773,kw_46,0.,0.,0.,0,"{Random number generator} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
-		{"sample_refinement",8,3,6,0,679,kw_112},
+		{"sample_refinement",8,3,6,0,679,kw_112,0.,0.,0.,0,"{Importance sampling refinement} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"},
 		{"sample_type",8,2,7,0,687,kw_113,0.,0.,0.,0,"{Sampling type} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"},
 		{"samples",9,0,9,0,863,0,0.,0.,0.,0,"{Number of samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
 		{"seed",9,0,8,0,865,0,0.,0.,0.,0,"{Random seed} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
 		{"sparse_grid_level",9,1,3,1,665,kw_114,0.,0.,0.,0,"{Sparse grid level for collocation points} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"},
-		{"variance_based_decomp",8,2,5,0,673,kw_115},
+		{"variance_based_decomp",8,2,5,0,673,kw_115,0.,0.,0.,0,"{Variance-based decomposition (VBD)} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"},
 		{"wiener",8,0,2,0,661}
 		},
 	kw_117[1] = {
@@ -1336,7 +1336,7 @@ static GuiKeyWord
 		{"iterator_servers",9,0,4,0,11,0,0.,0.,0.,0,"{Number of iterator servers} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratIndControl"},
 		{"iterator_static_scheduling",8,0,6,0,15,0,0.,0.,0.,0,"{Static scheduling of iterator jobs} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratIndControl"},
 		{"multi_start",8,3,7,1,35,kw_187,0.,0.,0.,0,"{Multi-start iteration strategy} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratMultiStart"},
-		{"output_precision",0x29,0,3,0,9},
+		{"output_precision",0x29,0,3,0,9,0,0.,0.,0.,0,"{Numeric output precision} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratIndControl"},
 		{"pareto_set",8,5,7,1,45,kw_189,0.,0.,0.,0,"{Pareto set optimization strategy} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratParetoSet"},
 		{"single_method",8,1,7,1,55,kw_190,0.,0.,0.,0,"@{Single method strategy} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratSingle"},
 		{"tabular_graphics_data",8,1,2,0,5,kw_191,0.,0.,0.,0,"{Tabulation of graphics data} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/StratCommands.html#StratIndControl"}

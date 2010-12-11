@@ -121,8 +121,8 @@ ConcurrentStrategy::ConcurrentStrategy(ProblemDescDB& problem_db):
 	// sampling over multiobj. weight sets in the Pareto-set case.  This
 	// hard-wiring currently restricts us to uniform, uncorrelated samples.
         int seed = problem_db.get_int("strategy.concurrent.random_seed");
-	String rng; // empty string: use default LHS random number generator
-	NonDLHSSampling lhs_sampler(num_random_jobs, seed, rng,
+	String sample_type, rng; // empty strings: use defaults
+	NonDLHSSampling lhs_sampler(sample_type, num_random_jobs, seed, rng,
 				    lower_bnds, upper_bnds);
 	const RealMatrix& all_samples = lhs_sampler.all_samples();
 	random_jobs.resize(num_random_jobs);

@@ -65,13 +65,13 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   // Use a hardwired minimal initial samples.
   int samples  = (numContinuousVars+1)*(numContinuousVars+2)/2,
       lhs_seed = probDescDB.get_int("method.random_seed");
-  String rng; // empty string: use default LHS random number generator
-
+  String sample_type, rng; // empty strings: use defaults
   //int symbols = samples; // symbols needed for DDACE
+
   Iterator dace_iterator;
   // The following uses on the fly derived ctor:
-  dace_iterator.assign_rep(new NonDLHSSampling(iteratedModel, samples, lhs_seed,
-					       rng, ACTIVE_UNIFORM), false);
+  dace_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
+    samples, lhs_seed, rng, ACTIVE_UNIFORM), false);
     
   // Construct f-hat using a GP approximation for each response function over
   // the active/design vars (same view as iteratedModel: not the typical All

@@ -53,9 +53,9 @@ NonDSampling::NonDSampling(Model& model): NonD(model),
     abort_handler(-1);
   }
 
-  // Since the sampleType is shared with other iterators for other purposes, its
-  // default in DataMethod.C is the NULL string.  Explicitly enforce the LHS
-  // default here.
+  // Since the sampleType is shared with other iterators for other purposes,
+  // its default in DataMethod.C is the NULL string.  Explicitly enforce the
+  // LHS default here.
   if (sampleType.empty())
     sampleType = "lhs";
 
@@ -71,14 +71,18 @@ NonDSampling::NonDSampling(Model& model): NonD(model),
 /** This alternate constructor is used for generation and evaluation
     of on-the-fly sample sets. */
 NonDSampling::
-NonDSampling(NoDBBaseConstructor, Model& model, int samples, int seed,
-	     const String& rng):
+NonDSampling(NoDBBaseConstructor, Model& model, const String& sample_type,
+	     int samples, int seed, const String& rng):
   NonD(NoDBBaseConstructor(), model), seedSpec(seed), randomSeed(seed),
-  samplesSpec(samples), numSamples(samples), rngName(rng), sampleType("lhs"),
-  statsFlag(false), allDataFlag(true), sampleRanksMode(IGNORE_RANKS),
-  varyPattern(false), numLHSRuns(0)
+  samplesSpec(samples), numSamples(samples), rngName(rng),
+  sampleType(sample_type), statsFlag(false), allDataFlag(true),
+  sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
+
+  // enforce LHS as default sample type
+  if (sampleType.empty())
+    sampleType = "lhs";
 
   // not used but included for completeness
   if (numSamples) // samples is now optional (default = 0)
@@ -89,14 +93,19 @@ NonDSampling(NoDBBaseConstructor, Model& model, int samples, int seed,
 /** This alternate constructor is used by ConcurrentStrategy for
     generation of uniform, uncorrelated sample sets. */
 NonDSampling::
-NonDSampling(NoDBBaseConstructor, int samples, int seed, const String& rng,
-	     const RealVector& lower_bnds, const RealVector& upper_bnds):
+NonDSampling(NoDBBaseConstructor, const String& sample_type, int samples,
+	     int seed, const String& rng, const RealVector& lower_bnds,
+	     const RealVector& upper_bnds):
   NonD(NoDBBaseConstructor(), lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), numSamples(samples), rngName(rng),
-  sampleType("lhs"), statsFlag(false), allDataFlag(true),
+  sampleType(sample_type), statsFlag(false), allDataFlag(true),
   sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
+
+  // enforce LHS as default sample type
+  if (sampleType.empty())
+    sampleType = "lhs";
 
   // not used but included for completeness
   if (numSamples) // samples is now optional (default = 0)

@@ -45,11 +45,14 @@ NonDGPMSABayesCalibration::NonDGPMSABayesCalibration(Model& model):
   yObsDataFile(probDescDB.get_string("method.y_obs_data_file")),
   yStdDataFile(probDescDB.get_string("method.y_std_data_file"))
 {
-  Cout << "The Bayesian Calibration method GPMSA is currently not operational."
-	<< " We expect that it will be operational in 2011." << '\n';
+  Cout << "The Bayesian Calibration method GPMSA is not currently operational."
+       << " We expect that it will be operational in 2011." << std::endl;
   abort_handler(-1);
-  lhsSampler.assign_rep(new NonDLHSSampling(iteratedModel, numSamples,
-					    seedSpec, rngName, ALL), false);
+
+  String sample_type; // empty string: use default sample type
+  lhsSampler.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
+    numSamples, seedSpec, rngName, ALL), false);
+
   iteratedModel.init_communicators(lhsSampler.maximum_concurrency());
 }
 

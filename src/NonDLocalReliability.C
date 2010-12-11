@@ -411,14 +411,15 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       // For NonDLocal, integration refinement is applied to the original model
       int refinement_samples = probDescDB.get_int("method.samples"),
 	  refinement_seed    = probDescDB.get_int("method.random_seed");
-      String rng; // empty string: use default random number generator
+      String sample_type, rng; // empty strings: use defaults
 
       // flags control if/when transformation is needed in importanceSampler
       bool x_data_flag = false, x_model_flag = true, bounded_model = false;
 
-      importanceSampler.assign_rep(new NonDAdaptImpSampling(iteratedModel,
-	refinement_samples, refinement_seed, rng, integrationRefinement,
-	cdfFlag, x_data_flag, x_model_flag, bounded_model), false);
+      importanceSampler.assign_rep(
+	new NonDAdaptImpSampling(iteratedModel, sample_type, refinement_samples,
+	refinement_seed, rng, integrationRefinement, cdfFlag, x_data_flag,
+	x_model_flag, bounded_model), false);
 
       iteratedModel.init_communicators(importanceSampler.maximum_concurrency());
     }

@@ -49,11 +49,11 @@ NonDAdaptImpSampling::NonDAdaptImpSampling(Model& model):
 /** This is an alternate constructor for instantiations on the fly
     using a Model but no ProblemDescDB. */
 NonDAdaptImpSampling::
-NonDAdaptImpSampling(Model& model, int samples, int seed, const String& rng,
-		     short sampling_type, bool cdf_flag, bool x_space_data,
-		     bool x_space_model, bool bounded_model): 
-  NonDSampling(NoDBBaseConstructor(), model, samples, seed, rng),
-  initLHS(false), importanceSamplingType(sampling_type),
+NonDAdaptImpSampling(Model& model, const String& sample_type, int samples,
+		     int seed, const String& rng, short is_type, bool cdf_flag,
+		     bool x_space_data, bool x_space_model, bool bounded_model):
+  NonDSampling(NoDBBaseConstructor(), model, sample_type, samples, seed, rng),
+  initLHS(false), importanceSamplingType(is_type),
   // if initial points in x-space, they must be transformed because method
   //   expects all points in u-space
   transInitPoints(x_space_data),

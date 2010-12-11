@@ -497,10 +497,15 @@ construct_lhs(Iterator& u_space_sampler, Model& g_u_model)
       numSamplesOnModel, orig_seed, ACTIVE), false);
   else
   */
+
+  // go ahead and reuse seed/rng settings intended for the expansion_sampler
   int orig_seed = probDescDB.get_int("method.random_seed");
   const String& rng = probDescDB.get_string("method.random_number_generator");
-  u_space_sampler.assign_rep(new NonDLHSSampling(g_u_model, numSamplesOnModel,
-			     orig_seed, rng, ACTIVE), false);
+  // use default LHS sample_type for consistency with collocation support for
+  // incremental_lhs but not incremental_random
+  String sample_type; // default
+  u_space_sampler.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
+    numSamplesOnModel, orig_seed, rng, ACTIVE), false);
 }
 
 
@@ -556,9 +561,10 @@ void NonDExpansion::construct_expansion_sampler()
       abort_handler(-1);
     }
 
+    const String& sample_type = probDescDB.get_string("method.sample_type");
     int orig_seed = probDescDB.get_int("method.random_seed");
     const String& rng = probDescDB.get_string("method.random_number_generator");
-    expansionSampler.assign_rep(new NonDLHSSampling(uSpaceModel,
+    expansionSampler.assign_rep(new NonDLHSSampling(uSpaceModel, sample_type,
       numSamplesOnExpansion, orig_seed, rng, UNCERTAIN), false);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
     NonD* exp_sampler_rep = (NonD*)expansionSampler.iterator_rep();
@@ -578,19 +584,19 @@ void NonDExpansion::construct_expansion_sampler()
 	  { impSampling = true; break; }
 
     if (impSampling) {
-      short int_refine_type;
+      short is_type;
       if (integration_refine == "is")
-	int_refine_type = IS;
+	is_type = IS;
       else if (integration_refine == "ais")
-	int_refine_type = AIS;
+	is_type = AIS;
       else if (integration_refine == "mmais")
-	int_refine_type = MMAIS;
-      Cout << "IS refinement type " << int_refine_type;
+	is_type = MMAIS;
+      Cout << "IS refinement type " << is_type;
 
       int refine_samples = 1000;
       importanceSampler.assign_rep(new NonDAdaptImpSampling(uSpaceModel,
-      	refine_samples, orig_seed, rng, int_refine_type, cdfFlag, false, false,
-	false), false);
+	sample_type, refine_samples, orig_seed, rng, is_type, cdfFlag,
+	false, false, false), false);
       uSpaceModel.init_communicators(importanceSampler.maximum_concurrency());
  
       NonDAdaptImpSampling* imp_sampler_rep = 
@@ -1031,6 +1037,10 @@ void NonDExpansion::average_decay_rates(RealVector& avg_decay)
     // TO DO: invert order for preference
     //approx_rep->compute_dimension_decay rates();
     //avg_decay += approx_rep->dimension_decay_rates();
+    Cout << "The SPECTRAL_DECAY option is not currently operational in "
+	 << "NonDExpansion. We expect that it will be operational in 2011."
+	 << std::endl;
+    abort_handler(-1);
   }
   avg_decay.scale(1./(Real)numFunctions);
   // manage small values that are not 0 (SGMGA has special handling for 0)
