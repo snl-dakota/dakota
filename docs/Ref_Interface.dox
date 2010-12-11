@@ -54,14 +54,14 @@ experimental and under development, but is intended to support
 simulations which are external to DAKOTA and geographically
 distributed.
 
-Several examples follow. The first example shows an system call
-interface specification which specifies the names of the analysis
-executable and the parameters and results files, and that parameters
-and responses files will be tagged and saved. Refer to 
-\ref InterfApplicSC for more information on the use of these options.
+Several examples follow. The first example shows a fork interface
+specification which specifies the names of the analysis executable and
+the parameters and results files, and that parameters and responses
+files will be tagged and saved. Refer to \ref InterfApplicF for more
+information on the use of these options.
 \verbatim
 interface,
-	system
+	fork
 	  analysis_drivers = 'rosenbrock'
 	  parameters_file  = 'params.in'
 	  results_file     = 'results.out'
@@ -87,7 +87,7 @@ response descriptors used by the individual mappings.
 \verbatim
 interface,
 	algebraic_mappings = 'ampl/fma.nl'
-	system
+	fork
 	  analysis_driver = 'text_book'
 	  parameters_file = 'tb.in'
 	  results_file    = 'tb.out'
@@ -556,29 +556,31 @@ terminates prematurely (e.g., due to a system crash or network
 problem).  This option is not recommended when function evaluations
 are costly or prone to failure.
 
-In addition to these simulation interface specifications, the
-type of interface involves a selection between \c system,
-\c fork, \c direct, or \c grid required group specifications. The
-following sections describe these group specifications in detail.
-
+In addition to these simulation interface specifications, the type of
+interface involves a selection between \c system, \c fork, \c direct,
+or \c grid required group specifications. The following sections
+describe these group specifications in detail.
 
 \subsection InterfApplicSC System call interface
 
-For system call interfaces, the \c system keyword anchors the group
-specification and the \c parameters_file, \c results_file,
-\c verbatim, \c aprepro, \c file_tag, and \c file_save are additional
-settings within the group specification. The parameters and results
-file names are supplied as strings using the \c parameters_file and \c
-results_file specifications. Both specifications are optional with the
-default data transfer files being Unix temporary files with
-system-generated names (e.g., \c /usr/tmp/aaaa08861). The parameters
-and results file names are passed on the command line to the analysis
-driver(s) and any specified input/output filters, unless the \c
-verbatim option is invoked, in which case the driver/filter invocation
-syntax is used verbatim without command line argument augmentation.
-For additional information on invocation syntax, see the Interfaces
-chapter of the Users Manual [\ref UsersMan "Adams et al., 2010"].  The 
-format of data in the parameters files can be modified for direct usage
+<b>Users are strongly encouraged to use the \ref InterfApplicF
+"fork interface" if possible, though the system interface is still
+supported for portability and backward compatibility.</b> For system
+call interfaces, the \c system keyword anchors the group specification
+and the \c parameters_file, \c results_file, \c verbatim, \c aprepro,
+\c file_tag, and \c file_save are additional settings within the group
+specification. The parameters and results file names are supplied as
+strings using the \c parameters_file and \c results_file
+specifications. Both specifications are optional with the default data
+transfer files being Unix temporary files with system-generated names
+(e.g., \c /usr/tmp/aaaa08861). The parameters and results file names
+are passed on the command line to the analysis driver(s) and any
+specified input/output filters, unless the \c verbatim option is
+invoked, in which case the driver/filter invocation syntax is used
+verbatim without command line argument augmentation.  For additional
+information on invocation syntax, see the Interfaces chapter of the
+Users Manual [\ref UsersMan "Adams et al., 2010"].  The format of data
+in the parameters files can be modified for direct usage
  with the APREPRO pre-processing tool [\ref Sjaar1992 "Sjaardema, 1992"] 
 using the \c aprepro specification (NOTE: the DPrePro pre-processing
 utility does not require this special formatting). File tagging
@@ -596,8 +598,17 @@ communication between DAKOTA and the simulation.
 By default DAKOTA will remove existing results files before invoking
 the \c analysis_driver to avoid problems created by stale files in the
 current directory.  To override this behavior and not delete existing
-files, specify \c allow_existing_files.  The additional specifications
-for system call interfaces are summarized in \ref T8d5 "Table 8.5".
+files, specify \c allow_existing_files. 
+
+When performing concurrent evaluations and/or analyses, it is often
+necessary to cloister input and output files in separate directories
+to avoid conflicts.  When \c work_directory feature is enabled, DAKOTA
+will create a directory for each evaluation/analysis (with optional
+tagging and saving as with files), and execute the analysis driver
+from that working directory.  If an optional \c template_directory
+and/or list of \c template_files is specified, DAKOTA will link (or
+copy) those files into each working directory. The specifications for
+system call interfaces are summarized in \ref T8d5 "Table 8.5".
   
 \anchor T8d5
 <table>
@@ -781,8 +792,10 @@ specification to point to a Matlab m-file containing a function that
 performs the simulation.  This capability is disabled by default in
 DAKOTA binaries, but information on enabling and using it is available
 in the Users Manual [\ref UsersMan "Adams et al., 2010"].  Contact the
-DAKOTA developers for assistance building and using DAKOTA with Matlab
-simulation support.
+DAKOTA users mailing list for assistance building and using DAKOTA
+with Matlab simulation support.  An experimental interface to Python
+simulation codes is also available and can be enabled when compiling
+DAKOTA from source.
 
 Other direct interfaces to simulation codes include Sandia's SALINAS
 structural dynamics code, Sandia's SIERRA multiphysics framework, and

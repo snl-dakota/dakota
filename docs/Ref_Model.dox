@@ -60,7 +60,7 @@ model,
 	variables_pointer = 'V1'
 	responses_pointer = 'R1'
 	surrogate global
-	  quadratic polynomial
+	  polynomial quadratic
 	  dace_method_pointer = 'DACE'
 	  reuse_samples region
 	  correction multiplicative first_order
@@ -306,65 +306,64 @@ one of the following approximation methods: \c gaussian_process, \c
 kriging, \c mars, \c moving_least_squares, \c neural_network, <!-- \c
 orthogonal_polynomial, --> \c polynomial, or \c radial_basis.  These
 specifications invoke a gaussian process approximation, a kriging
-interpolation approximation (note that kriging in Dakota 5.1 has 
-changed relative to the Dakota 5.0 version), a multivariate adaptive 
-regression spline approximation, a moving least squares approximation, 
-a layered perceptron artificial neural network approximation, 
-<!-- an orthogonal polynomial (Hermite, Legendre, Laguerre, Jacobi, 
-and/or generalized Laguerre) approximation, --> a polynomial regression 
-approximation, or a radial basis function approximation, respectively.  
-In the polynomial case, the order of the polynomial (linear, quadratic, 
-or cubic) must be specified.
+interpolation approximation (the kriging implementation is all new in
+DAKOTA 5.1), a multivariate adaptive regression spline approximation,
+a moving least squares approximation, a layered perceptron artificial
+neural network approximation, <!-- an orthogonal polynomial (Hermite,
+Legendre, Laguerre, Jacobi, and/or generalized Laguerre)
+approximation, --> a polynomial regression approximation, or a radial
+basis function approximation, respectively.  In the polynomial case,
+the order of the polynomial (linear, quadratic, or cubic) must be
+specified.
 
-In the kriging case, a vector of correlation lengths can be optionally 
-specified in order to bypass the internal kriging calculations of 
-correlation parameters. A correlation parameter equals one-half divided 
-by the square of the corresponding correlation length, where the 
-definition of correlation parameter has not changed relative to 
-Dakota 5.0.  This definition of the correlation lengths makes their 
-effect on the behavior of the gaussian correlation function directly 
-analogous to that of the standard deviation of a gaussian (normal) 
-distribution. For the gaussian process approximation, the correlation 
-parameters are always chosen by an internal global optimization 
-procedure.  The kriging model allows optional sub-specification of the 
-method used to select the correlation lengths. The 
-\c optimization_method keyword can be followed by any of the following 
-choices: \c 'global' (this is the default), \c 'local', \c 'sampling', 
-and \c 'none'.  The global optimizer is the same one used by the 
-gaussian process approximation.  However, the Kriging model searches in
-a much smaller "feasible region" of correlation lengths.  If the 
-\c 'none' option is selected, and \c correlation_lengths are not 
-directly specified, then the center (in log scale) of the feasible region 
-will be selected. This center is also used as the starting point for 
-\c 'local' optimization.  The small feasible region typically
-contains small/large enough correlation lengths to include both well 
-conditioned correlation matrices and either the globally optimal, or at 
-least a near optimal, correlation matrix. Ill-conditioned correlation 
-matrices are explicitly excluded from consideration based on (an estimate 
-of) their condition number. The gaussian process deals with ill 
-conditioning in 2 ways.  First, when it encounters a non-invertible 
-correlation matrix it iteratively increases the size of the "nugget," 
-but in such cases the gaussian process will approximate (smooth) rather 
-than interpolate the data. Second, the GP also has an option for 
-\c point_selection to avoid ill-conditioning when the number of points 
-becomes large.  This option calls a greedy algorithm that chooses a 
-subset of points with which to build the gaussian process.  These points 
-are "optimal" in terms of creating a gaussian process with low 
-prediction error.  As a default, there is no point selection.  Note 
-that in general, one would not need point selection in trust-region 
-methods because only a small number of points are used to develop a 
-surrogate within each trust region.  The point selection option will be 
-most useful in cases where the gaussian process is built on a "large" 
-number of points, where large is more than a hundred or a few hundred 
-points, depending on the number of variables and the spacing of the 
-sample points.  The user can specify the trend function of the kriging 
-and gaussian process models using the \c trend keyword.  For 
-both models, the trend type can be \c constant, \c linear, or 
-\c reduced_quadratic; the default for both is \c reduced_quadratic.  The 
-kriging approximation has the additional option of \c quadratic.  The 
-\c reduced_quadratic trend function includes the main effects but not 
-mixed/interaction terms; prior to Dakota 5.1, it was selected for the 
-gaussian process via the \c quadratic option.
+In the \c kriging case, a vector of \c correlation_lengths can be
+specified to bypass the automatic determination of correlation
+parameters.  (A correlation parameter equals one-half divided by the
+square of the corresponding correlation length. This definition of the
+correlation lengths makes their effect on the behavior of the gaussian
+correlation function directly analogous to that of the standard
+deviation of a gaussian (normal) distribution.) For the \c
+gaussian_process approximation, the correlation parameters are always
+chosen by an internal global optimization procedure.  The kriging
+model allows optional sub-specification of the method used to select
+the correlation lengths. The \c optimization_method keyword can be
+followed by any of \c 'global' (this is the default), \c 'local', \c
+'sampling', and \c 'none'.  The global optimizer is the same one used
+by the gaussian process approximation.  However, the Kriging model
+searches in a much smaller "feasible region" of correlation lengths.
+If the \c 'none' option is selected, and \c correlation_lengths are
+not directly specified, then the center (in log scale) of the feasible
+region will be selected. This center is also used as the starting
+point for \c 'local' optimization.  The small feasible region
+typically contains small/large enough correlation lengths to include
+both well conditioned correlation matrices and either the globally
+optimal, or at least a near optimal, correlation
+matrix. Ill-conditioned correlation matrices are explicitly excluded
+from consideration based on (an estimate of) their condition
+number. The gaussian process deals with ill conditioning in 2 ways.
+First, when it encounters a non-invertible correlation matrix it
+iteratively increases the size of the "nugget," but in such cases the
+gaussian process will approximate (smooth) rather than interpolate the
+data. Second, the GP also has an option for \c point_selection to
+avoid ill-conditioning when the number of points becomes large.  This
+option calls a greedy algorithm that chooses a subset of points with
+which to build the gaussian process.  These points are "optimal" in
+terms of creating a gaussian process with low prediction error.  As a
+default, there is no point selection.  Note that in general, one would
+not need point selection in trust-region methods because only a small
+number of points are used to develop a surrogate within each trust
+region.  The point selection option will be most useful in cases where
+the gaussian process is built on a "large" number of points, where
+large is more than a hundred or a few hundred points, depending on the
+number of variables and the spacing of the sample points.  The user
+can specify the trend function of the kriging and gaussian process
+models using the \c trend keyword.  For both models, the trend type
+can be \c constant, \c linear, or \c reduced_quadratic; the default
+for both is \c reduced_quadratic.  The \c kriging approximation has
+the additional option of \c quadratic.  The \c reduced_quadratic trend
+function includes the main effects but not mixed/interaction terms;
+prior to DAKOTA 5.1, it was selected for the gaussian process via the
+\c quadratic option.
 
 For each of the global surrogates, \c dace_method_pointer, \c
 reuse_samples, \c correction, and \c use_gradients can be optionally
@@ -436,12 +435,11 @@ is described in detail in [\ref Eldred2004a "Eldred et al., 2004a"].
 Finally, the \c use_gradients flag specifies a future capability for
 the use of gradient data in the global approximation builds. This
 capability is currently supported in SurrBasedLocalMinimizer,
-SurrogateDataPoint, and \ref Approximation::build "Approximation::build()", 
-but is not yet supported in any global approximation derived class 
-redefinitions of 
-\ref Approximation::find_coefficients "Approximation::find_coefficients()".
-Tables \ref T6d4 "6.4" and \ref T6d5 "6.5" summarizes the global 
-approximation specifications.
+Pecos::SurrogateDataPoint, and \ref Approximation::build
+"Approximation::build()", but is not yet supported in any global
+approximation derived class redefinitions of build().  Tables \ref
+T6d4 "6.4" and \ref T6d5 "6.5" summarizes the global approximation
+specifications.
 
 \anchor T6d4
 <table>
@@ -920,7 +918,7 @@ uncertain distribution parameter keyword that is appropriate for a
 single variable instance) or continuous or discrete design/state
 variable sub-parameters such as \c 'lower_bound' or \c 'upper_bound'
 (again, keyword form appropriate for a single variable instance).  No
-coersion of types is supported, so real-valued top-level variables
+coercion of types is supported, so real-valued top-level variables
 should map to either real-valued sub-model variables or real-valued
 sub-parameters and integer-valued top-level variables should map to
 either integer-valued sub-model variables or integer-valued
