@@ -182,7 +182,7 @@ base class for non-deterministic methods \ref Dakota::NonDSampling
 "NonDIntegration" (numerical integration methods), and \ref
 Dakota::NonDInterval "NonDInterval" (interval-based epistemic
 methods).  Bayesian calibration methods are prototyped in \ref
-Dakota::NonDBayesCal "NonDBayesCal".
+Dakota::NonDBayesCalibration "NonDBayesCalibration".  At this point, we have an initial implementation of the LANL GPMSA code in \ref Dakota::NonDGPMSABayesCalibration "NonDGPMSABayesianCalibration".
 
 <ul> <li> \ref Dakota::NonDSampling "NonDSampling" is further
 specialized with the \ref Dakota::NonDLHSSampling "NonDLHSSampling"

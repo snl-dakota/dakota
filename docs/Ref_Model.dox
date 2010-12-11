@@ -978,7 +978,7 @@ need to be further propagated down the recursion.
 
 For the response mappings, the primary and secondary specifications
 provide real-valued multipliers to be applied to sub-iterator response
-results.  The sub-iterator response results are defined as follows for
+results. The idea is that the responses from the inner loop are mapped to the outer loop.  For example, if the nested model is an uncertainty quantification, aleatory statistics from the inner loop such as the mean inner loop response are mapped to the outer level, where they are treated epistemically, so that intervals on the mean (for example) are calculated. The response mapping defines a vector which multiplies the values from the inner loop to the outer loop.  Each row of the mapping corresponds to one outer loop response, where each column of the mapping corresponds to a value from the inner loop.  Depending on the number of responses and the particular attributes calculated on the inner loop, there will be a vector of inner loop response values that need to be accounted for in the mapping.   The sub-iterator response results are defined as follows for
 different sub-iterator types:
 
 - optimization: the final objective function(s) and nonlinear constraints
@@ -1024,9 +1024,9 @@ two of which employ the default mappings from active top-level
 variables to sub-model variables of the same type (option 3 above) and
 the latter two of which are inserted into the mean distribution
 parameters of sub-model variables \c 'X' and \c 'Y' (option 1 above).
+In this particular example, there are 9 inner loop response attributes and 3 outer loop response functions (one primary response function and 2 secondary functions, such as one objective and two constraints).  Each row of the response mapping is a vector which is multiplied (e.g. dot-product) against the 9 sub-iterator values to determine the outer loop function.  For example, the primary response mapping only picks up the first value from the inner loop.  This first value is the mean of the first response function on the inner loop. 
 The response mappings correspond to 9 sub-iterator response functions
-(e.g., a set of UQ final statistics for 3 response functions, each
-with a mean, a standard deviation, and a level mapping).  The primary
+(e.g., there are 3 response functions, each with a set of UQ final statistics:  each has a mean, a standard deviation, and a level mapping in this example.  If no probability or reliability levels are specified, the responses would only have a mean and standard deviation).  The primary
 response mapping maps the first sub-iterator response function (mean)
 into a single objective function, least squares term, or generic
 response function (as dictated by the top-level response
@@ -1037,7 +1037,7 @@ nonlinear constraint and the seventh sub-iterator response function
 plus 3 times the eighth sub-iterator response function (mean plus 3
 standard deviations) into another top-level nonlinear constraint
 (these top-level nonlinear constraints may be inequality or equality,
-as dictated by the top-level response specification).
+as dictated by the top-level response specification). Note that in many cases, each particular sub-iterator response will be mapped to a unique outer loop response (for example, in the nested UQ case where one wants to determine an interval on each inner loop statistic).  In these cases, the response mapping will be the identity matrix.  That is, the primary response mapping will have N rows and N columns corresponding to the N sub-iterator response values, and the mapping matrix will have a value of one along the diagonal and zeros elsewhere.
 
 Table \ref T6d10 "6.10" provides the specification detail for the model
 independent controls involving nested model mappings.
