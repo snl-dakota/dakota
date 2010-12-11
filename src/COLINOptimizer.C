@@ -228,6 +228,8 @@ void COLINOptimizer::find_optimum()
     colin::ApplicationHandle problem = colinSolver->get_problem_handle();
     if ( constraint_penalty >= 0. )
       problem->property("constraint_penalty") = constraint_penalty;
+    else if (solverType == PS || solverType == SW)
+      problem->property("constraint_penalty") = 1.0;
     if ( problem->has_property("apply_convergence_factor") )
       problem->property("apply_convergence_factor") = !constant_penalty;
 
@@ -663,6 +665,8 @@ void COLINOptimizer::set_solver_parameters()
     if (show_misc_options){
       Cout << "---------------------------SOLVER OPTIONS"
 	   << "---------------------------\n";
+      Cout << "The functionality to show solver options is temporarily unavailable.\n"
+	   << "It will return in future releases.\n";
       //	colinSolver->options().write(Cout, true);
       //	colinSolver->options().write_parameters(Cout);
       Cout << "---------------------------SOLVER OPTIONS"
@@ -698,8 +702,9 @@ void COLINOptimizer::set_solver_parameters()
       colinSolver->property("basis") = (string)pattern_basis;
     maxConcurrency *= total_pattern_size;
     if (!blockingSynch)
-      Cout << "\n Coliny Asynchronous Pattern Search temporarily not supported."
-	   << "\n Will return in future releases.  Running synchronously.\n\n";
+      Cout << "\n 'synchronization nonblocking' is currently not fully functional."
+	   << "\n Pattern Search will operate in 'synchronization blocking' mode."
+	   << "\n Full nonblocking functionality will return in future releases.\n\n";
   }
 
   // previous parameters for all algorithms
@@ -708,8 +713,8 @@ void COLINOptimizer::set_solver_parameters()
   //
 
   if (solverType != COBYLA) {
-    if (colinSolver->has_property("max_function_evaluations"))
-      colinSolver->property("max_function_evaluations") = maxFunctionEvals;
+    if (colinSolver->has_property("max_function_evaluations_this_trial"))
+      colinSolver->property("max_function_evaluations_this_trial") = maxFunctionEvals;
     if (colinSolver->has_property("max_iterations"))
       colinSolver->property("max_iterations") = maxIterations;
   }
@@ -850,7 +855,6 @@ void COLINOptimizer::post_run(std::ostream& s)
       else {
 	if (multiObjFlag) {
 	  const RealVector& mo_weights = model_for_sort.primary_response_fn_weights();
-	  size_t constraint_offset = numUserObjectiveFns;
 	  if (mo_weights.empty()) {
 	    for (size_t j=0; j<numUserObjectiveFns; j++)
 	      obj_fn_metric += fn_vals[j];
