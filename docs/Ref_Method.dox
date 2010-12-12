@@ -3782,7 +3782,7 @@ surrogate_based_global works in an iterative scheme where optimization
 is performed on a global surrogate using the same bounds during each
 iteration.  In one iteration, the optimal solutions of the surrogate
 model are found, and then a selected set of these optimal surrogate
-solutions are passed to the next iteration.  At the next iteration,
+solutions are passed to the next iteration. At the next iteration,
 these surrogate points are evaluated with the "truth" model, and then
 these points are added back to the set of points upon which the next
 surrogate is constructed.  In this way, the optimization acts on a
@@ -3804,7 +3804,13 @@ truth points or using the optimal points from the surrogate model
 to replace the optimal set of points from the previous iteration. 
 Although appending to the set is the default behavior, at this time 
 we strongly recommend using the option \c replace_points because it 
-appears to be more accurate and robust.
+appears to be more accurate and robust.  Finally, the number 
+of best solutions that will be passed from one iteration 
+to another is governed by the iterator control 
+\c final_solutions.  If this is not specified, the 
+surrogate-based global method will take all of the 
+solutions available (e.g. all of the solutions 
+in the Pareto front). 
 
 As for the \c surrogate_based_local method, the \c surrogate_based_global 
 specification must identify a sub-method using either \c
