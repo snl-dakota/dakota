@@ -435,6 +435,18 @@ part of the \c method_source \c dakota finite difference routine
 (since these additional evaluations are intentionally isolated from
 the iterators).
 
+The \c final_solutions controls the number of final solutions 
+returned by the iterator as the best solutions.  
+For most optimizers, this is one, but some optimizers 
+can produce multiple solutions (e.g. genetic algorithms).  
+In the case of analyzers such as sampling methods, if one 
+specifies 100 samples (for example) but also specifies
+\c final_solutions = 5, the five best solutions (in 
+order of lowest response function value) are returned. 
+When using a \c hybrid strategy, the number of final 
+solutions dictates how many solutions are passed from 
+one method to another. 
+
 Continuous design variable, function, and constraint scaling can be
 turned on for optimizers and least squares minimizers by providing the
 \c scaling keyword.  Discrete variable scaling is not supported.  When
@@ -585,6 +597,12 @@ scaling
 <td>real
 <td>Optional
 <td>1.e-4
+<tr>
+<td>Final solutions
+<td>\c final_solutions
+<td>integer
+<td>Optional
+<td>1
 <tr>
 <td>Scaling flag
 <td>\c scaling

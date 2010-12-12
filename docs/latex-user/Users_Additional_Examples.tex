@@ -975,7 +975,11 @@ Figure~\ref{additional:moga1inp} and provided in \\ {\tt
 Dakota/examples/tutorial/dakota\_mogatest1.in}.  The interface keyword
 specifies the use of the \texttt{mogatest1} executable (compiled from
 \texttt{Dakota/test/mogatest1.C}) as the simulator.  The Pareto front
-is shown in Figure~\ref{additional:moga1front}.
+is shown in Figure~\ref{additional:moga1front}.  Note that the keyword \texttt{final\_solutions} specifies the number 
+of best solutions reported by moga.  This differs from the entire Pareto front:  the top three solutions are simply the best 
+three as ranked by their distance to the utopia point, 
+which is the point of minimum objective value in 
+each dimension. 
 
 \begin{figure}
   \centering
