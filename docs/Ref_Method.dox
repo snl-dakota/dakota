@@ -2556,7 +2556,7 @@ of the objective function(s) and constraints for each population member)
 <li> Evaluate the new population members.
 
 <li> Assess the fitness of each member in the population.  There are a number
-of ways to evaluate the fitness of the members of the populations.  Choice
+of ways to evaluate the fitness of the members of the population.  Choice
 of fitness assessor operators is strongly related to the type of replacement 
 algorithm being used and can have a profound effect on the
 solutions selected for the next generation. For
@@ -2619,9 +2619,9 @@ frontier from generation to generation.  When the changes occurring over a user
 specified number of generations fall below a user specified threshold, the
 algorithm stops.
 
-<li> Peroform post processing.  This step is new as of JEGA v2.1.
+<li> Perform post processing.  This step is new as of JEGA v2.1.
 The purpose of this operation is to perform any needed data manipulations on the
-final solution deemed necessary.  Currently the the \c distance_postprocessor
+final solution deemed necessary.  Currently the \c distance_postprocessor
 is the only one other than the \c null_postprocessor.  The
 \c distance_postprocessor is specifically for use with the MOGA and reduces the
 final solution set size such that a minimum distance in each direction exists
