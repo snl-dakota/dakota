@@ -337,7 +337,9 @@ int not_executable(const char *dname, const char *tdir)
 				}
 #endif
 			}
-		if (!*p1)
+		if (p1 == 0)
+			goto ret;
+		else if (!*p1)
 			break;
 		for(p = p1 + 1; *p <= ' '; ++p)
 		while(*p <= ' ' && *p)
