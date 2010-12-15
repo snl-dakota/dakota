@@ -24,27 +24,25 @@ namespace Dakota {
 \section ModelDescr Model Description
 
 
-The model specification in a DAKOTA input file specifies the
-components to be used in constructing a particular model
-instance. This specification selects a Model from the model hierarchy,
-which includes SingleModel, DataFitSurrModel, HierarchSurrModel, and
-NestedModel derived classes.  Depending on the type of derived model,
-different sub-specifications are needed to construct different
-components of the model.  In all cases, however, the model provides
-the logical unit for determining how a set of variables is mapped into
-a set of responses in support of an iterative method.
+A DAKOTA model specifies how variables are mapped into a set of
+responses in support of an iterative method and the model
+specification in an input file dictates the components to be used in
+constructing a particular model instance. This specification selects a
+Model from the model hierarchy, which includes SingleModel,
+DataFitSurrModel, HierarchSurrModel, and NestedModel derived classes.
+Depending on the type of derived model, different sub-specifications
+are needed to construct different components of the model.
 
 Several examples follow. The first example shows a minimal
-specification for a single model.
+specification for a single model, which is the default model when no
+models are specified by the user.
 \verbatim
 model,
 	single
 \endverbatim
-This example does not provide any pointers and therefore relies on the
-default behavior of constructing the model with the last variables,
-interface, and responses specifications parsed.  This is also the
-default model specification, for the case where no model
-specifications are provided by the user.
+This example does not provide any pointer strings and therefore relies
+on the default behavior of constructing the model with the last
+variables, interface, and responses specifications parsed.
 
 The next example displays a surrogate model specification which
 selects a quadratic polynomial from among the global approximation
@@ -106,20 +104,20 @@ model,
 \endverbatim
 
 The <tt>\<model independent controls\></tt> are those controls which
-are valid for all models. Referring to <a
-href="dakota.input.summary">dakota.input.summary</a>, these controls are
-defined externally from and prior to the model selection blocks. The
-model selection blocks are all required group specifications separated
-by logical OR's, where the model selection must be \c single OR \c
-surrogate OR \c nested. If a \c surrogate model is specified, a
-secondary selection must be made for its type: \c global, \c
-multipoint, \c local, or \c hierarchical.  The <tt>\<model dependent
-controls\></tt> are those controls which are only meaningful for a
-specific model.  These controls are defined within each model
-selection block. Defaults for model independent and model dependent
-controls are defined in DataModel.  The following sections provide
-additional detail on the model independent controls followed by the
-model selections and their corresponding model dependent controls.
+are valid for all models. Referring to dakota.input.summary, these
+controls are defined externally from and prior to the model selection
+blocks. The model selection blocks are all required group
+specifications separated by logical OR's, where the model selection
+must be \c single OR \c surrogate OR \c nested. If a \c surrogate
+model is specified, a secondary selection must be made for its type:
+\c global, \c multipoint, \c local, or \c hierarchical.  The
+<tt>\<model dependent controls\></tt> are those controls which are
+only meaningful for a specific model.  These controls are defined
+within each model selection block. Defaults for model independent and
+model dependent controls are defined in DataModel.  The following
+sections provide additional detail on the model independent controls
+followed by the model selections and their corresponding model
+dependent controls.
 
 
 \section ModelIndControl Model Independent Controls
@@ -291,79 +289,271 @@ optimization and least squares methods (see SurrBasedMinimizer and its
 derived classes and \ref MethodSB), in which the goals are to reduce
 expense by minimizing the number of truth function evaluations and to
 smooth out noisy data with a global data fit.  However, the use of
-surrogate models is not restricted in any way to optimization
-techniques, and in fact, the uncertainty quantification methods and
-optimization under uncertainty strategy are other primary users.
+surrogate models is not restricted to optimization techniques;
+uncertainty quantification and optimization under uncertainty methods
+are other primary users.
 
 The following sections present the \c global, \c multipoint, \c local,
-or \c hierarchical specification groups in further detail.
+and \c hierarchical specification groups in further detail.
 
 
 \subsection ModelSurrG Global approximations
 
-The global surrogate model specification requires the specification of
-one of the following approximation methods: \c gaussian_process, \c
-kriging, \c mars, \c moving_least_squares, \c neural_network, <!-- \c
-orthogonal_polynomial, --> \c polynomial, or \c radial_basis.  These
-specifications invoke a gaussian process approximation, a kriging
-interpolation approximation (the kriging implementation is all new in
-DAKOTA 5.1), a multivariate adaptive regression spline approximation,
-a moving least squares approximation, a layered perceptron artificial
-neural network approximation, <!-- an orthogonal polynomial (Hermite,
-Legendre, Laguerre, Jacobi, and/or generalized Laguerre)
-approximation, --> a polynomial regression approximation, or a radial
-basis function approximation, respectively.  In the polynomial case,
-the order of the polynomial (linear, quadratic, or cubic) must be
-specified.
+The global surrogate model requires specification of one of the
+following approximation types: \c polynomial, \c gaussian_process, \c
+kriging, \c neural_network, \c mars, \c moving_least_squares, <!-- \c
+orthogonal_polynomial, --> or \c radial_basis.  These specifications
+will create a polynomial, Gaussian process, kriging interpolation
+(significantly updated as of DAKOTA 5.1), layered perceptron
+artificial neural network approximation, multivariate adaptive
+regression spline, moving least squares, <!-- an orthogonal polynomial
+(Hermite, Legendre, Laguerre, Jacobi, and/or generalized Laguerre)
+approximation, --> or radial basis function approximation,
+respectively.  All these approximations are implemented in \ref
+Giunta2006 "SurfPack" except the Gaussian process model, which is
+implemented directly in DAKOTA.
 
-In the \c kriging case, a vector of \c correlation_lengths can be
-specified to bypass the automatic determination of correlation
-parameters.  (A correlation parameter equals one-half divided by the
-square of the corresponding correlation length. This definition of the
-correlation lengths makes their effect on the behavior of the gaussian
-correlation function directly analogous to that of the standard
-deviation of a gaussian (normal) distribution.) For the \c
-gaussian_process approximation, the correlation parameters are always
-chosen by an internal global optimization procedure.  The kriging
-model allows optional sub-specification of the method used to select
-the correlation lengths. The \c optimization_method keyword can be
-followed by any of \c 'global' (this is the default), \c 'local', \c
-'sampling', and \c 'none'.  The global optimizer is the same one used
-by the gaussian process approximation.  However, the Kriging model
-searches in a much smaller "feasible region" of correlation lengths.
-If the \c 'none' option is selected, and \c correlation_lengths are
-not directly specified, then the center (in log scale) of the feasible
-region will be selected. This center is also used as the starting
-point for \c 'local' optimization.  The small feasible region
-typically contains small/large enough correlation lengths to include
-both well conditioned correlation matrices and either the globally
-optimal, or at least a near optimal, correlation
-matrix. Ill-conditioned correlation matrices are explicitly excluded
-from consideration based on (an estimate of) their condition
-number. The gaussian process deals with ill conditioning in 2 ways.
-First, when it encounters a non-invertible correlation matrix it
-iteratively increases the size of the "nugget," but in such cases the
-gaussian process will approximate (smooth) rather than interpolate the
-data. Second, the GP also has an option for \c point_selection to
-avoid ill-conditioning when the number of points becomes large.  This
-option calls a greedy algorithm that chooses a subset of points with
-which to build the gaussian process.  These points are "optimal" in
-terms of creating a gaussian process with low prediction error.  As a
-default, there is no point selection.  Note that in general, one would
-not need point selection in trust-region methods because only a small
-number of points are used to develop a surrogate within each trust
-region.  The point selection option will be most useful in cases where
-the gaussian process is built on a "large" number of points, where
-large is more than a hundred or a few hundred points, depending on the
-number of variables and the spacing of the sample points.  The user
-can specify the trend function of the kriging and gaussian process
-models using the \c trend keyword.  For both models, the trend type
-can be \c constant, \c linear, or \c reduced_quadratic; the default
-for both is \c reduced_quadratic.  The \c kriging approximation has
-the additional option of \c quadratic.  The \c reduced_quadratic trend
-function includes the main effects but not mixed/interaction terms;
-prior to DAKOTA 5.1, it was selected for the gaussian process via the
-\c quadratic option.
+In the polynomial case, the order of the polynomial (linear,
+quadratic, or cubic) must be specified. 
+
+While historically the \c gaussian_process and \c kriging models were
+drastically different, as of DAKOTA 5.1, their features and
+implementations are more similar.  The trend function of both the
+kriging and Gaussian process models is selected using the \c trend
+keyword, with options \c constant, \c linear, or \c reduced_quadratic
+(default).  The \c kriging approximation has the additional option of
+(full) \c quadratic.  The \c reduced_quadratic trend function includes
+the main effects, but not mixed/interaction terms; prior to DAKOTA
+5.1, it was selected for the Gaussian process via the \c quadratic
+option.
+
+For the \c gaussian_process approximation, the correlation parameters
+are always chosen by an internal global optimization procedure.
+Ill-conditioning is a common challenge in the construction of Gaussian
+process models.  The \c gaussian_process deals with ill-conditioning
+in two ways.  First, when it encounters a non-invertible correlation
+matrix it iteratively increases the size of a "nugget," but in such
+cases the resulting approximation smooths rather than interpolates the
+data. Second, the GP has an option for \c point_selection to avoid
+ill-conditioning when the number of points becomes large.  This option
+uses a greedy algorithm to choose a subset of points with which to
+build the Gaussian process.  These points are "optimal" in terms of
+creating a Gaussian process with low prediction error.  By default,
+there is no point selection.  Typically, one should not need point
+selection in trust-region methods because a small number of points are
+used to develop a surrogate within each trust region.  Point selection
+is most beneficial when constructing with a "large" number of points,
+typically more than order one hundred, though this depends on the
+number of variables and spacing of the sample points.
+
+By default, the kriging model uses a global optimization algorithm to
+determine the correlation parameters, however one may force a
+particular approach by specifying \c optimization_method followed by
+any of \c 'global', \c 'local', \c 'sampling', or \c 'none'.
+Alternately, a vector of \c correlation_lengths can be specified,
+bypassing their automatic determination.  (A correlation parameter
+equals one-half divided by the square of the corresponding correlation
+length. This definition of the correlation lengths makes their effect
+on the Gaussian correlation function directly analogous to that of the
+standard deviation of a Gaussian (normal) distribution.)  When
+performing optmization to determine correlation parameters, the
+Kriging model searches in a much smaller "feasible region" of
+correlation lengths.  If the \c 'none' option is selected, and \c
+correlation_lengths are not directly specified, then the center (in
+log scale) of the feasible region will be selected. This center is
+also used as the starting point for \c 'local' optimization.  The
+small feasible region typically contains small/large enough
+correlation lengths to include both well-conditioned correlation
+matrices and either the globally optimal, or at least a near-optimal,
+correlation matrix. Ill-conditioned correlation matrices are
+explicitly excluded from consideration based on (an estimate of) their
+condition number.  The \c max_trials option limits the number of
+internal likelihood function evaluations used in constructing the
+kriging model.
+
+<!-- TODO: document MARS, ANN, and RBF controls -->
+Table \ref T6d4 "6.4" summarizes the global approximation selction
+specifications.
+
+\anchor T6d4
+<table>
+<caption align = "top">
+\htmlonly
+Table 6.4
+\endhtmlonly
+Specification detail for global approximations: global 
+approximation type
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
+<td>Global approximations 
+<td>\c global
+<td>none
+<td>Required group (1 of 4 selections)
+<td>N/A
+<tr>
+<td>Polynomial
+<td>\c polynomial
+<td>\c linear | \c quadratic | \c cubic
+<td>Required group (1 of 7 selections)
+<td>N/A
+<tr>
+<td>Gaussian process
+<td>\c gaussian_process
+<td>none
+<td>Required (1 of 7 selections)
+<td>N/A
+<tr>
+<td>GP trend function
+<td>\c trend
+<td>\c constant | \c linear | \c reduced_quadratic
+<td>Optional
+<td>reduced_quadratic trend
+<tr>
+<td>GP point selection
+<td>\c point_selection
+<td>none
+<td>Optional
+<td>no point selection
+<tr>
+<td>Kriging interpolation
+<td>\c kriging
+<td>none
+<td>Required group (1 of 7 selections)
+<td>N/A
+<tr>
+<td>Kriging trend function
+<td>\c trend
+<td>\c constant | \c linear | \c reduced_quadratic | \c quadratic
+<td>Optional
+<td>reduced_quadratic trend
+<td>
+<tr>
+<td>Kriging correlation lengths
+<td>\c correlation_lengths
+<td>list of reals
+<td>Optional
+<td>internally computed correlation_lengths
+<tr>
+<td>Kriging optimization method
+<td>\c optimization_method
+<td>\c 'global' | \c 'local' | \c 'sampling' | \c 'none'
+<td>Optional 
+<td>global 
+<tr>
+<td>Kriging maximum trials
+<td>\c max_trials
+<td>integer
+<td>Optional
+<td>
+<tr>
+<td>Artificial neural network
+<td>\c neural_network
+<td>none
+<td>Required (1 of 7 selections)
+<td>N/A
+<tr>
+<td>ANN number nodes
+<td>\c nodes
+<td>integer
+<td>Optional
+<td>
+<tr>
+<td>ANN range
+<td>\c range
+<td>real
+<td>Optional
+<td>
+<tr>
+<td>ANN random weight
+<td>\c random_weight
+<td>integer
+<td>Optional
+<td>
+<tr>
+<td>Multivariate adaptive regression splines
+<td>\c mars
+<td>none
+<td>Required (1 of 7 selections)
+<td>N/A
+<tr>
+<td>MARS maximum bases
+<td>\c max_bases
+<td>integer
+<td>Optional
+<td>
+<tr>
+<td>MARS interpolation
+<td>\c interpolation
+<td>\c linear | \c cubic
+<td>Optional
+<td>
+<tr>
+<td>Moving least squares
+<td>\c moving_least_squares
+<td>none
+<td>Required (1 of 7 selections)
+<td>N/A
+<tr>
+<td>MLS polynomial order
+<td>\c poly_order
+<td>integer
+<td>Optional
+<td>
+<tr>
+<td>MLS weight function
+<td>\c weight_function
+<td>integer
+<td>Optional
+<td>
+<!--
+<tr>
+<td>Orthogonal polynomial
+<td>\c orthogonal_polynomial
+<td>none
+<td>Required (1 of 7 selections)
+<td>N/A
+-->
+<tr>
+<td>Radial basis functions
+<td>\c radial_basis_functions
+<td>none
+<td>Required group (1 of 7 selections)
+<td>N/A
+<tr>
+<td>RBF number of bases
+<td>\c bases
+<td>integer
+<td>Optional
+<td>
+<tr>
+<td>RBF maximum points
+<td>\c max_pts
+<td>integer
+<td>Optional
+<td>
+<tr>
+<td>RBF minimum partitions
+<td>\c min_partition
+<td>integer
+<td>Optional
+<td>
+<tr>
+<td>RBF maximum subsets
+<td>\c bases
+<td>integer
+<td>Optional
+<td>
+</table>
+
+Table \ref T6d5 "6.5" summarizes the remaining global approximation
+specifications, including DACE method and sample resue, correction,
+and use of gradient data.
 
 For each of the global surrogates, \c dace_method_pointer, \c
 reuse_samples, \c correction, and \c use_gradients can be optionally
@@ -437,185 +627,7 @@ the use of gradient data in the global approximation builds. This
 capability is currently supported in SurrBasedLocalMinimizer,
 Pecos::SurrogateDataPoint, and \ref Approximation::build
 "Approximation::build()", but is not yet supported in any global
-approximation derived class redefinitions of build().  Tables \ref
-T6d4 "6.4" and \ref T6d5 "6.5" summarizes the global approximation
-specifications.
-
-\anchor T6d4
-<table>
-<caption align = "top">
-\htmlonly
-Table 6.4
-\endhtmlonly
-Specification detail for global approximations: global 
-approximation type
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Global approximations 
-<td>\c global
-<td>none
-<td>Required group (1 of 4 selections)
-<td>N/A
-<tr>
-<td>Artificial neural network
-<td>\c neural_network
-<td>none
-<td>Required (1 of 7 selections)
-<td>N/A
-<tr>
-<td>ANN number nodes
-<td>\c nodes
-<td>integer
-<td>Optional
-<td>
-<tr>
-<td>ANN range
-<td>\c range
-<td>real
-<td>Optional
-<td>
-<tr>
-<td>ANN random weight
-<td>\c random_weight
-<td>integer
-<td>Optional
-<td>
-<tr>
-<td>Gaussian process
-<td>\c gaussian_process
-<td>none
-<td>Required (1 of 7 selections)
-<td>N/A
-<tr>
-<td>GP point selection
-<td>\c point_selection
-<td>none
-<td>Optional
-<td>no point selection
-<tr>
-<td>GP trend function
-<td>\c trend
-<td>\c constant | \c linear | \c reduced_quadratic
-<td>Optional
-<td>reduced_quadratic trend
-<tr>
-<td>Kriging interpolation
-<td>\c kriging
-<td>none
-<td>Required group (1 of 7 selections)
-<td>N/A
-<tr>
-<td>Kriging correlation lengths
-<td>\c correlation_lengths
-<td>list of reals
-<td>Optional
-<td>internally computed correlation_lengths
-<tr>
-<td>Kriging optimization method
-<td>\c optimization_method
-<td>\c 'global' | \c 'local' | \c 'sampling' | \c 'none'
-<td>Optional 
-<td>global 
-<tr>
-<td>Kriging maximum trials
-<td>\c max_trials
-<td>integer
-<td>Optional
-<td>
-<tr>
-<td>Kriging trend function
-<td>\c trend
-<td>\c constant | \c linear | \c reduced_quadratic | \c quadratic
-<td>Optional
-<td>reduced_quadratic trend
-<td>
-<tr>
-<td>Multivariate adaptive regression splines
-<td>\c mars
-<td>none
-<td>Required (1 of 7 selections)
-<td>N/A
-<tr>
-<td>MARS maximum bases
-<td>\c max_bases
-<td>integer
-<td>Optional
-<td>
-<tr>
-<td>MARS interpolation
-<td>\c interpolation
-<td>\c linear | \c cubic
-<td>Optional
-<td>
-<tr>
-<td>Moving least squares
-<td>\c moving_least_squares
-<td>none
-<td>Required (1 of 7 selections)
-<td>N/A
-<tr>
-<td>MLS polynomial order
-<td>\c poly_order
-<td>integer
-<td>Optional
-<td>
-<tr>
-<td>MLS weight function
-<td>\c weight_function
-<td>integer
-<td>Optional
-<td>
-<!--
-<tr>
-<td>Orthogonal polynomial
-<td>\c orthogonal_polynomial
-<td>none
-<td>Required (1 of 7 selections)
-<td>N/A
--->
-<tr>
-<td>Polynomial
-<td>\c polynomial
-<td>\c linear | \c quadratic | \c cubic
-<td>Required group (1 of 7 selections)
-<td>N/A
-<tr>
-<td>Radial basis functions
-<td>\c radial_basis_functions
-<td>none
-<td>Required group (1 of 7 selections)
-<td>N/A
-<tr>
-<td>RBF number of bases
-<td>\c bases
-<td>integer
-<td>Optional
-<td>
-<tr>
-<td>RBF maximum points
-<td>\c max_pts
-<td>integer
-<td>Optional
-<td>
-<tr>
-<td>RBF minimum partitions
-<td>\c min_partition
-<td>integer
-<td>Optional
-<td>
-<tr>
-<td>RBF maximum subsets
-<td>\c bases
-<td>integer
-<td>Optional
-<td>
-</table>
+approximation derived class redefinitions of build().
 
 \anchor T6d5
 <table>
@@ -961,9 +973,8 @@ combination by employing empty strings (\c '') for particular omitted
 mappings (the number of strings in user-supplied primary and secondary
 variable mapping specifications must equal the total number of active
 top-level variables, including both continuous and discrete types).
-The ordering of the active variables is the same as shown in 
-<a href="dakota.input.summary">dakota.input.summary</a> and as presented in 
-\ref VarCommands.
+The ordering of the active variables is the same as shown in
+dakota.input.summary and as presented in \ref VarCommands.
 
 If inactive variables are present at the outer level, then the default
 type 3 mapping is used for these variables; that is, outer loop

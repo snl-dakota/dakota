@@ -150,14 +150,14 @@ used to enact model adaptivity in future strategy developments.
 
 The ordering of variables is important, and a consistent ordering is
 employed throughout the DAKOTA software.  It is the same ordering as
-shown in <a href="dakota.input.summary">dakota.input.summary</a> and as
-presented in the outline of this chapter.  That ordering can be
-summarized as continuous followed by discrete integer followed by
-discrete real within each of the following types: design, aleatory
-uncertain, epistemic uncertain, and state.  Ordering of variable types
-below this granularity (e.g., from normal to histogram bin within
-continuous aleatory uncertain) is defined somewhat arbitrarily, but is
-enforced consistently throughout the code.
+shown in dakota.input.summary and as presented in the outline of this
+chapter.  That ordering can be summarized as continuous followed by
+discrete integer followed by discrete real within each of the
+following types: design, aleatory uncertain, epistemic uncertain, and
+state.  Ordering of variable types below this granularity (e.g., from
+normal to histogram bin within continuous aleatory uncertain) is
+defined somewhat arbitrarily, but is enforced consistently throughout
+the code.
 
 Several examples follow. In the first example, two continuous design
 variables are specified:
@@ -298,15 +298,14 @@ variables,
 	<discrete state set real variables specification>
 \endverbatim
 
-Referring to <a href="dakota.input.summary">dakota.input.summary</a>, it is
-evident from the enclosing brackets that the set identifier
-specification, the uncertain correlation specification, and each of
-the variables specifications are all optional. The set identifier and
-uncertain correlation are stand-alone optional specifications, whereas
-the variables specifications are optional group specifications,
-meaning that the group can either appear or not as a unit. If any part
-of an optional group is specified, then all required parts of the
-group must appear.
+Referring to dakota.input.summary, it is evident from the enclosing
+brackets that the set identifier specification, the uncertain
+correlation specification, and each of the variables specifications
+are all optional. The set identifier and uncertain correlation are
+stand-alone optional specifications, whereas the variables
+specifications are optional group specifications, meaning that the
+group can either appear or not as a unit. If any part of an optional
+group is specified, then all required parts of the group must appear.
 
 The optional status of the different variable type specifications
 allows the user to specify only those variables which are present

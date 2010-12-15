@@ -151,15 +151,15 @@ implementations from one method to the next, the implementations of
 each of the strategy independent controls are consistent for all
 strategies that use them. The <tt>\<strategy dependent controls\></tt>
 are those controls which are only meaningful for a specific
-strategy. Referring to <a href="dakota.input.summary">dakota.input.summary</a>, 
-the strategy independent controls are those controls defined
-externally from and prior to the strategy selection blocks. They are
-all optional. The strategy selection blocks are all required group
-specifications separated by logical OR's (\c hybrid OR \c multi_start
-OR \c pareto_set OR \c single_method). Thus, one and only one strategy
-selection must be provided.  The strategy dependent controls are those
-controls defined within the strategy selection blocks. Defaults for
-strategy independent and strategy dependent controls are defined in
+strategy. Referring to dakota.input.summary, the strategy independent
+controls are those controls defined externally from and prior to the
+strategy selection blocks. They are all optional. The strategy
+selection blocks are all required group specifications separated by
+logical OR's (\c hybrid OR \c multi_start OR \c pareto_set OR \c
+single_method). Thus, one and only one strategy selection must be
+provided.  The strategy dependent controls are those controls defined
+within the strategy selection blocks. Defaults for strategy
+independent and strategy dependent controls are defined in
 DataStrategy.  The following sections provide additional detail on the
 strategy independent controls followed by the strategy selections and
 their corresponding strategy dependent controls.
@@ -181,7 +181,7 @@ a name to use for this file (\c dakota_tabular.dat is the default).
 Within the file, the variables and response functions appear as
 columns and each function evaluation provides a new table row.  This
 capability is most useful for post-processing of DAKOTA results with
-3rd party graphics tools such as MATLAB, Tecplot, etc.  There is no
+third-party graphics tools such as MATLAB, Tecplot, etc.  There is no
 dependence between the \c graphics flag and the \c
 tabular_graphics_data flag; they may be used independently or
 concurrently.  Numeric output precision (as passed to the C++ control

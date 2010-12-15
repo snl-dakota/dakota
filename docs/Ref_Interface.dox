@@ -109,24 +109,24 @@ interface,
 \endverbatim
 
 The <tt>\<interface independent controls\></tt> are those controls
-which are valid for all interfaces. Referring to <a
-href="dakota.input.summary">dakota.input.summary</a>, these controls are
-defined externally from the algebraic mappings and simulation
-interface selection blocks (before and after). Both the algebraic
-mappings specification and the simulation interface selection are
-optional specifications, allowing the use of algebraic mappings alone,
-simulation-based mappings alone, or a combination.  The simulation
-interface selection blocks are all required group specifications
-separated by logical OR's, where the interface selection must be \c
-system, \c fork, \c direct, or \c grid. The <tt>\<interface dependent
-controls\></tt> are those controls which are only meaningful for a
-specific simulation interface selection.  These controls are defined
-within each interface selection block. Defaults for interface
-independent and simulation interface dependent controls are defined in
-DataInterface.  The following sections provide additional detail on
-the interface independent controls followed by the algebraic mappings
-specification, the simulation interface selections, and their
-corresponding simulation interface dependent controls.
+which are valid for all interfaces. Referring to dakota.input.summary,
+these controls are defined externally from the algebraic mappings and
+simulation interface selection blocks (before and after). Both the
+algebraic mappings specification and the simulation interface
+selection are optional specifications, allowing the use of algebraic
+mappings alone, simulation-based mappings alone, or a combination.
+The simulation interface selection blocks are all required group
+specifications separated by logical OR's, where the interface
+selection must be \c system, \c fork, \c direct, or \c grid. The
+<tt>\<interface dependent controls\></tt> are those controls which are
+only meaningful for a specific simulation interface selection.  These
+controls are defined within each interface selection block. Defaults
+for interface independent and simulation interface dependent controls
+are defined in DataInterface.  The following sections provide
+additional detail on the interface independent controls followed by
+the algebraic mappings specification, the simulation interface
+selections, and their corresponding simulation interface dependent
+controls.
 
 
 \section InterfIndControl Interface Independent Controls

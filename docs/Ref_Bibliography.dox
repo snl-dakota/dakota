@@ -65,12 +65,13 @@ Structures, Structural Dynamics, and Materials Conference (8th AIAA
 Non-Deterministic Approaches Conference)</i>, Newport, Rhode Island,
 May 1 - 4.
 
-\li \anchor UsersMan Adams, B. M., Bohnhoff, W. J., Dalbey, K. R., 
-Eddy, J. P., Eldred, M. S., Gay, D. M., Haskell, K., Hough, P. D., 
-and Swiler, L. P., 2010.  "DAKOTA: A Multilevel Parallel Object-Oriented 
-Framework for Design Optimization, Parameter Estimation, Uncertainty 
-Quantification, and Sensitivity Analysis.  Version 5.0 Users Manual," 
-Sandia Technical Report SAND2010-2183, 2010.
+\li \anchor UsersMan Adams, B. M., Bohnhoff, W. J., Dalbey, K. R.,
+Eddy, J. P., Eldred, M. S., Gay, D. M., Haskell, K., Hough, P. D., and
+Swiler, L. P., 2010.  "DAKOTA: A Multilevel Parallel Object-Oriented
+Framework for Design Optimization, Parameter Estimation, Uncertainty
+Quantification, and Sensitivity Analysis.  Version 5.0 Users Manual,"
+Sandia Technical Report SAND2010-2183, December 2009; updated "Version
+5.1 Users Manual," December 2010.
 
 \li \anchor Eldred2004a Eldred, M. S., Giunta, A. A., and Collis,
 S. S., 2004. "Second-Order Corrections for Surrogate-Based
@@ -105,6 +106,13 @@ Sandia Technical Report SAND2008-2261P.  Available as http://www.sandia.gov/~dmg
 Wright, M. H., 1986.  "User's Guide for NPSOL (Version 4.0): A Fortran
 Package for Nonlinear Programming," System Optimization Laboratory
 Technical Report SOL-86-2, Stanford University, Stanford, CA.
+
+\li \anchor Giunta2006 Giunta, A. A., Swiler, L.P., Brown, S.L,
+Eldred, M.S., Richards, M.D., and Cyr, E.C., 2006. "The Surfpack
+Software Library for Surrogate Modeling of Sparse, Irregularly Spaced
+Multidimensional Data," paper AIAA-2006-7049 in <i>Proceedings of the
+11th AIAA/ISSMO Multidisciplinary Analysis and Optimization
+Conference</i>, Portsmouth, VA.
 
 \li \anchor Gunzburger2004 Gunburger, M. and J. Burkardt, 2004. "Uniformity 
 Measures for Point Samples in Hypercubes."  Available on John Burkardt's 

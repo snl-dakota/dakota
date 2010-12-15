@@ -31,77 +31,76 @@ namespace Dakota {
 \section IntroCmdsOverview Overview
 
 
-In the DAKOTA system, a \e strategy creates and manages \e iterators
-and \e models. A model, generally speaking, contains a set of \e
-variables, an \e interface, and a set of \e responses, and the
-iterator operates on the model to map the variables into responses
-using the interface. Each of these six pieces (strategy, method,
-model, variables, interface, and responses) are separate
-specifications in the user's input file, and as a whole, determine the
-study to be performed during an execution of the DAKOTA software. The
-number of strategies which can be invoked during a DAKOTA execution is
-limited to one. This strategy, however, may invoke multiple
+In DAKOTA, a \e strategy creates and manages \e iterators and \e
+models. A model, generally speaking, contains a set of \e variables,
+an \e interface, and a set of \e responses.  An iterator repeatedly
+operates on the model to map the variables into responses using the
+interface. Each of these six pieces (strategy, method, model,
+variables, interface, and responses) are separate specifications in
+the user's input file, and as a whole, determine the study to be
+performed during an execution of the DAKOTA software. A DAKOTA
+execution is limited to a single strategy, which may invoke multiple
 methods. Furthermore, each method may have its own model, consisting
-of (generally speaking) its own set of variables, its own interface,
-and its own set of responses. Thus, there may be multiple
-specifications of the method, model, variables, interface, and
-responses sections.
+of (generally speaking) its own variables, interface, and set of
+responses. Thus, there may be multiple specifications of the method,
+model, variables, interface, and responses sections.
 
-The syntax of DAKOTA specification is governed by the New Input Deck
-Reader (NIDR) parsing system [\ref Gay2008 "Gay, 2008"],
-which uses the dakota.input.nspec file to describe the allowable inputs
-to the system.  A shortened form of this input specification file,
-dakota.input.summary, provides a quick
-reference to the allowable system inputs from which a particular input file
-(e.g., \c dakota.in) can be derived.  This automatically derived shortened
-form omits implementation details not needed in a quick reference.
+DAKOTA input is most commonly specified through a text file, whose
+syntax is governed by the New Input Deck Reader (NIDR) parsing system
+[\ref Gay2008 "Gay, 2008"], in conjunction with the dakota.input.nspec
+file which describes allowable inputs.  A more concise version of the
+input specification file, dakota.input.summary, offers a quick
+reference to keywords and data values from which a particular input
+file (e.g., \c dakota.in) may be derived.  This automatically derived
+shortened form omits implementation details not needed in a quick
+reference.
 
-This Reference Manual focuses on providing complete details for the
-allowable specifications in an input file to the DAKOTA program.
-Related details on the name and location of the DAKOTA program,
-command line inputs, and execution syntax are provided in the Users
-Manual [\ref UsersMan "Adams et al., 2010"].
+This Reference Manual focuses on the details of allowable
+specifications in a file input to the DAKOTA program.  Related details
+on the name and location of the \dakota program, command line inputs,
+and execution syntax are provided in the Users Manual [\ref UsersMan
+"Adams et al., 2010"].
 
 
 \section IntroCmdsInpSpec NIDR Input Specification File
 
 
 DAKOTA input is governed by the NIDR input specification file. This
-file (dakota.input.nspec) is used by a code generator to create parsing
-system components that are compiled into the DAKOTA executable (refer
-to \ref SpecChange for additional information). Therefore,
-dakota.input.nspec and its summary, dakota.input.summary, are the
-definitive source for input syntax,
-capability options, and optional and required capability
-sub-parameters. Beginning users may find dakota.input.summary more confusing than
-helpful and, in this case, adaptation of example input files to a
-particular problem may be a more effective approach. However, advanced
-users can master all of the various input specification possibilities
-once the structure of the input specification file is understood.
+file (dakota.input.nspec) is used by a code generator to create
+parsing system components that are compiled into the DAKOTA executable
+(refer to \ref SpecChange for additional information). Therefore,
+dakota.input.nspec and its derived summary, dakota.input.summary, are
+the definitive source for input syntax, capability options, and
+optional and required capability sub-parameters for any given DAKOTA
+version. Beginning users may find dakota.input.summary overwhelming or
+confusing and will likely derive more benefit from adapting example
+input files to a particular problem. However, advanced users can
+master the many input specification possibilities by understanding the
+structure of the input specification file.
 
-Refer to the dakota.input.summary file for current input specifications.
-From this file listing, it can be seen that the main structure of the
-strategy specification is that of several required group
-specifications separated by logical OR's: either hybrid OR multi-start
-OR pareto set OR single method.  The method keyword is the most
-lengthy specification; however, its structure is again relatively
-simple. The structure is that of a set of optional
-method-independent settings followed by a long list of possible
-methods appearing as required group specifications (containing a
-variety of method-dependent settings) separated by OR's.  The model
-keyword reflects a structure of three required group specifications
-separated by OR's.  Within the surrogate model type, the type of
-approximation must be specified with either a global OR multipoint OR
-local OR hierarchical required group specification.  The structure of
-the variables keyword is that of optional group specifications for
-continuous and discrete design variables, a number of different
-uncertain variable distribution types, and continuous and discrete
-state variables. Each of these specifications can either appear or not
-appear as a group. Next, the interface keyword allows the
-specification of either algebraic mappings, simulation-based analysis
-driver mappings, or both.  Within the analysis drivers specification,
-a system OR fork OR direct OR grid group specification must be
-selected.  Finally, within the responses keyword, the primary
+Refer to the dakota.input.summary file for current input
+specifications.  From this file listing, it can be seen that the main
+structure of the strategy specification consists several required
+group specifications separated by logical OR's (indicated by \c |):
+either hybrid OR multi-start OR pareto set OR single method.  The
+method keyword is the most lengthy specification; however, its
+structure is again relatively simple. The structure is a set of
+optional method-independent settings followed by a long list of
+possible methods appearing as required group specifications
+(containing a variety of method-dependent settings) separated by OR's.
+The model keyword reflects a structure of three required group
+specifications separated by OR's.  Within the surrogate model type,
+the type of approximation must be specified with either a global OR
+multipoint OR local OR hierarchical required group specification.  The
+structure of the variables keyword is that of optional group
+specifications for continuous and discrete design variables, a number
+of different uncertain variable distribution types, and continuous and
+discrete state variables. Each of these specifications can either
+appear or not appear as a group. Next, the interface keyword allows
+the specification of either algebraic mappings, simulation-based
+analysis driver mappings, or both.  Within the analysis drivers
+specification, a system OR fork OR direct OR grid group specification
+must be selected.  Finally, within the responses keyword, the primary
 structure is the required specification of the function set (either
 optimization functions OR least squares functions OR generic response
 functions), followed by the required specification of the gradients
@@ -114,11 +113,11 @@ various optional and required specifications. And for additional
 details on NIDR specification logic and rules, refer to [\ref Gay2008
 "Gay, 2008"].
 
-Some keywords, such as those providing bounds on variables,
-have an associated list of values.  When the same value should be
-repeated several times in a row, you can use a notation of the
-form \c n*value instead of repeating the value n times.  For example,
-in \ref IntroCmdsSampleLS below,
+Some keywords, such as those providing bounds on variables, have an
+associated list of values.  When the same value should be repeated
+several times in a row, you can use the notation \c N*value instead of
+repeating the value N times.  For example, in \ref IntroCmdsSampleLS
+below,
 \verbatim
           lower_bounds    -2.0   -2.0
           upper_bounds     2.0    2.0
@@ -152,15 +151,14 @@ could also be written
 \section IntroCmdsMistakes Common Specification Mistakes
 
 
-Spelling mistakes and omission of required parameters are the most common
-errors.   Some causes of errors are more obscure:
+Spelling mistakes and omission of required parameters are the most
+common errors.  Some causes of errors are more obscure:
 
-\li Documentation of new capability sometimes lags the use of new
-capability in executables, especially experimental VOTD executables
-from nightly builds. When parsing errors occur that the
-documentation cannot explain, reference to the particular input
-specification used in building the executable, which is installed
-alongside the executable, will often resolve the errors.
+\li Documentation of new capability sometimes lags its availability in
+source and executables, especially nightly releases. When parsing
+errors occur that the documentation cannot explain, reference to the
+particular input specification used in building the executable, which
+is installed alongside the executable, will often resolve the errors.
 
 \li If you want to compare results with those obtained using
 an earlier version of DAKOTA (prior to 4.1), your input file
@@ -195,16 +193,16 @@ help the user isolate errors in DAKOTA input files.
 
 
 A DAKOTA input file is a collection of fields from the
-dakota.input.summary file that describe the problem to be
-solved by the DAKOTA system. Several examples follow.
+dakota.input.summary file that describe the problem to be solved by
+DAKOTA. Several examples follow.
 
 
 \subsection IntroCmdsSampleOpt Sample 1: Optimization
 
 The following sample input file shows single-method optimization of
 the Textbook Example using DOT's modified method of feasible
-directions. A similar file is available in the test
-directory as \c Dakota/examples/tutorial/dakota_textbook.in.
+directions. A similar file is available as \c
+Dakota/examples/tutorial/dakota_textbook.in.
 
 <!-- \include dakota_textbook.in -->
 
@@ -244,11 +242,11 @@ responses,
 \subsection IntroCmdsSampleLS Sample 2: Least Squares
 
 The following sample input file shows a nonlinear least squares
-solution of the Rosenbrock Example using the NL2SOL method. A
-similar file is available in the test directory as
-\c Dakota/examples/tutorial/dakota_rosenbrock_ls.in.
+solution of the Rosenbrock Example using the NL2SOL method. A similar
+file is available as \c
+Dakota/examples/tutorial/dakota_rosenbrock_ls.in.
 
-<!-- \include dakota_rosenbrock.in -->
+<!-- \include dakota_rosenbrock_ls.in -->
 
 \verbatim
 strategy,
@@ -283,8 +281,8 @@ responses,
 \subsection IntroCmdsSampleUQ Sample 3: Nondeterministic Analysis
 
 The following sample input file shows Latin Hypercube Monte Carlo
-sampling using the Textbook Example. A similar file is available in
-the test directory as \c Dakota/test/dakota_uq_textbook_lhs.in.
+sampling using the Textbook Example. A similar file is available as \c
+Dakota/test/dakota_uq_textbook_lhs.in.
 
 <!-- \include dakota_textbook_lhs.in -->
 
@@ -340,9 +338,9 @@ responses,
 
 The following sample input file shows a 1-D vector parameter study
 using the Textbook Example. It makes use of the default strategy and
-model specifications (\c single_method and \c single, respectively).
-A similar file is available in the test directory as \c
-Dakota/examples/tutorial/dakota_rosenbrock_vector.in.
+model specifications (\c single_method and \c single, respectively),
+so they can be omitted.  A similar file is available in the test
+directory as \c Dakota/examples/tutorial/dakota_rosenbrock_vector.in.
 
 <!-- \include dakota_pstudy.in -->
 
@@ -379,8 +377,8 @@ responses,
 The following sample input file shows a hybrid strategy using three
 methods. It employs a genetic algorithm, pattern search, and full
 Newton gradient-based optimization in succession to solve the Textbook
-Example. A similar file is available in the test directory as \c
-Dakota/test/dakota_hybrid.in.
+Example. A similar file is available as \c
+Dakota/examples/methods/dakota_hybrid.in.
 
 <!-- \include dakota_hybrid.in -->
 
@@ -470,17 +468,17 @@ responses,
  \endverbatim
 
 Additional example input files, as well as the corresponding output
-and graphics, are provided in the Getting Started chapter of the
-Users Manual [\ref UsersMan "Adams et al., 2010"].
+and graphics, are provided in the Tutorial chapter of the Users Manual
+[\ref UsersMan "Adams et al., 2010"].
 
 
 \section IntroCmdsTables Tabular descriptions
 
 
-In the following discussions of keyword specifications, tabular
-formats (Tables \ref T4d1 "4.1" through \ref T9d10 "9.10") are used to
-present a short description of the specification, the keyword used in
-the specification, the type of data associated with the keyword, the
+In the following discussion of keyword specifications, tabular formats
+(Tables \ref T4d1 "4.1" through \ref T9d10 "9.10") are used to present
+a short description of the specification, the keyword used in the
+specification, the type of data associated with the keyword, the
 status of the specification (required, optional, required group, or
 optional group), and the default for an optional specification.
 
@@ -516,12 +514,12 @@ through \ref T6d8 "6.8") in succession.
 /** \file dakota.input.summary
     \brief File containing the input specification for DAKOTA
 
-This file is derived automatically from dakota.input.nspec, which is used
-in the generation of parser system files that are
-compiled into the DAKOTA executable. Therefore, these files are the
-definitive source for input syntax, capability options, and associated
-data inputs. Refer to \ref SpecChange for information on how to modify
-the input specification and propagate the changes through the parsing
+This file is derived automatically from dakota.input.nspec, which is
+used in the generation of parser system files that are compiled into
+the DAKOTA executable. Therefore, these files are the definitive
+source for input syntax, capability options, and associated data
+inputs. Refer to \ref SpecChange for information on how to modify the
+input specification and propagate the changes through the parsing
 system.
 
 Key features of the input specification and the associated user
@@ -555,13 +553,12 @@ input file, only the name of the keyword appears (e.g., \c variables).
 -->
 
 \li Some of the keyword components within the input specification
-indicate that the user must supply <tt>INTEGER</tt>,
-<tt>REAL</tt>, <tt>STRING</tt>, <tt>INTEGERLIST</tt>,
-<tt>REALLIST</tt>, or <tt>STRINGLIST</tt> data as part
-of the specification. In a user input file, the \c "=" is optional,
-data in a <tt>LIST</tt> can be separated by commas or whitespace, and
-the <tt>STRING</tt> data are enclosed in single or double quotes (e.g., \c
-'text_book' or "text_book").
+indicate that the user must supply <tt>INTEGER</tt>, <tt>REAL</tt>,
+<tt>STRING</tt>, <tt>INTEGERLIST</tt>, <tt>REALLIST</tt>, or
+<tt>STRINGLIST</tt> data as part of the specification. In a user input
+file, the \c "=" is optional, data in a <tt>LIST</tt> can be separated
+by commas or whitespace, and the <tt>STRING</tt> data are enclosed in
+single or double quotes (e.g., \c 'text_book' or "text_book").
 
 
 \li In user input files, input is largely order-independent (except for
@@ -579,7 +576,7 @@ would be ambiguous with other DOT method specifications.
 \li In both the input specification and user input files, comments are
 preceded by \c #.
 
-The dakota.input.summary file for DAKOTA V5.0 is:
+The dakota.input.summary file for DAKOTA version 5.1 is:
 
 \include dakota.input.summary
 
