@@ -1224,7 +1224,11 @@ link different analysis packages.
 
 The first stochastic expansion method is the polynomial chaos
 expansion (PCE) described in Ghanem, et
-al.~\cite{Gha99},~\cite{Gha91}.  DAKOTA implements the generalized
+al.~\cite{Gha99},~\cite{Gha91}.  For smooth functions (i.e., analytic,
+infinitely-differentiable) in $L^2$ (i.e., possessing finite
+variance), exponential convergence rates can be obtained under order
+refinement for integrated statistical quantities of interest such as
+mean, variance, and probability.  DAKOTA implements the generalized
 polynomial chaos approach using the Wiener-Askey
 scheme~\cite{XiuKarn02}, in which Hermite, Legendre, Laguerre, Jacobi,
 and generalized Laguerre orthogonal polynomials are used for modeling
@@ -1234,16 +1238,19 @@ respectively\footnote{Orthogonal polynomial selections also exist for
 discrete probability distributions, but are not yet supported in
 DAKOTA.}.  These orthogonal polynomial selections are optimal for
 these distribution types since the inner product weighting function
-and its corresponding support range correspond to the probability
-density functions for these continuous distributions.  In theory,
-exponential convergence rates in response moments can be obtained with
-the optimal basis.  When transformations to independent standard
-random variables (in some cases, approximated by uncorrelated standard
-random variables) are used, the variable expansions are uncoupled,
+corresponds\footnote{Identical support range; weight
+differs by at most a constant factor.} to the probability
+density functions for these continuous distributions.  Orthogonal polynomials
+can be computed for any positive weight function, so these five
+classical orthogonal polynomials may be augmented with
+numerically-generated polynomials for other probability distributions
+(e.g., for lognormal, extreme value, and histogram distributions).
+When independent standard random variables are used (or computed
+through transformation), the variable expansions are uncoupled,
 allowing the polynomial orthogonality properties to be applied on a
 per-dimension basis.  This allows one to mix and match the polynomial
 basis used for each variable without interference with the spectral
-projection scheme for the response.
+projection scheme for the response.  
 
 In non-intrusive PCE, simulations are used as black boxes and the
 calculation of chaos expansion coefficients for response metrics of
@@ -1255,44 +1262,60 @@ against each basis function using inner products and employs the
 polynomial orthogonality properties to extract each coefficient.  Each
 inner product involves a multidimensional integral over the support
 range of the weighting function, which can be evaluated numerically
-using quadrature, cubature, or sampling approaches.  The linear
-regression approach (also known as point collocation or stochastic
-response surfaces) uses a single linear least squares solution to
-solve for the PCE coefficients which best match a set of response
-values obtained from a design of computer experiments.
+using sampling, tensor-product quadrature, Smolyak sparse
+grid~\cite{Smolyak_63}, or cubature~\cite{stroud} approaches.  The
+linear regression approach uses a single linear least squares solution
+to solve for the set of PCE coefficients which best match a set of
+response values obtained from either a design of computer experiments
+(``point collocation''~\cite{pt_colloc1}) or from the subset of tensor
+Gauss points with highest product weight (``probabilistic
+collocation''~\cite{Tatang_95}).
 
 Stochastic collocation (SC) is another stochastic expansion technique
-for UQ that is closely related to PCE.  Whereas PCE estimates
-coefficients for known orthogonal polynomial basis functions, SC forms
-Lagrange interpolation functions for known coefficients.  Since the
-$i^{th}$ interpolation function is 1 at collocation point $i$ and 0
-for all other collocation points, it is easy to see that the expansion
-coefficients are just the response values at each of the collocation
-points.  The formation of multidimensional interpolants with this
-property requires the use of structured collocation point sets derived
-from tensor product or sparse grids.  The key to the approach is
-performing collocation using the Gauss points and weights from the
-same optimal orthogonal polynomials used in generalized PCE, which
-results in the same exponential convergence rates.  A key distinction
-is that, whereas PCE must define an expansion formulation and a
-corresponding coefficient estimation approach (which may not be
-perfectly synchronized), SC requires only a collocation grid
-definition from which the expansion polynomials are derived based on
-Lagrange interpolation.
+for UQ that is closely related to PCE.  As for PCE,
+exponential convergence rates can be obtained under order refinement
+for integrated statistical quantities of interest, provided that the
+response functions are smooth with finite variance.  The primary
+distinction is that, whereas PCE estimates coefficients for known
+orthogonal polynomial basis functions, SC forms Lagrange interpolation
+functions for known coefficients.  
+Interpolation is performed on structured grids such as tensor-product
+or sparse grids.  Starting from a tensor-product multidimensional
+Lagrange interpolant, we have the feature that the $i^{th}$
+interpolation polynomial is 1 at collocation point $i$ and 0 for all
+other collocation points, leading to the use of expansion coefficients
+that are just the response values at each of the collocation points.
+Sparse interpolants are weighted sums of these tensor interpolants;
+%and retain the use of response values as expansion coefficients;
+however, they are only interpolatory for sparse grids based on fully 
+nested rules and will exhibit some interpolation error at the 
+collocation points for sparse grids based on non-nested rules.
+A key to maximizing performance with SC is performing collocation
+using the Gauss points and weights from the same optimal orthogonal
+polynomials used in PCE.  
+For use of standard Gauss integration rules (not nested variants such
+as Gauss-Patterson or Genz-Keister) within tensor-product quadrature,
+tensor PCE expansions and tensor SC interpolants are equivalent in
+that identical polynomial approximations are
+generated~\cite{paul_tpq}.  Moreover, this equivalence can be extended
+to sparse grids based on standard Gauss rules, provided that a sparse
+PCE is formed based on a weighted sum of tensor expansions~\cite{paul_ssg}.
+
 
 \subsection{Orthogonal polynomials in the Askey scheme} \label{uq:expansion:askey}
 
-Table~\ref{TAB:askey} shows the set of polynomials which provide an
-optimal basis for different continuous probability distribution types.
-It is derived from the family of hypergeometric orthogonal polynomials
-known as the Askey scheme~\cite{askey}, for which the Hermite
-polynomials originally employed by Wiener~\cite{wiener} are a subset.
-The optimality of these basis selections derives from their
-orthogonality with respect to weighting functions that correspond to
-the probability density functions (PDFs) of the continuous
-distributions when placed in a standard form.  The density and
-weighting functions differ by a constant factor due to the requirement
-that the integral of the PDF over the support range is one.
+Table~\ref{TAB:askey} shows the set of classical orthogonal
+polynomials which provide an optimal basis for different continuous
+probability distribution types.  It is derived from the family of
+hypergeometric orthogonal polynomials known as the Askey
+scheme~\cite{askey}, for which the Hermite polynomials originally
+employed by Wiener~\cite{wiener} are a subset.  The optimality of
+these basis selections derives from their orthogonality with respect
+to weighting functions that correspond to the probability density
+functions (PDFs) of the continuous distributions when placed in a
+standard form.  The density and weighting functions differ by a
+constant factor due to the requirement that the integral of the PDF
+over the support range is one.
 
 \begin{table}[h]
   \centering
@@ -1322,25 +1345,30 @@ used in Table~\ref{TAB:askey}.
 \subsection{Numerically generated orthogonal polynomials} 
 \label{uq:expansion:beyond_askey}
 
-If all random inputs can be described using independent normal,
-uniform, exponential, beta, and gamma distributions, then generalized
-PCE can be directly applied.  If correlation or other distribution
+If all random inputs can be described using independent normal, 
+uniform, exponential, beta, and gamma distributions, then Askey 
+polynomials can be directly applied.  If correlation or other distribution
 types are present, then additional techniques are required.  One
 solution is to employ nonlinear variable transformations as described
-in Section~\ref{uq:expansion:trans} such that an Askey basis can be applied in
-the transformed space.  This can be effective as shown
+in Section~\ref{uq:expansion:trans} such that an Askey basis can be 
+applied in the transformed space.  This can be effective as shown
 in~\cite{Eld07}, but convergence rates are typically degraded.  In
 addition, correlation coefficients are warped by the nonlinear
-transformation~\cite{Der86}, and transformed correlation values are
-not always readily available.  An alternative is to numerically
-generate the orthogonal polynomials, along with their Gauss points and
-weights, that are optimal for given random variable sets having
-arbitrary probability density functions~\cite{gautschi_book,GolubWelsch69}.
-This preserves the exponential convergence rates for UQ applications 
-with general probabilistic inputs,
+transformation~\cite{Der86}, and simple expressions for these
+transformed correlation values are not always readily available.  An
+alternative is to numerically generate the orthogonal polynomials
+(using Gauss-Wigert~\cite{simpson_gw}, discretized
+Stieltjes~\cite{gautschi_book}, Chebyshev~\cite{gautschi_book}, or
+Gramm-Schmidt~\cite{WillBijl06} approaches) and then compute their
+Gauss points and weights (using the Golub-Welsch~\cite{GolubWelsch69}
+tridiagonal eigensolution).  These solutions are optimal for given
+random variable sets having arbitrary probability density functions and 
+%preserve the exponential convergence rates for general UQ applications,
 %and also eliminates the need to calculate correlation warping.
-but performing this process for general joint density functions with 
-correlation is a topic on ongoing research. 
+eliminate the need to induce additional nonlinearity through variable
+transformations, but performing this process for general joint density
+functions with correlation is a topic of ongoing research (refer to
+Section~\ref{uq:expansion:trans} for additional details).
 
 \subsection{Interpolation polynomials} \label{uq:expansion:interp}
 
@@ -1369,19 +1397,20 @@ r\left(\xi^{i_1}_{j_1},\dots , \xi^{i_n}_{j_n}\right)\,
 = \sum_{j=1}^{N_p} r_j(\boldsymbol{\xi}) \boldsymbol{L}_j(\boldsymbol{\xi})
 \label{eq:lagrange_interp_nd}
 \end{equation}
-where $\boldsymbol{i} = (m_1, m_2, \cdots, m_n)$ are the number of nodes
-used in the $n$-dimensional interpolation and $\xi^{i_k}_{j_m}$ is the 
-$j_m$th point in the $k$th direction.  As will be seen later, interpolation 
-on sparse grids involves a summation of these tensor products with varying 
-$\boldsymbol{i}$ levels.
+where $\boldsymbol{i} = (m_1, m_2, \cdots, m_n)$ are the number of
+nodes used in the $n$-dimensional interpolation and $\xi^i_j$ is the
+$j$-th point in the $i$-th direction.  As will be seen later,
+interpolation on sparse grids involves a summation of these tensor
+products with varying $\boldsymbol{i}$ levels.
 
 
 \subsection{Generalized Polynomial Chaos} \label{uq:expansion:pce}
 
-The set of polynomials from \ref{uq:expansion:askey} are
-used as an orthogonal basis to approximate the functional form between
-the stochastic response output and each of its random inputs.  The
-chaos expansion for a response $R$ takes the form
+The set of polynomials from \ref{uq:expansion:askey}
+and~\ref{uq:expansion:beyond_askey} are used as an orthogonal basis to
+approximate the functional form between the stochastic response output
+and each of its random inputs.  The chaos expansion for a response $R$
+takes the form
 \begin{equation}
 R = a_0 B_0 + \sum_{i_1=1}^{\infty} a_{i_1} B_1(\xi_{i_1}) + 
 \sum_{i_1=1}^{\infty} \sum_{i_2=1}^{i_1} a_{i_1i_2} B_2(\xi_{i_1},\xi_{i_2}) +
@@ -1419,6 +1448,9 @@ B_n(\xi_{i_1}, ..., \xi_{i_n}) =
 \end{equation}
 %which provides a convenient form for sensitivity analysis as described
 %in \ref{uq:expansion:rvsa}.
+In the case of a mixed basis, the same multi-index definition is
+employed although the one-dimensional polynomials $\psi_{m_i^j}$ are
+heterogeneous in type.
 
 \subsubsection{Expansion truncation and tailoring} \label{uq:expansion:pce:exp_tnt}
 
@@ -1429,8 +1461,13 @@ R \cong \sum_{j=0}^P \alpha_j \Psi_j(\boldsymbol{\xi})
 \label{eq:pc_exp_trunc}
 \end{equation}
 Traditionally, the polynomial chaos expansion includes a complete
-basis of polynomials up to a fixed total-order specification.  For
-example, the multidimensional basis polynomials for a second-order
+basis of polynomials up to a fixed total-order specification.  That is,
+for an expansion of total order $p$ involving $n$ random variables, the 
+multi-index defining the set of $\Psi_j$ is constrained by
+\begin{equation}
+\sum_{i=1}^{n} m_i^j \leq p \label{eq:to_multi_index}
+\end{equation}
+For example, the multidimensional basis polynomials for a second-order
 expansion over two random dimensions are
 \begin{eqnarray}
 \Psi_0(\boldsymbol{\xi}) & = & \psi_0(\xi_1) ~ \psi_0(\xi_2) ~~=~~ 1 
@@ -1458,7 +1495,12 @@ expansion.''
 An important alternative approach is to employ a ``tensor-product
 expansion,'' in which polynomial order bounds are applied on a
 per-dimension basis (no total-order bound is enforced) and all
-combinations of the one-dimensional polynomials are included.  
+combinations of the one-dimensional polynomials are included.  That 
+is, the multi-index defining the set of $\Psi_j$ is constrained by
+\begin{equation}
+m_i^j \leq p_i \label{eq:tp_multi_index}
+\end{equation}
+where $p_i$ is the polynomial order bound for the $i$-th dimension.
 In this case, the example basis for $p = 2, n = 2$ is
 \begin{eqnarray}
 \Psi_0(\boldsymbol{\xi}) & = & \psi_0(\xi_1) ~ \psi_0(\xi_2) ~~=~~ 1 
@@ -1484,77 +1526,51 @@ and the total number of terms $N_t$ is
 \begin{equation}
 N_t ~=~ 1 + P ~=~ \prod_{i=1}^{n} (p_i + 1) \label{eq:num_tp_terms}
 \end{equation}
-where $p_i$ is the polynomial order bound for the $i$-th dimension.
 
 It is apparent from Eq.~\ref{eq:num_tp_terms} that the tensor-product
 expansion readily supports anisotropy in polynomial order for each
 dimension, since the polynomial order bounds for each dimension can be
 specified independently.  It is also feasible to support anisotropy
-with total-order expansions, although this involves pruning
-polynomials that satisfy the total-order bound (potentially defined
-from the maximum of the per-dimension bounds) but which violate
-individual per-dimension bounds.  In this case,
-Eq.~\ref{eq:num_to_terms} does not apply.
-
-Additional expansion form alternatives can also be considered.  Of
-particular interest is the tailoring of expansion form to target
-specific monomial coverage as motivated by the integration process
-employed for evaluating chaos coefficients.  If the specific monomial
-set that can be resolved by a particular integration approach is known
-or can be approximated, then the chaos expansion can be tailored to
-synchonize with this set.  Tensor-product and total-order expansions
-can be seen as special cases of this general approach (corresponding
-to tensor-product quadrature and Smolyak sparse grids with linear
-growth rules, respectively), whereas, for example, Smolyak sparse
-grids with nonlinear growth rules could generate synchonized expansion
-forms that are neither tensor-product nor total-order (to be discussed
-later in association with Figure~\ref{fig:pascal_sparse_lev4_Gauss}).
+with total-order expansions, through pruning polynomials that satisfy 
+the total-order bound 
+%(potentially defined from the maximum of the per-dimension bounds)
+but violate individual per-dimension bounds (the number of these
+pruned polynomials would then be subtracted from
+Eq.~\ref{eq:num_to_terms}).  Finally, custom tailoring of the
+expansion form can also be explored, e.g. to closely synchronize with
+monomial coverage in sparse grids through use of a summation of tensor
+expansions (see Section~\ref{sec:spectral_sparse}).
+%Of particular interest is the tailoring of expansion form to target
+%specific monomial coverage as motivated by the integration process
+%employed for evaluating chaos coefficients.  If the specific monomial
+%set that can be resolved by a particular integration approach is known
+%or can be approximated, then the chaos expansion can be tailored to
+%synchonize with this set.  Tensor-product and total-order expansions
+%can be seen as special cases of this general approach (corresponding
+%to tensor-product quadrature and Smolyak sparse grids with linear
+%growth rules, respectively), whereas, for example, Smolyak sparse
+%grids with nonlinear growth rules could generate synchonized expansion
+%forms that are neither tensor-product nor total-order (to be discussed
+%later in association with Figure~\ref{fig:pascal_sparse_lev4_Gauss}).
 In all cases, the specifics of the expansion are codified in the
 multi-index, and subsequent machinery for estimating response values
-at particular $\boldsymbol{\xi}$, evaluating response statistics by
-integrating over $\boldsymbol{\xi}$, etc., can be performed in a
-manner that is agnostic to the exact expansion formulation.
+and statistics from the expansion
+%(estimating response values at particular $\boldsymbol{\xi}$, evaluating
+%response statistics by integrating over $\boldsymbol{\xi}$, etc.)
+can be performed in a manner that is agnostic to the specific 
+expansion form.
 
-%The number of random dimensions, the order of the expansion, and the
-%order of a numerical integration scheme are all potential sources for
-%algorithm adaptivity.
-
-\subsubsection{Dimension independence} \label{uq:expansion:pce:dim_ind}
-
-A generalized polynomial basis is generated by selecting the
-univariate basis that is most optimal for each random input and then
-applying the products as defined by the multi-index to define a mixed
-set of multivariate polynomials.  Similarly, multivariate weighting
-functions involve a product of the one-dimensional weighting functions
-and multivariate quadrature rules involve tensor products of the
-one-dimensional quadrature rules.
-
-The use of independent standard random variables is the critical
-component that allows decoupling of the multidimensional integrals in
-a mixed basis expansion.  It is assumed in this work that the
-uncorrelated standard random variables resulting from the
-transformation described in Section~\ref{uq:expansion:trans} can be
-treated as independent.  This assumption is valid for uncorrelated
-standard normal variables (which motivates an approach of using a
-strictly Hermite basis for problems with correlated inputs), but could
-introduce significant error for other uncorrelated random variable
-types.  For independent variables, the multidimensional integrals
-involved in the inner products of multivariate polynomials decouple to
-a product of one-dimensional integrals involving only the particular
-polynomial basis and corresponding weight function selected for each
-random dimension.  The multidimensional inner products are nonzero
-only if each of the one-dimensional inner products is nonzero, which
-preserves the desired multivariate orthogonality properties for the
-case of a mixed basis.
-% would be interesting to add comparisons among strictly Hermite 
-% PCE vs. generalized PCE for correlated Askey variables.
 
 \subsection{Stochastic Collocation} \label{uq:expansion:sc}
 
 The SC expansion is formed as a sum of a set of multidimensional
-Lagrange interpolation polynomials, one polynomial per collocation
-point.  Since these polynomials have the feature of being equal to 1
-at their particular collocation point and 0 at all other points, the
+Lagrange interpolation polynomials, one polynomial per unique
+collocation point.  Since these polynomials have the feature of being
+equal to 1 at their particular collocation point and 0 at all other
+points\footnote{for tensor interpolants and sparse interpolants based
+on fully nested rules (e.g., Clenshaw-Curtis, Gauss-Patterson,
+Genz-Keister); sparse interpolants based on non-nested rules will
+exhibit some interpolation error at the collocation points}, the
 coefficients of the expansion are just the response values at each of
 the collocation points.  This can be written as:
 \begin{equation}
@@ -1562,13 +1578,17 @@ R \cong \sum_{j=1}^{N_p} r_j \boldsymbol{L}_j(\boldsymbol{\xi})
 \label{eq:sc_exp_short}
 \end{equation}
 where the set of $N_p$ collocation points involves a structured
-multidimensional grid.  There is no need for tailoring of the
-expansion form as there is for PCE (see Section~\ref{uq:expansion:pce:exp_tnt})
-since the polynomials that appear in the expansion are determined by
-the Lagrange construction (Eq.~\ref{eq:lagrange_poly_1d}).  That is,
-any tailoring or refinement of the expansion occurs through the
-selection of points in the interpolation grid and the polynomial
-orders of the basis adapt automatically.
+multidimensional grid (a tensor-product grid as in
+Eq.~\ref{eq:lagrange_interp_nd} or a Smolyak sparse grid).  There is
+no need for tailoring of the expansion form as there is for PCE (i.e.,
+to synchronize the expansion polynomials with the set of integrable
+monomials) since the polynomials that appear in the expansion are
+determined by the Lagrange construction
+(Eq.~\ref{eq:lagrange_poly_1d}).  That is, any tailoring or refinement
+of the expansion occurs through the selection of points in the
+interpolation grid and the polynomial orders of the basis are adapted
+implicitly.
+
 
 \subsection{Transformations to uncorrelated standard variables} \label{uq:expansion:trans}
 
@@ -1578,27 +1598,26 @@ variables $\boldsymbol{\xi}$.  Thus, a key component of either
 approach is performing a transformation of variables from the original
 random variables $\boldsymbol{x}$ to independent standard random
 variables $\boldsymbol{\xi}$ and then applying the stochastic
-expansion in the transformed space.  The dimension of
-$\boldsymbol{\xi}$ is typically chosen to correspond to the dimension
-of $\boldsymbol{x}$, although this is not required.  In fact, the
-dimension of $\boldsymbol{\xi}$ should be chosen to represent the
-number of distinct sources of randomness in a particular problem, and
-if individual $x_i$ mask multiple random inputs, then the dimension of
-$\boldsymbol{\xi}$ can be expanded to accommodate.  For simplicity,
-all subsequent discussion will assume a one-to-one correspondence
-between $\boldsymbol{\xi}$ and $\boldsymbol{x}$.
-
+expansion in the transformed space.  %The dimension of
+%$\boldsymbol{\xi}$ is typically chosen to correspond to the dimension
+%of $\boldsymbol{x}$, although this is not required.  In fact, the
+%dimension of $\boldsymbol{\xi}$ should be chosen to represent the
+%number of distinct sources of randomness in a particular problem, and
+%if individual $x_i$ mask multiple random inputs, then the dimension of
+%$\boldsymbol{\xi}$ can be expanded to accommodate~\cite{ghanem_private}.
+%For simplicity, all subsequent discussion will assume a one-to-one 
+%correspondence between $\boldsymbol{\xi}$ and $\boldsymbol{x}$.
 This notion of independent standard space is extended over the notion
 of ``u-space'' used in reliability methods (see
-Section~\ref{uq:reliability:mpp}) in that in includes not just
-independent standard normals, but also independent standardized
-uniforms, exponentials, betas and gammas.  For problems directly
-involving independent normal, uniform, exponential, beta, and gamma
-distributions for input random variables, conversion to standard form
-involves a simple linear scaling transformation (to the form of the
-density functions in Table~\ref{TAB:askey}) and then the corresponding
-chaos/collocation points can be employed.
-%For correlated normal,
+Section~\ref{uq:reliability:mpp}) 
+in that it extends the standardized set beyond standard normals.
+%includes not just independent standard normals, but also independent 
+%standard uniforms, exponentials, betas, and gammas.
+%For problems directly involving independent input distributions of
+%these five types, conversion to standard form involves a simple linear
+%scaling transformation (to the form of the density functions in
+%Table~\ref{TAB:askey}) and then the corresponding chaos/collocation
+%points can be employed.  For correlated normal,
 %uniform, exponential, beta, and gamma distributions, the same linear
 %scaling transformation can be applied followed by application of the
 %inverse Cholesky factor of the correlation matrix (similar to
@@ -1607,35 +1626,91 @@ chaos/collocation points can be employed.
 %the subsequent independence assumption is valid for uncorrelated
 %standard normals but may introduce significant error for other random
 %variable types (this is currently a topic of ongoing research).  
-For other independent distributions, one has a choice of two
-different approaches:
+For distributions that are already independent, three different 
+approaches are of interest:
+%one has a choice of up to three different approaches, depending on
+%the types of distributions that are present:
 \begin{enumerate}
-\item Numerically generate an optimal polynomial basis for each 
-independent distribution (using Gauss-Wigert~\cite{simpson_gw},
-discretized Stieltjes~\cite{gautschi_book},
-Chebyshev~\cite{gautschi_book}, or Gramm-Schmidt~\cite{WillBijl06}
-approaches) and employ Golub-Welsch~\cite{GolubWelsch69} to compute
-the corresponding Gauss points and weights.
-\item Perform a nonlinear variable transformation from a given
-input distribution to the most similar Askey basis and employ the
-Askey orthogonal polynomials and associated Gauss points/weights.
-For example, lognormal might employ a Hermite basis in a transformed
-standard normal space and loguniform, triangular, and bin-based 
-histograms might employ a Legendre basis in a transformed standard 
-uniform space.
+\item {\it Extended basis:} For each Askey distribution type, employ
+  the corresponding Askey basis (Table~\ref{TAB:askey}).  For
+  non-Askey types, numerically generate an optimal polynomial basis
+  for each independent distribution as described in
+  Section~\ref{uq:expansion:beyond_askey}.
+  % text below moved downstream from Intro:
+  With usage of the optimal basis corresponding to each of the random
+  variable types, we can exploit basis orthogonality under expectation
+  (e.g., Eq.~\ref{eq:coeff_extract}) without requiring a transformation
+  of variables, thereby avoiding inducing additional nonlinearity that
+  could slow convergence.
+\item {\it Askey basis:} For non-Askey types, perform a nonlinear
+  variable transformation from a given input distribution to the most
+  similar Askey basis.  For example, lognormal distributions might
+  employ a Hermite basis in a transformed standard normal space and
+  loguniform, triangular, and histogram distributions might employ a
+  Legendre basis in a transformed standard uniform space.  All
+  distributions then employ the Askey orthogonal polynomials and
+  their associated Gauss points/weights.
+\item {\it Wiener basis:} For non-normal distributions, employ a
+  nonlinear variable transformation to standard normal distributions. All
+  distributions then employ the Hermite orthogonal polynomials and
+  their associated Gauss points/weights.
 \end{enumerate}
-For correlated non-normal distributions, a third approach is currently
-the only acceptable option (although other options are an active
-research area):
+For dependent distributions, we must first perform a nonlinear
+variable transformation to uncorrelated standard normal distributions,
+due to the independence of decorrelated standard normals.  This
+involves the Nataf transformation, described in the following
+paragraph.  We then have the following choices:
 \begin{enumerate}
-\setcounter{enumi}{2}
-\item Perform a nonlinear variable transformation from all given
-input distributions to uncorrelated standard normal distributions and
-employ strictly Hermite orthogonal polynomial bases and associated
-Gauss points/weights.
+%\setcounter{enumi}{2}
+\item {\it Single transformation:} Following the Nataf transformation
+  to independent standard normal distributions, employ the Wiener
+  basis in the transformed space.
+\item {\it Double transformation:} From independent standard normal
+  space, transform back to either the original marginal distributions
+  or the desired Askey marginal distributions and employ an extended
+  or Askey basis, respectively, in the transformed space. Independence
+  is maintained, but the nonlinearity of the Nataf transformation is
+  at least partially mitigated.
+  % Note: no secondary warping since no correlation.
 \end{enumerate}
-This third approach is performed using the Nataf transformation, which
-is described in Section~\ref{uq:reliability:mpp}.
+DAKOTA currently supports single transformations for dependent
+variables in combination with an Askey basis for independent variables.
+
+The transformation from correlated non-normal distributions to
+uncorrelated standard normal distributions is denoted as
+$\boldsymbol{\xi} = T({\bf x})$ with the reverse transformation denoted as
+${\bf x} = T^{-1}(\boldsymbol{\xi})$.  These transformations are nonlinear in
+general, and possible approaches include the Rosenblatt~\cite{rosen},
+Nataf~\cite{nataf}, and Box-Cox~\cite{boxcox} transformations.
+%The nonlinear transformations may also be linearized, and common
+%approaches for this include the Rackwitz-Fiessler~\cite{rf}
+%two-parameter equivalent normal and the Chen-Lind~\cite{cl} and
+%Wu-Wirsching~\cite{ww} three-parameter equivalent normals.
+The results in this paper employ the Nataf transformation,
+which is suitable for the common case when marginal distributions and
+a correlation matrix are provided, but full joint distributions are
+not known\footnote{If joint distributions are known, then the
+Rosenblatt transformation is preferred.}.  The Nataf transformation
+occurs in the following two steps.  To transform between the original
+correlated x-space variables and correlated standard normals
+(``z-space''), a CDF matching condition is applied for each of the
+marginal distributions:
+\begin{equation}
+\Phi(z_i) = F(x_i) \label{eq:trans_zx}
+\end{equation}
+where $\Phi()$ is the standard normal cumulative distribution function
+and $F()$ is the cumulative distribution function of the original
+probability distribution.  Then, to transform between correlated
+z-space variables and uncorrelated $\xi$-space variables, the Cholesky
+factor ${\bf L}$ of a modified correlation matrix is used:
+\begin{equation}
+{\bf z} = {\bf L} \boldsymbol{\xi} \label{eq:trans_zu}
+\end{equation}
+where the original correlation matrix for non-normals in x-space has
+been modified to represent the corresponding ``warped'' correlation in
+z-space~\cite{nataf}.
+
+<!-- TO HERE! -->
 
 \subsection{Spectral projection} \label{uq:expansion:spectral}
 
