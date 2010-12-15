@@ -2931,6 +2931,18 @@ Test Number 21 succeeded
                       2.9604178609e-03
                       3.1675975069e-03
 <<<<< Best data captured at function evaluation 301
+Test Number 22 succeeded
+<<<<< Function evaluation summary: 61 total (61 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0223564793e+00 x1
+                      9.8076852069e-01 x2
+                      9.7451852069e-01 x3
+<<<<< Best objective function  =
+                      8.0819908037e-07
+<<<<< Best constraint values   =
+                      5.5482851044e-01
+                      4.5072865152e-01
+<<<<< Best data captured at function evaluation 60
 dakota_big_dataset.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 300 total (300 new, 0 duplicate)
