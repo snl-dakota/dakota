@@ -50,9 +50,9 @@ namespace Dakota {
        Pattern Search (APPS)</a>
     <ul>
     <li> <a href="MethodCommands.html#MethodAPPSIC">
-         APPSPACK method independent controls</a>
+         APPS method independent controls</a>
     <li> <a href="MethodCommands.html#MethodAPPSDC">
-         APPSPACK method dependent controls</a>
+         APPS method dependent controls</a>
     </ul>
   <li> <a href="MethodCommands.html#MethodCOLINY">Coliny Methods</a>
     <ul>
@@ -1401,11 +1401,7 @@ after unsuccesful iterates, must be strictly between 0 and 1
 When the solution to the optimization problem is known, the user may
 specify a value for \c solution_target as a termination criteria.
 APPS will terminate when the function value falls below \c
-solution_target.  We note that there is a rarely-occurring known issue
-with using \c solution_target as a stopping criteria.  In some very
-unusual circumstances, it may seg fault during cleanup at the end.
-This issue is being corrected.  You should still be able to extract
-your solution from the output.
+solution_target.
 
 Currently, APPS only supports coordinate bases with a total of \e 2n
 function evaluations in the pattern, and these patterns may only
@@ -1516,7 +1512,7 @@ Coliny is a collection of nongradient-based optimizers that support
 the Common Optimization Library INterface (COLIN).  Coliny optimizers
 currently include \c coliny_cobyla, \c coliny_direct, \c coliny_ea, \c
 coliny_pattern_search and \c coliny_solis_wets.  Additional Coliny
-information is available from http://software.sandia.gov/Acro/Coliny/.
+information is available from https://software.sandia.gov/trac/acro.
 
 Coliny solvers now support bound constraints and general nonlinear
 constraints.  Supported nonlinear constraints include both equality
@@ -1561,10 +1557,10 @@ maximum amount of evaluation concurrency that can be leveraged by the
 various methods is as follows:
 
 \li COBYLA: one
-\li DIRECT:  twice the number of variables
-\li Evolutionary Algorithms:  size of the population
-\li Pattern Search:  size of the search pattern
-\li Solis-Wets:  one
+\li DIRECT: twice the number of variables
+\li Evolutionary Algorithms: size of the population
+\li Pattern Search: size of the search pattern
+\li Solis-Wets: one
 
 \subsubsection MethodCOLINYDC Coliny method dependent controls
 
@@ -2099,28 +2095,33 @@ includes a variety of specification components.
 Traditional pattern search methods search with a fixed pattern of
 search directions to try to find improvements to the current iterate.
 The Coliny pattern search methods generalize this simple algorithmic
-strategy to enable control of how the search pattern is adapted,
-as well as how each search pattern is evaluated.  The \c stochastic
-and \c synchronization specifications denote how the the trial
-points are evaluated.  The \c stochastic specification indicates
-that the trial points are considered in a random order.  For parallel
-pattern search, \c synchronization dictates whether the evaluations
-are scheduled using a \c blocking scheduler or a \c nonblocking
-scheduler (i.e., \ref Model::synchronize "Model::synchronize()" or 
-\ref Model::synchronize_nowait "Model::synchronize_nowait()", respectively).
-In the \c blocking case, all points in the pattern are evaluated
-(in parallel), and if the best of these trial points is an improving
-point, then it becomes the next iterate.  These runs are reproducible,
-assuming use of the same seed in the \c stochastic case.  In the \c
-nonblocking case, all points in the pattern may not be evaluated,
-since the first improving point found becomes the next iterate.  Since
-the algorithm steps will be subject to parallel timing variabilities,
-these runs will not generally be repeatable.  The \c synchronization
-specification has similar connotations for sequential pattern search.
-If \c blocking is specified, then each sequential iteration terminates
-after all trial points have been considered, and if \c nonblocking is
-specified, then each sequential iteration terminates after the first
-improving trial point is evaluated.
+strategy to enable control of how the search pattern is adapted, as
+well as how each search pattern is evaluated.  The \c stochastic and
+\c synchronization specifications denote how the the trial points are
+evaluated.  The \c stochastic specification indicates that the trial
+points are considered in a random order.  For parallel pattern search,
+\c synchronization dictates whether the evaluations are scheduled
+using a \c blocking scheduler or a \c nonblocking scheduler (i.e.,
+\ref Model::synchronize "Model::synchronize()" or \ref
+Model::synchronize_nowait "Model::synchronize_nowait()",
+respectively).  In the \c blocking case, all points in the pattern are
+evaluated (in parallel), and if the best of these trial points is an
+improving point, then it becomes the next iterate.  These runs are
+reproducible, assuming use of the same seed in the \c stochastic case.
+In the \c nonblocking case, all points in the pattern may not be
+evaluated, since the first improving point found becomes the next
+iterate.  Since the algorithm steps will be subject to parallel timing
+variabilities, these runs will not generally be repeatable.  The \c
+synchronization specification has similar connotations for sequential
+pattern search.  If \c blocking is specified, then each sequential
+iteration terminates after all trial points have been considered, and
+if \c nonblocking is specified, then each sequential iteration
+terminates after the first improving trial point is evaluated.  In
+this release, both \c blocking and \c nonblocking specifications
+result in blocking behavior (except in the case where \c
+exporatory_moves below is set to \c adaptive_pattern).  Nonblocking
+behavior will be re-enabled after some underlying technical issues
+have been resolved.
 
 The particular form of the search pattern is controlled by the \c
 pattern_basis specification.  If \c pattern_basis is \c coordinate
@@ -2299,7 +2300,7 @@ Specification detail for the Coliny pattern search method: pattern controls
 <td>\c expand_after_success
 <td>integer
 <td>Optional
-<td>1
+<td>5
 <tr>
 <td>Pattern contraction factor
 <td>\c contraction_factor
@@ -2388,7 +2389,7 @@ Specification detail for the Coliny Solis-Wets method
 <td>\c contract_after_failure
 <td>integer
 <td>Optional
-<td>3
+<td>4*number of variables
 <tr>
 <td>Pattern contraction factor
 <td>\c contraction_factor

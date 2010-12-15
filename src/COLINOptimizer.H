@@ -37,16 +37,16 @@ namespace Dakota {
     nongradient-based techniques. COLINOptimizer uses a
     COLINApplication object to perform the function evaluations.
 
-    BMA TODO: Update the following
     The user input mappings are as follows: \c max_iterations, \c
-    max_function_evaluations, \c convergence_tolerance, \c
-    solution_accuracy and \c max_cpu_time are mapped into COLIN's \c
-    max_iters, \c max_neval, \c ftol, \c accuracy, and \c max_time
-    data attributes.  An \c output setting of \c verbose is passed to
-    COLIN's set_output() function and a setting of \c debug activates
-    output of method initialization and sets the COLIN \c debug
-    attribute to 10000. Refer to [Hart, W.E., 2006] for additional
-    information on COLIN objects and controls. */
+    max_function_evaluations, \c convergence_tolerance, and \c
+    solution_accuracy are mapped into COLIN's \c max_iterations, \c
+    max_function_evaluations_this_trial, \c function_value_tolerance,
+    \c sufficient_objective_value properties.  An \c outputLevel is
+    mapped to COLIN's \c output_level property and a setting of \c
+    debug activates output of method initialization and sets the COLIN
+    \c debug attribute to 10000 for the DEBUG output level. Refer to
+    [Hart, W.E., 2006] for additional information on COLIN objects and
+    controls. */
 
 class COLINOptimizer : public Optimizer
 {
@@ -76,6 +76,7 @@ public:
 
   // COLIN methods cannot yet accept multiple initial points
   //bool accepts_multiple_points() const;
+
   /// some COLIN methods can return multiple points
   bool returns_multiple_points() const;
 
@@ -100,8 +101,10 @@ protected:
   //- Heading: runtime convenience member functions
   //
 
-  /// Get the set of best points from the solver
-  //  void get_final_points();
+  /// Get the final set of points from the solver
+  /// Look up responses and sort, first according
+  /// to constraint violation, then according to
+  /// function value
   void post_run(std::ostream& s);
 
   /// resize bestVariablesArray
@@ -123,6 +126,7 @@ protected:
   /// handle and pointer to the COLINApplication object
   std::pair<colin::ApplicationHandle, COLINApplication*> colinProblem;
 
+  /// pointer to the COLIN evalutaion manager object
   colin::EvaluationManager_Base* colinEvalMgr;
 
   /// random number generator pointer

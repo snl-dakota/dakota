@@ -60,6 +60,26 @@ using std::runtime_error;
 // - COLINOptimizer implementation
 //
 
+/** The COLINOptimizer class wraps COLIN, a Sandia-developed C++
+    optimization interface library.  A variety of COLIN optimizers are
+    defined in COLIN and its associated libraries, including SCOLIB
+    which contains the optimization components from the old COLINY
+    (formerly SGOPT) library. COLIN contains optimizers such as
+    genetic algorithms, pattern search methods, and other
+    nongradient-based techniques. COLINOptimizer uses a
+    COLINApplication object to perform the function evaluations.
+
+    The user input mappings are as follows: \c max_iterations, \c
+    max_function_evaluations, \c convergence_tolerance, and \c
+    solution_accuracy are mapped into COLIN's \c max_iterations, \c
+    max_function_evaluations_this_trial, \c function_value_tolerance,
+    \c sufficient_objective_value properties.  An \c outputLevel is
+    mapped to COLIN's \c output_level property and a setting of \c
+    debug activates output of method initialization and sets the COLIN
+    \c debug attribute to 10000 for the DEBUG output level. Refer to
+    [Hart, W.E., 2006] for additional information on COLIN objects and
+    controls. */
+
 namespace Dakota {
 
 //
@@ -67,6 +87,13 @@ namespace Dakota {
 //
 
 namespace {
+
+  // These functions define the operations needed to cast from one
+  // type to another in order to freely make assignments of one type
+  // of data to another.  This is particularly useful in converting
+  // DAKOTA types when setting algorithm properties.
+
+  /// Cast from DAKOTA RealVector to std::vector<double>.
 
 int cast_from_realvector_to_vector(const Any& src, Any& dest)
 {
@@ -79,6 +106,8 @@ int cast_from_realvector_to_vector(const Any& src, Any& dest)
   return 0;
 }
 
+  /// Cast from std::vector<double> to DAKOTA RealVector.
+
 int cast_from_vector_to_realvector(const Any& src, Any& dest)
 { 
   const vector<double>& tmp = src.expose<vector<double> >();
@@ -89,6 +118,8 @@ int cast_from_vector_to_realvector(const Any& src, Any& dest)
   }
   return 0;
 }
+
+  /// Cast from DAKOTA IntVector to std::vector<int>.
 
 int cast_from_intvector_to_vector(const Any& src, Any& dest)
 {
@@ -101,6 +132,8 @@ int cast_from_intvector_to_vector(const Any& src, Any& dest)
   return 0;
 }
 
+  /// Cast from std::vector<int> to DAKOTA IntVector.
+
 int cast_from_vector_to_intvector(const Any& src, Any& dest)
 { 
   const vector<int>& tmp = src.expose<vector<int> >();
@@ -112,6 +145,8 @@ int cast_from_vector_to_intvector(const Any& src, Any& dest)
   return 0;
 }
 
+  /// Cast from int to unsigned int.
+
 int cast_from_int_to_unsignedint(const Any& src, Any& dest)
 { 
   const int& tmp = src.expose<int>();
@@ -120,6 +155,8 @@ int cast_from_int_to_unsignedint(const Any& src, Any& dest)
   return static_cast<int>(ans) == tmp 
      ? 0 : utilib::Type_Manager::CastWarning::ValueOutOfRange;
 }
+
+  /// Cast for unsigned in to int.
 
 int cast_from_unsignedint_to_int(const Any& src, Any& dest)
 { 
@@ -130,6 +167,8 @@ int cast_from_unsignedint_to_int(const Any& src, Any& dest)
      ? 0 : utilib::Type_Manager::CastWarning::ValueOutOfRange;
 }
 
+  /// Cast from char const* to std::string.
+
 int cast_from_charconst_to_string(const Any& src, Any& dest)
 { 
   char const* tmp = src.expose<char const*>();
@@ -137,6 +176,8 @@ int cast_from_charconst_to_string(const Any& src, Any& dest)
   ans = tmp;
   return 0;
 }
+
+  /// Register the cast functions.
 
 bool register_dakota_cast(){
 
@@ -168,63 +209,95 @@ const volatile bool dakota_cast_registered = register_dakota_cast();
 
 } // private namespace
 
-// used to enumerate the solverType
+// Enumerate the solverType
+
 enum { COBYLA, DIRECT, EA, MS, PS, SW };
+
+  /// Default constructor.
 
 COLINOptimizer::COLINOptimizer(Model& model):
   Optimizer(model)
 {
   // (iteratedModel initialized in Optimizer(Model&))
+  // Set solver properties.
+
   solver_setup(model);
   set_rng(probDescDB.get_int("method.random_seed"));
-  set_solver_parameters(); // set specification values using DB
+  set_solver_parameters();
 
   // The following is not performed in the Optimizer constructor since
   // maxConcurrency is updated within set_method_parameters().  The
   // matching free_communicators() appears in the Optimizer destructor.
+
   if (scaleFlag || multiObjFlag)
     iteratedModel.init_communicators(maxConcurrency);
 }
 
+  /// Alternate constructor for on-the-fly instantiations.
+
 COLINOptimizer::COLINOptimizer(Model& model, int seed):
   Optimizer(NoDBBaseConstructor(), model), blockingSynch(false)
 {
+  // (iteratedModel initialized in Optimizer(Model&))
+  // Set solver properties.
+
   solver_setup(model);
   set_rng(seed);
-  set_solver_parameters(); // DB is null: set inherited attributes and defaults
+  set_solver_parameters();
 }
+
+  /// Alternate constructor for Iterator instantiations by name.
 
 COLINOptimizer::COLINOptimizer(NoDBBaseConstructor, Model& model):
   Optimizer(NoDBBaseConstructor(), model), rng(NULL), blockingSynch(false)
 {
+  // (iteratedModel initialized in Optimizer(Model&))
+  // Set solver properties.
   solver_setup(model);
-  set_solver_parameters(); // DB is null: set inherited attributes and defaults
+  set_solver_parameters();
 }
 
 /** find_optimum redefines the Optimizer virtual function to perform
     the optimization using COLIN. It first sets up the problem data,
     then executes optimize() on the COLIN solver and finally
     catalogues the results. */
+
 void COLINOptimizer::find_optimum()
 {
   // Much of this is performed in find_optimum in order to capture any
   // reassignment at the strategy layer (after iterator construction).
+
   try {
+    // Instantiate the evaluation manager.  Use the concurrent
+    // evaluator for asynchronous evaluations and the serial evaluator
+    // for synchronous.
+
      colinEvalMgr = colin::EvalManagerFactory()
         .create(iteratedModel.asynch_flag() ? "Concurrent" : "Serial");
      if (colinEvalMgr->has_property("max_concurrency"))
        colinEvalMgr->property("max_concurrency") = iteratedModel.evaluation_capacity();
+
+     // Instantiate the solver.
+
      colinSolver->set_evaluation_manager(colinEvalMgr);
      colinProblem.second->set_evaluation_manager(colinEvalMgr);
 
     // Initialize the COLINApplication with the appropriate model
     // this will initialize functions, constraints, and bounds
+
     colinProblem.second->set_problem(iteratedModel);
     colinSolver->set_problem(colinProblem.first);
 
-    // JDS: We need to wait to set the constraint penalty until after
-    // the problem is handed to the solver and all reformulations have
-    // taken place.
+    // Set the constraint penalty.  This is a property of the
+    // application/problem, not the solver.  It must be done after the
+    // problem is handed to the solver and all reformulations have
+    // taken place.  Therefore, it is set here rather than at
+    // construction time.
+
+    // TODO: Revisit default penalty.  Here it is currently algorithm
+    // specific.  This is to enforce consistency with COLIN 2
+    // behavior.
+
     colin::ApplicationHandle problem = colinSolver->get_problem_handle();
     if ( constraint_penalty >= 0. )
       problem->property("constraint_penalty") = constraint_penalty;
@@ -233,14 +306,26 @@ void COLINOptimizer::find_optimum()
     if ( problem->has_property("apply_convergence_factor") )
       problem->property("apply_convergence_factor") = !constant_penalty;
 
-    // Set initial point; the following discards any initial point
-    // data existing in the cache 
-    // BMA TODO: handle multiple intial  points, check memory mngmnt/efficiency
-    // ask for MixedIntVars set functions; consider convenience function
+    // Set initial point.  The following discards any initial point
+    // data existing in the cache.
+
+    // TODO: handle multiple intial points, check memory
+    // mngmnt/efficiency
+
+    // There are continuous, discrete integer, and discrete real
+    // variables.  COLIN does not distinguish between discrete integer
+    // and discrete real.
+
     const RealVector& cv_init = iteratedModel.continuous_variables();
     const IntVector&  div_init = iteratedModel.discrete_int_variables();
     const RealVector& drv_init = iteratedModel.discrete_real_variables();
     IntVector dv_init(numDiscreteIntVars+numDiscreteRealVars);
+
+    // One specification type for discrete variables is a set of
+    // values.  Get that list of values if the user provided one.
+    // Also, determine the size of those sets and the number of
+    // non-set integer variables.
+
     const IntSetArray& ddsiv_values
       = iteratedModel.discrete_design_set_int_values();
     const RealSetArray& ddsrv_values
@@ -248,11 +333,28 @@ void COLINOptimizer::find_optimum()
     size_t  num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
       num_ddrv  = numDiscreteIntVars - num_ddsiv, offset;
 
+    // Initialize the continuous variables in COLIN's mixed-variable
+    // object.
+
     MixedIntVars miv_init(0, numDiscreteIntVars+numDiscreteRealVars, cv_init.length());
     TypeManager()->lexical_cast(cv_init, miv_init.Real());
 
+    // Need to consolidate all of the discrete variables in one
+    // place.  Start by assigning the initial values of the non-set
+    // integer variables to a temporary vector.
+
     for (size_t i=0; i<num_ddrv; i++)
       dv_init[i] = div_init[i];
+
+    // Next do the integer set variables.  Given the initial value,
+    // find it's index (i.e., relative location) in the list of
+    // possible values.  Treat that index as the value on which the
+    // COLIN solver will operate.  We can put bounds on the index
+    // (done in COLINApplication), thereby restricting the solver's
+    // exploration to the prescribed values.  We have to undo this
+    // transformation when doing a function evaluation (in
+    // COLINApplication) and when getting the final points.  May want
+    // to consider a helper function for these transformations.
 
     offset = num_ddrv;
     for (size_t i=0; i<num_ddsiv; i++) {
@@ -260,13 +362,20 @@ void COLINOptimizer::find_optimum()
       dv_init[i+offset] = (int)index;
     }
 
+    // Do the same for the real set variables.
+
     offset += num_ddsiv;
     for (size_t i=0; i<num_ddsrv; i++) {
       size_t index = set_value_to_index(drv_init[i], ddsrv_values[i]);
       dv_init[i+offset] = (int)index;
     }
 
+    // Now initialize the discrete variables in COLIN's mixed-variable
+    // object.
+
     TypeManager()->lexical_cast(dv_init, miv_init.Integer());
+
+    // Set the initial point.
 
     PointSet ps;  // allocates ResponseCache_local
     ps.add_point(colinProblem.first, miv_init);
@@ -279,8 +388,10 @@ void COLINOptimizer::find_optimum()
       //      problem->PrintProperties(Cout);
     }
 
-    // Solve the optimization problem
-    colinSolver->reset(); // only call once just before optimize
+    // Solve the optimization problem.  Only call reset once just
+    // before optimize.
+
+    colinSolver->reset();
     colinSolver->optimize();
 
     if (outputLevel == DEBUG_OUTPUT) {
@@ -289,12 +400,8 @@ void COLINOptimizer::find_optimum()
       printer.print(Cout, colinSolver->results());
     }
  
-    // Get the best points from the solver; JDS says there's no way to
-    // get the "best" point out of a COLIN solver, so we have to
-    // manage ourselves.  OLD COMMENT: COLIN methods do a
-    // func->set_vars(best_pt) at the end of minimize, so just
-    // retrieve this data and copy it into bestVariables.
-    //    get_final_points();
+    // Getting the best and final points from the solver is done in
+    // the override of post_run().
 
   }
   catch(const runtime_error &exception) {
@@ -302,9 +409,12 @@ void COLINOptimizer::find_optimum()
   }
 }
 
+  /// Designate which solvers can return multiple final points.
 
 bool COLINOptimizer::returns_multiple_points() const
-{ 
+{
+  // Need to know this for sequential hybrid methods.
+
   switch(solverType) {
 
   case DIRECT:
@@ -319,7 +429,9 @@ bool COLINOptimizer::returns_multiple_points() const
 }
 
 
-// convenience function to be called by constructors
+  /// This convenience function is called by the constructors in order to
+  /// instantiate the solver.
+
 void COLINOptimizer::solver_setup(Model& model)
 {
    // This exception should never be thrown.  Normally, static_casting
@@ -327,6 +439,7 @@ void COLINOptimizer::solver_setup(Model& model)
    // linker include the respective static libraries, but some compilers
    // (PGI 9.x) appear to be "smart" enough to recognize the no-op and
    // not link in the library.
+
    if ( ! ( interfaces::StaticInitializers::static_interfaces_registrations
             && scolib::StaticInitializers::static_scolib_registrations ) )
       EXCEPTION_MNGR(std::runtime_error, "COLINOptimizer::solver_setup(): "
@@ -336,9 +449,13 @@ void COLINOptimizer::solver_setup(Model& model)
                      << interfaces::StaticInitializers::static_interfaces_registrations
                      << ").");
 
-  // initialize some buffer variables
+  // Initialize constraint-related buffer variables.  Explanation for
+  // why these are need is in set_method_parameters().
+
   constraint_penalty = 0.;
   constant_penalty = false;
+
+  // Determine which solver is specified.
 
   string solverstr;
   string method_name = probDescDB.get_string("method.algorithm");
@@ -372,28 +489,31 @@ void COLINOptimizer::solver_setup(Model& model)
     Cerr << "Error (COLINOptimizer): unknown method " << method_name << endl;
   }
 
-  // Create the solver handle with defaults
+  // Create the appropriate solver handle with defaults.
+
   colinSolver = SolverMngr().create_solver(solverstr.data());
   if (colinSolver.empty())
     EXCEPTION_MNGR(std::runtime_error, "COLINOptimizer:"
 		   " Solver \"" << solverstr << "\" not found");
 
-  // We create a COLINApplication, but defer its configuration until runtime
+  // We create a COLINApplication but defer its configuration until
+  // runtime.
+
   colinProblem = ApplicationHandle::create<COLINApplication>();
 }
 
+  /// Instantiate random number generator (RNG).
 
-// BMA TODO: how to get seed from colin and set rng if necessary
 void COLINOptimizer::set_rng(int seed)
 {
   try {
     if (colinSolver->has_property("seed")) {
       //
-      // Instantiate random number generator (RNG). Can either pass the RNG in
-      // the constructor or use optimizer->set_rng(RNG) prior to 
-      // interface->setup (NOTE: passing it to the SWOpt constructor has 
-      // failed, so use set_rng).  LCG = a portable linear congruential 
-      // generator (better than Unix RAND).
+      //  Can either pass the RNG in the constructor or use
+      // optimizer->set_rng(RNG) prior to interface->setup (NOTE:
+      // passing it to the SWOpt constructor has failed, so use
+      // set_rng).  LCG = a portable linear congruential generator
+      // (better than Unix RAND).
       //
       PM_LCG* prng = new PM_LCG(seed);
       if (seed != 0) // default is zero if no spec.
@@ -412,31 +532,41 @@ void COLINOptimizer::set_rng(int seed)
   }
 }
 
-/*string propName;
-if ( solver->has_property(propName) ) {
-   Property& tmp = solver->property(propName);
-   if ( ! tmp.readonly() )
-      tmp == newValue;
-      } */
+/// Sets solver properties based on user specifications.  Called at
+/// construction time.
 
-/// sets options for specific methods based on user specifications
-/// (called at construction time)
 void COLINOptimizer::set_solver_parameters()
 {
+  // TODO:  Make this more robust.  Really should be doing something
+  // like the following:
+  //    string propName;
+  //    if ( solver->has_property(propName) ) {
+  //       Property& tmp = solver->property(propName);
+  //       if ( ! tmp.readonly() )
+  //       tmp == newValue;
+  //    }
+  // Also, create a map from DAKOTA specs to COLIN properties.  Then
+  // loop through the map to set the properties.  This will eliminate
+  // a lot of duplicate code.
+
+  // Need these variables throughout.
+
   unsigned int pop_size;
   String pattern_basis;
   int total_pattern_size;
 
   if (probDescDB.is_null()) { 
-    // instantiate on-the-fly:
-    // rely on internal COLINY defaults for the most part, but set any
-    // default overrides (including enforcement of DAKOTA defaults) here
+    // Instantiate on-the-fly.  Rely on internal COLINY defaults for
+    // the most part, but set any default overrides (including
+    // enforcement of DAKOTA defaults).
+
     pop_size = 100;
     pattern_basis = "coordinate";
     total_pattern_size = 2*numContinuousVars;
   }
   else {
-    // previous cobyla, pattern search, and solis-wets parameters
+    // Previous COBYLA, Pattern Search, and Solis-Wets parameters.
+
     const Real& init_delta 
       = probDescDB.get_real("method.coliny.initial_delta");
     if (init_delta >= 0.0 && colinSolver->has_property("initial_step"))
@@ -447,8 +577,10 @@ void COLINOptimizer::set_solver_parameters()
     if (thresh_delta >= 0.0 && colinSolver->has_property("step_tolerance"))
       colinSolver->property("step_tolerance") = thresh_delta;
 
-    // previous direct parameters
-    // returns "major_dimension", "all_dimensions", or empty string (default)
+    // Previous DIRECT parameters.
+    // Returns "major_dimension", "all_dimensions", or empty string
+    // (default).
+
     const String& division_type
       = probDescDB.get_string("method.coliny.division");
     if (colinSolver->has_property("division")) {
@@ -457,8 +589,10 @@ void COLINOptimizer::set_solver_parameters()
       else if (division_type == "all_dimensions")
 	colinSolver->property("division") = (string)"multi";
       else {
-	// user didn't specify, so by default use multiple division in asynch
-	// case, otherwise single division (a maximum of 2 asynch evals)
+	// User didn't specify, so by default use multiple division in
+	// asynch case, otherwise single division (a maximum of 2
+	// asynch evals).
+
 	if (iteratedModel.asynch_flag())
 	  colinSolver->property("division") = (string)"multi";
 	else
@@ -484,6 +618,8 @@ void COLINOptimizer::set_solver_parameters()
     const Real& min_box = probDescDB.get_real("method.min_boxsize_limit");
     if (min_box >= 0. && colinSolver->has_property("min_boxsize_limit"))
       colinSolver->property("min_boxsize_limit") = min_box;
+
+    // Previous EA parameters.
 
     pop_size = probDescDB.get_int("method.population_size");
     if (!pop_size)
@@ -584,14 +720,14 @@ void COLINOptimizer::set_solver_parameters()
 	colinSolver->property("realarray_mutation_selfadaptation") = false;
     }
 
-    // previous pattern search and solis-wets parameters
-    // A null string is the DB default and nonblocking is the PS default, so
-    // the flag is true only for an explicit blocking user specification.
+    // Previous Pattern Search and Solis-Wets parameters.  A null
+    // string is the DB default and nonblocking is the PS default, so
+    // the flag is true only for an explicit blocking user
+    // specification.
+
     blockingSynch = (probDescDB.get_string("method.coliny.synchronization")
 		     == "blocking") ? true : false;
 
-    // no need to check for case of -1.e+25 since the COLINY defaults are
-    // replicated in DataMethod.C
     const Real& contraction_factor
       = probDescDB.get_real("method.coliny.contraction_factor");
     if (colinSolver->has_property("contraction_factor"))
@@ -639,24 +775,23 @@ void COLINOptimizer::set_solver_parameters()
       ? numContinuousVars + 1 : 2*numContinuousVars;
     int num_augmented_trials = total_pattern_size - basic_pattern_size;
 
-    // catch bad input or default total_pattern_size = 0
     if (num_augmented_trials > 0 && colinSolver->has_property("num_augmented_trials"))
       colinSolver->property("num_augmented_trials") = num_augmented_trials;
     else // enforce lower bound of basic pattern
       total_pattern_size = basic_pattern_size;
 
-    //
-    // COLINY specification attributes from database
-    //
+    // Parameters relevant to all methods.
+
     const Real& solution_accuracy
       = probDescDB.get_real("method.solution_target");
     if (solution_accuracy > -DBL_MAX && colinSolver->has_property("sufficient_objective_value"))
       colinSolver->property("sufficient_objective_value") = solution_accuracy;
 
-    // JDS: buffer the constraint_penalty here: in DAKOTA, this is a
-    // property of the solver; in COLIN it is a property of the
+    // Buffer the constraint_penalty here.  In DAKOTA, this is a
+    // property of the solver; in COLIN, it is a property of the
     // reformulated application.  Unfortunately, the probDescDB is
     // locked by the time we hit find_optimum().
+
     constraint_penalty = probDescDB.get_real("method.constraint_penalty");
     constant_penalty = probDescDB.get_bool("method.coliny.constant_penalty");
 
@@ -689,6 +824,8 @@ void COLINOptimizer::set_solver_parameters()
     }
   }
 
+  // Maximum concurrency is algorithm dependent.
+
   if (solverType == DIRECT)
     maxConcurrency *= 2*numContinuousVars;
   else if (solverType == EA) {
@@ -706,11 +843,6 @@ void COLINOptimizer::set_solver_parameters()
 	   << "\n Pattern Search will operate in 'synchronization blocking' mode."
 	   << "\n Full nonblocking functionality will return in future releases.\n\n";
   }
-
-  // previous parameters for all algorithms
-  //
-  // Inherited attributes
-  //
 
   if (solverType != COBYLA) {
     if (colinSolver->has_property("max_function_evaluations_this_trial"))
@@ -751,31 +883,45 @@ void COLINOptimizer::set_solver_parameters()
   }
 }
 
+  /** This overrides Optimizer::post_run().  Do this because we need
+      to unscale variables in order to look responses up in the
+      database. */
+
 void COLINOptimizer::post_run(std::ostream& s)
 {
-  // retreive the COLIN points (local cache) in the right Application context
+  // Retreive the COLIN points (local cache) in the right Application
+  // context.
+
   list<Any> points;
   PointSet ps = colinSolver->get_final_points();
   ps.get_points(colinProblem.second, points);
 
-  // crude tracking of best function value and its index for now
+  // Need iterators through the point list and maps to hold the sorted
+  // list of variables and responses.
 
   list<Any>::iterator pt_it = points.begin();
   list<Any>::iterator pt_end = points.end();
   std::multimap<RealRealPair, Variables> variableSortMap;
   std::multimap<RealRealPair, Response> responseSortMap;
 
-  RealVector cdv;
-  IntVector ddv;
+  // If we have any recast model, need to get the native and/or
+  // user-provided pieces to do database lookup and/or sort.
 
   Model& model_for_sort(iteratedModel);
   if (scaleFlag || multiObjFlag)
     model_for_sort = iteratedModel.subordinate_model();
 
+  // Temporary data structures needed for sort.
+
+  RealVector cdv;
+  IntVector ddv;
   extern PRPCache data_pairs; // global container
   ActiveSet search_set(numFunctions, numContinuousVars); // asv = 1's
   Variables tmpVariableHolder = model_for_sort.current_variables().copy();
   Response tmpResponseHolder = model_for_sort.current_response().copy();
+
+  // Need number of constraints and bounds so we can determine
+  // constraint violation.
 
   size_t num_nln_ineq = model_for_sort.num_nonlinear_ineq_constraints(),
          num_nln_eq   = model_for_sort.num_nonlinear_eq_constraints();
@@ -786,6 +932,11 @@ void COLINOptimizer::post_run(std::ostream& s)
   const RealVector& nln_eq_targets
     = model_for_sort.nonlinear_eq_constraint_targets();
 
+  // One specification type for discrete variables is a set of values.
+  // Get that list of values if the user provided one.  Also,
+  // determine the size of those sets and the number of non-set
+  // integer variables.
+
   const IntSetArray& ddsiv_values
     = model_for_sort.discrete_design_set_int_values();
   const RealSetArray& ddsrv_values
@@ -793,19 +944,33 @@ void COLINOptimizer::post_run(std::ostream& s)
   size_t  num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
     num_ddrv  = numDiscreteIntVars - num_ddsiv, offset;
 
+  // Iterate through points returned by COLIN.
+
   for(size_t i=0; pt_it!=pt_end; i++, pt_it++) {
+
+    // Get the mixed variables for the point.
 
     utilib::Any tmp;
     TypeManager()->lexical_cast(*pt_it, tmp, typeid(utilib::MixedIntVars));
     utilib::MixedIntVars& miv = tmp.expose<utilib::MixedIntVars>();
 
+    // Cast the continuous variables from COLIN to DAKOTA.
+
     TypeManager()->lexical_cast(miv.Real(), cdv);
     tmpVariableHolder.continuous_variables(cdv);
 
+    // Cast the discrete variables from COLIN to a temporary vector.
+
     TypeManager()->lexical_cast(miv.Integer(), ddv);
+
+    // Assign non-set integer variables to DAKOTA integer variables.
 
     for (size_t j=0; j<num_ddrv; j++)
       tmpVariableHolder.discrete_int_variable(ddv[j], j);
+
+    // Remember, COLIN is operating on the index for the set discrete
+    // variables.  Get the integer values associated with each index
+    // and assign them to DAKOTA integer variables.
 
     offset = num_ddrv;
     for (size_t j=0; j<num_ddsiv; j++) {
@@ -814,6 +979,8 @@ void COLINOptimizer::post_run(std::ostream& s)
       tmpVariableHolder.discrete_int_variable(dakota_value, j+offset);
     }
 
+    // Likewise for the real set discrete variables.
+
     offset += num_ddsiv;
     for (size_t j=0; j<num_ddsrv; j++) {
       int colin_index = ddv[j+offset];
@@ -821,21 +988,23 @@ void COLINOptimizer::post_run(std::ostream& s)
       tmpVariableHolder.discrete_real_variable(dakota_value, j);
     }
 
-    // transform variables back to user/native for lookup
-    // Default unscaling does not apply in this case, so can't use
-    // implementation in LeastSq::post_run
+    // Unscale variables back to user/native for database lookup.
+
     if (varsScaleFlag)
       tmpVariableHolder.continuous_variables(
 			modify_s2n(tmpVariableHolder.continuous_variables(), 
 				   cvScaleTypes, cvScaleMultipliers, cvScaleOffsets));
 
-    // get the optimal response and constraint values (presumably from
-    // the cache)
-    // there are three possible courses here: DAKOTA cache, DAKOTA model eval, COLIN model eval, all of which ultimately results in a cache lookup, but only the first won't increment eval duplicates.
+    // Get the optimal response and constraint values associated with
+    // the point.
 
     if (lookup_by_val(data_pairs, model_for_sort.interface_id(), 
 		      tmpVariableHolder, search_set, tmpResponseHolder)) {
       const RealVector& fn_vals = tmpResponseHolder.function_values();
+
+      // Compute constraint violation for nonlinear inequality and
+      // equality constraints using sum of squares of component-wise
+      // differences.  Only done for infeasible points.
 
       double constraintViolation = 0.0;
       for(size_t j=0; j<num_nln_ineq; j++) {
@@ -848,6 +1017,8 @@ void COLINOptimizer::post_run(std::ostream& s)
 	if (std::fabs(fn_vals[j+numUserObjectiveFns+num_nln_ineq] - nln_eq_targets[j]) > 0.)
 	  constraintViolation += std::pow(fn_vals[j+numUserObjectiveFns+num_nln_ineq]-nln_eq_targets[j], 2);
       }
+
+      // For feasible points, compute (sum of) objectives.
 
       double obj_fn_metric = 0.0;
       if (constraintViolation > 0.0)
@@ -872,10 +1043,15 @@ void COLINOptimizer::post_run(std::ostream& s)
       RealRealPair metrics(constraintViolation, obj_fn_metric);
 
       if (variableSortMap.size() < numFinalSolutions) {
+	// If there's still room in the map, insert the point.
+
 	variableSortMap.insert(std::make_pair(metrics, tmpVariableHolder.copy()));
 	responseSortMap.insert(std::make_pair(metrics, tmpResponseHolder.copy()));
       }
       else {
+	// Otherwise, boot out the worst point first and then insert
+	// the new point.
+
 	std::multimap<RealRealPair, Variables>::iterator var_worst_it = 
 	  --variableSortMap.end();
 	std::multimap<RealRealPair, Response>::iterator resp_worst_it = 
@@ -898,10 +1074,15 @@ void COLINOptimizer::post_run(std::ostream& s)
     }
   }
 
+  // Make sure bestVariablesArray and bestResponseArray are the right
+  // size.
+
   resize_final_points(numFinalSolutions);
   resize_final_responses(numFinalSolutions);
 
-  // this stinks, but COLIN doesn't return a best point anymore
+  // Iterate through the map and populate bestVariablesArray and
+  // bestResponseArray with sorted points and corresponding responses.
+
   std::multimap<RealRealPair, Variables>::const_iterator var_best_it = 
     variableSortMap.begin(); 
   const std::multimap<RealRealPair, Variables>::const_iterator var_best_end = 
@@ -913,6 +1094,8 @@ void COLINOptimizer::post_run(std::ostream& s)
     bestVariablesArray[index] = var_best_it->second.copy();
     bestResponseArray[index] = resp_best_it->second.copy();
   }
+
+  // Call Optimizer::post_run() to finish up.
 
   Iterator::post_run(s);
 }

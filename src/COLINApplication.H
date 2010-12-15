@@ -43,19 +43,19 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  /// default constructor: required by COLIN's ApplicationHandle creation
+  /// Default constructor. Rrequired by COLIN's ApplicationHandle creation.
   COLINApplication() 
   { /* empty constructor */ }
 
-  /// constructor with Model (not presently used)
+  /// Constructor with Model (not presently used).
   COLINApplication(Model& model);
 
-  /// destructor
+  /// Destructor.
   ~COLINApplication()
   { /* empty destructor */ }
 
-  /// helper function called after default construction to extract
-  /// information from the Model
+  /// Helper function called after default construction to extract problem
+  /// information from the Model and set it for COLIN.
   void set_problem(Model& model);
 
   /// publishes whether or not COLIN is operating synchronously
@@ -77,6 +77,7 @@ public:
   virtual bool
   evaluation_available();
 
+  /// Perform a function evaluation at t given point.
   virtual void
   perform_evaluation_impl(const utilib::Any &domain,
                      const colin::AppRequest::request_map_t &requests,
@@ -88,35 +89,38 @@ public:
   collect_evaluation_impl(colin::AppResponse::response_map_t &responses,
 		     utilib::seed_t &seed);
 
+  /// Helper function to convert evaluation request data from COLIN
+  /// structures to DAKOTA structures.
   virtual void
   colin_request_to_dakota_request(const utilib::Any &domain,
 				  const colin::AppRequest::request_map_t &requests,
 				  utilib::seed_t &seed);
 
+  /// Gelper function to convert evaluation response data from DAKOTA
+  /// structures to COLIN structures.
   virtual void
   dakota_response_to_colin_response(const Response &dakota_response,
 				    colin::AppResponse::response_map_t &colin_responses);
 
-  /// map the domain point into data type desired by this application context
+  /// Map the domain point into data type desired by this application context.
   virtual bool map_domain (const utilib::Any &src, utilib::Any &native, 
 			   bool forward = true) const;
 
 protected:
 
-  /// shallow copy of the model on which COLIN will iterate
+  /// Shallow copy of the model on which COLIN will iterate.
   Model iteratedModel;
 
-  /// flag for COLIN synchronous behavior
+  /// Flag for COLIN synchronous behavior (Pattern Search only).
   bool blockingSynch;
 
-  /// local copy of model's active set for convenience
+  /// Local copy of model's active set for convenience.
   ActiveSet activeSet;
 
-  /// evaluations queued for asynch evaluation
-  //  IntList requestedEvals;
+  /// Evaluations queued for asynch evaluation.
   std::vector<int> requestedEvals;
 
-  /// eval_id to Response mapping to cache completed jobs
+  /// eval_id to response mapping to cache completed jobs.
   IntResponseMap dakota_responses;
 
 }; // class COLINApplication
