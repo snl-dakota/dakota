@@ -7,7 +7,7 @@ and Linux operating systems. The computers and operating systems
 actively supported by the DAKOTA project include:
 
 \begin{itemize}
-\item Intel/AMD Redhat Enterprise Linux 4 and 5 (RHEL4, RHEL5) with gcc and Intel compilers
+\item Intel/AMD Redhat Enterprise Linux 4,5,6 (RHEL4, RHEL5, RHEL6) with gcc and Intel compilers
 \item Sun Solaris 5.10 with SunPro CC compilers
 \item IBM AIX 5.3 with xlC compilers
 \item Mac OS X 10.5 with gcc compilers
@@ -402,8 +402,8 @@ Manual~\cite{RefMan} for additional details on this input file syntax.
 The first section of the input file shown in
 Figure~\ref{tutorial:rosenbrock_2d} is the \emph{strategy} section.
 This keyword section is used to specify some of DAKOTA's advanced
-meta-procedures such as hybrid optimization, surrogate-based
-optimization, multi-start optimization, and Pareto optimization.
+meta-procedures such as hybrid optimization, 
+multi-start optimization, and Pareto optimization.
 See Chapter~\ref{strat} for more information on these
 meta-procedures. The \emph{strategy} section also contains the
 settings for DAKOTA's graphical output (via the \texttt{graphics}
@@ -488,14 +488,14 @@ a parameter study.
 
 \section{Example Problems}\label{tutorial:example}
 
-This section serves to familiarize users without how to perform parameter 
+This section serves to familiarize users about how to perform parameter 
 studies, optimization, and uncertainty quantification through their common
 DAKOTA interface.  The initial examples utilize simple built in driver 
 functions; later we show how to utilize DAKOTA to drive the evaluation of 
 user supplied black box code.  The examples presented in this chapter 
 are intended to show the simplest use of DAKOTA for several methods of 
 each type.  More advanced examples of using DAKOTA for specific purposes 
-are provided in subsequent, topic based, chapters.
+are provided in subsequent, topic-based, chapters.
 
 \subsection{Parameter Studies}\label{tutorial:example:param_study}
 
@@ -1293,14 +1293,16 @@ is specified.
 As shown in Figure~\ref{tutorial:results_mc}, 
 the statistical data on the 200 Monte Carlo samples is printed at the
 end of the output file in the section that starts with ``Statistics
-based on 200 samples.'' In this section, DAKOTA outputs the
-mean, standard deviation, coefficient of variation, and 95\%
-confidence intervals for each of the response functions.  For example, 
+based on 200 samples.'' In this section summarizing 
+moment-based statistics, DAKOTA outputs the
+mean, standard deviation, skewness, and kurtosis estimates 
+for each of the response functions.  For example, 
 the mean of the Rosenbrock function given uniform input uncertainties 
 on the input variables is 455.4 and the standard deviation is 536.8. 
 This is a very large standard deviation, due to the fact that the 
 Rosenbrock function varies by three orders of magnitude over the input 
-domain.  The statistical information on moments in the output is followed by
+domain.  The skewness is positive, meaning this is a right-tailed distribution, not a symmetric distribution.  Finally, the kurtosis (a measure of the ``peakedness'' of the distribution) indicates that 
+this is a strongly peaked distribution (note that we use a central, standardized kurtosis so that the kurtosis of a normal is zero).  After the moment-related statistics, the 95\% confidence intervals on the mean and standard deviations are printed.  This is followed by
 the fractions (``Probability Level'') of the response function values 
 that are below the response threshold values specified in the input file. 
 For example, 34 percent of the sample inputs resulted in a Rosenbrock 
