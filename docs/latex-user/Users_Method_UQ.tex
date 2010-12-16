@@ -1269,7 +1269,7 @@ to solve for the set of PCE coefficients which best match a set of
 response values obtained from either a design of computer experiments
 (``point collocation''~\cite{pt_colloc1}) or from the subset of tensor
 Gauss points with highest product weight (``probabilistic
-collocation''~\cite{Tatang_95}).
+collocation''~\cite{Tat95}).
 
 Stochastic collocation (SC) is another stochastic expansion technique
 for UQ that is closely related to PCE.  As for PCE,
@@ -1297,9 +1297,9 @@ For use of standard Gauss integration rules (not nested variants such
 as Gauss-Patterson or Genz-Keister) within tensor-product quadrature,
 tensor PCE expansions and tensor SC interpolants are equivalent in
 that identical polynomial approximations are
-generated~\cite{paul_tpq}.  Moreover, this equivalence can be extended
+generated~\cite{ConstTPQ}.  Moreover, this equivalence can be extended
 to sparse grids based on standard Gauss rules, provided that a sparse
-PCE is formed based on a weighted sum of tensor expansions~\cite{paul_ssg}.
+PCE is formed based on a weighted sum of tensor expansions~\cite{ConstSSG}.
 
 
 \subsection{Orthogonal polynomials in the Askey scheme} \label{uq:expansion:askey}
@@ -1680,8 +1680,8 @@ The transformation from correlated non-normal distributions to
 uncorrelated standard normal distributions is denoted as
 $\boldsymbol{\xi} = T({\bf x})$ with the reverse transformation denoted as
 ${\bf x} = T^{-1}(\boldsymbol{\xi})$.  These transformations are nonlinear in
-general, and possible approaches include the Rosenblatt~\cite{rosen},
-Nataf~\cite{nataf}, and Box-Cox~\cite{boxcox} transformations.
+general, and possible approaches include the Rosenblatt~\cite{Ros52},
+Nataf~\cite{Der86}, and Box-Cox~\cite{Box64} transformations.
 %The nonlinear transformations may also be linearized, and common
 %approaches for this include the Rackwitz-Fiessler~\cite{rf}
 %two-parameter equivalent normal and the Chen-Lind~\cite{cl} and
@@ -1708,21 +1708,21 @@ factor ${\bf L}$ of a modified correlation matrix is used:
 \end{equation}
 where the original correlation matrix for non-normals in x-space has
 been modified to represent the corresponding ``warped'' correlation in
-z-space~\cite{nataf}.
+z-space~\cite{Der86}.
 
-<!-- TO HERE! -->
 
 \subsection{Spectral projection} \label{uq:expansion:spectral}
 
 The major practical difference between PCE and SC is that, in PCE, one
 must estimate the coefficients for known basis functions, whereas in
 SC, one must form the interpolants for known coefficients.  PCE
-estimates its coefficients using any of the approaches to follow:
-random sampling, tensor-product quadrature, Smolyak sparse grids, or
-linear regression.  In SC, the multidimensional interpolants need to
-be formed over structured data sets, such as point sets from
+estimates its coefficients using either spectral projection or linear
+regression, where the former approach involves numerical integration
+based on random sampling, tensor-product quadrature, Smolyak sparse
+grids, or cubature methods.  In SC, the multidimensional interpolants
+need to be formed over structured data sets, such as point sets from
 quadrature or sparse grids; approaches based on random sampling may
-not be used.
+not be used.  
 
 The spectral projection approach
 %(which justifies the term stochastic finite elements)
@@ -1730,7 +1730,8 @@ projects the response against each basis function using inner products
 and employs the polynomial orthogonality properties to extract each
 coefficient.  Similar to a Galerkin projection, the residual error
 from the approximation is rendered orthogonal to the selected basis.
-From Eq.~\ref{eq:pc_exp_trunc}, it is evident that
+From Eq.~\ref{eq:pc_exp_trunc}, taking the inner product of both sides
+with respect to $\Psi_j$ and enforcing orthogonality yields:
 \begin{equation}
 \alpha_j ~=~ \frac{\langle R, \Psi_j \rangle}{\langle \Psi^2_j \rangle}
 ~=~ {1\over {\langle \Psi^2_j \rangle}}
@@ -1752,11 +1753,13 @@ product of univariate norms squared
 \end{equation}
 where the univariate inner products have simple closed form
 expressions for each polynomial in the Askey
-scheme~\cite{abram_stegun}. Thus, the primary computational effort
-resides in evaluating the numerator, which is evaluated numerically
-using sampling, quadrature or sparse grid approaches (and this
-numerical approximation leads to use of the term ``pseudo-spectral''
-by some investigators).
+scheme~\cite{abram_stegun} and are readily computed as part of the
+numerically-generated solution procedures described in
+Section~\ref{uq:expansion:beyond_askey}. Thus, the primary
+computational effort resides in evaluating the numerator, which is
+evaluated numerically using sampling, quadrature, cubature, or sparse
+grid approaches (and this numerical approximation leads to use of the
+term ``pseudo-spectral'' by some investigators).
 
 
 \subsubsection{Sampling} \label{uq:expansion:spectral_samp}
@@ -1784,14 +1787,16 @@ noticeable beneficial effect for under-resolved sampling.
 In quadrature-based approaches, the simplest general technique for
 approximating multidimensional integrals, as in
 Eq.~\ref{eq:coeff_extract}, is to employ a tensor product of
-one-dimensional quadrature rules.  In the case where $\Omega$ is a
-hypercube, i.e. $\Omega=[-1,1]^n$, there are several choices of nested
-abscissas, included Clenshaw-Curtis, Gauss-Patterson,
-etc.~\cite{webster1, webster2, gerstner_griebel_98}.  In the more
-general case, we propose to use Gaussian abscissas, i.e. the zeros of
-the orthogonal polynomials with respect to some positive weight,
+one-dimensional quadrature rules.  %In the case where $\Omega$ is a
+%hypercube, i.e. $\Omega=[-1,1]^n$, there are several choices of nested
+%abscissas, included Clenshaw-Curtis, Gauss-Patterson,
+%etc.~\cite{webster1, webster2, gerstner_griebel_98}.  
+Since there is little benefit to the use of nested quadrature rules in
+the tensor-product case\footnote{Unless a refinement procedure is in
+  use.}, we choose Gaussian abscissas, i.e. the zeros of polynomials
+that are orthogonal with respect to a density function weighting,
 e.g. Gauss-Hermite, Gauss-Legendre, Gauss-Laguerre, generalized
-Gauss-Laguerre, or Gauss-Jacobi.
+Gauss-Laguerre, Gauss-Jacobi, or numerically-generated Gauss rules.
 
 We first introduce an index $i\in\mathbb{N}_+$, $i\ge1$. Then, for
 each value of $i$, let $\{\xi_1^i, \ldots,\xi_{m_i}^i\}\subset \Omega_i$ 
@@ -1833,25 +1838,48 @@ Eq.~\ref{eq:multi_tensor} employs the same order for all random dimensions,
 $m_{i_j} = m$, then Eq.~\ref{eq:multi_tensor} requires $m^n$ function
 evaluations.
 
-Figure~\ref{fig:pascal_tensor_quad5_Gauss} displays the monomial
-coverage for an integrand evaluated using an isotropic Gaussian
-quadrature rules in two dimensions ($m_1 = m_2 = 5$).  Given this type
-of coverage, the traditional approach of exploying a total-order chaos
-expansion (involving integrands indicated by the red horizontal line)
-neglects a significant portion of the monomial coverage and one would
-expect a tensor-product expansion to provide improved synchronization
-and more effective usage of the Gauss point evaluations.  Note that
-the integrand monomial coverage must resolve $2p$, such that $p_1 =
-p_2 = 4$ would be selected in this case.
-\begin{figure}[h!]
-\begin{center}
-\includegraphics[width=2.5in]{images/TensorQuad5_Gauss}
-\caption{Pascal's triangle depiction of integrand monomial coverage 
-for two dimensions and Gaussian tensor-product quadrature order = 5.
-Red line depicts maximal total-order integrand coverage.}
-\label{fig:pascal_tensor_quad5_Gauss}
-\end{center}
-\end{figure}
+%Figure~\ref{fig:pascal_tensor_quad5_Gauss} depicts the monomial
+%coverage in Pascal's triangle for an integrand evaluated using an
+%isotropic Gaussian quadrature rules in two dimensions ($m_1 = m_2 =
+%5$).  Given this type of coverage, the traditional approach of
+%exploying a total-order PCE (involving integrands indicated by the red
+%horizontal line) neglects a significant portion of the monomial
+%coverage and one would expect a tensor-product PCE to provide improved
+%synchronization and more effective usage of the Gauss point
+%evaluations.  In fact, use of a tensor-expansion improves PCE
+%performance significantly and has been shown to result in identical
+%polynomial forms to SC~\cite{ConstTPQ}, eliminating a performance gap
+%that exists in the total-order expansion case.  Note that the
+%integrand monomial coverage must resolve $2p$, such that $p_1 = p_2 =
+%4$ would be selected in this example (preferring slight
+%over-integration to under-integration) for either the tensor or
+%total-order expansion cases.
+%\begin{figure}[h!]
+%\begin{center}
+%\includegraphics[width=2.5in]{TensorQuad5_Gauss}
+%\caption{Pascal's triangle depiction of integrand monomial coverage 
+%for two dimensions and Gaussian tensor-product quadrature order = 5.
+%Red line depicts maximal total-order integrand coverage.}
+%\label{fig:pascal_tensor_quad5_Gauss}
+%\end{center}
+%\end{figure} 
+
+In~\cite{Eld09a}, it is demonstrated that close synchronization of
+expansion form with the monomial resolution of a particular numerical
+integration technique can result in significant performance
+improvements.  In particular, the traditional approach of exploying a
+total-order PCE (Eqs.~\ref{eq:to_multi_index}--\ref{eq:num_to_terms})
+neglects a significant portion of the monomial coverage for a
+tensor-product quadrature approach, and one should rather employ a
+tensor-product PCE (Eqs.~\ref{eq:tp_multi_index}--\ref{eq:num_tp_terms}) 
+to provide improved synchronization and more effective usage of the
+Gauss point evaluations.  When the quadrature points are standard
+Gauss rules (i.e., no Clenshaw-Curtis, Gauss-Patterson, or
+Genz-Keister nested rules), it has been shown that tensor-product PCE
+and SC result in identical polynomial forms~\cite{ConstTPQ},
+completely eliminating a performance gap that exists between
+total-order PCE and SC~\cite{Eld09a}.
+
 
 \subsubsection{Smolyak sparse grids} \label{uq:expansion:spectral_sparse}
 
@@ -1900,10 +1928,11 @@ Equivalently, formula Eq.~\ref{eq:smolyak1} can be written as~\cite{was_woz}
 \left(\mathscr{U}^{i_1}\otimes\cdots\otimes\mathscr{U}^{i_n}\right).
 \end{equation}
 
-Given an index set of levels, linear or nonlinear growth rules may be
-defined for the one-dimensional quadrature orders in order to take
-advantage of nesting of collocation points.  The following growth rules
-are currently available for indices $i \geq 1$:
+For each index set $\mathbf{i}$ of levels, linear or nonlinear growth
+rules are used to define the corresponding one-dimensional quadrature
+orders.  The following growth rules are employed for indices $i \geq
+1$, where closed and open refer to the inclusion and exclusion of the
+bounds within an interval, respectively:
 % The following is more precisely presented by replacing w with i-1
 %\begin{eqnarray}
 %{\rm Clenshaw-Curtis:}~~m &=& 
@@ -1914,114 +1943,143 @@ are currently available for indices $i \geq 1$:
 %{\rm Gaussian:}~~m &=& 2^{w+1} - 1 \label{eq:growth_Gauss_nonlin}
 %\end{eqnarray}
 \begin{eqnarray}
-{\rm Clenshaw-Curtis:}~~m &=& 
+{\rm closed~nonlinear:}~~m &=& 
 \left\{ \begin{array}{ll}
          1       & i=1 \\
          2^{i-1} + 1 & i > 1 
         \end{array} \right.    \label{eq:growth_CC_nonlin} \\
-{\rm Gaussian~nonlinear:}~~m &=& 2^i - 1 \label{eq:growth_Gauss_nonlin} \\
-{\rm Gaussian~linear:}   ~~m &=& 2 i - 1 \label{eq:growth_Gauss_lin}
+{\rm open~nonlinear:}~~m &=& 2^i - 1 \label{eq:growth_Gauss_nonlin} \\
+{\rm open~linear:}   ~~m &=& 2 i - 1 \label{eq:growth_Gauss_lin}
 \end{eqnarray}
-For fully nested quadrature rules such as Clenshaw-Curtis and
-Gauss-Patterson, nonlinear growth rules are strongly preferred
-(Eq.~\ref{eq:growth_CC_nonlin} for the former and
-Eq.~\ref{eq:growth_Gauss_nonlin} for the latter).  For at most weakly
-nested Gaussian quadrature rules, either linear or nonlinear rules may
-be selected, with the former motivated by finer granularity of control
-and uniform integrand coverage and the latter motivated by consistency
-with Clenshaw-Curtis and Gauss-Patterson.  The $m = 2i - 1$ linear
-rule takes advantage of weak nesting (e.g., Gauss-Hermite and
-Gauss-Legendre), whereas non-nested rules (e.g., Gauss-Laguerre) could
-alternatively employ an $m = i$ linear rule without any loss of reuse.
-In the experiments to follow, Clenshaw-Curtis employs nonlinear growth
-via Eq.~\ref{eq:growth_CC_nonlin}, and all Gaussian rules employ
-either nonlinear growth from Eq.~\ref{eq:growth_Gauss_nonlin} or
-linear growth from Eq.~\ref{eq:growth_Gauss_lin}.
+Nonlinear growth rules are used for fully nested rules (e.g.,
+Clenshaw-Curtis is closed fully nested and Gauss-Patterson is open
+fully nested), and linear growth rules are best for standard Gauss
+rules that take advantage of, at most, ``weak'' nesting (e.g., reuse
+of the center point).
+%For fully nested quadrature rules such as Clenshaw-Curtis and
+%%Gauss-Patterson, nonlinear growth rules are strongly preferred
+%(Eq.~\ref{eq:growth_CC_nonlin} for the former and
+%Eq.~\ref{eq:growth_Gauss_nonlin} for the latter).  For at most weakly
+%nested Gaussian quadrature rules, either linear or nonlinear rules may
+%be selected, with the former motivated by finer granularity of control
+%and uniform integrand coverage and the latter motivated by consistency
+%with Clenshaw-Curtis and Gauss-Patterson.  The $m = 2i - 1$ linear
+%rule takes advantage of weak nesting (e.g., Gauss-Hermite and
+%Gauss-Legendre), whereas non-nested rules (e.g., Gauss-Laguerre) could
+%alternatively employ an $m = i$ linear rule without any loss of reuse.
+%In the experiments to follow, Clenshaw-Curtis employs nonlinear growth
+%via Eq.~\ref{eq:growth_CC_nonlin}, and all Gaussian rules employ
+%either nonlinear growth from Eq.~\ref{eq:growth_Gauss_nonlin} or
+%linear growth from Eq.~\ref{eq:growth_Gauss_lin}.
 
 Examples of isotropic sparse grids, constructed from the fully nested 
 Clenshaw-Curtis abscissas %described in Section \ref{sub:cc}, 
 and the weakly-nested Gaussian abscissas %in Section \ref{sub:cc_gauss}, 
-are shown in Figure \ref{fig:isogrid_N2_q7}, where $\Omega=[-1,1]^2$.
-There, we consider a two-dimensional parameter space and a maximum level 
-${\rm w}=5$ (sparse grid $\mathscr{A}(5,2)$).  To see the reduction in 
-function evaluations with respect to full tensor product grids, we also 
-include a plot of the corresponding Clenshaw-Curtis isotropic full tensor 
-grid having the same maximum number of points in each direction, namely 
-$2^{\rm w}+1 = 33$.  Whereas an isotropic tensor-product quadrature scales
-as $m^n$, an isotropic sparse grid scales as $m^{{\rm log}~n}$, 
-significantly mitigating the curse of dimensionality.
+are shown in Figure \ref{fig:isogrid_N2_q7}, where $\Omega=[-1,1]^2$
+and both Clenshaw-Curtis and Gauss-Legendre employ nonlinear
+growth\footnote{We prefer linear growth for Gauss-Legendre, but employ
+nonlinear growth here for purposes of comparison.} from
+Eqs.~\ref{eq:growth_CC_nonlin} and~\ref{eq:growth_Gauss_nonlin},
+respectively.  There, we consider a two-dimensional parameter space
+and a maximum level ${\rm w}=5$ (sparse grid $\mathscr{A}(5,2)$).  To
+see the reduction in function evaluations with respect to full tensor
+product grids, we also include a plot of the corresponding
+Clenshaw-Curtis isotropic full tensor grid having the same maximum
+number of points in each direction, namely $2^{\rm w}+1 = 33$.
+%Whereas an isotropic tensor-product quadrature scales as $m^n$, an
+%isotropic sparse grid scales as $m^{{\rm log}~n}$, significantly
+%mitigating the curse of dimensionality.
 %
 \begin{figure}[h!]
 %\vspace{-2cm}
 \begin{center}
 \includegraphics[width=6.5in]{images/isogrid_N2_q6}
-\caption{For a two-dimensional parameter space ($n=2$) and maximum level
-  ${\rm w}=5$, we plot the full tensor product grid using the Clenshaw-Curtis
-  abscissas (left) and isotropic Smolyak sparse grids
-  $\mathscr{A}(5,2)$, utilizing the Clenshaw-Curtis abscissas (middle)
-  and the Gaussian abscissas (right).} % for ${\rm w}=5$. }
+\caption{Two-dimensional grid comparison with a tensor product grid
+  using Clenshaw-Curtis points (left) and sparse grids
+  $\mathscr{A}(5,2)$ utilizing Clenshaw-Curtis (middle) and
+  Gauss-Legendre (right) points with nonlinear growth. }
 \label{fig:isogrid_N2_q7}
 \end{center}
 \end{figure}
 
-Figure~\ref{fig:pascal_sparse_lev4_Gauss} displays the monomial
-coverage in Pascal's triangle for an isotropic sparse grid with level
-$w = 4$ employing Gaussian integration rules in two dimensions.  Given
-this geometric interpretation, subtracted tensor-product grids from
-Eqs.~\ref{eq:smolyak1} and \ref{eq:smolyak2} can be interpreted as
-regions of overlap where only a single contribution to the integral
-should be retained.  Figure~\ref{fig:pascal_sparse_lev4_Gauss}(a)
-shows the case of nonlinear growth rules as given in
-Eq.~\ref{eq:growth_Gauss_nonlin} and
-Figure~\ref{fig:pascal_sparse_lev4_Gauss}(b) shows the linear growth
-rule given in Eq.~\ref{eq:growth_Gauss_lin}.  Given this type of
-coverage, the traditional approach of exploying a total-order chaos
-expansion (maximal resolvable total-order integrand depicted with red
-horizontal line) can be seen to be well synchronized for the case of
-linear growth rules, since only a few small ``teeth'' protrude beyond
-the maximal total-order basis, and to be somewhat conservative for
-nonlinear growth rules, since the maximal total-order basis is
-dictated by the concave interior and neglects the outer ``legs'' 
-(this shape is sometimes referred to as the ``hyperbolic cross'').
-However, the inclusion of additional terms beyond the total-order
-basis in the nonlinear growth rule case, as motivated by the legs in
-Figure~\ref{fig:pascal_sparse_lev4_Gauss}(a), is error-prone, since
-the order of the unknown response function will tend to push the
-product integrand out into the concave interior, resulting in product
-polynomials that are not resolvable by the sparse integration.
-For the total-order basis, the integrand monomial coverage must
-resolve $2p$, such that $p = 9$ would be selected in the nonlinear
-growth rule case and $p = 7$ would be selected in the linear growth
-rule case.
-\begin{figure}[htbp]
-  \begin{subfigmatrix}{2}
-  \subfigure[Nonlinear growth rule.]{\includegraphics{images/SparseLevel4_NonlinGauss}}
-  \subfigure[Linear growth rule.]{\includegraphics{images/SparseLevel4_LinGauss}}
-  \end{subfigmatrix}
-  \caption{Pascal's triangle depiction of integrand monomial coverage 
-for two dimensions and Gaussian sparse grid level = 4.  Red line depicts 
-maximal total-order integrand coverage.}
-\label{fig:pascal_sparse_lev4_Gauss}
-\end{figure}
+%Figure~\ref{fig:pascal_sparse_lev4_Gauss} depicts the monomial
+%coverage in Pascal's triangle for two-dimensional level 4 isotropic
+%sparse grids ($\mathscr{A}(4,2)$) employing the same one-dimensional
+%Gaussian integration rule, where
+%Figure~\ref{fig:pascal_sparse_lev4_Gauss}(a) shows the application of
+%a nonlinear growth rule as given in Eq.~\ref{eq:growth_Gauss_nonlin}
+%and Figure~\ref{fig:pascal_sparse_lev4_Gauss}(b) shows the use of a
+%linear growth rule as given in Eq.~\ref{eq:growth_Gauss_lin}.  Using
+%this geometric interpretation, subtracted tensor-product grids from
+%Eqs.~\ref{eq:delta} and \ref{eq:smolyak2} can be interpreted as
+%regions of overlap where only a single contribution to the integral
+%should be retained.  And for these monomial coverage patterns, the
+%traditional approach of exploying a total-order PCE (maximal
+%resolvable total-order integrand depicted with red horizontal line)
+%can be seen to be well synchronized for the case of linear growth
+%rules (since only a few small ``teeth'' protrude beyond the maximal
+%total-order basis) and to be somewhat conservative for nonlinear
+%growth rules due to the ``hyperbolic cross'' shape (since the maximal
+%total-order basis is dictated by the concave interior, neglecting the
+%extended coverage along the axes).
+%
+%However, the inclusion of additional terms beyond the
+%total-order basis in the nonlinear growth rule case, as motivated by
+%the legs in Figure~\ref{fig:pascal_sparse_lev4_Gauss}(a), would be
+%error-prone, since the order of the unknown response function will
+%tend to push the product integrand (Eq.~\ref{eq:coeff_extract}) out
+%into the concave interior, resulting in product polynomials that are
+%not resolvable by the sparse integration.
+%\begin{figure}[htbp]
+%  \begin{subfigmatrix}{2}
+%  \subfigure[Nonlinear growth rule.]{\includegraphics{SparseLevel4_NonlinGauss}}
+%  \subfigure[Linear growth rule.]{\includegraphics{SparseLevel4_LinGauss}}
+%  \end{subfigmatrix}
+%  \caption{Pascal's triangle depiction of integrand monomial coverage 
+%for two dimensions and Gaussian sparse grid level = 4.  Red line depicts 
+%maximal total-order integrand coverage.}
+%\label{fig:pascal_sparse_lev4_Gauss}
+%\end{figure}
+%For the total-order PCE basis, the integrand monomial coverage must
+%again resolve $2p$, such that $p = 9$ would be selected in this
+%nonlinear growth rule example and $p = 7$ would be selected in the
+%linear growth rule example.
 
-For anisotropic Smolyak sparse grids, DAKOTA supports the
-specification of a dimension preference vector in order to emphasize
-stochastic dimensions that are more important over ones that are less
-important.  A natural mechanism for quantifying dimension importance
-is through the global sensitivity analysis procedure described in
-Section~\ref{uq:expansion:vbd}, as the attribution of output variance
-among input sources provides an intuitive measure of importance in the
-stochastic setting.
+In~\cite{Eld09a}, it is demonstrated that the synchronization of
+total-order PCE with the monomial resolution of a sparse grid is
+imperfect, and that sparse grid SC consistently outperforms sparse
+grid PCE when employing the sparse grid to directly evaluate the
+integrals in Eq.~\ref{eq:coeff_extract}.  In our DAKOTA implementation, we 
+depart from the use of sparse integration of total-order expansions, and 
+instead employ a linear combination of tensor expansions~\cite{ConstSSG}.
+%That is, instead of employing the sparse grid as a separate numerical
+%integration scheme for evaluations of Eq.~\ref{eq:coeff_extract} (for 
+%which expansion synchronization is a challenge), we instead 
+That is, we compute separate tensor polynomial chaos expansions for
+each of the underlying tensor quadrature grids (for which there is no
+synchronization issue) and then sum them using the Smolyak
+combinatorial coefficient (from Eq.~\ref{eq:smolyak2} in the isotropic
+case).  This improves accuracy, preserves the PCE/SC consistency
+property described in Section~\ref{uq:expansion:spectral_quad}, and also
+simplifies PCE for the case of anisotropic sparse grids described next.
 
-Given a mechanism for defining anisotropy, we must extend the
-definition of the sparse grid from that of Eq.~\ref{eq:smolyak2}.
-First, the sparse grid index set constraint becomes
+For anisotropic Smolyak sparse grids, a dimension preference vector is
+used to emphasize important stochastic dimensions.  
+%A natural mechanism for quantifying
+%dimension importance is through the global sensitivity analysis
+%procedure described in Section~\ref{sec:ssa:global}, as the
+%attribution of output variance among input sources provides an
+%intuitive measure of importance in the stochastic setting.
+Given a mechanism for defining anisotropy, we can extend the
+definition of the sparse grid from that of Eq.~\ref{eq:smolyak2} to
+weight the contributions of different index set components.  First,
+the sparse grid index set constraint becomes
 \begin{equation}
 {\rm w}\underline{\gamma} < \mathbf{i} \cdot \mathbf{\gamma} \leq 
 {\rm w}\underline{\gamma}+|\mathbf{\gamma}|
 \label{eq:aniso_smolyak_constr}
 \end{equation}
-where $\underline{\gamma}$ is the minimum if the dimension weights
+where $\underline{\gamma}$ is the minimum of the dimension weights
 $\gamma_k$, $k$ = 1 to $n$.  The dimension weighting vector
 $\mathbf{\gamma}$ amplifies the contribution of a particular dimension
 index within the constraint, and is therefore inversely related to the
@@ -2031,73 +2089,97 @@ that you reproduce the isotropic index constraint ${\rm w}+1 \leq
 |\mathbf{i}| \leq {\rm w}+n$ (note the change from $<$ to $\leq$).
 Second, the combinatorial coefficient for adding the contribution from
 each of these index sets is modified as described in~\cite{Burk09}.
-Given the modified index sets and combinatorial coefficients defined
-from the dimension preference vector, interpolation (SC) on
-anisotropic sparse grids proceeds as for the isotropic case.  PCE,
-however, again has the challenge of expansion tailoring.  Fortunately,
-in the anistropic case, we can assume that more is known about the
-form of the response function (especially if the dimension preference
-was based on variance-based decomposition).  This allows us to abandon
-the safe total-order basis approach in favor of a tightly-synchronized
-expansion formulation that applies the $2p$ logic to all of the
-protruding ``legs'' in the monomial resolution structure.
+%Given the modified index sets and combinatorial coefficients defined
+%from the dimension preference vector, interpolation (SC) on
+%anisotropic sparse grids proceeds as for the isotropic case.  PCE,
+%however, again has the challenge of expansion tailoring.  Fortunately,
+%in the anistropic case, we can assume that more is known about the
+%form of the response function (especially if the dimension preference
+%was based on variance-based decomposition).  This allows us to abandon
+%the safe total-order basis approach in favor of a tightly-synchronized
+%expansion formulation that applies the $2p$ logic to all of the
+%protruding ``legs'' in the monomial resolution structure.
+
+
+\subsubsection{Cubature} \label{uq:expansion:cubature}
+
+Cubature rules~\cite{stroud,xiu_cubature} are specifically optimized
+for multidimensional integration and are distinct from tensor-products 
+and sparse grids in that they are not based on combinations of 
+one-dimensional Gauss quadrature rules.  They have the advantage of 
+improved scalability to large numbers of random variables, but are 
+restricted in integrand order and require homogeneous random variable 
+sets (achieved via transformation).  For example, optimal rules for
+integrands of 2, 3, and 5 and either Gaussian or uniform densities 
+allow low-order polynomial chaos expansions ($p=1$ or $2$) that are 
+useful for global sensitivity analysis including main effects and, 
+for $p=2$, all two-way interactions.
 
 
 \subsection{Linear regression} \label{uq:expansion:regress}
 
-The linear regression approach (also known as point collocation or
-stochastic response surfaces~\cite{pt_colloc1,pt_colloc2}) uses a
+The linear regression approach uses a
 single linear least squares solution of the form:
 \begin{equation}
 \boldsymbol{\Psi} \boldsymbol{\alpha} = \boldsymbol{R} \label{eq:regression}
 \end{equation}
 to solve for the complete set of PCE coefficients
 $\boldsymbol{\alpha}$ that best match a set of response values
-$\boldsymbol{R}$.  The set of response values is typically obtained by
+$\boldsymbol{R}$.  The set of response values is obtained either by
 performing a design of computer experiments within the density
-function of $\boldsymbol{\xi}$, where each row of the matrix
+function of $\boldsymbol{\xi}$ (point
+collocation~\cite{pt_colloc1,pt_colloc2}) or from a subset of tensor
+quadrature points with highest product weight (probabilistic
+collocation~\cite{Tat95}).  In either case, each row of the matrix
 $\boldsymbol{\Psi}$ contains the $N_t$ multivariate polynomial terms
 $\Psi_j$ evaluated at a particular $\boldsymbol{\xi}$ sample.  An
-over-sampling is generally advisable (Ref.~\cite{pt_colloc2}
-recommends $2N_t$ samples), resulting in a least squares solution for
-the over-determined system.  In the case of $2N_t$ oversampling, the
-simulation requirements for this approach scale as
-$\frac{2(n+p)!}{n!p!}$, which can be significantly more affordable
-than isotropic tensor-product quadrature (e.g., $(p+1)^n$) for larger
-problems.
-
-A closely related technique is known as the ``probabilistic
-collocation'' approach.  Rather than employing random over-sampling,
-this technique uses a selected subset of $N_t$ Gaussian quadrature
-points (those with highest tensor-product weighting), which provides
-more optimal collocation locations and preserves interpolation
-properties.  Finally, additional regression equations can be obtained
-through the use of derivative information (gradient and Hessians) from
-each collocation point, which aids greatly in scaling with respect to
-the number of random variables.  Neither of these latter capabilities
-are currently available in DAKOTA.
+over-sampling is recommended in the case of random samples
+(\cite{pt_colloc2} recommends $2N_t$ samples), resulting in a least
+squares solution for the over-determined system.  As for
+sampling-based coefficient estimation, this approach is only valid for
+PCE and does not require synchronization with monomial coverage; thus
+it is common to combine this coefficient estimation approach with a
+traditional total-order chaos expansion in order to keep sampling
+requirements low.  In this case, simulation requirements for this
+approach scale as $\frac{r(n+p)!}{n!p!}$ ($r$ is an over-sampling
+factor with typical values $1 \leq r \leq 2$), which can be
+significantly more affordable than isotropic tensor-product quadrature
+(scales as $(p+1)^n$ for standard Gauss rules) for larger problems.
+%A closely related technique is known as the ``probabilistic
+%collocation'' approach.  Rather than employing random over-sampling,
+%this technique uses a selected subset of $N_t$ Gaussian quadrature
+%points (those with highest tensor-product weighting), which provides
+%more optimal collocation locations and preserves interpolation
+%properties.
+Finally, additional regression equations can be obtained through the
+use of derivative information (gradients and Hessians) from each
+collocation point, which can aid in scaling with respect to the number
+of random variables, particularly for adjoint-based derivative
+approaches.
 
 
 \subsection{Analytic moments} \label{uq:expansion:moment}
 
-Mean and variance of the polynomial chaos expansion are available
+Mean and covariance of polynomial chaos expansions are available
 in simple closed form:
 \begin{eqnarray}
-\mu_R      &=& \langle R \rangle ~~\cong~~ \sum_{j=0}^P \alpha_j \langle 
-\Psi_j(\boldsymbol{\xi}) \rangle ~~=~~ \alpha_0 \label{eq:mean_pce} \\
-\sigma^2_R &=& \langle (R - \mu_R)^2 \rangle ~~\cong~~ 
-\langle (\sum_{j=1}^P \alpha_j \Psi_j(\boldsymbol{\xi}))^2 \rangle
-~~=~~ \sum_{j=1}^P \sum_{k=1}^P \alpha_j \alpha_k
-\langle \Psi_j(\boldsymbol{\xi}) \Psi_k(\boldsymbol{\xi}) \rangle
-~~=~~ \sum_{j=1}^P \alpha^2_j \langle \Psi^2_j \rangle \label{eq:var_pce} 
+\mu_i      &=& \langle R_i \rangle ~~\cong~~ \sum_{k=0}^P \alpha_{ik} \langle 
+\Psi_k(\boldsymbol{\xi}) \rangle ~=~ \alpha_{i0} \label{eq:mean_pce} \\
+\Sigma_{ij} &=& \langle (R_i - \mu_i)(R_j - \mu_j) \rangle ~~\cong~~ 
+%\langle (\sum_{j=1}^P \alpha_j \Psi_j(\boldsymbol{\xi}))^2 \rangle ~=~ 
+\sum_{k=1}^P \sum_{l=1}^P \alpha_{ik} \alpha_{jl}
+\langle \Psi_k(\boldsymbol{\xi}) \Psi_l(\boldsymbol{\xi}) \rangle ~=~
+\sum_{k=1}^P \alpha_{ik}\alpha_{jk} \langle \Psi^2_k \rangle~~~~~~~~ \label{eq:covar_pce} 
 \end{eqnarray}
 where the norm squared of each multivariate polynomial is computed
-from Eq.~\ref{eq:norm_squared}.  The moments $\mu_R$ and $\sigma_R$
-are exact moments of the expansion, which converge to moments of the
-true response function.  Higher moments are also available
-analytically and could be employed in moment fitting approaches (i.e.,
-Pearson and Johnson models) in order to approximate a response PDF,
-although this is outside the scope of the current paper.
+from Eq.~\ref{eq:norm_squared}.  These expressions provide exact moments 
+of the expansions, which converge under refinement to moments of the 
+true response functions.  Skewness and kurtosis are additionally 
+reported from direct numerical integration of the response function.
+%Higher moments are also available
+%analytically and could be employed in moment fitting approaches (i.e.,
+%Pearson and Johnson models) in order to approximate a response PDF,
+%although this is outside the scope of the current paper.
 
 Similar expressions can be derived for stochastic collocation:
 \begin{eqnarray}
@@ -2109,10 +2191,22 @@ Similar expressions can be derived for stochastic collocation:
 \boldsymbol{L}_j(\boldsymbol{\xi}) \boldsymbol{L}_k(\boldsymbol{\xi}) \rangle
 - \mu_R^2  ~~=~~ \sum_{j=1}^{N_p} r^2_j w_j - \mu_R^2 \label{eq:var_sc} 
 \end{eqnarray}
-where the expectation of a particular Lagrange polynomial constructed 
-at Gauss points and then integrated at these same Gauss points leaves
-only the weight corresponding to the point for which the interpolation
-value is one.
+where we have simplified the expectation of Lagrange polynomials
+constructed at Gauss points and then integrated at these same Gauss
+points.  For tensor grids and sparse grids with fully nested rules,
+these expectations leave only the weight corresponding to the point
+for which the interpolation value is one, such that the final
+equalities in Eqs.~\ref{eq:mean_sc}--\ref{eq:covar_sc} hold precisely.
+For sparse grids with non-nested rules, however, interpolation error
+exists at the collocation points, such that these final equalities
+hold only approximately.  In this case, we have the choice of
+computing the moments based on sparse numerical integration or based
+on the moments of the (imperfect) sparse interpolant, where small
+differences may exist prior to numerical convergence.  In DAKOTA,
+we employ the former approach; i.e., the right-most expressions in
+Eqs.~\ref{eq:mean_sc}--\ref{eq:covar_sc} are employed for all tensor
+and sparse cases irregardless of nesting.  Subsequent sensitivity
+derivations are also based on this choice.
 %Similarly, moment $k$ for stochastic collocation is just 
 %$\sum_{j=1}^{N_p} r^k_j w_j$ minus previously computed moments.
 
@@ -2176,8 +2270,7 @@ is a global sensitivity method that summarizes how the uncertainty
 in model output can be apportioned to uncertainty in individual 
 input variables.  VBD uses two primary measures, the main effect 
 sensitivity index $S_{i}$ and the total effect index $T_{i}$.  These 
-indices are also called the Sobol' indices. 
-The main effect sensitivity 
+indices are also called the Sobol' indices. The main effect sensitivity 
 index corresponds to the fraction of the uncertainty in the output, $Y$, 
 that can be attributed to input $x_{i}$ alone.  The total effects index 
 corresponds to the fraction of the uncertainty in 
@@ -2210,6 +2303,7 @@ Note that in addition to the first-order main effects, $S_{i}$,
 we are able to calculate the sensitivity indices for higher order 
 interactions such as the two-way interaction  $S_{i,j}$.   
 
+
 \subsection{Uncertainty Quantification Example using Stochastic Collocation}\label{uq:uncertainty2}
 
 A typical DAKOTA input file for performing an uncertainty
@@ -2232,7 +2326,7 @@ use in Eq.~\ref{eq:aniso_smolyak_constr}.  In this example, we compute
 CDF probabilities for six response levels of Rosenbrock's function.
 This example requires 19 function evaluations to calculate the
 interpolating polynomials in stochastic collocation and the resulting
-expansion exactly reproduces Rosenbrock's function .  The placement of
+expansion exactly reproduces Rosenbrock's function.  The placement of
 the points generated by the sparse grid is shown in
 Figure~\ref{uq:figure11b}.
 
@@ -2260,17 +2354,19 @@ For the numerical portion, the input file specifies the use of 10000
 samples, which will be evaluated on the expansion to compute the CDF
 probabilities.  In Figure~\ref{uq:figure12}, excerpts from the results
 summary are presented.  We first see the analytic statistics for 
-mean, standard deviation, and COV as computed from 
-Eqs.~\ref{eq:mean_sc}-\ref{eq:var_sc}.  The global sensitivity indices
-(Sobol' indices) are presented. This example shows that variable 
+mean and standard deviation as computed from 
+Eqs.~\ref{eq:mean_sc}-\ref{eq:var_sc} as well as skewness, and kurtosis.  
+The response covariance (collapsing to a single variance value for 
+one response function) and global sensitivity indices
+(Sobol' indices) are presented next. This example shows that variable 
 x1 has the largest main effect (0.99) as compared with variable 
 x2 (0.0007) or the interaction between x1 and x2 (0.005). 
-After the global sensitivity indices, the local, analytic random 
-variable sensitivities are presented, as computed from
-Eqs.~\ref{eq:dR_dx}-\ref{eq:dR_dxi_sc}, evaluated at the mean values.
+%After the global sensitivity indices, the local, analytic random 
+%variable sensitivities are presented, as computed from
+%Eqs.~\ref{eq:dR_dx}-\ref{eq:dR_dxi_sc}, evaluated at the mean values.
 Finally, we see the numerical results for the CDF probabilities based
 on 10000 samples performed on the expansion.  For example, the probability 
-that the Rosenbrock function is less than 100 is 0.723.  Note that these 
+that the Rosenbrock function is less than 100 is 0.7233.  Note that these 
 results are significantly different than the ones presented in 
 Section~\ref{tutorial:example:uncert_quant:poly_chaos} because of 
 the different assumptions about the inputs: uniform[-2,2] versus
@@ -2282,27 +2378,24 @@ lognormals with means of 1.0 and standard deviations of 0.5.
 \begin{verbatim}
 Statistics derived analytically from polynomial expansion:
 
-Moments for each response function:
-response_fn_1:  Mean =  2.5671972656e+02  Std. Dev. = 2.0484189184e+03  
-Coeff. of Variation =  7.9792034130e+00
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  2.5671972656e+02  2.0484189184e+03  2.7419241630e+02  1.9594567379e+06
+
+Covariance among response functions:
+[[  4.1960200651e+06 ]] 
 
 Global sensitivity indices for each response function:
 response_fn_1 Sobol indices:
-                      9.9391978710e-01 x1
-                      7.1275222945e-04 x2
-                      5.3674606667e-03 x1 x2
-response_fn_1 total Sobol indices:
-                      9.9928724777e-01 x1
-                      6.0802128961e-03 x2
-
-Local sensitivities for each response function evaluated at 
-uncertain variable means:
-response_fn_1:
- [ -5.1159076975e-13  1.6342482922e-13 ]
+                                  Main             Total
+                      9.9391978710e-01  9.9928724777e-01 x1
+                      7.1275222945e-04  6.0802128961e-03 x2
+                           Interaction
+                      5.3674606667e-03 x1 x2 
 
 Statistics based on 10000 samples performed on polynomial expansion:
 
-Probabilities for each response function:
+Level mappings for each response function:
 Cumulative Distribution Function (CDF) for response_fn_1:
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------

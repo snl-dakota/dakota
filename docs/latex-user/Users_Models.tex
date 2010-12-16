@@ -1233,7 +1233,7 @@ R(\boldsymbol{\xi}, \boldsymbol{s}) \cong \sum_{j=0}^P \alpha_j(\boldsymbol{s})
 \end{equation}
 
 \noindent In this case, design sensitivities for the mean and variance 
-in Eqs.~\ref{eq:mean_pce} and~\ref{eq:var_pce} are as follows:
+in Eqs.~\ref{eq:mean_pce} and~\ref{eq:covar_pce} are as follows:
 \begin{eqnarray}
 \frac{d\mu_R}{ds} &=& \frac{d\alpha_0}{ds} 
 ~~=~~ \frac{d}{ds} \langle R \rangle 
@@ -1584,9 +1584,9 @@ case upper or lower bound of the interval.
 We now have the capability to perform epistemic analysis by 
 using interval optimization on the ``outer loop'' to calculate bounding 
 statistics of the aleatory uncertainty on the ``inner loop.''  
-Preliminary studies~\cite{Eldred09} have shown this approach is more efficient 
+Preliminary studies~\cite{Eld09b} have shown this approach is more efficient 
 and accurate than nested sampling (which was described in 
-Section~\ref{models:ex:sop}.  This approach uses 
+Section~\ref{models:ex:sop}).  This approach uses 
 an efficient global optimization method for the outer loop and 
 stochastic expansion methods (e.g. polynomial chaos or stochastic 
 collocation on the inner loop).  The interval optimization is described in 
