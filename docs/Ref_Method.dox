@@ -1967,6 +1967,9 @@ however, the default \c new_solutions_generated value is set such that
 the entire set of newly generated individuals will be selected for
 replacement.
 
+Note that \c new_solutions_generated is not recognized by DAKOTA as a
+valid keyword unless \c replacement_type has been specified.
+
 \ref T5d13 "Table 5.13" show the controls in the EA method associated
 with crossover and mutation.
 
@@ -2077,10 +2080,17 @@ is not limited by \c mutation_scale; rather it generates a replacement
 value for a coordinate using a uniformly distributed value over the
 total range for that coordinate.  
 
+Note that \c mutation_scale and \c mutation_range are not recognized
+by DAKOTA as valid keywords unless \c mutation_type has been
+specified and the type is an "offset" mutations.
+
 The Coliny EA method uses self-adaptive mutation, which modifies the mutation
 scale dynamically.  This mechanism is borrowed from EAs like 
 evolution strategies.  The \c non_adaptive flag can be used to deactivate
 the self-adaptation, which may facilitate a more global search.  
+
+Note that \c non_adaptive is not recognized by DAKOTA as a valid
+keyword unless \c mutation_type has been specified.
 
 
 \subsubsection MethodCOLINYPS Pattern Search
