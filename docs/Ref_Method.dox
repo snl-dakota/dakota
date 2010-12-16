@@ -5058,7 +5058,7 @@ options are provided:
    for uniforms/transformed uniforms).  By specifying a \c
    dimension_preference, where higher preference leads to higher order
    polynomial resolution, the sparse grid may be rendered anisotropic
-   (refer to the PCE description in the Theory Manual for the
+   (refer to the PCE description in the User's Manual for the
    anisotropic index set constraint definition).  For PCE with either
    isotropic or anisotropic sparse grids, a summation of
    tensor-product expansions is used, where each anisotropic
@@ -5066,7 +5066,7 @@ options are provided:
    construction results in its own anisotropic tensor-product
    expansion as described in case 1.  These anisotropic tensor-product 
    expansions are summed into a sparse PCE using the standard Smolyak 
-   summation (again, refer to the Theory Manual for additional details).
+   summation (again, refer to the User's Manual for additional details).
 -# multidimensional integration by Stroud cubature rules 
    [\ref Stroud1971 "Stroud, 1971"] and extensions [\ref Xiu2008 "Xiu, 2008"],
    as specified with \c cubature_integrand.  A total-order expansion is 
@@ -5194,7 +5194,7 @@ grid algorithm, in which candidate index sets are evaluated for their
 impact on the statistical QOI, the most influential sets are selected
 and used to generate additional candidates, and the index set frontier
 of a sparse grid is evolved in an unstructured and goal-oriented
-manner (refer to Theory Manual PCE descriptions for additional
+manner (refer to User's Manual PCE descriptions for additional
 specifics).
 
 Additional specifications include the level mappings described in \ref
