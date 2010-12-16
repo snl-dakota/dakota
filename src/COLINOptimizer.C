@@ -440,12 +440,13 @@ void COLINOptimizer::solver_setup(Model& model)
    // (PGI 9.x) appear to be "smart" enough to recognize the no-op and
    // not link in the library.
 
-   if ( ! ( interfaces::StaticInitializers::static_interfaces_registrations
-            && scolib::StaticInitializers::static_scolib_registrations ) )
+   if ( interfaces::StaticInitializers::static_interfaces_registrations
+        || scolib::StaticInitializers::static_scolib_registrations )
       EXCEPTION_MNGR(std::runtime_error, "COLINOptimizer::solver_setup(): "
                      "error: Acro incompletely registered (likely an issue "
                      "with the library link step ("
                      << scolib::StaticInitializers::static_scolib_registrations
+                     << ","
                      << interfaces::StaticInitializers::static_interfaces_registrations
                      << ").");
 
@@ -947,6 +948,8 @@ void COLINOptimizer::post_run(std::ostream& s)
   // Iterate through points returned by COLIN.
 
   for(size_t i=0; pt_it!=pt_end; i++, pt_it++) {
+     //std::cerr << "Point #" << i << ": ";
+     //::operator<<(std::cerr, *pt_it) << endl;
 
     // Get the mixed variables for the point.
 
