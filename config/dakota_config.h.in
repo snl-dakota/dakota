@@ -6,9 +6,6 @@
 #include <Teuchos_config.h>
 #include <pecos_config.h>
 
-// Macro to enable fork
-#cmakedefine HAVE_WORKING_FORK 1
-
 
 // Macro to handle code which depends on PECOS. (unconditional dependency!)
 //wjbPOUNDcmakedefine HAVE_PECOS 1
