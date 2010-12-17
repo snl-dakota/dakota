@@ -51,7 +51,7 @@ the \c -L and \c -I compiler options (using \c PREFIX/lib and \c
 PREFIX/include, respectively).  Depending on the configuration used
 when building this library, other libraries for the vendor optimizers
 and vendor packages will also be needed to resolve DAKOTA symbols for
-DOT, NPSOL, OPT++, SGOPT, LHS, Epetra, etc.  Copies of these libraries
+DOT, NPSOL, OPT++, NCSUOpt, LHS, Teuchos, etc.  Copies of these libraries
 are also placed in \c Dakota/lib.  Refer to \ref DakLibraryLinking for 
 additional information. <!-- A sample XML specification of
 library names and paths is also available in \c
@@ -636,22 +636,18 @@ Post DAKOTA 5.0, \c -lquadrature has been renamed to \c -lsparsegrid.
 
 \code
 DAKOTA_LIBS = -L$(PREFIX)/lib -ldakota -lteuchos -lpecos -ldfftpack -llhs  \
-              -lsurfpack -lconmin -lddace -ldot -lfsudace    \
+              -lsparsegrid -lsurfpack -lnkm -lconmin -lddace -ldot -lfsudace \
 	      -ljega -lcport -lnlpql -lnpsol -lopt -lpsuade -lnewmat    \
-              -lncsuopt -lsparsegrid -lcoliny -lcolin -lpebbl     \
-              -lutilib -l3po -lnappspack -lappspack -lconveyor -lshared \
-	      -lcdd -lamplsolver -llhs -llapack -lblas
+              -lncsuopt -lcolin -linterfaces -lmomh -lscolib -lpebbl     \
+              -ltinyxml -lutilib -l3po -lboost_signals \
+	      -lhopspack -lexecutor -levaluator -lframework -lcitizens \
+	      -lshared -lnidr -lamplsolver -llapack -lblas
 \endcode
 
 You may also need \c funcadd0.o, \c -lfl and, if linking with
 system-provided GSL, \c -lgslcblas. The AMPL solver library may
-require \c -ldl.  If configuring with graphics, you will need to add:
-
-\code 
--lplplotcxxd -lplplotd -lgd -lpng -ljpeg -lz -lfreetype -lrt -lDGraphics
-\endcode
-
-as well as any system X libraries (partial list here):
+require \c -ldl.  If configuring with graphics, you will need to add
+system X libraries (partial list here):
 
 \code 
 -lXpm -lXm -lXt -lXmu -lXp -lXext -lX11 -lSM -lICE
