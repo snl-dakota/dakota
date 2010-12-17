@@ -26,11 +26,6 @@ static const char rcsId[]="@(#) $Id: AnalysisCode.C 7024 2010-10-16 01:24:42Z ms
 
 namespace Dakota {
 
-int rec_cp(const char *from, const char *todir, int copy,
-           int flatten, int replace);
-int rec_rmdir(const char*);
-
-
 AnalysisCode::AnalysisCode(const ProblemDescDB& problem_db):
   suppressOutputFlag(false),
   // See base constructor in DakotaIterator.C for full discussion of output

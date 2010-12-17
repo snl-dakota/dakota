@@ -30,11 +30,17 @@ namespace Dakota {
 
 int not_executable(const char*, const char*);
 
+
+int rec_cp(const char *from, const char *todir, int copy,
+           int flatten, int replace);
+int rec_rmdir(const char*);
+
+
+// WJB - ToDo: void workdir_adjust(const std::string& workdir);
 void workdir_adjust(const char* workdir);
 void workdir_reset();
 
 
-// WJB - ToDo, ASAP: void workdir_adjust(const std::string& workdir);
 #if 0
 // WJB- ToDo: consider a WorkdirManager class with a C++ implementation
 //            with members funcs properly accessing dakdir/dakpath private data?
