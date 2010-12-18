@@ -684,7 +684,7 @@ Symlink(const char *from, const char *to)
 	static size_t ddlen;
 
 	b = buf;
-	if (*to == '/' && *from != '/') {
+	if (*from != '/') {
 		if (!Filesys_buf::dakpath)
 			get_dakpath();	/* for Filesys_buf::dakdir */
 		if (!ddlen)
