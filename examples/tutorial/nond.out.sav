@@ -1,6 +1,6 @@
 Running MPI executable in serial mode.
-DAKOTA version 4.2+ developmental release.
-Subversion revision 6339M built Dec 10 2009 11:55:20.
+DAKOTA version 5.1 released 12/21/2010.
+Subversion revision 13 built Dec 19 2010 12:46:19.
 Constructing Single Method Strategy...
 Writing new restart file dakota.rst
 methodName = nond_sampling
@@ -3016,13 +3016,15 @@ Active set vector = { 1 }
 
 Statistics based on 200 samples:
 
-Moments for each response function:
-response_fn_1:  Mean = 4.5540183516e+02  Std. Dev. = 5.3682678089e+02  Coeff. of Variation = 1.1787980185e+00
-
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5540183516e+02  5.3682678089e+02  1.6661798252e+00  2.7925726822e+00
+ 
 95% confidence intervals for each response function:
-response_fn_1:  Mean = ( 3.8054757609e+02, 5.3025609422e+02 ), Std Dev = ( 4.8886795789e+02, 5.9530059589e+02 )
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+ response_fn_1  3.8054757609e+02  5.3025609422e+02  4.8886795789e+02  5.9530059589e+02
 
-Probabilities for each response function:
+Level mappings for each response function:
 Cumulative Distribution Function (CDF) for response_fn_1:
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------

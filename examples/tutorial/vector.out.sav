@@ -1,6 +1,6 @@
 Running MPI executable in serial mode.
-DAKOTA version 4.2+ developmental release.
-Subversion revision 6339M built Dec 10 2009 11:55:20.
+DAKOTA version 5.1 released 12/21/2010.
+Subversion revision 13 built Dec 19 2010 12:46:19.
 Constructing Single Method Strategy...
 Writing new restart file dakota.rst
 methodName = vector_parameter_study

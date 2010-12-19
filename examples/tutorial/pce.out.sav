@@ -1,0 +1,319 @@
+Running MPI executable in serial mode.
+DAKOTA version 5.1 released 12/21/2010.
+Subversion revision 13 built Dec 19 2010 12:46:19.
+Constructing Single Method Strategy...
+Writing new restart file dakota.rst
+methodName = nond_polynomial_chaos
+gradientType = none
+hessianType = none
+
+>>>>> Running Single Method Strategy.
+
+>>>>> Running nond_polynomial_chaos iterator.
+
+>>>>> nond_polynomial_chaos: pre-run phase.
+
+>>>>> nond_polynomial_chaos: core run phase.
+
+>>>>> Building global_orthogonal_polynomial approximations.
+
+Number of Gauss points per variable: { 5 3 }
+Total number of integration points: 15
+
+------------------------------
+Begin Function Evaluation    1
+------------------------------
+Parameters for function evaluation 1:
+                     -1.8123596919e+00 x1
+                     -1.5491933385e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 1:
+Active set vector = { 1 }
+                      2.3445112399e+03 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation    2
+------------------------------
+Parameters for function evaluation 2:
+                     -1.0769386202e+00 x1
+                     -1.5491933385e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 2:
+Active set vector = { 1 }
+                      7.3817642658e+02 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation    3
+------------------------------
+Parameters for function evaluation 3:
+                      0.0000000000e+00 x1
+                     -1.5491933385e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 3:
+Active set vector = { 1 }
+                      2.4100000000e+02 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation    4
+------------------------------
+Parameters for function evaluation 4:
+                      1.0769386202e+00 x1
+                     -1.5491933385e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 4:
+Active set vector = { 1 }
+                      7.3386867210e+02 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation    5
+------------------------------
+Parameters for function evaluation 5:
+                      1.8123596919e+00 x1
+                     -1.5491933385e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 5:
+Active set vector = { 1 }
+                      2.3372618011e+03 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation    6
+------------------------------
+Parameters for function evaluation 6:
+                     -1.8123596919e+00 x1
+                      0.0000000000e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 6:
+Active set vector = { 1 }
+                      1.0868003873e+03 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation    7
+------------------------------
+Parameters for function evaluation 7:
+                     -1.0769386202e+00 x1
+                      0.0000000000e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 7:
+Active set vector = { 1 }
+                      1.3882653384e+02 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation    8
+------------------------------
+Parameters for function evaluation 8:
+                      0.0000000000e+00 x1
+                      0.0000000000e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 8:
+Active set vector = { 1 }
+                      1.0000000000e+00 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation    9
+------------------------------
+Parameters for function evaluation 9:
+                      1.0769386202e+00 x1
+                      0.0000000000e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 9:
+Active set vector = { 1 }
+                      1.3451877936e+02 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation   10
+------------------------------
+Parameters for function evaluation 10:
+                      1.8123596919e+00 x1
+                      0.0000000000e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 10:
+Active set vector = { 1 }
+                      1.0795509485e+03 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation   11
+------------------------------
+Parameters for function evaluation 11:
+                     -1.8123596919e+00 x1
+                      1.5491933385e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 11:
+Active set vector = { 1 }
+                      3.0908953472e+02 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation   12
+------------------------------
+Parameters for function evaluation 12:
+                     -1.0769386202e+00 x1
+                      1.5491933385e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 12:
+Active set vector = { 1 }
+                      1.9476641097e+01 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation   13
+------------------------------
+Parameters for function evaluation 13:
+                      0.0000000000e+00 x1
+                      1.5491933385e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 13:
+Active set vector = { 1 }
+                      2.4100000000e+02 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation   14
+------------------------------
+Parameters for function evaluation 14:
+                      1.0769386202e+00 x1
+                      1.5491933385e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 14:
+Active set vector = { 1 }
+                      1.5168886616e+01 response_fn_1
+
+
+
+------------------------------
+Begin Function Evaluation   15
+------------------------------
+Parameters for function evaluation 15:
+                      1.8123596919e+00 x1
+                      1.5491933385e+00 x2
+
+Direct function: invoking rosenbrock 
+
+Active response data for function evaluation 15:
+Active set vector = { 1 }
+                      3.0184009596e+02 response_fn_1
+
+
+Constructing global approximations with no anchor, 15 DACE samples, and 0 reused points.
+Orthogonal polynomial approximation order = { 4 2 } using tensor-product expansion of 15 terms
+
+<<<<< global_orthogonal_polynomial approximation builds completed.
+
+NonD lhs Samples = 10000 Seed (user-specified) = 12347
+Beginning Approximate Fn Evaluations...
+
+>>>>> nond_polynomial_chaos: post-run phase.
+<<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
+  response_fn_1: 15 val (15 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+-------------------------------------------------------------------
+Polynomial Chaos coefficients for response_fn_1:
+        coefficient   u1   u2
+        ----------- ---- ----
+   4.5566666667e+02   P0   P0
+  -4.0000000000e+00   P1   P0
+   9.1695238095e+02   P2   P0
+  -9.9475983006e-14   P3   P0
+   3.6571428571e+02   P4   P0
+  -5.3333333333e+02   P0   P1
+  -3.9968028887e-14   P1   P1
+  -1.0666666667e+03   P2   P1
+  -3.3573144265e-13   P3   P1
+   1.2829737273e-12   P4   P1
+   2.6666666667e+02   P0   P2
+   2.2648549702e-13   P1   P2
+   4.8849813084e-13   P2   P2
+   2.8754776338e-13   P3   P2
+  -2.8477220582e-13   P4   P2
+-------------------------------------------------------------------
+Statistics derived analytically from polynomial expansion:
+
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+response_fn_1
+  expansion:    4.5566666667e+02  6.0656024184e+02
+  numerical:    4.5566666667e+02  6.0656024184e+02  1.9633285271e+00  3.3633861456e+00
+
+Covariance among response functions:
+[[  3.6791532698e+05 ]] 
+
+Local sensitivities for each response function evaluated at uncertain variable means:
+response_fn_1:
+ [ -2.0000000000e+00  2.4055757386e-13 ] 
+
+Global sensitivity indices for each response function:
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                           Interaction
+                      2.0616659946e-01 x1 x2 
+
+Statistics based on 10000 samples performed on polynomial expansion:
+
+Level mappings for each response function:
+Cumulative Distribution Function (CDF) for response_fn_1:
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.9000000000e-03
+   1.0000000000e+00   1.3600000000e-02
+   5.0000000000e+01   2.4390000000e-01
+   1.0000000000e+02   3.4230000000e-01
+   5.0000000000e+02   7.1090000000e-01
+   1.0000000000e+03   8.5240000000e-01
+-------------------------------------------------------------------
+
+<<<<< Iterator nond_polynomial_chaos completed.
+<<<<< Single Method Strategy completed.
+DAKOTA execution time in seconds:
+  Total CPU        =       0.35 [parent =   0.349947, child =    5.3e-05]
+  Total wall clock =   0.349742

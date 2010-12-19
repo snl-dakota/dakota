@@ -1,0 +1,3786 @@
+Running MPI executable in serial mode.
+DAKOTA version 5.1 released 12/21/2010.
+Subversion revision 13 built Dec 19 2010 12:46:19.
+Constructing Single Method Strategy...
+Writing new restart file dakota.rst
+methodName = nond_global_interval_est
+gradientType = none
+hessianType = none
+
+>>>>> Running Single Method Strategy.
+
+>>>>> Running nond_global_interval_est iterator.
+
+>>>>> nond_global_interval_est: pre-run phase.
+
+>>>>> nond_global_interval_est: core run phase.
+
+>>>>> Building global_gaussian approximations.
+
+NonD lhs Samples = 6 Seed (user-specified) = 1234567
+
+------------------------------
+Begin Function Evaluation    1
+------------------------------
+Parameters for function evaluation 1:
+                      5.7564674651e+00 beam_width
+                      5.3682605903e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 1:
+Active set vector = { 1 1 1 }
+                      3.0902217432e+01 weight
+                     -8.6741781397e-01 stress
+                     -9.2505312875e-01 displ
+
+
+
+------------------------------
+Begin Function Evaluation    2
+------------------------------
+Parameters for function evaluation 2:
+                      7.2617923549e+00 beam_width
+                      8.6239743615e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 2:
+Active set vector = { 1 1 1 }
+                      6.2625511087e+01 weight
+                     -9.5573465044e-01 stress
+                     -9.8391990268e-01 displ
+
+
+
+------------------------------
+Begin Function Evaluation    3
+------------------------------
+Parameters for function evaluation 3:
+                      1.7709511480e+00 beam_width
+                      3.7441856706e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 3:
+Active set vector = { 1 1 1 }
+                      6.6307699115e+00 weight
+                      2.4287587293e-01 stress
+                      6.1221708853e-01 displ
+
+
+
+------------------------------
+Begin Function Evaluation    4
+------------------------------
+Parameters for function evaluation 4:
+                      4.8225254201e+00 beam_width
+                      6.1670318438e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 4:
+Active set vector = { 1 1 1 }
+                      2.9740667833e+01 weight
+                     -8.6592465995e-01 stress
+                     -9.3010059079e-01 displ
+
+
+
+------------------------------
+Begin Function Evaluation    5
+------------------------------
+Parameters for function evaluation 5:
+                      3.3507119096e+00 beam_width
+                      8.0307330936e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 5:
+Active set vector = { 1 1 1 }
+                      2.6908673019e+01 weight
+                     -8.4740403974e-01 stress
+                     -8.9273596935e-01 displ
+
+
+
+------------------------------
+Begin Function Evaluation    6
+------------------------------
+Parameters for function evaluation 6:
+                      9.4247256223e+00 beam_width
+                      2.4169019812e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 6:
+Active set vector = { 1 1 1 }
+                      2.2778638029e+01 weight
+                     -6.9260359810e-01 stress
+                     -5.3975057728e-01 displ
+
+
+Constructing global approximations with no anchor, 6 DACE samples, and 0 reused points.
+
+Building GP using all 6 training points...
+NCSU DIRECT succeeded with code 2
+(maximum iterations reached)
+
+Building GP using all 6 training points...
+NCSU DIRECT succeeded with code 2
+(maximum iterations reached)
+
+Building GP using all 6 training points...
+NCSU DIRECT succeeded with code 2
+(maximum iterations reached)
+
+<<<<< global_gaussian approximation builds completed.
+Beginning Approximate Fn Evaluations...
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      4.6583600061e+00
+                      1.0000762079e+00
+Expected Improvement    =
+                      4.6216244443e+02
+
+------------------------------
+Begin Function Evaluation    7
+------------------------------
+Parameters for function evaluation 7:
+                      4.6583600061e+00 beam_width
+                      1.0000762079e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 7:
+Active set vector = { 1 0 0 }
+                      4.6587150099e+00 weight
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 7 training points...
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 2
+(maximum iterations reached)
+
+Results of EGO minimization:
+Final point             =
+                      1.0000084675e+00
+                      1.0000084675e+00
+Expected Improvement    =
+                      1.8037791836e+01
+
+------------------------------
+Begin Function Evaluation    8
+------------------------------
+Parameters for function evaluation 8:
+                      1.0000084675e+00 beam_width
+                      1.0000084675e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 8:
+Active set vector = { 1 0 0 }
+                      1.0000169352e+00 weight
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 8 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      3.1224660875e+00
+                      1.0000762079e+00
+Expected Improvement    =
+                      1.2115025332e+01
+
+------------------------------
+Begin Function Evaluation    9
+------------------------------
+Parameters for function evaluation 9:
+                      3.1224660875e+00 beam_width
+                      1.0000762079e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 9:
+Active set vector = { 1 0 0 }
+                      3.1227040441e+00 weight
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 9 training points...
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 2
+(maximum iterations reached)
+
+Results of EGO minimization:
+Final point             =
+                      1.0000084675e+00
+                      1.3333418009e+00
+Expected Improvement    =
+                      4.9925699835e-10
+
+------------------------------
+Begin Function Evaluation   10
+------------------------------
+Parameters for function evaluation 10:
+                      1.0000084675e+00 beam_width
+                      1.3333418009e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 10:
+Active set vector = { 1 0 0 }
+                      1.3333530910e+00 weight
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 10 training points...
+NCSU DIRECT succeeded with code 2
+(maximum iterations reached)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      5.5000000000e+00
+                      5.5000000000e+00
+Expected Improvement    =
+                      0.0000000000e+00
+
+------------------------------
+Begin Function Evaluation   11
+------------------------------
+Parameters for function evaluation 11:
+                      5.5000000000e+00 beam_width
+                      5.5000000000e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 11:
+Active set vector = { 1 0 0 }
+                      3.0250000000e+01 weight
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 11 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      5.5000000000e+00
+                      5.5000000000e+00
+Expected Improvement    =
+                      0.0000000000e+00
+
+>>>>> Initiating global maximization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999915325e+00
+                      9.9999915325e+00
+Expected Improvement    =
+                      3.7301700065e+01
+
+------------------------------
+Begin Function Evaluation   12
+------------------------------
+Parameters for function evaluation 12:
+                      9.9999915325e+00 beam_width
+                      9.9999915325e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 12:
+Active set vector = { 1 0 0 }
+                      9.9999830649e+01 weight
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 12 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global maximization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      5.5000000000e+00
+                      5.5000000000e+00
+Expected Improvement    =
+                      0.0000000000e+00
+
+------------------------------
+Begin Function Evaluation   13
+------------------------------
+Parameters for function evaluation 13:
+                      5.5000000000e+00 beam_width
+                      5.5000000000e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 0 0 }
+                      3.0250000000e+01 weight
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 13 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global maximization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      5.5000000000e+00
+                      5.5000000000e+00
+Expected Improvement    =
+                      0.0000000000e+00
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      5.0785703399e+00
+                      1.0000762079e+00
+Expected Improvement    =
+                      1.1262661345e+01
+
+------------------------------
+Begin Function Evaluation   14
+------------------------------
+Parameters for function evaluation 14:
+                      5.0785703399e+00 beam_width
+                      1.0000762079e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 14:
+Active set vector = { 0 1 0 }
+                      2.2439040818e+00 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 7 training points...
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999237921e+00
+                      6.7682517909e+00
+Expected Improvement    =
+                      1.7913339433e+00
+
+------------------------------
+Begin Function Evaluation   15
+------------------------------
+Parameters for function evaluation 15:
+                      9.9999237921e+00 beam_width
+                      6.7682517909e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 15:
+Active set vector = { 0 1 0 }
+                     -9.5617394242e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 8 training points...
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999237921e+00
+                      4.1752019509e+00
+Expected Improvement    =
+                      3.3838556901e-01
+
+------------------------------
+Begin Function Evaluation   16
+------------------------------
+Parameters for function evaluation 16:
+                      9.9999237921e+00 beam_width
+                      4.1752019509e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 16:
+Active set vector = { 0 1 0 }
+                     -8.9598875812e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 9 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      8.3381344307e+00
+                      5.5507544582e+00
+Expected Improvement    =
+                      2.0039993088e+00
+
+------------------------------
+Begin Function Evaluation   17
+------------------------------
+Parameters for function evaluation 17:
+                      8.3381344307e+00 beam_width
+                      5.5507544582e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 17:
+Active set vector = { 0 1 0 }
+                     -9.2217829344e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 10 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      6.9801097394e+00
+                      7.5795610425e+00
+Expected Improvement    =
+                      6.7060637609e-01
+
+------------------------------
+Begin Function Evaluation   18
+------------------------------
+Parameters for function evaluation 18:
+                      6.9801097394e+00 beam_width
+                      7.5795610425e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 18:
+Active set vector = { 0 1 0 }
+                     -9.4228483704e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 11 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999237921e+00
+                      8.9749276025e+00
+Expected Improvement    =
+                      2.3281166994e-01
+
+------------------------------
+Begin Function Evaluation   19
+------------------------------
+Parameters for function evaluation 19:
+                      9.9999237921e+00 beam_width
+                      8.9749276025e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 19:
+Active set vector = { 0 1 0 }
+                     -9.7302098747e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 12 training points...
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.1831275720e+00
+                      6.1200274348e+00
+Expected Improvement    =
+                      3.7154584097e-01
+
+------------------------------
+Begin Function Evaluation   20
+------------------------------
+Parameters for function evaluation 20:
+                      9.1831275720e+00 beam_width
+                      6.1200274348e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 20:
+Active set vector = { 0 1 0 }
+                     -9.4185717257e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 13 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999745974e+00
+                      9.9999745974e+00
+Expected Improvement    =
+                      5.4346276626e-02
+
+------------------------------
+Begin Function Evaluation   21
+------------------------------
+Parameters for function evaluation 21:
+                      9.9999745974e+00 beam_width
+                      9.9999745974e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 21:
+Active set vector = { 0 1 0 }
+                     -9.7749982853e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 14 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999745974e+00
+                      9.6027282426e+00
+Expected Improvement    =
+                      1.6057218128e-02
+
+------------------------------
+Begin Function Evaluation   22
+------------------------------
+Parameters for function evaluation 22:
+                      9.9999745974e+00 beam_width
+                      9.6027282426e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 22:
+Active set vector = { 0 1 0 }
+                     -9.7592284405e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 15 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      1.9842249657e+00
+                      9.9999237921e+00
+Expected Improvement    =
+                      3.1144235078e-02
+
+------------------------------
+Begin Function Evaluation   23
+------------------------------
+Parameters for function evaluation 23:
+                      1.9842249657e+00 beam_width
+                      9.9999237921e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 23:
+Active set vector = { 0 1 0 }
+                     -7.3390794382e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 16 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      8.0216176396e+00
+                      9.9999745974e+00
+Expected Improvement    =
+                      1.4970083942e-03
+
+------------------------------
+Begin Function Evaluation   24
+------------------------------
+Parameters for function evaluation 24:
+                      8.0216176396e+00 beam_width
+                      9.9999745974e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 24:
+Active set vector = { 0 1 0 }
+                     -9.6964473233e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 17 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      5.1780978509e+00
+                      9.8255601280e+00
+Expected Improvement    =
+                      7.5056416506e-03
+
+------------------------------
+Begin Function Evaluation   25
+------------------------------
+Parameters for function evaluation 25:
+                      5.1780978509e+00 beam_width
+                      9.8255601280e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 25:
+Active set vector = { 0 1 0 }
+                     -9.4152569490e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 18 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 2
+(maximum iterations reached)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999915325e+00
+                      3.2654151637e+00
+Expected Improvement    =
+                      1.9584783089e-03
+
+------------------------------
+Begin Function Evaluation   26
+------------------------------
+Parameters for function evaluation 26:
+                      9.9999915325e+00 beam_width
+                      3.2654151637e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 26:
+Active set vector = { 0 1 0 }
+                     -8.3635766070e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 19 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      1.0000254026e+00
+                      7.6340242849e+00
+Expected Improvement    =
+                      2.6490014134e-02
+
+------------------------------
+Begin Function Evaluation   27
+------------------------------
+Parameters for function evaluation 27:
+                      1.0000254026e+00 beam_width
+                      7.6340242849e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 27:
+Active set vector = { 0 1 0 }
+                      2.3977293691e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 20 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      5.5361225423e+00
+                      7.6367169639e+00
+Expected Improvement    =
+                      2.6452708688e-01
+
+------------------------------
+Begin Function Evaluation   28
+------------------------------
+Parameters for function evaluation 28:
+                      5.5361225423e+00 beam_width
+                      7.6367169639e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 28:
+Active set vector = { 0 1 0 }
+                     -9.2149701361e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 21 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      3.6019661637e+00
+                      9.8603109282e+00
+Expected Improvement    =
+                      7.1297242695e-02
+
+------------------------------
+Begin Function Evaluation   29
+------------------------------
+Parameters for function evaluation 29:
+                      3.6019661637e+00 beam_width
+                      9.8603109282e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 29:
+Active set vector = { 0 1 0 }
+                     -8.9854164433e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 22 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      6.6349387797e+00
+                      9.9999745974e+00
+Expected Improvement    =
+                      6.6189019702e-02
+
+------------------------------
+Begin Function Evaluation   30
+------------------------------
+Parameters for function evaluation 30:
+                      6.6349387797e+00 beam_width
+                      9.9999745974e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 30:
+Active set vector = { 0 1 0 }
+                     -9.6035547179e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 23 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      8.6353452218e+00
+                      3.7373113855e+00
+Expected Improvement    =
+                      1.0898767916e-02
+
+------------------------------
+Begin Function Evaluation   31
+------------------------------
+Parameters for function evaluation 31:
+                      8.6353452218e+00 beam_width
+                      3.7373113855e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 31:
+Active set vector = { 0 1 0 }
+                     -8.4872469635e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 24 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      4.4094650206e+00
+                      9.0212620027e+00
+Expected Improvement    =
+                      4.8006266035e-03
+
+------------------------------
+Begin Function Evaluation   32
+------------------------------
+Parameters for function evaluation 32:
+                      4.4094650206e+00 beam_width
+                      9.0212620027e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 32:
+Active set vector = { 0 1 0 }
+                     -9.1544206029e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 25 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.3015546411e+00
+                      9.9999237921e+00
+Expected Improvement    =
+                      2.5922964842e-02
+
+------------------------------
+Begin Function Evaluation   33
+------------------------------
+Parameters for function evaluation 33:
+                      9.3015546411e+00 beam_width
+                      9.9999237921e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 33:
+Active set vector = { 0 1 0 }
+                     -9.7520472737e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 26 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      8.9142661180e+00
+                      8.8333333333e+00
+Expected Improvement    =
+                      4.5260702887e-03
+
+------------------------------
+Begin Function Evaluation   34
+------------------------------
+Parameters for function evaluation 34:
+                      8.9142661180e+00 beam_width
+                      8.8333333333e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 34:
+Active set vector = { 0 1 0 }
+                     -9.6774987744e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 27 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.8459330387e+00
+                      9.9999915325e+00
+Expected Improvement    =
+                      5.4731303549e-05
+
+------------------------------
+Begin Function Evaluation   35
+------------------------------
+Parameters for function evaluation 35:
+                      9.8459330387e+00 beam_width
+                      9.9999915325e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 35:
+Active set vector = { 0 1 0 }
+                     -9.7702869795e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 28 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.4939033684e+00
+                      9.5483158055e+00
+Expected Improvement    =
+                      9.9786511093e-06
+
+------------------------------
+Begin Function Evaluation   36
+------------------------------
+Parameters for function evaluation 36:
+                      9.4939033684e+00 beam_width
+                      9.5483158055e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 36:
+Active set vector = { 0 1 0 }
+                     -9.7395567769e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 29 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      8.3227404359e+00
+                      9.5170705685e+00
+Expected Improvement    =
+                      2.0702690806e-07
+
+------------------------------
+Begin Function Evaluation   37
+------------------------------
+Parameters for function evaluation 37:
+                      8.3227404359e+00 beam_width
+                      9.5170705685e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 37:
+Active set vector = { 0 1 0 }
+                     -9.6872465719e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 30 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      2.8478128334e+00
+                      5.9671543972e+00
+Expected Improvement    =
+                      5.2343396271e-10
+
+------------------------------
+Begin Function Evaluation   38
+------------------------------
+Parameters for function evaluation 38:
+                      2.8478128334e+00 beam_width
+                      5.9671543972e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 38:
+Active set vector = { 0 1 0 }
+                     -6.9709536890e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 31 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.5704160951e+00
+                      7.8635116598e+00
+Expected Improvement    =
+                      3.8687183046e-13
+
+------------------------------
+Begin Function Evaluation   39
+------------------------------
+Parameters for function evaluation 39:
+                      9.5704160951e+00 beam_width
+                      7.8635116598e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 39:
+Active set vector = { 0 1 0 }
+                     -9.6423977997e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 32 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      3.7222222222e+00
+                      4.2338820302e+00
+Expected Improvement    =
+                      4.1831128495e-13
+
+>>>>> Initiating global maximization
+NCSU DIRECT succeeded with code 2
+(maximum iterations reached)
+
+Results of EGO minimization:
+Final point             =
+                      1.0000084675e+00
+                      1.0000084675e+00
+Expected Improvement    =
+                      8.3854205714e-01
+
+------------------------------
+Begin Function Evaluation   40
+------------------------------
+Parameters for function evaluation 40:
+                      1.0000084675e+00 beam_width
+                      1.0000084675e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 40:
+Active set vector = { 0 1 0 }
+                      2.1499428450e+01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 33 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global maximization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      1.0000084675e+00
+                      1.1111195787e+00
+Expected Improvement    =
+                      1.0522464888e-38
+
+------------------------------
+Begin Function Evaluation   41
+------------------------------
+Parameters for function evaluation 41:
+                      1.0000084675e+00 beam_width
+                      1.1111195787e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 41:
+Active set vector = { 0 1 0 }
+                      1.7899546189e+01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 34 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global maximization
+NCSU DIRECT succeeded with code 2
+(maximum iterations reached)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999915325e+00
+                      1.0000084675e+00
+Expected Improvement    =
+                      1.3546405534e-02
+
+------------------------------
+Begin Function Evaluation   42
+------------------------------
+Parameters for function evaluation 42:
+                      9.9999915325e+00 beam_width
+                      1.0000084675e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 42:
+Active set vector = { 0 1 0 }
+                      5.7497535975e-01 stress
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 35 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global maximization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      1.0000084675e+00
+                      2.4720740402e+00
+Expected Improvement    =
+                      1.0783273194e-77
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      5.0666819082e+00
+                      1.0000762079e+00
+Expected Improvement    =
+                      1.5541414969e+01
+
+------------------------------
+Begin Function Evaluation   43
+------------------------------
+Parameters for function evaluation 43:
+                      5.0666819082e+00 beam_width
+                      1.0000762079e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 43:
+Active set vector = { 0 0 1 }
+                      1.1079915335e+01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 7 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999237921e+00
+                      6.5641670477e+00
+Expected Improvement    =
+                      7.7313317625e+00
+
+------------------------------
+Begin Function Evaluation   44
+------------------------------
+Parameters for function evaluation 44:
+                      9.9999237921e+00 beam_width
+                      6.5641670477e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 44:
+Active set vector = { 0 0 1 }
+                     -9.7786287884e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 8 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      7.0761316872e+00
+                      3.3751714678e+00
+Expected Improvement    =
+                      2.2736848908e+00
+
+------------------------------
+Begin Function Evaluation   45
+------------------------------
+Parameters for function evaluation 45:
+                      7.0761316872e+00 beam_width
+                      3.3751714678e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 45:
+Active set vector = { 0 0 1 }
+                     -7.7358098491e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 9 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      8.6083676269e+00
+                      8.0994513032e+00
+Expected Improvement    =
+                      4.1915455775e-01
+
+------------------------------
+Begin Function Evaluation   46
+------------------------------
+Parameters for function evaluation 46:
+                      8.6083676269e+00 beam_width
+                      8.0994513032e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 46:
+Active set vector = { 0 0 1 }
+                     -9.8536583567e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 10 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      6.7162780064e+00
+                      2.8479652492e+00
+Expected Improvement    =
+                      6.1600672838e-01
+
+------------------------------
+Begin Function Evaluation   47
+------------------------------
+Parameters for function evaluation 47:
+                      6.7162780064e+00 beam_width
+                      2.8479652492e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 47:
+Active set vector = { 0 0 1 }
+                     -6.0388633875e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 11 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999745974e+00
+                      3.0969110400e+00
+Expected Improvement    =
+                      8.1101777527e-01
+
+------------------------------
+Begin Function Evaluation   48
+------------------------------
+Parameters for function evaluation 48:
+                      9.9999745974e+00 beam_width
+                      3.0969110400e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 48:
+Active set vector = { 0 0 1 }
+                     -7.9369102086e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 12 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      7.6796982167e+00
+                      7.3532235940e+00
+Expected Improvement    =
+                      6.9447900768e-01
+
+------------------------------
+Begin Function Evaluation   49
+------------------------------
+Parameters for function evaluation 49:
+                      7.6796982167e+00 beam_width
+                      7.3532235940e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 49:
+Active set vector = { 0 0 1 }
+                     -9.7794831422e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 13 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      8.3614540466e+00
+                      5.6961591221e+00
+Expected Improvement    =
+                      1.9629355060e-01
+
+------------------------------
+Begin Function Evaluation   50
+------------------------------
+Parameters for function evaluation 50:
+                      8.3614540466e+00 beam_width
+                      5.6961591221e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 50:
+Active set vector = { 0 0 1 }
+                     -9.5934026452e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 14 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      6.7149062643e+00
+                      8.3893461363e+00
+Expected Improvement    =
+                      9.8257997299e-02
+
+------------------------------
+Begin Function Evaluation   51
+------------------------------
+Parameters for function evaluation 51:
+                      6.7149062643e+00 beam_width
+                      8.3893461363e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 51:
+Active set vector = { 0 0 1 }
+                     -9.8041730683e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 15 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      7.5237768633e+00
+                      7.7030178326e+00
+Expected Improvement    =
+                      7.1101957278e-02
+
+------------------------------
+Begin Function Evaluation   52
+------------------------------
+Parameters for function evaluation 52:
+                      7.5237768633e+00 beam_width
+                      7.7030178326e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 52:
+Active set vector = { 0 0 1 }
+                     -9.7990500993e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 16 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999915325e+00
+                      9.9999915325e+00
+Expected Improvement    =
+                      5.1147550212e-01
+
+------------------------------
+Begin Function Evaluation   53
+------------------------------
+Parameters for function evaluation 53:
+                      9.9999915325e+00 beam_width
+                      9.9999915325e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 53:
+Active set vector = { 0 0 1 }
+                     -9.9315677360e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 17 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      4.1114921506e+00
+                      9.9999237921e+00
+Expected Improvement    =
+                      1.3788219605e-01
+
+------------------------------
+Begin Function Evaluation   54
+------------------------------
+Parameters for function evaluation 54:
+                      4.1114921506e+00 beam_width
+                      9.9999237921e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 54:
+Active set vector = { 0 0 1 }
+                     -9.5351833364e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 18 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      7.5068587106e+00
+                      9.5685871056e+00
+Expected Improvement    =
+                      5.4478527366e-01
+
+------------------------------
+Begin Function Evaluation   55
+------------------------------
+Parameters for function evaluation 55:
+                      7.5068587106e+00 beam_width
+                      9.5685871056e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 55:
+Active set vector = { 0 0 1 }
+                     -9.8800921221e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 19 training points...
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      6.8904892547e+00
+                      6.7473708276e+00
+Expected Improvement    =
+                      4.2648139156e-02
+
+------------------------------
+Begin Function Evaluation   56
+------------------------------
+Parameters for function evaluation 56:
+                      6.8904892547e+00 beam_width
+                      6.7473708276e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 56:
+Active set vector = { 0 0 1 }
+                     -9.6793141153e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 20 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      7.7857796068e+00
+                      9.8516232282e+00
+Expected Improvement    =
+                      4.2731106911e-02
+
+------------------------------
+Begin Function Evaluation   57
+------------------------------
+Parameters for function evaluation 57:
+                      7.7857796068e+00 beam_width
+                      9.8516232282e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 57:
+Active set vector = { 0 0 1 }
+                     -9.8946790839e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 21 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      1.0000254026e+00
+                      9.3886856678e+00
+Expected Improvement    =
+                      2.4615907766e-02
+
+------------------------------
+Begin Function Evaluation   58
+------------------------------
+Parameters for function evaluation 58:
+                      1.0000254026e+00 beam_width
+                      9.3886856678e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 58:
+Active set vector = { 0 0 1 }
+                      2.2602305338e+00 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 22 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      3.5352080476e+00
+                      7.2315957933e+00
+Expected Improvement    =
+                      3.1018352736e-01
+
+------------------------------
+Begin Function Evaluation   59
+------------------------------
+Parameters for function evaluation 59:
+                      3.5352080476e+00 beam_width
+                      7.2315957933e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 59:
+Active set vector = { 0 0 1 }
+                     -8.9383695318e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 23 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      3.5187471422e+00
+                      4.7684042067e+00
+Expected Improvement    =
+                      2.1435329943e-01
+
+------------------------------
+Begin Function Evaluation   60
+------------------------------
+Parameters for function evaluation 60:
+                      3.5187471422e+00 beam_width
+                      4.7684042067e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 60:
+Active set vector = { 0 0 1 }
+                     -7.8219299321e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 24 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      5.3838083625e+00
+                      9.9999745974e+00
+Expected Improvement    =
+                      1.6833681626e-01
+
+------------------------------
+Begin Function Evaluation   61
+------------------------------
+Parameters for function evaluation 61:
+                      5.3838083625e+00 beam_width
+                      9.9999745974e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 61:
+Active set vector = { 0 0 1 }
+                     -9.7733161970e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 25 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.2169638775e+00
+                      9.5722450846e+00
+Expected Improvement    =
+                      1.4030596822e-01
+
+------------------------------
+Begin Function Evaluation   62
+------------------------------
+Parameters for function evaluation 62:
+                      9.2169638775e+00 beam_width
+                      9.5722450846e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 62:
+Active set vector = { 0 0 1 }
+                     -9.9139778785e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 26 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      4.3765432099e+00
+                      3.8324188386e+00
+Expected Improvement    =
+                      1.4511201006e-01
+
+------------------------------
+Begin Function Evaluation   63
+------------------------------
+Parameters for function evaluation 63:
+                      4.3765432099e+00 beam_width
+                      3.8324188386e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 63:
+Active set vector = { 0 0 1 }
+                     -7.3390583114e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 27 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      4.6380887060e+00
+                      9.4176954733e+00
+Expected Improvement    =
+                      1.0797023741e-01
+
+------------------------------
+Begin Function Evaluation   64
+------------------------------
+Parameters for function evaluation 64:
+                      4.6380887060e+00 beam_width
+                      9.4176954733e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 64:
+Active set vector = { 0 0 1 }
+                     -9.6380068470e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 28 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      4.5118884316e+00
+                      7.8196159122e+00
+Expected Improvement    =
+                      7.2036138871e-02
+
+------------------------------
+Begin Function Evaluation   65
+------------------------------
+Parameters for function evaluation 65:
+                      4.5118884316e+00 beam_width
+                      7.8196159122e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 65:
+Active set vector = { 0 0 1 }
+                     -9.4880818193e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 29 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      8.7217649749e+00
+                      2.9234110654e+00
+Expected Improvement    =
+                      8.5180743273e-02
+
+------------------------------
+Begin Function Evaluation   66
+------------------------------
+Parameters for function evaluation 66:
+                      8.7217649749e+00 beam_width
+                      2.9234110654e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 66:
+Active set vector = { 0 0 1 }
+                     -7.1867097368e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 30 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      7.7217649749e+00
+                      6.1758116141e+00
+Expected Improvement    =
+                      4.7305394086e-02
+
+------------------------------
+Begin Function Evaluation   67
+------------------------------
+Parameters for function evaluation 67:
+                      7.7217649749e+00 beam_width
+                      6.1758116141e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 67:
+Active set vector = { 0 0 1 }
+                     -9.6466912121e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 31 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999745974e+00
+                      4.9712696235e+00
+Expected Improvement    =
+                      2.4613708782e-01
+
+------------------------------
+Begin Function Evaluation   68
+------------------------------
+Parameters for function evaluation 68:
+                      9.9999745974e+00 beam_width
+                      4.9712696235e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 68:
+Active set vector = { 0 0 1 }
+                     -9.4980110407e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 32 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999745974e+00
+                      7.4577808261e+00
+Expected Improvement    =
+                      7.8383667828e-02
+
+------------------------------
+Begin Function Evaluation   69
+------------------------------
+Parameters for function evaluation 69:
+                      9.9999745974e+00 beam_width
+                      7.4577808261e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 69:
+Active set vector = { 0 0 1 }
+                     -9.8468375464e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 33 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999745974e+00
+                      8.9259005233e+00
+Expected Improvement    =
+                      5.1679117124e-02
+
+------------------------------
+Begin Function Evaluation   70
+------------------------------
+Parameters for function evaluation 70:
+                      9.9999745974e+00 beam_width
+                      8.9259005233e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 70:
+Active set vector = { 0 0 1 }
+                     -9.9073525983e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 34 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.3518518519e+00
+                      6.0610425240e+00
+Expected Improvement    =
+                      4.5495973415e-02
+
+------------------------------
+Begin Function Evaluation   71
+------------------------------
+Parameters for function evaluation 71:
+                      9.3518518519e+00 beam_width
+                      6.0610425240e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 71:
+Active set vector = { 0 0 1 }
+                     -9.6996428427e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 35 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      1.3573388203e+00
+                      5.9385002286e+00
+Expected Improvement    =
+                      3.7675639356e-02
+
+------------------------------
+Begin Function Evaluation   72
+------------------------------
+Parameters for function evaluation 72:
+                      1.3573388203e+00 beam_width
+                      5.9385002286e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 72:
+Active set vector = { 0 0 1 }
+                      1.0720041047e+00 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 36 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999915325e+00
+                      5.6214923199e+00
+Expected Improvement    =
+                      3.1515044229e-02
+
+------------------------------
+Begin Function Evaluation   73
+------------------------------
+Parameters for function evaluation 73:
+                      9.9999915325e+00 beam_width
+                      5.6214923199e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 73:
+Active set vector = { 0 0 1 }
+                     -9.6511773708e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 37 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.9999915325e+00
+                      9.5935663601e+00
+Expected Improvement    =
+                      2.1142712839e-02
+
+------------------------------
+Begin Function Evaluation   74
+------------------------------
+Parameters for function evaluation 74:
+                      9.9999915325e+00 beam_width
+                      9.5935663601e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 74:
+Active set vector = { 0 0 1 }
+                     -9.9236912366e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 38 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.1485291876e+00
+                      9.9999745974e+00
+Expected Improvement    =
+                      1.5021957562e-02
+
+------------------------------
+Begin Function Evaluation   75
+------------------------------
+Parameters for function evaluation 75:
+                      9.1485291876e+00 beam_width
+                      9.9999745974e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 75:
+Active set vector = { 0 0 1 }
+                     -9.9220657660e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 39 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.4355281207e+00
+                      7.3936137784e+00
+Expected Improvement    =
+                      2.3052432046e-03
+
+------------------------------
+Begin Function Evaluation   76
+------------------------------
+Parameters for function evaluation 76:
+                      9.4355281207e+00 beam_width
+                      7.3936137784e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 76:
+Active set vector = { 0 0 1 }
+                     -9.8321091177e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 40 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.5525834476e+00
+                      8.8941472337e+00
+Expected Improvement    =
+                      1.5386922757e-03
+
+------------------------------
+Begin Function Evaluation   77
+------------------------------
+Parameters for function evaluation 77:
+                      9.5525834476e+00 beam_width
+                      8.8941472337e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 77:
+Active set vector = { 0 0 1 }
+                     -9.9007440828e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 41 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      8.5333790581e+00
+                      9.8223593964e+00
+Expected Improvement    =
+                      1.5732247688e-03
+
+------------------------------
+Begin Function Evaluation   78
+------------------------------
+Parameters for function evaluation 78:
+                      8.5333790581e+00 beam_width
+                      9.8223593964e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 78:
+Active set vector = { 0 0 1 }
+                     -9.9092087167e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 42 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.6902149063e+00
+                      9.8671696388e+00
+Expected Improvement    =
+                      1.2394718150e-03
+
+------------------------------
+Begin Function Evaluation   79
+------------------------------
+Parameters for function evaluation 79:
+                      9.6902149063e+00 beam_width
+                      9.8671696388e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 79:
+Active set vector = { 0 0 1 }
+                     -9.9259399057e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 43 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      5.8191586648e+00
+                      9.1195701875e+00
+Expected Improvement    =
+                      5.9284812306e-05
+
+------------------------------
+Begin Function Evaluation   80
+------------------------------
+Parameters for function evaluation 80:
+                      5.8191586648e+00 beam_width
+                      9.1195701875e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 80:
+Active set vector = { 0 0 1 }
+                     -9.7803741322e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 44 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.8275415333e+00
+                      9.3742569730e+00
+Expected Improvement    =
+                      5.1066313709e-06
+
+------------------------------
+Begin Function Evaluation   81
+------------------------------
+Parameters for function evaluation 81:
+                      9.8275415333e+00 beam_width
+                      9.3742569730e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 81:
+Active set vector = { 0 0 1 }
+                     -9.9169389804e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 45 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      9.3233500991e+00
+                      4.7677945435e+00
+Expected Improvement    =
+                      1.5754703900e-06
+
+------------------------------
+Begin Function Evaluation   82
+------------------------------
+Parameters for function evaluation 82:
+                      9.3233500991e+00 beam_width
+                      4.7677945435e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 82:
+Active set vector = { 0 0 1 }
+                     -9.3891127693e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 46 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      4.4242493522e+00
+                      8.6734491693e+00
+Expected Improvement    =
+                      5.6635144811e-08
+
+------------------------------
+Begin Function Evaluation   83
+------------------------------
+Parameters for function evaluation 83:
+                      4.4242493522e+00 beam_width
+                      8.6734491693e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 83:
+Active set vector = { 0 0 1 }
+                     -9.5406934225e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 47 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      5.4445206523e+00
+                      4.1314586191e+00
+Expected Improvement    =
+                      1.4275455730e-09
+
+------------------------------
+Begin Function Evaluation   84
+------------------------------
+Parameters for function evaluation 84:
+                      5.4445206523e+00 beam_width
+                      4.1314586191e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 84:
+Active set vector = { 0 0 1 }
+                     -8.3410731924e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 48 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      6.5777320530e+00
+                      9.7575826856e+00
+Expected Improvement    =
+                      2.2782821742e-13
+
+------------------------------
+Begin Function Evaluation   85
+------------------------------
+Parameters for function evaluation 85:
+                      6.5777320530e+00 beam_width
+                      9.7575826856e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 85:
+Active set vector = { 0 0 1 }
+                     -9.8510784331e-01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 49 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global minimization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      8.4194228522e+00
+                      1.0000084675e+00
+Expected Improvement    =
+                      3.8816866885e-15
+
+>>>>> Initiating global maximization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      1.0000084675e+00
+                      1.0000084675e+00
+Expected Improvement    =
+                      1.3053898851e+01
+
+------------------------------
+Begin Function Evaluation   86
+------------------------------
+Parameters for function evaluation 86:
+                      1.0000084675e+00 beam_width
+                      1.0000084675e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 86:
+Active set vector = { 0 0 1 }
+                      6.7429714485e+01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 50 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global maximization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      2.0000084675e+00
+                      1.0000084675e+00
+Expected Improvement    =
+                     1.9983045628e-120
+
+------------------------------
+Begin Function Evaluation   87
+------------------------------
+Parameters for function evaluation 87:
+                      2.0000084675e+00 beam_width
+                      1.0000084675e+00 beam_thickness
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+
+Direct function: invoking cantilever 
+
+Active response data for function evaluation 87:
+Active set vector = { 0 0 1 }
+                      2.9840990133e+01 displ
+
+
+
+>>>>> Appending to global_gaussian approximations.
+
+Building GP using all 51 training points...
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+COV matrix corrected with nugget: 1.0000000000e-15
+NCSU DIRECT succeeded with code 4
+(best rectangle reduced from original volume by prescribed fraction)
+
+<<<<< global_gaussian approximation updates completed.
+
+>>>>> Initiating global maximization
+NCSU DIRECT succeeded with code 1
+(maximum function evaluations exceeded)
+
+Results of EGO minimization:
+Final point             =
+                      1.1111195787e+00
+                      1.0000084675e+00
+Expected Improvement    =
+                      6.1430099604e-42
+
+>>>>> nond_global_interval_est: post-run phase.
+<<<<< Function evaluation summary: 87 total (86 new, 1 duplicate)
+         weight: 13 val (12 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 35 val (35 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 51 val (51 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+------------------------------------------------------------------
+Min and Max estimated values for each response function:
+weight:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
+stress:  Min = -9.7749982853e-01  Max = 2.1499428450e+01
+displ:  Min = -9.9315677360e-01  Max = 6.7429714485e+01
+-----------------------------------------------------------------
+
+<<<<< Iterator nond_global_interval_est completed.
+<<<<< Single Method Strategy completed.
+DAKOTA execution time in seconds:
+  Total CPU        =      79.89 [parent =    79.8929, child =  -0.002855]
+  Total wall clock =    79.9221

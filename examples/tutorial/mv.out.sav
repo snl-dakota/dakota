@@ -1,0 +1,171 @@
+Running MPI executable in serial mode.
+DAKOTA version 5.1 released 12/21/2010.
+Subversion revision 13 built Dec 19 2010 12:46:19.
+Constructing Single Method Strategy...
+Writing new restart file dakota.rst
+methodName = nond_local_reliability
+gradientType = numerical
+Numerical gradients using central differences
+to be calculated by the dakota finite difference routine.
+hessianType = none
+
+>>>>> Running Single Method Strategy.
+
+>>>>> Running nond_local_reliability iterator.
+
+>>>>> Evaluating response at mean values
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> Initial map for analytic portion of response:
+
+------------------------------
+Begin Function Evaluation    1
+------------------------------
+Parameters for function evaluation 1:
+                      1.0000000000e+00 TF1ln
+                      1.0000000000e+00 TF2ln
+
+(Asynchronous job 1 added to queue)
+
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation    2
+------------------------------
+Parameters for function evaluation 2:
+                      1.0001000000e+00 TF1ln
+                      1.0000000000e+00 TF2ln
+
+(Asynchronous job 2 added to queue)
+
+
+>>>>> Dakota finite difference gradient evaluation for x[1] - h:
+
+------------------------------
+Begin Function Evaluation    3
+------------------------------
+Parameters for function evaluation 3:
+                      9.9990000000e-01 TF1ln
+                      1.0000000000e+00 TF2ln
+
+(Asynchronous job 3 added to queue)
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation    4
+------------------------------
+Parameters for function evaluation 4:
+                      1.0000000000e+00 TF1ln
+                      1.0001000000e+00 TF2ln
+
+(Asynchronous job 4 added to queue)
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] - h:
+
+------------------------------
+Begin Function Evaluation    5
+------------------------------
+Parameters for function evaluation 5:
+                      1.0000000000e+00 TF1ln
+                      9.9990000000e-01 TF2ln
+
+(Asynchronous job 5 added to queue)
+
+
+
+Blocking synchronize of 5 asynchronous evaluations
+First pass: initiating 5 asynchronous jobs
+Initiating function evaluation 1
+text_book /tmp/fileoJ5ImL /tmp/filebY7pP3 &
+Initiating function evaluation 2
+text_book /tmp/fileozLKim /tmp/fileH0C5LE &
+Initiating function evaluation 3
+text_book /tmp/filecmL0fX /tmp/fileryVVJf &
+Initiating function evaluation 4
+text_book /tmp/fileea6qey /tmp/filePduWIQ &
+Initiating function evaluation 5
+text_book /tmp/fileUz49d9 /tmp/fileRNSnJr &
+Waiting on completed jobs
+Function evaluation 1 has completed
+Function evaluation 2 has completed
+Function evaluation 3 has completed
+Waiting on completed jobs
+Function evaluation 4 has completed
+Function evaluation 5 has completed
+
+Active response data for function evaluation 1:
+Active set vector = { 1 1 1 }
+                      0.0000000000e+00 response_fn_1
+                      5.0000000000e-01 response_fn_2
+                      5.0000000000e-01 response_fn_3
+
+
+Active response data for function evaluation 2:
+Active set vector = { 1 1 1 }
+                      1.0000000000e-16 response_fn_1
+                      5.0020001000e-01 response_fn_2
+                      4.9995000000e-01 response_fn_3
+
+
+Active response data for function evaluation 3:
+Active set vector = { 1 1 1 }
+                      1.0000000000e-16 response_fn_1
+                      4.9980001000e-01 response_fn_2
+                      5.0005000000e-01 response_fn_3
+
+
+Active response data for function evaluation 4:
+Active set vector = { 1 1 1 }
+                      1.0000000000e-16 response_fn_1
+                      4.9995000000e-01 response_fn_2
+                      5.0020001000e-01 response_fn_3
+
+
+Active response data for function evaluation 5:
+Active set vector = { 1 1 1 }
+                      1.0000000000e-16 response_fn_1
+                      5.0005000000e-01 response_fn_2
+                      4.9980001000e-01 response_fn_3
+
+>>>>> Total response returned to iterator:
+
+Active set vector = { 3 3 3 } Deriv vars vector = { 1 2 }
+                      0.0000000000e+00 response_fn_1
+                      5.0000000000e-01 response_fn_2
+                      5.0000000000e-01 response_fn_3
+ [  0.0000000000e+00  0.0000000000e+00 ] response_fn_1 gradient
+ [  2.0000000000e+00 -5.0000000000e-01 ] response_fn_2 gradient
+ [ -5.0000000000e-01  2.0000000000e+00 ] response_fn_3 gradient
+
+
+<<<<< Function evaluation summary: 5 total (5 new, 0 duplicate)
+-----------------------------------------------------------------
+MV Statistics for response_fn_1:
+  Approximate Mean Response                  =  0.0000000000e+00
+  Approximate Standard Deviation of Response =  0.0000000000e+00
+  Importance Factors not available.
+MV Statistics for response_fn_2:
+  Approximate Mean Response                  =  5.0000000000e-01
+  Approximate Standard Deviation of Response =  1.0307764064e+00
+  Importance Factor for variable TF1ln       =  9.4117647059e-01
+  Importance Factor for variable TF2ln       =  5.8823529412e-02
+MV Statistics for response_fn_3:
+  Approximate Mean Response                  =  5.0000000000e-01
+  Approximate Standard Deviation of Response =  1.0307764064e+00
+  Importance Factor for variable TF1ln       =  5.8823529412e-02
+  Importance Factor for variable TF2ln       =  9.4117647059e-01
+-----------------------------------------------------------------
+
+<<<<< Iterator nond_local_reliability completed.
+<<<<< Single Method Strategy completed.
+DAKOTA execution time in seconds:
+  Total CPU        =          0 [parent =   0.008998, child =  -0.008998]
+  Total wall clock =   0.023514
+
