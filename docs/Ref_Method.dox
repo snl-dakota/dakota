@@ -258,16 +258,16 @@ are valid for a variety of methods. In some cases, these controls are
 abstractions which may have slightly different implementations from
 one method to the next. The <tt>\<method dependent controls\></tt> are
 those controls which are only meaningful for a specific method or
-library. Referring to <a href="dakota.input.summary">dakota.input.summary</a>,
-the method independent controls are those controls defined externally
-from and prior to the method selection blocks. They are all
-optional. The method selection blocks are all required group
-specifications separated by logical OR's. The method dependent
-controls are those controls defined within the method selection
-blocks. Defaults for method independent and method dependent controls
-are defined in DataMethod.  The following sections provide additional
-detail on the method independent controls followed by the method
-selections and their corresponding method dependent controls.
+library. Referring to dakota.input.summary, the method independent
+controls are those controls defined externally from and prior to the
+method selection blocks. They are all optional. The method selection
+blocks are all required group specifications separated by logical
+OR's. The method dependent controls are those controls defined within
+the method selection blocks. Defaults for method independent and
+method dependent controls are defined in DataMethod.  The following
+sections provide additional detail on the method independent controls
+followed by the method selections and their corresponding method
+dependent controls.
 
 
 \section MethodIndControl Method Independent Controls
@@ -6622,34 +6622,34 @@ direction). This study is selected using the \c vector_parameter_study
 specification followed by either a \c final_point or a \c step_vector
 specification.
 
-The vector for the study can be defined in several ways (refer to <a
-href="dakota.input.summary">dakota.input.summary</a>). First, a \c final_point
-specification, when combined with the initial values from the
-variables specification (in \ref VarCommands, see \c initial_point and
-\c initial_state for design and state variables as well as inferred
-initial values for uncertain variables), uniquely defines an
-n-dimensional vector's direction and magnitude through its start and
-end points. The values included in the \c final_point specification
-are the actual variable values for discrete sets, not the underlying
-set index value.  The intervals along this vector are then specified
-with a \c num_steps specification, for which the distance between the
-initial values and the \c final_point is broken into \c num_steps
-intervals of equal length.  For continuous and discrete range
-variables, distance is measured in the actual values of the variables,
-but for discrete set variables (either integer or real sets for
-design, uncertain, or state types), distance is instead measured in
-index offsets.  Since discrete sets may have nonuniform offsets in
-their enumerated set values but have uniform offsets in their index
-values, defining steps in terms of set indices allows for meaningful
-parameter study specifications for these variable types.  This study
-performs function evaluations at both ends, making the total number of
-evaluations equal to \c num_steps+1.  The study has stringent
-requirements on performing appropriate steps with any discrete range
-and discrete set variables.  A \c num_steps specification must result
-in discrete range and set index steps that are integral: no remainder
-is currently permitted in the integer step calculation and no rounding
-to integer steps will occur.  The \c final_point specification detail
-is given in \ref T5d44 "Table 5.44".
+The vector for the study can be defined in several ways (refer to
+dakota.input.summary). First, a \c final_point specification, when
+combined with the initial values from the variables specification (in
+\ref VarCommands, see \c initial_point and \c initial_state for design
+and state variables as well as inferred initial values for uncertain
+variables), uniquely defines an n-dimensional vector's direction and
+magnitude through its start and end points. The values included in the
+\c final_point specification are the actual variable values for
+discrete sets, not the underlying set index value.  The intervals
+along this vector are then specified with a \c num_steps
+specification, for which the distance between the initial values and
+the \c final_point is broken into \c num_steps intervals of equal
+length.  For continuous and discrete range variables, distance is
+measured in the actual values of the variables, but for discrete set
+variables (either integer or real sets for design, uncertain, or state
+types), distance is instead measured in index offsets.  Since discrete
+sets may have nonuniform offsets in their enumerated set values but
+have uniform offsets in their index values, defining steps in terms of
+set indices allows for meaningful parameter study specifications for
+these variable types.  This study performs function evaluations at
+both ends, making the total number of evaluations equal to \c
+num_steps+1.  The study has stringent requirements on performing
+appropriate steps with any discrete range and discrete set variables.
+A \c num_steps specification must result in discrete range and set
+index steps that are integral: no remainder is currently permitted in
+the integer step calculation and no rounding to integer steps will
+occur.  The \c final_point specification detail is given in \ref T5d44
+"Table 5.44".
 
 \anchor T5d44
 <table>

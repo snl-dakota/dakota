@@ -57,9 +57,9 @@ reference.
 
 This Reference Manual focuses on the details of allowable
 specifications in a file input to the DAKOTA program.  Related details
-on the name and location of the \dakota program, command line inputs,
-and execution syntax are provided in the Users Manual [\ref UsersMan
-"Adams et al., 2010"].
+on the name and location of the \c dakota program, command line
+inputs, and execution syntax are provided in the Users Manual [\ref
+UsersMan "Adams et al., 2010"].
 
 
 \section IntroCmdsInpSpec NIDR Input Specification File

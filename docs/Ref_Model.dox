@@ -860,6 +860,11 @@ Specification detail for hierarchical approximations
 
 \section ModelNested Nested Model Controls
 
+Instead of appealing directly to a primary interface, a nested model
+maps parameters to responses by executing a sub-iterator for each
+evaluation of the nested model; the sub-iterator in turn operates on a
+sub-model.  The sub-iterator responses may be combined with those from
+an optional interface specification.
 
 In the \c nested model case, a \c sub_method_pointer must be provided
 in order to specify the nested iterator, and \c
