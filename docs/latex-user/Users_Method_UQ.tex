@@ -157,7 +157,9 @@ Equation~\ref{tutorial:textbook_f}) will be used to demonstrate
 the application of sampling methods for uncertainty quantification
 where it is assumed that $x_1$ and $x_2$ are uniform uncertain
 variables on the interval $[0,1]$. The DAKOTA input file for this
-problem is shown in Figure~\ref{uq:figure01}. The number of samples to
+problem is shown in Figure~\ref{uq:figure01}. This input 
+file is \texttt{dakota\_uq\_sampling.in} in the 
+\texttt{Dakota/examples/methods} directory.  The number of samples to
 perform is controlled with the \texttt{samples} specification, the
 type of sampling algorithm to use is controlled with the
 \texttt{sample\_type} specification, the levels used for computing
@@ -1060,7 +1062,8 @@ variables with means of \texttt{1}, standard deviations of
 
 A DAKOTA input file showing RIA using FORM (option 7 in limit state
 approximations combined with first-order integration) is listed in
-Figure~\ref{uq:rel_input_form}.  The user first specifies the 
+Figure~\ref{uq:rel_input_form}.  This input file is 
+\texttt{dakota\_uq\_reliability.in} in the {Dakota/examples/methods} directory.  The user first specifies the 
 \texttt{local\_reliability} method, followed by the MPP search 
 approach and integration order.  In this example, we specify
 \texttt{mpp\_search no\_approx} and utilize the default first-order
@@ -2458,7 +2461,9 @@ numerically-generated orthogonal polynomials.  The uncertain variables
 are lognormal in this example and the orthogonal polynomials are
 generated from Gauss-Wigert recursion coefficients~\cite{simpson_gw}
 in combination with the Golub-Welsch procedure~\cite{GolubWelsch69}.
-The input file is shown in Figure~\ref{uq:figure11}. Note that the
+The input file is shown in Figure~\ref{uq:figure11}. This 
+input file is \texttt{dakota\_sc.in} in the 
+\texttt{Dakota/examples/methods} directory.  Note that the
 dimension preference of $(2,1)$ is inverted to define a $\gamma$
 weighting vector of $(0.5,1)$ (and $\underline{\gamma}$ of $0.5$) for
 use in Eq.~\ref{eq:aniso_smolyak_constr}.  In this example, we compute
@@ -2693,8 +2698,10 @@ to specify the number of intervals defined for each variable with
 per interval, \texttt{iuv\_interval\_probs}, and the associated bounds
 per each interval, \texttt{iuv\_interval\_bounds}. 
 Figure~\ref{uq:figure16} shows the input specification for interval
-uncertain variables.  The example shown in Figure~\ref{uq:figure16}
-has two epistemic uncertain interval variables.  The first uncertain
+uncertain variables. This input file is \texttt{dakota\_uq\_textbook\_dste.in}, found in the \texttt{Dakota/examples/methods} 
+directory.   The example shown in Figure~\ref{uq:figure16}
+has two epistemic uncertain interval variables.  
+The first uncertain
 variable has three intervals and the second has two. The basic
 probability assignments for the first variable are 0.5, 0.1, and 0.4,
 while the BPAs for the second variable are 0.7 and 0.3. Note that it
