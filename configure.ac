@@ -3,7 +3,7 @@
 
 # Prerequisites.
 AC_PREREQ([2.60])
-AC_INIT([DAKOTA],[5.0],[dakota-developers@development.sandia.gov])
+AC_INIT([DAKOTA],[5.1],[dakota-developers@development.sandia.gov])
 AC_CONFIG_SRCDIR([src/main.C])
 AC_CONFIG_HEADER([dakota_config.h])
 AC_CANONICAL_TARGET
