@@ -1,4 +1,6 @@
-// This test fixture requires MPI and can be run on 3--8 processors
+/** \file library_split.C
+    \brief file containing a mock simulator main for testing DAKOTA in
+    library mode on a split communicator */ 
 
 #include <boost/lexical_cast.hpp>
 #include "mpi.h"
@@ -26,9 +28,10 @@ void collect_results();
 /// Set input to NIDR via string argument instead of input file
 extern "C" void nidr_set_input_string(const char *);
 
-/** \file library_split
-    \brief file containing a mock simulator main for testing DAKOTA in
-    library mode on a split communicator */ 
+
+/// Driver routine for testing library mode with partitioned
+/// MPI_Comm. This test fixture requires MPI and can be run on 3--8
+/// processors
 int main(int argc, char* argv[])
 {
   

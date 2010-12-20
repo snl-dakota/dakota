@@ -1546,7 +1546,7 @@ JEGAOptimizer::GetBestSolutions(
 void
 JEGAOptimizer::GetBestMOSolutions(
     const JEGA::Utilities::DesignOFSortSet& from,
-    std::multimap<RealRealPair, Design*>& designSortMap
+    std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
     )
 {
     EDDY_FUNC_DEBUGSCOPE
@@ -1626,7 +1626,7 @@ JEGAOptimizer::GetBestMOSolutions(
 void
 JEGAOptimizer::GetBestSOSolutions(
     const JEGA::Utilities::DesignOFSortSet& from,
-    std::multimap<RealRealPair, Design*>& designSortMap
+    std::multimap<RealRealPair, JEGA::Utilities::Design*>& designSortMap
     )
 {
     EDDY_FUNC_DEBUGSCOPE

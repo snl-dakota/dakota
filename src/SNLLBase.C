@@ -106,8 +106,9 @@ snll_post_instantiate(const int& num_cv, bool vendor_num_grad_flag,
 		      const Real& conv_tol, const Real& grad_tol,
 		      const Real& max_step, bool bound_constr_flag,
 		      const int& num_constr, short output_lev,
-		      OptimizeClass* the_optimizer, NLP0* nlf_objective,
-		      FDNLF1* fd_nlf1, FDNLF1* fd_nlf1_con)
+		      OPTPP::OptimizeClass* the_optimizer, 
+		      OPTPP::NLP0* nlf_objective,
+		      OPTPP::FDNLF1* fd_nlf1, OPTPP::FDNLF1* fd_nlf1_con)
 {
   // These options belong to the abstract base classes NLP0 and OptimizeClass
   // and are set after the pointer assignments. See bottom of
@@ -174,7 +175,7 @@ void SNLLBase::init_fn(int n, NEWMAT::ColumnVector& x)
 
 
 void SNLLBase::
-snll_initialize_run(NLP0* nlf_objective, NLP* nlp_constraint,
+snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
 		    const RealVector& init_pt, bool bound_constr_flag,
 		    const RealVector& lower_bounds,
 		    const RealVector& upper_bounds,
@@ -292,7 +293,7 @@ snll_initialize_run(NLP0* nlf_objective, NLP* nlp_constraint,
 }
 
 
-void SNLLBase::snll_post_run(NLP0* nlf_objective)
+void SNLLBase::snll_post_run(OPTPP::NLP0* nlf_objective)
 {
   // the best response update is specialized in the derived classes,
   // but the best variables update is not
@@ -367,7 +368,8 @@ copy_con_grad(const RealMatrix& local_fn_grads, NEWMAT::Matrix& grad_g,
 
 void SNLLBase::
 copy_con_hess(const RealSymMatrixArray& local_fn_hessians,
-              OptppArray<NEWMAT::SymmetricMatrix>& hess_g, const size_t& offset)
+              OPTPP::OptppArray<NEWMAT::SymmetricMatrix>& hess_g,
+	      const size_t& offset)
 {
   // Unlike DAKOTA, OPT++ expects nonlinear equations followed by nonlinear
   // inequalities.  Therefore, we have to reorder the constraint Hessians.

@@ -152,7 +152,7 @@ public:
   void compute_moments();
   /// compute moments in all-variables mode up to the order supported
   /// by the Pecos polynomial approximation
-  void compute_moments(const RealVector& x);
+  void compute_moments(const Pecos::RealVector& x);
   /// return virtual Pecos::PolynomialApproximation::moments()
   const RealVector& moments() const;
   /// return Pecos::PolynomialApproximation::expansionMoments
@@ -168,9 +168,14 @@ protected:
   //
   //- Heading: Virtual function redefinitions
   //
+  
+  // redocumenting these since they use Pecos:: qualification
 
+  /// retrieve the approximate function value for a given parameter vector
   const Real&                 get_value(const Pecos::RealVector& x);
+  /// retrieve the approximate function gradient for a given parameter vector
   const Pecos::RealVector&    get_gradient(const Pecos::RealVector& x);
+  /// retrieve the approximate function Hessian for a given parameter vector
   const Pecos::RealSymMatrix& get_hessian(const Pecos::RealVector& x);
 
   int min_coefficients() const;

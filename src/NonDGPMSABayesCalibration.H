@@ -85,7 +85,8 @@ private:
   //- Heading: Data
   //
 
-  Iterator lhsSampler; ///< LHS sampling iterator
+  /// LHS sampling iterator
+  Iterator lhsSampler;
   /// Storage for the observed x data (inputs) provided by the user
   RealArray xObsData;
   /// Storage for the observed y data (outputs) provided by the user

@@ -828,6 +828,7 @@ inline void copy_data(StringMultiArrayConstView ma, StringArray& da)
 }
 
 
+/// return true if the item val appears in container v
 template <typename DakContainerType>
 inline bool contains(const DakContainerType& v,
                      const typename DakContainerType::value_type& val)
@@ -836,6 +837,8 @@ inline bool contains(const DakContainerType& v,
 }
 
 
+/// count the number of elements in the list satisfying the predicate
+/// test_fn w.r.t. the passed test_fn_data
 template <class ListT>
 typename ListT::size_type
 count_if(const ListT& l,
@@ -849,7 +852,8 @@ count_if(const ListT& l,
   return cntr;
 }
 
-
+/// return an iterator to the first list element satisfying the
+/// predicate test_fn w.r.t. the passed test_fn_data; end if not found
 template <class ListT>
 typename ListT::const_iterator
 find_if(const ListT& c,

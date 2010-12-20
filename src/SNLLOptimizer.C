@@ -811,7 +811,7 @@ constraint1_evaluator(int mode, int n, const NEWMAT::ColumnVector& x,
 void SNLLOptimizer::
 constraint2_evaluator(int mode, int n, const NEWMAT::ColumnVector& x,
 		      NEWMAT::ColumnVector& g, NEWMAT::Matrix& grad_g,
-		      OptppArray<NEWMAT::SymmetricMatrix>& hess_g,
+		      OPTPP::OptppArray<NEWMAT::SymmetricMatrix>& hess_g,
 		      int& result_mode)
 { 
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)

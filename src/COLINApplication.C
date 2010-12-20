@@ -288,7 +288,7 @@ void COLINApplication::
 perform_evaluation_impl(const utilib::Any &domain,
                    const colin::AppRequest::request_map_t &requests,
                    utilib::seed_t &seed,
-                   AppResponse::response_map_t &colin_responses)
+		   colin::AppResponse::response_map_t &colin_responses)
 {
   // Transform COLIN request to point for which DAKOTA executes an
   // evaluation, launch the evaluation, wait for the response, and
@@ -333,7 +333,7 @@ evaluation_available()
     the evalid of the response returned. */
 
 utilib::Any COLINApplication::
-collect_evaluation_impl(AppResponse::response_map_t &colin_responses,
+collect_evaluation_impl(colin::AppResponse::response_map_t &colin_responses,
 		   utilib::seed_t &seed)
 {
   // Get the first response off the list.
@@ -453,7 +453,7 @@ colin_request_to_dakota_request(const utilib::Any &domain,
 
 void COLINApplication::
 dakota_response_to_colin_response(const Response &dakota_response,
-				  AppResponse::response_map_t &colin_responses)
+				  colin::AppResponse::response_map_t &colin_responses)
 {
 
   const ShortArray& asv = dakota_response.active_set_request_vector();

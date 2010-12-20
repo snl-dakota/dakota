@@ -66,8 +66,9 @@ public:
 	   HOPSPACK::Vector& apps_cEqs, HOPSPACK::Vector& apps_cIneqs,
 	   string& apps_msg);
 
-  /// currently do nothing but are needed to complete the interface
+  /// empty implementation of debug info needed to complete the interface
   void printDebugInfo(void) const {};
+  /// empty implementation of timing info needed to complete the interface
   void printTimingInfo(void) const {};
 
   //

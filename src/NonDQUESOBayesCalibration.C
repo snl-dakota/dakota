@@ -87,7 +87,7 @@ NonDQUESOBayesCalibration::~NonDQUESOBayesCalibration()
 { }
 
 
-/** . */
+/** Perform the uncertainty quantification */
 void NonDQUESOBayesCalibration::quantify_uncertainty()
 {
   // instantiate QUESO objects and execute

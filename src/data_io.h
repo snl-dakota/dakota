@@ -993,6 +993,8 @@ inline void array_write_aprepro(std::ostream& s, const ArrayT& v,
 
 // WJB: confer with MSE -- e.g. desired API? naming style of read/write funcs,
 //                              order of the argument list; mv to data_io.h??
+/// Write array to ostream as a row vector; precede with length if
+/// write_len = true
 template <class ArrayT>
 inline void array_write_annotated(const ArrayT& v, std::ostream& s, bool write_len)
 {

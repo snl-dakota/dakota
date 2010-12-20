@@ -750,7 +750,7 @@ static GuiKeyWord
 		{"gen_reliability_levels",14,1,12,0,769,kw_44,0.,0.,0.,0,"{Generalized reliability levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"},
 		{"nested",8,0,4,0,669},
 		{"non_nested",8,0,4,0,671},
-		{"p_refinement",8,2,1,0,649,kw_111},
+		{"p_refinement",8,2,1,0,649,kw_111,0.,0.,0.,0,"{Automated polynomial order refinement} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"},
 		{"probability_levels",14,1,11,0,765,kw_45,0.,0.,0.,0,"{Probability levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"},
 		{"quadrature_order",13,0,3,1,663,0,0.,0.,0.,0,"{Quadrature order for collocation points} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"},
 		{"reliability_levels",14,1,14,0,715,kw_92,0.,0.,0.,0,"{Reliability levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"},
@@ -845,7 +845,7 @@ static GuiKeyWord
 		{"converge_order",8,0,1,1,1057},
 		{"converge_qoi",8,0,1,1,1059},
 		{"estimate_order",8,0,1,1,1055},
-		{"refinement_rate",10,0,2,0,1061}
+		{"refinement_rate",10,0,2,0,1061,0,0.,0.,0.,0,"{Refinement rate} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSolnRichardson"}
 		},
 	kw_126[2] = {
 		{"num_generations",0x29,0,2,0,341},
@@ -989,7 +989,7 @@ static GuiKeyWord
 		{"dot_slp",8,10,11,1,155,kw_36,0.,0.,0.,0,0,"Optimization: Local, Derivative-based"},
 		{"dot_sqp",8,10,11,1,157,kw_36,0.,0.,0.,0,0,"Optimization: Local, Derivative-based"},
 		{"efficient_global",8,1,11,1,577,kw_37,0.,0.,0.,0,0,"Surrogate-based Methods"},
-		{"final_solutions",0x29,0,10,0,87},
+		{"final_solutions",0x29,0,10,0,87,0,0.,0.,0.,0,"{Final solutions} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
 		{"fsu_cvt",8,8,11,1,837,kw_40,0.,0.,0.,0,0,"DACE"},
 		{"fsu_quasi_mc",8,10,11,1,1007,kw_42,0.,0.,0.,0,0,"DACE"},
 		{"global_evidence",8,9,11,1,743,kw_49,0.,0.,0.,0,0,"Uncertainty Quantification"},
@@ -1032,7 +1032,7 @@ static GuiKeyWord
 		{"output",8,4,3,0,65,kw_123,0.,0.,0.,0,"{Output verbosity} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
 		{"polynomial_chaos",8,23,11,1,579,kw_105,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"psuade_moat",8,3,11,1,859,kw_124,0.,0.,0.,0,"{PSUADE MOAT method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSUADE","DACE"},
-		{"richardson_extrap",8,4,11,1,1053,kw_125},
+		{"richardson_extrap",8,4,11,1,1053,kw_125,0.,0.,0.,0,"{Richardson extrapolation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSolnRichardson"},
 		{"sampling",8,12,11,1,693,kw_109,0.,0.,0.,0,"{Nondeterministic sampling method} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC","Uncertainty Quantification"},
 		{"scaling",8,0,9,0,85,0,0.,0.,0.,0,"{Scaling flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
 		{"soga",8,19,11,1,311,kw_131,0.,0.,0.,0,0,"Optimization: Global"},

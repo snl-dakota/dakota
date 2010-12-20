@@ -433,7 +433,7 @@ constraint1_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
 void SNLLLeastSq::
 constraint2_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
                          NEWMAT::ColumnVector& g, NEWMAT::Matrix& grad_g,
-                         OptppArray<NEWMAT::SymmetricMatrix>& hess_g,
+                         OPTPP::OptppArray<NEWMAT::SymmetricMatrix>& hess_g,
 			 int& result_mode)
 { 
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)

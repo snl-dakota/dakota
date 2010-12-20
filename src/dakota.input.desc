@@ -122,6 +122,8 @@ TAG "method/scaling"
 	DESC "{Scaling flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
 
 TAG "method/final_solutions"
+	DESC "{Final solutions} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"
+
 TAG "method/surrogate_based_local" GROUP "Surrogate-based Methods"
 TAG "method/surrogate_based_local/approx_method_name"
 	DESC "[CHOOSE sub-method ref.]{Approximate sub-problem minimization method name} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSBL"
@@ -709,6 +711,8 @@ TAG "method/polynomial_chaos/sample_type/lhs"
 TAG "method/polynomial_chaos/sample_type/random"
 TAG "method/stoch_collocation" GROUP "Uncertainty Quantification"
 TAG "method/stoch_collocation/p_refinement"
+	DESC "{Automated polynomial order refinement} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"
+
 TAG "method/stoch_collocation/p_refinement/uniform"
 TAG "method/stoch_collocation/p_refinement/adaptive"
 TAG "method/stoch_collocation/p_refinement/adaptive/sobol"
@@ -1053,10 +1057,14 @@ TAG "method/multidim_parameter_study/partitions"
 	DESC "{Partitions per variable} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodPSMPS"
 
 TAG "method/richardson_extrap"
+	DESC "{Richardson extrapolation} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSolnRichardson"
+
 TAG "method/richardson_extrap/estimate_order"
 TAG "method/richardson_extrap/converge_order"
 TAG "method/richardson_extrap/converge_qoi"
 TAG "method/richardson_extrap/refinement_rate"
+	DESC "{Refinement rate} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodSolnRichardson"
+
 TAG "model"
 	DESC "{Model} A model consists of a model type and maps specified variables through an interface to generate responses. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/ModelCommands.html"
 
