@@ -62,12 +62,18 @@ packages may take from 15 minutes to over an hour.  Typical process:
   3) cd Dakota
   4) export PATH=$PATH:.
   5) configure [--disable-mpi] [--disable-f90]
+     * see NOTE below regarding GNU F90/F77 compatibility
   6) make [-j#]
   [optional] 7) make install
      * requires write privilege in $prefix (see "Installation Details" below).
 
-where support for the message-passing interface (MPI) and Fortran 90
-compilation may not be available on all platforms.
+where support for the message-passing interface (MPI) and Fortran90
+compilation may not be available on all platforms.  If your platform
+has the GNU Fortran90 compiler installed, please set the following environment
+variable prior to configuring dakota to ensure compatible system, shared-object
+libs, e.g.
+
+  export F77=gfortran    # SH/BASH
 
 Some packages (DOT, NPSOL, and NLPQL, in particular) are optional
 commercial extensions which can be licensed separately and are not
@@ -114,29 +120,30 @@ currently available. (All contact e-mail addresses end with @sandia.gov.)
 
 Package    System                  Group         Contact
 ---------  ----------------------  ------------  -------------
-Dakota     development.sandia.gov  svn           Mike Eldred (mseldre)
-ampl       software.sandia.gov     svn           David Gay (dmgay)
-boost      software.sandia.gov     svn           Bill Bohnhoff (wjbohnh)
-Pecos      development.sandia.gov  svn           Mike Eldred (mseldre)
-Surfpack   development.sandia.gov  svn           Brian Adams (briadam)
-teuchos    software.sandia.gov     svn           Bill Bohnhoff (wjbohnh)
-Acro       software.sandia.gov     svn           Bill Hart (wehart)
+Dakota     software.sandia.gov     apache        Mike Eldred (mseldre)
+ampl       software.sandia.gov     apache        Brian Adams (briadam)
+boost      software.sandia.gov     apache        Bill Bohnhoff (wjbohnh)
+pecos      software.sandia.gov     apache        Mike Eldred (mseldre)
+surfpack   software.sandia.gov     apache        Brian Adams (briadam)
+teuchos    software.sandia.gov     apache        Bill Bohnhoff (wjbohnh)
+Acro       software.sandia.gov     apache        John Siirola (jdsiiro)
 DDACE      software.sandia.gov     apache        Patty Hough (pdhough)
-hopspack   development.sandia.gov  svn           Patty Hough (pdhough)
-JEGA       software.sandia.gov     svn           John Eddy (jpeddy) 
+hopspack   software.sandia.gov     apache        Patty Hough (pdhough)
+JEGA       software.sandia.gov     apache        John Eddy (jpeddy) 
 OPT++      software.sandia.gov     apache        Patty Hough (pdhough)
 
-For DAKOTA checkout from development.sandia.gov, you will need to set
-the Subversion URL target to the repository directory where DAKOTA
-resides (i.e., svn+ssh://development.sandia.gov/usr/local/svn).  Refer
+For DAKOTA checkout from software.sandia.gov, you will need to
+use Subversion 1.6 or later, and set the Subversion URL target
+to the repository directory where DAKOTA resides (i.e.,
+https://software.sandia.gov/svn/public/dakota).  Refer
 to the DAKOTA Developers Manual for help installing and configuring
-Subversion, and to the Subversion man pages for additional information
+Subversion 1.6, and to the Subversion man pages for additional information
 on svn (the checkout, diff, update, and commit commands are the
 essential subset).  The following steps can then be executed:
 
    1) cd $HOME (or other appropriate directory)
-   2) export SVNROOT=svn+ssh://development.sandia.gov/usr/local/svn # SH/BASH
-   3) svn checkout $SVNROOT/Dakota/trunk Dakota
+   2) export SVNROOT=https://software.sandia.gov/svn/public/dakota # SH/BASH
+   3) svn checkout $SVNROOT/private/trunk Dakota
    4) cd Dakota
    5) autoreconf -i -v   
 
@@ -158,16 +165,16 @@ Basic Installation
 For both the source distribution tar file and version control checkout 
 cases, there should now be a Dakota directory containing the
 autoconf-generated scripts to enable configuration.  External tools
-acro, hopspack, DDACE, JEGA, and OPTPP will appear in Dakota/methods;
-ampl, boost, Pecos, Surfpack, and teuchos in Dakota/packages.
+acro, hopspack, DDACE, JEGA, OPTPP, ampl, boost, pecos, surfpack, and teuchos
+in Dakota/packages.
 
 To build DAKOTA with all possible packages, some platform-dependent
 software dependencies exist.  These include the Message Passing
 Interface (MPI) library, the Basic Linear Algebra Subprograms (BLAS)
 and Linear Algebra PACKage (LAPACK) libraries, support for lex and
 yacc (or flex and bison), X11 graphics libraries, and availability of
-a Fortran 90 compiler.  Of these, support for MPI, X11 graphics, and
-Fortran 90 are not strict requirements since they can be optionally
+a Fortran90 compiler.  Of these, support for MPI, X11 graphics, and
+Fortran90 are not strict requirements since they can be optionally
 omitted from the build by configuring with --disable-mpi,
 --without-graphics, and --disable-f90, respectively (see "Installation
 Details" below).  However, BLAS/LAPACK and lex/yacc support are
@@ -233,7 +240,7 @@ free implementations of X11 such as XFree86 (http://www.xfree86.org/)
 or OpenMOTIF (http://www.opengroup.org/openmotif/).
 
 Finally, use of Lawson/Hanson methods and the full features of the LHS
-package require a Fortran 90 compiler.  If the compiler is in a
+package require a Fortran90 compiler.  If the compiler is in a
 nonstandard location, it may be necessary to specify it at configure
 time, e.g., for the Portland Group compilers:
 
@@ -243,8 +250,8 @@ time, e.g., for the Portland Group compilers:
 "Installation Details" for more information, or the MPICXX example  
 above for examples of doing this by setting an environment variable.  
 DAKOTA has been successfully built with the Intel, Portland Group, g95, 
-and gfortran Fortran 90 compilers.  gfortran is preferred to g95 at this
-time.  If no Fortran 90 compiler is available, DAKOTA features that
+and gfortran Fortran90 compilers.  gfortran is preferred to g95 at this
+time.  If no Fortran90 compiler is available, DAKOTA features that
 require it can be disabled with
 
   configure --disable-f90
@@ -375,12 +382,17 @@ teuchos library (similar to "Installing Commercial Libs" below, but note,
 Teuchos is NOT a commercial library, it is just one of many core libraries
 that composes Sandia's Trilinos product).
 
-The Boost dependency is a bit different (for now), since DAKOTA uses a
-header-only subset of Boost (for convenience, provided in Dakota/packages),
-so therefore there is currently no prerequisite Boost build step necessary.
+DAKOTA uses a subset of Boost (for convenience, provided in Dakota/packages)
+consisting of several header-only Boost components PLUS a single Boost library:
+Boost.signals.
+There is no prerequisite step to build the Boost signals library since the
+DAKOTA/packages/boost "snapshot" contains a autotools build-harness that
+is compatible with DAKOTA.  It should configure/make just like any other
+DAKOTA TPL.
+
 Please note that many system Boost installations DO NOT meet the minimum 
-minimum version requirement for DAKOTA (Boost 1.37 or higher).  Attempting
-to configure with a Boost installation earlier than 1.37 will result in a
+minimum version requirement for DAKOTA (Boost 1.40 or higher).  Attempting
+to configure with a Boost installation earlier than 1.40 will result in a
 configure error.
 
 Once the locations locations of the TPLs have been identified, 'cd' to the
@@ -535,21 +547,21 @@ to these sites for licensing fees and policies.
 
 It is preferable to license the source code, although target platform
 object libraries may also be workable with configuration modifications.  
-These distributions should be installed in the Dakota/methods/DOT,
-Dakota/methods/NPSOL, and Dakota/methods/NLPQL directories prior to 
+These distributions should be installed in the Dakota/packages/DOT,
+Dakota/packages/NPSOL, and Dakota/packages/NLPQL directories prior to 
 building DAKOTA.  
 
 In a DOT source distribution, the files of interest are DDOT1.FOR through 
 DDOT6.FOR, which should be renamed dot1.f through dot6.f and placed in the 
-Dakota/methods/DOT/dbl_prec directory.  
+Dakota/packages/DOT/dbl_prec directory.  
 
 In NPSOL 5.0 source distributions, the required Fortran files are 
 npUnix/src/*.f and npUnix/examples/*.f.  These files should be copied to the 
-Dakota/methods/NPSOL directory.  For older NPSOL versions, refer to 
-the comments in Dakota/methods/NPSOL/Makefile.in for the required 
+Dakota/packages/NPSOL directory.  For older NPSOL versions, refer to 
+the comments in Dakota/packages/NPSOL/Makefile.in for the required 
 Fortran files.  In a NLPQL distribution, the required Fortran files are
 NLPQLP20.FOR and QL.FOR, which should be renamed to NLPQLP20.f and QL.f and 
-placed in the Dakota/methods/NLPQL directory.
+placed in the Dakota/packages/NLPQL directory.
 
 DOT source modifications: In dot1.f, modify the parameter list of
 SUBROUTINE DOT to pass the parameter NGOTOZ as its second parameter.
@@ -568,7 +580,7 @@ Version 4: In f06subs.f, comment out the "ENTRY" statements which alias the
            up the NAG f06 routines (which allows consistent usage of the 
            latest platform-optimized BLAS).  In addition, replace the 
            NPSRC, NPOBJ, MAINSRC, MAINOBJ, and PGMS Makefile macros as 
-           documented in Dakota/methods/NPSOL/Makefile.in.
+           documented in Dakota/packages/NPSOL/Makefile.in.
 Version 5: No modifications necessary.
 
 NPSOL _optional_ source modifications: 
@@ -590,7 +602,7 @@ enabled.  The DAKOTA/Matlab interface has been built and tested on
 (R14SP3).  Configuration support for Solaris is included, but is
 untested.  Builds on other platforms or with other versions of Matlab
 may require modifications to the DAKOTA build system, including the
-Matlab section of m4/dak_options.m4 (please send feedback on what
+Matlab section of config/dak_options.m4 (please send feedback on what
 modifications were necessary for your platform and environment to
 dakota-developers@development.sandia.gov).
 
@@ -675,7 +687,7 @@ Library Notes
 Library versions that are distributed with DAKOTA have been tested for
 a particular DAKOTA release.  Links to the latest versions of these
 libraries can be found at
-http://www.cs.sandia.gov/dakota/packages.html.  When upgrading to the
+http://dakota.sandia.gov/packages.html.  When upgrading to the
 latest libraries, modifications to the supporting DAKOTA code (e.g.,
 the wrapper class) may be required. Sharing upgrades of this type with
 the development team is greatly appreciated.  Direct messages to
