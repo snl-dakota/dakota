@@ -274,7 +274,7 @@ CheckPackage(SURFPACK)
 if(HAVE_SURFPACK)
   include_directories(${Surfpack_BINARY_DIR} ${Surfpack_SOURCE_DIR}/src
                       ${Surfpack_SOURCE_DIR}/src/surfaces)
-  set(TPL_LIBS ${TPL_LIBS} mars surfaces)
+  set(TPL_LIBS ${TPL_LIBS} mars surfaces nkm)
 endif(HAVE_SURFPACK)
 
 
