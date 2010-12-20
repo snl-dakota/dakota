@@ -909,7 +909,7 @@ different from the one where DAKOTA is invoked.  A simulator script
 used as an \texttt{analysis\_driver}
 can of course change to a different directory if desired (while still arranging
 to write a results file in the original directory), but
-DAKOTA 5.0 has new facilities that may simplify the creation pf
+DAKOTA 5.0 has new facilities that may simplify the creation of
 simulator scripts.
 % for use with the fork or system interface.
 If an interface specification includes the keyword
@@ -919,7 +919,7 @@ If an interface specification includes the keyword
 \end{verbatim}
 \end{small}
 then DAKOTA will arrange for the simulator and any filters to
-wake up in a temporary directory, with \$PATH adjusted (if necessary)
+wake up in the work directory, with \$PATH adjusted (if necessary)
 so programs that could be invoked without a relative
 path to them (i.e., by a name not involving any slashes) from
 DAKOTA's directory can also be invoked from the simulator's (and filter's)
@@ -956,8 +956,8 @@ new directory populated with some files.  Adding
 \end{small}
 to the work directory specification would cause the
 contents of directory \texttt{my/template} to be linked recursively
-into the work directory.  Linking is good if files are large, but if they
-are to be modified by the simulator, it may be better to have
+into the work directory.  Linking makes sense if files are large,
+but when practical, it is far more reliable to have
 copies of the files; adding \texttt{copy} to the specification
 would cause the contents of the template directory to be copied
 recursively to the work directory.  The linking or copying does
