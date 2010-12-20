@@ -10,16 +10,16 @@ Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis
 
 Brian M. Adams      (Project Lead)                      _/_/_/       
 Michael S. Eldred   (Research Lead)           	         _/_/    
-William J. Bohnhoff (Support Manager, acting) 	    _/_/_/_/_/_/ 
-James R. Stewart    (Business Manager)        	   _/  _/_/  _/  
+James R. Stewart    (Business Manager)	 	    _/_/_/_/_/_/ 
+Sophia Lefantzi     (Support Manager)        	   _/  _/_/  _/  
 Keith R. Dalbey                                   _/  _/_/  _/   
 John P. Eddy                                  	    _/_/_/       
-David M. Gay	    		               
-Karen Haskell    			P.O. Box 5800, Mail Stop 1318
-Laura P. Swiler				Albuquerque, NM 87185-1318
+Laura P. Swiler
+John D. Siirola				P.O. Box 5800, Mail Stop 1318
+William Bohnhoff			Albuquerque, NM 87185-1318
 
 Patty D. Hough				P.O. Box 969, MS 9217
-                 			Livermore, CA 94551-0969
+					Livermore, CA 94551-0969
 
 Email: dakota-developers@development.sandia.gov
 
@@ -37,7 +37,7 @@ file for important U.S. Government legal notices.
 
 The DAKOTA distribution contains libraries which are available
 separately under compatible licensing terms.  In particular, many of
-the libraries in methods and packages are available separately under
+the libraries in packages are available separately under
 the GNU Lesser General Public License (LGPL).  DAKOTA source
 distributions include optional GNU GPL-licensed components, which are
 disabled by default, resulting in an LGPL-compatible DAKOTA.
@@ -66,7 +66,7 @@ The directories contained in DAKOTA distributions include (bin denotes
 binary distributions, src denotes source distributions):
 
 bin		    Binary files for DAKOTA, restart utility, dprepro, and 
-(bin)		    various TPLs.
+(bin)		    various third-party libraries (TPLs).
 
 examples            Example problems from the Users Manual, examples of
 (bin/src)           interfacing with other codes using script-based or direct
@@ -83,15 +83,15 @@ lib (bin)	    Library files for DAKOTA and it's associated TPLs.
 
 share (bin)	    Miscellaneous files installed by DAKOTA TPLs.
 
-methods             Libraries of iterative algorithms provided by commercial
-(src)               vendors and related Sandia projects.
+packages            Libraries of iterative algorithms provided by commercial
+(src)               vendors and related Sandia projects.  Additionally,
+                    libraries for parsing (nidr), vector/matrix utilities
+                    (Trilinos Teuchos), Boost C++ libraries, stochastic 
+		    utilities (Pecos), algebraic interface (AMPL),
+		    surface fitting (Surfpack), etc.
 
-packages            Other libraries for parsing (nidr), vector/matrix utilities
-(src)               (Trilinos Teuchos), Boost C++ libraries, stochastic 
-		     utilities (Pecos), algebraic interface (AMPL), graphics 
-		    (PLplot, SciPlot), surface fitting (Surfpack), etc.
-
-m4 (src)            m4 macros used for supporting autoconf.
+config (src)        m4 macros used for supporting autoconf and beta
+		    implementation of CMake build macros/settings.
 
 docs                The Users, Reference, and Developers Manuals are 
 (src)               maintained here.  Other references are available from
@@ -115,11 +115,8 @@ DAKOTA is actively supported with nightly build and regression test
 verifications on the following platforms for the given operating systems, 
 C++ compilers, and MPI libraries:
 
-  PC        RHEL 4 Update 8          g++-3.4.6            MPICH1
-  	    64-bit (x86_64)   	     gfortran-4.1.2
-
-  PC        RHEL 4 Update 8          g++-4.1.2            MPICH1
-  	    32-bit (i686)
+  PC        RHEL 5 Update 4          g++-4.3.2            MPICH1 
+  	    64-bit (x86_64)   	     
 
   PC        Linux (various)          Intel                OpenMPI, MVAPICH
 
@@ -131,12 +128,12 @@ C++ compilers, and MPI libraries:
 
 Ports to the following platforms are supported manually on an as-needed basis:
 
-  PC        Windows (Cygwin 1.5.24)  g++-4.3.2            NONE/MPICH
+  PC        Windows (Cygwin 1.5.24)  g++-4.3.2                NONE/MPICH
 
   PC        Windows (Msys 1.0.11)    g++-3.4.5 (MinGW-5.1.6)  NONE
   	    	    	  	     g95-0.92 (gcc-4.1.2)
 
-  Red Storm                          PGI                  Cray MPI
+  Red Storm                          PGI 9.0.4                Cray MPI
 
 Ports to the following platforms have been supported in the past although
 they are no longer maintained:
@@ -152,6 +149,7 @@ Versions.
 
 Versions of the DAKOTA software have been tagged as follows:
 
+Version_5_1        12/21/10 (refer to svn externals for TPL tags)
 Version_5_0        12/21/09 (refer to svn externals for TPL tags)
 Version_4_2        11/05/08 (refer to svn externals for TPL tags)
 Version_4_1         9/21/07 (refer to svn externals for TPL tags)
