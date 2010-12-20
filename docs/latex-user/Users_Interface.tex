@@ -213,8 +213,11 @@ Section~\ref{advint:direct}.
 
 \subsection{The System Call Simulation Interface}\label{interfaces:system}
 
-The system call approach invokes a simulation code or simulation
-driver by using the \texttt{system} function from the standard C
+{\bf Users are strongly encouraged to use the fork simulation
+  interface if possible, though the system interface is still
+  supported for portability and backward compatibility.}  The system
+call approach invokes a simulation code or simulation driver by using
+the \texttt{system} function from the standard C
 library~\cite{Ker88}. In this approach, the system call creates a new
 process that communicates with DAKOTA through parameter and response
 files.  The system call approach allows the simulation to be initiated
@@ -224,8 +227,8 @@ This approach has been widely used in previous
 studies~\cite{Eld96a,Eld96b,Eld98b}. The system call approach involves
 more process creation and file I/O overhead than the direct function
 approach, but this extra overhead is usually insignificant compared
-with the cost of a simulation.  An example of a system
-call interface specification follows:
+with the cost of a simulation.  An example of a system call interface
+specification follows:
 \begin{small}
 \begin{verbatim}
     interface,
@@ -904,15 +907,13 @@ used as placeholders.
 
 \subsection{Work Directories}\label{interfaces:workdir}
 
-Sometimes it is convenient for simulators and filters to run in a directory
-different from the one where DAKOTA is invoked.  A simulator script
-used as an \texttt{analysis\_driver}
-can of course change to a different directory if desired (while still arranging
-to write a results file in the original directory), but
-DAKOTA 5.0 has new facilities that may simplify the creation of
-simulator scripts.
-% for use with the fork or system interface.
-If an interface specification includes the keyword
+Sometimes it is convenient for simulators and filters to run in a
+directory different from the one where DAKOTA is invoked.  A simulator
+script used as an \texttt{analysis\_driver} can of course change to a
+different directory if desired (while still arranging to write a
+results file in the original directory), has facilities that may
+simplify the creation of simulator scripts.  If an interface
+specification includes the keyword
 \begin{small}
 \begin{verbatim}
        work_directory

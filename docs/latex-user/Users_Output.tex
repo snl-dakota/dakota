@@ -387,46 +387,6 @@ window number, can be created using the ``Print'' button.
 \label{output:2dcontoptions}
 \end{figure}
 
-In addition to these two-dimensional iteration history plots,
-three-dimensional surface plots can be generated when using data fit
-surrogate models (see Section~\ref{models:surrogate:datafit}) in
-combination with the graphics keyword. This feature is currently
-available only if there are two parameters in the problem (a mechanism
-for selecting a two parameter subset of an $n$-dimensional problem is
-not currently available).  When DAKOTA is executed, a 3-D surface plot
-is automatically spawned (Figure~\ref{output:3dcont} shows an example
-from optimization of the Rosenbrock problem). The creation of the 3-D
-surface plot pauses the advance of the iterative algorithm.  To
-continue progress, click the right mouse button or hit return while
-the mouse cursor is in the 3D graphics window.
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.65]{images/sbo_3d_surface}
-  \caption{An example of the 3-D surface plotting that is available
-    for surrogate-based optimization with two design parameters.}
-  \label{output:3dcont}
-\end{figure}
-
-The 3D graphics from the PLplot library have a dependency on external
-font files. If the 3D graphics fail with a message similar to:
-\begin{small}
-\begin{verbatim}
-    Cannot open library file: plstnd5.fnt
-    lib dir="<...some_path...>"
-    *** PLPLOT ERROR ***
-    Unable to open font file
-    Program aborted
-\end{verbatim}
-\end{small}
-
-then the solution is to locate the font files that came with your
-DAKOTA installation and set the \texttt{\$PLPLOT\_LIB} environment
-variable to point to them, e.g.:
-\begin{small}
-\begin{verbatim}
-    setenv PLPLOT_LIB /home/<user_name>/Dakota/packages/plplot/data
-\end{verbatim}
-\end{small}
 
 \section{Error Messages Output}\label{output:error}
 

@@ -2,9 +2,11 @@
 
 \section{Purpose}\label{capabilities:purpose}
 
-This chapter provides a brief, but comprehensive, overview of DAKOTA's
-capabilities. Additional details and example problems are provided in
-subsequent chapters in this manual.
+This chapter provides a brief overview of DAKOTA's capabilities.
+Emerging capabilites in solution verification and Bayesian
+calibration/uncertainty quantificaiton are not yet documented here.
+Additional details and example problems are provided in subsequent
+chapters in this manual.
 
 \section{Parameter Study Methods}\label{capabilities:parameter}
 
@@ -727,40 +729,38 @@ without surrogate model indirection.  Three important examples are
 highlighted: mixed epistemic-aleatory uncertainty quantification, 
 optimization under uncertainty, and surrogate-based uncertainty quantification.
 
-\textbf{Mixed Epistemic-Aleatory Uncertainty Quantification}: 
-Mixed uncertainty quantification (UQ) refers to capabilities for 
-performing UQ calculations on both epistemic uncertainties (also 
-known as reducible uncertainties resulting from a lack of knowledge) 
-and aleatory uncertainties (also known as irreducible uncertainties 
-that are inherent variabilities).  Mixed UQ approaches employ nested 
-models to embed one uncertainty quantification
-within another.  The outer level UQ is commonly linked to epistemic
-uncertainties, and the inner UQ is commonly linked to aleatory
-uncertainties.  We have three main approaches: interval-valued 
-probability, second-order probability, and nested Dempster-Shafer. 
-In interval-valued probability, the outer level generates sets of realizations,
-typically from sampling within interval distributions.  These
-realizations define values for the epistemic variables used in a
-probabilistic analysis for the inner level UQ (e.g. which may involve 
-sampling over aleatory variables).  In interval-valued 
-probability, we generate intervals on statistics from the inner loop. 
-In second-order probability, the outer level also generates 
-sets of realizations, from sampling from distributions on the epistemic
-variables.  These outer loop values then define values for 
-distribution parameters used in the inner level UQ.  The term
-``second-order'' derives from this use of distributions on
-distributions and the generation of statistics on statistics.
-Starting with DAKOTA release 5.0, we have the capability to use interval 
-analysis to perform the outer loop calculations (e.g. find intervals 
-on inner loop statistics).  Interval analysis can use efficient optimization 
-methods to obtain interval bound estimates.  Nested 
-Dempster-Shafer refers to using Dempster-Shafer evidence theory on the 
-outer loop, and an aleatory UQ method such as sampling or 
-stochastic expansions on the inner loop.  Evidence theory 
-results in measures of belief and plausbility, so in a nested context, 
-this produces belief and plausibility bounds on inner loop statistics.
-More on mixed UQ approaches can be found in~\cite{Eld09b} and 
-~\cite{Eld11}.
+\textbf{Mixed Epistemic-Aleatory Uncertainty Quantification}: Mixed
+uncertainty quantification (UQ) refers to capabilities for performing
+UQ calculations on both epistemic uncertainties (also known as
+reducible uncertainties resulting from a lack of knowledge) and
+aleatory uncertainties (also known as irreducible uncertainties that
+are inherent variabilities).  Mixed UQ approaches employ nested models
+to embed one uncertainty quantification within another.  The outer
+level UQ is commonly linked to epistemic uncertainties, and the inner
+UQ is commonly linked to aleatory uncertainties.  We have three main
+approaches: interval-valued probability, second-order probability, and
+nested Dempster-Shafer.  In interval-valued probability, the outer
+level generates sets of realizations, typically from sampling within
+interval distributions.  These realizations define values for the
+epistemic variables used in a probabilistic analysis for the inner
+level UQ (e.g. which may involve sampling over aleatory variables).
+In interval-valued probability, we generate intervals on statistics
+from the inner loop.  In second-order probability, the outer level
+also generates sets of realizations, from sampling from distributions
+on the epistemic variables.  These outer loop values then define
+values for distribution parameters used in the inner level UQ.  The
+term ``second-order'' derives from this use of distributions on
+distributions and the generation of statistics on statistics.  DAKOTA
+includes capability to use interval analysis to perform the outer loop
+calculations (e.g. find intervals on inner loop statistics).  Interval
+analysis can use efficient optimization methods to obtain interval
+bound estimates.  Nested Dempster-Shafer refers to using
+Dempster-Shafer evidence theory on the outer loop, and an aleatory UQ
+method such as sampling or stochastic expansions on the inner loop.
+Evidence theory results in measures of belief and plausbility, so in a
+nested context, this produces belief and plausibility bounds on inner
+loop statistics.  More on mixed UQ approaches can be found
+in~\cite{Eld09b} and ~\cite{Eld11}.
 
 \textbf{Optimization Under Uncertainty (OUU)}: Many real-world
 engineering design problems contain stochastic features and must be

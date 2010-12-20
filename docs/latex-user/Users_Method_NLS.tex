@@ -136,39 +136,37 @@ which the residuals do not tend towards zero at the solution.
 
 \subsection{Additional Features and Future plans}\label{nls:solution:future}
 
-In DAKOTA 4.2, the capability to calculate confidence 
-intervals on the estimated parameters was added.  The confidence 
-intervals are determined for individual parameters: 
-these are not joint confidence intervals.  The intervals are 95\% 
-intervals around the estimated parameters, and are calculated as 
-the optimal value of the estimated parameters $+/-$ a 
-t-test statistic times the standard error (SE) of the estimated 
-parameter vector.  
-The SE is based on a linearization approximation involving the 
-matrix of the derivatives of the model with respect to the 
-derivatives of the estimated parameters.  In the case where 
-these gradients are extremely inaccurate or the model is very nonlinear, 
-the confidence intervals reported are likely to be inaccurate as well. 
-Future work on generating confidence intervals on the estimated 
-parameters for nonlinear least-squares methods will involve 
-adding Bonferroni confidence intervals and one or two methods for 
-calculating joint confidence intervals (such as a linear approximation 
-and the F-test method). See~\cite{Seb03} and~\cite{Vug07} for more 
-details about confidence intervals. Note that confidence intervals 
-are not calculated when scaling is used, when the number of 
-least-squares terms is less than the number of parameters to 
-be estimated, or when using numerical gradients. 
+DAKOTA can calculate confidence intervals on estimated parameters.
+These are determined for individual parameters; they are not joint
+confidence intervals.  The intervals reported are 95\% intervals
+around the estimated parameters, and are calculated as the optimal
+value of the estimated parameters $+/-$ a t-test statistic times the
+standard error (SE) of the estimated parameter vector.  The SE is
+based on a linearization approximation involving the matrix of the
+derivatives of the model with respect to the derivatives of the
+estimated parameters.  In the case where these gradients are extremely
+inaccurate or the model is very nonlinear, the confidence intervals
+reported are likely to be inaccurate as well.  Future work on
+generating confidence intervals on the estimated parameters for
+nonlinear least-squares methods will involve adding Bonferroni
+confidence intervals and one or two methods for calculating joint
+confidence intervals (such as a linear approximation and the F-test
+method). See~\cite{Seb03} and~\cite{Vug07} for more details about
+confidence intervals. Note that confidence intervals are not
+calculated when scaling is used, when the number of least-squares
+terms is less than the number of parameters to be estimated, or when
+using numerical gradients.
 
-Dakota 4.2 also allows a form of weighted least squares. 
-The user can specify a set of weights that are used to 
-weight each residual term using the keyword \texttt{least\_squares\_weights}.
-Note that these weights must be pre-determined by the user 
-and entered in the DAKOTA input file: they are not calculated on-the-fly.
-The user can also specify scaling for the least-squares terms. 
-Scaling is applied before weighting; usually one or the other would be 
-applied but not both.  The Responses section in the DAKOTA
-Reference Manual~\cite{RefMan} has more detail about weighting and scaling
-of the residual terms.
+DAKOTA also allows a form of weighted least squares.  The user can
+specify a set of weights that are used to weight each residual term
+using the keyword \texttt{least\_squares\_weights}.  Note that these
+weights must be pre-determined by the user and entered in the DAKOTA
+input file: they are not calculated on-the-fly.  The user can also
+specify scaling for the least-squares terms.  Scaling is applied
+before weighting; usually one or the other would be applied but not
+both.  The Responses section in the DAKOTA Reference
+Manual~\cite{RefMan} has more detail about weighting and scaling of
+the residual terms.
 
 The least-squares branch in DAKOTA is an area of continuing
 enhancements, particularly through the addition of new least-squares
@@ -259,18 +257,16 @@ will be one line per residual term, specified with
 in the DAKOTA input file.   It is the last two steps which are different from 
 most other DAKOTA applications.  
 
-To aid the calculation of the residuals, in DAKOTA 4.2
-we have added the capability to have the user specify a 
-data file with the experimental results.  In this case, DAKOTA
-will calculate the residuals 
-(that is, the simulation model results minus the experimental results),
-and the user-provided script can omit this step:
-the script can just return the simulation results. 
-An example of this can be found in the file named   
-\texttt{dakota\_nls\_datafile.in} in the \texttt{Dakota/examples/methods} 
-directory.  In this example, there are 3 residual terms.  
-The data file of experimental results associated with this example
-is \texttt{least\_squares\_test.dat}.  These three values are subtracted 
-from the least-squares terms to produce residuals for the nonlinear 
-least-squares problem. 
+To simplify specifying a least squares problem, a user may specify a
+data file containing experimental results or other calibration data.
+In this case, DAKOTA will calculate the residuals (that is, the
+simulation model results minus the experimental results), and the
+user-provided script can omit this step: the script can just return
+the simulation outputs of interest.  An example of this can be found
+in the file named \texttt{dakota\_nls\_datafile.in} in the
+\texttt{Dakota/examples/methods} directory.  In this example, there
+are 3 residual terms.  The data file of experimental results
+associated with this example is \texttt{least\_squares\_test.dat}.
+These three values are subtracted from the least-squares terms to
+produce residuals for the nonlinear least-squares problem.
 

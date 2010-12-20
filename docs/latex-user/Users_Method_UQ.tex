@@ -1699,7 +1699,7 @@ correlated x-space variables and correlated standard normals
 (``z-space''), a CDF matching condition is applied for each of the
 marginal distributions:
 \begin{equation}
-\Phi(z_i) = F(x_i) \label{eq:trans_zx}
+\Phi(z_i) = F(x_i) %\label{eq:trans_zx}
 \end{equation}
 where $\Phi()$ is the standard normal cumulative distribution function
 and $F()$ is the cumulative distribution function of the original
@@ -1707,7 +1707,7 @@ probability distribution.  Then, to transform between correlated
 z-space variables and uncorrelated $\xi$-space variables, the Cholesky
 factor ${\bf L}$ of a modified correlation matrix is used:
 \begin{equation}
-{\bf z} = {\bf L} \boldsymbol{\xi} \label{eq:trans_zu}
+{\bf z} = {\bf L} \boldsymbol{\xi} %\label{eq:trans_zu}
 \end{equation}
 where the original correlation matrix for non-normals in x-space has
 been modified to represent the corresponding ``warped'' correlation in
@@ -2499,7 +2499,7 @@ samples, which will be evaluated on the expansion to compute the CDF
 probabilities.  In Figure~\ref{uq:figure12}, excerpts from the results
 summary are presented.  We first see the analytic statistics for 
 mean and standard deviation as computed from 
-Eqs.~\ref{eq:mean_sc}-\ref{eq:var_sc} as well as skewness, and kurtosis.  
+Eqs.~\ref{eq:mean_sc}-\ref{eq:covar_sc} as well as skewness, and kurtosis.  
 The response covariance (collapsing to a single variance value for 
 one response function) and global sensitivity indices
 (Sobol' indices) are presented next. This example shows that variable 
@@ -2518,7 +2518,7 @@ lognormals with means of 1.0 and standard deviations of 0.5.
 \begin{figure}
 \centering
 \begin{bigbox}
-\begin{small}
+\begin{footnotesize}
 \begin{verbatim}
 Statistics derived analytically from polynomial expansion:
 
@@ -2550,7 +2550,7 @@ Cumulative Distribution Function (CDF) for response_fn_1:
    5.0000000000e+02   9.2010000000e-01
    1.0000000000e+03   9.5660000000e-01
 \end{verbatim}
-\end{small}
+\end{footnotesize}
 \end{bigbox}
 \caption{Excerpt of UQ output for stochastic collocation example.}
 \label{uq:figure12}
