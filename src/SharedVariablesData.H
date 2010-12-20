@@ -58,19 +58,19 @@ private:
   //- Heading: Member functions
   //
 
-  /// Convenience function for sizing allContinuousLabels
+  /// size allContinuousLabels, with or without discrete relaxation
   void size_all_continuous_labels(bool relax);
-  /// Convenience function for initializing allContinuousTypes
+  /// initialize allContinuousTypes, with or without discrete relaxation
   void initialize_all_continuous_types(bool relax);
-  /// Convenience function for initializing allContinuousIds
+  /// initialize allContinuousIds, with or without discrete relaxation
   void initialize_all_continuous_ids(bool relax);
-  /// Convenience function for sizing allDiscreteIntLabels
+  /// size allDiscreteIntLabels
   void size_all_discrete_int_labels();
-  /// Convenience function for initializing allDiscreteIntTypes
+  /// initialize allDiscreteIntTypes
   void initialize_all_discrete_int_types();
-  /// Convenience function for sizing allDiscreteRealLabels
+  /// size allDiscreteRealLabels
   void size_all_discrete_real_labels();
-  /// Convenience function for initializing allDiscreteRealTypes
+  /// initialize allDiscreteRealTypes
   void initialize_all_discrete_real_types();
 
   /// retrieve the count within variablesComponents corresponding to key
@@ -93,12 +93,11 @@ private:
   /// {design,aleatory uncertain,epistemic uncertain,state}
   SizetArray variablesCompsTotals;
 
-  /// array combining all of the continuous variable labels
-  /// (design, uncertain, state)
+  /// array of variable labels for all of the continuous variables
   StringMultiArray allContinuousLabels;
-  /// array combining all of the discrete integer variable labels (design,state)
+  /// array of variable labels for all of the discrete integer variables
   StringMultiArray allDiscreteIntLabels;
-  /// array combining all of the discrete real variable labels (design, state)
+  /// array of variable labels for all of the discrete real variables
   StringMultiArray allDiscreteRealLabels;
 
   /// array of variable types for all of the continuous variables
@@ -201,19 +200,22 @@ public:
   //- Heading: member functions
   //
 
-  /// size labels for continuous variables
+  /// size labels for all of the continuous variables, with or without
+  /// discrete relaxation
   void size_all_continuous_labels(bool relax);
-  /// initialize types for continuous variables
+  /// initialize types for all of the continuous variables, with or without
+  /// discrete relaxation
   void initialize_all_continuous_types(bool relax);
-  /// initialize IDs for continuous variables
+  /// initialize ids for all of the continuous variables, with or without
+  /// discrete relaxation
   void initialize_all_continuous_ids(bool relax);
-  /// size labels for discrete integer variables
+  /// size labels for all of the discrete integer variables
   void size_all_discrete_int_labels();
-  /// initialize types for discrete integer variables
+  /// initialize types for all of the discrete integer variables
   void initialize_all_discrete_int_types();
-  /// size labels for discrete real variables
+  /// size labels for all of the discrete real variables
   void size_all_discrete_real_labels();
-  /// initialize types for discrete real variables
+  /// initialize types for all of the discrete real variables
   void initialize_all_discrete_real_types();
 
   /// get num_items continuous labels beginning at index start 
@@ -251,10 +253,10 @@ public:
   UShortMultiArrayConstView
     all_discrete_real_types(size_t start, size_t num_items) const;
 
-  /// get num_items continuous IDs beginning at index start
+  /// get num_items continuous ids beginning at index start
   SizetMultiArrayConstView
     all_continuous_ids(size_t start, size_t num_items) const;
-  /// get discrete IDs merged
+  /// get ids of discrete variables that have been merged into continuous arrays
   const SizetArray& merged_discrete_ids() const;
 
   /// retreive the Variables view
