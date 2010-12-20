@@ -1,0 +1,61 @@
+Recommended Tools
+-----------------
+Last known good tool versions:
+  doxygen-1.5.1
+  tetex-3.0-33.8
+
+Process
+-------
+To automatically build manuals (takes some time due to poor management
+of dependencies), configure DAKOTA with --enable-docs and:
+
+  cd Dakota/docs
+  make doxygen-dev-ref # to only build html dev/ref
+  make pdf             # to also build latex/pdf dev/ref/users
+  make SAND-shell      # to also build SAND report versions of dev/ref/users
+  
+Alternately one may manually execute some steps, e.g.,
+
+* Cleanup
+    rm -rf html-dev html-ref latex-dev latex-ref man-dev man-ref
+
+* Build doxygen, including resolving cross-references
+    doxygen Doxyfile && doxygen Doxyfile-ref
+    doxygen Doxyfile && doxygen Doxyfile-ref
+
+* Optimize LaTeX for PDF generation: either 
+    EXECUTE latex_modify.perl
+  or  
+    EDIT latex-ref/*.tex files as indicated in comments in refman.tex
+
+* IF building PDF of developer's manual, need to mitigate buffer overrun
+    cp /usr/share/texmf/web2c/texmf.cnf .
+    EDIT local copy to have save_size = 10*save_size, for example
+    export TEXMFCNF=`pwd`:$TEXMFCNF
+
+* Build PDFs
+    cd latex-dev  && make     && cd ..
+    cd latex-ref  && make     && cd ..
+    cd latex-user && make pdf && cd ..
+
+* To generate SAND Report-valid print documents (from Dakota/docs);
+  requires reference and developers PDFs to exist as well as these
+  files in SANDreport, which must be on the TEXINPUTS PATH.
+
+    pdflatex SAND-shell-dev
+    pdflatex SAND-shell-ref
+    pdflatex SAND-shell-users
+
+"Full" versions of manuals
+--------------------------
+To build using
+  SAND-full-users.tex
+  header-ref-SAND-full.tex
+  header-dev-SAND-full.tex
+which offer an alternative to the shell with included PDF; likely
+copy the .tex and the SNL style files to the manual directory and
+pdflatex there (not presently used)
+
+
+
+
