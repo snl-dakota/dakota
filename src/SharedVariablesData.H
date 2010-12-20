@@ -201,44 +201,72 @@ public:
   //- Heading: member functions
   //
 
+  /// size labels for continuous variables
   void size_all_continuous_labels(bool relax);
+  /// initialize types for continuous variables
   void initialize_all_continuous_types(bool relax);
+  /// initialize IDs for continuous variables
   void initialize_all_continuous_ids(bool relax);
+  /// size labels for discrete integer variables
   void size_all_discrete_int_labels();
+  /// initialize types for discrete integer variables
   void initialize_all_discrete_int_types();
+  /// size labels for discrete real variables
   void size_all_discrete_real_labels();
+  /// initialize types for discrete real variables
   void initialize_all_discrete_real_types();
 
+  /// get num_items continuous labels beginning at index start 
   StringMultiArrayView
     all_continuous_labels(size_t start, size_t num_items) const;
+  /// set num_items continuous labels beginning at index start 
   void all_continuous_labels(StringMultiArrayConstView cv_labels, size_t start,
 			     size_t num_items);
+  /// set continuous label at index start 
   void all_continuous_label(const String& cv_label, size_t index);
+  /// get num_items discrete integer labels beginning at index start 
   StringMultiArrayView
     all_discrete_int_labels(size_t start, size_t num_items) const;
+  /// set num_items discrete integer labels beginning at index start 
   void all_discrete_int_labels(StringMultiArrayConstView div_labels,
 			       size_t start, size_t num_items);
+  /// set discrete integer label at index start 
   void all_discrete_int_label(const String& div_label, size_t index);
+  /// get num_items discrete real labels beginning at index start 
   StringMultiArrayView
     all_discrete_real_labels(size_t start, size_t num_items) const;
+  /// set num_items discrete real labels beginning at index start 
   void all_discrete_real_labels(StringMultiArrayConstView drv_labels,
 				size_t start, size_t num_items);
+  /// set discrete real label at index start 
   void all_discrete_real_label(const String& drv_label, size_t index);
 
+  /// get num_items continuous types beginning at index start
   UShortMultiArrayConstView
     all_continuous_types(size_t start, size_t num_items) const;
+  /// get num_items discrete integer types beginning at index start
   UShortMultiArrayConstView
     all_discrete_int_types(size_t start, size_t num_items) const;
+  /// get num_items discrete real types beginning at index start
   UShortMultiArrayConstView
     all_discrete_real_types(size_t start, size_t num_items) const;
 
+  /// get num_items continuous IDs beginning at index start
   SizetMultiArrayConstView
     all_continuous_ids(size_t start, size_t num_items) const;
+  /// get discrete IDs merged
   const SizetArray& merged_discrete_ids() const;
 
+  /// retreive the Variables view
   const std::pair<short,short>& view() const;
+  /// set the inactive Variables view
   void inactive_view(short view2);
+
+  /// return the user-provided or default Variables identifier
   const String& id() const;
+  /// return variable type counts for
+  /// {continuous,discrete integer,discrete real}
+  /// {design,aleatory uncertain,epistemic uncertain,state}
   const SizetArray& components_totals() const;
 
   /// retrieve the variables type count within
