@@ -5992,9 +5992,17 @@ Richardson extrapolation.
 \subsection MethodSolnRichardson Richardson Extrapolation
 
 
-This method utilizes the \c max_iterations and \c
-convergence_tolerance method independent controls to manage the
-iterative procedures.  Three algorithm options are currently provided:
+This method utilizes state variables as active variables (continuous
+state only at this time; discrete state to follow later) for
+parameterizing the refinement of the discretizations, and employs the
+\c max_iterations and \c convergence_tolerance method independent
+controls to manage the iterative procedures.  The refinement path is
+determined from the \c initial_state of the \c continuous_state
+variables specification (refer to \ref VarSV) in combination with the
+\c refinement_rate, where each of the state variables is treated as an
+independent refinement factor and each of the initial state values is
+repeatedly divided by the refinement rate value to define new
+discretization states.  Three algorithm options are currently provided:
 
 -# The \c estimate_order option is the simplest option.  For each of
    the refinement factors, it evaluates three points along the
@@ -6012,13 +6020,12 @@ iterative procedures.  Three algorithm options are currently provided:
    of the response discretization errors (computed from extrapolation)
    must be less than the convergence tolerance.
 
-In each of these case, a uniform refinement rate \f$r\f$ (specified by \c
-refinement_rate) is applied to each of the refinement factors provided
-in the continuous state variable specification, and convergence order 
-for a response quantity of interest (QOI) is estimated from
+In each of these cases, convergence order for a response quantity of 
+interest (QOI) is estimated from
 \f[p = ln(\frac{QOI_3 - QOI_2}{QOI_2 - QOI_1})/ln(r)\f]
-\ref T5d39 "Table 5.39" provides the specification details for the \c
-richardson_extrap method.
+where \f$r\f$ is the uniform refinement rate specified by \c 
+refinement_rate.  \ref T5d39 "Table 5.39" provides the specification 
+details for the \c richardson_extrap method.
 
 \anchor T5d39
 <table>

@@ -15,10 +15,10 @@ epistemic uncertainties, data is generally sparse, making the use of
 probability distribution assertions questionable and typically leading
 to nonprobabilistic methods based on interval specifications.
 
-DAKOTA contains capabilities for performing nondeterministic analysis.  
-The methods for uncertainty quantification in DAKOTA have been developed 
-by a group of researchers at Sandia Labs, in conjunction with collaborators in
-academia~\cite{Gha99,Gha91,Eld05,Tang10a}. 
+DAKOTA contains capabilities for performing nondeterministic analysis.
+The methods for uncertainty quantification in DAKOTA have been
+developed by a group of researchers at Sandia Labs, in conjunction
+with collaborators in academia~\cite{Gha99,Gha91,Eld05,Tang10a}.
 %In addition, future extensions to the DDACE package will make it 
 %applicable to general UQ problems, which will augment the DAKOTA/UQ 
 %capabilities.
@@ -2327,19 +2327,19 @@ p-refinement using generalized sparse grids.  %Each involves
 \subsubsection{Uniform p-refinement}
 
 Uniform p-refinement involves ramping the order of a tensor-product
-quadrature grid or the level of a Smolyak sparse grid isotropically,
-that is, with no dimension preference.  In this case, Sobol' indices
-are not employed, and the only algorithmic requirements are:
+quadrature grid or the level of a Smolyak sparse grid isotropically.
+In this case, dimension preferences are not computed, and the only
+algorithmic requirements are:
 \begin{itemize}
-\item With the usage of nested integration rules and ``restricted growth''
-  schemes that attempt to reduce inefficiency due to the hyperbolic
-  cross phenomenon, one must ensure that a change in level results in
-  an adequate change in the grid.  If it does not, continue
-  incrementing the order/level (without grid evaluation) until
-  sufficient change is obtained.  An insufficient grid change is 
-  likely to cause premature convergence in the refinement process.
-\item A convergence criterion is required.  One useful general-purpose
-  metric is the $L^2$ norm of the change in the response covariance matrix.
+\item With the usage of nested integration rules with restricted
+  exponential growth, DAKOTA must ensure that a change in level
+  results in a sufficient change in the grid; otherwise premature
+  convergence could occur within the refinement process.  If no change
+  is initially detected, DAKOTA continues incrementing the order/level
+  (without grid evaluation) until the number of grid points increases.
+\item A convergence criterion is required.  For uniform refinement,
+  DAKOTA employs the $L^2$ norm of the change in the response
+  covariance matrix as a general-purpose convergence metric.
 \end{itemize}
 
 
@@ -2350,14 +2350,14 @@ quadrature grid or the level of a Smolyak sparse grid anisotropically,
 that is, using a defined dimension preference.  This dimension
 preference may be computed from local sensitivity analysis, global
 sensitivity analysis, a posteriori error estimation, or decay rate
-estimation.  Herein, we focus on global sensitivity analysis
-from low order isotropic expansions where dimension preference is
-defined from total Sobol' indices (Eq.~\ref{eq:total_sobol}) and is
-updated on every iteration.  These main effects admit anisotropic
-sparse grids based on a linear index-set constraint
-(Eq.~\ref{eq:aniso_smolyak_constr}).%; with the introduction of
-%interaction effects, nonlinear index-set constraints can also be
-%considered.
+estimation.  In the current release, we focus on global sensitivity
+analysis from low order isotropic expansions where dimension
+preference is defined from total Sobol' indices
+(Eq.~\ref{eq:total_sobol}) and is updated on every iteration.  This
+dimension preference vector supports anisotropic sparse grids based on
+a linear index-set constraint (Eq.~\ref{eq:aniso_smolyak_constr}).
+%; with the introduction of interaction effects, nonlinear index-set
+%constraints can also be considered.
 
 
 \subsubsection{Goal-oriented p-refinement}
