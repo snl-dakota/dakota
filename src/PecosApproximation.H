@@ -206,6 +206,7 @@ private:
   //- Heading: Convenience member functions
   //
 
+  /// synchronize Pecos dataPoints with updated Approximation currentPoints
   void append_from_current();
 
   //

@@ -211,7 +211,7 @@ Dakota::NonDSparseGrid "NonDSparseGrid").
 <li> \ref Dakota::NonDInterval "NonDInterval" provides a base class
 for epistemic interval-based UQ methods.  Three interval analysis
 approaches are provided: LHS (\ref Dakota::NonDLHSInterval
-"NonDLHSInterval"), surrogate-based global optimization (\ref
+"NonDLHSInterval"), efficient global optimization (\ref
 Dakota::NonDGlobalInterval "NonDGlobalInterval"), and local
 optimization (\ref Dakota::NonDLocalInterval "NonDLocalInterval").
 Each of these three has specializations for single interval (\ref
