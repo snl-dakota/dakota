@@ -2,41 +2,44 @@ namespace Dakota {
 
 /** \page IteratorFlow Understanding Iterator Flow
 
-This page explains the various phases comprising \c run_iterator().
-Prior to Iterator construction, when command-line options are parsed,
-Boolean run mode flags corresponding to PRERUN, RUN, and POSTRUN are
-set in ParallelLibrary.  If the user didn't specify any specific run
-modes, the default is for all three to be true (all phases will
-execute).
+This page explains the various phases comprising
+Iterator::run_iterator().  Prior to Iterator construction, when
+command-line options are parsed, Boolean run mode flags corresponding
+to PRERUN, RUN, and POSTRUN are set in ParallelLibrary.  If the user
+didn't specify any specific run modes, the default is for all three to
+be true (all phases will execute).
 
 Iterator is constructed.
 
 When called, \c run_iterator() sequences:
 <ul> 
-  <li> \c initialize_run(): unconditionally called, non-virtual. Performs
-       common initialization and then calls \c derived_initialize_run(). </li>
-       <ul>
-         <li> \c derived_initialize_run(): (virtual) derived class-specific
-              portions of \c initialize_run(); default is no-op.  Purpose:
-              allocating workspaces, etc. </li>
-       </ul>
+
+  <li> \c initialize_run(): unconditionally called, virtual. Performs
+       common initialization such as allocating workspaces, setting
+       communicators and evaluation counts.  When re-implementing this
+       virtual, a derived class must call its nearest parent's
+       initialize_run(), typically <em>before</em> performing its own
+       implementation steps. </li>
 
   <li> <em>Not implemented: pre-run input </em> </li>
 
-  <li> IF PRERUN, invoke \c pre_run(): virtual function; default no-op.
-       Purpose: derived classes should implement \c pre_run() if they
-       are able to generate all parameter sets (variables) at once,
-       separate from \c run(). </li>
+  <li> IF PRERUN, invoke \c pre_run(): virtual function; default
+       no-op.  Purpose: derived classes should implement \c pre_run()
+       if they are able to generate all parameter sets (variables) at
+       once, separate from \c run().  Derived implementations should
+       call their nearest parent's pre_run(), typically
+       <em>before</em> performing their own steps.</li>
 
   <li> IF PRERUN, invoke \c pre_output(): non-virtual function; if
        user requested, output variables to file. </li>
 
   <li> <em>Not implemented: run input </em> </li>
 
-  <li> IF RUN, invoke virtual function \c run().  Purpose: at a minimum,
-       evaluate parameter sets through computing responses; for
-       iterators without pre/post capability, their entire
-       implementation is in \c run(). </li>
+  <li> IF RUN, invoke virtual function \c run().  Purpose: at a
+       minimum, evaluate parameter sets through computing responses;
+       for iterators without pre/post capability, their entire
+       implementation is in \c run() and this is a reasonable default
+       for new Iterators. </li>
 
   <li> <em> Not implemented: run output </em> </li>
 
@@ -47,31 +50,26 @@ When called, \c run_iterator() sequences:
        appropriately.  Implementations must check if the user
        requested file input.
 
-  <li> IF POSTRUN, invoke \c post_run(): non-virtual function.  Invokes
-       \c derived_post_run(), then if ostream, prints final results.
-       <ul>
-         <li> \c derived_post_run(): (virtual) derived class-specific
-              portions of \c post_run(); default is no-op.  Purpose:
-              generate statistics / final results.  Any analysis that
-              can be done solely on tabular data read by \c post_input()
-              can be done here.</li>
-       </ul>
+  <li> IF POSTRUN, invoke \c post_run(): virtual function.  Purpose:
+       generate statistics / final results.  Any analysis that can be
+       done solely on tabular data read by \c post_input() can be done
+       here.  Derived re-implementations should call their nearest
+       parent's post-run(), typically <em>after</em> performing their
+       specific post-run activities.
 
   <li> <em> Not implemented: post-run output </em> </li>
 
-  <li> \c finalize_run(): unconditionally called, non-virtual. Calls
-       \c derived_finalize_run(), then would perform common finalization,
-       though current base implementation is no-op </li>
-       <ul>
-         <li> \c derived_finalize_run(): (virtual) derived class-specific
-              portions of \c finalize_run(); default is no-op.  Purpose:
-              freeing workspaces, etc. </li>
-       </ul>
+  <li> \c finalize_run(): unconditionally called, virtual.  Purpose:
+       free workspaces.  Default base class behavior is no-op,
+       however, derived implementations should call their nearest
+       parent's finalize_run <em>after</em> performing their
+       specialized portions.
 
-  </ul>  
+</ul>  
 
 Iterator is destructed.
 
 */
 
 } // namespace Dakota
+

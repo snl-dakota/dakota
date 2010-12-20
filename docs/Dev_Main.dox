@@ -38,8 +38,9 @@ methods, uncertainty quantification with sampling, reliability,
 stochastic expansion, and interval estimation methods, parameter
 estimation with nonlinear least squares methods, and
 sensitivity/variance analysis with design of experiments and parameter
-study capabilities. These capabilities may be used on their own or as
-components within advanced algorithms such as surrogate-based
+study capabilities.  (Solution verification and Bayesian approaches
+are also in development.)  These capabilities may be used on their own
+or as components within advanced algorithms such as surrogate-based
 optimization, mixed integer nonlinear programming, mixed
 aleatory-epistemic uncertainty quantification, or optimization under
 uncertainty. By employing object-oriented design to implement
@@ -48,28 +49,28 @@ analyses, the DAKOTA toolkit provides a flexible problem-solving
 environment as well as a platform for rapid prototyping of new
 solution approaches.
 
-The Developers Manual focuses on documentation of the class structures
-used by the DAKOTA system.  It derives directly from annotation of the
-actual source code.  For information on input command syntax, refer to
-the <a href="../html-ref/index.html">Reference Manual</a>, and for a
-tour of DAKOTA features and capabilities, refer to the Users Manual.
+The Developers Manual focuses on documentation of DAKOTA class
+structures; it derives directly from annotation of the source code.
+For information on input command syntax, refer to the <a
+href="../html-ref/index.html">Reference Manual</a>, and for a tour of
+DAKOTA features and capabilities, refer to the Users Manual.
 
 
 \section DevOverview Overview of DAKOTA
 
 
-In the DAKOTA system, the \e strategy creates and manages \e iterators
-and \e models.  In the simplest case, the strategy creates a single
-iterator and a single model and executes the iterator on the model to
-perform a single study.  In a more advanced case, a hybrid
-optimization strategy might manage a global optimizer operating on a
-low-fidelity model in coordination with a local optimizer operating on
-a high-fidelity model.  And on the high end, a surrogate-based
-optimization under uncertainty strategy would employ an uncertainty
-quantification iterator nested within an optimization iterator and
-would employ truth models layered within surrogate models.  Thus,
-iterators and models provide both stand-alone capabilities as well as
-building blocks for more sophisticated studies.
+In DAKOTA, the \e strategy creates and manages \e iterators and \e
+models.  In the simplest case, the strategy creates a single iterator
+and a single model and executes the iterator on the model to perform a
+single study.  In a more advanced case, a hybrid optimization strategy
+might manage a global optimizer operating on a low-fidelity model in
+coordination with a local optimizer operating on a high-fidelity
+model.  And on the high end, a surrogate-based optimization under
+uncertainty strategy would employ an uncertainty quantification
+iterator nested within an optimization iterator and would employ truth
+models layered within surrogate models.  Thus, iterators and models
+provide both stand-alone capabilities as well as building blocks for
+more sophisticated studies.
 
 A model contains a set of \e variables, an \e interface, and a set of
 \e responses, and the iterator operates on the model to map the
@@ -202,8 +203,9 @@ specializations for generalized polynomial chaos (\ref
 Dakota::NonDPolynomialChaos "NonDPolynomialChaos") and stochastic
 collocation (\ref Dakota::NonDStochCollocation "NonDStochCollocation")
 and is supported by \ref Dakota::NonDIntegration "NonDIntegration",
-which supplies tensor-product quadrature and Smolyak sparse grid
-methods (\ref Dakota::NonDQuadrature "NonDQuadrature" and \ref
+which supplies cubature, tensor-product quadrature and Smolyak sparse
+grid methods (\ref Dakota::NonDCubature "NonDCubature", \ref
+Dakota::NonDQuadrature "NonDQuadrature", and \ref
 Dakota::NonDSparseGrid "NonDSparseGrid").
 
 <li> \ref Dakota::NonDInterval "NonDInterval" provides a base class
@@ -234,7 +236,16 @@ for parameter space exploration through design and analysis of
 computer experiments.  \ref Dakota::NonDLHSSampling "NonDLHSSampling" 
 from the uncertainty quantification branch also supports design of 
 experiments for design and state variables when in \c all_variables mode.
+
+<li> Solution verification studies: 
+\ref Dakota::Verification "Verification" provides a base class for the
+active \ref Dakota::RichExtrapVerification "RichExtrapVerification"
+(verification via Richardson extrapolation) and other solution
+verification methods in development.
+
 </ul>
+
+
 
 
 \subsection DevModels Models
@@ -397,13 +408,12 @@ These include \ref Dakota::SurfpackApproximation
 "SurfpackApproximation" (provides kriging, MARS, moving least squares,
 neural network, polynomial regression, and radial basis functions),
 \ref Dakota::GaussProcApproximation "GaussProcApproximation" (Gaussian
-process models), \ref Dakota::OrthogPolyApproximation
-"OrthogPolyApproximation" (multivariate orthogonal polynomials),
-\ref Dakota::InterpPolyApproximation "InterpPolyApproximation"
-(multivariate Lagrange interpolation polynomials), \ref
-Dakota::TANA3Approximation "TANA3Approximation" (two-point adaptive
-nonlinearity approximation), and \ref Dakota::TaylorApproximation
-"TaylorApproximation" (local Taylor series).  </ul>
+process models), \ref Dakota::PecosApproximation "PecosApproximation"
+(multivariate orthogonal and Lagrange interpolation polynomials from
+Pecos), \ref Dakota::TANA3Approximation "TANA3Approximation"
+(two-point adaptive nonlinearity approximation), and \ref
+Dakota::TaylorApproximation "TaylorApproximation" (local Taylor
+series).  </ul>
 
 which is an essential component within the \ref Dakota::DataFitSurrModel 
 "DataFitSurrModel" capability described above in \ref DevModels.
@@ -484,17 +494,15 @@ following class hierarchies: \ref Dakota::Strategy "Strategy", \ref
 Dakota::Iterator "Iterator", \ref Dakota::Model "Model", \ref
 Dakota::Variables "Variables", \ref Dakota::Constraints "Constraints", 
 \ref Dakota::Interface "Interface", 
-\ref Dakota::ProblemDescDB "ProblemDescDB", 
-\ref Dakota::Approximation "Approximation", and 
-\ref Dakota::BasisPolynomial "BasisPolynomial".  The latter 
+\ref Dakota::ProblemDescDB "ProblemDescDB", and 
+\ref Dakota::Approximation "Approximation".  The latter 
 idiom provides for memory efficiency in data-intensive classes which
 do not involve a class hierarchy.  The \ref Dakota::Response "Response",
 parser data (\ref Dakota::DataStrategy "DataStrategy", 
 \ref Dakota::DataMethod "DataMethod", \ref Dakota::DataModel "DataModel", 
 \ref Dakota::DataVariables "DataVariables",
 \ref Dakota::DataInterface "DataInterface", and
-\ref Dakota::DataResponses "DataResponses"), and 
-\ref Dakota::SurrogateDataPoint "SurrogateDataPoint" classes use
+\ref Dakota::DataResponses "DataResponses") classes use
 this idiom.  When managing reference-counted data containers (e.g.,
 \ref Dakota::Variables "Variables" or \ref Dakota::Response "Response"
 objects), it is important to properly manage shallow and deep copies,
@@ -502,10 +510,9 @@ to allow for both efficiency and data independence as needed in a
 particular context.
 
 <li> Graphics: DAKOTA provides 2D iteration history graphics using
-Motif widgets and 3D surface plotting graphics from the PLPLOT
-package.  Graphics data can also be catalogued in a tabular data file
-for post-processing with 3rd party tools such as Matlab, Tecplot, etc.
-All of these capabilities are encapsulated within the 
+Motif widgets. Graphics data can also be catalogued in a tabular data
+file for post-processing with 3rd party tools such as Matlab, Tecplot,
+etc.  These capabilities are encapsulated within the 
 \ref Dakota::Graphics "Graphics" class.
 </ul>
 
@@ -524,10 +531,9 @@ Additional development resources include:
     involving several class hierarchies.  An overview of the classes and
     member functions involved in performing these evaluations is provided
     in \ref FnEvals.
-\li Project web pages are maintained at http://dakota.sandia.gov/dakota with
-    documentation pointers provided at
-    http://dakota.sandia.gov/dakota/documentation.html, and a list of 
-    publications provided at http://dakota.sandia.gov/dakota/publications.html
+\li Project web pages are maintained at http://dakota.sandia.gov/ including
+    documentation at http://dakota.sandia.gov/documentation.html and a list of 
+    publications at http://dakota.sandia.gov/dakota/publications.html
 
 */
 

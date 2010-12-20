@@ -6,7 +6,7 @@ namespace Dakota {
 <b>Specification Change Table of Contents</b>
 <ul>
 <li> <a href="SpecChange.html#ModSpec">Modify dakota.input.nspec</a>
-<li> <a href="SpecChange.html#Rebuild">Rebuild NIDR_keywds.H</a>
+<li> <a href="SpecChange.html#Rebuild">Rebuild generated files</a>
 <li> <a href="SpecChange.html#UpdateIDRPDDB">
      Update NIDRProblemDescDB.C in Dakota/src</a>
 <li> <a href="SpecChange.html#UpdatePDDB">
@@ -28,23 +28,29 @@ namespace Dakota {
 </ul>
 \endhtmlonly
 
+To modify DAKOTA's input specification (for maintenance or addition of
+new input syntax), specification maintenance mode must be enabled at
+DAKOTA configure time with the \c --enable-spec-maint option, e.g.,
+\code
+  ./configure --enable-spec-maint
+\endcode
+This will enable regeneration of NIDR and DAKOTA components which must
+be updated following a spec change.
 
 \section ModSpec Modify dakota.input.nspec
 
-
-The master input specification resides in dakota.input.nspec in 
-Dakota/src.  The master input specification uses
+The master input specification dakota.input.nspec in Dakota/src is the
+primary file to update when making a specification change.  It uses
 the following syntactic elements:
 \li () for required group specifications
 \li [] for optional specifications
 \li |  for alternatives
 \li {} for functions to process keywords
-
-to express logical relationships.
-These syntactic elements can be used to express various dependency
-relationships in the input specification.  It is recommended that you
-review the existing specification and have an understanding of the
-constructs in use before attempting to add new ones.
+to express logical relationships.  These syntactic elements can be
+used to express various dependency relationships in the input
+specification.  It is recommended that you review the existing
+specification and have an understanding of the constructs in use
+before attempting to add new ones.
 
 \warning 
 \li Do \e not skip this step.  Attempts to modify the 
@@ -76,27 +82,26 @@ That is why there are such aliases for \c initial_point as \c cdv_initial_point
 and \c ddv_initial_point: so older input files can be used with no or fewer changes.
 
 
-\section Rebuild Rebuild NIDR_keywds.H
+\section Rebuild Rebuild generated files
 
-
-\verbatim
-cd Dakota/packages/nidr
-make
-\endverbatim
-
-These steps regenerate NIDR_keywds.H and dakota.input.summary
-in the Dakota/src directory.
-As described in more detail in the
-next section, you must manually update NIDRProblemDescDB.C in Dakota/src
-to accord with changes to dakota.input.nspec.
-If you commit changes to a source
-repository, be sure to commit the updated Dakota/src/NIDR_keywds.H,
-Dakota/src/dakota.input.nspec, Dakota/src/dakota.input.summary,
-and your manually updated Dakota/src/NIDRProblemDescDB.C.
+As of DAKOTA 5.1, a separate make command in \c packages/nidr is no
+longer necessary.  When configured with \c --enable-spec-maint,
+performing a make in Dakota/src will regenerate all files which derive
+from dakota.input.nspec, including NIDR_keywds.H,
+dakota.input.summary, NIDR_guikywds.H, and dakota.input.desc.  If you
+commit changes to a source repository, be sure to commit any
+automatically generated files in addition to any modified in the
+following steps.  It is not strictly necessary to run make at this
+point in the sequence, and in fact may generate errors if necessary
+handlers aren't yet available.  One may optionally 
+\code
+  cd Dakota/src
+  make nidr-files
+\endcode
+to only rebuild generated dependencies of dakota.input.nspec.
 
 
 \section UpdateIDRPDDB Update NIDRProblemDescDB.C in Dakota/src
-
 
 Many keywords have data associated with them:  an integer,
 a floating-point number, a string, or arrays of such entities.
@@ -343,10 +348,11 @@ not return data from the desired list node.
 
 \section UpdateDocs Update the Documentation
 
-
 Doxygen comments should be added to the Data class headers for the new
 attributes, and the reference manual sections describing the portions
-of dakota.input.nspec that have been modified should be updated.
+of dakota.input.nspec that have been modified should be updated.  In
+particular, the reference manual tables summarizing keywords provide
+help data to the Jaguar user interface so need to be kept updated.
 
 */
 

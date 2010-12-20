@@ -36,8 +36,8 @@ http://subversion.apache.org/packages.html
 
 To configure and build from source on your machine, the following
 settings should be used, since DAKOTA is hosted as a FSFS-type
-repository and depends on the external acro which is stored in a
-repository requiring SSL certificate handling:
+repository and numerous components are stored in a repository
+requiring SSL certificate handling:
 
 \code
 SVNVER=1.6.13

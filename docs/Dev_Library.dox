@@ -34,10 +34,9 @@ examples and test code</a>
 \section DakLibraryIntro Introduction
 
 
-Some users may be interested in linking the DAKOTA toolkit into
-another application for use as an algorithm library.  While this is
-not the primary usage model for DAKOTA, certain facilities are in
-place to allow this type of integration.
+It is possible to link the DAKOTA toolkit into another application for
+use as an algorithm library.  This section describes facilities which
+permit this type of integration.
 
 As part of the normal DAKOTA build process, where \c Dakota/configure
 \c --prefix=PREFIX has been run prior to \c make and \c make \c
