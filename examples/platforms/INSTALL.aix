@@ -9,6 +9,7 @@ configure-time environment
   setenv CXX "xlC"
   setenv F77 "xlf"
   setenv FC "xlf90"
+  setenv CXXFLAGS "-O0 -DBOOST_MPL_CFG_ASSERT_USE_RELATION_NAMES -qlanglvl=redefmac"
   setenv LAPACK_LIBS "/usr/netpub/LAPACK/liblapack.a"
 
 --------------------

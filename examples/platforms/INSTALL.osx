@@ -26,17 +26,19 @@ export DYLD_LIBRARY_PATH=$HOME/Dakota/bin:$DYLD_LIBRARY_PATH # sh/bash
 Option 2: Building the DAKOTA source distribution using GNU compilers
 
 Compilation of Dakota on MacOS X Darwin 9.4.0
-10/14/2009
 
 Installed the following packages
-
-GNU compiler suite v4.3.2 -- in particular gfortran for compiling f90 code
-OpenMPI-1.3.3 -- Message Passing Interface
+    GNU compiler suite v4.3.2 - in particular gfortran for compiling f90 code
+    OpenMPI-1.3.3 -- Message Passing Interface
 
 Configure/make/make install per usual:
   configure --without-graphics
 
 
+
+##############################################################################
+The section below regarding configuration/build on Tiger is DEPRECATED!
+##############################################################################
 
 ==============================
 OLDER Macs OS X 10.4.x (Tiger)

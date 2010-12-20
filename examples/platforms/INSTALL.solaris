@@ -2,6 +2,9 @@
 Sun Solaris (SunOS) Platform-specific Notes
 ===========================================
 
+DAKOTA uses Boost 1.45 which requires Sun Studio 12.1 (C++ compiler 5.10)
+(see http://www.boost.org/users/news/version_1_45_0)
+
 --------------------------
 configure-time environment
 --------------------------
@@ -16,10 +19,7 @@ likely needed at run-time):
   setenv FC "f90"
   setenv LDFLAGS "-lmvec"
   setenv YACC "/usr/ccs/bin/yacc"
-  setenv CFLAGS "-fast"
-  setenv CXXFLAGS "-fast -library=stlport4,sunperf -features=tmplife -features=tmplrefstatic"
-  setenv FFLAGS "-fast"
-  setenv FCFLAGS "-fast"
+  setenv CXXFLAGS "-library=stlport4,sunperf -features=tmplife -features=tmplrefstatic"
 
 --------------------
 run-time environment

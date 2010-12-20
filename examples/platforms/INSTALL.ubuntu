@@ -14,4 +14,4 @@ bison -- gen purpose parser converts a grammar desc for LALR into c prog to pars
 g++ -- gnu cpp compiler
 
 Configure/make/make install per usual:
-  ./configure --without-graphics --disable-mpi
+  ./configure F77=gfortran --without-expat --without-graphics --disable-mpi

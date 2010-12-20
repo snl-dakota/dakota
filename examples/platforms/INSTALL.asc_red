@@ -2,6 +2,15 @@
 ASC Red (SNL Internal) Cross Compilation
 ========================================
 
+ALL CONTENT IN THIS FILE IS DEPRECATED!
+Please contact dakota-developers@development.sandia.gov for info/tips
+regarding configuration and build for ASC Red.
+
+
+
+##############################################################################
+##############################################################################
+##############################################################################
 For cross-compiling DAKOTA for the janus service and compute nodes,
 the procedure is as follows:
 

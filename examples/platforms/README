@@ -34,7 +34,7 @@ The script body should include comments detailing
 - operating systems tested on
 - options included 
 - date last tested and with which versions of Dakota and packages
-  (acro, DDACE, OPTPP, Surfpack)
+  (acro, DDACE, OPTPP, surfpack)
 
 Scripts should be portable, i.e., independent of the particular shell
 in use when invoked.  To invoke a configure script, cd to the dakota
