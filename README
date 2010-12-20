@@ -56,8 +56,8 @@ may be used on their own or as components within advanced strategies such as
 surrogate-based optimization, mixed integer nonlinear programming, or 
 optimization under uncertainty.
 
-Refer to http://www.cs.sandia.gov/dakota/software.html for additional 
-information.  For help using DAKOTA, email dakota-users@software.sandia.gov.
+Refer to http://dakota.sandia.gov for additional information.
+For help using DAKOTA, email dakota-users@software.sandia.gov.
 
 ------------------------------------------------------------------------------
 Distribution.
@@ -95,7 +95,7 @@ config (src)        m4 macros used for supporting autoconf and beta
 
 docs                The Users, Reference, and Developers Manuals are 
 (src)               maintained here.  Other references are available from
-                    the DAKOTA Web site (http://www.cs.sandia.gov/DAKOTA).
+                    the DAKOTA Web site (http://dakota.sandia.gov).
 
 src (src)           The main source code repository for the DAKOTA system.
 
