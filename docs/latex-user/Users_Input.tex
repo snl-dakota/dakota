@@ -34,8 +34,9 @@ DAKOTA studies. After the data have been input by the user, JAGUAR
 generates one or more input files for DAKOTA; it can also execute
 DAKOTA, capturing and (eventually) interpret the results.
 
-JAGUAR 2.0 is available for Windows, Mac (Intel processors), and Linux
-32- and 64-bit platforms.  While JAGUAR's core source is BSD licensed,
+JAGUAR 2.1 is available for Windows 32- and 64-bit platforms, 
+Mac (Intel processors), and Linux 32- and 64-bit platforms. 
+While JAGUAR's core source is BSD licensed,
 binary distributions of JAGUAR include Eclipse Workbench components
 and are therefore subject to the terms of the Eclipse Public License.
 A short description of the steps for downloading, installing, and
@@ -62,7 +63,7 @@ is provided here.
   distribution is accessed by clicking on the download link available
   from:~\url{http://dakota.sandia.gov/download.html} and
   filling out the short online registration form.  Download the JAGUAR
-  install for your platform (Windows, Mac, or Linux 32/64-bit).
+  install for your platform (Windows 32/64-bit, Mac, or Linux 32/64-bit).
 
 The JAGUAR package is provided as a zipped archive file.  Windows and
 Mac users should be able to double-click on the file's icon from a
@@ -71,7 +72,7 @@ the {\tt unzip} utility to unzip the archive from their command-line
 console.  The JAGUAR installation package is self-contained, so JAGUAR
 can be directly run immediately after extracting the archive. (See
 Figure~\ref{fig:input:jag_package}.)  Take note of where you installed
-as you may want to create a shortcut or link to the installed Jaguar
+as you may want to create a shortcut or link to the installed JAGUAR 
 executable.
 \begin{figure}
   \centering
@@ -157,8 +158,7 @@ users).
 \end{figure}
 
 This text editor supports simple syntax highlighting.  Additional text
-editor features planned include syntax completion and
-context-sensitive, on-demand tooltip help.
+editor features are syntax completion and context-sensitive, on-demand tooltip help.
 
 
 \subsection{Graphical Editors}
@@ -311,17 +311,16 @@ text, displaying comments, and toggling push-up elements.
 The ``Execute Problem'' tab contains several options for executing
 DAKOTA on the active input file, as shown in
 Figure~\ref{fig:input:jag_execute}.
-\begin{figure}
+\begin{figure}[htbp]
   \centering
-  \includegraphics[scale=0.4]{images/jag_execute}
+  \includegraphics[scale=0.6]{images/4ExecuteProblem}
   \caption{The JAGUAR ``Execute Problem'' tab.}
   \label{fig:input:jag_execute}
 \end{figure}
 The execute options all rely on a locally installed copy of DAKOTA,
-the path to which can be set via Window \textgreater Preferences
-\textgreater Jaguar.
+the path to which can be set via {\bf Window $\rightarrow$ Preferences $\rightarrow$ Jaguar}.
 
-Currently four modes of DAKOTA execution are supported:
+Currently five modes of DAKOTA execution are supported:
 \begin{itemize}
 
 \item {\bf Check:} While JAGUAR includes considerable input
@@ -368,27 +367,30 @@ function evaluation data, for example, to compute final statistics in
 a screening study (the analysis counterpart complementing Pre Run).
 Pre-run and post-run are central to the sensitivity analysis wizard.
 
+\item {\bf Core Run:} Perform only the model evaluation (invoke {\tt
+analysis\_drivers}) to map variables to responses.  ({\tt dakota
+-run})
+
 \end{itemize}
 
 Results from any execute option are displayed on the ``Visualize
 Results'' tab as shown in Figure~\ref{fig:input:jaguar_visualize}.
 
-\begin{figure}
+\begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.4]{images/jaguar_visualize}
   \caption{JAGUAR Visualize Results tab.}
   \label{fig:input:jaguar_visualize}
 \end{figure}
 
-Two additional modes will be supported in future JAGUAR versions:
-\begin{itemize} 
-\item {\bf Core Run:} Perform only the model evaluation (invoke {\tt
-analysis\_drivers}) to map variables to responses.  ({\tt dakota
--run})
 
-\item {\bf Remote job submission:} Submit DAKOTA job on a remote
-compute cluster and monitor job status.
-\end{itemize}
+For all problem execition supported modes under {\bf Run} the additional feature of 
+{\bf Manual override} has been added to allow DAKOTA users to modify the problem execution 
+commands on the fly, without having to open new files in JAGUAR and start from scratch. 
+
+
+In future JAGUAR releases we plan to add another execute mode, the {\bf Remote job submission} for the users to be able to submit a DAKOTA job on a remote
+compute cluster and monitor the job status.
 
 
 \subsection{Sensitivity Analysis Wizard}
@@ -462,7 +464,7 @@ containing the variables and response data to analyze.
 
 There exist many example input files for DAKOTA analysis and studies
 that users can build on, customizing their own studies from these
-templates.  JAGUAR provides easy access to these templates by allowing
+templates. JAGUAR provides easy access to these templates by allowing
 users to generate new input files from a library of templates.  These
 templates can be accessed from the Welcome screen, or from the main
 File menu ({\bf New $\rightarrow$ DAKOTA input file from template}).
@@ -487,14 +489,14 @@ Figure~\ref{fig:input:jag_template2}).
 \end{figure}
 
 \newpage
-\subsection{Brief tutorial on how to use Jaguar}
+\subsection{Brief tutorial on how to use JAGUAR}
 
 Here we provide a simple example originating from the input file dakota\_rosebrock\_2d.in that can be found in the examples/tutorial
-directory of the Dakota distributions. To familiarize with Jaguar's basics please follow the steps described below.
+directory of the Dakota distributions. To familiarize with JAGUAR's basics please follow the steps described below.
 
 Start Jaguar
 
-In the Welcome screen, select ``Configure Jaguar'' or select Window \textgreater Preferences (see Figure~\ref{fig:input:0Preferences}).
+In the Welcome screen, select ``Configure Jaguar'' or click {\bf Window $\rightarrow$ Preferences $\rightarrow$ Jaguar} (see Figure~\ref{fig:input:0Preferences}).
 \begin{itemize}
 \item Under Jaguar options, provide your paths for ``DAKOTA executable'' (this is the full path for the Dakota executable file you will use to run Dakota), ``Save path'' (this is the full path for the directory you wish to save your input files in) and ``Templates path'' (this is the full path for the directory you wish to save your own Dakota Templates in).
 \item Select ``OK''.
@@ -502,7 +504,7 @@ In the Welcome screen, select ``Configure Jaguar'' or select Window \textgreater
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/0Preferences}
-  \caption{Jaguar Preferences}
+  \caption{JAGUAR Preferences}
   \label{fig:input:0Preferences}
 \end{figure}
 
@@ -528,7 +530,7 @@ In the Welcome screen, select ``Configure Jaguar'' or select Window \textgreater
 
 As in Figure~\ref{fig:input:2rosenbrockfile} notice the following:
 \begin{itemize}      
-\item There are errors with \texttt{direct} and \texttt{analysis\_driver}. (Note: These error messages occur because there is a limitation in the ordering of keywords currently parsed for Jaguar from Dakota. We plan to address this issue in future Jaguar releases. For Dakota these are valid keywords). 
+\item There are errors with \texttt{direct} and \texttt{analysis\_driver}. (Note: These error messages occur because there is a limitation in the ordering of keywords currently parsed for JAGUAR from DAKOTA. We plan to address this issue in future JAGUAR releases. For DAKOTA these are valid keywords). 
 \item Mouse over and see the tooltip errors.
 \item Mouse over other keywords to see additional information.
 \item To run the advanced parsing engine and to format the text, press Ctrl-Shift-F or {\bf Edit $\rightarrow$ Format}. Observe the updated rosenbrock\_2d template input file in Figure~\ref{fig:input:3fixed}. 
@@ -544,8 +546,8 @@ As in Figure~\ref{fig:input:2rosenbrockfile} notice the following:
 In Figure~\ref{fig:input:3fixed} notice the following:
 \begin{itemize}
 \item cleaner look (unnecessary spaces and newlines removed)
-\item \texttt{analysis\_driver} replaced with \texttt{analysis\_drivers} (Jaguar specific keyword correction)
-\item \texttt{direct} now a sub-element of \texttt{analysis\_drivers} (Jaguar specific keyword correction)
+\item \texttt{analysis\_driver} replaced with \texttt{analysis\_drivers} (JAGUAR specific keyword correction)
+\item \texttt{direct} now a sub-element of \texttt{analysis\_drivers} (JAGUAR specific keyword correction)
 \item double quoted ``x2'' replaced with single quoted 'x2' (uniform)
 \end{itemize}
 \begin{figure}[htbp]
@@ -555,20 +557,9 @@ In Figure~\ref{fig:input:3fixed} notice the following:
   \label{fig:input:3fixed}
 \end{figure}      
 
- 
-To execute click the tab ``(3) Execute Problem'' at the bottom, as in Figure~\ref{fig:input:4ExecuteProblem}. 
-\begin{itemize}
-\item Click ``Check'' at the top of the page
-\end{itemize}
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.6]{images/4ExecuteProblem}
-  \caption{``Execute Problem'' tab}
-  \label{fig:input:4ExecuteProblem}
-\end{figure}
 
-
-In Figure~\ref{fig:input:5Visualize} notice:
+To execute click the tab ``(3) Execute Problem'' at the bottom (see previously in Figure~\ref{fig:input:jag_execute}). 
+In Figure~\ref{fig:input:5Visualize} notice the following:
 \begin{itemize}
 \item Actual DAKOTA command (in green) just ran.
 \item Output of DAKOTA's check run below.
@@ -620,8 +611,8 @@ Now go back to the Source (1st tab):
 
 
 Save this corrected rosenbrock file as your own template (Figure~\ref{fig:input:9SaveAsTemplate}):
+{\bf File $\rightarrow$ Save As Template}
 \begin{itemize}
-\item {\bf File $\rightarrow$ Save As Template}
 \item Notice: this path is specified in the Jaguar Preferences you had set earlier.
 \item Name it ``Rosenbrock Fixed''
 \item Click ``Save''
@@ -663,15 +654,15 @@ Click on {\bf File $\rightarrow$ New $\rightarrow$ DAKOTA input file from templa
 \end{itemize}
 
 
-This completes the basic tutorial of Jaguar 2.1.
+This completes the basic tutorial of JAGUAR 2.1.
 
 \subsection{Troubleshooting}
 
 In case of errors, please try these options:
 \begin{enumerate}
-\item  Check if your Java version is supported: ``java-version''. You should have at least Java 1.5
-\item  If it is a corrupted workspace, remove the workspace (User\_folder \textgreater Jaguar\_workspace).
-\item  Enable Error Log: Window \textgreater Show View \textgreater Error Log (see Figure~\ref{fig:input:11ShowView}).
+\item  Check if your Java version is supported: In a Command Prompt type``java -version''. You should have at least Java 1.5
+\item  If there exists a corrupted JAGUAR workspace, remove the workspace (User\_folder \textgreater Jaguar\_workspace).
+\item  Enable Error Log: {\bf Window $\rightarrow$ Show View $\rightarrow$ Error Log} (see Figure~\ref{fig:input:11ShowView}).
 \end{enumerate}
 
 \begin{figure}[htbp]
