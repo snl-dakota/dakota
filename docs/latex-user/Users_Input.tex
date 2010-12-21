@@ -16,7 +16,7 @@ Section~\ref{input:gui}.  Once prepared, the DAKOTA input file and/or
 command line may identify additional files for data import as
 described in Section~\ref{input:import}.
 
-\section{JAGUAR 2.0}\label{input:gui}
+\section{JAGUAR 2.1}\label{input:gui}
 
 JAGUAR (JAva GUi for Applied Research) is a Java software tool for
 automatically rendering a graphical user interface (GUI) from a
@@ -487,6 +487,205 @@ Figure~\ref{fig:input:jag_template2}).
   \label{fig:input:jag_template2}
 \end{figure}
 
+\newpage
+\subsection{Brief tutorial on how to use Jaguar}
+
+Here we provide a simple example originating from the legacy input file dakota\_rosebrock\_2d.in that can be found in the examples/tutorial
+directory of the Dakota distributions. To familiarize with Jaguar's basics please follow the steps described below.
+
+Start Jaguar
+
+In the Welcome screen, select ``Configure Jaguar'' or select Window $\Rightarrow$ Preferences (see Figure~\ref{fig:input:0Preferences}).
+\begin{itemize}
+\item Under Jaguar options, provide your paths for ``DAKOTA executable'', ``Save path'' and ``Templates path''.
+\item Select ``OK''.
+\end{itemize}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.6]{images/0Preferences}
+  \caption{Jaguar Preferences}
+  \label{fig:input:0Preferences}
+\end{figure}
+
+File $\Rightarrow$ New $\Rightarrow$ DAKOTA input file from template
+\begin{itemize}
+\item Do either of the following:
+\begin{enumerate}
+\item Type ``tutorial'' in the quick search bar and select ``Tutorial Rosenbrock''
+\item Navigate down and select ``Tutorial Rosenbrock''
+\end{enumerate}
+\item A preview of the template file should be visible, see Figure~\ref{fig:input:1tutorial}.
+\item Select ``Next''
+\item Specify a filename such as ``rosenbrock.i''
+\item Select ``Finish''
+\end{itemize}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.6]{images/1tutorial}
+  \caption{DAKOTA input file templates}
+  \label{fig:input:1tutorial}
+\end{figure}
+
+
+As in Figure~\ref{fig:input:2rosenbrockfile} notice the following:
+\begin{itemize}      
+\item Errors with \texttt{direct} and \texttt{analysis\_driver}. This is because the two keywords are out of place (often the case with legacy input files). We will fix this issue later.
+\item Mouse over and see the tooltip errors.
+\item Mouse over other keywords to see additional information.
+\item To run the advanced parsing engine and to format the text, press Ctrl-Shift-F or Edit $\Rightarrow$ Format. Observe the updated rosenbrock\_2d template input file in Figure~\ref{fig:input:3fixed}. 
+\item You can always Undo (Ctrl-Z or Edit $\Rightarrow$ ''Undo Typing'') and Redo (Ctrl-Y or Edit $\Rightarrow$ ''Redo Typing'') to compare.
+\end{itemize}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.6]{images/2rosenbrockfile}
+  \caption{rosenbrock\_2d legacy input file}
+  \label{fig:input:2rosenbrockfile}
+\end{figure}
+
+In Figure~\ref{fig:input:3fixed} notice the following:
+\begin{itemize}
+\item cleaner look (unnecessary spaces and newlines removed)
+\item \texttt{analysis\_driver} replaced with \texttt{analysis\_drivers} (legacy correction)
+\item \texttt{direct} now a sub-element of \texttt{analysis\_drivers} (legacy correction)
+\item double quoted ``x2'' replaced with single quoted 'x2' (uniform)
+\end{itemize}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.6]{images/3fixed}
+  \caption{``Fixed'' rosenbrock\_2d template input file after using the advanced parsing engine}
+  \label{fig:input:3fixed}
+\end{figure}      
+
+ 
+To execute click the tab ``(3) Execute Problem'' at the bottom, as in Figure~\ref{fig:input:4ExecuteProblem}. 
+\begin{itemize}
+\item Click ``Check'' at the top of the page
+\end{itemize}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.6]{images/4ExecuteProblem}
+  \caption{``Execute Problem'' tab}
+  \label{fig:input:4ExecuteProblem}
+\end{figure}
+
+
+In Figure~\ref{fig:input:5Visualize} notice:
+\begin{itemize}
+\item Actual DAKOTA command (in green) just ran.
+\item Output of DAKOTA's check run below.
+\end{itemize}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.6]{images/5Visualize}
+  \caption{``Visualize Results'' tab}
+  \label{fig:input:5Visualize}
+\end{figure}
+
+
+Now go back to the Source (1st tab):
+\begin{itemize}
+\item Find tabular\_graphics\_data (around line 5), create a new line below and press Ctrl-Space. Notice a list of keywords are listed in a dropdown, see Figure~\ref{fig:input:6Autocomplete}.
+\item Press up or down arrows to navigate.
+\item Navigate to ``output\_precision'' but DO NOT press Enter.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.6]{images/6Autocomplete}
+  \caption{}
+  \label{fig:input:6Autocomplete}
+\end{figure}
+\begin{itemize}
+\item Notice that strategy is highlighted in the text, and also listed next to output\_precision. Auto-completing keywords are sorted backwards, meaning they keywords at the top are the closest matching keywords. This helps you discover relevant keywords.
+\end{itemize}
+\item Select output\_precision
+\item Notice auto-complete types in an equal ``='' for you to remind you to enter a value.
+\item Type in ``notinteger''.
+\item Notice red underline shows an error has occurred.
+\item Mouse over it (see Figure~\ref{fig:input:7texterror}).
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.6]{images/7texterror}
+  \caption{Text error detailed message}
+  \label{fig:input:7texterror}
+\end{figure}
+\item Correct by replacing it with a valid integer
+\item On the next line, type in ``iterato''.
+\item Right after the ``o'' in ``iterato'', press Ctrl-Space.
+\item Notice auto-completion can also finish off half completed keywords. Pick one (see Figure~\ref{fig:input:8iterato}).
+\end{itemize}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.6]{images/8iterato}
+  \caption{Auto-completion window}
+  \label{fig:input:8iterato}
+\end{figure}
+
+
+Save this corrected rosenbrock file as your own template (Figure~\ref{fig:input:9SaveAsTemplate}):
+\begin{itemize}
+\item File $\Rightarrow$ Save As Template
+\item Notice: this path is specified in the Jaguar Preferences you had set earlier.
+\item Name it ``Rosenbrock Fixed''
+\item Click ``Save''
+\end{itemize} 
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.6]{images/9SaveAsTemplate}
+  \caption{Save As DAKOTA Template Window}
+  \label{fig:input:9SaveAsTemplate}
+\end{figure}
+
+
+Close all files (Ctrl-Shift-W) or File $\Rightarrow$ ''Close All''. No need to save changes.
+
+
+Click on File $\Rightarrow$ New $\Rightarrow$ DAKOTA input file from template 
+\begin{itemize}
+\item Do either of the following:
+\begin{enumerate}
+\item Type ``Fixed'' in the quick search bar and select ``Rosenbrock Fixed''
+\item Navigate down and select ``Rosenbrock Fixed''
+\end{enumerate}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.6]{images/10Template_Rosenbrock}
+  \caption{Rosenbrock Fixed DAKOTA Template}
+  \label{fig:input:10Template_Rosenbrock}
+\end{figure}
+
+\item Notice (see Figure~\ref{fig:input:10Template_Rosenbrock}) that:
+\begin{enumerate}
+\item This time we are creating an input file from a user-created template.
+\item User-created templates do not have stars on them and are listed at the top.
+\end{enumerate} 
+\item A preview of the template file should be visible.
+\item Select ``Next''
+\item Specify a filename such as ``rosenbrock\_fixed.i'' 
+\item Select ``Finish''
+\end{itemize}
+
+
+This completes the basic tutorial of Jaguar 2.1.
+
+\subsection{Troubleshooting}
+
+In case of errors, please try these options:
+\begin{enumerate}
+\item  Check if your Java version is supported: ``java-version''. You should have at least Java 1.5
+\item  If it is a corrupted workspace, remove the workspace (<User\_folder>/Jaguar\_workspace)
+\item  Enable Error Log: Window $\Rightarrow$ Show View $\Rightarrow$ Error Log (see Figure~\ref{fig:input:11ShowView}).
+\end{enumerate}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.6]{images/11ShowView}
+  \caption{Enabling Jaguar Error Log}
+  \label{fig:input:11ShowView}
+\end{figure}
+
+
+Send any errors listed to our support email (jaguar-help@sandia.gov).
+
+\newpage
 \section{Data Imports}\label{input:import}
 
 The DAKOTA input file and/or command line may identify additional
