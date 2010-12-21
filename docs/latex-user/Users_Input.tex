@@ -489,14 +489,14 @@ Figure~\ref{fig:input:jag_template2}).
 \newpage
 \subsection{Brief tutorial on how to use Jaguar}
 
-Here we provide a simple example originating from the legacy input file dakota\_rosebrock\_2d.in that can be found in the examples/tutorial
+Here we provide a simple example originating from the input file dakota\_rosebrock\_2d.in that can be found in the examples/tutorial
 directory of the Dakota distributions. To familiarize with Jaguar's basics please follow the steps described below.
 
 Start Jaguar
 
-In the Welcome screen, select ``Configure Jaguar'' or select Window $\Rightarrow$ Preferences (see Figure~\ref{fig:input:0Preferences}).
+In the Welcome screen, select ``Configure Jaguar'' or select Window \textgreater Preferences (see Figure~\ref{fig:input:0Preferences}).
 \begin{itemize}
-\item Under Jaguar options, provide your paths for ``DAKOTA executable'', ``Save path'' and ``Templates path''.
+\item Under Jaguar options, provide your paths for ``DAKOTA executable'' (this is the full path for the Dakota executable file you will use to run Dakota), ``Save path'' (this is the full path for the directory you wish to save your input files in) and ``Templates path'' (this is the full path for the directory you wish to save your own Dakota Templates in).
 \item Select ``OK''.
 \end{itemize}
 \begin{figure}[htbp]
@@ -506,7 +506,7 @@ In the Welcome screen, select ``Configure Jaguar'' or select Window $\Rightarrow
   \label{fig:input:0Preferences}
 \end{figure}
 
-File $\Rightarrow$ New $\Rightarrow$ DAKOTA input file from template
+{\bf File $\rightarrow$ New $\rightarrow$ DAKOTA input file from template}
 \begin{itemize}
 \item Do either of the following:
 \begin{enumerate}
@@ -528,30 +528,30 @@ File $\Rightarrow$ New $\Rightarrow$ DAKOTA input file from template
 
 As in Figure~\ref{fig:input:2rosenbrockfile} notice the following:
 \begin{itemize}      
-\item There are errors with \texttt{direct} and \texttt{analysis\_driver}. This is because the two keywords are out of place (often the case with legacy input files). We will fix this issue later.
+\item There are errors with \texttt{direct} and \texttt{analysis\_driver}. (Note: These error messages occur because there is a limitation in the ordering of keywords currently parsed for Jaguar from Dakota. We plan to address this issue in future Jaguar releases. For Dakota these are valid keywords). 
 \item Mouse over and see the tooltip errors.
 \item Mouse over other keywords to see additional information.
-\item To run the advanced parsing engine and to format the text, press Ctrl-Shift-F or Edit $\Rightarrow$ Format. Observe the updated rosenbrock\_2d template input file in Figure~\ref{fig:input:3fixed}. 
-\item You can always Undo (Ctrl-Z or Edit $\Rightarrow$ ''Undo Typing'') and Redo (Ctrl-Y or Edit $\Rightarrow$ ''Redo Typing'') to compare.
+\item To run the advanced parsing engine and to format the text, press Ctrl-Shift-F or {\bf Edit $\rightarrow$ Format}. Observe the updated rosenbrock\_2d template input file in Figure~\ref{fig:input:3fixed}. 
+\item You can always Undo (Ctrl-Z or {\bf Edit $\rightarrow$ ''Undo Typing''}) and Redo (Ctrl-Y or {\bf Edit $\rightarrow$ ''Redo Typing''}) to compare.
 \end{itemize}
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/2rosenbrockfile}
-  \caption{rosenbrock\_2d legacy input file}
+  \caption{rosenbrock\_2d input file}
   \label{fig:input:2rosenbrockfile}
 \end{figure}
 
 In Figure~\ref{fig:input:3fixed} notice the following:
 \begin{itemize}
 \item cleaner look (unnecessary spaces and newlines removed)
-\item \texttt{analysis\_driver} replaced with \texttt{analysis\_drivers} (legacy correction)
-\item \texttt{direct} now a sub-element of \texttt{analysis\_drivers} (legacy correction)
+\item \texttt{analysis\_driver} replaced with \texttt{analysis\_drivers} (Jaguar specific keyword correction)
+\item \texttt{direct} now a sub-element of \texttt{analysis\_drivers} (Jaguar specific keyword correction)
 \item double quoted ``x2'' replaced with single quoted 'x2' (uniform)
 \end{itemize}
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/3fixed}
-  \caption{``Fixed'' rosenbrock\_2d template input file after using the advanced parsing engine}
+  \caption{``Updated'' rosenbrock\_2d template input file after using the advanced parsing engine}
   \label{fig:input:3fixed}
 \end{figure}      
 
@@ -621,7 +621,7 @@ Now go back to the Source (1st tab):
 
 Save this corrected rosenbrock file as your own template (Figure~\ref{fig:input:9SaveAsTemplate}):
 \begin{itemize}
-\item File $\Rightarrow$ Save As Template
+\item {\bf File $\rightarrow$ Save As Template}
 \item Notice: this path is specified in the Jaguar Preferences you had set earlier.
 \item Name it ``Rosenbrock Fixed''
 \item Click ``Save''
@@ -634,10 +634,10 @@ Save this corrected rosenbrock file as your own template (Figure~\ref{fig:input:
 \end{figure}
 
 
-Close all files (Ctrl-Shift-W) or File $\Rightarrow$ ''Close All''. No need to save changes.
+Close all files (Ctrl-Shift-W) or {\bf File $\rightarrow$ ''Close All''}. No need to save changes.
 
 
-Click on File $\Rightarrow$ New $\Rightarrow$ DAKOTA input file from template 
+Click on {\bf File $\rightarrow$ New $\rightarrow$ DAKOTA input file from template} 
 \begin{itemize}
 \item Do either of the following:
 \begin{enumerate}
@@ -670,8 +670,8 @@ This completes the basic tutorial of Jaguar 2.1.
 In case of errors, please try these options:
 \begin{enumerate}
 \item  Check if your Java version is supported: ``java-version''. You should have at least Java 1.5
-\item  If it is a corrupted workspace, remove the workspace (<User\_folder>/Jaguar\_workspace)
-\item  Enable Error Log: Window $\Rightarrow$ Show View $\Rightarrow$ Error Log (see Figure~\ref{fig:input:11ShowView}).
+\item  If it is a corrupted workspace, remove the workspace (User\_folder \textgreater Jaguar\_workspace).
+\item  Enable Error Log: Window \textgreater Show View \textgreater Error Log (see Figure~\ref{fig:input:11ShowView}).
 \end{enumerate}
 
 \begin{figure}[htbp]
