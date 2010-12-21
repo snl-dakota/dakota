@@ -65,24 +65,31 @@ is provided here.
   filling out the short online registration form.  Download the JAGUAR
   install for your platform (Windows 32/64-bit, Mac, or Linux 32/64-bit).
 
-The JAGUAR package is provided as a zipped archive file.  Windows and
-Mac users should be able to double-click on the file's icon from a
-file system browser to perform the extraction.  Linux users can use
+\begin{enumerate}
+
+\item For our Windows users we provide an installer that will automatically install JAGUAR. 
+Download JAGUAR\_2\_1.win32installer.exe on your Desktop, double click it and follow the instructions. 
+The installer itself is 32-bit; it has been tested successfully on 64-bit Windows 7 PCs. 
+
+\item For all platforms we provide the JAGUAR package as a zipped archive file. 
+Windows and Mac users should be able to double-click on the file's icon from a
+file system browser to perform the extraction. Linux users can use
 the {\tt unzip} utility to unzip the archive from their command-line
 console.  The JAGUAR installation package is self-contained, so JAGUAR
 can be directly run immediately after extracting the archive. (See
-Figure~\ref{fig:input:jag_package}.)  Take note of where you installed
+Figure~\ref{fig:input:jag_package}). Take note of where you installed
 as you may want to create a shortcut or link to the installed JAGUAR 
 executable.
+\end{enumerate}
+
 \begin{figure}
   \centering
-  \includegraphics[scale=0.6]{images/jag_package}
+  \includegraphics[scale=0.6]{images/2_1jag_package}
   \caption{The JAGUAR installation package.}
   \label{fig:input:jag_package}
 \end{figure}
 
 \end{itemize}
-
 
 \subsection{Running JAGUAR for the First Time}
 
@@ -94,7 +101,7 @@ on the Welcome tab and returned to at anytime via the JAGUAR help menu
 ({\bf Help $\rightarrow$ Welcome}).
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/jag_welcome}
+  \includegraphics[scale=0.4]{images/2_1jag_welcome}
   \caption{The JAGUAR ``Welcome'' screen.}
   \label{fig:input:jag_welcome}
 \end{figure}
@@ -111,7 +118,7 @@ two links provides access to guided tours via JAGUAR Cheat Sheets
 which are shown in Figure~\ref{fig:input:jag_cheatsheets}.
 \begin{figure}
   \centering
-  \includegraphics[scale=0.6]{images/jag_cheatsheets}
+  \includegraphics[scale=0.6]{images/2_1jag_cheatsheets}
   \caption{A sample JAGUAR cheatsheet.}
   \label{fig:input:jag_cheatsheets}
 \end{figure}
@@ -152,7 +159,7 @@ input file text (likely only comfortable for experienced DAKOTA
 users).
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/jag_texteditor}
+  \includegraphics[scale=0.4]{images/2_1jag_texteditor}
   \caption{The JAGUAR text editor.}
   \label{fig:input:jag_texteditor}
 \end{figure}
@@ -179,7 +186,7 @@ variables through interfaces to responses.  ``Define Flow/Iteration''
 is where a method or methods and possibly a strategy are specified.
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/jag_graphical1}
+  \includegraphics[scale=0.4]{images/2_1jag_graphical1}
   \caption{The ``Define Problem'' portion of the JAGUAR graphical
     editor.}
   \label{fig:input:jag_graphical1}
@@ -192,7 +199,7 @@ content is displayed and selections may be made.  As an example, see
 Figure \ref{fig:input:jag_graphical2}.
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/jag_graphical2}
+  \includegraphics[scale=0.4]{images/2_1jag_graphical2}
   \caption{Content selected from the left tree hierarchy is displayed
     on the right side of the view.}
   \label{fig:input:jag_graphical2}
@@ -225,7 +232,7 @@ displayed in the content pane.  To view these child elements, select
 the element in the left hierarchy tree.
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/jag_graphical4}
+  \includegraphics[scale=0.4]{images/2_1jag_graphical4}
   \caption{Display of elements from a selected instance.}
   \label{fig:input:jag_graphical4}
 \end{figure}
@@ -241,7 +248,7 @@ There are five basic types of elements in JAGUAR.
   thus cannot be disabled.
 \begin{figure}
   \centering
-  \includegraphics[scale=0.8]{images/jag_graphical5}
+  \includegraphics[scale=0.8]{images/2_1jag_graphical5}
   \caption{Different element types in JAGUAR.}
   \label{fig:input:jag_graphical5}
 \end{figure}
@@ -280,14 +287,14 @@ or in preferences.
 
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/jaguar_pushup_on}
+  \includegraphics[scale=0.4]{images/2_1jaguar_pushup_on}
   \caption{JAGUAR with push-up elements enabled (default).}
   \label{fig:input:jaguar_pushup_on}
 \end{figure}
 
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/jaguar_pushup_off}
+  \includegraphics[scale=0.4]{images/2_1jaguar_pushup_off}
   \caption{JAGUAR with push-up elements disabled.}
   \label{fig:input:jaguar_pushup_off}
 \end{figure}
@@ -378,13 +385,13 @@ Results'' tab as shown in Figure~\ref{fig:input:jaguar_visualize}.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[scale=0.4]{images/jaguar_visualize}
+  \includegraphics[scale=0.6]{images/5Visualize}
   \caption{JAGUAR Visualize Results tab.}
   \label{fig:input:jaguar_visualize}
 \end{figure}
 
 
-For all problem execition supported modes under {\bf Run} the additional feature of 
+For all problem execution supported modes under {\bf Run} the additional feature of 
 {\bf Manual override} has been added to allow DAKOTA users to modify the problem execution 
 commands on the fly, without having to open new files in JAGUAR and start from scratch. 
 
@@ -476,13 +483,13 @@ specify a location to save the new input file (see
 Figure~\ref{fig:input:jag_template2}).
 \begin{figure}
   \centering
-  \includegraphics[scale=0.6]{images/jag_template1}
-  \caption{A list of DAKOTA input file templates in JAGUAR}
+  \includegraphics[scale=0.6]{images/2_1jag_template1}
+  \caption{A list of DAKOTA input file templates in JAGUAR.}
   \label{fig:input:jag_template1}
 \end{figure}
 \begin{figure}
   \centering
-  \includegraphics[scale=0.6]{images/jag_template2}
+  \includegraphics[scale=0.6]{images/2_1jag_template2}
   \caption{Specifying a location for saving an input file generated
     from a template.}
   \label{fig:input:jag_template2}
@@ -504,7 +511,7 @@ In the Welcome screen, select ``Configure Jaguar'' or click {\bf Window $\righta
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/0Preferences}
-  \caption{JAGUAR Preferences}
+  \caption{JAGUAR Preferences.}
   \label{fig:input:0Preferences}
 \end{figure}
 
@@ -523,7 +530,7 @@ In the Welcome screen, select ``Configure Jaguar'' or click {\bf Window $\righta
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/1tutorial}
-  \caption{DAKOTA input file templates}
+  \caption{DAKOTA input file templates.}
   \label{fig:input:1tutorial}
 \end{figure}
 
@@ -539,7 +546,7 @@ As in Figure~\ref{fig:input:2rosenbrockfile} notice the following:
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/2rosenbrockfile}
-  \caption{rosenbrock\_2d input file}
+  \caption{rosenbrock\_2d input file.}
   \label{fig:input:2rosenbrockfile}
 \end{figure}
 
@@ -553,24 +560,17 @@ In Figure~\ref{fig:input:3fixed} notice the following:
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/3fixed}
-  \caption{``Updated'' rosenbrock\_2d template input file after using the advanced parsing engine}
+  \caption{``Updated'' rosenbrock\_2d template input file after using the advanced parsing engine.}
   \label{fig:input:3fixed}
 \end{figure}      
 
 
 To execute click the tab ``(3) Execute Problem'' at the bottom (see previously in Figure~\ref{fig:input:jag_execute}). 
-In Figure~\ref{fig:input:5Visualize} notice the following:
+Refering to Figure~\ref{fig:input:jaguar_visualize} notice that:
 \begin{itemize}
 \item Actual DAKOTA command (in green) just ran.
 \item Output of DAKOTA's check run below.
 \end{itemize}
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.6]{images/5Visualize}
-  \caption{``Visualize Results'' tab}
-  \label{fig:input:5Visualize}
-\end{figure}
-
 
 Now go back to the Source (1st tab):
 \begin{itemize}
@@ -580,7 +580,7 @@ Now go back to the Source (1st tab):
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/6Autocomplete}
-  \caption{}
+  \caption{Ctrl-Space Auto-completing keywords in the text editor.}
   \label{fig:input:6Autocomplete}
 \end{figure}
 \begin{itemize}
@@ -594,7 +594,7 @@ Now go back to the Source (1st tab):
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/7texterror}
-  \caption{Text error detailed message}
+  \caption{Text error detailed message.}
   \label{fig:input:7texterror}
 \end{figure}
 \item Correct by replacing it with a valid integer
@@ -605,7 +605,7 @@ Now go back to the Source (1st tab):
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/8iterato}
-  \caption{Auto-completion window}
+  \caption{Text Editor's Auto-completion of partial words.}
   \label{fig:input:8iterato}
 \end{figure}
 
@@ -620,7 +620,7 @@ Save this corrected rosenbrock file as your own template (Figure~\ref{fig:input:
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/9SaveAsTemplate}
-  \caption{Save As DAKOTA Template Window}
+  \caption{Save As DAKOTA Template Window.}
   \label{fig:input:9SaveAsTemplate}
 \end{figure}
 
@@ -638,7 +638,7 @@ Click on {\bf File $\rightarrow$ New $\rightarrow$ DAKOTA input file from templa
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/10Template_Rosenbrock}
-  \caption{Rosenbrock Fixed DAKOTA Template}
+  \caption{Rosenbrock Fixed DAKOTA Template.}
   \label{fig:input:10Template_Rosenbrock}
 \end{figure}
 
@@ -668,7 +668,7 @@ In case of errors, please try these options:
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/11ShowView}
-  \caption{Enabling Jaguar Error Log}
+  \caption{Enabling Jaguar Error Log.}
   \label{fig:input:11ShowView}
 \end{figure}
 
