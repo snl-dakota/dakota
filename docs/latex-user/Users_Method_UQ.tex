@@ -2318,13 +2318,14 @@ interactions such as the two-way interaction  $S_{i,j}$.
 \subsection{Automated Refinement}\label{uq:expansion:refine}
 
 Several approaches for refinement of stochastic expansions are
-presented here: uniform p-refinement, adaptive p-refinement using
-anisotropic sparse and tensor grids, and goal-oriented adaptive
-p-refinement using generalized sparse grids.  %Each involves
-%incrementing the grid upon which the expansions are based, using a
-%variety of criteria.
+presented here: uniform p-refinement with isotropic sparse and tensor
+grids, adaptive p-refinement using anisotropic sparse and tensor
+grids, and goal-oriented adaptive p-refinement using generalized
+sparse grids.  Each involves incrementing the grid upon which the 
+stochastic expansions are based, using differing refinement criteria
+and convergence controls.
 
-\subsubsection{Uniform p-refinement}
+\subsubsection{Uniform p-refinement with isotropic grids}
 
 Uniform p-refinement involves ramping the order of a tensor-product
 quadrature grid or the level of a Smolyak sparse grid isotropically.
@@ -2343,7 +2344,7 @@ algorithmic requirements are:
 \end{itemize}
 
 
-\subsubsection{Adaptive p-refinement}
+\subsubsection{Adaptive p-refinement with anisotropic grids}
 
 Adaptive p-refinement involves ramping the order of a tensor-product
 quadrature grid or the level of a Smolyak sparse grid anisotropically,
@@ -2355,40 +2356,27 @@ analysis from low order isotropic expansions where dimension
 preference is defined from total Sobol' indices
 (Eq.~\ref{eq:total_sobol}) and is updated on every iteration.  This
 dimension preference vector supports anisotropic sparse grids based on
-a linear index-set constraint (Eq.~\ref{eq:aniso_smolyak_constr}).
+a linear index-set constraint (Eq.~\ref{eq:aniso_smolyak_constr}) or
+anisotropic tensor grids (Eq.~\ref{eq:multi_tensor}) with dimension
+order scaled proportionately to preference; in both cases, dimension
+refinement lower bound constraints are enforced to ensure that all
+previously evaluated points remain in new refined grids.
 %; with the introduction of interaction effects, nonlinear index-set
 %constraints can also be considered.
 
 
-\subsubsection{Goal-oriented p-refinement}
+\subsubsection{Goal-oriented p-refinement with generalized sparse grids}
 
-If the objectives and constraints of a design under uncertainty
-problem are focused on variance (e.g., robust design), then the
-general-purpose formulations described above are sufficiently
-goal-oriented.  However, for other classes of problems (e.g.,
-reliability-based design or stochastic inverse problems), we may
-prefer to employ refinement approaches guided by assessments of
-accuracy in other statistical quantities of interest.  %A particular
-%focus in this effort is to refine adaptively with the goal of accuracy
-%in tail probability estimates.  There are two parts to this effort:
-%goal-oriented p-refinement using generalized sparse grids and
-%efficient tail probability estimation.
-
-%Since probability levels are not available analytically from
-%stochastic expansions, they must be evaluated numerically using some
-%form of sampling on the expansion.  For tail probability estimates,
-%standard sampling approaches (e.g., LHS) can become expensive even for
-%this surrogate-based sampling and we require a more directed
-%probability estimation procedure, in particular the importance
-%sampling procedure described previously in Section~\ref{sec:imp_samp}.
-
-Given a capability to estimate alternative goals, we must then employ
-an adaptive refinement procedure that flexibly accommodates these
-goals.  The generalized sparse grid
-algorithm~\cite{Gerstner_Griebel_2003}, originally intended for
-adaptive numerical integration, is readily adapted to the adaptive
-refinement of PCE and SC expansions.  Customizations of the DAKOTA 
-approach from that of~\cite{Gerstner_Griebel_2003} include:
+The uniform and adaptive refinement capabilities described above
+define anisotropy and control convergence in a highly structured
+manner based on variance-related measures.  The generalized sparse
+grid algorithm~\cite{Gerstner_Griebel_2003}, on the other hand,
+supports greater flexibility in the definition of sparse grid index
+sets and supports refinement controls based on general statistical
+quantities of interest (QOI).  This algorithm was originally intended
+for adaptive numerical integration on a hypercube, but can be readily
+extended to the adaptive refinement of stochastic expansions using 
+the following customizations:
 \begin{itemize}
 \item In addition to hierarchical interpolants in SC, we employ
   independent polynomial chaos expansions for each active and accepted
@@ -2396,23 +2384,46 @@ approach from that of~\cite{Gerstner_Griebel_2003} include:
   of tensor chaos expansions (as described in
   Section~\ref{uq:expansion:spectral_sparse}) along with corresponding
   increments to the Smolyak combinatorial coefficients.
-\item Since we support bases for more than uniform and normal random
-  variables, we exploit rule nesting when possible (i.e.,
+\item Since we support bases for more than uniform distributions on a
+  hypercube, we exploit rule nesting when possible (i.e.,
   Gauss-Patterson for uniform or transformed uniform variables, and
   Genz-Keister for normal or transformed normal variables), but we do
-  not require it.  This implies a loss of some algorithmic 
-  simplifications that occur when grids are strictly hierarchical.
+  not require it.  This implies a loss of some algorithmic
+  simplifications in~\cite{Gerstner_Griebel_2003} that occur when
+  grids are strictly hierarchical.
 \item In the evaluation of the effect of a trial index set, the goal
-  in~\cite{Gerstner_Griebel_2003} is numerical integration and the 
-  metric is the size of the increment
-  induced by the trial set on the expectation of the function of
-  interest.  It is straightforward to instead measure the effect of a
-  trial index set on response covariance, numerical probability, or
-  other statistical quantities of interest (QOI) computed by
-  post-processing the resulting PCE or SC expansion (it is much 
-  less straightforward to embed QOI in the calculation of dimension
-  preference for anisotropic tensor/sparse grids).
+  in~\cite{Gerstner_Griebel_2003} is numerical integration and the
+  metric is the size of the increment induced by the trial set on the
+  expectation of the function of interest.  It is straightforward to
+  instead measure the effect of a trial index set on response
+  covariance, numerical probability, or other statistical QOI
+  computed by post-processing the resulting PCE or SC expansion.  
+  %(it is much less straightforward to embed QOI in the calculation
+  %of dimension preference for anisotropic tensor/sparse grids).
+  By tying the refinement process more closely to the statistical QOI,
+  the refinement process can become more efficient in achieving the
+  desired analysis objectives.
 \end{itemize}
+
+%If the objectives and constraints of a design under uncertainty
+%problem are focused on variance (e.g., robust design), then the
+%general-purpose formulations described above are sufficiently
+%goal-oriented.  However, for other classes of problems (e.g.,
+%reliability-based design or stochastic inverse problems), we may
+%prefer to employ refinement approaches guided by assessments of
+%accuracy in other statistical quantities of interest.  A particular
+%focus in this effort is to refine adaptively with the goal of
+%accuracy in tail probability estimates.  There are two parts to this
+%effort: goal-oriented p-refinement using generalized sparse grids
+%and efficient tail probability estimation.
+%
+%Since probability levels are not available analytically from
+%stochastic expansions, they must be evaluated numerically using some
+%form of sampling on the expansion.  For tail probability estimates,
+%standard sampling approaches (e.g., LHS) can become expensive even for
+%this surrogate-based sampling and we require a more directed
+%probability estimation procedure, in particular the importance
+%sampling procedure described previously in Section~\ref{sec:imp_samp}.
 
 Given these customizations, the algorithmic steps can be summarized as:
 \begin{enumerate}
@@ -2423,21 +2434,22 @@ Given these customizations, the algorithmic steps can be summarized as:
   neighbors of all old index sets.
 \item {\em Trial set evaluation:} Evaluate the tensor grid
   corresponding to each trial active index set, form the tensor
-  polynomial chaos expansion corresponding to it, update the Smolyak
-  combinatorial coefficients, and combine the trial expansion with the
-  reference expansion.  Perform necessary bookkeeping to allow
-  efficient restoration of previously evaluated tensor polynomial
-  chaos expansions.
+  polynomial chaos expansion or tensor interpolant corresponding to
+  it, update the Smolyak combinatorial coefficients, and combine the
+  trial expansion with the reference expansion.  Perform necessary
+  bookkeeping to allow efficient restoration of previously evaluated
+  tensor expansions.
 \item {\em Trial set selection:} Select the trial index set that
   induces the largest change in the statistical quantity of interest.
-  In our studies, we employ an $L^2$ norm of change in
-  probaility/reliability/response level mappings, when level mappings
+  In our implementation, we employ an $L^2$ norm of change in CDF/CCDF
+  probability/reliability/response level mappings, when level mappings
   are present, or $L^2$ norm of change in response covariance, when
   level mappings are not present.
 \item {\em Update sets:} If the largest change induced by the trial
   sets exceeds a specified convergence tolerance, then promote the
   selected trial set from the active set to the old set and update the
-  active sets with new admissible forward neighbors; return to step 2.
+  active sets with new admissible forward neighbors; return to step 2
+  and evaluate all trial sets with respect to the new reference point.
   If the convergence tolerance is satisfied, advance to step 5.
 \item {\em Finalization:} Promote all remaining active sets to the old
   set, update the Smolyak combinatorial coefficients, and perform a
