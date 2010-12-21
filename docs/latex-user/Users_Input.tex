@@ -329,8 +329,7 @@ validation, additional validation is managed solely by DAKOTA's input
 parser.  To use DAKOTA to validate the active input file (via {\tt
 dakota -check}), click the Check button and view the console output on
 the Visualize tab.  You should see a message indicating that the check
-completed and should see no errors:
-
+completed and should see no errors
 \begin{small}
 \begin{verbatim}
 Input check completed: problem specification parsed and objects instantiated.
@@ -529,7 +528,7 @@ File $\Rightarrow$ New $\Rightarrow$ DAKOTA input file from template
 
 As in Figure~\ref{fig:input:2rosenbrockfile} notice the following:
 \begin{itemize}      
-\item Errors with \texttt{direct} and \texttt{analysis\_driver}. This is because the two keywords are out of place (often the case with legacy input files). We will fix this issue later.
+\item There are errors with \texttt{direct} and \texttt{analysis\_driver}. This is because the two keywords are out of place (often the case with legacy input files). We will fix this issue later.
 \item Mouse over and see the tooltip errors.
 \item Mouse over other keywords to see additional information.
 \item To run the advanced parsing engine and to format the text, press Ctrl-Shift-F or Edit $\Rightarrow$ Format. Observe the updated rosenbrock\_2d template input file in Figure~\ref{fig:input:3fixed}. 
@@ -600,7 +599,7 @@ Now go back to the Source (1st tab):
 \item Notice auto-complete types in an equal ``='' for you to remind you to enter a value.
 \item Type in ``notinteger''.
 \item Notice red underline shows an error has occurred.
-\item Mouse over it (see Figure~\ref{fig:input:7texterror}).
+\item Mouse over it (as in Figure~\ref{fig:input:7texterror}).
 \begin{figure}[htbp]
   \centering
   \includegraphics[scale=0.6]{images/7texterror}
