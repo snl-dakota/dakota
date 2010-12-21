@@ -43,6 +43,9 @@ NOTE 2: MSYS-1.0.11.exe has been patched and should work as is
 Perl for export-makefiles and acro cp_u (could install Perl to resolve
 export-makefiles)
 
+*** Install Python 2.7 and link from /bin to /c/Python27/python
+or put /c/Python27 on PATH
+
 4. Install g95-MinGW041 (http://ftp.g95.org/g95-MinGW-41.exe) in
 C:\MinGW
 
