@@ -1,0 +1,1338 @@
+Running serial executable in serial mode.
+DAKOTA version 5.1 released 12/21/2010.
+svn rev * built Dec 20 2010 15:28:25.
+Constructing Single Method Strategy...
+Writing new restart file dakota.rst
+methodName = conmin_mfd
+gradientType = numerical
+Numerical gradients using central differences
+to be calculated by the dakota finite difference routine.
+hessianType = none
+
+>>>>> Running Single Method Strategy.
+
+>>>>> Running conmin_mfd iterator.
+
+------------------------------
+Begin Function Evaluation    1
+------------------------------
+Parameters for function evaluation 1:
+                      9.0000000000e-01 x1
+                      1.1000000000e+00 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 1:
+Active set vector = { 1 1 1 }
+                      2.0000000000e-04 obj_fn
+                      2.6000000000e-01 nln_ineq_con_1
+                      7.6000000000e-01 nln_ineq_con_2
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation    2
+------------------------------
+Parameters for function evaluation 2:
+                      9.0009000000e-01 x1
+                      1.1000000000e+00 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 2:
+Active set vector = { 1 1 1 }
+                      1.9964048571e-04 obj_fn
+                      2.6016200810e-01 nln_ineq_con_1
+                      7.5995500000e-01 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[1] - h:
+
+------------------------------
+Begin Function Evaluation    3
+------------------------------
+Parameters for function evaluation 3:
+                      8.9991000000e-01 x1
+                      1.1000000000e+00 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 3:
+Active set vector = { 1 1 1 }
+                      2.0036048629e-04 obj_fn
+                      2.5983800810e-01 nln_ineq_con_1
+                      7.6004500000e-01 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation    4
+------------------------------
+Parameters for function evaluation 4:
+                      9.0000000000e-01 x1
+                      1.1001100000e+00 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 4:
+Active set vector = { 1 1 1 }
+                      2.0044072653e-04 obj_fn
+                      2.5994500000e-01 nln_ineq_con_1
+                      7.6024201210e-01 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] - h:
+
+------------------------------
+Begin Function Evaluation    5
+------------------------------
+Parameters for function evaluation 5:
+                      9.0000000000e-01 x1
+                      1.0998900000e+00 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 5:
+Active set vector = { 1 1 1 }
+                      1.9956072547e-04 obj_fn
+                      2.6005500000e-01 nln_ineq_con_1
+                      7.5975801210e-01 nln_ineq_con_2
+
+
+>>>>> Gradients returned to iterator:
+
+Active set vector = { 2 2 2 } Deriv vars vector = { 1 2 }
+ [ -4.0000032400e-03  4.0000048400e-03 ] obj_fn gradient
+ [  1.8000000000e+00 -5.0000000000e-01 ] nln_ineq_con_1 gradient
+ [ -5.0000000000e-01  2.2000000000e+00 ] nln_ineq_con_2 gradient
+
+
+
+------------------------------
+Begin Function Evaluation    6
+------------------------------
+Parameters for function evaluation 6:
+                      5.8256179003e-01 x1
+                      4.7722244410e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 6:
+Active set vector = { 1 1 1 }
+                      1.0505559370e-01 obj_fn
+                      1.0076701715e-01 nln_ineq_con_1
+                     -6.3539633857e-02 nln_ineq_con_2
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation    7
+------------------------------
+Parameters for function evaluation 7:
+                      5.8262004621e-01 x1
+                      4.7722244410e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 7:
+Active set vector = { 1 1 1 }
+                      1.0503864690e-01 obj_fn
+                      1.0083489619e-01 nln_ineq_con_1
+                     -6.3568761947e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[1] - h:
+
+------------------------------
+Begin Function Evaluation    8
+------------------------------
+Parameters for function evaluation 8:
+                      5.8250353385e-01 x1
+                      4.7722244410e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 8:
+Active set vector = { 1 1 1 }
+                      1.0507254760e-01 obj_fn
+                      1.0069914490e-01 nln_ineq_con_1
+                     -6.3510505768e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation    9
+------------------------------
+Parameters for function evaluation 9:
+                      5.8256179003e-01 x1
+                      4.7727016635e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 9:
+Active set vector = { 1 1 1 }
+                      1.0502832451e-01 obj_fn
+                      1.0074315603e-01 nln_ineq_con_1
+                     -6.3494083328e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] - h:
+
+------------------------------
+Begin Function Evaluation   10
+------------------------------
+Parameters for function evaluation 10:
+                      5.8256179003e-01 x1
+                      4.7717472186e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 10:
+Active set vector = { 1 1 1 }
+                      1.0508287036e-01 obj_fn
+                      1.0079087827e-01 nln_ineq_con_1
+                     -6.3585179832e-02 nln_ineq_con_2
+
+
+>>>>> Gradients returned to iterator:
+
+Active set vector = { 2 2 2 } Deriv vars vector = { 1 2 }
+ [ -2.9096221763e-01 -5.7149284430e-01 ] obj_fn gradient
+ [  1.1651235801e+00 -5.0000000000e-01 ] nln_ineq_con_1 gradient
+ [ -5.0000000000e-01  9.5444488821e-01 ] nln_ineq_con_2 gradient
+
+
+
+------------------------------
+Begin Function Evaluation   11
+------------------------------
+Parameters for function evaluation 11:
+                      5.0000000000e-01 x1
+                      4.3181315662e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 11:
+Active set vector = { 1 1 1 }
+                      1.6672326949e-01 obj_fn
+                      3.4093421691e-02 nln_ineq_con_1
+                     -6.3537397771e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   12
+------------------------------
+Parameters for function evaluation 12:
+                      5.0000000000e-01 x1
+                      3.6954950616e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 12:
+Active set vector = { 1 1 1 }
+                      2.2048067205e-01 obj_fn
+                      6.5225246918e-02 nln_ineq_con_1
+                     -1.1343316249e-01 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   13
+------------------------------
+Parameters for function evaluation 13:
+                      5.0000000000e-01 x1
+                      3.7577587269e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 13:
+Active set vector = { 1 1 1 }
+                      2.1433161217e-01 obj_fn
+                      6.2112063653e-02 nln_ineq_con_1
+                     -1.0879249350e-01 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   14
+------------------------------
+Parameters for function evaluation 14:
+                      5.0000000000e-01 x1
+                      3.6954950616e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      2.2048067205e-01 obj_fn
+                      6.5225246918e-02 nln_ineq_con_1
+                     -1.1343316249e-01 nln_ineq_con_2
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   15
+------------------------------
+Parameters for function evaluation 15:
+                      5.0005000000e-01 x1
+                      4.3181315662e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 15:
+Active set vector = { 1 1 1 }
+                      1.6669827324e-01 obj_fn
+                      3.4143424191e-02 nln_ineq_con_1
+                     -6.3562397771e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[1] - h:
+
+------------------------------
+Begin Function Evaluation   16
+------------------------------
+Parameters for function evaluation 16:
+                      5.0010000000e-01 x1
+                      4.3181315662e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 16:
+Active set vector = { 1 1 1 }
+                      1.6667328449e-01 obj_fn
+                      3.4193431691e-02 nln_ineq_con_1
+                     -6.3587397771e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   17
+------------------------------
+Parameters for function evaluation 17:
+                      5.0000000000e-01 x1
+                      4.3185633793e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 17:
+Active set vector = { 1 1 1 }
+                      1.6669158988e-01 obj_fn
+                      3.4071831033e-02 nln_ineq_con_1
+                     -6.3500103386e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] - h:
+
+------------------------------
+Begin Function Evaluation   18
+------------------------------
+Parameters for function evaluation 18:
+                      5.0000000000e-01 x1
+                      4.3176997530e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 18:
+Active set vector = { 1 1 1 }
+                      1.6675495633e-01 obj_fn
+                      3.4115012349e-02 nln_ineq_con_1
+                     -6.3574688427e-02 nln_ineq_con_2
+
+
+>>>>> Gradients returned to iterator:
+
+Active set vector = { 2 2 2 } Deriv vars vector = { 1 2 }
+ [ -1.6132220769e+03 -7.3372533212e-01 ] obj_fn gradient
+ [ -9.3295475683e+02 -5.0000000000e-01 ] nln_ineq_con_1 gradient
+ [  1.4963729417e+03  8.6362631324e-01 ] nln_ineq_con_2 gradient
+
+
+
+------------------------------
+Begin Function Evaluation   19
+------------------------------
+Parameters for function evaluation 19:
+                      5.0054686818e-01 x1
+                     -5.2040653253e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 19:
+Active set vector = { 1 1 1 }
+                      5.4058881224e+00 obj_fn
+                      5.1075043351e-01 nln_ineq_con_1
+                      2.0549525016e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   20
+------------------------------
+Parameters for function evaluation 20:
+                      5.0000925540e-01 x1
+                      4.1569744085e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 20:
+Active set vector = { 1 1 1 }
+                      1.7905580589e-01 obj_fn
+                      4.2160535058e-02 nln_ineq_con_1
+                     -7.7200265369e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   21
+------------------------------
+Parameters for function evaluation 21:
+                      5.0000091903e-01 x1
+                      4.3021291486e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 21:
+Active set vector = { 1 1 1 }
+                      1.6790191747e-01 obj_fn
+                      3.4894461602e-02 nln_ineq_con_1
+                     -6.4917307401e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   22
+------------------------------
+Parameters for function evaluation 22:
+                      5.0037519002e-01 x1
+                     -2.2147650787e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 22:
+Active set vector = { 1 1 1 }
+                      2.2883911161e+00 obj_fn
+                      3.6111358472e-01 nln_ineq_con_1
+                     -2.0113575147e-01 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   23
+------------------------------
+Parameters for function evaluation 23:
+                      5.0001051068e-01 x1
+                      4.1351171730e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 23:
+Active set vector = { 1 1 1 }
+                      1.8080907777e-01 obj_fn
+                      4.3254652138e-02 nln_ineq_con_1
+                     -7.9013314994e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   24
+------------------------------
+Parameters for function evaluation 24:
+                      5.0000102981e-01 x1
+                      4.3002003316e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 24:
+Active set vector = { 1 1 1 }
+                      1.6804465587e-01 obj_fn
+                      3.4991013226e-02 nln_ineq_con_1
+                     -6.5083285982e-02 nln_ineq_con_2
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   25
+------------------------------
+Parameters for function evaluation 25:
+                      5.0005000000e-01 x1
+                      4.3181315662e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 25:
+Active set vector = { 1 1 1 }
+                      1.6669827324e-01 obj_fn
+                      3.4143424191e-02 nln_ineq_con_1
+                     -6.3562397771e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[1] - h:
+
+------------------------------
+Begin Function Evaluation   26
+------------------------------
+Parameters for function evaluation 26:
+                      5.0010000000e-01 x1
+                      4.3181315662e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 26:
+Active set vector = { 1 1 1 }
+                      1.6667328449e-01 obj_fn
+                      3.4193431691e-02 nln_ineq_con_1
+                     -6.3587397771e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   27
+------------------------------
+Parameters for function evaluation 27:
+                      5.0000000000e-01 x1
+                      4.3185633793e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 27:
+Active set vector = { 1 1 1 }
+                      1.6669158988e-01 obj_fn
+                      3.4071831033e-02 nln_ineq_con_1
+                     -6.3500103386e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] - h:
+
+------------------------------
+Begin Function Evaluation   28
+------------------------------
+Parameters for function evaluation 28:
+                      5.0000000000e-01 x1
+                      4.3176997530e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 28:
+Active set vector = { 1 1 1 }
+                      1.6675495633e-01 obj_fn
+                      3.4115012349e-02 nln_ineq_con_1
+                     -6.3574688427e-02 nln_ineq_con_2
+
+
+>>>>> Gradients returned to iterator:
+
+Active set vector = { 2 2 2 } Deriv vars vector = { 1 2 }
+ [ -4.0141591520e+01 -7.3372533212e-01 ] obj_fn gradient
+ [ -2.5927746063e+01 -5.0000000000e-01 ] nln_ineq_con_1 gradient
+ [  4.5876646319e+01  8.6362631324e-01 ] nln_ineq_con_2 gradient
+
+
+
+------------------------------
+Begin Function Evaluation   29
+------------------------------
+Parameters for function evaluation 29:
+                      5.0002017833e-01 x1
+                      4.3093644298e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 29:
+Active set vector = { 1 1 1 }
+                      1.6735793831e-01 obj_fn
+                      3.4551957246e-02 nln_ineq_con_1
+                     -6.4303871274e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   30
+------------------------------
+Parameters for function evaluation 30:
+                      5.0000209897e-01 x1
+                      4.3172195996e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 30:
+Active set vector = { 1 1 1 }
+                      1.6678914942e-01 obj_fn
+                      3.4141118995e-02 nln_ineq_con_1
+                     -6.3617198773e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   31
+------------------------------
+Parameters for function evaluation 31:
+                      5.0000209897e-01 x1
+                      4.3172195996e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.6678914942e-01 obj_fn
+                      3.4141118995e-02 nln_ineq_con_1
+                     -6.3617198773e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   32
+------------------------------
+Parameters for function evaluation 32:
+                      5.0000522253e-01 x1
+                      4.3175466431e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 32:
+Active set vector = { 1 1 1 }
+                      1.6676358218e-01 obj_fn
+                      3.4127890397e-02 nln_ineq_con_1
+                     -6.3590521106e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   33
+------------------------------
+Parameters for function evaluation 33:
+                      5.0000210282e-01 x1
+                      4.3178960509e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 33:
+Active set vector = { 1 1 1 }
+                      1.6673949952e-01 obj_fn
+                      3.4107300277e-02 nln_ineq_con_1
+                     -6.3558788347e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   34
+------------------------------
+Parameters for function evaluation 34:
+                      5.0000210282e-01 x1
+                      4.3178960509e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.6673949952e-01 obj_fn
+                      3.4107300277e-02 nln_ineq_con_1
+                     -6.3558788347e-02 nln_ineq_con_2
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   35
+------------------------------
+Parameters for function evaluation 35:
+                      5.0005000000e-01 x1
+                      4.3181315662e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 35:
+Active set vector = { 1 1 1 }
+                      1.6669827324e-01 obj_fn
+                      3.4143424191e-02 nln_ineq_con_1
+                     -6.3562397771e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[1] - h:
+
+------------------------------
+Begin Function Evaluation   36
+------------------------------
+Parameters for function evaluation 36:
+                      5.0010000000e-01 x1
+                      4.3181315662e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 36:
+Active set vector = { 1 1 1 }
+                      1.6667328449e-01 obj_fn
+                      3.4193431691e-02 nln_ineq_con_1
+                     -6.3587397771e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   37
+------------------------------
+Parameters for function evaluation 37:
+                      5.0000000000e-01 x1
+                      4.3185633793e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 37:
+Active set vector = { 1 1 1 }
+                      1.6669158988e-01 obj_fn
+                      3.4071831033e-02 nln_ineq_con_1
+                     -6.3500103386e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] - h:
+
+------------------------------
+Begin Function Evaluation   38
+------------------------------
+Parameters for function evaluation 38:
+                      5.0000000000e-01 x1
+                      4.3176997530e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 38:
+Active set vector = { 1 1 1 }
+                      1.6675495633e-01 obj_fn
+                      3.4115012349e-02 nln_ineq_con_1
+                     -6.3574688427e-02 nln_ineq_con_2
+
+
+>>>>> Gradients returned to iterator:
+
+Active set vector = { 2 2 2 } Deriv vars vector = { 1 2 }
+ [ -9.8690085958e-01 -7.3372533212e-01 ] obj_fn gradient
+ [  5.8364242539e-01 -5.0000000000e-01 ] nln_ineq_con_1 gradient
+ [  1.4171727460e-01  8.6362631324e-01 ] nln_ineq_con_2 gradient
+
+
+
+------------------------------
+Begin Function Evaluation   39
+------------------------------
+Parameters for function evaluation 39:
+                      5.0000000000e-01 x1
+                      4.3247168498e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 39:
+Active set vector = { 1 1 1 }
+                      1.6624092991e-01 obj_fn
+                      3.3764157510e-02 nln_ineq_con_1
+                     -6.2968241691e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   40
+------------------------------
+Parameters for function evaluation 40:
+                      5.0000000000e-01 x1
+                      4.3510579843e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 40:
+Active set vector = { 1 1 1 }
+                      1.6432829395e-01 obj_fn
+                      3.2447100787e-02 nln_ineq_con_1
+                     -6.0682944176e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   41
+------------------------------
+Parameters for function evaluation 41:
+                      5.0000000000e-01 x1
+                      4.4827636566e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 41:
+Active set vector = { 1 1 1 }
+                      1.5515873214e-01 obj_fn
+                      2.5861817171e-02 nln_ineq_con_1
+                     -4.9048299993e-02 nln_ineq_con_2
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   42
+------------------------------
+Parameters for function evaluation 42:
+                      5.0005000000e-01 x1
+                      4.4827636566e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 42:
+Active set vector = { 1 1 1 }
+                      1.5513373589e-01 obj_fn
+                      2.5911819671e-02 nln_ineq_con_1
+                     -4.9073299993e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[1] - h:
+
+------------------------------
+Begin Function Evaluation   43
+------------------------------
+Parameters for function evaluation 43:
+                      5.0010000000e-01 x1
+                      4.4827636566e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 43:
+Active set vector = { 1 1 1 }
+                      1.5510874714e-01 obj_fn
+                      2.5961827171e-02 nln_ineq_con_1
+                     -4.9098299993e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   44
+------------------------------
+Parameters for function evaluation 44:
+                      5.0000000000e-01 x1
+                      4.4832119329e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 44:
+Active set vector = { 1 1 1 }
+                      1.5512862166e-01 obj_fn
+                      2.5839403353e-02 nln_ineq_con_1
+                     -4.9008107644e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] - h:
+
+------------------------------
+Begin Function Evaluation   45
+------------------------------
+Parameters for function evaluation 45:
+                      5.0000000000e-01 x1
+                      4.4823153802e-01 x2
+
+text_book.sh params.in results.out
+
+Active response data for function evaluation 45:
+Active set vector = { 1 1 1 }
+                      1.5518884996e-01 obj_fn
+                      2.5884230990e-02 nln_ineq_con_1
+                     -4.9088488324e-02 nln_ineq_con_2
+
+
+>>>>> Gradients returned to iterator:
+
+Active set vector = { 2 2 2 } Deriv vars vector = { 1 2 }
+ [ -4.9999999000e-01 -6.7177642562e-01 ] obj_fn gradient
+ [  1.0000000000e+00 -5.0000000000e-01 ] nln_ineq_con_1 gradient
+ [ -5.0000000000e-01  8.9655273131e-01 ] nln_ineq_con_2 gradient
+
+
+
+------------------------------
+Begin Function Evaluation   46
+------------------------------
+Parameters for function evaluation 46:
+                      5.0000000000e-01 x1
+                      4.4827636566e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.5515873214e-01 obj_fn
+                      2.5861817171e-02 nln_ineq_con_1
+                     -4.9048299993e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   47
+------------------------------
+Parameters for function evaluation 47:
+                      5.0000000000e-01 x1
+                      4.4827636566e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.5515873214e-01 obj_fn
+                      2.5861817171e-02 nln_ineq_con_1
+                     -4.9048299993e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   48
+------------------------------
+Parameters for function evaluation 48:
+                      5.0000000000e-01 x1
+                      4.4827636566e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.5515873214e-01 obj_fn
+                      2.5861817171e-02 nln_ineq_con_1
+                     -4.9048299993e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   49
+------------------------------
+Parameters for function evaluation 49:
+                      5.0000000000e-01 x1
+                      4.4827636566e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.5515873214e-01 obj_fn
+                      2.5861817171e-02 nln_ineq_con_1
+                     -4.9048299993e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   50
+------------------------------
+Parameters for function evaluation 50:
+                      5.0000000000e-01 x1
+                      4.4827636566e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.5515873214e-01 obj_fn
+                      2.5861817171e-02 nln_ineq_con_1
+                     -4.9048299993e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   51
+------------------------------
+Parameters for function evaluation 51:
+                      5.0000000000e-01 x1
+                      4.4827636566e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.5515873214e-01 obj_fn
+                      2.5861817171e-02 nln_ineq_con_1
+                     -4.9048299993e-02 nln_ineq_con_2
+
+
+
+------------------------------------------
+Begin Dakota derivative estimation routine
+------------------------------------------
+
+>>>>> Dakota finite difference gradient evaluation for x[1] + h:
+
+------------------------------
+Begin Function Evaluation   52
+------------------------------
+Parameters for function evaluation 52:
+                      5.0005000000e-01 x1
+                      4.4827636566e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.5513373589e-01 obj_fn
+                      2.5911819671e-02 nln_ineq_con_1
+                     -4.9073299993e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[1] - h:
+
+------------------------------
+Begin Function Evaluation   53
+------------------------------
+Parameters for function evaluation 53:
+                      5.0010000000e-01 x1
+                      4.4827636566e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.5510874714e-01 obj_fn
+                      2.5961827171e-02 nln_ineq_con_1
+                     -4.9098299993e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] + h:
+
+------------------------------
+Begin Function Evaluation   54
+------------------------------
+Parameters for function evaluation 54:
+                      5.0000000000e-01 x1
+                      4.4832119329e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.5512862166e-01 obj_fn
+                      2.5839403353e-02 nln_ineq_con_1
+                     -4.9008107644e-02 nln_ineq_con_2
+
+
+>>>>> Dakota finite difference gradient evaluation for x[2] - h:
+
+------------------------------
+Begin Function Evaluation   55
+------------------------------
+Parameters for function evaluation 55:
+                      5.0000000000e-01 x1
+                      4.4823153802e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.5518884996e-01 obj_fn
+                      2.5884230990e-02 nln_ineq_con_1
+                     -4.9088488324e-02 nln_ineq_con_2
+
+
+>>>>> Gradients returned to iterator:
+
+Active set vector = { 2 2 2 } Deriv vars vector = { 1 2 }
+ [ -4.9999999000e-01 -6.7177642562e-01 ] obj_fn gradient
+ [  1.0000000000e+00 -5.0000000000e-01 ] nln_ineq_con_1 gradient
+ [ -5.0000000000e-01  8.9655273131e-01 ] nln_ineq_con_2 gradient
+
+
+
+------------------------------
+Begin Function Evaluation   56
+------------------------------
+Parameters for function evaluation 56:
+                      5.0000000000e-01 x1
+                      4.4827636566e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.5515873214e-01 obj_fn
+                      2.5861817171e-02 nln_ineq_con_1
+                     -4.9048299993e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   57
+------------------------------
+Parameters for function evaluation 57:
+                      5.0000000000e-01 x1
+                      4.4827636566e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.5515873214e-01 obj_fn
+                      2.5861817171e-02 nln_ineq_con_1
+                     -4.9048299993e-02 nln_ineq_con_2
+
+
+
+------------------------------
+Begin Function Evaluation   58
+------------------------------
+Parameters for function evaluation 58:
+                      5.0000000000e-01 x1
+                      4.4827636566e-01 x2
+
+Duplication detected: analysis_drivers not invoked.
+
+Active response data retrieved from database:
+Active set vector = { 1 1 1 }
+                      1.5515873214e-01 obj_fn
+                      2.5861817171e-02 nln_ineq_con_1
+                     -4.9048299993e-02 nln_ineq_con_2
+
+
+<<<<< Function evaluation summary: 58 total (42 new, 16 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      4.4827636566e-01 x2
+<<<<< Best objective function  =
+                      1.5515873214e-01
+<<<<< Best constraint values   =
+                      2.5861817171e-02
+                     -4.9048299993e-02
+<<<<< Best data captured at function evaluation 41
+
+
+<<<<< Iterator conmin_mfd completed.
+<<<<< Single Method Strategy completed.
+DAKOTA execution time in seconds:
+  Total CPU        =       0.04
+1
+
+
+
+            * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+            *                                                   *
+            *                    C O N M I N                    *
+            *                                                   *
+            *                FORTRAN PROGRAM FOR                *
+            *                                                   *
+            *         CONSTRAINED FUNCTION MINIMIZATION         *
+            *                                                   *
+            * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+
+
+
+     CONSTRAINED FUNCTION MINIMIZATION
+
+     CONTROL PARAMETERS
+
+     IPRINT  NDV    ITMAX    NCON    NSIDE  ICNDIR   NSCAL   NFDG
+       2       2      60       2       1       3       0       1
+
+     LINOBJ  ITRM     N1      N2      N3      N4      N5
+       0       3       4       6       5       5      10
+
+         CT              CTMIN           CTL             CTLMIN
+     -0.10000E+00     0.10000E-02    -0.10000E-01     0.10000E-02
+
+         THETA           PHI             DELFUN          DABFUN
+      0.10000E+01     0.50000E+01     0.10000E-06     0.10000E-06
+
+         FDCH            FDCHM           ALPHAX          ABOBJ1
+      0.10000E-04     0.10000E-04     0.10000E+00     0.10000E+00
+
+     LOWER BOUNDS ON DECISION VARIABLES (VLB)
+       1)    0.50000E+00 -0.29000E+01
+
+     UPPER BOUNDS ON DECISION VARIABLES (VUB)
+       1)    0.58000E+01  0.29000E+01
+
+     ALL CONSTRAINTS ARE NON-LINEAR
+
+
+     INITIAL FUNCTION INFORMATION
+
+     OBJ =   0.200000E-03
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.90000E+00  0.11000E+01
+
+     CONSTRAINT VALUES (G-VECTOR)
+       1)    0.26000E+00  0.76000E+00
+ 
+
+
+
+
+     ITER =    1     OBJ =   0.10506E+00
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.58256E+00  0.47722E+00
+
+     CONSTRAINT VALUES (G-VECTOR)
+       1)    0.10077E+00 -0.63540E-01
+
+
+
+
+     ITER =    2     OBJ =   0.16672E+00
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.50000E+00  0.43181E+00
+
+     CONSTRAINT VALUES (G-VECTOR)
+       1)    0.34093E-01 -0.63537E-01
+
+
+
+
+     ITER =    3     OBJ =   0.16672E+00     NO CHANGE IN OBJ
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.50000E+00  0.43181E+00
+
+     CONSTRAINT VALUES (G-VECTOR)
+       1)    0.34093E-01 -0.63537E-01
+
+
+
+
+     ITER =    4     OBJ =   0.16672E+00     NO CHANGE IN OBJ
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.50000E+00  0.43181E+00
+
+     CONSTRAINT VALUES (G-VECTOR)
+       1)    0.34093E-01 -0.63537E-01
+
+
+
+
+     ITER =    5     OBJ =   0.16672E+00     NO CHANGE IN OBJ
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.50000E+00  0.43181E+00
+
+     CONSTRAINT VALUES (G-VECTOR)
+       1)    0.34093E-01 -0.63537E-01
+
+
+
+
+     ITER =    6     OBJ =   0.16672E+00     NO CHANGE IN OBJ
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.50000E+00  0.43181E+00
+
+     CONSTRAINT VALUES (G-VECTOR)
+       1)    0.34093E-01 -0.63537E-01
+
+
+
+
+     ITER =    7     OBJ =   0.15516E+00
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.50000E+00  0.44828E+00
+
+     CONSTRAINT VALUES (G-VECTOR)
+       1)    0.25862E-01 -0.49048E-01
+
+
+
+
+     ITER =    8     OBJ =   0.15516E+00     NO CHANGE IN OBJ
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.50000E+00  0.44828E+00
+
+     CONSTRAINT VALUES (G-VECTOR)
+       1)    0.25862E-01 -0.49048E-01
+
+
+
+
+     ITER =    9     OBJ =   0.15516E+00     NO CHANGE IN OBJ
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.50000E+00  0.44828E+00
+
+     CONSTRAINT VALUES (G-VECTOR)
+       1)    0.25862E-01 -0.49048E-01
+
+
+
+
+     ITER =   10     OBJ =   0.15516E+00     NO CHANGE IN OBJ
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.50000E+00  0.44828E+00
+
+     CONSTRAINT VALUES (G-VECTOR)
+       1)    0.25862E-01 -0.49048E-01
+1
+
+
+
+    FINAL OPTIMIZATION INFORMATION
+
+     OBJ =   0.155159E+00
+
+     DECISION VARIABLES (X-VECTOR)
+       1)    0.50000E+00  0.44828E+00
+
+     CONSTRAINT VALUES (G-VECTOR)
+       1)    0.25862E-01 -0.49048E-01
+
+     THERE ARE    1 ACTIVE CONSTRAINTS
+     CONSTRAINT NUMBERS ARE
+         2
+
+     THERE ARE    1 VIOLATED CONSTRAINTS
+     CONSTRAINT NUMBERS ARE
+         1
+
+     THERE ARE    1 ACTIVE SIDE CONSTRAINTS
+     DECISION VARIABLES AT LOWER OR UPPER BOUNDS (MINUS INDICATES LOWER BOUND)
+        -1
+
+     TERMINATION CRITERION
+          NFEASCT CONSECUTIVE ITERATIONS FAILED TO PRODUCE A   FEASIBLE DESIGN
+
+     NUMBER OF ITERATIONS =   10
+
+     OBJECTIVE FUNCTION WAS EVALUATED           30  TIMES
+
+     CONSTRAINT FUNCTIONS WERE EVALUATED        30  TIMES
+
+     GRADIENT OF OBJECTIVE WAS CALCULATED        7  TIMES
+
+     GRADIENTS OF CONSTRAINTS WERE CALCULATED    7  TIMES
