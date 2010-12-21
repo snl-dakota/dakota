@@ -632,21 +632,23 @@ As of DAKOTA 5.0, \c -levidence is no longer required and \c -lgsl is
 optional (discouraged due to GPL), depending on how DAKOTA was configured.
 
 Post DAKOTA 5.0, \c -lquadrature has been renamed to \c -lsparsegrid.
+Also the DFFTPACK library should be integrated into libpecos, so 
+\c -ldfftpack should not be needed and NKM should be integrated into
+libsurfpack, so \c -lnkm should not be needed.
 
 \code
-DAKOTA_LIBS = -L$(PREFIX)/lib -ldakota -lteuchos -lpecos -ldfftpack -llhs  \
-              -lsparsegrid -lsurfpack -lnkm -lconmin -lddace -ldot -lfsudace \
-	      -ljega -lcport -lnlpql -lnpsol -lopt -lpsuade -lnewmat    \
-              -lncsuopt -lcolin -linterfaces -lmomh -lscolib -lpebbl     \
-              -ltinyxml -lutilib -l3po -lboost_signals \
-	      -lhopspack -lexecutor -levaluator -lframework -lcitizens \
-	      -lshared -lnidr -lamplsolver -llapack -lblas
+DAKOTA_LIBS = -L${PREFIX}/lib -ldakota -lteuchos -lpecos -llhs         \
+              -lsparsegrid -lsurfpack -lconmin -lddace -ldot -lfsudace \
+	      -ljega -lcport -lnlpql -lnpsol -lopt -lpsuade -lnewmat   \
+              -lncsuopt -lcolin -linterfaces -lmomh -lscolib -lpebbl   \
+              -ltinyxml -lutilib -l3po -lboost_signals -lhopspack      \
+	      -lnidr -lamplsolver -llapack -lblas
 \endcode
 
 You may also need \c funcadd0.o, \c -lfl and, if linking with
 system-provided GSL, \c -lgslcblas. The AMPL solver library may
 require \c -ldl.  If configuring with graphics, you will need to add
-system X libraries (partial list here):
+\c -lDGraphics and system X libraries (partial list here):
 
 \code 
 -lXpm -lXm -lXt -lXmu -lXp -lXext -lX11 -lSM -lICE
@@ -656,9 +658,11 @@ We have experienced problems with the creation of \c libamplsolver.a
 on some platforms.  Please use the DAKOTA mailing lists for help with
 any problems.
 
-Finally, it is important to declare the compiler define \c
--DHAVE_CONFIG_H when including header files from DAKOTA.  This ensures
-that the platform configuration settings are properly propagated.
+Finally, it is important to use the same C++ compiler (possibly an MPI
+wrapper) for compiling DAKOTA and your application and declare the
+compiler define \c -DHAVE_CONFIG_H when including header files from
+DAKOTA.  This ensures that the platform configuration settings are
+properly propagated.
 
 
 \section DakLibrarySummary Summary
