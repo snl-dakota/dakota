@@ -66,6 +66,8 @@ packages may take from 15 minutes to over an hour.  Typical process:
   6) make [-j#]
   [optional] 7) make install
      * requires write privilege in $prefix (see "Installation Details" below).
+  [optional] 8) ./scripts/finish_install $prefix
+     * install DAKOTA dependencies and additional examples/tests into prefix
 
 where support for the message-passing interface (MPI) and Fortran90
 compilation may not be available on all platforms.  If your platform
