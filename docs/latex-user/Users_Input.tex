@@ -16,7 +16,7 @@ Section~\ref{input:gui}.  Once prepared, the DAKOTA input file and/or
 command line may identify additional files for data import as
 described in Section~\ref{input:import}.
 
-\section{JAGUAR 2.1}\label{input:gui}
+\section{JAGUAR 2.0}\label{input:gui}
 
 JAGUAR (JAva GUi for Applied Research) is a Java software tool for
 automatically rendering a graphical user interface (GUI) from a
@@ -32,15 +32,14 @@ specification and presents the user with linked graphical and plain
 text representations of problem set-up and option specification for
 DAKOTA studies. After the data have been input by the user, JAGUAR
 generates one or more input files for DAKOTA; it can also execute
-DAKOTA, capturing and (eventually) interpreting the results.
+DAKOTA, capturing and (eventually) interpret the results.
 
-JAGUAR 2.1 is available for Windows 32- and 64-bit platforms, Mac
-(Intel processors), and Linux 32- and 64-bit platforms.  While
-JAGUAR's core source is BSD licensed, binary distributions of JAGUAR
-include Eclipse Workbench components and are therefore subject to the
-terms of the Eclipse Public License.  This section provides an
-overview of acquiring, installing, and using JAGUAR.
-
+JAGUAR 2.0 is available for Windows, Mac (Intel processors), and Linux
+32- and 64-bit platforms.  While JAGUAR's core source is BSD licensed,
+binary distributions of JAGUAR include Eclipse Workbench components
+and are therefore subject to the terms of the Eclipse Public License.
+A short description of the steps for downloading, installing, and
+executing JAGUAR is provided below.
 
 \subsection{Downloading and Installing JAGUAR}
 
@@ -63,53 +62,38 @@ is provided here.
   distribution is accessed by clicking on the download link available
   from:~\url{http://dakota.sandia.gov/download.html} and
   filling out the short online registration form.  Download the JAGUAR
-  install for your platform (Windows 32/64-bit, Mac, or Linux 32/64-bit).
+  install for your platform (Windows, Mac, or Linux 32/64-bit).
 
-\begin{enumerate}
-
-\item For our Windows users we provide an installer that will
-  automatically install JAGUAR.  Download
-  JAGUAR\_2\_1.win32installer.exe to your Desktop, double-click it and
-  follow the instructions.  While the installer itself is 32-bit, it
-  has been tested successfully on 64-bit Windows 7 PCs.
-
-\item For all platforms we provide the JAGUAR package as a zipped archive file. 
-Windows and Mac users should be able to double-click on the file's icon from a
-file system browser to perform the extraction. Linux users can use
+The JAGUAR package is provided as a zipped archive file.  Windows and
+Mac users should be able to double-click on the file's icon from a
+file system browser to perform the extraction.  Linux users can use
 the {\tt unzip} utility to unzip the archive from their command-line
 console.  The JAGUAR installation package is self-contained, so JAGUAR
 can be directly run immediately after extracting the archive. (See
-Figure~\ref{fig:input:jag_package}). Take note of where you installed
-as you may want to create a shortcut or link to the installed JAGUAR 
+Figure~\ref{fig:input:jag_package}.)  Take note of where you installed
+as you may want to create a shortcut or link to the installed Jaguar
 executable.
-\end{enumerate}
-
-{\bf Important!} If you have a previous version of JAGUAR installed it
-is recommended to move your personal JAGUAR workspace directory to a
-different location or remove it (this directory can be found in your
-home directory or User\_folder \textgreater Jaguar\_workspace) to
-prevent corruption of the workspace when running JAGUAR 2.1.
-
 \begin{figure}
   \centering
-  \includegraphics[scale=0.6]{images/2_1jag_package}
+  \includegraphics[scale=0.6]{images/jag_package}
   \caption{The JAGUAR installation package.}
   \label{fig:input:jag_package}
 \end{figure}
 
 \end{itemize}
 
+
 \subsection{Running JAGUAR for the First Time}
 
 When starting JAGUAR for the first time, you should see a ``Welcome''
-screen.  As shown in Figure~\ref{fig:input:jag_welcome}, the Welcome
-screen provides quick navigation to many JAGUAR features.  This screen
-can be closed at anytime by clicking on the ``X'' located on the
-Welcome tab and returned to at anytime via the JAGUAR help menu ({\bf
-  Help $\rightarrow$ Welcome}).
+screen.  As can be seen in Figure~\ref{fig:input:jag_welcome}, the
+Welcome screen provides quick navigation to many JAGUAR features.
+This screen can be closed at anytime by clicking on the ``X'' located
+on the Welcome tab and returned to at anytime via the JAGUAR help menu
+({\bf Help $\rightarrow$ Welcome}).
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/2_1jag_welcome}
+  \includegraphics[scale=0.4]{images/jag_welcome}
   \caption{The JAGUAR ``Welcome'' screen.}
   \label{fig:input:jag_welcome}
 \end{figure}
@@ -126,27 +110,27 @@ two links provides access to guided tours via JAGUAR Cheat Sheets
 which are shown in Figure~\ref{fig:input:jag_cheatsheets}.
 \begin{figure}
   \centering
-  \includegraphics[scale=0.6]{images/2_1jag_cheatsheets}
+  \includegraphics[scale=0.6]{images/jag_cheatsheets}
   \caption{A sample JAGUAR cheatsheet.}
   \label{fig:input:jag_cheatsheets}
 \end{figure}
 JAGUAR Cheat Sheets are a useful mechanism for quickly learning how to
 perform important JAGUAR operations such as opening and saving files.
 They utilize an interactive step-by-step approach to guide new users
-through JAGUAR. The Welcome screen is also accessible from Cheat Sheets. 
-Cheat Sheets usually dock on the side of the application so
+through JAGUAR.  The Welcome screen is also accessible from Cheat
+Sheets.  Cheat Sheets usually dock on the side of the application so
 as to not obstruct user interactions, and can always be accessed from
 the JAGUAR help menu ({\bf Help $\rightarrow$ Cheat Sheets}).
 
 \item {\bf Create new input file.}  This link creates an empty DAKOTA
-  input file.  New input files can also be created by selecting {\bf
+  input file.  New input files can also be accessed by selecting {\bf
     New $\rightarrow$ DAKOTA input file} from the File menu.  Users
-  must enter a file name for newly-created input files when saving
-  them for the first time.
+  must enter a file name for newly-created input files when attempting
+  to save them for the first time.
 
-\item {\bf Create new input file from template.} This links creates a
-  new input file from existing DAKOTA templates. Users must also
-  enter a file name when saving these newly-created input files. This
+\item {\bf Create new input file from template.}  This links creates a
+  new input file from existing DAKOTA templates.  Users must also
+  enter a file name when saving these newly-created input files.  This
   action can also be accessed from the File menu by selecting {\bf New
   $\rightarrow$ DAKOTA input file from template}.
 
@@ -154,6 +138,7 @@ the JAGUAR help menu ({\bf Help $\rightarrow$ Cheat Sheets}).
 
 The remaining two links are used for sending an email to the JAGUAR
 developers, and viewing existing JAGUAR bugs.
+
 
 \subsection{Text Editors}
 
@@ -166,17 +151,15 @@ input file text (likely only comfortable for experienced DAKOTA
 users).
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/2_1jag_texteditor}
+  \includegraphics[scale=0.4]{images/jag_texteditor}
   \caption{The JAGUAR text editor.}
   \label{fig:input:jag_texteditor}
 \end{figure}
 
-The JAGUAR 2.1 text editor supports:
-\begin{itemize}
-\item Advanced syntax highlighting of errors and warnings with the ability to mouse over keywords for additional details.
-\item Auto-completion of keywords using Ctrl-Space.
-\item Text formatting using {\bf Edit $\rightarrow$ Format} or Ctrl-Shift-F. 
-\end{itemize}
+This text editor supports simple syntax highlighting.  Additional text
+editor features planned include syntax completion and
+context-sensitive, on-demand tooltip help.
+
 
 \subsection{Graphical Editors}
 
@@ -196,7 +179,7 @@ variables through interfaces to responses.  ``Define Flow/Iteration''
 is where a method or methods and possibly a strategy are specified.
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/2_1jag_graphical1}
+  \includegraphics[scale=0.4]{images/jag_graphical1}
   \caption{The ``Define Problem'' portion of the JAGUAR graphical
     editor.}
   \label{fig:input:jag_graphical1}
@@ -209,18 +192,18 @@ content is displayed and selections may be made.  As an example, see
 Figure \ref{fig:input:jag_graphical2}.
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/2_1jag_graphical2}
+  \includegraphics[scale=0.4]{images/jag_graphical2}
   \caption{Content selected from the left tree hierarchy is displayed
     on the right side of the view.}
   \label{fig:input:jag_graphical2}
 \end{figure}
 
-When a top-level element (i.e., Model, Variables, Interface,
-Responses, Strategy, or Method), represented by a multi-colored brick,
-is selected by a user, the right pane will display a top-level
-overview of the selection.  From this page, certain top-level elements
-will show instance restrictions for a valid input file, allow the user
-to create a new instance, and to go directly to or delete an existing
+When a top-level element (i.e., Model, Variable Interface, Responses,
+Strategy, or Method), represented by a multi-colored brick, is
+selected by a user, the right pane will display a top-level overview
+of the selection.  From this page, certain top-level elements will
+show instance restrictions for a valid input file, allow the user to
+create a new instance, and to go directly to or delete an existing
 instance.
 
 Within each top-level instance lie unique instances (represented by a
@@ -242,7 +225,7 @@ displayed in the content pane.  To view these child elements, select
 the element in the left hierarchy tree.
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/2_1jag_graphical4}
+  \includegraphics[scale=0.4]{images/jag_graphical4}
   \caption{Display of elements from a selected instance.}
   \label{fig:input:jag_graphical4}
 \end{figure}
@@ -258,7 +241,7 @@ There are five basic types of elements in JAGUAR.
   thus cannot be disabled.
 \begin{figure}
   \centering
-  \includegraphics[scale=0.8]{images/2_1jag_graphical5}
+  \includegraphics[scale=0.8]{images/jag_graphical5}
   \caption{Different element types in JAGUAR.}
   \label{fig:input:jag_graphical5}
 \end{figure}
@@ -297,14 +280,14 @@ or in preferences.
 
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/2_1jaguar_pushup_on}
+  \includegraphics[scale=0.4]{images/jaguar_pushup_on}
   \caption{JAGUAR with push-up elements enabled (default).}
   \label{fig:input:jaguar_pushup_on}
 \end{figure}
 
 \begin{figure}
   \centering
-  \includegraphics[scale=0.4]{images/2_1jaguar_pushup_off}
+  \includegraphics[scale=0.4]{images/jaguar_pushup_off}
   \caption{JAGUAR with push-up elements disabled.}
   \label{fig:input:jaguar_pushup_off}
 \end{figure}
@@ -328,17 +311,17 @@ text, displaying comments, and toggling push-up elements.
 The ``Execute Problem'' tab contains several options for executing
 DAKOTA on the active input file, as shown in
 Figure~\ref{fig:input:jag_execute}.
-\begin{figure}[htbp]
+\begin{figure}
   \centering
-  \includegraphics[scale=0.6]{images/4ExecuteProblem}
+  \includegraphics[scale=0.4]{images/jag_execute}
   \caption{The JAGUAR ``Execute Problem'' tab.}
   \label{fig:input:jag_execute}
 \end{figure}
 The execute options all rely on a locally installed copy of DAKOTA,
-the path to which can be set via {\bf Window $\rightarrow$ Preferences
-  $\rightarrow$ Jaguar}.
+the path to which can be set via Window \textgreater Preferences
+\textgreater Jaguar.
 
-Currently five modes of DAKOTA execution are supported:
+Currently four modes of DAKOTA execution are supported:
 \begin{itemize}
 
 \item {\bf Check:} While JAGUAR includes considerable input
@@ -346,7 +329,8 @@ validation, additional validation is managed solely by DAKOTA's input
 parser.  To use DAKOTA to validate the active input file (via {\tt
 dakota -check}), click the Check button and view the console output on
 the Visualize tab.  You should see a message indicating that the check
-completed and should see no errors
+completed and should see no errors:
+
 \begin{small}
 \begin{verbatim}
 Input check completed: problem specification parsed and objects instantiated.
@@ -385,27 +369,27 @@ function evaluation data, for example, to compute final statistics in
 a screening study (the analysis counterpart complementing Pre Run).
 Pre-run and post-run are central to the sensitivity analysis wizard.
 
-\item {\bf Core Run:} Perform only the model evaluation (invoke {\tt
-analysis\_drivers}) to map variables to responses.  ({\tt dakota
--run})
-
 \end{itemize}
 
 Results from any execute option are displayed on the ``Visualize
 Results'' tab as shown in Figure~\ref{fig:input:jaguar_visualize}.
 
-\begin{figure}[htbp]
+\begin{figure}
   \centering
-  \includegraphics[scale=0.6]{images/5Visualize}
+  \includegraphics[scale=0.4]{images/jaguar_visualize}
   \caption{JAGUAR Visualize Results tab.}
   \label{fig:input:jaguar_visualize}
 \end{figure}
 
-For all problem execution modes under {\bf Run}, a {\bf Manual
-  override} option allows users to modify the shell command used to
-execute the dakota program.  In future JAGUAR releases we hope to add
-the {\bf Remote job submission} execute mode, to permit DAKOTA job
-submission to a remote compute cluster and monitor the job status.
+Two additional modes will be supported in future JAGUAR versions:
+\begin{itemize} 
+\item {\bf Core Run:} Perform only the model evaluation (invoke {\tt
+analysis\_drivers}) to map variables to responses.  ({\tt dakota
+-run})
+
+\item {\bf Remote job submission:} Submit DAKOTA job on a remote
+compute cluster and monitor job status.
+\end{itemize}
 
 
 \subsection{Sensitivity Analysis Wizard}
@@ -479,258 +463,29 @@ containing the variables and response data to analyze.
 
 There exist many example input files for DAKOTA analysis and studies
 that users can build on, customizing their own studies from these
-templates. JAGUAR 2.1 also supports User-created templates (see
-Figure~\ref{fig:input:jag_template1}). To specify the path for saving
-your own templates go to {\bf Window $\rightarrow$ Preferences
-  $\rightarrow$ Jaguar $\rightarrow$ Templates Path} and define your
-template path.
+templates.  JAGUAR provides easy access to these templates by allowing
+users to generate new input files from a library of templates.  These
+templates can be accessed from the Welcome screen, or from the main
+File menu ({\bf New $\rightarrow$ DAKOTA input file from template}).
 
-JAGUAR contains a large library of pre-made input file templates that
-users can select from. Whether you want to access the standard
-templates library or the User-created templates to generate new DAKOTA
-input files you can do so in two ways:
-\begin{enumerate}
-\item from the Welcome screen 
-\item from the main File menu ({\bf New $\rightarrow$ DAKOTA input
-  file from template}).
-\end{enumerate}
-
-After selecting a template upon which to base a new input file,
+As shown in Figure~\ref{fig:input:jag_template1}, JAGUAR contains a
+large library of pre-made input file templates that users can select
+from.  After selecting a template upon which to base a new input file,
 specify a location to save the new input file (see
-Figure~\ref{fig:input:jag_template2}).  Also, at any time, you can
-save an input file or template as your own template with {\bf File
-  $\rightarrow$ Save $\rightarrow$ Save As Template} (see
-Figure~\ref{fig:input:9SaveAsTemplate}). The default directory for
-saving will be the one you defined as your own template path and the
-default template extension will be .dak.
+Figure~\ref{fig:input:jag_template2}).
 \begin{figure}
   \centering
-  \includegraphics[scale=0.6]{images/2_1jag_template1}
-  \caption{A list of DAKOTA input file templates in JAGUAR.}
+  \includegraphics[scale=0.6]{images/jag_template1}
+  \caption{A list of DAKOTA input file templates in JAGUAR}
   \label{fig:input:jag_template1}
 \end{figure}
 \begin{figure}
   \centering
-  \includegraphics[scale=0.6]{images/2_1jag_template2}
+  \includegraphics[scale=0.6]{images/jag_template2}
   \caption{Specifying a location for saving an input file generated
     from a template.}
   \label{fig:input:jag_template2}
 \end{figure}
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.6]{images/9SaveAsTemplate}
-  \caption{JAGUAR Save As Template Window.}
-  \label{fig:input:9SaveAsTemplate}
-\end{figure}
-
-\newpage
-\subsection{Brief tutorial on how to use JAGUAR}
-
-Here we provide a simple example originating from the input file {\tt
-  dakota\_rosenbrock\_2d.in} that can be found in the {\tt
-  examples/tutorial} directory of a DAKOTA distribution. To
-familiarize yourself with JAGUAR's basics, you can follow the steps
-here.
-
-Start Jaguar.
-
-In the Welcome screen, select ``Configure Jaguar'' or click {\bf
-  Window $\rightarrow$ Preferences $\rightarrow$ Jaguar} (see
-Figure~\ref{fig:input:0Preferences}).
-\begin{itemize}
-\item Under Jaguar options, provide your paths for ``DAKOTA
-  executable'' (this is the full path for the DAKOTA executable file
-  you will use to run DAKOTA), ``Save path'' (this is the full path
-  for the directory you wish to save your input files in) and
-  ``Templates path'' (this is the full path for the directory you wish
-  to save your own DAKOTA Templates in).
-\item Select ``OK''.
-\end{itemize}
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.6]{images/0Preferences}
-  \caption{JAGUAR Preferences.}
-  \label{fig:input:0Preferences}
-\end{figure}
-
-{\bf File $\rightarrow$ New $\rightarrow$ DAKOTA input file from template}
-\begin{itemize}
-\item Do either of the following:
-\begin{enumerate}
-\item Type ``tutorial'' in the quick search bar and select ``Tutorial
-  Rosenbrock''.
-\item Navigate down and select ``Tutorial Rosenbrock''.
-\end{enumerate}
-\item A preview of the template file should be visible, see
-  Figure~\ref{fig:input:1tutorial}.
-\item Select ``Next''.
-\item Specify a filename such as ``rosenbrock.i''.
-\item Select ``Finish''.
-\end{itemize}
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.6]{images/1tutorial}
-  \caption{DAKOTA input file templates.}
-  \label{fig:input:1tutorial}
-\end{figure}
-
-
-As in Figure~\ref{fig:input:2rosenbrockfile} notice the following:
-\begin{itemize}      
-\item There are errors reported for \texttt{direct} and
-  \texttt{analysis\_driver}. (Note: These error messages occur because
-  there is a limitation in the valid ordering of keywords as parsed by
-  JAGUAR. We plan to address this issue in future JAGUAR releases, but
-  for DAKOTA these are valid keywords).
-\item Mouse over and see the tooltip errors.
-\item Mouse over other keywords to see additional information.
-\item To run the advanced parsing engine and to format the text, press
-  Ctrl-Shift-F or {\bf Edit $\rightarrow$ Format}. Observe the updated
-  rosenbrock\_2d template input file in Figure~\ref{fig:input:3fixed}.
-\item You can always Undo (Ctrl-Z or {\bf Edit $\rightarrow$ ''Undo
-  Typing''}) and Redo (Ctrl-Y or {\bf Edit $\rightarrow$ ''Redo
-  Typing''}) to compare.
-\end{itemize}
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.6]{images/2rosenbrockfile}
-  \caption{rosenbrock\_2d input file.}
-  \label{fig:input:2rosenbrockfile}
-\end{figure}
-
-In Figure~\ref{fig:input:3fixed} notice the following:
-\begin{itemize}
-\item Cleaner look (unnecessary spaces and newlines removed).
-\item \texttt{analysis\_driver} replaced with
-  \texttt{analysis\_drivers} (JAGUAR-specific keyword correction).
-\item \texttt{direct} now a sub-element of \texttt{analysis\_drivers}
-  (JAGUAR-specific keyword correction).
-\item Double quoted ``x2'' replaced with single quoted 'x2' (uniformity).
-\end{itemize}
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.6]{images/3fixed}
-  \caption{``Updated'' rosenbrock\_2d template input file after using
-    the advanced parsing engine.}
-  \label{fig:input:3fixed}
-\end{figure}      
-
-
-To execute select the ``(3) Execute Problem'' tab at the bottom (see
-previously in Figure~\ref{fig:input:jag_execute}).  Notice the
-following (for reference see Figure~\ref{fig:input:jaguar_visualize}):
-\begin{itemize}
-\item Actual DAKOTA command (in green) that just ran.
-\item Output of DAKOTA's check mode run at the bottom.
-\end{itemize}
-
-Now go back to the Source (1st tab):
-\begin{itemize}
-\item Find tabular\_graphics\_data (around line 5), create a new line
-  below and press Ctrl-Space. Notice a list of potential keywords are
-  listed in a dropdown, see Figure~\ref{fig:input:6Autocomplete}.
-\item Press up or down arrows to navigate.
-\item Navigate to ``output\_precision'' but DO NOT press Enter.
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.6]{images/6Autocomplete}
-  \caption{Ctrl-Space Auto-completing keywords in the text editor.}
-  \label{fig:input:6Autocomplete}
-\end{figure}
-\begin{itemize}
-\item Notice that strategy is highlighted in the text, and also listed
-  next to output\_precision. Auto-completing keywords are sorted
-  backwards, meaning they keywords at the top are the closest matching
-  keywords. This helps you discover relevant keywords.
-\end{itemize}
-\item Select output\_precision
-\item Notice auto-complete types in an equal ``='' for you to remind
-  you to enter a value.
-\item Type in ``notinteger''.
-\item Notice red underline shows an error has occurred.
-\item Mouse over it (as in Figure~\ref{fig:input:7texterror}).
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.6]{images/7texterror}
-  \caption{Text error detailed message.}
-  \label{fig:input:7texterror}
-\end{figure}
-\item Correct by replacing it with a valid integer
-\item On the next line, type in ``iterato''.
-\item Right after the ``o'' in ``iterato'', press Ctrl-Space.
-\item Notice auto-completion can also finish off half completed
-  keywords. Pick one (see Figure~\ref{fig:input:8iterato}).
-\end{itemize}
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.6]{images/8iterato}
-  \caption{Text Editor's Auto-completion of partial words.}
-  \label{fig:input:8iterato}
-\end{figure}
-
-
-Save this corrected rosenbrock file as your own template (see
-Figure~\ref{fig:input:9SaveAsTemplate}): {\bf File $\rightarrow$ Save
-  As Template}
-\begin{itemize}
-\item Notice: this path is specified in the Jaguar Preferences you had
-  set earlier.
-\item Name it ``Rosenbrock Fixed''.
-\item Click ``Save''.
-\end{itemize} 
-
-Close all files (Ctrl-Shift-W) or {\bf File $\rightarrow$ ''Close
-  All''}. No need to save changes.
-
-
-Click on {\bf File $\rightarrow$ New $\rightarrow$ DAKOTA input file
-  from template}
-\begin{itemize}
-\item Do either of the following:
-\begin{enumerate}
-\item Type ``Fixed'' in the quick search bar and select ``Rosenbrock Fixed''.
-\item Navigate down and select ``Rosenbrock Fixed''.
-\end{enumerate}
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.6]{images/10Template_Rosenbrock}
-  \caption{Rosenbrock Fixed DAKOTA Template.}
-  \label{fig:input:10Template_Rosenbrock}
-\end{figure}
-
-\item Notice (see Figure~\ref{fig:input:10Template_Rosenbrock}) that:
-\begin{enumerate}
-\item This time we are creating an input file from a user-created template.
-\item User-created templates do not have stars on them and are listed
-  at the top.
-\end{enumerate} 
-\item A preview of the template file should be visible.
-\item Select ``Next''.
-\item Specify a filename such as ``rosenbrock\_fixed.i''. 
-\item Select ``Finish''.
-\end{itemize}
-
-
-This completes the basic tutorial of JAGUAR 2.1.
-
-\subsection{Troubleshooting}
-
-In case of errors, please try these options:
-\begin{enumerate}
-\item  Check if your Java version is supported: In a Command Prompt type``java -version''. You should have at least Java 1.5.
-\item  If there exists a corrupted JAGUAR workspace, remove the workspace (User\_folder \textgreater Jaguar\_workspace).
-\item  Enable Error Log: {\bf Window $\rightarrow$ Show View $\rightarrow$ Error Log} (see Figure~\ref{fig:input:11ShowView}).
-\end{enumerate}
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.6]{images/11ShowView}
-  \caption{Enabling Jaguar Error Log.}
-  \label{fig:input:11ShowView}
-\end{figure}
-
-
-Send any errors listed to our support email (jaguar-help@sandia.gov).
 
 \section{Data Imports}\label{input:import}
 
