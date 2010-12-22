@@ -39,8 +39,8 @@ Mac (Intel processors), and Linux 32- and 64-bit platforms.
 While JAGUAR's core source is BSD licensed,
 binary distributions of JAGUAR include Eclipse Workbench components
 and are therefore subject to the terms of the Eclipse Public License.
-A short description of the steps for downloading, installing, and
-executing JAGUAR is provided below.
+This section provides an overview of acquiring, installing, and using JAGUAR.
+
 
 \subsection{Downloading and Installing JAGUAR}
 
@@ -81,6 +81,11 @@ Figure~\ref{fig:input:jag_package}). Take note of where you installed
 as you may want to create a shortcut or link to the installed JAGUAR 
 executable.
 \end{enumerate}
+
+Please note that if you have a previous version of JAGUAR installed it is a good idea to 
+move the previous JAGUAR workspace directory to a different location (that directory is 
+under User\_folder \textgreater Jaguar\_workspace) or remove it to prevent the creation 
+of a corrupted workspace before installing JAGUAR 2.1.
 
 \begin{figure}
   \centering
@@ -125,8 +130,8 @@ which are shown in Figure~\ref{fig:input:jag_cheatsheets}.
 JAGUAR Cheat Sheets are a useful mechanism for quickly learning how to
 perform important JAGUAR operations such as opening and saving files.
 They utilize an interactive step-by-step approach to guide new users
-through JAGUAR.  The Welcome screen is also accessible from Cheat
-Sheets.  Cheat Sheets usually dock on the side of the application so
+through JAGUAR. The Welcome screen is also accessible from Cheat Sheets. 
+Cheat Sheets usually dock on the side of the application so
 as to not obstruct user interactions, and can always be accessed from
 the JAGUAR help menu ({\bf Help $\rightarrow$ Cheat Sheets}).
 
@@ -136,9 +141,9 @@ the JAGUAR help menu ({\bf Help $\rightarrow$ Cheat Sheets}).
   must enter a file name for newly-created input files when attempting
   to save them for the first time.
 
-\item {\bf Create new input file from template.}  This links creates a
-  new input file from existing DAKOTA templates.  Users must also
-  enter a file name when saving these newly-created input files.  This
+\item {\bf Create new input file from template.} This links creates a
+  new input file from existing DAKOTA templates. Users must also
+  enter a file name when saving these newly-created input files. This
   action can also be accessed from the File menu by selecting {\bf New
   $\rightarrow$ DAKOTA input file from template}.
 
@@ -146,7 +151,6 @@ the JAGUAR help menu ({\bf Help $\rightarrow$ Cheat Sheets}).
 
 The remaining two links are used for sending an email to the JAGUAR
 developers, and viewing existing JAGUAR bugs.
-
 
 \subsection{Text Editors}
 
@@ -164,9 +168,12 @@ users).
   \label{fig:input:jag_texteditor}
 \end{figure}
 
-This text editor supports simple syntax highlighting.  Additional text
-editor features are syntax completion and context-sensitive, on-demand tooltip help.
-
+The JAGUAR 2.1 text editor supports:
+\begin{itemize}
+\item Advanced syntax highlighting of errors and warnings with the ability to mouse over keywords for additional details.
+\item Auto-completion of keywords using Ctrl-Space.
+\item Text formatting using {\bf Edit $\rightarrow$ Format} or Ctrl-Shift-F. 
+\end{itemize}
 
 \subsection{Graphical Editors}
 
@@ -395,7 +402,6 @@ For all problem execution supported modes under {\bf Run} the additional feature
 {\bf Manual override} has been added to allow DAKOTA users to modify the problem execution 
 commands on the fly, without having to open new files in JAGUAR and start from scratch. 
 
-
 In future JAGUAR releases we plan to add another execute mode, the {\bf Remote job submission} for the users to be able to submit a DAKOTA job on a remote
 compute cluster and monitor the job status.
 
@@ -471,16 +477,25 @@ containing the variables and response data to analyze.
 
 There exist many example input files for DAKOTA analysis and studies
 that users can build on, customizing their own studies from these
-templates. JAGUAR provides easy access to these templates by allowing
-users to generate new input files from a library of templates.  These
-templates can be accessed from the Welcome screen, or from the main
-File menu ({\bf New $\rightarrow$ DAKOTA input file from template}).
+templates. JAGUAR 2.1 also supports User-created templates 
+(see Figure~\ref{fig:input:jag_template1}). To specify the path for 
+saving your own templates go to 
+{\bf Window $\rightarrow$ Preferences $\rightarrow$ Jaguar $\rightarrow$ Templates Path} 
+and define your template path.
 
-As shown in Figure~\ref{fig:input:jag_template1}, JAGUAR contains a
-large library of pre-made input file templates that users can select
-from.  After selecting a template upon which to base a new input file,
-specify a location to save the new input file (see
-Figure~\ref{fig:input:jag_template2}).
+JAGUAR contains a large library of pre-made input file templates that users can select 
+from. Whether you want to access the standard templates library or the User-created templates  
+to generate new DAKOTA input files you can do so in two ways:
+\begin{enumerate}
+\item from the Welcome screen 
+\item from the main File menu ({\bf New $\rightarrow$ DAKOTA input file from template}). 
+\end{enumerate}
+
+After selecting a template upon which to base a new input file,
+specify a location to save the new input file (see Figure~\ref{fig:input:jag_template2}).
+Also, at any time, you can save an input file or template as your own template 
+with {\bf File $\rightarrow$ Save $\rightarrow$ Save As Template} 
+(see Figure~\ref{fig:input:9SaveAsTemplate}). The default directory for saving will be the one you defined as your own template path and the default template extension will be .dak. 
 \begin{figure}
   \centering
   \includegraphics[scale=0.6]{images/2_1jag_template1}
@@ -493,6 +508,12 @@ Figure~\ref{fig:input:jag_template2}).
   \caption{Specifying a location for saving an input file generated
     from a template.}
   \label{fig:input:jag_template2}
+\end{figure}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=0.6]{images/9SaveAsTemplate}
+  \caption{JAGUAR Save As Template Window.}
+  \label{fig:input:9SaveAsTemplate}
 \end{figure}
 
 \newpage
@@ -519,13 +540,13 @@ In the Welcome screen, select ``Configure Jaguar'' or click {\bf Window $\righta
 \begin{itemize}
 \item Do either of the following:
 \begin{enumerate}
-\item Type ``tutorial'' in the quick search bar and select ``Tutorial Rosenbrock''
-\item Navigate down and select ``Tutorial Rosenbrock''
+\item Type ``tutorial'' in the quick search bar and select ``Tutorial Rosenbrock''.
+\item Navigate down and select ``Tutorial Rosenbrock''.
 \end{enumerate}
 \item A preview of the template file should be visible, see Figure~\ref{fig:input:1tutorial}.
-\item Select ``Next''
-\item Specify a filename such as ``rosenbrock.i''
-\item Select ``Finish''
+\item Select ``Next''.
+\item Specify a filename such as ``rosenbrock.i''.
+\item Select ``Finish''.
 \end{itemize}
 \begin{figure}[htbp]
   \centering
@@ -552,10 +573,10 @@ As in Figure~\ref{fig:input:2rosenbrockfile} notice the following:
 
 In Figure~\ref{fig:input:3fixed} notice the following:
 \begin{itemize}
-\item cleaner look (unnecessary spaces and newlines removed)
-\item \texttt{analysis\_driver} replaced with \texttt{analysis\_drivers} (JAGUAR specific keyword correction)
-\item \texttt{direct} now a sub-element of \texttt{analysis\_drivers} (JAGUAR specific keyword correction)
-\item double quoted ``x2'' replaced with single quoted 'x2' (uniform)
+\item Cleaner look (unnecessary spaces and newlines removed).
+\item \texttt{analysis\_driver} replaced with \texttt{analysis\_drivers} (JAGUAR specific keyword correction).
+\item \texttt{direct} now a sub-element of \texttt{analysis\_drivers} (JAGUAR specific keyword correction).
+\item Double quoted ``x2'' replaced with single quoted 'x2' (uniform).
 \end{itemize}
 \begin{figure}[htbp]
   \centering
@@ -566,7 +587,7 @@ In Figure~\ref{fig:input:3fixed} notice the following:
 
 
 To execute click the tab ``(3) Execute Problem'' at the bottom (see previously in Figure~\ref{fig:input:jag_execute}). 
-Refering to Figure~\ref{fig:input:jaguar_visualize} notice that:
+Notice the following (for reference see previously in Figure~\ref{fig:input:jaguar_visualize}):
 \begin{itemize}
 \item Actual DAKOTA command (in green) just ran.
 \item Output of DAKOTA's check run below.
@@ -610,20 +631,13 @@ Now go back to the Source (1st tab):
 \end{figure}
 
 
-Save this corrected rosenbrock file as your own template (Figure~\ref{fig:input:9SaveAsTemplate}):
+Save this corrected rosenbrock file as your own template (see Figure~\ref{fig:input:9SaveAsTemplate}):
 {\bf File $\rightarrow$ Save As Template}
 \begin{itemize}
 \item Notice: this path is specified in the Jaguar Preferences you had set earlier.
-\item Name it ``Rosenbrock Fixed''
-\item Click ``Save''
+\item Name it ``Rosenbrock Fixed''.
+\item Click ``Save''.
 \end{itemize} 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[scale=0.6]{images/9SaveAsTemplate}
-  \caption{Save As DAKOTA Template Window.}
-  \label{fig:input:9SaveAsTemplate}
-\end{figure}
-
 
 Close all files (Ctrl-Shift-W) or {\bf File $\rightarrow$ ''Close All''}. No need to save changes.
 
@@ -632,8 +646,8 @@ Click on {\bf File $\rightarrow$ New $\rightarrow$ DAKOTA input file from templa
 \begin{itemize}
 \item Do either of the following:
 \begin{enumerate}
-\item Type ``Fixed'' in the quick search bar and select ``Rosenbrock Fixed''
-\item Navigate down and select ``Rosenbrock Fixed''
+\item Type ``Fixed'' in the quick search bar and select ``Rosenbrock Fixed''.
+\item Navigate down and select ``Rosenbrock Fixed''.
 \end{enumerate}
 \begin{figure}[htbp]
   \centering
@@ -648,9 +662,9 @@ Click on {\bf File $\rightarrow$ New $\rightarrow$ DAKOTA input file from templa
 \item User-created templates do not have stars on them and are listed at the top.
 \end{enumerate} 
 \item A preview of the template file should be visible.
-\item Select ``Next''
-\item Specify a filename such as ``rosenbrock\_fixed.i'' 
-\item Select ``Finish''
+\item Select ``Next''.
+\item Specify a filename such as ``rosenbrock\_fixed.i''. 
+\item Select ``Finish''.
 \end{itemize}
 
 
@@ -660,7 +674,7 @@ This completes the basic tutorial of JAGUAR 2.1.
 
 In case of errors, please try these options:
 \begin{enumerate}
-\item  Check if your Java version is supported: In a Command Prompt type``java -version''. You should have at least Java 1.5
+\item  Check if your Java version is supported: In a Command Prompt type``java -version''. You should have at least Java 1.5.
 \item  If there exists a corrupted JAGUAR workspace, remove the workspace (User\_folder \textgreater Jaguar\_workspace).
 \item  Enable Error Log: {\bf Window $\rightarrow$ Show View $\rightarrow$ Error Log} (see Figure~\ref{fig:input:11ShowView}).
 \end{enumerate}
@@ -675,7 +689,6 @@ In case of errors, please try these options:
 
 Send any errors listed to our support email (jaguar-help@sandia.gov).
 
-\newpage
 \section{Data Imports}\label{input:import}
 
 The DAKOTA input file and/or command line may identify additional
