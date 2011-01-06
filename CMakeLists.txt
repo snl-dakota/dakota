@@ -155,7 +155,7 @@ set(SUBLIBS dakota_src)
 
 add_subdirectory(packages)
 add_subdirectory(src)
-#add_subdirectory(test)
+add_subdirectory(test)
 
 # Package-specific configuration options
 include_directories(${Dakota_BINARY_DIR})
