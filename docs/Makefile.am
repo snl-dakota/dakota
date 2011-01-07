@@ -3,8 +3,8 @@
 ## Add all the necessary m4 directories to aclocal's search path.
 ACLOCAL_AMFLAGS = -I m4
 
-## Nothing to do here; recurse into latex-user.
-SUBDIRS = latex-user
+## Dev and Ref at this level; recurse into latex-user and latex-theory
+SUBDIRS = latex-user latex-theory
 
 ## These files should be deleted on 'make maintainer-clean'.
 MAINTAINERCLEANFILES = aclocal.m4 configure install-sh missing Makefile.in
@@ -37,13 +37,14 @@ pdf-local: texmf.cnf doxygen-dev-ref
 	cd latex-ref && make && cd ..
 
 
-## Requires latex-user/Users_Main.pdf
+## Requires latex-user/Users_Main.pdf and latex-theory/Theory_Main.pdf
 SAND-shell: pdf-local
 	export TEXINPUTS=`pwd`:`pwd`/SANDreport:$$TEXINPUTS && \
 	cd latex-user && make pdf && cd .. && \
 	$(pdflatex) SAND-shell-dev && \
 	$(pdflatex) SAND-shell-ref && \
-	$(pdflatex) SAND-shell-users
+	$(pdflatex) SAND-shell-users && \
+	$(pdflatex) SAND-shell-theory
 
 
 clean-local:

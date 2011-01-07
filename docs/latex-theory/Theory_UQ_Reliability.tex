@@ -1,0 +1,381 @@
+\chapter{Reliability Methods}\label{uq:reliability}
+
+This chapter explores local and global reliability methods in greater
+detail than that provided in the Uncertainty Quantification chapter of
+the User's Manual.
+
+
+\section{Local Reliability Methods}\label{uq:reliability:local}
+
+Local reliability methods include the Mean Value method and the family
+of most probable point (MPP) search methods.
+
+
+\subsection{Mean Value}\label{uq:reliability:local:mv}
+
+The Mean Value method (MV, also known as MVFOSM in \cite{Hal00}) is
+the simplest, least-expensive reliability method because it estimates
+the response means, response standard deviations, and all CDF/CCDF
+response-probability-reliability levels from a single evaluation of
+response functions and their gradients at the uncertain variable
+means.  This approximation can have acceptable accuracy when the
+response functions are nearly linear and their distributions are
+approximately Gaussian, but can have poor accuracy in other
+situations.  The expressions for approximate response mean $\mu_g$,
+approximate response variance $\sigma^2_g$, response target to
+approximate probability/reliability level mapping ($\bar{z} \to p,\beta$),
+and probability/reliability target to approximate response level mapping
+($\bar{p},\bar{\beta} \to z$) are
+
+\begin{eqnarray}
+\mu_g      & = & g(\mu_{\bf x})  \label{eq:mv_mean1} \\
+\sigma^2_g & = & \sum_i \sum_j Cov(i,j) \frac{dg}{dx_i}(\mu_{\bf x})
+                 \frac{dg}{dx_j}(\mu_{\bf x}) \label{eq:mv_std_dev} \\
+\beta_{cdf}  & = & \frac{\mu_g - \bar{z}}{\sigma_g} \label{eq:mv_ria_cdf} \\
+\beta_{ccdf} & = & \frac{\bar{z} - \mu_g}{\sigma_g} \label{eq:mv_ria_ccdf} \\
+z        & = & \mu_g - \sigma_g \bar{\beta}_{cdf} \label{eq:mv_pma_cdf} \\
+z        & = & \mu_g + \sigma_g \bar{\beta}_{ccdf} \label{eq:mv_pma_ccdf}
+\end{eqnarray}
+
+respectively, where ${\bf x}$ are the uncertain values in the 
+space of the original uncertain variables (``x-space''), $g({\bf x})$
+is the limit state function (the response function for which
+probability-response level pairs are needed), and $\beta_{cdf}$ and
+$\beta_{ccdf}$ are the CDF and CCDF reliability indices, respectively.
+
+With the introduction of second-order limit state information, MVSOSM
+calculates a second-order mean as
+
+\begin{equation}
+\mu_g = g(\mu_{\bf x}) + \frac{1}{2} \sum_i \sum_j Cov(i,j) 
+\frac{d^2g}{dx_i dx_j}(\mu_{\bf x}) \label{eq:mv_mean2}
+\end{equation}
+
+This is commonly combined with a first-order variance
+(Equation~\ref{eq:mv_std_dev}), since second-order variance involves
+higher order distribution moments (skewness, kurtosis)~\cite{Hal00}
+which are often unavailable.
+
+The first-order CDF probability $p(g \le z)$, first-order 
+CCDF probability $p(g > z)$, $\beta_{cdf}$, and $\beta_{ccdf}$ are
+related to one another through
+
+\begin{eqnarray}
+p(g \le z)   & = & \Phi(-\beta_{cdf})     \label{eq:p_cdf} \\
+p(g > z)     & = & \Phi(-\beta_{ccdf})    \label{eq:p_ccdf} \\
+\beta_{cdf}  & = & -\Phi^{-1}(p(g \le z)) \label{eq:beta_cdf} \\
+\beta_{ccdf} & = & -\Phi^{-1}(p(g > z))   \label{eq:beta_ccdf} \\
+\beta_{cdf}  & = & -\beta_{ccdf}          \label{eq:beta_cdf_ccdf} \\
+p(g \le z)   & = & 1 - p(g > z)           \label{eq:p_cdf_ccdf}
+\end{eqnarray}
+
+where $\Phi()$ is the standard normal cumulative distribution
+function.  A common convention in the literature is to define $g$ in
+such a way that the CDF probability for a response level $z$ of zero
+(i.e., $p(g \le 0)$) is the response metric of interest.  DAKOTA is
+not restricted to this convention and is designed to support CDF or
+CCDF mappings for general response, probability, and reliability level
+sequences.
+
+With the Mean Value method, it is possible to obtain 
+importance factors indicating the relative importance of 
+input variables.  The importance factors can be viewed
+as an extension of linear sensitivity analysis combining deterministic
+gradient information with input uncertainty information,
+\emph{i.e}. input variable standard deviations. The accuracy of the
+importance factors is contingent of the validity of the linear
+approximation used to approximate the true response functions.
+The importance factors are determined as: 
+
+\begin{equation}
+ImpFactor_i  = ({\frac{\sigma_{x_{i}}}{\sigma_g}}{\frac{dg}{dx_i}(\mu_{\bf x})})^2
+\end{equation}
+
+
+\subsection{MPP Search Methods}\label{uq:reliability:local:mpp}
+
+All other local reliability methods solve an equality-constrained nonlinear
+optimization problem to compute a most probable point (MPP) and then
+integrate about this point to compute probabilities.  The MPP search
+is performed in uncorrelated standard normal space (``u-space'') since
+it simplifies the probability integration: the distance of the MPP
+from the origin has the meaning of the number of input standard
+deviations separating the mean response from a particular response
+threshold.  The transformation from correlated non-normal
+distributions (x-space) to uncorrelated standard normal distributions
+(u-space) is denoted as ${\bf u} = T({\bf x})$ with the reverse
+transformation denoted as ${\bf x} = T^{-1}({\bf u})$.  These
+transformations are nonlinear in general, and possible approaches
+include the Rosenblatt~\cite{Ros52}, Nataf~\cite{Der86}, and
+Box-Cox~\cite{Box64} transformations.  The nonlinear transformations
+may also be linearized, and common approaches for this include the
+Rackwitz-Fiessler~\cite{Rac78} two-parameter equivalent normal and the
+Chen-Lind~\cite{Che83} and Wu-Wirsching~\cite{Wu87} three-parameter
+equivalent normals.  DAKOTA employs the Nataf nonlinear transformation
+which is suitable for the common case when marginal distributions and
+a correlation matrix are provided, but full joint distributions are
+not known\footnote{If joint distributions are known, then the
+Rosenblatt transformation is preferred.}.  This transformation occurs 
+in the following two steps.  To transform between the
+original correlated x-space variables and correlated standard normals
+(``z-space''), a CDF matching condition is applied for each of the
+marginal distributions:
+\begin{equation}
+\Phi(z_i) = F(x_i) \label{eq:trans_zx}
+\end{equation}
+where $F()$ is the cumulative distribution function of the original
+probability distribution.  Then, to transform between correlated
+z-space variables and uncorrelated u-space variables, the Cholesky 
+factor ${\bf L}$ of a modified correlation matrix is used:
+\begin{equation}
+{\bf z} = {\bf L} {\bf u} \label{eq:trans_zu}
+\end{equation}
+where the original correlation matrix for non-normals in x-space has
+been modified to represent the corresponding ``warped'' correlation in 
+z-space~\cite{Der86}.
+
+The forward reliability analysis algorithm of computing CDF/CCDF
+probability/reliability levels for specified response levels is called
+the reliability index approach (RIA), and the inverse reliability
+analysis algorithm of computing response levels for specified CDF/CCDF
+probability/reliability levels is called the performance measure
+approach (PMA)~\cite{Tu99}.  The differences between the RIA and PMA
+formulations appear in the objective function and equality constraint
+formulations used in the MPP searches.  For RIA, the MPP search for
+achieving the specified response level $\bar{z}$ is formulated as
+computing the minimum distance in u-space from the origin to the
+$\bar{z}$ contour of the limit state response function:
+\begin{eqnarray}
+{\rm minimize}     & {\bf u}^T {\bf u} \nonumber \\
+{\rm subject \ to} & G({\bf u}) = \bar{z} \label{eq:ria_opt}
+\end{eqnarray}
+
+and for PMA, the MPP search for achieving the specified
+reliability/probability level $\bar{\beta},\bar{p}$ is formulated as
+computing the minimum/maximum response function value corresponding
+to a prescribed distance from the origin in u-space:
+\begin{eqnarray}
+{\rm minimize}     & \pm G({\bf u}) \nonumber \\
+{\rm subject \ to} & {\bf u}^T {\bf u} = \bar{\beta}^2 \label{eq:pma_opt}
+\end{eqnarray}
+
+where ${\bf u}$ is a vector centered at the origin in 
+u-space and $g({\bf x}) \equiv G({\bf u})$ by definition.  In the RIA
+case, the optimal MPP solution ${\bf u}^*$ defines the reliability 
+index from $\beta = \pm \|{\bf u}^*\|_2$, which in turn defines the 
+CDF/CCDF probabilities (using Equations~\ref{eq:p_cdf}-\ref{eq:p_ccdf} in 
+the case of first-order integration).  The sign of $\beta$ is defined by
+\begin{eqnarray}
+G({\bf u}^*) > G({\bf 0}): \beta_{cdf} < 0, \beta_{ccdf} > 0 \\
+G({\bf u}^*) < G({\bf 0}): \beta_{cdf} > 0, \beta_{ccdf} < 0
+\end{eqnarray}
+\noindent where $G({\bf 0})$ is the median limit state response computed 
+at the origin in u-space\footnote{It is not necessary to explicitly compute
+the median response since the sign of the inner product 
+$\langle {\bf u}^*, \nabla_{\bf u} G \rangle$
+can be used to determine the orientation of the optimal response with 
+respect to the median response.} (where $\beta_{cdf}$ = $\beta_{ccdf}$ = 0 
+and first-order $p(g \le z)$ = $p(g > z)$ = 0.5).  In the PMA case, the 
+sign applied to $G({\bf u})$ (equivalent to minimizing or maximizing 
+$G({\bf u})$) is similarly defined by $\bar{\beta}$
+\begin{eqnarray}
+\bar{\beta}_{cdf} < 0, \bar{\beta}_{ccdf} > 0: {\rm maximize \ } G({\bf u}) \\
+\bar{\beta}_{cdf} > 0, \bar{\beta}_{ccdf} < 0: {\rm minimize \ } G({\bf u})
+\end{eqnarray}
+and the limit state at the MPP ($G({\bf u}^*)$) defines the desired
+response level result.
+
+\subsubsection{Limit state approximations} \label{uq:reliability:local:mpp:approx}
+
+There are a variety of algorithmic variations that are available for
+use within RIA/PMA reliability analyses.  First, one may select among
+several different limit state approximations that can be used to
+reduce computational expense during the MPP searches.  Local,
+multipoint, and global approximations of the limit state are possible.
+\cite{Eld05} investigated local first-order limit state 
+approximations, and \cite{Eld06a} investigated local second-order
+and multipoint approximations.  These techniques include:
+
+\begin{enumerate}
+\item a single Taylor series per response/reliability/probability level 
+in x-space centered at the uncertain variable means.  The first-order 
+approach is commonly known as the Advanced Mean Value (AMV) method:
+\begin{equation}
+g({\bf x}) \cong g(\mu_{\bf x}) + \nabla_x g(\mu_{\bf x})^T 
+({\bf x} - \mu_{\bf x}) \label{eq:linear_x_mean}
+\end{equation}
+and the second-order approach has been named AMV$^2$:
+\begin{equation}
+g({\bf x}) \cong g(\mu_{\bf x}) + \nabla_{\bf x} g(\mu_{\bf x})^T 
+({\bf x} - \mu_{\bf x}) + \frac{1}{2} ({\bf x} - \mu_{\bf x})^T 
+\nabla^2_{\bf x} g(\mu_{\bf x}) ({\bf x} - \mu_{\bf x})
+\label{eq:taylor2_x_mean}
+\end{equation}
+
+\item same as AMV/AMV$^2$, except that the Taylor series is expanded 
+in u-space.  The first-order option has been termed the u-space AMV 
+method:
+\begin{equation}
+G({\bf u}) \cong G(\mu_{\bf u}) + \nabla_u G(\mu_{\bf u})^T 
+({\bf u} - \mu_{\bf u}) \label{eq:linear_u_mean}
+\end{equation}
+where $\mu_{\bf u} = T(\mu_{\bf x})$ and is nonzero in general, and 
+the second-order option has been named the u-space AMV$^2$ method:
+\begin{equation}
+G({\bf u}) \cong G(\mu_{\bf u}) + \nabla_{\bf u} G(\mu_{\bf u})^T 
+({\bf u} - \mu_{\bf u}) + \frac{1}{2} ({\bf u} - \mu_{\bf u})^T 
+\nabla^2_{\bf u} G(\mu_{\bf u}) ({\bf u} - \mu_{\bf u}) 
+\label{eq:taylor2_u_mean}
+\end{equation}
+
+\item an initial Taylor series approximation in x-space at the uncertain 
+variable means, with iterative expansion updates at each MPP estimate
+(${\bf x}^*$) until the MPP converges.  The first-order option is
+commonly known as AMV+:
+\begin{equation}
+g({\bf x}) \cong g({\bf x}^*) + \nabla_x g({\bf x}^*)^T ({\bf x} - {\bf x}^*)
+\label{eq:linear_x_mpp}
+\end{equation}
+and the second-order option has been named AMV$^2$+:
+\begin{equation}
+g({\bf x}) \cong g({\bf x}^*) + \nabla_{\bf x} g({\bf x}^*)^T 
+({\bf x} - {\bf x}^*) + \frac{1}{2} ({\bf x} - {\bf x}^*)^T 
+\nabla^2_{\bf x} g({\bf x}^*) ({\bf x} - {\bf x}^*) \label{eq:taylor2_x_mpp}
+\end{equation}
+
+\item same as AMV+/AMV$^2$+, except that the expansions are performed in 
+u-space.  The first-order option has been termed the u-space AMV+ method.
+\begin{equation}
+G({\bf u}) \cong G({\bf u}^*) + \nabla_u G({\bf u}^*)^T ({\bf u} - {\bf u}^*)
+\label{eq:linear_u_mpp}
+\end{equation}
+and the second-order option has been named the u-space AMV$^2$+ method:
+\begin{equation}
+G({\bf u}) \cong G({\bf u}^*) + \nabla_{\bf u} G({\bf u}^*)^T 
+({\bf u} - {\bf u}^*) + \frac{1}{2} ({\bf u} - {\bf u}^*)^T 
+\nabla^2_{\bf u} G({\bf u}^*) ({\bf u} - {\bf u}^*) \label{eq:taylor2_u_mpp}
+\end{equation}
+
+\item a multipoint approximation in x-space. This approach involves a 
+Taylor series approximation in intermediate variables where the powers
+used for the intermediate variables are selected to match information at
+the current and previous expansion points.  Based on the 
+two-point exponential approximation concept (TPEA, \cite{Fad90}), the 
+two-point adaptive nonlinearity approximation (TANA-3, \cite{Xu98})
+approximates the limit state as:
+\begin{equation}
+g({\bf x}) \cong g({\bf x}_2) + \sum_{i=1}^n 
+\frac{\partial g}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i} 
+(x_i^{p_i} - x_{i,2}^{p_i}) + \frac{1}{2} \epsilon({\bf x}) \sum_{i=1}^n 
+(x_i^{p_i} - x_{i,2}^{p_i})^2 \label{eq:tana_g}
+\end{equation}
+
+\noindent where $n$ is the number of uncertain variables and:
+\begin{eqnarray}
+p_i & = & 1 + \ln \left[ \frac{\frac{\partial g}{\partial x_i}({\bf x}_1)}
+{\frac{\partial g}{\partial x_i}({\bf x}_2)} \right] \left/ 
+\ln \left[ \frac{x_{i,1}}{x_{i,2}} \right] \right. \label{eq:tana_pi_x} \\
+\epsilon({\bf x}) & = & \frac{H}{\sum_{i=1}^n (x_i^{p_i} - x_{i,1}^{p_i})^2 + 
+\sum_{i=1}^n (x_i^{p_i} - x_{i,2}^{p_i})^2} \label{eq:tana_eps_x} \\
+H & = & 2 \left[ g({\bf x}_1) - g({\bf x}_2) - \sum_{i=1}^n 
+\frac{\partial g}{\partial x_i}({\bf x}_2) \frac{x_{i,2}^{1-p_i}}{p_i} 
+(x_{i,1}^{p_i} - x_{i,2}^{p_i}) \right] \label{eq:tana_H_x}
+\end{eqnarray}
+\noindent and ${\bf x}_2$ and ${\bf x}_1$ are the current and previous
+MPP estimates in x-space, respectively.  Prior to the availability of
+two MPP estimates, x-space AMV+ is used.
+
+\item a multipoint approximation in u-space. The u-space TANA-3
+approximates the limit state as:
+\begin{equation}
+G({\bf u}) \cong G({\bf u}_2) + \sum_{i=1}^n 
+\frac{\partial G}{\partial u_i}({\bf u}_2) \frac{u_{i,2}^{1-p_i}}{p_i} 
+(u_i^{p_i} - u_{i,2}^{p_i}) + \frac{1}{2} \epsilon({\bf u}) \sum_{i=1}^n 
+(u_i^{p_i} - u_{i,2}^{p_i})^2 \label{eq:tana_G}
+\end{equation}
+
+\noindent where:
+\begin{eqnarray}
+p_i & = & 1 + \ln \left[ \frac{\frac{\partial G}{\partial u_i}({\bf u}_1)}
+{\frac{\partial G}{\partial u_i}({\bf u}_2)} \right] \left/ 
+\ln \left[ \frac{u_{i,1}}{u_{i,2}} \right] \right. \label{eq:tana_pi_u} \\
+\epsilon({\bf u}) & = & \frac{H}{\sum_{i=1}^n (u_i^{p_i} - u_{i,1}^{p_i})^2 + 
+\sum_{i=1}^n (u_i^{p_i} - u_{i,2}^{p_i})^2} \label{eq:tana_eps_u} \\
+H & = & 2 \left[ G({\bf u}_1) - G({\bf u}_2) - \sum_{i=1}^n 
+\frac{\partial G}{\partial u_i}({\bf u}_2) \frac{u_{i,2}^{1-p_i}}{p_i} 
+(u_{i,1}^{p_i} - u_{i,2}^{p_i}) \right] \label{eq:tana_H_u}
+\end{eqnarray}
+\noindent and ${\bf u}_2$ and ${\bf u}_1$ are the current and previous
+MPP estimates in u-space, respectively.  Prior to the availability of
+two MPP estimates, u-space AMV+ is used.
+
+\item the MPP search on the original response functions without the 
+use of any approximations.  Combining this option with first-order and
+second-order integration approaches (see next section) results in the
+traditional first-order and second-order reliability methods (FORM and
+SORM).
+\end{enumerate}
+
+The Hessian matrices in AMV$^2$ and AMV$^2$+ may be available
+analytically, estimated numerically, or approximated through
+quasi-Newton updates.  The selection between x-space or u-space for
+performing approximations depends on where the approximation will be
+more accurate, since this will result in more accurate MPP estimates
+(AMV, AMV$^2$) or faster convergence (AMV+, AMV$^2$+, TANA).  Since
+this relative accuracy depends on the forms of the limit state $g(x)$
+and the transformation $T(x)$ and is therefore application dependent
+in general, DAKOTA supports both options.  A concern with
+approximation-based iterative search methods (i.e., AMV+, AMV$^2$+ and
+TANA) is the robustness of their convergence to the MPP.  It is
+possible for the MPP iterates to oscillate or even diverge.  However,
+to date, this occurrence has been relatively rare, and DAKOTA contains
+checks that monitor for this behavior.  Another concern with TANA is
+numerical safeguarding (e.g., the possibility of raising negative
+$x_i$ or $u_i$ values to nonintegral $p_i$ exponents in
+Equations~\ref{eq:tana_g}, \ref{eq:tana_eps_x}-\ref{eq:tana_G},
+and~\ref{eq:tana_eps_u}-\ref{eq:tana_H_u}).  Safeguarding involves
+offseting negative $x_i$ or $u_i$ and, for potential numerical
+difficulties with the logarithm ratios in Equations~\ref{eq:tana_pi_x}
+and~\ref{eq:tana_pi_u}, reverting to either the linear ($p_i = 1$) or
+reciprocal ($p_i = -1$) approximation based on which approximation has
+lower error in $\frac{\partial g}{\partial x_i}({\bf x}_1)$ or
+$\frac{\partial G}{\partial u_i}({\bf u}_1)$.
+
+\subsubsection{Probability integrations} \label{uq:reliability:local:mpp:int}
+
+The second algorithmic variation involves the integration approach for
+computing probabilities at the MPP, which can be selected to be
+first-order (Equations~\ref{eq:p_cdf}-\ref{eq:p_ccdf}) or second-order
+integration.  Second-order integration involves applying a curvature
+correction~\cite{Bre84,Hoh88,Hon99}.  Breitung applies a correction
+based on asymptotic analysis~\cite{Bre84}:
+\begin{equation}
+p = \Phi(-\beta_p) \prod_{i=1}^{n-1} \frac{1}{\sqrt{1 + \beta_p \kappa_i}}
+\label{eq:p_2nd_breit}
+\end{equation}
+where $\kappa_i$ are the principal curvatures of the limit state
+function (the eigenvalues of an orthonormal transformation of
+$\nabla^2_{\bf u} G$, taken positive for a convex limit state) and
+$\beta_p \ge 0$ (a CDF or CCDF probability correction is selected to
+obtain the correct sign for $\beta_p$).  An alternate correction in
+\cite{Hoh88} is consistent in the asymptotic regime ($\beta_p \to \infty$) 
+but does not collapse to first-order integration for $\beta_p = 0$:
+\begin{equation}
+p = \Phi(-\beta_p) \prod_{i=1}^{n-1} 
+\frac{1}{\sqrt{1 + \psi(-\beta_p) \kappa_i}} \label{eq:p_2nd_hr}
+\end{equation}
+where $\psi() = \frac{\phi()}{\Phi()}$ and $\phi()$ is the standard
+normal density function.  \cite{Hon99} applies further corrections to
+Equation~\ref{eq:p_2nd_hr} based on point concentration methods.  At
+this time, all three approaches are available within the code, but the
+Hohenbichler-Rackwitz correction is used by default (switching the 
+correction is a compile-time option in the source code and has not
+not currently been exposed in the input specification).
+
+
+\section{Global Reliability Methods}\label{uq:reliability:global}
+
+Global reliability methods include the efficient global reliability
+analysis (EGRA) method.
+
+% TO DO: add global reliability description from AIAA paper(s)

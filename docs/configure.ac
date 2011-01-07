@@ -19,5 +19,6 @@ AC_LATEX_DVIPS_O_STDOUT
 
 # Write Makefiles and exit.
 AC_CONFIG_FILES([Makefile
-                 latex-user/Makefile])
+                 latex-user/Makefile
+                 latex-theory/Makefile])
 AC_OUTPUT

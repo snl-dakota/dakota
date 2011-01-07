@@ -108,11 +108,8 @@ USERS_EPS = images/dakota_flowchart.eps \
 	    images/cdf_orig_graphic.eps \
 	    images/cdf_tran_graphic.eps \
 	    images/cdf_form.eps \
-	    images/isogrid_N2_q6.eps \
 	    images/rosen_sc_pts.eps \
 	    images/belief_plaus.eps \
-	    images/filter.eps \
-	    images/tau_updates.eps \
 	    images/sbo_df.eps \
 	    images/sbo_mh.eps \
 	    images/branch_history.eps \
