@@ -12,7 +12,7 @@ if (BOOST_DISABLE_ASSERTS)
 endif (BOOST_DISABLE_ASSERTS)
 
 
-# Check already done in Teuchos.  Setting the macro again leads to redef warning
+# Unistd check already done in Teuchos.  Setting the macro again leads to redef warning
 check_include_files(unistd.h HAVE_UNISTD_H)
 if(HAVE_UNISTD_H)
   add_definitions("-DHAVE_UNISTD_H")
@@ -28,6 +28,16 @@ if(HAVE_FORK)
   set(HAVE_WORKING_FORK ${HAVE_FORK})
   add_definitions("-DHAVE_WORKING_FORK")
 endif(HAVE_FORK)
+
+check_function_exists(wait HAVE_SYS_WAIT_H)
+if(HAVE_SYS_WAIT_H)
+  add_definitions("-DHAVE_SYS_WAIT_H")
+endif(HAVE_SYS_WAIT_H)
+
+check_function_exists(usleep HAVE_USLEEP)
+if(HAVE_USLEEP)
+  add_definitions("-DHAVE_USLEEP")
+endif(HAVE_USLEEP)
 
 
 set(TPL_LIBS teuchos nidr)
