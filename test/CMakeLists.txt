@@ -39,6 +39,23 @@ add_executable(text_book_ouu text_book_ouu.C)
 # WJB - ToDo - if HAVE_MPI: add_executable(text_book_par text_book_par.C)
 
 
+# Copy the dakota_test support files into the BUILD_DIR tree
+# WJB - ask Zack: should these files go into 'Testing' dir for CTest?
+set(testsupport_files
+  dakota_test.perl
+  dakota_diff.perl
+  dakota_base.test
+)
+foreach(tsfile ${testsupport_files})
+  #configure_file("${Dakota_SOURCE_DIR}/test/dakota_test.perl"
+  #  "${Dakota_BINARY_DIR}/test/dakota_test.perl"
+  #  COPYONLY)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${tsfile}
+    ${CMAKE_CURRENT_BINARY_DIR}/${tsfile}
+    COPYONLY)
+endforeach()
+
+
 # UNIT TESTS
 
 if(ENABLE_TESTS)
