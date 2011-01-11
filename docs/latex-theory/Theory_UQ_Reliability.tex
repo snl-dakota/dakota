@@ -376,6 +376,352 @@ not currently been exposed in the input specification).
 \section{Global Reliability Methods}\label{uq:reliability:global}
 
 Global reliability methods include the efficient global reliability
-analysis (EGRA) method.
+analysis (EGRA) method. Analytical methods of reliability analysis solve a 
+local optimization problem to locate the most probable point of failure (MPP), 
+and then quantify the reliability based on its location and an approximation 
+to the shape of the limit state at this point. Typically, gradient-based 
+solvers are used to solve this optimization problem, which may fail to 
+converge for nonsmooth response functions with unreliable gradients or 
+may converge to only one of several solutions for response functions that 
+possess multiple local optima. In addition to these MPP convergence issues, 
+the evaluated probabilites can be adversely affected by limit state 
+approximations that may be inaccurate. Analysts are then forced
+to revert to sampling methods, which do not rely on MPP convergence or 
+simplifying approximations to the true shape of the limit state. 
+However, employing such methods is impractical when evaluation of the 
+response function is expensive.
 
-% TO DO: add global reliability description from AIAA paper(s)
+A reliability analysis method that is both efficient when applied to
+expensive response functions and accurate for a response function of any
+arbitrary shape is needed. This paper develops such a method based on 
+efficient global optimization~\cite{Jon98} (EGO) to the search for 
+multiple points on or near the limit state throughout the random variable 
+space. By locating multiple points on the limit state, more complex limit 
+states can be accurately modeled, resulting in a more accurate assessment 
+of the reliability. It should be emphasized here that these multiple points 
+exist on a single limit state. Because of its roots in efficient global 
+optimization, this method of reliability analysis is called efficient 
+global reliability analysis (EGRA).  The following two subsections 
+describe two capabilities that are incorporated into the EGRA algorithm: 
+importance sampling and EGO. 
+
+\subsection{Importance Sampling}\label{uq:reliability:global:ais}
+An alternative to MPP search methods is to directly 
+perform the probability integration numerically by sampling the 
+response function.
+Sampling methods do not rely on a simplifying approximation to the shape
+of the limit state, so they can be more accurate than FORM and SORM, but they
+can also be prohibitively expensive because they generally require a large
+number of response function evaluations.
+Importance sampling methods reduce this expense by focusing the samples in
+the important regions of the uncertain space.
+They do this by centering the sampling density function at the MPP rather
+than at the mean.
+This ensures the samples will lie the region of interest,
+thus increasing the efficiency of the sampling method.
+Adaptive importance sampling (AIS) further improves the efficiency by
+adaptively updating the sampling density function.
+Multimodal adaptive importance sampling~\cite{mais_dey,mais_zou} is a
+variation of AIS that allows for the use of multiple sampling densities
+making it better suited for cases where multiple sections of the limit state
+are highly probable.
+
+Note that importance sampling methods require that the location of at 
+least one MPP be known because it is used to center the initial sampling 
+density. However, current gradient-based, local search methods used in 
+MPP search may fail to converge or may converge to poor solutions for 
+highly nonlinear problems, possibly making these methods inapplicable.
+As the next section describes, EGO is a global optimization method that 
+does not depend on the availability of accurate gradient information, making
+convergence more reliable for nonsmooth response functions.
+Moreover, EGO has the ability to locate multiple failure points, 
+which would provide multiple starting points and thus a good 
+multimodal sampling density for the initial steps of multimodal AIS.
+The resulting Gaussian process model is accurate in the
+vicinity of the limit state, thereby providing an inexpensive surrogate that
+can be used to provide response function samples.
+As will be seen, using EGO to locate multiple points along the limit state, 
+and then using the resulting Gaussian process model to provide function 
+evaluations in multimodal AIS for the probability integration, 
+results in an accurate and efficient reliability analysis tool.
+
+\subsection{Efficient Global Optimization}\label{uq:reliability:global:ego}
+Efficient Global Optimization (EGO) was developed to facilitate the 
+unconstrained minimization of expensive implicit response functions.
+The method builds an initial Gaussian process model as a global surrogate 
+for the response function, then intelligently selects additional samples 
+to be added for inclusion in a new Gaussian process model in subsequent 
+iterations. The new samples are selected based on how much they are expected 
+to improve the current best solution to the optimization problem.
+When this expected improvement is acceptably small, the globally optimal 
+solution has been found. The application of this methodology to 
+equality-constrained reliability analysis is the primary contribution of 
+EGRA.  
+
+Efficient global optimization was originally proposed by
+Jones et al.~\cite{Jon98}~and has been adapted into similar methods
+such as sequential kriging optimization (SKO)~\cite{huang_sko}.
+The main difference between SKO and EGO lies within the specific formulation
+of what is known as the expected improvement function (EIF), which is the
+feature that sets all EGO/SKO-type methods apart from other global optimization
+methods.
+The EIF is used to select the location at which a new training point should be
+added to the Gaussian process model by maximizing the amount of improvement in 
+the objective function that can be expected by adding that point.
+A point could be expected to produce an improvement in the objective function
+if its predicted value is better than the current best solution, or if the
+uncertainty in its prediction is such that the probability of it producing
+a better solution is high.
+Because the uncertainty is higher in regions of the design space with fewer
+observations, this provides a balance between exploiting areas of the
+design space that predict good solutions, and exploring areas where more
+information is needed.
+
+The general procedure of these EGO-type methods is:
+\begin{enumerate}
+\item Build an initial Gaussian process model of the objective function.
+%\item Use cross validation to ensure that the kriging model is satisfactory.
+\item Find the point that maximizes the EIF.
+      If the EIF value at this point is sufficiently small, stop.
+\item Evaluate the objective function at the point where the EIF is maximized.
+      Update the Gaussian process model using this new point.
+      Go to Step 2.
+\end{enumerate}
+%\noindent To construct a parallel algorithm, the $n$ best points could be 
+%selected and evaluated in steps 2 and 3.
+\noindent 
+
+The following sections discuss the construction of the Gaussian process model
+used, the form of the EIF, and then a description of how that EIF is modified
+for application to reliability analysis.
+
+\subsubsection{Gaussian Process Model}\label{uq:reliability:global:ego:gpm}
+Gaussian process (GP) models are set apart from other surrogate models because
+they provide not just a predicted value at an unsampled point, but also and
+estimate of the prediction variance.
+This variance gives an indication of the uncertainty in the GP model, which
+results from the construction of the covariance function. 
+This function is based on the idea that when input points are near one another,
+the correlation between their corresponding outputs will be high.
+As a result, the uncertainty associated with the model's predictions will be
+small for input points which are near the points used to train the model,
+and will increase as one moves further from the training points.
+
+It is assumed that the true response function being modeled $G({\bf u})$ can 
+be described by:~\cite{cressie}
+\begin{equation}
+G({\bf u})={\bf h}({\bf u})^T{\boldsymbol \beta} + Z({\bf u})
+\end{equation}
+\noindent where ${\bf h}()$ is the trend of the model, 
+${\boldsymbol \beta}$ is the vector of trend coefficients, and
+$Z()$ is a stationary Gaussian process with zero mean (and covariance defined 
+below) that describes the departure of the model from its underlying trend.
+The trend of the model can be assumed to be any function, but
+taking it to be a constant value has been reported to be generally sufficient.~\cite{sacks}
+For the work presented here, the trend is assumed constant and
+${\boldsymbol \beta}$ is taken as simply the mean of the responses at
+the training points.
+The covariance between outputs of the Gaussian process $Z()$ at points 
+${\bf a}$ and ${\bf b}$ is defined as:
+\begin{equation}
+Cov \left[ Z({\bf a}),Z({\bf b}) \right] = \sigma_Z^2 R({\bf a},{\bf b})
+\label{eq:cov}
+\end{equation}
+\noindent where $\sigma_Z^2$ is the process variance and $R()$ is the
+correlation function.
+There are several options for the correlation function, but the 
+squared-exponential function is common~\cite{sacks}, and is used here for $R()$:
+\begin{equation}
+R({\bf a},{\bf b}) = \exp \left[ -\sum_{i=1}^d \theta_i(a_i - b_i)^2 \right]
+\end{equation}
+\noindent where $d$ represents the dimensionality of the problem
+(the number of random variables), and 
+$\theta_i$ is a scale parameter that indicates the correlation between the 
+points within dimension $i$.
+A large $\theta_i$ is representative of a short correlation length.
+
+The expected value $\mu_G()$ and variance $\sigma_G^2()$ of the GP model 
+prediction at point ${\bf u}$ are:
+\begin{align}
+\mu_G({\bf u}) &= {\bf h}({\bf u})^T{\boldsymbol \beta} + 
+  {\bf r}({\bf u})^T{\bf R}^{-1}({\bf g} - {\bf F}{\boldsymbol \beta}) 
+  \label{eq:exp} \\
+\sigma_G^2({\bf u}) &= \sigma_Z^2 - 
+  \begin{bmatrix} {\bf h}({\bf u})^T  & 
+                  {\bf r}({\bf u})^T  \end{bmatrix}
+  \begin{bmatrix} {\bf 0} & {\bf F}^T \\ 
+                  {\bf F} & {\bf R}   \end{bmatrix}^{-1}
+  \begin{bmatrix} {\bf h}({\bf u})    \\ 
+                  {\bf r}({\bf u})    \end{bmatrix} \label{eq:var}
+\end{align}
+where ${\bf r}({\bf u})$ is a vector containing the covariance between 
+${\bf u}$ and each of the $n$ training points (defined by Eq.~\ref{eq:cov}),
+${\bf R}$ is an $n \times n$ matrix containing the correlation between each
+pair of training points,
+${\bf g}$ is the vector of response outputs at each of the training points, and
+${\bf F}$ is an $n \times q$ matrix with rows ${\bf h}({\bf u}_i)^T$ (the
+trend function for training point $i$ containing $q$ terms; for a constant
+trend $q\!=\!1$).
+This form of the variance accounts for the uncertainty in the trend 
+coefficients $\boldsymbol \beta$, but assumes that the parameters governing
+the covariance function ($\sigma_Z^2$ and $\boldsymbol \theta$) have known 
+values.
+
+The parameters $\sigma_Z^2$ and ${\boldsymbol \theta}$ are determined through 
+maximum likelihood estimation.
+This involves taking the log of the probability of observing the response 
+values ${\bf g}$ given the covariance matrix ${\bf R}$, which can be written 
+as:~\cite{sacks}
+\begin{equation}
+\log \left[ p({\bf g} | {\bf R}) \right] = 
+  -\frac{1}{n} \log \lvert{\bf R}\rvert - \log(\hat{\sigma}_Z^2) 
+  \label{eq:like}
+\end{equation}
+\noindent where $\lvert {\bf R} \rvert$ indicates the determinant of ${\bf R}$,
+and $\hat{\sigma}_Z^2$ is the optimal value of the variance given an estimate
+of $\boldsymbol \theta$ and is defined by:
+\begin{equation}
+\hat{\sigma}_Z^2 = \frac{1}{n}({\bf g}-{\bf F}{\boldsymbol \beta})^T
+  {\bf R}^{-1}({\bf g}-{\bf F}{\boldsymbol \beta})
+\end{equation}
+%\noindent where $\hat{\boldsymbol \beta}$ is the generalized least squares 
+%estimate of $\boldsymbol \beta$ from:
+%\begin{equation}
+%\hat{\boldsymbol \beta} = \left[ {\bf F}^T{\bf R}^{-1}{\bf F} \right]^{-1}
+%  {\bf F}^T{\bf R}^{-1}{\bf g}
+%\end{equation}
+\noindent Maximizing Eq.~\ref{eq:like} gives the maximum likelihood estimate 
+of $\boldsymbol \theta$, which in turn defines $\sigma_Z^2$.
+
+
+\subsubsection{Expected Improvement Function}\label{uq:reliability:global:ego:eif}
+The expected improvement function is used to select the location at which a 
+new training point should be added.
+The EIF is defined as the expectation that any point in the search
+space will provide a better solution than the current best solution
+based on the expected values and variances predicted by the GP model.
+An important feature of the EIF is that it provides a balance between 
+exploiting areas of the design space where good solutions have been found, and 
+exploring areas of the design space where the uncertainty is high.
+First, recognize that at any point in the design space, the GP prediction
+$\hat{G}()$ is a Gaussian distribution:
+\begin{equation}
+\hat{G}({\bf u}) \sim N\left[ \mu_G({\bf u}), \sigma_G({\bf u}) \right]
+\end{equation}
+\noindent where the mean $\mu_G()$ and the variance $\sigma_G^2()$ were 
+defined in Eqs.~\ref{eq:exp} and \ref{eq:var}, respectively.
+The EIF is defined as:~\cite{Jon98}
+\begin{equation}
+EI\bigl( \hat{G}({\bf u}) \bigr) \equiv 
+  E\left[ \max \left( G({\bf u}^*) - \hat{G}({\bf u}),0 \right) \right]  
+\end{equation}
+\noindent where $G({\bf u}^*)$ is the current best solution chosen from among 
+the true function values at the training points (henceforth referred to as
+simply $G^*$).
+This expectation can then be computed by integrating over the distribution 
+$\hat{G}({\bf u})$ with $G^*$ held constant:
+\begin{equation}
+EI\bigl( \hat{G}({\bf u}) \bigr) = 
+  \int_{-\infty}^{G^*} \left( G^* - G \right) \, \hat{G}({\bf u}) \; dG  
+  \label{eq:eif_int}
+\end{equation}
+\noindent where $G$ is a realization of $\hat{G}$.
+This integral can be expressed analytically as:~\cite{Jon98}
+\begin{equation}
+EI\bigl( \hat{G}({\bf u}) \bigr) = \left( G^* - \mu_G \right) \,
+  \Phi\left( \frac{G^* - \mu_G}{\sigma_G} \right) + \sigma_G \,
+  \phi\left( \frac{G^* - \mu_G}{\sigma_G} \right) \label{eq:eif}
+\end{equation}
+\noindent where it is understood that $\mu_G$ and $\sigma_G$ are functions of 
+${\bf u}$.
+
+The point at which the EIF is maximized is selected as an additional training 
+point.
+With the new training point added, a new GP model is built and then used 
+to construct another EIF, which is then used to choose another new training 
+point, and so on, until the value of the EIF at its maximized point is below 
+some specified tolerance.
+In Ref.~\cite{huang_sko} this maximization is performed using a Nelder-Mead
+simplex approach, which is a local optimization method.
+Because the EIF is often highly multimodal~\cite{jones_ego} it is expected that 
+Nelder-Mead may fail to converge to the true global optimum.
+In Ref.~\cite{Jon98}, a branch-and-bound technique for maximizing the EIF
+is used, but was found to often be too expensive to run to convergence.
+In this paper, an implementation of the DIRECT global optimization algorithm is 
+used~\cite{direct}.
+
+It is important to understand how the use of this EIF leads to optimal
+solutions.
+Eq.~\ref{eq:eif} indicates how much the objective function value at ${\bf x}$ 
+is expected to be less than the predicted value at the current best solution. 
+Because the GP model provides a Gaussian distribution at each predicted 
+point, expectations can be calculated.
+Points with good expected values and even a small variance will
+have a significant expectation of producing a better solution (exploitation), 
+but so will points that have relatively poor expected values and greater 
+variance (exploration).
+
+The application of EGO to reliability analysis, however, is made more 
+complicated due to the inclusion of equality constraints 
+(see Eqs.~\ref{eq:ria_opt}-\ref{eq:pma_opt}).
+For inverse reliability analysis, this extra complication is small.
+The response being modeled by the GP is the objective function of the optimization 
+problem (see Eq.~\ref{eq:pma_opt}) and the deterministic constraint might be handled 
+through the use of a merit function, thereby allowing EGO to solve this 
+equality-constrained optimization problem.
+Here the problem lies in the interpretation of the constraint for multimodal
+problems as mentioned previously.
+In the forward reliability case, the response function appears in the
+constraint rather than the objective.
+Here, the maximization of the EIF is inappropriate because feasibility is
+the main concern.
+This application is therefore a significant departure from the original
+objective of EGO and requires a new formulation.
+For this problem, the expected feasibility function is introduced.
+
+\subsubsection{Expected Feasibility Function}\label{uq:reliability:global:ego:eff}
+The expected improvement function provides an indication of how much the true
+value of the response at a point can be expected to be less than the current 
+best solution.
+It therefore makes little sense to apply this to the forward reliability problem 
+where the goal is not to minimize the response, but rather to find where it is 
+equal to a specified threshold value.
+The expected feasibility function (EFF) is introduced here to provide an 
+indication of how well the true value of the response is expected to satisfy 
+the equality constraint $G({\bf u})\!=\!\bar{z}$.
+Inspired by the contour estimation work in Ref.~\citen{pritam}, this 
+expectation can be calculated in a similar fashion as Eq.~\ref{eq:eif_int}
+by integrating over a region in the immediate vicinity of the threshold value 
+$\bar{z}\pm\epsilon$:
+\begin{equation}
+EF\bigl( \hat{G}({\bf u}) \bigr) = 
+  \int_{z-\epsilon}^{z+\epsilon} 
+    \bigl[ \epsilon - | \bar{z}-G | \bigr] \, \hat{G}({\bf u}) \; dG
+\end{equation}
+\noindent where $G$ denotes a realization of the distribution $\hat{G}$, as
+before.
+Allowing $z^+$ and $z^-$ to denote $\bar{z}\pm\epsilon$, respectively, this 
+integral can be expressed analytically as:
+\begin{align}
+EF\bigl( \hat{G}({\bf u}) \bigr) &= \left( \mu_G - \bar{z} \right)
+           \left[ 2 \, \Phi\left( \frac{\bar{z} - \mu_G}{\sigma_G} \right) -
+                       \Phi\left( \frac{  z^-   - \mu_G}{\sigma_G} \right) -
+                       \Phi\left( \frac{  z^+   - \mu_G}{\sigma_G} \right) 
+          \right] \notag \\ & \ \ \ \ \ \ \ \ - 
+  \sigma_G \left[ 2 \, \phi\left( \frac{\bar{z} - \mu_G}{\sigma_G} \right) \, -
+                       \phi\left( \frac{  z^-   - \mu_G}{\sigma_G} \right) \, -
+                       \phi\left( \frac{  z^+   - \mu_G}{\sigma_G} \right) 
+          \right] \notag \\ & \ \ \ \ \ \ \ \ + \ \ \,
+  \epsilon \left[      \Phi\left( \frac{  z^+   - \mu_G}{\sigma_G} \right) -
+                       \Phi\left( \frac{  z^-   - \mu_G}{\sigma_G} \right)
+          \right] \label{eq:eff}
+\end{align}
+where $\epsilon$ is proportional to the standard deviation of the GP 
+predictor ($\epsilon\propto\sigma_G$).
+In this case, $z^-$, $z^+$, $\mu_G$, $\sigma_G$, and $\epsilon$ are all functions of the 
+location ${\bf u}$, while $\bar{z}$ is a constant.
+Note that the EFF provides the same balance between exploration and 
+exploitation as is captured in the EIF.
+Points where the expected value is close to the threshold 
+($\mu_G\!\approx\!\bar{z}$) and points with a large uncertainty in the 
+prediction will have large expected feasibility values.
