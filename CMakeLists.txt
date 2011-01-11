@@ -9,6 +9,14 @@ include(FindCURL)
 
 option(BUILD_STATIC "build static libraries" OFF)
 
+if( CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR AND NOT MSVC_IDE )
+  message(FATAL_ERROR "In-source builds are not allowed.
+Please create a directory and run cmake from there, passing the path
+to this source directory as the last argument.
+This process created the file `CMakeCache.txt' and the directory `CMakeFiles'.
+Please delete them.")
+endif()
+
 # first check for a system blas and lapack
 find_library(BLAS_LIBS blas)
 find_library(LAPACK_LIBS lapack)
@@ -97,23 +105,6 @@ option(HAVE_SURFPACK "Build the Surfpack package." ON)
 option(HAVE_TRACKING "Build the DAKOTA usage tracker module." ON)
 option(HAVE_XDR "Build the XDR interface module." ON)
 
-option(USE_SYSTEM_TEUCHOS
-  "If false, DAKOTA will use the included version of Teuchos."
-  OFF)
-
-#if(USE_SYSTEM_TEUCHOS)
-#  # WJB: suspect SYSTEM_TEUCHOS settings specify incorrect paths -- try to get
-#  #      a review from someone interested in this case being enabled
-#  find_package(Trilinos REQUIRED)
-#  ## Kitware version -- include(${Trilinos_DIR}/TrilinosConfig.cmake)
-#  include(${Trilinos_DIR}/TeuchosConfig.cmake)
-#  ##set(Teuchos_INCLUDE_DIRS ${Trilinos_INCLUDE_DIRS} CACHE FILEPATH "include dir for Teuchos" FORCE)
-#  ##set(Teuchos_LIBRARY_DIRS ${Trilinos_LIBRARY_DIRS} CACHE FILEPATH "library dir for Teuchos" FORCE)
-#else()
-#  set(Teuchos_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/packages/teuchos/src
-#                           ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos/src)
-#  set(Teuchos_LIBRARY_DIRS ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos/src)
-#endif()
 
 # first probe for system-installed Trilinos
 # this will respect Trilinos_DIR if already set

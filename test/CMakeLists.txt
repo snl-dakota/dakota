@@ -1,7 +1,55 @@
 # CMakeLists.txt for DAKOTA tests
+#add_definitions("-DHAVE_CONFIG_H")
 
 # The 'morris' tester depends on Boost
 include_directories(${Boost_INCLUDE_DIRS})
+
+if(BUILD_TESTING)
+  # Copy the dakota_test support files into the BUILD_DIR tree
+  set(TestFiles
+    dakota_4level.in dakota_addtnl_users.in dakota_ampl.in dakota_cantilever.in
+    dakota_test.perl dakota_diff.perl dakota_base.test
+  )
+  foreach(file ${TestFiles})
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${file}
+      ${CMAKE_CURRENT_BINARY_DIR}/${file}
+      COPYONLY)
+  endforeach()
+
+  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ampl)
+  #set(GLOB AmplTests ${CMAKE_CURRENT_SOURCE_DIR}/ampl/*.*)
+  set(AmplTests
+    fma fma.col fma.nl fma.row
+    text_book.col text_book.mod text_book.nl text_book.row
+    text_book_mixed.mod text_book_mixed_unc.mod
+    text_book_unc.col text_book_unc.mod text_book_unc.nl text_book_unc.row
+  )
+  foreach(file ${AmplTests})
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ampl/${file}
+      ${CMAKE_CURRENT_BINARY_DIR}/ampl/${file}
+      COPYONLY)
+  endforeach()
+
+  # Copy the BUILD_DIR/src/dakota executable into the BUILD_DIR/test directory
+
+  get_target_property(EXE_LOC dakota LOCATION)
+  message(STATUS EXE_LOC = ${EXE_LOC})
+  #add_custom_command(TARGET dakota POST_BUILD COMMAND ${CMAKE_COMMAND}
+  #  ARGS -E copy ${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR})  
+
+  add_custom_target(test_dakota ALL
+    ${CMAKE_COMMAND} -E copy ${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS dakota)  
+
+  # Just do a simple subset of tests (WJB - ToDo: get feedback from Zack prior
+  # to setting up ALL DAKOTA tests!)
+
+  add_test(simple_subset ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl)
+
+  # Clean up test dir
+  #file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/dakota_diffs.out)
+endif(BUILD_TESTING)
+
 
 # Executables needed for DAKOTA testing, but NOT unit tests
 
@@ -38,22 +86,10 @@ add_executable(text_book3 text_book3.C)
 add_executable(text_book_ouu text_book_ouu.C)
 # WJB - ToDo - if HAVE_MPI: add_executable(text_book_par text_book_par.C)
 
-
-# Copy the dakota_test support files into the BUILD_DIR tree
-# WJB - ask Zack: should these files go into 'Testing' dir for CTest?
-set(testsupport_files
-  dakota_test.perl
-  dakota_diff.perl
-  dakota_base.test
-)
-foreach(tsfile ${testsupport_files})
-  #configure_file("${Dakota_SOURCE_DIR}/test/dakota_test.perl"
-  #  "${Dakota_BINARY_DIR}/test/dakota_test.perl"
-  #  COPYONLY)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${tsfile}
-    ${CMAKE_CURRENT_BINARY_DIR}/${tsfile}
-    COPYONLY)
-endforeach()
+# Enforce an "imaginary" dependency
+add_dependencies(cantilever dakota)
+add_dependencies(morris dakota)
+add_dependencies(text_book dakota)
 
 
 # UNIT TESTS
@@ -73,28 +109,4 @@ if(ENABLE_TESTS)
   add_executable(dll_tester dll_tester.C)
 
 endif()
-
-
-
-
-#include_directories(${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/src
-#                    ${Boost_INCLUDE_DIRS}
-#                    ${Teuchos_INCLUDE_DIRS})
-#add_definitions("-DHAVE_CONFIG_H")
-
-#if(HAVE_LHS)
-#  set(TPL_LIBS ${TPL_LIBS} lhs)
-#endif(HAVE_LHS)
-
-# Complete these for each specific test.
-#add_executable(boost_test_dist boost_test_dist.cpp)
-#target_link_libraries(boost_test_dist pecos pecos_src ${TPL_LIBS} ${LAPACK_LIBS} ${BLAS_LIBS} ${FLIBS} ${FCLIBS})
-#add_test(boost_test_dist boost_test_dist)
-
-# Complete these for each specific test.
-#add_executable(pecos_ifft_g pecos_ifft_g.cpp)
-#target_link_libraries(pecos_ifft_g pecos pecos_src ${TPL_LIBS} ${LAPACK_LIBS}
-#${BLAS_LIBS} ${FLIBS} ${FCLIBS})
-#add_test(pecos_ifft_g pecos_ifft_g)
-
 
