@@ -8,6 +8,7 @@ THEORY_SOURCES = Theory_Opt_SurrBased.tex \
 		 Theory_Opt_UnderUnc.tex \
 		 Theory_UQ_Reliability.tex \
 		 Theory_UQ_StochExp.tex \
+		 Theory_UQ_Epistemic.tex \
 		 Theory_Parallel.tex \
 		 Theory.bib
 

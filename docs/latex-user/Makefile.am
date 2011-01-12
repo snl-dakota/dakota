@@ -64,13 +64,14 @@ USERS_SOURCES = Users_Preface.tex \
 		Users_Method_Opt.tex \
 		Users_Method_NLS.tex \
 		Users_Method_SurrBased.tex \
-		Users_Strategy.tex \
 		Users_Models.tex \
 		Users_Variables.tex \
 		Users_Interface.tex \
 		Users_Responses.tex \
 		Users_Input.tex \
 		Users_Output.tex \
+		Users_Advanced_Strategies.tex \
+		Users_Advanced_Models.tex \
 		Users_Advanced_Interfaces.tex \
 		Users_Parallel.tex \
 		Users_Guidance.tex \
@@ -117,6 +118,7 @@ USERS_EPS = images/dakota_flowchart.eps \
 	    images/nested_ouu.eps \
 	    images/sbouu.eps \
 	    images/dakota_components.eps \
+	    images/horsetail.eps \
 	    images/jag_package.eps \
 	    images/jag_welcome.eps \
 	    images/jag_cheatsheets.eps \

@@ -1129,69 +1129,79 @@ allows the user to specify either \texttt{sqp} which is sequential
 quadratic programming, or \texttt{nip} which is a nonlinear interior point 
 method. 
 
-Note that when performing interval analysis, it is necessary to 
-define interval uncertain variables as described in 
-Section~\ref{variables:uncertain}.  For interval analysis, 
-one must define only one interval per input variable, in 
-contrast with Dempster-Shafer evidence theory, where 
-an input can have several possible intervals.  Interval 
-analysis can be considered a subset of Dempster-Shafer
-evidence theory where each input is defined by one 
-input interval with a basic probability assignment of one. 
-If you are performing a pure interval analysis, we 
-recommend using either \texttt{global\_interval\_est} or 
-\texttt{local\_interval\_est}.  An example of interval estimation 
-is found in the test file \texttt{dakota\_uq\_cantilever\_interval.in}, 
-and also in the Tutorial, Section~\ref{tutorial:example:uncert_quant:interval}. 
-Note that we have kept separate 
-implementations of interval analysis and Dempster-Shafer 
-evidence theory because our users often want to couple 
-interval analysis on an ``outer loop'' with an aleatory, 
-probabilistic analysis on an ``inner loop'' for nested, 
-second-order probability calculations.  See Section~\ref{models:ex:sop} 
-for more details on nested approaches.
-
+Note that when performing interval analysis, it is necessary to define
+interval uncertain variables as described in
+Section~\ref{variables:uncertain}.  For interval analysis, one must
+define only one interval per input variable, in contrast with
+Dempster-Shafer evidence theory, where an input can have several
+possible intervals.  Interval analysis can be considered a special
+case of Dempster-Shafer evidence theory where each input is defined by
+one input interval with a basic probability assignment of one.  In
+DAKOTA, however, the methods are separate and semantic differences
+exist in the output presentation.  If you are performing a pure
+interval analysis, we recommend using either
+\texttt{global\_interval\_est} or \texttt{local\_interval\_est}
+instead of \texttt{global\_evidence} or \texttt{local\_evidence}, for
+reasons of simplicity.  An example of interval estimation is found in
+the test file \texttt{dakota\_uq\_cantilever\_interval.in}, and also
+in the Tutorial, Section~\ref{tutorial:example:uncert_quant:interval}.
+%Note that we have kept separate implementations of interval analysis and
+%Dempster-Shafer evidence theory because our users often want to couple
+%interval analysis on an ``outer loop'' with an aleatory, probabilistic
+%analysis on an ``inner loop'' for nested, second-order probability
+%calculations.  See Section~\ref{adv_models:mixed_uq} for additional
+%details on these nested approaches.
+These interval methods can also be used as the outer loop within an
+interval-valued probability analysis for propagating mixed aleatory
+and epistemic uncertainty -- refer to
+Section~\ref{adv_models:mixed_uq:ivp} for additional details.
 
 \subsection{Dempster-Shafer Theory of Evidence}\label{uq:dempshaf}
-We have chosen to pursue evidence theory at Sandia as a way to 
-model epistemic uncertainty, in part because evidence theory is
-a generalization of probability theory.  Evidence theory is also
+We have chosen to pursue evidence theory at Sandia as a way to model
+epistemic uncertainty, in part because evidence theory is a
+generalization of probability theory.  Evidence theory is also
 referred to as Dempster-Shafer theory or the theory of random
-sets~\cite{Obe03}.  In evidence theory, there are two complementary
-measures of uncertainty: belief and plausibility.  Together, belief
-and plausibility can be thought of as defining lower and upper bounds,
+sets~\cite{Obe03}.  This section focuses on the use of Dempster-Shafer
+evidence theory for propagating epistemic uncertainties.  When
+aleatory uncertainties are also present, we may choose either to
+discretize the aleatory probability distributions into sets of
+intervals and treat them as well-characterized epistemic variables, or
+we may choose to segregate the aleatory uncertainties and treat them
+within an inner loop.  A nested Dempster-Shafer approach for
+propagating mixed aleatory and epistemic uncertainty is described in
+Section~\ref{adv_models:mixed_uq:dste}.
+%We also use a technique called second-order probability to perform
+%uncertainty quantification when there is both epistemic and aleatory
+%uncertainty present.  Second-order probability is a nested technique
+%with two levels of uncertainty quantification.  The outer level UQ is
+%typically linked to epistemic uncertainties and the inner level UQ is
+%commonly associated with aleatory uncertainties.  A common approach
+%used is to sample possible realizations of epistemic variables in the
+%outer loop, then send these to the inner loop for additional sampling
+%over the aleatory variables.  In this way one generates ``families''
+%or ensembles of cumulative distribution functions, where each
+%individual CDF is based on aleatory uncertainty, and the ensemble is
+%based on epistemic uncertainty.  See Section~\ref{adv_models:mixed_uq}
+%for more details.
+
+In evidence theory, there are two complementary measures of
+uncertainty: belief and plausibility.  Together, belief and
+plausibility can be thought of as defining lower and upper bounds,
 respectively, on probabilities.  Belief and plausibility define the
-lower and upper limits or intervals on probability values. 
-Typical plots of cumulative and complementary cumulative 
-belief and plausibility functions are shown in 
-Figure~\ref{uq:figure15}~\cite{Hel07}.  
-In evidence theory, it is not possible to specify one probability value.
-Instead, there is a range of values that is consistent with the
-evidence. The range of values is defined by belief and
-plausibility. Note that no statement or claim is made about one value
-within an interval being more or less likely than any other value.
-
-This section focuses on Dempster-Shafer evidence theory.  We also 
-use a technique called second-order probability to perform 
-uncertainty quantification when there is both epistemic and 
-aleatory uncertainty present.  Second-order probability is a nested 
-technique with two levels of uncertainty quantification.  
-The outer level UQ is typically linked 
-to epistemic uncertainties and the inner level UQ is commonly associated 
-with aleatory uncertainties.  A common approach used is to sample 
-possible realizations of epistemic variables in the outer loop, 
-then send these to the inner loop for additional sampling over the aleatory 
-variables.  In this way one generates ``families'' or ensembles of 
-cumulative distribution functions, where each individual CDF is based on 
-aleatory uncertainty, and the ensemble is based on epistemic uncertainty. 
-See Section~\ref{models:ex:sop} for more details.
-
+lower and upper limits or intervals on probability values.  Typical
+plots of cumulative and complementary cumulative belief and
+plausibility functions are shown in Figure~\ref{uq:figure15}~\cite{Hel07}.
 \begin{figure}
   \centering 
   \includegraphics[scale=0.8]{images/belief_plaus} 
   \caption{Example cumulative belief and plausibility distribution functions on left; complementary cumulative belief and plausibility distribution functions on right}
   \label{uq:figure15}
 \end{figure}
+In evidence theory, it is not possible to specify one probability value.
+Instead, there is a range of values that is consistent with the
+evidence. The range of values is defined by belief and
+plausibility. Note that no statement or claim is made about one value
+within an interval being more or less likely than any other value.
 
 In Dempster-Shafer evidence theory, the uncertain input variables are
 modeled as sets of intervals.  The user assigns a basic probability
@@ -1413,7 +1423,6 @@ the DAKOTA/test/gpmsa directory.
 \begin{bigbox}
 \begin{small}
 \begin{verbatim}
-
 strategy,
         single_method
         tabular_graphics_data
@@ -1467,14 +1476,15 @@ expansion methods and sampling capabilities currently supported.
 Advanced ``smart sampling'' techniques such as bootstrap sampling (BS)
 and Markov chain Monte Carlo simulation (McMC) are being considered.
 We also have an active research focus on adaptive sparse grid methods,
-to more efficiently construct stochastic expansions.  Efforts have
-been initiated to allow for the possibility of non-traditional
-representations of uncertainty.  We have implemented Dempster-Shafer
-theory of evidence.  We are currently pursuing Bayesian methods,
+to more efficiently construct stochastic expansions.  
+%Efforts have been initiated to allow for non-traditional
+%representations of uncertainty.  We have implemented Dempster-Shafer
+%theory of evidence, and other non-traditional approaches may follow.  
+We are currently pursuing Bayesian methods,
 specifically focusing on Bayesian calibration, where a ``prior
 distribution'' on a parameter is updated through a Bayesian framework
 involving experimental data and a likelihood function.
-Finally, the tractability and efficacy of the more intrusive
-variant of stochastic finite element/polynomial chaos expansion
-methods, previously mentioned, is being assessed for possible
-implementation in DAKOTA.
+%Finally, the tractability and efficacy of the more intrusive
+%variant of stochastic finite element/polynomial chaos expansion
+%methods, previously mentioned, is being assessed for possible
+%implementation in DAKOTA.
