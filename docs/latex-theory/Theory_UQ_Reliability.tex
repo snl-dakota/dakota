@@ -28,26 +28,25 @@ approximate response variance $\sigma^2_g$, response target to
 approximate probability/reliability level mapping ($\bar{z} \to p,\beta$),
 and probability/reliability target to approximate response level mapping
 ($\bar{p},\bar{\beta} \to z$) are
-
 \begin{eqnarray}
 \mu_g      & = & g(\mu_{\bf x})  \label{eq:mv_mean1} \\
 \sigma^2_g & = & \sum_i \sum_j Cov(i,j) \frac{dg}{dx_i}(\mu_{\bf x})
                  \frac{dg}{dx_j}(\mu_{\bf x}) \label{eq:mv_std_dev} \\
-\beta_{cdf}  & = & \frac{\mu_g - \bar{z}}{\sigma_g} \label{eq:mv_ria_cdf} \\
-\beta_{ccdf} & = & \frac{\bar{z} - \mu_g}{\sigma_g} \label{eq:mv_ria_ccdf} \\
-z        & = & \mu_g - \sigma_g \bar{\beta}_{cdf} \label{eq:mv_pma_cdf} \\
-z        & = & \mu_g + \sigma_g \bar{\beta}_{ccdf} \label{eq:mv_pma_ccdf}
+\bar{z} \rightarrow \beta: & ~ & 
+\beta_{\rm CDF} = \frac{\mu_g - \bar{z}}{\sigma_g}, ~~~~~
+\beta_{\rm CCDF} = \frac{\bar{z} - \mu_g}{\sigma_g} \label{eq:mv_ria} \\
+\bar{\beta} \rightarrow z: & ~ & 
+z = \mu_g - \sigma_g \bar{\beta}_{\rm CDF}, ~~~~~
+z = \mu_g + \sigma_g \bar{\beta}_{\rm CCDF} \label{eq:mv_pma}
 \end{eqnarray}
-
 respectively, where ${\bf x}$ are the uncertain values in the 
 space of the original uncertain variables (``x-space''), $g({\bf x})$
 is the limit state function (the response function for which
-probability-response level pairs are needed), and $\beta_{cdf}$ and
-$\beta_{ccdf}$ are the CDF and CCDF reliability indices, respectively.
+probability-response level pairs are needed), and $\beta_{\rm CDF}$ and
+$\beta_{\rm CCDF}$ are the CDF and CCDF reliability indices, respectively.
 
 With the introduction of second-order limit state information, MVSOSM
 calculates a second-order mean as
-
 \begin{equation}
 \mu_g = g(\mu_{\bf x}) + \frac{1}{2} \sum_i \sum_j Cov(i,j) 
 \frac{d^2g}{dx_i dx_j}(\mu_{\bf x}) \label{eq:mv_mean2}
@@ -59,18 +58,16 @@ higher order distribution moments (skewness, kurtosis)~\cite{Hal00}
 which are often unavailable.
 
 The first-order CDF probability $p(g \le z)$, first-order 
-CCDF probability $p(g > z)$, $\beta_{cdf}$, and $\beta_{ccdf}$ are
+CCDF probability $p(g > z)$, $\beta_{\rm CDF}$, and $\beta_{\rm CCDF}$ are
 related to one another through
-
 \begin{eqnarray}
-p(g \le z)   & = & \Phi(-\beta_{cdf})     \label{eq:p_cdf} \\
-p(g > z)     & = & \Phi(-\beta_{ccdf})    \label{eq:p_ccdf} \\
-\beta_{cdf}  & = & -\Phi^{-1}(p(g \le z)) \label{eq:beta_cdf} \\
-\beta_{ccdf} & = & -\Phi^{-1}(p(g > z))   \label{eq:beta_ccdf} \\
-\beta_{cdf}  & = & -\beta_{ccdf}          \label{eq:beta_cdf_ccdf} \\
-p(g \le z)   & = & 1 - p(g > z)           \label{eq:p_cdf_ccdf}
+p(g \le z)  & = & \Phi(-\beta_{\rm CDF})     \label{eq:p_cdf} \\
+p(g > z)    & = & \Phi(-\beta_{\rm CCDF})    \label{eq:p_ccdf} \\
+\beta_{\rm CDF}  & = & -\Phi^{-1}(p(g \le z)) \label{eq:beta_cdf} \\
+\beta_{\rm CCDF} & = & -\Phi^{-1}(p(g > z))   \label{eq:beta_ccdf} \\
+\beta_{\rm CDF}  & = & -\beta_{\rm CCDF}       \label{eq:beta_cdf_ccdf} \\
+p(g \le z)  & = & 1 - p(g > z)             \label{eq:p_cdf_ccdf}
 \end{eqnarray}
-
 where $\Phi()$ is the standard normal cumulative distribution
 function.  A common convention in the literature is to define $g$ in
 such a way that the CDF probability for a response level $z$ of zero
@@ -168,21 +165,21 @@ index from $\beta = \pm \|{\bf u}^*\|_2$, which in turn defines the
 CDF/CCDF probabilities (using Equations~\ref{eq:p_cdf}-\ref{eq:p_ccdf} in 
 the case of first-order integration).  The sign of $\beta$ is defined by
 \begin{eqnarray}
-G({\bf u}^*) > G({\bf 0}): \beta_{cdf} < 0, \beta_{ccdf} > 0 \\
-G({\bf u}^*) < G({\bf 0}): \beta_{cdf} > 0, \beta_{ccdf} < 0
+G({\bf u}^*) > G({\bf 0}): \beta_{\rm CDF} < 0, \beta_{\rm CCDF} > 0 \\
+G({\bf u}^*) < G({\bf 0}): \beta_{\rm CDF} > 0, \beta_{\rm CCDF} < 0
 \end{eqnarray}
 \noindent where $G({\bf 0})$ is the median limit state response computed 
 at the origin in u-space\footnote{It is not necessary to explicitly compute
 the median response since the sign of the inner product 
 $\langle {\bf u}^*, \nabla_{\bf u} G \rangle$
 can be used to determine the orientation of the optimal response with 
-respect to the median response.} (where $\beta_{cdf}$ = $\beta_{ccdf}$ = 0 
+respect to the median response.} (where $\beta_{\rm CDF}$ = $\beta_{\rm CCDF}$ = 0 
 and first-order $p(g \le z)$ = $p(g > z)$ = 0.5).  In the PMA case, the 
 sign applied to $G({\bf u})$ (equivalent to minimizing or maximizing 
 $G({\bf u})$) is similarly defined by $\bar{\beta}$
 \begin{eqnarray}
-\bar{\beta}_{cdf} < 0, \bar{\beta}_{ccdf} > 0: {\rm maximize \ } G({\bf u}) \\
-\bar{\beta}_{cdf} > 0, \bar{\beta}_{ccdf} < 0: {\rm minimize \ } G({\bf u})
+\bar{\beta}_{\rm CDF} < 0, \bar{\beta}_{\rm CCDF} > 0: {\rm maximize \ } G({\bf u}) \\
+\bar{\beta}_{\rm CDF} > 0, \bar{\beta}_{\rm CCDF} < 0: {\rm minimize \ } G({\bf u})
 \end{eqnarray}
 and the limit state at the MPP ($G({\bf u}^*)$) defines the desired
 response level result.
