@@ -102,7 +102,7 @@ option(HAVE_NLPQL "Build the NLPQL package." ON)
 option(HAVE_OPTPP "Build the OPTPP package." ON)
 option(HAVE_PSUADE "Build the PSUADE package." ON)
 option(HAVE_SURFPACK "Build the Surfpack package." ON)
-option(HAVE_TRACKING "Build the DAKOTA usage tracker module." ON)
+option(HAVE_USAGE_TRACKING "Build the DAKOTA usage tracker module." OFF)
 option(HAVE_XDR "Build the XDR interface module." ON)
 
 

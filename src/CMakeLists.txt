@@ -39,6 +39,16 @@ if(HAVE_USLEEP)
   add_definitions("-DHAVE_USLEEP")
 endif(HAVE_USLEEP)
 
+set(TRACKING_LOCATION_AND_PROXY "" CACHE STRING 
+    "<URL;proxy> for usage tracking")
+if(HAVE_USAGE_TRACKING)
+  if(CURL_FOUND)
+    add_definitions("-DHAVE_USAGE_TRACKING=\"${TRACKING_LOCATION_AND_PROXY}\"")
+  else(CURL_FOUND)
+    message(WARNING "Tracking requested, but curl not found; disabling.")
+    set(HAVE_USAGE_TRACKING OFF FORCE)
+  endif(CURL_FOUND)
+endif(HAVE_USAGE_TRACKING)
 
 set(TPL_LIBS teuchos nidr)
 
@@ -284,7 +294,7 @@ CheckPackage(SURFPACK)
 if(HAVE_SURFPACK)
   include_directories(${Surfpack_BINARY_DIR} ${Surfpack_SOURCE_DIR}/src
                       ${Surfpack_SOURCE_DIR}/src/surfaces)
-  set(TPL_LIBS ${TPL_LIBS} mars surfaces nkm)
+  set(TPL_LIBS ${TPL_LIBS} surfaces surfpack mars nkm)
 endif(HAVE_SURFPACK)
 
 

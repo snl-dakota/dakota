@@ -26,7 +26,7 @@
 #include "CommandLineHandler.H"
 #include "ProblemDescDB.H"
 #include "DakotaStrategy.H"
-#ifdef DAKOTA_TRACKING
+#ifdef HAVE_USAGE_TRACKING
 #include "TrackerHTTP.H"
 #endif
 
@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
   // partitions are created during strategy construction.
   Strategy selected_strategy(problem_db);
 
-#ifdef DAKOTA_TRACKING
+#ifdef HAVE_USAGE_TRACKING
   // must wait for iterators to be instantiated; positive side effect is that 
   // we don't track dakota -version, -help, and errant usage
   TrackerHTTP usage_tracker(problem_db, parallel_lib.world_rank());
@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
 #endif
   }
 
-#ifdef DAKOTA_TRACKING
+#ifdef HAVE_USAGE_TRACKING
   usage_tracker.post_finish();
 #endif
 
