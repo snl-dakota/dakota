@@ -1,14 +1,16 @@
 \chapter{Reliability Methods}\label{uq:reliability}
 
-This chapter explores local and global reliability methods in greater
-detail than that provided in the Uncertainty Quantification chapter of
-the User's Manual.
+%This chapter explores local and global reliability methods in greater
+%detail than that provided in the Uncertainty Quantification chapter of
+%the User's Manual.
 
 
 \section{Local Reliability Methods}\label{uq:reliability:local}
 
 Local reliability methods include the Mean Value method and the family
-of most probable point (MPP) search methods.
+of most probable point (MPP) search methods.  Each of these methods is
+gradient-based, employing local approximations and/or local
+optimization methods.
 
 
 \subsection{Mean Value}\label{uq:reliability:local:mv}
@@ -372,40 +374,149 @@ Hohenbichler-Rackwitz correction is used by default (switching the
 correction is a compile-time option in the source code and has not
 not currently been exposed in the input specification).
 
+\subsubsection{Hessian approximations} \label{sec:hessian}
+
+To use a second-order Taylor series or a second-order integration when
+second-order information ($\nabla^2_{\bf x} g$, $\nabla^2_{\bf u} G$,
+and/or $\kappa$) is not directly available, one can estimate the
+missing information using finite differences or approximate it through
+use of quasi-Newton approximations.  These procedures will often be
+needed to make second-order approaches practical for engineering
+applications.
+
+In the finite difference case, numerical Hessians are commonly computed
+using either first-order forward differences of gradients using
+\begin{equation}
+\nabla^2 g ({\bf x}) \cong 
+\frac{\nabla g ({\bf x} + h {\bf e}_i) - \nabla g ({\bf x})}{h}
+\end{equation}
+to estimate the $i^{th}$ Hessian column when gradients are analytically 
+available, or second-order differences of function values using
+\begin{equation}
+\begin{array}{l}
+\nabla^2 g ({\bf x}) \cong \frac{g({\bf x} + h {\bf e}_i + h {\bf e}_j) - 
+g({\bf x} + h {\bf e}_i - h {\bf e}_j) - 
+g({\bf x} - h {\bf e}_i + h {\bf e}_j) + 
+g({\bf x} - h {\bf e}_i - h {\bf e}_j)}{4h^2}
+\end{array}
+\end{equation}
+to estimate the $ij^{th}$ Hessian term when gradients are not directly
+available.  This approach has the advantage of locally-accurate
+Hessians for each point of interest (which can lead to quadratic
+convergence rates in discrete Newton methods), but has the
+disadvantage that numerically estimating each of the matrix terms can
+be expensive.
+
+Quasi-Newton approximations, on the other hand, do not reevaluate all
+of the second-order information for every point of interest.  Rather,
+they accumulate approximate curvature information over time using
+secant updates.  Since they utilize the existing gradient evaluations,
+they do not require any additional function evaluations for evaluating
+the Hessian terms.  The quasi-Newton approximations of interest
+include the Broyden-Fletcher-Goldfarb-Shanno (BFGS) update
+\begin{equation}
+{\bf B}_{k+1} = {\bf B}_{k} - \frac{{\bf B}_k {\bf s}_k {\bf s}_k^T {\bf B}_k}
+{{\bf s}_k^T {\bf B}_k {\bf s}_k} + 
+\frac{{\bf y}_k {\bf y}_k^T}{{\bf y}_k^T {\bf s}_k} \label{eq:bfgs}
+\end{equation}
+which yields a sequence of symmetric positive definite Hessian
+approximations, and the Symmetric Rank 1 (SR1) update
+\begin{equation}
+{\bf B}_{k+1} = {\bf B}_{k} + 
+\frac{({\bf y}_k - {\bf B}_k {\bf s}_k)({\bf y}_k - {\bf B}_k {\bf s}_k)^T}
+{({\bf y}_k - {\bf B}_k {\bf s}_k)^T {\bf s}_k} \label{eq:sr1}
+\end{equation}
+which yields a sequence of symmetric, potentially indefinite, Hessian 
+approximations.  ${\bf B}_k$ is the $k^{th}$ approximation to
+the Hessian $\nabla^2 g$, ${\bf s}_k = {\bf x}_{k+1} - {\bf x}_k$ is
+the step and ${\bf y}_k = \nabla g_{k+1} - \nabla g_k$ is the
+corresponding yield in the gradients.  The selection of BFGS versus SR1
+involves the importance of retaining positive definiteness in the
+Hessian approximations; if the procedure does not require it, then
+the SR1 update can be more accurate if the true Hessian is not positive 
+definite.  Initial scalings for ${\bf B}_0$ and numerical safeguarding 
+techniques (damped BFGS, update skipping) are described in \cite{Eld06a}.
+
+
+\subsubsection{Optimization algorithms}
+
+The next algorithmic variation involves the optimization algorithm
+selection for solving Eqs.~\ref{eq:ria_opt} and~\ref{eq:pma_opt}.  The
+Hasofer-Lind Rackwitz-Fissler (HL-RF) algorithm~\cite{Hal00} is a
+classical approach that has been broadly applied.  It is a
+Newton-based approach lacking line search/trust region globalization,
+and is generally regarded as computationally efficient but
+occasionally unreliable.  DAKOTA takes the approach of employing
+robust, general-purpose optimization algorithms with provable
+convergence properties.  In particular, we employ the sequential
+quadratic programming (SQP) and nonlinear interior-point (NIP)
+optimization algorithms from the NPSOL~\cite{Gil86} and
+OPT++~\cite{MeOlHoWi07} libraries, respectively.
+
+
+\subsubsection{Warm Starting of MPP Searches}  
+
+The final algorithmic variation for local reliability methods involves
+the use of warm starting approaches for improving computational
+efficiency.  \cite{Eld05} describes the acceleration of MPP
+searches through warm starting with approximate iteration increment,
+with $z/p/\beta$ level increment, and with design variable increment.
+Warm started data includes the expansion point and associated response
+values and the MPP optimizer initial guess.  Projections are used when
+an increment in $z/p/\beta$ level or design variables occurs.  Warm
+starts were consistently effective in \cite{Eld05}, with greater
+effectiveness for smaller parameter changes, and are used by default
+in DAKOTA. %for all computational experiments presented in this paper.
+
 
 \section{Global Reliability Methods}\label{uq:reliability:global}
 
-Global reliability methods include the efficient global reliability
-analysis (EGRA) method. Analytical methods of reliability analysis solve a 
-local optimization problem to locate the most probable point of failure (MPP), 
-and then quantify the reliability based on its location and an approximation 
-to the shape of the limit state at this point. Typically, gradient-based 
-solvers are used to solve this optimization problem, which may fail to 
-converge for nonsmooth response functions with unreliable gradients or 
-may converge to only one of several solutions for response functions that 
-possess multiple local optima. In addition to these MPP convergence issues, 
-the evaluated probabilites can be adversely affected by limit state 
-approximations that may be inaccurate. Analysts are then forced
-to revert to sampling methods, which do not rely on MPP convergence or 
-simplifying approximations to the true shape of the limit state. 
-However, employing such methods is impractical when evaluation of the 
-response function is expensive.
+Local reliability methods, while computationally efficient, have
+well-known failure mechanisms.  When confronted with a limit state
+function that is nonsmooth, local gradient-based optimizers may stall
+due to gradient inaccuracy and fail to converge to an MPP.  Moreover,
+if the limit state is multimodal (multiple MPPs), then a
+gradient-based local method can, at best, locate only one local MPP
+solution.  Finally, a linear (Eqs.~\ref{eq:p_cdf}--\ref{eq:p_ccdf}) or
+parabolic (Eqs.~\ref{eq:p_2nd_breit}--\ref{eq:p_2nd_hr}) approximation
+to the limit state at this MPP may fail to adequately capture the
+contour of a highly nonlinear limit state.  %For these reasons,
+%efficient global reliability analysis (EGRA) is investigated
+%in~\cite{bichon_egra_sdm}.
+
+%Global reliability methods include the efficient global reliability
+%analysis (EGRA) method. Analytical methods of reliability analysis solve a 
+%local optimization problem to locate the most probable point of failure (MPP), 
+%and then quantify the reliability based on its location and an approximation 
+%to the shape of the limit state at this point. Typically, gradient-based 
+%solvers are used to solve this optimization problem, which may fail to 
+%converge for nonsmooth response functions with unreliable gradients or 
+%may converge to only one of several solutions for response functions that 
+%possess multiple local optima. In addition to these MPP convergence issues, 
+%the evaluated probabilites can be adversely affected by limit state 
+%approximations that may be inaccurate. Analysts are then forced
+%to revert to sampling methods, which do not rely on MPP convergence or 
+%simplifying approximations to the true shape of the limit state. 
+%However, employing such methods is impractical when evaluation of the 
+%response function is expensive.
 
 A reliability analysis method that is both efficient when applied to
-expensive response functions and accurate for a response function of any
-arbitrary shape is needed. This paper develops such a method based on 
-efficient global optimization~\cite{Jon98} (EGO) to the search for 
-multiple points on or near the limit state throughout the random variable 
-space. By locating multiple points on the limit state, more complex limit 
-states can be accurately modeled, resulting in a more accurate assessment 
-of the reliability. It should be emphasized here that these multiple points 
-exist on a single limit state. Because of its roots in efficient global 
-optimization, this method of reliability analysis is called efficient 
-global reliability analysis (EGRA).  The following two subsections 
-describe two capabilities that are incorporated into the EGRA algorithm: 
-importance sampling and EGO. 
+expensive response functions and accurate for a response function of
+any arbitrary shape is needed. This section develops such a method
+based on efficient global optimization~\cite{Jon98} (EGO) to the
+search for multiple points on or near the limit state throughout the
+random variable space. By locating multiple points on the limit state,
+more complex limit states can be accurately modeled, resulting in a
+more accurate assessment of the reliability. It should be emphasized
+here that these multiple points exist on a single limit state. Because
+of its roots in efficient global optimization, this method of
+reliability analysis is called efficient global reliability analysis
+(EGRA)~\cite{Bic07}.  The following two subsections describe two
+capabilities that are incorporated into the EGRA algorithm: importance
+sampling and EGO.
 
 \subsection{Importance Sampling}\label{uq:reliability:global:ais}
+
 An alternative to MPP search methods is to directly 
 perform the probability integration numerically by sampling the 
 response function.
@@ -446,6 +557,7 @@ evaluations in multimodal AIS for the probability integration,
 results in an accurate and efficient reliability analysis tool.
 
 \subsection{Efficient Global Optimization}\label{uq:reliability:global:ego}
+
 Efficient Global Optimization (EGO) was developed to facilitate the 
 unconstrained minimization of expensive implicit response functions.
 The method builds an initial Gaussian process model as a global surrogate 
@@ -496,6 +608,7 @@ used, the form of the EIF, and then a description of how that EIF is modified
 for application to reliability analysis.
 
 \subsubsection{Gaussian Process Model}\label{uq:reliability:global:ego:gpm}
+
 Gaussian process (GP) models are set apart from other surrogate models because
 they provide not just a predicted value at an unsampled point, but also and
 estimate of the prediction variance.
@@ -593,8 +706,8 @@ of $\boldsymbol \theta$ and is defined by:
 \noindent Maximizing Eq.~\ref{eq:like} gives the maximum likelihood estimate 
 of $\boldsymbol \theta$, which in turn defines $\sigma_Z^2$.
 
-
 \subsubsection{Expected Improvement Function}\label{uq:reliability:global:ego:eif}
+
 The expected improvement function is used to select the location at which a 
 new training point should be added.
 The EIF is defined as the expectation that any point in the search
@@ -647,7 +760,7 @@ Because the EIF is often highly multimodal~\cite{jones_ego} it is expected that
 Nelder-Mead may fail to converge to the true global optimum.
 In Ref.~\cite{Jon98}, a branch-and-bound technique for maximizing the EIF
 is used, but was found to often be too expensive to run to convergence.
-In this paper, an implementation of the DIRECT global optimization algorithm is 
+In DAKOTA, an implementation of the DIRECT global optimization algorithm is 
 used~\cite{direct}.
 
 It is important to understand how the use of this EIF leads to optimal
@@ -680,6 +793,7 @@ objective of EGO and requires a new formulation.
 For this problem, the expected feasibility function is introduced.
 
 \subsubsection{Expected Feasibility Function}\label{uq:reliability:global:ego:eff}
+
 The expected improvement function provides an indication of how much the true
 value of the response at a point can be expected to be less than the current 
 best solution.
@@ -689,7 +803,7 @@ equal to a specified threshold value.
 The expected feasibility function (EFF) is introduced here to provide an 
 indication of how well the true value of the response is expected to satisfy 
 the equality constraint $G({\bf u})\!=\!\bar{z}$.
-Inspired by the contour estimation work in Ref.~\citen{pritam}, this 
+Inspired by the contour estimation work in~\cite{pritam}, this 
 expectation can be calculated in a similar fashion as Eq.~\ref{eq:eif_int}
 by integrating over a region in the immediate vicinity of the threshold value 
 $\bar{z}\pm\epsilon$:
