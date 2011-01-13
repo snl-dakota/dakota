@@ -43,7 +43,23 @@ if(CMAKE_SYSTEM_NAME MATCHES Darwin)
       "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
 endif()
 
-find_package(Boost 1.40 REQUIRED)
+# Prefer system Boost, otherwise fall back to in-source.  Neither
+# Boost_DIR nor BOOST_ROOT work as expected (as in Teuchos example);
+# likely due to custom FindBoost.cmake.  Therefore try include/libs.
+find_package(Boost 1.40 QUIET)
+if (NOT Boost_FOUND)
+  if (NOT BOOST_INCLUDEDIR)
+    set (BOOST_INCLUDEDIR ${CMAKE_CURRENT_SOURCE_DIR}/packages/boost)
+  endif() 
+  find_package( Boost 1.40 REQUIRED)
+  # Adding the subdirectory will build libs, but find_package's config
+  # mode not working for Boost
+  #if (NOT BOOST_LIBRARYDIR) 
+  #  set (BOOST_LIBRARYDIR ${CMAKE_CURRENT_BINARY_DIR}/packages/boost)
+  #endif()
+  #add_subdirectory(packages/boost)
+  #find_package( Boost 1.40 REQUIRED COMPONENTS signals)
+endif(NOT Boost_FOUND)
 
 # check for a MPI-enabled build
 if(CMAKE_CXX_COMPILER MATCHES mpicxx)
