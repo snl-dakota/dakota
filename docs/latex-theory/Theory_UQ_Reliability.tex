@@ -529,7 +529,7 @@ This ensures the samples will lie the region of interest,
 thus increasing the efficiency of the sampling method.
 Adaptive importance sampling (AIS) further improves the efficiency by
 adaptively updating the sampling density function.
-Multimodal adaptive importance sampling~\cite{mais_dey,mais_zou} is a
+Multimodal adaptive importance sampling~\cite{Dey98,Zou02} is a
 variation of AIS that allows for the use of multiple sampling densities
 making it better suited for cases where multiple sections of the limit state
 are highly probable.
@@ -569,7 +569,7 @@ EGRA.
 
 Efficient global optimization was originally proposed by
 Jones et al.~\cite{Jon98}~and has been adapted into similar methods
-such as sequential kriging optimization (SKO)~\cite{huang_sko}.
+such as sequential kriging optimization (SKO)~\cite{Hua06}.
 The main difference between SKO and EGO lies within the specific formulation
 of what is known as the expected improvement function (EIF), which is the
 feature that sets all EGO/SKO-type methods apart from other global optimization
@@ -618,7 +618,7 @@ small for input points which are near the points used to train the model,
 and will increase as one moves further from the training points.
 
 It is assumed that the true response function being modeled $G({\bf u})$ can 
-be described by:~\cite{cressie}
+be described by:~\cite{Cre91}
 \begin{equation}
 G({\bf u})={\bf h}({\bf u})^T{\boldsymbol \beta} + Z({\bf u})
 \end{equation}
@@ -627,7 +627,7 @@ ${\boldsymbol \beta}$ is the vector of trend coefficients, and
 $Z()$ is a stationary Gaussian process with zero mean (and covariance defined 
 below) that describes the departure of the model from its underlying trend.
 The trend of the model can be assumed to be any function, but
-taking it to be a constant value has been reported to be generally sufficient.~\cite{sacks}
+taking it to be a constant value has been reported to be generally sufficient.~\cite{Sac89}
 For the work presented here, the trend is assumed constant and
 ${\boldsymbol \beta}$ is taken as simply the mean of the responses at
 the training points.
@@ -640,7 +640,7 @@ Cov \left[ Z({\bf a}),Z({\bf b}) \right] = \sigma_Z^2 R({\bf a},{\bf b})
 \noindent where $\sigma_Z^2$ is the process variance and $R()$ is the
 correlation function.
 There are several options for the correlation function, but the 
-squared-exponential function is common~\cite{sacks}, and is used here for $R()$:
+squared-exponential function is common~\cite{Sac89}, and is used here for $R()$:
 \begin{equation}
 R({\bf a},{\bf b}) = \exp \left[ -\sum_{i=1}^d \theta_i(a_i - b_i)^2 \right]
 \end{equation}
@@ -681,7 +681,7 @@ The parameters $\sigma_Z^2$ and ${\boldsymbol \theta}$ are determined through
 maximum likelihood estimation.
 This involves taking the log of the probability of observing the response 
 values ${\bf g}$ given the covariance matrix ${\bf R}$, which can be written 
-as:~\cite{sacks}
+as:~\cite{Sac89}
 \begin{equation}
 \log \left[ p({\bf g} | {\bf R}) \right] = 
   -\frac{1}{n} \log \lvert{\bf R}\rvert - \log(\hat{\sigma}_Z^2) 
@@ -751,14 +751,14 @@ With the new training point added, a new GP model is built and then used
 to construct another EIF, which is then used to choose another new training 
 point, and so on, until the value of the EIF at its maximized point is below 
 some specified tolerance.
-In Ref.~\cite{huang_sko} this maximization is performed using a Nelder-Mead
+In Ref.~\cite{Hua06} this maximization is performed using a Nelder-Mead
 simplex approach, which is a local optimization method.
-Because the EIF is often highly multimodal~\cite{jones_ego} it is expected that 
+Because the EIF is often highly multimodal~\cite{Jon98} it is expected that 
 Nelder-Mead may fail to converge to the true global optimum.
 In Ref.~\cite{Jon98}, a branch-and-bound technique for maximizing the EIF
 is used, but was found to often be too expensive to run to convergence.
 In DAKOTA, an implementation of the DIRECT global optimization algorithm is 
-used~\cite{direct}.
+used~\cite{Gab01}.
 
 It is important to understand how the use of this EIF leads to optimal
 solutions.
@@ -800,7 +800,7 @@ equal to a specified threshold value.
 The expected feasibility function (EFF) is introduced here to provide an 
 indication of how well the true value of the response is expected to satisfy 
 the equality constraint $G({\bf u})\!=\!\bar{z}$.
-Inspired by the contour estimation work in~\cite{pritam}, this 
+Inspired by the contour estimation work in~\cite{Ran08}, this 
 expectation can be calculated in a similar fashion as Eq.~\ref{eq:eif_int}
 by integrating over a region in the immediate vicinity of the threshold value 
 $\bar{z}\pm\epsilon$:
