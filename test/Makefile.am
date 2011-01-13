@@ -216,8 +216,8 @@ dist_noinst_SCRIPTS = acro_test.pl \
 		      test_3pc_of \
 		      acro/dakota_test \
 		      dakota_diff.perl \
-		      dakota_test.perl \
-		      dakota_update_input.perl 
+		      dakota_test.perl
+#		      dakota_update_input.perl 
 
 ## Define the files which should be in the distribution.
 include $(srcdir)/Makefile.dist
