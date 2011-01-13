@@ -41,7 +41,7 @@ SOP to weakest in IVP.
 \subsection{Interval-valued probability (IVP)} \label{adv_models:mixed_uq:ivp}
 
 In IVP (also known as probability bounds
-analysis~\cite{ferson,karanki,aughenbaugh}), we employ an outer loop
+analysis~\cite{Fer06,KaKiVeAj09,Aug07}), we employ an outer loop
 of interval estimation in combination with an aleatory inner loop.
 %These approaches can be considered to be a special case of imprecise
 %probability theory.  
@@ -178,7 +178,7 @@ modeling epistemic uncertainty with a single interval per variable and
 computing interval-valued statistics, we instead employ subjective
 probability distributions and compute epistemic statistics on the
 aleatory statistics (for example, probabilities on probabilities --
-the source of the ``second-order'' terminology~\cite{goodman}).  Now
+the source of the ``second-order'' terminology~\cite{GoNg99}).  Now
 the different hairs of the horsetail shown in
 Figure~\ref{fig:horsetail} have a relative probability of occurrence
 and stronger inferences may be drawn.  In particular, mean, 5$^{th}$
@@ -188,14 +188,15 @@ probability of frequency (PoF) analysis, referring to a probabilistic
 interpretation of the epistemic variables and a frequency
 interpretation of the aleatory variables.  The PoF terminology is used
 in a recent National Academy of Sciences report on the Quantification
-of Margins and Uncertainties (QMU)~\cite{nas}.
+of Margins and Uncertainties (QMU)~\cite{NAS08}.
 
 Rather than employing interval estimation techniques at the outer loop
 in SOP, we can instead rely on the same probabilistic methods for
 aleatory propagation employed for the inner loop.  In certain special
 cases, expected values of expected values can be computed in closed
 form (selected statistics for combined variable stochastic expansions,
-refer to Theory Manual), without need for a separate outer loop method.
+refer to the DAKOTA Theory Manual~\cite{TheoMan}), without need for a
+separate outer loop method.
 
 The previous example in Figure~\ref{adv_models:2ndprob} can be
 modified to define the epistemic outer loop using uniform variables
@@ -236,9 +237,9 @@ functions provide a more finely resolved epistemic characterization
 than a basic output interval.
 
 The single-level DSTE approach for propagating epistemic uncertainties
-is described in Section~\ref{uq:dempshaf} and in the Theory Manual.
-Examples of nested DSTE for propagating mixed uncertainties can be
-seen in \texttt{dakota/test} in the input file
+is described in Section~\ref{uq:dempshaf} and in the DAKOTA Theory
+Manual~\cite{TheoMan}.  Examples of nested DSTE for propagating mixed
+uncertainties can be seen in \texttt{dakota/test} in the input file
 \texttt{dakota\_uq\_ishigami\_dste\_exp.in}.
 
 
@@ -430,7 +431,7 @@ in~\cite{Eld02}.
 Bi-level and sequential approaches to reliability-based design
 optimization (RBDO) and their associated sensitivity analysis
 requirements are described in the Optimization Under Uncertainty
-chapter of the Theory Manual.
+chapter of the DAKOTA Theory Manual~\cite{TheoMan}.
 
 A number of bi-level RBDO examples are provided in \texttt{dakota/test}.
 The \texttt{dakota\_rbdo\_cantilever.in},
@@ -470,38 +471,40 @@ with respect to design variables.
 For stochastic expansion-based approaches to optimization under
 uncertainty, bi-level, sequential, and multifidelity approaches and
 their associated sensitivity analysis requirements are described in
-the Optimization Under Uncertainty chapter of the Theory Manual.
+the Optimization Under Uncertainty chapter of the DAKOTA Theory
+Manual~\cite{TheoMan}.
 
 In \texttt{dakota/test}, the \texttt{dakota\_pcbdo\_cantilever.in},
 \texttt{dakota\_pcbdo\_rosenbrock.in},\\
 \texttt{dakota\_pcbdo\_short\_column.in}, and
-\texttt{dakota\_pcbdo\_steel\_column.in} input files solve 
-cantilever (see Section~\ref{additional:cantilever}), Rosenbrock,
-short column (see Section~\ref{additional:short_column}), and steel
-column (see Section~\ref{additional:steel_column}) OUU problems using
-a bi-level polynomial chaos-based approach, where the statistical
-design metrics are reliability indices based on moment projection
-(i.e., Eqs.~\ref{eq:mv_ria_cdf}-\ref{eq:mv_ria_ccdf}).  The test
-matrix in the former three input files evaluate design gradients of
-these reliability indices using several different approaches: analytic
-design gradients based on a PCE formed over only over the random
-variables (Eqs.~\ref{eq:dmuR_ds_unc_pce}-\ref{eq:dsigR_ds_unc_pce}),
-analytic design gradients based on a PCE formed over all variables
-(differentiation of
-Eqs.~\ref{eq:muR_comb_pce}-\ref{eq:sigR_comb_pce}), numerical design
-gradients based on a PCE formed only over the random variables, and
-numerical design gradients based on a PCE formed over all variables.
-In the cases where the expansion is formed over all variables, only a
-single PCE construction is required for the complete PCBDO process,
-whereas the expansions only over the random variables must be
-recomputed for each change in design variables.  Sensitivities for
-``augmented'' design variables (which are separate from and augment
-the random variables) may be handled using either analytic approach;
-however, sensitivities for ``inserted'' design variables (which define
-distribution parameters for the random variables) must be handled
-using Eqs.~\ref{eq:dmuR_ds_unc_pce}-\ref{eq:dsigR_ds_unc_pce} where
-$\frac{dR}{ds}$ is calculated as $\frac{dR}{dx} \frac{dx}{ds}$.
-Additional test input files include:
+\texttt{dakota\_pcbdo\_steel\_column.in} input files solve cantilever
+(see Section~\ref{additional:cantilever}), Rosenbrock, short column
+(see Section~\ref{additional:short_column}), and steel column (see
+Section~\ref{additional:steel_column}) OUU problems using a bi-level
+polynomial chaos-based approach, where the statistical design metrics
+are reliability indices based on moment projection (see Mean Value
+section in Reliability Methods Chapter of DAKOTA Theory
+Manual~\cite{TheoMan}).  The test matrix in the former three input
+files evaluate design gradients of these reliability indices using
+several different approaches: analytic design gradients based on a PCE
+formed over only over the random variables, analytic design gradients
+based on a PCE formed over all variables, numerical design gradients
+based on a PCE formed only over the random variables, and numerical
+design gradients based on a PCE formed over all variables.  In the
+cases where the expansion is formed over all variables, only a single
+PCE construction is required for the complete PCBDO process, whereas
+the expansions only over the random variables must be recomputed for
+each change in design variables.  Sensitivities for ``augmented''
+design variables (which are separate from and augment the random
+variables) may be handled using either analytic approach; however,
+sensitivities for ``inserted'' design variables (which define
+distribution parameters for the random variables) must be 
+%handled using Eqs.~\ref{eq:dmuR_ds_xi_pce}-\ref{eq:dsigR_ds_xi_pce} 
+%where $\frac{dR}{ds}$ is calculated as $\frac{dR}{dx} \frac{dx}{ds}$.
+computed using $\frac{dR}{dx} \frac{dx}{ds}$ (refer to Stochastic
+Sensitivity Analysis section in Optimization Under Uncertainty chapter
+of DAKOTA Theory Manual~\cite{TheoMan}).  Additional test input files
+include:
 \begin{itemize}
 \item \texttt{dakota\_scbdo\_cantilever.in}, 
 \texttt{dakota\_scbdo\_rosenbrock.in}, \\
@@ -553,7 +556,7 @@ using interval optimization on the ``outer loop'' to calculate bounding
 statistics of the aleatory uncertainty on the ``inner loop.''  
 Preliminary studies~\cite{Eld09b} have shown this approach is more efficient 
 and accurate than nested sampling (which was described in 
-Section~\ref{adv_models:sop}).  This approach uses 
+Section~\ref{adv_models:mixed_uq:sop}).  This approach uses 
 an efficient global optimization method for the outer loop and 
 stochastic expansion methods (e.g. polynomial chaos or stochastic 
 collocation on the inner loop).  The interval optimization is described in 

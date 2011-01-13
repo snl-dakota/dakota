@@ -33,9 +33,9 @@ approximate optimization cycles using a trust region approach.
 %trouble, and where the computational expense of the simulation
 %precludes the use of nongradient-based methods.
 
-Refer to the DAKOTA Theory Manual for algorithmic details on iterate
-acceptance, merit function formulations, convergence assessment, and
-constraint relaxation.
+Refer to the DAKOTA Theory Manual~\cite{TheoMan} for algorithmic
+details on iterate acceptance, merit function formulations,
+convergence assessment, and constraint relaxation.
 
 
 \subsection{SBO with Data Fits}\label{sbm:sblm:surface}
@@ -452,8 +452,8 @@ which maximize the EIF.  Rather, we use the DIRECT algorithm.  Second,
 we allow for multiobjective optimization and nonlinear least squares
 including general nonlinear constraints.  Constraints are handled
 through an augmented Lagrangian merit function approach (see
-Section~\ref{sbm:sblm_con_merit} and
-Eqs.~\ref{eq:aug_lag_merit}-\ref{eq:lambda_h}).
+Surrogate-Based Minimization chapter in DAKOTA Theory
+Manual~\cite{TheoMan}).
 
 The method is specified as \texttt{efficient\_global}.  Currently we
 do not expose any specification controls for the underlying Gaussian

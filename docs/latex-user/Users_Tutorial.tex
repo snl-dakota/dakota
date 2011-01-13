@@ -1407,22 +1407,21 @@ of the response distributions (events with low probability) than
 sampling based approaches since the number of samples required to
 resolve a low probability can be prohibitive.
 
-Figure~\ref{tutorial:textbook_mv} shows the DAKOTA input file for
-an example problem that demonstrates the simplest reliability method, 
-called the mean value method (also referred to as the Mean Value 
-First Order Second Moment method).  It is specified with method 
-keyword \texttt{local\_reliability}.  
-This method calculates the mean 
-and variance of the response function based on information about the 
-mean and variance of the inputs and gradient information at the mean 
-of the inputs. The mean value method is extremely cheap computationally 
-(only five runs were required for the textbook function), but can 
-be quite inaccurate, especially for nonlinear problems and/or problems 
-with uncertain inputs that are significantly non-normal. More 
-detail on the mean value method can be found in 
-Section~\ref{uq:reliability:mv}, and more detail on reliability 
-methods in general (including the more advanced methods) is found in 
-Section~\ref{uq:reliability}.
+Figure~\ref{tutorial:textbook_mv} shows the DAKOTA input file for an
+example problem that demonstrates the simplest reliability method,
+called the mean value method (also referred to as the Mean Value First
+Order Second Moment method).  It is specified with method keyword
+\texttt{local\_reliability}.  This method calculates the mean and
+variance of the response function based on information about the mean
+and variance of the inputs and gradient information at the mean of the
+inputs. The mean value method is extremely cheap computationally (only
+five runs were required for the textbook function), but can be quite
+inaccurate, especially for nonlinear problems and/or problems with
+uncertain inputs that are significantly non-normal. More detail on the
+mean value method can be found in the Local Reliability Methods
+section of the DAKOTA Theory Manual~\cite{TheoMan}, and more detail on
+reliability methods in general (including the more advanced methods)
+is found in Section~\ref{uq:reliability}.
 
 Example output from the mean value method is displayed in 
 Figure~\ref{tutorial:results_mv}. Note that since the mean of both inputs
@@ -1494,7 +1493,7 @@ inputs. Coefficients in the Chaos expansion are determined through
 orthogonal projection. For non-intrusive implementations, such as in DAKOTA,
 numerical integration via quadrature or cubature is used to evaluate the 
 orthogonal projections.  Additional details regarding the method are 
-provided in Section \ref{uq:expansion}.
+provided in Section~\ref{uq:expansion}.
 
 A typical DAKOTA input file for performing an uncertainty
 quantification using polynomial chaos expansions is shown in

@@ -7,9 +7,9 @@ perform design optimization accounting for reliability metrics.  The
 reliability analysis capabilities described in
 Section~\ref{uq:reliability:local} provide a substantial foundation
 for exploring a variety of gradient-based RBDO formulations.
-\cite{firstorder} investigated bi-level, fully-analytic bi-level, and
+\cite{Eld05} investigated bi-level, fully-analytic bi-level, and
 first-order sequential RBDO approaches employing underlying
-first-order reliability assessments.  \cite{secondorder} investigated
+first-order reliability assessments.  \cite{Eld06a} investigated
 fully-analytic bi-level and second-order sequential RBDO approaches
 employing underlying second-order reliability assessments.  These
 methods are overviewed in the following sections.
@@ -79,7 +79,7 @@ include the curvature correction.  For Breitung's correction
 \right] \nabla_{\bf d} \beta_{cdf} \label{eq:deriv_p_breit}
 \end{equation}
 where $\nabla_{\bf d} \kappa_i$ has been neglected and $\beta_p \ge 0$
-(see Section~\ref{uq:reliability:mpp:int}).  Other approaches assume
+(see Section~\ref{uq:reliability:local:mpp:int}).  Other approaches assume
 the curvature correction is nearly independent of the design
 variables~\cite{Rac02}, which is equivalent to neglecting the first
 term in Eq.~\ref{eq:deriv_p_breit}.

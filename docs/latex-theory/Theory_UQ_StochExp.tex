@@ -316,7 +316,7 @@ expansion in the transformed space.  %The dimension of
 %correspondence between $\boldsymbol{\xi}$ and $\boldsymbol{x}$.
 This notion of independent standard space is extended over the notion
 of ``u-space'' used in reliability methods (see
-Section~\ref{uq:reliability:mpp}) 
+Section~\ref{uq:reliability:local:mpp}) 
 in that it extends the standardized set beyond standard normals.
 %includes not just independent standard normals, but also independent 
 %standard uniforms, exponentials, betas, and gammas.
@@ -975,25 +975,24 @@ involves the same Jacobian application shown in Eq.~\ref{eq:dR_dx}.
 
 \section{Global sensitivity analysis: variance-based decomposition}\label{uq:expansion:vbd}
 
-In addition to obtaining derivatives of stochastic expansions with 
-respect to the random variables, it is possible to obtain 
-variance-based sensitivity indices from the stochastic expansions. 
-Variance-based sensitivity indices are explained in 
-Section~\ref{dace:sensitivity}.  The concepts are summarized here 
-as well.  Variance-based decomposition 
-is a global sensitivity method that summarizes how the uncertainty 
-in model output can be apportioned to uncertainty in individual 
-input variables.  VBD uses two primary measures, the main effect 
-sensitivity index $S_{i}$ and the total effect index $T_{i}$.  These 
-indices are also called the Sobol' indices. The main effect sensitivity 
-index corresponds to the fraction of the uncertainty in the output, $Y$, 
-that can be attributed to input $x_{i}$ alone.  The total effects index 
-corresponds to the fraction of the uncertainty in 
-the output, $Y$, that can be attributed to input $x_{i}$ and its 
-interactions with other variables. The main effect sensitivity index
-compares the variance of the conditional expectation
-$Var_{x_{i}}[E(Y|x_{i})]$ against the total variance $Var(Y)$.
-Formulas for the indices are: 
+In addition to obtaining derivatives of stochastic expansions with
+respect to the random variables, it is possible to obtain
+variance-based sensitivity indices from the stochastic expansions.
+Variance-based sensitivity indices are explained in the Design of
+Experiments Chapter of the Users Manual.  The concepts are summarized
+here as well.  Variance-based decomposition is a global sensitivity
+method that summarizes how the uncertainty in model output can be
+apportioned to uncertainty in individual input variables.  VBD uses
+two primary measures, the main effect sensitivity index $S_{i}$ and
+the total effect index $T_{i}$.  These indices are also called the
+Sobol' indices. The main effect sensitivity index corresponds to the
+fraction of the uncertainty in the output, $Y$, that can be attributed
+to input $x_{i}$ alone.  The total effects index corresponds to the
+fraction of the uncertainty in the output, $Y$, that can be attributed
+to input $x_{i}$ and its interactions with other variables. The main
+effect sensitivity index compares the variance of the conditional
+expectation $Var_{x_{i}}[E(Y|x_{i})]$ against the total variance
+$Var(Y)$.  Formulas for the indices are:
 
 \begin{equation}
 S_{i}=\frac{Var_{x_{i}}[E(Y|x_{i})]}{Var(Y)} \label{eq:sobol}
