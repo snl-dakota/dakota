@@ -16,9 +16,9 @@
 #define DAKOTA_NOND_H
 
 #include "DakotaAnalyzer.H"
-#ifdef DAKOTA_PECOS
+#ifdef HAVE_PECOS
 #include "ProbabilityTransformation.hpp"
-#endif // DAKOTA_PECOS
+#endif // HAVE_PECOS
 
 //#define DERIV_DEBUG
 
@@ -42,11 +42,11 @@ public:
 
   /// initialize natafTransform based on distribution data from iteratedModel
   void initialize_random_variables(short u_space_type);
-#ifdef DAKOTA_PECOS
+#ifdef HAVE_PECOS
   /// alternate form: initialize natafTransform based on incoming data
   void initialize_random_variables(
     const Pecos::ProbabilityTransformation& transform);
-#endif // DAKOTA_PECOS
+#endif // HAVE_PECOS
 
   /// set requestedRespLevels, requestedProbLevels, requestedRelLevels,
   /// requestedGenRelLevels, respLevelTarget, and cdfFlag (used in
@@ -152,11 +152,11 @@ protected:
   // passed in to the alternate form of initialize_random_variables() from
   // outside sources.
 
-#ifdef DAKOTA_PECOS
+#ifdef HAVE_PECOS
   /// Nonlinear variable transformation that encapsulates the required
   /// data for performing transformations from X -> Z -> U and back.
   Pecos::ProbabilityTransformation natafTransform;
-#endif // DAKOTA_PECOS
+#endif // HAVE_PECOS
   // ---------------------------------------------------------------------------
 
 

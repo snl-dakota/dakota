@@ -323,14 +323,14 @@ build_approximation(const Variables& vars, const Response& response)
   // return a bool indicating whether the incoming data defines an embedded
   // correction (hard constraint) or just another data point.  It would be
   // preferable to flow this up from the surrogate, but keep it simple for now.
-#ifdef DAKOTA_SURFPACK
+#ifdef HAVE_SURFPACK
   return (surrogateType.begins("local_") ||
 	  surrogateType.begins("multipoint_") ||
 	  surrogateType == "global_polynomial");
 #else
   return (surrogateType.begins("local_") ||
 	  surrogateType.begins("multipoint_"));
-#endif // DAKOTA_SURFPACK
+#endif // HAVE_SURFPACK
 }
 
 

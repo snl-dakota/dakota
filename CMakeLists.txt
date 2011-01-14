@@ -116,6 +116,7 @@ option(HAVE_NL2SOL "Build the NL2SOL package." ON)
 option(HAVE_NPSOL "Build the NPSOL package." ON)
 option(HAVE_NLPQL "Build the NLPQL package." ON)
 option(HAVE_OPTPP "Build the OPTPP package." ON)
+option(HAVE_PLUGIN "Enable plugins to the dakota executable." ON)
 option(HAVE_PSUADE "Build the PSUADE package." ON)
 option(HAVE_SURFPACK "Build the Surfpack package." ON)
 option(HAVE_USAGE_TRACKING "Build the DAKOTA usage tracker module." OFF)
@@ -155,10 +156,6 @@ if(HAVE_CONMIN)
   find_package( CONMIN NO_MODULE REQUIRED )
 endif(HAVE_CONMIN)
 
-
-#Keep track of what libraries should be included in libdakota
-## WJB - ToDo: determine whether this is needed at the top-level
-set(SUBLIBS dakota_src)
 
 add_subdirectory(packages)
 add_subdirectory(src)

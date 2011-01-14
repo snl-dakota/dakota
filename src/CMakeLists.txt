@@ -39,6 +39,11 @@ if(HAVE_USLEEP)
   add_definitions("-DHAVE_USLEEP")
 endif(HAVE_USLEEP)
 
+check_include_files(pdb.h HAVE_PDB_H)
+if(HAVE_PDB_H)
+  add_definitions("-DHAVE_PDB_H")
+endif(HAVE_PDB_H)
+
 set(TRACKING_LOCATION_AND_PROXY "" CACHE STRING 
     "<URL;proxy> for usage tracking")
 if(HAVE_USAGE_TRACKING)
@@ -49,6 +54,7 @@ if(HAVE_USAGE_TRACKING)
     set(HAVE_USAGE_TRACKING OFF FORCE)
   endif(CURL_FOUND)
 endif(HAVE_USAGE_TRACKING)
+
 
 set(TPL_LIBS teuchos nidr)
 
@@ -69,16 +75,14 @@ function(CheckPackage package)
   endif()
 endfunction(CheckPackage)
 
+
 CheckPackage(PECOS)
-
 if(HAVE_PECOS)
-  # WJB - ToDo: Change M4 and source files to new convention, i.e. -DHAVE_PECOS
-  add_definitions("-DDAKOTA_PECOS")
-
   # WJB: really need Pecos_INCLUDE_DIRS for dakota
   include_directories(${Pecos_BINARY_DIR} ${Pecos_SOURCE_DIR}/src
                       ${VPISparseGrid_SOURCE_DIR}/src)
 endif(HAVE_PECOS)
+
 
 ## DAKOTA library sources.
 set(Dakota_src DakotaBuildInfo.C)
@@ -93,10 +97,9 @@ if(HAVE_XDR)
   list(APPEND util_src dak_xdr_interface.c)
 endif(HAVE_XDR)
 
-if(HAVE_TRACKING)
+if(HAVE_USAGE_TRACKING)
   list(APPEND util_src TrackerHTTP.C)
-  #WJB set(util_src ${util_src} TrackerHTTP.C)
-endif(HAVE_TRACKING)
+endif(HAVE_USAGE_TRACKING)
 
 ## EVALDATA sources.
 set(evaldata_src DakotaVariables.C MergedVariables.C MixedVariables.C
@@ -121,11 +124,16 @@ set(interface_src DakotaInterface.C ApproximationInterface.C
     SysCallApplicInterface.C ForkApplicInterface.C DirectApplicInterface.C
     AnalysisCode.C ForkAnalysisCode.C SysCallAnalysisCode.C CommandShell.C)
 
+CheckPackage(SURFPACK)
 if(HAVE_SURFPACK)
-  set(interface_src ${interface_src} SurfpackApproximation.C)
+  list(APPEND interface_src SurfpackApproximation.C)
+  include_directories(${Surfpack_BINARY_DIR} ${Surfpack_SOURCE_DIR}/src
+                      ${Surfpack_SOURCE_DIR}/src/surfaces)
+  list(APPEND TPL_LIBS surfaces surfpack mars nkm)
 endif(HAVE_SURFPACK)
 
 if(HAVE_PLUGIN)
+  add_definitions("-DDAKOTA_PLUGIN")
   set(interface_src ${interface_src} PluginSerialDirectApplicInterface.C
       PluginParallelDirectApplicInterface.C)
 endif(HAVE_PLUGIN)
@@ -242,14 +250,14 @@ if(HAVE_NCSUOPT)
   add_definitions("-DDAKOTA_NCSU")
   set(iterator_src ${iterator_src} NCSUOptimizer.C)
   #link_directories(${Dakota_BINARY_DIR}/packages/NCSUOpt)
-  set(TPL_LIBS ${TPL_LIBS} ncsuopt)
+  list(APPEND TPL_LIBS ncsuopt)
 endif(HAVE_NCSUOPT)
 
 if(HAVE_NLPQL)
   add_definitions("-DDAKOTA_NLPQL")
   set(iterator_src ${iterator_src} NLPQLPOptimizer.C)
   #link_directories(${Dakota_BINARY_DIR}/packages/NLPQL)
-  set(TPL_LIBS ${TPL_LIBS} nlpql)
+  list(APPEND TPL_LIBS nlpql)
 endif(HAVE_NLPQL)
 
 if(HAVE_NL2SOL)
@@ -257,7 +265,7 @@ if(HAVE_NL2SOL)
   set(iterator_src ${iterator_src} NL2SOLLeastSq.C)
   include_directories(${Dakota_BINARY_DIR}/packages/NP2SOL)
   #link_directories(${Dakota_BINARY_DIR}/packages/NP2SOL)
-  set(TPL_LIBS ${TPL_LIBS} cport)
+  list(APPEND TPL_LIBS cport)
 endif(HAVE_NL2SOL)
 
 CheckPackage(NPSOL)
@@ -281,21 +289,11 @@ if(HAVE_OPTPP)
   set(TPL_LIBS ${TPL_LIBS} opt newmat)
 endif(HAVE_OPTPP)
 
+CheckPackage(PSUADE)
 if(HAVE_PSUADE)
-  add_definitions("-DHAVE_PSUADE")
+  list(APPEND interface_src PSUADEDesignCompExp.C)
   include_directories(${PSUADE_SOURCE_DIR})
-  set(iterator_src ${iterator_src} PSUADEDesignCompExp.C)
-  #link_directories(${Dakota_BINARY_DIR}/packages/PSUADE)
-  set(TPL_LIBS ${TPL_LIBS} psuade)
 endif(HAVE_PSUADE)
-
-
-CheckPackage(SURFPACK)
-if(HAVE_SURFPACK)
-  include_directories(${Surfpack_BINARY_DIR} ${Surfpack_SOURCE_DIR}/src
-                      ${Surfpack_SOURCE_DIR}/src/surfaces)
-  set(TPL_LIBS ${TPL_LIBS} surfaces surfpack mars nkm)
-endif(HAVE_SURFPACK)
 
 
 ## AGGREGATED source code spec for full-up libdakota.

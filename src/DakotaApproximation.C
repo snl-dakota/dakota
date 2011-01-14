@@ -19,9 +19,9 @@
 #include "TANA3Approximation.H"
 #include "PecosApproximation.H"
 #include "GaussProcApproximation.H"
-#ifdef DAKOTA_SURFPACK
+#ifdef HAVE_SURFPACK
 #include "SurfpackApproximation.H"
-#endif // DAKOTA_SURFPACK
+#endif // HAVE_SURFPACK
 #include "DakotaGraphics.H"
 
 #define DEBUG
@@ -111,7 +111,7 @@ get_approx(ProblemDescDB& problem_db, size_t num_vars)
     return new PecosApproximation(problem_db, num_vars);
   else if (approx_type == "global_gaussian")
     return new GaussProcApproximation(problem_db, num_vars);
-#ifdef DAKOTA_SURFPACK
+#ifdef HAVE_SURFPACK
   else if (approx_type == "global_polynomial"     ||
 	   approx_type == "global_kriging"        ||
 	   approx_type == "global_neural_network" || // TO DO: Two ANN's ?
@@ -119,7 +119,7 @@ get_approx(ProblemDescDB& problem_db, size_t num_vars)
 	   approx_type == "global_mars"           ||
 	   approx_type == "global_moving_least_squares")
     return new SurfpackApproximation(problem_db, num_vars);
-#endif // DAKOTA_SURFPACK
+#endif // HAVE_SURFPACK
   else {
     Cerr << "Error: Approximation type " << approx_type << " not available."
 	 << std::endl;
@@ -172,7 +172,7 @@ get_approx(const String& approx_type, const UShortArray& approx_order,
 				    data_order);
   else if (approx_type == "global_gaussian")
     approx = new GaussProcApproximation(num_vars, data_order);
-#ifdef DAKOTA_SURFPACK
+#ifdef HAVE_SURFPACK
   else if (approx_type == "global_polynomial"     ||
 	   approx_type == "global_kriging"        ||
 	   approx_type == "global_neural_network" || // TO DO: Two ANN's ?
@@ -181,7 +181,7 @@ get_approx(const String& approx_type, const UShortArray& approx_order,
 	   approx_type == "global_moving_least_squares")
     approx = new SurfpackApproximation(approx_type, approx_order,
 				       num_vars, data_order);
-#endif // DAKOTA_SURFPACK
+#endif // HAVE_SURFPACK
   else {
     Cerr << "Error: Approximation type " << approx_type << " not available."
 	 << std::endl;

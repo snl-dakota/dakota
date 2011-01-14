@@ -1143,7 +1143,7 @@ void NonD::initialize_random_variable_parameters()
     ProbabilityTransformation::ranVarTypes et al. may not be generated
     directly.  This allows for the use of inverse transformations to
     return the transformed space variables to their original states. */
-#ifdef DAKOTA_PECOS
+#ifdef HAVE_PECOS
 void NonD::
 initialize_random_variables(const Pecos::ProbabilityTransformation& transform)
 {
@@ -1160,7 +1160,7 @@ initialize_random_variables(const Pecos::ProbabilityTransformation& transform)
   numContStateVars
     = std::count(x_types.begin(), x_types.end(), (short)Pecos::STATE);
 }
-#endif // DAKOTA_PECOS
+#endif // HAVE_PECOS
 
 
 void NonD::initialize_distribution_mappings()
