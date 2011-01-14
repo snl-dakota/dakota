@@ -29,9 +29,11 @@
 #include <pm_util.h>  // for pm_child_sig_handler
 #endif // HAVE_AIX_MPI
 
+// on by default by request from Collis/Drake/Salinger
+#define COMM_SPLIT_TO_SINGLE
+
 static const char rcsId[]="@(#) $Id: ParallelLibrary.C 7013 2010-10-08 01:03:38Z wjbohnh $";
 
-using std::endl;
 
 namespace Dakota {
 
@@ -109,7 +111,8 @@ ParallelLibrary::ParallelLibrary(int& argc, char**& argv):
     Cout << "Running MPI executable in serial mode.\n";
 #else // mpi not available
   if (mpirunFlag) {
-    Cerr << "Error: Attempting to run serial executable in parallel." << endl;
+    Cerr << "Error: Attempting to run serial executable in parallel."
+	 << std::endl;
     abort_handler(-1);
   }
   else { // use defaults: worldRank = 0, worldSize = 1
@@ -238,11 +241,11 @@ bool ParallelLibrary::detect_parallel_launch(int& argc, char**& argv)
   // CommandLineHandler - which must only allow it as an enrolled option) is a 
   // safer mechanism for differentiating behavior than using GetLongOpt::parse.
   //bool mpi_flag = false;
-  //Cout << argc << endl;
-  //for (int i=0; i<argc; i++) {
-  //  Cout << argv[i] << endl;
+  //Cout << argc << std::endl;
+  //for (int i=0; i<argc; ++i) {
+  //  Cout << argv[i] << std::endl;
   //  if (strcmp(argv[i],"-mpi") == 0) {
-  //    Cout << "Found -mpi" << endl;
+  //    Cout << "Found -mpi" << std::endl;
   //    mpi_flag = true;
   //  }
   //}
@@ -270,7 +273,7 @@ bool ParallelLibrary::detect_parallel_launch(int& argc, char**& argv)
   char* ompi_1_3_test = std::getenv("OMPI_COMM_WORLD_SIZE");
   if (ompi_1_2_test || ompi_1_3_test) {
 #ifdef MPI_DEBUG
-    Cout << "Parallel run detected via OpenMPI test" <<endl;
+    Cout << "Parallel run detected via OpenMPI test" << std::endl;
 #endif
     mpi_launch = true;
   }
@@ -283,11 +286,11 @@ bool ParallelLibrary::detect_parallel_launch(int& argc, char**& argv)
   //
   // test for p4 device
   //char* test = std::getenv("MPIRUN_DEVICE"); // no good: only set on master
-  for (int i=0; i<argc; i++) {
+  for (int i=0; i<argc; ++i) {
     String test(argv[i]);
     if (test=="-p4pg" || test=="-p4amslave") {
 #ifdef MPI_DEBUG
-      Cout << "Parallel run detected via MPICH args test" <<endl;
+      Cout << "Parallel run detected via MPICH args test" << std::endl;
 #endif
       mpi_launch = true;
       break;
@@ -306,13 +309,13 @@ bool ParallelLibrary::detect_parallel_launch(int& argc, char**& argv)
 	mpirun_test = std::getenv("MPICH_NP");
   if (gm_test || mpirun_test) { // && atoi(gm_test) > 1)
 #ifdef MPI_DEBUG
-    Cout << "Parallel run detected via MPICH env test" <<endl;
+    Cout << "Parallel run detected via MPICH env test" << std::endl;
 #endif
     mpi_launch = true;
   }
 
 #elif defined(HAVE_OSF_MPI) // Digital MPI sets env vars. on all procs.
-  char* dec_test = std::getenv("DIGITALMPI_ENV_MAGIC"); // returns NULL if not set
+  char* dec_test = std::getenv("DIGITALMPI_ENV_MAGIC");//returns NULL if not set
   if (dec_test) // non-NULL
     mpi_launch = true;
 
@@ -386,7 +389,7 @@ init_communicators(const ParallelLevel& parent_pl, const int& num_servers,
     split_communicator_peer_partition(parent_pl,   child_pl, proc_remainder);
 
   if (child_pl.commSplitFlag)
-    currPCIter->numParallelLevels++;
+    ++currPCIter->numParallelLevels;
 
   parallelLevels.push_back(child_pl);
   currPLIter = --parallelLevels.end();
@@ -512,7 +515,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
     // (decreasing below request should be avoided).  Estimating num_servers 
     // using avail_procs (peer partition) provides an upper bound (i.e., 
     // num_servers can only decrease for a dedicated master partition).
-    num_servers = avail_procs/procs_per_server;
+    num_servers = avail_procs/procs_per_server; // trial config (not final)
     int max_servers
       = (int)std::ceil((Real)max_concurrency/(Real)capacity_multiplier);
     if ( !self_scheduling_override && ( num_servers <= 1 ||
@@ -537,7 +540,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
       return false;
     }
     else { // dynamic scheduling -> self or distr. (self only for now)
-      num_servers = (avail_procs-1)/procs_per_server; // update
+      num_servers = (avail_procs-1)/procs_per_server; // update config
       // no need to check if this num_servers >= max_servers since max_servers
       // would still be greater (num_servers can only decrease).  However, 
       // num_servers can become < 2 (e.g., 8/4 > 1 -> dynamic -> 7/4 = 1 server
@@ -575,7 +578,8 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
     //if (print_rank)
     //  Cout << "nom_ppa = " << nom_ppa << " ssplus1_ppa = " << ssplus1_ppa
     //       << "\nnom_ppa delta = " << nom_ppa - procs_per_server
-    //       <<" ssplus1_ppa delta = "<<procs_per_server - ssplus1_ppa<<endl;
+    //       <<" ssplus1_ppa delta = "<<procs_per_server - ssplus1_ppa
+    //       << std::endl;
     if (procs_per_server - ssplus1_ppa < nom_ppa - procs_per_server) {
       if (print_rank)
         Cerr << "Warning: reducing procs_per_server for best fit.\n";
@@ -683,38 +687,37 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   // Split parent Comm to create new intra- and inter-comms
   // ------------------------------------------------------
 
-  // This partitioning approach uses MPI_Comm_split.  It is simpler than 
-  // MPI_Group_incl since it avoids group operations and creates only 1 new 
-  // intracommunicator.
-  int color = 0; // reassigned unless master proc.
-  int i, color_cntr = 1, end = 0, proc_rem_cntr = proc_remainder;
   IntArray start(child_pl.numServers);
-
-  for(i=0; i<child_pl.numServers; i++) {
+  int color = 0; // reassigned unless master proc.
+  // addtl_procs manages case where proc_remainder > num_servers that can occur
+  // for large procs_per_analysis --> ensures that proc_rem_cntr < num_servers
+  int i, color_cntr = 1, end = 0,
+    addtl_procs   = proc_remainder / child_pl.numServers, // truncated
+    proc_rem_cntr = proc_remainder - addtl_procs*child_pl.numServers;
+  for (i=0; i<child_pl.numServers; ++i) {
     start[i] = end + 1;
-    end = start[i] + child_pl.procsPerServer - 1;
-    if (proc_rem_cntr > 0) {
-      end++;
-      proc_rem_cntr--;
-    }
+    end = start[i] + child_pl.procsPerServer + addtl_procs - 1;
+    if (proc_rem_cntr > 0)
+      { ++end; --proc_rem_cntr; }
     if (parent_pl.serverCommRank >= start[i] &&
 	parent_pl.serverCommRank <= end) {
       color = color_cntr;
       //Cout << "Slave processor " << parent_pl.serverCommRank
-      //     << " assigned color = " << color << endl;
+      //     << " assigned color = " << color << std::endl;
     }
 #ifdef MPI_DEBUG
     if (parent_pl.serverCommRank == 0)
       Cout << "group " << i << " has processors " << start[i] 
            << " through " << end << " with color = " << color_cntr << '\n';
 #endif // MPI_DEBUG
-    color_cntr++;
+    ++color_cntr;
   }
   if (parent_pl.serverCommRank && !color) {
     Cerr << "Error: slave processor " << parent_pl.serverCommRank 
-         << " missing color assignment" << endl;
+         << " missing color assignment" << std::endl;
     abort_handler(-1);
   }
+
 #ifdef HAVE_MPI
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.serverIntraComm);
@@ -728,7 +731,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   // See example on p. 252 of MPI: The Complete Reference.
   if (parent_pl.serverCommRank == 0) {
     child_pl.hubServerInterComms = new MPI_Comm [child_pl.numServers];
-    for(i=0; i<child_pl.numServers; i++)
+    for(i=0; i<child_pl.numServers; ++i)
       MPI_Intercomm_create(child_pl.serverIntraComm, 0,
 			   parent_pl.serverIntraComm, start[i], i+1,
 			   &child_pl.hubServerInterComms[i]);
@@ -742,7 +745,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
        << child_pl.serverCommSize << '\n';
   int size, remote_size;
   if (parent_pl.serverCommRank==0) { // the dedicated master
-    for (int i=0; i<child_pl.numServers; i++) {
+    for (int i=0; i<child_pl.numServers; ++i) {
       MPI_Comm_size(child_pl.hubServerInterComms[i], &size);
       MPI_Comm_remote_size(child_pl.hubServerInterComms[i], &remote_size);
       Cout << "Master: size = " << size << " inter_comms[" << i
@@ -821,17 +824,18 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   // Split parent Comm to create new peer intra- and inter-comms
   // -----------------------------------------------------------
 
-  int color = 0; // reassigned for all procs. in peer case
-  int i, color_cntr = 1, end = -1, proc_rem_cntr = proc_remainder;
   IntArray start(child_pl.numServers);
-
-  for(i=0; i<child_pl.numServers; i++) {
+  int color = 0; // reassigned for all procs. in peer case
+  // addtl_procs manages case where proc_remainder > num_servers that can occur
+  // for large procs_per_analysis --> ensures that proc_rem_cntr < num_servers
+  int i, color_cntr = 1, end = -1,
+    addtl_procs   = proc_remainder / child_pl.numServers, // truncated
+    proc_rem_cntr = proc_remainder - addtl_procs*child_pl.numServers;
+  for (i=0; i<child_pl.numServers; ++i) {
     start[i] = end + 1;
-    end = start[i] + child_pl.procsPerServer - 1;
-    if (proc_rem_cntr > 0) {
-      end++;
-      proc_rem_cntr--;
-    }
+    end = start[i] + child_pl.procsPerServer + addtl_procs - 1;
+    if (proc_rem_cntr > 0)
+      { ++end; --proc_rem_cntr; }
     if (parent_pl.serverCommRank >= start[i] && parent_pl.serverCommRank <= end)
       color = color_cntr;
 #ifdef MPI_DEBUG
@@ -839,13 +843,14 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
       Cout << "group " << i << " has processors " << start[i] 
            << " through " << end << " with color = " << color_cntr << '\n';
 #endif // MPI_DEBUG
-    color_cntr++;
+    ++color_cntr;
   }
   if (!color) {
-    Cerr << "Error: processor " << parent_pl.serverCommRank << " missing color "
-	 << "assignment" << endl;
+    Cerr << "Error: processor " << parent_pl.serverCommRank
+	 << " missing color assignment" << std::endl;
     abort_handler(-1);
   }
+
 #ifdef HAVE_MPI
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.serverIntraComm);
@@ -860,7 +865,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   // intercomms, and could easily be supported in the future if needed.
   if (child_pl.serverId == 1) {
     child_pl.hubServerInterComms = new MPI_Comm [child_pl.numServers-1];
-    for(i=0; i<child_pl.numServers-1; i++)
+    for(i=0; i<child_pl.numServers-1; ++i)
       MPI_Intercomm_create(child_pl.serverIntraComm, 0,
 			   parent_pl.serverIntraComm, start[i+1], i+2,
 			   &child_pl.hubServerInterComms[i]);
@@ -874,7 +879,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
        <<  child_pl.serverCommSize << '\n';
   int size, remote_size;
   if (child_pl.serverId == 1) { // first peer
-    for (int i=0; i<child_pl.numServers-1; i++) {
+    for (int i=0; i<child_pl.numServers-1; ++i) {
       MPI_Comm_size(child_pl.hubServerInterComms[i], &size);
       MPI_Comm_remote_size(child_pl.hubServerInterComms[i], &remote_size);
       Cout << "Peer 1: size = " << size << " inter_comms[" << i
@@ -1012,7 +1017,7 @@ void ParallelLibrary::print_configuration()
     cout << "multiprocessor analysis\t  " << std::setw(4) << p_per_anal
          << "\t\t     N/A\t        N/A\n\nTotal parallelism levels =   " 
          << par_levels << "\n-------------------------------------------------"
-	 << "----------------------------" << endl;
+	 << "----------------------------" << std::endl;
   }
 }
 
@@ -1072,13 +1077,11 @@ specify_outputs_restart(const char* clh_std_output_filename,
   
   // TODO: allow passing any relevant flags; for now emulate historical
   if (pre_run_flag) {
-    userModesFlag = true;
-    preRunFlag = true;
-    runFlag = false;
-    postRunFlag = false;
+    userModesFlag = preRunFlag = true;
+    runFlag = postRunFlag = false;
   }
-
 }
+
 
 void ParallelLibrary::manage_run_modes(CommandLineHandler& cmd_line_handler)
 {
@@ -1106,6 +1109,7 @@ void ParallelLibrary::manage_run_modes(CommandLineHandler& cmd_line_handler)
     userModesFlag = true;  // one or more active user modes
 }
 
+
 /// Tokenize colon-delimited input and output filenames, returns
 /// unchanged strings if tokens not found
 void ParallelLibrary::
@@ -1132,7 +1136,6 @@ split_filenames(const char * filenames, String& input_filename,
       input_filename = runarg;
   }
 }
-
 
 
 /** If the user has specified the use of files for DAKOTA standard
@@ -1274,7 +1277,7 @@ manage_outputs_restart(const ParallelLevel& pl)
     // written to the restart file!
     if (stopRestartEvals) // cmd_line_handler returns 0 if no cmd line setting
       Cout << "Stopping restart file processing at " << stopRestartEvals 
-           << " evaluations." << endl;
+           << " evaluations." << std::endl;
 
     int cntr = 1;
     while ( !read_restart.eof() && 
@@ -1288,7 +1291,7 @@ manage_outputs_restart(const ParallelLevel& pl)
       try { read_restart >> current_pair; }
 
       catch(String& err_msg) {
-        //Cerr << "Warning: " << err_msg << endl;
+        //Cerr << "Warning: " << err_msg << std::endl;
         break;
       }
 
@@ -1296,7 +1299,7 @@ manage_outputs_restart(const ParallelLevel& pl)
       Cout << "\n-------------------------------------------\nFunction "
            << "evaluation " << std::setw(4) << cntr << " from restart file:\n"
            << "-------------------------------------------\n" << current_pair;
-      cntr++;
+      ++cntr;
     }
     read_restart.close();
     Cout << "Restart file processing completed: " << data_pairs.size() 
@@ -1320,7 +1323,7 @@ manage_outputs_restart(const ParallelLevel& pl)
     write_restart.open(write_restart_filename, std::ios::app);
 
     Cout << "Appending new evaluations to existing restart file " 
-         << write_restart_filename << endl;
+         << write_restart_filename << std::endl;
     // One possible problem here is the use of stop_restart, since we could
     // be appending new results for the same points back to the same file,
     // such that multiple records (potentially corrupted results followed by
@@ -1333,13 +1336,13 @@ manage_outputs_restart(const ParallelLevel& pl)
     // NOTE: It may be preferable to always start over to avoid appending to
     // a damaged file.  Restart is often used when DAKOTA has been killed by a
     // scheduler in which case the file could have a partial evaluation at the
-    // end.  If reusing dakota.rst as the write_restart, std::ios::trunc (implied
-    // by std::ios::out which is the default) will discard any old file contents
-    // and start over [see FSTREAM(3C++) in AT&T C++ Library Manual].
+    // end.  If reusing dakota.rst as the write_restart, std::ios::trunc
+    // (implied by std::ios::out which is the default) will discard any old file
+    // contents and start over [see FSTREAM(3C++) in AT&T C++ Library Manual].
   }
   else {
     write_restart.open(write_restart_filename);
-    Cout << "Writing new restart file " << write_restart_filename << endl;
+    Cout << "Writing new restart file " << write_restart_filename << std::endl;
     // Write any processed records from the old restart file to the new file.
     // This prevents the situation where good data from an initial run and a 
     // restart run are in separate files.  By keeping all of the saved data in
@@ -1383,13 +1386,13 @@ void ParallelLibrary::close_streams()
   if (mc_ptr_int)
     mc_release_com(ireturn, iprint, mc_ptr_int);
   if (ireturn == -1) {
-    std::cerr << "Error: mc_release of API pointer unsuccessful." << endl;
+    std::cerr << "Error: mc_release of API pointer unsuccessful." << std::endl;
     abort_handler(-1);
   }
   if (dc_ptr_int)
     mc_release_com(ireturn, iprint, dc_ptr_int);
   if (ireturn == -1) {
-    std::cerr << "Error: mc_release of DC pointer unsuccessful." << endl;
+    std::cerr << "Error: mc_release of DC pointer unsuccessful." << std::endl;
     abort_handler(-1);
   }
 #endif // DAKOTA_MODELCENTER
@@ -1443,7 +1446,7 @@ void ParallelLibrary::free_communicators(ParallelLevel& pl)
     MPI_Comm_free(&pl.hubServerIntraComm);
     if (pl.dedicatedMasterFlag) { // master-slave interComms
       if (pl.serverId == 0) { // if dedicated master
-        for(int i=0; i<pl.numServers; i++) 
+        for(int i=0; i<pl.numServers; ++i) 
           MPI_Comm_free(&pl.hubServerInterComms[i]);
         delete [] pl.hubServerInterComms;
       }
@@ -1452,7 +1455,7 @@ void ParallelLibrary::free_communicators(ParallelLevel& pl)
     }
     else { // peer interComms
       if (pl.serverId == 1) { // 1st peer
-        for(int i=0; i<pl.numServers-1; i++) 
+        for(int i=0; i<pl.numServers-1; ++i) 
           MPI_Comm_free(&pl.hubServerInterComms[i]);
         delete [] pl.hubServerInterComms;
       }
@@ -1515,9 +1518,9 @@ ParallelLibrary::~ParallelLibrary()
 #ifdef DAKOTA_UTILIB
       Cout << " [parent = " << setw(10) << parentCPU << ", child = "
 	   << setw(10) << childCPU << "]\n  Total wall clock = "
-	   << setw(10) << totalWC << endl;
+	   << setw(10) << totalWC << std::endl;
 #else
-      Cout << endl;
+      Cout << std::endl;
 #endif // DAKOTA_UTILIB
     }
     extern Graphics dakota_graphics;
