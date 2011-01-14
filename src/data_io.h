@@ -146,8 +146,8 @@ template <typename OrdinalType, typename ScalarType>
 void read_data(std::istream& s,
 	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v)
 {
-  OrdinalType len = v.length();
-  for (OrdinalType i=0; i<len; i++)
+  OrdinalType i, len = v.length();
+  for (i=0; i<len; ++i)
     s >> v[i];
 }
 
@@ -158,10 +158,10 @@ void read_data(std::istream& s,
 	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
 	       StringMultiArray& label_array)
 {
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length();
   if (label_array.size() != len)
     label_array.resize(boost::extents[len]);
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s >> v[i] >> label_array[i];
 }
 
@@ -172,13 +172,13 @@ void read_data(std::istream& s,
 	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
 	       StringMultiArrayView label_array)
 {
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length();
   if (label_array.size() != len) {
     Cerr << "Error: size of label_array in read_data(std::istream) does not "
 	 << "equal length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s >> v[i] >> label_array[i];
 }
 
@@ -188,13 +188,13 @@ template <typename OrdinalType, typename ScalarType>
 void read_data_partial(std::istream& s, size_t start_index, size_t num_items,
 		       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v)
 {
-  OrdinalType end = start_index + num_items;
+  OrdinalType i, end = start_index + num_items;
   if (end > v.length()) {
     Cerr << "Error: indexing in Vector<T>::read_data_partial(istream) exceeds "
 	 << "length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  for (OrdinalType i=start_index; i<end; i++)
+  for (i=start_index; i<end; ++i)
     s >> v[i];
 }
 
@@ -207,8 +207,7 @@ void read_data_partial(std::istream& s,
 		       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
 		       StringMultiArray& label_array)
 {
-  OrdinalType end = start_index + num_items;
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length(), end = start_index + num_items;
   if (end > len) { // start_index >= 0 since size_t
     Cerr << "Error: indexing in read_data_partial(std::istream) exceeds "
 	 << "length of SerialDenseVector." << std::endl;
@@ -216,7 +215,7 @@ void read_data_partial(std::istream& s,
   }
   if (label_array.size() != len)
     label_array.resize(boost::extents[len]);
-  for (OrdinalType i=start_index; i<end; i++)
+  for (i=start_index; i<end; ++i)
     s >> v[i] >> label_array[i];
 }
 
@@ -229,8 +228,7 @@ void read_data_partial(std::istream& s,
 		       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
 		       StringMultiArrayView label_array)
 {
-  OrdinalType end = start_index + num_items;
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length(), end = start_index + num_items;
   if (end > len) { // start_index >= 0 since size_t
     Cerr << "Error: indexing in read_data_partial(std::istream) exceeds "
 	 << "length of SerialDenseVector." << std::endl;
@@ -241,7 +239,7 @@ void read_data_partial(std::istream& s,
 	 << "does not equal length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  for (OrdinalType i=start_index; i<end; i++)
+  for (i=start_index; i<end; ++i)
     s >> v[i] >> label_array[i];
 }
 
@@ -252,8 +250,8 @@ void read_data_tabular(std::istream& s,
 		       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v)
 {
   // differs from read_data(std::istream& s) only in exception handling
-  OrdinalType len = v.length();
-  for (OrdinalType i=0; i<len; i++) {
+  OrdinalType i, len = v.length();
+  for (i=0; i<len; ++i) {
     if (s)
       s >> v[i];
     else {
@@ -271,13 +269,13 @@ template <typename OrdinalType, typename ScalarType>
 void read_data_partial_tabular(std::istream& s, size_t start_index,
   size_t num_items, Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v)
 {
-  OrdinalType end = start_index + num_items;
+  OrdinalType i, end = start_index + num_items;
   if (end > v.length()) {
     Cerr << "Error: indexing in Vector<T>::read_data_partial_tabular(istream) "
 	 << "exceeds length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  for (OrdinalType i=start_index; i<end; i++) {
+  for (i=start_index; i<end; ++i) {
     if (s)
       s >> v[i];
     else {
@@ -296,13 +294,13 @@ void read_data_annotated(std::istream& s,
   Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
   StringMultiArray& label_array)
 {
-  OrdinalType len;
+  OrdinalType i, len;
   s >> len;
   if( len != v.length() )
     v.sizeUninitialized(len);
   if( len != label_array.size() )
     label_array.resize(boost::extents[len]);
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s >> v[i] >> label_array[i];
 }
 
@@ -313,7 +311,7 @@ void read_data_annotated(std::istream& s,
   Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
   StringMultiArrayView label_array)
 {
-  OrdinalType len;
+  OrdinalType i, len;
   s >> len;
   if( len != v.length() )
     v.sizeUninitialized(len);
@@ -322,7 +320,7 @@ void read_data_annotated(std::istream& s,
 	 << "does not equal length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s >> v[i] >> label_array[i];
 }
 
@@ -333,7 +331,7 @@ void write_data(std::ostream& s, const ScalarType* v, OrdinalType len)
 {
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
-  for (OrdinalType i=0; i<len; i++)
+  for (OrdinalType i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i]
       << '\n';
 }
@@ -344,10 +342,10 @@ template <typename OrdinalType, typename ScalarType>
 void write_data(std::ostream& s,
 		const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v)
 {
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length();
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i]
       << '\n';
 }
@@ -359,7 +357,7 @@ void write_data(std::ostream& s,
 		const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
 		const StringMultiArray& label_array)
 {
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length();
   if (label_array.size() != len) {
     Cerr << "Error: size of label_array in write_data(std::ostream) does not "
 	 << "equal length of SerialDenseVector." << std::endl;
@@ -367,7 +365,7 @@ void write_data(std::ostream& s,
   }
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i] << ' '
       << label_array[i] << '\n';
 }
@@ -383,9 +381,9 @@ void write_data(std::ostream& s,
 template <typename OrdinalType, typename ScalarType>
 void write_data(std::ostream& s,
 		const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
-		StringMultiArrayConstView& label_array)
+		StringMultiArrayConstView label_array)
 {
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length();
   if (label_array.size() != len) {
     Cerr << "Error: size of label_array in write_data(std::ostream) does not "
 	 << "equal length of SerialDenseVector." << std::endl;
@@ -393,7 +391,7 @@ void write_data(std::ostream& s,
   }
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i] << ' '
       << label_array[i] << '\n';
 }
@@ -407,7 +405,7 @@ void write_data(std::ostream& s,
 		const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
 		const StringArray& label_array)
 {
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length();
   if (label_array.size() != len) {
     Cerr << "Error: size of label_array in write_data(std::ostream) does not "
 	 << "equal length of SerialDenseVector." << std::endl;
@@ -415,7 +413,7 @@ void write_data(std::ostream& s,
   }
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i] << ' '
       << label_array[i] << '\n';
 }
@@ -427,7 +425,7 @@ void write_data_aprepro(std::ostream& s,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
   const StringMultiArray& label_array)
 {
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length();
   if (label_array.size() != len) {
     Cerr << "Error: size of label_array in write_data_aprepro(std::ostream) "
 	 << "does not equal length of SerialDenseVector." << std::endl;
@@ -435,7 +433,7 @@ void write_data_aprepro(std::ostream& s,
   }
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s << "                    { " << std::setw(15)
       << std::setiosflags(std::ios::left)
       << label_array[i].data() << std::resetiosflags(std::ios::adjustfield)
@@ -456,7 +454,7 @@ void write_data_partial(std::ostream& s, size_t start_index, size_t num_items,
   }
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
-  for (OrdinalType i=start_index; i<end; i++)
+  for (OrdinalType i=start_index; i<end; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i] <<'\n';
 }
 
@@ -469,7 +467,7 @@ void write_data_partial(std::ostream& s, size_t start_index, size_t num_items,
   const StringMultiArray& label_array)
 {
   size_t end = start_index + num_items;
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length();
   if (end > len) { // start_index >= 0 since size_t
     Cerr << "Error: indexing in write_data_partial(std::ostream) exceeds "
 	 << "length of SerialDenseVector." << std::endl;
@@ -482,7 +480,7 @@ void write_data_partial(std::ostream& s, size_t start_index, size_t num_items,
   }
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
-  for (OrdinalType i=start_index; i<end; i++)
+  for (i=start_index; i<end; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i] << ' '
       << label_array[i] << '\n';
 }
@@ -496,7 +494,7 @@ void write_data_partial_aprepro(std::ostream& s, size_t start_index,
   const StringMultiArray& label_array)
 {
   size_t end = start_index + num_items;
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length();
   if (end > len) { // start_index >= 0 since size_t
     Cerr << "Error: indexing in write_data_partial_aprepro(std::ostream) "
 	 << "exceeds length of SerialDenseVector." << std::endl;
@@ -509,7 +507,7 @@ void write_data_partial_aprepro(std::ostream& s, size_t start_index,
   }
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
-  for (OrdinalType i=start_index; i<end; i++)
+  for (i=start_index; i<end; ++i)
     s << "                    { " << std::setw(15)
       << std::setiosflags(std::ios::left)
       << label_array[i].data() << std::resetiosflags(std::ios::adjustfield)
@@ -523,7 +521,7 @@ void write_data_annotated(std::ostream& s,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
   const StringMultiArray& label_array)
 {
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length();
   if (label_array.size() != len) {
     Cerr << "Error: size of label_array in write_data_annotated(std::ostream) "
 	 << "does not equal length of SerialDenseVector." << std::endl;
@@ -531,7 +529,7 @@ void write_data_annotated(std::ostream& s,
   }
   s.setf(std::ios::scientific);
   s << len << ' ' << std::setprecision(write_precision);
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s << v[i] << ' ' << label_array[i] << ' ';
 }
 
@@ -541,10 +539,10 @@ template <typename OrdinalType, typename ScalarType>
 void write_data_tabular(std::ostream& s,
   const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v)
 {
-  const OrdinalType& len = v.length();
+  OrdinalType i, len = v.length();
   s << std::setprecision(write_precision) 
     << std::resetiosflags(std::ios::floatfield);
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s << std::setw(write_precision+4) << v[i] << ' ';
 }
 
@@ -563,7 +561,7 @@ void write_data_partial_tabular(std::ostream& s, size_t start_index,
   }
   s << std::setprecision(write_precision) 
     << std::resetiosflags(std::ios::floatfield);
-  for (OrdinalType i=start_index; i<end; i++)
+  for (OrdinalType i=start_index; i<end; ++i)
     s << std::setw(write_precision+4) << v[i] << ' ';
 }
 
@@ -600,13 +598,13 @@ void read_data(BiStream& s,
 	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
 	       StringMultiArray& label_array)
 {
-  OrdinalType len;
+  OrdinalType i, len;
   s >> len;
   if( len != v.length() )
     v.sizeUninitialized(len);
   if( len != label_array.size() )
     label_array.resize(boost::extents[len]);
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s >> v[i] >> label_array[i];
 }
 
@@ -618,7 +616,7 @@ void read_data(BiStream& s,
 	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
 	       StringMultiArrayView label_array)
 {
-  OrdinalType len;
+  OrdinalType i, len;
   s >> len;
   if( len != v.length() )
     v.sizeUninitialized(len);
@@ -627,7 +625,7 @@ void read_data(BiStream& s,
 	 << "equal length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s >> v[i] >> label_array[i];
 }
 
@@ -639,14 +637,14 @@ void write_data(BoStream& s,
 		const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
 		const StringMultiArray& label_array)
 {
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length();
   if (label_array.size() != len) {
     Cerr << "Error: size of label_array in write_data(BoStream) does not "
 	 << "equal length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
   s << len;
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s << v[i] << label_array[i];
 }
 
@@ -658,13 +656,13 @@ void read_data(MPIUnpackBuffer& s,
 	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
 	       StringMultiArray& label_array)
 {
-  OrdinalType len;
+  OrdinalType i, len;
   s >> len;
   if( len != v.length() )
     v.sizeUninitialized(len);
   if( len != label_array.size() )
     label_array.resize(boost::extents[len]);
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s >> v[i] >> label_array[i];
 }
 
@@ -676,7 +674,7 @@ void read_data(MPIUnpackBuffer& s,
 	       Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
 	       StringMultiArrayView label_array)
 {
-  OrdinalType len;
+  OrdinalType i, len;
   s >> len;
   if( len != v.length() )
     v.sizeUninitialized(len);
@@ -685,7 +683,7 @@ void read_data(MPIUnpackBuffer& s,
 	 << "not equal length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s >> v[i] >> label_array[i];
 }
 
@@ -697,14 +695,14 @@ void write_data(MPIPackBuffer& s,
 		const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v,
 		const StringMultiArray& label_array)
 {
-  OrdinalType len = v.length();
+  OrdinalType i, len = v.length();
   if (label_array.size() != len) {
     Cerr << "Error: size of label_array in write_data(MPIPackBuffer) "
 	 << "does not equal length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
   s << len;
-  for (OrdinalType i=0; i<len; i++)
+  for (i=0; i<len; ++i)
     s << v[i] << label_array[i];
 }
 
@@ -714,10 +712,9 @@ template <typename OrdinalType, typename ScalarType>
 void read_data(std::istream& s,
   std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& va)
 {
-  const OrdinalType& nrows = va.size();
-  const OrdinalType  ncols = (nrows > 0) ? va[0].length() : 0;
-  for (OrdinalType i=0; i<nrows; ++i)
-    for (OrdinalType j=0; j<ncols; ++j)
+  OrdinalType i, j, nrows = va.size(), ncols = (nrows > 0) ? va[0].length() : 0;
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<ncols; ++j)
       s >> va[i][j];
 }
 
@@ -727,10 +724,9 @@ template <typename OrdinalType, typename ScalarType>
 void read_data(std::istream& s,
                Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
 {
-  const OrdinalType& nrows = m.numRows();
-  const OrdinalType& ncols = m.numCols();
-  for (OrdinalType i=0; i<nrows; ++i)
-    for (OrdinalType j=0; j<ncols; ++j)
+  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<ncols; ++j)
       s >> m(i,j);
 }
 
@@ -740,10 +736,9 @@ template <typename OrdinalType, typename ScalarType>
 void read_data(BiStream& s,
                Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
 {
-  const OrdinalType& nrows = m.numRows();
-  const OrdinalType& ncols = m.numCols();
-  for (OrdinalType i=0; i<nrows; ++i)
-    for (OrdinalType j=0; j<ncols; ++j)
+  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<ncols; ++j)
       s >> m(i,j);
 }
 
@@ -752,10 +747,9 @@ template <typename OrdinalType, typename ScalarType>
 void read_data(MPIUnpackBuffer& s,
                Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
 {
-  const OrdinalType& nrows = m.numRows();
-  const OrdinalType& ncols = m.numCols();
-  for (OrdinalType i=0; i<nrows; ++i)
-    for (OrdinalType j=0; j<ncols; ++j)
+  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<ncols; ++j)
       s >> m(i,j);
 }
 
@@ -766,24 +760,21 @@ void write_data(std::ostream& s,
                 const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m,
                 bool brackets, bool row_rtn, bool final_rtn)
 {
-  const OrdinalType& nrows = m.numRows();
-  const OrdinalType& ncols = m.numCols();
+  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
   s.setf(std::ios::scientific); // formatting optimized for T = double
   s << std::setprecision(write_precision);
-  if (brackets)
-    s << "[[ ";
-  for (OrdinalType i=0; i<nrows; ++i) {
-    for (OrdinalType j=0; j<ncols; ++j)
+  if (brackets) s << "[[ ";
+  else          s << "   ";
+  for (i=0; i<nrows; ++i) {
+    for (j=0; j<ncols; ++j)
       s << std::setw(write_precision+7) << m(i,j) << ' ';
     // NOTE: newlines on every 4th component (as in the row vector case)
     // could lead to ambiguity in the matrix case.
     if (row_rtn && i!=m.numRows()-1)
       s << "\n   ";
   }
-  if (brackets)
-    s << "]] ";
-  if (final_rtn)
-    s << '\n';
+  if (brackets)  s << "]] ";
+  if (final_rtn) s << '\n';
 }
 
 
@@ -792,10 +783,9 @@ template <typename OrdinalType, typename ScalarType>
 void write_data(BoStream& s,
                 const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
 {
-  const OrdinalType& nrows = m.numRows();
-  const OrdinalType& ncols = m.numCols();
-  for (OrdinalType i=0; i<nrows; ++i)
-    for (OrdinalType j=0; j<ncols; ++j)
+  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<ncols; ++j)
       s << m(i,j);
 }
 
@@ -805,42 +795,60 @@ template <typename OrdinalType, typename ScalarType>
 void write_data(MPIPackBuffer& s,
                 const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
 {
-  const OrdinalType& nrows = m.numRows();
-  const OrdinalType& ncols = m.numCols();
-  for (OrdinalType i=0; i<nrows; ++i)
-    for (OrdinalType j=0; j<ncols; ++j)
+  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<ncols; ++j)
       s << m(i,j);
 }
 
 
-/// formatted ostream insertion operator for SerialSymDenseMatrix
+/// formatted ostream insertion operator for SerialDenseMatrix
 template <typename OrdinalType, typename ScalarType>
 void write_data(std::ostream& s,
                 const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& m,
                 bool brackets, bool row_rtn, bool final_rtn)
 {
-  const OrdinalType& nrows = m.numRows();
-  const OrdinalType& ncols = m.numCols();
+  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
   s.setf(std::ios::scientific); // formatting optimized for T = double
   s << std::setprecision(write_precision);
-  if (brackets)
-    s << "[[ ";
-  for (OrdinalType i=0; i<nrows; ++i) {
-    for (OrdinalType j=0; j<ncols; ++j)
+  if (brackets) s << "[[ ";
+  else          s << "   ";
+  for (i=0; i<nrows; ++i) {
+    for (j=0; j<ncols; ++j)
       s << std::setw(write_precision+7) << m(i,j) << ' ';
     // NOTE: newlines on every 4th component (as in the row vector case)
     // could lead to ambiguity in the matrix case.
     if (row_rtn && i!=m.numRows()-1)
       s << "\n   ";
   }
-  if (brackets)
-    s << "]] ";
-  if (final_rtn)
-    s << '\n';
+  if (brackets)  s << "]] ";
+  if (final_rtn) s << '\n';
 }
 
 
-/// standard MPI buffer insertion operator for SerialSymDenseMatrix
+/// ostream insertion operator for SerialDenseMatrix with row/col labels
+template <typename OrdinalType, typename ScalarType>
+void write_data(std::ostream& s,
+                const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& m,
+                const StringArray& row_labels, const StringArray& col_labels)
+{
+  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  s.setf(std::ios::scientific); // formatting optimized for T = double
+  s << std::setprecision(write_precision);
+  s << "                 ";
+  for (j=0; j<ncols; ++j)
+    s << std::setw(write_precision+7) << col_labels[j] << ' ';
+  s << '\n';
+  for (i=0; i<nrows; ++i) {
+    s << std::setw(15) << row_labels[i] << "  ";
+    for (j=0; j<ncols; ++j)
+      s << std::setw(write_precision+7) << m(i,j) << ' ';
+    s << '\n';
+  }
+}
+
+
+/// ostream insertion operator for a column vector from a SerialDenseMatrix
 template <typename OrdinalType, typename ScalarType>
 void write_col_vector_trans(std::ostream& s, OrdinalType col,
   OrdinalType num_items, bool brackets, bool break_line,
@@ -848,17 +856,15 @@ void write_col_vector_trans(std::ostream& s, OrdinalType col,
 {
   s.setf(std::ios::scientific);
   s << std::setprecision(write_precision);
-  if (brackets)
-    s << " [ ";
+  if (brackets) s << " [ ";
+  else          s << "   ";
   for (OrdinalType row=0; row < num_items; ++row) {
     s << std::setw(write_precision+7) << sdm(row,col) << ' ';
     if (break_line && (row+1)%4 == 0)
       s << "\n   "; // Output 4 gradient components per line
   }
-  if (brackets)
-    s << "] ";
-  if (final_rtn)
-    s << '\n';
+  if (brackets)  s << "] ";
+  if (final_rtn) s << '\n';
 }
 
 

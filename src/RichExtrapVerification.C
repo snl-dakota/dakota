@@ -310,15 +310,20 @@ void RichExtrapVerification::post_run(std::ostream& s)
 
 void RichExtrapVerification::print_results(std::ostream& s)
 {
+  StringArray cv_labels;
+  copy_data(iteratedModel.continuous_variable_labels(), cv_labels);
+  const StringArray& fn_labels = iteratedModel.response_labels();
+
   // Print resulting order and error estimates
-  Cout << "Refinement Rate          =\n\t\t      " << refinementRate  << '\n';
-  Cout << "Refinement Reference Pt  =\n"; write_data(Cout, refinementRefPt);
-  Cout << "Final Convergence Rates  =\n";
-  write_data(Cout, convOrder, false, true, true);
-  Cout << "Extrapolated QOI         =\n";
-  write_data(Cout, extrapQOI, false, true, true);
-  Cout << "Final QOI Error Estimate =\n";
-  write_data(Cout, numErrorQOI, false, true, true);
+  Cout << "\nRefinement Rate = " << refinementRate;
+  Cout << "\nRefinement Reference Pt  =\n"; write_data(Cout, refinementRefPt);
+  Cout << "\nFinal Convergence Rates  =\n";
+  write_data(Cout,   convOrder, fn_labels, cv_labels);
+  Cout << "\nExtrapolated QOI         =\n";
+  write_data(Cout,   extrapQOI, fn_labels, cv_labels);
+  Cout << "\nFinal QOI Error Estimate =\n";
+  write_data(Cout, numErrorQOI, fn_labels, cv_labels);
+  Cout << '\n';
 
   Verification::print_results(s);
 }
