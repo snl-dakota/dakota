@@ -6,9 +6,11 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 if(BUILD_TESTING)
   # Copy the dakota_test support files into the BUILD_DIR tree
+  # TODO: LSQ data files; other files
+  file(GLOB DAKOTA_SYSTEM_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "dakota_*.in")
   set(TestFiles
-    dakota_4level.in dakota_addtnl_users.in dakota_ampl.in dakota_cantilever.in
-    dakota_test.perl dakota_diff.perl dakota_base.test
+    ${DAKOTA_SYSTEM_TESTS} dakota_test.perl dakota_diff.perl dakota_base.test
   )
   foreach(file ${TestFiles})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${file}
@@ -43,8 +45,15 @@ if(BUILD_TESTING)
 
   # Just do a simple subset of tests (WJB - ToDo: get feedback from Zack prior
   # to setting up ALL DAKOTA tests!)
-
-  add_test(simple_subset ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl)
+  #add_test(simple_subset ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl)
+  # BMA: enabling one CTest test per DAKOTA input file; 
+  #      TODO: regex which reports fail if _any_ test in the file failed
+  file(GLOB DAKOTA_SYSTEM_TESTS "dakota_*.in")
+  foreach(DAKOTA_SYSTEST ${DAKOTA_SYSTEM_TESTS})
+    add_test(${DAKOTA_SYSTEST}
+             ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${DAKOTA_SYSTEST})
+    #set_tests_properties(test1 [test2...] PROPERTIES prop1 value1 prop2 value2)
+  endforeach()
 
   # Clean up test dir
   #file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/dakota_diffs.out)
