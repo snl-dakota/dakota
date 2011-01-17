@@ -150,11 +150,12 @@ typedef struct _SciPlotRec      *SciPlotWidget;
 /* MSE, 7/19/01: added OSF define */
 /* MPA, 5/10/02: added RS6K define */
 /* SLB, 12/7/05: autoconf can check for function prototype compliance */
-#if PROTOTYPES
+/* BMA, 1/14/11: all compilers of interest support prototypes */
+//#if PROTOTYPES
 #define P_(s) s
-#else
-#define P_(s) ()
-#endif
+//#else
+//#define P_(s) ()
+//#endif
 
 /* SciPlot.c */
 Boolean SciPlotPSCreate P_((Widget wi, char *filename));

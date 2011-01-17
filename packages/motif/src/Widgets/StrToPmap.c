@@ -36,7 +36,7 @@ static char rcsid[] = "$ StrToPmap.c <thoth>, what a hack $";
 
 #ifdef HAVE_XPM
 
-#include <xpm.h>
+#include <X11/xpm.h>
 
 #if 0
 #define PIXMAPFILEPATHCACHE (cache->string_to_pixmap.pixmapFilePath)

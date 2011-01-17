@@ -3,7 +3,7 @@
 #endif /* HAVE_CONFIG_H */
 
 #ifdef HAVE_XPM
-#include <xpm.h>
+#include <X11/xpm.h>
 #include "wheel0.pm"
 #include "wheel1.pm"
 #include "wheel2.pm"

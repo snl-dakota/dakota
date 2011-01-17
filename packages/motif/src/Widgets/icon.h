@@ -7,7 +7,7 @@
 
 #ifdef HAVE_XPM
 
-#include <xpm.h>
+#include <X11/xpm.h>
 
 Boolean cvtStringToIcon(
 #if NeedFunctionPrototypes
