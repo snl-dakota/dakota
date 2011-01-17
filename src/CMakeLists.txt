@@ -174,6 +174,12 @@ if(HAVE_ACRO)
   #list(APPEND TPL_LIBS colin tinyxml 3po)
 endif(HAVE_ACRO)
 
+# TODO: conditional on Acro?  
+if(Boost_FOUND)
+  list(APPEND link_directories ${Boost_LIBRARY_DIRS})
+  list(APPEND TPL_LIBS ${Boost_LIBRARIES})
+endif()
+
 CheckPackage(CONMIN)
 if(HAVE_CONMIN)
   link_directories ( ${link_directories} ${CONMIN_LIB_DIRS} )
@@ -295,6 +301,14 @@ if(HAVE_PSUADE)
   include_directories(${PSUADE_SOURCE_DIR})
 endif(HAVE_PSUADE)
 
+if(HAVE_X_GRAPHICS)
+  add_definitions("-DHAVE_X_GRAPHICS")
+  include_directories(${DakotaMotif_SOURCE_DIR}/include ${X11_INCLUDE_DIR} 
+    ${MOTIF_INCLUDE_DIR})
+  #set(iterator_src ${iterator_src} PSUADEDesignCompExp.C)
+  link_directories(${DakotaMotif_BINARY_DIR})
+  list(APPEND TPL_LIBS DGraphics)
+endif(HAVE_X_GRAPHICS)
 
 ## AGGREGATED source code spec for full-up libdakota.
 set(Dakota_src ${Dakota_src} ${util_src} ${evaldata_src} ${db_src}
@@ -354,7 +368,8 @@ endif(HAVE_HOPSPACK)
 
 ## WJB: request macro from Kitware? FindLibDL.cmake (e.g. digidoc++)
 target_link_libraries(dakota dakota_src ${TPL_LIBS} ${LAPACK_LIBS}
-                      ${CURL_LIBRARIES} dl)
+                      ${CURL_LIBRARIES} dl 
+		      ${X11_LIBRARIES} ${MOTIF_LIBRARIES} ${XMU_LIB})
 
 if(Teuchos_TPL_LIST MATCHES "LAPACK;BLAS")
   message(STATUS "Building against pre-installed Teuchos WITH own lapack: ${Teuchos_TPL_LIST}")

@@ -106,3 +106,6 @@ if(HAVE_PSUADE)
   add_subdirectory(PSUADE)
 endif(HAVE_PSUADE)
 
+if(HAVE_X_GRAPHICS)
+  add_subdirectory(motif)
+endif(HAVE_X_GRAPHICS)

@@ -277,7 +277,7 @@ AC_DEFUN([DAK_PACKAGES],[
     fi
     AC_MSG_NOTICE([DAKOTA graphics: enabled.])
     AC_CONFIG_SUBDIRS([packages/motif])
-    AC_DEFINE([DAKOTA_GRAPHICS],[1],
+    AC_DEFINE([HAVE_X_GRAPHICS],[1],
 	      [Macro to handle code which depends on motif.])
 
   fi

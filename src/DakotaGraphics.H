@@ -16,9 +16,9 @@
 #include "system_defs.h"
 #include "data_types.h"
 
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
 class Graphics2D;
-#endif // DAKOTA_GRAPHICS
+#endif // HAVE_X_GRAPHICS
 
 namespace Dakota {
 
@@ -87,9 +87,9 @@ public:
 
 private:
 
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
   Graphics2D* graphics2D; ///< pointer to the 2D graphics object
-#endif // DAKOTA_GRAPHICS
+#endif // HAVE_X_GRAPHICS
 
   bool win2dOn; ///< flag to indicate if 2D graphics window is active
   //bool win3dOn; // flag to indicate if 3D graphics window is active

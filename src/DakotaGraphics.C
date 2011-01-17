@@ -14,10 +14,10 @@
 #include "dakota_config.h"
 #endif
 
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
 //#include "plplot.h" 
 #include "Graphics.H"
-#endif // DAKOTA_GRAPHICS
+#endif // HAVE_X_GRAPHICS
 #include "data_io.h"
 #include "CtelRegExp.H"
 #include "DakotaGraphics.H"
@@ -28,7 +28,7 @@
 namespace Dakota {
 
 Graphics::Graphics():
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
   graphics2D(NULL), 
 #endif
   win2dOn(false), //win3dOn(false),
@@ -51,7 +51,7 @@ Graphics::~Graphics()
     instantiate new). */
 void Graphics::create_plots_2d(const Variables& vars, const Response& response)
 {
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
   using std::sprintf;
   using std::strcpy;
   StringMultiArrayConstView cv_labels  = vars.continuous_variable_labels();
@@ -177,7 +177,7 @@ void Graphics::create_plots_2d(const Variables& vars, const Response& response)
     graphics2D->go();
     win2dOn = true;
   }
-#endif // DAKOTA_GRAPHICS
+#endif // HAVE_X_GRAPHICS
 }
 
 
@@ -238,7 +238,7 @@ void Graphics::add_datapoint(const Variables& vars, const Response& response)
   if (!plot_data)
     return;
 
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
   if (win2dOn) {
     const RealVector& c_vars  = vars.continuous_variables();
     const IntVector&  di_vars = vars.discrete_int_variables();
@@ -258,7 +258,7 @@ void Graphics::add_datapoint(const Variables& vars, const Response& response)
       graphics2D->add_datapoint2d(i+num_fns+num_cv+num_div, 
 				  (double)graphicsCntr, dr_vars[i]);
   }
-#endif // DAKOTA_GRAPHICS
+#endif // HAVE_X_GRAPHICS
 
   if (tabularDataFlag) {
     // In the tabular graphics file, only the *active* variables are tabulated
@@ -286,10 +286,10 @@ void Graphics::add_datapoint(const Variables& vars, const Response& response)
     defining other kinds of x-y plotting in the 2D graphics. */
 void Graphics::add_datapoint(int i, double x, double y)
 {
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
   if (win2dOn)
     graphics2D->add_datapoint2d(i, x, y);
-#endif // DAKOTA_GRAPHICS
+#endif // HAVE_X_GRAPHICS
 
   // Problem with this is that calls to this function may fill in the table
   // by columns -> data may require caching or a reorganization of the table
@@ -301,10 +301,10 @@ void Graphics::add_datapoint(int i, double x, double y)
 /** Used for displaying multiple data sets within the same plot. */
 void Graphics::new_dataset(int i)
 {
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
   if (win2dOn)
     graphics2D->new_dataset2d(i);
-#endif // DAKOTA_GRAPHICS
+#endif // HAVE_X_GRAPHICS
 }
 
 
@@ -321,7 +321,7 @@ show_data_3d(const RealVector& X, const RealVector& Y,
   if (!num_axis_pts)
     return;
 
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
   if (!win3dOn) {
     plsdev("xwin");
     plinit();
@@ -384,14 +384,14 @@ show_data_3d(const RealVector& X, const RealVector& Y,
   delete [] vis_mat; 
   delete [] x;
   delete [] y;
-#endif // DAKOTA_GRAPHICS
+#endif // HAVE_X_GRAPHICS
 }
 */
 
 
 void Graphics::close()
 {
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
   //if (win3dOn)
   //  plend(); // 3D
   if (win2dOn) {
@@ -401,7 +401,7 @@ void Graphics::close()
 
     delete graphics2D; // 2D
   }
-#endif // DAKOTA_GRAPHICS
+#endif // HAVE_X_GRAPHICS
 
   if (tabularDataFlag)
     tabularDataFStream.close();
@@ -410,43 +410,43 @@ void Graphics::close()
 
 void Graphics::set_x_labels2d(const char* x_label)
 {
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
   if (win2dOn) {
     int num_2d_plots = graphics2D->num_2d_plots();
     for (int i=0; i<num_2d_plots; ++i)
       graphics2D->set_x_label2d(i, x_label);
   }
-#endif // DAKOTA_GRAPHICS
+#endif // HAVE_X_GRAPHICS
 }
 
 
 void Graphics::set_y_labels2d(const char* y_label)
 {
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
   if (win2dOn) {
     int num_2d_plots = graphics2D->num_2d_plots();
     for (int i=0; i<num_2d_plots; ++i)
       graphics2D->set_y_label2d(i, y_label);
   }
-#endif // DAKOTA_GRAPHICS
+#endif // HAVE_X_GRAPHICS
 }
 
 
 void Graphics::set_x_label2d(int i, const char* x_label)
 {
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
   if (win2dOn)
     graphics2D->set_x_label2d(i, x_label);
-#endif // DAKOTA_GRAPHICS
+#endif // HAVE_X_GRAPHICS
 }
 
 
 void Graphics::set_y_label2d(int i, const char* y_label)
 {
-#ifdef DAKOTA_GRAPHICS
+#ifdef HAVE_X_GRAPHICS
   if (win2dOn)
     graphics2D->set_y_label2d(i, y_label);
-#endif // DAKOTA_GRAPHICS
+#endif // HAVE_X_GRAPHICS
 }
 
 } // namespace Dakota
