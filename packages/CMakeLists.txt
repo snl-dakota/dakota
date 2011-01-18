@@ -1,8 +1,18 @@
+# CMakeLists.txt for DAKOTA packages
+
 add_subdirectory(nidr)
 
-#if(NOT USE_SYSTEM_TEUCHOS)
-#  add_subdirectory(teuchos)
-#endif()
+if(HAVE_AMPL)
+  # packages/nidr/../ampl/asl.h:28:51: error: arith.h: No such file
+  # WJB - ToDo: nidr dependency on AMPL's asl.h/arith.h is "loose"
+  #             could/should be managed better than adding explicit
+  #             dependency in the CMakeLists.txt file
+  add_subdirectory(ampl)
+  add_dependencies(nidr amplsolver)
+endif(HAVE_AMPL)
+
+# Both DAKOTA and PECOS unconditionally depend on Teuchos, and the "shared
+# component magic" is managed in the top-level CMakeLists.txt file
 
 add_subdirectory(pecos)
 
@@ -31,15 +41,6 @@ endif() #sh
 if(HAVE_SURFPACK)
   add_subdirectory(surfpack)
 endif(HAVE_SURFPACK)
-
-if(HAVE_AMPL)
-  add_subdirectory(ampl)
-endif(HAVE_AMPL)
-
-
-if(HAVE_ACRO)
-  add_subdirectory(acro)
-endif(HAVE_ACRO)
 
 if(HAVE_ACRO)
   add_subdirectory(acro)
