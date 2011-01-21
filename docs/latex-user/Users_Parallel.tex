@@ -324,11 +324,12 @@ effective in reducing the time to obtain a solution.  Three
 single-level parallelism models will be discussed, and are depicted
 in Figure~\ref{parallel:figure03}:
 
-\begin{wrapfigure}[23]{l}{60mm}
+\begin{figure}[ht]
+  \centering
   \includegraphics[width=60mm]{images/ex_in_hy_job_management}
   \caption{External, internal, and hybrid job management.}
   \label{parallel:figure03}
-\end{wrapfigure}
+\end{figure}
 
 \begin{itemize}
 \item \emph{asynchronous local}: DAKOTA executes on a single processor,
@@ -712,12 +713,6 @@ in a direct-linked SPMD model is preferred.
 
 \subsubsection{Partitioning}\label{parallel:SLP:message:part}
 
-\begin{wrapfigure}[16]{l}{70mm}
-  \includegraphics[width=70mm]{images/comm_partitioning}
-  \caption{Communicator partitioning models.}
-  \label{parallel:figure01}
-\end{wrapfigure}
-
 A level of message passing parallelism can use either of two processor
 partitioning models:
 \begin{itemize}
@@ -736,6 +731,13 @@ scheduling of concurrent work performs well (see \emph{Scheduling}
 below).  If neither of these characteristics is present, then use of
 the dedicated master partition supports a dynamic scheduling which
 assures that server idleness is minimized.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=70mm]{images/comm_partitioning}
+  \caption{Communicator partitioning models.}
+  \label{parallel:figure01}
+\end{figure}
 
 \subsubsection{Scheduling}\label{parallel:SLP:message:sched}
 
@@ -1136,7 +1138,7 @@ are measured relative to the case of a single instance of a
 multiprocessor analysis, since it was desired to investigate the
 effectiveness of the DAKOTA schedulers independent from the efficiency
 of the parallel analysis.
-\begin{figure}
+\begin{figure}[ht]
   \centering
   \subfigure[Relative speedup.]
     {\includegraphics[width=.45\textwidth]{images/mss_rel_speedup_3lev_determ}}
@@ -1208,11 +1210,12 @@ for the next lower level of parallelism.
 
 \subsubsection{Scheduling within levels}\label{parallel:MLP:message:scheduling}
 
-\begin{wrapfigure}[17]{l}{60mm}
+\begin{figure}[ht]
+  \centering
   \includegraphics[width=60mm]{images/recursive_partitioning}
   \caption{Recursive partitioning for nested parallelism.}
   \label{parallel:figure02}
-\end{wrapfigure}
+\end{figure}
 
 DAKOTA is designed to allow the freedom to configure each parallelism
 level with either the dedicated master partition/self-scheduling

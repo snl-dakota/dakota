@@ -40,6 +40,12 @@ convergence assessment, and constraint relaxation.
 
 \subsection{SBO with Data Fits}\label{sbm:sblm:surface}
 
+\begin{wrapfigure}{r}{.3\textwidth}
+  \centering
+  \includegraphics[width=.3\textwidth]{images/sbo_df}
+  \caption{SBO iteration progression for global data fits.}
+  \label{fig:sbo_df}
+\end{wrapfigure}
 When performing SBO with local, multipoint, and global data fit
 surrogates, it is necessary to regenerate or update the data fit for
 each new trust region.  In the global data fit case, this can mean
@@ -53,12 +59,6 @@ the original model into smooth, differentiable, easily navigated
 surrogates.  This allows SBO with global data fits to extract the
 relevant global design trends from noisy simulation data.
 
-\begin{wrapfigure}{r}{.3\textwidth}
-  \centering
-  \includegraphics[width=.3\textwidth]{images/sbo_df}
-  \caption{SBO iteration progression for global data fits.}
-  \label{fig:sbo_df}
-\end{wrapfigure}
 When enforcing local consistency between a global data fit surrogate
 and a high-fidelity model at a point, care must be taken to balance
 this local consistency requirement with the global accuracy of the

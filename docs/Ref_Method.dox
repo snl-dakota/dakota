@@ -4136,8 +4136,9 @@ Specification detail for forward/inverse level mappings
 </table>
 
 Different nondeterministic methods have differing support for
-uncertain variable distributions. \ref T5d29 "Table 5.29"
-summarizes the uncertain variables that are available for use by the
+uncertain variable distributions. Tables \ref T5d29 "5.29", 
+\ref T5d30 "5.30", and \ref T5d31 "5.31"
+summarize the uncertain variables that are available for use by the
 different methods, where a "-" indicates that the distribution is not
 supported by the method, a "U" means the uncertain input variables of
 this type must be uncorrelated, a "C" denotes that correlations are
@@ -4178,7 +4179,7 @@ specifications and do not support \c std_deviation specifications, -->
 \htmlonly
 Table 5.29
 \endhtmlonly
-Summary of Distribution Types supported by Nondeterministic Methods
+Summary of Distribution Types supported by Nondeterministic Methods, Part I
 </caption>
 <tr>
 <td><b>Distribution Type</b>
@@ -4349,6 +4350,29 @@ Summary of Distribution Types supported by Nondeterministic Methods
 <td>-
 <td>-
 <td>-
+</table>  
+
+\anchor T5d30
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.30
+\endhtmlonly
+Summary of Distribution Types supported by Nondeterministic Methods, Part II
+</caption>
+<tr>
+<td><b>Distribution Type</b>
+<!-- <td><b>Old Sampling</b> -->
+<td><b><!-- New -->Sampling</b>
+<td><b>Local Reliability</b>
+<td><b>Global Reliability</b>
+<td><b>Wiener SE</b>
+<td><b>Askey SE</b>
+<td><b>Extended SE</b>
+<td><b>Local Interval</b>
+<td><b>Global Interval</b>
+<td><b>Local Evidence</b>
+<td><b>Global Evidence</b>
 <tr>
 <td>Weibull
 <!-- <td>U -->
@@ -4466,6 +4490,29 @@ Summary of Distribution Types supported by Nondeterministic Methods
 <td>U
 <td>U
 <td>U
+</table>
+
+\anchor T5d31
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.31
+\endhtmlonly
+Summary of Distribution Types supported by Nondeterministic Methods, Part III
+</caption>
+<tr>
+<td><b>Distribution Type</b>
+<!-- <td><b>Old Sampling</b> -->
+<td><b><!-- New -->Sampling</b>
+<td><b>Local Reliability</b>
+<td><b>Global Reliability</b>
+<td><b>Wiener SE</b>
+<td><b>Askey SE</b>
+<td><b>Extended SE</b>
+<td><b>Local Interval</b>
+<td><b>Global Interval</b>
+<td><b>Local Evidence</b>
+<td><b>Global Evidence</b>
 <tr>
 <td>Continuous Design (\c all_variables)
 <!-- <td>- -->
@@ -4519,7 +4566,6 @@ Summary of Distribution Types supported by Nondeterministic Methods
 <td>-
 <td>-
 </table>  
-
 
 \subsection MethodNonDAleat Aleatory Uncertainty Quantification Methods
 
@@ -4655,15 +4701,15 @@ samples.  To obtain sensitivity indices that are reasonably accurate,
 we recommend that N, the number of samples, be at least one hundred
 and preferably several hundred or thousands. Because of the
 computational cost, \c variance_based_decomp is turned off as a
-default. \ref T5d30 "Table 5.30" provides details of the
+default. \ref T5d32 "Table 5.32" provides details of the
 nondeterministic sampling specifications beyond those of \ref T5d28
 "Table 5.28".
 
-\anchor T5d30
+\anchor T5d32
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.30
+Table 5.32
 \endhtmlonly
 Specification detail for nondeterministic sampling method
 </caption>
@@ -4835,14 +4881,14 @@ and [\ref Eldred2006b "Eldred and Bichon, 2006"] and in the Uncertainty
 Quantification Capabilities chapter of the Users Manual 
 [\ref UsersMan "Adams et al., 2010"].
 
-\ref T5d31 "Table 5.31" provides details of the local reliability method
+\ref T5d33 "Table 5.33" provides details of the local reliability method
 specifications beyond those of \ref T5d28 "Table 5.28".
 
-\anchor T5d31
+\anchor T5d33
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.31
+Table 5.33
 \endhtmlonly
 Specification detail for local reliability methods
 </caption>
@@ -4920,14 +4966,14 @@ limit state is formed over the uncertain variables by default, but may
 be extended to also capture the effect of design and state variables
 via the \c all_variables flag.
 
-\ref T5d32 "Table 5.32" provides details of the global reliability method
+\ref T5d34 "Table 5.34" provides details of the global reliability method
 specifications beyond those of \ref T5d28 "Table 5.28".
 
-\anchor T5d32
+\anchor T5d34
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.32
+Table 5.34
 \endhtmlonly
 Specification detail for global reliability methods
 </caption>
@@ -4985,7 +5031,8 @@ Manual [\ref UsersMan "Adams et al., 2010"] for additional information
 on the PCE algorithm.
 
 To select the basis \f$\Psi_i\f$ of the expansion, three approaches
-may be employed, as previously shown in \ref T5d29 "Table 5.29":
+may be employed, as previously shown in Tables \ref T5d29 "5.29", 
+\ref T5d30 "5.30", and \ref T5d31 "5.31":
 Wiener, Askey, and Extended.  The Wiener option uses a Hermite
 orthogonal polynomial basis for all random variables and employs the
 same nonlinear variable transformation as the local and global
@@ -4998,7 +5045,8 @@ numerically-generated orthogonal polynomials for non-Askey probability
 density functions.  The selection of Wiener versus Askey versus
 Extended is partially automated and partially under the user's
 control.  The Extended option is the default and supports only
-Gaussian correlations (see \ref T5d29 "Table 5.29").  This default can
+Gaussian correlations (see Tables \ref T5d29 "5.29", 
+\ref T5d30 "5.30", and \ref T5d31 "5.31").  This default can
 be overridden by the user by supplying the keyword \c askey to request
 restriction to the use of Askey bases only or by supplying the keyword
 \c wiener to request restriction to the use of exclusively Hermite
@@ -5210,17 +5258,18 @@ described in \ref MethodNonDMC, but since PCE outputs main,
 interaction, and total effects by default, the \c univariate_effects
 option has been added to allow suppression of the interaction effects
 since the output volume of these results can be prohibitive for high
-dimensional problems.  \ref T5d33 "Table 5.33" provides details of the
+dimensional problems.  Tables \ref T5d35 "5.35", \ref T5d36 "5.36", 
+and \ref T5d37 "5.37" provide details of the
 polynomial chaos expansion specifications beyond those of 
 \ref T5d28 "Table 5.28".
 
-\anchor T5d33
+\anchor T5d35
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.33
+Table 5.35
 \endhtmlonly
-Specification detail for polynomial chaos expansion method
+Specification detail for polynomial chaos expansion method, Part I
 </caption>
 <tr>
 <td><b>Description</b>
@@ -5294,6 +5343,16 @@ Specification detail for polynomial chaos expansion method
 <td>none
 <td>Optional
 <td>coefficient estimation does not reuse previous samples
+</table>
+
+\anchor T5d36
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.36
+\endhtmlonly
+Specification detail for polynomial chaos expansion method, Part II
+</caption>
 <tr>
 <td>Number of collocation points for PCE coefficient estimation
 <td>\c collocation_points
@@ -5342,6 +5401,22 @@ Specification detail for polynomial chaos expansion method
 <td>\c random | \c lhs
 <td>Optional group
 <td>\c lhs
+</table>
+
+\anchor T5d37
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.37
+\endhtmlonly
+Specification detail for polynomial chaos expansion method, Part III
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
 <tr>
 <td>Number of samples on PCE for generating statistics
 <td>\c samples
@@ -5494,17 +5569,18 @@ and \c rng specifications described in \ref MethodNonDMC.  These
 latter sampling specifications refer to sampling on the interpolant
 for the purposes of generating approximate statistics, which should
 not be confused with collocation evaluations used for forming the
-interpolant.  \ref T5d34 "Table 5.34" provides details of the
+interpolant.  Tables \ref T5d38 "5.38" and \ref T5d39 "5.39"
+provide details of the
 stochastic collocation specifications beyond those of \ref T5d28
 "Table 5.28".
 
-\anchor T5d34
+\anchor T5d38
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.34
+Table 5.38
 \endhtmlonly
-Specification detail for stochastic collocation method
+Specification detail for stochastic collocation method, Part I
 </caption>
 <tr>
 <td><b>Description</b>
@@ -5596,6 +5672,22 @@ Specification detail for stochastic collocation method
 <td>\c import | \c adapt_import | \c mm_adapt_import
 <td>Optional group
 <td>No sampling refinement
+</table>
+
+\anchor T5d39
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.39
+\endhtmlonly
+Specification detail for stochastic collocation method, Part II
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
 <tr>
 <td>Variance-based decomposition (VBD)
 <td>\c variance_based_decomp
@@ -5697,15 +5789,15 @@ methods to calculate these bounds.  \c local_interval_est
 allows the user to specify either \c sqp which is sequential
 quadratic programming, or \c nip which is a nonlinear interior point
 method.  
-\ref T5d35 "Table 5.35" provides the specification for the 
+\ref T5d40 "Table 5.40" provides the specification for the 
 local interval method. 
 
 
-\anchor T5d35
+\anchor T5d40
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.35
+Table 5.40
 \endhtmlonly
 Specification detail for local interval estimation used in epistemic uncertainty
 </caption>
@@ -5752,14 +5844,14 @@ bounds (see the EGO method on this page for more explanation).
 When using \c lhs or \c ego, one can specify a seed for the 
 number of LHS samples, the random number generator, and the number 
 of samples. 
-\ref T5d36 "Table 5.36" provides the specification for the 
+\ref T5d41 "Table 5.41" provides the specification for the 
 global interval methods.
 
-\anchor T5d36
+\anchor T5d41
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.36
+Table 5.41
 \endhtmlonly
 Specification detail for global interval estimation used in epistemic uncertainty
 </caption>
@@ -5857,16 +5949,16 @@ gen_reliability_levels) or outputs (\c response_levels with \c compute
 probability levels and the same probability-based mappings described
 above are performed.
 
-\ref T5d37 "Table 5.37" provides the specification for the \c
+\ref T5d42 "Table 5.42" provides the specification for the \c
 local_evidence method. Note that two local optimization methods 
 are available:  \c sqp (sequential quadratic programming or \c nip
 (nonlinear interior point method). 
 
-\anchor T5d37
+\anchor T5d42
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.37
+Table 5.42
 \endhtmlonly
 Specification detail for local evidence theory method for epistemic uncertainty
 </caption>
@@ -5902,7 +5994,7 @@ expensive, since the minimum and maximum function value must be calculated
 for each "interval cell combination."    These 
 bounds are aggregated into belief and plausibility. 
 
-\ref T5d38 "Table 5.38" provides the 
+\ref T5d43 "Table 5.43" provides the 
 specification for the \c global_evidence method.
 \c global_evidence allows the user to specify either \c lhs or \c ego. 
 \c lhs performs Latin Hypercube Sampling and takes the minimum and maximum of
@@ -5932,11 +6024,11 @@ instead to find the minimum and maximum sample values within each
 cell, this can also be computationally expensive.
 
 
-\anchor T5d38
+\anchor T5d43
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.38
+Table 5.43
 \endhtmlonly
 Specification detail for global evidence theory method for epistemic uncertainty
 </caption>
@@ -6024,14 +6116,14 @@ In each of these cases, convergence order for a response quantity of
 interest (QOI) is estimated from
 \f[p = ln(\frac{QOI_3 - QOI_2}{QOI_2 - QOI_1})/ln(r)\f]
 where \f$r\f$ is the uniform refinement rate specified by \c 
-refinement_rate.  \ref T5d39 "Table 5.39" provides the specification 
+refinement_rate.  \ref T5d44 "Table 5.44" provides the specification 
 details for the \c richardson_extrap method.
 
-\anchor T5d39
+\anchor T5d44
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.39
+Table 5.44
 \endhtmlonly
 Specification detail for Richardson extrapolation method for solution verification
 </caption>
@@ -6124,13 +6216,13 @@ indices which indicate how important the uncertainty in each input
 variable is in contributing to the output variance.  More details 
 on variance based decomposition are given in \ref MethodNonDMC.
 Design of experiments specification detail is
-given in \ref T5d40 "Table 5.40".
+given in \ref T5d45 "Table 5.45".
 
-\anchor T5d40
+\anchor T5d45
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.40
+Table 5.45
 \endhtmlonly
 Specification detail for design of experiments methods
 </caption>
@@ -6256,7 +6348,7 @@ these sequences, see [\ref Halton1960 "Halton, 1960",
 \ref Kocis1997 "Kocis and Whiten, 1997"].
  
 The specification for specifying quasi-Monte Carlo (\c fsu_quasi_mc) 
-is given below in \ref T5d41 "Table 5.41".  
+is given below in \ref T5d46 "Table 5.46".  
 The user must specify if the sequence is 
 (\c halton) or (\c hammersley).  The user must also specify the number 
 of samples to generate for each variable (\c samples). 
@@ -6317,11 +6409,11 @@ distribution).  Complete explanation of these measures can be found in
 [\ref Gunzburger2004 "Gunzburger and Burkardt, 2004."].
 
 <!-- dakota subcat fsu_quasi_mc -->
-\anchor T5d41
+\anchor T5d46
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.41
+Table 5.46
 \endhtmlonly
 Specification detail for FSU Quasi-Monte Carlo sequences 
 </caption>
@@ -6454,14 +6546,14 @@ More details on the quality measures are given under the description of the
 QMC methods. 
 
 The specification detail for the FSU CVT method is given in 
-\ref T5d42 "Table 5.42".
+\ref T5d47 "Table 5.47".
 
 <!-- dakota subcat fsu_cvt -->
-\anchor T5d42
+\anchor T5d47
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.42
+Table 5.47
 \endhtmlonly
 Specification detail for FSU Centroidal Voronoi Tesselation sampling
 </caption>
@@ -6555,13 +6647,13 @@ partitions) applies to each variable being studied and must be odd
 also be adjusted at runtime as necessary.  For information on
 practical use of this method, see 
 [\ref Saltelli2004 "Saltelli, et al., 2004"].  The specification detail
-for the PSUADE MOAT method is given in \ref T5d43 "Table 5.43".
+for the PSUADE MOAT method is given in \ref T5d48 "Table 5.48".
 
-\anchor T5d43
+\anchor T5d48
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.43
+Table 5.48
 \endhtmlonly
 Specification detail for PSUADE methods
 </caption>
@@ -6655,14 +6747,14 @@ appropriate steps with any discrete range and discrete set variables.
 A \c num_steps specification must result in discrete range and set
 index steps that are integral: no remainder is currently permitted in
 the integer step calculation and no rounding to integer steps will
-occur.  The \c final_point specification detail is given in \ref T5d44
-"Table 5.44".
+occur.  The \c final_point specification detail is given in \ref T5d49
+"Table 5.49".
 
-\anchor T5d44
+\anchor T5d49
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.44
+Table 5.49
 \endhtmlonly
 final_point specification detail for the vector parameter study
 </caption>
@@ -6700,13 +6792,13 @@ state; real or integer), the steps are set index offsets, not steps
 between the actual set values.  This increment process is performed \c
 num_steps times, and since the initial values are included, the total
 number of simulations is again equal to \c num_steps+1. The \c
-step_vector specification detail is given in \ref T5d45 "Table 5.45".
+step_vector specification detail is given in \ref T5d50 "Table 5.50".
 
-\anchor T5d45
+\anchor T5d50
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.45
+Table 5.50
 \endhtmlonly
 step_vector specification detail for the vector parameter study
 </caption>
@@ -6755,13 +6847,13 @@ specification will not be used, they need not be specified. For
 discrete set types, the actual values should be specified, not the set
 indices, although the values will be validated for membership within
 the set value specifications.  The list parameter study specification
-detail is given in \ref T5d46 "Table 5.46".
+detail is given in \ref T5d51 "Table 5.51".
 
-\anchor T5d46
+\anchor T5d51
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.46
+Table 5.51
 \endhtmlonly
 Specification detail for the list parameter study
 </caption>
@@ -6803,14 +6895,14 @@ MethodPSVPS) in either actual values (continuous and discrete range)
 or index offsets (discrete set). The \c steps_per_variable
 specification provides the number of increments per variable (again,
 employed sequentially) in each of the plus and minus directions. The
-centered parameter study specification detail is given in \ref T5d47
-"Table 5.47".
+centered parameter study specification detail is given in \ref T5d52
+"Table 5.52".
 
-\anchor T5d47
+\anchor T5d52
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.47
+Table 5.52
 \endhtmlonly
 Specification detail for the centered parameter study
 </caption>
@@ -6862,13 +6954,13 @@ occurs, so the partitions specification must be carefully selected in
 the presence of these types.  Since the initial values from the
 variables specification will not be used, they need not be
 specified. The multidimensional parameter study specification detail
-is given in \ref T5d48 "Table 5.48".
+is given in \ref T5d53 "Table 5.53".
 
-\anchor T5d48
+\anchor T5d53
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.48
+Table 5.53
 \endhtmlonly
 Specification detail for the multidimensional parameter study
 </caption>
