@@ -372,8 +372,8 @@ internal likelihood function evaluations used in constructing the
 kriging model.
 
 <!-- TODO: document MARS, ANN, and RBF controls -->
-Table \ref T6d4 "6.4" summarizes the global approximation selction
-specifications.
+Tables \ref T6d4 "6.4" and \ref T6d5 "6.5" summarize the global 
+approximation selection specifications.
 
 \anchor T6d4
 <table>
@@ -382,7 +382,7 @@ specifications.
 Table 6.4
 \endhtmlonly
 Specification detail for global approximations: global 
-approximation type
+approximation type, Part I
 </caption>
 <tr>
 <td><b>Description</b>
@@ -475,6 +475,23 @@ approximation type
 <td>integer
 <td>Optional
 <td>
+</table>
+
+\anchor T6d5
+<table>
+<caption align = "top">
+\htmlonly
+Table 6.5
+\endhtmlonly
+Specification detail for global approximations: global 
+approximation type, Part II
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
 <tr>
 <td>Multivariate adaptive regression splines
 <td>\c mars
@@ -551,7 +568,7 @@ approximation type
 <td>
 </table>
 
-Table \ref T6d5 "6.5" summarizes the remaining global approximation
+Table \ref T6d6 "6.6" summarizes the remaining global approximation
 specifications, including DACE method and sample resue, correction,
 and use of gradient data.
 
@@ -629,11 +646,11 @@ Pecos::SurrogateDataPoint, and \ref Approximation::build
 "Approximation::build()", but is not yet supported in any global
 approximation derived class redefinitions of build().
 
-\anchor T6d5
+\anchor T6d6
 <table>
 <caption align = "top">
 \htmlonly
-Table 6.5
+Table 6.6
 \endhtmlonly
 Specification detail for global approximations: build and correction controls
 </caption>
@@ -694,14 +711,14 @@ requires response value and gradient information from two points, and
 uses a first-order Taylor series if only one point is available.  The
 truth model to be used to generate the value/gradient data used in the
 approximation is identified through the required \c
-actual_model_pointer specification.  \ref T6d6 "Table 6.6" summarizes
+actual_model_pointer specification.  \ref T6d7 "Table 6.7" summarizes
 the multipoint approximation specifications.
 
-\anchor T6d6
+\anchor T6d7
 <table>
 <caption align = "top">
 \htmlonly
-Table 6.6
+Table 6.7
 \endhtmlonly
 Specification detail for multipoint approximations
 </caption>
@@ -754,14 +771,14 @@ defining the approximation.  In particular, the derivative
 specification for the truth model may differ from the derivative
 specification for the approximation , and the truth model results
 being approximated may involve a model recursion (e.g., the
-values/gradients from a nested model).  \ref T6d7 "Table 6.7"
+values/gradients from a nested model).  \ref T6d8 "Table 6.8"
 summarizes the local approximation interface specifications.
 
-\anchor T6d7
+\anchor T6d8
 <table>
 <caption align = "top">
 \htmlonly
-Table 6.7
+Table 6.8
 \endhtmlonly
 Specification detail for local approximations
 </caption>
@@ -814,14 +831,14 @@ effectively eliminate the purpose of the high fidelity model.  If it
 is desired to use a low fidelity model without corrections, then a
 hierarchical approximation is not needed and a \c single model should
 be used.  Refer to \ref ModelSurrG for additional information on
-available correction approaches.  \ref T6d8 "Table 6.8" summarizes the
+available correction approaches.  \ref T6d9 "Table 6.9" summarizes the
 hierarchical approximation specifications.
 
-\anchor T6d8
+\anchor T6d9
 <table>
 <caption align = "top">
 \htmlonly
-Table 6.8
+Table 6.9
 \endhtmlonly
 Specification detail for hierarchical approximations
 </caption>
@@ -879,14 +896,14 @@ combined with data from the nested iterator using the \c
 primary_response_mapping and \c secondary_response_mapping inputs (see
 mapping discussion below).
 
-Table \ref T6d9 "6.9" provides the specification detail for nested
+Table \ref T6d10 "6.10" provides the specification detail for nested
 model pointers.
 
-\anchor T6d9
+\anchor T6d10
 <table>
 <caption align = "top">
 \htmlonly
-Table 6.9
+Table 6.10
 \endhtmlonly
 Specification detail for nested models
 </caption>
@@ -1055,14 +1072,14 @@ standard deviations) into another top-level nonlinear constraint
 (these top-level nonlinear constraints may be inequality or equality,
 as dictated by the top-level response specification). Note that in many cases, each particular sub-iterator response will be mapped to a unique outer loop response (for example, in the nested UQ case where one wants to determine an interval on each inner loop statistic).  In these cases, the response mapping will be the identity matrix.  That is, the primary response mapping will have N rows and N columns corresponding to the N sub-iterator response values, and the mapping matrix will have a value of one along the diagonal and zeros elsewhere.
 
-Table \ref T6d10 "6.10" provides the specification detail for the model
+Table \ref T6d11 "6.11" provides the specification detail for the model
 independent controls involving nested model mappings.
 
-\anchor T6d10
+\anchor T6d11
 <table>
 <caption align = "top">
 \htmlonly
-Table 6.10
+Table 6.11
 \endhtmlonly
 Specification detail for the model independent controls: nested model mappings
 </caption>
