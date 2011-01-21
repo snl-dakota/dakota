@@ -168,7 +168,7 @@ if(HAVE_ACRO)
                       ${Acro_BINARY_DIR}/packages/colin/src
                       ${Acro_BINARY_DIR}/packages/interfaces/src
                       ${Acro_BINARY_DIR}/scolib/interfaces/src)
-  list(APPEND interface_src COLINApplication.C COLINEvaluator.C)
+  list(APPEND interface_src COLINApplication.C)
   list(APPEND iterator_src COLINOptimizer.C)
   #link_directories(${Dakota_BINARY_DIR}/packages/acro)
   #list(APPEND TPL_LIBS colin tinyxml 3po)
