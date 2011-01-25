@@ -3,24 +3,22 @@
 add_subdirectory(nidr)
 
 if(HAVE_AMPL)
-
-  find_package(AMPL QUIET)
-  if (NOT AMPL_FOUND)
-    set(AMPL_DIR ${CMAKE_CURRENT_BINARY_DIR}/ampl)
-    message("Setting AMPL_DIR to ${AMPL_DIR}")
+  if (NOT AMPL_INCLUDE_DIRS)
     add_subdirectory(ampl)
-  else()
-    message("In ${CMAKE_CURRENT_BINARY_DIR} AMPL already found: AMPL_DIR is ${AMPL_DIR}")
   endif()
-  find_package(AMPL NO_MODULE REQUIRED)
 
   # packages/nidr/../ampl/asl.h:28:51: error: arith.h: No such file
   # WJB - ToDo: nidr dependency on AMPL's asl.h/arith.h is "loose"
   #             could/should be managed better than adding explicit
   #             dependency in the CMakeLists.txt file
   add_dependencies(nidr amplsolver)
-
 endif(HAVE_AMPL)
+
+if(HAVE_OPTPP)
+  if (NOT OPTPP_INCLUDE_DIRS)
+    add_subdirectory(OPTPP)
+  endif()
+endif()
 
 # Both DAKOTA and PECOS unconditionally depend on Teuchos, and the "shared
 # component magic" is managed in the top-level CMakeLists.txt file
@@ -109,10 +107,6 @@ if(HAVE_NPSOL)
     set(HAVE_NPSOL OFF CACHE BOOL "Build the NPSOL package" FORCE)
   endif()
 endif(HAVE_NPSOL)
-
-if(HAVE_OPTPP)
-  add_subdirectory(OPTPP)
-endif(HAVE_OPTPP)
 
 if(HAVE_PSUADE)
   add_subdirectory(PSUADE)
