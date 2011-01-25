@@ -25,7 +25,11 @@
 #include <mpi.h>
 #else
 typedef int MPI_Comm;
+
+#ifndef utilib_mpi_utilib_h
 typedef struct { int MPI_SOURCE; int MPI_TAG; int MPI_ERROR; } MPI_Status;
+#endif
+
 typedef void* MPI_Request;
 #define MPI_COMM_WORLD   0
 #define MPI_COMM_NULL    0

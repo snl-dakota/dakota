@@ -165,9 +165,16 @@ if(HAVE_ACRO)
   #include_directories(${Acro_BINARY_DIR} ${Acro_SOURCE_DIR}/include
   #                    ${Acro_BINARY_DIR}/src ${Acro_SOURCE_DIR}/src)
   include_directories(${Acro_BINARY_DIR}/include
+                      ${Acro_BINARY_DIR}/packages
+                      ${Acro_BINARY_DIR}/packages/utilib
                       ${Acro_BINARY_DIR}/packages/colin/src
                       ${Acro_BINARY_DIR}/packages/interfaces/src
-                      ${Acro_BINARY_DIR}/scolib/interfaces/src)
+                      ${Acro_BINARY_DIR}/scolib/interfaces/src
+                      ${Acro_SOURCE_DIR}/packages/interfaces/src
+                      ${Acro_SOURCE_DIR}/packages/scolib/src
+                      ${Acro_SOURCE_DIR}/packages/utilib/src
+                      ${Acro_SOURCE_DIR}/packages/colin/src
+                      ${Acro_SOURCE_DIR}/tpl/tinyxml)
   list(APPEND interface_src COLINApplication.C)
   list(APPEND iterator_src COLINOptimizer.C)
   #link_directories(${Dakota_BINARY_DIR}/packages/acro)
@@ -315,15 +322,10 @@ set(Dakota_src ${Dakota_src} ${util_src} ${evaldata_src} ${db_src}
     ${model_src} ${constraint_src} ${interface_src} ${strategy_src}
     ${iterator_src})
 
-
-## WJB: can the library AND executable target have the same name? add_library(dakota ${Dakota_src})
-add_library(dakota_src SHARED ${Dakota_src})
-add_library(dakota_src-static STATIC ${Dakota_src})
-
-## Ensure both the shared and static libraries have the same root name
-set_target_properties(dakota_src-static PROPERTIES OUTPUT_NAME "dakota_src")
-set_target_properties(dakota_src-static PROPERTIES PREFIX "lib")
-
+add_library(dakota_src ${Dakota_src})
+if(HAVE_ACRO)
+  target_link_libraries(dakota_src utilib colin interfaces scolib)
+endif()
 
 ## MORE TPLs to append to the link stream, conditionally, based on user prefs
 if(HAVE_AMPL)
