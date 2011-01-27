@@ -23,21 +23,19 @@
 #include "DakotaString.H"
 #ifdef HAVE_MPI
 #include <mpi.h>
-#else
+#endif // HAVE_MPI
+
+namespace Dakota {
+
+#ifndef HAVE_MPI
 typedef int MPI_Comm;
-
-#ifndef utilib_mpi_utilib_h
 typedef struct { int MPI_SOURCE; int MPI_TAG; int MPI_ERROR; } MPI_Status;
-#endif
-
 typedef void* MPI_Request;
 #define MPI_COMM_WORLD   0
 #define MPI_COMM_NULL    0
 #define MPI_ANY_TAG      0
 #define MPI_REQUEST_NULL 0
-#endif // HAVE_MPI
-
-namespace Dakota {
+#endif // not HAVE_MPI
 
 class CommandLineHandler;
 
