@@ -24,12 +24,11 @@
 #ifdef DAKOTA_MODELCENTER
 #include "PHXCppApi.h"
 #endif // DAKOTA_MODELCENTER
-
 #ifdef HAVE_AIX_MPI
 #include <pm_util.h>  // for pm_child_sig_handler
 #endif // HAVE_AIX_MPI
 
-// on by default by request from Collis/Drake/Salinger
+// on by default from consensus among Collis/Drake/Keiter/Salinger
 #define COMM_SPLIT_TO_SINGLE
 
 static const char rcsId[]="@(#) $Id: ParallelLibrary.C 7013 2010-10-08 01:03:38Z wjbohnh $";
@@ -128,7 +127,6 @@ ParallelLibrary::ParallelLibrary(int& argc, char**& argv):
   Dak_pl = this;
   if (!mpirunFlag)
     start_dakota_heartbeat(-1); // -1 ==> take interval from $DAKOTA_HEARTBEAT
-
 }
 
 
@@ -146,6 +144,7 @@ ParallelLibrary::ParallelLibrary(): dakotaMPIComm(MPI_COMM_WORLD), worldRank(0),
   init_mpi_comm(dakotaMPIComm);
 }
 
+
 /** This constructor provides a library mode ParallelLibrary,
     accepting an MPI communicator that might not be MPI_COMM_WORLD.
     It does not call MPI_Init, but rather gathers data from
@@ -161,6 +160,7 @@ ParallelLibrary::ParallelLibrary(MPI_Comm dakota_mpi_comm):
 {
   init_mpi_comm(dakotaMPIComm);
 }
+
 
 /// shared function for initializing based on passed MPI_Comm
 void ParallelLibrary::init_mpi_comm(MPI_Comm dakota_mpi_comm)
@@ -1273,8 +1273,8 @@ manage_outputs_restart(const ParallelLevel& pl)
     // in from the restart file is very useful when the last few evaluations in
     // a run were corrupted.  Note that the desired -stop_restart setting may
     // differ from the evaluation number in the previous run since detected 
-    // duplicates are included in ApplicationInterface::fnEvalId, but are not 
-    // written to the restart file!
+    // duplicates are included in Interface::evalIdCntr, but are not written
+    // to the restart file!
     if (stopRestartEvals) // cmd_line_handler returns 0 if no cmd line setting
       Cout << "Stopping restart file processing at " << stopRestartEvals 
            << " evaluations." << std::endl;

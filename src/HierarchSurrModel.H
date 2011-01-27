@@ -153,7 +153,7 @@ private:
 
   /// number of calls to derived_compute_response()/
   /// derived_asynch_compute_response()
-  int hierModelEvals;
+  int hierModelEvalCntr;
 
   /// map of high-fidelity responses retrieved in derived_synchronize_nowait()
   /// that could not be returned since corresponding low-fidelity response
@@ -304,7 +304,7 @@ inline void HierarchSurrModel::inactive_view(short view, bool recurse_flag)
     either the loFi or hiFi model evaluation counts.  It also does not
     distinguish duplicate evals. */
 inline int HierarchSurrModel::evaluation_id() const
-{ return hierModelEvals; }
+{ return hierModelEvalCntr; }
 
 
 inline void HierarchSurrModel::set_evaluation_reference()
@@ -316,7 +316,7 @@ inline void HierarchSurrModel::set_evaluation_reference()
   //highFidelityModel.set_evaluation_reference();
 
   // may want to add this in time
-  //hierModelEvalRef = hierModelEvals;
+  //hierModelEvalRef = hierModelEvalCntr;
 }
 
 

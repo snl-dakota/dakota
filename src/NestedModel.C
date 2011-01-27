@@ -25,7 +25,7 @@ static const char rcsId[]="@(#) $Id: NestedModel.C 7024 2010-10-16 01:24:42Z mse
 namespace Dakota {
 
 NestedModel::NestedModel(ProblemDescDB& problem_db):
-  Model(BaseConstructor(), problem_db), nestedModelEvals(0),
+  Model(BaseConstructor(), problem_db), nestedModelEvalCntr(0),
   optInterfacePointer(problem_db.get_string("model.interface_pointer"))
 {
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
@@ -931,9 +931,10 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
   // optInterfaceResponse by map):
   if (opt_interface_map) {
     Cout << "\n----------------------------------------------------------------"
-	 << "--\nNestedModel Evaluation " << std::setw(4) << nestedModelEvals+1 
-	 << ": performing optional interface mapping\n-------------------------"
-	 << "-----------------------------------------\n";
+	 << "--\nNestedModel Evaluation " << std::setw(4)
+	 << nestedModelEvalCntr+1 << ": performing optional interface mapping\n"
+	 << "------------------------------------------------------------------"
+	 << '\n';
     component_parallel_mode(OPTIONAL_INTERFACE);
     optionalInterface.map(currentVariables, opt_interface_set,
 			  optInterfaceResponse);
@@ -942,7 +943,7 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
   if (sub_iterator_map) {
     // need comm set up and master break off (see Strategy::run_iterator())
     Cout << "\n-------------------------------------------------\n"
-	 << "NestedModel Evaluation " << std::setw(4) << nestedModelEvals+1 
+	 << "NestedModel Evaluation " << std::setw(4) << nestedModelEvalCntr+1 
 	 << ": running sub_iterator"
 	 << "\n-------------------------------------------------\n";
     component_parallel_mode(SUB_MODEL);
@@ -957,7 +958,7 @@ void NestedModel::derived_compute_response(const ActiveSet& set)
   response_mapping(optInterfaceResponse, subIterator.response_results(),
 		   currentResponse);
 
-  nestedModelEvals++;
+  ++nestedModelEvalCntr;
 }
 
 
@@ -981,9 +982,10 @@ void NestedModel::derived_asynch_compute_response(const ActiveSet& set)
   // optInterfaceResponse by map):
   if (opt_interface_map) {
     Cout << "\n----------------------------------------------------------------"
-	 << "--\nNestedModel Evaluation " << std::setw(4) << nestedModelEvals+1 
-	 << ": performing optional interface mapping\n-------------------------"
-	 << "-----------------------------------------\n";
+	 << "--\nNestedModel Evaluation " << std::setw(4)
+	 << nestedModelEvalCntr+1 << ": performing optional interface mapping\n"
+	 << "------------------------------------------------------------------"
+	 << '\n';
     // don't need to set component parallel mode since this only queues the job
     optionalInterface.map(currentVariables, opt_interface_set,
 			  optInterfaceResponse, true);
@@ -992,7 +994,7 @@ void NestedModel::derived_asynch_compute_response(const ActiveSet& set)
   if (sub_iterator_map) {
     // need comm set up and master break off (see Strategy::run_iterator())
     Cout << "\n-------------------------------------------------\n"
-	 << "NestedModel Evaluation " << std::setw(4) << nestedModelEvals+1 
+	 << "NestedModel Evaluation " << std::setw(4) << nestedModelEvalCntr+1 
 	 << ": running sub_iterator"
 	 << "\n-------------------------------------------------\n";
 
@@ -1012,8 +1014,8 @@ void NestedModel::derived_asynch_compute_response(const ActiveSet& set)
     */
   }
 
-  nestedModelEvals++;
-  //varsMap[nestedModelEvals] = currentVariables.copy();
+  ++nestedModelEvalCntr;
+  //varsMap[nestedModelEvalCntr] = currentVariables.copy();
 }
 
 
@@ -1598,7 +1600,7 @@ void NestedModel::update_sub_model()
 	if (extraCVarsData[i]) {
 	  subModel.all_continuous_lower_bound(curr_c_l_bnds[i], pacvm_index);
 	  subModel.all_continuous_upper_bound(curr_c_u_bnds[i], pacvm_index);
-	  if (!nestedModelEvals)
+	  if (!nestedModelEvalCntr)
 	    subModel.all_continuous_variable_label(curr_c_labels[i],
 						   pacvm_index);
 	}
@@ -1650,7 +1652,7 @@ void NestedModel::update_sub_model()
 	if (extraDIVarsData[i]) {
 	  subModel.all_discrete_int_lower_bound(curr_di_l_bnds[i],padivm_index);
 	  subModel.all_discrete_int_upper_bound(curr_di_u_bnds[i],padivm_index);
-	  if (!nestedModelEvals)
+	  if (!nestedModelEvalCntr)
 	    subModel.all_discrete_int_variable_label(curr_di_labels[i],
 						     padivm_index);
 	}
@@ -1704,7 +1706,7 @@ void NestedModel::update_sub_model()
 						 padrvm_index);
 	  subModel.all_discrete_real_upper_bound(curr_dr_u_bnds[i],
 						 padrvm_index);
-	  if (!nestedModelEvals)
+	  if (!nestedModelEvalCntr)
 	    subModel.all_discrete_real_variable_label(curr_dr_labels[i],
 						      padrvm_index);
 	}
@@ -1733,7 +1735,7 @@ void NestedModel::update_sub_model()
     subModel.all_continuous_variable(curr_ac_vars[curr_i], c1_index);
     subModel.all_continuous_lower_bound(curr_ac_l_bnds[curr_i], c1_index);
     subModel.all_continuous_upper_bound(curr_ac_u_bnds[curr_i], c1_index);
-    if (!nestedModelEvals)
+    if (!nestedModelEvalCntr)
       subModel.all_continuous_variable_label(curr_ac_labels[curr_i], c1_index);
   }
 
@@ -1754,7 +1756,7 @@ void NestedModel::update_sub_model()
     subModel.all_discrete_int_variable(curr_adi_vars[curr_i], c1_index);
     subModel.all_discrete_int_lower_bound(curr_adi_l_bnds[curr_i], c1_index);
     subModel.all_discrete_int_upper_bound(curr_adi_u_bnds[curr_i], c1_index);
-    if (!nestedModelEvals)
+    if (!nestedModelEvalCntr)
       subModel.all_discrete_int_variable_label(curr_adi_labels[curr_i],
 					       c1_index);
   }
@@ -1776,7 +1778,7 @@ void NestedModel::update_sub_model()
     subModel.all_discrete_real_variable(curr_adr_vars[curr_i], c1_index);
     subModel.all_discrete_real_lower_bound(curr_adr_l_bnds[curr_i], c1_index);
     subModel.all_discrete_real_upper_bound(curr_adr_u_bnds[curr_i], c1_index);
-    if (!nestedModelEvals)
+    if (!nestedModelEvalCntr)
       subModel.all_discrete_real_variable_label(curr_adr_labels[curr_i],
 						c1_index);
   }

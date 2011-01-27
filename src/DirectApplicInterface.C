@@ -53,7 +53,7 @@ const char *FIELD_NAMES[] = { "numFns", "numVars", "numACV", "numADIV",  // 0
 			      "directFnDVV", "directFnDVV_bool",         // 14
 			      "fnFlag", "gradFlag", "hessFlag",          // 16
 			      "fnVals",  "fnGrads",  "fnHessians",       // 19
-			      "fnLabels", "failure", "fnEvalId" };       // 22
+			      "fnLabels", "failure", "currEvalId" };     // 22
 /** number of fields in above structure */
 const int NUMBER_OF_FIELDS = 25;
 #endif
@@ -2983,7 +2983,7 @@ int DirectApplicInterface::matlab_engine_run()
 
   if ( (iF = matlab_field_prep(dakota_matlab, FIELD_NAMES[24])) >= 0) {
     mxSetFieldByNumber(dakota_matlab,0,iF,
-		       mxCreateDoubleScalar((double) fnEvalId));
+		       mxCreateDoubleScalar((double) currEvalId));
   }
   else	
     return(MATLAB_FAIL);
@@ -3220,8 +3220,8 @@ int DirectApplicInterface::python_run()
   PyDict_SetItem(pDict, PyString_FromString("av_labels"), av_labels);
   PyDict_SetItem(pDict, PyString_FromString("asv"), asv);
   PyDict_SetItem(pDict, PyString_FromString("dvv"), dvv);
-  PyDict_SetItem(pDict, PyString_FromString("fnEvalId"), 
-		 PyInt_FromLong((long) fnEvalId)); 
+  PyDict_SetItem(pDict, PyString_FromString("currEvalId"), 
+		 PyInt_FromLong((long) currEvalId));
 
   // perform analysis
   if (outputLevel > NORMAL_OUTPUT)

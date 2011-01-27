@@ -307,58 +307,58 @@ void ApplicationInterface::free_communicators()
 void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 			       Response& response, const bool asynch_flag)
 {
-  fnEvalId++; // all calls to map for this interface instance
+  ++evalIdCntr; // all calls to map for this interface instance
   if (fineGrainEvalCounters) { // detailed evaluation reporting
     const ShortArray& asv = set.request_vector();
     size_t i, num_fns = asv.size();
     for (i=0; i<num_fns; i++) {
       short asv_val = asv[i];
-      if (asv_val & 1) fnValCounter[i]++;
-      if (asv_val & 2) fnGradCounter[i]++;
-      if (asv_val & 4) fnHessCounter[i]++;
+      if (asv_val & 1) ++fnValCounter[i];
+      if (asv_val & 2) ++fnGradCounter[i];
+      if (asv_val & 4) ++fnHessCounter[i];
     }
     if (fnLabels.empty())
       fnLabels = response.function_labels();
   }
   if (outputLevel > SILENT_OUTPUT) {
     Cout << "\n------------------------------\nBegin Function Evaluation " 
-	 << std::setw(4) << fnEvalId;
+	 << std::setw(4) << evalIdCntr;
     // This may be more confusing than helpful:
-    //if (fnEvalIdRefPt)
-    //  Cout << " (local evaluation " << fnEvalId - fnEvalIdRefPt << ")";
+    //if (evalIdRefPt)
+    //  Cout << " (local evaluation " << evalIdCntr - evalIdRefPt << ")";
     Cout << "\n------------------------------\n";
   }
   if (outputLevel > QUIET_OUTPUT)
-    Cout << "Parameters for function evaluation " << fnEvalId << ":\n"
+    Cout << "Parameters for function evaluation " << evalIdCntr << ":\n"
 	 << vars << '\n';
 
   response.active_set(set); // responseActiveSet = set for duplicate search
 
   // Subdivide ActiveSet for algebraic_mappings() and derived_map()
-  Response algebraic_response, core_response; // empty handles
+  Response algebraic_resp, core_resp; // empty handles
   ActiveSet core_set;
 
   if (algebraicMappings) {
-    if (fnEvalId == 1)
+    if (evalIdCntr == 1)
       init_algebraic_mappings(vars, response);
     if (coreMappings) { // both mappings
       ActiveSet algebraic_set;
       asv_mapping(set, algebraic_set, core_set);
-      algebraic_response = Response(algebraic_set);
+      algebraic_resp = Response(algebraic_set);
       if (asynch_flag) {
-	ParamResponsePair prp(vars, idInterface, algebraic_response, fnEvalId);
+	ParamResponsePair prp(vars, idInterface, algebraic_resp, evalIdCntr);
 	beforeSynchAlgPRPQueue.insert(prp);
       }
       else
-	algebraic_mappings(vars, algebraic_set, algebraic_response);
-      // separate core_response from response
-      core_response = response.copy();
-      core_response.active_set(core_set);
+	algebraic_mappings(vars, algebraic_set, algebraic_resp);
+      // separate core_resp from response
+      core_resp = response.copy();
+      core_resp.active_set(core_set);
     }
     else { // algebraic mappings only
-      // algebraic_set = incoming set and algebraic_response = incoming response
+      // algebraic_set = incoming set and algebraic_resp = incoming response
       if (asynch_flag) {
-	ParamResponsePair prp(vars, idInterface, response, fnEvalId);
+	ParamResponsePair prp(vars, idInterface, response, evalIdCntr);
 	beforeSynchAlgPRPQueue.insert(prp);
       }
       else
@@ -366,13 +366,13 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
     }
   }
   else if (coreMappings) { // analysis_driver mappings only
-    core_set      = set;
-    core_response = response; // shared rep: no need for response_mapping()
+    core_set  = set;
+    core_resp = response; // shared rep: no need for response_mapping()
   }
 
   bool duplicate = false;
   if (coreMappings) {
-    if (evalCacheFlag && duplication_detect(vars, core_response, asynch_flag)) {
+    if (evalCacheFlag && duplication_detect(vars, core_resp, asynch_flag)) {
       // catches duplication both in data_pairs (core evals already computed)
       // and in beforeSynchCorePRPQueue (core evals queued for processing).
       duplicate = true;
@@ -381,11 +381,11 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
     }
     else {
 
-      //if ( partial_duplication_detect(vars, set, core_response) ) {
-        // sets augmentFlag (for use by Response::read), adds to core_response,
+      //if ( partial_duplication_detect(vars, set, core_resp) ) {
+        // sets augmentFlag (for use by Response::read), adds to core_resp,
         // and decrements the asv to be used in derived_map, but saves the  
         // original asv for resetting once everything's reintegrated.  The 
-        // original asv must be restored prior to any I/O of the core_response.
+        // original asv must be restored prior to any I/O of the core_resp.
       //}
 
       // For new evaluations, manage the user's active_set_vector specification.
@@ -393,12 +393,12 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       //   off: asv seen by user's interface is constant for all evals
       if (!asvControlFlag) { // set ASV's to defaultASV for the mapping
 	core_set.request_vector(defaultASV);
-	core_response.active_set(core_set);
+	core_resp.active_set(core_set);
       }
 
       if (asynch_flag) { // multiple simultaneous evals. (local or parallel)
 	// use this constructor since deep copies of vars/response are needed
-	ParamResponsePair prp(vars, idInterface, core_response, fnEvalId);
+	ParamResponsePair prp(vars, idInterface, core_resp, evalIdCntr);
 	beforeSynchCorePRPQueue.insert(prp);
 	// jobs are not queued until call to synch() to allow self-scheduling.
 	// Response data headers & data_pair list insertion appear in synch().
@@ -407,7 +407,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 
 	// bcast the job to other processors within peer 1 (if required)
 	if (multiProcEvalFlag) {
-	  parallelLib.bcast_e(fnEvalId); // matches serve_peer
+	  parallelLib.bcast_e(evalIdCntr); // matches serve_peer
 	  MPIPackBuffer send_buffer(lenVarsActSetMessage);
 	  send_buffer << vars << core_set;
 	  parallelLib.bcast_e(send_buffer); // matches serve_peer
@@ -415,20 +415,21 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 
 	//common_input_filtering(vars);
 
-	try { derived_map(vars, core_set, core_response, fnEvalId); }
+	currEvalId = evalIdCntr;
+	try { derived_map(vars, core_set, core_resp, currEvalId); }
 
 	catch(int fail_code) { // value of fail_code not currently used.
 	  //Cout << "Caught int in map" << std::endl;
-	  manage_failure(vars, core_set, core_response, fnEvalId);
+	  manage_failure(vars, core_set, core_resp, currEvalId);
 	}
 
-	//common_output_filtering(core_response);
+	//common_output_filtering(core_resp);
 
 	if (evalCacheFlag || restartFileFlag) {
 	  extern PRPCache data_pairs;
 	  extern BoStream write_restart;
 	  // deep copy of vars/response:
-	  ParamResponsePair prp(vars, idInterface, core_response, fnEvalId);
+	  ParamResponsePair prp(vars, idInterface, core_resp, currEvalId);
 	  if (evalCacheFlag)
 	    data_pairs.insert(prp);
 	  if (restartFileFlag)
@@ -439,32 +440,32 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
   }
 
   if (!duplicate) {
-    newFnEvalId++; // nonduplicate evaluations (used ONLY in fn eval summary)
+    ++newEvalIdCntr; // nonduplicate evaluations (used ONLY in fn eval summary)
     if (fineGrainEvalCounters) { // detailed evaluation reporting
       const ShortArray& asv = set.request_vector();
       size_t i, num_fns = asv.size();
       for (i=0; i<num_fns; i++) {
 	short asv_val = asv[i];
-	if (asv_val & 1) newFnValCounter[i]++;
-	if (asv_val & 2) newFnGradCounter[i]++;
-	if (asv_val & 4) newFnHessCounter[i]++;
+	if (asv_val & 1) ++newFnValCounter[i];
+	if (asv_val & 2) ++newFnGradCounter[i];
+	if (asv_val & 4) ++newFnHessCounter[i];
       }
     }
   }
 
   if (asynch_flag) {
     if (!duplicate && outputLevel > SILENT_OUTPUT)
-      Cout << "(Asynchronous job " << fnEvalId << " added to queue)\n";
+      Cout << "(Asynchronous job " << evalIdCntr << " added to queue)\n";
   }
   else {
     if (algebraicMappings && coreMappings)
-      response_mapping(algebraic_response, core_response, response);
+      response_mapping(algebraic_resp, core_resp, response);
 
     if (outputLevel > QUIET_OUTPUT) {
       if (duplicate)
 	Cout << "\nActive response data retrieved from database";
       else
-	Cout << "\nActive response data for function evaluation " << fnEvalId;
+	Cout << "\nActive response data for function evaluation " << evalIdCntr;
       Cout << ":\n" << response << std::endl;
     }
   }
@@ -499,7 +500,7 @@ duplication_detect(const Variables& vars, Response& response,
     // subset of the data_pairs response -> use update().
     response.update(desired_resp);
     if (asynch_flag) // asynch case: bookkeep
-      historyDuplicateMap[fnEvalId] = response.copy();
+      historyDuplicateMap[evalIdCntr] = response.copy();
     return true; // Duplication detected.
   }
   // check beforeSynchCorePRPQueue (if asynchronous)
@@ -509,7 +510,7 @@ duplication_detect(const Variables& vars, Response& response,
 		      response.active_set());
     if ( prp_hash_iter != hashedQueueEnd(beforeSynchCorePRPQueue) ) {
       // Duplication detected: bookkeep
-      beforeSynchDuplicateMap[fnEvalId]
+      beforeSynchDuplicateMap[evalIdCntr]
 	= std::make_pair(prp_hash_iter, response.copy());
       return true; // Duplication detected.
     }
@@ -1006,8 +1007,8 @@ void ApplicationInterface::asynchronous_local_evaluations(PRPQueue& prp_queue)
         if (outputLevel > SILENT_OUTPUT)
           Cout << "Initiating function evaluation " <<prp_iter->eval_id()<<'\n';
         derived_map_asynch(*prp_iter);
-        send_cntr++;
-        prp_iter++;
+        ++send_cntr;
+        ++prp_iter;
       }
     }
   }
@@ -1300,28 +1301,28 @@ void ApplicationInterface::synchronous_local_evaluations(PRPQueue& prp_queue)
 
   for (PRPQueueIter prp_iter = prp_queue.begin(); prp_iter != prp_queue.end();
        prp_iter++) {
-    int   fn_eval_id        = prp_iter->eval_id();
+    currEvalId              = prp_iter->eval_id();
     const Variables& vars   = prp_iter->prp_parameters();
     const ActiveSet& set    = prp_iter->active_set();
     Response local_response = prp_iter->prp_response(); // shared rep
     if (outputLevel > SILENT_OUTPUT)
-      Cout << "Evaluating function evaluation " << fn_eval_id << std::endl;
+      Cout << "Evaluating function evaluation " << currEvalId << std::endl;
 
     // bcast the job to other processors within peer 1 (if required)
     if (multiProcEvalFlag) {
-      parallelLib.bcast_e(fn_eval_id); // matches serve_peer
+      parallelLib.bcast_e(currEvalId); // matches serve_peer
       MPIPackBuffer send_buffer(lenVarsActSetMessage);
       send_buffer << vars << set;
       parallelLib.bcast_e(send_buffer); // matches serve_peer
     }
 
-    try { derived_map(vars, set, local_response, fn_eval_id); } // synch. local
+    try { derived_map(vars, set, local_response, currEvalId); } // synch. local
 
     catch(int fail_code) {
-      manage_failure(vars, set, local_response, fn_eval_id);
+      manage_failure(vars, set, local_response, currEvalId);
     }
 
-    rawResponseMap[fn_eval_id] = local_response; // shares prp_queue rep
+    rawResponseMap[currEvalId] = local_response; // shares prp_queue rep
     //prp_iter->prp_response(local_response); // not needed since shared rep
     if (evalCacheFlag)
       data_pairs.insert(*prp_iter);
@@ -1367,24 +1368,26 @@ void ApplicationInterface::serve_evaluations()
     stop_evaluation_servers()). */
 void ApplicationInterface::serve_evaluations_synch()
 {
-  int fn_eval_id = 1;
+  // update class member eval id for usage on iteratorCommRank!=0 processors
+  // (Use case: special logic within derived direct interface plug-ins)
+  currEvalId = 1;
   MPI_Status status; // holds source, tag, and number received in MPI_Recv
   MPI_Request request = MPI_REQUEST_NULL; // bypass MPI_Wait on first pass
   MPIPackBuffer send_buffer(lenResponseMessage); // prevent dealloc @loop end
-  while (fn_eval_id) {
+  while (currEvalId) {
     MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
     // blocking receive of x & set
     if (evalCommRank == 0) { // 1-level or local comm. leader in 2-level
       parallelLib.recv_ie(recv_buffer, 0, MPI_ANY_TAG, status);
-      fn_eval_id = status.MPI_TAG;
+      currEvalId = status.MPI_TAG;
     }
     if (multiProcEvalFlag) { // multilevel must Bcast x/set over evalComm
-      parallelLib.bcast_e(fn_eval_id);
-      if (fn_eval_id)
+      parallelLib.bcast_e(currEvalId);
+      if (currEvalId)
         parallelLib.bcast_e(recv_buffer);
     }
 
-    if (fn_eval_id) { // fn_eval_id = 0 is the termination signal
+    if (currEvalId) { // currEvalId = 0 is the termination signal
 
       Variables vars; // could slave's Model::currentVariables be 
       // used instead? (would remove need to pass vars flags in MPI buffers)
@@ -1401,11 +1404,11 @@ void ApplicationInterface::serve_evaluations_synch()
       Response local_response(set); // special constructor
 
       // slaves invoke derived_map to avoid repeating overhead of map fn.
-      try { derived_map(vars, set, local_response, fn_eval_id); } // synch local
+      try { derived_map(vars, set, local_response, currEvalId); } // synch local
 
       catch(int fail_code) { // value of fail_code not currently used.
         //Cerr<< "Slave has caught exception from local derived_map"<<std::endl;
-        manage_failure(vars, set, local_response, fn_eval_id);
+        manage_failure(vars, set, local_response, currEvalId);
       }
 
       // bypass MPI_Wait the 1st time through, since there has been no Isend
@@ -1423,7 +1426,7 @@ void ApplicationInterface::serve_evaluations_synch()
       if (evalCommRank == 0) { // 1-level or local comm. leader in 2-level
         send_buffer.reset();
         send_buffer << local_response;
-        parallelLib.isend_ie(send_buffer, 0, fn_eval_id, request);
+        parallelLib.isend_ie(send_buffer, 0, currEvalId, request);
       }
     }
   }
@@ -1438,11 +1441,13 @@ void ApplicationInterface::serve_evaluations_synch()
     in map(). */
 void ApplicationInterface::serve_evaluations_peer()
 { 
-  int fn_eval_id = 1;
-  while (fn_eval_id) {
-    parallelLib.bcast_e(fn_eval_id); // incoming from iterator
+  // update class member eval id for usage on iteratorCommRank!=0 processors
+  // (Use case: special logic within derived direct interface plug-ins)
+  currEvalId = 1;
+  while (currEvalId) {
+    parallelLib.bcast_e(currEvalId); // incoming from iterator
 
-    if (fn_eval_id) { // fn_eval_id = 0 is the termination signal
+    if (currEvalId) { // currEvalId = 0 is the termination signal
 
       MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
       parallelLib.bcast_e(recv_buffer); // incoming from iterator
@@ -1461,11 +1466,11 @@ void ApplicationInterface::serve_evaluations_peer()
       Response local_response(set); // special constructor
 
       // slaves invoke derived_map to avoid repeating overhead of map fn.
-      try { derived_map(vars, set, local_response, fn_eval_id); } //synch local
+      try { derived_map(vars, set, local_response, currEvalId); } //synch local
 
       catch(int fail_code) { // value of fail_code not currently used.
         //Cerr<< "Slave has caught exception from local derived_map"<<std::endl;
-        manage_failure(vars, set, local_response, fn_eval_id);
+        manage_failure(vars, set, local_response, currEvalId);
       }
     }
   }
@@ -1534,7 +1539,7 @@ void ApplicationInterface::serve_evaluations_asynch()
           prp_queue.insert(prp);
 	  // execute
           derived_map_asynch(prp);
-          num_active++;
+          ++num_active;
 	  // repost
           recv_buffer.reset();
           parallelLib.irecv_ie(recv_buffer, 0, MPI_ANY_TAG, recv_request);
@@ -1689,7 +1694,7 @@ void ApplicationInterface::self_schedule_analyses()
           parallelLib.isend_ea(analysis_id, server_id, analysis_id, 
                                send_request);
           parallelLib.free(send_request); // no test/wait on send_request
-          send_cntr++;
+          ++send_cntr;
         }
       }
     }
@@ -1789,7 +1794,7 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
     bool fail_flag = 1; // allow 1st pass through the while test
     while (fail_flag) {
       fail_flag = 0; // reset each time prior to derived_map
-      retries++;
+      ++retries;
       Cout << "Failure captured: retry attempt number " << retries << ".\n";
       try { derived_map(vars, set, response, failed_eval_id); }
       catch(int fail_code) { 
@@ -1939,7 +1944,7 @@ continuation(const Variables& target_vars, const ActiveSet& set,
     }
 
     if (fail_flag) {
-      failures++;
+      ++failures;
       Cout << "\nFunction evaluation failed. Interval halving." << std::endl;
       if (failures > MAX_FAILURES) {
 	Cerr << "\n\nInterval halving limit exceeded in continuation: "

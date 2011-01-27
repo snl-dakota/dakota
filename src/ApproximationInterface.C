@@ -134,16 +134,16 @@ void ApproximationInterface::
 map(const Variables& vars, const ActiveSet& set, Response& response,
     const bool asynch_flag)
 {
-  fnEvalId++;    // all calls to map (used throughout as eval id)
-  newFnEvalId++; // nonduplicate evaluations (used ONLY in fn. eval. summary)
+  ++evalIdCntr;    // all calls to map (used throughout as eval id)
+  ++newEvalIdCntr; // nonduplicate evaluations (used ONLY in fn. eval. summary)
   if (fineGrainEvalCounters) { // detailed evaluation reporting
     const ShortArray& asv = set.request_vector();
     size_t i, num_fns = asv.size();
     for (i=0; i<num_fns; ++i) {
       short asv_val = asv[i];
-      if (asv_val & 1) { fnValCounter[i]++;  newFnValCounter[i]++;  }
-      if (asv_val & 2) { fnGradCounter[i]++; newFnGradCounter[i]++; }
-      if (asv_val & 4) { fnHessCounter[i]++; newFnHessCounter[i]++; }
+      if (asv_val & 1) { ++fnValCounter[i];  ++newFnValCounter[i];  }
+      if (asv_val & 2) { ++fnGradCounter[i]; ++newFnGradCounter[i]; }
+      if (asv_val & 4) { ++fnHessCounter[i]; ++newFnHessCounter[i]; }
     }
     if (fnLabels.empty())
       fnLabels = response.function_labels();
@@ -152,14 +152,14 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
   // output the current parameter values prior to running the Analysis
   if (outputLevel > NORMAL_OUTPUT) {
     Cout << "\n------------------------------------\n"
-         <<   "Begin Approximate Fn Evaluation " << std::setw(4) << fnEvalId;
+         <<   "Begin Approximate Fn Evaluation " << std::setw(4) << evalIdCntr;
     // This may be more confusing than helpful:
-    //if (fnEvalIdRefPt)
-    //  Cout << " (local evaluation " << fnEvalId - fnEvalIdRefPt << ")";
+    //if (evalIdRefPt)
+    //  Cout << " (local evaluation " << evalIdCntr - evalIdRefPt << ")";
     Cout << "\n------------------------------------\nParameters for "
-         << "approximate fn evaluation " << fnEvalId << ":\n" << vars << '\n';
+         << "approximate fn evaluation " << evalIdCntr << ":\n" << vars << '\n';
   }
-  else if (fnEvalId == 1)
+  else if (evalIdCntr == 1)
     Cout << "Beginning Approximate Fn Evaluations..." << std::endl;
 
   //if (asvControlFlag) // else leave response ActiveSet as initialized
@@ -170,7 +170,7 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
   ActiveSet core_set;
 
   if (algebraicMappings) {
-    if (fnEvalId == 1)
+    if (evalIdCntr == 1)
       init_algebraic_mappings(vars, response);
     if (coreMappings) { // both mappings
       ActiveSet algebraic_set;
@@ -267,10 +267,10 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
     response_mapping(algebraic_response, core_response, response);
 
   if (outputLevel > NORMAL_OUTPUT)
-    Cout << "\nActive response data for approximate fn evaluation " << fnEvalId
-	 << ":\n" << response << '\n';
+    Cout << "\nActive response data for approximate fn evaluation "
+	 << evalIdCntr << ":\n" << response << '\n';
   if (asynch_flag)
-    beforeSynchResponseMap[fnEvalId] = response.copy();
+    beforeSynchResponseMap[evalIdCntr] = response.copy();
 }
 
 

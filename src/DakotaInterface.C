@@ -41,8 +41,9 @@ namespace Dakota {
 Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db): 
   interfaceType(problem_db.get_string("interface.type")),
   idInterface(problem_db.get_string("interface.id")), algebraicMappings(false),
-  coreMappings(true), fnEvalId(0), newFnEvalId(0), fnEvalIdRefPt(0),
-  newFnEvalIdRefPt(0), multiProcEvalFlag(false), ieDedMasterFlag(false),
+  coreMappings(true), currEvalId(0), evalIdCntr(0), newEvalIdCntr(0),
+  evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
+  ieDedMasterFlag(false),
   // See base constructor in DakotaIterator.C for full discussion of output
   // verbosity.  Interfaces support the full granularity in verbosity.
   outputLevel(problem_db.get_short("method.output")),
@@ -149,9 +150,10 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 
 Interface::Interface(NoDBBaseConstructor, size_t num_fns):
   idInterface("NO_DB_INTERFACE"), algebraicMappings(false), coreMappings(true),
-  fineGrainEvalCounters(false), fnEvalId(0), newFnEvalId(0), fnEvalIdRefPt(0),
-  newFnEvalIdRefPt(0), multiProcEvalFlag(false), ieDedMasterFlag(false),
-  outputLevel(NORMAL_OUTPUT), interfaceRep(NULL), referenceCount(1)
+  fineGrainEvalCounters(false), currEvalId(0), evalIdCntr(0), newEvalIdCntr(0),
+  evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
+  ieDedMasterFlag(false), outputLevel(NORMAL_OUTPUT), interfaceRep(NULL),
+  referenceCount(1)
 {
 #ifdef DEBUG
   outputLevel = DEBUG_OUTPUT;
@@ -399,8 +401,8 @@ void Interface::set_evaluation_reference()
     interfaceRep->set_evaluation_reference();
   else { // letter (not virtual)
 
-    fnEvalIdRefPt    = fnEvalId;
-    newFnEvalIdRefPt = newFnEvalId;
+    evalIdRefPt    = evalIdCntr;
+    newEvalIdRefPt = newEvalIdCntr;
 
     if (fineGrainEvalCounters) {
       size_t i, num_fns = fnValCounter.size();
@@ -437,10 +439,10 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
       if (!idInterface.empty())
 	s << " (" << idInterface << ')';
     }
-    int     fn_evals = (relative_count) ? fnEvalId - fnEvalIdRefPt
-                                        : fnEvalId;
-    int new_fn_evals = (relative_count) ? newFnEvalId - newFnEvalIdRefPt
-                                        : newFnEvalId;
+    int     fn_evals = (relative_count) ? evalIdCntr - evalIdRefPt
+                                        : evalIdCntr;
+    int new_fn_evals = (relative_count) ? newEvalIdCntr - newEvalIdRefPt
+                                        : newEvalIdCntr;
     s << ": " << fn_evals << " total (" << new_fn_evals << " new, "
       << fn_evals - new_fn_evals << " duplicate)\n";
 

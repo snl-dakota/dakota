@@ -393,10 +393,10 @@ private:
   // Bookkeeping lists/sets/maps/queues:
 
   /// used to bookkeep asynchronous evaluations which duplicate data_pairs
-  /// evaluations.  Map key is fnEvalId, map value is corresponding response.
+  /// evaluations.  Map key is evalIdCntr, map value is corresponding response.
   IntResponseMap historyDuplicateMap;
 
-  /// used to bookkeep fnEvalId, beforeSynchCorePRPQueue iterator, and
+  /// used to bookkeep evalIdCntr, beforeSynchCorePRPQueue iterator, and
   /// response of asynchronous evaluations which duplicate queued
   /// beforeSynchCorePRPQueue evaluations
   std::map<int, std::pair<PRPQueueHIter, Response> > beforeSynchDuplicateMap;

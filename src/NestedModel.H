@@ -208,7 +208,7 @@ private:
 
   /// number of calls to derived_compute_response()/
   /// derived_asynch_compute_response()
-  int nestedModelEvals;
+  int nestedModelEvalCntr;
 
   // attributes pertaining to the subIterator/subModel pair:
   //
@@ -460,7 +460,7 @@ inline const String& NestedModel::interface_id() const
     eval count, the subModel must be explicitly queried.  This is
     consistent with the eval counter definitions in surrogate models. */
 inline int NestedModel::evaluation_id() const
-{ return nestedModelEvals; }
+{ return nestedModelEvalCntr; }
 
 
 inline void NestedModel::set_evaluation_reference()
@@ -472,7 +472,7 @@ inline void NestedModel::set_evaluation_reference()
   //subModel.set_evaluation_reference();
 
   // may want to add this in time
-  //nestedModelEvalRef = nestedModelEvals;
+  //nestedModelEvalRef = nestedModelEvalCntr;
 }
 
 

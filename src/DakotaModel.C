@@ -138,7 +138,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   discreteStateSetRealValues(
     problem_db.get_drsa("variables.discrete_state_set_real.set_values")),
   primaryRespFnWts(probDescDB.get_rdv("responses.primary_response_fn_weights")),
-  idModel(problem_db.get_string("model.id")), modelEvalId(0),
+  idModel(problem_db.get_string("model.id")), modelEvalCntr(0),
   estDerivsFlag(false), evaluationCapacity(1), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
@@ -186,7 +186,7 @@ Model(NoDBBaseConstructor, ParallelLibrary& parallel_lib,
   probDescDB(dummy_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), outputLevel(NORMAL_OUTPUT),
-  idModel("NO_DB_MODEL"), modelEvalId(0), estDerivsFlag(false),
+  idModel("NO_DB_MODEL"), modelEvalCntr(0), estDerivsFlag(false),
   evaluationCapacity(1), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
@@ -210,7 +210,7 @@ Model(RecastBaseConstructor, ProblemDescDB& problem_db,
   probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   modelType("recast"), supportsEstimDerivs(false),
-  componentParallelMode(0), asynchEvalFlag(false), modelEvalId(0),
+  componentParallelMode(0), asynchEvalFlag(false), modelEvalCntr(0),
   estDerivsFlag(false), evaluationCapacity(1), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
@@ -407,7 +407,7 @@ void Model::compute_response()
   if (modelRep) // envelope fwd to letter
     modelRep->compute_response();
   else { // letter
-    ++modelEvalId;
+    ++modelEvalCntr;
 
     // Define default ActiveSet for iterators which don't pass one
     ActiveSet temp_set = currentResponse.active_set(); // copy
@@ -432,7 +432,7 @@ void Model::compute_response(const ActiveSet& set)
   if (modelRep) // envelope fwd to letter
     modelRep->compute_response(set);
   else { // letter
-    ++modelEvalId;
+    ++modelEvalCntr;
 
     // Derivative estimation support goes here and is not replicated in the
     // default asv version of compute_response -> a good reason for using an
@@ -476,7 +476,7 @@ void Model::asynch_compute_response()
   if (modelRep) // envelope fwd to letter
     modelRep->asynch_compute_response();
   else { // letter
-    ++modelEvalId;
+    ++modelEvalCntr;
 
     // Define default ActiveSet for iterators which don't pass one
     ActiveSet temp_set = currentResponse.active_set(); // copy
@@ -488,8 +488,8 @@ void Model::asynch_compute_response()
     // history of vars must be catalogued for use in synchronize()
     if (modelAutoGraphicsFlag)
       varsList.push_back(currentVariables.copy());
-    rawEvalIdMap[evaluation_id()] = modelEvalId;
-    numFDEvalsMap[modelEvalId] = -1;//no deriv est; distinguish from QN updating
+    rawEvalIdMap[evaluation_id()] = modelEvalCntr;
+    numFDEvalsMap[modelEvalCntr] = -1;//no deriv est; distinguish from QN update
   }
 }
 
@@ -499,7 +499,7 @@ void Model::asynch_compute_response(const ActiveSet& set)
   if (modelRep) // envelope fwd to letter
     modelRep->asynch_compute_response(set);
   else { // letter
-    ++modelEvalId;
+    ++modelEvalCntr;
 
     // Manage use of estimate_derivatives() for a particular asv based on
     // the user's gradients/Hessians spec.
@@ -531,8 +531,8 @@ void Model::asynch_compute_response(const ActiveSet& set)
     // history of vars must be catalogued for use in synchronize
     if (modelAutoGraphicsFlag || num_fd_evals >= 0)
       varsList.push_back(currentVariables.copy());
-    rawEvalIdMap[evaluation_id()] = modelEvalId;
-    numFDEvalsMap[modelEvalId] = num_fd_evals;
+    rawEvalIdMap[evaluation_id()] = modelEvalCntr;
+    numFDEvalsMap[modelEvalCntr] = num_fd_evals;
   }
 }
 
@@ -601,7 +601,7 @@ const IntResponseMap& Model::synchronize()
     }
     else // no calls to estimate_derivatives()
       // rekey the raw response map (lower level evaluation ids may be offset
-      // from modelEvalId if previous finite differencing occurred)
+      // from modelEvalCntr if previous finite differencing occurred)
       for (r_cit  = raw_response_map.begin(), m_it = numFDEvalsMap.begin();
 	   r_cit != raw_response_map.end(); ++r_cit, ++m_it)
 	responseMap[m_it->first] = r_cit->second;
@@ -3137,7 +3137,7 @@ int Model::evaluation_id() const
   if (modelRep) // envelope fwd to letter
     return modelRep->evaluation_id();
   else // letter lacking redefinition of virtual fn.
-    return modelEvalId; // default
+    return modelEvalCntr; // default
 }
 
 

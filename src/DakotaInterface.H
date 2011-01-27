@@ -216,7 +216,7 @@ public:
   /// returns the interface identifier
   const String& interface_id() const;
 
-  /// returns the current function evaluation id for the interface
+  /// returns the value of the (total) evaluation id counter for the interface
   int evaluation_id() const;
 
   /// set fineGrainEvalCounters to true and initialize counters if needed
@@ -296,13 +296,22 @@ protected:
   /// ApplicationInterface or functionSurfaces for ApproximationInterface).
   bool coreMappings;
 
-  bool fineGrainEvalCounters; ///< controls use of fn val/grad/hess counters
+  /// identifier for the current evaluation, which may differ from the
+  /// evaluation counters in the case of evaluation scheduling; used on
+  /// iterator master as well as server processors.  Currently, this is
+  /// set prior to all invocations of derived_map() for all processors.
+  int currEvalId;
+  // TO DO: what's the right behavior for derived_map_asynch()?  This is
+  // secondary, since DirectApplicInterface provides the main use case.
+
   // evaluation counters specific to each interface instance that track
-  // counts on the master processor
-  int fnEvalId;         ///< total interface evaluation counter
-  int newFnEvalId;      ///< new (non-duplicate) interface evaluation counter
-  int fnEvalIdRefPt;    ///< iteration reference point for fnEvalId
-  int newFnEvalIdRefPt; ///< iteration reference point for newFnEvalId
+  // counts on the iterator master processor
+
+  bool fineGrainEvalCounters; ///< controls use of fn val/grad/hess counters
+  int evalIdCntr;     ///< total interface evaluation counter
+  int newEvalIdCntr;  ///< new (non-duplicate) interface evaluation counter
+  int evalIdRefPt;    ///< iteration reference point for evalIdCntr
+  int newEvalIdRefPt; ///< iteration reference point for newEvalIdCntr
   // counter arrays provide more detailed reporting if output level >= verbose
   IntArray fnValCounter;     ///< number of value evaluations by resp fn
   IntArray fnGradCounter;    ///< number of gradient evaluations by resp fn
@@ -320,8 +329,8 @@ protected:
   /// Set of responses returned after either a blocking or nonblocking schedule
   /// of asynchronous evaluations.
   /** The map is a full/partial set of completions which are identified through
-      their fnEvalId key.  The raw set is postprocessed (i.e., finite difference
-      gradients merged) in Model::synchronize() where it becomes responseMap. */
+      their evalIdCntr key.  The raw set is postprocessed (i.e., finite diff
+      grads merged) in Model::synchronize() where it becomes responseMap. */
   IntResponseMap rawResponseMap;
 
   /// response function descriptors from the DAKOTA input file (used in
@@ -400,7 +409,7 @@ inline const String& Interface::interface_id() const
 
 
 inline int Interface::evaluation_id() const
-{ return (interfaceRep) ? interfaceRep->fnEvalId : fnEvalId; }
+{ return (interfaceRep) ? interfaceRep->evalIdCntr : evalIdCntr; }
 
 
 inline bool Interface::multi_proc_eval_flag() const

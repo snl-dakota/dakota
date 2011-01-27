@@ -242,7 +242,7 @@ private:
 
   /// number of calls to derived_compute_response()/
   /// derived_asynch_compute_response()
-  int surrModelEvals;
+  int surrModelEvalCntr;
 
   /// total points the user specified to construct the surrogate
   int  pointsTotal;
@@ -498,7 +498,7 @@ inline const String& DataFitSurrModel::interface_id() const
     either the approxInterface or actualModel model evaluation counts.
     It also does not distinguish duplicate evals. */
 inline int DataFitSurrModel::evaluation_id() const
-{ return surrModelEvals; }
+{ return surrModelEvalCntr; }
 
 
 inline void DataFitSurrModel::set_evaluation_reference()
@@ -510,7 +510,7 @@ inline void DataFitSurrModel::set_evaluation_reference()
   //  actualModel.set_evaluation_reference();
 
   // may want to add this in time
-  //surrModelEvalRef = surrModelEvals;
+  //surrModelEvalRef = surrModelEvalCntr;
 }
 
 

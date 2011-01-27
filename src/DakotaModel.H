@@ -222,7 +222,7 @@ public:
 
   /// return the interface identifier
   virtual const String& interface_id() const;
-  /// Return the current function evaluation id for the Model
+  /// Return the value of the evaluation id counter for the Model
   virtual int evaluation_id() const;
 
   /// Set the reference points for the evaluation counters within the Model
@@ -942,7 +942,7 @@ private:
   /// asynch_compute_response() calls.  Differs from lower level counters
   /// in case of numerical derivative estimation (several lower level
   /// evaluations are assimilated into a single higher level evaluation)
-  int modelEvalId;
+  int modelEvalCntr;
 
   /// flags presence of estimated derivatives within a set of calls to
   /// asynch_compute_response()
@@ -1000,8 +1000,8 @@ private:
   IntIntMap numFDEvalsMap;
 
   /// maps from the raw evaluation ids returned by derived_synchronize() and
-  /// derived_synchronize_nowait() to the corresponding modelEvalId.  Used
-  /// for rekeying responseMap.
+  /// derived_synchronize_nowait() to the corresponding modelEvalCntr id.
+  /// Used for rekeying responseMap.
   IntIntMap rawEvalIdMap;
 
   /// previous parameter vectors used in computing s for quasi-Newton updates

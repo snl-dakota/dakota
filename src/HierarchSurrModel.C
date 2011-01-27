@@ -22,7 +22,7 @@ using namespace std;
 namespace Dakota {
 
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
-  SurrogateModel(problem_db), hierModelEvals(0),
+  SurrogateModel(problem_db), hierModelEvalCntr(0),
   highFidRefResponse(currentResponse.copy())
 {
   // Correction is required in the hierarchical case (since without
@@ -164,7 +164,7 @@ build_approximation(const RealVector& c_vars, const Response& response)
     low fidelity results. */
 void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
 {
-  hierModelEvals++;
+  ++hierModelEvalCntr;
 
   ShortArray hi_fi_asv, lo_fi_asv;
   asv_mapping(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
@@ -229,7 +229,7 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
     derived_synchronize_nowait()) if not performed previously. */
 void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
 {
-  hierModelEvals++;
+  ++hierModelEvalCntr;
 
   ShortArray hi_fi_asv, lo_fi_asv;
   asv_mapping(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
@@ -241,7 +241,7 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     hi_fi_set.request_vector(hi_fi_asv);
     highFidelityModel.asynch_compute_response(hi_fi_set);
     // store map from HF eval id to HierarchSurrModel id
-    truthIdMap[highFidelityModel.evaluation_id()] = hierModelEvals;
+    truthIdMap[highFidelityModel.evaluation_id()] = hierModelEvalCntr;
   }
 
   if (!lo_fi_asv.empty()) { // normal case: evaluation of lowFidelityModel
@@ -259,9 +259,9 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     lowFidelityModel.asynch_compute_response(lo_fi_set);
     if (autoCorrection)
       copy_data(currentVariables.continuous_variables(),
-		rawCVarsMap[hierModelEvals]);
+		rawCVarsMap[hierModelEvalCntr]);
     // store map from LF eval id to HierarchSurrModel id
-    surrIdMap[lowFidelityModel.evaluation_id()] = hierModelEvals;
+    surrIdMap[lowFidelityModel.evaluation_id()] = hierModelEvalCntr;
   }
 }
 
@@ -283,7 +283,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
     component_parallel_mode(HF_MODEL);
     const IntResponseMap& hi_fi_resp_map = highFidelityModel.synchronize();
 
-    // update map keys to use hierModelEvals counter
+    // update map keys to use hierModelEvalCntr
     IntResponseMap& hi_fi_resp_map_proxy
       = (lo_fi_evals) ? hi_fi_resp_map_rekey : surrResponseMap;
     for (IntRespMCIter r_cit = hi_fi_resp_map.begin();
@@ -307,7 +307,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
     component_parallel_mode(LF_MODEL);
     const IntResponseMap& lo_fi_resp_map = lowFidelityModel.synchronize();
 
-    // update map keys to use hierModelEvals counter
+    // update map keys to use hierModelEvalCntr
     IntResponseMap& lo_fi_resp_map_proxy
       = (hi_fi_evals) ? lo_fi_resp_map_rekey : surrResponseMap;
     for (IntRespMCIter r_cit = lo_fi_resp_map.begin();
@@ -403,7 +403,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
     const IntResponseMap& hi_fi_resp_map
       = highFidelityModel.synchronize_nowait();
 
-    // update map keys to use hierModelEvals counter
+    // update map keys to use hierModelEvalCntr
     IntResponseMap& hi_fi_resp_map_proxy
       = (lo_fi_evals) ? hi_fi_resp_map_rekey : surrResponseMap;
     for (IntRespMCIter r_cit = hi_fi_resp_map.begin();
@@ -431,7 +431,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
     const IntResponseMap& lo_fi_resp_map
       = lowFidelityModel.synchronize_nowait();
 
-    // update map keys to use hierModelEvals counter
+    // update map keys to use hierModelEvalCntr
     IntResponseMap& lo_fi_resp_map_proxy
       = (hi_fi_evals) ? lo_fi_resp_map_rekey : surrResponseMap;
     for (IntRespMCIter r_cit = lo_fi_resp_map.begin();

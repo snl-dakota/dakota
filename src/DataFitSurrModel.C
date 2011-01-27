@@ -29,7 +29,7 @@ namespace Dakota {
 
 
 DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
-  SurrogateModel(problem_db), surrModelEvals(0),
+  SurrogateModel(problem_db), surrModelEvalCntr(0),
   pointsTotal(problem_db.get_int("model.surrogate.points_total")),
   pointsMinimum(problem_db.get_bool("model.surrogate.points_minimum")),
   pointsRecommended(problem_db.get_bool("model.surrogate.points_recommended")),
@@ -154,7 +154,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 actual_model.current_variables().shared_data(),
 		 actual_model.current_response().active_set(), corr_type,
 		 corr_order),
-  daceIterator(dace_iterator), actualModel(actual_model), surrModelEvals(0),
+  daceIterator(dace_iterator), actualModel(actual_model), surrModelEvalCntr(0),
   pointsTotal(0), pointsMinimum(false), pointsRecommended(true),
   pointReuse(point_reuse)
 {
@@ -864,7 +864,7 @@ void DataFitSurrModel::build_global()
     correction (if active) to the results. */
 void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
 {
-  surrModelEvals++;
+  ++surrModelEvalCntr;
 
   ShortArray actual_asv, approx_asv;
   asv_mapping(set.request_vector(), actual_asv, approx_asv, false);
@@ -924,7 +924,7 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
     bookkeeps the results for return in derived_synchronize() below). */
 void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
 {
-  surrModelEvals++;
+  ++surrModelEvalCntr;
 
   ShortArray actual_asv, approx_asv;
   asv_mapping(set.request_vector(), actual_asv, approx_asv, false);
@@ -936,7 +936,7 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     actual_set.request_vector(actual_asv);
     actualModel.asynch_compute_response(actual_set);
     // store mapping from actualModel eval id to DataFitSurrModel id
-    truthIdMap[actualModel.evaluation_id()] = surrModelEvals;
+    truthIdMap[actualModel.evaluation_id()] = surrModelEvalCntr;
   }
 
   if (!approx_asv.empty()) { // normal case: evaluation of approxInterface
@@ -955,9 +955,9 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
 
     if (autoCorrection && !correctionType.empty())
       copy_data(currentVariables.continuous_variables(),
-		rawCVarsMap[surrModelEvals]);
+		rawCVarsMap[surrModelEvalCntr]);
     // store map from approxInterface eval id to DataFitSurrModel id
-    surrIdMap[approxInterface.evaluation_id()] = surrModelEvals;
+    surrIdMap[approxInterface.evaluation_id()] = surrModelEvalCntr;
   }
 }
 
@@ -979,7 +979,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
     component_parallel_mode(ACTUAL_MODEL);
     const IntResponseMap& actual_resp_map = actualModel.synchronize();
 
-    // update map keys to use surrModelEvals counter (proxy simplifies logic)
+    // update map keys to use surrModelEvalCntr (proxy simplifies logic)
     IntResponseMap& actual_resp_map_proxy
       = (approx_evals) ? actual_resp_map_rekey : surrResponseMap;
     for (IntRespMCIter r_cit = actual_resp_map.begin();
@@ -1059,7 +1059,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
     component_parallel_mode(ACTUAL_MODEL);
     const IntResponseMap& actual_resp_map = actualModel.synchronize_nowait();
 
-    // update map keys to use surrModelEvals counter
+    // update map keys to use surrModelEvalCntr
     for (IntRespMCIter r_cit = actual_resp_map.begin();
 	 r_cit != actual_resp_map.end(); r_cit++) {
       int am_eval_id = r_cit->first;
@@ -1150,7 +1150,7 @@ void DataFitSurrModel::
 derived_synchronize_approx(const IntResponseMap& approx_resp_map,
 			   IntResponseMap& approx_resp_map_rekey)
 {
-  // update map keys to use surrModelEvals counter
+  // update map keys to use surrModelEvalCntr
   bool actual_evals = !truthIdMap.empty();
   IntResponseMap& approx_resp_map_proxy
     = (actual_evals) ? approx_resp_map_rekey : surrResponseMap;
