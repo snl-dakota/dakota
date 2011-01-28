@@ -203,13 +203,11 @@ endif(HAVE_DDACE)
 
 CheckPackage(DOT)
 if(HAVE_DOT)
-  add_definitions("-DDAKOTA_DOT")
   set(iterator_src ${iterator_src} DOTOptimizer.C)
 endif(HAVE_DOT)
 
 CheckPackage(FSUDACE)
 if(HAVE_FSUDACE)
-  add_definitions("-DDAKOTA_FSUDACE")
   include_directories(${FSUDace_BINARY_DIR} ${FSUDace_SOURCE_DIR})
   set(iterator_src ${iterator_src} FSUDesignCompExp.C)
 endif(HAVE_FSUDACE)
@@ -249,7 +247,7 @@ if(HAVE_HOPSPACK)
 endif(HAVE_HOPSPACK)
 
 if(HAVE_JEGA)
-  add_definitions("-DDAKOTA_JEGA")
+  add_definitions("-DHAVE_JEGA")
   include_directories(${JEGA_BINARY_DIR} ${JEGA_SOURCE_DIR}/include
                       ${JEGA_SOURCE_DIR}/src ${JEGA_SOURCE_DIR}/eddy
                       ${JEGA_BINARY_DIR}/src ${JEGA_BINARY_DIR}/eddy)
@@ -260,21 +258,19 @@ if(HAVE_JEGA)
 endif(HAVE_JEGA)
 
 if(HAVE_NCSUOPT)
-  add_definitions("-DDAKOTA_NCSU")
+  add_definitions("-DHAVE_NCSU")
   set(iterator_src ${iterator_src} NCSUOptimizer.C)
   #link_directories(${Dakota_BINARY_DIR}/packages/NCSUOpt)
   list(APPEND TPL_LIBS ncsuopt)
 endif(HAVE_NCSUOPT)
 
+CheckPackage(NLPQL)
 if(HAVE_NLPQL)
-  add_definitions("-DDAKOTA_NLPQL")
   set(iterator_src ${iterator_src} NLPQLPOptimizer.C)
-  #link_directories(${Dakota_BINARY_DIR}/packages/NLPQL)
-  list(APPEND TPL_LIBS nlpql)
 endif(HAVE_NLPQL)
 
 if(HAVE_NL2SOL)
-  add_definitions("-DDAKOTA_NL2SOL")
+  add_definitions("-DHAVE_NL2SOL")
   set(iterator_src ${iterator_src} NL2SOLLeastSq.C)
   include_directories(${Dakota_BINARY_DIR}/packages/NP2SOL)
   #link_directories(${Dakota_BINARY_DIR}/packages/NP2SOL)
@@ -283,7 +279,6 @@ endif(HAVE_NL2SOL)
 
 CheckPackage(NPSOL)
 if(HAVE_NPSOL)
-  add_definitions("-DDAKOTA_NPSOL")
   set(iterator_src ${iterator_src} SOLBase.C NPSOLOptimizer.C NLSSOLLeastSq.C
       npoptn_wrapper.f)
 endif(HAVE_NPSOL)
@@ -292,11 +287,8 @@ if(HAVE_OPTPP)
   # WJB - ToDo: FY11 contract - "pair-program" a FINAL iteration with Zack
   include_directories(${optpp_BINARY_DIR}/config ${optpp_SOURCE_DIR}/include
                       ${optpp_SOURCE_DIR}/newmat11)
-  #include_directories(${PROJECT_BINARY_DIR}/packages/OPTPP/include
-  #                    ${PROJECT_SOURCE_DIR}/packages/OPTPP/include
-  #                    ${PROJECT_SOURCE_DIR}/packages/OPTPP/newmat11)
 
-  add_definitions("-DDAKOTA_OPTPP")
+  add_definitions("-DHAVE_OPTPP")
   add_definitions("-DDAKOTA_NEWMAT")
   set(iterator_src ${iterator_src} SNLLBase.C SNLLOptimizer.C SNLLLeastSq.C)
   set(TPL_LIBS ${TPL_LIBS} opt newmat)
@@ -363,8 +355,14 @@ file( APPEND ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
 if(HAVE_HOPSPACK)
   add_executable(dakota main.C
                  ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
+  add_executable(dakota_restart_util restart_util.C
+                 ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
+  add_executable(dakota_library_mode library_mode.C
+                 ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
 else()
   add_executable(dakota main.C)
+  add_executable(dakota_restart_util restart_util.C)
+  add_executable(dakota_library_mode library_mode.C)
 endif(HAVE_HOPSPACK)
 #target_link_libraries(dakota dakota_src ${TPL_LIBS} ${CURL_LIBRARIES} ${LAPACK_LIBS} ${BLAS_LIBS} ${FLIBS} ${FCLIBS})
 

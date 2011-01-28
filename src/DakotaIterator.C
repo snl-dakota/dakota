@@ -36,13 +36,13 @@
 #ifdef DAKOTA_DDACE
 #include "DDACEDesignCompExp.H"
 #endif
-#ifdef DAKOTA_FSUDACE
+#ifdef HAVE_FSUDACE
 #include "FSUDesignCompExp.H"
 #endif
 #ifdef HAVE_PSUADE
 #include "PSUADEDesignCompExp.H"
 #endif
-#ifdef DAKOTA_DOT
+#ifdef HAVE_DOT
 #include "DOTOptimizer.H"
 #endif
 #ifdef HAVE_CONMIN
@@ -51,20 +51,20 @@
 #ifdef DAKOTA_DL_SOLVER
 #include "DLSolver.H"
 #endif
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.H"
 #include "NLSSOLLeastSq.H"
 #endif
-#ifdef DAKOTA_NLPQL
+#ifdef HAVE_NLPQL
 #include "NLPQLPOptimizer.H"
 #endif
-#ifdef DAKOTA_NL2SOL
+#ifdef HAVE_NL2SOL
 #include "NL2SOLLeastSq.H"
 #endif
 #ifdef DAKOTA_RSQP
 #include "rSQPOptimizer.H"
 #endif
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
 #include "SNLLOptimizer.H"
 #include "SNLLLeastSq.H"
 #endif
@@ -74,10 +74,10 @@
 #ifdef DAKOTA_HOPS
 #include "APPSOptimizer.H"
 #endif
-#ifdef DAKOTA_NCSU
+#ifdef HAVE_NCSU
 #include "NCSUOptimizer.H"
 #endif
-#ifdef DAKOTA_JEGA
+#ifdef HAVE_JEGA
 #include "JEGAOptimizer.H"
 #endif
 #ifdef DAKOTA_GPMSA
@@ -96,7 +96,7 @@ namespace Dakota {
 
 extern ProblemDescDB dummy_db;    // defined in global_defs.C
 
-#if defined(DAKOTA_DOT) || defined(DAKOTA_JEGA) || defined(DAKOTA_NLPQL) || defined(DAKOTA_NPSOL) /*{*/
+#if defined(HAVE_DOT) || defined(HAVE_JEGA) || defined(HAVE_NLPQL) || defined(HAVE_NPSOL) /*{*/
 
 #ifdef DAKOTA_SHLIB /*{*/
 #undef DAKOTA_DYNLIB
@@ -319,7 +319,7 @@ not_available(const char *what)
 	}
 #endif /*}*/
 
-#ifdef DAKOTA_DOT /*{*/
+#ifdef HAVE_DOT /*{*/
 
   static DOTOptimizer* no_DOT(Model& model)
 {
@@ -344,9 +344,9 @@ not_available(const char *what)
  DOTOptimizer *(*new_DOTOptimizer)(Model& model) = no_DOT;
  DOTOptimizer *(*new_DOTOptimizer1)(NoDBBaseConstructor, Model &model) = no_DOT1;
 
-#endif /*}DAKOTA_DOT*/
+#endif /*}HAVE_DOT*/
 
-#ifdef DAKOTA_JEGA /*{*/
+#ifdef HAVE_JEGA /*{*/
 
  static JEGAOptimizer* no_JEGA(Model& model)
 {
@@ -360,9 +360,9 @@ not_available(const char *what)
 
  JEGAOptimizer *(*new_JEGAOptimizer)(Model& model) = no_JEGA;
 
-#endif /*}DAKOTA_JEGA*/
+#endif /*}HAVE_JEGA*/
 
-#ifdef DAKOTA_NLPQL /*{*/
+#ifdef HAVE_NLPQL /*{*/
 
  static NLPQLPOptimizer* no_NLPQL(Model& model)
 {
@@ -387,9 +387,9 @@ not_available(const char *what)
  NLPQLPOptimizer *(*new_NLPQLPOptimizer)(Model& model) = no_NLPQL;
  NLPQLPOptimizer *(*new_NLPQLPOptimizer1)(NoDBBaseConstructor, Model &model) = no_NLPQL1;
 
-#endif /*}DAKOTA_NLPQL*/
+#endif /*}HAVE_NLPQL*/
 
-#ifdef DAKOTA_NPSOL /*{*/
+#ifdef HAVE_NPSOL /*{*/
 
  static NPSOLOptimizer* no_NPSOL(Model& model)
 {
@@ -502,7 +502,7 @@ no_NPSOL3(const RealVector& initial_point,
  NLSSOLLeastSq *(*new_NLSSOLLeastSq)(Model& model) = no_NLSSOL;
  NLSSOLLeastSq *(*new_NLSSOLLeastSq1)(NoDBBaseConstructor, Model &model) = no_NLSSOL1;
 
-#endif /*}DAKOTA_NPSOL*/
+#endif /*}HAVE_NPSOL*/
 #endif /*}*/
 
 /** This constructor builds the base class data for all inherited
@@ -785,7 +785,7 @@ Iterator* Iterator::get_iterator(Model& model)
   }
   else if (method_name == "nonlinear_cg")
     return new NonlinearCGOptimizer(model);
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
   else if (method_name == "optpp_cg"        || method_name == "optpp_q_newton"
         || method_name == "optpp_fd_newton" || method_name == "optpp_newton"
         || method_name == "optpp_pds")
@@ -801,7 +801,7 @@ Iterator* Iterator::get_iterator(Model& model)
   else if (method_name.begins("coliny_"))
     return new COLINOptimizer(model);
 #endif
-#ifdef DAKOTA_JEGA
+#ifdef HAVE_JEGA
   else if (method_name == "moga" || method_name == "soga")
     return new_JEGAOptimizer(model);
 #endif
@@ -809,17 +809,17 @@ Iterator* Iterator::get_iterator(Model& model)
   else if (method_name == "dl_solver")
     return new DLSolver(model);
 #endif
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
   else if (method_name == "npsol_sqp")
     return new_NPSOLOptimizer(model);
   else if (method_name == "nlssol_sqp")
     return new_NLSSOLLeastSq(model);
 #endif
-#ifdef DAKOTA_NLPQL
+#ifdef HAVE_NLPQL
   else if (method_name == "nlpql_sqp")
     return new_NLPQLPOptimizer(model);
 #endif
-#ifdef DAKOTA_NL2SOL
+#ifdef HAVE_NL2SOL
   else if (method_name == "nl2sol")
     return new NL2SOLLeastSq(model);
 #endif
@@ -827,7 +827,7 @@ Iterator* Iterator::get_iterator(Model& model)
 //  else if (method_name == "reduced_sqp")
 //    return new rSQPOptimizer(model);
 //#endif
-#ifdef DAKOTA_DOT
+#ifdef HAVE_DOT
   else if (method_name.begins("dot_"))
     return new_DOTOptimizer(model);
 #endif
@@ -839,7 +839,7 @@ Iterator* Iterator::get_iterator(Model& model)
   else if (method_name == "dace")
     return new DDACEDesignCompExp(model);
 #endif
-#ifdef DAKOTA_FSUDACE
+#ifdef HAVE_FSUDACE
   else if (method_name.begins("fsu_"))
     return new FSUDesignCompExp(model);
 #endif
@@ -847,7 +847,7 @@ Iterator* Iterator::get_iterator(Model& model)
   else if (method_name.begins("psuade_"))
     return new PSUADEDesignCompExp(model);
 #endif
-#ifdef DAKOTA_NCSU
+#ifdef HAVE_NCSU
   else if (method_name == "ncsu_direct")
     return new NCSUOptimizer(model);
 #endif
@@ -899,7 +899,7 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
   //  return new EffGlobalMinimizer(NoDBBaseConstructor(), model);
 
   if (false) { } // dummy anchor for else blocks to avoid issues with #ifdef's
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
   else if (method_name == "optpp_cg"   || method_name == "optpp_q_newton" ||
       method_name == "optpp_fd_newton" || method_name == "optpp_newton"   ||
       method_name == "optpp_pds")
@@ -915,7 +915,7 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
   else if (method_name.begins("coliny_"))
     return new COLINOptimizer(NoDBBaseConstructor(), model);
 #endif
-#ifdef DAKOTA_JEGA
+#ifdef HAVE_JEGA
   //else if (method_name == "moga" || method_name == "soga")
   //  return new JEGAOptimizer(NoDBBaseConstructor(), model);
 #endif
@@ -923,21 +923,21 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
   //else if (method_name == "dl_solver")
   //  return new DLSolver(NoDBBaseConstructor(), model);
 #endif
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
   else if (method_name == "npsol_sqp")
     return new_NPSOLOptimizer1(NoDBBaseConstructor(), model);
   else if (method_name == "nlssol_sqp")
     return new_NLSSOLLeastSq1(NoDBBaseConstructor(), model);
 #endif
-#ifdef DAKOTA_NLPQL
+#ifdef HAVE_NLPQL
   else if (method_name == "nlpql_sqp")
     return new_NLPQLPOptimizer1(NoDBBaseConstructor(), model);
 #endif
-#ifdef DAKOTA_NL2SOL
+#ifdef HAVE_NL2SOL
   else if (method_name == "nl2sol")
     return new NL2SOLLeastSq(NoDBBaseConstructor(), model);
 #endif
-#ifdef DAKOTA_DOT
+#ifdef HAVE_DOT
   else if (method_name.begins("dot_"))
     return new_DOTOptimizer1(NoDBBaseConstructor(), model);
 #endif
@@ -945,7 +945,7 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
   else if (method_name.begins("conmin_"))
     return new CONMINOptimizer(NoDBBaseConstructor(), model);
 #endif
-#ifdef DAKOTA_NCSU
+#ifdef HAVE_NCSU
   else if (method_name == "ncsu_direct")
     return new NCSUOptimizer(NoDBBaseConstructor(), model);
 #endif

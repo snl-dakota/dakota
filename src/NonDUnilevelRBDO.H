@@ -81,7 +81,7 @@ class NonDUnilevelRBDO: public DakotaNonD
     // operators which would restrict the generality of the
     // NPSOLOptimizer/SNLLOptimizer "user_functions" interfaces).
 
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
     /// static function used by NPSOL as the objective function in the 
     /// RBDO problem formulation.  This portion is independent of RIA/PMA.
     static void RBDO_objective_eval(int& mode, int& n, Real* u, Real& f,
@@ -99,7 +99,7 @@ class NonDUnilevelRBDO: public DakotaNonD
 					 int& nrowj, int* needc, Real* u,
 					 Real* c, Real* cjac, int& nstate);
 
-#elif defined (DAKOTA_OPTPP)
+#elif defined (HAVE_OPTPP)
     /// static function used by OPT++ as the objective function in the 
     /// Reliability Index Approach (RIA) problem formulation.  This
     /// equality-constrained optimization problem performs the search for the

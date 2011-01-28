@@ -101,7 +101,7 @@ AC_DEFUN([DAK_METHODS],[
   if test "x$with_dot" = xyes -a \
           -e $srcdir/packages/DOT/dbl_prec/dot1.f; then
     AC_CONFIG_SUBDIRS([packages/DOT])
-    AC_DEFINE([DAKOTA_DOT],[1],[Macro to handle code which depends on DOT.])
+    AC_DEFINE([HAVE_DOT],[1],[Macro to handle code which depends on DOT.])
     MAYBE_DOT=DOT
   else 
     MAYBE_DOT=
@@ -116,7 +116,7 @@ AC_DEFUN([DAK_METHODS],[
 				       [turn FSUDace support off]),
 	      [with_fsudace=$withval],[with_fsudace=yes])
   if test "x$with_fsudace" = xyes; then
-    AC_DEFINE([DAKOTA_FSUDACE],[1],
+    AC_DEFINE([HAVE_FSUDACE],[1],
 	      [Macro to handle code which depends on FSUDACE.])
     AC_CONFIG_SUBDIRS([packages/FSUDace])
   fi
@@ -182,7 +182,7 @@ AC_DEFUN([DAK_METHODS],[
 	      [with_jega=$withval],[with_jega=yes])
   if test "x$with_jega" = xyes -a -d $srcdir/packages/JEGA; then
     AC_CONFIG_SUBDIRS([packages/JEGA])
-    AC_DEFINE([DAKOTA_JEGA],[1],
+    AC_DEFINE([HAVE_JEGA],[1],
 	      [Macro to handle code which depends on JEGA.])
     MAYBE_JEGA=JEGA
   else
@@ -198,7 +198,7 @@ AC_DEFUN([DAK_METHODS],[
 	      [with_ncsu=$withval],[with_ncsu=yes])
   if test "x$with_ncsu" = xyes; then
     AC_CONFIG_SUBDIRS([packages/NCSUOpt])
-    AC_DEFINE([DAKOTA_NCSU],[1],
+    AC_DEFINE([HAVE_NCSU],[1],
 	      [Macro to handle code which depends on NCSUOpt.])
   fi
   AM_CONDITIONAL([WITH_NCSU],
@@ -210,7 +210,7 @@ AC_DEFUN([DAK_METHODS],[
 	      [with_nl2sol=$withval],[with_nl2sol=yes])
   if test "x$with_nl2sol" = xyes; then
     AC_CONFIG_SUBDIRS([packages/NL2SOL])
-    AC_DEFINE([DAKOTA_NL2SOL],[1],
+    AC_DEFINE([HAVE_NL2SOL],[1],
     	      [Macro to handle code which depends on NL2SOL.])
   fi
   AM_CONDITIONAL([WITH_NL2SOL],[test "x$with_nl2sol" = xyes])
@@ -222,7 +222,7 @@ AC_DEFUN([DAK_METHODS],[
   if test "x$with_nlpql" = xyes -a \
 	  -e $srcdir/packages/NLPQL/NLPQLP.f; then
     AC_CONFIG_SUBDIRS([packages/NLPQL])
-    AC_DEFINE([DAKOTA_NLPQL],[1],
+    AC_DEFINE([HAVE_NLPQL],[1],
 	      [Macro to handle code which depends on NLPQL.])
     MAYBE_NLPQL=NLPQL
   else
@@ -240,7 +240,7 @@ AC_DEFUN([DAK_METHODS],[
   if test "x$with_npsol" = xyes -a \
           -e $srcdir/packages/NPSOL/npsolsubs.f; then
     AC_CONFIG_SUBDIRS([packages/NPSOL])
-    AC_DEFINE([DAKOTA_NPSOL],[1],
+    AC_DEFINE([HAVE_NPSOL],[1],
     [Macro to handle code which depends on NPSOL.])
     MAYBE_NPSOL=NPSOL
   else
@@ -257,7 +257,7 @@ AC_DEFUN([DAK_METHODS],[
 	      [with_optpp=$withval],[with_optpp=yes])
   if test "x$with_optpp" = xyes -a -d $srcdir/packages/OPTPP; then
     AC_CONFIG_SUBDIRS([packages/OPTPP])
-    AC_DEFINE([DAKOTA_OPTPP],[1],
+    AC_DEFINE([HAVE_OPTPP],[1],
 	      [Macro to handle code which depends on OPTPP.])
     AC_DEFINE([DAKOTA_NEWMAT],[1],
 	      [Macro to handle code which depends on NEWMAT.])

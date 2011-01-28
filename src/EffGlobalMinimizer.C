@@ -19,7 +19,7 @@
 #include "DakotaApproximation.H"
 #include "ProblemDescDB.H"
 #include "DakotaGraphics.H"
-#ifdef DAKOTA_NCSU
+#ifdef HAVE_NCSU
 #include "NCSUOptimizer.H"
 #endif
 #include "DakotaModel.H"
@@ -115,7 +115,7 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   // must use alternate NoDB ctor chain
   int max_iterations = 10000, max_fn_evals = 50000;
   double min_box_size = 1.e-15, vol_box_size = 1.e-15;
-#ifdef DAKOTA_NCSU
+#ifdef HAVE_NCSU
   approxSubProbMinimizer.assign_rep(new
 				    NCSUOptimizer(eifModel, max_iterations, 
 						  max_fn_evals, min_box_size, 
@@ -125,7 +125,7 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. " 
        << "Aborting process. " << std::endl;
         abort_handler(-1);
-#endif //DAKOTA_NCSU
+#endif //HAVE_NCSU
 }
 
 

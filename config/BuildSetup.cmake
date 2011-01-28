@@ -43,8 +43,8 @@
 
 # Boost base directory
 
-set(Boost_INCLUDE_DIR "$ENV{DAKOTA_SRC}/packages/boost"
-    CACHE PATH "Always use DAKOTA supplied Boost1.45 header subset" FORCE)
+set(Boost_INCLUDE_DIR "/Net/dakota/utils/Linux_x86_64/boost_signals1.45.gnu-4.1.2/include"
+    CACHE PATH "Always use pre-installed Boost1.45 headers Plus SIGNALS subset" FORCE)
 
 # Teuchos spec (WJB: see ASSUME above and "Trilinos TIPS" at bottom of file)
 # WJB - ToDo: add detail regarding MacOSX/DYLD_LIBRARY_PATH (ictinus:/Users/dakota/local/trilinos10.2.1/gnu-4.3.2_install)

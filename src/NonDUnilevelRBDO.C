@@ -18,9 +18,9 @@
 #include "NonDUnilevelRBDO.H"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialSpdDenseSolver.h"
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.H"
-#elif defined(DAKOTA_OPTPP)
+#elif defined(HAVE_OPTPP)
 #include "SNLLOptimizer.H"
 #endif
 
@@ -439,7 +439,7 @@ void NonDUnilevelRBDO::iterated_mean_value()
 
         // Use NPSOL/OPT++ in "user_functions" mode to perform the MPP search
         Cout << "\n>>>>> Initiating search for most probable point (MPP)\n";
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
         // NPSOL deriv. level: 1 = supplied grads of objective fn, 2 = supplied
         // grads of constraints, 3 = supplied grads of both.  Always use the
         // supplied grads of u'u (deriv. level = 1 for RIA, deriv. level = 2 for
@@ -477,7 +477,7 @@ void NonDUnilevelRBDO::iterated_mean_value()
           lin_eq_coeffs, lin_eq_targets, nln_ineq_lower_bnds,
           nln_ineq_upper_bnds, nln_eq_targets, obj_eval, con_eval,
           npsolDerivLevel, conv_tol);
-#elif defined(DAKOTA_OPTPP)
+#elif defined(HAVE_OPTPP)
         void (*obj_eval) (int,int,const ColumnVector&,Real&,ColumnVector&,int&)
           = (ria_flag) ? RIA_objective_eval : PMA_objective_eval;
         void (*con_eval)(int,int,const ColumnVector&,ColumnVector&,Matrix&,int&)
@@ -634,7 +634,7 @@ void NonDUnilevelRBDO::iterated_mean_value()
 }
 
 
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
 void NonDUnilevelRBDO::
 RBDO_objective_eval(int& mode, int& n, Real* d_and_u, Real& f, Real* grad_f,
 		    int&)
@@ -813,7 +813,7 @@ RBDO_PMA_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
 }
 
 
-#elif defined (DAKOTA_OPTPP)
+#elif defined (HAVE_OPTPP)
 void NonDUnilevelRBDO::
 RIA_objective_eval(int mode, int n, const ColumnVector& u, Real& f,
                    ColumnVector& grad_f, int& result_mode)

@@ -17,12 +17,12 @@
 #include "DakotaIterator.H"
 #include "DakotaResponse.H"
 //#include "NPSOLOptimizer.H"
-#ifdef DAKOTA_NCSU
+#ifdef HAVE_NCSU
 #include "NCSUOptimizer.H"
 #endif
 #include "ProblemDescDB.H"
 
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
 #include "SNLLOptimizer.H"
 using OPTPP::NLPFunction;
 using OPTPP::NLPGradient;
@@ -156,7 +156,7 @@ GaussProcApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
 
   dataOrder = 1; // TO DO: support dataOrder = 3
 
-#ifdef DAKOTA_NCSU
+#ifdef HAVE_NCSU
   Cout << "Using NCSU DIRECT to optimize correlation coefficients."<<endl;
 #else
   Cerr << "NCSU DIRECT Optimizer is not available to calculate " 
@@ -392,7 +392,7 @@ void GaussProcApproximation::optimize_theta_global()
   // bounds for log transformation of correlation parameters
   RealVector theta_lbnds(numVars, false), theta_ubnds(numVars, false);
   theta_lbnds = -9.; theta_ubnds = 5.;
-#ifdef DAKOTA_NCSU  
+#ifdef HAVE_NCSU  
   // NCSU DIRECT optimize of Negative Log Likelihood
   // Uses default convergence tolerance settings in NCSUOptimizer wrapper!
   int max_iterations = 1000, max_fn_evals = 10000;
@@ -408,7 +408,7 @@ void GaussProcApproximation::optimize_theta_global()
 #ifdef DEBUG
   Cout << "Optimal NLL = " << resp_star.function_values()[0] << '\n';
 #endif //DEBUG
-#endif //DAKOTA_NCSU
+#endif //HAVE_NCSU
 }
 
 
@@ -821,7 +821,7 @@ void GaussProcApproximation::optimize_theta_multipoint()
   Real nll, nll_best = DBL_MAX;
   RealVector theta_best(numVars);
 
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
   for (i=0; i<3; i++) {
     for (j=0; j<numVars; j++)
       thetaParams[j] = THETA_INIT_STARTS[i];
@@ -922,7 +922,7 @@ void GaussProcApproximation::calc_grad_nll()
 }
 
 
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
 void GaussProcApproximation::
 negloglik(int mode, int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& fx, 
 	  NEWMAT::ColumnVector& grad_f, int& result_mode)
@@ -949,7 +949,7 @@ constraint_eval(int mode, int n, const NEWMAT::ColumnVector& x,
 		NEWMAT::ColumnVector& g, NEWMAT::Matrix& grad_c, 
 		int& res_mode)
 { }
-#endif //DAKOTA_OPTPP
+#endif //HAVE_OPTPP
 
 
 void GaussProcApproximation::run_point_selection()

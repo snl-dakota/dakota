@@ -21,7 +21,7 @@
 #include "RecastModel.H"
 #include "DataFitSurrModel.H"
 #include "ProblemDescDB.H"
-#ifdef DAKOTA_NCSU
+#ifdef HAVE_NCSU
 #include "NCSUOptimizer.H"
 #endif
 #include "pecos_stat_util.hpp"
@@ -94,7 +94,7 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   // instantiate the optimizer used to improve the GP
   int max_iter = 1000, max_eval = 10000;
   double min_box_size = 1.e-15, vol_box_size = 1.e-15;
-#ifdef DAKOTA_NCSU  
+#ifdef HAVE_NCSU  
   gpOptimizer.assign_rep(new NCSUOptimizer(eifModel, max_iter, max_eval, 
 					   min_box_size, vol_box_size), false);
   eifModel.init_communicators(gpOptimizer.maximum_concurrency());
@@ -102,7 +102,7 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   Cerr << "NCSU DIRECT Optimizer is not available to use to find the" 
        << " interval bounds from the GP model." << std::endl;
   abort_handler(-1);
-#endif // DAKOTA_NCSU
+#endif // HAVE_NCSU
 }
 
 

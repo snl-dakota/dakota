@@ -20,10 +20,10 @@
 #include "DakotaGraphics.H"
 #include "NonDLocalReliability.H"
 #include "NonDAdaptImpSampling.H"
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.H"
 #endif
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
 #include "SNLLOptimizer.H"
 using OPTPP::NLPFunction;
 using OPTPP::NLPGradient;
@@ -96,7 +96,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
 
     // Map MPP search NIP/SQP algorithm specification into an NPSOL/OPT++
     // selection based on configuration availability.
-#if !defined(DAKOTA_NPSOL) && !defined(DAKOTA_OPTPP)
+#if !defined(HAVE_NPSOL) && !defined(HAVE_OPTPP)
     Cerr << "Error: this executable not configured with NPSOL or OPT++.\n"
 	 << "       NonDLocalReliability cannot perform MPP search."
          << std::endl;
@@ -105,7 +105,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
     const String& mpp_search_alg
       = probDescDB.get_string("method.nond.optimization_algorithm");
     if (mpp_search_alg == "sqp") {
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
       npsolFlag = true;
 #else
       Cerr << "\nError: this executable not configured with NPSOL SQP.\n"
@@ -115,7 +115,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
 #endif
     }
     else if (mpp_search_alg == "nip") {
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
       npsolFlag = false;
 #else
       Cerr << "\nError: this executable not configured with OPT++ NIP.\n"
@@ -125,9 +125,9 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
 #endif
     }
     else if (mpp_search_alg.empty()) {
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
       npsolFlag = true;
-#elif DAKOTA_OPTPP
+#elif HAVE_OPTPP
       npsolFlag = false;
 #endif
     }
@@ -338,12 +338,12 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       //Real conv_tol = (mppSearchType == NO_APPROX) ? 1.e-4 : 1.e-6;
       Real conv_tol = -1.; // use NPSOL default
 
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
       mppOptimizer.assign_rep(new_NPSOLOptimizer2(mppModel, npsol_deriv_level,
 	conv_tol), false);
 #endif
     }
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
     else
       mppOptimizer.assign_rep(new SNLLOptimizer("optpp_q_newton", mppModel),
 	false);
@@ -2323,7 +2323,7 @@ void NonDLocalReliability::method_recourse()
   Cerr << "\nWarning: method recourse invoked in NonDLocalReliability due to "
        << "detected method conflict.\n\n";
   if (mppSearchType && npsolFlag) {
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
     mppModel.free_communicators(mppOptimizer.maximum_concurrency());
     mppOptimizer.assign_rep(
       new SNLLOptimizer("optpp_q_newton", mppModel), false);

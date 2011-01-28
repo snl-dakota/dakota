@@ -17,12 +17,12 @@
 #include "NonDLocalInterval.H"
 #include "RecastModel.H"
 #include "ProblemDescDB.H"
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.H"
-#endif // DAKOTA_NPSOL
-#ifdef DAKOTA_OPTPP
+#endif // HAVE_NPSOL
+#ifdef HAVE_OPTPP
 #include "SNLLOptimizer.H"
-#endif // DAKOTA_NPSOL
+#endif // HAVE_OPTPP
 
 //#define DEBUG
 
@@ -39,7 +39,7 @@ NonDLocalInterval::NonDLocalInterval(Model& model): NonDInterval(model)
   // each level within the run fn.
   minMaxModel.assign_rep(new RecastModel(iteratedModel, 1, 0, 0), false);
 
-#if !defined(DAKOTA_NPSOL) && !defined(DAKOTA_OPTPP)
+#if !defined(HAVE_NPSOL) && !defined(HAVE_OPTPP)
   Cerr << "Error: this executable not configured with NPSOL or OPT++.\n"
        << "       NonDLocalInterval requires a gradient-based optimizer."
        << std::endl;
@@ -48,7 +48,7 @@ NonDLocalInterval::NonDLocalInterval(Model& model): NonDInterval(model)
   const String& opt_algorithm
     = probDescDB.get_string("method.nond.optimization_algorithm");
   if (opt_algorithm == "sqp") {
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
     npsolFlag = true;
 #else
     Cerr << "\nError: this executable not configured with NPSOL SQP.\n"
@@ -58,7 +58,7 @@ NonDLocalInterval::NonDLocalInterval(Model& model): NonDInterval(model)
 #endif
   }
   else if (opt_algorithm == "nip") {
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
     npsolFlag = false;
 #else
     Cerr << "\nError: this executable not configured with OPT++ NIP.\n"
@@ -68,26 +68,26 @@ NonDLocalInterval::NonDLocalInterval(Model& model): NonDInterval(model)
 #endif
   }
   else if (opt_algorithm.empty()) {
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
     npsolFlag = true;
-#elif DAKOTA_OPTPP
+#elif HAVE_OPTPP
     npsolFlag = false;
 #endif
   }
 
   // instantiate the optimizer used to compute the output interval bounds
   if (npsolFlag) {
-#ifdef DAKOTA_NPSOL  
+#ifdef HAVE_NPSOL  
     int npsol_deriv_level = 3;
     minMaxOptimizer.assign_rep(new_NPSOLOptimizer2(minMaxModel,
 				npsol_deriv_level, convergenceTol), false);
-#endif // DAKOTA_NPSOL
+#endif // HAVE_NPSOL
   }
   else {
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
     minMaxOptimizer.assign_rep(new
       SNLLOptimizer("optpp_q_newton", minMaxModel), false);
-#endif // DAKOTA_OPTPP
+#endif // HAVE_OPTPP
   }
 
   // Prevent nesting of an instance of a Fortran iterator within another
@@ -282,7 +282,7 @@ void NonDLocalInterval::method_recourse()
        << "detected method conflict.\n\n";
   if (npsolFlag) {
     // if NPSOL already assigned, then reassign; otherwise just set the flag.
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
     minMaxModel.free_communicators(minMaxOptimizer.maximum_concurrency());
     minMaxOptimizer.assign_rep(
       new SNLLOptimizer("optpp_q_newton", minMaxModel), false);

@@ -18,7 +18,7 @@
 #include "NonDReliability.H"
 #include "DakotaApproximation.H"
 
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
 #include "globals.h"
 #endif
 

@@ -107,7 +107,7 @@ set( CMAKE_MODULE_PATH
 
 
 option(HAVE_PECOS "Build the Pecos package." ON)
-option(HAVE_ACRO "Build the ACRO package." OFF)
+option(HAVE_ACRO "Build the ACRO package." ON)
 option(HAVE_AMPL "Build the AMPL package." ON)
 option(HAVE_DDACE "Build the DDACE package." ON)
 option(HAVE_DOT "Build the DOT package." ON)

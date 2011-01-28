@@ -26,7 +26,7 @@
 #include "DataFitSurrModel.H"
 #include "DakotaApproximation.H"
 #include "ProblemDescDB.H"
-#ifdef DAKOTA_NCSU
+#ifdef HAVE_NCSU
 #include "NCSUOptimizer.H"
 #endif
 #include "pecos_stat_util.hpp"
@@ -312,7 +312,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   // must use alternate NoDB ctor chain
   int max_iter = 1000, max_eval = 10000;
   double min_box_size = 1.e-15, vol_box_size = 1.e-15;
-#ifdef DAKOTA_NCSU  
+#ifdef HAVE_NCSU  
   mppOptimizer.assign_rep(new NCSUOptimizer(mppModel, max_iter, max_eval,
 					    min_box_size, vol_box_size), false);
   //#ifdef DAKOTA_COLINY
@@ -327,7 +327,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   Cerr << "NCSU DIRECT Optimizer is not available to use in the MPP search " 
        << "in global reliability optimization:  aborting process." << std::endl;
         abort_handler(-1);
-#endif //DAKOTA_NCSU
+#endif //HAVE_NCSU
 
   // The importance sampler uses uSpaceModel (without additional recasting)
   // and may be constructed here.  Thus, NonDGlobal applies integration

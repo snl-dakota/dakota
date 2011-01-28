@@ -22,7 +22,7 @@
 
 #include "Teuchos_SerialSpdDenseSolver.hpp"
 
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
 #include "globals.h"
 #endif
 
@@ -133,7 +133,7 @@ private:
   /// to each componeent of x.
   void get_grad_cov_vector();
 
-#ifdef DAKOTA_OPTPP
+#ifdef HAVE_OPTPP
   /// static function used by OPT++ as the objective function to 
   /// optimize the hyperparameters in the covariance of the GP
   /// by minimizing the negative log likelihood

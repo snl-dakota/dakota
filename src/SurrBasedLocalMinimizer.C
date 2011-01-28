@@ -20,9 +20,9 @@
 #include "PRPMultiIndex.H"
 #include "DakotaGraphics.H"
 #include "RecastModel.H"
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.H"
-#endif // DAKOTA_NPSOL
+#endif // HAVE_NPSOL
 
 //#define DEBUG
 
@@ -305,7 +305,7 @@ SurrBasedLocalMinimizer::SurrBasedLocalMinimizer(Model& model):
 	 << "implemented.\n               Using HOMOTOPY method instead.\n";
     trConstraintRelax = HOMOTOPY;
   }
-#ifndef DAKOTA_NPSOL
+#ifndef HAVE_NPSOL
   if (trConstraintRelax > NO_RELAX) {
     Cerr << "Error: this executable not configured with NPSOL.\n       "
 	 << "SurrBasedLocalMinimizer cannot perform constraint relaxation."
@@ -1597,7 +1597,7 @@ relax_constraints(const RealVector& lower_bnds,
     copy_data_partial(upper_bnds, tau_and_x_upper_bnds, 1);
     
     // setup optimization problem for updating tau
-#ifdef DAKOTA_NPSOL
+#ifdef HAVE_NPSOL
     tau_minimizer.assign_rep(new_NPSOLOptimizer3(tau_and_x_initial,
       tau_and_x_lower_bnds, tau_and_x_upper_bnds, lin_ineq_coeffs,
       lin_ineq_lower_bnds, lin_ineq_lower_bnds, lin_eq_coeffs, lin_eq_targets,
