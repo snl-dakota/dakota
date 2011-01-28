@@ -60,9 +60,10 @@ endif(HAVE_USAGE_TRACKING)
 
 
 set(TPL_LIBS teuchos nidr)
+set(EXTRA_TPL_LIBS "")
 
 if(HAVE_MPI)
-  list(APPEND TPL_LIBS ${MPI_LIBRARIES})
+  list(APPEND EXTRA_TPL_LIBS ${MPI_LIBRARIES})
 endif(HAVE_MPI)
 
 link_directories(${Teuchos_LIBRARY_DIRS})
@@ -80,6 +81,7 @@ endfunction(CheckPackage)
 
 
 CheckPackage(PECOS)
+list(APPEND TPL_LIBS ${Pecos_LINK_LIBRARIES})
 if(HAVE_PECOS)
   # WJB: really need Pecos_INCLUDE_DIRS for dakota
   include_directories(${Pecos_BINARY_DIR} ${Pecos_SOURCE_DIR}/src
@@ -187,7 +189,7 @@ endif(HAVE_ACRO)
 # TODO: conditional on Acro?  
 if(Boost_FOUND)
   list(APPEND link_directories ${Boost_LIBRARY_DIRS})
-  list(APPEND TPL_LIBS ${Boost_LIBRARIES})
+  list(APPEND EXTRA_TPL_LIBS ${Boost_LIBRARIES})
 endif()
 
 CheckPackage(CONMIN)
@@ -201,7 +203,7 @@ if(HAVE_DDACE)
   include_directories(${ddace_BINARY_DIR} ${ddace_SOURCE_DIR}/include)
   set(iterator_src ${iterator_src} DDACEDesignCompExp.C)
   #link_directories(${Dakota_BINARY_DIR}/methods/DDACE)
-  set(TPL_LIBS ${TPL_LIBS} dace)
+  set(TPL_LIBS ${TPL_LIBS} dace analyzer random sampling bose)
 endif(HAVE_DDACE)
 
 CheckPackage(DOT)
@@ -257,7 +259,7 @@ if(HAVE_JEGA)
   list(APPEND iterator_src JEGAOptimizer.C)
   #link_directories(${Dakota_BINARY_DIR}/packages/JEGA)
   # WJB: "jega_link_libs: looks fishy; confer with Zack about JEGA commit 692
-  list(APPEND TPL_LIBS jega jega_fe moga soga eutils)
+  list(APPEND TPL_LIBS jega jega_fe moga soga eutils utilities)
 endif(HAVE_JEGA)
 
 if(HAVE_NCSUOPT)
@@ -371,14 +373,36 @@ endif(HAVE_HOPSPACK)
 target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} dl)
 target_link_libraries(dakota_library_mode dakota_src ${TPL_LIBS} dl)
 
+list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${CURL_LIBRARIES} dl 
+     ${X11_LIBRARIES} ${MOTIF_LIBRARIES} ${XMU_LIB})
+
 ## WJB: request macro from Kitware? FindLibDL.cmake (e.g. digidoc++)
-target_link_libraries(dakota dakota_src ${TPL_LIBS} ${LAPACK_LIBS}
-                      ${CURL_LIBRARIES} dl 
-		      ${X11_LIBRARIES} ${MOTIF_LIBRARIES} ${XMU_LIB})
+target_link_libraries(dakota dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
+
+install(TARGETS dakota_src DESTINATION lib)
+file(GLOB Dakota_hdr *.H *.h)
+list(APPEND Dakota_hdr ${Dakota_BINARY_DIR}/dakota_config.h)
+install(FILES ${Dakota_hdr} DESTINATION include)
 
 if(Teuchos_TPL_LIST MATCHES "LAPACK;BLAS")
   message(STATUS "Building against pre-installed Teuchos WITH own lapack: ${Teuchos_TPL_LIST}")
 endif()
 
 message(STATUS "TPL LIBS: ${TPL_LIBS}")
+message(STATUS "EXTRA TPL LIBS: ${EXTRA_TPL_LIBS}")
 
+# Pass some data back to Trilinos
+if (BUILD_IN_TRILINOS)
+get_directory_property(Dakota_INC_DIRS INCLUDE_DIRECTORIES)
+set(Dakota_INCLUDE_DIRS ${Dakota_INC_DIRS} CACHE INTERNAL 
+    "Dakota include directories")
+set(Dakota_LIBS dakota_src ${TPL_LIBS})
+#if(HAVE_HOPSPACK)
+#  set(Dakota_LIBS ${Dakota_LIBS}
+#      ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
+#endif()
+set(Dakota_LIBRARIES ${Dakota_LIBS} CACHE INTERNAL 
+    "Dakota libraries")
+set(Dakota_EXTRA_LIBRARIES ${EXTRA_TPL_LIBS} CACHE INTERNAL 
+    "Dakota extra libraries")
+endif()
