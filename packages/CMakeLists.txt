@@ -1,4 +1,28 @@
 # CMakeLists.txt for DAKOTA packages
+option(HAVE_ACRO "Build the ACRO package." ON)
+option(HAVE_AMPL "Build the AMPL package." ON)
+option(HAVE_CONMIN "Build the CONMIN package." ON)
+option(HAVE_DDACE "Build the DDACE package." ON)
+option(HAVE_DOT "Build the DOT package." ON)
+option(HAVE_FSUDACE "Build the FSUDACE package." ON)
+option(HAVE_HOPSPACK "Build the hopspack package." ON)
+option(HAVE_JEGA "Build the JEGA package." ON)
+option(HAVE_NCSUOPT "Build the NCSUOPT package." ON)
+option(HAVE_NL2SOL "Build the NL2SOL package." ON)
+option(HAVE_NLPQL "Build the NLPQL package." ON)
+option(HAVE_NPSOL "Build the NPSOL package." ON)
+option(HAVE_OPTPP "Build the OPTPP package." ON)
+option(HAVE_PECOS "Build the Pecos package." ON)
+option(HAVE_PLUGIN "Enable plugins to the dakota executable." ON)
+option(HAVE_PSUADE "Build the PSUADE package." ON)
+option(HAVE_SURFPACK "Build the Surfpack package." ON)
+
+if(HAVE_CONMIN)
+  if ( NOT CONMIN_DIR )
+    set( CONMIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/CONMIN )
+    add_subdirectory(CONMIN)
+  endif()
+endif(HAVE_CONMIN)
 
 add_subdirectory(nidr)
 

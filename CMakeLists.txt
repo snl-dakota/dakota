@@ -105,28 +105,6 @@ set( CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH}
 )
 
-
-option(HAVE_PECOS "Build the Pecos package." ON)
-option(HAVE_ACRO "Build the ACRO package." ON)
-option(HAVE_AMPL "Build the AMPL package." ON)
-option(HAVE_DDACE "Build the DDACE package." ON)
-option(HAVE_DOT "Build the DOT package." ON)
-option(HAVE_CONMIN "Build the CONMIN package." ON)
-option(HAVE_FSUDACE "Build the FSUDACE package." ON)
-option(HAVE_HOPSPACK "Build the hopspack package." ON)
-option(HAVE_JEGA "Build the JEGA package." ON)
-option(HAVE_NCSUOPT "Build the NCSUOPT package." ON)
-option(HAVE_NL2SOL "Build the NL2SOL package." ON)
-option(HAVE_NPSOL "Build the NPSOL package." ON)
-option(HAVE_NLPQL "Build the NLPQL package." ON)
-option(HAVE_OPTPP "Build the OPTPP package." ON)
-option(HAVE_PLUGIN "Enable plugins to the dakota executable." ON)
-option(HAVE_PSUADE "Build the PSUADE package." ON)
-option(HAVE_SURFPACK "Build the Surfpack package." ON)
-option(HAVE_USAGE_TRACKING "Build the DAKOTA usage tracker module." OFF)
-option(HAVE_XDR "Build the XDR interface module." ON)
-
-
 # first probe for system-installed Trilinos
 # this will respect Trilinos_DIR if already set
 find_package(Trilinos QUIET)
@@ -145,20 +123,6 @@ if ( NOT Trilinos_DIR )
 else()
   message( "Using system trilinos in ${Trilinos_DIR}" )
 endif()
-
-if(HAVE_CONMIN)
-
-  if ( NOT CONMIN_DIR )
-    set( CONMIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/packages/CONMIN )
-    message( "Setting CONMIN_DIR to ${CONMIN_DIR}" )
-    add_subdirectory(packages/CONMIN)
-
-  else()
-    message( "in ${CMAKE_CURRENT_BINARY_DIR} CONMIN_DIR already set to ${CONMIN_DIR}" )
-  endif()
-
-  find_package( CONMIN NO_MODULE REQUIRED )
-endif(HAVE_CONMIN)
 
 
 add_subdirectory(packages)
