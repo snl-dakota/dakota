@@ -1,3 +1,6 @@
+option(HAVE_USAGE_TRACKING "Build the DAKOTA usage tracker module." OFF)
+option(HAVE_XDR "Build the XDR interface module." ON)
+
 include_directories(${Dakota_BINARY_DIR} ${Dakota_SOURCE_DIR}/src
                     ${NIDR_SOURCE_DIR}/..
                     ${Boost_INCLUDE_DIRS}
@@ -129,7 +132,7 @@ if(HAVE_SURFPACK)
   list(APPEND interface_src SurfpackApproximation.C)
   include_directories(${Surfpack_BINARY_DIR} ${Surfpack_SOURCE_DIR}/src
                       ${Surfpack_SOURCE_DIR}/src/surfaces)
-  list(APPEND TPL_LIBS surfaces surfpack mars nkm)
+  list(APPEND TPL_LIBS surfpack surfaces mars nkm)
 endif(HAVE_SURFPACK)
 
 if(HAVE_PLUGIN)
@@ -364,7 +367,9 @@ else()
   add_executable(dakota_restart_util restart_util.C)
   add_executable(dakota_library_mode library_mode.C)
 endif(HAVE_HOPSPACK)
-#target_link_libraries(dakota dakota_src ${TPL_LIBS} ${CURL_LIBRARIES} ${LAPACK_LIBS} ${BLAS_LIBS} ${FLIBS} ${FCLIBS})
+  
+target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} dl)
+target_link_libraries(dakota_library_mode dakota_src ${TPL_LIBS} dl)
 
 ## WJB: request macro from Kitware? FindLibDL.cmake (e.g. digidoc++)
 target_link_libraries(dakota dakota_src ${TPL_LIBS} ${LAPACK_LIBS}
