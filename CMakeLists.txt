@@ -73,9 +73,12 @@ if(CMAKE_CXX_COMPILER MATCHES mpicxx)
     message(FATAL_ERROR "Cannot build parallel configuration without mpicxx")
   endif()
 
-  message(" ****      dakota build    ****    MPIHOME is: " $ENV{MPIHOME})
-  set(MPI_INCLUDE_PATH "$ENV{MPIHOME}/include"
-      CACHE PATH "Always use $MPIHOME to find MessagePassing header files" FORCE)
+  if ($ENV{MPIHOME})
+    message(" ****      dakota build    ****    MPIHOME is: " $ENV{MPIHOME})
+    set(MPI_INCLUDE_PATH "$ENV{MPIHOME}/include"
+    	CACHE PATH "Always use $MPIHOME to find MessagePassing header files"
+	FORCE)
+  endif()
   
   find_package(MPI REQUIRED)
   if(MPI_FOUND)
@@ -105,6 +108,8 @@ set( CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH}
 )
 
+# when building inside Trilinos, the path to Teuchos will already be set
+if (NOT BUILD_IN_TRILINOS)
 # first probe for system-installed Trilinos
 # this will respect Trilinos_DIR if already set
 find_package(Trilinos QUIET)
@@ -123,11 +128,16 @@ if ( NOT Trilinos_DIR )
 else()
   message( "Using system trilinos in ${Trilinos_DIR}" )
 endif()
+endif()
 
 
 add_subdirectory(packages)
 add_subdirectory(src)
-add_subdirectory(test)
+
+option(ENABLE_DAKOTA_TESTS "Enable Dakota tests." ON)
+if(ENABLE_DAKOTA_TESTS)
+  add_subdirectory(test)
+endif()
 
 # Package-specific configuration options
 include_directories(${Dakota_BINARY_DIR})
