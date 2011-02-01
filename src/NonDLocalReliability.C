@@ -1732,8 +1732,7 @@ void NonDLocalReliability::update_pma_reliability_level()
 
 void NonDLocalReliability::update_limit_state_surrogate()
 {
-  RealVector    mpp;
-  RealVector fn_grad(fnGradX.length());
+  RealVector mpp, fn_grad(fnGradX.length());
   const RealSymMatrix* fn_hess_ptr = 0;
   if (mppSearchType ==  AMV_X || mppSearchType == AMV_PLUS_X ||
       mppSearchType == TANA_X) {
@@ -1757,8 +1756,9 @@ void NonDLocalReliability::update_limit_state_surrogate()
   // construct Response object
   ShortArray asv(numFunctions, 0);
   asv[respFnCount] = (taylorOrder == 2) ? 7 : 3;
-  ActiveSet set(numFunctions, numUncertainVars);
+  ActiveSet set;//(numFunctions, numUncertainVars);
   set.request_vector(asv);
+  set.derivative_vector(iteratedModel.continuous_variable_ids());
   Response response(set);
   response.function_value(computedRespLevel, respFnCount);
   response.function_gradient(fn_grad, respFnCount);

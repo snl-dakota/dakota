@@ -119,7 +119,11 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
       actualModel.current_variables().shared_data();
     size_t num_c_vars = (actualModel.is_null()) ? currentVariables.cv() :
       actualModel.cv();
-    ActiveSet temp_set(numFns, num_c_vars); // function values only
+    SizetMultiArrayConstView cv_ids = (actualModel.is_null()) ?
+      currentVariables.continuous_variable_ids() :
+      actualModel.continuous_variable_ids();
+    ActiveSet temp_set(numFns); // function values only
+    temp_set.derivative_vector(cv_ids);
     while (!point_stream.eof()) {
       // reuse_file_vars/responses must already be sized for istream read
       RealVector reuse_file_c_vars(num_c_vars);

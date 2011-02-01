@@ -448,7 +448,8 @@ void NonD::initialize_final_statistics()
   size_t num_final_stats = 2*numFunctions, num_active_vars = iteratedModel.cv();
   if (!numEpistemicUncVars) // aleatory UQ
     num_final_stats += totalLevelRequests;
-  ActiveSet stats_set(num_final_stats, num_active_vars);
+  ActiveSet stats_set(num_final_stats);//, num_active_vars);
+  stats_set.derivative_vector(iteratedModel.continuous_variable_ids());
   finalStatistics = Response(stats_set);
 
   // Assign meaningful labels to finalStatistics (appear in NestedModel output)

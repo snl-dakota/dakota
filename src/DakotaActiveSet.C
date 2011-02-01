@@ -27,6 +27,10 @@ ActiveSet::ActiveSet(size_t num_fns, size_t num_deriv_vars)
 }
 
 
+ActiveSet::ActiveSet(size_t num_fns)
+{ reshape(num_fns); request_values(1); }
+
+
 /// equality operator for ActiveSet
 bool operator==(const ActiveSet& set1, const ActiveSet& set2)
 {

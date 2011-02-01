@@ -51,6 +51,7 @@ public:
 
   ActiveSet();                                      ///< default constructor
   ActiveSet(size_t num_fns, size_t num_deriv_vars); ///< standard constructor
+  ActiveSet(size_t num_fns);                        ///< partial constructor
   ActiveSet(const ActiveSet& set);                  ///< copy constructor
   ~ActiveSet();                                     ///< destructor
 
@@ -67,6 +68,8 @@ public:
 
   /// reshape requestVector and derivVarsVector
   void reshape(size_t num_fns, size_t num_deriv_vars);
+  /// reshape requestVector
+  void reshape(size_t num_fns);
 
   /// return the request vector
   const ShortArray& request_vector() const;
@@ -153,6 +156,10 @@ inline ActiveSet& ActiveSet::operator=(const ActiveSet& set)
 
 inline void ActiveSet::reshape(size_t num_fns, size_t num_deriv_vars)
 { requestVector.resize(num_fns); derivVarsVector.resize(num_deriv_vars); }
+
+
+inline void ActiveSet::reshape(size_t num_fns)
+{ requestVector.resize(num_fns); }
 
 
 inline const ShortArray& ActiveSet::request_vector() const
