@@ -92,8 +92,10 @@ void NonDInterval::initialize_final_statistics()
 {
   size_t num_final_stats = (singleIntervalFlag) ?
     2*numFunctions : 2*totalLevelRequests;
-  ActiveSet stats_set(num_final_stats);//, numUncertainVars);
-  stats_set.derivative_vector(iteratedModel.continuous_variable_ids());
+  // default response ASV/DVV may be overridden by NestedModel update
+  // in subIterator.response_results_active_set(sub_iterator_set)
+  ActiveSet stats_set(num_final_stats);
+  stats_set.derivative_vector(iteratedModel.inactive_continuous_variable_ids());
   finalStatistics = Response(stats_set);
 
   // Assign meaningful fn labels to final stats (appear in NestedModel output)

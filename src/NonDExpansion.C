@@ -1117,7 +1117,8 @@ void NonDExpansion::compute_expansion()
     if (final_asv[i] & 2)
       { final_stat_grad_flag  = true; break; }
 
-  // define active set request vector for u_space_sampler
+  // define ASV for u_space_sampler and expansion coefficient/gradient
+  // data flags for PecosApproximation
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   ActiveSet sampler_set;
   ShortArray sampler_asv(numFunctions, 0);
@@ -1207,6 +1208,7 @@ void NonDExpansion::compute_expansion()
 	{ all_approx = false; break; }
   }
   if (!all_approx || uSpaceModel.force_rebuild()) {
+    // Set the sampler ASV (defined from previous loop over numFunctions)
     sampler_set.request_vector(sampler_asv);
 
     // if required statistical sensitivities are not covered by All variables
@@ -1227,23 +1229,38 @@ void NonDExpansion::compute_expansion()
 	secondaryACVarMapTargets, secondaryADIVarMapTargets,
 	secondaryADRVarMapTargets);
 
-    // final_dvv: NestedModel::derived_compute_response() maps the top-level
-    // optimizer deriv vars to the sub-iterator deriv vars in
-    // NestedModel::set_mapping() and then sets this DVV within finalStats
-    // using subIterator.response_results_active_set().  NonDPCE/NonDSC then
-    // maps the finalStats DVV to the default set for u_space_sampler, which
-    // may then be augmented for correlations in NonD::set_u_to_x_mapping().
-    if (all_vars && sampler_grad) {
-      SizetArray filtered_final_dvv; // retain insertion targets only
+    // Set the u_space_sampler DVV, managing different gradient modes & their
+    // combinations.  The u_space_sampler's DVV may then be augmented for
+    // correlations in NonD::set_u_to_x_mapping().  Sources for DVV content
+    // include the model's continuous var ids and the final_dvv set by a
+    // NestedModel.  In the latter case, NestedModel::derived_compute_response()
+    // maps top-level optimizer derivative vars to sub-iterator derivative vars
+    // in NestedModel::set_mapping() and then sets this DVV within finalStats
+    // using subIterator.response_results_active_set().
+    if (useDerivsFlag) {
+      SizetMultiArrayConstView cv_ids
+	= iteratedModel.continuous_variable_ids();
+      if (sampler_grad) { // merge cv_ids with final_dvv
+	SizetSet merged_set; SizetArray merged_dvv;
+	merged_set.insert(cv_ids.begin(), cv_ids.end());
+	merged_set.insert(final_dvv.begin(), final_dvv.end());
+	std::copy(merged_set.begin(), merged_set.end(), merged_dvv.begin());
+	sampler_set.derivative_vector(merged_dvv);
+      }
+      else // assign cv_ids
+	sampler_set.derivative_vector(cv_ids);
+    }
+    else if (all_vars && sampler_grad) {//filter: retain only the insertion tgts
+      SizetArray filtered_final_dvv;
+      size_t num_cdv_cauv = numContDesVars+numContAleatUncVars;
       for (i=0; i<num_final_grad_vars; ++i) {
 	size_t dvv_i = final_dvv[i];
-	if (dvv_i >  numContDesVars &&
-	    dvv_i <= numContDesVars+numContAleatUncVars)
+	if (dvv_i > numContDesVars && dvv_i <= num_cdv_cauv)
 	  filtered_final_dvv.push_back(dvv_i);
       }
       sampler_set.derivative_vector(filtered_final_dvv);
     }
-    else
+    else // sampler_grad alone or placeholder default: assign final_dvv
       sampler_set.derivative_vector(final_dvv);
 
     // Build the orthogonal/interpolation polynomial approximations:

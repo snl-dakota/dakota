@@ -113,6 +113,7 @@ typedef std::pair<int, String>         IntStringPair;
 typedef std::pair<Real, Real>          RealRealPair;
 typedef std::set<Real>                 RealSet;
 typedef std::set<int>                  IntSet;
+typedef std::set<size_t>               SizetSet;
 typedef std::vector<RealSet>           RealSetArray;
 typedef std::vector<IntSet>            IntSetArray;
 typedef std::map<int, int>             IntIntMap;
