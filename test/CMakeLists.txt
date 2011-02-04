@@ -6,11 +6,13 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 if(BUILD_TESTING)
   # Copy the dakota_test support files into the BUILD_DIR tree
-  # TODO: LSQ data files; other files
   file(GLOB DAKOTA_SYSTEM_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "dakota_*.in")
   set(TestFiles
     ${DAKOTA_SYSTEM_TESTS} dakota_test.perl dakota_diff.perl dakota_base.test
+    dakota_coliny.dat  least_squares_test.dat
+    test_3pc_ac test_3pc_if test_3pc_of
+    test_3pc_ac_verb test_3pc_if_verb test_3pc_of_verb
   )
   foreach(file ${TestFiles})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${file}
@@ -35,7 +37,9 @@ if(BUILD_TESTING)
   # Copy the BUILD_DIR/src/dakota executable into the BUILD_DIR/test directory
 
   get_target_property(EXE_LOC dakota LOCATION)
-  message(STATUS EXE_LOC = ${EXE_LOC})
+  get_target_property(LIBMODE_EXE_LOC dakota_library_mode LOCATION)
+  #message(STATUS EXE_LOC = ${EXE_LOC})
+  message(STATUS LIBMODE_EXE_LOC = ${LIBMODE_EXE_LOC})
   #add_custom_command(TARGET dakota POST_BUILD COMMAND ${CMAKE_COMMAND}
   #  ARGS -E copy ${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR})  
 
@@ -43,8 +47,10 @@ if(BUILD_TESTING)
     ${CMAKE_COMMAND} -E copy ${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS dakota)  
 
-  # Just do a simple subset of tests (WJB - ToDo: get feedback from Zack prior
-  # to setting up ALL DAKOTA tests!)
+  add_custom_target(test_lib_mode_dakota ALL
+    ${CMAKE_COMMAND} -E copy ${LIBMODE_EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS dakota_library_mode)  
+
   #add_test(simple_subset ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl)
   # BMA: enabling one CTest test per DAKOTA input file; 
   #      TODO: regex which reports fail if _any_ test in the file failed
