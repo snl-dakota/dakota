@@ -10,7 +10,7 @@ if(BUILD_TESTING)
     "dakota_*.in")
   set(TestFiles
     ${DAKOTA_SYSTEM_TESTS} dakota_test.perl dakota_diff.perl dakota_base.test
-    dakota_coliny.dat  least_squares_test.dat
+    dakota_coliny.dat dakota_pce.txt least_squares_test.dat container.script
     test_3pc_ac test_3pc_if test_3pc_of
     test_3pc_ac_verb test_3pc_if_verb test_3pc_of_verb
   )
@@ -38,10 +38,6 @@ if(BUILD_TESTING)
 
   get_target_property(EXE_LOC dakota LOCATION)
   get_target_property(LIBMODE_EXE_LOC dakota_library_mode LOCATION)
-  #message(STATUS EXE_LOC = ${EXE_LOC})
-  message(STATUS LIBMODE_EXE_LOC = ${LIBMODE_EXE_LOC})
-  #add_custom_command(TARGET dakota POST_BUILD COMMAND ${CMAKE_COMMAND}
-  #  ARGS -E copy ${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR})  
 
   add_custom_target(test_dakota ALL
     ${CMAKE_COMMAND} -E copy ${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}
