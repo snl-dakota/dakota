@@ -134,7 +134,8 @@ if(HAVE_SURFPACK)
   list(APPEND interface_src SurfpackApproximation.C)
   include_directories(${Surfpack_BINARY_DIR} ${Surfpack_SOURCE_DIR}/src
                       ${Surfpack_SOURCE_DIR}/src/surfaces)
-  list(APPEND TPL_LIBS surfpack surfaces mars nkm)
+  # WJB - ToDo: work with BMA to untangle the "cyclic dependencies" in surfpack
+  list(APPEND TPL_LIBS surfaces surfpack surfaces mars nkm)
 endif(HAVE_SURFPACK)
 
 if(HAVE_PLUGIN)
