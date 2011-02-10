@@ -168,6 +168,7 @@ set(iterator_src DakotaIterator.C DakotaAnalyzer.C DakotaPStudyDACE.C
 
 if(HAVE_ACRO)
   add_definitions("-DDAKOTA_COLINY")
+  add_definitions("-DDAKOTA_UTILIB")
   #include_directories(${Acro_BINARY_DIR} ${Acro_SOURCE_DIR}/include
   #                    ${Acro_BINARY_DIR}/src ${Acro_SOURCE_DIR}/src)
   include_directories(${Acro_BINARY_DIR}/include
