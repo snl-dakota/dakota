@@ -194,7 +194,7 @@ void NonDQuadrature::filter_parameter_sets()
   }
   // truncate allSamples to the first numFilteredSamples with largest weight
   allSamples.reshape(numContinuousVars, numFilteredSamples);
-  std::map<Real, RealVector>::iterator it;
+  std::multimap<Real, RealVector>::iterator it;
   for (i=0, it=ordered_pts.begin(); i<numFilteredSamples; ++i, ++it)
     Teuchos::setCol(it->second, (int)i, allSamples);
 #ifdef DEBUG
