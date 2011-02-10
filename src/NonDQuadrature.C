@@ -54,7 +54,8 @@ NonDQuadrature::NonDQuadrature(Model& model): NonDIntegration(model),
 NonDQuadrature::
 NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
 	       const UShortArray& order, bool nested_rules): 
-  NonDIntegration(NoDBBaseConstructor(), model), nestedRules(nested_rules)
+  NonDIntegration(NoDBBaseConstructor(), model), nestedRules(nested_rules),
+  numFilteredSamples(0)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
@@ -70,6 +71,31 @@ NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
                              //, growth_rate, nested_uniform_rule);
   check_integration(order); // needs integrationRules from initialize_grid()
   maxConcurrency *= tpqDriver->grid_size();
+}
+
+
+/** This alternate constructor is used for on-the-fly generation and
+    evaluation of numerical quadrature points. */
+NonDQuadrature::
+NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
+	       int num_filt_samples, bool nested_rules): 
+  NonDIntegration(NoDBBaseConstructor(), model),
+  numFilteredSamples(num_filt_samples), nestedRules(nested_rules)
+{
+  // initialize the numerical integration driver
+  numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
+  tpqDriver = (Pecos::TensorProductDriver*)numIntDriver.driver_rep();
+
+  // local natafTransform not yet updated: x_types would have to be passed in
+  // from NonDExpansion if check_variables() needed to be called here.  Instead,
+  // it is deferred until run time in NonDIntegration::quantify_uncertainty().
+  //check_variables(x_types);
+  //short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;//SLOW_,UNRESTRICTED_
+  //short nested_uniform_rule = Pecos::GAUSS_PATTERSON;//CLENSHAW_CURTIS,FEJER2
+  tpqDriver->initialize_grid(u_types, nestedRules);
+                             //, growth_rate, nested_uniform_rule);
+  compute_min_order();
+  maxConcurrency *= numFilteredSamples;
 }
 
 
@@ -107,10 +133,25 @@ void NonDQuadrature::check_integration(const UShortArray& quad_order_spec)
     abort_handler(-1);
 
   // Update TensorProductDriver::quadOrder from quadOrderRef
-  if (nestedRules)
-    nested_quadrature_order(quadOrderRef);
-  else
-    tpqDriver->quadrature_order(quadOrderRef);
+  if (nestedRules) nested_quadrature_order(quadOrderRef);
+  else         tpqDriver->quadrature_order(quadOrderRef);
+}
+
+
+void NonDQuadrature::compute_min_order()
+{
+  unsigned short min_order = 1; size_t i, num_tensor_pts = 1;
+  while (num_tensor_pts < numFilteredSamples) {
+    ++min_order; num_tensor_pts = min_order;
+    for (i=1; i<numContinuousVars; ++i)
+      num_tensor_pts *= min_order;
+  }
+  quadOrderRef.reserve(numContinuousVars);
+  quadOrderRef.assign(numContinuousVars, min_order);
+
+  // Update TensorProductDriver::quadOrder from quadOrderRef
+  if (nestedRules) nested_quadrature_order(quadOrderRef);
+  else         tpqDriver->quadrature_order(quadOrderRef);
 }
 
 
@@ -130,6 +171,35 @@ void NonDQuadrature::get_parameter_sets(Model& model)
 
   // Compute the tensor-product grid and store in allSamples
   tpqDriver->compute_grid(allSamples);
+
+  // retain a subset of the minimal order tensor grid
+  if (numFilteredSamples)
+    filter_parameter_sets();
+}
+
+
+void NonDQuadrature::filter_parameter_sets()
+{
+  size_t i, num_tensor_pts = allSamples.numCols();
+  const Pecos::RealVector& wts = tpqDriver->weight_sets();
+#ifdef DEBUG
+  Cout << "allSamples pre-filter:" << allSamples
+       << "weights pre-filter:\n"  << wts;
+#endif // DEBUG
+  // sort TPQ points in order of descending weight
+  std::multimap<Real, RealVector> ordered_pts;
+  for (i=0; i<num_tensor_pts; ++i) {
+    RealVector col_i(Teuchos::Copy, allSamples[i], numContinuousVars);
+    ordered_pts.insert(std::pair<Real, RealVector>(-std::abs(wts[i]), col_i));
+  }
+  // truncate allSamples to the first numFilteredSamples with largest weight
+  allSamples.reshape(numContinuousVars, numFilteredSamples);
+  std::map<Real, RealVector>::iterator it;
+  for (i=0, it=ordered_pts.begin(); i<numFilteredSamples; ++i, ++it)
+    Teuchos::setCol(it->second, (int)i, allSamples);
+#ifdef DEBUG
+  Cout << "allSamples post-filter:" << allSamples;
+#endif // DEBUG
 }
 
 

@@ -45,9 +45,15 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  // alternate constructor for instantiations "on the fly"
+  /// alternate constructor for instantiations "on the fly" based on a
+  /// quadrature order specification
   NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
 		 const UShortArray& order, bool nested_rules = false);
+
+  /// alternate constructor for instantiations "on the fly" based on
+  /// the size of a filtered tensor product sample set
+  NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
+		 int num_filt_samples, bool nested_rules = false);
 
   //
   //- Heading: Member functions
@@ -85,11 +91,18 @@ private:
   //- Heading: Convenience functions
   //
 
+  /// prune allSamples back to size numFilteredSamples, retaining points
+  /// with highest product weight
+  void filter_parameter_sets();
+
   /// update quadOrder based on an updated dimension preference
   void anisotropic_preference(const RealVector& dim_pref);
 
   /// verify self-consistency of integration specification
   void check_integration(const UShortArray& quad_order_spec);
+
+  /// calculate smallest quadOrderRef with at least numFilteredSamples
+  void compute_min_order();
 
   /// update quadOrder from quadOrderRef to account for nested rule constraints
   void nested_quadrature_order(const UShortArray& quad_order_ref);
@@ -119,6 +132,10 @@ private:
   /// user specification for the number of Gauss points per dimension, plus
   /// any refinements posted by increment_grid()
   UShortArray quadOrderRef;
+
+  /// size of a filtered set of tensor quadrature points; used by the
+  /// regression PCE approach known as "probabilistic collocation"
+  size_t numFilteredSamples;
 };
 
 

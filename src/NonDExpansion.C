@@ -442,6 +442,31 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
 
 void NonDExpansion::
+construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
+		     int filtered_samples)
+{
+  /*
+  // define integration-dependent default refinement control
+  if (stochExpRefineControl == Pecos::DEFAULT_CONTROL &&
+      stochExpRefineType    >= Pecos::ADAPTIVE_P_REFINEMENT)
+    stochExpRefineControl = Pecos::TOTAL_SOBOL;
+  // enforce minimum required VBD control
+  if (!vbdControl && stochExpRefineType == Pecos::ADAPTIVE_P_REFINEMENT &&
+      stochExpRefineControl == Pecos::TOTAL_SOBOL)
+    vbdControl = Pecos::UNIVARIATE_VBD;
+  */
+
+  // nested/non_nested flag not supported in regression specification
+  bool nested_rules = false;//(ruleNestingOverride == Pecos::NESTED ||
+    //(ruleNestingOverride == Pecos::NO_OVERRIDE &&
+    // stochExpRefineType  != Pecos::NO_REFINEMENT));
+  u_space_sampler.assign_rep(
+    new NonDQuadrature(g_u_model, natafTransform.u_types(), filtered_samples,
+		       nested_rules), false);
+}
+
+
+void NonDExpansion::
 construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 		      unsigned short ssg_level, const RealVector& ssg_dim_pref)
 {
@@ -480,11 +505,11 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 
 
 void NonDExpansion::
-construct_lhs(Iterator& u_space_sampler, Model& g_u_model)
+construct_lhs(Iterator& u_space_sampler, Model& g_u_model, int num_samples)
 {
-  if (numSamplesOnModel <= 0) {
-    Cerr << "Error: bad expansion construction specification in NonDExpansion."
-	 << std::endl;
+  if (num_samples <= 0) {
+    Cerr << "Error: bad samples specification (" << num_samples << ") in "
+	 << "NonDExpansion::construct_lhs()." << std::endl;
     abort_handler(-1);
   }
 
@@ -493,8 +518,8 @@ construct_lhs(Iterator& u_space_sampler, Model& g_u_model)
       probDescDB.get_string("method.nond.expansion_sample_type")
       == "incremental_lhs")
     // TO DO: define and pass previous_samples ?
-    u_space_sampler.assign_rep(new NonDIncremLHSSampling(g_u_model,
-      numSamplesOnModel, orig_seed, ACTIVE), false);
+    u_space_sampler.assign_rep(new NonDIncremLHSSampling(g_u_model, num_samples,
+      orig_seed, ACTIVE), false);
   else
   */
 
@@ -505,7 +530,7 @@ construct_lhs(Iterator& u_space_sampler, Model& g_u_model)
   // incremental_lhs but not incremental_random
   String sample_type; // default
   u_space_sampler.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
-    numSamplesOnModel, orig_seed, rng, ACTIVE), false);
+    num_samples, orig_seed, rng, ACTIVE), false);
 }
 
 

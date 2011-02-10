@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 862 distinct keywords (plus 103 aliases) **/
+/** 863 distinct keywords (plus 103 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -602,10 +602,11 @@ static KeyWord
 		{"expansion_order",13,0,1,1,0,0.,0.,0,N_mdm(ushintL,expansionOrder)},
 		{"expansion_terms",9,0,1,1,0,0.,0.,0,N_mdm(int,expansionTerms)}
 		},
-	kw_106[4] = {
+	kw_106[5] = {
 		{0,0,2,0,0,kw_105},
 		{"reuse_points",8,0,1,0,0,0.,0.,0,N_mdm(lit,collocPtReuse_all)},
 		{"reuse_samples",0,0,1,0,0,0.,0.,-1,N_mdm(lit,collocPtReuse_all)},
+		{"tensor_grid",8,0,3,0,0,0.,0.,0,N_mdm(true,probCollocFlag)},
 		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,expansionDerivUsageFlag)}
 		},
 	kw_107[2] = {
@@ -649,8 +650,8 @@ static KeyWord
 		{0,0,2,0,0,kw_103},
 		{0,0,2,0,0,kw_104},
 		{"askey",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_ASKEY_U)},
-		{"collocation_points",9,3,3,1,kw_106,0.,0.,0,N_mdm(int,collocationPoints)},
-		{"collocation_ratio",10,3,3,1,kw_106,0.,0.,0,N_mdm(Realp,collocationRatio)},
+		{"collocation_points",9,4,3,1,kw_106,0.,0.,0,N_mdm(int,collocationPoints)},
+		{"collocation_ratio",10,4,3,1,kw_106,0.,0.,0,N_mdm(Realp,collocationRatio)},
 		{"cubature_integrand",9,0,3,1,0,0.,0.,0,N_mdm(ushint,cubIntOrder)},
 		{"expansion_import_file",11,2,3,1,kw_105,0.,0.,0,N_mdm(str,expansionImportFile)},
 		{"expansion_samples",9,1,3,1,kw_107,0.,0.,0,N_mdm(int,expansionSamples)},

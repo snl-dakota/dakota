@@ -609,6 +609,7 @@ KEYWORD12 method
 	    | collocation_ratio REAL
 	    [ reuse_points ALIAS reuse_samples ]
 	    [ use_derivatives ]
+	    [ tensor_grid ]
 	    expansion_order INTEGERLIST
 	    | expansion_terms INTEGER
 	    )

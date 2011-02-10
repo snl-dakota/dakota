@@ -2170,6 +2170,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"nl2sol.regression_diagnostics", P regressDiag},
 	{"nond.all_variables", P allVarsFlag},
 	{"nond.derivative_usage", P expansionDerivUsageFlag},
+	{"nond.tensor_grid", P probCollocFlag},
 	{"print_each_pop", P printPopFlag},
 	{"quality_metrics", P volQualityFlag},
 	{"sbg.replace_points", P surrBasedGlobalReplacePts},

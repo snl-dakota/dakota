@@ -75,15 +75,21 @@ protected:
   /// assign a NonDCubature instance within u_space_sampler
   void construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
 			  unsigned short cub_int_order);
-  /// assign a NonDQuadrature instance within u_space_sampler
+  /// assign a NonDQuadrature instance within u_space_sampler based on
+  /// a quad_order specification
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 			    const UShortArray& quad_order);
+  /// assign a NonDQuadrature instance within u_space_sampler based on
+  /// the size of a filtered tensor product sample set
+  void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
+			    int filtered_samples);
   /// assign a NonDSparsegrid instance within u_space_sampler
   void construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 			     unsigned short ssg_level,
 			     const RealVector& ssg_dim_pref);
   /// assign a NonDLHSSampling instance within u_space_sampler
-  void construct_lhs(Iterator& u_space_sampler, Model& g_u_model);
+  void construct_lhs(Iterator& u_space_sampler, Model& g_u_model,
+		     int num_samples);
 
   /// initialize uSpaceModel polynomial approximations with PCE/SC data
   void initialize_u_space_model();

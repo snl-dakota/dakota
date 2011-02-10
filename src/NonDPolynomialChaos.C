@@ -72,27 +72,37 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  colloc_pts  = probDescDB.get_int("method.nond.collocation_points");
       const Real& colloc_ratio
 	= probDescDB.get_real("method.nond.collocation_ratio");
-      if (exp_samples > 0) {
+      if (exp_samples > 0) { // expectation
 	numSamplesOnModel       = exp_samples;
 	expansionCoeffsApproach = Pecos::SAMPLING;
+	construct_lhs(u_space_sampler, g_u_model, numSamplesOnModel);
       }
-      else if (colloc_pts > 0) {
-	numSamplesOnModel       = colloc_pts;
+      else { // regression
 	expansionCoeffsApproach = Pecos::REGRESSION;
+	if (colloc_pts > 0)
+	  numSamplesOnModel = colloc_pts;
+	else if (colloc_ratio > 0.) {
+	  int num_exp_terms = (exp_order.empty()) ? expansionTerms : 
+	    Pecos::PolynomialApproximation::total_order_terms(exp_order);
+	  int data_per_pt
+	    = (useDerivsFlag && g_u_model.gradient_type() != "none")
+	    ? numContinuousVars + 1 : 1;
+	  Real min_pts = (Real)num_exp_terms/(Real)data_per_pt;
+	  int min_samples = (int)std::ceil(min_pts),
+	    tgt_samples = (int)std::floor(colloc_ratio*min_pts + .5);
+	  numSamplesOnModel = std::max(min_samples, tgt_samples);
+	}
+	// "probabilistic collocation": subset of TPQ pts w/ highest product wt
+	if (probDescDB.get_bool("method.nond.tensor_grid"))
+	  // since NonDExpansion invokes uSpaceModel.build_approximation() which
+	  // in turn invokes daceIterator.run_iterator(), we need to avoid
+	  // execution of the full tensor grid in real fn evals by overloading
+	  // the NonDQuad ctor to allow internal point set filtering.
+	  construct_quadrature(u_space_sampler, g_u_model, numSamplesOnModel);
+	// "point collocation": LHS sampling
+	else
+	  construct_lhs(u_space_sampler, g_u_model, numSamplesOnModel);
       }
-      else if (colloc_ratio > 0.) {
-	int num_exp_terms = (exp_order.empty()) ? expansionTerms : 
-	  Pecos::PolynomialApproximation::total_order_terms(exp_order);
-	int data_per_pt
-	  = (useDerivsFlag && g_u_model.gradient_type() != "none")
-	  ? numContinuousVars + 1 : 1;
-	Real min_pts = (Real)num_exp_terms/(Real)data_per_pt;
-	int min_samples = (int)std::ceil(min_pts),
-	  tgt_samples = (int)std::floor(colloc_ratio*min_pts + .5);
-	numSamplesOnModel = std::max(min_samples, tgt_samples);
-	expansionCoeffsApproach = Pecos::REGRESSION;
-      }
-      construct_lhs(u_space_sampler, g_u_model);
     }
 
     // iteratedModel concurrency is defined by the number of samples

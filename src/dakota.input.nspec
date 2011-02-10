@@ -415,6 +415,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		        | collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
 		        [ reuse_points ALIAS reuse_samples {N_mdm(lit,collocPtReuse_all)} ]
 		        [ use_derivatives {N_mdm(true,expansionDerivUsageFlag)} ]
+			[ tensor_grid {N_mdm(true,probCollocFlag)} ]
 		        )
 		    	| ( expansion_samples INTEGER {N_mdm(int,expansionSamples)}
 		          [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]

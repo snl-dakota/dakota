@@ -4343,6 +4343,7 @@ static bool
 	MP_(methodScaling),
 	MP_(mutationAdaptive),
 	MP_(printPopFlag),
+	MP_(probCollocFlag),
 	MP_(randomizeOrderFlag),
 	MP_(regressDiag),
 	MP_(showMiscOptions),
