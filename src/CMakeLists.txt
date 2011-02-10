@@ -372,14 +372,14 @@ else()
   add_executable(dakota_library_mode library_mode.C)
 endif(HAVE_HOPSPACK)
   
-target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} dl)
-target_link_libraries(dakota_library_mode dakota_src ${TPL_LIBS} dl)
-
+## WJB: request macro from Kitware? FindLibDL.cmake (e.g. digidoc++)
 list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${CURL_LIBRARIES} dl 
      ${X11_LIBRARIES} ${MOTIF_LIBRARIES} ${XMU_LIB})
 
-## WJB: request macro from Kitware? FindLibDL.cmake (e.g. digidoc++)
 target_link_libraries(dakota dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
+target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
+target_link_libraries(dakota_library_mode dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
+
 
 install(TARGETS dakota_src DESTINATION lib)
 file(GLOB Dakota_hdr *.H *.h)
