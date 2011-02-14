@@ -230,7 +230,8 @@ endif(HAVE_GPMSA)
 if(HAVE_HOPSPACK)
   #add_definitions("-DHAVE_HOPSPACK") # WJB: use convention?
   add_definitions("-DDAKOTA_HOPS")
-  include_directories(${HOPSPACK_SOURCE_DIR}/src/src-shared
+  include_directories(${HOPSPACK_BINARY_DIR}/src-shared
+                      ${HOPSPACK_SOURCE_DIR}/src/src-shared
                       ${HOPSPACK_SOURCE_DIR}/src/src-citizens
                       ${HOPSPACK_SOURCE_DIR}/src/src-evaluator
                       ${HOPSPACK_SOURCE_DIR}/src/src-executor
@@ -372,7 +373,7 @@ else()
   add_executable(dakota_library_mode library_mode.C)
 endif(HAVE_HOPSPACK)
   
-## WJB: request macro from Kitware? FindLibDL.cmake (e.g. digidoc++)
+## WJB: request macro from Kitware? FindLibDL.cmake (e.g. digidoc++ or casacore)
 list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${CURL_LIBRARIES} dl 
      ${X11_LIBRARIES} ${MOTIF_LIBRARIES} ${XMU_LIB})
 
