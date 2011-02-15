@@ -1,6 +1,4 @@
-// wjbPOUND#ifdef DAKOTA_SHLIB
-
-// probably already removed to much _SHLIB code (looked harmless) wjbPOUNDendif /*}DAKOTA_SHLIB*/
+#if 0
 
 // NOTE:  THIS IS NOT ACTIVE CODE
 //
@@ -229,6 +227,7 @@ extern "C" void QL(int *m, int *me, int *mmax, int *n, int *nmax, int *mnn, doub
          iout, ifail, iprint, war, lwar, iwar, liwar);
 }
 
-
 #endif // HAVE_DOT or NPSOL or JEGA or NPPQL
+
+#endif // end of DISABLE ALL CODE block
 
