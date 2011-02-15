@@ -1,0 +1,33 @@
+strategy,
+	single_method
+#	output_precision = 16
+
+method,
+	polynomial_chaos				#0,#1,#2,#3,#4,#5
+#	stoch_collocation				#6,#7,#8,#9,#10,#11
+	  adaptive p_refinement generalized
+	    convergence_tol = 1.e-10
+	  sparse_grid_level = 0
+#	  output debug
+
+variables,
+	uniform_uncertain = 2
+	  lower_bounds      0.  0.
+	  upper_bounds      1.  1.
+	  descriptors =    'x' 'y'
+
+interface,
+        direct
+          analysis_driver = 'gerstner'
+	  analysis_components = 'iso1'			#0,#6
+#	  analysis_components = 'iso2'			#1,#7
+#	  analysis_components = 'iso3'			#2,#8
+#	  analysis_components = 'aniso1'		#3,#9
+#	  analysis_components = 'aniso2'		#4,#10
+#	  analysis_components = 'aniso3'		#5,#11
+#	  deactivate restart_file evaluation_cache
+
+responses,
+        num_response_functions = 1
+        no_gradients
+        no_hessians

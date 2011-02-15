@@ -79,6 +79,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   driverTypeMap["extended_rosenbrock"]    = EXTENDED_ROSENBROCK;
   driverTypeMap["generalized_rosenbrock"] = GENERALIZED_ROSENBROCK;
   driverTypeMap["rosenbrock"]             = ROSENBROCK;
+  driverTypeMap["gerstner"]               = GERSTNER;
   driverTypeMap["log_ratio"]              = LOGNORMAL_RATIO;
   driverTypeMap["multimodal"]             = MULTIMODAL;
   driverTypeMap["short_column"]           = SHORT_COLUMN;
@@ -161,12 +162,13 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
     case STEEL_COLUMN_PERFORMANCE:
       localDataView |= VARIABLES_MAP;    break;
     case NO_DRIVER: // assume VARIABLES_VECTOR approach for plug-ins for now
-    case CYLINDER_HEAD:   case EXTENDED_ROSENBROCK: case GENERALIZED_ROSENBROCK:
-    case LOGNORMAL_RATIO: case MULTIMODAL:          case SOBOL_G_FUNCTION:
-    case SOBOL_RATIONAL:  case TEXT_BOOK:           case TEXT_BOOK1:
-    case TEXT_BOOK2:      case TEXT_BOOK3:          case TEXT_BOOK_OUU:
-    case SALINAS:         case MODELCENTER:         case MATLAB:
-    case PYTHON:
+    case CYLINDER_HEAD:       case GERSTNER:
+    case EXTENDED_ROSENBROCK: case GENERALIZED_ROSENBROCK:
+    case LOGNORMAL_RATIO:     case MULTIMODAL:
+    case SOBOL_G_FUNCTION:    case SOBOL_RATIONAL:
+    case TEXT_BOOK:           case TEXT_BOOK_OUU:
+    case TEXT_BOOK1: case TEXT_BOOK2:  case TEXT_BOOK3:
+    case SALINAS:    case MODELCENTER: case MATLAB: case PYTHON:
       localDataView |= VARIABLES_VECTOR; break;
     }
 
@@ -450,6 +452,8 @@ int DirectApplicInterface::derived_map_ac(const String& ac_name)
     fail_code = generalized_rosenbrock(); break;
   case EXTENDED_ROSENBROCK:
     fail_code = extended_rosenbrock(); break;
+  case GERSTNER:
+    fail_code = gerstner(); break;
   case LOGNORMAL_RATIO:
     fail_code = log_ratio(); break;
   case MULTIMODAL:
@@ -1463,6 +1467,82 @@ int DirectApplicInterface::extended_rosenbrock()
   }
 
   //sleep(5); // for faking a more expensive evaluation
+  return 0; // no failure
+}
+
+
+int DirectApplicInterface::gerstner()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: log_ratio direct fn does not support multiprocessor "
+	 << "analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numVars != 2 || numADIV || numADRV || (gradFlag && numDerivVars != 2)) {
+    Cerr << "Error: Bad number of variables in gerstner direct fn."<< std::endl;
+    abort_handler(-1);
+  }
+  if (numFns != 1) {
+    Cerr << "Error: Bad number of functions in gerstner direct fn."<< std::endl;
+    abort_handler(-1);
+  }
+  if (hessFlag) {
+    Cerr << "Error: Hessians not supported in gerstner direct fn." << std::endl;
+    abort_handler(-1);
+  }
+
+  const Real& x = xC[0]; const Real& y = xC[1];
+  const std::string& an_comp = analysisComponents[analysisDriverIndex][0];
+  short test_fn; Real x_coeff, y_coeff, xy_coeff;
+  if (an_comp        == "iso1")
+    { test_fn = 1; x_coeff = y_coeff = 10.; }
+  else if (an_comp   == "iso2")
+    { test_fn = 2; x_coeff = y_coeff = xy_coeff = 1.; }
+  else if (an_comp   == "iso3")
+    { test_fn = 3; x_coeff = y_coeff = 10.; }
+  else if (an_comp == "aniso1")
+    { test_fn = 1; x_coeff =  1.; y_coeff = 10.; }
+  else if (an_comp == "aniso2")
+    { test_fn = 2; x_coeff =  1.; y_coeff = xy_coeff = 10.; }
+  else if (an_comp == "aniso3")
+    { test_fn = 3; x_coeff = 10.; y_coeff = 5.; }
+  else {
+    Cerr << "Error: analysis component specification required in gerstner "
+	 << "direct fn." << std::endl;
+    abort_handler(-1);
+  }
+
+  // **** f:
+  if (directFnASV[0] & 1) {
+    switch (test_fn) {
+    case 1:
+      fnVals[0] = x_coeff*std::exp(-x*x) + y_coeff*std::exp(-y*y); break;
+    case 2:
+      fnVals[0]	=  x_coeff*std::exp(x) + y_coeff*std::exp(y)
+	        + xy_coeff*std::exp(x*y);                          break;
+    case 3:
+      fnVals[0] = std::exp(-x_coeff*x*x - y_coeff*y*y);            break;
+    }
+  }
+
+  // **** df/dx:
+  if (directFnASV[0] & 2) {
+    Real val;
+    switch (test_fn) {
+    case 1:
+      fnGrads[0][0] = -2.*x*x_coeff*std::exp(-x*x);
+      fnGrads[0][1] = -2.*y*y_coeff*std::exp(-y*y); break;
+    case 2:
+      val = xy_coeff*std::exp(x*y);
+      fnGrads[0][0] = x_coeff*std::exp(x) + val*y;
+      fnGrads[0][1] = y_coeff*std::exp(y) + val*x;  break;
+    case 3:
+      val = std::exp(-x_coeff*x*x - y_coeff*y*y);
+      fnGrads[0][0] = -2.*x*x_coeff*val;
+      fnGrads[0][1] = -2.*y*y_coeff*val;            break;
+    }
+  }
+
   return 0; // no failure
 }
 
