@@ -230,7 +230,7 @@ endif(HAVE_GPMSA)
 if(HAVE_HOPSPACK)
   #add_definitions("-DHAVE_HOPSPACK") # WJB: use convention?
   add_definitions("-DDAKOTA_HOPS")
-  include_directories(${HOPSPACK_BINARY_DIR}/src-shared
+  include_directories(${HOPSPACK_BINARY_DIR}/src/src-shared
                       ${HOPSPACK_SOURCE_DIR}/src/src-shared
                       ${HOPSPACK_SOURCE_DIR}/src/src-citizens
                       ${HOPSPACK_SOURCE_DIR}/src/src-evaluator
