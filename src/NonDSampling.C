@@ -633,7 +633,8 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
       std::sort(sorted_samples.begin(), sorted_samples.end());
       if (pdfOutput)
 	{ min = sorted_samples[0]; max = sorted_samples[num_samp-1]; }
-      // in case of rl_len mixed with pl_len/gl_len, bin using sorted array
+      // in case of rl_len mixed with pl_len/gl_len, bin using sorted array.
+      // Note: all bins open on right end due to use of less than.
       if (rl_len && respLevelTarget != RELIABILITIES) {
 	const RealVector& req_rl_i = requestedRespLevels[i];
         bins.assign(rl_len+1, 0); size_t samp_cntr = 0;
@@ -656,8 +657,8 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
 	    if (sample < min) min = sample;
 	    if (sample > max) max = sample;
 	  }
-	  // 1st  PDF bin from -inf to 1st resp lev;
-	  // last PDF bin from last resp lev to +inf
+	  // 1st PDF bin from -inf to 1st resp lev; last PDF bin from last resp
+	  // lev to +inf. Note: all bins open on right end due to use of <.
 	  bool found = false;
 	  for (k=0; k<rl_len; ++k)
 	    if (sample < req_rl_i[k])
@@ -736,9 +737,6 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
       size_t req_comp_rl_len = pl_len + gl_len;
       if (respLevelTarget != RELIABILITIES) req_comp_rl_len += rl_len;
       if (req_comp_rl_len) {
-	// update computedSampleBounds from (min, max)
-	//computedSampleBounds[i] = std::pair<Real, Real>(min, max);
-
 	RealVector pdf_all_rlevs;
 	if (pl_len || gl_len) {
 	  // merge all requested & computed rlevs into pdf rlevs and sort
@@ -757,10 +755,13 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
 	  if (gl_len)
 	    copy_data_partial(computedRespLevels[i], (int)(pl_len+bl_len),
 			      (int)gl_len, pdf_all_rlevs, offset);
-	  // sort combined array
+	  // sort combined array; retain unique entries; update req_comp_rl_len
 	  Real* start = pdf_all_rlevs.values();
 	  std::sort(start, start+req_comp_rl_len);
-	  // (re)compute bins from sorted_samples
+	  req_comp_rl_len = std::distance(start,
+	    std::unique(start, start+req_comp_rl_len));
+	  // (re)compute bins from sorted_samples.  Note that these bins are
+	  // open on right end due to use of strictly less than.
 	  bins.assign(req_comp_rl_len+1, 0); size_t samp_cntr = 0;
 	  for (j=0; j<req_comp_rl_len; ++j)
 	    while (samp_cntr < num_samp &&
@@ -771,11 +772,19 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
 	}
 	RealVector& pdf_rlevs = (pl_len || gl_len) ?
 	  pdf_all_rlevs : requestedRespLevels[i];
-
-	// compute computedPDF{Abscissas,Ordinates} from bin counts and widths
-	size_t last_rl_index = req_comp_rl_len-1, pdf_size = last_rl_index;
+	size_t last_rl_index = req_comp_rl_len-1;
 	const Real& lev_0    = pdf_rlevs[0];
 	const Real& lev_last = pdf_rlevs[last_rl_index];
+	// to properly sum to 1, final PDF bin must be closed on right end.
+	// --> where the max sample value defines the last response level,
+	//     move any max samples on right boundary inside last PDF bin.
+	if (max <= lev_last && bins[req_comp_rl_len]) {
+	  bins[req_comp_rl_len-1] += bins[req_comp_rl_len];
+	  bins[req_comp_rl_len]    = 0;
+	}
+
+	// compute computedPDF{Abscissas,Ordinates} from bin counts and widths
+	size_t pdf_size = last_rl_index;
 	if (min < lev_0)    ++pdf_size;
 	if (max > lev_last) ++pdf_size;
 	RealVector& abs_i = computedPDFAbscissas[i]; abs_i.resize(pdf_size+1);
