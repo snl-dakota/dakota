@@ -724,7 +724,8 @@ void NonDExpansion::quantify_uncertainty()
     case Pecos::ADAPTIVE_P_REFINEMENT:
       switch (stochExpRefineControl) {
       case Pecos::GENERALIZED_SPARSE:
-	finalize_sets(); break;
+	bool converged_within_tol = (metric <= convergenceTol);
+	finalize_sets(converged_within_tol); break;
       } break;
     }
   }
@@ -950,12 +951,14 @@ Real NonDExpansion::increment_sets()
 }
 
 
-void NonDExpansion::finalize_sets()
+void NonDExpansion::finalize_sets(bool converged_within_tol)
 {
   Cout << "\n<<<<< Finalization of generalized sparse grid sets.\n";
   NonDSparseGrid* nond_sparse
     = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
   // apply all remaining increments not previously selected
+  if (outputLevel >= VERBOSE_OUTPUT)
+    nond_sparse->print_final_sets(converged_within_tol);
   nond_sparse->finalize_sets();
   uSpaceModel.finalize_approximation();
 }
@@ -990,6 +993,19 @@ compute_final_statistics_metric(const RealVector& final_stats_ref)
   //        with a target value or measure norm of relative change.
   Real sum_sq = 0.; size_t i, j, cntr = 0, num_levels_i;
   for (i=0; i<numFunctions; ++i) {
+
+    /* this modification can be used to mirror the metrics in Gerstner & Griebel
+       2003.  However, their approach uses a hierarchical integral contribution
+       evaluation which is less prone to roundoff (and is refined to very tight
+       tolerances in the paper).
+    sum_sq += std::pow(delta_final_stats[cntr], 2.); // mean
+    cntr += 1 + requestedRespLevels[i].length() +
+      requestedProbLevels[i].length() + requestedRelLevels[i].length() +
+      requestedGenRelLevels[i].length();
+    */
+
+    // simple approach takes 2-norm of level mappings (no relative scaling),
+    // which should be fine for mappings that are not of mixed type
     cntr += 2; // skip moments
     num_levels_i = requestedRespLevels[i].length() +
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +

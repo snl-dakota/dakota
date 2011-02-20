@@ -390,11 +390,10 @@ requested_levels(const RealVectorArray& req_resp_levels,
   cdfFlag               = cdf_flag;
 
   // In current usage, incoming levels are already distributed.
-  // But if they're not, distribute them now.
-  distribute_levels(requestedRespLevels);
-  distribute_levels(requestedProbLevels);
-  distribute_levels(requestedRelLevels);
-  distribute_levels(requestedGenRelLevels);
+  //distribute_levels(requestedRespLevels);
+  //distribute_levels(requestedProbLevels);
+  //distribute_levels(requestedRelLevels);
+  //distribute_levels(requestedGenRelLevels);
 
   for (size_t i=0; i<numFunctions; i++)
     totalLevelRequests += requestedRespLevels[i].length() +
@@ -408,6 +407,8 @@ requested_levels(const RealVectorArray& req_resp_levels,
 void NonD::distribute_levels(RealVectorArray& levels)
 {
   size_t i, j, num_level_arrays = levels.size();
+  // when not already performed by the parser (i.e., a num_levels key
+  // was not provided), distribute levels among an array of vectors
   if (num_level_arrays != numFunctions) {
     if (num_level_arrays == 0) // create array of empty vectors
       levels.resize(numFunctions);
@@ -422,19 +423,27 @@ void NonD::distribute_levels(RealVectorArray& levels)
              << "of response functions." << std::endl;
         abort_handler(-1);
       }
-      levels.resize(numFunctions);
       size_t new_len = total_len/numFunctions;
-      RealVector new_vec(new_len);
-      for (i=0; i<numFunctions; i++) {
-        for (j=0; j<new_len; j++)
-          new_vec[j] = level_array0[i*new_len+j];
-        levels[i] = new_vec;
+      levels.resize(numFunctions);
+      for (i=0; i<numFunctions; ++i) {
+	RealVector& vec_i = levels[i];
+	vec_i.sizeUninitialized(new_len);
+        for (j=0; j<new_len; ++j)
+          vec_i[j] = level_array0[i*new_len+j];
       }
     }
     else {
       Cerr << "\nError: num_levels specification differs from the number of "
            << "response functions." << std::endl;
       abort_handler(-1);
+    }
+  }
+  // now ensure that each vector is sorted in ascending order
+  for (i=0; i<numFunctions; i++) {
+    size_t len_i = levels[i].length();
+    if (len_i > 1) {
+      Real* vec_i = levels[i].values();
+      std::sort(vec_i, vec_i + len_i);
     }
   }
 }

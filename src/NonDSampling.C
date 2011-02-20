@@ -45,13 +45,18 @@ NonDSampling::NonDSampling(Model& model): NonD(model),
   rngName(probDescDB.get_string("method.random_number_generator")),
   sampleType(probDescDB.get_string("method.sample_type")),
   statsFlag(true), allDataFlag(false), sampleRanksMode(IGNORE_RANKS),
-  varyPattern(!probDescDB.get_bool("method.fixed_seed")), numLHSRuns(0)
+  varyPattern(!probDescDB.get_bool("method.fixed_seed")), numLHSRuns(0),
+  pdfOutput(false)
 {
   if (numEpistemicUncVars && totalLevelRequests) {
     Cerr << "\nError: sampling does not support level requests for "
 	 << "analyses containing epistemic uncertainties." << std::endl;
     abort_handler(-1);
   }
+
+  // simple PDF output control for now (suppressed by default)
+  if (totalLevelRequests && outputLevel >= VERBOSE_OUTPUT)
+    pdfOutput = true;
 
   // Since the sampleType is shared with other iterators for other purposes,
   // its default in DataMethod.C is the NULL string.  Explicitly enforce the
@@ -76,7 +81,8 @@ NonDSampling(NoDBBaseConstructor, Model& model, const String& sample_type,
   NonD(NoDBBaseConstructor(), model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), numSamples(samples), rngName(rng),
   sampleType(sample_type), statsFlag(false), allDataFlag(true),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0)
+  sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0),
+  pdfOutput(false)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -99,7 +105,8 @@ NonDSampling(NoDBBaseConstructor, const String& sample_type, int samples,
   NonD(NoDBBaseConstructor(), lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), numSamples(samples), rngName(rng),
   sampleType(sample_type), statsFlag(false), allDataFlag(true),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0)
+  sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0),
+  pdfOutput(false)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -589,14 +596,19 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
   // Size the output arrays here instead of in the ctor in order to support
   // alternate sampling ctors.
   initialize_distribution_mappings();
+  if (pdfOutput) {
+    computedPDFAbscissas.resize(numFunctions);
+    computedPDFOrdinates.resize(numFunctions);
+  }
 
   // For the samples array, calculate the following statistics:
   // > CDF/CCDF mappings of response levels to probability/reliability levels
   // > CDF/CCDF mappings of probability/reliability levels to response levels
   using boost::math::isfinite;
-  size_t i, j, k, num_obs = samples.size(), num_samp;
+  size_t i, j, k, num_obs = samples.size(), num_samp, bin_accumulator;
   const StringArray& resp_labels = iteratedModel.response_labels();
   RealArray sorted_samples; // STL-based array for sorting
+  SizetArray bins; Real min, max;
 
   for (i=0; i<numFunctions; ++i) {
 
@@ -606,27 +618,70 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
            bl_len = requestedRelLevels[i].length(),
            gl_len = requestedGenRelLevels[i].length();
 
+    // ----------------------------------------------------------------------
+    // Preliminaries: define finite subset, sort (if needed), and bin samples
+    // ----------------------------------------------------------------------
     num_samp = 0;
+    if (pl_len || gl_len) { // sort samples array for p/beta* -> z mappings
+      sorted_samples.clear(); sorted_samples.reserve(num_obs);
+      for (j=0; j<num_obs; j++) {
+	const Real& sample = samples[j].function_value(i);
+	if (isfinite(sample))
+	  { ++num_samp; sorted_samples.push_back(sample); }
+      }
+      // sort in ascending order
+      std::sort(sorted_samples.begin(), sorted_samples.end());
+      if (pdfOutput)
+	{ min = sorted_samples[0]; max = sorted_samples[num_samp-1]; }
+      // in case of rl_len mixed with pl_len/gl_len, bin using sorted array
+      if (rl_len && respLevelTarget != RELIABILITIES) {
+	const RealVector& req_rl_i = requestedRespLevels[i];
+        bins.assign(rl_len+1, 0); size_t samp_cntr = 0;
+	for (j=0; j<rl_len; ++j)
+	  while (samp_cntr<num_samp && sorted_samples[samp_cntr]<req_rl_i[j])
+	    { ++bins[j]; ++samp_cntr; }
+	if (num_samp > samp_cntr)
+	  bins[rl_len] += num_samp - samp_cntr;
+      }
+    }
+    else if (rl_len && respLevelTarget != RELIABILITIES) {
+      // in case of rl_len without pl_len/gl_len, bin from original sample set
+      const RealVector& req_rl_i = requestedRespLevels[i];
+      bins.assign(rl_len+1, 0); min = DBL_MAX; max = -DBL_MAX;
+      for (j=0; j<num_obs; ++j) {
+	const Real& sample = samples[j].function_value(i);
+	if (isfinite(sample)) {
+	  ++num_samp;
+	  if (pdfOutput) {
+	    if (sample < min) min = sample;
+	    if (sample > max) max = sample;
+	  }
+	  // 1st  PDF bin from -inf to 1st resp lev;
+	  // last PDF bin from last resp lev to +inf
+	  bool found = false;
+	  for (k=0; k<rl_len; ++k)
+	    if (sample < req_rl_i[k])
+	      { ++bins[k]; found = true; break; }
+	  if (!found)
+	    ++bins[rl_len];
+	}
+      }
+    }
+
+    // ----------------
+    // Process mappings
+    // ----------------
     if (rl_len) {
       switch (respLevelTarget) {
       case PROBABILITIES: case GEN_RELIABILITIES: {
 	// z -> p/beta* (based on binning)
-	SizetArray less_eq_z(rl_len, 0);
-	for (j=0; j<num_obs; ++j) {
-	  const Real& sample = samples[j].function_value(i);
-	  if (isfinite(sample)) {
-	    ++num_samp;
-	    const RealVector& req_rl_i = requestedRespLevels[i];
-	    for (k=0; k<rl_len; ++k)
-	      if (sample < req_rl_i[k])
-		less_eq_z[k] += 1;
-	  }
-	}
-	for (j=0; j<rl_len; ++j) {
-	  Real cdf_prob = (Real)less_eq_z[j]/(Real)num_samp;
+	bin_accumulator = 0;
+	for (j=0; j<rl_len; ++j) { // compute CDF/CCDF p/beta*
+	  bin_accumulator += bins[j];
+	  Real cdf_prob = (Real)bin_accumulator/(Real)num_samp;
 	  Real computed_prob = (cdfFlag) ? cdf_prob : 1. - cdf_prob;
 	  if (respLevelTarget == PROBABILITIES)
-	    computedProbLevels[i][j] = computed_prob;
+	    computedProbLevels[i][j]   =  computed_prob;
 	  else
 	    computedGenRelLevels[i][j] = -Pecos::Phi_inverse(computed_prob);
 	}
@@ -645,31 +700,6 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
 	}
 	break;
       }
-    }
-    if (pl_len || gl_len) { // sort samples array for p/beta* -> z mappings
-      // create array of finite samples for sorting
-      if (rl_len && respLevelTarget != RELIABILITIES) { // num_samp available
-	sorted_samples.resize(num_samp);
-	size_t cntr = 0;
-	for (j=0; j<num_obs; j++) {
-	  const Real& sample = samples[j].function_value(i);
-	  if (isfinite(sample))
-	    sorted_samples[cntr++] = sample;
-	}
-      }
-      else { // num_samp not yet available
-	sorted_samples.clear();
-	sorted_samples.reserve(num_obs);
-	for (j=0; j<num_obs; j++) {
-	  const Real& sample = samples[j].function_value(i);
-	  if (isfinite(sample)) {
-	    ++num_samp;
-	    sorted_samples.push_back(sample);
-	  }
-	}
-      }
-      // sort in ascending order
-      std::sort(sorted_samples.begin(),sorted_samples.end());
     }
     for (j=0; j<pl_len+gl_len; j++) { // p/beta* -> z
       Real p = (j<pl_len) ? requestedProbLevels[i][j] :
@@ -697,6 +727,79 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
       computedRespLevels[i][j+pl_len] = (cdfFlag) ?
 	meanStats[i] - beta * stdDevStats[i] :
 	meanStats[i] + beta * stdDevStats[i];
+    }
+
+    // ---------------------------------------------------------------------
+    // Post-process for PDF incorporating all requested/computed resp levels
+    // ---------------------------------------------------------------------
+    if (pdfOutput) {
+      size_t req_comp_rl_len = pl_len + gl_len;
+      if (respLevelTarget != RELIABILITIES) req_comp_rl_len += rl_len;
+      if (req_comp_rl_len) {
+	// update computedSampleBounds from (min, max)
+	//computedSampleBounds[i] = std::pair<Real, Real>(min, max);
+
+	RealVector pdf_all_rlevs;
+	if (pl_len || gl_len) {
+	  // merge all requested & computed rlevs into pdf rlevs and sort
+	  pdf_all_rlevs.sizeUninitialized(req_comp_rl_len);
+	  // merge requested/computed --> pdf_all_rlevs
+	  int offset = 0;
+	  if (rl_len && respLevelTarget != RELIABILITIES) {
+	    copy_data_partial(requestedRespLevels[i], pdf_all_rlevs, 0);
+	    offset += rl_len;
+	  }
+	  if (pl_len) {
+	    copy_data_partial(computedRespLevels[i], 0, (int)pl_len,
+			      pdf_all_rlevs, offset);
+	    offset += pl_len;
+	  }
+	  if (gl_len)
+	    copy_data_partial(computedRespLevels[i], (int)(pl_len+bl_len),
+			      (int)gl_len, pdf_all_rlevs, offset);
+	  // sort combined array
+	  Real* start = pdf_all_rlevs.values();
+	  std::sort(start, start+req_comp_rl_len);
+	  // (re)compute bins from sorted_samples
+	  bins.assign(req_comp_rl_len+1, 0); size_t samp_cntr = 0;
+	  for (j=0; j<req_comp_rl_len; ++j)
+	    while (samp_cntr < num_samp &&
+		   sorted_samples[samp_cntr] < pdf_all_rlevs[j])
+	      { ++bins[j]; ++samp_cntr; }
+	  if (num_samp > samp_cntr)
+	    bins[req_comp_rl_len] += num_samp - samp_cntr;
+	}
+	RealVector& pdf_rlevs = (pl_len || gl_len) ?
+	  pdf_all_rlevs : requestedRespLevels[i];
+
+	// compute computedPDF{Abscissas,Ordinates} from bin counts and widths
+	size_t last_rl_index = req_comp_rl_len-1, pdf_size = last_rl_index;
+	const Real& lev_0    = pdf_rlevs[0];
+	const Real& lev_last = pdf_rlevs[last_rl_index];
+	if (min < lev_0)    ++pdf_size;
+	if (max > lev_last) ++pdf_size;
+	RealVector& abs_i = computedPDFAbscissas[i]; abs_i.resize(pdf_size+1);
+	RealVector& ord_i = computedPDFOrdinates[i]; ord_i.resize(pdf_size);
+	size_t offset = 0;
+	if (min < lev_0) {
+	  abs_i[0] = min;
+	  ord_i[0] = (Real)bins[0]/(Real)num_samp/(lev_0 - min);
+	  offset = 1;
+	}
+	for (j=0; j<last_rl_index; ++j) {
+	  abs_i[j+offset] = pdf_rlevs[j];
+	  ord_i[j+offset]
+	    = (Real)bins[j+1]/(Real)num_samp/(pdf_rlevs[j+1] - pdf_rlevs[j]);
+	}
+	if (max > lev_last) {
+	  abs_i[pdf_size-1] = pdf_rlevs[last_rl_index];
+	  abs_i[pdf_size]   = max;
+	  ord_i[pdf_size-1]
+	    = (Real)bins[req_comp_rl_len]/(Real)num_samp/(max - lev_last);
+	}
+	else
+	  abs_i[pdf_size] = pdf_rlevs[last_rl_index];
+      }
     }
   }
 }
@@ -753,8 +856,11 @@ void NonDSampling::print_statistics(std::ostream& s) const
     print_intervals(s);
   else {
     print_moments(s);
-    if (totalLevelRequests)
+    if (totalLevelRequests) {
       print_distribution_mappings(s);
+      if (pdfOutput)
+	print_pdf_mappings(s);
+    }
   }
   if (!subIteratorFlag) {
     StringMultiArrayConstView
@@ -822,6 +928,33 @@ void NonDSampling::print_moments(std::ostream& s) const
 	<< ' ' << std::setw(width) << meanStats[i] + mean95CIDeltas[i]
 	<< ' ' << std::setw(width) << stdDev95CILowerBnds[i]
 	<< ' ' << std::setw(width) << stdDev95CIUpperBnds[i] << '\n';
+  }
+}
+
+
+void NonDSampling::print_pdf_mappings(std::ostream& s) const
+{
+  const StringArray& resp_labels = iteratedModel.response_labels();
+
+  // output CDF/CCDF probabilities resulting from binning or CDF/CCDF
+  // reliabilities resulting from number of std devs separating mean & target
+  s.setf(std::ios::scientific);
+  s << std::setprecision(write_precision)
+    << "\nProbability Density Function (PDF) histograms for each response "
+    << "function:\n";
+  size_t i, j, width = write_precision+7;
+  for (i=0; i<numFunctions; ++i) {
+    if (!requestedRespLevels[i].empty() || !computedRespLevels[i].empty()) {
+      s << "PDF for " << resp_labels[i] << ":\n"
+	<< "          Bin Lower          Bin Upper      Density Value\n"
+	<< "          ---------          ---------      -------------\n";
+
+      size_t pdf_len = computedPDFOrdinates[i].length();
+      for (j=0; j<pdf_len; ++j)
+	s << "  " << std::setw(width) << computedPDFAbscissas[i][j] << "  "
+	  << std::setw(width) << computedPDFAbscissas[i][j+1] << "  "
+	  << std::setw(width) << computedPDFOrdinates[i][j] << '\n';
+    }
   }
 }
 

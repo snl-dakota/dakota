@@ -150,7 +150,7 @@ private:
   /// perform an adaptive refinement increment using generalized sparse grids
   Real increment_sets();
   /// finalization of adaptive refinement using generalized sparse grids
-  void finalize_sets();
+  void finalize_sets(bool converged_within_tol);
 
   /// compute 2-norm of change in response covariance
   Real compute_covariance_metric(const RealSymMatrix& resp_covar_ref);

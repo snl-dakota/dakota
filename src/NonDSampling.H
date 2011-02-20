@@ -125,6 +125,8 @@ protected:
   void print_intervals(std::ostream& s) const;
   /// prints the moments computed in compute_moments()
   void print_moments(std::ostream& s) const;
+  /// prints the PDFs computed in compute_statistics()
+  void print_pdf_mappings(std::ostream& s) const;
 
   /// compute sampled subsets of all cv/div/drv from samplingVarsMode and model
   void view_counts(const Model& model, size_t& cv_start, size_t& num_cv,
@@ -198,6 +200,15 @@ private:
   /// Max values of response functions for epistemic calculations
   /// (calculated in compute_intervals())
   RealVector maxValues;
+
+  /// flag for managing output of response probability density functions (PDFs)
+  bool pdfOutput;
+  /// sorted response PDF intervals bounds extracted from min/max sample
+  /// and requested/computedRespLevels (vector lengths = num bins + 1)
+  RealVectorArray computedPDFAbscissas;
+  /// response PDF densities computed from bin counts divided by
+  /// (unequal) bin widths (vector lengths = num bins)
+  RealVectorArray computedPDFOrdinates;
 };
 
 

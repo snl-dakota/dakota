@@ -80,6 +80,8 @@ public:
   void decrement_set();
   /// invokes SparseGridDriver::update_sets()
   void update_sets(const UShortArray& set_star);
+  /// invokes SparseGridDriver::print_final_sets(bool)
+  void print_final_sets(bool converged_within_tol);
   /// invokes SparseGridDriver::finalize_sets()
   void finalize_sets();
 
@@ -178,6 +180,10 @@ inline void NonDSparseGrid::decrement_set()
 
 inline void NonDSparseGrid::update_sets(const UShortArray& set_star)
 { ssgDriver->update_sets(set_star); }
+
+
+inline void NonDSparseGrid::print_final_sets(bool converged_within_tol)
+{ ssgDriver->print_final_sets(converged_within_tol); }
 
 
 inline void NonDSparseGrid::finalize_sets()
