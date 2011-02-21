@@ -178,10 +178,10 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   // where there are multiple response fns but only one vector of levels (no
   // index key provided), which are to be evenly distributed among the response
   // fns.  This provides some measure of backwards compatibility.
-  distribute_levels(requestedRespLevels);
-  distribute_levels(requestedProbLevels);
-  distribute_levels(requestedRelLevels);
-  distribute_levels(requestedGenRelLevels);
+  distribute_levels(requestedRespLevels);            //  always ascending
+  distribute_levels(requestedProbLevels,    cdfFlag);//  ascending if cumulative
+  distribute_levels(requestedRelLevels,    !cdfFlag);// descending if cumulative
+  distribute_levels(requestedGenRelLevels, !cdfFlag);// descending if cumulative
 
   for (size_t i=0; i<numFunctions; i++)
     totalLevelRequests += requestedRespLevels[i].length() +
@@ -391,9 +391,9 @@ requested_levels(const RealVectorArray& req_resp_levels,
 
   // In current usage, incoming levels are already distributed.
   //distribute_levels(requestedRespLevels);
-  //distribute_levels(requestedProbLevels);
-  //distribute_levels(requestedRelLevels);
-  //distribute_levels(requestedGenRelLevels);
+  //distribute_levels(requestedProbLevels,    cdfFlag);
+  //distribute_levels(requestedRelLevels,    !cdfFlag);
+  //distribute_levels(requestedGenRelLevels, !cdfFlag);
 
   for (size_t i=0; i<numFunctions; i++)
     totalLevelRequests += requestedRespLevels[i].length() +
@@ -404,7 +404,7 @@ requested_levels(const RealVectorArray& req_resp_levels,
 }
 
 
-void NonD::distribute_levels(RealVectorArray& levels)
+void NonD::distribute_levels(RealVectorArray& levels, bool ascending)
 {
   size_t i, j, num_level_arrays = levels.size();
   // when not already performed by the parser (i.e., a num_levels key
@@ -438,12 +438,15 @@ void NonD::distribute_levels(RealVectorArray& levels)
       abort_handler(-1);
     }
   }
-  // now ensure that each vector is sorted in ascending order
+  // now ensure that each vector is sorted (ascending order is default)
   for (i=0; i<numFunctions; i++) {
     size_t len_i = levels[i].length();
     if (len_i > 1) {
       Real* vec_i = levels[i].values();
-      std::sort(vec_i, vec_i + len_i);
+      if (ascending)
+	std::sort(vec_i, vec_i + len_i); // ascending sort by default
+      else
+	std::sort(vec_i, vec_i + len_i, std::greater<Real>());// descending sort
     }
   }
 }

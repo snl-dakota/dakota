@@ -297,7 +297,7 @@ private:
 
   /// convenience function for distributing a vector of levels among multiple
   /// response functions if a short-hand specification is employed.
-  void distribute_levels(RealVectorArray& levels);
+  void distribute_levels(RealVectorArray& levels, bool ascending = true);
 
   //
   //- Heading: Data members
