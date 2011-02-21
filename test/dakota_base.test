@@ -48474,30 +48474,30 @@ response_fn_1 Sobol indices:
 Test Number 28 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
-   3.2488855020e+04 Num0 Num0
-   2.0380761651e+04 Num1 Num0
-   7.7875409265e+03 Num2 Num0
-   1.4225935100e+03 Num3 Num0
+   3.2540741426e+04 Num0 Num0
+   2.0370779642e+04 Num1 Num0
+   7.7918418821e+03 Num2 Num0
+   1.4223421078e+03 Num3 Num0
    1.0000000000e+02 Num4 Num0
-  -2.9261060529e+03 Num0 Num1
-  -1.4384436010e+03 Num1 Num1
+  -2.9293565098e+03 Num0 Num1
+  -1.4379877985e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-  -8.4000206205e-12 Num3 Num1
-  -1.6887928867e-11 Num4 Num1
+   9.5231208696e-12 Num3 Num1
+  -1.6519910241e-11 Num4 Num1
    1.0000000000e+02 Num0 Num2
-   2.1906307438e-11 Num1 Num2
-   7.0818790914e-12 Num2 Num2
-   2.3210921414e-12 Num3 Num2
-   1.6484810293e-12 Num4 Num2
+   3.1302991723e-12 Num1 Num2
+   0.0000000000e+00 Num2 Num2
+  -3.8691219016e-13 Num3 Num2
+  -7.6067380696e-13 Num4 Num2
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-  expansion:    3.2488855020e+04  3.2856399563e+04
-  numerical:    3.2488855020e+04  3.2856399563e+04  8.1614467636e-01 -5.3362758003e-01
+  expansion:    3.2540741426e+04  3.2849041386e+04
+  numerical:    3.2540741426e+04  3.2849041386e+04  8.1467442477e-01 -5.3390503907e-01
 response_fn_1 Sobol indices:
                                   Main             Total
-                      9.9298831703e-01  9.9536939114e-01 x1
-                      4.6306088552e-03  7.0116829693e-03 x2
-                      2.3810741141e-03 x1 x2 
+                      9.9297926591e-01  9.9535897863e-01 x1
+                      4.6410213734e-03  7.0207340869e-03 x2
+                      2.3797127135e-03 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-04
@@ -48773,28 +48773,28 @@ response_fn_1 Sobol indices:
 Test Number 37 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
-   3.2488855020e+04 Num0 Num0
-   2.0380761651e+04 Num1 Num0
-   7.7875409265e+03 Num2 Num0
-  -2.9261060529e+03 Num0 Num1
+   3.2540741426e+04 Num0 Num0
+   2.0370779642e+04 Num1 Num0
+   7.7918418821e+03 Num2 Num0
+  -2.9293565098e+03 Num0 Num1
    1.0000000000e+02 Num0 Num2
-   1.4225935100e+03 Num3 Num0
+   1.4223421078e+03 Num3 Num0
    1.0000000000e+02 Num4 Num0
-  -1.4384436010e+03 Num1 Num1
+  -1.4379877985e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
-   1.8776834947e-11 Num1 Num2
-   6.4380719013e-12 Num2 Num2
-  -1.1555773380e-10 Num0 Num3
-   1.2145463015e-09 Num0 Num4
+   4.1737322298e-12 Num1 Num2
+   1.9306598478e-12 Num2 Num2
+   1.9637913423e-10 Num0 Num3
+   7.2837036846e-09 Num0 Num4
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-  expansion:    3.2488855020e+04  3.2856399563e+04
-  numerical:    3.2488855020e+04  3.2856399563e+04  8.1565294471e-01 -5.4939967495e-01
+  expansion:    3.2540741426e+04  3.2849041386e+04
+  numerical:    3.2540741426e+04  3.2849041386e+04  8.1418251430e-01 -5.4968634599e-01
 response_fn_1 Sobol indices:
                                   Main             Total
-                      9.9298831703e-01  9.9536939114e-01 x1
-                      4.6306088552e-03  7.0116829693e-03 x2
-                      2.3810741141e-03 x1 x2 
+                      9.9297926591e-01  9.9535897863e-01 x1
+                      4.6410213734e-03  7.0207340869e-03 x2
+                      2.3797127135e-03 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-04
@@ -49241,28 +49241,28 @@ response_fn_1 Sobol indices:
 Test Number 51 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
-   3.2488855020e+04 Num0 Num0
-   2.0380761651e+04 Num1 Num0
-   7.7875409265e+03 Num2 Num0
-   1.4225935100e+03 Num3 Num0
+   3.2540741426e+04 Num0 Num0
+   2.0370779642e+04 Num1 Num0
+   7.7918418821e+03 Num2 Num0
+   1.4223421078e+03 Num3 Num0
    1.0000000000e+02 Num4 Num0
-   1.4198877502e-09 Num5 Num0
-   1.5853457244e-08 Num6 Num0
-  -2.9261060529e+03 Num0 Num1
-  -1.4384436010e+03 Num1 Num1
+  -1.0070961756e-08 Num5 Num0
+   9.2915399135e-09 Num6 Num0
+  -2.9293565098e+03 Num0 Num1
+  -1.4379877985e+03 Num1 Num1
   -2.0000000000e+02 Num2 Num1
    1.0000000000e+02 Num0 Num2
-   1.8776834947e-11 Num1 Num2
-   6.4380719013e-12 Num2 Num2
+   4.1737322298e-12 Num1 Num2
+   1.9306598478e-12 Num2 Num2
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-  expansion:    3.2488855020e+04  3.2856399563e+04
-  numerical:    3.2488855020e+04  3.2856399563e+04  8.1597893123e-01 -5.2962959805e-01
+  expansion:    3.2540741426e+04  3.2849041386e+04
+  numerical:    3.2540741426e+04  3.2849041386e+04  8.1450883389e-01 -5.2988836628e-01
 response_fn_1 Sobol indices:
                                   Main             Total
-                      9.9298831703e-01  9.9536939114e-01 x1
-                      4.6306088552e-03  7.0116829693e-03 x2
-                      2.3810741141e-03 x1 x2 
+                      9.9297926591e-01  9.9535897863e-01 x1
+                      4.6410213734e-03  7.0207340869e-03 x2
+                      2.3797127135e-03 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-04
@@ -49475,17 +49475,17 @@ response_fn_1 Sobol indices:
 Test Number 65 succeeded
 <<<<< Function evaluation summary: 3 total (3 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
-   3.7305232910e+03 Num0 Num0
-   6.4102749071e+03 Num1 Num0
-  -2.6840121268e+02 Num0 Num1
+   3.7176364480e+03 Num0 Num0
+   6.3912090152e+03 Num1 Num0
+  -2.6703948601e+02 Num0 Num1
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-  expansion:    3.7305232910e+03  4.9002978655e+03
-  numerical:    3.7305232910e+03  4.9002978655e+03  7.0154216118e-01 -1.5000000000e+00
+  expansion:    3.7176364480e+03  4.8846777896e+03
+  numerical:    3.7176364480e+03  4.8846777896e+03  7.0156551097e-01 -1.5000000000e+00
 response_fn_1 Sobol indices:
                                   Main             Total
-                      9.9824993199e-01  9.9824993199e-01 x1
-                      1.7500680132e-03  1.7500680132e-03 x2
+                      9.9825728082e-01  9.9825728082e-01 x1
+                      1.7427191831e-03  1.7427191831e-03 x2
                       0.0000000000e+00 x1 x2 
 dakota_uq_rosenbrock_sc.in
 Test Number 0 succeeded
@@ -49908,12 +49908,12 @@ Test Number 20 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.2488855020e+04  3.2856399563e+04  8.1614467636e-01 -5.3362758003e-01
+ response_fn_1  3.2540741426e+04  3.2849041386e+04  8.1467442477e-01 -5.3390503907e-01
 response_fn_1 Sobol indices:
                                   Main             Total
-                      9.9298831703e-01  9.9536939114e-01 x1
-                      4.6306088552e-03  7.0116829693e-03 x2
-                      2.3810741141e-03 x1 x2 
+                      9.9297926591e-01  9.9535897863e-01 x1
+                      4.6410213734e-03  7.0207340869e-03 x2
+                      2.3797127135e-03 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-04
@@ -50070,12 +50070,12 @@ Test Number 29 succeeded
 <<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.2488855020e+04  3.2856399563e+04  8.1565294471e-01 -5.4939967495e-01
+ response_fn_1  3.2540741426e+04  3.2849041386e+04  8.1418251430e-01 -5.4968634599e-01
 response_fn_1 Sobol indices:
                                   Main             Total
-                      9.9298831703e-01  9.9536939114e-01 x1
-                      4.6306088552e-03  7.0116829693e-03 x2
-                      2.3810741141e-03 x1 x2 
+                      9.9297926591e-01  9.9535897863e-01 x1
+                      4.6410213734e-03  7.0207340869e-03 x2
+                      2.3797127135e-03 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-04
@@ -50322,12 +50322,12 @@ Test Number 43 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.2488855020e+04  3.2856399563e+04  8.1597893123e-01 -5.2962959805e-01
+ response_fn_1  3.2540741426e+04  3.2849041386e+04  8.1450883389e-01 -5.2988836628e-01
 response_fn_1 Sobol indices:
                                   Main             Total
-                      9.9298831703e-01  9.9536939114e-01 x1
-                      4.6306088552e-03  7.0116829693e-03 x2
-                      2.3810741141e-03 x1 x2 
+                      9.9297926591e-01  9.9535897863e-01 x1
+                      4.6410213734e-03  7.0207340869e-03 x2
+                      2.3797127135e-03 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   4.0000000000e-04
