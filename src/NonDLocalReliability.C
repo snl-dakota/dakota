@@ -339,7 +339,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       Real conv_tol = -1.; // use NPSOL default
 
 #ifdef HAVE_NPSOL
-      mppOptimizer.assign_rep(new_NPSOLOptimizer2(mppModel, npsol_deriv_level,
+      mppOptimizer.assign_rep(new NPSOLOptimizer(mppModel, npsol_deriv_level,
 	conv_tol), false);
 #endif
     }

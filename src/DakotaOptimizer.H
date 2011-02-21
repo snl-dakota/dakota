@@ -30,6 +30,9 @@ class Optimizer: public Minimizer
 {
 public:
 
+  // Static helper function third-party, opt packages which are not available
+  static void not_available(const std::string& package_name);
+
 protected:
 
   //
@@ -134,6 +137,13 @@ inline void Optimizer::finalize_run()
   optimizerInstance = prevOptInstance;
 
   Minimizer::finalize_run();
+}
+
+
+inline void Optimizer::not_available(const std::string& package_name)
+{
+  Cerr << package_name << " is not available.\n";
+  abort_handler(-1);
 }
 
 } // namespace Dakota

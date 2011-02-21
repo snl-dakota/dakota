@@ -328,6 +328,16 @@ private:
   RealList linIneqConMappingOffsets;
 };
 
+
+#ifdef HAVE_DYNLIB_FACTORIES
+// ---------------------------------------------------------
+// Factory functions for dynamic loading of solver libraries
+// ---------------------------------------------------------
+
+NLPQLPOptimizer* new_NLPQLPOptimizer(Model& model);
+NLPQLPOptimizer* new_NLPQLPOptimizer(NoDBBaseConstructor dummy, Model& model);
+#endif // HAVE_DYNLIB_FACTORIES
+
 } // namespace Dakota
 
-#endif
+#endif // NLPQLP_OPTIMIZER_H

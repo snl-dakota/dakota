@@ -1598,7 +1598,7 @@ relax_constraints(const RealVector& lower_bnds,
     
     // setup optimization problem for updating tau
 #ifdef HAVE_NPSOL
-    tau_minimizer.assign_rep(new_NPSOLOptimizer3(tau_and_x_initial,
+    tau_minimizer.assign_rep(new NPSOLOptimizer(tau_and_x_initial,
       tau_and_x_lower_bnds, tau_and_x_upper_bnds, lin_ineq_coeffs,
       lin_ineq_lower_bnds, lin_ineq_lower_bnds, lin_eq_coeffs, lin_eq_targets,
       origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets,

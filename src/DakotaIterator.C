@@ -96,415 +96,6 @@ namespace Dakota {
 
 extern ProblemDescDB dummy_db;    // defined in global_defs.C
 
-#if defined(HAVE_DOT) || defined(HAVE_JEGA) || defined(HAVE_NLPQL) || defined(HAVE_NPSOL) /*{*/
-
-#ifdef DAKOTA_SHLIB /*{*/
-#undef DAKOTA_DYNLIB
-
- typedef void (*p_vf)(void);
-
-#ifdef _WIN32 /*{{*/
-#include <windows.h>
-#define find_dlsym(a,b,c) (a = (p_vf)GetProcAddress((HINSTANCE)(b),c))
-#define NO_DLERROR
-#else /*}{*/
-#include <dlfcn.h>
-#define find_dlsym(a,b,c) (a = (p_vf)dlsym(b,c))
-#undef NO_DLERROR
-#endif /*}}*/
-
-#define DOT F77_FUNC(dot,DOT)
-#define DOT510 F77_FUNC(dot510,DOT510)
-#define NPSOL F77_FUNC(npsol,NPSOL)
-#define NLSSOL F77_FUNC(nlssol,NLSSOL)
-#define NPOPTN2 F77_FUNC(npoptn2,NPOPTN2)
-#define NLPQLP F77_FUNC(nlpqlp,NLPQLP)
-#define QL F77_FUNC(ql,QL)
-#define NumberOf(x) (sizeof(x)/sizeof(x[0]))
-
- typedef struct
-Libentry { const char *name; p_vf f; } Libentry;
-
- typedef struct
-SharedLib {
-	const char *libname;
-	size_t nentries;
-	Libentry *Entries;
-	} SharedLib;
-
- struct NIDR_KWlib;
- extern "C" NIDR_KWlib *nidr_lib_record(void *, const char*);
- extern "C" void *nidr_dlopen(const char*);
-
- static p_vf
-Lib_load(SharedLib *L, int k)
-{
-	Libentry *e, *ee;
-	const char *lname;
-	void *h;
-
-	h = nidr_dlopen(lname = L->libname);
-	if (!h) {
-#ifndef NO_DLERROR
-		const char *s;
-		if ((s = dlerror()))
-			Cerr << "Cannot open library \"" << lname << "\":\n\t" << s;
-		else
-#endif
-			Cerr << "Cannot open library \"" << lname << "\n";
-		exit(1);
-		}
-	nidr_lib_record(h, L->libname);	/* for cleanup (e.g., dlclose()) at end of execution */
-	e = L->Entries;
-	ee = e + L->nentries;
-	for(ee = e + L->nentries; e < ee; ++e)
-		if (!find_dlsym(e->f, h, e->name)) {
-			Cerr << "Could not find " << e->name << " in library " << lname << "\n";
-			exit(2);
-			}
-	return L->Entries[k].f;
-	}
-
- static Libentry
-	Dot_entries[] = { {"dot_"}, {"dot510_"} },
-	Npsol_entries[] = { {"npsol_"}, {"nlssol_"}, {"npoptn2_"} },
-	Nlpql_entries[] = { {"nlpqlp_"}, {"ql_"} };
-
- static SharedLib
-	Dot_lib = { "libdot.dll", NumberOf(Dot_entries), Dot_entries },
-	Npsol_lib = { "libnpsol.dll", NumberOf(Npsol_entries), Npsol_entries },
-	Nlpql_lib = { "libnlpql.dll", NumberOf(Nlpql_entries), Nlpql_entries };
-	
- extern "C" void
-DOT(int *info, int *ngotoz, int *method,
-	int *iprint, int *ndv, int *ncon, double *x,
-	double *xl, double *xu, double *obj, int *minmax,
-	double *g, double *rprm, int *iprm, double *wk,
-	int *nrwk, int *iwk, int *nriwk)
-{
-	typedef void (*DOT_t)(int *, int *, int *,
-			int *, int *, int *, double *,
-			double *, double *, double *, int *,
-			double *, double *, int *, double *,
-			int *, int *, int *);
-	DOT_t f;
-	if (!(f = (DOT_t)Dot_entries[0].f))
-		f = (DOT_t)Lib_load(&Dot_lib, 0);
-	f(info, ngotoz, method, iprint, ndv, ncon, x, xl, xu, obj,
-	  minmax, g, rprm, iprm, wk, nrwk, iwk, nriwk);
-	}
-
- extern "C" void
-DOT510(int *ndv, int *ncon, int *ncola,  int *method, int *nrwk, int *nriwk,
-	int *nrb, int *ngmax, double *xl, double *xu)
-{
-	typedef void (*DOT510_t)(int *, int *, int *,  int *, int *, int *,
-				int *, int *, double *, double *);
-	DOT510_t f;
-	if (!(f = (DOT510_t)Dot_entries[1].f))
-		f = (DOT510_t)Lib_load(&Dot_lib, 1);
-	f(ndv, ncon, ncola,  method, nrwk, nriwk, nrb, ngmax, xl, xu);
-	}
-
- extern "C" void
-NPSOL(int *n, int *nclin, int *ncnln,
-	int *lda, int *ldju, int *ldr, double *a, double *bl, double *bu,
-	p_vf funcon, p_vf funobj, int *inform,  int *iter, int *istate,
-	double *c, double *cjacu, double *clamda, double *objf,
-	double *gradu, double *r, double *x, int *iw, int *leniw,
-	double *w, int *lenw)
-{
-	typedef void (*NPSOL_t)(int *, int *, int *, int *, int *,
-			int *, double *, double *, double *, p_vf, p_vf,
-			int *, int *, int *, double *, double *, double *,
-			double *, double *, double *, double *, int *,
-			int *, double *, int *);
-	NPSOL_t f;
-	if (!(f = (NPSOL_t)Npsol_entries[0].f))
-		f = (NPSOL_t)Lib_load(&Npsol_lib, 0);
-	f(n, nclin, ncnln, lda, ldju, ldr, a, bl, bu, funcon, funobj,
-	  inform, iter, istate, c, cjacu, clamda, objf, gradu, r, x,
-	  iw, leniw, w, lenw);
-	}
-
- extern "C" void
-NLSSOL(int *m, int *n, int *nclin, int *ncnln, int *lda, int *ldcju,
-	int *ldfju, int *ldr, double *a, double *bl, double *bu,
-	p_vf funcon, p_vf funobj, int *inform, int *iter, int *istate,
-	double *c, double *cjacu, double *y, double *f, double *fjacu,
-	double *clamda, double *objf, double *r, double *x, int *iw,
-	int *leniw, double *w, int *lenw)
-{
-	typedef void (*NLSSOL_t)(int *, int *, int *, int *, int *, int *,
-		int *, int *, double *, double *, double *, p_vf, p_vf,
-		int *, int *, int *, double *, double *, double *,
-		double *, double *, double *, double *, double *,
-		double *, int *, int *, double *, int *);
-	NLSSOL_t F;
-	if (!(F = (NLSSOL_t)Npsol_entries[1].f))
-		F = (NLSSOL_t)Lib_load(&Npsol_lib, 1);
-	F(m, n, nclin, ncnln, lda, ldcju, ldfju, ldr, a, bl, bu,
-	  funcon, funobj, inform, iter, istate, c, cjacu, y, f,
-	  fjacu, clamda, objf, r, x, iw, leniw, w, lenw);
-	}
-
- extern "C" void
-NPOPTN2(char *string, size_t string_len)
-{
-	typedef void (*NPOPTN2_t)(char *, size_t);
-	NPOPTN2_t f;
-	if (!(f = (NPOPTN2_t)Npsol_entries[2].f))
-		f = (NPOPTN2_t)Lib_load(&Npsol_lib, 2);
-	f(string, string_len);
-	}
-
- extern "C" void
-NLPQLP(int *l, int *m, int *me, int *mmax, int *n, int *nmax, int *mnn2,
-	double *x, double *f, double *g, double *df, double *dg, double *u,
-	double *xl, double *xu, double *c, double *d, double *acc,
-	double *accqp, double *stpmin, int *maxfun, int *maxit, int *max_nm,
-	double *tol_nm, int *iprint, int *mode, int *iout, int *ifail,
-	double *wa, int *lwa, int *kwa, int *lkwa, int *active,
-	int *lactiv, int *lql, p_vf qpsolve)
-{
-	typedef void (*NLPQLP_t)(int *, int *, int *, int *, int *, int *,
-			int *mnn2, double *, double *, double *, double *,
-			double *, double *, double *, double *, double *,
-			double *, double *, double *, double *, int *, int *,
-			int *, double *, int *, int *, int *, int *, double *,
-			int *, int *, int *, int *, int *, int *, p_vf);
-	NLPQLP_t F;
-	if (!(F = (NLPQLP_t)Nlpql_entries[0].f))
-		F = (NLPQLP_t)Lib_load(&Nlpql_lib, 0);
-	F(l, m, me, mmax, n, nmax, mnn2, x, f, g, df, dg, u, xl, xu, c, d, acc,
-	  accqp, stpmin, maxfun, maxit, max_nm, tol_nm, iprint, mode, iout,
-	  ifail, wa, lwa, kwa, lkwa, active, lactiv, lql, qpsolve);
-	}
-
- extern "C" void
-QL(int *m, int *me, int *mmax, int *n, int *nmax, int *mnn, double *c,
-   double *d, double *a, double *b, double *xl, double *xu, double *x,
-   double *u, double *eps, int *mode, int *iout, int *ifail, int *iprint,
-   double *war, int *lwar, int *iwar, int *liwar)
-{
-	typedef void (*QL_t)(int *, int *, int *, int *, int *, int *,
-			double *, double *, double *, double *, double *,
-			double *, double *, double *, double *, int *, int *,
-			int *, int *, double *, int *, int *, int *);
-	QL_t f;
-	if (!(f = (QL_t)Nlpql_entries[1].f))
-		f = (QL_t)Lib_load(&Nlpql_lib, 1);
-	f(m, me, mmax, n, nmax, mnn, c, d, a, b, xl, xu, x, u, eps, mode,
-	 iout, ifail, iprint, war, lwar, iwar, liwar);
-	}
-
-#undef NumberOf
-#undef Str
-#undef DOT
-#undef DOT510
-#undef NPSOL
-#undef NLSSOL
-#undef NPOPTN2
-#undef NLPQLP
-#undef QL
-
-#endif /*}DAKOTA_SHLIB*/
-
-#ifdef DAKOTA_DYNLIB /*{*/
- static void
-not_available(const char *what)
-{
-	Cerr << what << " is not available.\n";
-	abort_handler(-1);
-	}
-#endif /*}*/
-
-#ifdef HAVE_DOT /*{*/
-
-  static DOTOptimizer* no_DOT(Model& model)
-{
-#ifdef DAKOTA_DYNLIB
-	not_available("DOT");
-	return 0;
-#else
-	return new DOTOptimizer(model);
-#endif
-	}
-
- static DOTOptimizer* no_DOT1(NoDBBaseConstructor, Model& model)
-{
-#ifdef DAKOTA_DYNLIB
-	not_available("DOT");
-	return 0;
-#else
-	return new DOTOptimizer(NoDBBaseConstructor(), model);
-#endif
-	}
-
- DOTOptimizer *(*new_DOTOptimizer)(Model& model) = no_DOT;
- DOTOptimizer *(*new_DOTOptimizer1)(NoDBBaseConstructor, Model &model) = no_DOT1;
-
-#endif /*}HAVE_DOT*/
-
-#ifdef HAVE_JEGA /*{*/
-
- static JEGAOptimizer* no_JEGA(Model& model)
-{
-#ifdef DAKOTA_DYNLIB
-	not_available("JEGA");
-	return 0;
-#else
-	return new JEGAOptimizer(model);
-#endif
-	}
-
- JEGAOptimizer *(*new_JEGAOptimizer)(Model& model) = no_JEGA;
-
-#endif /*}HAVE_JEGA*/
-
-#ifdef HAVE_NLPQL /*{*/
-
- static NLPQLPOptimizer* no_NLPQL(Model& model)
-{
-#ifdef DAKOTA_DYNLIB
-	not_available("NLPQL");
-	return 0;
-#else
-	return new NLPQLPOptimizer(model);
-#endif
-	}
-
- static NLPQLPOptimizer* no_NLPQL1(NoDBBaseConstructor, Model& model)
-{
-#ifdef DAKOTA_DYNLIB
-	not_available("NLPQL");
-	return 0;
-#else
-	return new NLPQLPOptimizer(NoDBBaseConstructor(), model);
-#endif
-	}
-
- NLPQLPOptimizer *(*new_NLPQLPOptimizer)(Model& model) = no_NLPQL;
- NLPQLPOptimizer *(*new_NLPQLPOptimizer1)(NoDBBaseConstructor, Model &model) = no_NLPQL1;
-
-#endif /*}HAVE_NLPQL*/
-
-#ifdef HAVE_NPSOL /*{*/
-
- static NPSOLOptimizer* no_NPSOL(Model& model)
-{
-#ifdef DAKOTA_DYNLIB
-	not_available("NPSOL");
-	return 0;
-#else
-	return new NPSOLOptimizer(model);
-#endif
-	}
-
- static NPSOLOptimizer* no_NPSOL1(NoDBBaseConstructor, Model& model)
-{
-#ifdef DAKOTA_DYNLIB
-	not_available("NPSOL");
-	return 0;
-#else
-	return new NPSOLOptimizer(NoDBBaseConstructor(), model);
-#endif
-	}
-
- static NPSOLOptimizer*
-no_NPSOL2(Model& model, const int& derivative_level, const Real& conv_tol)
-{
-#ifdef DAKOTA_DYNLIB
-	not_available("NPSOL");
-	return 0;
-#else
-	return new NPSOLOptimizer(model, derivative_level, conv_tol);
-#endif
-	}
-
- static NPSOLOptimizer*
-no_NPSOL3(const RealVector& initial_point,
-    const RealVector& var_lower_bnds,
-    const RealVector& var_upper_bnds,
-    const RealMatrix& lin_ineq_coeffs,
-    const RealVector& lin_ineq_lower_bnds,
-    const RealVector& lin_ineq_upper_bnds,
-    const RealMatrix& lin_eq_coeffs,
-    const RealVector& lin_eq_targets,
-    const RealVector& nonlin_ineq_lower_bnds,
-    const RealVector& nonlin_ineq_upper_bnds,
-    const RealVector& nonlin_eq_targets,
-    void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
-    void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
-			   double*, int&),
-    const int& derivative_level, const Real& conv_tol)
-{
-#ifdef DAKOTA_DYNLIB
-	not_available("NPSOL");
-	return 0;
-#else
-	return new NPSOLOptimizer(initial_point,
-			var_lower_bnds,
-			var_upper_bnds,
-			lin_ineq_coeffs,
-			lin_ineq_lower_bnds,
-			lin_ineq_upper_bnds,
-			lin_eq_coeffs,
-			lin_eq_targets,
-			nonlin_ineq_lower_bnds,
-			nonlin_ineq_upper_bnds,
-			nonlin_eq_targets,
-			user_obj_eval,
-			user_con_eval,
-			derivative_level,
-			conv_tol);
-#endif
-	}
-
- static NLSSOLLeastSq* no_NLSSOL(Model& model)
-{
-#ifdef DAKOTA_DYNLIB
-	not_available("NPSOL");
-	return 0;
-#else
-	return new NLSSOLLeastSq(model);
-#endif
-	}
-
- static NLSSOLLeastSq* no_NLSSOL1(NoDBBaseConstructor, Model& model)
-{
-#ifdef DAKOTA_DYNLIB
-	not_available("NPSOL");
-	return 0;
-#else
-	return new NLSSOLLeastSq(NoDBBaseConstructor(), model);
-#endif
-	}
-
- NPSOLOptimizer *(*new_NPSOLOptimizer)(Model& model) = no_NPSOL;
- NPSOLOptimizer *(*new_NPSOLOptimizer1)(NoDBBaseConstructor, Model &model) = no_NPSOL1;
- NPSOLOptimizer *(*new_NPSOLOptimizer2)(Model&, const int&, const Real&) = no_NPSOL2;
- NPSOLOptimizer *(*new_NPSOLOptimizer3)(const RealVector& initial_point,
-    const RealVector& var_lower_bnds,
-    const RealVector& var_upper_bnds,
-    const RealMatrix& lin_ineq_coeffs,
-    const RealVector& lin_ineq_lower_bnds,
-    const RealVector& lin_ineq_upper_bnds,
-    const RealMatrix& lin_eq_coeffs,
-    const RealVector& lin_eq_targets,
-    const RealVector& nonlin_ineq_lower_bnds,
-    const RealVector& nonlin_ineq_upper_bnds,
-    const RealVector& nonlin_eq_targets,
-    void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
-    void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
-			   double*, int&),
-    const int& derivative_level, const Real& conv_tol) = no_NPSOL3;
- NLSSOLLeastSq *(*new_NLSSOLLeastSq)(Model& model) = no_NLSSOL;
- NLSSOLLeastSq *(*new_NLSSOLLeastSq1)(NoDBBaseConstructor, Model &model) = no_NLSSOL1;
-
-#endif /*}HAVE_NPSOL*/
-#endif /*}*/
-
 /** This constructor builds the base class data for all inherited
     iterators.  get_iterator() instantiates a derived class and the
     derived class selects this base class constructor in its
@@ -803,7 +394,7 @@ Iterator* Iterator::get_iterator(Model& model)
 #endif
 #ifdef HAVE_JEGA
   else if (method_name == "moga" || method_name == "soga")
-    return new_JEGAOptimizer(model);
+    return new JEGAOptimizer(model);
 #endif
 #ifdef DAKOTA_DL_SOLVER
   else if (method_name == "dl_solver")
@@ -811,13 +402,13 @@ Iterator* Iterator::get_iterator(Model& model)
 #endif
 #ifdef HAVE_NPSOL
   else if (method_name == "npsol_sqp")
-    return new_NPSOLOptimizer(model);
+    return new NPSOLOptimizer(model);
   else if (method_name == "nlssol_sqp")
-    return new_NLSSOLLeastSq(model);
+    return new NLSSOLLeastSq(model);
 #endif
 #ifdef HAVE_NLPQL
   else if (method_name == "nlpql_sqp")
-    return new_NLPQLPOptimizer(model);
+    return new NLPQLPOptimizer(model);
 #endif
 #ifdef HAVE_NL2SOL
   else if (method_name == "nl2sol")
@@ -829,7 +420,7 @@ Iterator* Iterator::get_iterator(Model& model)
 //#endif
 #ifdef HAVE_DOT
   else if (method_name.begins("dot_"))
-    return new_DOTOptimizer(model);
+    return new DOTOptimizer(model);
 #endif
 #ifdef HAVE_CONMIN
   else if (method_name.begins("conmin_"))
@@ -925,13 +516,13 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
 #endif
 #ifdef HAVE_NPSOL
   else if (method_name == "npsol_sqp")
-    return new_NPSOLOptimizer1(NoDBBaseConstructor(), model);
+    return new NPSOLOptimizer(NoDBBaseConstructor(), model);
   else if (method_name == "nlssol_sqp")
-    return new_NLSSOLLeastSq1(NoDBBaseConstructor(), model);
+    return new NLSSOLLeastSq(NoDBBaseConstructor(), model);
 #endif
 #ifdef HAVE_NLPQL
   else if (method_name == "nlpql_sqp")
-    return new_NLPQLPOptimizer1(NoDBBaseConstructor(), model);
+    return new NLPQLPOptimizer(NoDBBaseConstructor(), model);
 #endif
 #ifdef HAVE_NL2SOL
   else if (method_name == "nl2sol")
@@ -939,7 +530,7 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
 #endif
 #ifdef HAVE_DOT
   else if (method_name.begins("dot_"))
-    return new_DOTOptimizer1(NoDBBaseConstructor(), model);
+    return new DOTOptimizer(NoDBBaseConstructor(), model);
 #endif
 #ifdef HAVE_CONMIN
   else if (method_name.begins("conmin_"))

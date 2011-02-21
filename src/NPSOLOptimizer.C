@@ -51,7 +51,6 @@ void NPOPTN2_F77( const char* option_string );
 
 }
 
-using namespace std;
 
 namespace Dakota {
 
@@ -90,6 +89,8 @@ NPSOLOptimizer::NPSOLOptimizer(Model& model, const int& derivative_level,
   const Real& conv_tol): // SOLBase default ctor
   Optimizer(NoDBBaseConstructor(), model), setUpType("model")
 {
+  using std::string;
+
   // Set NPSOL options (mostly use defaults)
   string vlevel_s("Verify Level                = -1");
   vlevel_s.resize(72, ' ');
@@ -101,7 +102,7 @@ NPSOLOptimizer::NPSOLOptimizer(Model& model, const int& derivative_level,
 
   // assign the derivative_level passed in
   string dlevel_s("Derivative Level            = ");
-  dlevel_s += boost::lexical_cast<std::string>(derivative_level);
+  dlevel_s += boost::lexical_cast<string>(derivative_level);
   dlevel_s.resize(72, ' ');
   NPOPTN2_F77( dlevel_s.data() );
 
@@ -140,6 +141,8 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
   lowerBounds(var_lower_bnds), upperBounds(var_upper_bnds), 
   userObjectiveEval(user_obj_eval), userConstraintEval(user_con_eval)
 {
+  using std::string;
+
   // invoke SOLBase allocate/set functions (shared with NLSSOLLeastSq)
   allocate_arrays(numContinuousVars, numNonlinearConstraints, lin_ineq_coeffs,
 		  lin_eq_coeffs);
@@ -161,7 +164,7 @@ NPSOLOptimizer::NPSOLOptimizer(const RealVector& initial_point,
   // Set Derivative Level = 3 for user-supplied gradients, 0 for NPSOL
   // vendor-numerical, ...
   string dlevel_s("Derivative Level            = ");
-  dlevel_s += boost::lexical_cast<std::string>(derivative_level);
+  dlevel_s += boost::lexical_cast<string>(derivative_level);
   dlevel_s.resize(72, ' ');
   NPOPTN2_F77( dlevel_s.data() );
 
@@ -187,6 +190,68 @@ NPSOLOptimizer::~NPSOLOptimizer()
 }
 
 
+#ifdef HAVE_DYNLIB_FACTORIES
+NPSOLOptimizer* new_NPSOLOptimizer(Model& model)
+{
+#ifdef DAKOTA_DYNLIB
+  not_available("NPSOL");
+  return 0;
+#else
+  return new NPSOLOptimizer(model);
+#endif
+}
+
+NPSOLOptimizer* new_NPSOLOptimizer1(NoDBBaseConstructor, Model& model)
+{
+#ifdef DAKOTA_DYNLIB
+  not_available("NPSOL");
+  return 0;
+#else
+  return new NPSOLOptimizer(NoDBBaseConstructor(), model);
+#endif
+}
+
+NPSOLOptimizer* new_NPSOLOptimizer2(Model& model, const int& derivative_level,
+                                    const Real& conv_tol)
+{
+#ifdef DAKOTA_DYNLIB
+  not_available("NPSOL");
+  return 0;
+#else
+  return new NPSOLOptimizer(model, derivative_level, conv_tol);
+#endif
+}
+
+NPSOLOptimizer* new_NPSOLOptimizer3(const RealVector& initial_point,
+  const RealVector& var_lower_bnds,
+  const RealVector& var_upper_bnds,
+  const RealMatrix& lin_ineq_coeffs,
+  const RealVector& lin_ineq_lower_bnds,
+  const RealVector& lin_ineq_upper_bnds,
+  const RealMatrix& lin_eq_coeffs,
+  const RealVector& lin_eq_targets,
+  const RealVector& nonlin_ineq_lower_bnds,
+  const RealVector& nonlin_ineq_upper_bnds,
+  const RealVector& nonlin_eq_targets,
+  void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
+  void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
+                         double*, int&),
+  const int& derivative_level, const Real& conv_tol)
+{
+#ifdef DAKOTA_DYNLIB
+  not_available("NPSOL");
+  return 0;
+#else
+  return new NPSOLOptimizer( initial_point, var_lower_bnds, var_upper_bnds,
+	       lin_ineq_coeffs, lin_ineq_lower_bnds, lin_ineq_upper_bnds,
+	       lin_eq_coeffs, lin_eq_targets, nonlin_ineq_lower_bnds,
+	       nonlin_ineq_upper_bnds, nonlin_eq_targets, user_obj_eval,
+	       user_con_eval, derivative_level, conv_tol);
+#endif // DAKOTA_DYNLIB
+}
+#endif // HAVE_DYNLIB_FACTORIES
+
+
 void NPSOLOptimizer::
 objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
 	       int& nstate)
@@ -206,9 +271,11 @@ objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
       Cout << "NPSOL has requested objective gradient for case of vendor "
 	   << "numerical gradients.\n";
       if (asv_request)
-	Cout << "Request will be downgraded to objective value alone.\n" <<endl;
+	Cout << "Request will be downgraded to objective value alone.\n"
+             << std::endl;
       else
-	Cout << "Request will be ignored and no evaluation performed.\n" <<endl;
+	Cout << "Request will be ignored and no evaluation performed.\n"
+             << std::endl;
     }
   }
 
@@ -225,7 +292,7 @@ objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
       mode = -1; // terminate NPSOL (see mode discussion in "User-Supplied
 	         // Subroutines" section of NPSOL manual)
       Cout << "Iteration terminated: max_function_evaluations limit has been "
-	   << "met." << endl;
+	   << "met." << std::endl;
     }
   }
   
@@ -246,7 +313,8 @@ void NPSOLOptimizer::find_optimum()
   else if (setUpType == "user_functions")
     find_optimum_on_user_functions();
   else {
-    Cerr << "Error: bad setUpType in NPSOLOptimizer::find_optimum()." << endl;
+    Cerr << "Error: bad setUpType in NPSOLOptimizer::find_optimum()."
+         << std::endl;
     abort_handler(-1);
   }
 }
@@ -340,17 +408,17 @@ void NPSOLOptimizer::find_optimum_on_model()
   // For better post-processing, could append fort.9 to dakota.out line
   // by line, but: THERE IS A PROBLEM WITH GETTING ALL OF THE FILE!
   // (FORTRAN output is lacking a final buffer flush?)
-  Cout << "\nEcho NPSOL's iteration output from fort.9 file:\n" << endl;
+  Cout << "\nEcho NPSOL's iteration output from fort.9 file:\n" << std::endl;
   ifstream npsol_fort_9( "fort.9" );
   char fort_9_line[255];
   while (npsol_fort_9) {
     npsol_fort_9.getline( fort_9_line, 255 );
     Cout << fort_9_line << '\n';
   }
-  Cout << endl;
+  Cout << std::endl;
   */
   Cout << "\nNOTE: see Fortran device 9 file (fort.9 or ftn09)"
-       << "\n      for complete NPSOL iteration history." << endl;
+       << "\n      for complete NPSOL iteration history." << std::endl;
 
   // restore in case of recursion
   npsolInstance  = prev_nps_instance;

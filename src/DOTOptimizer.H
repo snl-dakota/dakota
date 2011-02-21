@@ -161,6 +161,16 @@ private:
   RealArray constraintMappingOffsets;
 };
 
+
+#ifdef HAVE_DYNLIB_FACTORIES
+// ---------------------------------------------------------
+// Factory functions for dynamic loading of solver libraries
+// ---------------------------------------------------------
+
+DOTOptimizer* new_DOTOptimizer(Model& model);
+DOTOptimizer* new_DOTOptimizer(NoDBBaseConstructor dummy, Model& model);
+#endif // HAVE_DYNLIB_FACTORIES
+
 } // namespace Dakota
 
-#endif
+#endif // DOT_OPTIMIZER_H

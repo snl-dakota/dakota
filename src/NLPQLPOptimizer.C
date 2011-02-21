@@ -52,6 +52,29 @@ NLPQLPOptimizer::NLPQLPOptimizer(NoDBBaseConstructor, Model& model):
 { initialize(); }
 
 
+#ifdef HAVE_DYNLIB_FACTORIES
+NLPQLPOptimizer* new_NLPQLPOptimizer(Model& model)
+{
+#ifdef DAKOTA_DYNLIB
+  not_available("NLPQLP");
+  return 0;
+#else
+  return new NLPQLPOptimizer(model);
+#endif // DAKOTA_DYNLIB
+}
+
+NLPQLPOptimizer* new_NLPQLPOptimizer(NoDBBaseConstructor, Model& model)
+{
+#ifdef DAKOTA_DYNLIB
+  not_available("NLPQLP");
+  return 0;
+#else
+  return new NLPQLPOptimizer(NoDBBaseConstructor(), model);
+#endif // DAKOTA_DYNLIB
+}
+#endif // HAVE_DYNLIB_FACTORIES
+
+
 void NLPQLPOptimizer::initialize()
 {
   // NLPQLP does not support internal calculation of numerical derivatives

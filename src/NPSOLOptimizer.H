@@ -135,10 +135,16 @@ private:
 			      double*, int&);
 };
 
-extern NPSOLOptimizer *(*new_NPSOLOptimizer)(Model&);
-extern NPSOLOptimizer *(*new_NPSOLOptimizer1)(NoDBBaseConstructor, Model &);
-extern NPSOLOptimizer *(*new_NPSOLOptimizer2)(Model&, const int&, const Real&);
-extern NPSOLOptimizer *(*new_NPSOLOptimizer3)(const RealVector& initial_point,
+
+#ifdef HAVE_DYNLIB_FACTORIES
+// ---------------------------------------------------------
+// Factory functions for dynamic loading of solver libraries
+// ---------------------------------------------------------
+
+NPSOLOptimizer* new_NPSOLOptimizer(Model& model);
+NPSOLOptimizer* new_NPSOLOptimizer(NoDBBaseConstructor dummy, Model& model);
+NPSOLOptimizer* new_NPSOLOptimizer(Model& model, const int&, const Real&);
+NPSOLOptimizer* new_NPSOLOptimizer(const RealVector& initial_point,
     const RealVector& var_lower_bnds,
     const RealVector& var_upper_bnds,
     const RealMatrix& lin_ineq_coeffs,
@@ -154,7 +160,8 @@ extern NPSOLOptimizer *(*new_NPSOLOptimizer3)(const RealVector& initial_point,
 			   double*, int&),
     const int& derivative_level, const Real& conv_tol);
 
+#endif // HAVE_DYNLIB_FACTORIES
 
 } // namespace Dakota
 
-#endif
+#endif // NPSOL_OPTIMIZER_H

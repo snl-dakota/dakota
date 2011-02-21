@@ -79,7 +79,7 @@ NonDLocalInterval::NonDLocalInterval(Model& model): NonDInterval(model)
   if (npsolFlag) {
 #ifdef HAVE_NPSOL  
     int npsol_deriv_level = 3;
-    minMaxOptimizer.assign_rep(new_NPSOLOptimizer2(minMaxModel,
+    minMaxOptimizer.assign_rep(new NPSOLOptimizer(minMaxModel,
 				npsol_deriv_level, convergenceTol), false);
 #endif // HAVE_NPSOL
   }

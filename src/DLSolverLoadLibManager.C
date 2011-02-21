@@ -1,47 +1,64 @@
-#if 0
+/*  _______________________________________________________________________
+
+    DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
+    Copyright (c) 2010, Sandia National Laboratories.
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+//- Class:        Iterator
+//- Description:  Dynamic library load manager for third-party solver packages.
+//- Version: $Id$
 
 // NOTE:  THIS IS NOT ACTIVE CODE
 //
-// Just a "buffer" to maintain a record of a commit that is no longer
+// It is just a "buffer" to maintain a record of a commit that is no longer
 // maintained.  Revs related to DLib management (in the mid-May 2010)
 // were deemed inappropriate to add to the top of DakotaIterator.C from
 // the perperspective of DAKOTA code design/modularity.  Therefore, the
 // code has been de-activated and moved into this source file for posterity.
 //
-// Assuming we do want to maintain "DL LoadManagementcapabability", these
+// Assuming we do want to maintain "DL LoadManagement" capabability, these
 // typedefs/functions/"iterator" prototypes should be re-designed and 
 // implemented in a new component for DAKOTA (e.g. DynLoadLib Manager?).
 
-#if(defined(HAVE_DOT) || defined(HAVE_JEGA) || defined(HAVE_NLPQL)               || defined(HAVE_NPSOL))
+#include "system_defs.h"
+#include "global_defs.h"
+
+/* WJB: re-enable dependencies class-wrappers only if necessary
+#ifdef HAVE_DOT
+#include "DOTOptimizer.H"
+#endif
+#ifdef HAVE_NLPQL
+#include "NLPQLPOptimizer.H"
+#endif
+#ifdef HAVE_NPSOL
+#include "NPSOLOptimizer.H"
+#include "NLSSOLLeastSq.H"
+#endif
+// WJB: end of re-enable dependencies comment */
+
+#if(defined(HAVE_DOT) || defined(HAVE_JEGA) || defined(HAVE_NLPQL) ||               defined(HAVE_NPSOL)) 
 
 #ifdef DAKOTA_SHLIB
 #undef DAKOTA_DYNLIB
 
-#ifdef DAKOTA_DYNLIB
-static void not_available(const char *what)
-{
-  std::cerr << what << " is not available.\n";
-  abort_handler(-1);
-}
-#endif // DAKOTA_DYNLIB
-
-
 typedef void (*p_vf)(void);
 
+// WJB - ToDo: prefer function over macro
 #ifdef _WIN32
 #include <windows.h>
 #define find_dlsym(a,b,c) (a = (p_vf)GetProcAddress((HINSTANCE)(b),c))
 #define NO_DLERROR
 #else
 #include <dlfcn.h>
-#define find_dlsym(a,b,c) (a = (p_vf)dlsym(b,c))
+#define find_dlsym(a,b,c) (a = dlsym(b,c))
 #undef NO_DLERROR
 #endif
 
 
 typedef struct Libentry
 {
-  typedef void (*p_vf)(void);
   const char *name;
   p_vf f;
 } Libentry;
@@ -66,8 +83,7 @@ static p_vf Lib_load(SharedLib *L, int k)
   void* h = nidr_dlopen(lname = L->libname);
   if (!h) {
 #ifndef NO_DLERROR
-    const char *s;
-    if ((s = dlerror()))
+    if ((const char* s = dlerror()))
       std::cerr << "Cannot open library \"" << lname << "\":\n\t" << s;
     else
 #endif
@@ -77,11 +93,14 @@ static p_vf Lib_load(SharedLib *L, int k)
   nidr_lib_record(h, L->libname); // for cleanup (e.g., dlclose()) at endOf exec
   e = L->Entries;
   ee = e + L->nentries;
+
   for(ee = e + L->nentries; e < ee; ++e)
-  //      if (!find_dlsym(e->f, h, e->name)) {  // WJB: always error-out (for now)
-                  std::cerr << "Could not find " << e->name << " in library " << lname << "\n";
-                  std::exit(2);
-  //              }
+    if (!find_dlsym(e->f, h, e->name)) {
+      std::cerr << "Could not find " << e->name << " in library "
+                << lname << "\n";
+      std::exit(2);
+    }
+
   return L->Entries[k].f;
 }
 
@@ -108,7 +127,7 @@ static SharedLib
 #define NLPQLP F77_FUNC(nlpqlp,NLPQLP)
 #define QL F77_FUNC(ql,QL)
 
-
+/* WJB - ToDo:  verify redeclaration of an existing function and REMOVE!
 extern "C" void DOT(int *info, int *ngotoz, int *method,
         int *iprint, int *ndv, int *ncon, double *x,
         double *xl, double *xu, double *obj, int *minmax,
@@ -137,7 +156,6 @@ extern "C" void DOT510(int *ndv, int *ncon, int *ncola,  int *method, int *nrwk,
                 f = (DOT510_t)Lib_load(&Dot_lib, 1);
         f(ndv, ncon, ncola,  method, nrwk, nriwk, nrb, ngmax, xl, xu);
 }
-
 
 extern "C" void NPSOL(int *n, int *nclin, int *ncnln,
         int *lda, int *ldju, int *ldr, double *a, double *bl, double *bu,
@@ -211,8 +229,8 @@ t *mnn2,
           ifail, wa, lwa, kwa, lkwa, active, lactiv, lql, qpsolve);
 }
 
-extern "C" void QL(int *m, int *me, int *mmax, int *n, int *nmax, int *mnn, double *c,
-   double *d, double *a, double *b, double *xl, double *xu, double *x,
+extern "C" void QL(int *m, int *me, int *mmax, int *n, int *nmax, int *mnn,
+   double *c, double *d, double *a, double *b, double *xl, double *xu,double *x,
    double *u, double *eps, int *mode, int *iout, int *ifail, int *iprint,
    double *war, int *lwar, int *iwar, int *liwar)
 {
@@ -226,8 +244,8 @@ extern "C" void QL(int *m, int *me, int *mmax, int *n, int *nmax, int *mnn, doub
         f(m, me, mmax, n, nmax, mnn, c, d, a, b, xl, xu, x, u, eps, mode,
          iout, ifail, iprint, war, lwar, iwar, liwar);
 }
+// WJB: end of long ToDo verify redeclaration comment block */
 
+#endif // DAKOTA_SHLIB
 #endif // HAVE_DOT or NPSOL or JEGA or NPPQL
-
-#endif // end of DISABLE ALL CODE block
 

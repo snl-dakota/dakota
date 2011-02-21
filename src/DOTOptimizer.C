@@ -71,6 +71,29 @@ DOTOptimizer::DOTOptimizer(NoDBBaseConstructor, Model& model):
 }
 
 
+#ifdef HAVE_DYNLIB_FACTORIES
+DOTOptimizer* new_DOTOptimizer(Model& model)
+{
+#ifdef DAKOTA_DYNLIB
+  not_available("DOT");
+  return 0;
+#else
+  return new DOTOptimizer(model);
+#endif // DAKOTA_DYNLIB
+}
+
+DOTOptimizer* new_DOTOptimizer(NoDBBaseConstructor, Model& model)
+{
+#ifdef DAKOTA_DYNLIB
+  not_available("DOT");
+  return 0;
+#else
+  return new DOTOptimizer(NoDBBaseConstructor(), model);
+#endif // DAKOTA_DYNLIB
+}
+#endif // HAVE_DYNLIB_FACTORIES
+
+
 void DOTOptimizer::initialize()
 {
   // Prevent nesting of an instance of a Fortran iterator within another
