@@ -1915,6 +1915,8 @@ void NonDExpansion::print_results(std::ostream& s)
 	<< "expansion:\n";
     else
       s << "projection of analytic moments:\n";
+    //if (expansionSampler.pdf_output())
+    //  expansionSampler.print_pdf_mappings(s); // TO DO
     print_distribution_mappings(s);
   }
   s << "-------------------------------------------------------------------"

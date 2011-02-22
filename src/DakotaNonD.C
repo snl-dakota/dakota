@@ -45,7 +45,7 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   requestedRelLevels(probDescDB.get_rdva("method.nond.reliability_levels")),
   requestedGenRelLevels(
     probDescDB.get_rdva("method.nond.gen_reliability_levels")),
-  totalLevelRequests(0), distParamDerivs(false)
+  totalLevelRequests(0), cdfFlag(true), pdfOutput(false), distParamDerivs(false)
 {
   bool err_flag = false;
   short active_view = iteratedModel.current_variables().view().first;
@@ -154,8 +154,8 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   }
 
   // initialize convenience flags & enums
-  cdfFlag = (probDescDB.get_string("method.nond.distribution") ==
-             "complementary") ? false : true;
+  if (probDescDB.get_string("method.nond.distribution") == "complementary")
+    cdfFlag = false;
   const String& resp_mapping
     = probDescDB.get_string("method.nond.response_level_mapping_type");
   if (resp_mapping == "probabilities")
@@ -178,8 +178,8 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   // where there are multiple response fns but only one vector of levels (no
   // index key provided), which are to be evenly distributed among the response
   // fns.  This provides some measure of backwards compatibility.
-  distribute_levels(requestedRespLevels);            //  always ascending
-  distribute_levels(requestedProbLevels,    cdfFlag);//  ascending if cumulative
+  distribute_levels(requestedRespLevels);             // always ascending
+  distribute_levels(requestedProbLevels,    cdfFlag); // ascending if cumulative
   distribute_levels(requestedRelLevels,    !cdfFlag);// descending if cumulative
   distribute_levels(requestedGenRelLevels, !cdfFlag);// descending if cumulative
 
@@ -187,6 +187,10 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
     totalLevelRequests += requestedRespLevels[i].length() +
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +
       requestedGenRelLevels[i].length();
+
+  // simple PDF output control for now (suppressed if quiet/silent output level)
+  if (totalLevelRequests && outputLevel >= NORMAL_OUTPUT)
+    pdfOutput = true;
 
   if (err_flag)
     abort_handler(-1);
@@ -207,7 +211,7 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
   numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
   numDiscRealEpistUncVars(0), numEpistemicUncVars(0),
   numResponseFunctions(numFunctions), totalLevelRequests(0), cdfFlag(true),
-  distParamDerivs(false)
+  pdfOutput(false), distParamDerivs(false)
 {
   // NonDEvidence and NonDAdaptImpSampling use this ctor
 
@@ -365,7 +369,7 @@ NonD::NonD(NoDBBaseConstructor, const RealVector& lower_bnds,
   numContEpistUncVars(0), numDiscIntEpistUncVars(0), numDiscRealEpistUncVars(0),
   numEpistemicUncVars(0), numUncertainVars(numUniformVars),
   numResponseFunctions(0), totalLevelRequests(0), cdfFlag(true),
-  distParamDerivs(false)
+  pdfOutput(false), distParamDerivs(false)
 {
   // ConcurrentStrategy uses this ctor for design opt, either for multi-start
   // initial points or multibjective weight sets.
@@ -399,6 +403,9 @@ requested_levels(const RealVectorArray& req_resp_levels,
     totalLevelRequests += requestedRespLevels[i].length() +
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +
       requestedGenRelLevels[i].length();
+
+  if (totalLevelRequests && outputLevel >= NORMAL_OUTPUT)
+    pdfOutput = true;
 
   initialize_final_statistics();
 }

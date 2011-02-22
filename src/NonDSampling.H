@@ -201,8 +201,6 @@ private:
   /// (calculated in compute_intervals())
   RealVector maxValues;
 
-  /// flag for managing output of response probability density functions (PDFs)
-  bool pdfOutput;
   /// sorted response PDF intervals bounds extracted from min/max sample
   /// and requested/computedRespLevels (vector lengths = num bins + 1)
   RealVectorArray computedPDFAbscissas;

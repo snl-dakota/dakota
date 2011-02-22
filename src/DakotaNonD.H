@@ -289,6 +289,9 @@ protected:
   /// cumulative/CDF (true) or complementary/CCDF (false)
   bool cdfFlag;
 
+  /// flag for managing output of response probability density functions (PDFs)
+  bool pdfOutput;
+
   /// final statistics from the uncertainty propagation used in strategies:
   /// response means, standard deviations, and probabilities of failure
   Response finalStatistics;

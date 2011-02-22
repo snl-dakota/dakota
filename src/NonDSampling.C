@@ -45,18 +45,13 @@ NonDSampling::NonDSampling(Model& model): NonD(model),
   rngName(probDescDB.get_string("method.random_number_generator")),
   sampleType(probDescDB.get_string("method.sample_type")),
   statsFlag(true), allDataFlag(false), sampleRanksMode(IGNORE_RANKS),
-  varyPattern(!probDescDB.get_bool("method.fixed_seed")), numLHSRuns(0),
-  pdfOutput(false)
+  varyPattern(!probDescDB.get_bool("method.fixed_seed")), numLHSRuns(0)
 {
   if (numEpistemicUncVars && totalLevelRequests) {
     Cerr << "\nError: sampling does not support level requests for "
 	 << "analyses containing epistemic uncertainties." << std::endl;
     abort_handler(-1);
   }
-
-  // simple PDF output control for now (suppressed by default)
-  if (totalLevelRequests && outputLevel >= VERBOSE_OUTPUT)
-    pdfOutput = true;
 
   // Since the sampleType is shared with other iterators for other purposes,
   // its default in DataMethod.C is the NULL string.  Explicitly enforce the
@@ -81,8 +76,7 @@ NonDSampling(NoDBBaseConstructor, Model& model, const String& sample_type,
   NonD(NoDBBaseConstructor(), model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), numSamples(samples), rngName(rng),
   sampleType(sample_type), statsFlag(false), allDataFlag(true),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0),
-  pdfOutput(false)
+  sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -105,8 +99,7 @@ NonDSampling(NoDBBaseConstructor, const String& sample_type, int samples,
   NonD(NoDBBaseConstructor(), lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), numSamples(samples), rngName(rng),
   sampleType(sample_type), statsFlag(false), allDataFlag(true),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0),
-  pdfOutput(false)
+  sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
