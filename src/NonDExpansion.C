@@ -1062,35 +1062,22 @@ void NonDExpansion::average_total_sobol(RealVector& avg_sobol)
 
 void NonDExpansion::average_decay_rates(RealVector& avg_decay)
 {
-  // "main effects" anisotropy based on linear approximation to coefficient
-  // decay rates for each dimension as measured from univariate PCE terms.
-  // Again, these rates are averaged over the response fn set.
+  // anisotropy based on linear approximation to coefficient decay rates for
+  // each dimension as measured from univariate PCE terms.  Again, these rates
+  // are averaged over the response fn set.
+  if (avg_decay.empty()) avg_decay.size(numContinuousVars); // init to 0
+  else                   avg_decay = 0.;
+
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  size_t i;
-  if (avg_decay.empty())
-    avg_decay.sizeUninitialized(numContinuousVars);
-  avg_decay = 0.;
-  for (i=0; i<numFunctions; ++i) {
-    PecosApproximation* approx_rep
-      = (PecosApproximation*)poly_approxs[i].approx_rep();
-    // TO DO: normalize coefficients by multiplying by sqrt(norm_sq)
-    // TO DO: Richardson extrapolation for best fit polynomial order
-    // TO DO: invert order for preference
-    //approx_rep->compute_dimension_decay rates();
-    //avg_decay += approx_rep->dimension_decay_rates();
-    Cout << "The SPECTRAL_DECAY option is not currently operational in "
-	 << "NonDExpansion. We expect that it will be operational in 2011."
-	 << std::endl;
-    abort_handler(-1);
+  PecosApproximation* poly_approx_rep;
+  for (size_t i=0; i<numFunctions; ++i) {
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    avg_decay += poly_approx_rep->dimension_decay_rates();
   }
   avg_decay.scale(1./(Real)numFunctions);
-  // manage small values that are not 0 (SGMGA has special handling for 0)
-  Real pref_tol = 1.e-2; // TO DO
-  for (i=0; i<numContinuousVars; ++i)
-    if (std::abs(avg_decay[i]) < pref_tol)
-      avg_decay[i] = 0.;
-  Cout << "avg_decay truncated at " << pref_tol << ":\n";
-  write_data(Cout, avg_decay);
+
+  // Note: order for preference is inverted outside this fn
+  Cout << "avg_decay:\n"; write_data(Cout, avg_decay);
 }
 
 
