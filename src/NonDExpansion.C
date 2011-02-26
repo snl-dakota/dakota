@@ -1909,8 +1909,13 @@ void NonDExpansion::print_results(std::ostream& s)
 	<< "expansion:\n";
     else
       s << "projection of analytic moments:\n";
-    //if (expansionSampler.pdf_output())
-    //  expansionSampler.print_pdf_mappings(s); // TO DO
+
+    // Note: PDF output ignores any importance sampling refinements
+    NonDSampling* exp_sampler_rep
+      = (NonDSampling*)expansionSampler.iterator_rep();
+    if (exp_sampler_rep->pdf_output())
+      exp_sampler_rep->print_pdf_mappings(s);
+
     print_distribution_mappings(s);
   }
   s << "-------------------------------------------------------------------"

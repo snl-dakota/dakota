@@ -55,6 +55,9 @@ public:
   /// and computedProbLevels/computedRelLevels/computedRespLevels
   void update_final_statistics();
 
+  /// prints the PDFs computed in compute_statistics()
+  void print_pdf_mappings(std::ostream& s) const;
+
 protected:
 
   //
@@ -125,8 +128,6 @@ protected:
   void print_intervals(std::ostream& s) const;
   /// prints the moments computed in compute_moments()
   void print_moments(std::ostream& s) const;
-  /// prints the PDFs computed in compute_statistics()
-  void print_pdf_mappings(std::ostream& s) const;
 
   /// compute sampled subsets of all cv/div/drv from samplingVarsMode and model
   void view_counts(const Model& model, size_t& cv_start, size_t& num_cv,

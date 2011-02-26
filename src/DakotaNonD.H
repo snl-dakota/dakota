@@ -60,6 +60,15 @@ public:
   /// set distParamDerivs
   void distribution_parameter_derivatives(bool dist_param_derivs);
 
+  //
+  //- Heading: Set/get routines
+  //
+
+  /// get pdfOutput
+  bool pdf_output() const;
+  /// set pdfOutput
+  void pdf_output(bool output);
+
 protected:
 
   //
@@ -320,6 +329,14 @@ inline NonD::~NonD()
 
 inline void NonD::distribution_parameter_derivatives(bool dist_param_derivs)
 { distParamDerivs = dist_param_derivs; }
+
+
+inline bool NonD::pdf_output() const
+{ return pdfOutput; }
+
+
+inline void NonD::pdf_output(bool output)
+{ pdfOutput = output; }
 
 
 inline void NonD::initialize_run()
