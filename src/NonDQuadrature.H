@@ -83,7 +83,7 @@ protected:
 
   void increment_grid();
 
-  void increment_grid(const RealVector& dim_pref);
+  void increment_grid_preference(const RealVector& dim_pref);
 
 private:
 

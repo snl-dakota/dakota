@@ -41,7 +41,10 @@ public:
   virtual void increment_grid() = 0;
 
   /// increment SSG level/TPQ order and update anisotropy
-  virtual void increment_grid(const RealVector& dim_pref) = 0;
+  virtual void increment_grid_preference(const RealVector& dim_pref);
+
+  /// increment SSG level/TPQ order and update anisotropy
+  virtual void increment_grid_weights(const RealVector& aniso_wts);
 
   //
   //- Heading: Member functions

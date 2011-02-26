@@ -109,4 +109,34 @@ void NonDIntegration::check_variables(const Pecos::ShortArray& x_types)
     abort_handler(-1);
 }
 
+
+void NonDIntegration::increment_grid_preference(const RealVector& dim_pref)
+{
+  // derived classes must provide at least one of increment_grid_preference()
+  // or increment_grid_weights(), but need not provide both.  Therefore, the
+  // default base class implementation of increment_grid_preference(pref) is
+  // to convert pref to wts and invoke increment_grid_weights(wts)
+
+  size_t i, num_pref = dim_pref.length();
+  RealVector aniso_wts(num_pref);
+  for (i=0; i<num_pref; ++i)
+    aniso_wts[i] = 1./dim_pref[i];
+  increment_grid_weights(aniso_wts);
+}
+
+
+void NonDIntegration::increment_grid_weights(const RealVector& aniso_wts)
+{
+  // derived classes must provide at least one of increment_grid_preference()
+  // or increment_grid_weights(), but need not provide both.  Therefore, the
+  // default base class implementation of increment_grid_weights(wts) is to
+  // convert wts to pref and invoke increment_grid_preference(pref)
+
+  size_t i, num_wts = aniso_wts.length();
+  RealVector dim_pref(num_wts);
+  for (i=0; i<num_wts; ++i)
+    dim_pref[i] = 1./aniso_wts[i];
+  increment_grid_preference(dim_pref);
+}
+
 } // namespace Dakota

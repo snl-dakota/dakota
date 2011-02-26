@@ -66,7 +66,7 @@ protected:
   void sampling_reset(int min_samples,bool all_data_flag, bool stats_flag);
 
   void increment_grid();
-  void increment_grid(const RealVector& dim_pref);
+  void increment_grid_preference(const RealVector& dim_pref);
 
 private:
 
@@ -117,7 +117,7 @@ inline void NonDCubature::increment_reference()
 
 
 /** Should not be used, but pure virtual must be defined. */
-inline void NonDCubature::increment_grid(const RealVector& dim_pref)
+inline void NonDCubature::increment_grid_preference(const RealVector& dim_pref)
 { increment_grid(); } // ignore dim_pref
 
 } // namespace Dakota

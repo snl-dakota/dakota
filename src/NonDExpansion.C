@@ -669,7 +669,7 @@ void NonDExpansion::quantify_uncertainty()
       case Pecos::UNIFORM_P_REFINEMENT:
 	// Uniform refinement: ramp only the SSG level or TPQ order.
 	// Note: initial specification can be isotropic or anisotropic.
-	nond_integration->increment_grid(); // virtual: TPQ or SSG
+	nond_integration->increment_grid(); // TPQ or SSG
 	update_expansion();
         metric = compute_covariance_metric(respCovariance);
 	break;
@@ -681,7 +681,7 @@ void NonDExpansion::quantify_uncertainty()
 	  RealVector dim_pref;
 	  average_total_sobol(dim_pref);
 	  // incrementing grid & updating aniso wts are best performed together
-	  nond_integration->increment_grid(dim_pref); // virtual: TPQ or SSG
+	  nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
 	  update_expansion();
 	  metric = compute_covariance_metric(respCovariance);
 	  break;
@@ -690,12 +690,10 @@ void NonDExpansion::quantify_uncertainty()
 	  // Dimension adaptive refinement: define anisotropic preference vector
 	  // from inverse of spectral decay rates (PCE only), averaged over
 	  // response function set.
-	  RealVector avg_decay, dim_pref(numContinuousVars, false);
-	  average_decay_rates(avg_decay);
-	  for (i=0; i<numContinuousVars; ++i)
-	    dim_pref[i] = 1./avg_decay[i];
+	  RealVector aniso_wts;
+	  average_decay_rates(aniso_wts);
 	  // incrementing grid & updating aniso wts are best performed together
-	  nond_integration->increment_grid(dim_pref); // virtual: TPQ or SSG
+	  nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
 	  update_expansion();
 	  metric = compute_covariance_metric(respCovariance);
 	  break;
@@ -1025,9 +1023,10 @@ void NonDExpansion::average_total_sobol(RealVector& avg_sobol)
   // individual Sobol indices would require a nonlinear index set constraint
   // within anisotropic sparse grids.]
 
-  if (avg_sobol.empty())
-    avg_sobol.sizeUninitialized(numContinuousVars);
-  avg_sobol = 0.;
+  if (numFunctions > 1) {
+    if (avg_sobol.empty()) avg_sobol.size(numContinuousVars); // init to 0
+    else                   avg_sobol = 0.;
+  }
 
   size_t i;
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
@@ -1046,10 +1045,14 @@ void NonDExpansion::average_total_sobol(RealVector& avg_sobol)
     if (vbdControl == Pecos::ALL_VBD)
       poly_approx_rep->compute_component_effects(); // needed w/i total effects
     poly_approx_rep->compute_total_effects();
-    avg_sobol += poly_approx_rep->total_sobol_indices();
+    if (numFunctions > 1)
+      avg_sobol += poly_approx_rep->total_sobol_indices();
+    else
+      avg_sobol  = poly_approx_rep->total_sobol_indices();
   }
+  if (numFunctions > 1)
+    avg_sobol.scale(1./(Real)numFunctions);
 
-  avg_sobol.scale(1./(Real)numFunctions);
   // manage small values that are not 0 (SGMGA has special handling for 0)
   Real pref_tol = 1.e-2; // TO DO
   for (i=0; i<numContinuousVars; ++i)
@@ -1065,19 +1068,23 @@ void NonDExpansion::average_decay_rates(RealVector& avg_decay)
   // anisotropy based on linear approximation to coefficient decay rates for
   // each dimension as measured from univariate PCE terms.  Again, these rates
   // are averaged over the response fn set.
-  if (avg_decay.empty()) avg_decay.size(numContinuousVars); // init to 0
-  else                   avg_decay = 0.;
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   PecosApproximation* poly_approx_rep;
-  for (size_t i=0; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-    avg_decay += poly_approx_rep->dimension_decay_rates();
+  if (numFunctions > 1) {
+    if (avg_decay.empty()) avg_decay.size(numContinuousVars); // init to 0
+    else                   avg_decay = 0.;
+    for (size_t i=0; i<numFunctions; ++i) {
+      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+      avg_decay += poly_approx_rep->dimension_decay_rates();
+    }
+    avg_decay.scale(1./(Real)numFunctions);
   }
-  avg_decay.scale(1./(Real)numFunctions);
-
-  // Note: order for preference is inverted outside this fn
-  Cout << "avg_decay:\n"; write_data(Cout, avg_decay);
+  else {
+    poly_approx_rep = (PecosApproximation*)poly_approxs[0].approx_rep();
+    avg_decay = poly_approx_rep->dimension_decay_rates();
+  }
+  //Cout << "avg_decay:\n"; write_data(Cout, avg_decay);
 }
 
 

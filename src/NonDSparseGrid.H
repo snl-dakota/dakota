@@ -54,8 +54,9 @@ public:
 
   /// increment ssgDriver::ssgLevel
   void increment_grid();
-  /// update ssgDriver::ssgLevel and ssgDriver::ssgAnisoLevelWts
-  void increment_grid(const RealVector& dim_pref);
+  /// update ssgDriver::ssgAnisoLevelWts and increment ssgDriver::ssgLevel
+  /// based on specified anisotropic weighting
+  void increment_grid_weights(const RealVector& aniso_wts);
 
   /// returns SparseGridDriver::active_multi_index()
   const std::set<UShortArray>& active_multi_index() const;

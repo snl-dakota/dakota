@@ -314,7 +314,7 @@ void NonDQuadrature::increment_grid()
 }
 
 
-void NonDQuadrature::increment_grid(const RealVector& dim_pref)
+void NonDQuadrature::increment_grid_preference(const RealVector& dim_pref)
 {
   // Used for dimension-adaptive refinement: order lower bounds are enforced
   // using quadOrderRef such that anisotropy may not reduce dimension resolution

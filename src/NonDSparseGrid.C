@@ -158,20 +158,20 @@ void NonDSparseGrid::increment_grid()
 }
 
 
-void NonDSparseGrid::increment_grid(const RealVector& dim_pref)
+void NonDSparseGrid::increment_grid_weights(const RealVector& aniso_wts)
 {
   // define reference points
   int orig_ssg_size = ssgDriver->grid_size();
   ssgDriver->update_axis_lower_bounds();
   // initial increment and anisotropy update
   ssgDriver->level(++ssgLevelRef);
-  ssgDriver->dimension_preference(dim_pref); // enforce axis LB's --> wt UB's
+  ssgDriver->anisotropic_weights(aniso_wts); // enforce axis LB's --> wt UB's
   // Enforce constraints of retaining all previous collocation sets and adding
   // at least one new set.  Given the former constraint, the same grid size
   // must logically be the same grid irregardless of changes in anisotropy.
   while (ssgDriver->grid_size() == orig_ssg_size) {
     ssgDriver->level(++ssgLevelRef);
-    ssgDriver->dimension_preference(dim_pref); // re-enforce LB's for new level
+    ssgDriver->anisotropic_weights(aniso_wts); // re-enforce LB's for new level
   }
 }
 
