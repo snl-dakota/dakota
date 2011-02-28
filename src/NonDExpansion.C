@@ -842,7 +842,7 @@ void NonDExpansion::compute_print_converged_results()
       }
     }
   }
-#endif
+#endif // CONVERGENCE_DATA
 
   // if not already performed above, compute all stats
   switch (stochExpRefineType) {
@@ -1911,10 +1911,12 @@ void NonDExpansion::print_results(std::ostream& s)
       s << "projection of analytic moments:\n";
 
     // Note: PDF output ignores any importance sampling refinements
-    NonDSampling* exp_sampler_rep
-      = (NonDSampling*)expansionSampler.iterator_rep();
-    if (exp_sampler_rep->pdf_output())
-      exp_sampler_rep->print_pdf_mappings(s);
+    if (expSampling) {
+      NonDSampling* exp_sampler_rep
+	= (NonDSampling*)expansionSampler.iterator_rep();
+      if (exp_sampler_rep->pdf_output())
+	exp_sampler_rep->print_pdf_mappings(s);
+    }
 
     print_distribution_mappings(s);
   }
