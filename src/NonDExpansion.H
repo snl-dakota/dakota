@@ -138,12 +138,12 @@ private:
   //- Heading: Convenience function definitions
   //
 
-  /// compute average of total Sobol' indices from VBD for use as an
-  /// anisotropy indicator
-  void average_total_sobol(RealVector& avg_sobol);
-  /// compute average of spectral coefficient decay rates for use as
-  /// an anisotropy indicator
-  void average_decay_rates(RealVector& avg_decay);
+  /// compute average of total Sobol' indices (from VBD) across the
+  /// response set for use as an anisotropy indicator
+  void reduce_total_sobol_sets(RealVector& avg_sobol);
+  /// compute minimum of spectral coefficient decay rates across the
+  /// response set for use as an anisotropy indicator
+  void reduce_decay_rate_sets(RealVector& min_decay);
 
   /// initialization of adaptive refinement using generalized sparse grids
   void initialize_sets();

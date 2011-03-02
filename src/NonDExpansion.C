@@ -679,7 +679,7 @@ void NonDExpansion::quantify_uncertainty()
 	  // Dimension adaptive refinement: define anisotropic preference vector
 	  // from total Sobol' indices, averaged over response function set.
 	  RealVector dim_pref;
-	  average_total_sobol(dim_pref);
+	  reduce_total_sobol_sets(dim_pref);
 	  // incrementing grid & updating aniso wts are best performed together
 	  nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
 	  update_expansion();
@@ -691,7 +691,7 @@ void NonDExpansion::quantify_uncertainty()
 	  // from inverse of spectral decay rates (PCE only), averaged over
 	  // response function set.
 	  RealVector aniso_wts;
-	  average_decay_rates(aniso_wts);
+	  reduce_decay_rate_sets(aniso_wts);
 	  // incrementing grid & updating aniso wts are best performed together
 	  nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
 	  update_expansion();
@@ -1016,7 +1016,7 @@ compute_final_statistics_metric(const RealVector& final_stats_ref)
 }
 
 
-void NonDExpansion::average_total_sobol(RealVector& avg_sobol)
+void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
 {
   // anisotropy based on total Sobol indices (univariate effects only) averaged
   // over the response fn set.  [Addition of interaction effects based on
@@ -1058,33 +1058,42 @@ void NonDExpansion::average_total_sobol(RealVector& avg_sobol)
   for (i=0; i<numContinuousVars; ++i)
     if (std::abs(avg_sobol[i]) < pref_tol)
       avg_sobol[i] = 0.;
-  //Cout << "avg_sobol truncated at " << pref_tol << ":\n";
-  //write_data(Cout, avg_sobol);
+#ifdef DEBUG
+  Cout << "avg_sobol truncated at " << pref_tol << ":\n";
+  write_data(Cout, avg_sobol);
+#endif // DEBUG
 }
 
 
-void NonDExpansion::average_decay_rates(RealVector& avg_decay)
+void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
 {
   // anisotropy based on linear approximation to coefficient decay rates for
-  // each dimension as measured from univariate PCE terms.  Again, these rates
-  // are averaged over the response fn set.
+  // each dimension as measured from univariate PCE terms.  In this case,
+  // averaging tends to wash out the interesting anisotropy, especially if
+  // some functions converge quickly with high rates.  Thus, it is more
+  // appropriate to extract the minimum decay rates over the response fn set.
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  PecosApproximation* poly_approx_rep;
-  if (numFunctions > 1) {
-    if (avg_decay.empty()) avg_decay.size(numContinuousVars); // init to 0
-    else                   avg_decay = 0.;
-    for (size_t i=0; i<numFunctions; ++i) {
-      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-      avg_decay += poly_approx_rep->dimension_decay_rates();
-    }
-    avg_decay.scale(1./(Real)numFunctions);
+  PecosApproximation* poly_approx_rep
+    = (PecosApproximation*)poly_approxs[0].approx_rep();
+  min_decay = poly_approx_rep->dimension_decay_rates();
+  size_t i, j;
+  for (i=1; i<numFunctions; ++i) {
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    const RealVector& decay_i = poly_approx_rep->dimension_decay_rates();
+    for (j=0; j<numContinuousVars; ++j)
+      if (decay_i[j] < min_decay[j])
+	min_decay[j] = decay_i[j];
   }
-  else {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[0].approx_rep();
-    avg_decay = poly_approx_rep->dimension_decay_rates();
-  }
-  //Cout << "avg_decay:\n"; write_data(Cout, avg_decay);
+  // enforce a lower bound on minimum decay (disallow negative/zero decay rates)
+  Real decay_tol = 1.e-2; // TO DO
+  for (j=0; j<numContinuousVars; ++j)
+    if (min_decay[j] < decay_tol)
+      min_decay[j] = decay_tol;
+
+#ifdef DEBUG
+  Cout << "min_decay:\n"; write_data(Cout, min_decay);
+#endif // DEBUG
 }
 
 
