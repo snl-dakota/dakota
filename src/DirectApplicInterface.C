@@ -80,6 +80,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   driverTypeMap["generalized_rosenbrock"] = GENERALIZED_ROSENBROCK;
   driverTypeMap["rosenbrock"]             = ROSENBROCK;
   driverTypeMap["gerstner"]               = GERSTNER;
+  driverTypeMap["scalable_gerstner"]      = SCALABLE_GERSTNER;
   driverTypeMap["log_ratio"]              = LOGNORMAL_RATIO;
   driverTypeMap["multimodal"]             = MULTIMODAL;
   driverTypeMap["short_column"]           = SHORT_COLUMN;
@@ -162,9 +163,9 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
     case STEEL_COLUMN_PERFORMANCE:
       localDataView |= VARIABLES_MAP;    break;
     case NO_DRIVER: // assume VARIABLES_VECTOR approach for plug-ins for now
-    case CYLINDER_HEAD:       case GERSTNER:
+    case CYLINDER_HEAD:       case LOGNORMAL_RATIO:     case MULTIMODAL:
+    case GERSTNER:            case SCALABLE_GERSTNER:
     case EXTENDED_ROSENBROCK: case GENERALIZED_ROSENBROCK:
-    case LOGNORMAL_RATIO:     case MULTIMODAL:
     case SOBOL_G_FUNCTION:    case SOBOL_RATIONAL:
     case TEXT_BOOK:           case TEXT_BOOK_OUU:
     case TEXT_BOOK1: case TEXT_BOOK2:  case TEXT_BOOK3:
@@ -454,6 +455,8 @@ int DirectApplicInterface::derived_map_ac(const String& ac_name)
     fail_code = extended_rosenbrock(); break;
   case GERSTNER:
     fail_code = gerstner(); break;
+  case SCALABLE_GERSTNER:
+    fail_code = scalable_gerstner(); break;
   case LOGNORMAL_RATIO:
     fail_code = log_ratio(); break;
   case MULTIMODAL:
@@ -1474,7 +1477,7 @@ int DirectApplicInterface::extended_rosenbrock()
 int DirectApplicInterface::gerstner()
 {
   if (multiProcAnalysisFlag) {
-    Cerr << "Error: log_ratio direct fn does not support multiprocessor "
+    Cerr << "Error: gerstner direct fn does not support multiprocessor "
 	 << "analyses." << std::endl;
     abort_handler(-1);
   }
@@ -1540,6 +1543,112 @@ int DirectApplicInterface::gerstner()
       val = std::exp(-x_coeff*x*x - y_coeff*y*y);
       fnGrads[0][0] = -2.*x*x_coeff*val;
       fnGrads[0][1] = -2.*y*y_coeff*val;            break;
+    }
+  }
+
+  return 0; // no failure
+}
+
+
+int DirectApplicInterface::scalable_gerstner()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: scalable_gerstner direct fn does not support "
+	 << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numADIV || numADRV) {
+    Cerr << "Error: Bad variable types in scalable_gerstner direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  if (numFns != 1) {
+    Cerr << "Error: Bad number of functions in scalable_gerstner direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  if (hessFlag) {
+    Cerr << "Error: Hessians not supported in scalable_gerstner direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  const std::string& an_comp = analysisComponents[analysisDriverIndex][0];
+  short test_fn; Real even_coeff, odd_coeff, inter_coeff;
+  if (an_comp        == "iso1")
+    { test_fn = 1; even_coeff = odd_coeff = 10.; }
+  else if (an_comp   == "iso2")
+    { test_fn = 2; even_coeff = odd_coeff = inter_coeff = 1.; }
+  else if (an_comp   == "iso3")
+    { test_fn = 3; even_coeff = odd_coeff = 10.; }
+  else if (an_comp == "aniso1")
+    { test_fn = 1; even_coeff =  1.; odd_coeff = 10.; }
+  else if (an_comp == "aniso2")
+    { test_fn = 2; even_coeff =  1.; odd_coeff = inter_coeff = 10.; }
+  else if (an_comp == "aniso3")
+    { test_fn = 3; even_coeff = 10.; odd_coeff = 5.; }
+  else {
+    Cerr << "Error: analysis component specification required in gerstner "
+	 << "direct fn." << std::endl;
+    abort_handler(-1);
+  }
+
+  // **** f:
+  if (directFnASV[0] & 1) {
+    switch (test_fn) {
+    case 1:
+      fnVals[0] = 0.;
+      for (size_t i=0; i<numVars; ++i)
+	fnVals[0] += (i%2) ? odd_coeff*std::exp(-xC[i]*xC[i]) :
+	                    even_coeff*std::exp(-xC[i]*xC[i]); break;
+    case 2:
+      fnVals[0] = 0.;
+      for (size_t i=0; i<numVars; ++i)
+	if (i%2)
+	  fnVals[0] +=  odd_coeff*std::exp(xC[i])
+	            + inter_coeff*std::exp(xC[i]*xC[i-1]);
+	else
+	  fnVals[0] += even_coeff*std::exp(xC[i]);
+      break;
+    case 3: {
+      Real sum = 0;
+      for (size_t i=0; i<numVars; ++i)
+	sum -= (i%2) ? odd_coeff*xC[i]*xC[i] : even_coeff*xC[i]*xC[i];
+      fnVals[0] = std::exp(sum); break;
+    }
+    }
+  }
+
+  // **** df/dx:
+  if (directFnASV[0] & 2) {
+    Real val;
+    switch (test_fn) {
+    case 1:
+      for (size_t i=0; i<numVars; ++i)
+	fnGrads[0][i] = (i%2) ? -2.*xC[i]* odd_coeff*std::exp(-xC[i]*xC[i])
+	                      : -2.*xC[i]*even_coeff*std::exp(-xC[i]*xC[i]);
+      break;
+    case 2:
+      for (size_t i=0; i<numVars; ++i)
+	fnGrads[0][i] = (i%2) ?
+	  odd_coeff*std::exp(xC[i])
+	  + inter_coeff*xC[i-1]*std::exp(xC[i]*xC[i-1]) :
+	  even_coeff*std::exp(xC[i])
+	  + inter_coeff*xC[i+1]*std::exp(xC[i]*xC[i+1]);
+      break;
+    case 3:
+      if (directFnASV[0] & 1)
+	val = fnVals[0];
+      else {
+	Real sum = 0;
+	for (size_t i=0; i<numVars; ++i)
+	  sum -= (i%2) ? odd_coeff*xC[i]*xC[i] : even_coeff*xC[i]*xC[i];
+	val = std::exp(sum);
+      }
+      for (size_t i=0; i<numVars; ++i)
+	fnGrads[0][i] = (i%2) ? -2.*xC[i]* odd_coeff*val
+	                      : -2.*xC[i]*even_coeff*val;
+      break;
     }
   }
 
