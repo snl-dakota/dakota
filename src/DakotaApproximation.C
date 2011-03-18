@@ -46,6 +46,8 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 {
   if (problem_db.get_bool("model.surrogate.derivative_usage") &&
       approxType != "global_polynomial"                       &&
+      // TODO: add the following when Surfpack Kriging supports derivatives
+      //approxType != "global_kriging"                          && 
       approxType != "global_orthogonal_polynomial")
     Cerr << "\nWarning: use_derivatives is not currently supported by "
 	 << approxType << ".\n\n";

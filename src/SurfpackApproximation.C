@@ -21,6 +21,8 @@
 
 // Headers from Surfpack
 #include "SurfData.h"
+// for Hessian data
+#include "SurfpackMatrix.h"
 #include "ModelFactory.h"
 #include "ModelFitness.h"
 #include "LinearRegressionModel.h"
@@ -100,6 +102,15 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
 	  args["order"] = toString<unsigned int>(2);
 	  args["reduced_polynomial"] = toString<bool>(false);
 	}
+      }
+
+      // activate derivative information if available
+      dataOrder = 1;
+      if (problem_db.get_bool("model.surrogate.derivative_usage")) {
+	if (problem_db.get_string("responses.gradient_type") != "none")
+	  dataOrder |= 2;
+	if (problem_db.get_string("responses.hessian_type")  != "none")
+	  dataOrder |= 4;
       }
 
       // optimization options are none | sample | local | global (default)
@@ -384,7 +395,7 @@ void SurfpackApproximation::build()
       surfData = NULL;
     }
     surfData = surrogates_to_surf_data();
-    if (approxType == "global_polynomial")
+     if (approxType == "global_polynomial")
       checkForEqualityConstraints();
  
     // send any late updates to bounds (as in SBO); will overwrite existing
@@ -546,15 +557,15 @@ const Real& SurfpackApproximation::get_diagnostic(const String& metric_type)
 SurfData* SurfpackApproximation::surrogates_to_surf_data()
 {
   SurfData* surf_data = new SurfData();
-  RealArray x; //std::vector<double>
-  if (!anchorPoint.is_null() && approxType != "global_polynomial") {
-    copy_data(anchorPoint.continuous_variables(), x);
-    surf_data->addPoint(SurfPoint(x, anchorPoint.response_function()));
-  }
-  for (SDPLIter it=currentPoints.begin(); it!=currentPoints.end(); ++it) {
-    copy_data(it->continuous_variables(), x);
-    surf_data->addPoint(SurfPoint(x, it->response_function()));
-  }
+
+  // global_polynomials treat the anchor point specially as a
+  // constraint; other surrogates treat is as a regular data point
+  if (!anchorPoint.is_null() && approxType != "global_polynomial")
+    add_sdp_to_surfdata(anchorPoint, *surf_data);
+  // add the remaining surrogate data points
+  for (SDPLIter it=currentPoints.begin(); it!=currentPoints.end(); ++it)
+    add_sdp_to_surfdata(*it, *surf_data);
+
   return surf_data;
 }
 
@@ -624,6 +635,51 @@ void SurfpackApproximation::checkForEqualityConstraints()
       Cout << "Requested contraints vector: " << requested_constraints << '\n';
     dynamic_cast<LinearRegressionModelFactory*>(factory)->setEqualityConstraints
       (requested_constraints, sp, response_value, &gradient, &hessian);
+  }
+}
+
+
+void SurfpackApproximation::
+add_sdp_to_surfdata(const Pecos::SurrogateDataPoint& sdp,
+		    SurfData& surf_data)
+{
+  // Surfpack's RealArray is std::vector<double>; use DAKOTA copy_data helpers
+  RealArray x; 
+  copy_data(sdp.continuous_variables(), x);
+  
+  Real f = sdp.response_function();
+  RealArray gradient;
+
+  // for now only allow builds from exactly 1, 3=1+2, or 7=1+2+4; use
+  // different set functions so the SurfPoint data remains empty if
+  // not present
+  switch (dataOrder) {
+
+  case 1:
+    surf_data.addPoint(SurfPoint(x, f));
+    break;
+
+  case 3:
+    copy_data(sdp.response_gradient(), gradient);
+    surf_data.addPoint(SurfPoint(x, f, gradient));
+    break;
+
+  case 7:
+    {
+      copy_data(sdp.response_gradient(), gradient);
+      SurfpackMatrix<Real> hessian(numVars,numVars); // only allocate if needed
+      copy_data(sdp.response_hessian(), hessian);
+      surf_data.addPoint(SurfPoint(x, f, gradient, hessian));
+      break;
+    }
+
+  default:
+    Cerr << "\nError (SurfpackApproximation): derivative data may only be used"
+	 << "if all\nlower-order information is also present. Specified "
+	 << "dataOrder is " << dataOrder << "."  << std::endl; 
+    abort_handler(-1);
+    break;
+
   }
 }
 

@@ -193,4 +193,29 @@ void copy_data(const std::vector<DDaceSamplePoint>& dspa, Real* ptr,
 }
 #endif // DAKOTA_DDACE
 
+#ifdef HAVE_SURFPACK
+// copy RealSymMatrix to SurfpackMatrix (Real type only)
+void copy_data(const RealSymMatrix& rsdm,
+	       SurfpackMatrix<Real>& surfpack_matrix)
+{
+  // SymmetricMatrix = symmetric and square, but Dakota::Matrix can be general
+  // (e.g., functionGradients = numFns x numVars).  Therefore, have to verify
+  // sanity of the copy.  Could copy square submatrix of rsdm into sm, but 
+  // aborting with an error seems better since this should only currently be
+  // used for copying Hessian matrices.
+  size_t nr = rsdm.numRows(), nc = rsdm.numCols();
+  if (nr != nc) {
+    Cerr << "Error: copy_data(const Dakota::RealSymMatrix& rsdm, "
+	 << "SurfpackMatrix<Real>& sm) called with nonsquare rsdm."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  if (surfpack_matrix.getNRows() != nr | surfpack_matrix.getNCols() != nc) 
+    surfpack_matrix.resize(nr, nc);
+  for (size_t i=0; i<nr; ++i)
+    for (size_t j=0; j<nc; ++j)
+      surfpack_matrix(i,j) = rsdm(i,j);
+}
+#endif // HAVE_SURFPACK
+
 } // namespace Dakota
