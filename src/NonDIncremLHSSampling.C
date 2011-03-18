@@ -106,7 +106,7 @@ void NonDIncremLHSSampling::quantify_uncertainty()
 
   if (sampleType.ends("random")) {
     // for random sampling, obtain a new set of samples of the full size
-    numSamples = samplesSpec;
+    numSamples = samplesRef;
     varyPattern = true; 
     get_parameter_sets(iteratedModel);
   }
@@ -407,8 +407,8 @@ void NonDIncremLHSSampling::quantify_uncertainty()
 #endif // DEBUG
 
     // calculate the combined ranks  
-    sampleRanks.shapeUninitialized(numContinuousVars, samplesSpec);
-    for (i=0; i<samplesSpec; i++) {
+    sampleRanks.shapeUninitialized(numContinuousVars, samplesRef);
+    for (i=0; i<samplesRef; i++) {
       for (j=0; j<numContinuousVars; j++) {
         if (i < numSamples) {
 	  int index_temp = static_cast<int>(sample_ranks_first(j,i))-1;
@@ -431,7 +431,7 @@ void NonDIncremLHSSampling::quantify_uncertainty()
 
     // send LHS the full sampleRanks matrix for the combined set
     // and get back a sample that maintains the structure   
-    numSamples = samplesSpec;
+    numSamples = samplesRef;
 #ifdef DEBUG
     sampleRanksMode = SET_GET_RANKS;
 #else
@@ -449,12 +449,12 @@ void NonDIncremLHSSampling::quantify_uncertainty()
     copy_data(sample_values_first[i], allSamples[i], (int)numContinuousVars);
   
 #ifdef DEBUG
-  numSamples = samplesSpec;
+  numSamples = samplesRef;
   Cout <<"\nallSamples\n";
   write_data(Cout, allSamples, false, true, true);
 #endif //DEBUG
 
-  // evaluate full parameter set of size samplesSpec, where the first half
+  // evaluate full parameter set of size samplesRef, where the first half
   // should be intercepted via restart file duplication detection
   evaluate_parameter_sets(iteratedModel, true, false);
   compute_statistics(allSamples, allResponses);

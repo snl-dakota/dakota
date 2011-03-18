@@ -17,6 +17,7 @@
 #include "ProblemDescDB.H"
 #include "DataFitSurrModel.H"
 #include "NonDIntegration.H"
+#include "NonDSampling.H"
 #include "PecosApproximation.H"
 #include "SparseGridDriver.hpp"
 #include "TensorProductDriver.hpp"
@@ -29,7 +30,8 @@ namespace Dakota {
 NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   expansionImportFile(
     probDescDB.get_string("method.nond.expansion_import_file")),
-  expansionTerms(probDescDB.get_int("method.nond.expansion_terms"))
+  expansionTerms(probDescDB.get_int("method.nond.expansion_terms")),
+  collocRatio(probDescDB.get_real("method.nond.collocation_ratio"))
 {
   // This constructor is called for a standard letter-envelope iterator 
   // instantiation.
@@ -68,10 +70,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     else if (cub_int_spec != USHRT_MAX)
       construct_cubature(u_space_sampler, g_u_model, cub_int_spec);
     else { // expansion_samples or collocation_points
-      int exp_samples = probDescDB.get_int("method.nond.expansion_samples"),
-	  colloc_pts  = probDescDB.get_int("method.nond.collocation_points");
-      const Real& colloc_ratio
-	= probDescDB.get_real("method.nond.collocation_ratio");
+      int exp_samples = probDescDB.get_int("method.nond.expansion_samples");
       if (exp_samples > 0) { // expectation
 	numSamplesOnModel       = exp_samples;
 	expansionCoeffsApproach = Pecos::SAMPLING;
@@ -79,19 +78,16 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
       }
       else { // regression
 	expansionCoeffsApproach = Pecos::REGRESSION;
-	if (colloc_pts > 0)
+	size_t exp_terms = (exp_order.empty()) ? expansionTerms : 
+	  Pecos::PolynomialApproximation::total_order_terms(exp_order);
+	int colloc_pts = probDescDB.get_int("method.nond.collocation_points");
+	if (colloc_pts > 0) {
 	  numSamplesOnModel = colloc_pts;
-	else if (colloc_ratio > 0.) {
-	  int num_exp_terms = (exp_order.empty()) ? expansionTerms : 
-	    Pecos::PolynomialApproximation::total_order_terms(exp_order);
-	  int data_per_pt
-	    = (useDerivsFlag && g_u_model.gradient_type() != "none")
-	    ? numContinuousVars + 1 : 1;
-	  Real min_pts = (Real)num_exp_terms/(Real)data_per_pt;
-	  int min_samples = (int)std::ceil(min_pts),
-	    tgt_samples = (int)std::floor(colloc_ratio*min_pts + .5);
-	  numSamplesOnModel = std::max(min_samples, tgt_samples);
+	  // define collocRatio for use in uniform refinement
+	  collocRatio = terms_samples_to_ratio(exp_terms, colloc_pts);
 	}
+	else if (collocRatio > 0.)
+	  numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
 	// "probabilistic collocation": subset of TPQ pts w/ highest product wt
 	if (probDescDB.get_bool("method.nond.tensor_grid"))
 	  // since NonDExpansion invokes uSpaceModel.build_approximation() which
@@ -239,6 +235,28 @@ void NonDPolynomialChaos::compute_expansion()
     read_data(import_stream, chaos_coeffs);
     uSpaceModel.approximation_coefficients(chaos_coeffs);
   }
+}
+
+
+void NonDPolynomialChaos::increment_expansion()
+{
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  PecosApproximation* poly_approx_rep; size_t exp_terms = 0;
+  for (size_t i=0; i<numFunctions; i++) {
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (poly_approx_rep) { // may be NULL based on approxFnIndices
+      poly_approx_rep->increment_order();
+      exp_terms = std::max(poly_approx_rep->expansion_terms(), exp_terms);
+    }
+  }
+
+  // update numSamplesOnModel based on existing collocatio ratio and
+  // updated number of expansion terms
+  numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
+  // update samples reference value to use new sample count
+  NonDSampling* nond_sampling
+    = (NonDSampling*)uSpaceModel.subordinate_iterator().iterator_rep();
+  nond_sampling->sampling_reference(numSamplesOnModel);
 }
 
 

@@ -41,7 +41,8 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDSampling::NonDSampling(Model& model): NonD(model),
   seedSpec(probDescDB.get_int("method.random_seed")), randomSeed(seedSpec),
-  samplesSpec(probDescDB.get_int("method.samples")), numSamples(samplesSpec),
+  samplesSpec(probDescDB.get_int("method.samples")), samplesRef(samplesSpec),
+  numSamples(samplesSpec),
   rngName(probDescDB.get_string("method.random_number_generator")),
   sampleType(probDescDB.get_string("method.sample_type")),
   statsFlag(true), allDataFlag(false), sampleRanksMode(IGNORE_RANKS),
@@ -74,7 +75,7 @@ NonDSampling::
 NonDSampling(NoDBBaseConstructor, Model& model, const String& sample_type,
 	     int samples, int seed, const String& rng):
   NonD(NoDBBaseConstructor(), model), seedSpec(seed), randomSeed(seed),
-  samplesSpec(samples), numSamples(samples), rngName(rng),
+  samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
   sampleType(sample_type), statsFlag(false), allDataFlag(true),
   sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0)
 {
@@ -97,9 +98,10 @@ NonDSampling(NoDBBaseConstructor, const String& sample_type, int samples,
 	     int seed, const String& rng, const RealVector& lower_bnds,
 	     const RealVector& upper_bnds):
   NonD(NoDBBaseConstructor(), lower_bnds, upper_bnds), seedSpec(seed),
-  randomSeed(seed), samplesSpec(samples), numSamples(samples), rngName(rng),
-  sampleType(sample_type), statsFlag(false), allDataFlag(true),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0)
+  randomSeed(seed), samplesSpec(samples), samplesRef(samples),
+  numSamples(samples), rngName(rng), sampleType(sample_type), statsFlag(false),
+  allDataFlag(true), sampleRanksMode(IGNORE_RANKS), varyPattern(false),
+  numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 

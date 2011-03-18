@@ -821,7 +821,7 @@ void DataFitSurrModel::build_global()
     // NOTE: the iterator's samplesSpec will always be a hard lower bound on 
     // the number of samples generated, so might need to be set to zero
     daceIterator.sampling_reset(samples_needed, true, false);
-    
+
     // only run the iterator if work to do
     if (daceIterator.num_samples()) {
       // Define the data requests

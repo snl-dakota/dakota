@@ -660,52 +660,84 @@ void NonDExpansion::quantify_uncertainty()
       } break;
     }
 
-    Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-    NonDIntegration* nond_integration
-      = (NonDIntegration*)u_space_sampler.iterator_rep();
     while (!converged) {
 
       switch (stochExpRefineType) {
       case Pecos::UNIFORM_P_REFINEMENT:
-	// Uniform refinement: ramp only the SSG level or TPQ order.
-	// Note: initial specification can be isotropic or anisotropic.
-	nond_integration->increment_grid(); // TPQ or SSG
-	update_expansion();
-        metric = compute_covariance_metric(respCovariance);
+	switch (expansionCoeffsApproach) {
+	case Pecos::QUADRATURE: case Pecos::SPARSE_GRID: {
+	  // ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
+	  NonDIntegration* nond_integration = (NonDIntegration*)
+	    uSpaceModel.subordinate_iterator().iterator_rep();
+	  nond_integration->increment_grid(); // TPQ or SSG
+	  update_expansion();
+	  break;
+	}
+	case Pecos::REGRESSION:
+	  // ramp expansion order and update regression samples, keeping
+	  // initial collocation ratio (either user specified or inferred)
+	  increment_expansion(); // virtual fn defined for NonDPCE
+	  update_expansion(); // invokes uSpaceModel.build_approximation()
+	  break;
+	case Pecos::SAMPLING: case Pecos::CUBATURE:
+	  // SAMPLING precluded since no obvious logic for sample refinement.
+	  // CUBATURE precluded since very limited refinement opportunities.
+	  Cerr << "Error: uniform refinement only supported for tensor "
+	       << "quadrature, sparse grids, and regression." << std::endl;
+	  abort_handler(-1);
+	  break;
+	}
+	metric = compute_covariance_metric(respCovariance);
 	break;
       case Pecos::ADAPTIVE_P_REFINEMENT:
-	switch (stochExpRefineControl) {
-	case Pecos::TOTAL_SOBOL: {
-	  // Dimension adaptive refinement: define anisotropic preference vector
-	  // from total Sobol' indices, averaged over response function set.
-	  RealVector dim_pref;
-	  reduce_total_sobol_sets(dim_pref);
-	  // incrementing grid & updating aniso wts are best performed together
-	  nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
-	  update_expansion();
-	  metric = compute_covariance_metric(respCovariance);
+	switch (expansionCoeffsApproach) {
+	case Pecos::QUADRATURE: case Pecos::SPARSE_GRID:
+	  switch (stochExpRefineControl) {
+	  case Pecos::TOTAL_SOBOL: {
+	    // Dimension adaptive refinement: define anisotropic preference
+	    // vector from total Sobol' indices, averaged over response fn set.
+	    RealVector dim_pref;
+	    reduce_total_sobol_sets(dim_pref);
+	    // incrementing grid & updating aniso wts best performed together
+	    NonDIntegration* nond_integration = (NonDIntegration*)
+	      uSpaceModel.subordinate_iterator().iterator_rep();
+	    nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
+	    update_expansion();
+	    metric = compute_covariance_metric(respCovariance);
+	    break;
+	  }
+	  case Pecos::SPECTRAL_DECAY: {
+	    // Dimension adaptive refinement: define anisotropic weight vector
+	    // from min of spectral decay rates (PCE only) over response fn set.
+	    RealVector aniso_wts;
+	    reduce_decay_rate_sets(aniso_wts);
+	    // incrementing grid & updating aniso wts best performed together
+	    NonDIntegration* nond_integration = (NonDIntegration*)
+	      uSpaceModel.subordinate_iterator().iterator_rep();
+	    nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
+	    update_expansion();
+	    metric = compute_covariance_metric(respCovariance);
+	    break;
+	  }
+	  case Pecos::GENERALIZED_SPARSE:
+	    // Dimension adaptive refinement using generalized sparse grids.
+	    // > Start GSG from iso/aniso SSG: starting from scratch (w=0) is
+	    //   most efficient if fully nested; otherwise, unique points from
+	    //   lowest levels may not contribute (smolyak coeff = 0).
+	    // > Starting GSG from TPQ is conceptually straightforward but
+	    //   awkward in implementation (would need something like
+	    //   nond_sparse->ssg_driver->compute_tensor_grid()).
+	    metric = increment_sets(); // SSG only
+	    break;
+	  }
 	  break;
-	}
-	case Pecos::SPECTRAL_DECAY: {
-	  // Dimension adaptive refinement: define anisotropic preference vector
-	  // from inverse of spectral decay rates (PCE only), averaged over
-	  // response function set.
-	  RealVector aniso_wts;
-	  reduce_decay_rate_sets(aniso_wts);
-	  // incrementing grid & updating aniso wts are best performed together
-	  nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
-	  update_expansion();
-	  metric = compute_covariance_metric(respCovariance);
-	  break;
-	}
-	case Pecos::GENERALIZED_SPARSE:
-	  // Dimension adaptive refinement using generalized sparse grids.
-	  // > Start GSG from iso/aniso SSG: starting from scratch (w=0) is most
-	  //   efficient if fully nested; otherwise, unique points from lowest
-	  //   level grids may not contribute (smolyak combinatorial coeff = 0).
-	  // > Starting GSG from TPQ is conceptually straightforward but awkward
-	  //   (would use nond_sparse->ssg_driver->compute_tensor_grid()).
-	  metric = increment_sets(); // SSG only
+	case Pecos::REGRESSION: case Pecos::SAMPLING: case Pecos::CUBATURE:
+	  // SAMPLING and REGRESSION precluded since LHS grid anisotropy not
+	  // readily supported for synchronization with expansion anisotropy.
+	  // CUBATURE precluded since no grid anisotropy and limited refinement.
+	  Cerr << "Error: adaptive refinement only supported for tensor "
+	       << "quadrature and sparse grids." << std::endl;
+	  abort_handler(-1);
 	  break;
 	}
 	break;
@@ -1311,6 +1343,15 @@ void NonDExpansion::compute_expansion()
     u_space_sampler.active_set(sampler_set);
     uSpaceModel.build_approximation();
   }
+}
+
+
+void NonDExpansion::increment_expansion()
+{
+  Cerr << "Error: virtual increment_expansion() not redefined by NonDExpansion "
+       << "derived class.  This class foes not support uniform expansion order "
+       << "increments." << std::endl;
+  abort_handler(-1);
 }
 
 

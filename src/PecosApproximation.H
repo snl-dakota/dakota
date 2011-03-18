@@ -50,6 +50,9 @@ public:
   //- Heading: Member functions
   //
 
+  /// increment OrthogPolyApproximation::approxOrder uniformly
+  void increment_order();
+
   /// set pecosBasisApprox.configOptions.expCoeffsSolnApproach
   void solution_approach(short soln_approach);
   /// get pecosBasisApprox.configOptions.expCoeffsSolnApproach
@@ -231,6 +234,10 @@ inline PecosApproximation::PecosApproximation(): polyApproxRep(NULL)
 
 inline PecosApproximation::~PecosApproximation()
 { }
+
+
+inline void PecosApproximation::increment_order()
+{ polyApproxRep->increment_order(); }
 
 
 inline void PecosApproximation::solution_approach(short soln_approach)

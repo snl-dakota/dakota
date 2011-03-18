@@ -58,6 +58,9 @@ public:
   /// prints the PDFs computed in compute_statistics()
   void print_pdf_mappings(std::ostream& s) const;
 
+  /// set samplesRef
+  void sampling_reference(int samples_ref);
+
 protected:
 
   //
@@ -139,12 +142,13 @@ protected:
   //- Heading: Data members
   //
 
-  const int seedSpec;     ///< the user seed specification (default is 0)
-  int       randomSeed;   ///< the current seed
-  const int samplesSpec;  ///< initial specification of number of samples
-  int       numSamples;   ///< the current number of samples to evaluate
-  String    rngName;	  ///< name of the random number generator
-  String    sampleType;   ///< the sample type: random, lhs, or incremental_lhs
+  const int seedSpec;    ///< the user seed specification (default is 0)
+  int       randomSeed;  ///< the current seed
+  const int samplesSpec; ///< initial specification of number of samples
+  int       samplesRef;  ///< reference number of samples updated for refinement
+  int       numSamples;  ///< the current number of samples to evaluate
+  String    rngName;	 ///< name of the random number generator
+  String    sampleType;  ///< the sample type: random, lhs, or incremental_lhs
 
   Pecos::LHSDriver lhsDriver; ///< the C++ wrapper for the F90 LHS library
 
@@ -211,6 +215,10 @@ private:
 };
 
 
+inline void NonDSampling::sampling_reference(int samples_ref)
+{ samplesRef = samples_ref; }
+
+
 inline int NonDSampling::num_samples() const
 { return numSamples; }
 
@@ -228,9 +236,11 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
   // allow sample reduction relative to previous sampling_reset() calls
   // (that is, numSamples may be increased or decreased to match min_samples),
   // but not relative to the original user specification (samplesSpec is a hard
-  // lower bound).  maxConcurrency must not be updated since parallel config
+  // lower bound).  With the introduction of uniform/adaptive refinements,
+  // samplesRef (which is incremented from samplesSpec) replaces samplesSpec as
+  // the lower bound.  maxConcurrency must not be updated since parallel config
   // management depends on having the same value at ctor/run/dtor times.
-  numSamples = (min_samples > samplesSpec) ? min_samples : samplesSpec;
+  numSamples = (min_samples > samplesRef) ? min_samples : samplesRef;
   // note that previous value of numSamples is irrelevant: may increase or
   // decrease relative to previous value
 

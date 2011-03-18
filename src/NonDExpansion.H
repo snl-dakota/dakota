@@ -56,6 +56,8 @@ protected:
   virtual void initialize_expansion();
   /// form the expansion by calling uSpaceModel.build_approximation()
   virtual void compute_expansion();
+  /// uniformly increment the expansion order (PCE only)
+  virtual void increment_expansion();
   /// print expansion coefficients, as supported by derived instance
   virtual void print_coefficients(std::ostream& s);
   /// print expansion and numerical moments, as supported by derived instance
