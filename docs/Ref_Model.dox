@@ -568,30 +568,61 @@ approximation type, Part II
 <td>
 </table>
 
-Table \ref T6d6 "6.6" summarizes the remaining global approximation
-specifications, including DACE method and sample resue, correction,
-and use of gradient data.
+Table \ref T6d6 "6.6" summarizes the remaining (optional) global
+approximation specifications, including controls for the number of
+points requested to build the surrogate, the source of the points (\c
+dace_method_pointer and \c reuse_samples), the use of derivative
+information in constructions (\c use_derivatives), calculation of
+fitness metrics, and the \c correction method.
 
-For each of the global surrogates, \c dace_method_pointer, \c
-reuse_samples, \c correction, and \c use_gradients can be optionally
-specified.  The \c dace_method_pointer specification points to a
-design of experiments iterator which can be used to generate truth
-model data for building a global data fit.  The \c reuse_samples
-specification can be used to employ old data (either from previous
-function evaluations performed in the run or from function evaluations
-read from a restart database or text file) in the building of new
-global approximations.  The default is no reuse of old data (since
-this can induce directional bias), and the settings of \c all, \c
-region, and \c samples_file result in reuse of all available data,
-reuse of all data available in the current trust region, and reuse of
-all data from a specified text file, respectively.  The combination of
-new build data from \c dace_method_pointer and old build data from \c
-reuse_samples must be sufficient for building the global
-approximation.  If not enough data is available, the system will abort
-with an error message.  Both \c dace_method_pointer and \c
-reuse_samples are optional specifications, which gives the user
-maximum flexibility in using design of experiments data, restart/text
-file data, or both.
+The number of points used to build a global approximation is
+determined by three variables:
+
+\li UserRequestedPoints: Each global surrogate type has an associated
+minimum reasonable and recommended number of build points, selected
+via \c minimum_points (default) and \c recommended_points,
+respectively.  Alternately an integer \c total_points may be specified
+to request a specific number of points in each surrogate build (a
+lower bound of minimum points is enforced).
+
+\li ReusedSamples: any samples available for reuse via the \c
+reuse_samples keyword (described below) are always used to build.
+
+\li DACESamples: \c samples specified in the DACE method configuration
+specified via \c dace_method_pointer (which may be zero) always
+provide a lower bound on the number of fresh DACE samples used to
+build the surrogate.
+
+If UserRequestedPoints does not exceed available ReusedSamples, the
+total points used to build the surrogate is given by ReusedSamples +
+DACESamples (the DACESamples augment the available data).  If
+UserRequestedPoints exceeds available ReusedSamples, the DACE method
+will make up the difference, with a lower bound given by DACESamples,
+resulting in a build from ReusedSamples + max(UserRequestedPoints -
+ReusedSamples, DACESamples).  If no DACE iterator is available to
+generated supplemental points, an error will result.
+
+The \c dace_method_pointer links to design of experiments iterator
+used to generate truth model data for building a global data fit.  The
+\c reuse_samples specification can be used to employ old data (either
+from previous function evaluations performed in the run or from
+function evaluations read from a restart database or text file) in the
+building of new global approximations.  The default is no reuse of old
+data (since this can induce directional bias), and the settings of \c
+all, \c region, and \c samples_file result in reuse of all available
+data, reuse of all data available in the current trust region, and
+reuse of all data from a specified text file, respectively.  Both \c
+dace_method_pointer and \c reuse_samples are optional specifications,
+which gives the user maximum flexibility in using design of
+experiments data, restart/text file data, or both.
+
+The \c use_derivatives flag specifies that any available derivative
+information should be used in global approximation builds. This
+capability is currently supported in SurrBasedLocalMinimizer,
+Pecos::SurrogateDataPoint, and \ref Approximation::build
+"Approximation::build()", and will soon be supported for \c
+global_kriging models, but is not yet supported in any global
+approximation derived class redefinitions of build().
 
 To assess the goodness of fit of a global surrogate, a variety of 
 diagnostics are available for the following global approximation methods: 
@@ -639,12 +670,6 @@ then a multipoint correction, as opposed to the local \c additive and
 \c multiplicative corrections.  Each of these correction capabilities
 is described in detail in [\ref Eldred2004a "Eldred et al., 2004a"].
 
-Finally, the \c use_gradients flag specifies a future capability for
-the use of gradient data in the global approximation builds. This
-capability is currently supported in SurrBasedLocalMinimizer,
-Pecos::SurrogateDataPoint, and \ref Approximation::build
-"Approximation::build()", but is not yet supported in any global
-approximation derived class redefinitions of build().
 
 \anchor T6d6
 <table>
@@ -660,6 +685,12 @@ Specification detail for global approximations: build and correction controls
 <td><b>Associated Data</b>
 <td><b>Status</b>
 <td><b>Default</b>
+<tr>
+<td>Number of build points
+<td>\c total_points | \c minimum_points | \c recommended_points 
+<td>integer | none | none
+<td>Optional
+<td>recommended_points
 <tr>
 <td>Design of experiments method pointer
 <td>\c dace_method_pointer
@@ -679,12 +710,6 @@ Specification detail for global approximations: build and correction controls
 <td>Optional
 <td>no sample import from a file
 <tr>
-<td>Surrogate correction approach
-<td>\c correction
-<td>\c additive or \c multiplicative or \c combined, \c zeroth_order or \c first_order or \c second_order
-<td>Optional group
-<td>no surrogate correction
-<tr>
 <td>Use of gradient data in global approximation builds
 <td>\c use_gradients
 <td>none
@@ -698,6 +723,12 @@ Specification detail for global approximations: build and correction controls
 \c press, \c cv, and \c rsquared 
 <td>Optional
 <td>No diagnostics printed
+<tr>
+<td>Surrogate correction approach
+<td>\c correction
+<td>\c additive or \c multiplicative or \c combined, \c zeroth_order or \c first_order or \c second_order
+<td>Optional group
+<td>no surrogate correction
 </table>
 
 
