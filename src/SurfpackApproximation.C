@@ -106,12 +106,27 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
 
       // activate derivative information if available
       dataOrder = 1;
+      unsigned short surfpack_derivative_order = 0;
       if (problem_db.get_bool("model.surrogate.derivative_usage")) {
-	if (problem_db.get_string("responses.gradient_type") != "none")
+	if (problem_db.get_string("responses.gradient_type") != "none") {
 	  dataOrder |= 2;
-	if (problem_db.get_string("responses.hessian_type")  != "none")
+	  surfpack_derivative_order = 1;
+	}
+	if (problem_db.get_string("responses.hessian_type")  != "none") {
 	  dataOrder |= 4;
+	  if (dataOrder | 2) {
+	    surfpack_derivative_order = 2;
+	  }
+	  else {
+	    Cerr << "\nError (global_kriging): Hessian information only used"
+		 << "if gradients present.\ndataOrder = " << dataOrder 
+		 << std::endl;
+	    abort_handler(-1);
+	  }
+	}
       }
+      args["derivative_order"] = 
+	toString<unsigned short>(surfpack_derivative_order);
 
       // optimization options are none | sample | local | global (default)
       args["optimization_method"] = "global";
