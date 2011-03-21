@@ -164,7 +164,16 @@ f = \sum_{i=1}^{n-1} \left[ 100 (x_{i+1}-x_i^2)^2+(1-x_i)^2 \right]
 \label{additional:rosengen}
 \end{equation}
 These formulations are not currently supported in DAKOTA's
-system/fork/direct interfaces.
+system/fork interfaces, but are supported in the direct interface.
+
+%\begin{equation}
+%f = \sum_{i=1}^{n/2} \left[ e^{-x^2_{2i-1}} + 10 e^{-x^2_{2i}} \right]
+%\label{additional:gerstner_aniso1}
+%\end{equation}
+%\begin{equation}
+%f = exp\left(-\sum_{i=1}^{n/2} \left[ 10 x^2_{2i-1} + 5 x^2_{2i} \right]\right)
+%\label{additional:gerstner_aniso3}
+%\end{equation}
 
 Surface and contour plots for this function have been shown previously
 in Figure~\ref{tutorial:rosenbrock_prob}. This example problem

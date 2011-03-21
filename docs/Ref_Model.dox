@@ -575,32 +575,35 @@ dace_method_pointer and \c reuse_samples), the use of derivative
 information in constructions (\c use_derivatives), calculation of
 fitness metrics, and the \c correction method.
 
-The number of points used to build a global approximation is
-determined by three variables:
+The number of points used in building a global approximation is
+determined by three point counts:
 
-\li UserRequestedPoints: Each global surrogate type has an associated
+\li #Model points: Each global surrogate type has an associated
 minimum reasonable and recommended number of build points, selected
-via \c minimum_points (default) and \c recommended_points,
-respectively.  Alternately an integer \c total_points may be specified
-to request a specific number of points in each surrogate build (a
-lower bound of minimum points is enforced).
+via \c minimum_points and \c recommended_points (default),
+respectively, within a global surrogate model specification.
+Alternately an integer \c total_points may be specified to request a
+specific number of points in each surrogate build (a lower bound of
+minimum points is enforced).  This count, then, can be summarized as
+#Model points = (minimum | recommended | max(minimum, total)).
 
-\li ReusedSamples: any samples available for reuse via the \c
+\li Reused points: any samples available for reuse via the \c
 reuse_samples keyword (described below) are always used to build.
+This count defaults to zero.
 
-\li DACESamples: \c samples specified in the DACE method configuration
-specified via \c dace_method_pointer (which may be zero) always
+\li #Iterator points: \c samples specified within the DACE method 
+specification (identified via \c dace_method_pointer) always
 provide a lower bound on the number of fresh DACE samples used to
-build the surrogate.
+build the surrogate.  This count defaults to zero.
 
-If UserRequestedPoints does not exceed available ReusedSamples, the
-total points used to build the surrogate is given by ReusedSamples +
-DACESamples (the DACESamples augment the available data).  If
-UserRequestedPoints exceeds available ReusedSamples, the DACE method
-will make up the difference, with a lower bound given by DACESamples,
-resulting in a build from ReusedSamples + max(UserRequestedPoints -
-ReusedSamples, DACESamples).  If no DACE iterator is available to
-generated supplemental points, an error will result.
+The number of new points to be evaluated by the DACE method is defined
+by New points = max(#Model points - Reused points, #Iterator points),
+using the logic that the number of points needed is #Model points minus
+Reused points, but respecting a lower bound DACE samples specification
+when present.  The total number of points used in the surrogate build
+is then New points + Reused points.  The DACE iterator will only be
+invoked if it has new samples to perform, and if new samples are
+required and no DACE iterator has been provided, an error will result.
 
 The \c dace_method_pointer links to design of experiments iterator
 used to generate truth model data for building a global data fit.  The
