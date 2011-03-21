@@ -18,11 +18,11 @@ namespace Dakota {
 
 DataModelRep::DataModelRep():
   modelType("single"), //approxPointReuse("none"),
-  pointsTotal(0), pointsMinimum(false), pointsRecommended(false),
-  approxCorrectionOrder(0), approxDerivUsageFlag(false), polynomialOrder(2),
-  krigingMaxTrials(0), mlsPolyOrder(0), mlsWeightFunction(0), rbfBases(0),
-  rbfMaxPts(0), rbfMaxSubsets(0), rbfMinPartition(0), marsMaxBases(0),
-  annRandomWeight(0), annNodes(0), annRange(0.0), trendOrder("reduced_quadratic"),
+  pointsTotal(0), pointsManagement(DEFAULT_POINTS), approxCorrectionOrder(0),
+  approxDerivUsageFlag(false), polynomialOrder(2), krigingMaxTrials(0),
+  mlsPolyOrder(0), mlsWeightFunction(0), rbfBases(0), rbfMaxPts(0),
+  rbfMaxSubsets(0), rbfMinPartition(0), marsMaxBases(0), annRandomWeight(0),
+  annNodes(0), annRange(0.0), trendOrder("reduced_quadratic"),
   pointSelection(false), referenceCount(1)
 { }
 
@@ -32,16 +32,16 @@ void DataModelRep::write(MPIPackBuffer& s) const
   s << idModel << modelType << variablesPointer << interfacePointer
     << responsesPointer << subMethodPointer << surrogateFnIndices
     << surrogateType << truthModelPointer << lowFidelityModelPointer
-    << pointsTotal << pointsMinimum << pointsRecommended
-    << approxPointReuse << approxPointReuseFile << approxCorrectionType
-    << approxCorrectionOrder << approxDerivUsageFlag << polynomialOrder
-    << krigingCorrelations << krigingOptMethod << krigingMaxTrials
-    << krigingMaxCorrelations << krigingMinCorrelations << mlsPolyOrder 
-    << mlsWeightFunction << rbfBases << rbfMaxPts << rbfMaxSubsets
-    << rbfMinPartition << marsMaxBases << marsInterpolation << annRandomWeight
-    << annNodes << annRange << trendOrder << pointSelection << diagMetrics
-    << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
-    << primaryRespCoeffs << secondaryRespCoeffs;
+    << pointsTotal << pointsManagement << approxPointReuse
+    << approxPointReuseFile << approxCorrectionType << approxCorrectionOrder
+    << approxDerivUsageFlag << polynomialOrder << krigingCorrelations
+    << krigingOptMethod << krigingMaxTrials << krigingMaxCorrelations
+    << krigingMinCorrelations << mlsPolyOrder << mlsWeightFunction << rbfBases
+    << rbfMaxPts << rbfMaxSubsets << rbfMinPartition << marsMaxBases
+    << marsInterpolation << annRandomWeight << annNodes << annRange
+    << trendOrder << pointSelection << diagMetrics << optionalInterfRespPointer
+    << primaryVarMaps << secondaryVarMaps << primaryRespCoeffs
+    << secondaryRespCoeffs;
 }
 
 
@@ -50,16 +50,16 @@ void DataModelRep::read(MPIUnpackBuffer& s)
   s >> idModel >> modelType >> variablesPointer >> interfacePointer
     >> responsesPointer >> subMethodPointer >> surrogateFnIndices
     >> surrogateType >> truthModelPointer >> lowFidelityModelPointer
-    >> pointsTotal >> pointsMinimum >> pointsRecommended
-    >> approxPointReuse >> approxPointReuseFile >> approxCorrectionType
-    >> approxCorrectionOrder >> approxDerivUsageFlag >> polynomialOrder
-    >> krigingCorrelations >> krigingOptMethod >> krigingMaxTrials
-    >> krigingMaxCorrelations >> krigingMinCorrelations >> mlsPolyOrder 
-    >> mlsWeightFunction >> rbfBases >> rbfMaxPts >> rbfMaxSubsets
-    >> rbfMinPartition >> marsMaxBases >> marsInterpolation >> annRandomWeight
-    >> annNodes >> annRange >> trendOrder >> pointSelection >> diagMetrics
-    >> optionalInterfRespPointer >> primaryVarMaps >> secondaryVarMaps
-    >> primaryRespCoeffs >> secondaryRespCoeffs;
+    >> pointsTotal >> pointsManagement >> approxPointReuse
+    >> approxPointReuseFile >> approxCorrectionType >> approxCorrectionOrder
+    >> approxDerivUsageFlag >> polynomialOrder >> krigingCorrelations
+    >> krigingOptMethod >> krigingMaxTrials >> krigingMaxCorrelations
+    >> krigingMinCorrelations >> mlsPolyOrder >> mlsWeightFunction >> rbfBases
+    >> rbfMaxPts >> rbfMaxSubsets >> rbfMinPartition >> marsMaxBases
+    >> marsInterpolation >> annRandomWeight >> annNodes >> annRange
+    >> trendOrder >> pointSelection >> diagMetrics >> optionalInterfRespPointer
+    >> primaryVarMaps >> secondaryVarMaps >> primaryRespCoeffs
+    >> secondaryRespCoeffs;
 }
 
 
@@ -68,16 +68,16 @@ void DataModelRep::write(std::ostream& s) const
   s << idModel << modelType << variablesPointer << interfacePointer
     << responsesPointer << subMethodPointer << surrogateFnIndices
     << surrogateType << truthModelPointer << lowFidelityModelPointer
-    << pointsTotal << pointsMinimum << pointsRecommended
-    << approxPointReuse << approxPointReuseFile << approxCorrectionType
-    << approxCorrectionOrder << approxDerivUsageFlag << polynomialOrder
-    << krigingCorrelations << krigingOptMethod << krigingMaxTrials
-    << krigingMaxCorrelations << krigingMinCorrelations << mlsPolyOrder 
-    << mlsWeightFunction << rbfBases << rbfMaxPts << rbfMaxSubsets
-    << rbfMinPartition << marsMaxBases << marsInterpolation << annRandomWeight
-    << annNodes << annRange << trendOrder << pointSelection << diagMetrics
-    << optionalInterfRespPointer << primaryVarMaps << secondaryVarMaps
-    << primaryRespCoeffs << secondaryRespCoeffs;
+    << pointsTotal << pointsManagement << approxPointReuse
+    << approxPointReuseFile << approxCorrectionType << approxCorrectionOrder
+    << approxDerivUsageFlag << polynomialOrder << krigingCorrelations
+    << krigingOptMethod << krigingMaxTrials << krigingMaxCorrelations
+    << krigingMinCorrelations << mlsPolyOrder << mlsWeightFunction << rbfBases
+    << rbfMaxPts << rbfMaxSubsets << rbfMinPartition << marsMaxBases
+    << marsInterpolation << annRandomWeight << annNodes << annRange
+    << trendOrder << pointSelection << diagMetrics << optionalInterfRespPointer
+    << primaryVarMaps << secondaryVarMaps << primaryRespCoeffs
+    << secondaryRespCoeffs;
 }
 
 

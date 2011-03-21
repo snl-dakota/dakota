@@ -1993,6 +1993,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"mls_weight_function", P mlsWeightFunction},
 	{"neural_network_nodes", P annNodes},
 	{"neural_network_random_weight", P annRandomWeight},
+	{"points_management", P pointsManagement},
 	{"polynomial_order", P polynomialOrder},
 	{"rbf_bases", P rbfBases},
 	{"rbf_max_pts", P rbfMaxPts},
@@ -2190,9 +2191,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     #define P &DataModelRep::
     static KW<bool, DataModelRep> Bdmo[] = {	// must be sorted
 	{"derivative_usage", P approxDerivUsageFlag},
-	{"point_selection", P pointSelection},
-        {"points_minimum", P pointsMinimum},
-        {"points_recommended", P pointsRecommended}};
+	{"point_selection", P pointSelection}};
     #undef P
 
     KW<bool, DataModelRep> *kw;

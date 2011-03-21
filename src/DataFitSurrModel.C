@@ -31,8 +31,7 @@ namespace Dakota {
 DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   SurrogateModel(problem_db), surrModelEvalCntr(0),
   pointsTotal(problem_db.get_int("model.surrogate.points_total")),
-  pointsMinimum(problem_db.get_bool("model.surrogate.points_minimum")),
-  pointsRecommended(problem_db.get_bool("model.surrogate.points_recommended")),
+  pointsManagement(problem_db.get_short("model.surrogate.points_management")),
   pointReuse(problem_db.get_string("model.surrogate.point_reuse")),
   pointReuseFile(problem_db.get_string("model.surrogate.point_reuse_file"))
 {
@@ -40,8 +39,9 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   // artificial in this case (and reflecting the stencil degrades accuracy)
   ignoreBounds = true;
 
-  if (pointsTotal <= 0 && !pointsMinimum)
-    pointsRecommended = true;
+  // if no user points management spec, assign RECOMMENDED_POINTS as default
+  if (pointsManagement == DEFAULT_POINTS)
+    pointsManagement = (pointsTotal > 0) ? TOTAL_POINTS : RECOMMENDED_POINTS;
 
   if (pointReuse.empty()) // assign default
     pointReuse = (pointReuseFile.empty()) ? "none" : "all";
@@ -159,8 +159,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 actual_model.current_response().active_set(), corr_type,
 		 corr_order),
   daceIterator(dace_iterator), actualModel(actual_model), surrModelEvalCntr(0),
-  pointsTotal(0), pointsMinimum(false), pointsRecommended(true),
-  pointReuse(point_reuse)
+  pointsTotal(0), pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse)
 {
   // dace_iterator may be an empty envelope (local, multipoint approx),
   // but actual_model must be defined.
@@ -777,49 +776,45 @@ void DataFitSurrModel::build_global()
   // *******************************************
   // Evaluate new data points using daceIterator
   // *******************************************
-  // minimum and preferred points wanted by the surrogate model
+  // minimum points required by the surrogate model
   int min_points = approxInterface.minimum_points(true);// incl constraints
-  int rec_points = approxInterface.recommended_points(true);
 
   size_t dace_samples = 0;
-  if (!daceIterator.is_null()) { // else use rst info only (no new data)
+  if (daceIterator.is_null()) { // reused/imported data only (no new data)
+    if (reuse_points < min_points) { // check for sufficient data
+      Cerr << "Error: a minimum of " << min_points << " points is required by "
+	   << "DataFitSurrModel::build_global.\n" << reuse_points
+	   << " were provided." << std::endl;
+      abort_handler(-1);
+    }
+  }
+  else { // else use rst info only (no new data)
 
     // set DataFitSurrModel parallelism mode to actualModel
     component_parallel_mode(ACTUAL_MODEL);
 
     // determine total number of points requested to build surrogate 
     // (min, recommended, or spec)
-    int points_requested = 0;                                
-
-    // after construction, only one should be true
-    if (pointsMinimum) 
-      points_requested = min_points;
-    else if (pointsRecommended)
-      points_requested = rec_points;
-    else { // total points must be defined
-      if (pointsTotal < min_points) {
-	if (outputLevel >= NORMAL_OUTPUT) 
-	  Cout << "\nDataFitSurrModel: Total points specified " << pointsTotal
-	       << " is less than minimum required;\nincreasing to "
-	       << min_points << std::endl;
-	points_requested = min_points;
-      }
-      else 
-	points_requested = pointsTotal;
+    int points_requested;                                
+    switch (pointsManagement) {
+    case DEFAULT_POINTS: case MINIMUM_POINTS:
+      points_requested = min_points;                               break;
+    case RECOMMENDED_POINTS:
+      points_requested = approxInterface.recommended_points(true); break;
+    case TOTAL_POINTS:
+      if (pointsTotal < min_points && outputLevel >= NORMAL_OUTPUT)
+	Cout << "\nDataFitSurrModel: Total points specified " << pointsTotal
+	     << " is less than minimum required;\n                  "
+	     << "increasing to " << min_points << std::endl;
+      points_requested = std::max(min_points, pointsTotal);        break;
     }
 
-    // number of additional samples needed to build the surrogate
-    int samples_needed = std::max(0, points_requested - (int)reuse_points);
-
-    if (outputLevel > NORMAL_OUTPUT && reuse_points > 0)
-      Cout << "DataFitSurrModel: Reusing " << reuse_points << " points.\n";
-
-    // daceIterator must generate at least samples_needed samples,
-    // should populate allData lists (allDataFlag = true), and should bypass 
+    // daceIterator must generate at least samples_needed points, should
+    // populate allData lists (allDataFlag = true), and should bypass
     // statistics computation (statsFlag = false).
-    //
-    // NOTE: the iterator's samplesSpec will always be a hard lower bound on 
+    // NOTE: the iterator's samplesRef provides a hard lower bound on 
     // the number of samples generated, so might need to be set to zero
+    int samples_needed = std::max(0, points_requested - (int)reuse_points);
     daceIterator.sampling_reset(samples_needed, true, false);
 
     // only run the iterator if work to do
@@ -830,9 +825,11 @@ void DataFitSurrModel::build_global()
       asv_mapping(set.request_vector(), actual_asv, approx_asv, true);
       set.request_vector(actual_asv);
       daceIterator.active_set(set);
+      // run the iterator
       daceIterator.run_iterator(Cout);
       const ResponseArray& all_resp = daceIterator.all_responses();
       dace_samples = all_resp.size();
+      // append data to the approximation
       if (daceIterator.compact_mode())
 	approxInterface.append_approximation(daceIterator.all_samples(),
 					     all_resp);
@@ -845,16 +842,9 @@ void DataFitSurrModel::build_global()
 	   << std::endl;
   }
 
-  // **********************************************************
-  // Verify union of reuse vars/response and dace vars/response
-  // **********************************************************
-  size_t total_points = reuse_points + dace_samples;
-  if (total_points < min_points) {
-    Cerr << "Error: a minimum of " << min_points << " points is required by "
-	 << "DataFitSurrModel::build_global.\n" << total_points
-	 << " were provided." << std::endl;
-    abort_handler(-1);
-  }
+  // *******************************
+  // Output counts for data ensemble
+  // *******************************
   String anchor = (approxInterface.anchor()) ? "one" : "no";
   Cout << "Constructing global approximations with " << anchor << " anchor, "
        << dace_samples << " DACE samples, and " << reuse_points

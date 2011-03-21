@@ -42,6 +42,13 @@ public:
   const RealMatrix&     all_samples();
   const ResponseArray&  all_responses() const;
 
+  //
+  //- Heading: Virtual functions
+  //
+
+  /// sets varyPattern in derived classes that support it
+  virtual void vary_pattern(bool pattern_flag);
+
 protected:
 
   //
@@ -62,9 +69,6 @@ protected:
   //
   //- Heading: Virtual functions
   //
-
-  /// sets varyPattern in derived classes that support it
-  virtual void vary_pattern(bool pattern_flag);
 
   /// Returns one block of samples (ndim * num_samples)
   virtual void get_parameter_sets(Model& model);

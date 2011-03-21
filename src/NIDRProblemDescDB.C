@@ -282,12 +282,6 @@ Method_mp_litrv {
 	};
 
  struct
-Method_mp_slit {
-	short DataMethodRep::* sp;
-	int lit;
-	};
-
- struct
 Method_mp_slit2 {
 	String DataMethodRep::* sp;
 	String DataMethodRep::* sp2;
@@ -319,6 +313,12 @@ Model_mp_ord {
 	};
 
  struct
+Model_mp_type {
+	short DataModelRep::* sp;
+	short type;
+	};
+
+ struct
 Resp_Info {
 	DataResponsesRep *dr;
 	DataResponses *dr0;
@@ -334,12 +334,6 @@ Resp_mp_lit {
 Strategy_mp_lit {
 	String DataStrategyRep::* sp;
 	const char *lit;
-	};
-
- struct
-Strategy_mp_slit {
-	short DataStrategyRep::* sp;
-	int lit;
 	};
 
  enum { // kinds of continuous aleatory uncertain variables
@@ -1030,12 +1024,6 @@ method_ushintL(const char *keyname, Values *val, void **g, void *v)
 	}
 
  void NIDRProblemDescDB::
-method_slit(const char *keyname, Values *val, void **g, void *v)
-{
-	(*(Meth_Info**)g)->dme->*((Method_mp_slit*)v)->sp = ((Method_mp_slit*)v)->lit;
-	}
-
- void NIDRProblemDescDB::
 method_slit2(const char *keyname, Values *val, void **g, void *v)
 {
 	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
@@ -1206,6 +1194,12 @@ model_lit(const char *keyname, Values *val, void **g, void *v)
 model_order(const char *keyname, Values *val, void **g, void *v)
 {
 	(*(Mod_Info**)g)->dmo->*((Model_mp_ord*)v)->sp = ((Model_mp_ord*)v)->ord;
+	}
+
+ void NIDRProblemDescDB::
+model_type(const char *keyname, Values *val, void **g, void *v)
+{
+	(*(Mod_Info**)g)->dmo->*((Model_mp_type*)v)->sp = ((Model_mp_type*)v)->type;
 	}
 
  void NIDRProblemDescDB::
@@ -1601,12 +1595,6 @@ strategy_int(const char *keyname, Values *val, void **g, void *v)
 strategy_lit(const char *keyname, Values *val, void **g, void *v)
 {
 	(*(DataStrategyRep**)g)->*((Strategy_mp_lit*)v)->sp = ((Strategy_mp_lit*)v)->lit;
-	}
-
- void NIDRProblemDescDB::
-strategy_slit(const char *keyname, Values *val, void **g, void *v)
-{
-	(*(DataStrategyRep**)g)->*((Strategy_mp_slit*)v)->sp = ((Strategy_mp_slit*)v)->lit;
 	}
 
  void NIDRProblemDescDB::
@@ -4036,8 +4024,6 @@ static int
 
 #define MP_(x) DataMethodRep::* method_mp_##x = &DataMethodRep::x
 #define MP2(x,y) method_mp_##x##_##y = {&DataMethodRep::x,#y}
-#define MP2a(x,y) method_mp_##x##_##y = {&DataMethodRep::x,y}
-#define MP2i(x,y) method_mp_##x = {&DataMethodRep::x,#y}
 #define MP2s(x,y) method_mp_##x##_##y = {&DataMethodRep::x,y}
 #define MP2p(x,y) method_mp_##x##_##y = {&DataMethodRep::x,Pecos::y}
 #define MP3(x,y,z) method_mp_3##x##_##z = {&DataMethodRep::x,&DataMethodRep::y,#z}
@@ -4217,26 +4203,6 @@ static Method_mp_litrv
 	MP3(nichingType,nicheVector,radial),
 	MP3(postProcessorType,distanceVector,distance_postprocessor);
 
-static Method_mp_slit
-	MP2a(methodOutput,DEBUG_OUTPUT),
-	MP2a(methodOutput,QUIET_OUTPUT),
-	MP2a(methodOutput,SILENT_OUTPUT),
-	MP2a(methodOutput,VERBOSE_OUTPUT),
-	MP2a(surrBasedLocalAcceptLogic,FILTER),
-	MP2a(surrBasedLocalAcceptLogic,TR_RATIO),
-	MP2a(surrBasedLocalConstrRelax,HOMOTOPY),
-	MP2a(surrBasedLocalMeritFn,ADAPTIVE_PENALTY_MERIT),
-	MP2a(surrBasedLocalMeritFn,AUGMENTED_LAGRANGIAN_MERIT),
-	MP2a(surrBasedLocalMeritFn,LAGRANGIAN_MERIT),
-	MP2a(surrBasedLocalMeritFn,PENALTY_MERIT),
-	MP2a(surrBasedLocalSubProbCon,LINEARIZED_CONSTRAINTS),
-	MP2a(surrBasedLocalSubProbCon,NO_CONSTRAINTS),
-	MP2a(surrBasedLocalSubProbCon,ORIGINAL_CONSTRAINTS),
-	MP2a(surrBasedLocalSubProbObj,AUGMENTED_LAGRANGIAN_OBJECTIVE),
-	MP2a(surrBasedLocalSubProbObj,LAGRANGIAN_OBJECTIVE),
-	MP2a(surrBasedLocalSubProbObj,ORIGINAL_PRIMARY),
-	MP2a(surrBasedLocalSubProbObj,SINGLE_OBJECTIVE);
-
 static Method_mp_slit2
 	MP3(initializationType,flatFile,flat_file),
 	MP3(methodName,dlDetails,dl_solver);
@@ -4390,6 +4356,10 @@ static size_t
 static Method_mp_type
 	MP2s(expansionType,ASKEY_U),
 	MP2s(expansionType,STD_NORMAL_U),
+	MP2s(methodOutput,DEBUG_OUTPUT),
+	MP2s(methodOutput,QUIET_OUTPUT),
+	MP2s(methodOutput,SILENT_OUTPUT),
+	MP2s(methodOutput,VERBOSE_OUTPUT),
 	MP2p(nestingOverride,NESTED),               // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),           // Pecos enumeration
 	MP2p(refinementControl,GENERALIZED_SPARSE), // Pecos enumeration
@@ -4397,12 +4367,24 @@ static Method_mp_type
 	MP2p(refinementControl,TOTAL_SOBOL),        // Pecos enumeration
 	MP2p(refinementType,ADAPTIVE_P_REFINEMENT), // Pecos enumeration
         MP2p(refinementType,UNIFORM_P_REFINEMENT),  // Pecos enumeration
+	MP2s(surrBasedLocalAcceptLogic,FILTER),
+	MP2s(surrBasedLocalAcceptLogic,TR_RATIO),
+	MP2s(surrBasedLocalConstrRelax,HOMOTOPY),
+	MP2s(surrBasedLocalMeritFn,ADAPTIVE_PENALTY_MERIT),
+	MP2s(surrBasedLocalMeritFn,AUGMENTED_LAGRANGIAN_MERIT),
+	MP2s(surrBasedLocalMeritFn,LAGRANGIAN_MERIT),
+	MP2s(surrBasedLocalMeritFn,PENALTY_MERIT),
+	MP2s(surrBasedLocalSubProbCon,LINEARIZED_CONSTRAINTS),
+	MP2s(surrBasedLocalSubProbCon,NO_CONSTRAINTS),
+	MP2s(surrBasedLocalSubProbCon,ORIGINAL_CONSTRAINTS),
+	MP2s(surrBasedLocalSubProbObj,AUGMENTED_LAGRANGIAN_OBJECTIVE),
+	MP2s(surrBasedLocalSubProbObj,LAGRANGIAN_OBJECTIVE),
+	MP2s(surrBasedLocalSubProbObj,ORIGINAL_PRIMARY),
+	MP2s(surrBasedLocalSubProbObj,SINGLE_OBJECTIVE),
 	MP2p(vbdControl,UNIVARIATE_VBD);            // Pecos enumeration
 
 #undef MP4
 #undef MP3
-#undef MP2i
-#undef MP2a
 #undef MP2s
 #undef MP2p
 #undef MP2
@@ -4450,6 +4432,10 @@ static Model_mp_ord
 	MP2s(polynomialOrder,2),
         MP2s(polynomialOrder,3);
 
+static Model_mp_type
+	MP2s(pointsManagement,MINIMUM_POINTS),
+        MP2s(pointsManagement,RECOMMENDED_POINTS);
+
 static Real
 	MP_(annRange);
 
@@ -4479,8 +4465,6 @@ static StringArray
 
 static bool
 	MP_(approxDerivUsageFlag),
-        MP_(pointsMinimum),
-        MP_(pointsRecommended),
 	MP_(pointSelection);
 
 static short

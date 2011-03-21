@@ -22,6 +22,9 @@
 
 namespace Dakota {
 
+// define special values for pointsManagement
+enum { DEFAULT_POINTS, MINIMUM_POINTS, RECOMMENDED_POINTS, TOTAL_POINTS };
+
 
 /// Body class for model specification data.
 
@@ -91,16 +94,12 @@ public:
 
   // controls for number of points with which to build the model
 
-  /// user-specified lower bound on total points with which to build
-  /// the model (if reuse_points < pointsTotal, new samples will make
-  /// up the difference)
+  /// user-specified lower bound on total points with which to build the model
+  /// (if reuse_points < pointsTotal, new samples will make up the difference)
   int pointsTotal;
-  /// use the surrogate-specific minimum allowable points to build the
-  /// model
-  bool pointsMinimum;
-  /// use the surrogate-specific recommended number of points to build
-  /// the model
-  bool pointsRecommended;
+  /// points management configuration for DataFitSurrModel:
+  /// DEFAULT_POINTS, MINIMUM_POINTS, or RECOMMENDED_POINTS
+  short pointsManagement;
 
   /// sample reuse selection for building global approximations: none, all,
   /// region, or file (from the \c reuse_samples specification in

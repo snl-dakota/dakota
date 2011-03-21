@@ -140,7 +140,6 @@ public:
   KWH(method_resplevs);
   KWH(method_resplevs01);
   KWH(method_shint);
-  KWH(method_slit);
   KWH(method_slit2);
   KWH(method_soga_begin);
   KWH(method_soga_final);
@@ -161,12 +160,12 @@ public:
   KWH(model_lit);
   KWH(model_order);
   KWH(model_shint);
-  KWH(model_slit2);
   KWH(model_start);
   KWH(model_stop);
   KWH(model_str);
   KWH(model_strL);
   KWH(model_true);
+  KWH(model_type);
 
   KWH(resp_RealDL);
   KWH(resp_RealL);
@@ -184,7 +183,6 @@ public:
   KWH(strategy_RealL);
   KWH(strategy_int);
   KWH(strategy_lit);
-  KWH(strategy_slit);
   KWH(strategy_start);
   KWH(strategy_str);
   KWH(strategy_strL);

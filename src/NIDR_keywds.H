@@ -767,10 +767,10 @@ static KeyWord
 		{"steplength_to_boundary",10,0,4,0,0,0.,0.,0,N_mdm(Real,stepLenToBoundary)}
 		},
 	kw_135[4] = {
-		{"debug",8,0,1,1,0,0.,0.,0,N_mdm(slit,methodOutput_DEBUG_OUTPUT)},
-		{"quiet",8,0,1,1,0,0.,0.,0,N_mdm(slit,methodOutput_QUIET_OUTPUT)},
-		{"silent",8,0,1,1,0,0.,0.,0,N_mdm(slit,methodOutput_SILENT_OUTPUT)},
-		{"verbose",8,0,1,1,0,0.,0.,0,N_mdm(slit,methodOutput_VERBOSE_OUTPUT)}
+		{"debug",8,0,1,1,0,0.,0.,0,N_mdm(type,methodOutput_DEBUG_OUTPUT)},
+		{"quiet",8,0,1,1,0,0.,0.,0,N_mdm(type,methodOutput_QUIET_OUTPUT)},
+		{"silent",8,0,1,1,0,0.,0.,0,N_mdm(type,methodOutput_SILENT_OUTPUT)},
+		{"verbose",8,0,1,1,0,0.,0.,0,N_mdm(type,methodOutput_VERBOSE_OUTPUT)}
 		},
 	kw_136[3] = {
 		{0,0,1,0,0,kw_14},
@@ -824,26 +824,26 @@ static KeyWord
 		{"replace_points",8,0,2,0,0,0.,0.,0,N_mdm(true,surrBasedGlobalReplacePts)}
 		},
 	kw_146[2] = {
-		{"filter",8,0,1,1,0,0.,0.,0,N_mdm(slit,surrBasedLocalAcceptLogic_FILTER)},
-		{"tr_ratio",8,0,1,1,0,0.,0.,0,N_mdm(slit,surrBasedLocalAcceptLogic_TR_RATIO)}
+		{"filter",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalAcceptLogic_FILTER)},
+		{"tr_ratio",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalAcceptLogic_TR_RATIO)}
 		},
 	kw_147[7] = {
-		{"augmented_lagrangian_objective",8,0,1,1,0,0.,0.,0,N_mdm(slit,surrBasedLocalSubProbObj_AUGMENTED_LAGRANGIAN_OBJECTIVE)},
-		{"lagrangian_objective",8,0,1,1,0,0.,0.,0,N_mdm(slit,surrBasedLocalSubProbObj_LAGRANGIAN_OBJECTIVE)},
-		{"linearized_constraints",8,0,2,2,0,0.,0.,0,N_mdm(slit,surrBasedLocalSubProbCon_LINEARIZED_CONSTRAINTS)},
-		{"no_constraints",8,0,2,2,0,0.,0.,0,N_mdm(slit,surrBasedLocalSubProbCon_NO_CONSTRAINTS)},
-		{"original_constraints",8,0,2,2,0,0.,0.,0,N_mdm(slit,surrBasedLocalSubProbCon_ORIGINAL_CONSTRAINTS)},
-		{"original_primary",8,0,1,1,0,0.,0.,0,N_mdm(slit,surrBasedLocalSubProbObj_ORIGINAL_PRIMARY)},
-		{"single_objective",8,0,1,1,0,0.,0.,0,N_mdm(slit,surrBasedLocalSubProbObj_SINGLE_OBJECTIVE)}
+		{"augmented_lagrangian_objective",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalSubProbObj_AUGMENTED_LAGRANGIAN_OBJECTIVE)},
+		{"lagrangian_objective",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalSubProbObj_LAGRANGIAN_OBJECTIVE)},
+		{"linearized_constraints",8,0,2,2,0,0.,0.,0,N_mdm(type,surrBasedLocalSubProbCon_LINEARIZED_CONSTRAINTS)},
+		{"no_constraints",8,0,2,2,0,0.,0.,0,N_mdm(type,surrBasedLocalSubProbCon_NO_CONSTRAINTS)},
+		{"original_constraints",8,0,2,2,0,0.,0.,0,N_mdm(type,surrBasedLocalSubProbCon_ORIGINAL_CONSTRAINTS)},
+		{"original_primary",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalSubProbObj_ORIGINAL_PRIMARY)},
+		{"single_objective",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalSubProbObj_SINGLE_OBJECTIVE)}
 		},
 	kw_148[1] = {
-		{"homotopy",8,0,1,1,0,0.,0.,0,N_mdm(slit,surrBasedLocalConstrRelax_HOMOTOPY)}
+		{"homotopy",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalConstrRelax_HOMOTOPY)}
 		},
 	kw_149[4] = {
-		{"adaptive_penalty_merit",8,0,1,1,0,0.,0.,0,N_mdm(slit,surrBasedLocalMeritFn_ADAPTIVE_PENALTY_MERIT)},
-		{"augmented_lagrangian_merit",8,0,1,1,0,0.,0.,0,N_mdm(slit,surrBasedLocalMeritFn_AUGMENTED_LAGRANGIAN_MERIT)},
-		{"lagrangian_merit",8,0,1,1,0,0.,0.,0,N_mdm(slit,surrBasedLocalMeritFn_LAGRANGIAN_MERIT)},
-		{"penalty_merit",8,0,1,1,0,0.,0.,0,N_mdm(slit,surrBasedLocalMeritFn_PENALTY_MERIT)}
+		{"adaptive_penalty_merit",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalMeritFn_ADAPTIVE_PENALTY_MERIT)},
+		{"augmented_lagrangian_merit",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalMeritFn_AUGMENTED_LAGRANGIAN_MERIT)},
+		{"lagrangian_merit",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalMeritFn_LAGRANGIAN_MERIT)},
+		{"penalty_merit",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalMeritFn_PENALTY_MERIT)}
 		},
 	kw_150[6] = {
 		{"contract_threshold",10,0,3,0,0,0.,0.,0,N_mdm(Real,surrBasedLocalTRContractTrigger)},
@@ -1032,13 +1032,13 @@ static KeyWord
 		{"gaussian_process",8,2,1,1,kw_160,0.,0.,0,N_mom(lit,surrogateType_global_gaussian)},
 		{"kriging",8,4,1,1,kw_162,0.,0.,0,N_mom(lit,surrogateType_global_kriging)},
 		{"mars",8,2,1,1,kw_164,0.,0.,0,N_mom(lit,surrogateType_global_mars)},
-		{"minimum_points",8,0,2,0,0,0.,0.,0,N_mom(true,pointsMinimum)},
+		{"minimum_points",8,0,2,0,0,0.,0.,0,N_mom(type,pointsManagement_MINIMUM_POINTS)},
 		{"moving_least_squares",8,2,1,1,kw_165,0.,0.,0,N_mom(lit,surrogateType_global_moving_least_squares)},
 		{"neural_network",8,3,1,1,kw_166,0.,0.,0,N_mom(lit,surrogateType_global_neural_network)},
 		{"points_file",11,0,5,0,0,0.,0.,0,N_mom(str,approxPointReuseFile)},
 		{"polynomial",8,3,1,1,kw_167,0.,0.,0,N_mom(lit,surrogateType_global_polynomial)},
 		{"radial_basis",8,4,1,1,kw_168,0.,0.,0,N_mom(lit,surrogateType_global_radial_basis)},
-		{"recommended_points",8,0,2,0,0,0.,0.,0,N_mom(true,pointsRecommended)},
+		{"recommended_points",8,0,2,0,0,0.,0.,0,N_mom(type,pointsManagement_RECOMMENDED_POINTS)},
 		{"reuse_points",8,3,4,0,kw_169},
 		{"reuse_samples",0,3,4,0,kw_169,0.,0.,-1},
 		{"samples_file",3,0,5,0,0,0.,0.,-6,N_mom(str,approxPointReuseFile)},

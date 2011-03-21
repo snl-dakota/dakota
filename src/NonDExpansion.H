@@ -134,6 +134,10 @@ protected:
       aleatory expansion statistics with respect to these variables. */
   bool useDerivsFlag;
 
+  /// refinement type: NO_REFINEMENT, UNIFORM_P_REFINEMENT, or
+  /// ADAPTIVE_P_REFINEMENT
+  short stochExpRefineType;
+
 private:
 
   //
@@ -183,9 +187,6 @@ private:
   /// user override of rule nesting: NO_OVERRIDE, NESTED, or NON_NESTED
   short ruleNestingOverride;
 
-  /// refinement type: NO_REFINEMENT, UNIFORM_P_REFINEMENT, or
-  /// ADAPTIVE_P_REFINEMENT
-  short stochExpRefineType;
   /// refinement control: DEFAULT_CONTROL, TOTAL_SOBOL, SPECTRAL_DECAY,
   /// or GENERALIZED_SPARSE
   short stochExpRefineControl;

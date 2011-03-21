@@ -70,6 +70,7 @@ private:
   //
 
   String expansionImportFile; ///< filename for import of chaos coefficients
+  String pointReuse;  ///< user spec of reuse_points for regression-based PCE
 
   int expansionTerms; ///< user specification of PCE terms
 

@@ -61,6 +61,12 @@ public:
   /// destructor
   ~DataFitSurrModel();
 
+  //
+  //- Heading: Member functions
+  //
+
+  /// set pointsTotal and pointsManagement mode
+  void total_points(int points);
 
 protected:
 
@@ -245,11 +251,9 @@ private:
   int surrModelEvalCntr;
 
   /// total points the user specified to construct the surrogate
-  int  pointsTotal;
-  /// user wishes to use minimum points to construct the surrogate
-  bool pointsMinimum;
-  /// user wishes to use recommended points to construct the surrogate
-  bool pointsRecommended;
+  int pointsTotal;
+  /// configuration for points management in build_global()
+  short pointsManagement;
 
   /// type of point reuse for approximation builds: \c all, \c region
   /// (default if points file), or \c none (default if no points file)
@@ -279,6 +283,10 @@ private:
 
 inline DataFitSurrModel::~DataFitSurrModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
+
+
+inline void DataFitSurrModel::total_points(int points)
+{ pointsTotal = points; if (points > 0) pointsManagement = TOTAL_POINTS; }
 
 
 inline Iterator& DataFitSurrModel::subordinate_iterator()

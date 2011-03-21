@@ -51,10 +51,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	[ id_method STRING {N_mdm(str,idMethod)} ]
 	[ model_pointer STRING {N_mdm(str,modelPointer)} ]
 	[ output {0}
-	  debug {N_mdm(slit,methodOutput_DEBUG_OUTPUT)}
-	  | verbose {N_mdm(slit,methodOutput_VERBOSE_OUTPUT)}
-	  | quiet {N_mdm(slit,methodOutput_QUIET_OUTPUT)}
-	  | silent {N_mdm(slit,methodOutput_SILENT_OUTPUT)}
+	  debug {N_mdm(type,methodOutput_DEBUG_OUTPUT)}
+	  | verbose {N_mdm(type,methodOutput_VERBOSE_OUTPUT)}
+	  | quiet {N_mdm(type,methodOutput_QUIET_OUTPUT)}
+	  | silent {N_mdm(type,methodOutput_SILENT_OUTPUT)}
 	  ]
 	[ max_iterations INTEGER {N_mdm(nnint,maxIterations)} ]
 	[ max_function_evaluations INTEGER {N_mdm(nnint,maxFunctionEvaluations)} ]
@@ -77,26 +77,26 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      [ expansion_factor REAL {N_mdm(Real,surrBasedLocalTRExpand)} ]
 	      ]
 	    [ approx_subproblem {0}
-	      original_primary {N_mdm(slit,surrBasedLocalSubProbObj_ORIGINAL_PRIMARY)}
-	      | single_objective {N_mdm(slit,surrBasedLocalSubProbObj_SINGLE_OBJECTIVE)}
-	      | augmented_lagrangian_objective {N_mdm(slit,surrBasedLocalSubProbObj_AUGMENTED_LAGRANGIAN_OBJECTIVE)}
-	      | lagrangian_objective {N_mdm(slit,surrBasedLocalSubProbObj_LAGRANGIAN_OBJECTIVE)}
-	      original_constraints {N_mdm(slit,surrBasedLocalSubProbCon_ORIGINAL_CONSTRAINTS)}
-	      | linearized_constraints {N_mdm(slit,surrBasedLocalSubProbCon_LINEARIZED_CONSTRAINTS)}
-	      | no_constraints {N_mdm(slit,surrBasedLocalSubProbCon_NO_CONSTRAINTS)}
+	      original_primary {N_mdm(type,surrBasedLocalSubProbObj_ORIGINAL_PRIMARY)}
+	      | single_objective {N_mdm(type,surrBasedLocalSubProbObj_SINGLE_OBJECTIVE)}
+	      | augmented_lagrangian_objective {N_mdm(type,surrBasedLocalSubProbObj_AUGMENTED_LAGRANGIAN_OBJECTIVE)}
+	      | lagrangian_objective {N_mdm(type,surrBasedLocalSubProbObj_LAGRANGIAN_OBJECTIVE)}
+	      original_constraints {N_mdm(type,surrBasedLocalSubProbCon_ORIGINAL_CONSTRAINTS)}
+	      | linearized_constraints {N_mdm(type,surrBasedLocalSubProbCon_LINEARIZED_CONSTRAINTS)}
+	      | no_constraints {N_mdm(type,surrBasedLocalSubProbCon_NO_CONSTRAINTS)}
 	      ]
 	    [ merit_function {0}
-	      penalty_merit {N_mdm(slit,surrBasedLocalMeritFn_PENALTY_MERIT)}
-	      | adaptive_penalty_merit {N_mdm(slit,surrBasedLocalMeritFn_ADAPTIVE_PENALTY_MERIT)}
-	      | lagrangian_merit {N_mdm(slit,surrBasedLocalMeritFn_LAGRANGIAN_MERIT)}
-	      | augmented_lagrangian_merit {N_mdm(slit,surrBasedLocalMeritFn_AUGMENTED_LAGRANGIAN_MERIT)}
+	      penalty_merit {N_mdm(type,surrBasedLocalMeritFn_PENALTY_MERIT)}
+	      | adaptive_penalty_merit {N_mdm(type,surrBasedLocalMeritFn_ADAPTIVE_PENALTY_MERIT)}
+	      | lagrangian_merit {N_mdm(type,surrBasedLocalMeritFn_LAGRANGIAN_MERIT)}
+	      | augmented_lagrangian_merit {N_mdm(type,surrBasedLocalMeritFn_AUGMENTED_LAGRANGIAN_MERIT)}
 	      ]
 	    [ acceptance_logic {0}
-	      tr_ratio {N_mdm(slit,surrBasedLocalAcceptLogic_TR_RATIO)}
-	      | filter {N_mdm(slit,surrBasedLocalAcceptLogic_FILTER)}
+	      tr_ratio {N_mdm(type,surrBasedLocalAcceptLogic_TR_RATIO)}
+	      | filter {N_mdm(type,surrBasedLocalAcceptLogic_FILTER)}
 	      ]
 	    [ constraint_relax {0}
-	      homotopy {N_mdm(slit,surrBasedLocalConstrRelax_HOMOTOPY)}
+	      homotopy {N_mdm(type,surrBasedLocalConstrRelax_HOMOTOPY)}
 	      ]
 	    )
 	  |
@@ -805,8 +805,8 @@ KEYWORD model {N_mom3(start,0,stop)}
 #	      [ max_correlations REALLIST {N_mom(RealDL,krigingMaxCorrelations)} ]
 	      )
             [ total_points INTEGER {N_mom(int,pointsTotal)} | 
-              minimum_points {N_mom(true,pointsMinimum)} | 
-              recommended_points {N_mom(true,pointsRecommended)} ]
+              minimum_points {N_mom(type,pointsManagement_MINIMUM_POINTS)} | 
+              recommended_points {N_mom(type,pointsManagement_RECOMMENDED_POINTS)} ]
 	    [ dace_method_pointer STRING {N_mom(str,subMethodPointer)} ]
 	    [ reuse_points ALIAS reuse_samples {0}
 	      all {N_mom(lit,approxPointReuse_all)}
