@@ -68,6 +68,8 @@ protected:
   void increment_grid();
   void increment_grid_preference(const RealVector& dim_pref);
 
+  int num_samples() const;
+
 private:
 
   //
@@ -103,11 +105,7 @@ private:
 
 
 inline unsigned short NonDCubature::integrand_order() const
-{
-  Pecos::CubatureDriver* cub_driver
-    = (Pecos::CubatureDriver*)numIntDriver.driver_rep();
-  return cub_driver->integrand_order();
-}
+{ return cubDriver->integrand_order(); }
 
 
 /** cubIntOrderRef is a reference point for CubatureDriver::cubIntOrder,
@@ -119,6 +117,10 @@ inline void NonDCubature::increment_reference()
 /** Should not be used, but pure virtual must be defined. */
 inline void NonDCubature::increment_grid_preference(const RealVector& dim_pref)
 { increment_grid(); } // ignore dim_pref
+
+
+inline int NonDCubature::num_samples() const
+{ return cubDriver->grid_size(); }
 
 } // namespace Dakota
 

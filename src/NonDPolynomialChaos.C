@@ -16,7 +16,7 @@
 #include "DakotaResponse.H"
 #include "ProblemDescDB.H"
 #include "DataFitSurrModel.H"
-#include "NonDIntegration.H"
+#include "NonDQuadrature.H"
 #include "NonDSampling.H"
 #include "PecosApproximation.H"
 #include "SparseGridDriver.hpp"
@@ -31,7 +31,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   expansionImportFile(
     probDescDB.get_string("method.nond.expansion_import_file")),
   expansionTerms(probDescDB.get_int("method.nond.expansion_terms")),
-  collocRatio(probDescDB.get_real("method.nond.collocation_ratio"))
+  collocRatio(probDescDB.get_real("method.nond.collocation_ratio")),
+  tensorRegression(probDescDB.get_bool("method.nond.tensor_grid"))
 {
   // This constructor is called for a standard letter-envelope iterator 
   // instantiation.
@@ -55,7 +56,6 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     exp_order.resize(numContinuousVars);
     exp_order.assign(numContinuousVars, order);
   }
-  bool tensor_grid = false;
   if (expansionImportFile.empty()) {
     const UShortArray& quad_order_spec
       = probDescDB.get_dusa("method.nond.quadrature_order");
@@ -82,7 +82,6 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	size_t exp_terms = (exp_order.empty()) ? expansionTerms : 
 	  Pecos::PolynomialApproximation::total_order_terms(exp_order);
 	int colloc_pts = probDescDB.get_int("method.nond.collocation_points");
-	tensor_grid = probDescDB.get_bool("method.nond.tensor_grid");
 	if (colloc_pts > 0) {
 	  numSamplesOnModel = colloc_pts;
 	  // define collocRatio for use in uniform refinement
@@ -91,7 +90,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	else if (collocRatio > 0.)
 	  numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
 	// "probabilistic collocation": subset of TPQ pts w/ highest product wt
-	if (tensor_grid)
+	if (tensorRegression)
 	  // since NonDExpansion invokes uSpaceModel.build_approximation() which
 	  // in turn invokes daceIterator.run_iterator(), we need to avoid
 	  // execution of the full tensor grid in real fn evals by overloading
@@ -116,20 +115,20 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-  String approx_type = "global_orthogonal_polynomial", corr_type;
-  if (expansionCoeffsApproach == Pecos::REGRESSION && !tensor_grid) {
-    pointReuse = probDescDB.get_string("method.nond.collocation_point_reuse");
+  String approx_type = "global_orthogonal_polynomial", corr_type, pt_reuse;
+  short corr_order = -1;
+  if (expansionCoeffsApproach == Pecos::REGRESSION && !tensorRegression) {
+    pt_reuse = probDescDB.get_string("method.nond.collocation_point_reuse");
     // if reusing samples within a refinement strategy ensure different random
     // numbers are generated for points w/i the grid (even if #samples differs)
-    if (stochExpRefineType && pointReuse != "none")
+    if (stochExpRefineType && !pt_reuse.empty())
       ((Analyzer*)u_space_sampler.iterator_rep())->vary_pattern(true);
   }
-  short corr_order = -1;
   //const Variables& g_u_vars = g_u_model.current_variables();
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     //g_u_vars.view(), g_u_vars.variables_components(),
     //g_u_model.current_response().active_set(),
-    approx_type, exp_order, corr_type, corr_order, pointReuse), false);
+    approx_type, exp_order, corr_type, corr_order, pt_reuse), false);
   initialize_u_space_model();
 
   // -------------------------------------
@@ -261,16 +260,21 @@ void NonDPolynomialChaos::increment_expansion()
   // update numSamplesOnModel based on existing collocatio ratio and
   // updated number of expansion terms
   numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
-  // update samples reference value to use new sample count
-  NonDSampling* nond_sampling
-    = (NonDSampling*)uSpaceModel.subordinate_iterator().iterator_rep();
-  if (pointReuse != "none") {
+
+  // update u-space sampler to use new sample count
+  if (tensorRegression) {
+    NonDQuadrature* nond_quad
+      = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
+    nond_quad->filtered_samples(numSamplesOnModel);
+    nond_quad->compute_min_order();
+  }
+  else {
+    NonDSampling* nond_sampling
+      = (NonDSampling*)uSpaceModel.subordinate_iterator().iterator_rep();
     nond_sampling->sampling_reference(0); // no lower bound
     DataFitSurrModel* dfs_model = (DataFitSurrModel*)uSpaceModel.model_rep();
     dfs_model->total_points(numSamplesOnModel);
   }
-  else
-    nond_sampling->sampling_reference(numSamplesOnModel); // lower bound
 }
 
 

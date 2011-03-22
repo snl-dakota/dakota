@@ -86,6 +86,8 @@ public:
   /// invokes SparseGridDriver::finalize_sets()
   void finalize_sets();
 
+  int num_samples() const;
+
 protected:
 
   //
@@ -189,6 +191,10 @@ inline void NonDSparseGrid::print_final_sets(bool converged_within_tol)
 
 inline void NonDSparseGrid::finalize_sets()
 { ssgDriver->finalize_sets(); }
+
+
+inline int NonDSparseGrid::num_samples() const
+{ return ssgDriver->grid_size(); }
 
 } // namespace Dakota
 

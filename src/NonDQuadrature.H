@@ -62,6 +62,12 @@ public:
   /// return quadOrder
   const Pecos::UShortArray& quadrature_order() const;
 
+  /// set numFilteredSamples
+  void filtered_samples(size_t samples);
+
+  /// calculate smallest quadOrderRef with at least numFilteredSamples
+  void compute_min_order();
+
 protected:
 
   //
@@ -85,6 +91,8 @@ protected:
 
   void increment_grid_preference(const RealVector& dim_pref);
 
+  int num_samples() const;
+
 private:
 
   //
@@ -101,14 +109,11 @@ private:
   /// verify self-consistency of integration specification
   void check_integration(const UShortArray& quad_order_spec);
 
-  /// calculate smallest quadOrderRef with at least numFilteredSamples
-  void compute_min_order();
-
   /// update quadOrder from quadOrderRef to account for nested rule constraints
   void nested_quadrature_order(const UShortArray& quad_order_ref);
 
   /// return Product_i(quadOrderRef[i])
-  size_t reference_grid_size();
+  size_t reference_grid_size() const;
 
   /// increment each quadOrderRef entry by 1
   void increment_reference();
@@ -143,17 +148,25 @@ inline const Pecos::UShortArray& NonDQuadrature::quadrature_order() const
 { return tpqDriver->quadrature_order(); }
 
 
+inline void NonDQuadrature::filtered_samples(size_t samples)
+{ numFilteredSamples = samples; }
+
+
 inline void NonDQuadrature::reset()
 { quadOrderRef = quadOrderSpec; tpqDriver->quadrature_order(quadOrderSpec); }
 
 
-inline size_t NonDQuadrature::reference_grid_size()
+inline size_t NonDQuadrature::reference_grid_size() const
 {
   size_t i, size = 1;
   for (i=0; i<numContinuousVars; ++i)
     size *= quadOrderRef[i];
   return size;
 }
+
+
+inline int NonDQuadrature::num_samples() const
+{ return (numFilteredSamples) ? numFilteredSamples : reference_grid_size(); }
 
 
 inline void NonDQuadrature::increment_reference()

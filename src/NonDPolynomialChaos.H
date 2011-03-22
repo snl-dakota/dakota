@@ -70,11 +70,10 @@ private:
   //
 
   String expansionImportFile; ///< filename for import of chaos coefficients
-  String pointReuse;  ///< user spec of reuse_points for regression-based PCE
-
-  int expansionTerms; ///< user specification of PCE terms
-
-  Real collocRatio; ///< collocation ratio, either user specified or inferred
+  //String collocPtReuse; // user spec of reuse_points for regression-based PCE
+  int    expansionTerms; ///< user specification of PCE terms
+  Real   collocRatio; ///< collocation ratio, either user specified or inferred
+  bool   tensorRegression; ///< PCE by regression of filtered tensor points
 
   /// derivative of the PCE with respect to the x-space variables
   /// evaluated at the means (used as uncertainty importance metrics)
