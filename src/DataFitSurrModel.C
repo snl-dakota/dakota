@@ -779,7 +779,7 @@ void DataFitSurrModel::build_global()
   // minimum points required by the surrogate model
   int min_points = approxInterface.minimum_points(true);// incl constraints
 
-  size_t dace_samples = 0;
+  int new_points = 0;
   if (daceIterator.is_null()) { // reused/imported data only (no new data)
     if (reuse_points < min_points) { // check for sufficient data
       Cerr << "Error: a minimum of " << min_points << " points is required by "
@@ -793,32 +793,33 @@ void DataFitSurrModel::build_global()
     // set DataFitSurrModel parallelism mode to actualModel
     component_parallel_mode(ACTUAL_MODEL);
 
-    // determine total number of points requested to build surrogate 
-    // (min, recommended, or spec)
-    int points_requested;                                
+    // determine number of points associated with the model specification
+    // (min, recommended, or total)
+    int model_points;                                
     switch (pointsManagement) {
     case DEFAULT_POINTS: case MINIMUM_POINTS:
-      points_requested = min_points;                               break;
+      model_points = min_points;                               break;
     case RECOMMENDED_POINTS:
-      points_requested = approxInterface.recommended_points(true); break;
+      model_points = approxInterface.recommended_points(true); break;
     case TOTAL_POINTS:
       if (pointsTotal < min_points && outputLevel >= NORMAL_OUTPUT)
 	Cout << "\nDataFitSurrModel: Total points specified " << pointsTotal
 	     << " is less than minimum required;\n                  "
 	     << "increasing to " << min_points << std::endl;
-      points_requested = std::max(min_points, pointsTotal);        break;
+      model_points = std::max(min_points, pointsTotal);        break;
     }
 
-    // daceIterator must generate at least samples_needed points, should
+    // daceIterator must generate at least diff_points samples, should
     // populate allData lists (allDataFlag = true), and should bypass
     // statistics computation (statsFlag = false).
-    // NOTE: the iterator's samplesRef provides a hard lower bound on 
-    // the number of samples generated, so might need to be set to zero
-    int samples_needed = std::max(0, points_requested - (int)reuse_points);
-    daceIterator.sampling_reset(samples_needed, true, false);
+    int diff_points = std::max(0, model_points - (int)reuse_points);
+    daceIterator.sampling_reset(diff_points, true, false);// update s.t. lwr bnd
+    // The DACE iterator's samples{Spec,Ref} value provides a lower bound on
+    // the number of samples generated: new_points = max(diff_points,reference).
+    new_points = daceIterator.num_samples();
 
     // only run the iterator if work to do
-    if (daceIterator.num_samples()) {
+    if (new_points) {
       // Define the data requests
       ActiveSet set = daceIterator.active_set(); // copy
       ShortArray actual_asv, approx_asv;
@@ -827,15 +828,13 @@ void DataFitSurrModel::build_global()
       daceIterator.active_set(set);
       // run the iterator
       daceIterator.run_iterator(Cout);
-      const ResponseArray& all_resp = daceIterator.all_responses();
-      dace_samples = all_resp.size();
-      // append data to the approximation
+      // append vars/resp arrays to the approximation
       if (daceIterator.compact_mode())
 	approxInterface.append_approximation(daceIterator.all_samples(),
-					     all_resp);
+					     daceIterator.all_responses());
       else
 	approxInterface.append_approximation(daceIterator.all_variables(),
-					     all_resp);
+					     daceIterator.all_responses());
     }
     else if (outputLevel >= DEBUG_OUTPUT)
       Cout << "DataFitSurrModel: No samples needed from DACE iterator."
@@ -847,7 +846,7 @@ void DataFitSurrModel::build_global()
   // *******************************
   String anchor = (approxInterface.anchor()) ? "one" : "no";
   Cout << "Constructing global approximations with " << anchor << " anchor, "
-       << dace_samples << " DACE samples, and " << reuse_points
+       << new_points << " DACE samples, and " << reuse_points
        << " reused points.\n";
 }
 
