@@ -96,10 +96,15 @@ if(HAVE_FSUDACE)
 endif(HAVE_FSUDACE)
 
 if(HAVE_HOPSPACK)
-  # WJB:  can't explain why hopspack/ConfigureLapack.cmake does NOT work on Mac
-  # ToDo: address issue post 5.1 release
+  if(HAVE_MPI)
+    # See hopspack/ConfigureMPI.cmake for MPI "help"
+    set(mpi ON)
+    message("HOPSPACK caches the variable mpi = ${mpi}")
+  endif(HAVE_MPI)
+
   if(CMAKE_SYSTEM_NAME MATCHES Darwin OR
      $ENV{TEST_PLATFORM_VER} MATCHES "suse_x86_64")
+    # See hopspack/buildMacDist.sh for BLAS/LAPACK "help"
     set(LAPACK_ADD_LIBS ${BLAS_LIBS})
   endif()
   add_subdirectory(hopspack)
