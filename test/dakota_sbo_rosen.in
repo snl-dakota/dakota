@@ -11,7 +11,7 @@
 
 strategy,
 	single_method
-	graphics
+#	graphics
 	tabular_graphics_data
 	method_pointer = 'SBLO'
 
@@ -52,16 +52,16 @@ method,
 
 model,
 	id_model = 'SURROGATE'
-	surrogate global		      	#0,#1,#2,#3,#4,#7,#8
+	surrogate global		      	#0,#1,#2,#3,#4,#7,#8,#9,#10,#11
 	  responses_pointer = 'SURROGATE_RESP'
-	  dace_method_pointer = 'SAMPLING' 	#0,#1,#2,#3,#4,#7,#8
+	  dace_method_pointer = 'SAMPLING' 	#0,#1,#2,#3,#4,#7,#8,#9,#10,#11
 #	  reuse_samples region
-#	  use_derivatives
-	  correction additive zeroth_order 	#0,#1,#2,#3,#4,#7,#8
+#	  use_derivatives			#10,#11
+	  correction additive zeroth_order 	#0,#1,#2,#3,#4,#7,#8,#9,#10,#11
 ### Section to specify surface fit method.
 	  polynomial quadratic 			#0
 #	  neural_network			#1
-#	  kriging				#2,#3
+#	  kriging				#2,#3,#9,#10,#11
 #	   correlation_lengths 0.79 0.76	#3
 #	  mars					#4
 #	  moving_least_squares			#7
@@ -79,11 +79,11 @@ variables,
 responses,
 	id_responses = 'SURROGATE_RESP'
 	num_objective_functions = 1
-#	analytic_gradients			#2,#3,#7,#8
-  	numerical_gradients			#0,#1,#4,#5,#6
-  	  method_source dakota			#0,#1,#4,#5,#6
-  	  interval_type central			#0,#1,#4,#5,#6
- 	  fd_gradient_step_size = 1.e-6		#0,#1,#4,#5,#6
+#	analytic_gradients			#3,#7,#8,#9,#10,#11
+  	numerical_gradients			#0,#1,#2,#4,#5,#6
+  	  method_source dakota			#0,#1,#2,#4,#5,#6
+  	  interval_type central			#0,#1,#2,#4,#5,#6
+ 	  fd_gradient_step_size = 1.e-6		#0,#1,#2,#4,#5,#6
 	no_hessians
 
 ###############################################
@@ -104,8 +104,9 @@ method,
 # the four lines below and comment out the two
 # lines starting with 'dace lhs' above.
 	sampling
-	  samples = 10		#0,#1,#2,#3,#5,#6,#7,#8
+	  samples = 10		#0,#1,#2,#3,#5,#6,#7,#8,#9,#10
 #	  samples = 30		#4
+#	  samples =  5		#11
 	  seed = 531 rng rnum2
 	  sample_type lhs
 	  all_variables
@@ -125,11 +126,11 @@ interface,
 responses,
 	id_responses = 'TRUE_RESP'
 	num_objective_functions = 1
-	no_gradients		#0,#1,#2,#3,#4,#7,#8
-#	analytic_gradients	#5,#6
+	no_gradients		#0,#1,#2,#3,#4,#7,#8,#9
+#	analytic_gradients	#5,#6,#10,#11
 #	numerical_gradients
 #	  method_source dakota
 #	  interval_type central
 #	  fd_gradient_step_size = 1.e-6
-	no_hessians		#0,#1,#2,#3,#4,#5,#7,#8
+	no_hessians		#0,#1,#2,#3,#4,#5,#7,#8,#9,#10,#11
 #	analytic_hessians	#6

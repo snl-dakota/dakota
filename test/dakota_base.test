@@ -4886,10 +4886,10 @@ Test Number 8 succeeded
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.5327331137e+02  6.0722403675e+02  2.0384683485e+00  4.1004605622e+00
+ response_fn_1  4.5328140233e+02  6.0724471931e+02  2.0386213233e+00  4.1016001827e+00
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  4.4137049813e+02  4.6517612461e+02  5.9892403560e+02  6.1575896453e+02
+ response_fn_1  4.4137818367e+02  4.6518462099e+02  5.9894443546e+02  6.1577993781e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.6000000000e-03
@@ -4900,32 +4900,32 @@ Simple Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 
           x1  1.00000e+00 
           x2 -4.04866e-03  1.00000e+00 
-response_fn_1 -3.50993e-03 -5.03744e-01  1.00000e+00 
+response_fn_1 -3.49828e-03 -5.03732e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-          x1 -6.42409e-03 
-          x2 -5.03766e-01 
+          x1 -6.41049e-03 
+          x2 -5.03753e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 
           x1  1.00000e+00 
           x2 -4.04458e-03  1.00000e+00 
-response_fn_1 -7.39050e-03 -5.26355e-01  1.00000e+00 
+response_fn_1 -7.38774e-03 -5.26353e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-          x1 -1.11959e-02 
-          x2 -5.26404e-01 
+          x1 -1.11926e-02 
+          x2 -5.26401e-01 
 Test Number 9 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10000 total (10000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.5300139216e+02  6.0632278029e+02  2.0304205324e+00  4.0421546099e+00
+ response_fn_1  4.5300389464e+02  6.0632309196e+02  2.0304238331e+00  4.0421736417e+00
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  4.4111624536e+02  4.6488653896e+02  5.9803509821e+02  6.1484504033e+02
+ response_fn_1  4.4111874173e+02  4.6488904755e+02  5.9803540562e+02  6.1484535638e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   1.0000000000e-01   3.5000000000e-03
+   1.0000000000e-01   3.4000000000e-03
    1.0000000000e+00   1.7500000000e-02
    1.0000000000e+01   1.0480000000e-01
    1.0000000000e+02   3.5610000000e-01
@@ -4933,20 +4933,20 @@ Simple Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 
           x1  1.00000e+00 
           x2 -4.04866e-03  1.00000e+00 
-response_fn_1 -3.65026e-03 -5.04130e-01  1.00000e+00 
+response_fn_1 -3.65328e-03 -5.04126e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-          x1 -6.59005e-03 
-          x2 -5.04152e-01 
+          x1 -6.59352e-03 
+          x2 -5.04148e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 
           x1  1.00000e+00 
           x2 -4.04458e-03  1.00000e+00 
-response_fn_1 -7.26609e-03 -5.26427e-01  1.00000e+00 
+response_fn_1 -7.27963e-03 -5.26414e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-          x1 -1.10505e-02 
-          x2 -5.26475e-01 
+          x1 -1.10662e-02 
+          x2 -5.26462e-01 
 Test Number 10 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 10000 total (10000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
@@ -12303,18 +12303,18 @@ Test Number 17 succeeded
 <<<<< Best data captured at function evaluation 1
 dakota_sbo_illum.in 
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 995 total (995 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 998 total (998 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 739 total (739 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.8175263720e-01 x2
-                      2.5474715256e-15 x3
-                      2.2448241855e-16 x4
-                      8.9560128244e-17 x5
-                      7.5578238405e-01 x6
+                      2.8174982658e-01 x2
+                      3.4414997386e-15 x3
+                      3.0708351744e-16 x4
+                      6.8061512130e-17 x5
+                      7.5578395981e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.0759890012e+00
+                      1.0759890017e+00
 <<<<< Best data captured at function evaluation 739
 dakota_sbo_rosen.in 
 Test Number 0 succeeded
@@ -12336,22 +12336,22 @@ Test Number 1 succeeded
                       3.3804721067e-03
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 1130 total (1130 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 353 total (353 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 1263 total (1263 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 232 total (232 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9899723049e-01 x1
-                      9.9799905747e-01 x2
+                      9.9877311374e-01 x1
+                      9.9749696565e-01 x2
 <<<<< Best objective function  =
-                      1.0068361883e-06
+                      1.7629795285e-06
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 901 total (901 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 917 total (917 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 320 total (320 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0002142438e+00 x1
-                      1.0004291194e+00 x2
+                      1.0002104052e+00 x1
+                      1.0004246801e+00 x2
 <<<<< Best objective function  =
-                      4.5934745056e-08
+                      4.5733749833e-08
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 21216 total (21216 new, 0 duplicate)
@@ -12397,6 +12397,33 @@ Test Number 8 succeeded
                       7.5285942263e-01 x2
 <<<<< Best objective function  =
                       1.7454260892e-02
+<<<<< Best data not found in evaluation cache
+Test Number 9 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 722 total (722 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 232 total (232 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9876986011e-01 x1
+                      9.9749046940e-01 x2
+<<<<< Best objective function  =
+                      1.7709431510e-06
+<<<<< Best data not found in evaluation cache
+Test Number 10 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 470 total (470 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 169 total (169 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000273877e+00 x1
+                      1.0000549390e+00 x2
+<<<<< Best objective function  =
+                      7.5273644620e-10
+<<<<< Best data not found in evaluation cache
+Test Number 11 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 704 total (704 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 148 total (148 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000021288e+00 x1
+                      1.0000042516e+00 x2
+<<<<< Best objective function  =
+                      4.5355468475e-12
 <<<<< Best data not found in evaluation cache
 dakota_sbo_sine_fcn.in
 Test Number 0 succeeded
@@ -56669,7 +56696,7 @@ Partial Rank Correlation Matrix between input and output:
      ddsrv_2 -6.66435e-02 -1.26786e-02  1.84138e-02 
      dssrv_1 -1.39465e-01 -6.01548e-02 -6.97095e-03 
      dssrv_2  7.75480e-02  3.09745e-02  3.45567e-02 
-dakota_uq_textbook_lhs_approx.in 
+dakota_uq_textbook_lhs_approx.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 6 total (6 new, 0 duplicate)
@@ -56739,33 +56766,33 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary (I1): 10 total (10 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.8972209045e-05  6.3841210784e-05  4.1347057828e+00  2.8942379926e+01
+ response_fn_1  3.9529554333e-05  6.4662023413e-05  4.1284016244e+00  2.8776073464e+01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  3.7202224933e-05  4.0742193158e-05  6.2614079522e-05  6.5117753146e-05
+ response_fn_1  3.7736813363e-05  4.1322295303e-05  6.3419114806e-05  6.5954978404e-05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-05   5.3220000000e-01
-   3.0000000000e-05   6.2680000000e-01
-   4.0000000000e-05   6.9740000000e-01
+   2.0000000000e-05   5.2780000000e-01
+   3.0000000000e-05   6.2460000000e-01
+   4.0000000000e-05   6.9380000000e-01
 Simple Correlation Matrix among all inputs and outputs:
                     TF1ln        TF1ln response_fn_1 
        TF1ln  1.00000e+00 
        TF1ln -3.37845e-05  1.00000e+00 
-response_fn_1  3.50548e-02  3.48644e-01  1.00000e+00 
+response_fn_1  3.89871e-02  3.39572e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln  3.74141e-02 
-       TF1ln  3.48859e-01 
+       TF1ln  4.14623e-02 
+       TF1ln  3.39832e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     TF1ln        TF1ln response_fn_1 
        TF1ln  1.00000e+00 
        TF1ln  3.43526e-03  1.00000e+00 
-response_fn_1  2.25735e-02  1.75231e-01  1.00000e+00 
+response_fn_1  2.67685e-02  1.68659e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln  2.23170e-02 
-       TF1ln  1.75199e-01 
+       TF1ln  2.65699e-02 
+       TF1ln  1.68629e-01 
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 20 total (20 new, 0 duplicate)
@@ -56797,7 +56824,7 @@ response_fn_1 -1.52042e-03 -1.74672e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
        TF1ln -9.34751e-04 
-       TF1ln -1.74668e-01 
+       TF1ln -1.74668e-01  
 dakota_uq_textbook_pce.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 250 total (250 new, 0 duplicate)
