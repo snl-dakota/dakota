@@ -4362,11 +4362,12 @@ static Method_mp_type
 	MP2s(methodOutput,VERBOSE_OUTPUT),
 	MP2p(nestingOverride,NESTED),               // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),           // Pecos enumeration
-	MP2p(refinementControl,GENERALIZED_SPARSE), // Pecos enumeration
-	MP2p(refinementControl,SPECTRAL_DECAY),     // Pecos enumeration
-	MP2p(refinementControl,TOTAL_SOBOL),        // Pecos enumeration
-	MP2p(refinementType,ADAPTIVE_P_REFINEMENT), // Pecos enumeration
-        MP2p(refinementType,UNIFORM_P_REFINEMENT),  // Pecos enumeration
+	MP2p(refinementControl,ADAPTIVE_CONTROL_GENERALIZED_SPARSE),//Pecos enum
+	MP2p(refinementControl,ADAPTIVE_CONTROL_SPECTRAL_DECAY),   // Pecos enum
+	MP2p(refinementControl,ADAPTIVE_CONTROL_TOTAL_SOBOL),      // Pecos enum
+	MP2p(refinementControl,UNIFORM_CONTROL),                   // Pecos enum
+	MP2p(refinementType,DIMENSION_P_REFINEMENT), // Pecos enumeration
+        MP2p(refinementType,DIMENSION_H_REFINEMENT), // Pecos enumeration
 	MP2s(surrBasedLocalAcceptLogic,FILTER),
 	MP2s(surrBasedLocalAcceptLogic,TR_RATIO),
 	MP2s(surrBasedLocalConstrRelax,HOMOTOPY),

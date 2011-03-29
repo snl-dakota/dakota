@@ -409,6 +409,14 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
 		   unsigned short cub_int_order)
 {
   expansionCoeffsApproach = Pecos::CUBATURE;
+  // sanity checks: CUBATURE precluded since no grid anisotropy for adaptive
+  // and very limited refinement opportunities for uniform/adaptive
+  if (stochExpRefineType) {
+    Cerr << "Error: uniform/adaptive refinement of cubature grids not "
+	 << "supported." << std::endl;
+    abort_handler(-1);
+  }
+
   u_space_sampler.assign_rep(new
     NonDCubature(g_u_model, natafTransform.u_types(), cub_int_order), false);
   numSamplesOnModel = u_space_sampler.maximum_concurrency()
@@ -421,13 +429,15 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 		     const UShortArray& quad_order)
 {
   expansionCoeffsApproach = Pecos::QUADRATURE;
-  // define integration-dependent default refinement control
-  if (stochExpRefineControl == Pecos::DEFAULT_CONTROL &&
-      stochExpRefineType    >= Pecos::ADAPTIVE_P_REFINEMENT)
-    stochExpRefineControl = Pecos::TOTAL_SOBOL;
+  // sanity checks: no GSG for TPQ
+  if (stochExpRefineControl == Pecos::ADAPTIVE_CONTROL_GENERALIZED_SPARSE) {
+    Cerr << "Error: generalized option not support for adaptive refinement of "
+	 << "tensor grids." << std::endl;
+    abort_handler(-1);
+  }
   // enforce minimum required VBD control
-  if (!vbdControl && stochExpRefineType == Pecos::ADAPTIVE_P_REFINEMENT &&
-      stochExpRefineControl == Pecos::TOTAL_SOBOL)
+  if (!vbdControl && 
+      stochExpRefineControl == Pecos::ADAPTIVE_CONTROL_TOTAL_SOBOL)
     vbdControl = Pecos::UNIVARIATE_VBD;
 
   bool nested_rules = (ruleNestingOverride == Pecos::NESTED ||
@@ -445,14 +455,17 @@ void NonDExpansion::
 construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 		     int filtered_samples)
 {
+  // sanity checks: only uniform refinement supported for probabilistic
+  // collocation (regression using filtered tensor grids)
+  if (stochExpRefineType && stochExpRefineControl > Pecos::UNIFORM_CONTROL) {
+    Cerr << "Error: only uniform refinement is supported for regression with "
+	 << "the tensor_grid option." << std::endl;
+    abort_handler(-1);
+  }
   /*
-  // define integration-dependent default refinement control
-  if (stochExpRefineControl == Pecos::DEFAULT_CONTROL &&
-      stochExpRefineType    >= Pecos::ADAPTIVE_P_REFINEMENT)
-    stochExpRefineControl = Pecos::TOTAL_SOBOL;
   // enforce minimum required VBD control
-  if (!vbdControl && stochExpRefineType == Pecos::ADAPTIVE_P_REFINEMENT &&
-      stochExpRefineControl == Pecos::TOTAL_SOBOL)
+  if (!vbdControl &&
+      stochExpRefineControl == Pecos::ADAPTIVE_CONTROL_TOTAL_SOBOL)
     vbdControl = Pecos::UNIVARIATE_VBD;
   */
 
@@ -471,13 +484,9 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 		      unsigned short ssg_level, const RealVector& ssg_dim_pref)
 {
   expansionCoeffsApproach = Pecos::SPARSE_GRID;
-  // define integration-dependent default refinement control
-  if (stochExpRefineControl == Pecos::DEFAULT_CONTROL &&
-      stochExpRefineType    >= Pecos::ADAPTIVE_P_REFINEMENT)
-    stochExpRefineControl = Pecos::GENERALIZED_SPARSE;
   // enforce minimum required VBD control
-  if (!vbdControl && stochExpRefineType == Pecos::ADAPTIVE_P_REFINEMENT &&
-      stochExpRefineControl == Pecos::TOTAL_SOBOL)
+  if (!vbdControl &&
+      stochExpRefineControl == Pecos::ADAPTIVE_CONTROL_TOTAL_SOBOL)
     vbdControl = Pecos::UNIVARIATE_VBD;
 
   //short sparse_grid_usage;
@@ -507,10 +516,28 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 void NonDExpansion::
 construct_lhs(Iterator& u_space_sampler, Model& g_u_model, int num_samples)
 {
+  // sanity checks
   if (num_samples <= 0) {
     Cerr << "Error: bad samples specification (" << num_samples << ") in "
 	 << "NonDExpansion::construct_lhs()." << std::endl;
     abort_handler(-1);
+  }
+  if (stochExpRefineType) {
+    // SAMPLING precluded for uniform/adaptive since no obvious logic for
+    // sample refinement.
+    if (expansionCoeffsApproach == Pecos::SAMPLING) {
+      Cerr << "Error: uniform/adaptive refinement of expansion_samples not "
+	   << "supported." << std::endl;
+      abort_handler(-1);
+    }
+    // REGRESSION precluded for adaptive since grid anisotropy not readily
+    // supported for synchronization with expansion anisotropy.
+    if (expansionCoeffsApproach == Pecos::REGRESSION &&
+	stochExpRefineControl    > Pecos::UNIFORM_CONTROL) {
+      Cerr << "Error: only uniform refinement is supported for LHS regression."
+	   << std::endl;
+      abort_handler(-1);
+    }
   }
 
   /*
@@ -641,7 +668,7 @@ void NonDExpansion::quantify_uncertainty()
   // --------------------------------------
   // Uniform/adaptive refinement approaches
   // --------------------------------------
-  if (stochExpRefineType) { // UNIFORM_P_REFINEMENT or ADAPTIVE_P_REFINEMENT
+  if (stochExpRefineType) { // {DIMENSION,DOMAIN}_{P,H}_REFINEMENT
 
     size_t i, iter = 1;
     bool converged = (iter > maxIterations);
@@ -652,92 +679,70 @@ void NonDExpansion::quantify_uncertainty()
       compute_print_iteration_results(true);
 
     // initialize refinement algorithms (if necessary)
-    switch (stochExpRefineType) {
-    case Pecos::ADAPTIVE_P_REFINEMENT:
-      switch (stochExpRefineControl) {
-      case Pecos::GENERALIZED_SPARSE:
-	initialize_sets(); break;
-      } break;
+    switch (stochExpRefineControl) {
+    case Pecos::ADAPTIVE_CONTROL_GENERALIZED_SPARSE:
+      initialize_sets(); break;
     }
 
     while (!converged) {
 
       switch (stochExpRefineType) {
-      case Pecos::UNIFORM_P_REFINEMENT:
-	switch (expansionCoeffsApproach) {
-	case Pecos::QUADRATURE: case Pecos::SPARSE_GRID: {
-	  // ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
+      case Pecos::DIMENSION_P_REFINEMENT: case Pecos::DIMENSION_H_REFINEMENT:
+	switch (stochExpRefineControl) {
+	case Pecos::UNIFORM_CONTROL:
+	  switch (expansionCoeffsApproach) {
+	  case Pecos::QUADRATURE: case Pecos::SPARSE_GRID: {
+	    // ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
+	    NonDIntegration* nond_integration = (NonDIntegration*)
+	      uSpaceModel.subordinate_iterator().iterator_rep();
+	    nond_integration->increment_grid(); // TPQ or SSG
+	    update_expansion();
+	    break;
+	  }
+	  case Pecos::REGRESSION:
+	    // ramp expansion order and update regression samples, keeping
+	    // initial collocation ratio (either user specified or inferred)
+	    increment_expansion(); // virtual fn defined for NonDPCE
+	    update_expansion(); // invokes uSpaceModel.build_approximation()
+	    break;
+	  }
+	  metric = compute_covariance_metric(respCovariance);
+	  break;
+	case Pecos::ADAPTIVE_CONTROL_TOTAL_SOBOL: {
+	  // Dimension adaptive refinement: define anisotropic preference
+	  // vector from total Sobol' indices, averaged over response fn set.
+	  RealVector dim_pref;
+	  reduce_total_sobol_sets(dim_pref);
+	  // incrementing grid & updating aniso wts best performed together
 	  NonDIntegration* nond_integration = (NonDIntegration*)
 	    uSpaceModel.subordinate_iterator().iterator_rep();
-	  nond_integration->increment_grid(); // TPQ or SSG
+	  nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
 	  update_expansion();
+	  metric = compute_covariance_metric(respCovariance);
 	  break;
 	}
-	case Pecos::REGRESSION:
-	  // ramp expansion order and update regression samples, keeping
-	  // initial collocation ratio (either user specified or inferred)
-	  increment_expansion(); // virtual fn defined for NonDPCE
-	  update_expansion(); // invokes uSpaceModel.build_approximation()
-	  break;
-	case Pecos::SAMPLING: case Pecos::CUBATURE:
-	  // SAMPLING precluded since no obvious logic for sample refinement.
-	  // CUBATURE precluded since very limited refinement opportunities.
-	  Cerr << "Error: uniform refinement only supported for tensor "
-	       << "quadrature, sparse grids, and regression." << std::endl;
-	  abort_handler(-1);
+	case Pecos::ADAPTIVE_CONTROL_SPECTRAL_DECAY: {
+	  // Dimension adaptive refinement: define anisotropic weight vector
+	  // from min of spectral decay rates (PCE only) over response fn set.
+	  RealVector aniso_wts;
+	  reduce_decay_rate_sets(aniso_wts);
+	  // incrementing grid & updating aniso wts best performed together
+	  NonDIntegration* nond_integration = (NonDIntegration*)
+	    uSpaceModel.subordinate_iterator().iterator_rep();
+	  nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
+	  update_expansion();
+	  metric = compute_covariance_metric(respCovariance);
 	  break;
 	}
-	metric = compute_covariance_metric(respCovariance);
-	break;
-      case Pecos::ADAPTIVE_P_REFINEMENT:
-	switch (expansionCoeffsApproach) {
-	case Pecos::QUADRATURE: case Pecos::SPARSE_GRID:
-	  switch (stochExpRefineControl) {
-	  case Pecos::TOTAL_SOBOL: {
-	    // Dimension adaptive refinement: define anisotropic preference
-	    // vector from total Sobol' indices, averaged over response fn set.
-	    RealVector dim_pref;
-	    reduce_total_sobol_sets(dim_pref);
-	    // incrementing grid & updating aniso wts best performed together
-	    NonDIntegration* nond_integration = (NonDIntegration*)
-	      uSpaceModel.subordinate_iterator().iterator_rep();
-	    nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
-	    update_expansion();
-	    metric = compute_covariance_metric(respCovariance);
-	    break;
-	  }
-	  case Pecos::SPECTRAL_DECAY: {
-	    // Dimension adaptive refinement: define anisotropic weight vector
-	    // from min of spectral decay rates (PCE only) over response fn set.
-	    RealVector aniso_wts;
-	    reduce_decay_rate_sets(aniso_wts);
-	    // incrementing grid & updating aniso wts best performed together
-	    NonDIntegration* nond_integration = (NonDIntegration*)
-	      uSpaceModel.subordinate_iterator().iterator_rep();
-	    nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
-	    update_expansion();
-	    metric = compute_covariance_metric(respCovariance);
-	    break;
-	  }
-	  case Pecos::GENERALIZED_SPARSE:
-	    // Dimension adaptive refinement using generalized sparse grids.
-	    // > Start GSG from iso/aniso SSG: starting from scratch (w=0) is
-	    //   most efficient if fully nested; otherwise, unique points from
-	    //   lowest levels may not contribute (smolyak coeff = 0).
-	    // > Starting GSG from TPQ is conceptually straightforward but
-	    //   awkward in implementation (would need something like
-	    //   nond_sparse->ssg_driver->compute_tensor_grid()).
-	    metric = increment_sets(); // SSG only
-	    break;
-	  }
-	  break;
-	case Pecos::REGRESSION: case Pecos::SAMPLING: case Pecos::CUBATURE:
-	  // SAMPLING and REGRESSION precluded since LHS grid anisotropy not
-	  // readily supported for synchronization with expansion anisotropy.
-	  // CUBATURE precluded since no grid anisotropy and limited refinement.
-	  Cerr << "Error: adaptive refinement only supported for tensor "
-	       << "quadrature and sparse grids." << std::endl;
-	  abort_handler(-1);
+	case Pecos::ADAPTIVE_CONTROL_GENERALIZED_SPARSE:
+	  // Dimension adaptive refinement using generalized sparse grids.
+	  // > Start GSG from iso/aniso SSG: starting from scratch (w=0) is
+	  //   most efficient if fully nested; otherwise, unique points from
+	  //   lowest levels may not contribute (smolyak coeff = 0).
+	  // > Starting GSG from TPQ is conceptually straightforward but
+	  //   awkward in implementation (would need something like
+	  //   nond_sparse->ssg_driver->compute_tensor_grid()).
+	  metric = increment_sets(); // SSG only
 	  break;
 	}
 	break;
@@ -750,13 +755,10 @@ void NonDExpansion::quantify_uncertainty()
     }
 
     // finalize refinement algorithms (if necessary)
-    switch (stochExpRefineType) {
-    case Pecos::ADAPTIVE_P_REFINEMENT:
-      switch (stochExpRefineControl) {
-      case Pecos::GENERALIZED_SPARSE:
-	bool converged_within_tol = (metric <= convergenceTol);
-	finalize_sets(converged_within_tol); break;
-      } break;
+    switch (stochExpRefineControl) {
+    case Pecos::ADAPTIVE_CONTROL_GENERALIZED_SPARSE:
+      bool converged_within_tol = (metric <= convergenceTol);
+      finalize_sets(converged_within_tol); break;
     }
   }
 
@@ -768,21 +770,17 @@ void NonDExpansion::quantify_uncertainty()
 
 void NonDExpansion::compute_print_increment_results()
 {
-  switch (stochExpRefineType) {
-  case Pecos::ADAPTIVE_P_REFINEMENT:
-    switch (stochExpRefineControl) {
-    case Pecos::GENERALIZED_SPARSE:
-      if (totalLevelRequests) { // both covariance and full results available
-	if (outputLevel == DEBUG_OUTPUT) print_results(Cout);
-	//else                           print_covariance(Cout);
-      }
-      else { // only covariance available, compute full results if needed
-	if (outputLevel == DEBUG_OUTPUT)
-	  { compute_statistics(); print_results(Cout); }
-	else
-	  print_covariance(Cout);
-      }
-      break;
+  switch (stochExpRefineControl) {
+  case Pecos::ADAPTIVE_CONTROL_GENERALIZED_SPARSE:
+    if (totalLevelRequests) { // both covariance and full results available
+      if (outputLevel == DEBUG_OUTPUT) print_results(Cout);
+      //else                           print_covariance(Cout);
+    }
+    else { // only covariance available, compute full results if needed
+      if (outputLevel == DEBUG_OUTPUT)
+	{ compute_statistics(); print_results(Cout); }
+      else
+	print_covariance(Cout);
     }
     break;
   }
@@ -813,42 +811,39 @@ void NonDExpansion::compute_print_iteration_results(bool initialize)
     }
   }
 #else
-  switch (stochExpRefineType) {
-  case Pecos::UNIFORM_P_REFINEMENT:
+  switch (stochExpRefineControl) {
+  case Pecos::UNIFORM_CONTROL:
     // In these cases, metric calculations already performed are still valid
     if (outputLevel == DEBUG_OUTPUT) // compute/print all stats
       { compute_statistics(); print_results(Cout); }
     else // compute/print subset of stats required for convergence assessment
       { if (initialize) compute_covariance(); print_covariance(Cout); }
     break;
-  case Pecos::ADAPTIVE_P_REFINEMENT:
-    switch (stochExpRefineControl) {
-    case Pecos::TOTAL_SOBOL: case Pecos::SPECTRAL_DECAY:
-      // In these cases, metric calculations already performed are still valid
-      if (outputLevel == DEBUG_OUTPUT) // compute/print all stats
-	{ compute_statistics(); print_results(Cout); }
-      else // compute/print subset of stats required for convergence assessment
-	{ if (initialize) compute_covariance(); print_covariance(Cout); }
-      break;
-    case Pecos::GENERALIZED_SPARSE:
-      // In this case, the last index set calculation may not be the selected
-      // index set. However, in the case where of non-debug output, we are using
-      // partial results updating to eliminate the need to recompute stats for
-      // the selected index set. This case also differs from other refinement
-      // cases above in that compute_print_increment_results() has already
-      // provided per increment output, so we do not push output if non-debug.
-      if (totalLevelRequests) {
-	if (initialize || outputLevel == DEBUG_OUTPUT) compute_statistics();
-	if (outputLevel == DEBUG_OUTPUT)               print_results(Cout);
-	// else no output!
-      }
-      else {
-	if (outputLevel == DEBUG_OUTPUT)               compute_statistics();
-	else if (initialize)                           compute_covariance();
-	if (outputLevel == DEBUG_OUTPUT)               print_results(Cout);
-	// else no output!
-      }
-      break;
+  case Pecos::ADAPTIVE_CONTROL_TOTAL_SOBOL:
+  case Pecos::ADAPTIVE_CONTROL_SPECTRAL_DECAY:
+    // In these cases, metric calculations already performed are still valid
+    if (outputLevel == DEBUG_OUTPUT) // compute/print all stats
+      { compute_statistics(); print_results(Cout); }
+    else // compute/print subset of stats required for convergence assessment
+      { if (initialize) compute_covariance(); print_covariance(Cout); }
+    break;
+  case Pecos::ADAPTIVE_CONTROL_GENERALIZED_SPARSE:
+    // In this case, the last index set calculation may not be the selected
+    // index set. However, in the case where of non-debug output, we are using
+    // partial results updating to eliminate the need to recompute stats for
+    // the selected index set. This case also differs from other refinement
+    // cases above in that compute_print_increment_results() has already
+    // provided per increment output, so we do not push output if non-debug.
+    if (totalLevelRequests) {
+      if (initialize || outputLevel == DEBUG_OUTPUT) compute_statistics();
+      if (outputLevel == DEBUG_OUTPUT)               print_results(Cout);
+      // else no output!
+    }
+    else {
+      if (outputLevel == DEBUG_OUTPUT)               compute_statistics();
+      else if (initialize)                           compute_covariance();
+      if (outputLevel == DEBUG_OUTPUT)               print_results(Cout);
+      // else no output!
     }
     break;
   }
@@ -877,24 +872,21 @@ void NonDExpansion::compute_print_converged_results()
 #endif // CONVERGENCE_DATA
 
   // if not already performed above, compute all stats
-  switch (stochExpRefineType) {
-  case Pecos::NO_REFINEMENT:
+  switch (stochExpRefineControl) {
+  case Pecos::NO_CONTROL:
     compute_statistics();
     break;
-  case Pecos::UNIFORM_P_REFINEMENT:
+  case Pecos::UNIFORM_CONTROL:
     if (outputLevel != DEBUG_OUTPUT)
       compute_statistics();
     break;
-  case Pecos::ADAPTIVE_P_REFINEMENT:
-    switch (stochExpRefineControl) {
-    case Pecos::TOTAL_SOBOL: case Pecos::SPECTRAL_DECAY:
-      if (outputLevel != DEBUG_OUTPUT)
-	compute_statistics();
-      break;
-    case Pecos::GENERALIZED_SPARSE:
+  case Pecos::ADAPTIVE_CONTROL_TOTAL_SOBOL:
+  case Pecos::ADAPTIVE_CONTROL_SPECTRAL_DECAY:
+    if (outputLevel != DEBUG_OUTPUT)
       compute_statistics();
-      break;
-    }
+    break;
+  case Pecos::ADAPTIVE_CONTROL_GENERALIZED_SPARSE:
+    compute_statistics();
     break;
   }
 
@@ -1405,8 +1397,8 @@ void NonDExpansion::compute_statistics()
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-  bool covariance_flag = (!subIteratorFlag || (stochExpRefineType &&
-			  stochExpRefineControl != Pecos::GENERALIZED_SPARSE));
+  bool covariance_flag = (!subIteratorFlag ||
+    stochExpRefineControl != Pecos::ADAPTIVE_CONTROL_GENERALIZED_SPARSE);
   size_t i, j, k, cntr = 0, sampler_cntr = 0,
     num_final_grad_vars = final_dvv.size();
 

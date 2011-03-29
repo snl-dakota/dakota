@@ -51,8 +51,8 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
     = probDescDB.get_short("method.nond.expansion_refinement_type");
   short refine_control
     = probDescDB.get_short("method.nond.expansion_refinement_control");
-  short growth_rate = (refine_type    == Pecos::ADAPTIVE_P_REFINEMENT &&
-		       refine_control == Pecos::GENERALIZED_SPARSE) ?
+  short growth_rate =
+    (refine_control == Pecos::ADAPTIVE_CONTROL_GENERALIZED_SPARSE) ?
     Pecos::UNRESTRICTED_GROWTH : Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
   ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelSpec,
@@ -84,8 +84,8 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
   bool  store_colloc = true; //(sparse_grid_usage == Pecos::INTERPOLATION);
-  short growth_rate  = (refine_type    == Pecos::ADAPTIVE_P_REFINEMENT &&
-			refine_control == Pecos::GENERALIZED_SPARSE) ?
+  short growth_rate =
+    (refine_control == Pecos::ADAPTIVE_CONTROL_GENERALIZED_SPARSE) ?
     Pecos::UNRESTRICTED_GROWTH : Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
   ssgDriver->initialize_grid(u_types, ssg_level, dim_pref, refine_type,

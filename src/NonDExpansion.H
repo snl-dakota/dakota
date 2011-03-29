@@ -134,8 +134,8 @@ protected:
       aleatory expansion statistics with respect to these variables. */
   bool useDerivsFlag;
 
-  /// refinement type: NO_REFINEMENT, UNIFORM_P_REFINEMENT, or
-  /// ADAPTIVE_P_REFINEMENT
+  /// refinement type: NO_REFINEMENT, DIMENSION_P_REFINEMENT, or
+  /// DIMENSION_H_REFINEMENT
   short stochExpRefineType;
 
 private:
@@ -187,8 +187,9 @@ private:
   /// user override of rule nesting: NO_OVERRIDE, NESTED, or NON_NESTED
   short ruleNestingOverride;
 
-  /// refinement control: DEFAULT_CONTROL, TOTAL_SOBOL, SPECTRAL_DECAY,
-  /// or GENERALIZED_SPARSE
+  /// refinement control: NO_CONTROL, UNIFORM_CONTROL,
+  /// ADAPTIVE_CONTROL_TOTAL_SOBOL, ADAPTIVE_CONTROL_SPECTRAL_DECAY, or
+  /// ADAPTIVE_CONTROL_GENERALIZED_SPARSE
   short stochExpRefineControl;
 
   /// flag to use LHS sampling or MMAIS sampling on the expansion

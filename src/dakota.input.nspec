@@ -395,12 +395,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	( efficient_global {N_mdm(lit,methodName_efficient_global)}
 	  |
 	  ( ( ( ( ( polynomial_chaos ALIAS nond_polynomial_chaos {N_mdm(lit,methodName_nond_polynomial_chaos)}
-		    [ p_refinement {0}
-		      uniform  {N_mdm(type,refinementType_UNIFORM_P_REFINEMENT)} |
-		      ( adaptive {N_mdm(type,refinementType_ADAPTIVE_P_REFINEMENT)}
-		        [ sobol {N_mdm(type,refinementControl_TOTAL_SOBOL)} |
-			  decay {N_mdm(type,refinementControl_SPECTRAL_DECAY)} |
-			  generalized {N_mdm(type,refinementControl_GENERALIZED_SPARSE)} ] ) ]
+		    [ dimension {0}
+		      p_refinement {N_mdm(type,refinementType_DIMENSION_P_REFINEMENT)}
+#		      | h_refinement {N_mdm(type,refinementType_DIMENSION_H_REFINEMENT)}
+		      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)} |
+		      ( adaptive {0}
+		        sobol {N_mdm(type,refinementControl_ADAPTIVE_CONTROL_TOTAL_SOBOL)}
+			| decay {N_mdm(type,refinementControl_ADAPTIVE_CONTROL_SPECTRAL_DECAY)}
+			| generalized {N_mdm(type,refinementControl_ADAPTIVE_CONTROL_GENERALIZED_SPARSE)} )
+		    ]
 		    [ askey {N_mdm(type,expansionType_ASKEY_U)}
 		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)} ]
 		    ( quadrature_order INTEGERLIST {N_mdm(ushintL,quadratureOrder)}
@@ -408,7 +411,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 			  [ dimension_preference REALLIST {N_mdm(RealDL,sparseGridDimPref)} ]
 			  )
 		        [ nested {N_mdm(type,nestingOverride_NESTED)}
-			 | non_nested {N_mdm(type,nestingOverride_NON_NESTED)} ]
+			  | non_nested {N_mdm(type,nestingOverride_NON_NESTED)} ]
 		    )
 		    | cubature_integrand INTEGER {N_mdm(ushint,cubIntOrder)}
 		    | ( ( collocation_points INTEGER {N_mdm(int,collocationPoints)}
@@ -440,11 +443,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    )
 		  |
 		  ( stoch_collocation ALIAS nond_stoch_collocation {N_mdm(lit,methodName_nond_stoch_collocation)}
-		    [ p_refinement {0}
-		      uniform  {N_mdm(type,refinementType_UNIFORM_P_REFINEMENT)} |
-		      ( adaptive {N_mdm(type,refinementType_ADAPTIVE_P_REFINEMENT)}
-		        [ sobol {N_mdm(type,refinementControl_TOTAL_SOBOL)} |
-			  generalized {N_mdm(type,refinementControl_GENERALIZED_SPARSE)} ] ) ]
+		    [ dimension {0}
+		      p_refinement {N_mdm(type,refinementType_DIMENSION_P_REFINEMENT)}
+		      | h_refinement {N_mdm(type,refinementType_DIMENSION_H_REFINEMENT)}
+		      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)} |
+		      ( adaptive {0}
+		        sobol {N_mdm(type,refinementControl_ADAPTIVE_CONTROL_TOTAL_SOBOL)}
+			| generalized {N_mdm(type,refinementControl_ADAPTIVE_CONTROL_GENERALIZED_SPARSE)} )
+		    ]
 		    [ askey {N_mdm(type,expansionType_ASKEY_U)}
 		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)} ]
 		    quadrature_order INTEGERLIST {N_mdm(ushintL,quadratureOrder)}

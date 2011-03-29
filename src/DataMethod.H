@@ -616,10 +616,10 @@ public:
   Real vbdDropTolerance;
   /// the \c basic random-number generator for NonD
   String rngName;
-  /// refinement type for stochastic expansions from \c p_refinement
+  /// refinement type for stochastic expansions from dimension refinement
   /// keyword group
   short refinementType;
-  /// refinement control for stochastic expansions from \c p_refinement
+  /// refinement control for stochastic expansions from dimension refinement
   /// keyword group
   short refinementControl;
   /// refinement type for stochastic expansions from \c refinement keyword

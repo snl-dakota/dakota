@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 863 distinct keywords (plus 103 aliases) **/
+/** 866 distinct keywords (plus 103 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -609,18 +609,19 @@ static KeyWord
 		{"tensor_grid",8,0,3,0,0,0.,0.,0,N_mdm(true,probCollocFlag)},
 		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,expansionDerivUsageFlag)}
 		},
-	kw_107[2] = {
-		{0,0,2,0,0,kw_105},
-		{"incremental_lhs",8,0,1,0,0,0.,0.,0,N_mdm(lit,expansionSampleType_incremental_lhs)}
+	kw_107[3] = {
+		{"decay",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_ADAPTIVE_CONTROL_SPECTRAL_DECAY)},
+		{"generalized",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_ADAPTIVE_CONTROL_GENERALIZED_SPARSE)},
+		{"sobol",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_ADAPTIVE_CONTROL_TOTAL_SOBOL)}
 		},
 	kw_108[3] = {
-		{"decay",8,0,1,0,0,0.,0.,0,N_mdm(type,refinementControl_SPECTRAL_DECAY)},
-		{"generalized",8,0,1,0,0,0.,0.,0,N_mdm(type,refinementControl_GENERALIZED_SPARSE)},
-		{"sobol",8,0,1,0,0,0.,0.,0,N_mdm(type,refinementControl_TOTAL_SOBOL)}
+		{"adaptive",8,3,2,2,kw_107},
+		{"p_refinement",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementType_DIMENSION_P_REFINEMENT)},
+		{"uniform",8,0,2,2,0,0.,0.,0,N_mdm(type,refinementControl_UNIFORM_CONTROL)}
 		},
 	kw_109[2] = {
-		{"adaptive",8,3,1,1,kw_108,0.,0.,0,N_mdm(type,refinementType_ADAPTIVE_P_REFINEMENT)},
-		{"uniform",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementType_UNIFORM_P_REFINEMENT)}
+		{0,0,2,0,0,kw_105},
+		{"incremental_lhs",8,0,1,0,0,0.,0.,0,N_mdm(lit,expansionSampleType_incremental_lhs)}
 		},
 	kw_110[2] = {
 		{"nested",8,0,1,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
@@ -653,9 +654,9 @@ static KeyWord
 		{"collocation_points",9,4,3,1,kw_106,0.,0.,0,N_mdm(int,collocationPoints)},
 		{"collocation_ratio",10,4,3,1,kw_106,0.,0.,0,N_mdm(Realp,collocationRatio)},
 		{"cubature_integrand",9,0,3,1,0,0.,0.,0,N_mdm(ushint,cubIntOrder)},
+		{"dimension",8,3,1,0,kw_108},
 		{"expansion_import_file",11,2,3,1,kw_105,0.,0.,0,N_mdm(str,expansionImportFile)},
-		{"expansion_samples",9,1,3,1,kw_107,0.,0.,0,N_mdm(int,expansionSamples)},
-		{"p_refinement",8,2,1,0,kw_109},
+		{"expansion_samples",9,1,3,1,kw_109,0.,0.,0,N_mdm(int,expansionSamples)},
 		{"quadrature_order",13,2,3,1,kw_110,0.,0.,0,N_mdm(ushintL,quadratureOrder)},
 		{"sample_refinement",8,3,5,0,kw_111},
 		{"sample_type",8,2,6,0,kw_112},
@@ -685,12 +686,14 @@ static KeyWord
 		{"variance_based_decomp",8,1,2,0,kw_118,0.,0.,0,N_mdm(true,vbdFlag)}
 		},
 	kw_120[2] = {
-		{"generalized",8,0,1,0,0,0.,0.,0,N_mdm(type,refinementControl_GENERALIZED_SPARSE)},
-		{"sobol",8,0,1,0,0,0.,0.,0,N_mdm(type,refinementControl_TOTAL_SOBOL)}
+		{"generalized",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_ADAPTIVE_CONTROL_GENERALIZED_SPARSE)},
+		{"sobol",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_ADAPTIVE_CONTROL_TOTAL_SOBOL)}
 		},
-	kw_121[2] = {
-		{"adaptive",8,2,1,1,kw_120,0.,0.,0,N_mdm(type,refinementType_ADAPTIVE_P_REFINEMENT)},
-		{"uniform",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementType_UNIFORM_P_REFINEMENT)}
+	kw_121[4] = {
+		{"adaptive",8,2,2,2,kw_120},
+		{"h_refinement",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementType_DIMENSION_H_REFINEMENT)},
+		{"p_refinement",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementType_DIMENSION_P_REFINEMENT)},
+		{"uniform",8,0,2,2,0,0.,0.,0,N_mdm(type,refinementControl_UNIFORM_CONTROL)}
 		},
 	kw_122[3] = {
 		{"adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_ais)},
@@ -715,9 +718,9 @@ static KeyWord
 		{0,0,2,0,0,kw_103},
 		{0,0,2,0,0,kw_104},
 		{"askey",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_ASKEY_U)},
+		{"dimension",8,4,1,0,kw_121},
 		{"nested",8,0,4,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
 		{"non_nested",8,0,4,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)},
-		{"p_refinement",8,2,1,0,kw_121},
 		{"quadrature_order",13,0,3,1,0,0.,0.,0,N_mdm(ushintL,quadratureOrder)},
 		{"sample_refinement",8,3,6,0,kw_122},
 		{"sample_type",8,2,7,0,kw_123},

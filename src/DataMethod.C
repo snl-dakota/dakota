@@ -106,8 +106,7 @@ DataMethodRep::DataMethodRep():
   numSamples(0), fixedSeedFlag(false), previousSamples(0), vbdFlag(false),
   // NonD
   vbdControl(Pecos::ALL_VBD), vbdDropTolerance(-1.), rngName("mt19937"),
-  refinementType(Pecos::NO_REFINEMENT),
-  refinementControl(Pecos::DEFAULT_CONTROL),
+  refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
   nestingOverride(Pecos::NO_OVERRIDE), expansionType(EXTENDED_U),
   expansionTerms(0), expansionSamples(0), sparseGridLevel(USHRT_MAX),
   cubIntOrder(USHRT_MAX), collocationPoints(0), collocationRatio(0.),
