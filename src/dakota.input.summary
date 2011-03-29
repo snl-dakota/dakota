@@ -582,11 +582,10 @@ KEYWORD12 method
 	  )
 	|
 	( polynomial_chaos ALIAS nond_polynomial_chaos
-	  [ dimension
-	    p_refinement
+	  [ p_refinement
 	    uniform
 	    |
-	    ( adaptive
+	    ( dimension_adaptive
 	      sobol
 	      | decay
 	      | generalized
@@ -670,12 +669,11 @@ KEYWORD12 method
 	  )
 	|
 	( stoch_collocation ALIAS nond_stoch_collocation
-	  [ dimension
-	    p_refinement
+	  [ p_refinement
 	    | h_refinement
 	    uniform
 	    |
-	    ( adaptive
+	    ( dimension_adaptive
 	      sobol
 	      | generalized
 	      )

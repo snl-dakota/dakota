@@ -4360,14 +4360,14 @@ static Method_mp_type
 	MP2s(methodOutput,QUIET_OUTPUT),
 	MP2s(methodOutput,SILENT_OUTPUT),
 	MP2s(methodOutput,VERBOSE_OUTPUT),
-	MP2p(nestingOverride,NESTED),               // Pecos enumeration
-	MP2p(nestingOverride,NON_NESTED),           // Pecos enumeration
-	MP2p(refinementControl,ADAPTIVE_CONTROL_GENERALIZED_SPARSE),//Pecos enum
-	MP2p(refinementControl,ADAPTIVE_CONTROL_SPECTRAL_DECAY),   // Pecos enum
-	MP2p(refinementControl,ADAPTIVE_CONTROL_TOTAL_SOBOL),      // Pecos enum
+	MP2p(nestingOverride,NESTED),                // Pecos enumeration
+	MP2p(nestingOverride,NON_NESTED),            // Pecos enumeration
+	MP2p(refinementControl,DIMENSION_ADAPTIVE_GENERALIZED_SPARSE),  // Pecos
+	MP2p(refinementControl,DIMENSION_ADAPTIVE_SPECTRAL_DECAY), // Pecos enum
+	MP2p(refinementControl,DIMENSION_ADAPTIVE_TOTAL_SOBOL),    // Pecos enum
 	MP2p(refinementControl,UNIFORM_CONTROL),                   // Pecos enum
-	MP2p(refinementType,DIMENSION_P_REFINEMENT), // Pecos enumeration
-        MP2p(refinementType,DIMENSION_H_REFINEMENT), // Pecos enumeration
+	MP2p(refinementType,P_REFINEMENT),           // Pecos enumeration
+        MP2p(refinementType,H_REFINEMENT),           // Pecos enumeration
 	MP2s(surrBasedLocalAcceptLogic,FILTER),
 	MP2s(surrBasedLocalAcceptLogic,TR_RATIO),
 	MP2s(surrBasedLocalConstrRelax,HOMOTOPY),
@@ -4382,7 +4382,7 @@ static Method_mp_type
 	MP2s(surrBasedLocalSubProbObj,LAGRANGIAN_OBJECTIVE),
 	MP2s(surrBasedLocalSubProbObj,ORIGINAL_PRIMARY),
 	MP2s(surrBasedLocalSubProbObj,SINGLE_OBJECTIVE),
-	MP2p(vbdControl,UNIVARIATE_VBD);            // Pecos enumeration
+	MP2p(vbdControl,UNIVARIATE_VBD);             // Pecos enumeration
 
 #undef MP4
 #undef MP3

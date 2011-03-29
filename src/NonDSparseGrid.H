@@ -44,7 +44,7 @@ public:
   NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
 		 unsigned short ssg_level, const RealVector& dim_pref,
 		 //short sparse_grid_usage,
-		 short refine_type    = Pecos::NO_REFINEMENT,
+		 //short refine_type  = Pecos::NO_REFINEMENT,
 		 short refine_control = Pecos::NO_CONTROL,
 		 bool track_ensemble_wts = true, bool nested_rules = true);
 
