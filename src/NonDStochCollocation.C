@@ -59,8 +59,11 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-  String approx_type = "global_interpolation_polynomial", sample_reuse,
-    corr_type;
+  String sample_reuse, corr_type,
+    approx_type = (stochExpRefineType == Pecos::H_REFINEMENT) ?
+    "local_interpolation_polynomial" : "global_interpolation_polynomial";
+  // *** TO DO: support local bases outside of H_REFINEMENT
+  // --> local or global basis spec separate from refinement spec (h/p inferred)
   UShortArray approx_order; // empty
   short corr_order = -1;
   //const Variables& g_u_vars = g_u_model.current_variables();

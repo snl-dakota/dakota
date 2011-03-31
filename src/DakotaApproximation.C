@@ -45,10 +45,9 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
   dataOrder(1), popCount(1), approxRep(NULL), referenceCount(1)
 {
   if (problem_db.get_bool("model.surrogate.derivative_usage") &&
-      approxType != "global_polynomial"                       &&
-      // TODO: add the following when Surfpack Kriging supports derivatives
-      //approxType != "global_kriging"                          && 
-      approxType != "global_orthogonal_polynomial")
+      approxType != "global_polynomial" && approxType != "global_kriging" && 
+      approxType != "global_orthogonal_polynomial" && 
+      approxType != "local_interpolation_polynomial")
     Cerr << "\nWarning: use_derivatives is not currently supported by "
 	 << approxType << ".\n\n";
 
@@ -109,7 +108,9 @@ get_approx(ProblemDescDB& problem_db, size_t num_vars)
   else if (approx_type == "multipoint_tana")
     return new TANA3Approximation(problem_db, num_vars);
   else if (approx_type == "global_orthogonal_polynomial" ||
-           approx_type == "global_interpolation_polynomial")
+           approx_type == "global_interpolation_polynomial" ||
+           approx_type == "local_orthogonal_polynomial" ||  // multi-element
+           approx_type == "local_interpolation_polynomial") // local spline
     return new PecosApproximation(problem_db, num_vars);
   else if (approx_type == "global_gaussian")
     return new GaussProcApproximation(problem_db, num_vars);
@@ -169,7 +170,9 @@ get_approx(const String& approx_type, const UShortArray& approx_order,
   else if (approx_type == "multipoint_tana")
     approx = new TANA3Approximation(num_vars, data_order);
   else if (approx_type == "global_orthogonal_polynomial" ||
-	   approx_type == "global_interpolation_polynomial")
+	   approx_type == "global_interpolation_polynomial" ||
+           approx_type == "local_orthogonal_polynomial" ||  // multi-element
+           approx_type == "local_interpolation_polynomial") // local spline
     approx = new PecosApproximation(approx_type, approx_order, num_vars,
 				    data_order);
   else if (approx_type == "global_gaussian")

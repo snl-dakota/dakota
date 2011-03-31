@@ -115,7 +115,11 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-  String approx_type = "global_orthogonal_polynomial", corr_type, pt_reuse;
+  String corr_type, pt_reuse,
+    approx_type = (stochExpRefineType == Pecos::H_REFINEMENT) ?
+    "local_orthogonal_polynomial" : "global_orthogonal_polynomial";
+  // *** TO DO: support local bases outside of H_REFINEMENT
+  // --> local or global basis spec separate from refinement spec (h/p inferred)
   short corr_order = -1;
   if (expansionCoeffsApproach == Pecos::REGRESSION && !tensorRegression) {
     pt_reuse = probDescDB.get_string("method.nond.collocation_point_reuse");

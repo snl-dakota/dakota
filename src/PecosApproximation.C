@@ -25,8 +25,8 @@ PecosApproximation(const String& approx_type, const UShortArray& approx_order,
 		   size_t num_vars, unsigned short data_order)
 {
   approxType = approx_type; numVars = num_vars; dataOrder = data_order;
-  pecosBasisApprox
-    = Pecos::BasisApproximation(approx_type, approx_order, num_vars);
+  pecosBasisApprox = Pecos::BasisApproximation(approx_type, approx_order,
+					       num_vars,    data_order);
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
 }
@@ -38,17 +38,16 @@ PecosApproximation(ProblemDescDB& problem_db, size_t num_vars):
 {
   dataOrder = 1;
   UShortArray approx_order;
-  if (approxType == "global_orthogonal_polynomial") {
+  if (approxType == "global_orthogonal_polynomial")
     approx_order = problem_db.get_dusa("method.nond.expansion_order");
-    if (problem_db.get_bool("model.surrogate.derivative_usage")) {
-      if (problem_db.get_string("responses.gradient_type") != "none")
-	dataOrder |= 2;
-      if (problem_db.get_string("responses.hessian_type")  != "none")
-	dataOrder |= 4;
-    }
+  if (problem_db.get_bool("model.surrogate.derivative_usage")) {
+    if (problem_db.get_string("responses.gradient_type") != "none")
+      dataOrder |= 2;
+    if (problem_db.get_string("responses.hessian_type")  != "none")
+      dataOrder |= 4;
   }
-  pecosBasisApprox
-    = Pecos::BasisApproximation(approxType, approx_order, numVars);
+  pecosBasisApprox = Pecos::BasisApproximation(approxType, approx_order,
+					       numVars,    dataOrder);
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
 }

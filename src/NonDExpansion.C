@@ -581,6 +581,7 @@ void NonDExpansion::initialize_u_space_model()
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep) { // may be NULL based on approxFnIndices
       poly_approx_rep->solution_approach(expansionCoeffsApproach);
+      poly_approx_rep->refinement_type(stochExpRefineType);
       poly_approx_rep->refinement_control(stochExpRefineControl);
       poly_approx_rep->vbd_control(vbdControl);
       if (expansionCoeffsApproach == Pecos::CUBATURE ||

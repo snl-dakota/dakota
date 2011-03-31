@@ -68,6 +68,11 @@ public:
   /// get pecosBasisApprox.configOptions.expansionGradFlag
   bool expansion_gradient_flag() const;
 
+  /// set pecosBasisApprox.configOptions.refinementType
+  void refinement_type(short refine_type);
+  /// get pecosBasisApprox.configOptions.refinementType
+  short refinement_type() const;
+
   /// set pecosBasisApprox.configOptions.refinementControl
   void refinement_control(short refine_cntl);
   /// get pecosBasisApprox.configOptions.refinementControl
@@ -262,6 +267,14 @@ inline void PecosApproximation::expansion_gradient_flag(bool grad_flag)
 
 inline bool PecosApproximation::expansion_gradient_flag() const
 { return polyApproxRep->expansion_coefficient_gradient_flag(); }
+
+
+inline void PecosApproximation::refinement_type(short refine_type)
+{ polyApproxRep->refinement_type(refine_type); }
+
+
+inline short PecosApproximation::refinement_type() const
+{ return polyApproxRep->refinement_type(); }
 
 
 inline void PecosApproximation::refinement_control(short refine_cntl)
