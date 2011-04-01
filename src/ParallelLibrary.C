@@ -55,11 +55,10 @@ extern ParallelLibrary *Dak_pl;
     conditionally based on whether a parallel launch is detected. */
 ParallelLibrary::ParallelLibrary(int& argc, char**& argv): 
   dakotaMPIComm(MPI_COMM_WORLD), worldRank(0), worldSize(1), mpirunFlag(false), 
-  ownMPIFlag(false), dummyFlag(false), stdOutputFlag(false),
-  stdErrorFlag(false), checkFlag(false), preRunFlag(true), 
+  ownMPIFlag(false), dummyFlag(false), stdOutputToFile(false),
+  stdErrorToFile(false), checkFlag(false), preRunFlag(true), 
   runFlag(true), postRunFlag(true), userModesFlag(false), startClock(0),
-  stdOutputFilename(NULL), stdErrorFilename(NULL), readRestartFilename(NULL),
-  writeRestartFilename(NULL), stopRestartEvals(0),
+  stopRestartEvals(0),
   currPLIter(parallelLevels.end()), currPCIter(parallelConfigurations.end())
 {
   // detect parallel launch of DAKOTA using mpirun/mpiexec/poe/etc.
@@ -135,10 +134,9 @@ ParallelLibrary::ParallelLibrary(int& argc, char**& argv):
     MPI_COMM_WORLD if MPI_Init has been called elsewhere. */
 ParallelLibrary::ParallelLibrary(): dakotaMPIComm(MPI_COMM_WORLD), worldRank(0),
   worldSize(1), mpirunFlag(false), ownMPIFlag(false), dummyFlag(false),
-  stdOutputFlag(false), stdErrorFlag(false), checkFlag(false),
+  stdOutputToFile(false), stdErrorToFile(false), checkFlag(false),
   preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false),
-  startClock(0), stdOutputFilename(NULL), stdErrorFilename(NULL), 
-  readRestartFilename(NULL), writeRestartFilename(NULL), stopRestartEvals(0),
+  startClock(0), stopRestartEvals(0),
   currPLIter(parallelLevels.end()), currPCIter(parallelConfigurations.end())
 {
   init_mpi_comm(dakotaMPIComm);
@@ -152,10 +150,9 @@ ParallelLibrary::ParallelLibrary(): dakotaMPIComm(MPI_COMM_WORLD), worldRank(0),
 ParallelLibrary::ParallelLibrary(MPI_Comm dakota_mpi_comm): 
   dakotaMPIComm(dakota_mpi_comm), worldRank(0), worldSize(1), 
   mpirunFlag(false), ownMPIFlag(false), dummyFlag(false),
-  stdOutputFlag(false), stdErrorFlag(false), checkFlag(false),
+  stdOutputToFile(false), stdErrorToFile(false), checkFlag(false),
   preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false), 
-  startClock(0), stdOutputFilename(NULL), stdErrorFilename(NULL),
-  readRestartFilename(NULL), writeRestartFilename(NULL), stopRestartEvals(0),
+  startClock(0), stopRestartEvals(0),
   currPLIter(parallelLevels.end()), currPCIter(parallelConfigurations.end())
 {
   init_mpi_comm(dakotaMPIComm);
@@ -1036,14 +1033,21 @@ specify_outputs_restart(CommandLineHandler& cmd_line_handler)
   // It retrieves inputs from the command line handler object.  This
   // is the normal mode used by main.C within DAKOTA.
 
+  // Need to catch the NULL case; this will clean up when GetLongOpt
+  // gets refactored
   if (worldRank == 0) {
-    stdOutputFilename    = cmd_line_handler.retrieve("output");
-    stdErrorFilename     = cmd_line_handler.retrieve("error");
-    readRestartFilename  = cmd_line_handler.retrieve("read_restart");
-    // check for specified, but without arg
-    if (readRestartFilename && strcmp(readRestartFilename, "") == 0)
-      readRestartFilename = "dakota.rst";
-    writeRestartFilename = cmd_line_handler.retrieve("write_restart");
+    if (cmd_line_handler.retrieve("output"))
+      stdOutputFilename = cmd_line_handler.retrieve("output");
+    if (cmd_line_handler.retrieve("error"))
+      stdErrorFilename = cmd_line_handler.retrieve("error");
+    if (cmd_line_handler.retrieve("read_restart")) {
+      readRestartFilename  = cmd_line_handler.retrieve("read_restart");
+      // check for specified, but without arg; use default restart filename
+      if (readRestartFilename.empty())
+	readRestartFilename = "dakota.rst";
+    }
+    if (cmd_line_handler.retrieve("write_restart"))
+      writeRestartFilename = cmd_line_handler.retrieve("write_restart");
     stopRestartEvals     = cmd_line_handler.read_restart_evals();
 
     manage_run_modes(cmd_line_handler);
@@ -1069,13 +1073,20 @@ specify_outputs_restart(const char* clh_std_output_filename,
   // provides a library mode for codes such as SIERRA.  It relies on
   // external retrieval of output settings.
 
-  stdOutputFilename    = clh_std_output_filename;
-  stdErrorFilename     = clh_std_error_filename;
-  readRestartFilename  = clh_read_restart_filename;
-  writeRestartFilename = clh_write_restart_filename;
-  stopRestartEvals     = stop_restart_evals;
+  // Need to catch the NULL case; this will clean up when we change
+  // the interface to an std::string
+  if (clh_std_output_filename)
+    stdOutputFilename = clh_std_output_filename;
+  if (clh_std_error_filename)
+    stdErrorFilename = clh_std_error_filename;
+  if (clh_read_restart_filename)
+    readRestartFilename  = clh_read_restart_filename;
+  if (clh_write_restart_filename)
+    writeRestartFilename = clh_write_restart_filename;
+  stopRestartEvals = stop_restart_evals;
   
   // TODO: allow passing any relevant flags; for now emulate historical
+  // (only pre-run supported and only by itself)
   if (pre_run_flag) {
     userModesFlag = preRunFlag = true;
     runFlag = postRunFlag = false;
@@ -1165,31 +1176,34 @@ manage_outputs_restart(const ParallelLevel& pl)
   // ---------------------------------------------
   // Process strings and Bcast to iterator masters
   // ---------------------------------------------
-  String std_output_filename,   std_error_filename,
-         read_restart_filename, write_restart_filename;
+
+  // local copies of strings to avoid confusion with user-specified vs.
+  //  locally-modified; could consider just overwriting the class data
+  std::string std_output_filename, std_error_filename, read_restart_filename, 
+    write_restart_filename;
   bool read_restart_flag;
   if (worldRank == 0) {
-    // filename pointers are NULL if no user specification.  Assign valid
-    // strings in this case due to MPI Bcast.
-    std_output_filename    = (stdOutputFilename)    ?
-                              stdOutputFilename     : "dakota.out";
-    std_error_filename     = (stdErrorFilename)     ?
-                              stdErrorFilename      : "NULL";
-    read_restart_filename  = (readRestartFilename)  ?
-                              readRestartFilename   : "NULL";
-    write_restart_filename = (writeRestartFilename) ? 
-                              writeRestartFilename  : "dakota.rst";
+
+    // need a default even if user didn't specify due to possible
+    // per-server tagging
+    std_output_filename    = (stdOutputFilename.empty()) ? 
+                             "dakota.out" : stdOutputFilename;
+    std_error_filename     = stdErrorFilename;
+    read_restart_filename  = readRestartFilename;
+    write_restart_filename = (writeRestartFilename.empty()) ? 
+                             "dakota.rst" : writeRestartFilename;
+
     // If iterator servers are in use, then always segregate the std output.
     // However, for std error, assume that this should remain directed to the
     // screen unless an explicit "-e" command line option has been given.
-    stdOutputFlag = (pl.numServers > 1 || pl.dedicatedMasterFlag || 
-		     stdOutputFilename)       ? true : false;
-    stdErrorFlag  = (stdErrorFilename)        ? true : false;
-    read_restart_flag = (readRestartFilename) ? true : false;
+    stdOutputToFile = (pl.numServers > 1 || pl.dedicatedMasterFlag || 
+		       !stdOutputFilename.empty()) ? true : false;
+    stdErrorToFile  = !stdErrorFilename.empty();
+    read_restart_flag = !readRestartFilename.empty();
 
     if (pl.hubServerCommSize > 1) {
       MPIPackBuffer send_buffer;
-      send_buffer << stdOutputFlag << stdErrorFlag 
+      send_buffer << stdOutputToFile << stdErrorToFile 
 		  << checkFlag << preRunFlag << runFlag << postRunFlag 
 		  << userModesFlag << preRunInput << preRunOutput << runInput
 		  << runOutput << postRunInput << postRunOutput
@@ -1207,7 +1221,7 @@ manage_outputs_restart(const ParallelLevel& pl)
     bcast(buffer_len, pl.hubServerIntraComm);
     MPIUnpackBuffer recv_buffer(buffer_len);
     bcast(recv_buffer, pl.hubServerIntraComm);
-    recv_buffer >> stdOutputFlag >> stdErrorFlag 
+    recv_buffer >> stdOutputToFile >> stdErrorToFile 
 		>> checkFlag >> preRunFlag >> runFlag >> postRunFlag 
 		>> userModesFlag >> preRunInput >> preRunOutput >> runInput
 		>> runOutput >> postRunInput >> postRunOutput
@@ -1231,7 +1245,7 @@ manage_outputs_restart(const ParallelLevel& pl)
     std::sprintf(si, ".%d", pl.serverId);
     String ctr_tag(si);
     std_output_filename += ctr_tag;     // e.g., "dakota.out.#"
-    if (stdErrorFlag)
+    if (stdErrorToFile)
       std_error_filename += ctr_tag;    // e.g., "dakota.err.#"
     if (read_restart_flag)
       read_restart_filename += ctr_tag; // e.g., "dakota.rst.#"
@@ -1244,13 +1258,13 @@ manage_outputs_restart(const ParallelLevel& pl)
   // Now that all iterator masters have the output filename settings, open
   // the ofstreams and attach them to Cout/Cerr (if required).  Note that the
   // opening of files on processors for which there is no output is avoided.
-  if (stdOutputFlag) {
-    output_ofstream.open(std_output_filename, std::ios::out);
+  if (stdOutputToFile) {
+    output_ofstream.open(std_output_filename.c_str(), std::ios::out);
     // assign global dakota_cout to this ofstream
     dakota_cout = &output_ofstream;
   }
-  if (stdErrorFlag) {
-    error_ofstream.open(std_error_filename, std::ios::out);
+  if (stdErrorToFile) {
+    error_ofstream.open(std_error_filename.c_str(), std::ios::out);
     // assign global dakota_cerr to this ofstream
     dakota_cerr = &error_ofstream;
   }
@@ -1262,7 +1276,7 @@ manage_outputs_restart(const ParallelLevel& pl)
   extern BoStream write_restart;
   // Process the evaluations from the restart file
   if (read_restart_flag) {
-    BiStream read_restart(read_restart_filename);
+    BiStream read_restart(read_restart_filename.c_str());
     if (!read_restart.good()) {
       Cerr << "\nError: could not open restart file " << read_restart_filename
 	   << std::endl;
@@ -1320,7 +1334,7 @@ manage_outputs_restart(const ParallelLevel& pl)
   // per interface, whereas there is only one parallel library instance.
   //if (!deactivateRestartFlag) {
   if (write_restart_filename == read_restart_filename) {
-    write_restart.open(write_restart_filename, std::ios::app);
+    write_restart.open(write_restart_filename.c_str(), std::ios::app);
 
     Cout << "Appending new evaluations to existing restart file " 
          << write_restart_filename << std::endl;
@@ -1341,7 +1355,7 @@ manage_outputs_restart(const ParallelLevel& pl)
     // contents and start over [see FSTREAM(3C++) in AT&T C++ Library Manual].
   }
   else {
-    write_restart.open(write_restart_filename);
+    write_restart.open(write_restart_filename.c_str());
     Cout << "Writing new restart file " << write_restart_filename << std::endl;
     // Write any processed records from the old restart file to the new file.
     // This prevents the situation where good data from an initial run and a 
@@ -1366,11 +1380,11 @@ void ParallelLibrary::close_streams()
   // clean up data from manage_outputs:
   // close ofstreams and reassign pointers for Cout/Cerr so that any subsequent
   // output (e.g., timings in ParallelLibrary destructor) is handled properly.
-  if (stdOutputFlag && pl.serverMasterFlag) {
+  if (stdOutputToFile && pl.serverMasterFlag) {
     output_ofstream.close();
     dakota_cout = &std::cout;
   }
-  if (stdErrorFlag && pl.serverMasterFlag) {
+  if (stdErrorToFile && pl.serverMasterFlag) {
     error_ofstream.close();
     dakota_cerr = &std::cerr;
   }

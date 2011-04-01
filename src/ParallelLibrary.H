@@ -684,8 +684,8 @@ private:
   bool mpirunFlag;    ///< flag for a parallel mpirun/yod launch
   bool ownMPIFlag;    ///< flag for ownership of MPI_Init/MPI_Finalize
   bool dummyFlag;     ///< prevents multiple MPI_Finalize calls due to dummy_lib
-  bool stdOutputFlag; ///< flags redirection of DAKOTA std output to a file
-  bool stdErrorFlag;  ///< flags redirection of DAKOTA std error to a file
+  bool stdOutputToFile; ///< flags redirection of DAKOTA std output to a file
+  bool stdErrorToFile;  ///< flags redirection of DAKOTA std error to a file
 
   // run mode flags and I/O files
   // Could condense flags into a bit-wise short, but using bool for
@@ -713,10 +713,10 @@ private:
   long startClock;    ///< start reference for local clock() timer measuring
                       ///< parent+child CPU
 
-  const char* stdOutputFilename;    ///< filename for redirection of stdout
-  const char* stdErrorFilename;     ///< filename for redirection of stderr
-  const char* readRestartFilename;  ///< input filename for restart
-  const char* writeRestartFilename; ///< output filename for restart
+  std::string stdOutputFilename;    ///< filename for redirection of stdout
+  std::string stdErrorFilename;     ///< filename for redirection of stderr
+  std::string readRestartFilename;  ///< input filename for restart
+  std::string writeRestartFilename; ///< output filename for restart
   int stopRestartEvals; ///< number of evals at which to stop restart processing
 
   /// the complete set of parallelism levels for managing multilevel
