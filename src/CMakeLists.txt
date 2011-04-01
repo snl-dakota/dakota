@@ -1,3 +1,5 @@
+# CMakeLists.txt for Dakota src
+
 option(HAVE_USAGE_TRACKING "Build the DAKOTA usage tracker module." OFF)
 option(HAVE_XDR "Build the XDR interface module." ON)
 
@@ -297,6 +299,11 @@ if(HAVE_OPTPP)
                       ${optpp_SOURCE_DIR}/newmat11)
 
   add_definitions("-DHAVE_OPTPP")
+  # WJB:  OPT++ macro naming "convention" differs from DAKOTA.  Even worse,
+  #       Behavior is conditional outside of the Opt++ package due to do inline,
+  #       VIRTUAL function definitions which can be enable/disabled "globally".
+  # Therefore, define as many build macros as necessary to get a desirable exec.
+  add_definitions("-DDAKOTA_OPTPP")
   add_definitions("-DDAKOTA_NEWMAT")
   set(iterator_src ${iterator_src} SNLLBase.C SNLLOptimizer.C SNLLLeastSq.C)
   set(TPL_LIBS ${TPL_LIBS} opt newmat)
