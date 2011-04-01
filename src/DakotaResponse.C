@@ -176,12 +176,12 @@ ResponseRep(const Variables& vars, const ProblemDescDB& problem_db):
   functionValues = 0.;
   short asv_value = 1;
   if (grad_flag) {
-    asv_value += 2;
+    asv_value |= 2;
     functionGradients.reshape(num_params, num_fns);
     functionGradients = 0.;
   }
   if (hess_flag) {
-    asv_value += 4;
+    asv_value |= 4;
     functionHessians.resize(num_fns);
     for (size_t i=0; i<num_fns; i++) {
       functionHessians[i].reshape(num_params);

@@ -2190,7 +2190,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	Locked_db();
     #define P &DataModelRep::
     static KW<bool, DataModelRep> Bdmo[] = {	// must be sorted
-	{"derivative_usage", P approxDerivUsageFlag},
+	{"derivative_usage", P modelUseDerivsFlag},
 	{"point_selection", P pointSelection}};
     #undef P
 

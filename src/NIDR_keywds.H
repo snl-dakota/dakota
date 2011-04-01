@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 868 distinct keywords (plus 103 aliases) **/
+/** 871 distinct keywords (plus 103 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -116,15 +116,16 @@ static KeyWord
 		{"mt19937",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_mt19937)},
 		{"rnum2",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_rnum2)}
 		},
-	kw_17[8] = {
+	kw_17[9] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{"gpmsa",8,0,1,1,0,0.,0.,0,N_mdm(lit,subMethodName_gpmsa)},
 		{"queso",8,0,1,1,0,0.,0.,0,N_mdm(lit,subMethodName_queso)},
-		{"rng",8,2,2,0,kw_16},
-		{"x_obs_data_file",11,0,3,0,0,0.,0.,0,N_mdm(str,xObsDataFile)},
-		{"y_obs_data_file",11,0,4,0,0,0.,0.,0,N_mdm(str,yObsDataFile)},
-		{"y_std_data_file",11,0,5,0,0,0.,0.,0,N_mdm(str,yStdDataFile)}
+		{"rng",8,2,3,0,kw_16},
+		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)},
+		{"x_obs_data_file",11,0,4,0,0,0.,0.,0,N_mdm(str,xObsDataFile)},
+		{"y_obs_data_file",11,0,5,0,0,0.,0.,0,N_mdm(str,yObsDataFile)},
+		{"y_std_data_file",11,0,6,0,0,0.,0.,0,N_mdm(str,yStdDataFile)}
 		},
 	kw_18[3] = {
 		{"deltas_per_variable",5,0,2,2,0,0.,0.,2,N_mdm(intDL,stepsPerVariable)},
@@ -339,130 +340,133 @@ static KeyWord
 		{"probability_levels",14,1,2,0,kw_51,0.,0.,0,N_mdm(resplevs01,probabilityLevels)},
 		{"rng",8,2,4,0,kw_52}
 		},
-	kw_54[2] = {
+	kw_54[1] = {
+		{"use_derivatives",8,0,1,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
+		},
+	kw_55[2] = {
 		{"gen_reliabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_gen_reliabilities)},
 		{"probabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_probabilities)}
 		},
-	kw_55[2] = {
-		{"compute",8,2,2,0,kw_54},
+	kw_56[2] = {
+		{"compute",8,2,2,0,kw_55},
 		{"num_response_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,responseLevels)}
 		},
-	kw_56[6] = {
+	kw_57[6] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{0,0,4,0,0,kw_53},
-		{"ego",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_ego)},
-		{"lhs",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_lhs)},
-		{"response_levels",14,2,2,0,kw_55,0.,0.,0,N_mdm(resplevs,responseLevels)}
+		{"ego",8,1,1,0,kw_54,0.,0.,0,N_mdm(lit,nondOptAlgorithm_ego)},
+		{"lhs",8,1,1,0,kw_54,0.,0.,0,N_mdm(lit,nondOptAlgorithm_lhs)},
+		{"response_levels",14,2,2,0,kw_56,0.,0.,0,N_mdm(resplevs,responseLevels)}
 		},
-	kw_57[2] = {
+	kw_58[2] = {
 		{"mt19937",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_mt19937)},
 		{"rnum2",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_rnum2)}
 		},
-	kw_58[5] = {
+	kw_59[5] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{"ego",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_ego)},
 		{"lhs",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_lhs)},
-		{"rng",8,2,2,0,kw_57}
+		{"rng",8,2,2,0,kw_58}
 		},
-	kw_59[2] = {
+	kw_60[2] = {
 		{"complementary",8,0,1,1,0,0.,0.,0,N_mdm(lit,distributionType_complementary)},
 		{"cumulative",8,0,1,1,0,0.,0.,0,N_mdm(lit,distributionType_cumulative)}
 		},
-	kw_60[1] = {
+	kw_61[1] = {
 		{"num_gen_reliability_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,genReliabilityLevels)}
 		},
-	kw_61[1] = {
+	kw_62[1] = {
 		{"num_probability_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,probabilityLevels)}
 		},
-	kw_62[3] = {
-		{"distribution",8,2,1,0,kw_59},
-		{"gen_reliability_levels",14,1,3,0,kw_60,0.,0.,0,N_mdm(resplevs,genReliabilityLevels)},
-		{"probability_levels",14,1,2,0,kw_61,0.,0.,0,N_mdm(resplevs01,probabilityLevels)}
+	kw_63[3] = {
+		{"distribution",8,2,1,0,kw_60},
+		{"gen_reliability_levels",14,1,3,0,kw_61,0.,0.,0,N_mdm(resplevs,genReliabilityLevels)},
+		{"probability_levels",14,1,2,0,kw_62,0.,0.,0,N_mdm(resplevs01,probabilityLevels)}
 		},
-	kw_63[2] = {
+	kw_64[2] = {
 		{"gen_reliabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_gen_reliabilities)},
 		{"probabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_probabilities)}
 		},
-	kw_64[2] = {
-		{"compute",8,2,2,0,kw_63},
+	kw_65[2] = {
+		{"compute",8,2,2,0,kw_64},
 		{"num_response_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,responseLevels)}
 		},
-	kw_65[2] = {
+	kw_66[2] = {
 		{"mt19937",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_mt19937)},
 		{"rnum2",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_rnum2)}
 		},
-	kw_66[8] = {
-		{0,0,3,0,0,kw_62},
+	kw_67[8] = {
+		{0,0,3,0,0,kw_63},
 		{"all_variables",8,0,2,0,0,0.,0.,0,N_mdm(true,allVarsFlag)},
-		{"response_levels",14,2,6,0,kw_64,0.,0.,0,N_mdm(resplevs,responseLevels)},
-		{"rng",8,2,5,0,kw_65},
+		{"response_levels",14,2,6,0,kw_65,0.,0.,0,N_mdm(resplevs,responseLevels)},
+		{"rng",8,2,5,0,kw_66},
 		{"seed",9,0,4,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
 		{"u_gaussian_process",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilitySearchType_egra_u)},
 		{"use_derivatives",8,0,3,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)},
 		{"x_gaussian_process",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilitySearchType_egra_x)}
 		},
-	kw_67[2] = {
+	kw_68[2] = {
 		{"gen_reliabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_gen_reliabilities)},
 		{"probabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_probabilities)}
 		},
-	kw_68[2] = {
-		{"compute",8,2,2,0,kw_67},
+	kw_69[2] = {
+		{"compute",8,2,2,0,kw_68},
 		{"num_response_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,responseLevels)}
 		},
-	kw_69[4] = {
+	kw_70[4] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{0,0,4,0,0,kw_53},
-		{"response_levels",14,2,1,0,kw_68,0.,0.,0,N_mdm(resplevs,responseLevels)}
+		{"response_levels",14,2,1,0,kw_69,0.,0.,0,N_mdm(resplevs,responseLevels)}
 		},
-	kw_70[1] = {
+	kw_71[1] = {
 		{"list_of_points",14,0,1,1,0,0.,0.,0,N_mdm(RealDL,listOfPoints)}
 		},
-	kw_71[2] = {
+	kw_72[2] = {
 		{"complementary",8,0,1,1,0,0.,0.,0,N_mdm(lit,distributionType_complementary)},
 		{"cumulative",8,0,1,1,0,0.,0.,0,N_mdm(lit,distributionType_cumulative)}
 		},
-	kw_72[1] = {
+	kw_73[1] = {
 		{"num_gen_reliability_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,genReliabilityLevels)}
 		},
-	kw_73[1] = {
+	kw_74[1] = {
 		{"num_probability_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,probabilityLevels)}
 		},
-	kw_74[2] = {
+	kw_75[2] = {
 		{"gen_reliabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_gen_reliabilities)},
 		{"probabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_probabilities)}
 		},
-	kw_75[2] = {
-		{"compute",8,2,2,0,kw_74},
+	kw_76[2] = {
+		{"compute",8,2,2,0,kw_75},
 		{"num_response_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,responseLevels)}
 		},
-	kw_76[6] = {
-		{"distribution",8,2,5,0,kw_71},
-		{"gen_reliability_levels",14,1,4,0,kw_72,0.,0.,0,N_mdm(resplevs,genReliabilityLevels)},
+	kw_77[6] = {
+		{"distribution",8,2,5,0,kw_72},
+		{"gen_reliability_levels",14,1,4,0,kw_73,0.,0.,0,N_mdm(resplevs,genReliabilityLevels)},
 		{"nip",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_nip)},
-		{"probability_levels",14,1,3,0,kw_73,0.,0.,0,N_mdm(resplevs01,probabilityLevels)},
-		{"response_levels",14,2,2,0,kw_75,0.,0.,0,N_mdm(resplevs,responseLevels)},
+		{"probability_levels",14,1,3,0,kw_74,0.,0.,0,N_mdm(resplevs01,probabilityLevels)},
+		{"response_levels",14,2,2,0,kw_76,0.,0.,0,N_mdm(resplevs,responseLevels)},
 		{"sqp",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_sqp)}
 		},
-	kw_77[2] = {
+	kw_78[2] = {
 		{"nip",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_nip)},
 		{"sqp",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_sqp)}
 		},
-	kw_78[5] = {
+	kw_79[5] = {
 		{"adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_ais)},
 		{"import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_is)},
 		{"mm_adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_mmais)},
 		{"samples",9,0,2,0,0,0.,0.,0,N_mdm(int,numSamples)},
 		{"seed",9,0,3,0,0,0.,0.,0,N_mdm(pint,randomSeed)}
 		},
-	kw_79[3] = {
+	kw_80[3] = {
 		{"first_order",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilityIntegration_first_order)},
-		{"sample_refinement",8,5,2,0,kw_78},
+		{"sample_refinement",8,5,2,0,kw_79},
 		{"second_order",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilityIntegration_second_order)}
 		},
-	kw_80[9] = {
+	kw_81[9] = {
 		{"nip",8,0,2,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_nip)},
 		{"no_approx",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilitySearchType_no_approx)},
 		{"sqp",8,0,2,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_sqp)},
@@ -473,106 +477,106 @@ static KeyWord
 		{"x_taylor_mpp",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilitySearchType_amv_plus_x)},
 		{"x_two_point",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilitySearchType_tana_x)}
 		},
-	kw_81[1] = {
+	kw_82[1] = {
 		{"num_reliability_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,reliabilityLevels)}
 		},
-	kw_82[3] = {
+	kw_83[3] = {
 		{"gen_reliabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_gen_reliabilities)},
 		{"probabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_probabilities)},
 		{"reliabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_reliabilities)}
 		},
-	kw_83[2] = {
-		{"compute",8,3,2,0,kw_82},
+	kw_84[2] = {
+		{"compute",8,3,2,0,kw_83},
 		{"num_response_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,responseLevels)}
 		},
-	kw_84[5] = {
-		{0,0,3,0,0,kw_62},
-		{"integration",8,3,2,0,kw_79},
-		{"mpp_search",8,9,1,0,kw_80},
-		{"reliability_levels",14,1,4,0,kw_81,0.,0.,0,N_mdm(resplevs,reliabilityLevels)},
-		{"response_levels",14,2,3,0,kw_83,0.,0.,0,N_mdm(resplevs,responseLevels)}
+	kw_85[5] = {
+		{0,0,3,0,0,kw_63},
+		{"integration",8,3,2,0,kw_80},
+		{"mpp_search",8,9,1,0,kw_81},
+		{"reliability_levels",14,1,4,0,kw_82,0.,0.,0,N_mdm(resplevs,reliabilityLevels)},
+		{"response_levels",14,2,3,0,kw_84,0.,0.,0,N_mdm(resplevs,responseLevels)}
 		},
-	kw_85[2] = {
+	kw_86[2] = {
 		{"num_offspring",0x19,0,2,0,0,0.,0.,0,N_mdm(pintz,numOffspring)},
 		{"num_parents",0x19,0,1,0,0,0.,0.,0,N_mdm(pintz,numParents)}
 		},
-	kw_86[5] = {
+	kw_87[5] = {
 		{"crossover_rate",10,0,2,0,0,0.,0.,0,N_mdm(litz,3crossoverType_null_crossover)},
 		{"multi_point_binary",9,0,1,1,0,0.,0.,0,N_mdm(ilit2p,3crossoverType_multi_point_binary)},
 		{"multi_point_parameterized_binary",9,0,1,1,0,0.,0.,0,N_mdm(ilit2p,3crossoverType_multi_point_parameterized_binary)},
 		{"multi_point_real",9,0,1,1,0,0.,0.,0,N_mdm(ilit2p,3crossoverType_multi_point_real)},
-		{"shuffle_random",8,2,1,1,kw_85,0.,0.,0,N_mdm(litc,3crossoverType_shuffle_random)}
+		{"shuffle_random",8,2,1,1,kw_86,0.,0.,0,N_mdm(litc,3crossoverType_shuffle_random)}
 		},
-	kw_87[3] = {
+	kw_88[3] = {
 		{"flat_file",11,0,1,1,0,0.,0.,0,N_mdm(slit2,3initializationType_flat_file)},
 		{"simple_random",8,0,1,1,0,0.,0.,0,N_mdm(lit,initializationType_random)},
 		{"unique_random",8,0,1,1,0,0.,0.,0,N_mdm(lit,initializationType_unique_random)}
 		},
-	kw_88[1] = {
+	kw_89[1] = {
 		{"mutation_scale",10,0,1,0,0,0.,0.,0,N_mdm(Real01,mutationScale)}
 		},
-	kw_89[6] = {
+	kw_90[6] = {
 		{"bit_random",8,0,1,1,0,0.,0.,0,N_mdm(lit,mutationType_bit_random)},
 		{"mutation_rate",10,0,2,0,0,0.,0.,0,N_mdm(litz,3mutationType_null_mutation)},
-		{"offset_cauchy",8,1,1,1,kw_88,0.,0.,0,N_mdm(litc,3mutationType_offset_cauchy)},
-		{"offset_normal",8,1,1,1,kw_88,0.,0.,0,N_mdm(litc,3mutationType_offset_normal)},
-		{"offset_uniform",8,1,1,1,kw_88,0.,0.,0,N_mdm(litc,3mutationType_offset_uniform)},
+		{"offset_cauchy",8,1,1,1,kw_89,0.,0.,0,N_mdm(litc,3mutationType_offset_cauchy)},
+		{"offset_normal",8,1,1,1,kw_89,0.,0.,0,N_mdm(litc,3mutationType_offset_normal)},
+		{"offset_uniform",8,1,1,1,kw_89,0.,0.,0,N_mdm(litc,3mutationType_offset_uniform)},
 		{"replace_uniform",8,0,1,1,0,0.,0.,0,N_mdm(lit,mutationType_replace_uniform)}
 		},
-	kw_90[7] = {
-		{"crossover_type",8,5,5,0,kw_86},
-		{"initialization_type",8,3,4,0,kw_87},
+	kw_91[7] = {
+		{"crossover_type",8,5,5,0,kw_87},
+		{"initialization_type",8,3,4,0,kw_88},
 		{"log_file",11,0,2,0,0,0.,0.,0,N_mdm(str,logFile)},
-		{"mutation_type",8,6,6,0,kw_89},
+		{"mutation_type",8,6,6,0,kw_90},
 		{"population_size",9,0,1,0,0,0.,0.,0,N_mdm(nnint,populationSize)},
 		{"print_each_pop",8,0,3,0,0,0.,0.,0,N_mdm(true,printPopFlag)},
 		{"seed",9,0,7,0,0,0.,0.,0,N_mdm(pint,randomSeed)}
 		},
-	kw_91[3] = {
+	kw_92[3] = {
 		{"metric_tracker",8,0,1,1,0,0.,0.,0,N_mdm(lit,convergenceType_metric_tracker)},
 		{"num_generations",0x29,0,3,0,0,0.,0.,0,N_mdm(nnintz,numGenerations)},
 		{"percent_change",10,0,2,0,0,0.,0.,0,N_mdm(Realz,convergenceTolerance)}
 		},
-	kw_92[2] = {
+	kw_93[2] = {
 		{"domination_count",8,0,1,1,0,0.,0.,0,N_mdm(lit,fitnessType_domination_count)},
 		{"layer_rank",8,0,1,1,0,0.,0.,0,N_mdm(lit,fitnessType_layer_rank)}
 		},
-	kw_93[2] = {
+	kw_94[2] = {
 		{"distance",14,0,1,1,0,0.,0.,0,N_mdm(RealLlit,3nichingType_distance)},
 		{"radial",14,0,1,1,0,0.,0.,0,N_mdm(RealLlit,3nichingType_radial)}
 		},
-	kw_94[1] = {
+	kw_95[1] = {
 		{"orthogonal_distance",14,0,1,1,0,0.,0.,0,N_mdm(RealLlit,3postProcessorType_distance_postprocessor)}
 		},
-	kw_95[2] = {
+	kw_96[2] = {
 		{"shrinkage_fraction",10,0,1,0,0,0.,0.,0,N_mdm(Real01,shrinkagePercent)},
 		{"shrinkage_percentage",2,0,1,0,0,0.,0.,-1,N_mdm(Real01,shrinkagePercent)}
 		},
-	kw_96[4] = {
-		{"below_limit",10,2,1,1,kw_95,0.,0.,0,N_mdm(litp,3replacementType_below_limit)},
+	kw_97[4] = {
+		{"below_limit",10,2,1,1,kw_96,0.,0.,0,N_mdm(litp,3replacementType_below_limit)},
 		{"elitist",8,0,1,1,0,0.,0.,0,N_mdm(lit,replacementType_elitist)},
 		{"roulette_wheel",8,0,1,1,0,0.,0.,0,N_mdm(lit,replacementType_roulette_wheel)},
 		{"unique_roulette_wheel",8,0,1,1,0,0.,0.,0,N_mdm(lit,replacementType_unique_roulette_wheel)}
 		},
-	kw_97[7] = {
+	kw_98[7] = {
 		{0,0,9,0,0,kw_10},
-		{0,0,7,0,0,kw_90},
-		{"convergence_type",8,3,4,0,kw_91},
-		{"fitness_type",8,2,1,0,kw_92},
-		{"niching_type",8,2,3,0,kw_93},
-		{"postprocessor_type",8,1,5,0,kw_94},
-		{"replacement_type",8,4,2,0,kw_96}
+		{0,0,7,0,0,kw_91},
+		{"convergence_type",8,3,4,0,kw_92},
+		{"fitness_type",8,2,1,0,kw_93},
+		{"niching_type",8,2,3,0,kw_94},
+		{"postprocessor_type",8,1,5,0,kw_95},
+		{"replacement_type",8,4,2,0,kw_97}
 		},
-	kw_98[1] = {
+	kw_99[1] = {
 		{"partitions",13,0,1,1,0,0.,0.,0,N_mdm(ushintL,varPartitions)}
 		},
-	kw_99[4] = {
+	kw_100[4] = {
 		{"min_boxsize_limit",10,0,2,0,0,0.,0.,0,N_mdm(Real,minBoxSize)},
 		{"solution_accuracy",2,0,1,0,0,0.,0.,1,N_mdm(Real,solnTarget)},
 		{"solution_target",10,0,1,0,0,0.,0.,0,N_mdm(Real,solnTarget)},
 		{"volume_boxsize_limit",10,0,3,0,0,0.,0.,0,N_mdm(Real,volBoxSize)}
 		},
-	kw_100[9] = {
+	kw_101[9] = {
 		{"absolute_conv_tol",10,0,2,0,0,0.,0.,0,N_mdm(Real,absConvTol)},
 		{"covariance",9,0,8,0,0,0.,0.,0,N_mdm(int,covarianceType)},
 		{"false_conv_tol",10,0,6,0,0,0.,0.,0,N_mdm(Real,falseConvTol)},
@@ -583,258 +587,259 @@ static KeyWord
 		{"singular_radius",10,0,5,0,0,0.,0.,0,N_mdm(Real,singRadius)},
 		{"x_conv_tol",10,0,3,0,0,0.,0.,0,N_mdm(Real,xConvTol)}
 		},
-	kw_101[1] = {
+	kw_102[1] = {
 		{"num_reliability_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,reliabilityLevels)}
 		},
-	kw_102[3] = {
+	kw_103[3] = {
 		{"gen_reliabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_gen_reliabilities)},
 		{"probabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_probabilities)},
 		{"reliabilities",8,0,1,1,0,0.,0.,0,N_mdm(lit,responseLevelMappingType_reliabilities)}
 		},
-	kw_103[2] = {
-		{"compute",8,3,2,0,kw_102},
+	kw_104[2] = {
+		{"compute",8,3,2,0,kw_103},
 		{"num_response_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,responseLevels)}
 		},
-	kw_104[2] = {
-		{"reliability_levels",14,1,1,0,kw_101,0.,0.,0,N_mdm(resplevs,reliabilityLevels)},
-		{"response_levels",14,2,2,0,kw_103,0.,0.,0,N_mdm(resplevs,responseLevels)}
-		},
 	kw_105[2] = {
+		{"reliability_levels",14,1,1,0,kw_102,0.,0.,0,N_mdm(resplevs,reliabilityLevels)},
+		{"response_levels",14,2,2,0,kw_104,0.,0.,0,N_mdm(resplevs,responseLevels)}
+		},
+	kw_106[2] = {
 		{"all_variables",8,0,1,0,0,0.,0.,0,N_mdm(true,allVarsFlag)},
 		{"fixed_seed",8,0,2,0,0,0.,0.,0,N_mdm(true,fixedSeedFlag)}
 		},
-	kw_106[2] = {
+	kw_107[2] = {
 		{"expansion_order",13,0,1,1,0,0.,0.,0,N_mdm(ushintL,expansionOrder)},
 		{"expansion_terms",9,0,1,1,0,0.,0.,0,N_mdm(int,expansionTerms)}
 		},
-	kw_107[5] = {
-		{0,0,2,0,0,kw_106},
+	kw_108[5] = {
+		{0,0,2,0,0,kw_107},
 		{"reuse_points",8,0,1,0,0,0.,0.,0,N_mdm(lit,collocPtReuse_all)},
 		{"reuse_samples",0,0,1,0,0,0.,0.,-1,N_mdm(lit,collocPtReuse_all)},
 		{"tensor_grid",8,0,3,0,0,0.,0.,0,N_mdm(true,probCollocFlag)},
 		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
 		},
-	kw_108[2] = {
-		{0,0,2,0,0,kw_106},
+	kw_109[2] = {
+		{0,0,2,0,0,kw_107},
 		{"incremental_lhs",8,0,1,0,0,0.,0.,0,N_mdm(lit,expansionSampleType_incremental_lhs)}
 		},
-	kw_109[3] = {
+	kw_110[3] = {
 		{"decay",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_SPECTRAL_DECAY)},
 		{"generalized",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)},
 		{"sobol",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_TOTAL_SOBOL)}
 		},
-	kw_110[2] = {
-		{"dimension_adaptive",8,3,1,1,kw_109},
+	kw_111[2] = {
+		{"dimension_adaptive",8,3,1,1,kw_110},
 		{"uniform",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_UNIFORM_CONTROL)}
 		},
-	kw_111[2] = {
+	kw_112[2] = {
 		{"nested",8,0,1,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
 		{"non_nested",8,0,1,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)}
 		},
-	kw_112[3] = {
+	kw_113[3] = {
 		{"adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_ais)},
 		{"import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_is)},
 		{"mm_adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_mmais)}
 		},
-	kw_113[2] = {
+	kw_114[2] = {
 		{"lhs",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_lhs)},
 		{"random",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_random)}
 		},
-	kw_114[2] = {
-		{0,0,2,0,0,kw_111},
+	kw_115[2] = {
+		{0,0,2,0,0,kw_112},
 		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,sparseGridDimPref)}
 		},
-	kw_115[2] = {
+	kw_116[2] = {
 		{"drop_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)},
 		{"univariate_effects",8,0,1,0,0,0.,0.,0,N_mdm(type,vbdControl_UNIVARIATE_VBD)}
 		},
-	kw_116[18] = {
+	kw_117[18] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{0,0,4,0,0,kw_53},
-		{0,0,2,0,0,kw_104},
 		{0,0,2,0,0,kw_105},
+		{0,0,2,0,0,kw_106},
 		{"askey",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_ASKEY_U)},
-		{"collocation_points",9,4,3,1,kw_107,0.,0.,0,N_mdm(int,collocationPoints)},
-		{"collocation_ratio",10,4,3,1,kw_107,0.,0.,0,N_mdm(Realp,collocationRatio)},
+		{"collocation_points",9,4,3,1,kw_108,0.,0.,0,N_mdm(int,collocationPoints)},
+		{"collocation_ratio",10,4,3,1,kw_108,0.,0.,0,N_mdm(Realp,collocationRatio)},
 		{"cubature_integrand",9,0,3,1,0,0.,0.,0,N_mdm(ushint,cubIntOrder)},
-		{"expansion_import_file",11,2,3,1,kw_106,0.,0.,0,N_mdm(str,expansionImportFile)},
-		{"expansion_samples",9,1,3,1,kw_108,0.,0.,0,N_mdm(int,expansionSamples)},
-		{"p_refinement",8,2,1,0,kw_110,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
-		{"quadrature_order",13,2,3,1,kw_111,0.,0.,0,N_mdm(ushintL,quadratureOrder)},
-		{"sample_refinement",8,3,5,0,kw_112},
-		{"sample_type",8,2,6,0,kw_113},
-		{"sparse_grid_level",9,1,3,1,kw_114,0.,0.,0,N_mdm(ushint,sparseGridLevel)},
-		{"variance_based_decomp",8,2,4,0,kw_115,0.,0.,0,N_mdm(true,vbdFlag)},
+		{"expansion_import_file",11,2,3,1,kw_107,0.,0.,0,N_mdm(str,expansionImportFile)},
+		{"expansion_samples",9,1,3,1,kw_109,0.,0.,0,N_mdm(int,expansionSamples)},
+		{"p_refinement",8,2,1,0,kw_111,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
+		{"quadrature_order",13,2,3,1,kw_112,0.,0.,0,N_mdm(ushintL,quadratureOrder)},
+		{"sample_refinement",8,3,5,0,kw_113},
+		{"sample_type",8,2,6,0,kw_114},
+		{"sparse_grid_level",9,1,3,1,kw_115,0.,0.,0,N_mdm(ushint,sparseGridLevel)},
+		{"variance_based_decomp",8,2,4,0,kw_116,0.,0.,0,N_mdm(true,vbdFlag)},
 		{"wiener",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_STD_NORMAL_U)}
 		},
-	kw_117[1] = {
+	kw_118[1] = {
 		{"previous_samples",9,0,1,1,0,0.,0.,0,N_mdm(int,previousSamples)}
 		},
-	kw_118[4] = {
-		{"incremental_lhs",8,1,1,1,kw_117,0.,0.,0,N_mdm(lit,sampleType_incremental_lhs)},
-		{"incremental_random",8,1,1,1,kw_117,0.,0.,0,N_mdm(lit,sampleType_incremental_random)},
+	kw_119[4] = {
+		{"incremental_lhs",8,1,1,1,kw_118,0.,0.,0,N_mdm(lit,sampleType_incremental_lhs)},
+		{"incremental_random",8,1,1,1,kw_118,0.,0.,0,N_mdm(lit,sampleType_incremental_random)},
 		{"lhs",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_lhs)},
 		{"random",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_random)}
 		},
-	kw_119[1] = {
+	kw_120[1] = {
 		{"drop_tolerance",10,0,1,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)}
 		},
-	kw_120[7] = {
+	kw_121[7] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{0,0,4,0,0,kw_53},
-		{0,0,2,0,0,kw_104},
 		{0,0,2,0,0,kw_105},
-		{"sample_type",8,4,1,0,kw_118},
-		{"variance_based_decomp",8,1,2,0,kw_119,0.,0.,0,N_mdm(true,vbdFlag)}
+		{0,0,2,0,0,kw_106},
+		{"sample_type",8,4,1,0,kw_119},
+		{"variance_based_decomp",8,1,2,0,kw_120,0.,0.,0,N_mdm(true,vbdFlag)}
 		},
-	kw_121[2] = {
+	kw_122[2] = {
 		{"generalized",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)},
 		{"sobol",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_TOTAL_SOBOL)}
 		},
-	kw_122[2] = {
-		{"dimension_adaptive",8,2,1,1,kw_121},
+	kw_123[2] = {
+		{"dimension_adaptive",8,2,1,1,kw_122},
 		{"uniform",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_UNIFORM_CONTROL)}
 		},
-	kw_123[3] = {
+	kw_124[3] = {
 		{"adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_ais)},
 		{"import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_is)},
 		{"mm_adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_mmais)}
 		},
-	kw_124[2] = {
+	kw_125[2] = {
 		{"lhs",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_lhs)},
 		{"random",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_random)}
 		},
-	kw_125[1] = {
+	kw_126[1] = {
 		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,sparseGridDimPref)}
 		},
-	kw_126[2] = {
+	kw_127[2] = {
 		{"drop_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)},
 		{"univariate_effects",8,0,1,0,0,0.,0.,0,N_mdm(type,vbdControl_UNIVARIATE_VBD)}
 		},
-	kw_127[17] = {
+	kw_128[18] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{0,0,4,0,0,kw_53},
-		{0,0,2,0,0,kw_104},
 		{0,0,2,0,0,kw_105},
+		{0,0,2,0,0,kw_106},
 		{"askey",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_ASKEY_U)},
-		{"h_refinement",8,2,1,0,kw_122,0.,0.,0,N_mdm(type,refinementType_H_REFINEMENT)},
-		{"nested",8,0,4,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
-		{"non_nested",8,0,4,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)},
-		{"p_refinement",8,2,1,0,kw_122,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
+		{"h_refinement",8,2,1,0,kw_123,0.,0.,0,N_mdm(type,refinementType_H_REFINEMENT)},
+		{"nested",8,0,5,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
+		{"non_nested",8,0,5,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)},
+		{"p_refinement",8,2,1,0,kw_123,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
 		{"piecewise",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_PIECEWISE_U)},
 		{"quadrature_order",13,0,3,1,0,0.,0.,0,N_mdm(ushintL,quadratureOrder)},
-		{"sample_refinement",8,3,6,0,kw_123},
-		{"sample_type",8,2,7,0,kw_124},
-		{"sparse_grid_level",9,1,3,1,kw_125,0.,0.,0,N_mdm(ushint,sparseGridLevel)},
-		{"variance_based_decomp",8,2,5,0,kw_126,0.,0.,0,N_mdm(true,vbdFlag)},
+		{"sample_refinement",8,3,7,0,kw_124},
+		{"sample_type",8,2,8,0,kw_125},
+		{"sparse_grid_level",9,1,3,1,kw_126,0.,0.,0,N_mdm(ushint,sparseGridLevel)},
+		{"use_derivatives",8,0,4,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)},
+		{"variance_based_decomp",8,2,6,0,kw_127,0.,0.,0,N_mdm(true,vbdFlag)},
 		{"wiener",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_STD_NORMAL_U)}
 		},
-	kw_128[1] = {
+	kw_129[1] = {
 		{"misc_options",15,0,1,0,0,0.,0.,0,N_mdm(strL,miscOptions)}
 		},
-	kw_129[3] = {
+	kw_130[3] = {
 		{"function_precision",10,0,2,0,0,0.,0.,0,N_mdm(Real,functionPrecision)},
 		{"linesearch_tolerance",10,0,3,0,0,0.,0.,0,N_mdm(Real,lineSearchTolerance)},
 		{"verify_level",9,0,1,0,0,0.,0.,0,N_mdm(int,verifyLevel)}
 		},
-	kw_130[3] = {
+	kw_131[3] = {
 		{0,0,9,0,0,kw_10},
-		{0,0,3,0,0,kw_129},
+		{0,0,3,0,0,kw_130},
 		{""}
 		},
-	kw_131[2] = {
+	kw_132[2] = {
 		{"gradient_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,gradientTolerance)},
 		{"max_step",10,0,1,0,0,0.,0.,0,N_mdm(Real,maxStep)}
 		},
-	kw_132[3] = {
+	kw_133[3] = {
 		{0,0,9,0,0,kw_10},
-		{0,0,2,0,0,kw_131},
+		{0,0,2,0,0,kw_132},
 		{""}
 		},
-	kw_133[2] = {
+	kw_134[2] = {
 		{0,0,9,0,0,kw_10},
 		{"search_scheme_size",9,0,1,0,0,0.,0.,0,N_mdm(int,searchSchemeSize)}
 		},
-	kw_134[4] = {
+	kw_135[4] = {
 		{"gradient_based_line_search",8,0,1,1,0,0.,0.,0,N_mdm(lit,searchMethod_gradient_based_line_search)},
 		{"tr_pds",8,0,1,1,0,0.,0.,0,N_mdm(lit,searchMethod_tr_pds)},
 		{"trust_region",8,0,1,1,0,0.,0.,0,N_mdm(lit,searchMethod_trust_region)},
 		{"value_based_line_search",8,0,1,1,0,0.,0.,0,N_mdm(lit,searchMethod_value_based_line_search)}
 		},
-	kw_135[7] = {
+	kw_136[7] = {
 		{0,0,9,0,0,kw_10},
-		{0,0,2,0,0,kw_131},
+		{0,0,2,0,0,kw_132},
 		{"centering_parameter",10,0,5,0,0,0.,0.,0,N_mdm(Real,centeringParam)},
 		{"central_path",11,0,3,0,0,0.,0.,0,N_mdm(meritFn,centralPath)},
 		{"merit_function",11,0,2,0,0,0.,0.,0,N_mdm(meritFn,meritFn)},
-		{"search_method",8,4,1,0,kw_134},
+		{"search_method",8,4,1,0,kw_135},
 		{"steplength_to_boundary",10,0,4,0,0,0.,0.,0,N_mdm(Real,stepLenToBoundary)}
 		},
-	kw_136[4] = {
+	kw_137[4] = {
 		{"debug",8,0,1,1,0,0.,0.,0,N_mdm(type,methodOutput_DEBUG_OUTPUT)},
 		{"quiet",8,0,1,1,0,0.,0.,0,N_mdm(type,methodOutput_QUIET_OUTPUT)},
 		{"silent",8,0,1,1,0,0.,0.,0,N_mdm(type,methodOutput_SILENT_OUTPUT)},
 		{"verbose",8,0,1,1,0,0.,0.,0,N_mdm(type,methodOutput_VERBOSE_OUTPUT)}
 		},
-	kw_137[3] = {
+	kw_138[3] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{"partitions",13,0,1,0,0,0.,0.,0,N_mdm(ushintL,varPartitions)}
 		},
-	kw_138[4] = {
+	kw_139[4] = {
 		{"converge_order",8,0,1,1,0,0.,0.,0,N_mdm(lit,subMethodName_converge_order)},
 		{"converge_qoi",8,0,1,1,0,0.,0.,0,N_mdm(lit,subMethodName_converge_qoi)},
 		{"estimate_order",8,0,1,1,0,0.,0.,0,N_mdm(lit,subMethodName_estimate_order)},
 		{"refinement_rate",10,0,2,0,0,0.,0.,0,N_mdm(Real,refinementRate)}
-		},
-	kw_139[2] = {
-		{"num_generations",0x29,0,2,0,0,0.,0.,0,N_mdm(nnintz,numGenerations)},
-		{"percent_change",10,0,1,0,0,0.,0.,0,N_mdm(Realz,convergenceTolerance)}
 		},
 	kw_140[2] = {
 		{"num_generations",0x29,0,2,0,0,0.,0.,0,N_mdm(nnintz,numGenerations)},
 		{"percent_change",10,0,1,0,0,0.,0.,0,N_mdm(Realz,convergenceTolerance)}
 		},
 	kw_141[2] = {
-		{"average_fitness_tracker",8,2,1,1,kw_139,0.,0.,0,N_mdm(lit,convergenceType_average_fitness_tracker)},
-		{"best_fitness_tracker",8,2,1,1,kw_140,0.,0.,0,N_mdm(lit,convergenceType_best_fitness_tracker)}
+		{"num_generations",0x29,0,2,0,0,0.,0.,0,N_mdm(nnintz,numGenerations)},
+		{"percent_change",10,0,1,0,0,0.,0.,0,N_mdm(Realz,convergenceTolerance)}
 		},
 	kw_142[2] = {
+		{"average_fitness_tracker",8,2,1,1,kw_140,0.,0.,0,N_mdm(lit,convergenceType_average_fitness_tracker)},
+		{"best_fitness_tracker",8,2,1,1,kw_141,0.,0.,0,N_mdm(lit,convergenceType_best_fitness_tracker)}
+		},
+	kw_143[2] = {
 		{"constraint_penalty",10,0,2,0,0,0.,0.,0,N_mdm(Realp,constraintTolerance)},
 		{"merit_function",8,0,1,1,0,0.,0.,0,N_mdm(lit,fitnessType_merit_function)}
 		},
-	kw_143[4] = {
+	kw_144[4] = {
 		{"elitist",8,0,1,1,0,0.,0.,0,N_mdm(lit,replacementType_elitist)},
 		{"favor_feasible",8,0,1,1,0,0.,0.,0,N_mdm(lit,replacementType_favor_feasible)},
 		{"roulette_wheel",8,0,1,1,0,0.,0.,0,N_mdm(lit,replacementType_roulette_wheel)},
 		{"unique_roulette_wheel",8,0,1,1,0,0.,0.,0,N_mdm(lit,replacementType_unique_roulette_wheel)}
 		},
-	kw_144[5] = {
+	kw_145[5] = {
 		{0,0,9,0,0,kw_10},
-		{0,0,7,0,0,kw_90},
-		{"convergence_type",8,2,3,0,kw_141},
-		{"fitness_type",8,2,1,0,kw_142},
-		{"replacement_type",8,4,2,0,kw_143}
+		{0,0,7,0,0,kw_91},
+		{"convergence_type",8,2,3,0,kw_142},
+		{"fitness_type",8,2,1,0,kw_143},
+		{"replacement_type",8,4,2,0,kw_144}
 		},
-	kw_145[4] = {
+	kw_146[4] = {
 		{0,0,9,0,0,kw_10},
-		{0,0,3,0,0,kw_129},
+		{0,0,3,0,0,kw_130},
 		{"nlssol",8,0,1,1,0,0.,0.,0,N_mdm(lit,methodName_nlssol_sqp)},
 		{"npsol",8,0,1,1,0,0.,0.,0,N_mdm(lit,methodName_npsol_sqp)}
 		},
-	kw_146[3] = {
+	kw_147[3] = {
 		{"approx_method_name",11,0,1,1,0,0.,0.,0,N_mdm(str,subMethodName)},
 		{"approx_method_pointer",11,0,1,1,0,0.,0.,0,N_mdm(str,subMethodPointer)},
 		{"replace_points",8,0,2,0,0,0.,0.,0,N_mdm(true,surrBasedGlobalReplacePts)}
 		},
-	kw_147[2] = {
+	kw_148[2] = {
 		{"filter",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalAcceptLogic_FILTER)},
 		{"tr_ratio",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalAcceptLogic_TR_RATIO)}
 		},
-	kw_148[7] = {
+	kw_149[7] = {
 		{"augmented_lagrangian_objective",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalSubProbObj_AUGMENTED_LAGRANGIAN_OBJECTIVE)},
 		{"lagrangian_objective",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalSubProbObj_LAGRANGIAN_OBJECTIVE)},
 		{"linearized_constraints",8,0,2,2,0,0.,0.,0,N_mdm(type,surrBasedLocalSubProbCon_LINEARIZED_CONSTRAINTS)},
@@ -843,16 +848,16 @@ static KeyWord
 		{"original_primary",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalSubProbObj_ORIGINAL_PRIMARY)},
 		{"single_objective",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalSubProbObj_SINGLE_OBJECTIVE)}
 		},
-	kw_149[1] = {
+	kw_150[1] = {
 		{"homotopy",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalConstrRelax_HOMOTOPY)}
 		},
-	kw_150[4] = {
+	kw_151[4] = {
 		{"adaptive_penalty_merit",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalMeritFn_ADAPTIVE_PENALTY_MERIT)},
 		{"augmented_lagrangian_merit",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalMeritFn_AUGMENTED_LAGRANGIAN_MERIT)},
 		{"lagrangian_merit",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalMeritFn_LAGRANGIAN_MERIT)},
 		{"penalty_merit",8,0,1,1,0,0.,0.,0,N_mdm(type,surrBasedLocalMeritFn_PENALTY_MERIT)}
 		},
-	kw_151[6] = {
+	kw_152[6] = {
 		{"contract_threshold",10,0,3,0,0,0.,0.,0,N_mdm(Real,surrBasedLocalTRContractTrigger)},
 		{"contraction_factor",10,0,5,0,0,0.,0.,0,N_mdm(Real,surrBasedLocalTRContract)},
 		{"expand_threshold",10,0,4,0,0,0.,0.,0,N_mdm(Real,surrBasedLocalTRExpandTrigger)},
@@ -860,26 +865,26 @@ static KeyWord
 		{"initial_size",10,0,1,0,0,0.,0.,0,N_mdm(Real,surrBasedLocalTRInitSize)},
 		{"minimum_size",10,0,2,0,0,0.,0.,0,N_mdm(Real,surrBasedLocalTRMinSize)}
 		},
-	kw_152[10] = {
+	kw_153[10] = {
 		{0,0,9,0,0,kw_10},
-		{"acceptance_logic",8,2,7,0,kw_147},
+		{"acceptance_logic",8,2,7,0,kw_148},
 		{"approx_method_name",11,0,1,1,0,0.,0.,0,N_mdm(str,subMethodName)},
 		{"approx_method_pointer",11,0,1,1,0,0.,0.,0,N_mdm(str,subMethodPointer)},
-		{"approx_subproblem",8,7,5,0,kw_148},
-		{"constraint_relax",8,1,8,0,kw_149},
-		{"merit_function",8,4,6,0,kw_150},
+		{"approx_subproblem",8,7,5,0,kw_149},
+		{"constraint_relax",8,1,8,0,kw_150},
+		{"merit_function",8,4,6,0,kw_151},
 		{"soft_convergence_limit",9,0,2,0,0,0.,0.,0,N_mdm(int,surrBasedLocalSoftConvLimit)},
-		{"trust_region",8,6,4,0,kw_151,0.,0.,0,0,0,NIDRProblemDescDB::method_tr_final},
+		{"trust_region",8,6,4,0,kw_152,0.,0.,0,0,0,NIDRProblemDescDB::method_tr_final},
 		{"truth_surrogate_bypass",8,0,3,0,0,0.,0.,0,N_mdm(true,surrBasedLocalLayerBypass)}
 		},
-	kw_153[3] = {
+	kw_154[3] = {
 		{"final_point",14,0,1,1,0,0.,0.,0,N_mdm(RealDL,finalPoint)},
 		{"num_steps",9,0,2,2,0,0.,0.,0,N_mdm(int,numSteps)},
 		{"step_vector",14,0,1,1,0,0.,0.,0,N_mdm(RealDL,stepVector)}
 		},
-	kw_154[75] = {
+	kw_155[75] = {
 		{"asynch_pattern_search",8,9,11,1,kw_13,0.,0.,0,N_mdm(lit,methodName_asynch_pattern_search)},
-		{"bayes_calibration",8,6,11,1,kw_17,0.,0.,0,N_mdm(lit,methodName_nond_bayes_calibration)},
+		{"bayes_calibration",8,7,11,1,kw_17,0.,0.,0,N_mdm(lit,methodName_nond_bayes_calibration)},
 		{"centered_parameter_study",8,3,11,1,kw_18,0.,0.,0,N_mdm(lit,methodName_centered_parameter_study)},
 		{"coliny_apps",0,9,11,1,kw_13,0.,0.,-3,N_mdm(lit,methodName_asynch_pattern_search)},
 		{"coliny_cobyla",8,0,11,1,kw_21,0.,0.,0,N_mdm(lit,methodName_coliny_cobyla)},
@@ -903,74 +908,74 @@ static KeyWord
 		{"final_solutions",0x29,0,10,0,0,0.,0.,0,N_mdm(nnintz,numFinalSolutions)},
 		{"fsu_cvt",8,6,11,1,kw_46,0.,0.,0,N_mdm(lit,methodName_fsu_cvt)},
 		{"fsu_quasi_mc",8,10,11,1,kw_48},
-		{"global_evidence",8,3,11,1,kw_56,0.,0.,0,N_mdm(lit,methodName_nond_global_evidence)},
-		{"global_interval_est",8,3,11,1,kw_58,0.,0.,0,N_mdm(lit,methodName_nond_global_interval_est)},
-		{"global_reliability",8,7,11,1,kw_66,0.,0.,0,N_mdm(lit,methodName_nond_global_reliability)},
+		{"global_evidence",8,3,11,1,kw_57,0.,0.,0,N_mdm(lit,methodName_nond_global_evidence)},
+		{"global_interval_est",8,3,11,1,kw_59,0.,0.,0,N_mdm(lit,methodName_nond_global_interval_est)},
+		{"global_reliability",8,7,11,1,kw_67,0.,0.,0,N_mdm(lit,methodName_nond_global_reliability)},
 		{"id_method",11,0,1,0,0,0.,0.,0,N_mdm(str,idMethod)},
-		{"importance_sampling",8,1,11,1,kw_69,0.,0.,0,N_mdm(lit,methodName_nond_importance_sampling)},
-		{"list_parameter_study",8,1,11,1,kw_70,0.,0.,0,N_mdm(lit,methodName_list_parameter_study)},
-		{"local_evidence",8,6,11,1,kw_76,0.,0.,0,N_mdm(lit,methodName_nond_local_evidence)},
-		{"local_interval_est",8,2,11,1,kw_77,0.,0.,0,N_mdm(lit,methodName_nond_local_interval_est)},
-		{"local_reliability",8,4,11,1,kw_84,0.,0.,0,N_mdm(lit2,methodName_nond_local_reliability)},
+		{"importance_sampling",8,1,11,1,kw_70,0.,0.,0,N_mdm(lit,methodName_nond_importance_sampling)},
+		{"list_parameter_study",8,1,11,1,kw_71,0.,0.,0,N_mdm(lit,methodName_list_parameter_study)},
+		{"local_evidence",8,6,11,1,kw_77,0.,0.,0,N_mdm(lit,methodName_nond_local_evidence)},
+		{"local_interval_est",8,2,11,1,kw_78,0.,0.,0,N_mdm(lit,methodName_nond_local_interval_est)},
+		{"local_reliability",8,4,11,1,kw_85,0.,0.,0,N_mdm(lit2,methodName_nond_local_reliability)},
 		{"max_function_evaluations",9,0,5,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
 		{"max_iterations",9,0,4,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
 		{"model_pointer",11,0,2,0,0,0.,0.,0,N_mdm(str,modelPointer)},
-		{"moga",8,5,11,1,kw_97,0.,0.,0,N_mdm3(moga_begin,0,moga_final)},
-		{"multidim_parameter_study",8,1,11,1,kw_98,0.,0.,0,N_mdm(lit,methodName_multidim_parameter_study)},
-		{"ncsu_direct",8,4,11,1,kw_99,0.,0.,0,N_mdm(lit,methodName_ncsu_direct)},
-		{"nl2sol",8,9,11,1,kw_100,0.,0.,0,N_mdm(lit,methodName_nl2sol)},
+		{"moga",8,5,11,1,kw_98,0.,0.,0,N_mdm3(moga_begin,0,moga_final)},
+		{"multidim_parameter_study",8,1,11,1,kw_99,0.,0.,0,N_mdm(lit,methodName_multidim_parameter_study)},
+		{"ncsu_direct",8,4,11,1,kw_100,0.,0.,0,N_mdm(lit,methodName_ncsu_direct)},
+		{"nl2sol",8,9,11,1,kw_101,0.,0.,0,N_mdm(lit,methodName_nl2sol)},
 		{"nlpql_sqp",8,9,11,1,kw_10,0.,0.,0,N_mdm(lit,methodName_nlpql_sqp)},
-		{"nlssol_sqp",8,0,11,1,kw_130,0.,0.,0,N_mdm(lit,methodName_nlssol_sqp)},
-		{"nond_bayes_calibration",0,6,11,1,kw_17,0.,0.,-42,N_mdm(lit,methodName_nond_bayes_calibration)},
-		{"nond_global_evidence",0,3,11,1,kw_56,0.,0.,-19,N_mdm(lit,methodName_nond_global_evidence)},
-		{"nond_global_interval_est",0,3,11,1,kw_58,0.,0.,-19,N_mdm(lit,methodName_nond_global_interval_est)},
-		{"nond_global_reliability",0,7,11,1,kw_66,0.,0.,-19,N_mdm(lit,methodName_nond_global_reliability)},
-		{"nond_importance_sampling",0,1,11,1,kw_69,0.,0.,-18,N_mdm(lit,methodName_nond_importance_sampling)},
-		{"nond_local_evidence",0,6,11,1,kw_76,0.,0.,-17,N_mdm(lit,methodName_nond_local_evidence)},
-		{"nond_local_interval_est",0,2,11,1,kw_77,0.,0.,-17,N_mdm(lit,methodName_nond_local_interval_est)},
-		{"nond_local_reliability",0,4,11,1,kw_84,0.,0.,-17,N_mdm(lit2,methodName_nond_local_reliability)},
-		{"nond_polynomial_chaos",0,13,11,1,kw_116,0.,0.,12,N_mdm(lit,methodName_nond_polynomial_chaos)},
-		{"nond_sampling",0,2,11,1,kw_120,0.,0.,14,N_mdm(lit,methodName_nond_sampling)},
-		{"nond_stoch_collocation",0,12,11,1,kw_127,0.,0.,18,N_mdm(lit,methodName_nond_stoch_collocation)},
-		{"nonlinear_cg",8,1,11,1,kw_128,0.,0.,0,N_mdm(lit,methodName_nonlinear_cg)},
-		{"npsol_sqp",8,0,11,1,kw_130,0.,0.,0,N_mdm(lit,methodName_npsol_sqp)},
-		{"optpp_cg",8,0,11,1,kw_132,0.,0.,0,N_mdm(lit,methodName_optpp_cg)},
-		{"optpp_fd_newton",8,5,11,1,kw_135,0.,0.,0,N_mdf(litpp,methodName_optpp_fd_newton)},
-		{"optpp_g_newton",8,5,11,1,kw_135,0.,0.,0,N_mdf(litpp,methodName_optpp_g_newton)},
-		{"optpp_newton",8,5,11,1,kw_135,0.,0.,0,N_mdf(litpp,methodName_optpp_newton)},
-		{"optpp_pds",8,1,11,1,kw_133,0.,0.,0,N_mdm(lit,methodName_optpp_pds)},
-		{"optpp_q_newton",8,5,11,1,kw_135,0.,0.,0,N_mdf(litpp,methodName_optpp_q_newton)},
-		{"output",8,4,3,0,kw_136},
-		{"polynomial_chaos",8,13,11,1,kw_116,0.,0.,0,N_mdm(lit,methodName_nond_polynomial_chaos)},
-		{"psuade_moat",8,1,11,1,kw_137,0.,0.,0,N_mdm(lit,methodName_psuade_moat)},
-		{"richardson_extrap",8,4,11,1,kw_138,0.,0.,0,N_mdm(lit,methodName_richardson_extrap)},
-		{"sampling",8,2,11,1,kw_120,0.,0.,0,N_mdm(lit,methodName_nond_sampling)},
+		{"nlssol_sqp",8,0,11,1,kw_131,0.,0.,0,N_mdm(lit,methodName_nlssol_sqp)},
+		{"nond_bayes_calibration",0,7,11,1,kw_17,0.,0.,-42,N_mdm(lit,methodName_nond_bayes_calibration)},
+		{"nond_global_evidence",0,3,11,1,kw_57,0.,0.,-19,N_mdm(lit,methodName_nond_global_evidence)},
+		{"nond_global_interval_est",0,3,11,1,kw_59,0.,0.,-19,N_mdm(lit,methodName_nond_global_interval_est)},
+		{"nond_global_reliability",0,7,11,1,kw_67,0.,0.,-19,N_mdm(lit,methodName_nond_global_reliability)},
+		{"nond_importance_sampling",0,1,11,1,kw_70,0.,0.,-18,N_mdm(lit,methodName_nond_importance_sampling)},
+		{"nond_local_evidence",0,6,11,1,kw_77,0.,0.,-17,N_mdm(lit,methodName_nond_local_evidence)},
+		{"nond_local_interval_est",0,2,11,1,kw_78,0.,0.,-17,N_mdm(lit,methodName_nond_local_interval_est)},
+		{"nond_local_reliability",0,4,11,1,kw_85,0.,0.,-17,N_mdm(lit2,methodName_nond_local_reliability)},
+		{"nond_polynomial_chaos",0,13,11,1,kw_117,0.,0.,12,N_mdm(lit,methodName_nond_polynomial_chaos)},
+		{"nond_sampling",0,2,11,1,kw_121,0.,0.,14,N_mdm(lit,methodName_nond_sampling)},
+		{"nond_stoch_collocation",0,13,11,1,kw_128,0.,0.,18,N_mdm(lit,methodName_nond_stoch_collocation)},
+		{"nonlinear_cg",8,1,11,1,kw_129,0.,0.,0,N_mdm(lit,methodName_nonlinear_cg)},
+		{"npsol_sqp",8,0,11,1,kw_131,0.,0.,0,N_mdm(lit,methodName_npsol_sqp)},
+		{"optpp_cg",8,0,11,1,kw_133,0.,0.,0,N_mdm(lit,methodName_optpp_cg)},
+		{"optpp_fd_newton",8,5,11,1,kw_136,0.,0.,0,N_mdf(litpp,methodName_optpp_fd_newton)},
+		{"optpp_g_newton",8,5,11,1,kw_136,0.,0.,0,N_mdf(litpp,methodName_optpp_g_newton)},
+		{"optpp_newton",8,5,11,1,kw_136,0.,0.,0,N_mdf(litpp,methodName_optpp_newton)},
+		{"optpp_pds",8,1,11,1,kw_134,0.,0.,0,N_mdm(lit,methodName_optpp_pds)},
+		{"optpp_q_newton",8,5,11,1,kw_136,0.,0.,0,N_mdf(litpp,methodName_optpp_q_newton)},
+		{"output",8,4,3,0,kw_137},
+		{"polynomial_chaos",8,13,11,1,kw_117,0.,0.,0,N_mdm(lit,methodName_nond_polynomial_chaos)},
+		{"psuade_moat",8,1,11,1,kw_138,0.,0.,0,N_mdm(lit,methodName_psuade_moat)},
+		{"richardson_extrap",8,4,11,1,kw_139,0.,0.,0,N_mdm(lit,methodName_richardson_extrap)},
+		{"sampling",8,2,11,1,kw_121,0.,0.,0,N_mdm(lit,methodName_nond_sampling)},
 		{"scaling",8,0,9,0,0,0.,0.,0,N_mdm(true,methodScaling)},
-		{"soga",8,3,11,1,kw_144,0.,0.,0,N_mdm3(soga_begin,0,soga_final)},
+		{"soga",8,3,11,1,kw_145,0.,0.,0,N_mdm3(soga_begin,0,soga_final)},
 		{"speculative",8,0,6,0,0,0.,0.,0,N_mdm(true,speculativeFlag)},
-		{"stanford",8,2,11,1,kw_145},
-		{"stoch_collocation",8,12,11,1,kw_127,0.,0.,0,N_mdm(lit,methodName_nond_stoch_collocation)},
-		{"surrogate_based_global",8,3,11,1,kw_146,0.,0.,0,N_mdm(lit,methodName_surrogate_based_global)},
-		{"surrogate_based_local",8,9,11,1,kw_152,0.,0.,0,N_mdm(lit,methodName_surrogate_based_local)},
-		{"vector_parameter_study",8,3,11,1,kw_153,0.,0.,0,N_mdm(lit,methodName_vector_parameter_study)}
+		{"stanford",8,2,11,1,kw_146},
+		{"stoch_collocation",8,13,11,1,kw_128,0.,0.,0,N_mdm(lit,methodName_nond_stoch_collocation)},
+		{"surrogate_based_global",8,3,11,1,kw_147,0.,0.,0,N_mdm(lit,methodName_surrogate_based_global)},
+		{"surrogate_based_local",8,9,11,1,kw_153,0.,0.,0,N_mdm(lit,methodName_surrogate_based_local)},
+		{"vector_parameter_study",8,3,11,1,kw_154,0.,0.,0,N_mdm(lit,methodName_vector_parameter_study)}
 		},
-	kw_155[1] = {
+	kw_156[1] = {
 		{"optional_interface_responses_pointer",11,0,1,0,0,0.,0.,0,N_mom(str,optionalInterfRespPointer)}
 		},
-	kw_156[4] = {
+	kw_157[4] = {
 		{"primary_response_mapping",14,0,3,0,0,0.,0.,0,N_mom(RealDL,primaryRespCoeffs)},
 		{"primary_variable_mapping",15,0,1,0,0,0.,0.,0,N_mom(strL,primaryVarMaps)},
 		{"secondary_response_mapping",14,0,4,0,0,0.,0.,0,N_mom(RealDL,secondaryRespCoeffs)},
 		{"secondary_variable_mapping",15,0,2,0,0,0.,0.,0,N_mom(strL,secondaryVarMaps)}
 		},
-	kw_157[2] = {
-		{"optional_interface_pointer",11,1,1,0,kw_155,0.,0.,0,N_mom(str,interfacePointer)},
-		{"sub_method_pointer",11,4,2,1,kw_156,0.,0.,0,N_mom(str,subMethodPointer)}
+	kw_158[2] = {
+		{"optional_interface_pointer",11,1,1,0,kw_156,0.,0.,0,N_mom(str,interfacePointer)},
+		{"sub_method_pointer",11,4,2,1,kw_157,0.,0.,0,N_mom(str,subMethodPointer)}
 		},
-	kw_158[1] = {
+	kw_159[1] = {
 		{"interface_pointer",11,0,1,0,0,0.,0.,0,N_mom(str,interfacePointer)}
 		},
-	kw_159[6] = {
+	kw_160[6] = {
 		{"additive",8,0,2,2,0,0.,0.,0,N_mom(lit,approxCorrectionType_additive)},
 		{"combined",8,0,2,2,0,0.,0.,0,N_mom(lit,approxCorrectionType_combined)},
 		{"first_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_1)},
@@ -978,81 +983,81 @@ static KeyWord
 		{"second_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_2)},
 		{"zeroth_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_0)}
 		},
-	kw_160[3] = {
+	kw_161[3] = {
 		{"constant",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_constant)},
 		{"linear",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_linear)},
 		{"reduced_quadratic",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_reduced_quadratic)}
 		},
-	kw_161[2] = {
+	kw_162[2] = {
 		{"point_selection",8,0,1,0,0,0.,0.,0,N_mom(true,pointSelection)},
-		{"trend",8,3,2,0,kw_160}
+		{"trend",8,3,2,0,kw_161}
 		},
-	kw_162[4] = {
+	kw_163[4] = {
 		{"constant",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_constant)},
 		{"linear",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_linear)},
 		{"quadratic",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_quadratic)},
 		{"reduced_quadratic",8,0,1,1,0,0.,0.,0,N_mom(lit,trendOrder_reduced_quadratic)}
 		},
-	kw_163[4] = {
+	kw_164[4] = {
 		{"correlation_lengths",14,0,4,0,0,0.,0.,0,N_mom(RealDL,krigingCorrelations)},
 		{"max_trials",0x19,0,3,0,0,0.,0.,0,N_mom(shint,krigingMaxTrials)},
 		{"optimization_method",11,0,2,0,0,0.,0.,0,N_mom(str,krigingOptMethod)},
-		{"trend",8,4,1,0,kw_162}
+		{"trend",8,4,1,0,kw_163}
 		},
-	kw_164[2] = {
+	kw_165[2] = {
 		{"cubic",8,0,1,1,0,0.,0.,0,N_mom(lit,marsInterpolation_cubic)},
 		{"linear",8,0,1,1,0,0.,0.,0,N_mom(lit,marsInterpolation_linear)}
 		},
-	kw_165[2] = {
-		{"interpolation",8,2,2,0,kw_164},
+	kw_166[2] = {
+		{"interpolation",8,2,2,0,kw_165},
 		{"max_bases",9,0,1,0,0,0.,0.,0,N_mom(shint,marsMaxBases)}
 		},
-	kw_166[2] = {
+	kw_167[2] = {
 		{"poly_order",9,0,1,0,0,0.,0.,0,N_mom(shint,mlsPolyOrder)},
 		{"weight_function",9,0,2,0,0,0.,0.,0,N_mom(shint,mlsWeightFunction)}
 		},
-	kw_167[3] = {
+	kw_168[3] = {
 		{"nodes",9,0,1,0,0,0.,0.,0,N_mom(shint,annNodes)},
 		{"random_weight",9,0,3,0,0,0.,0.,0,N_mom(shint,annRandomWeight)},
 		{"range",10,0,2,0,0,0.,0.,0,N_mom(Real,annRange)}
 		},
-	kw_168[3] = {
+	kw_169[3] = {
 		{"cubic",8,0,1,1,0,0.,0.,0,N_mom(order,polynomialOrder_3)},
 		{"linear",8,0,1,1,0,0.,0.,0,N_mom(order,polynomialOrder_1)},
 		{"quadratic",8,0,1,1,0,0.,0.,0,N_mom(order,polynomialOrder_2)}
 		},
-	kw_169[4] = {
+	kw_170[4] = {
 		{"bases",9,0,1,0,0,0.,0.,0,N_mom(shint,rbfBases)},
 		{"max_pts",9,0,2,0,0,0.,0.,0,N_mom(shint,rbfMaxPts)},
 		{"max_subsets",9,0,4,0,0,0.,0.,0,N_mom(shint,rbfMaxSubsets)},
 		{"min_partition",9,0,3,0,0,0.,0.,0,N_mom(shint,rbfMinPartition)}
 		},
-	kw_170[3] = {
+	kw_171[3] = {
 		{"all",8,0,1,1,0,0.,0.,0,N_mom(lit,approxPointReuse_all)},
 		{"none",8,0,1,1,0,0.,0.,0,N_mom(lit,approxPointReuse_none)},
 		{"region",8,0,1,1,0,0.,0.,0,N_mom(lit,approxPointReuse_region)}
 		},
-	kw_171[18] = {
-		{"correction",8,6,7,0,kw_159},
+	kw_172[18] = {
+		{"correction",8,6,7,0,kw_160},
 		{"dace_method_pointer",11,0,3,0,0,0.,0.,0,N_mom(str,subMethodPointer)},
 		{"diagnostics",15,0,8,0,0,0.,0.,0,N_mom(strL,diagMetrics)},
-		{"gaussian_process",8,2,1,1,kw_161,0.,0.,0,N_mom(lit,surrogateType_global_gaussian)},
-		{"kriging",8,4,1,1,kw_163,0.,0.,0,N_mom(lit,surrogateType_global_kriging)},
-		{"mars",8,2,1,1,kw_165,0.,0.,0,N_mom(lit,surrogateType_global_mars)},
+		{"gaussian_process",8,2,1,1,kw_162,0.,0.,0,N_mom(lit,surrogateType_global_gaussian)},
+		{"kriging",8,4,1,1,kw_164,0.,0.,0,N_mom(lit,surrogateType_global_kriging)},
+		{"mars",8,2,1,1,kw_166,0.,0.,0,N_mom(lit,surrogateType_global_mars)},
 		{"minimum_points",8,0,2,0,0,0.,0.,0,N_mom(type,pointsManagement_MINIMUM_POINTS)},
-		{"moving_least_squares",8,2,1,1,kw_166,0.,0.,0,N_mom(lit,surrogateType_global_moving_least_squares)},
-		{"neural_network",8,3,1,1,kw_167,0.,0.,0,N_mom(lit,surrogateType_global_neural_network)},
+		{"moving_least_squares",8,2,1,1,kw_167,0.,0.,0,N_mom(lit,surrogateType_global_moving_least_squares)},
+		{"neural_network",8,3,1,1,kw_168,0.,0.,0,N_mom(lit,surrogateType_global_neural_network)},
 		{"points_file",11,0,5,0,0,0.,0.,0,N_mom(str,approxPointReuseFile)},
-		{"polynomial",8,3,1,1,kw_168,0.,0.,0,N_mom(lit,surrogateType_global_polynomial)},
-		{"radial_basis",8,4,1,1,kw_169,0.,0.,0,N_mom(lit,surrogateType_global_radial_basis)},
+		{"polynomial",8,3,1,1,kw_169,0.,0.,0,N_mom(lit,surrogateType_global_polynomial)},
+		{"radial_basis",8,4,1,1,kw_170,0.,0.,0,N_mom(lit,surrogateType_global_radial_basis)},
 		{"recommended_points",8,0,2,0,0,0.,0.,0,N_mom(type,pointsManagement_RECOMMENDED_POINTS)},
-		{"reuse_points",8,3,4,0,kw_170},
-		{"reuse_samples",0,3,4,0,kw_170,0.,0.,-1},
+		{"reuse_points",8,3,4,0,kw_171},
+		{"reuse_samples",0,3,4,0,kw_171,0.,0.,-1},
 		{"samples_file",3,0,5,0,0,0.,0.,-6,N_mom(str,approxPointReuseFile)},
 		{"total_points",9,0,2,0,0,0.,0.,0,N_mom(int,pointsTotal)},
-		{"use_derivatives",8,0,6,0,0,0.,0.,0,N_mom(true,approxDerivUsageFlag)}
+		{"use_derivatives",8,0,6,0,0,0.,0.,0,N_mom(true,modelUseDerivsFlag)}
 		},
-	kw_172[6] = {
+	kw_173[6] = {
 		{"additive",8,0,2,2,0,0.,0.,0,N_mom(lit,approxCorrectionType_additive)},
 		{"combined",8,0,2,2,0,0.,0.,0,N_mom(lit,approxCorrectionType_combined)},
 		{"first_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_1)},
@@ -1060,43 +1065,43 @@ static KeyWord
 		{"second_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_2)},
 		{"zeroth_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_0)}
 		},
-	kw_173[3] = {
-		{"correction",8,6,3,3,kw_172},
+	kw_174[3] = {
+		{"correction",8,6,3,3,kw_173},
 		{"high_fidelity_model_pointer",11,0,2,2,0,0.,0.,0,N_mom(str,truthModelPointer)},
 		{"low_fidelity_model_pointer",11,0,1,1,0,0.,0.,0,N_mom(str,lowFidelityModelPointer)}
 		},
-	kw_174[1] = {
+	kw_175[1] = {
 		{"actual_model_pointer",11,0,1,1,0,0.,0.,0,N_mom(str,truthModelPointer)}
 		},
-	kw_175[2] = {
-		{0,0,1,0,0,kw_174},
+	kw_176[2] = {
+		{0,0,1,0,0,kw_175},
 		{"taylor_series",8,0,1,1}
 		},
-	kw_176[2] = {
-		{0,0,1,0,0,kw_174},
+	kw_177[2] = {
+		{0,0,1,0,0,kw_175},
 		{"tana",8,0,1,1}
 		},
-	kw_177[5] = {
-		{"global",8,18,2,1,kw_171},
-		{"hierarchical",8,3,2,1,kw_173,0.,0.,0,N_mom(lit,surrogateType_hierarchical)},
+	kw_178[5] = {
+		{"global",8,18,2,1,kw_172},
+		{"hierarchical",8,3,2,1,kw_174,0.,0.,0,N_mom(lit,surrogateType_hierarchical)},
 		{"id_surrogates",13,0,1,0,0,0.,0.,0,N_mom(intset,surrogateFnIndices)},
-		{"local",8,1,2,1,kw_175,0.,0.,0,N_mom(lit,surrogateType_local_taylor)},
-		{"multipoint",8,1,2,1,kw_176,0.,0.,0,N_mom(lit,surrogateType_multipoint_tana)}
+		{"local",8,1,2,1,kw_176,0.,0.,0,N_mom(lit,surrogateType_local_taylor)},
+		{"multipoint",8,1,2,1,kw_177,0.,0.,0,N_mom(lit,surrogateType_multipoint_tana)}
 		},
-	kw_178[6] = {
+	kw_179[6] = {
 		{"id_model",11,0,1,0,0,0.,0.,0,N_mom(str,idModel)},
-		{"nested",8,2,4,1,kw_157,0.,0.,0,N_mom(lit,modelType_nested)},
+		{"nested",8,2,4,1,kw_158,0.,0.,0,N_mom(lit,modelType_nested)},
 		{"responses_pointer",11,0,3,0,0,0.,0.,0,N_mom(str,responsesPointer)},
-		{"single",8,1,4,1,kw_158,0.,0.,0,N_mom(lit,modelType_single)},
-		{"surrogate",8,5,4,1,kw_177,0.,0.,0,N_mom(lit,modelType_surrogate)},
+		{"single",8,1,4,1,kw_159,0.,0.,0,N_mom(lit,modelType_single)},
+		{"surrogate",8,5,4,1,kw_178,0.,0.,0,N_mom(lit,modelType_surrogate)},
 		{"variables_pointer",11,0,2,0,0,0.,0.,0,N_mom(str,variablesPointer)}
 		},
-	kw_179[1] = {
+	kw_180[1] = {
 		{"ignore_bounds",8,0,1,0,0,0.,0.,0,N_rem(true,ignoreBounds)}
 		},
-	kw_180[8] = {
+	kw_181[8] = {
 		{"central",8,0,4,0,0,0.,0.,0,N_rem(lit,intervalType_central)},
-		{"dakota",8,1,2,0,kw_179,0.,0.,0,N_rem(lit,methodSource_dakota)},
+		{"dakota",8,1,2,0,kw_180,0.,0.,0,N_rem(lit,methodSource_dakota)},
 		{"fd_gradient_step_size",0x406,0,5,0,0,0.,0.,1,N_rem(RealL,fdGradStepSize)},
 		{"fd_step_size",0x40e,0,5,0,0,0.,0.,0,N_rem(RealL,fdGradStepSize)},
 		{"forward",8,0,4,0,0,0.,0.,0,N_rem(lit,intervalType_forward)},
@@ -1104,151 +1109,151 @@ static KeyWord
 		{"method_source",8,0,1},
 		{"vendor",8,0,2,0,0,0.,0.,0,N_rem(lit,methodSource_vendor)}
 		},
-	kw_181[3] = {
-		{0,0,8,0,0,kw_180},
+	kw_182[3] = {
+		{0,0,8,0,0,kw_181},
 		{"id_analytic_gradients",13,0,2,2,0,0.,0.,0,N_rem(intL,idAnalyticGrads)},
 		{"id_numerical_gradients",13,0,1,1,0,0.,0.,0,N_rem(intL,idNumericalGrads)}
 		},
-	kw_182[2] = {
+	kw_183[2] = {
 		{"fd_hessian_step_size",6,0,1,0,0,0.,0.,1,N_rem(RealL,fdHessStepSize)},
 		{"fd_step_size",14,0,1,0,0,0.,0.,0,N_rem(RealL,fdHessStepSize)}
 		},
-	kw_183[1] = {
+	kw_184[1] = {
 		{"damped",8,0,1,0,0,0.,0.,0,N_rem(lit,quasiHessianType_damped_bfgs)}
 		},
-	kw_184[2] = {
-		{"bfgs",8,1,1,1,kw_183,0.,0.,0,N_rem(lit,quasiHessianType_bfgs)},
+	kw_185[2] = {
+		{"bfgs",8,1,1,1,kw_184,0.,0.,0,N_rem(lit,quasiHessianType_bfgs)},
 		{"sr1",8,0,1,1,0,0.,0.,0,N_rem(lit,quasiHessianType_sr1)}
 		},
-	kw_185[5] = {
+	kw_186[5] = {
 		{"central",8,0,2,0,0,0.,0.,0,N_rem(true,centralHess)},
 		{"forward",8,0,2,0,0,0.,0.,0,N_rem(false,centralHess)},
 		{"id_analytic_hessians",13,0,4,0,0,0.,0.,0,N_rem(intL,idAnalyticHessians)},
-		{"id_numerical_hessians",13,2,1,0,kw_182,0.,0.,0,N_rem(intL,idNumericalHessians)},
-		{"id_quasi_hessians",13,2,3,0,kw_184,0.,0.,0,N_rem(intL,idQuasiHessians)}
+		{"id_numerical_hessians",13,2,1,0,kw_183,0.,0.,0,N_rem(intL,idNumericalHessians)},
+		{"id_quasi_hessians",13,2,3,0,kw_185,0.,0.,0,N_rem(intL,idQuasiHessians)}
 		},
-	kw_186[3] = {
+	kw_187[3] = {
 		{"nonlinear_equality_scale_types",0x80f,0,2,0,0,0.,0.,0,N_rem(strL,nonlinearEqScaleTypes)},
 		{"nonlinear_equality_scales",0x80e,0,3,0,0,0.,0.,0,N_rem(RealDL,nonlinearEqScales)},
 		{"nonlinear_equality_targets",14,0,1,0,0,0.,0.,0,N_rem(RealDL,nonlinearEqTargets)}
 		},
-	kw_187[4] = {
+	kw_188[4] = {
 		{"nonlinear_inequality_lower_bounds",14,0,1,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqLowerBnds)},
 		{"nonlinear_inequality_scale_types",0x80f,0,3,0,0,0.,0.,0,N_rem(strL,nonlinearIneqScaleTypes)},
 		{"nonlinear_inequality_scales",0x80e,0,4,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqScales)},
 		{"nonlinear_inequality_upper_bounds",14,0,2,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqUpperBnds)}
 		},
-	kw_188[6] = {
+	kw_189[6] = {
 		{"least_squares_data_file",11,0,1,0,0,0.,0.,0,N_rem(str,leastSqDataFile)},
 		{"least_squares_term_scale_types",0x80f,0,2,0,0,0.,0.,0,N_rem(strL,primaryRespFnScaleTypes)},
 		{"least_squares_term_scales",0x80e,0,3,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnScales)},
 		{"least_squares_weights",14,0,4,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnWeights)},
-		{"num_nonlinear_equality_constraints",0x29,3,6,0,kw_186,0.,0.,0,N_rem(nnintz,numNonlinearEqConstraints)},
-		{"num_nonlinear_inequality_constraints",0x29,4,5,0,kw_187,0.,0.,0,N_rem(nnintz,numNonlinearIneqConstraints)}
+		{"num_nonlinear_equality_constraints",0x29,3,6,0,kw_187,0.,0.,0,N_rem(nnintz,numNonlinearEqConstraints)},
+		{"num_nonlinear_inequality_constraints",0x29,4,5,0,kw_188,0.,0.,0,N_rem(nnintz,numNonlinearIneqConstraints)}
 		},
-	kw_189[3] = {
+	kw_190[3] = {
 		{"nonlinear_equality_scale_types",0x80f,0,2,0,0,0.,0.,0,N_rem(strL,nonlinearEqScaleTypes)},
 		{"nonlinear_equality_scales",0x80e,0,3,0,0,0.,0.,0,N_rem(RealDL,nonlinearEqScales)},
 		{"nonlinear_equality_targets",14,0,1,0,0,0.,0.,0,N_rem(RealDL,nonlinearEqTargets)}
 		},
-	kw_190[4] = {
+	kw_191[4] = {
 		{"nonlinear_inequality_lower_bounds",14,0,1,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqLowerBnds)},
 		{"nonlinear_inequality_scale_types",0x80f,0,3,0,0,0.,0.,0,N_rem(strL,nonlinearIneqScaleTypes)},
 		{"nonlinear_inequality_scales",0x80e,0,4,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqScales)},
 		{"nonlinear_inequality_upper_bounds",14,0,2,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqUpperBnds)}
 		},
-	kw_191[5] = {
+	kw_192[5] = {
 		{"multi_objective_weights",14,0,3,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnWeights)},
-		{"num_nonlinear_equality_constraints",0x29,3,5,0,kw_189,0.,0.,0,N_rem(nnintz,numNonlinearEqConstraints)},
-		{"num_nonlinear_inequality_constraints",0x29,4,4,0,kw_190,0.,0.,0,N_rem(nnintz,numNonlinearIneqConstraints)},
+		{"num_nonlinear_equality_constraints",0x29,3,5,0,kw_190,0.,0.,0,N_rem(nnintz,numNonlinearEqConstraints)},
+		{"num_nonlinear_inequality_constraints",0x29,4,4,0,kw_191,0.,0.,0,N_rem(nnintz,numNonlinearIneqConstraints)},
 		{"objective_function_scale_types",0x80f,0,1,0,0,0.,0.,0,N_rem(strL,primaryRespFnScaleTypes)},
 		{"objective_function_scales",0x80e,0,2,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnScales)}
 		},
-	kw_192[4] = {
+	kw_193[4] = {
 		{"central",8,0,2,0,0,0.,0.,0,N_rem(true,centralHess)},
 		{"fd_hessian_step_size",6,0,1,0,0,0.,0.,1,N_rem(RealL,fdHessStepSize)},
 		{"fd_step_size",14,0,1,0,0,0.,0.,0,N_rem(RealL,fdHessStepSize)},
 		{"forward",8,0,2,0,0,0.,0.,0,N_rem(false,centralHess)}
 		},
-	kw_193[1] = {
+	kw_194[1] = {
 		{"damped",8,0,1,0,0,0.,0.,0,N_rem(lit,quasiHessianType_damped_bfgs)}
 		},
-	kw_194[2] = {
-		{"bfgs",8,1,1,1,kw_193,0.,0.,0,N_rem(lit,quasiHessianType_bfgs)},
+	kw_195[2] = {
+		{"bfgs",8,1,1,1,kw_194,0.,0.,0,N_rem(lit,quasiHessianType_bfgs)},
 		{"sr1",8,0,1,1,0,0.,0.,0,N_rem(lit,quasiHessianType_sr1)}
 		},
-	kw_195[15] = {
+	kw_196[15] = {
 		{"analytic_gradients",8,0,4,2,0,0.,0.,0,N_rem(lit,gradientType_analytic)},
 		{"analytic_hessians",8,0,5,3,0,0.,0.,0,N_rem(lit,hessianType_analytic)},
 		{"descriptors",15,0,2,0,0,0.,0.,0,N_rem(strL,responseLabels)},
 		{"id_responses",11,0,1,0,0,0.,0.,0,N_rem(str,idResponses)},
-		{"mixed_gradients",8,2,4,2,kw_181,0.,0.,0,N_rem(lit,gradientType_mixed)},
-		{"mixed_hessians",8,5,5,3,kw_185,0.,0.,0,N_rem(lit,hessianType_mixed)},
+		{"mixed_gradients",8,2,4,2,kw_182,0.,0.,0,N_rem(lit,gradientType_mixed)},
+		{"mixed_hessians",8,5,5,3,kw_186,0.,0.,0,N_rem(lit,hessianType_mixed)},
 		{"no_gradients",8,0,4,2,0,0.,0.,0,N_rem(lit,gradientType_none)},
 		{"no_hessians",8,0,5,3,0,0.,0.,0,N_rem(lit,hessianType_none)},
-		{"num_least_squares_terms",0x29,6,3,1,kw_188,0.,0.,0,N_rem(nnintz,numLeastSqTerms)},
-		{"num_objective_functions",0x29,5,3,1,kw_191,0.,0.,0,N_rem(nnintz,numObjectiveFunctions)},
+		{"num_least_squares_terms",0x29,6,3,1,kw_189,0.,0.,0,N_rem(nnintz,numLeastSqTerms)},
+		{"num_objective_functions",0x29,5,3,1,kw_192,0.,0.,0,N_rem(nnintz,numObjectiveFunctions)},
 		{"num_response_functions",0x29,0,3,1,0,0.,0.,0,N_rem(nnintz,numResponseFunctions)},
-		{"numerical_gradients",8,8,4,2,kw_180,0.,0.,0,N_rem(lit,gradientType_numerical)},
-		{"numerical_hessians",8,4,5,3,kw_192,0.,0.,0,N_rem(lit,hessianType_numerical)},
-		{"quasi_hessians",8,2,5,3,kw_194,0.,0.,0,N_rem(lit,hessianType_quasi)},
+		{"numerical_gradients",8,8,4,2,kw_181,0.,0.,0,N_rem(lit,gradientType_numerical)},
+		{"numerical_hessians",8,4,5,3,kw_193,0.,0.,0,N_rem(lit,hessianType_numerical)},
+		{"quasi_hessians",8,2,5,3,kw_195,0.,0.,0,N_rem(lit,hessianType_quasi)},
 		{"response_descriptors",7,0,2,0,0,0.,0.,-12,N_rem(strL,responseLabels)}
 		},
-	kw_196[1] = {
+	kw_197[1] = {
 		{"method_list",15,0,1,1,0,0.,0.,0,N_stm(strL,hybridMethodList)}
 		},
-	kw_197[3] = {
+	kw_198[3] = {
 		{"global_method_pointer",11,0,1,1,0,0.,0.,0,N_stm(str,hybridGlobalMethodPointer)},
 		{"local_method_pointer",11,0,2,2,0,0.,0.,0,N_stm(str,hybridLocalMethodPointer)},
 		{"local_search_probability",10,0,3,0,0,0.,0.,0,N_stm(Real,hybridLSProb)}
 		},
-	kw_198[1] = {
+	kw_199[1] = {
 		{"method_list",15,0,1,1,0,0.,0.,0,N_stm(strL,hybridMethodList)}
 		},
-	kw_199[5] = {
-		{"collaborative",8,1,1,1,kw_196,0.,0.,0,N_stm(lit,hybridType_collaborative)},
-		{"coupled",0,3,1,1,kw_197,0.,0.,1,N_stm(lit,hybridType_embedded)},
-		{"embedded",8,3,1,1,kw_197,0.,0.,0,N_stm(lit,hybridType_embedded)},
-		{"sequential",8,1,1,1,kw_198,0.,0.,0,N_stm(lit,hybridType_sequential)},
-		{"uncoupled",0,1,1,1,kw_198,0.,0.,-1,N_stm(lit,hybridType_sequential)}
+	kw_200[5] = {
+		{"collaborative",8,1,1,1,kw_197,0.,0.,0,N_stm(lit,hybridType_collaborative)},
+		{"coupled",0,3,1,1,kw_198,0.,0.,1,N_stm(lit,hybridType_embedded)},
+		{"embedded",8,3,1,1,kw_198,0.,0.,0,N_stm(lit,hybridType_embedded)},
+		{"sequential",8,1,1,1,kw_199,0.,0.,0,N_stm(lit,hybridType_sequential)},
+		{"uncoupled",0,1,1,1,kw_199,0.,0.,-1,N_stm(lit,hybridType_sequential)}
 		},
-	kw_200[1] = {
+	kw_201[1] = {
 		{"seed",9,0,1,0,0,0.,0.,0,N_stm(int,concurrentSeed)}
 		},
-	kw_201[3] = {
+	kw_202[3] = {
 		{"method_pointer",11,0,1,1,0,0.,0.,0,N_stm(str,methodPointer)},
-		{"random_starts",9,1,2,0,kw_200,0.,0.,0,N_stm(int,concurrentRandomJobs)},
+		{"random_starts",9,1,2,0,kw_201,0.,0.,0,N_stm(int,concurrentRandomJobs)},
 		{"starting_points",14,0,3,0,0,0.,0.,0,N_stm(RealL,concurrentParameterSets)}
 		},
-	kw_202[1] = {
+	kw_203[1] = {
 		{"seed",9,0,1,0,0,0.,0.,0,N_stm(int,concurrentSeed)}
 		},
-	kw_203[5] = {
+	kw_204[5] = {
 		{"method_pointer",11,0,1,1,0,0.,0.,0,N_stm(str,methodPointer)},
 		{"multi_objective_weight_sets",6,0,3,0,0,0.,0.,3,N_stm(RealL,concurrentParameterSets)},
 		{"opt_method_pointer",3,0,1,1,0,0.,0.,-2,N_stm(str,methodPointer)},
-		{"random_weight_sets",9,1,2,0,kw_202,0.,0.,0,N_stm(int,concurrentRandomJobs)},
+		{"random_weight_sets",9,1,2,0,kw_203,0.,0.,0,N_stm(int,concurrentRandomJobs)},
 		{"weight_sets",14,0,3,0,0,0.,0.,0,N_stm(RealL,concurrentParameterSets)}
 		},
-	kw_204[1] = {
+	kw_205[1] = {
 		{"method_pointer",11,0,1,0,0,0.,0.,0,N_stm(str,methodPointer)}
 		},
-	kw_205[1] = {
+	kw_206[1] = {
 		{"tabular_graphics_file",11,0,1,0,0,0.,0.,0,N_stm(str,tabularDataFile)}
 		},
-	kw_206[10] = {
+	kw_207[10] = {
 		{"graphics",8,0,1,0,0,0.,0.,0,N_stm(true,graphicsFlag)},
-		{"hybrid",8,5,7,1,kw_199,0.,0.,0,N_stm(lit,strategyType_hybrid)},
+		{"hybrid",8,5,7,1,kw_200,0.,0.,0,N_stm(lit,strategyType_hybrid)},
 		{"iterator_self_scheduling",8,0,5,0,0,0.,0.,0,N_stm(lit,iteratorScheduling_self)},
 		{"iterator_servers",9,0,4,0,0,0.,0.,0,N_stm(int,iteratorServers)},
 		{"iterator_static_scheduling",8,0,6,0,0,0.,0.,0,N_stm(lit,iteratorScheduling_static)},
-		{"multi_start",8,3,7,1,kw_201,0.,0.,0,N_stm(lit,strategyType_multi_start)},
+		{"multi_start",8,3,7,1,kw_202,0.,0.,0,N_stm(lit,strategyType_multi_start)},
 		{"output_precision",0x29,0,3,0,0,0.,0.,0,N_stm(int,outputPrecision)},
-		{"pareto_set",8,5,7,1,kw_203,0.,0.,0,N_stm(lit,strategyType_pareto_set)},
-		{"single_method",8,1,7,1,kw_204,0.,0.,0,N_stm(lit,strategyType_single_method)},
-		{"tabular_graphics_data",8,1,2,0,kw_205,0.,0.,0,N_stm(true,tabularDataFlag)}
+		{"pareto_set",8,5,7,1,kw_204,0.,0.,0,N_stm(lit,strategyType_pareto_set)},
+		{"single_method",8,1,7,1,kw_205,0.,0.,0,N_stm(lit,strategyType_single_method)},
+		{"tabular_graphics_data",8,1,2,0,kw_206,0.,0.,0,N_stm(true,tabularDataFlag)}
 		},
-	kw_207[10] = {
+	kw_208[10] = {
 		{"alphas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,betaUncAlphas)},
 		{"betas",14,0,2,2,0,0.,0.,0,N_vam(RealLb,betaUncBetas)},
 		{"buv_alphas",6,0,1,1,0,0.,0.,-2,N_vam(RealLb,betaUncAlphas)},
@@ -1260,12 +1265,12 @@ static KeyWord
 		{"lower_bounds",14,0,3,3,0,0.,0.,0,N_vam(RealLd,betaUncLowerBnds)},
 		{"upper_bounds",14,0,4,4,0,0.,0.,0,N_vam(RealLd,betaUncUpperBnds)}
 		},
-	kw_208[3] = {
+	kw_209[3] = {
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(dailbl,DAUIVar_binomial)},
 		{"num_trials",13,0,2,2,0,0.,0.,0,N_vam(intDL,binomialUncNumTrials)},
 		{"prob_per_trial",14,0,1,1,0,0.,0.,0,N_vam(RealLd,binomialUncProbPerTrial)}
 		},
-	kw_209[12] = {
+	kw_210[12] = {
 		{"cdv_descriptors",7,0,6,0,0,0.,0.,6,N_vam(strL,continuousDesignLabels)},
 		{"cdv_initial_point",6,0,1,0,0,0.,0.,6,N_vam(RealLd,continuousDesignVars)},
 		{"cdv_lower_bounds",6,0,2,0,0,0.,0.,6,N_vam(RealLd,continuousDesignLowerBnds)},
@@ -1279,7 +1284,7 @@ static KeyWord
 		{"scales",0x80e,0,5,0,0,0.,0.,0,N_vam(RealLd,continuousDesignScales)},
 		{"upper_bounds",14,0,3,0,0,0.,0.,0,N_vam(RealLd,continuousDesignUpperBnds)}
 		},
-	kw_210[8] = {
+	kw_211[8] = {
 		{"csv_descriptors",7,0,4,0,0,0.,0.,4,N_vam(strL,continuousStateLabels)},
 		{"csv_initial_state",6,0,1,0,0,0.,0.,4,N_vam(RealLd,continuousStateVars)},
 		{"csv_lower_bounds",6,0,2,0,0,0.,0.,4,N_vam(RealLd,continuousStateLowerBnds)},
@@ -1289,7 +1294,7 @@ static KeyWord
 		{"lower_bounds",14,0,2,0,0,0.,0.,0,N_vam(RealLd,continuousStateLowerBnds)},
 		{"upper_bounds",14,0,3,0,0,0.,0.,0,N_vam(RealLd,continuousStateUpperBnds)}
 		},
-	kw_211[8] = {
+	kw_212[8] = {
 		{"ddv_descriptors",7,0,4,0,0,0.,0.,4,N_vam(strL,discreteDesignRangeLabels)},
 		{"ddv_initial_point",5,0,1,0,0,0.,0.,4,N_vam(intDL,discreteDesignRangeVars)},
 		{"ddv_lower_bounds",5,0,2,0,0,0.,0.,4,N_vam(intDL,discreteDesignRangeLowerBnds)},
@@ -1299,19 +1304,19 @@ static KeyWord
 		{"lower_bounds",13,0,2,0,0,0.,0.,0,N_vam(intDL,discreteDesignRangeLowerBnds)},
 		{"upper_bounds",13,0,3,0,0,0.,0.,0,N_vam(intDL,discreteDesignRangeUpperBnds)}
 		},
-	kw_212[4] = {
+	kw_213[4] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vam(strL,discreteDesignSetIntLabels)},
 		{"initial_point",13,0,1,0,0,0.,0.,0,N_vam(intDL,discreteDesignSetIntVars)},
 		{"num_set_values",13,0,2,0,0,0.,0.,0,N_vam(vil,Var_Info_ndsvi)},
 		{"set_values",13,0,3,1,0,0.,0.,0,N_vam(vil,Var_Info_dsvi)}
 		},
-	kw_213[4] = {
+	kw_214[4] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vam(strL,discreteDesignSetRealLabels)},
 		{"initial_point",14,0,1,0,0,0.,0.,0,N_vam(RealLd,discreteDesignSetRealVars)},
 		{"num_set_values",13,0,2,0,0,0.,0.,0,N_vam(vil,Var_Info_ndsvr)},
 		{"set_values",14,0,3,1,0,0.,0.,0,N_vam(vrl,Var_Info_dsvr)}
 		},
-	kw_214[8] = {
+	kw_215[8] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vam(strL,discreteStateRangeLabels)},
 		{"dsv_descriptors",7,0,4,0,0,0.,0.,-1,N_vam(strL,discreteStateRangeLabels)},
 		{"dsv_initial_state",5,0,1,0,0,0.,0.,3,N_vam(intDL,discreteStateRangeVars)},
@@ -1321,25 +1326,25 @@ static KeyWord
 		{"lower_bounds",13,0,2,0,0,0.,0.,0,N_vam(intDL,discreteStateRangeLowerBnds)},
 		{"upper_bounds",13,0,3,0,0,0.,0.,0,N_vam(intDL,discreteStateRangeUpperBnds)}
 		},
-	kw_215[4] = {
+	kw_216[4] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vam(strL,discreteStateSetIntLabels)},
 		{"initial_state",13,0,1,0,0,0.,0.,0,N_vam(intDL,discreteStateSetIntVars)},
 		{"num_set_values",13,0,2,0,0,0.,0.,0,N_vam(vil,Var_Info_nssvi)},
 		{"set_values",13,0,3,1,0,0.,0.,0,N_vam(vil,Var_Info_ssvi)}
 		},
-	kw_216[4] = {
+	kw_217[4] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vam(strL,discreteStateSetRealLabels)},
 		{"initial_state",14,0,1,0,0,0.,0.,0,N_vam(RealLd,discreteStateSetRealVars)},
 		{"num_set_values",13,0,2,0,0,0.,0.,0,N_vam(vil,Var_Info_nssvr)},
 		{"set_values",14,0,3,1,0,0.,0.,0,N_vam(vrl,Var_Info_ssvr)}
 		},
-	kw_217[4] = {
+	kw_218[4] = {
 		{"betas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,exponentialUncBetas)},
 		{"descriptors",15,0,2,0,0,0.,0.,0,N_vae(caulbl,CAUVar_exponential)},
 		{"euv_betas",6,0,1,1,0,0.,0.,-2,N_vam(RealLb,exponentialUncBetas)},
 		{"euv_descriptors",7,0,2,0,0,0.,0.,-2,N_vae(caulbl,CAUVar_exponential)}
 		},
-	kw_218[6] = {
+	kw_219[6] = {
 		{"alphas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,frechetUncAlphas)},
 		{"betas",14,0,2,2,0,0.,0.,0,N_vam(RealLd,frechetUncBetas)},
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(caulbl,CAUVar_frechet)},
@@ -1347,7 +1352,7 @@ static KeyWord
 		{"fuv_betas",6,0,2,2,0,0.,0.,-3,N_vam(RealLd,frechetUncBetas)},
 		{"fuv_descriptors",7,0,3,0,0,0.,0.,-3,N_vae(caulbl,CAUVar_frechet)}
 		},
-	kw_219[6] = {
+	kw_220[6] = {
 		{"alphas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,gammaUncAlphas)},
 		{"betas",14,0,2,2,0,0.,0.,0,N_vam(RealLb,gammaUncBetas)},
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(caulbl,CAUVar_gamma)},
@@ -1355,11 +1360,11 @@ static KeyWord
 		{"gauv_betas",6,0,2,2,0,0.,0.,-3,N_vam(RealLb,gammaUncBetas)},
 		{"gauv_descriptors",7,0,3,0,0,0.,0.,-3,N_vae(caulbl,CAUVar_gamma)}
 		},
-	kw_220[2] = {
+	kw_221[2] = {
 		{"descriptors",15,0,2,0,0,0.,0.,0,N_vae(dailbl,DAUIVar_geometric)},
 		{"prob_per_trial",14,0,1,1,0,0.,0.,0,N_vam(RealLd,geometricUncProbPerTrial)}
 		},
-	kw_221[6] = {
+	kw_222[6] = {
 		{"alphas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,gumbelUncAlphas)},
 		{"betas",14,0,2,2,0,0.,0.,0,N_vam(RealLd,gumbelUncBetas)},
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(caulbl,CAUVar_gumbel)},
@@ -1367,7 +1372,7 @@ static KeyWord
 		{"guuv_betas",6,0,2,2,0,0.,0.,-3,N_vam(RealLd,gumbelUncBetas)},
 		{"guuv_descriptors",7,0,3,0,0,0.,0.,-3,N_vae(caulbl,CAUVar_gumbel)}
 		},
-	kw_222[10] = {
+	kw_223[10] = {
 		{"abscissas",14,0,2,1,0,0.,0.,0,N_vam(vrl,Var_Info_ba)},
 		{"counts",14,0,3,2,0,0.,0.,0,N_vam(vrl,Var_Info_bc)},
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vae(caulbl,CAUVar_histogram_bin)},
@@ -1379,7 +1384,7 @@ static KeyWord
 		{"num_pairs",13,0,1,0,0,0.,0.,0,N_vam(vil,Var_Info_nbp)},
 		{"ordinates",14,0,3,2,0,0.,0.,0,N_vam(vrl,Var_Info_bo)}
 		},
-	kw_223[8] = {
+	kw_224[8] = {
 		{"abscissas",14,0,2,1,0,0.,0.,0,N_vam(vrl,Var_Info_pa)},
 		{"counts",14,0,3,2,0,0.,0.,0,N_vam(vrl,Var_Info_pc)},
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vae(darlbl,DAURVar_histogram_point)},
@@ -1389,13 +1394,13 @@ static KeyWord
 		{"huv_point_descriptors",7,0,4,0,0,0.,0.,-4,N_vae(darlbl,DAURVar_histogram_point)},
 		{"num_pairs",13,0,1,0,0,0.,0.,0,N_vam(vil,Var_Info_npp)}
 		},
-	kw_224[4] = {
+	kw_225[4] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vae(dailbl,DAUIVar_hypergeometric)},
 		{"num_drawn",13,0,3,3,0,0.,0.,0,N_vam(intDL,hyperGeomUncNumDrawn)},
 		{"selected_population",13,0,2,2,0,0.,0.,0,N_vam(intDL,hyperGeomUncSelectedPop)},
 		{"total_population",13,0,1,1,0,0.,0.,0,N_vam(intDL,hyperGeomUncTotalPop)}
 		},
-	kw_225[8] = {
+	kw_226[8] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vae(ceulbl,CEUVar_interval)},
 		{"interval_bounds",14,0,3,2,0,0.,0.,0,N_vam(vrl,Var_Info_Ivb)},
 		{"interval_probs",14,0,2,1,0,0.,0.,0,N_vam(vrl,Var_Info_Ivp)},
@@ -1405,29 +1410,29 @@ static KeyWord
 		{"iuv_num_intervals",5,0,1,0,0,0.,0.,1,N_vam(vil,Var_Info_nIv)},
 		{"num_intervals",13,0,1,0,0,0.,0.,0,N_vam(vil,Var_Info_nIv)}
 		},
-	kw_226[2] = {
+	kw_227[2] = {
 		{"lnuv_zetas",6,0,1,1,0,0.,0.,1,N_vam(RealLb,lognormalUncZetas)},
 		{"zetas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,lognormalUncZetas)}
 		},
-	kw_227[4] = {
+	kw_228[4] = {
 		{"error_factors",14,0,1,1,0,0.,0.,0,N_vam(RealLb,lognormalUncErrFacts)},
 		{"lnuv_error_factors",6,0,1,1,0,0.,0.,-1,N_vam(RealLb,lognormalUncErrFacts)},
 		{"lnuv_std_deviations",6,0,1,1,0,0.,0.,1,N_vam(RealLb,lognormalUncStdDevs)},
 		{"std_deviations",14,0,1,1,0,0.,0.,0,N_vam(RealLb,lognormalUncStdDevs)}
 		},
-	kw_228[10] = {
+	kw_229[10] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vae(caulbl,CAUVar_lognormal)},
-		{"lambdas",14,2,1,1,kw_226,0.,0.,0,N_vam(RealLd,lognormalUncLambdas)},
+		{"lambdas",14,2,1,1,kw_227,0.,0.,0,N_vam(RealLd,lognormalUncLambdas)},
 		{"lnuv_descriptors",7,0,4,0,0,0.,0.,-2,N_vae(caulbl,CAUVar_lognormal)},
-		{"lnuv_lambdas",6,2,1,1,kw_226,0.,0.,-2,N_vam(RealLd,lognormalUncLambdas)},
+		{"lnuv_lambdas",6,2,1,1,kw_227,0.,0.,-2,N_vam(RealLd,lognormalUncLambdas)},
 		{"lnuv_lower_bounds",6,0,2,0,0,0.,0.,3,N_vam(RealLb,lognormalUncLowerBnds)},
-		{"lnuv_means",6,4,1,1,kw_227,0.,0.,3,N_vam(RealLb,lognormalUncMeans)},
+		{"lnuv_means",6,4,1,1,kw_228,0.,0.,3,N_vam(RealLb,lognormalUncMeans)},
 		{"lnuv_upper_bounds",6,0,3,0,0,0.,0.,3,N_vam(RealUb,lognormalUncUpperBnds)},
 		{"lower_bounds",14,0,2,0,0,0.,0.,0,N_vam(RealLb,lognormalUncLowerBnds)},
-		{"means",14,4,1,1,kw_227,0.,0.,0,N_vam(RealLb,lognormalUncMeans)},
+		{"means",14,4,1,1,kw_228,0.,0.,0,N_vam(RealLb,lognormalUncMeans)},
 		{"upper_bounds",14,0,3,0,0,0.,0.,0,N_vam(RealUb,lognormalUncUpperBnds)}
 		},
-	kw_229[6] = {
+	kw_230[6] = {
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(caulbl,CAUVar_loguniform)},
 		{"lower_bounds",14,0,1,1,0,0.,0.,0,N_vam(RealLb,loguniformUncLowerBnds)},
 		{"luuv_descriptors",7,0,3,0,0,0.,0.,-2,N_vae(caulbl,CAUVar_loguniform)},
@@ -1435,12 +1440,12 @@ static KeyWord
 		{"luuv_upper_bounds",6,0,2,2,0,0.,0.,1,N_vam(RealUb,loguniformUncUpperBnds)},
 		{"upper_bounds",14,0,2,2,0,0.,0.,0,N_vam(RealUb,loguniformUncUpperBnds)}
 		},
-	kw_230[3] = {
+	kw_231[3] = {
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(dailbl,DAUIVar_negative_binomial)},
 		{"num_trials",13,0,2,2,0,0.,0.,0,N_vam(intDL,negBinomialUncNumTrials)},
 		{"prob_per_trial",14,0,1,1,0,0.,0.,0,N_vam(RealLd,negBinomialUncProbPerTrial)}
 		},
-	kw_231[10] = {
+	kw_232[10] = {
 		{"descriptors",15,0,5,0,0,0.,0.,0,N_vae(caulbl,CAUVar_normal)},
 		{"lower_bounds",14,0,3,0,0,0.,0.,0,N_vam(RealLd,normalUncLowerBnds)},
 		{"means",14,0,1,1,0,0.,0.,0,N_vam(RealLd,normalUncMeans)},
@@ -1452,11 +1457,11 @@ static KeyWord
 		{"std_deviations",14,0,2,2,0,0.,0.,0,N_vam(RealLb,normalUncStdDevs)},
 		{"upper_bounds",14,0,4,0,0,0.,0.,0,N_vam(RealLd,normalUncUpperBnds)}
 		},
-	kw_232[2] = {
+	kw_233[2] = {
 		{"descriptors",15,0,2,0,0,0.,0.,0,N_vae(dailbl,DAUIVar_poisson)},
 		{"lambdas",14,0,1,1,0,0.,0.,0,N_vam(RealLd,poissonUncLambdas)}
 		},
-	kw_233[8] = {
+	kw_234[8] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vae(caulbl,CAUVar_triangular)},
 		{"lower_bounds",14,0,2,2,0,0.,0.,0,N_vam(RealLb,triangularUncLowerBnds)},
 		{"modes",14,0,1,1,0,0.,0.,0,N_vam(RealLd,triangularUncModes)},
@@ -1466,7 +1471,7 @@ static KeyWord
 		{"tuv_upper_bounds",6,0,3,3,0,0.,0.,1,N_vam(RealUb,triangularUncUpperBnds)},
 		{"upper_bounds",14,0,3,3,0,0.,0.,0,N_vam(RealUb,triangularUncUpperBnds)}
 		},
-	kw_234[6] = {
+	kw_235[6] = {
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(caulbl,CAUVar_uniform)},
 		{"lower_bounds",14,0,1,1,0,0.,0.,0,N_vam(RealLb,uniformUncLowerBnds)},
 		{"upper_bounds",14,0,2,2,0,0.,0.,0,N_vam(RealUb,uniformUncUpperBnds)},
@@ -1474,7 +1479,7 @@ static KeyWord
 		{"uuv_lower_bounds",6,0,1,1,0,0.,0.,-3,N_vam(RealLb,uniformUncLowerBnds)},
 		{"uuv_upper_bounds",6,0,2,2,0,0.,0.,-3,N_vam(RealUb,uniformUncUpperBnds)}
 		},
-	kw_235[6] = {
+	kw_236[6] = {
 		{"alphas",14,0,1,1,0,0.,0.,0,N_vam(RealLb,weibullUncAlphas)},
 		{"betas",14,0,2,2,0,0.,0.,0,N_vam(RealLb,weibullUncBetas)},
 		{"descriptors",15,0,3,0,0,0.,0.,0,N_vae(caulbl,CAUVar_weibull)},
@@ -1482,46 +1487,46 @@ static KeyWord
 		{"wuv_betas",6,0,2,2,0,0.,0.,-3,N_vam(RealLb,weibullUncBetas)},
 		{"wuv_descriptors",7,0,3,0,0,0.,0.,-3,N_vae(caulbl,CAUVar_weibull)}
 		},
-	kw_236[29] = {
-		{"beta_uncertain",0x19,10,12,0,kw_207,0.,0.,0,N_vam(intz,numBetaUncVars)},
-		{"binomial_uncertain",0x19,3,19,0,kw_208,0.,0.,0,N_vam(intz,numBinomialUncVars)},
-		{"continuous_design",0x19,12,2,0,kw_209,0.,0.,0,N_vam(intz,numContinuousDesVars)},
-		{"continuous_state",0x19,8,26,0,kw_210,0.,0.,0,N_vam(intz,numContinuousStateVars)},
-		{"discrete_design_range",0x19,8,3,0,kw_211,0.,0.,0,N_vam(intz,numDiscreteDesRangeVars)},
-		{"discrete_design_set_integer",0x19,4,4,0,kw_212,0.,0.,0,N_vam(intz,numDiscreteDesSetIntVars)},
-		{"discrete_design_set_real",0x19,4,5,0,kw_213,0.,0.,0,N_vam(intz,numDiscreteDesSetRealVars)},
-		{"discrete_state_range",0x19,8,27,0,kw_214,0.,0.,0,N_vam(intz,numDiscreteStateRangeVars)},
-		{"discrete_state_set_integer",0x19,4,28,0,kw_215,0.,0.,0,N_vam(intz,numDiscreteStateSetIntVars)},
-		{"discrete_state_set_real",0x19,4,29,0,kw_216,0.,0.,0,N_vam(intz,numDiscreteStateSetRealVars)},
-		{"exponential_uncertain",0x19,4,11,0,kw_217,0.,0.,0,N_vam(intz,numExponentialUncVars)},
-		{"frechet_uncertain",0x19,6,15,0,kw_218,0.,0.,0,N_vam(intz,numFrechetUncVars)},
-		{"gamma_uncertain",0x19,6,13,0,kw_219,0.,0.,0,N_vam(intz,numGammaUncVars)},
-		{"geometric_uncertain",0x19,2,21,0,kw_220,0.,0.,0,N_vam(intz,numGeometricUncVars)},
-		{"gumbel_uncertain",0x19,6,14,0,kw_221,0.,0.,0,N_vam(intz,numGumbelUncVars)},
-		{"histogram_bin_uncertain",0x19,10,17,0,kw_222,0.,0.,0,N_vam(intz,numHistogramBinUncVars)},
-		{"histogram_point_uncertain",0x19,8,23,0,kw_223,0.,0.,0,N_vam(intz,numHistogramPtUncVars)},
-		{"hypergeometric_uncertain",0x19,4,22,0,kw_224,0.,0.,0,N_vam(intz,numHyperGeomUncVars)},
+	kw_237[29] = {
+		{"beta_uncertain",0x19,10,12,0,kw_208,0.,0.,0,N_vam(intz,numBetaUncVars)},
+		{"binomial_uncertain",0x19,3,19,0,kw_209,0.,0.,0,N_vam(intz,numBinomialUncVars)},
+		{"continuous_design",0x19,12,2,0,kw_210,0.,0.,0,N_vam(intz,numContinuousDesVars)},
+		{"continuous_state",0x19,8,26,0,kw_211,0.,0.,0,N_vam(intz,numContinuousStateVars)},
+		{"discrete_design_range",0x19,8,3,0,kw_212,0.,0.,0,N_vam(intz,numDiscreteDesRangeVars)},
+		{"discrete_design_set_integer",0x19,4,4,0,kw_213,0.,0.,0,N_vam(intz,numDiscreteDesSetIntVars)},
+		{"discrete_design_set_real",0x19,4,5,0,kw_214,0.,0.,0,N_vam(intz,numDiscreteDesSetRealVars)},
+		{"discrete_state_range",0x19,8,27,0,kw_215,0.,0.,0,N_vam(intz,numDiscreteStateRangeVars)},
+		{"discrete_state_set_integer",0x19,4,28,0,kw_216,0.,0.,0,N_vam(intz,numDiscreteStateSetIntVars)},
+		{"discrete_state_set_real",0x19,4,29,0,kw_217,0.,0.,0,N_vam(intz,numDiscreteStateSetRealVars)},
+		{"exponential_uncertain",0x19,4,11,0,kw_218,0.,0.,0,N_vam(intz,numExponentialUncVars)},
+		{"frechet_uncertain",0x19,6,15,0,kw_219,0.,0.,0,N_vam(intz,numFrechetUncVars)},
+		{"gamma_uncertain",0x19,6,13,0,kw_220,0.,0.,0,N_vam(intz,numGammaUncVars)},
+		{"geometric_uncertain",0x19,2,21,0,kw_221,0.,0.,0,N_vam(intz,numGeometricUncVars)},
+		{"gumbel_uncertain",0x19,6,14,0,kw_222,0.,0.,0,N_vam(intz,numGumbelUncVars)},
+		{"histogram_bin_uncertain",0x19,10,17,0,kw_223,0.,0.,0,N_vam(intz,numHistogramBinUncVars)},
+		{"histogram_point_uncertain",0x19,8,23,0,kw_224,0.,0.,0,N_vam(intz,numHistogramPtUncVars)},
+		{"hypergeometric_uncertain",0x19,4,22,0,kw_225,0.,0.,0,N_vam(intz,numHyperGeomUncVars)},
 		{"id_variables",11,0,1,0,0,0.,0.,0,N_vam(str,idVariables)},
-		{"interval_uncertain",0x19,8,25,0,kw_225,0.,0.,0,N_vam(intz,numIntervalUncVars)},
-		{"lognormal_uncertain",0x19,10,7,0,kw_228,0.,0.,0,N_vam(intz,numLognormalUncVars)},
-		{"loguniform_uncertain",0x19,6,9,0,kw_229,0.,0.,0,N_vam(intz,numLoguniformUncVars)},
-		{"negative_binomial_uncertain",0x19,3,20,0,kw_230,0.,0.,0,N_vam(intz,numNegBinomialUncVars)},
-		{"normal_uncertain",0x19,10,6,0,kw_231,0.,0.,0,N_vam(intz,numNormalUncVars)},
-		{"poisson_uncertain",0x19,2,18,0,kw_232,0.,0.,0,N_vam(intz,numPoissonUncVars)},
-		{"triangular_uncertain",0x19,8,10,0,kw_233,0.,0.,0,N_vam(intz,numTriangularUncVars)},
+		{"interval_uncertain",0x19,8,25,0,kw_226,0.,0.,0,N_vam(intz,numIntervalUncVars)},
+		{"lognormal_uncertain",0x19,10,7,0,kw_229,0.,0.,0,N_vam(intz,numLognormalUncVars)},
+		{"loguniform_uncertain",0x19,6,9,0,kw_230,0.,0.,0,N_vam(intz,numLoguniformUncVars)},
+		{"negative_binomial_uncertain",0x19,3,20,0,kw_231,0.,0.,0,N_vam(intz,numNegBinomialUncVars)},
+		{"normal_uncertain",0x19,10,6,0,kw_232,0.,0.,0,N_vam(intz,numNormalUncVars)},
+		{"poisson_uncertain",0x19,2,18,0,kw_233,0.,0.,0,N_vam(intz,numPoissonUncVars)},
+		{"triangular_uncertain",0x19,8,10,0,kw_234,0.,0.,0,N_vam(intz,numTriangularUncVars)},
 		{"uncertain_correlation_matrix",14,0,24,0,0,0.,0.,0,N_vam(vrl,Var_Info_ucm)},
-		{"uniform_uncertain",0x19,6,8,0,kw_234,0.,0.,0,N_vam(intz,numUniformUncVars)},
-		{"weibull_uncertain",0x19,6,16,0,kw_235,0.,0.,0,N_vam(intz,numWeibullUncVars)}
+		{"uniform_uncertain",0x19,6,8,0,kw_235,0.,0.,0,N_vam(intz,numUniformUncVars)},
+		{"weibull_uncertain",0x19,6,16,0,kw_236,0.,0.,0,N_vam(intz,numWeibullUncVars)}
 		},
-	kw_237[6] = {
+	kw_238[6] = {
 		{"interface",0x308,10,5,5,kw_9,0.,0.,0,N_ifm3(start,0,stop)},
-		{"method",0x308,75,2,2,kw_154,0.,0.,0,N_mdm3(start,0,stop)},
-		{"model",8,6,3,3,kw_178,0.,0.,0,N_mom3(start,0,stop)},
-		{"responses",0x308,15,6,6,kw_195,0.,0.,0,N_rem3(start,0,stop)},
-		{"strategy",0x108,10,1,1,kw_206,0.,0.,0,NIDRProblemDescDB::strategy_start},
-		{"variables",0x308,29,4,4,kw_236,0.,0.,0,N_vam3(start,0,stop)}
+		{"method",0x308,75,2,2,kw_155,0.,0.,0,N_mdm3(start,0,stop)},
+		{"model",8,6,3,3,kw_179,0.,0.,0,N_mom3(start,0,stop)},
+		{"responses",0x308,15,6,6,kw_196,0.,0.,0,N_rem3(start,0,stop)},
+		{"strategy",0x108,10,1,1,kw_207,0.,0.,0,NIDRProblemDescDB::strategy_start},
+		{"variables",0x308,29,4,4,kw_237,0.,0.,0,N_vam3(start,0,stop)}
 		};
 
 } // namespace Dakota
 
-KeyWord Dakota_Keyword_Top = {"KeywordTop",0,6,0,0,Dakota::kw_237};
+KeyWord Dakota_Keyword_Top = {"KeywordTop",0,6,0,0,Dakota::kw_238};

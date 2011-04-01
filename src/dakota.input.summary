@@ -687,6 +687,7 @@ KEYWORD12 method
 	  ( sparse_grid_level INTEGER
 	    [ dimension_preference REALLIST ]
 	    )
+	  [ use_derivatives ]
 	  [ nested
 	  | non_nested ]
 	  [ variance_based_decomp
@@ -805,7 +806,9 @@ KEYWORD12 method
 	|
 	( global_evidence ALIAS nond_global_evidence
 	  [ lhs
-	  | ego ]
+	    | ego
+	    [ use_derivatives ]
+	    ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute
@@ -847,6 +850,7 @@ KEYWORD12 method
 	( bayes_calibration ALIAS nond_bayes_calibration
 	  queso
 	  | gpmsa
+	  [ use_derivatives ]
 	  [ rng
 	    mt19937
 	    | rnum2

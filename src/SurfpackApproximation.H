@@ -50,7 +50,7 @@ public:
   /// alternate constructor
   SurfpackApproximation(const String& approx_type,
 			const UShortArray& approx_order, size_t num_vars,
-			unsigned short data_order);
+			short data_order);
   /// standard constructor: Surfpack surface of appropriate type will be created
   SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv);
   /// destructor

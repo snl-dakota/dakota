@@ -49,7 +49,7 @@ public:
   /// default constructor
   GaussProcApproximation();
   /// alternate constructor
-  GaussProcApproximation(size_t num_vars, unsigned short data_order);
+  GaussProcApproximation(size_t num_vars, short data_order);
   /// standard constructor
   GaussProcApproximation(const ProblemDescDB& problem_db,
 			 const size_t& num_acv);
@@ -275,7 +275,7 @@ inline GaussProcApproximation::GaussProcApproximation():
 
 
 inline GaussProcApproximation::
-GaussProcApproximation(size_t num_vars, unsigned short data_order):
+GaussProcApproximation(size_t num_vars, short data_order):
   trendOrder(2), usePointSelection(false)
 { numVars = num_vars; dataOrder = data_order; }
 

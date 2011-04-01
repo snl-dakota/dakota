@@ -51,7 +51,7 @@ public:
   Approximation(ProblemDescDB& problem_db, size_t num_vars);
    /// alternate constructor
   Approximation(const String& approx_type, const UShortArray& approx_order,
-		size_t num_vars, unsigned short data_order);
+		size_t num_vars, short data_order);
   /// copy constructor
   Approximation(const Approximation& approx);
 
@@ -213,7 +213,7 @@ protected:
       since we may need gradient support for evaluating gradients at a
       single point (e.g., the center of a trust region), but not require
       gradient evaluations at every point. */
-  unsigned short dataOrder;
+  short dataOrder;
 
   /// value of the approximation returned by get_value()
   Real approxValue;
@@ -255,7 +255,7 @@ private:
   /// approxRep to the appropriate derived type.
   Approximation* get_approx(const String& approx_type,
 			    const UShortArray& approx_order, size_t num_vars,
-			    unsigned short data_order);
+			    short data_order);
 
   /// extract the relevant RealVector from Variables and invoke add(RealVector&)
   void add(const Variables& vars, const Response& response,

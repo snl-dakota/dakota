@@ -459,6 +459,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    | ( sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}
 			[ dimension_preference REALLIST {N_mdm(RealDL,sparseGridDimPref)} ]
 			)
+		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 		    [ nested {N_mdm(type,nestingOverride_NESTED)}
 		      | non_nested {N_mdm(type,nestingOverride_NON_NESTED)} ]
 		    [ variance_based_decomp {N_mdm(true,vbdFlag)}
@@ -518,7 +519,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      |
 	      ( global_evidence ALIAS nond_global_evidence {N_mdm(lit,methodName_nond_global_evidence)}
 	        [ lhs {N_mdm(lit,nondOptAlgorithm_lhs)}
-		  | ego {N_mdm(lit,nondOptAlgorithm_ego)} ]
+		  | ego {N_mdm(lit,nondOptAlgorithm_ego)}
+		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] ]
 		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 		  [ compute {0}
@@ -554,6 +556,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
             ( bayes_calibration ALIAS nond_bayes_calibration {N_mdm(lit,methodName_nond_bayes_calibration)}
               queso {N_mdm(lit,subMethodName_queso)} |
               gpmsa {N_mdm(lit,subMethodName_gpmsa)} 
+	      [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 	      [ rng {0}
 		mt19937 {N_mdm(lit,rngName_mt19937)}
 		| rnum2 {N_mdm(lit,rngName_rnum2)} ]
@@ -824,7 +827,7 @@ KEYWORD model {N_mom3(start,0,stop)}
 	      | none {N_mom(lit,approxPointReuse_none)}
 	      ]
 	    [ points_file ALIAS samples_file STRING {N_mom(str,approxPointReuseFile)} ]
-	    [ use_derivatives {N_mom(true,approxDerivUsageFlag)} ]
+	    [ use_derivatives {N_mom(true,modelUseDerivsFlag)} ]
 	    [ correction {0}
 	      zeroth_order {N_mom(order,approxCorrectionOrder_0)}
 	      | first_order {N_mom(order,approxCorrectionOrder_1)}

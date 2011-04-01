@@ -153,11 +153,15 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   // Always build a global Gaussian process model.  No correction is needed.
   String approx_type = "global_gaussian", corr_type, sample_type;
   UShortArray approx_order; // empty
-  short corr_order = -1,
+  short corr_order = -1, data_order = 1,
     active_view = iteratedModel.current_variables().view().first;
+  if (probDescDB.get_bool("method.derivative_usage")) {
+    if (gradientType != "none") data_order |= 2;
+    if (hessianType  != "none") data_order |= 4;
+  }
   String sample_reuse
     = (active_view == MERGED_ALL || active_view == MIXED_ALL) ? "all" : "none";
-	
+
   // Use a hardwired minimal initial samples
   int samples  = (numContinuousVars+1)*(numContinuousVars+2)/2,
       lhs_seed = probDescDB.get_int("method.random_seed");
@@ -200,10 +204,11 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     }
     dace_iterator.active_set(set);
     //const Variables& curr_vars = iteratedModel.current_variables();
-    g_hat_x_model.assign_rep(new DataFitSurrModel(dace_iterator,
-      iteratedModel, //curr_vars.view(), curr_vars.variables_components(),
+    g_hat_x_model.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
+      //curr_vars.view(), curr_vars.variables_components(),
       //iteratedModel.current_response().active_set(),
-      approx_type, approx_order, corr_type, corr_order, sample_reuse), false);
+      approx_type, approx_order, corr_type, corr_order, data_order,
+      sample_reuse), false);
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
     // Recast g-hat(x) to G-hat(u)
@@ -273,7 +278,8 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     uSpaceModel.assign_rep(new DataFitSurrModel(dace_iterator, g_u_model,
       //g_u_vars.view(), g_u_vars.variables_components(),
       //g_u_model.current_response().active_set(),
-      approx_type, approx_order, corr_type, corr_order, sample_reuse), false);
+      approx_type, approx_order, corr_type, corr_order, data_order,
+      sample_reuse), false);
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
   }
 

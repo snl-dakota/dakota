@@ -45,8 +45,9 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
   dataOrder(1), popCount(1), approxRep(NULL), referenceCount(1)
 {
   if (problem_db.get_bool("model.surrogate.derivative_usage") &&
-      approxType != "global_polynomial" && approxType != "global_kriging" && 
-      approxType != "global_orthogonal_polynomial" && 
+      approxType != "global_polynomial"                       &&
+      approxType != "global_kriging"                          &&
+      approxType != "global_orthogonal_polynomial"            &&
       approxType != "local_interpolation_polynomial")
     Cerr << "\nWarning: use_derivatives is not currently supported by "
 	 << approxType << ".\n\n";
@@ -76,8 +77,7 @@ Approximation::Approximation(): dataOrder(1), outputLevel(NORMAL_OUTPUT),
 /** Envelope constructor only needs to extract enough data to properly
     execute get_approx, since Approximation(BaseConstructor, problem_db)
     builds the actual base class data for the derived approximations. */
-Approximation::
-Approximation(ProblemDescDB& problem_db, size_t num_vars):
+Approximation::Approximation(ProblemDescDB& problem_db, size_t num_vars):
   referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -139,7 +139,7 @@ get_approx(ProblemDescDB& problem_db, size_t num_vars)
     constructor of the base class. */
 Approximation::
 Approximation(const String& approx_type, const UShortArray& approx_order,
-	      size_t num_vars, unsigned short data_order):
+	      size_t num_vars, short data_order):
   referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -158,7 +158,7 @@ Approximation(const String& approx_type, const UShortArray& approx_order,
     appropriate derived type. */
 Approximation* Approximation::
 get_approx(const String& approx_type, const UShortArray& approx_order, 
-	   size_t num_vars, unsigned short data_order)
+	   size_t num_vars, short data_order)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter in get_approx(String&)." << std::endl;

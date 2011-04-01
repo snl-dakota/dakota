@@ -22,7 +22,7 @@ namespace Dakota {
 
 PecosApproximation::
 PecosApproximation(const String& approx_type, const UShortArray& approx_order, 
-		   size_t num_vars, unsigned short data_order)
+		   size_t num_vars, short data_order)
 {
   approxType = approx_type; numVars = num_vars; dataOrder = data_order;
   pecosBasisApprox = Pecos::BasisApproximation(approx_type, approx_order,

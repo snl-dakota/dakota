@@ -46,7 +46,11 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   String approx_type = "global_gaussian", corr_type, sample_type,
     sample_reuse = "none";
   UShortArray approx_order; 
-  short corr_order = -1;
+  short corr_order = -1, data_order = 1;
+  if (probDescDB.get_bool("method.derivative_usage")) {
+    if (gradientType != "none") data_order |= 2;
+    if (hessianType  != "none") data_order |= 4;
+  }
 
   // instantiate the Gaussian Process DataFit recursions
 
@@ -61,10 +65,11 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   // the active/design vars (same view as iteratedModel: not the typical All
   // view for DACE).
   //const Variables& curr_vars = iteratedModel.current_variables();
-  fHatModel.assign_rep(new DataFitSurrModel(daceIterator,
-    iteratedModel, //curr_vars.view(), curr_vars.variables_components(),
+  fHatModel.assign_rep(new DataFitSurrModel(daceIterator, iteratedModel,
+    //curr_vars.view(), curr_vars.variables_components(),
     //iteratedModel.current_response().active_set(),
-    approx_type, approx_order, corr_type, corr_order, sample_reuse), false);
+    approx_type, approx_order, corr_type, corr_order, data_order, sample_reuse),
+    false);
 
   // eifModel.init_communicators() recursion is currently sufficient for
   // fHatModel.  An additional fHatModel.init_communicators() call would be

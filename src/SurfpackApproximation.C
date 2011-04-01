@@ -292,7 +292,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
 SurfpackApproximation::
 SurfpackApproximation(const String& approx_type,
 		      const UShortArray& approx_order, size_t num_vars,
-		      unsigned short data_order):
+		      short data_order):
   surfData(NULL), model(NULL), factory(NULL)
 {
   approxType  = approx_type; numVars = num_vars; dataOrder = data_order;

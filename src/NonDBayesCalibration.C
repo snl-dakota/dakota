@@ -46,14 +46,19 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
       "global_orthogonal_polynomial" : "global_interpolation_polynomial";
     String sample_reuse, corr_type;
     UShortArray exp_order; // TO DO
-    short corr_order = -1;
+    short corr_order = -1, data_order = 1;
+    if (probDescDB.get_bool("method.derivative_usage")) {
+      if (gradientType != "none") data_order |= 2;
+      if (hessianType  != "none") data_order |= 4;
+    }
     int samples = 0, seed = 0;
     Iterator colloc_iterator; // TO DO
     //const Variables& curr_vars = iteratedModel.current_variables();
     emulatorModel.assign_rep(new DataFitSurrModel(colloc_iterator,
       iteratedModel, //curr_vars.view(), curr_vars.variables_components(),
       //iteratedModel.current_response().active_set(),
-      approx_type, exp_order, corr_type, corr_order, sample_reuse), false);
+      approx_type, exp_order, corr_type, corr_order, data_order, sample_reuse),
+      false);
 
     int mcmc_concurrency = 1;
     emulatorModel.init_communicators(mcmc_concurrency);
@@ -62,7 +67,11 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
   case GAUSSIAN_PROCESS: {
     String approx_type("global_gaussian"), sample_reuse, corr_type;
     UShortArray approx_order; // TO DO
-    short corr_order = -1;
+    short corr_order = -1, data_order = 1;
+    if (probDescDB.get_bool("method.derivative_usage")) {
+      if (gradientType != "none") data_order |= 2;
+      if (hessianType  != "none") data_order |= 4;
+    }
     int samples = 0, seed = 0;
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
     Iterator lhs_iterator; // TO DO
@@ -70,7 +79,8 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, iteratedModel,
       //curr_vars.view(), curr_vars.variables_components(),
       //iteratedModel.current_response().active_set(),
-      approx_type, approx_order, corr_type, corr_order, sample_reuse), false);
+      approx_type, approx_order, corr_type, corr_order, data_order,
+      sample_reuse), false);
 
     int mcmc_concurrency = 1;
     emulatorModel.init_communicators(mcmc_concurrency);

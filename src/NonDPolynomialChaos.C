@@ -116,10 +116,23 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short u_space_type = probDescDB.get_short("method.nond.expansion_type"),
-    corr_order = -1;
-  String corr_type, pt_reuse, approx_type = (u_space_type == PIECEWISE_U ||
-    stochExpRefineType == Pecos::H_REFINEMENT) ? "local_orthogonal_polynomial" :
-    "global_orthogonal_polynomial";
+    corr_order = -1, data_order = 1;
+  // There are two derivative cases of interest: (1) derivatives used as
+  // additional data for forming the approximation (derivatives w.r.t. the
+  // expansion variables), and (2) derivatives that will be approximated in
+  // separate expansions (derivatives w.r.t. auxilliary variables).  We do not
+  // have a good way to detect the latter at construct time, as neither the
+  // finalStats ASV/DVV nor the subIteratorFlag have been defined.  The current
+  // approach requires the presence of inactive continuous vars, relying on the
+  // update of the subModel inactive view within the NestedModel ctor prior to
+  // subIterator instantiation.
+  if (probDescDB.get_bool("method.derivative_usage") || iteratedModel.icv()) {
+    if (gradientType != "none") data_order |= 2;
+    if (hessianType  != "none") data_order |= 4;
+  }
+  String corr_type, pt_reuse, approx_type =
+    (u_space_type == PIECEWISE_U || stochExpRefineType == Pecos::H_REFINEMENT) ?
+    "local_orthogonal_polynomial" : "global_orthogonal_polynomial";
   if (expansionCoeffsApproach == Pecos::REGRESSION && !tensorRegression) {
     pt_reuse = probDescDB.get_string("method.nond.collocation_point_reuse");
     // if reusing samples within a refinement strategy ensure different random
@@ -127,11 +140,13 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     if (stochExpRefineType && !pt_reuse.empty())
       ((Analyzer*)u_space_sampler.iterator_rep())->vary_pattern(true);
   }
+
   //const Variables& g_u_vars = g_u_model.current_variables();
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     //g_u_vars.view(), g_u_vars.variables_components(),
     //g_u_model.current_response().active_set(),
-    approx_type, exp_order, corr_type, corr_order, pt_reuse), false);
+    approx_type, exp_order, corr_type, corr_order, data_order, pt_reuse),
+    false);
   initialize_u_space_model();
 
   // -------------------------------------

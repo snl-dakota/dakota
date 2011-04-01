@@ -230,14 +230,15 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       "multipoint_tana" : "local_taylor";
     String sample_reuse, corr_type;
     UShortArray approx_order(1, taylorOrder);
-    short corr_order = -1;
+    short corr_order = -1, data_order = (taylorOrder == 2) ? 7 : 3;
     int samples = 0, seed = 0;
     Iterator dace_iterator;
     //const Variables& curr_vars = iteratedModel.current_variables();
     g_hat_x_model.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
       //curr_vars.view(), curr_vars.variables_components(),
       //iteratedModel.current_response().active_set(),
-      approx_type, approx_order, corr_type, corr_order, sample_reuse), false);
+      approx_type, approx_order, corr_type, corr_order, data_order,
+      sample_reuse), false);
 
     // Recast g-hat(x) to G-hat(u)
     uSpaceModel.assign_rep(new RecastModel(g_hat_x_model, vars_map,
@@ -277,14 +278,15 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       "multipoint_tana" : "local_taylor";
     String sample_reuse, corr_type;
     UShortArray approx_order(1, taylorOrder);
-    short corr_order = -1;
+    short corr_order = -1, data_order = (taylorOrder == 2) ? 7 : 3;
     int samples = 0, seed = 0;
     Iterator dace_iterator;
     //const Variables& g_u_vars = g_u_model.current_variables();
     uSpaceModel.assign_rep(new DataFitSurrModel(dace_iterator, g_u_model,
       //g_u_vars.view(), g_u_vars.variables_components(),
       //g_u_model.current_response().active_set(),
-      approx_type, approx_order, corr_type, corr_order, sample_reuse), false);
+      approx_type, approx_order, corr_type, corr_order, data_order,
+      sample_reuse), false);
   }
   else if (mppSearchType == NO_APPROX) { // Recast( iteratedModel )
 
@@ -500,7 +502,7 @@ void NonDLocalReliability::initial_taylor_series()
   bool init_ts_flag = (mppSearchType < NO_APPROX) ? true : false;
   size_t i, j, k;
   ShortArray asrv(numFunctions, 0);
-  int mode = 3;
+  short mode = 3;
   if (taylorOrder == 2 && hessianType != "quasi") // no data yet in quasiHess
     mode |= 4;
 
@@ -1139,7 +1141,7 @@ void NonDLocalReliability::initialize_level_data()
       uSpaceModel.component_parallel_mode(TRUTH_MODEL);
       // set active/uncertain vars augmenting inactive design vars
       iteratedModel.continuous_variables(mostProbPointX);
-      int mode = (taylorOrder == 2) ? 7 : 3;
+      short mode = (taylorOrder == 2) ? 7 : 3;
       activeSet.request_values(0);
       activeSet.request_value(respFnCount, mode);
       iteratedModel.compute_response(activeSet);
@@ -1378,7 +1380,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       approxConverged = true;
     }
     // Update response data for local/multipoint MPP approximation
-    int mode = 1;
+    short mode = 1;
     if (approxConverged) {
       Cout << "\n>>>>> Approximate MPP iterations converged.  "
 	   << "Evaluating final response.\n";

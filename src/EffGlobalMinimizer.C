@@ -61,7 +61,11 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   // Always build a global Gaussian process model.  No correction is needed.
   String approx_type = "global_gaussian", sample_reuse = "none", corr_type;
   UShortArray approx_order; // empty
-  short corr_order = -1;
+  short corr_order = -1, data_order = 1;
+  if (probDescDB.get_bool("method.derivative_usage")) {
+    if (gradientType != "none") data_order |= 2;
+    if (hessianType  != "none") data_order |= 4;
+  }
   // Use a hardwired minimal initial samples.
   int samples  = (numContinuousVars+1)*(numContinuousVars+2)/2,
       lhs_seed = probDescDB.get_int("method.random_seed");
@@ -77,10 +81,11 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   // the active/design vars (same view as iteratedModel: not the typical All
   // view for DACE).
   //const Variables& curr_vars = iteratedModel.current_variables();
-  fHatModel.assign_rep(new DataFitSurrModel(dace_iterator,
-    iteratedModel, //curr_vars.view(), curr_vars.variables_components(),
+  fHatModel.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
+    //curr_vars.view(), curr_vars.variables_components(),
     //iteratedModel.current_response().active_set(),
-    approx_type, approx_order, corr_type, corr_order, sample_reuse), false);
+    approx_type, approx_order, corr_type, corr_order, data_order, sample_reuse),
+    false);
 
   // *** TO DO: support scaling and other forced Recasts. ***
   //if (scaleFlag || multiObjFlag || ...)

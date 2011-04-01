@@ -152,7 +152,7 @@ DataFitSurrModel::
 DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 //const SharedVariablesData& svd, const ActiveSet& set,
 		 const String& approx_type, const UShortArray& approx_order,
-		 const String& corr_type, short corr_order,
+		 const String& corr_type, short corr_order, short data_order,
 		 const String& point_reuse):
   SurrogateModel(actual_model.parallel_library(), //view, vars_comps, set,
 		 actual_model.current_variables().shared_data(),
@@ -179,14 +179,6 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   update_from_actual_model();
   check_submodel_compatibility(actualModel);
 
-  // use response specification from truth model for approximation data order.
-  // There are currently two derivative cases of interest: (1) derivatives used
-  // as additional data for forming the approximation (derivatives w.r.t. the
-  // expansion variables), and (2) derivatives that will be approximation
-  // separately (derivatives w.r.t. auxilliary variables).  The useDerivsFlag
-  // is used at a lower level to differentiate these cases.
-  unsigned short data_order
-    = actualModel.current_response().active_set().request_vector()[0];
   // assign the ApproximationInterface instance which manages the
   // local/multipoint/global approximation.  By instantiating with assign_rep(),
   // Interface::get_interface() does not need special logic for approximations.

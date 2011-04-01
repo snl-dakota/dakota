@@ -4466,7 +4466,7 @@ static StringArray
         MP_(diagMetrics);
 
 static bool
-	MP_(approxDerivUsageFlag),
+	MP_(modelUseDerivsFlag),
 	MP_(pointSelection);
 
 static short
