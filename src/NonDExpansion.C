@@ -35,7 +35,7 @@ namespace Dakota {
 NonDExpansion::NonDExpansion(Model& model): NonD(model),
   expansionCoeffsApproach(-1), numUncertainQuant(0), numSamplesOnModel(0),
   numSamplesOnExpansion(probDescDB.get_int("method.samples")),
-  useDerivsFlag(probDescDB.get_bool("method.nond.derivative_usage")),
+  useDerivsFlag(probDescDB.get_bool("method.derivative_usage")),
   ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
   stochExpRefineType(
     probDescDB.get_short("method.nond.expansion_refinement_type")),

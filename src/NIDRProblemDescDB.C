@@ -4300,12 +4300,12 @@ static StringArray
 static bool
 	MP_(allVarsFlag),
 	MP_(constantPenalty),
-	MP_(expansionDerivUsageFlag),
 	MP_(expansionFlag),
 	MP_(fixedSeedFlag),
 	MP_(fixedSequenceFlag),
 	MP_(latinizeFlag),
 	MP_(mainEffectsFlag),
+	MP_(methodDerivUsageFlag),
 	MP_(methodScaling),
 	MP_(mutationAdaptive),
 	MP_(printPopFlag),

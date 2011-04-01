@@ -578,6 +578,7 @@ KEYWORD12 method
 	  )
 	|
 	( efficient_global
+	  [ use_derivatives ]
 	  [ seed INTEGER ]
 	  )
 	|
@@ -836,6 +837,7 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
+	  [ use_derivatives ]
 	  [ samples INTEGER ]
 	  [ seed INTEGER ]
 	  )
@@ -984,6 +986,7 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
+	  [ use_derivatives ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute

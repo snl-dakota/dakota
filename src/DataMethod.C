@@ -110,7 +110,7 @@ DataMethodRep::DataMethodRep():
   nestingOverride(Pecos::NO_OVERRIDE), expansionType(EXTENDED_U),
   expansionTerms(0), expansionSamples(0), sparseGridLevel(USHRT_MAX),
   cubIntOrder(USHRT_MAX), collocationPoints(0), collocationRatio(0.),
-  expansionDerivUsageFlag(false), probCollocFlag(false), allVarsFlag(false),
+  methodDerivUsageFlag(false), probCollocFlag(false), allVarsFlag(false),
   //expansionSampleType("lhs"), sampleType("lhs"),
   distributionType("cumulative"), responseLevelMappingType("probabilities"),
   // Parameter Study
@@ -205,7 +205,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << nestingOverride << expansionType << expansionTerms << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << cubIntOrder << collocationPoints << collocationRatio
-    << collocPtReuse << expansionDerivUsageFlag << probCollocFlag
+    << collocPtReuse << methodDerivUsageFlag << probCollocFlag
     << expansionImportFile << sampleType << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << nondOptAlgorithm
     << distributionType << responseLevelMappingType << responseLevels
@@ -305,7 +305,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> nestingOverride >> expansionType >> expansionTerms >> expansionOrder
     >> expansionSamples >> expansionSampleType >> quadratureOrder
     >> sparseGridLevel >> cubIntOrder >> collocationPoints >> collocationRatio
-    >> collocPtReuse >> expansionDerivUsageFlag >> probCollocFlag
+    >> collocPtReuse >> methodDerivUsageFlag >> probCollocFlag
     >> expansionImportFile >> sampleType >> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> nondOptAlgorithm
     >> distributionType >> responseLevelMappingType >> responseLevels
@@ -405,7 +405,7 @@ void DataMethodRep::write(std::ostream& s) const
     << nestingOverride << expansionType << expansionTerms << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << cubIntOrder << collocationPoints << collocationRatio
-    << collocPtReuse << expansionDerivUsageFlag << probCollocFlag
+    << collocPtReuse << methodDerivUsageFlag << probCollocFlag
     << expansionImportFile << sampleType << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << nondOptAlgorithm
     << distributionType << responseLevelMappingType << responseLevels

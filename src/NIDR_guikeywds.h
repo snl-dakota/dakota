@@ -621,21 +621,21 @@ static GuiKeyWord
 		{"num_response_levels",13,0,1,0,725,0,0.,0.,0.,0,"{Number of response levels} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonD"}
 		},
 	kw_95[6] = {
-		{"expansion_order",13,0,4,1,625,0,0.,0.,0.,0,"{Expansion order} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"expansion_terms",9,0,4,1,627,0,0.,0.,0.,0,"{Expansion terms} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"reuse_points",8,0,1,0,613,0,0.,0.,0.,0,"{Reuse points flag for PCE coefficient estimation by collocation_points or collocation_ratio} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"reuse_samples",0,0,1,0,612},
-		{"tensor_grid",8,0,3,0,617},
-		{"use_derivatives",8,0,2,0,615,0,0.,0.,0.,0,"{Derivative usage flag for PCE coefficient estimation by collocation_points or collocation_ratio} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
+		{"expansion_order",13,0,4,1,627,0,0.,0.,0.,0,"{Expansion order} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"expansion_terms",9,0,4,1,629,0,0.,0.,0.,0,"{Expansion terms} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"reuse_points",8,0,1,0,615,0,0.,0.,0.,0,"{Reuse points flag for PCE coefficient estimation by collocation_points or collocation_ratio} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"reuse_samples",0,0,1,0,614},
+		{"tensor_grid",8,0,3,0,619},
+		{"use_derivatives",8,0,2,0,617,0,0.,0.,0.,0,"{Derivative usage flag for PCE coefficient estimation by collocation_points or collocation_ratio} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
 		},
 	kw_96[2] = {
-		{"expansion_order",13,0,4,1,625,0,0.,0.,0.,0,"{Expansion order} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"expansion_terms",9,0,4,1,627,0,0.,0.,0.,0,"{Expansion terms} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
+		{"expansion_order",13,0,4,1,627,0,0.,0.,0.,0,"{Expansion order} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"expansion_terms",9,0,4,1,629,0,0.,0.,0.,0,"{Expansion terms} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
 		},
 	kw_97[3] = {
-		{"expansion_order",13,0,2,1,625,0,0.,0.,0.,0,"{Expansion order} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"expansion_terms",9,0,2,1,627,0,0.,0.,0.,0,"{Expansion terms} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"incremental_lhs",8,0,1,0,621,0,0.,0.,0.,0,"{Incremental LHS flag for PCE coefficient estimation by expansion_samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
+		{"expansion_order",13,0,2,1,627,0,0.,0.,0.,0,"{Expansion order} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"expansion_terms",9,0,2,1,629,0,0.,0.,0.,0,"{Expansion terms} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"incremental_lhs",8,0,1,0,623,0,0.,0.,0.,0,"{Incremental LHS flag for PCE coefficient estimation by expansion_samples} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
 		},
 	kw_98[3] = {
 		{"decay",8,0,1,1,589},
@@ -647,26 +647,26 @@ static GuiKeyWord
 		{"uniform",8,0,1,1,583}
 		},
 	kw_100[2] = {
-		{"nested",8,0,1,0,603},
-		{"non_nested",8,0,1,0,605}
+		{"nested",8,0,1,0,605},
+		{"non_nested",8,0,1,0,607}
 		},
 	kw_101[3] = {
-		{"adapt_import",8,0,1,1,639},
-		{"import",8,0,1,1,637},
-		{"mm_adapt_import",8,0,1,1,641}
+		{"adapt_import",8,0,1,1,641},
+		{"import",8,0,1,1,639},
+		{"mm_adapt_import",8,0,1,1,643}
 		},
 	kw_102[2] = {
-		{"lhs",8,0,1,1,645},
-		{"random",8,0,1,1,647}
+		{"lhs",8,0,1,1,647},
+		{"random",8,0,1,1,649}
 		},
 	kw_103[3] = {
-		{"dimension_preference",14,0,1,0,601,0,0.,0.,0.,0,"{Sparse grid dimension preference} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"nested",8,0,2,0,603},
-		{"non_nested",8,0,2,0,605}
+		{"dimension_preference",14,0,1,0,603,0,0.,0.,0.,0,"{Sparse grid dimension preference} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"nested",8,0,2,0,605},
+		{"non_nested",8,0,2,0,607}
 		},
 	kw_104[2] = {
-		{"drop_tolerance",10,0,2,0,633,0,0.,0.,0.,0,"{VBD tolerance for omitting small indices} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
-		{"univariate_effects",8,0,1,0,631,0,0.,0.,0.,0,"{Restriction of VBD indices to main/total} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
+		{"drop_tolerance",10,0,2,0,635,0,0.,0.,0.,0,"{VBD tolerance for omitting small indices} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
+		{"univariate_effects",8,0,1,0,633,0,0.,0.,0.,0,"{Restriction of VBD indices to main/total} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
 		},
 	kw_105[23] = {
 		{"all_variables",8,0,15,0,715,0,0.,0.,0.,0,"{All variables flag} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
@@ -990,7 +990,7 @@ static GuiKeyWord
 		{"dot_mmfd",8,10,11,1,151,kw_36,0.,0.,0.,0,0,"Optimization: Local, Derivative-based"},
 		{"dot_slp",8,10,11,1,155,kw_36,0.,0.,0.,0,0,"Optimization: Local, Derivative-based"},
 		{"dot_sqp",8,10,11,1,157,kw_36,0.,0.,0.,0,0,"Optimization: Local, Derivative-based"},
-		{"efficient_global",8,1,11,1,577,kw_37,0.,0.,0.,0,0,"Surrogate-based Methods"},
+		{"efficient_global",8,2,11,1,577,kw_37,0.,0.,0.,0,0,"Surrogate-based Methods"},
 		{"final_solutions",0x29,0,10,0,87,0,0.,0.,0.,0,"{Final solutions} http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
 		{"fsu_cvt",8,8,11,1,841,kw_40,0.,0.,0.,0,0,"DACE"},
 		{"fsu_quasi_mc",8,10,11,1,1011,kw_42,0.,0.,0.,0,0,"DACE"},

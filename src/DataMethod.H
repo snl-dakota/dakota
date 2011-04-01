@@ -657,7 +657,8 @@ public:
   /// flag for usage of derivative data to enhance the computation
   /// of a stochastic expansion based on the \c use_derivatives
   /// specification in \ref MethodNonDPCE
-  bool expansionDerivUsageFlag;
+  // TODO: move to generic section instead of NonD
+  bool methodDerivUsageFlag;
   /// flag for usage of a filtered set of tensor-product grid points
   /// within regression PCE; based on the \c tensor_grid specification
   /// in \ref MethodNonDPCE
