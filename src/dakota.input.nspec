@@ -393,7 +393,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  )
 	|
 	( ( efficient_global {N_mdm(lit,methodName_efficient_global)}
-            [ use_derivatives {N_mdm(true,methodDerivUsageFlag)} ]
+            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 	    )
 	  |
 	  ( ( ( ( ( polynomial_chaos ALIAS nond_polynomial_chaos {N_mdm(lit,methodName_nond_polynomial_chaos)}
@@ -407,6 +407,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    ]
 		    [ askey {N_mdm(type,expansionType_ASKEY_U)}
 		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)} ]
+#		      | piecewise {N_mdm(type,expansionType_PIECEWISE_U)} ]
 		    ( quadrature_order INTEGERLIST {N_mdm(ushintL,quadratureOrder)}
 		      | ( sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}
 			  [ dimension_preference REALLIST {N_mdm(RealDL,sparseGridDimPref)} ]
@@ -418,7 +419,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    | ( ( collocation_points INTEGER {N_mdm(int,collocationPoints)}
 		        | collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
 		        [ reuse_points ALIAS reuse_samples {N_mdm(lit,collocPtReuse_all)} ]
-		        [ use_derivatives {N_mdm(true,methodDerivUsageFlag)} ]
+		        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 			[ tensor_grid {N_mdm(true,probCollocFlag)} ]
 		        )
 		    	| ( expansion_samples INTEGER {N_mdm(int,expansionSamples)}
@@ -452,7 +453,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 			| generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)} )
 		    ]
 		    [ askey {N_mdm(type,expansionType_ASKEY_U)}
-		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)} ]
+		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
+		      | piecewise {N_mdm(type,expansionType_PIECEWISE_U)} ]
 		    quadrature_order INTEGERLIST {N_mdm(ushintL,quadratureOrder)}
 		    | ( sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}
 			[ dimension_preference REALLIST {N_mdm(RealDL,sparseGridDimPref)} ]
@@ -542,11 +544,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    |
             ( global_interval_est ALIAS nond_global_interval_est {N_mdm(lit,methodName_nond_global_interval_est)}
 	      [ lhs {N_mdm(lit,nondOptAlgorithm_lhs)}
-		| ego {N_mdm(lit,nondOptAlgorithm_ego)} ]
+		| ( ego {N_mdm(lit,nondOptAlgorithm_ego)}
+		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] ) ]
 	      [ rng {0}
 		mt19937 {N_mdm(lit,rngName_mt19937)}
 		| rnum2 {N_mdm(lit,rngName_rnum2)} ]
-	      [ use_derivatives {N_mdm(true,methodDerivUsageFlag)} ]
 	      )
 	    |
             ( bayes_calibration ALIAS nond_bayes_calibration {N_mdm(lit,methodName_nond_bayes_calibration)}
@@ -678,11 +680,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    x_gaussian_process {N_mdm(lit,reliabilitySearchType_egra_x)}
 	    | u_gaussian_process {N_mdm(lit,reliabilitySearchType_egra_u)}
 	    [ all_variables {N_mdm(true,allVarsFlag)} ]
+            [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 	    [ seed INTEGER {N_mdm(pint,randomSeed)} ]
 	    [ rng {0}
 	      mt19937 {N_mdm(lit,rngName_mt19937)}
 	      | rnum2 {N_mdm(lit,rngName_rnum2)} ]
-            [ use_derivatives {N_mdm(true,methodDerivUsageFlag)} ]
 	    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 	      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 	      [ compute {0}

@@ -4305,8 +4305,8 @@ static bool
 	MP_(fixedSequenceFlag),
 	MP_(latinizeFlag),
 	MP_(mainEffectsFlag),
-	MP_(methodDerivUsageFlag),
 	MP_(methodScaling),
+	MP_(methodUseDerivsFlag),
 	MP_(mutationAdaptive),
 	MP_(printPopFlag),
 	MP_(probCollocFlag),
@@ -4355,6 +4355,7 @@ static size_t
 
 static Method_mp_type
 	MP2s(expansionType,ASKEY_U),
+	MP2s(expansionType,PIECEWISE_U),
 	MP2s(expansionType,STD_NORMAL_U),
 	MP2s(methodOutput,DEBUG_OUTPUT),
 	MP2s(methodOutput,QUIET_OUTPUT),

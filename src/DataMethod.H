@@ -36,7 +36,7 @@ enum { SILENT_OUTPUT, QUIET_OUTPUT, NORMAL_OUTPUT, VERBOSE_OUTPUT,
 // ----
 // define special values for u_space_type in
 // NonD::initialize_random_variable_types()
-enum { STD_NORMAL_U, ASKEY_U, EXTENDED_U };
+enum { STD_NORMAL_U, ASKEY_U, EXTENDED_U, PIECEWISE_U };
 // define special values for probability integration refinement
 enum { NO_INT_REFINE, IS, AIS, MMAIS };
 // define special values for respLevelTarget
@@ -165,6 +165,10 @@ public:
   /// load balance during the line search portion of optimization algorithms
   /// (from the \c speculative specification in \ref MethodIndControl)
   bool speculativeFlag;
+  /// flag for usage of derivative data to enhance the computation of
+  /// surrogate models (PCE/SC expansions, GP models for EGO/EGRA/EGIE)
+  /// based on the \c use_derivatives specification
+  bool methodUseDerivsFlag;
   /// iteration convergence tolerance for the method (from the \c
   /// convergence_tolerance specification in \ref MethodIndControl)
   Real convergenceTolerance;
@@ -625,7 +629,8 @@ public:
   /// refinement type for stochastic expansions from \c refinement keyword
   short nestingOverride;
   /// enumeration for overriding the u-space type default from EXTENDED_U to
-  /// ASKEY_U or STD_NORMAL_U based on input keywords \c askey or \c wiener
+  /// ASKEY_U, STD_NORMAL_U, or PIECEWISE_U based on input keywords \c askey,
+  /// \c wiener, or \c piecewise, respectively
   short expansionType;
   /// the \c expansion_terms specification in \ref MethodNonDPCE
   int expansionTerms;
@@ -654,11 +659,6 @@ public:
   /// allows for incremental PCE construction using the \c
   /// reuse_points specification in \ref MethodNonDPCE
   String collocPtReuse;
-  /// flag for usage of derivative data to enhance the computation
-  /// of a stochastic expansion based on the \c use_derivatives
-  /// specification in \ref MethodNonDPCE
-  // TODO: move to generic section instead of NonD
-  bool methodDerivUsageFlag;
   /// flag for usage of a filtered set of tensor-product grid points
   /// within regression PCE; based on the \c tensor_grid specification
   /// in \ref MethodNonDPCE

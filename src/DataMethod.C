@@ -19,8 +19,9 @@ namespace Dakota {
 
 DataMethodRep::DataMethodRep():
   methodOutput(NORMAL_OUTPUT), maxIterations(-1), maxFunctionEvaluations(1000),
-  speculativeFlag(false), convergenceTolerance(0.0001), constraintTolerance(0.),
-  methodScaling(false), numFinalSolutions(0),
+  speculativeFlag(false), methodUseDerivsFlag(false),
+  convergenceTolerance(1.e-4), constraintTolerance(0.), methodScaling(false),
+  numFinalSolutions(0),
   // Local surrogate-based opt/NLS
   surrBasedLocalSoftConvLimit(5),        surrBasedLocalLayerBypass(false),
   surrBasedLocalTRInitSize(0.4),         surrBasedLocalTRMinSize(1.0e-6),
@@ -110,7 +111,7 @@ DataMethodRep::DataMethodRep():
   nestingOverride(Pecos::NO_OVERRIDE), expansionType(EXTENDED_U),
   expansionTerms(0), expansionSamples(0), sparseGridLevel(USHRT_MAX),
   cubIntOrder(USHRT_MAX), collocationPoints(0), collocationRatio(0.),
-  methodDerivUsageFlag(false), probCollocFlag(false), allVarsFlag(false),
+  probCollocFlag(false), allVarsFlag(false),
   //expansionSampleType("lhs"), sampleType("lhs"),
   distributionType("cumulative"), responseLevelMappingType("probabilities"),
   // Parameter Study
@@ -124,12 +125,12 @@ DataMethodRep::DataMethodRep():
 void DataMethodRep::write(MPIPackBuffer& s) const
 {
   s << idMethod << modelPointer << methodOutput << maxIterations
-    << maxFunctionEvaluations << speculativeFlag << convergenceTolerance
-    << constraintTolerance << methodScaling << linearIneqConstraintCoeffs 
-    << linearIneqLowerBnds << linearIneqUpperBnds << linearIneqScaleTypes 
-    << linearIneqScales << linearEqConstraintCoeffs << linearEqTargets
-    << linearEqScaleTypes << linearEqScales << methodName << subMethodName
-    << subMethodPointer << numFinalSolutions;
+    << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
+    << convergenceTolerance << constraintTolerance << methodScaling
+    << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
+    << linearIneqScaleTypes << linearIneqScales << linearEqConstraintCoeffs
+    << linearEqTargets << linearEqScaleTypes << linearEqScales << methodName
+    << subMethodName << subMethodPointer << numFinalSolutions;
 
   s << surrBasedLocalSoftConvLimit << surrBasedLocalLayerBypass
     << surrBasedLocalTRInitSize << surrBasedLocalTRMinSize
@@ -205,12 +206,12 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << nestingOverride << expansionType << expansionTerms << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << cubIntOrder << collocationPoints << collocationRatio
-    << collocPtReuse << methodDerivUsageFlag << probCollocFlag
-    << expansionImportFile << sampleType << reliabilitySearchType
-    << reliabilityIntegration << integrationRefine << nondOptAlgorithm
-    << distributionType << responseLevelMappingType << responseLevels
-    << probabilityLevels << reliabilityLevels << genReliabilityLevels
-    << xObsDataFile << yObsDataFile << yStdDataFile << allVarsFlag;
+    << collocPtReuse << probCollocFlag << expansionImportFile << sampleType
+    << reliabilitySearchType << reliabilityIntegration << integrationRefine
+    << nondOptAlgorithm << distributionType << responseLevelMappingType
+    << responseLevels << probabilityLevels << reliabilityLevels
+    << genReliabilityLevels << xObsDataFile << yObsDataFile << yStdDataFile
+    << allVarsFlag;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -224,12 +225,12 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 void DataMethodRep::read(MPIUnpackBuffer& s)
 {
   s >> idMethod >> modelPointer >> methodOutput >> maxIterations
-    >> maxFunctionEvaluations >> speculativeFlag >> convergenceTolerance
-    >> constraintTolerance >> methodScaling >> linearIneqConstraintCoeffs 
-    >> linearIneqLowerBnds >> linearIneqUpperBnds >> linearIneqScaleTypes 
-    >> linearIneqScales >> linearEqConstraintCoeffs >> linearEqTargets
-    >> linearEqScaleTypes >> linearEqScales >> methodName >> subMethodName
-    >> subMethodPointer >> numFinalSolutions;
+    >> maxFunctionEvaluations >> speculativeFlag >> methodUseDerivsFlag
+    >> convergenceTolerance >> constraintTolerance >> methodScaling
+    >> linearIneqConstraintCoeffs >> linearIneqLowerBnds >> linearIneqUpperBnds
+    >> linearIneqScaleTypes >> linearIneqScales >> linearEqConstraintCoeffs
+    >> linearEqTargets >> linearEqScaleTypes >> linearEqScales >> methodName
+    >> subMethodName >> subMethodPointer >> numFinalSolutions;
 
   s >> surrBasedLocalSoftConvLimit >> surrBasedLocalLayerBypass
     >> surrBasedLocalTRInitSize >> surrBasedLocalTRMinSize
@@ -305,12 +306,12 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> nestingOverride >> expansionType >> expansionTerms >> expansionOrder
     >> expansionSamples >> expansionSampleType >> quadratureOrder
     >> sparseGridLevel >> cubIntOrder >> collocationPoints >> collocationRatio
-    >> collocPtReuse >> methodDerivUsageFlag >> probCollocFlag
-    >> expansionImportFile >> sampleType >> reliabilitySearchType
-    >> reliabilityIntegration >> integrationRefine >> nondOptAlgorithm
-    >> distributionType >> responseLevelMappingType >> responseLevels
-    >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
-    >> xObsDataFile >> yObsDataFile >> yStdDataFile >> allVarsFlag;
+    >> collocPtReuse >> probCollocFlag >> expansionImportFile >> sampleType
+    >> reliabilitySearchType >> reliabilityIntegration >> integrationRefine
+    >> nondOptAlgorithm >> distributionType >> responseLevelMappingType
+    >> responseLevels >> probabilityLevels >> reliabilityLevels
+    >> genReliabilityLevels >> xObsDataFile >> yObsDataFile >> yStdDataFile
+    >> allVarsFlag;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -324,12 +325,12 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 void DataMethodRep::write(std::ostream& s) const
 {
   s << idMethod << modelPointer << methodOutput << maxIterations
-    << maxFunctionEvaluations << speculativeFlag << convergenceTolerance
-    << constraintTolerance << methodScaling << linearIneqConstraintCoeffs 
-    << linearIneqLowerBnds << linearIneqUpperBnds << linearIneqScaleTypes 
-    << linearIneqScales << linearEqConstraintCoeffs << linearEqTargets
-    << linearEqScaleTypes << linearEqScales << methodName << subMethodName
-    << subMethodPointer << numFinalSolutions;
+    << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
+    << convergenceTolerance << constraintTolerance << methodScaling
+    << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
+    << linearIneqScaleTypes << linearIneqScales << linearEqConstraintCoeffs
+    << linearEqTargets << linearEqScaleTypes << linearEqScales << methodName
+    << subMethodName << subMethodPointer << numFinalSolutions;
 
   s << surrBasedLocalSoftConvLimit << surrBasedLocalLayerBypass
     << surrBasedLocalTRInitSize << surrBasedLocalTRMinSize
@@ -405,12 +406,12 @@ void DataMethodRep::write(std::ostream& s) const
     << nestingOverride << expansionType << expansionTerms << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << cubIntOrder << collocationPoints << collocationRatio
-    << collocPtReuse << methodDerivUsageFlag << probCollocFlag
-    << expansionImportFile << sampleType << reliabilitySearchType
-    << reliabilityIntegration << integrationRefine << nondOptAlgorithm
-    << distributionType << responseLevelMappingType << responseLevels
-    << probabilityLevels << reliabilityLevels << genReliabilityLevels
-    << xObsDataFile << yObsDataFile << yStdDataFile << allVarsFlag;
+    << collocPtReuse << probCollocFlag << expansionImportFile << sampleType
+    << reliabilitySearchType << reliabilityIntegration << integrationRefine
+    << nondOptAlgorithm << distributionType << responseLevelMappingType
+    << responseLevels << probabilityLevels << reliabilityLevels
+    << genReliabilityLevels << xObsDataFile << yObsDataFile << yStdDataFile
+    << allVarsFlag;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

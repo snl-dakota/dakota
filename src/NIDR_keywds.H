@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 867 distinct keywords (plus 103 aliases) **/
+/** 868 distinct keywords (plus 103 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -284,7 +284,7 @@ static KeyWord
 		},
 	kw_43[2] = {
 		{0,0,1,0,0,kw_14},
-		{"use_derivatives",8,0,1,0,0,0.,0.,0,N_mdm(true,methodDerivUsageFlag)}
+		{"use_derivatives",8,0,1,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
 		},
 	kw_44[3] = {
 		{"grid",8,0,1,1,0,0.,0.,0,N_mdm(lit,trialType_grid)},
@@ -359,13 +359,12 @@ static KeyWord
 		{"mt19937",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_mt19937)},
 		{"rnum2",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_rnum2)}
 		},
-	kw_58[6] = {
+	kw_58[5] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{"ego",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_ego)},
 		{"lhs",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_lhs)},
-		{"rng",8,2,2,0,kw_57},
-		{"use_derivatives",8,0,3,0,0,0.,0.,0,N_mdm(true,methodDerivUsageFlag)}
+		{"rng",8,2,2,0,kw_57}
 		},
 	kw_59[2] = {
 		{"complementary",8,0,1,1,0,0.,0.,0,N_mdm(lit,distributionType_complementary)},
@@ -398,10 +397,10 @@ static KeyWord
 		{0,0,3,0,0,kw_62},
 		{"all_variables",8,0,2,0,0,0.,0.,0,N_mdm(true,allVarsFlag)},
 		{"response_levels",14,2,6,0,kw_64,0.,0.,0,N_mdm(resplevs,responseLevels)},
-		{"rng",8,2,4,0,kw_65},
-		{"seed",9,0,3,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
+		{"rng",8,2,5,0,kw_65},
+		{"seed",9,0,4,0,0,0.,0.,0,N_mdm(pint,randomSeed)},
 		{"u_gaussian_process",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilitySearchType_egra_u)},
-		{"use_derivatives",8,0,5,0,0,0.,0.,0,N_mdm(true,methodDerivUsageFlag)},
+		{"use_derivatives",8,0,3,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)},
 		{"x_gaussian_process",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilitySearchType_egra_x)}
 		},
 	kw_67[2] = {
@@ -613,7 +612,7 @@ static KeyWord
 		{"reuse_points",8,0,1,0,0,0.,0.,0,N_mdm(lit,collocPtReuse_all)},
 		{"reuse_samples",0,0,1,0,0,0.,0.,-1,N_mdm(lit,collocPtReuse_all)},
 		{"tensor_grid",8,0,3,0,0,0.,0.,0,N_mdm(true,probCollocFlag)},
-		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodDerivUsageFlag)}
+		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
 		},
 	kw_108[2] = {
 		{0,0,2,0,0,kw_106},
@@ -714,7 +713,7 @@ static KeyWord
 		{"drop_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)},
 		{"univariate_effects",8,0,1,0,0,0.,0.,0,N_mdm(type,vbdControl_UNIVARIATE_VBD)}
 		},
-	kw_127[16] = {
+	kw_127[17] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{0,0,4,0,0,kw_53},
@@ -725,6 +724,7 @@ static KeyWord
 		{"nested",8,0,4,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
 		{"non_nested",8,0,4,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)},
 		{"p_refinement",8,2,1,0,kw_122,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
+		{"piecewise",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_PIECEWISE_U)},
 		{"quadrature_order",13,0,3,1,0,0.,0.,0,N_mdm(ushintL,quadratureOrder)},
 		{"sample_refinement",8,3,6,0,kw_123},
 		{"sample_type",8,2,7,0,kw_124},
@@ -904,7 +904,7 @@ static KeyWord
 		{"fsu_cvt",8,6,11,1,kw_46,0.,0.,0,N_mdm(lit,methodName_fsu_cvt)},
 		{"fsu_quasi_mc",8,10,11,1,kw_48},
 		{"global_evidence",8,3,11,1,kw_56,0.,0.,0,N_mdm(lit,methodName_nond_global_evidence)},
-		{"global_interval_est",8,4,11,1,kw_58,0.,0.,0,N_mdm(lit,methodName_nond_global_interval_est)},
+		{"global_interval_est",8,3,11,1,kw_58,0.,0.,0,N_mdm(lit,methodName_nond_global_interval_est)},
 		{"global_reliability",8,7,11,1,kw_66,0.,0.,0,N_mdm(lit,methodName_nond_global_reliability)},
 		{"id_method",11,0,1,0,0,0.,0.,0,N_mdm(str,idMethod)},
 		{"importance_sampling",8,1,11,1,kw_69,0.,0.,0,N_mdm(lit,methodName_nond_importance_sampling)},
@@ -923,7 +923,7 @@ static KeyWord
 		{"nlssol_sqp",8,0,11,1,kw_130,0.,0.,0,N_mdm(lit,methodName_nlssol_sqp)},
 		{"nond_bayes_calibration",0,6,11,1,kw_17,0.,0.,-42,N_mdm(lit,methodName_nond_bayes_calibration)},
 		{"nond_global_evidence",0,3,11,1,kw_56,0.,0.,-19,N_mdm(lit,methodName_nond_global_evidence)},
-		{"nond_global_interval_est",0,4,11,1,kw_58,0.,0.,-19,N_mdm(lit,methodName_nond_global_interval_est)},
+		{"nond_global_interval_est",0,3,11,1,kw_58,0.,0.,-19,N_mdm(lit,methodName_nond_global_interval_est)},
 		{"nond_global_reliability",0,7,11,1,kw_66,0.,0.,-19,N_mdm(lit,methodName_nond_global_reliability)},
 		{"nond_importance_sampling",0,1,11,1,kw_69,0.,0.,-18,N_mdm(lit,methodName_nond_importance_sampling)},
 		{"nond_local_evidence",0,6,11,1,kw_76,0.,0.,-17,N_mdm(lit,methodName_nond_local_evidence)},
@@ -931,7 +931,7 @@ static KeyWord
 		{"nond_local_reliability",0,4,11,1,kw_84,0.,0.,-17,N_mdm(lit2,methodName_nond_local_reliability)},
 		{"nond_polynomial_chaos",0,13,11,1,kw_116,0.,0.,12,N_mdm(lit,methodName_nond_polynomial_chaos)},
 		{"nond_sampling",0,2,11,1,kw_120,0.,0.,14,N_mdm(lit,methodName_nond_sampling)},
-		{"nond_stoch_collocation",0,11,11,1,kw_127,0.,0.,18,N_mdm(lit,methodName_nond_stoch_collocation)},
+		{"nond_stoch_collocation",0,12,11,1,kw_127,0.,0.,18,N_mdm(lit,methodName_nond_stoch_collocation)},
 		{"nonlinear_cg",8,1,11,1,kw_128,0.,0.,0,N_mdm(lit,methodName_nonlinear_cg)},
 		{"npsol_sqp",8,0,11,1,kw_130,0.,0.,0,N_mdm(lit,methodName_npsol_sqp)},
 		{"optpp_cg",8,0,11,1,kw_132,0.,0.,0,N_mdm(lit,methodName_optpp_cg)},
@@ -949,7 +949,7 @@ static KeyWord
 		{"soga",8,3,11,1,kw_144,0.,0.,0,N_mdm3(soga_begin,0,soga_final)},
 		{"speculative",8,0,6,0,0,0.,0.,0,N_mdm(true,speculativeFlag)},
 		{"stanford",8,2,11,1,kw_145},
-		{"stoch_collocation",8,11,11,1,kw_127,0.,0.,0,N_mdm(lit,methodName_nond_stoch_collocation)},
+		{"stoch_collocation",8,12,11,1,kw_127,0.,0.,0,N_mdm(lit,methodName_nond_stoch_collocation)},
 		{"surrogate_based_global",8,3,11,1,kw_146,0.,0.,0,N_mdm(lit,methodName_surrogate_based_global)},
 		{"surrogate_based_local",8,9,11,1,kw_152,0.,0.,0,N_mdm(lit,methodName_surrogate_based_local)},
 		{"vector_parameter_study",8,3,11,1,kw_153,0.,0.,0,N_mdm(lit,methodName_vector_parameter_study)}

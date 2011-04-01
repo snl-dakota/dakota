@@ -2163,7 +2163,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"coliny.expansion", P expansionFlag},
 	{"coliny.randomize", P randomizeOrderFlag},
 	{"coliny.show_misc_options", P showMiscOptions},
-	{"derivative_usage", P methodDerivUsageFlag},
+	{"derivative_usage", P methodUseDerivsFlag},
 	{"fixed_seed", P fixedSeedFlag},
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
 	{"latinize", P latinizeFlag},

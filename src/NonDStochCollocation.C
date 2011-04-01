@@ -59,18 +59,17 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-  String sample_reuse, corr_type,
-    approx_type = (stochExpRefineType == Pecos::H_REFINEMENT) ?
+  short u_space_type = probDescDB.get_short("method.nond.expansion_type"),
+    corr_order = -1;
+  String corr_type, pt_reuse, approx_type = (u_space_type == PIECEWISE_U ||
+    stochExpRefineType == Pecos::H_REFINEMENT) ?
     "local_interpolation_polynomial" : "global_interpolation_polynomial";
-  // *** TO DO: support local bases outside of H_REFINEMENT
-  // --> local or global basis spec separate from refinement spec (h/p inferred)
   UShortArray approx_order; // empty
-  short corr_order = -1;
   //const Variables& g_u_vars = g_u_model.current_variables();
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     //g_u_vars.view(), g_u_vars.variables_components(),
     //g_u_model.current_response().active_set(),
-    approx_type, approx_order, corr_type, corr_order, sample_reuse), false);
+    approx_type, approx_order, corr_type, corr_order, pt_reuse), false);
   initialize_u_space_model();
 
   // -------------------------------

@@ -820,7 +820,7 @@ void NonD::initialize_random_variable_types(short u_space_type)
     switch (u_space_type) {
     case STD_NORMAL_U:
       u_types[av_cntr] = Pecos::STD_NORMAL;  break;
-    case ASKEY_U:
+    case ASKEY_U: case PIECEWISE_U:
       u_types[av_cntr] = Pecos::STD_UNIFORM; break;
     case EXTENDED_U:
       u_types[av_cntr] = Pecos::LOGUNIFORM;  break;
@@ -831,7 +831,7 @@ void NonD::initialize_random_variable_types(short u_space_type)
     switch (u_space_type) {
     case STD_NORMAL_U:
       u_types[av_cntr] = Pecos::STD_NORMAL;  break;
-    case ASKEY_U:
+    case ASKEY_U: case PIECEWISE_U:
       u_types[av_cntr] = Pecos::STD_UNIFORM; break;
     case EXTENDED_U:
       u_types[av_cntr] = Pecos::TRIANGULAR;  break;
@@ -872,7 +872,7 @@ void NonD::initialize_random_variable_types(short u_space_type)
     switch (u_space_type) {
     case STD_NORMAL_U:
       u_types[av_cntr] = Pecos::STD_NORMAL;  break;
-    case ASKEY_U:
+    case ASKEY_U: case PIECEWISE_U:
       u_types[av_cntr] = Pecos::STD_UNIFORM; break;
     case EXTENDED_U:
       u_types[av_cntr] = Pecos::HISTOGRAM_BIN;   break;

@@ -680,7 +680,8 @@ KEYWORD12 method
 	      )
 	    ]
 	  [ askey
-	  | wiener ]
+	  | wiener
+	  | piecewise ]
 	  quadrature_order INTEGERLIST
 	  |
 	  ( sparse_grid_level INTEGER
@@ -832,12 +833,13 @@ KEYWORD12 method
 	|
 	( global_interval_est ALIAS nond_global_interval_est
 	  [ lhs
-	  | ego ]
+	    | ego
+	    [ use_derivatives ]
+	    ]
 	  [ rng
 	    mt19937
 	    | rnum2
 	    ]
-	  [ use_derivatives ]
 	  [ samples INTEGER ]
 	  [ seed INTEGER ]
 	  )
@@ -981,12 +983,12 @@ KEYWORD12 method
 	  x_gaussian_process
 	  | u_gaussian_process
 	  [ all_variables ]
+	  [ use_derivatives ]
 	  [ seed INTEGER ]
 	  [ rng
 	    mt19937
 	    | rnum2
 	    ]
-	  [ use_derivatives ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute
