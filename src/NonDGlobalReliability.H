@@ -129,6 +129,11 @@ private:
   /// flag to determine if last iterate was accepted
   /// this controls update of parameters for augmented Lagrangian merit fn
   bool lastIterateAccepted;
+
+  /// order of the data used for surrogate construction, in ActiveSet
+  /// request vector 3-bit format; user may override responses spec
+  short dataOrder;
+
 };
 
 } // namespace Dakota

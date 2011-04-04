@@ -322,6 +322,23 @@ SurfpackApproximation(const String& approx_type,
       copy_data(approxUpperBounds, aub_ra);
       args["upper_bounds"] = fromVec<Real>(aub_ra);
     }
+
+    // activate derivative information if available
+    unsigned short surfpack_derivative_order = 0;
+    if (dataOrder == 1)
+      surfpack_derivative_order = 0;
+    else if (dataOrder == 3)
+      surfpack_derivative_order = 1;
+    else if (dataOrder == 7)
+      surfpack_derivative_order = 2;
+    else {
+      Cerr << "\nError (global_kriging): Unsupported dataOrder = " 
+	   << dataOrder << std::endl;
+      abort_handler(-1);
+    }
+    args["derivative_order"] = 
+      toString<unsigned short>(surfpack_derivative_order);
+
   }
   else if (approxType == "global_neural_network")
     args["type"] = "ann";

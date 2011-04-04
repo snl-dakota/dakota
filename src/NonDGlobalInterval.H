@@ -144,6 +144,11 @@ private:
   bool approxConverged;
   /// flag for maximal response extraction
   bool allResponsesPerIter;
+
+  /// order of the data used for surrogate construction, in ActiveSet
+  /// request vector 3-bit format; user may override responses spec
+  short dataOrder;
+
 };
 
 

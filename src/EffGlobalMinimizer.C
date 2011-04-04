@@ -41,7 +41,7 @@ EffGlobalMinimizer* EffGlobalMinimizer::effGlobalInstance(NULL);
 
 // This constructor accepts a Model
 EffGlobalMinimizer::EffGlobalMinimizer(Model& model): 
-  SurrBasedMinimizer(model), setUpType("model")
+  SurrBasedMinimizer(model), setUpType("model"), dataOrder(1)
 {
   bestVariablesArray.push_back(iteratedModel.current_variables().copy());
 
@@ -61,10 +61,10 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   // Always build a global Gaussian process model.  No correction is needed.
   String approx_type = "global_gaussian", sample_reuse = "none", corr_type;
   UShortArray approx_order; // empty
-  short corr_order = -1, data_order = 1;
+  short corr_order = -1;
   if (probDescDB.get_bool("method.derivative_usage")) {
-    if (gradientType != "none") data_order |= 2;
-    if (hessianType  != "none") data_order |= 4;
+    if (gradientType != "none") dataOrder |= 2;
+    if (hessianType  != "none") dataOrder |= 4;
   }
   // Use a hardwired minimal initial samples.
   int samples  = (numContinuousVars+1)*(numContinuousVars+2)/2,
@@ -76,7 +76,11 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   // The following uses on the fly derived ctor:
   dace_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
     samples, lhs_seed, rng, ACTIVE_UNIFORM), false);
-    
+  // only use derivatives if the user requested and they are available
+  ActiveSet dace_set = dace_iterator.active_set(); // copy
+  dace_set.request_values(dataOrder);
+  dace_iterator.active_set(dace_set);
+
   // Construct f-hat using a GP approximation for each response function over
   // the active/design vars (same view as iteratedModel: not the typical All
   // view for DACE).
@@ -84,7 +88,7 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   fHatModel.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
     //curr_vars.view(), curr_vars.variables_components(),
     //iteratedModel.current_response().active_set(),
-    approx_type, approx_order, corr_type, corr_order, data_order, sample_reuse),
+    approx_type, approx_order, corr_type, corr_order, dataOrder, sample_reuse),
     false);
 
   // *** TO DO: support scaling and other forced Recasts. ***
@@ -292,9 +296,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
       fHatModel.component_parallel_mode(TRUTH_MODEL);
       iteratedModel.continuous_variables(c_vars);
       ActiveSet set = iteratedModel.current_response().active_set();
-      set.request_values(0);
-      for (size_t i=0; i<numFunctions; i++)
-	set.request_value(i, 1);
+      set.request_values(dataOrder);
       iteratedModel.compute_response(set);
       const Response& resp_star_truth = iteratedModel.current_response();
     

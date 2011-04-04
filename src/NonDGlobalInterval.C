@@ -38,7 +38,8 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   NonDInterval(model), seedSpec(probDescDB.get_int("method.random_seed")),
   numSamples(probDescDB.get_int("method.samples")),
   rngName(probDescDB.get_string("method.random_number_generator")),
-  allResponsesPerIter(false) // obtain all response values on each fn call
+  allResponsesPerIter(false), // obtain all response values on each fn call
+  dataOrder(1)
 {
   // Use a hardwired minimal initial samples
   if (!numSamples) // use a default of #terms in a quadratic polynomial
@@ -46,10 +47,10 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   String approx_type = "global_gaussian", corr_type, sample_type,
     sample_reuse = "none";
   UShortArray approx_order; 
-  short corr_order = -1, data_order = 1;
+  short corr_order = -1;
   if (probDescDB.get_bool("method.derivative_usage")) {
-    if (gradientType != "none") data_order |= 2;
-    if (hessianType  != "none") data_order |= 4;
+    if (gradientType != "none") dataOrder |= 2;
+    if (hessianType  != "none") dataOrder |= 4;
   }
 
   // instantiate the Gaussian Process DataFit recursions
@@ -57,6 +58,10 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   // The following uses on the fly derived ctor:
   daceIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
     numSamples, seedSpec, rngName, ACTIVE_UNIFORM), false);
+  // only use derivatives if the user requested and they are available
+  ActiveSet dace_set = daceIterator.active_set(); // copy
+  dace_set.request_values(dataOrder);
+  daceIterator.active_set(dace_set);
 
   // Construct fHatModel using a GP approximation over the active/uncertain
   // vars (same view as iteratedModel: not the typical All view for DACE).
@@ -68,7 +73,7 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   fHatModel.assign_rep(new DataFitSurrModel(daceIterator, iteratedModel,
     //curr_vars.view(), curr_vars.variables_components(),
     //iteratedModel.current_response().active_set(),
-    approx_type, approx_order, corr_type, corr_order, data_order, sample_reuse),
+    approx_type, approx_order, corr_type, corr_order, dataOrder, sample_reuse),
     false);
 
   // eifModel.init_communicators() recursion is currently sufficient for
@@ -299,9 +304,9 @@ void NonDGlobalInterval::post_process_gp_results()
     // changing this might break some of the logic needed to determine
     // whether the inner loop surrogate needs to be reconstructed
     if (allResponsesPerIter)
-      set.request_values(1);
+      set.request_values(dataOrder);
     else
-      { set.request_values(0); set.request_value(respFnCntr, 1); }
+      { set.request_values(0); set.request_value(respFnCntr, dataOrder); }
 
     iteratedModel.compute_response(set);
     const Response& resp_star_truth = iteratedModel.current_response();

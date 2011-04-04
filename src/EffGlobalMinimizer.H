@@ -109,6 +109,10 @@ private:
   /// point that corresponds to the optimal value meritFnStar
   RealVector varStar;
 
+  /// order of the data used for surrogate construction, in ActiveSet
+  /// request vector 3-bit format; user may override responses spec
+  short dataOrder;
+
 /// Computes relative change between successive c_stars using Euclidean norm
 inline Real rel_change_c_star(const RealVector& curr_c_star,
 			      const RealVector& prev_c_star)

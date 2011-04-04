@@ -58,7 +58,8 @@ NonDGlobalReliability* NonDGlobalReliability::nondGlobRelInstance(NULL);
 using std::setw;
 
 NonDGlobalReliability::NonDGlobalReliability(Model& model):
-  NonDReliability(model), meritFunctionType(AUGMENTED_LAGRANGIAN_MERIT)
+  NonDReliability(model), meritFunctionType(AUGMENTED_LAGRANGIAN_MERIT),
+  dataOrder(1)
 {
   const String& mpp_search
     = probDescDB.get_string("method.nond.reliability_search_type");
@@ -153,11 +154,11 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   // Always build a global Gaussian process model.  No correction is needed.
   String approx_type = "global_gaussian", corr_type, sample_type;
   UShortArray approx_order; // empty
-  short corr_order = -1, data_order = 1,
+  short corr_order = -1,
     active_view = iteratedModel.current_variables().view().first;
   if (probDescDB.get_bool("method.derivative_usage")) {
-    if (gradientType != "none") data_order |= 2;
-    if (hessianType  != "none") data_order |= 4;
+    if (gradientType != "none") dataOrder |= 2;
+    if (hessianType  != "none") dataOrder |= 4;
   }
   String sample_reuse
     = (active_view == MERGED_ALL || active_view == MIXED_ALL) ? "all" : "none";
@@ -198,7 +199,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     	     gl_len = requestedGenRelLevels[i].length(),
              num_levels = rl_len + pl_len + gl_len;
       if (num_levels) {
-    	set.request_value(i, 1);
+    	set.request_value(i, dataOrder);
 	surr_fn_indices.insert(i);
       }
     }
@@ -207,7 +208,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     g_hat_x_model.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
       //curr_vars.view(), curr_vars.variables_components(),
       //iteratedModel.current_response().active_set(),
-      approx_type, approx_order, corr_type, corr_order, data_order,
+      approx_type, approx_order, corr_type, corr_order, dataOrder,
       sample_reuse), false);
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
@@ -268,7 +269,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
 	     gl_len = requestedGenRelLevels[i].length(),
              num_levels = rl_len + pl_len + gl_len;
       if (num_levels) {
-        set.request_value(i, 1);
+        set.request_value(i, dataOrder);
         surr_fn_indices.insert(i);
       }
     }
@@ -278,7 +279,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     uSpaceModel.assign_rep(new DataFitSurrModel(dace_iterator, g_u_model,
       //g_u_vars.view(), g_u_vars.variables_components(),
       //g_u_model.current_response().active_set(),
-      approx_type, approx_order, corr_type, corr_order, data_order,
+      approx_type, approx_order, corr_type, corr_order, dataOrder,
       sample_reuse), false);
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
   }
@@ -627,7 +628,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  natafTransform.trans_U_to_X(c_vars_u, c_vars_x);
 	  iteratedModel.continuous_variables(c_vars_x);
 	  ActiveSet set = iteratedModel.current_response().active_set();
-	  set.request_values(0); set.request_value(respFnCount, 1);
+	  set.request_values(0); set.request_value(respFnCount, dataOrder);
 	  iteratedModel.compute_response(set);
 	  const Response& resp_star_truth = iteratedModel.current_response();
 
@@ -805,6 +806,7 @@ void NonDGlobalReliability::importance_sampling()
     RealVectorArray gp_inputs;
     if (num_levels==0) {
       uSpaceModel.component_parallel_mode(TRUTH_MODEL);
+      // don't use derivatives in the importance sampling
       ActiveSet set = iteratedModel.current_response().active_set();
       set.request_values(0); set.request_value(respFnCount, 1);
       iteratedModel.compute_response(set);
