@@ -68,10 +68,10 @@ public:
   /// get pecosBasisApprox.configOptions.expansionGradFlag
   bool expansion_gradient_flag() const;
 
-  /// set pecosBasisApprox.configOptions.refinementType
-  void refinement_type(short refine_type);
-  /// get pecosBasisApprox.configOptions.refinementType
-  short refinement_type() const;
+  // set pecosBasisApprox.configOptions.refinementType
+  //void refinement_type(short refine_type);
+  // get pecosBasisApprox.configOptions.refinementType
+  //short refinement_type() const;
 
   /// set pecosBasisApprox.configOptions.refinementControl
   void refinement_control(short refine_cntl);
@@ -220,6 +220,9 @@ private:
   /// synchronize Pecos dataPoints with updated Approximation currentPoints
   void append_from_current();
 
+  /// utility to convert Dakota type string to Pecos type enumeration
+  void approx_type_to_basis_type(const String& approx_type, short& basis_type);
+
   //
   //- Heading: Data
   //
@@ -269,12 +272,12 @@ inline bool PecosApproximation::expansion_gradient_flag() const
 { return polyApproxRep->expansion_coefficient_gradient_flag(); }
 
 
-inline void PecosApproximation::refinement_type(short refine_type)
-{ polyApproxRep->refinement_type(refine_type); }
+//inline void PecosApproximation::refinement_type(short refine_type)
+//{ polyApproxRep->refinement_type(refine_type); }
 
 
-inline short PecosApproximation::refinement_type() const
-{ return polyApproxRep->refinement_type(); }
+//inline short PecosApproximation::refinement_type() const
+//{ return polyApproxRep->refinement_type(); }
 
 
 inline void PecosApproximation::refinement_control(short refine_cntl)

@@ -135,7 +135,7 @@ protected:
   bool useDerivsFlag;
 
   /// refinement type: NO_REFINEMENT, P_REFINEMENT, or H_REFINEMENT
-  short stochExpRefineType;
+  short refineType;
 
 private:
 
@@ -189,7 +189,7 @@ private:
   /// refinement control: NO_CONTROL, UNIFORM_CONTROL,
   /// DIMENSION_ADAPTIVE_TOTAL_SOBOL, DIMENSION_ADAPTIVE_SPECTRAL_DECAY, or
   /// DIMENSION_ADAPTIVE_GENERALIZED_SPARSE
-  short stochExpRefineControl;
+  short refineControl;
 
   /// flag to use LHS sampling or MMAIS sampling on the expansion
   bool impSampling;

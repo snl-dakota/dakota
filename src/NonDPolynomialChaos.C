@@ -131,13 +131,13 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     if (hessianType  != "none") data_order |= 4;
   }
   String corr_type, pt_reuse, approx_type =
-    (u_space_type == PIECEWISE_U || stochExpRefineType == Pecos::H_REFINEMENT) ?
+    (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT) ?
     "local_orthogonal_polynomial" : "global_orthogonal_polynomial";
   if (expansionCoeffsApproach == Pecos::REGRESSION && !tensorRegression) {
     pt_reuse = probDescDB.get_string("method.nond.collocation_point_reuse");
     // if reusing samples within a refinement strategy ensure different random
     // numbers are generated for points w/i the grid (even if #samples differs)
-    if (stochExpRefineType && !pt_reuse.empty())
+    if (refineType && !pt_reuse.empty())
       ((Analyzer*)u_space_sampler.iterator_rep())->vary_pattern(true);
   }
 

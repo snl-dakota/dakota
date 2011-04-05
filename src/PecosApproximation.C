@@ -25,7 +25,8 @@ PecosApproximation(const String& approx_type, const UShortArray& approx_order,
 		   size_t num_vars, short data_order)
 {
   approxType = approx_type; numVars = num_vars; dataOrder = data_order;
-  pecosBasisApprox = Pecos::BasisApproximation(approx_type, approx_order,
+  short basis_type; approx_type_to_basis_type(approxType, basis_type);
+  pecosBasisApprox = Pecos::BasisApproximation(basis_type, approx_order,
 					       num_vars,    data_order);
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
@@ -36,20 +37,40 @@ PecosApproximation::
 PecosApproximation(ProblemDescDB& problem_db, size_t num_vars):
   Approximation(BaseConstructor(), problem_db, num_vars)
 {
-  dataOrder = 1;
+  short basis_type; approx_type_to_basis_type(approxType, basis_type);
   UShortArray approx_order;
-  if (approxType == "global_orthogonal_polynomial")
+  if (basis_type == Pecos::GLOBAL_ORTHOGONAL_POLYNOMIAL)
     approx_order = problem_db.get_dusa("method.nond.expansion_order");
+  dataOrder = 1;
   if (problem_db.get_bool("model.surrogate.derivative_usage")) {
     if (problem_db.get_string("responses.gradient_type") != "none")
       dataOrder |= 2;
     if (problem_db.get_string("responses.hessian_type")  != "none")
       dataOrder |= 4;
   }
-  pecosBasisApprox = Pecos::BasisApproximation(approxType, approx_order,
+  pecosBasisApprox = Pecos::BasisApproximation(basis_type, approx_order,
 					       numVars,    dataOrder);
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
+}
+
+
+void PecosApproximation::
+approx_type_to_basis_type(const String& approx_type, short& basis_type)
+{
+  basis_type = Pecos::NO_BASIS;
+  if (approx_type.begins("global_")) {
+    if (approx_type.ends("interpolation_polynomial"))
+      basis_type = Pecos::GLOBAL_INTERPOLATION_POLYNOMIAL;
+    else if (approx_type.ends("orthogonal_polynomial"))
+      basis_type = Pecos::GLOBAL_ORTHOGONAL_POLYNOMIAL;
+  }
+  else if (approx_type.begins("local_")) {
+    if (approx_type.ends("interpolation_polynomial"))
+      basis_type = Pecos::LOCAL_INTERPOLATION_POLYNOMIAL;
+    else if (approx_type.ends("orthogonal_polynomial"))
+      basis_type = Pecos::LOCAL_ORTHOGONAL_POLYNOMIAL;
+  }
 }
 
 

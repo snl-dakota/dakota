@@ -75,7 +75,7 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
     if (hessianType  != "none") data_order |= 4;
   }
   String corr_type, pt_reuse, approx_type =
-    (u_space_type == PIECEWISE_U || stochExpRefineType == Pecos::H_REFINEMENT) ?
+    (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT) ?
     "local_interpolation_polynomial" : "global_interpolation_polynomial";
   UShortArray approx_order; // empty
   //const Variables& g_u_vars = g_u_model.current_variables();
