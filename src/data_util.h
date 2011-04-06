@@ -30,10 +30,6 @@ class Matrix;
 class DDaceSamplePoint;
 #endif // DAKOTA_DDACE
 
-#ifdef HAVE_SURFPACK
-#include "SurfpackMatrix.h"
-#endif // DAKOTA_SURFPACK
-
 
 // ------------------------
 // templated hash functions
@@ -154,11 +150,6 @@ void copy_data(const std::vector<DDaceSamplePoint>& dspa, Real* ptr,
 	       const int ptr_len);
 #endif // DAKOTA_DDACE
 
-#ifdef HAVE_SURFPACK
-/// copy RealSymMatrix to SurfpackMatrix (Real type only)
-void copy_data(const RealSymMatrix& rsdm,
-	       SurfpackMatrix<Real>& surfpack_matrix);
-#endif // HAVE_SURFPACK
 
 
 /// Copies a row of a Teuchos_SerialDenseMatrix<int,Real> to std::vector<Real>

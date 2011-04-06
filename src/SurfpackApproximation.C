@@ -29,6 +29,7 @@
 
 #include <algorithm>
 
+
 namespace Dakota {
 
 /// \todo The dakota data structures like RealArray inherit from std::vector.
@@ -700,7 +701,7 @@ add_sdp_to_surfdata(const Pecos::SurrogateDataPoint& sdp,
     {
       copy_data(sdp.response_gradient(), gradient);
       SurfpackMatrix<Real> hessian(numVars,numVars); // only allocate if needed
-      copy_data(sdp.response_hessian(), hessian);
+      copy_matrix(sdp.response_hessian(), hessian);
       surf_data.addPoint(SurfPoint(x, f, gradient, hessian));
       break;
     }
@@ -714,5 +715,29 @@ add_sdp_to_surfdata(const Pecos::SurrogateDataPoint& sdp,
 
   }
 }
+
+
+void SurfpackApproximation::copy_matrix(const RealSymMatrix& rsdm,
+					SurfpackMatrix<Real>& surfpack_matrix)
+{
+  // SymmetricMatrix = symmetric and square, but Dakota::Matrix can be general
+  // (e.g., functionGradients = numFns x numVars).  Therefore, have to verify
+  // sanity of the copy.  Could copy square submatrix of rsdm into sm, but 
+  // aborting with an error seems better since this should only currently be
+  // used for copying Hessian matrices.
+  size_t nr = rsdm.numRows(), nc = rsdm.numCols();
+  if (nr != nc) {
+    Cerr << "Error: copy_data(const Dakota::RealSymMatrix& rsdm, "
+	 << "SurfpackMatrix<Real>& sm) called with nonsquare rsdm."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  if (surfpack_matrix.getNRows() != nr | surfpack_matrix.getNCols() != nc) 
+    surfpack_matrix.resize(nr, nc);
+  for (size_t i=0; i<nr; ++i)
+    for (size_t j=0; j<nc; ++j)
+      surfpack_matrix(i,j) = rsdm(i,j);
+}
+
 
 } // namespace Dakota

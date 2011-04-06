@@ -22,6 +22,7 @@
 class SurfData;
 class SurfpackModel;
 class SurfpackModelFactory;
+template< typename T > class SurfpackMatrix;
 
 namespace Dakota {
 
@@ -106,6 +107,11 @@ private:
   /// dataOrder available
   void add_sdp_to_surfdata(const Pecos::SurrogateDataPoint& sdp,
 			   SurfData& surf_data);
+
+  /// copy RealSymMatrix to SurfpackMatrix (Real type only)
+  void copy_matrix(const RealSymMatrix& rsdm,
+		   SurfpackMatrix<Real>& surfpack_matrix);
+
 
   //
   //- Heading: Data
