@@ -72,12 +72,12 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
       args["order"] = toString<unsigned short>(approxOrder);
 
       // TO DO: activate derivative-based regression
-      dataOrder = 1;
+      buildDataOrder = 1;
       if (problem_db.get_bool("model.surrogate.derivative_usage")) {
 	if (problem_db.get_string("responses.gradient_type") != "none")
-	  dataOrder |= 2;
+	  buildDataOrder |= 2;
 	if (problem_db.get_string("responses.hessian_type")  != "none")
-	  dataOrder |= 4;
+	  buildDataOrder |= 4;
       }
     }
 
@@ -106,21 +106,21 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
       }
 
       // activate derivative information if available
-      dataOrder = 1;
+      buildDataOrder = 1;
       unsigned short surfpack_derivative_order = 0;
       if (problem_db.get_bool("model.surrogate.derivative_usage")) {
 	if (problem_db.get_string("responses.gradient_type") != "none") {
-	  dataOrder |= 2;
+	  buildDataOrder |= 2;
 	  surfpack_derivative_order = 1;
 	}
 	if (problem_db.get_string("responses.hessian_type")  != "none") {
-	  dataOrder |= 4;
-	  if (dataOrder | 2) {
+	  buildDataOrder |= 4;
+	  if (buildDataOrder | 2) {
 	    surfpack_derivative_order = 2;
 	  }
 	  else {
-	    Cerr << "\nError (global_kriging): Hessian information only used"
-		 << "if gradients present.\ndataOrder = " << dataOrder 
+	    Cerr << "\nError (global_kriging): Hessian information only used "
+		 << "if gradients present.\nbuildDataOrder = " << buildDataOrder
 		 << std::endl;
 	    abort_handler(-1);
 	  }
@@ -326,15 +326,15 @@ SurfpackApproximation(const String& approx_type,
 
     // activate derivative information if available
     unsigned short surfpack_derivative_order = 0;
-    if (dataOrder == 1)
+    if (buildDataOrder == 1)
       surfpack_derivative_order = 0;
-    else if (dataOrder == 3)
+    else if (buildDataOrder == 3)
       surfpack_derivative_order = 1;
-    else if (dataOrder == 7)
+    else if (buildDataOrder == 7)
       surfpack_derivative_order = 2;
     else {
-      Cerr << "\nError (global_kriging): Unsupported dataOrder = " 
-	   << dataOrder << std::endl;
+      Cerr << "\nError (global_kriging): Unsupported buildDataOrder = " 
+	   << buildDataOrder << std::endl;
       abort_handler(-1);
     }
     args["derivative_order"] = 
@@ -686,7 +686,7 @@ add_sdp_to_surfdata(const Pecos::SurrogateDataPoint& sdp,
   // for now only allow builds from exactly 1, 3=1+2, or 7=1+2+4; use
   // different set functions so the SurfPoint data remains empty if
   // not present
-  switch (dataOrder) {
+  switch (buildDataOrder) {
 
   case 1:
     surf_data.addPoint(SurfPoint(x, f));
@@ -709,7 +709,7 @@ add_sdp_to_surfdata(const Pecos::SurrogateDataPoint& sdp,
   default:
     Cerr << "\nError (SurfpackApproximation): derivative data may only be used"
 	 << "if all\nlower-order information is also present. Specified "
-	 << "dataOrder is " << dataOrder << "."  << std::endl; 
+	 << "buildDataOrder is " << buildDataOrder << "."  << std::endl; 
     abort_handler(-1);
     break;
 

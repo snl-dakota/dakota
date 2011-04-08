@@ -42,7 +42,7 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
   // verbosity.  For approximations, verbose adds quad poly coeff reporting.
   outputLevel(problem_db.get_short("method.output")),
   numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
-  dataOrder(1), popCount(1), approxRep(NULL), referenceCount(1)
+  buildDataOrder(1), popCount(1), approxRep(NULL), referenceCount(1)
 {
   if (problem_db.get_bool("model.surrogate.derivative_usage") &&
       approxType != "global_polynomial"                       &&
@@ -69,7 +69,7 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 Approximation::Approximation(BaseConstructor, const String& approx_type,
 			     size_t num_vars, short data_order):
   outputLevel(NORMAL_OUTPUT), numVars(num_vars), approxType(approx_type),
-  dataOrder(data_order), popCount(1), approxRep(NULL), referenceCount(1)
+  buildDataOrder(data_order), popCount(1), approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(BaseConstructor) called to build base "
@@ -83,7 +83,7 @@ Approximation::Approximation(BaseConstructor, const String& approx_type,
     case (problem_db is needed to build a meaningful Approximation object).
     This makes it necessary to check for NULL in the copy constructor,
     assignment operator, and destructor. */
-Approximation::Approximation(): dataOrder(1), outputLevel(NORMAL_OUTPUT),
+Approximation::Approximation(): buildDataOrder(1), outputLevel(NORMAL_OUTPUT),
   popCount(1), approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -290,7 +290,7 @@ void Approximation::build()
          // insufficient on its own; derived implementations should
          // explicitly invoke (or reimplement) this base class contribution.
     size_t num_curr_pts = currentPoints.size();
-    int ms = min_points(true); // account for anchorPoint & dataOrder
+    int ms = min_points(true); // account for anchorPoint & buildDataOrder
     if (num_curr_pts < ms) {
       Cerr << "\nError: not enough samples to build approximation.  "
 	   << "Construction of this approximation\n       requires at least "
@@ -557,7 +557,7 @@ int Approximation::num_constraints() const
   else { // default implementation
     if (anchorPoint.is_null())
       return 0;
-    else { // anchorPoint data may differ from dataOrder setting
+    else { // anchorPoint data may differ from buildDataOrder setting
       int ng = anchorPoint.response_gradient().length(),
           nh = anchorPoint.response_hessian().numRows();
       return 1 + ng + nh*(nh + 1)/2;
@@ -575,9 +575,9 @@ int Approximation::min_points(bool constraint_flag) const
     if (constraint_flag)
       coeffs -= num_constraints();
     int data_per_pt = 0;
-    if (dataOrder & 1) data_per_pt += 1;
-    if (dataOrder & 2) data_per_pt += numVars;
-    if (dataOrder & 4) data_per_pt += numVars*(numVars + 1)/2;
+    if (buildDataOrder & 1) data_per_pt += 1;
+    if (buildDataOrder & 2) data_per_pt += numVars;
+    if (buildDataOrder & 4) data_per_pt += numVars*(numVars + 1)/2;
     return (data_per_pt > 1) ?
       (int)std::ceil((Real)coeffs/(Real)data_per_pt) : coeffs;
   }
@@ -593,9 +593,9 @@ int Approximation::recommended_points(bool constraint_flag) const
     if (constraint_flag)
       coeffs -= num_constraints();
     int data_per_pt = 0;
-    if (dataOrder & 1) data_per_pt += 1;
-    if (dataOrder & 2) data_per_pt += numVars;
-    if (dataOrder & 4) data_per_pt += numVars*(numVars + 1)/2;
+    if (buildDataOrder & 1) data_per_pt += 1;
+    if (buildDataOrder & 2) data_per_pt += numVars;
+    if (buildDataOrder & 4) data_per_pt += numVars*(numVars + 1)/2;
     return (data_per_pt > 1) ?
       (int)std::ceil((Real)coeffs/(Real)data_per_pt) : coeffs;
   }

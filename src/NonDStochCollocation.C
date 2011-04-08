@@ -63,14 +63,16 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
     corr_order = -1, data_order = 1;
   // There are two derivative cases of interest: (1) derivatives used as
   // additional data for forming the approximation (derivatives w.r.t. the
-  // expansion variables), and (2) derivatives that will be approximated in
-  // separate expansions (derivatives w.r.t. auxilliary variables).  We do not
-  // have a good way to detect the latter at construct time, as neither the
-  // finalStats ASV/DVV nor the subIteratorFlag have been defined.  The current
-  // approach requires the presence of inactive continuous vars, relying on the
-  // update of the subModel inactive view within the NestedModel ctor prior to
-  // subIterator instantiation.
-  if (probDescDB.get_bool("method.derivative_usage") || iteratedModel.icv()) {
+  // expansion variables), and (2) derivatives that will be approximated 
+  // separately (derivatives w.r.t. auxilliary variables).  The data_order
+  // passed through the DataFitSurrModel defines Approximation::buildDataOrder,
+  // which is restricted to managing the former case.  If we need to manage the
+  // latter case in the future, we do not have a good way to detect this state
+  // at construct time, as neither the finalStats ASV/DVV nor subIteratorFlag
+  // have yet been defined.  One indicator that is defined is the presence of
+  // inactive continuous vars, since the subModel inactive view is updated
+  // within the NestedModel ctor prior to subIterator instantiation.
+  if (probDescDB.get_bool("method.derivative_usage")) {// || iteratedModel.icv()
     if (gradientType != "none") data_order |= 2;
     if (hessianType  != "none") data_order |= 4;
   }

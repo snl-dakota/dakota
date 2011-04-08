@@ -78,7 +78,7 @@ inline TaylorApproximation::TaylorApproximation()
 
 inline TaylorApproximation::
 TaylorApproximation(size_t num_vars, short data_order)
-{ numVars = num_vars; dataOrder = data_order; }
+{ numVars = num_vars; buildDataOrder = data_order; }
 
 
 inline TaylorApproximation::~TaylorApproximation()

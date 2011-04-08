@@ -154,7 +154,7 @@ GaussProcApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
     abort_handler(-1);
   }
 
-  dataOrder = 1; // TO DO: support dataOrder = 3
+  buildDataOrder = 1; // TO DO: support buildDataOrder = 3
 
 #ifdef HAVE_NCSU
   Cout << "Using NCSU DIRECT to optimize correlation coefficients."<<endl;

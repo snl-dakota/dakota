@@ -21,7 +21,7 @@ TANA3Approximation::
 TANA3Approximation(ProblemDescDB& problem_db, size_t num_vars):
   Approximation(BaseConstructor(), problem_db, num_vars)
 {
-  dataOrder = 3;
+  buildDataOrder = 3;
   pExp.sizeUninitialized(numVars);
   minX.sizeUninitialized(numVars);
 
@@ -82,12 +82,13 @@ void TANA3Approximation::build()
 	 << std::endl;
     abort_handler(-1);
   }
-  if (!(dataOrder & 1)) {
+  if (!(buildDataOrder & 1)) {
     Cerr << "Error: response values required in TANA3Approximation::build."
 	 << std::endl;
     abort_handler(-1);
   }
-  if (!(dataOrder & 2) || anchorPoint.response_gradient().length() != numVars) {
+  if ( !(buildDataOrder & 2) ||
+       anchorPoint.response_gradient().length() != numVars ) {
     Cerr << "Error: response gradients required in TANA3Approximation::build."
 	 << std::endl;
     abort_handler(-1);

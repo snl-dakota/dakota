@@ -283,7 +283,7 @@ inline GaussProcApproximation::GaussProcApproximation():
 inline GaussProcApproximation::
 GaussProcApproximation(size_t num_vars, short data_order):
   trendOrder(2), usePointSelection(false)
-{ numVars = num_vars; dataOrder = data_order; }
+{ numVars = num_vars; buildDataOrder = data_order; }
 
 
 inline GaussProcApproximation::~GaussProcApproximation()

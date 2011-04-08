@@ -215,11 +215,14 @@ protected:
   String approxType;
   /// order of the data used for surrogate construction, in ActiveSet
   /// request vector 3-bit format.
-  /** This setting should not be inferred from the responses specification,
-      since we may need gradient support for evaluating gradients at a
-      single point (e.g., the center of a trust region), but not require
-      gradient evaluations at every point. */
-  short dataOrder;
+  /** This setting distinguishes derivative data intended for use in
+      construction (includes derivatives w.r.t. the build variables) from
+      derivative data that may be approximated separately (excludes derivatives
+      w.r.t. auxilliary variables).  This setting should also not be inferred
+      directly from the responses specification, since we may need gradient
+      support for evaluating gradients at a single point (e.g., the center of
+      a trust region), but not require gradient evaluations at every point. */
+  short buildDataOrder;
 
   /// value of the approximation returned by get_value()
   Real approxValue;

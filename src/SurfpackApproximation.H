@@ -104,7 +104,7 @@ private:
   SurfData* surrogates_to_surf_data();
 
   /// add Pecos::SurrogateDataPoint to SurfData, accounting for
-  /// dataOrder available
+  /// buildDataOrder available
   void add_sdp_to_surfdata(const Pecos::SurrogateDataPoint& sdp,
 			   SurfData& surf_data);
 

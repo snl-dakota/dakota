@@ -97,7 +97,7 @@ inline TANA3Approximation::TANA3Approximation(size_t num_vars, short data_order)
   numVars = num_vars;
   // as Hessian data cannot be used, do not accept 4 bit since it could
   // affect data requirement estimations in Approximation base class
-  dataOrder = (data_order & 3);
+  buildDataOrder = (data_order & 3);
 }
 
 

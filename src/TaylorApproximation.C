@@ -34,7 +34,7 @@ TaylorApproximation(ProblemDescDB& problem_db, size_t num_vars):
 	 << std::endl;
     abort_handler(-1);
   }
-  dataOrder
+  buildDataOrder
     = (problem_db.get_string("responses.hessian_type") == "none") ? 3 : 7;
   // restore the specification
   problem_db.set_db_model_nodes(model_index);
@@ -44,7 +44,7 @@ TaylorApproximation(ProblemDescDB& problem_db, size_t num_vars):
 int TaylorApproximation::min_coefficients() const
 {
   int num_coeffs = numVars + 1; // first-order Taylor series
-  if (dataOrder & 4)
+  if (buildDataOrder & 4)
     num_coeffs += numVars*(numVars + 1)/2;
   return num_coeffs;
 }
@@ -72,7 +72,7 @@ void TaylorApproximation::build()
   }
 
   // Check Hessian
-  if (dataOrder & 4) {
+  if (buildDataOrder & 4) {
     const RealSymMatrix& hess = anchorPoint.response_hessian();
     if (hess.numRows() != numVars) {
       Cerr << "Error: Hessian matrix required in TaylorApproximation::build."
@@ -92,7 +92,7 @@ const Real& TaylorApproximation::get_value(const RealVector& x)
   for (size_t i=0; i<numVars; i++) {
     Real dist_i = x[i] - c_vars[i];
     approxValue += grad[i] * dist_i;
-    if (dataOrder & 4) // include Hessian terms
+    if (buildDataOrder & 4) // include Hessian terms
       for (size_t j=0; j<numVars; j++)
         approxValue += dist_i * hess(i,j) * (x[j] - c_vars[j])/2.;
   }
@@ -104,7 +104,7 @@ const RealVector& TaylorApproximation::
 get_gradient(const RealVector& x)
 {
   approxGradient = anchorPoint.response_gradient();
-  if (dataOrder & 4) { // include Hessian terms
+  if (buildDataOrder & 4) { // include Hessian terms
     const RealVector&  c_vars = anchorPoint.continuous_variables();
     const RealSymMatrix& hess = anchorPoint.response_hessian();
     for (size_t i=0; i<numVars; i++)
@@ -118,7 +118,7 @@ get_gradient(const RealVector& x)
 const RealSymMatrix& TaylorApproximation::
 get_hessian(const RealVector& x)
 {
-  if (dataOrder & 4)
+  if (buildDataOrder & 4)
     return anchorPoint.response_hessian();
   else {
     if (approxHessian.numRows() != numVars)
