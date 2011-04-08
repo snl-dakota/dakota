@@ -195,6 +195,12 @@ protected:
   Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 		size_t num_vars);
 
+  /// constructor initializes the base class part of letter classes
+  /// (BaseConstructor overloading avoids infinite recursion in the
+  /// derived class constructors - Coplien, p. 139)
+  Approximation(BaseConstructor, const String& approx_type, size_t num_vars,
+		short data_order);
+
   //
   //- Heading: Data
   //

@@ -294,9 +294,9 @@ SurfpackApproximation::
 SurfpackApproximation(const String& approx_type,
 		      const UShortArray& approx_order, size_t num_vars,
 		      short data_order):
+  Approximation(BaseConstructor(), approx_type, num_vars, data_order),
   surfData(NULL), model(NULL), factory(NULL)
 {
-  approxType  = approx_type; numVars = num_vars; dataOrder = data_order;
   approxOrder = (approx_order.empty()) ? 2 : approx_order[0];
 
   ParamMap args;
