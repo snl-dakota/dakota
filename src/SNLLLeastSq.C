@@ -283,7 +283,7 @@ nlf2_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
   // OPT++ does not always have a 1-to-1 correspondence in evaluator calls.
   int i, j, k;
   RealVector local_des_vars;
-  copy_data(x, local_des_vars);
+  SNLLBase::copy_data(x, local_des_vars);
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::nlf2_evaluator_gn vars = \n" << local_des_vars;
   if (!snllLSqInstance->numNonlinearConstraints ||
@@ -398,7 +398,7 @@ constraint1_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
 
   // set model variables and asv prior to compute_response().
   RealVector local_des_vars;
-  copy_data(x, local_des_vars);
+  SNLLBase::copy_data(x, local_des_vars);
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint1_evaluator_gn vars = \n"
          << local_des_vars;
@@ -466,7 +466,7 @@ constraint2_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
 
   // set model variables and asv prior to compute_response().
   RealVector local_des_vars;
-  copy_data(x, local_des_vars);
+  SNLLBase::copy_data(x, local_des_vars);
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint2_evaluator_gn vars = \n"
          << local_des_vars;

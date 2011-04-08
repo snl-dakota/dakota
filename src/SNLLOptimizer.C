@@ -529,7 +529,7 @@ nlf0_evaluator(int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f,
   // present.  Unlike NPSOL, verify that vars are consistent since OPT++ does
   // not always have a 1-to-1 correspondence in evaluator calls.
   RealVector local_des_vars;
-  copy_data(x, local_des_vars);
+  SNLLBase::copy_data(x, local_des_vars);
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::nlf0_evaluator vars = \n" << local_des_vars;
   if (!snllOptInstance->numNonlinearConstraints ||
@@ -601,7 +601,7 @@ nlf1_evaluator(int mode, int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f,
   // present.  Unlike NPSOL, verify that mode and vars are consistent since
   // OPT++ does not always have a 1-to-1 correspondence in evaluator calls.
   RealVector local_des_vars;
-  copy_data(x, local_des_vars);
+  SNLLBase::copy_data(x, local_des_vars);
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::nlf1_evaluator vars = \n" << local_des_vars;
 
@@ -637,7 +637,7 @@ nlf1_evaluator(int mode, int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f,
   }
   if (mode & 2) { // 2nd bit is present, mode = 2 or 3
     const RealMatrix& local_fn_grads = local_response.function_gradients();
-    copy_data(local_fn_grads[0], local_fn_grads.numRows(), grad_f);
+    SNLLBase::copy_data(local_fn_grads[0], local_fn_grads.numRows(), grad_f);
     result_mode |= NLPGradient;
   }
 }
@@ -691,7 +691,7 @@ nlf2_evaluator(int mode, int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f,
   // present.  Unlike NPSOL, verify that mode and vars are consistent since
   // OPT++ does not always have a 1-to-1 correspondence in evaluator calls.
   RealVector local_des_vars;
-  copy_data(x, local_des_vars);
+  SNLLBase::copy_data(x, local_des_vars);
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::nlf2_evaluator vars = \n" << local_des_vars;
   if (!snllOptInstance->numNonlinearConstraints ||
@@ -725,13 +725,13 @@ nlf2_evaluator(int mode, int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f,
   }
   if (mode & 2) { // 2nd bit is present, mode = 2, 3, 6, or 7
     const RealMatrix& local_fn_grads = local_response.function_gradients();
-    copy_data(local_fn_grads[0], local_fn_grads.numRows(), grad_f);
+    SNLLBase::copy_data(local_fn_grads[0], local_fn_grads.numRows(), grad_f);
     result_mode |= NLPGradient;
   }
   if (mode & 4) { // 3rd bit is present, mode >= 4
     const RealSymMatrixArray& local_fn_hessians
       = local_response.function_hessians();
-    copy_data(local_fn_hessians[0], hess_f);
+    SNLLBase::copy_data(local_fn_hessians[0], hess_f);
     result_mode |= NLPHessian;
   }
 }
@@ -750,7 +750,7 @@ constraint0_evaluator(int n, const NEWMAT::ColumnVector& x,
 
   // set model variables prior to compute_response()
   RealVector local_des_vars;
-  copy_data(x, local_des_vars);
+  SNLLBase::copy_data(x, local_des_vars);
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint0_evaluator vars = \n" <<local_des_vars;
   snllOptInstance->iteratedModel.continuous_variables(local_des_vars);
@@ -780,7 +780,7 @@ constraint1_evaluator(int mode, int n, const NEWMAT::ColumnVector& x,
 
   // set model variables and active set prior to compute_response()
   RealVector local_des_vars;
-  copy_data(x, local_des_vars);
+  SNLLBase::copy_data(x, local_des_vars);
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint1_evaluator vars = \n" <<local_des_vars;
   snllOptInstance->iteratedModel.continuous_variables(local_des_vars);
@@ -820,7 +820,7 @@ constraint2_evaluator(int mode, int n, const NEWMAT::ColumnVector& x,
 
   // set model variables and active set prior to compute_response().
   RealVector local_des_vars;
-  copy_data(x, local_des_vars);
+  SNLLBase::copy_data(x, local_des_vars);
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint2_evaluator vars = \n" <<local_des_vars;
   snllOptInstance->iteratedModel.continuous_variables(local_des_vars);

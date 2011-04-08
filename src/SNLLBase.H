@@ -130,6 +130,18 @@ protected:
   /// method instantiations
   void snll_post_run(OPTPP::NLP0* nlf_objective);
 
+  /// copy RealSymMatrix to NEWMAT::SymmetricMatrix
+  static void copy_data(const RealSymMatrix& rsdm, NEWMAT::SymmetricMatrix& sm);
+  /// copy RealMatrix to NEWMAT::Matrix
+  static void copy_data(const RealMatrix& rdm, NEWMAT::Matrix& m);
+  /// copy NEWMAT::ColumnVector to RealVector
+  static void copy_data(const NEWMAT::ColumnVector& cv, RealVector& rdv);
+  /// copy RealVector to NEWMAT::ColumnVector
+  static void copy_data(const RealVector& rdv, NEWMAT::ColumnVector& cv);
+  /// copy Real* (column of Teuchos_SerialDenseMatrix) to NEWMAT::ColumnVector
+  static void copy_data(const Real* rdv, const int num_items,
+			NEWMAT::ColumnVector& cv);
+
   //
   //- Heading: Data
   //

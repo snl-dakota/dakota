@@ -19,6 +19,7 @@
 
 #include "DakotaPStudyDACE.H"
 
+class DDaceSamplePoint;
 
 namespace Dakota {
 
@@ -77,6 +78,18 @@ private:
   /// convenience function for resolving number of samples and
   /// number of symbols from input.
   void resolve_samples_symbols();
+
+  // inactive copy functions -- remove?
+  /// copy DDACE point to RealVector
+  //void copy_data(const DDaceSamplePoint& dsp, RealVector& rdv);
+  /// copy DDACE point array to RealVectorArray
+  //void copy_data(const std::vector<DDaceSamplePoint>& dspa,
+  //		 RealVectorArray& rdva);
+
+  /// copy DDACE point array to Real*
+  static void copy_data(const std::vector<DDaceSamplePoint>& dspa, Real* ptr,
+			const int ptr_len);
+
 
   //
   //- Heading: Data

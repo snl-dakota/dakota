@@ -924,7 +924,7 @@ void GaussProcApproximation::calc_grad_nll()
 
 #ifdef HAVE_OPTPP
 void GaussProcApproximation::
-negloglik(int mode, int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& fx, 
+negloglik(int mode, int n, const NEWMAT::ColumnVector& x, Real& fx, 
 	  NEWMAT::ColumnVector& grad_f, int& result_mode)
 {
   for (size_t i=0; i<n; i++)

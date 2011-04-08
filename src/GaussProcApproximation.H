@@ -23,8 +23,12 @@
 #include "Teuchos_SerialSpdDenseSolver.hpp"
 
 #ifdef HAVE_OPTPP
-#include "globals.h"
-#endif
+namespace NEWMAT { 
+  class ColumnVector;
+  class Matrix;
+}
+#endif // HAVE_OPTPP
+
 
 namespace Dakota {
 
@@ -134,11 +138,13 @@ private:
   void get_grad_cov_vector();
 
 #ifdef HAVE_OPTPP
+  // Using dakota::Real here as we don't expect OPT++ Newmat to be
+  // built with float
   /// static function used by OPT++ as the objective function to 
   /// optimize the hyperparameters in the covariance of the GP
   /// by minimizing the negative log likelihood
   static void negloglik(int mode, int n, const NEWMAT::ColumnVector& X,
-			NEWMAT::Real& fx, NEWMAT::ColumnVector& grad_x,
+			Real& fx, NEWMAT::ColumnVector& grad_x,
 			int& result_mode);
 
   /// static function used by OPT++ as the constraint function 

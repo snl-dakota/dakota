@@ -18,18 +18,6 @@
 #include <boost/foreach.hpp>
 #include <algorithm>
 
-#ifdef DAKOTA_NEWMAT
-namespace NEWMAT {
-class ColumnVector;
-class SymmetricMatrix;
-class Matrix;
-}
-#endif // DAKOTA_NEWMAT
-
-#ifdef DAKOTA_DDACE
-class DDaceSamplePoint;
-#endif // DAKOTA_DDACE
-
 
 // ------------------------
 // templated hash functions
@@ -125,32 +113,6 @@ inline void build_labels_partial(StringArray& label_array,
 // ----------------------------
 // non-templated copy functions
 // ----------------------------
-
-#ifdef DAKOTA_NEWMAT
-/// copy RealSymMatrix to NEWMAT::SymmetricMatrix
-void copy_data(const RealSymMatrix& rsdm, NEWMAT::SymmetricMatrix& sm);
-/// copy RealMatrix to NEWMAT::Matrix
-void copy_data(const RealMatrix& rdm, NEWMAT::Matrix& m);
-/// copy NEWMAT::ColumnVector to RealVector
-void copy_data(const NEWMAT::ColumnVector& cv, RealVector& rdv);
-/// copy RealVector to NEWMAT::ColumnVector
-void copy_data(const RealVector& rdv, NEWMAT::ColumnVector& cv);
-/// copy Real* (column of Teuchos_SerialDenseMatrix) to NEWMAT::ColumnVector
-void copy_data(const Real* rdv, const int num_items, NEWMAT::ColumnVector& cv);
-#endif // DAKOTA_NEWMAT
-
-#ifdef DAKOTA_DDACE
-/// copy DDACE point to RealVector
-void copy_data(const DDaceSamplePoint& dsp, RealVector& rdv);
-/// copy DDACE point array to RealVectorArray
-void copy_data(const std::vector<DDaceSamplePoint>& dspa,
-	       RealVectorArray& rdva);
-/// copy DDACE point array to Real*
-void copy_data(const std::vector<DDaceSamplePoint>& dspa, Real* ptr,
-	       const int ptr_len);
-#endif // DAKOTA_DDACE
-
-
 
 /// Copies a row of a Teuchos_SerialDenseMatrix<int,Real> to std::vector<Real>
 inline void copy_row_vector(const RealMatrix& m, RealMatrix::ordinalType i,
