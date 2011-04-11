@@ -148,6 +148,18 @@ could also be written
                           10:10:30  20  10              
 \endverbatim
 
+Count and sequence abbreviations can be used together.  For example
+\verbatim
+response_levels =
+	0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+	0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+\endverbatim
+can be abbreviated 
+\verbatim
+response_levels =
+	2*0.0:0.1:1.0
+\endverbatim
+
 \section IntroCmdsMistakes Common Specification Mistakes
 
 
