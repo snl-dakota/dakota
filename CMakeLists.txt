@@ -91,6 +91,12 @@ set( CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH}
 )
 
+# Set the export name in install targets
+set(Dakota_export_target Dakota-targets)
+if (BUILD_IN_TRILINOS)
+  set(Dakota_export_target Trilinos)
+endif()
+
 # when building inside Trilinos, the path to Teuchos will already be set
 if (NOT BUILD_IN_TRILINOS)
 # first probe for system-installed Trilinos
@@ -164,4 +170,5 @@ ADD_CUSTOM_COMMAND(
 
 #clean up binary dir
 #file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/docs)
+
 
