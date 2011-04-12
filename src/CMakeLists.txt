@@ -295,7 +295,7 @@ endif(HAVE_NPSOL)
 
 if(HAVE_OPTPP)
   # WJB - ToDo: FY11 contract - "pair-program" a FINAL iteration with Zack
-  include_directories(${optpp_BINARY_DIR}/config ${optpp_SOURCE_DIR}/include
+  include_directories(${optpp_BINARY_DIR}/include ${optpp_SOURCE_DIR}/include
                       ${optpp_SOURCE_DIR}/newmat11)
 
   add_definitions("-DHAVE_OPTPP")
