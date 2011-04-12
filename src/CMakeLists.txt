@@ -63,6 +63,7 @@ endif(HAVE_USAGE_TRACKING)
 
 set(TPL_LIBS teuchos nidr)
 set(EXTRA_TPL_LIBS "")
+set(EXPORT_TARGETS dakota_src teuchos nidr)
 
 if(HAVE_MPI)
   list(APPEND EXTRA_TPL_LIBS ${MPI_LIBRARIES})
@@ -78,12 +79,14 @@ function(CheckPackage package)
     add_definitions("-DHAVE_${package}")
     string(TOLOWER ${package} package_lower)
     set(TPL_LIBS ${TPL_LIBS} ${package_lower} PARENT_SCOPE)
+    list(APPEND EXPORT_TARGETS ${package_lower})
   endif()
 endfunction(CheckPackage)
 
 
 CheckPackage(PECOS)
 list(APPEND TPL_LIBS ${Pecos_LINK_LIBRARIES})
+list(APPEND EXPORT_TARGETS ${Pecos_LINK_LIBRARIES})
 if(HAVE_PECOS)
   # WJB: really need Pecos_INCLUDE_DIRS for dakota
   include_directories(${Pecos_BINARY_DIR} ${Pecos_SOURCE_DIR}/src
@@ -138,6 +141,7 @@ if(HAVE_SURFPACK)
                       ${Surfpack_SOURCE_DIR}/src/surfaces)
   # WJB - ToDo: work with BMA to untangle the "cyclic dependencies" in surfpack
   list(APPEND TPL_LIBS surfaces surfpack surfaces mars nkm)
+  list(APPEND EXPORT_TARGETS surfaces mars nkm)
 endif(HAVE_SURFPACK)
 
 if(HAVE_PLUGIN)
@@ -208,6 +212,7 @@ if(HAVE_DDACE)
   set(iterator_src ${iterator_src} DDACEDesignCompExp.C)
   #link_directories(${Dakota_BINARY_DIR}/methods/DDACE)
   set(TPL_LIBS ${TPL_LIBS} dace analyzer random sampling bose)
+  list(APPEND EXPORT_TARGETS dace analyzer random sampling bose)
 endif(HAVE_DDACE)
 
 CheckPackage(DOT)
@@ -227,6 +232,7 @@ if(HAVE_GPMSA)
   list(APPEND iterator_src NonDGPMSABayesCalibration.C)
   #link_directories(${Dakota_BINARY_DIR}/packages/gpmsa)
   list(APPEND TPL_LIBS gpmsa)
+  list(APPEND EXPORT_TARGETS gpmsa)
 endif(HAVE_GPMSA)
 
 if(HAVE_HOPSPACK)
@@ -253,7 +259,9 @@ if(HAVE_HOPSPACK)
   #set_target_properties(hopspack-static PROPERTIES PREFIX "lib")
 
   list(APPEND TPL_LIBS executor evaluator framework citizens shared)
-  #list(APPEND TPL_LIBS hopspack executor evaluator framework citizens shared)
+  #list(APPEND TPL_LIBS hopspack executor evaluator framework citizens
+  #shared)
+  list(APPEND EXPORT_TARGETS executor evaluator framework citizens shared)
 endif(HAVE_HOPSPACK)
 
 if(HAVE_JEGA)
@@ -265,6 +273,7 @@ if(HAVE_JEGA)
   #link_directories(${Dakota_BINARY_DIR}/packages/JEGA)
   # WJB: "jega_link_libs: looks fishy; confer with Zack about JEGA commit 692
   list(APPEND TPL_LIBS jega jega_fe moga soga eutils utilities)
+  list(APPEND EXPORT_TARGETS jega jega_fe moga soga eutils utilities)
 endif(HAVE_JEGA)
 
 if(HAVE_NCSUOPT)
@@ -272,6 +281,7 @@ if(HAVE_NCSUOPT)
   set(iterator_src ${iterator_src} NCSUOptimizer.C)
   #link_directories(${Dakota_BINARY_DIR}/packages/NCSUOpt)
   list(APPEND TPL_LIBS ncsuopt)
+  list(APPEND EXPORT_TARGETS ncsuopt)
 endif(HAVE_NCSUOPT)
 
 CheckPackage(NLPQL)
@@ -285,6 +295,7 @@ if(HAVE_NL2SOL)
   include_directories(${Dakota_BINARY_DIR}/packages/NP2SOL)
   #link_directories(${Dakota_BINARY_DIR}/packages/NP2SOL)
   list(APPEND TPL_LIBS cport)
+  list(APPEND EXPORT_TARGETS cport)
 endif(HAVE_NL2SOL)
 
 CheckPackage(NPSOL)
@@ -307,6 +318,7 @@ if(HAVE_OPTPP)
   add_definitions("-DDAKOTA_NEWMAT")
   set(iterator_src ${iterator_src} SNLLBase.C SNLLOptimizer.C SNLLLeastSq.C)
   set(TPL_LIBS ${TPL_LIBS} opt newmat)
+  list(APPEND EXPORT_TARGETS opt newmat)
 endif(HAVE_OPTPP)
 
 CheckPackage(PSUADE)
@@ -322,6 +334,7 @@ if(HAVE_X_GRAPHICS)
   #set(iterator_src ${iterator_src} PSUADEDesignCompExp.C)
   link_directories(${DakotaMotif_BINARY_DIR})
   list(APPEND TPL_LIBS DGraphics)
+  list(APPEND EXPORT_TARGETS DGraphics)
 endif(HAVE_X_GRAPHICS)
 
 ## AGGREGATED source code spec for full-up libdakota.
@@ -347,6 +360,7 @@ if(HAVE_AMPL)
 
   #link_directories(${Dakota_BINARY_DIR}/packages/ampl)
   set(TPL_LIBS ${TPL_LIBS} amplsolver)
+  list(APPEND EXPORT_TARGETS amplsolver)
 endif(HAVE_AMPL)
 
 
@@ -388,8 +402,7 @@ target_link_libraries(dakota dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 target_link_libraries(dakota_library_mode dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 
-
-install(TARGETS dakota_src DESTINATION lib)
+install(TARGETS dakota_src EXPORT ${Dakota_export_target} DESTINATION lib)
 file(GLOB Dakota_hdr *.H *.h)
 list(APPEND Dakota_hdr ${Dakota_BINARY_DIR}/dakota_config.h)
 install(FILES ${Dakota_hdr} DESTINATION include)
@@ -407,6 +420,8 @@ get_directory_property(Dakota_INC_DIRS INCLUDE_DIRECTORIES)
 set(Dakota_INCLUDE_DIRS ${Dakota_INC_DIRS} CACHE INTERNAL 
     "Dakota include directories")
 set(Dakota_LIBS dakota_src ${TPL_LIBS})
+# Remove teuchos from Dakota_LIBS
+list(REMOVE_ITEM Dakota_LIBS teuchos)
 #if(HAVE_HOPSPACK)
 #  set(Dakota_LIBS ${Dakota_LIBS}
 #      ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
@@ -415,4 +430,6 @@ set(Dakota_LIBRARIES ${Dakota_LIBS} CACHE INTERNAL
     "Dakota libraries")
 set(Dakota_EXTRA_LIBRARIES ${EXTRA_TPL_LIBS} CACHE INTERNAL 
     "Dakota extra libraries")
+message(STATUS "Export targets: ${EXPORT_TARGETS}")
+EXPORT(TARGETS ${EXPORT_TARGETS} FILE "${CMAKE_CURRENT_BINARY_DIR}/DakotaTargets.cmake")
 endif()
