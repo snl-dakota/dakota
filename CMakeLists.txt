@@ -43,27 +43,10 @@ if(CMAKE_SYSTEM_NAME MATCHES Darwin)
       "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
 endif()
 
-# Prefer system Boost, otherwise fall back to in-source.  Neither
-# Boost_DIR nor BOOST_ROOT work as expected (as in Teuchos example);
-# likely due to custom FindBoost.cmake.  Therefore try include/libs.
-option(USE_SYSTEM_BOOST "Use an outside build of Boost?" ON)
-if(USE_SYSTEM_BOOST)
-  find_package(Boost 1.40 QUIET)
-endif()
 
-if (NOT Boost_FOUND)
-  if (NOT BOOST_INCLUDEDIR AND NOT USE_SYSTEM_BOOST)
-    set (BOOST_INCLUDEDIR ${CMAKE_CURRENT_SOURCE_DIR}/packages/boost)
-  endif() 
-  find_package( Boost 1.40 REQUIRED)
-  # Adding the subdirectory will build libs, but find_package's config
-  # mode not working for Boost
-  #if (NOT BOOST_LIBRARYDIR) 
-  #  set (BOOST_LIBRARYDIR ${CMAKE_CURRENT_BINARY_DIR}/packages/boost)
-  #endif()
-  #add_subdirectory(packages/boost)
-  #find_package( Boost 1.40 REQUIRED COMPONENTS signals)
-endif(NOT Boost_FOUND)
+# Mandate a system or user-provided Boost
+# Could probe for signals conditionally on HAVE_ACRO
+find_package(Boost 1.37 REQUIRED COMPONENTS signals)
 
 # check for a MPI-enabled build
 if(CMAKE_CXX_COMPILER MATCHES mpicxx)
@@ -137,6 +120,11 @@ add_subdirectory(src)
 option(ENABLE_DAKOTA_TESTS "Enable Dakota tests." ON)
 if(ENABLE_DAKOTA_TESTS)
   add_subdirectory(test)
+endif()
+
+option(ENABLE_DAKOTA_DOCS "Enable DAKOTA documentation build." OFF)
+if(ENABLE_DAKOTA_DOCS)
+  add_subdirectory(docs)
 endif()
 
 # Package-specific configuration options
