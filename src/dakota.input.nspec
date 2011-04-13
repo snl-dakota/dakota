@@ -518,9 +518,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		)
 	      |
 	      ( global_evidence ALIAS nond_global_evidence {N_mdm(lit,methodName_nond_global_evidence)}
-	        [ lhs {N_mdm(lit,nondOptAlgorithm_lhs)}
-		  | ego {N_mdm(lit,nondOptAlgorithm_ego)}
-		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] ]
+	        [ ( ego {N_mdm(lit,nondOptAlgorithm_ego)}
+		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] )
+		    | lhs {N_mdm(lit,nondOptAlgorithm_lhs)} ]
 		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 		  [ compute {0}
@@ -545,9 +545,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      )
 	    |
             ( global_interval_est ALIAS nond_global_interval_est {N_mdm(lit,methodName_nond_global_interval_est)}
-	      [ lhs {N_mdm(lit,nondOptAlgorithm_lhs)}
-		| ( ego {N_mdm(lit,nondOptAlgorithm_ego)}
-		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] ) ]
+	      [ ( ego {N_mdm(lit,nondOptAlgorithm_ego)}
+		  [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] )
+		  | lhs {N_mdm(lit,nondOptAlgorithm_lhs)} ]
 	      [ rng {0}
 		mt19937 {N_mdm(lit,rngName_mt19937)}
 		| rnum2 {N_mdm(lit,rngName_rnum2)} ]

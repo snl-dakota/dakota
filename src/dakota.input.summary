@@ -805,10 +805,10 @@ KEYWORD12 method
 	  )
 	|
 	( global_evidence ALIAS nond_global_evidence
-	  [ lhs
-	    | ego
-	    [ use_derivatives ]
-	    ]
+	  [ ( ego
+	      [ use_derivatives ]
+	      )
+	  | lhs ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute
@@ -835,10 +835,10 @@ KEYWORD12 method
 	  )
 	|
 	( global_interval_est ALIAS nond_global_interval_est
-	  [ lhs
-	    | ego
-	    [ use_derivatives ]
-	    ]
+	  [ ( ego
+	      [ use_derivatives ]
+	      )
+	  | lhs ]
 	  [ rng
 	    mt19937
 	    | rnum2
