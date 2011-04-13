@@ -402,7 +402,7 @@ target_link_libraries(dakota dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 target_link_libraries(dakota_library_mode dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 
-install(TARGETS dakota_src EXPORT ${Dakota_export_target} DESTINATION lib)
+install(TARGETS dakota_src EXPORT ${ExportTarget} DESTINATION lib)
 file(GLOB Dakota_hdr *.H *.h)
 list(APPEND Dakota_hdr ${Dakota_BINARY_DIR}/dakota_config.h)
 install(FILES ${Dakota_hdr} DESTINATION include)

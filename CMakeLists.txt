@@ -91,10 +91,15 @@ set( CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH}
 )
 
-# Set the export name in install targets
-set(Dakota_export_target Dakota-targets)
+
+# Set the export name for install targets; parent packages likely want
+# to override this to the name of their target
+set(ExportTarget ${CMAKE_PROJECT_NAME}-targets CACHE STRING 
+  "Name for the export target for ${CMAKE_PROJECT_NAME}")
+
+# TODO: Have etphipp remove Trilinos-specific code and instead set in TriKota
 if (BUILD_IN_TRILINOS)
-  set(Dakota_export_target Trilinos)
+  set(ExportTarget Trilinos)
 endif()
 
 # when building inside Trilinos, the path to Teuchos will already be set
@@ -128,9 +133,20 @@ if(ENABLE_DAKOTA_TESTS)
   add_subdirectory(test)
 endif()
 
+option(ENABLE_DAKOTA_SPEC_MAINT "Enable DAKOTA specification maintenance mode."
+  OFF)
+if(ENABLE_DAKOTA_SPEC_MAINT AND NOT UNIX)
+  message(FATAL_ERROR "DAKOTA specification maintenance mode only available on UNIX platforms")
+endif()
+
+
 option(ENABLE_DAKOTA_DOCS "Enable DAKOTA documentation build." OFF)
 if(ENABLE_DAKOTA_DOCS)
-  add_subdirectory(docs)
+  if(UNIX)
+    add_subdirectory(docs)
+  else()
+    message(FATAL_ERROR "DAKOTA documentation build only available on UNIX platforms")
+  endif()
 endif()
 
 # Package-specific configuration options
