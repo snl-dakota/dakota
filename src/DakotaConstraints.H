@@ -257,6 +257,9 @@ public:
   void reshape(const size_t& num_nln_ineq_cons, const size_t& num_nln_eq_cons,
 	       const size_t& num_lin_ineq_cons, const size_t& num_lin_eq_cons);
 
+  /// sets the inactive view based on higher level (nested) context
+  void inactive_view(short view2);
+
   /// function to check constraintsRep (does this envelope contain a letter)
   bool is_null() const;
 

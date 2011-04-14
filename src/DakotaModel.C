@@ -945,9 +945,11 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     RealVector x = x0;
     for (j=0; j<num_deriv_vars; j++) { // difference the 1st num_deriv_vars vars
       size_t xj_index = find_index(var_ids, original_dvv[j]);
+      const Real& lb_j = l_bnds[xj_index]; const Real& ub_j = u_bnds[xj_index];
+      const Real& x0_j = x0[xj_index];
 
       if (fd_grad_flag) {
-	if (!ignoreBounds && l_bnds[xj_index] >= u_bnds[xj_index]) {
+	if (!ignoreBounds && lb_j >= ub_j) {
 	  if (asynch_flag)
 	    deltaList.push_back(0.);
 	  else
@@ -962,8 +964,6 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
 	// Enforce a minimum delta of fdgss*.01
 	Real fdgss = (fdGradSS.length() == num_deriv_vars)
 	           ? fdGradSS[xj_index] : fdGradSS[0];
-	const Real& x0_j = x0[xj_index]; const Real& lb_j = l_bnds[xj_index];
-	const Real& ub_j = u_bnds[xj_index];
 	Real h = FDstep1(x0_j, lb_j, ub_j, fdgss*std::max(std::fabs(x0_j),.01));
 	if (asynch_flag) // communicate settings to synchronize_derivatives()
 	  deltaList.push_back(h);
@@ -1069,7 +1069,6 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
 	    // Enforce a minimum delta of fdhss*.01
 	    Real fdhbfss = (fdHessByFnSS.length() == num_deriv_vars)
 	                 ? fdHessByFnSS[xj_index] : fdHessByFnSS[0];
-	    const Real& x0_j = x0[xj_index];
 	    Real h_mag = fdhbfss * std::max(std::fabs(x0_j), .01);
 	    Real h = (x0_j < 0.) ? -h_mag : h_mag; // h has same sign as x0_j
 	    if (asynch_flag)// communicate settings to synchronize_derivatives()
@@ -1255,9 +1254,6 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
 	    // Enforce a minimum delta of fdhss*.01
 	    Real fdhbfss = (fdHessByFnSS.length() == num_deriv_vars)
 	                 ? fdHessByFnSS[xj_index] : fdHessByFnSS[0];
-	    const Real& x0_j = x0[xj_index];
-	    const Real& lb_j = l_bnds[xj_index];
-	    const Real& ub_j = u_bnds[xj_index];
 	    Real h1 = FDstep1(x0_j, lb_j, ub_j, 2. * fdhbfss *
 			      std::max(std::fabs(x0_j), .01));
 	    Real h2 = FDstep2(x0_j, lb_j, ub_j, h1);
@@ -1386,9 +1382,8 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
 	  // Enforce a minimum delta of fdhss*.01
 	  Real fdhbgss = (fdHessByGradSS.length() == num_deriv_vars)
 	               ? fdHessByGradSS[xj_index] : fdHessByGradSS[0];
-	  const Real& x0_j = x0[xj_index];
-	  Real h = FDstep1(x0_j, l_bnds[xj_index], u_bnds[xj_index],
-			   fdhbgss * std::max(std::fabs(x0_j), .01));
+	  Real h = FDstep1(x0_j, lb_j, ub_j, fdhbgss *
+			   std::max(std::fabs(x0_j), .01));
 	  if (asynch_flag) // communicate settings to synchronize_derivatives()
 	    deltaList.push_back(h);
 
@@ -3122,8 +3117,10 @@ void Model::inactive_view(short view, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->inactive_view(view, recurse_flag);
-  else // default does not support recursion (SingleModel, NestedModel)
+  else { // default does not support recursion (SingleModel, NestedModel)
     currentVariables.inactive_view(view);
+    userDefinedConstraints.inactive_view(view);
+  }
 }
 
 

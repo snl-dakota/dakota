@@ -292,6 +292,7 @@ inline void HierarchSurrModel::stop_servers()
 inline void HierarchSurrModel::inactive_view(short view, bool recurse_flag)
 {
   currentVariables.inactive_view(view);
+  userDefinedConstraints.inactive_view(view);
   if (recurse_flag) {
     lowFidelityModel.inactive_view(view,  recurse_flag);
     highFidelityModel.inactive_view(view, recurse_flag);

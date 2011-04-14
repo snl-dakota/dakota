@@ -290,6 +290,24 @@ void Constraints::build_inactive_views()
 }
 
 
+void Constraints::inactive_view(short view2)
+{
+  if (constraintsRep)
+    constraintsRep->inactive_view(view2);
+  else {
+    short view1 = sharedVarsData.view().first;
+    // If active view is {MERGED,MIXED}_ALL, outer level active view is
+    // aggregated in inner loop all view and inactive view remains EMPTY.
+    // Disallow assignment of an inactive ALL view.
+    if (view1 > MIXED_ALL && view2 > MIXED_ALL) {
+      sharedVarsData.inactive_view(view2); // likely redundant with Variables
+      //check_view_compatibility(); // performed in Variables
+      build_inactive_views();
+    }
+  }
+}
+
+
 void Constraints::read(std::istream& s)
 {
   if (constraintsRep)

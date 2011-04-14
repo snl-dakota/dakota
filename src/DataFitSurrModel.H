@@ -492,6 +492,7 @@ inline void DataFitSurrModel::stop_servers()
 inline void DataFitSurrModel::inactive_view(short view, bool recurse_flag)
 {
   currentVariables.inactive_view(view);
+  userDefinedConstraints.inactive_view(view);
   if (recurse_flag && !actualModel.is_null())
     actualModel.inactive_view(view, recurse_flag);
 }

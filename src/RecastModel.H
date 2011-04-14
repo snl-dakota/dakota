@@ -524,6 +524,7 @@ inline void RecastModel::stop_servers()
 inline void RecastModel::inactive_view(short view, bool recurse_flag)
 {
   currentVariables.inactive_view(view);
+  userDefinedConstraints.inactive_view(view);
   if (recurse_flag)
     subModel.inactive_view(view, recurse_flag);
 }
