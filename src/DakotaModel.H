@@ -721,17 +721,14 @@ public:
   /// that are not mapped to the top Model level
   Model* model_rep() const;
 
-  /// auxiliary struct and function returning finite-difference step size,
-  /// possibly adjusted for bounds
-  struct FDhelp {
-    const RealVector *Lb, *Ub, *x0;
-    int shortstep;
-  };
+  /// flags finite-difference step size adjusted by bounds
+  bool shortStep;
   /// function returning finite-difference step size (affected by bounds)
-  Real FDstep1(FDhelp*, Real h_mag, size_t i);
+  Real FDstep1(const Real& x0_j, const Real& lb_j, const Real& ub_j,
+	       Real h_mag);
   /// function returning second central-difference step size (affected
   /// by bounds)
-  Real FDstep2(FDhelp*, Real h, size_t j);
+  Real FDstep2(const Real& x0_j, const Real& lb_j, const Real& ub_j, Real h);
 
 protected:
 
