@@ -102,11 +102,8 @@ if(HAVE_HOPSPACK)
     message("HOPSPACK caches the variable mpi = ${mpi}")
   endif(HAVE_MPI)
 
-  if(CMAKE_SYSTEM_NAME MATCHES Darwin OR
-     $ENV{TEST_PLATFORM_VER} MATCHES "suse_x86_64")
-    # See hopspack/buildMacDist.sh for BLAS/LAPACK "help"
-    set(LAPACK_ADD_LIBS ${BLAS_LIBS})
-  endif()
+  # See hopspack/buildMacDist.sh for BLAS/LAPACK "help"
+  set(LAPACK_ADD_LIBS ${BLAS_LIBS})
   add_subdirectory(hopspack)
 endif(HAVE_HOPSPACK)
 
