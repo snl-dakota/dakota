@@ -44,7 +44,7 @@ Alternately one may manually execute some steps, e.g.,
 
     pdflatex SAND-shell-dev
     pdflatex SAND-shell-ref
-    pdflatex SAND-shell-users
+    pdflatex SAND-shell-user
 
 "Full" versions of manuals
 --------------------------

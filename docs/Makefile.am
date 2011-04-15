@@ -43,7 +43,7 @@ SAND-shell: pdf-local
 	cd latex-user && make pdf && cd .. && \
 	$(pdflatex) SAND-shell-dev && \
 	$(pdflatex) SAND-shell-ref && \
-	$(pdflatex) SAND-shell-users && \
+	$(pdflatex) SAND-shell-user && \
 	$(pdflatex) SAND-shell-theory
 
 
