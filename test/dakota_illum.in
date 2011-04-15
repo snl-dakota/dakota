@@ -20,6 +20,7 @@
 
 method,
 	optpp_q_newton,         			#0
+#	optpp_newton					#5
 #	optpp_pds,              			#1
 #	dot_bfgs,					#2
 #	dot_frcg,					#3
@@ -30,8 +31,8 @@ method,
 variables,
 	continuous_design = 7
 	  initial_point .5 .5 .5 .5 .5 .5 .5
-     	  lower_bounds   0. 0. 0. 0. 0. 0. 0.	#0,#2,#3,#4
-          upper_bounds   1. 1. 1. 1. 1. 1. 1.	#0,#2,#3,#4
+     	  lower_bounds   0. 0. 0. 0. 0. 0. 0.	#0,#2,#3,#4,#5
+          upper_bounds   1. 1. 1. 1. 1. 1. 1.	#0,#2,#3,#4,#5
           descriptors   'x1' 'x2' 'x3' 'x4' 'x5' 'x6' 'x7'
 
 interface,
@@ -40,10 +41,11 @@ interface,
 
 responses,
         num_objective_functions = 1
-#	analytic_gradients
 #	no_gradients					#1
 	numerical_gradients				#0,#2,#3,#4
 	  method_source dakota 				#0,#2,#3,#4
 	  interval_type central 			#0,#2,#3,#4
 	  fd_gradient_step_size = .000001		#0,#2,#3,#4
-	no_hessians
+	no_hessians					#0,#1,#2,#3,#4
+#	analytic_gradients				#5
+#	analytic_hessians				#5
