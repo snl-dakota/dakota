@@ -2,6 +2,7 @@
 
 option(HAVE_USAGE_TRACKING "Build the DAKOTA usage tracker module." OFF)
 option(HAVE_XDR "Build the XDR interface module." ON)
+#option(HAVE_BVLS "Build the f90, bvls_wrapper." ON)
 
 include_directories(${Dakota_BINARY_DIR} ${Dakota_SOURCE_DIR}/src
                     ${NIDR_SOURCE_DIR}/..
@@ -9,6 +10,7 @@ include_directories(${Dakota_BINARY_DIR} ${Dakota_SOURCE_DIR}/src
                     ${Teuchos_INCLUDE_DIRS})
 
 add_definitions("-DHAVE_CONFIG_H")
+add_definitions("-DDISABLE_DAKOTA_CONFIG_H")
 # WJB: moving away from configuration header files; the "HAVE_LHS" option needs
 #  to be set here, unless we're able to refactor and move from Pecos headers
 #  into the appropriate .cpp file(s) (use pImpl?  and wouldn't
