@@ -4618,6 +4618,19 @@ Test Number 4 succeeded
 <<<<< Best objective function  =
                       1.1744280548e+00
 <<<<< Best data not found in evaluation cache
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 45 total (45 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0000000000e+00 x1
+                      2.8165147179e-01 x2
+                      0.0000000000e+00 x3
+                      0.0000000000e+00 x4
+                      0.0000000000e+00 x5
+                      7.5659358835e-01 x6
+                      1.0000000000e+00 x7
+<<<<< Best objective function  =
+                      1.0759888899e+00
+<<<<< Best data captured at function evaluation 44
 dakota_kriging_rosen.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
