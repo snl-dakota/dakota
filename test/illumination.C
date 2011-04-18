@@ -52,10 +52,6 @@ int main(int argc, char** argv)
   for (i=0; i<num_fns; i++) {
     fin >> ASV[i];
     fin.ignore(256, '\n');
-    if(!((0<=ASV[i])&&(ASV[i]<=7))) {
-      cerr << "illumination can only provide the function values and/or derivatives of total order less than or equal to 2" << endl;
-      exit(-1);
-    }
   }
     
   if (num_vars != 7) {
@@ -81,7 +77,7 @@ int main(int argc, char** argv)
   { 0.324622, 0.306394, 0.991904, 0.477744, 0.376266, 0.158288, 0.198745},
   { 0.000000, 0.050361, 0.000000, 0.212042, 0.434397, 0.286455, 0.462731} };
 
-  //KRD thinks this is wrong so doesn't use it
+  // KRD found bugs in previous computation; this Hessian no longer used:
   double harray[7][7] ={ 
   { 1.929437, 1.572662, 6.294004, 1.852205, 1.222324, 0.692036, 0.768564},
   { 1.572662, 1.354287, 5.511537, 1.787932, 1.320048, 0.724301, 0.870382},
@@ -90,8 +86,6 @@ int main(int argc, char** argv)
   { 1.222324, 1.320048, 5.133563, 2.497491, 2.457733, 1.295927, 1.816568},
   { 0.692036, 0.724301, 2.791970, 1.321922, 1.295927, 0.694642, 0.968982},
   { 0.768564, 0.870382, 3.257364, 1.747230, 1.816568, 0.968982, 1.385357} };
-
-
 
 
   ofstream fout(argv[2]);
@@ -103,43 +97,39 @@ int main(int argc, char** argv)
   fout.setf(ios::scientific);
   fout.setf(ios::right);
 
-  //we used the following approach to calculate grad(f)=df/dx_I and
-  //hess(f)=d^2f/(dx_I dx_J) 
+  // Calculation of grad(f) = df/dx_I and hess(f) = d^2f/(dx_I dx_J):
   //
-  //U=sum_{i=0:10}( (1-sum_{j=0:6}(A[i][j]*x[j]))^2 )
-  //dU/dx_I=sum_{i=0:10}( 2.0*(1-sum_{j=0:6}(A[i][j]*x[j]))*-A[i][I] )
-  //d^2U/(dx_I dx_J)=sum_{i=0:10)( 2.0*A[i][I]*A[i][J] )
+  // U = sum_{i=0:10}{ ( 1 - sum_{j=0:6}{ A[i][j]*x[j] } )^2 }
+  // dU/dx_I = sum_{i=0:10}{ 2.0*( 1 - sum_{j=0:6}{ A[i][j]*x[j] } )*-A[i][I] }
+  // d^2U/(dx_I dx_J) = sum_{i=0:10){ 2.0 * A[i][I] * A[i][J] }
   //
-  //f=sqrt(U)
-  //df/dx_I=0.5*(dU/dx_I)/sqrt(U) = 0.5*(dU/dx_I)/fx  
-  //d^2f/(dx_I dx_J)= 
-  //   =-0.25*U^(-1.5)*dU/dx_I*dU/dx_J+0.5/sqrt(U)*d2U/(dx_I dx_J)
-  //   =(-df/dx_I * df/dx_J  + 0.5*d2U/(dx_I dx_J))/fx
+  // f = sqrt(U)
+  // df/dx_I = 0.5*(dU/dx_I)/sqrt(U) 
+  //         = 0.5*(dU/dx_I)/f  
+  // d^2f/(dx_I dx_J)
+  //   = -0.25 * U^(-1.5) * dU/dx_I * dU/dx_J + 0.5/sqrt(U) * d2U/(dx_I dx_J)
+  //   = ( -df/dx_I * df/dx_J  + 0.5 * d2U/(dx_I dx_J) ) / f
   //
-  // so to (efficiently) compute grad(f) we need f
-  // and to (efficiently) compute hess(f) we need f, and grad(f)
-
+  // so to (efficiently) compute grad(f) we precompute f
+  // and to (efficiently) compute hess(f) we precompute f and grad(f)
 
   int Ider, Jder;
   double grad[7];
   for(Ider=0; Ider<num_vars; ++Ider) 
-    grad[Ider]=0.0;
-
-
+    grad[Ider] = 0.0;
   
-  
-  // **** f: (you need f to calculate any derivative of f)
-  double U=0.0;
+  // **** f: (f is required to calculate any derivative of f; perform always)
+  double U = 0.0;
   for (i=0; i<11; i++) {
     double dtmp = 0.0;
     for (j=0; j<num_vars; j++)
       dtmp += A[i][j] * x[j];
-    dtmp=1.0-dtmp;
+    dtmp = 1.0 - dtmp;
     U += dtmp*dtmp;
 
-    //this is essentially free if you do it while calcuating f so always do it
+    // precompute grad(U) unconditionally as it might be needed (cheap)
     for(Ider=0; Ider<num_vars; ++Ider) 
-      grad[Ider]-=dtmp*2.0*A[i][Ider]; //this is grad(U)
+      grad[Ider] -= dtmp*2.0*A[i][Ider]; //this is grad(U)
   }
   double fx = sqrt(U);
   if (ASV[0] & 1)
@@ -147,11 +137,11 @@ int main(int argc, char** argv)
 
 
   // **** df/dx: 
-  if(ASV[0]&6) {//6 not 2 because you need the gradient to calcuate the hessian
+  if (ASV[0] & 6) { // gradient required for itself and to calcuate the Hessian
     for(Ider=0; Ider<num_vars; ++Ider) 
-      grad[Ider]*=(0.5/fx); //this is grad(f) 
+      grad[Ider] *= (0.5/fx); // this is now updated to be grad(f) 
     
-    if (ASV[0] & 2) { //if they actually asked for the gradient print it
+    if (ASV[0] & 2) { // if ASV demands gradient, print it
       fout << "[ ";
       for (int Ider=0; Ider<num_vars; ++Ider) 
 	fout << grad[Ider] << " ";
@@ -165,11 +155,12 @@ int main(int argc, char** argv)
     fout << "[[ ";    
     for(Ider=0; Ider<num_vars; ++Ider) {
       for(Jder=Ider; Jder<num_vars; ++Jder) {
-	hess[Ider][Jder]=0.0;
+	// define triangular part of hess(U)
+	hess[Ider][Jder] = 0.0;
 	for(i=0; i<11; ++i)
-	  hess[Ider][Jder]+=A[i][Ider]*A[i][Jder]; //this is 1/2 hess(U)
+	  hess[Ider][Jder] += A[i][Ider]*A[i][Jder]; // this is 0.5*hess(U)
 
-	hess[Jder][Ider]= hess[Ider][Jder] //this is hess(f)
+	hess[Jder][Ider]= hess[Ider][Jder] // this is hess(f)
 	  = (hess[Ider][Jder]- grad[Ider]*grad[Jder])/fx;	
 	
       }
