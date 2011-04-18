@@ -9,6 +9,11 @@ include_directories(${Dakota_BINARY_DIR} ${Dakota_SOURCE_DIR}/src
                     ${Teuchos_INCLUDE_DIRS})
 
 add_definitions("-DHAVE_CONFIG_H")
+# WJB: moving away from configuration header files; the "HAVE_LHS" option needs
+#  to be set here, unless we're able to refactor and move from Pecos headers
+#  into the appropriate .cpp file(s) (use pImpl?  and wouldn't
+#  PECOS_DISABLE_LHS be better (following the Boost approach)??)
+add_definitions("-DHAVE_LHS")
 add_definitions("-DBOOST_MULTI_INDEX_DISABLE_SERIALIZATION")
 
 option(BOOST_DISABLE_ASSERTS "Toggle BoostAssert, default is AssertDisabled" ON)
