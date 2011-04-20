@@ -560,7 +560,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		 [emulator_samples INTEGER {N_mdm(int,numEmulatorSamples)}]) 
 		   |(pce {N_mdm(lit,emulatorType_pce)} 
 		   [sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}])
-                   |(sc {N_mdm(lit,emulatorType_pce)} 
+                   |(sc {N_mdm(lit,emulatorType_sc)} 
 		   [sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}])]
               [ rejection {0} standard {N_mdm(lit,rejectionType_standard)}
 			| delayed {N_mdm(lit,rejectionType_delayed)} ]

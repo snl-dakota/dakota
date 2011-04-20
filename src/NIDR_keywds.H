@@ -124,7 +124,7 @@ static KeyWord
 	kw_19[3] = {
 		{"gp",8,1,1,1,kw_16,0.,0.,0,N_mdm(lit,emulatorType_gp)},
 		{"pce",8,1,1,1,kw_17,0.,0.,0,N_mdm(lit,emulatorType_pce)},
-		{"sc",8,1,1,1,kw_18,0.,0.,0,N_mdm(lit,emulatorType_pce)}
+		{"sc",8,1,1,1,kw_18,0.,0.,0,N_mdm(lit,emulatorType_sc)}
 		},
 	kw_20[2] = {
 		{"adaptive",8,0,1,1,0,0.,0.,0,N_mdm(lit,metropolisType_adaptive)},
