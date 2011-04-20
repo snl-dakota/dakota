@@ -15,6 +15,9 @@
 # can be included in multiple tests by adding multiple #n designaters
 # seperated by a comma.
 
+# Restart specification for tests (test 0: write, test 1: read)
+# 0=Rw, 1=Rr
+
 strategy,
 	single_method
         tabular_graphics_data
