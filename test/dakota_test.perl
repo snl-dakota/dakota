@@ -321,7 +321,8 @@ foreach $file (@testin) {
 	if ( ($restart =~ /r/ || $restart =~ /w/) && $restart =~ /n/ ) {
 	  die "Restart file: (n)one option can't be used with (r)ead or (w)rite; exiting\n";	    
         }
-	elsif ( $restart =~ /r/ && $restart =~ /w/ ) {
+	elsif ( $restart =~ /r/ ) {
+	  # always write a named file if we're reading one (r or rw case)
 	  $restart_command =
 	    "-read_restart $restart_file -write_restart $restart_file";
 	  print "Restart file: reading and writing $restart_file\n";
@@ -330,10 +331,6 @@ foreach $file (@testin) {
 	  $restart_command = "-write_restart $restart_file";
 	  print "Restart file: writing $restart_file\n";
 	}
-	elsif ( $restart =~ /r/ ) {
-	  $restart_command = "-read_restart $restart_file";
-	  print "Restart file: reading $restart_file\n";
-        }	
 	elsif ( $restart =~ /n/ ) {
 	  $restart_command = "";
 	  print "Restart file: explicitly removing restart arguments\n";
@@ -731,7 +728,7 @@ foreach $file (@testin) {
     unlink $output;
     unlink $error;
     # Remove restart if not explicitly requested
-    if ( ! $restart =~ /w/ ) {
+    if ( ! ($restart =~ /w/) ) {
       unlink $restart_file;
     }
   }
