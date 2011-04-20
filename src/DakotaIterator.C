@@ -368,10 +368,10 @@ Iterator* Iterator::get_iterator(Model& model)
     if (sub_method_name == "gpmsa")
       return new NonDGPMSABayesCalibration(model);
 #endif
-//#ifdef DAKOTA_QUESO
-//    if (sub_method_name == "queso")
-//      return new NonDQUESOBayesCalibration(model);
-//#endif
+#ifdef DAKOTA_QUESO
+    if (sub_method_name == "queso")
+      return new NonDQUESOBayesCalibration(model);
+#endif
     return NULL;
   }
   else if (method_name == "nonlinear_cg")
