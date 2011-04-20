@@ -57,8 +57,10 @@ protected:
   Model emulatorModel;
 
   const int seedSpec;   ///< the user seed specification (default is 0)
-  int       numSamples; ///< the current number of samples to evaluate
+  int       numEmulatorSamples; ///< the current number of samples with
+                               /// which to build the emulator 
   String    rngName;	///< name of the random number generator
+  String    emulatorType; ///< the emulator type:  none, gp, pce, or sc
 
 private:
 

@@ -30,11 +30,15 @@ enum { NO_EMULATOR, STOCHASTIC_EXPANSION, GAUSSIAN_PROCESS };
     probDescDB can be queried for settings from the method specification. */
 NonDBayesCalibration::NonDBayesCalibration(Model& model):
   NonDCalibration(model), seedSpec(probDescDB.get_int("method.random_seed")),
-  numSamples(probDescDB.get_int("method.samples")),
-  rngName(probDescDB.get_string("method.random_number_generator"))
+  numEmulatorSamples(probDescDB.get_int("method.emulator_samples")),
+  rngName(probDescDB.get_string("method.random_number_generator")),
+  emulatorType(probDescDB.get_string("method.emulator"))
 {
   // Create a generic DataFitSurrModel recursion: GP, stoch expansion, none
   short emulator_type = NO_EMULATOR; // hard wire for now
+  
+  Cout << "Emulator type " << emulatorType << '\n' ;
+  Cout << "num Emulator Samples " << numEmulatorSamples << '\n';
 
   switch (emulator_type) {
   case STOCHASTIC_EXPANSION: {

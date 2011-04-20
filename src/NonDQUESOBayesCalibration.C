@@ -38,6 +38,9 @@ NonDQUESOBayesCalibration* NonDQUESOBayesCalibration::NonDQUESOInstance(NULL);
     probDescDB can be queried for settings from the method specification. */
 NonDQUESOBayesCalibration::NonDQUESOBayesCalibration(Model& model):
   NonDBayesCalibration(model),
+  numSamples(probDescDB.get_int("method.samples")),
+  rejectionType(probDescDB.get_string("method.rejection")),
+  metropolisType(probDescDB.get_string("method.metropolis")),
   yObsDataFile(probDescDB.get_string("method.y_obs_data_file")),
   yStdDataFile(probDescDB.get_string("method.y_std_data_file"))
 { }
@@ -52,6 +55,9 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
 {
   // instantiate QUESO objects and execute
   NonDQUESOInstance=this;
+  Cout << "Rejection type  "<< rejectionType << '\n';
+  Cout << "Metropolis type " << metropolisType << '\n';
+  Cout << "Num Samples " << numSamples;
   ////////////////////////////////////////////////////////
   // Step 2 of 5: Instantiate the QUESO environment 
   ////////////////////////////////////////////////////////
@@ -219,7 +225,10 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   calIpMhOptionsValues->m_dataOutputAllowedSet.insert(1);
 
   calIpMhOptionsValues->m_rawChainDataInputFileName     = ".";
-  calIpMhOptionsValues->m_rawChainSize                  = 48576;
+  if (numSamples == 0)
+    calIpMhOptionsValues->m_rawChainSize                  = 48576;
+  else 
+    calIpMhOptionsValues->m_rawChainSize                  = numSamples;
   //calIpMhOptionsValues->m_rawChainGenerateExtra         = false;
   //calIpMhOptionsValues->m_rawChainDisplayPeriod         = 20000;
   //calIpMhOptionsValues->m_rawChainMeasureRunTimes       = true;
@@ -232,10 +241,16 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   //calIpMhOptionsValues->m_putOutOfBoundsInChain     = true;
   //calIpMhOptionsValues->m_tkUseLocalHessian         = false;
   //calIpMhOptionsValues->m_tkUseNewtonComponent      = true;
-  calIpMhOptionsValues->m_drMaxNumExtraStages       = 1;
+  if (rejectionType.ends("standard"))
+    calIpMhOptionsValues->m_drMaxNumExtraStages = 0;
+  else if (rejectionType.ends("delayed"))
+    calIpMhOptionsValues->m_drMaxNumExtraStages = 1;
   calIpMhOptionsValues->m_drScalesForExtraStages.resize(1);
   calIpMhOptionsValues->m_drScalesForExtraStages[0] = 5.;
-  calIpMhOptionsValues->m_amInitialNonAdaptInterval = 0;
+  if (metropolisType.ends("hastings"))
+    calIpMhOptionsValues->m_amInitialNonAdaptInterval = 0;
+  else if (metropolisType.ends("adaptive"))
+    calIpMhOptionsValues->m_amInitialNonAdaptInterval = 1;
   calIpMhOptionsValues->m_amAdaptInterval           = 100;
   //calIpMhOptionsValues->m_amEta                     = 1.92;
   //calIpMhOptionsValues->m_amEpsilon                 = 1.e-5;

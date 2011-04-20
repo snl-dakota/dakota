@@ -597,6 +597,9 @@ public:
 
   /// the \c samples specification for NonD & DACE methods
   int numSamples;
+  /// the \c number of samples to construct the emulator for Bayesian 
+  /// calibration methods
+  int numEmulatorSamples;
   /// flag for fixing the value of the seed among different NonD/DACE
   /// sample sets.  This results in the use of the same sampling
   /// stencil/pattern throughout a strategy with repeated sampling.
@@ -711,6 +714,12 @@ public:
   String yObsDataFile;
   /// filename from which to read the y std of error for gpmsa
   String yStdDataFile;
+  /// the \c emulator specification in \ref MethodNonDBayes
+  String emulatorType;
+  /// the \c rejection type specification in \ref MethodNonDBayes
+  String rejectionType;
+  /// the \c metropolis type specification in \ref MethodNonDBayes
+  String metropolisType;
 
 
   // Parameter Study

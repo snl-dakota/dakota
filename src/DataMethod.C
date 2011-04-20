@@ -104,7 +104,8 @@ DataMethodRep::DataMethodRep():
   // COLINY, NonD, & DACE
   randomSeed(0),
   // NonD & DACE
-  numSamples(0), fixedSeedFlag(false), previousSamples(0), vbdFlag(false),
+  numSamples(0), numEmulatorSamples(0), fixedSeedFlag(false), 
+  previousSamples(0), vbdFlag(false),
   // NonD
   vbdControl(Pecos::ALL_VBD), vbdDropTolerance(-1.), rngName("mt19937"),
   refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
@@ -114,6 +115,7 @@ DataMethodRep::DataMethodRep():
   probCollocFlag(false), allVarsFlag(false),
   //expansionSampleType("lhs"), sampleType("lhs"),
   distributionType("cumulative"), responseLevelMappingType("probabilities"),
+  rejectionType("delayed"),metropolisType("hastings"),
   // Parameter Study
   numSteps(0),
   // Verification
@@ -198,8 +200,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   s << randomSeed;
 
   // NonD & DACE
-  s << numSamples << fixedSeedFlag << fixedSequenceFlag << previousSamples
-    << vbdFlag << vbdDropTolerance;
+  s << numSamples << numEmulatorSamples << fixedSeedFlag 
+    << fixedSequenceFlag << previousSamples << vbdFlag << vbdDropTolerance;
 
   // NonD
   s << vbdControl << rngName << refinementType << refinementControl
@@ -211,7 +213,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << nondOptAlgorithm << distributionType << responseLevelMappingType
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << xObsDataFile << yObsDataFile << yStdDataFile
-    << allVarsFlag;
+    << allVarsFlag << emulatorType << rejectionType << metropolisType;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -298,8 +300,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   s >> randomSeed;
 
   // NonD & DACE
-  s >> numSamples >> fixedSeedFlag >> fixedSequenceFlag >> previousSamples
-    >> vbdFlag >> vbdDropTolerance;
+  s >> numSamples >> numEmulatorSamples >> fixedSeedFlag 
+    >> fixedSequenceFlag >> previousSamples >> vbdFlag >> vbdDropTolerance;
 
   // NonD
   s >> vbdControl >> rngName >> refinementType >> refinementControl
@@ -311,7 +313,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> nondOptAlgorithm >> distributionType >> responseLevelMappingType
     >> responseLevels >> probabilityLevels >> reliabilityLevels
     >> genReliabilityLevels >> xObsDataFile >> yObsDataFile >> yStdDataFile
-    >> allVarsFlag;
+    >> allVarsFlag >> emulatorType >> rejectionType >> metropolisType;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -398,8 +400,8 @@ void DataMethodRep::write(std::ostream& s) const
   s << randomSeed;
 
   // NonD & DACE
-  s << numSamples << fixedSeedFlag << fixedSequenceFlag << previousSamples
-    << vbdFlag << vbdDropTolerance;
+  s << numSamples << numEmulatorSamples << fixedSeedFlag 
+    << fixedSequenceFlag << previousSamples << vbdFlag << vbdDropTolerance;
 
   // NonD
   s << vbdControl << rngName << refinementType << refinementControl
@@ -411,7 +413,7 @@ void DataMethodRep::write(std::ostream& s) const
     << nondOptAlgorithm << distributionType << responseLevelMappingType
     << responseLevels << probabilityLevels << reliabilityLevels
     << genReliabilityLevels << xObsDataFile << yObsDataFile << yStdDataFile
-    << allVarsFlag;
+    << allVarsFlag << emulatorType << rejectionType << metropolisType;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

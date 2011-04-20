@@ -850,6 +850,27 @@ KEYWORD12 method
 	( bayes_calibration ALIAS nond_bayes_calibration
 	  queso
 	  | gpmsa
+	  [ emulator
+	    ( gp
+	      [ emulator_samples INTEGER ]
+	      )
+	    |
+	    ( pce
+	      [ sparse_grid_level INTEGER ]
+	      )
+	    |
+	    ( sc
+	      [ sparse_grid_level INTEGER ]
+	      )
+	    ]
+	  [ rejection
+	    standard
+	    | delayed
+	    ]
+	  [ metropolis
+	    hastings
+	    | adaptive
+	    ]
 	  [ use_derivatives ]
 	  [ rng
 	    mt19937

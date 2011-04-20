@@ -48,6 +48,12 @@ public:
   String yObsDataFile;
   /// filename from which to read observed std of y data
   String yStdDataFile;
+  /// Rejection type (standard or delayed, in the DRAM framework) 
+  String rejectionType;
+  /// Metropolis type (hastings or adaptive, in the DRAM framework) 
+  String metropolisType;
+  /// number of samples in the chain (e.g. number of MCMC samples)
+  int numSamples;
          
 protected:
 
