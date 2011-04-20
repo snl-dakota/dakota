@@ -26,11 +26,12 @@ method,
 #	max_cpu_time = 1.0
 #	convergence_tolerance = 1.e-5
 	solution_accuracy = 1.e-6
-	seed = 1234
 	asynch_pattern_search				#0,#5
 	  initial_delta = .2				#0,#5
 	  threshold_delta = 1.e-4			#0,#5
 	  synchronization blocking			#0,#5
+#
+#	seed = 1234					#1,#2,#3,#4,#6,#7,#8,#9
 #
 #	coliny_direct					#1,#6
 #	  global_balance_parameter = 0.001		#1,#6

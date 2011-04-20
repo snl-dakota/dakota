@@ -13,7 +13,7 @@ cp $1 workdir.$num
 cd workdir.$num
 
 #run the container optimization interface from workdir.$1
-../container $1 $2
+container $1 $2
 
 #move the completed output file to the dakota working directory
 mv $2 ../.

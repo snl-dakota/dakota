@@ -6,19 +6,19 @@
 # -------------------------
 # test 0: parsed input file (library mode 1)
 # override dakota command; leave input file as dakota_library_mode.in
-# 0=D'dakota_library_mode'
+# 0=D'dakota_library_mode', 0=Rn
 
 # test 1: direct data object insertion (library mode 2)
 # override dakota command; override input file to none
-# 1=D'dakota_library_mode', 1=I''
+# 1=D'dakota_library_mode', 1=I'', 1=Rn
 
 # test 2: mixed mode with an input file (library mode 3)
 # override dakota command; leave input file as dakota_library_mode.in
-# 2=D'dakota_library_mode -m'
+# 2=D'dakota_library_mode -m', 2=Rn
 
 # test 3: mixed mode using default input string (library mode 3)
 # override dakota command; override input file to none
-# 3=D'dakota_library_mode -m', 3=I''
+# 3=D'dakota_library_mode -m', 3=I'', 3=Rn
 
 # --------------------------
 # parallel tests (text_book)

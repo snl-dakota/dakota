@@ -5,7 +5,9 @@
 include_directories(${Boost_INCLUDE_DIRS})
 
 if(BUILD_TESTING)
-  # Copy the dakota_test support files into the BUILD_DIR tree
+
+  # Copy the dakota_test support files into the build tree
+  # with dependency to source files
   file(GLOB DAKOTA_SYSTEM_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "dakota_*.in")
   set(TestFiles
@@ -20,13 +22,13 @@ if(BUILD_TESTING)
       COPYONLY)
   endforeach()
 
+  # Configure supplementary AMPL files
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ampl)
   #set(GLOB AmplTests ${CMAKE_CURRENT_SOURCE_DIR}/ampl/*.*)
   set(AmplTests
     fma fma.col fma.nl fma.row
     text_book.col text_book.mod text_book.nl text_book.row
-    text_book_mixed.mod text_book_mixed_unc.mod
-    text_book_unc.col text_book_unc.mod text_book_unc.nl text_book_unc.row
+    text_book_mixed.mod text_book_mixed_unc.mod    text_book_unc.col text_book_unc.mod text_book_unc.nl text_book_unc.row
   )
   foreach(file ${AmplTests})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ampl/${file}
@@ -34,8 +36,7 @@ if(BUILD_TESTING)
       COPYONLY)
   endforeach()
 
-  # Copy the BUILD_DIR/src/dakota executable into the BUILD_DIR/test directory
-
+  # Copy any necessary executables into the BINARY_DIR/test directory
   get_target_property(EXE_LOC dakota LOCATION)
   get_target_property(LIBMODE_EXE_LOC dakota_library_mode LOCATION)
 
@@ -47,18 +48,19 @@ if(BUILD_TESTING)
     ${CMAKE_COMMAND} -E copy ${LIBMODE_EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS dakota_library_mode)  
 
-  #add_test(simple_subset ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl)
-  # BMA: enabling one CTest test per DAKOTA input file; 
-  #      TODO: regex which reports fail if _any_ test in the file failed
-  file(GLOB DAKOTA_SYSTEM_TESTS "dakota_*.in")
+  # Create one CTest per DAKOTA input file
   foreach(DAKOTA_SYSTEST ${DAKOTA_SYSTEM_TESTS})
     add_test(${DAKOTA_SYSTEST}
              ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${DAKOTA_SYSTEST})
-    #set_tests_properties(test1 [test2...] PROPERTIES prop1 value1 prop2 value2)
+    # TODO: The following regex needs to be based on output of dakota_diff.perl
+    #       and account for consistency with baseline
+    set_tests_properties(${DAKOTA_SYSTEST} PROPERTIES 
+      FAIL_REGULAR_EXPRESSION "fail")
   endforeach()
 
   # Clean up test dir
   #file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/dakota_diffs.out)
+
 endif(BUILD_TESTING)
 
 

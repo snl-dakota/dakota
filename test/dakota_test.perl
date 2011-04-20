@@ -277,7 +277,8 @@ foreach $file (@testin) {
     # defaults for dakota command, input, restart, and timeout
     $dakota_command = "dakota";
     $dakota_input = $tempin;
-    $restart_command = "";
+    # Default is to write a unique restart per test, named for the test input
+    $restart_command = "-write_restart $restart_file";
     # test timeout parameters (in seconds): these may be overridden by
     # individual test inputs through tdMM,taNN for delay and absolute timeout,
     # respectively
@@ -311,13 +312,16 @@ foreach $file (@testin) {
 	print "Using alternate dakota input file name \'$dakota_input\'\n";
       }
 
-      # determine if restart file read/write is needed (R[rws]+) for this test
+      # determine if restart file read/write is needed (R[rwsn]+) for this test
       # TODO: allow specification of name to read/write for each test
       #       and allow stop specification
-      if ( ($parallel == 1 && /(#|\s+)p$cnt=R([rws]+)/ ) ||
-	   ($parallel == 0 &&  /(#|\s+)$cnt=R([rws]+)/ ) ) {
+      if ( ($parallel == 1 && /(#|\s+)p$cnt=R([rwsn]+)/ ) ||
+	   ($parallel == 0 &&  /(#|\s+)$cnt=R([rwsn]+)/ ) ) {
 	$restart = $2;
-	if ( $restart =~ /r/ && $restart =~ /w/ ) {
+	if ( ($restart =~ /r/ || $restart =~ /w/) && $restart =~ /n/ ) {
+	  die "Restart file: (n)one option can't be used with (r)ead or (w)rite; exiting\n";	    
+        }
+	elsif ( $restart =~ /r/ && $restart =~ /w/ ) {
 	  $restart_command =
 	    "-read_restart $restart_file -write_restart $restart_file";
 	  print "Restart file: reading and writing $restart_file\n";
@@ -330,8 +334,12 @@ foreach $file (@testin) {
 	  $restart_command = "-read_restart $restart_file";
 	  print "Restart file: reading $restart_file\n";
         }	
+	elsif ( $restart =~ /n/ ) {
+	  $restart_command = "";
+	  print "Restart file: explicitly removing restart arguments\n";
+        }	
 	else {
-	  print "Restart file: invalid option $restart; disabled\n";
+	  print "Restart file: invalid option $restart; default writing to $restart_file\n";
 	  $restart = 0;
         }
       }
@@ -439,7 +447,7 @@ foreach $file (@testin) {
       }
       else { # serial test
         #print "\n./$dakota_command $restart_command $dakota_input > $output 2> $error\n";
-        $pt_code = protected_test("./$dakota_command $restart_command $dakota_input > $output 2> $error");
+        $pt_code = protected_test("$dakota_command $restart_command $dakota_input > $output 2> $error");
       }
       $output_generated = 1;
 
@@ -722,6 +730,10 @@ foreach $file (@testin) {
     unlink $tempin;
     unlink $output;
     unlink $error;
+    # Remove restart if not explicitly requested
+    if ( ! $restart =~ /w/ ) {
+      unlink $restart_file;
+    }
   }
 }
 if ($mode == 2) {

@@ -8,4 +8,4 @@
 num=`echo $1 | cut -c 7-`
 cd workdir.$num
 #sleep 2
-../text_book tb.in tb.out
+text_book tb.in tb.out
