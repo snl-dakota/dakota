@@ -46,7 +46,7 @@ endif()
 
 # Mandate a system or user-provided Boost
 # Could probe for signals conditionally on HAVE_ACRO
-find_package(Boost 1.37 REQUIRED COMPONENTS signals)
+find_package(Boost 1.40 REQUIRED COMPONENTS signals)
 
 # check for a MPI-enabled build
 if(CMAKE_CXX_COMPILER MATCHES mpicxx)

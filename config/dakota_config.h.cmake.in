@@ -4,5 +4,5 @@
 // Bares little resemblance with the original, now that the CMake build is
 // becoming less-and-less like an autotools build.
 #include <Teuchos_config.h>
-#include <pecos_config.h>
+//#include <pecos_config.h>
 
