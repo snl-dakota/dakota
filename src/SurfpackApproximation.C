@@ -11,7 +11,6 @@
 //-               
 //- Owner:        Mark Richards, Sandia National Laboratories
 
-#include "surfpack_config.h"
 #include <stdexcept>
 #include <typeinfo>
 
