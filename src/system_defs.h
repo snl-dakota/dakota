@@ -9,8 +9,12 @@
 #ifndef SYSTEM_DEFS_H
 #define SYSTEM_DEFS_H
 
-#ifdef HAVE_CONFIG_H
-#include "dakota_config.h"
+#if defined(HAVE_CONFIG_H) && !defined(DISABLE_DAKOTA_CONFIG_H)
+  // Unfortunately, STILL need to set HAVE_CONFIG_H since it is used in many
+  // TPL header files included while building Dakota/src (even in the CMake
+  // build!) so use a "disable config header" conditional to help manage the
+  // transition (so, far pecos/surfpack are DONE and ddace, opt++ are close).
+  #include "dakota_config.h"
 #endif // HAVE_CONFIG_H
 
 // C++ headers

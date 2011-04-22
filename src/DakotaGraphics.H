@@ -47,7 +47,7 @@ public:
   /// opens the tabular data file stream and prints the headings
   void create_tabular_datastream(const Variables& vars,
 				 const Response& response,
-				 const String& tabular_data_file);
+				 const std::string& tabular_data_file);
 
   /// adds data to each window in the 2d graphics and adds a row to
   /// the tabular data file based on the results of a model evaluation
@@ -83,7 +83,7 @@ public:
   int graphics_counter() const;
 
   /// set tabularCntrLabel equal to label
-  void tabular_counter_label(const String& label);
+  void tabular_counter_label(const std::string& label);
 
 private:
 
@@ -99,7 +99,7 @@ private:
   int graphicsCntr;
 
   /// label for counter used in first line comment w/i the tabular data file
-  String tabularCntrLabel;
+  std::string tabularCntrLabel;
 
   /// file stream for tabulation of graphics data within compute_response
   std::ofstream tabularDataFStream;
@@ -114,7 +114,7 @@ inline int Graphics::graphics_counter() const
 { return graphicsCntr; }
 
 
-inline void Graphics::tabular_counter_label(const String& label)
+inline void Graphics::tabular_counter_label(const std::string& label)
 { tabularCntrLabel = label; }
 
 } // namespace Dakota

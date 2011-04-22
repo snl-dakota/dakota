@@ -15,7 +15,8 @@
 #ifndef DAK_XDR_INTERFACE_H
 #define DAK_XDR_INTERFACE_H
 
-#ifdef HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H) && !defined(DISABLE_DAKOTA_CONFIG_H)
+/* WJB - ToDo: transition away from configuration headers ASAP */
 #include "dakota_config.h"
 #endif
 

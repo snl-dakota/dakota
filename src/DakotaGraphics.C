@@ -10,17 +10,13 @@
 //- Description: Implementation code for the Graphics class
 //- Owner:       Brian Dennis, Sandia National Laboratories
 
-#ifdef HAVE_CONFIG_H
-#include "dakota_config.h"
-#endif
+#include "DakotaGraphics.H"
 
 #ifdef HAVE_X_GRAPHICS
-//#include "plplot.h" 
 #include "Graphics.H"
 #endif // HAVE_X_GRAPHICS
 #include "data_io.h"
 #include "CtelRegExp.H"
-#include "DakotaGraphics.H"
 #include "DakotaVariables.H"
 #include "DakotaResponse.H"
 
@@ -188,7 +184,7 @@ void Graphics::create_plots_2d(const Variables& vars, const Response& response)
     Matlab, Tecplot, etc. */
 void Graphics::
 create_tabular_datastream(const Variables& vars, const Response& response,
-			  const String& tabular_data_file)
+			  const std::string& tabular_data_file)
 {
   using std::setw;
   StringMultiArrayConstView cv_labels  = vars.continuous_variable_labels();
@@ -200,7 +196,7 @@ create_tabular_datastream(const Variables& vars, const Response& response,
 
   // tabular data file set up
   if (!tabularDataFlag) { // prevent multiple opens of tabular_data_file
-    tabularDataFStream.open(tabular_data_file);
+    tabularDataFStream.open(tabular_data_file.c_str());
     tabularDataFlag = true;
   }
   // output header info:
