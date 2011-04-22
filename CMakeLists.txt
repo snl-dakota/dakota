@@ -7,8 +7,6 @@ include(CheckFunctionExists)
 include(CheckIncludeFile)
 include(FindCURL)
 
-option(BUILD_SHARED_LIBS "Build shared libraries?" ON)
-
 if( CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR AND NOT MSVC_IDE )
   message(FATAL_ERROR "In-source builds are not allowed.
 Please create a directory and run cmake from there, passing the path
@@ -17,30 +15,24 @@ This process created the file `CMakeCache.txt' and the directory `CMakeFiles'.
 Please delete them.")
 endif()
 
-# first check for a system blas and lapack
-find_library(BLAS_LIBS blas)
-find_library(LAPACK_LIBS lapack)
-if(NOT BLAS_LIBS OR NOT LAPACK_LIBS)
-  # if not a system blas and lapack, then
-  # look for a cmake built LAPACK with
-  # find_package
-  find_package(LAPACK REQUIRED NO_MODULE)
-  set(BLAS_LIBS blas)
-  set(LAPACK_LIBS lapack)
-endif()
+add_definitions("-DHAVE_CONFIG_H")
 
-# hack to be fixed when CMake does it automatically
-if(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
-  set(FIXED_FLAG "-fixed")
-elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
-  set(FIXED_FLAG "-ffixed-form")
-elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "PGI")
-  set(FIXED_FLAG "-Mfixed")
-endif()
+option(BUILD_SHARED_LIBS "Build shared libraries?" ON)
 
 if(CMAKE_SYSTEM_NAME MATCHES Darwin)
   set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS
       "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
+endif()
+
+# first check for a system blas and lapack
+find_library(BLAS_LIBS blas)
+find_library(LAPACK_LIBS lapack)
+if(NOT BLAS_LIBS OR NOT LAPACK_LIBS)
+  # if not a system blas and lapack, then look for a cmake built LAPACK
+  # with find_package
+  find_package(LAPACK REQUIRED NO_MODULE)
+  set(BLAS_LIBS blas)
+  set(LAPACK_LIBS lapack)
 endif()
 
 
@@ -56,7 +48,7 @@ if(CMAKE_CXX_COMPILER MATCHES mpicxx)
     message(FATAL_ERROR "Cannot build parallel configuration without mpicxx")
   endif()
 
-  if ($ENV{MPIHOME})
+  if ("$ENV{MPIHOME}")
     message(" ****      dakota build    ****    MPIHOME is: " $ENV{MPIHOME})
     set(MPI_INCLUDE_PATH "$ENV{MPIHOME}/include"
     	CACHE PATH "Always use $MPIHOME to find MessagePassing header files"
@@ -148,11 +140,6 @@ if(ENABLE_DAKOTA_DOCS)
     message(FATAL_ERROR "DAKOTA documentation build only available on UNIX platforms")
   endif()
 endif()
-
-# Package-specific configuration options
-#include_directories(${Dakota_BINARY_DIR})
-
-add_definitions("-DHAVE_CONFIG_H")
 
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs)

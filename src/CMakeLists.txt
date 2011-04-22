@@ -1,9 +1,5 @@
 # CMakeLists.txt for Dakota src
 
-option(HAVE_USAGE_TRACKING "Build the DAKOTA usage tracker module." OFF)
-option(HAVE_XDR "Build the XDR interface module." ON)
-option(HAVE_BVLS "Build the f90, bvls_wrapper." OFF)
-
 include_directories(${Dakota_BINARY_DIR} ${Dakota_SOURCE_DIR}/src
                     ${NIDR_SOURCE_DIR}/..
                     ${Boost_INCLUDE_DIRS}
@@ -51,6 +47,45 @@ if(HAVE_PDB_H)
   add_definitions("-DHAVE_PDB_H")
 endif(HAVE_PDB_H)
 
+#option(HAVE_XDR "Build the XDR interface module." ON)
+if(UNIX)
+  #check_include_files("rpc/types.h" HAVE_RPC_TYPES_H)
+  #check_include_files("rpc/xdr.h" HAVE_RPC_XDR_H)
+  find_program(RPCGEN rpcgen)
+
+  if(RPCGEN AND EXISTS /usr/include/rpc/xdr.h)
+    message("  Found XDR header files.")
+    set(HAVE_RPC_XDR_H ON)
+    add_definitions("-DHAVE_RPC_XDR_H -DHAVE_RPC_TYPES_H")
+  else()
+    message(WARNING "** XDR bindings NOT properly enabled; continuing anyway..")
+    add_definitions("-DNO_XDR")
+  endif()
+endif(UNIX)
+
+
+#option(HAVE_BVLS "Build the f90, bvls_wrapper." ON)
+option(DAKOTA_F90 "Build the f90, bvls_wrapper." OFF)
+
+# A future version of CMake should set the Fortran FIXED_FLAG automagically
+if(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
+  set(FIXED_FLAG "-fixed")
+elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
+  set(FIXED_FLAG "-ffixed-form -std=legacy")
+elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "PGI")
+  set(FIXED_FLAG "-Mfixed")
+endif()
+
+if(DAKOTA_F90)
+  # WJB - ToDo - ASAP: add_definitions("-DDAKOTA_F90")
+  list(APPEND CMAKE_Fortran_FLAGS ${FIXED_FLAG})
+endif(DAKOTA_F90)
+
+# WJB - ToDo: uncomment the following line when I begin using CMake gend FC_FUNC macros
+#include_directories(${Dakota_BINARY_DIR})
+
+
+option(HAVE_USAGE_TRACKING "Build the DAKOTA usage tracker module." OFF)
 set(TRACKING_LOCATION_AND_PROXY "" CACHE STRING 
     "<URL;proxy> for usage tracking")
 if(HAVE_USAGE_TRACKING)
