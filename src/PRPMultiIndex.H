@@ -14,9 +14,6 @@
 #ifndef PRP_MULTI_INDEX_H
 #define PRP_MULTI_INDEX_H
 
-#ifdef HAVE_CONFIG_H
-#include "dakota_config.h"
-#endif
 #include "system_defs.h"
 #include "data_types.h"
 #include "ParamResponsePair.H"

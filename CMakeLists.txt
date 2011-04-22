@@ -150,12 +150,7 @@ if(ENABLE_DAKOTA_DOCS)
 endif()
 
 # Package-specific configuration options
-include_directories(${Dakota_BINARY_DIR})
-
-configure_file("${Dakota_SOURCE_DIR}/config/dakota_config.h.cmake.in"
-  "${Dakota_BINARY_DIR}/dakota_config.h"
-  @ONLY
-)
+#include_directories(${Dakota_BINARY_DIR})
 
 add_definitions("-DHAVE_CONFIG_H")
 
