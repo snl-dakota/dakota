@@ -15,7 +15,6 @@ if (BOOST_DISABLE_ASSERTS)
 endif (BOOST_DISABLE_ASSERTS)
 
 
-# Unistd check already done in Teuchos.  Setting the macro again leads to redef warning
 check_include_files(unistd.h HAVE_UNISTD_H)
 if(HAVE_UNISTD_H)
   add_definitions("-DHAVE_UNISTD_H")
@@ -47,14 +46,13 @@ if(HAVE_PDB_H)
   add_definitions("-DHAVE_PDB_H")
 endif(HAVE_PDB_H)
 
-#option(HAVE_XDR "Build the XDR interface module." ON)
 if(UNIX)
   #check_include_files("rpc/types.h" HAVE_RPC_TYPES_H)
-  #check_include_files("rpc/xdr.h" HAVE_RPC_XDR_H)
+  check_include_files("rpc/xdr.h" HAVE_RPC_XDR_H)
   find_program(RPCGEN rpcgen)
 
-  if(RPCGEN AND EXISTS /usr/include/rpc/xdr.h)
-    message("  Found XDR header files.")
+  if(HAVE_RPC_XDR_H)
+    #message("  Found XDR header files.")
     set(HAVE_RPC_XDR_H ON)
     add_definitions("-DHAVE_RPC_XDR_H -DHAVE_RPC_TYPES_H")
   else()
@@ -140,9 +138,9 @@ set(util_src ParallelLibrary.C MPIPackBuffer.C
     DakotaString.C DakotaBinStream.C CtelRegExp.C regexp.c
     SensAnalysisGlobal.C)
 
-if(HAVE_XDR)
+if(HAVE_RPC_XDR_H)
   list(APPEND util_src dak_xdr_interface.c)
-endif(HAVE_XDR)
+endif(HAVE_RPC_XDR_H)
 
 if(HAVE_USAGE_TRACKING)
   list(APPEND util_src TrackerHTTP.C)
@@ -468,5 +466,6 @@ set(Dakota_LIBRARIES ${Dakota_LIBS} CACHE INTERNAL
 set(Dakota_EXTRA_LIBRARIES ${EXTRA_TPL_LIBS} CACHE INTERNAL 
     "Dakota extra libraries")
 message(STATUS "Export targets: ${EXPORT_TARGETS}")
-EXPORT(TARGETS ${EXPORT_TARGETS} FILE "${CMAKE_CURRENT_BINARY_DIR}/DakotaTargets.cmake")
+export(TARGETS ${EXPORT_TARGETS} FILE
+       "${CMAKE_CURRENT_BINARY_DIR}/DakotaTargets.cmake")
 endif()
