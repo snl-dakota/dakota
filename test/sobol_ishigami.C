@@ -15,13 +15,14 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
-using namespace std;
 
 enum var_t { X1, X2, X3 };
 
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+
   // This application program reads and writes parameter and response data 
   // directly so no input/output filters are needed.
   ifstream fin(argv[1]);

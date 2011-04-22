@@ -15,13 +15,14 @@
 #include <map>
 #include <algorithm>
 #include <cctype>
-using namespace std;
 
 enum var_t { W, T, R, E, X, Y };
 
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+
   // This test problem is an OUU example from Applied Research Associates
   // (42nd AIAA SDM conference, April 2001).
 

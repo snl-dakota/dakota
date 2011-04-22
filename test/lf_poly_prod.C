@@ -11,11 +11,12 @@
 #include <fstream>
 #include <vector>
 #include <string>
-using namespace std;
 
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+
   // A modified "low fidelity" Rosenbrock function for use in testing SBO
   // with heirarchical approximations.  The true Rosenbrock function is:
   // Objective function = 100.*(x1-x0^2)^2 + (1-x0)^2

@@ -10,18 +10,10 @@
 #include <fstream>
 #include <vector>
 #include <string>
-#ifdef HAVE_CONFIG_H
-#include "dakota_config.h"
-#endif // HAVE_CONFIG_H
-#ifdef HAVE_STD
 #include <cmath>
-#else
-#include <math.h>
-#endif // HAVE_STD
-using namespace std;
 
 #ifdef USE_MPI
-#include "mpi.h"
+#include <mpi.h>
 #endif // USE_MPI
 
 #define POW_VAL 1.0 // text_book: 1.0 is nominal, 1.4 used for B&B testing
@@ -29,6 +21,8 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+
   int rank = 0, size = 1;
 #ifdef USE_MPI
   MPI_Init(&argc, &argv);

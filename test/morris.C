@@ -15,11 +15,12 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/variate_generator.hpp>
 
-using namespace std;
-using namespace boost;
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+  using namespace boost;
+
   // The 20-input/1-output screening design test problem that appeared in 
   //   Morris, M.D. Technometrics. 33 (1991), 161--174.
   // See also p. 88 in Sensitivity Analysis in Practice by Saltelli, Tarantola,

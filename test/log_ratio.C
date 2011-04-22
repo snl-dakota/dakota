@@ -11,19 +11,13 @@
 #include <fstream>
 #include <vector>
 #include <string>
-#ifdef HAVE_CONFIG_H
-#include "dakota_config.h"
-#endif // HAVE_CONFIG_H
-#ifdef HAVE_STD
 #include <cmath>
-#else
-#include <math.h>
-#endif // HAVE_STD
-using namespace std;
 
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+
   ifstream fin(argv[1]);
   if (!fin) {
     cerr << "\nError: failure opening " << argv[1] << endl;

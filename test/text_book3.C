@@ -11,20 +11,19 @@
 #include <fstream>
 #include <vector>
 #include <string>
-#ifdef HAVE_CONFIG_H
-#include "dakota_config.h"
-#endif // HAVE_CONFIG_H
+
 // eventually just use _WIN32 here
 #if defined(_WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
 #include <windows.h> // for Sleep()
 #elif defined(HAVE_UNISTD_H)
 #include <unistd.h> // for usleep()
 #endif
-using namespace std;
 
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+
   ifstream fin(argv[1]);
   if (!fin) {
     cerr << "\nError: failure opening " << argv[1] << endl;

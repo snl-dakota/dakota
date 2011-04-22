@@ -11,19 +11,13 @@
 #include <fstream>
 #include <vector>
 #include <string>
-#ifdef HAVE_CONFIG_H
-#include "dakota_config.h"
-#endif // HAVE_CONFIG_H
-#ifdef HAVE_STD
 #include <cmath>
-#else
-#include <math.h>
-#endif // HAVE_STD
-using namespace std;
 
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+
   // A modified "low fidelity" Rosenbrock function for use in testing SBO
   // with heirarchical approximations.  The true Rosenbrock function is:
   // Objective function = 100.*(x1-x0^2)^2 + (1-x0)^2

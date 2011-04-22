@@ -11,7 +11,6 @@
 #include <fstream>
 #include <vector>
 #include <string>
-using namespace std;
 
 //**********************************************************************
 // container.C - C++ container optimization example  
@@ -19,6 +18,8 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+
   //******************************
   // read the input from DAKOTA
   //******************************

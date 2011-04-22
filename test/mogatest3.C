@@ -11,19 +11,13 @@
 #include <fstream>
 #include <vector>
 #include <string>
-#ifdef HAVE_CONFIG_H
-#include "dakota_config.h"
-#endif // HAVE_CONFIG_H
-#ifdef HAVE_STD
 #include <cmath>
-#else
-#include <math.h>
-#endif // HAVE_STD
-using namespace std;
 
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+
   // This sample Dakota program implements the Srinivas' problem 
   // defined on page B-5 of David Van Veldhuizen's Ph.D. 
   // thesis at the Air Force Institute of Technology, titled 

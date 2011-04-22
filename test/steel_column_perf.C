@@ -14,13 +14,14 @@
 #include <map>
 #include <algorithm>
 #include <cctype>
-using namespace std;
 
 enum var_t { FS, P1, P2, P3, B, D, H, F0, E }; // order in Kuschel & Rackwitz
 
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+
   ifstream fin(argv[1]);
   if (!fin) {
     cerr << "\nError: failure opening " << argv[1] << endl;

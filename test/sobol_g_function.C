@@ -13,14 +13,15 @@
 #include <string>
 #include <cmath>
 #include <cfloat>
-using namespace std;
 
 // prototype for derivative calculation
 double dfdxi(const int index, const int a[], const int num_vars, 
-	     const vector<double>& x);
+	     const std::vector<double>& x);
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+
   // This application program reads and writes parameter and response data 
   // directly so no input/output filters are needed.
   ifstream fin(argv[1]);

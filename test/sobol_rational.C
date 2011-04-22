@@ -12,11 +12,12 @@
 #include <vector>
 #include <string>
 #include <cmath>
-using namespace std;
 
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+
   // This application program reads and writes parameter and response data 
   // directly so no input/output filters are needed.
   ifstream fin(argv[1]);

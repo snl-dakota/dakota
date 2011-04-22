@@ -14,13 +14,14 @@
 #include <map>
 #include <algorithm>
 #include <cctype>
-using namespace std;
 
 enum var_t { X1, X2 };
 
 
 int main(int argc, char** argv)
 {
+  using namespace std;
+
   // The Rosenbrock function may be solved as either a general minimization
   // problem with Objective function = 100.*(x1-x0^2)^2 + (1-x0)^2
   // or a least squares problem with Term1 = 10.*(x1-x0^2) and Term2 = (1-x0).
