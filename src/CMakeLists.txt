@@ -438,6 +438,7 @@ target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIB
 target_link_libraries(dakota_library_mode dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 
 install(TARGETS dakota_src EXPORT ${ExportTarget} DESTINATION lib)
+install(TARGETS dakota dakota_restart_util EXPORT DESTINATION bin)
 file(GLOB Dakota_hdr *.H *.h)
 install(FILES ${Dakota_hdr} DESTINATION include)
 
