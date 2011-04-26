@@ -78,7 +78,7 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   }
   String corr_type, pt_reuse, approx_type =
     (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT) ?
-    "local_interpolation_polynomial" : "global_interpolation_polynomial";
+    "piecewise_interpolation_polynomial" : "global_interpolation_polynomial";
   UShortArray approx_order; // empty
   //const Variables& g_u_vars = g_u_model.current_variables();
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,

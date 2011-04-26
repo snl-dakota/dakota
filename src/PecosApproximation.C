@@ -67,11 +67,11 @@ approx_type_to_basis_type(const String& approx_type, short& basis_type)
     else if (approx_type.ends("orthogonal_polynomial"))
       basis_type = Pecos::GLOBAL_ORTHOGONAL_POLYNOMIAL;
   }
-  else if (approx_type.begins("local_")) {
+  else if (approx_type.begins("piecewise_")) {
     if (approx_type.ends("interpolation_polynomial"))
-      basis_type = Pecos::LOCAL_INTERPOLATION_POLYNOMIAL;
+      basis_type = Pecos::PIECEWISE_INTERPOLATION_POLYNOMIAL;
     else if (approx_type.ends("orthogonal_polynomial"))
-      basis_type = Pecos::LOCAL_ORTHOGONAL_POLYNOMIAL;
+      basis_type = Pecos::PIECEWISE_ORTHOGONAL_POLYNOMIAL;
   }
 }
 

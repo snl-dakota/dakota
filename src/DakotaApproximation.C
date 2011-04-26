@@ -48,7 +48,7 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
       approxType != "global_polynomial"                       &&
       approxType != "global_kriging"                          &&
       approxType != "global_orthogonal_polynomial"            &&
-      approxType != "local_interpolation_polynomial")
+      approxType != "piecewise_interpolation_polynomial")
     Cerr << "\nWarning: use_derivatives is not currently supported by "
 	 << approxType << ".\n\n";
 
@@ -128,8 +128,8 @@ get_approx(ProblemDescDB& problem_db, size_t num_vars)
     return new TANA3Approximation(problem_db, num_vars);
   else if (approx_type == "global_orthogonal_polynomial" ||
            approx_type == "global_interpolation_polynomial" ||
-           approx_type == "local_orthogonal_polynomial" ||  // multi-element
-           approx_type == "local_interpolation_polynomial") // local spline
+           approx_type == "piecewise_orthogonal_polynomial" ||  // multi-element
+           approx_type == "piecewise_interpolation_polynomial") // local spline
     return new PecosApproximation(problem_db, num_vars);
   else if (approx_type == "global_gaussian")
     return new GaussProcApproximation(problem_db, num_vars);
@@ -190,8 +190,8 @@ get_approx(const String& approx_type, const UShortArray& approx_order,
     approx = new TANA3Approximation(num_vars, data_order);
   else if (approx_type == "global_orthogonal_polynomial" ||
 	   approx_type == "global_interpolation_polynomial" ||
-           approx_type == "local_orthogonal_polynomial" ||  // multi-element
-           approx_type == "local_interpolation_polynomial") // local spline
+           approx_type == "piecewise_orthogonal_polynomial" ||  // multi-element
+           approx_type == "piecewise_interpolation_polynomial") // local spline
     approx = new PecosApproximation(approx_type, approx_order,
 				    num_vars,    data_order);
   else if (approx_type == "global_gaussian")

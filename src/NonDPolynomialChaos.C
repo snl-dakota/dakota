@@ -134,7 +134,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   }
   String corr_type, pt_reuse, approx_type =
     (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT) ?
-    "local_orthogonal_polynomial" : "global_orthogonal_polynomial";
+    "piecewise_orthogonal_polynomial" : "global_orthogonal_polynomial";
   if (expansionCoeffsApproach == Pecos::REGRESSION && !tensorRegression) {
     pt_reuse = probDescDB.get_string("method.nond.collocation_point_reuse");
     // if reusing samples within a refinement strategy ensure different random
