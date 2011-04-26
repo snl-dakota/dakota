@@ -122,6 +122,21 @@ endif()
 endif()
 
 
+# Manage option for graphics (default ON if possible)
+option(HAVE_X_GRAPHICS "Build the DAKOTA/Motif Graphics package." ON)
+if (HAVE_X_GRAPHICS)
+  find_package(X11)
+  if (NOT X11_FOUND)
+    message(WARNING "HAVE_X_GRAPHICS requested, but X11 not found; disabling.")
+    set(HAVE_X_GRAPHICS OFF FORCE)
+  endif()
+  find_package(Motif)
+  if (NOT MOTIF_FOUND)
+    message(WARNING "HAVE_X_GRAPHICS requested, but Motif not found; disabling.")
+    set(HAVE_X_GRAPHICS OFF FORCE)
+  endif()
+endif()
+
 add_subdirectory(packages)
 add_subdirectory(src)
 

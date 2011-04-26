@@ -371,6 +371,11 @@ if(HAVE_X_GRAPHICS)
   link_directories(${DakotaMotif_BINARY_DIR})
   list(APPEND TPL_LIBS DGraphics)
   list(APPEND EXPORT_TARGETS DGraphics)
+
+  list(APPEND EXTRA_TPL_LIBS ${X11_LIBRARIES} ${MOTIF_LIBRARIES})
+  if (X11_Xpm_FOUND)
+    list(APPEND EXTRA_TPL_LIBS ${X11_Xpm_LIB})
+  endif()
 endif(HAVE_X_GRAPHICS)
 
 ## AGGREGATED source code spec for full-up libdakota.
@@ -431,8 +436,7 @@ else()
 endif(HAVE_HOPSPACK)
   
 ## WJB: request macro from Kitware? FindLibDL.cmake (e.g. digidoc++ or casacore)
-list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${CURL_LIBRARIES} dl 
-     ${X11_LIBRARIES} ${MOTIF_LIBRARIES} ${XMU_LIB})
+list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${CURL_LIBRARIES} dl ${XMU_LIB})
 
 target_link_libraries(dakota dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
