@@ -9,6 +9,10 @@ include_directories(include src/Widgets
 		    ${MOTIF_INCLUDE_DIR}
 )
 
+# We only need the HAVE_XPM definition, unless the defines need to
+# propagate to the system libraries (hope not).
+remove_definitions("-DHAVE_CONFIG_H")
+
 if(X11_Xpm_FOUND)
   add_definitions("-DHAVE_XPM")
 endif(X11_Xpm_FOUND)
