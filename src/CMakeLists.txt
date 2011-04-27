@@ -376,6 +376,9 @@ if(HAVE_X_GRAPHICS)
   if (X11_Xpm_FOUND)
     list(APPEND EXTRA_TPL_LIBS ${X11_Xpm_LIB})
   endif()
+  if (Threads_FOUND)
+    list(APPEND EXTRA_TPL_LIBS ${CMAKE_THREAD_LIBS_INIT})
+  endif()
 endif(HAVE_X_GRAPHICS)
 
 ## AGGREGATED source code spec for full-up libdakota.
