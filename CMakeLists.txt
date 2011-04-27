@@ -135,6 +135,12 @@ if (HAVE_X_GRAPHICS)
     message(WARNING "HAVE_X_GRAPHICS requested, but Motif not found; disabling.")
     set(HAVE_X_GRAPHICS OFF FORCE)
   endif()
+
+  include(FindThreads)
+  if (NOT Threads_FOUND)
+    message(WARNING "HAVE_X_GRAPHICS requested, but threads not found; disabling.")
+    set(HAVE_X_GRAPHICS OFF FORCE)
+  endif()
 endif()
 
 add_subdirectory(packages)
