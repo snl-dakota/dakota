@@ -4,6 +4,11 @@ project(DakotaMotif)
 find_package(X11 REQUIRED)
 find_package(Motif REQUIRED)
 
+# Set the export name for install targets; parent packages likely want
+# to override this to the name of their target
+set(ExportTarget ${CMAKE_PROJECT_NAME}-targets CACHE STRING 
+  "Name for the export target for ${CMAKE_PROJECT_NAME}")
+
 include_directories(include src/Widgets 
                     ${X11_INCLUDE_DIR} 
 		    ${MOTIF_INCLUDE_DIR}
@@ -38,7 +43,6 @@ add_library(DGraphics
 			  src/Widgets/ToggleBplus.c 
 			  src/Widgets/XCC.c 
 )
-
 
 #EXTRA_DIST = Widgets/darkstipple.bm \
 #	     Widgets/lightstipple.bm \
@@ -89,3 +93,5 @@ install(
 ##install(FILES ${FSUDace_BINARY_DIR}/cmake/FSUDaceConfig.cmake
 ##       DESTINATION lib/cmake/FSUDace)
 ##install(EXPORT FSUDace-targets DESTINATION lib/cmake/FSUDace)
+
+install(TARGETS DGraphics EXPORT ${ExportTarget} DESTINATION lib)
