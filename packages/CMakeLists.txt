@@ -42,6 +42,10 @@ if(HAVE_OPTPP)
   if (NOT OPTPP_INCLUDE_DIRS)
     add_subdirectory(OPTPP)
   endif()
+  if(NOT HAVE_MPI)
+    set(OPTPP_HAVE_MPI OFF CACHE BOOL
+        "MPI NOT enabled so disable in OPTPP as well" FORCE)
+  endif()
 endif()
 
 # Both DAKOTA and PECOS unconditionally depend on Teuchos, and the "shared
@@ -98,7 +102,7 @@ endif(HAVE_FSUDACE)
 if(HAVE_HOPSPACK)
   if(HAVE_MPI)
     # See hopspack/ConfigureMPI.cmake for MPI "help"
-    set(mpi ON)
+    set(mpi ON CACHE BOOL "MPI requested so enable in HOPSPACK" FORCE)
     message("HOPSPACK caches the variable mpi = ${mpi}")
   endif(HAVE_MPI)
 
