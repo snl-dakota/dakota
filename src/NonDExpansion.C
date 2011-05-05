@@ -90,6 +90,8 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
   // -----------------------------------------------------------------
   // use Askey/extended u-space definitions in Nataf transformations
   short u_space_type = probDescDB.get_short("method.nond.expansion_type");
+  if (refineType == Pecos::H_REFINEMENT) // override
+    u_space_type = PIECEWISE_U;
   initialize_random_variable_types(u_space_type); // need ranVarTypesX/U below
 
   // check for correlations that are not supported for (1) use in extended
@@ -178,7 +180,8 @@ void NonDExpansion::construct_g_u_model(Model& g_u_model)
 	 !( x_types[i] == Pecos::NORMAL && u_types[i] == Pecos::STD_NORMAL ) &&
 	 !( ( x_types[i] == Pecos::UNIFORM ||
 	      x_types[i] == Pecos::HISTOGRAM_BIN ) &&
-	    u_types[i] == Pecos::STD_UNIFORM ) &&
+	    ( u_types[i] == Pecos::STD_UNIFORM ||
+	      u_types[i] == Pecos::PIECEWISE_STD_UNIFORM ) ) &&
 	 !( x_types[i] == Pecos::EXPONENTIAL &&
 	    u_types[i] == Pecos::STD_EXPONENTIAL ) &&
 	 !( x_types[i] == Pecos::BETA   && u_types[i] == Pecos::STD_BETA ) &&
@@ -192,6 +195,7 @@ void NonDExpansion::construct_g_u_model(Model& g_u_model)
     nonlinear_vars_map, vars_u_to_x_mapping, set_u_to_x_mapping,
     primary_resp_map, secondary_resp_map, 0, nonlinear_resp_map,
     resp_x_to_u_mapping, NULL), false);
+
   // Populate random variable distribution parameters for transformed u-space.
   // *** Note ***: For use with REGRESSION approaches, variable ordering in
   // get_parameter_sets() does not use x_types/u_types as in NonDQuadrature/
@@ -200,36 +204,28 @@ void NonDExpansion::construct_g_u_model(Model& g_u_model)
   // and no current x->u selection in NonD::initialize_random_variable_types()
   // causes an ordering discrepancy.  If a future mapping causes an ordering
   // inconsistency, this could be handled above via the RecastModel vars_map.
-  size_t num_g_u_nuv = std::count(u_types.begin(), u_types.end(),
-				  (short)Pecos::STD_NORMAL),
-    num_g_u_bnuv     = std::count(u_types.begin(), u_types.end(),
-				  (short)Pecos::BOUNDED_NORMAL),
-    num_g_u_lnuv     = std::count(u_types.begin(), u_types.end(),
-				  (short)Pecos::LOGNORMAL),
-    num_g_u_blnuv    = std::count(u_types.begin(), u_types.end(),
-				  (short)Pecos::BOUNDED_LOGNORMAL),
-    num_g_u_uuv      =
-      std::count(u_types.begin(), u_types.end(), (short)Pecos::STD_UNIFORM) - 
-      std::count(x_types.begin(), x_types.end(), (short)Pecos::DESIGN) - 
-      std::count(x_types.begin(), x_types.end(), (short)Pecos::STATE),
-    num_g_u_luuv     = std::count(u_types.begin(), u_types.end(),
-				  (short)Pecos::LOGUNIFORM),
-    num_g_u_tuv      = std::count(u_types.begin(), u_types.end(),
-				  (short)Pecos::TRIANGULAR),
-    num_g_u_euv      = std::count(u_types.begin(), u_types.end(),
-				  (short)Pecos::STD_EXPONENTIAL),
-    num_g_u_buv      = std::count(u_types.begin(), u_types.end(),
-				  (short)Pecos::STD_BETA),
-    num_g_u_gauv     = std::count(u_types.begin(), u_types.end(),
-				  (short)Pecos::STD_GAMMA),
-    num_g_u_guuv     = std::count(u_types.begin(), u_types.end(),
-				  (short)Pecos::GUMBEL),
-    num_g_u_fuv      = std::count(u_types.begin(), u_types.end(),
-				  (short)Pecos::FRECHET),
-    num_g_u_wuv      = std::count(u_types.begin(), u_types.end(),
-				  (short)Pecos::WEIBULL),
-    num_g_u_hbuv     = std::count(u_types.begin(), u_types.end(),
-				  (short)Pecos::HISTOGRAM_BIN);
+  size_t num_g_u_nuv = 0, num_g_u_bnuv = 0, num_g_u_lnuv = 0, num_g_u_blnuv = 0,
+    num_g_u_uuv = 0, num_g_u_luuv = 0, num_g_u_tuv = 0, num_g_u_euv = 0,
+    num_g_u_buv = 0, num_g_u_gauv = 0, num_g_u_guuv = 0, num_g_u_fuv = 0,
+    num_g_u_wuv = 0, num_g_u_hbuv = 0;
+  for (i=numContDesVars; i<numContDesVars+numContAleatUncVars; ++i)
+    switch (u_types[i]) {
+    case Pecos::STD_NORMAL:        ++num_g_u_nuv;   break;
+    case Pecos::BOUNDED_NORMAL:    ++num_g_u_bnuv;  break;
+    case Pecos::LOGNORMAL:         ++num_g_u_lnuv;  break;
+    case Pecos::BOUNDED_LOGNORMAL: ++num_g_u_blnuv; break;
+    case Pecos::STD_UNIFORM: case Pecos::PIECEWISE_STD_UNIFORM:
+                                   ++num_g_u_uuv;   break;
+    case Pecos::LOGUNIFORM:        ++num_g_u_luuv;  break;
+    case Pecos::TRIANGULAR:        ++num_g_u_tuv;   break;
+    case Pecos::STD_EXPONENTIAL:   ++num_g_u_euv;   break;
+    case Pecos::STD_BETA:          ++num_g_u_buv;   break;
+    case Pecos::STD_GAMMA:         ++num_g_u_gauv;  break;
+    case Pecos::GUMBEL:            ++num_g_u_guuv;  break;
+    case Pecos::FRECHET:           ++num_g_u_fuv;   break;
+    case Pecos::WEIBULL:           ++num_g_u_wuv;   break;
+    case Pecos::HISTOGRAM_BIN:     ++num_g_u_hbuv;  break;
+    }
   Pecos::DistributionParams& im_dp = iteratedModel.distribution_parameters();
   Pecos::DistributionParams& gu_dp = g_u_model.distribution_parameters();
   if (num_g_u_nuv || num_g_u_bnuv) {

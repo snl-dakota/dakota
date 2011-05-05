@@ -246,7 +246,7 @@ sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
    the moderate exponential growth option in sparse grids. */
 void NonDQuadrature::nested_quadrature_order(const UShortArray& quad_order_ref)
 {
-  const Pecos::IntArray&    rules    = tpqDriver->integration_rules();
+  const Pecos::ShortArray&  rules    = tpqDriver->collocation_rules();
   const Pecos::UShortArray& gk_order = tpqDriver->genz_keister_order();
   const Pecos::UShortArray& gk_prec  = tpqDriver->genz_keister_precision();
   for (size_t i=0; i<numContinuousVars; ++i)

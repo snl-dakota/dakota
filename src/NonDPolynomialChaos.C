@@ -191,9 +191,6 @@ void NonDPolynomialChaos::initialize_expansion()
       = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
     driver_rep = u_space_sampler_rep->driver().driver_rep();
   }
-  Pecos::IntArray empty_array;
-  const Pecos::IntArray& int_rules = (num_int) ?
-    driver_rep->integration_rules() : empty_array;
 
   // reuse polynomial bases since they are the same for all response fns
   // (efficiency becomes more important for numerically-generated polynomials).
@@ -202,17 +199,17 @@ void NonDPolynomialChaos::initialize_expansion()
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep) { // may be NULL based on approxFnIndices
       if (num_int) {    // reuse driver basis
-	poly_approx_rep->distribution_types(u_types, int_rules);
+	poly_approx_rep->distribution_types(u_types);
         poly_approx_rep->polynomial_basis(driver_rep->polynomial_basis());
       }
       else if (first) { // construct a new basis for rep0
-	poly_approx_rep->distributions(u_types, int_rules,
+	poly_approx_rep->distributions(u_types,
 				       iteratedModel.distribution_parameters());
 	poly_approx_rep0 = poly_approx_rep;
 	first = false;
       }
       else {            // reuse rep0 basis
-        poly_approx_rep->distribution_types(u_types, int_rules);
+        poly_approx_rep->distribution_types(u_types);
 	poly_approx_rep->polynomial_basis(poly_approx_rep0->polynomial_basis());
       }
       // NumerGenOrthogPolynomial instances need to compute polyCoeffs and
