@@ -198,18 +198,19 @@ void NonDPolynomialChaos::initialize_expansion()
   for (size_t i=0; i<numFunctions; i++) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep) { // may be NULL based on approxFnIndices
-      if (num_int) {    // reuse driver basis
-	poly_approx_rep->distribution_types(u_types);
-        poly_approx_rep->polynomial_basis(driver_rep->polynomial_basis());
-      }
-      else if (first) { // construct a new basis for rep0
-	poly_approx_rep->distributions(u_types,
-				       iteratedModel.distribution_parameters());
+      if (first) {
+	if (num_int) { // reuse driver basis for rep0
+	  poly_approx_rep->distribution_types(u_types);
+	  poly_approx_rep->polynomial_basis(driver_rep->polynomial_basis());
+	}
+	else           // construct a new basis for rep0
+	  poly_approx_rep->
+	    distributions(u_types, iteratedModel.distribution_parameters());
 	poly_approx_rep0 = poly_approx_rep;
 	first = false;
       }
-      else {            // reuse rep0 basis
-        poly_approx_rep->distribution_types(u_types);
+      else {           // reuse rep0 basis for all other reps
+        poly_approx_rep->basis_types(poly_approx_rep0->basis_types());
 	poly_approx_rep->polynomial_basis(poly_approx_rep0->polynomial_basis());
       }
       // NumerGenOrthogPolynomial instances need to compute polyCoeffs and

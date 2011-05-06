@@ -111,9 +111,14 @@ public:
   void distributions(const Pecos::ShortArray& u_types,
 		     const Pecos::DistributionParams& dp);
 
-  /// invoke Pecos::OrthogPolyApproximation::polynomial_basis()
+  /// set Pecos::OrthogPolyApproximation::basisTypes
+  void basis_types(const Pecos::ShortArray& basis_types);
+  /// get Pecos::OrthogPolyApproximation::basisTypes
+  const Pecos::ShortArray& basis_types() const;
+
+  /// set Pecos::OrthogPolyApproximation::polynomialBasis
   void polynomial_basis(const std::vector<Pecos::BasisPolynomial>& poly_basis);
-  /// return Pecos::OrthogPolyApproximation::polynomial_basis()
+  /// get Pecos::OrthogPolyApproximation::polynomialBasis
   const std::vector<Pecos::BasisPolynomial>& polynomial_basis() const;
 
   /// invoke Pecos::OrthogPolyApproximation::coefficients_norms_flag()
@@ -339,6 +344,15 @@ distributions(const Pecos::ShortArray& u_types,
 {
   ((Pecos::OrthogPolyApproximation*)polyApproxRep)->distributions(u_types, dp);
 }
+
+
+inline void PecosApproximation::
+basis_types(const Pecos::ShortArray& basis_types)
+{ ((Pecos::OrthogPolyApproximation*)polyApproxRep)->basis_types(basis_types); }
+
+
+inline const Pecos::ShortArray& PecosApproximation::basis_types() const
+{ return ((Pecos::OrthogPolyApproximation*)polyApproxRep)->basis_types(); }
 
 
 inline void PecosApproximation::
