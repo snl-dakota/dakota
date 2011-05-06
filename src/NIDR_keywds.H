@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 884 distinct keywords (plus 103 aliases) **/
+/** 885 distinct keywords (plus 103 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -806,8 +806,9 @@ static KeyWord
 		{"search_method",8,4,1,0,kw_142},
 		{"steplength_to_boundary",10,0,4,0,0,0.,0.,0,N_mdm(Real,stepLenToBoundary)}
 		},
-	kw_144[4] = {
+	kw_144[5] = {
 		{"debug",8,0,1,1,0,0.,0.,0,N_mdm(type,methodOutput_DEBUG_OUTPUT)},
+		{"normal",8,0,1,1,0,0.,0.,0,N_mdm(type,methodOutput_NORMAL_OUTPUT)},
 		{"quiet",8,0,1,1,0,0.,0.,0,N_mdm(type,methodOutput_QUIET_OUTPUT)},
 		{"silent",8,0,1,1,0,0.,0.,0,N_mdm(type,methodOutput_SILENT_OUTPUT)},
 		{"verbose",8,0,1,1,0,0.,0.,0,N_mdm(type,methodOutput_VERBOSE_OUTPUT)}
@@ -973,7 +974,7 @@ static KeyWord
 		{"optpp_newton",8,5,11,1,kw_143,0.,0.,0,N_mdf(litpp,methodName_optpp_newton)},
 		{"optpp_pds",8,1,11,1,kw_141,0.,0.,0,N_mdm(lit,methodName_optpp_pds)},
 		{"optpp_q_newton",8,5,11,1,kw_143,0.,0.,0,N_mdf(litpp,methodName_optpp_q_newton)},
-		{"output",8,4,3,0,kw_144},
+		{"output",8,5,3,0,kw_144},
 		{"polynomial_chaos",8,13,11,1,kw_124,0.,0.,0,N_mdm(lit,methodName_nond_polynomial_chaos)},
 		{"psuade_moat",8,1,11,1,kw_145,0.,0.,0,N_mdm(lit,methodName_psuade_moat)},
 		{"richardson_extrap",8,4,11,1,kw_146,0.,0.,0,N_mdm(lit,methodName_richardson_extrap)},

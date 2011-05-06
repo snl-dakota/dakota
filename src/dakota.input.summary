@@ -49,6 +49,7 @@ KEYWORD12 method
 	[ output
 	  debug
 	  | verbose
+	  | normal
 	  | quiet
 	  | silent
 	  ]

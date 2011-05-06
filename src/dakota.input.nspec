@@ -53,6 +53,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	[ output {0}
 	  debug {N_mdm(type,methodOutput_DEBUG_OUTPUT)}
 	  | verbose {N_mdm(type,methodOutput_VERBOSE_OUTPUT)}
+	  | normal {N_mdm(type,methodOutput_NORMAL_OUTPUT)}
 	  | quiet {N_mdm(type,methodOutput_QUIET_OUTPUT)}
 	  | silent {N_mdm(type,methodOutput_SILENT_OUTPUT)}
 	  ]

@@ -4366,6 +4366,7 @@ static Method_mp_type
 	MP2s(expansionType,PIECEWISE_U),
 	MP2s(expansionType,STD_NORMAL_U),
 	MP2s(methodOutput,DEBUG_OUTPUT),
+	MP2s(methodOutput,NORMAL_OUTPUT),
 	MP2s(methodOutput,QUIET_OUTPUT),
 	MP2s(methodOutput,SILENT_OUTPUT),
 	MP2s(methodOutput,VERBOSE_OUTPUT),

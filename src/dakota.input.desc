@@ -101,6 +101,7 @@ TAG "method/output/debug"
 	DESC "[CHOOSE output level]"
 
 TAG "method/output/verbose"
+TAG "method/output/normal"
 TAG "method/output/quiet"
 TAG "method/output/silent"
 TAG "method/max_iterations"
