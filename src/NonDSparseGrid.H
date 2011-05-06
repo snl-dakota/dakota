@@ -46,7 +46,8 @@ public:
 		 //short sparse_grid_usage,
 		 //short refine_type  = Pecos::NO_REFINEMENT,
 		 short refine_control = Pecos::NO_CONTROL,
-		 bool track_ensemble_wts = true, bool nested_rules = true);
+		 bool track_ensemble_wts = true, bool nested_rules = true,
+		 bool piecewise_basis = false,	 bool use_derivs = false);
 
   //
   //- Heading: Virtual function redefinitions

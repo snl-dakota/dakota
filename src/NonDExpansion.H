@@ -80,15 +80,18 @@ protected:
   /// assign a NonDQuadrature instance within u_space_sampler based on
   /// a quad_order specification
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-			    const UShortArray& quad_order);
+			    const UShortArray& quad_order, bool piecewise_basis,
+			    bool use_derivs);
   /// assign a NonDQuadrature instance within u_space_sampler based on
   /// the size of a filtered tensor product sample set
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-			    int filtered_samples);
+			    int filtered_samples, bool piecewise_basis,
+			    bool use_derivs);
   /// assign a NonDSparsegrid instance within u_space_sampler
   void construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 			     unsigned short ssg_level,
-			     const RealVector& ssg_dim_pref);
+			     const RealVector& ssg_dim_pref,
+			     bool piecewise_basis, bool use_derivs);
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& g_u_model,
 		     int num_samples);

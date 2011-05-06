@@ -39,10 +39,19 @@ NonDQuadrature::NonDQuadrature(Model& model): NonDIntegration(model),
   // natafTransform available: initialize_random_variables() called in
   // NonDIntegration ctor
   check_variables(natafTransform.x_types());
-  //short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;//SLOW_,UNRESTRICTED_
-  //short nested_uniform_rule = Pecos::GAUSS_PATTERSON;//CLENSHAW_CURTIS,FEJER2
-  tpqDriver->initialize_grid(natafTransform.u_types(), nestedRules);
-                             //, growth_rate, nested_uniform_rule);
+
+  short u_space_type = probDescDB.get_short("method.nond.expansion_type");
+  short refine_type
+    = probDescDB.get_short("method.nond.expansion_refinement_type");
+  bool piecewise_basis
+    = (u_space_type == PIECEWISE_U || refine_type == Pecos::H_REFINEMENT);
+  bool use_derivs = probDescDB.get_bool("method.derivative_usage");
+  bool equidistant_rules = true; // NEWTON_COTES pts for piecewise interpolants
+  short nested_uniform_rule = Pecos::GAUSS_PATTERSON;//CLENSHAW_CURTIS,FEJER2
+  tpqDriver->initialize_grid(natafTransform.u_types(), nestedRules,
+                             piecewise_basis, equidistant_rules, use_derivs,
+			     nested_uniform_rule);
+
   // check_integration() needs integrationRules from initialize_grid()
   check_integration(probDescDB.get_dusa("method.nond.quadrature_order"));
   maxConcurrency *= tpqDriver->grid_size();
@@ -53,7 +62,8 @@ NonDQuadrature::NonDQuadrature(Model& model): NonDIntegration(model),
     evaluation of numerical quadrature points. */
 NonDQuadrature::
 NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
-	       const UShortArray& order, bool nested_rules): 
+	       const UShortArray& order, bool nested_rules,
+	       bool piecewise_basis, bool use_derivs): 
   NonDIntegration(NoDBBaseConstructor(), model), nestedRules(nested_rules),
   numFilteredSamples(0)
 {
@@ -65,10 +75,13 @@ NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
-  //short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;//SLOW_,UNRESTRICTED_
-  //short nested_uniform_rule = Pecos::GAUSS_PATTERSON;//CLENSHAW_CURTIS,FEJER2
-  tpqDriver->initialize_grid(u_types, nestedRules);
-                             //, growth_rate, nested_uniform_rule);
+
+  bool equidistant_rules = true; // NEWTON_COTES pts for piecewise interpolants
+  short nested_uniform_rule = Pecos::GAUSS_PATTERSON;//CLENSHAW_CURTIS,FEJER2
+  tpqDriver->initialize_grid(u_types, nestedRules, piecewise_basis,
+			     equidistant_rules, use_derivs,
+			     nested_uniform_rule);
+
   check_integration(order); // needs integrationRules from initialize_grid()
   maxConcurrency *= tpqDriver->grid_size();
 }
@@ -78,7 +91,8 @@ NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
     evaluation of numerical quadrature points. */
 NonDQuadrature::
 NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
-	       int num_filt_samples, bool nested_rules): 
+	       int num_filt_samples, bool nested_rules, bool piecewise_basis,
+	       bool use_derivs): 
   NonDIntegration(NoDBBaseConstructor(), model),
   numFilteredSamples(num_filt_samples), nestedRules(nested_rules)
 {
@@ -90,10 +104,12 @@ NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
-  //short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;//SLOW_,UNRESTRICTED_
-  //short nested_uniform_rule = Pecos::GAUSS_PATTERSON;//CLENSHAW_CURTIS,FEJER2
-  tpqDriver->initialize_grid(u_types, nestedRules);
-                             //, growth_rate, nested_uniform_rule);
+
+  bool equidistant_rules = true; // NEWTON_COTES pts for piecewise interpolants
+  short nested_uniform_rule = Pecos::GAUSS_PATTERSON;//CLENSHAW_CURTIS,FEJER2
+  tpqDriver->initialize_grid(u_types, nestedRules, piecewise_basis,
+			     equidistant_rules, use_derivs,
+			     nested_uniform_rule);
   compute_min_order();
   maxConcurrency *= numFilteredSamples;
 }

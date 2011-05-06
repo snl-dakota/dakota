@@ -42,24 +42,31 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
 
   // initialize_random_variables() called in NonDIntegration ctor
   check_variables(natafTransform.x_types());
-  bool store_colloc       = false; // no collocIndices/gauss{Pts,Wts}1D storage
-  bool track_ensemble_wts = false;
-  bool nested_rules       = true;
-  bool equidistant_rules  = true;
+
+  short u_space_type = probDescDB.get_short("method.nond.expansion_type");
+  short refine_type
+    = probDescDB.get_short("method.nond.expansion_refinement_type");
+  short refine_control
+    = probDescDB.get_short("method.nond.expansion_refinement_control");
+  bool use_derivs = probDescDB.get_bool("method.derivative_usage");
+
+  bool store_colloc = false; // no collocIndices/gauss{Pts,Wts}1D storage
+  bool nested_rules = true,  track_ensemble_wts = false;
+  bool piecewise_basis
+    = (u_space_type == PIECEWISE_U || refine_type == Pecos::H_REFINEMENT);
+  bool equidistant_rules = true; // NEWTON_COTES pts for piecewise interpolants
   // moderate growth is helpful for iso and aniso sparse grids, but
   // not necessary for generalized grids
   //short refine_type
   //  = probDescDB.get_short("method.nond.expansion_refinement_type");
-  short refine_control
-    = probDescDB.get_short("method.nond.expansion_refinement_control");
   short growth_rate =
     (refine_control == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) ?
     Pecos::UNRESTRICTED_GROWTH : Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
   ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelSpec,
     dimPrefSpec, /*refine_type,*/ refine_control, store_colloc,
-    track_ensemble_wts, nested_rules, equidistant_rules, growth_rate,
-    nested_uniform_rule);
+    track_ensemble_wts, nested_rules, piecewise_basis, equidistant_rules,
+    use_derivs, growth_rate, nested_uniform_rule);
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
     iteratedModel.distribution_parameters());
   maxConcurrency *= ssgDriver->grid_size(); // requires polyParams
@@ -73,7 +80,7 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
 	       unsigned short ssg_level, const RealVector& dim_pref,
 	       //short sparse_grid_usage, short refine_type,
 	       short refine_control, bool track_ensemble_wts,
-	       bool nested_rules): 
+	       bool nested_rules, bool piecewise_basis, bool use_derivs): 
   NonDIntegration(NoDBBaseConstructor(), model), ssgLevelSpec(ssg_level),
   dimPrefSpec(dim_pref), ssgLevelRef(ssg_level)  
 {
@@ -85,15 +92,16 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
-  bool  store_colloc      = true; //(sparse_grid_usage == Pecos::INTERPOLATION);
-  bool  equidistant_rules = true;
+  bool store_colloc = true; //(sparse_grid_usage == Pecos::INTERPOLATION);
+  bool equidistant_rules = true; // NEWTON_COTES pts for piecewise interpolants
   short growth_rate =
     (refine_control == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) ?
     Pecos::UNRESTRICTED_GROWTH : Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
   ssgDriver->initialize_grid(u_types, ssg_level, dim_pref, //refine_type,
     refine_control, store_colloc, track_ensemble_wts, nested_rules,
-    equidistant_rules, growth_rate, nested_uniform_rule);
+    piecewise_basis, equidistant_rules, use_derivs, growth_rate,
+    nested_uniform_rule);
   ssgDriver->
     initialize_grid_parameters(u_types, model.distribution_parameters());
   maxConcurrency *= ssgDriver->grid_size(); // requires polyParams

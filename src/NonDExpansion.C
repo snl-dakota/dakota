@@ -180,8 +180,7 @@ void NonDExpansion::construct_g_u_model(Model& g_u_model)
 	 !( x_types[i] == Pecos::NORMAL && u_types[i] == Pecos::STD_NORMAL ) &&
 	 !( ( x_types[i] == Pecos::UNIFORM ||
 	      x_types[i] == Pecos::HISTOGRAM_BIN ) &&
-	    ( u_types[i] == Pecos::STD_UNIFORM ||
-	      u_types[i] == Pecos::PIECEWISE_STD_UNIFORM ) ) &&
+	    u_types[i] == Pecos::STD_UNIFORM ) &&
 	 !( x_types[i] == Pecos::EXPONENTIAL &&
 	    u_types[i] == Pecos::STD_EXPONENTIAL ) &&
 	 !( x_types[i] == Pecos::BETA   && u_types[i] == Pecos::STD_BETA ) &&
@@ -214,8 +213,7 @@ void NonDExpansion::construct_g_u_model(Model& g_u_model)
     case Pecos::BOUNDED_NORMAL:    ++num_g_u_bnuv;  break;
     case Pecos::LOGNORMAL:         ++num_g_u_lnuv;  break;
     case Pecos::BOUNDED_LOGNORMAL: ++num_g_u_blnuv; break;
-    case Pecos::STD_UNIFORM: case Pecos::PIECEWISE_STD_UNIFORM:
-                                   ++num_g_u_uuv;   break;
+    case Pecos::STD_UNIFORM:       ++num_g_u_uuv;   break;
     case Pecos::LOGUNIFORM:        ++num_g_u_luuv;  break;
     case Pecos::TRIANGULAR:        ++num_g_u_tuv;   break;
     case Pecos::STD_EXPONENTIAL:   ++num_g_u_euv;   break;
@@ -421,7 +419,8 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
 
 void NonDExpansion::
 construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-		     const UShortArray& quad_order)
+		     const UShortArray& quad_order, bool piecewise_basis,
+		     bool use_derivs)
 {
   expansionCoeffsApproach = Pecos::QUADRATURE;
   // sanity checks: no GSG for TPQ
@@ -439,7 +438,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
      refineType          != Pecos::NO_REFINEMENT));
   u_space_sampler.assign_rep(
     new NonDQuadrature(g_u_model, natafTransform.u_types(), quad_order,
-		       nested_rules), false);
+		       nested_rules, piecewise_basis, use_derivs), false);
   numSamplesOnModel = u_space_sampler.maximum_concurrency()
                     / g_u_model.derivative_concurrency();
 }
@@ -447,7 +446,8 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
 void NonDExpansion::
 construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-		     int filtered_samples)
+		     int filtered_samples, bool piecewise_basis,
+		     bool use_derivs)
 {
   // sanity checks: only uniform refinement supported for probabilistic
   // collocation (regression using filtered tensor grids)
@@ -468,13 +468,14 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
     // refineType          != Pecos::NO_REFINEMENT));
   u_space_sampler.assign_rep(
     new NonDQuadrature(g_u_model, natafTransform.u_types(), filtered_samples,
-		       nested_rules), false);
+		       nested_rules, piecewise_basis, use_derivs), false);
 }
 
 
 void NonDExpansion::
 construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
-		      unsigned short ssg_level, const RealVector& ssg_dim_pref)
+		      unsigned short ssg_level, const RealVector& ssg_dim_pref,
+		      bool piecewise_basis, bool use_derivs)
 {
   expansionCoeffsApproach = Pecos::SPARSE_GRID;
   // enforce minimum required VBD control
@@ -493,11 +494,11 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   // calculations must employ gauss_wts_1d.
   bool track_wts = !(numContDesVars || numContEpistUncVars || numContStateVars);
   bool nested_rules = (ruleNestingOverride != Pecos::NON_NESTED);
-
   u_space_sampler.assign_rep(
     new NonDSparseGrid(g_u_model, natafTransform.u_types(), ssg_level,
 		       ssg_dim_pref, //sparse_grid_usage, refineType,
-		       refineControl, track_wts, nested_rules), false);
+		       refineControl, track_wts, nested_rules,
+		       piecewise_basis, use_derivs), false);
 
   numSamplesOnModel = u_space_sampler.maximum_concurrency()
                     / g_u_model.derivative_concurrency();

@@ -35,6 +35,25 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
+  // There are two derivative cases of interest: (1) derivatives used as
+  // additional data for forming the approximation (derivatives w.r.t. the
+  // expansion variables), and (2) derivatives that will be approximated 
+  // separately (derivatives w.r.t. auxilliary variables).  The data_order
+  // passed through the DataFitSurrModel defines Approximation::buildDataOrder,
+  // which is restricted to managing the former case.  If we need to manage the
+  // latter case in the future, we do not have a good way to detect this state
+  // at construct time, as neither the finalStats ASV/DVV nor subIteratorFlag
+  // have yet been defined.  One indicator that is defined is the presence of
+  // inactive continuous vars, since the subModel inactive view is updated
+  // within the NestedModel ctor prior to subIterator instantiation.
+  short data_order = 1;
+  if (probDescDB.get_bool("method.derivative_usage")) {// || iteratedModel.icv()
+    if (gradientType != "none") data_order |= 2;
+    if (hessianType  != "none") data_order |= 4;
+  }
+  short u_space_type = probDescDB.get_short("method.nond.expansion_type");
+  bool  use_derivs = (data_order > 1), piecewise_basis
+    = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
@@ -43,10 +62,12 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   unsigned short ssg_level_spec
     = probDescDB.get_ushort("method.nond.sparse_grid_level");
   if (!quad_order_spec.empty())
-    construct_quadrature(u_space_sampler, g_u_model, quad_order_spec);
+    construct_quadrature(u_space_sampler, g_u_model, quad_order_spec,
+			 piecewise_basis, use_derivs);
   else if (ssg_level_spec != USHRT_MAX)
     construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec,
-      probDescDB.get_rdv("method.nond.sparse_grid_dimension_preference"));
+      probDescDB.get_rdv("method.nond.sparse_grid_dimension_preference"),
+      piecewise_basis, use_derivs);
   // iteratedModel concurrency is defined by the number of samples
   // used in constructing the expansion
   if (numSamplesOnModel) // optional with default = 0
@@ -59,25 +80,8 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-  short u_space_type = probDescDB.get_short("method.nond.expansion_type"),
-    corr_order = -1, data_order = 1;
-  // There are two derivative cases of interest: (1) derivatives used as
-  // additional data for forming the approximation (derivatives w.r.t. the
-  // expansion variables), and (2) derivatives that will be approximated 
-  // separately (derivatives w.r.t. auxilliary variables).  The data_order
-  // passed through the DataFitSurrModel defines Approximation::buildDataOrder,
-  // which is restricted to managing the former case.  If we need to manage the
-  // latter case in the future, we do not have a good way to detect this state
-  // at construct time, as neither the finalStats ASV/DVV nor subIteratorFlag
-  // have yet been defined.  One indicator that is defined is the presence of
-  // inactive continuous vars, since the subModel inactive view is updated
-  // within the NestedModel ctor prior to subIterator instantiation.
-  if (probDescDB.get_bool("method.derivative_usage")) {// || iteratedModel.icv()
-    if (gradientType != "none") data_order |= 2;
-    if (hessianType  != "none") data_order |= 4;
-  }
-  String corr_type, pt_reuse, approx_type =
-    (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT) ?
+  short  corr_order = -1;
+  String corr_type, pt_reuse, approx_type = (piecewise_basis) ?
     "piecewise_interpolation_polynomial" : "global_interpolation_polynomial";
   UShortArray approx_order; // empty
   //const Variables& g_u_vars = g_u_model.current_variables();

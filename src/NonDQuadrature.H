@@ -48,12 +48,14 @@ public:
   /// alternate constructor for instantiations "on the fly" based on a
   /// quadrature order specification
   NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
-		 const UShortArray& order, bool nested_rules = false);
+		 const UShortArray& order, bool nested_rules = false,
+		 bool piecewise_basis = false, bool use_derivs = false);
 
   /// alternate constructor for instantiations "on the fly" based on
   /// the size of a filtered tensor product sample set
   NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
-		 int num_filt_samples, bool nested_rules = false);
+		 int num_filt_samples, bool nested_rules = false,
+		 bool piecewise_basis = false, bool use_derivs = false);
 
   //
   //- Heading: Member functions
