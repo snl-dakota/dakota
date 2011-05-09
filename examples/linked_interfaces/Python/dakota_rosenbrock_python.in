@@ -1,9 +1,9 @@
-# DAKOTA INPUT FILE - dakota_python_rosenbrock.in
-# demonstrate the Python interface using list or numpy
+# DAKOTA/Python linked interface demonstration
+#   Requires DAKOTA compiled with and linked against Python
+#   Exercise the Python interface using list or numpy
 
 method,						
-#	optpp_q_newton				#0,#1
-	optpp_newton				#2,#3
+	optpp_newton
 	  max_iterations = 50			
 	  convergence_tolerance = 1e-4
 
@@ -26,5 +26,4 @@ interface,
 responses,				
 	num_objective_functions = 1	
 	analytic_gradients		
-#	no_hessians				#0,#1
-	analytic_hessians			#2,#3
+	analytic_hessians
