@@ -353,7 +353,7 @@ if(HAVE_OPTPP)
   add_definitions("-DDAKOTA_NEWMAT")
   if(MPI_FOUND)
     add_definitions("-DWITH_MPI")
-  endif(HAVE_OPTPP)
+  endif(MPI_FOUND)
 
   set(iterator_src ${iterator_src} SNLLBase.C SNLLOptimizer.C SNLLLeastSq.C)
   set(TPL_LIBS ${TPL_LIBS} opt base constraints gss newton pds utils newmat)
