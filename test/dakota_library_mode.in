@@ -24,10 +24,10 @@
 # parallel tests (text_book)
 # --------------------------
 # Same test suite as above:
-# p0=D'dakota_library_mode'
-# p1=D'dakota_library_mode', p1=I''
-# p2=D'dakota_library_mode -m'
-# p3=D'dakota_library_mode -m', p3=I''
+# p0=D'dakota_library_mode', p0=Rn
+# p1=D'dakota_library_mode', p1=I'', p1=Rn
+# p2=D'dakota_library_mode -m', p2=Rn
+# p3=D'dakota_library_mode -m', p3=I'', p3=Rn
 
 # Processor counts:
 # p0=2,p1=2,p2=2,p3=2
