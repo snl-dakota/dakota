@@ -2572,8 +2572,8 @@ Test Number 4 succeeded
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3520341271e+00 beam_width
-                      3.3262784077e+00 beam_thickness
+                      2.3520341271e+00 w
+                      3.3262784077e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -2979,8 +2979,8 @@ dakota_cantilever.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3520341271e+00 beam_width
-                      3.3262784077e+00 beam_thickness
+                      2.3520341271e+00 w
+                      3.3262784077e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -2994,8 +2994,8 @@ Test Number 0 succeeded
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 55 total (55 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3520341285e+00 beam_width
-                      3.3262784057e+00 beam_thickness
+                      2.3520341285e+00 w
+                      3.3262784057e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3009,8 +3009,8 @@ Test Number 1 succeeded
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 34 total (34 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3520206894e+00 beam_width
-                      3.3262974057e+00 beam_thickness
+                      2.3520206894e+00 w
+                      3.3262974057e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3024,8 +3024,8 @@ Test Number 2 succeeded
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 31 total (30 new, 1 duplicate)
 <<<<< Best parameters          =
-                      2.3573307661e+00 beam_width
-                      3.3193291516e+00 beam_thickness
+                      2.3573307661e+00 w
+                      3.3193291516e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3039,8 +3039,8 @@ Test Number 3 succeeded
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 45 total (44 new, 1 duplicate)
 <<<<< Best parameters          =
-                      2.3573514113e+00 beam_width
-                      3.3192977012e+00 beam_thickness
+                      2.3573514113e+00 w
+                      3.3192977012e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3054,8 +3054,8 @@ Test Number 4 succeeded
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 31 total (30 new, 1 duplicate)
 <<<<< Best parameters          =
-                      2.3573307661e+00 beam_width
-                      3.3193291516e+00 beam_thickness
+                      2.3573307661e+00 w
+                      3.3193291516e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3069,8 +3069,8 @@ Test Number 5 succeeded
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 45 total (44 new, 1 duplicate)
 <<<<< Best parameters          =
-                      2.3573514113e+00 beam_width
-                      3.3192977012e+00 beam_thickness
+                      2.3573514113e+00 w
+                      3.3192977012e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3084,8 +3084,8 @@ Test Number 6 succeeded
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 93 total (88 new, 5 duplicate)
 <<<<< Best parameters          =
-                      2.3518478279e+00 beam_width
-                      3.3248865336e+00 beam_thickness
+                      2.3518478279e+00 w
+                      3.3248865336e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3099,8 +3099,8 @@ Test Number 7 succeeded
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 123 total (116 new, 7 duplicate)
 <<<<< Best parameters          =
-                      2.3518471234e+00 beam_width
-                      3.3248874475e+00 beam_thickness
+                      2.3518471234e+00 w
+                      3.3248874475e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3114,8 +3114,8 @@ Test Number 8 succeeded
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 89 total (84 new, 5 duplicate)
 <<<<< Best parameters          =
-                      2.3518478279e+00 beam_width
-                      3.3248865336e+00 beam_thickness
+                      2.3518478279e+00 w
+                      3.3248865336e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3129,8 +3129,8 @@ Test Number 9 succeeded
 Test Number 10 succeeded
 <<<<< Function evaluation summary: 39 total (39 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3520340723e+00 beam_width
-                      3.3262784853e+00 beam_thickness
+                      2.3520340723e+00 w
+                      3.3262784853e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3144,8 +3144,8 @@ Test Number 10 succeeded
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 65 total (65 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3520340723e+00 beam_width
-                      3.3262784853e+00 beam_thickness
+                      2.3520340723e+00 w
+                      3.3262784853e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3159,8 +3159,8 @@ Test Number 11 succeeded
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 91 total (39 new, 52 duplicate)
 <<<<< Best parameters          =
-                      2.3520340723e+00 beam_width
-                      3.3262784853e+00 beam_thickness
+                      2.3520340723e+00 w
+                      3.3262784853e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3174,8 +3174,8 @@ Test Number 12 succeeded
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 130 total (65 new, 65 duplicate)
 <<<<< Best parameters          =
-                      2.3520340723e+00 beam_width
-                      3.3262784853e+00 beam_thickness
+                      2.3520340723e+00 w
+                      3.3262784853e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3190,8 +3190,8 @@ dakota_cantilever_ego.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 22 total (22 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3142841821e+00 beam_width
-                      3.3862187900e+00 beam_thickness
+                      2.3142841821e+00 w
+                      3.3862187900e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -3205,8 +3205,8 @@ Test Number 0 succeeded
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.7261680977e+00 beam_width
-                      2.5445562160e+00 beam_thickness
+                      1.7261680977e+00 w
+                      2.5445562160e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
@@ -7050,8 +7050,8 @@ dakota_ouu1_cantilever.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (UQ_I): 3650 total (3650 new, 0 duplicate)
 <<<<< Best parameters          =
-                      3.0195318678e+00 beam_width
-                      3.1845826944e+00 beam_thickness
+                      3.0195318678e+00 w
+                      3.1845826944e+00 t
 <<<<< Best objective function  =
                       9.6159489313e+00
 <<<<< Best constraint values   =
@@ -7061,8 +7061,8 @@ Test Number 0 succeeded
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 2750 total (2750 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.4536290262e+00 beam_width
-                      3.8302407593e+00 beam_thickness
+                      2.4536290262e+00 w
+                      3.8302407593e+00 t
 <<<<< Best objective function  =
                       9.3979899044e+00
 <<<<< Best constraint values   =
@@ -7113,8 +7113,8 @@ dakota_ouu_cantilever_lps.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (UQ_I): 300000 total (300000 new, 0 duplicate)
 <<<<< Best parameters          =
-                      3.0195318722e+00 beam_width
-                      3.1845826992e+00 beam_thickness
+                      3.0195318722e+00 w
+                      3.1845826992e+00 t
 <<<<< Best objective function  =
                       9.6159489599e+00
 <<<<< Best constraint values   =
@@ -7124,8 +7124,8 @@ Test Number 0 succeeded
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 300000 total (300000 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.4749607875e+00 beam_width
-                      3.8314838300e+00 beam_thickness
+                      2.4749607875e+00 w
+                      3.8314838300e+00 t
 <<<<< Best objective function  =
                       9.4827722372e+00
 <<<<< Best constraint values   =
@@ -7135,8 +7135,8 @@ Test Number 1 succeeded
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 250000 total (250000 new, 0 duplicate)
 <<<<< Best parameters          =
-                      8.1112679908e+00 beam_width
-                      6.0027088763e+00 beam_thickness
+                      8.1112679908e+00 w
+                      6.0027088763e+00 t
 <<<<< Best objective function  =
                       4.8689580366e+01
 <<<<< Best constraint values   =
@@ -7146,8 +7146,8 @@ Test Number 2 succeeded
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 250000 total (250000 new, 0 duplicate)
 <<<<< Best parameters          =
-                      8.0175668287e+00 beam_width
-                      6.0597723557e+00 beam_thickness
+                      8.0175668287e+00 w
+                      6.0597723557e+00 t
 <<<<< Best objective function  =
                       4.8584629829e+01
 <<<<< Best constraint values   =
@@ -7362,8 +7362,8 @@ Test Number 0 succeeded
   response_fn_2: 330 val (330 n, 0 d), 330 grad (330 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 330 val (330 n, 0 d), 330 grad (330 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459897434e+00 beam_width
-                      3.8921860543e+00 beam_thickness
+                      2.4459897434e+00 w
+                      3.8921860543e+00 t
 <<<<< Best objective function  =
                       9.5202471684e+00
 <<<<< Best constraint values   =
@@ -7376,8 +7376,8 @@ Test Number 1 succeeded
   response_fn_2: 420 val (420 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 420 val (420 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      4.2758826577e+00 beam_width
-                      4.0296265483e+00 beam_thickness
+                      4.2758826577e+00 w
+                      4.0296265483e+00 t
 <<<<< Best objective function  =
                       1.7230210275e+01
 <<<<< Best constraint values   =
@@ -7390,8 +7390,8 @@ Test Number 2 succeeded
   response_fn_2: 1650 val (1650 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 1650 val (1650 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459897434e+00 beam_width
-                      3.8921860544e+00 beam_thickness
+                      2.4459897434e+00 w
+                      3.8921860544e+00 t
 <<<<< Best objective function  =
                       9.5202471684e+00
 <<<<< Best constraint values   =
@@ -7404,8 +7404,8 @@ Test Number 3 succeeded
   response_fn_2: 420 val (420 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 420 val (420 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      4.2758826563e+00 beam_width
-                      4.0296265484e+00 beam_thickness
+                      4.2758826563e+00 w
+                      4.0296265484e+00 t
 <<<<< Best objective function  =
                       1.7230210270e+01
 <<<<< Best constraint values   =
@@ -7418,8 +7418,8 @@ Test Number 4 succeeded
   response_fn_2: 539 val (539 n, 0 d), 539 grad (539 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 539 val (539 n, 0 d), 539 grad (539 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459894523e+00 beam_width
-                      3.8921865176e+00 beam_thickness
+                      2.4459894523e+00 w
+                      3.8921865176e+00 t
 <<<<< Best objective function  =
                       9.5202471684e+00
 <<<<< Best constraint values   =
@@ -7432,8 +7432,8 @@ Test Number 5 succeeded
   response_fn_2: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.7490339636e+00 beam_width
-                      3.3461821600e+00 beam_thickness
+                      2.7490339636e+00 w
+                      3.3461821600e+00 t
 <<<<< Best objective function  =
                       9.1987684061e+00
 <<<<< Best constraint values   =
@@ -7446,8 +7446,8 @@ Test Number 6 succeeded
   response_fn_2: 2695 val (2695 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 2695 val (2695 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459894530e+00 beam_width
-                      3.8921865164e+00 beam_thickness
+                      2.4459894530e+00 w
+                      3.8921865164e+00 t
 <<<<< Best objective function  =
                       9.5202471684e+00
 <<<<< Best constraint values   =
@@ -7460,8 +7460,8 @@ Test Number 7 succeeded
   response_fn_2: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.7490339636e+00 beam_width
-                      3.3461821600e+00 beam_thickness
+                      2.7490339636e+00 w
+                      3.3461821600e+00 t
 <<<<< Best objective function  =
                       9.1987684061e+00
 <<<<< Best constraint values   =
@@ -7479,8 +7479,8 @@ Test Number 0 succeeded
   response_fn_2: 1890 val (1890 n, 0 d), 90 grad (90 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 1890 val (1890 n, 0 d), 90 grad (90 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.6645308111e+00 beam_width
-                      3.4747679589e+00 beam_thickness
+                      2.6645308111e+00 w
+                      3.4747679589e+00 t
 <<<<< Best objective function  =
                       9.2586262880e+00
 <<<<< Best constraint values   =
@@ -7497,8 +7497,8 @@ Test Number 1 succeeded
   response_fn_2: 2460 val (2460 n, 0 d), 180 grad (180 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 2460 val (2460 n, 0 d), 180 grad (180 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459909201e+00 beam_width
-                      3.8921841821e+00 beam_thickness
+                      2.4459909201e+00 w
+                      3.8921841821e+00 t
 <<<<< Best objective function  =
                       9.5202471687e+00
 <<<<< Best constraint values   =
@@ -7515,8 +7515,8 @@ Test Number 2 succeeded
   response_fn_2: 234 val (225 n, 9 d), 174 grad (165 n, 9 d), 0 Hess (0 n, 0 d)
   response_fn_3: 234 val (225 n, 9 d), 174 grad (165 n, 9 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459903007e+00 beam_width
-                      3.8921849983e+00 beam_thickness
+                      2.4459903007e+00 w
+                      3.8921849983e+00 t
 <<<<< Best objective function  =
                       9.5202467543e+00
 <<<<< Best constraint values   =
@@ -7533,8 +7533,8 @@ Test Number 3 succeeded
   response_fn_2: 1800 val (1674 n, 126 d), 1620 grad (1554 n, 66 d), 0 Hess (0 n, 0 d)
   response_fn_3: 1800 val (1674 n, 126 d), 1620 grad (1554 n, 66 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4453607496e+00 beam_width
-                      3.8931872732e+00 beam_thickness
+                      2.4453607496e+00 w
+                      3.8931872732e+00 t
 <<<<< Best objective function  =
                       9.5202473487e+00
 <<<<< Best constraint values   =
@@ -7551,8 +7551,8 @@ Test Number 4 succeeded
   response_fn_2: 10063 val (10063 n, 0 d), 294 grad (294 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 10063 val (10063 n, 0 d), 294 grad (294 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459548774e+00 beam_width
-                      3.8922415329e+00 beam_thickness
+                      2.4459548774e+00 w
+                      3.8922415329e+00 t
 <<<<< Best objective function  =
                       9.5202471615e+00
 <<<<< Best constraint values   =
@@ -7569,8 +7569,8 @@ Test Number 5 succeeded
   response_fn_2: 9916 val (9916 n, 0 d), 196 grad (196 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 9916 val (9916 n, 0 d), 196 grad (196 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4344068351e+00 beam_width
-                      3.9106191274e+00 beam_thickness
+                      2.4344068351e+00 w
+                      3.9106191274e+00 t
 <<<<< Best objective function  =
                       9.5200379333e+00
 <<<<< Best constraint values   =
@@ -7587,8 +7587,8 @@ Test Number 6 succeeded
   response_fn_2: 329 val (318 n, 11 d), 231 grad (222 n, 9 d), 0 Hess (0 n, 0 d)
   response_fn_3: 329 val (318 n, 11 d), 231 grad (222 n, 9 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459903007e+00 beam_width
-                      3.8921849983e+00 beam_thickness
+                      2.4459903007e+00 w
+                      3.8921849983e+00 t
 <<<<< Best objective function  =
                       9.5202467543e+00
 <<<<< Best constraint values   =
@@ -7605,8 +7605,8 @@ Test Number 7 succeeded
   response_fn_2: 4910 val (4878 n, 32 d), 4665 grad (4638 n, 27 d), 0 Hess (0 n, 0 d)
   response_fn_3: 4910 val (4878 n, 32 d), 4665 grad (4638 n, 27 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4458761440e+00 beam_width
-                      3.8923668799e+00 beam_thickness
+                      2.4458761440e+00 w
+                      3.8923668799e+00 t
 <<<<< Best objective function  =
                       9.5202472953e+00
 <<<<< Best constraint values   =
@@ -7617,8 +7617,8 @@ dakota_pcbdo_cantilever_mixed.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (UQ_I): 1320 total (1050 new, 270 duplicate)
 <<<<< Best parameters          =
-                      2.4862410758e+00 beam_width
-                      2.4554450027e+00 beam_thickness
+                      2.4862410758e+00 w
+                      2.4554450027e+00 t
                       2.0000000000e+02 X_mean
                       2.0000000000e+02 Y_mean
 <<<<< Best objective function  =
@@ -7630,8 +7630,8 @@ Test Number 0 succeeded
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 2464 total (2016 new, 448 duplicate)
 <<<<< Best parameters          =
-                      1.9606684183e+00 beam_width
-                      7.6978543376e+00 beam_thickness
+                      1.9606684183e+00 w
+                      7.6978543376e+00 t
                       2.0000000000e+02 X_mean
                       4.6948551918e+02 Y_mean
 <<<<< Best objective function  =
@@ -7643,8 +7643,8 @@ Test Number 1 succeeded
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 4260 total (3990 new, 270 duplicate)
 <<<<< Best parameters          =
-                      2.4862410384e+00 beam_width
-                      2.4554450417e+00 beam_thickness
+                      2.4862410384e+00 w
+                      2.4554450417e+00 t
                       2.0000000000e+02 X_mean
                       2.0000000000e+02 Y_mean
 <<<<< Best objective function  =
@@ -7656,8 +7656,8 @@ Test Number 2 succeeded
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 7952 total (4368 new, 3584 duplicate)
 <<<<< Best parameters          =
-                      1.9606684183e+00 beam_width
-                      7.6978543376e+00 beam_thickness
+                      1.9606684183e+00 w
+                      7.6978543376e+00 t
                       2.0000000000e+02 X_mean
                       4.6948551918e+02 Y_mean
 <<<<< Best objective function  =
@@ -7677,8 +7677,8 @@ Test Number 0 succeeded
   response_fn_2: 300 val (300 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 300 val (300 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.3277902286e+00 beam_width
-                      3.9866954548e+00 beam_thickness
+                      2.3277902286e+00 w
+                      3.9866954548e+00 t
 <<<<< Best objective function  =
                       9.2801907242e+00
 <<<<< Best constraint values   =
@@ -7695,8 +7695,8 @@ Test Number 1 succeeded
   response_fn_2: 570 val (570 n, 0 d), 300 grad (300 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 570 val (570 n, 0 d), 300 grad (300 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459335082e+00 beam_width
-                      3.8922755142e+00 beam_thickness
+                      2.4459335082e+00 w
+                      3.8922755142e+00 t
 <<<<< Best objective function  =
                       9.5202471032e+00
 <<<<< Best constraint values   =
@@ -7713,8 +7713,8 @@ Test Number 2 succeeded
   response_fn_2: 490 val (490 n, 0 d), 245 grad (245 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 490 val (490 n, 0 d), 245 grad (245 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.3146947430e+00 beam_width
-                      4.0030527646e+00 beam_thickness
+                      2.3146947430e+00 w
+                      4.0030527646e+00 t
 <<<<< Best objective function  =
                       9.2658451900e+00
 <<<<< Best constraint values   =
@@ -7731,8 +7731,8 @@ Test Number 3 succeeded
   response_fn_2: 882 val (882 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 882 val (882 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459719209e+00 beam_width
-                      3.8922144097e+00 beam_thickness
+                      2.4459719209e+00 w
+                      3.8922144097e+00 t
 <<<<< Best objective function  =
                       9.5202471563e+00
 <<<<< Best constraint values   =
@@ -8949,8 +8949,8 @@ Test Number 0 succeeded
   response_fn_2: 104 val (95 n, 9 d), 104 grad (95 n, 9 d), 0 Hess (0 n, 0 d)
   response_fn_3: 104 val (95 n, 9 d), 104 grad (95 n, 9 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.2383436445e+00 beam_width
-                      5.0812957966e+00 beam_thickness
+                      2.2383436445e+00 w
+                      5.0812957966e+00 t
 <<<<< Best objective function  =
                       1.1373686152e+01
 <<<<< Best constraint values   =
@@ -8963,8 +8963,8 @@ Test Number 1 succeeded
   response_fn_2: 208 val (190 n, 18 d), 104 grad (95 n, 9 d), 0 Hess (0 n, 0 d)
   response_fn_3: 208 val (190 n, 18 d), 104 grad (95 n, 9 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.2383436445e+00 beam_width
-                      5.0812957966e+00 beam_thickness
+                      2.2383436445e+00 w
+                      5.0812957966e+00 t
 <<<<< Best objective function  =
                       1.1373686152e+01
 <<<<< Best constraint values   =
@@ -8977,8 +8977,8 @@ Test Number 2 succeeded
   response_fn_2: 353 val (331 n, 22 d), 353 grad (331 n, 22 d), 0 Hess (0 n, 0 d)
   response_fn_3: 405 val (384 n, 21 d), 405 grad (384 n, 21 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4563071000e+00 beam_width
-                      3.8931294368e+00 beam_thickness
+                      2.4563071000e+00 w
+                      3.8931294368e+00 t
 <<<<< Best objective function  =
                       9.5627214768e+00
 <<<<< Best constraint values   =
@@ -8991,8 +8991,8 @@ Test Number 3 succeeded
   response_fn_2: 509 val (508 n, 1 d), 509 grad (508 n, 1 d), 0 Hess (0 n, 0 d)
   response_fn_3: 533 val (532 n, 1 d), 533 grad (532 n, 1 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4563087186e+00 beam_width
-                      3.8931265964e+00 beam_thickness
+                      2.4563087186e+00 w
+                      3.8931265964e+00 t
 <<<<< Best objective function  =
                       9.5627208013e+00
 <<<<< Best constraint values   =
@@ -9005,8 +9005,8 @@ Test Number 4 succeeded
   response_fn_2: 48 val (44 n, 4 d), 48 grad (44 n, 4 d), 0 Hess (0 n, 0 d)
   response_fn_3: 48 val (44 n, 4 d), 48 grad (44 n, 4 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4368516977e+00 beam_width
-                      3.8541639805e+00 beam_thickness
+                      2.4368516977e+00 w
+                      3.8541639805e+00 t
 <<<<< Best objective function  =
                       9.3920260393e+00
 <<<<< Best constraint values   =
@@ -9019,8 +9019,8 @@ Test Number 5 succeeded
   response_fn_2: 96 val (88 n, 8 d), 48 grad (44 n, 4 d), 0 Hess (0 n, 0 d)
   response_fn_3: 96 val (88 n, 8 d), 48 grad (44 n, 4 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4368516977e+00 beam_width
-                      3.8541639805e+00 beam_thickness
+                      2.4368516977e+00 w
+                      3.8541639805e+00 t
 <<<<< Best objective function  =
                       9.3920260393e+00
 <<<<< Best constraint values   =
@@ -9033,8 +9033,8 @@ Test Number 6 succeeded
   response_fn_2: 252 val (246 n, 6 d), 252 grad (246 n, 6 d), 0 Hess (0 n, 0 d)
   response_fn_3: 307 val (301 n, 6 d), 307 grad (301 n, 6 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4514245526e+00 beam_width
-                      3.8835910762e+00 beam_thickness
+                      2.4514245526e+00 w
+                      3.8835910762e+00 t
 <<<<< Best objective function  =
                       9.5203305163e+00
 <<<<< Best constraint values   =
@@ -9047,8 +9047,8 @@ Test Number 7 succeeded
   response_fn_2: 406 val (403 n, 3 d), 406 grad (403 n, 3 d), 0 Hess (0 n, 0 d)
   response_fn_3: 418 val (415 n, 3 d), 418 grad (415 n, 3 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4514247487e+00 beam_width
-                      3.8835907438e+00 beam_thickness
+                      2.4514247487e+00 w
+                      3.8835907438e+00 t
 <<<<< Best objective function  =
                       9.5203304634e+00
 <<<<< Best constraint values   =
@@ -9061,8 +9061,8 @@ Test Number 8 succeeded
   response_fn_2: 55 val (53 n, 2 d), 55 grad (53 n, 2 d), 0 Hess (0 n, 0 d)
   response_fn_3: 55 val (53 n, 2 d), 55 grad (53 n, 2 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4376800635e+00 beam_width
-                      3.8530510228e+00 beam_thickness
+                      2.4376800635e+00 w
+                      3.8530510228e+00 t
 <<<<< Best objective function  =
                       9.3925056619e+00
 <<<<< Best constraint values   =
@@ -9075,8 +9075,8 @@ Test Number 9 succeeded
   response_fn_2: 108 val (106 n, 2 d), 54 grad (53 n, 1 d), 0 Hess (0 n, 0 d)
   response_fn_3: 108 val (106 n, 2 d), 54 grad (53 n, 1 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4485419600e+00 beam_width
-                      3.8813809241e+00 beam_thickness
+                      2.4485419600e+00 w
+                      3.8813809241e+00 t
 <<<<< Best objective function  =
                       9.5037240555e+00
 <<<<< Best constraint values   =
@@ -9089,8 +9089,8 @@ Test Number 10 succeeded
   response_fn_2: 215 val (196 n, 19 d), 215 grad (196 n, 19 d), 0 Hess (0 n, 0 d)
   response_fn_3: 290 val (285 n, 5 d), 290 grad (285 n, 5 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4521817168e+00 beam_width
-                      3.8826058812e+00 beam_thickness
+                      2.4521817168e+00 w
+                      3.8826058812e+00 t
 <<<<< Best objective function  =
                       9.5208551555e+00
 <<<<< Best constraint values   =
@@ -9103,8 +9103,8 @@ Test Number 11 succeeded
   response_fn_2: 528 val (526 n, 2 d), 528 grad (526 n, 2 d), 0 Hess (0 n, 0 d)
   response_fn_3: 578 val (576 n, 2 d), 578 grad (576 n, 2 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4521817168e+00 beam_width
-                      3.8826058813e+00 beam_thickness
+                      2.4521817168e+00 w
+                      3.8826058813e+00 t
 <<<<< Best objective function  =
                       9.5208551556e+00
 <<<<< Best constraint values   =
@@ -9117,8 +9117,8 @@ Test Number 12 succeeded
   response_fn_2: 55 val (53 n, 2 d), 55 grad (53 n, 2 d), 0 Hess (0 n, 0 d)
   response_fn_3: 55 val (53 n, 2 d), 55 grad (53 n, 2 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4376831856e+00 beam_width
-                      3.8530511428e+00 beam_thickness
+                      2.4376831856e+00 w
+                      3.8530511428e+00 t
 <<<<< Best objective function  =
                       9.3925179841e+00
 <<<<< Best constraint values   =
@@ -9131,8 +9131,8 @@ Test Number 13 succeeded
   response_fn_2: 108 val (106 n, 2 d), 54 grad (53 n, 1 d), 0 Hess (0 n, 0 d)
   response_fn_3: 108 val (106 n, 2 d), 54 grad (53 n, 1 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4485432915e+00 beam_width
-                      3.8813846071e+00 beam_thickness
+                      2.4485432915e+00 w
+                      3.8813846071e+00 t
 <<<<< Best objective function  =
                       9.5037382415e+00
 <<<<< Best constraint values   =
@@ -9145,8 +9145,8 @@ Test Number 14 succeeded
   response_fn_2: 215 val (195 n, 20 d), 215 grad (195 n, 20 d), 0 Hess (0 n, 0 d)
   response_fn_3: 290 val (286 n, 4 d), 290 grad (286 n, 4 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4521850443e+00 beam_width
-                      3.8826065193e+00 beam_thickness
+                      2.4521850443e+00 w
+                      3.8826065193e+00 t
 <<<<< Best objective function  =
                       9.5208696396e+00
 <<<<< Best constraint values   =
@@ -9159,8 +9159,8 @@ Test Number 15 succeeded
   response_fn_2: 528 val (526 n, 2 d), 528 grad (526 n, 2 d), 0 Hess (0 n, 0 d)
   response_fn_3: 582 val (580 n, 2 d), 582 grad (580 n, 2 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4521850443e+00 beam_width
-                      3.8826065193e+00 beam_thickness
+                      2.4521850443e+00 w
+                      3.8826065193e+00 t
 <<<<< Best objective function  =
                       9.5208696397e+00
 <<<<< Best constraint values   =
@@ -9174,8 +9174,8 @@ Test Number 0 succeeded
   response_fn_2: 183 val (147 n, 36 d), 194 grad (158 n, 36 d), 0 Hess (0 n, 0 d)
   response_fn_3: 214 val (180 n, 34 d), 225 grad (191 n, 34 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4446085786e+00 beam_width
-                      3.8980319865e+00 beam_thickness
+                      2.4446085786e+00 w
+                      3.8980319865e+00 t
 <<<<< Best objective function  =
                       9.5291624338e+00
 <<<<< Best constraint values   =
@@ -9188,8 +9188,8 @@ Test Number 1 succeeded
   response_fn_2: 230 val (215 n, 15 d), 241 grad (226 n, 15 d), 0 Hess (0 n, 0 d)
   response_fn_3: 267 val (252 n, 15 d), 278 grad (263 n, 15 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4564906837e+00 beam_width
-                      3.8928917537e+00 beam_thickness
+                      2.4564906837e+00 w
+                      3.8928917537e+00 t
 <<<<< Best objective function  =
                       9.5628523255e+00
 <<<<< Best constraint values   =
@@ -9202,8 +9202,8 @@ Test Number 2 succeeded
   response_fn_2: 112 val (89 n, 23 d), 120 grad (97 n, 23 d), 0 Hess (0 n, 0 d)
   response_fn_3: 131 val (109 n, 22 d), 139 grad (117 n, 22 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4514241274e+00 beam_width
-                      3.8835917690e+00 beam_thickness
+                      2.4514241274e+00 w
+                      3.8835917690e+00 t
 <<<<< Best objective function  =
                       9.5203305635e+00
 <<<<< Best constraint values   =
@@ -9216,8 +9216,8 @@ Test Number 3 succeeded
   response_fn_2: 149 val (138 n, 11 d), 157 grad (146 n, 11 d), 0 Hess (0 n, 0 d)
   response_fn_3: 157 val (146 n, 11 d), 165 grad (154 n, 11 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4514241125e+00 beam_width
-                      3.8835917858e+00 beam_thickness
+                      2.4514241125e+00 w
+                      3.8835917858e+00 t
 <<<<< Best objective function  =
                       9.5203305468e+00
 <<<<< Best constraint values   =
@@ -9230,8 +9230,8 @@ Test Number 4 succeeded
   response_fn_2: 119 val (89 n, 30 d), 127 grad (97 n, 30 d), 0 Hess (0 n, 0 d)
   response_fn_3: 158 val (136 n, 22 d), 166 grad (144 n, 22 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4521815102e+00 beam_width
-                      3.8826062155e+00 beam_thickness
+                      2.4521815102e+00 w
+                      3.8826062155e+00 t
 <<<<< Best objective function  =
                       9.5208551731e+00
 <<<<< Best constraint values   =
@@ -9244,8 +9244,8 @@ Test Number 5 succeeded
   response_fn_2: 332 val (322 n, 10 d), 340 grad (330 n, 10 d), 0 Hess (0 n, 0 d)
   response_fn_3: 482 val (468 n, 14 d), 490 grad (476 n, 14 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4521817159e+00 beam_width
-                      3.8826058833e+00 beam_thickness
+                      2.4521817159e+00 w
+                      3.8826058833e+00 t
 <<<<< Best objective function  =
                       9.5208551572e+00
 <<<<< Best constraint values   =
@@ -9258,8 +9258,8 @@ Test Number 6 succeeded
   response_fn_2: 119 val (92 n, 27 d), 127 grad (100 n, 27 d), 0 Hess (0 n, 0 d)
   response_fn_3: 158 val (137 n, 21 d), 166 grad (145 n, 21 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4521848378e+00 beam_width
-                      3.8826068534e+00 beam_thickness
+                      2.4521848378e+00 w
+                      3.8826068534e+00 t
 <<<<< Best objective function  =
                       9.5208696572e+00
 <<<<< Best constraint values   =
@@ -9272,8 +9272,8 @@ Test Number 7 succeeded
   response_fn_2: 346 val (336 n, 10 d), 354 grad (344 n, 10 d), 0 Hess (0 n, 0 d)
   response_fn_3: 484 val (467 n, 17 d), 492 grad (475 n, 17 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4521850435e+00 beam_width
-                      3.8826065214e+00 beam_thickness
+                      2.4521850435e+00 w
+                      3.8826065214e+00 t
 <<<<< Best objective function  =
                       9.5208696414e+00
 <<<<< Best constraint values   =
@@ -9287,8 +9287,8 @@ Test Number 0 succeeded
   response_fn_2: 162 val (125 n, 37 d), 173 grad (136 n, 37 d), 162 Hess (125 n, 37 d)
   response_fn_3: 162 val (127 n, 35 d), 173 grad (138 n, 35 d), 162 Hess (127 n, 35 d)
 <<<<< Best parameters          =
-                      2.4666954884e+00 beam_width
-                      3.8681129796e+00 beam_thickness
+                      2.4666954884e+00 w
+                      3.8681129796e+00 t
 <<<<< Best objective function  =
                       9.5414568353e+00
 <<<<< Best constraint values   =
@@ -9301,8 +9301,8 @@ Test Number 1 succeeded
   response_fn_2: 232 val (217 n, 15 d), 243 grad (228 n, 15 d), 39 Hess (31 n, 8 d)
   response_fn_3: 268 val (253 n, 15 d), 279 grad (264 n, 15 d), 39 Hess (34 n, 5 d)
 <<<<< Best parameters          =
-                      2.4666955245e+00 beam_width
-                      3.8681129224e+00 beam_thickness
+                      2.4666955245e+00 w
+                      3.8681129224e+00 t
 <<<<< Best objective function  =
                       9.5414568340e+00
 <<<<< Best constraint values   =
@@ -9315,8 +9315,8 @@ Test Number 2 succeeded
   response_fn_2: 53 val (41 n, 12 d), 57 grad (45 n, 12 d), 53 Hess (41 n, 12 d)
   response_fn_3: 55 val (45 n, 10 d), 59 grad (49 n, 10 d), 55 Hess (45 n, 10 d)
 <<<<< Best parameters          =
-                      2.4627704240e+00 beam_width
-                      3.8657110077e+00 beam_thickness
+                      2.4627704240e+00 w
+                      3.8657110077e+00 t
 <<<<< Best objective function  =
                       9.5203587375e+00
 <<<<< Best constraint values   =
@@ -9329,8 +9329,8 @@ Test Number 3 succeeded
   response_fn_2: 86 val (81 n, 5 d), 90 grad (85 n, 5 d), 13 Hess (9 n, 4 d)
   response_fn_3: 90 val (85 n, 5 d), 94 grad (89 n, 5 d), 13 Hess (10 n, 3 d)
 <<<<< Best parameters          =
-                      2.4627703519e+00 beam_width
-                      3.8657111161e+00 beam_thickness
+                      2.4627703519e+00 w
+                      3.8657111161e+00 t
 <<<<< Best objective function  =
                       9.5203587256e+00
 <<<<< Best constraint values   =
@@ -9343,8 +9343,8 @@ Test Number 4 succeeded
   response_fn_2: 113 val (82 n, 31 d), 121 grad (90 n, 31 d), 113 Hess (82 n, 31 d)
   response_fn_3: 125 val (106 n, 19 d), 133 grad (114 n, 19 d), 125 Hess (106 n, 19 d)
 <<<<< Best parameters          =
-                      2.4535268360e+00 beam_width
-                      3.8804538218e+00 beam_thickness
+                      2.4535268360e+00 w
+                      3.8804538218e+00 t
 <<<<< Best objective function  =
                       9.5207975875e+00
 <<<<< Best constraint values   =
@@ -9357,8 +9357,8 @@ Test Number 5 succeeded
   response_fn_2: 342 val (333 n, 9 d), 350 grad (341 n, 9 d), 342 Hess (333 n, 9 d)
   response_fn_3: 5264 val (5254 n, 10 d), 5272 grad (5262 n, 10 d), 5264 Hess (5254 n, 10 d)
 <<<<< Best parameters          =
-                      2.4535271253e+00 beam_width
-                      3.8804533923e+00 beam_thickness
+                      2.4535271253e+00 w
+                      3.8804533923e+00 t
 <<<<< Best objective function  =
                       9.5207976564e+00
 <<<<< Best constraint values   =
@@ -9371,8 +9371,8 @@ Test Number 6 succeeded
   response_fn_2: 113 val (82 n, 31 d), 121 grad (90 n, 31 d), 113 Hess (82 n, 31 d)
   response_fn_3: 125 val (104 n, 21 d), 133 grad (112 n, 21 d), 125 Hess (104 n, 21 d)
 <<<<< Best parameters          =
-                      2.4535281218e+00 beam_width
-                      3.8804577252e+00 beam_thickness
+                      2.4535281218e+00 w
+                      3.8804577252e+00 t
 <<<<< Best objective function  =
                       9.5208121543e+00
 <<<<< Best constraint values   =
@@ -9385,8 +9385,8 @@ Test Number 7 succeeded
   response_fn_2: 352 val (343 n, 9 d), 360 grad (351 n, 9 d), 352 Hess (343 n, 9 d)
   response_fn_3: 4440 val (4431 n, 9 d), 4448 grad (4439 n, 9 d), 4440 Hess (4431 n, 9 d)
 <<<<< Best parameters          =
-                      2.4535282602e+00 beam_width
-                      3.8804575359e+00 beam_thickness
+                      2.4535282602e+00 w
+                      3.8804575359e+00 t
 <<<<< Best objective function  =
                       9.5208122266e+00
 <<<<< Best constraint values   =
@@ -9442,8 +9442,8 @@ dakota_rbdo_cantilever_mixed.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (UQ_I): 3194 total (3194 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.4582634937e+00 beam_width
-                      2.4567495315e+00 beam_thickness
+                      2.4582634937e+00 w
+                      2.4567495315e+00 t
                       2.0000000000e+02 X_mean
                       2.0000000000e+02 Y_mean
 <<<<< Best objective function  =
@@ -9455,8 +9455,8 @@ Test Number 0 succeeded
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 764 total (764 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.4571354259e+00 beam_width
-                      2.4579435498e+00 beam_thickness
+                      2.4571354259e+00 w
+                      2.4579435498e+00 t
                       2.0000000000e+02 X_mean
                       2.0000000000e+02 Y_mean
 <<<<< Best objective function  =
@@ -9468,8 +9468,8 @@ Test Number 1 succeeded
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 2566 total (2566 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.4570435929e+00 beam_width
-                      2.4582549694e+00 beam_thickness
+                      2.4570435929e+00 w
+                      2.4582549694e+00 t
                       2.0000000000e+02 X_mean
                       2.0000000000e+02 Y_mean
 <<<<< Best objective function  =
@@ -9481,8 +9481,8 @@ Test Number 2 succeeded
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 1194 total (1194 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.4570439672e+00 beam_width
-                      2.4582547112e+00 beam_thickness
+                      2.4570439672e+00 w
+                      2.4582547112e+00 t
                       2.0000000000e+02 X_mean
                       2.0000000000e+02 Y_mean
 <<<<< Best objective function  =
@@ -9502,8 +9502,8 @@ Test Number 0 succeeded
   response_fn_2: 95 val (75 n, 20 d), 106 grad (86 n, 20 d), 0 Hess (0 n, 0 d)
   response_fn_3: 104 val (84 n, 20 d), 115 grad (95 n, 20 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4483868848e+00 beam_width
-                      3.8883707593e+00 beam_thickness
+                      2.4483868848e+00 w
+                      3.8883707593e+00 t
 <<<<< Best objective function  =
                       9.5202359704e+00
 <<<<< Best constraint values   =
@@ -9520,8 +9520,8 @@ Test Number 1 succeeded
   response_fn_2: 95 val (85 n, 10 d), 106 grad (96 n, 10 d), 0 Hess (0 n, 0 d)
   response_fn_3: 98 val (88 n, 10 d), 109 grad (99 n, 10 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4483868842e+00 beam_width
-                      3.8883707599e+00 beam_thickness
+                      2.4483868842e+00 w
+                      3.8883707599e+00 t
 <<<<< Best objective function  =
                       9.5202359692e+00
 <<<<< Best constraint values   =
@@ -9538,8 +9538,8 @@ Test Number 2 succeeded
   response_fn_2: 92 val (80 n, 12 d), 99 grad (87 n, 12 d), 0 Hess (0 n, 0 d)
   response_fn_3: 93 val (81 n, 12 d), 100 grad (88 n, 12 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.0169203125e+00 beam_width
-                      6.2103875048e+00 beam_thickness
+                      2.0169203125e+00 w
+                      6.2103875048e+00 t
 <<<<< Best objective function  =
                       1.2525856707e+01
 <<<<< Best constraint values   =
@@ -9556,8 +9556,8 @@ Test Number 3 succeeded
   response_fn_2: 84 val (78 n, 6 d), 91 grad (85 n, 6 d), 0 Hess (0 n, 0 d)
   response_fn_3: 83 val (77 n, 6 d), 90 grad (84 n, 6 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.0169207903e+00 beam_width
-                      6.2103832638e+00 beam_thickness
+                      2.0169207903e+00 w
+                      6.2103832638e+00 t
 <<<<< Best objective function  =
                       1.2525851120e+01
 <<<<< Best constraint values   =
@@ -9574,8 +9574,8 @@ Test Number 4 succeeded
   response_fn_2: 100 val (67 n, 33 d), 112 grad (79 n, 33 d), 0 Hess (0 n, 0 d)
   response_fn_3: 121 val (88 n, 33 d), 133 grad (100 n, 33 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4483795716e+00 beam_width
-                      3.8883749846e+00 beam_thickness
+                      2.4483795716e+00 w
+                      3.8883749846e+00 t
 <<<<< Best objective function  =
                       9.5202178788e+00
 <<<<< Best constraint values   =
@@ -9592,8 +9592,8 @@ Test Number 5 succeeded
   response_fn_2: 146 val (130 n, 16 d), 158 grad (142 n, 16 d), 0 Hess (0 n, 0 d)
   response_fn_3: 132 val (113 n, 19 d), 144 grad (125 n, 19 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4483795745e+00 beam_width
-                      3.8883749805e+00 beam_thickness
+                      2.4483795745e+00 w
+                      3.8883749805e+00 t
 <<<<< Best objective function  =
                       9.5202178801e+00
 <<<<< Best constraint values   =
@@ -9610,8 +9610,8 @@ Test Number 6 succeeded
   response_fn_2: 100 val (67 n, 33 d), 112 grad (79 n, 33 d), 0 Hess (0 n, 0 d)
   response_fn_3: 121 val (89 n, 32 d), 133 grad (101 n, 32 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4483806027e+00 beam_width
-                      3.8883792621e+00 beam_thickness
+                      2.4483806027e+00 w
+                      3.8883792621e+00 t
 <<<<< Best objective function  =
                       9.5202323613e+00
 <<<<< Best constraint values   =
@@ -9628,8 +9628,8 @@ Test Number 7 succeeded
   response_fn_2: 146 val (130 n, 16 d), 158 grad (142 n, 16 d), 0 Hess (0 n, 0 d)
   response_fn_3: 132 val (111 n, 21 d), 144 grad (123 n, 21 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4483806056e+00 beam_width
-                      3.8883792580e+00 beam_thickness
+                      2.4483806056e+00 w
+                      3.8883792580e+00 t
 <<<<< Best objective function  =
                       9.5202323626e+00
 <<<<< Best constraint values   =
@@ -9647,8 +9647,8 @@ Test Number 0 succeeded
   response_fn_2: 119 val (69 n, 50 d), 136 grad (84 n, 52 d), 119 Hess (69 n, 50 d)
   response_fn_3: 124 val (77 n, 47 d), 141 grad (92 n, 49 d), 124 Hess (77 n, 47 d)
 <<<<< Best parameters          =
-                      2.4651978357e+00 beam_width
-                      3.8770453541e+00 beam_thickness
+                      2.4651978357e+00 w
+                      3.8770453541e+00 t
 <<<<< Best objective function  =
                       9.5576838160e+00
 <<<<< Best constraint values   =
@@ -9665,8 +9665,8 @@ Test Number 1 succeeded
   response_fn_2: 129 val (114 n, 15 d), 142 grad (126 n, 16 d), 26 Hess (20 n, 6 d)
   response_fn_3: 126 val (111 n, 15 d), 139 grad (124 n, 15 d), 26 Hess (21 n, 5 d)
 <<<<< Best parameters          =
-                      2.4933820381e+00 beam_width
-                      3.8255428345e+00 beam_thickness
+                      2.4933820381e+00 w
+                      3.8255428345e+00 t
 <<<<< Best objective function  =
                       9.5385397894e+00
 <<<<< Best constraint values   =
@@ -9683,8 +9683,8 @@ Test Number 2 succeeded
   response_fn_2: 58 val (32 n, 26 d), 64 grad (38 n, 26 d), 58 Hess (32 n, 26 d)
   response_fn_3: 58 val (34 n, 24 d), 64 grad (40 n, 24 d), 58 Hess (34 n, 24 d)
 <<<<< Best parameters          =
-                      2.4538328695e+00 beam_width
-                      3.8797463222e+00 beam_thickness
+                      2.4538328695e+00 w
+                      3.8797463222e+00 t
 <<<<< Best objective function  =
                       9.5202490507e+00
 <<<<< Best constraint values   =
@@ -9701,8 +9701,8 @@ Test Number 3 succeeded
   response_fn_2: 78 val (68 n, 10 d), 84 grad (74 n, 10 d), 16 Hess (13 n, 3 d)
   response_fn_3: 71 val (61 n, 10 d), 77 grad (67 n, 10 d), 16 Hess (10 n, 6 d)
 <<<<< Best parameters          =
-                      2.4538328876e+00 beam_width
-                      3.8797462922e+00 beam_thickness
+                      2.4538328876e+00 w
+                      3.8797462922e+00 t
 <<<<< Best objective function  =
                       9.5202490475e+00
 <<<<< Best constraint values   =
@@ -9719,8 +9719,8 @@ Test Number 4 succeeded
   response_fn_2: 55 val (35 n, 20 d), 63 grad (43 n, 20 d), 55 Hess (35 n, 20 d)
   response_fn_3: 62 val (46 n, 16 d), 70 grad (54 n, 16 d), 62 Hess (46 n, 16 d)
 <<<<< Best parameters          =
-                      2.4591478162e+00 beam_width
-                      3.8716591959e+00 beam_thickness
+                      2.4591478162e+00 w
+                      3.8716591959e+00 t
 <<<<< Best objective function  =
                       9.5209822567e+00
 <<<<< Best constraint values   =
@@ -9737,8 +9737,8 @@ Test Number 5 succeeded
   response_fn_2: 141 val (132 n, 9 d), 149 grad (139 n, 10 d), 141 Hess (132 n, 9 d)
   response_fn_3: 1672 val (1651 n, 21 d), 1680 grad (1658 n, 22 d), 1672 Hess (1651 n, 21 d)
 <<<<< Best parameters          =
-                      2.4591137473e+00 beam_width
-                      3.8717131844e+00 beam_thickness
+                      2.4591137473e+00 w
+                      3.8717131844e+00 t
 <<<<< Best objective function  =
                       9.5209831174e+00
 <<<<< Best constraint values   =
@@ -9755,8 +9755,8 @@ Test Number 6 succeeded
   response_fn_2: 55 val (35 n, 20 d), 63 grad (43 n, 20 d), 55 Hess (35 n, 20 d)
   response_fn_3: 62 val (44 n, 18 d), 70 grad (52 n, 18 d), 62 Hess (44 n, 18 d)
 <<<<< Best parameters          =
-                      2.4591486081e+00 beam_width
-                      3.8716638777e+00 beam_thickness
+                      2.4591486081e+00 w
+                      3.8716638777e+00 t
 <<<<< Best objective function  =
                       9.5209968361e+00
 <<<<< Best constraint values   =
@@ -9773,8 +9773,8 @@ Test Number 7 succeeded
   response_fn_2: 140 val (131 n, 9 d), 148 grad (138 n, 10 d), 140 Hess (131 n, 9 d)
   response_fn_3: 1662 val (1641 n, 21 d), 1670 grad (1648 n, 22 d), 1662 Hess (1641 n, 21 d)
 <<<<< Best parameters          =
-                      2.4591136532e+00 beam_width
-                      3.8717193150e+00 beam_thickness
+                      2.4591136532e+00 w
+                      3.8717193150e+00 t
 <<<<< Best objective function  =
                       9.5209978289e+00
 <<<<< Best constraint values   =
@@ -12532,8 +12532,8 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 9 total (9 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_I): 300 total (300 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.0660982569e+00 beam_width
-                      5.6929129172e+00 beam_thickness
+                      2.0660982569e+00 w
+                      5.6929129172e+00 t
 <<<<< Best objective function  =
                       1.1762117455e+01
 <<<<< Best constraint values   =
@@ -12544,8 +12544,8 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 9 total (9 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_I): 300 total (300 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.0723915805e+00 beam_width
-                      5.6884352881e+00 beam_thickness
+                      2.0723915805e+00 w
+                      5.6884352881e+00 t
 <<<<< Best objective function  =
                       1.1788665398e+01
 <<<<< Best constraint values   =
@@ -12588,8 +12588,8 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 500000 total (500000 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_ACTUAL): 28 total (28 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0000000000e+00 beam_width
-                      1.0000000000e+00 beam_thickness
+                      1.0000000000e+00 w
+                      1.0000000000e+00 t
 <<<<< Best objective function  =
                       1.0000000000e+00
 <<<<< Best constraint values   =
@@ -12600,8 +12600,8 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 370000 total (370000 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_ACTUAL): 28 total (28 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.0517612093e+00 beam_width
-                      5.2675898503e+00 beam_thickness
+                      4.0517612093e+00 w
+                      5.2675898503e+00 t
 <<<<< Best objective function  =
                       2.1343016222e+01
 <<<<< Best constraint values   =
@@ -12645,8 +12645,8 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 30000 total (30000 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_ACTUAL): 28 total (28 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3935345217e+00 beam_width
-                      5.0180744966e+00 beam_thickness
+                      2.3935345217e+00 w
+                      5.0180744966e+00 t
 <<<<< Best objective function  =
                       1.2010934540e+01
 <<<<< Best constraint values   =
@@ -12658,8 +12658,8 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 30000 total (30000 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_ACTUAL): 28 total (28 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.1215483614e+00 beam_width
-                      4.6077619922e+00 beam_thickness
+                      2.1215483614e+00 w
+                      4.6077619922e+00 t
 <<<<< Best objective function  =
                       9.7755899042e+00
 <<<<< Best constraint values   =
@@ -12975,8 +12975,8 @@ Test Number 0 succeeded
   response_fn_2: 891 val (891 n, 0 d), 891 grad (891 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 891 val (891 n, 0 d), 891 grad (891 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459894481e+00 beam_width
-                      3.8921865242e+00 beam_thickness
+                      2.4459894481e+00 w
+                      3.8921865242e+00 t
 <<<<< Best objective function  =
                       9.5202471684e+00
 <<<<< Best constraint values   =
@@ -12989,8 +12989,8 @@ Test Number 1 succeeded
   response_fn_2: 729 val (729 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 729 val (729 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.0000000000e+00 beam_width
-                      6.5431859220e+00 beam_thickness
+                      1.0000000000e+00 w
+                      6.5431859220e+00 t
 <<<<< Best objective function  =
                       6.5431859220e+00
 <<<<< Best constraint values   =
@@ -13003,8 +13003,8 @@ Test Number 2 succeeded
   response_fn_2: 4455 val (4455 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 4455 val (4455 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459894511e+00 beam_width
-                      3.8921865195e+00 beam_thickness
+                      2.4459894511e+00 w
+                      3.8921865195e+00 t
 <<<<< Best objective function  =
                       9.5202471684e+00
 <<<<< Best constraint values   =
@@ -13017,8 +13017,8 @@ Test Number 3 succeeded
   response_fn_2: 729 val (729 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 729 val (729 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.0000000000e+00 beam_width
-                      6.5431859445e+00 beam_thickness
+                      1.0000000000e+00 w
+                      6.5431859445e+00 t
 <<<<< Best objective function  =
                       6.5431859445e+00
 <<<<< Best constraint values   =
@@ -13031,8 +13031,8 @@ Test Number 4 succeeded
   response_fn_2: 539 val (539 n, 0 d), 539 grad (539 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 539 val (539 n, 0 d), 539 grad (539 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459894524e+00 beam_width
-                      3.8921865175e+00 beam_thickness
+                      2.4459894524e+00 w
+                      3.8921865175e+00 t
 <<<<< Best objective function  =
                       9.5202471684e+00
 <<<<< Best constraint values   =
@@ -13045,8 +13045,8 @@ Test Number 5 succeeded
   response_fn_2: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.8271074031e+00 beam_width
-                      3.2112402758e+00 beam_thickness
+                      2.8271074031e+00 w
+                      3.2112402758e+00 t
 <<<<< Best objective function  =
                       9.0785211569e+00
 <<<<< Best constraint values   =
@@ -13059,8 +13059,8 @@ Test Number 6 succeeded
   response_fn_2: 2695 val (2695 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 2695 val (2695 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459894539e+00 beam_width
-                      3.8921865151e+00 beam_thickness
+                      2.4459894539e+00 w
+                      3.8921865151e+00 t
 <<<<< Best objective function  =
                       9.5202471684e+00
 <<<<< Best constraint values   =
@@ -13073,8 +13073,8 @@ Test Number 7 succeeded
   response_fn_2: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.8271069132e+00 beam_width
-                      3.2112408322e+00 beam_thickness
+                      2.8271069132e+00 w
+                      3.2112408322e+00 t
 <<<<< Best objective function  =
                       9.0785211568e+00
 <<<<< Best constraint values   =
@@ -13092,8 +13092,8 @@ Test Number 0 succeeded
   response_fn_2: 4374 val (4374 n, 0 d), 324 grad (324 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 4374 val (4374 n, 0 d), 324 grad (324 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.6034598837e+00 beam_width
-                      3.5513420219e+00 beam_thickness
+                      2.6034598837e+00 w
+                      3.5513420219e+00 t
 <<<<< Best objective function  =
                       9.2457764873e+00
 <<<<< Best constraint values   =
@@ -13110,8 +13110,8 @@ Test Number 1 succeeded
   response_fn_2: 3564 val (3564 n, 0 d), 324 grad (324 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 3564 val (3564 n, 0 d), 324 grad (324 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.0000000000e+00 beam_width
-                      4.7930205315e+00 beam_thickness
+                      1.0000000000e+00 w
+                      4.7930205315e+00 t
 <<<<< Best objective function  =
                       4.7930205315e+00
 <<<<< Best constraint values   =
@@ -13128,8 +13128,8 @@ Test Number 2 succeeded
   response_fn_2: 489 val (478 n, 11 d), 327 grad (318 n, 9 d), 0 Hess (0 n, 0 d)
   response_fn_3: 489 val (478 n, 11 d), 327 grad (318 n, 9 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459903007e+00 beam_width
-                      3.8921849983e+00 beam_thickness
+                      2.4459903007e+00 w
+                      3.8921849983e+00 t
 <<<<< Best objective function  =
                       9.5202467543e+00
 <<<<< Best constraint values   =
@@ -13146,8 +13146,8 @@ Test Number 3 succeeded
   response_fn_2: 7137 val (7105 n, 32 d), 6732 grad (6705 n, 27 d), 0 Hess (0 n, 0 d)
   response_fn_3: 7137 val (7105 n, 32 d), 6732 grad (6705 n, 27 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459904724e+00 beam_width
-                      3.8921850072e+00 beam_thickness
+                      2.4459904724e+00 w
+                      3.8921850072e+00 t
 <<<<< Best objective function  =
                       9.5202474446e+00
 <<<<< Best constraint values   =
@@ -13164,8 +13164,8 @@ Test Number 4 succeeded
   response_fn_2: 12346 val (12346 n, 0 d), 196 grad (196 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 12346 val (12346 n, 0 d), 196 grad (196 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4948052727e+00 beam_width
-                      3.8179299273e+00 beam_thickness
+                      2.4948052727e+00 w
+                      3.8179299273e+00 t
 <<<<< Best objective function  =
                       9.5249917136e+00
 <<<<< Best constraint values   =
@@ -13182,8 +13182,8 @@ Test Number 5 succeeded
   response_fn_2: 19881 val (19881 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 19881 val (19881 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459943515e+00 beam_width
-                      3.8921787186e+00 beam_thickness
+                      2.4459943515e+00 w
+                      3.8921787186e+00 t
 <<<<< Best objective function  =
                       9.5202471607e+00
 <<<<< Best constraint values   =
@@ -13200,8 +13200,8 @@ Test Number 6 succeeded
   response_fn_2: 329 val (318 n, 11 d), 231 grad (222 n, 9 d), 0 Hess (0 n, 0 d)
   response_fn_3: 329 val (318 n, 11 d), 231 grad (222 n, 9 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459903007e+00 beam_width
-                      3.8921849983e+00 beam_thickness
+                      2.4459903007e+00 w
+                      3.8921849983e+00 t
 <<<<< Best objective function  =
                       9.5202467543e+00
 <<<<< Best constraint values   =
@@ -13218,8 +13218,8 @@ Test Number 7 succeeded
   response_fn_2: 5120 val (5088 n, 32 d), 4875 grad (4848 n, 27 d), 0 Hess (0 n, 0 d)
   response_fn_3: 5120 val (5088 n, 32 d), 4875 grad (4848 n, 27 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4458871340e+00 beam_width
-                      3.8923494006e+00 beam_thickness
+                      2.4458871340e+00 w
+                      3.8923494006e+00 t
 <<<<< Best objective function  =
                       9.5202473199e+00
 <<<<< Best constraint values   =
@@ -13230,8 +13230,8 @@ dakota_scbdo_cantilever_mixed.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (UQ_I): 3726 total (2916 new, 810 duplicate)
 <<<<< Best parameters          =
-                      2.4565796104e+00 beam_width
-                      2.4587723697e+00 beam_thickness
+                      2.4565796104e+00 w
+                      2.4587723697e+00 t
                       2.0000000000e+02 X_mean
                       2.0000000000e+02 Y_mean
 <<<<< Best objective function  =
@@ -13243,8 +13243,8 @@ Test Number 0 succeeded
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 16038 total (13851 new, 2187 duplicate)
 <<<<< Best parameters          =
-                      1.0000000000e+00 beam_width
-                      5.4076806626e+00 beam_thickness
+                      1.0000000000e+00 w
+                      5.4076806626e+00 t
                       2.0000000000e+02 X_mean
                       1.0411340930e+03 Y_mean
 <<<<< Best objective function  =
@@ -13256,8 +13256,8 @@ Test Number 1 succeeded
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 12231 total (11421 new, 810 duplicate)
 <<<<< Best parameters          =
-                      2.4565773117e+00 beam_width
-                      2.4587746855e+00 beam_thickness
+                      2.4565773117e+00 w
+                      2.4587746855e+00 t
                       2.0000000000e+02 X_mean
                       2.0000000000e+02 Y_mean
 <<<<< Best objective function  =
@@ -13269,8 +13269,8 @@ Test Number 2 succeeded
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 51759 total (29160 new, 22599 duplicate)
 <<<<< Best parameters          =
-                      1.0000000000e+00 beam_width
-                      5.4076806620e+00 beam_thickness
+                      1.0000000000e+00 w
+                      5.4076806620e+00 t
                       2.0000000000e+02 X_mean
                       1.0411340893e+03 Y_mean
 <<<<< Best objective function  =
@@ -13290,8 +13290,8 @@ Test Number 0 succeeded
   response_fn_2: 810 val (810 n, 0 d), 405 grad (405 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 810 val (810 n, 0 d), 405 grad (405 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.3143958845e+00 beam_width
-                      4.0034434891e+00 beam_thickness
+                      2.3143958845e+00 w
+                      4.0034434891e+00 t
 <<<<< Best objective function  =
                       9.2655531351e+00
 <<<<< Best constraint values   =
@@ -13308,8 +13308,8 @@ Test Number 1 succeeded
   response_fn_2: 1458 val (1458 n, 0 d), 729 grad (729 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 1458 val (1458 n, 0 d), 729 grad (729 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459720935e+00 beam_width
-                      3.8922141352e+00 beam_thickness
+                      2.4459720935e+00 w
+                      3.8922141352e+00 t
 <<<<< Best objective function  =
                       9.5202471565e+00
 <<<<< Best constraint values   =
@@ -13326,8 +13326,8 @@ Test Number 2 succeeded
   response_fn_2: 490 val (490 n, 0 d), 245 grad (245 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 490 val (490 n, 0 d), 245 grad (245 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.3146986637e+00 beam_width
-                      4.0030479050e+00 beam_thickness
+                      2.3146986637e+00 w
+                      4.0030479050e+00 t
 <<<<< Best objective function  =
                       9.2658496364e+00
 <<<<< Best constraint values   =
@@ -13344,8 +13344,8 @@ Test Number 3 succeeded
   response_fn_2: 882 val (882 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 882 val (882 n, 0 d), 441 grad (441 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459719203e+00 beam_width
-                      3.8922144107e+00 beam_thickness
+                      2.4459719203e+00 w
+                      3.8922144107e+00 t
 <<<<< Best objective function  =
                       9.5202471563e+00
 <<<<< Best constraint values   =
@@ -15975,8 +15975,8 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 60 total (60 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_I): 1250 total (1250 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0830366142e+00 beam_width
-                      4.6617623762e+00 beam_thickness
+                      1.0830366142e+00 w
+                      4.6617623762e+00 t
 <<<<< Best objective function  =
                       5.0488593400e+00
 <<<<< Best constraint values   =
@@ -15987,8 +15987,8 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 127 total (127 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_I): 4550 total (4550 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.4464701198e+00 beam_width
-                      3.8411312937e+00 beam_thickness
+                      2.4464701198e+00 w
+                      3.8411312937e+00 t
 <<<<< Best objective function  =
                       9.3972129361e+00
 <<<<< Best constraint values   =
@@ -16032,8 +16032,8 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 485000 total (485000 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_ACTUAL): 714 total (714 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.4306965663e+00 beam_width
-                      3.8654979457e+00 beam_thickness
+                      2.4306965663e+00 w
+                      3.8654979457e+00 t
 <<<<< Best objective function  =
                       9.3958525838e+00
 <<<<< Best constraint values   =
@@ -16045,8 +16045,8 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 155000 total (155000 new, 0 duplicate)
 <<<<< Function evaluation summary (UQ_ACTUAL): 252 total (252 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0000000000e+00 beam_width
-                      6.7109612148e+00 beam_thickness
+                      1.0000000000e+00 w
+                      6.7109612148e+00 t
 <<<<< Best objective function  =
                       6.7109612148e+00
 <<<<< Best constraint values   =
@@ -35751,199 +35751,199 @@ Moment-based statistics for each response function:
  response_fn_3  3.0356974103e+00  2.5735288664e+00
 response_fn_1 Sobol indices:
                                   Main             Total
-                      4.4981412639e-01  5.5018587361e-01 beam_width
-                      4.4981412639e-01  5.5018587361e-01 beam_thickness
+                      4.4981412639e-01  5.5018587361e-01 w
+                      4.4981412639e-01  5.5018587361e-01 t
                       5.5997541962e-30  1.4937993839e-28 R
                       2.6706230259e-29  1.2856115549e-28 E
                       1.6239517102e-29  1.2722725414e-28 X
                       8.1375174394e-30  1.5133119447e-28 Y
-                      1.0037174721e-01 beam_width beam_thickness 
-                      3.5508761993e-30 beam_width R 
-                      4.1305745032e-30 beam_thickness R 
-                      2.3988337274e-30 beam_width beam_thickness R 
-                      1.2376236125e-30 beam_width E 
-                      6.3039420305e-31 beam_thickness E 
-                      1.7146164689e-30 beam_width beam_thickness E 
+                      1.0037174721e-01 w t 
+                      3.5508761993e-30 w R 
+                      4.1305745032e-30 t R 
+                      2.3988337274e-30 w t R 
+                      1.2376236125e-30 w E 
+                      6.3039420305e-31 t E 
+                      1.7146164689e-30 w t E 
                       1.6841349806e-29 R E 
-                      8.6114196435e-31 beam_width R E 
-                      2.7213298522e-30 beam_thickness R E 
-                      4.9431276757e-32 beam_width beam_thickness R E 
-                      4.4827110206e-30 beam_width X 
-                      4.3077949075e-30 beam_thickness X 
-                      4.0883232026e-31 beam_width beam_thickness X 
+                      8.6114196435e-31 w R E 
+                      2.7213298522e-30 t R E 
+                      4.9431276757e-32 w t R E 
+                      4.4827110206e-30 w X 
+                      4.3077949075e-30 t X 
+                      4.0883232026e-31 w t X 
                       3.5819877229e-29 R X 
-                      1.5028916308e-30 beam_width R X 
-                      3.9249699979e-31 beam_thickness R X 
-                      2.9746863789e-31 beam_width beam_thickness R X 
+                      1.5028916308e-30 w R X 
+                      3.9249699979e-31 t R X 
+                      2.9746863789e-31 w t R X 
                       1.3630100317e-29 E X 
-                      1.9679575701e-30 beam_width E X 
-                      1.4574344413e-30 beam_thickness E X 
-                      3.2319347805e-32 beam_width beam_thickness E X 
+                      1.9679575701e-30 w E X 
+                      1.4574344413e-30 t E X 
+                      3.2319347805e-32 w t E X 
                       7.2541681530e-30 R E X 
-                      2.1981968106e-32 beam_width R E X 
-                      2.0027055077e-31 beam_thickness R E X 
-                      0.0000000000e+00 beam_width beam_thickness R E X 
-                      7.8571493928e-30 beam_width Y 
-                      3.0820119541e-30 beam_thickness Y 
-                      2.9298020478e-31 beam_width beam_thickness Y 
+                      2.1981968106e-32 w R E X 
+                      2.0027055077e-31 t R E X 
+                      0.0000000000e+00 w t R E X 
+                      7.8571493928e-30 w Y 
+                      3.0820119541e-30 t Y 
+                      2.9298020478e-31 w t Y 
                       4.5198072421e-29 R Y 
-                      2.7558422254e-30 beam_width R Y 
-                      1.6847788789e-30 beam_thickness R Y 
-                      1.0663446324e-31 beam_width beam_thickness R Y 
+                      2.7558422254e-30 w R Y 
+                      1.6847788789e-30 t R Y 
+                      1.0663446324e-31 w t R Y 
                       2.8221215359e-29 E Y 
-                      1.4600785729e-30 beam_width E Y 
-                      2.2582847423e-30 beam_thickness E Y 
-                      6.9705823865e-32 beam_width beam_thickness E Y 
+                      1.4600785729e-30 w E Y 
+                      2.2582847423e-30 t E Y 
+                      6.9705823865e-32 w t E Y 
                       1.0714749094e-29 R E Y 
-                      2.3827174989e-31 beam_width R E Y 
-                      4.2470198065e-32 beam_thickness R E Y 
-                      0.0000000000e+00 beam_width beam_thickness R E Y 
+                      2.3827174989e-31 w R E Y 
+                      4.2470198065e-32 t R E Y 
+                      0.0000000000e+00 w t R E Y 
                       2.1139761296e-29 X Y 
-                      4.1760184585e-30 beam_width X Y 
-                      4.3557688298e-31 beam_thickness X Y 
-                      4.5459524658e-32 beam_width beam_thickness X Y 
+                      4.1760184585e-30 w X Y 
+                      4.3557688298e-31 t X Y 
+                      4.5459524658e-32 w t X Y 
                       1.9230067100e-30 R X Y 
-                      5.8855019003e-31 beam_width R X Y 
-                      6.7302873067e-31 beam_thickness R X Y 
-                      0.0000000000e+00 beam_width beam_thickness R X Y 
+                      5.8855019003e-31 w R X Y 
+                      6.7302873067e-31 t R X Y 
+                      0.0000000000e+00 w t R X Y 
                       5.7797349614e-30 E X Y 
-                      5.3446059471e-31 beam_width E X Y 
-                      1.0374756299e-31 beam_thickness E X Y 
-                      0.0000000000e+00 beam_width beam_thickness E X Y 
+                      5.3446059471e-31 w E X Y 
+                      1.0374756299e-31 t E X Y 
+                      0.0000000000e+00 w t E X Y 
                       3.8120870356e-30 R E X Y 
-                      0.0000000000e+00 beam_width R E X Y 
-                      0.0000000000e+00 beam_thickness R E X Y 
-                      0.0000000000e+00 beam_width beam_thickness R E X Y 
+                      0.0000000000e+00 w R E X Y 
+                      0.0000000000e+00 t R E X Y 
+                      0.0000000000e+00 w t R E X Y 
 response_fn_2 Sobol indices:
                                   Main             Total
-                      2.1343121652e-01  5.0712117918e-01 beam_width
-                      3.5908257520e-01  6.6345977746e-01 beam_thickness
+                      2.1343121652e-01  5.0712117918e-01 w
+                      3.5908257520e-01  6.6345977746e-01 t
                       3.7152435929e-03  1.0985578135e-01 R
                       1.8113008944e-03  9.8321480955e-02 E
                       3.5303272573e-03  1.0217396279e-01 X
                       1.8670233344e-03  9.0426980786e-02 Y
-                      2.2946491853e-01 beam_width beam_thickness 
-                      1.3290565308e-03 beam_width R 
-                      2.7466483015e-03 beam_thickness R 
-                      5.9243453349e-04 beam_width beam_thickness R 
-                      3.5651394736e-03 beam_width E 
-                      2.7116075404e-03 beam_thickness E 
-                      2.0715936692e-03 beam_width beam_thickness E 
+                      2.2946491853e-01 w t 
+                      1.3290565308e-03 w R 
+                      2.7466483015e-03 t R 
+                      5.9243453349e-04 w t R 
+                      3.5651394736e-03 w E 
+                      2.7116075404e-03 t E 
+                      2.0715936692e-03 w t E 
                       8.6137862672e-03 R E 
-                      2.5160415013e-03 beam_width R E 
-                      4.8496474841e-03 beam_thickness R E 
-                      2.0957227187e-03 beam_width beam_thickness R E 
-                      1.0825550614e-03 beam_width X 
-                      1.7455392715e-03 beam_thickness X 
-                      3.3561972383e-03 beam_width beam_thickness X 
+                      2.5160415013e-03 w R E 
+                      4.8496474841e-03 t R E 
+                      2.0957227187e-03 w t R E 
+                      1.0825550614e-03 w X 
+                      1.7455392715e-03 t X 
+                      3.3561972383e-03 w t X 
                       1.2697388560e-02 R X 
-                      3.6880670468e-03 beam_width R X 
-                      2.0085742218e-03 beam_thickness R X 
-                      4.3661180597e-03 beam_width beam_thickness R X 
+                      3.6880670468e-03 w R X 
+                      2.0085742218e-03 t R X 
+                      4.3661180597e-03 w t R X 
                       1.5461368950e-02 E X 
-                      4.0517401081e-03 beam_width E X 
-                      6.6244222055e-04 beam_thickness E X 
-                      7.2971089580e-03 beam_width beam_thickness E X 
+                      4.0517401081e-03 w E X 
+                      6.6244222055e-04 t E X 
+                      7.2971089580e-03 w t E X 
                       3.1156281717e-03 R E X 
-                      2.7513344360e-04 beam_width R E X 
-                      7.6378978914e-03 beam_thickness R E X 
-                      0.0000000000e+00 beam_width beam_thickness R E X 
-                      5.3418897699e-03 beam_width Y 
-                      9.0493116096e-04 beam_thickness Y 
-                      6.0883163557e-04 beam_width beam_thickness Y 
+                      2.7513344360e-04 w R E X 
+                      7.6378978914e-03 t R E X 
+                      0.0000000000e+00 w t R E X 
+                      5.3418897699e-03 w Y 
+                      9.0493116096e-04 t Y 
+                      6.0883163557e-04 w t Y 
                       1.3350097655e-02 R Y 
-                      5.6476111776e-03 beam_width R Y 
-                      5.2085756369e-03 beam_thickness R Y 
-                      3.6661611784e-03 beam_width beam_thickness R Y 
+                      5.6476111776e-03 w R Y 
+                      5.2085756369e-03 t R Y 
+                      3.6661611784e-03 w t R Y 
                       3.4666501122e-03 E Y 
-                      2.5956216360e-03 beam_width E Y 
-                      6.2502608240e-03 beam_thickness E Y 
-                      1.2632649747e-03 beam_width beam_thickness E Y 
+                      2.5956216360e-03 w E Y 
+                      6.2502608240e-03 t E Y 
+                      1.2632649747e-03 w t E Y 
                       1.3377415350e-03 R E Y 
-                      2.3204774796e-03 beam_width R E Y 
-                      5.3999663489e-03 beam_thickness R E Y 
-                      0.0000000000e+00 beam_width beam_thickness R E Y 
+                      2.3204774796e-03 w R E Y 
+                      5.3999663489e-03 t R E Y 
+                      0.0000000000e+00 w t R E Y 
                       3.5427665055e-03 X Y 
-                      6.3725708346e-03 beam_width X Y 
-                      3.9224241615e-03 beam_thickness X Y 
-                      7.3289393531e-05 beam_width beam_thickness X Y 
+                      6.3725708346e-03 w X Y 
+                      3.9224241615e-03 t X Y 
+                      7.3289393531e-05 w t X Y 
                       4.4612881776e-03 R X Y 
-                      4.3851395898e-06 beam_width R X Y 
-                      3.8698133622e-03 beam_thickness R X Y 
-                      0.0000000000e+00 beam_width beam_thickness R X Y 
+                      4.3851395898e-06 w R X Y 
+                      3.8698133622e-03 t R X Y 
+                      0.0000000000e+00 w t R X Y 
                       2.9617979020e-03 E X Y 
-                      4.4032573044e-05 beam_width E X Y 
-                      1.6032329409e-03 beam_thickness E X Y 
-                      0.0000000000e+00 beam_width beam_thickness E X Y 
+                      4.4032573044e-05 w E X Y 
+                      1.6032329409e-03 t E X Y 
+                      0.0000000000e+00 w t E X Y 
                       4.3422753363e-03 R E X Y 
-                      0.0000000000e+00 beam_width R E X Y 
-                      0.0000000000e+00 beam_thickness R E X Y 
-                      0.0000000000e+00 beam_width beam_thickness R E X Y 
+                      0.0000000000e+00 w R E X Y 
+                      0.0000000000e+00 t R E X Y 
+                      0.0000000000e+00 w t R E X Y 
 response_fn_3 Sobol indices:
                                   Main             Total
-                      1.3676781565e-01  4.3487417452e-01 beam_width
-                      3.3752230328e-01  6.7944577934e-01 beam_thickness
+                      1.3676781565e-01  4.3487417452e-01 w
+                      3.3752230328e-01  6.7944577934e-01 t
                       7.3400470803e-03  1.8193912767e-01 R
                       1.3982890768e-03  1.4293889857e-01 E
                       6.1845928224e-03  1.5393499785e-01 X
                       2.7683310137e-03  1.6672347873e-01 Y
-                      1.9397013262e-01 beam_width beam_thickness 
-                      3.3491693565e-03 beam_width R 
-                      5.0117516558e-03 beam_thickness R 
-                      2.4530750310e-03 beam_width beam_thickness R 
-                      5.7444867649e-03 beam_width E 
-                      8.1006308525e-03 beam_thickness E 
-                      5.1221422120e-03 beam_width beam_thickness E 
+                      1.9397013262e-01 w t 
+                      3.3491693565e-03 w R 
+                      5.0117516558e-03 t R 
+                      2.4530750310e-03 w t R 
+                      5.7444867649e-03 w E 
+                      8.1006308525e-03 t E 
+                      5.1221422120e-03 w t E 
                       1.4026851918e-02 R E 
-                      1.5186678145e-03 beam_width R E 
-                      6.7320642761e-03 beam_thickness R E 
-                      1.8415788932e-03 beam_width beam_thickness R E 
-                      3.0046631513e-03 beam_width X 
-                      5.0818419038e-03 beam_thickness X 
-                      7.0292073721e-03 beam_width beam_thickness X 
+                      1.5186678145e-03 w R E 
+                      6.7320642761e-03 t R E 
+                      1.8415788932e-03 w t R E 
+                      3.0046631513e-03 w X 
+                      5.0818419038e-03 t X 
+                      7.0292073721e-03 w t X 
                       1.8694408408e-02 R X 
-                      3.7798164284e-03 beam_width R X 
-                      3.4374903184e-03 beam_thickness R X 
-                      4.8103222185e-03 beam_width beam_thickness R X 
+                      3.7798164284e-03 w R X 
+                      3.4374903184e-03 t R X 
+                      4.8103222185e-03 w t R X 
                       1.6103406864e-02 E X 
-                      3.0072165212e-03 beam_width E X 
-                      2.9542169754e-03 beam_thickness E X 
-                      1.0372545873e-02 beam_width beam_thickness E X 
+                      3.0072165212e-03 w E X 
+                      2.9542169754e-03 t E X 
+                      1.0372545873e-02 w t E X 
                       4.9507400645e-03 R E X 
-                      4.9828610991e-05 beam_width R E X 
-                      1.2917217251e-02 beam_thickness R E X 
-                      0.0000000000e+00 beam_width beam_thickness R E X 
-                      1.0692627502e-02 beam_width Y 
-                      1.9206145031e-03 beam_thickness Y 
-                      3.1874546947e-03 beam_width beam_thickness Y 
+                      4.9828610991e-05 w R E X 
+                      1.2917217251e-02 t R E X 
+                      0.0000000000e+00 w t R E X 
+                      1.0692627502e-02 w Y 
+                      1.9206145031e-03 t Y 
+                      3.1874546947e-03 w t Y 
                       2.9139281983e-02 R Y 
-                      7.0540988583e-03 beam_width R Y 
-                      1.2328120623e-02 beam_thickness R Y 
-                      1.0510024120e-02 beam_width beam_thickness R Y 
+                      7.0540988583e-03 w R Y 
+                      1.2328120623e-02 t R Y 
+                      1.0510024120e-02 w t R Y 
                       5.1263946988e-03 E Y 
-                      2.1194853026e-03 beam_width E Y 
-                      1.2263331066e-02 beam_thickness E Y 
-                      4.2159956224e-03 beam_width beam_thickness E Y 
+                      2.1194853026e-03 w E Y 
+                      1.2263331066e-02 t E Y 
+                      4.2159956224e-03 w t E Y 
                       3.5972434143e-03 R E Y 
-                      1.3766763832e-03 beam_width R E Y 
-                      8.8663158794e-03 beam_thickness R E Y 
-                      0.0000000000e+00 beam_width beam_thickness R E Y 
+                      1.3766763832e-03 w R E Y 
+                      8.8663158794e-03 t R E Y 
+                      0.0000000000e+00 w t R E Y 
                       5.1730634401e-03 X Y 
-                      1.2600158194e-02 beam_width X Y 
-                      1.0755450629e-02 beam_thickness X Y 
-                      5.3956879146e-05 beam_width beam_thickness X Y 
+                      1.2600158194e-02 w X Y 
+                      1.0755450629e-02 t X Y 
+                      5.3956879146e-05 w t X Y 
                       5.5594527313e-03 R X Y 
-                      1.3433950120e-04 beam_width R X Y 
-                      6.7474894566e-03 beam_thickness R X Y 
-                      0.0000000000e+00 beam_width beam_thickness R X Y 
+                      1.3433950120e-04 w R X Y 
+                      6.7474894566e-03 t R X Y 
+                      0.0000000000e+00 w t R X Y 
                       3.4713227676e-03 E X Y 
-                      1.0868894664e-04 beam_width E X Y 
-                      1.2405051338e-03 beam_thickness E X Y 
-                      0.0000000000e+00 beam_width beam_thickness E X Y 
+                      1.0868894664e-04 w E X Y 
+                      1.2405051338e-03 t E X Y 
+                      0.0000000000e+00 w t E X Y 
                       5.7130553901e-03 R E X Y 
-                      0.0000000000e+00 beam_width R E X Y 
-                      0.0000000000e+00 beam_thickness R E X Y 
-                      0.0000000000e+00 beam_width beam_thickness R E X Y 
+                      0.0000000000e+00 w R E X Y 
+                      0.0000000000e+00 t R E X Y 
+                      0.0000000000e+00 w t R E X Y 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00   3.7500000000e-02
@@ -36953,199 +36953,199 @@ Moment-based statistics for each response function:
  response_fn_3  2.6241816412e+00  8.9267758366e+00
 response_fn_1 Sobol indices:
                                   Main             Total
-                      4.4981412639e-01  5.5018587361e-01 beam_width
-                      4.4981412639e-01  5.5018587361e-01 beam_thickness
+                      4.4981412639e-01  5.5018587361e-01 w
+                      4.4981412639e-01  5.5018587361e-01 t
                       3.5616858074e-30  3.2775079042e-29 R
                       1.4936362871e-30  2.0355406467e-29 E
                       6.9034321340e-30  2.9533198061e-29 X
                       4.0741792924e-30  2.4952472289e-29 Y
-                      1.0037174721e-01 beam_width beam_thickness 
-                      8.1541252475e-31 beam_width R 
-                      2.9717284242e-30 beam_thickness R 
-                      5.5687464206e-31 beam_width beam_thickness R 
-                      5.1815507923e-31 beam_width E 
-                      6.0410285936e-31 beam_thickness E 
-                      1.4422628623e-31 beam_width beam_thickness E 
+                      1.0037174721e-01 w t 
+                      8.1541252475e-31 w R 
+                      2.9717284242e-30 t R 
+                      5.5687464206e-31 w t R 
+                      5.1815507923e-31 w E 
+                      6.0410285936e-31 t E 
+                      1.4422628623e-31 w t E 
                       2.0009843067e-30 R E 
-                      5.0324990380e-31 beam_width R E 
-                      1.1112247599e-30 beam_thickness R E 
-                      4.6198654892e-31 beam_width beam_thickness R E 
-                      1.2262409630e-30 beam_width X 
-                      2.7070635622e-31 beam_thickness X 
-                      4.2149779261e-31 beam_width beam_thickness X 
+                      5.0324990380e-31 w R E 
+                      1.1112247599e-30 t R E 
+                      4.6198654892e-31 w t R E 
+                      1.2262409630e-30 w X 
+                      2.7070635622e-31 t X 
+                      4.2149779261e-31 w t X 
                       5.4413674117e-30 R X 
-                      9.7024049982e-31 beam_width R X 
-                      1.2815374988e-30 beam_thickness R X 
-                      3.3757799769e-31 beam_width beam_thickness R X 
+                      9.7024049982e-31 w R X 
+                      1.2815374988e-30 t R X 
+                      3.3757799769e-31 w t R X 
                       1.0157062122e-30 E X 
-                      5.1831681439e-31 beam_width E X 
-                      7.1630461756e-31 beam_thickness E X 
-                      5.0030797031e-31 beam_width beam_thickness E X 
+                      5.1831681439e-31 w E X 
+                      7.1630461756e-31 t E X 
+                      5.0030797031e-31 w t E X 
                       1.5244298871e-30 R E X 
-                      8.3198193661e-32 beam_width R E X 
-                      1.4771512319e-31 beam_thickness R E X 
-                      0.0000000000e+00 beam_width beam_thickness R E X 
-                      1.6781008513e-30 beam_width Y 
-                      3.6862074726e-31 beam_thickness Y 
-                      2.1106702996e-31 beam_width beam_thickness Y 
+                      8.3198193661e-32 w R E X 
+                      1.4771512319e-31 t R E X 
+                      0.0000000000e+00 w t R E X 
+                      1.6781008513e-30 w Y 
+                      3.6862074726e-31 t Y 
+                      2.1106702996e-31 w t Y 
                       9.0244192762e-31 R Y 
-                      1.9973807521e-31 beam_width R Y 
-                      3.6332514514e-31 beam_thickness R Y 
-                      1.4074186318e-30 beam_width beam_thickness R Y 
+                      1.9973807521e-31 w R Y 
+                      3.6332514514e-31 t R Y 
+                      1.4074186318e-30 w t R Y 
                       1.1384476582e-30 E Y 
-                      1.0003227751e-30 beam_width E Y 
-                      9.3367606795e-31 beam_thickness E Y 
-                      9.2727308585e-34 beam_width beam_thickness E Y 
+                      1.0003227751e-30 w E Y 
+                      9.3367606795e-31 t E Y 
+                      9.2727308585e-34 w t E Y 
                       4.0034461682e-30 R E Y 
-                      4.9467788608e-31 beam_width R E Y 
-                      1.4641716892e-33 beam_thickness R E Y 
-                      0.0000000000e+00 beam_width beam_thickness R E Y 
+                      4.9467788608e-31 w R E Y 
+                      1.4641716892e-33 t R E Y 
+                      0.0000000000e+00 w t R E Y 
                       1.5958784505e-30 X Y 
-                      9.6566870745e-31 beam_width X Y 
-                      5.7352554573e-31 beam_thickness X Y 
-                      1.9618339668e-31 beam_width beam_thickness X Y 
+                      9.6566870745e-31 w X Y 
+                      5.7352554573e-31 t X Y 
+                      1.9618339668e-31 w t X Y 
                       2.0243002304e-30 R X Y 
-                      5.9781855442e-31 beam_width R X Y 
-                      7.8234408651e-31 beam_thickness R X Y 
-                      0.0000000000e+00 beam_width beam_thickness R X Y 
+                      5.9781855442e-31 w R X Y 
+                      7.8234408651e-31 t R X Y 
+                      0.0000000000e+00 w t R X Y 
                       1.1802430266e-30 E X Y 
-                      2.9310489966e-32 beam_width E X Y 
-                      4.5546488643e-34 beam_thickness E X Y 
-                      0.0000000000e+00 beam_width beam_thickness E X Y 
+                      2.9310489966e-32 w E X Y 
+                      4.5546488643e-34 t E X Y 
+                      0.0000000000e+00 w t E X Y 
                       2.2889063520e-31 R E X Y 
-                      0.0000000000e+00 beam_width R E X Y 
-                      0.0000000000e+00 beam_thickness R E X Y 
-                      0.0000000000e+00 beam_width beam_thickness R E X Y 
+                      0.0000000000e+00 w R E X Y 
+                      0.0000000000e+00 t R E X Y 
+                      0.0000000000e+00 w t R E X Y 
 response_fn_2 Sobol indices:
                                   Main             Total
-                      9.5124019350e-02  4.3763041636e-01 beam_width
-                      1.0728457599e-01  4.5871228808e-01 beam_thickness
+                      9.5124019350e-02  4.3763041636e-01 w
+                      1.0728457599e-01  4.5871228808e-01 t
                       1.9204424835e-02  2.9037768523e-01 R
                       1.3196470781e-02  2.9229201954e-01 E
                       1.5875673736e-03  3.0316011697e-01 X
                       4.2099571635e-02  3.4384103738e-01 Y
-                      1.0920064130e-01 beam_width beam_thickness 
-                      9.5889872041e-03 beam_width R 
-                      6.3601318777e-03 beam_thickness R 
-                      1.2479431319e-02 beam_width beam_thickness R 
-                      1.4633257659e-02 beam_width E 
-                      2.1891369344e-02 beam_thickness E 
-                      5.5762659505e-03 beam_width beam_thickness E 
+                      1.0920064130e-01 w t 
+                      9.5889872041e-03 w R 
+                      6.3601318777e-03 t R 
+                      1.2479431319e-02 w t R 
+                      1.4633257659e-02 w E 
+                      2.1891369344e-02 t E 
+                      5.5762659505e-03 w t E 
                       2.6931814512e-02 R E 
-                      2.9308786457e-03 beam_width R E 
-                      6.0981941289e-03 beam_thickness R E 
-                      1.5164978077e-04 beam_width beam_thickness R E 
-                      3.0913810211e-02 beam_width X 
-                      2.0641360126e-02 beam_thickness X 
-                      3.7504244511e-02 beam_width beam_thickness X 
+                      2.9308786457e-03 w R E 
+                      6.0981941289e-03 t R E 
+                      1.5164978077e-04 w t R E 
+                      3.0913810211e-02 w X 
+                      2.0641360126e-02 t X 
+                      3.7504244511e-02 w t X 
                       2.2155877128e-02 R X 
-                      7.2702293245e-03 beam_width R X 
-                      4.9098067105e-03 beam_thickness R X 
-                      3.6453453598e-04 beam_width beam_thickness R X 
+                      7.2702293245e-03 w R X 
+                      4.9098067105e-03 t R X 
+                      3.6453453598e-04 w t R X 
                       1.7338932181e-02 E X 
-                      1.4542797083e-02 beam_width E X 
-                      2.5298076358e-02 beam_thickness E X 
-                      1.8383841665e-03 beam_width beam_thickness E X 
+                      1.4542797083e-02 w E X 
+                      2.5298076358e-02 t E X 
+                      1.8383841665e-03 w t E X 
                       1.5768301978e-02 R E X 
-                      3.2397205082e-03 beam_width R E X 
-                      2.1332077545e-03 beam_thickness R E X 
-                      0.0000000000e+00 beam_width beam_thickness R E X 
-                      1.2777593208e-02 beam_width Y 
-                      1.8539445277e-02 beam_thickness Y 
-                      1.1213911419e-02 beam_width beam_thickness Y 
+                      3.2397205082e-03 w R E X 
+                      2.1332077545e-03 t R E X 
+                      0.0000000000e+00 w t R E X 
+                      1.2777593208e-02 w Y 
+                      1.8539445277e-02 t Y 
+                      1.1213911419e-02 w t Y 
                       2.7823877772e-02 R Y 
-                      1.4615274200e-02 beam_width R Y 
-                      6.5734120399e-03 beam_thickness R Y 
-                      5.7911151849e-03 beam_width beam_thickness R Y 
+                      1.4615274200e-02 w R Y 
+                      6.5734120399e-03 t R Y 
+                      5.7911151849e-03 w t R Y 
                       3.2479300401e-02 E Y 
-                      6.5420984102e-03 beam_width E Y 
-                      5.0861115530e-03 beam_thickness E Y 
-                      7.1697913980e-03 beam_width beam_thickness E Y 
+                      6.5420984102e-03 w E Y 
+                      5.0861115530e-03 t E Y 
+                      7.1697913980e-03 w t E Y 
                       4.1360210405e-02 R E Y 
-                      6.0796042430e-03 beam_width R E Y 
-                      8.0364532136e-03 beam_thickness R E Y 
-                      0.0000000000e+00 beam_width beam_thickness R E Y 
+                      6.0796042430e-03 w R E Y 
+                      8.0364532136e-03 t R E Y 
+                      0.0000000000e+00 w t R E Y 
                       1.4868738275e-02 X Y 
-                      1.5470319386e-02 beam_width X Y 
-                      9.3184211939e-03 beam_thickness X Y 
-                      4.2478599809e-03 beam_width beam_thickness X Y 
+                      1.5470319386e-02 w X Y 
+                      9.3184211939e-03 t X Y 
+                      4.2478599809e-03 w t X Y 
                       1.4496821868e-02 R X Y 
-                      6.4304777929e-03 beam_width R X Y 
-                      1.8851499435e-02 beam_thickness R X Y 
-                      0.0000000000e+00 beam_width beam_thickness R X Y 
+                      6.4304777929e-03 w R X Y 
+                      1.8851499435e-02 t R X Y 
+                      0.0000000000e+00 w t R X Y 
                       9.1514671262e-03 E X Y 
-                      1.9335195958e-03 beam_width E X Y 
-                      2.1523935368e-03 beam_thickness E X Y 
-                      0.0000000000e+00 beam_width beam_thickness E X Y 
+                      1.9335195958e-03 w E X Y 
+                      2.1523935368e-03 t E X Y 
+                      0.0000000000e+00 w t E X Y 
                       7.3174882838e-04 R E X Y 
-                      0.0000000000e+00 beam_width R E X Y 
-                      0.0000000000e+00 beam_thickness R E X Y 
-                      0.0000000000e+00 beam_width beam_thickness R E X Y 
+                      0.0000000000e+00 w R E X Y 
+                      0.0000000000e+00 t R E X Y 
+                      0.0000000000e+00 w t R E X Y 
 response_fn_3 Sobol indices:
                                   Main             Total
-                      4.7517550286e-02  3.8226404064e-01 beam_width
-                      6.8984994543e-02  3.7924269741e-01 beam_thickness
+                      4.7517550286e-02  3.8226404064e-01 w
+                      6.8984994543e-02  3.7924269741e-01 t
                       1.7909805350e-02  3.7220842053e-01 R
                       1.7070693427e-02  4.4200078112e-01 E
                       2.8047780873e-03  3.5585538563e-01 X
                       2.7229222891e-02  3.4318721748e-01 Y
-                      5.7380609793e-02 beam_width beam_thickness 
-                      1.5897129329e-02 beam_width R 
-                      3.3375359231e-02 beam_thickness R 
-                      1.8460141521e-02 beam_width beam_thickness R 
-                      2.3708984023e-02 beam_width E 
-                      1.3531169026e-02 beam_thickness E 
-                      4.0280854527e-03 beam_width beam_thickness E 
+                      5.7380609793e-02 w t 
+                      1.5897129329e-02 w R 
+                      3.3375359231e-02 t R 
+                      1.8460141521e-02 w t R 
+                      2.3708984023e-02 w E 
+                      1.3531169026e-02 t E 
+                      4.0280854527e-03 w t E 
                       3.8659102156e-02 R E 
-                      1.6703175853e-02 beam_width R E 
-                      1.5704341541e-02 beam_thickness R E 
-                      4.1830225119e-05 beam_width beam_thickness R E 
-                      3.7475482936e-02 beam_width X 
-                      1.4372700674e-02 beam_thickness X 
-                      2.4159614175e-02 beam_width beam_thickness X 
+                      1.6703175853e-02 w R E 
+                      1.5704341541e-02 t R E 
+                      4.1830225119e-05 w t R E 
+                      3.7475482936e-02 w X 
+                      1.4372700674e-02 t X 
+                      2.4159614175e-02 w t X 
                       1.9892351136e-02 R X 
-                      1.2824697381e-02 beam_width R X 
-                      3.5247044345e-03 beam_thickness R X 
-                      8.0684481537e-04 beam_width beam_thickness R X 
+                      1.2824697381e-02 w R X 
+                      3.5247044345e-03 t R X 
+                      8.0684481537e-04 w t R X 
                       5.4553247763e-02 E X 
-                      2.1411894356e-02 beam_width E X 
-                      2.5002628257e-02 beam_thickness E X 
-                      1.7551486025e-03 beam_width beam_thickness E X 
+                      2.1411894356e-02 w E X 
+                      2.5002628257e-02 t E X 
+                      1.7551486025e-03 w t E X 
                       3.8746807154e-02 R E X 
-                      1.3711969263e-03 beam_width R E X 
-                      9.1377140625e-03 beam_thickness R E X 
-                      0.0000000000e+00 beam_width beam_thickness R E X 
-                      1.3745594825e-02 beam_width Y 
-                      1.6833779314e-02 beam_thickness Y 
-                      1.6076150729e-02 beam_width beam_thickness Y 
+                      1.3711969263e-03 w R E X 
+                      9.1377140625e-03 t R E X 
+                      0.0000000000e+00 w t R E X 
+                      1.3745594825e-02 w Y 
+                      1.6833779314e-02 t Y 
+                      1.6076150729e-02 w t Y 
                       1.2950858661e-02 R Y 
-                      1.7493078475e-02 beam_width R Y 
-                      6.0437725667e-03 beam_thickness R Y 
-                      6.9480420442e-03 beam_width beam_thickness R Y 
+                      1.7493078475e-02 w R Y 
+                      6.0437725667e-03 t R Y 
+                      6.9480420442e-03 w t R Y 
                       4.3801246906e-02 E Y 
-                      1.6217477777e-02 beam_width E Y 
-                      1.5100950999e-02 beam_thickness E Y 
-                      5.3650862180e-03 beam_width beam_thickness E Y 
+                      1.6217477777e-02 w E Y 
+                      1.5100950999e-02 t E Y 
+                      5.3650862180e-03 w t E Y 
                       4.7482416848e-02 R E Y 
-                      7.2426576370e-03 beam_width R E Y 
-                      2.6413067205e-03 beam_thickness R E Y 
-                      0.0000000000e+00 beam_width beam_thickness R E Y 
+                      7.2426576370e-03 w R E Y 
+                      2.6413067205e-03 t R E Y 
+                      0.0000000000e+00 w t R E Y 
                       2.0172679253e-02 X Y 
-                      1.1031313680e-02 beam_width X Y 
-                      4.5278228435e-03 beam_thickness X Y 
-                      1.3167991600e-03 beam_width beam_thickness X Y 
+                      1.1031313680e-02 w X Y 
+                      4.5278228435e-03 t X Y 
+                      1.3167991600e-03 w t X Y 
                       1.8438915403e-02 R X Y 
-                      2.3374593076e-03 beam_width R X Y 
-                      7.4669660321e-03 beam_thickness R X Y 
-                      0.0000000000e+00 beam_width beam_thickness R X Y 
+                      2.3374593076e-03 w R X Y 
+                      7.4669660321e-03 t R X Y 
+                      0.0000000000e+00 w t R X Y 
                       1.5011743929e-02 E X Y 
-                      9.4799511408e-04 beam_width E X Y 
-                      6.6561344318e-03 beam_thickness E X Y 
-                      0.0000000000e+00 beam_width beam_thickness E X Y 
+                      9.4799511408e-04 w E X Y 
+                      6.6561344318e-03 t E X Y 
+                      0.0000000000e+00 w t E X Y 
                       1.0774571626e-04 R E X Y 
-                      0.0000000000e+00 beam_width R E X Y 
-                      0.0000000000e+00 beam_thickness R E X Y 
-                      0.0000000000e+00 beam_width beam_thickness R E X Y 
+                      0.0000000000e+00 w R E X Y 
+                      0.0000000000e+00 t R E X Y 
+                      0.0000000000e+00 w t R E X Y 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00   2.5660000000e-01
