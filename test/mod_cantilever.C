@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 
   // define the string to enumeration map
   map<string, var_t> var_t_map;
-  var_t_map["beam_width"] = W; var_t_map["beam_thickness"] = T;
+  var_t_map["w"] = W; var_t_map["t"] = T;
   var_t_map["r"] = R; var_t_map["e"] = E;
   var_t_map["x"] = X; var_t_map["y"] = Y;
 
