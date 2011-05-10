@@ -19,7 +19,7 @@ variables,
 	  num_intervals   = 1 1
           interval_probs  = 1.0 1.0
           interval_bounds = 1. 10. 1. 10
-          descriptors 'beam_width' 'beam_thickness'
+          descriptors 'w' 't'
 # Variable ordering issue with cantilever: use state so intervals appear 1st
 #	normal_uncertain = 4
 #	  means             =  40000. 29.E+6 500. 1000.

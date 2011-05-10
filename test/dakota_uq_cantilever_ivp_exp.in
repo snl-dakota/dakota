@@ -21,7 +21,7 @@ model,
           variables_pointer  = 'EPIST_V'
           sub_method_pointer = 'ALEATORY'
           responses_pointer  = 'EPIST_R'
-          primary_variable_mapping   = 'beam_width' 'beam_thickness'
+          primary_variable_mapping   = 'w' 't'
           primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0.
                                        0. 0. 0. 0. 1. 0. 0. 0.
                                        0. 0. 0. 0. 0. 0. 0. 1.
@@ -70,7 +70,7 @@ variables,
 # bounds needed for all_variables mode
 	  upper_bounds    10.0   10.0
 	  lower_bounds     1.0    1.0
-          descriptors 'beam_width' 'beam_thickness'
+          descriptors 'w' 't'
         normal_uncertain = 4
           means             =  40000. 29.E+6 500. 1000.
           std_deviations    =  2000. 1.45E+6 100. 100.

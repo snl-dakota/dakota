@@ -55,7 +55,7 @@ model,
 variables,
 	id_variables = 'OPTIM_V'
 	continuous_design = 2
-	  descriptors 'beam_width' 'beam_thickness'
+	  descriptors 'w' 't'
 
 responses,
 # minimize mean Weight

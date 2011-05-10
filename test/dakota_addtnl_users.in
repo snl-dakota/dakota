@@ -21,7 +21,7 @@ variables,
 #	  initial_point  4.0   4.0	#5
 #	  upper_bounds  10.0  10.0  #5
 #	  lower_bounds   1.0   1.0  #5
-#	  descriptors'beam_width' 'beam_thickness'	#5
+#	  descriptors'w' 't'	#5
 #	continuous_state = 4				#5
 #	  initial_state  40000. 29.E+6 500. 1000.	#5
 #	  descriptors      'R'   'E'   'X'   'Y'	#5

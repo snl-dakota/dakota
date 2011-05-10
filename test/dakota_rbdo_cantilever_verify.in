@@ -22,7 +22,7 @@ variables,
 #	  initial_point    2.4485419602 3.8813809238  #5
 #	  initial_point    2.4376831856 3.8530511428  #6
 #	  initial_point    2.4485432927 3.8813846052  #7
-	  descriptors 'beam_width' 'beam_thickness'
+	  descriptors 'w' 't'
 	normal_uncertain = 4
 	  means             =  40000. 29.E+6 500. 1000.
 	  std_deviations    =  2000. 1.45E+6 100. 100.

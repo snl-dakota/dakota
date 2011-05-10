@@ -47,7 +47,7 @@ variables,
 	  initial_point    2.5    2.5
 	  upper_bounds    10.0   10.0
 	  lower_bounds     1.0    1.0
-	  descriptors 'beam_width' 'beam_thickness'
+	  descriptors 'w' 't'
 	normal_uncertain = 4
 	  means             =  40000. 29.E+6 500. 1000.
 	  std_deviations    =  2000. 1.45E+6 100. 100.

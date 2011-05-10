@@ -26,7 +26,7 @@ variables,
         uniform_uncertain = 2
 	  upper_bounds    10.0   10.0
 	  lower_bounds     1.0    1.0
-	  descriptors 'beam_width' 'beam_thickness'
+	  descriptors 'w' 't'
 
 interface,
         direct

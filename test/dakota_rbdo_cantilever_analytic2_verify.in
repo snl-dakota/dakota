@@ -33,7 +33,7 @@ variables,
 # automatically), but it is good form
 	continuous_design = 2
 	  initial_point	=  2.46277 3.86571
-	  descriptors 'beam_width' 'beam_thickness'
+	  descriptors 'w' 't'
 	normal_uncertain = 4
 	  means             =  40000. 29.E+6 500. 1000.
 	  std_deviations    =  2000. 1.45E+6 100. 100.

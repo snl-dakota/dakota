@@ -38,7 +38,7 @@ variables,
 	  initial_point    2.5    2.5
 	  upper_bounds    10.0   10.0
 	  lower_bounds     1.0    1.0
-	  descriptors 'beam_width' 'beam_thickness'
+	  descriptors 'w' 't'
 
 responses,
 # minimize mean Weight
