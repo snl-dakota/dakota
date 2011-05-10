@@ -157,11 +157,11 @@ public:
 						 const Pecos::SizetArray& dvv);
 
   /// return the variance of the expansion, treating all variables as random
-  Real get_covariance(const Pecos::RealVector& exp_coeffs_2);
+  Real get_covariance(PecosApproximation* pecos_approx_2);
   /// return the variance of the expansion, treating a subset of the
   /// variables as random
   Real get_covariance(const Pecos::RealVector& x,
-		      const Pecos::RealVector& exp_coeffs_2);
+		      PecosApproximation* pecos_approx_2);
 
   /// compute moments up to the order supported by the Pecos
   /// polynomial approximation
@@ -422,14 +422,13 @@ get_variance_gradient(const Pecos::RealVector& x, const Pecos::SizetArray& dvv)
 
 
 inline Real PecosApproximation::
-get_covariance(const Pecos::RealVector& exp_coeffs_2)
-{ return polyApproxRep->get_covariance(exp_coeffs_2); }
+get_covariance(PecosApproximation* pecos_approx_2)
+{ return polyApproxRep->get_covariance(pecos_approx_2->polyApproxRep); }
 
 
 inline Real PecosApproximation::
-get_covariance(const Pecos::RealVector& x, 
-	       const Pecos::RealVector& exp_coeffs_2)
-{ return polyApproxRep->get_covariance(x, exp_coeffs_2); }
+get_covariance(const Pecos::RealVector& x, PecosApproximation* pecos_approx_2)
+{ return polyApproxRep->get_covariance(x, pecos_approx_2->polyApproxRep); }
 
 
 inline void PecosApproximation::compute_moments()

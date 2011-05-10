@@ -1369,11 +1369,11 @@ void NonDExpansion::compute_covariance()
     if (all_vars)
       for (j=0; j<=i; ++j)
 	respCovariance(i,j) = poly_approx_rep_i->get_covariance(initialPtU,
-	  poly_approxs[j].approximation_coefficients());
+	  (PecosApproximation*)poly_approxs[j].approx_rep());
     else
       for (j=0; j<=i; ++j)
 	respCovariance(i,j) = poly_approx_rep_i->get_covariance(
-	  poly_approxs[j].approximation_coefficients());
+	  (PecosApproximation*)poly_approxs[j].approx_rep());
   }
 }
 
@@ -1428,11 +1428,11 @@ void NonDExpansion::compute_statistics()
 	if (all_vars)
 	  for (j=0; j<i; ++j)
 	    respCovariance(i,j) = poly_approx_rep->get_covariance(initialPtU,
-	      poly_approxs[j].approximation_coefficients());
+	      (PecosApproximation*)poly_approxs[j].approx_rep());
 	else
 	  for (j=0; j<i; ++j)
 	    respCovariance(i,j) = poly_approx_rep->get_covariance(
-	      poly_approxs[j].approximation_coefficients());
+	      (PecosApproximation*)poly_approxs[j].approx_rep());
       }
       if (var >= 0.)
 	sigma = std::sqrt(var);
