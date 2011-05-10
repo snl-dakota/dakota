@@ -182,25 +182,22 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
       varTypeMap["x3"] = VAR_x3; //varTypeMap["x4"]  = VAR_x4;
       //varTypeMap["x5"] = VAR_x5; varTypeMap["x6"]  = VAR_x6;
       //varTypeMap["x7"] = VAR_x7; varTypeMap["x8"]  = VAR_x8;
-      //varTypeMap["x9"] = VAR_x9; varTypeMap["x10"] = VAR_x10;
-      //break;
+      //varTypeMap["x9"] = VAR_x9; varTypeMap["x10"] = VAR_x10; break;
     //case SHORT_COLUMN:
       varTypeMap["b"] = VAR_b; varTypeMap["h"] = VAR_h;
       varTypeMap["P"] = VAR_P; varTypeMap["M"] = VAR_M; varTypeMap["Y"] = VAR_Y;
       //break;
     //case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM:
-      varTypeMap["beam_width"] = VAR_w; varTypeMap["beam_thickness"] = VAR_t;
-      varTypeMap["R"] = VAR_R;          varTypeMap["E"] = VAR_E;
-      varTypeMap["X"] = VAR_X;          //varTypeMap["Y"] = VAR_Y;
-      //break;
+      varTypeMap["w"] = VAR_w; varTypeMap["t"] = VAR_t; varTypeMap["R"] = VAR_R;
+      varTypeMap["E"] = VAR_E; varTypeMap["X"] = VAR_X;
+      //varTypeMap["Y"] = VAR_Y; break;
     //case STEEL_COLUMN:
       varTypeMap["Fs"] = VAR_Fs; varTypeMap["P1"] = VAR_P1;
       varTypeMap["P2"] = VAR_P2; varTypeMap["P3"] = VAR_P3;
       varTypeMap["B"]  = VAR_B;  varTypeMap["D"]  = VAR_D;
       varTypeMap["H"]  = VAR_H;  //varTypeMap["b"] = VAR_b;
       varTypeMap["d"]  = VAR_d;  //varTypeMap["h"] = VAR_h;
-      varTypeMap["F0"] = VAR_F0; //varTypeMap["E"] = VAR_E;
-      //break;
+      varTypeMap["F0"] = VAR_F0; //varTypeMap["E"] = VAR_E; break;
     //}
   }
 
