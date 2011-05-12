@@ -1368,11 +1368,11 @@ void NonDExpansion::compute_covariance()
 
     if (all_vars)
       for (j=0; j<=i; ++j)
-	respCovariance(i,j) = poly_approx_rep_i->get_covariance(initialPtU,
+	respCovariance(i,j) = poly_approx_rep_i->covariance(initialPtU,
 	  (PecosApproximation*)poly_approxs[j].approx_rep());
     else
       for (j=0; j<=i; ++j)
-	respCovariance(i,j) = poly_approx_rep_i->get_covariance(
+	respCovariance(i,j) = poly_approx_rep_i->covariance(
 	  (PecosApproximation*)poly_approxs[j].approx_rep());
   }
 }
@@ -1427,11 +1427,11 @@ void NonDExpansion::compute_statistics()
 	respCovariance(i,i) = var;
 	if (all_vars)
 	  for (j=0; j<i; ++j)
-	    respCovariance(i,j) = poly_approx_rep->get_covariance(initialPtU,
+	    respCovariance(i,j) = poly_approx_rep->covariance(initialPtU,
 	      (PecosApproximation*)poly_approxs[j].approx_rep());
 	else
 	  for (j=0; j<i; ++j)
-	    respCovariance(i,j) = poly_approx_rep->get_covariance(
+	    respCovariance(i,j) = poly_approx_rep->covariance(
 	      (PecosApproximation*)poly_approxs[j].approx_rep());
       }
       if (var >= 0.)
@@ -1461,8 +1461,8 @@ void NonDExpansion::compute_statistics()
     // *** mean gradient
     if (final_asv[cntr] & 2 || moment_grad_mapping_flag) {
       const RealVector& grad = (all_vars) ?
-	poly_approx_rep->get_mean_gradient(initialPtU, final_dvv) :
-	poly_approx_rep->get_mean_gradient();
+	poly_approx_rep->mean_gradient(initialPtU, final_dvv) :
+	poly_approx_rep->mean_gradient();
       if (final_asv[cntr] & 2)
 	finalStatistics.function_gradient(grad, cntr);
       if (moment_grad_mapping_flag)
@@ -1476,8 +1476,8 @@ void NonDExpansion::compute_statistics()
     // *** std deviation gradient
     if (final_asv[cntr] & 2 || moment_grad_mapping_flag) {
       sigma_grad = (all_vars) ?
-	poly_approx_rep->get_variance_gradient(initialPtU, final_dvv) :
-	poly_approx_rep->get_variance_gradient();
+	poly_approx_rep->variance_gradient(initialPtU, final_dvv) :
+	poly_approx_rep->variance_gradient();
       if (sigma > 0.)
 	for (j=0; j<num_final_grad_vars; ++j)
 	  sigma_grad[j] /= 2.*sigma;
@@ -1823,7 +1823,7 @@ void NonDExpansion::update_final_statistics()
     // has been configured to compute dg/ds at each of the sample points.
     // uSpaceModel.build_approximation() -> PecosApproximation::build()
     // then constructs PCE/SC approximations of these gradients, and
-    // PecosApproximation::get_<mean,variance>_gradient()
+    // PecosApproximation::<mean,variance>_gradient()
     // are used above to generate dmu/ds, dsigma/ds, and dbeta/ds.
   }
 }

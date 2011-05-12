@@ -197,7 +197,7 @@ void NonDQuadrature::get_parameter_sets(Model& model)
 void NonDQuadrature::filter_parameter_sets()
 {
   size_t i, num_tensor_pts = allSamples.numCols();
-  const Pecos::RealVector& wts = tpqDriver->weight_sets();
+  const Pecos::RealVector& wts = tpqDriver->type1_weight_sets();
 #ifdef DEBUG
   Cout << "allSamples pre-filter:" << allSamples
        << "weights pre-filter:\n"  << wts;
