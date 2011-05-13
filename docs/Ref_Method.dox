@@ -4179,7 +4179,7 @@ specifications and do not support \c std_deviation specifications, -->
 \htmlonly
 Table 5.29
 \endhtmlonly
-Summary of Distribution Types supported by Nondeterministic Methods, Part I
+Summary of Distribution Types supported by Nondeterministic Methods, Part I (Continuous Aleatory Types)
 </caption>
 <tr>
 <td><b>Distribution Type</b>
@@ -4350,29 +4350,6 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part I
 <td>-
 <td>-
 <td>-
-</table>  
-
-\anchor T5d30
-<table>
-<caption align = "top">
-\htmlonly
-Table 5.30
-\endhtmlonly
-Summary of Distribution Types supported by Nondeterministic Methods, Part II
-</caption>
-<tr>
-<td><b>Distribution Type</b>
-<!-- <td><b>Old Sampling</b> -->
-<td><b><!-- New -->Sampling</b>
-<td><b>Local Reliability</b>
-<td><b>Global Reliability</b>
-<td><b>Wiener SE</b>
-<td><b>Askey SE</b>
-<td><b>Extended SE</b>
-<td><b>Local Interval</b>
-<td><b>Global Interval</b>
-<td><b>Local Evidence</b>
-<td><b>Global Evidence</b>
 <tr>
 <td>Weibull
 <!-- <td>U -->
@@ -4399,6 +4376,29 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part II
 <td>-
 <td>-
 <td>-
+</table>  
+
+\anchor T5d30
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.30
+\endhtmlonly
+Summary of Distribution Types supported by Nondeterministic Methods, Part II (Discrete Aleatory Types)
+</caption>
+<tr>
+<td><b>Distribution Type</b>
+<!-- <td><b>Old Sampling</b> -->
+<td><b><!-- New -->Sampling</b>
+<td><b>Local Reliability</b>
+<td><b>Global Reliability</b>
+<td><b>Wiener SE</b>
+<td><b>Askey SE</b>
+<td><b>Extended SE</b>
+<td><b>Local Interval</b>
+<td><b>Global Interval</b>
+<td><b>Local Evidence</b>
+<td><b>Global Evidence</b>
 <tr>
 <td>Poisson
 <!-- <td> -->
@@ -4477,19 +4477,6 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part II
 <td>-
 <td>-
 <td>-
-<tr>
-<td>Interval
-<!-- <td>- -->
-<td>U
-<td>-
-<td>-
-<td>-
-<td>-
-<td>-
-<td>U
-<td>U
-<td>U
-<td>U
 </table>
 
 \anchor T5d31
@@ -4498,7 +4485,7 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part II
 \htmlonly
 Table 5.31
 \endhtmlonly
-Summary of Distribution Types supported by Nondeterministic Methods, Part III
+Summary of Distribution Types supported by Nondeterministic Methods, Part III (Epistemic, Design, and State Types)
 </caption>
 <tr>
 <td><b>Distribution Type</b>
@@ -4513,6 +4500,19 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part III
 <td><b>Global Interval</b>
 <td><b>Local Evidence</b>
 <td><b>Global Evidence</b>
+<tr>
+<td>Interval
+<!-- <td>- -->
+<td>U
+<td>-
+<td>-
+<td>-
+<td>-
+<td>-
+<td>U
+<td>U
+<td>U
+<td>U
 <tr>
 <td>Continuous Design (\c all_variables)
 <!-- <td>- -->
