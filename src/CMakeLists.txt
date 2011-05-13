@@ -9,6 +9,11 @@ add_definitions("-DHAVE_CONFIG_H")
 add_definitions("-DDISABLE_DAKOTA_CONFIG_H")
 add_definitions("-DBOOST_MULTI_INDEX_DISABLE_SERIALIZATION")
 
+option(DAKOTA_PLUGIN "Toggle Plugin support, default is PluginEnabled" ON)
+if(DAKOTA_PLUGIN)
+  add_definitions("-DDAKOTA_PLUGIN")
+endif(DAKOTA_PLUGIN)
+
 option(BOOST_DISABLE_ASSERTS "Toggle BoostAssert, default is AssertDisabled" ON)
 if (BOOST_DISABLE_ASSERTS)
   add_definitions("-DBOOST_DISABLE_ASSERTS")
@@ -179,11 +184,10 @@ if(HAVE_SURFPACK)
   list(APPEND EXPORT_TARGETS surfaces mars nkm)
 endif(HAVE_SURFPACK)
 
-if(HAVE_PLUGIN)
-  add_definitions("-DDAKOTA_PLUGIN")
+if(DAKOTA_PLUGIN)
   set(interface_src ${interface_src} PluginSerialDirectApplicInterface.C
       PluginParallelDirectApplicInterface.C)
-endif(HAVE_PLUGIN)
+endif(DAKOTA_PLUGIN)
 
 ## Strategy sources.
 set(strategy_src DakotaStrategy.C SingleMethodStrategy.C HybridStrategy.C
