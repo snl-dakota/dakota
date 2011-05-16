@@ -16,11 +16,11 @@
 #define PLUGIN_PARALLEL_DIRECT_APPLIC_INTERFACE_H
 
 #include "DirectApplicInterface.H"
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
 #include <mpi.h>
 #else
 typedef int MPI_Comm;
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
 
 namespace SIM {

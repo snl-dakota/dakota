@@ -105,9 +105,9 @@ set(TPL_LIBS teuchos nidr)
 set(EXTRA_TPL_LIBS "")
 set(EXPORT_TARGETS dakota_src teuchos nidr)
 
-if(HAVE_MPI)
+if(DAKOTA_HAVE_MPI)
   list(APPEND EXTRA_TPL_LIBS ${MPI_LIBRARIES})
-endif(HAVE_MPI)
+endif(DAKOTA_HAVE_MPI)
 
 link_directories(${Teuchos_LIBRARY_DIRS})
 

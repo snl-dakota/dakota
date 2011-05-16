@@ -8,9 +8,9 @@
 
 
 #include "MPIPackBuffer.H"
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
 #include <mpi.h>
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
 // TODO: needs to use correct MPI_Comm throughout
 //       see Rationale on p.137 of MPI: The Complete Reference
@@ -36,7 +36,7 @@ void MPIPackBuffer::resize(const int newsize)
 }
 
 
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
 #define PACKBUF(type, mpitype) \
 void MPIPackBuffer::pack(const type* data, const int num) \
 { \
@@ -47,7 +47,7 @@ void MPIPackBuffer::pack(const type* data, const int num) \
 #define PACKBUF(type, mpitype) \
 void MPIPackBuffer::pack(const type* /*data*/, const int /*num*/) \
 { }
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
 
 PACKBUF(int,MPI_INT)
@@ -64,13 +64,13 @@ PACKBUF(float,MPI_FLOAT)
 
 void MPIPackBuffer::pack(const bool* data, const int num)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   resize(num*MPIPackSize(data[0],1));
   for (int i=0; i<num; i++) {
     char c = (data[i]) ? 'T' : 'F';
     MPI_Pack((void*)(&c), 1, MPI_CHAR, Buffer, Size, &Index, MPI_COMM_WORLD);
   }
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -102,7 +102,7 @@ void MPIUnpackBuffer::setup(char* buf_, int size_, bool flag_)
 }
 
 
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
 #define UNPACKBUF(type, mpitype) \
 void MPIUnpackBuffer::unpack(type* data, const int num) \
 { MPI_Unpack(Buffer, Size, &Index, (void*)data, num, mpitype, MPI_COMM_WORLD); }
@@ -110,7 +110,7 @@ void MPIUnpackBuffer::unpack(type* data, const int num) \
 #define UNPACKBUF(type, mpitype) \
 void MPIUnpackBuffer::unpack(type* /*data*/, const int /*num*/) \
 { }
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
  
  
 UNPACKBUF(int,MPI_INT)
@@ -127,13 +127,13 @@ UNPACKBUF(float,MPI_FLOAT)
 
 void MPIUnpackBuffer::unpack(bool* data, const int num)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   for (int i=0; i<num; i++) {
     char c;
     MPI_Unpack(Buffer, Size, &Index, (void*)(&c), 1, MPI_CHAR, MPI_COMM_WORLD);
     data[i] = (c == 'T') ? true : false;
   }
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -143,7 +143,7 @@ void MPIUnpackBuffer::unpack(bool* data, const int num)
 //
 //---------------------------------------------------------------------
 
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
 #define PACKSIZE(type, mpitype)	\
 int MPIPackSize(const type& /*data*/, const int num) \
 { \
@@ -155,7 +155,7 @@ int MPIPackSize(const type& /*data*/, const int num) \
 #define PACKSIZE(type, mpitype)	\
 int MPIPackSize(const type& /*data*/, const int /*num*/) \
 { return 0; }
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
 
 PACKSIZE(int,MPI_INT)
@@ -172,13 +172,13 @@ PACKSIZE(float,MPI_FLOAT)
 
 int MPIPackSize(const bool& /*data*/, const int num)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int size; 
   MPI_Pack_size(num, MPI_CHAR, MPI_COMM_WORLD, &size);
   return size;
 #else
   return 0;
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 } // namespace Dakota

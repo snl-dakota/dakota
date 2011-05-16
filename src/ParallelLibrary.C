@@ -84,7 +84,7 @@ ParallelLibrary::ParallelLibrary(int& argc, char**& argv):
 
   // Initialize MPI if and only if DAKOTA launched in parallel (mpirunFlag).
   ParallelLevel pl;
-#ifdef HAVE_MPI // mpi available
+#ifdef DAKOTA_HAVE_MPI // mpi available
   if (mpirunFlag) {
     MPI_Init(&argc, &argv); // See comment above regarding argv and argc
     MPI_Comm_rank(MPI_COMM_WORLD, &worldRank);
@@ -117,7 +117,7 @@ ParallelLibrary::ParallelLibrary(int& argc, char**& argv):
     pl.serverIntraComm = MPI_COMM_NULL;
     Cout << "Running serial executable in serial mode.\n";
   }
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
   parallelLevels.push_back(pl);
   currPLIter = parallelLevels.begin();
@@ -171,7 +171,7 @@ void ParallelLibrary::init_mpi_comm(MPI_Comm dakota_mpi_comm)
 
   // do not initialize MPI.  Get worldRank/worldSize if available
   ParallelLevel pl;
-#ifdef HAVE_MPI // mpi available
+#ifdef DAKOTA_HAVE_MPI // mpi available
   int initialized = 0;
   MPI_Initialized(&initialized);
   if (initialized) {
@@ -198,7 +198,7 @@ void ParallelLibrary::init_mpi_comm(MPI_Comm dakota_mpi_comm)
 #else // mpi not available
   pl.serverIntraComm = MPI_COMM_NULL;
   Cout << "Running serial executable in serial mode.\n";
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
   parallelLevels.push_back(pl);
   currPLIter = parallelLevels.begin();
@@ -284,7 +284,7 @@ bool ParallelLibrary::detect_parallel_launch(int& argc, char**& argv)
   // test for p4 device
   //char* test = std::getenv("MPIRUN_DEVICE"); // no good: only set on master
   for (int i=0; i<argc; ++i) {
-    String test(argv[i]);
+    std::string test(argv[i]);
     if (test=="-p4pg" || test=="-p4amslave") {
 #ifdef MPI_DEBUG
       Cout << "Parallel run detected via MPICH args test" << std::endl;
@@ -336,9 +336,9 @@ bool ParallelLibrary::detect_parallel_launch(int& argc, char**& argv)
   // TFLOPS_COMPUTE & CPLANT_COMPUTE (+ other platforms w/o a special detection
   // routine) have defaults based only on MPI configuration.  Note that
   // TFLOPS_SERVICE is hardwired above and CPLANT_SERVICE is covered by -DMPICH.
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   mpi_launch = true;
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
 #endif // OPEN_MPI
 
@@ -356,8 +356,8 @@ void ParallelLibrary::
 init_communicators(const ParallelLevel& parent_pl, const int& num_servers,
 		   const int& procs_per_server, const int& max_concurrency, 
 		   const int& asynch_local_concurrency,
-		   const String& default_config,
-		   const String& scheduling_override)
+		   const std::string& default_config,
+		   const std::string& scheduling_override)
 {
   ParallelLevel child_pl;
   child_pl.numServers     = num_servers;      // request/default to be updated
@@ -417,8 +417,8 @@ init_communicators(const ParallelLevel& parent_pl, const int& num_servers,
 bool ParallelLibrary::
 resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs, 
                int& proc_remainder, const int& max_concurrency, 
-               const int& capacity_multiplier, const String& default_config,
-               const String& scheduling_override, bool print_rank)
+               const int& capacity_multiplier, const std::string& default_config,
+               const std::string& scheduling_override, bool print_rank)
 {
   const bool self_scheduling_override
     = (scheduling_override == "self")   ? true : false;
@@ -715,7 +715,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
     abort_handler(-1);
   }
 
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.serverIntraComm);
   MPI_Comm_rank(child_pl.serverIntraComm, &child_pl.serverCommRank);
@@ -767,7 +767,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
     MPI_Comm_rank(child_pl.hubServerIntraComm, &child_pl.hubServerCommRank);
     MPI_Comm_size(child_pl.hubServerIntraComm, &child_pl.hubServerCommSize);
   }
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
   if (child_pl.serverCommRank == 0 && parent_pl.serverCommRank)
     child_pl.serverMasterFlag = true; // this proc is a child partition master
@@ -848,7 +848,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     abort_handler(-1);
   }
 
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   MPI_Comm_split(parent_pl.serverIntraComm, color, parent_pl.serverCommRank,
 		 &child_pl.serverIntraComm);
   MPI_Comm_rank(child_pl.serverIntraComm, &child_pl.serverCommRank);
@@ -901,7 +901,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     MPI_Comm_rank(child_pl.hubServerIntraComm, &child_pl.hubServerCommRank);
     MPI_Comm_size(child_pl.hubServerIntraComm, &child_pl.hubServerCommSize);
   }
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
   if (child_pl.serverCommRank == 0) // don't exclude parent master 
     child_pl.serverMasterFlag = true; // this proc is a child partition master
@@ -1124,8 +1124,8 @@ void ParallelLibrary::manage_run_modes(CommandLineHandler& cmd_line_handler)
 /// Tokenize colon-delimited input and output filenames, returns
 /// unchanged strings if tokens not found
 void ParallelLibrary::
-split_filenames(const char * filenames, String& input_filename,
-		String& output_filename)
+split_filenames(const char * filenames, std::string& input_filename,
+		std::string& output_filename)
 {
   // Initial cut doesn't warn/error on invalid input, since pre and post 
   // are special cases in terms of permitted files.  For now admit all specs
@@ -1135,13 +1135,13 @@ split_filenames(const char * filenames, String& input_filename,
   // -pre ::pre.out
   // -post post.in
   if (filenames != NULL) {
-    String runarg(filenames);
-    String::size_type pos = runarg.find("::");
-    if (pos != String::npos) {
+    std::string runarg(filenames);
+    std::string::size_type pos = runarg.find("::");
+    if (pos != std::string::npos) {
       input_filename = runarg.substr(0, pos);
       pos = runarg.find_first_not_of("::", pos);
-      if (pos != String::npos)
-	output_filename = runarg.substr(pos, String::npos);
+      if (pos != std::string::npos)
+	output_filename = runarg.substr(pos, std::string::npos);
     }
     else
       input_filename = runarg;
@@ -1243,7 +1243,7 @@ manage_outputs_restart(const ParallelLevel& pl)
     // the output for 1 server in BranchBndStrategy/ConcurrentStrategy
     char si[16];
     std::sprintf(si, ".%d", pl.serverId);
-    String ctr_tag(si);
+    std::string ctr_tag(si);
     std_output_filename += ctr_tag;     // e.g., "dakota.out.#"
     if (stdErrorToFile)
       std_error_filename += ctr_tag;    // e.g., "dakota.err.#"
@@ -1304,7 +1304,7 @@ manage_outputs_restart(const ParallelLevel& pl)
       // by BiStream.
       try { read_restart >> current_pair; }
 
-      catch(String& err_msg) {
+      catch(std::string& err_msg) {
         //Cerr << "Warning: " << err_msg << std::endl;
         break;
       }
@@ -1416,7 +1416,7 @@ void ParallelLibrary::close_streams()
 void ParallelLibrary::abort_helper(int code) const {
   
   // Abort the process(es)
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
 #ifdef HAVE_AIX_MPI
   // AIX POE utility function for signal handling w/MPI to exit normally.
   pm_child_sig_handler(code, NULL, NULL);
@@ -1435,7 +1435,7 @@ void ParallelLibrary::abort_helper(int code) const {
   std::exit(code); // or std::exit(EXIT_FAILURE) from /usr/include/stdlib.h
 #endif // MODELCENTER
 
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
 }
 
@@ -1454,7 +1454,7 @@ output_helper(const std::string& s, std::ostream &outfile) const
 
 void ParallelLibrary::free_communicators(ParallelLevel& pl)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   if (pl.commSplitFlag) { // deallocate intra/inter comms.
     MPI_Comm_free(&pl.serverIntraComm);
     MPI_Comm_free(&pl.hubServerIntraComm);
@@ -1477,7 +1477,7 @@ void ParallelLibrary::free_communicators(ParallelLevel& pl)
         MPI_Comm_free(&pl.hubServerInterComm);
     }
   }
-#endif // HAVE_MPI (else no finalization needed)
+#endif // DAKOTA_HAVE_MPI (else no finalization needed)
 }
 
 
@@ -1504,7 +1504,7 @@ ParallelLibrary::~ParallelLibrary()
 #endif // DAKOTA_UTILIB
       
     if (mpirunFlag) { // MPI functions are available
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
       if (worldRank==0) {
 	Real runWC = parallel_time();
 	Cout << std::setprecision(6) << std::resetiosflags(std::ios::floatfield)
@@ -1523,7 +1523,7 @@ ParallelLibrary::~ParallelLibrary()
       }
       if (ownMPIFlag) // call MPI_Finalize only if DAKOTA called MPI_Init
 	MPI_Finalize(); // finalize MPI
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
     }
     else { // MPI functions are not available
       Cout << std::setprecision(6) << std::resetiosflags(std::ios::floatfield)

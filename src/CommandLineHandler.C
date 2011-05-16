@@ -13,9 +13,9 @@
 #include "ProblemDescDB.H"
 #include "ParallelLibrary.H"
 #include "DakotaBuildInfo.H"
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
 #include <mpi.h>
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 #include <string>
 
 

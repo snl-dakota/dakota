@@ -12,6 +12,18 @@ set(Boost_INCLUDE_DIR
   "/Net/dakota/utils/Linux_x86_64/boost_signals1.45.gnu-4.3.2/include"
   CACHE PATH "Always use pre-installed Boost1.45 SIGNALS subset" FORCE)
 
+#set(Boost_LIBRARY_DIRS
+#  "/Net/dakota/utils/Linux_x86_64/boost_signals1.45.gnu-4.3.2/lib"
+#  CACHE PATH "Always use pre-installed Boost1.45 SIGNALS subset" FORCE)
+
+set(USE_SYSTEM_TEUCHOS ON CACHE BOOL "Always use installed, Teuchos DSO" FORCE)
+
+# Path to "custom", local build of Trilinos: shared-objects, Teuchos ONLY!
+set(Trilinos_DIR
+    "/Net/dakota/utils/Linux_x86_64/trilinos-10.6.0/gnu-4.3.2_nompi_install"
+    CACHE PATH "Base directory for Teuchos installation" FORCE)
+
+
 ##############################################################################
 # Enforce shared library build for DAKOTA and all of its TPLs
 ##############################################################################

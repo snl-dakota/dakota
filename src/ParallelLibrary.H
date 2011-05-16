@@ -20,14 +20,14 @@
 #include "global_defs.h"  // for Cout
 #include "data_types.h"
 #include "MPIPackBuffer.H"
-#include "DakotaString.H"
-#ifdef HAVE_MPI
+//#include "DakotaString.H"
+#ifdef DAKOTA_HAVE_MPI
 #include <mpi.h>
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
 namespace Dakota {
 
-#ifndef HAVE_MPI
+#ifndef DAKOTA_HAVE_MPI
 typedef int MPI_Comm;
 typedef struct { int MPI_SOURCE; int MPI_TAG; int MPI_ERROR; } MPI_Status;
 typedef void* MPI_Request;
@@ -35,7 +35,7 @@ typedef void* MPI_Request;
 #define MPI_COMM_NULL    0
 #define MPI_ANY_TAG      0
 #define MPI_REQUEST_NULL 0
-#endif // not HAVE_MPI
+#endif // not DAKOTA_HAVE_MPI
 
 class CommandLineHandler;
 
@@ -368,20 +368,20 @@ public:
   /// split MPI_COMM_WORLD into iterator communicators
   const ParallelLevel& init_iterator_communicators(const int& iterator_servers,
     const int& procs_per_iterator, const int& max_iterator_concurrency,
-    const String& default_config, const String& iterator_scheduling);
+    const std::string& default_config, const std::string& iterator_scheduling);
 
   /// split an iterator communicator into evaluation communicators
   const ParallelLevel& init_evaluation_communicators(
     const int& evaluation_servers, const int& procs_per_evaluation,
     const int& max_evaluation_concurrency,
     const int& asynch_local_evaluation_concurrency,
-    const String& default_config, const String& evaluation_scheduling);
+    const std::string& default_config, const std::string& evaluation_scheduling);
 
   /// split an evaluation communicator into analysis communicators
   const ParallelLevel& init_analysis_communicators(const int& analysis_servers,
     const int& procs_per_analysis, const int& max_analysis_concurrency,
-    const int& asynch_local_analysis_concurrency, const String& default_config,
-    const String& analysis_scheduling);
+    const int& asynch_local_analysis_concurrency,
+    const std::string& default_config, const std::string& analysis_scheduling);
 
   /// deallocate iterator communicators
   void free_iterator_communicators();
@@ -422,12 +422,12 @@ public:
   bool command_line_run() const;        ///< return runFlag
   bool command_line_post_run() const;   ///< return postRunFlag
   bool command_line_user_modes() const; ///< return userModesFlag
-  const String& command_line_pre_run_input() const;   ///< preRunInput filename
-  const String& command_line_pre_run_output() const;  ///< preRunOutput filename
-  const String& command_line_run_input() const;       ///< runInput filename
-  const String& command_line_run_output() const;      ///< runOutput filename
-  const String& command_line_post_run_input() const;  ///< postRunInput filename
-  const String& command_line_post_run_output() const; ///< postRunOutput fname
+  const std::string& command_line_pre_run_input() const;   ///< preRunInput filename
+  const std::string& command_line_pre_run_output() const;  ///< preRunOutput filename
+  const std::string& command_line_run_input() const;       ///< runInput filename
+  const std::string& command_line_run_output() const;      ///< runOutput filename
+  const std::string& command_line_post_run_input() const;  ///< postRunInput filename
+  const std::string& command_line_post_run_output() const; ///< postRunOutput fname
 
   /// blocking send at the strategy-iterator communication level
   void  send_si(int& send_int, int dest, int tag);
@@ -586,7 +586,7 @@ private:
   void init_communicators(const ParallelLevel& parent_pl,
     const int& num_servers, const int& procs_per_server,
     const int& max_concurrency, const int& asynch_local_concurrency,
-    const String& default_config, const String& scheduling_override);
+    const std::string& default_config, const std::string& scheduling_override);
 
   /// deallocate intra/inter communicators for a particular ParallelLevel
   void free_communicators(ParallelLevel& pl);
@@ -604,8 +604,8 @@ private:
   /// resolve user inputs into a sensible partitioning scheme
   bool resolve_inputs(int& num_servers, int& procs_per_server,
     const int& avail_procs, int& proc_remainder, const int& max_concurrency, 
-    const int& capacity_multiplier, const String& default_config,
-    const String& scheduling_override, bool print_rank);
+    const int& capacity_multiplier, const std::string& default_config,
+    const std::string& scheduling_override, bool print_rank);
 
   /// blocking buffer send at the current communication level
   void  send(MPIPackBuffer& send_buff, const int& dest, const int& tag,
@@ -658,15 +658,15 @@ private:
 		  const MPI_Comm& comm);
 
   /// check the MPI return code and abort if error
-  void check_error(const String& err_source, const int& err_code);
+  void check_error(const std::string& err_source, const int& err_code);
 
   /// manage run mode information from command-line handler
   void manage_run_modes(CommandLineHandler& cmd_line_handler);
 
   /// split a double colon separated pair of filenames (possibly
   /// empty) into input and output filename strings
-  void split_filenames(const char * filenames, String& input_filename,
-		       String& output_filename);
+  void split_filenames(const char * filenames, std::string& input_filename,
+		       std::string& output_filename);
 
 
   //
@@ -700,12 +700,12 @@ private:
   bool runFlag;         ///< flags invocation with command line option -run
   bool postRunFlag;     ///< flags invocation with command line option -post_run
   bool userModesFlag;   ///< whether user run mdoes are active
-  String preRunInput;   ///< filename for pre_run input
-  String preRunOutput;  ///< filename for pre_run output
-  String runInput;      ///< filename for run input
-  String runOutput;     ///< filename for run output
-  String postRunInput;  ///< filename for post_run input
-  String postRunOutput; ///< filename for post_run output
+  std::string preRunInput;   ///< filename for pre_run input
+  std::string preRunOutput;  ///< filename for pre_run output
+  std::string runInput;      ///< filename for run input
+  std::string runOutput;     ///< filename for run output
+  std::string postRunInput;  ///< filename for post_run input
+  std::string postRunOutput; ///< filename for post_run output
 
   Real startCPUTime;  ///< start reference for UTILIB CPU timer
   Real startWCTime;   ///< start reference for UTILIB wall clock timer
@@ -753,11 +753,11 @@ inline bool ParallelLibrary::is_null() const
 
 inline Real ParallelLibrary::parallel_time() const
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   return (mpirunFlag) ? MPI_Wtime() - startMPITime : 0.;
 #else
   return 0.;
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -870,7 +870,7 @@ inline std::vector<MPI_Comm> ParallelLibrary::analysis_intra_communicators()
 inline const ParallelLevel& ParallelLibrary::
 init_iterator_communicators(const int& iterator_servers,
   const int& procs_per_iterator, const int& max_iterator_concurrency,
-  const String& default_config, const String& iterator_scheduling)
+  const std::string& default_config, const std::string& iterator_scheduling)
 {
   int asynch_local_iterator_concurrency = 0;
   init_communicators(*parallelLevels.begin(), iterator_servers,
@@ -884,8 +884,8 @@ init_iterator_communicators(const int& iterator_servers,
 inline const ParallelLevel& ParallelLibrary::
 init_evaluation_communicators(const int& evaluation_servers,
   const int& procs_per_evaluation, const int& max_evaluation_concurrency,
-  const int& asynch_local_evaluation_concurrency, const String& default_config,
-  const String& evaluation_scheduling)
+  const int& asynch_local_evaluation_concurrency,
+  const std::string& default_config, const std::string& evaluation_scheduling)
 {
   /*
   // handle case where there is a new parallel configuration instance, but
@@ -917,8 +917,8 @@ init_evaluation_communicators(const int& evaluation_servers,
 inline const ParallelLevel& ParallelLibrary::
 init_analysis_communicators(const int& analysis_servers,
   const int& procs_per_analysis, const int& max_analysis_concurrency,
-  const int& asynch_local_analysis_concurrency, const String& default_config,
-  const String& analysis_scheduling)
+  const int& asynch_local_analysis_concurrency,const std::string& default_config,
+  const std::string& analysis_scheduling)
 {
   init_communicators(*currPCIter->iePLIter, analysis_servers,
     procs_per_analysis, max_analysis_concurrency,
@@ -955,22 +955,22 @@ inline bool ParallelLibrary::command_line_post_run() const
 inline bool ParallelLibrary::command_line_user_modes() const
 { return userModesFlag; }
 
-inline const String& ParallelLibrary::command_line_pre_run_input() const
+inline const std::string& ParallelLibrary::command_line_pre_run_input() const
 { return preRunInput; }
 
-inline const String& ParallelLibrary::command_line_pre_run_output() const
+inline const std::string& ParallelLibrary::command_line_pre_run_output() const
 { return preRunOutput; }
 
-inline const String& ParallelLibrary::command_line_run_input() const
+inline const std::string& ParallelLibrary::command_line_run_input() const
 { return runInput; }
 
-inline const String& ParallelLibrary::command_line_run_output() const
+inline const std::string& ParallelLibrary::command_line_run_output() const
 { return runOutput; }
 
-inline const String& ParallelLibrary::command_line_post_run_input() const
+inline const std::string& ParallelLibrary::command_line_post_run_input() const
 { return postRunInput; }
 
-inline const String& ParallelLibrary::command_line_post_run_output() const
+inline const std::string& ParallelLibrary::command_line_post_run_output() const
 { return postRunOutput; }
 
 
@@ -987,7 +987,7 @@ inline const String& ParallelLibrary::command_line_post_run_output() const
 //   address (e.g., double*& sum_vals cannot be used in the MPI_Reduce wrappers
 //   due to its use for reducing a single value in DirectApplicInterface).
 inline void ParallelLibrary::
-check_error(const String& err_source, const int& err_code)
+check_error(const std::string& err_source, const int& err_code)
 {
   // NOTE: for error code meanings, see mpi/include/mpi_errno.h
   if (err_code) {
@@ -1002,7 +1002,7 @@ inline void ParallelLibrary::
 send(MPIPackBuffer& send_buff, const int& dest, const int& tag,
      ParallelLevel& parent_pl, ParallelLevel& child_pl)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
@@ -1014,7 +1014,7 @@ send(MPIPackBuffer& send_buff, const int& dest, const int& tag,
     err_code = MPI_Send((void*)send_buff.buf(), send_buff.size(), MPI_PACKED,
 			dest, tag, parent_pl.serverIntraComm);
   check_error("MPI_Send(MPIPackBuffer)", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1022,7 +1022,7 @@ inline void ParallelLibrary::
 send(int& send_int, const int& dest, const int& tag, ParallelLevel& parent_pl,
      ParallelLevel& child_pl)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
@@ -1034,7 +1034,7 @@ send(int& send_int, const int& dest, const int& tag, ParallelLevel& parent_pl,
     err_code = MPI_Send((void*)&send_int, 1, MPI_INT, dest, tag,
 			parent_pl.serverIntraComm);
   check_error("MPI_Send(int)", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1060,7 +1060,7 @@ inline void ParallelLibrary::
 isend(MPIPackBuffer& send_buff, const int& dest, const int& tag,
       MPI_Request& send_req, ParallelLevel& parent_pl, ParallelLevel& child_pl)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
@@ -1072,7 +1072,7 @@ isend(MPIPackBuffer& send_buff, const int& dest, const int& tag,
     err_code = MPI_Isend((void*)send_buff.buf(), send_buff.size(), MPI_PACKED,
 			 dest, tag, parent_pl.serverIntraComm, &send_req);
   check_error("MPI_Isend(MPIPackBuffer)", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1080,7 +1080,7 @@ inline void ParallelLibrary::
 isend(int& send_int, const int& dest, const int& tag, MPI_Request& send_req,
       ParallelLevel& parent_pl, ParallelLevel& child_pl)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
@@ -1092,7 +1092,7 @@ isend(int& send_int, const int& dest, const int& tag, MPI_Request& send_req,
     err_code = MPI_Isend((void*)&send_int, 1, MPI_INT, dest, tag,
 			 parent_pl.serverIntraComm, &send_req);
   check_error("MPI_Isend(int)", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1124,7 +1124,7 @@ inline void ParallelLibrary::
 recv(MPIUnpackBuffer& recv_buff, const int& source, const int& tag,
      MPI_Status& status, ParallelLevel& parent_pl, ParallelLevel& child_pl)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
@@ -1136,7 +1136,7 @@ recv(MPIUnpackBuffer& recv_buff, const int& source, const int& tag,
     err_code = MPI_Recv((void*)recv_buff.buf(), recv_buff.size(), MPI_PACKED,
 			source, tag, parent_pl.serverIntraComm, &status);
   check_error("MPI_Recv(MPIUnpackBuffer)", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1144,7 +1144,7 @@ inline void ParallelLibrary::
 recv(int& recv_int, const int& source, const int& tag, MPI_Status& status,
      ParallelLevel& parent_pl, ParallelLevel& child_pl)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
@@ -1156,7 +1156,7 @@ recv(int& recv_int, const int& source, const int& tag, MPI_Status& status,
     err_code = MPI_Recv((void*)&recv_int, 1, MPI_INT, source, tag, 
                         parent_pl.serverIntraComm, &status);
   check_error("MPI_Recv(int)", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1196,7 +1196,7 @@ inline void ParallelLibrary::
 irecv(MPIUnpackBuffer& recv_buff, const int& source, const int& tag,
       MPI_Request& recv_req, ParallelLevel& parent_pl, ParallelLevel& child_pl)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ?
@@ -1208,7 +1208,7 @@ irecv(MPIUnpackBuffer& recv_buff, const int& source, const int& tag,
     err_code = MPI_Irecv((void*)recv_buff.buf(), recv_buff.size(), MPI_PACKED,
 			 source, tag, parent_pl.serverIntraComm, &recv_req);
   check_error("MPI_Irecv(MPIUnpackBuffer)", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1216,7 +1216,7 @@ inline void ParallelLibrary::
 irecv(int& recv_int, const int& source, const int& tag, MPI_Request& recv_req,
       ParallelLevel& parent_pl, ParallelLevel& child_pl)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = 0;
   if (child_pl.commSplitFlag)
     err_code = (parent_pl.serverCommRank) ? 
@@ -1228,7 +1228,7 @@ irecv(int& recv_int, const int& source, const int& tag, MPI_Request& recv_req,
     err_code = MPI_Irecv((void*)&recv_int, 1, MPI_INT, source, tag, 
                          parent_pl.serverIntraComm, &recv_req);
   check_error("MPI_Irecv(int)", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1259,19 +1259,19 @@ irecv_ea(int& recv_int, int source, int tag, MPI_Request& recv_req)
 // bcast and waitall convenience functions can be used for any level
 inline void ParallelLibrary::bcast(int& data, const MPI_Comm& comm)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = MPI_Bcast(&data, 1, MPI_INT, 0, comm);
   check_error("MPI_Bcast(int)", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
 inline void ParallelLibrary::bcast(short& data, const MPI_Comm& comm)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = MPI_Bcast(&data, 1, MPI_SHORT, 0, comm);
   check_error("MPI_Bcast(short)", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1302,11 +1302,11 @@ inline void ParallelLibrary::bcast_si(int& data)
 inline void ParallelLibrary::
 bcast(MPIPackBuffer& send_buff, const MPI_Comm& comm)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code
     = MPI_Bcast((void*)send_buff.buf(), send_buff.size(), MPI_PACKED, 0, comm);
   check_error("MPI_Bcast(MPIPackBuffer)", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1333,11 +1333,11 @@ inline void ParallelLibrary::bcast_si(MPIPackBuffer& send_buff)
 inline void ParallelLibrary::
 bcast(MPIUnpackBuffer& recv_buff, const MPI_Comm& comm)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code
     = MPI_Bcast((void*)recv_buff.buf(), recv_buff.size(), MPI_PACKED, 0, comm);
   check_error("MPI_Bcast(MPIUnpackBuffer)", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1363,10 +1363,10 @@ inline void ParallelLibrary::bcast_si(MPIUnpackBuffer& recv_buff)
 
 inline void ParallelLibrary::barrier(const MPI_Comm& comm)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = MPI_Barrier(comm);
   check_error("MPI_Barrier", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1390,11 +1390,11 @@ inline void ParallelLibrary::
 reduce_sum(double* local_vals, double* sum_vals, const int& num_vals,
 	   const MPI_Comm& comm)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code
     = MPI_Reduce(local_vals, sum_vals, num_vals, MPI_DOUBLE, MPI_SUM, 0, comm);
   check_error("MPI_Reduce", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1417,31 +1417,31 @@ reduce_sum_a(double* local_vals, double* sum_vals, const int& num_vals)
 inline void ParallelLibrary::
 test(MPI_Request& request, int& test_flag, MPI_Status& status)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = MPI_Test(&request, &test_flag, &status);
   check_error("MPI_Test", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
 inline void ParallelLibrary::wait(MPI_Request& request, MPI_Status& status)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = MPI_Wait(&request, &status);
   check_error("MPI_Wait", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
 inline void ParallelLibrary::
 waitall(const int& num_recvs, MPI_Request*& recv_reqs)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   MPI_Status* status_array = new MPI_Status [num_recvs];
   int err_code = MPI_Waitall(num_recvs, recv_reqs, status_array);
   delete [] status_array;
   check_error("MPI_Waitall", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
@@ -1449,20 +1449,20 @@ inline void ParallelLibrary::
 waitsome(const int& num_sends, MPI_Request*& recv_requests, int& num_recvs,
 	 int*& index_array, MPI_Status*& status_array)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = MPI_Waitsome(num_sends, recv_requests, &num_recvs, index_array,
 			      status_array);
   check_error("MPI_Waitsome", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 
 inline void ParallelLibrary::free(MPI_Request& request)
 {
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   int err_code = MPI_Request_free(&request);
   check_error("MPI_Request_free", err_code);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 }
 
 } // namespace Dakota

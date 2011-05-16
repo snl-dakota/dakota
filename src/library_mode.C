@@ -57,10 +57,10 @@ int main(int argc, char* argv[])
   nidr_save_exedir(argv[0], 3);	// 3 ==> add both the directory containing this binary
 				// and . to the end of $PATH if not already on $PATH.
   bool parallel = Dakota::ParallelLibrary::detect_parallel_launch(argc, argv);
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   if (parallel)
     MPI_Init(&argc, &argv); // initialize MPI
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
   // Allow MPI to extract its command line arguments first,
   // then detect "-m" and dakota_input_file
@@ -85,10 +85,10 @@ int main(int argc, char* argv[])
   else
     Dakota::run_dakota_data();           // mode 2: data
 
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   if (parallel)
     MPI_Finalize(); // finalize MPI
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
   return 0;
 }
@@ -394,9 +394,9 @@ void run_dakota_mixed(const char* dakota_input_file)
 void model_interface_plugins(Dakota::ProblemDescDB& problem_db)
 {
   int initialized = 0;
-#ifdef HAVE_MPI
+#ifdef DAKOTA_HAVE_MPI
   MPI_Initialized(&initialized);
-#endif // HAVE_MPI
+#endif // DAKOTA_HAVE_MPI
 
   // Library mode interface plug-ins.
   // Model updates are performed on all processors.
