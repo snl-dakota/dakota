@@ -42,7 +42,7 @@ if(HAVE_OPTPP)
   if (NOT OPTPP_INCLUDE_DIRS)
     add_subdirectory(OPTPP)
   endif()
-  if(NOT HAVE_MPI)
+  if(NOT DAKOTA_HAVE_MPI)
     set(OPTPP_HAVE_MPI OFF CACHE BOOL
         "MPI NOT enabled so disable in OPTPP as well" FORCE)
   endif()
@@ -100,11 +100,11 @@ if(HAVE_FSUDACE)
 endif(HAVE_FSUDACE)
 
 if(HAVE_HOPSPACK)
-  if(HAVE_MPI)
+  if(DAKOTA_HAVE_MPI)
     # See hopspack/ConfigureMPI.cmake for MPI "help"
     set(mpi ON CACHE BOOL "MPI requested so enable in HOPSPACK" FORCE)
     message("HOPSPACK caches the variable mpi = ${mpi}")
-  endif(HAVE_MPI)
+  endif(DAKOTA_HAVE_MPI)
 
   # See hopspack/buildMacDist.sh for BLAS/LAPACK "help"
   set(LAPACK_ADD_LIBS ${BLAS_LIBS})
