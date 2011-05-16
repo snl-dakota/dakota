@@ -51,7 +51,7 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   bool use_derivs = probDescDB.get_bool("method.derivative_usage");
 
   bool store_colloc = false; // no collocIndices/gauss{Pts,Wts}1D storage
-  bool nested_rules = true,  track_ensemble_wts = false;
+  bool nested_rules = true,  track_uniq_prod_wts = false;
   bool piecewise_basis
     = (u_space_type == PIECEWISE_U || refine_type == Pecos::H_REFINEMENT);
   bool equidistant_rules = true; // NEWTON_COTES pts for piecewise interpolants
@@ -65,7 +65,7 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
   ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelSpec,
     dimPrefSpec, /*refine_type,*/ refine_control, store_colloc,
-    track_ensemble_wts, nested_rules, piecewise_basis, equidistant_rules,
+    track_uniq_prod_wts, nested_rules, piecewise_basis, equidistant_rules,
     use_derivs, growth_rate, nested_uniform_rule);
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
     iteratedModel.distribution_parameters());
@@ -79,7 +79,7 @@ NonDSparseGrid::
 NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
 	       unsigned short ssg_level, const RealVector& dim_pref,
 	       //short sparse_grid_usage, short refine_type,
-	       short refine_control, bool track_ensemble_wts,
+	       short refine_control, bool track_uniq_prod_wts,
 	       bool nested_rules, bool piecewise_basis, bool use_derivs): 
   NonDIntegration(NoDBBaseConstructor(), model), ssgLevelSpec(ssg_level),
   dimPrefSpec(dim_pref), ssgLevelRef(ssg_level)  
@@ -99,7 +99,7 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
     Pecos::UNRESTRICTED_GROWTH : Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
   ssgDriver->initialize_grid(u_types, ssg_level, dim_pref, //refine_type,
-    refine_control, store_colloc, track_ensemble_wts, nested_rules,
+    refine_control, store_colloc, track_uniq_prod_wts, nested_rules,
     piecewise_basis, equidistant_rules, use_derivs, growth_rate,
     nested_uniform_rule);
   ssgDriver->

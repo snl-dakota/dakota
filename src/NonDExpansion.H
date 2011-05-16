@@ -167,6 +167,8 @@ private:
 
   /// calculate respCovariance
   void compute_covariance();
+  /// calculate respCovariance(i,j) for j<i
+  void compute_off_diagonal_covariance();
 
   /// print respCovariance
   void print_covariance(std::ostream& s);

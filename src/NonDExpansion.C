@@ -488,9 +488,9 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   //else if (methodName == "nond_stoch_collocation")
   //  sparse_grid_usage = Pecos::INTERPOLATION;
 
-  // tracking of ensemble weights needed for PCE and SC standard modes since
-  // both employ Pecos::PolynomialApproximation::compute_numerical_moments(4).
-  // Neither PCE nor SC require ensemble wts for all_vars mode, since moment
+  // tracking of unique product weights needed for PCE and SC standard modes
+  // since both employ PolynomialApproximation::compute_numerical_moments(4).
+  // Neither PCE nor SC require product wts for all_vars mode, since moment
   // calculations must employ gauss_wts_1d.
   bool track_wts = !(numContDesVars || numContEpistUncVars || numContStateVars);
   bool nested_rules = (ruleNestingOverride != Pecos::NON_NESTED);
@@ -1354,26 +1354,47 @@ void NonDExpansion::compute_covariance()
   if (respCovariance.empty())
     respCovariance.shapeUninitialized(numFunctions);
 
+  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  for (size_t i=0; i<numFunctions; ++i) {
+    PecosApproximation* poly_approx_rep_i
+      = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (poly_approx_rep_i->expansion_coefficient_flag())
+      respCovariance(i,i) = (all_vars) ?
+	poly_approx_rep_i->variance(initialPtU) : poly_approx_rep_i->variance();
+    else
+      respCovariance(i,i) = 0.;
+  }
+  compute_off_diagonal_covariance();
+}
+
+
+void NonDExpansion::compute_off_diagonal_covariance()
+{
   size_t i, j;
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (i=0; i<numFunctions; ++i) {
     PecosApproximation* poly_approx_rep_i
       = (PecosApproximation*)poly_approxs[i].approx_rep();
-    if (!poly_approx_rep_i->expansion_coefficient_flag()) {
-      Cerr << "Error: expansion coefficients required in NonDExpansion::"
-	   << "compute_covariance()." << std::endl;
-      abort_handler(-1);
+    if (poly_approx_rep_i->expansion_coefficient_flag())
+      for (j=0; j<i; ++j) {
+	PecosApproximation* poly_approx_rep_j
+	  = (PecosApproximation*)poly_approxs[j].approx_rep();
+	if (poly_approx_rep_j->expansion_coefficient_flag())
+	  respCovariance(i,j) = (all_vars) ?
+	    poly_approx_rep_i->covariance(initialPtU, poly_approx_rep_j) :
+	    poly_approx_rep_i->covariance(poly_approx_rep_j);
+	else
+	  respCovariance(i,j) = 0.;
+      }
+    else {
+      PCerr << "Warning: expansion coefficients unavailable in NonDExpansion::"
+	    << "compute_covariance().  Zeroing covariance terms for function "
+	    << i+1 << std::endl;
+      for (j=0; j<i; ++j)
+	respCovariance(i,j) = 0.;
     }
-
-    if (all_vars)
-      for (j=0; j<=i; ++j)
-	respCovariance(i,j) = poly_approx_rep_i->covariance(initialPtU,
-	  (PecosApproximation*)poly_approxs[j].approx_rep());
-    else
-      for (j=0; j<=i; ++j)
-	respCovariance(i,j) = poly_approx_rep_i->covariance(
-	  (PecosApproximation*)poly_approxs[j].approx_rep());
   }
 }
 
@@ -1423,17 +1444,8 @@ void NonDExpansion::compute_statistics()
 
       const RealVector& moments = poly_approx_rep->moments(); // virtual
       mu = moments[0]; const Real& var = moments[1];
-      if (covariance_flag) {
+      if (covariance_flag)
 	respCovariance(i,i) = var;
-	if (all_vars)
-	  for (j=0; j<i; ++j)
-	    respCovariance(i,j) = poly_approx_rep->covariance(initialPtU,
-	      (PecosApproximation*)poly_approxs[j].approx_rep());
-	else
-	  for (j=0; j<i; ++j)
-	    respCovariance(i,j) = poly_approx_rep->covariance(
-	      (PecosApproximation*)poly_approxs[j].approx_rep());
-      }
       if (var >= 0.)
 	sigma = std::sqrt(var);
       else { // negative variance can happen with SC on sparse grids
@@ -1576,6 +1588,8 @@ void NonDExpansion::compute_statistics()
       poly_approx_rep->compute_total_effects();
     }
   }
+  if (covariance_flag)
+    compute_off_diagonal_covariance(); // diagonals were filled in above
 
   // ------------------------------
   // Calculate numerical statistics
