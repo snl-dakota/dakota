@@ -44010,215 +44010,220 @@ Test Number 2 succeeded
    1.0000000000e+02   2.5000000000e-01   1.0000000000e+00
 dakota_uq_rosenbrock_adapt_exp.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 43 total (43 new, 0 duplicate)
+<<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
-   4.0200000000e+02  He0  He0
-  -2.0000000000e+00  He1  He0
-   6.0100000000e+02  He2  He0
-  -2.0000000000e+02  He0  He1
-   1.0000000000e+02  He0  He2
-   2.0723006644e-14  He3  He0
-   1.0000000000e+02  He4  He0
-  -2.4443410259e-15  He5  He0
-   5.5892327803e-14  He6  He0
-  -3.7641847311e-16  He7  He0
-  -1.0214051827e-14  He1  He1
-  -2.0000000000e+02  He2  He1
-   1.5543122345e-15  He1  He2
-  -3.7747582837e-14  He2  He2
-  -9.4739031435e-15  He3  He1
-   3.5527136788e-15  He4  He1
-  -1.4210854715e-15  He5  He1
-  -3.1579677145e-16  He6  He1
-   0.0000000000e+00  He7  He1
-   1.7763568394e-15  He3  He2
-  -5.9211894647e-15  He4  He2
-   2.3684757859e-16  He5  He2
-  -3.1579677145e-16  He6  He2
-   4.5113824493e-17  He7  He2
-   2.9605947323e-16  He0  He3
-  -4.4408920985e-15  He0  He4
-  -1.1842378929e-16  He0  He5
-  -5.1316975360e-16  He0  He6
-   0.0000000000e+00  He0  He7
-  -4.8440969049e-15  He8  He0
-   1.2374972691e-16  He9  He0
-  -8.1543237771e-16 He10  He0
-   4.9670776462e-18 He11  He0
-  -5.9711260633e-17 He12  He0
-  -2.6173262591e-19 He13  He0
-   6.6367915856e-18 He14  He0
+   4.5566666667e+02   P0   P0
+  -4.0000000000e+00   P1   P0
+   9.1695238095e+02   P2   P0
+  -5.3333333333e+02   P0   P1
+   2.6666666667e+02   P0   P2
+   1.0391687510e-13   P1   P1
+  -1.0666666667e+03   P2   P1
+  -1.5321077740e-13   P1   P2
+   1.7763568394e-13   P2   P2
+  -1.2434497876e-14   P3   P0
+   3.6571428571e+02   P4   P0
+  -6.3504757009e-14   P5   P0
+  -7.8514972301e-13   P6   P0
+  -1.8651746814e-13   P7   P0
+  -5.8886229226e-12   P8   P0
+  -1.6875389974e-13   P9   P0
+   6.7705840934e-11  P10   P0
+  -4.4941828037e-13  P11   P0
+   0.0000000000e+00   P0   P3
+   4.7961634664e-14   P0   P4
+   0.0000000000e+00   P0   P5
+   5.5955240441e-14   P3   P1
+  -2.1582735599e-13   P4   P1
+  -1.0258460748e-13   P5   P1
+  -1.3988810110e-13   P3   P2
+   1.2989609388e-13   P4   P2
+   3.6637359813e-14   P5   P2
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-  expansion:    4.0200000000e+02  1.0499552371e+03
-  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
+  expansion:    4.5566666667e+02  6.0656024184e+02
+  numerical:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
 response_fn_1 Sobol indices:
                                   Main             Total
-                      8.7300504533e-01  9.4557359085e-01 x1
-                      5.4426409145e-02  1.2699495467e-01 x2
-                      7.2568545527e-02 x1 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                      2.0616659946e-01 x1 x2 
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 43 total (43 new, 0 duplicate)
+<<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
-   4.0200000000e+02  He0  He0
-  -2.0000000000e+00  He1  He0
-   6.0100000000e+02  He2  He0
-  -2.0000000000e+02  He0  He1
-   1.0000000000e+02  He0  He2
-   2.0723006644e-14  He3  He0
-   1.0000000000e+02  He4  He0
-  -2.4443410259e-15  He5  He0
-   5.5892327803e-14  He6  He0
-  -3.7641847311e-16  He7  He0
-  -1.0214051827e-14  He1  He1
-  -2.0000000000e+02  He2  He1
-   1.5543122345e-15  He1  He2
-  -3.7747582837e-14  He2  He2
-  -9.4739031435e-15  He3  He1
-   3.5527136788e-15  He4  He1
-  -1.4210854715e-15  He5  He1
-  -3.1579677145e-16  He6  He1
-   0.0000000000e+00  He7  He1
-   1.7763568394e-15  He3  He2
-  -5.9211894647e-15  He4  He2
-   2.3684757859e-16  He5  He2
-  -3.1579677145e-16  He6  He2
-   4.5113824493e-17  He7  He2
-   2.9605947323e-16  He0  He3
-  -4.4408920985e-15  He0  He4
-  -1.1842378929e-16  He0  He5
-  -5.1316975360e-16  He0  He6
-   0.0000000000e+00  He0  He7
-  -4.8440969049e-15  He8  He0
-   1.2374972691e-16  He9  He0
-  -8.1543237771e-16 He10  He0
-   4.9670776462e-18 He11  He0
-  -5.9711260633e-17 He12  He0
-  -2.6173262591e-19 He13  He0
-   6.6367915856e-18 He14  He0
+   4.5566666667e+02   P0   P0
+  -4.0000000000e+00   P1   P0
+   9.1695238095e+02   P2   P0
+  -5.3333333333e+02   P0   P1
+   2.6666666667e+02   P0   P2
+   1.0391687510e-13   P1   P1
+  -1.0666666667e+03   P2   P1
+  -1.5321077740e-13   P1   P2
+   1.7763568394e-13   P2   P2
+  -1.2434497876e-14   P3   P0
+   3.6571428571e+02   P4   P0
+  -6.3504757009e-14   P5   P0
+   5.5955240441e-14   P3   P1
+  -2.1582735599e-13   P4   P1
+  -1.0258460748e-13   P5   P1
+  -1.3988810110e-13   P3   P2
+   1.2989609388e-13   P4   P2
+   3.6637359813e-14   P5   P2
+   0.0000000000e+00   P0   P3
+   4.7961634664e-14   P0   P4
+   0.0000000000e+00   P0   P5
+  -7.8514972301e-13   P6   P0
+  -1.8651746814e-13   P7   P0
+  -5.8886229226e-12   P8   P0
+  -1.6875389974e-13   P9   P0
+   6.7705840934e-11  P10   P0
+  -4.4941828037e-13  P11   P0
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-  expansion:    4.0200000000e+02  1.0499552371e+03
-  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
+  expansion:    4.5566666667e+02  6.0656024184e+02
+  numerical:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
 response_fn_1 Sobol indices:
                                   Main             Total
-                      8.7300504533e-01  9.4557359085e-01 x1
-                      5.4426409145e-02  1.2699495467e-01 x2
-                      7.2568545527e-02 x1 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                      2.0616659946e-01 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      3.8287346525e-01
+   0.0000000000e+00                      7.5123068614e-01
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
-   4.0200000000e+02  He0  He0
-  -2.0000000000e+00  He1  He0
-   6.0100000000e+02  He2  He0
-  -2.0000000000e+02  He0  He1
-   1.0000000000e+02  He0  He2
-  -7.1054273576e-15  He3  He0
-   1.0000000000e+02  He4  He0
-   0.0000000000e+00  He1  He1
-  -2.0000000000e+02  He2  He1
-  -3.5527136788e-15  He1  He2
-  -7.1054273576e-14  He2  He2
-   0.0000000000e+00  He5  He0
-   2.0210993373e-14  He6  He0
-   0.0000000000e+00  He0  He3
-  -2.0132044180e-14  He0  He4
-  -1.8947806287e-14  He3  He1
-   4.7369515717e-14  He4  He1
-   2.3684757859e-15  He3  He2
-  -3.5527136788e-15  He4  He2
+   4.5566666667e+02   P0   P0
+  -4.0000000000e+00   P1   P0
+   9.1695238095e+02   P2   P0
+  -5.3333333333e+02   P0   P1
+   2.6666666667e+02   P0   P2
+  -3.9968028887e-14   P1   P1
+  -1.0666666667e+03   P2   P1
+   2.2648549702e-13   P1   P2
+   4.8849813084e-13   P2   P2
+  -4.9737991503e-14   P3   P0
+   3.6571428571e+02   P4   P0
+  -3.3573144265e-13   P3   P1
+   1.2829737273e-12   P4   P1
+   2.8754776338e-13   P3   P2
+  -2.8477220582e-13   P4   P2
+   0.0000000000e+00   P0   P3
+  -2.8776980798e-13   P0   P4
+  -2.3447910280e-13   P5   P0
+  -5.0803805607e-13   P6   P0
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-  expansion:    4.0200000000e+02  1.0499552371e+03
-  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.4279111568e+02
+  expansion:    4.5566666667e+02  6.0656024184e+02
+  numerical:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  3.5924128383e+00
 response_fn_1 Sobol indices:
                                   Main             Total
-                      8.7300504533e-01  9.4557359085e-01 x1
-                      5.4426409145e-02  1.2699495467e-01 x2
-                      7.2568545527e-02 x1 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                      2.0616659946e-01 x1 x2 
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
 Polynomial Chaos coefficients for response_fn_1:
-   4.0200000000e+02  He0  He0
-  -2.0000000000e+00  He1  He0
-   6.0100000000e+02  He2  He0
-  -2.0000000000e+02  He0  He1
-   1.0000000000e+02  He0  He2
-  -7.1054273576e-15  He3  He0
-   1.0000000000e+02  He4  He0
-   0.0000000000e+00  He1  He1
-  -2.0000000000e+02  He2  He1
-  -3.5527136788e-15  He1  He2
-  -7.1054273576e-14  He2  He2
-   0.0000000000e+00  He5  He0
-   2.0210993373e-14  He6  He0
-   0.0000000000e+00  He0  He3
-  -2.0132044180e-14  He0  He4
-  -1.8947806287e-14  He3  He1
-   4.7369515717e-14  He4  He1
-   2.3684757859e-15  He3  He2
-  -3.5527136788e-15  He4  He2
+   4.5566666667e+02   P0   P0
+  -4.0000000000e+00   P1   P0
+   9.1695238095e+02   P2   P0
+  -5.3333333333e+02   P0   P1
+   2.6666666667e+02   P0   P2
+  -3.9968028887e-14   P1   P1
+  -1.0666666667e+03   P2   P1
+   2.2648549702e-13   P1   P2
+   4.8849813084e-13   P2   P2
+  -4.9737991503e-14   P3   P0
+   3.6571428571e+02   P4   P0
+  -3.3573144265e-13   P3   P1
+   1.2829737273e-12   P4   P1
+   2.8754776338e-13   P3   P2
+  -2.8477220582e-13   P4   P2
+   0.0000000000e+00   P0   P3
+  -2.8776980798e-13   P0   P4
+  -2.3447910280e-13   P5   P0
+  -5.0803805607e-13   P6   P0
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-  expansion:    4.0200000000e+02  1.0499552371e+03
-  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.4279111568e+02
+  expansion:    4.5566666667e+02  6.0656024184e+02
+  numerical:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  3.5924128383e+00
 response_fn_1 Sobol indices:
                                   Main             Total
-                      8.7300504533e-01  9.4557359085e-01 x1
-                      5.4426409145e-02  1.2699495467e-01 x2
-                      7.2568545527e-02 x1 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                      2.0616659946e-01 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      3.8287346525e-01
+   0.0000000000e+00                      7.5123068614e-01
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 43 total (43 new, 0 duplicate)
+<<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
+ response_fn_1  4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
 response_fn_1 Sobol indices:
                                   Main             Total
-                      8.7300504533e-01  9.4557359085e-01 x1
-                      5.4426409145e-02  1.2699495467e-01 x2
-                      7.2568545527e-02 x1 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                      2.0616659946e-01 x1 x2 
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 43 total (43 new, 0 duplicate)
+<<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
+ response_fn_1  4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
 response_fn_1 Sobol indices:
                                   Main             Total
-                      8.7300504533e-01  9.4557359085e-01 x1
-                      5.4426409145e-02  1.2699495467e-01 x2
-                      7.2568545527e-02 x1 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                      2.0616659946e-01 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      3.8287346525e-01
+   0.0000000000e+00                      7.5123068614e-01
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.4279111568e+02
+ response_fn_1  4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  3.5924128383e+00
 response_fn_1 Sobol indices:
                                   Main             Total
-                      8.7300504533e-01  9.4557359085e-01 x1
-                      5.4426409145e-02  1.2699495467e-01 x2
-                      7.2568545527e-02 x1 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                      2.0616659946e-01 x1 x2 
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 31 total (31 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.4279111568e+02
+ response_fn_1  4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  3.5924128383e+00
 response_fn_1 Sobol indices:
                                   Main             Total
-                      8.7300504533e-01  9.4557359085e-01 x1
-                      5.4426409145e-02  1.2699495467e-01 x2
-                      7.2568545527e-02 x1 x2 
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                      2.0616659946e-01 x1 x2 
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   0.0000000000e+00                      3.8287346525e-01
+   0.0000000000e+00                      7.5123068614e-01
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 401 total (401 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5683870125e+02  6.1276862241e+02  2.0526464320e+00  4.0907928970e+00
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9303087451e-01  6.9591699252e-01 x1
+                      3.0408300748e-01  5.0696912549e-01 x2
+                      2.0288611801e-01 x1 x2 
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 257 total (257 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5801220703e+02  6.1717681052e+02  2.1763409074e+00  5.0964753285e+00
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9981763651e-01  7.0245292631e-01 x1
+                      2.9754707369e-01  5.0018236349e-01 x2
+                      2.0263528980e-01 x1 x2 
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.4210858092e-01
 dakota_uq_rosenbrock_adapt_pce_lls.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 112 total (112 new, 0 duplicate)
