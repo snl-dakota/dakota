@@ -59,9 +59,17 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   // not necessary for generalized grids
   //short refine_type
   //  = probDescDB.get_short("method.nond.expansion_refinement_type");
-  short growth_rate =
-    (refine_control == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) ?
-    Pecos::UNRESTRICTED_GROWTH : Pecos::MODERATE_RESTRICTED_GROWTH;
+  short growth_rate;
+  if (refine_control == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)
+    // unstructured index set evolution: no motivation to restrict
+    growth_rate = Pecos::UNRESTRICTED_GROWTH;
+  else if (piecewise_basis)
+    // no reason to match Gaussian precision, but restriction still useful:
+    // use SLOW i=2l+1 since it is more natural for NEWTON_COTES,CLENSHAW_CURTIS
+    // and is more consistent with UNRESTRICTED generalized sparse grids.
+    growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;//Pecos::UNRESTRICTED_GROWTH;
+  else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
+    growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
   ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelSpec,
     dimPrefSpec, /*refine_type,*/ refine_control, store_colloc,
@@ -94,9 +102,17 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
   //check_variables(x_types);
   bool store_colloc = true; //(sparse_grid_usage == Pecos::INTERPOLATION);
   bool equidistant_rules = true; // NEWTON_COTES pts for piecewise interpolants
-  short growth_rate =
-    (refine_control == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) ?
-    Pecos::UNRESTRICTED_GROWTH : Pecos::MODERATE_RESTRICTED_GROWTH;
+  short growth_rate;
+  if (refine_control == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)
+    // unstructured index set evolution: no motivation to restrict
+    growth_rate = Pecos::UNRESTRICTED_GROWTH;
+  else if (piecewise_basis)
+    // no reason to match Gaussian precision, but restriction still useful:
+    // use SLOW i=2l+1 since it is more natural for NEWTON_COTES,CLENSHAW_CURTIS
+    // and is more consistent with UNRESTRICTED generalized sparse grids.
+    growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;//Pecos::UNRESTRICTED_GROWTH;
+  else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
+    growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
   ssgDriver->initialize_grid(u_types, ssg_level, dim_pref, //refine_type,
     refine_control, store_colloc, track_uniq_prod_wts, nested_rules,
