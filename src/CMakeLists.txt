@@ -106,6 +106,8 @@ set(EXTRA_TPL_LIBS "")
 set(EXPORT_TARGETS dakota_src teuchos nidr)
 
 if(DAKOTA_HAVE_MPI)
+  #message("MPI found - path to include is: ${MPI_INCLUDE_PATH}")
+  add_definitions("-DDAKOTA_HAVE_MPI")
   list(APPEND EXTRA_TPL_LIBS ${MPI_LIBRARIES})
 endif(DAKOTA_HAVE_MPI)
 

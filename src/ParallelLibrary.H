@@ -20,7 +20,6 @@
 #include "global_defs.h"  // for Cout
 #include "data_types.h"
 #include "MPIPackBuffer.H"
-//#include "DakotaString.H"
 #ifdef DAKOTA_HAVE_MPI
 #include <mpi.h>
 #endif // DAKOTA_HAVE_MPI

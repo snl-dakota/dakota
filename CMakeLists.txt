@@ -62,14 +62,10 @@ if(CMAKE_CXX_COMPILER MATCHES mpicxx)
   
   find_package(MPI REQUIRED)
   if(MPI_FOUND)
-    #add_definitions(-DHAVE_MPI)
-    #include_directories(${MPI_INCLUDE_PATH})
-
-    #message("MPI found - path to include is: ${MPI_INCLUDE_PATH}")
     set(DAKOTA_HAVE_MPI "ON")
+
     # Some TPLs have manage the setting with USE_MPI rather than HAVE_MPI
     set(USE_MPI "ON")
-
   else()
     message(FATAL_ERROR
             "Cannot find MPI.  Please build a serial configuration instead")
