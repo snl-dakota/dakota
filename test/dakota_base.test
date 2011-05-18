@@ -44224,6 +44224,29 @@ response_fn_1 Sobol indices:
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      7.4210858092e-01
+Test Number 10 succeeded
+<<<<< Function evaluation summary: 273 total (273 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566661580e+02  6.0690124366e+02  2.0554942605e+00  4.2920270857e+00
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      5.1061752606e-01  7.1441790538e-01 x1
+                      3.1641069426e-01  5.2021107358e-01 x2
+                      2.0380037933e-01 x1 x2 
+Test Number 11 succeeded
+<<<<< Function evaluation summary: 273 total (273 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566661580e+02  6.0690124366e+02  2.0554942605e+00  4.2920270857e+00
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      5.1061752606e-01  7.1441790538e-01 x1
+                      3.1641069426e-01  5.2021107358e-01 x2
+                      2.0380037933e-01 x1 x2 
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   0.0000000000e+00                      7.5080850560e-01
 dakota_uq_rosenbrock_adapt_pce_lls.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 112 total (112 new, 0 duplicate)
@@ -51199,6 +51222,78 @@ response_fn_1 Sobol indices:
    1.0000000000e+02   8.9100000000e-02
    5.0000000000e+02   1.6920000000e-01
    1.0000000000e+03   2.0550000000e-01
+Test Number 44 succeeded
+<<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.6231570507e+02  6.2243173229e+02  2.1121279277e+00  4.6319192986e+00
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      5.1114488291e-01  7.1345294843e-01 x1
+                      2.8654705157e-01  4.8885511709e-01 x2
+                      2.0230806552e-01 x1 x2 
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   0.0000000000e+00
+   1.0000000000e+00   4.0000000000e-04
+   5.0000000000e+01   2.3810000000e-01
+   1.0000000000e+02   3.3630000000e-01
+   5.0000000000e+02   7.0720000000e-01
+   1.0000000000e+03   8.4930000000e-01
+Test Number 45 succeeded
+<<<<< Function evaluation summary: 385 total (385 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5801220703e+02  6.0838384026e+02  1.9608409623e+00  3.2700965290e+00
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      5.0465390230e-01  7.1112089790e-01 x1
+                      2.8887910210e-01  4.9534609770e-01 x2
+                      2.0646699560e-01 x1 x2 
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   0.0000000000e+00
+   1.0000000000e+00   4.2000000000e-03
+   5.0000000000e+01   2.4140000000e-01
+   1.0000000000e+02   3.4050000000e-01
+   5.0000000000e+02   7.0910000000e-01
+   1.0000000000e+03   8.5150000000e-01
+Test Number 46 succeeded
+<<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566011873e+02  6.0641819129e+02  2.0393905918e+00  4.1157598385e+00
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      5.5511063435e-01  7.5163041613e-01 x1
+                      3.1849438403e-01  5.1501416581e-01 x2
+                      1.9651978178e-01 x1 x2 
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.6000000000e-03
+   1.0000000000e+00   1.3800000000e-02
+   5.0000000000e+01   2.4390000000e-01
+   1.0000000000e+02   3.4250000000e-01
+   5.0000000000e+02   7.1090000000e-01
+   1.0000000000e+03   8.5240000000e-01
+Test Number 47 succeeded
+<<<<< Function evaluation summary: 385 total (385 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566585286e+02  6.1061205774e+02  2.1905537795e+00  5.7857997154e+00
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      5.0672734606e-01  7.0594038796e-01 x1
+                      2.9252446352e-01  4.9173750542e-01 x2
+                      1.9921304190e-01 x1 x2 
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.1200000000e-02
+   1.0000000000e+00   1.6300000000e-02
+   5.0000000000e+01   2.4380000000e-01
+   1.0000000000e+02   3.4240000000e-01
+   5.0000000000e+02   7.1100000000e-01
+   1.0000000000e+03   8.5220000000e-01
 dakota_uq_rosenbrock_verify.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 10000 total (10000 new, 0 duplicate)

@@ -823,14 +823,17 @@ void NonDExpansion::compute_print_iteration_results(bool initialize)
     // cases above in that compute_print_increment_results() has already
     // provided per increment output, so we do not push output if non-debug.
     if (totalLevelRequests) {
+      //if (initialize || outputLevel == DEBUG_OUTPUT)
+      //  { compute_statistics(); print_results(Cout); }
       if (initialize || outputLevel == DEBUG_OUTPUT) compute_statistics();
       if (outputLevel == DEBUG_OUTPUT)               print_results(Cout);
       // else no output!
     }
     else {
-      if (outputLevel == DEBUG_OUTPUT)               compute_statistics();
-      else if (initialize)                           compute_covariance();
-      if (outputLevel == DEBUG_OUTPUT)               print_results(Cout);
+      if (outputLevel == DEBUG_OUTPUT)
+	{ compute_statistics(); print_results(Cout); }
+      else if (initialize)
+	{ compute_covariance(); print_covariance(Cout); }
       // else no output!
     }
     break;
