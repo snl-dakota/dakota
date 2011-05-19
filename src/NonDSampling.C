@@ -528,21 +528,28 @@ void NonDSampling::compute_moments(const ResponseArray& samples)
 	pow_fn *= centered_fn; kurt += pow_fn;
       }
     }
+
     // sample std deviation
     stdDevStats[i] = (num_samp > 1) ? std::sqrt(var/(Real)(num_samp-1)) : 0.;
-    // sample skewness
-    skewnessStats[i] = (num_samp > 3) ? 
-      skew/(Real)num_samp/std::pow(var/(Real)num_samp,1.5) : 0.;
-    // population skewness 
-    skewnessStats[i]
-      *= std::sqrt((Real)(num_samp*(num_samp-1)))/(Real)(num_samp-2);
-    // sample kurtosis
-    kurtosisStats[i] = (num_samp > 4) ?
+
+    // skewness
+    skewnessStats[i] = (num_samp > 2 && var > 0.) ? 
+      // sample skewness
+      skew/(Real)num_samp/std::pow(var/(Real)num_samp,1.5) *
+      // population skewness 
+      std::sqrt((Real)(num_samp*(num_samp-1)))/(Real)(num_samp-2) :
+      // for no variation, central moment is zero
+      0.;
+
+    // kurtosis
+    kurtosisStats[i] = (num_samp > 3 && var > 0.) ?
+      // sample kurtosis
       (Real)((num_samp+1)*num_samp*(num_samp-1))*kurt/
-      (Real)((num_samp-2)*(num_samp-3)*var*var) : 0.;
-    // population kurtosis
-    kurtosisStats[i] -=
-      3.*std::pow((Real)(num_samp-1),2)/(Real)((num_samp-2)*(num_samp-3));
+      (Real)((num_samp-2)*(num_samp-3)*var*var) -
+      // population kurtosis
+      3.*std::pow((Real)(num_samp-1),2)/(Real)((num_samp-2)*(num_samp-3)) :
+      // for no variation, central moment is zero minus excess kurtosis
+      -3.;
 
     if (num_samp > 1) {
       // 95% confidence intervals (2-sided interval, not 1-sided limit)
