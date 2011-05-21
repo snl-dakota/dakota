@@ -495,7 +495,7 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   // calculations must employ gauss_wts_1d.
   bool track_wts = !(numContDesVars || numContEpistUncVars || numContStateVars);
   bool nested_rules = (ruleNestingOverride != Pecos::NON_NESTED);
-  bool unrestrict_growth = (ruleNestingOverride == Pecos::UNRESTRICTED);
+  bool unrestrict_growth = (ruleGrowthOverride == Pecos::UNRESTRICTED);
   u_space_sampler.assign_rep(
     new NonDSparseGrid(g_u_model, natafTransform.u_types(), ssg_level,
 		       ssg_dim_pref, //sparse_grid_usage, refineType,
