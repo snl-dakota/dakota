@@ -602,6 +602,8 @@ KEYWORD12 method
 	  |
 	  ( sparse_grid_level INTEGER
 	    [ dimension_preference REALLIST ]
+	    [ restricted
+	    | unrestricted ]
 	    [ nested
 	    | non_nested ]
 	    )
@@ -687,6 +689,8 @@ KEYWORD12 method
 	  |
 	  ( sparse_grid_level INTEGER
 	    [ dimension_preference REALLIST ]
+	    [ restricted
+	    | unrestricted ]
 	    )
 	  [ use_derivatives ]
 	  [ nested

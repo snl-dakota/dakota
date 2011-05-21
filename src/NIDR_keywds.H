@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 885 distinct keywords (plus 103 aliases) **/
+/** 889 distinct keywords (plus 103 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -672,9 +672,11 @@ static KeyWord
 		{"lhs",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_lhs)},
 		{"random",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_random)}
 		},
-	kw_122[2] = {
+	kw_122[4] = {
 		{0,0,2,0,0,kw_119},
-		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,sparseGridDimPref)}
+		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,sparseGridDimPref)},
+		{"restricted",8,0,2,0,0,0.,0.,0,N_mdm(type,growthOverride_RESTRICTED)},
+		{"unrestricted",8,0,2,0,0,0.,0.,0,N_mdm(type,growthOverride_UNRESTRICTED)}
 		},
 	kw_123[2] = {
 		{"drop_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)},
@@ -696,7 +698,7 @@ static KeyWord
 		{"quadrature_order",13,2,3,1,kw_119,0.,0.,0,N_mdm(ushintL,quadratureOrder)},
 		{"sample_refinement",8,3,5,0,kw_120},
 		{"sample_type",8,2,6,0,kw_121},
-		{"sparse_grid_level",9,1,3,1,kw_122,0.,0.,0,N_mdm(ushint,sparseGridLevel)},
+		{"sparse_grid_level",9,3,3,1,kw_122,0.,0.,0,N_mdm(ushint,sparseGridLevel)},
 		{"variance_based_decomp",8,2,4,0,kw_123,0.,0.,0,N_mdm(true,vbdFlag)},
 		{"wiener",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_STD_NORMAL_U)}
 		},
@@ -738,8 +740,10 @@ static KeyWord
 		{"lhs",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_lhs)},
 		{"random",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_random)}
 		},
-	kw_133[1] = {
-		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,sparseGridDimPref)}
+	kw_133[3] = {
+		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,sparseGridDimPref)},
+		{"restricted",8,0,2,0,0,0.,0.,0,N_mdm(type,growthOverride_RESTRICTED)},
+		{"unrestricted",8,0,2,0,0,0.,0.,0,N_mdm(type,growthOverride_UNRESTRICTED)}
 		},
 	kw_134[2] = {
 		{"drop_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)},
@@ -760,7 +764,7 @@ static KeyWord
 		{"quadrature_order",13,0,3,1,0,0.,0.,0,N_mdm(ushintL,quadratureOrder)},
 		{"sample_refinement",8,3,7,0,kw_131},
 		{"sample_type",8,2,8,0,kw_132},
-		{"sparse_grid_level",9,1,3,1,kw_133,0.,0.,0,N_mdm(ushint,sparseGridLevel)},
+		{"sparse_grid_level",9,3,3,1,kw_133,0.,0.,0,N_mdm(ushint,sparseGridLevel)},
 		{"use_derivatives",8,0,4,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)},
 		{"variance_based_decomp",8,2,6,0,kw_134,0.,0.,0,N_mdm(true,vbdFlag)},
 		{"wiener",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_STD_NORMAL_U)}
