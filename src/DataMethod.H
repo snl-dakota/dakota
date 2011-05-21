@@ -629,8 +629,12 @@ public:
   /// refinement control for stochastic expansions from dimension refinement
   /// keyword group
   short refinementControl;
-  /// refinement type for stochastic expansions from \c refinement keyword
+  /// override for default point nesting policy: NO_NESTING_OVERRIDE, NESTED,
+  /// or NON_NESTED
   short nestingOverride;
+  /// override for default point growth restriction policy: NO_GROWTH_OVERRIDE,
+  /// RESTRICTED, or UNRESTRICTED
+  short growthOverride;
   /// enumeration for overriding the u-space type default from EXTENDED_U to
   /// ASKEY_U, STD_NORMAL_U, or PIECEWISE_U based on input keywords \c askey,
   /// \c wiener, or \c piecewise, respectively

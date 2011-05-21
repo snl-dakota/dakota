@@ -48,10 +48,13 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
     = probDescDB.get_short("method.nond.expansion_refinement_type");
   short refine_control
     = probDescDB.get_short("method.nond.expansion_refinement_control");
+  short growth_override = probDescDB.get_short("method.nond.growth_override");
   bool use_derivs = probDescDB.get_bool("method.derivative_usage");
 
   bool store_colloc = false; // no collocIndices/gauss{Pts,Wts}1D storage
-  bool nested_rules = true,  track_uniq_prod_wts = false;
+  bool nested_rules = (probDescDB.get_short("method.nond.nesting_override")
+		       != Pecos::NON_NESTED);
+  bool track_uniq_prod_wts = false;
   bool piecewise_basis
     = (u_space_type == PIECEWISE_U || refine_type == Pecos::H_REFINEMENT);
   bool equidistant_rules = true; // NEWTON_COTES pts for piecewise interpolants
@@ -60,14 +63,15 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   //short refine_type
   //  = probDescDB.get_short("method.nond.expansion_refinement_type");
   short growth_rate;
-  if (refine_control == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)
+  if (growth_override == Pecos::UNRESTRICTED ||
+      refine_control  == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)
     // unstructured index set evolution: no motivation to restrict
     growth_rate = Pecos::UNRESTRICTED_GROWTH;
   else if (piecewise_basis)
     // no reason to match Gaussian precision, but restriction still useful:
     // use SLOW i=2l+1 since it is more natural for NEWTON_COTES,CLENSHAW_CURTIS
     // and is more consistent with UNRESTRICTED generalized sparse grids.
-    growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;//Pecos::UNRESTRICTED_GROWTH;
+    growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;
   else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
@@ -88,7 +92,8 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
 	       unsigned short ssg_level, const RealVector& dim_pref,
 	       //short sparse_grid_usage, short refine_type,
 	       short refine_control, bool track_uniq_prod_wts,
-	       bool nested_rules, bool piecewise_basis, bool use_derivs): 
+	       bool nested_rules,    bool unrestrict_growth,
+	       bool piecewise_basis, bool use_derivs): 
   NonDIntegration(NoDBBaseConstructor(), model), ssgLevelSpec(ssg_level),
   dimPrefSpec(dim_pref), ssgLevelRef(ssg_level)  
 {
@@ -103,14 +108,15 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
   bool store_colloc = true; //(sparse_grid_usage == Pecos::INTERPOLATION);
   bool equidistant_rules = true; // NEWTON_COTES pts for piecewise interpolants
   short growth_rate;
-  if (refine_control == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)
+  if (unrestrict_growth ||
+      refine_control == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)
     // unstructured index set evolution: no motivation to restrict
     growth_rate = Pecos::UNRESTRICTED_GROWTH;
   else if (piecewise_basis)
     // no reason to match Gaussian precision, but restriction still useful:
     // use SLOW i=2l+1 since it is more natural for NEWTON_COTES,CLENSHAW_CURTIS
     // and is more consistent with UNRESTRICTED generalized sparse grids.
-    growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;//Pecos::UNRESTRICTED_GROWTH;
+    growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;
   else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2

@@ -412,6 +412,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    ( quadrature_order INTEGERLIST {N_mdm(ushintL,quadratureOrder)}
 		      | ( sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}
 			  [ dimension_preference REALLIST {N_mdm(RealDL,sparseGridDimPref)} ]
+		          [ restricted {N_mdm(type,growthOverride_RESTRICTED)}
+			    | unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)} ]
 			  )
 		        [ nested {N_mdm(type,nestingOverride_NESTED)}
 			  | non_nested {N_mdm(type,nestingOverride_NON_NESTED)} ]
@@ -459,6 +461,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    quadrature_order INTEGERLIST {N_mdm(ushintL,quadratureOrder)}
 		    | ( sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}
 			[ dimension_preference REALLIST {N_mdm(RealDL,sparseGridDimPref)} ]
+		        [ restricted {N_mdm(type,growthOverride_RESTRICTED)}
+			  | unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)} ]
 			)
 		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 		    [ nested {N_mdm(type,nestingOverride_NESTED)}

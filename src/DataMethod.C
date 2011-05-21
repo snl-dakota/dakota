@@ -109,7 +109,8 @@ DataMethodRep::DataMethodRep():
   // NonD
   vbdControl(Pecos::ALL_VBD), vbdDropTolerance(-1.), rngName("mt19937"),
   refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
-  nestingOverride(Pecos::NO_OVERRIDE), expansionType(EXTENDED_U),
+  nestingOverride(Pecos::NO_NESTING_OVERRIDE),
+  growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
   expansionTerms(0), expansionSamples(0), sparseGridLevel(USHRT_MAX),
   cubIntOrder(USHRT_MAX), collocationPoints(0), collocationRatio(0.),
   probCollocFlag(false), allVarsFlag(false),
@@ -205,15 +206,16 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // NonD
   s << vbdControl << rngName << refinementType << refinementControl
-    << nestingOverride << expansionType << expansionTerms << expansionOrder
-    << expansionSamples << expansionSampleType << quadratureOrder
-    << sparseGridLevel << cubIntOrder << collocationPoints << collocationRatio
-    << collocPtReuse << probCollocFlag << expansionImportFile << sampleType
-    << reliabilitySearchType << reliabilityIntegration << integrationRefine
-    << nondOptAlgorithm << distributionType << responseLevelMappingType
-    << responseLevels << probabilityLevels << reliabilityLevels
-    << genReliabilityLevels << xObsDataFile << yObsDataFile << yStdDataFile
-    << allVarsFlag << emulatorType << rejectionType << metropolisType;
+    << nestingOverride << growthOverride << expansionType << expansionTerms
+    << expansionOrder << expansionSamples << expansionSampleType
+    << quadratureOrder << sparseGridLevel << cubIntOrder << collocationPoints
+    << collocationRatio << collocPtReuse << probCollocFlag
+    << expansionImportFile << sampleType << reliabilitySearchType
+    << reliabilityIntegration << integrationRefine << nondOptAlgorithm
+    << distributionType << responseLevelMappingType << responseLevels
+    << probabilityLevels << reliabilityLevels << genReliabilityLevels
+    << xObsDataFile << yObsDataFile << yStdDataFile << allVarsFlag
+    << emulatorType << rejectionType << metropolisType;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -305,15 +307,16 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // NonD
   s >> vbdControl >> rngName >> refinementType >> refinementControl
-    >> nestingOverride >> expansionType >> expansionTerms >> expansionOrder
-    >> expansionSamples >> expansionSampleType >> quadratureOrder
-    >> sparseGridLevel >> cubIntOrder >> collocationPoints >> collocationRatio
-    >> collocPtReuse >> probCollocFlag >> expansionImportFile >> sampleType
-    >> reliabilitySearchType >> reliabilityIntegration >> integrationRefine
-    >> nondOptAlgorithm >> distributionType >> responseLevelMappingType
-    >> responseLevels >> probabilityLevels >> reliabilityLevels
-    >> genReliabilityLevels >> xObsDataFile >> yObsDataFile >> yStdDataFile
-    >> allVarsFlag >> emulatorType >> rejectionType >> metropolisType;
+    >> nestingOverride >> growthOverride >> expansionType >> expansionTerms
+    >> expansionOrder >> expansionSamples >> expansionSampleType
+    >> quadratureOrder >> sparseGridLevel >> cubIntOrder >> collocationPoints
+    >> collocationRatio >> collocPtReuse >> probCollocFlag
+    >> expansionImportFile >> sampleType >> reliabilitySearchType
+    >> reliabilityIntegration >> integrationRefine >> nondOptAlgorithm
+    >> distributionType >> responseLevelMappingType >> responseLevels
+    >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
+    >> xObsDataFile >> yObsDataFile >> yStdDataFile >> allVarsFlag
+    >> emulatorType >> rejectionType >> metropolisType;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -405,15 +408,16 @@ void DataMethodRep::write(std::ostream& s) const
 
   // NonD
   s << vbdControl << rngName << refinementType << refinementControl
-    << nestingOverride << expansionType << expansionTerms << expansionOrder
-    << expansionSamples << expansionSampleType << quadratureOrder
-    << sparseGridLevel << cubIntOrder << collocationPoints << collocationRatio
-    << collocPtReuse << probCollocFlag << expansionImportFile << sampleType
-    << reliabilitySearchType << reliabilityIntegration << integrationRefine
-    << nondOptAlgorithm << distributionType << responseLevelMappingType
-    << responseLevels << probabilityLevels << reliabilityLevels
-    << genReliabilityLevels << xObsDataFile << yObsDataFile << yStdDataFile
-    << allVarsFlag << emulatorType << rejectionType << metropolisType;
+    << nestingOverride << growthOverride << expansionType << expansionTerms
+    << expansionOrder << expansionSamples << expansionSampleType
+    << quadratureOrder << sparseGridLevel << cubIntOrder << collocationPoints
+    << collocationRatio << collocPtReuse << probCollocFlag
+    << expansionImportFile << sampleType << reliabilitySearchType
+    << reliabilityIntegration << integrationRefine << nondOptAlgorithm
+    << distributionType << responseLevelMappingType << responseLevels
+    << probabilityLevels << reliabilityLevels << genReliabilityLevels
+    << xObsDataFile << yObsDataFile << yStdDataFile << allVarsFlag
+    << emulatorType << rejectionType << metropolisType;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

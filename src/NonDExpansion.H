@@ -188,8 +188,12 @@ private:
   //- Heading: Data
   //
 
-  /// user override of rule nesting: NO_OVERRIDE, NESTED, or NON_NESTED
+  /// user override of default rule nesting: NO_NESTING_OVERRIDE,
+  /// NESTED, or NON_NESTED
   short ruleNestingOverride;
+  /// user override of default rule growth: NO_GROWTH_OVERRIDE,
+  /// RESTRICTED, or UNRESTRICTED
+  short ruleGrowthOverride;
 
   /// refinement control: NO_CONTROL, UNIFORM_CONTROL,
   /// DIMENSION_ADAPTIVE_TOTAL_SOBOL, DIMENSION_ADAPTIVE_SPECTRAL_DECAY, or

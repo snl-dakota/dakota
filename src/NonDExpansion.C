@@ -27,7 +27,7 @@
 #include "SensAnalysisGlobal.H"
 
 //#define DEBUG
-//#define CONVERGENCE_DATA
+#define CONVERGENCE_DATA
 
 
 namespace Dakota {
@@ -37,6 +37,7 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
   numSamplesOnExpansion(probDescDB.get_int("method.samples")),
   useDerivsFlag(probDescDB.get_bool("method.derivative_usage")),
   ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
+  ruleGrowthOverride(probDescDB.get_short("method.nond.growth_override")),
   refineType(probDescDB.get_short("method.nond.expansion_refinement_type")),
   refineControl(
     probDescDB.get_short("method.nond.expansion_refinement_control")),
@@ -434,7 +435,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
     vbdControl = Pecos::UNIVARIATE_VBD;
 
   bool nested_rules = (ruleNestingOverride == Pecos::NESTED ||
-    (ruleNestingOverride == Pecos::NO_OVERRIDE &&
+    (ruleNestingOverride == Pecos::NO_NESTING_OVERRIDE &&
      refineType          != Pecos::NO_REFINEMENT));
   u_space_sampler.assign_rep(
     new NonDQuadrature(g_u_model, natafTransform.u_types(), quad_order,
@@ -464,7 +465,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
   // nested/non_nested flag not supported in regression specification
   bool nested_rules = false;//(ruleNestingOverride == Pecos::NESTED ||
-    //(ruleNestingOverride == Pecos::NO_OVERRIDE &&
+    //(ruleNestingOverride == Pecos::NO_NESTING_OVERRIDE &&
     // refineType          != Pecos::NO_REFINEMENT));
   u_space_sampler.assign_rep(
     new NonDQuadrature(g_u_model, natafTransform.u_types(), filtered_samples,
@@ -494,11 +495,12 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   // calculations must employ gauss_wts_1d.
   bool track_wts = !(numContDesVars || numContEpistUncVars || numContStateVars);
   bool nested_rules = (ruleNestingOverride != Pecos::NON_NESTED);
+  bool unrestrict_growth = (ruleNestingOverride == Pecos::UNRESTRICTED);
   u_space_sampler.assign_rep(
     new NonDSparseGrid(g_u_model, natafTransform.u_types(), ssg_level,
 		       ssg_dim_pref, //sparse_grid_usage, refineType,
 		       refineControl, track_wts, nested_rules,
-		       piecewise_basis, use_derivs), false);
+		       unrestrict_growth, piecewise_basis, use_derivs), false);
 
   numSamplesOnModel = u_space_sampler.maximum_concurrency()
                     / g_u_model.derivative_concurrency();
@@ -783,7 +785,8 @@ void NonDExpansion::compute_print_iteration_results(bool initialize)
   compute_statistics();
   iteratedModel.print_evaluation_summary(Cout);
   NonDExpansion::print_results(Cout);
-  if (expansionCoeffsApproach == Pecos::SPARSE_GRID) {
+  if (expansionCoeffsApproach == Pecos::SPARSE_GRID &&
+      refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
     NonDSparseGrid* nond_sparse
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
     const UShort2DArray& sm_multi_index = nond_sparse->smolyak_multi_index();
@@ -845,7 +848,8 @@ void NonDExpansion::compute_print_iteration_results(bool initialize)
 void NonDExpansion::compute_print_converged_results()
 {
 #ifdef CONVERGENCE_DATA
-  if (expansionCoeffsApproach == Pecos::SPARSE_GRID) {
+  if (expansionCoeffsApproach == Pecos::SPARSE_GRID &&
+      refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
     NonDSparseGrid* nond_sparse
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
     const UShort2DArray& sm_multi_index = nond_sparse->smolyak_multi_index();

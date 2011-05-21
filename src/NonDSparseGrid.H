@@ -47,7 +47,8 @@ public:
 		 //short refine_type  = Pecos::NO_REFINEMENT,
 		 short refine_control = Pecos::NO_CONTROL,
 		 bool track_uniq_prod_wts = true, bool nested_rules = true,
-		 bool piecewise_basis = false,	  bool use_derivs = false);
+		 bool unrestrict_growth = false,  bool piecewise_basis = false,
+		 bool use_derivs = false);
 
   //
   //- Heading: Virtual function redefinitions
