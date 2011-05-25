@@ -221,13 +221,13 @@ foreach $file (@testin) {
   # create necessary filenames
   $output = $file;
   $error  = $file;
-  $tempin = $file;
+  $input  = $file;
   $test   = $file;
   $restart_file = $file;
-  substr($output, -2, 2) = "out";
-  substr($error, -2, 2)  = "err";
-  substr($tempin, -2, 2) = "in_";
-  substr($test,   -2, 2) = "tst";
+  substr($output,-2, 2) = "out";
+  substr($error, -2, 2) = "err";
+  substr($input, -2, 2) = "in_";
+  substr($test,  -2, 2) = "tst";
   substr($restart_file, -2, 2) = "rst";
 
   # output name of test input file
@@ -236,7 +236,7 @@ foreach $file (@testin) {
   if ($mode == 2) { # annotate baseline with test filenames
     print TEST_OUT "$file\n";
   }
-  elsif ($mode == 0) { # if not a baseline, open individual test output file
+  elsif ($mode == 0) { # if normal test mode, open individual test output file
     open (TEST_OUT, ">$test") || die "cannot open output file $test\n$!";
   }
 
@@ -263,7 +263,7 @@ foreach $file (@testin) {
     open (INPUT_MASTER, "$file") ||
       die "cannot open original input file $file\n$!";
     # open temporary input file
-    open (INPUT_TMP, ">$tempin") || die "cannot open temp file $tempin\n$!";
+    open (INPUT_TMP, ">$input") || die "cannot open temp file $input\n$!";
 
     # trailing delimiter is important to avoid matching #nn with #n
     $test0_tag = "(\\s|,)#0(\\s|,|\\\\)";
@@ -276,7 +276,7 @@ foreach $file (@testin) {
 
     # defaults for dakota command, input, restart, and timeout
     $dakota_command = "dakota";
-    $dakota_input = $tempin;
+    $dakota_input = $input;
     # Default is to write a unique restart per test, named for the test input
     $restart_command = "-write_restart $restart_file";
     # test timeout parameters (in seconds): these may be overridden by
@@ -354,8 +354,8 @@ foreach $file (@testin) {
       }
 
       # Extracts a particular test (using pretty output) for inclusion in docs.
-      # Does not deactivate graphics.  Does not set $found -> test is not
-      # executed and loop exits after one pass.
+      # Does not deactivate graphics.  Does not set $found, such that the test
+      # is not executed and the loop exits after one pass.
       if ($mode == 1) {
 
 	# if line contains $test_num tag, then comment/uncomment
@@ -410,7 +410,6 @@ foreach $file (@testin) {
     # close both files
     close (INPUT_MASTER); # or could rewind it
     close (INPUT_TMP);
-    #system("cp $tempin $file.$cnt"); # for debugging
 
     # if a new test series was found run test, else stop checking this
     # input file for new tests
@@ -449,8 +448,9 @@ foreach $file (@testin) {
       $output_generated = 1;
 
       # Uncomment these lines to catalog data from each run
+      #rename $dakota_input, "$file.$cnt";
+      #system("cp $output $output.$cnt");# leave existing $output for processing
       #rename "dakota_tabular.dat", "dakota_tabular.dat.$cnt";
-      #rename $output, $output.$cnt;
 
       # parse out return codes from $? (the Perl $CHILD_ERROR special variable)
       # TODO: instead use POSIX W*() functions to check status
@@ -571,6 +571,11 @@ foreach $file (@testin) {
 	    print;
 	    print TEST_OUT;
 	  }
+
+	  #if (/^Condition number for LLS using LAPACK/) {
+	  #  print;
+	  #  print TEST_OUT;
+	  #}
 
 	  if (/Moment-based statistics for each response function:/) {
 	    print;
@@ -721,10 +726,10 @@ foreach $file (@testin) {
       system("dakota_diff.perl $file dakota_base.test $test >> dakota_diffs.out");
     }
   }
-  # remove unneeded files (especially $tempin since the last instance of this
+  # remove unneeded files (especially $input since the last instance of this
   # file corresponds to the #(n+1) tests for which $found == false).
   if ($mode != 1) {
-    unlink $tempin;
+    unlink $input;
     unlink $output;
     unlink $error;
     # Remove restart if not explicitly requested

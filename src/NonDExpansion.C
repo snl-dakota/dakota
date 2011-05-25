@@ -27,7 +27,7 @@
 #include "SensAnalysisGlobal.H"
 
 //#define DEBUG
-#define CONVERGENCE_DATA
+//#define CONVERGENCE_DATA
 
 
 namespace Dakota {
