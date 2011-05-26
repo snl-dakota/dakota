@@ -45,12 +45,14 @@ public:
   ~NonDGlobalInterval();            ///< destructor
 
   //
-  //- Heading: Member functions
+  //- Heading: Virtual function redefinitions
   //
 
   /// Performs an optimization to determine interval bounds for an   
   /// entire function or interval bounds on a particular statistical estimator
   void quantify_uncertainty(); // pure virtual, called by run_iterator
+
+  const Model& algorithm_space_model() const;
 
 protected:
 
@@ -148,33 +150,11 @@ private:
   /// order of the data used for surrogate construction, in ActiveSet
   /// request vector 3-bit format; user may override responses spec
   short dataOrder;
-
 };
 
 
-/// Computes relative change between successive c_stars using Euclidean norm
-inline Real rel_change_c_star(const RealVector& curr_c_star,
-			      const RealVector& prev_c_star)
-{
-  double norm_prev_c_star = 0, norm_diff_c_star = 0; 
-  Real normalized_dc_star;
-  for (size_t i=0; i < prev_c_star.length(); i++) {
-    norm_diff_c_star
-      += std::pow(std::fabs((double)curr_c_star[i]-(double)prev_c_star[i]),2.0);
-    norm_prev_c_star += std::pow(std::fabs((double)prev_c_star[i]),2.0);
-  }
-  normalized_dc_star
-    = (Real)std::pow(norm_diff_c_star,0.5)/std::pow(norm_prev_c_star,0.5);
-#ifdef DEBUG
-  Cout << "(Prev,Curr,dist) " << "(";
-  for (size_t i=0; i < curr_c_star.length(); i++)
-    Cout << prev_c_star[i] << ", ";
-  for (size_t i=0; i < curr_c_star.length(); i++)
-    Cout <<  curr_c_star[i] << ", ";
-  Cout << normalized_dc_star << ")\n";
-#endif
-  return normalized_dc_star; 
-}
+inline const Model& NonDGlobalInterval::algorithm_space_model() const
+{ return fHatModel; }
 
 } // namespace Dakota
 

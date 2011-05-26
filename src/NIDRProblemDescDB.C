@@ -4057,9 +4057,6 @@ static Method_mp_lit
 	MP2(crossoverType,uniform),
 	MP2(distributionType,complementary),
 	MP2(distributionType,cumulative),
-	MP2(emulatorType,gp),
-	MP2(emulatorType,pce),
-	MP2(emulatorType,sc),
 	MP2(evalSynchronization,blocking),
 	MP2(evalSynchronization,nonblocking),
 	MP2(evalSynchronize,blocking),
@@ -4335,6 +4332,7 @@ static int
 	MP_(collocationPoints),
 	MP_(contractAfterFail),
 	MP_(covarianceType),
+	MP_(emulatorSamples),
 	MP_(expandAfterSuccess),
 	MP_(expansionSamples),
 	MP_(expansionTerms),
@@ -4342,7 +4340,6 @@ static int
 	MP_(maxIterations),
 	MP_(mutationRange),
 	MP_(newSolnsGenerated),
-	MP_(numEmulatorSamples),
 	MP_(numSamples),
 	MP_(numSteps),
 	MP_(numSymbols),
@@ -4362,6 +4359,9 @@ static size_t
 	MP_(numParents);
 
 static Method_mp_type
+	MP2s(emulatorType,GAUSSIAN_PROCESS),
+	MP2s(emulatorType,POLYNOMIAL_CHAOS),
+	MP2s(emulatorType,STOCHASTIC_COLLOCATION),
 	MP2s(expansionType,ASKEY_U),
 	MP2s(expansionType,PIECEWISE_U),
 	MP2s(expansionType,STD_NORMAL_U),

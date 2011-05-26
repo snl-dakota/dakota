@@ -982,6 +982,15 @@ const String& Iterator::sampling_scheme() const
 }
 
 
+const Model& Iterator::algorithm_space_model() const
+{
+  if (iteratorRep) // envelope fwd to letter
+    return iteratorRep->algorithm_space_model();
+  else // default definition (letter lacking redefinition of virtual fn.)
+    return iteratedModel; // captures any recasts within Optimizer/LeastSq
+}
+
+
 String Iterator::uses_method() const
 {
   if (iteratorRep) // envelope fwd to letter

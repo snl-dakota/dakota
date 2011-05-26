@@ -1671,7 +1671,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"crossover_type", P crossoverType},
 	{"dl_solver.dlDetails", P dlDetails},
 	{"dot.minmax_type", P minMaxType},
-	{"emulator", P emulatorType},
 	{"fitness_type", P fitnessType},
 	{"flat_file", P flatFile},
 	{"id", P idMethod},
@@ -1900,12 +1899,12 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"coliny.new_solutions_generated", P newSolnsGenerated},
 	{"coliny.number_retained", P numberRetained},
 	{"coliny.total_pattern_size", P totalPatternSize},
-	{"emulator_samples", P numEmulatorSamples},
 	{"fsu_cvt.num_trials", P numTrials},
 	{"max_function_evaluations", P maxFunctionEvaluations},
 	{"max_iterations", P maxIterations},
 	{"nl2sol.covariance", P covarianceType},
 	{"nond.collocation_points", P collocationPoints},
+	{"nond.emulator_samples", P emulatorSamples},
 	{"nond.expansion_samples", P expansionSamples},
 	{"nond.expansion_terms", P expansionTerms},
 	{"npsol.verify_level", P verifyLevel},
@@ -1968,6 +1967,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	Locked_db();
     #define P &DataMethodRep::
     static KW<short, DataMethodRep> Shdme[] = {	// must be sorted
+	{"nond.emulator", P emulatorType},
 	{"nond.expansion_refinement_control", P refinementControl},
 	{"nond.expansion_refinement_type", P refinementType},
 	{"nond.expansion_type", P expansionType},
@@ -2023,9 +2023,9 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     DataMethodRep *MeRep = dbRep->dataMethodIter->dataMethodRep;
-    if (entry_name == "method.nond.sparse_grid_level")
+    if (entry_name.ends("nond.sparse_grid_level"))
       return MeRep->sparseGridLevel;
-    else if (entry_name == "method.nond.cubature_integrand")
+    else if (entry_name.ends("nond.cubature_integrand"))
       return MeRep->cubIntOrder;
   }
   Bad_name(entry_name, "get_ushort");

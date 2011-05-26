@@ -248,8 +248,7 @@ void NonDGlobalInterval::post_process_gp_results()
   // But if the new point is very close to the previous point
   // this represents a failing of the variance to go to zero when evaluated near
   // data points.
-  Real dist_tol = 1e-8;	
-  Real rdcstar = rel_change_c_star(c_vars_star, prevCStar);
+  Real dist_tol = 1.e-8, rdcstar = rel_change_rv(c_vars_star, prevCStar);
   // update prevCStar
   copy_data(c_vars_star, prevCStar);
 

@@ -67,6 +67,10 @@ NonDGPMSABayesCalibration::~NonDGPMSABayesCalibration()
     returning the posterior parameter distributions. */
 void NonDGPMSABayesCalibration::quantify_uncertainty()
 {
+  // construct emulatorModel, if needed
+  NonDBayesCalibration::quantify_uncertainty();
+  // *** TO DO ***: eliminate redundant lhsSampler
+
   // Note: I am assuming the user will use DAKOTA to run the initial 
   // simulations to generate simData.  Thus, the first part of this 
   // is similar to LHS. Currently we have one argument in our input 

@@ -46,6 +46,13 @@ enum { PROBABILITIES, RELIABILITIES, GEN_RELIABILITIES };
 // NonDExpansion (enums delegated to Pecos in pecos_global_defs.hpp)
 // -------------
 
+// --------------------
+// NonDBayesCalibration
+// --------------------
+// define special values for emulatorType
+enum { NO_EMULATOR, POLYNOMIAL_CHAOS, STOCHASTIC_COLLOCATION,
+       GAUSSIAN_PROCESS };
+
 // ------------
 // NonDSampling
 // ------------
@@ -597,9 +604,6 @@ public:
 
   /// the \c samples specification for NonD & DACE methods
   int numSamples;
-  /// the \c number of samples to construct the emulator for Bayesian 
-  /// calibration methods
-  int numEmulatorSamples;
   /// flag for fixing the value of the seed among different NonD/DACE
   /// sample sets.  This results in the use of the same sampling
   /// stencil/pattern throughout a strategy with repeated sampling.
@@ -718,8 +722,11 @@ public:
   String yObsDataFile;
   /// filename from which to read the y std of error for gpmsa
   String yStdDataFile;
+  /// the number of samples to construct a GP emulator for Bayesian 
+  /// calibration methods (\ref MethodNonDBayes)
+  int emulatorSamples;
   /// the \c emulator specification in \ref MethodNonDBayes
-  String emulatorType;
+  short emulatorType;
   /// the \c rejection type specification in \ref MethodNonDBayes
   String rejectionType;
   /// the \c metropolis type specification in \ref MethodNonDBayes

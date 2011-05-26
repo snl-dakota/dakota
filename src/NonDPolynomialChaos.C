@@ -27,6 +27,8 @@
 
 namespace Dakota {
 
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation using the ProblemDescDB. */
 NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   expansionImportFile(
     probDescDB.get_string("method.nond.expansion_import_file")),
@@ -34,9 +36,6 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   collocRatio(probDescDB.get_real("method.nond.collocation_ratio")),
   tensorRegression(probDescDB.get_bool("method.nond.tensor_grid"))
 {
-  // This constructor is called for a standard letter-envelope iterator 
-  // instantiation.
-
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
@@ -82,15 +81,21 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
       = probDescDB.get_ushort("method.nond.sparse_grid_level");
     unsigned short cub_int_spec
       = probDescDB.get_ushort("method.nond.cubature_integrand");
-    if (!quad_order_spec.empty())
+    if (!quad_order_spec.empty()) {
+      expansionCoeffsApproach = Pecos::QUADRATURE;
       construct_quadrature(u_space_sampler, g_u_model, quad_order_spec,
 			   piecewise_basis, use_derivs);
-    else if (ssg_level_spec != USHRT_MAX)
+    }
+    else if (ssg_level_spec != USHRT_MAX) {
+      expansionCoeffsApproach = Pecos::SPARSE_GRID;
       construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec,
 	probDescDB.get_rdv("method.nond.sparse_grid_dimension_preference"),
 	piecewise_basis, use_derivs);
-    else if (cub_int_spec != USHRT_MAX)
+    }
+    else if (cub_int_spec != USHRT_MAX) {
+      expansionCoeffsApproach = Pecos::CUBATURE;
       construct_cubature(u_space_sampler, g_u_model, cub_int_spec);
+    }
     else { // expansion_samples or collocation_points
       int exp_samples = probDescDB.get_int("method.nond.expansion_samples");
       if (exp_samples > 0) { // expectation
@@ -167,10 +172,75 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 }
 
 
+/** This constructor is used for helper iterator instantiation on the fly. */
+NonDPolynomialChaos::
+NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
+		    unsigned short num_int_level, short u_space_type,
+		    bool use_derivs):
+  NonDExpansion(model, exp_coeffs_approach, u_space_type, use_derivs)
+{
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+  Model g_u_model;
+  construct_g_u_model(g_u_model);
+
+  // -------------------------
+  // Construct u_space_sampler
+  // -------------------------
+  short data_order = 1;
+  if (use_derivs) {// || iteratedModel.icv()
+    if (gradientType != "none") data_order |= 2;
+    if (hessianType  != "none") data_order |= 4;
+  }
+  bool piecewise_basis
+    = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
+  // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
+  // generated using active sampling view:
+  Iterator u_space_sampler;
+  if (expansionCoeffsApproach == Pecos::QUADRATURE) {
+    UShortArray quad_order(numContinuousVars, num_int_level);
+    construct_quadrature(u_space_sampler, g_u_model, quad_order,
+			 piecewise_basis, use_derivs);
+  }
+  else if (expansionCoeffsApproach == Pecos::SPARSE_GRID) {
+    RealVector dim_pref; // empty
+    construct_sparse_grid(u_space_sampler, g_u_model, num_int_level, dim_pref,
+			  piecewise_basis, use_derivs);
+  }
+  else if (expansionCoeffsApproach == Pecos::CUBATURE)
+    construct_cubature(u_space_sampler, g_u_model, num_int_level);
+
+  // iteratedModel concurrency is defined by the number of samples
+  // used in constructing the PC expansion
+  if (numSamplesOnModel) // optional with default = 0
+    maxConcurrency *= numSamplesOnModel;
+
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  // G-hat(u) uses an orthogonal polynomial approximation over the
+  // active/uncertain variables (using same view as iteratedModel/g_u_model:
+  // not the typical All view for DACE).  No correction is employed.
+  // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+  short  corr_order = -1;
+  String corr_type, pt_reuse, approx_type = (piecewise_basis) ?
+    "piecewise_orthogonal_polynomial" : "global_orthogonal_polynomial";
+  UShortArray exp_order; // empty for numerical integration approaches
+  uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
+    approx_type, exp_order, corr_type, corr_order, data_order, pt_reuse),
+    false);
+  initialize_u_space_model();
+
+  // no expansionSampler, no numSamplesOnExpansion
+}
+
+
 NonDPolynomialChaos::~NonDPolynomialChaos()
 {
-  uSpaceModel.free_communicators(
-    numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
+  if (numSamplesOnExpansion)
+    uSpaceModel.free_communicators(
+      numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
 }
 
 

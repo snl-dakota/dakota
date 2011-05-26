@@ -47,6 +47,8 @@ protected:
   void initialize_graphics(bool graph_2d, bool tabular_data,
 			   const String& tabular_file);
 
+  const Model& algorithm_space_model() const;
+
   //
   //- Heading: New virtual functions
   //
@@ -161,6 +163,10 @@ protected:
   /// output reliability level calculated
   Real computedRelLevel;
 };
+
+
+inline const Model& NonDReliability::algorithm_space_model() const
+{ return uSpaceModel; }
 
 
 inline void NonDReliability::update_pma_reliability_level()

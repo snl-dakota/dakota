@@ -851,6 +851,21 @@ void remove(ListT& l, typename ListT::value_type a)
 
 #endif
 
+// ---------------------------------
+// miscellaneous numerical utilities
+// ---------------------------------
+
+/// Computes relative change between successive RealVectors using Euclidean norm
+inline Real rel_change_rv(const RealVector& curr_rv, const RealVector& prev_rv)
+{
+  Real norm_prev_rv = 0., norm_diff_rv = 0.;
+  for (size_t i=0; i < prev_rv.length(); i++) {
+    norm_diff_rv += std::pow(std::abs(curr_rv[i]-prev_rv[i]),2.);
+    norm_prev_rv += std::pow(std::abs(prev_rv[i]),2.);
+  }
+  return std::sqrt(norm_diff_rv)/std::sqrt(norm_prev_rv);
+}
+
 } // namespace Dakota
 
 #endif // DATA_UTIL_H

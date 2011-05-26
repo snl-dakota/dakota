@@ -47,6 +47,10 @@ protected:
 
   //void print_results(std::ostream& s);
 
+  void quantify_uncertainty();
+
+  const Model& algorithm_space_model() const;
+
   //
   //- Heading: Data
   //
@@ -56,15 +60,28 @@ protected:
   /// or direct access to simulations (no surrogate option)
   Model emulatorModel;
 
-  const int seedSpec;   ///< the user seed specification (default is 0)
-  int       numEmulatorSamples; ///< the current number of samples with
-                               /// which to build the emulator 
-  String    rngName;	///< name of the random number generator
-  String    emulatorType; ///< the emulator type:  none, gp, pce, or sc
+  /// flag indicating use of a variable transformation to standardized
+  /// probability space
+  bool standardizedSpace;
 
 private:
 
+  //
+  //- Heading: Data
+  //
+
+  /// the emulator type: NO_EMULATOR, GAUSSIAN_PROCESS, POLYNOMIAL_CHAOS, or
+  /// STOCHASTIC_COLLOCATION
+  short emulatorType;
+
+  /// NonDPolynomialChaos or NonDStochCollocation instance for defining a
+  /// PCE/SC-based emulatorModel
+  Iterator stochExpIterator;
 };
+
+
+inline const Model& NonDBayesCalibration::algorithm_space_model() const
+{ return emulatorModel; }
 
 } // namespace Dakota
 

@@ -34,8 +34,10 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDExpansion(Model& model); ///< constructor
-  ~NonDExpansion();            ///< destructor
+  NonDExpansion(Model& model);    ///< standard constructor
+  NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type,
+		bool use_derivs); ///< alternate constructor
+  ~NonDExpansion();               ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -45,6 +47,8 @@ public:
   void quantify_uncertainty(); // pure virtual fn. called by NonD
   /// print the final statistics
   void print_results(std::ostream& s);
+
+  const Model& algorithm_space_model() const;
 
 protected:
 
@@ -146,6 +150,9 @@ private:
   //- Heading: Convenience function definitions
   //
 
+  /// helper function for common constructor code
+  void initialize(Model& model, short u_space_type);
+
   /// compute average of total Sobol' indices (from VBD) across the
   /// response set for use as an anisotropy indicator
   void reduce_total_sobol_sets(RealVector& avg_sobol);
@@ -232,6 +239,10 @@ private:
   /// tolerance for omitting output of small VBD indices
   Real vbdDropTol;
 };
+
+
+inline const Model& NonDExpansion::algorithm_space_model() const
+{ return uSpaceModel; }
 
 
 inline void NonDExpansion::print_coefficients(std::ostream& s)

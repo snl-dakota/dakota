@@ -113,7 +113,7 @@ static KeyWord
 		{"samples",9,0,1,0,0,0.,0.,0,N_mdm(int,numSamples)}
 		},
 	kw_16[1] = {
-		{"emulator_samples",9,0,1,0,0,0.,0.,0,N_mdm(int,numEmulatorSamples)}
+		{"emulator_samples",9,0,1,0,0,0.,0.,0,N_mdm(int,emulatorSamples)}
 		},
 	kw_17[1] = {
 		{"sparse_grid_level",9,0,1,0,0,0.,0.,0,N_mdm(ushint,sparseGridLevel)}
@@ -122,9 +122,9 @@ static KeyWord
 		{"sparse_grid_level",9,0,1,0,0,0.,0.,0,N_mdm(ushint,sparseGridLevel)}
 		},
 	kw_19[3] = {
-		{"gp",8,1,1,1,kw_16,0.,0.,0,N_mdm(lit,emulatorType_gp)},
-		{"pce",8,1,1,1,kw_17,0.,0.,0,N_mdm(lit,emulatorType_pce)},
-		{"sc",8,1,1,1,kw_18,0.,0.,0,N_mdm(lit,emulatorType_sc)}
+		{"gp",8,1,1,1,kw_16,0.,0.,0,N_mdm(type,emulatorType_GAUSSIAN_PROCESS)},
+		{"pce",8,1,1,1,kw_17,0.,0.,0,N_mdm(type,emulatorType_POLYNOMIAL_CHAOS)},
+		{"sc",8,1,1,1,kw_18,0.,0.,0,N_mdm(type,emulatorType_STOCHASTIC_COLLOCATION)}
 		},
 	kw_20[2] = {
 		{"adaptive",8,0,1,1,0,0.,0.,0,N_mdm(lit,metropolisType_adaptive)},

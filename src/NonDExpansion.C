@@ -47,6 +47,37 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
   if (maxIterations < 0) // ctor chain picks up DataMethod default of -1
     maxIterations = 100;
 
+  if (probDescDB.get_bool("method.variance_based_decomp")) {
+    vbdControl = probDescDB.get_short("method.nond.vbd_control");
+    vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
+  }
+  else
+    vbdControl = Pecos::NO_VBD;
+  // Note: minimum VBD control for variance-controlled refinement is
+  //       enforced in NonDExpansion::construct_{quadrature,sparse_grid}
+  //Cout << "VBD control = " << vbdControl << std::endl;
+
+  short u_space_type = probDescDB.get_short("method.nond.expansion_type");
+  initialize(model, u_space_type);
+}
+
+
+NonDExpansion::
+NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type,
+	      bool use_derivs):
+  NonD(NoDBBaseConstructor(), model),
+  expansionCoeffsApproach(exp_coeffs_approach),
+  numUncertainQuant(0), numSamplesOnModel(0), numSamplesOnExpansion(0),
+  useDerivsFlag(use_derivs), refineType(Pecos::NO_REFINEMENT),
+  ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
+  ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE),
+  refineControl(Pecos::NO_CONTROL), impSampling(false), expSampling(false),
+  vbdControl(Pecos::NO_VBD)
+{ initialize(model, u_space_type); }
+
+
+void NonDExpansion::initialize(Model& model, short u_space_type)
+{
   bool err_flag = false;
   if (useDerivsFlag && gradientType == "none") { // && hessianType == "none"
     Cerr << "\nError: use_derivatives option in NonDExpansion requires a "
@@ -60,16 +91,6 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
 	 << "NonDExpansion." << std::endl;
     err_flag = true;
   }
-
-  if (probDescDB.get_bool("method.variance_based_decomp")) {
-    vbdControl = probDescDB.get_short("method.nond.vbd_control");
-    vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
-  }
-  else
-    vbdControl = Pecos::NO_VBD;
-  // Note: minimum VBD control for variance-controlled refinement is
-  //       enforced in NonDExpansion::construct_{quadrature,sparse_grid}
-  //Cout << "VBD control = " << vbdControl << std::endl;
 
   natafTransform = Pecos::ProbabilityTransformation("nataf");
   const Pecos::RealSymMatrix& uncertain_corr
@@ -90,7 +111,6 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
   // Determine full polynomial family, Wiener-Askey, or Wiener-Hermite
   // -----------------------------------------------------------------
   // use Askey/extended u-space definitions in Nataf transformations
-  short u_space_type = probDescDB.get_short("method.nond.expansion_type");
   if (refineType == Pecos::H_REFINEMENT) // override
     u_space_type = PIECEWISE_U;
   initialize_random_variable_types(u_space_type); // need ranVarTypesX/U below
@@ -144,7 +164,7 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
       err_flag = true;
     }
   }
-  
+
   if (err_flag)
     abort_handler(-1);
 }
@@ -402,7 +422,6 @@ void NonDExpansion::
 construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
 		   unsigned short cub_int_order)
 {
-  expansionCoeffsApproach = Pecos::CUBATURE;
   // sanity checks: CUBATURE precluded since no grid anisotropy for adaptive
   // and very limited refinement opportunities for uniform/adaptive
   if (refineType) {
@@ -423,7 +442,6 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 		     const UShortArray& quad_order, bool piecewise_basis,
 		     bool use_derivs)
 {
-  expansionCoeffsApproach = Pecos::QUADRATURE;
   // sanity checks: no GSG for TPQ
   if (refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
     Cerr << "Error: generalized option not support for adaptive refinement of "
@@ -478,7 +496,6 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 		      unsigned short ssg_level, const RealVector& ssg_dim_pref,
 		      bool piecewise_basis, bool use_derivs)
 {
-  expansionCoeffsApproach = Pecos::SPARSE_GRID;
   // enforce minimum required VBD control
   if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL)
     vbdControl = Pecos::UNIVARIATE_VBD;

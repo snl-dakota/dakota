@@ -263,8 +263,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     // since the new training point will essentially be the prev
     // optimal point 
 
-    Real dist_tol = 1e-8;	
-    Real rdcstar = rel_change_c_star(c_vars, prevCStar);
+    Real dist_tol = 1.e-8, rdcstar = rel_change_rv(c_vars, prevCStar);
     // update prevCStar
     copy_data(c_vars, prevCStar);
     if ( rdcstar < dist_tol)

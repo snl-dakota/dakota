@@ -36,9 +36,12 @@ public:
   //
   //- Heading: Constructors and destructor
   //
-
-  NonDPolynomialChaos(Model& model); ///< constructor
-  ~NonDPolynomialChaos();            ///< destructor
+ 
+  NonDPolynomialChaos(Model& model);    ///< standard constructor
+  NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
+		      unsigned short num_int_level, short u_space_type,
+		      bool use_derivs); ///< alternate constructor
+ ~NonDPolynomialChaos();                ///< destructor
 
   //
   //- Heading: Virtual function redefinitions

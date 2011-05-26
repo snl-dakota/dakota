@@ -36,8 +36,11 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDStochCollocation(Model& model); ///< constructor
-  ~NonDStochCollocation();            ///< destructor
+  NonDStochCollocation(Model& model);    ///< standard constructor
+  NonDStochCollocation(Model& model, short exp_coeffs_approach,
+		       unsigned short num_int_level, short u_space_type,
+		       bool use_derivs); ///< alternate constructor
+  ~NonDStochCollocation();               ///< destructor
 
   //
   //- Heading: Virtual function redefinitions

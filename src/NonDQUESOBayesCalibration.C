@@ -53,6 +53,9 @@ NonDQUESOBayesCalibration::~NonDQUESOBayesCalibration()
 /** Perform the uncertainty quantification */
 void NonDQUESOBayesCalibration::quantify_uncertainty()
 {
+  // construct emulatorModel, if needed
+  NonDBayesCalibration::quantify_uncertainty();
+
   // instantiate QUESO objects and execute
   NonDQUESOInstance=this;
   Cout << "Rejection type  "<< rejectionType << '\n';

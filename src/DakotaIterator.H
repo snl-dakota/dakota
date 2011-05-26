@@ -130,9 +130,12 @@ public:
   /// return sampling name
   virtual const String& sampling_scheme() const;
 
+  /// return the result of any recasting or surrogate model recursion
+  /// layered on top of iteratedModel by the derived Iterator ctor chain
+  virtual const Model& algorithm_space_model() const;
+
   /// return name of any enabling iterator used by this iterator
   virtual String uses_method() const;
-
   /// perform a method switch, if possible, due to a detected conflict
   virtual void method_recourse();
 
