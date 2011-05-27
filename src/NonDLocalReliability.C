@@ -952,12 +952,12 @@ void NonDLocalReliability::initialize_class_data()
   // Since the uncertain variable distributions (means, std devs, correlations)
   // may change among NonDLocalReliability invocations (e.g., RBDO with design
   // variable insertion), this code block is performed on every invocation.
-  natafTransform.trans_correlations();
+  natafTransform.transform_correlations();
 
   // define ranVarMeansU for use in the transformed AMV option
   //if (mppSearchType == AMV_U)
   natafTransform.trans_X_to_U(natafTransform.x_means(), ranVarMeansU);
-  // must follow trans_correlations()
+  // must follow transform_correlations()
 
   /*
   // Determine median limit state values for AMV/AMV+/FORM/SORM by evaluating

@@ -31,63 +31,24 @@ NonDReliability::NonDReliability(Model& model): NonD(model),
   //refinementSamples(probDescDB.get_int("method.samples")),
   //refinementSeed(probDescDB.get_int("method.random_seed"))
 {
-  bool err_flag = false;
-
   // Check for suitable distribution types.
   if (numDiscreteIntVars || numDiscreteRealVars) {
     Cerr << "Error: discrete random variables are not supported in reliability "
 	 << "methods." << std::endl;
-    err_flag = true;
-  }
-
-  natafTransform = Pecos::ProbabilityTransformation("nataf");
-  const RealSymMatrix& uncertain_corr
-    = model.distribution_parameters().uncertain_correlations();
-  if (!uncertain_corr.empty()) {
-    natafTransform.initialize_random_variable_correlations(uncertain_corr);
-    if (numContDesVars || numContEpistUncVars || numContStateVars)
-      // expand ProbabilityTransformation::corrMatrixX to include design + state
-      // + epistemic uncertain vars.  TO DO: propagate through model recursion?
-      natafTransform.reshape_correlation_matrix(numContDesVars,
-	numContAleatUncVars, numContEpistUncVars+numContStateVars);
-  }
-
-  initialize_random_variable_types(STD_NORMAL_U); // need ranVarTypesX below
-
-  // Check for correlations among variable types (bounded normal, bounded
-  // lognormal, loguniform, triangular, beta, and histogram) that are not
-  // supported by Der Kiureghian & Liu for correlation warping estimation when
-  // transforming to std normals.  See also related logic in NonDExpansion.
-  const Pecos::ShortArray& x_types = natafTransform.x_types();
-  if (natafTransform.x_correlation()) {
-    const Pecos::RealSymMatrix& x_corr = natafTransform.x_correlation_matrix();
-    size_t i, j;
-    bool distribution_error = false;
-    for (i=numContDesVars; i<numContDesVars+numContAleatUncVars; ++i)
-      if ( x_types[i] == Pecos::BOUNDED_NORMAL    ||
-	   x_types[i] == Pecos::BOUNDED_LOGNORMAL ||
-	   x_types[i] == Pecos::LOGUNIFORM || x_types[i] == Pecos::TRIANGULAR ||
-	   x_types[i] == Pecos::BETA || x_types[i] == Pecos::HISTOGRAM_BIN )
-	for (j=numContDesVars; j<numContDesVars+numContAleatUncVars; ++j)
-	  if (i != j && std::fabs(x_corr(i, j)) > 1.e-25)
-	    { distribution_error = true; break; }
-    if (distribution_error) {
-      Cerr << "Error: correlation warping for Nataf variable transformation of "
-	   << "bounded normal,\n       bounded lognormal, loguniform, "
-	   << "triangular, beta, and histogram bin\n       distributions is "
-	   << "not currently supported in NonDExpansion." << std::endl;
-      err_flag = true;
-    }
-  }
-  if (err_flag)
     abort_handler(-1);
+  }
 
+  initialize_random_variable_transformation();
+  initialize_random_variable_types(STD_NORMAL_U); // need ranVarTypesX below
+  // Note: initialize_random_variable_parameters() is performed at run time
+  initialize_random_variable_correlations();
+  verify_correlation_support();
+  initialize_final_statistics(); // default statistics set
+
+  // RealVectors are sized within derived classes
   computedRespLevels.resize(numFunctions);
   computedProbLevels.resize(numFunctions);
   computedGenRelLevels.resize(numFunctions);
-
-  // initialize finalStatistics using the default statistics set
-  initialize_final_statistics();
 }
 
 

@@ -56,8 +56,7 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
   //       enforced in NonDExpansion::construct_{quadrature,sparse_grid}
   //Cout << "VBD control = " << vbdControl << std::endl;
 
-  short u_space_type = probDescDB.get_short("method.nond.expansion_type");
-  initialize(model, u_space_type);
+  initialize(model, probDescDB.get_short("method.nond.expansion_type"));
 }
 
 
@@ -91,28 +90,13 @@ void NonDExpansion::initialize(Model& model, short u_space_type)
     err_flag = true;
   }
 
-  natafTransform = Pecos::ProbabilityTransformation("nataf");
-  const Pecos::RealSymMatrix& uncertain_corr
-    = model.distribution_parameters().uncertain_correlations();
-  if (!uncertain_corr.empty()) {
-    natafTransform.initialize_random_variable_correlations(uncertain_corr);
-    if (numContDesVars || numContEpistUncVars || numContStateVars)
-      // expand ProbabilityTransformation::corrMatrixX to include design + state
-      // + epistemic uncertain vars.  TO DO: propagate through model recursion?
-      natafTransform.reshape_correlation_matrix(numContDesVars,
-	numContAleatUncVars, numContEpistUncVars+numContStateVars);
-  }
-
-  // initialize finalStatistics
-  initialize_final_statistics();
-
-  // -----------------------------------------------------------------
-  // Determine full polynomial family, Wiener-Askey, or Wiener-Hermite
-  // -----------------------------------------------------------------
-  // use Askey/extended u-space definitions in Nataf transformations
+  initialize_random_variable_transformation();
   if (refineType == Pecos::H_REFINEMENT) // override
     u_space_type = PIECEWISE_U;
-  initialize_random_variable_types(u_space_type); // need ranVarTypesX/U below
+  // use Wiener/Askey/extended/piecewise u-space defn in Nataf transformation
+  initialize_random_variable_types(u_space_type); // need x/u_types below
+  initialize_random_variable_correlations();
+  initialize_final_statistics();
 
   // check for correlations that are not supported for (1) use in extended
   // u-space and (2) use by Der Kiureghian & Liu for basic u-space (bounded
@@ -142,26 +126,7 @@ void NonDExpansion::initialize(Model& model, short u_space_type)
     if (u_space_modified) // update ranVarTypesU in natafTransform
       natafTransform.initialize_random_variable_types(x_types, u_types);
 
-    // All correlated variables must have u_type = STD_NORMAL, but correlation
-    // warping for bounded normal, bounded lognormal, loguniform, triangular,
-    // beta, and histogram distributions are not supported by Der Kiureghian
-    // & Liu.  Abort with an error in these cases.
-    bool distribution_error = false;
-    for (i=numContDesVars; i<numContDesVars+numContAleatUncVars; ++i)
-      if ( x_types[i] == Pecos::BOUNDED_NORMAL ||
-	   x_types[i] == Pecos::BOUNDED_LOGNORMAL ||
-	   x_types[i] == Pecos::LOGUNIFORM || x_types[i] == Pecos::TRIANGULAR ||
-	   x_types[i] == Pecos::BETA || x_types[i] == Pecos::HISTOGRAM_BIN )
-	for (j=numContDesVars; j<numContDesVars+numContAleatUncVars; ++j)
-	  if (i != j && std::fabs(x_corr(i, j)) > 1.e-25)
-	    { distribution_error = true; break; }
-    if (distribution_error) {
-      Cerr << "\nError: correlation warping for Nataf variable transformation "
-	   << "of bounded normal,\n       bounded lognormal, loguniform, "
-	   << "triangular, beta, and histogram bin\n       distributions is "
-	   << "not currently supported in NonDExpansion." << std::endl;
-      err_flag = true;
-    }
+    verify_correlation_support(); // Der Kiureghian & Liu correlation warping
   }
 
   if (err_flag)
@@ -869,7 +834,7 @@ void NonDExpansion::initialize_expansion()
   // update ranVar info to capture any distribution param insertions
   initialize_random_variable_parameters();
   initialize_final_statistics_gradients();
-  natafTransform.trans_correlations();
+  natafTransform.transform_correlations();
 
   // now that labels have flowed down at run-time from any higher level
   // recursions, propagate them up the instantiate-on-the-fly Model

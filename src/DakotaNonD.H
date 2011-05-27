@@ -16,9 +16,7 @@
 #define DAKOTA_NOND_H
 
 #include "DakotaAnalyzer.H"
-#ifdef HAVE_PECOS
 #include "ProbabilityTransformation.hpp"
-#endif // HAVE_PECOS
 
 //#define DERIV_DEBUG
 
@@ -42,11 +40,9 @@ public:
 
   /// initialize natafTransform based on distribution data from iteratedModel
   void initialize_random_variables(short u_space_type);
-#ifdef HAVE_PECOS
   /// alternate form: initialize natafTransform based on incoming data
   void initialize_random_variables(
     const Pecos::ProbabilityTransformation& transform);
-#endif // HAVE_PECOS
 
   /// set requestedRespLevels, requestedProbLevels, requestedRelLevels,
   /// requestedGenRelLevels, respLevelTarget, and cdfFlag (used in
@@ -115,13 +111,27 @@ protected:
   //- Heading: Utility routines
   //
 
+  /// instantiate natafTransform
+  void initialize_random_variable_transformation();
   /// initializes ranVarTypesX and ranVarTypesU within natafTransform
   void initialize_random_variable_types(short u_space_type);
   /// initializes ranVarMeansX, ranVarStdDevsX, ranVarLowerBndsX,
   /// ranVarUpperBndsX, and ranVarAddtlParamsX within natafTransform
   void initialize_random_variable_parameters();
+  /// propagate iteratedModel correlations to natafTransform
+  void initialize_random_variable_correlations();
+  /// verify that correlation warping supported by Der Kiureghian & Liu
+  /// for given variable types
+  void verify_correlation_support();
+
   /// initializes finalStatistics::functionGradients
   void initialize_final_statistics_gradients();
+
+  /// size computed{Resp,Prob,Rel,GenRel}Levels
+  void initialize_distribution_mappings();
+  /// prints the z/p/beta/beta* mappings reflected in
+  /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels
+  void print_distribution_mappings(std::ostream& s) const;
 
   /// recast x_model from x-space to u-space to create u_model
   void construct_u_space_model(Model& x_model, Model& u_model,
@@ -146,12 +156,6 @@ protected:
 				  const Response& x_response,
 				  Response& u_response);
 
-  /// size computed{Resp,Prob,Rel,GenRel}Levels
-  void initialize_distribution_mappings();
-  /// prints the z/p/beta/beta* mappings reflected in
-  /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels
-  void print_distribution_mappings(std::ostream& s) const;
-
   //
   //- Heading: Data members
   //
@@ -162,26 +166,13 @@ protected:
   /// pointer containing previous value of nondInstance
   NonD* prevNondInstance;
 
-  // ---------------------------------------------------------------------------
-  // The following attributes are specific to X/Z/U space regardless of whether
-  // u-space models are being iterated by a NonD method.  That is, they are
-  // _not_ always derived from or in synch with the iteratedModel, and may be
-  // passed in to the alternate form of initialize_random_variables() from
-  // outside sources.
-
-#ifdef HAVE_PECOS
   /// Nonlinear variable transformation that encapsulates the required
   /// data for performing transformations from X -> Z -> U and back.
   Pecos::ProbabilityTransformation natafTransform;
-#endif // HAVE_PECOS
-  // ---------------------------------------------------------------------------
 
-
-  // ---------------------------------------------------------------------------
-  // The following attributes are not dedicated to either X, Z, or U space.
-  // Rather, they reflect the native Model space, which could be any of the
-  // above.  If a specific X or U variables count is needed, then
-  // ProbabilityTransformation::ranVarTypesX/U.count() should be used.
+  // The following variable counts reflect the native Model space, which could
+  // correspond to either X or U space.  If a specific X or U variables count
+  // is needed, then natafTransform.ranVarTypesX/U.count() should be used.
 
   /// number of continuous design variables (modeled using uniform
   /// distribution for All view modes)
@@ -263,7 +254,6 @@ protected:
   size_t numEpistemicUncVars;
   /// total number of uncertain variables (native space)
   size_t numUncertainVars;
-  // ---------------------------------------------------------------------------
 
   size_t numResponseFunctions; ///< number of response functions
 

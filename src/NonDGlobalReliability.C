@@ -119,7 +119,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
 
   // Always build a global Gaussian process model.  No correction is needed.
   String approx_type = "global_gaussian", corr_type, sample_type;
-  UShortArray approx_order; // empty
+  UShortArray approx_order; // not used for GP/kriging
   short corr_order = -1,
     active_view = iteratedModel.current_variables().view().first;
   if (probDescDB.get_bool("method.derivative_usage")) {
@@ -159,16 +159,9 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     IntSet surr_fn_indices; // Only want functions with requested levels
     ActiveSet set = iteratedModel.current_response().active_set();// copy
     set.request_values(0);
-    for (i=0; i<numFunctions; i++) {
-      size_t rl_len = requestedRespLevels[i].length(),
-    	     pl_len = requestedProbLevels[i].length(),
-    	     gl_len = requestedGenRelLevels[i].length(),
-             num_levels = rl_len + pl_len + gl_len;
-      if (num_levels) {
-    	set.request_value(i, dataOrder);
-	surr_fn_indices.insert(i);
-      }
-    }
+    for (i=0; i<numFunctions; ++i)
+      if (!computedRespLevels[i].empty()) // sized to total req levels above
+    	{ set.request_value(i, dataOrder); surr_fn_indices.insert(i); }
     dace_iterator.active_set(set);
     //const Variables& curr_vars = iteratedModel.current_variables();
     g_hat_x_model.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
@@ -207,16 +200,9 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     IntSet surr_fn_indices; // Only want functions with requested levels
     ActiveSet set = iteratedModel.current_response().active_set();// copy
     set.request_values(0);
-    for (i=0; i<numFunctions; i++) {
-      size_t rl_len = requestedRespLevels[i].length(),
-             pl_len = requestedProbLevels[i].length(),
-	     gl_len = requestedGenRelLevels[i].length(),
-             num_levels = rl_len + pl_len + gl_len;
-      if (num_levels) {
-        set.request_value(i, dataOrder);
-        surr_fn_indices.insert(i);
-      }
-    }
+    for (i=0; i<numFunctions; ++i)
+      if (!computedRespLevels[i].empty()) // sized to total req levels above
+    	{ set.request_value(i, dataOrder); surr_fn_indices.insert(i); }
     dace_iterator.active_set(set);
 
     //const Variables& g_u_vars = g_u_model.current_variables();
@@ -319,7 +305,7 @@ void NonDGlobalReliability::quantify_uncertainty()
 {
   // initialize the random variable arrays and the correlation Cholesky factor
   initialize_random_variable_parameters();
-  natafTransform.trans_correlations();
+  natafTransform.transform_correlations();
 
   // set the object instance pointer for use within static member functions
   NonDGlobalReliability* prev_grel_instance = nondGlobRelInstance;
@@ -616,15 +602,15 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  RealVector sams_u(num_vars);
 	  natafTransform.trans_X_to_U(sams,sams_u);
 	  
-	  samsOut << std::endl;
+	  samsOut << '\n';
 	  for (size_t j=0; j<num_vars; j++)
-	    samsOut << setw(13) << sams_u[j] << " ";
+	    samsOut << setw(13) << sams_u[j] << ' ';
 	  samsOut<< setw(13) << true_fn;
 	}
 	else {
-	  samsOut << std::endl;
+	  samsOut << '\n';
 	  for (size_t j=0; j<num_vars; j++)
-	    samsOut << setw(13) << sams[j] << " ";
+	    samsOut << setw(13) << sams[j] << ' ';
 	  samsOut<< setw(13) << true_fn;
 	}
       }
@@ -637,81 +623,65 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	bool true_plot = false;
         std::string truefile("egra_true"), gpfile("egra_gp"),
                     varfile("egra_var"), efffile("egra_eff");
-	truefile += tag;
-	gpfile   += tag;
-	varfile  += tag;
-	efffile  += tag;
-	std::ofstream trueOut(truefile.c_str(),std::ios::out);
-	std::ofstream gpOut(   gpfile.c_str(),std::ios::out);
-	std::ofstream varOut(  varfile.c_str(),std::ios::out);
-	std::ofstream effOut(  efffile.c_str(),std::ios::out);
-	if (true_plot) trueOut << std::scientific;
-	gpOut  << std::scientific;
-	varOut << std::scientific;
-	effOut << std::scientific;
-	RealVector test_pt_u(2), test_pt_x(2);
+	truefile += tag; gpfile += tag; varfile += tag; efffile += tag;
+	std::ofstream trueOut(truefile.c_str(), std::ios::out),
+	                gpOut(gpfile.c_str(),   std::ios::out),
+                       varOut(varfile.c_str(),  std::ios::out),
+                       effOut(efffile.c_str(),  std::ios::out);
+	gpOut  << std::scientific; varOut << std::scientific;
+	effOut << std::scientific; if (true_plot) trueOut << std::scientific;
+	RealVector u_pt(2), x_pt(2);
 	Real lbnd =  -5., ubnd =  5.;
 	//Real lbnd = -10., ubnd = 10.;
 	Real interval = (ubnd-lbnd)/100.;
 	for (size_t i=0; i<101; i++){
-	  test_pt_u[0] = lbnd + float(i)*interval;
+	  u_pt[0] = lbnd + float(i)*interval;
 	  for (size_t j=0; j<101; j++){
-	    test_pt_u[1] = lbnd + float(j)*interval;
+	    u_pt[1] = lbnd + float(j)*interval;
 	    
-	    uSpaceModel.continuous_variables(test_pt_u);
+	    uSpaceModel.continuous_variables(u_pt);
 	    ActiveSet set = uSpaceModel.current_response().active_set();
 	    set.request_values(0); set.request_value(respFnCount, 1);
 	    uSpaceModel.compute_response(set);
 	    const Response& gp_resp = uSpaceModel.current_response();
 	    const RealVector& gp_fn = gp_resp.function_values();
 	    
-	    gpOut << std::endl 
-		  << setw(13) << test_pt_u[0] << " " 
-		  << setw(13) << test_pt_u[1] << " " 
-		  << setw(13) << gp_fn[respFnCount];
+	    gpOut << '\n' << setw(13) << u_pt[0] << ' ' << setw(13)
+		  << u_pt[1] << ' ' << setw(13) << gp_fn[respFnCount];
 	    
 	    RealVector variance;
 	    if (mppSearchType == EGRA_X) {
-	      RealVector test_pt_x;
-	      natafTransform.trans_U_to_X(test_pt_u, test_pt_x);
-	      Model& sub_model = uSpaceModel.subordinate_model();
-	      variance = sub_model.approximation_variances(test_pt_x);
+	      natafTransform.trans_U_to_X(u_pt, x_pt);
+	      variance
+		= uSpaceModel.subordinate_model().approximation_variances(x_pt);
 	    }
 	    else
-	      variance = uSpaceModel.approximation_variances(test_pt_u);
+	      variance = uSpaceModel.approximation_variances(u_pt);
 	    
-	    varOut << std::endl 
-		   << setw(13) << test_pt_u[0] << " " 
-		   << setw(13) << test_pt_u[1] << " " 
-		   << setw(13) << variance[respFnCount];
+	    varOut << '\n' << setw(13) << u_pt[0] << ' ' << setw(13)
+		   << u_pt[1] << ' ' << setw(13) << variance[respFnCount];
 	    
-	    Real eff = expected_feasibility(gp_fn, test_pt_u);
+	    Real eff = expected_feasibility(gp_fn, u_pt);
 	    
-	    effOut << std::endl 
-		   << setw(13) << test_pt_u[0] << " " 
-		   << setw(13) << test_pt_u[1] << " " 
-		   << setw(13) << -eff;
+	    effOut << '\n' << setw(13) << u_pt[0] << ' ' << setw(13)
+		   << u_pt[1] << ' ' << setw(13) << -eff;
 
 	    // plotting the true function can be expensive, but is available
 	    if (true_plot) {
 	      uSpaceModel.component_parallel_mode(TRUTH_MODEL);
-	      natafTransform.trans_U_to_X(test_pt_u,test_pt_x);
-	      iteratedModel.continuous_variables(test_pt_x);
+	      natafTransform.trans_U_to_X(u_pt,x_pt);
+	      iteratedModel.continuous_variables(x_pt);
 	      set = iteratedModel.current_response().active_set();
 	      set.request_values(0); set.request_value(respFnCount, 1);
 	      iteratedModel.compute_response(set);
 	      const Response& true_resp = iteratedModel.current_response();
 	      const RealVector& true_fn = true_resp.function_values();
 	      
-	      trueOut << std::endl 
-		      << setw(13) << test_pt_u[0] << " " 
-		      << setw(13) << test_pt_u[1] << " " 
-		      << setw(13) << true_fn[respFnCount];
+	      trueOut << '\n' << setw(13) << u_pt[0] << ' ' << setw(13)
+		      << u_pt[1] << ' ' << setw(13) << true_fn[respFnCount];
 	    }
 	  }
-	  gpOut  << std::endl;
-	  varOut << std::endl;
-	  effOut << std::endl;
+	  gpOut << std::endl; varOut << std::endl; effOut << std::endl;
 	  if (true_plot) trueOut << std::endl;
 	}
       }
@@ -859,8 +829,7 @@ expected_improvement(const RealVector& expected_values, const RealVector& u)
   if (mppSearchType == EGRA_X) {
     RealVector x;
     natafTransform.trans_U_to_X(u, x);
-    Model& sub_model = uSpaceModel.subordinate_model();
-    variances = sub_model.approximation_variances(x);
+    variances = uSpaceModel.subordinate_model().approximation_variances(x);
   }
   else
     variances = uSpaceModel.approximation_variances(u);
@@ -909,8 +878,7 @@ expected_feasibility(const RealVector& expected_values,
   if (mppSearchType == EGRA_X) {
     RealVector x;
     natafTransform.trans_U_to_X(u, x);
-    Model& sub_model = uSpaceModel.subordinate_model();
-    variances = sub_model.approximation_variances(x);
+    variances = uSpaceModel.subordinate_model().approximation_variances(x);
   }
   else
     variances = uSpaceModel.approximation_variances(u);

@@ -681,10 +681,8 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& samples)
   varyPattern = true;
   initialize_lhs(false);
   RealMatrix lhs_samples_array;
-#ifdef HAVE_PECOS
   lhsDriver.generate_normal_samples(n_means, n_std_devs, n_l_bnds, n_u_bnds,
 				    numSamples, lhs_samples_array);
-#endif // HAVE_PECOS
 
   for (i=0; i<numRepPoints; i++) {
     int num_samples = int(repWeights[i]*numSamples);

@@ -460,74 +460,6 @@ void NonD::distribute_levels(RealVectorArray& levels, bool ascending)
 }
 
 
-/** Default definition of virtual function (used by sampling, reliability,
-    and stochastic expansion methods) defines the set of statistical
-    results to include means, standard deviations, and level mappings. */
-void NonD::initialize_final_statistics()
-{
-  size_t num_final_stats = 2*numFunctions, num_active_vars = iteratedModel.cv();
-  if (!numEpistemicUncVars) // aleatory UQ
-    num_final_stats += totalLevelRequests;
-  // default response ASV/DVV may be overridden by NestedModel update
-  // in subIterator.response_results_active_set(sub_iterator_set)
-  ActiveSet stats_set(num_final_stats);//, num_active_vars);
-  stats_set.derivative_vector(iteratedModel.inactive_continuous_variable_ids());
-  finalStatistics = Response(stats_set);
-
-  // Assign meaningful labels to finalStatistics (appear in NestedModel output)
-  size_t i, j, num_levels, cntr = 0;
-  char tag_string[10], lev_string[10];
-  StringArray stats_labels(num_final_stats);
-  for (i=0; i<numFunctions; i++) {
-    std::sprintf(tag_string, "_r%i", i+1);
-    if (numEpistemicUncVars) { // epistemic & mixed aleatory/epistemic
-      stats_labels[cntr++] = String("z_lo") + String(tag_string);
-      stats_labels[cntr++] = String("z_up") + String(tag_string);
-    }
-    else {                  // aleatory
-      stats_labels[cntr++] = String("mean")    + String(tag_string);
-      stats_labels[cntr++] = String("std_dev") + String(tag_string);
-      num_levels = requestedRespLevels[i].length();
-      for (j=0; j<num_levels; j++, cntr++) {
-	stats_labels[cntr] = (cdfFlag) ? String("cdf") : String("ccdf");
-	switch (respLevelTarget) {
-	case PROBABILITIES:
-	  std::sprintf(lev_string, "_plev%i",  j+1); break;
-	case RELIABILITIES:
-	  std::sprintf(lev_string, "_blev%i",  j+1); break;
-	case GEN_RELIABILITIES:
-	  std::sprintf(lev_string, "_b*lev%i", j+1); break;
-	}
-	stats_labels[cntr] += String(lev_string) + String(tag_string);
-      }
-      num_levels = requestedProbLevels[i].length() +
-	requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
-      for (j=0; j<num_levels; j++, cntr++) {
-	stats_labels[cntr] = (cdfFlag) ? String("cdf") : String("ccdf");
-	std::sprintf(lev_string, "_zlev%i", j+1);
-	stats_labels[cntr] += String(lev_string) + String(tag_string);
-      }
-    }
-  }
-  finalStatistics.function_labels(stats_labels);
-}
-
-
-void NonD::initialize_final_statistics_gradients()
-{
-  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
-  const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
-  size_t i, num_final_stats     = final_asv.size(),
-            num_final_grad_vars = final_dvv.size();
-  bool final_grad_flag = false;
-  for (i=0; i<num_final_stats; i++)
-    if (final_asv[i] & 2)
-      { final_grad_flag = true; break; }
-  finalStatistics.reshape(num_final_stats, num_final_grad_vars,
-			  final_grad_flag, false);
-}
-
-
 void NonD::construct_u_space_model(Model& x_model, Model& u_model,
 				   bool global_bounds, Real bound)
 {
@@ -718,9 +650,9 @@ void NonD::construct_u_space_model(Model& x_model, Model& u_model,
     for (i=numContDesVars; i<numContDesVars+numContAleatUncVars; ++i) {
       switch (u_types[i]) {
       case Pecos::STD_NORMAL:      // mean +/- bound std devs
-	c_l_bnds[i] = -bound; c_u_bnds[i] = bound; break;
+	c_l_bnds[i] = -bound; c_u_bnds[i] =    bound; break;
       case Pecos::STD_EXPONENTIAL: // [0, mean + bound std devs] for beta=1
-	c_l_bnds[i] =   0.; c_u_bnds[i] = 1.+bound; break;
+	c_l_bnds[i] =     0.; c_u_bnds[i] = 1.+bound; break;
       case Pecos::STD_GAMMA: {
 	Real mean, stdev;
 	Pecos::moments_from_gamma_params(gauv_alphas[guuv_cntr], 1.,
@@ -1011,11 +943,39 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
 void NonD::initialize_random_variables(short u_space_type)
 {
   if (natafTransform.is_null())
-    natafTransform = Pecos::ProbabilityTransformation("nataf"); // for now
-
+    initialize_random_variable_transformation();
   initialize_random_variable_types(u_space_type);
   initialize_random_variable_parameters();
+  initialize_random_variable_correlations();
+  verify_correlation_support();
 }
+
+
+/** This function is commonly used to publish tranformation data when
+    the Model variables are in a transformed space (e.g., u-space) and
+    ProbabilityTransformation::ranVarTypes et al. may not be generated
+    directly.  This allows for the use of inverse transformations to
+    return the transformed space variables to their original states. */
+void NonD::
+initialize_random_variables(const Pecos::ProbabilityTransformation& transform)
+{
+  if (natafTransform.is_null())
+    initialize_random_variable_transformation();
+
+  natafTransform.initialize_random_variables(transform); // or could use copy()
+
+  // infer numContDesVars and numContStateVars, but don't update continuous
+  // aleatory/epistemic uncertain counts (these may be u-space counts).
+  const Pecos::ShortArray& x_types = transform.x_types();
+  numContDesVars
+    = std::count(x_types.begin(), x_types.end(), (short)Pecos::DESIGN);
+  numContStateVars
+    = std::count(x_types.begin(), x_types.end(), (short)Pecos::STATE);
+}
+
+
+void NonD::initialize_random_variable_transformation()
+{ natafTransform = Pecos::ProbabilityTransformation("nataf"); /* for now */ }
 
 
 /** Build ProbabilityTransformation::ranVar arrays containing the
@@ -1483,29 +1443,122 @@ void NonD::initialize_random_variable_parameters()
 }
 
 
-/** This function is commonly used to publish tranformation data when
-    the Model variables are in a transformed space (e.g., u-space) and
-    ProbabilityTransformation::ranVarTypes et al. may not be generated
-    directly.  This allows for the use of inverse transformations to
-    return the transformed space variables to their original states. */
-#ifdef HAVE_PECOS
-void NonD::
-initialize_random_variables(const Pecos::ProbabilityTransformation& transform)
+void NonD::initialize_random_variable_correlations()
 {
-  if (natafTransform.is_null())
-    natafTransform = Pecos::ProbabilityTransformation("nataf"); // for now
-
-  natafTransform.initialize_random_variables(transform); // or could use copy()
-
-  // infer numContDesVars and numContStateVars, but don't update continuous
-  // aleatory/epistemic uncertain counts (these may be u-space counts).
-  const Pecos::ShortArray& x_types = transform.x_types();
-  numContDesVars
-    = std::count(x_types.begin(), x_types.end(), (short)Pecos::DESIGN);
-  numContStateVars
-    = std::count(x_types.begin(), x_types.end(), (short)Pecos::STATE);
+  const RealSymMatrix& uncertain_corr
+    = iteratedModel.distribution_parameters().uncertain_correlations();
+  if (!uncertain_corr.empty()) {
+    natafTransform.initialize_random_variable_correlations(uncertain_corr);
+    if (numContDesVars || numContEpistUncVars || numContStateVars)
+      // expand ProbabilityTransformation::corrMatrixX to include design + state
+      // + epistemic uncertain vars.  TO DO: propagate through model recursion?
+      natafTransform.reshape_correlation_matrix(numContDesVars,
+	numContAleatUncVars, numContEpistUncVars+numContStateVars);
+  }
 }
-#endif // HAVE_PECOS
+
+
+void NonD::verify_correlation_support()
+{
+  // Check for correlations among variable types (bounded normal, bounded
+  // lognormal, loguniform, triangular, beta, and histogram) that are not
+  // supported by Der Kiureghian & Liu for correlation warping estimation when
+  // transforming to std normals.
+  if (natafTransform.x_correlation()) {
+    bool err_flag = false;
+    const Pecos::ShortArray&    x_types = natafTransform.x_types();
+    const Pecos::RealSymMatrix& x_corr  = natafTransform.x_correlation_matrix();
+    size_t i, j;
+    for (i=numContDesVars; i<numContDesVars+numContAleatUncVars; ++i) {
+      bool distribution_error = false;
+      if ( x_types[i] == Pecos::BOUNDED_NORMAL    ||
+	   x_types[i] == Pecos::BOUNDED_LOGNORMAL ||
+	   x_types[i] == Pecos::LOGUNIFORM || x_types[i] == Pecos::TRIANGULAR ||
+	   x_types[i] == Pecos::BETA || x_types[i] == Pecos::HISTOGRAM_BIN )
+	for (j=numContDesVars; j<numContDesVars+numContAleatUncVars; ++j)
+	  if (i != j && std::fabs(x_corr(i, j)) > 1.e-25)
+	    { distribution_error = true; break; }
+      if (distribution_error) {
+	Cerr << "Error: correlation warping for Nataf variable transformation "
+	     << "of bounded normal,\n       bounded lognormal, loguniform, "
+	     << "triangular, beta, and histogram bin\n       distributions is "
+	     << "not currently supported.  Error detected for variable " << i+1
+	     << "." << std::endl;
+	err_flag = true;
+      }
+    }
+    if (err_flag)
+      abort_handler(-1);
+  }
+}
+
+
+/** Default definition of virtual function (used by sampling, reliability,
+    and stochastic expansion methods) defines the set of statistical
+    results to include means, standard deviations, and level mappings. */
+void NonD::initialize_final_statistics()
+{
+  size_t num_final_stats = 2*numFunctions, num_active_vars = iteratedModel.cv();
+  if (!numEpistemicUncVars) // aleatory UQ
+    num_final_stats += totalLevelRequests;
+  // default response ASV/DVV may be overridden by NestedModel update
+  // in subIterator.response_results_active_set(sub_iterator_set)
+  ActiveSet stats_set(num_final_stats);//, num_active_vars);
+  stats_set.derivative_vector(iteratedModel.inactive_continuous_variable_ids());
+  finalStatistics = Response(stats_set);
+
+  // Assign meaningful labels to finalStatistics (appear in NestedModel output)
+  size_t i, j, num_levels, cntr = 0;
+  char tag_string[10], lev_string[10];
+  StringArray stats_labels(num_final_stats);
+  for (i=0; i<numFunctions; i++) {
+    std::sprintf(tag_string, "_r%i", i+1);
+    if (numEpistemicUncVars) { // epistemic & mixed aleatory/epistemic
+      stats_labels[cntr++] = String("z_lo") + String(tag_string);
+      stats_labels[cntr++] = String("z_up") + String(tag_string);
+    }
+    else {                  // aleatory
+      stats_labels[cntr++] = String("mean")    + String(tag_string);
+      stats_labels[cntr++] = String("std_dev") + String(tag_string);
+      num_levels = requestedRespLevels[i].length();
+      for (j=0; j<num_levels; j++, cntr++) {
+	stats_labels[cntr] = (cdfFlag) ? String("cdf") : String("ccdf");
+	switch (respLevelTarget) {
+	case PROBABILITIES:
+	  std::sprintf(lev_string, "_plev%i",  j+1); break;
+	case RELIABILITIES:
+	  std::sprintf(lev_string, "_blev%i",  j+1); break;
+	case GEN_RELIABILITIES:
+	  std::sprintf(lev_string, "_b*lev%i", j+1); break;
+	}
+	stats_labels[cntr] += String(lev_string) + String(tag_string);
+      }
+      num_levels = requestedProbLevels[i].length() +
+	requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
+      for (j=0; j<num_levels; j++, cntr++) {
+	stats_labels[cntr] = (cdfFlag) ? String("cdf") : String("ccdf");
+	std::sprintf(lev_string, "_zlev%i", j+1);
+	stats_labels[cntr] += String(lev_string) + String(tag_string);
+      }
+    }
+  }
+  finalStatistics.function_labels(stats_labels);
+}
+
+
+void NonD::initialize_final_statistics_gradients()
+{
+  const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+  const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
+  size_t i, num_final_stats     = final_asv.size(),
+            num_final_grad_vars = final_dvv.size();
+  bool final_grad_flag = false;
+  for (i=0; i<num_final_stats; i++)
+    if (final_asv[i] & 2)
+      { final_grad_flag = true; break; }
+  finalStatistics.reshape(num_final_stats, num_final_grad_vars,
+			  final_grad_flag, false);
+}
 
 
 void NonD::initialize_distribution_mappings()
@@ -1521,18 +1574,17 @@ void NonD::initialize_distribution_mappings()
     computedRelLevels.resize(numFunctions);
     computedGenRelLevels.resize(numFunctions);
     for (size_t i=0; i<numFunctions; ++i) {
-      size_t num_levels = requestedRespLevels[i].length();
       switch (respLevelTarget) {
       case PROBABILITIES:
-	computedProbLevels[i].resize(num_levels);   break;
+	computedProbLevels[i].resize(requestedRespLevels[i].length());   break;
       case RELIABILITIES:
-	computedRelLevels[i].resize(num_levels);    break;
+	computedRelLevels[i].resize(requestedRespLevels[i].length());    break;
       case GEN_RELIABILITIES:
-	computedGenRelLevels[i].resize(num_levels); break;
+	computedGenRelLevels[i].resize(requestedRespLevels[i].length()); break;
       }
-      num_levels = requestedProbLevels[i].length() +
-	requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
-      computedRespLevels[i].resize(num_levels);
+      computedRespLevels[i].resize(requestedProbLevels[i].length() +
+				   requestedRelLevels[i].length()  +
+				   requestedGenRelLevels[i].length());
     }
   }
 }

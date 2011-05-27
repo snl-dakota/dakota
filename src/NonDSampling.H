@@ -17,9 +17,7 @@
 
 #include "data_types.h"
 #include "DakotaNonD.H"
-#ifdef HAVE_PECOS
 #include "LHSDriver.hpp"
-#endif // HAVE_PECOS
 #include "SensAnalysisGlobal.H"
 
 namespace Dakota {

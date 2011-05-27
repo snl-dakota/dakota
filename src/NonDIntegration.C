@@ -32,16 +32,19 @@ namespace Dakota {
 NonDIntegration::NonDIntegration(Model& model): NonD(model), numIntegrations(0)
   //, standAloneMode(true)
 {
-  initialize_random_variable_types(EXTENDED_U);
-  //natafTransform.initialize_random_variable_correlations(
-  //  model.uncertain_correlations());
-
   // Check for suitable distribution types.
   if (numDiscreteIntVars || numDiscreteRealVars) {
     Cerr << "\nError: discrete random variables are not currently supported in "
 	 << "NonDIntegration." << std::endl;
     abort_handler(-1);
   }
+
+  initialize_random_variable_transformation();
+  initialize_random_variable_types(EXTENDED_U);
+  // Note: initialize_random_variable_parameters() is performed at run time
+  initialize_random_variable_correlations();
+  verify_correlation_support();
+  initialize_final_statistics(); // default statistics set
 }
 
 
