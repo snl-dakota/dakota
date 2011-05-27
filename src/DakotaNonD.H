@@ -123,13 +123,18 @@ protected:
   /// initializes finalStatistics::functionGradients
   void initialize_final_statistics_gradients();
 
+  /// recast x_model from x-space to u-space to create u_model
+  void construct_u_space_model(Model& x_model, Model& u_model,
+			       bool global_bounds = false, Real bound = 10.);
+
   /// static function for RecastModels used to map u-space variables
   /// from NonD Iterators to x-space variables for Model evaluations.
   static void vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars);
 
   /// static function for RecastModels used to map u-space ActiveSets
   /// from NonD Iterators to x-space ActiveSets for Model evaluations.
-  static void set_u_to_x_mapping(const ActiveSet& u_set, ActiveSet& x_set);
+  static void set_u_to_x_mapping(const Variables& u_vars,
+				 const ActiveSet& u_set, ActiveSet& x_set);
 
   /// static function for RecastModels used to map x-space responses from
   /// Model evaluations to u-space responses for return to NonD Iterators.

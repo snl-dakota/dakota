@@ -316,7 +316,8 @@ PMA_constraint_eval(const Variables& sub_model_vars,
 
 
 void NonDReliability::
-PMA2_set_mapping(const ActiveSet& recast_set, ActiveSet& sub_model_set)
+PMA2_set_mapping(const Variables& recast_vars, const ActiveSet& recast_set,
+		 ActiveSet& sub_model_set)
 {
   // if the constraint value is requested for second-order PMA, then the
   // sub-model response gradient and Hessian are required to update beta-bar.

@@ -27,11 +27,12 @@ namespace Dakota {
 
 
 RecastModel::
-RecastModel(Model& sub_model, const Sizet2DArray& vars_map_indices,
+RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 	    bool nonlinear_vars_mapping,
 	    void (*variables_map)      (const Variables& recast_vars,
 					Variables& sub_model_vars),
-	    void (*set_map)            (const ActiveSet& recast_set,
+	    void (*set_map)            (const Variables& recast_vars,
+					const ActiveSet& recast_set,
 					ActiveSet& sub_model_set),
 	    const Sizet2DArray& primary_resp_map_indices,
 	    const Sizet2DArray& secondary_resp_map_indices,
@@ -137,7 +138,7 @@ RecastModel(Model& sub_model, const Sizet2DArray& vars_map_indices,
     currentResponse, and userDefinedConstraints.  The resulting model
     is sufficiently complete for passing to an Iterator. */
 RecastModel::
-RecastModel(Model& sub_model, //size_t num_deriv_vars,
+RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	    size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
 	    size_t recast_secondary_offset):
   Model(RecastBaseConstructor(), sub_model.problem_description_db(),
@@ -216,7 +217,8 @@ initialize(const Sizet2DArray& vars_map_indices,
 	   bool nonlinear_vars_mapping,
 	   void (*variables_map)      (const Variables& recast_vars,
 				       Variables& sub_model_vars),
-	   void (*set_map)            (const ActiveSet& recast_set,
+	   void (*set_map)            (const Variables& recast_vars,
+				       const ActiveSet& recast_set,
 				       ActiveSet& sub_model_set),
 	   const Sizet2DArray& primary_resp_map_indices,
 	   const Sizet2DArray& secondary_resp_map_indices,
@@ -269,7 +271,7 @@ void RecastModel::derived_compute_response(const ActiveSet& set)
   // the incoming set is for the recast problem, which must be converted
   // back to the underlying response set for evaluation by the subModel.
   ActiveSet sub_model_set;
-  set_mapping(set, sub_model_set);
+  set_mapping(currentVariables, set, sub_model_set);
 
   parallelLib.parallel_configuration_iterator(
     subModel.parallel_configuration_iterator());
@@ -327,7 +329,7 @@ void RecastModel::derived_asynch_compute_response(const ActiveSet& set)
   // the incoming set is for the recast problem, which must be converted
   // back to the underlying response set for evaluation by the subModel.
   ActiveSet sub_model_set;
-  set_mapping(set, sub_model_set);
+  set_mapping(currentVariables, set, sub_model_set);
 
   // evaluate the subModel in the original fn set definition.  Doing this here 
   // eliminates the need for eval tracking logic within the separate eval fns.
@@ -443,7 +445,8 @@ const IntResponseMap& RecastModel::derived_synchronize_nowait()
 
 
 void RecastModel::
-set_mapping(const ActiveSet& recast_set, ActiveSet& sub_model_set)
+set_mapping(const Variables& recast_vars, const ActiveSet& recast_set,
+	    ActiveSet& sub_model_set)
 {
   const size_t& num_recast_primary_fns   = primaryRespMapIndices.size();
   const size_t& num_recast_secondary_fns = secondaryRespMapIndices.size();
@@ -466,7 +469,7 @@ set_mapping(const ActiveSet& recast_set, ActiveSet& sub_model_set)
   // perform any supplied ASV modifications that augment the standard
   // mapping rules
   if (setMapping)
-    setMapping(recast_set, sub_model_set);
+    setMapping(recast_vars, recast_set, sub_model_set);
 
   // project each recast_asv request onto the contributing set of functions
   // within the sub_model_asv.  In the case of nonlinear input/output mappings,

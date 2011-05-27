@@ -116,41 +116,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
 
   // The Gaussian process model of the limit state in u-space [G-hat(u)] is 
   // constructed here one time.
-  Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
-  vars_map.resize(numContinuousVars);
-  for (i=0; i<numContinuousVars; ++i) {
-    vars_map[i].resize(1);
-    vars_map[i][0] = i;
-  }
-  primary_resp_map.resize(numFunctions);
-  for (i=0; i<numFunctions; ++i) {
-    primary_resp_map[i].resize(1);
-    primary_resp_map[i][0] = i;
-  }
 
-  // All uncertain variables are recast to N(0,1)
-  RealVector nuv_means(numContAleatUncVars);           // init to 0
-  RealVector nuv_std_devs(numContAleatUncVars, false); nuv_std_devs = 1.;
-  RealVector nuv_l_bnds(numContAleatUncVars, false);   nuv_l_bnds   = -DBL_MAX;
-  RealVector nuv_u_bnds(numContAleatUncVars, false);   nuv_u_bnds   =  DBL_MAX;
-  // Global bounds: uncertain variables limited to 5 std devs in u space,
-  // design/state variables are recast to [-1,1]
-  RealVector c_l_bnds(numContinuousVars, false); c_l_bnds = -5.;
-  RealVector c_u_bnds(numContinuousVars, false); c_u_bnds =  5.;
-  for (i=0; i<numContDesVars; i++)
-    { c_l_bnds[i] = -1.; c_u_bnds[i] = 1.; }
-  for (i=numContDesVars+numContAleatUncVars; i<numContinuousVars; i++)
-    { c_l_bnds[i] = -1.; c_u_bnds[i] = 1.; }
-
-  // Nataf is a nonlinear tranformation for all variables except Normals.
-  // Nonlinear mappings require special ASV logic for transforming Hessians.
-  const Pecos::ShortArray& x_types = natafTransform.x_types();
-  bool nonlinear_vars_map = ( numContAleatUncVars != std::count(x_types.begin(),
-			      x_types.end(), (short)Pecos::NORMAL) );
-
-  // There is no additional response mapping beyond that required by the
-  // nonlinear variables mapping.
-  BoolDequeArray nonlinear_resp_map(numFunctions, BoolDeque(1, false));
   // Always build a global Gaussian process model.  No correction is needed.
   String approx_type = "global_gaussian", corr_type, sample_type;
   UShortArray approx_order; // empty
@@ -213,35 +179,13 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
     // Recast g-hat(x) to G-hat(u)
-    uSpaceModel.assign_rep(new RecastModel(g_hat_x_model, vars_map,
-      nonlinear_vars_map, vars_u_to_x_mapping, set_u_to_x_mapping,
-      primary_resp_map, secondary_resp_map, 0, nonlinear_resp_map,
-      resp_x_to_u_mapping, NULL), false);
-    // populate random variable distribution parameters for u-space
-    Pecos::DistributionParams& dp = uSpaceModel.distribution_parameters();
-    dp.normal_means(nuv_means);
-    dp.normal_std_deviations(nuv_std_devs);
-    dp.normal_lower_bounds(nuv_l_bnds);
-    dp.normal_upper_bounds(nuv_u_bnds);
-    uSpaceModel.continuous_lower_bounds(c_l_bnds);
-    uSpaceModel.continuous_upper_bounds(c_u_bnds);
+    construct_u_space_model(g_hat_x_model, uSpaceModel, true, 5.);// global bnds
   }
   else { // DataFit( Recast( iteratedModel ) ) )
 
     // Recast g(x) to G(u)
     Model g_u_model;
-    g_u_model.assign_rep(new RecastModel(iteratedModel, vars_map,
-      nonlinear_vars_map, vars_u_to_x_mapping, set_u_to_x_mapping,
-      primary_resp_map, secondary_resp_map, 0, nonlinear_resp_map,
-      resp_x_to_u_mapping, NULL), false);
-    // populate random variable distribution parameters for u-space
-    Pecos::DistributionParams& dp = g_u_model.distribution_parameters();
-    dp.normal_means(nuv_means);
-    dp.normal_std_deviations(nuv_std_devs);
-    dp.normal_lower_bounds(nuv_l_bnds);
-    dp.normal_upper_bounds(nuv_u_bnds);
-    g_u_model.continuous_lower_bounds(c_l_bnds);
-    g_u_model.continuous_upper_bounds(c_u_bnds);
+    construct_u_space_model(iteratedModel, g_u_model, true, 5.); // global bnds
 
     // For additional generality, could develop on the fly envelope ctor:
     //Iterator dace_iterator(g_u_model, dace_method, ...);

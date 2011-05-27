@@ -102,7 +102,8 @@ protected:
 
   /// static function used to augment the sub-model ASV requests when a
   /// beta-bar constraint target update is required for second-order PMA
-  static void PMA2_set_mapping(const ActiveSet& recast_set,
+  static void PMA2_set_mapping(const Variables& recast_vars,
+			       const ActiveSet& recast_set,
 			       ActiveSet& sub_model_set);
 
   //

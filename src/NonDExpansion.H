@@ -75,9 +75,6 @@ protected:
   /// avoids unnecessary overhead in compute_expansion()
   void update_expansion();
 
-  /// recast iteratedModel from x-space to u-space to create g_u_model
-  void construct_g_u_model(Model& g_u_model);
-
   /// assign a NonDCubature instance within u_space_sampler
   void construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
 			  unsigned short cub_int_order);

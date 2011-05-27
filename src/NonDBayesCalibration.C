@@ -66,8 +66,10 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     Iterator lhs_iterator; // TO DO: construct_lhs()
 
     if (standardizedSpace) {
-      Model g_u_model; // recasting of iteratedModel
-      //construct_g_u_model(iteratedModel, g_u_model); // TO DO
+      Model g_u_model;
+      // TO DO: move NonDExpansion::initialize() up and invoke from this ctor
+      // so that natafTransform is initialized
+      construct_u_space_model(iteratedModel, g_u_model, true);//globally bounded
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, g_u_model,
         approx_type, approx_order, corr_type, corr_order, data_order,
         sample_reuse), false);
@@ -81,7 +83,9 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
   }
   case NO_EMULATOR:
     if (standardizedSpace) { // recast to standardized probability space
-      //construct_g_u_model(iteratedModel, emulatorModel); // TO DO
+      // TO DO: move NonDExpansion::initialize() up and invoke from this ctor 
+      // so that natafTransform is initialized
+      construct_u_space_model(iteratedModel, emulatorModel); // no global bounds
       emulatorModel.init_communicators(mcmc_concurrency);
     }
     else

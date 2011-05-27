@@ -29,7 +29,9 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  construct_g_u_model(g_u_model);
+  bool global_bnds
+    = (numContDesVars || numContEpistUncVars || numContStateVars);
+  construct_u_space_model(iteratedModel, g_u_model, global_bnds);
 
   // -------------------------
   // Construct u_space_sampler
@@ -118,7 +120,9 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
-  construct_g_u_model(g_u_model);
+  bool global_bnds
+    = (numContDesVars || numContEpistUncVars || numContStateVars);
+  construct_u_space_model(iteratedModel, g_u_model, global_bnds);
 
   // -------------------------
   // Construct u_space_sampler

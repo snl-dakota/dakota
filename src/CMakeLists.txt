@@ -206,6 +206,7 @@ set(iterator_src DakotaIterator.C DakotaAnalyzer.C DakotaPStudyDACE.C
     NonDGlobalSingleInterval.C NonDIntegration.C NonDCubature.C
     NonDQuadrature.C NonDSparseGrid.C NonDSampling.C NonDAdaptImpSampling.C
     NonDExpansion.C NonDPolynomialChaos.C NonDStochCollocation.C
+    NonDCalibration.C NonDBayesCalibration.C
     NonDLHSSampling.C NonDIncremLHSSampling.C
     DakotaMinimizer.C DakotaOptimizer.C DakotaLeastSq.C NonlinearCGOptimizer.C 
     SurrBasedMinimizer.C SurrBasedLocalMinimizer.C SurrBasedGlobalMinimizer.C

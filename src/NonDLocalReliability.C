@@ -184,42 +184,14 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
   // The model of the limit state in u-space (uSpaceModel) is constructed here
   // one time.  The RecastModel for the RIA/PMA formulations varies with the
   // level requests and is constructed for each level within mpp_search().
-  Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
-  vars_map.resize(numContinuousVars);
-  size_t i;
-  for (i=0; i<numContinuousVars; i++) {
-    vars_map[i].resize(1);
-    vars_map[i][0] = i;
-  }
-  primary_resp_map.resize(numFunctions);
-  for (i=0; i<numFunctions; i++) {
-    primary_resp_map[i].resize(1);
-    primary_resp_map[i][0] = i;
-  }
-  // Bound to 10 std devs in u space.  This is particularly important for PMA
+
+  // Instantiate the Nataf Recast and any DataFit model recursions.  Recast is
+  // bounded to 10 std devs in u space.  This is particularly important for PMA
   // since an SQP-based optimizer will not enforce the constraint immediately
   // and min +/-g has been observed to have significant excursions early on
   // prior to the u'u = beta^2 constraint enforcement bringing it back.  A
   // large excursion can cause overflow; a medium excursion can cause poor 
   // performance since far-field info is introduced into the BFGS Hessian.
-  RealVector sig10_l_bnds(numUncertainVars, false),
-    sig10_u_bnds(numUncertainVars, false), nuv_means(numUncertainVars),
-    nuv_std_devs(numUncertainVars, false), nuv_l_bnds(numUncertainVars, false),
-    nuv_u_bnds(numUncertainVars, false);
-  sig10_l_bnds = -10.;
-  sig10_u_bnds =  10.;
-  nuv_std_devs =  1.;
-  nuv_l_bnds   = -DBL_MAX;
-  nuv_u_bnds   =  DBL_MAX;
-  // Nataf is a nonlinear tranformation for all variables except Normals.
-  // Nonlinear mappings require special ASV logic for transforming Hessians.
-  const Pecos::ShortArray& x_types = natafTransform.x_types();
-  bool nonlinear_vars_map = ( numUncertainVars != std::count(x_types.begin(),
-			      x_types.end(), (short)Pecos::NORMAL) );
-  // There is no additional response mapping beyond that required by the
-  // nonlinear variables mapping.
-  BoolDequeArray nonlinear_resp_map(numFunctions, BoolDeque(1, false));
-  // instantiate the Nataf Recast and any DataFit model recursions
   if (mppSearchType ==  AMV_X || mppSearchType == AMV_PLUS_X ||
       mppSearchType == TANA_X) { // Recast( DataFit( iteratedModel ) )
 
@@ -240,37 +212,15 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       approx_type, approx_order, corr_type, corr_order, data_order,
       sample_reuse), false);
 
-    // Recast g-hat(x) to G-hat(u)
-    uSpaceModel.assign_rep(new RecastModel(g_hat_x_model, vars_map,
-      nonlinear_vars_map, vars_u_to_x_mapping, set_u_to_x_mapping,
-      primary_resp_map, secondary_resp_map, 0, nonlinear_resp_map,
-      resp_x_to_u_mapping, NULL), false);
-    // populate random variable distribution parameters for u-space
-    Pecos::DistributionParams& dp = uSpaceModel.distribution_parameters();
-    dp.normal_means(nuv_means);
-    dp.normal_std_deviations(nuv_std_devs);
-    dp.normal_lower_bounds(nuv_l_bnds);
-    dp.normal_upper_bounds(nuv_u_bnds);
-    uSpaceModel.continuous_lower_bounds(sig10_l_bnds);
-    uSpaceModel.continuous_upper_bounds(sig10_u_bnds);
+    // transform g_hat_x_model from x-space to u-space
+    construct_u_space_model(g_hat_x_model, uSpaceModel, true);//globally bounded
   }
   else if (mppSearchType ==  AMV_U || mppSearchType == AMV_PLUS_U ||
 	   mppSearchType == TANA_U) { // DataFit( Recast( iteratedModel ) )
 
     // Recast g(x) to G(u)
     Model g_u_model;
-    g_u_model.assign_rep(new RecastModel(iteratedModel, vars_map,
-      nonlinear_vars_map, vars_u_to_x_mapping, set_u_to_x_mapping,
-      primary_resp_map, secondary_resp_map, 0, nonlinear_resp_map,
-      resp_x_to_u_mapping, NULL), false);
-    // populate random variable distribution parameters for u-space
-    Pecos::DistributionParams& dp = g_u_model.distribution_parameters();
-    dp.normal_means(nuv_means);
-    dp.normal_std_deviations(nuv_std_devs);
-    dp.normal_lower_bounds(nuv_l_bnds);
-    dp.normal_upper_bounds(nuv_u_bnds);
-    g_u_model.continuous_lower_bounds(sig10_l_bnds);
-    g_u_model.continuous_upper_bounds(sig10_u_bnds);
+    construct_u_space_model(iteratedModel, g_u_model, true); // globally bounded
 
     // Construct G-hat(u) using a local/multipoint approximation over the
     // uncertain variables (using the same view as iteratedModel/g_u_model).
@@ -288,22 +238,9 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       approx_type, approx_order, corr_type, corr_order, data_order,
       sample_reuse), false);
   }
-  else if (mppSearchType == NO_APPROX) { // Recast( iteratedModel )
-
+  else if (mppSearchType == NO_APPROX) // Recast( iteratedModel )
     // Recast g(x) to G(u)
-    uSpaceModel.assign_rep(new RecastModel(iteratedModel, vars_map,
-      nonlinear_vars_map, vars_u_to_x_mapping, set_u_to_x_mapping,
-      primary_resp_map, secondary_resp_map, 0, nonlinear_resp_map,
-      resp_x_to_u_mapping, NULL), false);
-    // populate random variable distribution parameters for u-space
-    Pecos::DistributionParams& dp = uSpaceModel.distribution_parameters();
-    dp.normal_means(nuv_means);
-    dp.normal_std_deviations(nuv_std_devs);
-    dp.normal_lower_bounds(nuv_l_bnds);
-    dp.normal_upper_bounds(nuv_u_bnds);
-    uSpaceModel.continuous_lower_bounds(sig10_l_bnds);
-    uSpaceModel.continuous_upper_bounds(sig10_u_bnds);
-  }
+    construct_u_space_model(iteratedModel, uSpaceModel, true);//globally bounded
 
   // configure a RecastModel with one objective and one equality constraint
   // using the alternate minimalist constructor
@@ -393,7 +330,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
   const String& integration_refine
     = probDescDB.get_string("method.nond.integration_refinement");
   if (!integration_refine.empty()) {
-    for (i=0; i<numFunctions; i++) {
+    for (size_t i=0; i<numFunctions; i++) {
       if (!requestedProbLevels[i].empty() || !requestedRelLevels[i].empty() ||
 	  !requestedGenRelLevels[i].empty()) {
 	Cerr << "\nError: importance sampling methods only supported for RIA."
@@ -438,7 +375,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
   // not always achieved) and since probability and reliability are carried
   // along in parallel (due to their direct correspondence).
   computedRelLevels.resize(numFunctions);
-  for (i=0; i<numFunctions; i++) {
+  for (size_t i=0; i<numFunctions; i++) {
     size_t num_levels = requestedRespLevels[i].length() + 
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +
       requestedGenRelLevels[i].length();
@@ -930,7 +867,8 @@ void NonDLocalReliability::mpp_search()
 
 	  // If PMA SORM with p-level or generalized beta-level,
 	  // requestedCDFRelLevel must be updated using current grad/Hessian.
-	  void (*set_map) (const ActiveSet& recast_set,
+	  void (*set_map) (const Variables& recast_vars,
+			   const ActiveSet& recast_set,
 			   ActiveSet& sub_model_set) =
 	    ( mppSearchType == NO_APPROX && integrationOrder == 2 &&
 	      ( levelCount <  rl_len + pl_len ||

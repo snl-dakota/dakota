@@ -41,11 +41,12 @@ public:
   //
 
   /// standard constructor
-  RecastModel(Model& sub_model, const Sizet2DArray& vars_map_indices,
+  RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 	      bool nonlinear_vars_mapping,
 	      void (*variables_map)      (const Variables& recast_vars,
 					  Variables& sub_model_vars),
-	      void (*set_map)            (const ActiveSet& recast_set,
+	      void (*set_map)            (const Variables& recast_vars,
+					  const ActiveSet& recast_set,
 					  ActiveSet& sub_model_set),
 	      const Sizet2DArray& primary_resp_map_indices,
 	      const Sizet2DArray& secondary_resp_map_indices,
@@ -60,7 +61,7 @@ public:
 					  const Response& sub_model_response,
 					  Response& recast_response));
   /// alternate constructor
-  RecastModel(Model& sub_model, //size_t num_deriv_vars,
+  RecastModel(const Model& sub_model, //size_t num_deriv_vars,
 	      size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
 	      size_t recast_secondary_offset);
 
@@ -76,7 +77,8 @@ public:
 		  bool nonlinear_vars_mapping,
 		  void (*variables_map)     (const Variables& recast_vars,
 					     Variables& sub_model_vars),
-		  void (*set_map)           (const ActiveSet& recast_set,
+		  void (*set_map)           (const Variables& recast_vars,
+					     const ActiveSet& recast_set,
 					     ActiveSet& sub_model_set),
 		  const Sizet2DArray& primary_resp_map_indices,
 		  const Sizet2DArray& secondary_resp_map_indices,
@@ -236,7 +238,8 @@ private:
 
   /// Uses recastFnMap to convert incoming recast_set from iterator
   /// into sub_model_set for use with subModel.
-  void set_mapping(const ActiveSet& recast_set, ActiveSet& sub_model_set);
+  void set_mapping(const Variables& recast_vars, const ActiveSet& recast_set,
+		   ActiveSet& sub_model_set);
 
   /// update current variables/labels/bounds/targets from subModel
   void update_from_sub_model();
@@ -295,7 +298,8 @@ private:
   void (*variablesMapping)     (const Variables& recast_vars,
 			        Variables& sub_model_vars);
   /// holds pointer for set mapping function passed in ctor/initialize
-  void (*setMapping)           (const ActiveSet& recast_set,
+  void (*setMapping)           (const Variables& recast_vars,
+				const ActiveSet& recast_set,
 			        ActiveSet& sub_model_set);
   /// holds pointer for primary response mapping function passed in
   /// ctor/initialize
