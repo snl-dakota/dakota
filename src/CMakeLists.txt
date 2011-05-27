@@ -236,6 +236,27 @@ if(HAVE_ACRO)
   #list(APPEND TPL_LIBS colin tinyxml 3po)
 endif(HAVE_ACRO)
 
+
+option(HAVE_QUESO "Toggle QUESO support, default is QUESO disabled" OFF)
+CheckPackage(QUESO)
+if(HAVE_QUESO)
+  list(APPEND iterator_src NonDQUESOBayesCalibration.C)
+  add_definitions("-DDAKOTA_QUESO")
+
+  # QUESO depends on additional Trilinos packages (NOT just teuchos)
+  include(${Trilinos_DIR}/TrilinosConfig_install.cmake)
+
+  include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
+                      ${Trilinos_INCLUDE_DIRS})
+
+  list(APPEND link_directories "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
+       ${Trilinos_LIBRARY_DIRS})
+
+  list(APPEND TPL_LIBS queso grvy ${Trilinos_LIBRARIES})
+  list(APPEND EXPORT_TARGETS queso grvy ${Trilinos_LIBRARIES})
+endif(HAVE_QUESO)
+
+
 # TODO: conditional on Acro?  
 if(Boost_FOUND)
   list(APPEND link_directories ${Boost_LIBRARY_DIRS})
