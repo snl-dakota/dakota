@@ -93,9 +93,9 @@ protected:
 			     unsigned short ssg_level,
 			     const RealVector& ssg_dim_pref,
 			     bool piecewise_basis, bool use_derivs);
-  /// assign a NonDLHSSampling instance within u_space_sampler
-  void construct_lhs(Iterator& u_space_sampler, Model& g_u_model,
-		     int num_samples);
+  // assign a NonDIncremLHSSampling instance within u_space_sampler
+  //void construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
+  //				 int num_samples, int seed, const String& rng);
 
   /// initialize uSpaceModel polynomial approximations with PCE/SC data
   void initialize_u_space_model();
@@ -140,6 +140,10 @@ protected:
 
   /// refinement type: NO_REFINEMENT, P_REFINEMENT, or H_REFINEMENT
   short refineType;
+  /// refinement control: NO_CONTROL, UNIFORM_CONTROL,
+  /// DIMENSION_ADAPTIVE_TOTAL_SOBOL, DIMENSION_ADAPTIVE_SPECTRAL_DECAY, or
+  /// DIMENSION_ADAPTIVE_GENERALIZED_SPARSE
+  short refineControl;
 
 private:
 
@@ -198,11 +202,6 @@ private:
   /// user override of default rule growth: NO_GROWTH_OVERRIDE,
   /// RESTRICTED, or UNRESTRICTED
   short ruleGrowthOverride;
-
-  /// refinement control: NO_CONTROL, UNIFORM_CONTROL,
-  /// DIMENSION_ADAPTIVE_TOTAL_SOBOL, DIMENSION_ADAPTIVE_SPECTRAL_DECAY, or
-  /// DIMENSION_ADAPTIVE_GENERALIZED_SPARSE
-  short refineControl;
 
   /// flag to use LHS sampling or MMAIS sampling on the expansion
   bool impSampling;

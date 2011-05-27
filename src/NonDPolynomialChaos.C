@@ -101,11 +101,26 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     else { // expansion_samples or collocation_points
       int exp_samples = probDescDB.get_int("method.nond.expansion_samples");
       if (exp_samples > 0) { // expectation
+	if (refineType) { // no obvious logic for sample refinement
+	  Cerr << "Error: uniform/adaptive refinement of expansion_samples not "
+	       << "supported." << std::endl;
+	  abort_handler(-1);
+	}
 	numSamplesOnModel       = exp_samples;
 	expansionCoeffsApproach = Pecos::SAMPLING;
-	construct_lhs(u_space_sampler, g_u_model, numSamplesOnModel);
+	// reuse seed/rng settings intended for the expansion_sampler
+	construct_lhs(u_space_sampler, g_u_model, numSamplesOnModel,
+		      probDescDB.get_int("method.random_seed"),
+		      probDescDB.get_string("method.random_number_generator"));
       }
       else { // regression
+	if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
+	  // adaptive precluded since grid anisotropy not readily supported
+	  // for synchronization with expansion anisotropy.
+	  Cerr << "Error: only uniform refinement is supported for LHS "
+	       << "regression." << std::endl;
+	  abort_handler(-1);
+	}
 	expansionCoeffsApproach = Pecos::REGRESSION;
 	size_t exp_terms = (exp_order.empty()) ? expansionTerms : 
 	  Pecos::PolynomialApproximation::total_order_terms(exp_order);
@@ -117,17 +132,22 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	}
 	else if (collocRatio > 0.)
 	  numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
-	// "probabilistic collocation": subset of TPQ pts w/ highest product wt
-	if (tensorRegression)
+	if (tensorRegression) // "probabilistic collocation": subset of TPQ pts
 	  // since NonDExpansion invokes uSpaceModel.build_approximation() which
 	  // in turn invokes daceIterator.run_iterator(), we need to avoid
 	  // execution of the full tensor grid in real fn evals by overloading
 	  // the NonDQuad ctor to allow internal point set filtering.
 	  construct_quadrature(u_space_sampler, g_u_model, numSamplesOnModel,
 			       piecewise_basis, use_derivs);
-	// "point collocation": LHS sampling
-	else
-	  construct_lhs(u_space_sampler, g_u_model, numSamplesOnModel);
+	else                  // "point collocation": LHS sampling
+	  // reuse seed/rng settings intended for the expansion_sampler
+	  construct_lhs(u_space_sampler, g_u_model, numSamplesOnModel,
+	    probDescDB.get_int("method.random_seed"),
+	    probDescDB.get_string("method.random_number_generator"));
+	// TO DO:
+	//if (probDescDB.get_string("method.nond.expansion_sample_type")
+	//    == "incremental_lhs"))
+	//  construct_incremental_lhs();
       }
     }
 

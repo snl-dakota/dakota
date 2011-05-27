@@ -15,6 +15,7 @@
 #include "RecastModel.H"
 #include "DakotaResponse.H"
 #include "DakotaNonD.H"
+#include "NonDLHSSampling.H"
 #include "ProblemDescDB.H"
 #include "pecos_stat_util.hpp"
 
@@ -766,6 +767,22 @@ void NonD::construct_u_space_model(Model& x_model, Model& u_model,
     u_model.continuous_lower_bounds(c_l_bnds);
     u_model.continuous_upper_bounds(c_u_bnds);
   }
+}
+
+
+void NonD::construct_lhs(Iterator& u_space_sampler, Model& u_model,
+			 int num_samples, int seed, const String& rng)
+{
+  // sanity checks
+  if (num_samples <= 0) {
+    Cerr << "Error: bad samples specification (" << num_samples << ") in "
+	 << "NonD::construct_lhs()." << std::endl;
+    abort_handler(-1);
+  }
+
+  String sample_type; // default LHS sample_type
+  u_space_sampler.assign_rep(new NonDLHSSampling(u_model, sample_type,
+                             num_samples, seed, rng, ACTIVE), false);
 }
 
 

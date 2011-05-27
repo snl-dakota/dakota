@@ -46,7 +46,7 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     else
       stochExpIterator.assign_rep(new NonDStochCollocation(iteratedModel,
 	Pecos::SPARSE_GRID, level, EXTENDED_U, use_derivs));
-    // extract NonDStochCollocation's uSpaceModel for use in likelihood evals
+    // extract NonDExpansion's uSpaceModel for use in likelihood evals
     emulatorModel = stochExpIterator.algorithm_space_model(); // shared rep
     emulatorModel.init_communicators(mcmc_concurrency);
     break;
@@ -63,21 +63,23 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
         seed    = probDescDB.get_int("method.random_seed");
     const String& rng = probDescDB.get_string("method.random_number_generator");
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
-    Iterator lhs_iterator; // TO DO: construct_lhs()
-
+    Iterator lhs_iterator;
     if (standardizedSpace) {
       Model g_u_model;
       // TO DO: move NonDExpansion::initialize() up and invoke from this ctor
       // so that natafTransform is initialized
       construct_u_space_model(iteratedModel, g_u_model, true);//globally bounded
+      construct_lhs(lhs_iterator, g_u_model, samples, seed, rng);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, g_u_model,
         approx_type, approx_order, corr_type, corr_order, data_order,
         sample_reuse), false);
     }
-    else
+    else {
+      construct_lhs(lhs_iterator, iteratedModel, samples, seed, rng);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, iteratedModel,
         approx_type, approx_order, corr_type, corr_order, data_order,
         sample_reuse), false);
+    }
     emulatorModel.init_communicators(mcmc_concurrency);
     break;
   }

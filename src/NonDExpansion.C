@@ -282,8 +282,10 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 }
 
 
+/*
 void NonDExpansion::
-construct_lhs(Iterator& u_space_sampler, Model& g_u_model, int num_samples)
+construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
+			  int num_samples, int seed, const String& rng)
 {
   // sanity checks
   if (num_samples <= 0) {
@@ -291,43 +293,14 @@ construct_lhs(Iterator& u_space_sampler, Model& g_u_model, int num_samples)
 	 << "NonDExpansion::construct_lhs()." << std::endl;
     abort_handler(-1);
   }
-  if (refineType) {
-    // SAMPLING precluded for uniform/adaptive since no obvious logic for
-    // sample refinement.
-    if (expansionCoeffsApproach == Pecos::SAMPLING) {
-      Cerr << "Error: uniform/adaptive refinement of expansion_samples not "
-	   << "supported." << std::endl;
-      abort_handler(-1);
-    }
-    // REGRESSION precluded for adaptive since grid anisotropy not readily
-    // supported for synchronization with expansion anisotropy.
-    if (expansionCoeffsApproach == Pecos::REGRESSION &&
-	refineControl            > Pecos::UNIFORM_CONTROL) {
-      Cerr << "Error: only uniform refinement is supported for LHS regression."
-	   << std::endl;
-      abort_handler(-1);
-    }
-  }
 
-  /*
-  if (exp_samples > 0 &&
-      probDescDB.get_string("method.nond.expansion_sample_type")
-      == "incremental_lhs")
-    // TO DO: define and pass previous_samples ?
-    u_space_sampler.assign_rep(new NonDIncremLHSSampling(g_u_model, num_samples,
-      orig_seed, ACTIVE), false);
-  else
-  */
-
-  // go ahead and reuse seed/rng settings intended for the expansion_sampler
-  int orig_seed = probDescDB.get_int("method.random_seed");
-  const String& rng = probDescDB.get_string("method.random_number_generator");
   // use default LHS sample_type for consistency with collocation support for
   // incremental_lhs but not incremental_random
   String sample_type; // default
-  u_space_sampler.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
+  u_space_sampler.assign_rep(new NonDIncremLHSSampling(u_model, sample_type,
     num_samples, orig_seed, rng, ACTIVE), false);
 }
+*/
 
 
 void NonDExpansion::initialize_u_space_model()

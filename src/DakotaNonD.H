@@ -126,6 +126,9 @@ protected:
   /// recast x_model from x-space to u-space to create u_model
   void construct_u_space_model(Model& x_model, Model& u_model,
 			       bool global_bounds = false, Real bound = 10.);
+  /// assign a NonDLHSSampling instance within u_space_sampler
+  void construct_lhs(Iterator& u_space_sampler, Model& u_model,
+		     int num_samples, int seed, const String& rng);
 
   /// static function for RecastModels used to map u-space variables
   /// from NonD Iterators to x-space variables for Model evaluations.
