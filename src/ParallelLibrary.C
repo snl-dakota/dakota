@@ -77,7 +77,7 @@ ParallelLibrary::ParallelLibrary(int& argc, char**& argv):
   // When no children (direct interface), local & UTILIB CPU times are the same.
   startClock   = clock();
 #ifdef DAKOTA_UTILIB
-  utilib::exception_mngr::set_mode(utilib::exception_mngr::Abort);
+  utilib::exception_mngr::set_mode(utilib::exception_mngr::Standard);
   startCPUTime = CPUSeconds();       // see utilib/src/sys/seconds.cpp
   startWCTime  = WallClockSeconds(); // see utilib/src/sys/seconds.cpp
 #endif // DAKOTA_UTILIB
@@ -164,7 +164,7 @@ void ParallelLibrary::init_mpi_comm(MPI_Comm dakota_mpi_comm)
 {
   startClock   = clock();
 #ifdef DAKOTA_UTILIB
-  utilib::exception_mngr::set_mode(utilib::exception_mngr::Abort);
+  utilib::exception_mngr::set_mode(utilib::exception_mngr::Standard);
   startCPUTime = CPUSeconds();       // see utilib/src/sys/seconds.cpp
   startWCTime  = WallClockSeconds(); // see utilib/src/sys/seconds.cpp
 #endif // DAKOTA_UTILIB
