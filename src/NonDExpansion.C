@@ -57,6 +57,7 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
   //Cout << "VBD control = " << vbdControl << std::endl;
 
   initialize(model, probDescDB.get_short("method.nond.expansion_type"));
+  initialize_final_statistics(); // level mappings are available
 }
 
 
@@ -71,7 +72,7 @@ NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type,
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE),
   refineControl(Pecos::NO_CONTROL), impSampling(false), expSampling(false),
   vbdControl(Pecos::NO_VBD)
-{ initialize(model, u_space_type); }
+{ initialize(model, u_space_type); /* level mappings not yet available */ }
 
 
 void NonDExpansion::initialize(Model& model, short u_space_type)
@@ -96,7 +97,8 @@ void NonDExpansion::initialize(Model& model, short u_space_type)
   // use Wiener/Askey/extended/piecewise u-space defn in Nataf transformation
   initialize_random_variable_types(u_space_type); // need x/u_types below
   initialize_random_variable_correlations();
-  initialize_final_statistics();
+  // for lightweight ctor, defer until call to requested_levels()
+  //initialize_final_statistics();
 
   // check for correlations that are not supported for (1) use in extended
   // u-space and (2) use by Der Kiureghian & Liu for basic u-space (bounded
@@ -329,7 +331,7 @@ void NonDExpansion::construct_expansion_sampler()
     NonD* exp_sampler_rep = (NonD*)expansionSampler.iterator_rep();
     // publish level mappings to expansion sampler, but suppress reliability
     // moment mappings, which are performed locally within compute_statistics()
-    RealVectorArray empty_rv_array(numFunctions); // array of empty vectors
+    RealVectorArray empty_rv_array; // empty
     RealVectorArray& req_resp_levs = (respLevelTarget == RELIABILITIES) ?
       empty_rv_array : requestedRespLevels;
     exp_sampler_rep->requested_levels(req_resp_levs, requestedProbLevels,
@@ -883,8 +885,8 @@ void NonDExpansion::compute_expansion()
 
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
-  size_t i, j, num_final_stats = final_asv.size(),
-    num_final_grad_vars = final_dvv.size(), cntr = 0;
+  size_t i, j, rl_len, pl_len, bl_len, gl_len, cntr = 0,
+    num_final_stats = final_asv.size(), num_final_grad_vars = final_dvv.size();
   bool final_stat_value_flag = false, final_stat_grad_flag = false;
   for (i=0; i<num_final_stats; ++i)
     if (final_asv[i] & 1)
@@ -904,10 +906,14 @@ void NonDExpansion::compute_expansion()
       = (PecosApproximation*)poly_approxs[i].approx_rep();
     bool expansion_coeff_flag = false, expansion_grad_flag = false,
          mean_grad_flag       = false, std_dev_grad_flag   = false;
-    size_t rl_len = requestedRespLevels[i].length(),
-	   pl_len = requestedProbLevels[i].length(),
-	   bl_len = requestedRelLevels[i].length(),
-	   gl_len = requestedGenRelLevels[i].length();
+    if (totalLevelRequests) {
+      rl_len = requestedRespLevels[i].length();
+      pl_len = requestedProbLevels[i].length();
+      bl_len = requestedRelLevels[i].length();
+      gl_len = requestedGenRelLevels[i].length();
+    }
+    else
+      rl_len = pl_len = bl_len = gl_len = 0;
 
     if (final_stat_value_flag)
       // map final_asv value bits into expansion_coeff_flag requirements
@@ -1128,7 +1134,7 @@ void NonDExpansion::compute_statistics()
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   bool covariance_flag = (!subIteratorFlag ||
     refineControl != Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE);
-  size_t i, j, k, cntr = 0, sampler_cntr = 0,
+  size_t i, j, k, rl_len, pl_len, bl_len, gl_len, cntr = 0, sampler_cntr = 0,
     num_final_grad_vars = final_dvv.size();
 
   // initialize computed*Levels, expGradsMeanX and respCovariance
@@ -1149,10 +1155,14 @@ void NonDExpansion::compute_statistics()
   RealVector mu_grad, sigma_grad, final_stat_grad;
   PecosApproximation* poly_approx_rep;
   for (i=0; i<numFunctions; ++i) {
-    size_t rl_len = requestedRespLevels[i].length(),
-	   pl_len = requestedProbLevels[i].length(),
-	   bl_len = requestedRelLevels[i].length(),
-	   gl_len = requestedGenRelLevels[i].length();
+    if (totalLevelRequests) {
+      rl_len = requestedRespLevels[i].length();
+      pl_len = requestedProbLevels[i].length();
+      bl_len = requestedRelLevels[i].length();
+      gl_len = requestedGenRelLevels[i].length();
+    }
+    else
+      rl_len = pl_len = bl_len = gl_len = 0;
 
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
 

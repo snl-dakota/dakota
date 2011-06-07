@@ -387,23 +387,46 @@ requested_levels(const RealVectorArray& req_resp_levels,
 		 const RealVectorArray& req_gen_rel_levels,
 		 short resp_lev_target, bool cdf_flag)
 {
-  requestedRespLevels   = req_resp_levels;
-  requestedProbLevels   = req_prob_levels;
-  requestedRelLevels    = req_rel_levels;
-  requestedGenRelLevels = req_gen_rel_levels;
-  respLevelTarget       = resp_lev_target;
-  cdfFlag               = cdf_flag;
+  respLevelTarget = resp_lev_target; cdfFlag = cdf_flag;
 
-  // In current usage, incoming levels are already distributed.
-  //distribute_levels(requestedRespLevels);
-  //distribute_levels(requestedProbLevels,    cdfFlag);
-  //distribute_levels(requestedRelLevels,    !cdfFlag);
-  //distribute_levels(requestedGenRelLevels, !cdfFlag);
-
-  for (size_t i=0; i<numFunctions; i++)
-    totalLevelRequests += requestedRespLevels[i].length() +
-      requestedProbLevels[i].length() + requestedRelLevels[i].length() +
-      requestedGenRelLevels[i].length();
+  size_t i;
+  totalLevelRequests = 0;
+  if (req_resp_levels.empty())
+    requestedRespLevels.resize(numFunctions); // array of empty vectors
+  else {
+    requestedRespLevels = req_resp_levels;
+    // In current usage, incoming levels are already distributed.
+    //distribute_levels(requestedRespLevels);
+    for (i=0; i<numFunctions; ++i)
+      totalLevelRequests += requestedRespLevels[i].length();
+  }
+  if (req_prob_levels.empty())
+    requestedProbLevels.resize(numFunctions); // array of empty vectors
+  else {
+    requestedProbLevels = req_prob_levels;
+    // In current usage, incoming levels are already distributed.
+    //distribute_levels(requestedProbLevels, cdfFlag);
+    for (i=0; i<numFunctions; ++i)
+      totalLevelRequests += requestedProbLevels[i].length();
+  }
+  if (req_rel_levels.empty())
+    requestedRelLevels.resize(numFunctions); // array of empty vectors
+  else {
+    requestedRelLevels = req_rel_levels;
+    // In current usage, incoming levels are already distributed.
+    //distribute_levels(requestedRelLevels, !cdfFlag);
+    for (i=0; i<numFunctions; ++i)
+      totalLevelRequests += requestedRelLevels[i].length();
+  }
+  if (req_gen_rel_levels.empty())
+    requestedGenRelLevels.resize(numFunctions); // array of empty vectors
+  else {
+    requestedGenRelLevels = req_gen_rel_levels;
+    // In current usage, incoming levels are already distributed.
+    //distribute_levels(requestedGenRelLevels, !cdfFlag);
+    for (i=0; i<numFunctions; ++i)
+      totalLevelRequests += requestedGenRelLevels[i].length();
+  }
 
   if (totalLevelRequests && outputLevel >= NORMAL_OUTPUT)
     pdfOutput = true;
