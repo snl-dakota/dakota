@@ -36,7 +36,9 @@ additional information).  This can increase execution speed and reduce
 disk storage requirements, but at the expense of a loss in the ability
 to recover and continue a run that terminates prematurely.  Obviously,
 this option is not recommended when function evaluations are costly or
-prone to failure.
+prone to failure. Please note that using the \texttt{deactivate restart\_file}
+specification will result in a zero length restart file
+with the default name dakota.rst.
 
 To restart DAKOTA from a restart file, the \texttt{-read\_restart}
 command line input (may be abbreviated as \texttt{-r}) is used:
