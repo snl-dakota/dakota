@@ -1520,7 +1520,7 @@ void NonD::initialize_final_statistics()
     else {                  // aleatory
       stats_labels[cntr++] = String("mean")    + String(tag_string);
       stats_labels[cntr++] = String("std_dev") + String(tag_string);
-      num_levels = requestedRespLevels[i].length();
+      num_levels = (totalLevelRequests) ? requestedRespLevels[i].length() : 0;
       for (j=0; j<num_levels; j++, cntr++) {
 	stats_labels[cntr] = (cdfFlag) ? String("cdf") : String("ccdf");
 	switch (respLevelTarget) {
@@ -1533,8 +1533,8 @@ void NonD::initialize_final_statistics()
 	}
 	stats_labels[cntr] += String(lev_string) + String(tag_string);
       }
-      num_levels = requestedProbLevels[i].length() +
-	requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
+      num_levels = (totalLevelRequests) ? requestedProbLevels[i].length() +
+	requestedRelLevels[i].length() + requestedGenRelLevels[i].length() : 0;
       for (j=0; j<num_levels; j++, cntr++) {
 	stats_labels[cntr] = (cdfFlag) ? String("cdf") : String("ccdf");
 	std::sprintf(lev_string, "_zlev%i", j+1);
