@@ -554,7 +554,9 @@ increase speed and reduce disk storage requirements, but at the
 expense of a loss in the ability to recover and continue a run that
 terminates prematurely (e.g., due to a system crash or network
 problem).  This option is not recommended when function evaluations
-are costly or prone to failure.
+are costly or prone to failure. Please note that using the \c deactivate
+\c restart_file specification will result in a zero length restart file 
+with the default name \c dakota.rst.
 
 In addition to these simulation interface specifications, the type of
 interface involves a selection between \c system, \c fork, \c direct,
