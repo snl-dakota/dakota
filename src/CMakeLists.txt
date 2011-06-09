@@ -19,6 +19,13 @@ if (BOOST_DISABLE_ASSERTS)
   add_definitions("-DBOOST_DISABLE_ASSERTS")
 endif (BOOST_DISABLE_ASSERTS)
 
+option(DAKOTA_HAVE_BOOST_FS "Toggle FS support, default is BostFS disabled" OFF)
+if (DAKOTA_HAVE_BOOST_FS)
+  add_definitions("-DDAKOTA_HAVE_BOOST_FS")
+  add_definitions("-DBOOST_FILESYSTEM_VERSION=3")
+  find_package(Boost COMPONENTS filesystem regex system)
+endif (DAKOTA_HAVE_BOOST_FS)
+
 
 check_include_files(unistd.h HAVE_UNISTD_H)
 if(HAVE_UNISTD_H)

@@ -19,6 +19,15 @@
 #include "filesystem_utils.h"
 #include "global_defs.h"
 
+#ifdef DAKOTA_HAVE_BOOST_FS
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
+//#include "boost/progress.hpp"
+//#include "boost/regex.hpp"
+
+namespace bfs = boost::filesystem;
+#endif
+
 #ifdef __SUNPRO_CC
 #include <stdlib.h>
 #endif
@@ -27,7 +36,7 @@
 #include <sys/stat.h>
 #undef Want_Heartbeat
 
-// WJB - ToDo, next iteration: evaluation dependencies; are posix includes needed??
+// WJB - ToDo, next iteration: evaluate dependencies; are posix includes needed??
 #ifndef _WIN32 /*{{*/
 #ifndef NO_HEARTBEAT /*{*/
 #define Want_Heartbeat
@@ -195,6 +204,35 @@ int not_executable(const char *dname, const char *tdir)
 	static gid_t mygid;
 #endif
 
+#ifdef DAKOTA_HAVE_BOOST_FS
+        bfs::path dak_launch_dir( bfs::initial_path<bfs::path>() );
+
+        // declaring this here instead of just-in-time due to goto/_WIN32
+        std::string bfs_cwdir = dak_launch_dir.string();
+        //Cout << "dakota launched from: " << bfs_cwdir << std::endl;
+
+        for( bfs::directory_iterator dir_iter(dak_launch_dir), dir_end;
+             dir_iter != dir_end; ++dir_iter ) {
+          //boost::regex analysis_driver(dname);
+          //if (boost::regex_search( dir_iter->path().filename().string(),
+                                   //analysis_driver) )
+          if (dir_iter->path().filename().string() == std::string(dname)) {
+            Cout << "Analysis Driver FOUND in " << bfs_cwdir
+                 << " -- full path is: " << dir_iter->path() << std::endl;
+          }
+        }
+        if (tdir) {
+          bfs::path template_dir( bfs::initial_path<bfs::path>() );
+          template_dir = bfs::system_complete( bfs::path(tdir) );
+          Cout << "Template_dir for AC: " << template_dir.string() << std::endl;
+          /* WJB - ToDo:  repeat file search in tdir block, ~line 316
+              Cout << "Analysis Driver FOUND in " << template_dir.string()
+                   << " -- full path is: " << template_dir_iter->path()
+                   << std::endl;
+          */
+        }
+#endif  // DAKOTA_HAVE_BOOST_FS
+
 	// declaring this here instead of just-in-time due to goto/_WIN32
 	std::string cwdir;
 
@@ -250,6 +288,9 @@ int not_executable(const char *dname, const char *tdir)
 #endif
 	if (!Filesys_buf::dakpath) {
 	  cwdir = get_dakpath();
+#ifdef DAKOTA_HAVE_BOOST_FS
+          assert(cwdir == bfs_cwdir);
+#endif
 	}
 	size_t clen = cwdir.size();
 	dlen = std::strlen(dname);
