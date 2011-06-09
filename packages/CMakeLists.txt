@@ -39,12 +39,12 @@ if(HAVE_AMPL)
 endif(HAVE_AMPL)
 
 if(HAVE_OPTPP)
-  if (NOT OPTPP_INCLUDE_DIRS)
-    add_subdirectory(OPTPP)
-  endif()
   if(NOT DAKOTA_HAVE_MPI)
     set(OPTPP_HAVE_MPI OFF CACHE BOOL
-        "MPI NOT enabled so disable in OPTPP as well" FORCE)
+        "MPI NOT enabled in DAKOTA so disable in OPTPP as well" FORCE)
+  endif()
+  if (NOT OPTPP_INCLUDE_DIRS)
+    add_subdirectory(OPTPP)
   endif()
 endif()
 
@@ -80,6 +80,12 @@ if(HAVE_SURFPACK)
 endif(HAVE_SURFPACK)
 
 if(HAVE_ACRO)
+  if(NOT DAKOTA_HAVE_MPI)
+    set(ACRO_USING_MPI OFF CACHE BOOL
+        "MPI NOT enabled in DAKOTA so disable in acro as well" FORCE)
+    set(UTILIB_USE_MPI OFF CACHE BOOL
+        "MPI NOT enabled in DAKOTA so disable in utilib as well" FORCE)
+  endif()
   add_subdirectory(acro)
 endif(HAVE_ACRO)
 
