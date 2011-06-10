@@ -1297,7 +1297,7 @@ apply_multiplicative_correction(RealVector& beta_corrected_fns,
 	if (asv[index] & 2)
 	  for (j=0; j<numDerivVars; j++)
 	    beta_corrected_grads(j,index) += sum_beta_grads(j,index)
-                                           *  uncorrected_fns[index];
+                                          *  uncorrected_fns[index];
       }
     }
     if (hess_flag) { // add two terms to the base beta_corrected_hessians
@@ -1323,7 +1323,7 @@ apply_multiplicative_correction(RealVector& beta_corrected_fns,
 	for (j=0; j<numDerivVars; j++)
 	  for (k=0; k<numDerivVars; k++)
 	    beta_corrected_hessians[index](j,k) += uncorrected_fns[index]
-	      * multCorrHessians[index](j,k);
+	                                        *  multCorrHessians[index](j,k);
     }
   }
 }

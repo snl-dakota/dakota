@@ -267,17 +267,27 @@ void NonDQuadrature::nested_quadrature_order(const UShortArray& quad_order_ref)
   const Pecos::UShortArray& gk_prec  = tpqDriver->genz_keister_precision();
   for (size_t i=0; i<numContinuousVars; ++i)
     switch (rules[i]) {
-    case Pecos::CLENSHAW_CURTIS: case Pecos::FEJER2: {
+    case Pecos::CLENSHAW_CURTIS: case Pecos::NEWTON_COTES: { // closed rules
       unsigned short int_goal = 2*quad_order_ref[i] - 1, level = 0, order,
 	int_actual = 1;
       while (int_actual < int_goal) {
 	++level;
 	order = (level) ? (unsigned short)std::pow(2., (int)level) + 1 : 1;
-	int_actual = (order % 2) ? order : order - 1;
+	int_actual = (order % 2) ? order : order - 1;// for CC; also used for NC
       }
       tpqDriver->quadrature_order(order, i);             break;
     }
-    case Pecos::GAUSS_PATTERSON: {
+    case Pecos::FEJER2: { // open rule
+      unsigned short int_goal = 2*quad_order_ref[i] - 1, level = 0, order,
+	int_actual = 1;
+      while (int_actual < int_goal) {
+	++level;
+	order = (unsigned short)std::pow(2., (int)level+1) - 1;
+	int_actual = (order % 2) ? order : order - 1;// for CC; also used for F2
+      }
+      tpqDriver->quadrature_order(order, i);             break;
+    }
+    case Pecos::GAUSS_PATTERSON: { // open rule
       unsigned short int_goal = 2*quad_order_ref[i] - 1, level = 0, order = 1,
 	int_actual = 1, previous = order;
       while (int_actual < int_goal) {
@@ -288,9 +298,9 @@ void NonDQuadrature::nested_quadrature_order(const UShortArray& quad_order_ref)
       }
       tpqDriver->quadrature_order(order, i);             break;
     }
-    case Pecos::GENZ_KEISTER: {
+    case Pecos::GENZ_KEISTER: { // open rule with lookup
       unsigned short int_goal = 2*quad_order_ref[i] - 1,
-	level = 0, max_level = 4;
+	level = 0, max_level = 5;
       while (level <= max_level && gk_prec[level] < int_goal)
 	++level;
       tpqDriver->quadrature_order(gk_order[level], i); break;

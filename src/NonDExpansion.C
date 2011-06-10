@@ -177,9 +177,8 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL)
     vbdControl = Pecos::UNIVARIATE_VBD;
 
-  bool nested_rules = (ruleNestingOverride == Pecos::NESTED ||
-    (ruleNestingOverride == Pecos::NO_NESTING_OVERRIDE &&
-     refineType          != Pecos::NO_REFINEMENT));
+  bool nested_rules = (ruleNestingOverride == Pecos::NESTED || (refineType &&
+		       ruleNestingOverride != Pecos::NON_NESTED));
   u_space_sampler.assign_rep(
     new NonDQuadrature(g_u_model, natafTransform.u_types(), quad_order,
 		       nested_rules, piecewise_basis, use_derivs), false);
@@ -236,8 +235,8 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   // Neither PCE nor SC require product wts for all_vars mode, since moment
   // calculations must employ gauss_wts_1d.
   bool track_wts = !(numContDesVars || numContEpistUncVars || numContStateVars);
-  bool nested_rules = (ruleNestingOverride != Pecos::NON_NESTED);
-  bool unrestrict_growth = (ruleGrowthOverride == Pecos::UNRESTRICTED);
+  bool nested_rules      = (ruleNestingOverride != Pecos::NON_NESTED);
+  bool unrestrict_growth = (ruleGrowthOverride  == Pecos::UNRESTRICTED);
   u_space_sampler.assign_rep(
     new NonDSparseGrid(g_u_model, natafTransform.u_types(), ssg_level,
 		       ssg_dim_pref, //sparse_grid_usage, refineType,
@@ -257,7 +256,7 @@ construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
   // sanity checks
   if (num_samples <= 0) {
     Cerr << "Error: bad samples specification (" << num_samples << ") in "
-	 << "NonDExpansion::construct_lhs()." << std::endl;
+	 << "NonDExpansion::construct_incremental_lhs()." << std::endl;
     abort_handler(-1);
   }
 
