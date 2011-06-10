@@ -65,6 +65,9 @@ public:
   /// set pdfOutput
   void pdf_output(bool output);
 
+  /// return natafTransform
+  Pecos::ProbabilityTransformation& variable_transformation();
+
 protected:
 
   //
@@ -335,6 +338,10 @@ inline bool NonD::pdf_output() const
 
 inline void NonD::pdf_output(bool output)
 { pdfOutput = output; }
+
+
+inline Pecos::ProbabilityTransformation& NonD::variable_transformation()
+{ return natafTransform; }
 
 
 inline void NonD::initialize_run()
