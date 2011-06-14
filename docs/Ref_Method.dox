@@ -5676,7 +5676,7 @@ Specification detail for stochastic collocation method: general controls.
 <td>\c p_refinement | \c h_refinement
 <td>\c uniform | \c dimension_adaptive
 <td>Optional group
-<td>No p-refinement
+<td>No refinement
 <tr>
 <td>Dimension-adaptive refinement control
 <td>\c sobol | \c generalized
