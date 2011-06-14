@@ -289,8 +289,8 @@ void Approximation::build()
   else { // virtual fn: this is the common base class portion and is
          // insufficient on its own; derived implementations should
          // explicitly invoke (or reimplement) this base class contribution.
-    size_t num_curr_pts = currentPoints.size();
-    int ms = min_points(true); // account for anchorPoint & buildDataOrder
+    size_t num_curr_pts = approxData.size();
+    int ms = min_points(true); // account for anchor point & buildDataOrder
     if (num_curr_pts < ms) {
       Cerr << "\nError: not enough samples to build approximation.  "
 	   << "Construction of this approximation\n       requires at least "
@@ -314,35 +314,15 @@ void Approximation::rebuild()
 }
 
 
-void Approximation::pop(bool save_sdp_set)
+/** This is the common base class portion of the virtual fn and is
+    insufficient on its own; derived implementations should explicitly
+    invoke (or reimplement) this base class contribution. */
+void Approximation::pop(bool save_data)
 {
   if (approxRep)
-    approxRep->pop(save_sdp_set);
-  else  {
-    // virtual fn: this is the common base class portion and is
-    // insufficient on its own; derived implementations should
-    // explicitly invoke (or reimplement) this base class contribution.
-    size_t curr_size = currentPoints.size(), num_pop = pop_count();
-    if (curr_size >= num_pop) {
-      // save currentPoints data within savedSDPSets instance
-      if (save_sdp_set) {
-	SDPArray sdp; savedSDPSets.push_back(sdp); // copy empty
-	SDPArray& last_sdp = savedSDPSets.back();  // update in place
-	// prevent underflow portability issue w/ compiler coercion of -num_pop
-	SDPLDiffT reverse_advance = -(SDPLDiffT)num_pop;
-	SDPLIter it = currentPoints.end(); std::advance(it, reverse_advance);
-	for (; it!=currentPoints.end(); ++it)
-	  last_sdp.push_back(*it);
-      }
-      // drop num_data_pts off of end of currentPoints
-      currentPoints.resize(curr_size - num_pop);
-    }
-    else {
-      Cerr << "Error: cannot pop " << num_pop << " points from current list of "
-	   << curr_size << " entries in Approximation::pop()." << std::endl;
-      abort_handler(-1);
-    }
-  }
+    approxRep->pop(save_data);
+  else
+    approxData.pop(pop_count(), save_data);
 }
 
 
@@ -353,18 +333,15 @@ size_t Approximation::pop_count()
 }
 
 
+/** This is the common base class portion of the virtual fn and is
+    insufficient on its own; derived implementations should explicitly
+    invoke (or reimplement) this base class contribution. */
 void Approximation::restore()
 {
   if (approxRep)
     approxRep->restore();
-  else { // virtual fn: this is the common base class portion and is
-         // insufficient on its own; derived implementations should
-         // explicitly invoke (or reimplement) this base class contribution.
-    SDP2AIter it = savedSDPSets.begin();
-    std::advance(it, restoration_index());
-    currentPoints.insert(currentPoints.end(), it->begin(), it->end());
-    savedSDPSets.erase(it);
-  }
+  else
+    approxData.restore(restoration_index());
 }
 
 
@@ -392,20 +369,19 @@ size_t Approximation::restoration_index()
 }
 
 
+/** This is the common base class portion of the virtual fn and is
+    insufficient on its own; derived implementations should explicitly
+    invoke (or reimplement) this base class contribution. */
 void Approximation::finalize()
 {
   if (approxRep)
     approxRep->finalize();
-  else { // virtual fn: this is the common base class portion and is
-         // insufficient on its own; derived implementations should
-         // explicitly invoke (or reimplement) this base class contribution.
-    size_t i, index, num_restore = savedSDPSets.size();
-    for (i=0; i<num_restore; ++i) {
-      index = finalization_index(i);
-      currentPoints.insert(currentPoints.end(), savedSDPSets[index].begin(),
-			   savedSDPSets[index].end());
-    }
-    savedSDPSets.clear();
+  else {
+    // finalization has to apply restorations in the correct order
+    size_t i, num_restore = approxData.saved_size();
+    for (i=0; i<num_restore; ++i)
+      approxData.restore(finalization_index(i), false);
+    approxData.clear_saved(); // clear only after process completed
   }
 }
 
@@ -555,13 +531,13 @@ int Approximation::num_constraints() const
   if (approxRep) // fwd to letter
     return approxRep->num_constraints(); 
   else { // default implementation
-    if (anchorPoint.is_null())
-      return 0;
-    else { // anchorPoint data may differ from buildDataOrder setting
-      int ng = anchorPoint.response_gradient().length(),
-          nh = anchorPoint.response_hessian().numRows();
+    if (approxData.anchor()) { // anchor data may differ from buildDataOrder
+      int ng = approxData.anchor_gradient().length(),
+          nh = approxData.anchor_hessian().numRows();
       return 1 + ng + nh*(nh + 1)/2;
     }
+    else
+      return 0;
   }
 }
 
@@ -602,14 +578,14 @@ int Approximation::recommended_points(bool constraint_flag) const
 }
 
 
-
 void Approximation::
-update(const RealMatrix& samples, const ResponseArray& resp_array, int fn_index)
+update(const RealMatrix& samples, const ResponseArray& resp_array,
+       int fn_index, bool deep_copy)
 {
   if (approxRep)
     approxRep->update(samples, resp_array, fn_index);
   else { // not virtual: all derived classes use following definition:
-    currentPoints.clear(); // replace currentPoints with incoming samples
+    approxData.clear_data(); // replace {vars,resp}Data with incoming samples
     size_t num_points = std::min((size_t)samples.numCols(), resp_array.size());
     for (size_t i=0; i<num_points; ++i)
       add(samples[i], resp_array[i], fn_index, false);
@@ -619,12 +595,12 @@ update(const RealMatrix& samples, const ResponseArray& resp_array, int fn_index)
 
 void Approximation::
 update(const VariablesArray& vars_array, const ResponseArray& resp_array,
-       int fn_index)
+       int fn_index, bool deep_copy)
 {
   if (approxRep)
     approxRep->update(vars_array, resp_array, fn_index);
   else { // not virtual: all derived classes use following definition:
-    currentPoints.clear(); // replace currentPoints with incoming arrays
+    approxData.clear_data(); // replace {vars,resp}Data with incoming arrays
     size_t i, num_points = std::min(vars_array.size(), resp_array.size());
     for (i=0; i<num_points; ++i)
       add(vars_array[i], resp_array[i], fn_index, false);
@@ -633,7 +609,8 @@ update(const VariablesArray& vars_array, const ResponseArray& resp_array,
 
 
 void Approximation::
-append(const RealMatrix& samples, const ResponseArray& resp_array, int fn_index)
+append(const RealMatrix& samples, const ResponseArray& resp_array,
+       int fn_index, bool deep_copy)
 {
   if (approxRep)
     approxRep->append(samples, resp_array, fn_index);
@@ -647,7 +624,7 @@ append(const RealMatrix& samples, const ResponseArray& resp_array, int fn_index)
 
 void Approximation::
 append(const VariablesArray& vars_array, const ResponseArray& resp_array,
-       int fn_index)
+       int fn_index, bool deep_copy)
 {
   if (approxRep)
     approxRep->append(vars_array, resp_array, fn_index);
@@ -676,20 +653,15 @@ add(const Variables& vars, const Response& response, int fn_index,
 {
   // Approximation does not know about view mappings; therefore, take the
   // simple approach of matching up vars.cv() or vars.acv() with numVars.
-  bool active_vars;
-  if (vars.cv() == numVars)
-    active_vars = true;
-  else if (vars.acv() == numVars)
-    active_vars = false;
-  else {
-    Cerr << "Error: variable size mismatch in Approximation::add()."
-	 << std::endl;
+  bool active_vars = (vars.cv() == numVars);
+  if (!active_vars && vars.acv() != numVars) {
+    Cerr << "Error: variable size mismatch in Approximation::add()."<<std::endl;
     abort_handler(-1);
   }
-  const RealVector& c_vars = (active_vars) ? vars.continuous_variables() :
-    vars.all_continuous_variables();
-
-  add(c_vars, response, fn_index, anchor_flag);
+  if (active_vars)
+    add(vars.continuous_variables(),     response, fn_index, anchor_flag);
+  else
+    add(vars.all_continuous_variables(), response, fn_index, anchor_flag);
 }
 
 
@@ -727,14 +699,13 @@ add(const RealVector& c_vars, const Response& response, int fn_index,
       abort_handler(-1);
     }
 
-    // Since SurrogateDataPoint does not contain an asv, assure the
-    // use of empty vectors/matrices if data is not active.
-    Real          empty_r = 0.;
-    RealSymMatrix empty_hess;
-    const Real&   fn_val  = (asv_val & 1) ? fn_vals[fn_index] : empty_r;
-    RealVector    fn_grad;
+    // Since SurrogateData responses do not manage request vectors,
+    // ensure the use of empty vectors/matrices if data is not active.
+    Real fn_val = (asv_val & 1) ? fn_vals[fn_index] : 0.;
+    RealVector fn_grad;
     if (asv_val & 2)
       fn_grad = response.function_gradient_copy(fn_index); // copy->copy
+    RealSymMatrix empty_hess;
     const RealSymMatrix& fn_hess
       = (asv_val & 4) ? fn_hessians[fn_index] : empty_hess;
     if (anchor_flag)

@@ -15,7 +15,7 @@
 #define DAKOTA_APPROXIMATION_H
 
 #include "data_util.h"
-#include "SurrogateDataPoint.hpp"
+#include "SurrogateData.hpp"
 
 namespace Dakota {
 
@@ -69,10 +69,11 @@ public:
   virtual void build();
   /// rebuilds the approximation incrementally
   virtual void rebuild();
-  /// removes entries from end of currentPoints (last points appended)
-  virtual void pop(bool save_sdp_set);
-  /// returns number of entries to pop from end of currentPoints,
-  /// based on size of last data set appended
+  /// removes entries from end of SurrogateData::{vars,resp}Data
+  /// (last points appended)
+  virtual void pop(bool save_data);
+  /// returns number of entries to pop from end of
+  /// SurrogateData::{vars,resp}Data, based on size of last data set appended
   virtual size_t pop_count();
   /// restores state prior to previous append()
   virtual void restore();
@@ -113,7 +114,7 @@ public:
   /// build the derived class approximation type in numVars dimensions
   virtual int recommended_coefficients() const;
 
-  /// return the number of constraints to be enforced via anchorPoint
+  /// return the number of constraints to be enforced via an anchor point
   virtual int num_constraints() const;
 
   /// clear current build data in preparation for next build
@@ -137,38 +138,28 @@ public:
   /// return the number of variables used in the approximation
   int num_variables() const;
 
-  /// return currentPoints
-  const SDPList& current_points() const;
-  /// return anchorPoint
-  const Pecos::SurrogateDataPoint& anchor_point() const;
+  // return approxData
+  const Pecos::SurrogateData& approximation_data() const;
 
-  /// populates/replaces anchorPoint
+  /// populates/replaces anchor point within approxData
   void update(const Variables& vars, const Response& response,
-	      int fn_index);
-  /// populates/replaces anchorPoint
-  void update(const RealVector& c_vars, const Real& fn_val,
-	      const RealVector& fn_grad, const RealSymMatrix& fn_hess);
-  /// populates/replaces currentPoints
+	      int fn_index, bool deep_copy = false);
+  /// populates/replaces SurrogateData::{vars,resp}Data
   void update(const RealMatrix& samples, const ResponseArray& resp_array,
-	      int fn_index);
-  /// populates/replaces currentPoints
+	      int fn_index, bool deep_copy = false);
+  /// populates/replaces SurrogateData::{vars,resp}Data
   void update(const VariablesArray& vars_array, const ResponseArray& resp_array,
-	      int fn_index);
+	      int fn_index, bool deep_copy = false);
 
-  /// appends one additional entry to currentPoints
-  void append(const Variables& vars, const Response& response, int fn_index);
-  /// appends one additional entry to currentPoints
-  void append(const RealVector& c_vars, const Real& fn_val,
-	      const RealVector& fn_grad, const RealSymMatrix& fn_hess);
-  /// appends multiple additional entries to currentPoints
+  /// appends one additional entry to SurrogateData::{vars,resp}Data
+  void append(const Variables& vars, const Response& response, int fn_index,
+	      bool deep_copy = false);
+  /// appends multiple additional entries to SurrogateData::{vars,resp}Data
   void append(const RealMatrix& samples, const ResponseArray& resp_array,
-	      int fn_index);
-  /// appends multiple additional entries to currentPoints
+	      int fn_index, bool deep_copy = false);
+  /// appends multiple additional entries to SurrogateData::{vars,resp}Data
   void append(const VariablesArray& vars_array, const ResponseArray& resp_array,
-	      int fn_index);
-
-  /// queries the status of anchorPoint
-  bool anchor() const;
+	      int fn_index, bool deep_copy = false);
 
   /// clear all build data (current and history) to restore original state
   void clear_all();
@@ -235,20 +226,14 @@ protected:
   /// value of the diagnostic returned by get_diagnostic()
   Real approxDiagnostic;
 
-  /// list of samples used to build the approximation.  These sample points
-  /// are fit approximately (e.g., using least squares regression).
-  SDPList currentPoints;
-
-  /// a special sample (often at the center of the approximation region)
-  /// for which exact matching is enforced (e.g., using equality-constrained
-  /// least squares regression).
-  Pecos::SurrogateDataPoint anchorPoint;
+  /// contains the variables/response data for constructing a single
+  /// approximation model (one response function)
+  Pecos::SurrogateData approxData;
 
   /// approximation lower bounds (used by 3D graphics and Surfpack KrigingModel)
   RealVector approxLowerBounds;
   /// approximation upper bounds (used by 3D graphics and Surfpack KrigingModel)
   RealVector approxUpperBounds;
-
 
 private:
 
@@ -273,17 +258,18 @@ private:
   void add(const Real* sample_c_vars, const Response& response,
 	   int fn_index, bool anchor_flag);
   /// shared code among add(Variables&) and add(Real*); adds a new data point
-  /// by either appending to currentPoints or assigning to anchorPoint, as
-  /// dictated by anchor_flag.  Uses add_point() and add_anchor().
+  /// by either appending to SurrogateData::{vars,Resp}Data or assigning to
+  /// SurrogateData::anchor{Vars,Resp}, as dictated by anchor_flag.
+  /// Uses add_point() and add_anchor().
   void add(const RealVector& sample_c_vars, const Response& response,
 	   int fn_index, bool anchor_flag);
 
-  /// add a new data point by appending to currentPoints
+  /// add a new data point by appending to SurrogateData::{vars,Resp}Data
   void add_point(const RealVector& x, const Real& fn_val,
 		 const RealVector& fn_grad,
 		 const RealSymMatrix& fn_hess);
 
-  /// add a new data point by assigning to anchorPoint
+  /// add a new data point by assigning to SurrogateData::anchor{Vars,Resp}
   void add_anchor(const RealVector& x, const Real& fn_val,
 		  const RealVector& fn_grad,
 		  const RealSymMatrix& fn_hess);
@@ -292,9 +278,6 @@ private:
   //- Heading: Data
   //
 
-  /// bookkeeping for saving data popped from currentPoints (in pop())
-  /// that is later restored (in restore() and finalize())
-  SDP2DArray savedSDPSets;
   /// number of points previously added by append() to be removed by pop()
   size_t popCount;
 
@@ -305,35 +288,23 @@ private:
 };
 
 
-inline bool Approximation::anchor() const
-{
-  return (approxRep) ? !approxRep->anchorPoint.is_null() : 
-                       !anchorPoint.is_null();
-}
-
-
 inline int Approximation::num_variables() const
 { return (approxRep) ? approxRep->numVars : numVars; }
 
 
-inline const SDPList& Approximation::current_points() const
-{ return (approxRep) ? approxRep->currentPoints : currentPoints; }
-
-
-inline const Pecos::SurrogateDataPoint& Approximation::anchor_point() const
-{ return (approxRep) ? approxRep->anchorPoint : anchorPoint; }
+inline const Pecos::SurrogateData& Approximation::approximation_data() const
+{ return (approxRep) ? approxRep->approxData : approxData; }
 
 
 inline void Approximation::
 set_bounds(const RealVector& lower, const RealVector& upper)
 {
+  // enforce deep copies since lower/upper may be active views
   if (approxRep) {
-    // lower/upper may be views
     copy_data(lower, approxRep->approxLowerBounds);
     copy_data(upper, approxRep->approxUpperBounds);
   }
   else {
-    // lower/upper may be views
     copy_data(lower, approxLowerBounds);
     copy_data(upper, approxUpperBounds);
   }
@@ -346,11 +317,12 @@ inline Approximation* Approximation::approx_rep() const
 
 // private convenience fn -> approxRep forward not needed.
 inline void Approximation::
-add_point(const RealVector& x,      const Real& fn_val,
+add_point(const RealVector& x,       const Real& fn_val,
 	  const RealVector& fn_grad, const RealSymMatrix& fn_hess)
 {
-  Pecos::SurrogateDataPoint sdp(x, fn_val, fn_grad, fn_hess);
-  currentPoints.push_back(sdp);
+  Pecos::SurrogateDataVars sdv(x, Pecos::SHALLOW_COPY); // TO DO: map mode
+  Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, Pecos::SHALLOW_COPY);
+  approxData.push_back(sdv, sdr);
 }
 
 
@@ -358,51 +330,34 @@ add_point(const RealVector& x,      const Real& fn_val,
 inline void Approximation::
 add_anchor(const RealVector& x,       const Real& fn_val,
 	   const RealVector& fn_grad, const RealSymMatrix& fn_hess)
-{ anchorPoint = Pecos::SurrogateDataPoint(x, fn_val, fn_grad, fn_hess); }
+{
+  Pecos::SurrogateDataVars sdv(x, Pecos::SHALLOW_COPY); // TO DO: map mode
+  Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, Pecos::SHALLOW_COPY);
+  approxData.anchor_point(sdv, sdr);
+}
 
 
 inline void Approximation::
-update(const Variables& vars, const Response& response, int fn_index)
+update(const Variables& vars, const Response& response, int fn_index,
+       bool deep_copy)
 {
   if (approxRep)
     approxRep->add(vars, response, fn_index, true);
   else
-    add(vars, response, fn_index, true); // replace anchorPoint
+    add(vars, response, fn_index, true); // replace anchor point
 }
 
 
 inline void Approximation::
-update(const RealVector& c_vars,  const Real& fn_val,
-       const RealVector& fn_grad, const RealSymMatrix& fn_hess)
+append(const Variables& vars, const Response& response, int fn_index,
+       bool deep_copy)
 {
   if (approxRep)
-    approxRep->add_anchor(c_vars, fn_val, fn_grad, fn_hess);
-  else
-    add_anchor(c_vars, fn_val, fn_grad, fn_hess); // replace anchorPoint
-}
-
-
-inline void Approximation::
-append(const Variables& vars, const Response& response, int fn_index)
-{
-  if (approxRep)
-    approxRep->add(vars, response, fn_index, false);
+    approxRep->append(vars, response, fn_index, deep_copy);
   else {
     popCount = 1;
-    add(vars, response, fn_index, false); // append new point to currentPoints
-  }
-}
-
-
-inline void Approximation::
-append(const RealVector& c_vars,  const Real& fn_val,
-       const RealVector& fn_grad, const RealSymMatrix& fn_hess)
-{
-  if (approxRep)
-    approxRep->add_point(c_vars, fn_val, fn_grad, fn_hess);
-  else {
-    popCount = 1;
-    add_point(c_vars, fn_val, fn_grad, fn_hess); // append new pt to currentPts
+    // append new point to SurrogateData::{vars,resp}Data
+    add(vars, response, fn_index, false);
   }
 }
 
@@ -414,9 +369,9 @@ inline void Approximation::clear_all()
   if (approxRep) // envelope fwd to letter
     approxRep->clear_all();
   else { // not virtual: base class implementation
-    if (!anchorPoint.is_null())
-      anchorPoint = Pecos::SurrogateDataPoint();
-    currentPoints.clear();
+    if (approxData.anchor())
+      approxData.clear_anchor();
+    approxData.clear_data();
   }
 }
 

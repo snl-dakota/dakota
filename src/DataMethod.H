@@ -132,9 +132,7 @@ enum { DISALLOW, TARGET, BOUNDS };
     keyword specification.  Default values are managed in the
     DataMethodRep constructor.  Data is public to avoid maintaining
     set/get functions, but is still encapsulated within ProblemDescDB
-    since ProblemDescDB::dataMethodList is private (a similar approach
-    is used with SurrogateDataPoint objects contained in
-    Dakota::Approximation). */
+    since ProblemDescDB::dataMethodList is private. */
 
 class DataMethodRep
 {

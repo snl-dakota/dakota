@@ -67,7 +67,7 @@ protected:
   int recommended_coefficients() const;
   //int num_constraints() const; // use default implementation
 
-  /// SurfData object will be created from Dakota's SurrogateDataPoints,
+  /// SurfData object will be created from Dakota's SurrogateData,
   /// and the appropriate Surfpack build method will be invoked
   void build();
 
@@ -100,12 +100,13 @@ private:
   /// point, gradient, and/or hessian
   void checkForEqualityConstraints();
 
-  /// copy from SurrogateDataPoint to SurfPoint/SurfData
+  /// copy from SurrogateData to SurfPoint/SurfData
   SurfData* surrogates_to_surf_data();
 
-  /// add Pecos::SurrogateDataPoint to SurfData, accounting for
-  /// buildDataOrder available
-  void add_sdp_to_surfdata(const Pecos::SurrogateDataPoint& sdp,
+  /// add Pecos::SurrogateData::SurrogateData{Vars,Resp} to SurfData,
+  /// accounting for buildDataOrder available
+  void add_sdp_to_surfdata(const Pecos::SurrogateDataVars& sdv,
+			   const Pecos::SurrogateDataResp& sdr,
 			   SurfData& surf_data);
 
   /// copy RealSymMatrix to SurfpackMatrix (Real type only)

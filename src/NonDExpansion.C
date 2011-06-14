@@ -1394,22 +1394,20 @@ void NonDExpansion::compute_statistics()
       for (i=0; i<numFunctions; ++i) {
 	sampler_cntr += 2;
 	size_t rl_len = requestedRespLevels[i].length();
-	if (respLevelTarget != RELIABILITIES) {
+	if (rl_len && respLevelTarget != RELIABILITIES) {
 	  imp_sampler_stats[i].resize(rl_len);
+	  // Currently initializing importance sampling with both 
+	  // original build points and LHS expansion sampler points
+	  const Pecos::SurrogateData& exp_data
+	    = uSpaceModel.approximation_data(i);
+	  size_t m, num_data_pts = exp_data.size(),
+	    num_to_is = numSamplesOnExpansion + num_data_pts;
+	  RealVectorArray initial_points(num_to_is);
+	  for (m=0; m<num_data_pts; ++m)
+	    initial_points[m] = exp_data.continuous_variables(m); // view OK
+	  for (m=0; m<numSamplesOnExpansion; ++m)
+	    copy_data(exp_vars[m], exp_cv, initial_points[m+num_data_pts]);
 	  for (j=0; j<rl_len; ++j, ++sampler_cntr) {
-            // Currently initializing importance sampling with both 
-            // original build points and LHS expansion sampler points
-	    const SDPList& expansion_data = uSpaceModel.approximation_data(i);
-	    size_t m, num_data_pts = expansion_data.size(),
-	      num_to_is = numSamplesOnExpansion + num_data_pts;
-           
-            RealVectorArray initial_points(num_to_is);
-	    SDPLCIter cit = expansion_data.begin();
-	    for (m=0; m<num_data_pts; ++m, ++cit)
-	      initial_points[m] = cit->continuous_variables(); // view OK
-            for (m=0; m<numSamplesOnExpansion; ++m)
-              copy_data(exp_vars[m], exp_cv, initial_points[m+num_data_pts]);
-
             //Cout << "Initial estimate of p to seed "
 	    //     << exp_sampler_stats[sampler_cntr] << '\n';
 	    imp_sampler_rep->initialize(initial_points, i, 

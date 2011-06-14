@@ -108,10 +108,11 @@ inline TANA3Approximation::~TANA3Approximation()
 /** Redefine default implementation to support history mechanism. */
 inline void TANA3Approximation::clear_current()
 {
-  currentPoints.clear();
-  if (!anchorPoint.is_null()) {
-    currentPoints.push_back(anchorPoint);  // store 1 previous expansion point
-    anchorPoint = Pecos::SurrogateDataPoint(); // clear
+  approxData.clear_data();
+  if (approxData.anchor()) { // anchor becomes previous expansion point
+    approxData.push_back(approxData.anchor_variables(),
+			 approxData.anchor_response());
+    approxData.clear_anchor();
   }
 }
 

@@ -336,17 +336,14 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     samsfile += tag;
     std::ofstream samsOut(samsfile.c_str(),std::ios::out);
     samsOut << std::scientific;
-    const SDPList& gp_data = fHatModel.approximation_data(i);
+    const Pecos::SurrogateData& gp_data = fHatModel.approximation_data(i);
     size_t num_data_pts = gp_data.size(), num_vars = fHatModel.cv();
-    SDPLCIter cit = gp_data.begin();
-    for (size_t j=0; j<num_data_pts; j++, cit++) {
-      const RealVector& sams = cit->continuous_variables();
-      const Real& true_fn         = cit->response_function();
-
+    for (size_t j=0; j<num_data_pts; ++j) {
       samsOut << '\n';
+      const RealVector& sams = gp_data.continuous_variables(j);
       for (size_t k=0; k<num_vars; k++)
 	samsOut << std::setw(13) << sams[k] << ' ';
-      samsOut << std::setw(13) << true_fn;
+      samsOut << std::setw(13) << gp_data.response_function(j);
     }
     samsOut << std::endl;
 
@@ -496,13 +493,12 @@ void EffGlobalMinimizer::get_best_sample()
   // Pull the samples and responses from data used to build latest GP
   // to determine fnStar for use in the expected improvement function
 
-  const SDPList& gp_data_0 = fHatModel.approximation_data(0);
+  const Pecos::SurrogateData& gp_data_0 = fHatModel.approximation_data(0);
 
-  size_t i, sam_star_idx = 0;
+  size_t i, sam_star_idx = 0, num_data_pts = gp_data_0.size();
   Real fn, fn_star = DBL_MAX;
-  SDPLCIter cit;
-  for (i=0, cit = gp_data_0.begin(); cit != gp_data_0.end(); i++, cit++) {
-    const RealVector& sams = cit->continuous_variables();
+  for (i=0; i<num_data_pts; ++i) {
+    const RealVector& sams = gp_data_0.continuous_variables(i);
 
     fHatModel.continuous_variables(sams);
     fHatModel.compute_response();
@@ -515,18 +511,15 @@ void EffGlobalMinimizer::get_best_sample()
       sam_star_idx   = i;
       fn_star        = fn;
       meritFnStar    = fn;
-      truthFnStar[0] = cit->response_function();
+      truthFnStar[0] = gp_data_0.response_function(i);
     }
   }
 
   // update truthFnStar with all additional primary/secondary fns corresponding
   // to lowest merit function value
-  for (i=1; i<numFunctions; i++) {
-    const SDPList& gp_data_i = fHatModel.approximation_data(i);
-    cit = gp_data_i.begin();
-    advance(cit, sam_star_idx);
-    truthFnStar[i] = cit->response_function();
-  }
+  for (i=1; i<numFunctions; ++i)
+    truthFnStar[i]
+      = fHatModel.approximation_data(i).response_function(sam_star_idx);
 }
 
 

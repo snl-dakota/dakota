@@ -429,8 +429,8 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 	  extern PRPCache data_pairs;
 	  extern BoStream write_restart;
 	  // manage shallow/deep copy of vars/response with evalCacheFlag
-	  ParamResponsePair prp(vars, idInterface, core_resp,
-				currEvalId, evalCacheFlag);
+	  ParamResponsePair prp(vars, idInterface, core_resp, currEvalId,
+				evalCacheFlag);
 	  if (evalCacheFlag)
 	    data_pairs.insert(prp);
 	  if (restartFileFlag)

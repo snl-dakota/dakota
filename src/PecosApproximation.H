@@ -199,7 +199,7 @@ protected:
 
   void build();
   void rebuild();
-  void pop(bool save_sdp_set);
+  void pop(bool save_data);
   size_t pop_count();
   void restore();
   bool restore_available();
@@ -476,11 +476,13 @@ inline int PecosApproximation::min_coefficients() const
 
 inline void PecosApproximation::append_from_current()
 {
+  /* TO DO
   // no anchor updates currently needed/supported
   SDPLIter it = currentPoints.begin();
   std::advance(it, polyApproxRep->data_size());
   for (; it!=currentPoints.end(); ++it)
     polyApproxRep->push_back(*it);
+  */
 }
 
 
@@ -489,11 +491,13 @@ inline void PecosApproximation::build()
   // base class implementation checks data set against min required
   Approximation::build();
 
+  /* TO DO
   // synchronize Pecos dataPoints with Approximation currentPoints;
   // uses shallow copies of SurrogateDataPoint instances
   if (polyApproxRep->anchor())
     polyApproxRep->anchor_point(anchorPoint);
   polyApproxRep->data_points(currentPoints);
+  */
 
   // map to Pecos::BasisApproximation
   pecosBasisApprox.compute_coefficients();
@@ -503,7 +507,7 @@ inline void PecosApproximation::build()
 inline void PecosApproximation::rebuild()
 {
   // synchronize Pecos dataPoints with Approximation currentPoints
-  size_t curr_pts  = currentPoints.size(),
+  size_t curr_pts  = approxData.size(),
     curr_pecos_pts = polyApproxRep->data_size();
   if (curr_pts > curr_pecos_pts) {
     // no anchor updates currently needed/supported
@@ -519,12 +523,12 @@ inline void PecosApproximation::rebuild()
 }
 
 
-inline void PecosApproximation::pop(bool save_sdp_set)
+inline void PecosApproximation::pop(bool save_data)
 {
   // base class implementation removes data from currentPoints
-  Approximation::pop(save_sdp_set);
+  Approximation::pop(save_data);
   // synchronize Pecos dataPoints with Approximation currentPoints
-  polyApproxRep->pop(polyApproxRep->data_size() - currentPoints.size());
+  polyApproxRep->pop(polyApproxRep->data_size() - approxData.size());
 
   // map to Pecos::BasisApproximation
   pecosBasisApprox.decrement_coefficients();

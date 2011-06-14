@@ -179,7 +179,7 @@ int GaussProcApproximation::min_coefficients() const
 
 
 int GaussProcApproximation::num_constraints() const
-{ return (anchorPoint.is_null()) ? 0 : 1; }
+{ return (approxData.anchor()) ? 1 : 0; }
 
 
 void GaussProcApproximation::build()
@@ -187,10 +187,10 @@ void GaussProcApproximation::build()
   // base class implementation checks data set against min required
   Approximation::build();
 
-  size_t i, j, offset = 0, numObs = currentPoints.size();
+  size_t i, j, offset = 0; numObs = approxData.size();
   // GaussProcApproximation does not directly handle anchorPoint
   // -> treat it as another currentPoint
-  if (!anchorPoint.is_null()) {
+  if (approxData.anchor()) {
     offset  = 1;
     numObs += 1;
   }
@@ -199,19 +199,18 @@ void GaussProcApproximation::build()
   trainPoints.shapeUninitialized(numObs, numVars);
   trainValues.shapeUninitialized(numObs, 1);
   // process anchorPoint, if present
-  if (!anchorPoint.is_null()) {
-    const RealVector& c_vars = anchorPoint.continuous_variables();
-    for (j=0; j<numVars; j++)
+  if (approxData.anchor()) {
+    const RealVector& c_vars = approxData.anchor_continuous_variables();
+    for (j=0; j<numVars; ++j)
       trainPoints(0,j) = c_vars[j];
-    trainValues(0,0) = anchorPoint.response_function();
+    trainValues(0,0) = approxData.anchor_function();
   }
   // process currentPoints
-  SDPLIter it = currentPoints.begin();
-  for (i=offset; i<numObs; i++, it++) {
-    const RealVector& c_vars = it->continuous_variables();
+  for (i=offset; i<numObs; ++i) {
+    const RealVector& c_vars = approxData.continuous_variables(i);
     for (j=0; j<numVars; j++)
       trainPoints(i,j) = c_vars[j];
-    trainValues(i,0) = it->response_function();
+    trainValues(i,0) = approxData.response_function(i);
   }
 
   // Build a GP covariance model using the sampled data

@@ -231,8 +231,9 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 
 
 /** This function constructs a new approximation, discarding any
-    previous data.  It constructs any required currentPoints and does
-    not define an anchorPoint. */
+    previous data.  It constructs any required data for
+    SurrogateData::{vars,resp}Data and does not define an anchor point
+    for SurrogateData::anchor{Vars,Resp}. */
 void DataFitSurrModel::build_approximation()
 {
   Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
@@ -273,8 +274,9 @@ void DataFitSurrModel::build_approximation()
 
 
 /** This function constructs a new approximation, discarding any
-    previous data.  It uses the passed data to populate the
-    anchorPoint and constructs any required currentPoints. */
+    previous data.  It uses the passed data to populate
+    SurrogateData::anchor{Vars,Resp} and constructs any required data
+    points for SurrogateData::{vars,resp}Data. */
 bool DataFitSurrModel::
 build_approximation(const Variables& vars, const Response& response)
 {
@@ -329,12 +331,12 @@ build_approximation(const Variables& vars, const Response& response)
 }
 
 
-/** This function populates/replaces Approximation::anchorPoint and
-    rebuilds the approximation, if requested.  It does not clear other
-    data (i.e., Approximation::currentPoints) and does not update the
-    actualModel with revised bounds, labels, etc.  Thus, it updates
-    data from a previous call to build_approximation(), and is not
-    intended to be used in isolation. */
+/** This function populates/replaces SurrogateData::anchor{Vars,Resp}
+    and rebuilds the approximation, if requested.  It does not clear
+    other data (i.e., SurrogateData::{vars,resp}Data) and does not
+    update the actualModel with revised bounds, labels, etc.  Thus, it
+    updates data from a previous call to build_approximation(), and is
+    not intended to be used in isolation. */
 void DataFitSurrModel::update_approximation(bool rebuild_flag)
 {
   Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
@@ -358,12 +360,12 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
 }
 
 
-/** This function populates/replaces Approximation::anchorPoint and
-    rebuilds the approximation, if requested.  It does not clear other
-    data (i.e., Approximation::currentPoints) and does not update the
-    actualModel with revised bounds, labels, etc.  Thus, it updates
-    data from a previous call to build_approximation(), and is not
-    intended to be used in isolation. */
+/** This function populates/replaces SurrogateData::anchor{Vars,Resp}
+    and rebuilds the approximation, if requested.  It does not clear
+    other data (i.e., SurrogateData::{vars,resp}Data) and does not
+    update the actualModel with revised bounds, labels, etc.  Thus, it
+    updates data from a previous call to build_approximation(), and is
+    not intended to be used in isolation. */
 void DataFitSurrModel::
 update_approximation(const Variables& vars, const Response& response,
 		     bool rebuild_flag)
@@ -371,7 +373,7 @@ update_approximation(const Variables& vars, const Response& response,
   Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
 
   // populate/replace the anchor point for each approximation
-  approxInterface.update_approximation(vars, response); // update anchorPoint
+  approxInterface.update_approximation(vars, response); // update anchor point
 
   if (rebuild_flag) { // find the coefficients for each approximation
     // decide which surrogates to rebuild based on response content
@@ -396,12 +398,12 @@ update_approximation(const Variables& vars, const Response& response,
 }
 
 
-/** This function populates/replaces Approximation::currentPoints and
-    rebuilds the approximation, if requested.  It does not clear other
-    data (i.e., Approximation::anchorPoint) and does not update the
-    actualModel with revised bounds, labels, etc.  Thus, it updates
-    data from a previous call to build_approximation(), and is not
-    intended to be used in isolation. */
+/** This function populates/replaces SurrogateData::{vars,resp}Data
+    and rebuilds the approximation, if requested.  It does not clear
+    other data (i.e., SurrogateData::anchor{Vars,Resp}) and does not
+    update the actualModel with revised bounds, labels, etc.  Thus, it
+    updates data from a previous call to build_approximation(), and is
+    not intended to be used in isolation. */
 void DataFitSurrModel::
 update_approximation(const VariablesArray& vars_array,
 		     const ResponseArray&  resp_array, bool rebuild_flag)
@@ -438,10 +440,10 @@ update_approximation(const VariablesArray& vars_array,
 }
 
 
-/** This function appends one point to Approximation::currentPoints
+/** This function appends one point to SurrogateData::{vars,resp}Data
     and rebuilds the approximation, if requested.  It does not modify
-    other data (i.e., Approximation::anchorPoint) and does not update
-    the actualModel with revised bounds, labels, etc.  Thus, it
+    other data (i.e., SurrogateData::anchor{Vars,Resp}) and does not
+    update the actualModel with revised bounds, labels, etc.  Thus, it
     appends to data from a previous call to build_approximation(), and
     is not intended to be used in isolation. */
 void DataFitSurrModel::append_approximation(bool rebuild_flag)
@@ -467,10 +469,10 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
 }
 
 
-/** This function appends one point to Approximation::currentPoints
+/** This function appends one point to SurrogateData::{vars,resp}Data
     and rebuilds the approximation, if requested.  It does not modify
-    other data (i.e., Approximation::anchorPoint) and does not update
-    the actualModel with revised bounds, labels, etc.  Thus, it
+    other data (i.e., SurrogateData::anchor{Vars,Resp}) and does not
+    update the actualModel with revised bounds, labels, etc.  Thus, it
     appends to data from a previous call to build_approximation(), and
     is not intended to be used in isolation. */
 void DataFitSurrModel::
@@ -505,12 +507,12 @@ append_approximation(const Variables& vars, const Response& response,
 }
 
 
-/** This function appends multiple points to Approximation::currentPoints
-    and rebuilds the approximation, if requested.  It does not modify
-    other data (i.e., Approximation::anchorPoint) and does not update the
-    actualModel with revised bounds, labels, etc.  Thus, it appends to
-    data from a previous call to build_approximation(), and is not
-    intended to be used in isolation. */
+/** This function appends multiple points to SurrogateData::{vars,resp}Data
+    and rebuilds the approximation, if requested.  It does not modify other 
+    data (i.e., SurrogateData::anchor{Vars,Resp}) and does not update the
+    actualModel with revised bounds, labels, etc.  Thus, it appends to data
+    from a previous call to build_approximation(), and is not intended to
+    be used in isolation. */
 void DataFitSurrModel::
 append_approximation(const VariablesArray& vars_array,
 		     const ResponseArray&  resp_array, bool rebuild_flag)
@@ -547,12 +549,13 @@ append_approximation(const VariablesArray& vars_array,
 }
 
 
-void DataFitSurrModel::pop_approximation(bool save_sdp_set)//,bool rebuild_flag)
+void DataFitSurrModel::
+pop_approximation(bool save_surr_data)//,bool rebuild_flag)
 {
   Cout << "\n>>>>> Popping data from " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
-  approxInterface.pop_approximation(save_sdp_set);
+  approxInterface.pop_approximation(save_surr_data);
 
   /* 
   if (rebuild_flag) { // update the coefficients for each approximation
@@ -724,7 +727,9 @@ void DataFitSurrModel::build_global()
     // since SurrBasedLocalMinimizer currently evaluates the trust region center
     // first, we must take care to not include this point in the point reuse,
     // since this would cause it to be used twice.
-    const Pecos::SurrogateDataPoint& anchor_pt = approxInterface.anchor_point();
+    int index = *surrogateFnIndices.begin();
+    const Pecos::SurrogateDataVars& anchor_vars
+      = approxInterface.approximation_data(index).anchor_variables();
 
     // Process the PRPCache
     extern PRPCache data_pairs;
@@ -738,8 +743,8 @@ void DataFitSurrModel::build_global()
 	   db_di_vars.length() == num_di_vars &&
 	   db_dr_vars.length() == num_dr_vars &&
 	   prp_iter->interface_id() == actualModel.interface_id() &&
-	   ( anchor_pt.is_null() || 
-	     db_c_vars != anchor_pt.continuous_variables() ) &&
+	   ( anchor_vars.is_null() || 
+	     db_c_vars != anchor_vars.continuous_variables() ) &&
 	   inside(db_c_vars, db_di_vars, db_dr_vars) ) {
 	reuse_vars.push_back(db_vars);
 	reuse_responses.push_back(prp_iter->prp_response());
@@ -820,6 +825,20 @@ void DataFitSurrModel::build_global()
       daceIterator.active_set(set);
       // run the iterator
       daceIterator.run_iterator(Cout);
+
+      /* TO DO
+      // if truth evals not already cached, cache them now so that
+      // approximation classes may utilize shallow copies
+      if (!actualModel.eval_cache_flag()) {
+	if (daceIterator.compact_mode())
+	  approxInterface.cache_truth_data(daceIterator.all_samples(),
+					   daceIterator.all_responses());
+	else
+	  approxInterface.cache_truth_data(daceIterator.all_variables(),
+					   daceIterator.all_responses());
+      }
+      */
+
       // append vars/resp arrays to the approximation
       if (daceIterator.compact_mode())
 	approxInterface.append_approximation(daceIterator.all_samples(),
@@ -836,7 +855,9 @@ void DataFitSurrModel::build_global()
   // *******************************
   // Output counts for data ensemble
   // *******************************
-  String anchor = (approxInterface.anchor()) ? "one" : "no";
+  int index = *surrogateFnIndices.begin();
+  String anchor = (approxInterface.approximation_data(index).anchor())
+    ? "one" : "no";
   Cout << "Constructing global approximations with " << anchor << " anchor, "
        << new_points << " DACE samples, and " << reuse_points
        << " reused points.\n";

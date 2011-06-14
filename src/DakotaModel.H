@@ -27,8 +27,7 @@
 #undef interface
 #endif
 
-// forward declaration
-namespace Pecos { class SurrogateDataPoint; }
+namespace Pecos { class SurrogateData; /* forward declarations */ }
 
 namespace Dakota {
 
@@ -139,9 +138,9 @@ public:
 				    bool rebuild_flag);
 
   /// remove the previous data set addition to a surrogate (e.g., due
-  /// to a previous append_approximation() call); flag manages saving
-  /// of SurrogateDataPoint set for use in restore_approximation()
-  virtual void pop_approximation(bool save_sdp_set);
+  /// to a previous append_approximation() call); flag manages storing
+  /// of surrogate data for use in a subsequent restore_approximation()
+  virtual void pop_approximation(bool save_surr_data);
 
   /// restore a previous approximation data state within a surrogate
   virtual void restore_approximation();
@@ -162,6 +161,10 @@ public:
 
   /// retrieve the set of Approximations within a DataFitSurrModel
   virtual std::vector<Approximation>& approximations();
+  /// retrieve the approximation data from a particular Approximation
+  /// instance within a DataFitSurrModel
+  virtual const Pecos::SurrogateData& approximation_data(size_t index);
+
   /// retrieve the approximation coefficients from each Approximation
   /// within a DataFitSurrModel
   virtual const RealVectorArray& approximation_coefficients();
@@ -172,9 +175,6 @@ public:
   /// Approximation within a DataFitSurrModel
   virtual const RealVector& approximation_variances(
     const RealVector& c_vars);
-  /// retrieve the approximation data from a particular Approximation
-  /// instance within a DataFitSurrModel
-  virtual const SDPList& approximation_data(size_t index);
 
   /// compute correction factors for use in SurrogateModels
   virtual void compute_correction(const Response& truth_response, 

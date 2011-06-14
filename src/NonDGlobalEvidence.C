@@ -81,26 +81,27 @@ void NonDGlobalEvidence::get_best_sample(bool find_max, bool eval_approx)
   // Pull the samples and responses from data used to build latest GP
   // to determine fnStar for use in the expected improvement function
 
-  const SDPList& gp_data = fHatModel.approximation_data(respFnCntr);
-  SDPLCIter cit, cit_star;
+  const Pecos::SurrogateData& gp_data
+    = fHatModel.approximation_data(respFnCntr);
 
   // GT:
   // We want to make sure that we pick a data point that lies inside the cell
+  size_t i, j, index_star, num_data_pts = gp_data.size();
   truthFnStar = (find_max) ? -DBL_MAX : DBL_MAX;
-  for (cit = gp_data.begin(); cit != gp_data.end(); ++cit) {
-    const Real& truth_fn = cit->response_function();
-    const RealVector& truth_data = cit->continuous_variables();
+  for (i=0; i<num_data_pts; ++i) {
+    const Real&       truth_fn   = gp_data.response_function(i);
+    const RealVector& truth_data = gp_data.continuous_variables(i);
     bool in_bounds = true;
-    for (size_t i=0; i < numIntervalVars; i++) {
-      if ((truth_data[i] < cellLowerBounds[cellCntr][i]) ||
-	  (truth_data[i] > cellUpperBounds[cellCntr][i])) {	
+    for (j=0; j < numIntervalVars; ++j) {
+      if ((truth_data[j] < cellLowerBounds[cellCntr][j]) ||
+	  (truth_data[j] > cellUpperBounds[cellCntr][j])) {	
 	in_bounds = false;
 	break;
       }
     }
     if ( ( (  find_max && truth_fn > truthFnStar ) ||
 	   ( !find_max && truth_fn < truthFnStar ) ) && in_bounds ){
-      cit_star    = cit;
+      index_star  = i;
       truthFnStar = truth_fn;
     }
   }
@@ -120,7 +121,7 @@ void NonDGlobalEvidence::get_best_sample(bool find_max, bool eval_approx)
       fHatModel.continuous_variables(midpoint);
     }
     else
-      fHatModel.continuous_variables(cit_star->continuous_variables());
+      fHatModel.continuous_variables(gp_data.continuous_variables(index_star));
 		
     ActiveSet set = fHatModel.current_response().active_set();
     set.request_values(0); set.request_value(respFnCntr, 1);

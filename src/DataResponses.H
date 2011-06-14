@@ -29,9 +29,7 @@ namespace Dakota {
     responses keyword specification.  Default values are managed in
     the DataResponsesRep constructor.  Data is public to avoid
     maintaining set/get functions, but is still encapsulated within
-    ProblemDescDB since ProblemDescDB::dataResponsesList is private (a
-    similar approach is used with SurrogateDataPoint objects contained
-    in Dakota::Approximation). */
+    ProblemDescDB since ProblemDescDB::dataResponsesList is private. */
 
 class DataResponsesRep
 {

@@ -144,7 +144,7 @@ protected:
 			    const ResponseArray& resp_array, bool rebuild_flag);
 
   /// remove approximation data added on previous append_approximation() call
-  void pop_approximation(bool save_sdp_set);
+  void pop_approximation(bool save_surr_data);
 
   /// restore a previous approximation data state
   void restore_approximation();
@@ -167,7 +167,7 @@ protected:
   const RealVector& approximation_variances(const RealVector& c_vars);
   /// return the approximation data from a particular Approximation
   /// (request forwarded to approxInterface)
-  const SDPList& approximation_data(size_t index);
+  const Pecos::SurrogateData& approximation_data(size_t index);
 
   /// update component parallel mode for supporting parallelism in actualModel
   void component_parallel_mode(short mode);
@@ -393,7 +393,8 @@ approximation_variances(const RealVector& c_vars)
 { return approxInterface.approximation_variances(c_vars); }
 
 
-inline const SDPList& DataFitSurrModel::approximation_data(size_t index)
+inline const Pecos::SurrogateData& DataFitSurrModel::
+approximation_data(size_t index)
 { return approxInterface.approximation_data(index); }
 
 

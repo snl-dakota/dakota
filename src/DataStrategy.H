@@ -29,9 +29,7 @@ namespace Dakota {
     strategy keyword specification.  Default values are managed in the
     DataStrategyRep constructor.  Data is public to avoid maintaining
     set/get functions, but is still encapsulated within ProblemDescDB
-    since ProblemDescDB::strategySpec is private (a similar approach
-    is used with SurrogateDataPoint objects contained in
-    Dakota::Approximation). */
+    since ProblemDescDB::strategySpec is private. */
 
 class DataStrategyRep
 {

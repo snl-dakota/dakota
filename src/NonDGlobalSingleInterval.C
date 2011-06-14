@@ -42,21 +42,22 @@ void NonDGlobalSingleInterval::get_best_sample(bool find_max, bool eval_approx)
   // Pull the samples and responses from data used to build latest GP
   // to determine fnStar for use in the expected improvement function
 
-  const SDPList& gp_data = fHatModel.approximation_data(respFnCntr);
-  SDPLCIter cit, cit_star;
+  const Pecos::SurrogateData& gp_data
+    = fHatModel.approximation_data(respFnCntr);
 
+  size_t i, index_star, num_data_pts = gp_data.size();
   truthFnStar = (find_max) ? -DBL_MAX : DBL_MAX;
-  for (cit = gp_data.begin(); cit != gp_data.end(); ++cit) {
-    const Real& truth_fn = cit->response_function();
+  for (i=0; i<num_data_pts; ++i) {
+    const Real& truth_fn = gp_data.response_function(i);
     if ( (  find_max && truth_fn > truthFnStar ) ||
 	 ( !find_max && truth_fn < truthFnStar ) ) {
-      cit_star    = cit;
+      index_star  = i;
       truthFnStar = truth_fn;
     }
   }
 
   if (eval_approx) {
-    fHatModel.continuous_variables(cit_star->continuous_variables());
+    fHatModel.continuous_variables(gp_data.continuous_variables(index_star));
     ActiveSet set = fHatModel.current_response().active_set();
     set.request_values(0); set.request_value(respFnCntr, 1);
     fHatModel.compute_response(set);

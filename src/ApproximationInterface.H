@@ -73,25 +73,29 @@ protected:
   void approximation_function_indices(const IntSet& approx_fn_indices);
 
   void update_approximation(const Variables& vars,
-			    const Response& response);
+			    const Response& response, bool deep_copy = false);
   void update_approximation(const RealMatrix& samples,
-			    const ResponseArray& resp_array);
+			    const ResponseArray& resp_array,
+			    bool deep_copy = false);
   void update_approximation(const VariablesArray& vars_array,
-			    const ResponseArray& resp_array);
+			    const ResponseArray& resp_array,
+			    bool deep_copy = false);
 
   void append_approximation(const Variables& vars,
-			    const Response& response);
+			    const Response& response, bool deep_copy = false);
   void append_approximation(const RealMatrix& samples,
-			    const ResponseArray& resp_array);
+			    const ResponseArray& resp_array,
+			    bool deep_copy = false);
   void append_approximation(const VariablesArray& vars_array,
-			    const ResponseArray& resp_array);
+			    const ResponseArray& resp_array,
+			    bool deep_copy = false);
 
   void build_approximation(const BoolDeque& rebuild_deque,
 			   const RealVector& lower_bnds,
 			   const RealVector& upper_bnds);
 
   void rebuild_approximation(const BoolDeque& rebuild_deque);
-  void pop_approximation(bool save_sdp_set);
+  void pop_approximation(bool save_surr_data);
   void restore_approximation();
   bool restore_available();
   void finalize_approximation();
@@ -99,17 +103,13 @@ protected:
   void clear_current();
   void clear_all();
 
-  bool anchor() const;
-  const Pecos::SurrogateDataPoint& anchor_point() const;
-
   std::vector<Approximation>& approximations();
+  const Pecos::SurrogateData& approximation_data(size_t index);
 
   const RealVectorArray& approximation_coefficients();
   void approximation_coefficients(const RealVectorArray& approx_coeffs);
 
   const RealVector& approximation_variances(const RealVector& c_vars);
-
-  const SDPList& approximation_data(size_t index);
 
   // mimic asynchronous operations for those iterators which call
   // asynch_compute_response and synchronize/synchronize_nowait on an
@@ -139,9 +139,6 @@ private:
   RealVectorArray functionSurfaceCoeffs;
   /// vector of approximation variances, one value per response function
   RealVector functionSurfaceVariances;
-  /// list of surrogate data points used in building the approximation
-  /// for a particular response function
-  SDPList functionSurfaceDataPoints;
 
   // vector of approximation scalings from approx_scale_offset.in.  Provides
   // a capability to reuse existing surrogates with modified design goals.
@@ -152,8 +149,8 @@ private:
 
   //bool graph3DFlag; // controls 3D graphics of approximation surfaces
 
-  /// List of diagnostic metrics
-  StringArray diag_list;
+  /// set of diagnostic metrics
+  StringArray diagnosticSet;
 
   /// copy of the actualModel variables object used to simplify conversion 
   /// among differing variable views
@@ -181,6 +178,7 @@ inline int ApproximationInterface::minimum_points(bool constraint_flag) const
 			  functionSurfaces[*cit].min_points(constraint_flag));
   return min_points;
 }
+
 
 inline int ApproximationInterface::
 recommended_points(bool constraint_flag) const
@@ -216,24 +214,20 @@ inline void ApproximationInterface::clear_all()
 }
 
 
-inline bool ApproximationInterface::anchor() const
-{
-  // each functionSurface should be consistent
-  return (functionSurfaces.empty()) ? false :
-    functionSurfaces[*approxFnIndices.begin()].anchor();
-}
-
-
-inline const Pecos::SurrogateDataPoint& ApproximationInterface::
-anchor_point() const
-{
-  // each functionSurface should be consistent
-  return functionSurfaces[*approxFnIndices.begin()].anchor_point();
-}
-
-
 inline std::vector<Approximation>& ApproximationInterface::approximations()
 { return functionSurfaces; }
+
+
+inline const Pecos::SurrogateData& ApproximationInterface::
+approximation_data(size_t index)
+{
+  if (!approxFnIndices.count(index)) {
+    Cerr << "Error: index passed to ApproximationInterface::approximation_data"
+	 << "() does not correspond to an approximated function." << std::endl;
+    abort_handler(-1);
+  }
+  return functionSurfaces[index].approximation_data();
+}
 
 } // namespace Dakota
 

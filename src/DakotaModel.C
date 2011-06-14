@@ -2547,10 +2547,10 @@ append_approximation(const VariablesArray& vars_array,
 }
 
 
-void Model::pop_approximation(bool save_sdp_set)
+void Model::pop_approximation(bool save_surr_data)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->pop_approximation(save_sdp_set);
+    modelRep->pop_approximation(save_surr_data);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
 	 << "(bool) function.\nThis model does not support approximation data "
@@ -2690,7 +2690,7 @@ const RealVector& Model::approximation_variances(const RealVector& c_vars)
 }
 
 
-const SDPList& Model::approximation_data(size_t index)
+const Pecos::SurrogateData& Model::approximation_data(size_t index)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_data()"

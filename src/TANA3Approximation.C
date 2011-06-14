@@ -56,8 +56,8 @@ int TANA3Approximation::min_coefficients() const
 int TANA3Approximation::num_constraints() const
 {
   // For the minimal first-order Taylor series interim approximation, return
-  // the number of constraints within the anchorPoint.
-  return (anchorPoint.is_null()) ? 0 : numVars + 1;
+  // the number of constraints within approxData's anchor point.
+  return (approxData.anchor()) ? numVars + 1 : 0;
 }
 
 
@@ -76,8 +76,8 @@ void TANA3Approximation::build()
   // you pushed two anchors at the class.
   // *****************************************************************
 
-  // Check number of data points: require anchor; currentPoints are optional
-  if (anchorPoint.is_null()) {
+  // Check approxData: require anchor; SurrogateData::{vars,resp}Data optional
+  if (!approxData.anchor()) {
     Cerr << "Error: wrong number of data points in TANA3Approximation::build."
 	 << std::endl;
     abort_handler(-1);
@@ -88,21 +88,15 @@ void TANA3Approximation::build()
     abort_handler(-1);
   }
   if ( !(buildDataOrder & 2) ||
-       anchorPoint.response_gradient().length() != numVars ) {
+       approxData.anchor_gradient().length() != numVars ) {
     Cerr << "Error: response gradients required in TANA3Approximation::build."
 	 << std::endl;
     abort_handler(-1);
   }
 
-  if (currentPoints.empty()) {
-    // Insufficient data for two-point approximation:
-    // use 1st-order Taylor series as interim approach.
-    // In this case, no additional computations are needed.
-  }
-  else { // two-point approximation
+  if (approxData.size()) { // two-point approximation
     // Check gradients
-    const Pecos::SurrogateDataPoint& prev_pt = *currentPoints.begin();
-    if (prev_pt.response_gradient().length() != numVars) {
+    if (approxData.response_gradient(0).length() != numVars) {
       Cerr << "Error: gradients required in TANA3Approximation::build."
 	   << std::endl;
       abort_handler(-1);
@@ -115,11 +109,16 @@ void TANA3Approximation::build()
       minX.sizeUninitialized(numVars);
 
     // Calculate TANA3 terms
-    const RealVector& x1 = prev_pt.continuous_variables();
-    const RealVector& x2 = anchorPoint.continuous_variables();
+    const RealVector& x1 = approxData.continuous_variables(0);
+    const RealVector& x2 = approxData.anchor_continuous_variables();
     for (size_t i=0; i<numVars; i++)
       minX[i] = std::min(x1[i], x2[i]);
     find_scaled_coefficients();
+  }
+  else {
+    // Insufficient data for two-point approximation:
+    // use 1st-order Taylor series as interim approach.
+    // In this case, no additional computations are needed.
   }
 }
 
@@ -141,13 +140,12 @@ void TANA3Approximation::find_scaled_coefficients()
   //  Lower variable bounds for scaling   l_bnds
   //  Upper variable bounds for scaling   u_bnds 
 
-  const Pecos::SurrogateDataPoint& prev_pt = *currentPoints.begin();
-  const RealVector& x1    = prev_pt.continuous_variables();
-  const Real&       f1    = prev_pt.response_function();
-  const RealVector& grad1 = prev_pt.response_gradient();
-  const RealVector& x2    = anchorPoint.continuous_variables();
-  const Real&       f2    = anchorPoint.response_function();
-  const RealVector& grad2 = anchorPoint.response_gradient();
+  const RealVector& x1    = approxData.continuous_variables(0);
+  const Real&       f1    = approxData.response_function(0);
+  const RealVector& grad1 = approxData.response_gradient(0);
+  const RealVector& x2    = approxData.anchor_continuous_variables();
+  const Real&       f2    = approxData.anchor_function();
+  const RealVector& grad2 = approxData.anchor_gradient();
 
   // Numerical safeguarding must be performed since x^p is problematic for
   // x < 0 and nonintegral p.  Three approaches for this have been explored:
@@ -240,7 +238,8 @@ void TANA3Approximation::find_scaled_coefficients()
   H = f1 - f2;
   for (i=0; i<numVars; i++) {
     Real s2i = scX2[i], pi = pExp[i];
-    H -= grad2[i]*std::pow(s2i,1.-pi)/pi*(std::pow(scX1[i],pi)-std::pow(s2i,pi));
+    H -= grad2[i] * std::pow(s2i,1.-pi) / pi *
+      (std::pow(scX1[i],pi) - std::pow(s2i,pi));
   }
   H *= 2.;
 
@@ -278,16 +277,7 @@ void TANA3Approximation::offset(const RealVector& x, RealVector& s)
 
 const Real& TANA3Approximation::get_value(const RealVector& x)
 {
-  if (currentPoints.empty()) { // First-order Taylor series (interim approx)
-    approxValue                  = anchorPoint.response_function();
-    const RealVector& c_vars = anchorPoint.continuous_variables();
-    const RealVector& grad   = anchorPoint.response_gradient();
-    for (size_t i=0; i<numVars; i++) {
-      Real dist_i = x[i] - c_vars[i];
-      approxValue += grad[i] * dist_i;
-    }
-  }
-  else { // TANA-3 approximation
+  if (approxData.size()) { // TANA-3 approximation
 
     // Check existing scaling to verify that it is sufficient for x
     size_t i;
@@ -305,8 +295,8 @@ const Real& TANA3Approximation::get_value(const RealVector& x)
     }
 
     // Calculate approxValue
-    const Real&           f2    = anchorPoint.response_function();
-    const RealVector& grad2 = anchorPoint.response_gradient();
+    const Real&       f2    = approxData.anchor_function();
+    const RealVector& grad2 = approxData.anchor_gradient();
     Real sum1 = 0., sum_diff1_sq = 0., sum_diff2_sq = 0.;
     for (i=0; i<numVars; i++) {
       Real pi = pExp[i], sp = std::pow(s_eval[i],pi), s2i = scX2[i],
@@ -322,6 +312,15 @@ const Real& TANA3Approximation::get_value(const RealVector& x)
 	 << approxValue << '\n';
 #endif // DEBUG
   }
+  else { // First-order Taylor series (interim approx)
+    approxValue              = approxData.anchor_function();
+    const RealVector& c_vars = approxData.anchor_continuous_variables();
+    const RealVector& grad   = approxData.anchor_gradient();
+    for (size_t i=0; i<numVars; i++) {
+      Real dist_i = x[i] - c_vars[i];
+      approxValue += grad[i] * dist_i;
+    }
+  }
 
   return approxValue;
 }
@@ -329,9 +328,7 @@ const Real& TANA3Approximation::get_value(const RealVector& x)
 
 const RealVector& TANA3Approximation::get_gradient(const RealVector& x)
 {
-  if (currentPoints.empty()) // First-order Taylor series (interim approx)
-    approxGradient = anchorPoint.response_gradient();
-  else { // TANA-3 approximation
+  if (approxData.size()) { // TANA-3 approximation
 
     // Check existing scaling to verify that it is sufficient for x
     size_t i;
@@ -349,7 +346,7 @@ const RealVector& TANA3Approximation::get_gradient(const RealVector& x)
     }
 
     // Calculate approxGradient
-    const RealVector& grad2 = anchorPoint.response_gradient();
+    const RealVector& grad2 = approxData.anchor_gradient();
     Real sum_diff1_sq = 0., sum_diff2_sq = 0.;
     for (i=0; i<numVars; i++) {
       Real pi = pExp[i], sp = std::pow(s_eval[i],pi),
@@ -370,6 +367,8 @@ const RealVector& TANA3Approximation::get_gradient(const RealVector& x)
 #endif // DEBUG
     }
   }
+  else // First-order Taylor series (interim approx)
+    approxGradient = approxData.anchor_gradient();
 
   return approxGradient;
 }

@@ -32,9 +32,7 @@ enum { OBJECTIVE, INEQUALITY_CONSTRAINT, EQUALITY_CONSTRAINT };
     interface keyword specification.  Default values are managed in
     the DataInterfaceRep constructor.  Data is public to avoid
     maintaining set/get functions, but is still encapsulated within
-    ProblemDescDB since ProblemDescDB::dataInterfaceList is private (a
-    similar approach is used with SurrogateDataPoint objects contained
-    in Dakota::Approximation). */
+    ProblemDescDB since ProblemDescDB::dataInterfaceList is private. */
 
 class DataInterface;
 

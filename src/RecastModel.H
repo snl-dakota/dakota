@@ -163,7 +163,7 @@ protected:
   void append_approximation(const VariablesArray& vars_array,
 			    const ResponseArray& resp_array, bool rebuild_flag);
 
-  void pop_approximation(bool save_sdp_set);
+  void pop_approximation(bool save_surr_data);
   void restore_approximation();
   bool restore_available();
   void finalize_approximation();
@@ -177,7 +177,7 @@ protected:
   /// retrieve the approximation variances from the subModel
   const RealVector& approximation_variances(const RealVector& c_vars);
   /// retrieve the approximation data from the subModel
-  const SDPList& approximation_data(size_t index);
+  const Pecos::SurrogateData& approximation_data(size_t index);
 
   /// RecastModel only supports parallelism in subModel, so this
   /// virtual function redefinition is simply a sanity check.
@@ -422,8 +422,8 @@ append_approximation(const VariablesArray& vars_array,
 { subModel.append_approximation(vars_array, resp_array, rebuild_flag); }
 
 
-inline void RecastModel::pop_approximation(bool save_sdp_set)
-{ subModel.pop_approximation(save_sdp_set); }
+inline void RecastModel::pop_approximation(bool save_surr_data)
+{ subModel.pop_approximation(save_surr_data); }
 
 
 inline void RecastModel::restore_approximation()
@@ -456,7 +456,7 @@ approximation_variances(const RealVector& c_vars)
 { return subModel.approximation_variances(c_vars); }
 
 
-inline const SDPList& RecastModel::approximation_data(size_t index)
+inline const Pecos::SurrogateData& RecastModel::approximation_data(size_t index)
 { return subModel.approximation_data(index); }
 
 

@@ -584,7 +584,7 @@ const Real& SurfpackApproximation::get_diagnostic(const String& metric_type)
   return approxDiagnostic;
 }
 
-/** Copy the data stored in Dakota-style SurrogateDataPoint objects into
+/** Copy the data stored in Dakota-style SurrogateData into
     Surfpack-style SurfPoint and SurfData objects. */
 SurfData* SurfpackApproximation::surrogates_to_surf_data()
 {
@@ -592,11 +592,15 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
 
   // global_polynomials treat the anchor point specially as a
   // constraint; other surrogates treat is as a regular data point
-  if (!anchorPoint.is_null() && approxType != "global_polynomial")
-    add_sdp_to_surfdata(anchorPoint, *surf_data);
+  if (approxData.anchor() && approxType != "global_polynomial")
+    add_sdp_to_surfdata(approxData.anchor_variables(),
+			approxData.anchor_response(), *surf_data);
   // add the remaining surrogate data points
-  for (SDPLIter it=currentPoints.begin(); it!=currentPoints.end(); ++it)
-    add_sdp_to_surfdata(*it, *surf_data);
+  size_t i, num_data_pts = approxData.size();
+  const Pecos::SDVArray& sdv_array = approxData.variables_data();
+  const Pecos::SDRArray& sdr_array = approxData.response_data();
+  for (i=0; i<num_data_pts; ++i)
+    add_sdp_to_surfdata(sdv_array[i], sdr_array[i], *surf_data);
 
   return surf_data;
 }
@@ -607,14 +611,14 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
 void SurfpackApproximation::checkForEqualityConstraints()
 {
   assert(factory);
-  if (!anchorPoint.is_null()) {
+  if (approxData.anchor()) {
     // We will use logical OR to accumulate which constraints are present:
     // 1 for a response value,
     // 2 for a gradient vector,
     // 4 for a hessian matrix
 
     // Print out the continuous design variables
-    const RealVector& c_vars = anchorPoint.continuous_variables();
+    const RealVector& c_vars = approxData.anchor_continuous_variables();
     if (outputLevel > NORMAL_OUTPUT) {
       Cout << "Anchor point continuous vars\n";
       write_data(Cout, c_vars);
@@ -622,14 +626,14 @@ void SurfpackApproximation::checkForEqualityConstraints()
 
     // At a minimum, there should be a response value
     int requested_constraints = 1;
-    const Real& response_value = anchorPoint.response_function();
+    const Real& response_value = approxData.anchor_function();
     if (outputLevel > NORMAL_OUTPUT)
       Cout << "Anchor response: " << response_value << '\n';
 
     // Check for gradient in anchor point
-    RealArray gradient(anchorPoint.response_gradient().length());
-    std::copy( anchorPoint.response_gradient().values(),
-               anchorPoint.response_gradient().values() + gradient.size(),
+    const RealVector& anchor_grad = approxData.anchor_gradient();
+    RealArray gradient(anchor_grad.length());
+    std::copy( anchor_grad.values(), anchor_grad.values() + gradient.size(),
                gradient.begin() );
 
     // Print the gradient out, if present
@@ -645,16 +649,17 @@ void SurfpackApproximation::checkForEqualityConstraints()
     
     // Check for hessian in anchor point
     MtxDbl hessian;
-    if (!(anchorPoint.response_hessian().empty())) {
+    const RealSymMatrix& anchor_hess = approxData.anchor_hessian();
+    if (!anchor_hess.empty()) {
        requested_constraints |= 4;
-       const RealSymMatrix& rm = anchorPoint.response_hessian();
-       hessian.reshape(rm.numRows(), rm.numCols());
+       hessian.reshape(anchor_hess.numRows(), anchor_hess.numCols());
        ///\todo improve efficiency of conversion
-       for (size_t i = 0; i < rm.numRows();i++) {
-         for (size_t j = 0; j < rm.numCols();j++) {
+       for (size_t i = 0; i < anchor_hess.numRows();i++) {
+         for (size_t j = 0; j < anchor_hess.numCols();j++) {
            if (outputLevel > NORMAL_OUTPUT)
-	     Cout << "hessian(" << i << "," << j << "): " << rm(i,j) << " ";
-           hessian(i,j) = rm(i,j);
+	     Cout << "hessian(" << i << ',' << j << "): " << anchor_hess(i,j)
+		  << ' ';
+           hessian(i,j) = anchor_hess(i,j);
          }
          if (outputLevel > NORMAL_OUTPUT)
 	   Cout << '\n';
@@ -672,14 +677,15 @@ void SurfpackApproximation::checkForEqualityConstraints()
 
 
 void SurfpackApproximation::
-add_sdp_to_surfdata(const Pecos::SurrogateDataPoint& sdp,
+add_sdp_to_surfdata(const Pecos::SurrogateDataVars& sdv,
+		    const Pecos::SurrogateDataResp& sdr,
 		    SurfData& surf_data)
 {
   // Surfpack's RealArray is std::vector<double>; use DAKOTA copy_data helpers
   RealArray x; 
-  copy_data(sdp.continuous_variables(), x);
+  copy_data(sdv.continuous_variables(), x);
   
-  Real f = sdp.response_function();
+  Real f = sdr.response_function();
   RealArray gradient;
 
   // for now only allow builds from exactly 1, 3=1+2, or 7=1+2+4; use
@@ -692,15 +698,15 @@ add_sdp_to_surfdata(const Pecos::SurrogateDataPoint& sdp,
     break;
 
   case 3:
-    copy_data(sdp.response_gradient(), gradient);
+    copy_data(sdr.response_gradient(), gradient);
     surf_data.addPoint(SurfPoint(x, f, gradient));
     break;
 
   case 7:
     {
-      copy_data(sdp.response_gradient(), gradient);
+      copy_data(sdr.response_gradient(), gradient);
       SurfpackMatrix<Real> hessian(numVars,numVars); // only allocate if needed
-      copy_matrix(sdp.response_hessian(), hessian);
+      copy_matrix(sdr.response_hessian(), hessian);
       surf_data.addPoint(SurfPoint(x, f, gradient, hessian));
       break;
     }

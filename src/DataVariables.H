@@ -54,9 +54,7 @@ enum { CONTINUOUS_DESIGN, DISCRETE_DESIGN_RANGE, DISCRETE_DESIGN_SET_INT,
     variables keyword specification.  Default values are managed in
     the DataVariablesRep constructor.  Data is public to avoid
     maintaining set/get functions, but is still encapsulated within
-    ProblemDescDB since ProblemDescDB::dataVariablesList is private (a
-    similar model is used with SurrogateDataPoint objects contained in
-    Dakota::Approximation). */
+    ProblemDescDB since ProblemDescDB::dataVariablesList is private. */
 
 class DataVariablesRep
 {

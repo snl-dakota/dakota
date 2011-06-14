@@ -30,7 +30,7 @@ struct ASL; // forward declaration
 #endif
 
 // forward declaration
-namespace Pecos { class SurrogateDataPoint; }
+namespace Pecos { class SurrogateData; }
 
 namespace Dakota {
 
@@ -134,23 +134,29 @@ public:
 
   /// updates the anchor point for an approximation
   virtual void update_approximation(const Variables& vars,
-				    const Response& response);
+				    const Response& response,
+				    bool deep_copy = false);
   /// updates the current data points for an approximation
   virtual void update_approximation(const RealMatrix& samples,
-				    const ResponseArray& resp_array);
+				    const ResponseArray& resp_array,
+				    bool deep_copy = false);
   /// updates the current data points for an approximation
   virtual void update_approximation(const VariablesArray& vars_array,
-				    const ResponseArray& resp_array);
+				    const ResponseArray& resp_array,
+				    bool deep_copy = false);
 
   /// appends a single point to an existing approximation
   virtual void append_approximation(const Variables& vars,
-				    const Response& response);
+				    const Response& response,
+				    bool deep_copy = false);
   /// appends multiple points to an existing approximation
   virtual void append_approximation(const RealMatrix& samples,
-				    const ResponseArray& resp_array);
+				    const ResponseArray& resp_array,
+				    bool deep_copy = false);
   /// appends multiple points to an existing approximation
   virtual void append_approximation(const VariablesArray& vars_array,
-				    const ResponseArray& resp_array);
+				    const ResponseArray& resp_array,
+				    bool deep_copy = false);
 
   /// builds the approximation
   virtual void build_approximation(const BoolDeque& rebuild_deque,
@@ -161,7 +167,7 @@ public:
   virtual void rebuild_approximation(const BoolDeque& rebuild_deque);
 
   /// removes data from last append from the approximation
-  virtual void pop_approximation(bool save_sdp_set);
+  virtual void pop_approximation(bool save_surr_data);
 
   /// restores the approximation to a selected previous state
   virtual void restore_approximation();
@@ -176,13 +182,12 @@ public:
   /// clears all data from an approximation interface
   virtual void clear_all();
 
-  /// queries the presence of an anchorPoint within an approximation interface
-  virtual bool anchor() const;
-  /// returns the anchorPoint used within an approximation interface
-  virtual const Pecos::SurrogateDataPoint& anchor_point() const;
-
   /// retrieve the Approximations within an ApproximationInterface
   virtual std::vector<Approximation>& approximations();
+  /// retrieve the approximation data from a particular Approximation
+  /// within an ApproximationInterface
+  virtual const Pecos::SurrogateData& approximation_data(size_t index);
+
   /// retrieve the approximation coefficients from each Approximation
   /// within an ApproximationInterface
   virtual const RealVectorArray& approximation_coefficients();
@@ -193,9 +198,6 @@ public:
   /// within an ApproximationInterface
   virtual const RealVector& approximation_variances(
     const RealVector& c_variables);
-  /// retrieve the approximation data from a particular Approximation
-  /// within an ApproximationInterface
-  virtual const SDPList& approximation_data(size_t index);
 
   /// retrieve the analysis drivers specification for application interfaces
   virtual const StringArray& analysis_drivers() const;

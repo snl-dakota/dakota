@@ -15,8 +15,6 @@
 #include "ProblemDescDB.H"
 
 
-using namespace std;
-
 namespace Dakota {
 
 TaylorApproximation::
@@ -55,40 +53,38 @@ void TaylorApproximation::build()
   // base class implementation checks data set against min required
   Approximation::build();
 
-  // No computations needed.  Just do sanity checking on currentPoints.
+  // No computations needed.  Just do sanity checking on approxData.
 
   // Check number of data points
-  if (anchorPoint.is_null() || !currentPoints.empty()) {
-    Cerr << "Error: wrong number of data points in TaylorApproximation::build."
-	 << endl;
+  if (!approxData.anchor() || approxData.size()) {
+    Cerr << "Error: wrong number of data points in TaylorApproximation::"
+	 << "build()." << std::endl;
     abort_handler(-1);
   }
 
   // Check gradient
-  if (anchorPoint.response_gradient().length() != numVars) {
-    Cerr << "Error: gradient vector required in TaylorApproximation::build."
-	 << endl;
+  if (approxData.anchor_gradient().length() != numVars) {
+    Cerr << "Error: gradient vector required in TaylorApproximation::build()."
+	 << std::endl;
     abort_handler(-1);
   }
 
   // Check Hessian
-  if (buildDataOrder & 4) {
-    const RealSymMatrix& hess = anchorPoint.response_hessian();
-    if (hess.numRows() != numVars) {
-      Cerr << "Error: Hessian matrix required in TaylorApproximation::build."
-	   << endl;
-      abort_handler(-1);
-    }
+  if ( (buildDataOrder & 4) &&
+       approxData.anchor_hessian().numRows() != numVars) {
+    Cerr << "Error: Hessian matrix required in TaylorApproximation::build()."
+	 << std::endl;
+    abort_handler(-1);
   }
 }
 
 
 const Real& TaylorApproximation::get_value(const RealVector& x)
-{ 
-  approxValue               = anchorPoint.response_function();
-  const RealVector&  c_vars = anchorPoint.continuous_variables();
-  const RealVector&    grad = anchorPoint.response_gradient();
-  const RealSymMatrix& hess = anchorPoint.response_hessian();
+{
+  approxValue               = approxData.anchor_function();
+  const RealVector&  c_vars = approxData.anchor_continuous_variables();
+  const RealVector&    grad = approxData.anchor_gradient();
+  const RealSymMatrix& hess = approxData.anchor_hessian();
   for (size_t i=0; i<numVars; i++) {
     Real dist_i = x[i] - c_vars[i];
     approxValue += grad[i] * dist_i;
@@ -103,10 +99,10 @@ const Real& TaylorApproximation::get_value(const RealVector& x)
 const RealVector& TaylorApproximation::
 get_gradient(const RealVector& x)
 {
-  approxGradient = anchorPoint.response_gradient();
+  approxGradient = approxData.anchor_gradient();
   if (buildDataOrder & 4) { // include Hessian terms
-    const RealVector&  c_vars = anchorPoint.continuous_variables();
-    const RealSymMatrix& hess = anchorPoint.response_hessian();
+    const RealVector&  c_vars = approxData.anchor_continuous_variables();
+    const RealSymMatrix& hess = approxData.anchor_hessian();
     for (size_t i=0; i<numVars; i++)
       for (size_t j=0; j<numVars; j++)
         approxGradient[i] += hess(i,j) * (x[j] - c_vars[j]);
@@ -119,7 +115,7 @@ const RealSymMatrix& TaylorApproximation::
 get_hessian(const RealVector& x)
 {
   if (buildDataOrder & 4)
-    return anchorPoint.response_hessian();
+    return approxData.anchor_hessian();
   else {
     if (approxHessian.numRows() != numVars)
       approxHessian.reshape(numVars);

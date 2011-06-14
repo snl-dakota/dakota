@@ -591,12 +591,12 @@ void NonDGlobalReliability::optimize_gaussian_process()
       samsfile += tag;
       std::ofstream samsOut(samsfile.c_str(),std::ios::out);
       samsOut << std::scientific;
-      const SDPList& gp_data = uSpaceModel.approximation_data(respFnCount);
-      size_t num_data_pts = gp_data.entries(), num_vars = uSpaceModel.cv();
-      SDPLCIter cit = gp_data.begin();
-      for (size_t i=0; i<num_data_pts; i++, cit++) {
-	const RealVector& sams = cit->continuous_variables(); // view
-	Real true_fn = cit->response_function();
+      const Pecos::SurrogateData& gp_data
+	= uSpaceModel.approximation_data(respFnCount);
+      size_t num_data_pts = gp_data.size(), num_vars = uSpaceModel.cv();
+      for (size_t i=0; i<num_data_pts; ++i) {
+	const RealVector& sams = gp_data.continuous_variables(i); // view
+	Real true_fn = gp_data.response_function(i);
 	
 	if (mppSearchType == EGRA_X) {
 	  RealVector sams_u(num_vars);
@@ -735,12 +735,12 @@ void NonDGlobalReliability::importance_sampling()
       //         including initial DACE and EGRA added points for _all_ levels.
       // TO DO:  likely need to remove DACE and partition remaining data among
       //         levels for importance sampling efficiency.
-      const SDPList& gp_data = uSpaceModel.approximation_data(respFnCount);
+      const Pecos::SurrogateData& gp_data
+	= uSpaceModel.approximation_data(respFnCount);
       size_t num_data_pts = gp_data.size();
-      SDPLCIter cit = gp_data.begin();
       gp_inputs.resize(num_data_pts);
-      for (i=0; i<num_data_pts; ++i, ++cit)
-	gp_inputs[i] = cit->continuous_variables(); // view OK
+      for (i=0; i<num_data_pts; ++i)
+	gp_inputs[i] = gp_data.continuous_variables(i); // view OK
     }
     statCount++;
 

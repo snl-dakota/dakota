@@ -25,7 +25,7 @@ ApproximationInterface(ProblemDescDB& problem_db,
   Interface(BaseConstructor(), problem_db), 
   approxFnIndices(problem_db.get_dis("model.surrogate.function_indices")),
   //graph3DFlag(problem_db.get_bool("strategy.graphics")),
-  diag_list(problem_db.get_dsa("model.diagnostics")),
+  diagnosticSet(problem_db.get_dsa("model.diagnostics")),
   actualModelVars(actual_model_vars.copy())
 {
   // Some specification-based attributes inherited from Interface may
@@ -297,7 +297,8 @@ const IntResponseMap& ApproximationInterface::synch_nowait()
 /** This function populates/replaces each Approximation::anchorPoint
     with the incoming variables/response data point. */
 void ApproximationInterface::
-update_approximation(const Variables& vars, const Response& response)
+update_approximation(const Variables& vars, const Response& response,
+		     bool deep_copy)
 {
   // NOTE: variable sets passed in from DataFitSurrModel::build_approximation()
   // correspond to the active continuous variables for either the top level
@@ -317,7 +318,7 @@ update_approximation(const Variables& vars, const Response& response)
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int index = *it;
     // populate/replace Approximation::anchorPoint
-    functionSurfaces[index].update(vars, response, index);
+    functionSurfaces[index].update(vars, response, index, deep_copy);
   }
 }
 
@@ -325,7 +326,8 @@ update_approximation(const Variables& vars, const Response& response)
 /** This function populates/replaces each Approximation::currentPoints
     with the incoming variables/response arrays. */
 void ApproximationInterface::
-update_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
+update_approximation(const RealMatrix& samples, const ResponseArray& resp_array,
+		     bool deep_copy)
 {
   // NOTE: variable sets passed in from DataFitSurrModel::build_approximation()
   // correspond to the all continuous variables at the top level in
@@ -348,7 +350,7 @@ update_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int index = *it;
     // populate/replace Approximation::currentPoints
-    functionSurfaces[index].update(samples, resp_array, index);
+    functionSurfaces[index].update(samples, resp_array, index, deep_copy);
   }
 }
 
@@ -357,7 +359,7 @@ update_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
     with the incoming variables/response arrays. */
 void ApproximationInterface::
 update_approximation(const VariablesArray& vars_array,
-		     const ResponseArray& resp_array)
+		     const ResponseArray&  resp_array, bool deep_copy)
 {
   // NOTE: variable sets passed in from DataFitSurrModel::build_approximation()
   // correspond to the all continuous variables at the top level in
@@ -380,7 +382,7 @@ update_approximation(const VariablesArray& vars_array,
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int index = *it;
     // populate/replace Approximation::currentPoints
-    functionSurfaces[index].update(vars_array, resp_array, index);
+    functionSurfaces[index].update(vars_array, resp_array, index, deep_copy);
   }
 }
 
@@ -388,7 +390,8 @@ update_approximation(const VariablesArray& vars_array,
 /** This function appends to each Approximation::currentPoints with
     one incoming variables/response data point. */
 void ApproximationInterface::
-append_approximation(const Variables& vars, const Response& response)
+append_approximation(const Variables& vars, const Response& response,
+		     bool deep_copy)
 {
   // rather than unrolling the response (containing all response functions)
   // into per-response function arrays for input to functionSurfaces[i], pass
@@ -396,7 +399,7 @@ append_approximation(const Variables& vars, const Response& response)
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int index = *it;
     // append an entry to Approximation::currentPoints
-    functionSurfaces[index].append(vars, response, index);
+    functionSurfaces[index].append(vars, response, index, deep_copy);
   }
 }
 
@@ -404,7 +407,8 @@ append_approximation(const Variables& vars, const Response& response)
 /** This function appends to each Approximation::currentPoints with
     multiple incoming variables/response data points. */
 void ApproximationInterface::
-append_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
+append_approximation(const RealMatrix& samples, const ResponseArray& resp_array,
+		     bool deep_copy)
 {
   if (resp_array.size() != samples.numCols()) {
     Cerr << "Error: mismatch in sample and response set lengths in "
@@ -417,7 +421,7 @@ append_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int index = *it;
     // append an entry to Approximation::currentPoints
-    functionSurfaces[index].append(samples, resp_array, index);
+    functionSurfaces[index].append(samples, resp_array, index, deep_copy);
   }
 }
 
@@ -426,7 +430,7 @@ append_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
     multiple incoming variables/response data points. */
 void ApproximationInterface::
 append_approximation(const VariablesArray& vars_array,
-		     const ResponseArray& resp_array)
+		     const ResponseArray&  resp_array, bool deep_copy)
 {
   if (resp_array.size() != vars_array.size()) {
     Cerr << "Error: mismatch in variable and response set lengths in "
@@ -439,7 +443,7 @@ append_approximation(const VariablesArray& vars_array,
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int index = *it;
     // append an entry to Approximation::currentPoints
-    functionSurfaces[index].append(vars_array, resp_array, index);
+    functionSurfaces[index].append(vars_array, resp_array, index, deep_copy);
   }
 }
 
@@ -449,24 +453,23 @@ append_approximation(const VariablesArray& vars_array,
     bounds are used only for graphics visualization. */
 void ApproximationInterface::
 build_approximation(const BoolDeque& rebuild_deque,
-		    const RealVector& lower_bnds,
-		    const RealVector& upper_bnds)
+		    const RealVector& lower_bnds, const RealVector& upper_bnds)
 {
   // build the approximation surfaces
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int index = *it;
     // check for rebuild request (defaults to true if no deque defined)
     if (rebuild_deque.empty() || rebuild_deque[index]) {
-
       // always set bounds since needed for some approximation models
       functionSurfaces[index].set_bounds(lower_bnds, upper_bnds);
-
+      // construct the approximation
       functionSurfaces[index].build();
+      // manage diagnostics
       if (functionSurfaces[index].diagnostics_available()) {
-	if (!diag_list.empty()) {
-	  int num_diag = diag_list.size();
+	if (!diagnosticSet.empty()) {
+	  int num_diag = diagnosticSet.size();
 	  for(int j = 0; j < num_diag; j++)
-	    functionSurfaces[index].get_diagnostic(diag_list[j]);
+	    functionSurfaces[index].get_diagnostic(diagnosticSet[j]);
 	}
 	if (outputLevel > NORMAL_OUTPUT) {
 	  functionSurfaces[index].get_diagnostic("rsquared");
@@ -474,7 +477,6 @@ build_approximation(const BoolDeque& rebuild_deque,
 	  functionSurfaces[index].get_diagnostic("mean_abs");
 	}
       }
-
     }
   }
   /* Old 3D graphics capability:
@@ -503,11 +505,11 @@ rebuild_approximation(const BoolDeque& rebuild_deque)
 
 /** This function removes data provided by a previous call to
     append_approximation(). */
-void ApproximationInterface::pop_approximation(bool save_sdp_set)
+void ApproximationInterface::pop_approximation(bool save_surr_data)
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     // remove entries from Approximation::currentPoints
-    functionSurfaces[*it].pop(save_sdp_set);
+    functionSurfaces[*it].pop(save_surr_data);
 }
 
 
@@ -581,28 +583,6 @@ approximation_variances(const RealVector& c_vars)
       = functionSurfaces[index].get_prediction_variance(c_vars);
   }
   return functionSurfaceVariances;
-}
-
-
-const SDPList& ApproximationInterface::approximation_data(size_t index)
-{
-  if (!approxFnIndices.count(index)) {
-    Cerr << "Error: index passed to ApproximationInterface::approximation_data"
-	 << "() does not correspond to an approximated function." << std::endl;
-    abort_handler(-1);
-  }
-  const Approximation& approx = functionSurfaces[index];
-  if (approx.anchor()) {
-    // preserve standard order: anchor first, followed by current points
-    functionSurfaceDataPoints.clear();
-    functionSurfaceDataPoints.push_back(approx.anchor_point());
-    const SDPList& current_pts = approx.current_points();
-    for (SDPLCIter cit = current_pts.begin(); cit!=current_pts.end(); ++cit)
-      functionSurfaceDataPoints.push_back(*cit);
-    return functionSurfaceDataPoints;
-  }
-  else
-    return approx.current_points();
 }
 
 } // namespace Dakota

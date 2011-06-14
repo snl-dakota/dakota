@@ -14,10 +14,6 @@
 #include <boost/multi_array.hpp>
 #include <list>
 
-namespace Pecos {
-class SurrogateDataPoint;
-}
-
 namespace Dakota {
 
 // avoid problems with circular dependencies by using fwd declarations
@@ -90,8 +86,6 @@ typedef std::vector<Variables>         VariablesArray;
 typedef std::vector<Response>          ResponseArray;
 typedef std::vector<ParamResponsePair> PRPArray;
 typedef std::vector<PRPArray>          PRP2DArray;
-typedef std::vector<Pecos::SurrogateDataPoint> SDPArray;
-typedef std::vector<SDPArray>          SDP2DArray;
 typedef std::vector<Model>             ModelArray;
 typedef std::vector<Iterator>          IteratorArray;
 
@@ -100,7 +94,6 @@ typedef std::list<int>                 IntList;
 typedef std::list<size_t>              SizetList;
 typedef std::list<Real>                RealList;
 typedef std::list<String>              StringList;
-typedef std::list<Pecos::SurrogateDataPoint> SDPList;
 typedef std::list<Variables>           VariablesList;
 typedef std::list<Interface>           InterfaceList;
 typedef std::list<Response>            ResponseList;
@@ -137,11 +130,6 @@ typedef RealList::iterator                         RLIter;
 typedef RealList::const_iterator                   RLCIter;
 typedef StringList::iterator                       StringLIter;
 typedef StringList::const_iterator                 StringLCIter;
-typedef SDPList::iterator                          SDPLIter;
-typedef SDPList::const_iterator                    SDPLCIter;
-typedef SDPList::difference_type                   SDPLDiffT;
-typedef SDPArray::iterator                         SDPAIter;
-typedef SDP2DArray::iterator                       SDP2AIter;
 typedef VariablesList::iterator                    VarsLIter;
 typedef InterfaceList::iterator                    InterfLIter;
 typedef ResponseList::iterator                     RespLIter;

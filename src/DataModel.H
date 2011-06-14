@@ -32,9 +32,7 @@ enum { DEFAULT_POINTS, MINIMUM_POINTS, RECOMMENDED_POINTS, TOTAL_POINTS };
     keyword specification.  Default values are managed in the
     DataModelRep constructor.  Data is public to avoid maintaining
     set/get functions, but is still encapsulated within ProblemDescDB
-    since ProblemDescDB::dataModelList is private (a similar approach
-    is used with SurrogateDataPoint objects contained in
-    Dakota::Approximation). */
+    since ProblemDescDB::dataModelList is private. */
 
 class DataModelRep
 {
