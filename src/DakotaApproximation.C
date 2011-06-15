@@ -705,10 +705,10 @@ add(const RealVector& c_vars, const Response& response, int fn_index,
     Real fn_val = (asv_val & 1) ? fn_vals[fn_index] : 0.;
     RealVector fn_grad;
     if (asv_val & 2)
-      fn_grad = response.function_gradient_copy(fn_index); // copy->copy
+      fn_grad = response.function_gradient(fn_index); // view of a matrix column
     RealSymMatrix empty_hess;
-    const RealSymMatrix& fn_hess
-      = (asv_val & 4) ? fn_hessians[fn_index] : empty_hess;
+    const RealSymMatrix& fn_hess = (asv_val & 4) ?
+      fn_hessians[fn_index] : empty_hess;
     if (anchor_flag)
       add_anchor(c_vars, fn_val, fn_grad, fn_hess);
     else
