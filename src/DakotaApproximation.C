@@ -282,13 +282,14 @@ Approximation::~Approximation()
 }
 
 
+/** This is the common base class portion of the virtual fn and is
+    insufficient on its own; derived implementations should explicitly
+    invoke (or reimplement) this base class contribution. */
 void Approximation::build()
 {
   if (approxRep)
     approxRep->build();
-  else { // virtual fn: this is the common base class portion and is
-         // insufficient on its own; derived implementations should
-         // explicitly invoke (or reimplement) this base class contribution.
+  else {
     size_t num_curr_pts = approxData.size();
     int ms = min_points(true); // account for anchor point & buildDataOrder
     if (num_curr_pts < ms) {
@@ -302,15 +303,15 @@ void Approximation::build()
 }
 
 
+/** This is the common base class portion of the virtual fn and is
+    insufficient on its own; derived implementations should explicitly
+    invoke (or reimplement) this base class contribution. */
 void Approximation::rebuild()
 {
   if (approxRep)
     approxRep->rebuild();
-  else  { // virtual fn: no default, error if not supplied in derived class
-    Cerr << "Error: rebuild() not available for this approximation type."
-	 << std::endl;
-    abort_handler(-1);
-  }
+  else  // virtual fn: no default, error if not supplied in derived class
+    build(); // if no special rebuild optimization, fall back on full build()
 }
 
 

@@ -258,14 +258,12 @@ void DataFitSurrModel::build_approximation()
     // easy access to the truth/approx responses.  Instead, it is called
     // from SBOStrategy using data from the center of the trust region.
   }
-  BoolDeque rebuild_deque;
   if (actualModel.is_null())
-    approxInterface.build_approximation(rebuild_deque,
+    approxInterface.build_approximation(
       userDefinedConstraints.continuous_lower_bounds(),
       userDefinedConstraints.continuous_upper_bounds());
   else // employ sub-model vars view, if available
-    approxInterface.build_approximation(rebuild_deque,
-      actualModel.continuous_lower_bounds(),
+    approxInterface.build_approximation(actualModel.continuous_lower_bounds(),
       actualModel.continuous_upper_bounds());
   approxBuilds++;
 
@@ -304,14 +302,12 @@ build_approximation(const Variables& vars, const Response& response)
     // easy access to the truth/approx responses.  Instead, it is called
     // from SBOStrategy using data from the center of the trust region.
   }
-  BoolDeque rebuild_deque;
   if (actualModel.is_null())
-    approxInterface.build_approximation(rebuild_deque,
+    approxInterface.build_approximation(
       userDefinedConstraints.continuous_lower_bounds(),
       userDefinedConstraints.continuous_upper_bounds());
   else // employ sub-model vars view, if available
-    approxInterface.build_approximation(rebuild_deque,
-      actualModel.continuous_lower_bounds(),
+    approxInterface.build_approximation(actualModel.continuous_lower_bounds(),
       actualModel.continuous_upper_bounds());
   approxBuilds++;
 
@@ -320,14 +316,8 @@ build_approximation(const Variables& vars, const Response& response)
   // return a bool indicating whether the incoming data defines an embedded
   // correction (hard constraint) or just another data point.  It would be
   // preferable to flow this up from the surrogate, but keep it simple for now.
-#ifdef HAVE_SURFPACK
-  return (surrogateType.begins("local_") ||
-	  surrogateType.begins("multipoint_") ||
-	  surrogateType == "global_polynomial");
-#else
-  return (surrogateType.begins("local_") ||
-	  surrogateType.begins("multipoint_"));
-#endif // HAVE_SURFPACK
+  return (surrogateType.begins("local_") || surrogateType.begins("multipoint_")
+	  || surrogateType == "global_polynomial");
 }
 
 
@@ -343,15 +333,20 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
 
   // replace the current points for each approximation
   //daceIterator.run_iterator(Cout);
+  const ResponseArray& all_resp = daceIterator.all_responses();
   if (daceIterator.compact_mode())
-    approxInterface.update_approximation(daceIterator.all_samples(),
-					 daceIterator.all_responses());
+    approxInterface.update_approximation(daceIterator.all_samples(),  all_resp);
   else
-    approxInterface.update_approximation(daceIterator.all_variables(),
-					 daceIterator.all_responses());
+    approxInterface.update_approximation(daceIterator.all_variables(),all_resp);
 
   if (rebuild_flag) { // update the coefficients for each approximation
-    BoolDeque rebuild_deque;
+    BoolDeque rebuild_deque(numFns, false);
+    size_t i, j, num_resp = all_resp.size();
+    for (i=0; i<numFns; ++i)
+      for (j=0; j<num_resp; ++j)
+	if (all_resp[j].active_set_request_vector()[i])
+	  { rebuild_deque[i] = true; break; }
+    // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
     approxBuilds++;
   }
@@ -381,16 +376,8 @@ update_approximation(const Variables& vars, const Response& response,
     const ShortArray& asv = response.active_set_request_vector();
     for (size_t i=0; i<numFns; ++i)
       rebuild_deque[i] = (asv[i]) ? true : false;
-    // rebuild the designated surrogates, employing the sub-model bounds,
-    // if available
-    if (actualModel.is_null())
-      approxInterface.build_approximation(rebuild_deque,
-        userDefinedConstraints.continuous_lower_bounds(),
-        userDefinedConstraints.continuous_upper_bounds());
-    else
-      approxInterface.build_approximation(rebuild_deque,
-	actualModel.continuous_lower_bounds(),
-        actualModel.continuous_upper_bounds());
+    // rebuild the designated surrogates
+    approxInterface.rebuild_approximation(rebuild_deque);
     approxBuilds++;
   }
 
@@ -417,22 +404,12 @@ update_approximation(const VariablesArray& vars_array,
     // decide which surrogates to rebuild based on resp_array content
     BoolDeque rebuild_deque(numFns, false);
     size_t i, j, num_resp = resp_array.size();
-    for (i=0; i<num_resp; ++i) {
-      const ShortArray& asv_i = resp_array[i].active_set_request_vector();
-      for (j=0; j<numFns; ++j)
-	if (asv_i[j])
-	  rebuild_deque[j] = true;
-    }
-    // rebuild the designated surrogates, employing the sub-model bounds,
-    // if available
-    if (actualModel.is_null())
-      approxInterface.build_approximation(rebuild_deque,
-        userDefinedConstraints.continuous_lower_bounds(),
-        userDefinedConstraints.continuous_upper_bounds());
-    else
-      approxInterface.build_approximation(rebuild_deque,
-	actualModel.continuous_lower_bounds(),
-        actualModel.continuous_upper_bounds());
+    for (i=0; i<numFns; ++i)
+      for (j=0; j<num_resp; ++j)
+	if (resp_array[j].active_set_request_vector()[i])
+	  { rebuild_deque[i] = true; break; }
+    // rebuild the designated surrogates
+    approxInterface.rebuild_approximation(rebuild_deque);
     approxBuilds++;
   }
 
@@ -452,15 +429,21 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
 
   // append to the current points for each approximation
   //daceIterator.run_iterator(Cout);
+  const ResponseArray& all_resp = daceIterator.all_responses();
   if (daceIterator.compact_mode())
-    approxInterface.append_approximation(daceIterator.all_samples(),
-					 daceIterator.all_responses());
+    approxInterface.append_approximation(daceIterator.all_samples(),  all_resp);
   else
-    approxInterface.append_approximation(daceIterator.all_variables(),
-					 daceIterator.all_responses());
+    approxInterface.append_approximation(daceIterator.all_variables(),all_resp);
 
   if (rebuild_flag) { // update the coefficients for each approximation
-    BoolDeque rebuild_deque; // empty array rebuilds all fns
+    // decide which surrogates to rebuild based on resp_array content
+    BoolDeque rebuild_deque(numFns, false);
+    size_t i, j, num_resp = all_resp.size();
+    for (i=0; i<numFns; ++i)
+      for (j=0; j<num_resp; ++j)
+	if (all_resp[j].active_set_request_vector()[i])
+	  { rebuild_deque[i] = true; break; }
+    // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
     approxBuilds++;
   }
@@ -490,16 +473,8 @@ append_approximation(const Variables& vars, const Response& response,
     const ShortArray& asv = response.active_set_request_vector();
     for (size_t i=0; i<numFns; ++i)
       rebuild_deque[i] = (asv[i]) ? true : false;
-    // rebuild the designated surrogates, employing the sub-model vars
-    // view, if available
-    if (actualModel.is_null())
-      approxInterface.build_approximation(rebuild_deque,
-        userDefinedConstraints.continuous_lower_bounds(),
-        userDefinedConstraints.continuous_upper_bounds());
-    else
-      approxInterface.build_approximation(rebuild_deque,
-	actualModel.continuous_lower_bounds(),
-	actualModel.continuous_upper_bounds());
+    // rebuild the designated surrogates
+    approxInterface.rebuild_approximation(rebuild_deque);
     approxBuilds++;
   }
 
@@ -526,22 +501,12 @@ append_approximation(const VariablesArray& vars_array,
     // decide which surrogates to rebuild based on resp_array content
     BoolDeque rebuild_deque(numFns, false);
     size_t i, j, num_resp = resp_array.size();
-    for (i=0; i<num_resp; ++i) {
-      const ShortArray& asv_i = resp_array[i].active_set_request_vector();
-      for (j=0; j<numFns; ++j)
-	if (asv_i[j])
-	  rebuild_deque[j] = true;
-    }
-    // rebuild the designated surrogates, employing the sub-model vars
-    // view, if available
-    if (actualModel.is_null())
-      approxInterface.build_approximation(rebuild_deque,
-        userDefinedConstraints.continuous_lower_bounds(),
-        userDefinedConstraints.continuous_upper_bounds());
-    else
-      approxInterface.build_approximation(rebuild_deque,
-	actualModel.continuous_lower_bounds(),
-        actualModel.continuous_upper_bounds());
+    for (i=0; i<numFns; ++i)
+      for (j=0; j<num_resp; ++j)
+	if (resp_array[j].active_set_request_vector()[i])
+	  { rebuild_deque[i] = true; break; }
+    // rebuild the designated surrogates
+    approxInterface.rebuild_approximation(rebuild_deque);
     approxBuilds++;
   }
 
@@ -557,9 +522,9 @@ pop_approximation(bool save_surr_data)//,bool rebuild_flag)
   // append to the current points for each approximation
   approxInterface.pop_approximation(save_surr_data);
 
-  /* 
+  /*
   if (rebuild_flag) { // update the coefficients for each approximation
-    BoolDeque rebuild_deque;
+    BoolDeque rebuild_deque; // empty array: default rebuild of all fns
     approxInterface.rebuild_approximation(rebuild_deque);
     approxBuilds++;
   }
@@ -579,7 +544,7 @@ void DataFitSurrModel::restore_approximation()//(bool rebuild_flag)
 
   /*
   if (rebuild_flag) { // update the coefficients for each approximation
-    BoolDeque rebuild_deque;
+    BoolDeque rebuild_deque; // empty array: default rebuild of all fns
     approxInterface.rebuild_approximation(rebuild_deque);
     approxBuilds++;
   }
@@ -598,7 +563,7 @@ void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
 
   /*
   if (rebuild_flag) { // update the coefficients for each approximation
-    BoolDeque rebuild_deque;
+    BoolDeque rebuild_deque; // empty array: default rebuild of all fns
     approxInterface.rebuild_approximation(rebuild_deque);
     approxBuilds++;
   }

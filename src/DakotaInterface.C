@@ -1036,12 +1036,10 @@ append_approximation(const VariablesArray& vars_array,
 
 
 void Interface::
-build_approximation(const BoolDeque& rebuild_deque,
-		    const RealVector& lower_bnds,
-		    const RealVector& upper_bnds)
+build_approximation(const RealVector& lower_bnds, const RealVector& upper_bnds)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->build_approximation(rebuild_deque, lower_bnds, upper_bnds);
+    interfaceRep->build_approximation(lower_bnds, upper_bnds);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
          << "() function.\n       This interface does not support "

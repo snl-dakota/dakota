@@ -31,6 +31,7 @@ PecosApproximation(const String& approx_type, const UShortArray& approx_order,
 					       num_vars,   use_derivs);
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
+  polyApproxRep->surrogate_data(approxData); // share SurrogateDataRep
 }
 
 
@@ -54,6 +55,7 @@ PecosApproximation(ProblemDescDB& problem_db, size_t num_vars):
 					       numVars,    use_derivs);
   polyApproxRep
     = (Pecos::PolynomialApproximation*)pecosBasisApprox.approx_rep();
+  polyApproxRep->surrogate_data(approxData); // share SurrogateDataRep
 }
 
 

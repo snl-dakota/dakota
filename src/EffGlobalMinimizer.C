@@ -239,8 +239,9 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     Cout << "\nResults of EGO iteration:\nFinal point =\n";
     write_data(Cout, c_vars);
     Cout << "Expected Improvement    =\n                     "
-	 << std::setw(write_precision+7) << -eif_star << "\n                     "
-	 << std::setw(write_precision+7) << aug_lag << " [merit]\n";
+	 << std::setw(write_precision+7) << -eif_star
+	 << "\n                     " << std::setw(write_precision+7)
+	 << aug_lag << " [merit]\n";
 
 #ifdef DEBUG
     RealVector variance = fHatModel.approximation_variances(c_vars);

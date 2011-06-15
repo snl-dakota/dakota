@@ -90,8 +90,7 @@ protected:
 			    const ResponseArray& resp_array,
 			    bool deep_copy = false);
 
-  void build_approximation(const BoolDeque& rebuild_deque,
-			   const RealVector& lower_bnds,
+  void build_approximation(const RealVector& lower_bnds,
 			   const RealVector& upper_bnds);
 
   void rebuild_approximation(const BoolDeque& rebuild_deque);

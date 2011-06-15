@@ -452,38 +452,34 @@ append_approximation(const VariablesArray& vars_array,
     on the data passed through update_approximation() calls.  The
     bounds are used only for graphics visualization. */
 void ApproximationInterface::
-build_approximation(const BoolDeque& rebuild_deque,
-		    const RealVector& lower_bnds, const RealVector& upper_bnds)
+build_approximation(const RealVector& lower_bnds, const RealVector& upper_bnds)
 {
   // build the approximation surfaces
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int index = *it;
-    // check for rebuild request (defaults to true if no deque defined)
-    if (rebuild_deque.empty() || rebuild_deque[index]) {
-      // always set bounds since needed for some approximation models
-      functionSurfaces[index].set_bounds(lower_bnds, upper_bnds);
-      // construct the approximation
-      functionSurfaces[index].build();
-      // manage diagnostics
-      if (functionSurfaces[index].diagnostics_available()) {
-	if (!diagnosticSet.empty()) {
-	  int num_diag = diagnosticSet.size();
-	  for(int j = 0; j < num_diag; j++)
-	    functionSurfaces[index].get_diagnostic(diagnosticSet[j]);
-	}
-	if (outputLevel > NORMAL_OUTPUT) {
-	  functionSurfaces[index].get_diagnostic("rsquared");
-	  functionSurfaces[index].get_diagnostic("root_mean_squared");	
-	  functionSurfaces[index].get_diagnostic("mean_abs");
-	}
+    // always set bounds since needed for some approximation models
+    functionSurfaces[index].set_bounds(lower_bnds, upper_bnds);
+    // construct the approximation
+    functionSurfaces[index].build();
+    // manage diagnostics
+    if (functionSurfaces[index].diagnostics_available()) {
+      if (!diagnosticSet.empty()) {
+	int num_diag = diagnosticSet.size();
+	for (int j = 0; j < num_diag; ++j)
+	  functionSurfaces[index].get_diagnostic(diagnosticSet[j]);
+      }
+      if (outputLevel > NORMAL_OUTPUT) {
+	functionSurfaces[index].get_diagnostic("rsquared");
+	functionSurfaces[index].get_diagnostic("root_mean_squared");	
+	functionSurfaces[index].get_diagnostic("mean_abs");
       }
     }
   }
+
   /* Old 3D graphics capability:
   int index = *approxFnIndices.begin();
   // if graphics is on for 2 variables, plot first functionSurface in 3D
-  if (graph3DFlag && ( rebuild_deque.empty() || rebuild_deque[index] ) &&
-      functionSurfaces[index].num_variables() == 2) {
+  if (graph3DFlag && functionSurfaces[index].num_variables() == 2) {
     functionSurfaces[index].draw_surface();
   }
   */
@@ -498,8 +494,11 @@ rebuild_approximation(const BoolDeque& rebuild_deque)
   // rebuild the approximation surfaces
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     // check for rebuild request (defaults to true if no deque defined)
-    if (rebuild_deque.empty() || rebuild_deque[*it])
+    if (rebuild_deque.empty() || rebuild_deque[*it]) {
+      // approx bounds not updated as in build_approximation()
       functionSurfaces[*it].rebuild(); // invokes increment_coefficients()
+      // diagnostics not currently active on rebuild
+    }
 }
 
 
