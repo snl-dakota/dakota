@@ -253,26 +253,26 @@ private:
 
   /// extract the relevant RealVector from Variables and invoke add(RealVector&)
   void add(const Variables& vars, const Response& response,
-	   int fn_index, bool anchor_flag);
+	   int fn_index, bool anchor_flag, bool deep_copy);
   /// create a RealVector view and invoke add(RealVector&)
   void add(const Real* sample_c_vars, const Response& response,
-	   int fn_index, bool anchor_flag);
+	   int fn_index, bool anchor_flag, bool deep_copy);
   /// shared code among add(Variables&) and add(Real*); adds a new data point
   /// by either appending to SurrogateData::{vars,Resp}Data or assigning to
   /// SurrogateData::anchor{Vars,Resp}, as dictated by anchor_flag.
   /// Uses add_point() and add_anchor().
   void add(const RealVector& sample_c_vars, const Response& response,
-	   int fn_index, bool anchor_flag);
+	   int fn_index, bool anchor_flag, bool deep_copy);
 
   /// add a new data point by appending to SurrogateData::{vars,Resp}Data
   void add_point(const RealVector& x, const Real& fn_val,
-		 const RealVector& fn_grad,
-		 const RealSymMatrix& fn_hess);
+		 const RealVector& fn_grad, const RealSymMatrix& fn_hess,
+		 bool deep_copy);
 
   /// add a new data point by assigning to SurrogateData::anchor{Vars,Resp}
   void add_anchor(const RealVector& x, const Real& fn_val,
-		  const RealVector& fn_grad,
-		  const RealSymMatrix& fn_hess);
+		  const RealVector& fn_grad, const RealSymMatrix& fn_hess,
+		  bool deep_copy);
 
   //
   //- Heading: Data
@@ -318,10 +318,15 @@ inline Approximation* Approximation::approx_rep() const
 // private convenience fn -> approxRep forward not needed.
 inline void Approximation::
 add_point(const RealVector& x,       const Real& fn_val,
-	  const RealVector& fn_grad, const RealSymMatrix& fn_hess)
+	  const RealVector& fn_grad, const RealSymMatrix& fn_hess,
+	  bool deep_copy)
 {
-  Pecos::SurrogateDataVars sdv(x, Pecos::SHALLOW_COPY); // TO DO: map mode
-  Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, Pecos::SHALLOW_COPY);
+  // Map DAKOTA's deep_copy bool into Pecos' copy mode.
+  // Note that Pecos::DEFAULT_COPY is not supported through DAKOTA and the
+  // SurrogateDataVars/SurrogateDataResp modes are currently synchronized.
+  short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
+  Pecos::SurrogateDataVars sdv(x, mode);
+  Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, mode);
   approxData.push_back(sdv, sdr);
 }
 
@@ -329,10 +334,15 @@ add_point(const RealVector& x,       const Real& fn_val,
 // private convenience fn -> approxRep forward not needed.
 inline void Approximation::
 add_anchor(const RealVector& x,       const Real& fn_val,
-	   const RealVector& fn_grad, const RealSymMatrix& fn_hess)
+	   const RealVector& fn_grad, const RealSymMatrix& fn_hess,
+	   bool deep_copy)
 {
-  Pecos::SurrogateDataVars sdv(x, Pecos::SHALLOW_COPY); // TO DO: map mode
-  Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, Pecos::SHALLOW_COPY);
+  // Map DAKOTA's deep_copy bool into Pecos' copy mode.
+  // Note that Pecos::DEFAULT_COPY is not supported through DAKOTA and the
+  // SurrogateDataVars/SurrogateDataResp modes are currently synchronized.
+  short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
+  Pecos::SurrogateDataVars sdv(x, mode);
+  Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, mode);
   approxData.anchor_point(sdv, sdr);
 }
 
@@ -342,9 +352,9 @@ update(const Variables& vars, const Response& response, int fn_index,
        bool deep_copy)
 {
   if (approxRep)
-    approxRep->add(vars, response, fn_index, true);
+    approxRep->add(vars, response, fn_index, true, deep_copy);
   else
-    add(vars, response, fn_index, true); // replace anchor point
+    add(vars, response, fn_index, true, deep_copy); // replace anchor point
 }
 
 
@@ -357,7 +367,7 @@ append(const Variables& vars, const Response& response, int fn_index,
   else {
     popCount = 1;
     // append new point to SurrogateData::{vars,resp}Data
-    add(vars, response, fn_index, false);
+    add(vars, response, fn_index, false, deep_copy);
   }
 }
 
