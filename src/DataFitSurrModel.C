@@ -33,7 +33,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   pointsTotal(problem_db.get_int("model.surrogate.points_total")),
   pointsManagement(problem_db.get_short("model.surrogate.points_management")),
   pointReuse(problem_db.get_string("model.surrogate.point_reuse")),
-  pointReuseFile(problem_db.get_string("model.surrogate.point_reuse_file"))
+  pointReuseFile(problem_db.get_string("model.surrogate.point_reuse_file")),
+  actualModelCache(false)
 {
   // ignore bounds when finite differencing on data fits, since the bounds are
   // artificial in this case (and reflecting the stencil degrades accuracy)
@@ -61,6 +62,11 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     // instantiate the actual model
     actualModel = problem_db.get_model();
     check_submodel_compatibility(actualModel);
+    // data for constructing surrogates has persistence when interface cache
+    // is on and when actualModel data is not recast/nested/approximated from
+    // lower level cached data.  Possible exception: HierarchSurrModel.
+    actualModelCache = (actualModel.model_type() == "single" &&
+			problem_db.get_bool("interface.evaluation_cache"));
     // if outer level output is verbose/debug and actualModel verbosity is
     // defined by the DACE method spec, request fine-grained evaluation
     // reporting for purposes of the final output summary.  This allows verbose
@@ -288,6 +294,7 @@ build_approximation(const Variables& vars, const Response& response)
   // the surrogate type (local, multipoint, global polynomial regression), this
   // is enforced as a hard constraint. Otherwise, it is just another data point.
   approxInterface.update_approximation(vars, response);
+  // TO DO: persistence? (review SBLM et al.)
 
   // build a local, multipoint, or global data fit approximation.
   if (surrogateType.begins("local_") || surrogateType.begins("multipoint_"))
@@ -653,8 +660,11 @@ void DataFitSurrModel::build_local_multipoint()
   set.derivative_vector(actualModel.continuous_variable_ids());
   actualModel.compute_response(set);
 
-  approxInterface.update_approximation(actualModel.current_variables(),
-    actualModel.current_response());
+  const Variables& curr_vars = actualModel.current_variables();
+  const Response&  curr_resp = actualModel.current_response();
+  if (/*!deep_copy && */!actualModelCache)
+    approxInterface.cache_data(curr_vars, curr_resp);
+  approxInterface.update_approximation(curr_vars, curr_resp);
 }
 
 
@@ -720,7 +730,7 @@ void DataFitSurrModel::build_global()
     if (!pointReuseFile.empty()) {
       VarsLIter v_it; RespLIter r_it;
       for (v_it  = reuseFileVars.begin(), r_it = reuseFileResponses.begin();
-	   v_it != reuseFileVars.end();   v_it++, r_it++) {
+	   v_it != reuseFileVars.end(); ++v_it, ++r_it) {
 	if (inside(v_it->continuous_variables(), v_it->discrete_int_variables(),
 		   v_it->discrete_real_variables())) {
 	  reuse_vars.push_back(*v_it);
@@ -730,7 +740,8 @@ void DataFitSurrModel::build_global()
     }
 
     // append any reused data points (previous data cleared prior to
-    // build_global() call).
+    // build_global() call).  Note: all reuse sets have data persistence
+    // by nature of data_pairs or reuseFile{Vars,Responses}
     reuse_points = reuse_vars.size();
     approxInterface.append_approximation(reuse_vars, reuse_responses);
   }
@@ -791,26 +802,22 @@ void DataFitSurrModel::build_global()
       // run the iterator
       daceIterator.run_iterator(Cout);
 
-      /* TO DO
-      // if truth evals not already cached, cache them now so that
-      // approximation classes may utilize shallow copies
-      if (!actualModel.eval_cache_flag()) {
-	if (daceIterator.compact_mode())
-	  approxInterface.cache_truth_data(daceIterator.all_samples(),
-					   daceIterator.all_responses());
-	else
-	  approxInterface.cache_truth_data(daceIterator.all_variables(),
-					   daceIterator.all_responses());
+      // Append vars/resp arrays to the approximation.  If actualModel evals
+      // are not already cached, cache them now to provide persistence (thereby
+      // allowing approximation classes to consistently utilize shallow copies).
+      const ResponseArray& all_resp = daceIterator.all_responses();
+      if (daceIterator.compact_mode()) {
+	const RealMatrix& all_samp = daceIterator.all_samples();
+	if (/*!deep_copy && */!actualModelCache)
+	  approxInterface.cache_data(all_samp, all_resp);
+	approxInterface.append_approximation(all_samp, all_resp);//, deep_copy);
       }
-      */
-
-      // append vars/resp arrays to the approximation
-      if (daceIterator.compact_mode())
-	approxInterface.append_approximation(daceIterator.all_samples(),
-					     daceIterator.all_responses());
-      else
-	approxInterface.append_approximation(daceIterator.all_variables(),
-					     daceIterator.all_responses());
+      else {
+	const VariablesArray& all_vars = daceIterator.all_variables();
+	if (/*!deep_copy && */!actualModelCache)
+	  approxInterface.cache_data(all_vars, all_resp);
+	approxInterface.append_approximation(all_vars, all_resp);//, deep_copy);
+      }
     }
     else if (outputLevel >= DEBUG_OUTPUT)
       Cout << "DataFitSurrModel: No samples needed from DACE iterator."

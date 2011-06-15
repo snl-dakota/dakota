@@ -169,7 +169,7 @@ public:
 
   /// return the method name
   const String& method_name() const;
-  /// return the method identifier (idMethod)
+  /// return the method identifier (methodId)
   const String& method_id() const;
 
   /// return the method output level (outputLevel)
@@ -366,7 +366,7 @@ private:
   //
 
   /// method identifier string from the input file
-  String idMethod;
+  String methodId;
   /// pointer to the letter (initialized only for the envelope)
   Iterator* iteratorRep;
   /// number of objects sharing iteratorRep
@@ -398,7 +398,7 @@ inline const String& Iterator::method_name() const
 
 
 inline const String& Iterator::method_id() const
-{ return (iteratorRep) ? iteratorRep->idMethod : idMethod; }
+{ return (iteratorRep) ? iteratorRep->methodId : methodId; }
 
 
 inline short Iterator::output_level() const

@@ -638,7 +638,7 @@ public:
   ParallelLibrary& parallel_library() const;
   /// return the model type (modelType)
   const String& model_type() const;
-  /// return the model identifier (idModel)
+  /// return the model identifier (modelId)
   const String& model_id() const;
 
   /// return number of functions in currentResponse
@@ -933,7 +933,7 @@ private:
   //
 
   /// model identifier string from the input file
-  String idModel;
+  String modelId;
 
   /// evaluation counter for top-level compute_response() and
   /// asynch_compute_response() calls.  Differs from lower level counters
@@ -2265,7 +2265,7 @@ inline const String& Model::model_type() const
 
 
 inline const String& Model::model_id() const
-{ return (modelRep) ? modelRep->idModel : idModel; }
+{ return (modelRep) ? modelRep->modelId : modelId; }
 
 
 inline size_t Model::num_functions() const

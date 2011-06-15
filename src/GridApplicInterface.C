@@ -110,7 +110,7 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
   //
   // Launch the grid solver (asynchronously)
   //
-  ParamResponsePair prp(vars, idInterface, response, fn_eval_id);
+  ParamResponsePair prp(vars, interfaceId, response, fn_eval_id);
   derived_map_asynch(prp);
   //
   // Call derived_synch until our id is in the set

@@ -40,7 +40,7 @@ namespace Dakota {
     pointer causes problems in ~Interface). */
 Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db): 
   interfaceType(problem_db.get_string("interface.type")),
-  idInterface(problem_db.get_string("interface.id")), algebraicMappings(false),
+  interfaceId(problem_db.get_string("interface.id")), algebraicMappings(false),
   coreMappings(true), currEvalId(0), evalIdCntr(0), newEvalIdCntr(0),
   evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
   ieDedMasterFlag(false),
@@ -149,7 +149,7 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 
 
 Interface::Interface(NoDBBaseConstructor, size_t num_fns):
-  idInterface("NO_DB_INTERFACE"), algebraicMappings(false), coreMappings(true),
+  interfaceId("NO_DB_INTERFACE"), algebraicMappings(false), coreMappings(true),
   fineGrainEvalCounters(false), currEvalId(0), evalIdCntr(0), newEvalIdCntr(0),
   evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
   ieDedMasterFlag(false), outputLevel(NORMAL_OUTPUT), interfaceRep(NULL),
@@ -429,15 +429,15 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
 
     // standard evaluation summary
     if (minimal_header) {
-      if (idInterface.empty())
+      if (interfaceId.empty())
 	s << "  Interface evaluations";
       else
-	s << "  " << idInterface << " evaluations";
+	s << "  " << interfaceId << " evaluations";
     }
     else {
       s << "<<<<< Function evaluation summary";
-      if (!idInterface.empty())
-	s << " (" << idInterface << ')';
+      if (!interfaceId.empty())
+	s << " (" << interfaceId << ')';
     }
     int     fn_evals = (relative_count) ? evalIdCntr - evalIdRefPt
                                         : evalIdCntr;
@@ -1109,6 +1109,47 @@ void Interface::finalize_approximation()
     Cerr << "Error: Letter lacking redefinition of virtual finalize_"
 	 << "approximation() function.\n       This interface does not "
 	 << "support approximation finalization." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Interface::cache_data(const Variables& vars, const Response& response)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->cache_data(vars, response);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual cache_data("
+	 << "Variables&, Response&) function.\n       This interface does "
+	 << "not support approximation data management." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Interface::
+cache_data(const RealMatrix& samples, const ResponseArray& resp_array)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->cache_data(samples, resp_array);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual cache_data("
+	 << "RealMatrix&, ResponseArray&) function.\n       This interface "
+	 << "does not support approximation data management." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Interface::
+cache_data(const VariablesArray& vars_array, const ResponseArray& resp_array)
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->cache_data(vars_array, resp_array);
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual cache_data("
+	 << "VariablesArray&, ResponseArray&) function.\n       This interface "
+	 << "does not support approximation data management." << std::endl;
     abort_handler(-1);
   }
 }

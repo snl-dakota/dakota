@@ -31,7 +31,7 @@ namespace Dakota {
 SharedVariablesDataRep::
 SharedVariablesDataRep(const ProblemDescDB& problem_db,
 		       const std::pair<short,short>& view):
-  idVariables(problem_db.get_string("variables.id")), variablesView(view),
+  variablesId(problem_db.get_string("variables.id")), variablesView(view),
   variablesCompsTotals(12, 0), referenceCount(1)
 {
   size_t num_cdv, num_ddrv, num_ddsiv, num_ddsrv, num_dsrv, num_dssiv, count;

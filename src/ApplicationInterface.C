@@ -346,7 +346,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       asv_mapping(set, algebraic_set, core_set);
       algebraic_resp = Response(algebraic_set);
       if (asynch_flag) {
-	ParamResponsePair prp(vars, idInterface, algebraic_resp, evalIdCntr);
+	ParamResponsePair prp(vars, interfaceId, algebraic_resp, evalIdCntr);
 	beforeSynchAlgPRPQueue.insert(prp);
       }
       else
@@ -358,7 +358,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
     else { // algebraic mappings only
       // algebraic_set = incoming set and algebraic_resp = incoming response
       if (asynch_flag) {
-	ParamResponsePair prp(vars, idInterface, response, evalIdCntr);
+	ParamResponsePair prp(vars, interfaceId, response, evalIdCntr);
 	beforeSynchAlgPRPQueue.insert(prp);
       }
       else
@@ -398,7 +398,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 
       if (asynch_flag) { // multiple simultaneous evals. (local or parallel)
 	// use this constructor since deep copies of vars/response are needed
-	ParamResponsePair prp(vars, idInterface, core_resp, evalIdCntr);
+	ParamResponsePair prp(vars, interfaceId, core_resp, evalIdCntr);
 	beforeSynchCorePRPQueue.insert(prp);
 	// jobs are not queued until call to synch() to allow self-scheduling.
 	// Response data headers & data_pair list insertion appear in synch().
@@ -429,7 +429,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 	  extern PRPCache data_pairs;
 	  extern BoStream write_restart;
 	  // manage shallow/deep copy of vars/response with evalCacheFlag
-	  ParamResponsePair prp(vars, idInterface, core_resp, currEvalId,
+	  ParamResponsePair prp(vars, interfaceId, core_resp, currEvalId,
 				evalCacheFlag);
 	  if (evalCacheFlag)
 	    data_pairs.insert(prp);
@@ -495,7 +495,7 @@ duplication_detect(const Variables& vars, Response& response,
 
   // The incoming response's responseActiveSet was updated in map(), but
   // the rest of response is out-of-date (the previous fn. eval).
-  if (lookup_by_val(data_pairs, idInterface, vars, response.active_set(),
+  if (lookup_by_val(data_pairs, interfaceId, vars, response.active_set(),
 		    desired_resp)) {
     // due to id_vars_set_compare, the desired response set could be a
     // subset of the data_pairs response -> use update().
@@ -507,7 +507,7 @@ duplication_detect(const Variables& vars, Response& response,
   // check beforeSynchCorePRPQueue (if asynchronous)
   if (asynch_flag) {
     PRPQueueHIter prp_hash_iter
-      = lookup_by_val(beforeSynchCorePRPQueue, idInterface, vars,
+      = lookup_by_val(beforeSynchCorePRPQueue, interfaceId, vars,
 		      response.active_set());
     if ( prp_hash_iter != hashedQueueEnd(beforeSynchCorePRPQueue) ) {
       // Duplication detected: bookkeep
@@ -1535,7 +1535,7 @@ void ApplicationInterface::serve_evaluations_asynch()
           ActiveSet set;
           recv_buffer >> vars >> set;
           Response local_response(set); // special constructor
-          ParamResponsePair prp(vars, idInterface, local_response,
+          ParamResponsePair prp(vars, interfaceId, local_response,
 				fn_eval_id, false); // shallow copy
           prp_queue.insert(prp);
 	  // execute

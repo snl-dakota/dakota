@@ -136,10 +136,10 @@ inline std::size_t hash_value(const ParamResponsePair& prp)
 struct partial_prp_hash {
   /// access operator
   std::size_t operator()(const ParamResponsePair& prp) const
-  { return hash_value(prp); } // ONLY idInterface & Vars used for hash_value
+  { return hash_value(prp); } // ONLY interfaceId & Vars used for hash_value
 };
 
-/// predicate for comparing ONLY the idInterface and Vars attributes of PRPair
+/// predicate for comparing ONLY the interfaceId and Vars attributes of PRPair
 struct partial_prp_equality {
   /// access operator
   bool operator()(const ParamResponsePair& database_pr,

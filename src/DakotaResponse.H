@@ -161,7 +161,7 @@ private:
   StringArray functionLabels;
 
   /// response identifier string from the input file
-  String idResponses;
+  String responsesId;
 };
 
 
@@ -453,7 +453,7 @@ inline void Response::active_set_derivative_vector(const SizetArray& asdv)
 
 
 inline const String& Response::responses_id() const
-{ return responseRep->idResponses; }
+{ return responseRep->responsesId; }
 
 
 inline const String& Response::function_label(const size_t& i) const

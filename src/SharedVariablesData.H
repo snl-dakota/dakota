@@ -81,7 +81,7 @@ private:
   //
 
   /// variables identifier string from the input file
-  String idVariables;
+  String variablesId;
 
   /// the variables view pair containing active (first) and inactive (second)
   /// view enumerations
@@ -482,7 +482,7 @@ inline void SharedVariablesData::inactive_view(short view2)
 
 
 inline const String& SharedVariablesData::id() const
-{ return svdRep->idVariables; }
+{ return svdRep->variablesId; }
 
 
 inline const SizetArray& SharedVariablesData::components_totals() const

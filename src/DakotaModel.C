@@ -138,7 +138,7 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   discreteStateSetRealValues(
     problem_db.get_drsa("variables.discrete_state_set_real.set_values")),
   primaryRespFnWts(probDescDB.get_rdv("responses.primary_response_fn_weights")),
-  idModel(problem_db.get_string("model.id")), modelEvalCntr(0),
+  modelId(problem_db.get_string("model.id")), modelEvalCntr(0),
   estDerivsFlag(false), evaluationCapacity(1), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
@@ -186,7 +186,7 @@ Model(NoDBBaseConstructor, ParallelLibrary& parallel_lib,
   probDescDB(dummy_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(0), asynchEvalFlag(false), outputLevel(NORMAL_OUTPUT),
-  idModel("NO_DB_MODEL"), modelEvalCntr(0), estDerivsFlag(false),
+  modelId("NO_DB_MODEL"), modelEvalCntr(0), estDerivsFlag(false),
   evaluationCapacity(1), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {

@@ -15,6 +15,7 @@
 #include "DakotaVariables.H"
 #include "DakotaResponse.H"
 #include "ProblemDescDB.H"
+#include "PRPMultiIndex.H"
 
 
 namespace Dakota {
@@ -32,7 +33,7 @@ ApproximationInterface(ProblemDescDB& problem_db,
   // be incorrect since there is no longer an approximation interface
   // specification (assign_rep() is used from DataFitSurrModel).
   // Override these inherited settings.
-  idInterface   = "APPROX_INTERFACE";
+  interfaceId   = "APPROX_INTERFACE";
   interfaceType = "approximation";
   algebraicMappings = false; // for now; *** TO DO ***
   coreMappings      = true;
@@ -116,7 +117,7 @@ ApproximationInterface(const String& approx_type,
   Interface(NoDBBaseConstructor(), num_fns), //graph3DFlag(false),
   actualModelVars(actual_model_vars.copy())
 {
-  idInterface   = "APPROX_INTERFACE";
+  interfaceId   = "APPROX_INTERFACE";
   interfaceType = "approximation";
 
   functionSurfaces.resize(num_fns);
@@ -540,6 +541,50 @@ void ApproximationInterface::finalize_approximation()
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     // remove entries from Approximation::currentPoints
     functionSurfaces[*it].finalize();
+}
+
+
+/** cache truth data point used for surrogate construction to provide data
+    persistence, allowing use of shallow copies with
+    Approximation::approxData.  This data is not needed in lookups, so
+    non-informative eval and interface id's are sufficient. */
+void ApproximationInterface::
+cache_data(const Variables& vars, const Response& response)
+{
+  extern PRPCache data_pairs;
+  ParamResponsePair prp(vars, interfaceId, response, true); // deep copy
+  data_pairs.insert(prp);                                // shallow copy
+}
+
+
+/** cache truth data used for surrogate construction to provide data
+    persistence, allowing use of shallow copies with
+    Approximation::approxData.  This data is not needed in lookups, so
+    non-informative eval and interface id's are sufficient. */
+void ApproximationInterface::
+cache_data(const RealMatrix& samples, const ResponseArray& resp_array)
+{
+  size_t i, j, num_prp = std::min((size_t)samples.numCols(), resp_array.size()),
+    num_vars = samples.numRows();
+  for (i=0; i<num_prp; ++i) {
+    const Real* sample_i = samples[i]; // ith column
+    for (j=0; j<num_vars; ++j)
+      actualModelVars.continuous_variable(sample_i[j], j); // jth row
+    cache_data(actualModelVars, resp_array[i]);
+  }
+}
+
+
+/** cache truth data used for surrogate construction to provide data
+    persistence, allowing use of shallow copies with
+    Approximation::approxData.  This data is not needed in lookups, so
+    non-informative eval and interface id's are sufficient. */
+void ApproximationInterface::
+cache_data(const VariablesArray& vars_array, const ResponseArray& resp_array)
+{
+  size_t i, num_prp = std::min(vars_array.size(), resp_array.size());
+  for (i=0; i<num_prp; ++i)
+    cache_data(vars_array[i], resp_array[i]);
 }
 
 

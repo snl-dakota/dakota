@@ -176,6 +176,18 @@ public:
   /// finalizes the approximation by applying all trial increments
   virtual void finalize_approximation();
 
+  /// inserts a truth data point into the global data_pairs cache so that it
+  /// has persistence, enabling shallow copies within Approximation::approxData
+  virtual void cache_data(const Variables& vars, const Response& response);
+  /// inserts a truth data array into the global data_pairs cache so that it
+  /// has persistence, enabling shallow copies within Approximation::approxData
+  virtual void cache_data(const RealMatrix& samples,
+			  const ResponseArray& resp_array);
+  /// inserts a truth data array into the global data_pairs cache so that it
+  /// has persistence, enabling shallow copies within Approximation::approxData
+  virtual void cache_data(const VariablesArray& vars_array,
+			  const ResponseArray& resp_array);
+
   /// clears current data from an approximation interface
   virtual void clear_current();
   /// clears all data from an approximation interface
@@ -287,7 +299,7 @@ protected:
   /// the interface type: system, fork, direct, grid, or approximation
   String interfaceType;
   /// the interface specification identifier string from the DAKOTA input file
-  String idInterface;
+  String interfaceId;
 
   /// flag for the presence of algebraic_mappings that define the subset of an
   /// Interface's parameter to response mapping that is explicit and algebraic.
@@ -406,7 +418,7 @@ inline const String& Interface::interface_type() const
 
 
 inline const String& Interface::interface_id() const
-{ return (interfaceRep) ? interfaceRep->idInterface : idInterface; }
+{ return (interfaceRep) ? interfaceRep->interfaceId : interfaceId; }
 
 
 inline int Interface::evaluation_id() const

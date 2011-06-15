@@ -190,7 +190,7 @@ SurrBasedLocalMinimizer::SurrBasedLocalMinimizer(Model& model):
   // Allocate comms in approxSubProbModel/iteratedModel for parallel SBLM.
   // For DataFitSurrModel, concurrency is from daceIterator evals (global) or
   // numerical derivs (local/multipt) on actualModel.  For HierarchSurrModel,
-  // concurrency is from approxSubProbMinimizer on lowFidInterface.
+  // concurrency is from approxSubProbMinimizer on lowFidelityModel.
   approxSubProbModel.init_communicators(
     approxSubProbMinimizer.maximum_concurrency());
 

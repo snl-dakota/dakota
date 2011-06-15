@@ -274,6 +274,8 @@ private:
   /// (optional for global, required for local)
   /** actualModel is unrestricted in type; arbitrary nestings are possible. */
   Model actualModel;
+  /// indicates data_pairs caching of truth data used in surrogate construction
+  bool actualModelCache;
 
   /// selects parameter sets on which to evaluate actualModel in order
   /// to generate the necessary data for building global approximations

@@ -126,7 +126,7 @@ Response Response::copy() const
     response.responseRep->functionHessians  = responseRep->functionHessians;
     response.responseRep->responseActiveSet = responseRep->responseActiveSet;
     response.responseRep->functionLabels    = responseRep->functionLabels;
-    response.responseRep->idResponses       = responseRep->idResponses;
+    response.responseRep->responsesId       = responseRep->responsesId;
   }
 
   return response;
@@ -137,7 +137,7 @@ Response Response::copy() const
 ResponseRep::
 ResponseRep(const Variables& vars, const ProblemDescDB& problem_db):
   referenceCount(1), functionLabels(problem_db.get_dsa("responses.labels")),
-  idResponses(problem_db.get_string("responses.id"))
+  responsesId(problem_db.get_string("responses.id"))
 {
   size_t num_fns,
     num_resp_fns = problem_db.get_sizet("responses.num_response_functions");
@@ -1055,7 +1055,7 @@ bool operator==(const ResponseRep& rep1, const ResponseRep& rep2)
 	  rep1.functionHessians  == rep2.functionHessians  &&
 	  rep1.responseActiveSet == rep2.responseActiveSet &&
 	  rep1.functionLabels    == rep2.functionLabels);//&&
-        //rep1.idResponses       == rep2.idResponses);
+        //rep1.responsesId       == rep2.responsesId);
 }
 
 

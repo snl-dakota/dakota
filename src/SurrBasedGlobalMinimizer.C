@@ -78,7 +78,7 @@ SurrBasedGlobalMinimizer::SurrBasedGlobalMinimizer(Model& model):
   // Allocate comms for parallel.  For DataFitSurrModel, concurrency
   // is from daceIterator evals (global) or numerical derivatives
   // (local/multipt) on actualModel.  For HierarchSurrModel,
-  // concurrency is from approxSubProbMinimizer on lowFidInterface.
+  // concurrency is from approxSubProbMinimizer on lowFidelityModel.
   iteratedModel.init_communicators(
     approxSubProbMinimizer.maximum_concurrency());
 }

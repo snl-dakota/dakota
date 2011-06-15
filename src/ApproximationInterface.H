@@ -99,6 +99,11 @@ protected:
   bool restore_available();
   void finalize_approximation();
 
+  void cache_data(const Variables& vars, const Response& response);
+  void cache_data(const RealMatrix& samples, const ResponseArray& resp_array);
+  void cache_data(const VariablesArray& vars_array,
+		  const ResponseArray& resp_array);
+
   void clear_current();
   void clear_all();
 

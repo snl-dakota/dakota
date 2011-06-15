@@ -296,13 +296,13 @@ inline BoStream& operator<<(BoStream& s, const ParamResponsePair& pair)
 { pair.write(s); return s; }
 
 
-/** idInterface is omitted since master processor retains interface
+/** interfaceId is omitted since master processor retains interface
     ids and communicates asv and response data only with slaves. */
 inline void ParamResponsePair::read(MPIUnpackBuffer& s)
 { s >> prPairParameters >> prPairResponse >> evalInterfaceIds.first; }
 
 
-/** idInterface is omitted since master processor retains interface
+/** interfaceId is omitted since master processor retains interface
     ids and communicates asv and response data only with slaves. */
 inline void ParamResponsePair::write(MPIPackBuffer& s) const
 { s << prPairParameters << prPairResponse << evalInterfaceIds.first; }

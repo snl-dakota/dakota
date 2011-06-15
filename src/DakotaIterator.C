@@ -135,7 +135,7 @@ Iterator::Iterator(BaseConstructor, Model& model):
   // and interfaces have the most granularity in verbosity.
   outputLevel(probDescDB.get_short("method.output")), summaryOutputFlag(true),
   writePrecision(probDescDB.get_int("strategy.output_precision")),
-  idMethod(probDescDB.get_string("method.id")), iteratorRep(NULL),
+  methodId(probDescDB.get_string("method.id")), iteratorRep(NULL),
   referenceCount(1)
 {
   // Check for active variables
@@ -226,7 +226,7 @@ Iterator::Iterator(NoDBBaseConstructor, Model& model):
   intervalType(model.interval_type()), hessianType(model.hessian_type()),
   fdGradStepSize(0.001), fdHessByGradStepSize(0.001), 
   fdHessByFnStepSize(0.002), numFinalSolutions(1), outputLevel(NORMAL_OUTPUT),
-  summaryOutputFlag(false), writePrecision(0), idMethod("NO_DB_METHOD"),
+  summaryOutputFlag(false), writePrecision(0), methodId("NO_DB_METHOD"),
   iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -249,7 +249,7 @@ Iterator::Iterator(NoDBBaseConstructor): probDescDB(dummy_db),
   maxConcurrency(1), subIteratorFlag(false), gradientType("none"),
   hessianType("none"), fdGradStepSize(0.001), fdHessByGradStepSize(0.001),
   fdHessByFnStepSize(0.002), numFinalSolutions(1), outputLevel(NORMAL_OUTPUT),
-  summaryOutputFlag(false), writePrecision(0), idMethod("NO_DB_METHOD"),
+  summaryOutputFlag(false), writePrecision(0), methodId("NO_DB_METHOD"),
   iteratorRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
