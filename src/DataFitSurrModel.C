@@ -662,8 +662,8 @@ void DataFitSurrModel::build_local_multipoint()
 
   const Variables& curr_vars = actualModel.current_variables();
   const Response&  curr_resp = actualModel.current_response();
-  if (/*!deep_copy && */!actualModelCache)
-    approxInterface.cache_data(curr_vars, curr_resp);
+  //if (/*!deep_copy && */!actualModelCache)
+  //  approxInterface.cache_data(curr_vars, curr_resp);
   approxInterface.update_approximation(curr_vars, curr_resp);
 }
 
@@ -808,14 +808,14 @@ void DataFitSurrModel::build_global()
       const ResponseArray& all_resp = daceIterator.all_responses();
       if (daceIterator.compact_mode()) {
 	const RealMatrix& all_samp = daceIterator.all_samples();
-	if (/*!deep_copy && */!actualModelCache)
-	  approxInterface.cache_data(all_samp, all_resp);
+	//if (/*!deep_copy && */!actualModelCache)
+	//  approxInterface.cache_data(all_samp, all_resp);
 	approxInterface.append_approximation(all_samp, all_resp);//, deep_copy);
       }
       else {
 	const VariablesArray& all_vars = daceIterator.all_variables();
-	if (/*!deep_copy && */!actualModelCache)
-	  approxInterface.cache_data(all_vars, all_resp);
+	//if (/*!deep_copy && */!actualModelCache)
+	//  approxInterface.cache_data(all_vars, all_resp);
 	approxInterface.append_approximation(all_vars, all_resp);//, deep_copy);
       }
     }

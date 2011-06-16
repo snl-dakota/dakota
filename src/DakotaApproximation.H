@@ -324,7 +324,7 @@ add_point(const RealVector& x,       const Real& fn_val,
   // Map DAKOTA's deep_copy bool into Pecos' copy mode.
   // Note that Pecos::DEFAULT_COPY is not supported through DAKOTA and the
   // SurrogateDataVars/SurrogateDataResp modes are currently synchronized.
-  short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
+  short mode = Pecos::DEEP_COPY;//(deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
   Pecos::SurrogateDataVars sdv(x, mode);
   Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, mode);
   approxData.push_back(sdv, sdr);
@@ -340,7 +340,7 @@ add_anchor(const RealVector& x,       const Real& fn_val,
   // Map DAKOTA's deep_copy bool into Pecos' copy mode.
   // Note that Pecos::DEFAULT_COPY is not supported through DAKOTA and the
   // SurrogateDataVars/SurrogateDataResp modes are currently synchronized.
-  short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
+  short mode = Pecos::DEEP_COPY;//(deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
   Pecos::SurrogateDataVars sdv(x, mode);
   Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, mode);
   approxData.anchor_point(sdv, sdr);
