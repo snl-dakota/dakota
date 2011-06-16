@@ -253,10 +253,15 @@ if(HAVE_QUESO)
   # QUESO depends on additional Trilinos packages (NOT just teuchos)
   include(${Trilinos_DIR}/TrilinosConfig_install.cmake)
 
-  include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
+  #include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
+  include_directories(${Dakota_BINARY_DIR}/packages/queso/include
+                      ${Dakota_BINARY_DIR}/packages/grvy/include
                       ${Trilinos_INCLUDE_DIRS})
+  include_directories(${Dakota_BINARY_DIR}/packages/ampl)
 
-  list(APPEND link_directories "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
+  #list(APPEND link_directories "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
+  list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso/lib
+       ${Dakota_BINARY_DIR}/packages/grvy/lib
        ${Trilinos_LIBRARY_DIRS})
 
   list(APPEND TPL_LIBS queso grvy ${Trilinos_LIBRARIES})

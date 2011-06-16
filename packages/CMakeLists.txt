@@ -15,6 +15,7 @@ option(HAVE_OPTPP "Build the OPTPP package." ON)
 option(HAVE_PECOS "Build the Pecos package." ON)
 option(HAVE_PLUGIN "Enable plugins to the dakota executable." ON)
 option(HAVE_PSUADE "Build the PSUADE package." ON)
+#option(HAVE_QUESO "Build the QUESO package." ON)
 option(HAVE_SURFPACK "Build the Surfpack package." ON)
 
 if(HAVE_CONMIN)
@@ -55,22 +56,57 @@ add_subdirectory(pecos)
 
 include(ExternalProject)
 
-set(EXTERNAL_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/nidr)
-execute_process(
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${EXTERNAL_BINARY_DIR} )
 
-find_program(sh sh)
-if(${sh} MATCHES "sh-NOTFOUND")
+find_program(SH sh)
+if(${SH} MATCHES "sh-NOTFOUND")
   message(FATAL_ERROR
-          "Cannot build nidr as an external project without sh")
+          "Cannot build queso as an external project without sh")
 else()
-  #build NIDR as an external project
-  #externalproject_add(ac_nidr
-  #  DOWNLOAD_COMMAND ""
-  #  CONFIGURE_COMMAND ${sh} ${CMAKE_CURRENT_SOURCE_DIR}/nidr/configure
-  #  BINARY_DIR ${EXTERNAL_BINARY_DIR}
-  #  INSTALL_COMMAND ""
-  #)
+  if(HAVE_QUESO)
+    ############################################################################
+    # GRVY
+    #
+    set(GRVY_EXT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/grvy)
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${GRVY_EXT_BINARY_DIR} )
+
+    set(grvy_config_cmd
+      ${SH} ${CMAKE_CURRENT_BINARY_DIR}/grvy-prefix/src/grvy/configure
+      "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
+      "--without-hdf5" "--with-boost=${Boost_INCLUDE_DIR}/.."
+      "--prefix" "${GRVY_EXT_BINARY_DIR}"
+    )
+    externalproject_add(grvy
+      URL ${CMAKE_CURRENT_SOURCE_DIR}/queso_tarballs/grvy-0.30.0.tgz
+      BUILD_IN_SOURCE 1
+      CONFIGURE_COMMAND "${grvy_config_cmd}"
+    )
+
+    ############################################################################
+    # Queso
+    #
+    set(QUESO_EXT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/queso)
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${QUESO_EXT_BINARY_DIR} )
+
+    set(queso_config_cmd
+      ${SH} ${CMAKE_CURRENT_BINARY_DIR}/queso-prefix/src/queso/configure
+      "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
+      "--without-hdf5" "--without-glpk" "--with-grvy=${GRVY_EXT_BINARY_DIR}"
+      "--with-boost=${Boost_INCLUDE_DIR}/.."
+      "--with-trilinos=${Trilinos_DIR}"
+      #"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${Trilinos_DIR}/lib:/Net/dakota/utils/Linux_x86_64/gsl-1.14.gcc-4.3.2/lib"
+      "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${Trilinos_DIR}/lib"
+      "CXXFLAGS=${CMAKE_CXX_FLAGS} -Wl,-lepetra"
+      "--prefix" "${QUESO_EXT_BINARY_DIR}"
+    )
+    externalproject_add(queso
+      URL ${CMAKE_CURRENT_SOURCE_DIR}/queso_tarballs/queso-0.45.0.tar.gz
+      BUILD_IN_SOURCE 1
+      CONFIGURE_COMMAND "${queso_config_cmd}"
+    )
+
+  endif(HAVE_QUESO)
 endif() #sh
 
 
