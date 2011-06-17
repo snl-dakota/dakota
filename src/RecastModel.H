@@ -67,7 +67,7 @@ public:
 
   /// destructor
   ~RecastModel();
-    
+
   //
   //- Heading: Member functions
   //
@@ -253,7 +253,8 @@ private:
 
   /// For each subModel variable, identifies the indices of the recast
   /// variables used to define it (maps RecastModel variables to
-  /// subModel variables)
+  /// subModel variables; data is packed with only the variable indices
+  /// employed rather than a sparsely filled N_sm x N_r matrix)
   Sizet2DArray varsMapIndices;
   /// boolean set to true if the variables mapping involves a nonlinear
   /// transformation.  Used in set_mapping() to manage the requirement for

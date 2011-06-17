@@ -96,7 +96,7 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
     //  currentVariables.reshape(vc_totals);
   //}
   //else
-    numDerivVars = currentVariables.cv(); 
+    numDerivVars = currentVariables.cv();
 
   // recasting of response
   const Response& sub_model_resp = subModel.current_response();

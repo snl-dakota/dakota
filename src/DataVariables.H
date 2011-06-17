@@ -23,7 +23,7 @@
 
 namespace Dakota {
 
-// variable types for active and inactive views include EMPTY plus the 12
+// special values for active and inactive views include EMPTY plus the 12
 // combinations of All, Design, A Uncertain, E Uncertain, A+E Uncertain, or
 // State [6 total] and Merged or Mixed [2 total].
 enum { EMPTY, MERGED_ALL, MIXED_ALL,
@@ -34,8 +34,8 @@ enum { EMPTY, MERGED_ALL, MIXED_ALL,
        MIXED_DISTINCT_ALEATORY_UNCERTAIN, MIXED_DISTINCT_EPISTEMIC_UNCERTAIN,
        MIXED_DISTINCT_STATE };
 
-// define special values for Variables::VariablesData::variablesComponents
-// and Variables::VariablesData::all*VarTypes (Note: these differ from the
+// special values for SharedVariablesData::variablesComponents and
+// SharedVariablesData::all*Types (Note: these differ from the
 // pecos_global_defs.hpp enumeration, which is focused on ranVarTypesX/U)
 enum { CONTINUOUS_DESIGN, DISCRETE_DESIGN_RANGE, DISCRETE_DESIGN_SET_INT,
        DISCRETE_DESIGN_SET_REAL, NORMAL_UNCERTAIN, LOGNORMAL_UNCERTAIN,
