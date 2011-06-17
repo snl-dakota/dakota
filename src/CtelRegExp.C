@@ -33,7 +33,7 @@ struct ErrorTable
 // Mapping of the error codes and the message raised by the C engine
 static ErrorTable errorMapping[] =  
 {
-    { CtelRegexp::GOOD,              "Ok"             			},
+    { CtelRegexp::RE_GOOD,         "Ok"             			},
     { CtelRegexp::EXP_TOO_BIG,     "regexp too big" 			},
     { CtelRegexp::OUT_OF_MEM,      "out of space"   			},
     { CtelRegexp::TOO_MANY_PAR,    "too many ()"    			},
@@ -114,7 +114,7 @@ extern "C" void regerror( char *s )
 //
 /////////////////////////////////////////////////////////////////////////////
 CtelRegexp::CtelRegexp( const std::string & pattern )
-: r( 0 ), status( CtelRegexp::GOOD )
+: r( 0 ), status( CtelRegexp::RE_GOOD )
 {
   compile( pattern );
 }
@@ -145,7 +145,7 @@ CtelRegexp::~CtelRegexp()
 /////////////////////////////////////////////////////////////////////////////
 void CtelRegexp::clearErrors()
 {
-   status = CtelRegexp::GOOD;
+   status = CtelRegexp::RE_GOOD;
    statusMsg = "Ok";
 }
 

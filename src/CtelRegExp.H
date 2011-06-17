@@ -44,7 +44,7 @@ public:
    /// occurs with this implementation.
    enum RStatus 
    {
-  	 GOOD = 0,	   ///< Success - no errors
+  	 RE_GOOD = 0,	   ///< Success - no errors
 	 EXP_TOO_BIG,	   ///< Regular expression is too big to be compiled
 	 OUT_OF_MEM,       ///< out of space( memory )   			
 	 TOO_MANY_PAR,     ///< too many () parenteses    			
