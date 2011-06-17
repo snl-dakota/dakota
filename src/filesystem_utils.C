@@ -195,7 +195,7 @@ int not_executable(const char *dname, const char *tdir)
 	char *b, buf[2048];
 	const char *a2[2], **al;
 	int rc, sv;
-	size_t dlen, plen, tlen;
+	size_t clen, dlen, plen, tlen;
 	void *a0;
 #ifdef WIN32
 	char dbuf[128];
@@ -292,7 +292,7 @@ int not_executable(const char *dname, const char *tdir)
           assert(cwdir == bfs_cwdir);
 #endif
 	}
-	size_t clen = cwdir.size();
+	clen = cwdir.size();
 	dlen = std::strlen(dname);
 	tlen = std::strlen(tdir);
 	rc = 1;
