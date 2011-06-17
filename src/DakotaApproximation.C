@@ -579,98 +579,102 @@ int Approximation::recommended_points(bool constraint_flag) const
 }
 
 
-void Approximation::
-update(const RealMatrix& samples, const ResponseArray& resp_array,
-       int fn_index, bool deep_copy)
+void Approximation::update(const RealMatrix& samples, bool deep_copy)
 {
   if (approxRep)
-    approxRep->update(samples, resp_array, fn_index);
+    approxRep->update(samples, deep_copy);
   else { // not virtual: all derived classes use following definition:
-    approxData.clear_data(); // replace {vars,resp}Data with incoming samples
-    size_t num_points = std::min((size_t)samples.numCols(), resp_array.size());
+    approxData.clear_variables_data(); // replace varsData with incoming samples
+    int num_points = samples.numCols();
     for (size_t i=0; i<num_points; ++i)
-      add(samples[i], resp_array[i], fn_index, false, deep_copy);
+      add(samples[i], false, deep_copy);
   }
 }
 
 
-void Approximation::
-update(const VariablesArray& vars_array, const ResponseArray& resp_array,
-       int fn_index, bool deep_copy)
+void Approximation::update(const VariablesArray& vars_array, bool deep_copy)
 {
   if (approxRep)
-    approxRep->update(vars_array, resp_array, fn_index);
+    approxRep->update(vars_array, deep_copy);
   else { // not virtual: all derived classes use following definition:
-    approxData.clear_data(); // replace {vars,resp}Data with incoming arrays
-    size_t i, num_points = std::min(vars_array.size(), resp_array.size());
+    approxData.clear_variables_data(); // replace varsData with incoming array
+    size_t i, num_points = vars_array.size();
     for (i=0; i<num_points; ++i)
-      add(vars_array[i], resp_array[i], fn_index, false, deep_copy);
+      add(vars_array[i], false, deep_copy);
   }
 }
 
 
 void Approximation::
-append(const RealMatrix& samples, const ResponseArray& resp_array,
-       int fn_index, bool deep_copy)
+update(const ResponseArray& resp_array, int fn_index, bool deep_copy)
 {
   if (approxRep)
-    approxRep->append(samples, resp_array, fn_index);
-  else { // not virtual: all derived classes use following definition
-    popCount = std::min((size_t)samples.numCols(), resp_array.size());
-    for (size_t i=0; i<popCount; ++i)
-      add(samples[i], resp_array[i], fn_index, false, deep_copy);
+    approxRep->update(resp_array, fn_index, deep_copy);
+  else { // not virtual: all derived classes use following definition:
+    approxData.clear_response_data(); // replace respData with incoming array
+    size_t i, num_points = resp_array.size();
+    for (i=0; i<num_points; ++i)
+      add(resp_array[i], fn_index, false, deep_copy);
   }
 }
 
 
-void Approximation::
-append(const VariablesArray& vars_array, const ResponseArray& resp_array,
-       int fn_index, bool deep_copy)
+void Approximation::append(const RealMatrix& samples, bool deep_copy)
 {
   if (approxRep)
-    approxRep->append(vars_array, resp_array, fn_index);
+    approxRep->append(samples, deep_copy);
   else { // not virtual: all derived classes use following definition
-    popCount = std::min(vars_array.size(), resp_array.size());
+    popCount = samples.numCols();
     for (size_t i=0; i<popCount; ++i)
-      add(vars_array[i], resp_array[i], fn_index, false, deep_copy);
+      add(samples[i], false, deep_copy);
   }
 }
 
 
 void Approximation::
-add(const Real* sample_c_vars, const Response& response, int fn_index,
-    bool anchor_flag, bool deep_copy)
+append(const VariablesArray& vars_array, bool deep_copy)
 {
-  // create view of first numVars entries within column of sample Matrix
-  // --> any discrete {int,real} vars (e.g., from NonDSampling) are ignored.
-  RealVector c_vars(Teuchos::View, (Real*)sample_c_vars, numVars);
-  add(c_vars, response, fn_index, anchor_flag, deep_copy);
+  if (approxRep)
+    approxRep->append(vars_array, deep_copy);
+  else { // not virtual: all derived classes use following definition
+    popCount = vars_array.size();
+    for (size_t i=0; i<popCount; ++i)
+      add(vars_array[i], false, deep_copy);
+  }
 }
 
 
 void Approximation::
-add(const Variables& vars, const Response& response, int fn_index,
-    bool anchor_flag, bool deep_copy)
+append(const ResponseArray& resp_array, int fn_index, bool deep_copy)
+{
+  if (approxRep)
+    approxRep->append(resp_array, fn_index, deep_copy);
+  else { // not virtual: all derived classes use following definition
+    popCount = resp_array.size();
+    for (size_t i=0; i<popCount; ++i)
+      add(resp_array[i], fn_index, false, deep_copy);
+  }
+}
+
+
+void Approximation::
+add(const Variables& vars, bool anchor_flag, bool deep_copy)
 {
   // Approximation does not know about view mappings; therefore, take the
   // simple approach of matching up vars.cv() or vars.acv() with numVars.
-  bool active_vars = (vars.cv() == numVars);
-  if (!active_vars && vars.acv() != numVars) {
+  if (vars.cv() == numVars)
+    add(vars.continuous_variables(),     anchor_flag, deep_copy);
+  else if (vars.acv() == numVars)
+    add(vars.all_continuous_variables(), anchor_flag, deep_copy);
+  else {
     Cerr << "Error: variable size mismatch in Approximation::add()."<<std::endl;
     abort_handler(-1);
   }
-  if (active_vars)
-    add(vars.continuous_variables(),     response, fn_index, anchor_flag,
-	deep_copy);
-  else
-    add(vars.all_continuous_variables(), response, fn_index, anchor_flag,
-	deep_copy);
 }
 
 
 void Approximation::
-add(const RealVector& c_vars, const Response& response, int fn_index,
-    bool anchor_flag, bool deep_copy)
+add(const Response& response, int fn_index, bool anchor_flag, bool deep_copy)
 {
   // private fn used only by build() and update() functions -> approxRep
   // forward not needed.  Recomputing coefficients, if needed, is managed
@@ -678,7 +682,7 @@ add(const RealVector& c_vars, const Response& response, int fn_index,
 
   const ShortArray& asv = response.active_set_request_vector();
   short asv_val = asv[fn_index];
-  if (asv_val) {
+  //if (asv_val) {
     const RealVector&         fn_vals     = response.function_values();
     const RealMatrix&         fn_grads    = response.function_gradients();
     const RealSymMatrixArray& fn_hessians = response.function_hessians();
@@ -712,10 +716,10 @@ add(const RealVector& c_vars, const Response& response, int fn_index,
     const RealSymMatrix& fn_hess = (asv_val & 4) ?
       fn_hessians[fn_index] : empty_hess;
     if (anchor_flag)
-      add_anchor(c_vars, fn_val, fn_grad, fn_hess, deep_copy);
+      add_anchor(fn_val, fn_grad, fn_hess, asv_val, deep_copy);
     else
-      add_point(c_vars,  fn_val, fn_grad, fn_hess, deep_copy);
-  }
+      add_point(fn_val, fn_grad, fn_hess, asv_val, deep_copy);
+  //}
   // else no data point added for this index
 }
 

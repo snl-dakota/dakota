@@ -134,29 +134,23 @@ public:
 
   /// updates the anchor point for an approximation
   virtual void update_approximation(const Variables& vars,
-				    const Response& response,
-				    bool deep_copy = false);
+				    const Response& response);
   /// updates the current data points for an approximation
   virtual void update_approximation(const RealMatrix& samples,
-				    const ResponseArray& resp_array,
-				    bool deep_copy = false);
+				    const ResponseArray& resp_array);
   /// updates the current data points for an approximation
   virtual void update_approximation(const VariablesArray& vars_array,
-				    const ResponseArray& resp_array,
-				    bool deep_copy = false);
+				    const ResponseArray& resp_array);
 
   /// appends a single point to an existing approximation
   virtual void append_approximation(const Variables& vars,
-				    const Response& response,
-				    bool deep_copy = false);
+				    const Response& response);
   /// appends multiple points to an existing approximation
   virtual void append_approximation(const RealMatrix& samples,
-				    const ResponseArray& resp_array,
-				    bool deep_copy = false);
+				    const ResponseArray& resp_array);
   /// appends multiple points to an existing approximation
   virtual void append_approximation(const VariablesArray& vars_array,
-				    const ResponseArray& resp_array,
-				    bool deep_copy = false);
+				    const ResponseArray& resp_array);
 
   /// builds the approximation
   virtual void build_approximation(const RealVector& lower_bnds,

@@ -233,7 +233,8 @@ void PSUADEDesignCompExp::get_parameter_sets(Model& model)
     psuadeSampler->initialize(psuade_sdata);
 
     // extract samples from MOAT (could move this into a copy_data function)
-    if (allSamples.empty())
+    if (allSamples.numRows() != numContinuousVars ||
+	allSamples.numCols() != numSamples)
       allSamples.shapeUninitialized(numContinuousVars, numSamples);
     for (i=0; i<numSamples; ++i) {
       Real* all_samp_i = allSamples[i];

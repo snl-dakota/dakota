@@ -834,20 +834,20 @@ void ApplicationInterface::self_schedule_evaluations()
 /** This code runs on the iteratorCommRank 0 processor (the iterator)
     and is called from synch() in order to assign a static schedule.
     It matches serve_evaluations_peer() for any other processors
-    within the 1st evaluation partition and
-    serve_evaluations_synch()/serve_evaluations_asynch() for all other
-    evaluation partitions (depending on asynchLocalEvalConcurrency).
-    It performs function evaluations locally for its portion of the
-    static schedule using either asynchronous_local_evaluations() or
+    within the first evaluation partition and
+    serve_evaluations_{synch,asynch}() for all other evaluation
+    partitions (depending on asynchLocalEvalConcurrency).  It performs
+    function evaluations locally for its portion of the static
+    schedule using either asynchronous_local_evaluations() or
     synchronous_local_evaluations().  Single-level and multilevel
     parallel use intra- and inter-communicators, respectively, for
     send/receive.  Specific syntax is encapsulated within
     ParallelLibrary.  The iteratorCommRank 0 processor assigns the
     static schedule since it is the only processor with access to
-    beforeSynchCorePRPQueue (it runs the iterator and calls synchronize).
-    The alternate design of each peer selecting its own jobs using the
-    modulus operator would be applicable if execution of this function
-    (and therefore the job list) were distributed. */
+    beforeSynchCorePRPQueue (it runs the iterator and calls
+    synchronize).  The alternate design of each peer selecting its own
+    jobs using the modulus operator would be applicable if execution
+    of this function (and therefore the job list) were distributed. */
 void ApplicationInterface::static_schedule_evaluations()
 {
   // globals: list of param-response pairs & binary restart log

@@ -563,7 +563,7 @@ void Analyzer::pre_output()
 
 
 /// read num_evals variables/responses from file
-  void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
+void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 {
   // distinguish between defaulted post-run and user-specified
   if (!iteratedModel.parallel_library().command_line_user_modes())
@@ -746,6 +746,7 @@ void Analyzer::compute_best_metrics(const Response& response,
       constr_viol += std::pow(eq_con - nln_eq_targets[i], 2);
   }
 }
+
 
 void Analyzer::
 update_best(const Real* sample_c_vars, int eval_id, const Response& response)

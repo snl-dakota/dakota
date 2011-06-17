@@ -64,7 +64,7 @@ void RichExtrapVerification::pre_run()
   }
 
   size_t i, num_vars = numContinuousVars+numDiscreteIntVars+numDiscreteRealVars;
-  if (allSamples.empty())
+  if (allSamples.numRows() != num_vars || allSamples.numCols() != numEvals)
     allSamples.shapeUninitialized(num_vars, numEvals);
   if ( outputLevel > SILENT_OUTPUT &&
        ( studyType == VECTOR_SV || studyType == VECTOR_FP ||

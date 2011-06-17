@@ -131,17 +131,18 @@ void ParamStudy::pre_run()
     copy_data(iteratedModel.discrete_real_variables(), initialDRVPoint); // copy
   }
 
-  size_t i, num_vars = numContinuousVars+numDiscreteIntVars+numDiscreteRealVars;
-  if (allVariables.size() != numEvals)
+  size_t av_size = allVariables.size();
+  if (av_size != numEvals) {
     allVariables.resize(numEvals);
-  const Variables& vars = iteratedModel.current_variables();
-  for (size_t i=0; i<numEvals; ++i)
-    if (allVariables[i].is_null()) // use minimal data ctor
-      allVariables[i] = Variables(vars.shared_data());
-  if ( outputLevel > SILENT_OUTPUT &&
-       ( pStudyType == VECTOR_SV || pStudyType == VECTOR_FP ||
-	 pStudyType == CENTERED ) )
-    allHeaders.resize(numEvals);
+    const SharedVariablesData& svd
+      = iteratedModel.current_variables().shared_data();
+    for (size_t i=av_size; i<numEvals; ++i)
+      allVariables[i] = Variables(svd); // use minimal data ctor
+    if ( outputLevel > SILENT_OUTPUT &&
+	 ( pStudyType == VECTOR_SV || pStudyType == VECTOR_FP ||
+	   pStudyType == CENTERED ) )
+      allHeaders.resize(numEvals);
+  }
 
   switch (pStudyType) {
   case LIST: // list_parameter_study

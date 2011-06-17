@@ -298,8 +298,7 @@ const IntResponseMap& ApproximationInterface::synch_nowait()
 /** This function populates/replaces each Approximation::anchorPoint
     with the incoming variables/response data point. */
 void ApproximationInterface::
-update_approximation(const Variables& vars, const Response& response,
-		     bool deep_copy)
+update_approximation(const Variables& vars, const Response& response)
 {
   // NOTE: variable sets passed in from DataFitSurrModel::build_approximation()
   // correspond to the active continuous variables for either the top level
@@ -316,19 +315,49 @@ update_approximation(const Variables& vars, const Response& response,
   // rather than unrolling the response (containing all response functions)
   // into per-response function arrays for input to functionSurfaces[i], pass
   // the complete response along with a response function index.
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    int index = *it;
-    // populate/replace Approximation::anchorPoint
-    functionSurfaces[index].update(vars, response, index, deep_copy);
+
+  /*
+  // add/replace SurrogateData::anchor{Vars,Resp}
+  if (truthCache) { // shallow copies for all fns
+    // CAN WE PUSH IN ALL NEEDED EVAL ID'S? (interface should be OK)
+    // AVOID RESORTING TO LOOKUP_BY_VAL() IF POSSIBLE.
+    PRPCacheOIter o_it = lookup_by_ids(data_pairs, truthCacheSearchIds);
+    if (o_it == orderedCacheEnd) { // deep copies with vars sharing if not found
+  */
+      ISIter it = approxFnIndices.begin(); int index = *it;
+      functionSurfaces[index].update(vars, true);            // deep
+      functionSurfaces[index].update(response, index, true); // deep
+      const Pecos::SurrogateData& sd
+	= functionSurfaces[index].approximation_data();
+      for (++it; it!=approxFnIndices.end(); ++it) {
+	index = *it;
+	functionSurfaces[index].update(sd.anchor_variables()); // shallow
+	functionSurfaces[index].update(response, index, true); // deep
+      }
+  /*
+    }
+    else                         // shallow copies of cached data
+      for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+	index = *it;
+	functionSurfaces[index].update(o_it->prp_variables(), false);
+	functionSurfaces[index].update(o_it->prp_response(), index, false);
+      }
   }
+  else {                         // shallow copies with queued data
+    PRPCacheOIter o_it = truthAnchorQueue.begin();
+    for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
+      index = *it;
+      functionSurfaces[index].update(o_it->prp_variables(), false);
+      functionSurfaces[index].update(o_it->prp_response(), index, false);
+    }
+  */
 }
 
 
 /** This function populates/replaces each Approximation::currentPoints
     with the incoming variables/response arrays. */
 void ApproximationInterface::
-update_approximation(const RealMatrix& samples, const ResponseArray& resp_array,
-		     bool deep_copy)
+update_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
 {
   // NOTE: variable sets passed in from DataFitSurrModel::build_approximation()
   // correspond to the all continuous variables at the top level in
@@ -348,10 +377,15 @@ update_approximation(const RealMatrix& samples, const ResponseArray& resp_array,
   // rather than unrolling response arrays (containing all response functions)
   // into per-response function arrays for input to functionSurfaces[i], pass
   // the complete response arrays along with a response function index.
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    int index = *it;
-    // populate/replace Approximation::currentPoints
-    functionSurfaces[index].update(samples, resp_array, index, deep_copy);
+
+  ISIter it = approxFnIndices.begin(); int index = *it;
+  functionSurfaces[index].update(samples, true);           // deep
+  functionSurfaces[index].update(resp_array, index, true); // deep
+  const Pecos::SurrogateData& sd = functionSurfaces[index].approximation_data();
+  for (++it; it!=approxFnIndices.end(); ++it) {
+    index = *it;
+    functionSurfaces[index].update(sd.variables_data());     // shallow
+    functionSurfaces[index].update(resp_array, index, true); // deep
   }
 }
 
@@ -360,7 +394,7 @@ update_approximation(const RealMatrix& samples, const ResponseArray& resp_array,
     with the incoming variables/response arrays. */
 void ApproximationInterface::
 update_approximation(const VariablesArray& vars_array,
-		     const ResponseArray&  resp_array, bool deep_copy)
+		     const ResponseArray&  resp_array)
 {
   // NOTE: variable sets passed in from DataFitSurrModel::build_approximation()
   // correspond to the all continuous variables at the top level in
@@ -380,10 +414,15 @@ update_approximation(const VariablesArray& vars_array,
   // rather than unrolling response arrays (containing all response functions)
   // into per-response function arrays for input to functionSurfaces[i], pass
   // the complete response arrays along with a response function index.
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    int index = *it;
-    // populate/replace Approximation::currentPoints
-    functionSurfaces[index].update(vars_array, resp_array, index, deep_copy);
+
+  ISIter it = approxFnIndices.begin(); int index = *it;
+  functionSurfaces[index].update(vars_array, true);        // deep
+  functionSurfaces[index].update(resp_array, index, true); // deep
+  const Pecos::SurrogateData& sd = functionSurfaces[index].approximation_data();
+  for (++it; it!=approxFnIndices.end(); ++it) {
+    index = *it;
+    functionSurfaces[index].update(sd.variables_data());     // shallow
+    functionSurfaces[index].update(resp_array, index, true); // deep
   }
 }
 
@@ -391,16 +430,20 @@ update_approximation(const VariablesArray& vars_array,
 /** This function appends to each Approximation::currentPoints with
     one incoming variables/response data point. */
 void ApproximationInterface::
-append_approximation(const Variables& vars, const Response& response,
-		     bool deep_copy)
+append_approximation(const Variables& vars, const Response& response)
 {
   // rather than unrolling the response (containing all response functions)
   // into per-response function arrays for input to functionSurfaces[i], pass
   // the complete response along with a response function index.
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    int index = *it;
-    // append an entry to Approximation::currentPoints
-    functionSurfaces[index].append(vars, response, index, deep_copy);
+
+  ISIter it = approxFnIndices.begin(); int index = *it;
+  functionSurfaces[index].append(vars, true);            // deep
+  functionSurfaces[index].append(response, index, true); // deep
+  const Pecos::SurrogateData& sd = functionSurfaces[index].approximation_data();
+  for (++it; it!=approxFnIndices.end(); ++it) {
+    index = *it;
+    functionSurfaces[index].append(sd.anchor_variables()); // shallow
+    functionSurfaces[index].append(response, index, true); // deep
   }
 }
 
@@ -408,8 +451,7 @@ append_approximation(const Variables& vars, const Response& response,
 /** This function appends to each Approximation::currentPoints with
     multiple incoming variables/response data points. */
 void ApproximationInterface::
-append_approximation(const RealMatrix& samples, const ResponseArray& resp_array,
-		     bool deep_copy)
+append_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
 {
   if (resp_array.size() != samples.numCols()) {
     Cerr << "Error: mismatch in sample and response set lengths in "
@@ -419,10 +461,15 @@ append_approximation(const RealMatrix& samples, const ResponseArray& resp_array,
   // rather than unrolling response arrays (containing all response functions)
   // into per-response function arrays for input to functionSurfaces[i], pass
   // the complete response arrays along with a response function index.
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    int index = *it;
-    // append an entry to Approximation::currentPoints
-    functionSurfaces[index].append(samples, resp_array, index, deep_copy);
+
+  ISIter it = approxFnIndices.begin(); int index = *it;
+  functionSurfaces[index].append(samples, true);           // deep
+  functionSurfaces[index].append(resp_array, index, true); // deep
+  const Pecos::SurrogateData& sd = functionSurfaces[index].approximation_data();
+  for (++it; it!=approxFnIndices.end(); ++it) {
+    index = *it;
+    functionSurfaces[index].append(sd.variables_data());     // shallow
+    functionSurfaces[index].append(resp_array, index, true); // deep
   }
 }
 
@@ -431,7 +478,7 @@ append_approximation(const RealMatrix& samples, const ResponseArray& resp_array,
     multiple incoming variables/response data points. */
 void ApproximationInterface::
 append_approximation(const VariablesArray& vars_array,
-		     const ResponseArray&  resp_array, bool deep_copy)
+		     const ResponseArray&  resp_array)
 {
   if (resp_array.size() != vars_array.size()) {
     Cerr << "Error: mismatch in variable and response set lengths in "
@@ -441,10 +488,15 @@ append_approximation(const VariablesArray& vars_array,
   // rather than unrolling response arrays (containing all response functions)
   // into per-response function arrays for input to functionSurfaces[i], pass
   // the complete response arrays along with a response function index.
-  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
-    int index = *it;
-    // append an entry to Approximation::currentPoints
-    functionSurfaces[index].append(vars_array, resp_array, index, deep_copy);
+
+  ISIter it = approxFnIndices.begin(); int index = *it;
+  functionSurfaces[index].append(vars_array, true);        // deep
+  functionSurfaces[index].append(resp_array, index, true); // deep
+  const Pecos::SurrogateData& sd = functionSurfaces[index].approximation_data();
+  for (++it; it!=approxFnIndices.end(); ++it) {
+    index = *it;
+    functionSurfaces[index].append(sd.variables_data());     // shallow
+    functionSurfaces[index].append(resp_array, index, true); // deep
   }
 }
 
@@ -551,9 +603,9 @@ void ApproximationInterface::finalize_approximation()
 void ApproximationInterface::
 cache_data(const Variables& vars, const Response& response)
 {
-  extern PRPCache data_pairs;
   ParamResponsePair prp(vars, interfaceId, response, true); // deep copy
-  data_pairs.insert(prp);                                // shallow copy
+  //truthAnchorQueue.clear();
+  //truthAnchorQueue.insert(prp); // shallow copy
 }
 
 
@@ -570,7 +622,8 @@ cache_data(const RealMatrix& samples, const ResponseArray& resp_array)
     const Real* sample_i = samples[i]; // ith column
     for (j=0; j<num_vars; ++j)
       actualModelVars.continuous_variable(sample_i[j], j); // jth row
-    cache_data(actualModelVars, resp_array[i]);
+    //truthDataQueue.insert(ParamResponsePair(actualModelVars, interfaceId,
+    //					    resp_array[i], true));
   }
 }
 
@@ -583,8 +636,9 @@ void ApproximationInterface::
 cache_data(const VariablesArray& vars_array, const ResponseArray& resp_array)
 {
   size_t i, num_prp = std::min(vars_array.size(), resp_array.size());
-  for (i=0; i<num_prp; ++i)
-    cache_data(vars_array[i], resp_array[i]);
+  //for (i=0; i<num_prp; ++i)
+    //truthDataQueue.insert(ParamResponsePair(vars_array[i], interfaceId,
+    //					    resp_array[i], true));
 }
 
 

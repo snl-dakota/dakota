@@ -294,7 +294,10 @@ build_approximation(const Variables& vars, const Response& response)
   // the surrogate type (local, multipoint, global polynomial regression), this
   // is enforced as a hard constraint. Otherwise, it is just another data point.
   approxInterface.update_approximation(vars, response);
-  // TO DO: persistence? (review SBLM et al.)
+  // TO DO:
+  // > not used by SBLM local/multipoint
+  // > used by SBLM global *with* persistent center vars,response
+  // > used by NonDLocal *without* persistent vars,response
 
   // build a local, multipoint, or global data fit approximation.
   if (surrogateType.begins("local_") || surrogateType.begins("multipoint_"))
@@ -810,13 +813,13 @@ void DataFitSurrModel::build_global()
 	const RealMatrix& all_samp = daceIterator.all_samples();
 	//if (/*!deep_copy && */!actualModelCache)
 	//  approxInterface.cache_data(all_samp, all_resp);
-	approxInterface.append_approximation(all_samp, all_resp);//, deep_copy);
+	approxInterface.append_approximation(all_samp, all_resp);
       }
       else {
 	const VariablesArray& all_vars = daceIterator.all_variables();
 	//if (/*!deep_copy && */!actualModelCache)
 	//  approxInterface.cache_data(all_vars, all_resp);
-	approxInterface.append_approximation(all_vars, all_resp);//, deep_copy);
+	approxInterface.append_approximation(all_vars, all_resp);
       }
     }
     else if (outputLevel >= DEBUG_OUTPUT)

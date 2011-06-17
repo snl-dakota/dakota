@@ -242,7 +242,8 @@ void FSUDesignCompExp::get_parameter_sets(Model& model)
   }
 
   //Real* sample_points = new Real [numContinuousVars*numSamples];
-  if (allSamples.empty())
+  if (allSamples.numRows() != numContinuousVars ||
+      allSamples.numCols() != numSamples)
     allSamples.shapeUninitialized(numContinuousVars, numSamples);
 
   if( methodName == "fsu_halton") {

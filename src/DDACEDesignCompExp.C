@@ -251,7 +251,8 @@ void DDACEDesignCompExp::get_parameter_sets(Model& model)
   }
 
   // copy the DDace sample array to allSamples
-  if (allSamples.empty())
+  if (allSamples.numRows() != numContinuousVars ||
+      allSamples.numCols() != numSamples)
     allSamples.shapeUninitialized(numContinuousVars, numSamples);
   for (i=0; i<numSamples; ++i) {
     Real* all_samp_i = allSamples[i];

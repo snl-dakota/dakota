@@ -154,9 +154,12 @@ struct hashed  {};
 //struct random  {};
 
 
-/// Boost Multi-Index Container for caching ParamResponsePairs
+/// Boost Multi-Index Container for globally caching ParamResponsePairs
+
+/** For a global cache, both evaluation and interface id's are used for
+    tagging ParamResponsePair records. */
 typedef bmi::multi_index_container<Dakota::ParamResponsePair, bmi::indexed_by<
-  // sorted beginning with lowest evalId/interfaceId value
+  // sorted by increasing evalId/interfaceId value
   bmi::ordered_unique<bmi::tag<ordered>,
 		      bmi::const_mem_fun<Dakota::ParamResponsePair,
 		      const IntStringPair&,
@@ -185,11 +188,15 @@ inline PRPCacheHIter hashedCacheEnd(PRPCache& prp_cache)
 { return prp_cache.get<hashed>().end(); }
 
 
-/// Boost Multi-Index Container for queueing ParamResponsePairs
+/// Boost Multi-Index Container for locally queueing ParamResponsePairs
+
+/** For a local queue, interface id's are expected to be consistent,
+    such that evaluation id's are sufficient for tracking particular
+    evaluations. */
 typedef bmi::multi_index_container<Dakota::ParamResponsePair, bmi::indexed_by<
-  // random access for index-based operator[] access
-  //bmi::random_access<bmi::tag<random> >,
-  // sorted (by evalInterfaceIds) for fast key-based lookups
+  /* random access for index-based operator[] access
+  bmi::random_access<bmi::tag<random> >, */
+  // sorted by increasing evaluation id for fast key-based lookups
   bmi::ordered_unique<bmi::tag<ordered>,
 		      bmi::const_mem_fun<Dakota::ParamResponsePair, int,
 		      &Dakota::ParamResponsePair::eval_id> >,

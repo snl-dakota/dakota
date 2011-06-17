@@ -1689,8 +1689,7 @@ void NonDLocalReliability::update_limit_state_surrogate()
   }
 
   // construct local Variables object
-  const Variables& curr_vars = iteratedModel.current_variables();
-  Variables mpp_vars(curr_vars.shared_data());
+  Variables mpp_vars(iteratedModel.current_variables().shared_data());
   mpp_vars.continuous_variables(mpp);
 
   // construct Response object

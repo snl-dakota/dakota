@@ -73,22 +73,18 @@ protected:
   void approximation_function_indices(const IntSet& approx_fn_indices);
 
   void update_approximation(const Variables& vars,
-			    const Response& response, bool deep_copy = false);
+			    const Response& response);
   void update_approximation(const RealMatrix& samples,
-			    const ResponseArray& resp_array,
-			    bool deep_copy = false);
+			    const ResponseArray& resp_array);
   void update_approximation(const VariablesArray& vars_array,
-			    const ResponseArray& resp_array,
-			    bool deep_copy = false);
+			    const ResponseArray& resp_array);
 
   void append_approximation(const Variables& vars,
-			    const Response& response, bool deep_copy = false);
+			    const Response& response);
   void append_approximation(const RealMatrix& samples,
-			    const ResponseArray& resp_array,
-			    bool deep_copy = false);
+			    const ResponseArray& resp_array);
   void append_approximation(const VariablesArray& vars_array,
-			    const ResponseArray& resp_array,
-			    bool deep_copy = false);
+			    const ResponseArray& resp_array);
 
   void build_approximation(const RealVector& lower_bnds,
 			   const RealVector& upper_bnds);

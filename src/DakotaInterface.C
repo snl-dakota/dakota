@@ -946,11 +946,10 @@ void Interface::approximation_function_indices(const IntSet& approx_fn_indices)
 
 
 void Interface::
-update_approximation(const Variables& vars, const Response& response,
-		     bool deep_copy)
+update_approximation(const Variables& vars, const Response& response)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->update_approximation(vars, response, deep_copy);
+    interfaceRep->update_approximation(vars, response);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
          << "(Variables, Response) function.\n       This interface does not "
@@ -961,11 +960,10 @@ update_approximation(const Variables& vars, const Response& response,
 
 
 void Interface::
-update_approximation(const RealMatrix& samples, const ResponseArray& resp_array,
-		     bool deep_copy)
+update_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->update_approximation(samples, resp_array, deep_copy);
+    interfaceRep->update_approximation(samples, resp_array);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
          << "(RealMatrix, ResponseArray) function.\n       This interface "
@@ -977,10 +975,10 @@ update_approximation(const RealMatrix& samples, const ResponseArray& resp_array,
 
 void Interface::
 update_approximation(const VariablesArray& vars_array,
-		     const ResponseArray&  resp_array, bool deep_copy)
+		     const ResponseArray&  resp_array)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->update_approximation(vars_array, resp_array, deep_copy);
+    interfaceRep->update_approximation(vars_array, resp_array);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
          << "(VariablesArray, ResponseArray) function.\n       This interface "
@@ -991,11 +989,10 @@ update_approximation(const VariablesArray& vars_array,
 
 
 void Interface::
-append_approximation(const Variables& vars, const Response& response,
-		     bool deep_copy)
+append_approximation(const Variables& vars, const Response& response)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->append_approximation(vars, response, deep_copy);
+    interfaceRep->append_approximation(vars, response);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
 	 << "(Variables, Response) function.\n       This interface does not "
@@ -1006,11 +1003,10 @@ append_approximation(const Variables& vars, const Response& response,
 
 
 void Interface::
-append_approximation(const RealMatrix& samples, const ResponseArray& resp_array,
-		     bool deep_copy)
+append_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->append_approximation(samples, resp_array, deep_copy);
+    interfaceRep->append_approximation(samples, resp_array);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
          << "(RealMatrix, ResponseArray) function.\n       This interface "
@@ -1022,10 +1018,10 @@ append_approximation(const RealMatrix& samples, const ResponseArray& resp_array,
 
 void Interface::
 append_approximation(const VariablesArray& vars_array,
-		     const ResponseArray&  resp_array, bool deep_copy)
+		     const ResponseArray&  resp_array)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->append_approximation(vars_array, resp_array, deep_copy);
+    interfaceRep->append_approximation(vars_array, resp_array);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
          << "(VariablesArray, ResponseArray) function.\n       This interface "
