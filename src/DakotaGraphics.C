@@ -16,7 +16,9 @@
 #include "Graphics.H"
 #endif // HAVE_X_GRAPHICS
 #include "data_io.h"
-#include "CtelRegExp.H"
+#ifndef DAKOTA_HAVE_BOOST_REGEX
+// WJB - algreadyIncluded viaResponse POUNDinclude "CtelRegExp.H"
+#endif // !DAKOTA_HAVE_BOOST_REGEX
 #include "DakotaVariables.H"
 #include "DakotaResponse.H"
 
@@ -48,8 +50,6 @@ Graphics::~Graphics()
 void Graphics::create_plots_2d(const Variables& vars, const Response& response)
 {
 #ifdef HAVE_X_GRAPHICS
-  using std::sprintf;
-  using std::strcpy;
   StringMultiArrayConstView cv_labels  = vars.continuous_variable_labels();
   StringMultiArrayConstView div_labels = vars.discrete_int_variable_labels();
   StringMultiArrayConstView drv_labels = vars.discrete_real_variable_labels();
@@ -72,37 +72,43 @@ void Graphics::create_plots_2d(const Variables& vars, const Response& response)
   char title[25];
   // Since the user can specify arbitrary response labels, regular
   // expression matching is preferable to using label.contains().
+#ifdef DAKOTA_HAVE_BOOST_REGEX
+  boost::regex obj_re("obj_fn_[1-9][0-9]*"),lsq_re("least_sq_term_[1-9][0-9]*"),
+    resp_re(   "response_fn_[1-9][0-9]*"), ineq_re( "nln_ineq_con_[1-9][0-9]*"),
+    eq_re(      "nln_eq_con_[1-9][0-9]*");
+#else
   CtelRegexp obj_re("obj_fn_[1-9][0-9]*"),  lsq_re("least_sq_term_[1-9][0-9]*"),
     resp_re(   "response_fn_[1-9][0-9]*"), ineq_re( "nln_ineq_con_[1-9][0-9]*"),
     eq_re(      "nln_eq_con_[1-9][0-9]*");
+#endif // DAKOTA_HAVE_BOOST_REGEX
   for (i=0; i<num_fns; ++i) {
-    String label = fn_labels[i];
+    const std::string& label = fn_labels[i];
     if (label == "obj_fn") {
-      strcpy(title, "Objective Fn");
+      std::strcpy(title, "Objective Fn");
       graphics2D->change_line_color2d(i, 0, 0, 192); // blue
     }
-    else if (label == obj_re.match(label)) {
-      sprintf(title, "Objective %d", ++num_obj_fns);
+    else if (label == re_match(label, obj_re)) {
+      std::sprintf(title, "Objective %d", ++num_obj_fns);
       graphics2D->change_line_color2d(i, 0, 0, 192); // blue
     }
-    else if (label == lsq_re.match(label)) {
-      sprintf(title, "Least Square Term %d", ++num_lsq_terms);
+    else if (label == re_match(label, lsq_re)) {
+      std::sprintf(title, "Least Square Term %d", ++num_lsq_terms);
       graphics2D->change_line_color2d(i, 0, 0, 192); // blue
     }
-    else if (label == resp_re.match(label)) {
-      sprintf(title, "Response Function %d", ++num_resp_fns);
+    else if (label == re_match(label, resp_re)) {
+      std::sprintf(title, "Response Function %d", ++num_resp_fns);
       graphics2D->change_line_color2d(i, 0, 0, 192); // blue
     }
-    else if (label == ineq_re.match(label)) {
-      sprintf(title, "Ineq Constraint %d", ++num_nln_ineq_con);
+    else if (label == re_match(label, ineq_re)) {
+      std::sprintf(title, "Ineq Constraint %d", ++num_nln_ineq_con);
       graphics2D->change_line_color2d(i, 0, 192, 0); // green
     }
-    else if (label == eq_re.match(label)) {
-      sprintf(title, "Eq Constraint %d", ++num_nln_eq_con);
+    else if (label == re_match(label, eq_re)) {
+      std::sprintf(title, "Eq Constraint %d", ++num_nln_eq_con);
       graphics2D->change_line_color2d(i, 0, 192, 0); // green
     }
     else { // user-defined response descriptor
-      strcpy(title, fn_labels[i]);
+      std::strcpy(title, fn_labels[i]);
       graphics2D->change_line_color2d(i, 0, 0, 192); // blue
     }
     graphics2D->set_y_label2d(i, label.data());
@@ -113,53 +119,61 @@ void Graphics::create_plots_2d(const Variables& vars, const Response& response)
     num_dssrv = 0;
   // Since the user can specify arbitrary variable labels, regular
   // expression matching is preferable to using label.contains().
+#ifdef DAKOTA_HAVE_BOOST_REGEX
+  boost::regex  cdv_re(  "cdv_[1-9][0-9]*"), ddriv_re("ddriv_[1-9][0-9]*"),
+              ddsiv_re("ddsiv_[1-9][0-9]*"), ddsrv_re("ddsrv_[1-9][0-9]*"),
+                 uv_re(   "uv_[1-9][0-9]*"),  csv_re(   "csv_[1-9][0-9]*"),
+              dsriv_re("dsriv_[1-9][0-9]*"), dssiv_re("dssiv_[1-9][0-9]*"),
+              dssrv_re("dssrv_[1-9][0-9]*"); // TO DO
+#else
   CtelRegexp  cdv_re(  "cdv_[1-9][0-9]*"), ddriv_re("ddriv_[1-9][0-9]*"),
             ddsiv_re("ddsiv_[1-9][0-9]*"), ddsrv_re("ddsrv_[1-9][0-9]*"),
                uv_re(   "uv_[1-9][0-9]*"),  csv_re(   "csv_[1-9][0-9]*"),
             dsriv_re("dsriv_[1-9][0-9]*"), dssiv_re("dssiv_[1-9][0-9]*"),
             dssrv_re("dssrv_[1-9][0-9]*"); // TO DO
+#endif // DAKOTA_HAVE_BOOST_REGEX
   for(i=0; i<num_cv; ++i) {
-    String label = cv_labels[i];
-    if (label == cdv_re.match(label))
-      sprintf(title, "Cont Des Variable %d", ++num_cdv);
-    else if (label == uv_re.match(label))
-      sprintf(title, "Cont Unc Variable %d", ++num_cuv);
-    else if (label == csv_re.match(label))
-      sprintf(title, "Cont State Variable %d", ++num_csv);
+    const std::string& label = cv_labels[i];
+    if (label == re_match(label, cdv_re))
+      std::sprintf(title, "Cont Des Variable %d", ++num_cdv);
+    else if (label == re_match(label, uv_re))
+      std::sprintf(title, "Cont Unc Variable %d", ++num_cuv);
+    else if (label == re_match(label, csv_re))
+      std::sprintf(title, "Cont State Variable %d", ++num_csv);
     else
-      strcpy(title, label);
+      std::strcpy(title, label.c_str());
     graphics2D->set_title2d(i+num_fns, title);
     graphics2D->set_y_label2d(i+num_fns, label.data());
     graphics2D->change_line_color2d(i+num_fns, 192, 0, 0); // red
   }
   for(i=0; i<num_div; ++i) {
-    String label = div_labels[i];
-    if (label == ddriv_re.match(label))
-      sprintf(title, "Disc Range Des Var %d", ++num_ddriv);
-    else if (label == ddsiv_re.match(label))
-      sprintf(title, "Disc Set Int Des Var %d", ++num_ddsiv);
-    else if (label == uv_re.match(label))
-      sprintf(title, "Disc Int Unc Var %d", ++num_duiv);
-    else if (label == dsriv_re.match(label))
-      sprintf(title, "Disc Range State Var %d", ++num_dsriv);
-    else if (label == dssiv_re.match(label))
-      sprintf(title, "Disc Set Int State Var %d", ++num_dssiv);
+    const std::string& label = div_labels[i];
+    if (label == re_match(label, ddriv_re))
+      std::sprintf(title, "Disc Range Des Var %d", ++num_ddriv);
+    else if (label == re_match(label, ddsiv_re))
+      std::sprintf(title, "Disc Set Int Des Var %d", ++num_ddsiv);
+    else if (label == re_match(label, uv_re))
+      std::sprintf(title, "Disc Int Unc Var %d", ++num_duiv);
+    else if (label == re_match(label, dsriv_re))
+      std::sprintf(title, "Disc Range State Var %d", ++num_dsriv);
+    else if (label == re_match(label, dssiv_re))
+      std::sprintf(title, "Disc Set Int State Var %d", ++num_dssiv);
     else
-      strcpy(title, label);
+      std::strcpy(title, label.c_str());
     graphics2D->set_title2d(i+num_fns+num_cv, title);
     graphics2D->set_y_label2d(i+num_fns+num_cv, label.data());
     graphics2D->change_line_color2d(i+num_fns+num_cv, 192, 0, 0); // red
   }
   for(i=0; i<num_drv; ++i) {
-    String label = drv_labels[i];
-    if (label == ddsrv_re.match(label))
-      sprintf(title, "Disc Set Real Des Var %d", ++num_ddsrv);
-    else if (label == uv_re.match(label))
-      sprintf(title, "Disc Real Unc Var %d", ++num_durv);
-    else if (label == dssrv_re.match(label))
-      sprintf(title, "Disc Set Real State Var %d", ++num_dssrv);
+    const std::string& label = drv_labels[i];
+    if (label == re_match(label, ddsrv_re))
+      std::sprintf(title, "Disc Set Real Des Var %d", ++num_ddsrv);
+    else if (label == re_match(label, uv_re))
+      std::sprintf(title, "Disc Real Unc Var %d", ++num_durv);
+    else if (label == re_match(label, dssrv_re))
+      std::sprintf(title, "Disc Set Real State Var %d", ++num_dssrv);
     else
-      strcpy(title, label);
+      std::strcpy(title, label.c_str());
     graphics2D->set_title2d(i+num_fns+num_cv+num_div, title);
     graphics2D->set_y_label2d(i+num_fns+num_cv+num_div, label.data());
     graphics2D->change_line_color2d(i+num_fns+num_cv+num_div, 192, 0, 0); // red

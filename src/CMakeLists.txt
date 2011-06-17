@@ -19,11 +19,16 @@ if (BOOST_DISABLE_ASSERTS)
   add_definitions("-DBOOST_DISABLE_ASSERTS")
 endif (BOOST_DISABLE_ASSERTS)
 
+# WJB: To complete migration to Boost.Regex, the autotools build be updated.
+#      Once complete, there is NO NEED for a DAK_HAVE_BOOST_REGEX conditional.
+add_definitions("-DDAKOTA_HAVE_BOOST_REGEX")
+find_package(Boost COMPONENTS regex)
+
 option(DAKOTA_HAVE_BOOST_FS "Toggle FS support, default is BostFS disabled" OFF)
 if (DAKOTA_HAVE_BOOST_FS)
   add_definitions("-DDAKOTA_HAVE_BOOST_FS")
   add_definitions("-DBOOST_FILESYSTEM_VERSION=3")
-  find_package(Boost COMPONENTS filesystem regex system)
+  find_package(Boost COMPONENTS filesystem system)
 endif (DAKOTA_HAVE_BOOST_FS)
 
 
@@ -257,7 +262,6 @@ if(HAVE_QUESO)
   include_directories(${Dakota_BINARY_DIR}/packages/queso/include
                       ${Dakota_BINARY_DIR}/packages/grvy/include
                       ${Trilinos_INCLUDE_DIRS})
-  include_directories(${Dakota_BINARY_DIR}/packages/ampl)
 
   #list(APPEND link_directories "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
   list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso/lib
