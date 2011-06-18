@@ -200,7 +200,7 @@ protected:
   void build();
   void rebuild();
   void pop(bool save_data);
-  size_t pop_count();
+  //size_t pop_count();
   void restore();
   bool restore_available();
   size_t restoration_index();
@@ -510,8 +510,8 @@ inline void PecosApproximation::pop(bool save_data)
 }
 
 
-inline size_t PecosApproximation::pop_count()
-{ return polyApproxRep->pop_count(); }
+//inline size_t PecosApproximation::pop_count()
+//{ return polyApproxRep->pop_count(); }
 
 
 inline void PecosApproximation::restore()

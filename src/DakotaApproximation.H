@@ -72,9 +72,6 @@ public:
   /// removes entries from end of SurrogateData::{vars,resp}Data
   /// (last points appended)
   virtual void pop(bool save_data);
-  /// returns number of entries to pop from end of
-  /// SurrogateData::{vars,resp}Data, based on size of last data set appended
-  virtual size_t pop_count();
   /// restores state prior to previous append()
   virtual void restore();
   /// queries availability of restoration for trial set
@@ -141,50 +138,39 @@ public:
   // return approxData
   const Pecos::SurrogateData& approximation_data() const;
 
-  /// populates/replaces SurrogateData::anchorVars
-  void update(const Variables& vars, bool deep_copy = false);
-  /// populates/replaces SurrogateData::anchorVars
-  void update(const Pecos::SurrogateDataVars& sdv);
-  /// populates/replaces SurrogateData::varsData
-  void update(const RealMatrix& samples, bool deep_copy = false);
-  /// populates/replaces SurrogateData::varsData
-  void update(const VariablesArray& vars_array, bool deep_copy = false);
-  /// populates/replaces SurrogateData::varsData
-  void update(const Pecos::SDVArray& sdv_array);
+  /// append to SurrogateData::varsData or assign to SurrogateData::anchorVars
+  void add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag);
+  /// extract the relevant RealVector from Variables and invoke add(RealVector&)
+  void add(const Variables& vars, bool anchor_flag, bool deep_copy);
+  /// create a RealVector view and invoke add(RealVector&)
+  void add(const Real* sample_c_vars, bool anchor_flag, bool deep_copy);
+  /// shared code among add(Variables&) and add(Real*); adds a new
+  /// data point by either appending to SurrogateData::varsData or
+  /// assigning to SurrogateData::anchorVars, as dictated by anchor_flag.
+  /// Uses add_point() and add_anchor().
+  void add(const RealVector& sample_c_vars, bool anchor_flag, bool deep_copy);
 
-  /// populates/replaces SurrogateData::anchorResp
-  void update(const Response& response, int fn_index, bool deep_copy = false);
-  /// populates/replaces SurrogateData::anchorResp
-  void update(const Pecos::SurrogateDataResp& sdr);
-  /// populates/replaces SurrogateData::respData
-  void update(const ResponseArray& resp_array, int fn_index,
-	      bool deep_copy = false);
-  /// populates/replaces SurrogateData::respData
-  void update(const Pecos::SDRArray& sdr_array);
+  /// append to SurrogateData::respData or assign to SurrogateData::anchorResp
+  void add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag);
+  /// adds a new data point by either appending to SurrogateData::respData
+  /// or assigning to SurrogateData::anchorResp, as dictated by anchor_flag.
+  /// Uses add_point() and add_anchor().
+  void add(const Response& response, int fn_index, bool anchor_flag,
+	   bool deep_copy);
 
-  /// appends one additional entry to SurrogateData::varsData
-  void append(const Variables& vars, bool deep_copy = false);
-  /// appends one additional entry to SurrogateData::varsData
-  void append(const Pecos::SurrogateDataVars& sdv);
-  /// appends multiple additional entries to SurrogateData::varsData
-  void append(const RealMatrix& samples, bool deep_copy = false);
-  /// appends multiple additional entries to SurrogateData::varsData
-  void append(const VariablesArray& vars_array, bool deep_copy = false);
-  /// appends multiple additional entries to SurrogateData::varsData
-  void append(const Pecos::SDVArray& sdv_array);
-
-  /// appends one additional entry to SurrogateData::respData
-  void append(const Response& response, int fn_index, bool deep_copy = false);
-  /// appends one additional entry to SurrogateData::respData
-  void append(const Pecos::SurrogateDataResp& sdr);
-  /// appends multiple additional entries to SurrogateData::respData
-  void append(const ResponseArray& resp_array, int fn_index,
-	      bool deep_copy = false);
-  /// appends multiple additional entries to SurrogateData::respData
-  void append(const Pecos::SDRArray& sdr_array);
+  /// sets popCount (number of entries to pop from end of
+  /// SurrogateData::{vars,resp}Data, based on size of last data set appended)
+  void pop_count(size_t count);
+  /// returns popCount (number of entries to pop from end of
+  /// SurrogateData::{vars,resp}Data, based on size of last data set appended)
+  size_t pop_count() const;
 
   /// clear all build data (current and history) to restore original state
   void clear_all();
+  /// clear SurrogateData::anchor{Vars,Resp}
+  void clear_anchor();
+  /// clear SurrogateData::{vars,resp}Data
+  void clear_data();
 
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector& lower, const RealVector& upper);
@@ -273,38 +259,6 @@ private:
 			    const UShortArray& approx_order, size_t num_vars,
 			    short data_order);
 
-  /// append to SurrogateData::varsData or assign to SurrogateData::anchorVars
-  void add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag);
-  /// extract the relevant RealVector from Variables and invoke add(RealVector&)
-  void add(const Variables& vars, bool anchor_flag, bool deep_copy);
-  /// create a RealVector view and invoke add(RealVector&)
-  void add(const Real* sample_c_vars, bool anchor_flag, bool deep_copy);
-  /// shared code among add(Variables&) and add(Real*); adds a new
-  /// data point by either appending to SurrogateData::varsData or
-  /// assigning to SurrogateData::anchorVars, as dictated by anchor_flag.
-  /// Uses add_point() and add_anchor().
-  void add(const RealVector& sample_c_vars, bool anchor_flag, bool deep_copy);
-
-  /// append to SurrogateData::respData or assign to SurrogateData::anchorResp
-  void add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag);
-  /// adds a new data point by either appending to SurrogateData::respData
-  /// or assigning to SurrogateData::anchorResp, as dictated by anchor_flag.
-  /// Uses add_point() and add_anchor().
-  void add(const Response& response, int fn_index, bool anchor_flag,
-	   bool deep_copy);
-
-  /// add a new data point by assigning to SurrogateData::anchorVars
-  void add_anchor(const RealVector& x, bool deep_copy);
-  /// add a new data point by assigning to SurrogateData::anchorResp
-  void add_anchor(const Real& fn_val, const RealVector& fn_grad,
-		  const RealSymMatrix& fn_hess, short bits, bool deep_copy);
-
-  /// add a new data point by appending to SurrogateData::varsData
-  void add_point(const RealVector& x, bool deep_copy);
-  /// add a new data point by appending to SurrogateData::respData
-  void add_point(const Real& fn_val, const RealVector& fn_grad,
-		 const RealSymMatrix& fn_hess, short bits, bool deep_copy);
-
   //
   //- Heading: Data
   //
@@ -346,209 +300,68 @@ inline Approximation* Approximation::approx_rep() const
 { return approxRep; }
 
 
-// private convenience fn -> approxRep forward not needed.
-inline void Approximation::add_anchor(const RealVector& x, bool deep_copy)
-{
-  // Map DAKOTA's deep_copy bool into Pecos' copy mode
-  // (Pecos::DEFAULT_COPY is not supported through DAKOTA).
-  short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
-  Pecos::SurrogateDataVars sdv(x, mode);
-  approxData.anchor_variables(sdv);
-}
-
-
-// private convenience fn -> approxRep forward not needed.
-inline void Approximation::
-add_anchor(const Real& fn_val, const RealVector& fn_grad,
-	   const RealSymMatrix& fn_hess, short bits, bool deep_copy)
-{
-  // Map DAKOTA's deep_copy bool into Pecos' copy mode
-  // (Pecos::DEFAULT_COPY is not supported through DAKOTA).
-  short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
-  Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, bits, mode);
-  approxData.anchor_response(sdr);
-}
-
-
-// private convenience fn -> approxRep forward not needed.
-inline void Approximation::add_point(const RealVector& x, bool deep_copy)
-{
-  // Map DAKOTA's deep_copy bool into Pecos' copy mode
-  // (Pecos::DEFAULT_COPY is not supported through DAKOTA).
-  short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
-  Pecos::SurrogateDataVars sdv(x, mode);
-  approxData.push_back(sdv);
-}
-
-
-// private convenience fn -> approxRep forward not needed.
-inline void Approximation::
-add_point(const Real& fn_val, const RealVector& fn_grad,
-	  const RealSymMatrix& fn_hess, short bits, bool deep_copy)
-{
-  // Map DAKOTA's deep_copy bool into Pecos' copy mode
-  // (Pecos::DEFAULT_COPY is not supported through DAKOTA).
-  short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
-  Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, bits, mode);
-  approxData.push_back(sdr);
-}
-
-
 inline void Approximation::
 add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag)
 {
-  if (anchor_flag) approxData.anchor_variables(sdv);
-  else             approxData.push_back(sdv);
+  if (approxRep)
+    approxRep->add(sdv, anchor_flag);
+  else { // not virtual: all derived classes use following definition
+    if (anchor_flag) approxData.anchor_variables(sdv);
+    else             approxData.push_back(sdv);
+  }
 }
 
 
 inline void Approximation::
 add(const RealVector& c_vars, bool anchor_flag, bool deep_copy)
 {
-  if (anchor_flag) add_anchor(c_vars, deep_copy);
-  else             add_point(c_vars,  deep_copy);
+  if (approxRep)
+    approxRep->add(c_vars, anchor_flag, deep_copy);
+  else { // not virtual: all derived classes use following definition
+    // Map DAKOTA's deep_copy bool into Pecos' copy mode
+    // (Pecos::DEFAULT_COPY is not supported through DAKOTA).
+    short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
+    Pecos::SurrogateDataVars sdv(c_vars, mode);
+    if (anchor_flag) approxData.anchor_variables(sdv);
+    else             approxData.push_back(sdv);
+  }
 }
 
 
 inline void Approximation::
 add(const Real* sample_c_vars, bool anchor_flag, bool deep_copy)
 {
-  // create view of first numVars entries within column of sample Matrix
-  // --> any discrete {int,real} vars (e.g., from NonDSampling) are ignored.
-  RealVector c_vars(Teuchos::View, (Real*)sample_c_vars, numVars);
-  add(c_vars, anchor_flag, deep_copy);
+  if (approxRep)
+    approxRep->add(sample_c_vars, anchor_flag, deep_copy);
+  else { // not virtual: all derived classes use following definition
+    // create view of first numVars entries within column of sample Matrix
+    // --> any discrete {int,real} vars (e.g., from NonDSampling) are ignored.
+    RealVector c_vars(Teuchos::View, (Real*)sample_c_vars, numVars);
+    add(c_vars, anchor_flag, deep_copy);
+  }
 }
 
 
 inline void Approximation::
 add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag)
 {
-  if (anchor_flag) approxData.anchor_response(sdr);
-  else             approxData.push_back(sdr);
-}
-
-
-inline void Approximation::update(const Variables& vars, bool deep_copy)
-{
-  if (approxRep) approxRep->add(vars, true, deep_copy);
-  else           add(vars, true, deep_copy); // replace anchor vars
-}
-
-
-inline void Approximation::update(const Pecos::SurrogateDataVars& sdv)
-{
-  if (approxRep) approxRep->add(sdv, true);
-  else           add(sdv, true); // replace anchor vars
-}
-
-
-inline void Approximation::update(const Pecos::SDVArray& sdv_array)
-{
   if (approxRep)
-    approxRep->update(sdv_array);
-  else { // replace SurrogateData::varsData
-    approxData.clear_variables_data();
-    size_t i, num_points = sdv_array.size();
-    for (i=0; i<num_points; ++i)
-      add(sdv_array[i], false);
+    approxRep->add(sdr, anchor_flag);
+  else { // not virtual: all derived classes use following definition
+    if (anchor_flag) approxData.anchor_response(sdr);
+    else             approxData.push_back(sdr);
   }
 }
 
 
-inline void Approximation::
-update(const Response& response, int fn_index, bool deep_copy)
+inline size_t Approximation::pop_count() const
+{ return (approxRep) ? approxRep->popCount : popCount; }
+
+
+inline void Approximation::pop_count(size_t count)
 {
-  if (approxRep) approxRep->add(response, fn_index, true, deep_copy);
-  else           add(response, fn_index, true, deep_copy);// replace anchor resp
-}
-
-
-inline void Approximation::update(const Pecos::SurrogateDataResp& sdr)
-{
-  if (approxRep) approxRep->add(sdr, true);
-  else           add(sdr, true); // replace anchor response
-}
-
-
-inline void Approximation::update(const Pecos::SDRArray& sdr_array)
-{
-  if (approxRep)
-    approxRep->update(sdr_array);
-  else { // replace SurrogateData::respData
-    approxData.clear_response_data();
-    size_t i, num_points = sdr_array.size();
-    for (i=0; i<num_points; ++i)
-      add(sdr_array[i], false);
-  }
-}
-
-
-inline void Approximation::append(const Variables& vars, bool deep_copy)
-{
-  if (approxRep)
-    approxRep->append(vars, deep_copy);
-  else { // append new point to SurrogateData::varsData
-    popCount = 1;
-    add(vars, false, deep_copy);
-  }
-}
-
-
-inline void Approximation::append(const Pecos::SurrogateDataVars& sdv)
-{
-  if (approxRep)
-    approxRep->append(sdv);
-  else { // append new point to SurrogateData::varsData
-    popCount = 1;
-    add(sdv, false);
-  }
-}
-
-
-inline void Approximation::append(const Pecos::SDVArray& sdv_array)
-{
-  if (approxRep)
-    approxRep->append(sdv_array);
-  else { // append points to SurrogateData::varsData
-    popCount = sdv_array.size();
-    for (size_t i=0; i<popCount; ++i)
-      add(sdv_array[i], false);
-  }
-}
-
-
-inline void Approximation::
-append(const Response& response, int fn_index, bool deep_copy)
-{
-  if (approxRep)
-    approxRep->append(response, fn_index, deep_copy);
-  else { // append new point to SurrogateData::respData
-    popCount = 1;
-    add(response, fn_index, false, deep_copy);
-  }
-}
-
-
-inline void Approximation::append(const Pecos::SurrogateDataResp& sdr)
-{
-  if (approxRep)
-    approxRep->append(sdr);
-  else { // append new point to SurrogateData::respData
-    popCount = 1;
-    add(sdr, false);
-  }
-}
-
-
-inline void Approximation::append(const Pecos::SDRArray& sdr_array)
-{
-  if (approxRep)
-    approxRep->append(sdr_array);
-  else { // append points to SurrogateData::respData
-    popCount = sdr_array.size();
-    for (size_t i=0; i<popCount; ++i)
-      add(sdr_array[i], false);
-  }
+  if (approxRep) approxRep->popCount = count;
+  else           popCount = count;
 }
 
 
@@ -574,6 +387,24 @@ inline void Approximation::clear_current()
     approxRep->clear_current();
   else // default implementation
     clear_all();
+}
+
+
+inline void Approximation::clear_anchor()
+{
+  if (approxRep) // envelope fwd to letter
+    approxRep->approxData.clear_anchor();
+  else // not virtual: base class implementation
+    approxData.clear_anchor();
+}
+
+
+inline void Approximation::clear_data()
+{
+  if (approxRep) // envelope fwd to letter
+    approxRep->approxData.clear_data();
+  else // not virtual: base class implementation
+    approxData.clear_data();
 }
 
 } // namespace Dakota

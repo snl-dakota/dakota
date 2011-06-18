@@ -42,7 +42,7 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
   // verbosity.  For approximations, verbose adds quad poly coeff reporting.
   outputLevel(problem_db.get_short("method.output")),
   numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
-  buildDataOrder(1), popCount(1), approxRep(NULL), referenceCount(1)
+  buildDataOrder(1), popCount(0), approxRep(NULL), referenceCount(1)
 {
   if (problem_db.get_bool("model.surrogate.derivative_usage") &&
       approxType != "global_polynomial"                       &&
@@ -69,7 +69,7 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 Approximation::Approximation(BaseConstructor, const String& approx_type,
 			     size_t num_vars, short data_order):
   outputLevel(NORMAL_OUTPUT), numVars(num_vars), approxType(approx_type),
-  buildDataOrder(data_order), popCount(1), approxRep(NULL), referenceCount(1)
+  buildDataOrder(data_order), popCount(0), approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(BaseConstructor) called to build base "
@@ -84,7 +84,7 @@ Approximation::Approximation(BaseConstructor, const String& approx_type,
     This makes it necessary to check for NULL in the copy constructor,
     assignment operator, and destructor. */
 Approximation::Approximation(): buildDataOrder(1), outputLevel(NORMAL_OUTPUT),
-  popCount(1), approxRep(NULL), referenceCount(1)
+  popCount(0), approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation() called to build empty approximation "
@@ -323,14 +323,7 @@ void Approximation::pop(bool save_data)
   if (approxRep)
     approxRep->pop(save_data);
   else
-    approxData.pop(pop_count(), save_data);
-}
-
-
-size_t Approximation::pop_count()
-{
-  return (approxRep) ? approxRep->pop_count() // derived class redefinition
-                     : popCount; // default definition
+    approxData.pop(popCount, save_data);
 }
 
 
@@ -342,7 +335,7 @@ void Approximation::restore()
   if (approxRep)
     approxRep->restore();
   else
-    approxData.restore(restoration_index());
+    popCount = approxData.restore(restoration_index());
 }
 
 
@@ -579,96 +572,23 @@ int Approximation::recommended_points(bool constraint_flag) const
 }
 
 
-void Approximation::update(const RealMatrix& samples, bool deep_copy)
-{
-  if (approxRep)
-    approxRep->update(samples, deep_copy);
-  else { // not virtual: all derived classes use following definition:
-    approxData.clear_variables_data(); // replace varsData with incoming samples
-    int num_points = samples.numCols();
-    for (size_t i=0; i<num_points; ++i)
-      add(samples[i], false, deep_copy);
-  }
-}
-
-
-void Approximation::update(const VariablesArray& vars_array, bool deep_copy)
-{
-  if (approxRep)
-    approxRep->update(vars_array, deep_copy);
-  else { // not virtual: all derived classes use following definition:
-    approxData.clear_variables_data(); // replace varsData with incoming array
-    size_t i, num_points = vars_array.size();
-    for (i=0; i<num_points; ++i)
-      add(vars_array[i], false, deep_copy);
-  }
-}
-
-
-void Approximation::
-update(const ResponseArray& resp_array, int fn_index, bool deep_copy)
-{
-  if (approxRep)
-    approxRep->update(resp_array, fn_index, deep_copy);
-  else { // not virtual: all derived classes use following definition:
-    approxData.clear_response_data(); // replace respData with incoming array
-    size_t i, num_points = resp_array.size();
-    for (i=0; i<num_points; ++i)
-      add(resp_array[i], fn_index, false, deep_copy);
-  }
-}
-
-
-void Approximation::append(const RealMatrix& samples, bool deep_copy)
-{
-  if (approxRep)
-    approxRep->append(samples, deep_copy);
-  else { // not virtual: all derived classes use following definition
-    popCount = samples.numCols();
-    for (size_t i=0; i<popCount; ++i)
-      add(samples[i], false, deep_copy);
-  }
-}
-
-
-void Approximation::
-append(const VariablesArray& vars_array, bool deep_copy)
-{
-  if (approxRep)
-    approxRep->append(vars_array, deep_copy);
-  else { // not virtual: all derived classes use following definition
-    popCount = vars_array.size();
-    for (size_t i=0; i<popCount; ++i)
-      add(vars_array[i], false, deep_copy);
-  }
-}
-
-
-void Approximation::
-append(const ResponseArray& resp_array, int fn_index, bool deep_copy)
-{
-  if (approxRep)
-    approxRep->append(resp_array, fn_index, deep_copy);
-  else { // not virtual: all derived classes use following definition
-    popCount = resp_array.size();
-    for (size_t i=0; i<popCount; ++i)
-      add(resp_array[i], fn_index, false, deep_copy);
-  }
-}
-
-
 void Approximation::
 add(const Variables& vars, bool anchor_flag, bool deep_copy)
 {
-  // Approximation does not know about view mappings; therefore, take the
-  // simple approach of matching up vars.cv() or vars.acv() with numVars.
-  if (vars.cv() == numVars)
-    add(vars.continuous_variables(),     anchor_flag, deep_copy);
-  else if (vars.acv() == numVars)
-    add(vars.all_continuous_variables(), anchor_flag, deep_copy);
-  else {
-    Cerr << "Error: variable size mismatch in Approximation::add()."<<std::endl;
-    abort_handler(-1);
+  if (approxRep)
+    approxRep->add(vars, anchor_flag, deep_copy);
+  else { // not virtual: all derived classes use following definition
+    // Approximation does not know about view mappings; therefore, take the
+    // simple approach of matching up vars.cv() or vars.acv() with numVars.
+    if (vars.cv() == numVars)
+      add(vars.continuous_variables(),     anchor_flag, deep_copy);
+    else if (vars.acv() == numVars)
+      add(vars.all_continuous_variables(), anchor_flag, deep_copy);
+    else {
+      Cerr << "Error: variable size mismatch in Approximation::add()."
+	   << std::endl;
+      abort_handler(-1);
+    }
   }
 }
 
@@ -676,51 +596,30 @@ add(const Variables& vars, bool anchor_flag, bool deep_copy)
 void Approximation::
 add(const Response& response, int fn_index, bool anchor_flag, bool deep_copy)
 {
-  // private fn used only by build() and update() functions -> approxRep
-  // forward not needed.  Recomputing coefficients, if needed, is managed
-  // by the calling functions.
+  if (approxRep)
+    approxRep->add(response, fn_index, anchor_flag, deep_copy);
+  else { // not virtual: all derived classes use following definition
+    short asv_val = response.active_set_request_vector()[fn_index];
+    //if (asv_val) { // ASV dropouts are now managed at a higher level
 
-  const ShortArray& asv = response.active_set_request_vector();
-  short asv_val = asv[fn_index];
-  //if (asv_val) {
-    const RealVector&         fn_vals     = response.function_values();
-    const RealMatrix&         fn_grads    = response.function_gradients();
-    const RealSymMatrixArray& fn_hessians = response.function_hessians();
-    size_t num_fns = asv.size();
-
-    /*
-    if ( vars.cv() != numVars) {// ||
-	 //( (asv_val & 2) && fn_grads.numRows()               != numVars) ||
-	 //( (asv_val & 4) && (fn_hessians[fn_index].numRows() != numVars ||
-	 //		       fn_hessians[fn_index].numCols() != numVars))) {
-      Cerr << "Error: variable size mismatch in Approximation::add()."
-	   << std::endl;
-      abort_handler(-1);
-    }
-    */
-    if ( ( (asv_val & 1) && fn_vals.length()   != num_fns ) ||
-	 ( (asv_val & 2) && fn_grads.numCols() != num_fns ) || 
-	 ( (asv_val & 4) && fn_hessians.size() != num_fns ) ) {
-      Cerr << "Error: function size mismatch in Approximation::add()."
-	   << std::endl;
-      abort_handler(-1);
-    }
-
-    // Since SurrogateData responses do not manage request vectors,
-    // ensure the use of empty vectors/matrices if data is not active.
-    Real fn_val = (asv_val & 1) ? fn_vals[fn_index] : 0.;
+    // use empty vectors/matrices if data is not active.
+    Real fn_val = (asv_val & 1) ? response.function_value(fn_index) : 0.;
     RealVector fn_grad;
     if (asv_val & 2)
-      fn_grad = response.function_gradient(fn_index); // view of a matrix column
+      fn_grad = response.function_gradient(fn_index); // view of matrix column
     RealSymMatrix empty_hess;
     const RealSymMatrix& fn_hess = (asv_val & 4) ?
-      fn_hessians[fn_index] : empty_hess;
-    if (anchor_flag)
-      add_anchor(fn_val, fn_grad, fn_hess, asv_val, deep_copy);
-    else
-      add_point(fn_val, fn_grad, fn_hess, asv_val, deep_copy);
-  //}
-  // else no data point added for this index
+      response.function_hessian(fn_index) : empty_hess;
+
+    // Map DAKOTA's deep_copy bool into Pecos' copy mode
+    // (Pecos::DEFAULT_COPY is not supported through DAKOTA).
+    short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
+    Pecos::SurrogateDataResp sdr(fn_val, fn_grad, fn_hess, asv_val, mode);
+    if (anchor_flag) approxData.anchor_response(sdr);
+    else             approxData.push_back(sdr);
+
+    //}
+  }
 }
 
 

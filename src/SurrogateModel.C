@@ -53,28 +53,47 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
     combineFactors.resize(numFns);
     combineFactors = 1.; // used on 1st cycle prior to existence of prev pt.
   }
+  /*
+  UShortArray approx_order(numVars, correctionOrder);
+  short data_order = 1;
+  switch (correctionOrder) {
+  //case 0: default: data_order = 1; break;
+  case 1: data_order = 3; break;
+  case 2: data_order = 7; break;
+  }
+  */
   ISIter it;
   computeAdditive = (correctionType == "additive" || combinedFlag);
   if (computeAdditive) {
+    /*
+    addCorrections.size(numFns);
+    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
+      addCorrections[*it] = Approximation("local_taylor", approx_order, 
+					   numVars, data_order);
+    */
     addCorrFns.resize(numFns);
     if (correctionOrder >= 1)
       addCorrGrads.shapeUninitialized(numDerivVars, numFns);
-    if (correctionOrder == 2)
+    if (correctionOrder == 2) {
       addCorrHessians.resize(numFns);
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
-      if (correctionOrder == 2)
+      for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
 	addCorrHessians[*it].reshape(numDerivVars);
     }
   }
   computeMultiplicative = (correctionType == "multiplicative" || combinedFlag);
   if (computeMultiplicative) {
+    /*
+    multCorrections.size(numFns);
+    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
+      multCorrections[*it] = Approximation("local_taylor", approx_order, 
+					   numVars, data_order);
+    */
     multCorrFns.resize(numFns);
     if (correctionOrder >= 1)
       multCorrGrads.shapeUninitialized(numDerivVars, numFns);
-    if (correctionOrder == 2)
+    if (correctionOrder == 2) {
       multCorrHessians.resize(numFns);
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
-      if (correctionOrder == 2)
+      for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
 	multCorrHessians[*it].reshape(numDerivVars);
     }
   }
@@ -102,27 +121,46 @@ SurrogateModel(ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
     combineFactors.resize(numFns);
     combineFactors = 1.; // used on 1st cycle prior to existence of prev pt.
   }
+  /*
+  UShortArray approx_order(numVars, correctionOrder);
+  short data_order = 1;
+  switch (correctionOrder) {
+  //case 0: default: data_order = 1; break;
+  case 1: data_order = 3; break;
+  case 2: data_order = 7; break;
+  }
+  */
   computeAdditive = (correctionType == "additive" || combinedFlag);
   if (computeAdditive) {
+    /*
+    addCorrections.size(numFns);
+    for (i=0; i<numFns; ++i)
+      addCorrections[i] = Approximation("local_taylor", approx_order, 
+					numVars, data_order);
+    */
     addCorrFns.resize(numFns);
     if (correctionOrder >= 1)
       addCorrGrads.shapeUninitialized(numDerivVars, numFns);
-    if (correctionOrder == 2)
+    if (correctionOrder == 2) {
       addCorrHessians.resize(numFns);
-    for (i=0; i<numFns; ++i) {
-      if (correctionOrder == 2)
+      for (i=0; i<numFns; ++i)
 	addCorrHessians[i].reshape(numDerivVars);
     }
   }
   computeMultiplicative = (correctionType == "multiplicative" || combinedFlag);
   if (computeMultiplicative) {
+    /*
+    multCorrections.size(numFns);
+    for (i=0; i<numFns; ++i)
+      multCorrections[i] = Approximation("local_taylor", approx_order, 
+					 numVars, data_order);
+    */
     multCorrFns.resize(numFns);
     if (correctionOrder >= 1)
       multCorrGrads.shapeUninitialized(numDerivVars, numFns);
-    if (correctionOrder == 2)
+    if (correctionOrder == 2) {
       multCorrHessians.resize(numFns);
-    for (i=0; i<numFns; ++i) {
-      if (correctionOrder == 2)
+      for (i=0; i<numFns; ++i)
 	multCorrHessians[i].reshape(numDerivVars);
     }
   }

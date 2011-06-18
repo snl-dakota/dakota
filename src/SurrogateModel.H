@@ -216,6 +216,15 @@ private:
   /// flag indicating the need for multiplicative correction calculations
   bool computeMultiplicative;
 
+  /*
+  /// array of additive corrections; surrogate models of a model
+  /// discrepancy function (formed from model differences)
+  std::vector<Approximation> addCorrections;
+  /// array of multiplicative corrections; surrogate models of a model
+  /// discrepancy function (formed from model ratios)
+  std::vector<Approximation> multCorrections;
+  */
+
   /// 0th-order additive correction term: equals the difference between
   /// high and low fidelity model values at x=x_center.
   RealVector addCorrFns;
@@ -234,6 +243,7 @@ private:
   /// 2nd-order multiplicative correction term: equals the Hessian
   /// of the high/low function ratio at x=x_center.
   RealSymMatrixArray multCorrHessians;
+
   /// factors for combining additive and multiplicative corrections.
   /// Each factor is the weighting applied to the additive correction and
   /// 1.-factor is the weighting applied to the multiplicative correction.
