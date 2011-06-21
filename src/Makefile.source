@@ -166,7 +166,8 @@ ITERATOR_SRCS   = DakotaIterator.C                  \
 		  $(NLPQL_OPT_S)                    \
 		  $(NL2SOL_OPT_S)                   \
 		  $(NCSU_OPT_S)			    \
-		  $(DL_SOLVER_S)
+		  $(DL_SOLVER_S)		    \
+		  EfficientSubspaceMethod.C
 
 ## Possible later additions to ITERATOR_SRCS:
 ##		  $(SGOPT_OPT_S)                    \
@@ -301,4 +302,5 @@ include_HEADERS = ParallelLibrary.H             \
 		  $(DL_SOLVER_H)		\
 		  PRPMultiIndex.H         	\
 		  system_defs.h      		\
-	 	  DakotaBuildInfo.H              
+	 	  DakotaBuildInfo.H    		\
+		  EfficientSubspaceMethod.H         

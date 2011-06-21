@@ -28,7 +28,7 @@ namespace Dakota {
 
 RecastModel::
 RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
-	    bool nonlinear_vars_mapping,
+	    const SizetArray& vars_comps_total, bool nonlinear_vars_mapping,
 	    void (*variables_map)      (const Variables& recast_vars,
 					Variables& sub_model_vars),
 	    void (*set_map)            (const Variables& recast_vars,
@@ -88,14 +88,30 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   const Variables& sub_model_vars = subModel.current_variables();
   currentVariables = sub_model_vars.copy();
   // all current variables mappings are one-to-one -> no reshape needed
-  //if (variablesMapping) {
+  if (variablesMapping) {
     // varsMapIndices maps from currentVariables to subModel variables using
     // varsMapIndices[subModel vars id][currentVariables id] indexing
     //numDerivVars = ...; // unroll varsMapIndices arrays and count unique
-    //if (currentVariables.cv() != numDerivVars)
-    //  currentVariables.reshape(vc_totals);
-  //}
-  //else
+    if (sub_model_vars.cv() != varsMapIndices.size()) {
+      Cerr << "wrong mapping size" << std::endl;
+      abort_handler(-1);
+    }
+    // iterate over subModel variables and count unique recast variables
+    std::set<size_t> unique_recast_ids;
+    for (size_t sm_ind = 0; sm_ind < varsMapIndices.size(); ++sm_ind)
+      for (size_t recast_ind = 0; recast_ind < varsMapIndices[sm_ind].size(); ++ recast_ind)
+	unique_recast_ids.insert(varsMapIndices[sm_ind][recast_ind]);
+    numDerivVars = unique_recast_ids.size();
+
+    Cout << "numDerivVars = " << numDerivVars << std::endl;
+
+    SizetArray vc_totals(12, 0);
+    vc_totals[3] = 2;
+
+    if (currentVariables.cv() != numDerivVars)
+      currentVariables.reshape(vc_totals);
+  }
+  else
     numDerivVars = currentVariables.cv();
 
   // recasting of response

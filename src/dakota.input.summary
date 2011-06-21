@@ -1078,6 +1078,7 @@ KEYWORD12 method
 	  | converge_qoi
 	  [ refinement_rate REAL ]
 	  )
+	| efficient_subspace
 
 KEYWORD model
 	[ id_model STRING ]

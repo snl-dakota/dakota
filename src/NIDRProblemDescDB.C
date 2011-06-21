@@ -4096,6 +4096,7 @@ static Method_mp_lit
 	MP2(methodName,dot_slp),
 	MP2(methodName,dot_sqp),
 	MP2(methodName,efficient_global),
+	MP2(methodName,efficient_subspace),
 	MP2(methodName,fsu_cvt),
 	MP2(methodName,fsu_halton),
 	MP2(methodName,fsu_hammersley),

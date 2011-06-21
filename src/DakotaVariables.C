@@ -248,6 +248,8 @@ Variables::get_view(const ProblemDescDB& problem_db) const
     else // stoch exp and reliability methods
       view.first = MIXED_DISTINCT_ALEATORY_UNCERTAIN;    // active
   }
+  else if (method_name == "efficient_subspace")
+    view.first = MIXED_DISTINCT_ALEATORY_UNCERTAIN;    // active
   else if (method_name == "richardson_extrap")
     view.first = MIXED_DISTINCT_STATE;                   // active
   else
