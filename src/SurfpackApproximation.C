@@ -9,7 +9,7 @@
 //- Class:        SurfpackApproximation
 //- Description:  Class implementation of Surfpack response surface 
 //-               
-//- Owner:        Mark Richards, Sandia National Laboratories
+//- Owner:        Brian Adams
 
 #include <stdexcept>
 #include <typeinfo>
@@ -365,40 +365,15 @@ SurfpackApproximation::~SurfpackApproximation()
 
 int SurfpackApproximation::min_coefficients() const
 {
-  if (approxType == "global_polynomial") {
-    // bypass eqConRHS in Surfpack PolynomialSurface::minPointsRequired()
-    switch (approxOrder) {
-    case 3:
-      return (numVars*(numVars*(numVars + 6) + 11) + 6)/6;
-      break;
-    case 2:
-      return (numVars+1)*(numVars+2)/2;
-      break;
-    case 1:
-      return numVars+1;
-      break;
-    default:
-      Cerr << "Error: bad approximation order for global polynomial in "
-	   << "SurfpackApproximation::min_coefficients()." << std::endl;
-      abort_handler(-1);
-    }
-  }
-  else {
-    assert(factory);
-    return factory->minPointsRequired();
-  }
+  assert(factory);
+  return factory->minPointsRequired();
 }
 
 
 int SurfpackApproximation::recommended_coefficients() const
 {
-  if (approxType == "global_polynomial") {
-    return min_coefficients();
-  }
-  else {
-    assert(factory);
-    return factory->recommendedNumPoints();
-  }
+  assert(factory);
+  return factory->recommendedNumPoints();
 }
 
 
@@ -427,8 +402,6 @@ void SurfpackApproximation::build()
       surfData = NULL;
     }
     surfData = surrogates_to_surf_data();
-     if (approxType == "global_polynomial")
-      checkForEqualityConstraints();
  
     // send any late updates to bounds (as in SBO); will overwrite existing
     if (!approxLowerBounds.empty()) {
@@ -590,11 +563,15 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
 {
   SurfData* surf_data = new SurfData();
 
-  // global_polynomials treat the anchor point specially as a
-  // constraint; other surrogates treat is as a regular data point
-  if (approxData.anchor() && approxType != "global_polynomial")
-    add_sdp_to_surfdata(approxData.anchor_variables(),
-			approxData.anchor_response(), *surf_data);
+  // some surrogates, e.g., global_polynomials and kriging, treat the anchor
+  // point specially as a constraint; other treat as a regular data point
+  if (approxData.anchor()) {
+    if (factory->supports_constraints())
+      add_anchor_to_surfdata(*surf_data);
+    else
+      add_sdp_to_surfdata(approxData.anchor_variables(),
+			  approxData.anchor_response(), *surf_data);
+  }
   // add the remaining surrogate data points
   size_t i, num_data_pts = approxData.size();
   const Pecos::SDVArray& sdv_array = approxData.variables_data();
@@ -608,71 +585,92 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
 
 /** If there is an anchor point, add an equality constraint for its response
     value.  Also add constraints for gradient and hessian, if applicable. */
-void SurfpackApproximation::checkForEqualityConstraints()
+void SurfpackApproximation::add_anchor_to_surfdata(SurfData& surf_data)
 {
-  assert(factory);
-  if (approxData.anchor()) {
-    // We will use logical OR to accumulate which constraints are present:
-    // 1 for a response value,
-    // 2 for a gradient vector,
-    // 4 for a hessian matrix
+  // Surfpack's RealArray is std::vector<double>
+  RealArray x; 
+  Real f;
+  RealArray gradient;
+  SurfpackMatrix<Real> hessian;
 
-    // Print out the continuous design variables
-    const RealVector& c_vars = approxData.anchor_continuous_variables();
-    if (outputLevel > NORMAL_OUTPUT) {
-      Cout << "Anchor point continuous vars\n";
-      write_data(Cout, c_vars);
-    }
-
-    // At a minimum, there should be a response value
-    int requested_constraints = 1;
-    const Real& response_value = approxData.anchor_function();
-    if (outputLevel > NORMAL_OUTPUT)
-      Cout << "Anchor response: " << response_value << '\n';
-
-    // Check for gradient in anchor point
-    const RealVector& anchor_grad = approxData.anchor_gradient();
-    RealArray gradient(anchor_grad.length());
-    std::copy( anchor_grad.values(), anchor_grad.values() + gradient.size(),
-               gradient.begin() );
-
-    // Print the gradient out, if present
-    if (!gradient.empty()) {
-      requested_constraints |= 2;
-      if (outputLevel > NORMAL_OUTPUT) {
-        Cout << "Anchor gradient:\n";
-        std::copy(gradient.begin(),gradient.end(),
-	          std::ostream_iterator<Real>(Cout," "));
-        Cout << '\n';
-      }
-    }
-    
-    // Check for hessian in anchor point
-    MtxDbl hessian;
-    const RealSymMatrix& anchor_hess = approxData.anchor_hessian();
-    if (!anchor_hess.empty()) {
-       requested_constraints |= 4;
-       hessian.reshape(anchor_hess.numRows(), anchor_hess.numCols());
-       ///\todo improve efficiency of conversion
-       for (size_t i = 0; i < anchor_hess.numRows();i++) {
-         for (size_t j = 0; j < anchor_hess.numCols();j++) {
-           if (outputLevel > NORMAL_OUTPUT)
-	     Cout << "hessian(" << i << ',' << j << "): " << anchor_hess(i,j)
-		  << ' ';
-           hessian(i,j) = anchor_hess(i,j);
-         }
-         if (outputLevel > NORMAL_OUTPUT)
-	   Cout << '\n';
-       }
-    }
-    RealArray x; //std::vector<double>
-    copy_data(c_vars, x);
-    SurfPoint sp(x, response_value);
-    if (outputLevel > NORMAL_OUTPUT)
-      Cout << "Requested contraints vector: " << requested_constraints << '\n';
-    dynamic_cast<LinearRegressionModelFactory*>(factory)->setEqualityConstraints
-      (requested_constraints, sp, response_value, &gradient, &hessian);
+  // Print out the continuous design variables
+  const RealVector& c_vars = approxData.anchor_continuous_variables();
+  if (outputLevel > NORMAL_OUTPUT) {
+    Cout << "Anchor point continuous vars\n";
+    write_data(Cout, c_vars);
   }
+  copy_data(c_vars, x);
+
+  // At a minimum, there should be a response value
+  unsigned short anchor_data_order = 1;
+  f = approxData.anchor_function();
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "Anchor response: " << f << '\n';
+
+  // Check for gradient in anchor point
+  const RealVector& anchor_grad = approxData.anchor_gradient();
+  // Print the gradient out, if present
+  if (!anchor_grad.empty()) {
+    anchor_data_order |= 2;
+    copy_data(anchor_grad, gradient);
+    if (outputLevel > NORMAL_OUTPUT) {
+      Cout << "Anchor gradient:\n";
+      std::copy(gradient.begin(),gradient.end(),
+		std::ostream_iterator<Real>(Cout," "));
+      Cout << '\n';
+    }
+  }
+    
+  // Check for hessian in anchor point
+  const RealSymMatrix& anchor_hess = approxData.anchor_hessian();
+  if (!anchor_hess.empty()) {
+    anchor_data_order |= 4;
+    hessian.reshape(anchor_hess.numRows(), anchor_hess.numCols());
+    ///\todo improve efficiency of conversion
+    for (size_t i = 0; i < anchor_hess.numRows();i++) {
+      for (size_t j = 0; j < anchor_hess.numCols();j++) {
+	if (outputLevel > NORMAL_OUTPUT)
+	  Cout << "hessian(" << i << ',' << j << "): " << anchor_hess(i,j)
+	       << ' ';
+	hessian(i,j) = anchor_hess(i,j);
+      }
+      if (outputLevel > NORMAL_OUTPUT)
+	Cout << '\n';
+    }
+  }
+   
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "Requested contraint data order is " << anchor_data_order
+	 << '\n';
+  
+  // for now only allow builds from exactly 1, 3=1+2, or 7=1+2+4; use
+  // different set functions so the SurfPoint data remains empty if
+  // not present
+  switch (anchor_data_order) {
+
+  case 1:
+    surf_data.setConstraintPoint(SurfPoint(x, f));
+    break;
+
+  case 3:
+    surf_data.setConstraintPoint(SurfPoint(x, f, gradient));
+    break;
+
+  case 7:
+    {
+      surf_data.setConstraintPoint(SurfPoint(x, f, gradient, hessian));
+      break;
+    }
+
+  default:
+    Cerr << "\nError (SurfpackApproximation): derivative data may only be used"
+	 << "if all\nlower-order information is also present. Specified "
+	 << "anchor_data_order is " << anchor_data_order << "."  << std::endl; 
+    abort_handler(-1);
+    break;
+
+  }
+
 }
 
 

@@ -9,7 +9,7 @@
 //- Class:        SurfpackApproximation 
 //- Description:  Class for polynomial response surface approximation
 //-               
-//- Owner:        Mark Richards, Sandia National Laboratories
+//- Owner:        Brian Adams, Sandia National Laboratories
  
 
 #ifndef SURFPACK_APPROXIMATION_H 
@@ -96,12 +96,12 @@ private:
   //- Heading: Convenience functions
   //
 
-  /// If anchor_point is present, create equality constraints from a particular
-  /// point, gradient, and/or hessian
-  void checkForEqualityConstraints();
-
   /// copy from SurrogateData to SurfPoint/SurfData
   SurfData* surrogates_to_surf_data();
+
+  /// set the anchor point (including gradient and hessian if present)
+  /// into surf_data
+  void add_anchor_to_surfdata(SurfData& surf_data);
 
   /// add Pecos::SurrogateData::SurrogateData{Vars,Resp} to SurfData,
   /// accounting for buildDataOrder available
