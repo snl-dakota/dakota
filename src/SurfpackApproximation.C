@@ -573,6 +573,9 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
 			  approxData.anchor_response(), *surf_data);
   }
   // add the remaining surrogate data points
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Requested build data order is " << buildDataOrder
+	 << '\n';
   size_t i, num_data_pts = approxData.size();
   const Pecos::SDVArray& sdv_array = approxData.variables_data();
   const Pecos::SDRArray& sdr_array = approxData.response_data();
@@ -640,7 +643,7 @@ void SurfpackApproximation::add_anchor_to_surfdata(SurfData& surf_data)
   }
    
   if (outputLevel > NORMAL_OUTPUT)
-    Cout << "Requested contraint data order is " << anchor_data_order
+    Cout << "Requested constraint data order is " << anchor_data_order
 	 << '\n';
   
   // for now only allow builds from exactly 1, 3=1+2, or 7=1+2+4; use
