@@ -41,11 +41,8 @@ public:
   //
 
   /// standard constructor
-  /// vars_comps_total indicates the count of each type of variable in the
-  /// RecastModel
-  // TODO: extend to split construct/intialize case
   RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
-	      const SizetArray& vars_comps_total, bool nonlinear_vars_mapping,
+	      bool nonlinear_vars_mapping,
 	      void (*variables_map)      (const Variables& recast_vars,
 					  Variables& sub_model_vars),
 	      void (*set_map)            (const Variables& recast_vars,

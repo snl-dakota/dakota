@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 890 distinct keywords (plus 103 aliases) **/
+/** 889 distinct keywords (plus 103 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -915,7 +915,7 @@ static KeyWord
 		{"num_steps",9,0,2,2,0,0.,0.,0,N_mdm(int,numSteps)},
 		{"step_vector",14,0,1,1,0,0.,0.,0,N_mdm(RealDL,stepVector)}
 		},
-	kw_162[76] = {
+	kw_162[75] = {
 		{"asynch_pattern_search",8,9,11,1,kw_13,0.,0.,0,N_mdm(lit,methodName_asynch_pattern_search)},
 		{"bayes_calibration",8,10,11,1,kw_23,0.,0.,0,N_mdm(lit,methodName_nond_bayes_calibration)},
 		{"centered_parameter_study",8,3,11,1,kw_24,0.,0.,0,N_mdm(lit,methodName_centered_parameter_study)},
@@ -938,7 +938,6 @@ static KeyWord
 		{"dot_slp",8,0,11,1,kw_48,0.,0.,0,N_mdm(lit,methodName_dot_slp)},
 		{"dot_sqp",8,0,11,1,kw_48,0.,0.,0,N_mdm(lit,methodName_dot_sqp)},
 		{"efficient_global",8,1,11,1,kw_49,0.,0.,0,N_mdm(lit,methodName_efficient_global)},
-		{"efficient_subspace",8,0,11,1,0,0.,0.,0,N_mdm(lit,methodName_efficient_subspace)},
 		{"final_solutions",0x29,0,10,0,0,0.,0.,0,N_mdm(nnintz,numFinalSolutions)},
 		{"fsu_cvt",8,6,11,1,kw_52,0.,0.,0,N_mdm(lit,methodName_fsu_cvt)},
 		{"fsu_quasi_mc",8,10,11,1,kw_54},
@@ -960,7 +959,7 @@ static KeyWord
 		{"nl2sol",8,9,11,1,kw_108,0.,0.,0,N_mdm(lit,methodName_nl2sol)},
 		{"nlpql_sqp",8,9,11,1,kw_10,0.,0.,0,N_mdm(lit,methodName_nlpql_sqp)},
 		{"nlssol_sqp",8,0,11,1,kw_138,0.,0.,0,N_mdm(lit,methodName_nlssol_sqp)},
-		{"nond_bayes_calibration",0,10,11,1,kw_23,0.,0.,-43,N_mdm(lit,methodName_nond_bayes_calibration)},
+		{"nond_bayes_calibration",0,10,11,1,kw_23,0.,0.,-42,N_mdm(lit,methodName_nond_bayes_calibration)},
 		{"nond_global_evidence",0,3,11,1,kw_63,0.,0.,-19,N_mdm(lit,methodName_nond_global_evidence)},
 		{"nond_global_interval_est",0,3,11,1,kw_66,0.,0.,-19,N_mdm(lit,methodName_nond_global_interval_est)},
 		{"nond_global_reliability",0,7,11,1,kw_74,0.,0.,-19,N_mdm(lit,methodName_nond_global_reliability)},
@@ -1554,7 +1553,7 @@ static KeyWord
 		},
 	kw_245[6] = {
 		{"interface",0x308,10,5,5,kw_9,0.,0.,0,N_ifm3(start,0,stop)},
-		{"method",0x308,76,2,2,kw_162,0.,0.,0,N_mdm3(start,0,stop)},
+		{"method",0x308,75,2,2,kw_162,0.,0.,0,N_mdm3(start,0,stop)},
 		{"model",8,6,3,3,kw_186,0.,0.,0,N_mom3(start,0,stop)},
 		{"responses",0x308,15,6,6,kw_203,0.,0.,0,N_rem3(start,0,stop)},
 		{"strategy",0x108,10,1,1,kw_214,0.,0.,0,NIDRProblemDescDB::strategy_start},

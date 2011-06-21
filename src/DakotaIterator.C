@@ -33,7 +33,6 @@
 #include "EffGlobalMinimizer.H"
 #include "NonlinearCGOptimizer.H"
 #include "NIDR_initdefs.h"
-#include "EfficientSubspaceMethod.H"
 #ifdef DAKOTA_DDACE
 #include "DDACEDesignCompExp.H"
 #endif
@@ -443,9 +442,6 @@ Iterator* Iterator::get_iterator(Model& model)
   else if (method_name == "ncsu_direct")
     return new NCSUOptimizer(model);
 #endif
-  else if (method_name == "efficient_subspace")
-    // TODO: FIX ME
-    return new EfficientSubspaceMethod(model);
   else {
     Cerr << "Invalid iterator: " << method_name << " not available."
 	 << std::endl;

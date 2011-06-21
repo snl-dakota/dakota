@@ -123,9 +123,6 @@ void MixedVariables::reshape(const SizetArray& vc_totals)
   allDiscreteIntVars.resize(num_adiv);
   allDiscreteRealVars.resize(num_adrv);
 
-  const std::pair< short, short >& view = sharedVarsData.view();
-  sharedVarsData = SharedVariablesData(view, vc_totals);
-
   build_views(); // construct active/inactive views of all arrays
 }
 

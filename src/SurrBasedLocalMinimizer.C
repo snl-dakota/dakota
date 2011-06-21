@@ -101,7 +101,6 @@ SurrBasedLocalMinimizer::SurrBasedLocalMinimizer(Model& model):
       0 : numNonlinearConstraints;
     Sizet2DArray recast_vars_map, recast_primary_resp_map(num_recast_primary),
       recast_secondary_resp_map(num_recast_secondary);
-    SizetArray recast_vars_comps_total; // default: no change in size
     BoolDequeArray nonlinear_resp_map(num_recast_primary+num_recast_secondary);
     if (approxSubProbObj == ORIGINAL_PRIMARY) {
       for (i=0; i<num_recast_primary; i++) {
@@ -141,8 +140,7 @@ SurrBasedLocalMinimizer::SurrBasedLocalMinimizer(Model& model):
     size_t recast_offset
       = (approxSubProbCon == NO_CONSTRAINTS) ? 0 : numNonlinearIneqConstraints;
     approxSubProbModel.assign_rep(new RecastModel(iteratedModel,
-      recast_vars_map, recast_vars_comps_total, false, NULL, NULL, 
-      recast_primary_resp_map,
+      recast_vars_map, false, NULL, NULL, recast_primary_resp_map,
       recast_secondary_resp_map, recast_offset, nonlinear_resp_map,
       approx_subprob_objective_eval, approx_subprob_constraint_eval), false);
   }

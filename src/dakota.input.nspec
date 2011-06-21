@@ -766,9 +766,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  | converge_qoi {N_mdm(lit,subMethodName_converge_qoi)}
 	  [ refinement_rate REAL {N_mdm(Real,refinementRate)} ]
 	  )
-	|
-	( efficient_subspace {N_mdm(lit,methodName_efficient_subspace)}
-      	  )
 
 KEYWORD model {N_mom3(start,0,stop)}
 	[ id_model STRING {N_mom(str,idModel)} ]

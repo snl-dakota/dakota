@@ -131,7 +131,7 @@ sub process_tags_dox {
     }
 
     # Initialize variables                                                                                                                   
-    my $htmlroot = "http://dakota.sandia.gov/licensing/votd/html-ref/";
+    my $htmlroot = "http://www.cs.sandia.gov/dakota/licensing/votd/html-ref/";
     my $pageroot;
     my $category;
     my $lower_cat;
