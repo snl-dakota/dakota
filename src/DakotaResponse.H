@@ -19,11 +19,7 @@
 #include "data_types.h"
 #include "DakotaActiveSet.H"
 #include "Teuchos_SerialDenseHelpers.hpp"
-#ifdef DAKOTA_HAVE_BOOST_REGEX
 #include <boost/regex.hpp>
-#else
-#include "CtelRegExp.H"
-#endif // DAKOTA_HAVE_BOOST_REGEX
 
 namespace Dakota {
 
@@ -672,7 +668,6 @@ inline bool operator!=(const Response& resp1, const Response& resp2)
 
 
 /// Global utility function to ease migration from CtelRegExp to Boost.Regex
-#ifdef DAKOTA_HAVE_BOOST_REGEX
 inline std::string re_match(const std::string& token, const boost::regex& re)
 {
   std::string str_match;
@@ -682,10 +677,6 @@ inline std::string re_match(const std::string& token, const boost::regex& re)
   }
   return str_match;
 }
-#else
-inline std::string re_match(const std::string& token, CtelRegexp& re)
-{ return re.match(token); }
-#endif // DAKOTA_HAVE_BOOST_REGEX
 
 } // namespace Dakota
 

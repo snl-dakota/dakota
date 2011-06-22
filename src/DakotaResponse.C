@@ -16,10 +16,7 @@
 #include "ProblemDescDB.H"
 #include "data_io.h"
 #include <algorithm>
-// WJB - ToDo: fix up autotools build of Boost.regex and eliminate conditional
-#ifdef DAKOTA_HAVE_BOOST_REGEX
 #include <boost/regex.hpp>
-#endif // DAKOTA_HAVE_BOOST_REGEX
 
 static const char rcsId[]="@(#) $Id: DakotaResponse.C 7029 2010-10-22 00:17:02Z mseldre $";
 
@@ -317,11 +314,7 @@ void ResponseRep::read(std::istream& s)
 
   // Get fn. values as governed by ASV requests
   std::string token;
-#ifdef DAKOTA_HAVE_BOOST_REGEX
   boost::regex reg_exp("[\\+-]?[0-9]*\\.?[0-9]+\\.?[0-9]*[eEdD]?[\\+-]?[0-9]*|[Nn][Aa][Nn]|[\\+-]?[Ii][Nn][Ff]([Ii][Nn][Ii][Tt][Yy])?");
-#else
-  CtelRegexp reg_exp("[\\+-]?[0-9]*\\.?[0-9]+\\.?[0-9]*[eEdD]?[\\+-]?[0-9]*|[Nn][Aa][Nn]|[\\+-]?[Ii][Nn][Ff]([Ii][Nn][Ii][Tt][Yy])?");
-#endif // DAKOTA_HAVE_BOOST_REGEX
   const ShortArray& asv = responseActiveSet.request_vector();
   size_t num_fns = asv.size();
   for (i=0; i<num_fns; i++) {

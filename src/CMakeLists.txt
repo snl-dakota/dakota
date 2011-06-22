@@ -19,9 +19,6 @@ if (BOOST_DISABLE_ASSERTS)
   add_definitions("-DBOOST_DISABLE_ASSERTS")
 endif (BOOST_DISABLE_ASSERTS)
 
-# WJB: To complete migration to Boost.Regex, the autotools build be updated.
-#      Once complete, there is NO NEED for a DAK_HAVE_BOOST_REGEX conditional.
-add_definitions("-DDAKOTA_HAVE_BOOST_REGEX")
 find_package(Boost COMPONENTS regex)
 
 option(DAKOTA_HAVE_BOOST_FS "Toggle FS support, default is BostFS disabled" OFF)
@@ -154,8 +151,7 @@ set(Dakota_src DakotaBuildInfo.C)
 ## UTIL sources.
 set(util_src ParallelLibrary.C MPIPackBuffer.C
     data_util.C global_defs.C CommandLineHandler.C DakotaGraphics.C
-    DakotaString.C DakotaBinStream.C CtelRegExp.C regexp.c
-    SensAnalysisGlobal.C)
+    DakotaString.C DakotaBinStream.C SensAnalysisGlobal.C)
 
 if(HAVE_RPC_XDR_H)
   list(APPEND util_src dak_xdr_interface.c)

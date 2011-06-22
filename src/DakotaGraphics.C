@@ -16,9 +16,6 @@
 #include "Graphics.H"
 #endif // HAVE_X_GRAPHICS
 #include "data_io.h"
-#ifndef DAKOTA_HAVE_BOOST_REGEX
-// WJB - algreadyIncluded viaResponse POUNDinclude "CtelRegExp.H"
-#endif // !DAKOTA_HAVE_BOOST_REGEX
 #include "DakotaVariables.H"
 #include "DakotaResponse.H"
 
@@ -72,15 +69,9 @@ void Graphics::create_plots_2d(const Variables& vars, const Response& response)
   char title[25];
   // Since the user can specify arbitrary response labels, regular
   // expression matching is preferable to using label.contains().
-#ifdef DAKOTA_HAVE_BOOST_REGEX
   boost::regex obj_re("obj_fn_[1-9][0-9]*"),lsq_re("least_sq_term_[1-9][0-9]*"),
     resp_re(   "response_fn_[1-9][0-9]*"), ineq_re( "nln_ineq_con_[1-9][0-9]*"),
     eq_re(      "nln_eq_con_[1-9][0-9]*");
-#else
-  CtelRegexp obj_re("obj_fn_[1-9][0-9]*"),  lsq_re("least_sq_term_[1-9][0-9]*"),
-    resp_re(   "response_fn_[1-9][0-9]*"), ineq_re( "nln_ineq_con_[1-9][0-9]*"),
-    eq_re(      "nln_eq_con_[1-9][0-9]*");
-#endif // DAKOTA_HAVE_BOOST_REGEX
   for (i=0; i<num_fns; ++i) {
     const std::string& label = fn_labels[i];
     if (label == "obj_fn") {
@@ -119,19 +110,11 @@ void Graphics::create_plots_2d(const Variables& vars, const Response& response)
     num_dssrv = 0;
   // Since the user can specify arbitrary variable labels, regular
   // expression matching is preferable to using label.contains().
-#ifdef DAKOTA_HAVE_BOOST_REGEX
   boost::regex  cdv_re(  "cdv_[1-9][0-9]*"), ddriv_re("ddriv_[1-9][0-9]*"),
               ddsiv_re("ddsiv_[1-9][0-9]*"), ddsrv_re("ddsrv_[1-9][0-9]*"),
                  uv_re(   "uv_[1-9][0-9]*"),  csv_re(   "csv_[1-9][0-9]*"),
               dsriv_re("dsriv_[1-9][0-9]*"), dssiv_re("dssiv_[1-9][0-9]*"),
               dssrv_re("dssrv_[1-9][0-9]*"); // TO DO
-#else
-  CtelRegexp  cdv_re(  "cdv_[1-9][0-9]*"), ddriv_re("ddriv_[1-9][0-9]*"),
-            ddsiv_re("ddsiv_[1-9][0-9]*"), ddsrv_re("ddsrv_[1-9][0-9]*"),
-               uv_re(   "uv_[1-9][0-9]*"),  csv_re(   "csv_[1-9][0-9]*"),
-            dsriv_re("dsriv_[1-9][0-9]*"), dssiv_re("dssiv_[1-9][0-9]*"),
-            dssrv_re("dssrv_[1-9][0-9]*"); // TO DO
-#endif // DAKOTA_HAVE_BOOST_REGEX
   for(i=0; i<num_cv; ++i) {
     const std::string& label = cv_labels[i];
     if (label == re_match(label, cdv_re))

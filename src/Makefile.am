@@ -60,10 +60,13 @@ if WITH_PYTHON
 LOCALLDADD += $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LIBS)
 endif
 
-if WITH_ACRO
 LOCALLDFLAGS += @BOOST_LDFLAGS@
+
+if WITH_ACRO
 LOCALLDADD += -lboost_signals
 endif
+
+LOCALLDADD += -lboost_regex
 
 ## The sense of NIDR's DYNLIB flag is opposite: if no DL_SOLVER, use the 
 ## pre-processor to turn off NIDR's dynamic loading capability
@@ -183,3 +186,4 @@ dakreord_LDFLAGS = $(LOCALLDFLAGS)
 dakreord_LDADD = $(NIDR_ARCHIVE) -ldl
 
 endif
+

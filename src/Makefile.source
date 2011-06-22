@@ -42,8 +42,6 @@ UTIL_SRCS       = ParallelLibrary.C                 \
 		  DakotaGraphics.C                  \
 		  DakotaString.C                    \
 		  DakotaBinStream.C                 \
-		  CtelRegExp.C                      \
-		  regexp.c                          \
                   SensAnalysisGlobal.C           	
 
 EVALDATA_SRCS   = DakotaVariables.C                 \
@@ -186,8 +184,6 @@ include_HEADERS = ParallelLibrary.H             \
 		  DakotaGraphics.H              \
 		  DakotaString.H                \
 		  DakotaBinStream.H             \
-		  CtelRegExp.H                  \
-		  regexp.h                      \
                   SensAnalysisGlobal.H          \
 		  DakotaVariables.H             \
 		  MergedVariables.H             \
