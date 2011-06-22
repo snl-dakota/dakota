@@ -143,25 +143,28 @@ protected:
   /// builds the subModel approximation
   void build_approximation();
   /// builds the subModel approximation
-  bool build_approximation(const Variables& vars, const Response& response);
+  bool build_approximation(const Variables& vars,
+			   const IntResponsePair& response_pr);
 
   /// replaces data in the subModel approximation
   void update_approximation(bool rebuild_flag);
   /// replaces data in the subModel approximation
-  void update_approximation(const Variables& vars, const Response& response,
+  void update_approximation(const Variables& vars,
+			    const IntResponsePair& response_pr,
 			    bool rebuild_flag);
   /// replaces data in the subModel approximation
   void update_approximation(const VariablesArray& vars_array,
-			    const ResponseArray& resp_array, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag);
 
   /// appends data to the subModel approximation
   void append_approximation(bool rebuild_flag);
   /// appends data to the subModel approximation
-  void append_approximation(const Variables& vars, const Response& response,
+  void append_approximation(const Variables& vars,
+			    const IntResponsePair& response_pr,
 			    bool rebuild_flag);
   /// appends data to the subModel approximation
   void append_approximation(const VariablesArray& vars_array,
-			    const ResponseArray& resp_array, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag);
 
   void pop_approximation(bool save_surr_data);
   void restore_approximation();
@@ -387,8 +390,8 @@ inline void RecastModel::build_approximation()
 
 
 inline bool RecastModel::
-build_approximation(const Variables& vars, const Response& response)
-{ return subModel.build_approximation(vars, response); }
+build_approximation(const Variables& vars, const IntResponsePair& response_pr)
+{ return subModel.build_approximation(vars, response_pr); }
 
 
 inline void RecastModel::update_approximation(bool rebuild_flag)
@@ -396,15 +399,15 @@ inline void RecastModel::update_approximation(bool rebuild_flag)
 
 
 inline void RecastModel::
-update_approximation(const Variables& vars, const Response& response,
+update_approximation(const Variables& vars, const IntResponsePair& response_pr,
 		     bool rebuild_flag)
-{ subModel.update_approximation(vars, response, rebuild_flag); }
+{ subModel.update_approximation(vars, response_pr, rebuild_flag); }
 
 
 inline void RecastModel::
 update_approximation(const VariablesArray& vars_array,
-		     const ResponseArray& resp_array, bool rebuild_flag)
-{ subModel.update_approximation(vars_array, resp_array, rebuild_flag); }
+		     const IntResponseMap& resp_map, bool rebuild_flag)
+{ subModel.update_approximation(vars_array, resp_map, rebuild_flag); }
 
 
 inline void RecastModel::append_approximation(bool rebuild_flag)
@@ -412,15 +415,15 @@ inline void RecastModel::append_approximation(bool rebuild_flag)
 
 
 inline void RecastModel::
-append_approximation(const Variables& vars, const Response& response,
+append_approximation(const Variables& vars, const IntResponsePair& response_pr,
 		     bool rebuild_flag)
-{ subModel.append_approximation(vars, response, rebuild_flag); }
+{ subModel.append_approximation(vars, response_pr, rebuild_flag); }
 
 
 inline void RecastModel::
 append_approximation(const VariablesArray& vars_array,
-		     const ResponseArray& resp_array, bool rebuild_flag)
-{ subModel.append_approximation(vars_array, resp_array, rebuild_flag); }
+		     const IntResponseMap& resp_map, bool rebuild_flag)
+{ subModel.append_approximation(vars_array, resp_map, rebuild_flag); }
 
 
 inline void RecastModel::pop_approximation(bool save_surr_data)

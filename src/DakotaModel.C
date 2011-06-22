@@ -2447,17 +2447,17 @@ void Model::build_approximation()
 
 
 bool Model::
-build_approximation(const Variables& vars, const Response& response)
+build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
-         << "(Variables, Response) function.\nThis model does not support "
-            "constrained approximation construction." << std::endl;
+         << "(Variables, IntResponsePair) function.\nThis model does not "
+	 << "support constrained approximation construction." << std::endl;
     abort_handler(-1);
   }
 
   // envelope fwd to letter
-  return modelRep->build_approximation(vars, response);
+  return modelRep->build_approximation(vars, response_pr);
 }
 
 
@@ -2475,15 +2475,15 @@ void Model::update_approximation(bool rebuild_flag)
 
 
 void Model::
-update_approximation(const Variables& vars, const Response& response,
+update_approximation(const Variables& vars, const IntResponsePair& response_pr,
 		     bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->update_approximation(vars, response, rebuild_flag);
+    modelRep->update_approximation(vars, response_pr, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-         << "(Variables, Response) function.\nThis model does not support "
-	 << "approximation updating." << std::endl;
+         << "(Variables, IntResponsePair) function.\nThis model does not "
+	 << "support approximation updating." << std::endl;
     abort_handler(-1);
   }
 }
@@ -2491,13 +2491,13 @@ update_approximation(const Variables& vars, const Response& response,
 
 void Model::
 update_approximation(const VariablesArray& vars_array,
-		     const ResponseArray& resp_array, bool rebuild_flag)
+		     const IntResponseMap& resp_map, bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->update_approximation(vars_array, resp_array, rebuild_flag);
+    modelRep->update_approximation(vars_array, resp_map, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-         << "(VariablesArray, ResponseArray) function.\nThis model does not "
+         << "(VariablesArray, IntResponseMap) function.\nThis model does not "
             "support approximation updating." << std::endl;
     abort_handler(-1);
   }
@@ -2518,15 +2518,15 @@ void Model::append_approximation(bool rebuild_flag)
 
 
 void Model::
-append_approximation(const Variables& vars, const Response& response,
+append_approximation(const Variables& vars, const IntResponsePair& response_pr,
 		     bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(vars, response, rebuild_flag);
+    modelRep->append_approximation(vars, response_pr, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-         << "(Variables, Response) function.\nThis model does not support "
-	 << "approximation appending." << std::endl;
+         << "(Variables, IntResponsePair) function.\nThis model does not "
+	 << "support approximation appending." << std::endl;
     abort_handler(-1);
   }
 }
@@ -2534,13 +2534,13 @@ append_approximation(const Variables& vars, const Response& response,
 
 void Model::
 append_approximation(const VariablesArray& vars_array,
-		     const ResponseArray& resp_array, bool rebuild_flag)
+		     const IntResponseMap& resp_map, bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->append_approximation(vars_array, resp_array, rebuild_flag);
+    modelRep->append_approximation(vars_array, resp_map, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-         << "(VariablesArray, ResponseArray) function.\nThis model does not "
+         << "(VariablesArray, IntResponseMap) function.\nThis model does not "
             "support approximation appending." << std::endl;
     abort_handler(-1);
   }

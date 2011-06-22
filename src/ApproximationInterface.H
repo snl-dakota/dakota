@@ -73,18 +73,18 @@ protected:
   void approximation_function_indices(const IntSet& approx_fn_indices);
 
   void update_approximation(const Variables& vars,
-			    const Response& response);
+			    const IntResponsePair& response_pr);
   void update_approximation(const RealMatrix& samples,
-			    const ResponseArray& resp_array);
+			    const IntResponseMap& resp_map);
   void update_approximation(const VariablesArray& vars_array,
-			    const ResponseArray& resp_array);
+			    const IntResponseMap& resp_map);
 
   void append_approximation(const Variables& vars,
-			    const Response& response);
+			    const IntResponsePair& response_pr);
   void append_approximation(const RealMatrix& samples,
-			    const ResponseArray& resp_array);
+			    const IntResponseMap& resp_map);
   void append_approximation(const VariablesArray& vars_array,
-			    const ResponseArray& resp_array);
+			    const IntResponseMap& resp_map);
 
   void build_approximation(const RealVector& lower_bnds,
 			   const RealVector& upper_bnds);
@@ -94,11 +94,6 @@ protected:
   void restore_approximation();
   bool restore_available();
   void finalize_approximation();
-
-  void cache_data(const Variables& vars, const Response& response);
-  void cache_data(const RealMatrix& samples, const ResponseArray& resp_array);
-  void cache_data(const VariablesArray& vars_array,
-		  const ResponseArray& resp_array);
 
   void clear_current();
   void clear_all();

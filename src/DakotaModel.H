@@ -110,7 +110,7 @@ public:
   /// build a new SurrogateModel approximation using/enforcing
   /// response at vars
   virtual bool build_approximation(const Variables& vars,
-				   const Response& response);
+				   const IntResponsePair& response_pr);
 
 
   /// replace the approximation data within an existing surrogate
@@ -118,11 +118,11 @@ public:
   virtual void update_approximation(bool rebuild_flag);
   /// replace the anchor point data within an existing surrogate
   virtual void update_approximation(const Variables& vars, 
-				    const Response& response,
+				    const IntResponsePair& response_pr,
 				    bool rebuild_flag);
   /// replace the data points within an existing surrogate
   virtual void update_approximation(const VariablesArray& vars_array,
-				    const ResponseArray& resp_array,
+				    const IntResponseMap& resp_map,
 				    bool rebuild_flag);
 
   /// append to the existing approximation data within a surrogate
@@ -130,11 +130,11 @@ public:
   virtual void append_approximation(bool rebuild_flag);
   /// append a single point to an existing surrogate's data
   virtual void append_approximation(const Variables& vars, 
-				    const Response& response,
+				    const IntResponsePair& response_pr,
 				    bool rebuild_flag);
   /// append multiple points to an existing surrogate's data
   virtual void append_approximation(const VariablesArray& vars_array,
-				    const ResponseArray& resp_array,
+				    const IntResponseMap& resp_map,
 				    bool rebuild_flag);
 
   /// remove the previous data set addition to a surrogate (e.g., due

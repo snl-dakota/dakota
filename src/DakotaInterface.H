@@ -134,23 +134,23 @@ public:
 
   /// updates the anchor point for an approximation
   virtual void update_approximation(const Variables& vars,
-				    const Response& response);
+				    const IntResponsePair& response_pr);
   /// updates the current data points for an approximation
   virtual void update_approximation(const RealMatrix& samples,
-				    const ResponseArray& resp_array);
+				    const IntResponseMap& resp_map);
   /// updates the current data points for an approximation
   virtual void update_approximation(const VariablesArray& vars_array,
-				    const ResponseArray& resp_array);
+				    const IntResponseMap& resp_map);
 
   /// appends a single point to an existing approximation
   virtual void append_approximation(const Variables& vars,
-				    const Response& response);
+				    const IntResponsePair& response_pr);
   /// appends multiple points to an existing approximation
   virtual void append_approximation(const RealMatrix& samples,
-				    const ResponseArray& resp_array);
+				    const IntResponseMap& resp_map);
   /// appends multiple points to an existing approximation
   virtual void append_approximation(const VariablesArray& vars_array,
-				    const ResponseArray& resp_array);
+				    const IntResponseMap& resp_map);
 
   /// builds the approximation
   virtual void build_approximation(const RealVector& lower_bnds,
@@ -169,18 +169,6 @@ public:
 
   /// finalizes the approximation by applying all trial increments
   virtual void finalize_approximation();
-
-  /// inserts a truth data point into the global data_pairs cache so that it
-  /// has persistence, enabling shallow copies within Approximation::approxData
-  virtual void cache_data(const Variables& vars, const Response& response);
-  /// inserts a truth data array into the global data_pairs cache so that it
-  /// has persistence, enabling shallow copies within Approximation::approxData
-  virtual void cache_data(const RealMatrix& samples,
-			  const ResponseArray& resp_array);
-  /// inserts a truth data array into the global data_pairs cache so that it
-  /// has persistence, enabling shallow copies within Approximation::approxData
-  virtual void cache_data(const VariablesArray& vars_array,
-			  const ResponseArray& resp_array);
 
   /// clears current data from an approximation interface
   virtual void clear_current();

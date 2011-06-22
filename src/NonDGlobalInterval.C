@@ -308,7 +308,8 @@ void NonDGlobalInterval::post_process_gp_results()
       { set.request_values(0); set.request_value(respFnCntr, dataOrder); }
 
     iteratedModel.compute_response(set);
-    const Response& resp_star_truth = iteratedModel.current_response();
+    IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),
+				    iteratedModel.current_response());
 
     // Update the GP approximation
     fHatModel.append_approximation(vars_star, resp_star_truth, true);

@@ -66,11 +66,10 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
   // protected fn only called by letter classes.
 
   // allVariables or allSamples defines the set of fn evals to be performed
-  size_t i, num_evals = (compactMode) ?
-    allSamples.numCols() : allVariables.size();
+  size_t i, num_evals
+    = (compactMode) ? allSamples.numCols() : allVariables.size();
   bool header_flag = (allHeaders.size() == num_evals);
-  if (log_resp_flag && !asynchFlag)
-    allResponses.resize(num_evals);
+  if (!asynchFlag && log_resp_flag) allResponses.clear();
 
   // Loop over parameter sets and compute responses.  Collect data
   // and track best evaluations based on flags.
@@ -90,10 +89,11 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
     else {
       model.compute_response(activeSet);
       const Response& resp = model.current_response();
+      int eval_id = model.evaluation_id();
       if (log_best_flag) // update best variables/response
-        update_best(model.current_variables(), model.evaluation_id(), resp);
+        update_best(model.current_variables(), eval_id, resp);
       if (log_resp_flag) // log response data
-        allResponses[i] = resp.copy();
+        allResponses[eval_id] = resp.copy();
     }
   }
 
@@ -101,7 +101,7 @@ evaluate_parameter_sets(Model& model, bool log_resp_flag, bool log_best_flag)
   if (asynchFlag) {
     const IntResponseMap& resp_map = model.synchronize();
     if (log_resp_flag) // log response data
-      copy_data(resp_map, allResponses); // discards integer keys
+      allResponses = resp_map;
     if (log_best_flag) { // update best variables/response
       IntRespMCIter r_cit;
       if (compactMode)
@@ -607,7 +607,7 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
     allSamples.shapeUninitialized(num_vars, num_evals);
   else 
     allVariables.resize(num_evals);
-  allResponses.resize(num_evals);
+  //allResponses.resize(num_evals); // temp hack; TO DO
 
   // now read variables and responses (minimal error checking for now)
   for (size_t i=0; i<num_evals; ++i) {

@@ -214,10 +214,12 @@ SurrBasedLocalMinimizer::SurrBasedLocalMinimizer(Model& model):
   // Initialize response results objects (approx/truth and center/star).  These
   // must be deep copies to avoid representation sharing: initialize with copy()
   // and then use update() within the main loop.
-  responseCenterApprox = approx_model.current_response().copy();
-  responseStarApprox   = responseCenterApprox.copy();
-  responseCenterTruth  = truth_model.current_response().copy();
-  responseStarTruth    = responseCenterTruth.copy();
+  responseCenterApprox       = approx_model.current_response().copy();
+  responseStarApprox         = responseCenterApprox.copy();
+  responseCenterTruth.first  = truth_model.evaluation_id();
+  responseCenterTruth.second = truth_model.current_response().copy();
+  responseStarTruth.first    = responseCenterTruth.first;
+  responseStarTruth.second   = responseCenterTruth.second.copy();
 
   // Initialize method/interface dependent settings
   const String& approx_type = probDescDB.get_string("model.surrogate.type");
@@ -391,7 +393,8 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 
   // Create commonly-used ActiveSets
   ActiveSet val_set, full_approx_set, full_truth_set;
-  val_set = full_approx_set = full_truth_set = responseCenterTruth.active_set();
+  val_set = full_approx_set = full_truth_set
+    = responseCenterTruth.second.active_set();
   int full_approx_val = 1, full_truth_val = 1;
   if (approxGradientFlag) full_approx_val += 2;
   if (approxHessianFlag)  full_approx_val += 4;
@@ -402,9 +405,9 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
   full_truth_set.request_values(full_truth_val);
   // Set ActiveSets within the response copies
   responseStarApprox.active_set(val_set);
-  responseStarTruth.active_set(val_set);
+  responseStarTruth.second.active_set(val_set);
   responseCenterApprox.active_set(full_approx_set);
-  responseCenterTruth.active_set(full_truth_set);
+  responseCenterTruth.second.active_set(full_truth_set);
 
   newCenterFlag = true;
   extern Graphics dakota_graphics;
@@ -450,7 +453,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 
 	// Assess hard convergence prior to global surrogate construction
 	if (newCenterFlag)
-	  hard_convergence_check(responseCenterTruth,
+	  hard_convergence_check(responseCenterTruth.second,
 				 varsCenter.continuous_variables(),
 				 global_lower_bnds, global_upper_bnds);
 
@@ -464,7 +467,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 	if ( !multiLayerBypassFlag && !daceCenterPtFlag )
 	  // Can augment the global approximation with new center point data
 	  iteratedModel.update_approximation(varsCenter, responseCenterTruth,
-                                             true);
+	    true);
 	*/
       }
       else { // local/multipt/hierarchical with new center
@@ -479,7 +482,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 	find_center_truth(dace_iterator, truth_model);
 
 	// Assess hard convergence following build/retrieve
-	hard_convergence_check(responseCenterTruth,
+	hard_convergence_check(responseCenterTruth.second,
 			       varsCenter.continuous_variables(),
 			       global_lower_bnds, global_upper_bnds);
 
@@ -490,7 +493,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
       // Update graphics for iteration 0 (initial guess).
       if (sbIterNum == 0)
 	dakota_graphics.add_datapoint(iteratedModel.current_variables(),
-				      responseCenterTruth);
+				      responseCenterTruth.second);
 
       if (!convergenceFlag) {
 	// **************************************
@@ -505,7 +508,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 	  // -->> local and up to 1st-order multipt do not need correction
 	  // -->> hierarchical needs compute_correction if new center
 	  // -->> global needs compute_correction if new center or new bounds
-	  iteratedModel.compute_correction(responseCenterTruth,
+	  iteratedModel.compute_correction(responseCenterTruth.second,
 					   responseCenterApprox,
 					   varsCenter.continuous_variables());
 	  iteratedModel.apply_correction(responseCenterApprox,
@@ -565,7 +568,8 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
       // compute the gradients below if the predicted optimum is accepted.
       truth_model.compute_response(val_set); // fn values only
       truth_model.surrogate_bypass(false);
-      responseStarTruth.update(truth_model.current_response());
+      responseStarTruth.first = truth_model.evaluation_id();
+      responseStarTruth.second.update(truth_model.current_response());
 
       // compute the trust region ratio and update soft convergence counters
       const RealVector& c_vars_star = vars_star.continuous_variables();
@@ -575,7 +579,8 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
       // center variables and response data.
       if (newCenterFlag) {
 	varsCenter.continuous_variables(c_vars_star);
-	responseCenterTruth.update(responseStarTruth);
+	responseCenterTruth.first = responseStarTruth.first;
+	responseCenterTruth.second.update(responseStarTruth.second);
 	// update responseCenterApprox in the hierarchical case only if the
 	// old correction can be backed out.  Currently relying on a DB search
 	// to recover uncorrected low fidelity fn values.
@@ -586,7 +591,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
       // record the iteration results (irregardless of new center)
       iteratedModel.continuous_variables(varsCenter.continuous_variables());
       dakota_graphics.add_datapoint(iteratedModel.current_variables(),
-				    responseCenterTruth);
+				    responseCenterTruth.second);
 
       // If the soft convergence criterion is satisfied for a user-specified
       // number of iterations (softConvLimit), then SBLM is deemed converged.
@@ -633,7 +638,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
   bestVariablesArray.front().continuous_variables(
     varsCenter.continuous_variables());
   bestResponseArray.front().function_values(
-    responseCenterTruth.function_values());
+    responseCenterTruth.second.function_values());
 
   // restore original Model data
   iteratedModel.continuous_variables(initial_pt);
@@ -762,7 +767,8 @@ find_center_truth(const Iterator& dace_iterator, Model& truth_model)
     found = true;
   else if (!multiLayerBypassFlag && !globalApproxFlag) {
     // single layer local/multipoint/hierarchical: retrieve from build_approx.
-    responseCenterTruth.update(truth_model.current_response());
+    responseCenterTruth.first = truth_model.evaluation_id();
+    responseCenterTruth.second.update(truth_model.current_response());
     found = true;
   }
   /*
@@ -770,20 +776,22 @@ find_center_truth(const Iterator& dace_iterator, Model& truth_model)
   // build_approximation()
   else if (!multiLayerBypassFlag && daceCenterPtFlag) {
     // single layer untruncated CCD/BB DOE: retrieve from all_responses
-    const RealVectorArray& all_vars = dace_iterator.all_variables();
-    const ResponseArray&   all_responses = dace_iterator.all_responses();
+    const RealVectorArray& all_vars      = dace_iterator.all_variables();
+    const IntResponseMap&  all_responses = dace_iterator.all_responses();
     size_t i, j, num_samples = all_vars.length();
-    for (i=0; i<num_samples; i++) { // center should be first one
+    IntRespMCIter r_it = all_responses.begin();
+    for (i=0; i<num_samples; ++i, ++r_it) { // center should be first one
       if (all_vars[i].continuous_variables() ==
           varsCenter.continuous_variables()) {
-	const ShortArray& asv = all_responses[i].active_set_request_vector();
+	const ShortArray& asv = r_it->active_set_request_vector();
 	bool incomplete = false;
 	for (j=0; j<numFunctions; j++)
 	  if ( !(asv[j] & 1) || ( truthGradientFlag && !(asv[j] & 2) )
 	                     || ( truthHessianFlag  && !(asv[j] & 4) ) )
 	    incomplete = true;
 	if (!incomplete) {
-	  responseCenterTruth.update(all_responses[i]);
+          responseCenterTruth.first = r_it->first;
+	  responseCenterTruth.second.update(r_it->second);
 	  found = true;
 	}
 	break; // out of for loop
@@ -799,9 +807,10 @@ find_center_truth(const Iterator& dace_iterator, Model& truth_model)
     iteratedModel.component_parallel_mode(TRUTH_MODEL);
     truth_model.continuous_variables(varsCenter.continuous_variables());
     truth_model.surrogate_bypass(multiLayerBypassFlag);
-    truth_model.compute_response(responseCenterTruth.active_set());
+    truth_model.compute_response(responseCenterTruth.second.active_set());
     truth_model.surrogate_bypass(false);
-    responseCenterTruth.update(truth_model.current_response());
+    responseCenterTruth.first = truth_model.evaluation_id();
+    responseCenterTruth.second.update(truth_model.current_response());
   }
 }
 
@@ -829,7 +838,7 @@ void SurrBasedLocalMinimizer::find_center_approx()
   //      Arguments for hierarchical (old correction, no grads) also apply
   bool found = false;
   if (localApproxFlag) {
-    responseCenterApprox.update(responseCenterTruth);
+    responseCenterApprox.update(responseCenterTruth.second);
     found = true;
   }
   else if (multiptApproxFlag && !approxHessianFlag) {
@@ -837,7 +846,7 @@ void SurrBasedLocalMinimizer::find_center_approx()
     // and gradient at current expansion point and value at previous expansion
     // point.  It will also normally reproduce the gradient at the previous
     // expansion point, unless numerical safeguarding of p exponents is used.
-    responseCenterApprox.update(responseCenterTruth);
+    responseCenterApprox.update(responseCenterTruth.second);
     found = true;
   }
   else if (hierarchApproxFlag && sbIterNum) {
@@ -994,10 +1003,11 @@ tr_ratio_check(const RealVector& c_vars_star,
 	       const RealVector& tr_lower_bnds,
 	       const RealVector& tr_upper_bnds)
 {
-  const RealVector& fns_center_truth  = responseCenterTruth.function_values();
-  const RealVector& fns_star_truth    = responseStarTruth.function_values();
+  const RealVector& fns_center_truth
+    = responseCenterTruth.second.function_values();
+  const RealVector& fns_star_truth = responseStarTruth.second.function_values();
   const RealVector& fns_center_approx = responseCenterApprox.function_values();
-  const RealVector& fns_star_approx   = responseStarApprox.function_values();
+  const RealVector& fns_star_approx = responseStarApprox.function_values();
 
   // ---------------------------------------------------
   // Compute trust region ratio based on merit fn values
@@ -1081,8 +1091,8 @@ tr_ratio_check(const RealVector& c_vars_star,
   }
 
 #ifdef DEBUG
-  Cout << "Response truth:\ncenter = " << responseCenterTruth << "star = "
-       << responseStarTruth << "Response approx:\ncenter = "
+  Cout << "Response truth:\ncenter = " << responseCenterTruth.second
+       << "star = " << responseStarTruth.second << "Response approx:\ncenter = "
        << responseCenterApprox << "star = " << responseStarApprox;
   Cout << "Merit fn truth:  center = " << merit_fn_center_truth << " star = "
        << merit_fn_star_truth << "\nMerit fn approx: center = "
@@ -1517,7 +1527,8 @@ relax_constraints(const RealVector& lower_bnds,
   // class member variables in the ctor.
 
   // get current function/constraint values
-  const RealVector& fns_center_truth = responseCenterTruth.function_values();
+  const RealVector& fns_center_truth
+    = responseCenterTruth.second.function_values();
 
   // initial relaxation data during the first SBLM iteration
   if (sbIterNum == 0) {

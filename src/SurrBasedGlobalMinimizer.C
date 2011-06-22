@@ -185,7 +185,7 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
     // model.  For appending to the current approximate model, we must evaluate
     // the variable results with the truth model.
     iteratedModel.component_parallel_mode(TRUTH_MODEL);
-    ResponseArray truth_resp_results(num_results);
+    IntResponseMap truth_resp_results;
     for (i=0; i<num_results; i++) {
       // first, set the current values of the variables in the model.
       const Variables& vars_results_i = vars_results[i];
@@ -196,13 +196,14 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
         truth_model.asynch_compute_response();
       else {
         truth_model.compute_response();
-	truth_resp_results[i] = truth_model.current_response().copy();
+	truth_resp_results[truth_model.evaluation_id()]
+	  = truth_model.current_response().copy();
       }
     }
     // If we did our evaluations asynchronously, use synchronize to block
     // until all the results are available and then store these responses.
     if (truth_asynch_flag)
-      copy_data(truth_model.synchronize(), truth_resp_results); // discards keys
+      truth_resp_results = truth_model.synchronize();
 
     // Beyond this point, we will want to know if this is the last iteration.
     // We will use this information to prevent updating of the surrogate since
@@ -218,9 +219,10 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
       ofname += ".dat";
       std::ofstream ofile(ofname.c_str());
       ofile.precision(12);
-      for (i=0; i<num_results; i++) {
+      IntRespMCIter it = truth_resp_results.begin();
+      for (i=0; i<num_results; ++i, ++it) {
 	const RealVector& c_vars  = vars_results[i].continuous_variables();
-	const RealVector& fn_vals = truth_resp_results[i].function_values();
+	const RealVector& fn_vals = it->second.function_values();
 	std::copy(c_vars.values(), c_vars.values() + c_vars.length(),
 	          std::ostream_iterator<double>(ofile,"\t"));
 	std::copy(fn_vals.values(), fn_vals.values() + fn_vals.length(),
@@ -234,7 +236,7 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
     if (last_iter) { // catalogue final results in best{Variables,Response}Array
       if (returns_multipoint) {
 	bestVariablesArray = vars_results;
-	bestResponseArray  = truth_resp_results;
+	copy_data(truth_resp_results, bestResponseArray);
       }
       else {
 	bestVariablesArray.push_back(vars_results.front());

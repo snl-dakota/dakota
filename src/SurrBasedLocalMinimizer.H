@@ -228,8 +228,9 @@ private:
 
   Response responseCenterApprox; ///< approx response at trust region center
   Response responseStarApprox;   ///< approx response at SBLM cycle minimum
-  Response responseCenterTruth;  ///< truth response at trust region center
-  Response responseStarTruth;    ///< truth response at SBLM cycle minimum
+
+  IntResponsePair responseCenterTruth;///< truth response at trust region center
+  IntResponsePair responseStarTruth;  ///< truth response at SBLM cycle minimum
 };
 
 } // namespace Dakota

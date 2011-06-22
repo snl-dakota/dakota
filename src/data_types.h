@@ -104,6 +104,7 @@ typedef std::list<Iterator>            IteratorList;
 
 typedef std::pair<int, String>         IntStringPair;
 typedef std::pair<Real, Real>          RealRealPair;
+typedef std::pair<int, Response>       IntResponsePair;
 typedef std::set<Real>                 RealSet;
 typedef std::set<int>                  IntSet;
 typedef std::set<size_t>               SizetSet;

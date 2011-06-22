@@ -298,13 +298,14 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
       ActiveSet set = iteratedModel.current_response().active_set();
       set.request_values(dataOrder);
       iteratedModel.compute_response(set);
-      const Response& resp_star_truth = iteratedModel.current_response();
+      IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),
+				      iteratedModel.current_response());
     
       if (numNonlinearConstraints) {
 	// Update the merit function parameters
 	// Logic follows Conn, Gould, and Toint, section 14.4:
-	const RealVector& fns_star_truth = resp_star_truth.function_values();
-
+	const RealVector& fns_star_truth
+	  = resp_star_truth.second.function_values();
 	Real norm_cv_star = std::sqrt(constraint_violation(fns_star_truth, 0.));
 	if (norm_cv_star < etaSequence)
 	  update_augmented_lagrange_multipliers(fns_star_truth);

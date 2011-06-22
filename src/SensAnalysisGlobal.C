@@ -32,7 +32,7 @@ bool SensAnalysisGlobal::rank_sort(const int& x, const int& y)
 
 void SensAnalysisGlobal::
 compute_correlations(const VariablesArray& vars_samples,
-		     const ResponseArray&  resp_samples)
+		     const IntResponseMap& resp_samples)
 {
   using boost::math::isfinite;
 
@@ -40,13 +40,13 @@ compute_correlations(const VariablesArray& vars_samples,
   // simple correlation coefficients, partial correlation coefficients
   // simple rank correlation coefficients, and partial rank correlation coeff.
 
-  size_t num_obs = resp_samples.size();
+  size_t num_obs = vars_samples.size();
   if (!num_obs) {
     Cerr << "Error: Number of samples must be nonzero in SensAnalysisGlobal::"
          << "compute_correlations()." << std::endl;
     abort_handler(-1);
   }
-  if (vars_samples.size() != num_obs) {
+  if (resp_samples.size() != num_obs) {
     Cerr << "Error: Mismatch in array lengths in SensAnalysisGlobal::"
          << "compute_correlations()." << std::endl;
     abort_handler(-1);
@@ -54,26 +54,25 @@ compute_correlations(const VariablesArray& vars_samples,
   size_t i, j, k, num_cv = vars_samples[0].cv(),
     num_div = vars_samples[0].div(), num_drv = vars_samples[0].drv();
   numVars = num_cv + num_div + num_drv;
-  numFns  = resp_samples[0].num_functions();
+  numFns  = resp_samples.begin()->second.num_functions();
 
   //simple correlation coefficients
   int num_corr = numVars + numFns;
   size_t num_true_samples = 0;
-  IntArray valid_sample(num_obs);
-  for (j=0; j<num_obs; ++j){
-    for (k=0; k<numFns; ++k) {
-      //any Nan or +/- Inf response will result in observation being dropped
-      const Real& this_sample = resp_samples[j].function_value(k);
-      valid_sample[j] = isfinite(this_sample); 
-      //Cout << this_sample << " valid " << valid_sample(j) << '\n';
-    }
+  BoolDeque valid_sample(num_obs);
+  IntRespMCIter it;
+  for (it=resp_samples.begin(), j=0; j<num_obs; ++it, ++j) {
+    valid_sample[j] = true;
+    for (k=0; k<numFns; ++k) // any Nan or +/-Inf observation will be dropped
+      if (!isfinite(it->second.function_value(k)))
+	{ valid_sample[j] = false; break; }
     if (valid_sample[j])
       ++num_true_samples;
   }
   
   RealMatrix total_data(num_corr, num_true_samples);
   size_t s_cntr = 0;
-  for (j=0; j<num_obs; ++j)
+  for (it=resp_samples.begin(), j=0; j<num_obs; ++it, ++j)
     if (valid_sample[j]) {
       const Variables& vars_j = vars_samples[j];
       for (i=0; i<num_cv; ++i)
@@ -82,7 +81,7 @@ compute_correlations(const VariablesArray& vars_samples,
 	total_data(i+num_cv, s_cntr) = (Real)vars_j.discrete_int_variable(i);
       for (i=0; i<num_drv; ++i)
 	total_data(i+num_cv+num_div, s_cntr) = vars_j.discrete_real_variable(i);
-      const Response& resp_j = resp_samples[j];
+      const Response& resp_j = it->second;
       for (i=0; i<numFns; ++i)
 	total_data(i+numVars, s_cntr) = resp_j.function_value(i);
       ++s_cntr;
@@ -97,30 +96,35 @@ compute_correlations(const VariablesArray& vars_samples,
   //simple rank correlations
   IntArray rank_col(num_true_samples);
   IntArray final_rank(num_true_samples);
-  num_corr = numVars + numFns;
   rawData.resize(num_true_samples);
   for (i=0; i<num_corr; ++i) {
     s_cntr = 0;
-    for (j=0; j<num_obs; ++j)
-      if (valid_sample[j]) {
-        rank_col[s_cntr] = s_cntr;
-	if (i<num_cv)
-	  rawData[s_cntr] = vars_samples[j].continuous_variable(i);
-	else if (i<num_cv+num_div)
-	  rawData[s_cntr]
-	    = (Real)vars_samples[j].discrete_int_variable(i-num_cv);
-	else if (i<numVars)
-	  rawData[s_cntr]
-	    = vars_samples[j].discrete_real_variable(i-num_cv-num_div);
-	else
-	  rawData[s_cntr] = resp_samples[j].function_value(i-numVars);
-	++s_cntr;
-      }
+    if (i<numVars) {
+      for (j=0; j<num_obs; ++j)
+	if (valid_sample[j]) {
+	  if (i<num_cv)
+	    rawData[s_cntr] = vars_samples[j].continuous_variable(i);
+	  else if (i<num_cv+num_div)
+	    rawData[s_cntr]
+	      = (Real)vars_samples[j].discrete_int_variable(i-num_cv);
+	  else if (i<numVars)
+	    rawData[s_cntr]
+	      = vars_samples[j].discrete_real_variable(i-num_cv-num_div);
+	  rank_col[s_cntr] = s_cntr; ++s_cntr;
+	}
+    }
+    else {
+      for (it=resp_samples.begin(), j=0; j<num_obs; ++it, ++j)
+	if (valid_sample[j]) {
+	  rawData[s_cntr] = it->second.function_value(i-numVars);
+	  rank_col[s_cntr] = s_cntr; ++s_cntr;
+	}
+    }
     std::sort(rank_col.begin(),rank_col.end(),rank_sort);
     for (j=0; j<num_true_samples; ++j)
       final_rank[rank_col[j]] = j;
     for (j=0; j<num_true_samples; ++j)
-      total_data(i, j) = 1.*final_rank[j];
+      total_data(i, j) = (Real)final_rank[j];
   }
 
   //calculate simple rank correlation coeff
@@ -134,8 +138,8 @@ compute_correlations(const VariablesArray& vars_samples,
 
 
 void SensAnalysisGlobal::
-compute_correlations(const RealMatrix&    vars_samples,
-		     const ResponseArray& resp_samples)
+compute_correlations(const RealMatrix&     vars_samples,
+		     const IntResponseMap& resp_samples)
 {
   using boost::math::isfinite;
 
@@ -143,43 +147,42 @@ compute_correlations(const RealMatrix&    vars_samples,
   // simple correlation coefficients, partial correlation coefficients
   // simple rank correlation coefficients, and partial rank correlation coeff.
 
-  size_t num_obs = resp_samples.size();
+  size_t num_obs = vars_samples.numCols();
   if (!num_obs) {
     Cerr << "Error: Number of samples must be nonzero in SensAnalysisGlobal::"
          << "compute_correlations()." << std::endl;
     abort_handler(-1);
   }
-  if (vars_samples.numCols() != num_obs) {
+  if (resp_samples.size() != num_obs) {
     Cerr << "Error: Mismatch in array lengths in SensAnalysisGlobal::"
          << "compute_correlations()." << std::endl;
     abort_handler(-1);
   }
   size_t i, j, k;
   numVars = vars_samples.numRows();
-  numFns  = resp_samples[0].num_functions();
+  numFns  = resp_samples.begin()->second.num_functions();
 
   //simple correlation coefficients
   int num_corr = numVars + numFns;
   size_t num_true_samples = 0;
-  IntArray valid_sample(num_obs);
-  for (j=0; j<num_obs; ++j){
-    for (k=0; k<numFns; ++k) {
-      //any Nan or +/- Inf response will result in observation being dropped
-      const Real& this_sample = resp_samples[j].function_value(k);
-      valid_sample[j] = isfinite(this_sample); 
-      //Cout << this_sample << " valid " << valid_sample(j) << '\n';
-    }
+  BoolDeque valid_sample(num_obs);
+  IntRespMCIter it;
+  for (it=resp_samples.begin(), j=0; j<num_obs; ++it, ++j) {
+    valid_sample[j] = true;
+    for (k=0; k<numFns; ++k) // any Nan or +/-Inf observation will be dropped
+      if (!isfinite(it->second.function_value(k)))
+	{ valid_sample[j] = false; break; }
     if (valid_sample[j])
       ++num_true_samples;
   }
-  
+
   RealMatrix total_data(num_corr, num_true_samples);
   size_t s_cntr = 0;
-  for (j=0; j<num_obs; ++j)
+  for (it=resp_samples.begin(), j=0; j<num_obs; ++it, ++j)
     if (valid_sample[j]) {
       for (i=0; i<numVars; ++i)
 	total_data(i, s_cntr) = vars_samples(i,j);
-      const Response& resp_j = resp_samples[j];
+      const Response& resp_j = it->second;
       for (i=0; i<numFns; ++i)
 	total_data(i+numVars, s_cntr) = resp_j.function_value(i);
       ++s_cntr;
@@ -194,22 +197,28 @@ compute_correlations(const RealMatrix&    vars_samples,
   //simple rank correlations
   IntArray rank_col(num_true_samples);
   IntArray final_rank(num_true_samples);
-  num_corr = numVars + numFns;
   rawData.resize(num_true_samples);
   for (i=0; i<num_corr; ++i) {
     s_cntr = 0;
-    for (j=0; j<num_obs; ++j)
-      if (valid_sample[j]) {
-        rank_col[s_cntr] = s_cntr;
-	rawData[s_cntr] = (i<numVars) ? vars_samples(i,j) :
-	  resp_samples[j].function_value(i-numVars);
-	++s_cntr;
-      }
-    std::sort(rank_col.begin(),rank_col.end(),rank_sort);
+    if (i<numVars) {
+      for (j=0; j<num_obs; ++j)
+	if (valid_sample[j]) {
+	  rawData[s_cntr] = vars_samples(i,j);
+	  rank_col[s_cntr] = s_cntr; ++s_cntr;
+	}
+    }
+    else {
+      for (it=resp_samples.begin(), j=0; j<num_obs; ++it, ++j)
+	if (valid_sample[j]) {
+	  rawData[s_cntr] = it->second.function_value(i-numVars);
+	  rank_col[s_cntr] = s_cntr; ++s_cntr;
+	}
+    }
+    std::sort(rank_col.begin(), rank_col.end(), rank_sort);
     for (j=0; j<num_true_samples; ++j)
       final_rank[rank_col[j]] = j;
     for (j=0; j<num_true_samples; ++j)
-      total_data(i, j) = 1.*final_rank[j];
+      total_data(i, j) = (Real)final_rank[j];
   }
 
   //calculate simple rank correlation coeff

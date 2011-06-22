@@ -51,11 +51,11 @@ public:
   /// computes four correlation matrices for input and output data
   /// simple, partial, simple rank, and partial rank
   void compute_correlations(const VariablesArray& vars_samples,
-			    const ResponseArray&  resp_samples);
+			    const IntResponseMap& resp_samples);
   /// computes four correlation matrices for input and output data
   /// simple, partial, simple rank, and partial rank
-  void compute_correlations(const RealMatrix&    vars_samples,
-			    const ResponseArray& resp_samples);
+  void compute_correlations(const RealMatrix&     vars_samples,
+			    const IntResponseMap& resp_samples);
 
   /// returns corrComputed to indicate whether compute_correlations()
   /// has been invoked

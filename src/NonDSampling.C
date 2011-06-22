@@ -423,8 +423,8 @@ void NonDSampling::initialize_lhs(bool write_message)
 
 
 void NonDSampling::
-compute_statistics(const RealMatrix&    vars_samples,
-		   const ResponseArray& resp_samples)
+compute_statistics(const RealMatrix&     vars_samples,
+		   const IntResponseMap& resp_samples)
 {
   if (numEpistemicUncVars) // Epistemic/mixed
     compute_intervals(resp_samples); // compute min/max response intervals
@@ -442,7 +442,7 @@ compute_statistics(const RealMatrix&    vars_samples,
 }
 
 
-void NonDSampling::compute_intervals(const ResponseArray& samples)
+void NonDSampling::compute_intervals(const IntResponseMap& samples)
 {
   // For the samples array, calculate min/max response intervals
 
@@ -452,11 +452,12 @@ void NonDSampling::compute_intervals(const ResponseArray& samples)
 
   if (minValues.empty()) minValues.resize(numFunctions);
   if (maxValues.empty()) maxValues.resize(numFunctions);
+  IntRespMCIter it;
   for (i=0; i<numFunctions; ++i) {
     num_samp = 0;
     Real min = DBL_MAX, max = -DBL_MAX;
-    for (j=0; j<num_obs; j++) {
-      const Real& sample = samples[j].function_value(i);
+    for (it=samples.begin(); it!=samples.end(); ++it) {
+      const Real& sample = it->second.function_value(i);
       if (isfinite(sample)) { // neither NaN nor +/-Inf
 	if (sample < min) min = sample;
 	if (sample > max) max = sample;
@@ -473,7 +474,7 @@ void NonDSampling::compute_intervals(const ResponseArray& samples)
 }
 
 
-void NonDSampling::compute_moments(const ResponseArray& samples)
+void NonDSampling::compute_moments(const IntResponseMap& samples)
 {
   // For the samples array, calculate means and standard deviations
   // with confidence intervals
@@ -491,13 +492,14 @@ void NonDSampling::compute_moments(const ResponseArray& samples)
   if (stdDev95CILowerBnds.empty()) stdDev95CILowerBnds.resize(numFunctions);
   if (stdDev95CIUpperBnds.empty()) stdDev95CIUpperBnds.resize(numFunctions);
 
+  IntRespMCIter it;
   for (i=0; i<numFunctions; ++i) {
 
     num_samp  = 0;
     sum = var = skew = kurt = 0.;
     // means
-    for (j=0; j<num_obs; j++) {
-      const Real& sample = samples[j].function_value(i);
+    for (it=samples.begin(); it!=samples.end(); ++it) {
+      const Real& sample = it->second.function_value(i);
       if (isfinite(sample)) { // neither NaN nor +/-Inf
 	sum += sample;
 	++num_samp;
@@ -519,8 +521,8 @@ void NonDSampling::compute_moments(const ResponseArray& samples)
 
     // accumulate variance, skewness, and kurtosis
     Real centered_fn, pow_fn;
-    for (j=0; j<num_obs; ++j) {
-      const Real& sample = samples[j].function_value(i);
+    for (it=samples.begin(); it!=samples.end(); ++it) {
+      const Real& sample = it->second.function_value(i);
       if (isfinite(sample)) { // neither NaN nor +/-Inf
 	pow_fn  = centered_fn = sample - meanStats[i];
 	pow_fn *= centered_fn; var  += pow_fn;
@@ -593,7 +595,7 @@ void NonDSampling::compute_moments(const ResponseArray& samples)
 }
 
 
-void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
+void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
 {
   // Size the output arrays here instead of in the ctor in order to support
   // alternate sampling ctors.
@@ -612,6 +614,7 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
   RealArray sorted_samples; // STL-based array for sorting
   SizetArray bins; Real min, max;
 
+  IntRespMCIter it;
   for (i=0; i<numFunctions; ++i) {
 
     // CDF/CCDF mappings: z -> p/beta/beta* and p/beta/beta* -> z
@@ -626,8 +629,8 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
     num_samp = 0;
     if (pl_len || gl_len) { // sort samples array for p/beta* -> z mappings
       sorted_samples.clear(); sorted_samples.reserve(num_obs);
-      for (j=0; j<num_obs; j++) {
-	const Real& sample = samples[j].function_value(i);
+      for (it=samples.begin(); it!=samples.end(); ++it) {
+	const Real& sample = it->second.function_value(i);
 	if (isfinite(sample))
 	  { ++num_samp; sorted_samples.push_back(sample); }
       }
@@ -651,8 +654,8 @@ void NonDSampling::compute_distribution_mappings(const ResponseArray& samples)
       // in case of rl_len without pl_len/gl_len, bin from original sample set
       const RealVector& req_rl_i = requestedRespLevels[i];
       bins.assign(rl_len+1, 0); min = DBL_MAX; max = -DBL_MAX;
-      for (j=0; j<num_obs; ++j) {
-	const Real& sample = samples[j].function_value(i);
+      for (it=samples.begin(); it!=samples.end(); ++it) {
+	const Real& sample = it->second.function_value(i);
 	if (isfinite(sample)) {
 	  ++num_samp;
 	  if (pdfOutput) {

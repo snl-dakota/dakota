@@ -1038,7 +1038,7 @@ const RealMatrix& Iterator::all_samples()
 }
 
 
-const ResponseArray& Iterator::all_responses() const
+const IntResponseMap& Iterator::all_responses() const
 {
   if (!iteratorRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: letter class does not redefine all_responses() virtual fn."

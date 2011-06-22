@@ -40,7 +40,7 @@ public:
 
   const VariablesArray& all_variables();
   const RealMatrix&     all_samples();
-  const ResponseArray&  all_responses() const;
+  const IntResponseMap& all_responses() const;
 
   //
   //- Heading: Virtual functions
@@ -135,7 +135,7 @@ protected:
   /// compact alternative to allVariables
   RealMatrix allSamples;
   /// array of all responses to be computed in evaluate_parameter_sets()
-  ResponseArray allResponses;
+  IntResponseMap allResponses;
   /// array of headers to insert into output while evaluating allVariables
   StringArray allHeaders;
 
@@ -197,7 +197,7 @@ inline const RealMatrix& Analyzer::all_samples()
 }
 
 
-inline const ResponseArray& Analyzer::all_responses() const
+inline const IntResponseMap& Analyzer::all_responses() const
 { return allResponses; }
 
 

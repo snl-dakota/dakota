@@ -47,7 +47,7 @@ public:
 
   /// called by compute_statistics() to calculate CDF/CCDF mappings of
   /// z to p/beta and of p/beta to z
-  void compute_distribution_mappings(const ResponseArray& samples);
+  void compute_distribution_mappings(const IntResponseMap& samples);
 
   /// update finalStatistics from minValues/maxValues, meanStats/stdDevStats,
   /// and computedProbLevels/computedRelLevels/computedRespLevels
@@ -115,13 +115,13 @@ protected:
   /// For the input sample set, computes mean, standard deviation, and
   /// probability/reliability/response levels (aleatory uncertainties)
   /// or intervals (epsitemic or mixed uncertainties)
-  void compute_statistics(const RealMatrix&    vars_samples,
-			  const ResponseArray& resp_samples);
+  void compute_statistics(const RealMatrix&     vars_samples,
+			  const IntResponseMap& resp_samples);
   /// called by compute_statistics() to calculate min/max intervals
-  void compute_intervals(const ResponseArray& samples);
+  void compute_intervals(const IntResponseMap& samples);
   /// called by compute_statistics() to calculate means, std
   /// deviations, and confidence intervals
-  void compute_moments(const ResponseArray& samples);
+  void compute_moments(const IntResponseMap& samples);
 
   /// prints the statistics computed in compute_statistics()
   void print_statistics(std::ostream& s) const;

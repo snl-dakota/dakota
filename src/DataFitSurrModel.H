@@ -120,29 +120,32 @@ protected:
   /// Builds the local/multipoint/global approximation using
   /// daceIterator/actualModel to generate new data points that
   /// augment the vars/response anchor point
-  bool build_approximation(const Variables& vars, const Response& response);
+  bool build_approximation(const Variables& vars,
+			   const IntResponsePair& response_pr);
 
   /// replaces the approximation data with daceIterator results and
   /// rebuilds the approximation if requested
   void update_approximation(bool rebuild_flag);
   /// replaces the anchor point, and rebuilds the approximation if requested
-  void update_approximation(const Variables& vars, const Response& response,
+  void update_approximation(const Variables& vars,
+			    const IntResponsePair& response_pr,
 			    bool rebuild_flag);
   /// replaces the current points array and rebuilds the approximation
   /// if requested
   void update_approximation(const VariablesArray& vars_array,
-			    const ResponseArray& resp_array, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag);
 
   /// appends daceIterator results to a global approximation and rebuilds
   /// it if requested
   void append_approximation(bool rebuild_flag);
   /// appends a point to a global approximation and rebuilds it if requested
-  void append_approximation(const Variables& vars, const Response& response,
+  void append_approximation(const Variables& vars,
+			    const IntResponsePair& response_pr,
 			    bool rebuild_flag);
   /// appends an array of points to a global approximation and rebuilds it
   /// if requested
   void append_approximation(const VariablesArray& vars_array,
-			    const ResponseArray& resp_array, bool rebuild_flag);
+			    const IntResponseMap& resp_map, bool rebuild_flag);
 
   /// remove approximation data added on previous append_approximation() call
   void pop_approximation(bool save_surr_data);

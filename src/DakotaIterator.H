@@ -144,7 +144,7 @@ public:
   /// return the complete set of evaluated samples
   virtual const RealMatrix&     all_samples();
   /// return the complete set of computed responses
-  virtual const ResponseArray&  all_responses() const;
+  virtual const IntResponseMap& all_responses() const;
 
   /// returns Analyzer::compactMode
   virtual bool compact_mode() const;

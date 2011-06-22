@@ -560,7 +560,8 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  ActiveSet set = iteratedModel.current_response().active_set();
 	  set.request_values(0); set.request_value(respFnCount, dataOrder);
 	  iteratedModel.compute_response(set);
-	  const Response& resp_star_truth = iteratedModel.current_response();
+	  IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),
+					  iteratedModel.current_response());
 
 	  // Update the GP approximation
 	  if (mppSearchType == EGRA_X) // update with c_vars_x
@@ -910,10 +911,10 @@ void NonDGlobalReliability::get_best_sample()
   // This is only done for PMA - there is no "best solution" for
   //   the expected feasibility function used in RIA
 
-  Iterator&            dace_iterator  = uSpaceModel.subordinate_iterator();
-  const RealMatrix&    true_vars_x    = dace_iterator.all_samples();
-  const ResponseArray& true_responses = dace_iterator.all_responses();
-  size_t i, j, num_samples = true_responses.size(),
+  Iterator&             dace_iterator  = uSpaceModel.subordinate_iterator();
+  const RealMatrix&     true_vars_x    = dace_iterator.all_samples();
+  const IntResponseMap& true_responses = dace_iterator.all_responses();
+  size_t i, j, num_samples = true_vars_x.numCols(),
     num_vars = true_vars_x.numRows();
   
   // If GP built in x-space, transform true_vars_x to u-space to calculate beta
@@ -931,8 +932,8 @@ void NonDGlobalReliability::get_best_sample()
   // CDF probability >  0.5  -->  CDF beta <  0  -->  maximize g
   bool positive = (requestedCDFRelLevel >= 0.);
   
-  fnStar = DBL_MAX; 
-  for (i=0; i<num_samples; i++) {
+  fnStar = DBL_MAX; IntRespMCIter it;
+  for (i=0, it=true_responses.begin(); i<num_samples; i++, ++it) {
     // calculate the reliability index (beta)
     Real beta_sq = 0., penalized_response;
     for (j=0; j<num_vars; j++)
@@ -940,9 +941,8 @@ void NonDGlobalReliability::get_best_sample()
     // calculate the equality constraint: u'u - beta_target^2
     Real cfn = beta_sq - std::pow(requestedCDFRelLevel, 2);
     Real penalty = constraint_penalty(cfn, true_c_vars_u[i]);
-    penalized_response = (positive) ?
-      true_responses[i].function_value(0) + penalty :
-      true_responses[i].function_value(0) - penalty;
+    penalized_response = (positive) ? it->second.function_value(0) + penalty :
+                                      it->second.function_value(0) - penalty;
     if ( (positive && penalized_response < fnStar) || 
         (!positive && penalized_response > fnStar) )
       fnStar = penalized_response;

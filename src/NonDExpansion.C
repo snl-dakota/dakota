@@ -1385,8 +1385,8 @@ void NonDExpansion::compute_statistics()
       //ActiveSet sampler_set = importanceSampler.active_set(); // copy
       //ShortArray sampler_asv(numFunctions, 0);
 
-      const RealMatrix&    exp_vars      = expansionSampler.all_samples();
-      const ResponseArray& exp_responses = expansionSampler.all_responses();
+      const RealMatrix& exp_vars = expansionSampler.all_samples();
+      //const IntResponseMap& exp_responses = expansionSampler.all_responses();
       int exp_cv = exp_vars.numRows();
 
       sampler_cntr = 0;

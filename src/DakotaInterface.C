@@ -946,27 +946,27 @@ void Interface::approximation_function_indices(const IntSet& approx_fn_indices)
 
 
 void Interface::
-update_approximation(const Variables& vars, const Response& response)
+update_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->update_approximation(vars, response);
+    interfaceRep->update_approximation(vars, response_pr);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-         << "(Variables, Response) function.\n       This interface does not "
-	 << "support approximation updating." << std::endl;
+         << "(Variables, IntResponsePair) function.\n       This interface "
+	 << "does not support approximation updating." << std::endl;
     abort_handler(-1);
   }
 }
 
 
 void Interface::
-update_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
+update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->update_approximation(samples, resp_array);
+    interfaceRep->update_approximation(samples, resp_map);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-         << "(RealMatrix, ResponseArray) function.\n       This interface "
+         << "(RealMatrix, IntResponseMap) function.\n       This interface "
 	 << "does not support approximation updating." << std::endl;
     abort_handler(-1);
   }
@@ -975,13 +975,13 @@ update_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
 
 void Interface::
 update_approximation(const VariablesArray& vars_array,
-		     const ResponseArray&  resp_array)
+		     const IntResponseMap& resp_map)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->update_approximation(vars_array, resp_array);
+    interfaceRep->update_approximation(vars_array, resp_map);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-         << "(VariablesArray, ResponseArray) function.\n       This interface "
+         << "(VariablesArray, IntResponseMap) function.\n       This interface "
 	 << "does not support approximation updating." << std::endl;
     abort_handler(-1);
   }
@@ -989,27 +989,27 @@ update_approximation(const VariablesArray& vars_array,
 
 
 void Interface::
-append_approximation(const Variables& vars, const Response& response)
+append_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->append_approximation(vars, response);
+    interfaceRep->append_approximation(vars, response_pr);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-	 << "(Variables, Response) function.\n       This interface does not "
-	 << "support approximation appending." << std::endl;
+	 << "(Variables, IntResponsePair) function.\n       This interface "
+	 << "does not support approximation appending." << std::endl;
     abort_handler(-1);
   }
 }
 
 
 void Interface::
-append_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
+append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->append_approximation(samples, resp_array);
+    interfaceRep->append_approximation(samples, resp_map);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-         << "(RealMatrix, ResponseArray) function.\n       This interface "
+         << "(RealMatrix, IntResponseMap) function.\n       This interface "
 	 << "does not support approximation appending." << std::endl;
     abort_handler(-1);
   }
@@ -1018,13 +1018,13 @@ append_approximation(const RealMatrix& samples, const ResponseArray& resp_array)
 
 void Interface::
 append_approximation(const VariablesArray& vars_array,
-		     const ResponseArray&  resp_array)
+		     const IntResponseMap& resp_map)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->append_approximation(vars_array, resp_array);
+    interfaceRep->append_approximation(vars_array, resp_map);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-         << "(VariablesArray, ResponseArray) function.\n       This interface "
+         << "(VariablesArray, IntResponseMap) function.\n       This interface "
 	 << "does not support approximation appending." << std::endl;
     abort_handler(-1);
   }
@@ -1105,47 +1105,6 @@ void Interface::finalize_approximation()
     Cerr << "Error: Letter lacking redefinition of virtual finalize_"
 	 << "approximation() function.\n       This interface does not "
 	 << "support approximation finalization." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-void Interface::cache_data(const Variables& vars, const Response& response)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->cache_data(vars, response);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual cache_data("
-	 << "Variables&, Response&) function.\n       This interface does "
-	 << "not support approximation data management." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-void Interface::
-cache_data(const RealMatrix& samples, const ResponseArray& resp_array)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->cache_data(samples, resp_array);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual cache_data("
-	 << "RealMatrix&, ResponseArray&) function.\n       This interface "
-	 << "does not support approximation data management." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-void Interface::
-cache_data(const VariablesArray& vars_array, const ResponseArray& resp_array)
-{
-  if (interfaceRep) // envelope fwd to letter
-    interfaceRep->cache_data(vars_array, resp_array);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual cache_data("
-	 << "VariablesArray&, ResponseArray&) function.\n       This interface "
-	 << "does not support approximation data management." << std::endl;
     abort_handler(-1);
   }
 }

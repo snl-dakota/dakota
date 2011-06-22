@@ -282,7 +282,7 @@ void DataFitSurrModel::build_approximation()
     SurrogateData::anchor{Vars,Resp} and constructs any required data
     points for SurrogateData::{vars,resp}Data. */
 bool DataFitSurrModel::
-build_approximation(const Variables& vars, const Response& response)
+build_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
   Cout << "\n>>>>> Building " << surrogateType << " approximations.\n";
 
@@ -293,7 +293,7 @@ build_approximation(const Variables& vars, const Response& response)
   // populate/replace the anchor point for the approximation.  When supported by
   // the surrogate type (local, multipoint, global polynomial regression), this
   // is enforced as a hard constraint. Otherwise, it is just another data point.
-  approxInterface.update_approximation(vars, response);
+  approxInterface.update_approximation(vars, response_pr);
   // TO DO:
   // > not used by SBLM local/multipoint
   // > used by SBLM global *with* persistent center vars,response
@@ -343,7 +343,7 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
 
   // replace the current points for each approximation
   //daceIterator.run_iterator(Cout);
-  const ResponseArray& all_resp = daceIterator.all_responses();
+  const IntResponseMap& all_resp = daceIterator.all_responses();
   if (daceIterator.compact_mode())
     approxInterface.update_approximation(daceIterator.all_samples(),  all_resp);
   else
@@ -351,10 +351,9 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
 
   if (rebuild_flag) { // update the coefficients for each approximation
     BoolDeque rebuild_deque(numFns, false);
-    size_t i, j, num_resp = all_resp.size();
-    for (i=0; i<numFns; ++i)
-      for (j=0; j<num_resp; ++j)
-	if (all_resp[j].active_set_request_vector()[i])
+    for (size_t i=0; i<numFns; ++i)
+      for (IntRespMCIter r_it=all_resp.begin(); r_it!=all_resp.end(); ++r_it)
+	if (r_it->second.active_set_request_vector()[i])
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
@@ -372,18 +371,18 @@ void DataFitSurrModel::update_approximation(bool rebuild_flag)
     updates data from a previous call to build_approximation(), and is
     not intended to be used in isolation. */
 void DataFitSurrModel::
-update_approximation(const Variables& vars, const Response& response,
+update_approximation(const Variables& vars, const IntResponsePair& response_pr,
 		     bool rebuild_flag)
 {
   Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
 
   // populate/replace the anchor point for each approximation
-  approxInterface.update_approximation(vars, response); // update anchor point
+  approxInterface.update_approximation(vars, response_pr); // update anchor pt
 
   if (rebuild_flag) { // find the coefficients for each approximation
     // decide which surrogates to rebuild based on response content
     BoolDeque rebuild_deque(numFns);
-    const ShortArray& asv = response.active_set_request_vector();
+    const ShortArray& asv = response_pr.second.active_set_request_vector();
     for (size_t i=0; i<numFns; ++i)
       rebuild_deque[i] = (asv[i]) ? true : false;
     // rebuild the designated surrogates
@@ -403,20 +402,19 @@ update_approximation(const Variables& vars, const Response& response,
     not intended to be used in isolation. */
 void DataFitSurrModel::
 update_approximation(const VariablesArray& vars_array,
-		     const ResponseArray&  resp_array, bool rebuild_flag)
+		     const IntResponseMap& resp_map, bool rebuild_flag)
 {
   Cout << "\n>>>>> Updating " << surrogateType << " approximations.\n";
 
   // populate/replace the current points for each approximation
-  approxInterface.update_approximation(vars_array, resp_array);
+  approxInterface.update_approximation(vars_array, resp_map);
 
   if (rebuild_flag) { // find the coefficients for each approximation
-    // decide which surrogates to rebuild based on resp_array content
+    // decide which surrogates to rebuild based on resp_map content
     BoolDeque rebuild_deque(numFns, false);
-    size_t i, j, num_resp = resp_array.size();
-    for (i=0; i<numFns; ++i)
-      for (j=0; j<num_resp; ++j)
-	if (resp_array[j].active_set_request_vector()[i])
+    for (size_t i=0; i<numFns; ++i)
+      for (IntRespMCIter r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it)
+	if (r_it->second.active_set_request_vector()[i])
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
@@ -439,19 +437,18 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
 
   // append to the current points for each approximation
   //daceIterator.run_iterator(Cout);
-  const ResponseArray& all_resp = daceIterator.all_responses();
+  const IntResponseMap& all_resp = daceIterator.all_responses();
   if (daceIterator.compact_mode())
     approxInterface.append_approximation(daceIterator.all_samples(),  all_resp);
   else
     approxInterface.append_approximation(daceIterator.all_variables(),all_resp);
 
   if (rebuild_flag) { // update the coefficients for each approximation
-    // decide which surrogates to rebuild based on resp_array content
+    // decide which surrogates to rebuild based on resp_map content
     BoolDeque rebuild_deque(numFns, false);
-    size_t i, j, num_resp = all_resp.size();
-    for (i=0; i<numFns; ++i)
-      for (j=0; j<num_resp; ++j)
-	if (all_resp[j].active_set_request_vector()[i])
+    for (size_t i=0; i<numFns; ++i)
+      for (IntRespMCIter r_it=all_resp.begin(); r_it!=all_resp.end(); ++r_it)
+	if (r_it->second.active_set_request_vector()[i])
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
@@ -469,18 +466,18 @@ void DataFitSurrModel::append_approximation(bool rebuild_flag)
     appends to data from a previous call to build_approximation(), and
     is not intended to be used in isolation. */
 void DataFitSurrModel::
-append_approximation(const Variables& vars, const Response& response,
+append_approximation(const Variables& vars, const IntResponsePair& response_pr,
 		     bool rebuild_flag)
 {
   Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
-  approxInterface.append_approximation(vars, response);
+  approxInterface.append_approximation(vars, response_pr);
 
   if (rebuild_flag) { // find the coefficients for each approximation
     // decide which surrogates to rebuild based on response content
     BoolDeque rebuild_deque(numFns);
-    const ShortArray& asv = response.active_set_request_vector();
+    const ShortArray& asv = response_pr.second.active_set_request_vector();
     for (size_t i=0; i<numFns; ++i)
       rebuild_deque[i] = (asv[i]) ? true : false;
     // rebuild the designated surrogates
@@ -500,20 +497,19 @@ append_approximation(const Variables& vars, const Response& response,
     be used in isolation. */
 void DataFitSurrModel::
 append_approximation(const VariablesArray& vars_array,
-		     const ResponseArray&  resp_array, bool rebuild_flag)
+		     const IntResponseMap& resp_map, bool rebuild_flag)
 {
   Cout << "\n>>>>> Appending to " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
-  approxInterface.append_approximation(vars_array, resp_array);
+  approxInterface.append_approximation(vars_array, resp_map);
 
   if (rebuild_flag) { // find the coefficients for each approximation
-    // decide which surrogates to rebuild based on resp_array content
+    // decide which surrogates to rebuild based on resp_map content
     BoolDeque rebuild_deque(numFns, false);
-    size_t i, j, num_resp = resp_array.size();
-    for (i=0; i<numFns; ++i)
-      for (j=0; j<num_resp; ++j)
-	if (resp_array[j].active_set_request_vector()[i])
+    for (size_t i=0; i<numFns; ++i)
+      for (IntRespMCIter r_it=resp_map.begin(); r_it!=resp_map.end(); ++r_it)
+	if (r_it->second.active_set_request_vector()[i])
 	  { rebuild_deque[i] = true; break; }
     // rebuild the designated surrogates
     approxInterface.rebuild_approximation(rebuild_deque);
@@ -664,10 +660,9 @@ void DataFitSurrModel::build_local_multipoint()
   actualModel.compute_response(set);
 
   const Variables& curr_vars = actualModel.current_variables();
-  const Response&  curr_resp = actualModel.current_response();
-  //if (/*!deep_copy && */!actualModelCache)
-  //  approxInterface.cache_data(curr_vars, curr_resp);
-  approxInterface.update_approximation(curr_vars, curr_resp);
+  IntResponsePair curr_resp_pr(actualModel.evaluation_id(),
+			       actualModel.current_response());
+  approxInterface.update_approximation(curr_vars, curr_resp_pr);
 }
 
 
@@ -687,8 +682,7 @@ void DataFitSurrModel::build_global()
   size_t i, j, reuse_points = 0;
   if (pointReuse == "all" || pointReuse == "region") {
 
-    VariablesArray reuse_vars;
-    ResponseArray  reuse_responses;
+    VariablesArray reuse_vars; IntResponseMap reuse_responses;
 
     size_t num_c_vars, num_di_vars, num_dr_vars;
     if (actualModel.is_null()) {
@@ -725,19 +719,19 @@ void DataFitSurrModel::build_global()
 	     db_c_vars != anchor_vars.continuous_variables() ) &&
 	   inside(db_c_vars, db_di_vars, db_dr_vars) ) {
 	reuse_vars.push_back(db_vars);
-	reuse_responses.push_back(prp_iter->prp_response());
+	reuse_responses[prp_iter->eval_id()] = prp_iter->prp_response();
       }
     }
 
     // Process the points_file
     if (!pointReuseFile.empty()) {
-      VarsLIter v_it; RespLIter r_it;
+      VarsLIter v_it; RespLIter r_it; int cntr = -1;
       for (v_it  = reuseFileVars.begin(), r_it = reuseFileResponses.begin();
-	   v_it != reuseFileVars.end(); ++v_it, ++r_it) {
+	   v_it != reuseFileVars.end(); ++v_it, ++r_it, --cntr) {
 	if (inside(v_it->continuous_variables(), v_it->discrete_int_variables(),
 		   v_it->discrete_real_variables())) {
 	  reuse_vars.push_back(*v_it);
-	  reuse_responses.push_back(*r_it);
+	  reuse_responses[cntr] = *r_it; // dummy eval id < 0 for file imports
 	}
       }
     }
@@ -808,19 +802,12 @@ void DataFitSurrModel::build_global()
       // Append vars/resp arrays to the approximation.  If actualModel evals
       // are not already cached, cache them now to provide persistence (thereby
       // allowing approximation classes to consistently utilize shallow copies).
-      const ResponseArray& all_resp = daceIterator.all_responses();
-      if (daceIterator.compact_mode()) {
-	const RealMatrix& all_samp = daceIterator.all_samples();
-	//if (/*!deep_copy && */!actualModelCache)
-	//  approxInterface.cache_data(all_samp, all_resp);
-	approxInterface.append_approximation(all_samp, all_resp);
-      }
-      else {
-	const VariablesArray& all_vars = daceIterator.all_variables();
-	//if (/*!deep_copy && */!actualModelCache)
-	//  approxInterface.cache_data(all_vars, all_resp);
-	approxInterface.append_approximation(all_vars, all_resp);
-      }
+      if (daceIterator.compact_mode())
+	approxInterface.append_approximation(daceIterator.all_samples(),
+					     daceIterator.all_responses());
+      else
+	approxInterface.append_approximation(daceIterator.all_variables(),
+					     daceIterator.all_responses());
     }
     else if (outputLevel >= DEBUG_OUTPUT)
       Cout << "DataFitSurrModel: No samples needed from DACE iterator."
