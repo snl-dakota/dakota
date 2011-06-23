@@ -1022,7 +1022,7 @@ tr_ratio_check(const RealVector& c_vars_star,
   // better point (using merit fn or filter?) than the minimizer found.
   // If this occurs, then accept point but shrink TR.
   //Iterator& dace_iterator = iteratedModel.subordinate_iterator();
-  //ResponseArray dace_responses;
+  //IntResponseMap dace_responses;
   //if (globalApproxFlag && !dace_iterator.is_null())
   //  dace_responses = dace_iterator.all_responses();
 
@@ -1045,9 +1045,10 @@ tr_ratio_check(const RealVector& c_vars_star,
     merit_fn_star_approx = lagrangian_merit(fns_star_approx,
       origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets);
 
-    //for (i=0; i<num_dace_responses; i++) {
+    //IntRespMCIter d_it;
+    //for (i=0, d_it=dace_responses.begin(); i<num_dace_responses; ++i, ++d_it){
     //  Real merit_dace_truth = lagrangian_merit(
-    //    dace_responses[i].function_values(), origNonlinIneqLowerBnds,
+    //    d_it->second.function_values(), origNonlinIneqLowerBnds,
     //    origNonlinIneqUpperBnds, origNonlinEqTargets);
     //  if (merit_dace_truth < merit_fn_star_truth) {
     //    Cerr << "Warning: \n";

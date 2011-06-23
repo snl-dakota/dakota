@@ -427,30 +427,35 @@ void DDACEDesignCompExp::resolve_samples_symbols()
 
 void DDACEDesignCompExp::compute_main_effects() 
 {
-  const StringArray& fn_labels = iteratedModel.response_labels();
-  for (size_t f=0; f<numFunctions; f++) {
+  if (allResponses.size() != numSamples) {
+    Cerr << "\nError in DDACEDesignCompExp::compute_main_effects(): expected "
+	 << numSamples << " responses; received " << allResponses.size()
+	 << std::endl;
+    abort_handler(-1);
+  }
 
-    std::vector<double> resp_fn_samples;
-    IntRespMCIter resp_it = allResponses.begin();
-    for (size_t s=0; s<numSamples; ++s, ++resp_it)
-      resp_fn_samples.push_back(resp_it->second.function_value(f));
+  const StringArray& fn_labels = iteratedModel.response_labels();
+  IntRespMCIter r_it; size_t f, s, v;
+  std::vector<double> resp_fn_samples(numSamples);
+  std::vector<int> symbols_map_factor(numSamples);
+  for (f=0; f<numFunctions; ++f) {
+
+    for (s=0, r_it=allResponses.begin(); s<numSamples; ++s, ++r_it)
+      resp_fn_samples[s] = r_it->second.function_value(f);
 
     // Create a DDACE Response object
     DDaceMainEffects::Response ddace_response(resp_fn_samples);
 
     // Create a vector of factors 
-    std::vector<DDaceMainEffects::Factor> ddace_factors;
+    std::vector<DDaceMainEffects::Factor> ddace_factors(numContinuousVars);
 
-    for (size_t v=0; v<numContinuousVars; v++) {
-      std::vector<int> symbols_map_factor;
-      for (size_t s=0; s<numSamples; s++) 
-	symbols_map_factor.push_back(symbolMapping[s][v]);
+    for (v=0; v<numContinuousVars; ++v) {
+      for (s=0; s<numSamples; ++s) 
+	symbols_map_factor[s] = symbolMapping[s][v];
 
       // Create a DDACE Factor object
-      DDaceMainEffects::Factor ddace_factor(symbols_map_factor, numSymbols,
-					    ddace_response);
-
-      ddace_factors.push_back(ddace_factor);
+      ddace_factors[v] = DDaceMainEffects::Factor(symbols_map_factor,
+						  numSymbols, ddace_response);
     }
 
     // Perform the ANOVA computations and display screen output

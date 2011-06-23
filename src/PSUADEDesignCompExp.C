@@ -104,22 +104,21 @@ void PSUADEDesignCompExp::post_run(std::ostream& s)
   psuade_adata.sampleOutputs_ = new double [numSamples*numFunctions];
  
   if (allResponses.size() != numSamples) {
-    Cerr << "\nError (PSUADE): Expected " << numSamples
-	 << " Responses; received " << allResponses.size() << std::endl;
+    Cerr << "\nError in PSUADEDesignCompExp::post_run(): expected "
+	 << numSamples << " responses; received " << allResponses.size()
+	 << std::endl;
     abort_handler(-1);
   }
- 
-  int i = 0;
-  IntRespMCIter resp_it  = allResponses.begin();
-  IntRespMCIter resp_end = allResponses.end();
-  for( ; resp_it != resp_end ; ++resp_it, ++i) {
-    const RealVector& fn_vals = resp_it->second.function_values();
-    for (int j=0; j<numFunctions; j++)
+
+  IntRespMCIter r_it; int i, j;
+  for (r_it=allResponses.begin(), i=0; i<numSamples; ++r_it, ++i) {
+    const RealVector& fn_vals = r_it->second.function_values();
+    for (j=0; j<numFunctions; ++j)
       psuade_adata.sampleOutputs_[i*numFunctions+j] = fn_vals[j];
   }
 
   MOATAnalyzer *psuadeAnalyzer = new MOATAnalyzer();
-  for (int i=0; i<numFunctions; i++) {
+  for (i=0; i<numFunctions; ++i) {
     Cout << "\n>>>>>> PSUADE MOAT output for function " << i << ":\n";
     psuade_adata.outputID_ = i;
     psuadeAnalyzer->analyze(psuade_adata);

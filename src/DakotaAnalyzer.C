@@ -201,11 +201,11 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
 
   // WJB - ToDo: confer with MSE: RealVector2DArray total_c_vars(ncont+2);
   multi_array<RealVector, 2> total_c_vars(extents[ndimtotal+2][num_samples]);
-  
+
   multi_array<IntVector, 2> total_di_vars = (ndiscint > 0) ?
     multi_array<IntVector, 2>(extents[ndimtotal+2][num_samples]):
     multi_array<IntVector, 2>();
- 
+
   multi_array<RealVector, 2> total_dr_vars = (ndiscreal > 0 ) ? 
     multi_array<RealVector, 2>(extents[ndimtotal+2][num_samples]):
     multi_array<RealVector, 2>();
@@ -213,7 +213,13 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
   // get first sample block
   vary_pattern(true);
   get_parameter_sets(iteratedModel);
-  if (compactMode)
+  if (compactMode) {
+    if (allSamples.numCols() != num_samples) {
+      Cerr << "\nError in Analyzer::variance_based_decomp(): Expected "
+	   << num_samples << " variable samples; received "
+	   << allSamples.numCols() << std::endl;
+      abort_handler(-1);
+    }
     for (j=0; j<num_samples; ++j) {
       const Real* sample_j = allSamples[j];
       if (ncont)
@@ -226,7 +232,14 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
       if (ndiscreal)
 	copy_data(&sample_j[ncont+ndiscint], ndiscreal, total_dr_vars[0][j]);
     }
-  else
+  }
+  else {
+    if (allVariables.size() != num_samples) {
+      Cerr << "\nError in Analyzer::variance_based_decomp(): Expected "
+	   << num_samples << " variables sets; received "
+	   << allVariables.size() << std::endl;
+      abort_handler(-1);
+    }
     for (j=0; j<num_samples; ++j) {
       const Variables& all_vars_j = allVariables[j];
       if (ncont)
@@ -236,10 +249,17 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
       if (ndiscreal)
 	copy_data(all_vars_j.discrete_real_variables(), total_dr_vars[0][j]);
     }
+  }
 
   // get second sample block
   get_parameter_sets(iteratedModel);
-  if (compactMode)
+  if (compactMode) {
+    if (allSamples.numCols() != num_samples) {
+      Cerr << "\nError in Analyzer::variance_based_decomp(): Expected "
+	   << num_samples << " variable samples; received "
+	   << allSamples.numCols() << std::endl;
+      abort_handler(-1);
+    }
     for (j=0; j<num_samples; ++j) {
       const Real* sample_j = allSamples[j];
       if (ncont)
@@ -252,7 +272,14 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
       if (ndiscreal)
 	copy_data(&sample_j[ncont+ndiscint], ndiscreal, total_dr_vars[1][j]);
     }
-  else
+  }
+  else {
+    if (allVariables.size() != num_samples) {
+      Cerr << "\nError in Analyzer::variance_based_decomp(): Expected "
+	   << num_samples << " variables sets; received "
+	   << allVariables.size() << std::endl;
+      abort_handler(-1);
+    }
     for (j=0; j<num_samples; ++j) {
       const Variables& all_vars_j = allVariables[j];
       if (ncont)
@@ -262,6 +289,7 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
       if (ndiscreal)
 	copy_data(all_vars_j.discrete_real_variables(), total_dr_vars[1][j]);
     }
+  }
 
   for (i=2; i<ndimtotal+2; ++i) {
     total_c_vars[i]  = total_c_vars[1];
@@ -314,17 +342,15 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
     // evaluate each of the parameter sets in allVariables
     evaluate_parameter_sets(iteratedModel, true, false);
     if (allResponses.size() != num_samples) {
-      Cerr << "\nError (VBD): Expected " << num_samples
-	   << " Responses; received " << allResponses.size() << std::endl;
+      Cerr << "\nError in Analyzer::variance_based_decomp(): expected "
+	   << num_samples << " responses; received " << allResponses.size()
+	   << std::endl;
       abort_handler(-1);
     }
-    for (k=0; k<numFunctions; ++k) {
-      int j = 0;
-      IntRespMCIter resp_it  = allResponses.begin();
-      IntRespMCIter resp_end = allResponses.end();
-      for( ; resp_it != resp_end ; ++resp_it, ++j)
-	total_fn_vals[k][i][j] = resp_it->second.function_value(k);
-    }
+    IntRespMCIter r_it;
+    for (k=0; k<numFunctions; ++k)
+      for (r_it=allResponses.begin(), j=0; j<num_samples; ++r_it, ++j)
+	total_fn_vals[k][i][j] = r_it->second.function_value(k);
   }
   // There are four versions of the indices being calculated. 
   // S1 is a corrected version from Saltelli's 2004 "Sensitivity 
@@ -429,7 +455,7 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
   //    var_A_norm += std::pow(total_norm_vals[k][0][j], 2.);
   //  var_AB_norm = var_A_norm/(Real)(num_samples) - (mean_A_norm*mean_B_norm);
   //  var_A_norm = var_A_norm/(Real)(num_samples) - (mean_A_norm*mean_A_norm);
-    // variance estimate of Y for T indices
+  // variance estimate of Y for T indices
   //  for (j=0; j<num_samples; j++)
   //    var_B_norm += std::pow(total_norm_vals[k][1][j], 2.);
   //  var_B_norm = var_B_norm/(Real)(num_samples) - (mean_B_norm*mean_B_norm);
@@ -459,13 +485,13 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
       //S1[k][i] = (sum_S/(Real)(num_samples) - mean_sq2)/var_hatYS;  
       //T1[k][i] = 1. - (sum_T/(Real)(num_samples-1) - mean_sq2)/var_hatYS;
       //T1[k][i] = 1. - (sum_T/(Real)(num_samples) - (mean_hatB*mean_hatB))/var_hatYT;
-      // S2[k][i] = (sum_S/(Real)(num_samples) - mean_sq1)/var_hatYnom;     
-      // T2[k][i] = 1. - (sum_T/(Real)(num_samples) - mean_sq1)/var_hatYnom;
+      //S2[k][i] = (sum_S/(Real)(num_samples) - mean_sq1)/var_hatYnom;     
+      //T2[k][i] = 1. - (sum_T/(Real)(num_samples) - mean_sq1)/var_hatYnom;
       //S2[k][i] = (sum_5/(Real)(num_samples) - (mean_A_norm*mean_B_norm))/var_AB_norm;  
       //T2[k][i] = 1. - (sum_6/(Real)(num_samples) - (mean_B_norm*mean_B_norm))/var_B_norm;
       //S3[k][i] = ((sum_5/(Real)(num_samples)) - (mean_A_norm*mean_A_norm))/var_A_norm;  
       //T3[k][i] = 1. - (sum_6/(Real)(num_samples) - (mean_A_norm*mean_B_norm))/var_AB_norm;
-      // S3[k][i] = (sum_3/(Real)(num_samples))/var_hatYC;    
+      //S3[k][i] = (sum_3/(Real)(num_samples))/var_hatYC;    
       //T3[k][i] = (sum_32/(Real)(num_samples))/var_hatYnom;
       //S4[k][i] = (var_hatYnom - (sum_J/(Real)(2*num_samples)))/var_hatYnom;
       S4[k][i] = (sum_3/(Real)(num_samples))/var_hatYC;    
@@ -616,16 +642,17 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
     allSamples.shapeUninitialized(num_vars, num_evals);
   else 
     allVariables.resize(num_evals);
-  //allResponses.resize(num_evals); // temp hack; TO DO
+  allResponses.clear();
 
   // now read variables and responses (minimal error checking for now)
-  for (size_t i=0; i<num_evals; ++i) {
+  int cntr = -1; // use negative ids for file import
+  for (size_t i=0; i<num_evals; ++i, --cntr) {
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "   reading sample " << i << std::endl;
 
     if (!compactMode)
       allVariables[i] = iteratedModel.current_variables().copy();
-    allResponses[i] = iteratedModel.current_response().copy();
+    allResponses[cntr] = iteratedModel.current_response().copy();
 
     try {
       if (compactMode)
@@ -633,18 +660,17 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 	  tabular_file >> allSamples(var_index, i);
       else
 	allVariables[i].read_tabular(tabular_file);
-      allResponses[i].read_tabular(tabular_file);
+      allResponses[cntr].read_tabular(tabular_file);
     }
     catch (const std::ios_base::failure& failorbad_except) {
-      Cerr << "\nError: insufficient data in post-run input file;\n"
-	   << "       expected " << num_evals << " samples, read " << i 
-	   << std::endl;
+      Cerr << "\nError: insufficient data in post-run input file;\n       "
+	   << "expected " << num_evals << " samples, read " << i << std::endl;
       abort_handler(-1);
     }
     if (compactMode)
-      update_best(allSamples[i], i+1, allResponses[i]);
+      update_best(allSamples[i], i+1, allResponses[cntr]);
     else
-      update_best(allVariables[i], i+1, allResponses[i]);
+      update_best(allVariables[i], i+1, allResponses[cntr]);
   }
   
   tabular_file.close();

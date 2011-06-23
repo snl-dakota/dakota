@@ -37,14 +37,14 @@ void NonDLHSSingleInterval::initialize()
 void NonDLHSSingleInterval::post_process_samples()
 {
   const IntResponseMap& all_responses = lhsSampler.all_responses();
-  Real lwr, upr;
+  Real lwr, upr; IntRespMCIter r_it;
   for (respFnCntr=0; respFnCntr<numFunctions; ++respFnCntr) {
     Cout << ">>>>> Identifying minimum and maximum samples for response "
 	 << "function " << respFnCntr+1 << '\n';
-    size_t i, j; IntRespMCIter it = all_responses.begin();
-    lwr = upr = it->second.function_values()[respFnCntr]; ++it;
-    for (; it!=all_responses.end(); ++it) {
-      const Real& fn_val = it->second.function_values()[respFnCntr];
+    r_it = all_responses.begin();
+    lwr = upr = r_it->second.function_values()[respFnCntr]; ++r_it;
+    for (; r_it!=all_responses.end(); ++r_it) {
+      const Real& fn_val = r_it->second.function_values()[respFnCntr];
       if (fn_val < lwr)
 	lwr = fn_val;
       else if (fn_val > upr)

@@ -90,6 +90,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
  
   const RealMatrix&     all_samples = lhsSampler.all_samples();
   const IntResponseMap& all_resp    = lhsSampler.all_responses();
+  IntRespMCIter resp_it;
   double **zt_raw;
   double **ysim;
   double **x_obs;
@@ -100,30 +101,26 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   Cout << "num_problem_vars " << num_problem_vars << '\n';
   size_t num_resp = iteratedModel.num_functions();
   Cout << "num_responses " << num_resp << '\n';
-  
+
+  int i, j, num_obs_data = 0;
   zt_raw=new double*[numSamples];
-  for (int i=0; i<numSamples; ++i)
+  for (i=0; i<numSamples; ++i)
     zt_raw[i]=new double[num_problem_vars];
-  for (int i=0; i<num_problem_vars; ++i)
-   for (int j=0; j<numSamples; ++j)
-     zt_raw[j][i]=all_samples(i,j);
+  for (i=0; i<num_problem_vars; ++i)
+    for (j=0; j<numSamples; ++j)
+      zt_raw[j][i]=all_samples(i,j);
   
   ysim=new double*[1];
-  for (int i=0; i<1; ++i)
+  for (i=0; i<1; ++i)
     ysim[i]=new double[numSamples];
-  for (int i=0; i<1; ++i) {
-    IntRespMCIter resp_it = all_resp.begin();
-    for (int j=0; j<numSamples; ++j, ++resp_it)
+  for (i=0; i<1; ++i)
+    for (j=0, resp_it=all_resp.begin(); j<numSamples; ++j, ++resp_it)
       ysim[i][j]=resp_it->second.function_value(0);
 
-  }
-
- // We read in the experimental data.  
- // We assume for now that the number of calibration 
- // parameters is the number of total uncertain variables 
- // (num_problem_vars) less the number of x_observed data. 
-  int i=0, num_obs_data = 0;
-  
+  // We read in the experimental data.  
+  // We assume for now that the number of calibration 
+  // parameters is the number of total uncertain variables 
+  // (num_problem_vars) less the number of x_observed data. 
   std::ifstream data_file1(xObsDataFile);
   if (!data_file1) {
     Cerr << "Could not open user data source for x observations " 
@@ -142,11 +139,11 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
     data_file1.clear();
     data_file1.seekg(0, std::ios::beg);
 
-    i=0;
+    i = 0;
     while ((i<num_obs_data) && (data_file1 >> xObsData[i]))
     //while (i<num_obs_data) {
     // data_file1 >> *xObsData[i];
-     i++;
+      ++i;
     data_file1.close();
   }
 
@@ -203,9 +200,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
  fprintf (fp_new,"\n%d \n",1);
  // ysim [ lsim x m ]
 
- IntRespMCIter resp_it  = all_resp.begin();
- IntRespMCIter resp_end = all_resp.end();
- for ( ; resp_it != resp_end; ++resp_it)
+ for (resp_it = all_resp.begin(); resp_it != all_resp.end(); ++resp_it)
    fprintf(fp_new,"%f ", resp_it->second.function_value(0));
 
  // Ksim [ lsim x pu ]
