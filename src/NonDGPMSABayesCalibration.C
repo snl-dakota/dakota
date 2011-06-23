@@ -88,8 +88,8 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   
   lhsSampler.run_iterator(Cout);
  
-  const RealMatrix&    all_samples = lhsSampler.all_samples();
-  const ResponseArray& all_resp    = lhsSampler.all_responses();
+  const RealMatrix&     all_samples = lhsSampler.all_samples();
+  const IntResponseMap& all_resp    = lhsSampler.all_responses();
   double **zt_raw;
   double **ysim;
   double **x_obs;
@@ -111,9 +111,12 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   ysim=new double*[1];
   for (int i=0; i<1; ++i)
     ysim[i]=new double[numSamples];
-  for (int i=0; i<1; ++i)
-   for (int j=0; j<numSamples; ++j)
-     ysim[i][j]=all_resp[j].function_value(0);
+  for (int i=0; i<1; ++i) {
+    IntRespMCIter resp_it = all_resp.begin();
+    for (int j=0; j<numSamples; ++j, ++resp_it)
+      ysim[i][j]=resp_it->second.function_value(0);
+
+  }
 
  // We read in the experimental data.  
  // We assume for now that the number of calibration 
@@ -199,8 +202,12 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
  // lsim
  fprintf (fp_new,"\n%d \n",1);
  // ysim [ lsim x m ]
- for (int i=0; i<numSamples;i++)
-   fprintf(fp_new,"%f ",all_resp[i].function_value(0));
+
+ IntRespMCIter resp_it  = all_resp.begin();
+ IntRespMCIter resp_end = all_resp.end();
+ for ( ; resp_it != resp_end; ++resp_it)
+   fprintf(fp_new,"%f ", resp_it->second.function_value(0));
+
  // Ksim [ lsim x pu ]
  //fprintf (fp_new,"\n%f \n",1.0);
  // Dsim [ lsim x pv ]

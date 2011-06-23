@@ -427,13 +427,13 @@ void DDACEDesignCompExp::resolve_samples_symbols()
 
 void DDACEDesignCompExp::compute_main_effects() 
 {
-  size_t f, s, v;
   const StringArray& fn_labels = iteratedModel.response_labels();
   for (size_t f=0; f<numFunctions; f++) {
 
     std::vector<double> resp_fn_samples;
-    for (s=0; s<numSamples; s++)
-      resp_fn_samples.push_back(allResponses[s].function_value(f));
+    IntRespMCIter resp_it = allResponses.begin();
+    for (size_t s=0; s<numSamples; ++s, ++resp_it)
+      resp_fn_samples.push_back(resp_it->second.function_value(f));
 
     // Create a DDACE Response object
     DDaceMainEffects::Response ddace_response(resp_fn_samples);
@@ -441,9 +441,9 @@ void DDACEDesignCompExp::compute_main_effects()
     // Create a vector of factors 
     std::vector<DDaceMainEffects::Factor> ddace_factors;
 
-    for (v=0; v<numContinuousVars; v++) {
+    for (size_t v=0; v<numContinuousVars; v++) {
       std::vector<int> symbols_map_factor;
-      for (s=0; s<numSamples; s++) 
+      for (size_t s=0; s<numSamples; s++) 
 	symbols_map_factor.push_back(symbolMapping[s][v]);
 
       // Create a DDACE Factor object
