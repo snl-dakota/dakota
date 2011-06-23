@@ -224,6 +224,8 @@ public:
   virtual const String& interface_id() const;
   /// Return the value of the evaluation id counter for the Model
   virtual int evaluation_id() const;
+  /// Indicates the usage of an evaluation cache by the Model
+  virtual bool evaluation_cache() const;
 
   /// Set the reference points for the evaluation counters within the Model
   virtual void set_evaluation_reference();

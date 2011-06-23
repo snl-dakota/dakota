@@ -73,6 +73,9 @@ protected:
   /// return interfaceSynchronization
   String interface_synchronization() const;
 
+  /// return evalCacheFlag
+  bool evaluation_cache() const;
+
   // Placeholders for external layer of filtering (common I/O operations
   // such as d.v. linking and response time history smoothing)
   //void filter(const Variables& vars);
@@ -437,6 +440,10 @@ inline int ApplicationInterface::asynch_local_evaluation_concurrency() const
 
 inline String ApplicationInterface::interface_synchronization() const
 { return interfaceSynchronization; }
+
+
+inline bool ApplicationInterface::evaluation_cache() const
+{ return evalCacheFlag; }
 
 
 inline void ApplicationInterface::

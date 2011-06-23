@@ -109,6 +109,9 @@ protected:
   /// return the current evaluation id for the SingleModel
   /// (request forwarded to userDefinedInterface)
   int evaluation_id() const;
+  /// return flag indicated usage of an evaluation cache by the SingleModel
+  /// (request forwarded to userDefinedInterface)
+  bool evaluation_cache() const;
 
   /// set the evaluation counter reference points for the SingleModel
   /// (request forwarded to userDefinedInterface)
@@ -228,6 +231,10 @@ inline const String& SingleModel::interface_id() const
 
 inline int SingleModel::evaluation_id() const
 { return userDefinedInterface.evaluation_id(); }
+
+
+inline bool SingleModel::evaluation_cache() const
+{ return userDefinedInterface.evaluation_cache(); }
 
 
 inline void SingleModel::set_evaluation_reference()

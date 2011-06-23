@@ -3133,6 +3133,18 @@ int Model::evaluation_id() const
 }
 
 
+/** Only Models including ApplicationInterfaces support an evaluation cache:
+    surrogate, nested, and recast mappings are not stored in the cache. 
+    Possible exceptions: HierarchSurrModel, NestedModel::optionalInterface. */
+bool Model::evaluation_cache() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->evaluation_cache();
+  else // letter lacking redefinition of virtual fn.
+    return false; // default
+}
+
+
 void Model::set_evaluation_reference()
 {
   if (modelRep) // envelope fwd to letter

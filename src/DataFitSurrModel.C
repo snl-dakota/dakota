@@ -33,8 +33,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   pointsTotal(problem_db.get_int("model.surrogate.points_total")),
   pointsManagement(problem_db.get_short("model.surrogate.points_management")),
   pointReuse(problem_db.get_string("model.surrogate.point_reuse")),
-  pointReuseFile(problem_db.get_string("model.surrogate.point_reuse_file")),
-  actualModelCache(false)
+  pointReuseFile(problem_db.get_string("model.surrogate.point_reuse_file"))
 {
   // ignore bounds when finite differencing on data fits, since the bounds are
   // artificial in this case (and reflecting the stencil degrades accuracy)
@@ -62,11 +61,6 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     // instantiate the actual model
     actualModel = problem_db.get_model();
     check_submodel_compatibility(actualModel);
-    // data for constructing surrogates has persistence when interface cache
-    // is on and when actualModel data is not recast/nested/approximated from
-    // lower level cached data.  Possible exception: HierarchSurrModel.
-    actualModelCache = (actualModel.model_type() == "single" &&
-			problem_db.get_bool("interface.evaluation_cache"));
     // if outer level output is verbose/debug and actualModel verbosity is
     // defined by the DACE method spec, request fine-grained evaluation
     // reporting for purposes of the final output summary.  This allows verbose
@@ -106,8 +100,15 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   // must be performed in ApproximationInterface::map().
   const Variables& vars = (actualModel.is_null()) ? currentVariables :
     actualModel.current_variables();
-  approxInterface.assign_rep(new
-    ApproximationInterface(problem_db, vars, numFns), false);
+  //actual_model_cache = (actualModel.model_type() == "single" &&
+  //			  problem_db.get_bool("interface.evaluation_cache"));
+  bool cache = false; String interface_id;
+  if (!actualModel.is_null()) {
+    cache = actualModel.evaluation_cache();
+    interface_id = actualModel.interface_id();
+  }
+  approxInterface.assign_rep(new ApproximationInterface(problem_db, vars,
+    cache, interface_id, numFns), false);
 
   // read the points_file once and then reuse this data as appropriate
   // within build_global()
@@ -189,7 +190,9 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   // local/multipoint/global approximation.  By instantiating with assign_rep(),
   // Interface::get_interface() does not need special logic for approximations.
   approxInterface.assign_rep(new ApproximationInterface(approx_type,
-    approx_order, actualModel.current_variables(), numFns, data_order), false);
+    approx_order, actualModel.current_variables(),
+    actualModel.evaluation_cache(), actualModel.interface_id(),
+    numFns, data_order), false);
 
   if (!daceIterator.is_null()) // global DACE approximations
     daceIterator.sub_iterator_flag(true);
@@ -705,13 +708,13 @@ void DataFitSurrModel::build_global()
 
     // Process the PRPCache
     extern PRPCache data_pairs;
-    PRPCacheCIter prp_iter, prp_end_iter = data_pairs.end();
-    for (prp_iter = data_pairs.begin(); prp_iter != prp_end_iter; ++prp_iter) {
+    for (PRPCacheCIter prp_iter = data_pairs.begin();
+	 prp_iter != data_pairs.end(); ++prp_iter) {
       const Variables&  db_vars    = prp_iter->prp_parameters();
       const RealVector& db_c_vars  = db_vars.continuous_variables();
       const IntVector&  db_di_vars = db_vars.discrete_int_variables();
       const RealVector& db_dr_vars = db_vars.discrete_real_variables();
-      if ( db_c_vars.length()  == num_c_vars &&
+      if ( db_c_vars.length()  == num_c_vars  &&
 	   db_di_vars.length() == num_di_vars &&
 	   db_dr_vars.length() == num_dr_vars &&
 	   prp_iter->interface_id() == actualModel.interface_id() &&

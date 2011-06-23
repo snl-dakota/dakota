@@ -1221,4 +1221,13 @@ const AnalysisCode* Interface::analysis_code() const
   return NULL;
 }
 
+
+bool Interface::evaluation_cache() const
+{
+  if (interfaceRep)
+    return interfaceRep->evaluation_cache();
+  else // letter lacking redefinition of virtual fn.
+    return false; // default
+}
+
 } // namespace Dakota

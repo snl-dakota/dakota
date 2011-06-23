@@ -198,6 +198,9 @@ public:
   /// return AnalysisCode::fileNameMap when defined for derived Interface class
   virtual const AnalysisCode* analysis_code() const;
 
+  /// return flag indicating usage of the global evaluation cache
+  virtual bool evaluation_cache() const;
+
   //
   //- Heading: Set and Inquire functions
   //

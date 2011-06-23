@@ -41,12 +41,14 @@ public:
   //
 
   /// primary constructor
-  ApproximationInterface(ProblemDescDB& problem_db,
-			 const Variables& actual_model_vars, size_t num_fns);
+  ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
+			 bool am_cache, const String& am_interface_id,
+			 size_t num_fns);
   /// alternate constructor for instantiations on the fly
   ApproximationInterface(const String& approx_type,
 			 const UShortArray& approx_order,
-			 const Variables& actual_model_vars, size_t num_fns,
+			 const Variables& am_vars, bool am_cache,
+			 const String& am_interface_id, size_t num_fns,
 			 short data_order);
   /// destructor
   ~ApproximationInterface();
@@ -115,6 +117,24 @@ protected:
 private:
 
   //
+  //- Heading: Convenience functions
+  //
+
+  /// add variables/response data to functionSurfaces using a mixture
+  /// of shallow and deep copies
+  void mixed_add(const Variables& vars, const Response& response, bool anchor);
+  /// add variables/response data to functionSurfaces using a mixture
+  /// of shallow and deep copies
+  void mixed_add(const Real* c_vars, const Response& response, bool anchor);
+  /// add variables/response data to functionSurfaces using a shallow copy
+  void shallow_add(const Variables& vars, const Response& response,
+		   bool anchor);
+
+  /// update the popCount within each of the functionSurfaces based on the
+  /// active set definitions within resp_map
+  void update_pop_counts(const IntResponseMap& resp_map);
+
+  //
   //- Heading: Data
   //
 
@@ -150,6 +170,10 @@ private:
   /// copy of the actualModel variables object used to simplify conversion 
   /// among differing variable views
   Variables actualModelVars;
+  /// indicates usage of an evaluation cache by the actualModel
+  bool actualModelCache;
+  /// the interface id from the actualModel used for ordered PRPCache lookups
+  String actualModelInterfaceId;
 
   /// bookkeeping map to catalogue responses generated in map() for use
   /// in synch() and synch_nowait().  This supports pseudo-asynchronous
