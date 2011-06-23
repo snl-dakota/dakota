@@ -119,7 +119,10 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   // Configure a RecastModel with one objective and no constraints using the
   // alternate minimalist constructor: the recast fn pointers are reset for
   // each level within the run fn.
-  eifModel.assign_rep(new RecastModel(fHatModel, 1, 0, 0), false);
+  SizetArray recast_vars_comps_total; // default: empty; no change in size
+  eifModel.assign_rep(
+    new RecastModel(fHatModel, recast_vars_comps_total, 1, 0, 0), 
+    false);
 
   // must use alternate NoDB ctor chain
   int max_iterations = 10000, max_fn_evals = 50000;

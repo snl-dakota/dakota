@@ -60,8 +60,11 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
   if (weightFlag || scaleFlag || obsDataFlag){
 
     // user-space model becomes the sub-model of a RecastModel:
-    iteratedModel.assign_rep(new RecastModel(model, numIterPrimaryFns, 
-      numNonlinearConstraints, numNonlinearIneqConstraints), false);
+    SizetArray recast_vars_comps_total; // default: empty; no change in size
+    iteratedModel.assign_rep(
+      new RecastModel(model, recast_vars_comps_total, numIterPrimaryFns, 
+		      numNonlinearConstraints, numNonlinearIneqConstraints), 
+      false);
 
     if (scaleFlag)
       initialize_scaling();

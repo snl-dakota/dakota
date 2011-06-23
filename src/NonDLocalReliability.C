@@ -245,7 +245,10 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
   // configure a RecastModel with one objective and one equality constraint
   // using the alternate minimalist constructor
   if (mppSearchType) {
-    mppModel.assign_rep(new RecastModel(uSpaceModel, 1, 1, 0), false);
+    SizetArray recast_vars_comps_total; // default: empty; no change in size
+    mppModel.assign_rep(
+      new RecastModel(uSpaceModel, recast_vars_comps_total, 1, 1, 0),
+      false);
     RealVector nln_eq_targets(1, false); nln_eq_targets = 0.;
     mppModel.nonlinear_eq_constraint_targets(nln_eq_targets);
 

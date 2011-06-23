@@ -488,6 +488,7 @@ void NonD::construct_u_space_model(Model& x_model, Model& u_model,
 {
   size_t i;
   Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;
+  SizetArray recast_vars_comps_total; // default: no change in size
   vars_map.resize(numContinuousVars);
   for (i=0; i<numContinuousVars; ++i) {
     vars_map[i].resize(1);
@@ -518,7 +519,8 @@ void NonD::construct_u_space_model(Model& x_model, Model& u_model,
   // There is no additional response mapping beyond that required by the
   // nonlinear variables mapping.
   BoolDequeArray nonlinear_resp_map(numFunctions, BoolDeque(1, false));
-  u_model.assign_rep(new RecastModel(x_model, vars_map, nonlinear_vars_map,
+  u_model.assign_rep(new RecastModel(x_model, vars_map,
+    recast_vars_comps_total, nonlinear_vars_map,
     vars_u_to_x_mapping, set_u_to_x_mapping, primary_resp_map,
     secondary_resp_map, 0, nonlinear_resp_map, resp_x_to_u_mapping, NULL),
     false);

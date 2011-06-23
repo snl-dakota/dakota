@@ -37,7 +37,10 @@ NonDLocalInterval::NonDLocalInterval(Model& model): NonDInterval(model)
   // Configure a RecastModel with one objective and no constraints using the
   // alternate minimalist constructor: the recast fn pointers are reset for
   // each level within the run fn.
-  minMaxModel.assign_rep(new RecastModel(iteratedModel, 1, 0, 0), false);
+  SizetArray recast_vars_comps_total; // default: empty; no change in size
+  minMaxModel.assign_rep(
+    new RecastModel(iteratedModel, recast_vars_comps_total, 1, 0, 0),
+    false);
 
 #if !defined(HAVE_NPSOL) && !defined(HAVE_OPTPP)
   Cerr << "Error: this executable not configured with NPSOL or OPT++.\n"

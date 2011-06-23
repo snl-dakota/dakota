@@ -26,9 +26,15 @@ namespace Dakota {
 //#define DEBUG
 
 
+
+
+/** Default recast model constructor.  Requires full definition of the
+    transformation.  Parameter vars_comps_totals indicates the number
+    of each type of variable {4 types} x {3 domains} in the recast
+    variable space */
 RecastModel::
 RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
-	    bool nonlinear_vars_mapping,
+	    const SizetArray& vars_comps_totals, bool nonlinear_vars_mapping,
 	    void (*variables_map)      (const Variables& recast_vars,
 					Variables& sub_model_vars),
 	    void (*set_map)            (const Variables& recast_vars,
@@ -55,26 +61,30 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   nonlinearRespMapping(nonlinear_resp_mapping),
   primaryRespMapping(primary_resp_map), secondaryRespMapping(secondary_resp_map)
 {
-  componentParallelMode = SUB_MODEL;
-  outputLevel     = sub_model.output_level();
-
-  gradType        = sub_model.gradient_type();
-  methodSrc       = sub_model.method_source();
-  ignoreBounds    = sub_model.ignore_bounds();
-  centralHess	  = sub_model.central_hess();
-  intervalType    = sub_model.interval_type();
-  fdGradSS        = sub_model.fd_gradient_step_size();
-  gradIdAnalytic  = sub_model.gradient_id_analytic();
-  gradIdNumerical = sub_model.gradient_id_numerical();
-
-  hessType        = sub_model.hessian_type();
-  quasiHessType   = sub_model.quasi_hessian_type();
-  fdHessByFnSS    = sub_model.fd_hessian_by_fn_step_size();
-  fdHessByGradSS  = sub_model.fd_hessian_by_grad_step_size();
-  hessIdAnalytic  = sub_model.hessian_id_analytic();
-  hessIdNumerical = sub_model.hessian_id_numerical();
-  hessIdQuasi     = sub_model.hessian_id_quasi();
  
+  initialize_data_from_submodel();
+
+  // recasting of variables
+  const Variables& sub_model_vars = subModel.current_variables();
+  // only reshape if change in the counts of each variable type
+  bool reshape_vars = false;
+  if (vars_comps_totals.empty() || 
+      sub_model_vars.variables_components_totals() == vars_comps_totals) {
+    currentVariables = sub_model_vars.copy();
+  }
+  else {
+    reshape_vars = true;
+    SharedVariablesData recast_svd(sub_model_vars.view(), vars_comps_totals);
+    currentVariables = Variables(recast_svd);
+    if (!variablesMapping) {
+      Cerr << "\nError (RecastModel): variables are resized, but no variables "
+	   << "mapping provided." << std::endl;
+      abort_handler(-1);
+    }
+  }
+  // propagate number of active continuous vars to deriv vars
+  numDerivVars = currentVariables.cv();
+
   respMapping = (primaryRespMapping || secondaryRespMapping) ? true : false;
   size_t num_recast_primary_fns = primaryRespMapIndices.size(),
     num_recast_secondary_fns = secondaryRespMapIndices.size(),
@@ -83,20 +93,6 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
     Cerr << "Error: size mismatch in response mapping configuration." << endl;
     abort_handler(-1);
   }
-
-  // recasting of variables
-  const Variables& sub_model_vars = subModel.current_variables();
-  currentVariables = sub_model_vars.copy();
-  // all current variables mappings are one-to-one -> no reshape needed
-  //if (variablesMapping) {
-    // varsMapIndices maps from currentVariables to subModel variables using
-    // varsMapIndices[subModel vars id][currentVariables id] indexing
-    //numDerivVars = ...; // unroll varsMapIndices arrays and count unique
-    //if (currentVariables.cv() != numDerivVars)
-    //  currentVariables.reshape(vc_totals);
-  //}
-  //else
-    numDerivVars = currentVariables.cv();
 
   // recasting of response
   const Response& sub_model_resp = subModel.current_response();
@@ -127,8 +123,8 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
         sub_model_cons.num_linear_eq_constraints());
   }
   // could be separate reshapes or could be combined
-  //if (variablesMapping && currentVariables.cv() != numDerivVars)
-  //  userDefinedConstraints.reshape(vc_totals);
+  if (reshape_vars)
+    userDefinedConstraints.reshape(vars_comps_totals);
 }
 
 
@@ -136,9 +132,12 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
     pointers until a separate call to initialize(), and accepts the
     minimum information needed to construct currentVariables,
     currentResponse, and userDefinedConstraints.  The resulting model
-    is sufficiently complete for passing to an Iterator. */
+    is sufficiently complete for passing to an Iterator.  Parameter
+    vars_comps_totals indicates the number of each type of variable
+    {4 types} x {3 domains} in the recast variable space */
 RecastModel::
 RecastModel(const Model& sub_model, //size_t num_deriv_vars,
+	    const SizetArray& vars_comps_totals,
 	    size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
 	    size_t recast_secondary_offset):
   Model(RecastBaseConstructor(), sub_model.problem_description_db(),
@@ -147,39 +146,25 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   variablesMapping(NULL), setMapping(NULL), primaryRespMapping(NULL),
   secondaryRespMapping(NULL)
 {
-  componentParallelMode = SUB_MODEL;
-  outputLevel     = sub_model.output_level();
-
-  gradType        = sub_model.gradient_type();
-  methodSrc       = sub_model.method_source();
-  ignoreBounds    = sub_model.ignore_bounds();
-  centralHess	  = sub_model.central_hess();
-  intervalType    = sub_model.interval_type();
-  fdGradSS        = sub_model.fd_gradient_step_size();
-  gradIdAnalytic  = sub_model.gradient_id_analytic();
-  gradIdNumerical = sub_model.gradient_id_numerical();
-
-  hessType        = sub_model.hessian_type();
-  quasiHessType   = sub_model.quasi_hessian_type();
-  fdHessByFnSS    = sub_model.fd_hessian_by_fn_step_size();
-  fdHessByGradSS  = sub_model.fd_hessian_by_grad_step_size();
-  hessIdAnalytic  = sub_model.hessian_id_analytic();
-  hessIdNumerical = sub_model.hessian_id_numerical();
-  hessIdQuasi     = sub_model.hessian_id_quasi();
+  
+  initialize_data_from_submodel();
 
   // recasting of variables
   const Variables& sub_model_vars = subModel.current_variables();
-  currentVariables = sub_model_vars.copy();
-  // all current variables mappings are one-to-one -> no reshape needed
-  //if (variablesMapping) {
-    // varsMapIndices maps from currentVariables to subModel variables using
-    // varsMapIndices[subModel vars id][currentVariables id] indexing
-    //numDerivVars = ...; // unroll varsMapIndices arrays and count unique
-    //if (currentVariables.cv() != numDerivVars)
-    //  currentVariables.reshape(vc_totals);
-  //}
-  //else
-    numDerivVars = currentVariables.cv(); 
+  // only reshape if change in the counts of each variable type
+  bool reshape_vars = false;
+  if (vars_comps_totals.empty() || 
+      sub_model_vars.variables_components_totals() == vars_comps_totals) {
+    currentVariables = sub_model_vars.copy();
+  }
+  else {
+    reshape_vars = true;
+    SharedVariablesData recast_svd(sub_model_vars.view(), vars_comps_totals);
+    currentVariables = Variables(recast_svd);
+  }
+  // propagate number of active continuous vars to deriv vars
+  numDerivVars = currentVariables.cv();
+
 
   // recasting of response
   const Response& sub_model_resp = subModel.current_response();
@@ -203,10 +188,9 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
     userDefinedConstraints.reshape(num_recast_nln_ineq, num_recast_nln_eq,
       sub_model_cons.num_linear_ineq_constraints(),
       sub_model_cons.num_linear_eq_constraints());
-
   // could be separate reshapes or could be combined
-  //if (variablesMapping && currentVariables.cv() != numDerivVars)
-  //  userDefinedConstraints.reshape(vc_totals);
+  if (reshape_vars)
+    userDefinedConstraints.reshape(vars_comps_totals);
 }
 
 
@@ -243,6 +227,7 @@ initialize(const Sizet2DArray& vars_map_indices,
   secondaryRespMapping    = secondary_resp_map;
 
   respMapping = (primaryRespMapping || secondaryRespMapping) ? true : false;
+
   if (nonlinearRespMapping.size() != primaryRespMapIndices.size() +
       secondaryRespMapIndices.size()) {
     Cerr << "Error: size mismatch in response mapping configuration." << endl;
@@ -441,6 +426,30 @@ const IntResponseMap& RecastModel::derived_synchronize_nowait()
   }
   else
     return orig_resp_map;
+}
+
+
+void RecastModel::initialize_data_from_submodel()
+{
+  componentParallelMode = SUB_MODEL;
+  outputLevel     = subModel.output_level();
+
+  gradType        = subModel.gradient_type();
+  methodSrc       = subModel.method_source();
+  ignoreBounds    = subModel.ignore_bounds();
+  centralHess	  = subModel.central_hess();
+  intervalType    = subModel.interval_type();
+  fdGradSS        = subModel.fd_gradient_step_size();
+  gradIdAnalytic  = subModel.gradient_id_analytic();
+  gradIdNumerical = subModel.gradient_id_numerical();
+
+  hessType        = subModel.hessian_type();
+  quasiHessType   = subModel.quasi_hessian_type();
+  fdHessByFnSS    = subModel.fd_hessian_by_fn_step_size();
+  fdHessByGradSS  = subModel.fd_hessian_by_grad_step_size();
+  hessIdAnalytic  = subModel.hessian_id_analytic();
+  hessIdNumerical = subModel.hessian_id_numerical();
+  hessIdQuasi     = subModel.hessian_id_quasi();
 }
 
 

@@ -42,7 +42,7 @@ public:
 
   /// standard constructor
   RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
-	      bool nonlinear_vars_mapping,
+	      const SizetArray& vars_comps_total, bool nonlinear_vars_mapping,
 	      void (*variables_map)      (const Variables& recast_vars,
 					  Variables& sub_model_vars),
 	      void (*set_map)            (const Variables& recast_vars,
@@ -62,6 +62,7 @@ public:
 					  Response& recast_response));
   /// alternate constructor
   RecastModel(const Model& sub_model, //size_t num_deriv_vars,
+	      const SizetArray& vars_comps_totals,
 	      size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
 	      size_t recast_secondary_offset);
 
@@ -238,6 +239,9 @@ private:
   //
   //- Heading: Convenience member functions
   //
+
+  /// code shared among constructors to initialize base class data from submodel
+  void initialize_data_from_submodel();
 
   /// Uses recastFnMap to convert incoming recast_set from iterator
   /// into sub_model_set for use with subModel.
