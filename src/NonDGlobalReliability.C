@@ -239,7 +239,11 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   // alternate minimalist constructor.  The RIA/PMA expected improvement/
   // expected feasibility formulations may vary with the level requests, so
   // the recast fn pointers are reset for each level within the run fn.
-  mppModel.assign_rep(new RecastModel(uSpaceModel, 1, 0, 0), false);
+  SizetArray recast_vars_comps_total; // default: empty; no change in size
+  mppModel.assign_rep(
+    new RecastModel(uSpaceModel, recast_vars_comps_total, 1, 0, 0),
+    false);
+
   // For formulations with one objective and one equality constraint,
   // use the following instead:
   //mppModel.assign_rep(new RecastModel(uSpaceModel, 1, 1, 0), false);
