@@ -102,8 +102,18 @@ void PSUADEDesignCompExp::post_run(std::ostream& s)
   }
 
   psuade_adata.sampleOutputs_ = new double [numSamples*numFunctions];
-  for (int i=0; i<numSamples; i++) {
-    const RealVector& fn_vals = allResponses[i].function_values();
+ 
+  if (allResponses.size() != numSamples) {
+    Cerr << "\nError (PSUADE): Expected " << numSamples
+	 << " Responses; received " << allResponses.size() << std::endl;
+    abort_handler(-1);
+  }
+ 
+  int i = 0;
+  IntRespMCIter resp_it  = allResponses.begin();
+  IntRespMCIter resp_end = allResponses.end();
+  for( ; resp_it != resp_end ; ++resp_it, ++i) {
+    const RealVector& fn_vals = resp_it->second.function_values();
     for (int j=0; j<numFunctions; j++)
       psuade_adata.sampleOutputs_[i*numFunctions+j] = fn_vals[j];
   }

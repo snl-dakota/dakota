@@ -313,9 +313,18 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
 
     // evaluate each of the parameter sets in allVariables
     evaluate_parameter_sets(iteratedModel, true, false);
-    for (k=0; k<numFunctions; ++k)
-      for (j=0; j<num_samples; ++j)
-	total_fn_vals[k][i][j] = allResponses[j].function_value(k);
+    if (allResponses.size() != num_samples) {
+      Cerr << "\nError (VBD): Expected " << num_samples
+	   << " Responses; received " << allResponses.size() << std::endl;
+      abort_handler(-1);
+    }
+    for (k=0; k<numFunctions; ++k) {
+      int j = 0;
+      IntRespMCIter resp_it  = allResponses.begin();
+      IntRespMCIter resp_end = allResponses.end();
+      for( ; resp_it != resp_end ; ++resp_it, ++j)
+	total_fn_vals[k][i][j] = resp_it->second.function_value(k);
+    }
   }
   // There are four versions of the indices being calculated. 
   // S1 is a corrected version from Saltelli's 2004 "Sensitivity 
