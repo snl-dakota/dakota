@@ -9,6 +9,128 @@ add_definitions("-DHAVE_CONFIG_H")
 add_definitions("-DDISABLE_DAKOTA_CONFIG_H")
 add_definitions("-DBOOST_MULTI_INDEX_DISABLE_SERIALIZATION")
 
+if (ENABLE_SPEC_MAINT)
+
+  # generate dakota.input.summary using nidrgen
+  add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.summary"
+    DEPENDS nidrgen 
+            ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+    COMMAND ${NIDR_BINARY_DIR}/nidrgen
+    ARGS    -efp ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec > ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.summary
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+  # generate dakota.input.desc (depends on dakota.tags.desc)
+  find_package(Perl REQUIRED)
+  file(GLOB ref_dox_files ${CMAKE_CURRENT_SOURCE_DIR}/docs Ref_*.dox)
+  add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc"
+    DEPENDS nidrgen 
+            ${CMAKE_CURRENT_SOURCE_DIR}/generate_desc.pl
+	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+	    ${ref_dox_files}
+    COMMAND ${NIDR_BINARY_DIR}/nidrgen
+    ARGS    -T ${CMAKE_CURRENT_SOURCE_DIR}/dakota.tags.desc ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+    COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/generate_desc.pl
+    COMMAND ${CMAKE_COMMAND}
+    ARGS    -E remove ${CMAKE_CURRENT_SOURCE_DIR}/dakota.tags.desc
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+  # generate NIDR_guikeywds.h
+  add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/NIDR_guikeywds.h"
+    DEPENDS nidrgen 
+            ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
+    COMMAND ${NIDR_BINARY_DIR}/nidrgen
+    ARGS    -egG ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc > ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_guikeywds.h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+  # generate NIDR_keywds.H
+  add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/NIDR_keywds.H"
+    DEPENDS nidrgen 
+            ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
+	    ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_initdefs.h
+    COMMAND ${NIDR_BINARY_DIR}/nidrgen
+    ARGS    dakota.input.nspec dakota.input.desc NIDR_initdefs.h NIDR_keywds.H
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+  # create a special target and add to "all" target
+  add_custom_target(dakota-spec-files 
+    ALL
+    DEPENDS nidrgen
+            ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.summary
+	    ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc
+	    ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_guikeywds.h
+	    ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_keywds.H
+    VERBATIM
+    )
+
+  # TODO: add guikeywds here as not needed in repo
+  #add_custom_target(jaguar-files 
+  #  DEPENDS nidrgen
+  #          ${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.nspec
+  #	  ${CMAKE_CURRENT_SOURCE_DIR}/NIDR_keywds0.h
+  #	  dakreorder
+  #	  dakreord
+  #  VERBATIM
+  #  )
+
+
+  # NOTE: NIDR_keywds0.h is only needed by dakreorder.c
+
+  # generate NIDR_keywds0.h in two steps
+  # (1) generate NIDR_keywds0.h.tmp
+  #ADD_CUSTOM_COMMAND(
+  #  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds0.h.tmp"
+  #  DEPENDS nidrgen Dt ${CMAKE_CURRENT_BINARY_DIR}/dakota.input.desc
+  #  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/nidrgen
+  #  ARGS -ftn- dakota.input.nspec > NIDR_keywds0.h.tmp
+  #  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/Dt
+  #  ARGS -8 dakota.input.nspec ${CMAKE_CURRENT_SOURCE_DIR}/dakreorder.c ${CMAKE_CURRENT_SOURCE_DIR}/nidr.c ${CMAKE_CURRENT_SOURCE_DIR}/nidr-parser.c ${CMAKE_CURRENT_SOURCE_DIR}/nidr-scanner.c ${CMAKE_CURRENT_SOURCE_DIR}/avltree.c ${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds0.h.tmp > date.txt
+  #  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  #)
+
+
+
+  # (2) generate NIDR_keywds0.h
+  #ADD_CUSTOM_COMMAND(
+  #  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds0.h"
+  #  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds0.h.tmp"
+  #  COMMAND ${CMAKE_COMMAND}
+  #  ARGS
+  #    -Dinfile:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds0.h.tmp
+  #    -Ddatefile:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/date.txt
+  #    -Doutfile:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/NIDR_keywds0.h
+  #    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/finish_keywds0.cmake
+  #  VERBATIM)
+
+  # TODO: make -ldl optional if possible
+  ##bin_PROGRAMS += dakreorder
+  ##dakreorder_SOURCES = dakreorder.c NIDR_keywds0.h
+  #dakreorder.$(OBJEXT): NIDR_keywds0.h
+  ##dakreorder_INCLUDES = $(NIDR_INCL)
+  ##dakreorder_LDFLAGS = $(LOCALLDFLAGS)
+  ##dakreorder_LDADD = $(NIDR_ARCHIVE) -ldl
+
+  ##bin_PROGRAMS += dakreord
+  ##dakreord_SOURCES = dakreorder.c
+  ##dakreord_CFLAGS = -DNO_NIDR_keywds0
+  ##dakreord_INCLUDES = $(NIDR_INCL)
+  ##dakreord_LDFLAGS = $(LOCALLDFLAGS)
+  ##dakreord_LDADD = $(NIDR_ARCHIVE) -ldl
+
+  # TODO: DAKOTA sources depend on NIDR_kywds.H
+
+endif()
+
+
 option(DAKOTA_PLUGIN "Toggle Plugin support, default is PluginEnabled" ON)
 if(DAKOTA_PLUGIN)
   add_definitions("-DDAKOTA_PLUGIN")

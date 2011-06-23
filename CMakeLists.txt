@@ -156,9 +156,9 @@ if(ENABLE_DAKOTA_TESTS)
   add_subdirectory(test)
 endif()
 
-option(ENABLE_DAKOTA_SPEC_MAINT "Enable DAKOTA specification maintenance mode."
+option(ENABLE_SPEC_MAINT "Enable DAKOTA specification maintenance mode."
   OFF)
-if(ENABLE_DAKOTA_SPEC_MAINT AND NOT UNIX)
+if(ENABLE_SPEC_MAINT AND NOT UNIX)
   message(FATAL_ERROR "DAKOTA specification maintenance mode only available on UNIX platforms")
 endif()
 
@@ -171,33 +171,4 @@ if(ENABLE_DAKOTA_DOCS)
     message(FATAL_ERROR "DAKOTA documentation build only available on UNIX platforms")
   endif()
 endif()
-
-
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs)
-set(docs_files
-  Ref_Interface.dox
-  Ref_Method.dox
-  Ref_Model.dox
-  Ref_Responses.dox
-  Ref_Strategy.dox
-  Ref_Variables.dox
-)
-foreach(doc ${docs_files})
-  configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/docs/${doc}
-    ${CMAKE_CURRENT_BINARY_DIR}/docs/${doc}
-    COPYONLY)
-endforeach()
-
-#generate dakota.input.desc
-find_package(Perl REQUIRED)
-ADD_CUSTOM_COMMAND(
-  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/dakota.input.desc"
-  COMMAND ${PERL_EXECUTABLE} generate_desc.pl
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-#clean up binary dir
-#file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/docs)
-
 
