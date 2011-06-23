@@ -94,7 +94,7 @@ public:
 					     Response& recast_response));
 
   /// override the submodel's derivative estimation behavior
-  void submodel_supports_estimated_derivatives(bool ssed_flag);
+  void submodel_supports_derivative_estimation(bool sed_flag);
 
 protected:
 
@@ -328,8 +328,8 @@ inline RecastModel::~RecastModel()
 { } // Virtual destructor handles referenceCount at Strategy level.
 
 
-inline void RecastModel::submodel_supports_estimated_derivatives(bool ssed_flag)
-{ subModel.supports_estimated_derivatives(ssed_flag); }
+inline void RecastModel::submodel_supports_derivative_estimation(bool sed_flag)
+{ subModel.supports_derivative_estimation(sed_flag); }
 
 
 inline Iterator& RecastModel::subordinate_iterator()

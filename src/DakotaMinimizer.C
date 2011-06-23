@@ -297,9 +297,9 @@ void Minimizer::initialize_scaling()
 
   // in the scaled case, perform numerical derivatives at the RecastModel level
   // (override the RecastModel default and the subModel default)
-  iteratedModel.supports_estimated_derivatives(true);
+  iteratedModel.supports_derivative_estimation(true);
   RecastModel* recast_model_rep = (RecastModel*) iteratedModel.model_rep();
-  recast_model_rep->submodel_supports_estimated_derivatives(false);
+  recast_model_rep->submodel_supports_derivative_estimation(false);
 
   // temporary arrays
   IntArray    tmp_types;

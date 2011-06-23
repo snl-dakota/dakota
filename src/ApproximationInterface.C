@@ -317,7 +317,7 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
   // a Taylor series rebuild whenever the inactive variable values change.
 
   // add/replace SurrogateData::anchor{Vars,Resp}
-  if (actualModelCache) {
+  if (actualModelCache && response_pr.first > 0) {
     // anchor vars/resp are not sufficiently persistent for use in shallow
     // copies.  Therefore, use ordered id lookup in global PRPCache.
     extern PRPCache data_pairs;
@@ -348,11 +348,11 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
   ISIter a_it; IntRespMCIter r_it;
   for (a_it=approxFnIndices.begin(); a_it!=approxFnIndices.end(); ++a_it)
     functionSurfaces[index].clear_data();
-  if (actualModelCache) {
-    extern PRPCache data_pairs;
-    for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
+  for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
+    if (actualModelCache && r_it->first > 0) { // valid evaluation id
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
+      extern PRPCache data_pairs;
       IntStringPair ids(r_it->first, actualModelInterfaceId);
       PRPCacheCIter p_it = lookup_by_ids(data_pairs, ids);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
@@ -360,10 +360,9 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
       else                          // shallow copies of cached vars/resp data
 	shallow_add(p_it->prp_parameters(), p_it->prp_response(), false);
     }
-  }
-  else                              // deep response copies with vars sharing
-    for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
+    else                            // deep response copies with vars sharing
       mixed_add(samples[i], r_it->second, false);
+  }
 }
 
 
@@ -382,11 +381,11 @@ update_approximation(const VariablesArray& vars_array,
   ISIter a_it; IntRespMCIter r_it;
   for (a_it=approxFnIndices.begin(); a_it!=approxFnIndices.end(); ++a_it)
     functionSurfaces[index].clear_data();
-  if (actualModelCache) {
-    extern PRPCache data_pairs;
-    for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
+  for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
+    if (actualModelCache && r_it->first > 0) { // valid evaluation id
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
+      extern PRPCache data_pairs;
       IntStringPair ids(r_it->first, actualModelInterfaceId);
       PRPCacheCIter p_it = lookup_by_ids(data_pairs, ids);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
@@ -394,10 +393,9 @@ update_approximation(const VariablesArray& vars_array,
       else                          // shallow copies of cached vars/resp data
 	shallow_add(p_it->prp_parameters(), p_it->prp_response(), false);
     }
-  }
-  else                              // deep response copies with vars sharing
-    for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
+    else                            // deep response copies with vars sharing
       mixed_add(vars_array[i], r_it->second, false);
+  }
 }
 
 
@@ -406,8 +404,8 @@ update_approximation(const VariablesArray& vars_array,
 void ApproximationInterface::
 append_approximation(const Variables& vars, const IntResponsePair& response_pr)
 {
-  // append to SurrogateData::{vars,resp}Data
-  if (actualModelCache) {
+  // append a single point to SurrogateData::{vars,resp}Data
+  if (actualModelCache && response_pr.first > 0) {
     // anchor vars/resp are not sufficiently persistent for use in shallow
     // copies.  Therefore, use ordered id lookup in global PRPCache.
     extern PRPCache data_pairs;
@@ -441,13 +439,13 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
 	 << "ApproximationInterface::update_approximation()." << std::endl;
     abort_handler(-1);
   }
-
-  ISIter a_it; IntRespMCIter r_it;
-  if (actualModelCache) {
-    extern PRPCache data_pairs;
-    for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
+  // append multiple points to SurrogateData::{vars,resp}Data
+  IntRespMCIter r_it;
+  for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
+    if (actualModelCache && r_it->first > 0) { // valid evaluation id
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
+      extern PRPCache data_pairs;
       IntStringPair ids(r_it->first, actualModelInterfaceId);
       PRPCacheCIter p_it = lookup_by_ids(data_pairs, ids);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
@@ -455,10 +453,9 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
       else                          // shallow copies of cached vars/resp data
 	shallow_add(p_it->prp_parameters(), p_it->prp_response(), false);
     }
-  }
-  else                              // deep response copies with vars sharing
-    for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
+    else                            // deep response copies with vars sharing
       mixed_add(samples[i], r_it->second, false);
+  }
 
   update_pop_counts(resp_map);
 }
@@ -476,13 +473,13 @@ append_approximation(const VariablesArray& vars_array,
 	 << "ApproximationInterface::update_approximation()." << std::endl;
     abort_handler(-1);
   }
-
-  ISIter a_it; IntRespMCIter r_it;
-  if (actualModelCache) {
-    extern PRPCache data_pairs;
-    for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
+  // append multiple points to SurrogateData::{vars,resp}Data
+  IntRespMCIter r_it;
+  for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it) {
+    if (actualModelCache && r_it->first > 0) { // valid evaluation id
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
+      extern PRPCache data_pairs;
       IntStringPair ids(r_it->first, actualModelInterfaceId);
       PRPCacheCIter p_it = lookup_by_ids(data_pairs, ids);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
@@ -490,10 +487,9 @@ append_approximation(const VariablesArray& vars_array,
       else                          // shallow copies of cached vars/resp data
 	shallow_add(p_it->prp_parameters(), p_it->prp_response(), false);
     }
-  }
-  else                              // deep response copies with vars sharing
-    for (i=0, r_it=resp_map.begin(); i<num_pts; ++i, ++r_it)
+    else                            // deep response copies with vars sharing
       mixed_add(vars_array[i], r_it->second, false);
+  }
 
   update_pop_counts(resp_map);
 }

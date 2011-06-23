@@ -681,8 +681,11 @@ public:
   /// squares terms.  Used by ConcurrentStrategy for Pareto set optimization.
   const RealVector& primary_response_fn_weights() const;
 
+  /// indicates potential usage of estimate_derivatives() based on
+  /// gradType/hessType
+  bool derivative_estimation();
   /// set whether this model should perform or pass on derivative estimation
-  void supports_estimated_derivatives(bool sed_flag);
+  void supports_derivative_estimation(bool sed_flag);
 
   /// set initCommsBcastFlag
   void init_comms_bcast_flag(bool icb_flag);
@@ -2341,7 +2344,15 @@ inline const RealVector& Model::primary_response_fn_weights() const
 { return (modelRep) ? modelRep->primaryRespFnWts : primaryRespFnWts; }
 
 
-inline void Model::supports_estimated_derivatives(bool sed_flag)
+inline bool Model::derivative_estimation()
+{
+  return (modelRep) ? modelRep->derivative_estimation() :
+    ( (gradType == "numerical" || gradType == "mixed") ||
+      (hessType == "numerical" || hessType == "mixed" || hessType == "quasi") );
+}
+
+
+inline void Model::supports_derivative_estimation(bool sed_flag)
 {
   if (modelRep)
     modelRep->supportsEstimDerivs = sed_flag;

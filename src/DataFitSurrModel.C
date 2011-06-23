@@ -93,19 +93,21 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   }
 
   // assign the ApproximationInterface instance which manages the
-  // local/multipoint/global approximation.  By instantiating with assign_rep(),
-  // Interface::get_interface() does not need special logic for approximations.
-  // The number of approximation variables is defined by the active variable set
-  // in the sub-model, and any conversions based on differing variable views
-  // must be performed in ApproximationInterface::map().
+  // local/multipoint/global approximation.  The number of
+  // approximation variables is defined by the active variable set in
+  // the sub-model, and any conversions based on differing variable
+  // views must be performed in ApproximationInterface::map().
   const Variables& vars = (actualModel.is_null()) ? currentVariables :
     actualModel.current_variables();
-  //actual_model_cache = (actualModel.model_type() == "single" &&
-  //			  problem_db.get_bool("interface.evaluation_cache"));
   bool cache = false; String interface_id;
   if (!actualModel.is_null()) {
-    cache = actualModel.evaluation_cache();
     interface_id = actualModel.interface_id();
+    // for ApproximationInterface to be able to look up actualModel eval records
+    // within data_pairs, the actualModel must have an active evaluation cache
+    // and derivative estimation (which causes consolidation of Interface evals
+    // within Model evals, breaking Model eval lookups) must be off.
+    if (actualModel.evaluation_cache() && !actualModel.derivative_estimation())
+      cache = true;
   }
   approxInterface.assign_rep(new ApproximationInterface(problem_db, vars,
     cache, interface_id, numFns), false);
@@ -186,13 +188,18 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   update_from_actual_model();
   check_submodel_compatibility(actualModel);
 
+  // for ApproximationInterface to be able to look up actualModel eval records
+  // within data_pairs, the actualModel must have an active evaluation cache
+  // and derivative estimation (which causes consolidation of Interface evals
+  // within Model evals, breaking Model eval lookups) must be off.
+  bool cache = ( actualModel.evaluation_cache() &&
+		!actualModel.derivative_estimation() );
   // assign the ApproximationInterface instance which manages the
   // local/multipoint/global approximation.  By instantiating with assign_rep(),
   // Interface::get_interface() does not need special logic for approximations.
   approxInterface.assign_rep(new ApproximationInterface(approx_type,
-    approx_order, actualModel.current_variables(),
-    actualModel.evaluation_cache(), actualModel.interface_id(),
-    numFns, data_order), false);
+    approx_order, actualModel.current_variables(), cache,
+    actualModel.interface_id(), numFns, data_order), false);
 
   if (!daceIterator.is_null()) // global DACE approximations
     daceIterator.sub_iterator_flag(true);

@@ -34,7 +34,7 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   }
 
   // Hierarchical surrogate models pass through numerical derivatives
-  supports_estimated_derivatives(false);
+  supports_derivative_estimation(false);
   // initialize ignoreBounds even though it's irrelevant for pass through
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
 
