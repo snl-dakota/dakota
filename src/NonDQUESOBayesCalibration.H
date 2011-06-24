@@ -83,7 +83,7 @@ protected:
   RealVector yObsData;
   RealVector yStdData;
 
-protected:
+private:
 
   struct
   likelihoodRoutine_DataType
@@ -92,7 +92,6 @@ protected:
     const uqGslMatrixClass* covMatrix;
   };
   static NonDQUESOBayesCalibration* NonDQUESOInstance;
-
 };
 
 } // namespace Dakota

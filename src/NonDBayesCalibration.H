@@ -63,6 +63,9 @@ protected:
   /// flag indicating use of a variable transformation to standardized
   /// probability space
   bool standardizedSpace;
+  /// NonDPolynomialChaos or NonDStochCollocation instance for defining a
+  /// PCE/SC-based emulatorModel
+  Iterator stochExpIterator;
 
 private:
 
@@ -74,9 +77,6 @@ private:
   /// STOCHASTIC_COLLOCATION
   short emulatorType;
 
-  /// NonDPolynomialChaos or NonDStochCollocation instance for defining a
-  /// PCE/SC-based emulatorModel
-  Iterator stochExpIterator;
 };
 
 

@@ -87,6 +87,12 @@ private:
 
   /// LHS sampling iterator
   Iterator lhsSampler;
+  /// number of samples to construct the GP emulator
+  int numEmulatorSamples;
+  /// number of draws from the MCMC chain 
+  int numDraws;
+  const int seedSpec;   ///< the user seed specification (default is 0)     
+  String    rngName;    ///< name of the random number generator
   /// Storage for the observed x data (inputs) provided by the user
   RealArray xObsData;
   /// Storage for the observed y data (outputs) provided by the user

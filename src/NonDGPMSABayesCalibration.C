@@ -21,7 +21,7 @@
 // includes from gpmsa TPL
 #ifdef DAKOTA_GPMSA
 #include "GPmodel.H"
-#include "rawData.H"
+#include "rawD.H"
 #include "covMat.H"
 #include "Init.H"
 #include "Prior.H"
@@ -41,17 +41,21 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDGPMSABayesCalibration::NonDGPMSABayesCalibration(Model& model):
   NonDBayesCalibration(model),
+  numEmulatorSamples(probDescDB.get_int("method.nond.emulator_samples")),
+  numDraws(probDescDB.get_int("method.samples")),
+  seedSpec(probDescDB.get_int("method.random_seed")),
+  rngName(probDescDB.get_string("method.random_number_generator")),
   xObsDataFile(probDescDB.get_string("method.x_obs_data_file")),
   yObsDataFile(probDescDB.get_string("method.y_obs_data_file")),
   yStdDataFile(probDescDB.get_string("method.y_std_data_file"))
 {
-  Cout << "The Bayesian Calibration method GPMSA is not currently operational."
-       << " We expect that it will be operational in 2011." << std::endl;
-  abort_handler(-1);
+  //Cout << "The Bayesian Calibration method GPMSA is not currently operational."
+    //   << " We expect that it will be operational in 2011." << std::endl;
+  //abort_handler(-1);
 
   String sample_type; // empty string: use default sample type
   lhsSampler.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-    numSamples, seedSpec, rngName, ALL), false);
+    numEmulatorSamples, seedSpec, rngName, ALL), false);
 
   iteratedModel.init_communicators(lhsSampler.maximum_concurrency());
 }
@@ -90,12 +94,8 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
  
   const RealMatrix&     all_samples = lhsSampler.all_samples();
   const IntResponseMap& all_resp    = lhsSampler.all_responses();
-  IntRespMCIter resp_it;
   double **zt_raw;
   double **ysim;
-  double **x_obs;
-  double **y_obs;
-  double **y_std;
 
   size_t num_problem_vars = iteratedModel.acv(); 
   Cout << "num_problem_vars " << num_problem_vars << '\n';
@@ -103,19 +103,21 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   Cout << "num_responses " << num_resp << '\n';
 
   int i, j, num_obs_data = 0;
-  zt_raw=new double*[numSamples];
-  for (i=0; i<numSamples; ++i)
+  zt_raw=new double*[numEmulatorSamples];
+  for (int i=0; i<numEmulatorSamples; ++i)
     zt_raw[i]=new double[num_problem_vars];
-  for (i=0; i<num_problem_vars; ++i)
-    for (j=0; j<numSamples; ++j)
-      zt_raw[j][i]=all_samples(i,j);
+  for (int i=0; i<num_problem_vars; ++i)
+   for (int j=0; j<numEmulatorSamples; ++j)
+     zt_raw[j][i]=all_samples(i,j);
   
   ysim=new double*[1];
   for (i=0; i<1; ++i)
-    ysim[i]=new double[numSamples];
-  for (i=0; i<1; ++i)
-    for (j=0, resp_it=all_resp.begin(); j<numSamples; ++j, ++resp_it)
+    ysim[i]=new double[numEmulatorSamples];
+  for (int i=0; i<1; ++i) {
+    IntRespMCIter resp_it = all_resp.begin();
+    for (j=0, resp_it=all_resp.begin(); j<numEmulatorSamples; ++j, ++resp_it)
       ysim[i][j]=resp_it->second.function_value(0);
+  }
 
   // We read in the experimental data.  
   // We assume for now that the number of calibration 
@@ -183,115 +185,81 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   // parse command line arguments for number of draws, rawfile, 
   //  parmsfile, and outfile
 
- int numDraws=10000;
+ // type = scalar, functional, multivariate (0, 1, or 2)
+ // flag = no calibration, calibration (0 or 1)
+ int type = 0;
+ int flag = 1;
 
 #ifdef DAKOTA_GPMSA 
- FILE *fp_raw, *fp_optparms, *fp_out, *fp_new;
+ FILE *fp_raw, *fp_out, *fp_new;
  int num_cal_parameters = num_problem_vars-1; 
  fp_new=fopen("gpmsa.rawinfo.dat","w");
- //  n, m, p, q, pu, pv
- fprintf(fp_new, "%d %d %d %d %d %d\n", num_obs_data, numSamples, 1,
-	 num_cal_parameters, 1, 1);
+ // type
+ fprintf(fp_new, "%d \n", type); 
+ //  n, m, p, q
+ fprintf(fp_new, "%d %d %d %d \n", num_obs_data, numEmulatorSamples, 1,
+	 num_cal_parameters);
  // zt [ m x (p+q) ]    read in column major order
  for (int i=0; i<num_problem_vars; ++i)
-   for (int j=0; j<numSamples; ++j)
+   for (int j=0; j<numEmulatorSamples; ++j)
      fprintf(fp_new,"%f ",all_samples(i,j));
  // lsim
  fprintf (fp_new,"\n%d \n",1);
  // ysim [ lsim x m ]
+ IntRespMCIter resp_it = all_resp.begin();
+ IntRespMCIter resp_end = all_resp.end();
+ for ( ; resp_it != resp_end; ++resp_it)
+    fprintf(fp_new,"%f ", resp_it->second.function_value(0));
 
- for (resp_it = all_resp.begin(); resp_it != all_resp.end(); ++resp_it)
-   fprintf(fp_new,"%f ", resp_it->second.function_value(0));
-
- // Ksim [ lsim x pu ]
- //fprintf (fp_new,"\n%f \n",1.0);
- // Dsim [ lsim x pv ]
- //fprintf(fp_new,"%f \n",1.0);
+ // lsup
+ fprintf (fp_new,"\n%d \n",1);
+ // gsim [ lsim x lsup ]
+ fprintf (fp_new,"%f \n",1.0);
+ // nkern
+ fprintf (fp_new,"%d \n",1);
    // for ii = 0, n-1
     //   x (ii,jj), jj=0, p-1
     //   lobs[ii] (element ii of vector lobs)
-    //   yobs[ii] (elements jj=0, lobs[ii]-1 of gsl vector yobs[ii])
-    //   sdobs[ii] (element ii of vector sdobs)
-    //   Kobs[ii] (all lobs[ii] x pu elements of gsl matrix Kobs[ii])
-    //   Dobs[ii] (all lobs[ii] x pv elements of gsl matrix Dobs[ii])
+    //   yobs[ii] (elements jj=0, lobs[ii]-1 of vector yobs[ii])
+    //   gobs[ii] (lobs[ii]*lsup, obs support matrix)
+    //   Sigy[ii] (lobs[ii] x lobs[ii])
  
  for (int j=0; j<num_obs_data; j++){
    fprintf(fp_new,"%f \n",xObsData[j]);
    fprintf(fp_new,"%d \n",1);
    fprintf(fp_new,"%f \n",yObsData[j]);
+   fprintf(fp_new,"%d \n",1.0);
    fprintf(fp_new,"%f \n",yStdData[j]);
-   //fprintf(fp_new,"%f \n",1.0);
-   //fprintf(fp_new,"%f \n",1.0);
  }  
  fclose(fp_new); 
-
-    x_obs=  new double*[num_obs_data];
-    y_obs= new double*[num_obs_data];
-    y_std = new double*[num_obs_data];
-    for (i=0; i<num_obs_data; ++i) {
-      x_obs[i] = new double[1];
-      y_obs[i] = new double[1];
-      y_std[i] = new double[1];
-     }
-    for (int j=0; j<num_obs_data; j++){
-      for (int i=0; i<1; ++i) {
-        x_obs[j][i] = xObsData[j];
-        y_obs[j][i] = yObsData[j];
-        y_std[j][i] = yStdData[j];
-      }
-    }
      
- fp_new=fopen("gpmsa.optparms.dat","w");
- // Opt Parms just for scalar data - will need to be updated for functional data
- fprintf(fp_new, "%d\n",0);
- fprintf(fp_new, "%d\n",1);
- fclose(fp_new);
-
  fp_raw=fopen("gpmsa.rawinfo.dat","r");
 
  if (verbose) printf("main: calling rawData\n");
- rawData *raw = new rawData(fp_raw);
+ rawD *raw = new rawD(fp_raw);
 
  fclose(fp_raw);
 
-  // setup some optional parameters
-  //  optional parms data consists of
-  //  scOut - scalar output
-  //  lamVzGroup - see p. 31 of GPMSA Command Reference
- int scOut_raw = 0, lamVzGnum_raw = 1, *lamVzGroup_raw;
- lamVzGroup_raw = new int[raw->pv_raw];
- for (int ii=0; ii<raw->pv_raw; ii++) lamVzGroup_raw[ii] = 1;
-
  Init *params = new Init();
- int a[num_obs_data];
- float y1[num_obs_data];
- for(int j=0; j<num_obs_data; j++){
-  a[j]=1;
-  y1[j]=yStdData[0];
- }
  
- if (verbose) printf("main: calling setProbDims\n");
- params->setProbDims(num_obs_data, numSamples, 1, num_cal_parameters, 1, 1);
- params->showProbDims();
- if (verbose) printf("main: calling setSimData\n");
- params->setSimData(zt_raw,1,ysim);
- params->showSimData();
- if (verbose) printf("main: calling setObsData\n");
- params->setObsData(&x_obs[0],&a[0],&y_obs[0],&y1[0]);
- params->showObsData();
- if (verbose) printf("main: calling setOptions\n");
- params->setOptions(scOut_raw, lamVzGnum_raw, lamVzGroup_raw);
+ if (verbose) printf("main: calling Init::setProbDims\n");
+ params->setProbDims(raw->type_raw,raw->cal_raw,raw->n_raw,raw->m_raw,raw->p_raw,raw->q_raw);
+ if (verbose) printf("main: calling Init::setSimData\n");
+ params->setSimData(raw->zt_raw,raw->lsim_raw,raw->ysim_raw,raw->lsup_raw,raw->gsim_raw,raw->nkern_raw);
+ if (raw->n_raw) {
+   if (verbose) printf("main: calling Init::setObsData\n");
+   params->setObsData(raw->x_raw,raw->lobs_raw,raw->yobs_raw,raw->gobs_raw,raw->Sigy_raw);
+  }
 
+ if (verbose) printf("main: calling Init::setOptions\n");
+ params->setOptions();
 
- // type = scalar, functional, multivariate (1, 2, or 3)
- // flag = no calibration, calibration (0 or 1)
- int type = 1;
- int flag = 1;
- if (verbose) printf("main: calling preProcess\n");
- params->preProcess(type,flag);
+ if (verbose) printf("main: calling Init::preProcess\n");
+ params->preProcess();
+ if (verbose) printf("main: calling Init::setDefaults\n");
+ params->setDefaults();
  if (verbose) printf("main: calling setupModel\n");
  params->setupModel();
-
  if (verbose) printf("main: returned from setupModel\n");
  
   if (verbose) printf("main: calling LAdata copy constructor\n");
