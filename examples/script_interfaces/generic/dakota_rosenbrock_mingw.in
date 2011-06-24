@@ -19,7 +19,7 @@ variables,
 	  cdv_descriptor       'x1'     'x2'
 
 interface,
-	system
+	fork
 #	  asynchronous
 	  analysis_driver = 'simulator_script.bat'
 	  parameters_file = 'params.in'
@@ -27,11 +27,9 @@ interface,
 	  work_directory directory_tag  named 'workdir'
 	  template_directory = 'templatedir'
 
-# Could omit "named 'workdir'" after adding dprepro to templatedir
-# and changing "../../dprepro" to "dprepro" in simulator_script.bat .
-
-# Another possible variation: omit "directory_tag" and change
-# "../../dprepro" to "../dprepro" in simulator_script.bat .
+# Could omit "named 'workdir'" after adding dprepro to templatedir or
+# putting dprepro on the PATH and changing "../dprepro" to
+# "dprepro" in simulator_script.bat.
 
 # uncomment to leave params.in and results.out files in work_dir subdirectories
 # 	  file_save  directory_save
