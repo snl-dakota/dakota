@@ -31,12 +31,6 @@ if(HAVE_AMPL)
   if (NOT AMPL_INCLUDE_DIRS)
     add_subdirectory(ampl)
   endif()
-
-  # packages/nidr/../ampl/asl.h:28:51: error: arith.h: No such file
-  # WJB - ToDo: nidr dependency on AMPL's asl.h/arith.h is "loose"
-  #             could/should be managed better than adding explicit
-  #             dependency in the CMakeLists.txt file
-  add_dependencies(nidr amplsolver)
 endif(HAVE_AMPL)
 
 if(HAVE_OPTPP)
