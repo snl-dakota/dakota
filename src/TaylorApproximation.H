@@ -24,9 +24,10 @@ namespace Dakota {
 /// series (a local approximation).
 
 /** The TaylorApproximation class provides a local approximation based 
-    on data from a single point in parameter space.  It uses a first-
-    or second-order Taylor series expansion: f(x) = f(x_c)
-    + grad(x_c)' (x - x_c) + (x - x_c)' Hess(x_c) (x - x_c) / 2. */
+    on data from a single point in parameter space.  It uses a zeroth-,
+    first- or second-order Taylor series expansion: f(x) = f(x_c) for
+    zeroth-order, plus grad(x_c)' (x - x_c) for first- and second-order,
+    and plus (x - x_c)' Hess(x_c) (x - x_c) / 2 for second-order. */
 
 class TaylorApproximation: public Approximation
 {

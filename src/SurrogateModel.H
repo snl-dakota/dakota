@@ -17,6 +17,7 @@
 
 #include "DakotaModel.H"
 #include "DakotaInterface.H"
+#include "DakotaApproximation.H"
 
 
 namespace Dakota {
@@ -202,6 +203,10 @@ private:
     RealSymMatrixArray& beta_corrected_hessians,
     const RealVector& c_vars, const ActiveSet& set);
 
+  /// search data_pairs for missing approximation data
+  const Response& search_db(const RealVector& c_vars,
+			    const ShortArray& search_asv);
+
   //
   //- Heading: Data
   //
@@ -216,33 +221,12 @@ private:
   /// flag indicating the need for multiplicative correction calculations
   bool computeMultiplicative;
 
-  /*
   /// array of additive corrections; surrogate models of a model
   /// discrepancy function (formed from model differences)
   std::vector<Approximation> addCorrections;
   /// array of multiplicative corrections; surrogate models of a model
   /// discrepancy function (formed from model ratios)
   std::vector<Approximation> multCorrections;
-  */
-
-  /// 0th-order additive correction term: equals the difference between
-  /// high and low fidelity model values at x=x_center.
-  RealVector addCorrFns;
-  /// 1st-order additive correction term: equals the gradient of the
-  /// high/low function difference at x=x_center.
-  RealMatrix addCorrGrads;
-  /// 2nd-order additive correction term: equals the Hessian of the
-  /// high/low function difference at x=x_center.
-  RealSymMatrixArray addCorrHessians;
-  /// 0th-order multiplicative correction term: equals the ratio of
-  /// high fidelity to low fidelity model values at x=x_center.
-  RealVector multCorrFns;
-  /// 1st-order multiplicative correction term: equals the gradient
-  /// of the high/low function ratio at x=x_center.
-  RealMatrix multCorrGrads;
-  /// 2nd-order multiplicative correction term: equals the Hessian
-  /// of the high/low function ratio at x=x_center.
-  RealSymMatrixArray multCorrHessians;
 
   /// factors for combining additive and multiplicative corrections.
   /// Each factor is the weighting applied to the additive correction and
@@ -253,11 +237,11 @@ private:
   /// correction instead of a strictly local correction.
   RealVector combineFactors;
 
-  /// The point in parameter space where the current correction is calculated
-  /// (often the center of the current trust region).  Used in calculating
-  /// (x - x_c) terms in 1st-/2nd-order corrections.
-  RealVector correctionCenterPt;
-  /// copy of correctionCenterPt from the previous correction cycle
+  // The point in parameter space where the current correction is calculated
+  // (often the center of the current trust region).  Used in calculating
+  // (x - x_c) terms in 1st-/2nd-order corrections.
+  //RealVector correctionCenterPt;
+  /// copy of center point from the previous correction cycle
   RealVector correctionPrevCenterPt;
   /// Surrogate function values at the current correction point which are
   /// needed as a fall back if the current surrogate function values are

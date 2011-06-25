@@ -17,6 +17,8 @@
 #include "ProblemDescDB.H"
 #include "PRPMultiIndex.H"
 
+#define DEBUG
+
 
 namespace Dakota {
 
@@ -608,10 +610,16 @@ mixed_add(const Variables& vars, const Response& response, bool anchor)
 	sdv = (anchor) ? fn_surf.approximation_data().anchor_variables() :
 	                 fn_surf.approximation_data().variables_data().back();
 	first_vars = false;
+#ifdef DEBUG
+	Cout << "ApproximationInterface::mixed_add(): first vars\n";
+#endif // DEBUG
       }
       else {
 	fn_surf.add(sdv, anchor);                // shallow
 	fn_surf.add(response, index, anchor, true); // deep
+#ifdef DEBUG
+	Cout << "ApproximationInterface::mixed_add(): subsequent vars\n";
+#endif // DEBUG
       }
     }
   }
@@ -636,10 +644,16 @@ mixed_add(const Real* c_vars, const Response& response, bool anchor)
 	sdv = (anchor) ? fn_surf.approximation_data().anchor_variables() :
 	                 fn_surf.approximation_data().variables_data().back();
 	first_vars = false;
+#ifdef DEBUG
+	Cout << "ApproximationInterface::mixed_add(): first c_vars\n";
+#endif // DEBUG
       }
       else {
 	fn_surf.add(sdv, anchor);                // shallow
 	fn_surf.add(response, index, anchor, true); // deep
+#ifdef DEBUG
+	Cout << "ApproximationInterface::mixed_add(): subsequent c_vars\n";
+#endif // DEBUG
       }
     }
   }
@@ -660,6 +674,9 @@ shallow_add(const Variables& vars, const Response& response, bool anchor)
       // into per-response function arrays for input to fn_surf, pass the
       // complete response along with a response function index.
       fn_surf.add(response, index, anchor, false); // shallow
+#ifdef DEBUG
+      Cout << "ApproximationInterface::shallow_add()\n";
+#endif // DEBUG
     }
   }
 }
