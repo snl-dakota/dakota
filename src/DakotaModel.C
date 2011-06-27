@@ -2705,12 +2705,11 @@ const Pecos::SurrogateData& Model::approximation_data(size_t index)
 
 
 void Model::
-compute_correction(const Response& truth_response,
-		   const Response& approx_response,
-		   const RealVector& c_vars)
+compute_correction(const RealVector& c_vars, const Response& truth_response,
+		   const Response& approx_response)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->compute_correction(truth_response, approx_response, c_vars);
+    modelRep->compute_correction(c_vars, truth_response, approx_response);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual compute_correction()"
          << " function.\nThis model does not support approximations."
@@ -2742,11 +2741,11 @@ bool Model::auto_correction()
 }
 
 
-void Model::apply_correction(Response& approx_response,
-			     const RealVector& c_vars, bool quiet_flag)
+void Model::apply_correction(const RealVector& c_vars,
+			     Response& approx_response, bool quiet_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->apply_correction(approx_response, c_vars, quiet_flag);
+    modelRep->apply_correction(c_vars, approx_response, quiet_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual apply_correction() "
          << "function.\nThis model does not support approximations."

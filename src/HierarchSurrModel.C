@@ -111,7 +111,7 @@ void HierarchSurrModel::build_approximation()
 
   // could compute the correction to lowFidelityModel here, but rely on an
   // external call for consistency with DataFitSurr and to facilitate SBO logic.
-  //compute_correction(highFidRefResponse, lo_fi_response, ...);
+  //compute_correction(..., highFidRefResponse, lo_fi_response);
 
   Cout << "\n<<<<< Hierarchical approximation build completed.\n";
   approxBuilds++;
@@ -204,9 +204,9 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
 
     if (autoCorrection) {
       if (!correctionComputed)
-	compute_correction(highFidRefResponse, lo_fi_response,
-			   currentVariables.continuous_variables());
-      apply_correction(lo_fi_response, currentVariables.continuous_variables());
+	compute_correction(currentVariables.continuous_variables(),
+			   highFidRefResponse, lo_fi_response);
+      apply_correction(currentVariables.continuous_variables(), lo_fi_response);
     }
 
     if (!mixed_eval) {
@@ -323,15 +323,15 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
 
       // if a correction has not been computed, compute it now
       if (!correctionComputed && !lo_fi_resp_map_proxy.empty())
-	compute_correction(highFidRefResponse,
-	  lo_fi_resp_map_proxy.begin()->second, rawCVarsMap.begin()->second);
+	compute_correction(rawCVarsMap.begin()->second, highFidRefResponse,
+			   lo_fi_resp_map_proxy.begin()->second);
 
       // Apply the correction.  A rawCVarsMap lookup is not needed since
       // rawCVarsMap and lo_fi_resp_map are complete and consistently ordered.
       IntRDVMIter v_it; IntRespMIter r_it;
       for (r_it  = lo_fi_resp_map_proxy.begin(), v_it = rawCVarsMap.begin();
 	   r_it != lo_fi_resp_map_proxy.end(); ++r_it, ++v_it)
-        apply_correction(r_it->second, v_it->second);//rawCVarsMap[r_it->first]
+        apply_correction(v_it->second, r_it->second);//rawCVarsMap[r_it->first]
       rawCVarsMap.clear();
     }
 
@@ -450,15 +450,15 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
 
       // if a correction has not been computed, compute it now
       if (!correctionComputed && !lo_fi_resp_map_proxy.empty())
-	compute_correction(highFidRefResponse,
-	  lo_fi_resp_map_proxy.begin()->second, rawCVarsMap.begin()->second);
+	compute_correction(rawCVarsMap.begin()->second, highFidRefResponse,
+			   lo_fi_resp_map_proxy.begin()->second);
 
       // Apply the correction.  Must use rawCVarsMap lookup in this case since
       // rawCVarsMap is complete, but lo_fi_resp_map may not be.
       for (IntRespMIter r_it = lo_fi_resp_map_proxy.begin();
 	   r_it != lo_fi_resp_map_proxy.end(); ++r_it) {
 	int hier_eval_id = r_it->first;
-        apply_correction(r_it->second, rawCVarsMap[hier_eval_id]);
+        apply_correction(rawCVarsMap[hier_eval_id], r_it->second);
         rawCVarsMap.erase(hier_eval_id);
       }
     }

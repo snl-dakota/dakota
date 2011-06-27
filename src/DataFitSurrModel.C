@@ -881,9 +881,9 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
 
     if (autoCorrection && !correctionType.empty()) {
       //if (!correctionComputed)
-      //  compute_correction(centerResponse, approx_response,
-      //                     currentVariables.continuous_variables());
-      apply_correction(approx_response,currentVariables.continuous_variables());
+      //  compute_correction(currentVariables.continuous_variables(),
+      //                     centerResponse, approx_response);
+      apply_correction(currentVariables.continuous_variables(),approx_response);
     }
   }
 
@@ -1144,12 +1144,12 @@ derived_synchronize_approx(const IntResponseMap& approx_resp_map,
     // complete and in order.
 
     //if (!correctionComputed && !approx_resp_map_proxy.empty())
-    //  compute_correction(..., approx_resp_map_proxy.begin()->second,
-    //                     rawCVarsMap.begin()->second);
+    //  compute_correction(rawCVarsMap.begin()->second, ...,
+    //                     approx_resp_map_proxy.begin()->second);
     IntRDVMIter v_it; IntRespMIter r_it;
     for (r_it  = approx_resp_map_proxy.begin(), v_it = rawCVarsMap.begin();
 	 r_it != approx_resp_map_proxy.end(); ++r_it, ++v_it)
-      apply_correction(r_it->second, v_it->second);//rawCVarsMap[r_it->first]
+      apply_correction(v_it->second, r_it->second);//rawCVarsMap[r_it->first]
     rawCVarsMap.clear();
   }
 

@@ -58,13 +58,13 @@ protected:
 
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response
-  void compute_correction(const Response& truth_response, 
-			  const Response& approx_response,
-			  const RealVector& c_vars);
+  void compute_correction(const RealVector& c_vars,
+			  const Response& truth_response, 
+			  const Response& approx_response);
 
   /// apply the correction computed in compute_correction() to approx_response
-  void apply_correction(Response& approx_response,
-			const RealVector& c_vars, bool quiet_flag = false);
+  void apply_correction(const RealVector& c_vars, Response& approx_response,
+			bool quiet_flag = false);
 
   /// sets autoCorrection to on (true) or off (false)
   void auto_correction(bool correction_flag);
@@ -192,16 +192,22 @@ private:
   //
 
   /// internal convenience function for applying additive corrections
-  void apply_additive_correction(RealVector& alpha_corrected_fns,
-    RealMatrix& alpha_corrected_grads,
-    RealSymMatrixArray& alpha_corrected_hessians,
-    const RealVector& c_vars, const ActiveSet& set);
+  /// to an approximate response
+  void apply_additive_correction(const RealVector& c_vars,
+				 Response& approx_response);
+  /// internal convenience function for applying additive corrections
+  /// to a set of response functions
+  void apply_additive_correction(const RealVector& c_vars,
+				 RealVector& approx_fns);
 
+  /// internal convenience function for applying multiplicative
+  /// corrections to an approximate response
+  void apply_multiplicative_correction(const RealVector& c_vars,
+				       Response& approx_response);
   /// internal convenience function for applying multiplicative corrections
-  void apply_multiplicative_correction(RealVector& beta_corrected_fns,
-    RealMatrix& beta_corrected_grads,
-    RealSymMatrixArray& beta_corrected_hessians,
-    const RealVector& c_vars, const ActiveSet& set);
+  /// to a set of response functions
+  void apply_multiplicative_correction(const RealVector& c_vars,
+				       RealVector& approx_fns);
 
   /// search data_pairs for missing approximation data
   const Response& search_db(const RealVector& c_vars,

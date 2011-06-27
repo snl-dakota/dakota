@@ -495,7 +495,7 @@ asv_mapping(const ShortArray& orig_asv, ShortArray& actual_asv,
     if (mixedResponseSet) {
       actual_asv.resize(numFns); actual_asv.assign(actual_asv.size(), 0);
       for (ISIter it=surrogateFnIndices.begin();
-	   it!=surrogateFnIndices.end(); it++) {
+	   it!=surrogateFnIndices.end(); ++it) {
 	int index = *it;
 	actual_asv[index] = orig_asv[index];
       }
@@ -612,9 +612,8 @@ response_mapping(const Response& actual_response,
     scalar values, linear scaling functions, and quadratic scaling
     functions, respectively, for each response function. */
 void SurrogateModel::
-compute_correction(const Response& truth_response, 
-		   const Response& approx_response,
-		   const RealVector& c_vars)
+compute_correction(const RealVector& c_vars, const Response& truth_response, 
+		   const Response& approx_response)
 {
   // The incoming approx_response is assumed to be uncorrected (i.e.,
   // correction has not been applied to it previously).  In this case,
@@ -673,7 +672,7 @@ compute_correction(const Response& truth_response,
   // no longer near zero.
   badScalingFlag = false;
   if (computeMultiplicative) {
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); it++) {
+    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;
       if ( std::fabs(approx_fns[index]) < 1.e-25 ||
 	   ( correctionOrder == 0 && std::fabs(truth_fns[index]) < 1.e-25 ) ) {
@@ -727,24 +726,10 @@ compute_correction(const Response& truth_response,
       // update anchor data
       addCorrections[index].add(sdv, true); // shallow copy into SurrogateData
       addCorrections[index].add(sdr, true); // shallow copy into SurrogateData
-    }
 
-    /*
-    // output (TO DO)
-    if (data_order & 1)
-      Cout << "\nCorrection computed: offset function values =\n" << addCorrFns;
-    if (data_order & 2) {
-      Cout << "                     offset function gradients =\n";
-      for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
-	write_col_vector_trans(Cout, *it, true, true, true, addCorrGrads);
+      if (outputLevel >= NORMAL_OUTPUT)
+	Cout << "\nAdditive correction computed:\n" << sdr << '\n';
     }
-    if (data_order & 4) {
-      Cout << "                     offset function Hessians =\n";
-      for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
-	Cout << addCorrHessians[*it]; // with carriage return
-    }
-    Cout << '\n';
-    */
   }
 
   if (computeMultiplicative && !badScalingFlag) {
@@ -797,24 +782,10 @@ compute_correction(const Response& truth_response,
       // update anchor data
       multCorrections[index].add(sdv, true); // shallow copy into SurrogateData
       multCorrections[index].add(sdr, true); // shallow copy into SurrogateData
-    }
 
-    /*
-    // output (TO DO)
-    if (data_order & 1)
-      Cout << "\nCorrection computed: scaling function values =\n"<<multCorrFns;
-    if (data_order & 2) {
-      Cout << "                     scaling function gradients =\n";
-      for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
-	write_col_vector_trans(Cout, *it, true, true, true, multCorrGrads);
+      if (outputLevel >= NORMAL_OUTPUT)
+	Cout << "\nMultiplicative correction computed:\n" << sdr << '\n';
     }
-    if (data_order & 4) {
-      Cout << "                     scaling function Hessians =\n";
-      for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
-	Cout << multCorrHessians[*it]; // with carriage return
-    }
-    Cout << '\n';
-    */
   }
 
   // Compute combination factors once for each new correction.  combineFactors =
@@ -822,38 +793,31 @@ compute_correction(const Response& truth_response,
   // ratio goes -> 1 (use additive alone) if f_hi_alpha(x_pp) -> f_hi(x_pp) and
   // it goes -> 0 (use multiplicative alone) if f_hi_beta(x_pp) -> f_hi(x_pp).
   if (combinedFlag && !badScalingFlag && correctionComputed) {
-    ActiveSet fns_set = approx_response.active_set(); // copy
-    fns_set.request_values(1); // correct fn values only
-    RealVector alpha_corrected_fns = approxFnsPrevCenter,
-               beta_corrected_fns  = approxFnsPrevCenter;
-    RealMatrix alpha_corrected_grads, beta_corrected_grads;
-    RealSymMatrixArray alpha_corrected_hessians, beta_corrected_hessians;
-    apply_additive_correction(alpha_corrected_fns, alpha_corrected_grads, 
-			      alpha_corrected_hessians, correctionPrevCenterPt,
-			      fns_set);
-    apply_multiplicative_correction(beta_corrected_fns, beta_corrected_grads,
-				    beta_corrected_hessians,
-				    correctionPrevCenterPt, fns_set);
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); it++) {
+    RealVector alpha_corr_fns = approxFnsPrevCenter,
+               beta_corr_fns  = approxFnsPrevCenter;
+    apply_additive_correction(correctionPrevCenterPt, alpha_corr_fns);
+    apply_multiplicative_correction(correctionPrevCenterPt, beta_corr_fns);
+    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;
-      Real numer =  truthFnsPrevCenter[index] - beta_corrected_fns[index];
-      Real denom = alpha_corrected_fns[index] - beta_corrected_fns[index];
+      Real numer = truthFnsPrevCenter[index] - beta_corr_fns[index];
+      Real denom =     alpha_corr_fns[index] - beta_corr_fns[index];
       combineFactors[index] = (std::fabs(denom) > 1.e-25) ? numer/denom : 1.;
 #ifdef DEBUG
-      Cout << "additive = " << alpha_corrected_fns[index] <<" multiplicative = "
-	   << beta_corrected_fns[index] << "\nnumer = " << numer << " denom = "
+      Cout << "additive = " << alpha_corr_fns[index] <<" multiplicative = "
+	   << beta_corr_fns[index] << "\nnumer = " << numer << " denom = "
 	   << denom << '\n';
 #endif
     }
-    Cout << "\nCorrection computed: combination factors =\n" << combineFactors
-	 << '\n';
+    if (outputLevel >= NORMAL_OUTPUT)
+      Cout << "\nCombined correction computed: combination factors =\n"
+	   << combineFactors << '\n';
 
 #ifdef DEBUG
     Cout << "Testing final match at previous point\n";
     Response approx_copy = approx_response.copy();
     approx_copy.active_set(fns_set);
     approx_copy.function_values(approxFnsPrevCenter);
-    apply_correction(approx_copy, correctionPrevCenterPt, false);
+    apply_correction(correctionPrevCenterPt, approx_copy);
 #endif
   }
 
@@ -863,139 +827,52 @@ compute_correction(const Response& truth_response,
 
 
 void SurrogateModel::
-apply_correction(Response& approx_response, const RealVector& c_vars,
+apply_correction(const RealVector& c_vars, Response& approx_response,
 		 bool quiet_flag)
 {
   if (!correctionComputed)
     return;
 
-  const ActiveSet&  set = approx_response.active_set();
-  const ShortArray& asv = set.request_vector();
-  size_t i, j, k;
-  ISIter it;
-  int index;
-  bool fn_flag = false, grad_flag = false, hess_flag = false;
-  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); it++) {
-    index = *it;
-    if (asv[index] & 1)
-      fn_flag   = true;
-    if (asv[index] & 2)
-      grad_flag = true;
-    if (asv[index] & 4)
-      hess_flag = true;
-  }
-
-  // apply the alpha/beta corrections to the fn/grad/Hessian components
-  // of approx_response
-  RealVector alpha_corrected_fns, beta_corrected_fns;
-  RealMatrix alpha_corrected_grads, beta_corrected_grads;
-  RealSymMatrixArray alpha_corrected_hessians, beta_corrected_hessians;
-  if (computeAdditive || badScalingFlag) {
-    if (fn_flag)
-      alpha_corrected_fns.resize(numFns);
-    if (grad_flag && (correctionOrder >= 1 || combinedFlag) )
-      alpha_corrected_grads.shapeUninitialized(numDerivVars, numFns);
-    if (hess_flag && (correctionOrder == 2 || combinedFlag) )
-      alpha_corrected_hessians.resize(numFns);
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
-      index = *it;
-      if (fn_flag)
-	alpha_corrected_fns[index] = approx_response.function_value(index);
-      if (grad_flag && (correctionOrder >= 1 || combinedFlag) )
-	Teuchos::setCol(approx_response.function_gradient(index), index,
-	                alpha_corrected_grads);
-      if (hess_flag && (correctionOrder == 2 || combinedFlag) )
-	alpha_corrected_hessians[index]=approx_response.function_hessian(index);
-    }
-    apply_additive_correction(alpha_corrected_fns, alpha_corrected_grads, 
-			      alpha_corrected_hessians, c_vars, set);
-  }
-  if (computeMultiplicative && !badScalingFlag) {
-    if (fn_flag)
-      beta_corrected_fns.resize(numFns);
-    if (grad_flag)
-      beta_corrected_grads.shapeUninitialized(numDerivVars, numFns);
-    if (hess_flag)
-      beta_corrected_hessians.resize(numFns);
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
-      index = *it;
-      if (fn_flag)
-	beta_corrected_fns[index] = approx_response.function_value(index);
-      if (grad_flag)
-	Teuchos::setCol(approx_response.function_gradient(index), index,
-                        beta_corrected_grads);
-      if (hess_flag)
-	beta_corrected_hessians[index] =approx_response.function_hessian(index);
-    }
-    apply_multiplicative_correction(beta_corrected_fns, beta_corrected_grads,
-				    beta_corrected_hessians, c_vars, set);
-  }
-
   // update approx_response with the alpha/beta/combined corrected data
-  if (correctionType == "additive" || badScalingFlag) { // use alpha_corrected_*
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); it++) {
-      index = *it;
-      if (fn_flag)
-	approx_response.function_value(alpha_corrected_fns[index], index);
-      if (grad_flag && correctionOrder >= 1)
-        approx_response.function_gradient(Teuchos::getCol(Teuchos::View,
-                                            alpha_corrected_grads, index),
-                                          index);
-      if (hess_flag && correctionOrder == 2)
-	approx_response.function_hessian(alpha_corrected_hessians[index],index);
-    }
-  }
-  else if (correctionType == "multiplicative") { // use beta_corrected_*
+  if (correctionType == "additive" || badScalingFlag) // use alpha_corrected_*
+    apply_additive_correction(c_vars, approx_response);
+  else if (correctionType == "multiplicative") // use beta_corrected_*
+    apply_multiplicative_correction(c_vars, approx_response);
+  else if (combinedFlag) { // use both alpha_corrected_* and beta_corrected_*
+
+    // compute {add,mult}_response contributions to combined correction
+    Response add_response = approx_response.copy(),
+            mult_response = approx_response.copy();
+    apply_additive_correction(c_vars, add_response);
+    apply_multiplicative_correction(c_vars, mult_response);
+
+    // compute convex combination of add_response and mult_response
+    ISIter it; int index; size_t j, k;
+    const ShortArray& asv = approx_response.active_set_request_vector();
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;
-      if (fn_flag)
-	approx_response.function_value(beta_corrected_fns[index], index);
-      if (grad_flag)
-        approx_response.function_gradient(Teuchos::getCol(Teuchos::View,
-                                            beta_corrected_grads, index),
-                                          index);
-      if (hess_flag)
-	approx_response.function_hessian(beta_corrected_hessians[index], index);
-    }
-  }
-  else if (combinedFlag) { // use both alpha_corrected_* and beta_corrected_*
-    if (fn_flag) {
-      Real corrected_fn;
-      for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
-	index = *it;
-	if (asv[index] & 1){
-	  Real cf = combineFactors[index], ccf = 1. - cf;
-	  corrected_fn = cf*alpha_corrected_fns[index]
-	    + ccf*beta_corrected_fns[index];
-	  approx_response.function_value(corrected_fn, index);
-	}
+      Real cf = combineFactors[index], ccf = 1. - cf;
+      if (asv[index] & 1) {
+	Real corrected_fn =  cf *  add_response.function_value(index)
+	                  + ccf * mult_response.function_value(index);
+	approx_response.function_value(corrected_fn, index);
       }
-    }
-    if (grad_flag) {
-      RealVector corrected_grad(numDerivVars);
-      for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
-	index = *it;
-        if (asv[index] & 2) {
-	  Real cf = combineFactors[index], ccf = 1. - cf;
-          for (j=0; j<numDerivVars; j++)
-	    corrected_grad[j] = cf*alpha_corrected_grads(j,index)
-	      + ccf*beta_corrected_grads(j,index);
-	  approx_response.function_gradient(corrected_grad, index);
-	}
+      if (asv[index] & 2) {
+	RealVector corrected_grad(numDerivVars, false),
+	  add_grad  =  add_response.function_gradient(index), // view
+	  mult_grad = mult_response.function_gradient(index); // view
+	for (j=0; j<numDerivVars; j++)
+	  corrected_grad[j] = cf * add_grad[j] + ccf * mult_grad[j];
+	approx_response.function_gradient(corrected_grad, index);
       }
-    }
-    if (hess_flag) {
-      RealSymMatrix corrected_hessian(numDerivVars, numDerivVars);
-      for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
-	index = *it;
-        if (asv[index] & 4) {
-	  Real cf = combineFactors[index], ccf = 1. - cf;
-          for (j=0; j<numDerivVars; j++)
-            for (k=0; k<numDerivVars; k++)
-	      corrected_hessian(j,k) = cf*alpha_corrected_hessians[index](j,k)
-		+ ccf*beta_corrected_hessians[index](j,k);
-	  approx_response.function_hessian(corrected_hessian, index);
-	}
+      if (asv[index] & 4) {
+	RealSymMatrix corrected_hess(numDerivVars, false);
+	const RealSymMatrix&  add_hess =  add_response.function_hessian(index);
+	const RealSymMatrix& mult_hess = mult_response.function_hessian(index);
+	for (j=0; j<numDerivVars; ++j)
+	  for (k=0; k<=j; ++k)
+	    corrected_hess(j,k) = cf * add_hess(j,k) + ccf * mult_hess(j,k);
+	approx_response.function_hessian(corrected_hess, index);
       }
     }
   }
@@ -1006,38 +883,52 @@ apply_correction(Response& approx_response, const RealVector& c_vars,
 
 
 void SurrogateModel::
-apply_additive_correction(RealVector& alpha_corrected_fns,
-			  RealMatrix& alpha_corrected_grads,
-			  RealSymMatrixArray& alpha_corrected_hessians,
-			  const RealVector& c_vars, const ActiveSet& set)
+apply_additive_correction(const RealVector& c_vars, Response& approx_response)
 {
   if (!correctionComputed)
     return;
 
-  size_t j, index; ISIter it;
-  const ShortArray& asv = set.request_vector();
-  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); it++) {
+  size_t index; ISIter it;
+  const ShortArray& asv = approx_response.active_set_request_vector();
+  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     index = *it;
     Approximation& add_corr = addCorrections[index];
     if (asv[index] & 1)
-      alpha_corrected_fns[index] += add_corr.get_value(c_vars);
+      approx_response.function_value(approx_response.function_value(index) +
+				     add_corr.get_value(c_vars), index);
     if (correctionOrder >= 1 && asv[index] & 2) {
-      const RealVector& grad_corr = add_corr.get_gradient(c_vars);
-      Real* alpha_corrected_grad = alpha_corrected_grads[index];
-      for (j=0; j<numDerivVars; j++)
-	alpha_corrected_grad[j] += grad_corr[j];
+      // update view (no reassignment):
+      RealVector approx_grad = approx_response.function_gradient(index);
+      approx_grad += add_corr.get_gradient(c_vars);
+      // update copy and reassign:
+      //RealVector approx_grad = approx_response.function_gradient_copy(index);
+      //approx_grad += add_corr.get_gradient(c_vars);
+      //approx_response.function_gradient(approx_grad, index)
     }
-    if (correctionOrder == 2 && asv[index] & 4)
-      alpha_corrected_hessians[index] += add_corr.get_hessian(c_vars);
+    if (correctionOrder == 2 && asv[index] & 4) {
+      // update copy and reassign:
+      RealSymMatrix approx_hess = approx_response.function_hessian(index);
+      approx_hess += add_corr.get_hessian(c_vars);
+      approx_response.function_hessian(approx_hess, index);
+    }
   }
 }
 
 
 void SurrogateModel::
-apply_multiplicative_correction(RealVector& beta_corrected_fns,
-				RealMatrix& beta_corrected_grads,
-				RealSymMatrixArray& beta_corrected_hessians,
-				const RealVector& c_vars, const ActiveSet& set)
+apply_additive_correction(const RealVector& c_vars, RealVector& approx_fns)
+{
+  if (!correctionComputed)
+    return;
+
+  for (ISIter it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
+    approx_fns[*it] += addCorrections[*it].get_value(c_vars);
+}
+
+
+void SurrogateModel::
+apply_multiplicative_correction(const RealVector& c_vars,
+				Response& approx_response)
 {
   if (!correctionComputed)
     return;
@@ -1045,9 +936,9 @@ apply_multiplicative_correction(RealVector& beta_corrected_fns,
   // Retrieve uncorrected data for special cases where the data required to
   // apply the correction is different from the active data being corrected.
   bool fn_db_search = false, grad_db_search = false;
-  const ShortArray& asv = set.request_vector();
+  const ShortArray& asv = approx_response.active_set_request_vector();
   ShortArray fn_db_asv, grad_db_asv; ISIter it; size_t j, k, index;
-  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); it++) {
+  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     index = *it;
     if ( !(asv[index] & 1) && ( ((asv[index] & 2) && correctionOrder >= 1) ||
 				((asv[index] & 4) && correctionOrder == 2) ) ) {
@@ -1084,45 +975,69 @@ apply_multiplicative_correction(RealVector& beta_corrected_fns,
 	Teuchos::setCol(db_resp.function_gradient(i), i, uncorrected_grads);
   }
 
-  RealVector empty_rv; RealSymMatrix empty_rsm;
-  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); it++) {
+  RealVector empty_rv;
+  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     index = *it;
-    Approximation&       mult_corr = multCorrections[index];
-    const Real&            fn_corr = mult_corr.get_value(c_vars);
-    const RealVector&    grad_corr = (correctionOrder >= 1) ?
+    Approximation&    mult_corr = multCorrections[index];
+    const Real&         fn_corr = mult_corr.get_value(c_vars);
+    const RealVector& grad_corr = (correctionOrder >= 1 && (asv[index] & 6)) ?
       mult_corr.get_gradient(c_vars) : empty_rv;
-    const RealSymMatrix& hess_corr = (correctionOrder == 2) ?
-      mult_corr.get_hessian(c_vars) : empty_rsm;
-    const Real& uncorrected_fn   = (fn_db_search)   ? uncorrected_fns[index] :
-      beta_corrected_fns[index];
-    const Real* uncorrected_grad = (grad_db_search) ? uncorrected_grads[index] :
-      beta_corrected_grads[index];
     // apply corrections in descending derivative order to avoid
-    // disturbing uncorrected fn/grad
+    // disturbing original approx fn/grad values
     if (asv[index] & 4) {
-      RealSymMatrix& beta_corr_hess = beta_corrected_hessians[index];
-      beta_corr_hess *= fn_corr;
-      if (correctionOrder >= 1)
+      // update copy and reassign:
+      RealSymMatrix approx_hess = approx_response.function_hessian(index);
+      const Real*   approx_grad = (grad_db_search) ? uncorrected_grads[index] :
+	approx_response.function_gradients()[index];
+      approx_hess *= fn_corr; // all correction orders
+      switch (correctionOrder) {
+      case 2: {
+	const RealSymMatrix& hess_corr = mult_corr.get_hessian(c_vars);
+	const Real& approx_fn = (fn_db_search) ? uncorrected_fns[index] :
+	  approx_response.function_value(index);
 	for (j=0; j<numDerivVars; ++j)
 	  for (k=0; k<=j; ++k)
-	    beta_corr_hess(j,k) += grad_corr[j] * uncorrected_grad[k]
-	                        +  grad_corr[k] * uncorrected_grad[j];
-      if (correctionOrder == 2)
+	    approx_hess(j,k) += hess_corr(j,k) * approx_fn
+	      +  grad_corr[j] * approx_grad[k] + grad_corr[k] * approx_grad[j];
+	break;
+      }
+      case 1:
 	for (j=0; j<numDerivVars; ++j)
 	  for (k=0; k<=j; ++k)
-	    beta_corr_hess(j,k) += hess_corr(j,k) * uncorrected_fn;
+	    approx_hess(j,k)
+	      += grad_corr[j] * approx_grad[k] + grad_corr[k] * approx_grad[j];
+	break;
+      }
+      approx_response.function_hessian(approx_hess, index);
     }
     if (asv[index] & 2) {
-      Real* beta_corr_grad = beta_corrected_grads[index];
-      for (j=0; j<numDerivVars; ++j)
-	beta_corr_grad[j] *= fn_corr;
+      // update view (no reassignment):
+      RealVector approx_grad = approx_response.function_gradient(index);
+      //RealVector approx_grad = approx_response.function_gradient_copy(index);
+      const Real& approx_fn  = (fn_db_search) ? uncorrected_fns[index] :
+	approx_response.function_value(index);
+      approx_grad *= fn_corr; // all correction orders
       if (correctionOrder >= 1)
 	for (j=0; j<numDerivVars; ++j)
-	  beta_corr_grad[j] += grad_corr[j] * uncorrected_fn;
+	  approx_grad[j] += grad_corr[j] * approx_fn;
+      //approx_response.function_gradient(approx_grad, index)
     }
     if (asv[index] & 1)
-      beta_corrected_fns[index] *= fn_corr;
+      approx_response.function_value(approx_response.function_value(index) *
+				     fn_corr, index);
   }
+}
+
+
+void SurrogateModel::
+apply_multiplicative_correction(const RealVector& c_vars,
+				RealVector& approx_fns)
+{
+  if (!correctionComputed)
+    return;
+
+  for (ISIter it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
+    approx_fns[*it] *= multCorrections[*it].get_value(c_vars);
 }
 
 

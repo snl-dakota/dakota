@@ -177,9 +177,9 @@ public:
     const RealVector& c_vars);
 
   /// compute correction factors for use in SurrogateModels
-  virtual void compute_correction(const Response& truth_response, 
-				  const Response& approx_response,
-				  const RealVector& c_vars);
+  virtual void compute_correction(const RealVector& c_vars,
+				  const Response& truth_response, 
+				  const Response& approx_response);
 
   /// manages automatic application of correction factors in SurrogateModels
   virtual void auto_correction(bool correction_flag);
@@ -188,8 +188,8 @@ public:
   virtual bool auto_correction();
 
   /// apply correction factors to approx_response (for use in SurrogateModels)
-  virtual void apply_correction(Response& approx_response,
-				const RealVector& c_vars, 
+  virtual void apply_correction(const RealVector& c_vars,
+				Response& approx_response,
 				bool quiet_flag = false);
 
   /// update component parallel mode for supporting parallelism in a model's

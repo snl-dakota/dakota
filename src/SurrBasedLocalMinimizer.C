@@ -510,11 +510,11 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 	  // -->> local and up to 1st-order multipt do not need correction
 	  // -->> hierarchical needs compute_correction if new center
 	  // -->> global needs compute_correction if new center or new bounds
-	  iteratedModel.compute_correction(responseCenterTruth.second,
-					   responseCenterApprox,
-					   varsCenter.continuous_variables());
-	  iteratedModel.apply_correction(responseCenterApprox,
-					 varsCenter.continuous_variables());
+	  iteratedModel.compute_correction(varsCenter.continuous_variables(),
+					   responseCenterTruth.second,
+					   responseCenterApprox);
+	  iteratedModel.apply_correction(varsCenter.continuous_variables(),
+					 responseCenterApprox);
 	}
 	else
 	  iteratedModel.auto_correction(false); // TO DO: correct usage ???
