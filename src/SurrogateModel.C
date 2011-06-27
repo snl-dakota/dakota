@@ -696,9 +696,9 @@ compute_correction(const RealVector& c_vars, const Response& truth_response,
 
   Pecos::SurrogateDataVars sdv(c_vars, Pecos::DEEP_COPY);
   if (computeAdditive || badScalingFlag) {
-    Pecos::SurrogateDataResp sdr(data_order, numDerivVars);
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;
+      Pecos::SurrogateDataResp sdr(data_order, numDerivVars);
       // -----------------------------
       // Additive 0th order correction
       // -----------------------------
@@ -728,14 +728,14 @@ compute_correction(const RealVector& c_vars, const Response& truth_response,
       addCorrections[index].add(sdr, true); // shallow copy into SurrogateData
 
       if (outputLevel >= NORMAL_OUTPUT)
-	Cout << "\nAdditive correction computed:\n" << sdr << '\n';
+	Cout << "\nAdditive correction computed:\n" << sdr;
     }
   }
 
   if (computeMultiplicative && !badScalingFlag) {
-    Pecos::SurrogateDataResp sdr(data_order, numDerivVars);
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;
+      Pecos::SurrogateDataResp sdr(data_order, numDerivVars);
       // -----------------------------------
       // Multiplicative 0th order correction
       // -----------------------------------
@@ -784,7 +784,7 @@ compute_correction(const RealVector& c_vars, const Response& truth_response,
       multCorrections[index].add(sdr, true); // shallow copy into SurrogateData
 
       if (outputLevel >= NORMAL_OUTPUT)
-	Cout << "\nMultiplicative correction computed:\n" << sdr << '\n';
+	Cout << "\nMultiplicative correction computed:\n" << sdr;
     }
   }
 
@@ -878,7 +878,7 @@ apply_correction(const RealVector& c_vars, Response& approx_response,
   }
 
   if (!quiet_flag)
-    Cout << "Correction applied: corrected response =\n" << approx_response;
+    Cout << "\nCorrection applied: corrected response =\n" << approx_response;
 }
 
 

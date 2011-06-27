@@ -17,7 +17,7 @@
 #include "ProblemDescDB.H"
 #include "PRPMultiIndex.H"
 
-#define DEBUG
+//#define DEBUG
 
 
 namespace Dakota {
