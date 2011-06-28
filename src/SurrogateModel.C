@@ -620,9 +620,9 @@ compute_correction(const RealVector& c_vars, const Response& truth_response,
   // it is not necessary to back out a previous correction, and the
   // computation of the new correction is straightforward.
 
-  const RealVector&    truth_fns = truth_response.function_values();
+  const RealVector&    truth_fns =  truth_response.function_values();
   const RealVector&   approx_fns = approx_response.function_values();
-  const RealMatrix&  truth_grads = truth_response.function_gradients();
+  const RealMatrix&  truth_grads =  truth_response.function_gradients();
   const RealMatrix& approx_grads = approx_response.function_gradients();
   const RealSymMatrixArray& truth_hessians
     = truth_response.function_hessians();
@@ -630,11 +630,10 @@ compute_correction(const RealVector& c_vars, const Response& truth_response,
     = approx_response.function_hessians();
 
   // Catalog data needed later
-  // *** TO DO: augment approxFnsPrevCenter logic for data fit surrogates.  May
-  // require additional fn evaluation.  This may also be a better approach for
-  // approxFnsCenter/approxGradsCenter within apply_multiplicative_correction
-  // (if not found in search, evaluate it instead of falling back on center
-  // approx values).
+  // TO DO: augment approxFnsPrevCenter logic for data fit surrogates.  May
+  // require additional fn evaluation of previous pt on current surrogate.
+  // This could combine with DB lookups within apply_multiplicative_correction
+  // (approx re-evaluated if not found in DB search).
   int index; size_t j, k; ISIter it; short data_order;
   switch (correctionOrder) {
   case 2: data_order = 7; break;
@@ -643,22 +642,29 @@ compute_correction(const RealVector& c_vars, const Response& truth_response,
   }
   if (combinedFlag && correctionComputed) {
     // save previous correction data for multipoint correction
-    //correctionPrevCenterPt = correctionCenterPt;
-    index = *surrogateFnIndices.begin();
-    correctionPrevCenterPt = (computeAdditive || badScalingFlag) ?
-      addCorrections[index].approximation_data().anchor_continuous_variables() :
-      multCorrections[index].approximation_data().anchor_continuous_variables();
-    approxFnsPrevCenter    = approxFnsCenter; // OK for hierarchical approx
-    truthFnsPrevCenter     = truthFnsCenter;
+    approxFnsPrevCenter = approxFnsCenter;
+    if (truthFnsPrevCenter.empty())
+      truthFnsPrevCenter.sizeUninitialized(numFns);
+    it = surrogateFnIndices.begin();
+    if (computeAdditive || badScalingFlag) {
+      correctionPrevCenterPt = 
+	addCorrections[*it].approximation_data().anchor_continuous_variables();
+      for (; it!=surrogateFnIndices.end(); ++it)
+	truthFnsPrevCenter[*it]
+	  = addCorrections[*it].approximation_data().anchor_function();
+    }
+    else {
+      correctionPrevCenterPt =
+	multCorrections[*it].approximation_data().anchor_continuous_variables();
+      for (; it!=surrogateFnIndices.end(); ++it)
+	truthFnsPrevCenter[*it]
+	  = multCorrections[index].approximation_data().anchor_function();
+    }
   }
-  if (combinedFlag)
-    truthFnsCenter = truth_fns;
-  //if (combinedFlag || correctionOrder >= 1)
-  //  copy_data(c_vars, correctionCenterPt);
-  if (combinedFlag || (computeMultiplicative && correctionOrder >= 1))
+  if (combinedFlag)// || (computeMultiplicative && correctionOrder >= 1))
     approxFnsCenter = approx_fns;
-  if (computeMultiplicative && correctionOrder >= 1)
-    approxGradsCenter = approx_grads;
+  //if (computeMultiplicative && correctionOrder >= 1)
+  //  approxGradsCenter = approx_grads;
 
   // Multiplicative will fail if response functions are near zero.
   //   0th order:     a truth_val == 0 causes a zero scaling which will cause
@@ -794,7 +800,7 @@ compute_correction(const RealVector& c_vars, const Response& truth_response,
   // it goes -> 0 (use multiplicative alone) if f_hi_beta(x_pp) -> f_hi(x_pp).
   if (combinedFlag && !badScalingFlag && correctionComputed) {
     RealVector alpha_corr_fns = approxFnsPrevCenter,
-               beta_corr_fns  = approxFnsPrevCenter;
+                beta_corr_fns = approxFnsPrevCenter;
     apply_additive_correction(correctionPrevCenterPt, alpha_corr_fns);
     apply_multiplicative_correction(correctionPrevCenterPt, beta_corr_fns);
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {

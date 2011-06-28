@@ -243,25 +243,15 @@ private:
   /// correction instead of a strictly local correction.
   RealVector combineFactors;
 
-  // The point in parameter space where the current correction is calculated
-  // (often the center of the current trust region).  Used in calculating
-  // (x - x_c) terms in 1st-/2nd-order corrections.
-  //RealVector correctionCenterPt;
   /// copy of center point from the previous correction cycle
   RealVector correctionPrevCenterPt;
-  /// Surrogate function values at the current correction point which are
-  /// needed as a fall back if the current surrogate function values are
-  /// unavailable when applying 1st-/2nd-order multiplicative corrections.
+  /// Surrogate function values at the current correction point
   RealVector approxFnsCenter;
-  /// copy of approxFnsCenter from the previous correction cycle
+  /// copy of approximate function values at center of previous correction cycle
   RealVector approxFnsPrevCenter;
-  /// Surrogate gradient values at the current correction point which are
-  /// needed as a fall back if the current surrogate function gradients are
-  /// unavailable when applying 1st-/2nd-order multiplicative corrections.
-  RealMatrix approxGradsCenter;
-  /// Truth function values at the current correction point
-  RealVector truthFnsCenter;
-  /// copy of truthFnsCenter from the previous correction cycle
+  // Surrogate gradient values at the current correction point
+  //RealMatrix approxGradsCenter;
+  /// copy of truth function values at center of previous correction cycle
   RealVector truthFnsPrevCenter;
 
   /// copy of the truth model variables object used to simplify conversion 
