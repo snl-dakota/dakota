@@ -370,7 +370,7 @@ if(HAVE_ACRO)
 endif(HAVE_ACRO)
 
 
-option(HAVE_QUESO "Toggle QUESO support, default is QUESO disabled" OFF)
+#CheckPackage(GRVY)
 CheckPackage(QUESO)
 if(HAVE_QUESO)
   list(APPEND iterator_src NonDQUESOBayesCalibration.C)
@@ -382,6 +382,8 @@ if(HAVE_QUESO)
   #include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
   include_directories(${Dakota_BINARY_DIR}/packages/queso/include
                       ${Dakota_BINARY_DIR}/packages/grvy/include
+                      #wjbHardwire, for now -- "$ENV{GSL_CONFIG}/../../include"
+                      /home/wjbohnh/local/gsl-1.14.gcc-4.4.4/include
                       ${Trilinos_INCLUDE_DIRS})
 
   #list(APPEND link_directories "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
@@ -389,7 +391,7 @@ if(HAVE_QUESO)
        ${Dakota_BINARY_DIR}/packages/grvy/lib
        ${Trilinos_LIBRARY_DIRS})
 
-  list(APPEND TPL_LIBS queso grvy ${Trilinos_LIBRARIES})
+  list(APPEND TPL_LIBS grvy ${Trilinos_LIBRARIES})
   list(APPEND EXPORT_TARGETS queso grvy ${Trilinos_LIBRARIES})
 endif(HAVE_QUESO)
 
@@ -561,11 +563,16 @@ if(HAVE_ACRO)
 endif()
 
 ## MORE TPLs to append to the link stream, conditionally, based on user prefs
+
+if(HAVE_QUESO)
+  # Enforce GRVY/QUESO config header creation prior to compiling dakota sources
+  add_dependencies(dakota_src queso_ext grvy_ext)
+endif()
+
 if(HAVE_AMPL)
   add_definitions("-DHAVE_AMPL")
 
-  # WJB - ToDo: ask Zack about whether this is correct??
-  # (i.e. enforce AMPL config header creation prior to compiling dakota sources)
+  # Enforce AMPL config header creation prior to compiling dakota sources
   add_dependencies(dakota_src amplsolver)
 
   #include_directories(${Ampl_SOURCE_DIR}/ampl)

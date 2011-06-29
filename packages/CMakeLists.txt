@@ -15,7 +15,7 @@ option(HAVE_OPTPP "Build the OPTPP package." ON)
 option(HAVE_PECOS "Build the Pecos package." ON)
 option(HAVE_PLUGIN "Enable plugins to the dakota executable." ON)
 option(HAVE_PSUADE "Build the PSUADE package." ON)
-#option(HAVE_QUESO "Build the QUESO package." ON)
+option(HAVE_QUESO "Build the QUESO package." OFF)
 option(HAVE_SURFPACK "Build the Surfpack package." ON)
 
 if(HAVE_CONMIN)
@@ -60,17 +60,17 @@ else()
     ############################################################################
     # GRVY
     #
-    set(GRVY_EXT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/grvy)
+    set(GRVY_EXT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/grvy_ext)
     execute_process(
       COMMAND ${CMAKE_COMMAND} -E make_directory ${GRVY_EXT_BINARY_DIR} )
 
     set(grvy_config_cmd
-      ${SH} ${CMAKE_CURRENT_BINARY_DIR}/grvy-prefix/src/grvy/configure
+      ${SH} ${CMAKE_CURRENT_BINARY_DIR}/grvy_ext-prefix/src/grvy_ext/configure
       "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
       "--without-hdf5" "--with-boost=${Boost_INCLUDE_DIR}/.."
       "--prefix" "${GRVY_EXT_BINARY_DIR}"
     )
-    externalproject_add(grvy
+    externalproject_add(grvy_ext
       URL ${CMAKE_CURRENT_SOURCE_DIR}/queso_tarballs/grvy-0.30.0.tgz
       BUILD_IN_SOURCE 1
       CONFIGURE_COMMAND "${grvy_config_cmd}"
@@ -79,12 +79,12 @@ else()
     ############################################################################
     # Queso
     #
-    set(QUESO_EXT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/queso)
+    set(QUESO_EXT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/queso_ext)
     execute_process(
       COMMAND ${CMAKE_COMMAND} -E make_directory ${QUESO_EXT_BINARY_DIR} )
 
     set(queso_config_cmd
-      ${SH} ${CMAKE_CURRENT_BINARY_DIR}/queso-prefix/src/queso/configure
+      ${SH} ${CMAKE_CURRENT_BINARY_DIR}/queso_ext-prefix/src/queso_ext/configure
       "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
       "--without-hdf5" "--without-glpk" "--with-grvy=${GRVY_EXT_BINARY_DIR}"
       "--with-boost=${Boost_INCLUDE_DIR}/.."
@@ -94,12 +94,13 @@ else()
       "CXXFLAGS=${CMAKE_CXX_FLAGS} -Wl,-lepetra"
       "--prefix" "${QUESO_EXT_BINARY_DIR}"
     )
-    externalproject_add(queso
+    externalproject_add(queso_ext
       URL ${CMAKE_CURRENT_SOURCE_DIR}/queso_tarballs/queso-0.45.0.tar.gz
       BUILD_IN_SOURCE 1
       CONFIGURE_COMMAND "${queso_config_cmd}"
     )
 
+    add_dependencies(queso_ext grvy_ext)
   endif(HAVE_QUESO)
 endif() #sh
 
