@@ -380,15 +380,14 @@ if(HAVE_QUESO)
   include(${Trilinos_DIR}/TrilinosConfig_install.cmake)
 
   #include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
-  include_directories(${Dakota_BINARY_DIR}/packages/queso/include
-                      ${Dakota_BINARY_DIR}/packages/grvy/include
-                      #wjbHardwire, for now -- "$ENV{GSL_CONFIG}/../../include"
-                      /home/wjbohnh/local/gsl-1.14.gcc-4.4.4/include
+  include_directories(${Dakota_BINARY_DIR}/packages/queso_ext/include
+                      ${Dakota_BINARY_DIR}/packages/grvy_ext/include
+                      "$ENV{GSL_CONFIG}/../../include"
                       ${Trilinos_INCLUDE_DIRS})
 
   #list(APPEND link_directories "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
-  list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso/lib
-       ${Dakota_BINARY_DIR}/packages/grvy/lib
+  list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso_ext/lib
+       ${Dakota_BINARY_DIR}/packages/grvy_ext/lib
        ${Trilinos_LIBRARY_DIRS})
 
   list(APPEND TPL_LIBS grvy ${Trilinos_LIBRARIES})
