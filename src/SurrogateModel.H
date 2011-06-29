@@ -245,14 +245,16 @@ private:
 
   /// copy of center point from the previous correction cycle
   RealVector correctionPrevCenterPt;
+  /// truth function values at the current correction point
+  RealVector truthFnsCenter;
   /// Surrogate function values at the current correction point
   RealVector approxFnsCenter;
-  /// copy of approximate function values at center of previous correction cycle
-  RealVector approxFnsPrevCenter;
   // Surrogate gradient values at the current correction point
   //RealMatrix approxGradsCenter;
   /// copy of truth function values at center of previous correction cycle
   RealVector truthFnsPrevCenter;
+  /// copy of approximate function values at center of previous correction cycle
+  RealVector approxFnsPrevCenter;
 
   /// copy of the truth model variables object used to simplify conversion 
   /// among differing variable views in force_rebuild()

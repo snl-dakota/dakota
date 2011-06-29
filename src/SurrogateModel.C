@@ -22,6 +22,8 @@
 
 static const char rcsId[]="@(#) $Id: SurrogateModel.C 7024 2010-10-16 01:24:42Z mseldre $";
 
+//#define DEBUG
+
 
 namespace Dakota {
 
@@ -643,26 +645,16 @@ compute_correction(const RealVector& c_vars, const Response& truth_response,
   if (combinedFlag && correctionComputed) {
     // save previous correction data for multipoint correction
     approxFnsPrevCenter = approxFnsCenter;
-    if (truthFnsPrevCenter.empty())
-      truthFnsPrevCenter.sizeUninitialized(numFns);
+    truthFnsPrevCenter  = truthFnsCenter;
     it = surrogateFnIndices.begin();
-    if (computeAdditive || badScalingFlag) {
-      correctionPrevCenterPt = 
-	addCorrections[*it].approximation_data().anchor_continuous_variables();
-      for (; it!=surrogateFnIndices.end(); ++it)
-	truthFnsPrevCenter[*it]
-	  = addCorrections[*it].approximation_data().anchor_function();
-    }
-    else {
-      correctionPrevCenterPt =
-	multCorrections[*it].approximation_data().anchor_continuous_variables();
-      for (; it!=surrogateFnIndices.end(); ++it)
-	truthFnsPrevCenter[*it]
-	  = multCorrections[index].approximation_data().anchor_function();
-    }
+    correctionPrevCenterPt = (computeAdditive || badScalingFlag) ?
+      addCorrections[*it].approximation_data().anchor_continuous_variables() :
+      multCorrections[*it].approximation_data().anchor_continuous_variables();
   }
-  if (combinedFlag)// || (computeMultiplicative && correctionOrder >= 1))
-    approxFnsCenter = approx_fns;
+  if (combinedFlag)
+    { truthFnsCenter = truth_fns; approxFnsCenter = approx_fns; }
+  //if (combinedFlag || (computeMultiplicative && correctionOrder >= 1))
+  //  approxFnsCenter = approx_fns;
   //if (computeMultiplicative && correctionOrder >= 1)
   //  approxGradsCenter = approx_grads;
 
@@ -806,9 +798,10 @@ compute_correction(const RealVector& c_vars, const Response& truth_response,
       Real denom =     alpha_corr_fns[index] - beta_corr_fns[index];
       combineFactors[index] = (std::fabs(denom) > 1.e-25) ? numer/denom : 1.;
 #ifdef DEBUG
-      Cout << "additive = " << alpha_corr_fns[index] <<" multiplicative = "
-	   << beta_corr_fns[index] << "\nnumer = " << numer << " denom = "
-	   << denom << '\n';
+      Cout << "truth prev = " << truthFnsPrevCenter[index]
+	   << " additive prev = " << alpha_corr_fns[index]
+	   << " multiplicative prev = " << beta_corr_fns[index]
+	   << "\nnumer = " << numer << " denom = " << denom << '\n';
 #endif
     }
     if (outputLevel >= NORMAL_OUTPUT)
@@ -818,6 +811,8 @@ compute_correction(const RealVector& c_vars, const Response& truth_response,
 #ifdef DEBUG
     Cout << "Testing final match at previous point\n";
     Response approx_copy = approx_response.copy();
+    ActiveSet fns_set = approx_response.active_set(); // copy
+    fns_set.request_values(1); // correct fn values only
     approx_copy.active_set(fns_set);
     approx_copy.function_values(approxFnsPrevCenter);
     apply_correction(correctionPrevCenterPt, approx_copy);
