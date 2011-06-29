@@ -164,7 +164,7 @@ nextarg:
 	return 0;
 	}
 
-#include "nidr.h"
+#include "nidr/nidr.h"
 
 #ifdef NO_NIDR_keywds0
 KeyWord Dakota_Keyword_Top = {"KeywordTop"};
