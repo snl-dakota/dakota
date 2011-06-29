@@ -745,8 +745,11 @@ compute_correction(const RealVector& c_vars, const Response& truth_response,
       // -----------------------------------
       // Multiplicative 0th order correction
       // -----------------------------------
+      const Real&  truth_fn =  truth_fns[index];
+      const Real& approx_fn = approx_fns[index];
+      Real ratio = truth_fn / approx_fn;
       if (data_order & 1)
-	sdr.response_function(truth_fns[index] / approx_fns[index]);
+	sdr.response_function(ratio);
       // -----------------------------------
       // Multiplicative 1st order correction
       // -----------------------------------
@@ -756,34 +759,28 @@ compute_correction(const RealVector& c_vars, const Response& truth_response,
       // 1st-order consistency (matches the high-fidelity function values and
       // the high-fidelity gradients at the center of the approximation region).
       if (data_order & 2) {
-	const Real&    truth_fn =    truth_fns[index];
-	const Real&   approx_fn =   approx_fns[index];
 	const Real*  truth_grad =  truth_grads[index];
 	const Real* approx_grad = approx_grads[index];
-	Real f_lo_2 = approx_fn*approx_fn;
 	for (j=0; j<numDerivVars; ++j)
-	  sdr.response_gradient(truth_grad[j] / approx_fn -
-				truth_fn * approx_grad[j] / f_lo_2, j);
+	  sdr.response_gradient( ( truth_grad[j] - approx_grad[j] * ratio )
+				 / approx_fn, j);
       }
       // -----------------------------------
       // Multiplicative 2nd order correction
       // -----------------------------------
       if (data_order & 4) {
-	const Real&             truth_fn =       truth_fns[index];
-	const Real&            approx_fn =      approx_fns[index];
 	const Real*           truth_grad =     truth_grads[index];
 	const Real*          approx_grad =    approx_grads[index];
 	const RealSymMatrix&  truth_hess =  truth_hessians[index];
 	const RealSymMatrix& approx_hess = approx_hessians[index];
 	// consider use of Teuchos assign and operator-=
-	Real f_lo_f_hi = approx_fn * truth_fn, f_lo_2 = approx_fn * approx_fn,
-	     f_lo_3 = approx_fn * f_lo_2;
+	Real f_lo_2 = approx_fn * approx_fn;
 	for (j=0; j<numDerivVars; ++j)
 	  for (k=0; k<=j; ++k) // lower half
-	    sdr.response_hessian(( f_lo_2 * truth_hess(j,k) - f_lo_f_hi
-	      * approx_hess(j,k) + 2. * truth_fn * approx_grad[j]
-	      * approx_grad[k] - approx_fn * ( truth_grad[j] * approx_grad[k]
-	      + approx_grad[j] * truth_grad[k] ) ) / f_lo_3, j, k);
+	    sdr.response_hessian( ( truth_hess(j,k) * approx_fn - truth_fn *
+	      approx_hess(j,k) + 2. * ratio * approx_grad[j] * approx_grad[k] -
+	      truth_grad[j] * approx_grad[k] - approx_grad[j] * truth_grad[k] )
+	      / f_lo_2, j, k);
       }
       // update anchor data
       multCorrections[index].add(sdv, true); // shallow copy into SurrogateData
@@ -995,7 +992,6 @@ apply_multiplicative_correction(const RealVector& c_vars,
       RealSymMatrix approx_hess = approx_response.function_hessian(index);
       const Real*   approx_grad = (grad_db_search) ? uncorrected_grads[index] :
 	approx_response.function_gradients()[index];
-      approx_hess *= fn_corr; // all correction orders
       switch (correctionOrder) {
       case 2: {
 	const RealSymMatrix& hess_corr = mult_corr.get_hessian(c_vars);
@@ -1003,15 +999,19 @@ apply_multiplicative_correction(const RealVector& c_vars,
 	  approx_response.function_value(index);
 	for (j=0; j<numDerivVars; ++j)
 	  for (k=0; k<=j; ++k)
-	    approx_hess(j,k) += hess_corr(j,k) * approx_fn
-	      +  grad_corr[j] * approx_grad[k] + grad_corr[k] * approx_grad[j];
+	    approx_hess(j,k) = approx_hess(j,k) * fn_corr
+	      + hess_corr(j,k) * approx_fn + grad_corr[j] * approx_grad[k]
+	      + grad_corr[k] * approx_grad[j];
 	break;
       }
       case 1:
 	for (j=0; j<numDerivVars; ++j)
 	  for (k=0; k<=j; ++k)
-	    approx_hess(j,k)
-	      += grad_corr[j] * approx_grad[k] + grad_corr[k] * approx_grad[j];
+	    approx_hess(j,k) = approx_hess(j,k) * fn_corr
+	      + grad_corr[j] * approx_grad[k] + grad_corr[k] * approx_grad[j];
+	break;
+      case 0:
+	approx_hess *= fn_corr;
 	break;
       }
       approx_response.function_hessian(approx_hess, index);
