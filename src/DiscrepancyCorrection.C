@@ -34,6 +34,26 @@ initialize(Model& surr_model, const IntSet& surr_fn_indices,
   numFns = surr_model.num_functions(); numVars = surr_model.cv();
   correctionType = corr_type; correctionOrder = corr_order;
 
+  initialize_corrections();
+}
+
+
+void DiscrepancyCorrection::
+initialize(const IntSet& surr_fn_indices, size_t num_fns, size_t num_vars,
+	   const String& corr_type, short corr_order)
+{
+  surrogateFnIndices = surr_fn_indices;
+  numFns = num_fns; numVars = num_vars;
+  correctionType = corr_type; correctionOrder = corr_order;
+
+  initialize_corrections();
+
+  // in this case, surrModel is null and must be protected
+}
+
+
+void DiscrepancyCorrection::initialize_corrections()
+{
   // initialize correction data
   correctionComputed = badScalingFlag = combinedFlag = computeAdditive
     = computeMultiplicative = false;
@@ -94,14 +114,13 @@ compute(const RealVector& c_vars, const Response& truth_response,
   const RealSymMatrixArray& approx_hessians
     = approx_response.function_hessians();
 
-  // Catalog data needed later
+  // update previous center data arrays for combined corrections
   // TO DO: augment approxFnsPrevCenter logic for data fit surrogates.  May
   // require additional fn evaluation of previous pt on current surrogate.
-  // This could combine with DB lookups within apply_multiplicative_correction
+  // This could combine with DB lookups within apply_multiplicative()
   // (approx re-evaluated if not found in DB search).
   int index; size_t j, k; ISIter it;
   if (combinedFlag && correctionComputed) {
-    // save previous correction data for multipoint correction
     approxFnsPrevCenter = approxFnsCenter;
     truthFnsPrevCenter  = truthFnsCenter;
     it = surrogateFnIndices.begin();
@@ -109,12 +128,12 @@ compute(const RealVector& c_vars, const Response& truth_response,
       addCorrections[*it].approximation_data().anchor_continuous_variables() :
       multCorrections[*it].approximation_data().anchor_continuous_variables();
   }
-  if (combinedFlag)
-    { truthFnsCenter = truth_fns; approxFnsCenter = approx_fns; }
-  //if (combinedFlag || (computeMultiplicative && correctionOrder >= 1))
-  //  approxFnsCenter = approx_fns;
-  //if (computeMultiplicative && correctionOrder >= 1)
-  //  approxGradsCenter = approx_grads;
+  // update current center data arrays
+  bool fall_back
+    = (computeMultiplicative && correctionOrder >= 1 && surrModel.is_null());
+  if (combinedFlag)                 truthFnsCenter = truth_fns;
+  if (combinedFlag || fall_back)   approxFnsCenter = approx_fns;
+  if (fall_back)                 approxGradsCenter = approx_grads;
 
   // Multiplicative will fail if response functions are near zero.
   //   0th order:     a truth_val == 0 causes a zero scaling which will cause
@@ -370,8 +389,9 @@ apply_additive(const RealVector& c_vars, Response& approx_response)
 void DiscrepancyCorrection::
 apply_multiplicative(const RealVector& c_vars, Response& approx_response)
 {
-  // Retrieve uncorrected data for special cases where the data required to
-  // apply the correction is different from the active data being corrected.
+  // Determine needs for retrieving uncorrected data due to cases where
+  // the data required to apply the correction is different from the
+  // active data being corrected.
   bool fn_db_search = false, grad_db_search = false;
   const ShortArray& asv = approx_response.active_set_request_vector();
   ShortArray fn_db_asv, grad_db_asv; ISIter it; size_t j, k, index;
@@ -387,32 +407,53 @@ apply_multiplicative(const RealVector& c_vars, Response& approx_response)
       grad_db_asv[index] = 2; grad_db_search = true;
     }
   }
-  // Retrieve the uncorrected fn values for use in gradient and Hessian
-  // corrections.  They are not immediately available in cases where the
-  // correction is applied only to the fn gradient (i.e., when the current
-  // asv contains 2's due to DOT/CONMIN/OPT++ requesting gradients separately).
-  RealVector uncorrected_fns;
+  // Retrieve any uncorrected fn values/gradients required for use in gradient
+  // and Hessian corrections.  They are not immediately available in cases where
+  // the correction is applied only to the fn gradient (i.e., when the current
+  // asv contains 2's due to DOT/CONMIN/OPT++ requesting gradients separately)
+  // or only to the fn Hessian (i.e., when the current asv contains 4's due to
+  // OPT++ requesting Hessians separately).  If surrModel is initialized, we
+  // lookup the data in data_pairs and re-evaluate if not found.  If surrModel
+  // is not initialized, we fall back to using uncorrected data from the center
+  // of the current trust region (TR).  This still satisifies the required
+  // consistency at the TR center, but is less accurate over the rest of the TR.
+  RealVector uncorr_fns; RealMatrix uncorr_grads; RealVector empty_rv;
   if (fn_db_search) {
-    const Response& db_resp = search_db(c_vars, fn_db_asv);
-    uncorrected_fns.sizeUninitialized(numFns);
-    for (size_t i=0; i<numFns; ++i)
-      if (fn_db_asv[i])
-	uncorrected_fns[i] = db_resp.function_value(i);
+    uncorr_fns.sizeUninitialized(numFns);
+    if (surrModel.is_null()) { // fallback position
+      Cerr << "Warning: original function values not available at the current "
+	   << "point.\n         Multiplicative correction falling back to "
+	   << "function values from the correction point." << std::endl;
+      for (size_t i=0; i<numFns; ++i)
+	if (fn_db_asv[i])
+	  uncorr_fns[i] = approxFnsCenter[i];
+    }
+    else {
+      const Response& db_resp = search_db(c_vars, fn_db_asv);
+      for (size_t i=0; i<numFns; ++i)
+	if (fn_db_asv[i])
+	  uncorr_fns[i] = db_resp.function_value(i);
+    }
   }
-  // Retrieve the uncorrected fn gradients for use in Hessian corrections.
-  // They are not immediately available in cases where the correction is
-  // applied only to the fn Hessian (i.e., when the current asv contains
-  // 4's due to OPT++ requesting Hessians separately).
-  RealMatrix uncorrected_grads;
   if (grad_db_search) {
-    const Response& db_resp = search_db(c_vars, grad_db_asv);
-    uncorrected_grads.shapeUninitialized(numVars, numFns);
-    for (int i=0; i<numFns; ++i)
-      if (grad_db_asv[i])
-	Teuchos::setCol(db_resp.function_gradient(i), i, uncorrected_grads);
+    uncorr_grads.shapeUninitialized(numVars, numFns);
+    if (surrModel.is_null()) { // fallback position
+      Cerr << "Warning: original function gradients not available at the "
+	   << "current point.\n         Multiplicative correction falling back "
+	   << "to function gradients from the correction point." << std::endl;
+      for (int i=0; i<numFns; ++i)
+	if (grad_db_asv[i])
+	  Teuchos::setCol(Teuchos::getCol(Teuchos::View, approxGradsCenter, i),
+			  i, uncorr_grads);
+    }
+    else {
+      const Response& db_resp = search_db(c_vars, grad_db_asv);
+      for (int i=0; i<numFns; ++i)
+	if (grad_db_asv[i])
+	  Teuchos::setCol(db_resp.function_gradient(i), i, uncorr_grads);
+    }
   }
 
-  RealVector empty_rv;
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     index = *it;
     Approximation&    mult_corr = multCorrections[index];
@@ -424,12 +465,12 @@ apply_multiplicative(const RealVector& c_vars, Response& approx_response)
     if (asv[index] & 4) {
       // update copy and reassign:
       RealSymMatrix approx_hess = approx_response.function_hessian(index);
-      const Real*   approx_grad = (grad_db_search) ? uncorrected_grads[index] :
+      const Real*   approx_grad = (grad_db_search) ? uncorr_grads[index] :
 	approx_response.function_gradients()[index];
       switch (correctionOrder) {
       case 2: {
 	const RealSymMatrix& hess_corr = mult_corr.get_hessian(c_vars);
-	const Real& approx_fn = (fn_db_search) ? uncorrected_fns[index] :
+	const Real& approx_fn = (fn_db_search) ? uncorr_fns[index] :
 	  approx_response.function_value(index);
 	for (j=0; j<numVars; ++j)
 	  for (k=0; k<=j; ++k)
@@ -454,7 +495,7 @@ apply_multiplicative(const RealVector& c_vars, Response& approx_response)
       // update view (no reassignment):
       RealVector approx_grad = approx_response.function_gradient(index);
       //RealVector approx_grad = approx_response.function_gradient_copy(index);
-      const Real& approx_fn  = (fn_db_search) ? uncorrected_fns[index] :
+      const Real& approx_fn  = (fn_db_search) ? uncorr_fns[index] :
 	approx_response.function_value(index);
       approx_grad *= fn_corr; // all correction orders
       if (correctionOrder >= 1)
@@ -474,13 +515,13 @@ search_db(const RealVector& c_vars, const ShortArray& search_asv)
 {
   // Retrieve missing uncorrected approximate data for use in derivative
   // multiplicative corrections.  The correct approach is to retrieve the
-  // missing data for the current point in parameter space, and this
-  // approach is now enforced in all cases (data is either available
-  // directly as indicated by the asv, is retrieved via a data_pairs
-  // search, or is recomputed).  A previous fallback was to employ approx
-  // center data (see comments below).  Recomputation can occur either for
-  // ApproximationInterface data in DataFitSurrModels or low fidelity data
-  // in HierarchSurrModels that involves additional model recursions, since
+  // missing data for the current point in parameter space, and this approach
+  // is when data is either available directly as indicated by the asv, can be
+  // retrieved via a data_pairs search, or can be recomputed).  A final fallback
+  // is to employ approx center data; this approach is used when surrModel has
+  // not been initialized (see apply_multiplicative()).  Recomputation can occur
+  // either for ApproximationInterface data in DataFitSurrModels or low fidelity
+  // data in HierarchSurrModels that involves additional model recursions, since
   // neither of these data sets are catalogued in data_pairs.
 
   // query data_pairs to extract the response at the current pt
@@ -497,27 +538,6 @@ search_db(const RealVector& c_vars, const ShortArray& search_asv)
     surrModel.continuous_variables(c_vars);
     surrModel.compute_response(search_set);
     return surrModel.current_response();
-
-    /* Old fall-back position uses the approximate data from the
-    // center of the current trust region.  This still satisifies
-    // consistency at the center of the trust region, but is a less
-    // accurate approximation over the rest of the trust region.
-
-    Cerr << "Warning: current function values not available.\n         "
-	 << "beta correction using function values from the correction "
-	 << "point." << std::endl;
-    for (size_t i=0; i<numFns; ++i)
-      if (search_asv[i] & 1)
-	uncorrected_fns[i] = approxFnsCenter[i];
-
-    Cerr << "Warning: current function gradients not available.\n"
-	 << "         beta correction using function gradients from the"
-	 << " correction point." << std::endl;
-    for (int i=0; i<numFns; ++i)
-      if (search_asv[i] & 2)
-	Teuchos::setCol(Teuchos::getCol(Teuchos::View, approxGradsCenter, i),
-	                i, uncorrected_grads);
-    */
   }
   else
     return cache_it->prp_response();

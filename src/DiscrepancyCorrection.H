@@ -40,6 +40,10 @@ public:
   /// standard constructor
   DiscrepancyCorrection(Model& surr_model, const IntSet& surr_fn_indices,
 			const String& corr_type, short corr_order);
+  /// alternate constructor
+  DiscrepancyCorrection(const IntSet& surr_fn_indices, size_t num_fns,
+			size_t num_vars, const String& corr_type,
+			short corr_order);
   /// destructor
   ~DiscrepancyCorrection();
 
@@ -47,8 +51,12 @@ public:
   //- Heading: Member functions
   //
 
+  /// initialize the DiscrepancyCorrection data
   void initialize(Model& surr_model, const IntSet& surr_fn_indices,
 		  const String& corr_type, short corr_order);
+  /// initialize the DiscrepancyCorrection data
+  void initialize(const IntSet& surr_fn_indices, size_t num_fns,
+		  size_t num_vars, const String& corr_type, short corr_order);
 
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response
@@ -103,6 +111,9 @@ private:
   //
   //- Heading: Convenience functions
   //
+
+  /// internal convenience function shared by overloaded initialize() variants
+  void initialize_corrections();
 
   /// internal convenience function for applying additive corrections
   /// to an approximate response
@@ -164,8 +175,8 @@ private:
   RealVector truthFnsCenter;
   /// Surrogate function values at the current correction point
   RealVector approxFnsCenter;
-  // Surrogate gradient values at the current correction point
-  //RealMatrix approxGradsCenter;
+  /// Surrogate gradient values at the current correction point
+  RealMatrix approxGradsCenter;
   /// copy of truth function values at center of previous correction cycle
   RealVector truthFnsPrevCenter;
   /// copy of approximate function values at center of previous correction cycle
