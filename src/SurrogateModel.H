@@ -17,7 +17,8 @@
 
 #include "DakotaModel.H"
 #include "DakotaInterface.H"
-#include "DakotaApproximation.H"
+#include "DiscrepancyCorrection.H"
+#include "DataMethod.H"
 
 
 namespace Dakota {
@@ -99,9 +100,6 @@ protected:
   //- Heading: Data
   //
 
-  /// flag for mixed approximate/actual responses
-  bool mixedResponseSet;
-
   /// for mixed response sets, this array specifies the response function
   /// subset that is approximated
   IntSet surrogateFnIndices;
@@ -127,21 +125,11 @@ protected:
   /// portions were still pending.
   IntResponseMap cachedApproxRespMap;
 
-  /// approximation correction approach to be used: additive or multiplicative
-  String correctionType;
-
-  /// approximation correction order to be used: 0, 1, or 2
-  short correctionOrder;
-
   /// a flag which controls the use of apply_correction() in DataFitSurrModel
   /// and HierarchSurrModel approximate response computations
   /** SurrBasedOptStrategy must toggle this value since compute_correction()
       no longer automatically backs out an old correction. */
   bool autoCorrection;
-
-  /// flag indicating whether or not a correction has been computed
-  /// and is available for application
-  bool correctionComputed;
 
   /// number of calls to build_approximation()
   /** used as a flag to automatically build the approximation if one of the
@@ -185,83 +173,23 @@ protected:
   /// a rebuild is required.
   RealVector referenceIDRVars;
 
+  /// manages construction and application of correction functions that
+  /// are applied to a surrogate model (DataFitSurr or HierarchSurr) in
+  /// order to reproduce high fidelity data.
+  DiscrepancyCorrection deltaCorr;
+
 private:
-
-  //
-  //- Heading: Convenience functions
-  //
-
-  /// internal convenience function for applying additive corrections
-  /// to an approximate response
-  void apply_additive_correction(const RealVector& c_vars,
-				 Response& approx_response);
-  /// internal convenience function for applying additive corrections
-  /// to a set of response functions
-  void apply_additive_correction(const RealVector& c_vars,
-				 RealVector& approx_fns);
-
-  /// internal convenience function for applying multiplicative
-  /// corrections to an approximate response
-  void apply_multiplicative_correction(const RealVector& c_vars,
-				       Response& approx_response);
-  /// internal convenience function for applying multiplicative corrections
-  /// to a set of response functions
-  void apply_multiplicative_correction(const RealVector& c_vars,
-				       RealVector& approx_fns);
-
-  /// search data_pairs for missing approximation data
-  const Response& search_db(const RealVector& c_vars,
-			    const ShortArray& search_asv);
 
   //
   //- Heading: Data
   //
 
-  /// flag used to indicate function values near zero for multiplicative
-  /// corrections; triggers an automatic switch to additive corrections
-  bool badScalingFlag;
-  /// flag indicating the combination of additive/multiplicative corrections
-  bool combinedFlag;
-  /// flag indicating the need for additive correction calculations
-  bool computeAdditive;
-  /// flag indicating the need for multiplicative correction calculations
-  bool computeMultiplicative;
-
-  /// array of additive corrections; surrogate models of a model
-  /// discrepancy function (formed from model differences)
-  std::vector<Approximation> addCorrections;
-  /// array of multiplicative corrections; surrogate models of a model
-  /// discrepancy function (formed from model ratios)
-  std::vector<Approximation> multCorrections;
-
-  /// factors for combining additive and multiplicative corrections.
-  /// Each factor is the weighting applied to the additive correction and
-  /// 1.-factor is the weighting applied to the multiplicative correction.
-  /// The factor value is determined by an additional requirement to match
-  /// the high fidelity function value at the previous correction point
-  /// (e.g., previous trust region center).  This results in a multipoint
-  /// correction instead of a strictly local correction.
-  RealVector combineFactors;
-
-  /// copy of center point from the previous correction cycle
-  RealVector correctionPrevCenterPt;
-  /// truth function values at the current correction point
-  RealVector truthFnsCenter;
-  /// Surrogate function values at the current correction point
-  RealVector approxFnsCenter;
-  // Surrogate gradient values at the current correction point
-  //RealMatrix approxGradsCenter;
-  /// copy of truth function values at center of previous correction cycle
-  RealVector truthFnsPrevCenter;
-  /// copy of approximate function values at center of previous correction cycle
-  RealVector approxFnsPrevCenter;
-
   /// copy of the truth model variables object used to simplify conversion 
   /// among differing variable views in force_rebuild()
-  Variables subModelVars;
+  Variables   truthModelVars;
   /// copy of the truth model constraints object used to simplify conversion 
   /// among differing variable views in force_rebuild()
-  Constraints subModelCons;
+  Constraints truthModelCons;
 };
 
 
@@ -271,6 +199,21 @@ inline SurrogateModel::~SurrogateModel()
 
 inline Model& SurrogateModel::subordinate_model()
 { return truth_model(); }
+
+
+inline void SurrogateModel::
+compute_correction(const RealVector& c_vars, const Response& truth_response, 
+		   const Response& approx_response)
+{
+  bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+  deltaCorr.compute(c_vars, truth_response, approx_response, quiet_flag);
+}
+
+
+inline void SurrogateModel::
+apply_correction(const RealVector& c_vars, Response& approx_response,
+		 bool quiet_flag)
+{ deltaCorr.apply(c_vars, approx_response, quiet_flag); }
 
 
 inline void SurrogateModel::auto_correction(bool correction_flag)

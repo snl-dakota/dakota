@@ -297,7 +297,8 @@ set(db_src ProblemDescDB.C NIDRProblemDescDB.C DataStrategy.C DataMethod.C
 
 ## Model sources.
 set(model_src DakotaModel.C SingleModel.C RecastModel.C NestedModel.C
-    SurrogateModel.C DataFitSurrModel.C HierarchSurrModel.C)
+    SurrogateModel.C DataFitSurrModel.C HierarchSurrModel.C
+    DiscrepancyCorrection.C)
 
 ## Constraint sources.
 set(constraint_src DakotaConstraints.C MergedConstraints.C MixedConstraints.C)

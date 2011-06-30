@@ -112,6 +112,13 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   approxInterface.assign_rep(new ApproximationInterface(problem_db, vars,
     cache, interface_id, numFns), false);
 
+  // initialize the DiscrepancyCorrection instance
+  const String& corr_type
+    = problem_db.get_string("model.surrogate.correction_type");
+  if (!corr_type.empty())
+    deltaCorr.initialize(*this, surrogateFnIndices, corr_type,
+      problem_db.get_short("model.surrogate.correction_order"));
+
   // read the points_file once and then reuse this data as appropriate
   // within build_global()
   if (!pointReuseFile.empty()) {
@@ -205,6 +212,10 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
     daceIterator.sub_iterator_flag(true);
   //else { // local/multipoint approximation
   //}
+
+  // initialize the DiscrepancyCorrection instance
+  if (!corr_type.empty())
+    deltaCorr.initialize(*this, surrogateFnIndices, corr_type, corr_order);
 
   // ignore bounds when finite differencing on data fits, since the bounds are
   // artificial in this case (and reflecting the stencil degrades accuracy)
@@ -868,7 +879,7 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
 
     // if build_approximation has not yet been called, call it now
     if (!approxBuilds || force_rebuild()) {
-      //if (!approxBuilds && !correctionType.empty())
+      //if (!approxBuilds && deltaCorr.active())
       //  autoCorrection = true; // default if stand-alone use
       build_approximation();
     }
@@ -879,8 +890,8 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
     approx_response = (mixed_eval) ? currentResponse.copy() : currentResponse;
     approxInterface.map(currentVariables, approx_set, approx_response);
 
-    if (autoCorrection && !correctionType.empty()) {
-      //if (!correctionComputed)
+    if (autoCorrection && deltaCorr.active()) {
+      //if (!deltaCorr.computed())
       //  compute_correction(currentVariables.continuous_variables(),
       //                     centerResponse, approx_response);
       apply_correction(currentVariables.continuous_variables(),approx_response);
@@ -921,7 +932,7 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
 
     // if build_approximation has not yet been called, call it now
     if (!approxBuilds || force_rebuild()) {
-      //if (!approxBuilds && !correctionType.empty())
+      //if (!approxBuilds && deltaCorr.active())
       //  autoCorrection = true; // default if stand-alone use
       build_approximation();
     }
@@ -931,7 +942,7 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     approx_set.request_vector(approx_asv);
     approxInterface.map(currentVariables, approx_set, currentResponse, true);
 
-    if (autoCorrection && !correctionType.empty())
+    if (autoCorrection && deltaCorr.active())
       copy_data(currentVariables.continuous_variables(),
 		rawCVarsMap[surrModelEvalCntr]);
     // store map from approxInterface eval id to DataFitSurrModel id
@@ -1136,14 +1147,14 @@ derived_synchronize_approx(const IntResponseMap& approx_resp_map,
        r_cit != approx_resp_map.end(); ++r_cit)
     approx_resp_map_proxy[surrIdMap[r_cit->first]] = r_cit->second;
 
-  if (autoCorrection && !correctionType.empty()) {
+  if (autoCorrection && deltaCorr.active()) {
     // Interface::rawResponseMap can be corrected directly in the case of an
     // ApproximationInterface since data_pairs is not used (not true for
     // HierarchSurrModel::derived_synchronize()/derived_synchronize_nowait()).
     // The response map from ApproximationInterface's quasi-asynch mode is
     // complete and in order.
 
-    //if (!correctionComputed && !approx_resp_map_proxy.empty())
+    //if (!deltaCorr.computed() && !approx_resp_map_proxy.empty())
     //  compute_correction(rawCVarsMap.begin()->second, ...,
     //                     approx_resp_map_proxy.begin()->second);
     IntRDVMIter v_it; IntRespMIter r_it;

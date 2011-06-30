@@ -106,9 +106,9 @@ public:
   /// the file name for the "file" setting for the \c reuse_samples
   /// specification in \ref ModelSurrG
   String approxPointReuseFile;
-  /// correction type for global and hierarchical approximations:
-  /// additive or multiplicative (from the \c correction specification
-  /// in \ref ModelSurrG and \ref ModelSurrH)
+  /// correction type for global and hierarchical approximations: additive,
+  /// multiplicative, or combined (from the \c correction specification in
+  /// \ref ModelSurrG and \ref ModelSurrH)
   String approxCorrectionType;
   /// correction order for global and hierarchical approximations: 0,
   /// 1, or 2 (from the \c correction specification in \ref ModelSurrG

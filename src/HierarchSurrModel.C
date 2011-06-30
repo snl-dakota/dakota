@@ -17,27 +17,16 @@
 static const char rcsId[]="@(#) $Id: HierarchSurrModel.C 6656 2010-02-26 05:20:48Z mseldre $";
 
 
-using namespace std;
-
 namespace Dakota {
 
 HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   SurrogateModel(problem_db), hierModelEvalCntr(0),
   highFidRefResponse(currentResponse.copy())
 {
-  // Correction is required in the hierarchical case (since without
-  // correction, all highFidelityModel evaluations are wasted).  Omission
-  // of a correction type should be prevented by the input specification.
-  if (correctionType.empty()) {
-    Cerr << "Error: correction is required with model hierarchies." << endl;
-    abort_handler(-1);
-  }
-
   // Hierarchical surrogate models pass through numerical derivatives
   supports_derivative_estimation(false);
   // initialize ignoreBounds even though it's irrelevant for pass through
   ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
-
   // initialize centralHess even though it's irrelevant for pass through
   centralHess = problem_db.get_bool("responses.central_hess");
 
@@ -57,15 +46,28 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   check_submodel_compatibility(highFidelityModel);
 
   // Enforce additional sub-model compatibility: views must be identical
-  const pair<short,short>& cv_view = currentVariables.view();
+  const std::pair<short,short>& cv_view = currentVariables.view();
   if (cv_view !=  lowFidelityModel.current_variables().view() ||
       cv_view != highFidelityModel.current_variables().view()) {
     Cerr << "Error: variable views in hierarchical models must be identical."
-	 << endl;
+	 << std::endl;
     abort_handler(-1);
   }
 
   problem_db.set_db_model_nodes(model_index); // restore
+
+  // Correction is required in the hierarchical case (since without
+  // correction, all highFidelityModel evaluations are wasted).  Omission
+  // of a correction type should be prevented by the input specification.
+  const String& corr_type
+    = problem_db.get_string("model.surrogate.correction_type");
+  if (corr_type.empty()) {
+    Cerr << "Error: correction is required with model hierarchies."<< std::endl;
+    abort_handler(-1);
+  }
+  else // initialize the DiscrepancyCorrection instance
+    deltaCorr.initialize(lowFidelityModel, surrogateFnIndices, corr_type,
+      problem_db.get_short("model.surrogate.correction_order"));
 }
 
 
@@ -97,12 +99,7 @@ void HierarchSurrModel::build_approximation()
   copy_data(hf_vars.inactive_discrete_real_variables(), referenceIDRVars);
 
   // compute the response for the high fidelity model
-  short asv_val = 1; // correctionOrder == 0
-  if (correctionOrder == 1)      // >= 1 && !hess_flag
-    asv_val = 3;
-  else if (correctionOrder == 2) // == 2 && hess_flag
-    asv_val = 7;
-  ShortArray total_asv(numFns, asv_val), hf_asv, lf_asv;
+  ShortArray total_asv(numFns, deltaCorr.data_order()), hf_asv, lf_asv;
   asv_mapping(total_asv, hf_asv, lf_asv, true);
   ActiveSet hf_set = highFidRefResponse.active_set(); // copy
   hf_set.request_vector(hf_asv);
@@ -126,11 +123,11 @@ build_approximation(const RealVector& c_vars, const Response& response)
 
   // Verify data content in incoming response
   const ShortArray& asrv = response.active_set_request_vector();
-  bool data_complete = true;
+  bool data_complete = true; short corr_order = dataCorr.correction_order();
   for (size_t i=0; i<numFns; i++)
-    if ( ( correctionOrder == 2 && (asrv[i] & 7) != 7 ) ||
-	 ( correctionOrder == 1 && (asrv[i] & 3) != 3 ) ||
-	 ( correctionOrder == 0 && !(asrv[i] & 1) ) )
+    if ( ( corr_order == 2 &&  (asrv[i] & 7) != 7 ) ||
+	 ( corr_order == 1 &&  (asrv[i] & 3) != 3 ) ||
+	 ( corr_order == 0 && !(asrv[i] & 1) ) )
       data_complete = false;
   if (data_complete) {
     Cout << "\n>>>>> Updating hierarchical approximation.\n";
@@ -203,7 +200,7 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
     lo_fi_response = (autoCorrection) ? lf_resp.copy() : lf_resp;
 
     if (autoCorrection) {
-      if (!correctionComputed)
+      if (!deltaCorr.computed())
 	compute_correction(currentVariables.continuous_variables(),
 			   highFidRefResponse, lo_fi_response);
       apply_correction(currentVariables.continuous_variables(), lo_fi_response);
@@ -322,7 +319,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
       // a responseRep -->> modifying rawResponseMap affects data_pairs.
 
       // if a correction has not been computed, compute it now
-      if (!correctionComputed && !lo_fi_resp_map_proxy.empty())
+      if (!deltaCorr.computed() && !lo_fi_resp_map_proxy.empty())
 	compute_correction(rawCVarsMap.begin()->second, highFidRefResponse,
 			   lo_fi_resp_map_proxy.begin()->second);
 
@@ -449,7 +446,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
       // a responseRep -->> modifying rawResponseMap affects data_pairs.
 
       // if a correction has not been computed, compute it now
-      if (!correctionComputed && !lo_fi_resp_map_proxy.empty())
+      if (!deltaCorr.computed() && !lo_fi_resp_map_proxy.empty())
 	compute_correction(rawCVarsMap.begin()->second, highFidRefResponse,
 			   lo_fi_resp_map_proxy.begin()->second);
 

@@ -68,7 +68,8 @@ MODEL_SRCS      = DakotaModel.C                     \
 		  NestedModel.C                     \
 		  SurrogateModel.C                  \
 		  DataFitSurrModel.C                \
-		  HierarchSurrModel.C
+		  HierarchSurrModel.C		    \
+		  DiscrepancyCorrection.C
 
 CONSTRAINT_SRCS = DakotaConstraints.C               \
 		  MergedConstraints.C               \
@@ -210,6 +211,7 @@ include_HEADERS = ParallelLibrary.H             \
 		  SurrogateModel.H              \
 		  DataFitSurrModel.H            \
 		  HierarchSurrModel.H           \
+		  DiscrepancyCorrection.H       \
 		  DakotaConstraints.H           \
 		  MergedConstraints.H           \
 		  MixedConstraints.H            \
