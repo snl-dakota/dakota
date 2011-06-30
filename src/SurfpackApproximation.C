@@ -24,7 +24,7 @@
 #include "SurfpackMatrix.h"
 #include "ModelFactory.h"
 #include "ModelFitness.h"
-#include "LinearRegressionModel.h"
+#include "surfaces/SurfpackModel.h"
 
 #include <algorithm>
 

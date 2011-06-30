@@ -313,11 +313,8 @@ set(interface_src DakotaInterface.C ApproximationInterface.C
 CheckPackage(SURFPACK)
 if(HAVE_SURFPACK)
   list(APPEND interface_src SurfpackApproximation.C)
-  include_directories(${Surfpack_BINARY_DIR} ${Surfpack_SOURCE_DIR}/src
-                      ${Surfpack_SOURCE_DIR}/src/surfaces)
-  # WJB - ToDo: work with BMA to untangle the "cyclic dependencies" in surfpack
-  list(APPEND TPL_LIBS surfaces surfpack surfaces mars nkm)
-  list(APPEND EXPORT_TARGETS surfaces mars nkm)
+  include_directories(${Surfpack_BINARY_DIR} ${Surfpack_SOURCE_DIR}/src)
+  list(APPEND TPL_LIBS surfpack)
 endif(HAVE_SURFPACK)
 
 if(DAKOTA_PLUGIN)
