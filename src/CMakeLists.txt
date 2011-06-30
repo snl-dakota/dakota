@@ -144,7 +144,7 @@ if (BOOST_DISABLE_ASSERTS)
   add_definitions("-DBOOST_DISABLE_ASSERTS")
 endif (BOOST_DISABLE_ASSERTS)
 
-find_package(Boost COMPONENTS regex)
+find_package(Boost REQUIRED COMPONENTS regex)
 
 option(DAKOTA_HAVE_BOOST_FS "Toggle FS support, default is BostFS disabled" OFF)
 if (DAKOTA_HAVE_BOOST_FS)

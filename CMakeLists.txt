@@ -42,8 +42,14 @@ endif()
 
 
 # Mandate a system or user-provided Boost
-# Could probe for signals conditionally on HAVE_ACRO
-find_package(Boost 1.40 REQUIRED COMPONENTS signals)
+if(HAVE_ACRO)
+  # Acro requires Boost 1.40 or newer and the signals library
+  find_package(Boost 1.40 REQUIRED COMPONENTS signals)  
+else()
+  # DAKOTA requires Boost 1.37 or newer;
+  # there are additional probes in src/
+  find_package(Boost 1.37 REQUIRED)
+endif()
 
 # check for a MPI-enabled build
 if(CMAKE_CXX_COMPILER MATCHES mpicxx)
