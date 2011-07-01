@@ -1,6 +1,26 @@
 cmake_minimum_required(VERSION 2.8)
 
-project("Dakota" C CXX Fortran)
+set(CMAKE_MODULE_PATH
+  ${CMAKE_CURRENT_SOURCE_DIR}/config
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/share
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/share/utils
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/share/package_arch
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/share/config_tests
+  ${CMAKE_MODULE_PATH}
+)
+
+# Check for compilers after initializing MPI
+project("Dakota" NONE)
+
+# Attempt to detect MPI if not specified
+option(DAKOTA_HAVE_MPI "Enable MPI in DAKOTA" OFF)
+include(DakotaHaveMPI)
+DakotaHaveMPI()
+
+# Now check lanauges after MPI compilers are processed
+enable_language(C)
+enable_language(CXX)
+enable_language(Fortran)
 
 include(FortranCInterface)
 include(CheckFunctionExists)
@@ -41,55 +61,16 @@ if(NOT BLAS_LIBS OR NOT LAPACK_LIBS)
 endif()
 
 
-# Mandate a system or user-provided Boost
+# Mandate a system or user-provided Boost, including some libraries
+# DAKOTA requires Boost 1.37 or newer; PGI may demand 1.40 or newer
 if(HAVE_ACRO)
-  # Acro requires Boost 1.40 or newer and the signals library
-  find_package(Boost 1.40 REQUIRED COMPONENTS signals)  
+  # Acro requires the signals library in addition
+  find_package(Boost 1.37 REQUIRED COMPONENTS regex signals)  
 else()
-  # DAKOTA requires Boost 1.37 or newer;
-  # there are additional probes in src/
-  find_package(Boost 1.37 REQUIRED)
+  find_package(Boost 1.37 REQUIRED COMPONENTS regex)
 endif()
-
-# check for a MPI-enabled build
-if(CMAKE_CXX_COMPILER MATCHES mpicxx)
-
-  find_program(mpicxx mpicxx)
-  if(${mpicxx} MATCHES "mpicxx-NOTFOUND")
-    message(FATAL_ERROR "Cannot build parallel configuration without mpicxx")
-  endif()
-
-  if ("$ENV{MPIHOME}")
-    message(" ****      dakota build    ****    MPIHOME is: " $ENV{MPIHOME})
-    set(MPI_INCLUDE_PATH "$ENV{MPIHOME}/include"
-    	CACHE PATH "Always use $MPIHOME to find MessagePassing header files"
-	FORCE)
-  endif()
-  
-  find_package(MPI REQUIRED)
-  if(MPI_FOUND)
-    set(DAKOTA_HAVE_MPI "ON")
-
-    # Some TPLs have manage the setting with USE_MPI rather than HAVE_MPI
-    set(USE_MPI "ON")
-  else()
-    message(FATAL_ERROR
-            "Cannot find MPI.  Please build a serial configuration instead")
-  endif(MPI_FOUND)
-
-endif()
-
 
 include(CTest)
-
-set( CMAKE_MODULE_PATH
-  ${CMAKE_CURRENT_SOURCE_DIR}/config/share
-  ${CMAKE_CURRENT_SOURCE_DIR}/config/share/utils
-  ${CMAKE_CURRENT_SOURCE_DIR}/config/share/package_arch
-  ${CMAKE_CURRENT_SOURCE_DIR}/config/share/config_tests
-  ${CMAKE_MODULE_PATH}
-)
-
 
 # Set the export name for install targets; parent packages likely want
 # to override this to the name of their target
@@ -177,4 +158,3 @@ if(ENABLE_DAKOTA_DOCS)
     message(FATAL_ERROR "DAKOTA documentation build only available on UNIX platforms")
   endif()
 endif()
-
