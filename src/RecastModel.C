@@ -146,7 +146,6 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   variablesMapping(NULL), setMapping(NULL), primaryRespMapping(NULL),
   secondaryRespMapping(NULL)
 {
-  
   initialize_data_from_submodel();
 
   // recasting of variables
@@ -164,7 +163,6 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   }
   // propagate number of active continuous vars to deriv vars
   numDerivVars = currentVariables.cv();
-
 
   // recasting of response
   const Response& sub_model_resp = subModel.current_response();

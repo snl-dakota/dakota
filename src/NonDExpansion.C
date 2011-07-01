@@ -18,7 +18,7 @@
 #include "NonDSparseGrid.H"
 #include "NonDLHSSampling.H"
 #include "NonDAdaptImpSampling.H" 
-#include "DakotaModel.H"
+#include "RecastModel.H"
 #include "DakotaResponse.H"
 #include "ProblemDescDB.H"
 #include "PecosApproximation.H"
@@ -159,6 +159,43 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
     NonDCubature(g_u_model, natafTransform.u_types(), cub_int_order), false);
   numSamplesOnModel = u_space_sampler.maximum_concurrency()
                     / g_u_model.derivative_concurrency();
+}
+
+
+void NonDExpansion::
+construct_discrepancy_model(const Model& hierarch_model,
+			    Model& discrepancy_model)
+{
+  Sizet2DArray empty_map, primary_resp_map;
+  SizetArray empty_totals;
+  primary_resp_map.resize(numFunctions);
+  for (size_t i=0; i<numFunctions; ++i) {
+    primary_resp_map[i].resize(1);
+    primary_resp_map[i][0] = i;
+  }
+  bool nonlinear_vars_map = false;
+  BoolDequeArray nonlinear_resp_map(numFunctions, BoolDeque(1, false));
+  discrepancy_model.assign_rep(new RecastModel(hierarch_model, empty_map,
+    empty_totals, nonlinear_vars_map, NULL, NULL, primary_resp_map, empty_map,
+    0, nonlinear_resp_map, discrepancy_mapping, NULL), false);
+}
+
+
+void NonDExpansion::
+discrepancy_mapping(const Variables& hierarch_vars,
+		    const Variables& discrepancy_vars,
+		    const Response&  hierarch_response,
+		    Response&        discrepancy_response)
+{
+  const RealVector&         h_cv       = hierarch_vars.continuous_variables();
+  const RealVector&         h_fns      = hierarch_response.function_values();
+  const RealMatrix&         h_grads    = hierarch_response.function_gradients();
+  const RealSymMatrixArray& h_hessians = hierarch_response.function_hessians();
+  const ShortArray& h_asv = hierarch_response.active_set_request_vector();
+  const SizetArray& h_dvv = hierarch_response.active_set_derivative_vector();
+  size_t i, j, num_fns = h_asv.size(), num_deriv_vars = h_dvv.size();
+
+  // TO DO
 }
 
 

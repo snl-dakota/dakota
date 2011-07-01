@@ -640,6 +640,8 @@ public:
   ParallelLibrary& parallel_library() const;
   /// return the model type (modelType)
   const String& model_type() const;
+  /// return the surrogate type (surrogateType)
+  const String& surrogate_type() const;
   /// return the model identifier (modelId)
   const String& model_id() const;
 
@@ -2267,6 +2269,10 @@ inline ParallelLibrary& Model::parallel_library() const
 
 inline const String& Model::model_type() const
 { return (modelRep) ? modelRep->modelType : modelType; }
+
+
+inline const String& Model::surrogate_type() const
+{ return (modelRep) ? modelRep->surrogateType : surrogateType; }
 
 
 inline const String& Model::model_id() const
