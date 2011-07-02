@@ -97,10 +97,6 @@ protected:
   //void construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
   //				 int num_samples, int seed, const String& rng);
 
-  /// assign a NonDCubature instance within u_space_sampler
-  void construct_discrepancy_model(const Model& hierarch_model,
-				   Model& discrepancy_model);
-
   /// initialize uSpaceModel polynomial approximations with PCE/SC data
   void initialize_u_space_model();
   /// construct the expansionSampler operating on uSpaceModel
@@ -157,13 +153,6 @@ private:
 
   /// helper function for common constructor code
   void initialize(Model& model, short u_space_type);
-
-  /// static function for RecastModels used to map x-space responses from
-  /// Model evaluations to u-space responses for return to NonD Iterators.
-  static void discrepancy_mapping(const Variables& hierarch_vars,
-				  const Variables& discrepancy_vars,
-				  const Response&  hierarch_response,
-				  Response&        discrepancy_response);
 
   /// compute average of total Sobol' indices (from VBD) across the
   /// response set for use as an anisotropy indicator

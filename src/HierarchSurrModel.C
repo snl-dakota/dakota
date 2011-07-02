@@ -163,58 +163,109 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
 {
   ++hierModelEvalCntr;
 
-  ShortArray hi_fi_asv, lo_fi_asv;
-  asv_mapping(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
-  bool hi_fi_eval = !hi_fi_asv.empty(), lo_fi_eval = !lo_fi_asv.empty(),
-    mixed_eval = (hi_fi_eval && lo_fi_eval);
+  // define LF/HF evaluation requirements
+  ShortArray hi_fi_asv, lo_fi_asv; bool hi_fi_eval, lo_fi_eval, mixed_eval;
   Response lo_fi_response, hi_fi_response; // don't use highFidRefResponse
+  switch (responseMode) {
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    asv_mapping(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
+    hi_fi_eval = !hi_fi_asv.empty(); lo_fi_eval = !lo_fi_asv.empty();
+    mixed_eval = (hi_fi_eval && lo_fi_eval); break;
+  case BYPASS_SURROGATE:
+    hi_fi_eval = true; lo_fi_eval = false;   break;
+  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    hi_fi_eval = lo_fi_eval = true;          break;
+  }
 
-  if (hi_fi_eval) { // rare case: use hiFi Model instead of loFi Model
+  if (hi_fi_eval) {
     component_parallel_mode(HF_MODEL);
     update_model(highFidelityModel);
-    ActiveSet hi_fi_set = set;
-    hi_fi_set.request_vector(hi_fi_asv);
-    highFidelityModel.compute_response(hi_fi_set);
-    hi_fi_response = highFidelityModel.current_response(); // shared rep
-    if (!mixed_eval) {
-      currentResponse.active_set(hi_fi_set);
-      currentResponse.update(hi_fi_response);
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
+      ActiveSet hi_fi_set = set; hi_fi_set.request_vector(hi_fi_asv);
+      highFidelityModel.compute_response(hi_fi_set);
+      if (mixed_eval)
+	hi_fi_response = highFidelityModel.current_response(); // shared rep
+      else {
+	currentResponse.active_set(hi_fi_set);
+	currentResponse.update(highFidelityModel.current_response());
+      }
+      break;
+    }
+    case BYPASS_SURROGATE:
+      highFidelityModel.compute_response(set);
+      currentResponse.active_set(set);
+      currentResponse.update(highFidelityModel.current_response());
+      break;
+    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      highFidelityModel.compute_response(set);
+      break;
     }
   }
 
-  if (lo_fi_eval) { // normal case: evaluation of lowFidelityModel
+  if (lo_fi_eval) {
+    // pre-process
+    switch (responseMode) {
+    case AUTO_CORRECTED_SURROGATE:
+      // if build_approximation has not yet been called, call it now
+      if (!approxBuilds || force_rebuild())
+	build_approximation();
+      break;
+    }
 
-    // if build_approximation has not yet been called, call it now
-    if (!approxBuilds)
-      autoCorrection = true; // default if stand-alone use
-    if (!approxBuilds || force_rebuild())
-      build_approximation();
-
+    // compute the LF response
     component_parallel_mode(LF_MODEL);
     update_model(lowFidelityModel);
-    ActiveSet lo_fi_set = set;
-    lo_fi_set.request_vector(lo_fi_asv);
-    lowFidelityModel.compute_response(lo_fi_set);
-    const Response& lf_resp = lowFidelityModel.current_response();
-    // LF response should not be corrected directly (see derived_synchronize())
-    lo_fi_response = (autoCorrection) ? lf_resp.copy() : lf_resp;
+    ActiveSet lo_fi_set;
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+      lo_fi_set = set; lo_fi_set.request_vector(lo_fi_asv);
+      lowFidelityModel.compute_response(lo_fi_set); break;
+    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      lowFidelityModel.compute_response(set);       break;
+    }
 
-    if (autoCorrection) {
+    // post-process
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE:
+      if (mixed_eval)
+	lo_fi_response = lowFidelityModel.current_response(); // shared rep
+      else {
+	currentResponse.active_set(lo_fi_set);
+	currentResponse.update(lowFidelityModel.current_response());
+      }
+      break;
+    case AUTO_CORRECTED_SURROGATE:
+      // LF resp should not be corrected directly (see derived_synchronize())
+      lo_fi_response = lowFidelityModel.current_response().copy();
       if (!deltaCorr.computed())
 	compute_correction(currentVariables.continuous_variables(),
 			   highFidRefResponse, lo_fi_response);
       apply_correction(currentVariables.continuous_variables(), lo_fi_response);
-    }
-
-    if (!mixed_eval) {
-      currentResponse.active_set(lo_fi_set);
-      currentResponse.update(lo_fi_response);
+      if (!mixed_eval) {
+	currentResponse.active_set(lo_fi_set);
+	currentResponse.update(lo_fi_response);
+      }
+      break;
     }
   }
 
-  if (mixed_eval) {
-    currentResponse.active_set(set);
-    response_mapping(hi_fi_response, lo_fi_response, currentResponse);
+  // perform any reductions involving LF & HF response aggregate
+  switch (responseMode) {
+  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    // TO DO: append global data flag?  or no SurrogateData update flag?
+    // (passed to higher level via currentResponse)
+    deltaCorr.compute(currentVariables.continuous_variables(),
+		      highFidelityModel.current_response(),
+		      lowFidelityModel.current_response(), false);
+    // TO DO: update currentResponse
+    break;
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    if (mixed_eval) {
+      currentResponse.active_set(set);
+      response_mapping(hi_fi_response, lo_fi_response, currentResponse);
+    }
+    break;
   }
 }
 
@@ -228,35 +279,61 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
 {
   ++hierModelEvalCntr;
 
-  ShortArray hi_fi_asv, lo_fi_asv;
-  asv_mapping(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
+  ShortArray hi_fi_asv, lo_fi_asv; bool hi_fi_eval, lo_fi_eval;
+  switch (responseMode) {
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    asv_mapping(set.request_vector(), hi_fi_asv, lo_fi_asv, false);
+    hi_fi_eval = !hi_fi_asv.empty(); lo_fi_eval = !lo_fi_asv.empty(); break;
+  case BYPASS_SURROGATE:
+    hi_fi_eval = true; lo_fi_eval = false;                            break;
+  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    hi_fi_eval = lo_fi_eval = true;                                   break;
+  }
 
-  if (!hi_fi_asv.empty()) { // rare case: use hiFi Model instead of loFi Model
+  if (hi_fi_eval) {
     // don't need to set component parallel mode since this only queues the job
     update_model(highFidelityModel);
-    ActiveSet hi_fi_set = set;
-    hi_fi_set.request_vector(hi_fi_asv);
-    highFidelityModel.asynch_compute_response(hi_fi_set);
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
+      ActiveSet hi_fi_set = set; hi_fi_set.request_vector(hi_fi_asv);
+      highFidelityModel.asynch_compute_response(hi_fi_set); break;
+    }
+    case BYPASS_SURROGATE:
+    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      highFidelityModel.asynch_compute_response(set);       break;
+    }
     // store map from HF eval id to HierarchSurrModel id
     truthIdMap[highFidelityModel.evaluation_id()] = hierModelEvalCntr;
   }
 
-  if (!lo_fi_asv.empty()) { // normal case: evaluation of lowFidelityModel
+  if (lo_fi_eval) {
+    // pre-process
+    switch (responseMode) {
+    case AUTO_CORRECTED_SURROGATE:
+      // if build_approximation has not yet been called, call it now
+      if (!approxBuilds || force_rebuild())
+	build_approximation();
+      break;
+    }
 
-    // if build_approximation has not yet been called, call it now
-    if (!approxBuilds)
-      autoCorrection = true; // default if stand-alone use
-    if (!approxBuilds || force_rebuild())
-      build_approximation();
-
+    // compute the LF response
     // don't need to set component parallel mode since this only queues the job
     update_model(lowFidelityModel);
-    ActiveSet lo_fi_set = set;
-    lo_fi_set.request_vector(lo_fi_asv);
-    lowFidelityModel.asynch_compute_response(lo_fi_set);
-    if (autoCorrection)
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
+      ActiveSet lo_fi_set = set; lo_fi_set.request_vector(lo_fi_asv);
+      lowFidelityModel.asynch_compute_response(lo_fi_set); break;
+    }
+    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      lowFidelityModel.asynch_compute_response(set);       break;
+    }
+
+    // post-process
+    switch (responseMode) {
+    case AUTO_CORRECTED_SURROGATE:
       copy_data(currentVariables.continuous_variables(),
-		rawCVarsMap[hierModelEvalCntr]);
+		rawCVarsMap[hierModelEvalCntr]);           break;
+    }
     // store map from LF eval id to HierarchSurrModel id
     surrIdMap[lowFidelityModel.evaluation_id()] = hierModelEvalCntr;
   }
@@ -309,11 +386,12 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
       = (hi_fi_evals) ? lo_fi_resp_map_rekey : surrResponseMap;
     for (IntRespMCIter r_cit = lo_fi_resp_map.begin();
 	 r_cit != lo_fi_resp_map.end(); ++r_cit)
-      lo_fi_resp_map_proxy[surrIdMap[r_cit->first]]
-	= (autoCorrection) ? r_cit->second.copy() : r_cit->second;
+      lo_fi_resp_map_proxy[surrIdMap[r_cit->first]] =
+	(responseMode == AUTO_CORRECTED_SURROGATE) ?
+	r_cit->second.copy() : r_cit->second;
     surrIdMap.clear();
 
-    if (autoCorrection) {
+    if (responseMode == AUTO_CORRECTED_SURROGATE) {
       // Interface::rawResponseMap should _not_ be corrected directly since
       // rawResponseMap, beforeSynchCorePRPQueue, and data_pairs all share
       // a responseRep -->> modifying rawResponseMap affects data_pairs.
@@ -378,6 +456,8 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
     }
   }
 
+  // TO DO: ADDITIVE_DISCREPANCY and MULTIPLICATIVE_DISCREPANCY cases
+
   return surrResponseMap;
 }
 
@@ -434,13 +514,14 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
     for (IntRespMCIter r_cit = lo_fi_resp_map.begin();
 	 r_cit != lo_fi_resp_map.end(); ++r_cit) {
       int lf_eval_id = r_cit->first;
-      lo_fi_resp_map_proxy[surrIdMap[lf_eval_id]]
-	= (autoCorrection) ? r_cit->second.copy() : r_cit->second;
+      lo_fi_resp_map_proxy[surrIdMap[lf_eval_id]] =
+	(responseMode == AUTO_CORRECTED_SURROGATE) ?
+	r_cit->second.copy() : r_cit->second;
       if (!hi_fi_evals)
 	surrIdMap.erase(lf_eval_id);
     }
 
-    if (autoCorrection) {
+    if (responseMode == AUTO_CORRECTED_SURROGATE) {
       // Interface::rawResponseMap should _not_ be corrected directly since
       // rawResponseMap, beforeSynchCorePRPQueue, and data_pairs all share
       // a responseRep -->> modifying rawResponseMap affects data_pairs.
@@ -471,6 +552,8 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
     if (!hi_fi_evals)         // return ref to non-temporary
       return surrResponseMap; // rekeyed, corrected, and augmented by proxy
   }
+
+  // TO DO: ADDITIVE_DISCREPANCY and MULTIPLICATIVE_DISCREPANCY cases
 
   // mixed highFidelityModel and lowFidelityModel evals: both
   // hi_fi_resp_map_rekey and lo_fi_resp_map_rekey may be partial sets of evals

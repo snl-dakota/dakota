@@ -43,12 +43,11 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   bool global_bnds
     = (numContDesVars || numContEpistUncVars || numContStateVars);
   if (iteratedModel.surrogate_type() == "hierarchical") {
-    Model discrepancy_model;
-    construct_discrepancy_model(iteratedModel, discrepancy_model);
-    construct_u_space_model(discrepancy_model, g_u_model, global_bnds);
+    iteratedModel.surrogate_response_mode(ADDITIVE_DISCREPANCY);
+    //construct_u_space_model(iteratedModel.surrogate_model(), lf_g_u_model,
+    //			    global_bnds);
   }
-  else
-    construct_u_space_model(iteratedModel, g_u_model, global_bnds);
+  construct_u_space_model(iteratedModel, g_u_model, global_bnds);
 
   // -------------------------
   // Construct u_space_sampler

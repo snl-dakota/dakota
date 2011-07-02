@@ -461,7 +461,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 
 	// Perform the sampling and the surface fitting
 	if (!convergenceFlag)
-	  // embed_correction is true if constraints accepted by surrogate
+	  // embed_correction is true if surrogate supports anchor constraints
 	  embed_correction = iteratedModel.build_approximation(varsCenter,
 	    responseCenterTruth); // TO DO: problem with CCD/BB duplication!
 
@@ -516,8 +516,6 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 	  iteratedModel.apply_correction(varsCenter.continuous_variables(),
 					 responseCenterApprox);
 	}
-	else
-	  iteratedModel.auto_correction(false); // TO DO: correct usage ???
       }
     } // end of "if (globalApproxFlag || newCenterFlag)" block
     else
@@ -531,7 +529,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
       // Run iterator on approximation (with correction applied)
       // *******************************************************
       Cout << "\n>>>>> Starting approximate optimization cycle.\n";
-      iteratedModel.auto_correction(true);
+      iteratedModel.surrogate_response_mode(AUTO_CORRECTED_SURROGATE);
       if ( trConstraintRelax > NO_RELAX ) // relax constraints if requested
       	relax_constraints(tr_lower_bnds, tr_upper_bnds);
       // This iterator constructed from DB, but summary output suppressed:
@@ -551,6 +549,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 	Cout << "\n>>>>> Evaluating approximate optimum outside of subproblem "
 	     << "recasting.\n";
         iteratedModel.active_variables(vars_star);
+	// leave iteratedModel in AUTO_CORRECTED_SURROGATE mode
 	iteratedModel.compute_response(val_set);
 	responseStarApprox.update(iteratedModel.current_response());
       }
@@ -564,12 +563,17 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
       // must be in the correct server mode.
       iteratedModel.component_parallel_mode(TRUTH_MODEL);
       truth_model.active_variables(vars_star);
-      truth_model.surrogate_bypass(multiLayerBypassFlag);
       // In all cases (including gradient mode), we only need the truth fn
       // values to validate the predicted optimum.  For gradient mode, we will
       // compute the gradients below if the predicted optimum is accepted.
-      truth_model.compute_response(val_set); // fn values only
-      truth_model.surrogate_bypass(false);
+      if (multiLayerBypassFlag) {
+	short mode = truth_model.surrogate_response_mode();
+	truth_model.surrogate_response_mode(BYPASS_SURROGATE);
+	truth_model.compute_response(val_set);
+	truth_model.surrogate_response_mode(mode); // restore
+      }
+      else
+	truth_model.compute_response(val_set);
       responseStarTruth.first = truth_model.evaluation_id();
       responseStarTruth.second.update(truth_model.current_response());
 
@@ -808,9 +812,14 @@ find_center_truth(const Iterator& dace_iterator, Model& truth_model)
     // must be in the correct server mode.
     iteratedModel.component_parallel_mode(TRUTH_MODEL);
     truth_model.continuous_variables(varsCenter.continuous_variables());
-    truth_model.surrogate_bypass(multiLayerBypassFlag);
-    truth_model.compute_response(responseCenterTruth.second.active_set());
-    truth_model.surrogate_bypass(false);
+    if (multiLayerBypassFlag) {
+      short mode = truth_model.surrogate_response_mode();
+      truth_model.surrogate_response_mode(BYPASS_SURROGATE);
+      truth_model.compute_response(responseCenterTruth.second.active_set());
+      truth_model.surrogate_response_mode(mode); // restore
+    }
+    else
+      truth_model.compute_response(responseCenterTruth.second.active_set());
     responseCenterTruth.first = truth_model.evaluation_id();
     responseCenterTruth.second.update(truth_model.current_response());
   }
@@ -892,7 +901,7 @@ void SurrBasedLocalMinimizer::find_center_approx()
 	 << "region center.\n"; // << responseCenterApprox;
   else { // responseCenterApprox not available
     Cout <<"\n>>>>> Evaluating approximation at trust region center.\n";
-    iteratedModel.auto_correction(false);
+    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
     iteratedModel.compute_response(responseCenterApprox.active_set());
     responseCenterApprox.update(iteratedModel.current_response());
   }

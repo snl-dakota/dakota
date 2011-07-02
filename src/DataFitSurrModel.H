@@ -106,9 +106,9 @@ protected:
   void primary_response_fn_weights(const RealVector& wts,
 				   bool recurse_flag = true);
 
-  /// set surrogateBypass flag and pass request on to actualModel for
+  /// set responseMode and pass any bypass request on to actualModel for
   /// any lower-level surrogates.
-  void surrogate_bypass(bool bypass_flag);
+  void surrogate_response_mode(short mode);
 
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
   /// and ApproximationInterface::approxFnIndices
@@ -350,10 +350,11 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 }
 
 
-inline void DataFitSurrModel::surrogate_bypass(bool bypass_flag)
+inline void DataFitSurrModel::surrogate_response_mode(short mode)
 {
-  surrogateBypass = bypass_flag;
-  actualModel.surrogate_bypass(bypass_flag);
+  responseMode = mode;
+  if (mode == BYPASS_SURROGATE) // recurse in this case
+    actualModel.surrogate_response_mode(mode);
 }
 
 

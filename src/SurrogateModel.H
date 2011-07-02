@@ -57,6 +57,9 @@ protected:
   /// return truth_model()
   Model& subordinate_model();
 
+  /// return responseMode
+  short surrogate_response_mode();
+
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response
   void compute_correction(const RealVector& c_vars,
@@ -66,11 +69,6 @@ protected:
   /// apply the correction computed in compute_correction() to approx_response
   void apply_correction(const RealVector& c_vars, Response& approx_response,
 			bool quiet_flag = false);
-
-  /// sets autoCorrection to on (true) or off (false)
-  void auto_correction(bool correction_flag);
-  /// returns autoCorrection setting
-  bool auto_correction();
 
   //
   //- Heading: Member functions
@@ -125,21 +123,17 @@ protected:
   /// portions were still pending.
   IntResponseMap cachedApproxRespMap;
 
-  /// a flag which controls the use of apply_correction() in DataFitSurrModel
-  /// and HierarchSurrModel approximate response computations
-  /** SurrBasedOptStrategy must toggle this value since compute_correction()
-      no longer automatically backs out an old correction. */
-  bool autoCorrection;
+  /// an enumeration that controls the response calculation mode in
+  /// {DataFit,Hierarch}SurrModel approximate response computations
+  /** SurrBasedLocalMinimizer toggles this mode since compute_correction()
+      does not back out old corrections. */
+  short responseMode;
 
   /// number of calls to build_approximation()
   /** used as a flag to automatically build the approximation if one of the
       derived compute_response functions is called prior to
       build_approximation(). */
   size_t approxBuilds;
-
-  /// a flag which allows bypassing the approximation for evaluations
-  /// on the underlying truth model.
-  bool surrogateBypass;
 
   /// stores a reference copy of active continuous lower bounds when the
   /// approximation is built; used to detect when a rebuild is required.
@@ -201,6 +195,10 @@ inline Model& SurrogateModel::subordinate_model()
 { return truth_model(); }
 
 
+inline short SurrogateModel::surrogate_response_mode()
+{ return responseMode; }
+
+
 inline void SurrogateModel::
 compute_correction(const RealVector& c_vars, const Response& truth_response, 
 		   const Response& approx_response)
@@ -214,14 +212,6 @@ inline void SurrogateModel::
 apply_correction(const RealVector& c_vars, Response& approx_response,
 		 bool quiet_flag)
 { deltaCorr.apply(c_vars, approx_response, quiet_flag); }
-
-
-inline void SurrogateModel::auto_correction(bool correction_flag)
-{ autoCorrection = correction_flag; }
-
-
-inline bool SurrogateModel::auto_correction()
-{ return autoCorrection; }
 
 } // namespace Dakota
 

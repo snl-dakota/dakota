@@ -855,52 +855,99 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
-  ShortArray actual_asv, approx_asv;
-  asv_mapping(set.request_vector(), actual_asv, approx_asv, false);
-  bool actual_eval = !actual_asv.empty(), approx_eval = !approx_asv.empty(),
-    mixed_eval = (actual_eval && approx_eval);
+  ShortArray actual_asv, approx_asv; bool actual_eval, approx_eval, mixed_eval;
   Response actual_response, approx_response; // empty handles
+  switch (responseMode) {
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    asv_mapping(set.request_vector(), actual_asv, approx_asv, false);
+    actual_eval = !actual_asv.empty(); approx_eval = !approx_asv.empty();
+    mixed_eval = (actual_eval && approx_eval); break;
+  case BYPASS_SURROGATE:
+    actual_eval = true; approx_eval = false;   break;
+  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    actual_eval = approx_eval = true;          break;
+  }
 
-  if (actual_eval) { // rare case: use actualModel i/o approxInterface
+  if (actual_eval) {
     component_parallel_mode(ACTUAL_MODEL);
     update_actual_model(); // update variables/bounds/labels in actualModel
-    ActiveSet actual_set = set;
-    actual_set.request_vector(actual_asv);
-    actualModel.compute_response(actual_set);
-    if (mixed_eval)
-      actual_response = actualModel.current_response(); // shared rep
-    else {
-      currentResponse.active_set(actual_set);
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
+      ActiveSet actual_set = set;
+      actual_set.request_vector(actual_asv);
+      actualModel.compute_response(actual_set);
+      if (mixed_eval)
+	actual_response = actualModel.current_response(); // shared rep
+      else {
+	currentResponse.active_set(actual_set);
+	currentResponse.update(actualModel.current_response());
+      }
+      break;
+    }
+    case BYPASS_SURROGATE:
+      actualModel.compute_response(set);
+      currentResponse.active_set(set);
       currentResponse.update(actualModel.current_response());
+      break;
+    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      actualModel.compute_response(set);
+      break;
     }
   }
 
   if (approx_eval) { // normal case: evaluation of approxInterface
-
-    // if build_approximation has not yet been called, call it now
-    if (!approxBuilds || force_rebuild()) {
-      //if (!approxBuilds && deltaCorr.active())
-      //  autoCorrection = true; // default if stand-alone use
-      build_approximation();
+    // pre-process
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+      // if build_approximation has not yet been called, call it now
+      if (!approxBuilds || force_rebuild())
+	build_approximation();
+      break;
     }
 
+    // compute the approximate response
     //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
-    ActiveSet approx_set = set;
-    approx_set.request_vector(approx_asv);
-    approx_response = (mixed_eval) ? currentResponse.copy() : currentResponse;
-    approxInterface.map(currentVariables, approx_set, approx_response);
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
+      ActiveSet approx_set = set;
+      approx_set.request_vector(approx_asv);
+      approx_response = (mixed_eval) ? currentResponse.copy() : currentResponse;
+      approxInterface.map(currentVariables, approx_set, approx_response); break;
+    }
+    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      approx_response = currentResponse.copy(); // TO DO
+      approxInterface.map(currentVariables, set, approx_response);        break;
+    }
 
-    if (autoCorrection && deltaCorr.active()) {
-      //if (!deltaCorr.computed())
-      //  compute_correction(currentVariables.continuous_variables(),
-      //                     centerResponse, approx_response);
-      apply_correction(currentVariables.continuous_variables(),approx_response);
+    // post-process
+    switch (responseMode) {
+    case AUTO_CORRECTED_SURROGATE:
+      if (deltaCorr.active()) {
+	//if (!deltaCorr.computed())
+	//  compute_correction(currentVariables.continuous_variables(),
+	//	             centerResponse, approx_response);
+	apply_correction(currentVariables.continuous_variables(),
+			 approx_response);
+      }
+      break;
     }
   }
 
-  if (mixed_eval) {
-    currentResponse.active_set(set);
-    response_mapping(actual_response, approx_response, currentResponse);
+  // perform any reductions involving LF & HF response aggregate
+  switch (responseMode) {
+  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    // TO DO: append global data flag?  or no SurrogateData update flag?
+    // (passed to higher level via currentResponse)
+    deltaCorr.compute(currentVariables.continuous_variables(),
+		      actualModel.current_response(), approx_response, false);
+    // TO DO: update currentResponse
+    break;
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    if (mixed_eval) {
+      currentResponse.active_set(set);
+      response_mapping(actual_response, approx_response, currentResponse);
+    }
+    break;
   }
 }
 
@@ -915,36 +962,64 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
 {
   ++surrModelEvalCntr;
 
-  ShortArray actual_asv, approx_asv;
-  asv_mapping(set.request_vector(), actual_asv, approx_asv, false);
+  ShortArray actual_asv, approx_asv; bool actual_eval, approx_eval;
+  switch (responseMode) {
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    asv_mapping(set.request_vector(), actual_asv, approx_asv, false);
+    actual_eval = !actual_asv.empty(); approx_eval = !approx_asv.empty(); break;
+  case BYPASS_SURROGATE:
+    actual_eval = true; approx_eval = false;                              break;
+  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    actual_eval = approx_eval = true;                                     break;
+  }
 
-  if (!actual_asv.empty()) { // rare case: use actualModel i/o approxInterface
+  if (actual_eval) {
     // don't need to set component parallel mode since this only queues the job
     update_actual_model(); // update variables/bounds/labels in actualModel
-    ActiveSet actual_set = set;
-    actual_set.request_vector(actual_asv);
-    actualModel.asynch_compute_response(actual_set);
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
+      ActiveSet actual_set = set;
+      actual_set.request_vector(actual_asv);
+      actualModel.asynch_compute_response(actual_set); break;
+    }
+    case BYPASS_SURROGATE:
+    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      actualModel.asynch_compute_response(set);        break;
+    }
     // store mapping from actualModel eval id to DataFitSurrModel id
     truthIdMap[actualModel.evaluation_id()] = surrModelEvalCntr;
   }
 
-  if (!approx_asv.empty()) { // normal case: evaluation of approxInterface
-
-    // if build_approximation has not yet been called, call it now
-    if (!approxBuilds || force_rebuild()) {
-      //if (!approxBuilds && deltaCorr.active())
-      //  autoCorrection = true; // default if stand-alone use
-      build_approximation();
+  if (approx_eval) { // normal case: evaluation of approxInterface
+    // pre-process
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+      // if build_approximation has not yet been called, call it now
+      if (!approxBuilds || force_rebuild())
+	build_approximation();
+      break;
     }
 
+    // compute the approximate response
     // don't need to set component parallel mode since this only queues the job
-    ActiveSet approx_set = set;
-    approx_set.request_vector(approx_asv);
-    approxInterface.map(currentVariables, approx_set, currentResponse, true);
+    switch (responseMode) {
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE: {
+      ActiveSet approx_set = set;
+      approx_set.request_vector(approx_asv);
+      approxInterface.map(currentVariables, approx_set, currentResponse, true);
+      break;
+    }
+    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      approxInterface.map(currentVariables,        set, currentResponse, true);
+      break;
+    }
 
-    if (autoCorrection && deltaCorr.active())
+    // post-process
+    switch (responseMode) {
+    case AUTO_CORRECTED_SURROGATE:
       copy_data(currentVariables.continuous_variables(),
-		rawCVarsMap[surrModelEvalCntr]);
+		rawCVarsMap[surrModelEvalCntr]);           break;
+    }
     // store map from approxInterface eval id to DataFitSurrModel id
     surrIdMap[approxInterface.evaluation_id()] = surrModelEvalCntr;
   }
@@ -992,6 +1067,8 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
     if (!actual_evals)        // return ref to non-temporary
       return surrResponseMap; // rekeyed and corrected by proxy
   }
+
+  // TO DO: ADDITIVE_DISCREPANCY and MULTIPLICATIVE_DISCREPANCY cases
 
   // mixed actualModel and approxInterface evals
   Response empty_resp;
@@ -1078,6 +1155,8 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
     }
   }
 
+  // TO DO: ADDITIVE_DISCREPANCY and MULTIPLICATIVE_DISCREPANCY cases
+
   // mixed actualModel and approxInterface evals:
   // > actual_resp_map_rekey may be a partial set of evals
   // > approx_resp_map_rekey is a complete set of evals
@@ -1147,7 +1226,7 @@ derived_synchronize_approx(const IntResponseMap& approx_resp_map,
        r_cit != approx_resp_map.end(); ++r_cit)
     approx_resp_map_proxy[surrIdMap[r_cit->first]] = r_cit->second;
 
-  if (autoCorrection && deltaCorr.active()) {
+  if (responseMode == AUTO_CORRECTED_SURROGATE && deltaCorr.active()) {
     // Interface::rawResponseMap can be corrected directly in the case of an
     // ApproximationInterface since data_pairs is not used (not true for
     // HierarchSurrModel::derived_synchronize()/derived_synchronize_nowait()).

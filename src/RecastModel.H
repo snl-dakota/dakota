@@ -19,6 +19,7 @@
 #include "DakotaModel.H"
 #include "DakotaInterface.H"
 #include "ParallelLibrary.H"
+#include "DataModel.H"
 
 
 namespace Dakota {
@@ -139,7 +140,7 @@ protected:
   void surrogate_function_indices(const IntSet& surr_fn_indices);
 
   // forward to subModel
-  void surrogate_bypass(bool bypass_flag);
+  void surrogate_response_mode(bool mode);
 
   /// builds the subModel approximation
   void build_approximation();
@@ -380,8 +381,8 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 }
 
 
-inline void RecastModel::surrogate_bypass(bool bypass_flag)
-{ subModel.surrogate_bypass(bypass_flag); }
+inline void RecastModel::surrogate_response_mode(bool mode)
+{ if (mode == BYPASS_SURROGATE) subModel.surrogate_response_mode(mode); }
 
 
 inline void RecastModel::

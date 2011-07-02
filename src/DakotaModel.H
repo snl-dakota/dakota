@@ -98,10 +98,6 @@ public:
   virtual void primary_response_fn_weights(const RealVector& wts, 
 					   bool recurse_flag = true);
 
-  /// deactivate/reactivate the approximations for any/all surrogate
-  /// models contained within this model
-  virtual void surrogate_bypass(bool bypass_flag);
-
   /// set the (currently active) surrogate function index set
   virtual void surrogate_function_indices(const IntSet& surr_fn_indices);
 
@@ -176,16 +172,17 @@ public:
   virtual const RealVector& approximation_variances(
     const RealVector& c_vars);
 
+  /// set response computation mode used in SurrogateModels for
+  /// forming currentResponse
+  virtual void surrogate_response_mode(short mode);
+  /// return response computation mode used in SurrogateModels for
+  /// forming currentResponse
+  virtual short surrogate_response_mode() const;
+
   /// compute correction factors for use in SurrogateModels
   virtual void compute_correction(const RealVector& c_vars,
 				  const Response& truth_response, 
 				  const Response& approx_response);
-
-  /// manages automatic application of correction factors in SurrogateModels
-  virtual void auto_correction(bool correction_flag);
-  /// return flag indicating use of automatic correction within this
-  /// model's responses
-  virtual bool auto_correction();
 
   /// apply correction factors to approx_response (for use in SurrogateModels)
   virtual void apply_correction(const RealVector& c_vars,

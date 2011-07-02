@@ -25,6 +25,10 @@ namespace Dakota {
 // define special values for pointsManagement
 enum { DEFAULT_POINTS, MINIMUM_POINTS, RECOMMENDED_POINTS, TOTAL_POINTS };
 
+// define special values for SurrogateModel::responseMode
+enum { NO_SURROGATE=0,  UNCORRECTED_SURROGATE, AUTO_CORRECTED_SURROGATE,
+       BYPASS_SURROGATE, ADDITIVE_DISCREPANCY, MULTIPLICATIVE_DISCREPANCY };
+
 
 /// Body class for model specification data.
 

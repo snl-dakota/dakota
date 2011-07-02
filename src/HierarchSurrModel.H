@@ -18,6 +18,7 @@
 
 #include "SurrogateModel.H"
 #include "ParallelLibrary.H"
+#include "DataModel.H"
 
 
 namespace Dakota {
@@ -79,9 +80,9 @@ protected:
   void primary_response_fn_weights(const RealVector& wts,
 				   bool recurse_flag = true);
 
-  /// set surrogateBypass flag and pass request on to highFidelityModel
-  /// for any lower-level surrogates.
-  void surrogate_bypass(bool bypass_flag);
+  /// set responseMode and pass any bypass request on to highFidelityModel
+  /// for any lower-level surrogate recursions.
+  void surrogate_response_mode(short mode);
 
   /// (re)set the surrogate index set in SurrogateModel::surrogateFnIndices
   void surrogate_function_indices(const IntSet& surr_fn_indices);
@@ -210,12 +211,13 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
 }
 
 
-inline void HierarchSurrModel::surrogate_bypass(bool bypass_flag)
+inline void HierarchSurrModel::surrogate_response_mode(short mode)
 {
-  surrogateBypass = bypass_flag;
+  responseMode = mode;
   // don't pass to lowFidelityModel (in case it includes surrogates) since the
   // point of a surrogate bypass is to get a surrogate-free truth evaluation
-  highFidelityModel.surrogate_bypass(bypass_flag);
+  if (mode == BYPASS_SURROGATE) // recurse in this case
+    highFidelityModel.surrogate_response_mode(mode);
 }
 
 
@@ -313,7 +315,7 @@ inline void HierarchSurrModel::set_evaluation_reference()
   //lowFidelityModel.set_evaluation_reference();
 
   // don't recurse this, since the eval reference is for the top level iteration
-  //if (surrogateBypass)
+  //if (responseMode == BYPASS_SURROGATE)
   //highFidelityModel.set_evaluation_reference();
 
   // may want to add this in time

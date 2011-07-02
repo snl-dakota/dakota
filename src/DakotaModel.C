@@ -1836,7 +1836,8 @@ update_response(const Variables& vars, Response& new_response,
   // perform quasi-Newton updates if quasi_hessians have been specified by the
   // user, the response data is uncorrected, and the DVV is set to the active
   // continuous variables (the default).
-  if ( supportsEstimDerivs && !auto_correction() &&
+  if ( supportsEstimDerivs && 
+       surrogate_response_mode() != AUTO_CORRECTED_SURROGATE &&
        original_set.derivative_vector() ==
        currentVariables.continuous_variable_ids() &&
        (hessType == "quasi" || (hessType == "mixed" && !hessIdQuasi.empty())) )
@@ -2147,8 +2148,9 @@ bool Model::manage_asv(const ShortArray& asv_in, ShortArray& map_asv_out,
 	     << std::endl;
 	abort_handler(-1);
       }
-      if ( !auto_correction() && (hessType == "quasi" || (hessType == "mixed" &&
-	   contains(hessIdQuasi, i+1)) ))
+      if ( surrogate_response_mode() != AUTO_CORRECTED_SURROGATE &&
+	   ( hessType == "quasi" ||
+	     ( hessType == "mixed" && contains(hessIdQuasi, i+1) ) ) )
 	use_est_deriv = true;
     }
 
@@ -2372,14 +2374,6 @@ primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
     modelRep->primary_response_fn_weights(wts, recurse_flag);
   else // default does not support recursion (SingleModel, NestedModel)
     primaryRespFnWts = wts;
-}
-
-
-void Model::surrogate_bypass(bool bypass_flag)
-{
-  if (modelRep)
-    modelRep->surrogate_bypass(bypass_flag); // envelope fwd to letter
-  // else: default implementation is no-op
 }
 
 
@@ -2704,6 +2698,23 @@ const Pecos::SurrogateData& Model::approximation_data(size_t index)
 }
 
 
+void Model::surrogate_response_mode(short mode)
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->surrogate_response_mode(mode);
+  // else: default implementation is no-op
+}
+
+
+short Model::surrogate_response_mode() const
+{
+  if (modelRep) // envelope fwd to letter
+    return modelRep->surrogate_response_mode();
+  else // letter lacking redefinition of virtual fn.
+    return 0; // default for non-surrogate models
+}
+
+
 void Model::
 compute_correction(const RealVector& c_vars, const Response& truth_response,
 		   const Response& approx_response)
@@ -2716,28 +2727,6 @@ compute_correction(const RealVector& c_vars, const Response& truth_response,
 	 << std::endl;
     abort_handler(-1);
   }
-}
-
-
-void Model::auto_correction(bool correction_flag)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->auto_correction(correction_flag);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual auto_correction() "
-         << "function.\nThis model does not support approximations."
-	 << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-bool Model::auto_correction()
-{
-  if (modelRep) // envelope fwd to letter
-    return modelRep->auto_correction();
-  else // letter lacking redefinition of virtual fn.
-    return false; // default for non-surrogate models
 }
 
 

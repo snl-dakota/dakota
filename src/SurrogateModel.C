@@ -30,7 +30,7 @@ namespace Dakota {
 SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
   surrogateFnIndices(problem_db.get_dis("model.surrogate.function_indices")),
-  autoCorrection(false), approxBuilds(0), surrogateBypass(false)
+  responseMode(AUTO_CORRECTED_SURROGATE), approxBuilds(0)
 {
   // process surrogateFnIndices. IntSets are sorted and unique.
   if (surrogateFnIndices.empty()) // default: all fns are approximated
@@ -50,8 +50,8 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
 SurrogateModel::
 SurrogateModel(ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
 	       const ActiveSet& set, const String& corr_type, short corr_order):
-  Model(NoDBBaseConstructor(), parallel_lib, svd, set), autoCorrection(false),
-  approxBuilds(0), surrogateBypass(false)
+  Model(NoDBBaseConstructor(), parallel_lib, svd, set),
+  responseMode(AUTO_CORRECTED_SURROGATE), approxBuilds(0)
 {
   modelType = "surrogate";
 
@@ -429,45 +429,34 @@ void SurrogateModel::
 asv_mapping(const ShortArray& orig_asv, ShortArray& actual_asv,
 	    ShortArray& approx_asv, bool build_flag)
 {
-  bool mixed_resp_set = (surrogateFnIndices.size() != numFns);
-  if (build_flag) { // construct mode: define actual_asv
-    if (mixed_resp_set) {
+  if (surrogateFnIndices.size() != numFns) { // mixed response set
+    if (build_flag) { // construct mode: define actual_asv
       actual_asv.resize(numFns); actual_asv.assign(actual_asv.size(), 0);
       for (ISIter it=surrogateFnIndices.begin();
-	   it!=surrogateFnIndices.end(); ++it) {
-	int index = *it;
-	actual_asv[index] = orig_asv[index];
-      }
+	   it!=surrogateFnIndices.end(); ++it)
+	actual_asv[*it] = orig_asv[*it];
     }
-    else
-      actual_asv = orig_asv;
-  }
-  else { // eval mode: define actual_asv & approx_asv contributions
-    if (surrogateBypass)
-      actual_asv = orig_asv;
-    else if (mixed_resp_set) {
-      for (size_t i=0; i<numFns; i++) {
-	bool  surr_id      = (surrogateFnIndices.count(i)) ? true : false;
+    else { // eval mode: define actual_asv & approx_asv contributions
+      for (size_t i=0; i<numFns; ++i) {
 	short orig_asv_val = orig_asv[i];
-	// keep asv's at null size if no active requests
-	if (surr_id && orig_asv_val) {
-	  if (approx_asv.empty()) {
-	    approx_asv.resize(numFns);
-	    approx_asv.assign(approx_asv.size(), 0);
+	if (orig_asv_val) {
+	  if (surrogateFnIndices.count(i)) {
+	    if (approx_asv.empty()) // keep empty if no active requests
+	      { approx_asv.resize(numFns); approx_asv.assign(numFns, 0); }
+	    approx_asv[i] = orig_asv_val;
 	  }
-	  approx_asv[i] = orig_asv_val;
-	}
-	else if (!surr_id && orig_asv_val) {
-	  if (actual_asv.empty()) {
-	    actual_asv.resize(numFns);
-	    actual_asv.assign(actual_asv.size(), 0);
+	  else {
+	    if (actual_asv.empty()) // keep empty if no active requests
+	      { actual_asv.resize(numFns); actual_asv.assign(numFns, 0); }
+	    actual_asv[i] = orig_asv_val;
 	  }
-	  actual_asv[i] = orig_asv_val;
 	}
       }
     }
-    else
-      approx_asv = orig_asv;
+  }
+  else {
+    if (build_flag) actual_asv = orig_asv;
+    else            approx_asv = orig_asv;
   }
 }
 
@@ -485,8 +474,8 @@ asv_mapping(const ShortArray& actual_asv, const ShortArray& approx_asv,
     combined_asv = actual_asv;
   else 
     for (size_t i=0; i<numFns; ++i)
-      combined_asv[i]
-	= (surrogateFnIndices.count(i)) ? approx_asv[i] : actual_asv[i];
+      combined_asv[i] = (surrogateFnIndices.count(i)) ?
+	approx_asv[i] : actual_asv[i];
 }
 
 

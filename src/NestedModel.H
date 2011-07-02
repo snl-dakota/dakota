@@ -20,7 +20,7 @@
 #include "DakotaInterface.H"
 #include "DakotaIterator.H"
 #include "ParallelLibrary.H"
-#include "DataMethod.H"
+#include "DataModel.H"
 
 
 namespace Dakota {
@@ -81,9 +81,8 @@ protected:
   /// return optionalInterface
   Interface& interface();
 
-  /// NestedModels have nothing to bypass, but must pass request on
-  /// to the subModel for any lower-level surrogates.
-  void surrogate_bypass(bool bypass_flag);
+  /// pass a bypass request on to the subModel for any lower-level surrogates
+  void surrogate_response_mode(bool mode);
 
   /// update component parallel mode for supporting parallelism in
   /// optionalInterface and subModel
@@ -340,8 +339,8 @@ inline Interface& NestedModel::interface()
 { return optionalInterface; }
 
 
-inline void NestedModel::surrogate_bypass(bool bypass_flag)
-{ subModel.surrogate_bypass(bypass_flag); }
+inline void NestedModel::surrogate_response_mode(bool mode)
+{ if (mode == BYPASS_SURROGATE) subModel.surrogate_response_mode(mode); }
 
 
 /* Used in setting Model::asynchEvalFlag.  subModel synchronization
