@@ -89,7 +89,7 @@ function(DakotaHaveMPI)
     if(NOT MPI_FOUND)
       message(FATAL_ERROR "DAKOTA MPI requested, but not found. "
         " Please build a serial configuration instead")
-    endif(MPI_FOUND)
+    endif()
     # Some TPLs manage the setting with USE_MPI rather than HAVE_MPI
     set(USE_MPI "ON")
   
