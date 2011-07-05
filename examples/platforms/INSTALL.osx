@@ -1,11 +1,50 @@
 ============================================
+Modern Intel Macs - 10.6 (Snow Leopard)
+============================================
+
+If you wish to use DAKOTA on an intel, MacOS X Snow Leopard platform, it
+is recommended that you build from the source distribution to ensure
+binary compatibility with dylibs on your system.
+
+Compiling DAKOTA from source with the autotools typically requires:
+    C, C++, Fortran77, and (optionally, but recommended) Fortran90 compilers
+    (Optional) MPI compiler wrappers, headers, and libraries
+    (Optional) X Windows development headers and libs, including for example:
+      X11 or Xorg (specific libraries vary from platform to platform,
+                   but may include X11, Xext, Xp, Xau, Xaw, Xmu, Xt)
+      A motif implementation such a lesstif or openmotif (for Xm)
+      XPM
+
+In general when compiling DAKOTA, be careful that autoconf doesn't select
+incompatible compilers or pre-processor, e.g., mixing g77 with gfortran or
+mixing vendors even, by setting CC, CXX, F77, and FC to the ones you want
+to use.
+
+Install Xcode tools (believed optional, but likely needed for graphics support).
+Install a compiler toolchain with Fortran90 support.  We've used MacPorts
+and the IBM gfortran download as well, but the whole gcc suite from
+http://hpc.sourceforge.net/ seems to work.
+
+Make sure new compilers are on head of PATH, e.g.,
+  export PATH=/usr/local/bin:$PATH
+Configure, make, install:
+  ./configure CC=gcc CXX=g++ F77=gfortran FC=gfortran --prefix=/path/to/installdir --disable-mpi
+  make
+  make install
+
+You should not need --without-graphics if XCode is installed, but some users
+can't get it to work.
+
+
+============================================
 Modern Intel Macs - 10.5 (Leopard)
 ============================================
 
-If you wish to use DAKOTA on a modern MacOS X platform, you have two
+If you wish to use DAKOTA on an intel, MacOS X Leopard platform, you have two
 primary options:
 
     1. Installing the binary distribution of DAKOTA (recommended)
+       - The DAKOTA team's Mac build host is Leopard (Darwin Kernel 9.4.0)
     2. Building the DAKOTA source distribution using GNU compilers
        (Coming soon: build notes using Intel compilers)
 
