@@ -31,6 +31,9 @@ set(Trilinos_DIR
 set(BUILD_STATIC_LIBS OFF CACHE BOOL "Set to ON to build static libraries" FORCE)
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Set to ON to build DSO libraries" FORCE)
 
+##############################################################################
+
+set(DAKOTA_HAVE_MPI ON CACHE BOOL "Always build with MPI enabled" FORCE)
 
 ##############################################################################
 #
