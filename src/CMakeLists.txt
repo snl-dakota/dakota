@@ -245,11 +245,13 @@ if(HAVE_ACRO)
 endif(HAVE_ACRO)
 
 
-#CheckPackage(GRVY)
 CheckPackage(QUESO)
 if(HAVE_QUESO)
   list(APPEND iterator_src NonDQUESOBayesCalibration.C)
   add_definitions("-DDAKOTA_QUESO")
+
+  exec_program("$ENV{GSL_CONFIG}" ARGS --prefix OUTPUT_VARIABLE GSL_PREFIX)
+  message(STATUS "GSL prefix: ${GSL_PREFIX}")
 
   # QUESO depends on additional Trilinos packages (NOT just teuchos)
   include(${Trilinos_DIR}/TrilinosConfig_install.cmake)
@@ -257,7 +259,7 @@ if(HAVE_QUESO)
   #include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
   include_directories(${Dakota_BINARY_DIR}/packages/queso_ext/include
                       ${Dakota_BINARY_DIR}/packages/grvy_ext/include
-                      "$ENV{GSL_CONFIG}/../../include"
+                      ${GSL_PREFIX}/include
                       ${Trilinos_INCLUDE_DIRS})
 
   #list(APPEND link_directories "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
