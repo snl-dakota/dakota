@@ -184,8 +184,8 @@ void NonDSparseGrid::increment_grid()
 {
   int orig_ssg_size = ssgDriver->grid_size();
   ssgDriver->level(++ssgLevelRef);
-  // with "slow growth" nested rules, an increment in level will not always
-  // change the grid.  Anisotropy (if present) is fixed.
+  // with restricted growth/delayed sequences in nested rules, an increment in
+  // level will not always change the grid.  Anisotropy (if present) is fixed.
   while (ssgDriver->grid_size() == orig_ssg_size)
     ssgDriver->level(++ssgLevelRef);
 }

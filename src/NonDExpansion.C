@@ -233,8 +233,11 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   // tracking of unique product weights needed for PCE and SC standard modes
   // since both employ PolynomialApproximation::compute_numerical_moments(4).
   // Neither PCE nor SC require product wts for all_vars mode, since moment
-  // calculations must employ gauss_wts_1d.
+  // calculations must employ gauss_wts_1d (exception: all PCE SPARSE_INT_*
+  // expansion modes for PCE require wts for integrate_expansion()).
   bool track_wts = !(numContDesVars || numContEpistUncVars || numContStateVars);
+    // || poly_approx_rep0->sparse_grid_expansion() >=
+    //    Pecos::SPARSE_INT_TOTAL_ORD_EXP;
   bool nested_rules      = (ruleNestingOverride != Pecos::NON_NESTED);
   bool unrestrict_growth = (ruleGrowthOverride  == Pecos::UNRESTRICTED);
   u_space_sampler.assign_rep(
