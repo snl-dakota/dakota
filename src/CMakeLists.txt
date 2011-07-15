@@ -27,7 +27,7 @@ endif (BOOST_DISABLE_ASSERTS)
 option(DAKOTA_HAVE_BOOST_FS "Toggle FS support, default is BostFS disabled" OFF)
 if (DAKOTA_HAVE_BOOST_FS)
   add_definitions("-DDAKOTA_HAVE_BOOST_FS")
-  add_definitions("-DBOOST_FILESYSTEM_VERSION=3")
+  #add_definitions("-DBOOST_FILESYSTEM_VERSION=2")
   find_package(Boost COMPONENTS filesystem system)
 endif (DAKOTA_HAVE_BOOST_FS)
 
