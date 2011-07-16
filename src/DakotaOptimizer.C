@@ -426,14 +426,13 @@ void Optimizer::weighted_sum(const Response& full_response,
   }
 
   // build new_fn_hessians from full_fn_hessians
-  const RealSymMatrixArray& full_fn_hessians = full_response.function_hessians();
+  const RealSymMatrixArray& full_fn_hessians
+    = full_response.function_hessians();
   RealSymMatrixArray new_fn_hessians = reduced_response.function_hessians();
   if (new_fn_hessians.size()) { // hessians active
     if (reduced_asv[0] & 4) {
-      if (outputLevel > NORMAL_OUTPUT)
-	Cout << "[[ ";
       for (j=0; j<numContinuousVars; j++) {
-        for (k=0; k<numContinuousVars; k++) {
+        for (k=0; k<=j; k++) {
           Real sum = 0.;
 	  if (multiobj_wts.empty()) {
 	    for (i=0; i<numUserObjectiveFns; i++)
@@ -445,21 +444,17 @@ void Optimizer::weighted_sum(const Response& full_response,
 	      sum += full_fn_hessians[i](j,k) * multiobj_wts[i];
 	    new_fn_hessians[0](j,k) = sum;
 	  }
-	  if (outputLevel > NORMAL_OUTPUT)
-	    Cout << std::setw(write_precision+7) << sum << ' ';
 	}
-	if (j != numContinuousVars-1)
-	  if (outputLevel > NORMAL_OUTPUT)
-	    Cout << "\n   ";
       }
-      if (outputLevel > NORMAL_OUTPUT)
-	Cout << " ]] obj_fn Hessian\n";
+      if (outputLevel > NORMAL_OUTPUT) {
+	write_data(Cout, new_fn_hessians[0], true, true, false);
+ 	Cout << " obj_fn Hessian\n";
+      }
     }
     reduced_response.function_hessians(new_fn_hessians);
   }
   if (outputLevel > NORMAL_OUTPUT)
     Cout << std::endl;
-
 }
 
 

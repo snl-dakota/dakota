@@ -734,7 +734,7 @@ int ResponseRep::data_size()
   const ShortArray& asv = responseActiveSet.request_vector();
   size_t i, num_fns = functionValues.length(),
     grad_size = responseActiveSet.derivative_vector().size(),
-    hess_size = grad_size*grad_size; // symmetry is not exploited
+    hess_size = grad_size*(grad_size+1)/2; // (n^2+n)/2
   for (i=0; i<num_fns; ++i) {
     if (asv[i] & 1)
       size++;
@@ -765,7 +765,7 @@ void ResponseRep::read_data(double* response_data)
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4)
       for (j=0; j<num_params; ++j)
-        for (k=0; k<num_params; ++k) // symmetry is not exploited
+        for (k=0; k<=j; ++k)
           functionHessians[i](j,k) = response_data[cntr++];
 }
 
@@ -788,7 +788,7 @@ void ResponseRep::write_data(double* response_data)
   for (i=0; i<num_fns; i++)
     if (asv[i] & 4)
       for (j=0; j<num_params; j++)
-        for (k=0; k<num_params; k++) // symmetry is not exploited
+        for (k=0; k<=j; k++)
           response_data[cntr++] = functionHessians[i](j,k);
 }
 
@@ -814,7 +814,7 @@ void ResponseRep::overlay(const Response& response)
   for (i=0; i<num_fns; i++)
     if (asv[i] & 4)
       for (j=0; j<num_params; j++)
-        for (k=0; k<num_params; k++)
+        for (k=0; k<=j; k++)
           functionHessians[i](j,k) += partial_fn_hessians[i](j,k);
 }
 
@@ -889,7 +889,7 @@ update(const RealVector& source_fn_vals, const RealMatrix& source_fn_grads,
     for (i=0; i<num_fns; i++)
       if (asv[i] & 4) // assign each entry since size may differ
 	for (j=0; j<num_params; j++)
-	  for (k=0; k<num_params; k++)
+	  for (k=0; k<=j; k++)
 	    functionHessians[i](j,k) = source_fn_hessians[i](j,k);
   }
 
@@ -969,7 +969,7 @@ update_partial(size_t start_index_target, size_t num_items,
     for (i=0; i<num_items; i++)
       if (asv[start_index_target+i] & 4)
 	for (j=0; j<num_params; j++)
-	  for (k=0; k<num_params; k++)
+	  for (k=0; k<=j; k++)
 	    functionHessians[start_index_target+i](j,k)
 	      = source_fn_hessians[start_index_source+i](j,k);
   }

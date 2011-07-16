@@ -3288,7 +3288,7 @@ int DirectApplicInterface::matlab_engine_run()
           ptr=mxGetPr(mx_tmp[21]);
           for (i=0; i<numFns; ++i)
             for (j=0; j<numDerivVars; ++j)
-              for (k=0; k<numDerivVars; ++k)
+              for (k=0; k<=j; ++k)
                 fnHessians[i](j,k) += *(ptr + numDerivVars*numFns*k 
                                             + numFns*j + i );
         }
