@@ -253,12 +253,11 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
   // perform any reductions involving LF & HF response aggregate
   switch (responseMode) {
   case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
-    // TO DO: append global data flag?  or no SurrogateData update flag?
-    // (passed to higher level via currentResponse)
+    // don't update surrogate data within deltaCorr's Approximations; just
+    // update currentResponse (managed as surrogate data at a higher level)
     deltaCorr.compute(currentVariables.continuous_variables(),
 		      highFidelityModel.current_response(),
-		      lowFidelityModel.current_response(), false);
-    // TO DO: update currentResponse
+		      lowFidelityModel.current_response(), currentResponse);
     break;
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     if (mixed_eval) {

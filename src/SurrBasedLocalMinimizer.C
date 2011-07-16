@@ -1378,7 +1378,7 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
 	recast_response.function_value(surrogate_fns[i], i);
       if (recast_asv[i] & 2)
 	recast_response.function_gradient(
-	  surrogate_response.function_gradient(i), i );
+	  surrogate_response.function_gradient_view(i), i );
     }
   }
   else {
@@ -1473,7 +1473,7 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
 	recast_response.function_value(surrogate_fns[surr_i], recast_i);
       if (recast_asv[recast_i] & 2)
 	recast_response.function_gradient(
-	  surrogate_response.function_gradient(surr_i), recast_i );
+	  surrogate_response.function_gradient_view(surr_i), recast_i );
     }
     break;
   }
@@ -1507,7 +1507,7 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
       }
       if (recast_asv[recast_i] & 2)
 	recast_response.function_gradient(
-	  sblmInstance->responseCenterApprox.function_gradient(surr_i),
+	  sblmInstance->responseCenterApprox.function_gradient_view(surr_i),
 	  recast_i );
     }
 #ifdef DEBUG

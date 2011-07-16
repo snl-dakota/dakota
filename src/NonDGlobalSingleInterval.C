@@ -61,7 +61,7 @@ void NonDGlobalSingleInterval::get_best_sample(bool find_max, bool eval_approx)
     ActiveSet set = fHatModel.current_response().active_set();
     set.request_values(0); set.request_value(respFnCntr, 1);
     fHatModel.compute_response(set);
-    approxFnStar = fHatModel.current_response().function_values()[respFnCntr];
+    approxFnStar = fHatModel.current_response().function_value(respFnCntr);
   }
 }
 

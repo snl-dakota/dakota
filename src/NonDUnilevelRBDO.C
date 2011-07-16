@@ -559,9 +559,9 @@ void NonDUnilevelRBDO::iterated_mean_value()
           amv_plus_converged = true; // break out of while loop
           if (ria_flag) // RIA computed response = response target + eq_con_star
             computedRespLevels[respFnCount][levelCount] = 
-              resp_star.function_values()[1] + requestedRespLevel;
+              resp_star.function_value(1) + requestedRespLevel;
           else { // PMA computed response = obj_fn_star
-            double obj_fn_star = resp_star.function_values()[0];
+            double obj_fn_star = resp_star.function_value(0);
             computedRespLevels[respFnCount][levelCount]
               = (requestedCDFProbLevel <= 0.5) ? obj_fn_star : -obj_fn_star;
           }
@@ -571,10 +571,10 @@ void NonDUnilevelRBDO::iterated_mean_value()
         // converting to a probability using phi(beta).
         double norm_u_sq;
         if (ria_flag)
-          norm_u_sq = resp_star.function_values()[0]; // obj_fn_star
+          norm_u_sq = resp_star.function_value(0); // obj_fn_star
         else {
           double beta_target = phi_inverse(requestedCDFProbLevel);
-          double eq_con_star = resp_star.function_values()[1]; // constr. viol.
+          double eq_con_star = resp_star.function_value(1); // constr. viol.
           norm_u_sq = eq_con_star + pow(beta_target, 2);
         }
         double beta = (computedRespLevels[respFnCount][levelCount] >=

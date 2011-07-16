@@ -84,11 +84,11 @@ void NonlinearCGOptimizer::find_optimum()
     // is in use and only request gradient if appropriate
     activeSet.request_values(3);
     iteratedModel.compute_response(activeSet);
-    const Response& response = iteratedModel.current_response();
+    const Response&   response  = iteratedModel.current_response();
     const RealVector& functions = response.function_values();
 
     functionCurr = functions[0];
-    gradCurr = response.function_gradient(0); // NOTE: gradCurr is a VIEW!
+    gradCurr = response.function_gradient_view(0);
 
     // always store ||g||^2
     gradDotGrad_curr = gradCurr.dot(gradCurr);

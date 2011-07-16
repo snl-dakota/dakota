@@ -1089,12 +1089,12 @@ void NonDLocalReliability::initialize_level_data()
       SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
       SizetArray x_dvv; copy_data(cv_ids, x_dvv);
       const Response& local_resp = iteratedModel.current_response();
-      computedRespLevel = local_resp.function_values()[respFnCount];
-      fnGradX = local_resp.function_gradient(respFnCount);
+      computedRespLevel = local_resp.function_value(respFnCount);
+      fnGradX = local_resp.function_gradient_copy(respFnCount);
       natafTransform.trans_grad_X_to_U(fnGradX, fnGradU, mostProbPointX,
 				       x_dvv, cv_ids);
       if (mode & 4) {
-	fnHessX = local_resp.function_hessians()[respFnCount];
+	fnHessX = local_resp.function_hessian(respFnCount);
 	natafTransform.trans_hess_X_to_U(fnHessX, fnHessU, mostProbPointX,
 					 fnGradX, x_dvv, cv_ids);
 	curvatureDataAvailable = true;
@@ -1303,7 +1303,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     iteratedModel.continuous_variables(mostProbPointX);
     iteratedModel.compute_response(activeSet); 
     computedRespLevel
-      = iteratedModel.current_response().function_values()[respFnCount];
+      = iteratedModel.current_response().function_value(respFnCount);
     break;
   }
   case AMV_PLUS_X: case AMV_PLUS_U: case TANA_X: case TANA_U: {
@@ -1352,7 +1352,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     iteratedModel.continuous_variables(mostProbPointX);
     iteratedModel.compute_response(activeSet);
     computedRespLevel
-      = iteratedModel.current_response().function_values()[respFnCount];
+      = iteratedModel.current_response().function_value(respFnCount);
 #ifdef MPP_CONVERGE_RATE
     Cout << "u'u = "  << mostProbPointU.dot(mostProbPointU)
 	 << " G(u) = " << computedRespLevel << '\n';
@@ -1426,7 +1426,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       Response desired_resp;
       if( lookup_by_val(data_pairs, iteratedModel.interface_id(), search_vars,
 			search_set, desired_resp) ) {
-	fnGradX = desired_resp.function_gradient(respFnCount);
+	fnGradX = desired_resp.function_gradient_copy(respFnCount);
 	found_mode |= 2;
       }
     }
@@ -1446,7 +1446,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       Response desired_resp;
       if( lookup_by_val(data_pairs, iteratedModel.interface_id(), search_vars,
 			search_set, desired_resp) ) {
-        fnHessX = desired_resp.function_hessians()[respFnCount];
+        fnHessX = desired_resp.function_hessian(respFnCount);
 	found_mode |= 4;
       }
     }
@@ -1458,12 +1458,11 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       activeSet.request_values(0);
       activeSet.request_value(respFnCount, remaining_mode);
       iteratedModel.compute_response(activeSet);
+      const Response& curr_resp = iteratedModel.current_response();
       if (remaining_mode & 2)
-	fnGradX
-	 = iteratedModel.current_response().function_gradient(respFnCount);
+	fnGradX = curr_resp.function_gradient_copy(respFnCount);
       if (remaining_mode & 4)
-        fnHessX
-	  = iteratedModel.current_response().function_hessians()[respFnCount];
+        fnHessX = curr_resp.function_hessian(respFnCount);
     }
     if (mode & 2)
       natafTransform.trans_grad_X_to_U(fnGradX, fnGradU, mostProbPointX,
@@ -1665,8 +1664,8 @@ void NonDLocalReliability::update_pma_reliability_level()
     // mostProbPointU needed for alternate R0 initialization
     copy_data(u_vars.continuous_variables(), mostProbPointU); // view -> copy
     // grad/Hessian availability enforced by NonDReliability::PMA2_set_mapping()
-    fnGradU = u_resp.function_gradient(respFnCount);
-    fnHessU = u_resp.function_hessians()[respFnCount];
+    fnGradU = u_resp.function_gradient_copy(respFnCount);
+    fnHessU = u_resp.function_hessian(respFnCount);
     curvatureDataAvailable = true;
     requestedCDFRelLevel   = reliability(requestedCDFProbLevel, true);
   }
@@ -1676,7 +1675,7 @@ void NonDLocalReliability::update_pma_reliability_level()
 void NonDLocalReliability::update_limit_state_surrogate()
 {
   RealVector mpp, fn_grad(fnGradX.length());
-  const RealSymMatrix* fn_hess_ptr = 0;
+  const RealSymMatrix* fn_hess_ptr = NULL;
   if (mppSearchType ==  AMV_X || mppSearchType == AMV_PLUS_X ||
       mppSearchType == TANA_X) {
     mpp = mostProbPointX;
@@ -1704,10 +1703,8 @@ void NonDLocalReliability::update_limit_state_surrogate()
   Response response(set);
   response.function_value(computedRespLevel, respFnCount);
   response.function_gradient(fn_grad, respFnCount);
-  if (taylorOrder == 2) {
-    const RealSymMatrix& fn_hess = *fn_hess_ptr;
-    response.function_hessian(fn_hess, respFnCount);
-  }
+  if (taylorOrder == 2)
+    response.function_hessian(*fn_hess_ptr, respFnCount);
   IntResponsePair response_pr(0, response); // dummy eval id
 
   // After a design variable change, history data (e.g., TANA) needs
@@ -1803,17 +1800,15 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
     inactive_grad_set.derivative_vector(filtered_final_dvv);
     */
     iteratedModel.compute_response(inactive_grad_set);
-    if (secondaryACVarMapTargets.empty()) {
-      final_stat_grad
-        = iteratedModel.current_response().function_gradient(respFnCount);
-    }
+    const Response& curr_resp = iteratedModel.current_response();
+    if (secondaryACVarMapTargets.empty())
+      final_stat_grad = curr_resp.function_gradient_copy(respFnCount);
     else {
-      const RealMatrix& local_grads
-        = iteratedModel.current_response().function_gradients();
+      const RealMatrix& local_grads = curr_resp.function_gradients();
       size_t cntr = 0;
       for (i=0; i<num_final_grad_vars; i++)
 	if (secondaryACVarMapTargets[i] == Pecos::NO_TARGET)
-	  final_stat_grad[i] = local_grads(cntr++,respFnCount);
+	  final_stat_grad[i] = local_grads(cntr++, respFnCount);
     }
   }
 }
@@ -2290,8 +2285,7 @@ void NonDLocalReliability::g_eval(int& mode, const RealVector& u)
 
 #ifdef MPP_CONVERGE_RATE
     Cout << "u'u = " << u.dot(u) << " G(u) = "
-         << iteratedModel.current_response().function_values()[respFnCount]
-	 << '\n';
+         << iteratedModel.current_response().function_value(respFnCount)<< '\n';
 #endif // MPP_CONVERGE_RATE
 }
 

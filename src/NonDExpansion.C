@@ -236,8 +236,8 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   // calculations must employ gauss_wts_1d (exception: all PCE SPARSE_INT_*
   // expansion modes for PCE require wts for integrate_expansion()).
   bool track_wts = !(numContDesVars || numContEpistUncVars || numContStateVars);
-    // || poly_approx_rep0->sparse_grid_expansion() >=
-    //    Pecos::SPARSE_INT_TOTAL_ORD_EXP;
+  // || pa_rep0->sparse_grid_expansion() >= Pecos::SPARSE_INT_TOTAL_ORD_EXP;
+  // uSpaceModel not yet available! (no approxs until bottom of derived ctor)
   bool nested_rules      = (ruleNestingOverride != Pecos::NON_NESTED);
   bool unrestrict_growth = (ruleGrowthOverride  == Pecos::UNRESTRICTED);
   u_space_sampler.assign_rep(
@@ -1554,7 +1554,7 @@ void NonDExpansion::update_final_statistics()
       natafTransform.jacobian_dU_dX(initial_pt_x_pv, jacobian_ux);
       RealBaseVector final_stat_grad;
       for (i=0; i<num_final_stats; ++i) {
-	copy_data(finalStatistics.function_gradient(i), fn_grad_u);
+	copy_data(finalStatistics.function_gradient_view(i), fn_grad_u);
 	natafTransform.trans_grad_U_to_X(fn_grad_u, fn_grad_x, jacobian_ux,
 	                                 final_dvv);
 	copy_data(fn_grad_x, final_stat_grad);

@@ -248,7 +248,7 @@ objective_min(const Variables& sub_model_vars, const Variables& recast_vars,
       sub_model_response.function_value(nondLIInstance->respFnCntr), 0);
   if (recast_asv[0] & 2)
     recast_response.function_gradient(
-      sub_model_response.function_gradient(nondLIInstance->respFnCntr), 0);
+      sub_model_response.function_gradient_view(nondLIInstance->respFnCntr), 0);
   if (recast_asv[0] & 4)
     recast_response.function_hessian(
       sub_model_response.function_hessian(nondLIInstance->respFnCntr), 0);
@@ -266,7 +266,7 @@ objective_max(const Variables& sub_model_vars, const Variables& recast_vars,
       -sub_model_response.function_value(nondLIInstance->respFnCntr), 0);
   if (recast_asv[0] & 2) {
     RealVector sm_fn_grad
-      = sub_model_response.function_gradient(nondLIInstance->respFnCntr);
+      = sub_model_response.function_gradient_copy(nondLIInstance->respFnCntr);
     sm_fn_grad *= -1.;
     recast_response.function_gradient(sm_fn_grad, 0);
   }

@@ -513,7 +513,7 @@ response_mapping(const Response& actual_response,
 	  combined_response.function_value(approx_fns[i], i);
 	if (combined_asv[i] & 2)
 	  combined_response.function_gradient(
-	    approx_response.function_gradient(i), i );
+	    approx_response.function_gradient_view(i), i);
 	if (combined_asv[i] & 4)
 	  combined_response.function_hessian(approx_hessians[i], i);
       }
@@ -522,7 +522,7 @@ response_mapping(const Response& actual_response,
 	  combined_response.function_value(actual_fns[i], i);
 	if (combined_asv[i] & 2)
 	  combined_response.function_gradient(
-	   actual_response.function_gradient(i), i ); 
+	   actual_response.function_gradient_view(i), i); 
 	if (combined_asv[i] & 4)
 	  combined_response.function_hessian(actual_hessians[i], i);
       }

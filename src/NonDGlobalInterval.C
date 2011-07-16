@@ -241,7 +241,7 @@ void NonDGlobalInterval::post_process_gp_results()
   write_data(Cout, c_vars_star);
 
   const Response& resp_star_approx = gpOptimizer.response_results();
-  Real eif_star = -resp_star_approx.function_values()[0];
+  Real eif_star = -resp_star_approx.function_value(0);
   Cout << "Expected Improvement    =\n                     "
        << std::setw(write_precision+7) << eif_star << "\n";
 

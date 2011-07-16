@@ -299,10 +299,11 @@ objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
   const Response& local_response
     = npsolInstance->iteratedModel.current_response();
   if (asv_request & 1)
-    f = local_response.function_values()[0];
-  if (asv_request & 2)
-    std::copy(local_response.function_gradients()[0],
-              local_response.function_gradients()[0] + n, gradf);
+    f = local_response.function_value(0);
+  if (asv_request & 2) {
+    const Real* local_grad = local_response.function_gradient(0);
+    std::copy(local_grad, local_grad + n, gradf);
+  }
 }
 
 

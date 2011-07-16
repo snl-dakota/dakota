@@ -230,7 +230,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     const Variables&    vars_star = approxSubProbMinimizer.variables_results();
     const RealVector&   c_vars = vars_star.continuous_variables();
     const Response&     resp_star = approxSubProbMinimizer.response_results();
-    const Real&         eif_star  = resp_star.function_values()[0];
+    const Real&         eif_star  = resp_star.function_value(0);
 
     // Get expected value for output
     fHatModel.continuous_variables(c_vars);

@@ -606,7 +606,7 @@ add(const Response& response, int fn_index, bool anchor_flag, bool deep_copy)
     Real fn_val = (asv_val & 1) ? response.function_value(fn_index) : 0.;
     RealVector fn_grad;
     if (asv_val & 2)
-      fn_grad = response.function_gradient(fn_index); // view of matrix column
+      fn_grad = response.function_gradient_view(fn_index); // view of column
     RealSymMatrix empty_hess;
     const RealSymMatrix& fn_hess = (asv_val & 4) ?
       response.function_hessian(fn_index) : empty_hess;

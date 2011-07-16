@@ -101,7 +101,7 @@ RIA_objective_eval(const Variables& sub_model_vars,
   // ----------------------------------------
 
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
-  const RealVector&     u = recast_vars.continuous_variables();
+  const RealVector& u = recast_vars.continuous_variables();
   size_t i, num_vars = u.length();
   short asv_val = recast_asv[0];
   if (asv_val & 1) {
@@ -111,16 +111,15 @@ RIA_objective_eval(const Variables& sub_model_vars,
     recast_response.function_value(f, 0);
   }
   if (asv_val & 2) {
-    RealVector grad_f(num_vars);
+    RealVector grad_f = recast_response.function_gradient_view(0);
     for (i=0; i<num_vars; ++i)
       grad_f[i] = 2.*u[i]; // grad f = 2u
-    recast_response.function_gradient(grad_f, 0);
   }
   if (asv_val & 4) {
-    RealSymMatrix hess_f(num_vars); hess_f = 0.;
+    RealSymMatrix hess_f = recast_response.function_hessian_view(0);
+    hess_f = 0.;
     for (i=0; i<num_vars; i++)
       hess_f(i,i) = 2.; // hess f = 2's on diagonal
-    recast_response.function_hessian(hess_f, 0);
   }
 
   // Using f = norm u is a poor choice, since grad f is undefined at u = 0.
@@ -146,22 +145,18 @@ RIA_constraint_eval(const Variables& sub_model_vars,
 
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
   short asv_val = recast_asv[1]; //sub_model_asv[nondRelInstance->respFnCount];
+  int fn_count = nondRelInstance->respFnCount;
   if (asv_val & 1) {
-    const Real& sub_model_fn
-      = sub_model_response.function_values()[nondRelInstance->respFnCount];
-    Real c = sub_model_fn - nondRelInstance->requestedRespLevel;
-    recast_response.function_value(c, 1);
+    const Real& sub_model_fn = sub_model_response.function_value(fn_count);
+    recast_response.function_value(
+      sub_model_fn - nondRelInstance->requestedRespLevel, 1);
   }
-  if (asv_val & 2) { // dG/du: no additional transformation needed
-    RealVector sub_model_grad
-      = sub_model_response.function_gradient(nondRelInstance->respFnCount);
-    recast_response.function_gradient(sub_model_grad, 1);
-  }
-  if (asv_val & 4) { // d^2G/du^2: no additional transformation needed
-    const RealSymMatrix& sub_model_hessian
-      = sub_model_response.function_hessians()[nondRelInstance->respFnCount];
-    recast_response.function_hessian(sub_model_hessian, 1);
-  }
+  if (asv_val & 2) // dG/du: no additional transformation needed
+    recast_response.function_gradient(
+      sub_model_response.function_gradient_view(fn_count), 1);
+  if (asv_val & 4) // d^2G/du^2: no additional transformation needed
+    recast_response.function_hessian(
+      sub_model_response.function_hessian(fn_count), 1);
 }
 
 
@@ -189,7 +184,7 @@ PMA_objective_eval(const Variables& sub_model_vars,
 
   if (asv_val & 1) {
     const Real& sub_model_fn
-      = sub_model_response.function_values()[nondRelInstance->respFnCount];
+      = sub_model_response.function_value(nondRelInstance->respFnCount);
     if (positive)
       recast_response.function_value( sub_model_fn, 0);
     else
@@ -197,29 +192,28 @@ PMA_objective_eval(const Variables& sub_model_vars,
   }
   if (asv_val & 2) { // dG/du: no additional transformation needed
     RealVector sub_model_grad
-      = sub_model_response.function_gradient(nondRelInstance->respFnCount);
+      = sub_model_response.function_gradient_view(nondRelInstance->respFnCount);
     if (positive)
       recast_response.function_gradient(sub_model_grad, 0);
     else {
-      size_t num_vars = sub_model_response.function_gradients().numRows();
-      RealVector neg_sub_model_grad(num_vars);
-      for (int i=0; i<num_vars; ++i)
+      RealVector neg_sub_model_grad = recast_response.function_gradient_view(0);
+      size_t i, num_vars = sub_model_response.function_gradients().numRows();
+      for (i=0; i<num_vars; ++i)
 	neg_sub_model_grad[i] = -sub_model_grad[i];
-      recast_response.function_gradient(neg_sub_model_grad, 0);
     }
   }
   if (asv_val & 4) { // d^2G/du^2: no additional transformation needed
     const RealSymMatrix& sub_model_hessian
-      = sub_model_response.function_hessians()[nondRelInstance->respFnCount];
+      = sub_model_response.function_hessian(nondRelInstance->respFnCount);
     if (positive)
       recast_response.function_hessian(sub_model_hessian, 0);
     else {
-      size_t num_vars = sub_model_hessian.numRows();
-      RealSymMatrix neg_sub_model_hessian(num_vars);
-      for (size_t i=0; i<num_vars; ++i)
-	for (size_t j=0; j<num_vars; ++j)
+      RealSymMatrix neg_sub_model_hessian
+	= recast_response.function_hessian_view(0);
+      size_t i, j, num_vars = sub_model_hessian.numRows();
+      for (i=0; i<num_vars; ++i)
+	for (j=0; j<=i; ++j)
 	  neg_sub_model_hessian(i,j) = -sub_model_hessian(i,j);
-      recast_response.function_hessian(neg_sub_model_hessian, 0);
     }
   }
 }
@@ -262,16 +256,15 @@ PMA_constraint_eval(const Variables& sub_model_vars,
     // live with an approximate constraint gradient in this case.  It is 
     // preferable to use a surrogate-based PMA to converge beta-bar(p-bar) in 
     // steps rather than PMA SORM which requires the full constraint gradient.
-    RealVector grad_f(num_vars);
+    RealVector grad_f = recast_response.function_gradient_view(1);
     for (i=0; i<num_vars; ++i)
       grad_f[i] = 2.*u[i]; // grad f = 2u
-    recast_response.function_gradient(grad_f, 1);
   }
   if (asv_val & 4) {
-    RealSymMatrix hess_f(num_vars); hess_f = 0.;
+    RealSymMatrix hess_f = recast_response.function_hessian_view(1);
+    hess_f = 0.;
     for (i=0; i<num_vars; i++)
       hess_f(i,i) = 2.; // hess f = 2's on diagonal
-    recast_response.function_hessian(hess_f, 1);
   }
 }
 

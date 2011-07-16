@@ -42,9 +42,9 @@ void NonDLHSSingleInterval::post_process_samples()
     Cout << ">>>>> Identifying minimum and maximum samples for response "
 	 << "function " << respFnCntr+1 << '\n';
     r_it = all_responses.begin();
-    lwr = upr = r_it->second.function_values()[respFnCntr]; ++r_it;
+    lwr = upr = r_it->second.function_value(respFnCntr); ++r_it;
     for (; r_it!=all_responses.end(); ++r_it) {
-      const Real& fn_val = r_it->second.function_values()[respFnCntr];
+      const Real& fn_val = r_it->second.function_value(respFnCntr);
       if (fn_val < lwr)
 	lwr = fn_val;
       else if (fn_val > upr)

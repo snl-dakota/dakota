@@ -889,11 +889,8 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
     // manage data requirements for derivative transformations: if fn_grad_x_rv
     // is needed for Hessian x-form (nonlinear I/O mapping), then x_asv has been
     // augmented to include the gradient in RecastModel::asv_mapping().
-    if (map_derivs && (x_asv_val & 2)) {
-      //copy_data(x_response.function_gradient(i), fn_grad_x_rv);
-      // WJB: looks easy (except VIEW vs COPY choice) copy_data(x_grads[i], x_grads.numRows(), fn_grad_x_rdv);
-      fn_grad_x_rv = x_response.function_gradient_copy(i);
-    }
+    if (map_derivs && (x_asv_val & 2))
+      fn_grad_x_rv = x_response.function_gradient_view(i);
 
     // map gradient dg/dx to dG/du
     if (u_asv_val & 2) {
@@ -914,12 +911,8 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
 	    fn_grad_us_rv, jacobian_xu, x_dvv, cv_ids);
 	u_response.function_gradient(fn_grad_us_rv, i);
       }
-      else { // no transformation: dg/dx = dG/du
-	u_response.function_gradient(x_response.function_gradient(i), i);
-        /* WJB: above line work?? RealVector x_grad_i(Teuchos::View, (Real*)x_grads[i],
-			    x_grads.numRows());
-	u_response.function_gradient(x_grad_i, i); */
-      }
+      else // no transformation: dg/dx = dG/du
+	u_response.function_gradient(x_response.function_gradient_view(i), i);
     }
 
     // map Hessian d^2g/dx^2 to d^2G/du^2

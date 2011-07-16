@@ -253,7 +253,7 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
 	core_response.function_value(fn_val, index);
       }
       if (core_asv[index] & 2) { // TO DO: ACV->DVV
-	const RealVector& fn_grad= functionSurfaces[index].get_gradient(x);
+	const RealVector& fn_grad = functionSurfaces[index].get_gradient(x);
 	//if (approx_scale_len)
 	//  for (size_t j=0; j<num_core_vars; j++)
 	//    fn_grad[j] *= approxScale[index];

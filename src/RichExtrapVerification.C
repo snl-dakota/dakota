@@ -140,9 +140,9 @@ extrapolation(const RealVector& refine_triple, RealMatrix& qoi_triples)
   if (qoi_triples.empty())
     qoi_triples.shapeUninitialized(numFunctions, 3);
   for (size_t i=0; i<numFunctions; ++i) {
-    qoi_triples(i,0) = resp0.function_values()[i];
-    qoi_triples(i,1) = resp1.function_values()[i];
-    qoi_triples(i,2) = resp2.function_values()[i];
+    qoi_triples(i,0) = resp0.function_value(i);
+    qoi_triples(i,1) = resp1.function_value(i);
+    qoi_triples(i,2) = resp2.function_value(i);
 
     // Assumes uniform refinement rate
     r21 = refine_triple[1]/refine_triple[0]; // could replace w/ refinementRate

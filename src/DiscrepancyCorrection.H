@@ -59,9 +59,13 @@ public:
 		  size_t num_vars, const String& corr_type, short corr_order);
 
   /// compute the correction required to bring approx_response into
-  /// agreement with truth_response
+  /// agreement with truth_response and store in {add,mult}Corrections
   void compute(const RealVector& c_vars, const Response& truth_response, 
 	       const Response& approx_response, bool quiet_flag);
+  /// compute the correction required to bring approx_response into
+  /// agreement with truth_response and store in discrepancy_response
+  void compute(const RealVector& c_vars, const Response& truth_response, 
+	       const Response& approx_response, Response& discrepancy_response);
 
   /// apply the correction computed in compute() to approx_response
   void apply(const RealVector& c_vars, Response& approx_response,
@@ -114,6 +118,9 @@ private:
 
   /// internal convenience function shared by overloaded initialize() variants
   void initialize_corrections();
+
+  /// define badScalingFlag
+  bool check_scaling(const RealVector& truth_fns, const RealVector& approx_fns);
 
   /// internal convenience function for applying additive corrections
   /// to an approximate response

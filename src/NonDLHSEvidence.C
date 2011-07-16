@@ -59,7 +59,7 @@ void NonDLHSEvidence::post_process_samples()
     size_t i, j; IntRespMCIter it;
     for (i=0, it=all_responses.begin(); i<numSamples; i++, ++it) {
 
-      const Real& fn_val = it->second.function_values()[respFnCntr];
+      const Real& fn_val = it->second.function_value(respFnCntr);
       const Real* c_vars = all_samples[i]; // column vector
 
       RealVector in_cell(numIntervalVars);

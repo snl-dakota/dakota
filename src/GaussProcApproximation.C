@@ -404,7 +404,7 @@ void GaussProcApproximation::optimize_theta_global()
   copy_data(vars_star.continuous_variables(), thetaParams);
 
 #ifdef DEBUG
-  Cout << "Optimal NLL = " << resp_star.function_values()[0] << '\n';
+  Cout << "Optimal NLL = " << resp_star.function_value(0) << '\n';
 #endif //DEBUG
 #endif //HAVE_NCSU
 }
@@ -834,7 +834,7 @@ void GaussProcApproximation::optimize_theta_multipoint()
     const Variables& vars_star = nll_optimizer.variables_results();
     const Response&  resp_star = nll_optimizer.response_results();
     copy_data(vars_star.continuous_variables(), thetaParams);
-    nll = resp_star.function_values()[0];
+    nll = resp_star.function_value(0);
     if (nll < nll_best) {
       nll_best = nll;
       for (j=0; j<numVars; j++) 

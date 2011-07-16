@@ -211,7 +211,7 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
 	// record the response in the function vector
 	const Response& local_response 
 	  = ncsudirectInstance->iteratedModel.current_response();
-	fvec[cnt+j] = local_response.function_values()[0];
+	fvec[cnt+j] = local_response.function_value(0);
 	fvec[cnt+j+(*maxfunc)] = feasible;
       }
 
@@ -234,7 +234,7 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
     // record the responses in the function vector
     IntRespMCIter r_cit = response_map.begin();
     for (int j=0; j<np; ++j, ++r_cit) {
-      fvec[cnt+j] = r_cit->second.function_values()[0];
+      fvec[cnt+j] = r_cit->second.function_value(0);
       fvec[cnt+j+(*maxfunc)] = feasible;
     }
   }
