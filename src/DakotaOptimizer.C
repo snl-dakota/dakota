@@ -293,12 +293,10 @@ multi_objective_retrieve(const Variables& vars, Response& response) const
     space using a RecastModel.  If resizing the response, copies the 
     constraint (secondary) data from native_response too */
 void Optimizer::
-primary_resp_recast(const Variables& native_vars,
-		    const Variables& scaled_vars,
+primary_resp_recast(const Variables& native_vars, const Variables& scaled_vars,
 		    const Response& native_response,
 		    Response& iterator_response)
 {
-
   if (optimizerInstance->outputLevel > NORMAL_OUTPUT) {
     Cout << "\n-----------------------------------";
     Cout << "\nPost-processing Function Evaluation";
@@ -317,7 +315,6 @@ primary_resp_recast(const Variables& native_vars,
   // goal-oriented).  Using weighted_sum yields a resized
   // iterator_response, but does not copy constraints
   if (optimizerInstance->multiObjFlag && scale_transform_needed) {
-
     // tmp_response contains the intermediate result with scaled
     // functions only (indices 0:(numUserObjectiveFns-1)) then apply
     // weighted objective sum
@@ -328,15 +325,11 @@ primary_resp_recast(const Variables& native_vars,
       = optimizerInstance->iteratedModel.subordinate_model();
     const RealVector& wts  = sub_model.primary_response_fn_weights();
     optimizerInstance->weighted_sum(tmp_response, iterator_response, wts);
-
   }
   else if (scale_transform_needed)
-
     optimizerInstance->response_modify_n2s(native_vars, native_response,
       iterator_response, 0, 0, optimizerInstance->numUserObjectiveFns);
-
   else if (optimizerInstance->multiObjFlag) {
-
     const Model& sub_model
       = optimizerInstance->iteratedModel.subordinate_model();
     const RealVector& wts  = sub_model.primary_response_fn_weights();
@@ -346,9 +339,7 @@ primary_resp_recast(const Variables& native_vars,
     // could reach this if variables are scaled and only functions are requested
     iterator_response.update_partial(0, optimizerInstance->numUserObjectiveFns,
 				     native_response, 0);
-    return;
   }
-
 }
 
 
@@ -378,19 +369,17 @@ void Optimizer::weighted_sum(const Response& full_response,
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Multiobjective transformation:\n";
 
-  const RealVector& full_fn_vals = full_response.function_values();
   if (reduced_asv[0] & 1) {
+    const RealVector& full_fn_vals = full_response.function_values();
     Real sum = 0.;
     if (multiobj_wts.empty()) {
       for (i=0; i<numUserObjectiveFns; i++)
 	sum += full_fn_vals[i];
       sum /= (Real)numUserObjectiveFns; // default wt = 1/n
     }
-    else {
+    else
       for (i=0; i<numUserObjectiveFns; i++)
 	sum += full_fn_vals[i] * multiobj_wts[i];
-
-    }
     reduced_response.function_value(sum, 0);    
     if (outputLevel > NORMAL_OUTPUT)
       Cout << "                     " << std::setw(write_precision+7) << sum
@@ -398,61 +387,55 @@ void Optimizer::weighted_sum(const Response& full_response,
   }
 
   // build new_fn_grads from full_fn_grads
-  const RealMatrix&  full_fn_grads  = full_response.function_gradients();
-  RealMatrix new_fn_grads = reduced_response.function_gradients();
-  if (new_fn_grads.numCols() != 0) { // gradients active
-    if (reduced_asv[0] & 2) {
-      if (outputLevel > NORMAL_OUTPUT)
-	Cout << " [ ";
-      for (j=0; j<numContinuousVars; j++) {
-        Real sum = 0.;
-	if (multiobj_wts.empty()) {
-	  for (i=0; i<numUserObjectiveFns; i++)
-	    sum += full_fn_grads[i][j];
-	  new_fn_grads[0][j] = sum / (Real)numUserObjectiveFns;
-	}
-	else {
-	  for (i=0; i<numUserObjectiveFns; i++)
-	    sum += full_fn_grads[i][j] * multiobj_wts[i];
-	  new_fn_grads[0][j] = sum;
-	}
-	if (outputLevel > NORMAL_OUTPUT)
-	  Cout << std::setw(write_precision+7) << sum << ' ';
+  if (reduced_asv[0] & 2) {
+    const RealMatrix& full_fn_grads = full_response.function_gradients();
+    RealVector new_fn_grad = reduced_response.function_gradient_view(0);
+    for (j=0; j<numContinuousVars; j++) {
+      Real sum = 0.;
+      if (multiobj_wts.empty()) {
+	for (i=0; i<numUserObjectiveFns; i++)
+	  sum += full_fn_grads[i][j];
+	new_fn_grad[j] = sum / (Real)numUserObjectiveFns;
       }
-      if (outputLevel > NORMAL_OUTPUT)
-	Cout << " ] obj_fn gradient\n";
+      else {
+	for (i=0; i<numUserObjectiveFns; i++)
+	  sum += full_fn_grads[i][j] * multiobj_wts[i];
+	new_fn_grad[j] = sum;
+      }
     }
-    reduced_response.function_gradients(new_fn_grads);
+    if (outputLevel > NORMAL_OUTPUT) {
+      write_col_vector_trans(Cout, 0, true, true, false,
+			     reduced_response.function_gradients());
+      Cout << " obj_fn gradient\n";
+    }
   }
 
   // build new_fn_hessians from full_fn_hessians
-  const RealSymMatrixArray& full_fn_hessians
-    = full_response.function_hessians();
-  RealSymMatrixArray new_fn_hessians = reduced_response.function_hessians();
-  if (new_fn_hessians.size()) { // hessians active
-    if (reduced_asv[0] & 4) {
-      for (j=0; j<numContinuousVars; j++) {
-        for (k=0; k<=j; k++) {
-          Real sum = 0.;
-	  if (multiobj_wts.empty()) {
-	    for (i=0; i<numUserObjectiveFns; i++)
-	      sum += full_fn_hessians[i](j,k);
-	    new_fn_hessians[0](j,k) = sum / (Real)numUserObjectiveFns;
-	  }
-	  else {
-	    for (i=0; i<numUserObjectiveFns; i++)
-	      sum += full_fn_hessians[i](j,k) * multiobj_wts[i];
-	    new_fn_hessians[0](j,k) = sum;
-	  }
+  if (reduced_asv[0] & 4) {
+    const RealSymMatrixArray& full_fn_hessians
+      = full_response.function_hessians();
+    RealSymMatrix new_fn_hessian = reduced_response.function_hessian_view(0);
+    for (j=0; j<numContinuousVars; j++) {
+      for (k=0; k<=j; k++) {
+	Real sum = 0.;
+	if (multiobj_wts.empty()) {
+	  for (i=0; i<numUserObjectiveFns; i++)
+	    sum += full_fn_hessians[i](j,k);
+	  new_fn_hessian(j,k) = sum / (Real)numUserObjectiveFns;
+	}
+	else {
+	  for (i=0; i<numUserObjectiveFns; i++)
+	    sum += full_fn_hessians[i](j,k) * multiobj_wts[i];
+	  new_fn_hessian(j,k) = sum;
 	}
       }
-      if (outputLevel > NORMAL_OUTPUT) {
-	write_data(Cout, new_fn_hessians[0], true, true, false);
- 	Cout << " obj_fn Hessian\n";
-      }
     }
-    reduced_response.function_hessians(new_fn_hessians);
+    if (outputLevel > NORMAL_OUTPUT) {
+      write_data(Cout, new_fn_hessian, true, true, false);
+      Cout << " obj_fn Hessian\n";
+    }
   }
+
   if (outputLevel > NORMAL_OUTPUT)
     Cout << std::endl;
 }
