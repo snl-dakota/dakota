@@ -588,80 +588,55 @@ algebraic_mappings(const Variables& vars, const ActiveSet& algebraic_set,
     nl_vars[i] = dak_a_c_vars[algebraicACVIndices[i]];
 
   // nl_vars -> algebraic_response
-  RealVector fn_vals(num_alg_fns);
-  RealMatrix fn_grads;
-  Real* grad = NULL;
-  if (grad_flag) {
-    fn_grads.shapeUninitialized(num_alg_vars, num_alg_fns);
-    fn_grads = 0.;
-    grad = new Real [num_alg_vars];
-  }
-  RealSymMatrixArray fn_hessians;
-  Real* hess = NULL;
-  int n2 = num_alg_vars*num_alg_vars;
-  if (hess_flag) {
-    fn_hessians.resize(num_alg_fns);
-    hess = new Real [n2];
-  }
+  algebraic_response.reset_inactive(); // zero inactive data
+  Real fn_val; RealVector fn_grad; RealSymMatrix fn_hess;
   fint err = 0;
   for (i=0; i<num_alg_fns; i++) {
     // nl_vars -> response fns via AMPL
     if (algebraic_asv[i] & 1) {
       if (algebraicFnTypes[i] > 0)
-	fn_vals[i] = objval(algebraicFnTypes[i]-1, nl_vars, &err);
+	fn_val = objval(algebraicFnTypes[i]-1, nl_vars, &err);
       else
-	fn_vals[i] = conival(-(algebraicFnTypes[i]+1), nl_vars, &err);
+	fn_val = conival(-1-algebraicFnTypes[i], nl_vars, &err);
       if (err) {
 	Cerr << "\nError: AMPL processing failure in objval().\n" << std::endl;
 	abort_handler(-1);
       }
+      algebraic_response.function_value(fn_val, i);
     }
     // nl_vars -> response grads via AMPL
     if (algebraic_asv[i] & 6) { // need grad for Hessian
+      fn_grad = algebraic_response.function_gradient_view(i);
       if (algebraicFnTypes[i] > 0)
-	objgrd(algebraicFnTypes[i]-1, nl_vars, grad, &err);
+	objgrd(algebraicFnTypes[i]-1, nl_vars, fn_grad.values(), &err);
       else
-	congrd(-(algebraicFnTypes[i]+1), nl_vars, grad, &err);
+	congrd(-1-algebraicFnTypes[i], nl_vars, fn_grad.values(), &err);
       if (err) {
 	Cerr << "\nError: AMPL processing failure in objgrad().\n" << std::endl;
 	abort_handler(-1);
       }
-      Teuchos::setCol( RealVector(Teuchos::View, grad, num_alg_vars),
-                       (int)i, fn_grads );
     }
     // nl_vars -> response Hessians via AMPL
     if (algebraic_asv[i] & 4) {
-      fn_hessians[i].reshape(num_alg_vars);
+      fn_hess = algebraic_response.function_hessian_view(i);
       // the fullhess calls must follow corresp call to objgrad/congrad
-      if (algebraicFnTypes[i] > 0) {
-	fullhes(hess, num_alg_vars, algebraicFnTypes[i]-1, NULL, NULL); 
-      }
+      if (algebraicFnTypes[i] > 0)
+	fullhes(fn_hess.values(), num_alg_vars, algebraicFnTypes[i]-1,
+		NULL, NULL);
       else {
 	algebraicConstraintWeights.assign(algebraicConstraintWeights.size(), 0);
-	algebraicConstraintWeights[-(algebraicFnTypes[i]+1)] = 1;
-	fullhes(hess, num_alg_vars, num_alg_vars, NULL, 
+	algebraicConstraintWeights[-1-algebraicFnTypes[i]] = 1;
+	fullhes(fn_hess.values(), num_alg_vars, num_alg_vars, NULL, 
 		&algebraicConstraintWeights[0]); 
       }
-      std::copy( hess, hess + n2, fn_hessians[i].values() );
     }
   }
-  algebraic_response.function_values(fn_vals);
-  if (grad_flag) {
-    algebraic_response.function_gradients(fn_grads);
-    delete [] grad;
-  }
-  if (hess_flag) {
-    algebraic_response.function_hessians(fn_hessians);
-    delete [] hess;
-  }
+  delete [] nl_vars;
   algebraic_response.function_labels(algebraicFnTags);
-
 #ifdef DEBUG
   Cout << ">>>> algebraic_response.fn_labels\n"
        << algebraic_response.function_labels() << std::endl;
 #endif // DEBUG
-
-  delete [] nl_vars;
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Algebraic mapping applied.\n";
@@ -685,37 +660,24 @@ response_mapping(const Response& algebraic_response,
       hess_flag = true;
   }
 
-  // core_response:
+  // core_response contributions to total_response:
 
-  RealVector total_fn_vals;
-  RealMatrix total_fn_grads;
-  RealSymMatrixArray total_fn_hessians;
+  total_response.reset_inactive();
   if (coreMappings) {
-    total_fn_vals = core_response.function_values();
-    if (grad_flag)
-      total_fn_grads = core_response.function_gradients();
-    if (hess_flag)
-      total_fn_hessians = core_response.function_hessians();
-    if (outputLevel == DEBUG_OUTPUT)
-      Cout << "core_response:\n" << core_response;
-  }
-  else {
-    total_fn_vals.resize(num_total_fns);
-    total_fn_vals = 0.;
-    if (grad_flag) {
-      total_fn_grads.shapeUninitialized(num_total_vars, num_total_fns);
-      total_fn_grads = 0.;
-    }
-    if (hess_flag) {
-      total_fn_hessians.resize(num_total_fns);
-      for (i=0; i<num_total_fns; i++) {
-	total_fn_hessians[i].reshape(num_total_vars);
-	total_fn_hessians[i] = 0.;
-      }
+    const ShortArray& core_asv = core_response.active_set_request_vector();
+    size_t num_core_fns = core_asv.size();
+    for (i=0; i<num_core_fns; ++i) {
+      if (core_asv[i] & 1)
+	total_response.function_value(core_response.function_value(i), i);
+      if (core_asv[i] & 2)
+	total_response.function_gradient(
+	  core_response.function_gradient_view(i), i);
+      if (core_asv[i] & 4)
+	total_response.function_hessian(core_response.function_hessian(i), i);
     }
   }
 
-  // algebraic_response:
+  // algebraic_response contributions to total_response:
 
   const ShortArray& algebraic_asv
     = algebraic_response.active_set_request_vector();
@@ -739,73 +701,70 @@ response_mapping(const Response& algebraic_response,
       algebraic_dvv_indices[i] = find_index(total_dvv, algebraicACVIds[i]);
       // Note: _NPOS return is handled below
   }
-
+  // augment total_response
   const RealVector& algebraic_fn_vals = algebraic_response.function_values();
   const RealMatrix& algebraic_fn_grads
     = algebraic_response.function_gradients();
   const RealSymMatrixArray& algebraic_fn_hessians
     = algebraic_response.function_hessians();
-  for (i=0; i<num_alg_fns; i++) {
+  RealVector total_fn_vals = total_response.function_values_view();
+  for (i=0; i<num_alg_fns; ++i) {
     size_t fn_index = algebraicFnIndices[i];
     if (algebraic_asv[i] & 1)
       total_fn_vals[fn_index] += algebraic_fn_vals[i];
     if (algebraic_asv[i] & 2) {
+      const Real* algebraic_fn_grad = algebraic_fn_grads[i];
+      RealVector total_fn_grad
+	= total_response.function_gradient_view(fn_index);
       for (j=0; j<num_alg_vars; j++) {
 	size_t dvv_index = algebraic_dvv_indices[j];
 	if (dvv_index != _NPOS)
-	  total_fn_grads(dvv_index,fn_index) += algebraic_fn_grads(j,i);
+	  total_fn_grad[dvv_index] += algebraic_fn_grad[j];
       }
     }
     if (algebraic_asv[i] & 4) {
-      for (j=0; j<num_alg_vars; j++) {
+      const RealSymMatrix& algebraic_fn_hess = algebraic_fn_hessians[i];
+      RealSymMatrix total_fn_hess
+	= total_response.function_hessian_view(fn_index);
+      for (j=0; j<num_alg_vars; ++j) {
 	size_t dvv_index_j = algebraic_dvv_indices[j];
 	if (dvv_index_j != _NPOS) {
-	  for (k=0; k<num_alg_vars; k++) {
+	  for (k=0; k<=j; ++k) {
 	    size_t dvv_index_k = algebraic_dvv_indices[k];
 	    if (dvv_index_k != _NPOS)
-	      total_fn_hessians[fn_index](dvv_index_j,dvv_index_k) +=
-		algebraic_fn_hessians[i](j,k);
+	      total_fn_hess(dvv_index_j,dvv_index_k) +=	algebraic_fn_hess(j,k);
 	  }
 	}
       }
     }
   }
 
-  // total_response:
+  // output response sets:
 
-  total_response.function_values(total_fn_vals);
-  if (grad_flag)
-    total_response.function_gradients(total_fn_grads);
-  if (hess_flag)
-    total_response.function_hessians(total_fn_hessians);
-
-  if (outputLevel == DEBUG_OUTPUT)
+  if (outputLevel == DEBUG_OUTPUT) {
+    if (coreMappings) Cout << "core_response:\n" << core_response;
     Cout << "algebraic_response:\n" << algebraic_response
 	 << "total_response:\n"     << total_response << '\n';
+  }
 }
 
 
-int Interface::
-algebraic_function_type(String functionTag) 
+int Interface::algebraic_function_type(String functionTag) 
 {
 #ifdef HAVE_AMPL
   size_t i;
-
-  for(i=0; i<n_obj; i++) {
+  for (i=0; i<n_obj; i++)
     if (functionTag.contains(obj_name(i)))
-      return (i+1);
-  }    
-
-  for(i=0; i<n_con; i++) {
+      return i+1;
+  for (i=0; i<n_con; i++)
     if (functionTag.contains(con_name(i)))
-      return (-(i+1));
-  }
+      return -(i+1);
 
   Cerr << "Error: No function type available for \'" << functionTag << "\' " 
        << "via algebraic_mappings interface." << std::endl;
   abort_handler(-1);
 #else
-  return (0);
+  return 0;
 #endif // HAVE_AMPL
 }
 

@@ -261,6 +261,8 @@ public:
   const Real& function_value(const size_t& i) const;
   /// return all function values
   const RealVector& function_values() const;
+  /// return all function values as a view
+  RealVector function_values_view();
   /// set a function value
   void function_value(const Real& function_val, const size_t& i);
   /// set all function values
@@ -270,12 +272,14 @@ public:
   const Real* function_gradient(const int& i) const;
   /// return the i-th function gradient as a SerialDenseVector
   /// Teuchos::View (shallow copy)
-  RealVector function_gradient_view(const int& i) const;
+  RealVector function_gradient_view(const int& i) const; // TO DO: retire const
   /// return the i-th function gradient as a SerialDenseVector
   /// Teuchos::Copy (deep copy)
   RealVector function_gradient_copy(const int& i) const;
   /// return all function gradients
   const RealMatrix& function_gradients() const;
+  /// return all function gradients as a view
+  RealMatrix function_gradients_view();
   /// set a function gradient
   void function_gradient(const RealVector& function_grad, const int& i);
   /// set all function gradients
@@ -285,10 +289,10 @@ public:
   const RealSymMatrix& function_hessian(const size_t& i) const;
   /// return the i-th function Hessian as a Teuchos::View (shallow copy)
   RealSymMatrix function_hessian_view(const size_t& i);
-  /// return the i-th function Hessian as a Teuchos::Copy (deep copy)
-  RealSymMatrix function_hessian_copy(const size_t& i) const;
   /// return all function Hessians
   const RealSymMatrixArray& function_hessians() const;
+  /// return all function Hessians as Teuchos::Views (shallow copies)
+  RealSymMatrixArray function_hessians_view();
   /// set a function Hessian
   void function_hessian(const RealSymMatrix& function_hessian, const size_t& i);
   /// set all function Hessians
@@ -387,6 +391,13 @@ inline const RealVector& Response::function_values() const
 { return responseRep->functionValues; }
 
 
+inline RealVector Response::function_values_view()
+{
+  return RealVector(Teuchos::View, responseRep->functionValues.values(),
+		    responseRep->functionValues.length());
+}
+
+
 inline void Response::function_value(const Real& function_val, const size_t& i)
 { responseRep->functionValues[i] = function_val; }
 
@@ -411,6 +422,14 @@ inline const RealMatrix& Response::function_gradients() const
 { return responseRep->functionGradients; }
 
 
+inline RealMatrix Response::function_gradients_view()
+{
+  return RealMatrix(Teuchos::View, responseRep->functionGradients,
+		    responseRep->functionGradients.numRows(),
+		    responseRep->functionGradients.numCols());
+}
+
+
 inline void Response::
 function_gradient(const RealVector& function_grad, const int& i)
 { Teuchos::setCol(function_grad, i, responseRep->functionGradients); }
@@ -426,20 +445,25 @@ inline const RealSymMatrix& Response::function_hessian(const size_t& i) const
 
 inline RealSymMatrix Response::function_hessian_view(const size_t& i)
 {
-  const RealSymMatrix& hess_i = responseRep->functionHessians[i];
-  return RealSymMatrix(Teuchos::View, hess_i, hess_i.numRows());
-}
-
-
-inline RealSymMatrix Response::function_hessian_copy(const size_t& i) const
-{
-  const RealSymMatrix& hess_i = responseRep->functionHessians[i];
-  return RealSymMatrix(Teuchos::Copy, hess_i, hess_i.numRows());
+  return RealSymMatrix(Teuchos::View, responseRep->functionHessians[i],
+		       responseRep->functionHessians[i].numRows());
 }
 
 
 inline const RealSymMatrixArray& Response::function_hessians() const
 { return responseRep->functionHessians; }
+
+
+inline RealSymMatrixArray Response::function_hessians_view()
+{
+  size_t i, num_hess = responseRep->functionHessians.size();
+  RealSymMatrixArray fn_hessians_view(num_hess);
+  for (i=0; i<num_hess; ++i)
+    fn_hessians_view[i]
+      = RealSymMatrix(Teuchos::View, responseRep->functionHessians[i],
+		      responseRep->functionHessians[i].numRows());
+  return fn_hessians_view;
+}
 
 
 inline void Response::
