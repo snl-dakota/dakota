@@ -373,7 +373,7 @@ private:
   //
   //- Heading: Private data members
   //
- 
+
   /// pointer to the body (handle-body idiom)
   ResponseRep* responseRep;
 };

@@ -799,16 +799,11 @@ void Minimizer::response_modify_n2s(const Variables& native_vars,
   RealVector cdv;
 
   // unroll the unscaled (native/user-space) response
-  const ActiveSet&  set       = native_response.active_set();
-  const ShortArray& asv       = native_response.active_set_request_vector();
-  const SizetArray&  dvv      = native_response.active_set_derivative_vector();
-  const size_t num_deriv_vars = dvv.size(); 
+  const ActiveSet&  set = native_response.active_set();
+  const ShortArray& asv = set.request_vector();
+  const SizetArray& dvv = set.derivative_vector();
+  size_t num_deriv_vars = dvv.size(); 
  
-  const RealVector&      fn_vals     = native_response.function_values();
-  const RealMatrix&      fn_grads    = native_response.function_gradients();
-  const RealSymMatrixArray& fn_hessians = native_response.function_hessians();
-  const StringArray&     new_labels  = recast_response.function_labels();
-
   if (dvv == native_vars.continuous_variable_ids()) {
     var_ids.resize(boost::extents[native_vars.cv()]);
     var_ids = native_vars.continuous_variable_ids();
@@ -836,120 +831,126 @@ void Minimizer::response_modify_n2s(const Variables& native_vars,
   // there's a tradeoff here between flops and logic simplicity
   // (responseScaleOffsets may be nonzero for constraints)
   // iterate over components of ASV-requested functions and scale when necessary
-  Real tmp_fn;
-  for (ri=0, i=native_offset; ri<num_responses; ri++,i++)
+  Real recast_val;
+  const RealVector&  native_vals   = native_response.function_values();
+  const StringArray& recast_labels = recast_response.function_labels();
+  for (ri=0, i=native_offset; ri<num_responses; ++ri, ++i)
     if (asv[i] & 1) {
       // SCALE_LOG case here includes case of SCALE_LOG && SCALE_VALUE
       if (responseScaleTypes[i] & SCALE_LOG)
-	tmp_fn = log( (fn_vals[i] - responseScaleOffsets[i]) / 
-			      responseScaleMultipliers[i] )/SCALING_LN_LOGBASE; 
+	recast_val = log( (native_vals[i] - responseScaleOffsets[i]) / 
+	  responseScaleMultipliers[i] )/SCALING_LN_LOGBASE; 
       else if (responseScaleTypes[i] & SCALE_VALUE)
-	tmp_fn = (fn_vals[i] - responseScaleOffsets[i]) / 
+	recast_val = (native_vals[i] - responseScaleOffsets[i]) / 
 	  responseScaleMultipliers[i]; 
       else
-	tmp_fn = fn_vals[i];
-      recast_response.function_value(tmp_fn,recast_offset+ri);
+	recast_val = native_vals[i];
+      recast_response.function_value(recast_val, recast_offset+ri);
       if (outputLevel > NORMAL_OUTPUT)
 	Cout << "                     " << std::setw(write_precision+7) 
-	     << tmp_fn << ' ' << new_labels[recast_offset+ri] << '\n';
+	     << recast_val << ' ' << recast_labels[recast_offset+ri] << '\n';
     }
 
   // scale gradients
-  for (ri=0, i=native_offset; ri<num_responses; ri++,i++)
+  const RealMatrix& native_grads = native_response.function_gradients();
+  for (ri=0, i=native_offset; ri<num_responses; ++ri, ++i)
     if (asv[i] & 2) {
 
       Real fn_divisor;
       if (responseScaleTypes[i] & SCALE_LOG)
-	fn_divisor = (fn_vals[i] - responseScaleOffsets[i])*SCALING_LN_LOGBASE;
+	fn_divisor = (native_vals[i] - responseScaleOffsets[i]) *
+	  SCALING_LN_LOGBASE;
       else if (responseScaleTypes[i] & SCALE_VALUE)
 	fn_divisor = responseScaleMultipliers[i];
       else
-	fn_divisor = 1.0;
+	fn_divisor = 1.;
 
-      RealVector tmp_grad( Teuchos::Copy, (Real*)fn_grads[i],
-                                fn_grads.numRows() );
-      for (j=0; j<num_deriv_vars; j++) {
+      RealVector recast_grad
+	= recast_response.function_gradient_view(recast_offset+ri);
+      copy_data(native_grads[i], (int)num_deriv_vars, recast_grad);
+      for (j=0; j<num_deriv_vars; ++j) {
 	size_t xj_index = find_index(var_ids, dvv[j]);
 
 	// first multiply by d(f_scaled)/d(f) based on scaling type
-	tmp_grad[xj_index] /= fn_divisor; 
+	recast_grad[xj_index] /= fn_divisor;
 
 	// now multiply by d(x)/d(x_scaled)
 	if (cvScaleTypes[xj_index] & SCALE_LOG)
-	  tmp_grad[xj_index] *= 
+	  recast_grad[xj_index] *= 
 	    (cdv[xj_index] - cvScaleOffsets[xj_index]) * SCALING_LN_LOGBASE;
 	else if (cvScaleTypes[xj_index] & SCALE_VALUE)
-	  tmp_grad[xj_index] *= cvScaleMultipliers[xj_index];
-
+	  recast_grad[xj_index] *= cvScaleMultipliers[xj_index];
       }
-      recast_response.function_gradient(tmp_grad,recast_offset+ri);
       if (outputLevel > NORMAL_OUTPUT) {
 	write_col_vector_trans(Cout, recast_offset+ri,
           true, true, false, recast_response.function_gradients());
-	Cout << new_labels[recast_offset+ri] << " gradient\n";
+	Cout << recast_labels[recast_offset+ri] << " gradient\n";
       }
     }
   
   // scale hessians
-  for (ri=0, i=native_offset; ri<num_responses; ri++,i++)
+  const RealSymMatrixArray& native_hessians
+    = native_response.function_hessians();
+  for (ri=0, i=native_offset; ri<num_responses; ++ri, ++i)
     if (asv[i] & 4) {
-      Real offset_fn = 1.0;
+      RealSymMatrix recast_hess
+	= recast_response.function_hessian_view(recast_offset+ri);
+      recast_hess.assign(native_hessians[i]);
+
+      Real offset_fn = 1.;
       if (responseScaleTypes[i] & SCALE_LOG)
-	offset_fn = fn_vals[i] - responseScaleOffsets[i];
-      RealSymMatrix tmp_hess = fn_hessians[i];
-      for (j=0; j<num_deriv_vars; j++) {
+	offset_fn = native_vals[i] - responseScaleOffsets[i];
+      for (j=0; j<num_deriv_vars; ++j) {
 	size_t xj_index = find_index(var_ids, dvv[j]);
-	for (k=0; k<num_deriv_vars; k++) {
+	for (k=0; k<=j; ++k) {
 	  size_t xk_index = find_index(var_ids, dvv[k]);
 
 	  // first multiply by d(f_scaled)/d(f) based on scaling type
 	  if (responseScaleTypes[i] & SCALE_LOG) {
 
-	    tmp_hess(xj_index,xk_index) -= 
-	      fn_grads(xj_index,i)*fn_grads(xk_index,i) / offset_fn;
+	    recast_hess(xj_index,xk_index) -= 
+	      native_grads(xj_index,i)*native_grads(xk_index,i) / offset_fn;
 
-	    tmp_hess(xj_index,xk_index) /= offset_fn*SCALING_LN_LOGBASE;
+	    recast_hess(xj_index,xk_index) /= offset_fn*SCALING_LN_LOGBASE;
 
 	  }
 	  else if (responseScaleTypes[i] & SCALE_VALUE)
-	    tmp_hess(xj_index,xk_index) /= responseScaleMultipliers[i];
+	    recast_hess(xj_index,xk_index) /= responseScaleMultipliers[i];
 
 	  // now multiply by d(x)/d(x_scaled) for j,k
 	  if (cvScaleTypes[xj_index] & SCALE_LOG)
-	    tmp_hess(xj_index,xk_index) *= 
+	    recast_hess(xj_index,xk_index) *= 
 	      (cdv[xj_index] - cvScaleOffsets[xj_index]) * SCALING_LN_LOGBASE;
 	  else if (cvScaleTypes[xj_index] & SCALE_VALUE)
-	    tmp_hess(xj_index,xk_index) *= cvScaleMultipliers[xj_index];
+	    recast_hess(xj_index,xk_index) *= cvScaleMultipliers[xj_index];
 
 	  if (cvScaleTypes[xk_index] & SCALE_LOG)
-	    tmp_hess(xj_index,xk_index) *= 
+	    recast_hess(xj_index,xk_index) *= 
 	      (cdv[xk_index] - cvScaleOffsets[xk_index]) * SCALING_LN_LOGBASE;
 	  else if (cvScaleTypes[xk_index] & SCALE_VALUE)
-	    tmp_hess(xj_index,xk_index) *= cvScaleMultipliers[xk_index];
+	    recast_hess(xj_index,xk_index) *= cvScaleMultipliers[xk_index];
 
 	  // need gradient term only for diagonal entries
 	  if (xj_index == xk_index && cvScaleTypes[xj_index] & SCALE_LOG)
 	    if (responseScaleTypes[i] & SCALE_LOG)
-	      tmp_hess(xj_index,xk_index) += fn_grads(xj_index,i)*
+	      recast_hess(xj_index,xk_index) += native_grads(xj_index,i)*
 		(cdv[xj_index] - cvScaleOffsets[xj_index]) *
 		SCALING_LN_LOGBASE / offset_fn;
 	    else
-	      tmp_hess(xj_index,xk_index) += fn_grads(xj_index,i)*
+	      recast_hess(xj_index,xk_index) += native_grads(xj_index,i)*
 		(cdv[xj_index] - cvScaleOffsets[xj_index]) * SCALING_LN_LOGBASE
 		* SCALING_LN_LOGBASE / responseScaleMultipliers[i];
 
 	}
       }
-      recast_response.function_hessian(tmp_hess,recast_offset+ri);
       if (outputLevel > NORMAL_OUTPUT) {
-	write_data(Cout, tmp_hess, true, true, false);
-	Cout << new_labels[recast_offset+ri] << " Hessian\n";
+	write_data(Cout, recast_hess, true, true, false);
+	Cout << recast_labels[recast_offset+ri] << " Hessian\n";
       }
     }
   
   if (outputLevel > NORMAL_OUTPUT)
     Cout << std::endl;
-
 }
 
 /** scaling response mapping: modifies response from scaled (iterator) to 
@@ -968,16 +969,11 @@ void Minimizer::response_modify_s2n(const Variables& native_vars,
   RealVector cdv;
 
   // unroll the unscaled (native/user-space) response
-  const ActiveSet&  set       = scaled_response.active_set();
-  const ShortArray& asv       = scaled_response.active_set_request_vector();
-  const SizetArray&  dvv      = scaled_response.active_set_derivative_vector();
-  const size_t num_deriv_vars = dvv.size(); 
+  const ActiveSet&  set = scaled_response.active_set();
+  const ShortArray& asv = set.request_vector();
+  const SizetArray& dvv = set.derivative_vector();
+  size_t num_deriv_vars = dvv.size(); 
  
-  const RealVector&      fn_vals     = scaled_response.function_values();
-  const RealMatrix&      fn_grads    = scaled_response.function_gradients();
-  const RealSymMatrixArray& fn_hessians = scaled_response.function_hessians();
-  const StringArray&     new_labels  = native_response.function_labels();
-
   if (dvv == native_vars.continuous_variable_ids()) {
     var_ids.resize(boost::extents[native_vars.cv()]);
     var_ids = native_vars.continuous_variable_ids();
@@ -1005,124 +1001,129 @@ void Minimizer::response_modify_s2n(const Variables& native_vars,
   // there's a tradeoff here between flops and logic simplicity
   // (responseScaleOffsets may be nonzero for constraints)
   // iterate over components of ASV-requested functions and scale when necessary
-  Real tmp_fn;
-  for (ri=0, i=scaled_offset; ri<num_responses; ri++,i++)
+  Real native_val;
+  const RealVector&  scaled_vals   = scaled_response.function_values();
+  const StringArray& native_labels = native_response.function_labels();
+  for (ri=0, i=scaled_offset; ri<num_responses; ++ri, ++i)
     if (asv[i] & 1) {
       // SCALE_LOG case here includes case of SCALE_LOG && SCALE_VALUE
       if (responseScaleTypes[i] & SCALE_LOG)
-	tmp_fn = pow(SCALING_LOGBASE, fn_vals[i])*responseScaleMultipliers[i] + 
-	  responseScaleOffsets[i];
+	native_val = pow(SCALING_LOGBASE, scaled_vals[i]) *
+	  responseScaleMultipliers[i] + responseScaleOffsets[i];
  
       else if (responseScaleTypes[i] & SCALE_VALUE)
-	tmp_fn = fn_vals[i]*responseScaleMultipliers[i] + 
+	native_val = scaled_vals[i]*responseScaleMultipliers[i] + 
 	  responseScaleOffsets[i];
       else
-	tmp_fn = fn_vals[i];
-      native_response.function_value(tmp_fn,native_offset+ri);
+	native_val = scaled_vals[i];
+      native_response.function_value(native_val, native_offset+ri);
       if (outputLevel > NORMAL_OUTPUT)
 	Cout << "                     " << std::setw(write_precision+7) 
-	     << tmp_fn << ' ' << new_labels[native_offset+ri] << '\n';
+	     << native_val << ' ' << native_labels[native_offset+ri] << '\n';
     }
 
   // scale gradients
   Real df_dfscl;
-  for (ri=0, i=scaled_offset; ri<num_responses; ri++,i++)
+  const RealMatrix& scaled_grads = scaled_response.function_gradients();
+  for (ri=0, i=scaled_offset; ri<num_responses; ++ri, ++i)
     if (asv[i] & 2) {
 
       if (responseScaleTypes[i] & SCALE_LOG)
-	df_dfscl = pow(SCALING_LOGBASE, fn_vals[i]) * SCALING_LN_LOGBASE *
+	df_dfscl = pow(SCALING_LOGBASE, scaled_vals[i]) * SCALING_LN_LOGBASE *
 	  responseScaleMultipliers[i];	 
       else if (responseScaleTypes[i] & SCALE_VALUE)
 	df_dfscl = responseScaleMultipliers[i];
       else
-	df_dfscl = 1.0;
+	df_dfscl = 1.;
 
-      RealVector tmp_grad( Teuchos::Copy, (Real*)fn_grads[i],
-                                fn_grads.numRows() );
+      RealVector native_grad
+	= native_response.function_gradient_view(native_offset+ri);
+      copy_data(scaled_grads[i], (int)num_deriv_vars, native_grad);
       for (j=0; j<num_deriv_vars; j++) {
 	size_t xj_index = find_index(var_ids, dvv[j]);
 
 	// first multiply by d(f)/d(f_scaled) based on scaling type
-	tmp_grad[xj_index] *= df_dfscl; 
+	native_grad[xj_index] *= df_dfscl; 
 
 	// now multiply by d(x_scaled)/d(x)
 	if (cvScaleTypes[xj_index] & SCALE_LOG)
-	  tmp_grad[xj_index] /= (cdv[xj_index] - cvScaleOffsets[xj_index]) *
+	  native_grad[xj_index] /= (cdv[xj_index] - cvScaleOffsets[xj_index]) *
 	    SCALING_LN_LOGBASE;
 	else if (cvScaleTypes[xj_index] & SCALE_VALUE)
-	  tmp_grad[xj_index] /= cvScaleMultipliers[xj_index];
-
+	  native_grad[xj_index] /= cvScaleMultipliers[xj_index];
       }
-      native_response.function_gradient(tmp_grad,native_offset+ri);
       if (outputLevel > NORMAL_OUTPUT) {
 	write_col_vector_trans(Cout, native_offset+ri,
           true, true, false, native_response.function_gradients());
-	Cout << new_labels[native_offset+ri] << " gradient\n";
+	Cout << native_labels[native_offset+ri] << " gradient\n";
       }
     }
   
   // scale hessians
-  for (ri=0, i=scaled_offset; ri<num_responses; ri++,i++)
+  const RealSymMatrixArray& scaled_hessians
+    = scaled_response.function_hessians();
+  for (ri=0, i=scaled_offset; ri<num_responses; ++ri, ++i)
     if (asv[i] & 4) {
  
      if (responseScaleTypes[i] & SCALE_LOG)
-	df_dfscl = pow(SCALING_LOGBASE, fn_vals[i]) * SCALING_LN_LOGBASE *
+	df_dfscl = pow(SCALING_LOGBASE, scaled_vals[i]) * SCALING_LN_LOGBASE *
 	  responseScaleMultipliers[i];
       else if (responseScaleTypes[i] & SCALE_VALUE)
 	df_dfscl = responseScaleMultipliers[i];
       else
-	df_dfscl = 1.0;
+	df_dfscl = 1.;
 
-      RealSymMatrix tmp_hess = fn_hessians[i];
-      for (j=0; j<num_deriv_vars; j++) {
+      RealSymMatrix native_hess
+	= native_response.function_hessian_view(native_offset+ri);
+      native_hess.assign(scaled_hessians[i]);
+      for (j=0; j<num_deriv_vars; ++j) {
 	size_t xj_index = find_index(var_ids, dvv[j]);
-	for (k=0; k<num_deriv_vars; k++) {
+	for (k=0; k<=j; ++k) {
 	  size_t xk_index = find_index(var_ids, dvv[k]);
 	  
 	  // first multiply by d(f_scaled)/d(f) based on scaling type
 
 	  if (responseScaleTypes[i] & SCALE_LOG) {
 
-	    tmp_hess(xj_index,xk_index) += 
-	      fn_grads(xj_index,i)*fn_grads(xk_index,i) * SCALING_LN_LOGBASE; 
+	    native_hess(xj_index,xk_index) += scaled_grads(xj_index,i) *
+	      scaled_grads(xk_index,i) * SCALING_LN_LOGBASE; 
 
-	    tmp_hess(xj_index,xk_index) *= df_dfscl; 
+	    native_hess(xj_index,xk_index) *= df_dfscl; 
 
 	  }
 	  else if (responseScaleTypes[i] & SCALE_VALUE)
-	    tmp_hess(xj_index,xk_index) *= df_dfscl;
+	    native_hess(xj_index,xk_index) *= df_dfscl;
 
 	  // now multiply by d(x_scaled)/d(x) for j,k
 	  if (cvScaleTypes[xj_index] & SCALE_LOG)
-	    tmp_hess(xj_index,xk_index) /= 
+	    native_hess(xj_index,xk_index) /= 
 	      (cdv[xj_index] - cvScaleOffsets[xj_index]) * SCALING_LN_LOGBASE;
 	  else if (cvScaleTypes[xj_index] & SCALE_VALUE)
-	    tmp_hess(xj_index,xk_index) /= cvScaleMultipliers[xj_index];
+	    native_hess(xj_index,xk_index) /= cvScaleMultipliers[xj_index];
 
 	  if (cvScaleTypes[xk_index] & SCALE_LOG)
-	    tmp_hess(xj_index,xk_index) /= 
+	    native_hess(xj_index,xk_index) /= 
 	      (cdv[xk_index] - cvScaleOffsets[xk_index]) * SCALING_LN_LOGBASE;
 	  else if (cvScaleTypes[xk_index] & SCALE_VALUE)
-	    tmp_hess(xj_index,xk_index) /= cvScaleMultipliers[xk_index];
+	    native_hess(xj_index,xk_index) /= cvScaleMultipliers[xk_index];
 
 	  // need gradient term only for diagonal entries
 	  if (xj_index == xk_index && cvScaleTypes[xj_index] & SCALE_LOG)
-	    tmp_hess(xj_index,xk_index) -= df_dfscl * fn_grads(xj_index,i) /
+	    native_hess(xj_index,xk_index) -=
+	      df_dfscl * scaled_grads(xj_index,i) /
 	      (cdv[xj_index] - cvScaleOffsets[xj_index]) * 
 	      (cdv[xj_index] - cvScaleOffsets[xj_index]) * SCALING_LN_LOGBASE;
 
 	}
       }
-      native_response.function_hessian(tmp_hess,native_offset+ri);
       if (outputLevel > NORMAL_OUTPUT) {
-	write_data(Cout, tmp_hess, true, true, false);
-	Cout << new_labels[native_offset+ri] << " Hessian\n";
+	write_data(Cout, native_hess, true, true, false);
+	Cout << native_labels[native_offset+ri] << " Hessian\n";
       }
     }
   
   if (outputLevel > NORMAL_OUTPUT)
     Cout << std::endl;
-
 }
 
 

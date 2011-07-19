@@ -74,10 +74,10 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 	= problem_db.get_rdv("responses.nonlinear_equality_targets");
       bool warning_flag = false;
       size_t i;
-      for (i=0; i<numOptInterfIneqCon; i++)
+      for (i=0; i<numOptInterfIneqCon; ++i)
 	if ( interf_ineq_l_bnds[i] > -DBL_MAX || interf_ineq_u_bnds[i] != 0.0 )
 	  warning_flag = true;
-      for (i=0; i<numOptInterfEqCon; i++)
+      for (i=0; i<numOptInterfEqCon; ++i)
 	if ( interf_eq_targets[i] != 0.0 )
 	  warning_flag = true;
       if (warning_flag)
@@ -150,7 +150,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   String empty_str;
 
   // Map ACTIVE CONTINUOUS VARIABLES from currentVariables
-  for (i=0; i<num_curr_cv; i++) {
+  for (i=0; i<num_curr_cv; ++i) {
     curr_i = cv_index_map(i);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
@@ -196,7 +196,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   }
 
   // Map ACTIVE DISCRETE INTEGER VARIABLES from currentVariables
-  for (i=0; i<num_curr_div; i++) {
+  for (i=0; i<num_curr_div; ++i) {
     curr_i = div_index_map(i);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
@@ -242,7 +242,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   }
 
   // Map ACTIVE DISCRETE REAL VARIABLES from currentVariables
-  for (i=0; i<num_curr_drv; i++) {
+  for (i=0; i<num_curr_drv; ++i) {
     curr_i = drv_index_map(i);
     const String& map1
       = (num_var_map_1) ? primary_var_mapping[curr_i] : empty_str;
@@ -308,7 +308,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
     prev_adr_type = USHRT_MAX;
 
   // Map COMPLEMENT CONTINUOUS VARIABLES from currentVariables
-  for (i=0; i<num_curr_ccv; i++) {
+  for (i=0; i<num_curr_ccv; ++i) {
     curr_i = ccv_index_map(i);
     // Can't use label matching, since subModel labels may not be updated
     // until runtime.  index() returns the _first_ instance of the type.
@@ -336,7 +336,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   }
 
   // Map COMPLEMENT DISCRETE INTEGER VARIABLES from currentVariables
-  for (i=0; i<num_curr_cdiv; i++) {
+  for (i=0; i<num_curr_cdiv; ++i) {
     curr_i = cdiv_index_map(i);
     // Can't use label matching, since subModel labels may not be updated
     // until runtime.  index() returns the _first_ instance of the type.
@@ -364,7 +364,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   }
 
   // Map COMPLEMENT DISCRETE REAL VARIABLES from currentVariables
-  for (i=0; i<num_curr_cdrv; i++) {
+  for (i=0; i<num_curr_cdrv; ++i) {
     curr_i = cdrv_index_map(i);
     // Can't use label matching, since subModel labels may not be updated
     // until runtime.  index() returns the _first_ instance of the type.
@@ -1073,12 +1073,12 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
   opt_interface_map = false;
   size_t num_opt_interf_fns = numOptInterfPrimary+num_opt_interf_con;
   ShortArray opt_interface_asv(num_opt_interf_fns);
-  for (i=0; i<numOptInterfPrimary; i++)
+  for (i=0; i<numOptInterfPrimary; ++i)
     opt_interface_asv[i] = mapped_asv[i];
   // num_opt_interf_con has 1-to-1 correspondence with different offsets
-  for (i=0; i<num_opt_interf_con; i++)
+  for (i=0; i<num_opt_interf_con; ++i)
     opt_interface_asv[i+numOptInterfPrimary] = mapped_asv[i+num_mapped_primary];
-  for (i=0; i<num_opt_interf_fns; i++)
+  for (i=0; i<num_opt_interf_fns; ++i)
     if (opt_interface_asv[i])
       { opt_interface_map = true; break; }
   if (opt_interface_map)
@@ -1209,11 +1209,8 @@ void NestedModel::response_mapping(const Response& opt_interface_response,
   // mapped data initialization
   const ShortArray& mapped_asv = mapped_response.active_set_request_vector();
   const SizetArray& mapped_dvv = mapped_response.active_set_derivative_vector();
-  size_t i, j, k, l, index, num_mapped_fns = mapped_asv.size(),
+  size_t i, j, k, l, m_index, oi_index, num_mapped_fns = mapped_asv.size(),
     num_mapped_deriv_vars = mapped_dvv.size();
-  RealVector      mapped_fn_vals(num_mapped_fns);
-  RealMatrix      mapped_fn_grads;
-  RealSymMatrixArray mapped_fn_hessians;
   bool grad_flag = false, hess_flag = false;
   for (i=0; i<num_mapped_fns; ++i) {
     if (mapped_asv[i] & 2)
@@ -1234,49 +1231,15 @@ void NestedModel::response_mapping(const Response& opt_interface_response,
          << "response_mapping()." << std::endl;
     abort_handler(-1);
   }
-  if (grad_flag) {
-    mapped_fn_grads.shapeUninitialized(num_mapped_deriv_vars, num_mapped_fns);
-    mapped_fn_grads = 0.;
-  }
-  if (hess_flag) {
-    mapped_fn_hessians.resize(num_mapped_fns);
-    for (i=0; i<num_mapped_fns; ++i) {
-      mapped_fn_hessians[i].reshape(num_mapped_deriv_vars);
-      mapped_fn_hessians[i]=0.;
-    }
-  }
-
-  RealVector      empty_rv;
-  RealMatrix      empty_rm;
-  RealSymMatrixArray empty_rma;
-
-  // interface data extraction
-  //opt_interface_asv = opt_interface_response.active_set_request_vector();
-  const RealVector& opt_interface_fn_vals  = (!optInterfacePointer.empty())
-    ? opt_interface_response.function_values() : empty_rv;
-  const RealMatrix& opt_interface_fn_grads = (!optInterfacePointer.empty() &&
-    grad_flag) ? opt_interface_response.function_gradients() : empty_rm;
-  const RealSymMatrixArray& opt_interface_fn_hessians
-    = (!optInterfacePointer.empty() && hess_flag) ?
-    opt_interface_response.function_hessians() : empty_rma;
-
-  // subIterator data extraction
-  //const ShortArray& sub_iterator_asv
-  //  = sub_iterator_response.active_set_request_vector();
-  const RealVector& sub_iterator_fn_vals
-    = sub_iterator_response.function_values();
-  const RealMatrix& sub_iterator_fn_grads
-    = (grad_flag) ? sub_iterator_response.function_gradients() : empty_rm;
-  const RealSymMatrixArray& sub_iterator_fn_hessians
-    = (hess_flag) ? sub_iterator_response.function_hessians()  : empty_rma;
 
   // counter initialization & sanity checking
-  size_t num_opt_interf_fns = opt_interface_fn_vals.length(),
-    num_opt_interf_con      = numOptInterfIneqCon + numOptInterfEqCon,
+  size_t num_opt_interf_fns     = (optInterfacePointer.empty()) ? 0 :
+                                  opt_interface_response.num_functions(),
+    num_opt_interf_con          = numOptInterfIneqCon + numOptInterfEqCon,
     num_sub_iter_mapped_primary = primaryRespCoeffs.numRows(),
     num_sub_iter_mapped_con     = secondaryRespCoeffs.numRows(),
-    num_mapped_primary = std::max(numOptInterfPrimary, 
-				  num_sub_iter_mapped_primary);
+    num_mapped_primary          = std::max(numOptInterfPrimary, 
+					   num_sub_iter_mapped_primary);
   // NOTE: numSubIterFns != num_sub_iter_mapped_primary+num_sub_iter_mapped_con
   // since subIterator response is converted to sub_iter_mapped_primary/con
   // through the action of [W] and [A].
@@ -1291,44 +1254,55 @@ void NestedModel::response_mapping(const Response& opt_interface_response,
 
   // build mapped response data:
 
+  mapped_response.reset_inactive();
+  RealVector mapped_vals = mapped_response.function_values_view();
+  RealMatrix empty_rm; RealSymMatrixArray empty_rma;
+  const RealVector& sub_iterator_vals
+    = sub_iterator_response.function_values();
+  const RealMatrix& sub_iterator_grads
+    = (grad_flag) ? sub_iterator_response.function_gradients() : empty_rm;
+  const RealSymMatrixArray& sub_iterator_hessians
+    = (hess_flag) ? sub_iterator_response.function_hessians()  : empty_rma;
+
   // {f} + [W]{S}:
-  for (i=0; i<num_mapped_primary; i++) {
-    if (mapped_asv[i] & 1) { // mapped_fn_vals
-      if (i<numOptInterfPrimary)
-        mapped_fn_vals[i] = opt_interface_fn_vals[i]; // {f}
+  for (i=0; i<num_mapped_primary; ++i) {
+    if (mapped_asv[i] & 1) { // mapped_vals
+      mapped_vals[i] = (i<numOptInterfPrimary) ?
+	opt_interface_response.function_value(i) : 0.; // {f}
       if (i<num_sub_iter_mapped_primary) {
-        Real inner_prod = 0.;
-        for (j=0; j<numSubIterFns; j++)
-          inner_prod += primaryRespCoeffs(i,j)*sub_iterator_fn_vals[j];
-        mapped_fn_vals[i] += inner_prod;          // [W]{S}
+        Real& inner_prod = mapped_vals[i];
+        for (j=0; j<numSubIterFns; ++j)
+          inner_prod += primaryRespCoeffs(i,j)*sub_iterator_vals[j]; // [W]{S}
       }
     }
-    if (mapped_asv[i] & 2) { // mapped_fn_grads
-      if (i<numOptInterfPrimary) {
-        RealVector opt_intf_fn_gradi_col_vec( Teuchos::View,
-          (Real*)opt_interface_fn_grads[i], opt_interface_fn_grads.numRows() );
-        Teuchos::setCol(opt_intf_fn_gradi_col_vec, (int)i, mapped_fn_grads);
-      }
+    if (mapped_asv[i] & 2) { // mapped_grads
+      RealVector mapped_grad = mapped_response.function_gradient_view(i);
+      if (i<numOptInterfPrimary)
+	copy_data(opt_interface_response.function_gradient(i),
+		  (int)num_mapped_deriv_vars, mapped_grad); // {f}
+      else
+	mapped_grad = 0.;
       if (i<num_sub_iter_mapped_primary) {
-        for (j=0; j<num_mapped_deriv_vars; j++) {
-          Real inner_prod = 0.;
-          for (k=0; k<numSubIterFns; k++)
-            inner_prod += primaryRespCoeffs(i,k)*sub_iterator_fn_grads(j,k);
-          mapped_fn_grads(j,i) += inner_prod;
+        for (j=0; j<num_mapped_deriv_vars; ++j) {
+          Real& inner_prod = mapped_grad[j]; // [W]{S}
+          for (k=0; k<numSubIterFns; ++k)
+            inner_prod += primaryRespCoeffs(i,k)*sub_iterator_grads(j,k);
 	}
       }
     }
-    if (mapped_asv[i] & 4) { // mapped_fn_hessians
+    if (mapped_asv[i] & 4) { // mapped_hessians
+      RealSymMatrix mapped_hess = mapped_response.function_hessian_view(i);
       if (i<numOptInterfPrimary)
-        mapped_fn_hessians[i] = opt_interface_fn_hessians[i];
+        mapped_hess.assign(opt_interface_response.function_hessian(i)); // {f}
+      else
+	mapped_hess = 0.;
       if (i<num_sub_iter_mapped_primary) {
-        for (j=0; j<num_mapped_deriv_vars; j++) {
-          for (k=0; k<num_mapped_deriv_vars; k++) {
-            Real inner_prod = 0.;
-            for (l=0; l<numSubIterFns; l++)
+        for (j=0; j<num_mapped_deriv_vars; ++j) {
+          for (k=0; k<=j; ++k) {
+            Real& inner_prod = mapped_hess(j,k); // [W]{S}
+            for (l=0; l<numSubIterFns; ++l)
               inner_prod += primaryRespCoeffs(i,l)
-                         *  sub_iterator_fn_hessians[l](j,k);
-            mapped_fn_hessians[i](j,k) += inner_prod;
+                         *  sub_iterator_hessians[l](j,k);
 	  }
 	}
       }
@@ -1336,64 +1310,55 @@ void NestedModel::response_mapping(const Response& opt_interface_response,
   }
 
   // {g}:
-  for (i=0; i<num_opt_interf_con; i++) {
-    if (i<numOptInterfIneqCon) // {g_l} <= {g} <= {g_u}
-      index = i + num_mapped_primary;
-    else                       // {g} == {g_t}
-      index = i + num_mapped_primary + numOptInterfIneqCon
-            + numSubIterMappedIneqCon;
-    if (mapped_asv[index] & 1) // mapped_fn_vals
-      mapped_fn_vals[index] = opt_interface_fn_vals[i+numOptInterfPrimary];
-    if (mapped_asv[index] & 2) { // mapped_fn_grads
-      RealVector opt_intf_fn_gradi_col_vec( Teuchos::View,
-        (Real*)opt_interface_fn_grads[i+numOptInterfPrimary],
-        opt_interface_fn_grads.numRows() );
-      Teuchos::setCol(opt_intf_fn_gradi_col_vec, (int)index, mapped_fn_grads);
-    }
-    if (mapped_asv[index] & 4) // mapped_fn_hessians
-      mapped_fn_hessians[index]
-        = opt_interface_fn_hessians[i+numOptInterfPrimary];
+  for (i=0; i<num_opt_interf_con; ++i) {
+    oi_index = i+numOptInterfPrimary;
+    m_index  = i + num_mapped_primary; // {g_l} <= {g} <= {g_u}
+    if (i>=numOptInterfIneqCon)     // {g} == {g_t}
+      m_index += numOptInterfIneqCon + numSubIterMappedIneqCon;
+    if (mapped_asv[m_index] & 1) // mapped_vals
+      mapped_vals[m_index] = opt_interface_response.function_value(oi_index);
+    if (mapped_asv[m_index] & 2) // mapped_grads
+      mapped_response.function_gradient(
+	opt_interface_response.function_gradient_view(oi_index), m_index);
+    if (mapped_asv[m_index] & 4) // mapped_hessians
+      mapped_response.function_hessian(
+	opt_interface_response.function_hessian(oi_index), m_index);
   }
 
   // [A]{S}:
-  for (i=0; i<num_sub_iter_mapped_con; i++) {
+  for (i=0; i<num_sub_iter_mapped_con; ++i) {
+    m_index = i + num_mapped_primary;
     if (i<numSubIterMappedIneqCon) // {a_l} <= [A]{S} <= {a_u}
-      index = i + num_mapped_primary + numOptInterfIneqCon;
-    else                            // [A]{S} == {a_t}
-      index = i + num_mapped_primary + num_opt_interf_con
-            + numSubIterMappedIneqCon;
-    if (mapped_asv[index] & 1) { // mapped_fn_vals
-      Real inner_prod = 0.;
-      for (j=0; j<numSubIterFns; j++)
-        inner_prod += secondaryRespCoeffs(i,j)*sub_iterator_fn_vals[j];
-      mapped_fn_vals[index] = inner_prod;
+      m_index += numOptInterfIneqCon;
+    else                           // [A]{S} == {a_t}
+      m_index += num_opt_interf_con + numSubIterMappedIneqCon;
+    if (mapped_asv[m_index] & 1) { // mapped_vals
+      Real& inner_prod = mapped_vals[m_index]; inner_prod = 0.;
+      for (j=0; j<numSubIterFns; ++j)
+        inner_prod += secondaryRespCoeffs(i,j)*sub_iterator_vals[j];
     }
-    if (mapped_asv[index] & 2) { // mapped_fn_grads
-      for (j=0; j<num_mapped_deriv_vars; j++) {
-        Real inner_prod = 0.;
-        for (k=0; k<numSubIterFns; k++)
-          inner_prod += secondaryRespCoeffs(i,k)*sub_iterator_fn_grads(j,k);
-        mapped_fn_grads(j,index) = inner_prod;
+    if (mapped_asv[m_index] & 2) { // mapped_grads
+      RealVector mapped_grad = mapped_response.function_gradient_view(m_index);
+      for (j=0; j<num_mapped_deriv_vars; ++j) {
+        Real& inner_prod = mapped_grad[j]; inner_prod = 0.;
+        for (k=0; k<numSubIterFns; ++k)
+          inner_prod += secondaryRespCoeffs(i,k)*sub_iterator_grads(j,k);
       }
     }
-    if (mapped_asv[index] & 4) { // mapped_fn_hessians
-      for (j=0; j<num_mapped_deriv_vars; j++) {
-        for (k=0; k<num_mapped_deriv_vars; k++) {
-          Real inner_prod = 0.;
-          for (l=0; l<numSubIterFns; l++)
+    if (mapped_asv[m_index] & 4) { // mapped_hessians
+      RealSymMatrix mapped_hess
+        = mapped_response.function_hessian_view(m_index);
+      for (j=0; j<num_mapped_deriv_vars; ++j) {
+        for (k=0; k<=j; ++k) {
+          Real& inner_prod = mapped_hess(j,k); inner_prod = 0.;
+          for (l=0; l<numSubIterFns; ++l)
             inner_prod += secondaryRespCoeffs(i,l)
-	               *  sub_iterator_fn_hessians[l](j,k);
-          mapped_fn_hessians[index](j,k) = inner_prod;
+	               *  sub_iterator_hessians[l](j,k);
 	}
       }
     }
   }
 
-  mapped_response.function_values(mapped_fn_vals);
-  if (grad_flag)
-    mapped_response.function_gradients(mapped_fn_grads);
-  if (hess_flag)
-    mapped_response.function_hessians(mapped_fn_hessians);
   Cout << "\n---------------------------\nNestedModel total response:"
        << "\n---------------------------\n\nActive response data from nested "
        << "mapping:\n" << mapped_response << '\n';
@@ -1633,7 +1598,7 @@ void NestedModel::update_sub_model()
     = userDefinedConstraints.discrete_int_upper_bounds();
   StringMultiArrayConstView curr_di_labels
     = currentVariables.discrete_int_variable_labels();
-  for (i=0; i<num_curr_div; i++) {
+  for (i=0; i<num_curr_div; ++i) {
     curr_i = div_index_map(i);
     size_t pacvm_index = active1ACVarMapIndices[curr_i],
       padivm_index = active1ADIVarMapIndices[curr_i],
@@ -1679,7 +1644,7 @@ void NestedModel::update_sub_model()
     = userDefinedConstraints.discrete_real_upper_bounds();
   StringMultiArrayConstView curr_dr_labels
     = currentVariables.discrete_real_variable_labels();
-  for (i=0; i<num_curr_drv; i++) {
+  for (i=0; i<num_curr_drv; ++i) {
     curr_i = drv_index_map(i);
     size_t pacvm_index  = active1ACVarMapIndices[curr_i],
       padivm_index = active1ADIVarMapIndices[curr_i],
@@ -1750,7 +1715,7 @@ void NestedModel::update_sub_model()
     = userDefinedConstraints.all_discrete_int_upper_bounds();
   StringMultiArrayConstView curr_adi_labels
     = currentVariables.all_discrete_int_variable_labels();
-  for (i=0; i<num_curr_cdiv; i++) {
+  for (i=0; i<num_curr_cdiv; ++i) {
     curr_i = cdiv_index_map(i);
     size_t c1_index = complement1ADIVarMapIndices[i];
     subModel.all_discrete_int_variable(curr_adi_vars[curr_i], c1_index);
@@ -1772,7 +1737,7 @@ void NestedModel::update_sub_model()
     = userDefinedConstraints.all_discrete_real_upper_bounds();
   StringMultiArrayConstView curr_adr_labels
     = currentVariables.all_discrete_real_variable_labels();
-  for (i=0; i<num_curr_cdrv; i++) {
+  for (i=0; i<num_curr_cdrv; ++i) {
     curr_i = cdrv_index_map(i);
     size_t c1_index = complement1ADRVarMapIndices[i];
     subModel.all_discrete_real_variable(curr_adr_vars[curr_i], c1_index);

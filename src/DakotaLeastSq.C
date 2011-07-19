@@ -222,7 +222,6 @@ primary_resp_recast(const Variables& native_vars,
 		    const Response& native_response,
 		    Response& iterator_response)
 {
-
   if (leastSqInstance->outputLevel > NORMAL_OUTPUT) {
     Cout << "\n-----------------------------------";
     Cout << "\nPost-processing Function Evaluation";
@@ -291,11 +290,6 @@ primary_resp_recast(const Variables& native_vars,
     const SizetArray& dvv = iterator_response.active_set_derivative_vector();
     const size_t num_deriv_vars = dvv.size(); 
 
-    const RealVector& fn_vals     = iterator_response.function_values();
-    const RealMatrix& fn_grads    = iterator_response.function_gradients();
-    const RealSymMatrixArray& fn_hessians
-      = iterator_response.function_hessians();
-
     if (dvv == native_vars.continuous_variable_ids()) {
       var_ids.resize(boost::extents[native_vars.cv()]);
       var_ids = native_vars.continuous_variable_ids();
@@ -309,40 +303,40 @@ primary_resp_recast(const Variables& native_vars,
       var_ids = native_vars.all_continuous_variable_ids();
     }
 
+    RealVector fn_vals = iterator_response.function_values_view();
     for (size_t i=0; i<leastSqInstance->numLeastSqTerms; i++) {
       // functions
       if (asv[i] & 1)
-	iterator_response.function_value(lsq_weights[i]*fn_vals[i],i);
+	fn_vals[i] *= lsq_weights[i];
       // gradients
       if (asv[i] & 2) {
-	RealVector tmp_grad( Teuchos::Copy, (Real*)fn_grads[i],
-                                  fn_grads.numRows() );
+	RealVector fn_grad = iterator_response.function_gradient_view(i);
 	for (j=0; j<num_deriv_vars; ++j) {
 	  size_t xj_index = find_index(var_ids, dvv[j]);
-	  tmp_grad[xj_index] *= lsq_weights[i]; 
+	  if (xj_index != _NPOS)
+	    fn_grad[xj_index] *= lsq_weights[i];
 	}
-	iterator_response.function_gradient(tmp_grad,i);
       }
       // hessians
       if (asv[i] & 4) {
-	RealSymMatrix tmp_hess = fn_hessians[i];
-	for (j=0; j<num_deriv_vars; j++) {
+	RealSymMatrix fn_hess = iterator_response.function_hessian_view(i);
+	for (j=0; j<num_deriv_vars; ++j) {
 	  size_t xj_index = find_index(var_ids, dvv[j]);
-	  for (k=0; k<num_deriv_vars; k++) {
-	    size_t xk_index = find_index(var_ids, dvv[k]);
-	    tmp_hess(xj_index,xk_index) *= lsq_weights[i]; 
+	  if (xj_index != _NPOS) {
+	    for (k=0; k<=j; ++k) {
+	      size_t xk_index = find_index(var_ids, dvv[k]);
+	      if (xk_index != _NPOS)
+		fn_hess(xj_index,xk_index) *= lsq_weights[i];
+	    }
 	  }
 	}
-	iterator_response.function_hessian(tmp_hess,i);
       }
     } // loop over least squares terms
 
     if (leastSqInstance->outputLevel > NORMAL_OUTPUT)
       Cout << "Least squares weighting transformation:\n" << iterator_response 
 	   << std::endl;
-
   }
-
 }
 
 
