@@ -356,10 +356,15 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   //for now return sum squares of residuals, need to add sigma
   // for now assume iid, constant sigma
   
+  //KEN:  If you want to assume all the values in the sigma file are constant, we can pull the 
+  //first one and use it in the likelihood:
+  //double sigma_likelihood = NonDQUESOInstand->yStdData[0];
+  //
   for (i=0; i<num_data_pts; i++){ 
   result = result+pow((fn_vals(0)-NonDQUESOInstance->yObsData[i]),2.0);
   }
-  result = (result/0.23)/9.0;
+  //result = (result/0.23)/9.0;
+  result = result/(2*sigma_likelihood);
   result = (result*(NonDQUESOInstance->likelihoodScale));
   result = -1.0*result;
   Cout << "likelihood is " << exp(result) << '\n';
