@@ -729,6 +729,10 @@ public:
   String rejectionType;
   /// the \c metropolis type specification in \ref MethodNonDBayes
   String metropolisType;
+  /// the \c proposal covariance scale factor in \ref MethodNonDBayes
+  Real proposalCovScale;
+  /// the \c likelihood scale factor in \ref MethodNonDBayes
+  Real likelihoodScale;
 
 
   // Parameter Study

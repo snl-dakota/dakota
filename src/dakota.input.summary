@@ -884,6 +884,8 @@ KEYWORD12 method
 	  [ x_obs_data_file STRING ]
 	  [ y_obs_data_file STRING ]
 	  [ y_std_data_file STRING ]
+	  [ proposal_covariance_scale REAL ]
+	  [ likelihood_scale REAL ]
 	  [ samples INTEGER ]
 	  [ seed INTEGER ]
 	  )

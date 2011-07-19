@@ -116,7 +116,7 @@ DataMethodRep::DataMethodRep():
   //expansionSampleType("lhs"), sampleType("lhs"),
   distributionType("cumulative"), responseLevelMappingType("probabilities"),
   emulatorSamples(0), emulatorType(NO_EMULATOR), rejectionType("delayed"),
-  metropolisType("hastings"),
+  metropolisType("hastings"),proposalCovScale(1.0),likelihoodScale(1.0),
   // Parameter Study
   numSteps(0),
   // Verification
@@ -215,7 +215,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << distributionType << responseLevelMappingType << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
     << xObsDataFile << yObsDataFile << yStdDataFile << allVarsFlag
-    << emulatorSamples << emulatorType << rejectionType << metropolisType;
+    << emulatorSamples << emulatorType << rejectionType << metropolisType
+    << proposalCovScale << likelihoodScale;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -316,7 +317,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> distributionType >> responseLevelMappingType >> responseLevels
     >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
     >> xObsDataFile >> yObsDataFile >> yStdDataFile >> allVarsFlag
-    >> emulatorSamples >> emulatorType >> rejectionType >> metropolisType;
+    >> emulatorSamples >> emulatorType >> rejectionType >> metropolisType
+    >> proposalCovScale >> likelihoodScale;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -417,7 +419,8 @@ void DataMethodRep::write(std::ostream& s) const
     << distributionType << responseLevelMappingType << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
     << xObsDataFile << yObsDataFile << yStdDataFile << allVarsFlag
-    << emulatorSamples << emulatorType << rejectionType << metropolisType;
+    << emulatorSamples << emulatorType << rejectionType << metropolisType
+    << proposalCovScale << likelihoodScale;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

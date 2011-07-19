@@ -42,7 +42,9 @@ NonDQUESOBayesCalibration::NonDQUESOBayesCalibration(Model& model):
   rejectionType(probDescDB.get_string("method.rejection")),
   metropolisType(probDescDB.get_string("method.metropolis")),
   yObsDataFile(probDescDB.get_string("method.y_obs_data_file")),
-  yStdDataFile(probDescDB.get_string("method.y_std_data_file"))
+  yStdDataFile(probDescDB.get_string("method.y_std_data_file")),
+  proposalCovScale(probDescDB.get_real("method.proposal_covariance_scale")),
+  likelihoodScale(probDescDB.get_real("method.likelihood_scale"))
 { }
 
 
@@ -279,7 +281,8 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     //paramInitials[i]=0.5;
     for (size_t j=0;j<numContinuousVars;j++) 
       proposalCovMatrix(i,j)=0.;
-    proposalCovMatrix(i,i)=(upper_bounds[i]-lower_bounds[i])/90.0;
+    //proposalCovMatrix(i,i)=(upper_bounds[i]-lower_bounds[i])/90.0;
+    proposalCovMatrix(i,i)=(upper_bounds[i]-lower_bounds[i])*proposalCovScale;
   }
   ip.solveWithBayesMetropolisHastings(calIpMhOptionsValues,
                                     paramInitials, &proposalCovMatrix);
@@ -357,6 +360,7 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   result = result+pow((fn_vals(0)-NonDQUESOInstance->yObsData[i]),2.0);
   }
   result = (result/0.23)/9.0;
+  result = (result*(NonDQUESOInstance->likelihoodScale));
   result = -1.0*result;
   Cout << "likelihood is " << exp(result) << '\n';
   return result;

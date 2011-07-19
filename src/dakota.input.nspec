@@ -581,6 +581,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      [ x_obs_data_file STRING {N_mdm(str,xObsDataFile)} ]
 	      [ y_obs_data_file STRING {N_mdm(str,yObsDataFile)} ]
 	      [ y_std_data_file STRING {N_mdm(str,yStdDataFile)} ]
+              [ proposal_covariance_scale REAL {N_mdm(Real,proposalCovScale)} ]
+              [ likelihood_scale REAL {N_mdm(Real,likelihoodScale)} ]
 	      )
 	    |
 	    ( dace {N_mdm(lit,methodName_dace)}

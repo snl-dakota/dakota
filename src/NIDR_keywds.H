@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 889 distinct keywords (plus 103 aliases) **/
+/** 891 distinct keywords (plus 103 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -138,12 +138,14 @@ static KeyWord
 		{"mt19937",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_mt19937)},
 		{"rnum2",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_rnum2)}
 		},
-	kw_23[12] = {
+	kw_23[14] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{"emulator",8,3,2,0,kw_19},
 		{"gpmsa",8,0,1,1,0,0.,0.,0,N_mdm(lit,subMethodName_gpmsa)},
+		{"likelihood_scale",10,0,11,0,0,0.,0.,0,N_mdm(Real,likelihoodScale)},
 		{"metropolis",8,2,4,0,kw_20},
+		{"proposal_covariance_scale",10,0,10,0,0,0.,0.,0,N_mdm(Real,proposalCovScale)},
 		{"queso",8,0,1,1,0,0.,0.,0,N_mdm(lit,subMethodName_queso)},
 		{"rejection",8,2,3,0,kw_21},
 		{"rng",8,2,6,0,kw_22},
@@ -917,7 +919,7 @@ static KeyWord
 		},
 	kw_162[75] = {
 		{"asynch_pattern_search",8,9,11,1,kw_13,0.,0.,0,N_mdm(lit,methodName_asynch_pattern_search)},
-		{"bayes_calibration",8,10,11,1,kw_23,0.,0.,0,N_mdm(lit,methodName_nond_bayes_calibration)},
+		{"bayes_calibration",8,12,11,1,kw_23,0.,0.,0,N_mdm(lit,methodName_nond_bayes_calibration)},
 		{"centered_parameter_study",8,3,11,1,kw_24,0.,0.,0,N_mdm(lit,methodName_centered_parameter_study)},
 		{"coliny_apps",0,9,11,1,kw_13,0.,0.,-3,N_mdm(lit,methodName_asynch_pattern_search)},
 		{"coliny_cobyla",8,0,11,1,kw_27,0.,0.,0,N_mdm(lit,methodName_coliny_cobyla)},
@@ -959,7 +961,7 @@ static KeyWord
 		{"nl2sol",8,9,11,1,kw_108,0.,0.,0,N_mdm(lit,methodName_nl2sol)},
 		{"nlpql_sqp",8,9,11,1,kw_10,0.,0.,0,N_mdm(lit,methodName_nlpql_sqp)},
 		{"nlssol_sqp",8,0,11,1,kw_138,0.,0.,0,N_mdm(lit,methodName_nlssol_sqp)},
-		{"nond_bayes_calibration",0,10,11,1,kw_23,0.,0.,-42,N_mdm(lit,methodName_nond_bayes_calibration)},
+		{"nond_bayes_calibration",0,12,11,1,kw_23,0.,0.,-42,N_mdm(lit,methodName_nond_bayes_calibration)},
 		{"nond_global_evidence",0,3,11,1,kw_63,0.,0.,-19,N_mdm(lit,methodName_nond_global_evidence)},
 		{"nond_global_interval_est",0,3,11,1,kw_66,0.,0.,-19,N_mdm(lit,methodName_nond_global_interval_est)},
 		{"nond_global_reliability",0,7,11,1,kw_74,0.,0.,-19,N_mdm(lit,methodName_nond_global_reliability)},

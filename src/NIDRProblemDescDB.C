@@ -4229,6 +4229,7 @@ static Real
 	MP_(initDelta),
 	MP_(initStepLength),
 	MP_(initTRRadius),
+	MP_(likelihoodScale),
 	MP_(lineSearchTolerance),
 	MP_(localBalanceParam),
 	MP_(maxBoxSize),
@@ -4236,6 +4237,7 @@ static Real
 	MP_(minBoxSize),
 	MP_(mutationRate),
 	MP_(mutationScale),
+	MP_(proposalCovScale),
 	MP_(refinementRate),
 	MP_(shrinkagePercent),	// should be called shrinkageFraction
 	MP_(singConvTol),
