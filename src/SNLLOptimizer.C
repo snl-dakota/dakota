@@ -550,11 +550,7 @@ nlf0_evaluator(int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f,
     lastFnEvalLocn = NLFEvaluator;
   }
 
-  const Response& local_response
-    = snllOptInstance->iteratedModel.current_response();
-
-  const RealVector& local_fn_vals = local_response.function_values();
-  f = local_fn_vals[0];
+  f = snllOptInstance->iteratedModel.current_response().function_value(0);
   result_mode = NLPFunction;
 }
 
@@ -631,13 +627,11 @@ nlf1_evaluator(int mode, int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f,
     = snllOptInstance->iteratedModel.current_response();
 
   if (mode & 1) { // 1st bit is present, mode = 1 or 3
-    const RealVector& local_fn_vals = local_response.function_values();
-    f = local_fn_vals[0];
+    f = local_response.function_value(0);
     result_mode = NLPFunction;
   }
   if (mode & 2) { // 2nd bit is present, mode = 2 or 3
-    const RealMatrix& local_fn_grads = local_response.function_gradients();
-    SNLLBase::copy_data(local_fn_grads[0], local_fn_grads.numRows(), grad_f);
+    SNLLBase::copy_data(local_response.function_gradient(0), n, grad_f);
     result_mode |= NLPGradient;
   }
 }
@@ -719,19 +713,15 @@ nlf2_evaluator(int mode, int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f,
     = snllOptInstance->iteratedModel.current_response();
 
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
-    const RealVector& local_fn_vals = local_response.function_values();
-    f = local_fn_vals[0];
+    f = local_response.function_value(0);
     result_mode = NLPFunction;
   }
   if (mode & 2) { // 2nd bit is present, mode = 2, 3, 6, or 7
-    const RealMatrix& local_fn_grads = local_response.function_gradients();
-    SNLLBase::copy_data(local_fn_grads[0], local_fn_grads.numRows(), grad_f);
+    SNLLBase::copy_data(local_response.function_gradient(0), n, grad_f);
     result_mode |= NLPGradient;
   }
   if (mode & 4) { // 3rd bit is present, mode >= 4
-    const RealSymMatrixArray& local_fn_hessians
-      = local_response.function_hessians();
-    SNLLBase::copy_data(local_fn_hessians[0], hess_f);
+    SNLLBase::copy_data(local_response.function_hessian(0), hess_f);
     result_mode |= NLPHessian;
   }
 }
@@ -759,10 +749,9 @@ constraint0_evaluator(int n, const NEWMAT::ColumnVector& x,
   lastFnEvalLocn = CONEvaluator;
   lastEvalVars   = local_des_vars;
 
-  const Response& local_response
-    = snllOptInstance->iteratedModel.current_response();
-  snllOptInstance->copy_con_vals(local_response.function_values(), g,
-				 snllOptInstance->numObjectiveFns);
+  snllOptInstance->copy_con_vals(
+    snllOptInstance->iteratedModel.current_response().function_values(), g,
+    snllOptInstance->numObjectiveFns);
   result_mode = NLPFunction;
 }
 

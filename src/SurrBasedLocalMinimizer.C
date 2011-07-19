@@ -1456,9 +1456,7 @@ approx_subprob_constraint_eval(const Variables& surrogate_vars,
   if (num_recast_fns <= num_recast_primary)
     return;
   size_t num_recast_cons = num_recast_fns - num_recast_primary;
-
-  const RealVector& surrogate_fns   = surrogate_response.function_values();
-  //const RealMatrix& surrogate_grads = surrogate_response.function_gradients();
+  const RealVector& surrogate_fns = surrogate_response.function_values();
 
   switch (sblmInstance->approxSubProbCon) {
 

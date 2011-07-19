@@ -797,25 +797,28 @@ void ResponseRep::overlay(const Response& response)
 {
   // add incoming response to functionValues/Gradients/Hessians
   const ShortArray& asv = responseActiveSet.request_vector();
-  size_t i, j, k, num_fns = functionValues.length(),
+  size_t i, j, k, num_fns = asv.size(),
     num_params = responseActiveSet.derivative_vector().size();
-  const RealVector& partial_fn_vals  = response.function_values();
-  const RealMatrix& partial_fn_grads = response.function_gradients();
-  const RealSymMatrixArray& partial_fn_hessians = response.function_hessians();
-  for (i=0; i<num_fns; i++)
+  for (i=0; i<num_fns; ++i)
     if (asv[i] & 1)
-      functionValues[i] += partial_fn_vals[i];
+      functionValues[i] += response.function_value(i);
   num_fns = functionGradients.numCols();
-  for (i=0; i<num_fns; i++)
-    if (asv[i] & 2)
-      for (j=0; j<num_params; j++)
-        functionGradients(j,i) += partial_fn_grads(j,i);
+  for (i=0; i<num_fns; ++i)
+    if (asv[i] & 2) {
+      const Real* partial_fn_grad = response.function_gradient(i);
+      Real* fn_grad = functionGradients[i];
+      for (j=0; j<num_params; ++j)
+        fn_grad[j] += partial_fn_grad[j];
+    }
   num_fns = functionHessians.size();
-  for (i=0; i<num_fns; i++)
-    if (asv[i] & 4)
-      for (j=0; j<num_params; j++)
-        for (k=0; k<=j; k++)
-          functionHessians[i](j,k) += partial_fn_hessians[i](j,k);
+  for (i=0; i<num_fns; ++i)
+    if (asv[i] & 4) {
+      const RealSymMatrix& partial_fn_hess = response.function_hessian(i);
+      RealSymMatrix& fn_hess = functionHessians[i];
+      for (j=0; j<num_params; ++j)
+        for (k=0; k<=j; ++k)
+          fn_hess(j,k) += partial_fn_hess(j,k);
+    }
 }
 
 

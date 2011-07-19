@@ -320,7 +320,7 @@ nlf2_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
 
   // Sum the squared residuals to get the objective function = {R}'{R}.
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
-    f = 0.0;
+    f = 0.;
     for (i=0; i<snllLSqInstance->numLeastSqTerms; i++)
       f += local_fn_vals[i] * local_fn_vals[i];
     if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
@@ -334,9 +334,9 @@ nlf2_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
     if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
       Cout << "    nlf2_evaluator_gn results: objective fn. gradient =\n [ ";
     for (i=0; i<n; i++) {
-      grad_f(i+1) = 0.0;
+      grad_f(i+1) = 0.;
       for (j=0; j<snllLSqInstance->numLeastSqTerms; j++)
-        grad_f(i+1) += 2.0 * local_fn_grads(i,j) * local_fn_vals[j];
+        grad_f(i+1) += 2. * local_fn_grads(i,j) * local_fn_vals[j];
       if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
 	Cout << std::setw(write_precision+7) << grad_f(i+1) << ' ';
     }
@@ -349,9 +349,9 @@ nlf2_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
   if (mode & 4) { // 3rd bit is present, mode >= 4
     for (i=0; i<n; i++) {
       for (j=0; j<=i; j++) {
-        Real dtmp = 0.0;
+        Real dtmp = 0.;
         for (k=0; k<snllLSqInstance->numLeastSqTerms; k++)
-          dtmp += 2.0 * local_fn_grads(i,k) * local_fn_grads(j,k);
+          dtmp += 2. * local_fn_grads(i,k) * local_fn_grads(j,k);
         hess_f(i+1, j+1) = dtmp;
       }
       for (j=0; j<i; j++)

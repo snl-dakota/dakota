@@ -1530,7 +1530,7 @@ void NonDExpansion::update_final_statistics()
       const Pecos::RealVector& x_l_bnds = natafTransform.x_lower_bounds();
       const Pecos::RealVector& x_u_bnds = natafTransform.x_upper_bounds();
 
-      RealMatrix final_stat_grads = finalStatistics.function_gradients();
+      RealMatrix final_stat_grads = finalStatistics.function_gradients_view();
       int num_final_stats = final_stat_grads.numCols();
       for (size_t j=0; j<num_final_grad_vars; ++j) {
 	size_t deriv_j = find_index(cv_ids, final_dvv[j]); //final_dvv[j]-1;
@@ -1543,7 +1543,6 @@ void NonDExpansion::update_final_statistics()
 	}
 	// else inserted design variable sensitivity: no scaling required
       }
-      finalStatistics.function_gradients(final_stat_grads);
       
       // This approach is more general, but is overkill for this purpose
       // and incurs additional copying overhead.

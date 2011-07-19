@@ -499,8 +499,8 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	// Get expected value at u* for output
 	uSpaceModel.continuous_variables(c_vars_u);
 	uSpaceModel.compute_response();
-	const Response&   g_hat_resp = uSpaceModel.current_response();
-	const RealVector& g_hat_fns  = g_hat_resp.function_values();
+	const RealVector& g_hat_fns
+	  = uSpaceModel.current_response().function_values();
 
 	// Re-evaluate the expected improvement/feasibility at c_vars_u
 	Real exp_fns_star = (ria_flag) ?
@@ -976,11 +976,10 @@ constraint_penalty(const Real& c_viol, const RealVector& u)
     // form -{grad_f} = m_grad_f = -grad[G_hat(u)]
     uSpaceModel.continuous_variables(u);
     uSpaceModel.compute_response();
-    const Response&   g_hat_resp = uSpaceModel.current_response();
-    const RealMatrix& grad_f     = g_hat_resp.function_gradients();
-    RealVector m_grad_f(numContAleatUncVars, true);
+    const Real* grad_f = uSpaceModel.current_response().function_gradient(0);
+    RealVector m_grad_f(numContAleatUncVars, false);
     for (size_t i=0; i<numContAleatUncVars; ++i)
-      m_grad_f[i] = -grad_f(i,0);
+      m_grad_f[i] = -grad_f[i];
 
     // solve for lambda : [A]{lambda} = {m_grad_f}
     int ierr, nsetp, m = numContAleatUncVars, n = 1;

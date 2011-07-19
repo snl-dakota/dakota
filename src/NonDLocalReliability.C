@@ -489,14 +489,10 @@ void NonDLocalReliability::initial_taylor_series()
     activeSet.request_vector(asrv);
     iteratedModel.compute_response(activeSet);
     const Response& local_response = iteratedModel.current_response();
-    fnValsMeanX = local_response.function_values();
+    fnValsMeanX  = local_response.function_values();
     fnGradsMeanX = local_response.function_gradients();
-    if (mode & 4) {
-      fnHessiansMeanX.resize( local_response.function_hessians().size() );
-      std::copy( local_response.function_hessians().begin(),
-                 local_response.function_hessians().end(),
-                 fnHessiansMeanX.begin() );
-    }
+    if (mode & 4)
+      fnHessiansMeanX = local_response.function_hessians();
 
     // compute the covariance matrix from the correlation matrix
     RealSymMatrix covariance;
