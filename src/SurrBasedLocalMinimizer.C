@@ -20,6 +20,7 @@
 #include "PRPMultiIndex.H"
 #include "DakotaGraphics.H"
 #include "RecastModel.H"
+#include "DiscrepancyCorrection.H"
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.H"
 #endif // HAVE_NPSOL
@@ -510,11 +511,10 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 	  // -->> local and up to 1st-order multipt do not need correction
 	  // -->> hierarchical needs compute_correction if new center
 	  // -->> global needs compute_correction if new center or new bounds
-	  iteratedModel.compute_correction(varsCenter.continuous_variables(),
-					   responseCenterTruth.second,
-					   responseCenterApprox);
-	  iteratedModel.apply_correction(varsCenter.continuous_variables(),
-					 responseCenterApprox);
+	  DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
+	  delta.compute(varsCenter.continuous_variables(),
+			responseCenterTruth.second, responseCenterApprox);
+	  delta.apply(varsCenter.continuous_variables(), responseCenterApprox);
 	}
       }
     } // end of "if (globalApproxFlag || newCenterFlag)" block

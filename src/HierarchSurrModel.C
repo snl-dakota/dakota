@@ -108,7 +108,7 @@ void HierarchSurrModel::build_approximation()
 
   // could compute the correction to lowFidelityModel here, but rely on an
   // external call for consistency with DataFitSurr and to facilitate SBO logic.
-  //compute_correction(..., highFidRefResponse, lo_fi_response);
+  //deltaCorr.compute(..., highFidRefResponse, lo_fi_response);
 
   Cout << "\n<<<<< Hierarchical approximation build completed.\n";
   approxBuilds++;
@@ -227,6 +227,21 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
 
     // post-process
     switch (responseMode) {
+    case AUTO_CORRECTED_SURROGATE: {
+      // LF resp should not be corrected directly (see derived_synchronize())
+      lo_fi_response = lowFidelityModel.current_response().copy();
+      bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+      if (!deltaCorr.computed())
+	deltaCorr.compute(currentVariables.continuous_variables(),
+			  highFidRefResponse, lo_fi_response, quiet_flag);
+      deltaCorr.apply(currentVariables.continuous_variables(), lo_fi_response,
+		      quiet_flag);
+      if (!mixed_eval) {
+	currentResponse.active_set(lo_fi_set);
+	currentResponse.update(lo_fi_response);
+      }
+      break;
+    }
     case UNCORRECTED_SURROGATE:
       if (mixed_eval)
 	lo_fi_response = lowFidelityModel.current_response(); // shared rep
@@ -235,30 +250,21 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
 	currentResponse.update(lowFidelityModel.current_response());
       }
       break;
-    case AUTO_CORRECTED_SURROGATE:
-      // LF resp should not be corrected directly (see derived_synchronize())
-      lo_fi_response = lowFidelityModel.current_response().copy();
-      if (!deltaCorr.computed())
-	compute_correction(currentVariables.continuous_variables(),
-			   highFidRefResponse, lo_fi_response);
-      apply_correction(currentVariables.continuous_variables(), lo_fi_response);
-      if (!mixed_eval) {
-	currentResponse.active_set(lo_fi_set);
-	currentResponse.update(lo_fi_response);
-      }
-      break;
     }
   }
 
   // perform any reductions involving LF & HF response aggregate
   switch (responseMode) {
-  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY: {
     // don't update surrogate data within deltaCorr's Approximations; just
     // update currentResponse (managed as surrogate data at a higher level)
+    bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
     deltaCorr.compute(currentVariables.continuous_variables(),
 		      highFidelityModel.current_response(),
-		      lowFidelityModel.current_response(), currentResponse);
+		      lowFidelityModel.current_response(),
+		      currentResponse, quiet_flag);
     break;
+  }
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     if (mixed_eval) {
       currentResponse.active_set(set);
@@ -396,16 +402,18 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
       // a responseRep -->> modifying rawResponseMap affects data_pairs.
 
       // if a correction has not been computed, compute it now
+      bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
       if (!deltaCorr.computed() && !lo_fi_resp_map_proxy.empty())
-	compute_correction(rawCVarsMap.begin()->second, highFidRefResponse,
-			   lo_fi_resp_map_proxy.begin()->second);
+	deltaCorr.compute(rawCVarsMap.begin()->second, highFidRefResponse,
+			  lo_fi_resp_map_proxy.begin()->second, quiet_flag);
 
       // Apply the correction.  A rawCVarsMap lookup is not needed since
       // rawCVarsMap and lo_fi_resp_map are complete and consistently ordered.
       IntRDVMIter v_it; IntRespMIter r_it;
       for (r_it  = lo_fi_resp_map_proxy.begin(), v_it = rawCVarsMap.begin();
 	   r_it != lo_fi_resp_map_proxy.end(); ++r_it, ++v_it)
-        apply_correction(v_it->second, r_it->second);//rawCVarsMap[r_it->first]
+        deltaCorr.apply(v_it->second, r_it->second, quiet_flag); //rawCVarsMap
+                                                                 //[r_it->first]
       rawCVarsMap.clear();
     }
 
@@ -526,16 +534,17 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
       // a responseRep -->> modifying rawResponseMap affects data_pairs.
 
       // if a correction has not been computed, compute it now
+      bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
       if (!deltaCorr.computed() && !lo_fi_resp_map_proxy.empty())
-	compute_correction(rawCVarsMap.begin()->second, highFidRefResponse,
-			   lo_fi_resp_map_proxy.begin()->second);
+	deltaCorr.compute(rawCVarsMap.begin()->second, highFidRefResponse,
+			  lo_fi_resp_map_proxy.begin()->second, quiet_flag);
 
       // Apply the correction.  Must use rawCVarsMap lookup in this case since
       // rawCVarsMap is complete, but lo_fi_resp_map may not be.
       for (IntRespMIter r_it = lo_fi_resp_map_proxy.begin();
 	   r_it != lo_fi_resp_map_proxy.end(); ++r_it) {
 	int hier_eval_id = r_it->first;
-        apply_correction(rawCVarsMap[hier_eval_id], r_it->second);
+        deltaCorr.apply(rawCVarsMap[hier_eval_id], r_it->second, quiet_flag);
         rawCVarsMap.erase(hier_eval_id);
       }
     }

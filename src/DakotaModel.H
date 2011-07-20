@@ -35,6 +35,7 @@ namespace Dakota {
 class ProblemDescDB;
 class ParallelLibrary;
 class Approximation;
+class DiscrepancyCorrection;
 
 
 /// Base class for the model class hierarchy.
@@ -179,15 +180,8 @@ public:
   /// forming currentResponse
   virtual short surrogate_response_mode() const;
 
-  /// compute correction factors for use in SurrogateModels
-  virtual void compute_correction(const RealVector& c_vars,
-				  const Response& truth_response, 
-				  const Response& approx_response);
-
-  /// apply correction factors to approx_response (for use in SurrogateModels)
-  virtual void apply_correction(const RealVector& c_vars,
-				Response& approx_response,
-				bool quiet_flag = false);
+  /// return the DiscrepancyCorrection object used by SurrogateModels
+  virtual DiscrepancyCorrection& discrepancy_correction();
 
   /// update component parallel mode for supporting parallelism in a model's
   /// interface component, sub-model component, or neither component

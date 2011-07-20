@@ -2715,32 +2715,17 @@ short Model::surrogate_response_mode() const
 }
 
 
-void Model::
-compute_correction(const RealVector& c_vars, const Response& truth_response,
-		   const Response& approx_response)
+DiscrepancyCorrection& Model::discrepancy_correction()
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->compute_correction(c_vars, truth_response, approx_response);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual compute_correction()"
-         << " function.\nThis model does not support approximations."
+  if (!modelRep) { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual discrepancy_"
+	 << "correction() function.\nThis model does not support corrections."
 	 << std::endl;
     abort_handler(-1);
   }
-}
 
-
-void Model::apply_correction(const RealVector& c_vars,
-			     Response& approx_response, bool quiet_flag)
-{
-  if (modelRep) // envelope fwd to letter
-    modelRep->apply_correction(c_vars, approx_response, quiet_flag);
-  else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual apply_correction() "
-         << "function.\nThis model does not support approximations."
-	 << std::endl;
-    abort_handler(-1);
-  }
+  // envelope fwd to letter
+  return modelRep->discrepancy_correction();
 }
 
 

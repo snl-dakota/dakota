@@ -61,15 +61,16 @@ public:
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response and store in {add,mult}Corrections
   void compute(const RealVector& c_vars, const Response& truth_response, 
-	       const Response& approx_response, bool quiet_flag);
+	       const Response& approx_response, bool quiet_flag = false);
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response and store in discrepancy_response
   void compute(const RealVector& c_vars, const Response& truth_response, 
-	       const Response& approx_response, Response& discrepancy_response);
+	       const Response& approx_response, Response& discrepancy_response,
+	       bool quiet_flag = false);
 
   /// apply the correction computed in compute() to approx_response
   void apply(const RealVector& c_vars, Response& approx_response,
-	     bool quiet_flag);
+	     bool quiet_flag = false);
 
   /// indicates an active correction via non-empty correctionType
   bool active() const;

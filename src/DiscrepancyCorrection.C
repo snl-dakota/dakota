@@ -280,7 +280,8 @@ compute(const RealVector& c_vars, const Response& truth_response,
 
 void DiscrepancyCorrection::
 compute(const RealVector& c_vars, const Response& truth_response, 
-	const Response& approx_response, Response& discrepancy_response)
+	const Response& approx_response, Response& discrepancy_response,
+	bool quiet_flag)
 {
   // The incoming approx_response is assumed to be uncorrected (i.e.,
   // correction has not been applied to it previously).  In this case,
@@ -355,8 +356,8 @@ compute(const RealVector& c_vars, const Response& truth_response,
 	    discrep_hess(j,k) = truth_hess(j,k) - approx_hess(j,k);
       }
 
-      //if (!quiet_flag)
-      //  Cout << "\nAdditive correction computed:\n" << sdr;
+      if (!quiet_flag)
+        Cout << "\nAdditive correction computed:\n" << discrepancy_response;
     }
   }
 
@@ -408,8 +409,8 @@ compute(const RealVector& c_vars, const Response& truth_response,
 	      / f_lo_2;
       }
 
-      //if (!quiet_flag)
-      //  Cout << "\nMultiplicative correction computed:\n" << sdr;
+      if (!quiet_flag)
+        Cout << "\nMultiplicative correction computed:\n"<<discrepancy_response;
     }
   }
 }

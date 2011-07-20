@@ -279,11 +279,11 @@ void DataFitSurrModel::build_approximation()
   else { // global approximation.  NOTE: branch not used by SBO.
     update_global();
     build_global();
-    //compute_correction(...need data...);
-    // could add compute_correction() here and in
-    // HierarchSurrModel::build_approximation if global approximations had
-    // easy access to the truth/approx responses.  Instead, it is called
-    // from SBOStrategy using data from the center of the trust region.
+    //deltaCorr.compute(...need data...);
+    // could add deltaCorr.compute() here and in HierarchSurrModel::
+    // build_approximation if global approximations had easy access
+    // to the truth/approx responses.  Instead, it is called from
+    // SurrBasedLocalMinimizer using data from the trust region center.
   }
   if (actualModel.is_null())
     approxInterface.build_approximation(
@@ -327,11 +327,11 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
   else { // global approximation.  NOTE: branch used by SBO.
     update_global();
     build_global();
-    //compute_correction(...need data...);
-    // could add compute_correction() here and in
-    // HierarchSurrModel::build_approximation if global approximations had
-    // easy access to the truth/approx responses.  Instead, it is called
-    // from SBOStrategy using data from the center of the trust region.
+    //deltaCorr.compute(...need data...);
+    // could add deltaCorr.compute() here and in HierarchSurrModel::
+    // build_approximation if global approximations had easy access
+    // to the truth/approx responses.  Instead, it is called from
+    // SurrBasedLocalMinimizer using data from the trust region center.
   }
   if (actualModel.is_null())
     approxInterface.build_approximation(
@@ -923,11 +923,12 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
     switch (responseMode) {
     case AUTO_CORRECTED_SURROGATE:
       if (deltaCorr.active()) {
+	bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
 	//if (!deltaCorr.computed())
-	//  compute_correction(currentVariables.continuous_variables(),
-	//	             centerResponse, approx_response);
-	apply_correction(currentVariables.continuous_variables(),
-			 approx_response);
+	//  deltaCorr.compute(currentVariables.continuous_variables(),
+	//	              centerResponse, approx_response, quiet_flag);
+	deltaCorr.apply(currentVariables.continuous_variables(),
+			approx_response, quiet_flag);
       }
       break;
     }
@@ -935,13 +936,15 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
 
   // perform any reductions involving LF & HF response aggregate
   switch (responseMode) {
-  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
-    // TO DO: append global data flag?  or no SurrogateData update flag?
-    // (passed to higher level via currentResponse)
+  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY: {
+    // don't update surrogate data within deltaCorr's Approximations; just
+    // update currentResponse (managed as surrogate data at a higher level)
+    bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
     deltaCorr.compute(currentVariables.continuous_variables(),
-		      actualModel.current_response(), approx_response, false);
-    // TO DO: update currentResponse
+		      actualModel.current_response(), approx_response,
+		      currentResponse, quiet_flag);
     break;
+  }
   case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
     if (mixed_eval) {
       currentResponse.active_set(set);
@@ -1233,13 +1236,15 @@ derived_synchronize_approx(const IntResponseMap& approx_resp_map,
     // The response map from ApproximationInterface's quasi-asynch mode is
     // complete and in order.
 
+    bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
     //if (!deltaCorr.computed() && !approx_resp_map_proxy.empty())
-    //  compute_correction(rawCVarsMap.begin()->second, ...,
-    //                     approx_resp_map_proxy.begin()->second);
+    //  deltaCorr.compute(rawCVarsMap.begin()->second, ...,
+    //                    approx_resp_map_proxy.begin()->second, quiet_flag);
     IntRDVMIter v_it; IntRespMIter r_it;
     for (r_it  = approx_resp_map_proxy.begin(), v_it = rawCVarsMap.begin();
 	 r_it != approx_resp_map_proxy.end(); ++r_it, ++v_it)
-      apply_correction(v_it->second, r_it->second);//rawCVarsMap[r_it->first]
+      deltaCorr.apply(v_it->second, r_it->second, quiet_flag);//rawCVarsMap
+                                                              //[r_it->first]
     rawCVarsMap.clear();
   }
 
