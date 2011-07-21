@@ -123,17 +123,30 @@ private:
   /// define badScalingFlag
   bool check_scaling(const RealVector& truth_fns, const RealVector& approx_fns);
 
+  /// internal convenience function for computing additive corrections
+  /// between truth and approximate responses
+  void compute_additive(const Response& truth_response,
+			const Response& approx_response, int index,
+			Real& discrep_fn, RealVector& discrep_grad,
+			RealSymMatrix& discrep_hess);
+  /// internal convenience function for computing multiplicative corrections
+  /// between truth and approximate responses
+  void compute_multiplicative(const Response& truth_response,
+			      const Response& approx_response, int index,
+			      Real& discrep_fn, RealVector& discrep_grad,
+			      RealSymMatrix& discrep_hess);
+
   /// internal convenience function for applying additive corrections
   /// to an approximate response
   void apply_additive(const RealVector& c_vars, Response& approx_response);
-  /// internal convenience function for applying additive corrections
-  /// to a set of response functions
-  void apply_additive(const RealVector& c_vars, RealVector& approx_fns);
-
   /// internal convenience function for applying multiplicative
   /// corrections to an approximate response
   void apply_multiplicative(const RealVector& c_vars,
 			    Response& approx_response);
+
+  /// internal convenience function for applying additive corrections
+  /// to a set of response functions
+  void apply_additive(const RealVector& c_vars, RealVector& approx_fns);
   /// internal convenience function for applying multiplicative corrections
   /// to a set of response functions
   void apply_multiplicative(const RealVector& c_vars, RealVector& approx_fns);
@@ -177,6 +190,9 @@ private:
   /// correction instead of a strictly local correction.
   RealVector combineFactors;
 
+  /// point in parameter space where the current correction is calculated
+  /// (often the center of the current trust region)
+  RealVector correctionCenterPt;
   /// copy of center point from the previous correction cycle
   RealVector correctionPrevCenterPt;
   /// truth function values at the current correction point

@@ -259,9 +259,11 @@ public:
 
   /// return a function value
   const Real& function_value(const size_t& i) const;
+  /// return a "view" of a function value for updating in place
+  Real& function_value_view(const size_t& i);
   /// return all function values
   const RealVector& function_values() const;
-  /// return all function values as a view
+  /// return all function values as a view for updating in place
   RealVector function_values_view();
   /// set a function value
   void function_value(const Real& function_val, const size_t& i);
@@ -271,14 +273,14 @@ public:
   /// return the i-th function gradient as a const Real*
   const Real* function_gradient(const int& i) const;
   /// return the i-th function gradient as a SerialDenseVector
-  /// Teuchos::View (shallow copy)
+  /// Teuchos::View (shallow copy) for updating in place
   RealVector function_gradient_view(const int& i) const; // TO DO: retire const
   /// return the i-th function gradient as a SerialDenseVector
   /// Teuchos::Copy (deep copy)
   RealVector function_gradient_copy(const int& i) const;
   /// return all function gradients
   const RealMatrix& function_gradients() const;
-  /// return all function gradients as a view
+  /// return all function gradients as a view for updating in place
   RealMatrix function_gradients_view();
   /// set a function gradient
   void function_gradient(const RealVector& function_grad, const int& i);
@@ -288,10 +290,12 @@ public:
   /// return the i-th function Hessian
   const RealSymMatrix& function_hessian(const size_t& i) const;
   /// return the i-th function Hessian as a Teuchos::View (shallow copy)
+  /// for updating in place
   RealSymMatrix function_hessian_view(const size_t& i);
   /// return all function Hessians
   const RealSymMatrixArray& function_hessians() const;
   /// return all function Hessians as Teuchos::Views (shallow copies)
+  /// for updating in place
   RealSymMatrixArray function_hessians_view();
   /// set a function Hessian
   void function_hessian(const RealSymMatrix& function_hessian, const size_t& i);
@@ -384,6 +388,10 @@ inline size_t Response::num_functions() const
 
 
 inline const Real& Response::function_value(const size_t& i) const
+{ return responseRep->functionValues[i]; }
+
+
+inline Real& Response::function_value_view(const size_t& i)
 { return responseRep->functionValues[i]; }
 
 

@@ -105,15 +105,6 @@ compute(const RealVector& c_vars, const Response& truth_response,
   // it is not necessary to back out a previous correction, and the
   // computation of the new correction is straightforward.
 
-  const RealVector&    truth_fns =  truth_response.function_values();
-  const RealVector&   approx_fns = approx_response.function_values();
-  const RealMatrix&  truth_grads =  truth_response.function_gradients();
-  const RealMatrix& approx_grads = approx_response.function_gradients();
-  const RealSymMatrixArray& truth_hessians
-    = truth_response.function_hessians();
-  const RealSymMatrixArray& approx_hessians
-    = approx_response.function_hessians();
-
   // update previous center data arrays for combined corrections
   // TO DO: augment approxFnsPrevCenter logic for data fit surrogates.  May
   // require additional fn evaluation of previous pt on current surrogate.
@@ -129,11 +120,13 @@ compute(const RealVector& c_vars, const Response& truth_response,
       multCorrections[*it].approximation_data().anchor_continuous_variables();
   }
   // update current center data arrays
+  const RealVector&  truth_fns =  truth_response.function_values();
+  const RealVector& approx_fns = approx_response.function_values();
   bool fall_back
     = (computeMultiplicative && correctionOrder >= 1 && surrModel.is_null());
-  if (combinedFlag)                 truthFnsCenter = truth_fns;
-  if (combinedFlag || fall_back)   approxFnsCenter = approx_fns;
-  if (fall_back)                 approxGradsCenter = approx_grads;
+  if (combinedFlag)               truthFnsCenter = truth_fns;
+  if (combinedFlag || fall_back) approxFnsCenter = approx_fns;
+  if (fall_back) approxGradsCenter = approx_response.function_gradients();
 
   // detect numerical issues with multiplicative scaling
   badScalingFlag = (computeMultiplicative) ?
@@ -151,36 +144,17 @@ compute(const RealVector& c_vars, const Response& truth_response,
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;
       Pecos::SurrogateDataResp sdr(dataOrder, numVars);
-      // -----------------------------
-      // Additive 0th order correction
-      // -----------------------------
-      if (dataOrder & 1)
-	sdr.response_function(truth_fns[index] - approx_fns[index]);
-      // -----------------------------
-      // Additive 1st order correction
-      // -----------------------------
-      if (dataOrder & 2) {
-	const Real*  truth_grad =  truth_grads[index];
-	const Real* approx_grad = approx_grads[index];
-	for (j=0; j<numVars; ++j)
-	  sdr.response_gradient(truth_grad[j] - approx_grad[j], j);
-      }
-      // -----------------------------
-      // Additive 2nd order correction
-      // -----------------------------
-      if (dataOrder & 4) {
-	const RealSymMatrix&  truth_hess =  truth_hessians[index];
-	const RealSymMatrix& approx_hess = approx_hessians[index];
-	for (j=0; j<numVars; ++j)
-	  for (k=0; k<=j; ++k) // lower half
-	    sdr.response_hessian(truth_hess(j,k) - approx_hess(j,k), j, k);
-      }
+      RealVector    discrep_grad = sdr.response_gradient_view();
+      RealSymMatrix discrep_hess = sdr.response_hessian_view();
+      compute_additive(truth_response, approx_response, index,
+		       sdr.response_function_view(),
+		       discrep_grad, discrep_hess);
+      if (!quiet_flag)
+	Cout << "\nAdditive correction computed:\n" << sdr;
+
       // update anchor data
       addCorrections[index].add(sdv, true); // shallow copy into SurrogateData
       addCorrections[index].add(sdr, true); // shallow copy into SurrogateData
-
-      if (!quiet_flag)
-	Cout << "\nAdditive correction computed:\n" << sdr;
     }
   }
 
@@ -188,52 +162,17 @@ compute(const RealVector& c_vars, const Response& truth_response,
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;
       Pecos::SurrogateDataResp sdr(dataOrder, numVars);
-      // -----------------------------------
-      // Multiplicative 0th order correction
-      // -----------------------------------
-      const Real&  truth_fn =  truth_fns[index];
-      const Real& approx_fn = approx_fns[index];
-      Real ratio = truth_fn / approx_fn;
-      if (dataOrder & 1)
-	sdr.response_function(ratio);
-      // -----------------------------------
-      // Multiplicative 1st order correction
-      // -----------------------------------
-      // The beta-correction method is based on the work of Chang and Haftka,
-      // and Alexandrov.  It is a multiplicative correction like the "scaled"
-      // correction method, but it uses gradient information to achieve
-      // 1st-order consistency (matches the high-fidelity function values and
-      // the high-fidelity gradients at the center of the approximation region).
-      if (dataOrder & 2) {
-	const Real*  truth_grad =  truth_grads[index];
-	const Real* approx_grad = approx_grads[index];
-	for (j=0; j<numVars; ++j)
-	  sdr.response_gradient( ( truth_grad[j] - approx_grad[j] * ratio )
-				 / approx_fn, j);
-      }
-      // -----------------------------------
-      // Multiplicative 2nd order correction
-      // -----------------------------------
-      if (dataOrder & 4) {
-	const Real*           truth_grad =     truth_grads[index];
-	const Real*          approx_grad =    approx_grads[index];
-	const RealSymMatrix&  truth_hess =  truth_hessians[index];
-	const RealSymMatrix& approx_hess = approx_hessians[index];
-	// consider use of Teuchos assign and operator-=
-	Real f_lo_2 = approx_fn * approx_fn;
-	for (j=0; j<numVars; ++j)
-	  for (k=0; k<=j; ++k) // lower half
-	    sdr.response_hessian( ( truth_hess(j,k) * approx_fn - truth_fn *
-	      approx_hess(j,k) + 2. * ratio * approx_grad[j] * approx_grad[k] -
-	      truth_grad[j] * approx_grad[k] - approx_grad[j] * truth_grad[k] )
-	      / f_lo_2, j, k);
-      }
+      RealVector    discrep_grad = sdr.response_gradient_view();
+      RealSymMatrix discrep_hess = sdr.response_hessian_view();
+      compute_multiplicative(truth_response, approx_response, index,
+			     sdr.response_function_view(),
+			     discrep_grad, discrep_hess);
+      if (!quiet_flag)
+	Cout << "\nMultiplicative correction computed:\n" << sdr;
+
       // update anchor data
       multCorrections[index].add(sdv, true); // shallow copy into SurrogateData
       multCorrections[index].add(sdr, true); // shallow copy into SurrogateData
-
-      if (!quiet_flag)
-	Cout << "\nMultiplicative correction computed:\n" << sdr;
     }
   }
 
@@ -288,15 +227,6 @@ compute(const RealVector& c_vars, const Response& truth_response,
   // it is not necessary to back out a previous correction, and the
   // computation of the new correction is straightforward.
 
-  const RealVector&    truth_fns =  truth_response.function_values();
-  const RealVector&   approx_fns = approx_response.function_values();
-  const RealMatrix&  truth_grads =  truth_response.function_gradients();
-  const RealMatrix& approx_grads = approx_response.function_gradients();
-  const RealSymMatrixArray& truth_hessians
-    = truth_response.function_hessians();
-  const RealSymMatrixArray& approx_hessians
-    = approx_response.function_hessians();
-
   // update previous center data arrays for combined corrections
   // TO DO: augment approxFnsPrevCenter logic for data fit surrogates.  May
   // require additional fn evaluation of previous pt on current surrogate.
@@ -304,114 +234,127 @@ compute(const RealVector& c_vars, const Response& truth_response,
   // (approx re-evaluated if not found in DB search).
   int index; size_t j, k; ISIter it;
   if (combinedFlag && correctionComputed) {
-    approxFnsPrevCenter = approxFnsCenter;
-    truthFnsPrevCenter  = truthFnsCenter;
-    it = surrogateFnIndices.begin();
-    // TO DO
-    correctionPrevCenterPt = (computeAdditive || badScalingFlag) ?
-      addCorrections[*it].approximation_data().anchor_continuous_variables() :
-      multCorrections[*it].approximation_data().anchor_continuous_variables();
+    correctionPrevCenterPt = correctionCenterPt;
+    approxFnsPrevCenter    = approxFnsCenter;
+    truthFnsPrevCenter     = truthFnsCenter;
   }
-  // update current center data arrays
+  // update current center data arrays (deep copies for history)
+  const RealVector&  truth_fns =  truth_response.function_values();
+  const RealVector& approx_fns = approx_response.function_values();
   bool fall_back
     = (computeMultiplicative && correctionOrder >= 1 && surrModel.is_null());
-  if (combinedFlag)                 truthFnsCenter = truth_fns;
-  if (combinedFlag || fall_back)   approxFnsCenter = approx_fns;
-  if (fall_back)                 approxGradsCenter = approx_grads;
+  if (combinedFlag)
+    { copy_data(c_vars, correctionCenterPt); truthFnsCenter = truth_fns; }
+  if (combinedFlag || fall_back)            approxFnsCenter = approx_fns;
+  if (fall_back) approxGradsCenter = approx_response.function_gradients();
 
   // detect numerical issues with multiplicative scaling
   badScalingFlag = (computeMultiplicative) ?
     check_scaling(truth_fns, approx_fns) : false;
 
-  if (computeAdditive || badScalingFlag) {
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
-      index = *it;
-      // -----------------------------
-      // Additive 0th order correction
-      // -----------------------------
-      if (dataOrder & 1)
-	discrepancy_response.function_value(truth_fns[index] - 
-					    approx_fns[index], index);
-      // -----------------------------
-      // Additive 1st order correction
-      // -----------------------------
-      if (dataOrder & 2) {
-	const Real*  truth_grad =  truth_grads[index];
-	const Real* approx_grad = approx_grads[index];
-	RealVector discrep_grad
-	  = discrepancy_response.function_gradient_view(index);
-	for (j=0; j<numVars; ++j) // update view
-	  discrep_grad[j] = truth_grad[j] - approx_grad[j];
-      }
-      // -----------------------------
-      // Additive 2nd order correction
-      // -----------------------------
-      if (dataOrder & 4) {
-	const RealSymMatrix&  truth_hess =  truth_hessians[index];
-	const RealSymMatrix& approx_hess = approx_hessians[index];
-	RealSymMatrix discrep_hess
-	  = discrepancy_response.function_hessian_view(index);
-	for (j=0; j<numVars; ++j)
-	  for (k=0; k<=j; ++k) // lower half
-	    discrep_hess(j,k) = truth_hess(j,k) - approx_hess(j,k);
-      }
-
+  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+    index = *it;
+    RealVector    discrep_grad
+      = discrepancy_response.function_gradient_view(index);
+    RealSymMatrix discrep_hess
+      = discrepancy_response.function_hessian_view(index);
+    // for discrepancy_response, only one correction type may be applied
+    if (computeAdditive || badScalingFlag) {
+      compute_additive(truth_response, approx_response, index,
+		       discrepancy_response.function_value_view(index),
+		       discrep_grad, discrep_hess);
       if (!quiet_flag)
         Cout << "\nAdditive correction computed:\n" << discrepancy_response;
     }
-  }
-
-  if (computeMultiplicative && !badScalingFlag) {
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
-      index = *it;
-      Pecos::SurrogateDataResp sdr(dataOrder, numVars);
-      // -----------------------------------
-      // Multiplicative 0th order correction
-      // -----------------------------------
-      const Real&  truth_fn =  truth_fns[index];
-      const Real& approx_fn = approx_fns[index];
-      Real ratio = truth_fn / approx_fn;
-      if (dataOrder & 1)
-	discrepancy_response.function_value(ratio, index);
-      // -----------------------------------
-      // Multiplicative 1st order correction
-      // -----------------------------------
-      // The beta-correction method is based on the work of Chang and Haftka,
-      // and Alexandrov.  It is a multiplicative correction like the "scaled"
-      // correction method, but it uses gradient information to achieve
-      // 1st-order consistency (matches the high-fidelity function values and
-      // the high-fidelity gradients at the center of the approximation region).
-      if (dataOrder & 2) {
-	const Real*  truth_grad =  truth_grads[index];
-	const Real* approx_grad = approx_grads[index];
-	RealVector discrep_grad
-	  = discrepancy_response.function_gradient_view(index);
-	for (j=0; j<numVars; ++j) // update view
-	  discrep_grad[j] = (truth_grad[j] - approx_grad[j] * ratio)/approx_fn;
-      }
-      // -----------------------------------
-      // Multiplicative 2nd order correction
-      // -----------------------------------
-      if (dataOrder & 4) {
-	const Real*           truth_grad =     truth_grads[index];
-	const Real*          approx_grad =    approx_grads[index];
-	const RealSymMatrix&  truth_hess =  truth_hessians[index];
-	const RealSymMatrix& approx_hess = approx_hessians[index];
-	RealSymMatrix discrep_hess
-	  = discrepancy_response.function_hessian_view(index);
-	// consider use of Teuchos assign and operator-=
-	Real f_lo_2 = approx_fn * approx_fn;
-	for (j=0; j<numVars; ++j)
-	  for (k=0; k<=j; ++k) // lower half
-	    discrep_hess(j,k) = ( truth_hess(j,k) * approx_fn - truth_fn *
-	      approx_hess(j,k) + 2. * ratio * approx_grad[j] * approx_grad[k] -
-	      truth_grad[j] * approx_grad[k] - approx_grad[j] * truth_grad[k] )
-	      / f_lo_2;
-      }
-
+    else if (computeMultiplicative && !badScalingFlag) {
+      compute_multiplicative(truth_response, approx_response, index,
+			     discrepancy_response.function_value_view(index),
+			     discrep_grad, discrep_hess);
       if (!quiet_flag)
         Cout << "\nMultiplicative correction computed:\n"<<discrepancy_response;
     }
+  }
+}
+
+
+void DiscrepancyCorrection::
+compute_additive(const Response& truth_response,
+		 const Response& approx_response, int index,
+		 Real& discrep_fn, RealVector& discrep_grad,
+		 RealSymMatrix& discrep_hess)
+{
+  // -----------------------------
+  // Additive 0th order correction
+  // -----------------------------
+  if (dataOrder & 1)
+    discrep_fn =  truth_response.function_value(index)
+               - approx_response.function_value(index);
+  // -----------------------------
+  // Additive 1st order correction
+  // -----------------------------
+  if (dataOrder & 2) {
+    const Real*  truth_grad =  truth_response.function_gradient(index);
+    const Real* approx_grad = approx_response.function_gradient(index);
+    for (size_t j=0; j<numVars; ++j)
+      discrep_grad[j] = truth_grad[j] - approx_grad[j];
+  }
+  // -----------------------------
+  // Additive 2nd order correction
+  // -----------------------------
+  if (dataOrder & 4) {
+    const RealSymMatrix&  truth_hess =  truth_response.function_hessian(index);
+    const RealSymMatrix& approx_hess = approx_response.function_hessian(index);
+    for (size_t j=0; j<numVars; ++j)
+      for (size_t k=0; k<=j; ++k) // lower half
+	discrep_hess(j,k) = truth_hess(j,k) - approx_hess(j,k);
+  }
+}
+
+
+void DiscrepancyCorrection::
+compute_multiplicative(const Response& truth_response,
+		       const Response& approx_response, int index,
+		       Real& discrep_fn, RealVector& discrep_grad,
+		       RealSymMatrix& discrep_hess)
+{
+  // -----------------------------------
+  // Multiplicative 0th order correction
+  // -----------------------------------
+  const Real&  truth_fn =  truth_response.function_value(index);
+  const Real& approx_fn = approx_response.function_value(index);
+  Real ratio = truth_fn / approx_fn;
+  if (dataOrder & 1)
+    discrep_fn = ratio;
+  // -----------------------------------
+  // Multiplicative 1st order correction
+  // -----------------------------------
+  // The beta-correction method is based on the work of Chang and Haftka,
+  // and Alexandrov.  It is a multiplicative correction like the "scaled"
+  // correction method, but it uses gradient information to achieve
+  // 1st-order consistency (matches the high-fidelity function values and
+  // the high-fidelity gradients at the center of the approximation region).
+  if (dataOrder & 2) {
+    const Real*  truth_grad =  truth_response.function_gradient(index);
+    const Real* approx_grad = approx_response.function_gradient(index);
+    for (size_t j=0; j<numVars; ++j)
+      discrep_grad[j] = (truth_grad[j] - approx_grad[j] * ratio) / approx_fn;
+  }
+  // -----------------------------------
+  // Multiplicative 2nd order correction
+  // -----------------------------------
+  if (dataOrder & 4) {
+    const Real*           truth_grad =  truth_response.function_gradient(index);
+    const Real*          approx_grad = approx_response.function_gradient(index);
+    const RealSymMatrix&  truth_hess =  truth_response.function_hessian(index);
+    const RealSymMatrix& approx_hess = approx_response.function_hessian(index);
+    // consider use of Teuchos assign and operator-=
+    Real f_lo_2 = approx_fn * approx_fn;
+    for (size_t j=0; j<numVars; ++j)
+      for (size_t k=0; k<=j; ++k) // lower half
+	discrep_hess(j,k) = ( truth_hess(j,k) * approx_fn - truth_fn *
+	  approx_hess(j,k) + 2. * ratio * approx_grad[j] * approx_grad[k] -
+	  truth_grad[j] * approx_grad[k] - approx_grad[j] * truth_grad[k] )
+	  / f_lo_2;
   }
 }
 

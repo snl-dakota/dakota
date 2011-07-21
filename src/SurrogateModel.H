@@ -195,25 +195,6 @@ inline short SurrogateModel::surrogate_response_mode()
 inline DiscrepancyCorrection& SurrogateModel::discrepancy_correction()
 { return deltaCorr; }
 
-
-/*
-inline void SurrogateModel::
-compute_correction(const RealVector& c_vars, const Response& truth_response, 
-		   const Response& approx_response)
-{
-  bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-  deltaCorr.compute(c_vars, truth_response, approx_response, quiet_flag);
-}
-
-
-inline void SurrogateModel::
-apply_correction(const RealVector& c_vars, Response& approx_response)
-{
-  bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-  deltaCorr.apply(c_vars, approx_response, quiet_flag);
-}
-*/
-
 } // namespace Dakota
 
 #endif
