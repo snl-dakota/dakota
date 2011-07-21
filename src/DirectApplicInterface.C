@@ -3234,7 +3234,7 @@ int DirectApplicInterface::matlab_engine_run()
         
         ptr=mxGetPr(mx_tmp[19]);
         for (i=0; i<numFns; ++i)
-          fnVals[i] += *(ptr + i);
+          fnVals[i] = *(ptr + i);
       }   
   
     if (gradFlag) 
@@ -3252,11 +3252,12 @@ int DirectApplicInterface::matlab_engine_run()
         fail_code = MATLAB_FAIL;
       
       } else  {
-      
+
+	// Matlab stores column major
         ptr=mxGetPr(mx_tmp[20]);
         for (i=0; i<numFns; ++i)
           for (j=0; j<numDerivVars; ++j)
-            fnGrads(j,i) += *(ptr + numFns*j + i);
+            fnGrads(j,i) = *(ptr + j*numFns + i);
       
       }
   
@@ -3285,12 +3286,13 @@ int DirectApplicInterface::matlab_engine_run()
           
         } else {
           
+	  // Matlab stores column major
           ptr=mxGetPr(mx_tmp[21]);
           for (i=0; i<numFns; ++i)
             for (j=0; j<numDerivVars; ++j)
               for (k=0; k<=j; ++k)
-                fnHessians[i](j,k) += *(ptr + numDerivVars*numFns*k 
-                                            + numFns*j + i );
+                fnHessians[i](j,k) = 
+		  *(ptr + k*numFns*numDerivVars + j*numFns + i);
         }
       
       }
