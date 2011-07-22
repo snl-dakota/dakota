@@ -129,8 +129,8 @@ compute(const RealVector& c_vars, const Response& truth_response,
   if (fall_back) approxGradsCenter = approx_response.function_gradients();
 
   // detect numerical issues with multiplicative scaling
-  badScalingFlag = (computeMultiplicative) ?
-    check_scaling(truth_fns, approx_fns) : false;
+  badScalingFlag
+    = (computeMultiplicative) ? check_scaling(truth_fns, approx_fns) : false;
   if (badScalingFlag && addCorrections.empty()) {
     addCorrections.resize(numFns);
     UShortArray approx_order(numVars, correctionOrder);
@@ -181,8 +181,8 @@ compute(const RealVector& c_vars, const Response& truth_response,
   // ratio goes -> 1 (use additive alone) if f_hi_alpha(x_pp) -> f_hi(x_pp) and
   // it goes -> 0 (use multiplicative alone) if f_hi_beta(x_pp) -> f_hi(x_pp).
   if (combinedFlag && !badScalingFlag && correctionComputed) {
-    RealVector alpha_corr_fns = approxFnsPrevCenter,
-                beta_corr_fns = approxFnsPrevCenter;
+    RealVector alpha_corr_fns(approxFnsPrevCenter),
+                beta_corr_fns(approxFnsPrevCenter);
     apply_additive(correctionPrevCenterPt, alpha_corr_fns);
     apply_multiplicative(correctionPrevCenterPt, beta_corr_fns);
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
@@ -218,8 +218,10 @@ compute(const RealVector& c_vars, const Response& truth_response,
 
 
 void DiscrepancyCorrection::
-compute(const RealVector& c_vars, const Response& truth_response, 
-	const Response& approx_response, Response& discrepancy_response,
+compute(//const RealVector& c_vars,
+	const Response& truth_response, const Response& approx_response,
+	Response& discrep_response,
+        //Response& add_discrep_response, Response& mult_discrep_response,
 	bool quiet_flag)
 {
   // The incoming approx_response is assumed to be uncorrected (i.e.,
@@ -233,47 +235,62 @@ compute(const RealVector& c_vars, const Response& truth_response,
   // This could combine with DB lookups within apply_multiplicative()
   // (approx re-evaluated if not found in DB search).
   int index; size_t j, k; ISIter it;
-  if (combinedFlag && correctionComputed) {
-    correctionPrevCenterPt = correctionCenterPt;
-    approxFnsPrevCenter    = approxFnsCenter;
-    truthFnsPrevCenter     = truthFnsCenter;
-  }
+  //if (combinedFlag && correctionComputed) {
+  //  correctionPrevCenterPt = correctionCenterPt;
+  //  approxFnsPrevCenter    = approxFnsCenter;
+  //  truthFnsPrevCenter     = truthFnsCenter;
+  //}
   // update current center data arrays (deep copies for history)
   const RealVector&  truth_fns =  truth_response.function_values();
   const RealVector& approx_fns = approx_response.function_values();
   bool fall_back
     = (computeMultiplicative && correctionOrder >= 1 && surrModel.is_null());
-  if (combinedFlag)
-    { copy_data(c_vars, correctionCenterPt); truthFnsCenter = truth_fns; }
-  if (combinedFlag || fall_back)            approxFnsCenter = approx_fns;
+  //if (combinedFlag)
+  //  { copy_data(c_vars, correctionCenterPt); truthFnsCenter = truth_fns; }
+  if (/*combinedFlag ||*/ fall_back)          approxFnsCenter = approx_fns;
   if (fall_back) approxGradsCenter = approx_response.function_gradients();
 
   // detect numerical issues with multiplicative scaling
-  badScalingFlag = (computeMultiplicative) ?
-    check_scaling(truth_fns, approx_fns) : false;
+  badScalingFlag
+    = (computeMultiplicative) ? check_scaling(truth_fns, approx_fns) : false;
 
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     index = *it;
-    RealVector    discrep_grad
-      = discrepancy_response.function_gradient_view(index);
-    RealSymMatrix discrep_hess
-      = discrepancy_response.function_hessian_view(index);
-    // for discrepancy_response, only one correction type may be applied
-    if (computeAdditive || badScalingFlag) {
+    RealVector    discrep_grad = discrep_response.function_gradient_view(index);
+    RealSymMatrix discrep_hess = discrep_response.function_hessian_view(index);
+    // for a single discrep_response, only a single correction type can be
+    // applied (corrections can be combined when applying but must be stored
+    // separately when computing)
+    if (combinedFlag && !badScalingFlag && correctionComputed) {
+      Cerr << "Error: combined corrections not currently supported for compute"
+	   << "() applied to a single response discrepancy." << std::endl;
+      abort_handler(-1);
+      /*
       compute_additive(truth_response, approx_response, index,
-		       discrepancy_response.function_value_view(index),
+		       add_discrep_response.function_value_view(index),
+		       add_discrep_grad, add_discrep_hess);
+      compute_multiplicative(truth_response, approx_response, index,
+			     mult_discrep_response.function_value_view(index),
+			     mult_discrep_grad, mult_discrep_hess);
+      */
+    }
+    else if (computeAdditive || badScalingFlag) {
+      compute_additive(truth_response, approx_response, index,
+		       discrep_response.function_value_view(index),
 		       discrep_grad, discrep_hess);
       if (!quiet_flag)
-        Cout << "\nAdditive correction computed:\n" << discrepancy_response;
+        Cout << "\nAdditive correction computed:\n" << discrep_response;
     }
     else if (computeMultiplicative && !badScalingFlag) {
       compute_multiplicative(truth_response, approx_response, index,
-			     discrepancy_response.function_value_view(index),
+			     discrep_response.function_value_view(index),
 			     discrep_grad, discrep_hess);
       if (!quiet_flag)
-        Cout << "\nMultiplicative correction computed:\n"<<discrepancy_response;
+        Cout << "\nMultiplicative correction computed:\n" << discrep_response;
     }
   }
+  //if (combinedFlag && !badScalingFlag && correctionComputed)
+  //  compute_combine_factors(add_discrep_response, mult_discrep_response);
 }
 
 

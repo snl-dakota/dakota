@@ -868,6 +868,9 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
     actual_eval = approx_eval = true;          break;
   }
 
+  // -----------------------------
+  // Compute actual model response
+  // -----------------------------
   if (actual_eval) {
     component_parallel_mode(ACTUAL_MODEL);
     update_actual_model(); // update variables/bounds/labels in actualModel
@@ -895,6 +898,9 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
     }
   }
 
+  // ---------------------------------
+  // Compute approx interface response
+  // ---------------------------------
   if (approx_eval) { // normal case: evaluation of approxInterface
     // pre-process
     switch (responseMode) {
@@ -934,14 +940,15 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
     }
   }
 
-  // perform any reductions involving LF & HF response aggregate
+  // --------------------------------------
+  // perform any actual/approx aggregations
+  // --------------------------------------
   switch (responseMode) {
   case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY: {
     // don't update surrogate data within deltaCorr's Approximations; just
     // update currentResponse (managed as surrogate data at a higher level)
     bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-    deltaCorr.compute(currentVariables.continuous_variables(),
-		      actualModel.current_response(), approx_response,
+    deltaCorr.compute(actualModel.current_response(), approx_response,
 		      currentResponse, quiet_flag);
     break;
   }
@@ -976,6 +983,9 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     actual_eval = approx_eval = true;                                     break;
   }
 
+  // -----------------------------
+  // Compute actual model response
+  // -----------------------------
   if (actual_eval) {
     // don't need to set component parallel mode since this only queues the job
     update_actual_model(); // update variables/bounds/labels in actualModel
@@ -993,6 +1003,9 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     truthIdMap[actualModel.evaluation_id()] = surrModelEvalCntr;
   }
 
+  // ---------------------------------
+  // Compute approx interface response
+  // ---------------------------------
   if (approx_eval) { // normal case: evaluation of approxInterface
     // pre-process
     switch (responseMode) {
@@ -1040,7 +1053,9 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
   surrResponseMap.clear();
   bool actual_evals = !truthIdMap.empty(), approx_evals = !surrIdMap.empty();
 
+  // -----------------------------
   // synchronize actualModel evals
+  // -----------------------------
   IntResponseMap actual_resp_map_rekey;
   if (actual_evals) {
     component_parallel_mode(ACTUAL_MODEL);
@@ -1058,7 +1073,9 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
       return surrResponseMap; // rekeyed by proxy
   }
 
+  // ---------------------------------
   // synchronize approxInterface evals
+  // ---------------------------------
   IntResponseMap approx_resp_map_rekey;
   if (approx_evals) {
     //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism
@@ -1122,7 +1139,9 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
   surrResponseMap.clear();
   bool actual_evals = !truthIdMap.empty(), approx_evals = !surrIdMap.empty();
 
+  // -----------------------------
   // synchronize actualModel evals
+  // -----------------------------
   IntResponseMap actual_resp_map_rekey;
   if (actual_evals) {
     component_parallel_mode(ACTUAL_MODEL);
@@ -1144,7 +1163,9 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
       return surrResponseMap;
   }
 
+  // ---------------------------------
   // synchronize approxInterface evals
+  // ---------------------------------
   IntResponseMap approx_resp_map_rekey;
   if (approx_evals) {
     //component_parallel_mode(APPROX_INTERFACE); // does not use parallelism

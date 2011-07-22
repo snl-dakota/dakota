@@ -64,9 +64,9 @@ public:
 	       const Response& approx_response, bool quiet_flag = false);
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response and store in discrepancy_response
-  void compute(const RealVector& c_vars, const Response& truth_response, 
-	       const Response& approx_response, Response& discrepancy_response,
-	       bool quiet_flag = false);
+  void compute(//const RealVector& c_vars,
+	       const Response& truth_response, const Response& approx_response,
+	       Response& discrepancy_response, bool quiet_flag = false);
 
   /// apply the correction computed in compute() to approx_response
   void apply(const RealVector& c_vars, Response& approx_response,
@@ -190,9 +190,9 @@ private:
   /// correction instead of a strictly local correction.
   RealVector combineFactors;
 
-  /// point in parameter space where the current correction is calculated
-  /// (often the center of the current trust region)
-  RealVector correctionCenterPt;
+  // point in parameter space where the current correction is calculated
+  // (often the center of the current trust region)
+  //RealVector correctionCenterPt;
   /// copy of center point from the previous correction cycle
   RealVector correctionPrevCenterPt;
   /// truth function values at the current correction point

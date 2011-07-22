@@ -177,6 +177,9 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
     hi_fi_eval = lo_fi_eval = true;          break;
   }
 
+  // ------------------------------
+  // Compute high fidelity response
+  // ------------------------------
   if (hi_fi_eval) {
     component_parallel_mode(HF_MODEL);
     update_model(highFidelityModel);
@@ -203,6 +206,9 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
     }
   }
 
+  // -----------------------------
+  // Compute low fidelity response
+  // -----------------------------
   if (lo_fi_eval) {
     // pre-process
     switch (responseMode) {
@@ -253,14 +259,15 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
     }
   }
 
-  // perform any reductions involving LF & HF response aggregate
+  // ------------------------------
+  // perform any LF/HF aggregations
+  // ------------------------------
   switch (responseMode) {
   case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY: {
     // don't update surrogate data within deltaCorr's Approximations; just
     // update currentResponse (managed as surrogate data at a higher level)
     bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
-    deltaCorr.compute(currentVariables.continuous_variables(),
-		      highFidelityModel.current_response(),
+    deltaCorr.compute(highFidelityModel.current_response(),
 		      lowFidelityModel.current_response(),
 		      currentResponse, quiet_flag);
     break;
@@ -295,6 +302,9 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     hi_fi_eval = lo_fi_eval = true;                                   break;
   }
 
+  // ------------------------------
+  // Compute high fidelity response
+  // ------------------------------
   if (hi_fi_eval) {
     // don't need to set component parallel mode since this only queues the job
     update_model(highFidelityModel);
@@ -311,6 +321,9 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     truthIdMap[highFidelityModel.evaluation_id()] = hierModelEvalCntr;
   }
 
+  // -----------------------------
+  // Compute low fidelity response
+  // -----------------------------
   if (lo_fi_eval) {
     // pre-process
     switch (responseMode) {
@@ -356,7 +369,9 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
   surrResponseMap.clear();
   bool hi_fi_evals = !truthIdMap.empty(), lo_fi_evals = !surrIdMap.empty();
 
+  // -----------------------------------
   // synchronize highFidelityModel evals
+  // -----------------------------------
   IntResponseMap hi_fi_resp_map_rekey;
   if (hi_fi_evals) {
     component_parallel_mode(HF_MODEL);
@@ -377,10 +392,16 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
       hi_fi_resp_map_proxy[r_cit->first] = r_cit->second;
     cachedTruthRespMap.clear();
 
+    // if no LF evals (BYPASS_SURROGATE mode or rare case of empty
+    // surrogateFnIndices in {UN,AUTO_}CORRECTED_SURROGATE modes), return
+    // all HF results.  *_DISCREPANCY modes always have both lo & hi evals.
     if (!lo_fi_evals)         // return ref to non-temporary
       return surrResponseMap; // rekeyed and augmented by proxy
   }
+
+  // ----------------------------------
   // synchronize lowFidelityModel evals
+  // ----------------------------------
   IntResponseMap lo_fi_resp_map_rekey;
   if (lo_fi_evals) {
     component_parallel_mode(LF_MODEL);
@@ -425,45 +446,52 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
       lo_fi_resp_map_proxy[r_cit->first] = r_cit->second;
     cachedApproxRespMap.clear();
 
+    // if no HF evals (full surrogateFnIndices in {UN,AUTO_}CORRECTED_SURROGATE
+    // modes), return all LF results.  *_DISCREPANCY modes always have both
+    // lo & hi evals.
     if (!hi_fi_evals)         // return ref to non-temporary
       return surrResponseMap; // rekeyed, corrected, and augmented by proxy
   }
 
-  // mixed highFidelityModel and lowFidelityModel evals: both
-  // hi_fi_resp_map_rekey and lo_fi_resp_map_rekey may be partial sets of evals
+  // ------------------------------
+  // perform any LF/HF aggregations
+  // ------------------------------
+  // Both highFidelityModel and lowFidelityModel evals are present:
+  // {hi,lo}_fi_resp_map_rekey may be partial sets (partial surrogateFnIndices
+  // in {UN,AUTO_}CORRECTED_SURROGATE modes) or full sets (*_DISCREPANCY modes).
   Response empty_resp;
-  IntRespMCIter hi_fi_it = hi_fi_resp_map_rekey.begin(),
-                lo_fi_it = lo_fi_resp_map_rekey.begin();
-  bool hi_fi_complete = false, lo_fi_complete = false;
-  // process any combination of HF and LF completions
-  while (!hi_fi_complete || !lo_fi_complete) {
-    if (hi_fi_it == hi_fi_resp_map_rekey.end())
-      hi_fi_complete = true;
-    if (lo_fi_it == lo_fi_resp_map_rekey.end())
-      lo_fi_complete = true;
-
-    int hf_hier_model_eval_id = (hi_fi_complete) ? INT_MAX : hi_fi_it->first;
-    int lf_hier_model_eval_id = (lo_fi_complete) ? INT_MAX : lo_fi_it->first;
-
-    if (hf_hier_model_eval_id < lf_hier_model_eval_id) { // only HF available
-      response_mapping(hi_fi_it->second, empty_resp,
-		       surrResponseMap[hf_hier_model_eval_id]);
-      ++hi_fi_it;
-    }
-    else if (lf_hier_model_eval_id < hf_hier_model_eval_id) {//only LF available
-      response_mapping(empty_resp, lo_fi_it->second, 
-		       surrResponseMap[lf_hier_model_eval_id]);
-      ++lo_fi_it;
-    }
-    else if (!hi_fi_complete && !lo_fi_complete) { // both LF and HF available
-      response_mapping(hi_fi_it->second, lo_fi_it->second,
-		       surrResponseMap[hf_hier_model_eval_id]);
-      ++hi_fi_it;
-      ++lo_fi_it;
-    }
+  IntRespMCIter hf_it = hi_fi_resp_map_rekey.begin(),
+                lf_it = lo_fi_resp_map_rekey.begin();
+  switch (responseMode) {
+  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY: {
+    bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+    for (; hf_it != hi_fi_resp_map_rekey.end() && 
+	   lf_it != lo_fi_resp_map_rekey.end(); ++hf_it, ++lf_it)
+      deltaCorr.compute(hf_it->second, lf_it->second,
+			surrResponseMap[hf_it->first], quiet_flag);
+    break;
   }
+  default: // {UN,AUTO_}CORRECTED_SURROGATE modes
+    // process any combination of HF and LF completions
+    while (hf_it != hi_fi_resp_map_rekey.end() ||
+	   lf_it != lo_fi_resp_map_rekey.end()) {
+      int hf_eval_id = (hf_it == hi_fi_resp_map_rekey.end()) ?
+	INT_MAX : hf_it->first;
+      int lf_eval_id = (lf_it == lo_fi_resp_map_rekey.end()) ?
+	INT_MAX : lf_it->first;
 
-  // TO DO: ADDITIVE_DISCREPANCY and MULTIPLICATIVE_DISCREPANCY cases
+      if (hf_eval_id < lf_eval_id) // only HF available
+	{ response_mapping(hf_it->second, empty_resp,
+			   surrResponseMap[hf_eval_id]); ++hf_it; }
+      else if (lf_eval_id < hf_eval_id) // only LF available
+	{ response_mapping(empty_resp, lf_it->second,
+			   surrResponseMap[lf_eval_id]); ++lf_it; }
+      else // both LF and HF available
+	{ response_mapping(hf_it->second, lf_it->second,
+			   surrResponseMap[hf_eval_id]); ++hf_it; ++lf_it; }
+    }
+    break;
+  }
 
   return surrResponseMap;
 }
@@ -480,7 +508,9 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
   surrResponseMap.clear();
   bool hi_fi_evals = !truthIdMap.empty(), lo_fi_evals = !surrIdMap.empty();
 
+  // -----------------------------------
   // synchronize highFidelityModel evals
+  // -----------------------------------
   IntResponseMap hi_fi_resp_map_rekey;
   if (hi_fi_evals) {
     component_parallel_mode(HF_MODEL);
@@ -505,10 +535,16 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
       hi_fi_resp_map_proxy[r_cit->first] = r_cit->second;
     cachedTruthRespMap.clear();
 
+    // if no LF evals (BYPASS_SURROGATE mode or rare case of empty
+    // surrogateFnIndices in {UN,AUTO_}CORRECTED_SURROGATE modes), return
+    // all HF results.  *_DISCREPANCY modes always have both lo & hi evals.
     if (!lo_fi_evals)         // return ref to non-temporary
       return surrResponseMap; // rekeyed and augmented by proxy
   }
+
+  // ----------------------------------
   // synchronize lowFidelityModel evals
+  // ----------------------------------
   IntResponseMap lo_fi_resp_map_rekey;
   if (lo_fi_evals) {
     component_parallel_mode(LF_MODEL);
@@ -557,18 +593,23 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
       lo_fi_resp_map_proxy[r_cit->first] = r_cit->second;
     cachedApproxRespMap.clear();
 
+    // if no HF evals (full surrogateFnIndices in {UN,AUTO_}CORRECTED_SURROGATE
+    // modes), return all LF results.  *_DISCREPANCY modes always have both
+    // lo & hi evals.
     if (!hi_fi_evals)         // return ref to non-temporary
       return surrResponseMap; // rekeyed, corrected, and augmented by proxy
   }
 
-  // TO DO: ADDITIVE_DISCREPANCY and MULTIPLICATIVE_DISCREPANCY cases
-
-  // mixed highFidelityModel and lowFidelityModel evals: both
-  // hi_fi_resp_map_rekey and lo_fi_resp_map_rekey may be partial sets of evals
+  // ------------------------------
+  // perform any LF/HF aggregations
+  // ------------------------------
+  // Both highFidelityModel and lowFidelityModel evals are present:
+  // {hi,lo}_fi_resp_map_rekey may be partial sets (partial surrogateFnIndices
+  // in {UN,AUTO_}CORRECTED_SURROGATE modes) or full sets (*_DISCREPANCY modes).
   Response empty_resp;
-  IntRespMCIter hi_fi_it = hi_fi_resp_map_rekey.begin(),
-                lo_fi_it = lo_fi_resp_map_rekey.begin();
-  bool hi_fi_complete = false, lo_fi_complete = false;
+  IntRespMCIter hf_it = hi_fi_resp_map_rekey.begin(),
+                lf_it = lo_fi_resp_map_rekey.begin();
+  bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
   // invert truthIdMap and surrIdMap
   IntIntMap inverse_truth_id_map, inverse_surr_id_map;
   for (IntIntMCIter tim_it=truthIdMap.begin();
@@ -578,46 +619,64 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
        sim_it!=surrIdMap.end(); ++sim_it)
     inverse_surr_id_map[sim_it->second] = sim_it->first;
   // process any combination of HF and LF completions
-  while (!hi_fi_complete || !lo_fi_complete) {
-    if (hi_fi_it == hi_fi_resp_map_rekey.end())
-      hi_fi_complete = true;
-    if (lo_fi_it == lo_fi_resp_map_rekey.end())
-      lo_fi_complete = true;
-
-    int hf_hier_model_eval_id = (hi_fi_complete) ? INT_MAX : hi_fi_it->first;
-    int lf_hier_model_eval_id = (lo_fi_complete) ? INT_MAX : lo_fi_it->first;
-
-    if (hf_hier_model_eval_id < lf_hier_model_eval_id) { // only HF available
-      if (inverse_surr_id_map.count(hf_hier_model_eval_id))
-	// response not complete: LF contribution not yet available
-	cachedTruthRespMap[hf_hier_model_eval_id] = hi_fi_it->second;
-      else { // there is no LF component to this response
-	response_mapping(hi_fi_it->second, empty_resp,
-			 surrResponseMap[hf_hier_model_eval_id]);
-	truthIdMap.erase(inverse_truth_id_map[hf_hier_model_eval_id]);
+  while (hf_it != hi_fi_resp_map_rekey.end() ||
+	 lf_it != lo_fi_resp_map_rekey.end()) {
+    int hf_eval_id = (hf_it == hi_fi_resp_map_rekey.end()) ?
+      INT_MAX : hf_it->first;
+    int lf_eval_id = (lf_it == lo_fi_resp_map_rekey.end()) ?
+      INT_MAX : lf_it->first;
+    // process LF/HF results or cache them for next pass
+    if (hf_eval_id < lf_eval_id) { // only HF available
+      switch (responseMode) {
+      case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+	// cache HF response since LF contribution not yet available
+	cachedTruthRespMap[hf_eval_id] = hf_it->second; break;
+      default: // {UN,AUTO_}CORRECTED_SURROGATE modes
+	if (inverse_surr_id_map.count(hf_eval_id))
+	  // cache HF response since LF contribution not yet available
+	  cachedTruthRespMap[hf_eval_id] = hf_it->second;
+	else { // there is no LF component to this response
+	  response_mapping(hf_it->second, empty_resp,
+			   surrResponseMap[hf_eval_id]);
+	  truthIdMap.erase(inverse_truth_id_map[hf_eval_id]);
+	}
+	break;
       }
-      ++hi_fi_it;
+      ++hf_it;
     }
-    else if (lf_hier_model_eval_id < hf_hier_model_eval_id) {//only LF available
-      if (inverse_truth_id_map.count(lf_hier_model_eval_id))
-	// response not complete: HF contribution not yet available
-	cachedApproxRespMap[lf_hier_model_eval_id] = lo_fi_it->second;
-      else { // response complete: there is no HF contribution
-	response_mapping(empty_resp, lo_fi_it->second, 
-			 surrResponseMap[lf_hier_model_eval_id]);
-	surrIdMap.erase(inverse_surr_id_map[lf_hier_model_eval_id]);
+    else if (lf_eval_id < hf_eval_id) { // only LF available
+      switch (responseMode) {
+      case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+	// cache LF response since HF contribution not yet available
+	cachedApproxRespMap[lf_eval_id] = lf_it->second; break;
+      default: // {UN,AUTO_}CORRECTED_SURROGATE modes
+	if (inverse_truth_id_map.count(lf_eval_id))
+	  // cache LF response since HF contribution not yet available
+	  cachedApproxRespMap[lf_eval_id] = lf_it->second;
+	else { // response complete: there is no HF contribution
+	  response_mapping(empty_resp, lf_it->second, 
+			   surrResponseMap[lf_eval_id]);
+	  surrIdMap.erase(inverse_surr_id_map[lf_eval_id]);
+	}
+	break;
       }
-      ++lo_fi_it;
+      ++lf_it;
     }
-    else if (!hi_fi_complete && !lo_fi_complete) { // both LF and HF available
-      response_mapping(hi_fi_it->second, lo_fi_it->second,
-		       surrResponseMap[hf_hier_model_eval_id]);
-      truthIdMap.erase(inverse_truth_id_map[hf_hier_model_eval_id]);
-      surrIdMap.erase(inverse_surr_id_map[lf_hier_model_eval_id]);
-      ++hi_fi_it;
-      ++lo_fi_it;
+    else { // both LF and HF available
+      switch (responseMode) {
+      case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+	deltaCorr.compute(hf_it->second, lf_it->second,
+			  surrResponseMap[hf_eval_id], quiet_flag); break;
+      default: // {UN,AUTO_}CORRECTED_SURROGATE modes
+	response_mapping(hf_it->second, lf_it->second,
+			 surrResponseMap[hf_eval_id]);              break;
+      }
+      truthIdMap.erase(inverse_truth_id_map[hf_eval_id]);
+      surrIdMap.erase(inverse_surr_id_map[lf_eval_id]);
+      ++hf_it; ++lf_it;
     }
   }
+
   return surrResponseMap;
 }
 
