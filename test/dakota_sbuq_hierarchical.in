@@ -1,0 +1,61 @@
+
+strategy,
+	single_method
+	graphics tabular_graphics_data
+	method_pointer = 'SBUQ'
+
+method,
+	id_method = 'SBUQ'
+	model_pointer = 'SURROGATE'
+#	model_pointer = 'HIFI'
+	polynomial_chaos				#0,#1,#2
+#	stoch_collocation				#3,#4,#5
+	  sparse_grid_level = 3				#0,#3
+#	  uniform p_refinement				#1,#4
+#	  dimension_adaptive p_refinement generalized	#2,#5
+#	  sparse_grid_level = 0		  		#1,#4,#2,#5
+
+# TO DO: need (a) discrepancy SSG level << LF SSG level or (b) no LF surrogate
+
+model,
+	id_model = 'SURROGATE'
+	surrogate hierarchical
+	  low_fidelity_model  = 'LOFI'
+	  high_fidelity_model = 'HIFI'
+	  correction additive zeroth_order		
+#	  correction additive first_order		
+
+variables,
+	normal_uncertain = 2
+      	  means             =  0.   0.
+	  std_deviations    =  1.   1.
+	  descriptors       = 'x1' 'x2'
+
+responses,
+	num_response_functions = 1
+	no_gradients
+# 	analytic_gradients
+	no_hessians				
+
+model,
+	id_model = 'LOFI'
+	single
+	  interface_pointer = 'LOFI_FN'
+
+interface,
+	id_interface = 'LOFI_FN'
+	system #asynchronous
+ 	  analysis_driver = 'lf_rosenbrock'
+	  deactivate restart_file
+
+model,
+	id_model = 'HIFI'
+	single
+	  interface_pointer = 'HIFI_FN'
+
+interface,
+	id_interface = 'HIFI_FN'
+	system
+ 	  analysis_driver = 'rosenbrock'
+	  deactivate restart_file
+
