@@ -4411,9 +4411,6 @@ static IntSet
 	MP_(surrogateFnIndices);
 
 static Model_mp_lit
-	MP2(approxCorrectionType,additive),
-	MP2(approxCorrectionType,combined),
-	MP2(approxCorrectionType,multiplicative),
 	MP2(approxPointReuse,all),
 	MP2(approxPointReuse,none),
 	MP2(approxPointReuse,region),
@@ -4446,6 +4443,9 @@ static Model_mp_ord
         MP2s(polynomialOrder,3);
 
 static Model_mp_type
+	MP2s(approxCorrectionType,ADDITIVE_CORRECTION),
+	MP2s(approxCorrectionType,COMBINED_CORRECTION),
+	MP2s(approxCorrectionType,MULTIPLICATIVE_CORRECTION),
 	MP2s(pointsManagement,MINIMUM_POINTS),
         MP2s(pointsManagement,RECOMMENDED_POINTS);
 

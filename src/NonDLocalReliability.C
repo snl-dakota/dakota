@@ -198,11 +198,11 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
     // Construct g-hat(x) using a local/multipoint approximation over the
     // uncertain variables (using the same view as iteratedModel).
     Model g_hat_x_model;
-    String approx_type = (mppSearchType == TANA_X) ?
+    String sample_reuse, approx_type = (mppSearchType == TANA_X) ?
       "multipoint_tana" : "local_taylor";
-    String sample_reuse, corr_type;
     UShortArray approx_order(1, taylorOrder);
-    short corr_order = -1, data_order = (taylorOrder == 2) ? 7 : 3;
+    short corr_order = -1, corr_type = NO_CORRECTION,
+      data_order = (taylorOrder == 2) ? 7 : 3;
     int samples = 0, seed = 0;
     Iterator dace_iterator;
     //const Variables& curr_vars = iteratedModel.current_variables();
@@ -224,11 +224,11 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
 
     // Construct G-hat(u) using a local/multipoint approximation over the
     // uncertain variables (using the same view as iteratedModel/g_u_model).
-    String approx_type = (mppSearchType == TANA_U) ?
+    String sample_reuse, approx_type = (mppSearchType == TANA_U) ?
       "multipoint_tana" : "local_taylor";
-    String sample_reuse, corr_type;
     UShortArray approx_order(1, taylorOrder);
-    short corr_order = -1, data_order = (taylorOrder == 2) ? 7 : 3;
+    short corr_order = -1, corr_type = NO_CORRECTION,
+      data_order = (taylorOrder == 2) ? 7 : 3;
     int samples = 0, seed = 0;
     Iterator dace_iterator;
     //const Variables& g_u_vars = g_u_model.current_variables();

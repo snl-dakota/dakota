@@ -44,10 +44,9 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   // Use a hardwired minimal initial samples
   if (!numSamples) // use a default of #terms in a quadratic polynomial
     numSamples = (numContinuousVars+1)*(numContinuousVars+2)/2;
-  String approx_type = "global_gaussian", corr_type, sample_type,
-    sample_reuse = "none";
+  String approx_type = "global_gaussian", sample_type, sample_reuse = "none";
   UShortArray approx_order; 
-  short corr_order = -1;
+  short corr_order = -1, corr_type = NO_CORRECTION;
   if (probDescDB.get_bool("method.derivative_usage")) {
     if (gradientType != "none") dataOrder |= 2;
     if (hessianType  != "none") dataOrder |= 4;

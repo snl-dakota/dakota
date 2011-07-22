@@ -59,9 +59,8 @@ HierarchSurrModel::HierarchSurrModel(ProblemDescDB& problem_db):
   // Correction is required in the hierarchical case (since without
   // correction, all highFidelityModel evaluations are wasted).  Omission
   // of a correction type should be prevented by the input specification.
-  const String& corr_type
-    = problem_db.get_string("model.surrogate.correction_type");
-  if (corr_type.empty()) {
+  short corr_type = problem_db.get_short("model.surrogate.correction_type");
+  if (!corr_type) {
     Cerr << "Error: correction is required with model hierarchies."<< std::endl;
     abort_handler(-1);
   }
@@ -173,7 +172,7 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
     mixed_eval = (hi_fi_eval && lo_fi_eval); break;
   case BYPASS_SURROGATE:
     hi_fi_eval = true; lo_fi_eval = false;   break;
-  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+  case MODEL_DISCREPANCY:
     hi_fi_eval = lo_fi_eval = true;          break;
   }
 
@@ -200,7 +199,7 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
       currentResponse.active_set(set);
       currentResponse.update(highFidelityModel.current_response());
       break;
-    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    case MODEL_DISCREPANCY:
       highFidelityModel.compute_response(set);
       break;
     }
@@ -227,7 +226,7 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
     case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
       lo_fi_set = set; lo_fi_set.request_vector(lo_fi_asv);
       lowFidelityModel.compute_response(lo_fi_set); break;
-    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    case MODEL_DISCREPANCY:
       lowFidelityModel.compute_response(set);       break;
     }
 
@@ -263,7 +262,7 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
   // perform any LF/HF aggregations
   // ------------------------------
   switch (responseMode) {
-  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY: {
+  case MODEL_DISCREPANCY: {
     // don't update surrogate data within deltaCorr's Approximations; just
     // update currentResponse (managed as surrogate data at a higher level)
     bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
@@ -298,7 +297,7 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     hi_fi_eval = !hi_fi_asv.empty(); lo_fi_eval = !lo_fi_asv.empty(); break;
   case BYPASS_SURROGATE:
     hi_fi_eval = true; lo_fi_eval = false;                            break;
-  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+  case MODEL_DISCREPANCY:
     hi_fi_eval = lo_fi_eval = true;                                   break;
   }
 
@@ -313,8 +312,7 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
       ActiveSet hi_fi_set = set; hi_fi_set.request_vector(hi_fi_asv);
       highFidelityModel.asynch_compute_response(hi_fi_set); break;
     }
-    case BYPASS_SURROGATE:
-    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    case BYPASS_SURROGATE: case MODEL_DISCREPANCY:
       highFidelityModel.asynch_compute_response(set);       break;
     }
     // store map from HF eval id to HierarchSurrModel id
@@ -342,7 +340,7 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
       ActiveSet lo_fi_set = set; lo_fi_set.request_vector(lo_fi_asv);
       lowFidelityModel.asynch_compute_response(lo_fi_set); break;
     }
-    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    case MODEL_DISCREPANCY:
       lowFidelityModel.asynch_compute_response(set);       break;
     }
 
@@ -394,7 +392,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
 
     // if no LF evals (BYPASS_SURROGATE mode or rare case of empty
     // surrogateFnIndices in {UN,AUTO_}CORRECTED_SURROGATE modes), return
-    // all HF results.  *_DISCREPANCY modes always have both lo & hi evals.
+    // all HF results.  MODEL_DISCREPANCY mode always has both lo & hi evals.
     if (!lo_fi_evals)         // return ref to non-temporary
       return surrResponseMap; // rekeyed and augmented by proxy
   }
@@ -447,7 +445,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
     cachedApproxRespMap.clear();
 
     // if no HF evals (full surrogateFnIndices in {UN,AUTO_}CORRECTED_SURROGATE
-    // modes), return all LF results.  *_DISCREPANCY modes always have both
+    // modes), return all LF results.  MODEL_DISCREPANCY mode always has both
     // lo & hi evals.
     if (!hi_fi_evals)         // return ref to non-temporary
       return surrResponseMap; // rekeyed, corrected, and augmented by proxy
@@ -458,12 +456,12 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
   // ------------------------------
   // Both highFidelityModel and lowFidelityModel evals are present:
   // {hi,lo}_fi_resp_map_rekey may be partial sets (partial surrogateFnIndices
-  // in {UN,AUTO_}CORRECTED_SURROGATE modes) or full sets (*_DISCREPANCY modes).
+  // in {UN,AUTO_}CORRECTED_SURROGATE) or full sets (MODEL_DISCREPANCY).
   Response empty_resp;
   IntRespMCIter hf_it = hi_fi_resp_map_rekey.begin(),
                 lf_it = lo_fi_resp_map_rekey.begin();
   switch (responseMode) {
-  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY: {
+  case MODEL_DISCREPANCY: {
     bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
     for (; hf_it != hi_fi_resp_map_rekey.end() && 
 	   lf_it != lo_fi_resp_map_rekey.end(); ++hf_it, ++lf_it)
@@ -537,7 +535,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
 
     // if no LF evals (BYPASS_SURROGATE mode or rare case of empty
     // surrogateFnIndices in {UN,AUTO_}CORRECTED_SURROGATE modes), return
-    // all HF results.  *_DISCREPANCY modes always have both lo & hi evals.
+    // all HF results.  MODEL_DISCREPANCY mode always has both lo & hi evals.
     if (!lo_fi_evals)         // return ref to non-temporary
       return surrResponseMap; // rekeyed and augmented by proxy
   }
@@ -594,7 +592,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
     cachedApproxRespMap.clear();
 
     // if no HF evals (full surrogateFnIndices in {UN,AUTO_}CORRECTED_SURROGATE
-    // modes), return all LF results.  *_DISCREPANCY modes always have both
+    // modes), return all LF results.  MODEL_DISCREPANCY mode always has both
     // lo & hi evals.
     if (!hi_fi_evals)         // return ref to non-temporary
       return surrResponseMap; // rekeyed, corrected, and augmented by proxy
@@ -605,7 +603,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
   // ------------------------------
   // Both highFidelityModel and lowFidelityModel evals are present:
   // {hi,lo}_fi_resp_map_rekey may be partial sets (partial surrogateFnIndices
-  // in {UN,AUTO_}CORRECTED_SURROGATE modes) or full sets (*_DISCREPANCY modes).
+  // in {UN,AUTO_}CORRECTED_SURROGATE) or full sets (MODEL_DISCREPANCY).
   Response empty_resp;
   IntRespMCIter hf_it = hi_fi_resp_map_rekey.begin(),
                 lf_it = lo_fi_resp_map_rekey.begin();
@@ -628,7 +626,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
     // process LF/HF results or cache them for next pass
     if (hf_eval_id < lf_eval_id) { // only HF available
       switch (responseMode) {
-      case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      case MODEL_DISCREPANCY:
 	// cache HF response since LF contribution not yet available
 	cachedTruthRespMap[hf_eval_id] = hf_it->second; break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE modes
@@ -646,7 +644,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
     }
     else if (lf_eval_id < hf_eval_id) { // only LF available
       switch (responseMode) {
-      case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      case MODEL_DISCREPANCY:
 	// cache LF response since HF contribution not yet available
 	cachedApproxRespMap[lf_eval_id] = lf_it->second; break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE modes
@@ -664,7 +662,7 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
     }
     else { // both LF and HF available
       switch (responseMode) {
-      case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      case MODEL_DISCREPANCY:
 	deltaCorr.compute(hf_it->second, lf_it->second,
 			  surrResponseMap[hf_eval_id], quiet_flag); break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE modes

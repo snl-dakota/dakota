@@ -56,7 +56,7 @@ public:
 		   //const std::pair<short,short>& view,
 		   //const Sizet2DArray& vars_comps,  const ActiveSet& set,
 		   const String& approx_type, const UShortArray& approx_order,
-		   const String& corr_type, short corr_order, short data_order,
+		   short corr_type, short corr_order, short data_order,
 		   const String& point_reuse);
   /// destructor
   ~DataFitSurrModel();

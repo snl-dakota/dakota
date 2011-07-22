@@ -1720,7 +1720,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"nested.sub_method_pointer", P subMethodPointer},
 	{"optional_interface_responses_pointer", P optionalInterfRespPointer},
 	{"surrogate.actual_model_pointer", P truthModelPointer},
-	{"surrogate.correction_type", P approxCorrectionType},
 	{"surrogate.dace_method_pointer", P subMethodPointer},
 	{"surrogate.high_fidelity_model_pointer", P truthModelPointer},
 	{"surrogate.kriging_opt_method", P krigingOptMethod},
@@ -1994,6 +1993,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
     #define P &DataModelRep::
     static KW<short, DataModelRep> Shdmo[] = {	// must be sorted
 	{"correction_order", P approxCorrectionOrder},
+	{"correction_type", P approxCorrectionType},
 	{"kriging_max_trials", P krigingMaxTrials},
 	{"mars_max_bases", P marsMaxBases},
 	{"mls_poly_order", P mlsPolyOrder},

@@ -73,10 +73,9 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     break;
   }
   case GAUSSIAN_PROCESS: {
-    String approx_type("global_gaussian")/*("global_kriging")*/,
-      sample_reuse, corr_type;
+    String sample_reuse, approx_type("global_gaussian");/*("global_kriging");*/
     UShortArray approx_order; // not used by GP/kriging
-    short corr_order = -1, data_order = 1;
+    short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
     if (probDescDB.get_bool("method.derivative_usage")) {
       if (gradientType != "none") data_order |= 2;
       if (hessianType  != "none") data_order |= 4;

@@ -18,7 +18,8 @@ namespace Dakota {
 
 DataModelRep::DataModelRep():
   modelType("single"), //approxPointReuse("none"),
-  pointsTotal(0), pointsManagement(DEFAULT_POINTS), approxCorrectionOrder(0),
+  pointsTotal(0), pointsManagement(DEFAULT_POINTS),
+  approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
   modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
   mlsPolyOrder(0), mlsWeightFunction(0), rbfBases(0), rbfMaxPts(0),
   rbfMaxSubsets(0), rbfMinPartition(0), marsMaxBases(0), annRandomWeight(0),

@@ -113,9 +113,8 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     cache, interface_id, numFns), false);
 
   // initialize the DiscrepancyCorrection instance
-  const String& corr_type
-    = problem_db.get_string("model.surrogate.correction_type");
-  if (!corr_type.empty())
+  short corr_type = problem_db.get_short("model.surrogate.correction_type");
+  if (corr_type)
     deltaCorr.initialize(*this, surrogateFnIndices, corr_type,
       problem_db.get_short("model.surrogate.correction_order"));
 
@@ -168,12 +167,11 @@ DataFitSurrModel::
 DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 //const SharedVariablesData& svd, const ActiveSet& set,
 		 const String& approx_type, const UShortArray& approx_order,
-		 const String& corr_type, short corr_order, short data_order,
+		 short corr_type, short corr_order, short data_order,
 		 const String& point_reuse):
   SurrogateModel(actual_model.parallel_library(), //view, vars_comps, set,
 		 actual_model.current_variables().shared_data(),
-		 actual_model.current_response().active_set(), corr_type,
-		 corr_order),
+		 actual_model.current_response().active_set()),
   daceIterator(dace_iterator), actualModel(actual_model), surrModelEvalCntr(0),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse)
 {
@@ -214,7 +212,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   //}
 
   // initialize the DiscrepancyCorrection instance
-  if (!corr_type.empty())
+  if (corr_type)
     deltaCorr.initialize(*this, surrogateFnIndices, corr_type, corr_order);
 
   // ignore bounds when finite differencing on data fits, since the bounds are
@@ -864,7 +862,7 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
     mixed_eval = (actual_eval && approx_eval); break;
   case BYPASS_SURROGATE:
     actual_eval = true; approx_eval = false;   break;
-  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+  case MODEL_DISCREPANCY:
     actual_eval = approx_eval = true;          break;
   }
 
@@ -892,7 +890,7 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
       currentResponse.active_set(set);
       currentResponse.update(actualModel.current_response());
       break;
-    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    case MODEL_DISCREPANCY:
       actualModel.compute_response(set);
       break;
     }
@@ -920,7 +918,7 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
       approx_response = (mixed_eval) ? currentResponse.copy() : currentResponse;
       approxInterface.map(currentVariables, approx_set, approx_response); break;
     }
-    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    case MODEL_DISCREPANCY:
       approx_response = currentResponse.copy(); // TO DO
       approxInterface.map(currentVariables, set, approx_response);        break;
     }
@@ -944,7 +942,7 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
   // perform any actual/approx aggregations
   // --------------------------------------
   switch (responseMode) {
-  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY: {
+  case MODEL_DISCREPANCY: {
     // don't update surrogate data within deltaCorr's Approximations; just
     // update currentResponse (managed as surrogate data at a higher level)
     bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
@@ -979,7 +977,7 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     actual_eval = !actual_asv.empty(); approx_eval = !approx_asv.empty(); break;
   case BYPASS_SURROGATE:
     actual_eval = true; approx_eval = false;                              break;
-  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+  case MODEL_DISCREPANCY:
     actual_eval = approx_eval = true;                                     break;
   }
 
@@ -995,8 +993,7 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
       actual_set.request_vector(actual_asv);
       actualModel.asynch_compute_response(actual_set); break;
     }
-    case BYPASS_SURROGATE:
-    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    case BYPASS_SURROGATE: case MODEL_DISCREPANCY:
       actualModel.asynch_compute_response(set);        break;
     }
     // store mapping from actualModel eval id to DataFitSurrModel id
@@ -1025,7 +1022,7 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
       approxInterface.map(currentVariables, approx_set, currentResponse, true);
       break;
     }
-    case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+    case MODEL_DISCREPANCY:
       approxInterface.map(currentVariables,        set, currentResponse, true);
       break;
     }
@@ -1093,12 +1090,12 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
   // --------------------------------------
   // Both actual and approx evals are present: {actual,approx}_resp_map_rekey
   // may be partial sets (partial surrogateFnIndices in
-  // {UN,AUTO_}CORRECTED_SURROGATE modes) or full sets (*_DISCREPANCY modes).
+  // {UN,AUTO_}CORRECTED_SURROGATE) or full sets (MODEL_DISCREPANCY).
   Response empty_resp;
   IntRespMCIter act_it = actual_resp_map_rekey.begin(),
                 app_it = approx_resp_map_rekey.begin();
   switch (responseMode) {
-  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY: {
+  case MODEL_DISCREPANCY: {
     bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
     for (; act_it != actual_resp_map_rekey.end() && 
 	   app_it != approx_resp_map_rekey.end(); ++act_it, ++app_it)
@@ -1165,7 +1162,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
 
     // if no approx evals (BYPASS_SURROGATE mode or rare case of empty
     // surrogateFnIndices in {UN,AUTO_}CORRECTED_SURROGATE modes), return all
-    // actual results.  *_DISCREPANCY modes always have approx & actual evals.
+    // actual results.  MODEL_DISCREPANCY mode has both approx & actual evals.
     if (!approx_evals)
       return surrResponseMap;
   }
@@ -1192,7 +1189,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
   // Both actual and approx evals are present:
   // > actual_resp_map_rekey may be a partial set of evals (partial
   //   surrogateFnIndices in {UN,AUTO_}CORRECTED_SURROGATE modes) or
-  //   full sets (*_DISCREPANCY modes)
+  //   full sets (MODEL_DISCREPANCY mode)
   // > approx_resp_map_rekey is a complete set of evals
   Response empty_resp;
   IntRespMCIter act_it = actual_resp_map_rekey.begin(),
@@ -1216,7 +1213,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
     // process approx/actual results or cache them for next pass
     if (act_eval_id < app_eval_id) { // only actual available
       switch (responseMode) {
-      case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      case MODEL_DISCREPANCY:
 	Cerr << "Error: approx eval missing in DataFitSurrModel::"
 	     << "derived_synchronize_nowait()" << std::endl;
 	abort_handler(-1); break;
@@ -1231,7 +1228,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
     }
     else if (app_eval_id < act_eval_id) { // only approx available
       switch (responseMode) {
-      case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      case MODEL_DISCREPANCY:
 	// cache approx response since actual contribution not yet available
 	cachedApproxRespMap[app_eval_id] = app_it->second; break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE modes
@@ -1249,7 +1246,7 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
     }
     else { // both approx and actual available
       switch (responseMode) {
-      case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+      case MODEL_DISCREPANCY:
 	deltaCorr.compute(act_it->second, app_it->second,
 			  surrResponseMap[act_eval_id], quiet_flag); break;
       default: // {UN,AUTO_}CORRECTED_SURROGATE modes

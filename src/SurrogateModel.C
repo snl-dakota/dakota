@@ -49,7 +49,7 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
 
 SurrogateModel::
 SurrogateModel(ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
-	       const ActiveSet& set, const String& corr_type, short corr_order):
+	       const ActiveSet& set):
   Model(NoDBBaseConstructor(), parallel_lib, svd, set),
   responseMode(AUTO_CORRECTED_SURROGATE), approxBuilds(0)
 {

@@ -17,6 +17,7 @@
 
 #include "DakotaApproximation.H"
 #include "DakotaModel.H"
+#include "DataModel.H"
 
 
 namespace Dakota {
@@ -39,11 +40,10 @@ public:
   DiscrepancyCorrection();
   /// standard constructor
   DiscrepancyCorrection(Model& surr_model, const IntSet& surr_fn_indices,
-			const String& corr_type, short corr_order);
+			short corr_type, short corr_order);
   /// alternate constructor
   DiscrepancyCorrection(const IntSet& surr_fn_indices, size_t num_fns,
-			size_t num_vars, const String& corr_type,
-			short corr_order);
+			size_t num_vars, short corr_type, short corr_order);
   /// destructor
   ~DiscrepancyCorrection();
 
@@ -53,10 +53,10 @@ public:
 
   /// initialize the DiscrepancyCorrection data
   void initialize(Model& surr_model, const IntSet& surr_fn_indices,
-		  const String& corr_type, short corr_order);
+		  short corr_type, short corr_order);
   /// initialize the DiscrepancyCorrection data
   void initialize(const IntSet& surr_fn_indices, size_t num_fns,
-		  size_t num_vars, const String& corr_type, short corr_order);
+		  size_t num_vars, short corr_type, short corr_order);
 
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response and store in {add,mult}Corrections
@@ -74,6 +74,8 @@ public:
 
   /// indicates an active correction via non-empty correctionType
   bool active() const;
+  /// return correctionType
+  short correction_type() const;
   /// return correctionOrder
   short correction_order() const;
   /// return dataOrder
@@ -91,10 +93,9 @@ protected:
   /// subset that is approximated
   IntSet surrogateFnIndices;
 
-  /// approximation correction approach to be used: additive, multiplicative,
-  /// or combined.  An empty string indicates that a correction has not been
-  /// defined.
-  String correctionType;
+  /// approximation correction approach to be used: NO_CORRECTION,
+  /// ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION, or COMBINED_CORRECTION.
+  short correctionType;
   /// approximation correction order to be used: 0, 1, or 2
   short correctionOrder;
   /// order of correction data in 3-bit format: overlay of 1 (value),
@@ -162,8 +163,6 @@ private:
   /// flag used to indicate function values near zero for multiplicative
   /// corrections; triggers an automatic switch to additive corrections
   bool badScalingFlag;
-  /// flag indicating the combination of additive/multiplicative corrections
-  bool combinedFlag;
   /// flag indicating the need for additive correction calculations
   bool computeAdditive;
   /// flag indicating the need for multiplicative correction calculations
@@ -208,13 +207,14 @@ private:
 };
 
 
-inline DiscrepancyCorrection::DiscrepancyCorrection()
+inline DiscrepancyCorrection::DiscrepancyCorrection():
+  correctionType(NO_CORRECTION)
 { }
 
 
 inline DiscrepancyCorrection::
 DiscrepancyCorrection(Model& surr_model, const IntSet& surr_fn_indices,
-		  const String& corr_type, short corr_order)
+		      short corr_type, short corr_order)
 { initialize(surr_model, surr_fn_indices, corr_type, corr_order); }
 
 
@@ -223,7 +223,11 @@ inline DiscrepancyCorrection::~DiscrepancyCorrection()
 
 
 inline bool DiscrepancyCorrection::active() const
-{ return !correctionType.empty(); }
+{ return (correctionType != NO_CORRECTION); }
+
+
+inline short DiscrepancyCorrection::correction_type() const
+{ return correctionType; }
 
 
 inline short DiscrepancyCorrection::correction_order() const

@@ -42,11 +42,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   Model g_u_model;
   bool global_bnds
     = (numContDesVars || numContEpistUncVars || numContStateVars);
-  if (iteratedModel.surrogate_type() == "hierarchical") {
-    iteratedModel.surrogate_response_mode(ADDITIVE_DISCREPANCY);
-    //construct_u_space_model(iteratedModel.surrogate_model(), lf_g_u_model,
-    //			    global_bnds);
-  }
+  if (iteratedModel.surrogate_type() == "hierarchical")
+    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
   construct_u_space_model(iteratedModel, g_u_model, global_bnds);
 
   // -------------------------
@@ -169,8 +166,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-  short  corr_order = -1;
-  String corr_type, pt_reuse, approx_type = (piecewise_basis) ?
+  short  corr_order = -1, corr_type = NO_CORRECTION;
+  String pt_reuse, approx_type = (piecewise_basis) ?
     "piecewise_orthogonal_polynomial" : "global_orthogonal_polynomial";
   if (expansionCoeffsApproach == Pecos::REGRESSION && !tensorRegression) {
     pt_reuse = probDescDB.get_string("method.nond.collocation_point_reuse");
@@ -252,8 +249,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
-  short  corr_order = -1;
-  String corr_type, pt_reuse, approx_type = (piecewise_basis) ?
+  short  corr_order = -1, corr_type = NO_CORRECTION;
+  String pt_reuse, approx_type = (piecewise_basis) ?
     "piecewise_orthogonal_polynomial" : "global_orthogonal_polynomial";
   UShortArray exp_order; // empty for numerical integration approaches
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,

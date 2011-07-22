@@ -59,9 +59,9 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   truthFnStar.resize(numFunctions);
 
   // Always build a global Gaussian process model.  No correction is needed.
-  String approx_type = "global_gaussian", sample_reuse = "none", corr_type;
+  String approx_type = "global_gaussian", sample_reuse = "none";
   UShortArray approx_order; // empty
-  short corr_order = -1;
+  short corr_order = -1, corr_type = NO_CORRECTION;
   if (probDescDB.get_bool("method.derivative_usage")) {
     if (gradientType != "none") dataOrder |= 2;
     if (hessianType  != "none") dataOrder |= 4;

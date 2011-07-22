@@ -31,11 +31,8 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   Model g_u_model;
   bool global_bnds
     = (numContDesVars || numContEpistUncVars || numContStateVars);
-  if (iteratedModel.surrogate_type() == "hierarchical") {
-    iteratedModel.surrogate_response_mode(ADDITIVE_DISCREPANCY);
-    //construct_u_space_model(iteratedModel.surrogate_model(), lf_g_u_model,
-    //			    global_bnds);
-  }
+  if (iteratedModel.surrogate_type() == "hierarchical")
+    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
   construct_u_space_model(iteratedModel, g_u_model, global_bnds);
 
   // -------------------------
@@ -90,8 +87,8 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
-  short  corr_order = -1;
-  String corr_type, pt_reuse, approx_type = (piecewise_basis) ?
+  short  corr_order = -1, corr_type = NO_CORRECTION;
+  String pt_reuse, approx_type = (piecewise_basis) ?
     "piecewise_interpolation_polynomial" : "global_interpolation_polynomial";
   UShortArray approx_order; // empty
   //const Variables& g_u_vars = g_u_model.current_variables();
@@ -164,8 +161,8 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // active/uncertain variables (using same view as iteratedModel/g_u_model:
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
-  short  corr_order = -1;
-  String corr_type, pt_reuse, approx_type = (piecewise_basis) ?
+  short  corr_order = -1, corr_type = NO_CORRECTION;
+  String pt_reuse, approx_type = (piecewise_basis) ?
     "piecewise_interpolation_polynomial" : "global_interpolation_polynomial";
   UShortArray approx_order; // empty
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,

@@ -852,9 +852,9 @@ KEYWORD model {N_mom3(start,0,stop)}
 	      zeroth_order {N_mom(order,approxCorrectionOrder_0)}
 	      | first_order {N_mom(order,approxCorrectionOrder_1)}
 	      | second_order {N_mom(order,approxCorrectionOrder_2)}
-	      additive {N_mom(lit,approxCorrectionType_additive)}
-	      | multiplicative {N_mom(lit,approxCorrectionType_multiplicative)}
-	      | combined {N_mom(lit,approxCorrectionType_combined)}
+	      additive {N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}
+	      | multiplicative {N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}
+	      | combined {N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}
 	      ]
 	    [ diagnostics STRINGLIST {N_mom(strL,diagMetrics)} ]
 	    )
@@ -876,9 +876,9 @@ KEYWORD model {N_mom3(start,0,stop)}
 	      zeroth_order {N_mom(order,approxCorrectionOrder_0)}
 	      | first_order {N_mom(order,approxCorrectionOrder_1)}
 	      | second_order {N_mom(order,approxCorrectionOrder_2)}
-	      additive {N_mom(lit,approxCorrectionType_additive)}
-	      | multiplicative {N_mom(lit,approxCorrectionType_multiplicative)}
-	      | combined {N_mom(lit,approxCorrectionType_combined)}
+	      additive {N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)}
+	      | multiplicative {N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)}
+	      | combined {N_mom(type,approxCorrectionType_COMBINED_CORRECTION)}
 	      )
 	    )
 	  )

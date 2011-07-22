@@ -118,9 +118,9 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   // constructed here one time.
 
   // Always build a global Gaussian process model.  No correction is needed.
-  String approx_type = "global_gaussian", corr_type, sample_type;
+  String approx_type = "global_gaussian", sample_type;
   UShortArray approx_order; // not used for GP/kriging
-  short corr_order = -1,
+  short corr_order = -1, corr_type = NO_CORRECTION,
     active_view = iteratedModel.current_variables().view().first;
   if (probDescDB.get_bool("method.derivative_usage")) {
     if (gradientType != "none") dataOrder |= 2;

@@ -1011,10 +1011,10 @@ static KeyWord
 		{"interface_pointer",11,0,1,0,0,0.,0.,0,N_mom(str,interfacePointer)}
 		},
 	kw_167[6] = {
-		{"additive",8,0,2,2,0,0.,0.,0,N_mom(lit,approxCorrectionType_additive)},
-		{"combined",8,0,2,2,0,0.,0.,0,N_mom(lit,approxCorrectionType_combined)},
+		{"additive",8,0,2,2,0,0.,0.,0,N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)},
+		{"combined",8,0,2,2,0,0.,0.,0,N_mom(type,approxCorrectionType_COMBINED_CORRECTION)},
 		{"first_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_1)},
-		{"multiplicative",8,0,2,2,0,0.,0.,0,N_mom(lit,approxCorrectionType_multiplicative)},
+		{"multiplicative",8,0,2,2,0,0.,0.,0,N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)},
 		{"second_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_2)},
 		{"zeroth_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_0)}
 		},
@@ -1093,10 +1093,10 @@ static KeyWord
 		{"use_derivatives",8,0,6,0,0,0.,0.,0,N_mom(true,modelUseDerivsFlag)}
 		},
 	kw_180[6] = {
-		{"additive",8,0,2,2,0,0.,0.,0,N_mom(lit,approxCorrectionType_additive)},
-		{"combined",8,0,2,2,0,0.,0.,0,N_mom(lit,approxCorrectionType_combined)},
+		{"additive",8,0,2,2,0,0.,0.,0,N_mom(type,approxCorrectionType_ADDITIVE_CORRECTION)},
+		{"combined",8,0,2,2,0,0.,0.,0,N_mom(type,approxCorrectionType_COMBINED_CORRECTION)},
 		{"first_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_1)},
-		{"multiplicative",8,0,2,2,0,0.,0.,0,N_mom(lit,approxCorrectionType_multiplicative)},
+		{"multiplicative",8,0,2,2,0,0.,0.,0,N_mom(type,approxCorrectionType_MULTIPLICATIVE_CORRECTION)},
 		{"second_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_2)},
 		{"zeroth_order",8,0,1,1,0,0.,0.,0,N_mom(order,approxCorrectionOrder_0)}
 		},

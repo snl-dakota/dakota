@@ -407,10 +407,8 @@ inline short Iterator::output_level() const
 
 inline void Iterator::summary_output(bool summary_output_flag)
 { 
-  if (iteratorRep)
-    iteratorRep->summaryOutputFlag = summary_output_flag;
-  else
-    summaryOutputFlag = summary_output_flag; 
+  if (iteratorRep) iteratorRep->summaryOutputFlag = summary_output_flag;
+  else             summaryOutputFlag = summary_output_flag; 
 }
 
 
@@ -420,10 +418,8 @@ inline int Iterator::maximum_concurrency() const
 
 inline void Iterator::maximum_concurrency(int max_conc)
 {
-  if (iteratorRep)
-    iteratorRep->maxConcurrency = max_conc;
-  else
-    maxConcurrency = max_conc;
+  if (iteratorRep) iteratorRep->maxConcurrency = max_conc;
+  else             maxConcurrency = max_conc;
 }
 
 
@@ -433,19 +429,15 @@ inline size_t Iterator::num_final_solutions() const
 
 inline void Iterator::num_final_solutions(size_t num_final)
 { 
-  if (iteratorRep)
-    iteratorRep->numFinalSolutions = num_final;
-  else
-    numFinalSolutions = num_final;
+  if (iteratorRep) iteratorRep->numFinalSolutions = num_final;
+  else             numFinalSolutions = num_final;
 }
 
 
 inline void Iterator::active_set(const ActiveSet& set)
 {
-  if (iteratorRep)
-    iteratorRep->activeSet = set;
-  else
-    activeSet = set;
+  if (iteratorRep) iteratorRep->activeSet = set;
+  else             activeSet = set;
 }
 
 
