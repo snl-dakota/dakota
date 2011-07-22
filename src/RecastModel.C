@@ -456,10 +456,9 @@ void RecastModel::
 set_mapping(const Variables& recast_vars, const ActiveSet& recast_set,
 	    ActiveSet& sub_model_set)
 {
-  const size_t& num_recast_primary_fns   = primaryRespMapIndices.size();
-  const size_t& num_recast_secondary_fns = secondaryRespMapIndices.size();
-  size_t i, j, num_recast_fns
-    = num_recast_primary_fns + num_recast_secondary_fns;
+  size_t num_recast_primary_fns   = primaryRespMapIndices.size(),
+         num_recast_secondary_fns = secondaryRespMapIndices.size(), i, j,
+         num_recast_fns = num_recast_primary_fns + num_recast_secondary_fns;
   const ShortArray& recast_asv = recast_set.request_vector();
   if (recast_asv.size() != num_recast_fns) {
     Cerr << "Error: inconsistent asv sizing in RecastModel::set_mapping()."

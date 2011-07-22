@@ -146,7 +146,7 @@ inline ActiveSet& ActiveSet::operator=(const ActiveSet& set)
 //inline bool operator==(const ActiveSet& set1, const ActiveSet& set2)
 //{
 //  return (set1.requestVector   == set2.requestVector &&
-//	  set1.derivVarsVector == set2.derivVarsVector);
+//	    set1.derivVarsVector == set2.derivVarsVector);
 //}
 
 

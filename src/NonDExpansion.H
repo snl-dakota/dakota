@@ -71,6 +71,10 @@ protected:
   //- Heading: Member function definitions
   //
 
+  /// refine the reference expansion found by compute_expansion() using
+  /// uniform/adaptive p-/h-refinement strategies
+  void refine_expansion();
+
   /// update the expansion by calling uSpaceModel.build_approximation();
   /// avoids unnecessary overhead in compute_expansion()
   void update_expansion();
@@ -190,7 +194,7 @@ private:
   /// manage print of results following a refinement increment
   void compute_print_iteration_results(bool initialize);
   /// manage print of results following convergence of iterative refinement
-  void compute_print_converged_results();
+  void compute_print_converged_results(bool print_override = false);
 
   //
   //- Heading: Data
