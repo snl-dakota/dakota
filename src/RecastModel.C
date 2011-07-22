@@ -26,8 +26,6 @@ namespace Dakota {
 //#define DEBUG
 
 
-
-
 /** Default recast model constructor.  Requires full definition of the
     transformation.  Parameter vars_comps_totals indicates the number
     of each type of variable {4 types} x {3 domains} in the recast
@@ -61,19 +59,19 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
   nonlinearRespMapping(nonlinear_resp_mapping),
   primaryRespMapping(primary_resp_map), secondaryRespMapping(secondary_resp_map)
 {
- 
+  // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
 
   // recasting of variables
   const Variables& sub_model_vars = subModel.current_variables();
   // only reshape if change in the counts of each variable type
-  bool reshape_vars = false;
+  bool reshape_vars;
   if (vars_comps_totals.empty() || 
       sub_model_vars.variables_components_totals() == vars_comps_totals) {
     currentVariables = sub_model_vars.copy();
+    reshape_vars = false;
   }
   else {
-    reshape_vars = true;
     SharedVariablesData recast_svd(sub_model_vars.view(), vars_comps_totals);
     currentVariables = Variables(recast_svd);
     if (!variablesMapping) {
@@ -81,6 +79,7 @@ RecastModel(const Model& sub_model, const Sizet2DArray& vars_map_indices,
 	   << "mapping provided." << std::endl;
       abort_handler(-1);
     }
+    reshape_vars = true;
   }
   // propagate number of active continuous vars to deriv vars
   numDerivVars = currentVariables.cv();
@@ -146,20 +145,22 @@ RecastModel(const Model& sub_model, //size_t num_deriv_vars,
   variablesMapping(NULL), setMapping(NULL), primaryRespMapping(NULL),
   secondaryRespMapping(NULL)
 {
+  // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
 
   // recasting of variables
   const Variables& sub_model_vars = subModel.current_variables();
   // only reshape if change in the counts of each variable type
-  bool reshape_vars = false;
+  bool reshape_vars;
   if (vars_comps_totals.empty() || 
       sub_model_vars.variables_components_totals() == vars_comps_totals) {
     currentVariables = sub_model_vars.copy();
+    reshape_vars = false;
   }
   else {
-    reshape_vars = true;
     SharedVariablesData recast_svd(sub_model_vars.view(), vars_comps_totals);
     currentVariables = Variables(recast_svd);
+    reshape_vars = true;
   }
   // propagate number of active continuous vars to deriv vars
   numDerivVars = currentVariables.cv();

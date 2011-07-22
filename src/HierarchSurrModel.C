@@ -266,6 +266,7 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
     // don't update surrogate data within deltaCorr's Approximations; just
     // update currentResponse (managed as surrogate data at a higher level)
     bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+    currentResponse.active_set(set);
     deltaCorr.compute(highFidelityModel.current_response(),
 		      lowFidelityModel.current_response(),
 		      currentResponse, quiet_flag);

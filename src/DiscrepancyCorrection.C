@@ -230,6 +230,17 @@ compute(//const RealVector& c_vars,
   // it is not necessary to back out a previous correction, and the
   // computation of the new correction is straightforward.
 
+  // for asynchronous operations involving IntResponseMaps, the incoming
+  // discrep_response may be empty
+  if (discrep_response.is_null()) {
+    if (truth_response.active_set() != approx_response.active_set()) {
+      Cerr << "Error: active set inconsistency between truth and approx in "
+	   << "DiscrepancyCorrection::compute()." << std::endl;
+      abort_handler(-1);
+    }
+    discrep_response = truth_response.copy();
+  }
+
   // update previous center data arrays for combined corrections
   // TO DO: augment approxFnsPrevCenter logic for data fit surrogates.  May
   // require additional fn evaluation of previous pt on current surrogate.
@@ -256,6 +267,7 @@ compute(//const RealVector& c_vars,
   badScalingFlag
     = (computeMultiplicative) ? check_scaling(truth_fns, approx_fns) : false;
 
+  // compute additive/multiplicative discrepancy and store in discrep_response
   Real empty_r;
   RealVector discrep_grad, empty_rv; RealSymMatrix discrep_hess, empty_rsm;
   const ShortArray& discrep_asv = discrep_response.active_set_request_vector();
