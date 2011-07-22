@@ -1088,40 +1088,44 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize()
       return surrResponseMap; // rekeyed and corrected by proxy
   }
 
-  // TO DO: ADDITIVE_DISCREPANCY and MULTIPLICATIVE_DISCREPANCY cases
-
-  // mixed actualModel and approxInterface evals
+  // --------------------------------------
+  // perform any actual/approx aggregations
+  // --------------------------------------
+  // Both actual and approx evals are present: {actual,approx}_resp_map_rekey
+  // may be partial sets (partial surrogateFnIndices in
+  // {UN,AUTO_}CORRECTED_SURROGATE modes) or full sets (*_DISCREPANCY modes).
   Response empty_resp;
-  IntRespMCIter actual_it = actual_resp_map_rekey.begin(),
-                approx_it = approx_resp_map_rekey.begin();
-  bool actual_complete = false, approx_complete = false;
-  // process any combination of actual and approx completions
-  while (!actual_complete || !approx_complete) {
-    if (actual_it == actual_resp_map_rekey.end())
-      actual_complete = true;
-    if (approx_it == approx_resp_map_rekey.end())
-      approx_complete = true;
+  IntRespMCIter act_it = actual_resp_map_rekey.begin(),
+                app_it = approx_resp_map_rekey.begin();
+  switch (responseMode) {
+  case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY: {
+    bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
+    for (; act_it != actual_resp_map_rekey.end() && 
+	   app_it != approx_resp_map_rekey.end(); ++act_it, ++app_it)
+      deltaCorr.compute(act_it->second, app_it->second,
+			surrResponseMap[act_it->first], quiet_flag);
+    break;
+  }
+  default: // {UN,AUTO_}CORRECTED_SURROGATE modes
+    // process any combination of HF and LF completions
+    while (act_it != actual_resp_map_rekey.end() ||
+	   app_it != approx_resp_map_rekey.end()) {
+      int act_eval_id = (act_it == actual_resp_map_rekey.end()) ?
+	INT_MAX : act_it->first;
+      int app_eval_id = (app_it == approx_resp_map_rekey.end()) ?
+	INT_MAX : app_it->first;
 
-    int act_dfs_model_eval_id = (actual_complete) ? INT_MAX : actual_it->first;
-    int app_dfs_model_eval_id = (approx_complete) ? INT_MAX : approx_it->first;
-
-    if (act_dfs_model_eval_id < app_dfs_model_eval_id) { // only actual
-      // there is no approx component to this response
-      response_mapping(actual_it->second, empty_resp,
-		       surrResponseMap[act_dfs_model_eval_id]);
-      ++actual_it;
+      if (act_eval_id < app_eval_id) // only HF available
+	{ response_mapping(act_it->second, empty_resp,
+			   surrResponseMap[act_eval_id]); ++act_it; }
+      else if (app_eval_id < act_eval_id) // only LF available
+	{ response_mapping(empty_resp, app_it->second,
+			   surrResponseMap[app_eval_id]); ++app_it; }
+      else // both LF and HF available
+	{ response_mapping(act_it->second, app_it->second,
+			   surrResponseMap[act_eval_id]); ++act_it; ++app_it; }
     }
-    else if (app_dfs_model_eval_id < act_dfs_model_eval_id) { // only approx
-      response_mapping(empty_resp, approx_it->second, 
-		       surrResponseMap[app_dfs_model_eval_id]);
-      ++approx_it;
-    }
-    else if (!actual_complete && !approx_complete) { // both actual and approx
-      response_mapping(actual_it->second, approx_it->second,
-		       surrResponseMap[act_dfs_model_eval_id]);
-      ++actual_it;
-      ++approx_it;
-    }
+    break;
   }
 
   return surrResponseMap;
@@ -1159,6 +1163,9 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
       }
     }
 
+    // if no approx evals (BYPASS_SURROGATE mode or rare case of empty
+    // surrogateFnIndices in {UN,AUTO_}CORRECTED_SURROGATE modes), return all
+    // actual results.  *_DISCREPANCY modes always have approx & actual evals.
     if (!approx_evals)
       return surrResponseMap;
   }
@@ -1179,15 +1186,18 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
     }
   }
 
-  // TO DO: ADDITIVE_DISCREPANCY and MULTIPLICATIVE_DISCREPANCY cases
-
-  // mixed actualModel and approxInterface evals:
-  // > actual_resp_map_rekey may be a partial set of evals
+  // --------------------------------------
+  // perform any approx/actual aggregations
+  // --------------------------------------
+  // Both actual and approx evals are present:
+  // > actual_resp_map_rekey may be a partial set of evals (partial
+  //   surrogateFnIndices in {UN,AUTO_}CORRECTED_SURROGATE modes) or
+  //   full sets (*_DISCREPANCY modes)
   // > approx_resp_map_rekey is a complete set of evals
   Response empty_resp;
-  IntRespMCIter actual_it = actual_resp_map_rekey.begin(),
-                approx_it = approx_resp_map_rekey.begin();
-  bool actual_complete = false, approx_complete = false;
+  IntRespMCIter act_it = actual_resp_map_rekey.begin(),
+                app_it = approx_resp_map_rekey.begin();
+  bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
   // invert truthIdMap and surrIdMap
   IntIntMap inverse_truth_id_map, inverse_surr_id_map;
   for (IntIntMCIter tim_it=truthIdMap.begin();
@@ -1197,40 +1207,58 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
        sim_it!=surrIdMap.end(); ++sim_it)
     inverse_surr_id_map[sim_it->second] = sim_it->first;
   // process any combination of actual and approx completions
-  while (!actual_complete || !approx_complete) {
-    if (actual_it == actual_resp_map_rekey.end())
-      actual_complete = true;
-    if (approx_it == approx_resp_map_rekey.end())
-      approx_complete = true;
-
-    int act_dfs_model_eval_id = (actual_complete) ? INT_MAX : actual_it->first;
-    int app_dfs_model_eval_id = (approx_complete) ? INT_MAX : approx_it->first;
-
-    if (act_dfs_model_eval_id < app_dfs_model_eval_id) { // only actual
-      // there is no approx component to this response
-      response_mapping(actual_it->second, empty_resp,
-		       surrResponseMap[act_dfs_model_eval_id]);
-      truthIdMap.erase(inverse_truth_id_map[act_dfs_model_eval_id]);
-      ++actual_it;
-    }
-    else if (app_dfs_model_eval_id < act_dfs_model_eval_id) { // only approx
-      if (inverse_truth_id_map.count(app_dfs_model_eval_id))
-	// response not complete: actual contribution not yet available
-	cachedApproxRespMap[app_dfs_model_eval_id] = approx_it->second;
-      else { // response complete: there is no actual contribution
-	response_mapping(empty_resp, approx_it->second, 
-			 surrResponseMap[app_dfs_model_eval_id]);
-	surrIdMap.erase(inverse_surr_id_map[app_dfs_model_eval_id]);
+  while (act_it != actual_resp_map_rekey.end() ||
+	 app_it != approx_resp_map_rekey.end()) {
+    int act_eval_id = (act_it == actual_resp_map_rekey.end()) ?
+      INT_MAX : act_it->first;
+    int app_eval_id = (app_it == approx_resp_map_rekey.end()) ?
+      INT_MAX : app_it->first;
+    // process approx/actual results or cache them for next pass
+    if (act_eval_id < app_eval_id) { // only actual available
+      switch (responseMode) {
+      case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+	Cerr << "Error: approx eval missing in DataFitSurrModel::"
+	     << "derived_synchronize_nowait()" << std::endl;
+	abort_handler(-1); break;
+      default: // {UN,AUTO_}CORRECTED_SURROGATE modes
+	// there is no approx component to this response
+	response_mapping(act_it->second, empty_resp,
+			 surrResponseMap[act_eval_id]);
+	truthIdMap.erase(inverse_truth_id_map[act_eval_id]);
+	break;
       }
-      ++approx_it;
+      ++act_it;
     }
-    else if (!actual_complete && !approx_complete) { // both actual and approx
-      response_mapping(actual_it->second, approx_it->second,
-		       surrResponseMap[act_dfs_model_eval_id]);
-      truthIdMap.erase(inverse_truth_id_map[act_dfs_model_eval_id]);
-      surrIdMap.erase(inverse_surr_id_map[app_dfs_model_eval_id]);
-      ++actual_it;
-      ++approx_it;
+    else if (app_eval_id < act_eval_id) { // only approx available
+      switch (responseMode) {
+      case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+	// cache approx response since actual contribution not yet available
+	cachedApproxRespMap[app_eval_id] = app_it->second; break;
+      default: // {UN,AUTO_}CORRECTED_SURROGATE modes
+	if (inverse_truth_id_map.count(app_eval_id))
+	  // cache approx response since actual contribution not yet available
+	  cachedApproxRespMap[app_eval_id] = app_it->second;
+	else { // response complete: there is no actual contribution
+	  response_mapping(empty_resp, app_it->second, 
+			   surrResponseMap[app_eval_id]);
+	  surrIdMap.erase(inverse_surr_id_map[app_eval_id]);
+	}
+	break;
+      }
+      ++app_it;
+    }
+    else { // both approx and actual available
+      switch (responseMode) {
+      case ADDITIVE_DISCREPANCY: case MULTIPLICATIVE_DISCREPANCY:
+	deltaCorr.compute(act_it->second, app_it->second,
+			  surrResponseMap[act_eval_id], quiet_flag); break;
+      default: // {UN,AUTO_}CORRECTED_SURROGATE modes
+	response_mapping(act_it->second, app_it->second,
+			 surrResponseMap[act_eval_id]);              break;
+      }
+      truthIdMap.erase(inverse_truth_id_map[act_eval_id]);
+      surrIdMap.erase(inverse_surr_id_map[app_eval_id]);
+      ++act_it; ++app_it;
     }
   }
 
