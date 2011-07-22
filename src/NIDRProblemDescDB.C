@@ -43,8 +43,6 @@ namespace Dakota {
 extern "C" FILE *nidrin;
 extern "C" int nidr_parse(const char*, FILE*);
 
-using std::sprintf;
-
 int NIDRProblemDescDB::nerr = 0;
 NIDRProblemDescDB* NIDRProblemDescDB::pDDBInstance(NULL);
 
@@ -53,9 +51,9 @@ botch(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	fprintf(stderr, "\nError: ");
-	vfprintf(stderr, fmt, ap);
-	fputs(".\n", stderr);
+	std::fprintf(stderr, "\nError: ");
+	std::vfprintf(stderr, fmt, ap);
+	std::fputs(".\n", stderr);
 	va_end(ap);
 	abort_handler(-1);
 	}
@@ -65,9 +63,9 @@ squawk(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	fprintf(stderr, "\nError: ");
-	vfprintf(stderr, fmt, ap);
-	fputs(".\n", stderr);
+	std::fprintf(stderr, "\nError: ");
+	std::vfprintf(stderr, fmt, ap);
+	std::fputs(".\n", stderr);
 	va_end(ap);
 	++nerr;
 	}
@@ -77,9 +75,9 @@ warn(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	fprintf(stderr, "\nWarning: ");
-	vfprintf(stderr, fmt, ap);
-	fputs(".\n", stderr);
+	std::fprintf(stderr, "\nWarning: ");
+	std::vfprintf(stderr, fmt, ap);
+	std::fputs(".\n", stderr);
 	va_end(ap);
 	}
 
@@ -97,7 +95,7 @@ derived_parse_inputs(const char* dakota_input_file, const char* parser_options)
   if (dakota_input_file) {
     if (dakota_input_file[0] == '-' && !dakota_input_file[1])
       nidrin = stdin;
-    else if( !(nidrin = fopen(dakota_input_file, "r")) )
+    else if( !(nidrin = std::fopen(dakota_input_file, "r")) )
       botch("cannot open \"%s\"", dakota_input_file);
   }
 
@@ -1325,7 +1323,7 @@ BuildLabels(StringArray *sa, size_t nsa, size_t n1, size_t n2, const char *stub)
 		sa->resize(nsa);
 	i = n0 = n1;
 	while(n1 < n2) {
-		sprintf(buf, "%s%lu", stub, (UL)(++n1 - n0));
+		std::sprintf(buf, "%s%lu", stub, (UL)(++n1 - n0));
 		(*sa)[i++] = buf;
 		}
 	}
@@ -3630,7 +3628,7 @@ make_variable_defaults(std::list<DataVariables>* dvl)
 				    }
 				if ((*sa)[i] == "")
 					for(j = 1; j <= n; ++j) {
-						sprintf(buf, "%s%d", vui->lbl, (int)j);
+						std::sprintf(buf, "%s%d", vui->lbl, (int)j);
 						(*sa)[i++] = buf;
 						}
 				else
@@ -4816,7 +4814,7 @@ Var_Name(StringArray *sa, char *buf, size_t i)
 {
 	if (sa)
 		return (*sa)[i].data();
-	sprintf(buf,"%lu", (UL)(i+1));
+	std::sprintf(buf,"%lu", (UL)(i+1));
 	return (const char*)buf;
 	}
 

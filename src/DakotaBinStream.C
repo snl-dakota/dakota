@@ -111,7 +111,7 @@ BiStream& BiStream::operator>>(String& ds)
   tmp[size] = '\0';       // Add the null terminator
   ds = tmp; 
   //Cout << "debug: String = " << ds << endl;
-  free(tmp);
+  std::free(tmp);
 #else
   // do native binary reads
   // read in size of string
