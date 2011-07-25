@@ -62,7 +62,9 @@ SurrBasedLocalMinimizer::SurrBasedLocalMinimizer(Model& model):
   //meritFnType(AUGMENTED_LAGRANGIAN_MERIT), acceptLogic(FILTER),
   penaltyIterOffset(-200), convergenceFlag(0), softConvCount(0),
   softConvLimit(probDescDB.get_int("method.sbl.soft_convergence_limit")),
-  multiLayerBypassFlag(false)
+  correctionType(probDescDB.get_short("model.surrogate.correction_type")),
+  multiLayerBypassFlag(false),
+  useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage"))
 {
   // Verify that iteratedModel is a surrogate model so that
   // approximation-related functions are defined.
@@ -226,27 +228,23 @@ SurrBasedLocalMinimizer::SurrBasedLocalMinimizer(Model& model):
 
   // Initialize method/interface dependent settings
   const String& approx_type = probDescDB.get_string("model.surrogate.type");
-  const String& correction_type
-    = probDescDB.get_string("model.surrogate.correction_type");
   short correction_order
     = probDescDB.get_short("model.surrogate.correction_order");
-  useDerivsFlag = probDescDB.get_bool("model.surrogate.derivative_usage");
-  correctionFlag     = (!correction_type.empty());
   globalApproxFlag   = (approx_type.begins("global_"));
   multiptApproxFlag  = (approx_type.begins("multipoint_"));
   localApproxFlag    = (approx_type.begins("local_"));
   hierarchApproxFlag = (approx_type == "hierarchical");
   truthGradientFlag  = ( localApproxFlag || multiptApproxFlag || 
 			 ( globalApproxFlag && useDerivsFlag ) ||
-			 ( correctionFlag && correction_order >= 1 ) ||
+			 ( correctionType && correction_order >= 1 ) ||
 			 meritFnType      == LAGRANGIAN_MERIT ||
 			 approxSubProbObj == LAGRANGIAN_OBJECTIVE );
-  approxGradientFlag = ( ( correctionFlag && correction_order >= 1 ) ||
+  approxGradientFlag = ( ( correctionType && correction_order >= 1 ) ||
 			 approxSubProbCon == LINEARIZED_CONSTRAINTS );
   truthHessianFlag
     = ( ( localApproxFlag && truth_model.hessian_type() != "none" ) ||
-	( correctionFlag  && correction_order == 2 ) );
-  approxHessianFlag = ( correctionFlag && correction_order == 2 );
+	( correctionType  && correction_order == 2 ) );
+  approxHessianFlag = ( correctionType && correction_order == 2 );
 
   // Sanity check on derivative specifications for first- and second-order SBLM.
   if ( truthGradientFlag && truth_model.gradient_type() == "none" ) {
@@ -507,7 +505,7 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 	// ******************************************
 	// Compute additive/multiplicative correction
 	// ******************************************
-	if (correctionFlag && !embed_correction) {
+	if (correctionType && !embed_correction) {
 	  // -->> local and up to 1st-order multipt do not need correction
 	  // -->> hierarchical needs compute_correction if new center
 	  // -->> global needs compute_correction if new center or new bounds

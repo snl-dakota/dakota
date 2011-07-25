@@ -184,7 +184,7 @@ private:
   bool approxHessianFlag;
   /// flags the use of surrogate correction techniques at the center
   /// of each trust region
-  bool correctionFlag;
+  short correctionType;
   /// flags the use of a global data fit surrogate (rsm, ann, mars, kriging)
   bool globalApproxFlag;
   /// flags the use of a multipoint data fit surrogate (TANA)

@@ -2592,6 +2592,32 @@ void Model::finalize_approximation()
 }
 
 
+void Model::store_approximation()
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->store_approximation();
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual store_approximation"
+	 << "() function.\nThis model does not support approximation storage."
+	 << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Model::combine_approximation()
+{
+  if (modelRep) // envelope fwd to letter
+    modelRep->combine_approximation();
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual combine_"
+	 << "approximation() function.\nThis model does not support "
+	 << "approximation combination." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 /*
 const VariablesArray Model::build_variables() const
 {

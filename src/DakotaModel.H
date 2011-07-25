@@ -147,6 +147,11 @@ public:
   /// finalize an approximation by applying all previous trial increments
   virtual void finalize_approximation();
 
+  /// move the current approximation into storage for later combination
+  virtual void store_approximation();
+  /// combine the current approximation with one previously stored
+  virtual void combine_approximation();
+
   // retrieve the variables used to build a surrogate model
   //virtual const VariablesArray build_variables() const;
   // retrieve the responses used to build a surrogate model

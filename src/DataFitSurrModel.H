@@ -158,6 +158,11 @@ protected:
   /// finalize data fit by applying all previous trial increments
   void finalize_approximation();
 
+  /// store the current data fit approximation for later combination
+  void store_approximation();
+  /// combine the current data fit approximation with one previously stored
+  void combine_approximation();
+
   /// retrieve the set of Approximations from approxInterface
   std::vector<Approximation>& approximations();
   /// return the approximation coefficients from each Approximation

@@ -206,6 +206,8 @@ protected:
   size_t restoration_index();
   void finalize();
   size_t finalization_index(size_t i);
+  void store();
+  void combine();
 
   void print_coefficients(std::ostream& s) const;
 
@@ -537,6 +539,24 @@ inline void PecosApproximation::finalize()
   Approximation::finalize();
   // map to Pecos::BasisApproximation
   pecosBasisApprox.finalize_coefficients();
+}
+
+
+inline void PecosApproximation::store()
+{
+  // base class implementation manages approx data
+  Approximation::store();
+  // map to Pecos::BasisApproximation
+  pecosBasisApprox.store_coefficients();
+}
+
+
+inline void PecosApproximation::combine()
+{
+  // base class implementation manages approx data
+  Approximation::combine();
+  // map to Pecos::BasisApproximation
+  pecosBasisApprox.combine_coefficients();
 }
 
 

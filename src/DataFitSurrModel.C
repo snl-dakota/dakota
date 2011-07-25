@@ -598,6 +598,28 @@ void DataFitSurrModel::finalize_approximation()//(bool rebuild_flag)
 }
 
 
+void DataFitSurrModel::store_approximation()
+{
+  Cout << "\n>>>>> Storing " << surrogateType << " approximations.\n";
+
+  // store the current data for each approximation for later combination
+  approxInterface.store_approximation();
+
+  //Cout << "\n<<<<< " << surrogateType << " approximation stored.\n";
+}
+
+
+void DataFitSurrModel::combine_approximation()//(bool rebuild_flag)
+{
+  Cout << "\n>>>>> Combining " << surrogateType << " approximations.\n";
+
+  // combine current data fits with previously stored approximations
+  approxInterface.combine_approximation();
+
+  //Cout << "\n<<<<< " << surrogateType << " approximation finalized.\n";
+}
+
+
 void DataFitSurrModel::update_local_multipoint()
 {
   // Store the actualModel inactive variable values for use in force_rebuild()

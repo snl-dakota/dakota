@@ -170,6 +170,11 @@ public:
   /// finalizes the approximation by applying all trial increments
   virtual void finalize_approximation();
 
+  /// move the current approximation into storage for later combination
+  virtual void store_approximation();
+  /// combine the current approximation with one previously stored
+  virtual void combine_approximation();
+
   /// clears current data from an approximation interface
   virtual void clear_current();
   /// clears all data from an approximation interface

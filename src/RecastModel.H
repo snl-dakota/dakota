@@ -173,6 +173,9 @@ protected:
   bool restore_available();
   void finalize_approximation();
 
+  void store_approximation();
+  void combine_approximation();
+
   /// retrieve the set of Approximations from the subModel
   std::vector<Approximation>& approximations();
   /// retrieve the approximation coefficients from the subModel
@@ -445,6 +448,14 @@ inline bool RecastModel::restore_available()
 
 inline void RecastModel::finalize_approximation()
 { subModel.finalize_approximation(); }
+
+
+inline void RecastModel::store_approximation()
+{ subModel.store_approximation(); }
+
+
+inline void RecastModel::combine_approximation()
+{ subModel.combine_approximation(); }
 
 
 inline std::vector<Approximation>& RecastModel::approximations()

@@ -380,6 +380,26 @@ void Approximation::finalize()
 }
 
 
+void Approximation::store()
+{
+  if (approxRep)
+    approxRep->store();
+  else {
+    //approxData.store(); 
+  }
+}
+
+
+void Approximation::combine()
+{
+  if (approxRep)
+    approxRep->combine();
+  else {
+    //approxData.restore(); // overloaded version?
+  }
+}
+
+
 size_t Approximation::finalization_index(size_t i)
 {
   if (!approxRep) { // virtual fn: no default, error if not supplied by derived

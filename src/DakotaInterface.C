@@ -1069,6 +1069,32 @@ void Interface::finalize_approximation()
 }
 
 
+void Interface::store_approximation()
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->store_approximation();
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual store_"
+	 << "approximation() function.\n       This interface does not "
+	 << "support approximation storage." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+void Interface::combine_approximation()
+{
+  if (interfaceRep) // envelope fwd to letter
+    interfaceRep->combine_approximation();
+  else { // letter lacking redefinition of virtual fn.
+    Cerr << "Error: Letter lacking redefinition of virtual combine_"
+	 << "approximation() function.\n       This interface does not "
+	 << "support approximation combination." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 void Interface::clear_current()
 {
   if (interfaceRep) // envelope fwd to letter

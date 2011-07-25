@@ -387,7 +387,10 @@ void NonDExpansion::quantify_uncertainty()
 	 << "\nMultifidelity model discrepancy results:"
 	 << "\n----------------------------------------\n";
     compute_print_converged_results(true);
-    RealVectorArray discrep_coeffs = uSpaceModel.approximation_coefficients();
+    // store current state
+    uSpaceModel.store_approximation();
+    // subsequent finalize_approximation() must distinguish boundary between
+    // saved trial sets and archived expansions
 
     // flip HierarchSurrModel::responseMode to LF model
     iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
@@ -400,8 +403,8 @@ void NonDExpansion::quantify_uncertainty()
     compute_print_converged_results(true);
 
     // compute aggregate expansion and generate its statistics
-    //uSpaceModel.increment_coefficients(discrep_coeffs);
-    //compute_print_converged_results();
+    uSpaceModel.combine_approximation();
+    compute_print_converged_results();
   }
   else
     compute_print_converged_results();

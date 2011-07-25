@@ -83,6 +83,11 @@ public:
   /// return index of i-th trailing trial set within restorable bookkeeping sets
   virtual size_t finalization_index(size_t i);
 
+  /// store current approximation for later combination
+  virtual void store();
+  /// combine current approximation with previously stored approximation
+  virtual void combine();
+
   /// retrieve the approximate function value for a given parameter vector
   virtual const Real& get_value(const RealVector& x);
   /// retrieve the approximate function gradient for a given parameter vector

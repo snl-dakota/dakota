@@ -566,7 +566,6 @@ void ApproximationInterface::pop_approximation(bool save_surr_data)
 void ApproximationInterface::restore_approximation()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    // remove entries from Approximation::currentPoints
     functionSurfaces[*it].restore();
 }
 
@@ -577,7 +576,6 @@ bool ApproximationInterface::restore_available()
 {
   bool avail = true;
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    // remove entries from Approximation::currentPoints
     if (!functionSurfaces[*it].restore_available())
       { avail = false; break; }
   return avail;
@@ -587,8 +585,21 @@ bool ApproximationInterface::restore_available()
 void ApproximationInterface::finalize_approximation()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    // remove entries from Approximation::currentPoints
     functionSurfaces[*it].finalize();
+}
+
+
+void ApproximationInterface::store_approximation()
+{
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].store();
+}
+
+
+void ApproximationInterface::combine_approximation()
+{
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
+    functionSurfaces[*it].combine();
 }
 
 
