@@ -336,10 +336,8 @@ if(HAVE_HOPSPACK)
   #set_target_properties(hopspack-static PROPERTIES OUTPUT_NAME "hopspack")
   #set_target_properties(hopspack-static PROPERTIES PREFIX "lib")
 
-  list(APPEND TPL_LIBS executor evaluator framework citizens shared)
-  #list(APPEND TPL_LIBS hopspack executor evaluator framework citizens
-  #shared)
-  list(APPEND EXPORT_TARGETS executor evaluator framework citizens shared)
+  list(APPEND TPL_LIBS hopspack)
+  list(APPEND EXPORT_TARGETS hopspack)
 endif(HAVE_HOPSPACK)
 
 if(HAVE_JEGA)
