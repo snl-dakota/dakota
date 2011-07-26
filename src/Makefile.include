@@ -221,7 +221,7 @@ OPTPP_SRC       = $(top_srcdir)/packages/OPTPP
 OPTPP_BUILD     = $(top_builddir)/packages/OPTPP
 OPTPP_INCL      = -I$(OPTPP_BUILD)/include -I$(OPTPP_SRC)/include \
 		  -I$(OPTPP_SRC)/newmat11
-OPTPP_ARCHIVE   = $(OPTPP_BUILD)/lib/libopt.la
+OPTPP_ARCHIVE   = $(OPTPP_BUILD)/lib/liboptpp.la
 NEWMAT_ARCHIVE  = $(OPTPP_BUILD)/lib/libnewmat.la
 OPTPP_OPT_H     = SNLLBase.H \
                   SNLLOptimizer.H \

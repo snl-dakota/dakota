@@ -386,9 +386,8 @@ if(HAVE_OPTPP)
   endif(MPI_FOUND)
 
   set(iterator_src ${iterator_src} SNLLBase.C SNLLOptimizer.C SNLLLeastSq.C)
-  set(TPL_LIBS ${TPL_LIBS} opt base constraints gss newton pds utils newmat)
-  list(APPEND EXPORT_TARGETS opt base constraints gss newton pds utils
-  newmat)
+  set(TPL_LIBS ${TPL_LIBS} optpp newmat)
+  list(APPEND EXPORT_TARGETS optpp newmat)
 endif(HAVE_OPTPP)
 
 CheckPackage(PSUADE)
