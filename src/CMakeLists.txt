@@ -325,17 +325,6 @@ if(HAVE_HOPSPACK)
                       ${HOPSPACK_SOURCE_DIR}/src/src-main)
   list(APPEND iterator_src APPSOptimizer.C APPSEvalMgr.C)
   #link_directories(${Dakota_BINARY_DIR}/packages/hopspack)
-
-  # WJB: request and additional library target be added to HOPSPACK
-  #add_library(hopspack SHARED
-  #            ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
-  #add_library(hopspack-static STATIC
-  #            ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
-
-  ### Ensure both the shared and static libraries have the same root name
-  #set_target_properties(hopspack-static PROPERTIES OUTPUT_NAME "hopspack")
-  #set_target_properties(hopspack-static PROPERTIES PREFIX "lib")
-
   list(APPEND TPL_LIBS hopspack)
   list(APPEND EXPORT_TARGETS hopspack)
 endif(HAVE_HOPSPACK)
@@ -475,18 +464,10 @@ file( APPEND ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
 
 
 ## DAKOTA executables.
-if(HAVE_HOPSPACK)
-  add_executable(dakota main.C
-                 ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
-  add_executable(dakota_restart_util restart_util.C
-                 ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
-  add_executable(dakota_library_mode library_mode.C
-                 ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
-else()
-  add_executable(dakota main.C)
-  add_executable(dakota_restart_util restart_util.C)
-  add_executable(dakota_library_mode library_mode.C)
-endif(HAVE_HOPSPACK)
+add_executable(dakota main.C)
+add_executable(dakota_restart_util restart_util.C)
+add_executable(dakota_library_mode library_mode.C)
+
   
 ## WJB: request macro from Kitware? FindLibDL.cmake (e.g. digidoc++ or casacore)
 list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${CURL_LIBRARIES} dl ${XMU_LIB})
@@ -515,10 +496,7 @@ set(Dakota_INCLUDE_DIRS ${Dakota_INC_DIRS} CACHE INTERNAL
 set(Dakota_LIBS dakota_src ${TPL_LIBS})
 # Remove teuchos from Dakota_LIBS
 list(REMOVE_ITEM Dakota_LIBS teuchos)
-#if(HAVE_HOPSPACK)
-#  set(Dakota_LIBS ${Dakota_LIBS}
-#      ${HOPSPACK_SOURCE_DIR}/src/src-main/HOPSPACK_Hopspack.cpp)
-#endif()
+
 set(Dakota_LIBRARIES ${Dakota_LIBS} CACHE INTERNAL 
     "Dakota libraries")
 set(Dakota_EXTRA_LIBRARIES ${EXTRA_TPL_LIBS} CACHE INTERNAL 
