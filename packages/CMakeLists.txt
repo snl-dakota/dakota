@@ -34,10 +34,6 @@ if(HAVE_AMPL)
 endif(HAVE_AMPL)
 
 if(HAVE_OPTPP)
-  if(NOT DAKOTA_HAVE_MPI)
-    set(OPTPP_HAVE_MPI OFF CACHE BOOL
-        "MPI NOT enabled in DAKOTA so disable in OPTPP as well" FORCE)
-  endif()
   if (NOT OPTPP_INCLUDE_DIRS)
     add_subdirectory(OPTPP)
   endif()
