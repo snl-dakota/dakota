@@ -382,21 +382,15 @@ void Approximation::finalize()
 
 void Approximation::store()
 {
-  if (approxRep)
-    approxRep->store();
-  else {
-    //approxData.store(); 
-  }
+  if (approxRep) approxRep->store();
+  else           approxData.store(); // base contribution; derived augments
 }
 
 
 void Approximation::combine()
 {
-  if (approxRep)
-    approxRep->combine();
-  else {
-    //approxData.restore(); // overloaded version?
-  }
+  if (approxRep) approxRep->combine();
+  else           approxData.restore(); // base contribution; derived augments
 }
 
 
