@@ -381,9 +381,6 @@ if(HAVE_OPTPP)
   # Therefore, define as many build macros as necessary to get a desirable exec.
   add_definitions("-DDAKOTA_OPTPP")
   add_definitions("-DDAKOTA_NEWMAT")
-  if(MPI_FOUND)
-    add_definitions("-DWITH_MPI")
-  endif(MPI_FOUND)
 
   set(iterator_src ${iterator_src} SNLLBase.C SNLLOptimizer.C SNLLLeastSq.C)
   set(TPL_LIBS ${TPL_LIBS} optpp newmat)
