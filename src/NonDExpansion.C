@@ -963,6 +963,7 @@ void NonDExpansion::compute_print_iteration_results(bool initialize)
 void NonDExpansion::compute_print_converged_results(bool print_override)
 {
 #ifdef CONVERGENCE_DATA
+  // output fine-grained data on generalized index sets
   if (expansionCoeffsApproach == Pecos::SPARSE_GRID &&
       refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
     NonDSparseGrid* nond_sparse
@@ -977,6 +978,18 @@ void NonDExpansion::compute_print_converged_results(bool print_override)
 	  Cout << ' ' << sm_multi_index[i][j];
 	Cout << '\n';
       }
+    }
+  }
+  // output spectral data for multifidelity UQ.  To get finer grain data,
+  // activate DECAY_DEBUG in packages/pecos/src/OrthogPolyApproximation.cpp
+  if (iteratedModel.surrogate_type() == "hierarchical" &&
+      methodName == "nond_polynomial_chaos") {
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    PecosApproximation* poly_approx_rep;
+    for (size_t i=0; i<numFunctions; ++i) {
+      poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+      Cout << "Variable decay rates for response function " << i+1 << ":\n"
+	   << poly_approx_rep->dimension_decay_rates();
     }
   }
 #endif // CONVERGENCE_DATA
