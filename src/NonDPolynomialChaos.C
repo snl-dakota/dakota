@@ -81,19 +81,20 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   if (expansionImportFile.empty()) {
     const UShortArray& quad_order_spec
       = probDescDB.get_dusa("method.nond.quadrature_order");
-    unsigned short ssg_level_spec
-      = probDescDB.get_ushort("method.nond.sparse_grid_level");
+    const UShortArray& ssg_level_spec
+      = probDescDB.get_dusa("method.nond.sparse_grid_level");
     unsigned short cub_int_spec
       = probDescDB.get_ushort("method.nond.cubature_integrand");
     if (!quad_order_spec.empty()) {
       expansionCoeffsApproach = Pecos::QUADRATURE;
-      construct_quadrature(u_space_sampler, g_u_model, quad_order_spec,
-			   piecewise_basis, use_derivs);
+      construct_quadrature(u_space_sampler, g_u_model, quad_order_spec[0],
+	probDescDB.get_rdv("method.nond.dimension_preference"),
+	piecewise_basis, use_derivs);
     }
-    else if (ssg_level_spec != USHRT_MAX) {
+    else if (!ssg_level_spec.empty()) {
       expansionCoeffsApproach = Pecos::SPARSE_GRID;
-      construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec,
-	probDescDB.get_rdv("method.nond.sparse_grid_dimension_preference"),
+      construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec[0],
+	probDescDB.get_rdv("method.nond.dimension_preference"),
 	piecewise_basis, use_derivs);
     }
     else if (cub_int_spec != USHRT_MAX) {
@@ -134,13 +135,15 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	}
 	else if (collocRatio > 0.)
 	  numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
-	if (tensorRegression) // "probabilistic collocation": subset of TPQ pts
+	if (tensorRegression) {// "probabilistic collocation": subset of TPQ pts
 	  // since NonDExpansion invokes uSpaceModel.build_approximation() which
 	  // in turn invokes daceIterator.run_iterator(), we need to avoid
 	  // execution of the full tensor grid in real fn evals by overloading
 	  // the NonDQuad ctor to allow internal point set filtering.
+	  RealVector dim_pref; // empty (not part of regression spec)
 	  construct_quadrature(u_space_sampler, g_u_model, numSamplesOnModel,
-			       piecewise_basis, use_derivs);
+			       dim_pref, piecewise_basis, use_derivs);
+	}
 	else                  // "point collocation": LHS sampling
 	  // reuse seed/rng settings intended for the expansion_sampler
 	  construct_lhs(u_space_sampler, g_u_model, numSamplesOnModel,
@@ -225,8 +228,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // generated using active sampling view:
   Iterator u_space_sampler;
   if (expansionCoeffsApproach == Pecos::QUADRATURE) {
-    UShortArray quad_order(numContinuousVars, num_int_level);
-    construct_quadrature(u_space_sampler, g_u_model, quad_order,
+    RealVector dim_pref; // empty
+    construct_quadrature(u_space_sampler, g_u_model, num_int_level, dim_pref,
 			 piecewise_basis, use_derivs);
   }
   else if (expansionCoeffsApproach == Pecos::SPARSE_GRID) {
@@ -384,7 +387,7 @@ void NonDPolynomialChaos::increment_expansion()
     NonDQuadrature* nond_quad
       = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
     nond_quad->filtered_samples(numSamplesOnModel);
-    nond_quad->compute_min_order();
+    nond_quad->compute_min_quadrature_order(numSamplesOnModel);
   }
   else {
     NonDSampling* nond_sampling

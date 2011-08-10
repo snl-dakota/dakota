@@ -10,21 +10,18 @@ method,
 #	model_pointer = 'HIFI'
 	polynomial_chaos non_nested			#0,#1,#2
 #	stoch_collocation non_nested			#3,#4,#5
-	  sparse_grid_level = 3				#0,#3
+	  sparse_grid_level = 1 3			#0,#3
 #	  uniform p_refinement				#1,#4
 #	  dimension_adaptive p_refinement generalized	#2,#5
 #	  sparse_grid_level = 0		  		#1,#4,#2,#5
-
-# TO DO: need (a) discrepancy SSG level << LF SSG level or (b) no LF surrogate
 
 model,
 	id_model = 'SURROGATE'
 	surrogate hierarchical
 	  low_fidelity_model  = 'LOFI'
 	  high_fidelity_model = 'HIFI'
-#	  correction additive zeroth_order		
 	  correction multiplicative zeroth_order		
-#	  correction additive first_order		
+#	  correction multiplicative first_order		
 
 variables,
 	normal_uncertain = 2

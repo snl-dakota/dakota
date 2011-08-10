@@ -48,27 +48,29 @@ public:
   /// alternate constructor for instantiations "on the fly" based on a
   /// quadrature order specification
   NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
-		 const UShortArray& order, bool nested_rules = false,
-		 bool piecewise_basis = false, bool use_derivs = false);
+		 unsigned short order, const RealVector& dim_pref,
+		 bool nested_rules = false, bool piecewise_basis = false,
+		 bool use_derivs = false);
 
   /// alternate constructor for instantiations "on the fly" based on
   /// the size of a filtered tensor product sample set
   NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
-		 int num_filt_samples, bool nested_rules = false,
-		 bool piecewise_basis = false, bool use_derivs = false);
+		 int num_filt_samples, const RealVector& dim_pref,
+		 bool nested_rules = false, bool piecewise_basis = false,
+		 bool use_derivs = false);
 
   //
   //- Heading: Member functions
   //
 
-  /// return quadOrder
+  /// return Pecos::TensorProductDriver::quadOrder
   const Pecos::UShortArray& quadrature_order() const;
 
   /// set numFilteredSamples
   void filtered_samples(size_t samples);
 
   /// calculate smallest quadOrderRef with at least numFilteredSamples
-  void compute_min_order();
+  void compute_min_quadrature_order(size_t min_samples);
 
 protected:
 
@@ -105,17 +107,22 @@ private:
   /// with highest product weight
   void filter_parameter_sets();
 
-  /// update quadOrder based on an updated dimension preference
-  void anisotropic_preference(const RealVector& dim_pref);
+  /// initialize quad_order vector based on quad_order_spec scalar and
+  /// dim_pref_spec vector
+  void anisotropic_preference(unsigned short quad_order_spec,
+			      const RealVector& dim_pref_spec,
+			      UShortArray& quad_order);
+  /// update quad_order_ref based on an updated dimension preference,
+  /// enforcing previous values as a lower bound
+  void anisotropic_preference(const RealVector& dim_pref,
+			      UShortArray& quad_order_ref);
 
-  /// verify self-consistency of integration specification
-  void check_integration(const UShortArray& quad_order_spec);
+  /// initialize quadOrder{Spec,Ref} from quad_order_spec and dimPrefSpec
+  void initialize_quadrature_order(unsigned short quad_order_spec);
 
-  /// update quadOrder from quadOrderRef to account for nested rule constraints
+  /// update Pecos::TensorProductDriver::quadOrder from quadOrderRef
+  /// to account for nested rule constraints
   void nested_quadrature_order(const UShortArray& quad_order_ref);
-
-  /// return Product_i(quadOrderRef[i])
-  size_t reference_grid_size() const;
 
   /// increment each quadOrderRef entry by 1
   void increment_reference();
@@ -154,44 +161,13 @@ inline void NonDQuadrature::filtered_samples(size_t samples)
 { numFilteredSamples = samples; }
 
 
+/** Note: quadOrderSpec state includes dimPrefSpec. */
 inline void NonDQuadrature::reset()
 { quadOrderRef = quadOrderSpec; tpqDriver->quadrature_order(quadOrderSpec); }
 
 
-inline size_t NonDQuadrature::reference_grid_size() const
-{
-  size_t i, size = 1;
-  for (i=0; i<numContinuousVars; ++i)
-    size *= quadOrderRef[i];
-  return size;
-}
-
-
 inline int NonDQuadrature::num_samples() const
-{ return (numFilteredSamples) ? numFilteredSamples : reference_grid_size(); }
-
-
-inline void NonDQuadrature::increment_reference()
-{
-  // quadOrderRef is a reference point for quadOrder, e.g., a lower bound
-  for (size_t i=0; i<numContinuousVars; ++i)
-    quadOrderRef[i] += 1;
-}
-
-
-inline void NonDQuadrature::increment_reference(const RealVector& dim_pref)
-{
-  // determine the dimension with max preference
-  Real max_dim_pref = dim_pref[0]; size_t max_dim_pref_index = 0;
-  for (size_t i=1; i<numContinuousVars; ++i)
-    if (dim_pref[i] > max_dim_pref)
-      { max_dim_pref = dim_pref[i]; max_dim_pref_index = i; }
-  // increment only the dimension with max preference by 1
-  quadOrderRef[max_dim_pref_index] += 1;
-  // now balance the other dims relative to this new increment, preserving
-  // previous resolution
-  anisotropic_preference(dim_pref);
-}
+{ return (numFilteredSamples) ? numFilteredSamples : tpqDriver->grid_size(); }
 
 } // namespace Dakota
 

@@ -1166,7 +1166,7 @@ const RealVector& ProblemDescDB::get_rdv(const String& entry_name) const
 	{"linear_inequality_lower_bounds", P linearIneqLowerBnds},
 	{"linear_inequality_scales", P linearIneqScales},
 	{"linear_inequality_upper_bounds", P linearIneqUpperBnds},
-	{"nond.sparse_grid_dimension_preference", P sparseGridDimPref},
+	{"nond.dimension_preference", P anisoGridDimPref},
 	{"parameter_study.final_point", P finalPoint},
 	{"parameter_study.list_of_points", P listOfPoints},
 	{"parameter_study.step_vector", P stepVector}};
@@ -1361,6 +1361,7 @@ const UShortArray& ProblemDescDB::get_dusa(const String& entry_name) const
     static KW<UShortArray, DataMethodRep> USAdme[] = {	// must be sorted
 	{"nond.expansion_order", P expansionOrder},
 	{"nond.quadrature_order", P quadratureOrder},
+	{"nond.sparse_grid_level", P sparseGridLevel},
 	{"partitions", P varPartitions}};
     #undef P
 
@@ -2025,9 +2026,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
     if (dbRep->methodDBLocked)
 	Locked_db();
     DataMethodRep *MeRep = dbRep->dataMethodIter->dataMethodRep;
-    if (entry_name.ends("nond.sparse_grid_level"))
-      return MeRep->sparseGridLevel;
-    else if (entry_name.ends("nond.cubature_integrand"))
+    if (entry_name.ends("nond.cubature_integrand"))
       return MeRep->cubIntOrder;
   }
   Bad_name(entry_name, "get_ushort");

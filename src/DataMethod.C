@@ -38,7 +38,7 @@ DataMethodRep::DataMethodRep():
   // DOT and CONMIN
   minMaxType("minimize"),
   // DL_SOLVER
-  dlDetails(""), dlLib(0),
+  dlDetails(""), dlLib(NULL),
   // NPSOL
   verifyLevel(-1), functionPrecision(1.e-10), lineSearchTolerance(0.9),
   // NL2SOL: Real values of -1. ==> use NL2SOL default
@@ -110,10 +110,9 @@ DataMethodRep::DataMethodRep():
   refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
-  expansionTerms(0), expansionSamples(0), sparseGridLevel(USHRT_MAX),
-  cubIntOrder(USHRT_MAX), collocationPoints(0), collocationRatio(0.),
-  probCollocFlag(false), allVarsFlag(false),
-  //expansionSampleType("lhs"), sampleType("lhs"),
+  expansionTerms(0), expansionSamples(0), cubIntOrder(USHRT_MAX),
+  collocationPoints(0), collocationRatio(0.), probCollocFlag(false),
+  allVarsFlag(false), //expansionSampleType("lhs"), sampleType("lhs"),
   distributionType("cumulative"), responseLevelMappingType("probabilities"),
   emulatorSamples(0), emulatorType(NO_EMULATOR), rejectionType("delayed"),
   metropolisType("hastings"),proposalCovScale(1.0),likelihoodScale(1.0),
@@ -130,10 +129,10 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   s << idMethod << modelPointer << methodOutput << maxIterations
     << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
     << convergenceTolerance << constraintTolerance << methodScaling
-    << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
-    << linearIneqScaleTypes << linearIneqScales << linearEqConstraintCoeffs
-    << linearEqTargets << linearEqScaleTypes << linearEqScales << methodName
-    << subMethodName << subMethodPointer << numFinalSolutions;
+    << numFinalSolutions << linearIneqConstraintCoeffs << linearIneqLowerBnds
+    << linearIneqUpperBnds << linearIneqScaleTypes << linearIneqScales
+    << linearEqConstraintCoeffs << linearEqTargets << linearEqScaleTypes
+    << linearEqScales << methodName << subMethodName << subMethodPointer;
 
   s << surrBasedLocalSoftConvLimit << surrBasedLocalLayerBypass
     << surrBasedLocalTRInitSize << surrBasedLocalTRMinSize
@@ -208,13 +207,13 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   s << vbdControl << rngName << refinementType << refinementControl
     << nestingOverride << growthOverride << expansionType << expansionTerms
     << expansionOrder << expansionSamples << expansionSampleType
-    << quadratureOrder << sparseGridLevel << cubIntOrder << collocationPoints
-    << collocationRatio << collocPtReuse << probCollocFlag
+    << quadratureOrder << sparseGridLevel << anisoGridDimPref << cubIntOrder
+    << collocationPoints << collocationRatio << collocPtReuse << probCollocFlag
     << expansionImportFile << sampleType << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << nondOptAlgorithm
     << distributionType << responseLevelMappingType << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
-    << xObsDataFile << yObsDataFile << yStdDataFile << allVarsFlag
+    << allVarsFlag << xObsDataFile << yObsDataFile << yStdDataFile
     << emulatorSamples << emulatorType << rejectionType << metropolisType
     << proposalCovScale << likelihoodScale;
 
@@ -232,10 +231,10 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   s >> idMethod >> modelPointer >> methodOutput >> maxIterations
     >> maxFunctionEvaluations >> speculativeFlag >> methodUseDerivsFlag
     >> convergenceTolerance >> constraintTolerance >> methodScaling
-    >> linearIneqConstraintCoeffs >> linearIneqLowerBnds >> linearIneqUpperBnds
-    >> linearIneqScaleTypes >> linearIneqScales >> linearEqConstraintCoeffs
-    >> linearEqTargets >> linearEqScaleTypes >> linearEqScales >> methodName
-    >> subMethodName >> subMethodPointer >> numFinalSolutions;
+    >> numFinalSolutions >> linearIneqConstraintCoeffs >> linearIneqLowerBnds
+    >> linearIneqUpperBnds >> linearIneqScaleTypes >> linearIneqScales
+    >> linearEqConstraintCoeffs >> linearEqTargets >> linearEqScaleTypes
+    >> linearEqScales >> methodName >> subMethodName >> subMethodPointer;
 
   s >> surrBasedLocalSoftConvLimit >> surrBasedLocalLayerBypass
     >> surrBasedLocalTRInitSize >> surrBasedLocalTRMinSize
@@ -295,7 +294,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // DDACE
   s >> numSymbols >> mainEffectsFlag;
 
-  // FSUDace
+  // FSUDace 
   s >> latinizeFlag >> volQualityFlag >> sequenceStart >> sequenceLeap
     >> primeBase >> numTrials >> trialType;
 
@@ -310,13 +309,13 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   s >> vbdControl >> rngName >> refinementType >> refinementControl
     >> nestingOverride >> growthOverride >> expansionType >> expansionTerms
     >> expansionOrder >> expansionSamples >> expansionSampleType
-    >> quadratureOrder >> sparseGridLevel >> cubIntOrder >> collocationPoints
-    >> collocationRatio >> collocPtReuse >> probCollocFlag
+    >> quadratureOrder >> sparseGridLevel >> anisoGridDimPref >> cubIntOrder
+    >> collocationPoints >> collocationRatio >> collocPtReuse >> probCollocFlag
     >> expansionImportFile >> sampleType >> reliabilitySearchType
     >> reliabilityIntegration >> integrationRefine >> nondOptAlgorithm
     >> distributionType >> responseLevelMappingType >> responseLevels
     >> probabilityLevels >> reliabilityLevels >> genReliabilityLevels
-    >> xObsDataFile >> yObsDataFile >> yStdDataFile >> allVarsFlag
+    >> allVarsFlag >> xObsDataFile >> yObsDataFile >> yStdDataFile
     >> emulatorSamples >> emulatorType >> rejectionType >> metropolisType
     >> proposalCovScale >> likelihoodScale;
 
@@ -334,10 +333,10 @@ void DataMethodRep::write(std::ostream& s) const
   s << idMethod << modelPointer << methodOutput << maxIterations
     << maxFunctionEvaluations << speculativeFlag << methodUseDerivsFlag
     << convergenceTolerance << constraintTolerance << methodScaling
-    << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
-    << linearIneqScaleTypes << linearIneqScales << linearEqConstraintCoeffs
-    << linearEqTargets << linearEqScaleTypes << linearEqScales << methodName
-    << subMethodName << subMethodPointer << numFinalSolutions;
+    << numFinalSolutions << linearIneqConstraintCoeffs << linearIneqLowerBnds
+    << linearIneqUpperBnds << linearIneqScaleTypes << linearIneqScales
+    << linearEqConstraintCoeffs << linearEqTargets << linearEqScaleTypes
+    << linearEqScales << methodName << subMethodName << subMethodPointer;
 
   s << surrBasedLocalSoftConvLimit << surrBasedLocalLayerBypass
     << surrBasedLocalTRInitSize << surrBasedLocalTRMinSize
@@ -412,13 +411,13 @@ void DataMethodRep::write(std::ostream& s) const
   s << vbdControl << rngName << refinementType << refinementControl
     << nestingOverride << growthOverride << expansionType << expansionTerms
     << expansionOrder << expansionSamples << expansionSampleType
-    << quadratureOrder << sparseGridLevel << cubIntOrder << collocationPoints
-    << collocationRatio << collocPtReuse << probCollocFlag
+    << quadratureOrder << sparseGridLevel << anisoGridDimPref << cubIntOrder
+    << collocationPoints << collocationRatio << collocPtReuse << probCollocFlag
     << expansionImportFile << sampleType << reliabilitySearchType
     << reliabilityIntegration << integrationRefine << nondOptAlgorithm
     << distributionType << responseLevelMappingType << responseLevels
     << probabilityLevels << reliabilityLevels << genReliabilityLevels
-    << xObsDataFile << yObsDataFile << yStdDataFile << allVarsFlag
+    << allVarsFlag << xObsDataFile << yObsDataFile << yStdDataFile
     << emulatorSamples << emulatorType << rejectionType << metropolisType
     << proposalCovScale << likelihoodScale;
 

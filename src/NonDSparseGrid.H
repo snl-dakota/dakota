@@ -122,8 +122,6 @@ private:
 
   /// the user specification for the Smolyak sparse grid level
   unsigned short ssgLevelSpec;
-  /// the user specification for anisotropic dimension preference
-  RealVector dimPrefSpec;
 
   /// reference point (e.g., lower bound) for the Smolyak sparse grid level
   /// maintained within ssgDriver

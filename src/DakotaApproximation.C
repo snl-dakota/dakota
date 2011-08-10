@@ -391,6 +391,7 @@ void Approximation::combine()
 {
   if (approxRep) approxRep->combine();
   else           approxData.restore(); // base contribution; derived augments
+//else           approxData.combine(); // base contribution; derived augments
 }
 
 

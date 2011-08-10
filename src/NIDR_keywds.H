@@ -116,10 +116,10 @@ static KeyWord
 		{"emulator_samples",9,0,1,0,0,0.,0.,0,N_mdm(int,emulatorSamples)}
 		},
 	kw_17[1] = {
-		{"sparse_grid_level",9,0,1,0,0,0.,0.,0,N_mdm(ushint,sparseGridLevel)}
+		{"sparse_grid_level",13,0,1,0,0,0.,0.,0,N_mdm(ushintL,sparseGridLevel)}
 		},
 	kw_18[1] = {
-		{"sparse_grid_level",9,0,1,0,0,0.,0.,0,N_mdm(ushint,sparseGridLevel)}
+		{"sparse_grid_level",13,0,1,0,0,0.,0.,0,N_mdm(ushintL,sparseGridLevel)}
 		},
 	kw_19[3] = {
 		{"gp",8,1,1,1,kw_16,0.,0.,0,N_mdm(type,emulatorType_GAUSSIAN_PROCESS)},
@@ -661,9 +661,10 @@ static KeyWord
 		{"dimension_adaptive",8,3,1,1,kw_117},
 		{"uniform",8,0,1,1,0,0.,0.,0,N_mdm(type,refinementControl_UNIFORM_CONTROL)}
 		},
-	kw_119[2] = {
-		{"nested",8,0,1,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
-		{"non_nested",8,0,1,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)}
+	kw_119[3] = {
+		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,anisoGridDimPref)},
+		{"nested",8,0,2,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
+		{"non_nested",8,0,2,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)}
 		},
 	kw_120[3] = {
 		{"adapt_import",8,0,1,1,0,0.,0.,0,N_mdm(lit,integrationRefine_ais)},
@@ -674,11 +675,10 @@ static KeyWord
 		{"lhs",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_lhs)},
 		{"random",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_random)}
 		},
-	kw_122[4] = {
-		{0,0,2,0,0,kw_119},
-		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,sparseGridDimPref)},
-		{"restricted",8,0,2,0,0,0.,0.,0,N_mdm(type,growthOverride_RESTRICTED)},
-		{"unrestricted",8,0,2,0,0,0.,0.,0,N_mdm(type,growthOverride_UNRESTRICTED)}
+	kw_122[3] = {
+		{0,0,3,0,0,kw_119},
+		{"restricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_RESTRICTED)},
+		{"unrestricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_UNRESTRICTED)}
 		},
 	kw_123[2] = {
 		{"drop_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)},
@@ -697,10 +697,10 @@ static KeyWord
 		{"expansion_import_file",11,2,3,1,kw_114,0.,0.,0,N_mdm(str,expansionImportFile)},
 		{"expansion_samples",9,1,3,1,kw_116,0.,0.,0,N_mdm(int,expansionSamples)},
 		{"p_refinement",8,2,1,0,kw_118,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
-		{"quadrature_order",13,2,3,1,kw_119,0.,0.,0,N_mdm(ushintL,quadratureOrder)},
+		{"quadrature_order",13,3,3,1,kw_119,0.,0.,0,N_mdm(ushintL,quadratureOrder)},
 		{"sample_refinement",8,3,5,0,kw_120},
 		{"sample_type",8,2,6,0,kw_121},
-		{"sparse_grid_level",9,3,3,1,kw_122,0.,0.,0,N_mdm(ushint,sparseGridLevel)},
+		{"sparse_grid_level",13,2,3,1,kw_122,0.,0.,0,N_mdm(ushintL,sparseGridLevel)},
 		{"variance_based_decomp",8,2,4,0,kw_123,0.,0.,0,N_mdm(true,vbdFlag)},
 		{"wiener",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_STD_NORMAL_U)}
 		},
@@ -742,33 +742,33 @@ static KeyWord
 		{"lhs",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_lhs)},
 		{"random",8,0,1,1,0,0.,0.,0,N_mdm(lit,sampleType_random)}
 		},
-	kw_133[3] = {
-		{"dimension_preference",14,0,1,0,0,0.,0.,0,N_mdm(RealDL,sparseGridDimPref)},
-		{"restricted",8,0,2,0,0,0.,0.,0,N_mdm(type,growthOverride_RESTRICTED)},
-		{"unrestricted",8,0,2,0,0,0.,0.,0,N_mdm(type,growthOverride_UNRESTRICTED)}
+	kw_133[2] = {
+		{"restricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_RESTRICTED)},
+		{"unrestricted",8,0,1,0,0,0.,0.,0,N_mdm(type,growthOverride_UNRESTRICTED)}
 		},
 	kw_134[2] = {
 		{"drop_tolerance",10,0,2,0,0,0.,0.,0,N_mdm(Real,vbdDropTolerance)},
 		{"univariate_effects",8,0,1,0,0,0.,0.,0,N_mdm(type,vbdControl_UNIVARIATE_VBD)}
 		},
-	kw_135[18] = {
+	kw_135[19] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{0,0,4,0,0,kw_59},
 		{0,0,2,0,0,kw_112},
 		{0,0,2,0,0,kw_113},
 		{"askey",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_ASKEY_U)},
+		{"dimension_preference",14,0,4,0,0,0.,0.,0,N_mdm(RealDL,anisoGridDimPref)},
 		{"h_refinement",8,2,1,0,kw_130,0.,0.,0,N_mdm(type,refinementType_H_REFINEMENT)},
-		{"nested",8,0,5,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
-		{"non_nested",8,0,5,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)},
+		{"nested",8,0,6,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
+		{"non_nested",8,0,6,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)},
 		{"p_refinement",8,2,1,0,kw_130,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
 		{"piecewise",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_PIECEWISE_U)},
 		{"quadrature_order",13,0,3,1,0,0.,0.,0,N_mdm(ushintL,quadratureOrder)},
-		{"sample_refinement",8,3,7,0,kw_131},
-		{"sample_type",8,2,8,0,kw_132},
-		{"sparse_grid_level",9,3,3,1,kw_133,0.,0.,0,N_mdm(ushint,sparseGridLevel)},
-		{"use_derivatives",8,0,4,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)},
-		{"variance_based_decomp",8,2,6,0,kw_134,0.,0.,0,N_mdm(true,vbdFlag)},
+		{"sample_refinement",8,3,8,0,kw_131},
+		{"sample_type",8,2,9,0,kw_132},
+		{"sparse_grid_level",13,2,3,1,kw_133,0.,0.,0,N_mdm(ushintL,sparseGridLevel)},
+		{"use_derivatives",8,0,5,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)},
+		{"variance_based_decomp",8,2,7,0,kw_134,0.,0.,0,N_mdm(true,vbdFlag)},
 		{"wiener",8,0,2,0,0,0.,0.,0,N_mdm(type,expansionType_STD_NORMAL_U)}
 		},
 	kw_136[1] = {
@@ -971,7 +971,7 @@ static KeyWord
 		{"nond_local_reliability",0,4,11,1,kw_92,0.,0.,-17,N_mdm(lit2,methodName_nond_local_reliability)},
 		{"nond_polynomial_chaos",0,13,11,1,kw_124,0.,0.,12,N_mdm(lit,methodName_nond_polynomial_chaos)},
 		{"nond_sampling",0,2,11,1,kw_128,0.,0.,14,N_mdm(lit,methodName_nond_sampling)},
-		{"nond_stoch_collocation",0,13,11,1,kw_135,0.,0.,18,N_mdm(lit,methodName_nond_stoch_collocation)},
+		{"nond_stoch_collocation",0,14,11,1,kw_135,0.,0.,18,N_mdm(lit,methodName_nond_stoch_collocation)},
 		{"nonlinear_cg",8,1,11,1,kw_136,0.,0.,0,N_mdm(lit,methodName_nonlinear_cg)},
 		{"npsol_sqp",8,0,11,1,kw_138,0.,0.,0,N_mdm(lit,methodName_npsol_sqp)},
 		{"optpp_cg",8,0,11,1,kw_140,0.,0.,0,N_mdm(lit,methodName_optpp_cg)},
@@ -989,7 +989,7 @@ static KeyWord
 		{"soga",8,3,11,1,kw_152,0.,0.,0,N_mdm3(soga_begin,0,soga_final)},
 		{"speculative",8,0,6,0,0,0.,0.,0,N_mdm(true,speculativeFlag)},
 		{"stanford",8,2,11,1,kw_153},
-		{"stoch_collocation",8,13,11,1,kw_135,0.,0.,0,N_mdm(lit,methodName_nond_stoch_collocation)},
+		{"stoch_collocation",8,14,11,1,kw_135,0.,0.,0,N_mdm(lit,methodName_nond_stoch_collocation)},
 		{"surrogate_based_global",8,3,11,1,kw_154,0.,0.,0,N_mdm(lit,methodName_surrogate_based_global)},
 		{"surrogate_based_local",8,9,11,1,kw_160,0.,0.,0,N_mdm(lit,methodName_surrogate_based_local)},
 		{"vector_parameter_study",8,3,11,1,kw_161,0.,0.,0,N_mdm(lit,methodName_vector_parameter_study)}

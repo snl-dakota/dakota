@@ -29,7 +29,8 @@ namespace Dakota {
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there are not yet
     separate nond_quadrature/nond_sparse_grid method specifications. */
-NonDIntegration::NonDIntegration(Model& model): NonD(model), numIntegrations(0)
+NonDIntegration::NonDIntegration(Model& model): NonD(model), numIntegrations(0),
+  dimPrefSpec(probDescDB.get_rdv("method.nond.dimension_preference"))
   //, standAloneMode(true)
 {
   // Check for suitable distribution types.
@@ -52,6 +53,21 @@ NonDIntegration::NonDIntegration(Model& model): NonD(model), numIntegrations(0)
     evaluation of numerical integration points. */
 NonDIntegration::NonDIntegration(NoDBBaseConstructor, Model& model): 
   NonD(NoDBBaseConstructor(), model), numIntegrations(0)
+  //, standAloneMode(false)
+{
+  // The passed model (stored in iteratedModel) is G(u): it is recast to
+  // standard space and does not include a DataFit recursion.
+
+  // initialize_random_variables(natafTransform) is called externally (e.g.,
+  // NonDExpansion::initialize_expansion()) and passed data from outer context.
+}
+
+
+/** This alternate constructor is used for on-the-fly generation and
+    evaluation of numerical integration points. */
+NonDIntegration::
+NonDIntegration(NoDBBaseConstructor, Model& model, const RealVector& dim_pref): 
+  NonD(NoDBBaseConstructor(), model), numIntegrations(0), dimPrefSpec(dim_pref)
   //, standAloneMode(false)
 {
   // The passed model (stored in iteratedModel) is G(u): it is recast to

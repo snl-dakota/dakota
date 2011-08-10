@@ -410,11 +410,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)} ]
 #		      | piecewise {N_mdm(type,expansionType_PIECEWISE_U)} ]
 		    ( quadrature_order INTEGERLIST {N_mdm(ushintL,quadratureOrder)}
-		      | ( sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}
-			  [ dimension_preference REALLIST {N_mdm(RealDL,sparseGridDimPref)} ]
+		      | ( sparse_grid_level INTEGERLIST {N_mdm(ushintL,sparseGridLevel)}
 		          [ restricted {N_mdm(type,growthOverride_RESTRICTED)}
 			    | unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)} ]
-			  )
+			)
+			[ dimension_preference REALLIST {N_mdm(RealDL,anisoGridDimPref)} ]
 		        [ nested {N_mdm(type,nestingOverride_NESTED)}
 			  | non_nested {N_mdm(type,nestingOverride_NON_NESTED)} ]
 		    )
@@ -459,11 +459,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
 		      | piecewise {N_mdm(type,expansionType_PIECEWISE_U)} ]
 		    quadrature_order INTEGERLIST {N_mdm(ushintL,quadratureOrder)}
-		    | ( sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)}
-			[ dimension_preference REALLIST {N_mdm(RealDL,sparseGridDimPref)} ]
+		    | ( sparse_grid_level INTEGERLIST {N_mdm(ushintL,sparseGridLevel)}
 		        [ restricted {N_mdm(type,growthOverride_RESTRICTED)}
 			  | unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)} ]
-			)
+		      )
+		    [ dimension_preference REALLIST {N_mdm(RealDL,anisoGridDimPref)} ]
 		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 		    [ nested {N_mdm(type,nestingOverride_NESTED)}
 		      | non_nested {N_mdm(type,nestingOverride_NON_NESTED)} ]
@@ -565,9 +565,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	        ( gp {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
 		  [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ] ) |
 		( pce {N_mdm(type,emulatorType_POLYNOMIAL_CHAOS)}
-		  [ sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)} ] ) |
+		  [ sparse_grid_level INTEGERLIST {N_mdm(ushintL,sparseGridLevel)} ] ) |
 		( sc {N_mdm(type,emulatorType_STOCHASTIC_COLLOCATION)}
-		  [ sparse_grid_level INTEGER {N_mdm(ushint,sparseGridLevel)} ] ) ]
+		  [ sparse_grid_level INTEGERLIST {N_mdm(ushintL,sparseGridLevel)} ] ) ]
               [ rejection {0}
 	        standard {N_mdm(lit,rejectionType_standard)}
 		| delayed {N_mdm(lit,rejectionType_delayed)} ]

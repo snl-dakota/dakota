@@ -55,7 +55,7 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     // instantiate a NonD{PolynomialChaos,StochCollocation} iterator
     bool use_derivs = probDescDB.get_bool("method.derivative_usage");
     unsigned short level
-      = probDescDB.get_ushort("method.nond.sparse_grid_level");
+      = probDescDB.get_dusa("method.nond.sparse_grid_level")[0];
     if (emulatorType == POLYNOMIAL_CHAOS)
       stochExpIterator.assign_rep(new NonDPolynomialChaos(iteratedModel,
 	Pecos::SPARSE_GRID, level, EXTENDED_U, use_derivs));

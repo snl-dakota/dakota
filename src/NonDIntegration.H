@@ -69,6 +69,9 @@ protected:
 
   /// alternate constructor for instantiations "on the fly"
   NonDIntegration(NoDBBaseConstructor, Model& model);
+  /// alternate constructor for instantiations "on the fly"
+  NonDIntegration(NoDBBaseConstructor, Model& model,
+		  const RealVector& dim_pref);
 
   ~NonDIntegration();            ///< destructor
 
@@ -95,6 +98,9 @@ protected:
 
   /// counter for number of integration executions for this object
   size_t numIntegrations;
+
+  /// the user specification for anisotropic dimension preference
+  RealVector dimPrefSpec;
 
 private:
 

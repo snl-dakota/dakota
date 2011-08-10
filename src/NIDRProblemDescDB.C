@@ -4256,16 +4256,16 @@ static Real
 	MP_(xConvTol);
 
 static RealVector
+	MP_(anisoGridDimPref),
 	MP_(finalPoint),
 	MP_(linearEqConstraintCoeffs),
-	MP_(linearEqTargets),
 	MP_(linearEqScales),
+	MP_(linearEqTargets),
 	MP_(linearIneqConstraintCoeffs),
 	MP_(linearIneqLowerBnds),
 	MP_(linearIneqUpperBnds),
 	MP_(linearIneqScales),
 	MP_(listOfPoints),
-	MP_(sparseGridDimPref),
 	MP_(stepVector);
 
 static RealVectorArray
@@ -4275,12 +4275,12 @@ static RealVectorArray
 	MP_(responseLevels);
 
 static unsigned short
-	MP_(cubIntOrder),
-	MP_(sparseGridLevel);
+	MP_(cubIntOrder);
 
 static UShortArray
         MP_(expansionOrder),
         MP_(quadratureOrder),
+	MP_(sparseGridLevel),
 	MP_(varPartitions);
 
 static String

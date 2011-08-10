@@ -186,6 +186,7 @@ public:
   bool methodScaling;
   /// number of final solutions returned from the iterator
   size_t numFinalSolutions;
+
   /// coefficient matrix for the linear inequality constraints (from
   /// the \c linear_inequality_constraint_matrix specification in \ref
   /// MethodIndControl)
@@ -279,7 +280,6 @@ public:
   short surrBasedLocalAcceptLogic;
   /// SBL constraint relaxation method: NO_RELAX or HOMOTOPY
   short surrBasedLocalConstrRelax;
-
   /// user-specified method for adding points to the set upon which the
   /// next surrogate is based in the \c surrogate_based_global strategy. 
   bool surrBasedGlobalReplacePts;
@@ -299,7 +299,7 @@ public:
 
   /// string of options for a dynamically linked solver
   String dlDetails;
-  /// handle to dynammically loaded library
+  /// handle to dynamically loaded library
   void *dlLib;
 
   // NPSOL
@@ -614,6 +614,8 @@ public:
   int previousSamples;
   /// the \c var_based_decomp specification for a variety of sampling methods
   bool vbdFlag;
+  /// the \c var_based_decomp tolerance for omitting index output
+  Real vbdDropTolerance;
 
   // NonD
 
@@ -621,8 +623,6 @@ public:
   /// vbdFlag is on, controls granularity of calculation/output of
   /// main/interaction/total effects
   short vbdControl;
-  /// the \c var_based_decomp tolerance for omitting index output
-  Real vbdDropTolerance;
   /// the \c basic random-number generator for NonD
   String rngName;
   /// refinement type for stochastic expansions from dimension refinement
@@ -653,14 +653,14 @@ public:
   /// the \c quadrature_order specification in \ref MethodNonDPCE and
   /// \ref MethodNonDSC
   UShortArray quadratureOrder;
-  /// the \c sparse_grid_level specification in \ref MethodNonDPCE and
-  /// \ref MethodNonDSC
-  unsigned short sparseGridLevel;
+  /// the \c sparse_grid_level specification in \ref MethodNonDPCE,
+  /// \ref MethodNonDSC, and other stochastic expansion-enabled methods
+  UShortArray sparseGridLevel;
+  /// the \c dimension_preference specification for tensor and sparse grids
+  /// in \ref MethodNonDPCE and \ref MethodNonDSC
+  RealVector anisoGridDimPref;
   /// the \c cubature_integrand specification in \ref MethodNonDPCE
   unsigned short cubIntOrder;
-  /// the sparse grid \c dimension_preference specification in
-  /// \ref MethodNonDPCE and \ref MethodNonDSC
-  RealVector sparseGridDimPref;
   /// the \c collocation_points specification in \ref MethodNonDPCE
   int collocationPoints;
   /// the \c collocation_ratio specification in \ref MethodNonDPCE
@@ -733,7 +733,6 @@ public:
   Real proposalCovScale;
   /// the \c likelihood scale factor in \ref MethodNonDBayes
   Real likelihoodScale;
-
 
   // Parameter Study
 

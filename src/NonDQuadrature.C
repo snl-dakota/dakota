@@ -52,8 +52,9 @@ NonDQuadrature::NonDQuadrature(Model& model): NonDIntegration(model),
                              piecewise_basis, equidistant_rules, use_derivs,
 			     nested_uniform_rule);
 
-  // check_integration() needs integrationRules from initialize_grid()
-  check_integration(probDescDB.get_dusa("method.nond.quadrature_order"));
+  // initialize_quadrature_order() needs integrationRules from initialize_grid()
+  initialize_quadrature_order(
+    probDescDB.get_dusa("method.nond.quadrature_order")[0]);
   maxConcurrency *= tpqDriver->grid_size();
 }
 
@@ -62,10 +63,10 @@ NonDQuadrature::NonDQuadrature(Model& model): NonDIntegration(model),
     evaluation of numerical quadrature points. */
 NonDQuadrature::
 NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
-	       const UShortArray& order, bool nested_rules,
-	       bool piecewise_basis, bool use_derivs): 
-  NonDIntegration(NoDBBaseConstructor(), model), nestedRules(nested_rules),
-  numFilteredSamples(0)
+	       unsigned short order, const RealVector& dim_pref,
+	       bool nested_rules, bool piecewise_basis, bool use_derivs): 
+  NonDIntegration(NoDBBaseConstructor(), model, dim_pref),
+  nestedRules(nested_rules), numFilteredSamples(0)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
@@ -82,7 +83,7 @@ NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
 			     equidistant_rules, use_derivs,
 			     nested_uniform_rule);
 
-  check_integration(order); // needs integrationRules from initialize_grid()
+  initialize_quadrature_order(order); // use initialize_grid()->integrationRules
   maxConcurrency *= tpqDriver->grid_size();
 }
 
@@ -91,9 +92,9 @@ NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
     evaluation of numerical quadrature points. */
 NonDQuadrature::
 NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
-	       int num_filt_samples, bool nested_rules, bool piecewise_basis,
-	       bool use_derivs): 
-  NonDIntegration(NoDBBaseConstructor(), model),
+	       int num_filt_samples, const RealVector& dim_pref,
+	       bool nested_rules, bool piecewise_basis, bool use_derivs): 
+  NonDIntegration(NoDBBaseConstructor(), model, dim_pref),
   numFilteredSamples(num_filt_samples), nestedRules(nested_rules)
 {
   // initialize the numerical integration driver
@@ -110,7 +111,7 @@ NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
   tpqDriver->initialize_grid(u_types, nestedRules, piecewise_basis,
 			     equidistant_rules, use_derivs,
 			     nested_uniform_rule);
-  compute_min_order();
+  compute_min_quadrature_order(numFilteredSamples);
   maxConcurrency *= numFilteredSamples;
 }
 
@@ -119,55 +120,35 @@ NonDQuadrature::~NonDQuadrature()
 { }
 
 
-void NonDQuadrature::check_integration(const UShortArray& quad_order_spec)
+void NonDQuadrature::initialize_quadrature_order(unsigned short quad_order_spec)
 {
-  bool err_flag = false;
-
-  // Update quadOrderRef from quad_order_spec (the original user specification)
-  size_t quad_spec_len = quad_order_spec.size();
-  if (quad_spec_len == numContinuousVars)
-    quadOrderRef = quadOrderSpec = quad_order_spec;
-  else if (quad_spec_len == 1) {
-    unsigned short quad_order = quad_order_spec[0];
-    quadOrderRef.reserve(numContinuousVars);
-    quadOrderRef.assign(numContinuousVars, quad_order);
+  // Update quadOrder{Spec,Ref} from quad_order_spec and dimPrefSpec
+  if (dimPrefSpec.empty()) { // update quadOrderSpec for aniso tensor grid
     quadOrderSpec.reserve(numContinuousVars);
-    quadOrderSpec.assign(numContinuousVars, quad_order);
+    quadOrderSpec.assign(numContinuousVars, quad_order_spec);
   }
-  else {
-    err_flag = true;
-    if (quad_spec_len == 0)
-      Cerr << "Error: quadrature order specification required in "
-	   << "NonDQuadrature::check_quadrature()." << std::endl;
-    else
-      Cerr << "Error: length of quadrature order specification is "
-	   << "inconsistent with active\n       continuous variables in "
-	   << "NonDQuadrature::check_quadrature()." << std::endl;
-  }
+  else
+    anisotropic_preference(quad_order_spec, dimPrefSpec, quadOrderSpec);
+  quadOrderRef = quadOrderSpec;
+  //dimPrefRef = dimPrefSpec; // not currently necessary
 
-  if (err_flag)
-    abort_handler(-1);
-
-  // Update TensorProductDriver::quadOrder from quadOrderRef
+  // Update Pecos::TensorProductDriver::quadOrder from quadOrderRef
   if (nestedRules) nested_quadrature_order(quadOrderRef);
   else         tpqDriver->quadrature_order(quadOrderRef);
 }
 
 
-void NonDQuadrature::compute_min_order()
+void NonDQuadrature::compute_min_quadrature_order(size_t min_samples)
 {
-  unsigned short min_order = 1; size_t i, num_tensor_pts = 1;
-  while (num_tensor_pts < numFilteredSamples) {
-    ++min_order; num_tensor_pts = min_order;
-    for (i=1; i<numContinuousVars; ++i)
-      num_tensor_pts *= min_order;
-  }
   quadOrderRef.reserve(numContinuousVars);
-  quadOrderRef.assign(numContinuousVars, min_order);
-
-  // Update TensorProductDriver::quadOrder from quadOrderRef
-  if (nestedRules) nested_quadrature_order(quadOrderRef);
-  else         tpqDriver->quadrature_order(quadOrderRef);
+  quadOrderRef.assign(numContinuousVars, 1);
+  // compute minimal order tensor grid with at least numFilteredSamples points
+  if (dimPrefSpec.empty()) // isotropic tensor grid
+    while (tpqDriver->grid_size() < min_samples)
+      increment_grid();
+  else                   // anisotropic tensor grid
+    while (tpqDriver->grid_size() < min_samples)
+      increment_grid_preference(dimPrefSpec);
 }
 
 
@@ -225,30 +206,23 @@ void NonDQuadrature::filter_parameter_sets()
 void NonDQuadrature::
 sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 {
-  // quadrature order may be increased ***or decreased*** to provide at least
-  // min_samples, but the original user specification (quadOrderSpec) is a
-  // hard lower bound.  With the introduction of uniform/adaptive refinements,
-  // quadOrderRef (which is incremented from quadOrderSpec) replaces
-  // quadOrderSpec as the lower bound.
-  if (min_samples > reference_grid_size()) {
-    // enforcing a minimum isotropic order for an anisotropic expansion isn't
-    // exact, but it's close enough since this function should only come into
-    // play for regression-based isotropic PCE.
-    unsigned short min_iso_order = (unsigned short)std::ceil(
-      std::pow((Real)min_samples, 1./(Real)numContinuousVars) - 1.e-10);
-    if (nestedRules) {
-      UShortArray new_quad_order_ref(numContinuousVars);
-      for (size_t i=0; i<numContinuousVars; ++i)
-	new_quad_order_ref[i] = std::max(min_iso_order, quadOrderRef[i]);
-      nested_quadrature_order(new_quad_order_ref);
-    }
-    else
-      for (size_t i=0; i<numContinuousVars; ++i)
-	tpqDriver->
-	  quadrature_order(std::max(min_iso_order, quadOrderRef[i]), i);
-
-    // maxConcurrency must not be updated since parallel config management
-    // depends on having the same value at ctor/run/dtor times.
+  // With the introduction of uniform/adaptive refinements, quadOrderRef
+  // (which is incremented from quadOrderSpec) replaces quadOrderSpec as
+  // the current lower bound.  Pecos::TensorProductDriver::quadOrder may be
+  // increased ***or decreased*** to provide at least min_samples subject
+  // to this lower bound.  quadOrderRef is ***not*** updated by min_samples.
+  if (min_samples > tpqDriver->grid_size()) {
+    // store quadOrderRef prior to temporary update by compute_min_quad_order()
+    UShortArray quad_order_low_bnd = quadOrderRef;
+    compute_min_quadrature_order(min_samples); // iso or aniso TPQ
+    // enforce lower bound
+    UShortArray new_quad_order(numContinuousVars);
+    for (size_t i=0; i<numContinuousVars; ++i)
+      new_quad_order[i] = std::max(quad_order_low_bnd[i], quadOrderRef[i]);
+    if (nestedRules) nested_quadrature_order(new_quad_order);
+    else         tpqDriver->quadrature_order(new_quad_order);
+    // restore quadOrderRef
+    quadOrderRef = quad_order_low_bnd;
   }
 
   // not currently used by this class:
@@ -331,12 +305,20 @@ void NonDQuadrature::increment_grid()
     size_t orig_size = tpqDriver->grid_size();
     // initial increment and nestedness enforcement
     increment_reference();      nested_quadrature_order(quadOrderRef);
-    // ensure change in presence of slow growth
+    // ensure change in presence of restricted growth
     while (tpqDriver->grid_size() == orig_size)
       { increment_reference();  nested_quadrature_order(quadOrderRef); }
   }
   else
     { increment_reference(); tpqDriver->quadrature_order(quadOrderRef); }
+}
+
+
+void NonDQuadrature::increment_reference()
+{
+  // quadOrderRef is a reference point for quadOrder, e.g., a lower bound
+  for (size_t i=0; i<numContinuousVars; ++i)
+    quadOrderRef[i] += 1;
 }
 
 
@@ -350,7 +332,7 @@ void NonDQuadrature::increment_grid_preference(const RealVector& dim_pref)
     size_t orig_size = tpqDriver->grid_size();
     // initial increment, anisotropy update, and nestedness enforcement
     increment_reference(dim_pref);     nested_quadrature_order(quadOrderRef);
-    // ensure change in presence of slow growth
+    // ensure change in presence of restricted growth
     while (tpqDriver->grid_size() == orig_size)
       { increment_reference(dim_pref); nested_quadrature_order(quadOrderRef); }
   }
@@ -361,37 +343,71 @@ void NonDQuadrature::increment_grid_preference(const RealVector& dim_pref)
 }
 
 
-void NonDQuadrature::anisotropic_preference(const RealVector& dim_pref)
+void NonDQuadrature::increment_reference(const RealVector& dim_pref)
+{
+  // determine the dimension with max preference
+  Real max_dim_pref = dim_pref[0]; size_t max_dim_pref_index = 0;
+  for (size_t i=1; i<numContinuousVars; ++i)
+    if (dim_pref[i] > max_dim_pref)
+      { max_dim_pref = dim_pref[i]; max_dim_pref_index = i; }
+  // increment only the dimension with max preference by 1
+  quadOrderRef[max_dim_pref_index] += 1;
+  // now balance the other dims relative to this new increment, preserving
+  // previous resolution
+  anisotropic_preference(dim_pref, quadOrderRef);
+}
+
+
+/** This version of anisotropic_preference() converts a scalar
+    quad_order_spec and a dim_pref vector into a quad_order vector.  It is
+    used for initialization and does not enforce a reference lower bound. */
+void NonDQuadrature::
+anisotropic_preference(unsigned short quad_order_spec,
+		       const RealVector& dim_pref_spec, UShortArray& quad_order)
+{
+  Real max_dim_pref = dim_pref_spec[0]; size_t i, max_dim_pref_index = 0;
+  for (i=1; i<numContinuousVars; ++i)
+    if (dim_pref_spec[i] > max_dim_pref)
+      { max_dim_pref = dim_pref_spec[i]; max_dim_pref_index = i; }
+
+  quad_order.resize(numContinuousVars);
+  for (i=0; i<numContinuousVars; ++i)
+    quad_order[i] = (i == max_dim_pref_index) ? quad_order_spec :
+      (unsigned short)(quad_order_spec*dim_pref_spec[i]/max_dim_pref);//truncate
+}
+
+
+void NonDQuadrature::
+anisotropic_preference(const RealVector& dim_pref, UShortArray& quad_order_ref)
 {
   // Logic is loosely patterned after anisotropic SSG in which the dominant
   // dimension is constrained by the current ssgLevel and all nondominant
   // dimensions are scaled back.
-  unsigned short max_quad_ref = quadOrderRef[0];
+  unsigned short max_quad_ref = quad_order_ref[0];
   Real max_dim_pref = dim_pref[0]; size_t max_dim_pref_index = 0;
   for (size_t i=1; i<numContinuousVars; ++i) {
-    if (quadOrderRef[i] > max_quad_ref)
-      max_quad_ref = quadOrderRef[i];
+    if (quad_order_ref[i] > max_quad_ref)
+      max_quad_ref = quad_order_ref[i];
     if (dim_pref[i] > max_dim_pref)
       { max_dim_pref = dim_pref[i]; max_dim_pref_index = i; }
   }
-  // There are several different options for the following operation.
-  // I have initially chosen to preserve the current (recently incremented)
-  // quadOrderRef entry in the dimension with max_dim_pref and to compute
-  // the others relative to max_quad_ref (whose dimension may differ from
-  // max_dim_pref).  Could also, e.g., decide to set max_quad_ref in the
-  // max_dim_pref dimension, but this could be a much larger increment.
-  // In all cases, the current quadOrderRef is used as a lower bound to
-  // prevent reducing previous resolution.
+  // There are several different options for the following operation.  Initial
+  // choice is to preserve the current (recently incremented) quad_order_ref
+  // entry in the dimension with max_dim_pref and to compute the others relative
+  // to max_quad_ref (whose dimension may differ from max_dim_pref).  Could also
+  // decide to set max_quad_ref in the max_dim_pref dimension, but this could be
+  // a much larger increment.  In all cases, the current quad_order_ref is used
+  // as a lower bound to prevent reducing previous resolution.
   for (size_t i=0; i<numContinuousVars; ++i)
     if (i != max_dim_pref_index)
-      quadOrderRef[i] = std::max(quadOrderRef[i],
-	(unsigned short)(max_quad_ref*dim_pref[i]/max_dim_pref));
+      quad_order_ref[i] = std::max(quad_order_ref[i],
+	(unsigned short)(max_quad_ref*dim_pref[i]/max_dim_pref)); // truncate
 
   /* When used as a stand-alone update:
   if (nestedRules)
-    nested_quadrature_order(quadOrderRef);
+    nested_quadrature_order(quad_order_ref);
   else
-    quadOrder = quadOrderRef;
+    tpqDriver->quadrature_order(quad_order_ref);
   */
 }
 

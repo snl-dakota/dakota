@@ -164,8 +164,8 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
 
 void NonDExpansion::
 construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-		     const UShortArray& quad_order, bool piecewise_basis,
-		     bool use_derivs)
+		     unsigned short quad_order, const RealVector& dim_pref,
+		     bool piecewise_basis, bool use_derivs)
 {
   // sanity checks: no GSG for TPQ
   if (refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
@@ -179,9 +179,9 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
   bool nested_rules = (ruleNestingOverride == Pecos::NESTED || (refineType &&
 		       ruleNestingOverride != Pecos::NON_NESTED));
-  u_space_sampler.assign_rep(
-    new NonDQuadrature(g_u_model, natafTransform.u_types(), quad_order,
-		       nested_rules, piecewise_basis, use_derivs), false);
+  u_space_sampler.assign_rep(new 
+    NonDQuadrature(g_u_model, natafTransform.u_types(), quad_order, dim_pref,
+		   nested_rules, piecewise_basis, use_derivs), false);
   numSamplesOnModel = u_space_sampler.maximum_concurrency()
                     / g_u_model.derivative_concurrency();
 }
@@ -189,8 +189,8 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
 void NonDExpansion::
 construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-		     int filtered_samples, bool piecewise_basis,
-		     bool use_derivs)
+		     int filtered_samples, const RealVector& dim_pref,
+		     bool piecewise_basis, bool use_derivs)
 {
   // sanity checks: only uniform refinement supported for probabilistic
   // collocation (regression using filtered tensor grids)
@@ -209,15 +209,15 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
   bool nested_rules = false;//(ruleNestingOverride == Pecos::NESTED ||
     //(ruleNestingOverride == Pecos::NO_NESTING_OVERRIDE &&
     // refineType          != Pecos::NO_REFINEMENT));
-  u_space_sampler.assign_rep(
-    new NonDQuadrature(g_u_model, natafTransform.u_types(), filtered_samples,
-		       nested_rules, piecewise_basis, use_derivs), false);
+  u_space_sampler.assign_rep(new
+    NonDQuadrature(g_u_model, natafTransform.u_types(), filtered_samples,
+		   dim_pref, nested_rules, piecewise_basis, use_derivs), false);
 }
 
 
 void NonDExpansion::
 construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
-		      unsigned short ssg_level, const RealVector& ssg_dim_pref,
+		      unsigned short ssg_level, const RealVector& dim_pref,
 		      bool piecewise_basis, bool use_derivs)
 {
   // enforce minimum required VBD control
@@ -241,8 +241,8 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   bool nested_rules      = (ruleNestingOverride != Pecos::NON_NESTED);
   bool unrestrict_growth = (ruleGrowthOverride  == Pecos::UNRESTRICTED);
   u_space_sampler.assign_rep(
-    new NonDSparseGrid(g_u_model, natafTransform.u_types(), ssg_level,
-		       ssg_dim_pref, //sparse_grid_usage, refineType,
+    new NonDSparseGrid(g_u_model, natafTransform.u_types(), ssg_level, dim_pref,
+		       //sparse_grid_usage, refineType,
 		       refineControl, track_wts, nested_rules,
 		       unrestrict_growth, piecewise_basis, use_derivs), false);
 
@@ -387,13 +387,12 @@ void NonDExpansion::quantify_uncertainty()
 	 << "\nMultifidelity model discrepancy results:"
 	 << "\n----------------------------------------\n";
     compute_print_converged_results(true);
-    // store current state
+    // store current state.  Note: a subsequent finalize_approximation()
+    // within refine_expansion() must distinguish between saved trial sets
+    // and archived expansions.
     uSpaceModel.store_approximation();
-    // subsequent finalize_approximation() must distinguish boundary between
-    // saved trial sets and archived expansions
 
-    // flip HierarchSurrModel::responseMode to LF model
-    iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+    update_hierarchy();
     update_expansion();   // nominal iso/aniso expansion from input spec
     if (refineType)
       refine_expansion(); // uniform/adaptive p-/h-refinement
@@ -404,372 +403,12 @@ void NonDExpansion::quantify_uncertainty()
 
     // compute aggregate expansion and generate its statistics
     uSpaceModel.combine_approximation();
-    compute_print_converged_results();
   }
-  else
-    compute_print_converged_results();
   
   // generate final results
+  compute_print_converged_results();
   update_final_statistics();
   ++numUncertainQuant;
-}
-
-
-void NonDExpansion::compute_print_increment_results()
-{
-  switch (refineControl) {
-  case Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE:
-    if (totalLevelRequests) { // both covariance and full results available
-      if (outputLevel == DEBUG_OUTPUT) print_results(Cout);
-      //else                           print_covariance(Cout);
-    }
-    else { // only covariance available, compute full results if needed
-      if (outputLevel == DEBUG_OUTPUT)
-	{ compute_statistics(); print_results(Cout); }
-      else
-	print_covariance(Cout);
-    }
-    break;
-  }
-}
-
-
-void NonDExpansion::compute_print_iteration_results(bool initialize)
-{
-#ifdef CONVERGENCE_DATA
-  // full results compute/print mirroring Iterator::post_run(),
-  // allowing output level to be set low in performance testing
-  compute_statistics();
-  iteratedModel.print_evaluation_summary(Cout);
-  NonDExpansion::print_results(Cout);
-  if (expansionCoeffsApproach == Pecos::SPARSE_GRID &&
-      refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
-    NonDSparseGrid* nond_sparse
-      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-    const UShort2DArray& sm_multi_index = nond_sparse->smolyak_multi_index();
-    const IntArray&      sm_coeffs      = nond_sparse->smolyak_coefficients();
-    size_t i, j, smi_len = sm_multi_index.size();
-    for (i=0; i<smi_len; ++i) {
-      if (sm_coeffs[i]) {
-	Cout << "Smolyak index set " << i << ':';
-	for (j=0; j<numContinuousVars; ++j)
-	  Cout << ' ' << sm_multi_index[i][j];
-	Cout << '\n';
-      }
-    }
-  }
-#else
-  switch (refineControl) {
-  case Pecos::UNIFORM_CONTROL:
-    // In these cases, metric calculations already performed are still valid
-    if (outputLevel == DEBUG_OUTPUT) // compute/print all stats
-      { compute_statistics(); print_results(Cout); }
-    else // compute/print subset of stats required for convergence assessment
-      { if (initialize) compute_covariance(); print_covariance(Cout); }
-    break;
-  case Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL:
-  case Pecos::DIMENSION_ADAPTIVE_SPECTRAL_DECAY:
-    // In these cases, metric calculations already performed are still valid
-    if (outputLevel == DEBUG_OUTPUT) // compute/print all stats
-      { compute_statistics(); print_results(Cout); }
-    else // compute/print subset of stats required for convergence assessment
-      { if (initialize) compute_covariance(); print_covariance(Cout); }
-    break;
-  case Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE:
-    // In this case, the last index set calculation may not be the selected
-    // index set. However, in the case where of non-debug output, we are using
-    // partial results updating to eliminate the need to recompute stats for
-    // the selected index set. This case also differs from other refinement
-    // cases above in that compute_print_increment_results() has already
-    // provided per increment output, so we do not push output if non-debug.
-    if (totalLevelRequests) {
-      //if (initialize || outputLevel == DEBUG_OUTPUT)
-      //  { compute_statistics(); print_results(Cout); }
-      if (initialize || outputLevel == DEBUG_OUTPUT) compute_statistics();
-      if (outputLevel == DEBUG_OUTPUT)               print_results(Cout);
-      // else no output!
-    }
-    else {
-      if (outputLevel == DEBUG_OUTPUT)
-	{ compute_statistics(); print_results(Cout); }
-      else if (initialize)
-	{ compute_covariance(); print_covariance(Cout); }
-      // else no output!
-    }
-    break;
-  }
-#endif // CONVERGENCE_DATA
-}
-
-
-void NonDExpansion::compute_print_converged_results(bool print_override)
-{
-#ifdef CONVERGENCE_DATA
-  if (expansionCoeffsApproach == Pecos::SPARSE_GRID &&
-      refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
-    NonDSparseGrid* nond_sparse
-      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-    const UShort2DArray& sm_multi_index = nond_sparse->smolyak_multi_index();
-    const IntArray&      sm_coeffs      = nond_sparse->smolyak_coefficients();
-    size_t i, j, smi_len = sm_multi_index.size();
-    for (i=0; i<smi_len; ++i) {
-      if (sm_coeffs[i]) {
-	Cout << "Smolyak index set " << i << ':';
-	for (j=0; j<numContinuousVars; ++j)
-	  Cout << ' ' << sm_multi_index[i][j];
-	Cout << '\n';
-      }
-    }
-  }
-#endif // CONVERGENCE_DATA
-
-  // if not already performed above, compute all stats
-  switch (refineControl) {
-  case Pecos::NO_CONTROL:
-    compute_statistics();
-    break;
-  case Pecos::UNIFORM_CONTROL:
-    if (outputLevel != DEBUG_OUTPUT)
-      compute_statistics();
-    break;
-  case Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL:
-  case Pecos::DIMENSION_ADAPTIVE_SPECTRAL_DECAY:
-    if (outputLevel != DEBUG_OUTPUT)
-      compute_statistics();
-    break;
-  case Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE:
-    compute_statistics();
-    break;
-  }
-
-  // For stand-alone executions, print_results occurs in Iterator::post_run().
-  // For sub-iterator executions, stats are normally suppressed.
-  if (print_override || (subIteratorFlag && outputLevel == DEBUG_OUTPUT))
-    print_results(Cout);
-}
-
-
-void NonDExpansion::initialize_sets()
-{
-  Cout << "\n>>>>> Initialization of generalized sparse grid sets.\n";
-  NonDSparseGrid* nond_sparse
-    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-  nond_sparse->initialize_sets();
-}
-
-
-Real NonDExpansion::increment_sets()
-{
-  Cout << "\n>>>>> Begin evaluation of active index sets.\n";
-
-  NonDSparseGrid* nond_sparse
-    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-  std::set<UShortArray>::const_iterator cit, cit_star;
-  Real delta, delta_star = -1.;
-  RealSymMatrix covar_ref, covar_star; RealVector stats_ref, stats_star;
-
-  // set reference points for refinement assessment
-  if (totalLevelRequests) stats_ref = finalStatistics.function_values();
-  else                    covar_ref = respCovariance;
-
-  // Reevaluate the effect of every active set every time, since the reference
-  // point for the surplus calculation changes (and the overlay should
-  // eventually be inexpensive since each point set is only evaluated once).
-  const std::set<UShortArray>& active_mi = nond_sparse->active_multi_index();
-  for (cit=active_mi.begin(); cit!=active_mi.end(); ++cit) {
-
-    // increment grid with current candidate
-    Cout << "\n>>>>> Evaluating trial index set:\n" << *cit;
-    nond_sparse->increment_set(*cit);
-    if (uSpaceModel.restore_available()) {    // has been active previously
-      nond_sparse->restore_set();
-      uSpaceModel.restore_approximation();
-    }
-    else {                                    // a new active set
-      nond_sparse->evaluate_set();
-      uSpaceModel.append_approximation(true); // rebuild
-    }
-
-    // assess effect of increment (non-negative norm) and store best
-    delta = (totalLevelRequests) ? compute_final_statistics_metric(stats_ref)
-                                 : compute_covariance_metric(covar_ref); 
-    if (delta > delta_star) {
-      cit_star = cit; delta_star = delta;
-      // partial results tracking avoids need to recompute statistics
-      // on the selected index set
-      if (outputLevel < DEBUG_OUTPUT) {
-	if (totalLevelRequests) stats_star = finalStatistics.function_values();
-	else                    covar_star = respCovariance;
-      }
-    }
-    compute_print_increment_results();
-    Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
-
-    // restore previous state (destruct order is reversed from construct order)
-    uSpaceModel.pop_approximation(true); // store SDP set for use in restore
-    nond_sparse->decrement_set();
-  }
-  Cout << "\n<<<<< Evaluation of active index sets completed.\n"
-       << "\n<<<<< Index set selection:\n" << *cit_star;
-
-  // permanently apply best increment and update ref points for next increment
-  nond_sparse->update_sets(*cit_star);
-  uSpaceModel.restore_approximation();
-  nond_sparse->update_reference();
-  if (outputLevel < DEBUG_OUTPUT) { // partial results tracking
-    if (totalLevelRequests) finalStatistics.function_values(stats_star);
-    else                    respCovariance = covar_star;
-  }
-
-  return delta_star;
-}
-
-
-void NonDExpansion::finalize_sets(bool converged_within_tol)
-{
-  Cout << "\n<<<<< Finalization of generalized sparse grid sets.\n";
-  NonDSparseGrid* nond_sparse
-    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-  // apply all remaining increments not previously selected
-  if (outputLevel >= VERBOSE_OUTPUT)
-    nond_sparse->print_final_sets(converged_within_tol);
-  nond_sparse->finalize_sets();
-  uSpaceModel.finalize_approximation();
-}
-
-
-Real NonDExpansion::
-compute_covariance_metric(const RealSymMatrix& resp_covar_ref)
-{
-  RealSymMatrix delta_resp_covar = resp_covar_ref;
-  compute_covariance();
-  delta_resp_covar -= respCovariance;
-  return delta_resp_covar.normFrobenius();
-}
-
-
-/** computes a "goal-oriented" refinement metric employing finalStatistics */
-Real NonDExpansion::
-compute_final_statistics_metric(const RealVector& final_stats_ref)
-{
-  RealVector delta_final_stats = final_stats_ref;
-  compute_statistics();
-  delta_final_stats -= finalStatistics.function_values();
-#ifdef DEBUG
-  Cout << "final_stats_ref:\n" << final_stats_ref
-       << "final_stats:\n" << finalStatistics.function_values()
-       << "delta_final_stats:\n" << delta_final_stats << std::endl;
-#endif // DEBUG
-
-  // sum up only the level mapping stats (don't mix with mean and variance due
-  // to scaling issues)
-  // TO DO: if the level mappings are of mixed type, then would need to scale
-  //        with a target value or measure norm of relative change.
-  Real sum_sq = 0.; size_t i, j, cntr = 0, num_levels_i;
-  for (i=0; i<numFunctions; ++i) {
-
-    /* this modification can be used to mirror the metrics in Gerstner & Griebel
-       2003.  However, their approach uses a hierarchical integral contribution
-       evaluation which is less prone to roundoff (and is refined to very tight
-       tolerances in the paper).
-    sum_sq += std::pow(delta_final_stats[cntr], 2.); // mean
-    cntr += 1 + requestedRespLevels[i].length() +
-      requestedProbLevels[i].length() + requestedRelLevels[i].length() +
-      requestedGenRelLevels[i].length();
-    */
-
-    // simple approach takes 2-norm of level mappings (no relative scaling),
-    // which should be fine for mappings that are not of mixed type
-    cntr += 2; // skip moments
-    num_levels_i = requestedRespLevels[i].length() +
-      requestedProbLevels[i].length() + requestedRelLevels[i].length() +
-      requestedGenRelLevels[i].length();
-    for (j=0; j<num_levels_i; ++j, ++cntr)
-      sum_sq += std::pow(delta_final_stats[cntr], 2.);
-  }
-
-  return std::sqrt(sum_sq);
-}
-
-
-void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
-{
-  // anisotropy based on total Sobol indices (univariate effects only) averaged
-  // over the response fn set.  [Addition of interaction effects based on
-  // individual Sobol indices would require a nonlinear index set constraint
-  // within anisotropic sparse grids.]
-
-  if (numFunctions > 1) {
-    if (avg_sobol.empty()) avg_sobol.size(numContinuousVars); // init to 0
-    else                   avg_sobol = 0.;
-  }
-
-  size_t i;
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  PecosApproximation* poly_approx_rep;
-  for (i=0; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-
-    // InterpPolyApproximation::compute_*_effects() assumes moments are
-    // available and compute_statistics() has not been called if !DEBUG_OUTPUT
-    if (outputLevel < DEBUG_OUTPUT) {
-      if (all_vars) poly_approx_rep->compute_moments(initialPtU);
-      else          poly_approx_rep->compute_moments();
-    }
-
-    if (vbdControl == Pecos::ALL_VBD)
-      poly_approx_rep->compute_component_effects(); // needed w/i total effects
-    poly_approx_rep->compute_total_effects();
-    if (numFunctions > 1)
-      avg_sobol += poly_approx_rep->total_sobol_indices();
-    else
-      avg_sobol  = poly_approx_rep->total_sobol_indices();
-  }
-  if (numFunctions > 1)
-    avg_sobol.scale(1./(Real)numFunctions);
-
-  // manage small values that are not 0 (SGMGA has special handling for 0)
-  Real pref_tol = 1.e-2; // TO DO
-  for (i=0; i<numContinuousVars; ++i)
-    if (std::abs(avg_sobol[i]) < pref_tol)
-      avg_sobol[i] = 0.;
-#ifdef DEBUG
-  Cout << "avg_sobol truncated at " << pref_tol << ":\n";
-  write_data(Cout, avg_sobol);
-#endif // DEBUG
-}
-
-
-void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
-{
-  // anisotropy based on linear approximation to coefficient decay rates for
-  // each dimension as measured from univariate PCE terms.  In this case,
-  // averaging tends to wash out the interesting anisotropy, especially if
-  // some functions converge quickly with high rates.  Thus, it is more
-  // appropriate to extract the minimum decay rates over the response fn set.
-
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  PecosApproximation* poly_approx_rep
-    = (PecosApproximation*)poly_approxs[0].approx_rep();
-  min_decay = poly_approx_rep->dimension_decay_rates();
-  size_t i, j;
-  for (i=1; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-    const RealVector& decay_i = poly_approx_rep->dimension_decay_rates();
-    for (j=0; j<numContinuousVars; ++j)
-      if (decay_i[j] < min_decay[j])
-	min_decay[j] = decay_i[j];
-  }
-  // enforce a lower bound on minimum decay (disallow negative/zero decay rates)
-  Real decay_tol = 1.e-2; // TO DO
-  for (j=0; j<numContinuousVars; ++j)
-    if (min_decay[j] < decay_tol)
-      min_decay[j] = decay_tol;
-
-#ifdef DEBUG
-  Cout << "min_decay:\n"; write_data(Cout, min_decay);
-#endif // DEBUG
 }
 
 
@@ -1108,6 +747,396 @@ void NonDExpansion::update_expansion()
   uSpaceModel.build_approximation();
   //u_space_sampler->run_iterator(Cout);
   //uSpaceModel.update_approximation(true); // append_approximation() ?
+}
+
+
+void NonDExpansion::update_hierarchy()
+{
+  // flip HierarchSurrModel::responseMode to LF model
+  iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
+
+  /*
+  // update grid order/level, if multiple values were provided
+  bool multiple_num_int = (numIntSpec.size() > 1);
+  Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
+  switch (refineControl) {
+  case NO_CONTROL:             // no refinement
+    if (multiple_num_int) { // set the second refinement level spec
+      NonDIntegration* nond_int = (NonDIntegration*)u_space_sampler.iterator_rep();
+      nond_int->update_grid(numIntSpec[1]); // TPQ or SSG
+    }
+    else // restore the initial spec
+      u_space_sampler.reset();
+    break;
+  case Pecos::UNIFORM_CONTROL: // uniform refinement
+    if (multiple_num_int) { // set the second refinement level spec
+      NonDIntegration* nond_int = (NonDIntegration*)u_space_sampler.iterator_rep();
+      nond_int->update_grid(numIntSpec[1]); // TPQ or SSG
+    }
+    // else carry final discrepancy refinement level as initial LF refinement
+    break;
+  default:                     // adaptive refinement
+    break;
+  }
+  */
+}
+
+
+void NonDExpansion::initialize_sets()
+{
+  Cout << "\n>>>>> Initialization of generalized sparse grid sets.\n";
+  NonDSparseGrid* nond_sparse
+    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+  nond_sparse->initialize_sets();
+}
+
+
+Real NonDExpansion::increment_sets()
+{
+  Cout << "\n>>>>> Begin evaluation of active index sets.\n";
+
+  NonDSparseGrid* nond_sparse
+    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+  std::set<UShortArray>::const_iterator cit, cit_star;
+  Real delta, delta_star = -1.;
+  RealSymMatrix covar_ref, covar_star; RealVector stats_ref, stats_star;
+
+  // set reference points for refinement assessment
+  if (totalLevelRequests) stats_ref = finalStatistics.function_values();
+  else                    covar_ref = respCovariance;
+
+  // Reevaluate the effect of every active set every time, since the reference
+  // point for the surplus calculation changes (and the overlay should
+  // eventually be inexpensive since each point set is only evaluated once).
+  const std::set<UShortArray>& active_mi = nond_sparse->active_multi_index();
+  for (cit=active_mi.begin(); cit!=active_mi.end(); ++cit) {
+
+    // increment grid with current candidate
+    Cout << "\n>>>>> Evaluating trial index set:\n" << *cit;
+    nond_sparse->increment_set(*cit);
+    if (uSpaceModel.restore_available()) {    // has been active previously
+      nond_sparse->restore_set();
+      uSpaceModel.restore_approximation();
+    }
+    else {                                    // a new active set
+      nond_sparse->evaluate_set();
+      uSpaceModel.append_approximation(true); // rebuild
+    }
+
+    // assess effect of increment (non-negative norm) and store best
+    delta = (totalLevelRequests) ? compute_final_statistics_metric(stats_ref)
+                                 : compute_covariance_metric(covar_ref); 
+    if (delta > delta_star) {
+      cit_star = cit; delta_star = delta;
+      // partial results tracking avoids need to recompute statistics
+      // on the selected index set
+      if (outputLevel < DEBUG_OUTPUT) {
+	if (totalLevelRequests) stats_star = finalStatistics.function_values();
+	else                    covar_star = respCovariance;
+      }
+    }
+    compute_print_increment_results();
+    Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
+
+    // restore previous state (destruct order is reversed from construct order)
+    uSpaceModel.pop_approximation(true); // store SDP set for use in restore
+    nond_sparse->decrement_set();
+  }
+  Cout << "\n<<<<< Evaluation of active index sets completed.\n"
+       << "\n<<<<< Index set selection:\n" << *cit_star;
+
+  // permanently apply best increment and update ref points for next increment
+  nond_sparse->update_sets(*cit_star);
+  uSpaceModel.restore_approximation();
+  nond_sparse->update_reference();
+  if (outputLevel < DEBUG_OUTPUT) { // partial results tracking
+    if (totalLevelRequests) finalStatistics.function_values(stats_star);
+    else                    respCovariance = covar_star;
+  }
+
+  return delta_star;
+}
+
+
+void NonDExpansion::finalize_sets(bool converged_within_tol)
+{
+  Cout << "\n<<<<< Finalization of generalized sparse grid sets.\n";
+  NonDSparseGrid* nond_sparse
+    = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+  // apply all remaining increments not previously selected
+  if (outputLevel >= VERBOSE_OUTPUT)
+    nond_sparse->print_final_sets(converged_within_tol);
+  nond_sparse->finalize_sets();
+  uSpaceModel.finalize_approximation();
+}
+
+
+void NonDExpansion::compute_print_increment_results()
+{
+  switch (refineControl) {
+  case Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE:
+    if (totalLevelRequests) { // both covariance and full results available
+      if (outputLevel == DEBUG_OUTPUT) print_results(Cout);
+      //else                           print_covariance(Cout);
+    }
+    else { // only covariance available, compute full results if needed
+      if (outputLevel == DEBUG_OUTPUT)
+	{ compute_statistics(); print_results(Cout); }
+      else
+	print_covariance(Cout);
+    }
+    break;
+  }
+}
+
+
+void NonDExpansion::compute_print_iteration_results(bool initialize)
+{
+#ifdef CONVERGENCE_DATA
+  // full results compute/print mirroring Iterator::post_run(),
+  // allowing output level to be set low in performance testing
+  compute_statistics();
+  iteratedModel.print_evaluation_summary(Cout);
+  NonDExpansion::print_results(Cout);
+  if (expansionCoeffsApproach == Pecos::SPARSE_GRID &&
+      refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
+    NonDSparseGrid* nond_sparse
+      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+    const UShort2DArray& sm_multi_index = nond_sparse->smolyak_multi_index();
+    const IntArray&      sm_coeffs      = nond_sparse->smolyak_coefficients();
+    size_t i, j, smi_len = sm_multi_index.size();
+    for (i=0; i<smi_len; ++i) {
+      if (sm_coeffs[i]) {
+	Cout << "Smolyak index set " << i << ':';
+	for (j=0; j<numContinuousVars; ++j)
+	  Cout << ' ' << sm_multi_index[i][j];
+	Cout << '\n';
+      }
+    }
+  }
+#else
+  switch (refineControl) {
+  case Pecos::UNIFORM_CONTROL:
+    // In these cases, metric calculations already performed are still valid
+    if (outputLevel == DEBUG_OUTPUT) // compute/print all stats
+      { compute_statistics(); print_results(Cout); }
+    else // compute/print subset of stats required for convergence assessment
+      { if (initialize) compute_covariance(); print_covariance(Cout); }
+    break;
+  case Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL:
+  case Pecos::DIMENSION_ADAPTIVE_SPECTRAL_DECAY:
+    // In these cases, metric calculations already performed are still valid
+    if (outputLevel == DEBUG_OUTPUT) // compute/print all stats
+      { compute_statistics(); print_results(Cout); }
+    else // compute/print subset of stats required for convergence assessment
+      { if (initialize) compute_covariance(); print_covariance(Cout); }
+    break;
+  case Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE:
+    // In this case, the last index set calculation may not be the selected
+    // index set. However, in the case where of non-debug output, we are using
+    // partial results updating to eliminate the need to recompute stats for
+    // the selected index set. This case also differs from other refinement
+    // cases above in that compute_print_increment_results() has already
+    // provided per increment output, so we do not push output if non-debug.
+    if (totalLevelRequests) {
+      //if (initialize || outputLevel == DEBUG_OUTPUT)
+      //  { compute_statistics(); print_results(Cout); }
+      if (initialize || outputLevel == DEBUG_OUTPUT) compute_statistics();
+      if (outputLevel == DEBUG_OUTPUT)               print_results(Cout);
+      // else no output!
+    }
+    else {
+      if (outputLevel == DEBUG_OUTPUT)
+	{ compute_statistics(); print_results(Cout); }
+      else if (initialize)
+	{ compute_covariance(); print_covariance(Cout); }
+      // else no output!
+    }
+    break;
+  }
+#endif // CONVERGENCE_DATA
+}
+
+
+void NonDExpansion::compute_print_converged_results(bool print_override)
+{
+#ifdef CONVERGENCE_DATA
+  if (expansionCoeffsApproach == Pecos::SPARSE_GRID &&
+      refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
+    NonDSparseGrid* nond_sparse
+      = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
+    const UShort2DArray& sm_multi_index = nond_sparse->smolyak_multi_index();
+    const IntArray&      sm_coeffs      = nond_sparse->smolyak_coefficients();
+    size_t i, j, smi_len = sm_multi_index.size();
+    for (i=0; i<smi_len; ++i) {
+      if (sm_coeffs[i]) {
+	Cout << "Smolyak index set " << i << ':';
+	for (j=0; j<numContinuousVars; ++j)
+	  Cout << ' ' << sm_multi_index[i][j];
+	Cout << '\n';
+      }
+    }
+  }
+#endif // CONVERGENCE_DATA
+
+  // if not already performed above, compute all stats
+  switch (refineControl) {
+  case Pecos::NO_CONTROL:
+    compute_statistics();
+    break;
+  case Pecos::UNIFORM_CONTROL:
+    if (outputLevel != DEBUG_OUTPUT)
+      compute_statistics();
+    break;
+  case Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL:
+  case Pecos::DIMENSION_ADAPTIVE_SPECTRAL_DECAY:
+    if (outputLevel != DEBUG_OUTPUT)
+      compute_statistics();
+    break;
+  case Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE:
+    compute_statistics();
+    break;
+  }
+
+  // For stand-alone executions, print_results occurs in Iterator::post_run().
+  // For sub-iterator executions, stats are normally suppressed.
+  if (print_override || (subIteratorFlag && outputLevel == DEBUG_OUTPUT))
+    print_results(Cout);
+}
+
+
+Real NonDExpansion::
+compute_covariance_metric(const RealSymMatrix& resp_covar_ref)
+{
+  RealSymMatrix delta_resp_covar = resp_covar_ref;
+  compute_covariance();
+  delta_resp_covar -= respCovariance;
+  return delta_resp_covar.normFrobenius();
+}
+
+
+/** computes a "goal-oriented" refinement metric employing finalStatistics */
+Real NonDExpansion::
+compute_final_statistics_metric(const RealVector& final_stats_ref)
+{
+  RealVector delta_final_stats = final_stats_ref;
+  compute_statistics();
+  delta_final_stats -= finalStatistics.function_values();
+#ifdef DEBUG
+  Cout << "final_stats_ref:\n" << final_stats_ref
+       << "final_stats:\n" << finalStatistics.function_values()
+       << "delta_final_stats:\n" << delta_final_stats << std::endl;
+#endif // DEBUG
+
+  // sum up only the level mapping stats (don't mix with mean and variance due
+  // to scaling issues)
+  // TO DO: if the level mappings are of mixed type, then would need to scale
+  //        with a target value or measure norm of relative change.
+  Real sum_sq = 0.; size_t i, j, cntr = 0, num_levels_i;
+  for (i=0; i<numFunctions; ++i) {
+
+    /* this modification can be used to mirror the metrics in Gerstner & Griebel
+       2003.  However, their approach uses a hierarchical integral contribution
+       evaluation which is less prone to roundoff (and is refined to very tight
+       tolerances in the paper).
+    sum_sq += std::pow(delta_final_stats[cntr], 2.); // mean
+    cntr += 1 + requestedRespLevels[i].length() +
+      requestedProbLevels[i].length() + requestedRelLevels[i].length() +
+      requestedGenRelLevels[i].length();
+    */
+
+    // simple approach takes 2-norm of level mappings (no relative scaling),
+    // which should be fine for mappings that are not of mixed type
+    cntr += 2; // skip moments
+    num_levels_i = requestedRespLevels[i].length() +
+      requestedProbLevels[i].length() + requestedRelLevels[i].length() +
+      requestedGenRelLevels[i].length();
+    for (j=0; j<num_levels_i; ++j, ++cntr)
+      sum_sq += std::pow(delta_final_stats[cntr], 2.);
+  }
+
+  return std::sqrt(sum_sq);
+}
+
+
+void NonDExpansion::reduce_total_sobol_sets(RealVector& avg_sobol)
+{
+  // anisotropy based on total Sobol indices (univariate effects only) averaged
+  // over the response fn set.  [Addition of interaction effects based on
+  // individual Sobol indices would require a nonlinear index set constraint
+  // within anisotropic sparse grids.]
+
+  if (numFunctions > 1) {
+    if (avg_sobol.empty()) avg_sobol.size(numContinuousVars); // init to 0
+    else                   avg_sobol = 0.;
+  }
+
+  size_t i;
+  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  PecosApproximation* poly_approx_rep;
+  for (i=0; i<numFunctions; ++i) {
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+
+    // InterpPolyApproximation::compute_*_effects() assumes moments are
+    // available and compute_statistics() has not been called if !DEBUG_OUTPUT
+    if (outputLevel < DEBUG_OUTPUT) {
+      if (all_vars) poly_approx_rep->compute_moments(initialPtU);
+      else          poly_approx_rep->compute_moments();
+    }
+
+    if (vbdControl == Pecos::ALL_VBD)
+      poly_approx_rep->compute_component_effects(); // needed w/i total effects
+    poly_approx_rep->compute_total_effects();
+    if (numFunctions > 1)
+      avg_sobol += poly_approx_rep->total_sobol_indices();
+    else
+      avg_sobol  = poly_approx_rep->total_sobol_indices();
+  }
+  if (numFunctions > 1)
+    avg_sobol.scale(1./(Real)numFunctions);
+
+  // manage small values that are not 0 (SGMGA has special handling for 0)
+  Real pref_tol = 1.e-2; // TO DO
+  for (i=0; i<numContinuousVars; ++i)
+    if (std::abs(avg_sobol[i]) < pref_tol)
+      avg_sobol[i] = 0.;
+#ifdef DEBUG
+  Cout << "avg_sobol truncated at " << pref_tol << ":\n";
+  write_data(Cout, avg_sobol);
+#endif // DEBUG
+}
+
+
+void NonDExpansion::reduce_decay_rate_sets(RealVector& min_decay)
+{
+  // anisotropy based on linear approximation to coefficient decay rates for
+  // each dimension as measured from univariate PCE terms.  In this case,
+  // averaging tends to wash out the interesting anisotropy, especially if
+  // some functions converge quickly with high rates.  Thus, it is more
+  // appropriate to extract the minimum decay rates over the response fn set.
+
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  PecosApproximation* poly_approx_rep
+    = (PecosApproximation*)poly_approxs[0].approx_rep();
+  min_decay = poly_approx_rep->dimension_decay_rates();
+  size_t i, j;
+  for (i=1; i<numFunctions; ++i) {
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    const RealVector& decay_i = poly_approx_rep->dimension_decay_rates();
+    for (j=0; j<numContinuousVars; ++j)
+      if (decay_i[j] < min_decay[j])
+	min_decay[j] = decay_i[j];
+  }
+  // enforce a lower bound on minimum decay (disallow negative/zero decay rates)
+  Real decay_tol = 1.e-2; // TO DO
+  for (j=0; j<numContinuousVars; ++j)
+    if (min_decay[j] < decay_tol)
+      min_decay[j] = decay_tol;
+
+#ifdef DEBUG
+  Cout << "min_decay:\n"; write_data(Cout, min_decay);
+#endif // DEBUG
 }
 
 

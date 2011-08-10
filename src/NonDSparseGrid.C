@@ -31,9 +31,7 @@ namespace Dakota {
     specification.  It is not currently used, as there is not a
     separate sparse_grid method specification. */
 NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
-  ssgLevelSpec(probDescDB.get_ushort("method.nond.sparse_grid_level")),
-  dimPrefSpec(
-    probDescDB.get_rdv("method.nond.sparse_grid_dimension_preference")),
+  ssgLevelSpec(probDescDB.get_dusa("method.nond.sparse_grid_level")[0]),
   ssgLevelRef(ssgLevelSpec)
 {
   // initialize the numerical integration driver
@@ -94,8 +92,8 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
 	       short refine_control, bool track_uniq_prod_wts,
 	       bool nested_rules,    bool unrestrict_growth,
 	       bool piecewise_basis, bool use_derivs): 
-  NonDIntegration(NoDBBaseConstructor(), model), ssgLevelSpec(ssg_level),
-  dimPrefSpec(dim_pref), ssgLevelRef(ssg_level)  
+  NonDIntegration(NoDBBaseConstructor(), model, dim_pref),
+  ssgLevelSpec(ssg_level), ssgLevelRef(ssg_level)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::SPARSE_GRID);

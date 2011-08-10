@@ -62,18 +62,19 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   Iterator u_space_sampler;
   const UShortArray& quad_order_spec
     = probDescDB.get_dusa("method.nond.quadrature_order");
-  unsigned short ssg_level_spec
-    = probDescDB.get_ushort("method.nond.sparse_grid_level");
+  const UShortArray& ssg_level_spec
+    = probDescDB.get_dusa("method.nond.sparse_grid_level");
+  const RealVector& dim_pref
+    = probDescDB.get_rdv("method.nond.dimension_preference");
   if (!quad_order_spec.empty()) {
     expansionCoeffsApproach = Pecos::QUADRATURE;
-    construct_quadrature(u_space_sampler, g_u_model, quad_order_spec,
-			 piecewise_basis, use_derivs);
+    construct_quadrature(u_space_sampler, g_u_model, quad_order_spec[0],
+			 dim_pref, piecewise_basis, use_derivs);
   }
-  else if (ssg_level_spec != USHRT_MAX) {
+  else if (!ssg_level_spec.empty()) {
     expansionCoeffsApproach = Pecos::SPARSE_GRID;
-    construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec,
-      probDescDB.get_rdv("method.nond.sparse_grid_dimension_preference"),
-      piecewise_basis, use_derivs);
+    construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec[0],
+			  dim_pref, piecewise_basis, use_derivs);
   }
   // iteratedModel concurrency is defined by the number of samples
   // used in constructing the expansion
@@ -134,21 +135,18 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
     if (gradientType != "none") data_order |= 2;
     if (hessianType  != "none") data_order |= 4;
   }
+  RealVector dim_pref; // empty
   bool piecewise_basis
     = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
-  if (expansionCoeffsApproach == Pecos::QUADRATURE) {
-    UShortArray quad_order(numContinuousVars, num_int_level);
-    construct_quadrature(u_space_sampler, g_u_model, quad_order,
+  if (expansionCoeffsApproach == Pecos::QUADRATURE)
+    construct_quadrature(u_space_sampler, g_u_model, num_int_level, dim_pref,
 			 piecewise_basis, use_derivs);
-  }
-  else if (expansionCoeffsApproach == Pecos::SPARSE_GRID) {
-    RealVector dim_pref; // empty
+  else if (expansionCoeffsApproach == Pecos::SPARSE_GRID)
     construct_sparse_grid(u_space_sampler, g_u_model, num_int_level, dim_pref,
 			  piecewise_basis, use_derivs);
-  }
   // iteratedModel concurrency is defined by the number of samples
   // used in constructing the expansion
   if (numSamplesOnModel) // optional with default = 0

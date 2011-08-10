@@ -79,19 +79,23 @@ protected:
   /// avoids unnecessary overhead in compute_expansion()
   void update_expansion();
 
+  /// update settings for subsequent passes in the case of multifidelity models
+  void update_hierarchy();
+
   /// assign a NonDCubature instance within u_space_sampler
   void construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
 			  unsigned short cub_int_order);
   /// assign a NonDQuadrature instance within u_space_sampler based on
   /// a quad_order specification
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-			    const UShortArray& quad_order, bool piecewise_basis,
+			    unsigned short quad_order,
+			    const RealVector& dim_pref, bool piecewise_basis,
 			    bool use_derivs);
   /// assign a NonDQuadrature instance within u_space_sampler based on
   /// the size of a filtered tensor product sample set
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-			    int filtered_samples, bool piecewise_basis,
-			    bool use_derivs);
+			    int filtered_samples, const RealVector& dim_pref,
+			    bool piecewise_basis, bool use_derivs);
   /// assign a NonDSparsegrid instance within u_space_sampler
   void construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 			     unsigned short ssg_level,

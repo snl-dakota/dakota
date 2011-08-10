@@ -596,14 +596,15 @@ KEYWORD12 method
 	  [ askey
 	  | wiener ]
 	  ( quadrature_order INTEGERLIST
+	    [ dimension_preference REALLIST ]
 	    [ nested
 	    | non_nested ]
 	    )
 	  |
-	  ( sparse_grid_level INTEGER
-	    [ dimension_preference REALLIST ]
+	  ( sparse_grid_level INTEGERLIST
 	    [ restricted
 	    | unrestricted ]
+	    [ dimension_preference REALLIST ]
 	    [ nested
 	    | non_nested ]
 	    )
@@ -687,11 +688,11 @@ KEYWORD12 method
 	  | piecewise ]
 	  quadrature_order INTEGERLIST
 	  |
-	  ( sparse_grid_level INTEGER
-	    [ dimension_preference REALLIST ]
+	  ( sparse_grid_level INTEGERLIST
 	    [ restricted
 	    | unrestricted ]
 	    )
+	  [ dimension_preference REALLIST ]
 	  [ use_derivatives ]
 	  [ nested
 	  | non_nested ]
@@ -861,11 +862,11 @@ KEYWORD12 method
 	      )
 	    |
 	    ( pce
-	      [ sparse_grid_level INTEGER ]
+	      [ sparse_grid_level INTEGERLIST ]
 	      )
 	    |
 	    ( sc
-	      [ sparse_grid_level INTEGER ]
+	      [ sparse_grid_level INTEGERLIST ]
 	      )
 	    ]
 	  [ rejection
