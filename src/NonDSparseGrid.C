@@ -31,8 +31,8 @@ namespace Dakota {
     specification.  It is not currently used, as there is not a
     separate sparse_grid method specification. */
 NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
-  ssgLevelSpec(probDescDB.get_dusa("method.nond.sparse_grid_level")[0]),
-  ssgLevelRef(ssgLevelSpec)
+  ssgLevelSpec(probDescDB.get_dusa("method.nond.sparse_grid_level")),
+  ssgLevelRef(ssgLevelSpec[sequenceIndex])
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::SPARSE_GRID);
@@ -55,7 +55,7 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   bool track_uniq_prod_wts = false;
   bool piecewise_basis
     = (u_space_type == PIECEWISE_U || refine_type == Pecos::H_REFINEMENT);
-  bool equidistant_rules = true; // NEWTON_COTES pts for piecewise interpolants
+  bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
   // moderate growth is helpful for iso and aniso sparse grids, but
   // not necessary for generalized grids
   //short refine_type
@@ -73,9 +73,9 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
-  ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelSpec,
+  ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelRef,
     dimPrefSpec, /*refine_type,*/ refine_control, store_colloc,
-    track_uniq_prod_wts, nested_rules, piecewise_basis, equidistant_rules,
+    track_uniq_prod_wts, nested_rules, piecewise_basis, equidist_rules,
     use_derivs, growth_rate, nested_uniform_rule);
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
     iteratedModel.distribution_parameters());
@@ -87,13 +87,13 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
     evaluation of sparse grids within PCE and SC. */
 NonDSparseGrid::
 NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
-	       unsigned short ssg_level, const RealVector& dim_pref,
+	       const UShortArray& ssg_level, const RealVector& dim_pref,
 	       //short sparse_grid_usage, short refine_type,
 	       short refine_control, bool track_uniq_prod_wts,
 	       bool nested_rules,    bool unrestrict_growth,
 	       bool piecewise_basis, bool use_derivs): 
   NonDIntegration(NoDBBaseConstructor(), model, dim_pref),
-  ssgLevelSpec(ssg_level), ssgLevelRef(ssg_level)
+  ssgLevelSpec(ssg_level), ssgLevelRef(ssgLevelSpec[sequenceIndex])
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::SPARSE_GRID);
@@ -104,7 +104,7 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
   bool store_colloc = true; //(sparse_grid_usage == Pecos::INTERPOLATION);
-  bool equidistant_rules = true; // NEWTON_COTES pts for piecewise interpolants
+  bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
   short growth_rate;
   if (unrestrict_growth ||
       refine_control == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)
@@ -118,9 +118,9 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
   else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
   short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
-  ssgDriver->initialize_grid(u_types, ssg_level, dim_pref, //refine_type,
+  ssgDriver->initialize_grid(u_types, ssgLevelRef, dimPrefSpec, //refine_type,
     refine_control, store_colloc, track_uniq_prod_wts, nested_rules,
-    piecewise_basis, equidistant_rules, use_derivs, growth_rate,
+    piecewise_basis, equidist_rules, use_derivs, growth_rate,
     nested_uniform_rule);
   ssgDriver->
     initialize_grid_parameters(u_types, model.distribution_parameters());
@@ -152,11 +152,11 @@ void NonDSparseGrid::get_parameter_sets(Model& model)
 void NonDSparseGrid::
 sampling_reset(int min_samples, bool all_data_flag, bool stats_flag)
 {
-  // sparse grid level may be increased ***or decreased*** to provide at least
-  // min_samples, but the original user specification (ssgLevelSpec) is a hard
-  // lower bound.  With the introduction of uniform/adaptive refinements,
-  // ssgLevelRef (which is incremented from ssgLevelSpec) replaces ssgLevelSpec
-  // as the lower bound.
+  // ssgLevelRef (potentially incremented from ssgLevelSpec[numIntSeqIndex]
+  // due to uniform/adaptive refinements) provides the current lower bound
+  // reference point.  Pecos::SparseGridDriver::ssgLevel may be increased
+  // ***or decreased*** to provide at least min_samples subject to this lower
+  // bound.  ssgLevelRef is ***not*** updated by min_samples.
 
   // should be ssgLevelRef already, unless min_level previous enforced
   ssgDriver->level(ssgLevelRef);

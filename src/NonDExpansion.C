@@ -164,7 +164,7 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
 
 void NonDExpansion::
 construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-		     unsigned short quad_order, const RealVector& dim_pref,
+		     const UShortArray& quad_order, const RealVector& dim_pref,
 		     bool piecewise_basis, bool use_derivs)
 {
   // sanity checks: no GSG for TPQ
@@ -217,7 +217,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
 void NonDExpansion::
 construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
-		      unsigned short ssg_level, const RealVector& dim_pref,
+		      const UShortArray& ssg_level, const RealVector& dim_pref,
 		      bool piecewise_basis, bool use_derivs)
 {
   // enforce minimum required VBD control
@@ -755,30 +755,32 @@ void NonDExpansion::update_hierarchy()
   // flip HierarchSurrModel::responseMode to LF model
   iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
 
-  /*
   // update grid order/level, if multiple values were provided
-  bool multiple_num_int = (numIntSpec.size() > 1);
-  Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
-  switch (refineControl) {
-  case NO_CONTROL:             // no refinement
-    if (multiple_num_int) { // set the second refinement level spec
-      NonDIntegration* nond_int = (NonDIntegration*)u_space_sampler.iterator_rep();
-      nond_int->update_grid(numIntSpec[1]); // TPQ or SSG
+  switch (expansionCoeffsApproach) {
+  case Pecos::QUADRATURE: case Pecos::SPARSE_GRID: {
+    NonDIntegration* nond_integration
+      = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
+    nond_integration->increment_refinement_sequence(); // TPQ or SSG
+    /*
+    bool multiple_num_int = (nond_integration->_spec().size() > 1);
+    switch (refineControl) {
+    case NO_CONTROL:             // no refinement
+      if (multiple_num_int)
+        nond_integration->increment_refinement_sequence(); // TPQ or SSG
+      //else the initial spec has not been modified: no u_space_sampler.reset()
+      break;
+    case Pecos::UNIFORM_CONTROL: // uniform refinement
+      if (multiple_num_int)
+        nond_integration->increment_refinement_sequence(); // TPQ or SSG
+      // else carry final discrepancy refinement level as initial LF refinement
+      break;
+    default:                     // adaptive refinement
+      break;
     }
-    else // restore the initial spec
-      u_space_sampler.reset();
-    break;
-  case Pecos::UNIFORM_CONTROL: // uniform refinement
-    if (multiple_num_int) { // set the second refinement level spec
-      NonDIntegration* nond_int = (NonDIntegration*)u_space_sampler.iterator_rep();
-      nond_int->update_grid(numIntSpec[1]); // TPQ or SSG
-    }
-    // else carry final discrepancy refinement level as initial LF refinement
-    break;
-  default:                     // adaptive refinement
+    */
     break;
   }
-  */
+  }
 }
 
 

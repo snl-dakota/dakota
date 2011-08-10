@@ -48,7 +48,7 @@ public:
   /// alternate constructor for instantiations "on the fly" based on a
   /// quadrature order specification
   NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
-		 unsigned short order, const RealVector& dim_pref,
+		 const UShortArray& quad_order, const RealVector& dim_pref,
 		 bool nested_rules = false, bool piecewise_basis = false,
 		 bool use_derivs = false);
 
@@ -69,8 +69,12 @@ public:
   /// set numFilteredSamples
   void filtered_samples(size_t samples);
 
-  /// calculate smallest quadOrderRef with at least numFilteredSamples
-  void compute_min_quadrature_order(size_t min_samples);
+  /// calculate smallest dimQuadOrderRef with at least numFilteredSamples
+  void compute_minimum_quadrature_order();
+  /// calculate smallest dim_quad_order with at least min_samples
+  void compute_minimum_quadrature_order(size_t min_samples,
+					const RealVector& dim_pref,
+					UShortArray& dim_quad_order);
 
 protected:
 
@@ -95,6 +99,8 @@ protected:
 
   void increment_grid_preference(const RealVector& dim_pref);
 
+  void increment_refinement_sequence();
+
   int num_samples() const;
 
 private:
@@ -102,6 +108,12 @@ private:
   //
   //- Heading: Convenience functions
   //
+
+  /// convenience function used to make increment_grid() more modular
+  void increment_grid(UShortArray& dim_quad_order);
+  /// convenience function used to make increment_grid_preference() more modular
+  void increment_grid_preference(const RealVector& dim_pref,
+				 UShortArray& dim_quad_order);
 
   /// prune allSamples back to size numFilteredSamples, retaining points
   /// with highest product weight
@@ -117,17 +129,21 @@ private:
   void anisotropic_preference(const RealVector& dim_pref,
 			      UShortArray& quad_order_ref);
 
-  /// initialize quadOrder{Spec,Ref} from quad_order_spec and dimPrefSpec
-  void initialize_quadrature_order(unsigned short quad_order_spec);
+  /// initialize dim_quad_order from quad_order_spec and dim_pref_spec
+  void initialize_dimension_quadrature_order(unsigned short quad_order_spec,
+					     const RealVector& dim_pref_spec,
+					     UShortArray& dim_quad_order);
 
-  /// update Pecos::TensorProductDriver::quadOrder from quadOrderRef
+  /// update Pecos::TensorProductDriver::quadOrder from dimQuadOrderRef
   /// to account for nested rule constraints
   void nested_quadrature_order(const UShortArray& quad_order_ref);
 
-  /// increment each quadOrderRef entry by 1
-  void increment_reference();
-  /// increment the quadOrderRef entry with maximum preference by 1
-  void increment_reference(const RealVector& dim_pref);
+  /// increment each dim_quad_order entry by 1
+  void increment_dimension_quadrature_order(UShortArray& dim_quad_order);
+  /// increment the dim_quad_order entry with maximum preference by 1
+  /// and then rebalance
+  void increment_dimension_quadrature_order(const RealVector& dim_pref,
+					    UShortArray& dim_quad_order);
 
   //
   //- Heading: Data
@@ -140,12 +156,12 @@ private:
   /// quadrature rules such as Gauss-Patterson
   bool nestedRules;
 
-  /// the user specification for the number of Gauss points per dimension
+  /// a sequence of scalar quadrature orders, one per refinement level
   UShortArray quadOrderSpec;
   /// reference point for Pecos::TensorProductDriver::quadOrder: the original
   /// user specification for the number of Gauss points per dimension, plus
   /// any refinements posted by increment_grid()
-  UShortArray quadOrderRef;
+  UShortArray dimQuadOrderRef;
 
   /// size of a filtered set of tensor quadrature points; used by the
   /// regression PCE approach known as "probabilistic collocation"
@@ -161,9 +177,35 @@ inline void NonDQuadrature::filtered_samples(size_t samples)
 { numFilteredSamples = samples; }
 
 
-/** Note: quadOrderSpec state includes dimPrefSpec. */
+inline void NonDQuadrature::compute_minimum_quadrature_order()
+{
+  compute_minimum_quadrature_order(numFilteredSamples, dimPrefSpec,
+				   dimQuadOrderRef);
+}
+
+
 inline void NonDQuadrature::reset()
-{ quadOrderRef = quadOrderSpec; tpqDriver->quadrature_order(quadOrderSpec); }
+{
+  initialize_dimension_quadrature_order(quadOrderSpec[sequenceIndex],
+					dimPrefSpec, dimQuadOrderRef);
+}
+
+
+inline void NonDQuadrature::increment_grid()
+{ increment_grid(dimQuadOrderRef); }
+
+
+inline void NonDQuadrature::
+increment_grid_preference(const RealVector& dim_pref)
+{ increment_grid_preference(dim_pref, dimQuadOrderRef); }
+
+
+inline void NonDQuadrature::increment_refinement_sequence()
+{
+  if (sequenceIndex+1 < quadOrderSpec.size())
+    ++sequenceIndex;
+  reset();
+}
 
 
 inline int NonDQuadrature::num_samples() const

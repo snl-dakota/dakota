@@ -88,7 +88,7 @@ protected:
   /// assign a NonDQuadrature instance within u_space_sampler based on
   /// a quad_order specification
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-			    unsigned short quad_order,
+			    const UShortArray& quad_order,
 			    const RealVector& dim_pref, bool piecewise_basis,
 			    bool use_derivs);
   /// assign a NonDQuadrature instance within u_space_sampler based on
@@ -98,7 +98,7 @@ protected:
 			    bool piecewise_basis, bool use_derivs);
   /// assign a NonDSparsegrid instance within u_space_sampler
   void construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
-			     unsigned short ssg_level,
+			     const UShortArray& ssg_level,
 			     const RealVector& ssg_dim_pref,
 			     bool piecewise_basis, bool use_derivs);
   // assign a NonDIncremLHSSampling instance within u_space_sampler

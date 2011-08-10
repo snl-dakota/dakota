@@ -29,7 +29,8 @@ namespace Dakota {
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there are not yet
     separate nond_quadrature/nond_sparse_grid method specifications. */
-NonDIntegration::NonDIntegration(Model& model): NonD(model), numIntegrations(0),
+NonDIntegration::NonDIntegration(Model& model):
+  NonD(model), numIntegrations(0), sequenceIndex(0),
   dimPrefSpec(probDescDB.get_rdv("method.nond.dimension_preference"))
   //, standAloneMode(true)
 {
@@ -52,7 +53,7 @@ NonDIntegration::NonDIntegration(Model& model): NonD(model), numIntegrations(0),
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical integration points. */
 NonDIntegration::NonDIntegration(NoDBBaseConstructor, Model& model): 
-  NonD(NoDBBaseConstructor(), model), numIntegrations(0)
+  NonD(NoDBBaseConstructor(), model), numIntegrations(0), sequenceIndex(0)
   //, standAloneMode(false)
 {
   // The passed model (stored in iteratedModel) is G(u): it is recast to
@@ -67,8 +68,8 @@ NonDIntegration::NonDIntegration(NoDBBaseConstructor, Model& model):
     evaluation of numerical integration points. */
 NonDIntegration::
 NonDIntegration(NoDBBaseConstructor, Model& model, const RealVector& dim_pref): 
-  NonD(NoDBBaseConstructor(), model), numIntegrations(0), dimPrefSpec(dim_pref)
-  //, standAloneMode(false)
+  NonD(NoDBBaseConstructor(), model), numIntegrations(0), sequenceIndex(0),
+  dimPrefSpec(dim_pref) //, standAloneMode(false)
 {
   // The passed model (stored in iteratedModel) is G(u): it is recast to
   // standard space and does not include a DataFit recursion.
@@ -157,5 +158,9 @@ void NonDIntegration::increment_grid_weights(const RealVector& aniso_wts)
     dim_pref[i] = 1./aniso_wts[i];
   increment_grid_preference(dim_pref);
 }
+
+
+void NonDIntegration::increment_refinement_sequence()
+{ ++sequenceIndex; } // default overridden by NonD{Quadrature,SparseGrid}
 
 } // namespace Dakota

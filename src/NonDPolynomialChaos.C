@@ -87,13 +87,13 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
       = probDescDB.get_ushort("method.nond.cubature_integrand");
     if (!quad_order_spec.empty()) {
       expansionCoeffsApproach = Pecos::QUADRATURE;
-      construct_quadrature(u_space_sampler, g_u_model, quad_order_spec[0],
+      construct_quadrature(u_space_sampler, g_u_model, quad_order_spec,
 	probDescDB.get_rdv("method.nond.dimension_preference"),
 	piecewise_basis, use_derivs);
     }
     else if (!ssg_level_spec.empty()) {
       expansionCoeffsApproach = Pecos::SPARSE_GRID;
-      construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec[0],
+      construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec,
 	probDescDB.get_rdv("method.nond.dimension_preference"),
 	piecewise_basis, use_derivs);
     }
@@ -228,13 +228,15 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // generated using active sampling view:
   Iterator u_space_sampler;
   if (expansionCoeffsApproach == Pecos::QUADRATURE) {
-    RealVector dim_pref; // empty
-    construct_quadrature(u_space_sampler, g_u_model, num_int_level, dim_pref,
+    RealVector  dim_pref;                     // empty -> isotropic
+    UShortArray quad_order(1, num_int_level); // single sequence
+    construct_quadrature(u_space_sampler, g_u_model, quad_order, dim_pref,
 			 piecewise_basis, use_derivs);
   }
   else if (expansionCoeffsApproach == Pecos::SPARSE_GRID) {
-    RealVector dim_pref; // empty
-    construct_sparse_grid(u_space_sampler, g_u_model, num_int_level, dim_pref,
+    RealVector  dim_pref;                    // empty -> isotropic
+    UShortArray ssg_level(1, num_int_level); // single sequence
+    construct_sparse_grid(u_space_sampler, g_u_model, ssg_level, dim_pref,
 			  piecewise_basis, use_derivs);
   }
   else if (expansionCoeffsApproach == Pecos::CUBATURE)
@@ -387,7 +389,7 @@ void NonDPolynomialChaos::increment_expansion()
     NonDQuadrature* nond_quad
       = (NonDQuadrature*)uSpaceModel.subordinate_iterator().iterator_rep();
     nond_quad->filtered_samples(numSamplesOnModel);
-    nond_quad->compute_min_quadrature_order(numSamplesOnModel);
+    nond_quad->compute_minimum_quadrature_order();
   }
   else {
     NonDSampling* nond_sampling
