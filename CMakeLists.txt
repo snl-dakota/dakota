@@ -14,10 +14,12 @@ project("Dakota" NONE)
 
 # Attempt to detect MPI if not specified
 option(DAKOTA_HAVE_MPI "Enable MPI in DAKOTA" OFF)
-include(DakotaHaveMPI)
-DakotaHaveMPI()
+if(DAKOTA_HAVE_MPI)
+  include(DakotaHaveMPI)
+  DakotaHaveMPI()
+endif(DAKOTA_HAVE_MPI)
 
-# Now check lanauges after MPI compilers are processed
+# Now check languages after MPI compilers are processed
 enable_language(C)
 enable_language(CXX)
 enable_language(Fortran)
@@ -50,14 +52,20 @@ if(CMAKE_SYSTEM_NAME MATCHES Darwin)
 endif()
 
 # first check for a system blas and lapack
-find_library(BLAS_LIBS blas)
-find_library(LAPACK_LIBS lapack)
-if(NOT BLAS_LIBS OR NOT LAPACK_LIBS)
-  # if not a system blas and lapack, then look for a cmake built LAPACK
-  # with find_package
-  find_package(LAPACK REQUIRED NO_MODULE)
-  set(BLAS_LIBS blas)
-  set(LAPACK_LIBS lapack)
+if(NOT DEFINED BLAS_LIBS OR NOT DEFINED LAPACK_LIBS)
+  if(NOT DEFINED BLAS_LIBS)
+    find_library(BLAS_LIBS blas)
+  endif()
+  if(NOT DEFINED LAPACK_LIBS)
+    find_library(LAPACK_LIBS lapack)
+  endif()
+  if(NOT BLAS_LIBS OR NOT LAPACK_LIBS)
+    # if not a system blas and lapack, then look for a cmake built LAPACK
+    # with find_package
+    find_package(LAPACK REQUIRED NO_MODULE)
+    set(BLAS_LIBS blas)
+    set(LAPACK_LIBS lapack)
+  endif()
 endif()
 
 
