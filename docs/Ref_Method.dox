@@ -5202,8 +5202,8 @@ are provided in Tables \ref T5d36 "5.36" and \ref T5d37 "5.37":
 
 <ol>
 <li> multidimensional integration by a tensor-product of Gaussian
-     quadrature rules (specified with \c quadrature_order, where the
-     order per variable may be anisotropic).  The default rule
+     quadrature rules (specified with \c quadrature_order, and, 
+     optionally, \c dimension_preference).  The default rule
      selection is to employ \c non_nested Gauss rules including
      Gauss-Hermite (for normals or transformed normals),
      Gauss-Legendre (for uniforms or transformed uniforms),
@@ -5214,16 +5214,27 @@ are provided in Tables \ref T5d36 "5.36" and \ref T5d37 "5.37":
      case of an explicit \c nested override, Gauss-Hermite rules are
      replaced with Genz-Keister nested rules and Gauss-Legendre rules
      are replaced with Gauss-Patterson nested rules, both of which
-     exchange lower integrand precision for greater point reuse.  To
-     synchronize with tensor-product integration, a tensor-product
+     exchange lower integrand precision for greater point reuse.  
+     By specifying a \c dimension_preference, where higher preference
+     leads to higher order polynomial resolution, the tensor grid may
+     be rendered anisotropic.  The dimension specified to have 
+     highest preference will be set to the specified \c quadrature_order
+     and all other dimensions will be reduced in proportion to their
+     reduced preference; any non-integral portion is truncated.
+     To synchronize with tensor-product integration, a tensor-product
      expansion is used, where the order \f$p_i\f$ of the expansion in
      each dimension is selected to be half of the integrand precision
      available from the rule in use, rounded down.  In the case of
      non-nested Gauss rules with integrand precision \f$2m_i-1\f$,
      \f$p_i\f$ is one less than the quadrature order \f$m_i\f$ in each
-     dimension.  The total number of terms, \e N, in a tensor-product
-     expansion involving \e n uncertain input variables is 
+     dimension (a one-dimensional expansion contains the same number 
+     of terms, \f$p+1\f$, as the number of Gauss points).  The 
+     total number of terms, \e N, in a tensor-product expansion 
+     involving \e n uncertain input variables is 
      \f[N ~=~ 1 + P ~=~ \prod_{i=1}^{n} (p_i + 1)\f]
+     In some advanced use cases (e.g., multifidelity UQ), multiple
+     grid resolutions can be employed; for this reason, the \c 
+     quadrature_order specification supports an array input.
 <li> multidimensional integration by the Smolyak sparse grid method
      (specified with \c sparse_grid_level and, optionally, \c
      dimension_preference).  The underlying one-dimensional
@@ -5234,18 +5245,24 @@ are provided in Tables \ref T5d36 "5.36" and \ref T5d37 "5.37":
      default can be overridden with an explicit \c non_nested
      specification (resulting in Gauss-Hermite for normals/transformed
      normals and Gauss-Legendre for uniforms/transformed uniforms).
-     By specifying a \c dimension_preference, where higher preference
-     leads to higher order polynomial resolution, the sparse grid may
-     be rendered anisotropic (refer to the PCE description in the
-     User's Manual for the anisotropic index set constraint
-     definition).  For PCE with either isotropic or anisotropic sparse
-     grids, a summation of tensor-product expansions is used, where
-     each anisotropic tensor-product quadrature rule underlying the
-     sparse grid construction results in its own anisotropic
+     As for tensor quadrature, the \c dimension_preference
+     specification enables the use of anisotropic sparse grids (refer
+     to the PCE description in the User's Manual for the anisotropic
+     index set constraint definition).  Similar to anisotropic tensor
+     grids, the dimension with greatest preference will have
+     resolution at the full \c sparse_grid_level and all other
+     dimension resolutions will be reduced in proportion to their
+     reduced preference.  For PCE with either isotropic or anisotropic
+     sparse grids, a summation of tensor-product expansions is used,
+     where each anisotropic tensor-product quadrature rule underlying
+     the sparse grid construction results in its own anisotropic
      tensor-product expansion as described in case 1.  These
      anisotropic tensor-product expansions are summed into a sparse
      PCE using the standard Smolyak summation (again, refer to the
-     User's Manual for additional details).
+     User's Manual for additional details).  As for \c quadrature_order,
+     the \c sparse_grid_level specification admits an array input for
+     enabling specification of multiple grid resolutions used by certain
+     advanced solution methodologies.
 <li> multidimensional integration by Stroud cubature rules [\ref
      Stroud1971 "Stroud, 1971"] and extensions [\ref Xiu2008 "Xiu,
      2008"], as specified with \c cubature_integrand.  A total-order
@@ -5288,7 +5305,13 @@ cubature, and sparse grid approaches.
 <tr>
 <td>Quadrature order for PCE coefficient estimation
 <td>\c quadrature_order
-<td>list of integer
+<td>list of integers (one per grid resolution)
+<td>Required (1 of 7 selections)
+<td>N/A
+<tr>
+<td>Sparse grid level for PCE coefficient estimation
+<td>\c sparse_grid_level
+<td>list of integers (one per grid resolution)
 <td>Required (1 of 7 selections)
 <td>N/A
 <tr>
@@ -5298,17 +5321,11 @@ cubature, and sparse grid approaches.
 <td>Required (1 of 7 selections)
 <td>N/A
 <tr>
-<td>Sparse grid level for PCE coefficient estimation
-<td>\c sparse_grid_level
-<td>integer
-<td>Required (1 of 7 selections)
-<td>N/A
-<tr>
-<td>Sparse grid dimension preference
+<td>Dimension preference for anisotropic tensor and sparse grids
 <td>\c dimension_preference
 <td>list of reals
 <td>Optional
-<td>isotropic sparse grid
+<td>isotropic grids
 <tr>
 <td>Sparse grid growth rule restriction
 <td>\c restricted | \c unrestricted
@@ -5721,20 +5738,20 @@ are provided in \ref T5d40 "Table 5.40".
 
 <ol>
 <li> interpolation on a tensor-product of Gaussian quadrature points
-     (specified with \c quadrature_order, where the order per variable
-     may be anisotropic).  As for PCE, non-nested Gauss rules are
-     employed by default, although the presence of \c p_refinement or
-     \c h_refinement will result in default usage of nested rules for
-     normal or uniform variables after any variable transformations
-     have been applied (both defaults can be overridden using explicit
-     \c nested or \c non_nested specifications).
+     (specified with \c quadrature_order and, optionally, \c
+     dimension_preference for anisotropic tensor grids).  As for PCE,
+     non-nested Gauss rules are employed by default, although the
+     presence of \c p_refinement or \c h_refinement will result in
+     default usage of nested rules for normal or uniform variables
+     after any variable transformations have been applied (both
+     defaults can be overridden using explicit \c nested or \c
+     non_nested specifications).
 <li> interpolation on a Smolyak sparse grid (specified with \c
-     sparse_grid_level and, optionally, \c dimension_preference)
-     defined from Gaussian rules.  With the specification of \c
-     dimension_preference, the sparse grid can be rendered
-     anisotropic.  As for sparse PCE, nested rules are employed unless
-     overridden with the \c non_nested option, and the growth rules 
-     are restricted unless overridden by the \c unrestricted keyword.
+     sparse_grid_level and, optionally, \c dimension_preference for
+     anisotropic sparse grids) defined from Gaussian rules.  As for
+     sparse PCE, nested rules are employed unless overridden with the
+     \c non_nested option, and the growth rules are restricted unless
+     overridden by the \c unrestricted keyword.
 
 \anchor T5d40
 <table>
@@ -5753,21 +5770,21 @@ Specification detail for stochastic collocation method: grid controls.
 <tr>
 <td>Quadrature order for collocation points
 <td>\c quadrature_order
-<td>list of integer
+<td>list of integers (one per grid resolution)
 <td>Required (1 of 2 selections)
 <td>N/A
 <tr>
 <td>Sparse grid level for collocation points
 <td>\c sparse_grid_level
-<td>integer
+<td>list of integers (one per grid resolution)
 <td>Required (1 of 2 selections)
 <td>N/A
 <tr>
-<td>Sparse grid dimension preference
+<td>Dimension preference for anisotropic tensor and sparse grids
 <td>\c dimension_preference
 <td>list of reals
 <td>Optional
-<td>isotropic sparse grid
+<td>isotropic grids
 <tr>
 <td>Sparse grid growth rule restriction
 <td>\c restricted | \c unrestricted
