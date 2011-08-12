@@ -83,6 +83,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   driverTypeMap["scalable_gerstner"]      = SCALABLE_GERSTNER;
   driverTypeMap["log_ratio"]              = LOGNORMAL_RATIO;
   driverTypeMap["multimodal"]             = MULTIMODAL;
+  driverTypeMap["lf_short_column"]        = LF_SHORT_COLUMN;
   driverTypeMap["short_column"]           = SHORT_COLUMN;
   driverTypeMap["sobol_rational"]         = SOBOL_RATIONAL;
   driverTypeMap["sobol_g_function"]       = SOBOL_G_FUNCTION;
@@ -159,8 +160,8 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   for (size_t i=0; i<numAnalysisDrivers; ++i)
     switch (analysisDriverTypes[i]) {
     case CANTILEVER_BEAM:   case MOD_CANTILEVER_BEAM: case ROSENBROCK:
-    case SHORT_COLUMN:      case SOBOL_ISHIGAMI:      case STEEL_COLUMN_COST:
-    case STEEL_COLUMN_PERFORMANCE:
+    case SHORT_COLUMN:      case LF_SHORT_COLUMN:     case SOBOL_ISHIGAMI:
+    case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE:
       localDataView |= VARIABLES_MAP;    break;
     case NO_DRIVER: // assume VARIABLES_VECTOR approach for plug-ins for now
     case CYLINDER_HEAD:       case LOGNORMAL_RATIO:     case MULTIMODAL:
@@ -183,7 +184,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
       //varTypeMap["x5"] = VAR_x5; varTypeMap["x6"]  = VAR_x6;
       //varTypeMap["x7"] = VAR_x7; varTypeMap["x8"]  = VAR_x8;
       //varTypeMap["x9"] = VAR_x9; varTypeMap["x10"] = VAR_x10; break;
-    //case SHORT_COLUMN:
+    //case SHORT_COLUMN: case LF_SHORT_COLUMN:
       varTypeMap["b"] = VAR_b; varTypeMap["h"] = VAR_h;
       varTypeMap["P"] = VAR_P; varTypeMap["M"] = VAR_M; varTypeMap["Y"] = VAR_Y;
       //break;
@@ -460,6 +461,8 @@ int DirectApplicInterface::derived_map_ac(const String& ac_name)
     fail_code = multimodal(); break;
   case SHORT_COLUMN:
     fail_code = short_column(); break;
+  case LF_SHORT_COLUMN:
+    fail_code = lf_short_column(); break;
   case SOBOL_RATIONAL:
     fail_code = sobol_rational(); break;
   case SOBOL_G_FUNCTION:
@@ -1492,7 +1495,8 @@ int DirectApplicInterface::gerstner()
   }
 
   const Real& x = xC[0]; const Real& y = xC[1];
-  const std::string& an_comp = analysisComponents[analysisDriverIndex][0];
+  const StringArray& an_comps = analysisComponents[analysisDriverIndex];
+  String an_comp = (an_comps.size()) ? an_comps[0] : "iso1";
   short test_fn; Real x_coeff, y_coeff, xy_coeff;
   if (an_comp        == "iso1")
     { test_fn = 1; x_coeff = y_coeff = 10.; }
@@ -1707,7 +1711,12 @@ int DirectApplicInterface::short_column()
 	 << std::endl;
     abort_handler(-1);
   }
-  if (numFns != 2) {
+  size_t ai, lsi;
+  if (numFns == 1)      // option for limit state only
+    lsi = 0;
+  else if (numFns == 2) // option for area + limit state
+    { ai = 0; lsi = 1; }
+  else {
     Cerr << "Error: Bad number of functions in short_column direct fn."
 	 << std::endl;
     abort_handler(-1);
@@ -1722,84 +1731,144 @@ int DirectApplicInterface::short_column()
        Y = xCM[VAR_Y], b_sq = b*b, h_sq = h*h, P_sq = P*P, Y_sq = Y*Y;
 
   // **** f (objective = bh = cross sectional area):
-  if (directFnASV[0] & 1)
-    fnVals[0] = b*h;
+  if (numFns > 1 && (directFnASV[ai] & 1))
+    fnVals[ai] = b*h;
 
   // **** g (limit state = short column response):
-  if (directFnASV[1] & 1)
-    fnVals[1] = 1. - 4.*M/(b*h_sq*Y) - P_sq/(b_sq*h_sq*Y_sq);
+  if (directFnASV[lsi] & 1)
+    fnVals[lsi] = 1. - 4.*M/(b*h_sq*Y) - P_sq/(b_sq*h_sq*Y_sq);
 
   // **** df/dx (w.r.t. active variables):
-  if (directFnASV[0] & 2)
+  if (numFns > 1 && (directFnASV[ai] & 2))
     for (size_t i=0; i<numDerivVars; ++i)
       switch (varTypeDVV[i]) {
       case VAR_b: // design variable derivative
-	fnGrads[0][i] = h;  break;
+	fnGrads[ai][i] = h;  break;
       case VAR_h: // design variable derivative
-	fnGrads[0][i] = b;  break;
+	fnGrads[ai][i] = b;  break;
       default: // uncertain variable derivative
-	fnGrads[0][i] = 0.; break;
+	fnGrads[ai][i] = 0.; break;
       }
 
   // **** dg/dx (w.r.t. active variables):
-  if (directFnASV[1] & 2)
+  if (directFnASV[lsi] & 2)
     for (size_t i=0; i<numDerivVars; ++i)
       switch (varTypeDVV[i]) {
       case VAR_b: // design variable derivative
-	fnGrads[1][i] = 4.*M/(b_sq*h_sq*Y) + 2.*P_sq/(b_sq*b*h_sq*Y_sq); break;
+	fnGrads[lsi][i] = 4.*M/(b_sq*h_sq*Y) + 2.*P_sq/(b_sq*b*h_sq*Y_sq);break;
       case VAR_h: // design variable derivative
-	fnGrads[1][i] = 8.*M/(b*h_sq*h*Y)  + 2.*P_sq/(b_sq*h_sq*h*Y_sq); break;
+	fnGrads[lsi][i] = 8.*M/(b*h_sq*h*Y)  + 2.*P_sq/(b_sq*h_sq*h*Y_sq);break;
       case VAR_P: // uncertain variable derivative
-	fnGrads[1][i] = -2.*P/(b_sq*h_sq*Y_sq);                          break;
+	fnGrads[lsi][i] = -2.*P/(b_sq*h_sq*Y_sq);                         break;
       case VAR_M: // uncertain variable derivative
-	fnGrads[1][i] = -4./(b*h_sq*Y);                                  break;
+	fnGrads[lsi][i] = -4./(b*h_sq*Y);                                 break;
       case VAR_Y: // uncertain variable derivative
-	fnGrads[1][i] = 4.*M/(b*h_sq*Y_sq) + 2.*P_sq/(b_sq*h_sq*Y_sq*Y); break;
+	fnGrads[lsi][i] = 4.*M/(b*h_sq*Y_sq) + 2.*P_sq/(b_sq*h_sq*Y_sq*Y);break;
       }
 
   // **** d^2f/dx^2: (SORM)
-  if (directFnASV[0] & 4)
+  if (numFns > 1 && (directFnASV[ai] & 4))
     for (size_t i=0; i<numDerivVars; ++i)
       for (size_t j=0; j<=i; ++j)
-	fnHessians[0](i,j)
+	fnHessians[ai](i,j)
 	  = ( (varTypeDVV[i] == VAR_b && varTypeDVV[j] == VAR_h) ||
 	      (varTypeDVV[i] == VAR_h && varTypeDVV[j] == VAR_b) ) ? 1. : 0.;
 
   // **** d^2g/dx^2: (SORM)
-  if (directFnASV[1] & 4)
+  if (directFnASV[lsi] & 4)
     for (size_t i=0; i<numDerivVars; ++i)
       for (size_t j=0; j<=i; ++j)
 	if (varTypeDVV[i] == VAR_b && varTypeDVV[j] == VAR_b)
-	  fnHessians[1](i,j) = -8.*M/(b_sq*b*h_sq*Y)
+	  fnHessians[lsi](i,j) = -8.*M/(b_sq*b*h_sq*Y)
 	    - 6.*P_sq/(b_sq*b_sq*h_sq*Y_sq);
 	else if ( (varTypeDVV[i] == VAR_b && varTypeDVV[j] == VAR_h) ||
 		  (varTypeDVV[i] == VAR_h && varTypeDVV[j] == VAR_b) )
-	  fnHessians[1](i,j) = -8.*M/(b_sq*h_sq*h*Y)
+	  fnHessians[lsi](i,j) = -8.*M/(b_sq*h_sq*h*Y)
 	    - 4.*P_sq/(b_sq*b*h_sq*h*Y_sq);
 	else if (varTypeDVV[i] == VAR_h && varTypeDVV[j] == VAR_h)
-	  fnHessians[1](i,j) = -24.*M/(b*h_sq*h_sq*Y)
+	  fnHessians[lsi](i,j) = -24.*M/(b*h_sq*h_sq*Y)
 	    - 6.*P_sq/(b_sq*h_sq*h_sq*Y_sq);
 	else if (varTypeDVV[i] == VAR_P && varTypeDVV[j] == VAR_P)
-	  fnHessians[1](i,j) = -2./(b_sq*h_sq*Y_sq);
+	  fnHessians[lsi](i,j) = -2./(b_sq*h_sq*Y_sq);
 	else if ( (varTypeDVV[i] == VAR_P && varTypeDVV[j] == VAR_M) ||
 		  (varTypeDVV[i] == VAR_M && varTypeDVV[j] == VAR_P) )
-	  fnHessians[1](i,j) = 0.;
+	  fnHessians[lsi](i,j) = 0.;
 	else if ( (varTypeDVV[i] == VAR_P && varTypeDVV[j] == VAR_Y) ||
 		  (varTypeDVV[i] == VAR_Y && varTypeDVV[j] == VAR_P) )
-	  fnHessians[1](i,j) = 4.*P/(b_sq*h_sq*Y_sq*Y);
+	  fnHessians[lsi](i,j) = 4.*P/(b_sq*h_sq*Y_sq*Y);
 	else if (varTypeDVV[i] == VAR_M && varTypeDVV[j] == VAR_M)
-	  fnHessians[1](i,j) = 0.;
+	  fnHessians[lsi](i,j) = 0.;
 	else if ( (varTypeDVV[i] == VAR_M && varTypeDVV[j] == VAR_Y) ||
 		  (varTypeDVV[i] == VAR_Y && varTypeDVV[j] == VAR_M) )
-	  fnHessians[1](i,j) = 4./(b*h_sq*Y_sq);
+	  fnHessians[lsi](i,j) = 4./(b*h_sq*Y_sq);
 	else if (varTypeDVV[i] == VAR_Y && varTypeDVV[j] == VAR_Y)
-	  fnHessians[1](i,j) = -8.*M/(b*h_sq*Y_sq*Y)
+	  fnHessians[lsi](i,j) = -8.*M/(b*h_sq*Y_sq*Y)
 	    - 6.*P_sq/(b_sq*h_sq*Y_sq*Y_sq);
 	else { // unsupported cross-derivative
 	  Cerr << "Error: unsupported Hessian cross term in short_column."
 	       << std::endl;
 	  abort_handler(-1);
 	}
+
+  return 0; // no failure
+}
+
+
+int DirectApplicInterface::lf_short_column()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: lf_short_column direct fn does not support multiprocessor "
+	 << "analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numVars != 5 || numADIV || numADRV) {
+    Cerr << "Error: Bad number of variables in lf_short_column direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  size_t ai, lsi;
+  if (numFns == 1)      // option for limit state only
+    lsi = 0;
+  else if (numFns == 2) // option for area + limit state
+    { ai = 0; lsi = 1; }
+  else {
+    Cerr << "Error: Bad number of functions in lf_short_column direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  // b = xC[0] = column base   (design var.)
+  // h = xC[1] = column height (design var.)
+  // P = xC[2] (normal uncertain var.)
+  // M = xC[3] (normal uncertain var.)
+  // Y = xC[4] (lognormal uncertain var.)
+  Real b = xCM[VAR_b], h = xCM[VAR_h], P = xCM[VAR_P], M = xCM[VAR_M],
+       Y = xCM[VAR_Y], b_sq = b*b, h_sq = h*h, P_sq = P*P, M_sq = M*M,
+       Y_sq = Y*Y;
+  short test_fn = 1;
+  const StringArray& an_comps = analysisComponents[analysisDriverIndex];
+  if (an_comps.size()) {
+    if (an_comps[0]      == "lf1") test_fn = 1;
+    else if (an_comps[0] == "lf2") test_fn = 2;
+    else if (an_comps[0] == "lf3") test_fn = 3;
+  }
+
+  // **** f (objective = bh = cross sectional area):
+  if (numFns > 1 && (directFnASV[ai] & 1))
+    fnVals[ai] = b*h;
+
+  // **** g (limit state = short column response):
+  if (directFnASV[lsi] & 1) {
+    switch (test_fn) {
+    case 1:
+      fnVals[lsi] = 1. - 4.*P/(b*h_sq*Y) - P_sq/(b_sq*h_sq*Y_sq); break;
+    case 2:
+      fnVals[lsi] = 1. - 4.*M/(b*h_sq*Y) - M_sq/(b_sq*h_sq*Y_sq); break;
+    case 3:
+      fnVals[lsi] = 1. - 4.*M/(b*h_sq*Y) - P_sq/(b_sq*h_sq*Y_sq)
+	               - 4.*(P - M)/(b*h*Y);                      break;
+    }
+  }
 
   return 0; // no failure
 }

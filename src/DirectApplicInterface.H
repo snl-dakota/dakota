@@ -49,9 +49,11 @@ enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
 /// enumeration of possible driver types (to index to names)
 enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
 		CYLINDER_HEAD, EXTENDED_ROSENBROCK, GENERALIZED_ROSENBROCK,
-		ROSENBROCK, GERSTNER, SCALABLE_GERSTNER, LOGNORMAL_RATIO,
-		MULTIMODAL, PLUGIN_ROSENBROCK, PLUGIN_TEXT_BOOK, SHORT_COLUMN,
-		SOBOL_RATIONAL,	SOBOL_G_FUNCTION, SOBOL_ISHIGAMI,
+		ROSENBROCK, GERSTNER, SCALABLE_GERSTNER,
+		LOGNORMAL_RATIO, MULTIMODAL,
+		PLUGIN_ROSENBROCK, PLUGIN_TEXT_BOOK,
+		SHORT_COLUMN, LF_SHORT_COLUMN,
+		SOBOL_RATIONAL, SOBOL_G_FUNCTION, SOBOL_ISHIGAMI,
 		STEEL_COLUMN_COST, STEEL_COLUMN_PERFORMANCE,
 		TEXT_BOOK, TEXT_BOOK1, TEXT_BOOK2, TEXT_BOOK3, TEXT_BOOK_OUU,
 		SALINAS, MODELCENTER, MATLAB, PYTHON };
@@ -213,6 +215,7 @@ private:
   int multimodal();   ///< multimodal UQ test function
   int log_ratio();    ///< the log_ratio UQ test function
   int short_column(); ///< the short_column UQ/OUU test function
+  int lf_short_column(); ///< a low fidelity short_column test function
 
   int rosenbrock();  ///< the Rosenbrock optimization and least squares test fn
   int generalized_rosenbrock(); ///< n-dimensional Rosenbrock (Schittkowski)
@@ -222,7 +225,7 @@ private:
   int scalable_gerstner(); ///< scalable versions of the Gerstner test family
 
   int steel_column_cost(); ///< the steel_column_cost UQ/OUU test function
-  int steel_column_perf(); ///< the short_column_perf UQ/OUU test function
+  int steel_column_perf(); ///< the steel_column_perf UQ/OUU test function
 
   int sobol_rational();   ///< Sobol SA rational test function
   int sobol_g_function(); ///< Sobol SA discontinuous test function
