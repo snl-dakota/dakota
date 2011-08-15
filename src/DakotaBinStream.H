@@ -25,9 +25,6 @@
 
 namespace Dakota {
 
-class String;
-
-
 /// The binary input stream class.  Overloads the >> operator for all
 /// data types
 
@@ -63,7 +60,7 @@ public:
   //
 
   /// Binary Input stream operator>>
-  BiStream& operator>>(String& ds);
+  BiStream& operator>>(std::string& ds);
   /// Input operator, reads char* from binary stream BiStream
   BiStream& operator>>(char* s);
   /// Input operator, reads char from binary stream BiStream
@@ -133,14 +130,14 @@ public:
   BoStream(const char *s, std::ios_base::openmode mode);
 
   /// Destructor, calls xdr_destroy to delete xdr stream
-  ~BoStream();
+  ~BoStream() throw();
 
   //
   //- Heading: operators 
   //
 
   /// Binary Output stream operator<<
-  BoStream& operator<<(const String& ds);
+  BoStream& operator<<(const std::string& ds);
   /// Output operator, writes char* TO binary stream BoStream
   BoStream& operator<<(const char* s);
   /// Output operator, writes char to binary stream BoStream
