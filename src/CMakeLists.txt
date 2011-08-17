@@ -10,6 +10,11 @@ add_definitions("-DHAVE_CONFIG_H")
 add_definitions("-DDISABLE_DAKOTA_CONFIG_H")
 add_definitions("-DBOOST_MULTI_INDEX_DISABLE_SERIALIZATION")
 
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "XL" OR
+   ${CMAKE_CXX_COMPILER_ID} MATCHES "VisualAge")
+  add_definitions("-DBOOST_MPL_CFG_ASSERT_USE_RELATION_NAMES")
+endif()
+
 # DAKOTA-specific processing of specification maintenance options
 include(DakotaEnableSpecMaint)
 DakotaEnableSpecMaint()
