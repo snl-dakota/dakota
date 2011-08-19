@@ -1,4 +1,15 @@
 #!/usr/bin/perl
+
+###############################################################################
+#
+#  Usage: dakota_test.perl [parallel] [base|extract] [filename(s)] [#]
+#
+#  Long options:
+#  --extract=filename    (intermediate extracted test file name)
+#  --input-dir=filepath  (directory containing test inputs and baselines)
+#  --output-dir=filepath (for generated intermediate, diff, and baseline files)
+#
+###############################################################################
 #
 # This perl script runs one or more Dakota regression tests, captures the
 # output, and compares the results against a baseline.  The script may
@@ -7,94 +18,76 @@
 # This script supports several different modes according to the command
 # line arguments:
 #
-# -- serial multi-file mode
+# -- all file run mode
 #
-#      dakota_test.perl
-#      -> executes all serial tests and compares results to the baseline
+#      dakota_test.perl [parallel]
+#      -> executes all serial [parallel] tests in dakota_*.in and compares 
+#         results to the relevant baseline
 #
-# -- parallel multi-file mode
+# -- specified file(s) run mode
 #
-#      dakota_test.perl parallel
-#      -> executes all parallel tests and compares results to the baseline
+#      dakota_test.perl [parallel] dakota_f1.in [dakota_f2.in] [dakota_f*.in]
+#      -> executes the serial [parallel] tests only in the specified file 
+#         names / globs and compares results to the relevant baseline
 #
-# -- serial single-file mode
+# -- specified file(s) run nth-test
 #
-#      dakota_test.perl filename.in
-#      -> executes only the serial tests defined in filename.in
+#      dakota_test.perl [parallel] dakota_f1.in [dakota_f2.in] [dakota_f*.in] 3
+#      -> execute the nth serial [parallel] test defined in each of the 
+#         specified filenames / globs (baseline compare only for 0th test)
 #
-# -- parallel single-file mode
+# -- single-file extract nth-test
 #
-#      dakota_test.perl parallel filename.in
-#      -> executes only the parallel tests defined in filename.in
+#      dakota_test.perl [parallel] extract dakota_filename.in 3
+#      -> extracts, but does not execute, the nth serial [parallel] test defined
+#         in dakota_filename.in, writing dakota_filename.in_
 #
-# -- serial single-file nth-test
+# -- baseline generation
 #
-#      dakota_test.perl filename.in 3
-#      -> execute the nth serial test defined in filename.in
-#
-# -- parallel single-file nth-test
-#
-#      dakota_test.perl parallel filename.in 3
-#      -> execute the nth parallel test defined in filename.in
-#
-# -- serial single-file extract nth-test
-#
-#      dakota_test.perl extract filename.in 3
-#      -> extracts, but does not execute, the nth serial test defined
-#         in filename.in
-#
-# -- parallel single-file extract nth-test
-#
-#      dakota_test.perl parallel extract filename.in 3
-#      -> extracts, but does not execute, the nth parallel test defined
-#         in filename.in
-#
-# -- serial baseline
-#
-#      dakota_test.perl base
-#      -> executes all the serial tests in the current directory
-#         and creates a new baseline file, dakota_base.test.new
-#
-# -- parallel baseline
-#
-#      dakota_test.perl parallel base
-#      -> executes all the parallel tests in the current directory
-#         and creates a new baseline file, dakota_pbase.test.new
+#      dakota_test.perl [parallel] base
+#      -> executes all the serial [parallel] tests in the test input directory
+#         and creates a new baseline file, dakota_[p]base.test.new
 #
 # Baseline creating guidelines:
 #
-# To create a new serial baseline :
-# 1. Run dakota_test.perl in baseline serial mode
-#      dakota_test.perl base
-# 2. Review results in dakota_base.test.new to make sure all tests executed
+# To create a new serial [parallel] baseline :
+# 1. Run dakota_test.perl in baseline serial [parallel] mode
+#      dakota_test.perl [parallel] base
+# 2. Review results in dakota_[p]base.test.new to make sure all tests executed
 #    correctly. Making sure any expected changes are present and are reasonable.
-# 3. copy the dakota_base.test.new file
-#      cp dakota_base.test.new dakota_base.test
-# 4. commit the updated dakota_base.test to Subversion
-#      svn commit
-#
-# To create a new parallel baseline :
-# 1. Run dakota_test.perl in baseline parallel mode
-#      dakota_test.perl parallel base
-# 2. Review results in dakota_pbase.test.new .to make sure all tests executed
-#    correctly. Making sure any expected changes are present and are reasonable.
-# 3. Copy the dakota_pbase.test.new file
-#      cp dakota_pbase.test.new dakota_pbase.test
-# 4. commit the updated dakota_pbase.test to Subversion
-#      svn commit
-#
-#######################################################################
-#
-#  Usage: dakota_test.perl <parallel> <base,extract> <filename> <#>
-#
-#######################################################################
+# 3. copy the dakota_[p]base.test.new file
+#      cp dakota_[p]base.test.new dakota_[p]base.test
+# 4. commit the updated dakota_[p]base.test to the repository
 
+use Getopt::Long;
+use File::Basename;
 use POSIX "sys_wait_h";
 
+# Process long options
+my $extract_filename = ""; # default is dakota_*.in_
+my $input_dir = "";        # default test file source is pwd
+my $output_dir = "";       # default output is pwd
+GetOptions('extract=s'    => \$extract_filename,
+	   'input-dir=s'  => \$input_dir,
+	   'output-dir=s' => \$output_dir
+	   );
+# only append a slash if using an alternate path, so local tests still work
+if ($input_dir) {
+  $input_dir .= "/";
+}
+if ($output_dir) {
+  $output_dir .= "/";
+}
+
 # clean up diffs file
+# BMA: not currently working; need quotes around filename, but don't want to
+#      change behavior unexpectedly; also need to do pdiffs. 
 if (-e dakota_diffs.out) {
   unlink dakota_diffs.out;
 }
+#if (-e "$output_dir" . "dakota_diffs.out") {
+#  unlink "$output_dir" . "dakota_diffs.out";
+#}
 
 # determine $parallel and $base based on command line arguments
 $parallel = 0; # $parallel = 0 (serial) or 1 (parallel)
@@ -109,13 +102,13 @@ if (@ARGV) {
   if (@ARGV[$argcnt] =~ /base/) {
     $mode = 2;
     $argcnt++;
-    @testin = <dakota_*.in>;
+    @testin = glob("$input_dir" . "dakota_*.in");
   }
   elsif (@ARGV[$argcnt] =~ /extract/) {
     $mode = 1;
     $argcnt++;
     if (@ARGV[$argcnt] =~ /dakota_\w+\.in/) {
-      @testin = @ARGV[$argcnt];
+      @testin = "$input_dir" . "@ARGV[$argcnt]";
       $argcnt++;
       if (@ARGV[$argcnt] =~ /[0-9]+/) { # check for trailing test number
 	$test_num = @ARGV[$argcnt];
@@ -131,7 +124,7 @@ if (@ARGV) {
   }
   elsif (@ARGV[$argcnt] =~ /dakota_\w+\.in/) {
     while (@ARGV[$argcnt] =~ /dakota_\w+\.in/) {
-      push @testin, @ARGV[$argcnt];
+      push @testin, "$input_dir" . "@ARGV[$argcnt]";
       $argcnt++;
     }
     if (@ARGV[$argcnt] =~ /[0-9]+/) { # check for trailing test number
@@ -140,11 +133,11 @@ if (@ARGV) {
     }
   }
   else {
-    @testin = <dakota_*.in>;
+    @testin = glob("$input_dir" . "dakota_*.in");
   }
 }
 else {
-  @testin = <dakota_*.in>;
+  @testin = glob("$input_dir" . "dakota_*.in");
 }
 if ($nth_test == 1) {
   print "Testing parallel = $parallel, mode = $mode, test_num = $test_num\n";
@@ -156,12 +149,12 @@ else {
 # Create a new baseline file for output.  Define filename based on mode.
 if ($mode == 2) {
   if ($parallel == 1) {
-    open (TEST_OUT, ">dakota_pbase.test.new") ||
-      die "cannot open dakota_pbase.test.new\n$!";
+    open (TEST_OUT, ">$output_dir" . "dakota_pbase.test.new") ||
+      die "cannot open $output_dir" . "dakota_pbase.test.new\n$!";
   }
   else {
-    open (TEST_OUT, ">dakota_base.test.new") ||
-      die "cannot open dakota_base.test.new\n$!";
+    open (TEST_OUT, ">$output_dir" . "dakota_base.test.new") ||
+      die "cannot open $output_dir" . "dakota_base.test.new\n$!";
   }
 }
 
@@ -218,23 +211,15 @@ $i = "-?\\d+";                    # numerical field in integer notation
 $ui = "\\d+";                     # numerical field in unsigned integer notation
 foreach $file (@testin) {
 
-  # create necessary filenames
-  $output = $file;
-  $error  = $file;
-  $input  = $file;
-  $test   = $file;
-  $restart_file = $file;
-  substr($output,-2, 2) = "out";
-  substr($error, -2, 2) = "err";
-  substr($input, -2, 2) = "in_";
-  substr($test,  -2, 2) = "tst";
-  substr($restart_file, -2, 2) = "rst";
-
   # output name of test input file
   print "Testing $file\n";
 
+  # get the intermediate file names
+  my($base_filename, $output, $error, $input, $test, $restart_file) = 
+      get_filenames($file);
+
   if ($mode == 2) { # annotate baseline with test filenames
-    print TEST_OUT "$file\n";
+    print TEST_OUT "$base_filename\n";
   }
   elsif ($mode == 0) { # if normal test mode, open individual test output file
     open (TEST_OUT, ">$test") || die "cannot open output file $test\n$!";
@@ -720,10 +705,14 @@ foreach $file (@testin) {
     close(TEST_OUT);
     # diff the test output against the base output and save to a file
     if ($parallel == 1) {
-      system("dakota_diff.perl $file dakota_pbase.test $test >> dakota_pdiffs.out");
+      system("dakota_diff.perl $base_filename $input_dir" . 
+	     "dakota_pbase.test $test >> $output_dir" . 
+	     "dakota_pdiffs.out");
     }
     else {
-      system("dakota_diff.perl $file dakota_base.test $test >> dakota_diffs.out");
+      system("dakota_diff.perl $base_filename $input_dir" . 
+	     "dakota_base.test $test >> $output_dir" .
+	     "dakota_diffs.out");
     }
   }
   # remove unneeded files (especially $input since the last instance of this
@@ -742,6 +731,44 @@ if ($mode == 2) {
   close(TEST_OUT);
 }
 print "Testing Script Complete.\n";
+
+
+# take a (potentially fully-qualified) input file name and create all
+# needed output file names, possibly fully-qualified; uses optional
+# (global) variables $output_dir and $extract_filename
+sub get_filenames {
+  my $qualified_filename = shift(@_);
+  my $output_filename = "";
+  my($filename, $directories, $suffix) = fileparse($qualified_filename);
+  if ($output_dir) {
+    $output_filename = "$output_dir" . "$filename";
+  } 
+  else {
+    # use the base file name if no output dir specified (output to pwd)
+    $output_filename = "$filename";
+  }
+
+  # create necessary filenames, then change suffixes
+  my $output = $output_filename;
+  my $error = $output_filename;
+  my $input = $output_filename;
+  my $test = $output_filename;
+  my $restart_file = $output_filename;
+
+  substr($output,-2, 2) = "out";
+  substr($error, -2, 2) = "err";
+  substr($input, -2, 2) = "in_";
+  substr($test,  -2, 2) = "tst";
+  substr($restart_file, -2, 2) = "rst";
+
+  # allow override of the extract name used
+  if ($extract_filename) {
+    $input = "$output_dir" . "$extract_filename";
+  }
+
+  return ($filename, $output, $error, $input, $test, $restart_file);
+}
+
 
 # The following subroutines (protected_test and fork_dakota) adapted from Xyce
 # test harness, with thanks to Todd Coffey
