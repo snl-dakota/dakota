@@ -89,16 +89,6 @@ if ($output_dir) {
   $output_dir .= "/";
 }
 
-# clean up diffs file
-# BMA: not currently working; need quotes around filename, but don't want to
-#      change behavior unexpectedly; also need to do pdiffs. 
-if (-e dakota_diffs.out) {
-  unlink dakota_diffs.out;
-}
-#if (-e "$output_dir" . "dakota_diffs.out") {
-#  unlink "$output_dir" . "dakota_diffs.out";
-#}
-
 # determine $parallel and $base based on command line arguments
 $parallel = 0; # $parallel = 0 (serial) or 1 (parallel)
 $mode     = 0; # $mode = 0 (normal), 1 (extract), or 2 (create baseline)
@@ -411,35 +401,32 @@ foreach $file (@testin) {
 
     if ( $found == 1 || ( $cnt == 0 && $parallel == 0 && $mode != 1 ) ) {
 
-      my $pt_code;
+      my ($test_command, $pt_code);
       print "Test Number $cnt ";
-      if ($parallel == 1) { # parallel test
+      if ($parallel == 1) {
+        # parallel test
 	if ( $qsub == 1 || $slurm == 1 ) {
-          #print "mpiexec -np $proc $dakota_command $dakota_input > $output\n";
-          $pt_code = protected_test("mpiexec -np $proc $dakota_command $restart_command $dakota_input > $output 2> $error\n");
+          $test_command = "mpiexec -np $proc $dakota_command $restart_command $dakota_input > $output 2> $error\n";
         }
-        elsif ($uname =~ /IRIX64/) {
-	  #print "mpirun -np $proc $dakota_command $dakota_input > $output\n";
-	  $pt_code = protected_test("mpirun -np $proc $dakota_command $restart_command $dakota_input > $output 2> $error");
-	}
 	elsif ($uname =~ /AIX/) {
-	  #print "poe $dakota_command $dakota_input -procs $proc > $output\n";
 	  # TODO: perform poekill after specified time
-	  $pt_code = protected_test("poe $dakota_command $restart_command $dakota_input -procs $proc > $output 2> $error");
+	  $test_command = "poe $dakota_command $restart_command $dakota_input -procs $proc > $output 2> $error";
 	}
 	elsif ($uname =~ /SunOS/) {
-	  #print "mprun -np $proc $dakota_command $dakota_input > $output\n";
-	  $pt_code = protected_test("mprun -np $proc $dakota_command $restart_command $dakota_input > $output 2> $error");
+	  $test_command = "mprun -np $proc $dakota_command $restart_command $dakota_input > $output 2> $error";
 	}
-	else { # default for Linux, ...
-	  #print "mpirun -np $proc -machinefile machines $dakota_command $dakota_input > $output\n";
-	  $pt_code = protected_test("mpirun -np $proc -machinefile machines $dakota_command $restart_command $dakota_input > $output 2> $error");
+	else { 
+          # default for Linux workstation
+	  $test_command = "mpirun -np $proc -machinefile machines $dakota_command $restart_command $dakota_input > $output 2> $error";
 	}
       }
-      else { # serial test
-        #print "\n./$dakota_command $restart_command $dakota_input > $output 2> $error\n";
-        $pt_code = protected_test("$dakota_command $restart_command $dakota_input > $output 2> $error");
+      else { 
+        # serial test
+        $test_command = "$dakota_command $restart_command $dakota_input > $output 2> $error";
       }
+
+      #print "Test command is:\n  $test_command\n";
+      $pt_code = protected_test($test_command, $output);
       $output_generated = 1;
 
       # Uncomment these lines to catalog data from each run
@@ -783,6 +770,10 @@ sub get_filenames {
 # The following subroutines (protected_test and fork_dakota) adapted from Xyce
 # test harness, with thanks to Todd Coffey
 #
+# 
+# protected_test(test_command, output_file) # output file to monitor
+#   uses global variables timeout and delay
+#
 # Note that $? is expected to be 16 bits, with exit code in the leftmost 8 bits
 # This function returns: $? from waitpid if fork and child exited, $? from
 # system, or one of the following codes in the leftmost 8 bits
@@ -792,10 +783,12 @@ sub get_filenames {
 #   103: aborted by SIG_INT
 sub protected_test
 {
-  my ($test_command, $pid, $exitcode, $t0, $tn, $tnp1, $dead_pid, $elapsed_time,
-      $incr_time, $filesize, $filesize_old);
+  my ($test_command, $output_file, $pid, $exitcode, $t0, $tn, $tnp1, $dead_pid, 
+      $elapsed_time, $incr_time, $filesize, $filesize_old);
 
-  ($test_command) = @_;
+  ($test_command) = shift(@_);
+  ($output_file)  = shift(@_);
+
   $pid = fork_dakota($test_command);
 
   $exitcode = undef;
@@ -833,10 +826,10 @@ sub protected_test
       $incr_time = $tnp1-$tn;
       if ($incr_time >= $delay) {
 	$tn = time;
-	if ( -f "$output" ){
-	  $filesize = (stat("$output"))[7];
+	if ( -f "$output_file" ){
+	  $filesize = (stat("$output_file"))[7];
 	  if (defined ($filesize_old) and ($filesize <= $filesize_old)) {
-	    print("killing $pid -- $output unchanged for $delay seconds\n");
+	    print("killing $pid -- $output_file unchanged for $delay seconds\n");
 	    kill -9, $pid; # TERM -> process group
 	    $dead_pid = waitpid($pid,0);
 	    $exitcode = 101 << 8;
@@ -844,7 +837,7 @@ sub protected_test
 	  $filesize_old = $filesize;
 	}
 	else {
-	  print("killing $pid -- $output not created in $delay seconds\n");
+	  print("killing $pid -- $output_file not created in $delay seconds\n");
 	  kill -9, $pid; # TERM -> process group
 	  $dead_pid = waitpid($pid,0);
 	  $exitcode = 102 << 8;
