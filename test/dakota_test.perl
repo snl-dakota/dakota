@@ -63,11 +63,21 @@ use Getopt::Long;
 use File::Basename;
 use POSIX "sys_wait_h";
 
-# Process long options
+# Default options
 my $extract_filename = ""; # default is dakota_*.in_
 my $input_dir = "";        # default test file source is pwd
 my $output_dir = "";       # default output is pwd
-GetOptions('extract=s'    => \$extract_filename,
+
+# Was Cmake used to substitute the source directory name? Can't just use
+# the literal as it will be replaced.  Allow user override by long opt.
+my $cmake_source_dir = "\@CMAKE_CURRENT_SOURCE_DIR@";
+if ($cmake_source_dir !~ /^\@/ && 
+    $cmake_source_dir !~ /CMAKE_CURRENT_SOURCE_DIR@$/) {
+  $input_dir = ${cmake_source_dir};
+} 
+    
+# Process long options
+GetOptions('extract:s'    => \$extract_filename,
 	   'input-dir=s'  => \$input_dir,
 	   'output-dir=s' => \$output_dir
 	   );

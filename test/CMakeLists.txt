@@ -13,14 +13,25 @@ if(BUILD_TESTING)
 
   # Copy the dakota_test support files into the build tree
   # with dependency to source files
-  file(GLOB DAKOTA_SYSTEM_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "dakota_*.in")
-  set(TestFiles
-    ${DAKOTA_SYSTEM_TESTS} dakota_test.perl dakota_diff.perl dakota_base.test
-    dakota_coliny.dat dakota_pce.txt least_squares_test.dat container.script
-    test_3pc_ac test_3pc_if test_3pc_of
+
+  # configured primary scripts
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dakota_test.perl
+    ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl @ONLY)
+
+  # copied primary scripts
+  set(TestFiles dakota_diff.perl) 
+
+  # analysis driver scripts
+  list(APPEND TestFiles
+    container.script test_3pc_ac test_3pc_if test_3pc_of
     test_3pc_ac_verb test_3pc_if_verb test_3pc_of_verb
-  )
+    )
+
+  # supplemental data
+  list(APPEND TestFiles 
+    dakota_coliny.dat dakota_pce.txt least_squares_test.dat 
+    )
+
   foreach(file ${TestFiles})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${file}
       ${CMAKE_CURRENT_BINARY_DIR}/${file}
@@ -54,9 +65,15 @@ if(BUILD_TESTING)
     DEPENDS dakota_library_mode)  
 
   # Create one CTest per DAKOTA input file
-  foreach(DAKOTA_SYSTEST ${DAKOTA_SYSTEM_TESTS})
-    add_test(${DAKOTA_SYSTEST}
-             ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl ${DAKOTA_SYSTEST})
+  file(GLOB DakotaTestsFQ RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in")
+  foreach(DakotaTest ${DakotaTestsFQ})
+
+    get_filename_component(TestName ${DakotaTest} NAME)
+    add_test(${TestName}
+             ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl 
+	     --input-dir=${CMAKE_CURRENT_SOURCE_DIR}
+	     ${DakotaTest}
+	     )
     # TODO: The following regex needs to be based on output of dakota_diff.perl
     #       and account for consistency with baseline
     set_tests_properties(${DAKOTA_SYSTEST} PROPERTIES 
