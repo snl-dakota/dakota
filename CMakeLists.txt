@@ -14,10 +14,10 @@ project("Dakota" NONE)
 
 # Attempt to detect MPI if not specified
 option(DAKOTA_HAVE_MPI "Enable MPI in DAKOTA" OFF)
-if(DAKOTA_HAVE_MPI)
+if(DAKOTA_HAVE_MPI AND NOT DEFINED MPI_INCLUDE_PATH AND NOT DEFINED MPI_LIBRARY)
   include(DakotaHaveMPI)
   DakotaHaveMPI()
-endif(DAKOTA_HAVE_MPI)
+endif()
 
 # Now check languages after MPI compilers are processed
 enable_language(C)
