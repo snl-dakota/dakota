@@ -422,6 +422,10 @@ set(Dakota_src ${Dakota_src} ${util_src} ${evaldata_src} ${db_src}
     ${iterator_src})
 
 add_library(dakota_src ${Dakota_src})
+if(ENABLE_SPEC_MAINT)
+  # force dependency on generated files in source tree
+  add_dependencies(dakota_src dakota-spec-files)
+endif()
 if(HAVE_ACRO)
   target_link_libraries(dakota_src utilib colin interfaces scolib)
 endif()
