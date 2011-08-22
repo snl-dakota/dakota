@@ -19,15 +19,6 @@
 #include "filesystem_utils.h"
 #include "global_defs.h"
 
-#ifdef DAKOTA_HAVE_BOOST_FS
-#include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/path.hpp"
-//#include "boost/progress.hpp"
-//#include "boost/regex.hpp"
-
-namespace bfs = boost::filesystem;
-#endif
-
 #ifdef __SUNPRO_CC
 #include <stdlib.h>
 #endif
@@ -57,6 +48,9 @@ namespace bfs = boost::filesystem;
 
 
 namespace Dakota {
+
+char* Filesys_buf::dakdir  = 0;
+char* Filesys_buf::dakpath = 0;
 
 /* The following routines assume ASCII or UTF-encoded Unicode. */
 
@@ -173,17 +167,14 @@ arg_list_adjust(const char **arg_list, void **a0)
 	}
 
 
-// WJB - ToDo - next iter: replace struct with a full-blown class and mv into header file
 
+/* WJB - ToDo - next iter: replace struct with a full-blown class
 typedef struct
 Filesys_buf {
         static char* dakdir;
         static char* dakpath;
         } Filesys_buf;
-
-char* Filesys_buf::dakdir  = 0;
-char* Filesys_buf::dakpath = 0;
-
+*/
 static std::string get_dakpath();  // additional dir ($PWD!), for driver search
 
 int not_executable(const char *dname, const char *tdir)
@@ -1339,19 +1330,6 @@ cd_fail:
 	}
 
 
-/* WJB - ToDo: verify std::string API is OK
-void workdir_adjust(const std::string& workdir)
-{
-  if (workdir == "") {
-    workdir_adjust(NULL);
-  }
-  else {
-    workdir_adjust(workdir.c_str());
-  }
-}
-*/
-
-
 void workdir_adjust(const char* workdir)
 {
   char* workdir_path;
@@ -1383,7 +1361,7 @@ void workdir_adjust(const char* workdir)
 }
 
 
-void workdir_reset()
+void Filesys_buf::reset()
 {
   if (chdir(Filesys_buf::dakdir)) {
     Cerr << "\nError: chdir(" << Filesys_buf::dakdir
@@ -1394,6 +1372,19 @@ void workdir_reset()
     Cerr << "\nError: putenv(" << Filesys_buf::dakpath
          << ") failed in workdir_reset()" << std::endl;
     abort_handler(-1);
+  }
+}
+
+
+void Filesys_buf::change_cwd(const std::string& wd_str)
+{
+  // WJB: also use as an "adapter layer" to manager 3 different APIs
+  //      1. DMG not_executable,  2. BoostFS V2, and  3. BoostFS V3
+  if (wd_str == "" || wd_str.c_str() == NULL) {
+    workdir_adjust(NULL);
+  }
+  else {
+    workdir_adjust(wd_str.c_str());
   }
 }
 

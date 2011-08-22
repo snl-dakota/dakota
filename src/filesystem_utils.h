@@ -23,6 +23,12 @@
 #define DAK_MKDIR(a,b) mkdir(a,b)
 #endif
 
+#ifdef DAKOTA_HAVE_BOOST_FS
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+namespace bfs = boost::filesystem;
+#endif
+
 #include <string>
 
 
@@ -36,26 +42,19 @@ int rec_cp(const char *from, const char *todir, int copy,
 int rec_rmdir(const char*);
 
 
-// WJB - ToDo: void workdir_adjust(const std::string& workdir);
-void workdir_adjust(const char* workdir);
-void workdir_reset();
-
-
-#if 0
-// WJB- ToDo: consider a WorkdirManager class with a C++ implementation
-//            with members funcs properly accessing dakdir/dakpath private data?
-inline void wd_reset()
+typedef
+struct Filesys_buf
 {
-  if (chdir(dakdir)) {
-    // Cerr ...
-    abort_handler(-1);
-  }
-  if (putenv(dakpath)) {
-    // Cerr ...
-    abort_handler(-1);
-  }
-}
-#endif // WJB 0
+  static void change_cwd(const std::string& wd_str);  // old nm: workdir_adjust
+  static void reset();                                // old nm: workdir_reset
+
+  static char* dakdir;
+  static char* dakpath;
+#ifdef DAKOTA_HAVE_BOOST_FS
+  static bfs::path dakLaunchDir;  // WJB: should be "similar" to DMG dakdir
+#endif
+} Filesys_buf;
+
 
 } // namespace Dakota
 

@@ -51,7 +51,7 @@ arg_adjust(bool cmd_line_args, std::vector<std::string> &args,
   av = arg_list_adjust(av, 0);
 
   if (s) {
-    workdir_adjust(s);
+    Filesys_buf::change_cwd(s);
     L = std::strlen(s);
     for(i = 1; (t = av[i]); ++i)
       if (!std::strncmp(s, t, L) && t[L] == '/')
@@ -81,7 +81,7 @@ pid_t ForkAnalysisCode::fork_program(const bool block_flag)
 	else
 		pid = _spawnvp(_P_NOWAIT, av[0], av);
 	if (wd)
-		workdir_reset();
+		Filesys_buf::reset();
 #else //}{
 #if defined(HAVE_WORKING_VFORK)
   pid = vfork(); // replicate this process

@@ -31,7 +31,7 @@ CommandShell& CommandShell::flush()
     Cout << sysCommand << std::endl;  // output the cmd string for verification
 
   if (workDir)
-    workdir_adjust(workDir);
+    Filesys_buf::change_cwd(workDir);
 
 #ifdef HAVE_SYSTEM
   std::system(sysCommand.c_str());
@@ -42,7 +42,7 @@ CommandShell& CommandShell::flush()
 #endif
 
   if (workDir)
-    workdir_reset();
+    Filesys_buf::reset();
 
   sysCommand.clear();
   return *this;
