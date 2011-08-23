@@ -45,6 +45,8 @@ int rec_rmdir(const char*);
 typedef
 struct Filesys_buf
 {
+  static std::string get_dakpath(); // addl dir, for analysis driver search
+
   static void change_cwd(const std::string& wd_str);  // old nm: workdir_adjust
   static void reset();                                // old nm: workdir_reset
 

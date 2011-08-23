@@ -40,7 +40,7 @@ void SysCallAnalysisCode::spawn_evaluation(const bool block_flag)
   const char *s, *s1;
   size_t L;
 
-  if ((s = shell.workDir = work_dir()))
+  if ((s = shell.workDir = useWorkdir ? curWorkdir.c_str() : 0))
 	L = std::strlen(s);
 
   // Input filter portion
@@ -107,7 +107,7 @@ void SysCallAnalysisCode::spawn_input_filter(const bool block_flag)
 {
   CommandShell shell;
 
-  shell.workDir = work_dir();
+  shell.workDir = useWorkdir ? curWorkdir.c_str() : 0;
   shell << iFilterName;
   if (commandLineArgs)
     shell << " " << paramsFileName << " " << resultsFileName;
@@ -127,7 +127,7 @@ spawn_analysis(const int& analysis_id, const bool block_flag)
 {
   CommandShell shell;
 
-  shell.workDir = work_dir();
+  shell.workDir = useWorkdir ? curWorkdir.c_str() : 0;
   shell << programNames[analysis_id-1];
   if (commandLineArgs) {
     using std::string;
@@ -156,7 +156,7 @@ void SysCallAnalysisCode::spawn_output_filter(const bool block_flag)
 {
   CommandShell shell;
 
-  shell.workDir = work_dir();
+  shell.workDir = useWorkdir ? curWorkdir.c_str() : 0;
   shell << oFilterName;
   if (commandLineArgs)
     shell << " " << paramsFileName << " " << resultsFileName;

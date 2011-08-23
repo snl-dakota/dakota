@@ -34,12 +34,10 @@ const char** arg_list_adjust(const char **, void **);
 
 // WJB - ToDo: totally rewrite in C++ (perhaps leverage Boost.Filesystem)
 static const char**
-arg_adjust(bool cmd_line_args, std::vector<std::string> &args,
-           const char **av, const char *s)
+arg_adjust(bool cmd_line_args, std::vector<std::string>& args,
+           const char **av, const std::string& wd_str)
 {
-  const char *argL, *t;
   int i;
-  size_t L;
 
   av[0] = args[0].c_str();
   i = 1;
@@ -50,12 +48,14 @@ arg_adjust(bool cmd_line_args, std::vector<std::string> &args,
   av[i] = 0;
   av = arg_list_adjust(av, 0);
 
-  if (s) {
+  const char* s = wd_str.c_str();
+  if (s && wd_str != "") {
+    const char* t;
     Filesys_buf::change_cwd(s);
-    L = std::strlen(s);
+    size_t len = wd_str.size();
     for(i = 1; (t = av[i]); ++i)
-      if (!std::strncmp(s, t, L) && t[L] == '/')
-        av[i] = t + L + 1;
+      if (!std::strncmp(s, t, len) && t[len] == '/')
+        av[i] = t + len + 1;
   }
 
   return av;
@@ -66,7 +66,7 @@ arg_adjust(bool cmd_line_args, std::vector<std::string> &args,
 pid_t ForkAnalysisCode::fork_program(const bool block_flag)
 {
 #ifdef Need_Local_Decls
-  const char *arg_list[4], **av, *wd = work_dir();
+  const char *arg_list[4], **av;
   int status;
 #endif
   pid_t pid = 0;
@@ -75,12 +75,13 @@ pid_t ForkAnalysisCode::fork_program(const bool block_flag)
   // conserves memory over fork().  If some platforms have problems with a
   // hybrid fork/vfork approach, add #ifdef's but make vfork the default.
 #if defined(_WIN32) //{{
-	av = arg_adjust(commandLineArgs, argList, arg_list, wd);
+	av = arg_adjust(commandLineArgs, argList, arg_list,
+                        useWorkdir ? curWorkdir : std::string(""));
 	if (block_flag)
 		status = _spawnvp(_P_WAIT, av[0], av);
 	else
 		pid = _spawnvp(_P_NOWAIT, av[0], av);
-	if (wd)
+	if (curWorkdir.c_str())
 		Filesys_buf::reset();
 #else //}{
 #if defined(HAVE_WORKING_VFORK)
@@ -104,7 +105,8 @@ pid_t ForkAnalysisCode::fork_program(const bool block_flag)
     // entry is passed as the first argument, and the entire arg_list is cast
     // as the second argument.
 
-    av = arg_adjust(commandLineArgs, argList, arg_list, wd);
+    av = arg_adjust(commandLineArgs, argList, arg_list,
+                    useWorkdir ? curWorkdir : std::string(""));
 
     // replace the child process with the fork target defined in arg_list
     status = execvp(av[0], (char*const*)av);

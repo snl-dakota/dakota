@@ -168,15 +168,6 @@ arg_list_adjust(const char **arg_list, void **a0)
 
 
 
-/* WJB - ToDo - next iter: replace struct with a full-blown class
-typedef struct
-Filesys_buf {
-        static char* dakdir;
-        static char* dakpath;
-        } Filesys_buf;
-*/
-static std::string get_dakpath();  // additional dir ($PWD!), for driver search
-
 int not_executable(const char *dname, const char *tdir)
 {
 	static const char *p0;
@@ -278,7 +269,7 @@ int not_executable(const char *dname, const char *tdir)
 		goto ret;
 #endif
 	if (!Filesys_buf::dakpath) {
-	  cwdir = get_dakpath();
+	  cwdir = Filesys_buf::get_dakpath();
 #ifdef DAKOTA_HAVE_BOOST_FS
           assert(cwdir == bfs_cwdir);
 #endif
@@ -718,7 +709,7 @@ Symlink(const char *from, const char *to)
 	b = buf;
 	if (*from != '/') {
 		if (!Filesys_buf::dakpath)
-			get_dakpath();	/* for Filesys_buf::dakdir */
+			Filesys_buf::get_dakpath(); // for Filesys_buf::dakdir
 		if (!ddlen)
 			ddlen = std::strlen(Filesys_buf::dakdir);
 		L = std::strlen(from);
@@ -1104,7 +1095,7 @@ static char* Malloc(size_t L)
 #endif // WJB 0
 
 
-static std::string get_dakpath()
+std::string Filesys_buf::get_dakpath()
 {
 	char buf[4096], *p;
 	size_t L, Lc, Lp;
@@ -1157,7 +1148,7 @@ get_npath(int appdrive, char **pnpath)
 
 	appdrive = Map(appdrive & 0xff);
 	if (!Filesys_buf::dakpath)
-		get_dakpath();
+		Filesys_buf::get_dakpath();
 	Lc = std::strlen(Filesys_buf::dakdir);
 	Lp = std::strlen(Filesys_buf::dakpath);
 #ifdef _WIN32
