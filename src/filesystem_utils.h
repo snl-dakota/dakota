@@ -29,7 +29,9 @@
 namespace bfs = boost::filesystem;
 #endif
 
+//#include <boost/shared_array.hpp>  // WJB - ToDo: look into improved mem mgmt
 #include <string>
+#include <utility>
 
 
 namespace Dakota {
@@ -43,15 +45,17 @@ int rec_rmdir(const char*);
 
 
 typedef
-struct Filesys_buf
+struct WorkdirHelper
 {
-  static std::string get_dakpath(); // addl dir, for analysis driver search
+  static std::pair<std::string, std::string> get_dakpath();
 
   static void change_cwd(const std::string& wd_str);  // old nm: workdir_adjust
   static void reset();                                // old nm: workdir_reset
 
-  static char* dakdir;
-  static char* dakpath;
+  static char* cwdBegin;      // old name: dakdir
+  static char* envPathBegin;  // old name: dakpath
+  //static std::pair<std::string, std::string> startupCwdEnvPathPair;
+
 #ifdef DAKOTA_HAVE_BOOST_FS
   static bfs::path dakLaunchDir;  // WJB: should be "similar" to DMG dakdir
 #endif

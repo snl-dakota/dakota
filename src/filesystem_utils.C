@@ -11,9 +11,9 @@
 //- Version: $Id$
 
 /*
- *  not_executable(const char *dname) checks whether dname is an executable
- *  file appearing somewhere in $PATH and returns 0 if so, 1 if not found,
- *  2 if found but not executable.
+ *  not_executable(const char *driver_name) checks whether driver_name is an 
+ *  executable file appearing somewhere in $PATH and returns 0 if so,
+ *  1 if not found, 2 if found but not executable.
  */
 
 #include "filesystem_utils.h"
@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #endif
 
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #undef Want_Heartbeat
@@ -49,8 +50,11 @@
 
 namespace Dakota {
 
-char* Filesys_buf::dakdir  = 0;
-char* Filesys_buf::dakpath = 0;
+char* WorkdirHelper::cwdBegin     = 0;
+char* WorkdirHelper::envPathBegin = 0;
+
+//std::pair<std::string, std::string>
+//  WorkdirHelper::startupCwdEnvPathPair = WorkdirHelper::get_dakpath();
 
 /* The following routines assume ASCII or UTF-encoded Unicode. */
 
@@ -168,7 +172,7 @@ arg_list_adjust(const char **arg_list, void **a0)
 
 
 
-int not_executable(const char *dname, const char *tdir)
+int not_executable(const char *driver_name, const char *tdir)
 {
 	static const char *p0;
 	struct stat sb;
@@ -195,10 +199,10 @@ int not_executable(const char *dname, const char *tdir)
 
         for( bfs::directory_iterator dir_iter(dak_launch_dir), dir_end;
              dir_iter != dir_end; ++dir_iter ) {
-          //boost::regex analysis_driver(dname);
+          //boost::regex analysis_driver(driver_name);
           //if (boost::regex_search( dir_iter->path().filename().string(),
                                    //analysis_driver) )
-          if (dir_iter->path().filename().string() == std::string(dname)) {
+          if (dir_iter->path().filename().string() == std::string(driver_name)) {
             Cout << "Analysis Driver FOUND in " << bfs_cwdir
                  << " -- full path is: " << dir_iter->path() << std::endl;
           }
@@ -216,14 +220,14 @@ int not_executable(const char *dname, const char *tdir)
 #endif  // DAKOTA_HAVE_BOOST_FS
 
 	// declaring this here instead of just-in-time due to goto/_WIN32
-	std::string cwdir;
+	std::pair<std::string, std::string> cwd_and_env_path;
 
 	/* allow shell assignments and quotes around executable names */
 	/* that may involve blanks */
-	a2[0] = dname;
+	a2[0] = driver_name;
 	a2[1] = 0;
 	al = arg_list_adjust(a2,&a0);
-	dname = al[0];
+	driver_name = al[0];
 
 	rc = 0;
 	if (!p0) {
@@ -243,7 +247,7 @@ int not_executable(const char *dname, const char *tdir)
 		}
 #ifdef WIN32
 	/* make sure we have a suitable suffix */
-	if ((p = strrchr(dname, '.'))) {
+	if ((p = strrchr(driver_name, '.'))) {
 		if (std::strlen(++p) != 3)
 			p = 0;
 		else {
@@ -255,41 +259,42 @@ int not_executable(const char *dname, const char *tdir)
 			}
 		}
 	if (!p) {
-		dlen = std::strlen(dname);
+		dlen = std::strlen(driver_name);
 		if (dlen + 5 > sizeof(dbuf)) {
 			rc = 1;
 			goto ret;
 			}
-		std::strcpy(dbuf, dname);
+		std::strcpy(dbuf, driver_name);
 		std::strcpy(dbuf+dlen, ".exe");
-		dname = dbuf;
+		driver_name = dbuf;
 		}
 	/* . is always implicitly in $Path under MS Windows; check it now */
-	if (!stat(dname, &sb))
+	if (!stat(driver_name, &sb))
 		goto ret;
 #endif
-	if (!Filesys_buf::dakpath) {
-	  cwdir = Filesys_buf::get_dakpath();
+	if (!WorkdirHelper::envPathBegin) {
+	  cwd_and_env_path = WorkdirHelper::get_dakpath();
 #ifdef DAKOTA_HAVE_BOOST_FS
-          assert(cwdir == bfs_cwdir);
+          assert(cwd_and_env_path.first == bfs_cwdir);
 #endif
 	}
-	clen = cwdir.size();
-	dlen = std::strlen(dname);
+	clen = cwd_and_env_path.first.size();
+	dlen = std::strlen(driver_name);
 	tlen = std::strlen(tdir);
 	rc = 1;
 	p = p0;
-	if (std::strchr(dname, '/')
+	if (std::strchr(driver_name, '/')
 #ifdef _WIN32
-		|| std::strchr(dname, '\\') || (dlen > 2 && dname[1] == ':')
+		|| std::strchr(driver_name, '\\')
+		|| (dlen > 2 && driver_name[1] == ':')
 #endif
 		)
 		p = "";
 
 	else if (clen + dlen + 2 < sizeof(buf)) {
-		std::memcpy(buf,cwdir.c_str(),clen);
+		std::memcpy(buf,cwd_and_env_path.first.c_str(),clen);
 		buf[clen] = '/';
-		std::strcpy(buf+clen+1, dname);
+		std::strcpy(buf+clen+1, driver_name);
 		sv = stat(buf,&sb);
 		if (sv == 0)
 			goto stat_check;
@@ -298,7 +303,7 @@ int not_executable(const char *dname, const char *tdir)
 	else if (tdir && *tdir && tlen + dlen + 2 < sizeof(buf)) {
 		std::memcpy(buf,tdir,tlen);
 		buf[tlen] = '/';
-		std::strcpy(buf+tlen+1, dname);
+		std::strcpy(buf+tlen+1, driver_name);
 		sv = stat(buf,&sb);
 		if (sv == 0)
 			goto stat_check;
@@ -318,7 +323,7 @@ int not_executable(const char *dname, const char *tdir)
 			}
  break2:
 		if (p1 == p || (p1 == p + 1 && *p == '.'))
-			sv = stat(dname, &sb);
+			sv = stat(driver_name, &sb);
 		else {
 			plen = p1 - p;
 			while(plen && p[plen-1] <= ' ')
@@ -329,7 +334,7 @@ int not_executable(const char *dname, const char *tdir)
 				std::strncpy(buf,p,plen);
 				b = buf + plen;
 				*b++ = '/';
-				std::strcpy(b, dname);
+				std::strcpy(b, driver_name);
 				sv = stat(buf, &sb);
 				}
 			}
@@ -683,10 +688,9 @@ ftw1(char *name, size_t namelen, size_t namemaxlen, ftw_fn fn, int depth, void *
  int
 sftw(const char *name, ftw_fn fn, void *v)
 {
-	char buf[4096];
-	size_t L;
+	char buf[MAXPATHLEN];
+	size_t L = std::strlen(name);
 
-	L = std::strlen(name);
 	if (L >= sizeof(buf))
 		return sFTWret_mallocfailure;
 	std::strcpy(buf, name);
@@ -708,15 +712,15 @@ Symlink(const char *from, const char *to)
 
 	b = buf;
 	if (*from != '/') {
-		if (!Filesys_buf::dakpath)
-			Filesys_buf::get_dakpath(); // for Filesys_buf::dakdir
+		if (!WorkdirHelper::envPathBegin)
+			WorkdirHelper::get_dakpath(); // for WorkdirHelper::cwdBegin
 		if (!ddlen)
-			ddlen = std::strlen(Filesys_buf::dakdir);
+			ddlen = std::strlen(WorkdirHelper::cwdBegin);
 		L = std::strlen(from);
 		L1 = L + ddlen + 2;
 		if (L1 > sizeof(buf))
 			b = new char [L1];
-		std::strcpy(b, Filesys_buf::dakdir);
+		std::strcpy(b, WorkdirHelper::cwdBegin);
 		b[ddlen] = '/';
 		std::strcpy(b + ddlen + 1, from);
 		from = b;
@@ -1095,45 +1099,56 @@ static char* Malloc(size_t L)
 #endif // WJB 0
 
 
-std::string Filesys_buf::get_dakpath()
+std::pair<std::string, std::string> WorkdirHelper::get_dakpath()
 {
-	char buf[4096], *p;
-	size_t L, Lc, Lp;
+  char cwd_buf[MAXPATHLEN], *env_path;
+  size_t total_buf_size = 0;
 
 #ifdef _WIN32
 #define FailFmt "GetCurrentDirectory() failed!\n"
-	L = GetCurrentDirectory(sizeof(buf), buf);
-	if (L <= 0 || L >= sizeof(buf))
+  total_buf_size = GetCurrentDirectory(MAXPATHLEN, cwd_buf);
+  if (total_buf_size <= 0 || total_buf_size >= MAXPATHLEN))
 #else
 #define FailFmt "getcwd() failed!\n"
-	if (!getcwd((char*)buf, sizeof(buf)))
+  if (!getcwd((char*)cwd_buf, MAXPATHLEN))
 #endif
-		{
-		std::fprintf(stderr, FailFmt);
-		std::exit(1);
-		}
-	if (!(p = std::getenv(Pathname))) {
-		std::fprintf(stderr, "getenv(\"" Pathname "\") failed in getpaths().\n");
-		std::exit(1);
-		}
-	Lc = std::strlen(buf);
-	Lp = std::strlen(p);
-	L = Lc + Lp + 7;
-	Filesys_buf::dakdir = new char [L];
-	std::memcpy(Filesys_buf::dakdir, buf, Lc);
-	Filesys_buf::dakdir[Lc] = 0;
-	Filesys_buf::dakpath = Filesys_buf::dakdir + Lc + 1;
-	std::memcpy(Filesys_buf::dakpath, Pathname "=", 5);
-	std::memcpy(Filesys_buf::dakpath+5, p, Lp);
-	Filesys_buf::dakpath[Lp+5] = 0;
+  {
+	std::fprintf(stderr, FailFmt);
+	std::exit(1);
+  }
+  if (!(env_path = std::getenv(Pathname))) {
+	std::fprintf(stderr, "getenv(\"" Pathname "\") failed in get_dakpath().\n");
+	std::exit(1);
+  }
+
+  size_t cwd_len  = std::strlen(cwd_buf);
+  size_t path_len = std::strlen(env_path);
+
+  // Allocate enough space for BOTH strings + "PATH=" + 2 NULL terminators
+  total_buf_size = cwd_len + path_len + 7;
+
+  cwdBegin = new char [total_buf_size];
+
+  // first, copy cwd
+  std::memcpy(cwdBegin, cwd_buf, cwd_len);
+  cwdBegin[cwd_len] = 0;
+
+  // second, copy PATH environment variable
+  envPathBegin = cwdBegin + cwd_len + 1;
+  std::memcpy(envPathBegin, Pathname "=", 5);
+  std::memcpy(envPathBegin+5, env_path, path_len);
+  envPathBegin[path_len+5] = 0;
+
 #ifdef _WIN32
-	if (buf[1] == ':')
-		dakdrive = Map(buf[0]);
+  if (cwd_buf[1] == ':')
+    dakdrive = Map(cwd_buf[0]);
 #endif
-        // WJB: never see dakpath freed, so I'm surprised no memleak!?
-	return std::string(buf, Lc);
-	}
+
+  return std::make_pair( std::string(cwd_buf,  cwd_len),
+                         std::string(env_path, path_len) );
+}
 #undef FailFmt
+
 
  static void
 get_npath(int appdrive, char **pnpath)
@@ -1142,15 +1157,15 @@ get_npath(int appdrive, char **pnpath)
 	int c, dot, nrel, needcolon;
 	size_t L, Lc, Lp;
 #ifdef _WIN32
-	char *appdir, buf[4096];
+	char *appdir, buf[MAXPATHLEN];
 	int nrel2;
 #endif
 
 	appdrive = Map(appdrive & 0xff);
-	if (!Filesys_buf::dakpath)
-		Filesys_buf::get_dakpath();
-	Lc = std::strlen(Filesys_buf::dakdir);
-	Lp = std::strlen(Filesys_buf::dakpath);
+	if (!WorkdirHelper::envPathBegin)
+		WorkdirHelper::get_dakpath();
+	Lc = std::strlen(WorkdirHelper::cwdBegin);
+	Lp = std::strlen(WorkdirHelper::envPathBegin);
 #ifdef _WIN32
 	if (appdrive && appdrive != dakdrive) {
 		buf[0] = appdrive;
@@ -1169,18 +1184,18 @@ cd_fail:
 			}
 		appdir = buf;
 		appdir[L] = 0;
-		if (!SetCurrentDirectory(s = Filesys_buf::dakdir))
+		if (!SetCurrentDirectory(s = WorkdirHelper::cwdBegin))
 			goto cd_fail;
 		}
 	else
-		appdir = Filesys_buf::dakdir;
+		appdir = WorkdirHelper::cwdBegin;
 	dot = 1;
 	nrel2 = 0;
 #else
 	dot = 0;
 #endif
 	nrel = 0;
-	for(p = Filesys_buf::dakpath+5; *p; ++p) {
+	for(p = WorkdirHelper::envPathBegin+5; *p; ++p) {
 		switch(Map(*p)) {
 		  case PathSep:
 			++dot;
@@ -1235,19 +1250,19 @@ cd_fail:
 	if (nrel2)
 		L += nrel2*(std::strlen(appdir) + 1);
 	*pnpath = q = new char [L];
-	std::memcpy(q, Filesys_buf::dakpath, 5);
-	std::memcpy(q += 5, Filesys_buf::dakdir, Lc);
+	std::memcpy(q, WorkdirHelper::envPathBegin, 5);
+	std::memcpy(q += 5, WorkdirHelper::cwdBegin, Lc);
 	q += Lc;
 	dot = 1;
 #else
 	L = Lp + nrel*(Lc+1) + 3;
 	*pnpath = q = new char [L];
-	std::memcpy(q, Filesys_buf::dakpath, 5);
+	std::memcpy(q, WorkdirHelper::envPathBegin, 5);
 	q += 5;
 	*q++ = '.';
 #endif
 	needcolon = 1;
-	for(p = Filesys_buf::dakpath+5; *p; ++p) {
+	for(p = WorkdirHelper::envPathBegin+5; *p; ++p) {
 		switch(c = Map(*q = *p)) {
 		  case PathSep:
  dotcheck:
@@ -1258,7 +1273,7 @@ cd_fail:
 					*q++ = ':';
 					q0 = q;
 					}
-				for(s= Filesys_buf::dakdir; (*q = *s); ++q, ++s);
+				for(s= WorkdirHelper::cwdBegin; (*q = *s); ++q, ++s);
 				q = pathsimp(q0);
 				needcolon = 1;
 				}
@@ -1274,7 +1289,7 @@ cd_fail:
 				q0 = q;
 				needcolon = 0;
 				}
-			s = Filesys_buf::dakdir;
+			s = WorkdirHelper::cwdBegin;
 #ifdef _WIN32
 			if (p[1] == ':') {
 				*q = *p;
@@ -1352,22 +1367,22 @@ void workdir_adjust(const char* workdir)
 }
 
 
-void Filesys_buf::reset()
+void WorkdirHelper::reset()
 {
-  if (chdir(Filesys_buf::dakdir)) {
-    Cerr << "\nError: chdir(" << Filesys_buf::dakdir
+  if (chdir(cwdBegin)) {
+    Cerr << "\nError: chdir(" << cwdBegin
          << ") failed in workdir_reset()" << std::endl;
     abort_handler(-1);
   }
-  if (putenv(Filesys_buf::dakpath)) {
-    Cerr << "\nError: putenv(" << Filesys_buf::dakpath
+  if (putenv(envPathBegin)) {
+    Cerr << "\nError: putenv(" << envPathBegin
          << ") failed in workdir_reset()" << std::endl;
     abort_handler(-1);
   }
 }
 
 
-void Filesys_buf::change_cwd(const std::string& wd_str)
+void WorkdirHelper::change_cwd(const std::string& wd_str)
 {
   // WJB: also use as an "adapter layer" to manager 3 different APIs
   //      1. DMG not_executable,  2. BoostFS V2, and  3. BoostFS V3
