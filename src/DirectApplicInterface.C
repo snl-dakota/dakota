@@ -1496,7 +1496,7 @@ int DirectApplicInterface::gerstner()
 
   const Real& x = xC[0]; const Real& y = xC[1];
   const StringArray& an_comps = analysisComponents[analysisDriverIndex];
-  std::string an_comp((an_comps.size()) ? an_comps[0] : "iso1");
+  std::string an_comp((an_comps.size()) ? an_comps[0].c_str() : "iso1");
   short test_fn; Real x_coeff, y_coeff, xy_coeff;
   if (an_comp        == "iso1")
     { test_fn = 1; x_coeff = y_coeff = 10.; }
