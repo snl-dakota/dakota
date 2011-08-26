@@ -111,7 +111,7 @@ foreach(generated_input ${users_test_inputs})
   add_custom_command(
     OUTPUT  ${test_output}
     COMMAND ${Dakota_SOURCE_DIR}/test/dakota_test.perl 
-    ARGS    extract ${test_input} ${test_num} 
+    ARGS    --extract ${test_input} ${test_num} 
     COMMAND ${CMAKE_COMMAND} 
     ARGS -E copy ${test_input}_ ${CMAKE_CURRENT_BINARY_DIR}/${test_output}
   )

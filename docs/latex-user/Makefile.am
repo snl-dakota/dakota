@@ -206,125 +206,125 @@ dvi-local: Users_Main.tex $(USERS_SOURCES) $(USERS_EPS) $(USERS_INPUTS)
 
 ## Users_Tutorial.tex
 dakota_rosenbrock_2d.in: $(USERS_TEST_PATH)/dakota_rosenbrock_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 dakota_rosenbrock_vector.in: $(USERS_TEST_PATH)/dakota_rosenbrock_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 1
+	-$(DAKOTA_TEST_PERL) --extract $< 1
 	-mv $<_ $@
 
 dakota_rosenbrock_grad_opt.in: $(USERS_TEST_PATH)/dakota_rosenbrock_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 2
+	-$(DAKOTA_TEST_PERL) --extract $< 2
 	-mv $<_ $@
 
 dakota_textbook.in: $(USERS_TEST_PATH)/dakota_textbook.in
-	-$(DAKOTA_TEST_PERL) extract $< 9
+	-$(DAKOTA_TEST_PERL) --extract $< 9
 	-mv $<_ $@
 
 dakota_rosenbrock_ls.in: $(USERS_TEST_PATH)/dakota_rosenbrock_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 8
+	-$(DAKOTA_TEST_PERL) --extract $< 8
 	-mv $<_ $@
 
 dakota_rosenbrock_ps_opt.in: $(USERS_TEST_PATH)/dakota_rosenbrock_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 4
+	-$(DAKOTA_TEST_PERL) --extract $< 4
 	-mv $<_ $@
 
 dakota_rosenbrock_ea_opt.in: $(USERS_TEST_PATH)/dakota_rosenbrock_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 5
+	-$(DAKOTA_TEST_PERL) --extract $< 5
 	-mv $<_ $@
 
 dakota_mogatest1.in: $(USERS_TEST_PATH)/dakota_mogatest.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 dakota_rosenbrock_nond.in: $(USERS_TEST_PATH)/dakota_rosenbrock_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 6
+	-$(DAKOTA_TEST_PERL) --extract $< 6
 	-mv $<_ $@
 
 dakota_mv.in: $(USERS_TEST_PATH)/dakota_mv.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 dakota_pce.in: $(USERS_TEST_PATH)/dakota_uq_rosenbrock_pce.in
-	-$(DAKOTA_TEST_PERL) extract $< 1
+	-$(DAKOTA_TEST_PERL) --extract $< 1
 	-mv $<_ $@
 
 dakota_uq_interval.in: $(USERS_TEST_PATH)/dakota_uq_cantilever_interval.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 dakota_rosenbrock_syscall.in: $(USERS_TEST_PATH)/dakota_rosenbrock_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 7
+	-$(DAKOTA_TEST_PERL) --extract $< 7
 	-mv $<_ $@
 
 ## Users_Method_UQ.tex
 dakota_uq_sampling.in: $(USERS_TEST_PATH)/dakota_uq_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 dakota_uq_reliability.in: $(USERS_TEST_PATH)/dakota_logratio.in
-	-$(DAKOTA_TEST_PERL) extract $< 5
+	-$(DAKOTA_TEST_PERL) --extract $< 5
 	-mv $<_ $@
 
 dakota_sc.in: $(USERS_TEST_PATH)/dakota_uq_rosenbrock_sc.in
-	-$(DAKOTA_TEST_PERL) extract $< 36
+	-$(DAKOTA_TEST_PERL) --extract $< 36
 	-mv $<_ $@
 
 dakota_uq_textbook_dste.in: $(USERS_TEST_PATH)/dakota_uq_textbook_dste.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 ## Users_Method_Opt.tex
 dakota_multiobj1.in: $(USERS_TEST_PATH)/dakota_multiobj1.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 dakota_rosenbrock_scaled.in: $(USERS_TEST_PATH)/dakota_rosenbrock_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 9
+	-$(DAKOTA_TEST_PERL) --extract $< 9
 	-mv $<_ $@
 
 ## Users_Models.tex
 dakota_sbo_rosen.in: $(USERS_TEST_PATH)/dakota_sbo_rosen.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 dakota_su_mogatest1.in: $(USERS_TEST_PATH)/dakota_su_mogatest1.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 dakota_rosenbrock_ego.in: $(USERS_TEST_PATH)/dakota_rosenbrock_ego.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 ## Users_Strategy.tex
 dakota_hybrid.in: $(USERS_TEST_PATH)/dakota_hybrid.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 dakota_multistart.in: $(USERS_TEST_PATH)/dakota_multistart.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 dakota_pareto.in: $(USERS_TEST_PATH)/dakota_pareto.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 #dakota_bandb.in: $(USERS_TEST_PATH)/dakota_bandb.in
-#	-$(DAKOTA_TEST_PERL) extract $< 0
+#	-$(DAKOTA_TEST_PERL) --extract $< 0
 #	-mv $<_ $@
 
 dakota_uq_cantilever_sop_rel.in: \
 $(USERS_TEST_PATH)/dakota_uq_cantilever_sop_rel.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 dakota_ouu1_tb.in: $(USERS_TEST_PATH)/dakota_ouu1_tb.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 ## Users_Output.tex
 dakota_container.in: $(USERS_TEST_PATH)/dakota_container.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 ## Users_Advanced_Interfaces.tex
@@ -343,27 +343,27 @@ ros.template: $(USERS_GENERIC_PATH)/templatedir/ros.template
 
 ## Users_Additional_Examples.tex
 dakota_addtnl_rosen_opt.in: $(USERS_TEST_PATH)/dakota_addtnl_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 0
+	-$(DAKOTA_TEST_PERL) --extract $< 0
 	-mv $<_ $@
 
 dakota_addtnl_rosen_ls.in: $(USERS_TEST_PATH)/dakota_addtnl_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 1
+	-$(DAKOTA_TEST_PERL) --extract $< 1
 	-mv $<_ $@
 
 dakota_addtnl_cylhead.in: $(USERS_TEST_PATH)/dakota_addtnl_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 4
+	-$(DAKOTA_TEST_PERL) --extract $< 4
 	-mv $<_ $@
 
 dakota_addtnl_cantilever.in: $(USERS_TEST_PATH)/dakota_addtnl_users.in
-	-$(DAKOTA_TEST_PERL) extract $< 5
+	-$(DAKOTA_TEST_PERL) --extract $< 5
 	-mv $<_ $@
 
 dakota_mogatest2.in: $(USERS_TEST_PATH)/dakota_mogatest.in
-	-$(DAKOTA_TEST_PERL) extract $< 1
+	-$(DAKOTA_TEST_PERL) --extract $< 1
 	-mv $<_ $@
 
 dakota_mogatest3.in: $(USERS_TEST_PATH)/dakota_mogatest.in
-	-$(DAKOTA_TEST_PERL) extract $< 2
+	-$(DAKOTA_TEST_PERL) --extract $< 2
 	-mv $<_ $@
 
 ## Files to be removed on 'make clean'.
