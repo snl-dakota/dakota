@@ -56887,7 +56887,6 @@ Partial Rank Correlation Matrix between input and output:
      dssrv_1 -1.39465e-01 -6.01548e-02 -6.97095e-03 
      dssrv_2  7.75480e-02  3.09745e-02  3.45567e-02 
 dakota_uq_textbook_lhs_approx.in
-
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 6 total (6 new, 0 duplicate)
