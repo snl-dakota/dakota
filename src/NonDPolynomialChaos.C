@@ -439,13 +439,11 @@ void NonDPolynomialChaos::print_moments(std::ostream& s)
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const StringArray& fn_labels = iteratedModel.response_labels();
-
   size_t i, j, width = write_precision+7;
 
   s << "\nMoment-based statistics for each response function:\n"
     << std::setw(width+15) << "Mean"     << std::setw(width+1) << "Std Dev"
     << std::setw(width+1)  << "Skewness" << std::setw(width+2) << "Kurtosis\n";
-  //<< std::setw(width+2)  << "Coeff of Var\n";
   PecosApproximation* poly_approx_rep; size_t exp_mom, num_mom;
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();

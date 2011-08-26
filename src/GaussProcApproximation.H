@@ -74,10 +74,10 @@ protected:
   void build();
 
   /// retrieve the function value for a given parameter set x
-  const Real& get_value(const RealVector& x);
+  Real get_value(const RealVector& x);
 
   /// retrieve the variance of the predicted value for a given parameter set x
-  const Real& get_prediction_variance(const RealVector& x);
+  Real get_prediction_variance(const RealVector& x);
 
   /// retrieve the function gradient at the predicted value 
   /// for a given parameter set x
@@ -193,6 +193,11 @@ private:
 
   /// pointer to the active object instance used within the static evaluator
   static GaussProcApproximation* GPinstance;
+
+  /// value of the approximation returned by get_value()
+  Real approxValue;
+  /// value of the approximation returned by get_prediction_variance()
+  Real approxVariance;
 
   /// A 2-D array (num sample sites = rows, num vars = columns) 
   /// used to create the Gaussian process

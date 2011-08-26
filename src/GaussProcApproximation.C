@@ -218,11 +218,11 @@ void GaussProcApproximation::build()
 }
 
 
-const Real& GaussProcApproximation::get_value(const RealVector& x)
+Real GaussProcApproximation::get_value(const RealVector& x)
 { GPmodel_apply(x,false,false); return approxValue; }
 
 
-const Real& GaussProcApproximation::get_prediction_variance(const RealVector& x)
+Real GaussProcApproximation::get_prediction_variance(const RealVector& x)
 { GPmodel_apply(x,true,false); return approxVariance;}
 
 const RealVector& GaussProcApproximation::
@@ -683,8 +683,7 @@ void GaussProcApproximation::predict(bool variance_flag, bool gradients_flag)
     approxVariance = procVar*(1.- rT_Rinv_r(0,0));
 
 #ifdef DEBUG_FULL
-      Cout << "variance " << approxVariance << '\n';
-      Cout << '\n';
+      Cout << "variance " << approxVariance << "\n\n";
 #endif //DEBUG_FULL
 
     // set this flag to true to use longer equation

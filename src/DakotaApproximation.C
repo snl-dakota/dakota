@@ -407,7 +407,7 @@ size_t Approximation::finalization_index(size_t i)
 }
 
 
-const Real& Approximation::get_value(const RealVector& x)
+Real Approximation::get_value(const RealVector& x)
 {
   if (!approxRep) {
     Cerr << "Error: get_value() not available for this approximation type."
@@ -443,7 +443,7 @@ const RealSymMatrix& Approximation::get_hessian(const RealVector& x)
 }
 
 
-const Real& Approximation::get_prediction_variance(const RealVector& x)
+Real Approximation::get_prediction_variance(const RealVector& x)
 {
   if (!approxRep) {
     Cerr << "Error: get_prediction_variance() not available for this "
@@ -464,13 +464,12 @@ const bool Approximation::diagnostics_available()
 }
 
 
-const Real& Approximation::get_diagnostic(const String& metric_type)
+Real Approximation::get_diagnostic(const String& metric_type)
 {
   //if (!approxRep) {
-  //  Cerr << "Error: get_diagnostic() not available for this" 
-  //	 << " approximation type."
-  //	 << std::endl;
-  // return 0.;
+  //  Cerr << "Error: get_diagnostic() not available for this approximation " 
+  //	   << "type." << std::endl;
+  //  abort_handler(-1);
   //}
 
   return approxRep->get_diagnostic(metric_type);

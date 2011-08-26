@@ -131,10 +131,10 @@ public:
   void allocate_arrays();
 
   /// return the mean of the expansion, treating all variables as random
-  const Real& mean();
+  Real mean();
   /// return the mean of the expansion for a given parameter vector,
   /// treating a subset of the variables as random
-  const Real& mean(const Pecos::RealVector& x);
+  Real mean(const Pecos::RealVector& x);
   /// return the gradient of the expansion mean for a given parameter
   /// vector, treating all variables as random
   const Pecos::RealVector& mean_gradient();
@@ -144,10 +144,10 @@ public:
 					 const Pecos::SizetArray& dvv);
 
   /// return the variance of the expansion, treating all variables as random
-  const Real& variance();
+  Real variance();
   /// return the variance of the expansion for a given parameter vector,
   /// treating a subset of the variables as random
-  const Real& variance(const Pecos::RealVector& x);
+  Real variance(const Pecos::RealVector& x);
   /// return the gradient of the expansion variance for a given parameter
   /// vector, treating all variables as random
   const Pecos::RealVector& variance_gradient();
@@ -188,7 +188,7 @@ protected:
   // redocumenting these since they use Pecos:: qualification
 
   /// retrieve the approximate function value for a given parameter vector
-  const Real&                 get_value(const Pecos::RealVector& x);
+  Real                        get_value(const Pecos::RealVector& x);
   /// retrieve the approximate function gradient for a given parameter vector
   const Pecos::RealVector&    get_gradient(const Pecos::RealVector& x);
   /// retrieve the approximate function Hessian for a given parameter vector
@@ -386,11 +386,11 @@ inline void PecosApproximation::allocate_arrays()
 { polyApproxRep->allocate_arrays(); }
 
 
-inline const Real& PecosApproximation::mean()
+inline Real PecosApproximation::mean()
 { return polyApproxRep->mean(); }
 
 
-inline const Real& PecosApproximation::mean(const Pecos::RealVector& x)
+inline Real PecosApproximation::mean(const Pecos::RealVector& x)
 { return polyApproxRep->mean(x); }
 
 
@@ -403,11 +403,11 @@ mean_gradient(const Pecos::RealVector& x, const Pecos::SizetArray& dvv)
 { return polyApproxRep->mean_gradient(x, dvv); }
 
 
-inline const Real& PecosApproximation::variance()
+inline Real PecosApproximation::variance()
 { return polyApproxRep->variance(); }
 
 
-inline const Real& PecosApproximation::variance(const Pecos::RealVector& x)
+inline Real PecosApproximation::variance(const Pecos::RealVector& x)
 { return polyApproxRep->variance(x); }
 
 
@@ -455,7 +455,7 @@ pecos_basis_approximation()
 { return pecosBasisApprox; }
 
 
-inline const Real& PecosApproximation::get_value(const Pecos::RealVector& x)
+inline Real PecosApproximation::get_value(const Pecos::RealVector& x)
 { return pecosBasisApprox.value(x); }
 
 

@@ -80,12 +80,12 @@ void TaylorApproximation::build()
 }
 
 
-const Real& TaylorApproximation::get_value(const RealVector& x)
+Real TaylorApproximation::get_value(const RealVector& x)
 {
   if (buildDataOrder == 1)
     return approxData.anchor_function();
-  else { // build up approxValue from constant and derivative terms
-    approxValue = (buildDataOrder & 1) ? approxData.anchor_function() : 0.;
+  else { // build up approx value from constant and derivative terms
+    Real approx_val = (buildDataOrder & 1) ? approxData.anchor_function() : 0.;
     if (buildDataOrder & 6) {
       const RealVector&  c_vars = approxData.anchor_continuous_variables();
       const RealVector&    grad = approxData.anchor_gradient();
@@ -93,13 +93,13 @@ const Real& TaylorApproximation::get_value(const RealVector& x)
       for (size_t i=0; i<numVars; i++) {
 	Real dist_i = x[i] - c_vars[i];
 	if (buildDataOrder & 2) // include gradient terms
-	  approxValue += grad[i] * dist_i;
+	  approx_val += grad[i] * dist_i;
 	if (buildDataOrder & 4) // include Hessian terms
 	  for (size_t j=0; j<numVars; j++)
-	    approxValue += dist_i * hess(i,j) * (x[j] - c_vars[j])/2.;
+	    approx_val += dist_i * hess(i,j) * (x[j] - c_vars[j])/2.;
       }
     }
-    return approxValue;
+    return approx_val;
   }
 }
 

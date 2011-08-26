@@ -752,7 +752,7 @@ void NonDExpansion::update_expansion()
 
 void NonDExpansion::update_hierarchy()
 {
-  // flip HierarchSurrModel::responseMode to LF model
+  // change HierarchSurrModel::responseMode to uncorrected LF model
   iteratedModel.surrogate_response_mode(UNCORRECTED_SURROGATE);
 
   // update grid order/level, if multiple values were provided
@@ -1266,7 +1266,7 @@ void NonDExpansion::compute_statistics()
       }
     }
 
-    // compute moments if needed for beta mappings
+    // compute moment gradients if needed for beta mappings
     bool moment_grad_mapping_flag = false;
     if (respLevelTarget == RELIABILITIES)
       for (j=0; j<rl_len; ++j) // dbeta/ds requires mu,sigma,dmu/ds,dsigma/ds

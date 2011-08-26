@@ -77,16 +77,16 @@ protected:
   //void approximation_coefficients(const RealVector& approx_coeffs);
 
   /// Return the value of the Surfpack surface for a given parameter vector x
-  const Real& get_value(const RealVector& x);
+  Real get_value(const RealVector& x);
   /// retrieve the variance of the predicted value for a given parameter set x
   /// (KrigingModel only)
-  const Real& get_prediction_variance(const RealVector& x);
+  Real get_prediction_variance(const RealVector& x);
   /// retrieve the approximate function gradient for a given parameter vector x
   const RealVector& get_gradient(const RealVector& x);
   /// retrieve the approximate function Hessian for a given parameter vector x
   const RealSymMatrix& get_hessian(const RealVector& x);
   /// retrieve the diagnostic metric for the diagnostic type specified
-  const Real& get_diagnostic(const String& metric_type);
+  Real get_diagnostic(const String& metric_type);
   /// check if the diagnostics are available (true for the Surfpack types)
   const bool diagnostics_available();
 

@@ -576,7 +576,7 @@ apply_multiplicative(const RealVector& c_vars, Response& approx_response)
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     index = *it;
     Approximation&    mult_corr = multCorrections[index];
-    const Real&         fn_corr = mult_corr.get_value(c_vars);
+    Real                fn_corr = mult_corr.get_value(c_vars);
     const RealVector& grad_corr = (correctionOrder >= 1 && (asv[index] & 6)) ?
       mult_corr.get_gradient(c_vars) : empty_rv;
     // apply corrections in descending derivative order to avoid

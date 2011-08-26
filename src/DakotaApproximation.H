@@ -89,15 +89,15 @@ public:
   virtual void combine();
 
   /// retrieve the approximate function value for a given parameter vector
-  virtual const Real& get_value(const RealVector& x);
+  virtual Real get_value(const RealVector& x);
   /// retrieve the approximate function gradient for a given parameter vector
   virtual const RealVector& get_gradient(const RealVector& x);
   /// retrieve the approximate function Hessian for a given parameter vector
   virtual const RealSymMatrix& get_hessian(const RealVector& x);
   /// retrieve the variance of the predicted value for a given parameter vector
-  virtual const Real& get_prediction_variance(const RealVector& x);
+  virtual Real get_prediction_variance(const RealVector& x);
   /// retrieve the diagnostic metric for the diagnostic type specified
-  virtual const Real& get_diagnostic(const String& metric_type);
+  virtual Real get_diagnostic(const String& metric_type);
 
   /// return the coefficient array computed by build()/rebuild()
   virtual const RealVector& approximation_coefficients() const;
@@ -228,16 +228,10 @@ protected:
       a trust region), but not require gradient evaluations at every point. */
   short buildDataOrder;
 
-  /// value of the approximation returned by get_value()
-  Real approxValue;
   /// gradient of the approximation returned by get_gradient()
   RealVector approxGradient;
   /// Hessian of the approximation returned by get_hessian()
   RealSymMatrix approxHessian;
-  /// value of the approximation returned by get_prediction_variance()
-  Real approxVariance;
-  /// value of the diagnostic returned by get_diagnostic()
-  Real approxDiagnostic;
 
   /// contains the variables/response data for constructing a single
   /// approximation model (one response function)

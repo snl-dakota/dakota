@@ -450,7 +450,7 @@ void SurfpackApproximation::build()
 }
 
 
-const Real& SurfpackApproximation::get_value(const RealVector& x)
+Real SurfpackApproximation::get_value(const RealVector& x)
 { 
   //static int times_called = 0;
   if (!model) { 
@@ -465,31 +465,26 @@ const Real& SurfpackApproximation::get_value(const RealVector& x)
   }
   RealArray x_vec;
   copy_data(x, x_vec);
-  approxValue = (*model)(x_vec);
-  //Cout << "SurfpackApproximation::get_value times called " << ++times_called
-  //     << std::endl; 
-  return approxValue;
+  return (*model)(x_vec);
 }
   
 
-const Real& SurfpackApproximation::get_prediction_variance(const RealVector& x)
+Real SurfpackApproximation::get_prediction_variance(const RealVector& x)
 {
   try {
     RealArray x_vec;
     copy_data(x, x_vec);
-    approxVariance = model->variance(x_vec);
+    return model->variance(x_vec);
   }
   catch (...) {
     Cerr << "Error: get_prediction_variance not available for this "
 	 << "approximation type." << std::endl;
     abort_handler(-1);
   }
-  return approxVariance;
 }
 
 
-const RealVector& SurfpackApproximation::
-get_gradient(const RealVector& x)
+const RealVector& SurfpackApproximation::get_gradient(const RealVector& x)
 {
   approxGradient.sizeUninitialized(x.length());
   try {
@@ -509,8 +504,7 @@ get_gradient(const RealVector& x)
 }
 
 
-const RealSymMatrix& SurfpackApproximation::
-get_hessian(const RealVector& x)
+const RealSymMatrix& SurfpackApproximation::get_hessian(const RealVector& x)
 {
   approxHessian.reshape(x.length());
   try {
@@ -540,22 +534,21 @@ const bool SurfpackApproximation::diagnostics_available()
 { return true; }
 
 
-const Real& SurfpackApproximation::get_diagnostic(const String& metric_type)
+Real SurfpackApproximation::get_diagnostic(const String& metric_type)
 { 
-  //static int times_called = 0;
   if (!model) { 
     Cerr << "Error: surface is null in get_diagnostic" << std::endl;  
     abort_handler(-1);
   }
 
   ModelFitness* SS_fitness = ModelFitness::Create(metric_type);
-  approxDiagnostic = (*SS_fitness)(*model,*surfData);
-  Cout << "The " << metric_type << " goodness of fit =  " 
-       << approxDiagnostic  << "\n" ;
+  Real approx_diag = (*SS_fitness)(*model,*surfData);
   delete SS_fitness;
 
-  return approxDiagnostic;
+  Cout << "The " << metric_type << " goodness of fit = " << approx_diag << '\n';
+  return approx_diag;
 }
+
 
 /** Copy the data stored in Dakota-style SurrogateData into
     Surfpack-style SurfPoint and SurfData objects. */

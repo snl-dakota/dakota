@@ -245,7 +245,7 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
     for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
       int index = *it;
       if (core_asv[index] & 1) {
-	const Real& fn_val = functionSurfaces[index].get_value(x);
+	Real fn_val = functionSurfaces[index].get_value(x);
 	//if (approx_scale_len)
 	//  fn_val *= approxScale[index];
 	//if (approx_offset_len)

@@ -275,8 +275,9 @@ void TANA3Approximation::offset(const RealVector& x, RealVector& s)
 }
 
 
-const Real& TANA3Approximation::get_value(const RealVector& x)
+Real TANA3Approximation::get_value(const RealVector& x)
 {
+  Real approx_val;
   if (approxData.size()) { // TANA-3 approximation
 
     // Check existing scaling to verify that it is sufficient for x
@@ -294,7 +295,7 @@ const Real& TANA3Approximation::get_value(const RealVector& x)
       offset(x, s_eval);
     }
 
-    // Calculate approxValue
+    // Calculate approx_val
     const Real&       f2    = approxData.anchor_function();
     const RealVector& grad2 = approxData.anchor_gradient();
     Real sum1 = 0., sum_diff1_sq = 0., sum_diff2_sq = 0.;
@@ -306,23 +307,23 @@ const Real& TANA3Approximation::get_value(const RealVector& x)
       sum_diff2_sq += diff2*diff2;
     }
     Real epsilon = H/(sum_diff1_sq + sum_diff2_sq);
-    approxValue  = f2 + sum1 + sum_diff2_sq*epsilon/2.;
+    approx_val  = f2 + sum1 + sum_diff2_sq*epsilon/2.;
 #ifdef DEBUG
-    Cout << "epsilon: " << epsilon << " sum1: " << sum1 << " approxValue: "
-	 << approxValue << '\n';
+    Cout << "epsilon: " << epsilon << " sum1: " << sum1 << " approx value: "
+	 << approx_val << '\n';
 #endif // DEBUG
   }
   else { // First-order Taylor series (interim approx)
-    approxValue              = approxData.anchor_function();
+    approx_val              = approxData.anchor_function();
     const RealVector& c_vars = approxData.anchor_continuous_variables();
     const RealVector& grad   = approxData.anchor_gradient();
     for (size_t i=0; i<numVars; i++) {
       Real dist_i = x[i] - c_vars[i];
-      approxValue += grad[i] * dist_i;
+      approx_val += grad[i] * dist_i;
     }
   }
 
-  return approxValue;
+  return approx_val;
 }
 
 

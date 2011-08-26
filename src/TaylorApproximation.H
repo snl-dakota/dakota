@@ -58,7 +58,7 @@ protected:
 
   void build();
 
-  const Real& get_value(const RealVector& x);
+  Real get_value(const RealVector& x);
 
   const RealVector& get_gradient(const RealVector& x);
 
