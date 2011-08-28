@@ -32,7 +32,7 @@ const char** arg_list_adjust(const char **, void **);
 #if (defined(HAVE_UNISTD_H) && defined(HAVE_SYS_WAIT_H)) || defined(_WIN32) //{
 #define Need_Local_Decls
 
-// WJB - ToDo: totally rewrite in C++ (perhaps leverage Boost.Filesystem)
+// WJB - ToDo: totally rewrite in C++ (perhaps leverage STL)
 static const char**
 arg_adjust(bool cmd_line_args, std::vector<std::string>& args,
            const char **av, const std::string& wd_str)
@@ -48,11 +48,11 @@ arg_adjust(bool cmd_line_args, std::vector<std::string>& args,
   av[i] = 0;
   av = arg_list_adjust(av, 0);
 
-  const char* s = wd_str.c_str();
-  if (s && wd_str != "") {
-    const char* t;
-    Filesys_buf::change_cwd(s);
+  if ( !wd_str.empty() ) {
+    WorkdirHelper::change_cwd(wd_str);
     size_t len = wd_str.size();
+    const char* s = wd_str.c_str();
+    const char* t;
     for(i = 1; (t = av[i]); ++i)
       if (!std::strncmp(s, t, len) && t[len] == '/')
         av[i] = t + len + 1;
@@ -82,7 +82,7 @@ pid_t ForkAnalysisCode::fork_program(const bool block_flag)
 	else
 		pid = _spawnvp(_P_NOWAIT, av[0], av);
 	if (curWorkdir.c_str())
-		Filesys_buf::reset();
+		WorkdirHelper::reset();
 #else //}{
 #if defined(HAVE_WORKING_VFORK)
   pid = vfork(); // replicate this process

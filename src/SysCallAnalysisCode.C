@@ -35,13 +35,12 @@ void SysCallAnalysisCode::spawn_evaluation(const bool block_flag)
   // asv, parameters, etc., and (2) in asynch usage, each of the 3 pieces must
   // be able to manage tagged files and/or working subdirectories.
 
-  CommandShell shell;
-  bool needparen;
-  const char *s, *s1;
-  size_t L;
+  std::string no_workdir;
+  CommandShell shell(useWorkdir ? curWorkdir : no_workdir);
+  const char* s = useWorkdir ? curWorkdir.c_str() : 0;
+  size_t wd_strlen = useWorkdir ? curWorkdir.size() : 0;
 
-  if ((s = shell.workDir = useWorkdir ? curWorkdir.c_str() : 0))
-	L = std::strlen(s);
+  bool needparen;
 
   // Input filter portion
   if ((needparen = !block_flag && (numPrograms > 1
@@ -60,9 +59,9 @@ void SysCallAnalysisCode::spawn_evaluation(const bool block_flag)
   for (size_t i=0; i<numPrograms; ++i) {
     shell << programNames[i];
     if (commandLineArgs) {
-       s1 = paramsFileName.c_str();
-       if (s && !std::strncmp(s,s1,L) && s1[L] == '/')
-		s1 += L + 1;
+       const char* s1 = paramsFileName.c_str();
+       if (s && !std::strncmp(s,s1,wd_strlen) && s1[wd_strlen] == '/')
+		s1 += wd_strlen + 1;
       shell << " " << s1;
       std::string prog_num( (multipleParamsFiles || numPrograms > 1) ?
                             "." + boost::lexical_cast<std::string>(i+1) : "" );
@@ -70,8 +69,8 @@ void SysCallAnalysisCode::spawn_evaluation(const bool block_flag)
 	shell << prog_num;
 
       s1 = resultsFileName.c_str();
-      if (s && !std::strncmp(s,s1,L) && s1[L] == '/')
-		s1 += L + 1;
+      if (s && !std::strncmp(s,s1,wd_strlen) && s1[wd_strlen] == '/')
+		s1 += wd_strlen + 1;
       shell << " " << s1;
       if (numPrograms > 1)     // append program cntr to resultsFileName
 	shell << prog_num;
@@ -105,9 +104,9 @@ void SysCallAnalysisCode::spawn_evaluation(const bool block_flag)
     externally. */
 void SysCallAnalysisCode::spawn_input_filter(const bool block_flag)
 {
-  CommandShell shell;
+  std::string no_workdir;
+  CommandShell shell(useWorkdir ? curWorkdir : no_workdir);
 
-  shell.workDir = useWorkdir ? curWorkdir.c_str() : 0;
   shell << iFilterName;
   if (commandLineArgs)
     shell << " " << paramsFileName << " " << resultsFileName;
@@ -125,9 +124,9 @@ void SysCallAnalysisCode::spawn_input_filter(const bool block_flag)
 void SysCallAnalysisCode::
 spawn_analysis(const int& analysis_id, const bool block_flag)
 {
-  CommandShell shell;
+  std::string no_workdir;
+  CommandShell shell(useWorkdir ? curWorkdir : no_workdir);
 
-  shell.workDir = useWorkdir ? curWorkdir.c_str() : 0;
   shell << programNames[analysis_id-1];
   if (commandLineArgs) {
     using std::string;
@@ -154,9 +153,9 @@ spawn_analysis(const int& analysis_id, const bool block_flag)
     externally. */
 void SysCallAnalysisCode::spawn_output_filter(const bool block_flag)
 {
-  CommandShell shell;
+  std::string no_workdir;
+  CommandShell shell(useWorkdir ? curWorkdir : no_workdir);
 
-  shell.workDir = useWorkdir ? curWorkdir.c_str() : 0;
   shell << oFilterName;
   if (commandLineArgs)
     shell << " " << paramsFileName << " " << resultsFileName;

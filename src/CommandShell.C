@@ -30,8 +30,8 @@ CommandShell& CommandShell::flush()
   if (!suppressOutputFlag)
     Cout << sysCommand << std::endl;  // output the cmd string for verification
 
-  if (workDir)
-    Filesys_buf::change_cwd(workDir);
+  if ( !workDir.empty() )
+    WorkdirHelper::change_cwd(workDir);
 
 #ifdef HAVE_SYSTEM
   std::system(sysCommand.c_str());
@@ -41,8 +41,8 @@ CommandShell& CommandShell::flush()
   abort_handler(-1);
 #endif
 
-  if (workDir)
-    Filesys_buf::reset();
+  if ( !workDir.empty() )
+    WorkdirHelper::reset();
 
   sysCommand.clear();
   return *this;

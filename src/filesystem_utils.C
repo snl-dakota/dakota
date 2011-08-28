@@ -19,6 +19,8 @@
 #include "filesystem_utils.h"
 #include "global_defs.h"
 
+#include <boost/array.hpp>
+
 #ifdef __SUNPRO_CC
 #include <stdlib.h>
 #endif
@@ -1101,27 +1103,29 @@ static char* Malloc(size_t L)
 
 std::pair<std::string, std::string> WorkdirHelper::get_dakpath()
 {
-  char cwd_buf[MAXPATHLEN], *env_path;
+  boost::array<char, MAXPATHLEN> cwd_buf;
   size_t total_buf_size = 0;
 
 #ifdef _WIN32
 #define FailFmt "GetCurrentDirectory() failed!\n"
-  total_buf_size = GetCurrentDirectory(MAXPATHLEN, cwd_buf);
-  if (total_buf_size <= 0 || total_buf_size >= MAXPATHLEN))
+  total_buf_size = GetCurrentDirectory(MAXPATHLEN, cwd_buf.c_array());
+  if (total_buf_size <= 0 || total_buf_size >= MAXPATHLEN)
 #else
 #define FailFmt "getcwd() failed!\n"
-  if (!getcwd((char*)cwd_buf, MAXPATHLEN))
+  if (!getcwd(cwd_buf.c_array(), MAXPATHLEN))
 #endif
   {
 	std::fprintf(stderr, FailFmt);
 	std::exit(1);
   }
+
+  char* env_path = 0;
   if (!(env_path = std::getenv(Pathname))) {
 	std::fprintf(stderr, "getenv(\"" Pathname "\") failed in get_dakpath().\n");
 	std::exit(1);
   }
 
-  size_t cwd_len  = std::strlen(cwd_buf);
+  size_t cwd_len  = std::strlen(cwd_buf.c_array());
   size_t path_len = std::strlen(env_path);
 
   // Allocate enough space for BOTH strings + "PATH=" + 2 NULL terminators
@@ -1130,7 +1134,7 @@ std::pair<std::string, std::string> WorkdirHelper::get_dakpath()
   cwdBegin = new char [total_buf_size];
 
   // first, copy cwd
-  std::memcpy(cwdBegin, cwd_buf, cwd_len);
+  std::memcpy(cwdBegin, cwd_buf.c_array(), cwd_len);
   cwdBegin[cwd_len] = 0;
 
   // second, copy PATH environment variable
@@ -1144,7 +1148,7 @@ std::pair<std::string, std::string> WorkdirHelper::get_dakpath()
     dakdrive = Map(cwd_buf[0]);
 #endif
 
-  return std::make_pair( std::string(cwd_buf,  cwd_len),
+  return std::make_pair( std::string(cwd_buf.c_array(), cwd_len),
                          std::string(env_path, path_len) );
 }
 #undef FailFmt
@@ -1384,14 +1388,16 @@ void WorkdirHelper::reset()
 
 void WorkdirHelper::change_cwd(const std::string& wd_str)
 {
-  // WJB: also use as an "adapter layer" to manager 3 different APIs
+  /* WJB: also use as an "adapter layer" to manager 3 different APIs
   //      1. DMG not_executable,  2. BoostFS V2, and  3. BoostFS V3
   if (wd_str == "" || wd_str.c_str() == NULL) {
     workdir_adjust(NULL);
   }
   else {
     workdir_adjust(wd_str.c_str());
-  }
+  } */
+  // Really a need for a wrapper now that workdirs are std::string objects?
+  if ( !wd_str.empty() ) workdir_adjust( wd_str.c_str() );
 }
 
 } // namespace Dakota

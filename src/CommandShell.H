@@ -37,8 +37,8 @@ public:
   //- Heading: Constructor and destructor
   //
 
-  CommandShell();  ///< constructor
-  ~CommandShell(); ///< destructor
+  CommandShell(const std::string& work_dir); ///< constructor
+  ~CommandShell();                           ///< destructor
 
   //
   //- Heading: Operator overloaded functions
@@ -60,16 +60,14 @@ public:
   void suppress_output_flag(const bool flag); ///< set the suppressOutputFlag
   bool suppress_output_flag() const;          ///< get the suppressOutputFlag
 
+private:
 
   //
   //- Heading: Data members
   //
 
   /// To convey working directory when useWorkdir is true:
-  //WJB - ToDo: PRIVATE std::string! const char* workDir;
-  const char* workDir;
-
-private:
+  const std::string& workDir;
 
   /// The command string that is constructed through one or more <<
   /// insertions and then executed by flush
@@ -84,8 +82,8 @@ private:
 
 
 /// constructor
-inline CommandShell::CommandShell() :
-  workDir(NULL), asynchFlag(false), suppressOutputFlag(false)
+inline CommandShell::CommandShell(const std::string& work_dir) :
+  workDir(work_dir), asynchFlag(false), suppressOutputFlag(false)
 { }
 
 /// destructor
