@@ -81,107 +81,83 @@ text_book_ouu$(EXEEXT): $(top_builddir)/test/text_book_ouu$(EXEEXT)
 
 ## Users_Method_UQ.tex
 dakota_uq_sampling.in: $(METHODS_TEST_PATH)/dakota_uq_users.in
-	-$(DAKOTA_TEST_PERL) --extract $< 0
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 dakota_uq_reliability.in: $(METHODS_TEST_PATH)/dakota_logratio.in
-	-$(DAKOTA_TEST_PERL) --extract $< 5
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 5 --file-extract=$@
 
 dakota_sc.in: $(METHODS_TEST_PATH)/dakota_uq_rosenbrock_sc.in
-	-$(DAKOTA_TEST_PERL) --extract $< 36
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 36 --file-extract=$@
 
 dakota_uq_textbook_dste.in: $(METHODS_TEST_PATH)/dakota_uq_textbook_dste.in
-	-$(DAKOTA_TEST_PERL) --extract $< 0
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 ## Users_Method_Opt.tex
 dakota_multiobj1.in: $(METHODS_TEST_PATH)/dakota_multiobj1.in
-	-$(DAKOTA_TEST_PERL) --extract $< 0
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 dakota_rosenbrock_scaled.in: $(METHODS_TEST_PATH)/dakota_rosenbrock_users.in
-	-$(DAKOTA_TEST_PERL) --extract $< 9
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 9 --file-extract=$@
 
 ## Users_Models.tex
 dakota_sbo_rosen.in: $(METHODS_TEST_PATH)/dakota_sbo_rosen.in
-	-$(DAKOTA_TEST_PERL) --extract $< 0
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 dakota_su_mogatest1.in: $(METHODS_TEST_PATH)/dakota_su_mogatest1.in
-	-$(DAKOTA_TEST_PERL) --extract $< 0
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 dakota_rosenbrock_ego.in: $(METHODS_TEST_PATH)/dakota_rosenbrock_ego.in
-	-$(DAKOTA_TEST_PERL) --extract $< 0
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 ## Users_Strategy.tex
 dakota_hybrid.in: $(METHODS_TEST_PATH)/dakota_hybrid.in
-	-$(DAKOTA_TEST_PERL) --extract $< 0
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 dakota_multistart.in: $(METHODS_TEST_PATH)/dakota_multistart.in
-	-$(DAKOTA_TEST_PERL) --extract $< 0
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 dakota_pareto.in: $(METHODS_TEST_PATH)/dakota_pareto.in
-	-$(DAKOTA_TEST_PERL) --extract $< 0
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 #dakota_bandb.in: $(METHODS_TEST_PATH)/dakota_bandb.in
-#	-$(DAKOTA_TEST_PERL) --extract $< 0
-#	-mv $<_ $@
+#	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 dakota_uq_cantilever_sop_rel.in: \
 $(METHODS_TEST_PATH)/dakota_uq_cantilever_sop_rel.in
-	-$(DAKOTA_TEST_PERL) --extract $< 0
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 dakota_ouu1_tb.in: $(METHODS_TEST_PATH)/dakota_ouu1_tb.in
-	-$(DAKOTA_TEST_PERL) --extract $< 0
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 ## Users_Output.tex
 dakota_container.in: $(METHODS_TEST_PATH)/dakota_container.in
-	-$(DAKOTA_TEST_PERL) --extract $< 0
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 ## Users_Additional_Examples.tex
 dakota_addtnl_rosen_opt.in: $(METHODS_TEST_PATH)/dakota_addtnl_users.in
-	-$(DAKOTA_TEST_PERL) --extract $< 0
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 0 --file-extract=$@
 
 dakota_addtnl_rosen_ls.in: $(METHODS_TEST_PATH)/dakota_addtnl_users.in
-	-$(DAKOTA_TEST_PERL) --extract $< 1
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 1 --file-extract=$@
 
 dakota_addtnl_cylhead.in: $(METHODS_TEST_PATH)/dakota_addtnl_users.in
-	-$(DAKOTA_TEST_PERL) --extract $< 4
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 4 --file-extract=$@
 
 dakota_addtnl_cantilever.in: $(METHODS_TEST_PATH)/dakota_addtnl_users.in
-	-$(DAKOTA_TEST_PERL) --extract $< 5
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 5 --file-extract=$@
 
 dakota_mogatest2.in: $(METHODS_TEST_PATH)/dakota_mogatest.in
-	-$(DAKOTA_TEST_PERL) --extract $< 1
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 1 --file-extract=$@
 
 dakota_mogatest3.in: $(METHODS_TEST_PATH)/dakota_mogatest.in
-	-$(DAKOTA_TEST_PERL) --extract $< 2
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 2 --file-extract=$@
 
 ## Not in User's Manual 
 dakota_nls_datafile.in: $(METHODS_TEST_PATH)/dakota_textbook_nips.in
-	-$(DAKOTA_TEST_PERL) --extract $< 7
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 7 --file-extract=$@
 
 dakota_surr_uq.in: $(METHODS_TEST_PATH)/dakota_uq_users.in
-	-$(DAKOTA_TEST_PERL) --extract $< 4 
-	-mv $<_ $@
+	-$(DAKOTA_TEST_PERL) --extract $< 4  --file-extract=$@
 
 # data file
 least_squares_test.dat: $(top_srcdir)/test/least_squares_test.dat

@@ -105,15 +105,10 @@ foreach(generated_input ${users_test_inputs})
   list(GET geninput_as_args 2 test_output)
   list(APPEND all_generated_inputs ${test_output})
 
-  # TODO: generate inputs only in build tree!!!
-  #       currently pollutes source tree's test
-  #       requires changing perl script behavior
   add_custom_command(
     OUTPUT  ${test_output}
     COMMAND ${Dakota_SOURCE_DIR}/test/dakota_test.perl 
-    ARGS    --extract ${test_input} ${test_num} 
-    COMMAND ${CMAKE_COMMAND} 
-    ARGS -E copy ${test_input}_ ${CMAKE_CURRENT_BINARY_DIR}/${test_output}
+    ARGS    --extract ${test_input} ${test_num} --file-extract=${CMAKE_CURRENT_BINARY_DIR}/${test_output}
   )
 
 endforeach()
