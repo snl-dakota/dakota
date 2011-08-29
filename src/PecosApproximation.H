@@ -553,8 +553,8 @@ inline void PecosApproximation::store()
 
 inline void PecosApproximation::combine()
 {
-  // base class implementation manages approx data
-  Approximation::combine();
+  // base class implementation manages approxData state
+  //Approximation::combine();
   // map to Pecos::BasisApproximation
   pecosBasisApprox.combine_coefficients();
 }

@@ -683,7 +683,7 @@ static GuiKeyWord
 		{"uniform",8,0,1,1,587}
 		},
 	kw_108[3] = {
-		{"dimension_preference",14,0,1,0,609,0,0.,0.,0.,0,"{Sparse grid dimension preference} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"dimension_preference",14,0,1,0,609,0,0.,0.,0.,0,"{Dimension preference for anisotropic tensor and sparse grids} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
 		{"nested",8,0,2,0,611},
 		{"non_nested",8,0,2,0,613}
 		},
@@ -697,7 +697,7 @@ static GuiKeyWord
 		{"random",8,0,1,1,655}
 		},
 	kw_111[5] = {
-		{"dimension_preference",14,0,2,0,609,0,0.,0.,0.,0,"{Sparse grid dimension preference} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"dimension_preference",14,0,2,0,609,0,0.,0.,0.,0,"{Dimension preference for anisotropic tensor and sparse grids} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
 		{"nested",8,0,3,0,611},
 		{"non_nested",8,0,3,0,613},
 		{"restricted",8,0,1,0,605},
@@ -786,7 +786,7 @@ static GuiKeyWord
 	kw_124[24] = {
 		{"all_variables",8,0,18,0,731,0,0.,0.,0.,0,"{All variables flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
 		{"askey",8,0,2,0,671},
-		{"dimension_preference",14,0,4,0,685,0,0.,0.,0.,0,"{Sparse grid dimension preference} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"},
+		{"dimension_preference",14,0,4,0,685,0,0.,0.,0.,0,"{Dimension preference for anisotropic tensor and sparse grids} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"},
 		{"distribution",8,2,12,0,781,kw_49,0.,0.,0.,0,"{Distribution type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonD"},
 		{"fixed_seed",8,0,19,0,733,0,0.,0.,0.,0,"{Fixed seed flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
 		{"gen_reliability_levels",14,1,14,0,791,kw_50,0.,0.,0.,0,"{Generalized reliability levels} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonD"},
