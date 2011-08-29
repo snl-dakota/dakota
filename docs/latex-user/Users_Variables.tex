@@ -371,11 +371,11 @@ Figure~\ref{variables:figure01}.
     <int>    <label_dsiv\(\sb{i}\)>        (i = 1 to n\(\sb{dsiv}\))
     <double> <label_dsrv\(\sb{i}\)>        (i = 1 to n\(\sb{dsrv}\)) \color{blue}
     <int>    functions
-    <int>    ASV_i                (i = 1 to m) \color{red}
+    <int>    ASV_i:label_response\(\sb{i}\)       (i = 1 to m) \color{red}
     <int>    derivative_variables
-    <int>    DVV_i                (i = 1 to p) \color{green}
+    <int>    DVV_i:label_cdv\(\sb{i}\)            (i = 1 to p) \color{green}
     <int>    analysis_components
-    <string> AC_i                 (i = 1 to q)
+    <string> AC_i:analysis_driver_name\(\sb{i}\)  (i = 1 to q)
   \end{alltt}
   \end{bigbox}
   \caption{Parameters file data format - standard option.}
@@ -422,28 +422,33 @@ The second array for the active set vector (ASV) begins with the total
 number of functions (\texttt{m}) and its identifier string
 ``\texttt{functions}.'' The next \texttt{m} lines specify the request
 vector for each of the \texttt{m} functions in the response data set
-followed by the tags ``\texttt{ASV\_i}.''  These integer codes indicate
-what data is required on the current function evaluation and are
-described further in Section~\ref{variables:asv}.
+followed by the tags ``\texttt{ASV\_i:label\_response}'', where the
+label is either a user-provided response descriptor or a
+default-generated one. These integer codes indicate what data is
+required on the current function evaluation and are described further
+in Section~\ref{variables:asv}.
 
 The third array for the derivative variables vector (DVV) begins with
 the number of derivative variables (\texttt{p}) and its identifier
 string ``\texttt{derivative\_variables}.'' The next \texttt{p} lines
 specify integer variable identifiers followed by the tags
-``\texttt{DVV\_i}.''  These integer identifiers are used to identify
-the subset of variables that are active for the calculation of
-derivatives (gradient vectors and Hessian matrices), and correspond to
-the list of variables in the first array (e.g., an identifier of 2
+``\texttt{DVV\_i:label\_cdv}''.  These integer identifiers are used to
+identify the subset of variables that are active for the calculation
+of derivatives (gradient vectors and Hessian matrices), and correspond
+to the list of variables in the first array (e.g., an identifier of 2
 indicates that the second variable in the list is active for
-derivatives).
+derivatives).  The labels are again taken from user-provided or
+default variable descriptors.
 
 The final array for the analysis components (AC) begins with the
 number of analysis components (\texttt{q}) and its identifier string
 ``\texttt{analysis\_components}.'' The next \texttt{q} lines provide
-additional strings for use in specializing a simulation interface 
-followed by the tags ``\texttt{AC\_i}.''  These strings are specified
-in a user's input file for a set of \texttt{analysis\_drivers} using 
-the \texttt{analysis\_components} specification.  The subset of the
+additional strings for use in specializing a simulation interface
+followed by the tags ``\texttt{AC\_i:analysis\_driver\_name}'', where
+\texttt{analysis\_driver\_name} indicates the driver associated with
+this component.  These strings are specified in a user's input file
+for a set of \texttt{analysis\_drivers} using the
+\texttt{analysis\_components} specification.  The subset of the
 analysis components used for a particular analysis driver is the set
 passed in a particular parameters file.
 
@@ -495,11 +500,11 @@ with the variables data.
     \{ <label_dsiv\(\sb{i}\)> = <int> \}           (i = 1 to n\(\sb{dsiv}\))
     \{ <label_dsrv\(\sb{i}\)> = <double> \}        (i = 1 to n\(\sb{dsrv}\)) \color{blue}
     \{ DAKOTA_FNS = <int> \}
-    \{ ASV_i = <int> \}                   (i = 1 to m) \color{red}
+    \{ ASV_i:label_response\(\sb{i}\) = <int> \}              (i = 1 to m) \color{red}
     \{ DAKOTA_DER_VARS = <int> \}
-    \{ DVV_i = <int> \}                   (i = 1 to p) \color{green}
+    \{ DVV_i:label_cdv\(\sb{i}\) = <int> \}                   (i = 1 to p) \color{green}
     \{ DAKOTA_AN_COMPS = <int> \}
-    \{ AC_i = <int> \}                    (i = 1 to q)
+    \{ AC_i:analysis_driver_name\(\sb{i}\) = <string> \}      (i = 1 to q)
   \end{alltt}
   \end{bigbox}
   \caption{Parameters file data format - APREPRO option.}
