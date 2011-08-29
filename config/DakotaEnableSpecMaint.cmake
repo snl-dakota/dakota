@@ -17,7 +17,7 @@ function(DakotaEnableSpecMaint)
   
     # generate dakota.input.desc (depends on dakota.tags.desc)
     find_package(Perl REQUIRED)
-    file(GLOB ref_dox_files ${CMAKE_CURRENT_SOURCE_DIR}/docs Ref_*.dox)
+    file(GLOB ref_dox_files ${Dakota_SOURCE_DIR}/docs Ref_*.dox)
     add_custom_command(
       OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/dakota.input.desc"
       DEPENDS nidrgen 
