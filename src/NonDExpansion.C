@@ -383,9 +383,9 @@ void NonDExpansion::quantify_uncertainty()
   // multifidelity LF expansion
   if (iteratedModel.surrogate_type() == "hierarchical") {
     // output and capture discrepancy results
-    Cout << "\n----------------------------------------"
-	 << "\nMultifidelity model discrepancy results:"
-	 << "\n----------------------------------------\n";
+    Cout << "\n-------------------------------------------"
+	 << "\nMultifidelity UQ: model discrepancy results"
+	 << "\n-------------------------------------------\n\n";
     compute_print_converged_results(true);
     // store current state.  Note: a subsequent finalize_approximation()
     // within refine_expansion() must distinguish between saved trial sets
@@ -397,12 +397,15 @@ void NonDExpansion::quantify_uncertainty()
     if (refineType)
       refine_expansion(); // uniform/adaptive p-/h-refinement
     Cout << "\n--------------------------------------"
-	 << "\nMultifidelity surrogate model results:"
-	 << "\n--------------------------------------\n";
+	 << "\nMultifidelity UQ: low fidelity results"
+	 << "\n--------------------------------------\n\n";
     compute_print_converged_results(true);
 
     // compute aggregate expansion and generate its statistics
     uSpaceModel.combine_approximation();
+    Cout << "\n----------------------------------------------------"
+	 << "\nMultifidelity UQ: approximated high fidelity results"
+	 << "\n----------------------------------------------------\n\n";
   }
   
   // generate final results

@@ -44,7 +44,7 @@ model,
 
 interface,
 	id_interface = 'LOFI_FN'
-	system #asynchronous
+	direct
  	  analysis_driver = 'lf_rosenbrock'
 	  deactivate restart_file
 
@@ -55,7 +55,7 @@ model,
 
 interface,
 	id_interface = 'HIFI_FN'
-	system
+	direct
  	  analysis_driver = 'rosenbrock'
 	  deactivate restart_file
 

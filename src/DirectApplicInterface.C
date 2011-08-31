@@ -78,6 +78,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   driverTypeMap["cyl_head"]               = CYLINDER_HEAD;
   driverTypeMap["extended_rosenbrock"]    = EXTENDED_ROSENBROCK;
   driverTypeMap["generalized_rosenbrock"] = GENERALIZED_ROSENBROCK;
+  driverTypeMap["lf_rosenbrock"]          = LF_ROSENBROCK;
   driverTypeMap["rosenbrock"]             = ROSENBROCK;
   driverTypeMap["gerstner"]               = GERSTNER;
   driverTypeMap["scalable_gerstner"]      = SCALABLE_GERSTNER;
@@ -159,9 +160,9 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   localDataView = 0;
   for (size_t i=0; i<numAnalysisDrivers; ++i)
     switch (analysisDriverTypes[i]) {
-    case CANTILEVER_BEAM:   case MOD_CANTILEVER_BEAM: case ROSENBROCK:
-    case SHORT_COLUMN:      case LF_SHORT_COLUMN:     case SOBOL_ISHIGAMI:
-    case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE:
+    case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM: case ROSENBROCK:
+    case LF_ROSENBROCK:  case SHORT_COLUMN:      case LF_SHORT_COLUMN:
+    case SOBOL_ISHIGAMI: case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE:
       localDataView |= VARIABLES_MAP;    break;
     case NO_DRIVER: // assume VARIABLES_VECTOR approach for plug-ins for now
     case CYLINDER_HEAD:       case LOGNORMAL_RATIO:     case MULTIMODAL:
@@ -178,7 +179,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   if (localDataView & VARIABLES_MAP) {
     // define the string to enumeration map
     //switch (ac_name) {
-    //case ROSENBROCK: case SOBOL_ISHIGAMI: // SOBOL_G_FUNCTION:
+    //case ROSENBROCK: case LF_ROSENBROCK: case SOBOL_ISHIGAMI:
       varTypeMap["x1"] = VAR_x1; varTypeMap["x2"] = VAR_x2;
       varTypeMap["x3"] = VAR_x3; //varTypeMap["x4"]  = VAR_x4;
       //varTypeMap["x5"] = VAR_x5; varTypeMap["x6"]  = VAR_x6;
@@ -451,6 +452,8 @@ int DirectApplicInterface::derived_map_ac(const String& ac_name)
     fail_code = generalized_rosenbrock(); break;
   case EXTENDED_ROSENBROCK:
     fail_code = extended_rosenbrock(); break;
+  case LF_ROSENBROCK:
+    fail_code = lf_rosenbrock(); break;
   case GERSTNER:
     fail_code = gerstner(); break;
   case SCALABLE_GERSTNER:
@@ -1468,6 +1471,56 @@ int DirectApplicInterface::extended_rosenbrock()
       fnHessians[0](index_2i,index_2i)     +=  2.*alpha;
     }
   }
+
+  //sleep(5); // for faking a more expensive evaluation
+  return 0; // no failure
+}
+
+
+int DirectApplicInterface::lf_rosenbrock()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: lf_rosenbrock direct fn does not support "
+	 << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numVars != 2 || numADIV || numADRV) {
+    Cerr << "Error: Bad number of variables in lf_rosenbrock direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  if (numFns > 1) {
+    Cerr << "Error: Bad number of functions in lf_rosenbrock direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  Real x1 = xCM[VAR_x1],     x2 = xCM[VAR_x2],
+       f1 = x2 - x1*x1 + .2, f2 = 0.8 - x1; // terms offset by +/- .2
+
+  // **** f:
+  if (directFnASV[0] & 1)
+    fnVals[0] = 100.*f1*f1+f2*f2;
+
+  // **** df/dx:
+  if (directFnASV[0] & 2)
+    for (size_t i=0; i<numDerivVars; ++i)
+      switch (varTypeDVV[i]) {
+      case VAR_x1: fnGrads[0][i] = -400.*f1*x1 - 2.*f2; break;
+      case VAR_x2: fnGrads[0][i] =  200.*f1;            break;
+      }
+
+  // **** d^2f/dx^2:
+  if (directFnASV[0] & 4)
+    for (size_t i=0; i<numDerivVars; ++i)
+      for (size_t j=0; j<=i; ++j)
+	if (varTypeDVV[i] == VAR_x1 && varTypeDVV[j] == VAR_x1)
+	  fnHessians[0](i,j) = -400.*(x2 - 3.*x1*x1 + .2) + 2.;
+	else if ( (varTypeDVV[i] == VAR_x1 && varTypeDVV[j] == VAR_x2) ||
+		  (varTypeDVV[i] == VAR_x2 && varTypeDVV[j] == VAR_x1) )
+	  fnHessians[0](i,j) = -400.*x1;
+	else if (varTypeDVV[i] == VAR_x2 && varTypeDVV[j] == VAR_x2)
+	  fnHessians[0](i,j) =  200.;
 
   //sleep(5); // for faking a more expensive evaluation
   return 0; // no failure

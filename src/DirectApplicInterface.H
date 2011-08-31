@@ -49,7 +49,7 @@ enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
 /// enumeration of possible driver types (to index to names)
 enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
 		CYLINDER_HEAD, EXTENDED_ROSENBROCK, GENERALIZED_ROSENBROCK,
-		ROSENBROCK, GERSTNER, SCALABLE_GERSTNER,
+		LF_ROSENBROCK, ROSENBROCK, GERSTNER, SCALABLE_GERSTNER,
 		LOGNORMAL_RATIO, MULTIMODAL,
 		PLUGIN_ROSENBROCK, PLUGIN_TEXT_BOOK,
 		SHORT_COLUMN, LF_SHORT_COLUMN,
@@ -220,6 +220,7 @@ private:
   int rosenbrock();  ///< the Rosenbrock optimization and least squares test fn
   int generalized_rosenbrock(); ///< n-dimensional Rosenbrock (Schittkowski)
   int extended_rosenbrock();    ///< n-dimensional Rosenbrock (Nocedal/Wright)
+  int lf_rosenbrock(); ///< a low fidelity version of the Rosenbrock function
 
   int gerstner(); ///< the isotropic/anisotropic Gerstner test function family
   int scalable_gerstner(); ///< scalable versions of the Gerstner test family

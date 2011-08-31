@@ -372,7 +372,7 @@ void Approximation::finalize()
     approxRep->finalize();
   else {
     // finalization has to apply restorations in the correct order
-    size_t i, num_restore = approxData.saved_size();
+    size_t i, num_restore = approxData.saved_trials(); // # of saved trial sets
     for (i=0; i<num_restore; ++i)
       approxData.restore(finalization_index(i), false);
     approxData.clear_saved(); // clear only after process completed
