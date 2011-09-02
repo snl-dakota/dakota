@@ -168,3 +168,24 @@ if(ENABLE_DAKOTA_DOCS)
 endif()
 
 add_subdirectory(examples)
+
+
+# Top-level install rules from source (binary rules are in subdirs)
+install(FILES INSTALL LICENSE COPYRIGHT README DESTINATION .)
+
+install(DIRECTORY examples DESTINATION .
+  PATTERN "CMakeLists.txt" EXCLUDE
+  PATTERN "Makefile.am" EXCLUDE
+  PATTERN ".svn" EXCLUDE
+  PATTERN "*.c" EXCLUDE 
+  PATTERN "*.f" EXCLUDE 
+  )
+
+install(DIRECTORY test DESTINATION .
+  PATTERN "CMakeLists.txt" EXCLUDE
+  PATTERN "Makefile.*" EXCLUDE
+  PATTERN ".svn" EXCLUDE
+  PATTERN "*.c" EXCLUDE 
+  PATTERN "*.C" EXCLUDE 
+  PATTERN "*.f" EXCLUDE 
+  )

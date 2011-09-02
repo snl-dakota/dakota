@@ -1,3 +1,4 @@
-# TODO: reorganize process for examples, scripts, etc.
+add_subdirectory(tutorial)
+add_subdirectory(methods)
 
 install(PROGRAMS script_interfaces/generic/dprepro DESTINATION bin)

@@ -119,7 +119,9 @@ add_executable(text_book1 text_book1.C)
 add_executable(text_book2 text_book2.C)
 add_executable(text_book3 text_book3.C)
 add_executable(text_book_ouu text_book_ouu.C)
-# WJB - ToDo - if HAVE_MPI: add_executable(text_book_par text_book_par.C)
+if(DAKOTA_HAVE_MPI)
+  add_executable(text_book_par text_book_par.C)
+endif()
 
 # Enforce an "imaginary" dependency
 add_dependencies(cantilever dakota)
@@ -145,3 +147,16 @@ if(ENABLE_TESTS)
 
 endif()
 
+install(TARGETS 
+  barnes barnes_lf cantilever container cyl_head illumination 
+  lf_rosenbrock lf_poly_prod log_ratio mod_cantilever 
+  mogatest1 mogatest2 mogatest3 morris nl2func poly_prod portal_frame 
+  quasi_sine_fcn rosenbrock short_column 
+  sobol_g_function sobol_ishigami sobol_rational 
+  steel_column_cost steel_column_perf steel_section 
+  text_book text_book1 text_book2 text_book3 text_book_ouu
+  DESTINATION test)
+
+if(DAKOTA_HAVE_MPI)
+  install(TARGETS text_book_par DESTINATION test)
+endif()
