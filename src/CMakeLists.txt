@@ -472,7 +472,6 @@ file( APPEND ${Dakota_BINARY_DIR}/src/DakotaBuildInfo.C
 add_executable(dakota main.C)
 add_executable(dakota_restart_util restart_util.C)
 add_executable(dakota_library_mode library_mode.C)
-
   
 ## WJB: request macro from Kitware? FindLibDL.cmake (e.g. digidoc++ or casacore)
 list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${CURL_LIBRARIES} dl ${XMU_LIB})
@@ -483,8 +482,18 @@ target_link_libraries(dakota_library_mode dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIB
 
 install(TARGETS dakota_src EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota dakota_restart_util EXPORT DESTINATION bin)
+install(TARGETS dakota_library_mode DESTINATION bin)
 file(GLOB Dakota_hdr *.H *.h)
 install(FILES ${Dakota_hdr} DESTINATION include)
+file(GLOB Dakota_spec_files dakota.input.*)
+install(FILES ${Dakota_spec_files} DESTINATION bin)
+
+if (DAKOTA_HAVE_MPI)
+  add_executable(dakota_library_split library_split.C)
+  install(TARGETS dakota_library_split DESTINATION bin)
+  target_link_libraries(dakota_library_split
+    dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
+endif()
 
 if(Teuchos_TPL_LIST MATCHES "LAPACK;BLAS")
   message(STATUS "Building against pre-installed Teuchos WITH own lapack: ${Teuchos_TPL_LIST}")

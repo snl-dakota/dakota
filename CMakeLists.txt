@@ -166,3 +166,5 @@ if(ENABLE_DAKOTA_DOCS)
     message(FATAL_ERROR "DAKOTA documentation build only available on UNIX platforms")
   endif()
 endif()
+
+add_subdirectory(examples)
