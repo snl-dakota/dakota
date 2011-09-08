@@ -35665,23 +35665,32 @@ Test Number 4 succeeded
 <<<<< Function evaluation summary: 4777 total (4777 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
- response_fn_2 -1.6974149070e+04  4.7481050841e+04  6.0776155317e+00  5.4986228365e+01
- response_fn_3  2.4785183579e-01  6.9166881370e+00  7.1313020386e+00  7.6207393566e+01
+  expansion:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  numerical:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  expansion:   -1.6974149070e+04  4.7481050841e+04  6.0776155317e+00  5.4986228365e+01
+  numerical:   -1.6974149070e+04  4.7481050841e+04  6.0776155317e+00  5.4986228365e+01
+  expansion:    2.4785183579e-01  6.9166881370e+00  7.1313020386e+00  7.6207393566e+01
+  numerical:    2.4785183579e-01  6.9166881370e+00  7.1313020386e+00  7.6207393566e+01
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 3875 total (3875 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
- response_fn_2 -1.6974149444e+04  4.7480506810e+04  6.0743524200e+00  5.4772368525e+01
- response_fn_3  2.4199892039e-01  6.8892383944e+00  7.0955567070e+00  7.4840887601e+01
+  expansion:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  numerical:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  expansion:   -1.6974149444e+04  4.7480543059e+04  6.0745255987e+00  5.4782247402e+01
+  numerical:   -1.6974149444e+04  4.7480506810e+04  6.0744035679e+00  5.4776443662e+01
+  expansion:    2.4199895375e-01  6.8892650488e+00  7.0975280138e+00  7.4976645514e+01
+  numerical:    2.4199895375e-01  6.8892383823e+00  7.0967062007e+00  7.4932107021e+01
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 993 total (993 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
- response_fn_2 -1.6974149317e+04  4.7481150426e+04  6.0775319265e+00  5.4950724494e+01
- response_fn_3  2.4785261705e-01  6.9163666973e+00  7.1298610803e+00  7.6119950065e+01
+  expansion:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  numerical:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  expansion:   -1.6974149317e+04  4.7481150426e+04  6.0775319265e+00  5.4950724494e+01
+  numerical:   -1.6974149317e+04  4.7481150426e+04  6.0775319265e+00  5.4950724494e+01
+  expansion:    2.4785261705e-01  6.9163666973e+00  7.1298610803e+00  7.6119950065e+01
+  numerical:    2.4785261705e-01  6.9163666973e+00  7.1298610803e+00  7.6119950065e+01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      3.5749237676e-01
@@ -35692,9 +35701,12 @@ Test Number 7 succeeded
 <<<<< Function evaluation summary: 2757 total (2757 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
- response_fn_2 -1.6974153524e+04  4.7476146930e+04  6.0592983701e+00  5.4128657548e+01
- response_fn_3  2.4785984834e-01  6.9125132514e+00  7.0690380763e+00  7.3466616470e+01
+  expansion:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  numerical:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  expansion:   -1.6974153524e+04  4.7476403553e+04  6.0596044883e+00  5.4140415380e+01
+  numerical:   -1.6974153524e+04  4.7476146930e+04  6.0592983701e+00  5.4128657548e+01
+  expansion:    2.4785984834e-01  6.9129272361e+00  7.0724715680e+00  7.3579534426e+01
+  numerical:    2.4785984834e-01  6.9125132514e+00  7.0690380763e+00  7.3466616470e+01
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      3.5753014138e-01
@@ -38649,9 +38661,12 @@ Test Number 2 succeeded
           displ: 17025 val (17025 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-       mean_wt  3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
-   ccdf_beta_s  1.1355549360e+01  8.3388342712e+00 -9.4592705415e-01 -4.5029589380e-01
-   ccdf_beta_d  1.5418231184e+02  2.4250941828e+02  2.1602067045e+00  4.5560700207e+00
+  expansion:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  numerical:    3.0250000000e+01  2.1305809067e+01  8.5504718744e-01 -4.9753872943e-02
+  expansion:    1.1355549360e+01  8.3388342712e+00 -9.4592705415e-01 -4.5029589380e-01
+  numerical:    1.1355549360e+01  8.3388342712e+00 -9.4592705415e-01 -4.5029589380e-01
+  expansion:    1.5418231184e+02  2.4250941828e+02  2.1602067045e+00  4.5560700207e+00
+  numerical:    1.5418231184e+02  2.4250941828e+02  2.1602067045e+00  4.5560700207e+00
 mean_wt Sobol indices:
                                   Main             Total
                       4.4981412639e-01  5.5018587361e-01 uuv_1
@@ -38674,9 +38689,12 @@ Test Number 3 succeeded
           displ: 30869 val (30869 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-       mean_wt  3.0250000000e+01  2.1305809067e+01  8.5504718745e-01 -4.9753872938e-02
-   ccdf_beta_s  1.1361191109e+01  8.2932170753e+00 -9.4534207172e-01 -3.9932323451e-01
-   ccdf_beta_d  2.1167144784e+49  4.0849314071e+49  1.4116690021e+00 -7.1906284056e-03
+  expansion:    3.0250000000e+01  2.1305809067e+01  8.5504718745e-01 -4.9753872938e-02
+  numerical:    3.0250000000e+01  2.1305809067e+01  8.5504718745e-01 -4.9753872938e-02
+  expansion:    1.1361191109e+01  8.2932170753e+00 -9.4534207172e-01 -3.9932323451e-01
+  numerical:    1.1361191109e+01  8.2932170753e+00 -9.4534207172e-01 -3.9932323451e-01
+  expansion:    2.1167144784e+49  4.0849314071e+49  1.4116690021e+00 -7.1906284056e-03
+  numerical:    2.1167144784e+49  4.0849314071e+49  1.4116690021e+00 -7.1906284056e-03
 mean_wt Sobol indices:
                                   Main             Total
                       4.4981412639e-01  5.5018587361e-01 uuv_1
@@ -57064,8 +57082,10 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary (INNER_I): 7425 total (7425 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-     mean_area  2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
-      cdf_beta  2.0377948711e+00  2.8391913582e+00  8.1335499002e-01  1.9480384247e-02
+  expansion:    2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+  numerical:    2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+  expansion:    2.0377948711e+00  2.8391913582e+00  8.1335499002e-01  1.9480384247e-02
+  numerical:    2.0377948711e+00  2.8391913582e+00  8.1335499002e-01  1.9480384247e-02
 mean_area Sobol indices:
                                   Main             Total
                       7.8688524590e-01  8.0327868852e-01 uuv_1
@@ -57080,8 +57100,10 @@ Test Number 3 succeeded
 <<<<< Function evaluation summary (INNER_I): 13683 total (13683 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-     mean_area  2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
-      cdf_beta  2.0377949123e+00  2.8391915252e+00  8.1335518962e-01  1.9482550875e-02
+  expansion:    2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+  numerical:    2.0000000000e+02  6.5085413966e+01  3.0225099525e-01 -7.1200214996e-01
+  expansion:    2.0377949123e+00  2.8391915252e+00  8.1335518962e-01  1.9482550875e-02
+  numerical:    2.0377949123e+00  2.8391915252e+00  8.1335518962e-01  1.9482550875e-02
 mean_area Sobol indices:
                                   Main             Total
                       7.8688524590e-01  8.0327868852e-01 uuv_1
