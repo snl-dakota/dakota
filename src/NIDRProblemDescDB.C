@@ -16,7 +16,8 @@
 
 #include "NIDRProblemDescDB.H"
 #include "ParallelLibrary.H"
-#include "filesystem_utils.h"  // for DAK_MKDIR and not_executable(...)
+#include "WorkdirHelper.H"     // for DAK_MKDIR
+#include "filesystem_utils.h"  // for not_executable(...)
 #include "pecos_stat_util.hpp"
 #include <functional>
 #include <stdarg.h>

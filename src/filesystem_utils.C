@@ -18,8 +18,7 @@
 
 #include "filesystem_utils.h"
 #include "global_defs.h"
-
-#include <boost/array.hpp>
+#include "WorkdirHelper.H"
 
 #ifdef __SUNPRO_CC
 #include <stdlib.h>
@@ -51,12 +50,6 @@
 
 
 namespace Dakota {
-
-char* WorkdirHelper::cwdBegin     = 0;
-char* WorkdirHelper::envPathBegin = 0;
-
-//std::pair<std::string, std::string>
-//  WorkdirHelper::startupCwdEnvPathPair = WorkdirHelper::get_dakpath();
 
 /* The following routines assume ASCII or UTF-encoded Unicode. */
 
@@ -248,7 +241,7 @@ int not_executable(const char *driver_name, const char *tdir)
 			p0 = "";
 		}
 #ifdef WIN32
-	/* make sure we have a suitable suffix */
+	// make sure we have a suitable suffix
 	if ((p = strrchr(driver_name, '.'))) {
 		if (std::strlen(++p) != 3)
 			p = 0;
@@ -270,16 +263,21 @@ int not_executable(const char *driver_name, const char *tdir)
 		std::strcpy(dbuf+dlen, ".exe");
 		driver_name = dbuf;
 		}
-	/* . is always implicitly in $Path under MS Windows; check it now */
+
+	// . is always implicitly in $Path under MS Windows; check it now
 	if (!stat(driver_name, &sb))
 		goto ret;
 #endif
+
 	if (!WorkdirHelper::envPathBegin) {
 	  cwd_and_env_path = WorkdirHelper::get_dakpath();
-#ifdef DAKOTA_HAVE_BOOST_FS
-          assert(cwd_and_env_path.first == bfs_cwdir);
+#ifdef _WIN32
+	  const std::string& cwd = cwd_and_env_path.first;
+          if (cwd[1] == ':')
+            dakdrive = Map(cwd[0]);
 #endif
 	}
+
 	clen = cwd_and_env_path.first.size();
 	dlen = std::strlen(driver_name);
 	tlen = std::strlen(tdir);
@@ -1101,58 +1099,6 @@ static char* Malloc(size_t L)
 #endif // WJB 0
 
 
-std::pair<std::string, std::string> WorkdirHelper::get_dakpath()
-{
-  boost::array<char, MAXPATHLEN> cwd_buf;
-  size_t total_buf_size = 0;
-
-#ifdef _WIN32
-#define FailFmt "GetCurrentDirectory() failed!\n"
-  total_buf_size = GetCurrentDirectory(MAXPATHLEN, cwd_buf.c_array());
-  if (total_buf_size <= 0 || total_buf_size >= MAXPATHLEN)
-#else
-#define FailFmt "getcwd() failed!\n"
-  if (!getcwd(cwd_buf.c_array(), MAXPATHLEN))
-#endif
-  {
-	std::fprintf(stderr, FailFmt);
-	std::exit(1);
-  }
-
-  char* env_path = 0;
-  if (!(env_path = std::getenv(Pathname))) {
-	std::fprintf(stderr, "getenv(\"" Pathname "\") failed in get_dakpath().\n");
-	std::exit(1);
-  }
-
-  size_t cwd_len  = std::strlen(cwd_buf.c_array());
-  size_t path_len = std::strlen(env_path);
-
-  // Allocate enough space for BOTH strings + "PATH=" + 2 NULL terminators
-  total_buf_size = cwd_len + path_len + 7;
-
-  cwdBegin = new char [total_buf_size];
-
-  // first, copy cwd
-  std::memcpy(cwdBegin, cwd_buf.c_array(), cwd_len);
-  cwdBegin[cwd_len] = 0;
-
-  // second, copy PATH environment variable
-  envPathBegin = cwdBegin + cwd_len + 1;
-  std::memcpy(envPathBegin, Pathname "=", 5);
-  std::memcpy(envPathBegin+5, env_path, path_len);
-  envPathBegin[path_len+5] = 0;
-
-#ifdef _WIN32
-  if (cwd_buf[1] == ':')
-    dakdrive = Map(cwd_buf[0]);
-#endif
-
-  return std::make_pair( std::string(cwd_buf.c_array(), cwd_len),
-                         std::string(env_path, path_len) );
-}
-#undef FailFmt
-
 
  static void
 get_npath(int appdrive, char **pnpath)
@@ -1340,13 +1286,12 @@ cd_fail:
 	}
 
 
-void workdir_adjust(const char* workdir)
+void workdir_adjust(const std::string& workdir)
 {
-  char* workdir_path;
   size_t appdrive = 0;
 
-#ifdef _WIN32
-  if (workdir && workdir[0] && workdir[1] == ':') {
+#ifdef WIN32
+  if (workdir.c_str() && workdir[0] && workdir[1] == ':') {
     appdrive = Map(workdir[0] & 0xff);
     if (appdrive >= 'A' && appdrive <= 'Z')
       appdrive += 1 - 'A';
@@ -1358,46 +1303,18 @@ void workdir_adjust(const char* workdir)
   if (!wd_path[appdrive])
     get_npath(appdrive, &wd_path[appdrive]);
 
-  if (chdir(workdir)) {
+  if ( DAK_CHDIR(workdir.c_str()) ) {
     Cerr << "\nError: chdir(" << workdir
          << ") failed in workdir_adjust()" << std::endl;
     abort_handler(-1);
   }
+
+  char* workdir_path = 0;
   if (putenv(workdir_path = wd_path[appdrive])) {
     Cerr << "\nError: putenv(" << workdir_path
          << ") failed in workdir_adjust()" << std::endl;
     abort_handler(-1);
   }
-}
-
-
-void WorkdirHelper::reset()
-{
-  if (chdir(cwdBegin)) {
-    Cerr << "\nError: chdir(" << cwdBegin
-         << ") failed in workdir_reset()" << std::endl;
-    abort_handler(-1);
-  }
-  if (putenv(envPathBegin)) {
-    Cerr << "\nError: putenv(" << envPathBegin
-         << ") failed in workdir_reset()" << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-void WorkdirHelper::change_cwd(const std::string& wd_str)
-{
-  /* WJB: also use as an "adapter layer" to manager 3 different APIs
-  //      1. DMG not_executable,  2. BoostFS V2, and  3. BoostFS V3
-  if (wd_str == "" || wd_str.c_str() == NULL) {
-    workdir_adjust(NULL);
-  }
-  else {
-    workdir_adjust(wd_str.c_str());
-  } */
-  // Really a need for a wrapper now that workdirs are std::string objects?
-  if ( !wd_str.empty() ) workdir_adjust( wd_str.c_str() );
 }
 
 } // namespace Dakota

@@ -11,7 +11,7 @@
 //- Owner:        Bill Bohnhoff
 
 #include "CommandShell.H"
-#include "filesystem_utils.h"
+#include "WorkdirHelper.H"
 #include "global_defs.h"
 
 static const char rcsId[]="@(#) $Id: CommandShell.C 7021 2010-10-12 22:19:01Z wjbohnh $";

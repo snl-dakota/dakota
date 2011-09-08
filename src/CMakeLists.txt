@@ -158,7 +158,7 @@ set(Dakota_src DakotaBuildInfo.C)
 ## UTIL sources.
 set(util_src ParallelLibrary.C MPIPackBuffer.C
     data_util.C global_defs.C CommandLineHandler.C DakotaGraphics.C
-    DakotaString.C DakotaBinStream.C SensAnalysisGlobal.C)
+    DakotaString.C DakotaBinStream.C SensAnalysisGlobal.C WorkdirHelper.C)
 
 if(HAVE_RPC_XDR_H)
   list(APPEND util_src dak_xdr_interface.c)

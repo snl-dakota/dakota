@@ -42,7 +42,8 @@ UTIL_SRCS       = ParallelLibrary.C                 \
 		  DakotaGraphics.C                  \
 		  DakotaString.C                    \
 		  DakotaBinStream.C                 \
-                  SensAnalysisGlobal.C           	
+		  SensAnalysisGlobal.C              \
+		  WorkdirHelper.C
 
 EVALDATA_SRCS   = DakotaVariables.C                 \
 		  MergedVariables.C                 \
@@ -299,4 +300,5 @@ include_HEADERS = ParallelLibrary.H             \
 		  $(DL_SOLVER_H)		\
 		  PRPMultiIndex.H         	\
 		  system_defs.h      		\
+		  WorkdirHelper.H               \
 	 	  DakotaBuildInfo.H              

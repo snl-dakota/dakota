@@ -12,7 +12,7 @@
 
 #include "ForkAnalysisCode.H"
 #include "ProblemDescDB.H"
-#include "filesystem_utils.h"
+#include "WorkdirHelper.H"
 #include <boost/lexical_cast.hpp>
 
 #ifdef HAVE_SYS_WAIT_H
@@ -70,13 +70,14 @@ pid_t ForkAnalysisCode::fork_program(const bool block_flag)
   int status;
 #endif
   pid_t pid = 0;
+  std::string no_workdir;
 
   // vfork() should be used here since there is an immediate execvp(). This 
   // conserves memory over fork().  If some platforms have problems with a
   // hybrid fork/vfork approach, add #ifdef's but make vfork the default.
 #if defined(_WIN32) //{{
 	av = arg_adjust(commandLineArgs, argList, arg_list,
-                        useWorkdir ? curWorkdir : std::string(""));
+                        useWorkdir ? curWorkdir : no_workdir);
 	if (block_flag)
 		status = _spawnvp(_P_WAIT, av[0], av);
 	else
@@ -106,7 +107,7 @@ pid_t ForkAnalysisCode::fork_program(const bool block_flag)
     // as the second argument.
 
     av = arg_adjust(commandLineArgs, argList, arg_list,
-                    useWorkdir ? curWorkdir : std::string(""));
+                    useWorkdir ? curWorkdir : no_workdir);
 
     // replace the child process with the fork target defined in arg_list
     status = execvp(av[0], (char*const*)av);

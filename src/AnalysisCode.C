@@ -15,6 +15,7 @@
 #include "DakotaResponse.H"
 #include "ProblemDescDB.H"
 #include "ParallelLibrary.H"
+#include "WorkdirHelper.H"
 #include "filesystem_utils.h"
 #include <boost/lexical_cast.hpp>
 #include <string>
