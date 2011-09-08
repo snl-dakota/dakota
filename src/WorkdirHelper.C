@@ -17,6 +17,10 @@
 #include <boost/array.hpp>
 #include <sys/param.h>
 
+#ifdef __SUNPRO_CC
+#include <stdlib.h>  // for putenv
+#endif
+
 
 namespace Dakota {
 
