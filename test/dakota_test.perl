@@ -378,8 +378,13 @@ sub process_command_line {
         $test_num = $arg;
       }
       else {
-        # assume an input file
-        push @test_inputs, "$input_dir" . "$arg";
+        # Assume argument specifies input file(s).
+	#
+	# Depending on location of test inputs (in or out of source),
+	# arg might be a literal glob expression "dakota_d*.in" or
+	# might be a single input file from a specified list.  Use
+	# glob to handle both cases.
+        push @test_inputs, glob("$input_dir" . "$arg");
       }
     }
   }
