@@ -27,48 +27,10 @@ static const char rcsId[]="@(#) $Id: ForkAnalysisCode.C 7021 2010-10-12 22:19:01
 
 namespace Dakota {
 
-const char** arg_list_adjust(const char **, void **);
-
-#if (defined(HAVE_UNISTD_H) && defined(HAVE_SYS_WAIT_H)) || defined(_WIN32) //{
-#define Need_Local_Decls
-
-// WJB - ToDo: totally rewrite in C++ (perhaps leverage STL)
-static const char**
-arg_adjust(bool cmd_line_args, std::vector<std::string>& args,
-           const char **av, const std::string& wd_str)
-{
-  int i;
-
-  av[0] = args[0].c_str();
-  i = 1;
-  if (cmd_line_args)
-    for(; i < 3; ++i)
-      av[i] = args[i].c_str();
-
-  av[i] = 0;
-  av = arg_list_adjust(av, 0);
-
-  if ( !wd_str.empty() ) {
-    WorkdirHelper::change_cwd(wd_str);
-    size_t len = wd_str.size();
-    const char* s = wd_str.c_str();
-    const char* t;
-    for(i = 1; (t = av[i]); ++i)
-      if (!std::strncmp(s, t, len) && t[len] == '/')
-        av[i] = t + len + 1;
-  }
-
-  return av;
-}
-#endif //}
-
-
 pid_t ForkAnalysisCode::fork_program(const bool block_flag)
 {
-#ifdef Need_Local_Decls
   const char *arg_list[4], **av;
   int status;
-#endif
   pid_t pid = 0;
   std::string no_workdir;
 
@@ -76,8 +38,8 @@ pid_t ForkAnalysisCode::fork_program(const bool block_flag)
   // conserves memory over fork().  If some platforms have problems with a
   // hybrid fork/vfork approach, add #ifdef's but make vfork the default.
 #if defined(_WIN32) //{{
-	av = arg_adjust(commandLineArgs, argList, arg_list,
-                        useWorkdir ? curWorkdir : no_workdir);
+	av = WorkdirHelper::arg_adjust(commandLineArgs, argList, arg_list,
+                                       useWorkdir ? curWorkdir : no_workdir);
 	if (block_flag)
 		status = _spawnvp(_P_WAIT, av[0], av);
 	else
@@ -106,8 +68,8 @@ pid_t ForkAnalysisCode::fork_program(const bool block_flag)
     // entry is passed as the first argument, and the entire arg_list is cast
     // as the second argument.
 
-    av = arg_adjust(commandLineArgs, argList, arg_list,
-                    useWorkdir ? curWorkdir : no_workdir);
+    av = WorkdirHelper::arg_adjust(commandLineArgs, argList, arg_list,
+                                   useWorkdir ? curWorkdir : no_workdir);
 
     // replace the child process with the fork target defined in arg_list
     status = execvp(av[0], (char*const*)av);

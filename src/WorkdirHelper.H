@@ -14,7 +14,8 @@
 #define WORKDIR_HELPER_H
 
 #include "system_defs.h"
-//#include <boost/shared_array.hpp>  // WJB - ToDo: look into improved mem mgmt
+//#include <boost/shared_array.hpp>   WJB - ToDo: look into improved mem mgmt
+//                                    e.g. use of malloc w/o free is undesirable
 
 #ifdef DAKOTA_HAVE_BOOST_FS
 #include <boost/filesystem/operations.hpp>
@@ -45,38 +46,72 @@ namespace bfs = boost::filesystem;
 
 namespace Dakota {
 
-//const char** arg_list_adjust(const char **, void **);
-
 class WorkdirHelper
 {
-public:
+  //
+  //- Heading: Friends
+  //
 
-  static std::pair<std::string, std::string> get_dakpath();
+  friend class CommandShell;                          // calls change_cwd, reset
+  friend class ForkAnalysisCode;                      // calls arg_adjust
 
-  static void change_cwd(const std::string& wd_str);  // old nm: workdir_adjust
-  static void reset();                                // old nm: workdir_reset
-/*
-  static const char** arg_adjust(bool cmd_line_args,
-                                 const std::vector<std::string>& args,
-                                 const char **av, const std::string& workdir);
-*/
+  /// Treat legacy utilities as "blackboxes"
+  friend void get_npath(int, char**);                 // calls get_dakpath
+  friend int not_executable(const char*, const char*);// calls get_dakpath
 
-  static std::string startupWorkdir; // workdir upon entry to dakota main()
 
-  static char* cwdBegin;      // old name: dakdir
-  static char* envPathBegin;  // old name: dakpath
-  //static std::pair<std::string, std::string> startupCwdEnvPathPair;
-
-#ifdef DAKOTA_HAVE_BOOST_FS
-  static bfs::path dakLaunchDir;  // WJB: should be "similar" to DMG dakdir
-#endif
+  // WJB:  Remove friendship after Symlink is re-written (use std::string!)
+  //       (perhaps Symlink goes away entirely -- USE Boost.Filesystem!?)
+  friend int Symlink(const char*, const char*);       // general BS data access
 
 
 private:
 
   static std::string get_cwd();
 
+  static std::pair<std::string, std::string> get_dakpath();
+
+  static void change_cwd(const std::string& wd_str);  // old nm: workdir_adjust
+  static void reset();                                // old nm: workdir_reset
+
+  static const char** arg_adjust(bool cmd_line_args,
+                                 const std::vector<std::string>& args,
+                                 const char **av, const std::string& workdir);
+  //
+  //- Heading: Data
+  //
+
+  static char* cwdBegin;      // old name: dakdir
+  static char* envPathBegin;  // old name: dakpath
+
+  //static std::pair<std::string, std::string> startupCwdEnvPathPair;
+  static std::string startupWorkdir; // workdir upon entry to dakota main()
+
+#ifdef DAKOTA_HAVE_BOOST_FS
+  static std::string bfsStartupCwd; // rename var IF still useful after DBGing
+  static bfs::path dakLaunchDir;    // WJB: should be "similar" to DMG dakdir
+#endif
+
+  /*
+  //- Heading:  DISABLED constructors, destructor, assignment operator
+  //
+
+  /// default constructor
+  WorkdirHelper();
+  /// copy constructor
+  WorkdirHelper(const WorkdirHelper&);
+
+  /// destructor
+  ~WorkdirHelper();
+
+  /// assignment operator
+  WorkdirHelper& operator=(const WorkdirHelper&);
+  */
 };
+
+
+/// Utility function from legacy, "not_executable" module -- DO NOT TOUCH!
+const char** arg_list_adjust(const char **, void **);
 
 
 } // namespace Dakota

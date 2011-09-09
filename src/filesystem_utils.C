@@ -19,10 +19,7 @@
 #include "filesystem_utils.h"
 #include "global_defs.h"
 #include "WorkdirHelper.H"
-
-#ifdef __SUNPRO_CC
-#include <stdlib.h>
-#endif
+#include <boost/array.hpp>
 
 #include <sys/param.h>
 #include <sys/types.h>
@@ -50,122 +47,6 @@
 
 
 namespace Dakota {
-
-/* The following routines assume ASCII or UTF-encoded Unicode. */
-
- static void
-find_token(const char *s0, const char **s1, const char **s2, const char **s3)
-{
-	char ebuf[256];
-	const char *t;
-	const unsigned char *s;
-	int q;
-	size_t i, n;
-
- top:
-	for(s = (const unsigned char*)s0; *s <= ' '; ++s)
-		if (!*s) {
-			*s1 = *s2 = *s3 = (const char*)s;
-			return;
-			}
-	*s1 = t = (const char*)s;
-	if ((q = *s) == '"' || q == '\'') {
-		for(*s1 = (const char*)++s; *s != q; ++s) {
-			if (!*s) {
-				*s2 = *s3 = (const char*)s;
-				return;
-				}
-			}
-		*s2 = (const char*)s;
-		*s3 = (const char*)s + 1;
-		return;
-		}
-	while((q = *++s) > ' ' && q != '"' && q != '\'' && q != '$');
-	*s2 = *s3 = (const char*)s;
-	if (*t == '$' && (n = *s2 - t) <= sizeof(ebuf)) {
-		--n;
-		for(i = 0; i < n; ++i)
-			ebuf[i] = *++t;
-		ebuf[n] = 0;
-		if ((t = std::getenv(ebuf))) {
-			*s1 = t;
-			while(*t)
-				++t;
-			*s2 = t;
-			}
-		else {
-			s0 = *s3;
-			goto top;
-			}
-		}
-	}
-
-/* adjust for quoted strings in arg_list[0] */
- const char**
-arg_list_adjust(const char **arg_list, void **a0)
-{
-	const char **al, *s, *s1, *s2, *s3;
-	char *t;
-	int n, n0;
-	size_t L;
-
-	s = arg_list[0];
-	find_token(s = arg_list[0], &s1, &s2, &s3);
-	if (!*s3 && s == s1) {
-		if (a0)
-			*a0 = 0;
-		return arg_list;
-		}
-	n = 0;
-	while(arg_list[n++]);
-	n0 = n;
-	L = s2 - s1 + 1;
-	while(*s3) {
-		find_token(s3, &s1, &s2, &s3);
-		if (s1 == s3)
-			break;
-		L += s2 - s1 + 1;
-		if (*(unsigned char*)s3 <= ' ')
-			++n;
-		}
-	al = (const char**)std::malloc(n*sizeof(const char*) + L); /* freed implicitly by execvp */
-	if (a0)
-		*a0 = (void*)al;
-	if (!al)
-		return arg_list; /* should not happen */
-	t = (char*)(al + n);
-	find_token(s = arg_list[0], &s1, &s2, &s3);
-	for(n = 0;;) {
-		al[n++] = t;
-		while(s1 < s2)
-			*t++ = *s1++;
-		while(*(unsigned char*)s3 > ' ') {
-			find_token(s3, &s1, &s2, &s3);
-			while(s1 < s2)
-				*t++ = *s1++;
-			}
-		*t++ = 0;
-		if (!*s3)
-			break;
-		find_token(s3, &s1, &s2, &s3);
-		if (s1 == s3)
-			break;
-		}
-	n0 = 0;
-	while((al[n] = arg_list[++n0]))
-		++n;
-	for(n0 = 0; n0 < n && std::strchr(al[n0], '='); ++n0);
-	if (n0 && n0 < n) {
-		if (!a0) {
-			for(n = 0; n < n0; ++n)
-				putenv((char*)al[n]);
-			}
-		al += n0;
-		}
-	return al;
-	}
-
-
 
 int not_executable(const char *driver_name, const char *tdir)
 {
@@ -197,7 +78,7 @@ int not_executable(const char *driver_name, const char *tdir)
           //boost::regex analysis_driver(driver_name);
           //if (boost::regex_search( dir_iter->path().filename().string(),
                                    //analysis_driver) )
-          if (dir_iter->path().filename().string() == std::string(driver_name)) {
+          if (dir_iter->path().file_string() == std::string(driver_name)) {
             Cout << "Analysis Driver FOUND in " << bfs_cwdir
                  << " -- full path is: " << dir_iter->path() << std::endl;
           }
@@ -702,18 +583,21 @@ sftw(const char *name, ftw_fn fn, void *v)
 //static char* Malloc(size_t);   	/* ... replaced by 'new' ... in Symlink. */
 
 #ifndef _WIN32
- static int
+ int
 Symlink(const char *from, const char *to)
 {
-	char buf[4096], *b;
+        // WJB:  Candidate for removal in favor of Boost.Filesystem
+	char buf[MAXPATHLEN], *b;
 	int rc;
 	size_t L, L1;
 	static size_t ddlen;
 
 	b = buf;
 	if (*from != '/') {
+// WJB: believe can be safely commented-out
 		if (!WorkdirHelper::envPathBegin)
 			WorkdirHelper::get_dakpath(); // for WorkdirHelper::cwdBegin
+//
 		if (!ddlen)
 			ddlen = std::strlen(WorkdirHelper::cwdBegin);
 		L = std::strlen(from);
@@ -1100,7 +984,7 @@ static char* Malloc(size_t L)
 
 
 
- static void
+ void
 get_npath(int appdrive, char **pnpath)
 {
 	char *p, *q, *q0, *s;
@@ -1112,8 +996,12 @@ get_npath(int appdrive, char **pnpath)
 #endif
 
 	appdrive = Map(appdrive & 0xff);
+
+// WJB:  Believe can be safely commented-out --
+//         envPathBegin NOT NULL after dakota "startup"
 	if (!WorkdirHelper::envPathBegin)
 		WorkdirHelper::get_dakpath();
+//
 	Lc = std::strlen(WorkdirHelper::cwdBegin);
 	Lp = std::strlen(WorkdirHelper::envPathBegin);
 #ifdef _WIN32
