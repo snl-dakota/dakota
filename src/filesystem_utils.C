@@ -24,6 +24,12 @@
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifdef __SUNPRO_CC
+#include <stdlib.h>  // for putenv, temporarily while WJB evaluates alternatives
+                     // e.g. is setenv a more portable, "Standard C" option?
+#endif
+
 #undef Want_Heartbeat
 
 // WJB - ToDo, next iteration: evaluate dependencies; are posix includes needed??
@@ -470,7 +476,7 @@ dodir(DIR *dir, char *name, size_t namelen, size_t namemaxlen, ftw_fn fn, int de
 	if (L == 0)
 		return 0;
 	if (L > 1)
-		qsort(fn0, L, sizeof(char*), compar);
+		std::qsort(fn0, L, sizeof(char*), compar);
 	name1 = name;
 	++Lmax;
 	if (namemaxlen < namelen + Lmax) {
@@ -842,8 +848,6 @@ rec_cp(const char *from, const char *todir, int copy, int flatten, int replace)
 
 #ifdef _WIN32
 #include <windows.h>
-#define Pathname "Path"
-#define PathSep ';'
 static int dakdrive;
 static char slmap[256] = { /* Identity except that slmap['\\'] == slmap[0x5c] == '/' */
 			   /* (note that Win32 system calls treat \ and / alike in filenames) */
@@ -865,15 +869,9 @@ static char slmap[256] = { /* Identity except that slmap['\\'] == slmap[0x5c] ==
  0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xee, 0xef,
  0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff};
 #define Map(x) slmap[x]
-#define Slash '\\'
 #define N_wdpath 27
-#undef chdir
-#define chdir(s) (SetCurrentDirectory(s) == 0)
 #else
-#define Pathname "PATH"
-#define PathSep ':'
 #define Map(x) x
-#define Slash '/'
 #define N_wdpath 1
 #endif
 
@@ -948,7 +946,7 @@ pathsimp(char *t0)
 				continue;
 #ifdef _WIN32
  dflt:
-			*to = Slash;
+			*to = DAK_SLASH;
 #endif
 		default:
 #ifndef _WIN32
@@ -1035,7 +1033,7 @@ cd_fail:
 	nrel = 0;
 	for(p = WorkdirHelper::envPathBegin+5; *p; ++p) {
 		switch(Map(*p)) {
-		  case PathSep:
+		  case DAK_PATH_SEP:
 			++dot;
 			continue;
 		  default:
@@ -1062,7 +1060,7 @@ cd_fail:
 #ifdef _WIN32
  slashadj:
 #endif
-			while(*++p != PathSep)
+			while(*++p != DAK_PATH_SEP)
 				if (!*p) {
 					--p;
 					break;
@@ -1102,7 +1100,7 @@ cd_fail:
 	needcolon = 1;
 	for(p = WorkdirHelper::envPathBegin+5; *p; ++p) {
 		switch(c = Map(*q = *p)) {
-		  case PathSep:
+		  case DAK_PATH_SEP:
  dotcheck:
 #ifndef _WIN32
 			if (!dot++) {
@@ -1116,14 +1114,14 @@ cd_fail:
 				needcolon = 1;
 				}
 #endif
-			while(p[1] == PathSep)
+			while(p[1] == DAK_PATH_SEP)
 				++p;
 			continue;
 		  default:
-			if (*p == '.' && (p[1] == PathSep || !p[1]))
+			if (*p == '.' && (p[1] == DAK_PATH_SEP || !p[1]))
 				goto dotcheck;
 			if (needcolon) {
-				*q++ = PathSep;
+				*q++ = DAK_PATH_SEP;
 				q0 = q;
 				needcolon = 0;
 				}
@@ -1141,12 +1139,12 @@ cd_fail:
 				}
 #endif
 			for(; (*q = *s); ++q, ++s);
-			*q++ = Slash;
+			*q++ = DAK_SLASH;
 			*q = *p;
 			/* no break */
 		  case '/':
 			if (needcolon) {
-				*q++ = PathSep;
+				*q++ = DAK_PATH_SEP;
 				*q = *p;
 				}
 #ifdef _WIN32
@@ -1154,7 +1152,7 @@ cd_fail:
 #endif
 			q0 = q;
 			for(;;) {
-				if (*++p == PathSep) {
+				if (*++p == DAK_PATH_SEP) {
 					*++q = 0;
 					break;
 					}

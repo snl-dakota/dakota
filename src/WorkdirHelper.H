@@ -29,6 +29,8 @@ namespace bfs = boost::filesystem;
   #define DAK_CHDIR(s) (SetCurrentDirectory(s) == 0)
   #define DAK_MKDIR(a,b) mkdir(a)
   #define DAK_PATH_ENV_NAME "Path"
+  #define DAK_PATH_SEP ';'
+  #define DAK_SLASH '\\'
 
 #elif defined(HAVE_UNISTD_H) 
 
@@ -36,6 +38,8 @@ namespace bfs = boost::filesystem;
   #define DAK_CHDIR chdir
   #define DAK_MKDIR(a,b) mkdir(a,b)
   #define DAK_PATH_ENV_NAME "PATH"
+  #define DAK_PATH_SEP ':'
+  #define DAK_SLASH '/'
 
 #endif // WIN32
 
