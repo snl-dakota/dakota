@@ -29,45 +29,13 @@ char* WorkdirHelper::cwdBegin     = 0;
 char* WorkdirHelper::envPathBegin = 0;
 
 #ifdef DAKOTA_HAVE_BOOST_FS
-std::string WorkdirHelper::bfsStartupCwd = WorkdirHelper::get_cwd();
+std::string WorkdirHelper::bfsStartupCwd = get_cwd();
 #endif
-
-//std::pair<std::string, std::string>
-//  WorkdirHelper::startupCwdEnvPathPair = WorkdirHelper::get_dakpath();
-
-
-/** Portability adapter for getcwd
- */
-std::string WorkdirHelper::get_cwd()
-{
-  // Boost.Filesystem V2/V3 "adapter layer" should be easily implemented here
-  boost::array<char, MAXPATHLEN> cwd;
-
-#ifdef WIN32
-#define DAK_FAIL_FMT "GetCurrentDirectory() failed!\n"
-  size_t len = GetCurrentDirectory(MAXPATHLEN, cwd.c_array());
-  if (len <= 0 || len >= MAXPATHLEN)
-#else
-#define DAK_FAIL_FMT "getcwd() failed!\n"
-  if (!getcwd(cwd.c_array(), MAXPATHLEN))
-#endif
-  {
-    Cerr << "\nERROR: " << DAK_FAIL_FMT << std::endl;
-    abort_handler(-1);
-  }
-
-#ifdef DAKOTA_HAVE_BOOST_FS
-  bfs::path dak_launch_dir( bfs::initial_path<bfs::path>() );
-  //assert( std::string(cwd.c_array()) == dak_launch_dir.file_string() );
-#endif
-
-  return std::string( cwd.c_array() );
-}
 
 
 /** Gets the CWD and the $PATH and stuffs them into a common buffer
-    (WJB: when dakota was launched!?) */
-std::pair<std::string, std::string> WorkdirHelper::get_dakpath()
+ */
+void WorkdirHelper::get_dakpath()
 {
   char* env_path = std::getenv(DAK_PATH_ENV_NAME);
 
@@ -100,8 +68,6 @@ std::pair<std::string, std::string> WorkdirHelper::get_dakpath()
   std::memcpy(envPathBegin, DAK_PATH_ENV_NAME "=", 5);
   std::memcpy(envPathBegin+5, env_path, path_len);
   envPathBegin[path_len+5] = 0;
-
-  return std::make_pair( cwd, std::string(env_path, path_len) );
 }
 
 

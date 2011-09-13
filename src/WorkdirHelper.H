@@ -71,9 +71,7 @@ class WorkdirHelper
 
 private:
 
-  static std::string get_cwd();
-
-  static std::pair<std::string, std::string> get_dakpath();
+  static void get_dakpath();
 
   static void change_cwd(const std::string& wd_str);  // old nm: workdir_adjust
   static void reset();                                // old nm: workdir_reset
@@ -96,7 +94,7 @@ private:
   static bfs::path dakLaunchDir;    // WJB: should be "similar" to DMG dakdir
 #endif
 
-  /*
+  //
   //- Heading:  DISABLED constructors, destructor, assignment operator
   //
 
@@ -110,7 +108,6 @@ private:
 
   /// assignment operator
   WorkdirHelper& operator=(const WorkdirHelper&);
-  */
 };
 
 

@@ -101,9 +101,6 @@ int not_executable(const char *driver_name, const char *tdir)
         }
 #endif  // DAKOTA_HAVE_BOOST_FS
 
-	// declaring this here instead of just-in-time due to goto/_WIN32
-	std::pair<std::string, std::string> cwd_and_env_path;
-
 	/* allow shell assignments and quotes around executable names */
 	/* that may involve blanks */
 	a2[0] = driver_name;
@@ -156,16 +153,9 @@ int not_executable(const char *driver_name, const char *tdir)
 		goto ret;
 #endif
 
-	if (!WorkdirHelper::envPathBegin) {
-	  cwd_and_env_path = WorkdirHelper::get_dakpath();
-#ifdef _WIN32
-	  const std::string& cwd = cwd_and_env_path.first;
-          if (cwd[1] == ':')
-            dakdrive = Map(cwd[0]);
-#endif
-	}
+	WorkdirHelper::get_dakpath();
 
-	clen = cwd_and_env_path.first.size();
+	clen = std::strlen(WorkdirHelper::cwdBegin);
 	dlen = std::strlen(driver_name);
 	tlen = std::strlen(tdir);
 	rc = 1;
@@ -179,7 +169,7 @@ int not_executable(const char *driver_name, const char *tdir)
 		p = "";
 
 	else if (clen + dlen + 2 < sizeof(buf)) {
-		std::memcpy(buf,cwd_and_env_path.first.c_str(),clen);
+		std::memcpy(buf,WorkdirHelper::cwdBegin,clen);
 		buf[clen] = '/';
 		std::strcpy(buf+clen+1, driver_name);
 		sv = stat(buf,&sb);
@@ -600,10 +590,7 @@ Symlink(const char *from, const char *to)
 
 	b = buf;
 	if (*from != '/') {
-// WJB: believe can be safely commented-out
-		if (!WorkdirHelper::envPathBegin)
-			WorkdirHelper::get_dakpath(); // for WorkdirHelper::cwdBegin
-//
+		WorkdirHelper::get_dakpath(); // for WorkdirHelper::cwdBegin
 		if (!ddlen)
 			ddlen = std::strlen(WorkdirHelper::cwdBegin);
 		L = std::strlen(from);
@@ -995,11 +982,7 @@ get_npath(int appdrive, char **pnpath)
 
 	appdrive = Map(appdrive & 0xff);
 
-// WJB:  Believe can be safely commented-out --
-//         envPathBegin NOT NULL after dakota "startup"
-	if (!WorkdirHelper::envPathBegin)
-		WorkdirHelper::get_dakpath();
-//
+	WorkdirHelper::get_dakpath();
 	Lc = std::strlen(WorkdirHelper::cwdBegin);
 	Lp = std::strlen(WorkdirHelper::envPathBegin);
 #ifdef _WIN32
@@ -1201,6 +1184,41 @@ void workdir_adjust(const std::string& workdir)
          << ") failed in workdir_adjust()" << std::endl;
     abort_handler(-1);
   }
+}
+
+
+/** Portability adapter for getcwd
+ */
+std::string get_cwd()
+{
+#ifdef DAKOTA_HAVE_BOOST_FS
+
+  return bfs::current_path().string();
+
+#else
+
+  boost::array<char, MAXPATHLEN> cwd;
+
+#ifdef WIN32
+#define DAK_FAIL_FMT "GetCurrentDirectory() failed!\n"
+  size_t len = GetCurrentDirectory(MAXPATHLEN, cwd.c_array());
+  if (len <= 0 || len >= MAXPATHLEN)
+#else
+#define DAK_FAIL_FMT "getcwd() failed!\n"
+  if (!getcwd(cwd.c_array(), MAXPATHLEN))
+#endif
+  {
+    Cerr << "\nERROR: " << DAK_FAIL_FMT << std::endl;
+    abort_handler(-1);
+  }
+
+#ifdef _WIN32
+  if (cwd[1] == ':')
+    dakdrive = Map(cwd.c_array()[0]);
+#endif
+
+  return std::string( cwd.c_array() );
+#endif
 }
 
 } // namespace Dakota
