@@ -77,6 +77,8 @@ public:
   void update_reference();
   /// invokes SparseGridDriver::push_trial_set()
   void increment_set(const UShortArray& set);
+  /// invokes SparseGridDriver::unique_trial_points()
+  int increment_size() const;
   /// invokes SparseGridDriver::restore_set()
   void restore_set();
   /// invokes SparseGridDriver::compute_trial_grid()
@@ -174,6 +176,10 @@ inline void NonDSparseGrid::update_reference()
 
 inline void NonDSparseGrid::increment_set(const UShortArray& set)
 { ssgDriver->push_trial_set(set); }
+
+
+inline int NonDSparseGrid::increment_size() const
+{ return ssgDriver->unique_trial_points(); }
 
 
 inline void NonDSparseGrid::restore_set()

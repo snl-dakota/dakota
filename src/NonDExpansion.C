@@ -828,9 +828,12 @@ Real NonDExpansion::increment_sets()
       uSpaceModel.append_approximation(true); // rebuild
     }
 
-    // assess effect of increment (non-negative norm) and store best
+    // assess effect of increment (non-negative norm)
     delta = (totalLevelRequests) ? compute_final_statistics_metric(stats_ref)
-                                 : compute_covariance_metric(covar_ref); 
+                                 : compute_covariance_metric(covar_ref);
+    // normalize effect of increment based on cost (# of collocation pts)
+    //delta /= nond_sparse->increment_size();
+    // track best increment evaluated thus far
     if (delta > delta_star) {
       cit_star = cit; delta_star = delta;
       // partial results tracking avoids need to recompute statistics
