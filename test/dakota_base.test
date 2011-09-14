@@ -3188,36 +3188,38 @@ Test Number 13 succeeded
 <<<<< Best data captured at function evaluation 121
 dakota_cantilever_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 22 total (22 new, 0 duplicate)
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.3142841821e+00 w
-                      3.3862187900e+00 t
+                      2.2503937408e+00 w
+                      3.4936154719e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.8366725828e+00
+                      7.8620103907e+00
 <<<<< Best constraint values   =
-                     -2.1209259306e-02
-                     -2.1991697299e-03
-<<<<< Best data captured at function evaluation 22
+                     -2.9981378954e-02
+                     -1.1676092295e-03
+<<<<< Best data captured at function evaluation 17
+Output delay overridden to 120 seconds
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.7261680977e+00 w
-                      2.5445562160e+00 t
+                      1.7243560433e+00 w
+                      2.5470456739e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best residual terms      =
-                      4.3923317629e+00
-                      1.3312950893e+00
-                      2.1780483446e+00
+                      4.3920136004e+00
+                      1.3311917048e+00
+                      2.1790554008e+00
 <<<<< Best data captured at function evaluation 17
+Output delay overridden to 300 seconds
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 57 total (57 new, 0 duplicate)
+<<<<< Function evaluation summary: 300197 total (255117 new, 45080 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    2.0000000000e-01   5.3015812487e-02                      1.6162900134e+00
@@ -11448,13 +11450,13 @@ Test Number 14 succeeded
 <<<<< Best data captured at function evaluation 36
 dakota_rosenbrock_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 27 total (27 new, 0 duplicate)
+<<<<< Function evaluation summary: 52 total (52 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.8846720520e-01 x1
-                      9.7796745076e-01 x2
+                      9.8765432099e-01 x1
+                      9.7552628921e-01 x2
 <<<<< Best objective function  =
-                      2.1401165605e-04
-<<<<< Best data captured at function evaluation 23
+                      1.5284130447e-04
+<<<<< Best data captured at function evaluation 34
 dakota_rosenbrock_hessians.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 74 total (74 new, 0 duplicate)
@@ -34359,8 +34361,8 @@ Moment-based statistics for each response function:
    0.0000000000e+00                     -3.5927662506e-02
 dakota_uq_cantilever_interval.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 87 total (86 new, 1 duplicate)
-         weight: 13 val (12 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 88 total (87 new, 1 duplicate)
+         weight: 14 val (13 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 35 val (35 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 51 val (51 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 weight:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
@@ -37412,8 +37414,8 @@ Simple Correlation Matrix among all inputs and outputs:
  ccdf_beta_d -9.13854e-01 -4.01386e-01  0.00000e+00  8.84098e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
                   mean_wt  ccdf_beta_s  ccdf_beta_d 
-      X_mean -0.00000e+00          nan -9.99584e-01 
-      Y_mean -0.00000e+00          nan -9.97881e-01 
+      X_mean -0.00000e+00 -5.28522e-01 -9.99584e-01 
+      Y_mean -0.00000e+00 -6.17538e-01 -9.97881e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                    X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d 
       X_mean  1.00000e+00 
@@ -43673,8 +43675,8 @@ Test Number 0 succeeded
    5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
    1.0000000000e+02   5.0000000000e-01   7.5000000000e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 15100 total (14300 new, 800 duplicate)
-  response_fn_1: 15100 val (14300 n, 800 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 13200 total (12400 new, 800 duplicate)
+  response_fn_1: 13200 val (12400 n, 800 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
@@ -44100,17 +44102,17 @@ Moment-based statistics for each response function:
  response_fn_1  4.0200000000e+02  1.0499552371e+03
 dakota_uq_rosenbrock_global.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 54 total (54 new, 0 duplicate)
+<<<<< Function evaluation summary: 60 total (59 new, 1 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   5.0000000000e-01   1.0178278203e-02                      2.3197102606e+00
-   1.0000000000e+00   2.4974046684e-02                      1.9604082413e+00
-   5.0000000000e+00   1.0704803824e-01                      1.2423808535e+00
-   1.0000000000e+01   1.6656326558e-01                      9.6783550008e-01
-   5.0000000000e+01   3.6964907201e-01                      3.3278293055e-01
-   1.0000000000e+02   5.0018484368e-01                     -4.6333441445e-04
-   5.0000000000e+02   8.1732232018e-01                     -9.0520770704e-01
-   1.0000000000e+03   9.0583432912e-01                     -1.3155314887e+00
+   5.0000000000e-01   1.0198596157e-02                      2.3189602395e+00
+   1.0000000000e+00   2.6606285968e-02                      1.9331918211e+00
+   5.0000000000e+00   1.0621647076e-01                      1.2469033411e+00
+   1.0000000000e+01   1.6425544078e-01                      9.7711770889e-01
+   5.0000000000e+01   3.7031223489e-01                      3.3102649873e-01
+   1.0000000000e+02   4.9966902886e-01                      8.2962171433e-04
+   5.0000000000e+02   8.1938657108e-01                     -9.1302982095e-01
+   1.0000000000e+03   9.0582708355e-01                     -1.3154883418e+00
 dakota_uq_rosenbrock_pce.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
@@ -55875,7 +55877,7 @@ Test Number 4 succeeded
    8.0000000000e-01   9.3000000000e-01   1.0000000000e+00
   Probability Level  Belief Resp Level   Plaus Resp Level
   -----------------  -----------------   ----------------
-   2.5000000000e-01   2.6569900873e-01   6.2500094084e-02
+   2.5000000000e-01   2.6569900873e-01   6.2530201671e-02
    5.0000000000e-01   3.0259950662e-01   6.2600095213e-02
    7.5000000000e-01   6.8169656331e-01   6.4100194189e-02
      Response Level  Belief Prob Level   Plaus Prob Level
@@ -55984,15 +55986,15 @@ response_fn_2  1.00000e+00  1.44374e-02  4.48845e-03  5.18452e-03 -2.87549e-02 -
 response_fn_3  1.44374e-02  1.00000e+00  5.21572e-02  2.29223e-03  8.62886e-03  8.67687e-03  1.88539e-02 -6.42064e-03 -2.75308e-02  3.64404e-01  1.44374e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-        TF1n -5.23502e-03  1.00000e+00 -1.17062e-02 
-        TF2n  8.92165e-01 -7.78003e-03  1.00000e+00 
-        TF1u  7.11318e-02 -2.12561e-03 -3.71413e-02 
-        TF2u  9.78928e-01 -1.95373e-03  3.06565e-03 
-        TF1w  1.05075e-01  1.54021e-02 -7.12178e-03 
-        TF2w  8.40896e-01  1.06332e-02 -9.34090e-03 
-        TF1h -5.10906e-02  1.33132e-03 -1.69264e-02 
-        TF2h  1.33902e-02 -7.36227e-03  3.62420e-03 
-        TF3h -1.16281e-01  7.25993e-03  2.75669e-02 
+        TF1n -5.23502e-03  1.00000e+00 -7.73621e-03 
+        TF2n  8.92165e-01 -7.15431e-03  1.00000e+00 
+        TF1u  7.11318e-02 -2.54117e-03 -3.21318e-02 
+        TF2u  9.78928e-01 -1.51839e-03  2.14778e-03 
+        TF1w  1.05075e-01  1.40823e-02 -5.41900e-03 
+        TF2w  8.40896e-01  1.14200e-02 -6.93382e-03 
+        TF1h -5.10906e-02  1.47625e-03 -9.91604e-03 
+        TF2h  1.33902e-02 -7.02452e-03  3.07308e-03 
+        TF3h -1.16281e-01  7.52743e-03  1.97433e-02 
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 Moment-based statistics for each response function:
@@ -56138,15 +56140,15 @@ response_fn_2  1.00000e+00  1.44374e-02  4.48845e-03  5.18452e-03 -2.87549e-02 -
 response_fn_3  1.44374e-02  1.00000e+00  5.21572e-02  2.29223e-03  8.62886e-03  8.67687e-03  1.88539e-02 -6.42064e-03 -2.75308e-02  3.64404e-01  1.44374e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-        TF1n -5.23502e-03  1.00000e+00 -1.17062e-02 
-        TF2n  8.92165e-01 -7.78003e-03  1.00000e+00 
-        TF1u  7.11318e-02 -2.12561e-03 -3.71413e-02 
-        TF2u  9.78928e-01 -1.95373e-03  3.06565e-03 
-        TF1w  1.05075e-01  1.54021e-02 -7.12178e-03 
-        TF2w  8.40896e-01  1.06332e-02 -9.34090e-03 
-        TF1h -5.10906e-02  1.33132e-03 -1.69264e-02 
-        TF2h  1.33902e-02 -7.36227e-03  3.62420e-03 
-        TF3h -1.16281e-01  7.25993e-03  2.75669e-02 
+        TF1n -5.23502e-03  1.00000e+00 -7.73621e-03 
+        TF2n  8.92165e-01 -7.15431e-03  1.00000e+00 
+        TF1u  7.11318e-02 -2.54117e-03 -3.21318e-02 
+        TF2u  9.78928e-01 -1.51839e-03  2.14778e-03 
+        TF1w  1.05075e-01  1.40823e-02 -5.41900e-03 
+        TF2w  8.40896e-01  1.14200e-02 -6.93382e-03 
+        TF1h -5.10906e-02  1.47625e-03 -9.91604e-03 
+        TF2h  1.33902e-02 -7.02452e-03  3.07308e-03 
+        TF3h -1.16281e-01  7.52743e-03  1.97433e-02 
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 Moment-based statistics for each response function:
@@ -56295,15 +56297,15 @@ response_fn_2  1.00000e+00  1.44374e-02  4.48845e-03  5.18452e-03 -2.87549e-02 -
 response_fn_3  1.44374e-02  1.00000e+00  5.21572e-02  2.29223e-03  8.62886e-03  8.67687e-03  1.88539e-02 -6.42064e-03 -2.75308e-02  3.64404e-01  1.44374e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-        TF1n -5.23502e-03  1.00000e+00 -1.17062e-02 
-        TF2n  8.92165e-01 -7.78003e-03  1.00000e+00 
-        TF1u  7.11318e-02 -2.12561e-03 -3.71413e-02 
-        TF2u  9.78928e-01 -1.95373e-03  3.06565e-03 
-        TF1w  1.05075e-01  1.54021e-02 -7.12178e-03 
-        TF2w  8.40896e-01  1.06332e-02 -9.34090e-03 
-        TF1h -5.10906e-02  1.33132e-03 -1.69264e-02 
-        TF2h  1.33902e-02 -7.36227e-03  3.62420e-03 
-        TF3h -1.16281e-01  7.25993e-03  2.75669e-02 
+        TF1n -5.23502e-03  1.00000e+00 -7.73621e-03 
+        TF2n  8.92165e-01 -7.15431e-03  1.00000e+00 
+        TF1u  7.11318e-02 -2.54117e-03 -3.21318e-02 
+        TF2u  9.78928e-01 -1.51839e-03  2.14778e-03 
+        TF1w  1.05075e-01  1.40823e-02 -5.41900e-03 
+        TF2w  8.40896e-01  1.14200e-02 -6.93382e-03 
+        TF1h -5.10906e-02  1.47625e-03 -9.91604e-03 
+        TF2h  1.33902e-02 -7.02452e-03  3.07308e-03 
+        TF3h -1.16281e-01  7.52743e-03  1.97433e-02 
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 Moment-based statistics for each response function:
@@ -56375,15 +56377,15 @@ response_fn_2  1.00000e+00  1.44374e-02  4.48845e-03  5.18452e-03 -2.87549e-02 -
 response_fn_3  1.44374e-02  1.00000e+00  5.21572e-02  2.29223e-03  8.62886e-03  8.67687e-03  1.88539e-02 -6.42064e-03 -2.75308e-02  3.64404e-01  1.44374e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-        TF1n -5.23502e-03  1.00000e+00 -1.17062e-02 
-        TF2n  8.92165e-01 -7.78003e-03  1.00000e+00 
-        TF1u  7.11318e-02 -2.12561e-03 -3.71413e-02 
-        TF2u  9.78928e-01 -1.95373e-03  3.06565e-03 
-        TF1w  1.05075e-01  1.54021e-02 -7.12178e-03 
-        TF2w  8.40896e-01  1.06332e-02 -9.34090e-03 
-        TF1h -5.10906e-02  1.33132e-03 -1.69264e-02 
-        TF2h  1.33902e-02 -7.36227e-03  3.62420e-03 
-        TF3h -1.16281e-01  7.25993e-03  2.75669e-02 
+        TF1n -5.23502e-03  1.00000e+00 -7.73621e-03 
+        TF2n  8.92165e-01 -7.15431e-03  1.00000e+00 
+        TF1u  7.11318e-02 -2.54117e-03 -3.21318e-02 
+        TF2u  9.78928e-01 -1.51839e-03  2.14778e-03 
+        TF1w  1.05075e-01  1.40823e-02 -5.41900e-03 
+        TF2w  8.40896e-01  1.14200e-02 -6.93382e-03 
+        TF1h -5.10906e-02  1.47625e-03 -9.91604e-03 
+        TF2h  1.33902e-02 -7.02452e-03  3.07308e-03 
+        TF3h -1.16281e-01  7.52743e-03  1.97433e-02 
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 Moment-based statistics for each response function:
@@ -56415,14 +56417,14 @@ Partial Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
         TF1p -1.59713e-02  1.00000e+00 -6.67679e-02 
         TF2p -9.34450e-02 -1.00000e+00  9.65308e-01 
-       TF1bi -8.01529e-03 -4.02702e-02  9.14653e-02 
-       TF2bi -2.58079e-02 -3.86930e-02  1.23578e-01 
-       TF1nb  7.21802e-01  2.95550e-02 -1.89847e-02 
-       TF2nb  2.26816e-01  4.38484e-02 -5.91764e-02 
-       TF1ge  4.89352e-01 -5.81605e-02  2.65388e-01 
-       TF2ge  1.39005e-01 -3.39348e-02 -1.42062e-01 
-       TF1hg -4.16430e-02 -7.64986e-02 -4.91704e-02 
-       TF2hg  1.40479e-01 -1.43249e-01 -1.09643e-01 
+       TF1bi -8.01529e-03 -4.79041e-02  9.14653e-02 
+       TF2bi -2.58079e-02 -3.88921e-02  1.23578e-01 
+       TF1nb  7.21802e-01  3.15088e-02 -1.89847e-02 
+       TF2nb  2.26816e-01  6.10635e-02 -5.91764e-02 
+       TF1ge  4.89352e-01 -6.65975e-02  2.65388e-01 
+       TF2ge  1.39005e-01 -3.36098e-02 -1.42062e-01 
+       TF1hg -4.16430e-02 -7.55139e-02 -4.91704e-02 
+       TF2hg  1.40479e-01 -1.59288e-01 -1.09643e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                      TF1p         TF2p        TF1bi        TF2bi        TF1nb        TF2nb        TF1ge        TF2ge        TF1hg        TF2hg response_fn_1 response_fn_2 response_fn_3 
         TF1p  1.00000e+00 
@@ -56533,25 +56535,25 @@ response_fn_2  1.00000e+00 -5.24812e-02  2.76148e-02  6.85269e-03 -9.43294e-03 -
 response_fn_3 -5.24812e-02  1.00000e+00  7.52475e-03  3.65197e-02  1.56016e-02 -2.87429e-02 -2.63426e-02 -1.01650e-02 -1.13075e-01 -4.66847e-03  5.38974e-02  3.73357e-02 -9.92499e-03 -1.56136e-02  9.84098e-03 -3.03270e-02 -1.38614e-02  2.04980e-02  3.84038e-03  3.78602e-01 -5.24812e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-        TF1n  1.09535e-01  1.00000e+00  2.29614e-02 
-        TF2n  9.14045e-01  2.39444e-02  1.00000e+00 
-        TF1u  1.37858e-01 -1.84834e-02  5.10045e-03 
-        TF2u  9.83197e-01  1.73990e-03 -2.01407e-02 
-        TF1w  1.85722e-01  1.39130e-02 -1.33353e-02 
-        TF2w  8.54321e-01 -2.77602e-03  3.04531e-02 
-        TF1h  1.89562e-01  1.14160e-02  9.82808e-03 
-        TF2h  8.10567e-02 -2.35326e-02 -9.90078e-03 
-        TF1p -1.70777e-03 -3.13266e-02  8.60907e-02 
-        TF2p  2.62302e-01  3.55845e-03 -7.76126e-04 
-       TF1bi -2.11463e-01 -1.74703e-02 -3.62442e-02 
-       TF2bi -2.13118e-01  7.37126e-03 -3.74758e-02 
-       TF1nb  8.20874e-02 -2.11864e-02  1.59323e-02 
-       TF2nb -1.49335e-01 -1.99355e-02  1.22486e-02 
-       TF1ge  1.31653e-01 -1.08983e-02 -8.78676e-03 
-       TF2ge  1.78178e-01  1.83420e-02  1.54154e-02 
-       TF1hg  5.02524e-02 -1.80200e-02  8.34052e-03 
-       TF2hg -1.88390e-01 -6.72969e-03 -2.52716e-02 
-        TF3h -9.06116e-02 -8.76904e-02  9.08642e-03 
+        TF1n  1.09535e-01  1.00000e+00  2.18316e-02 
+        TF2n  9.14045e-01  2.42039e-02  1.00000e+00 
+        TF1u  1.37858e-01 -1.90756e-02  4.00733e-03 
+        TF2u  9.83197e-01  1.64965e-03 -1.91182e-02 
+        TF1w  1.85722e-01  1.32319e-02 -1.08218e-02 
+        TF2w  8.54321e-01 -2.88067e-03  2.22423e-02 
+        TF1h  1.89562e-01  1.16650e-02  8.63776e-03 
+        TF2h  8.10567e-02 -2.33672e-02 -6.69827e-03 
+        TF1p -1.70777e-03 -3.03136e-02  6.37697e-02 
+        TF2p  2.62302e-01  4.06536e-03 -2.42721e-04 
+       TF1bi -2.11463e-01 -1.55430e-02 -2.13611e-02 
+       TF2bi -2.13118e-01  7.36497e-03 -3.33067e-02 
+       TF1nb  8.20874e-02 -1.89411e-02  1.25394e-02 
+       TF2nb -1.49335e-01 -2.03823e-02  8.61729e-03 
+       TF1ge  1.31653e-01 -1.24055e-02 -8.20983e-03 
+       TF2ge  1.78178e-01  1.77243e-02  1.98586e-02 
+       TF1hg  5.02524e-02 -1.79746e-02  6.59826e-03 
+       TF2hg -1.88390e-01 -7.67397e-03 -1.85692e-02 
+        TF3h -9.06116e-02 -8.69740e-02  6.61984e-03 
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 Moment-based statistics for each response function:
@@ -57352,8 +57354,8 @@ response_fn_2  5.00000e-01 -8.00000e-01  8.00000e-01  1.00000e+00
 response_fn_3 -5.00000e-01  8.00000e-01 -8.00000e-01 -1.00000e+00  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-          x1          nan  9.71537e-01 -9.71537e-01 
-          x2          nan -9.86440e-01  9.86440e-01 
+          x1 -0.00000e+00  9.71537e-01 -9.71537e-01 
+          x2 -7.05328e-01 -9.86440e-01  9.86440e-01 
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1000 total (1000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 121 total (121 new, 0 duplicate)

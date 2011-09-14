@@ -804,8 +804,8 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 65
 dakota_uq_cantilever_interval.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 87 total (86 new, 1 duplicate)
-         weight: 13 val (12 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 88 total (87 new, 1 duplicate)
+         weight: 14 val (13 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 35 val (35 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 51 val (51 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 weight:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
