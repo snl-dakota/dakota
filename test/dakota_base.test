@@ -7499,13 +7499,13 @@ Test Number 1 succeeded
   response_fn_2: 2460 val (2460 n, 0 d), 180 grad (180 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 2460 val (2460 n, 0 d), 180 grad (180 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459909187e+00 w
-                      3.8921841842e+00 t
+                      2.4459909188e+00 w
+                      3.8921841841e+00 t
 <<<<< Best objective function  =
                       9.5202471687e+00
 <<<<< Best constraint values   =
                       3.0000000002e+00
-                      3.2639438734e+00
+                      3.2639438738e+00
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 234 total (225 new, 9 duplicate)
@@ -7526,22 +7526,22 @@ Test Number 2 succeeded
                       3.2639403078e+00
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (UQ_I): 1800 total (1674 new, 126 duplicate)
-  response_fn_1: 1800 val (1674 n, 126 d), 1620 grad (1554 n, 66 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 1800 val (1674 n, 126 d), 1620 grad (1554 n, 66 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 1800 val (1674 n, 126 d), 1620 grad (1554 n, 66 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1800 total (1674 new, 126 duplicate)
-  response_fn_1: 1800 val (1674 n, 126 d), 1620 grad (1554 n, 66 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 1800 val (1674 n, 126 d), 1620 grad (1554 n, 66 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 1800 val (1674 n, 126 d), 1620 grad (1554 n, 66 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1740 total (1614 new, 126 duplicate)
+  response_fn_1: 1740 val (1614 n, 126 d), 1560 grad (1494 n, 66 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 1740 val (1614 n, 126 d), 1560 grad (1494 n, 66 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 1740 val (1614 n, 126 d), 1560 grad (1494 n, 66 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1740 total (1614 new, 126 duplicate)
+  response_fn_1: 1740 val (1614 n, 126 d), 1560 grad (1494 n, 66 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 1740 val (1614 n, 126 d), 1560 grad (1494 n, 66 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 1740 val (1614 n, 126 d), 1560 grad (1494 n, 66 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4453607496e+00 w
-                      3.8931872732e+00 t
+                      2.4453471771e+00 w
+                      3.8932088801e+00 t
 <<<<< Best objective function  =
-                      9.5202473487e+00
+                      9.5202473448e+00
 <<<<< Best constraint values   =
-                      2.9999998916e+00
-                      3.2609894540e+00
+                      2.9999998682e+00
+                      3.2609257760e+00
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
 <<<<< Function evaluation summary (UQ_I): 10063 total (10063 new, 0 duplicate)
@@ -7670,10 +7670,10 @@ Test Number 3 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_pcbdo_cantilever_trsb.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 17 total (17 new, 0 duplicate)
-         obj_fn: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_2: 17 val (17 n, 0 d), 17 grad (17 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 16 total (16 new, 0 duplicate)
+         obj_fn: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 300 total (300 new, 0 duplicate)
   response_fn_1: 300 val (300 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 300 val (300 n, 0 d), 150 grad (150 n, 0 d), 0 Hess (0 n, 0 d)
@@ -8804,18 +8804,18 @@ Simple Correlation Matrix among all inputs and outputs:
 response_fn_1  6.64419e-04  3.56988e-10  5.64528e-01  5.76483e-07 -7.02991e-09  2.10897e-07 -7.02991e-09  2.90728e-06  3.44372e-08  1.51813e-05  8.25414e-01  5.54045e-07  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-       nuv_1  1.00000e+00 
-      lnuv_1  1.00000e+00 
-       uuv_1  1.00000e+00 
-      luuv_1  1.00000e+00 
-       tuv_1 -1.00000e+00 
-       euv_1  1.00000e+00 
-      beuv_1 -1.00000e+00 
-      gauv_1  1.00000e+00 
-      guuv_1  1.00000e+00 
-       fuv_1  1.00000e+00 
-       wuv_1  1.00000e+00 
-      hbuv_1  1.00000e+00 
+       nuv_1  9.75211e-04 
+      lnuv_1  5.23974e-10 
+       uuv_1  6.38029e-01 
+      luuv_1  8.46141e-07 
+       tuv_1 -1.03183e-08 
+       euv_1  3.09548e-07 
+      beuv_1 -1.03183e-08 
+      gauv_1  4.26720e-06 
+      guuv_1  5.05457e-08 
+       fuv_1  2.22826e-05 
+       wuv_1  7.71217e-01 
+      hbuv_1  8.13208e-07 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     nuv_1       lnuv_1        uuv_1       luuv_1        tuv_1        euv_1       beuv_1       gauv_1       guuv_1        fuv_1        wuv_1       hbuv_1 response_fn_1 
        nuv_1  1.00000e+00 
@@ -8859,11 +8859,11 @@ response_fn_1  0.00000e+00  1.08330e-03  9.50901e-01  3.09494e-01  4.21100e-05  
 Partial Correlation Matrix between input and output:
              response_fn_1 
        puv_1 -0.00000e+00 
-      biuv_1  1.00000e+00 
-      nbuv_1  1.00000e+00 
-      geuv_1  1.00000e+00 
-      hguv_1  1.00000e+00 
-      hpuv_1  1.00000e+00 
+      biuv_1  1.13088e-02 
+      nbuv_1  9.94965e-01 
+      geuv_1  9.55294e-01 
+      hguv_1  4.39624e-04 
+      hpuv_1  4.13764e-04 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     puv_1       biuv_1       nbuv_1       geuv_1       hguv_1       hpuv_1 response_fn_1 
        puv_1  1.00000e+00 
@@ -8894,12 +8894,12 @@ Simple Correlation Matrix among all inputs and outputs:
 response_fn_1  2.44631e-02  1.29676e-03  1.29669e-03  4.74398e-05  9.99699e-01  4.74398e-05  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-       cdv_1  1.00000e+00 
-      luuv_1  1.00000e+00 
-      biuv_1  1.00000e+00 
-     dssiv_1  1.00000e+00 
-     ddsrv_1  1.00000e+00 
-      hpuv_1  1.00000e+00 
+       cdv_1  2.44705e-02 
+      luuv_1  1.29754e-03 
+      biuv_1  1.29747e-03 
+     dssiv_1  4.74684e-05 
+     ddsrv_1  7.07213e-01 
+      hpuv_1  4.74684e-05 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     cdv_1       luuv_1       biuv_1      dssiv_1      ddsrv_1       hpuv_1 response_fn_1 
        cdv_1  1.00000e+00 
@@ -34680,21 +34680,21 @@ Moment-based statistics for each response function:
  response_fn_3  7.6331165581e-01  1.8036558489e-01
 response_fn_1 Sobol indices:
                                   Main             Total
-                      6.9100505850e-02  4.6160693333e-01 R
-                      8.0130753853e-02  4.9985448868e-01 E
-                      4.5567374999e-02  3.6392704043e-01 X
-                      1.1916632681e-01  4.6310909101e-01 Y
-                      1.7725671977e-01 R E 
-                      8.1713208990e-02 R X 
-                      5.1411246351e-02 E X 
-                      3.1711099182e-02 R E X 
-                      5.2097716647e-02 R Y 
-                      1.2236618753e-01 E Y 
-                      1.5954749109e-02 R E Y 
-                      1.0253875043e-01 X Y 
-                      2.9961627594e-02 R X Y 
-                      1.7212426698e-02 E X Y 
-                      3.8113061883e-03 R E X Y 
+                      9.2166978091e-02  6.9192974662e-01 R
+                      9.1806716822e-02  6.8530080031e-01 E
+                      1.8546680651e-02  1.7649465929e-01 X
+                      2.8167340126e-02  3.1122739712e-01 Y
+                      4.1330793023e-01 R E 
+                      4.3152244368e-02 R X 
+                      2.2477258613e-02 E X 
+                      7.3147941037e-03 R E X 
+                      9.3886601091e-02 R Y 
+                      6.9850715956e-02 E Y 
+                      3.4319058390e-02 R E Y 
+                      3.2040003487e-02 X Y 
+                      6.7393518794e-03 R X Y 
+                      4.5181537730e-02 E X Y 
+                      1.0427884614e-03 R E X Y 
 response_fn_2 Sobol indices:
                                   Main             Total
                       2.2168484909e-01  2.2365503013e-01 R
@@ -35882,21 +35882,21 @@ Moment-based statistics for each response function:
  response_fn_3  7.6332776071e-01  1.8036481455e-01
 response_fn_1 Sobol indices:
                                   Main             Total
-                      4.4014671386e-03  5.2240726884e-01 R
-                      6.2099192697e-02  4.7594911832e-01 E
-                      1.3432379837e-02  5.9854536842e-01 X
-                      7.4001738800e-02  4.7314986345e-01 Y
-                      1.1849146787e-01 R E 
-                      1.9181075431e-01 R X 
-                      5.6714180727e-02 E X 
-                      7.9900693978e-02 R E X 
-                      4.7099152602e-02 R Y 
-                      9.1918167079e-02 E Y 
-                      3.4434454003e-03 R E Y 
-                      1.2739732157e-01 X Y 
-                      6.5908067417e-02 R X Y 
-                      5.2029750450e-02 E X Y 
-                      1.1352220126e-02 R E X Y 
+                      7.1050317924e-02  3.7207576666e-01 R
+                      5.0167359116e-02  5.7783714285e-01 E
+                      6.7412206472e-02  5.8874013948e-01 X
+                      4.9502296005e-02  5.6040541006e-01 Y
+                      6.0061874737e-02 R E 
+                      1.9314345736e-02 R X 
+                      1.4112712441e-01 E X 
+                      3.0461361548e-02 R E X 
+                      5.9764273868e-02 R Y 
+                      7.7095664950e-02 E Y 
+                      4.3618073921e-02 R E Y 
+                      1.1785164596e-01 X Y 
+                      3.7267771186e-02 R X Y 
+                      1.2476793643e-01 E X Y 
+                      5.0537747742e-02 R E X Y 
 response_fn_2 Sobol indices:
                                   Main             Total
                       2.2167612554e-01  2.2364652359e-01 R
