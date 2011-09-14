@@ -612,6 +612,7 @@ KEYWORD12 method
 	  |
 	  ( collocation_points INTEGER
 	    | collocation_ratio REAL
+	    [ squared ]
 	    [ reuse_points ALIAS reuse_samples ]
 	    [ use_derivatives ]
 	    [ tensor_grid ]

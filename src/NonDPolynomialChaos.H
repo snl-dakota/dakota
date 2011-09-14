@@ -63,20 +63,31 @@ private:
 
   /// convert number of expansion terms and collocation ratio to a
   /// number of collocation samples
-  int  terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio);
+  int  terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio,
+			      short terms_order);
   /// convert number of expansion terms and number of collocation samples
   /// to a collocation ratio
-  Real terms_samples_to_ratio(size_t num_exp_terms, int samples);
+  Real terms_samples_to_ratio(size_t num_exp_terms, int samples,
+			      short terms_order);
 
   //
   //- Heading: Data
   //
 
-  String expansionImportFile; ///< filename for import of chaos coefficients
-  //String collocPtReuse; // user spec of reuse_points for regression-based PCE
-  int    expansionTerms; ///< user specification of PCE terms
-  Real   collocRatio; ///< collocation ratio, either user specified or inferred
-  bool   tensorRegression; ///< PCE by regression of filtered tensor points
+  /// filename for import of chaos coefficients
+  String expansionImportFile;
+  // user spec of reuse_points for regression-based PCE
+  //String collocPtReuse;
+  /// user specification of PCE terms
+  int expansionTerms;
+  /// factor applied to expansionTerms^termsOrder in computing number of
+  /// regression points, either user specified or inferred
+  Real collocRatio;
+  /// exponent applied to number of expansion terms for computing
+  /// number of regression points
+  short termsOrder;
+  /// option for regression PCE using a filtered set tensor-product points
+  bool tensorRegression;
 
   /// derivative of the PCE with respect to the x-space variables
   /// evaluated at the means (used as uncertainty importance metrics)
@@ -85,10 +96,14 @@ private:
 
 
 inline int NonDPolynomialChaos::
-terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio)
+terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio,
+		       short terms_order)
 {
-  size_t data_per_pt = (useDerivsFlag) ? numContinuousVars + 1 : 1;
-  Real min_pts = (Real)num_exp_terms/(Real)data_per_pt;
+  size_t i, terms_to_power = num_exp_terms,
+    data_per_pt = (useDerivsFlag) ? numContinuousVars + 1 : 1;;
+  for (i=1; i<terms_order; ++i)
+    terms_to_power *= num_exp_terms;
+  Real min_pts = (Real)terms_to_power / (Real)data_per_pt;
   int min_samples = (int)std::ceil(min_pts),                    // lower bound
       tgt_samples = (int)std::floor(colloc_ratio*min_pts + .5); // rounded
   return std::max(min_samples, tgt_samples);
@@ -96,11 +111,13 @@ terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio)
 
 
 inline Real NonDPolynomialChaos::
-terms_samples_to_ratio(size_t num_exp_terms, int samples)
+terms_samples_to_ratio(size_t num_exp_terms, int samples, short terms_order)
 {
-  size_t data_per_pt = (useDerivsFlag) ? numContinuousVars + 1 : 1;
-  Real min_pts = (Real)num_exp_terms/(Real)data_per_pt;
-  return (Real)samples/min_pts;
+  size_t i, terms_to_power = num_exp_terms,
+    data_per_pt = (useDerivsFlag) ? numContinuousVars + 1 : 1;;
+  for (i=1; i<terms_order; ++i)
+    terms_to_power *= num_exp_terms;
+  return (Real)(samples * data_per_pt) / (Real)terms_to_power;
 }
 
 } // namespace Dakota

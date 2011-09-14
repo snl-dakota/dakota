@@ -128,13 +128,18 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	size_t exp_terms = (exp_order.empty()) ? expansionTerms : 
 	  Pecos::PolynomialApproximation::total_order_terms(exp_order);
 	int colloc_pts = probDescDB.get_int("method.nond.collocation_points");
+	termsOrder =
+	  (probDescDB.get_bool("method.nond.collocation_ratio_squared_terms"))
+	  ? 2 : 1;
 	if (colloc_pts > 0) {
 	  numSamplesOnModel = colloc_pts;
 	  // define collocRatio for use in uniform refinement
-	  collocRatio = terms_samples_to_ratio(exp_terms, colloc_pts);
+	  collocRatio
+	    = terms_samples_to_ratio(exp_terms, colloc_pts, termsOrder);
 	}
 	else if (collocRatio > 0.)
-	  numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
+	  numSamplesOnModel
+	    = terms_ratio_to_samples(exp_terms, collocRatio, termsOrder);
 	if (tensorRegression) {// "probabilistic collocation": subset of TPQ pts
 	  // since NonDExpansion invokes uSpaceModel.build_approximation() which
 	  // in turn invokes daceIterator.run_iterator(), we need to avoid
@@ -382,7 +387,8 @@ void NonDPolynomialChaos::increment_expansion()
 
   // update numSamplesOnModel based on existing collocatio ratio and
   // updated number of expansion terms
-  numSamplesOnModel = terms_ratio_to_samples(exp_terms, collocRatio);
+  numSamplesOnModel
+    = terms_ratio_to_samples(exp_terms, collocRatio, termsOrder);
 
   // update u-space sampler to use new sample count
   if (tensorRegression) {

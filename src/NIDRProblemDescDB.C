@@ -4304,6 +4304,7 @@ static StringArray
 
 static bool
 	MP_(allVarsFlag),
+	MP_(collocRatioSquaredTermsFlag),
 	MP_(constantPenalty),
 	MP_(expansionFlag),
 	MP_(fixedSeedFlag),

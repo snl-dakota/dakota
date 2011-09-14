@@ -2177,6 +2177,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"mutation_adaptive", P mutationAdaptive},
 	{"nl2sol.regression_diagnostics", P regressDiag},
 	{"nond.all_variables", P allVarsFlag},
+	{"nond.collocation_ratio_squared_terms", P collocRatioSquaredTermsFlag},
 	{"nond.tensor_grid", P probCollocFlag},
 	{"print_each_pop", P printPopFlag},
 	{"quality_metrics", P volQualityFlag},
