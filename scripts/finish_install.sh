@@ -43,7 +43,7 @@ case $UNAME in
   *Linux*)
     # only do for nightly builds; not cluster installs
     HOST=`uname -n`
-    if [ $HOST = "leoni.sandia.gov" ]; then
+    if [ $HOST = "leoni.sandia.gov" -o $HOST = "face.sandia.gov" ]; then
       echo "Copying DAKOTA's so dependencies to $prefix/bin"
       # for most deps
       deps3=`ldd ./src/dakota | awk '/=>/ {print $3}'` 
