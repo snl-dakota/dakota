@@ -12316,7 +12316,7 @@ Test Number 17 succeeded
 <<<<< Best data captured at function evaluation 18
 dakota_sbo_illum.in 
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 998 total (998 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 992 total (992 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 739 total (739 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
@@ -12440,8 +12440,8 @@ Test Number 11 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_sbo_sine_fcn.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 527 total (527 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 221 total (217 new, 4 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 539 total (539 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 221 total (218 new, 3 duplicate)
 <<<<< Best parameters          =
                       1.7708662830e-01 x1
                       1.7709425951e-01 x2
@@ -12449,16 +12449,16 @@ Test Number 0 succeeded
                       6.0247195369e-02
 <<<<< Best data captured at function evaluation 210
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 476 total (476 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 482 total (482 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 210 total (207 new, 3 duplicate)
 <<<<< Best parameters          =
                       1.7708636248e-01 x1
                       1.7708257602e-01 x2
 <<<<< Best objective function  =
                       6.0247197395e-02
-<<<<< Best data captured at function evaluation 144
+<<<<< Best data captured at function evaluation 199
 Test Number 2 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 290 total (290 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 284 total (284 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 155 total (155 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.7188934174e-01 x1

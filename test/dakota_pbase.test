@@ -791,17 +791,17 @@ Test Number 0 succeeded
 <<<<< Best data captured at function evaluation 21
 dakota_sbo_textbook.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 185 total (185 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 69 total (65 new, 4 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 69 total (66 new, 3 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000228573e-01 x2
 <<<<< Best objective function  =
                       1.2499885714e-01
 <<<<< Best constraint values   =
-                     -1.1428651501e-06
-                      2.2857355247e-06
-<<<<< Best data captured at function evaluation 64
+                     -4.8906050876e-09
+                      9.7812102862e-09
+<<<<< Best data captured at function evaluation 65
 dakota_uq_cantilever_interval.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 87 total (86 new, 1 duplicate)
