@@ -18,10 +18,6 @@
 #include <sys/param.h>
 #include <cassert>
 
-#ifdef __SUNPRO_CC
-#include <stdlib.h>  // for putenv
-#endif
-
 
 namespace Dakota {
 
@@ -81,11 +77,7 @@ void WorkdirHelper::reset()
     abort_handler(-1);
   }
 
-  if (putenv(envPathBegin)) {
-    Cerr << "\nError: putenv(" << envPathBegin
-         << ") failed in workdir_reset()" << std::endl;
-    abort_handler(-1);
-  }
+  putenv_impl(envPathBegin);
 }
 
 
@@ -227,7 +219,7 @@ arg_list_adjust(const char **arg_list, void **a0)
         if (n0 && n0 < n) {
                 if (!a0) {
                         for(n = 0; n < n0; ++n)
-                                putenv((char*)al[n]);
+                                putenv_impl(std::string(al[n]));
                         }
                 al += n0;
         }

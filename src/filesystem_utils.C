@@ -25,11 +25,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef __SUNPRO_CC
-#include <stdlib.h>  // for putenv, temporarily while WJB evaluates alternatives
-                     // e.g. is setenv a more portable, "Standard C" option?
-#endif
-
 #undef Want_Heartbeat
 
 // WJB - ToDo, next iteration: evaluate dependencies; are posix includes needed??
@@ -1178,12 +1173,7 @@ void workdir_adjust(const std::string& workdir)
     abort_handler(-1);
   }
 
-  char* workdir_path = 0;
-  if (putenv(workdir_path = wd_path[appdrive])) {
-    Cerr << "\nError: putenv(" << workdir_path
-         << ") failed in workdir_adjust()" << std::endl;
-    abort_handler(-1);
-  }
+  putenv_impl( std::string(wd_path[appdrive]) );
 }
 
 
