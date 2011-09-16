@@ -128,9 +128,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	size_t exp_terms = (exp_order.empty()) ? expansionTerms : 
 	  Pecos::PolynomialApproximation::total_order_terms(exp_order);
 	int colloc_pts = probDescDB.get_int("method.nond.collocation_points");
-	termsOrder =
-	  (probDescDB.get_bool("method.nond.collocation_ratio_squared_terms"))
-	  ? 2 : 1;
+	termsOrder
+	  = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
 	if (colloc_pts > 0) {
 	  numSamplesOnModel = colloc_pts;
 	  // define collocRatio for use in uniform refinement

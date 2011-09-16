@@ -421,7 +421,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    | cubature_integrand INTEGER {N_mdm(ushint,cubIntOrder)}
 		    | ( ( collocation_points INTEGER {N_mdm(int,collocationPoints)}
 		        | collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-			[ squared {N_mdm(true,collocRatioSquaredTermsFlag)} ]
+			[ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
 		        [ reuse_points ALIAS reuse_samples {N_mdm(lit,collocPtReuse_all)} ]
 		        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 			[ tensor_grid {N_mdm(true,probCollocFlag)} ]

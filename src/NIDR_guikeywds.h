@@ -659,9 +659,9 @@ static GuiKeyWord
 	kw_103[7] = {
 		{"expansion_order",13,0,5,1,635,0,0.,0.,0.,0,"{Expansion order} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
 		{"expansion_terms",9,0,5,1,637,0,0.,0.,0.,0,"{Expansion terms} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"ratio_order",10,0,1,0,621},
 		{"reuse_points",8,0,2,0,623,0,0.,0.,0.,0,"{Reuse points flag for PCE coefficient estimation by collocation_points or collocation_ratio} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
 		{"reuse_samples",0,0,2,0,622},
-		{"squared",8,0,1,0,621},
 		{"tensor_grid",8,0,4,0,627},
 		{"use_derivatives",8,0,3,0,625,0,0.,0.,0.,0,"{Derivative usage flag for PCE coefficient estimation by collocation_points or collocation_ratio} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
 		},

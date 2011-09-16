@@ -665,10 +665,10 @@ public:
   int collocationPoints;
   /// the \c collocation_ratio specification in \ref MethodNonDPCE
   Real collocationRatio;
-  /// flag indicating application of the collocation ratio to the
-  /// square of the number of expansion terms within regression PCE;
-  /// based on the \c squared specification in \ref MethodNonDPCE
-  bool collocRatioSquaredTermsFlag;
+  /// order applied to the number of expansion terms when applying
+  /// or computing the collocation ratio within regression PCE;
+  /// based on the \c ratio_order specification in \ref MethodNonDPCE
+  Real collocRatioTermsOrder;
   /// allows for incremental PCE construction using the \c
   /// reuse_points specification in \ref MethodNonDPCE
   String collocPtReuse;

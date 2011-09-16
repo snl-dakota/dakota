@@ -4214,6 +4214,7 @@ static Real
 	MP_(absConvTol),
 	MP_(centeringParam),
 	MP_(collocationRatio),
+	MP_(collocRatioTermsOrder),
 	MP_(constraintPenalty),
 	MP_(constrPenalty),
 	MP_(constraintTolerance),
@@ -4304,7 +4305,6 @@ static StringArray
 
 static bool
 	MP_(allVarsFlag),
-	MP_(collocRatioSquaredTermsFlag),
 	MP_(constantPenalty),
 	MP_(expansionFlag),
 	MP_(fixedSeedFlag),

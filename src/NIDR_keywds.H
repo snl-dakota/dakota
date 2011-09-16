@@ -643,9 +643,9 @@ static KeyWord
 		},
 	kw_115[6] = {
 		{0,0,2,0,0,kw_114},
+		{"ratio_order",10,0,1,0,0,0.,0.,0,N_mdm(Realp,collocRatioTermsOrder)},
 		{"reuse_points",8,0,2,0,0,0.,0.,0,N_mdm(lit,collocPtReuse_all)},
 		{"reuse_samples",0,0,2,0,0,0.,0.,-1,N_mdm(lit,collocPtReuse_all)},
-		{"squared",8,0,1,0,0,0.,0.,0,N_mdm(true,collocRatioSquaredTermsFlag)},
 		{"tensor_grid",8,0,4,0,0,0.,0.,0,N_mdm(true,probCollocFlag)},
 		{"use_derivatives",8,0,3,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
 		},

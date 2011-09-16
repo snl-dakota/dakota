@@ -64,11 +64,11 @@ private:
   /// convert number of expansion terms and collocation ratio to a
   /// number of collocation samples
   int  terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio,
-			      short terms_order);
+			      Real terms_order);
   /// convert number of expansion terms and number of collocation samples
   /// to a collocation ratio
   Real terms_samples_to_ratio(size_t num_exp_terms, int samples,
-			      short terms_order);
+			      Real terms_order);
 
   //
   //- Heading: Data
@@ -85,7 +85,7 @@ private:
   Real collocRatio;
   /// exponent applied to number of expansion terms for computing
   /// number of regression points
-  short termsOrder;
+  Real termsOrder;
   /// option for regression PCE using a filtered set tensor-product points
   bool tensorRegression;
 
@@ -97,13 +97,10 @@ private:
 
 inline int NonDPolynomialChaos::
 terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio,
-		       short terms_order)
+		       Real terms_order)
 {
-  size_t i, terms_to_power = num_exp_terms,
-    data_per_pt = (useDerivsFlag) ? numContinuousVars + 1 : 1;;
-  for (i=1; i<terms_order; ++i)
-    terms_to_power *= num_exp_terms;
-  Real min_pts = (Real)terms_to_power / (Real)data_per_pt;
+  size_t data_per_pt = (useDerivsFlag) ? numContinuousVars + 1 : 1;;
+  Real min_pts = std::pow((Real)num_exp_terms, terms_order) / (Real)data_per_pt;
   int min_samples = (int)std::ceil(min_pts),                    // lower bound
       tgt_samples = (int)std::floor(colloc_ratio*min_pts + .5); // rounded
   return std::max(min_samples, tgt_samples);
@@ -111,13 +108,11 @@ terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio,
 
 
 inline Real NonDPolynomialChaos::
-terms_samples_to_ratio(size_t num_exp_terms, int samples, short terms_order)
+terms_samples_to_ratio(size_t num_exp_terms, int samples, Real terms_order)
 {
-  size_t i, terms_to_power = num_exp_terms,
-    data_per_pt = (useDerivsFlag) ? numContinuousVars + 1 : 1;;
-  for (i=1; i<terms_order; ++i)
-    terms_to_power *= num_exp_terms;
-  return (Real)(samples * data_per_pt) / (Real)terms_to_power;
+  size_t data_per_pt = (useDerivsFlag) ? numContinuousVars + 1 : 1;;
+  return (Real)(samples * data_per_pt) /
+    std::pow((Real)num_exp_terms, terms_order);
 }
 
 } // namespace Dakota

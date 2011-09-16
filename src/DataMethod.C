@@ -111,9 +111,9 @@ DataMethodRep::DataMethodRep():
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
   expansionTerms(0), expansionSamples(0), cubIntOrder(USHRT_MAX),
-  collocationPoints(0), collocationRatio(0.),
-  collocRatioSquaredTermsFlag(false), probCollocFlag(false),
-  allVarsFlag(false), //expansionSampleType("lhs"), sampleType("lhs"),
+  collocationPoints(0), collocationRatio(0.), collocRatioTermsOrder(1.),
+  probCollocFlag(false), allVarsFlag(false),
+  //expansionSampleType("lhs"), sampleType("lhs"),
   distributionType("cumulative"), responseLevelMappingType("probabilities"),
   emulatorSamples(0), emulatorType(NO_EMULATOR), rejectionType("delayed"),
   metropolisType("hastings"),proposalCovScale(1.0),likelihoodScale(1.0),
@@ -209,7 +209,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << nestingOverride << growthOverride << expansionType << expansionTerms
     << expansionOrder << expansionSamples << expansionSampleType
     << quadratureOrder << sparseGridLevel << anisoGridDimPref << cubIntOrder
-    << collocationPoints << collocationRatio << collocRatioSquaredTermsFlag
+    << collocationPoints << collocationRatio << collocRatioTermsOrder
     << collocPtReuse << probCollocFlag << expansionImportFile << sampleType
     << reliabilitySearchType << reliabilityIntegration << integrationRefine
     << nondOptAlgorithm << distributionType << responseLevelMappingType
@@ -311,7 +311,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> nestingOverride >> growthOverride >> expansionType >> expansionTerms
     >> expansionOrder >> expansionSamples >> expansionSampleType
     >> quadratureOrder >> sparseGridLevel >> anisoGridDimPref >> cubIntOrder
-    >> collocationPoints >> collocationRatio >> collocRatioSquaredTermsFlag
+    >> collocationPoints >> collocationRatio >> collocRatioTermsOrder
     >> collocPtReuse >> probCollocFlag >> expansionImportFile >> sampleType
     >> reliabilitySearchType >> reliabilityIntegration >> integrationRefine
     >> nondOptAlgorithm >> distributionType >> responseLevelMappingType
@@ -413,7 +413,7 @@ void DataMethodRep::write(std::ostream& s) const
     << nestingOverride << growthOverride << expansionType << expansionTerms
     << expansionOrder << expansionSamples << expansionSampleType
     << quadratureOrder << sparseGridLevel << anisoGridDimPref << cubIntOrder
-    << collocationPoints << collocationRatio << collocRatioSquaredTermsFlag
+    << collocationPoints << collocationRatio << collocRatioTermsOrder
     << collocPtReuse << probCollocFlag << expansionImportFile << sampleType
     << reliabilitySearchType << reliabilityIntegration << integrationRefine
     << nondOptAlgorithm << distributionType << responseLevelMappingType
