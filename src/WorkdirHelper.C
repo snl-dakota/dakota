@@ -21,53 +21,62 @@
 
 namespace Dakota {
 
-char* WorkdirHelper::cwdBegin     = 0;
-char* WorkdirHelper::envPathBegin = 0;
+std::string WorkdirHelper::startupPWD  = get_cwd();
+std::string WorkdirHelper::startupPATH = init_startup_path();
 
 std::vector<char> WorkdirHelper::cwdAndEnvPathBuf =
   std::vector<char>(get_cwd().size(), DAK_PATH_SEP);
 
-#ifdef DAKOTA_HAVE_BOOST_FS
-std::string WorkdirHelper::bfsStartupCwd = get_cwd();
-#endif
 
-
-/** Gets the CWD and the $PATH and stuffs them into a common buffer
+/** Gets the $PWD and the $PATH and stuffs them into a common buffer
  */
-void WorkdirHelper::get_dakpath()
+char* WorkdirHelper::get_dakpath()
+{
+  size_t cwd_len  = startupPWD.size();
+  size_t path_len = startupPATH.size();
+
+  // Desired $PATH includes space for $PWD (cwd_len + 1 colon char)
+  //
+  // Allocate enough space for BOTH strings + "PATH=" + 2 NULL terminators
+  //                                          (and now an xtra colon for $PWD)
+  size_t total_buf_size = 2*cwd_len + path_len + 8;
+
+  cwdAndEnvPathBuf.resize(total_buf_size, DAK_PATH_SEP);
+  char* cwd = cwdAndEnvPathBuf.data();  // aka &cwdAndEnvPathBuf[0]
+
+  // first, copy cwd into the buffer and terminate with NULL as a separator
+  std::copy(startupPWD.data(), startupPWD.data() + cwd_len, cwd);
+  cwdAndEnvPathBuf[cwd_len] = 0;
+
+  // second, copy PATH environment variable into the same buffer
+  char* env_path = cwd + cwd_len + 1;
+
+  // WJB:  dataBuf is now a vector, so consider std::copy instead of memcpy
+  std::memcpy(env_path, DAK_PATH_ENV_NAME "=", 5);
+
+  std::memcpy(env_path+5, startupPWD.data(), cwd_len);
+  std::memcpy(env_path+6+cwd_len, startupPATH.data(), path_len);
+  env_path[path_len+cwd_len+6] = 0;
+
+  putenv_impl(env_path);
+  return env_path;
+}
+
+
+/** Gets the $PATH (%PATH% on windows) and returns the std::string value
+ */
+std::string WorkdirHelper::init_startup_path()
 {
   char* env_path = std::getenv(DAK_PATH_ENV_NAME);
 
   if (!env_path) {
     Cerr << "\nERROR: "
-         << "getenv(\"" DAK_PATH_ENV_NAME "\") failed in get_dakpath().\n"
+         << "getenv(\"" DAK_PATH_ENV_NAME "\") failed in init_startup_path().\n"
          << std::endl;
     abort_handler(-1);
   }
 
-  const std::string& cwd = get_cwd();
-#ifdef DAKOTA_HAVE_BOOST_FS
-  assert(cwd == bfsStartupCwd);
-#endif
-
-  size_t path_len = std::strlen(env_path);
-  size_t cwd_len  = cwd.size();
-
-  // Allocate enough space for BOTH strings + "PATH=" + 2 NULL terminators
-  size_t total_buf_size = cwd_len + path_len + 7;
-
-  cwdAndEnvPathBuf.resize(total_buf_size, DAK_PATH_SEP);
-  cwdBegin = cwdAndEnvPathBuf.data();  // or &cwdAndEnvPathBuf[0]
-
-  // first, copy cwd into the buffer and terminate with NULL as a separator
-  std::memcpy(cwdBegin, cwd.data(), cwd_len);
-  cwdBegin[cwd_len] = 0;
-
-  // second, copy PATH environment variable into the same buffer
-  envPathBegin = cwdBegin + cwd_len + 1;
-  std::memcpy(envPathBegin, DAK_PATH_ENV_NAME "=", 5);
-  std::memcpy(envPathBegin+5, env_path, path_len);
-  envPathBegin[path_len+5] = 0;
+  return std::string(env_path);
 }
 
 
@@ -75,13 +84,13 @@ void WorkdirHelper::get_dakpath()
     was launched */
 void WorkdirHelper::reset()
 {
-  if (DAK_CHDIR(cwdBegin)) {
-    Cerr << "\nError: chdir(" << cwdBegin
+  if (DAK_CHDIR( startupPWD.c_str() )) {
+    Cerr << "\nError: chdir(" << startupPWD.c_str()
          << ") failed in workdir_reset()" << std::endl;
     abort_handler(-1);
   }
 
-  putenv_impl(envPathBegin);
+  putenv_impl( &cwdAndEnvPathBuf[startupPWD.size()+1] );
 }
 
 

@@ -59,19 +59,16 @@ class WorkdirHelper
   friend class CommandShell;                          // calls change_cwd, reset
   friend class ForkAnalysisCode;                      // calls arg_adjust
 
-  /// Treat legacy utilities as "blackboxes"
+  /// Treat get_npath as a legacy, "blackbox" utility
   friend void get_npath(int, char**);                 // calls get_dakpath
-  friend int not_executable(const char*, const char*);// calls get_dakpath
-
-
-  // WJB:  Remove friendship after Symlink is re-written (use std::string!)
-  //       (perhaps Symlink goes away entirely -- USE Boost.Filesystem!?)
-  friend int Symlink(const char*, const char*);       // general BS data access
-
 
 private:
 
-  static void get_dakpath();
+  /// Initializes class member, startupPATH
+  static std::string init_startup_path();
+
+  /// "Factory" for memory buffer needed by get_npath
+  static char* get_dakpath();
 
   static void change_cwd(const std::string& wd_str);  // old nm: workdir_adjust
   static void reset();                                // old nm: workdir_reset
@@ -83,14 +80,17 @@ private:
   //- Heading: Data
   //
 
-  static char* cwdBegin;      // old name: dakdir
-  static char* envPathBegin;  // old name: dakpath
+  /// Value of $PWD var upon entry to dakota main()
+  static std::string startupPWD; // "old name": dakdir (ptr to the start of cwd)
+
+  /// Value of $PATH (%PATH% on windows) var upon entry to dakota main()
+  static std::string startupPATH; // "old name": dakpath (ptr just past the end of cwd)
+
 
   static std::vector<char> cwdAndEnvPathBuf; // improve mem mgmt of key buffer
-  //static std::string startupWorkdir; // workdir upon entry to dakota main()
+
 
 #ifdef DAKOTA_HAVE_BOOST_FS
-  static std::string bfsStartupCwd; // rename var IF still useful after DBGing
   static bfs::path dakLaunchDir;    // WJB: should be "similar" to DMG dakdir
 #endif
 

@@ -148,9 +148,9 @@ int not_executable(const char *driver_name, const char *tdir)
 		goto ret;
 #endif
 
-	WorkdirHelper::get_dakpath();
+	std::string cwd = get_cwd();
 
-	clen = std::strlen(WorkdirHelper::cwdBegin);
+	clen = cwd.size();
 	dlen = std::strlen(driver_name);
 	tlen = std::strlen(tdir);
 	rc = 1;
@@ -164,7 +164,7 @@ int not_executable(const char *driver_name, const char *tdir)
 		p = "";
 
 	else if (clen + dlen + 2 < sizeof(buf)) {
-		std::memcpy(buf,WorkdirHelper::cwdBegin,clen);
+		std::memcpy(buf,cwd.c_str(),clen);
 		buf[clen] = '/';
 		std::strcpy(buf+clen+1, driver_name);
 		sv = stat(buf,&sb);
@@ -581,18 +581,18 @@ Symlink(const char *from, const char *to)
 	char buf[MAXPATHLEN], *b;
 	int rc;
 	size_t L, L1;
-	static size_t ddlen;
-
+	static size_t ddlen;  // WJB: how does one get deterministic behavior 5 lines
+                              //      below if ddlen is NOT initialized?
 	b = buf;
 	if (*from != '/') {
-		WorkdirHelper::get_dakpath(); // for WorkdirHelper::cwdBegin
+		std::string cwd = get_cwd();
 		if (!ddlen)
-			ddlen = std::strlen(WorkdirHelper::cwdBegin);
+			ddlen = cwd.size();
 		L = std::strlen(from);
 		L1 = L + ddlen + 2;
 		if (L1 > sizeof(buf))
 			b = new char [L1];
-		std::strcpy(b, WorkdirHelper::cwdBegin);
+		std::strcpy(b, cwd.c_str());
 		b[ddlen] = '/';
 		std::strcpy(b + ddlen + 1, from);
 		from = b;
@@ -967,9 +967,10 @@ static char* Malloc(size_t L)
  void
 get_npath(int appdrive, char **pnpath)
 {
-	char *p, *q, *q0, *s;
+	char *p, *q, *q0;
+
 	int c, dot, nrel, needcolon;
-	size_t L, Lc, Lp;
+	size_t L;
 #ifdef _WIN32
 	char *appdir, buf[MAXPATHLEN];
 	int nrel2;
@@ -977,11 +978,16 @@ get_npath(int appdrive, char **pnpath)
 
 	appdrive = Map(appdrive & 0xff);
 
-	WorkdirHelper::get_dakpath();
-	Lc = std::strlen(WorkdirHelper::cwdBegin);
-	Lp = std::strlen(WorkdirHelper::envPathBegin);
+	const std::string cwd_str( get_cwd() );
+	size_t wd_strlen = cwd_str.size();
+	const char* cwd  = cwd_str.c_str();
+
+	char* env_path = WorkdirHelper::get_dakpath();
+	size_t env_path_strlen = std::strlen(env_path);
+
 #ifdef _WIN32
 	if (appdrive && appdrive != dakdrive) {
+		const char* s;
 		buf[0] = appdrive;
 		buf[1] = ':';
 		buf[2] = 0;
@@ -998,18 +1004,20 @@ cd_fail:
 			}
 		appdir = buf;
 		appdir[L] = 0;
-		if (!SetCurrentDirectory(s = WorkdirHelper::cwdBegin))
+
+                // WJB - NOTE:  seems odd that non-WIN32 case has no chdir
+		if (!SetCurrentDirectory(s = cwd))
 			goto cd_fail;
 		}
 	else
-		appdir = WorkdirHelper::cwdBegin;
+		appdir = cwd;
 	dot = 1;
 	nrel2 = 0;
 #else
 	dot = 0;
 #endif
 	nrel = 0;
-	for(p = WorkdirHelper::envPathBegin+5; *p; ++p) {
+	for(p = env_path+5; *p; ++p) {
 		switch(Map(*p)) {
 		  case DAK_PATH_SEP:
 			++dot;
@@ -1060,23 +1068,24 @@ cd_fail:
 	else
 		dot = 1;
 #ifdef _WIN32
-	L = Lp + nrel*(Lc+1) + 1;
+	L = env_path_strlen + nrel*(wd_strlen+1) + 1;
 	if (nrel2)
 		L += nrel2*(std::strlen(appdir) + 1);
 	*pnpath = q = new char [L];
-	std::memcpy(q, WorkdirHelper::envPathBegin, 5);
-	std::memcpy(q += 5, WorkdirHelper::cwdBegin, Lc);
-	q += Lc;
+	std::memcpy(q, env_path, 5);
+	std::memcpy(q += 5, cwd, wd_strlen);
+	q += wd_strlen;
 	dot = 1;
 #else
-	L = Lp + nrel*(Lc+1) + 3;
+	L = env_path_strlen + nrel*(wd_strlen+1) + 3;
 	*pnpath = q = new char [L];
-	std::memcpy(q, WorkdirHelper::envPathBegin, 5);
+	std::memcpy(q, env_path, 5);
 	q += 5;
 	*q++ = '.';
 #endif
 	needcolon = 1;
-	for(p = WorkdirHelper::envPathBegin+5; *p; ++p) {
+	for(p = env_path+5; *p; ++p) {
+		const char* s;
 		switch(c = Map(*q = *p)) {
 		  case DAK_PATH_SEP:
  dotcheck:
@@ -1087,7 +1096,7 @@ cd_fail:
 					*q++ = ':';
 					q0 = q;
 					}
-				for(s= WorkdirHelper::cwdBegin; (*q = *s); ++q, ++s);
+				for(s= cwd; (*q = *s); ++q, ++s);
 				q = pathsimp(q0);
 				needcolon = 1;
 				}
@@ -1103,7 +1112,7 @@ cd_fail:
 				q0 = q;
 				needcolon = 0;
 				}
-			s = WorkdirHelper::cwdBegin;
+			s = cwd;
 #ifdef _WIN32
 			if (p[1] == ':') {
 				*q = *p;
