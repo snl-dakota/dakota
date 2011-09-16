@@ -24,6 +24,9 @@ namespace Dakota {
 char* WorkdirHelper::cwdBegin     = 0;
 char* WorkdirHelper::envPathBegin = 0;
 
+std::vector<char> WorkdirHelper::cwdAndEnvPathBuf =
+  std::vector<char>(get_cwd().size(), DAK_PATH_SEP);
+
 #ifdef DAKOTA_HAVE_BOOST_FS
 std::string WorkdirHelper::bfsStartupCwd = get_cwd();
 #endif
@@ -53,7 +56,8 @@ void WorkdirHelper::get_dakpath()
   // Allocate enough space for BOTH strings + "PATH=" + 2 NULL terminators
   size_t total_buf_size = cwd_len + path_len + 7;
 
-  cwdBegin = new char [total_buf_size];
+  cwdAndEnvPathBuf.resize(total_buf_size, DAK_PATH_SEP);
+  cwdBegin = cwdAndEnvPathBuf.data();  // or &cwdAndEnvPathBuf[0]
 
   // first, copy cwd into the buffer and terminate with NULL as a separator
   std::memcpy(cwdBegin, cwd.data(), cwd_len);

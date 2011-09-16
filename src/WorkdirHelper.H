@@ -86,8 +86,8 @@ private:
   static char* cwdBegin;      // old name: dakdir
   static char* envPathBegin;  // old name: dakpath
 
-  //static std::pair<std::string, std::string> startupCwdEnvPathPair;
-  static std::string startupWorkdir; // workdir upon entry to dakota main()
+  static std::vector<char> cwdAndEnvPathBuf; // improve mem mgmt of key buffer
+  //static std::string startupWorkdir; // workdir upon entry to dakota main()
 
 #ifdef DAKOTA_HAVE_BOOST_FS
   static std::string bfsStartupCwd; // rename var IF still useful after DBGing
