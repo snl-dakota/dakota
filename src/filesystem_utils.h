@@ -44,7 +44,7 @@ void workdir_adjust(const std::string& workdir);
 /// Utility function from boost/test, not available in the DAKOTA snapshot
 inline void putenv_impl(const std::string& name, const std::string& value)
 {
-  setenv(name.c_str(), value.c_str(), true);
+  setenv(name.c_str(), value.c_str(), 1);
 }
 
 inline void putenv_impl(const std::string& name_and_value)

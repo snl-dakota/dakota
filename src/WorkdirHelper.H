@@ -57,20 +57,20 @@ class WorkdirHelper
   //- Heading: Friends
   //
 
-  friend class CommandShell;                          // calls change_cwd, reset
-  friend class ForkAnalysisCode;                      // calls arg_adjust
+  friend class CommandShell;                        // calls change_cwd, reset
+  friend class ForkAnalysisCode;                    // calls arg_adjust
 
   /// Treat get_npath as a legacy, "blackbox" utility
-  friend void get_npath(int, char**);                 // calls get_dakpath
+  friend void get_npath(int, char**);               // dakPreferredEnvPath access
 
   /// Treat my_cp as a legacy, "blackbox" utility
   friend int my_cp(const char*, const struct stat*,
-                   int, int, void*);                  // calls symlink
+                   int, int, void*);                // calls symlink
 
 public:
 
   /// Query for dakota's startup $PWD
-  //static const std::string& startup_pwd() { return startupPWD; }
+  static const std::string& startup_pwd() { return startupPWD; }
 
 
 private:
@@ -78,11 +78,11 @@ private:
   /// Initializes class member, startupPATH
   static std::string init_startup_path();
 
+  /// Initializes class member, dakPreferredEnvPath, and overwrites $PATH env
+  static std::string set_preferred_env_path();
+
   /// "Helper"/wrapper for system symlink when "from" needs path adjustment
   static int symlink(const char* from, const char* to);
-
-  /// "Factory" for memory buffer (cwdAndEnvPathBuf) needed by get_npath
-  static char* get_dakpath();
 
   static void change_cwd(const std::string& wd_str);  // old nm: workdir_adjust
   static void reset();                                // old nm: workdir_reset
@@ -100,7 +100,8 @@ private:
   /// Value of $PATH (%PATH% on windows) var upon entry to dakota main()
   static std::string startupPATH;
 
-  static std::vector<char> cwdAndEnvPathBuf; // WJB: need concat of PWD and PATH?
+  /// PATH="<parent_of_dakexe>:startupPWD:startupPATH"
+  static std::string dakPreferredEnvPath;
 
 
 #ifdef DAKOTA_HAVE_BOOST_FS

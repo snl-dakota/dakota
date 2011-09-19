@@ -12,7 +12,7 @@
 
 #include "filesystem_utils.h"
 #include "global_defs.h"
-#include "WorkdirHelper.H" // for WorkdirHelper::get_dakpath()
+#include "WorkdirHelper.H" // for WorkdirHelper::dakPreferredEnvPath
 #include <boost/array.hpp>
 
 #include <sys/param.h>
@@ -699,11 +699,13 @@ get_npath(int appdrive, char **pnpath)
 
 	appdrive = Map(appdrive & 0xff);
 
-	const std::string cwd_str( get_cwd() );
-	size_t wd_strlen = cwd_str.size();
-	const char* cwd  = cwd_str.c_str();
+	// WJB:  Is startup wdir or cwd desired here?
+	//       maybe BOTH need to "find" the analysis driver?
+	const std::string& dak_startup_dir = WorkdirHelper::startup_pwd();
+	const char* startup_pwd = dak_startup_dir.c_str();
+	size_t wd_strlen = dak_startup_dir.size();
 
-	char* env_path = WorkdirHelper::get_dakpath();
+	char* env_path = (char*)WorkdirHelper::dakPreferredEnvPath.c_str();
 	size_t env_path_strlen = std::strlen(env_path);
 
 #ifdef _WIN32
@@ -727,11 +729,11 @@ cd_fail:
 		appdir[L] = 0;
 
                 // WJB - NOTE:  seems odd that non-WIN32 case has no chdir
-		if (!SetCurrentDirectory(s = cwd))
+		if (!SetCurrentDirectory(s = startup_pwd))
 			goto cd_fail;
 		}
 	else
-		appdir = cwd;
+		appdir = startup_pwd;
 	dot = 1;
 	nrel2 = 0;
 #else
@@ -794,7 +796,7 @@ cd_fail:
 		L += nrel2*(std::strlen(appdir) + 1);
 	*pnpath = q = new char [L];
 	std::memcpy(q, env_path, 5);
-	std::memcpy(q += 5, cwd, wd_strlen);
+	std::memcpy(q += 5, startup_pwd, wd_strlen);
 	q += wd_strlen;
 	dot = 1;
 #else
@@ -817,7 +819,7 @@ cd_fail:
 					*q++ = ':';
 					q0 = q;
 					}
-				for(s= cwd; (*q = *s); ++q, ++s);
+				for(s= startup_pwd; (*q = *s); ++q, ++s);
 				q = pathsimp(q0);
 				needcolon = 1;
 				}
@@ -833,7 +835,7 @@ cd_fail:
 				q0 = q;
 				needcolon = 0;
 				}
-			s = cwd;
+			s = startup_pwd;
 #ifdef _WIN32
 			if (p[1] == ':') {
 				*q = *p;

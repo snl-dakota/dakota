@@ -15,8 +15,13 @@
 #include "filesystem_utils.h" // undesirable dependency for workdir_adjust
                               // WJB: wd_adjust has a MAJOR dependency on statics in filesystem_utils.C
 #include <boost/array.hpp>
+#include <boost/lexical_cast.hpp>
 #include <sys/param.h>
 #include <cassert>
+
+#if defined(__APPLE__)
+#include <mach-o/dyld.h>
+#endif
 
 
 namespace Dakota {
@@ -24,43 +29,80 @@ namespace Dakota {
 std::string WorkdirHelper::startupPWD  = get_cwd();
 std::string WorkdirHelper::startupPATH = init_startup_path();
 
-std::vector<char> WorkdirHelper::cwdAndEnvPathBuf =
-  std::vector<char>(get_cwd().size(), DAK_PATH_SEP);
+std::string WorkdirHelper::dakPreferredEnvPath = set_preferred_env_path();
+
+
+/** Overwrites $PATH with additional directories so that analysis driver
+ *  detection is (hopefully) more robust
+ */
+std::string WorkdirHelper::set_preferred_env_path()
+{
+  std::string path_sep_string(1, DAK_PATH_SEP);
+  std::string preferred_env_path(DAK_PATH_ENV_NAME"=");
+
+  std::string parent_of_dakexe = std::string();
+  /* WJB - ToDo: implement WIN32 version, leveraging GetModuleFileName
+  std::string parent_of_dakexe(FILENAME_MAX, '*');
+
+#if defined(__APPLE__)
+
+  uint32_t exe_pathlen = FILENAME_MAX;
+  if (_NSGetExecutablePath((char*)parent_of_dakexe.c_str(),
+                           &exe_pathlen) == 0) {
+    std::string::size_type split_pos = parent_of_dakexe.find_last_of("/");
+    parent_of_dakexe = parent_of_dakexe.substr(0, split_pos);
+  }
+  else {
+    Cerr << "\nWarning: _NSGetExecutablePath() failed; continuing anyway.."
+         << std::endl;
+    parent_of_dakexe = std::string();
+    //Cout << "buffer too small; need " << exe_pathlen << std::endl;
+    //abort_handler(-1);
+  }
+
+#elif !defined(_WIN32)
+
+  std::string path_for_readlink =
+    "/proc/" + boost::lexical_cast<std::string>(getpid()) + "/exe";
+
+  if (readlink(path_for_readlink.c_str(), (char*)parent_of_dakexe.c_str(),
+               FILENAME_MAX) != -1) {
+    //parent_of_dakexe[pos] = 0; // WJB: verify already NULL terminated
+    std::string::size_type split_pos = parent_of_dakexe.find_last_of("/");
+    parent_of_dakexe = parent_of_dakexe.substr(0, split_pos);
+  }
+  else {
+    Cerr << "\nWarning: readlink() failed; continuing anyway" << std::endl;
+    parent_of_dakexe = std::string();
+    //abort_handler(-1);
+  }
+
+#else
+
+  parent_of_dakexe = std::string(); // default case (empty string should be OK)
+
+#endif
+// WJB:  end long commented-out block */
+
+  preferred_env_path += parent_of_dakexe;
+  Cout << "Analysis Driver POTENTIALLY in " << parent_of_dakexe << std::endl;
+
+  preferred_env_path += path_sep_string + get_cwd() + path_sep_string;
+  preferred_env_path += init_startup_path();
+
+  putenv_impl(preferred_env_path);
+
+  return preferred_env_path;
+}
 
 
 /** Gets the $PWD and the $PATH and stuffs them into a common buffer
- */
+ * 
 char* WorkdirHelper::get_dakpath()
 {
-  size_t cwd_len  = startupPWD.size();
-  size_t path_len = startupPATH.size();
-
-  // Desired $PATH includes space for $PWD (cwd_len + 1 colon char)
-  //
-  // Allocate enough space for BOTH strings + "PATH=" + 2 NULL terminators
-  //                                          (and now an xtra colon for $PWD)
-  size_t total_buf_size = 2*cwd_len + path_len + 8;
-
-  cwdAndEnvPathBuf.resize(total_buf_size, DAK_PATH_SEP);
-  char* cwd = cwdAndEnvPathBuf.data();  // aka &cwdAndEnvPathBuf[0]
-
-  // first, copy cwd into the buffer and terminate with NULL as a separator
-  std::copy(startupPWD.data(), startupPWD.data() + cwd_len, cwd);
-  cwdAndEnvPathBuf[cwd_len] = 0;
-
-  // second, copy PATH environment variable into the same buffer
-  char* env_path = cwd + cwd_len + 1;
-
-  // WJB:  dataBuf is now a vector, so consider std::copy instead of memcpy
-  std::memcpy(env_path, DAK_PATH_ENV_NAME "=", 5);
-
-  std::memcpy(env_path+5, startupPWD.data(), cwd_len);
-  std::memcpy(env_path+6+cwd_len, startupPATH.data(), path_len);
-  env_path[path_len+cwd_len+6] = 0;
-
-  putenv_impl(env_path);
-  return env_path;
-}
+  // WJB - ToDo:  OFFICIALLY retire this legacy global string buf/"factory"!
+  return (char*)cwdAndEnvPathBuf.c_str();
+} */
 
 
 /** Gets the $PATH (%PATH% on windows) and returns the std::string value
@@ -90,7 +132,7 @@ void WorkdirHelper::reset()
     abort_handler(-1);
   }
 
-  putenv_impl( &cwdAndEnvPathBuf[startupPWD.size()+1] );
+  putenv_impl(dakPreferredEnvPath);
 }
 
 
