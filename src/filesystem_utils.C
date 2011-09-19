@@ -10,15 +10,9 @@
 //-
 //- Version: $Id$
 
-/*
- *  not_executable(const char *driver_name) checks whether driver_name is an 
- *  executable file appearing somewhere in $PATH and returns 0 if so,
- *  1 if not found, 2 if found but not executable.
- */
-
 #include "filesystem_utils.h"
 #include "global_defs.h"
-#include "WorkdirHelper.H"
+#include "WorkdirHelper.H" // for WorkdirHelper::get_dakpath()
 #include <boost/array.hpp>
 
 #include <sys/param.h>
@@ -49,208 +43,6 @@
 
 namespace Dakota {
 
-int not_executable(const char *driver_name, const char *tdir)
-{
-	static const char *p0;
-	struct stat sb;
-	const char *p;
-	const char *p1;
-	char *b, buf[2048];
-	const char *a2[2], **al;
-	int rc, sv;
-	size_t clen, dlen, plen, tlen;
-	void *a0;
-#ifdef WIN32
-	char dbuf[128];
-#else
-	static uid_t myuid;
-	static gid_t mygid;
-#endif
-
-#ifdef DAKOTA_HAVE_BOOST_FS
-        bfs::path dak_launch_dir( bfs::initial_path<bfs::path>() );
-
-        // declaring this here instead of just-in-time due to goto/_WIN32
-        std::string bfs_cwdir = dak_launch_dir.string();
-        //Cout << "dakota launched from: " << bfs_cwdir << std::endl;
-
-        for( bfs::directory_iterator dir_iter(dak_launch_dir), dir_end;
-             dir_iter != dir_end; ++dir_iter ) {
-          //boost::regex analysis_driver(driver_name);
-          //if (boost::regex_search( dir_iter->path().filename().string(),
-                                   //analysis_driver) )
-          if (dir_iter->path().file_string() == std::string(driver_name)) {
-            Cout << "Analysis Driver FOUND in " << bfs_cwdir
-                 << " -- full path is: " << dir_iter->path() << std::endl;
-          }
-        }
-        if (tdir) {
-          bfs::path template_dir( bfs::initial_path<bfs::path>() );
-          template_dir = bfs::system_complete( bfs::path(tdir) );
-          Cout << "Template_dir for AC: " << template_dir.string() << std::endl;
-          /* WJB - ToDo:  repeat file search in tdir block, ~line 316
-              Cout << "Analysis Driver FOUND in " << template_dir.string()
-                   << " -- full path is: " << template_dir_iter->path()
-                   << std::endl;
-          */
-        }
-#endif  // DAKOTA_HAVE_BOOST_FS
-
-	/* allow shell assignments and quotes around executable names */
-	/* that may involve blanks */
-	a2[0] = driver_name;
-	a2[1] = 0;
-	al = arg_list_adjust(a2,&a0);
-	driver_name = al[0];
-
-	rc = 0;
-	if (!p0) {
-		p0 = std::getenv("PATH");
-#ifdef WIN32
-		if (!p0)
-			p0 = std::getenv("Path");
-#else
-		myuid = geteuid();
-		mygid = getegid();
-#endif
-		if (p0)
-			while(*p0 <= ' ' && *p0)
-				++p0;
-		else
-			p0 = "";
-		}
-#ifdef WIN32
-	// make sure we have a suitable suffix
-	if ((p = strrchr(driver_name, '.'))) {
-		if (std::strlen(++p) != 3)
-			p = 0;
-		else {
-			for(b = dbuf; *p; ++b, ++p)
-				*b = tolower(*p);
-			*b = 0;
-			if (std::strcmp(dbuf,"exe") && std::strcmp(dbuf,"bat") && std::strcmp(dbuf, "cmd"))
-				p = 0;
-			}
-		}
-	if (!p) {
-		dlen = std::strlen(driver_name);
-		if (dlen + 5 > sizeof(dbuf)) {
-			rc = 1;
-			goto ret;
-			}
-		std::strcpy(dbuf, driver_name);
-		std::strcpy(dbuf+dlen, ".exe");
-		driver_name = dbuf;
-		}
-
-	// . is always implicitly in $Path under MS Windows; check it now
-	if (!stat(driver_name, &sb))
-		goto ret;
-#endif
-
-	std::string cwd = get_cwd();
-
-	clen = cwd.size();
-	dlen = std::strlen(driver_name);
-	tlen = std::strlen(tdir);
-	rc = 1;
-	p = p0;
-	if (std::strchr(driver_name, '/')
-#ifdef _WIN32
-		|| std::strchr(driver_name, '\\')
-		|| (dlen > 2 && driver_name[1] == ':')
-#endif
-		)
-		p = "";
-
-	else if (clen + dlen + 2 < sizeof(buf)) {
-		std::memcpy(buf,cwd.c_str(),clen);
-		buf[clen] = '/';
-		std::strcpy(buf+clen+1, driver_name);
-		sv = stat(buf,&sb);
-		if (sv == 0)
-			goto stat_check;
-		}
-
-	else if (tdir && *tdir && tlen + dlen + 2 < sizeof(buf)) {
-		std::memcpy(buf,tdir,tlen);
-		buf[tlen] = '/';
-		std::strcpy(buf+tlen+1, driver_name);
-		sv = stat(buf,&sb);
-		if (sv == 0)
-			goto stat_check;
-		}
-
-	for(;;) {
-		for(p1 = p;; ++p1) {
-			switch(*p1) {
-			  case 0:
-#ifdef _WIN32
-			  case ';':
-#else
-			  case ':':
-#endif
-				goto break2;
-			  }
-			}
- break2:
-		if (p1 == p || (p1 == p + 1 && *p == '.'))
-			sv = stat(driver_name, &sb);
-		else {
-			plen = p1 - p;
-			while(plen && p[plen-1] <= ' ')
-				--plen;
-			if (plen + dlen + 2 > sizeof(buf))
-				sv = 1;
-			else {
-				std::strncpy(buf,p,plen);
-				b = buf + plen;
-				*b++ = '/';
-				std::strcpy(b, driver_name);
-				sv = stat(buf, &sb);
-				}
-			}
-		if (!sv) {
- stat_check:
-#ifdef __CYGWIN__
-			rc = 2;
-			if (sb.st_mode & (S_IXUSR|S_IXGRP|S_IXOTH)) {
-				rc = 0;
-				goto ret;
-				}
-#elif defined(_WIN32)
-			rc = 0;
-			goto ret;
-#else
-			rc = 2;
-			if (sb.st_uid == myuid) {
-				if (sb.st_mode & S_IXUSR)
-					goto ret0;
-				}
-			else if (sb.st_gid == mygid) {
-				if (sb.st_mode & S_IXGRP)
-					goto ret0;
-				}
-			else if (sb.st_mode & S_IXOTH) {
- ret0:				rc = 0;
-				goto ret;
-				}
-#endif
-			}
-		if (p1 == 0)
-			goto ret;
-		else if (!*p1)
-			break;
-		for(p = p1 + 1; *p <= ' '; ++p)
-		while(*p <= ' ' && *p)
-			if (!*p)
-				goto ret;
-		}
- ret:
-	if (a0)
-		std::free(a0);
-	return rc;
-	}
 
 #ifdef Want_Heartbeat /*{*/
  static time_t start_time;
@@ -302,45 +94,6 @@ void start_dakota_heartbeat(int seconds)
 #endif /*Want_Heartbeat }*/
 	}
 
-#ifdef TEST
- static char *progname;
- static int
-usage(int rc)
-{
-	std::fprintf(rc ? stderr : stdout, "Usage: %s file [file...]\n\
-	to report whether the files exist and are executable.\n", progname);
-	return rc;
-	}
-
- int
-main(int argc, char **argv)
-{
-	char *s;
-	static const char *what[3] = {
-		"executable", "not found", "found but not executable" };
-
-	progname = *argv;
-	if (argc < 2)
-		return usage(1);
-	s = argv[1];
-	if (*s == '-') {
-		if (((s[1] == '?' || s[1] == 'h') && !s[2])
-			  || (s[1] == '-' && !std::strcmp(s+2,"help")))
-			return usage(0);
-		if (s[1] == '-' && s[2] == 0) {
-			--argc;
-			++argv;
-			if (argc < 2)
-				return usage(1);
-			}
-		else
-			return usage(1);
-		}
-	while((s = *++argv))
-		printf("%s is %s.\n", s, what[not_executable(s)]);
-	return 0;
-	}
-#endif
 
 /* Adding sftw.c, sftw.h and rec_cp, rec_rm here for simplicity... */
 
@@ -571,38 +324,6 @@ sftw(const char *name, ftw_fn fn, void *v)
 
 
 /*************** rec_cp and rec_rmdir ****************/
-//static char* Malloc(size_t);   	/* ... replaced by 'new' ... in Symlink. */
-
-#ifndef _WIN32
- int
-Symlink(const char *from, const char *to)
-{
-        // WJB:  Candidate for removal in favor of Boost.Filesystem
-	char buf[MAXPATHLEN], *b;
-	int rc;
-	size_t L, L1;
-	static size_t ddlen;  // WJB: how does one get deterministic behavior 5 lines
-                              //      below if ddlen is NOT initialized?
-	b = buf;
-	if (*from != '/') {
-		std::string cwd = get_cwd();
-		if (!ddlen)
-			ddlen = cwd.size();
-		L = std::strlen(from);
-		L1 = L + ddlen + 2;
-		if (L1 > sizeof(buf))
-			b = new char [L1];
-		std::strcpy(b, cwd.c_str());
-		b[ddlen] = '/';
-		std::strcpy(b + ddlen + 1, from);
-		from = b;
-		}
-	rc = symlink(from, to);
-	if (b != buf)
-		delete [] b;
-	return rc;
-	}
-#endif
 
  static int
 my_recrm(const char *file, const struct stat *sb, int ftype, int depth, void *v)
@@ -698,7 +419,7 @@ buf_incr(Buf *b, size_t Lt)
 	b->buflen = L;
 	}
 
- static int
+ int
 my_cp(const char *file, const struct stat *sb, int ftype, int depth, void *v)
 {
 	Finfo *f = (Finfo*)v;
@@ -744,7 +465,7 @@ my_cp(const char *file, const struct stat *sb, int ftype, int depth, void *v)
 		else
 #ifndef _WIN32
 		     if (f->copy
-			|| (Symlink(file,s) && link(file,s)))
+			|| (WorkdirHelper::symlink(file,s) && link(file,s)))
 #endif
 				{
 				L = sb->st_size;

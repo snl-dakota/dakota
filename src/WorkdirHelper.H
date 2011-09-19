@@ -43,6 +43,7 @@ namespace bfs = boost::filesystem;
 
 #endif // WIN32
 
+#include <sys/stat.h>
 #include <string>
 #include <utility>
 #include <vector>
@@ -62,12 +63,25 @@ class WorkdirHelper
   /// Treat get_npath as a legacy, "blackbox" utility
   friend void get_npath(int, char**);                 // calls get_dakpath
 
+  /// Treat my_cp as a legacy, "blackbox" utility
+  friend int my_cp(const char*, const struct stat*,
+                   int, int, void*);                  // calls symlink
+
+public:
+
+  /// Query for dakota's startup $PWD
+  //static const std::string& startup_pwd() { return startupPWD; }
+
+
 private:
 
   /// Initializes class member, startupPATH
   static std::string init_startup_path();
 
-  /// "Factory" for memory buffer needed by get_npath
+  /// "Helper"/wrapper for system symlink when "from" needs path adjustment
+  static int symlink(const char* from, const char* to);
+
+  /// "Factory" for memory buffer (cwdAndEnvPathBuf) needed by get_npath
   static char* get_dakpath();
 
   static void change_cwd(const std::string& wd_str);  // old nm: workdir_adjust
@@ -81,13 +95,12 @@ private:
   //
 
   /// Value of $PWD var upon entry to dakota main()
-  static std::string startupPWD; // "old name": dakdir (ptr to the start of cwd)
+  static std::string startupPWD;
 
   /// Value of $PATH (%PATH% on windows) var upon entry to dakota main()
-  static std::string startupPATH; // "old name": dakpath (ptr just past the end of cwd)
+  static std::string startupPATH;
 
-
-  static std::vector<char> cwdAndEnvPathBuf; // improve mem mgmt of key buffer
+  static std::vector<char> cwdAndEnvPathBuf; // WJB: need concat of PWD and PATH?
 
 
 #ifdef DAKOTA_HAVE_BOOST_FS
@@ -109,6 +122,17 @@ private:
   /// assignment operator
   WorkdirHelper& operator=(const WorkdirHelper&);
 };
+
+
+inline int WorkdirHelper::symlink(const char* from, const char* to)
+{
+  std::string tmp("/");
+  tmp += from;
+  std::string adjusted_from( (*from != '/') ?
+                             WorkdirHelper::startupPWD + tmp : from );
+
+  return symlink(adjusted_from.c_str(), to);
+}
 
 
 /// Utility function from legacy, "not_executable" module -- DO NOT TOUCH!

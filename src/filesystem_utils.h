@@ -26,8 +26,6 @@
 
 namespace Dakota {
 
-int not_executable(const char*, const char*);
-
 
 int rec_cp(const char *from, const char *todir, int copy,
            int flatten, int replace);

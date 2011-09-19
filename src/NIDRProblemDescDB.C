@@ -17,7 +17,7 @@
 #include "NIDRProblemDescDB.H"
 #include "ParallelLibrary.H"
 #include "WorkdirHelper.H"     // for DAK_MKDIR
-#include "filesystem_utils.h"  // for not_executable(...)
+#include "filesystem_utils.h"  // for get_cwd()
 #include "pecos_stat_util.hpp"
 #include <functional>
 #include <stdarg.h>
@@ -522,6 +522,183 @@ iface_true(const char *keyname, Values *val, void **g, void *v)
 {
 	(*(Iface_Info**)g)->di->**(bool DataInterfaceRep::**)v = true;
 	}
+
+/*
+ *  not_executable(const char *driver_name) checks whether driver_name is an 
+ *  executable file appearing somewhere in $PATH and returns 0 if so,
+ *  1 if not found, 2 if found but not executable.
+ */
+int not_executable(const char *driver_name, const char *tdir)
+{
+        static const char *p0;
+        struct stat sb;
+        const char *p;
+        const char *p1;
+        char *b, buf[2048];
+        const char *a2[2], **al;
+        int rc, sv;
+        size_t clen, dlen, plen, tlen;
+        void *a0;
+#ifdef WIN32
+        char dbuf[128];
+#else
+        static uid_t myuid;
+        static gid_t mygid;
+#endif
+
+        /* allow shell assignments and quotes around executable names */
+        /* that may involve blanks */
+        a2[0] = driver_name;
+        a2[1] = 0;
+        al = arg_list_adjust(a2,&a0);
+        driver_name = al[0];
+
+        rc = 0;
+        if (!p0) {
+                p0 = std::getenv("PATH");
+#ifdef WIN32
+                if (!p0)
+                        p0 = std::getenv("Path");
+#else
+                myuid = geteuid();
+                mygid = getegid();
+#endif
+                if (p0)
+                        while(*p0 <= ' ' && *p0)
+                                ++p0;
+                else
+                        p0 = "";
+                }
+#ifdef WIN32
+        // make sure we have a suitable suffix
+        if ((p = strrchr(driver_name, '.'))) {
+                if (std::strlen(++p) != 3)
+                        p = 0;
+                else {
+                        for(b = dbuf; *p; ++b, ++p)
+                                *b = tolower(*p);
+                        *b = 0;
+                        if (std::strcmp(dbuf,"exe") && std::strcmp(dbuf,"bat") && std::strcmp(dbuf, "cmd"))
+                                p = 0;
+                        }
+                }
+        if (!p) {
+                dlen = std::strlen(driver_name);
+                if (dlen + 5 > sizeof(dbuf)) {
+                        rc = 1;
+                        goto ret;
+                        }
+                std::strcpy(dbuf, driver_name);
+                std::strcpy(dbuf+dlen, ".exe");
+                driver_name = dbuf;
+                }
+
+        // . is always implicitly in $Path under MS Windows; check it now
+        if (!stat(driver_name, &sb))
+                goto ret;
+#endif
+
+        std::string cwd( get_cwd() );
+        clen = cwd.size();
+        dlen = std::strlen(driver_name);
+        tlen = std::strlen(tdir);
+        rc = 1;
+        p = p0;
+        if (std::strchr(driver_name, '/')
+#ifdef _WIN32
+                || std::strchr(driver_name, '\\')
+                || (dlen > 2 && driver_name[1] == ':')
+#endif
+                )
+                p = "";
+
+        else if (clen + dlen + 2 < sizeof(buf)) {
+                std::memcpy(buf,cwd.c_str(),clen);
+                buf[clen] = '/';
+                std::strcpy(buf+clen+1, driver_name);
+                sv = stat(buf,&sb);
+                if (sv == 0)
+                        goto stat_check;
+                }
+        else if (tdir && *tdir && tlen + dlen + 2 < sizeof(buf)) {
+                std::memcpy(buf,tdir,tlen);
+                buf[tlen] = '/';
+                std::strcpy(buf+tlen+1, driver_name);
+                sv = stat(buf,&sb);
+                if (sv == 0)
+                        goto stat_check;
+                }
+        for(;;) {
+                for(p1 = p;; ++p1) {
+                        switch(*p1) {
+                          case 0:
+#ifdef _WIN32
+                          case ';':
+#else
+                          case ':':
+#endif
+                                goto break2;
+                          }
+                        }
+ break2:
+                if (p1 == p || (p1 == p + 1 && *p == '.'))
+                        sv = stat(driver_name, &sb);
+                else {
+                        plen = p1 - p;
+                        while(plen && p[plen-1] <= ' ')
+                                --plen;
+                        if (plen + dlen + 2 > sizeof(buf))
+                                sv = 1;
+                        else {
+                                std::strncpy(buf,p,plen);
+                                b = buf + plen;
+                                *b++ = '/';
+                                std::strcpy(b, driver_name);
+                                sv = stat(buf, &sb);
+                                }
+                        }
+                if (!sv) {
+ stat_check:
+#ifdef __CYGWIN__
+                        rc = 2;
+                        if (sb.st_mode & (S_IXUSR|S_IXGRP|S_IXOTH)) {
+                                rc = 0;
+                                goto ret;
+                                }
+#elif defined(_WIN32)
+                        rc = 0;
+                        goto ret;
+#else
+                        rc = 2;
+                        if (sb.st_uid == myuid) {
+                                if (sb.st_mode & S_IXUSR)
+                                        goto ret0;
+                                }
+                        else if (sb.st_gid == mygid) {
+                                if (sb.st_mode & S_IXGRP)
+                                        goto ret0;
+                                }
+                        else if (sb.st_mode & S_IXOTH) {
+ ret0:                          rc = 0;
+                                goto ret;
+                                }
+#endif
+                        }
+                if (p1 == 0)
+                        goto ret;
+                else if (!*p1)
+                        break;
+                for(p = p1 + 1; *p <= ' '; ++p)
+                while(*p <= ' ' && *p)
+                        if (!*p)
+                                goto ret;
+                }
+ ret:
+        if (a0)
+                std::free(a0);
+        return rc;
+        }
+
 
  void NIDRProblemDescDB::
 iface_stop(const char *keyname, Values *val, void **g, void *v)
