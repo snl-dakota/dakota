@@ -323,6 +323,50 @@ sftw(const char *name, ftw_fn fn, void *v)
 	}
 
 
+#ifndef _WIN32
+ static int
+Symlink(const char *from, const char *to)
+{
+#if 0
+        char buf[MAXPATHLEN], *b;
+        int rc;
+        size_t L, L1;
+        static size_t ddlen;
+
+        b = buf;
+
+        if (*from != '/') {
+                if (!ddlen)
+                        ddlen = WorkdirHelper::startup_pwd().size();
+                L = std::strlen(from);
+                L1 = L + ddlen + 2;
+                if (L1 > sizeof(buf))
+                        b = new char [L1];
+                std::strcpy(b, WorkdirHelper::startup_pwd().c_str());
+                b[ddlen] = '/';
+                std::strcpy(b + ddlen + 1, from);
+                from = b;
+                }
+
+        Cout << "oldSymlink from: " << from << '\n' << std::endl;
+
+        rc = symlink(from, to);
+        if (b != buf)
+                delete [] b;
+        return rc;
+#endif
+  std::string tmp("/");
+  tmp += from;
+  std::string adjusted_from( (*from != '/') ?
+                             WorkdirHelper::startup_pwd() + tmp : from );
+
+  //Cout << "newSymlink from: " << adjusted_from << '\n' << std::endl;
+
+  return symlink(adjusted_from.c_str(), to);
+}
+#endif
+
+
 /*************** rec_cp and rec_rmdir ****************/
 
  static int
@@ -465,7 +509,7 @@ my_cp(const char *file, const struct stat *sb, int ftype, int depth, void *v)
 		else
 #ifndef _WIN32
 		     if (f->copy
-			|| (WorkdirHelper::symlink(file,s) && link(file,s)))
+			|| (Symlink(file,s) && link(file,s)))
 #endif
 				{
 				L = sb->st_size;

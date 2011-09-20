@@ -125,17 +125,6 @@ private:
 };
 
 
-inline int WorkdirHelper::symlink(const char* from, const char* to)
-{
-  std::string tmp("/");
-  tmp += from;
-  std::string adjusted_from( (*from != '/') ?
-                             WorkdirHelper::startupPWD + tmp : from );
-
-  return symlink(adjusted_from.c_str(), to);
-}
-
-
 /// Utility function from legacy, "not_executable" module -- DO NOT TOUCH!
 const char** arg_list_adjust(const char **, void **);
 

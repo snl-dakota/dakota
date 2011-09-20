@@ -150,6 +150,18 @@ void WorkdirHelper::change_cwd(const std::string& workdir)
 }
 
 
+/* WJB - ToDo: debug later.. 
+int WorkdirHelper::symlink(const char* from, const char* to)
+{
+  std::string prefix_from("/");
+  prefix_from += from;
+  std::string adjusted_from( (*from != '/') ?
+                             WorkdirHelper::startupPWD + prefix_from : from );
+
+  Cout << "Symlink-newFrom: " << adjusted_from << '\n' << std::endl;
+  return symlink(adjusted_from.c_str(), to);
+}
+*/
 
 /* The following routines assume ASCII or UTF-encoded Unicode. */
 
