@@ -72,6 +72,9 @@ public:
   /// Query for dakota's startup $PWD
   static const std::string& startup_pwd() { return startupPWD; }
 
+  /// Query for dakota's startup $PWD
+  static void prepend_preferred_env_path(const std::string& extra_path);
+
 
 private:
 

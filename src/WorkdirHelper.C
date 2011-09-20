@@ -38,10 +38,6 @@ std::string WorkdirHelper::dakPreferredEnvPath = set_preferred_env_path();
 std::string WorkdirHelper::set_preferred_env_path()
 {
   std::string path_sep_string(1, DAK_PATH_SEP);
-  std::string preferred_env_path(DAK_PATH_ENV_NAME"=");
-
-  std::string parent_of_dakexe = std::string();
-  /* WJB - ToDo: implement WIN32 version, leveraging GetModuleFileName
   std::string parent_of_dakexe(FILENAME_MAX, '*');
 
 #if defined(__APPLE__)
@@ -49,7 +45,7 @@ std::string WorkdirHelper::set_preferred_env_path()
   uint32_t exe_pathlen = FILENAME_MAX;
   if (_NSGetExecutablePath((char*)parent_of_dakexe.c_str(),
                            &exe_pathlen) == 0) {
-    std::string::size_type split_pos = parent_of_dakexe.find_last_of("/");
+    std::string::size_type split_pos = parent_of_dakexe.find_last_of(DAK_SLASH);
     parent_of_dakexe = parent_of_dakexe.substr(0, split_pos);
   }
   else {
@@ -60,7 +56,7 @@ std::string WorkdirHelper::set_preferred_env_path()
     //abort_handler(-1);
   }
 
-#elif !defined(_WIN32)
+#elif defined(__linux__)
 
   std::string path_for_readlink =
     "/proc/" + boost::lexical_cast<std::string>(getpid()) + "/exe";
@@ -68,13 +64,38 @@ std::string WorkdirHelper::set_preferred_env_path()
   if (readlink(path_for_readlink.c_str(), (char*)parent_of_dakexe.c_str(),
                FILENAME_MAX) != -1) {
     //parent_of_dakexe[pos] = 0; // WJB: verify already NULL terminated
-    std::string::size_type split_pos = parent_of_dakexe.find_last_of("/");
+    std::string::size_type split_pos = parent_of_dakexe.find_last_of(DAK_SLASH);
     parent_of_dakexe = parent_of_dakexe.substr(0, split_pos);
   }
   else {
-    Cerr << "\nWarning: readlink() failed; continuing anyway" << std::endl;
+    Cerr << "\nWarning: readlink() failed; continuing anyway.." << std::endl;
     parent_of_dakexe = std::string();
-    //abort_handler(-1);
+  }
+
+#elif defined(_WIN32 || _WIN64)
+
+  if (GetModuleFileName(NULL, (char*)parent_of_dakexe.c_str(),
+                        FILENAME_MAX) != 0) {
+    std::string::size_type split_pos = parent_of_dakexe.find_last_of(DAK_SLASH);
+    parent_of_dakexe = parent_of_dakexe.substr(0, split_pos);
+  }
+  else {
+    Cerr << "\nWarning: GetModuleFileName() failed; continuing anyway.."
+         << std::endl;
+    parent_of_dakexe = std::string();
+  }
+
+#elif defined(__SUNPRO_CC)
+
+  if (char* buf=getexecname() != 0) {
+    parent_of_dakexe = buf;
+    std::string::size_type split_pos = parent_of_dakexe.find_last_of(DAK_SLASH);
+    parent_of_dakexe = parent_of_dakexe.substr(0, split_pos);
+  }
+  else {
+    Cerr << "\nWarning: getexecname() failed; continuing anyway.."
+         << std::endl;
+    parent_of_dakexe = std::string();
   }
 
 #else
@@ -82,10 +103,14 @@ std::string WorkdirHelper::set_preferred_env_path()
   parent_of_dakexe = std::string(); // default case (empty string should be OK)
 
 #endif
-// WJB:  end long commented-out block */
 
-  preferred_env_path += parent_of_dakexe;
-  Cout << "Analysis Driver POTENTIALLY in " << parent_of_dakexe << std::endl;
+  //Cout << "Analysis Driver POTENTIALLY in " << parent_of_dakexe << std::endl;
+
+  std::string preferred_env_path(DAK_PATH_ENV_NAME"=");
+
+  // Go ahead and add '.' to the preferred $PATH here as well since it can't hurt
+
+  preferred_env_path += "." + path_sep_string + parent_of_dakexe;
 
   preferred_env_path += path_sep_string + get_cwd() + path_sep_string;
   preferred_env_path += init_startup_path();
@@ -96,13 +121,27 @@ std::string WorkdirHelper::set_preferred_env_path()
 }
 
 
-/** Gets the $PWD and the $PATH and stuffs them into a common buffer
- * 
-char* WorkdirHelper::get_dakpath()
+/** Overwrites $PATH with an additional directory prepended,
+ *  typically for the purpose of ensuring templatedir is in the $PATH
+ */
+void WorkdirHelper::prepend_preferred_env_path(const std::string& extra_path)
 {
-  // WJB - ToDo:  OFFICIALLY retire this legacy global string buf/"factory"!
-  return (char*)cwdAndEnvPathBuf.c_str();
-} */
+  // Assume a relative extra_path arg is relative to dakota's startupPWD
+  // WJB - NOTE: BoostFS would help here (WIN32 drive letter!)
+  std::string abs_extra_path = (extra_path[0] != DAK_SLASH) ?
+                               startupPWD + std::string(1,DAK_SLASH)+extra_path :
+                               extra_path;
+
+  std::string preferred_env_path(DAK_PATH_ENV_NAME"=");
+  std::string old_preferred_path
+    = dakPreferredEnvPath.substr(preferred_env_path.size());
+
+  preferred_env_path += abs_extra_path + std::string(1, DAK_PATH_SEP)
+                      + old_preferred_path;
+  dakPreferredEnvPath = preferred_env_path;
+
+  putenv_impl(preferred_env_path);
+}
 
 
 /** Gets the $PATH (%PATH% on windows) and returns the std::string value
@@ -296,8 +335,8 @@ arg_list_adjust(const char **arg_list, void **a0)
 
 
 // WJB - ToDo: totally rewrite in C++ (perhaps leverage STL)
-//       should workdir arg be an actual BstFS "path" object??
-//       static member function of WorkdirHelper!  reVal:  StringArray?!
+//       should workdir arg be an actual BoostFS "path" object?
+//       reVal:  StringArray?!
 const char**
 WorkdirHelper::arg_adjust(bool cmd_line_args,
                           const std::vector<std::string>& args,

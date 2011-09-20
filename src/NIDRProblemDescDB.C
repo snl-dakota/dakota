@@ -16,7 +16,7 @@
 
 #include "NIDRProblemDescDB.H"
 #include "ParallelLibrary.H"
-#include "WorkdirHelper.H"     // for DAK_MKDIR
+#include "WorkdirHelper.H"     // for DAK_MKDIR, prepend_preferred_env_path
 #include "filesystem_utils.h"  // for get_cwd()
 #include "pecos_stat_util.hpp"
 #include <functional>
@@ -545,6 +545,9 @@ int not_executable(const char *driver_name, const char *tdir)
         static uid_t myuid;
         static gid_t mygid;
 #endif
+
+        if (tdir)
+          WorkdirHelper::prepend_preferred_env_path(tdir);
 
         /* allow shell assignments and quotes around executable names */
         /* that may involve blanks */
