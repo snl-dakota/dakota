@@ -87,8 +87,10 @@ std::string WorkdirHelper::set_preferred_env_path()
 
 #elif defined(__SUNPRO_CC)
 
-  if (char* buf=getexecname() != 0) {
-    parent_of_dakexe = buf;
+  char* exec_name = (char*)parent_of_dakexe.c_str();
+
+  if (( exec_name=(char*)getexecname() ) != NULL) {
+    parent_of_dakexe = exec_name;
     std::string::size_type split_pos = parent_of_dakexe.find_last_of(DAK_SLASH);
     parent_of_dakexe = parent_of_dakexe.substr(0, split_pos);
   }
