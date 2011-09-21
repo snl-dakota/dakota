@@ -428,6 +428,13 @@ if(ENABLE_SPEC_MAINT)
 endif()
 if(HAVE_ACRO)
   target_link_libraries(dakota_src utilib colin interfaces scolib)
+  foreach(acro_dep utilib colin interfaces scolib 3po pebbl tinyxml)
+    string(TOUPPER "${acro_dep}" ACRODEP)
+    if (HAVE_${ACRODEP})
+      list(APPEND TPL_LIBS ${acro_dep})
+      list(APPEND EXPORT_TARGETS ${acro_dep})
+    endif()
+  endforeach()
 endif()
 
 ## MORE TPLs to append to the link stream, conditionally, based on user prefs
