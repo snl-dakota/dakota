@@ -72,7 +72,7 @@ std::string WorkdirHelper::set_preferred_env_path()
     parent_of_dakexe = std::string();
   }
 
-#elif defined(_WIN32 || _WIN64)
+#elif defined(_WIN32) || defined(_WIN64)
 
   if (GetModuleFileName(NULL, (char*)parent_of_dakexe.c_str(),
                         FILENAME_MAX) != 0) {
