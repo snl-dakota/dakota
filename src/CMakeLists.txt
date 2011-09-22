@@ -230,6 +230,7 @@ set(iterator_src DakotaIterator.C DakotaAnalyzer.C DakotaPStudyDACE.C
 if(HAVE_ACRO)
   add_definitions("-DDAKOTA_COLINY")
   add_definitions("-DDAKOTA_UTILIB")
+
   #include_directories(${Acro_BINARY_DIR} ${Acro_SOURCE_DIR}/include
   #                    ${Acro_BINARY_DIR}/src ${Acro_SOURCE_DIR}/src)
   include_directories(${Acro_BINARY_DIR}/include
@@ -243,10 +244,18 @@ if(HAVE_ACRO)
                       ${Acro_SOURCE_DIR}/packages/utilib/src
                       ${Acro_SOURCE_DIR}/packages/colin/src
                       ${Acro_SOURCE_DIR}/tpl/tinyxml)
+
   list(APPEND interface_src COLINApplication.C)
   list(APPEND iterator_src COLINOptimizer.C)
-  #link_directories(${Dakota_BINARY_DIR}/packages/acro)
-  #list(APPEND TPL_LIBS colin tinyxml 3po)
+
+  target_link_libraries(dakota_src utilib colin interfaces scolib)
+  foreach(acro_dep utilib colin interfaces scolib 3po pebbl tinyxml)
+    string(TOUPPER "${acro_dep}" ACRODEP)
+    if (HAVE_${ACRODEP})
+      list(APPEND TPL_LIBS ${acro_dep})
+      list(APPEND EXPORT_TARGETS ${acro_dep})
+    endif()
+  endforeach()
 endif(HAVE_ACRO)
 
 
@@ -425,16 +434,6 @@ add_library(dakota_src ${Dakota_src})
 if(ENABLE_SPEC_MAINT)
   # force dependency on generated files in source tree
   add_dependencies(dakota_src dakota-spec-files)
-endif()
-if(HAVE_ACRO)
-  target_link_libraries(dakota_src utilib colin interfaces scolib)
-  foreach(acro_dep utilib colin interfaces scolib 3po pebbl tinyxml)
-    string(TOUPPER "${acro_dep}" ACRODEP)
-    if (HAVE_${ACRODEP})
-      list(APPEND TPL_LIBS ${acro_dep})
-      list(APPEND EXPORT_TARGETS ${acro_dep})
-    endif()
-  endforeach()
 endif()
 
 ## MORE TPLs to append to the link stream, conditionally, based on user prefs
