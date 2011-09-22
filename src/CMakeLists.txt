@@ -248,7 +248,6 @@ if(HAVE_ACRO)
   list(APPEND interface_src COLINApplication.C)
   list(APPEND iterator_src COLINOptimizer.C)
 
-  target_link_libraries(dakota_src utilib colin interfaces scolib)
   foreach(acro_dep utilib colin interfaces scolib 3po pebbl tinyxml)
     string(TOUPPER "${acro_dep}" ACRODEP)
     if (HAVE_${ACRODEP})
@@ -431,6 +430,11 @@ set(Dakota_src ${Dakota_src} ${util_src} ${evaldata_src} ${db_src}
     ${iterator_src})
 
 add_library(dakota_src ${Dakota_src})
+
+if(HAVE_ACRO)
+  target_link_libraries(dakota_src utilib colin interfaces scolib)
+endif()
+
 if(ENABLE_SPEC_MAINT)
   # force dependency on generated files in source tree
   add_dependencies(dakota_src dakota-spec-files)
