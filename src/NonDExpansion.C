@@ -1032,6 +1032,12 @@ compute_covariance_metric(const RealSymMatrix& resp_covar_ref)
   RealSymMatrix delta_resp_covar = resp_covar_ref;
   compute_covariance();
   delta_resp_covar -= respCovariance;
+#ifdef DEBUG
+  Cout << "resp_covar_ref:\n"; write_data(Cout, resp_covar_ref,false,true,true);
+  Cout << "respCovariance:\n"; write_data(Cout, respCovariance,false,true,true);
+  Cout << "norm of delta_resp_covar = " << delta_resp_covar.normFrobenius()
+       << std::endl;
+#endif // DEBUG
   return delta_resp_covar.normFrobenius();
 }
 

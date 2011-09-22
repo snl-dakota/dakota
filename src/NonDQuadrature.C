@@ -283,7 +283,7 @@ void NonDQuadrature::nested_quadrature_order(const UShortArray& quad_order_ref)
 	g_rule = Pecos::FULL_EXPONENTIAL; // map l->o without restriction
       while (int_actual < int_goal) {
 	++level;
-	webbur::level_growth_to_order(1, &level, &i_rule, &g_rule, order);
+	webbur::level_growth_to_order_new(1, &level, &i_rule, &g_rule, order);
 	int_actual = 2*order - previous; // 2m-1 - constraints + 1
 	previous = order;
       }
