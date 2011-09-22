@@ -926,6 +926,9 @@ cd_fail:
 		  }
 		break;
 		}
+#if defined(DEBUG)
+	Cout << "get_npath: " << std::string(*pnpath) << '\n' << std::endl;
+#endif
 	}
 
 
