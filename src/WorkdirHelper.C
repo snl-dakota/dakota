@@ -30,6 +30,12 @@ std::string WorkdirHelper::startupPATH = init_startup_path();
 
 std::string WorkdirHelper::dakPreferredEnvPath = set_preferred_env_path();
 
+char* WorkdirHelper::cwdBegin     = 0;
+char* WorkdirHelper::envPathBegin = 0;
+
+std::vector<char> WorkdirHelper::cwdAndEnvPathBuf =
+  std::vector<char>(get_cwd().size(), DAK_PATH_SEP);
+
 
 /** Overwrites $PATH with additional directories so that analysis driver
  *  detection is (hopefully) more robust
@@ -159,6 +165,42 @@ std::string WorkdirHelper::init_startup_path()
   }
 
   return std::string(env_path);
+}
+
+
+/** Gets the CWD and the $PATH and stuffs them into a common buffer
+ */
+void WorkdirHelper::get_dakpath()
+{
+  char* env_path = std::getenv(DAK_PATH_ENV_NAME);
+
+  if (!env_path) {
+    Cerr << "\nERROR: "
+         << "getenv(\"" DAK_PATH_ENV_NAME "\") failed in get_dakpath().\n"
+         << std::endl;
+    abort_handler(-1);
+  }
+
+  const std::string& cwd = get_cwd();
+
+  size_t path_len = std::strlen(env_path);
+  size_t cwd_len  = cwd.size();
+
+  // Allocate enough space for BOTH strings + "PATH=" + 2 NULL terminators
+  size_t total_buf_size = cwd_len + path_len + 7;
+
+  cwdAndEnvPathBuf.resize(total_buf_size, DAK_PATH_SEP);
+  cwdBegin = &cwdAndEnvPathBuf[0];  // or cwdAndEnvPathBuf.data()
+
+  // first, copy cwd into the buffer and terminate with NULL as a separator
+  std::memcpy(cwdBegin, cwd.data(), cwd_len);
+  cwdBegin[cwd_len] = 0;
+
+  // second, copy PATH environment variable into the same buffer
+  envPathBegin = cwdBegin + cwd_len + 1;
+  std::memcpy(envPathBegin, DAK_PATH_ENV_NAME "=", 5);
+  std::memcpy(envPathBegin+5, env_path, path_len);
+  envPathBegin[path_len+5] = 0;
 }
 
 

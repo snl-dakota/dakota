@@ -65,6 +65,7 @@ class WorkdirHelper
 
   /// Treat get_npath as a legacy, "blackbox" utility
   friend void get_npath(int, char**);               // dakPreferredEnvPath access
+                                                    // old cwdAndPathBuf better?
 
   /// Treat my_cp as a legacy, "blackbox" utility
   friend int my_cp(const char*, const struct stat*,
@@ -108,6 +109,15 @@ private:
 
   /// PATH="<parent_of_dakexe>:startupPWD:startupPATH"
   static std::string dakPreferredEnvPath;
+
+
+  // WJB - ToDo: verify previous impl worked "better" (extra mem to work with)
+  //       NOTE: NOT portable with older compilers (PGI, etc.)
+  static char* cwdBegin;      // old name: dakdir
+  static char* envPathBegin;  // old name: dakpath
+
+  static void get_dakpath();
+  static std::vector<char> cwdAndEnvPathBuf;
 
 
 #ifdef DAKOTA_HAVE_BOOST_FS

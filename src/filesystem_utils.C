@@ -743,6 +743,8 @@ get_npath(int appdrive, char **pnpath)
 
 	appdrive = Map(appdrive & 0xff);
 
+	WorkdirHelper::get_dakpath(); // allocates a buffer to manipulate $PATH
+
 	/* WJB:  Is startup wdir or cwd desired here?
 	//       maybe BOTH are needed to "find" the analysis driver?
 	const std::string& dak_startup_dir = WorkdirHelper::startup_pwd();
@@ -752,7 +754,9 @@ get_npath(int appdrive, char **pnpath)
 	const char* cwd = cwd_str.c_str();
 	size_t wd_strlen = cwd_str.size();
 
-	char* env_path = (char*)WorkdirHelper::dakPreferredEnvPath.c_str();
+	// WJB: this is where the allocated buffer gets used! char* env_path = (char*)WorkdirHelper::dakPreferredEnvPath.c_str();
+
+	char* env_path = WorkdirHelper::envPathBegin;
 	size_t env_path_strlen = std::strlen(env_path);
 
 #ifdef _WIN32
@@ -927,8 +931,8 @@ cd_fail:
 		break;
 		}
 #if defined(DEBUG)
-	Cout << "get_npath: CWD=" << get_cwd() << '\n'
-	     << std::string(*pnpath) << '\n' << std::endl;
+	Cout << "\nget_npath: CWD=" << std::string(WorkdirHelper::cwdBegin)
+	     << '\n' <<std::string(*pnpath) << '\n' << std::endl;
 #endif
 	}
 
