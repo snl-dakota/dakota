@@ -23,11 +23,12 @@
 namespace bfs = boost::filesystem;
 #endif
 
-#if defined(WIN32) 
+#if defined(_WIN32) || defined(_WIN64)
 
   #include <io.h>
   #define DAK_CHDIR(s) (SetCurrentDirectory(s) == 0)
   #define DAK_MKDIR(a,b) mkdir(a)
+  #define DAK_MAXPATHLEN MAX_PATH
   #define DAK_PATH_ENV_NAME "Path"
   #define DAK_PATH_SEP ';'
   #define DAK_SLASH '\\'
@@ -35,8 +36,10 @@ namespace bfs = boost::filesystem;
 #elif defined(HAVE_UNISTD_H) 
 
   #include <unistd.h>
+  #include <sys/param.h>
   #define DAK_CHDIR chdir
   #define DAK_MKDIR(a,b) mkdir(a,b)
+  #define DAK_MAXPATHLEN MAXPATHLEN
   #define DAK_PATH_ENV_NAME "PATH"
   #define DAK_PATH_SEP ':'
   #define DAK_SLASH '/'
@@ -72,7 +75,7 @@ public:
   /// Query for dakota's startup $PWD
   static const std::string& startup_pwd() { return startupPWD; }
 
-  /// Query for dakota's startup $PWD
+  /// Prepend $PATH environment variable with an extra_path
   static void prepend_preferred_env_path(const std::string& extra_path);
 
 

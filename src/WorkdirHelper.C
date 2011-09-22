@@ -16,7 +16,6 @@
                               // WJB: wd_adjust has a MAJOR dependency on statics in filesystem_utils.C
 #include <boost/array.hpp>
 #include <boost/lexical_cast.hpp>
-#include <sys/param.h>
 #include <cassert>
 
 #if defined(__APPLE__)
@@ -38,11 +37,11 @@ std::string WorkdirHelper::dakPreferredEnvPath = set_preferred_env_path();
 std::string WorkdirHelper::set_preferred_env_path()
 {
   std::string path_sep_string(1, DAK_PATH_SEP);
-  std::string parent_of_dakexe(FILENAME_MAX, '*');
+  std::string parent_of_dakexe(DAK_MAXPATHLEN, '*');
 
 #if defined(__APPLE__)
 
-  uint32_t exe_pathlen = FILENAME_MAX;
+  uint32_t exe_pathlen = DAK_MAXPATHLEN;
   if (_NSGetExecutablePath((char*)parent_of_dakexe.c_str(),
                            &exe_pathlen) == 0) {
     std::string::size_type split_pos = parent_of_dakexe.find_last_of(DAK_SLASH);
@@ -62,7 +61,7 @@ std::string WorkdirHelper::set_preferred_env_path()
     "/proc/" + boost::lexical_cast<std::string>(getpid()) + "/exe";
 
   if (readlink(path_for_readlink.c_str(), (char*)parent_of_dakexe.c_str(),
-               FILENAME_MAX) != -1) {
+               DAK_MAXPATHLEN) != -1) {
     //parent_of_dakexe[pos] = 0; // WJB: verify already NULL terminated
     std::string::size_type split_pos = parent_of_dakexe.find_last_of(DAK_SLASH);
     parent_of_dakexe = parent_of_dakexe.substr(0, split_pos);
@@ -75,7 +74,7 @@ std::string WorkdirHelper::set_preferred_env_path()
 #elif defined(_WIN32) || defined(_WIN64)
 
   if (GetModuleFileName(NULL, (char*)parent_of_dakexe.c_str(),
-                        FILENAME_MAX) != 0) {
+                        DAK_MAXPATHLEN) != 0) {
     std::string::size_type split_pos = parent_of_dakexe.find_last_of(DAK_SLASH);
     parent_of_dakexe = parent_of_dakexe.substr(0, split_pos);
   }
@@ -209,7 +208,7 @@ int WorkdirHelper::symlink(const char* from, const char* to)
 void find_env_token(const char *s0, const char **s1,
                     const char **s2, const char **s3)
 {
-  boost::array<char, FILENAME_MAX> ebuf;
+  boost::array<char, DAK_MAXPATHLEN> ebuf;
   const char *t;
   const unsigned char *s;
   int q;
@@ -239,7 +238,7 @@ top:
   while((q = *++s) > ' ' && q != '"' && q != '\'' && q != '$');
 
   *s2 = *s3 = (const char*)s;
-  if (*t == '$' && (n = *s2 - t) <= FILENAME_MAX) { // 512 vs FNM_MAX=ebuf.size() ?
+  if (*t == '$' && (n = *s2 - t) <= DAK_MAXPATHLEN) {
     --n;
     for(i = 0; i < n; ++i)
       ebuf[i] = *++t;

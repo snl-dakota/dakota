@@ -15,7 +15,6 @@
 #include "WorkdirHelper.H" // for WorkdirHelper::dakPreferredEnvPath
 #include <boost/array.hpp>
 
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -25,6 +24,7 @@
 #ifndef _WIN32 /*{{*/
 #ifndef NO_HEARTBEAT /*{*/
 #define Want_Heartbeat
+#include <sys/param.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <signal.h>
@@ -313,7 +313,7 @@ ftw1(char *name, size_t namelen, size_t namemaxlen, ftw_fn fn, int depth, void *
  int
 sftw(const char *name, ftw_fn fn, void *v)
 {
-	char buf[MAXPATHLEN];
+	char buf[DAK_MAXPATHLEN];
 	size_t L = std::strlen(name);
 
 	if (L >= sizeof(buf))
@@ -328,7 +328,7 @@ sftw(const char *name, ftw_fn fn, void *v)
 Symlink(const char *from, const char *to)
 {
 #if 0
-        char buf[MAXPATHLEN], *b;
+        char buf[DAK_MAXPATHLEN], *b;
         int rc;
         size_t L, L1;
         static size_t ddlen;
@@ -736,8 +736,8 @@ get_npath(int appdrive, char **pnpath)
 
 	int c, dot, nrel, needcolon;
 	size_t L;
-#ifdef _WIN32
-	char *appdir, buf[MAXPATHLEN];
+#if defined(_WIN32) || defined(_WIN64)
+	char *appdir, buf[DAK_MAXPATHLEN];
 	int nrel2;
 #endif
 
@@ -966,22 +966,22 @@ std::string get_cwd()
 
 #else
 
-  boost::array<char, MAXPATHLEN> cwd;
+  boost::array<char, DAK_MAXPATHLEN> cwd;
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(_WIN64)
 #define DAK_FAIL_FMT "GetCurrentDirectory() failed!\n"
-  size_t len = GetCurrentDirectory(MAXPATHLEN, cwd.c_array());
-  if (len <= 0 || len >= MAXPATHLEN)
+  size_t len = GetCurrentDirectory(DAK_MAXPATHLEN, cwd.c_array());
+  if (len <= 0 || len >= DAK_MAXPATHLEN)
 #else
 #define DAK_FAIL_FMT "getcwd() failed!\n"
-  if (!getcwd(cwd.c_array(), MAXPATHLEN))
+  if (!getcwd(cwd.c_array(), DAK_MAXPATHLEN))
 #endif
   {
     Cerr << "\nERROR: " << DAK_FAIL_FMT << std::endl;
     abort_handler(-1);
   }
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(_WIN64)
   if (cwd[1] == ':')
     dakdrive = Map(cwd.c_array()[0]);
 #endif

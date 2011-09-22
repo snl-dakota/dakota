@@ -539,7 +539,7 @@ int not_executable(const char *driver_name, const char *tdir)
         int rc, sv;
         size_t clen, dlen, plen, tlen;
         void *a0;
-#ifdef WIN32
+#ifdef _WIN32
         char dbuf[128];
 #else
         static uid_t myuid;
@@ -559,7 +559,7 @@ int not_executable(const char *driver_name, const char *tdir)
         rc = 0;
         if (!p0) {
                 p0 = std::getenv("PATH");
-#ifdef WIN32
+#ifdef _WIN32
                 if (!p0)
                         p0 = std::getenv("Path");
 #else
@@ -572,7 +572,7 @@ int not_executable(const char *driver_name, const char *tdir)
                 else
                         p0 = "";
                 }
-#ifdef WIN32
+#ifdef _WIN32
         // make sure we have a suitable suffix
         if ((p = strrchr(driver_name, '.'))) {
                 if (std::strlen(++p) != 3)
@@ -668,7 +668,7 @@ int not_executable(const char *driver_name, const char *tdir)
                                 rc = 0;
                                 goto ret;
                                 }
-#elif defined(_WIN32)
+#elif defined(_WIN32) || defined(_WIN64)
                         rc = 0;
                         goto ret;
 #else
