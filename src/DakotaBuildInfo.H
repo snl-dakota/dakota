@@ -6,10 +6,10 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Description: Singleton storage class for Subversion revision, build
-//-              time and date; referenced via getInstance() from clients.
+//- Description: Monostate storage class for Subversion revision,
+//-              build time and date.
 //- 
-//- Owner:       Shannon Brown
+//- Owner:       Bill Bohnhoff
 //- Checked by:
 //- Version: $Id$
 
