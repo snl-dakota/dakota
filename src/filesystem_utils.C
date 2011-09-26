@@ -967,8 +967,7 @@ cd_fail:
 		  }
 		break;
 		}
-//wjbPOUNDif defined(DEBUG)
-#if 1
+#if defined(DEBUG)
 	Cout << "\nget_npath: CWD=" << std::string(WorkdirHelper::cwdBegin)
 	     << '\n' <<std::string(*pnpath) << '\n' << std::endl;
 #endif
