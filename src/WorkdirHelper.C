@@ -25,14 +25,17 @@
 
 namespace Dakota {
 
+/* WJB 0
 std::string WorkdirHelper::startupPWD  = get_cwd();
 std::string WorkdirHelper::startupPATH = init_startup_path();
 
 std::string WorkdirHelper::dakPreferredEnvPath = set_preferred_env_path();
-
+end WJB 0 */
 char* WorkdirHelper::cwdBegin     = 0;
 char* WorkdirHelper::envPathBegin = 0;
 
+//WJB: gradually re-enable features and commit if BMA tests pass
+#if 0
 std::vector<char> WorkdirHelper::cwdAndEnvPathBuf =
   std::vector<char>(get_cwd().size(), DAK_PATH_SEP);
 
@@ -189,8 +192,8 @@ void WorkdirHelper::get_dakpath()
   // Allocate enough space for BOTH strings + "PATH=" + 2 NULL terminators
   size_t total_buf_size = cwd_len + path_len + 7;
 
-  cwdAndEnvPathBuf.resize(total_buf_size, DAK_PATH_SEP);
-  cwdBegin = &cwdAndEnvPathBuf[0];  // or cwdAndEnvPathBuf.data()
+  char* cwd_and_env_path_buf = new char [total_buf_size];
+  cwdBegin = &cwd_and_env_path_buf[0];  // or cwdAndEnvPathBuf.data() if managed with class scoped std::vector
 
   // first, copy cwd into the buffer and terminate with NULL as a separator
   std::memcpy(cwdBegin, cwd.data(), cwd_len);
@@ -202,19 +205,20 @@ void WorkdirHelper::get_dakpath()
   std::memcpy(envPathBegin+5, env_path, path_len);
   envPathBegin[path_len+5] = 0;
 }
+#endif  // end long block WJB: gradually re-enable features and commit if.. pass
 
 
 /** Resets the working directory "state" to its initial state when DAKOTA 
     was launched */
 void WorkdirHelper::reset()
 {
-  if (DAK_CHDIR( startupPWD.c_str() )) {
-    Cerr << "\nError: chdir(" << startupPWD.c_str()
+  if (DAK_CHDIR( cwdBegin )) {
+    Cerr << "\nError: chdir(" << std::string(cwdBegin)
          << ") failed in workdir_reset()" << std::endl;
     abort_handler(-1);
   }
 
-  putenv_impl(dakPreferredEnvPath);
+  putenv_impl(envPathBegin);
 }
 
 
@@ -367,8 +371,8 @@ arg_list_adjust(const char **arg_list, void **a0)
         for(n0 = 0; n0 < n && std::strchr(al[n0], '='); ++n0);
         if (n0 && n0 < n) {
                 if (!a0) {
-                        for(n = 0; n < n0; ++n)
-                                putenv_impl(std::string(al[n]));
+                        for(n = 0; n < n0; ++n) // WJB: tmp sting object going out of scope?? putenv_impl(std::string(al[n]));
+                                putenv_impl((char*)(al[n]));
                         }
                 al += n0;
         }

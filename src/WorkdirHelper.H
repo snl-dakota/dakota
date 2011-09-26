@@ -67,6 +67,10 @@ class WorkdirHelper
   friend void get_npath(int, char**);               // dakPreferredEnvPath access
                                                     // old cwdAndPathBuf better?
 
+  friend int  Symlink(const char *from, const char *to);
+  friend void get_dakpath();
+
+#if 0 // WJB: gradually re-enable new functionality as tests pass
   /// Treat my_cp as a legacy, "blackbox" utility
   friend int my_cp(const char*, const struct stat*,
                    int, int, void*);                // calls symlink
@@ -90,6 +94,7 @@ private:
 
   /// "Helper"/wrapper for system symlink when "from" needs path adjustment
   static int symlink(const char* from, const char* to);
+#endif // WJB 0
 
   static void change_cwd(const std::string& wd_str);  // old nm: workdir_adjust
   static void reset();                                // old nm: workdir_reset
@@ -102,13 +107,13 @@ private:
   //
 
   /// Value of $PWD var upon entry to dakota main()
-  static std::string startupPWD;
+  //static std::string startupPWD;
 
   /// Value of $PATH (%PATH% on windows) var upon entry to dakota main()
-  static std::string startupPATH;
+  //static std::string startupPATH;
 
   /// PATH="<parent_of_dakexe>:startupPWD:startupPATH"
-  static std::string dakPreferredEnvPath;
+  //static std::string dakPreferredEnvPath;
 
 
   // WJB - ToDo: verify previous impl worked "better" (extra mem to work with)
@@ -116,8 +121,8 @@ private:
   static char* cwdBegin;      // old name: dakdir
   static char* envPathBegin;  // old name: dakpath
 
-  static void get_dakpath();
-  static std::vector<char> cwdAndEnvPathBuf;
+  //static void get_dakpath();
+  //static std::vector<char> cwdAndEnvPathBuf;
 
 
 #ifdef DAKOTA_HAVE_BOOST_FS

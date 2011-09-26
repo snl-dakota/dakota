@@ -47,9 +47,10 @@ inline void putenv_impl(const std::string& name, const std::string& value)
   setenv(name.c_str(), value.c_str(), 1);
 }
 
-inline void putenv_impl(const std::string& name_and_value)
+//inline void putenv_impl(const std::string& name_and_value)
+inline void putenv_impl(const char* name_and_value)
 {
-  if ( putenv( const_cast<char*>( name_and_value.c_str() ) ) ) {
+  if ( putenv( (char*)name_and_value) ) {
     Cerr << "\nError: putenv(" << name_and_value
          << ") failed in putenv_impl()" << std::endl;
     abort_handler(-1);
