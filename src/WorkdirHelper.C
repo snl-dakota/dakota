@@ -25,25 +25,22 @@
 
 namespace Dakota {
 
-/* WJB 0
 std::string WorkdirHelper::startupPWD  = get_cwd();
 std::string WorkdirHelper::startupPATH = init_startup_path();
 
-std::string WorkdirHelper::dakPreferredEnvPath = set_preferred_env_path();
-end WJB 0 */
+std::string WorkdirHelper::dakPreferredEnvPath = init_preferred_env_path();
 char* WorkdirHelper::cwdBegin     = 0;
 char* WorkdirHelper::envPathBegin = 0;
 
 //WJB: gradually re-enable features and commit if BMA tests pass
-#if 0
-std::vector<char> WorkdirHelper::cwdAndEnvPathBuf =
-  std::vector<char>(get_cwd().size(), DAK_PATH_SEP);
+//std::vector<char> WorkdirHelper::cwdAndEnvPathBuf =
+  //std::vector<char>(get_cwd().size(), DAK_PATH_SEP);
 
 
 /** Overwrites $PATH with additional directories so that analysis driver
  *  detection is (hopefully) more robust
  */
-std::string WorkdirHelper::set_preferred_env_path()
+std::string WorkdirHelper::init_preferred_env_path()
 {
   std::string path_sep_string(1, DAK_PATH_SEP);
   std::string parent_of_dakexe(DAK_MAXPATHLEN, '*');
@@ -125,8 +122,6 @@ std::string WorkdirHelper::set_preferred_env_path()
   preferred_env_path += path_sep_string + get_cwd() + path_sep_string;
   preferred_env_path += init_startup_path();
 
-  putenv_impl(preferred_env_path);
-
   return preferred_env_path;
 }
 
@@ -150,7 +145,7 @@ void WorkdirHelper::prepend_preferred_env_path(const std::string& extra_path)
                       + old_preferred_path;
   dakPreferredEnvPath = preferred_env_path;
 
-  putenv_impl(preferred_env_path);
+  putenv_impl(dakPreferredEnvPath.c_str());
 }
 
 
@@ -171,6 +166,8 @@ std::string WorkdirHelper::init_startup_path()
 }
 
 
+//WJB: gradually re-enable features and commit if BMA tests pass
+#if 0
 /** Gets the CWD and the $PATH and stuffs them into a common buffer
  */
 void WorkdirHelper::get_dakpath()
@@ -371,7 +368,7 @@ arg_list_adjust(const char **arg_list, void **a0)
         for(n0 = 0; n0 < n && std::strchr(al[n0], '='); ++n0);
         if (n0 && n0 < n) {
                 if (!a0) {
-                        for(n = 0; n < n0; ++n) // WJB: tmp sting object going out of scope?? putenv_impl(std::string(al[n]));
+                        for(n = 0; n < n0; ++n)
                                 putenv_impl((char*)(al[n]));
                         }
                 al += n0;

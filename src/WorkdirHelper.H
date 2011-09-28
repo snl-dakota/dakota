@@ -70,7 +70,6 @@ class WorkdirHelper
   friend int  Symlink(const char *from, const char *to);
   friend void get_dakpath();
 
-#if 0 // WJB: gradually re-enable new functionality as tests pass
   /// Treat my_cp as a legacy, "blackbox" utility
   friend int my_cp(const char*, const struct stat*,
                    int, int, void*);                // calls symlink
@@ -89,12 +88,11 @@ private:
   /// Initializes class member, startupPATH
   static std::string init_startup_path();
 
-  /// Initializes class member, dakPreferredEnvPath, and overwrites $PATH env
-  static std::string set_preferred_env_path();
+  /// Initializes class member, dakPreferredEnvPath
+  static std::string init_preferred_env_path();
 
   /// "Helper"/wrapper for system symlink when "from" needs path adjustment
   static int symlink(const char* from, const char* to);
-#endif // WJB 0
 
   static void change_cwd(const std::string& wd_str);  // old nm: workdir_adjust
   static void reset();                                // old nm: workdir_reset
@@ -107,13 +105,13 @@ private:
   //
 
   /// Value of $PWD var upon entry to dakota main()
-  //static std::string startupPWD;
+  static std::string startupPWD;
 
   /// Value of $PATH (%PATH% on windows) var upon entry to dakota main()
-  //static std::string startupPATH;
+  static std::string startupPATH;
 
   /// PATH="<parent_of_dakexe>:startupPWD:startupPATH"
-  //static std::string dakPreferredEnvPath;
+  static std::string dakPreferredEnvPath;
 
 
   // WJB - ToDo: verify previous impl worked "better" (extra mem to work with)

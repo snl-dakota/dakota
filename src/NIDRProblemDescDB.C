@@ -546,8 +546,8 @@ int not_executable(const char *driver_name, const char *tdir)
         static gid_t mygid;
 #endif
 
-        // WJB: verify no harm with testing and re-enable -- if (tdir)
-          //WorkdirHelper::prepend_preferred_env_path(tdir);
+        if (tdir)
+          WorkdirHelper::prepend_preferred_env_path(tdir);
 
         /* allow shell assignments and quotes around executable names */
         /* that may involve blanks */
