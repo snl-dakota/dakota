@@ -18,106 +18,24 @@
 #include <boost/lexical_cast.hpp>
 #include <cassert>
 
-#if defined(__APPLE__)
-#include <mach-o/dyld.h>
-#endif
-
 
 namespace Dakota {
 
-std::string WorkdirHelper::startupPWD  = get_cwd();
-std::string WorkdirHelper::startupPATH = init_startup_path();
-
+std::string WorkdirHelper::startupPWD          = get_cwd();
+std::string WorkdirHelper::startupPATH         = init_startup_path();
 std::string WorkdirHelper::dakPreferredEnvPath = init_preferred_env_path();
 
-//WJB: gradually re-enable features and commit if BMA tests pass
-//std::vector<char> WorkdirHelper::cwdAndEnvPathBuf =
-  //std::vector<char>(get_cwd().size(), DAK_PATH_SEP);
-
-
-/** Overwrites $PATH with additional directories so that analysis driver
+/** Creates a "PATH=.:$PWD:PATH" string so that analysis driver
  *  detection is (hopefully) more robust
  */
 std::string WorkdirHelper::init_preferred_env_path()
 {
   std::string path_sep_string(1, DAK_PATH_SEP);
-  std::string parent_of_dakexe(DAK_MAXPATHLEN, '*');
-
-#if defined(__APPLE__)
-
-  uint32_t exe_pathlen = DAK_MAXPATHLEN;
-  if (_NSGetExecutablePath((char*)parent_of_dakexe.c_str(),
-                           &exe_pathlen) == 0) {
-    std::string::size_type split_pos = parent_of_dakexe.find_last_of(DAK_SLASH);
-    parent_of_dakexe = parent_of_dakexe.substr(0, split_pos);
-  }
-  else {
-    Cerr << "\nWarning: _NSGetExecutablePath() failed; continuing anyway.."
-         << std::endl;
-    parent_of_dakexe = std::string();
-    //Cout << "buffer too small; need " << exe_pathlen << std::endl;
-    //abort_handler(-1);
-  }
-
-#elif defined(__linux__)
-
-  std::string path_for_readlink =
-    "/proc/" + boost::lexical_cast<std::string>(getpid()) + "/exe";
-
-  if (readlink(path_for_readlink.c_str(), (char*)parent_of_dakexe.c_str(),
-               DAK_MAXPATHLEN) != -1) {
-    //parent_of_dakexe[pos] = 0; // WJB: verify already NULL terminated
-    std::string::size_type split_pos = parent_of_dakexe.find_last_of(DAK_SLASH);
-    parent_of_dakexe = parent_of_dakexe.substr(0, split_pos);
-  }
-  else {
-    Cerr << "\nWarning: readlink() failed; continuing anyway.." << std::endl;
-    parent_of_dakexe = std::string();
-  }
-
-#elif defined(_WIN32) || defined(_WIN64)
-
-  if (GetModuleFileName(NULL, (char*)parent_of_dakexe.c_str(),
-                        DAK_MAXPATHLEN) != 0) {
-    std::string::size_type split_pos = parent_of_dakexe.find_last_of(DAK_SLASH);
-    parent_of_dakexe = parent_of_dakexe.substr(0, split_pos);
-  }
-  else {
-    Cerr << "\nWarning: GetModuleFileName() failed; continuing anyway.."
-         << std::endl;
-    parent_of_dakexe = std::string();
-  }
-
-#elif defined(__SUNPRO_CC)
-
-  char* exec_name = (char*)parent_of_dakexe.c_str();
-
-  if (( exec_name=(char*)getexecname() ) != NULL) {
-    parent_of_dakexe = exec_name;
-    std::string::size_type split_pos = parent_of_dakexe.find_last_of(DAK_SLASH);
-    parent_of_dakexe = parent_of_dakexe.substr(0, split_pos);
-  }
-  else {
-    Cerr << "\nWarning: getexecname() failed; continuing anyway.."
-         << std::endl;
-    parent_of_dakexe = std::string();
-  }
-
-#else
-
-  parent_of_dakexe = std::string(); // default case (empty string should be OK)
-
-#endif
-
-  //Cout << "Analysis Driver POTENTIALLY in " << parent_of_dakexe << std::endl;
-
   std::string preferred_env_path(DAK_PATH_ENV_NAME"=");
 
-  // Go ahead and add '.' to the preferred $PATH here as well since it can't hurt
+  // Go ahead and prepend '.' to the preferred $PATH since it can't hurt
 
-  preferred_env_path += "." + path_sep_string + parent_of_dakexe;
-
-  preferred_env_path += path_sep_string + get_cwd() + path_sep_string;
+  preferred_env_path += "." + path_sep_string + get_cwd() + path_sep_string;
   preferred_env_path += init_startup_path();
 
   return preferred_env_path;
@@ -164,45 +82,6 @@ std::string WorkdirHelper::init_startup_path()
 }
 
 
-//WJB: gradually re-enable features and commit if BMA tests pass
-#if 0
-/** Gets the CWD and the $PATH and stuffs them into a common buffer
- */
-void WorkdirHelper::get_dakpath()
-{
-  char* env_path = std::getenv(DAK_PATH_ENV_NAME);
-
-  if (!env_path) {
-    Cerr << "\nERROR: "
-         << "getenv(\"" DAK_PATH_ENV_NAME "\") failed in get_dakpath().\n"
-         << std::endl;
-    abort_handler(-1);
-  }
-
-  const std::string& cwd = get_cwd();
-
-  size_t path_len = std::strlen(env_path);
-  size_t cwd_len  = cwd.size();
-
-  // Allocate enough space for BOTH strings + "PATH=" + 2 NULL terminators
-  size_t total_buf_size = cwd_len + path_len + 7;
-
-  char* cwd_and_env_path_buf = new char [total_buf_size];
-  cwdBegin = &cwd_and_env_path_buf[0];  // or cwdAndEnvPathBuf.data() if managed with class scoped std::vector
-
-  // first, copy cwd into the buffer and terminate with NULL as a separator
-  std::memcpy(cwdBegin, cwd.data(), cwd_len);
-  cwdBegin[cwd_len] = 0;
-
-  // second, copy PATH environment variable into the same buffer
-  envPathBegin = cwdBegin + cwd_len + 1;
-  std::memcpy(envPathBegin, DAK_PATH_ENV_NAME "=", 5);
-  std::memcpy(envPathBegin+5, env_path, path_len);
-  envPathBegin[path_len+5] = 0;
-}
-#endif  // end long block WJB: gradually re-enable features and commit if.. pass
-
-
 /** Resets the working directory "state" to its initial state when DAKOTA 
     was launched */
 void WorkdirHelper::reset()
@@ -215,7 +94,6 @@ void WorkdirHelper::reset()
 
   putenv_impl(dakPreferredEnvPath.c_str());
 }
-
 
 
 /** Change directory to workdir and make necessary adjustments

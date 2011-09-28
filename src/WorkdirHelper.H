@@ -106,7 +106,7 @@ private:
   /// Value of $PATH (%PATH% on windows) var upon entry to dakota main()
   static std::string startupPATH;
 
-  /// PATH="<parent_of_dakexe>:startupPWD:startupPATH"
+  /// PATH=".:startupPWD:startupPATH"
   static std::string dakPreferredEnvPath;
 
 
