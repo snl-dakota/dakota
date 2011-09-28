@@ -29,8 +29,6 @@ std::string WorkdirHelper::startupPWD  = get_cwd();
 std::string WorkdirHelper::startupPATH = init_startup_path();
 
 std::string WorkdirHelper::dakPreferredEnvPath = init_preferred_env_path();
-char* WorkdirHelper::cwdBegin     = 0;
-char* WorkdirHelper::envPathBegin = 0;
 
 //WJB: gradually re-enable features and commit if BMA tests pass
 //std::vector<char> WorkdirHelper::cwdAndEnvPathBuf =
@@ -209,13 +207,13 @@ void WorkdirHelper::get_dakpath()
     was launched */
 void WorkdirHelper::reset()
 {
-  if (DAK_CHDIR( cwdBegin )) {
-    Cerr << "\nError: chdir(" << std::string(cwdBegin)
+  if (DAK_CHDIR( startupPWD.c_str() )) {
+    Cerr << "\nError: chdir(" << startupPWD
          << ") failed in workdir_reset()" << std::endl;
     abort_handler(-1);
   }
 
-  putenv_impl(envPathBegin);
+  putenv_impl(dakPreferredEnvPath.c_str());
 }
 
 

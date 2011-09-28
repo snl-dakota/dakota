@@ -12,7 +12,7 @@
 
 #include "filesystem_utils.h"
 #include "global_defs.h"
-#include "WorkdirHelper.H" // for WorkdirHelper::envPathBegin
+#include "WorkdirHelper.H" // for WorkdirHelper::dakPreferredEnvPath
 #include <boost/array.hpp>
 
 #include <sys/types.h>
@@ -323,82 +323,38 @@ sftw(const char *name, ftw_fn fn, void *v)
 	}
 
 
-void get_dakpath()
-{
-        char buf[DAK_MAXPATHLEN], *p;
-        size_t L, Lc, Lp;
-
-#ifdef _WIN32
-#define FailFmt "GetCurrentDirectory() failed!\n"
-        L = GetCurrentDirectory(sizeof(buf), buf);
-        if (L <= 0 || L >= sizeof(buf))
-#else
-#define FailFmt "getcwd() failed!\n"
-        if (!getcwd((char*)buf, sizeof(buf)))
-#endif
-                {
-                std::fprintf(stderr, FailFmt);
-                std::exit(1);
-                }
-        if (!(p = std::getenv(DAK_PATH_ENV_NAME))) {
-                std::fprintf(stderr, "getenv(\"" DAK_PATH_ENV_NAME "\") failed in getpaths().\n");
-                std::exit(1);
-                }
-        Lc = std::strlen(buf);
-        Lp = std::strlen(p);
-        L = Lc + Lp + 7;
-        WorkdirHelper::cwdBegin = new char [L];
-        std::memcpy(WorkdirHelper::cwdBegin, buf, Lc);
-        WorkdirHelper::cwdBegin[Lc] = 0;
-        WorkdirHelper::envPathBegin = WorkdirHelper::cwdBegin + Lc + 1;
-        std::memcpy(WorkdirHelper::envPathBegin, DAK_PATH_ENV_NAME "=", 5);
-        std::memcpy(WorkdirHelper::envPathBegin+5, p, Lp);
-        WorkdirHelper::envPathBegin[Lp+5] = 0;
-#ifdef _WIN32
-        if (buf[1] == ':')
-                dakdrive = Map(buf[0]);
-#endif
-        // WJB: never see memory freed, so I'm surprised no memleak!?
-        }
-#undef FailFmt
-
-
 #ifndef _WIN32
- int
+ static int
 Symlink(const char *from, const char *to)
 {
+#if 0
         char buf[DAK_MAXPATHLEN], *b;
         int rc;
         size_t L, L1;
-        //static size_t ddlen;
-        // WJB: prefer initialization here, even though it is a change from DMG code
-        static size_t ddlen = 0;
+        static size_t ddlen;
 
         b = buf;
 
         if (*from != '/') {
-                if (!WorkdirHelper::envPathBegin)
-                        get_dakpath(); // for WorkdirHelper::cwdBegin
                 if (!ddlen)
-                        ddlen = std::strlen(WorkdirHelper::cwdBegin);
+                        ddlen = WorkdirHelper::startup_pwd().size();
                 L = std::strlen(from);
                 L1 = L + ddlen + 2;
                 if (L1 > sizeof(buf))
                         b = new char [L1];
-                std::strcpy(b, WorkdirHelper::cwdBegin);
+                std::strcpy(b, WorkdirHelper::startup_pwd().c_str());
                 b[ddlen] = '/';
                 std::strcpy(b + ddlen + 1, from);
                 from = b;
                 }
 
-        //Cout << "oldSymlink from: " << from << '\n' << std::endl;
+        Cout << "oldSymlink from: " << from << '\n' << std::endl;
 
         rc = symlink(from, to);
         if (b != buf)
                 delete [] b;
         return rc;
-// WJB: std::string impl (behavior seemed worse post-migration)
-#if 0
+#endif
   std::string tmp("/");
   tmp += from;
   std::string adjusted_from( (*from != '/') ?
@@ -407,7 +363,6 @@ Symlink(const char *from, const char *to)
   //Cout << "newSymlink from: " << adjusted_from << '\n' << std::endl;
 
   return symlink(adjusted_from.c_str(), to);
-#endif // end WJB std::string impl
 }
 #endif
 
@@ -788,13 +743,17 @@ get_npath(int appdrive, char **pnpath)
 
 	appdrive = Map(appdrive & 0xff);
 
-	if (!WorkdirHelper::envPathBegin)
-		get_dakpath(); // allocates a buffer to manipulate $PATH
+	/* WJB:  Is startup wdir or cwd desired here?
+	//       maybe BOTH are needed to "find" the analysis driver?
+	const std::string& dak_startup_dir = WorkdirHelper::startup_pwd();
+	const char* startup_pwd = dak_startup_dir.c_str();
+	size_t wd_strlen = dak_startup_dir.size(); */
+	const std::string cwd_str = get_cwd();
+	const char* cwd = cwd_str.c_str();
+	size_t wd_strlen = cwd_str.size();
 
-	size_t wd_strlen = std::strlen(WorkdirHelper::cwdBegin);
-
-	//char* env_path = WorkdirHelper::envPathBegin;
-	size_t env_path_strlen = std::strlen(WorkdirHelper::envPathBegin);
+	char* env_path = (char*)WorkdirHelper::dakPreferredEnvPath.c_str();
+	size_t env_path_strlen = std::strlen(env_path);
 
 #ifdef _WIN32
 	if (appdrive && appdrive != dakdrive) {
@@ -817,18 +776,18 @@ cd_fail:
 		appdir[L] = 0;
 
                 // WJB - NOTE:  seems odd that non-WIN32 case has no chdir
-		if (!SetCurrentDirectory(s = WorkdirHelper::cwdBegin))
+		if (!SetCurrentDirectory(s = cwd))
 			goto cd_fail;
 		}
 	else
-		appdir = WorkdirHelper::cwdBegin;
+		appdir = cwd;
 	dot = 1;
 	nrel2 = 0;
 #else
 	dot = 0;
 #endif
 	nrel = 0;
-	for(p = WorkdirHelper::envPathBegin+5; *p; ++p) {
+	for(p = env_path+5; *p; ++p) {
 		switch(Map(*p)) {
 		  case DAK_PATH_SEP:
 			++dot;
@@ -883,19 +842,19 @@ cd_fail:
 	if (nrel2)
 		L += nrel2*(std::strlen(appdir) + 1);
 	*pnpath = q = new char [L];
-	std::memcpy(q, WorkdirHelper::envPathBegin, 5);
-	std::memcpy(q += 5, WorkdirHelper::cwdBegin, wd_strlen);
+	std::memcpy(q, env_path, 5);
+	std::memcpy(q += 5, cwd, wd_strlen);
 	q += wd_strlen;
 	dot = 1;
 #else
 	L = env_path_strlen + nrel*(wd_strlen+1) + 3;
 	*pnpath = q = new char [L];
-	std::memcpy(q, WorkdirHelper::envPathBegin, 5);
+	std::memcpy(q, env_path, 5);
 	q += 5;
 	*q++ = '.';
 #endif
 	needcolon = 1;
-	for(p = WorkdirHelper::envPathBegin+5; *p; ++p) {
+	for(p = env_path+5; *p; ++p) {
 		const char* s;
 		switch(c = Map(*q = *p)) {
 		  case DAK_PATH_SEP:
@@ -907,7 +866,7 @@ cd_fail:
 					*q++ = ':';
 					q0 = q;
 					}
-				for(s= WorkdirHelper::cwdBegin; (*q = *s); ++q, ++s);
+				for(s= cwd; (*q = *s); ++q, ++s);
 				q = pathsimp(q0);
 				needcolon = 1;
 				}
@@ -923,7 +882,7 @@ cd_fail:
 				q0 = q;
 				needcolon = 0;
 				}
-			s = WorkdirHelper::cwdBegin;
+			s = cwd;
 #ifdef _WIN32
 			if (p[1] == ':') {
 				*q = *p;
@@ -968,8 +927,8 @@ cd_fail:
 		break;
 		}
 #if defined(DEBUG)
-	Cout << "\nget_npath: CWD=" << std::string(WorkdirHelper::cwdBegin)
-	     << '\n' <<std::string(*pnpath) << '\n' << std::endl;
+	Cout << "get_npath: CWD=" << cwd << '\n'
+	     << *pnpath << '\n' << std::endl;
 #endif
 	}
 
@@ -997,7 +956,6 @@ void workdir_adjust(const std::string& workdir)
     abort_handler(-1);
   }
 
-  // WJB: tmp std::string issue?? putenv_impl( std::string(wd_path[appdrive]) );
   putenv_impl( wd_path[appdrive] );
 }
 

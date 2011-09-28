@@ -47,7 +47,6 @@ inline void putenv_impl(const std::string& name, const std::string& value)
   setenv(name.c_str(), value.c_str(), 1);
 }
 
-//inline void putenv_impl(const std::string& name_and_value)
 inline void putenv_impl(const char* name_and_value)
 {
   if ( putenv( (char*)name_and_value) ) {
