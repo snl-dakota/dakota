@@ -89,8 +89,14 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
-  String pt_reuse, approx_type = (piecewise_basis) ?
-    "piecewise_interpolation_polynomial" : "global_interpolation_polynomial";
+  String pt_reuse, approx_type;
+  if (piecewise_basis)
+    approx_type = (probDescDB.get_short("method.nond.piecewise_basis_type") ==
+		   HIERARCHICAL_INTERPOLANT) ? 
+      "piecewise_hierarchical_interpolation_polynomial" :
+      "piecewise_nodal_interpolation_polynomial";
+  else
+    approx_type = "global_interpolation_polynomial";
   UShortArray approx_order; // empty
   //const Variables& g_u_vars = g_u_model.current_variables();
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
@@ -161,8 +167,15 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
-  String pt_reuse, approx_type = (piecewise_basis) ?
-    "piecewise_interpolation_polynomial" : "global_interpolation_polynomial";
+  String pt_reuse, approx_type;
+  if (piecewise_basis)
+    // for now, rather than mapping piecewise basis type through, hardwire
+    // a reasonable selection (nodal OK outside of local refinement)
+    approx_type = (refineType == Pecos::H_REFINEMENT) ? 
+      "piecewise_hierarchical_interpolation_polynomial" :
+      "piecewise_nodal_interpolation_polynomial";
+  else
+    approx_type = "global_interpolation_polynomial";
   UShortArray approx_order; // empty
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     approx_type, approx_order, corr_type, corr_order, data_order, pt_reuse),

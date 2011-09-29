@@ -44,11 +44,15 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
   numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
   buildDataOrder(1), popCount(0), approxRep(NULL), referenceCount(1)
 {
-  if (problem_db.get_bool("model.surrogate.derivative_usage") &&
-      approxType != "global_polynomial"                       &&
-      approxType != "global_kriging"                          &&
-      approxType != "global_orthogonal_polynomial"            &&
-      approxType != "piecewise_interpolation_polynomial")
+  if (problem_db.get_bool("model.surrogate.derivative_usage")  &&
+      approxType != "global_polynomial"                        &&
+      approxType != "global_kriging"                           &&
+      approxType != "global_orthogonal_polynomial"             &&
+      approxType != "piecewise_nodal_interpolation_polynomial" &&
+      approxType != "piecewise_hierarchical_interpolation_polynomial")
+    // need global_interpolation_polynomial to be able to replace with this:
+    //!approxType.ends("_interpolation_polynomial") &&
+    //!approxType.ends("_orthogonal_polynomial"))
     Cerr << "\nWarning: use_derivatives is not currently supported by "
 	 << approxType << ".\n\n";
 
@@ -126,10 +130,8 @@ get_approx(ProblemDescDB& problem_db, size_t num_vars)
     return new TaylorApproximation(problem_db, num_vars);
   else if (approx_type == "multipoint_tana")
     return new TANA3Approximation(problem_db, num_vars);
-  else if (approx_type == "global_orthogonal_polynomial" ||
-           approx_type == "global_interpolation_polynomial" ||
-           approx_type == "piecewise_orthogonal_polynomial" ||  // multi-element
-           approx_type == "piecewise_interpolation_polynomial") // local spline
+  else if (approx_type.ends("_orthogonal_polynomial") ||
+	   approx_type.ends("_interpolation_polynomial"))
     return new PecosApproximation(problem_db, num_vars);
   else if (approx_type == "global_gaussian")
     return new GaussProcApproximation(problem_db, num_vars);
@@ -188,10 +190,8 @@ get_approx(const String& approx_type, const UShortArray& approx_order,
     approx = new TaylorApproximation(num_vars, data_order);
   else if (approx_type == "multipoint_tana")
     approx = new TANA3Approximation(num_vars, data_order);
-  else if (approx_type == "global_orthogonal_polynomial" ||
-	   approx_type == "global_interpolation_polynomial" ||
-           approx_type == "piecewise_orthogonal_polynomial" ||  // multi-element
-           approx_type == "piecewise_interpolation_polynomial") // local spline
+  else if (approx_type.ends("_orthogonal_polynomial") ||
+	   approx_type.ends("_interpolation_polynomial"))
     approx = new PecosApproximation(approx_type, approx_order,
 				    num_vars,    data_order);
   else if (approx_type == "global_gaussian")

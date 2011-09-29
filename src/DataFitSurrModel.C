@@ -226,7 +226,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
     gradType = "none";
   else
     gradType = (approx_type == "global_polynomial" ||
-		approx_type == "global_orthogonal_polynomial" ||
+		approx_type.ends("_orthogonal_polynomial") ||
+		approx_type.ends("_interplation_polynomial") ||
 		approx_type.begins("local_") ||
 		approx_type.begins("multipoint_")) ? "analytic" : "numerical";
   if (actual_model.hessian_type() == "none")
