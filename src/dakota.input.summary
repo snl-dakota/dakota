@@ -685,9 +685,12 @@ KEYWORD12 method
 	      )
 	    ]
 	  [ askey
-	  | wiener
-	  | piecewise ]
-	  quadrature_order INTEGERLIST
+	    | wiener
+	    | piecewise
+	    [ nodal
+	    | hierarchical ]
+	    ]
+	  ( quadrature_order INTEGERLIST
 	  |
 	  ( sparse_grid_level INTEGERLIST
 	    [ restricted

@@ -1976,6 +1976,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.expansion_type", P expansionType},
 	{"nond.growth_override", P growthOverride},
 	{"nond.nesting_override", P nestingOverride},
+	{"nond.piecewise_basis_type", P piecewiseBasisType},
 	{"nond.vbd_control", P vbdControl},
 	{"output", P methodOutput},
 	{"sbl.acceptance_logic", P surrBasedLocalAcceptLogic},

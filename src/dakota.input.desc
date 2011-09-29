@@ -725,6 +725,8 @@ TAG "method/stoch_collocation/p_refinement/dimension_adaptive/generalized"
 TAG "method/stoch_collocation/askey"
 TAG "method/stoch_collocation/wiener"
 TAG "method/stoch_collocation/piecewise"
+TAG "method/stoch_collocation/piecewise/nodal"
+TAG "method/stoch_collocation/piecewise/hierarchical"
 TAG "method/stoch_collocation/quadrature_order"
 	DESC "{Quadrature order for collocation points} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDSC"
 

@@ -37,6 +37,8 @@ enum { SILENT_OUTPUT, QUIET_OUTPUT, NORMAL_OUTPUT, VERBOSE_OUTPUT,
 // define special values for u_space_type in
 // NonD::initialize_random_variable_types()
 enum { STD_NORMAL_U, ASKEY_U, EXTENDED_U, PIECEWISE_U };
+// define special values for piecewiseBasisType
+enum { NODAL_INTERPOLANT, HIERARCHICAL_INTERPOLANT };
 // define special values for probability integration refinement
 enum { NO_INT_REFINE, IS, AIS, MMAIS };
 // define special values for respLevelTarget
@@ -641,6 +643,9 @@ public:
   /// ASKEY_U, STD_NORMAL_U, or PIECEWISE_U based on input keywords \c askey,
   /// \c wiener, or \c piecewise, respectively
   short expansionType;
+  /// enumeration for type of basis in piecewise interpolants:
+  /// NODAL_INTERPOLANT or HIERARCHICAL_INTERPOLANT
+  short piecewiseBasisType;
   /// the \c expansion_terms specification in \ref MethodNonDPCE
   int expansionTerms;
   /// the \c expansion_order specification in \ref MethodNonDPCE

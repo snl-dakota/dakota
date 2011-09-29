@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 892 distinct keywords (plus 103 aliases) **/
+/** 894 distinct keywords (plus 103 aliases) **/
 
 static KeyWord
 	kw_1[3] = {

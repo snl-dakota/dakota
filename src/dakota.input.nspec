@@ -458,7 +458,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    ]
 		    [ askey {N_mdm(type,expansionType_ASKEY_U)}
 		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
-		      | piecewise {N_mdm(type,expansionType_PIECEWISE_U)} ]
+		      | ( piecewise {N_mdm(type,expansionType_PIECEWISE_U)}
+		          [ nodal {N_mdm(type,piecewiseBasisType_NODAL_INTERPOLANT)}
+			    | hierarchical {N_mdm(type,piecewiseBasisType_HIERARCHICAL_INTERPOLANT)} ] )
+		    ]
 		    quadrature_order INTEGERLIST {N_mdm(ushintL,quadratureOrder)}
 		    | ( sparse_grid_level INTEGERLIST {N_mdm(ushintL,sparseGridLevel)}
 		        [ restricted {N_mdm(type,growthOverride_RESTRICTED)}
