@@ -71,6 +71,7 @@ endif()
 
 # Mandate a system or user-provided Boost, including some libraries
 # DAKOTA requires Boost 1.37 or newer; PGI may demand 1.40 or newer
+option(HAVE_ACRO "Build the ACRO package." ON)
 if(HAVE_ACRO)
   # Acro requires the signals library in addition
   find_package(Boost 1.37 REQUIRED COMPONENTS regex signals)  
