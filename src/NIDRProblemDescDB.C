@@ -546,9 +546,6 @@ int not_executable(const char *driver_name, const char *tdir)
         static gid_t mygid;
 #endif
 
-        if (tdir)
-          WorkdirHelper::prepend_preferred_env_path(tdir);
-
         /* allow shell assignments and quotes around executable names */
         /* that may involve blanks */
         a2[0] = driver_name;
@@ -746,11 +743,18 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
 			: Dak_pddb->parallel_library().command_line_run() ? squawk : 0)) {
 		sa = &di->analysisDrivers;
 		n = sa->size();
+		if (di->templateDir.c_str())
+ 			WorkdirHelper::prepend_preferred_env_path(di->templateDir.c_str());
+#ifdef DEBUG_NOT_EXECUTABLE
  		for(i = 0; i < n; ++i)
  			if ((j = not_executable(s = (*sa)[i], di->templateDir)))
  				Complain("analysis driver \"%s\" %s", s,
  					j == 1	? "not found"
  						: "exists but is not executable");
+#else
+		warn("LEGACY not_executable logic disabled -- \n\t"
+                     "NO SEARCH for analysis drivers will be done");
+#endif
 		}
 	same = 0;
 	if (di->workDir.length() > 0) {
