@@ -714,7 +714,8 @@ pathsimp(char *t0)
 	}
 
 
-// WJB: come back and re-enable if 'new' does NOT work!
+// WJB:  Come back and re-enable if 'new' does NOT work!  Consider if the same
+//       strategy applies to my new fav func:  get_npath() (corrupts pnpath!)
 #if 0
 static char* Malloc(size_t L)
 {
@@ -743,11 +744,6 @@ get_npath(int appdrive, char **pnpath)
 
 	appdrive = Map(appdrive & 0xff);
 
-	/* WJB:  Is startup wdir or cwd desired here?
-	//       maybe BOTH are needed to "find" the analysis driver?
-	const std::string& dak_startup_dir = WorkdirHelper::startup_pwd();
-	const char* startup_pwd = dak_startup_dir.c_str();
-	size_t wd_strlen = dak_startup_dir.size(); */
 	const std::string cwd_str = get_cwd();
 	const char* cwd = cwd_str.c_str();
 	size_t wd_strlen = cwd_str.size();
@@ -841,14 +837,22 @@ cd_fail:
 	L = env_path_strlen + nrel*(wd_strlen+1) + 1;
 	if (nrel2)
 		L += nrel2*(std::strlen(appdir) + 1);
-	*pnpath = q = new char [L];
+
+	// WJB: for now, let the p/q funk go as long as pnpath is un-molested
+	//*pnpath = q = new char [L];
+
+	q = new char [L];
 	std::memcpy(q, env_path, 5);
 	std::memcpy(q += 5, cwd, wd_strlen);
 	q += wd_strlen;
 	dot = 1;
 #else
 	L = env_path_strlen + nrel*(wd_strlen+1) + 3;
-	*pnpath = q = new char [L];
+
+	// WJB: for now, let the p/q funk go as long as pnpath is un-molested
+	//*pnpath = q = new char [L];
+
+	q = new char [L];
 	std::memcpy(q, env_path, 5);
 	q += 5;
 	*q++ = '.';
@@ -926,10 +930,15 @@ cd_fail:
 		  }
 		break;
 		}
+
+	// WJB: after ALL THE POINTER MANIP, restore PATH to its original state
+	*pnpath = (char*)WorkdirHelper::dakPreferredEnvPath.c_str();
+
 #if defined(DEBUG)
 	Cout << "get_npath: CWD=" << cwd << '\n'
 	     << *pnpath << '\n' << std::endl;
 #endif
+	// WJB: consider delete [] q;
 	}
 
 
@@ -947,9 +956,11 @@ void workdir_adjust(const std::string& workdir)
   }
 #endif
 
+  // WJB:  Commenting-out a key function (not_executable) seemed to improve
+  // runtime behavior with workdirs, so consider tryin the same idea here!
   if (!wd_path[appdrive])
     get_npath(appdrive, &wd_path[appdrive]);
-
+  //
   if ( DAK_CHDIR(workdir.c_str()) ) {
     Cerr << "\nError: chdir(" << workdir
          << ") failed in workdir_adjust()" << std::endl;
