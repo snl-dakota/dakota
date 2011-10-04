@@ -751,9 +751,6 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
  				Complain("analysis driver \"%s\" %s", s,
  					j == 1	? "not found"
  						: "exists but is not executable");
-#else
-		warn("LEGACY not_executable logic disabled -- \n\t"
-                     "NO SEARCH for analysis drivers will be done");
 #endif
 		}
 	same = 0;
