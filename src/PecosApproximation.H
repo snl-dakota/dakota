@@ -207,7 +207,7 @@ protected:
   void finalize();
   size_t finalization_index(size_t i);
   void store();
-  void combine();
+  void combine(short corr_type);
 
   void print_coefficients(std::ostream& s) const;
 
@@ -551,12 +551,13 @@ inline void PecosApproximation::store()
 }
 
 
-inline void PecosApproximation::combine()
+inline void PecosApproximation::combine(short corr_type)
 {
   // base class implementation manages approxData state
-  //Approximation::combine();
-  // map to Pecos::BasisApproximation
-  pecosBasisApprox.combine_coefficients();
+  //Approximation::combine(corr_type);
+  // map to Pecos::BasisApproximation.
+  // Note: DAKOTA and PECOS correction type enumerations coincide.
+  pecosBasisApprox.combine_coefficients(corr_type);
 }
 
 

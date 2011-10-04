@@ -86,7 +86,7 @@ public:
   /// store current approximation for later combination
   virtual void store();
   /// combine current approximation with previously stored approximation
-  virtual void combine();
+  virtual void combine(short corr_type);
 
   /// retrieve the approximate function value for a given parameter vector
   virtual Real get_value(const RealVector& x);

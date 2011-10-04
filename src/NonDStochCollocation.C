@@ -31,8 +31,6 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   Model g_u_model;
   bool global_bnds
     = (numContDesVars || numContEpistUncVars || numContStateVars);
-  if (iteratedModel.surrogate_type() == "hierarchical")
-    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
   construct_u_space_model(iteratedModel, g_u_model, global_bnds);
 
   // -------------------------

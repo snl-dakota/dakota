@@ -596,10 +596,10 @@ void ApproximationInterface::store_approximation()
 }
 
 
-void ApproximationInterface::combine_approximation()
+void ApproximationInterface::combine_approximation(short corr_type)
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
-    functionSurfaces[*it].combine();
+    functionSurfaces[*it].combine(corr_type);
 }
 
 

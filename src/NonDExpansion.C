@@ -24,6 +24,7 @@
 #include "PecosApproximation.H"
 #include "pecos_stat_util.hpp"
 #include "SensAnalysisGlobal.H"
+#include "DiscrepancyCorrection.H"
 
 //#define DEBUG
 //#define CONVERGENCE_DATA
@@ -90,6 +91,10 @@ void NonDExpansion::initialize(Model& model, short u_space_type)
 	 << "NonDExpansion." << std::endl;
     err_flag = true;
   }
+
+  // if multifidelity UQ, initial phase captures the model discrepancy
+  if (iteratedModel.surrogate_type() == "hierarchical")
+    iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 
   initialize_random_variable_transformation();
   if (refineType == Pecos::H_REFINEMENT) // override
@@ -285,7 +290,7 @@ void NonDExpansion::initialize_u_space_model()
 	= (i >= numContDesVars && i < numContDesVars + numContAleatUncVars);
   }
   // Specification data needed by PecosApproximation must be passed
-  // by diving through the hierarchy.
+  // by diving through the class containment hierarchy.
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   PecosApproximation* poly_approx_rep;
   Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
@@ -402,7 +407,8 @@ void NonDExpansion::quantify_uncertainty()
     compute_print_converged_results(true);
 
     // compute aggregate expansion and generate its statistics
-    uSpaceModel.combine_approximation();
+    uSpaceModel.combine_approximation(
+      iteratedModel.discrepancy_correction().correction_type());
     Cout << "\n----------------------------------------------------"
 	 << "\nMultifidelity UQ: approximated high fidelity results"
 	 << "\n----------------------------------------------------\n\n";

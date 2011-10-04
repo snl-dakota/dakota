@@ -610,12 +610,12 @@ void DataFitSurrModel::store_approximation()
 }
 
 
-void DataFitSurrModel::combine_approximation()//(bool rebuild_flag)
+void DataFitSurrModel::combine_approximation(short corr_type)
 {
   Cout << "\n>>>>> Combining " << surrogateType << " approximations.\n";
 
   // combine current data fits with previously stored approximations
-  approxInterface.combine_approximation();
+  approxInterface.combine_approximation(corr_type);
 
   //Cout << "\n<<<<< " << surrogateType << " approximation finalized.\n";
 }

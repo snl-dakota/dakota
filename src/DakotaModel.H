@@ -150,7 +150,7 @@ public:
   /// move the current approximation into storage for later combination
   virtual void store_approximation();
   /// combine the current approximation with one previously stored
-  virtual void combine_approximation();
+  virtual void combine_approximation(short corr_type);
 
   // retrieve the variables used to build a surrogate model
   //virtual const VariablesArray build_variables() const;

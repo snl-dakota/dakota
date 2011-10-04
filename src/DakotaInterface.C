@@ -1082,10 +1082,10 @@ void Interface::store_approximation()
 }
 
 
-void Interface::combine_approximation()
+void Interface::combine_approximation(short corr_type)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->combine_approximation();
+    interfaceRep->combine_approximation(corr_type);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual combine_"
 	 << "approximation() function.\n       This interface does not "

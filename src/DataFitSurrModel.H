@@ -161,7 +161,7 @@ protected:
   /// store the current data fit approximation for later combination
   void store_approximation();
   /// combine the current data fit approximation with one previously stored
-  void combine_approximation();
+  void combine_approximation(short corr_type);
 
   /// retrieve the set of Approximations from approxInterface
   std::vector<Approximation>& approximations();

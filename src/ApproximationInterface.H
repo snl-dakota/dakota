@@ -98,7 +98,7 @@ protected:
   void finalize_approximation();
 
   void store_approximation();
-  void combine_approximation();
+  void combine_approximation(short corr_type);
 
   void clear_current();
   void clear_all();

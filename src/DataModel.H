@@ -22,14 +22,14 @@
 
 namespace Dakota {
 
-// define special values for pointsManagement
+/// define special values for pointsManagement
 enum { DEFAULT_POINTS, MINIMUM_POINTS, RECOMMENDED_POINTS, TOTAL_POINTS };
 
-// define special values for SurrogateModel::responseMode
+/// define special values for SurrogateModel::responseMode
 enum { NO_SURROGATE=0,  UNCORRECTED_SURROGATE, AUTO_CORRECTED_SURROGATE,
        BYPASS_SURROGATE, MODEL_DISCREPANCY };
 
-// define special values for approxCorrectionType
+/// define special values for approxCorrectionType
 enum { NO_CORRECTION=0,  ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
        COMBINED_CORRECTION };
 

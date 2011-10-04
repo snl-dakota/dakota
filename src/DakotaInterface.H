@@ -173,7 +173,7 @@ public:
   /// move the current approximation into storage for later combination
   virtual void store_approximation();
   /// combine the current approximation with one previously stored
-  virtual void combine_approximation();
+  virtual void combine_approximation(short corr_type);
 
   /// clears current data from an approximation interface
   virtual void clear_current();

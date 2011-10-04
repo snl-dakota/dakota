@@ -174,7 +174,7 @@ protected:
   void finalize_approximation();
 
   void store_approximation();
-  void combine_approximation();
+  void combine_approximation(short corr_type);
 
   /// retrieve the set of Approximations from the subModel
   std::vector<Approximation>& approximations();
@@ -454,8 +454,8 @@ inline void RecastModel::store_approximation()
 { subModel.store_approximation(); }
 
 
-inline void RecastModel::combine_approximation()
-{ subModel.combine_approximation(); }
+inline void RecastModel::combine_approximation(short corr_type)
+{ subModel.combine_approximation(corr_type); }
 
 
 inline std::vector<Approximation>& RecastModel::approximations()
