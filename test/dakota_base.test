@@ -12802,7 +12802,7 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    4.0200000000e+02  1.0499552371e+03
-  numerical:    3.6564000000e+02  9.9751920282e+02  9.8241052697e+00  1.9141169062e+02
+  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7226516637e+02
 Test Number 1 succeeded
 Polynomial Chaos coefficients for response_fn_1:
    3.6360000000e+01  He0  He0
@@ -12917,7 +12917,7 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    4.0200000000e+02  1.0499552371e+03
-  numerical:    3.6564000000e+02  9.9751920282e+02  9.8241052697e+00  1.9141169062e+02
+  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7226516637e+02
 Test Number 2 succeeded
 Polynomial Chaos coefficients for response_fn_1:
    3.6360000000e+01  He0  He0
@@ -12925,15 +12925,15 @@ Polynomial Chaos coefficients for response_fn_1:
    4.0000000000e+01  He2  He0
   -4.0000000000e+01  He0  He1
    1.1657341759e-14  He0  He2
+  -1.2878587086e-14  He1  He1
+  -2.1760371283e-14  He2  He1
+   1.8651746814e-14  He1  He2
+   4.4408920985e-16  He2  He2
   -2.2574534834e-15  He0  He3
   -1.0732155905e-15  He0  He4
    3.2566542056e-16  He0  He5
   -9.8686491078e-18  He0  He6
    1.3534147348e-16  He0  He7
-  -1.2878587086e-14  He1  He1
-  -2.1760371283e-14  He2  He1
-   1.8651746814e-14  He1  He2
-   4.4408920985e-16  He2  He2
    2.0724163126e-15  He3  He0
   -9.1778436702e-15  He4  He0
    1.1842378929e-16  He5  He0
@@ -13026,7 +13026,7 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    4.0200000000e+02  1.0499552371e+03
-  numerical:    3.6564000000e+02  9.9751920282e+02  9.8241052697e+00  1.9480351934e+02
+  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7502298648e+02
 Test Number 3 succeeded
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -13148,7 +13148,7 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    4.0200000000e+02  1.0499552371e+03
-  numerical:    3.6564000000e+02  9.9751920282e+02  6.2177317557e+00  4.2411470307e+01
+  numerical:    4.0200000000e+02  1.0499552371e+03  6.0795301477e+00  4.0847433680e+01
 Test Number 7 succeeded
 Polynomial Chaos coefficients for response_fn_1:
    3.6360000000e+01  He0  He0
@@ -13680,7 +13680,7 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    4.0200000000e+02  1.0499552371e+03
-  numerical:    3.6564000000e+02  9.9751920282e+02  9.8241052697e+00  1.9484765973e+02
+  numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7506447751e+02
 Test Number 8 succeeded
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
