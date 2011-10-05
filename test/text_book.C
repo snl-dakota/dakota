@@ -51,8 +51,7 @@ int main(int argc, char** argv)
     fin.ignore(256, '\n');
   }
 
-
-  //  srand ( (unsigned int) (time(NULL)/x[0]) );
+  //srand ( (unsigned int) (time(NULL)/x[0]) );
   //sleep( (int)(3.0*((double)rand()/RAND_MAX)));
 
   //sleep(5);
@@ -71,24 +70,23 @@ int main(int argc, char** argv)
 
   // **** f:
   if (ASV[0] & 1) {
-    double value = 0.;
+    double val = 0.;
     for (i=0; i<num_vars; i++)
-      value += pow(x[i]-1.0, 4.0);
-    fout << "                     " << value << " f\n";
+      val += pow(x[i]-1.0, 4.0);
+    fout << "                     " << val << " f\n";
   }
 
-  // **** c1:
-  if (num_fns > 1 && (ASV[1] & 1))
-    fout << "                     " << x[0]*x[0] - 0.5*x[1] << " c1\n";
-
-  // **** c2:
-  if (num_fns > 2 && (ASV[2] & 1))
-    fout << "                     " << x[1]*x[1] - 0.5*x[0] << " c2\n";
-
-  // **** c3 through cn (allow an arbitrary # of response fns.):
-  for (i=3; i<num_fns; i++)
-    if (ASV[i] & 1)
-      fout << "                     0.0 c" << i << '\n';
+  // **** c: ****
+  for (i=1; i<num_fns; i++) {
+    if (ASV[i] & 1) {
+      double val = (i-1 < num_vars) ? x[i-1]*x[i-1] : 0;
+      if (i%2)
+	{ if (i   < num_vars) val -= x[i]/2.; }   //  odd constraint
+      else
+	{ if (i-2 < num_vars) val -= x[i-2]/2.; } // even constraint
+      fout << "                     " << val << " c" << i << '\n';
+    }
+  }
 
   // **** df/dx:
   if (ASV[0] & 2) {
@@ -98,97 +96,42 @@ int main(int argc, char** argv)
     fout << "]\n";
   }
 
-  // **** dc1/dx:
-  if (num_fns > 1 && (ASV[1] & 2)) {
-    fout << "[ ";
-    for (i=0; i<num_deriv_vars; i++) {
-      int var_index = DVV[i] - 1;
-      if (var_index == 0)
-        fout << 2.*x[0] << ' ';
-      else if (var_index == 1)
-        fout << -0.5 << ' ';
-      else
-	fout << "0. ";
-    }
-    fout << "]\n";
-  }
-
-  // **** dc2/dx:
-  if (num_fns > 2 && (ASV[2] & 2)) {
-    fout << "[ ";
-    for (i=0; i<num_deriv_vars; i++) {
-      int var_index = DVV[i] - 1;
-      if (var_index == 0)
-        fout << -0.5 << ' ';
-      else if (var_index == 1)
-        fout << 2.*x[1] << ' ';
-      else
-	fout << "0. ";
-    }
-    fout << "]\n";
-  }
-
-  // **** dc3/dx through dcn/dx (allow an arbitrary # of response fns.):
-  for (i=3; i<num_fns; i++) {
+  // **** dc/dx:
+  for (i=1; i<num_fns; i++) {
     if (ASV[i] & 2) {
       fout << "[ ";
-      for (j=0; j<num_deriv_vars; j++)
-        fout << "0. ";
+      for (j=0; j<num_deriv_vars; j++) {
+	int var_index = DVV[j] - 1;
+	if (i-1 < num_vars && var_index == i-1) // both constraints
+	  fout << 2.*x[i-1] << ' ';
+	else if ( (i   < num_vars &&   i%2  && var_index == i) || //  odd constr
+		  (i-2 < num_vars && !(i%2) && var_index == i-2) )// even constr
+	  fout << -0.5 << ' ';
+	else
+	  fout <<  0.  << ' ';
+      }
       fout << "]\n";
     }
   }
 
-  // **** d^2f/dx^2: (full Newton unconstrained opt.)
+  // **** d^2f/dx^2:
   if (ASV[0] & 4) {
     fout << "[[ ";
     for (i=0; i<num_deriv_vars; i++)
       for (j=0; j<num_deriv_vars; j++)
-        if (i==j)
-          fout << 12.*pow(x[DVV[i]-1] - 1., 2) << ' ';
-        else
-          fout << "0. ";
+        if (i==j) fout << 12.*pow(x[DVV[i]-1] - 1., 2) << ' ';
+        else      fout << 0. << ' ';
     fout << "]]\n";
   }
 
-  // **** d^2c1/dx^2: (ParamStudy testing of multiple Hessian matrices)
-  if (num_fns > 1 && (ASV[1] & 4)) {
-    fout << "[[ ";
-    for (i=0; i<num_deriv_vars; i++) {
-      int var_index_i = DVV[i] - 1;
-      for (j=0; j<num_deriv_vars; j++) {
-	int var_index_j = DVV[j] - 1;
-        if (var_index_i==0 && var_index_j==0)
-          fout << 2. << ' ';
-        else
-          fout << "0. ";
-      }
-    }
-    fout << "]]\n";
-  }
-
-  // **** d^2c2/dx^2: (ParamStudy testing of multiple Hessian matrices)
-  if (num_fns > 2 && (ASV[2] & 4)) {
-    fout << "[[ ";
-    for (i=0; i<num_deriv_vars; i++) {
-      int var_index_i = DVV[i] - 1;
-      for (j=0; j<num_deriv_vars; j++) {
-	int var_index_j = DVV[j] - 1;
-        if (var_index_i==1 && var_index_j==1)
-          fout << 2. << ' ';
-        else
-          fout << "0. ";
-      }
-    }
-    fout << "]]\n";
-  }
-
-  // **** d^2c3/dx^2 through d^2cn/dx^2 (allow an arbitrary # of response fns.):
-  for (i=3; i<num_fns; i++) {
+  // **** d^2c/dx^2:
+  for (i=1; i<num_fns; i++) {
     if (ASV[i] & 4) {
       fout << "[[ ";
       for (j=0; j<num_deriv_vars; j++)
-        for (k=0; k<num_deriv_vars; k++)
-          fout << "0. ";
+	for (k=0; k<num_deriv_vars; k++)
+	  if (i-1<num_vars && DVV[j]==i && DVV[k]==i) fout << 2. << ' ';
+	  else                                        fout << 0. << ' ';
       fout << "]]\n";
     }
   }

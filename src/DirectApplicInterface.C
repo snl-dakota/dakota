@@ -96,6 +96,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   driverTypeMap["text_book2"]             = TEXT_BOOK2;
   driverTypeMap["text_book3"]             = TEXT_BOOK3;
   driverTypeMap["text_book_ouu"]          = TEXT_BOOK_OUU;
+  driverTypeMap["scalable_text_book"]     = SCALABLE_TEXT_BOOK;
   driverTypeMap["salinas"]                = SALINAS;
   driverTypeMap["mc_api_run"]             = MODELCENTER;
   driverTypeMap["modelcenter"]            = MODELCENTER;
@@ -169,9 +170,9 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
     case GERSTNER:            case SCALABLE_GERSTNER:
     case EXTENDED_ROSENBROCK: case GENERALIZED_ROSENBROCK:
     case SOBOL_G_FUNCTION:    case SOBOL_RATIONAL:
-    case TEXT_BOOK:           case TEXT_BOOK_OUU:
-    case TEXT_BOOK1: case TEXT_BOOK2:  case TEXT_BOOK3:
-    case SALINAS:    case MODELCENTER: case MATLAB: case PYTHON:
+    case TEXT_BOOK:           case TEXT_BOOK_OUU:       case SCALABLE_TEXT_BOOK:
+    case TEXT_BOOK1:          case TEXT_BOOK2:          case TEXT_BOOK3:
+    case SALINAS:             case MODELCENTER:         case MATLAB: case PYTHON:
       localDataView |= VARIABLES_VECTOR; break;
     }
 
@@ -486,6 +487,8 @@ int DirectApplicInterface::derived_map_ac(const String& ac_name)
     fail_code = text_book3(); break;
   case TEXT_BOOK_OUU:
     fail_code = text_book_ouu(); break;
+  case SCALABLE_TEXT_BOOK:
+    fail_code = scalable_text_book(); break;
 #ifdef DAKOTA_SALINAS
   case SALINAS:
     fail_code = salinas(); break;
@@ -2267,11 +2270,27 @@ int DirectApplicInterface::sobol_ishigami()
 
 int DirectApplicInterface::text_book()
 {
-  // This version is used when evalComm is not split into multiple analysis
-  // servers.  In this case, execute the 3 portions serially.
+  // This version is used when multiple analysis drivers are not employed.
+  // In this case, execute text_book1/2/3 sequentially.
+
+  if (numFns > 3) {
+    Cerr << "Error: Bad number of functions in text_book direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  // The presence of discrete variables can cause offsets in directFnDVV which
+  // the text_book derivative logic does not currently account for.
+  if ( (gradFlag || hessFlag) && (numADIV || numADRV) ) {
+    Cerr << "Error: text_book direct fn assumes no discrete variables in "
+	 << "derivative mode." << std::endl;
+    abort_handler(-1);
+  }
+
   text_book1(); // objective fn val/grad/Hessian
-  text_book2(); // constraint 1 val/grad/Hessian
-  text_book3(); // constraint 2 val/grad/Hessian
+  if (numFns > 1)
+    text_book2(); // constraint 1 val/grad/Hessian
+  if (numFns > 2)
+    text_book3(); // constraint 2 val/grad/Hessian
 
   // Test failure capturing for Direct case
   //int r = rand();
@@ -2287,19 +2306,6 @@ int DirectApplicInterface::text_book()
 // servers.  In this case, the 3 portions are executed in parallel.
 int DirectApplicInterface::text_book1()
 {
-  if (numFns > 3) {
-    Cerr << "Error: Bad number of functions in text_book direct fn."
-	 << std::endl;
-    abort_handler(-1);
-  }
-  // The presence of discrete variables can cause offsets in directFnDVV which
-  // the text_book derivative logic does not currently account for.
-  if ( (gradFlag || hessFlag) && (numADIV || numADRV) ) {
-    Cerr << "Error: text_book direct fn assumes no discrete variables in "
-	 << "derivative mode." << std::endl;
-    abort_handler(-1);
-  }
-
   // **********************************
   // **** f: sum (x[i] - POWVAL)^4 ****
   // **********************************
@@ -2418,7 +2424,7 @@ int DirectApplicInterface::text_book2()
   // **** c1: x[0]*x[0] - 0.5*x[1] ****
   // **********************************
   size_t i;
-  if (numFns > 1 && (directFnASV[1] & 1)) {
+  if (directFnASV[1] & 1) {
     Real local_val = 0.0;
     // Definitely not the most efficient way to do this, but the point is to
     // demonstrate Comm communication.
@@ -2460,7 +2466,7 @@ int DirectApplicInterface::text_book2()
   // *****************
   // **** dc1/dx: ****
   // *****************
-  if (numFns > 1 && (directFnASV[1] & 2)) {
+  if (directFnASV[1] & 2) {
     std::fill_n(fnGrads[1], fnGrads.numRows(), 0.);
 
     //fnGrads[1][0] = 2.*xC[0];
@@ -2495,7 +2501,7 @@ int DirectApplicInterface::text_book2()
   // *********************
   // **** d^2c1/dx^2: ****
   // *********************
-  if (numFns > 1 && (directFnASV[1] & 4)) {
+  if (directFnASV[1] & 4) {
     fnHessians[1] = 0.;
     //fnHessians[1][0][0] = 2.;
     for (i=analysisCommRank; i<numDerivVars; i+=analysisCommSize) {
@@ -2537,7 +2543,7 @@ int DirectApplicInterface::text_book3()
   // **** c2: x[1]*x[1] - 0.5*x[0] ****
   // **********************************
   size_t i;
-  if (numFns > 2 && (directFnASV[2] & 1)) {
+  if (directFnASV[2] & 1) {
     Real local_val = 0.0;
     // Definitely not the most efficient way to do this, but the point is to
     // demonstrate Comm communication.
@@ -2579,7 +2585,7 @@ int DirectApplicInterface::text_book3()
   // *****************
   // **** dc2/dx: ****
   // *****************
-  if (numFns > 2 && (directFnASV[2] & 2)) {
+  if (directFnASV[2] & 2) {
     std::fill_n(fnGrads[2], fnGrads.numRows(), 0.);
 
     //fnGrads[2][0] = -0.5;
@@ -2614,7 +2620,7 @@ int DirectApplicInterface::text_book3()
   // *********************
   // **** d^2c2/dx^2: ****
   // *********************
-  if (numFns > 2 && (directFnASV[2] & 4)) {
+  if (directFnASV[2] & 4) {
     fnHessians[2] = 0.;
     //fnHessians[2][1][1] = 2.;
     for (i=analysisCommRank; i<numDerivVars; i+=analysisCommSize) {
@@ -2751,6 +2757,92 @@ int DirectApplicInterface::text_book_ouu()
       default: // all other derivative
 	fnGrads[2][i] = 0.;                      break;
       }
+
+  //sleep(5); // for faking a more expensive evaluation
+  return 0; // no failure
+}
+
+
+int DirectApplicInterface::scalable_text_book()
+{
+  if (numADIV || numADRV) {
+    Cerr << "Error: scalable_text_book direct fn does not support discrete "
+	 << "variables." << std::endl;
+    abort_handler(-1);
+  }
+
+  // **********************************
+  // **** f: sum (x[i] - POWVAL)^4 ****
+  // **********************************
+  size_t i, j;
+  if (directFnASV[0] & 1) {
+    fnVals[0] = 0.;
+    for (i=0; i<numACV; ++i)
+      fnVals[0] += std::pow(xC[i]-POW_VAL, 4);
+  }
+
+  // ****************
+  // **** df/dx: ****
+  // ****************
+  if (directFnASV[0] & 2) {
+    std::fill_n(fnGrads[0], fnGrads.numRows(), 0.);
+    for (i=0; i<numDerivVars; ++i) {
+      size_t var_index = directFnDVV[i] - 1;
+      fnGrads[0][i] = 4.*std::pow(xC[var_index]-POW_VAL,3);
+    }
+  }
+
+  // ********************
+  // **** d^2f/dx^2: ****
+  // ********************
+  if (directFnASV[0] & 4) {
+    fnHessians[0] = 0.;
+    for (i=0; i<numDerivVars; ++i) {
+      size_t var_index = directFnDVV[i] - 1;
+      fnHessians[0](i,i) = 12.*std::pow(xC[var_index]-POW_VAL,2);
+    }
+  }
+
+  // *********************
+  // **** constraints ****
+  // *********************
+  for (i=1; i<numFns; ++i) {
+    // ************
+    // **** c: ****
+    // ************
+    if (directFnASV[i] & 1) {
+      fnVals[i] = (i-1 < numACV) ? xC[i-1]*xC[i-1] : 0.;
+      if (i%2) //  odd constraint
+	{ if (i   < numACV) fnVals[i] -= xC[i]/2.; }
+      else     // even constraint
+	{ if (i-2 < numACV) fnVals[i] -= xC[i-2]/2.; }
+    }
+    // ****************
+    // **** dc/dx: ****
+    // ****************
+    if (directFnASV[i] & 2) {
+      std::fill_n(fnGrads[i], fnGrads.numRows(), 0.);
+      for (j=0; j<numDerivVars; ++j) {
+	size_t var_index = directFnDVV[j] - 1;
+	if (i-1 < numACV && var_index == i-1) // both constraints
+	  fnGrads[i][j] = 2.*xC[i-1];
+	else if (i%2)         //  odd constraint
+	  { if (i   < numACV && var_index == i)   fnGrads[i][j] = -0.5; }
+	else                  // even constraint
+	  { if (i-2 < numACV && var_index == i-2) fnGrads[i][j] = -0.5; }
+      }
+    }
+    // ********************
+    // **** d^2c/dx^2: ****
+    // ********************
+    if (directFnASV[i] & 4) {
+      fnHessians[i] = 0.;
+      if (i-1 < numACV)
+	for (j=0; j<numDerivVars; ++j)
+	  if (directFnDVV[j] == i) // both constraints
+	    fnHessians[i](j,j) = 2.;
+    }
+  }
 
   //sleep(5); // for faking a more expensive evaluation
   return 0; // no failure

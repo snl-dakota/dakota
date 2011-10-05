@@ -54,8 +54,8 @@ enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
 		PLUGIN_ROSENBROCK, PLUGIN_TEXT_BOOK,
 		SHORT_COLUMN, LF_SHORT_COLUMN,
 		SOBOL_RATIONAL, SOBOL_G_FUNCTION, SOBOL_ISHIGAMI,
-		STEEL_COLUMN_COST, STEEL_COLUMN_PERFORMANCE,
-		TEXT_BOOK, TEXT_BOOK1, TEXT_BOOK2, TEXT_BOOK3, TEXT_BOOK_OUU,
+		STEEL_COLUMN_COST, STEEL_COLUMN_PERFORMANCE, TEXT_BOOK,
+		TEXT_BOOK1, TEXT_BOOK2, TEXT_BOOK3, TEXT_BOOK_OUU, SCALABLE_TEXT_BOOK,
 		SALINAS, MODELCENTER, MATLAB, PYTHON };
 
 /// enumeration for how local variables are stored (values must employ
@@ -232,11 +232,12 @@ private:
   int sobol_g_function(); ///< Sobol SA discontinuous test function
   int sobol_ishigami();   ///< Sobol SA transcendental test function
 
-  int text_book();     ///< the text_book constrained optimization test function
-  int text_book1();    ///< portion of text_book() evaluating the objective fn
-  int text_book2();    ///< portion of text_book() evaluating constraint 1
-  int text_book3();    ///< portion of text_book() evaluating constraint 2
-  int text_book_ouu(); ///< the text_book_ouu OUU test function
+  int text_book();          ///< the text_book constrained optimization test function
+  int text_book1();         ///< portion of text_book() evaluating the objective fn
+  int text_book2();         ///< portion of text_book() evaluating constraint 1
+  int text_book3();         ///< portion of text_book() evaluating constraint 2
+  int text_book_ouu();      ///< the text_book_ouu OUU test function
+  int scalable_text_book(); ///< scalable version of the text_book test function
 
 #ifdef DAKOTA_SALINAS
   int salinas(); ///< direct interface to the SALINAS structural dynamics code
