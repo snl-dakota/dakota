@@ -2806,6 +2806,10 @@ int DirectApplicInterface::scalable_text_book()
   // *********************
   // **** constraints ****
   // *********************
+  // "symmetric" constraint pairs are defined from pairs of variables
+  // (although odd constraint or variable counts are also allowable):
+  // for i=1:num_fns-1, c[i] = x[i-1]^2 - x[i]/2    for  odd i 
+  //                    c[i] = x[i-1]^2 - x[i-2]/2  for even i
   for (i=1; i<numFns; ++i) {
     // ************
     // **** c: ****

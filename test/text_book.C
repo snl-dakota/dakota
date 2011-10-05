@@ -77,6 +77,10 @@ int main(int argc, char** argv)
   }
 
   // **** c: ****
+  // "symmetric" constraint pairs are defined from pairs of variables
+  // (although odd constraint or variable counts are also allowable):
+  // for i=1:num_fns-1, c[i] = x[i-1]^2 - x[i]/2    for  odd i 
+  //                    c[i] = x[i-1]^2 - x[i-2]/2  for even i
   for (i=1; i<num_fns; i++) {
     if (ASV[i] & 1) {
       double val = (i-1 < num_vars) ? x[i-1]*x[i-1] : 0;
