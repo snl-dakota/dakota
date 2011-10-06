@@ -9,7 +9,11 @@ method,
 # Single fidelity verification
 #	model_pointer = 'HIFI'
 #	  polynomial_chaos non_nested
-#	  sparse_grid_level = 3
+#	    sparse_grid_level = 3
+#
+#	  stoch_collocation non_nested
+#	    sparse_grid_level = 5
+#	    piecewise use_derivatives
 # Multifidelity test suite
 	model_pointer = 'SURROGATE'
 	polynomial_chaos non_nested			#0,#1,#2,#6,#7
@@ -33,9 +37,10 @@ model,
 #	    first_order				#10
 
 variables,
-	normal_uncertain = 2
-      	  means             =  0.   0.
-	  std_deviations    =  1.   1.
+	normal_uncertain = 2			#0,#1,#2,#3,#4,#5,#6,#7,#8,#9
+      	  means             =  0.   0.		#0,#1,#2,#3,#4,#5,#6,#7,#8,#9
+	  std_deviations    =  1.   1.		#0,#1,#2,#3,#4,#5,#6,#7,#8,#9
+#	uniform_uncertain = 2			#10
 #	  lower_bounds      = -5.  -5.		#10
 #	  upper_bounds	    =  5.   5.		#10
 	  descriptors       = 'x1' 'x2'
