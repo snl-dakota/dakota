@@ -135,6 +135,62 @@ private:
 const char** arg_list_adjust(const char **, void **);
 
 
+#ifdef DAKOTA_HAVE_BOOST_FS
+/// Utilities to manage API differences in BFS_VERSION_2 vs BFS_VERSION_3
+
+/// Same as file_path.filename() in latest boost::filesystem
+inline static std::string filename(const bfs::path& file_path)
+{
+#if BOOST_FILESYSTEM_VERSION < 3
+  return file_path.empty() ? std::string() : *--file_path.end();
+#else
+  return file_path.empty() ? std::string() : (*--file_path.end()).string();
+#endif
+}
+
+/// Should be same as fp.parent_path() in latest boost::filesystem
+// This is not entirely according to bfs::path::parent_path() in 1.39.0
+inline static bfs::path parent_path(const bfs::path& fp)
+{
+  std::string fn = filename(fp);
+  std::string fpath_str = fp.string();
+
+  return fpath_str.substr(0, fpath_str.length() - fn.length() - 1);
+}
+
+
+inline static bool contains(const bfs::path& dir_path,
+                            const std::string& file_name,
+                            bool recurse, bfs::path& path_found)
+{
+  bool success_flag(false);
+  if( exists(dir_path) && is_directory(dir_path) ) {
+    bfs::directory_iterator iter(dir_path), dir_end;
+
+    for(; iter != dir_end; ++iter) {
+      /* WJB: consider possibility of recursion into subdirs
+      if( bfs::is_directory(*iter) && recurse ) {
+        if( contains(*iter, file_name, recurse, path_found) ) {
+          success_flag = true;
+          break;
+        }
+      } */
+      //else if( filename(*iter) == file_name ) {
+#if BOOST_FILESYSTEM_VERSION < 3
+      if( iter->leaf() == file_name ) {
+#else
+      if( filename(*iter) == file_name ) {
+#endif
+        path_found = *iter;
+        success_flag = true;
+        break;
+      }
+    }
+    return success_flag;
+  }
+}
+#endif // DAKOTA_HAVE_BOOST_FS
+
 } // namespace Dakota
 
 #endif // WORKDIR_HELPER_H
