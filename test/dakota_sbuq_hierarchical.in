@@ -25,7 +25,7 @@ method,
 #	  sparse_grid_level = 0		  		#1,#4,#2,#5
 #	  quadrature_order = 1				#7,#9
 #	  sparse_grid_level = 5 10			#10
-#	  piecewise use_derivatives
+#	  piecewise use_derivatives			#10
 
 model,
 	id_model = 'SURROGATE'

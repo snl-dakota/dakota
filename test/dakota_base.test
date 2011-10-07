@@ -13711,6 +13711,21 @@ Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7506447751e+02
   numerical:    4.0200000000e+02  1.0499552371e+03  9.2965272463e+00  1.7506447751e+02
+Test Number 10 succeeded
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    3.2969333333e+02  3.1971145981e+02  5.2032680869e-01 -6.4868486779e-01
+  numerical:    3.2969333333e+02  3.1971145981e+02  5.2032680869e-01 -6.4868486779e-01
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.3012941544e+04  1.7631580865e+04  1.6864115549e+00  2.5160200589e+00
+  numerical:    1.3012941544e+04  1.7631580865e+04  1.6864115549e+00  2.5160200589e+00
+<<<<< Function evaluation summary (LOFI_FN): 466 total (385 new, 81 duplicate)
+<<<<< Function evaluation summary (HIFI_FN): 81 total (81 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    1.3342634878e+04  1.7928166847e+04  1.6690888734e+00  2.4415906715e+00
+  numerical:    1.3342634878e+04  1.7928166847e+04  1.6690888734e+00  2.4415906715e+00
 dakota_scaling.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (13 new, 2 duplicate)
