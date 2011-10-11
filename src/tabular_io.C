@@ -170,7 +170,6 @@ void read_data_tabular(const std::string& input_filename,
 	   << num_rows << " whitespace-separated numeric data.";
     }
     Cout << std::endl;
-    input_stream.close();
   }
 
   if (exists_extra_data(input_stream)) { 
@@ -180,7 +179,6 @@ void read_data_tabular(const std::string& input_filename,
 	 << "\nfile " << input_filename << "." << std::endl; 
   }
 
-  input_stream.close();
 }
 
 
@@ -215,9 +213,11 @@ void read_data_tabular(const std::string& input_filename,
       reuse_file_responses.read_tabular(data_file);
     }
     // TODO: catch any
+    catch (const std::ios_base::failure& failorbad_except) {
+      break; // out of while loop
+    }
     catch(String& err_msg) {
       //Cerr << "Warning: " << err_msg << std::endl;
-      data_file.close();
       break; // out of while loop
     }
     Variables reuse_file_vars(svd); // instantiate-on-the-fly
@@ -229,7 +229,6 @@ void read_data_tabular(const std::string& input_filename,
     input_resp.push_back(reuse_file_responses);  // shallow copy
   }
 
-  data_file.close();
 }
 
 
@@ -278,7 +277,6 @@ void read_data_tabular(const std::string& input_filename,
 	     << num_rows*num_cols << " whitespace-separated numeric data.";
       }
       Cout << std::endl;
-      input_stream.close();
     }
   }
 
@@ -288,7 +286,6 @@ void read_data_tabular(const std::string& input_filename,
 	 << (annotated ? "header-annotated" : "free-form")
 	 << "\nfile " << input_filename << "." << std::endl; 
   }
-  input_stream.close();
 }
 
 

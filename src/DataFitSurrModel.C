@@ -733,6 +733,8 @@ void DataFitSurrModel::build_global()
       = approxInterface.approximation_data(index).anchor_variables();
 
     // Process the PRPCache
+    // (this relies on data_pairs being in eval_id order so variables
+    // and responses are correctly ordered)
     extern PRPCache data_pairs;
     for (PRPCacheCIter prp_iter = data_pairs.begin();
 	 prp_iter != data_pairs.end(); ++prp_iter) {
@@ -752,24 +754,31 @@ void DataFitSurrModel::build_global()
       }
     }
 
+    // append any reused DB data points (previous data cleared prior to
+    // build_global() call).  Note: all reuse sets have data persistence
+    // by nature of data_pairs or reuseFile{Vars,Responses}
+    reuse_points += reuse_vars.size();
+    approxInterface.append_approximation(reuse_vars, reuse_responses);
+ 
     // Process the points_file
+    // Reused file-read responses go backward, so insert them
+    // separately, ordering variables and responses appropriately.
+    // The negative eval IDs mean DB lookups will appropriately fail
+    // on these which aren't in the cace.
     if (!pointReuseFile.empty()) {
       VarsLIter v_it; RespLIter r_it; int cntr = -1;
       for (v_it  = reuseFileVars.begin(), r_it = reuseFileResponses.begin();
 	   v_it != reuseFileVars.end(); ++v_it, ++r_it, --cntr) {
 	if (inside(v_it->continuous_variables(), v_it->discrete_int_variables(),
 		   v_it->discrete_real_variables())) {
-	  reuse_vars.push_back(*v_it);
-	  reuse_responses[cntr] = *r_it; // dummy eval id < 0 for file imports
+	  // dummy eval id < 0 for file imports
+	  approxInterface.append_approximation(*v_it,
+					       std::make_pair(cntr, *r_it));
+	  ++reuse_points;
 	}
       }
     }
 
-    // append any reused data points (previous data cleared prior to
-    // build_global() call).  Note: all reuse sets have data persistence
-    // by nature of data_pairs or reuseFile{Vars,Responses}
-    reuse_points = reuse_vars.size();
-    approxInterface.append_approximation(reuse_vars, reuse_responses);
   }
 
   // *******************************************
