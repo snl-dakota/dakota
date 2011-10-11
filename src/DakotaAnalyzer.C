@@ -616,19 +616,23 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
   allResponses.clear();
 
   // now read variables and responses (minimal error checking for now)
-  int cntr = -1; // use negative ids for file import
+  int cntr = -1; // use negative ids for file import if not annotated with IDs
   for (size_t i=0; i<num_evals; ++i, --cntr) {
+
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "   reading sample " << i << std::endl;
 
-    if (!compactMode)
-      allVariables[i] = iteratedModel.current_variables().copy();
-    allResponses[cntr] = iteratedModel.current_response().copy();
+    int eval_id = cntr;  // default eval_id is the (negative) cntr
 
     try {
       if (annotated) {
-	size_t discard_row_label;
-	tabular_file >> discard_row_label;
+	tabular_file >> eval_id;
+	if (eval_id != i+1) {
+	  Cerr << "\nError in post-run input: unexpected eval_id from leading "
+	       << "column in file." << std::endl;
+	  tabular_file.close();
+	  abort_handler(-1);
+	}
       }
       if (compactMode) {
 	// this doesn't work because getCol is returning a copy;
@@ -638,25 +642,36 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 	for (size_t var_index = 0; var_index < num_vars; ++var_index) 
 	  tabular_file >> allSamples(var_index, i);
       }
-      else
+      else {
+	allVariables[i] = iteratedModel.current_variables().copy();
 	allVariables[i].read_tabular(tabular_file);
-      allResponses[cntr].read_tabular(tabular_file);
+      }
+      allResponses[eval_id] = iteratedModel.current_response().copy();
+      allResponses[eval_id].read_tabular(tabular_file);
     }
     catch (const std::ios_base::failure& failorbad_except) {
       Cerr << "\nError: insufficient data in post-run input file;\n       "
-	   << "expected " << num_evals << " samples, read " << i << std::endl;
+	   << "expected " << num_evals << " samples, read " << i 
+	   << '\n' << std::endl;
+      tabular_file.close();
       abort_handler(-1);
     }
     if (compactMode)
-      update_best(allSamples[i], i+1, allResponses[cntr]);
+      update_best(allSamples[i], i+1, allResponses[eval_id]);
     else
-      update_best(allVariables[i], i+1, allResponses[cntr]);
+      update_best(allVariables[i], i+1, allResponses[eval_id]);
+  }
+
+  if (TabularIO::exists_extra_data(tabular_file)) { 
+    Cout << "\nWarning (post-run input): found unexpected extra data in " 
+	 << (annotated ? "header-annotated" : "free-form")
+	 << "\nfile " << filename << "." << std::endl; 
   }
   
   tabular_file.close();
   if (outputLevel > QUIET_OUTPUT)
     Cout << "\nPost-run phase initialized: variables / responses read from "
-	 << "tabular file " << filename << ".\n" << std::endl;
+	 << "tabular\nfile " << filename << ".\n" << std::endl;
 }
 
 
