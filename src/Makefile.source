@@ -37,6 +37,7 @@ UTIL_SRCS       = ParallelLibrary.C                 \
 		  $(XDR_S)                          \
 	 	  $(TRACKING_S)			    \
 		  data_util.C                       \
+		  tabular_io.C                      \
 		  global_defs.C                     \
 		  CommandLineHandler.C              \
 		  DakotaGraphics.C                  \
@@ -181,6 +182,7 @@ include_HEADERS = ParallelLibrary.H             \
 		  data_types.h                  \
 		  data_io.h                     \
 		  data_util.h                   \
+		  tabular_io.h			\
 		  global_defs.h                 \
 		  CommandLineHandler.H          \
 		  DakotaGraphics.H              \

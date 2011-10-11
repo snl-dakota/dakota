@@ -13,6 +13,7 @@
 
 #include "system_defs.h"
 #include "data_io.h"
+#include "tabular_io.h"
 #include "DakotaModel.H"
 #include "DakotaLeastSq.H"
 #include "ParamResponsePair.H"
@@ -50,9 +51,12 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
 
   bestVariablesArray.push_back(model.current_variables().copy());
 
-  // handle user observation data if specified
-  if (obsDataFlag)
-    read_observed_data();
+  // read observation data for computation of least squares residuals if specified
+  if (obsDataFlag) {
+    bool annotated = false;  // lsq is free-form for now
+    TabularIO::read_data_tabular(obsDataFilename, "least squares", obsData, 
+				 numLeastSqTerms, annotated);	
+  }
 
   // set minimizer data for number of functions or least squares terms
   // and then instantiate RecastModel as necessary
@@ -422,35 +426,6 @@ void LeastSq::post_run(std::ostream& s)
   }
 
   Iterator::post_run(s);
-}
- 
-
-/** read user's observation data for computation of least squares residuals
-    (currently reading on all processors -- need to read once and broadcast) */
-void LeastSq::read_observed_data()
-{
-  std::ifstream data_file(obsDataFilename);
-  if (!data_file) {
-    Cerr << "Could not open user data source " << obsDataFilename << " in "
-	 << "least squares method." << std::endl;
-    abort_handler(-1);
-  }
-  else {
-    obsData.resize(numLeastSqTerms);
-    // should have just this, but its not treating trailing newline correctly
-    // (reads as zero)
-    //data_file >> obsData;
-    //obsData.read_tabular(data_file);
-    size_t i = 0;
-    while (i<numLeastSqTerms && data_file >> obsData[i])
-      i++;
-    if (i<numLeastSqTerms) {
-      Cerr << "Data source " << obsDataFilename << " for least squares method"
-	   << "\ndid not contain " << numLeastSqTerms 
-	   << " entries as expected." << std::endl;
-      abort_handler(-1);
-    }
-  }
 }
 
 

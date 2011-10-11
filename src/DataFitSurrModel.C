@@ -17,6 +17,7 @@
 #include "ProblemDescDB.H"
 #include "PRPMultiIndex.H"
 #include "data_io.h"
+#include "tabular_io.h"
 
 static const char rcsId[]="@(#) $Id: DataFitSurrModel.C 7034 2010-10-22 20:16:32Z mseldre $";
 
@@ -121,44 +122,30 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
   // read the points_file once and then reuse this data as appropriate
   // within build_global()
   if (!pointReuseFile.empty()) {
-    std::ifstream point_stream(pointReuseFile);
-    if (!point_stream) {
-      Cerr << "Error: point reuse file " << pointReuseFile << " not found."
-	   << std::endl;
-      abort_handler(-1);
-    }
-    else
-      Cout << "Retrieving points from " << pointReuseFile << '\n';
+
+    // Data needed to reconstruct the variables and responses
     const SharedVariablesData& svd = (actualModel.is_null()) ?
       currentVariables.shared_data() :
-      actualModel.current_variables().shared_data();
-    size_t num_c_vars = (actualModel.is_null()) ? currentVariables.cv() :
+      actualModel.current_variables().shared_data();	
+    size_t num_c_vars = (actualModel.is_null()) ? 
+      currentVariables.cv() :
       actualModel.cv();
     SizetMultiArrayConstView cv_ids = (actualModel.is_null()) ?
       currentVariables.continuous_variable_ids() :
       actualModel.continuous_variable_ids();
     ActiveSet temp_set(numFns); // function values only
     temp_set.derivative_vector(cv_ids);
-    while (!point_stream.eof()) {
-      // reuse_file_vars/responses must already be sized for istream read
-      RealVector reuse_file_c_vars(num_c_vars);
-      Response   reuse_file_responses(temp_set);
-      try {
-	// read_data() lacks eof checks
-	read_data_tabular(point_stream, reuse_file_c_vars);
-	reuse_file_responses.read_tabular(point_stream);
-      }
-      catch(String& err_msg) {
-	//Cerr << "Warning: " << err_msg << std::endl;
-	break; // out of while loop
-      }
-      Variables reuse_file_vars(svd); // instantiate-on-the-fly
-      reuse_file_vars.continuous_variables(reuse_file_c_vars);
-      if (outputLevel > NORMAL_OUTPUT)
-	Cout << "Point read:\n" << reuse_file_c_vars << reuse_file_responses;
-      reuseFileVars.push_back(reuse_file_vars);           // shallow copy
-      reuseFileResponses.push_back(reuse_file_responses); // shallow copy
-    }
+
+    // read the data into continuous variables and responses
+    Cout << "Surrogate model retrieving points from file " << pointReuseFile 
+	 << '\n';
+    bool annotated = false;
+    bool verbose = (outputLevel < NORMAL_OUTPUT);
+    TabularIO::read_data_tabular(pointReuseFile, 
+      "DataFitSurrModel samples file", reuseFileVars, reuseFileResponses, svd, 
+      num_c_vars, temp_set, annotated, verbose);
+    Cout << "Surrogate model retrieved " << reuseFileVars.size()
+	 << " total points." << std::endl;
   }
 }
 

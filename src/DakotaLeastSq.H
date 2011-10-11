@@ -71,9 +71,6 @@ protected:
 				  const Response& native_response,
 				  Response& scaled_response);
 
-  /// read user data file to load observed data points
-  void read_observed_data();
-
   /// Calculate confidence intervals on estimated parameters
   void get_confidence_intervals();
 
@@ -97,7 +94,7 @@ protected:
   /// flag indicating whether user-supplied data is active
   bool obsDataFlag;
   /// storage for user-supplied data for computing residuals
-  RealArray obsData;
+  RealVector obsData;
   /// lower bounds for confidence intervals on calibration parameters
   RealVector confBoundsLower;
   /// upper bounds for confidence intervals on calibration parameters

@@ -565,6 +565,15 @@ void write_data_partial_tabular(std::ostream& s, size_t start_index,
     s << std::setw(write_precision+4) << v[i] << ' ';
 }
 
+/// tabular ostream insertion operator for vector of strings
+ inline void write_data_tabular(std::ostream& s, const StringArray& sa)
+{
+  s << std::setprecision(write_precision) 
+    << std::resetiosflags(std::ios::floatfield);
+  size_t size_sa = sa.size();
+  for (size_t i=0; i<size_sa; ++i)
+    s << std::setw(write_precision+4) << sa[i] << ' ';
+}
 
 /// tabular ostream insertion operator for view of StringMultiArray
 inline void write_data_tabular(std::ostream& s, StringMultiArrayConstView ma)

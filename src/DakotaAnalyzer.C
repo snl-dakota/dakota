@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include "system_defs.h"
 #include "data_io.h"
+#include "tabular_io.h"
 #include "DakotaModel.H"
 #include "DakotaAnalyzer.H"
 #include "ProblemDescDB.H"
@@ -500,7 +501,9 @@ variance_based_decomp(int ncont, int ndiscint, int ndiscreal, int num_samples)
   }
 }
 
-
+/** Generate tabular output with active variables (compactMode) or all
+    variables with their labels and response labels, with no data.
+    Variables are sequenced {cv, div, drv} */
 void Analyzer::pre_output()
 {
   // distinguish between defaulted pre-run and user-specified
@@ -523,66 +526,41 @@ void Analyzer::pre_output()
     return;
   }
 
-  std::ofstream tabular_file(filename);
-  if (!tabular_file.good()) {
-    Cerr << "\nError: could not open pre-run output file" << std::endl;
-    abort_handler(-1);
-  }
+  std::ofstream tabular_file;
+  TabularIO::open_file(tabular_file, filename, "pre-run output");
 
   // try to mitigate errors resulting from lack of precision in output
   // the full 17 digits might surprise users, but will reduce
   // numerical errors between pre/post phases
+  // consider passing precision to helper functions instead of using global
   int save_precision;
   if (writePrecision == 0) {
     save_precision = write_precision;
     write_precision = 17;
   }
-  tabular_file << '%'; // matlab comment syntax
+ 
+  bool active_only = compactMode;  // compactMode uses only active
+  bool response_labels = true;     // write response labels for user
+  bool annotated = true;
+  if (annotated)
+    TabularIO::write_header_tabular(tabular_file, "eval_id", 
+				    iteratedModel.current_variables(), 
+				    iteratedModel.current_response(),
+				    active_only,
+				    response_labels);
+  tabular_file << std::setprecision(write_precision) 
+	       << std::resetiosflags(std::ios::floatfield);
 
-  // BMA TODO: Need to review and resolve whether we want to output
-  // only the active variables or all the variables.  We currently
-  // don't have use cases with inactive, but could reasonably have
-  // them.  This implementation is currently incorrect as it uses all
-  // labels, but outputs either active variables from allSamples
-  // (compactMode case) or all variables (otherwise)
-
-  if (compactMode) {
-    // active only
-    write_data_tabular(tabular_file,
-		       iteratedModel.continuous_variable_labels());
-    write_data_tabular(tabular_file,
-		       iteratedModel.discrete_int_variable_labels());
-    write_data_tabular(tabular_file,
-		       iteratedModel.discrete_real_variable_labels());
-
-    tabular_file << std::setprecision(write_precision) 
-		 << std::resetiosflags(std::ios::floatfield);
-  }
-  else {
-    // all
-    write_data_tabular(tabular_file,
-		       iteratedModel.all_continuous_variable_labels());
-    write_data_tabular(tabular_file,
-		       iteratedModel.all_discrete_int_variable_labels());
-    write_data_tabular(tabular_file,
-		       iteratedModel.all_discrete_real_variable_labels());
-  }
-  tabular_file << '\n';
-  
-  
-  size_t num_active_vars = 
-    iteratedModel.cv() + iteratedModel.div() + iteratedModel.drv();
-
+  // TODO: consider helper to output allSamples or allVariables directly
+  // TODO: consider supplementing compactMode with inactive vars from model
   for (size_t eval_index = 0; eval_index < num_evals; eval_index++) {
-    
-    // output cv, div, drv in that order
-    // compactMode only outputs active variables (could supplement
-    // with inactive from the model), whereas write_tabular outputs
-    // all variables;
-    if (compactMode)
-      for (size_t var_index = 0; var_index < num_active_vars; ++var_index)
-	tabular_file << std::setw(write_precision+4) 
-		     << allSamples(var_index, eval_index) << " ";
+    if(annotated)
+      tabular_file << std::setw(8) << eval_index + 1 << ' ';
+    if (compactMode) {
+      // allSamples num_vars x num_evals, so each col becomes tabular file row
+      write_data_tabular(tabular_file, 
+			 getCol(Teuchos::View, allSamples, (int) eval_index));
+    }
     else
       allVariables[eval_index].write_tabular(tabular_file);
     tabular_file << '\n';
@@ -620,23 +598,16 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
     return;
   }
 
-  std::ifstream tabular_file(filename);
-  if (!tabular_file.good()) {
-    Cerr << "\nError: could not open post-run input file " 
-	 << filename << "." << std::endl;
-    abort_handler(-1);
-  }
-  tabular_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+  std::ifstream tabular_file;
+  TabularIO::open_file(tabular_file, filename, "post-run input");
+  bool annotated = true;
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "\nAttempting to read " << num_evals << " samples from file "
 	 << filename << "..." << std::endl;
-
-  // discard % and labels
-  char discard_percent;
-  tabular_file >> discard_percent; // matlab comment syntax
-  String discard_labels;
-  getline(tabular_file, discard_labels);
+  
+  if (annotated)
+    TabularIO::read_header_tabular(tabular_file); // discard header with labels
 
   if (compactMode)
     allSamples.shapeUninitialized(num_vars, num_evals);
@@ -655,9 +626,18 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
     allResponses[cntr] = iteratedModel.current_response().copy();
 
     try {
-      if (compactMode)
-	for (size_t var_index=0; var_index<num_vars; ++var_index) 
+      if (annotated) {
+	size_t discard_row_label;
+	tabular_file >> discard_row_label;
+      }
+      if (compactMode) {
+	// this doesn't work because getCol is returning a copy;
+	// could construct a View...
+	//read_data_tabular(tabular_file, 
+	//		  Teuchos::getCol(Teuchos::View, allSamples, (int)i));
+	for (size_t var_index = 0; var_index < num_vars; ++var_index) 
 	  tabular_file >> allSamples(var_index, i);
+      }
       else
 	allVariables[i].read_tabular(tabular_file);
       allResponses[cntr].read_tabular(tabular_file);

@@ -15,7 +15,7 @@
 #ifdef HAVE_X_GRAPHICS
 #include "Graphics.H"
 #endif // HAVE_X_GRAPHICS
-#include "data_io.h"
+#include "tabular_io.h"
 #include "DakotaVariables.H"
 #include "DakotaResponse.H"
 
@@ -183,30 +183,20 @@ void Graphics::
 create_tabular_datastream(const Variables& vars, const Response& response,
 			  const std::string& tabular_data_file)
 {
-  using std::setw;
-  StringMultiArrayConstView cv_labels  = vars.continuous_variable_labels();
-  StringMultiArrayConstView div_labels = vars.discrete_int_variable_labels();
-  StringMultiArrayConstView drv_labels = vars.discrete_real_variable_labels();
-  const StringArray& fn_labels = response.function_labels();
-  size_t i, num_cv = vars.cv(), num_div = vars.div(), num_drv = vars.drv(),
-    num_fns = response.num_functions();
-
   // tabular data file set up
   if (!tabularDataFlag) { // prevent multiple opens of tabular_data_file
-    tabularDataFStream.open(tabular_data_file.c_str());
+    TabularIO::open_file(tabularDataFStream, tabular_data_file, 
+			 "DakotaGraphics");
     tabularDataFlag = true;
   }
-  // output header info:
-  tabularDataFStream << '%' << tabularCntrLabel << ' '; // matlab comment syntax
-  for (i=0; i<num_cv; ++i)
-    tabularDataFStream << setw(14) << cv_labels[i].data() << ' ';
-  for (i=0; i<num_div; ++i)
-    tabularDataFStream << setw(14) << div_labels[i].data() << ' ';
-  for (i=0; i<num_drv; ++i)
-    tabularDataFStream << setw(14) << drv_labels[i].data() << ' ';
-  for (i=0; i<num_fns; ++i)
-    tabularDataFStream << setw(14) << fn_labels[i].data() << ' ';
-  tabularDataFStream << std::endl;
+
+  bool active_only = true;
+  bool response_labels = true;
+  bool annotated = true;
+  if (annotated)
+    TabularIO::write_header_tabular(tabularDataFStream, tabularCntrLabel, 
+				    vars, response, active_only, 
+				    response_labels);
 }
 
 
@@ -261,12 +251,12 @@ void Graphics::add_datapoint(const Variables& vars, const Response& response)
 
     // NOTE: could add ability to monitor response data subsets based on
     // user specification.
-    tabularDataFStream << std::setw(8) << graphicsCntr << ' ';
-    //vars.write_tabular(tabularDataFStream) not used since active, not all
-    write_data_tabular(tabularDataFStream, vars.continuous_variables());
-    write_data_tabular(tabularDataFStream, vars.discrete_int_variables());
-    write_data_tabular(tabularDataFStream, vars.discrete_real_variables());
-    response.write_tabular(tabularDataFStream);
+    bool active_only = true;
+    bool write_responses = true;
+    bool annotated = true;
+    TabularIO::write_data_tabular(tabularDataFStream, graphicsCntr, vars, 
+				  response, active_only, annotated, 
+				  write_responses);
   }
 
   // Only increment the graphics counter if posting data (incrementing on every
