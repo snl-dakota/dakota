@@ -35,7 +35,7 @@ void SysCallAnalysisCode::spawn_evaluation(const bool block_flag)
   // asv, parameters, etc., and (2) in asynch usage, each of the 3 pieces must
   // be able to manage tagged files and/or working subdirectories.
 
-  std::string no_workdir;
+  static std::string no_workdir;
   CommandShell shell(useWorkdir ? curWorkdir : no_workdir);
   const char* s = useWorkdir ? curWorkdir.c_str() : 0;
   size_t wd_strlen = useWorkdir ? curWorkdir.size() : 0;
@@ -104,7 +104,7 @@ void SysCallAnalysisCode::spawn_evaluation(const bool block_flag)
     externally. */
 void SysCallAnalysisCode::spawn_input_filter(const bool block_flag)
 {
-  std::string no_workdir;
+  static std::string no_workdir;
   CommandShell shell(useWorkdir ? curWorkdir : no_workdir);
 
   shell << iFilterName;
@@ -124,7 +124,7 @@ void SysCallAnalysisCode::spawn_input_filter(const bool block_flag)
 void SysCallAnalysisCode::
 spawn_analysis(const int& analysis_id, const bool block_flag)
 {
-  std::string no_workdir;
+  static std::string no_workdir;
   CommandShell shell(useWorkdir ? curWorkdir : no_workdir);
 
   shell << programNames[analysis_id-1];
@@ -153,7 +153,7 @@ spawn_analysis(const int& analysis_id, const bool block_flag)
     externally. */
 void SysCallAnalysisCode::spawn_output_filter(const bool block_flag)
 {
-  std::string no_workdir;
+  static std::string no_workdir;
   CommandShell shell(useWorkdir ? curWorkdir : no_workdir);
 
   shell << oFilterName;

@@ -32,7 +32,7 @@ pid_t ForkAnalysisCode::fork_program(const bool block_flag)
   const char *arg_list[4], **av;
   int status;
   pid_t pid = 0;
-  std::string no_workdir;
+  static std::string no_workdir;
 
   // vfork() should be used here since there is an immediate execvp(). This 
   // conserves memory over fork().  If some platforms have problems with a
