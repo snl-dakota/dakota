@@ -44,7 +44,7 @@ namespace bfs = boost::filesystem;
   #define DAK_PATH_SEP ':'
   #define DAK_SLASH '/'
 
-#endif // WIN32
+#endif // _WIN32 or _WIN64
 
 #include <sys/stat.h>
 #include <string>
@@ -64,9 +64,16 @@ class WorkdirHelper
   friend class ForkAnalysisCode;                    // calls arg_adjust
 
   /// Treat get_npath as a legacy, "blackbox" utility
+#ifdef DEBUG_GET_NPATH
+  /** get_npath "shuffles" the string representing the current $PATH variable
+      definition so that '.' is first in the $PATH.  It then returns the new
+      string as the result (last arg in the call). */
   friend void get_npath(int, char**);               // dakPreferredEnvPath access
+#endif
 
   /// Treat my_cp as a legacy, "blackbox" utility
+  /** my_cp is a wrapper around 'cp -r'.  The extra layer allows for symlink
+      to be used instead of file copy. */
   friend int my_cp(const char*, const struct stat*,
                    int, int, void*);                // calls symlink
 

@@ -591,6 +591,7 @@ rec_cp(const char *from, const char *todir, int copy, int flatten, int replace)
 	return rc;
 	}
 
+#ifdef DEBUG_GET_NPATH
 /* from ~dmgay/h/src/pathadjust.c */
 
 #ifdef _WIN32
@@ -714,22 +715,7 @@ pathsimp(char *t0)
 	}
 
 
-// WJB:  Come back and re-enable if 'new' does NOT work!  Consider if the same
-//       strategy applies to my new fav func:  get_npath() (corrupts pnpath!)
-#if 0
-static char* Malloc(size_t L)
-{
-	char *s = std::malloc(L);
-	if (!s) {
-		std::fprintf(stderr, "malloc(%ld) failure in getpaths()!\n", (long)L);
-		std::exit(1);
-		}
-	return s;
-	}
-#endif // WJB 0
-
-
-
+// WJB:  Come back and re-enable if disabling does NOT work!
  void
 get_npath(int appdrive, char **pnpath)
 {
@@ -933,13 +919,15 @@ cd_fail:
 
 	// WJB: after ALL THE POINTER MANIP, restore PATH to its original state
 	*pnpath = (char*)WorkdirHelper::dakPreferredEnvPath.c_str();
+	delete [] q;
 
 #if defined(DEBUG)
 	Cout << "get_npath: CWD=" << cwd << '\n'
 	     << *pnpath << '\n' << std::endl;
 #endif
-	// WJB: consider delete [] q;
+
 	}
+#endif // DEBUG_GET_NPATH
 
 
 void workdir_adjust(const std::string& workdir)
@@ -956,18 +944,20 @@ void workdir_adjust(const std::string& workdir)
   }
 #endif
 
-  // WJB:  Commenting-out a key function (not_executable) seemed to improve
-  // runtime behavior with workdirs, so consider tryin the same idea here!
+#ifdef DEBUG_GET_NPATH
   if (!wd_path[appdrive])
     get_npath(appdrive, &wd_path[appdrive]);
-  //
+#endif
+
   if ( DAK_CHDIR(workdir.c_str()) ) {
     Cerr << "\nError: chdir(" << workdir
          << ") failed in workdir_adjust()" << std::endl;
     abort_handler(-1);
   }
 
+#ifdef DEBUG_GET_NPATH
   putenv_impl( wd_path[appdrive] );
+#endif
 }
 
 
