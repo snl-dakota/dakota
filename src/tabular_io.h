@@ -10,7 +10,6 @@
 #define DAKOTA_TABULAR_IO_H
 
 #include "data_types.h"
-class SharedVariablesData;
 
 /// Utility functions for reading and writing tabular data files
 /**
@@ -91,6 +90,8 @@ class SharedVariablesData;
 
 
 namespace Dakota {
+
+class SharedVariablesData;
 
 namespace TabularIO {
 
