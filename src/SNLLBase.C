@@ -117,7 +117,7 @@ snll_post_instantiate(const int& num_cv, bool vendor_num_grad_flag,
   // fcn_acc = fdss*fdss (forward) || fdss*fdss*fdss (central)
   if ( vendor_num_grad_flag ) {
     // OPT++'s internal finite differencing in use.
-    Real fcn_acc, mcheps = NEWMAT::FloatingPointPrecision::Epsilon();
+    Real fcn_acc, mcheps = DBL_EPSILON;
     if (finite_diff_type == "central") {
       fd_nlf1->setDerivOption(CentralDiff); // See libopt/globals.h for enum
       if (num_constr)
@@ -131,7 +131,7 @@ snll_post_instantiate(const int& num_cv, bool vendor_num_grad_flag,
       fcn_acc = std::pow(fdss, 2);
     }
     fcn_acc = std::max(mcheps,fcn_acc);
-    NEWMAT::ColumnVector fcn_accrcy(num_cv);
+    Teuchos::SerialDenseVector<int, double> fcn_accrcy(num_cv);
     fcn_accrcy = fcn_acc;
     fd_nlf1->setFcnAccrcy(fcn_accrcy);
     if (num_constr)
@@ -161,7 +161,7 @@ snll_post_instantiate(const int& num_cv, bool vendor_num_grad_flag,
 }
 
 
-void SNLLBase::init_fn(int n, NEWMAT::ColumnVector& x)
+  void SNLLBase::init_fn(int n, Teuchos::SerialDenseVector<int, double>& x)
 {
   // This routine was previously called initial_guess which was misleading.
   // This is a mechanism provided by OPT++ to perform initialization functions.
@@ -197,7 +197,7 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
   // within opt++.  This occurs within the context of the run function so that
   // any variable reassignment at the strategy layer (after iterator
   // construction) is captured with setX.
-  NEWMAT::ColumnVector x;
+  Teuchos::SerialDenseVector<int, double> x;
   copy_data(init_pt, x);
   nlf_objective->setX(x);  // setX accepts a ColumnVector
   size_t num_cv = init_pt.length();
@@ -212,7 +212,7 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
   // so that any bounds modifications at the strategy layer (e.g., 
   // BranchBndStrategy, SurrBasedOptStrategy) are properly captured.
   if (bound_constr_flag) {
-    NEWMAT::ColumnVector bc_lower, bc_upper;
+    Teuchos::SerialDenseVector<int, double> bc_lower, bc_upper;
     copy_data(lower_bounds, bc_lower);
     copy_data(upper_bounds, bc_upper);
 
@@ -232,9 +232,9 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
   if (num_lin_con) {
 
     if (num_lin_ineq_con){
-      NEWMAT::Matrix A_i;
+      Teuchos::SerialDenseMatrix<int, double> A_i;
       copy_data(lin_ineq_coeffs, A_i);
-      NEWMAT::ColumnVector b_l, b_u;
+      Teuchos::SerialDenseVector<int, double> b_l, b_u;
       copy_data(lin_ineq_l_bnds, b_l);
       copy_data(lin_ineq_u_bnds, b_u);
 
@@ -243,9 +243,9 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
     }
 
     if (num_lin_eq_con) {
-      NEWMAT::Matrix A_e;
+      Teuchos::SerialDenseMatrix<int, double> A_e;
       copy_data(lin_eq_coeffs,  A_e);
-      NEWMAT::ColumnVector b_e;
+      Teuchos::SerialDenseVector<int, double> b_e;
       copy_data(lin_eq_targets, b_e);
 
       Constraint le = new LinearEquation(A_e, b_e);
@@ -255,24 +255,24 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
 
   if (num_nln_con) {
 
-    NEWMAT::ColumnVector augmented_lower_bnds(num_nln_con);
-    NEWMAT::ColumnVector augmented_upper_bnds(num_nln_con);
+    Teuchos::SerialDenseVector<int, double> augmented_lower_bnds(num_nln_con);
+    Teuchos::SerialDenseVector<int, double> augmented_upper_bnds(num_nln_con);
 
     // Unlike Dakota, opt++ expects nonlinear equality constraints
     // followed by nonlinear inequality constraints.
     int i;
     if (num_nln_eq_con) {
-      //NEWMAT::ColumnVector ne_targets(num_nln_eq_con);
-      for (i=1; i<=num_nln_eq_con; i++) {
-	augmented_lower_bnds(i) = nln_eq_targets[i-1];
-	augmented_upper_bnds(i) = nln_eq_targets[i-1];
+      //Teuchos::SerialDenseVector ne_targets(num_nln_eq_con);
+      for (i=0; i<num_nln_eq_con; i++) {
+	augmented_lower_bnds(i) = nln_eq_targets[i];
+	augmented_upper_bnds(i) = nln_eq_targets[i];
       }
     }
     if (num_nln_ineq_con) {
-      //NEWMAT::ColumnVector ni_lower_bnds, ni_upper_bnds;
-      for (i=1; i<=num_nln_ineq_con; i++) {
-	augmented_lower_bnds(i+num_nln_eq_con) = nln_ineq_l_bnds[i-1];
-	augmented_upper_bnds(i+num_nln_eq_con) = nln_ineq_u_bnds[i-1];
+      //Teuchos::SerialDenseVector ni_lower_bnds, ni_upper_bnds;
+      for (i=0; i<num_nln_ineq_con; i++) {
+	augmented_lower_bnds(i+num_nln_eq_con) = nln_ineq_l_bnds[i];
+	augmented_upper_bnds(i+num_nln_eq_con) = nln_ineq_u_bnds[i];
       }
     }
     Constraint nc = new NonLinearConstraint(nlp_constraint,
@@ -314,7 +314,7 @@ void SNLLBase::snll_post_run(OPTPP::NLP0* nlf_objective)
 
 
 void SNLLBase::
-copy_con_vals(const RealVector& local_fn_vals, NEWMAT::ColumnVector& g,
+copy_con_vals_dak_to_optpp(const RealVector& local_fn_vals, Teuchos::SerialDenseVector<int, double>& g,
               const size_t& offset)
 {
   // Unlike DAKOTA, OPT++ expects nonlinear equations followed by nonlinear
@@ -322,14 +322,14 @@ copy_con_vals(const RealVector& local_fn_vals, NEWMAT::ColumnVector& g,
   size_t i, num_nln_eq_con = optLSqInstance->numNonlinearEqConstraints,
     num_nln_ineq_con = optLSqInstance->numNonlinearIneqConstraints;
   for (i=0; i<num_nln_eq_con; i++)
-    g(i+1) = local_fn_vals[offset+num_nln_ineq_con+i];
+    g(i) = local_fn_vals[offset+num_nln_ineq_con+i];
   for (i=0; i<num_nln_ineq_con; i++)
-    g(i+num_nln_eq_con+1) = local_fn_vals[offset+i];
+    g(i+num_nln_eq_con) = local_fn_vals[offset+i];
 }
 
 
 void SNLLBase::
-copy_con_vals(const NEWMAT::ColumnVector& g, RealVector& local_fn_vals,
+copy_con_vals_optpp_to_dak(const Teuchos::SerialDenseVector<int, double>& g, RealVector& local_fn_vals,
 	      const size_t& offset)
 {
   // Unlike DAKOTA, OPT++ expects nonlinear equations followed by nonlinear
@@ -337,14 +337,14 @@ copy_con_vals(const NEWMAT::ColumnVector& g, RealVector& local_fn_vals,
   size_t i, num_nln_eq_con = optLSqInstance->numNonlinearEqConstraints,
     num_nln_ineq_con = optLSqInstance->numNonlinearIneqConstraints;
   for (i=0; i<num_nln_ineq_con; i++)
-    local_fn_vals[offset+i] = g(i+num_nln_eq_con+1);
+    local_fn_vals[offset+i] = g(i+num_nln_eq_con);
   for (i=0; i<num_nln_eq_con; i++)
-    local_fn_vals[offset+num_nln_ineq_con+i] = g(i+1);
+    local_fn_vals[offset+num_nln_ineq_con+i] = g(i);
 }
 
 
 void SNLLBase::
-copy_con_grad(const RealMatrix& local_fn_grads, NEWMAT::Matrix& grad_g,
+copy_con_grad(const RealMatrix& local_fn_grads, Teuchos::SerialDenseMatrix<int, double>& grad_g,
               const size_t& offset)
 {
   // Unlike DAKOTA, OPT++ expects nonlinear equations followed by nonlinear
@@ -359,16 +359,16 @@ copy_con_grad(const RealMatrix& local_fn_grads, NEWMAT::Matrix& grad_g,
     num_nln_ineq_con = optLSqInstance->numNonlinearIneqConstraints;
   for (i=0; i<n; i++)
     for (j=0; j<num_nln_eq_con; j++)
-      grad_g(i+1, j+1) = local_fn_grads(i,offset+num_nln_ineq_con+j);
+      grad_g(i, j) = local_fn_grads(i,offset+num_nln_ineq_con+j);
   for (i=0; i<n; i++)
     for (j=0; j<num_nln_ineq_con; j++)
-      grad_g(i+1, j+num_nln_eq_con+1) = local_fn_grads(i,offset+j);
+      grad_g(i, j+num_nln_eq_con) = local_fn_grads(i,offset+j);
 }
 
 
 void SNLLBase::
 copy_con_hess(const RealSymMatrixArray& local_fn_hessians,
-              OPTPP::OptppArray<NEWMAT::SymmetricMatrix>& hess_g,
+              OPTPP::OptppArray<Teuchos::SerialSymDenseMatrix<int, double> >& hess_g,
 	      const size_t& offset)
 {
   // Unlike DAKOTA, OPT++ expects nonlinear equations followed by nonlinear
@@ -385,8 +385,8 @@ copy_con_hess(const RealSymMatrixArray& local_fn_hessians,
 // Note: retaining these functions in a .C instead of inlining them
 // in a .H avoids collisions between NEWMAT and other headers.
 
-// copy RealSymMatrix to NEWMAT::SymmetricMatrix
-void SNLLBase::copy_data(const RealSymMatrix& rsdm, NEWMAT::SymmetricMatrix& sm)
+// copy RealSymMatrix to Teuchos::SerialSymDenseMatrix
+  void SNLLBase::copy_data(const RealSymMatrix& rsdm, Teuchos::SerialSymDenseMatrix<int, double>& sm)
 {
   // SymmetricMatrix = symmetric and square, but Dakota::Matrix can be general
   // (e.g., functionGradients = numFns x numVars).  Therefore, have to verify
@@ -399,52 +399,52 @@ void SNLLBase::copy_data(const RealSymMatrix& rsdm, NEWMAT::SymmetricMatrix& sm)
 	 << "SymmetricMatrix& sm) called with nonsquare rsdm." << std::endl;
     abort_handler(-1);
   }
-  if (sm.Nrows() != nr) // sm = symmetric & square -> only 1 dimension needed
-    sm.ReSize(nr);
+  if (sm.numRows() != nr) // sm = symmetric & square -> only 1 dimension needed
+    sm.reshape(nr);
   for (size_t i=0; i<nr; i++)
     for (size_t j=0; j<nr; j++)
-      sm(i+1,j+1) = rsdm(i,j);
+      sm(i,j) = rsdm(i,j);
 }
 
-// copy RealMatrix to NEWMAT::Matrix
-void SNLLBase::copy_data(const RealMatrix& rdm, NEWMAT::Matrix& m)
+// copy RealMatrix to Teuchos::SerialDenseMatrix
+  void SNLLBase::copy_data(const RealMatrix& rdm, Teuchos::SerialDenseMatrix<int, double>& m)
 {
   // Newmat Matrix and Dakota::RealMatrix are general rectangular matrices.
   RealMatrix::ordinalType nr = rdm.numRows(), nc = rdm.numCols();
-  if (m.Nrows() != nr || m.Ncols() != nc)
-    m.ReSize(nr, nc);
+  if (m.numRows() != nr || m.numCols() != nc)
+    m.reshape(nr, nc);
   for (RealMatrix::ordinalType i=0; i<nr; ++i)
     for (RealMatrix::ordinalType j=0; j<nc; ++j)
-      m(i+1,j+1) = rdm(i,j);
+      m(i,j) = rdm(i,j);
 }
 
-// copy NEWMAT::ColumnVector to RealVector
-void SNLLBase::copy_data(const NEWMAT::ColumnVector& cv, RealVector& rdv)
+// copy Teuchos::SerialDenseVector to RealVector
+  void SNLLBase::copy_data_optpp_to_dak(const Teuchos::SerialDenseVector<int, double>& cv, RealVector& rdv)
 {
-  int size_cv = cv.Nrows();
+  int size_cv = cv.numRows();
   if (rdv.length() != size_cv)
     rdv.sizeUninitialized(size_cv);
   for (size_t i=0; i<size_cv; i++)
-    rdv[i] = cv(i+1);
+    rdv[i] = cv(i);
 }
 
-// copy Real* (pointer to ColVec of Teuchos_SDMatrix) to NEWMAT::ColumnVector
-void SNLLBase::copy_data(const Real* rv, const int num_items, NEWMAT::ColumnVector& cv)
+// copy Real* (pointer to ColVec of Teuchos_SDMatrix) to Teuchos::SerialDenseVector
+  void SNLLBase::copy_data(const Real* rv, const int num_items, Teuchos::SerialDenseVector<int, double>& cv)
 {
-  if (cv.Nrows() != num_items)
-    cv.ReSize(num_items);
+  if (cv.numRows() != num_items)
+    cv.resize(num_items);
   for (size_t i=0; i<num_items; ++i)
-    cv(i+1) = rv[i];
+    cv(i) = rv[i];
 }
 
-// copy RealVector to NEWMAT::ColumnVector
-void SNLLBase::copy_data(const RealVector& rv, NEWMAT::ColumnVector& cv)
+// copy RealVector to Teuchos::SerialDenseVector
+  void SNLLBase::copy_data_dak_to_optpp(const RealVector& rv, Teuchos::SerialDenseVector<int, double>& cv)
 {
   int size_rv = rv.length();
-  if (cv.Nrows() != size_rv)
-    cv.ReSize(size_rv);
+  if (cv.numRows() != size_rv)
+    cv.resize(size_rv);
   for (size_t i=0; i<size_rv; ++i)
-    cv(i+1) = rv[i];
+    cv(i) = rv[i];
 }
 
 

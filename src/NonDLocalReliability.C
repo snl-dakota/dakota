@@ -2287,8 +2287,8 @@ void NonDLocalReliability::g_eval(int& mode, const RealVector& u)
 
 
 void NonDLocalReliability::
-RIA_objective_eval(int mode, int n, const NEWMAT::ColumnVector& u,
-		   NEWMAT::Real& f, NEWMAT::ColumnVector& grad_f,
+RIA_objective_eval(int mode, int n, const Teuchos::SerialDenseVector& u,
+		   double& f, Teuchos::SerialDenseVector& grad_f,
 		   int& result_mode)
 {
   // In all OPT++ evaluator functions:

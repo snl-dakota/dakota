@@ -30,7 +30,6 @@
 #include "OptCG.h"
 #include "OptPDS.h"
 #include "OptLBFGS.h"
-#include "precisio.h"
 #include "NLF.h"
 #include "NLP.h"
 #include "OptppArray.h"
@@ -416,11 +415,11 @@ SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt,
   const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
   const RealVector& lin_eq_tgts, const RealVector& nln_ineq_l_bnds,
   const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts, 
-  void (*user_obj_eval) (int mode, int n, const NEWMAT::ColumnVector& x,
-			 NEWMAT::Real& f, NEWMAT::ColumnVector& grad_f,
+			     void (*user_obj_eval) (int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
+						    double& f, Teuchos::SerialDenseVector<int, double>& grad_f,
 			 int& result_mode),
-  void (*user_con_eval) (int mode, int n, const NEWMAT::ColumnVector& x, 
-                         NEWMAT::ColumnVector& g, NEWMAT::Matrix& grad_g,
+			     void (*user_con_eval) (int mode, int n, const Teuchos::SerialDenseVector<int, double>& x, 
+						    Teuchos::SerialDenseVector<int, double>& g, Teuchos::SerialDenseMatrix<int, double>& grad_g,
 			 int& result_mode) ): // use default SNLLBase ctor
   Optimizer(NoDBBaseConstructor(), initial_pt.length(), 0, 0,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
@@ -519,7 +518,7 @@ SNLLOptimizer::~SNLLOptimizer()
     PDS and by gradient-based optimizers in vendor numerical gradient
     mode (opt++'s internal finite difference routine is used). */
 void SNLLOptimizer::
-nlf0_evaluator(int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f,
+nlf0_evaluator(int n, const Teuchos::SerialDenseVector<int, double>& x, double& f,
 	       int& result_mode)
 {
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
@@ -558,8 +557,8 @@ nlf0_evaluator(int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f,
 /** For use when DAKOTA computes f and df/dX (regardless of gradientType).
     Vendor numerical gradient case is handled by nlf0_evaluator. */
 void SNLLOptimizer::
-nlf1_evaluator(int mode, int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f, 
-               NEWMAT::ColumnVector& grad_f, int& result_mode)
+nlf1_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x, double& f, 
+               Teuchos::SerialDenseVector<int, double>& grad_f, int& result_mode)
 {
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::nlf1_evaluator called with mode = " << mode;
@@ -646,8 +645,8 @@ nlf1_evaluator(int mode, int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f,
     fd-newton with nlf1.  Gauss-Newton does not fit this model; it uses
     nlf2_evaluator_gn instead of nlf2_evaluator. */
 void SNLLOptimizer::
-nlf2_evaluator(int mode, int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f, 
-               NEWMAT::ColumnVector& grad_f, NEWMAT::SymmetricMatrix& hess_f,
+nlf2_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x, double& f, 
+               Teuchos::SerialDenseVector<int, double>& grad_f, Teuchos::SerialSymDenseMatrix<int, double>& hess_f,
 	       int& result_mode)
 {
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
@@ -732,8 +731,8 @@ nlf2_evaluator(int mode, int n, const NEWMAT::ColumnVector& x, NEWMAT::Real& f,
     gradient-based optimizers in vendor numerical gradient mode
     (opt++'s internal finite difference routine is used). */
 void SNLLOptimizer::
-constraint0_evaluator(int n, const NEWMAT::ColumnVector& x,
-		      NEWMAT::ColumnVector& g, int& result_mode)
+constraint0_evaluator(int n, const Teuchos::SerialDenseVector<int, double>& x,
+		      Teuchos::SerialDenseVector<int, double>& g, int& result_mode)
 {
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint0_evaluator called with mode = 1";
@@ -749,7 +748,7 @@ constraint0_evaluator(int n, const NEWMAT::ColumnVector& x,
   lastFnEvalLocn = CONEvaluator;
   lastEvalVars   = local_des_vars;
 
-  snllOptInstance->copy_con_vals(
+  snllOptInstance->copy_con_vals_dak_to_optpp(
     snllOptInstance->iteratedModel.current_response().function_values(), g,
     snllOptInstance->numObjectiveFns);
   result_mode = NLPFunction;
@@ -759,8 +758,8 @@ constraint0_evaluator(int n, const NEWMAT::ColumnVector& x,
 /** For use when DAKOTA computes g and dg/dX (regardless of gradientType).
     Vendor numerical gradient case is handled by constraint0_evaluator. */
 void SNLLOptimizer::
-constraint1_evaluator(int mode, int n, const NEWMAT::ColumnVector& x,
-		      NEWMAT::ColumnVector& g, NEWMAT::Matrix& grad_g,
+constraint1_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
+		      Teuchos::SerialDenseVector<int, double>& g, Teuchos::SerialDenseMatrix<int, double>& grad_g,
 		      int& result_mode)
 { 
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
@@ -784,7 +783,7 @@ constraint1_evaluator(int mode, int n, const NEWMAT::ColumnVector& x,
   const Response& local_response
     = snllOptInstance->iteratedModel.current_response();
   if (mode & 1) { // 1st bit is present, mode = 1 or 3
-    snllOptInstance->copy_con_vals(local_response.function_values(), g,
+    snllOptInstance->copy_con_vals_dak_to_optpp(local_response.function_values(), g,
 				   snllOptInstance->numObjectiveFns);
     result_mode = NLPFunction;
   }
@@ -798,9 +797,9 @@ constraint1_evaluator(int mode, int n, const NEWMAT::ColumnVector& x,
 
 /** For use when DAKOTA computes g, dg/dX, & d^2g/dx^2 (analytic only). */
 void SNLLOptimizer::
-constraint2_evaluator(int mode, int n, const NEWMAT::ColumnVector& x,
-		      NEWMAT::ColumnVector& g, NEWMAT::Matrix& grad_g,
-		      OPTPP::OptppArray<NEWMAT::SymmetricMatrix>& hess_g,
+constraint2_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
+		      Teuchos::SerialDenseVector<int, double>& g, Teuchos::SerialDenseMatrix<int, double>& grad_g,
+		      OPTPP::OptppArray<Teuchos::SerialSymDenseMatrix<int, double> >& hess_g,
 		      int& result_mode)
 { 
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
@@ -824,7 +823,7 @@ constraint2_evaluator(int mode, int n, const NEWMAT::ColumnVector& x,
   const Response& local_response
     = snllOptInstance->iteratedModel.current_response();
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
-    snllOptInstance->copy_con_vals(local_response.function_values(), g,
+    snllOptInstance->copy_con_vals_dak_to_optpp(local_response.function_values(), g,
 				   snllOptInstance->numObjectiveFns);
     result_mode = NLPFunction;
   }
@@ -917,7 +916,7 @@ void SNLLOptimizer::post_run(std::ostream& s)
     best_fns[0] = nlfObjective->getF(); // see opt++/libopt/nlp.h
     // OPT++ expects nonlinear equations followed by nonlinear inequalities.
     // Therefore, reorder the constraint values.
-    copy_con_vals(nlfObjective->getConstraintValue(), best_fns, 1);
+    copy_con_vals_optpp_to_dak(nlfObjective->getConstraintValue(), best_fns, 1);
     bestResponseArray.front().function_values(best_fns);
   }
 

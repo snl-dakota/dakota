@@ -20,10 +20,10 @@
 #include "DakotaString.H"
 #include "globals.h"
 
-namespace NEWMAT {
-class ColumnVector;
-class Matrix;
-class SymmetricMatrix;
+namespace Teuchos {
+template<typename OrdinalType, typename ScalarType> class SerialDenseVector;
+template<typename OrdinalType, typename ScalarType> class SerialDenseMatrix;
+template<typename OrdinalType, typename ScalarType> class SerialSymDenseMatrix;
 }
 
 namespace OPTPP {
@@ -68,29 +68,29 @@ protected:
   //
 
   /// An initialization mechanism provided by OPT++ (not currently used).
-  static void init_fn(int n, NEWMAT::ColumnVector& x);
+  static void init_fn(int n, Teuchos::SerialDenseVector<int, double>& x);
 
   //- Convenience routines
 
   /// convenience function for copying local_fn_vals to g; used by
   /// constraint evaluator functions
-  void copy_con_vals(const RealVector& local_fn_vals, NEWMAT::ColumnVector& g,
+  void copy_con_vals_dak_to_optpp(const RealVector& local_fn_vals, Teuchos::SerialDenseVector<int, double>& g,
 		     const size_t& offset);
 
   /// convenience function for copying g to local_fn_vals; used in
   /// final solution logging
-  void copy_con_vals(const NEWMAT::ColumnVector& g, RealVector& local_fn_vals,
-		     const size_t& offset);
+  void copy_con_vals_optpp_to_dak(const Teuchos::SerialDenseVector<int, double>& g, RealVector& local_fn_vals,
+  	     const size_t& offset);
 
   /// convenience function for copying local_fn_grads to grad_g;
   /// used by constraint evaluator functions
-  void copy_con_grad(const RealMatrix& local_fn_grads, NEWMAT::Matrix& grad_g,
+  void copy_con_grad(const RealMatrix& local_fn_grads, Teuchos::SerialDenseMatrix<int, double>& grad_g,
 		     const size_t& offset);
 
   /// convenience function for copying local_fn_hessians to hess_g;
   /// used by constraint evaluator functions
   void copy_con_hess(const RealSymMatrixArray& local_fn_hessians,
-		     OPTPP::OptppArray<NEWMAT::SymmetricMatrix>& hess_g, 
+		     OPTPP::OptppArray<Teuchos::SerialSymDenseMatrix<int, double> >& hess_g, 
                      const size_t& offset);
 
   /// convenience function for setting OPT++ options prior to the
@@ -130,17 +130,17 @@ protected:
   /// method instantiations
   void snll_post_run(OPTPP::NLP0* nlf_objective);
 
-  /// copy RealSymMatrix to NEWMAT::SymmetricMatrix
-  static void copy_data(const RealSymMatrix& rsdm, NEWMAT::SymmetricMatrix& sm);
-  /// copy RealMatrix to NEWMAT::Matrix
-  static void copy_data(const RealMatrix& rdm, NEWMAT::Matrix& m);
-  /// copy NEWMAT::ColumnVector to RealVector
-  static void copy_data(const NEWMAT::ColumnVector& cv, RealVector& rdv);
-  /// copy RealVector to NEWMAT::ColumnVector
-  static void copy_data(const RealVector& rdv, NEWMAT::ColumnVector& cv);
-  /// copy Real* (column of Teuchos_SerialDenseMatrix) to NEWMAT::ColumnVector
+  /// copy RealSymMatrix to Teuchos::SerialSymDenseMatrix
+  static void copy_data(const RealSymMatrix& rsdm, Teuchos::SerialSymDenseMatrix<int, double>& sm);
+  /// copy RealMatrix to Teuchos::Matrix
+  static void copy_data(const RealMatrix& rdm, Teuchos::SerialDenseMatrix<int, double>& m);
+  /// copy Teuchos::SerialDenseVector to RealVector
+  static void copy_data_optpp_to_dak(const Teuchos::SerialDenseVector<int, double>& cv, RealVector& rdv);
+  /// copy RealVector to Teuchos::SerialDenseVector
+  static void copy_data_dak_to_optpp(const RealVector& rdv, Teuchos::SerialDenseVector<int, double>& cv);
+  /// copy Real* (column of Teuchos_SerialDenseMatrix) to Teuchos::SerialDenseVector
   static void copy_data(const Real* rdv, const int num_items,
-			NEWMAT::ColumnVector& cv);
+			Teuchos::SerialDenseVector<int, double>& cv);
 
   //
   //- Heading: Data

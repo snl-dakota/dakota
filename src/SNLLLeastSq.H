@@ -109,9 +109,9 @@ private:
   /// gradients for least square terms and computes objective function
   /// value, gradient, and Hessian using the Gauss-Newton approximation.
   static void nlf2_evaluator_gn(int mode, int n, 
-    const NEWMAT::ColumnVector& x, NEWMAT::Real& f,
-    NEWMAT::ColumnVector& grad_f, NEWMAT::SymmetricMatrix& hess_f,
-    int& result_mode);
+	 const Teuchos::SerialDenseVector<int, double>& x, double& f,
+	 Teuchos::SerialDenseVector<int, double>& grad_f, Teuchos::SerialSymDenseMatrix<int, double>& hess_f,
+         int& result_mode);
 
   //- Constraint evaluation routines that invoke Model::compute_response
 
@@ -122,8 +122,8 @@ private:
       modes for the least squares terms.  This constraint evaluator function
       is used with diaggregated Hessian NIPS and is currently active. */
   static void constraint1_evaluator_gn(int mode, int n, 
-    const NEWMAT::ColumnVector& x, NEWMAT::ColumnVector& g, 
-    NEWMAT::Matrix& grad_g, int& result_mode);
+				       const Teuchos::SerialDenseVector<int, double>& x, Teuchos::SerialDenseVector<int, double>& g, 
+				       Teuchos::SerialDenseMatrix<int, double>& grad_g, int& result_mode);
 
   /// constraint evaluator function which provides constraint
   /// values, gradients, and Hessians to OPT++ Gauss-Newton methods.
@@ -132,8 +132,8 @@ private:
       modes for the least squares terms.  This constraint evaluator function
       is used with full Newton NIPS and is currently inactive. */
   static void constraint2_evaluator_gn(int mode, int n,
-    const NEWMAT::ColumnVector& x, NEWMAT::ColumnVector& g,
-    NEWMAT::Matrix& grad_g, OPTPP::OptppArray<NEWMAT::SymmetricMatrix>& hess_g,
+				       const Teuchos::SerialDenseVector<int, double>& x, Teuchos::SerialDenseVector<int, double>& g,
+				       Teuchos::SerialDenseMatrix<int, double>& grad_g, OPTPP::OptppArray<Teuchos::SerialSymDenseMatrix<int, double> >& hess_g,
     int& result_mode);
 
   //

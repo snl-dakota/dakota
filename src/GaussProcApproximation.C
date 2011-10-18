@@ -921,8 +921,8 @@ void GaussProcApproximation::calc_grad_nll()
 
 #ifdef HAVE_OPTPP
 void GaussProcApproximation::
-negloglik(int mode, int n, const NEWMAT::ColumnVector& x, Real& fx, 
-	  NEWMAT::ColumnVector& grad_f, int& result_mode)
+negloglik(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x, Real& fx, 
+	  Teuchos::SerialDenseVector<int, double>& grad_f, int& result_mode)
 {
   for (size_t i=0; i<n; i++)
     GPinstance->thetaParams[i] = x(i+1);
@@ -942,8 +942,8 @@ negloglik(int mode, int n, const NEWMAT::ColumnVector& x, Real& fx,
 
 
 void GaussProcApproximation::
-constraint_eval(int mode, int n, const NEWMAT::ColumnVector& x, 
-		NEWMAT::ColumnVector& g, NEWMAT::Matrix& grad_c, 
+constraint_eval(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x, 
+		Teuchos::SerialDenseVector<int, double>& g, Teuchos::SerialDenseMatrix<int, double>& grad_c, 
 		int& res_mode)
 { }
 #endif //HAVE_OPTPP

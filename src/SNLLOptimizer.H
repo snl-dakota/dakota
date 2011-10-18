@@ -91,11 +91,11 @@ public:
     const RealMatrix& lin_eq_coeffs,   const RealVector& lin_eq_tgts,
     const RealVector& nln_ineq_l_bnds,
     const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts, 
-    void (*user_obj_eval) (int mode, int n, const NEWMAT::ColumnVector& x,
-			   NEWMAT::Real& f, NEWMAT::ColumnVector& grad_f,
+		void (*user_obj_eval) (int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
+				       double& f, Teuchos::SerialDenseVector<int, double>& grad_f,
 			   int& result_mode),
-    void (*user_con_eval) (int mode, int n, const NEWMAT::ColumnVector& x, 
-                           NEWMAT::ColumnVector& g, NEWMAT::Matrix& grad_g,
+		void (*user_con_eval) (int mode, int n, const Teuchos::SerialDenseVector<int, double>& x, 
+				       Teuchos::SerialDenseVector<int, double>& g, Teuchos::SerialDenseMatrix<int, double>& grad_g,
 			   int& result_mode));
 
   ~SNLLOptimizer(); ///< destructor
@@ -134,41 +134,41 @@ private:
 
   /// objective function evaluator function for OPT++ methods which
   /// require only function values.
-  static void nlf0_evaluator(int n, const NEWMAT::ColumnVector& x,
-			     NEWMAT::Real& f, int& result_mode);
+  static void nlf0_evaluator(int n, const Teuchos::SerialDenseVector<int, double>& x,
+			     double& f, int& result_mode);
 
   /// objective function evaluator function which provides function
   /// values and gradients to OPT++ methods.
-  static void nlf1_evaluator(int mode, int n, const NEWMAT::ColumnVector& x,
-			     NEWMAT::Real& f, NEWMAT::ColumnVector& grad_f,
+  static void nlf1_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
+			     double& f, Teuchos::SerialDenseVector<int, double>& grad_f,
 			     int& result_mode);
 
   /// objective function evaluator function which provides function
   /// values, gradients, and Hessians to OPT++ methods.
-  static void nlf2_evaluator(int mode, int n, const NEWMAT::ColumnVector& x,
-			     NEWMAT::Real& f, NEWMAT::ColumnVector& grad_f,
-			     NEWMAT::SymmetricMatrix& hess_f, int& result_mode);
+  static void nlf2_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
+			     double& f, Teuchos::SerialDenseVector<int, double>& grad_f,
+			     Teuchos::SerialSymDenseMatrix<int, double>& hess_f, int& result_mode);
 
   //- Constraint evaluation routines that invoke Model::compute_response
 
   /// constraint evaluator function for OPT++ methods which require
   /// only constraint values.
-  static void constraint0_evaluator(int n, const NEWMAT::ColumnVector& x, 
-				    NEWMAT::ColumnVector& g, int& result_mode);
+  static void constraint0_evaluator(int n, const Teuchos::SerialDenseVector<int, double>& x, 
+				    Teuchos::SerialDenseVector<int, double>& g, int& result_mode);
 
   /// constraint evaluator function which provides constraint
   /// values and gradients to OPT++ methods.
   static void constraint1_evaluator(int mode, int n, 
-				    const NEWMAT::ColumnVector& x, 
-				    NEWMAT::ColumnVector& g, 
-				    NEWMAT::Matrix& grad_g, int& result_mode);
+				    const Teuchos::SerialDenseVector<int, double>& x, 
+				    Teuchos::SerialDenseVector<int, double>& g, 
+				    Teuchos::SerialDenseMatrix<int, double>& grad_g, int& result_mode);
 
   /// constraint evaluator function which provides constraint
   /// values, gradients, and Hessians to OPT++ methods.
   static void constraint2_evaluator(int mode, int n, 
-                             const NEWMAT::ColumnVector& x, 
-			     NEWMAT::ColumnVector& g, NEWMAT::Matrix& grad_g, 
-			     OPTPP::OptppArray<NEWMAT::SymmetricMatrix>& hess_g,
+				    const Teuchos::SerialDenseVector<int, double>& x, 
+				    Teuchos::SerialDenseVector<int, double>& g, Teuchos::SerialDenseMatrix<int, double>& grad_g, 
+				    OPTPP::OptppArray<Teuchos::SerialSymDenseMatrix<int, double> >& hess_g,
 			     int& result_mode);
 
   //

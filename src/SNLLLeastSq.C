@@ -23,7 +23,6 @@
 #include "OptBCNewtonLike.h"
 #include "OptDHNIPS.h"
 #include "OptNIPSLike.h"
-#include "precisio.h"
 #include "NLF.h"
 #include "NLP.h"
 #include "OptppArray.h"
@@ -247,9 +246,9 @@ SNLLLeastSq::~SNLLLeastSq()
     directly from the residual functions and their derivatives (which
     are returned from the Response object). */
 void SNLLLeastSq::
-nlf2_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
-		  NEWMAT::Real& f, NEWMAT::ColumnVector& grad_f,
-		  NEWMAT::SymmetricMatrix& hess_f, int& result_mode)
+nlf2_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
+		  double& f, Teuchos::SerialDenseVector<int, double>& grad_f,
+		  Teuchos::SerialSymDenseMatrix<int, double>& hess_f, int& result_mode)
 {
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::nlf2_evaluator_gn called with mode = " << mode
@@ -334,9 +333,9 @@ nlf2_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
     if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
       Cout << "    nlf2_evaluator_gn results: objective fn. gradient =\n [ ";
     for (i=0; i<n; i++) {
-      grad_f(i+1) = 0.;
+      grad_f(i) = 0.;
       for (j=0; j<snllLSqInstance->numLeastSqTerms; j++)
-        grad_f(i+1) += 2. * local_fn_grads(i,j) * local_fn_vals[j];
+        grad_f(i) += 2. * local_fn_grads(i,j) * local_fn_vals[j];
       if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
 	Cout << std::setw(write_precision+7) << grad_f(i+1) << ' ';
     }
@@ -352,10 +351,10 @@ nlf2_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
         Real dtmp = 0.;
         for (k=0; k<snllLSqInstance->numLeastSqTerms; k++)
           dtmp += 2. * local_fn_grads(i,k) * local_fn_grads(j,k);
-        hess_f(i+1, j+1) = dtmp;
+        hess_f(i, j) = dtmp;
       }
       for (j=0; j<i; j++)
-        hess_f(j+1, i+1) = hess_f(i+1, j+1); // fill in symmetric values
+        hess_f(j, i) = hess_f(i, j); // fill in symmetric values
     }
     if (snllLSqInstance->outputLevel > NORMAL_OUTPUT) {
       Cout << "    nlf2_evaluator_gn results: objective fn. Hessian =\n[[ ";
@@ -374,8 +373,8 @@ nlf2_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
 
 
 void SNLLLeastSq::
-constraint1_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
-                         NEWMAT::ColumnVector& g, NEWMAT::Matrix& grad_g,
+constraint1_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
+                         Teuchos::SerialDenseVector<int, double>& g, Teuchos::SerialDenseMatrix<int, double>& grad_g,
 			 int& result_mode)
 { 
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
@@ -418,7 +417,7 @@ constraint1_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
   const Response& local_response
     = snllLSqInstance->iteratedModel.current_response();
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
-    snllLSqInstance->copy_con_vals(local_response.function_values(), g,
+    snllLSqInstance->copy_con_vals_dak_to_optpp(local_response.function_values(), g,
 				   snllLSqInstance->numLeastSqTerms);
     result_mode = NLPFunction;
   }
@@ -431,9 +430,9 @@ constraint1_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
 
 
 void SNLLLeastSq::
-constraint2_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
-                         NEWMAT::ColumnVector& g, NEWMAT::Matrix& grad_g,
-                         OPTPP::OptppArray<NEWMAT::SymmetricMatrix>& hess_g,
+constraint2_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
+                         Teuchos::SerialDenseVector<int, double>& g, Teuchos::SerialDenseMatrix<int, double>& grad_g,
+                         OPTPP::OptppArray<Teuchos::SerialSymDenseMatrix<int, double> >& hess_g,
 			 int& result_mode)
 { 
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
@@ -486,7 +485,7 @@ constraint2_evaluator_gn(int mode, int n, const NEWMAT::ColumnVector& x,
   const Response& local_response
     = snllLSqInstance->iteratedModel.current_response();
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
-    snllLSqInstance->copy_con_vals(local_response.function_values(), g,
+    snllLSqInstance->copy_con_vals_dak_to_optpp(local_response.function_values(), g,
 				   snllLSqInstance->numLeastSqTerms);
     result_mode = NLPFunction;
   }
@@ -594,7 +593,7 @@ void SNLLLeastSq::post_run(std::ostream& s)
   if (numNonlinearConstraints) {
     RealVector scaled_cons(numFunctions);
     scaled_cons = 1.;
-    copy_con_vals(nlfObjective->getConstraintValue(), scaled_cons,
+    copy_con_vals_optpp_to_dak(nlfObjective->getConstraintValue(), scaled_cons,
 		  numLeastSqTerms);
     if (secondaryRespScaleFlag)
       copy_data_partial(

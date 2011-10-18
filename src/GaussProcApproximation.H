@@ -23,9 +23,9 @@
 #include "Teuchos_SerialSpdDenseSolver.hpp"
 
 #ifdef HAVE_OPTPP
-namespace NEWMAT { 
-  class ColumnVector;
-  class Matrix;
+namespace Teuchos { 
+  template<typename OrdinalType, typename ScalarType> class SerialDenseVector;
+  template<typename OrdinalType, typename ScalarType> class SerialDenseMatrix;
 }
 #endif // HAVE_OPTPP
 
@@ -143,16 +143,16 @@ private:
   /// static function used by OPT++ as the objective function to 
   /// optimize the hyperparameters in the covariance of the GP
   /// by minimizing the negative log likelihood
-  static void negloglik(int mode, int n, const NEWMAT::ColumnVector& X,
-			Real& fx, NEWMAT::ColumnVector& grad_x,
+  static void negloglik(int mode, int n, const Teuchos::SerialDenseVector<int,double>& X,
+			Real& fx, Teuchos::SerialDenseVector<int,double>& grad_x,
 			int& result_mode);
 
   /// static function used by OPT++ as the constraint function 
   /// in the optimization of the negative log likelihood. Currently 
   /// this function is empty:  it is an unconstrained optimization. 
-  static void constraint_eval(int mode, int n, const NEWMAT::ColumnVector& X,
-			      NEWMAT::ColumnVector& g,
-			      NEWMAT::Matrix& gradC, int& result_mode);
+  static void constraint_eval(int mode, int n, const Teuchos::SerialDenseVector<int,double>& X,
+			      Teuchos::SerialDenseVector<int,double>& g,
+			      Teuchos::SerialDenseMatrix<int,double>& gradC, int& result_mode);
 #endif
   /// function used by NCSUOptimizer to optimize negloglik objective
   static double negloglikNCSU(const RealVector &x);
