@@ -29,7 +29,7 @@ if (BOOST_DISABLE_ASSERTS)
   add_definitions("-DBOOST_DISABLE_ASSERTS")
 endif (BOOST_DISABLE_ASSERTS)
 
-option(DAKOTA_HAVE_BOOST_FS "Toggle FS support, default is BostFS disabled" OFF)
+option(DAKOTA_HAVE_BOOST_FS "Toggle FS support, default is BoostFS disabled" OFF)
 if (DAKOTA_HAVE_BOOST_FS)
   add_definitions("-DDAKOTA_HAVE_BOOST_FS")
   #add_definitions("-DBOOST_FILESYSTEM_VERSION=2")
@@ -384,8 +384,7 @@ endif(HAVE_NPSOL)
 
 if(HAVE_OPTPP)
   # WJB - ToDo: FY11 contract - "pair-program" a FINAL iteration with Zack
-  include_directories(${optpp_BINARY_DIR}/include ${optpp_SOURCE_DIR}/include
-                      ${optpp_SOURCE_DIR}/newmat11)
+  include_directories(${optpp_BINARY_DIR}/include ${optpp_SOURCE_DIR}/include)
 
   add_definitions("-DHAVE_OPTPP")
   # WJB:  OPT++ macro naming "convention" differs from DAKOTA.  Even worse,
@@ -393,11 +392,10 @@ if(HAVE_OPTPP)
   #       VIRTUAL function definitions which can be enable/disabled "globally".
   # Therefore, define as many build macros as necessary to get a desirable exec.
   add_definitions("-DDAKOTA_OPTPP")
-  add_definitions("-DDAKOTA_NEWMAT")
 
   set(iterator_src ${iterator_src} SNLLBase.C SNLLOptimizer.C SNLLLeastSq.C)
-  set(TPL_LIBS ${TPL_LIBS} optpp newmat)
-  list(APPEND EXPORT_TARGETS optpp newmat)
+  set(TPL_LIBS ${TPL_LIBS} optpp)
+  list(APPEND EXPORT_TARGETS optpp)
 endif(HAVE_OPTPP)
 
 CheckPackage(PSUADE)

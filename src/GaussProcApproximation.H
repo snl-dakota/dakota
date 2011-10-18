@@ -138,8 +138,6 @@ private:
   void get_grad_cov_vector();
 
 #ifdef HAVE_OPTPP
-  // Using dakota::Real here as we don't expect OPT++ Newmat to be
-  // built with float
   /// static function used by OPT++ as the objective function to 
   /// optimize the hyperparameters in the covariance of the GP
   /// by minimizing the negative log likelihood
