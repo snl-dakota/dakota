@@ -259,8 +259,6 @@ AC_DEFUN([DAK_METHODS],[
     AC_CONFIG_SUBDIRS([packages/OPTPP])
     AC_DEFINE([HAVE_OPTPP],[1],
 	      [Macro to handle code which depends on OPTPP.])
-    AC_DEFINE([DAKOTA_NEWMAT],[1],
-	      [Macro to handle code which depends on NEWMAT.])
     MAYBE_OPTPP=OPTPP
   else
     MAYBE_OPTPP=

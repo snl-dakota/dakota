@@ -219,10 +219,8 @@ endif
 if WITH_OPTPP
 OPTPP_SRC       = $(top_srcdir)/packages/OPTPP
 OPTPP_BUILD     = $(top_builddir)/packages/OPTPP
-OPTPP_INCL      = -I$(OPTPP_BUILD)/include -I$(OPTPP_SRC)/include \
-		  -I$(OPTPP_SRC)/newmat11
+OPTPP_INCL      = -I$(OPTPP_BUILD)/include -I$(OPTPP_SRC)/include
 OPTPP_ARCHIVE   = $(OPTPP_BUILD)/lib/liboptpp.la
-NEWMAT_ARCHIVE  = $(OPTPP_BUILD)/lib/libnewmat.la
 OPTPP_OPT_H     = SNLLBase.H \
                   SNLLOptimizer.H \
                   SNLLLeastSq.H
@@ -293,7 +291,6 @@ INCLUDES = $(NIDR_INCL) \
 	   $(NPSOL_INCL) \
 	   $(OPTPP_INCL) \
 	   $(PSUADE_INCL) \
-	   $(NEWMAT_INCL) \
 	   $(MATLAB_INCL) \
 	   $(TRACKING_INCL)
 
@@ -317,7 +314,6 @@ ARCHIVES = $(NIDR_ARCHIVE) \
 	   $(NPSOL_ARCHIVE) \
 	   $(OPTPP_ARCHIVE) \
 	   $(PSUADE_ARCHIVE) \
-	   $(NEWMAT_ARCHIVE) \
 	   $(NCSU_ARCHIVE) \
 	   $(SPARSE_GRID_ARCHIVE) \
 	   $(ACRO_ARCHIVE) \
