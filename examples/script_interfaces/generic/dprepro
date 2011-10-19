@@ -103,28 +103,35 @@ while (<TEMPLATE_SIMULATION>) {
     # Case 2: test for assignment "{tag = field}"
     elsif ( ($tag, $assign) = ($field =~ m/^($t)\s*=\s*(.+?)$/o) ) {
 
-      # Case 2a: assignment of numerical value
-      # ($v = exponential notation $e, floating point $f, or integer $i)
-      if ($assign =~ m/^($v)$/o) {
-        $assign =~ s/[dD]/e/o;               # convert F77 dbl prec exponents
-        $values_p2{$tag} = $assign;          # store in priority 2 hash
-        s/\{\s*$tag\s*=\s*.+?\s*\}/$assign/; # replace assignment with value
-      }
+      # If tag defined in values_p1 (parameters file), use that value,
+      # otherwise insert (possibly evaluated) $assign in values_p2 for
+      # later use
+      if ( not defined ( $value = $values_p1{$tag} ) ) {
 
-      # Case 2b: assignment of expression.  Evaluate $assign by replacing any
-      # known tags with their values and then eval the remaining expression.
-      else {
-        foreach $exptag ($assign =~ m/\b(\w*[a-zA-Z_]+\w*)\b/go) {
-          if ( defined ( $value = $values_p1{$exptag} ) ||
-               defined ( $value = $values_p2{$exptag} ) ) {
-            $assign =~ s/$exptag/$value/;
-          }
+        # Case 2a: assignment of numerical value
+        # ($v = exponential notation $e, floating point $f, or integer $i)
+        if ($assign =~ m/^($v)$/o) {
+          $assign =~ s/[dD]/e/o;               # convert F77 dbl prec exponents
+	  $value = $assign;
         }
-        $value = eval $assign;
-        if ($@) { die "Eval error: $@"; }
+
+        # Case 2b: assignment of expression.  Evaluate $assign by replacing any
+        # known tags with their values and then eval the remaining expression.
+        else {
+          foreach $exptag ($assign =~ m/\b(\w*[a-zA-Z_]+\w*)\b/go) {
+            if ( defined ( $value = $values_p1{$exptag} ) ||
+                 defined ( $value = $values_p2{$exptag} ) ) {
+              $assign =~ s/$exptag/$value/;
+            }
+          }
+          $value = eval $assign;
+          if ($@) { die "Eval error: $@"; }
+        }
         $values_p2{$tag} = $value;          # store in priority 2 hash
-        s/\{\s*$tag\s*=\s*.+?\s*\}/$value/; # replace assignment with value
+
       }
+      s/\{\s*$tag\s*=\s*.+?\s*\}/$value/; # replace assignment with value
+
     }
 
     # Case 3: assume general expression in all remaining $field matches.
