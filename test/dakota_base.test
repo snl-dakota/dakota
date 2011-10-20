@@ -3816,89 +3816,89 @@ dakota_dace.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.5212599222e-01 cdv_1
-                      2.5041036586e-02 cdv_2
-                      9.3157055499e-01 cdv_3
-                      2.1455816317e+00 csv_1
+                      3.0625565391e-01 cdv_1
+                      1.7966183297e-01 cdv_2
+                      1.9281970958e-01 cdv_3
+                      2.1916471235e+00 csv_1
 <<<<< Best objective function  =
-                      3.1426426144e+00
+                      3.1254689919e+00
 <<<<< Best constraint values   =
-                      1.0621799215e-02
-                     -7.5435942596e-02
-<<<<< Best data captured at function evaluation 25
+                      3.9616090681e-03
+                     -1.2084945273e-01
+<<<<< Best data captured at function evaluation 20
 Simple Correlation Matrix among all inputs and outputs:
-                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.00000e+00 
-       cdv_2  3.70009e-02  1.00000e+00 
-       cdv_3  7.72050e-03  3.87564e-02  1.00000e+00 
-       csv_1 -1.83712e-02  2.62019e-02  3.09170e-04  1.00000e+00 
-      obj_fn -3.40886e-03  4.11187e-02 -4.42252e-02  8.13917e-01  1.00000e+00 
-nln_ineq_con_1  9.46832e-01 -1.92449e-01 -1.44940e-02 -3.04262e-02 -2.56034e-03  1.00000e+00 
-nln_ineq_con_2 -2.12208e-01  9.36658e-01  3.71237e-02  1.19231e-02  3.30058e-03 -4.14015e-01  1.00000e+00 
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1  1.00000e+00
+       cdv_2  5.16495e-02  1.00000e+00
+       cdv_3 -2.47895e-02 -3.56150e-03  1.00000e+00
+       csv_1 -4.78156e-02 -2.35743e-02 -2.43766e-02  1.00000e+00
+      obj_fn -4.99626e-02 -4.66793e-02 -7.25756e-02  8.33132e-01  1.00000e+00
+nln_ineq_con_1  9.39037e-01 -2.05895e-01 -2.92181e-02 -3.21161e-02 -3.21366e-02  1.00000e+00
+nln_ineq_con_2 -1.82922e-01  9.50371e-01 -1.19377e-02  6.22073e-03 -1.68181e-02 -4.14859e-01  1.00000e+00
 Partial Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.91674e-02  9.72887e-01 -7.06638e-01 
-       cdv_2  3.64522e-02 -7.06833e-01  9.67298e-01 
-       cdv_3 -7.81116e-02 -5.74464e-02  9.56045e-03 
-       csv_1  8.14704e-01 -3.04854e-02 -7.01164e-02 
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1 -1.84324e-02  9.71743e-01 -7.47542e-01
+       cdv_2 -4.85328e-02 -7.40946e-01  9.77858e-01
+       cdv_3 -9.53009e-02 -2.74523e-02 -6.70752e-02
+       csv_1  8.33463e-01  3.13943e-02  8.45201e-02
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.00000e+00 
-       cdv_2  2.40816e-02  1.00000e+00 
-       cdv_3 -3.57143e-03  4.42857e-02  1.00000e+00 
-       csv_1 -2.16327e-02  3.18367e-02 -7.55102e-03  1.00000e+00 
-      obj_fn -2.14286e-03  2.65306e-02 -2.28571e-02  9.82551e-01  1.00000e+00 
-nln_ineq_con_1  9.54490e-01 -2.27347e-01 -2.48980e-02 -1.72449e-02  7.24490e-03  1.00000e+00 
-nln_ineq_con_2 -2.41020e-01  9.52449e-01  5.12245e-02  1.92857e-02  1.29592e-02 -4.62347e-01  1.00000e+00 
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1  1.00000e+00
+       cdv_2  6.35714e-02  1.00000e+00
+       cdv_3 -2.67347e-02  5.81633e-03  1.00000e+00
+       csv_1 -4.62245e-02 -4.04082e-02 -2.90816e-02  1.00000e+00
+      obj_fn -4.50000e-02 -3.05102e-02 -4.48980e-02  9.84082e-01  1.00000e+00
+nln_ineq_con_1  9.46531e-01 -2.03163e-01 -5.74490e-02 -4.87755e-02 -4.35714e-02  1.00000e+00
+nln_ineq_con_2 -2.45510e-01  9.31735e-01 -1.23469e-02  1.44898e-02  2.87755e-02 -4.73878e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.03433e-01  9.86187e-01 -8.68385e-01 
-       cdv_2 -2.46614e-02 -8.40266e-01  9.87797e-01 
-       cdv_3 -8.19136e-02 -6.36214e-02  5.07765e-02 
-       csv_1  9.82845e-01  7.06545e-02 -1.11246e-01 
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1 -3.10410e-03  9.82362e-01 -8.46657e-01
+       cdv_2  5.28573e-02 -8.22690e-01  9.80382e-01
+       cdv_3 -9.20598e-02 -1.65570e-01 -1.29305e-01
+       csv_1  9.84183e-01 -8.66602e-02  1.95501e-01
 Test Number 1 succeeded
 <<<<< Function evaluation summary (I1): 50 total (50 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.1136568866e-01 cdv_1
-                      2.4555379836e-01 cdv_2
-                      1.3082119977e+00 cdv_3
-                      5.3172104085e+00 csv_1
+                      1.6367258784e-01 cdv_1
+                      1.4716105557e-01 cdv_2
+                      1.8195178058e+00 cdv_3
+                      2.0064244978e+00 csv_1
 <<<<< Best objective function  =
-                      3.4834302017e+02
+                      2.4952423298e+00
 <<<<< Best constraint values   =
-                     -1.1037458257e-01
-                      4.6138235584e-03
-<<<<< Best data captured at function evaluation 7
+                     -4.6791811778e-02
+                     -6.0179917640e-02
+<<<<< Best data captured at function evaluation 47
 Simple Correlation Matrix among all inputs and outputs:
-                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.00000e+00 
-       cdv_2  4.45710e-02  1.00000e+00 
-       cdv_3 -3.57147e-01  2.49793e-02  1.00000e+00 
-       csv_1 -1.01957e-01 -1.64549e-02  1.92112e-01  1.00000e+00 
-      obj_fn -5.46993e-02 -1.58777e-02  3.30110e-02  8.33102e-01  1.00000e+00 
-nln_ineq_con_1  9.31329e-01 -2.31935e-01 -3.03282e-01 -3.41794e-02 -1.53344e-02  1.00000e+00 
-nln_ineq_con_2 -1.88443e-01  9.41024e-01  9.34994e-02  3.06343e-02  1.30371e-02 -4.33175e-01  1.00000e+00 
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1  1.00000e+00
+       cdv_2  1.62123e-01  1.00000e+00
+       cdv_3 -6.46766e-02 -1.05736e-01  1.00000e+00
+       csv_1  2.40140e-02  8.26361e-02  1.48486e-01  1.00000e+00
+      obj_fn  3.00526e-02 -2.31271e-02  2.65103e-01  8.35432e-01  1.00000e+00
+nln_ineq_con_1  9.35226e-01 -9.21294e-02 -1.05144e-01 -1.24026e-02  9.74660e-03  1.00000e+00
+nln_ineq_con_2 -9.48779e-02  9.35602e-01 -5.73281e-02  7.85279e-02 -2.75484e-03 -3.31015e-01  1.00000e+00
 Partial Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1 -2.86666e-02  9.68479e-01 -6.65315e-01 
-       cdv_2  4.48887e-03 -7.65402e-01  9.68125e-01 
-       cdv_3 -2.29472e-01  1.46718e-01 -7.18860e-02 
-       csv_1  8.42657e-01  2.16874e-01  1.03272e-01 
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1  6.08393e-02  9.69071e-01 -7.07713e-01
+       cdv_2 -1.50761e-01 -7.16907e-01  9.68158e-01
+       cdv_3  2.47549e-01 -2.66233e-01  1.18355e-01
+       csv_1  8.38799e-01 -1.74741e-02 -3.38785e-03
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.00000e+00 
-       cdv_2  3.92317e-02  1.00000e+00 
-       cdv_3 -3.58367e-01  2.30972e-02  1.00000e+00 
-       csv_1 -1.05402e-01 -1.56062e-02  1.97695e-01  1.00000e+00 
-      obj_fn -1.39592e-01 -2.83313e-03  2.13733e-01  9.88187e-01  1.00000e+00 
-nln_ineq_con_1  9.35462e-01 -2.62617e-01 -2.80192e-01 -7.92797e-02 -1.13565e-01  1.00000e+00 
-nln_ineq_con_2 -2.04322e-01  9.55054e-01  1.11741e-01  3.95198e-02  6.33373e-02 -4.66507e-01  1.00000e+00 
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1  1.00000e+00
+       cdv_2  1.68499e-01  1.00000e+00
+       cdv_3 -7.26531e-02 -1.03673e-01  1.00000e+00
+       csv_1  2.55942e-02  7.78391e-02  1.51020e-01  1.00000e+00
+      obj_fn  1.80072e-02  6.19928e-02  1.68595e-01  9.87227e-01  1.00000e+00
+nln_ineq_con_1  9.47755e-01 -9.32053e-02 -4.48019e-02 -2.41537e-02 -2.28091e-02  1.00000e+00
+nln_ineq_con_2 -1.43433e-01  9.33541e-01 -7.08283e-02  3.39496e-02  2.60744e-02 -3.71717e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1 -2.09153e-01  9.82219e-01 -7.98184e-01 
-       cdv_2  9.18080e-02 -8.66989e-01  9.85009e-01 
-       cdv_3  4.20584e-02  3.70449e-01 -1.31078e-02 
-       csv_1  9.88359e-01  2.16710e-02  1.70297e-01 
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1 -2.39746e-02  9.82109e-01 -8.54506e-01
+       cdv_2 -7.53743e-02 -8.02400e-01  9.82335e-01
+       cdv_3  1.12617e-01  2.70452e-02  7.98971e-02
+       csv_1  9.87055e-01 -1.57189e-01 -1.96241e-01
 Test Number 2 succeeded
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -4160,91 +4160,91 @@ Partial Rank Correlation Matrix between input and output:
 Test Number 8 succeeded
 <<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.5212599222e-01 cdv_1
-                      2.5041036586e-02 cdv_2
-                      9.3157055499e-01 cdv_3
+                      3.0625565391e-01 cdv_1
+                      1.7966183297e-01 cdv_2
+                      1.9281970958e-01 cdv_3
                                     -3 ddsiv_1
                                      2 ddsiv_2
-                      2.1455816317e+00 csv_1
+                      2.1916471235e+00 csv_1
 <<<<< Best objective function  =
-                      2.6014264261e+02
+                      2.6012546899e+02
 <<<<< Best constraint values   =
-                      1.0621799215e-02
-                     -7.5435942596e-02
-<<<<< Best data captured at function evaluation 25
+                      3.9616090681e-03
+                     -1.2084945273e-01
+<<<<< Best data captured at function evaluation 20
 Simple Correlation Matrix among all inputs and outputs:
-                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.00000e+00 
-       cdv_2  3.70009e-02  1.00000e+00 
-       cdv_3  7.72050e-03  3.87564e-02  1.00000e+00 
-       csv_1 -1.83712e-02  2.62019e-02  3.09170e-04  1.00000e+00 
-      obj_fn -3.40886e-03  4.11187e-02 -4.42252e-02  8.13917e-01  1.00000e+00 
-nln_ineq_con_1  9.46832e-01 -1.92449e-01 -1.44940e-02 -3.04262e-02 -2.56034e-03  1.00000e+00 
-nln_ineq_con_2 -2.12208e-01  9.36658e-01  3.71237e-02  1.19231e-02  3.30058e-03 -4.14015e-01  1.00000e+00 
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1  1.00000e+00
+       cdv_2  5.16495e-02  1.00000e+00
+       cdv_3 -2.47895e-02 -3.56150e-03  1.00000e+00
+       csv_1 -4.78156e-02 -2.35743e-02 -2.43766e-02  1.00000e+00
+      obj_fn -4.99626e-02 -4.66793e-02 -7.25756e-02  8.33132e-01  1.00000e+00
+nln_ineq_con_1  9.39037e-01 -2.05895e-01 -2.92181e-02 -3.21161e-02 -3.21366e-02  1.00000e+00
+nln_ineq_con_2 -1.82922e-01  9.50371e-01 -1.19377e-02  6.22073e-03 -1.68181e-02 -4.14859e-01  1.00000e+00
 Partial Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.91674e-02  9.72887e-01 -7.06638e-01 
-       cdv_2  3.64522e-02 -7.06833e-01  9.67298e-01 
-       cdv_3 -7.81116e-02 -5.74464e-02  9.56045e-03 
-       csv_1  8.14704e-01 -3.04854e-02 -7.01164e-02 
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1 -1.84324e-02  9.71743e-01 -7.47542e-01
+       cdv_2 -4.85328e-02 -7.40946e-01  9.77858e-01
+       cdv_3 -9.53009e-02 -2.74523e-02 -6.70752e-02
+       csv_1  8.33463e-01  3.13943e-02  8.45201e-02
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.00000e+00 
-       cdv_2  2.40816e-02  1.00000e+00 
-       cdv_3 -3.57143e-03  4.42857e-02  1.00000e+00 
-       csv_1 -2.16327e-02  3.18367e-02 -7.55102e-03  1.00000e+00 
-      obj_fn -2.14286e-03  2.65306e-02 -2.28571e-02  9.82551e-01  1.00000e+00 
-nln_ineq_con_1  9.54490e-01 -2.27347e-01 -2.48980e-02 -1.72449e-02  7.24490e-03  1.00000e+00 
-nln_ineq_con_2 -2.41020e-01  9.52449e-01  5.12245e-02  1.92857e-02  1.29592e-02 -4.62347e-01  1.00000e+00 
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1  1.00000e+00
+       cdv_2  6.35714e-02  1.00000e+00
+       cdv_3 -2.67347e-02  5.81633e-03  1.00000e+00
+       csv_1 -4.62245e-02 -4.04082e-02 -2.90816e-02  1.00000e+00
+      obj_fn -4.50000e-02 -3.05102e-02 -4.48980e-02  9.84082e-01  1.00000e+00
+nln_ineq_con_1  9.46531e-01 -2.03163e-01 -5.74490e-02 -4.87755e-02 -4.35714e-02  1.00000e+00
+nln_ineq_con_2 -2.45510e-01  9.31735e-01 -1.23469e-02  1.44898e-02  2.87755e-02 -4.73878e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.03433e-01  9.86187e-01 -8.68385e-01 
-       cdv_2 -2.46614e-02 -8.40266e-01  9.87797e-01 
-       cdv_3 -8.19136e-02 -6.36214e-02  5.07765e-02 
-       csv_1  9.82845e-01  7.06545e-02 -1.11246e-01 
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1 -3.10410e-03  9.82362e-01 -8.46657e-01
+       cdv_2  5.28573e-02 -8.22690e-01  9.80382e-01
+       cdv_3 -9.20598e-02 -1.65570e-01 -1.29305e-01
+       csv_1  9.84183e-01 -8.66602e-02  1.95501e-01
 Test Number 9 succeeded
 <<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.9156613419e-01 cdv_1
-                      2.5454529714e-01 cdv_2
-                      6.8893928923e-01 cdv_3
-                      4.7515739151e+00 csv_1
+                      1.2021486421e-01 cdv_1
+                      3.4637098521e-02 cdv_2
+                      1.2623545899e+00 cdv_3
+                      7.2793839739e-01 csv_1
 <<<<< Best objective function  =
-                      1.9883142842e+02
+                      1.4778112271e+00
 <<<<< Best constraint values   =
-                     -9.0575064800e-02
-                     -3.0989758800e-02
-<<<<< Best data captured at function evaluation 39
+                     -2.8669356831e-03
+                     -5.8907703512e-02
+<<<<< Best data captured at function evaluation 40
 Simple Correlation Matrix among all inputs and outputs:
-                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.00000e+00 
-       cdv_2  2.82295e-02  1.00000e+00 
-       cdv_3  1.67370e-02 -4.98341e-02  1.00000e+00 
-       csv_1 -3.30675e-02  2.17914e-02 -2.74238e-02  1.00000e+00 
-      obj_fn  1.12815e-03 -1.78282e-02  1.12951e-02  8.31712e-01  1.00000e+00 
-nln_ineq_con_1  9.37632e-01 -2.19817e-01  2.46181e-02 -1.62817e-02  1.32580e-02  1.00000e+00 
-nln_ineq_con_2 -1.99103e-01  9.42500e-01 -2.69341e-02  2.81796e-02 -9.78456e-04 -4.26141e-01  1.00000e+00 
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1  1.00000e+00
+       cdv_2 -6.20824e-03  1.00000e+00
+       cdv_3 -3.40765e-02 -4.76244e-03  1.00000e+00
+       csv_1 -4.06187e-02  1.16369e-02  3.36707e-02  1.00000e+00
+      obj_fn -1.24375e-02  2.47034e-02  3.80981e-02  8.32247e-01  1.00000e+00
+nln_ineq_con_1  9.35745e-01 -2.65855e-01 -3.73947e-02 -4.26153e-02 -3.65985e-02  1.00000e+00
+nln_ineq_con_2 -2.32827e-01  9.43495e-01  1.38796e-02  1.32692e-02  4.04734e-02 -4.67193e-01  1.00000e+00
 Partial Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  5.26942e-02  9.68106e-01 -6.77816e-01 
-       cdv_2 -6.35562e-02 -7.10340e-01  9.68157e-01 
-       cdv_3  5.76150e-02 -1.20960e-02  9.81200e-02 
-       csv_1  8.33550e-01  8.26145e-02  2.67558e-03 
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1  3.93719e-02  9.68910e-01 -6.84822e-01
+       cdv_2  2.74434e-02 -7.37502e-01  9.68778e-01
+       cdv_3  1.96265e-02 -2.83576e-02  4.50281e-02
+       csv_1  8.32326e-01 -5.99502e-03 -3.01298e-02
 Simple Rank Correlation Matrix among all inputs and outputs:
-                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  1.00000e+00 
-       cdv_2  2.62245e-02  1.00000e+00 
-       cdv_3  1.47959e-02 -4.94898e-02  1.00000e+00 
-       csv_1 -3.31633e-02  1.59184e-02 -2.43878e-02  1.00000e+00 
-      obj_fn -3.09184e-02  1.48980e-02 -9.18367e-04  9.80000e-01  1.00000e+00 
-nln_ineq_con_1  9.44388e-01 -2.45102e-01  4.32653e-02 -5.25510e-02 -5.11224e-02  1.00000e+00 
-nln_ineq_con_2 -2.45918e-01  9.46224e-01 -2.46939e-02  1.87755e-02  2.50000e-02 -4.81531e-01  1.00000e+00 
+                    cdv_1        cdv_2        cdv_3        csv_1       obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1  1.00000e+00
+       cdv_2 -3.57143e-03  1.00000e+00
+       cdv_3 -3.48980e-02 -9.79592e-03  1.00000e+00
+       csv_1 -3.80612e-02  1.57143e-02  3.95918e-02  1.00000e+00
+      obj_fn -4.15306e-02  3.57143e-03  3.04082e-02  9.86224e-01  1.00000e+00
+nln_ineq_con_1  9.43163e-01 -2.87347e-01 -1.19388e-02 -5.91837e-02 -5.91837e-02  1.00000e+00
+nln_ineq_con_2 -2.72041e-01  9.50714e-01  2.14286e-02 -1.52041e-02 -2.14286e-02 -5.13776e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
-       cdv_1  6.32144e-03  9.81283e-01 -8.40433e-01 
-       cdv_2  1.98886e-03 -8.21539e-01  9.83578e-01 
-       cdv_3  1.15382e-01  8.26791e-02  1.49335e-01 
-       csv_1  9.80246e-01 -8.73824e-02 -2.73013e-02 
+                   obj_fn nln_ineq_con_1 nln_ineq_con_2
+       cdv_1 -2.62710e-02  9.83966e-01 -8.76620e-01
+       cdv_2 -7.28695e-02 -8.56853e-01  9.88141e-01
+       cdv_3 -5.40213e-02  1.10211e-01  1.53494e-01
+       csv_1  9.86310e-01 -1.14127e-01 -2.68944e-01
 dakota_drivers.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 90 total (90 new, 0 duplicate)
@@ -4363,16 +4363,16 @@ dakota_graphics2.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.5212599222e+02 cdv_1
-                      2.5041036586e+01 cdv_2
-                      9.3157055499e+02 cdv_3
-                      2.1455816317e+03 csv_1
+                      5.8329528491e+00 cdv_1
+                      1.6669404741e+02 cdv_2
+                      9.0760615657e+02 cdv_3
+                      6.6977847926e+03 csv_1
 <<<<< Best objective function  =
-                      2.1903331420e+13
+                      2.0119231521e+15
 <<<<< Best constraint values   =
-                      2.3129796990e+04
-                      5.5099051717e+02
-<<<<< Best data captured at function evaluation 25
+                     -4.9323684763e+01
+                      2.7783988964e+04
+<<<<< Best data captured at function evaluation 34
 dakota_graphics3.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 237 total (237 new, 0 duplicate)
@@ -12470,7 +12470,7 @@ Test Number 2 succeeded
 <<<<< Best data captured at function evaluation 45
 dakota_sbo_textbook.in 
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 208 total (208 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 215 total (215 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 100 total (95 new, 5 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
@@ -12482,7 +12482,7 @@ Test Number 0 succeeded
                      -1.5787371410e-13
 <<<<< Best data captured at function evaluation 45
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 208 total (208 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 215 total (215 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 100 total (95 new, 5 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
@@ -12494,7 +12494,7 @@ Test Number 1 succeeded
                      -1.5787371410e-13
 <<<<< Best data captured at function evaluation 45
 Test Number 2 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 208 total (208 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 215 total (215 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 100 total (95 new, 5 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
@@ -12506,8 +12506,8 @@ Test Number 2 succeeded
                      -1.5787371410e-13
 <<<<< Best data captured at function evaluation 45
 Test Number 3 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 49 total (49 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 232 total (232 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 61 total (61 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
@@ -12516,10 +12516,10 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                      -1.3394840792e-13
                       2.6789681584e-13
-<<<<< Best data captured at function evaluation 49
+<<<<< Best data captured at function evaluation 61 
 Test Number 4 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 49 total (49 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 232 total (232 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 61 total (61 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
@@ -12528,7 +12528,7 @@ Test Number 4 succeeded
 <<<<< Best constraint values   =
                      -1.3394840792e-13
                       2.6789681584e-13
-<<<<< Best data captured at function evaluation 49
+<<<<< Best data captured at function evaluation 61
 dakota_sbouu2_cantilever.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 9 total (9 new, 0 duplicate)
@@ -52727,8 +52727,8 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 response_fn_1 Sobol indices:
                                   Main             Total
-                      4.4592839286e-01  3.3834610573e-01 uuv_1
-                      6.8627551554e-01  4.5970914139e-01 uuv_2
+                      4.1902887110e-01  4.7518187495e-01 uuv_1
+                      7.2576785720e-01  6.2460313734e-01 uuv_2
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 response_fn_1 Sobol indices:
