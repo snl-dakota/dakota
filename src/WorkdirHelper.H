@@ -17,6 +17,8 @@
 //#include <boost/shared_array.hpp>   WJB - ToDo: look into improved mem mgmt
 //                                    e.g. use of malloc w/o free is undesirable
 
+// WJB:  eventually (before Dak rel 5.2) #define BOOST_FILESYSTEM_NO_DEPRECATED
+
 #ifdef DAKOTA_HAVE_BOOST_FS
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -171,7 +173,7 @@ inline bool contains(const bfs::path& dir_path, const std::string& file_name,
                      boost::filesystem::path& complete_filepath)
 {
   complete_filepath = dir_path; complete_filepath /= file_name;
-  return boost::filesystem::is_regular(complete_filepath);
+  return boost::filesystem::is_regular_file(complete_filepath);
 }
 #endif // DAKOTA_HAVE_BOOST_FS
 

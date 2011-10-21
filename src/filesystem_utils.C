@@ -968,7 +968,11 @@ std::string get_cwd()
 {
 #ifdef DAKOTA_HAVE_BOOST_FS
 
-  return bfs::current_path().string();
+  #if BOOST_FILESYSTEM_VERSION < 3
+    return bfs::current_path<bfs::path>().string();
+  #else
+    return bfs::current_path().string();
+  #endif
 
 #else
 
