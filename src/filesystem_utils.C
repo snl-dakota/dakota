@@ -591,7 +591,6 @@ rec_cp(const char *from, const char *todir, int copy, int flatten, int replace)
 	return rc;
 	}
 
-#ifdef DEBUG_GET_NPATH
 /* from ~dmgay/h/src/pathadjust.c */
 
 #ifdef _WIN32
@@ -622,6 +621,8 @@ static char slmap[256] = { /* Identity except that slmap['\\'] == slmap[0x5c] ==
 #define Map(x) x
 #define N_wdpath 1
 #endif
+
+#ifdef DEBUG_GET_NPATH
 
 static char *wd_path[N_wdpath];
 
