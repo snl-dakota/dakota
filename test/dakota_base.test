@@ -12318,19 +12318,19 @@ Test Number 17 succeeded
 <<<<< Best data captured at function evaluation 18
 dakota_sbo_illum.in 
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 948 total (948 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 739 total (739 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 958 total (958 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 862 total (862 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.7753514501e-01 x2
+                      2.8221244743e-01 x2
                       2.4688298431e-15 x3
                       7.5563923203e-17 x4
                       2.7902803611e-17 x5
-                      7.6349891547e-01 x6
+                      7.5466589732e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
                       1.0759962566e+00
-<<<<< Best data captured at function evaluation 698
+<<<<< Best data captured at function evaluation 780 
 dakota_sbo_rosen.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 2490 total (2490 new, 0 duplicate)
@@ -12442,32 +12442,32 @@ Test Number 11 succeeded
 <<<<< Best data not found in evaluation cache
 dakota_sbo_sine_fcn.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 539 total (539 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 221 total (218 new, 3 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 481 total (481 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 199 total (199 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.7708662830e-01 x1
                       1.7709425951e-01 x2
 <<<<< Best objective function  =
                       6.0247195369e-02
-<<<<< Best data captured at function evaluation 210
+<<<<< Best data captured at function evaluation 166
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 482 total (482 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 210 total (207 new, 3 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 582 total (582 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 232 total (232 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.7708636248e-01 x1
                       1.7708257602e-01 x2
 <<<<< Best objective function  =
                       6.0247197395e-02
-<<<<< Best data captured at function evaluation 199
+<<<<< Best data captured at function evaluation 232
 Test Number 2 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 284 total (284 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 155 total (155 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 540 total (540 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 254 total (254 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.7188934174e-01 x1
-                      1.7622874669e-01 x2
+                      1.7496324686e-01 x1
+                      1.1551162430e-01 x2
 <<<<< Best objective function  =
-                      6.0774841167e-02
-<<<<< Best data captured at function evaluation 45
+                      9.9907647696e-02
+<<<<< Best data captured at function evaluation 243
 dakota_sbo_textbook.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 215 total (215 new, 0 duplicate)
