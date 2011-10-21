@@ -59,6 +59,9 @@ AnalysisCode::AnalysisCode(const ProblemDescDB& problem_db):
   templateReplace(problem_db.get_bool("interface.templateReplace")),
   haveTemplateDir(false), haveWorkdir(false)
 {
+  if (numPrograms > 0 && !programNames[0].empty())
+    WorkdirHelper::which(programNames[0]);
+
   if (numPrograms > 1 && !analysisComponents.empty())
     multipleParamsFiles = true;
 }
@@ -238,8 +241,8 @@ void AnalysisCode::define_filenames(const int id)
 	}
 
 	curWorkdir = wd;
-	paramsFileName  = wd + "/" + basename(paramsFileName.c_str());
-	resultsFileName = wd + "/" + basename(resultsFileName.c_str());
+	paramsFileName  = wd + std::string(1,DAK_SLASH) + basename(paramsFileName.c_str());
+	resultsFileName = wd + std::string(1,DAK_SLASH) + basename(resultsFileName.c_str());
     }
   }
 

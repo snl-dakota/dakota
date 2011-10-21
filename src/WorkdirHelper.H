@@ -60,22 +60,22 @@ class WorkdirHelper
   //- Heading: Friends
   //
 
-  friend class CommandShell;                        // calls change_cwd, reset
-  friend class ForkAnalysisCode;                    // calls arg_adjust
+  friend class CommandShell;                       // calls change_cwd, reset
+  friend class ForkAnalysisCode;                   // calls arg_adjust
 
   /// Treat get_npath as a legacy, "blackbox" utility
 #ifdef DEBUG_GET_NPATH
   /** get_npath "shuffles" the string representing the current $PATH variable
       definition so that '.' is first in the $PATH.  It then returns the new
       string as the result (last arg in the call). */
-  friend void get_npath(int, char**);               // dakPreferredEnvPath access
+  friend void get_npath(int,char**);               // dakPreferredEnvPath access
 #endif
 
   /// Treat my_cp as a legacy, "blackbox" utility
   /** my_cp is a wrapper around 'cp -r'.  The extra layer allows for symlink
       to be used instead of file copy. */
   friend int my_cp(const char*, const struct stat*,
-                   int, int, void*);                // calls symlink
+                   int, int, void*);               // calls symlink
 
 public:
 
@@ -85,6 +85,9 @@ public:
   /// Prepend $PATH environment variable with an extra_path
   static void prepend_preferred_env_path(const std::string& extra_path);
 
+  /// Returns the string representing the path to the analysis driver
+  static std::string which(const std::string& driver_name);
+
 
 private:
 
@@ -93,6 +96,9 @@ private:
 
   /// Initializes class member, dakPreferredEnvPath
   static std::string init_preferred_env_path();
+
+  /// Tokenizes $PATH environment variable into a "list" of directories
+  static std::vector<std::string> tokenize_env_path(const std::string& path);
 
   /// "Helper"/wrapper for system symlink when "from" needs path adjustment
   static int symlink(const char* from, const char* to);
@@ -115,11 +121,6 @@ private:
 
   /// PATH=".:startupPWD:startupPATH"
   static std::string dakPreferredEnvPath;
-
-
-#ifdef DAKOTA_HAVE_BOOST_FS
-  static bfs::path dakLaunchDir;    // WJB: should be "similar" to DMG dakdir
-#endif
 
   //
   //- Heading:  DISABLED constructors, destructor, assignment operator
@@ -166,35 +167,11 @@ inline static bfs::path parent_path(const bfs::path& fp)
 }
 
 
-inline static bool contains(const bfs::path& dir_path,
-                            const std::string& file_name,
-                            bool recurse, bfs::path& path_found)
+inline bool contains(const bfs::path& dir_path, const std::string& file_name,
+                     boost::filesystem::path& complete_filepath)
 {
-  bool success_flag(false);
-  if( exists(dir_path) && is_directory(dir_path) ) {
-    bfs::directory_iterator iter(dir_path), dir_end;
-
-    for(; iter != dir_end; ++iter) {
-      /* WJB: consider possibility of recursion into subdirs
-      if( bfs::is_directory(*iter) && recurse ) {
-        if( contains(*iter, file_name, recurse, path_found) ) {
-          success_flag = true;
-          break;
-        }
-      } */
-      //else if( filename(*iter) == file_name ) {
-#if BOOST_FILESYSTEM_VERSION < 3
-      if( iter->leaf() == file_name ) {
-#else
-      if( filename(*iter) == file_name ) {
-#endif
-        path_found = *iter;
-        success_flag = true;
-        break;
-      }
-    }
-    return success_flag;
-  }
+  complete_filepath = dir_path; complete_filepath /= file_name;
+  return boost::filesystem::is_regular(complete_filepath);
 }
 #endif // DAKOTA_HAVE_BOOST_FS
 

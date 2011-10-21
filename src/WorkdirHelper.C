@@ -16,6 +16,8 @@
                               // WJB: wd_adjust has a MAJOR dependency on statics in filesystem_utils.C
 #include <boost/array.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/foreach.hpp>
 #include <cassert>
 
 
@@ -48,10 +50,22 @@ std::string WorkdirHelper::init_preferred_env_path()
 void WorkdirHelper::prepend_preferred_env_path(const std::string& extra_path)
 {
   // Assume a relative extra_path arg is relative to dakota's startupPWD
-  // WJB - NOTE: BoostFS would help here (WIN32 drive letter!)
+
+#ifdef DAKOTA_HAVE_BOOST_FS
+  bfs::path extra_bfs_path(extra_path);
+
+#if defined(_WIN32) || defined(_WIN64)
+  std::string abs_extra_path = ( !(extra_bfs_path.has_root_name() && extra_bfs_path.has_root_directory()) ) ?
+#else
+  std::string abs_extra_path = ( !extra_bfs_path.has_root_directory() ) ?
+#endif
+                               startupPWD + std::string(1,DAK_SLASH)+extra_path :
+                               extra_path;
+#else
   std::string abs_extra_path = (extra_path[0] != DAK_SLASH) ?
                                startupPWD + std::string(1,DAK_SLASH)+extra_path :
                                extra_path;
+#endif // DAKOTA_HAVE_BOOST_FS
 
   std::string preferred_env_path(DAK_PATH_ENV_NAME"=");
   std::string old_preferred_path
@@ -79,6 +93,89 @@ std::string WorkdirHelper::init_startup_path()
   }
 
   return std::string(env_path);
+}
+
+
+/** Creates a a vector of directories (as an aid to search) by breaking up
+ *  the $PATH environment variable (passed in as a string argument)
+ */
+std::vector<std::string>
+WorkdirHelper::tokenize_env_path(const std::string& env_path)
+{
+  std::vector<std::string> dirs;
+
+  typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+  boost::char_separator<char> sep( std::string(1, DAK_PATH_SEP).c_str() );
+
+  tokenizer dir_tokens( env_path.begin() + 5,
+                        env_path.end(), sep ); // account for "PATH=" @beginning
+
+  for(tokenizer::iterator tok_iter = dir_tokens.begin();
+      tok_iter != dir_tokens.end(); ++tok_iter) {
+    std::string dir_path = *tok_iter;
+    dirs.push_back(dir_path);
+
+#ifdef DAKOTA_HAVE_BOOST_FS
+    if( !bfs::is_directory(dir_path) )
+      Cout << "WARNING - Absolute path: " << dir_path
+           << " MAY NOT be a directory\n"
+           << "\t But will check for existence of driver anyway" << std::endl;
+#endif
+  }
+
+#ifdef DEBUG
+  Cout << "Searchpath = " << env_path << '\n';
+  BOOST_FOREACH(const std::string& d, dirs)
+    Cout << "\tDir = " << d << '\n';
+  Cout << std::endl;
+#endif
+
+  return dirs;
+}
+
+
+/** Uses string representing $PATH to locate an analysis driver on the host
+ *  computer.  Returns the path to the driver (as a string)
+ */
+std::string WorkdirHelper::which(const std::string& driver_name)
+{
+#ifdef DAKOTA_HAVE_BOOST_FS
+  std::string driver_path_str;
+
+  bfs::path driver_path(driver_name);
+  //bool abs = driver_path.is_absolute(); // WJB:  not available in BFS V2
+
+#if defined(_WIN32) || defined(_WIN64)
+  if( !(driver_path.has_root_name() && driver_path.has_root_directory()) ) {
+#else
+  if( !driver_path.has_root_directory() ) {
+#endif
+    //Cout << "RELATIVE path to driver case" << '\n';
+    std::vector<std::string> search_dirs =
+      tokenize_env_path(dakPreferredEnvPath);
+
+    BOOST_FOREACH(const std::string& d, search_dirs) {
+      boost::filesystem::path f;
+
+      if( contains(d, driver_name, f) ) {
+        //Cout << driver_name << " FOUND in: " << d << std::endl;
+        driver_path_str = f.string();
+        break;
+      }
+    }
+
+  }
+  else {
+    //Cout << "ABSOLUTE path to driver was specified" << std::endl;
+    driver_path_str = driver_name;
+  }
+
+  return driver_path_str;
+
+#else
+  // WJB - NO Boost case: should I invoke the venerable "not_executable" func??
+  return driver_name;
+#endif // DAKOTA_HAVE_BOOST_FS
 }
 
 
