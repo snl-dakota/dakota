@@ -461,7 +461,10 @@ inline Real PecosApproximation::get_value(const Pecos::RealVector& x)
 
 inline const Pecos::RealVector& PecosApproximation::
 get_gradient(const Pecos::RealVector& x)
-{ return pecosBasisApprox.gradient(x); }
+{
+  //return pecosBasisApprox.gradient(x);
+  return polyApproxRep->gradient_basis_variables(x); // bypass a layer
+}
 
 
 inline const Pecos::RealSymMatrix& PecosApproximation::
