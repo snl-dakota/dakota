@@ -75,10 +75,6 @@ public:
   /// specification in \ref RespFnOpt and the \c least_squares_weights
   /// specification in \ref RespFnLS)
   RealVector primaryRespFnWeights;
-  /// filename from which to read observation data to compute least squares
-  /// residuals (from the \c least_squares_data_file specification in 
-  /// \ref RespFnLS)
-  String leastSqDataFile;
   /// vector of nonlinear inequality constraint lower bounds (from the \c
   /// nonlinear_inequality_lower_bounds specification in \ref RespFnOpt)
   RealVector nonlinearIneqLowerBnds;

@@ -1294,6 +1294,10 @@ method_stop(const char *keyname, Values *val, void **g, void *v)
 		"linear_inequality", mr_scaletypes);
 	scale_chk(dm->linearEqScaleTypes, dm->linearEqScales,
 		"linear_equality", mr_scaletypes);
+	if (!dm->expStdDeviations.empty() && dm->expDataReadStdDeviations) {
+	  NIDRProblemDescDB::squawk("specify one of  \"experimental_std_deviations\" or "
+				    "\"read_std_deviations\", not both");
+	}
 	pDDBInstance->dataMethodList.push_back(*mi->dme0);
 	delete mi->dme0;
 	delete mi;
@@ -1345,6 +1349,12 @@ model_RealDL(const char *keyname, Values *val, void **g, void *v)
 	rdv->sizeUninitialized(n);
 	for(i = 0; i < n; i++)
 		(*rdv)[i] = r[i];
+	}
+
+ void NIDRProblemDescDB::
+model_false(const char *keyname, Values *val, void **g, void *v)
+{
+	(*(Mod_Info**)g)->dmo->**(bool DataModelRep::**)v = false;
 	}
 
  void NIDRProblemDescDB::
@@ -4202,6 +4212,9 @@ static int
 #undef MP2
 #undef MP_
 
+
+// Macros for Method
+
 #define MP_(x) DataMethodRep::* method_mp_##x = &DataMethodRep::x
 #define MP2(x,y) method_mp_##x##_##y = {&DataMethodRep::x,#y}
 #define MP2s(x,y) method_mp_##x##_##y = {&DataMethodRep::x,y}
@@ -4440,6 +4453,7 @@ static Real
 
 static RealVector
 	MP_(anisoGridDimPref),
+	MP_(expStdDeviations),
 	MP_(finalPoint),
 	MP_(linearEqConstraintCoeffs),
 	MP_(linearEqScales),
@@ -4468,16 +4482,14 @@ static UShortArray
 
 static String
 	MP_(centralPath),
+	MP_(expDataFileName),
 	MP_(expansionImportFile),
 	MP_(idMethod),
 	MP_(logFile),
 	MP_(meritFn),
 	MP_(modelPointer),
 	MP_(subMethodName),
-	MP_(subMethodPointer),
-	MP_(xObsDataFile),
-	MP_(yObsDataFile),
-	MP_(yStdDataFile);
+        MP_(subMethodPointer);
 
 static StringArray
 	MP_(linearEqScaleTypes),
@@ -4487,6 +4499,8 @@ static StringArray
 static bool
 	MP_(allVarsFlag),
 	MP_(constantPenalty),
+	MP_(expDataFileAnnotated),
+	MP_(expDataReadStdDeviations),
 	MP_(expansionFlag),
 	MP_(fixedSeedFlag),
 	MP_(fixedSequenceFlag),
@@ -4523,6 +4537,8 @@ static int
 	MP_(maxIterations),
 	MP_(mutationRange),
 	MP_(newSolnsGenerated),
+	MP_(numExpConfigVars),
+	MP_(numExperiments),
 	MP_(numSamples),
 	MP_(numSteps),
 	MP_(numSymbols),
@@ -4587,6 +4603,9 @@ static Method_mp_type
 #undef MP2p
 #undef MP2
 #undef MP_
+
+
+// Macros for handling Model data
 
 #define MP_(x) DataModelRep::* model_mp_##x = &DataModelRep::x
 #define MP2(x,y) model_mp_##x##_##y = {&DataModelRep::x,#y}
@@ -4662,6 +4681,7 @@ static StringArray
         MP_(diagMetrics);
 
 static bool
+	MP_(approxPointFileAnnotated),
 	MP_(modelUseDerivsFlag),
 	MP_(pointSelection);
 
@@ -4724,8 +4744,7 @@ static Resp_mp_lit
 	MP2(quasiHessianType,sr1);
 
 static String
-	MP_(idResponses),
-	MP_(leastSqDataFile);
+        MP_(idResponses);
 
 static StringArray
 	MP_(primaryRespFnScaleTypes),

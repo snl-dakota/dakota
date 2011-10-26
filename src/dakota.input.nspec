@@ -130,11 +130,20 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  | dl_solver STRING {N_mdm(slit2,3methodName_dl_solver)}
 	  |
 	  ( npsol_sqp {N_mdm(lit,methodName_npsol_sqp)}
-	    | nlssol_sqp {N_mdm(lit,methodName_nlssol_sqp)}
-	    | (stanford {0}
-		npsol {N_mdm(lit,methodName_npsol_sqp)}
-		| nlssol {N_mdm(lit,methodName_nlssol_sqp)}
-		)
+	    | ( nlssol_sqp {N_mdm(lit,methodName_nlssol_sqp)}
+                [ experimental_data_file STRING {N_mdm(str,expDataFileName)}
+                  [ annotated {N_mdm(true,expDataFileAnnotated)} | 
+                    freeform  {N_mdm(false,expDataFileAnnotated)} 
+                    ]
+  	          [ num_experiments INTEGER {N_mdm(int,numExperiments)} ]
+                  [ experimental_config_variables INTEGER {N_mdm(int,numExpConfigVars)} ] 
+                  [ read_std_deviations {N_mdm(true,expDataReadStdDeviations)} ]
+                  ]
+                )
+#	    | (stanford {0}
+#		npsol {N_mdm(lit,methodName_npsol_sqp)}
+#		| nlssol {N_mdm(lit,methodName_nlssol_sqp)}
+#		)
 	    [ verify_level INTEGER {N_mdm(int,verifyLevel)} ]
 	    [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
 	    [ linesearch_tolerance REAL {N_mdm(Real,lineSearchTolerance)} ]
@@ -146,8 +155,17 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    |
 	    ( optpp_q_newton {N_mdf(litpp,methodName_optpp_q_newton)}
 	      | optpp_fd_newton {N_mdf(litpp,methodName_optpp_fd_newton)}
-	      | optpp_g_newton {N_mdf(litpp,methodName_optpp_g_newton)}
 	      | optpp_newton {N_mdf(litpp,methodName_optpp_newton)}
+	      | ( optpp_g_newton {N_mdf(litpp,methodName_optpp_g_newton)}
+                  [ experimental_data_file STRING {N_mdm(str,expDataFileName)}
+                    [ annotated {N_mdm(true,expDataFileAnnotated)} | 
+                      freeform  {N_mdm(false,expDataFileAnnotated)} 
+                      ]
+    	            [ num_experiments INTEGER {N_mdm(int,numExperiments)} ]
+                    [ experimental_config_variables INTEGER {N_mdm(int,numExpConfigVars)} ] 
+                    [ read_std_deviations {N_mdm(true,expDataReadStdDeviations)} ]
+                    ]
+                  )
 	      [ search_method {0}
 		value_based_line_search {N_mdm(lit,searchMethod_value_based_line_search)}
 		| gradient_based_line_search {N_mdm(lit,searchMethod_gradient_based_line_search)}
@@ -381,6 +399,14 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  [ initial_trust_radius REAL {N_mdm(Real,initTRRadius)} ]
 	  [ covariance INTEGER {N_mdm(int,covarianceType)} ]
 	  [ regression_diagnostics {N_mdm(true,regressDiag)} ]
+          [ experimental_data_file STRING {N_mdm(str,expDataFileName)}
+            [ annotated {N_mdm(true,expDataFileAnnotated)} | 
+              freeform  {N_mdm(false,expDataFileAnnotated)} 
+              ]
+	    [ num_experiments INTEGER {N_mdm(int,numExperiments)} ]
+            [ experimental_config_variables INTEGER {N_mdm(int,numExpConfigVars)} ] 
+            [ read_std_deviations {N_mdm(true,expDataReadStdDeviations)} ]
+            ]
 	  )
 	|
 	( nonlinear_cg {N_mdm(lit,methodName_nonlinear_cg)}
@@ -582,9 +608,15 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      [ rng {0}
 		mt19937 {N_mdm(lit,rngName_mt19937)}
 		| rnum2 {N_mdm(lit,rngName_rnum2)} ]
-	      [ x_obs_data_file STRING {N_mdm(str,xObsDataFile)} ]
-	      [ y_obs_data_file STRING {N_mdm(str,yObsDataFile)} ]
-	      [ y_std_data_file STRING {N_mdm(str,yStdDataFile)} ]
+	      [ experimental_std_deviations REALLIST {N_mdm(RealDL,expStdDeviations)} ]
+              [ experimental_data_file STRING {N_mdm(str,expDataFileName)}
+                [ annotated {N_mdm(true,expDataFileAnnotated)} | 
+                  freeform  {N_mdm(false,expDataFileAnnotated)} 
+                  ]
+	        [ num_experiments INTEGER {N_mdm(int,numExperiments)} ]
+                [ experimental_config_variables INTEGER {N_mdm(int,numExpConfigVars)} ] 
+                [ read_std_deviations {N_mdm(true,expDataReadStdDeviations)} ]
+                ]
               [ proposal_covariance_scale REAL {N_mdm(Real,proposalCovScale)} ]
               [ likelihood_scale REAL {N_mdm(Real,likelihoodScale)} ]
 	      )
@@ -850,7 +882,11 @@ KEYWORD model {N_mom3(start,0,stop)}
 	      | region {N_mom(lit,approxPointReuse_region)}
 	      | none {N_mom(lit,approxPointReuse_none)}
 	      ]
-	    [ points_file ALIAS samples_file STRING {N_mom(str,approxPointReuseFile)} ]
+	    [ points_file ALIAS samples_file STRING {N_mom(str,approxPointReuseFile)} 
+              [ annotated {N_mom(true,approxPointFileAnnotated)} | 
+                freeform  {N_mom(false,approxPointFileAnnotated)} 
+                ]
+              ]
 	    [ use_derivatives {N_mom(true,modelUseDerivsFlag)} ]
 	    [ correction {0}
 	      zeroth_order {N_mom(order,approxCorrectionOrder_0)}
@@ -1139,7 +1175,6 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 	  )
 	|
 	( num_least_squares_terms INTEGER >= 0 {N_rem(nnintz,numLeastSqTerms)}
-	  [ least_squares_data_file STRING {N_rem(str,leastSqDataFile)} ]
 	  [ least_squares_term_scale_types STRINGLIST LEN1 num_least_squares_terms {N_rem(strL,primaryRespFnScaleTypes)} ]
 	  [ least_squares_term_scales REALLIST LEN1 num_least_squares_terms {N_rem(RealDL,primaryRespFnScales)} ]
 	  [ least_squares_weights REALLIST LEN num_least_squares_terms {N_rem(RealDL,primaryRespFnWeights)} ]

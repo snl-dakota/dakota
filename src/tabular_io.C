@@ -162,7 +162,7 @@ void read_data_tabular(const std::string& input_filename,
     Cout << "\nError (" << context_message << "): could not read file.";
     if (annotated) {
       Cout << "\nExpected header-annotated tabular file:"
-	   << "\n  * header row with labels and " << num_rows << "data rows"
+	   << "\n  * header row with labels and " << num_rows << " data rows"
 	   << "\n  * leading column with counter and 1 data column";
     }
     else {
@@ -170,6 +170,7 @@ void read_data_tabular(const std::string& input_filename,
 	   << num_rows << " whitespace-separated numeric data.";
     }
     Cout << std::endl;
+    abort_handler(-1);
   }
 
   if (exists_extra_data(input_stream)) { 
@@ -268,15 +269,16 @@ void read_data_tabular(const std::string& input_filename,
       Cout << "\nError (" << context_message << "): could not read file.";
       if (annotated) {
 	Cout << "\nExpected header-annotated tabular file:"
-	     << "\n  * header row with labels and " << num_rows << "data rows"
+	     << "\n  * header row with labels and " << num_rows << " data rows"
 	     << "\n  * leading column with counter and " << num_cols 
-	     << "data columns";
+	     << " data columns";
       }
       else {
 	Cout << "\nExpected free-form tabular file: no leading row nor column; "
 	     << num_rows*num_cols << " whitespace-separated numeric data.";
       }
       Cout << std::endl;
+      abort_handler(-1);
     }
   }
 

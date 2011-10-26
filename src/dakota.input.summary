@@ -197,11 +197,15 @@ KEYWORD12 method
 	  [ linear_equality_scale_types STRINGLIST ]
 	  [ linear_equality_scales REALLIST ]
 	  )
-	| nlssol_sqp
 	|
-	( stanford
-	  npsol
-	  | nlssol
+	( nlssol_sqp
+	  [ experimental_data_file STRING
+	    [ annotated
+	    | freeform ]
+	    [ num_experiments INTEGER ]
+	    [ experimental_config_variables INTEGER ]
+	    [ read_std_deviations ]
+	    ]
 	  [ verify_level INTEGER ]
 	  [ function_precision REAL ]
 	  [ linesearch_tolerance REAL ]
@@ -243,9 +247,39 @@ KEYWORD12 method
 	  )
 	|
 	( optpp_q_newton
-	  | optpp_fd_newton
-	  | optpp_g_newton
-	  | optpp_newton
+	  [ search_method
+	    value_based_line_search
+	    | gradient_based_line_search
+	    | trust_region
+	    | tr_pds
+	    ]
+	  [ merit_function STRING ]
+	  [ central_path STRING ]
+	  [ steplength_to_boundary REAL ]
+	  [ centering_parameter REAL ]
+	  [ max_step REAL ]
+	  [ gradient_tolerance REAL ]
+	  [ linear_inequality_constraint_matrix REALLIST ]
+	  [ linear_inequality_lower_bounds REALLIST ]
+	  [ linear_inequality_upper_bounds REALLIST ]
+	  [ linear_inequality_scale_types STRINGLIST ]
+	  [ linear_inequality_scales REALLIST ]
+	  [ linear_equality_constraint_matrix REALLIST ]
+	  [ linear_equality_targets REALLIST ]
+	  [ linear_equality_scale_types STRINGLIST ]
+	  [ linear_equality_scales REALLIST ]
+	  )
+	| optpp_fd_newton
+	| optpp_newton
+	|
+	( optpp_g_newton
+	  [ experimental_data_file STRING
+	    [ annotated
+	    | freeform ]
+	    [ num_experiments INTEGER ]
+	    [ experimental_config_variables INTEGER ]
+	    [ read_std_deviations ]
+	    ]
 	  [ search_method
 	    value_based_line_search
 	    | gradient_based_line_search
@@ -566,6 +600,13 @@ KEYWORD12 method
 	  [ initial_trust_radius REAL ]
 	  [ covariance INTEGER ]
 	  [ regression_diagnostics ]
+	  [ experimental_data_file STRING
+	    [ annotated
+	    | freeform ]
+	    [ num_experiments INTEGER ]
+	    [ experimental_config_variables INTEGER ]
+	    [ read_std_deviations ]
+	    ]
 	  )
 	|
 	( nonlinear_cg
@@ -886,9 +927,14 @@ KEYWORD12 method
 	    mt19937
 	    | rnum2
 	    ]
-	  [ x_obs_data_file STRING ]
-	  [ y_obs_data_file STRING ]
-	  [ y_std_data_file STRING ]
+	  [ experimental_std_deviations REALLIST ]
+	  [ experimental_data_file STRING
+	    [ annotated
+	    | freeform ]
+	    [ num_experiments INTEGER ]
+	    [ experimental_config_variables INTEGER ]
+	    [ read_std_deviations ]
+	    ]
 	  [ proposal_covariance_scale REAL ]
 	  [ likelihood_scale REAL ]
 	  [ samples INTEGER ]
@@ -1158,7 +1204,10 @@ KEYWORD model
 	      | region
 	      | none
 	      ]
-	    [ points_file ALIAS samples_file STRING ]
+	    [ points_file ALIAS samples_file STRING
+	      [ annotated
+	      | freeform ]
+	      ]
 	    [ use_derivatives ]
 	    [ correction
 	      zeroth_order
@@ -1449,7 +1498,6 @@ KEYWORD12 responses
 	  )
 	|
 	( num_least_squares_terms INTEGER >= 0
-	  [ least_squares_data_file STRING ]
 	  [ least_squares_term_scale_types STRINGLIST ]
 	  [ least_squares_term_scales REALLIST ]
 	  [ least_squares_weights REALLIST ]

@@ -17547,6 +17547,16 @@ Test Number 7 succeeded
                      -4.7902545262e-01
                      -9.3585810555e-02
 <<<<< Best data captured at function evaluation 11
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 12 total (11 new, 1 duplicate)
+<<<<< Best parameters          =
+                      4.0011598866e+00 x1
+                      1.9766117810e+00 x2
+<<<<< Best residual terms      =
+                      3.5018717821e-02
+                     -4.7902545262e-01
+                     -9.3585810555e-02
+<<<<< Best data captured at function evaluation 11
 dakota_trsbouu2_cantilever.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 60 total (60 new, 0 duplicate)

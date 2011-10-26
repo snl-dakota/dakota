@@ -123,58 +123,43 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   // We assume for now that the number of calibration 
   // parameters is the number of total uncertain variables 
   // (num_problem_vars) less the number of x_observed data. 
-  std::ifstream data_file1(xObsDataFile);
-  if (!data_file1) {
-    Cerr << "Could not open user data source for x observations " 
-         << xObsDataFile << " in "
-         << "GPMSA Bayesian calibration method." << std::endl;
-    abort_handler(-1);
-  }
-  else {
-    std::string line;
-    while (getline(data_file1,line))
-      num_obs_data++;
-    xObsData.resize(num_obs_data);
-    yObsData.resize(num_obs_data);
-    yStdData.resize(num_obs_data);
-       
-    data_file1.clear();
-    data_file1.seekg(0, std::ios::beg);
 
-    i = 0;
-    while ((i<num_obs_data) && (data_file1 >> xObsData[i]))
-    //while (i<num_obs_data) {
-    // data_file1 >> *xObsData[i];
-      ++i;
-    data_file1.close();
-  }
+  // BMA: above may not be true any longer...
 
-  std::ifstream data_file2(yObsDataFile);
-  if (!data_file2) {
-    Cerr << "Could not open user data source for y observations " 
-         << yObsDataFile << " in "
-         << "GPMSA Bayesian calibration method." << std::endl;
-    abort_handler(-1);
-  }
-  else {
-    i = 0;
-    while ((i<num_obs_data) && (data_file2 >> yObsData[i]))
-      i++;
-    data_file2.close();
-  }
-  std::ifstream data_file3(yStdDataFile);
-  if (!data_file3) {
-    Cerr << "Could not open user data source for y error on observations " 
-         << yStdDataFile << " in "
-         << "GPMSA Bayesian calibration method." << std::endl;
-  abort_handler(-1);
-  }
-  else {
-    i = 0;
-    while ((i<num_obs_data) &&  (data_file3 >> yStdData[i]))
-      i++;
-    data_file3.close();
-  }
+  // a matrix with numExperiments rows and cols
+  // numExpConfigVars X, numFunctions Y, [numFunctions Sigma]
+  RealMatrix experimental_data;
+
+  size_t num_sigma_read = (expDataReadStdDeviations) ? numFunctions : 0;
+  size_t num_cols = numExpConfigVars + numFunctions + num_sigma_read;
+
+  read_data_tabular(expDataFileName, "GPMSA Bayes Calibration", 
+		    experimental_data, numExperiments,  num_cols, 
+		    expDataFileAnnotated);
+
+  // Get views of the data in 3 matrices for convenience
+  // TODO: make sure we don't create an empty view?
+
+  size_t start_row = 0;
+  size_t start_col = 0;
+  RealMatrix x_obs_data(Teuchos::View, experimental_data,
+			num_experiments, numExpConfigVars,
+			start_row, start_col);
+
+  start_row = 0;
+  start_col = numExpConfigVars;
+  RealMatrix y_obs_data(Teuchos::View, experimental_data,
+			num_experiments, numFunctions,
+			start_row, start_col);
+
+  start_row = 0;
+  start_col = numExpConfigVars + numFunctions;
+  RealMatrix y_std_data(Teuchos::View, experimental_data,
+			num_experiments, numFunctions,
+			start_row, start_col);
+
+  // Now populate yObsData, yStdData, etc. (sized numExperiments currently)
+ 
 
 
  // Assuming we get all of this as input, we need to populate the following 

@@ -18,7 +18,8 @@ namespace Dakota {
 
 DataModelRep::DataModelRep():
   modelType("single"), //approxPointReuse("none"),
-  pointsTotal(0), pointsManagement(DEFAULT_POINTS),
+  pointsTotal(0), pointsManagement(DEFAULT_POINTS), 
+  approxPointFileAnnotated(true),
   approxCorrectionType(NO_CORRECTION), approxCorrectionOrder(0),
   modelUseDerivsFlag(false), polynomialOrder(2), krigingMaxTrials(0),
   mlsPolyOrder(0), mlsWeightFunction(0), rbfBases(0), rbfMaxPts(0),
@@ -33,8 +34,9 @@ void DataModelRep::write(MPIPackBuffer& s) const
   s << idModel << modelType << variablesPointer << interfacePointer
     << responsesPointer << subMethodPointer << surrogateFnIndices
     << surrogateType << truthModelPointer << lowFidelityModelPointer
-    << pointsTotal << pointsManagement << approxPointReuse
-    << approxPointReuseFile << approxCorrectionType << approxCorrectionOrder
+    << pointsTotal << pointsManagement
+    << approxPointReuse << approxPointReuseFile << approxPointFileAnnotated
+    << approxCorrectionType << approxCorrectionOrder
     << modelUseDerivsFlag << polynomialOrder << krigingCorrelations
     << krigingOptMethod << krigingMaxTrials << krigingMaxCorrelations
     << krigingMinCorrelations << mlsPolyOrder << mlsWeightFunction << rbfBases
@@ -51,8 +53,9 @@ void DataModelRep::read(MPIUnpackBuffer& s)
   s >> idModel >> modelType >> variablesPointer >> interfacePointer
     >> responsesPointer >> subMethodPointer >> surrogateFnIndices
     >> surrogateType >> truthModelPointer >> lowFidelityModelPointer
-    >> pointsTotal >> pointsManagement >> approxPointReuse
-    >> approxPointReuseFile >> approxCorrectionType >> approxCorrectionOrder
+    >> pointsTotal >> pointsManagement
+    >> approxPointReuse >> approxPointReuseFile >> approxPointFileAnnotated 
+    >> approxCorrectionType >> approxCorrectionOrder
     >> modelUseDerivsFlag >> polynomialOrder >> krigingCorrelations
     >> krigingOptMethod >> krigingMaxTrials >> krigingMaxCorrelations
     >> krigingMinCorrelations >> mlsPolyOrder >> mlsWeightFunction >> rbfBases
@@ -69,8 +72,9 @@ void DataModelRep::write(std::ostream& s) const
   s << idModel << modelType << variablesPointer << interfacePointer
     << responsesPointer << subMethodPointer << surrogateFnIndices
     << surrogateType << truthModelPointer << lowFidelityModelPointer
-    << pointsTotal << pointsManagement << approxPointReuse
-    << approxPointReuseFile << approxCorrectionType << approxCorrectionOrder
+    << pointsTotal << pointsManagement
+    << approxPointReuse << approxPointReuseFile << approxPointFileAnnotated
+    << approxCorrectionType << approxCorrectionOrder
     << modelUseDerivsFlag << polynomialOrder << krigingCorrelations
     << krigingOptMethod << krigingMaxTrials << krigingMaxCorrelations
     << krigingMinCorrelations << mlsPolyOrder << mlsWeightFunction << rbfBases

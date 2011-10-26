@@ -30,7 +30,7 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
   s << numObjectiveFunctions << numNonlinearIneqConstraints
     << numNonlinearEqConstraints << numLeastSqTerms << numResponseFunctions
     << primaryRespFnScaleTypes << primaryRespFnScales << primaryRespFnWeights
-    << leastSqDataFile << nonlinearIneqLowerBnds << nonlinearIneqUpperBnds
+    << nonlinearIneqLowerBnds << nonlinearIneqUpperBnds
     << nonlinearIneqScaleTypes  << nonlinearIneqScales << nonlinearEqTargets
     << nonlinearEqScaleTypes << nonlinearEqScales << gradientType << hessianType
     << ignoreBounds << centralHess << quasiHessianType << methodSource << intervalType
@@ -45,7 +45,7 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
   s >> numObjectiveFunctions >> numNonlinearIneqConstraints
     >> numNonlinearEqConstraints >> numLeastSqTerms >> numResponseFunctions
     >> primaryRespFnScaleTypes >> primaryRespFnScales >> primaryRespFnWeights
-    >> leastSqDataFile >> nonlinearIneqLowerBnds >> nonlinearIneqUpperBnds
+    >> nonlinearIneqLowerBnds >> nonlinearIneqUpperBnds
     >> nonlinearIneqScaleTypes  >> nonlinearIneqScales >> nonlinearEqTargets
     >> nonlinearEqScaleTypes >> nonlinearEqScales >> gradientType >> hessianType
     >> ignoreBounds >> centralHess >> quasiHessianType >> methodSource >> intervalType
@@ -60,7 +60,7 @@ void DataResponsesRep::write(std::ostream& s) const
   s << numObjectiveFunctions << numNonlinearIneqConstraints
     << numNonlinearEqConstraints << numLeastSqTerms << numResponseFunctions
     << primaryRespFnScaleTypes << primaryRespFnScales << primaryRespFnWeights
-    << leastSqDataFile << nonlinearIneqLowerBnds << nonlinearIneqUpperBnds
+    << nonlinearIneqLowerBnds << nonlinearIneqUpperBnds
     << nonlinearIneqScaleTypes  << nonlinearIneqScales << nonlinearEqTargets
     << nonlinearEqScaleTypes << nonlinearEqScales << gradientType << hessianType
     << ignoreBounds << centralHess << quasiHessianType << methodSource << intervalType

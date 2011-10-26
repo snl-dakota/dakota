@@ -139,7 +139,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     // read the data into continuous variables and responses
     Cout << "Surrogate model retrieving points from file " << pointReuseFile 
 	 << '\n';
-    bool annotated = false;
+    bool annotated = problem_db.get_bool("method.exp_data_file_annotated");
     bool verbose = (outputLevel < NORMAL_OUTPUT);
     TabularIO::read_data_tabular(pointReuseFile, 
       "DataFitSurrModel samples file", reuseFileVars, reuseFileResponses, svd, 

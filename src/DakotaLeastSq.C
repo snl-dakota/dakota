@@ -39,7 +39,7 @@ LeastSq* LeastSq::leastSqInstance(NULL);
 LeastSq::LeastSq(Model& model): Minimizer(model),
   numLeastSqTerms(probDescDB.get_sizet("responses.num_least_squares_terms")),
   weightFlag(!model.primary_response_fn_weights().empty()),
-  obsDataFilename(probDescDB.get_string("responses.least_squares_data_file")),
+  obsDataFilename(probDescDB.get_string("method.exp_data_filename")),
   obsDataFlag(!obsDataFilename.empty())
 {
   // Check for proper function definition
@@ -53,9 +53,44 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
 
   // read observation data for computation of least squares residuals if specified
   if (obsDataFlag) {
-    bool annotated = false;  // lsq is free-form for now
-    TabularIO::read_data_tabular(obsDataFilename, "least squares", obsData, 
-				 numLeastSqTerms, annotated);	
+
+    // These may be promoted to members once we use state vars / sigma
+    int num_experiments = probDescDB.get_int("method.num_experiments");
+    int num_exp_config_vars = probDescDB.get_int("method.num_exp_config_vars");
+    bool exp_data_read_std_deviations = 
+      probDescDB.get_bool("method.exp_data_read_std_deviations");
+
+    if (num_experiments> 1)
+      Cout << "\nWarning (least squares): num_experiments > 1 unsupported; " 
+	   << "only first will be used." << std::endl;
+    if (num_exp_config_vars > 0)
+      Cout << "\nWarning (least squares): experimental_config_variables " 
+	   << "will be read from file, but ignored." << std::endl;
+    if (exp_data_read_std_deviations)
+      Cout << "\nWarning (least squares): experimental standard deviations "
+	   << "will be read from file, but ignored." << std::endl;
+
+    // a matrix with numExperiments rows and cols
+    // numExpConfigVars X, numFunctions Y, [numFunctions Sigma]
+    RealMatrix experimental_data;
+    
+    size_t num_sigma_read = 
+      (exp_data_read_std_deviations) ? numLeastSqTerms : 0;
+    size_t num_cols = num_exp_config_vars + numLeastSqTerms + num_sigma_read;
+
+    bool annotated = probDescDB.get_bool("method.exp_data_file_annotated");
+
+    TabularIO::read_data_tabular(obsDataFilename, "Least Squares", 
+				 experimental_data, num_experiments, num_cols, 
+				 annotated);
+
+    // copy the y portion of the data to obsData
+    obsData.resize(numLeastSqTerms);
+    for (int y_ind = 0; y_ind < numLeastSqTerms; ++y_ind) {
+      obsData[y_ind] = experimental_data(0, num_exp_config_vars + y_ind);
+      Cout << obsData[y_ind] << std::endl;
+    }
+
   }
 
   // set minimizer data for number of functions or least squares terms

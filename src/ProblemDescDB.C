@@ -1171,6 +1171,7 @@ const RealVector& ProblemDescDB::get_rdv(const String& entry_name) const
 
     #define P &DataMethodRep::
     static KW<RealVector, DataMethodRep> RVdme[] = {	// must be sorted
+	{"exp_std_deviations", P expStdDeviations},
 	{"jega.distance_vector", P distanceVector},
 	{"jega.niche_vector", P nicheVector},
 	{"linear_equality_constraints", P linearEqConstraintCoeffs},
@@ -1686,6 +1687,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"crossover_type", P crossoverType},
 	{"dl_solver.dlDetails", P dlDetails},
 	{"dot.minmax_type", P minMaxType},
+	{"exp_data_filename", P expDataFileName},
 	{"fitness_type", P fitnessType},
 	{"flat_file", P flatFile},
 	{"id", P idMethod},
@@ -1715,10 +1717,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"sample_type", P sampleType},
 	{"sub_method_name", P subMethodName},
 	{"sub_method_pointer", P subMethodPointer},
-	{"trial_type", P trialType},
-	{"x_obs_data_file", P xObsDataFile},
-	{"y_obs_data_file", P yObsDataFile},
-	{"y_std_data_file", P yStdDataFile}};
+	{"trial_type", P trialType}};
     #undef P
 
     KW<String, DataMethodRep> *kw;
@@ -1791,7 +1790,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"hessian_type", P hessianType},
 	{"id", P idResponses},
 	{"interval_type", P intervalType},
-	{"least_squares_data_file", P leastSqDataFile},
 	{"method_source", P methodSource},
 	{"quasi_hessian_type", P quasiHessianType}};
     #undef P
@@ -1925,6 +1923,8 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nond.expansion_samples", P expansionSamples},
 	{"nond.expansion_terms", P expansionTerms},
 	{"npsol.verify_level", P verifyLevel},
+	{"num_exp_config_vars", P numExpConfigVars},
+	{"num_experiments", P numExperiments},
 	{"optpp.search_scheme_size", P searchSchemeSize},
 	{"parameter_study.num_steps", P numSteps},
 	{"population_size", P populationSize},
@@ -2186,6 +2186,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"coliny.randomize", P randomizeOrderFlag},
 	{"coliny.show_misc_options", P showMiscOptions},
 	{"derivative_usage", P methodUseDerivsFlag},
+	{"exp_data_file_annotated", P expDataFileAnnotated},
+	{"exp_data_read_std_deviations", P expDataReadStdDeviations},
 	{"fixed_seed", P fixedSeedFlag},
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
 	{"latinize", P latinizeFlag},

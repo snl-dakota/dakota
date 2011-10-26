@@ -155,6 +155,7 @@ public:
 
   KWH(model_Real);
   KWH(model_RealDL);
+  KWH(model_false);
   KWH(model_int);
   KWH(model_intset);
   KWH(model_lit);

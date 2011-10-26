@@ -103,44 +103,41 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   ////////////////////////////////////////////////////////
   // Step 3 of 5: Instantiate the likelihood function object
   ////////////////////////////////////////////////////////
-  int i=0, num_obs_data = 0;
+  
+  // a matrix with numExperiments rows and cols
+  // numExpConfigVars X, numFunctions Y, [numFunctions Sigma]
+  RealMatrix experimental_data;
 
-  std::ifstream data_file1(yObsDataFile);
-  if (!data_file1) {
-    Cerr << "Could not open user data source for y observations "
-         << yObsDataFile << " in "
-         << "QUESO Bayesian calibration method." << std::endl;
-    abort_handler(-1);
-  }
-  else {
-    std::string line;
-    while (getline(data_file1,line))
-      num_obs_data++;
-    yObsData.resize(num_obs_data);
-    yStdData.resize(num_obs_data);
+  size_t num_sigma_read = (expDataReadStdDeviations) ? numFunctions : 0;
+  size_t num_cols = numExpConfigVars + numFunctions + num_sigma_read;
 
-    data_file1.clear();
-    data_file1.seekg(0, std::ios::beg);
+  read_data_tabular(expDataFileName, "QUESO Bayes Calibration", 
+		    experimental_data, numExperiments,  num_cols, 
+		    expDataFileAnnotated);
 
-    i=0;
-    while ((i<num_obs_data) && (data_file1 >> yObsData[i]))
-      i++;
-    data_file1.close();
-  }
+  // Get views of the data in 3 matrices for convenience
+  // TODO: make sure we don't create an empty view?
 
-  std::ifstream data_file3(yStdDataFile);
-  if (!data_file3) {
-    Cerr << "Could not open user data source for y error on observations "
-         << yStdDataFile << " in "
-         << "QUESO Bayesian calibration method." << std::endl;
-  abort_handler(-1);
-  }
-  else {
-    i = 0;
-    while ((i<num_obs_data) &&  (data_file3 >> yStdData[i]))
-      i++;
-    data_file3.close();
-  }
+  size_t start_row = 0;
+  size_t start_col = 0;
+  RealMatrix x_obs_data(Teuchos::View, experimental_data,
+			num_experiments, numExpConfigVars,
+			start_row, start_col);
+
+  start_row = 0;
+  start_col = numExpConfigVars;
+  RealMatrix y_obs_data(Teuchos::View, experimental_data,
+			num_experiments, numFunctions,
+			start_row, start_col);
+
+  start_row = 0;
+  start_col = numExpConfigVars + numFunctions;
+  RealMatrix y_std_data(Teuchos::View, experimental_data,
+			num_experiments, numFunctions,
+			start_row, start_col);
+
+  // Now populate yObsData, yStdData, etc. (sized numExperiments currently)
+
   uqGenericScalarFunctionClass<uqGslVectorClass,uqGslMatrixClass>
     likelihoodFunctionObj("like_",
                           paramDomain,

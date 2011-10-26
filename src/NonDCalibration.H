@@ -50,6 +50,24 @@ protected:
 
 private:
 
+  //
+  //- Heading: Data
+  //
+
+  /// 1 or numFunctions standard deviations
+  RealVector expStdDeviations;
+  /// filename from which to read experimental data; optionally
+  /// configuration vars x and standard deviations sigma
+  String expDataFileName;
+  /// whether the data file is in annotated format
+  bool expDataFileAnnotated;
+  /// number of experiments to read from data file
+  int numExperiments;
+  /// number of columns in data file which are state variables
+  int numExpConfigVars;
+  /// whether to read numFunctions sigmas from the data file
+  bool expDataReadStdDeviations;
+
 };
 
 } // namespace Dakota

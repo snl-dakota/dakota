@@ -114,6 +114,8 @@ public:
   /// the file name for the "file" setting for the \c reuse_samples
   /// specification in \ref ModelSurrG
   String approxPointReuseFile;
+  /// whether the point reuse file is annotated (default true)
+  bool approxPointFileAnnotated;
   /// correction type for global and hierarchical approximations:
   /// NO_CORRECTION, ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
   /// or COMBINED_CORRECTION (from the \c correction specification in
