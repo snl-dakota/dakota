@@ -4595,18 +4595,18 @@ Test Number 2 succeeded
                       1.0763895707e+00
 <<<<< Best data captured at function evaluation 331
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 130 total (130 new, 0 duplicate)
+<<<<< Function evaluation summary: 94 total (94 new, 0 duplicate)
 <<<<< Best parameters          =
-                      7.1880834746e-01 x1
-                      4.9508942525e-01 x2
+                      5.9768464590e-01 x1
+                      4.9512176525e-01 x2
                       0.0000000000e+00 x3
-                      1.7808160606e-01 x4
-                      3.2941170936e-01 x5
-                      4.7484593829e-01 x6
-                      4.8493830866e-01 x7
+                      3.4546116824e-01 x4
+                      4.1400710363e-01 x5
+                      4.8395461632e-01 x6
+                      4.8620411823e-01 x7
 <<<<< Best objective function  =
-                      1.1713290296e+00
-<<<<< Best data captured at function evaluation 109
+                      1.2396553141e+00
+<<<<< Best data captured at function evaluation 71
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 107 total (107 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -6463,15 +6463,15 @@ Test Number 3 succeeded
                       2.5300922366e-01
 <<<<< Best data captured at function evaluation 26
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 28 total (28 new, 0 duplicate)
+<<<<< Function evaluation summary: 36 total (36 new, 0 duplicate)
 <<<<< Best parameters          =
-                      5.9379415944e-01 x1
-                      7.4162579255e-01 x2
+                      5.9387905392e-01 x1
+                      7.4157652421e-01 x2
 <<<<< Best objective functions =
-                      3.1682578929e-02
-                     -1.8221392490e-02
-                      2.5311173646e-01
-<<<<< Best data captured at function evaluation 28
+                      3.1663225929e-02
+                     -1.8095931421e-02
+                      2.5299621429e-01
+<<<<< Best data captured at function evaluation 36
 dakota_multiobj2.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)

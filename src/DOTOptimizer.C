@@ -324,6 +324,11 @@ void DOTOptimizer::allocate_workspace()
   
   realWorkSpace.resize(realWorkSpaceSize); // wk[nrwk]
   intWorkSpace.resize(intWorkSpaceSize);   // iwk[nriwk]
+
+  // Initialize workspace to be a good citizen.
+
+  realWorkSpace.assign(realWorkSpaceSize, 0.);
+  intWorkSpace.assign(intWorkSpaceSize, 0);
 }
 
 
