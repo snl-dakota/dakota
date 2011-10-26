@@ -555,8 +555,8 @@ inline void PecosApproximation::combine(short corr_type)
 {
   // base class implementation manages approxData state
   //Approximation::combine(corr_type);
-  // map to Pecos::BasisApproximation.
-  // Note: DAKOTA and PECOS correction type enumerations coincide.
+  // map to Pecos::BasisApproximation.  Note: DAKOTA correction and
+  // PECOS combination type enumerations coincide.
   pecosBasisApprox.combine_coefficients(corr_type);
 }
 
