@@ -61,13 +61,14 @@ model,
 	surrogate global
 	  dace_method_pointer = 'SAMPLING'
 #	  reuse_samples region
-#	  correction additive       zeroth_order #1
+#	  correction additive       zeroth_order #1,#5
 #	  correction multiplicative zeroth_order #2
-#	  correction additive       first_order	 #3,#p0
+#	  correction additive       first_order	 #3,#6,#7,#p0
 #	  correction multiplicative first_order	 #4
-#	  use_derivatives
+#	  use_derivatives			 #6,#7
 #	  neural_network
-	  polynomial quadratic
+	  polynomial quadratic			 #0,#1,#2,#3,#4,#p0	
+#	  kriging                                #5,#6,#7
 #	  kriging correlation_lengths =  0.707106781186547 0.707106781186547
 #	  mars
 # 	surrogate local taylor_series
@@ -84,12 +85,12 @@ responses,
 	id_responses = 'SURROGATE_RESP'
 	num_objective_functions = 1
 	num_nonlinear_inequality_constraints = 2
-#	analytic_gradients
-#	no_gradients
-  	numerical_gradients
-  	  method_source dakota
-  	  interval_type forward
-  	  fd_gradient_step_size = .0001
+#	analytic_gradients			
+#	no_gradients				
+  	numerical_gradients			
+  	  method_source dakota			
+  	  interval_type forward			
+  	  fd_gradient_step_size = .0001		
 #	analytic_hessians
 	no_hessians
 
@@ -123,10 +124,10 @@ responses,
 	id_responses = 'TRUE_RESP'
 	num_objective_functions = 1
 	num_nonlinear_inequality_constraints = 2
-#	analytic_gradients		#3,#4
-	no_gradients		 	#0,#1,#2
-#  	numerical_gradients		#p0
-#  	  method_source dakota		#p0
-#  	  interval_type central		#p0
-#  	  fd_gradient_step_size = 1.e-9	#p0
+#	analytic_gradients		#3,#4,#7
+	no_gradients		 	#0,#1,#2,#5
+#  	numerical_gradients		#6,#p0
+#  	  method_source dakota		#6,#p0
+#  	  interval_type central		#6,#p0
+#  	  fd_gradient_step_size = 1.e-9	#6,#p0
 	no_hessians

@@ -51,12 +51,12 @@ model,
 	  responses_pointer = 'SURROGATE_RESP'
 	  dace_method_pointer = 'SAMPLING'
 #	  reuse_samples region
-#	  use_derivatives
+#	  use_derivatives	#2
 	  correction multiplicative zeroth_order
 #	  neural_network
 #	  polynomial quadratic
 	  kriging
-	   correlation_lengths =  0.707106781186547 0.707106781186547 0.707106781186547 0.707106781186547 0.707106781186547 0.707106781186547 0.707106781186547
+	   correlation_lengths =  0.707106781186547 0.707106781186547 0.707106781186547 0.707106781186547 0.707106781186547 0.707106781186547 0.707106781186547	#0
            trend constant
 #	  mars
 # 	surogate local taylor_series
@@ -109,7 +109,8 @@ interface,
 responses,
 	id_responses = 'TRUE_RESP'
 	num_objective_functions = 1
-	no_gradients
+#	analytic_gradients		#2
+	no_gradients			#0,#1
 #  	numerical_gradients
 #  	  method_source dakota
 #  	  interval_type central
