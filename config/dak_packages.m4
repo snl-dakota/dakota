@@ -16,6 +16,8 @@ AC_DEFUN([DAK_PACKAGES],[
 
   AC_DEFINE([BOOST_MULTI_INDEX_DISABLE_SERIALIZATION],[1],
             [Macro to disable dependency on the Boost serialization library.])
+  AC_DEFINE([DAKOTA_HAVE_BOOST_FS],[1],
+            [Macro to enable dependency on the Boost filesystem library.])
 
 
 

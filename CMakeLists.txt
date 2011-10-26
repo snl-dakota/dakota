@@ -74,9 +74,9 @@ endif()
 option(HAVE_ACRO "Build the ACRO package." ON)
 if(HAVE_ACRO)
   # Acro requires the signals library in addition
-  find_package(Boost 1.37 REQUIRED COMPONENTS regex signals)  
+  find_package(Boost 1.37 REQUIRED COMPONENTS regex signals filesystem system)
 else()
-  find_package(Boost 1.37 REQUIRED COMPONENTS regex)
+  find_package(Boost 1.37 REQUIRED COMPONENTS regex filesystem system)
 endif()
 
 include(CTest)
