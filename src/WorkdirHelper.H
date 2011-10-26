@@ -148,8 +148,22 @@ const char** arg_list_adjust(const char **, void **);
 #ifdef DAKOTA_HAVE_BOOST_FS
 /// Utilities to manage API differences in BFS_VERSION_2 vs BFS_VERSION_3
 
+/// Same as path.is_absolute() in latest boost::filesystem
+inline bool path_is_absolute(const bfs::path& p)
+{
+#if BOOST_FILESYSTEM_VERSION < 3
+  #if defined(_WIN32) || defined(_WIN64)
+    return ( p.has_root_name() && p.has_root_directory() );
+  #else
+    return p.has_root_directory();
+  #endif // _WIN 32 or 64
+#else
+  return p.is_absolute();
+#endif // BOOST_FILESYSTEM_VERSION
+}
+
 /// Same as file_path.filename() in latest boost::filesystem
-inline static std::string filename(const bfs::path& file_path)
+inline std::string filename(const bfs::path& file_path)
 {
 #if BOOST_FILESYSTEM_VERSION < 3
   return file_path.empty() ? std::string() : *--file_path.end();
@@ -159,8 +173,7 @@ inline static std::string filename(const bfs::path& file_path)
 }
 
 /// Should be same as fp.parent_path() in latest boost::filesystem
-// This is not entirely according to bfs::path::parent_path() in 1.39.0
-inline static bfs::path parent_path(const bfs::path& fp)
+inline bfs::path parent_path(const bfs::path& fp)
 {
   std::string fn = filename(fp);
   std::string fpath_str = fp.string();
@@ -169,6 +182,7 @@ inline static bfs::path parent_path(const bfs::path& fp)
 }
 
 
+/// Helper for "which" - sets complete_filepath from dir_path/file_name combo
 inline bool contains(const bfs::path& dir_path, const std::string& file_name,
                      boost::filesystem::path& complete_filepath)
 {

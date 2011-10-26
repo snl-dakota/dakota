@@ -59,8 +59,17 @@ AnalysisCode::AnalysisCode(const ProblemDescDB& problem_db):
   templateReplace(problem_db.get_bool("interface.templateReplace")),
   haveTemplateDir(false), haveWorkdir(false)
 {
-  if (numPrograms > 0 && !programNames[0].empty())
-    WorkdirHelper::which(programNames[0]);
+  if (numPrograms > 0 && !programNames[0].empty()) {
+    std::string driver_path = WorkdirHelper::which(programNames[0]);
+    if ( driver_path.empty() ) {
+      Cout << programNames[0] << ": Command not found.\n" << std::endl;
+      abort_handler(-1);
+    }
+    /* Uncomment for filename debugging
+    else
+      Cout << driver_path << std::endl;
+    // End filename debugging */
+  }
 
   if (numPrograms > 1 && !analysisComponents.empty())
     multipleParamsFiles = true;

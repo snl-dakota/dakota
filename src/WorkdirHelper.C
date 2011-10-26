@@ -52,20 +52,14 @@ void WorkdirHelper::prepend_preferred_env_path(const std::string& extra_path)
   // Assume a relative extra_path arg is relative to dakota's startupPWD
 
 #ifdef DAKOTA_HAVE_BOOST_FS
-  bfs::path extra_bfs_path(extra_path);
-
-#if defined(_WIN32) || defined(_WIN64)
-  std::string abs_extra_path = ( !(extra_bfs_path.has_root_name() && extra_bfs_path.has_root_directory()) ) ?
+  bool extra_path_is_abs = path_is_absolute( bfs::path(extra_path) );
 #else
-  std::string abs_extra_path = ( !extra_bfs_path.has_root_directory() ) ?
+  bool extra_path_is_abs = (extra_path[0] == DAK_SLASH);
 #endif
-                               startupPWD + std::string(1,DAK_SLASH)+extra_path :
+
+  std::string abs_extra_path = !extra_path_is_abs ?
+                               startupPWD+std::string(1,DAK_SLASH)+extra_path :
                                extra_path;
-#else
-  std::string abs_extra_path = (extra_path[0] != DAK_SLASH) ?
-                               startupPWD + std::string(1,DAK_SLASH)+extra_path :
-                               extra_path;
-#endif // DAKOTA_HAVE_BOOST_FS
 
   std::string preferred_env_path(DAK_PATH_ENV_NAME"=");
   std::string old_preferred_path
@@ -139,17 +133,12 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
  */
 std::string WorkdirHelper::which(const std::string& driver_name)
 {
-#ifdef DAKOTA_HAVE_BOOST_FS
   std::string driver_path_str;
 
+#ifdef DAKOTA_HAVE_BOOST_FS
   bfs::path driver_path(driver_name);
-  //bool abs = driver_path.is_absolute(); // WJB:  not available in BFS V2
 
-#if defined(_WIN32) || defined(_WIN64)
-  if( !(driver_path.has_root_name() && driver_path.has_root_directory()) ) {
-#else
-  if( !driver_path.has_root_directory() ) {
-#endif
+  if( !path_is_absolute(driver_path) ) {
     //Cout << "RELATIVE path to driver case" << '\n';
     std::vector<std::string> search_dirs =
       tokenize_env_path(dakPreferredEnvPath);
@@ -170,12 +159,13 @@ std::string WorkdirHelper::which(const std::string& driver_name)
     driver_path_str = driver_name;
   }
 
-  return driver_path_str;
-
 #else
-  // WJB - NO Boost case: should I invoke the venerable "not_executable" func??
-  return driver_name;
+
+  // WJB - NO BoostFS case: should I invoke the venerable "not_executable" func?
+
 #endif // DAKOTA_HAVE_BOOST_FS
+
+  return driver_path_str;
 }
 
 
@@ -197,8 +187,8 @@ void WorkdirHelper::reset()
     to $PATH (and drive for Windows platform) */
 void WorkdirHelper::change_cwd(const std::string& workdir)
 {
-  // WJB:  use as an "adapter layer" to manager 3 different APIs ?
-  //       1. DMG not_executable,  2. BoostFS V2, and  3. BoostFS V3
+  // Potential "adapter layer" to manager 3 different APIs
+  //       1. DMG version,  2. BoostFS V2, and  3. BoostFS V3
   //
   // (although NOT convinced BoostFS provides the necessary features)
 
@@ -353,7 +343,7 @@ arg_list_adjust(const char **arg_list, void **a0)
 
 // WJB - ToDo: totally rewrite in C++ (perhaps leverage STL)
 //       should workdir arg be an actual BoostFS "path" object?
-//       reVal:  StringArray?!
+//       retVal:  std::vector<std::string>?!
 const char**
 WorkdirHelper::arg_adjust(bool cmd_line_args,
                           const std::vector<std::string>& args,
