@@ -14,8 +14,8 @@ AC_DEFUN([DAK_PACKAGES],[
     AC_MSG_NOTICE([skipping bundled boost TPL.])
   fi
 
-  AC_DEFINE([DAKOTA_HAVE_BOOST_FS],[1],
-            [Macro to enable dependency on the Boost filesystem library.])
+  dnl AC_DEFINE([DAKOTA_HAVE_BOOST_FS],[1],
+  dnl           [Macro to enable dependency on the Boost filesystem library.])
 
   dnl ---------------------
   dnl Teuchos package check
