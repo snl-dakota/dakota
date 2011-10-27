@@ -59,6 +59,7 @@ AnalysisCode::AnalysisCode(const ProblemDescDB& problem_db):
   templateReplace(problem_db.get_bool("interface.templateReplace")),
   haveTemplateDir(false), haveWorkdir(false)
 {
+#if 0
   if (numPrograms > 0 && !programNames[0].empty()) {
     std::string driver_path = WorkdirHelper::which(programNames[0]);
     if ( driver_path.empty() ) {
@@ -69,6 +70,14 @@ AnalysisCode::AnalysisCode(const ProblemDescDB& problem_db):
     else
       Cout << driver_path << std::endl;
     // End filename debugging */
+  }
+#endif
+  if (numPrograms > 0 && !programNames[0].empty()) {
+    // ignore additional chars AFTER the first whitespace in programNames[0]
+    std::vector<std::string> driver_and_args;
+
+    boost::split( driver_and_args, programNames[0], boost::is_any_of(" ") );
+    Cout << driver_and_args[0] << std::endl;
   }
 
   if (numPrograms > 1 && !analysisComponents.empty())
