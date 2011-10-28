@@ -65,8 +65,10 @@ LOCALLDFLAGS += @BOOST_LDFLAGS@
 if WITH_ACRO
 LOCALLDADD += -lboost_signals
 endif
-
-LOCALLDADD += -lboost_regex -lboost_filesystem -lboost_system
+LOCALLDADD += -lboost_regex
+if DAKOTA_WITH_BOOST_FS
+LOCALLDADD += -lboost_filesystem -lboost_system
+endif
 
 ## The sense of NIDR's DYNLIB flag is opposite: if no DL_SOLVER, use the 
 ## pre-processor to turn off NIDR's dynamic loading capability

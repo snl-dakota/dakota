@@ -14,8 +14,21 @@ AC_DEFUN([DAK_PACKAGES],[
     AC_MSG_NOTICE([skipping bundled boost TPL.])
   fi
 
-  dnl AC_DEFINE([DAKOTA_HAVE_BOOST_FS],[1],
-  dnl           [Macro to enable dependency on the Boost filesystem library.])
+  dnl DAKOTA can only use boost filesystem version 2, 
+  dnl available in Boost 1.47.x and earlier.
+  dnl Default to yes in case of problems with the macro
+  dakota_ac_boost_lt_version_specified=yes
+  DAKOTA_AC_BOOST_LT_VERSION([1.48])
+  if test "x$dakota_ac_boost_lt_version_specified" = "xyes"; then
+    AC_MSG_NOTICE([will use boost filesystem library])
+    AC_DEFINE([DAKOTA_HAVE_BOOST_FS],[1],
+              [Macro to enable dependency on the Boost filesystem library.])
+  else
+    AC_MSG_NOTICE([will NOT use boost filesystem library])
+  fi
+  AM_CONDITIONAL([DAKOTA_WITH_BOOST_FS], [test "x$dakota_ac_boost_lt_version_specified" = xyes])
+
+
 
   dnl ---------------------
   dnl Teuchos package check
