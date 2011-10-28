@@ -233,10 +233,11 @@ manage_inputs(const char* dakota_input_file, const char* parser_options,
     // If the dakota_input_file is NOT in the $PWD when dakota starts up, then
     // prepend the parent directory of the input file to the preferred $PATH
 
-    if( !contains(startup_path, dakota_input_file, infile_path) ) {
-      bfs::path abs_dak_inp_parent( parent_path(infile_path) );
-      WorkdirHelper::prepend_preferred_env_path( abs_dak_inp_parent.string() );
-    }
+    if(dakota_input_file)
+      if( !contains(startup_path, dakota_input_file, infile_path) ) {
+        bfs::path abs_dak_inp_parent( parent_path(infile_path) );
+        WorkdirHelper::prepend_preferred_env_path(abs_dak_inp_parent.string());
+      }
 #endif
   }
 }
