@@ -44,11 +44,8 @@ protected:
 
   //void print_results(std::ostream& s);
 
-  //
-  //- Heading: Data
-  //
-
-private:
+  /// set the passed configuration variables into the model's state vars
+  void set_configuration_vars(Model& model, const RealVector& x);
 
   //
   //- Heading: Data
@@ -67,6 +64,22 @@ private:
   int numExpConfigVars;
   /// whether to read numFunctions sigmas from the data file
   bool expDataReadStdDeviations;
+
+private:
+
+  //
+  //- Heading: Data
+  //
+
+  // number of configuration variables of each type
+  size_t continuousConfigVars;
+  size_t discreteIntConfigVars;
+  size_t discreteRealConfigVars;
+  
+  // start indices for each type of config variable
+  size_t continuousConfigStart;
+  size_t discreteIntConfigStart;
+  size_t discreteRealConfigStart;
 
 };
 
