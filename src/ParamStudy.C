@@ -526,7 +526,7 @@ void ParamStudy::multidim_loop()
 
     // increment the multidimensional index set
     Pecos::PolynomialApproximation::increment_indices(multidim_indices,
-						      variablePartitions,false);
+						      variablePartitions, true);
   }
 }
 
