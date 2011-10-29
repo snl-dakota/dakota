@@ -57,13 +57,6 @@ public:
   //- Heading: Data
   //
 
-  /// filename from which to read observed x data
-  String xObsDataFile;
-  /// filename from which to read observed y data
-  String yObsDataFile;
-  /// filename from which to read observed std of y data
-  String yStdDataFile;
-
 protected:
 
   //
@@ -94,11 +87,6 @@ private:
   const int seedSpec;   ///< the user seed specification (default is 0)     
   String    rngName;    ///< name of the random number generator
   /// Storage for the observed x data (inputs) provided by the user
-  RealArray xObsData;
-  /// Storage for the observed y data (outputs) provided by the user
-  RealArray yObsData;
-  /// Storage for the observed standard deviations of y provided by the user
-  RealArray yStdData;
 };
 
 } // namespace Dakota

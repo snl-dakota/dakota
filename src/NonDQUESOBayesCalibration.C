@@ -15,6 +15,7 @@
 #include "NonDQUESOBayesCalibration.H"
 #include "ProblemDescDB.H"
 #include "DakotaModel.H"
+#include "tabular_io.h"
 #include "uqStatisticalInverseProblem.h"
 #include "uqStatisticalInverseProblemOptions.h"
 #include "uqGslVector.h"
@@ -41,8 +42,8 @@ NonDQUESOBayesCalibration::NonDQUESOBayesCalibration(Model& model):
   numSamples(probDescDB.get_int("method.samples")),
   rejectionType(probDescDB.get_string("method.rejection")),
   metropolisType(probDescDB.get_string("method.metropolis")),
-  yObsDataFile(probDescDB.get_string("method.y_obs_data_file")),
-  yStdDataFile(probDescDB.get_string("method.y_std_data_file")),
+  emulatorType(probDescDB.get_short("method.nond.emulator")),
+  randomSeed(probDescDB.get_int("method.random_seed")),
   proposalCovScale(probDescDB.get_real("method.proposal_covariance_scale")),
   likelihoodScale(probDescDB.get_real("method.likelihood_scale"))
 { }
@@ -63,7 +64,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   NonDQUESOInstance=this;
   Cout << "Rejection type  "<< rejectionType << '\n';
   Cout << "Metropolis type " << metropolisType << '\n';
-  Cout << "Num Samples " << numSamples;
+  Cout << "Num Samples " << numSamples << '\n';
   ////////////////////////////////////////////////////////
   // Step 2 of 5: Instantiate the QUESO environment 
   ////////////////////////////////////////////////////////
@@ -77,7 +78,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   envOptionsValues->m_subDisplayAllowedSet.insert(0);
   envOptionsValues->m_subDisplayAllowedSet.insert(1);
   envOptionsValues->m_displayVerbosity     = 2;
-  envOptionsValues->m_seed                 = 0;
+  envOptionsValues->m_seed                 = randomSeed;
   uqFullEnvironmentClass* env = new uqFullEnvironmentClass(MPI_COMM_SELF,"","",envOptionsValues);
 
   uqVectorSpaceClass<uqGslVectorClass,uqGslMatrixClass>
@@ -90,12 +91,24 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   uqGslVectorClass paramMaxs(paramSpace.zeroVector());
   const RealVector& lower_bounds = emulatorModel.continuous_lower_bounds();
   const RealVector& upper_bounds = emulatorModel.continuous_upper_bounds();
-  //const RealVector& lower_bounds = emulatorModel.distribution_parameters().uniform_lower_bounds();
-  //const RealVector& upper_bounds = emulatorModel.distribution_parameters().uniform_upper_bounds();
-
-  for (size_t i=0;i<numContinuousVars;i++) {
-    paramMins[i]=lower_bounds[i];
-    paramMaxs[i]=upper_bounds[i];
+  if (emulatorType == GAUSSIAN_PROCESS || emulatorType == NO_EMULATOR) {
+    for (size_t i=0;i<numContinuousVars;i++) {
+      paramMins[i]=0.0;
+      paramMaxs[i]=1.0;
+    }
+  }
+  else { // case POLYNOMIAL_CHAOS: case STOCHASTIC_COLLOCATION:
+    Iterator* se_iter = NonDQUESOInstance->stochExpIterator.iterator_rep();
+    Pecos::ProbabilityTransformation& nataf = ((NonD*)se_iter)->variable_transformation(); 
+    RealVector lower_u, upper_u;
+    nataf.trans_X_to_U(lower_bounds,lower_u);
+    nataf.trans_X_to_U(upper_bounds,upper_u);
+    for (size_t i=0;i<numContinuousVars;i++) {
+//      paramMins[i]=lower_bounds[i];
+//      paramMaxs[i]=upper_bounds[i];
+      paramMins[i]=lower_u[i];
+      paramMaxs[i]=upper_u[i];
+    }
   }
   uqBoxSubsetClass<uqGslVectorClass,uqGslMatrixClass>
     paramDomain("param_",paramSpace,paramMins,paramMaxs);
@@ -111,33 +124,69 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   size_t num_sigma_read = (expDataReadStdDeviations) ? numFunctions : 0;
   size_t num_cols = numExpConfigVars + numFunctions + num_sigma_read;
 
-  read_data_tabular(expDataFileName, "QUESO Bayes Calibration", 
-		    experimental_data, numExperiments,  num_cols, 
-		    expDataFileAnnotated);
+  TabularIO::read_data_tabular(expDataFileName, "QUESO Bayes Calibration", 
+			       experimental_data, numExperiments,  num_cols, 
+			       expDataFileAnnotated);
 
   // Get views of the data in 3 matrices for convenience
-  // TODO: make sure we don't create an empty view?
-
-  size_t start_row = 0;
-  size_t start_col = 0;
-  RealMatrix x_obs_data(Teuchos::View, experimental_data,
-			num_experiments, numExpConfigVars,
+  size_t start_row, start_col;
+  if (numExpConfigVars > 0) {
+    start_row = 0;
+    start_col = 0;
+    RealMatrix x_obs_data(Teuchos::View, experimental_data,
+			numExperiments, numExpConfigVars,
 			start_row, start_col);
-
+    xObsData.reshape(x_obs_data.numRows(),x_obs_data.numCols());
+    for (int i=0; i<x_obs_data.numRows(); i++)
+      for (int j=0; j<x_obs_data.numCols(); j++)
+        xObsData(i,j)=x_obs_data(i,j);
+  }
+  Cout << "xobs_data" << xObsData << '\n';
+  
   start_row = 0;
   start_col = numExpConfigVars;
   RealMatrix y_obs_data(Teuchos::View, experimental_data,
-			num_experiments, numFunctions,
+			numExperiments, numFunctions,
 			start_row, start_col);
+  yObsData.reshape(y_obs_data.numRows(),y_obs_data.numCols());
+  for (int i=0; i<y_obs_data.numRows(); i++)
+    for (int j=0; j<y_obs_data.numCols(); j++)
+      yObsData(i,j)=y_obs_data(i,j);
 
-  start_row = 0;
-  start_col = numExpConfigVars + numFunctions;
-  RealMatrix y_std_data(Teuchos::View, experimental_data,
-			num_experiments, numFunctions,
+  Cout << "yobs_data" << yObsData << '\n';
+
+  yStdData.reshape(numExperiments,numFunctions);
+  if (num_sigma_read > 0) {
+    start_row = 0;
+    start_col = numExpConfigVars + numFunctions;
+    RealMatrix y_std_data(Teuchos::View, experimental_data,
+			numExperiments, numFunctions,
 			start_row, start_col);
-
-  // Now populate yObsData, yStdData, etc. (sized numExperiments currently)
-
+    for (int i=0; i<y_std_data.numRows(); i++)
+      for (int j=0; j<y_std_data.numCols(); j++)
+        yStdData(i,j)=y_std_data(i,j);
+  }
+  else {
+    if (expStdDeviations.length()==1) {
+      for (int i=0; i<numExperiments; i++)
+        for (int j=0; j<numFunctions; j++)
+          yStdData(i,j)=expStdDeviations(0);
+    }
+    else if (expStdDeviations.length()==numFunctions) {
+      for (int i=0; i<numExperiments; i++)
+        for (int j=0; j<numFunctions; j++)
+          yStdData(i,j)=expStdDeviations(j);
+    }
+    else {
+      Cerr << "\nError (NonDGPMSABayesCalibration): must specify "
+           << "experimental standard deviations either from experimental_data_file "
+           << "or in the experimental_std_deviations specification."
+           << std::endl;
+      abort_handler(-1);
+    }
+  }
+  Cout << "ystd_data" << yStdData << '\n';
+    
   uqGenericScalarFunctionClass<uqGslVectorClass,uqGslMatrixClass>
     likelihoodFunctionObj("like_",
                           paramDomain,
@@ -243,7 +292,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   calIpMhOptionsValues->m_rawChainComputeStats          = true;
 
   //calIpMhOptionsValues->m_displayCandidates         = false;
-  //calIpMhOptionsValues->m_putOutOfBoundsInChain     = true;
+  calIpMhOptionsValues->m_putOutOfBoundsInChain       = true;
   //calIpMhOptionsValues->m_tkUseLocalHessian         = false;
   //calIpMhOptionsValues->m_tkUseNewtonComponent      = true;
   if (rejectionType.ends("standard"))
@@ -251,7 +300,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   else if (rejectionType.ends("delayed"))
     calIpMhOptionsValues->m_drMaxNumExtraStages = 1;
   calIpMhOptionsValues->m_drScalesForExtraStages.resize(1);
-  calIpMhOptionsValues->m_drScalesForExtraStages[0] = 9.;
+  calIpMhOptionsValues->m_drScalesForExtraStages[0] = 6;
   if (metropolisType.ends("hastings"))
     calIpMhOptionsValues->m_amInitialNonAdaptInterval = 0;
   else if (metropolisType.ends("adaptive"))
@@ -274,12 +323,12 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   uqGslVectorClass paramInitials(paramSpace.zeroVector());
   uqGslMatrixClass proposalCovMatrix(paramSpace.zeroVector());
   for (size_t i=0;i<numContinuousVars;i++) {
-    paramInitials[i]=(lower_bounds[i]+upper_bounds[i])/2.0;
-    //paramInitials[i]=0.5;
+    paramInitials[i]=(paramMaxs[i]+paramMins[i])/2.0;
+    //paramInitials[i]=0.75;
+    //paramInitials[i]=0.25;
     for (size_t j=0;j<numContinuousVars;j++) 
       proposalCovMatrix(i,j)=0.;
-    //proposalCovMatrix(i,i)=(upper_bounds[i]-lower_bounds[i])/90.0;
-    proposalCovMatrix(i,i)=(upper_bounds[i]-lower_bounds[i])*proposalCovScale;
+    proposalCovMatrix(i,i)=(paramMaxs[i]-paramMins[i])*proposalCovScale;
   }
   ip.solveWithBayesMetropolisHastings(calIpMhOptionsValues,
                                     paramInitials, &proposalCovMatrix);
@@ -312,58 +361,80 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   uqGslVectorClass*       hessianEffect)
 {
   double result = 0.;
-  size_t i, num_cont;
-  size_t num_data_pts = NonDQUESOInstance->yObsData.length();
-
-  num_cont = NonDQUESOInstance->numContinuousVars; 
+  size_t i,j;
+  int num_exp = NonDQUESOInstance->numExperiments;
+  int num_funcs = NonDQUESOInstance->numFunctions;
+  int num_cont = NonDQUESOInstance->numContinuousVars; 
   RealVector x(num_cont);
+  
+  //Cout << "numExperiments" << num_exp << '\n';
+  //Cout << "numFunctions" << num_funcs << '\n';
+  //Cout << "ReadExpStdDev " << NonDQUESOInstance->expDataReadStdDeviations << '\n';
 
   for (i=0; i<num_cont; i++) 
     x(i)=paramValues[i];
   
-  // FOR NOW:  THE GP and the NO EMULATOR case use 
-  // the original X-space, only the PCE or SC cases 
-  // use a standardized space.  So, I use the standardized
-  // Space flag to indicate whether the transformation 
-  // should be performed.  Eventually, we want to create 
-  // two likelihood functions:  one for x space and 
-  // one for u space.  In the case of u-space, we then 
-  // want QUESO to search in u-space and have the 
-  // likelihood formulated in terms of standardized variables.
-  // For now, QUESO searches in x-space, and we do the 
-  // transformation before we hand the model the 
-  // variables at which to compute the response.
+  // FOR NOW:  THE GP and the NO EMULATOR case use a standard uniform [0,1] 
+  // space and the PCE or SC cases use a more general standardized space.  
+  // The standardization for the GP was not fully working, so the 
+  // standardization for the GP and the NO EMULATOR case are done manually. 
+  // This eventually needs to be fixed. 
+  // For now, QUESO is searching in a standardized case in all cases. 
+  // We had discussed having QUESO search in the original space:  this may 
+  // difficult for high dimensional spaces depending on the scaling, 
+  // because QUESO calculates the volume of the hypercube in which it is 
+  // searching and will stop if it is too small (e.g. if one input is 
+  // of small magnitude, searching in the original space will not be viable).
   // 
-  if (NonDQUESOInstance->standardizedSpace) { 
-    RealVector u(num_cont);
-    Iterator* se_iter = NonDQUESOInstance->stochExpIterator.iterator_rep();
-    Pecos::ProbabilityTransformation& nataf = ((NonD*)se_iter)->variable_transformation(); 
-    nataf.trans_X_to_U(x,u);
-    NonDQUESOInstance->emulatorModel.continuous_variables(u); 
-  } 
-  else 
+  if (NonDQUESOInstance->emulatorType == GAUSSIAN_PROCESS || NonDQUESOInstance->emulatorType == NO_EMULATOR) {
+    const RealVector& xLow = NonDQUESOInstance->emulatorModel.continuous_lower_bounds();
+    const RealVector& xHigh = NonDQUESOInstance->emulatorModel.continuous_upper_bounds();
+    //Cout << "Queso X" << x << '\n';
+    for (i=0; i<num_cont; i++) 
+      x(i)=xLow(i)+x(i)*(xHigh(i)-xLow(i));
     NonDQUESOInstance->emulatorModel.continuous_variables(x); 
+    //Cout << "DAKOTA X" << x << '\n';
+  }
+  else { //case POLYNOMIAL_CHAOS: case STOCHASTIC_COLLOCATION: 
+  //    RealVector u(num_cont);
+  //    Iterator* se_iter = NonDQUESOInstance->stochExpIterator.iterator_rep();
+  //    Pecos::ProbabilityTransformation& nataf = ((NonD*)se_iter)->variable_transformation(); 
+  //    nataf.trans_X_to_U(x,u);
+    NonDQUESOInstance->emulatorModel.continuous_variables(x); 
+  } 
 
-  // TO DO: continuous to start
+  // Compute simulation response to use in likelihood 
   NonDQUESOInstance->emulatorModel.compute_response();
   RealVector fn_vals = NonDQUESOInstance->emulatorModel.current_response().function_values();
   Cout << "input is " << x << '\n';
   Cout << "output is " << fn_vals << '\n';
  
-  //for now return sum squares of residuals, need to add sigma
-  // for now assume iid, constant sigma
-  
-  //KEN:  If you want to assume all the values in the sigma file are constant, we can pull the 
-  //first one and use it in the likelihood:
-  //double sigma_likelihood = NonDQUESOInstand->yStdData[0];
-  //
-  for (i=0; i<num_data_pts; i++){ 
-  result = result+pow((fn_vals(0)-NonDQUESOInstance->yObsData[i]),2.0);
+  // Calculate the likelihood depending on what information is available 
+  // for the standard deviations
+  if (NonDQUESOInstance->expDataReadStdDeviations) {
+    for (i=0; i<num_exp; i++) 
+      for (j=0; j<num_funcs; j++)
+        result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j))/NonDQUESOInstance->yStdData(i,j),2.0);
   }
-  //result = (result/0.23)/9.0;
-  result = result/(2*sigma_likelihood);
+  else if (NonDQUESOInstance->expStdDeviations.length() == 0) {
+ 	//assume y_sigma = 1, only take squared diffs for likelihood
+    for (i=0; i<num_exp; i++) 
+      for (j=0; j<num_funcs; j++)
+        result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j)),2.0);
+  }
+  else if (NonDQUESOInstance->expStdDeviations.length() == 1) {
+    for (i=0; i<num_exp; i++) 
+      for (j=0; j<num_funcs; j++)
+        result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j))/NonDQUESOInstance->yStdData(0,0),2.0);
+  }
+  else if (NonDQUESOInstance->expStdDeviations.length() == num_funcs) {
+    for (i=0; i<num_exp; i++) 
+      for (j=0; j<num_funcs; j++)
+      result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j))/NonDQUESOInstance->yStdData(i,j),2.0);
+  }
   result = (result*(NonDQUESOInstance->likelihoodScale));
   result = -1.0*result;
+  Cout << "result final " << result << '\n';
   Cout << "likelihood is " << exp(result) << '\n';
   return result;
 }

@@ -44,10 +44,6 @@ public:
   NonDQUESOBayesCalibration(Model& model); ///< standard constructor
   ~NonDQUESOBayesCalibration();            ///< destructor
 
-  /// filename from which to read observed y data
-  String yObsDataFile;
-  /// filename from which to read observed std of y data
-  String yStdDataFile;
   /// Rejection type (standard or delayed, in the DRAM framework) 
   String rejectionType;
   /// Metropolis type (hastings or adaptive, in the DRAM framework) 
@@ -84,18 +80,27 @@ protected:
   //
   //- Heading: Data
   //
-  RealVector yObsData;
-  RealVector yStdData;
+  /// Matrix that holds the experimental realizations of state variables x
+  RealMatrix xObsData;
+  /// Matrix that holds the experimental realizations of responses y 
+  RealMatrix yObsData;
+  /// Matrix that holds the experimental realizations of std deviations 
+  /// of responses y 
+  RealMatrix yStdData;
+  /// random seed to pass to QUESO
+  int randomSeed;
 
 private:
-
-  struct
-  likelihoodRoutine_DataType
-  {
-    const uqGslVectorClass* meanVector;
-    const uqGslMatrixClass* covMatrix;
-  };
+  //
+  // - Heading: Data
+  // 
+  //     
+  /// the emulator type: NO_EMULATOR, GAUSSIAN_PROCESS, POLYNOMIAL_CHAOS, or
+  /// STOCHASTIC_COLLOCATION
+  short emulatorType;
+  
   static NonDQUESOBayesCalibration* NonDQUESOInstance;
+  
 };
 
 } // namespace Dakota

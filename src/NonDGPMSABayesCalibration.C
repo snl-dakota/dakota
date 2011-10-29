@@ -18,6 +18,7 @@
 #include "DakotaResponse.H"
 #include "ProblemDescDB.H"
 #include "NonDLHSSampling.H"
+#include "tabular_io.h"
 // includes from gpmsa TPL
 #ifdef DAKOTA_GPMSA
 #include "GPmodel.H"
@@ -44,18 +45,14 @@ NonDGPMSABayesCalibration::NonDGPMSABayesCalibration(Model& model):
   numEmulatorSamples(probDescDB.get_int("method.nond.emulator_samples")),
   numDraws(probDescDB.get_int("method.samples")),
   seedSpec(probDescDB.get_int("method.random_seed")),
-  rngName(probDescDB.get_string("method.random_number_generator")),
-  xObsDataFile(probDescDB.get_string("method.x_obs_data_file")),
-  yObsDataFile(probDescDB.get_string("method.y_obs_data_file")),
-  yStdDataFile(probDescDB.get_string("method.y_std_data_file"))
+  rngName(probDescDB.get_string("method.random_number_generator"))
 {
   //Cout << "The Bayesian Calibration method GPMSA is not currently operational."
     //   << " We expect that it will be operational in 2011." << std::endl;
   //abort_handler(-1);
-
   String sample_type; // empty string: use default sample type
   lhsSampler.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-    numEmulatorSamples, seedSpec, rngName, ALL), false);
+    numEmulatorSamples, seedSpec, rngName, ALL_UNIFORM), false);
 
   iteratedModel.init_communicators(lhsSampler.maximum_concurrency());
 }
@@ -72,29 +69,23 @@ NonDGPMSABayesCalibration::~NonDGPMSABayesCalibration()
 void NonDGPMSABayesCalibration::quantify_uncertainty()
 {
   // construct emulatorModel, if needed
-  NonDBayesCalibration::quantify_uncertainty();
+  // NonDBayesCalibration::quantify_uncertainty();
   // *** TO DO ***: eliminate redundant lhsSampler
 
   // Note: I am assuming the user will use DAKOTA to run the initial 
-  // simulations to generate simData.  Thus, the first part of this 
-  // is similar to LHS. Currently we have one argument in our input 
-  // spec for the number of samples.  I would suggest we leave this 
-  // for the number of simulation samples, and add another argument 
-  // for number of MCMC samples. 
-
-  // Note that we construct the initial LHS over x and theta.  We need 
-  // a better way to specify these separately, currently it is assumed 
-  // that the first p input variables are x and the next q are theta. 
+  // simulations to generate simData.  
+  // Note that we construct the initial LHS over x and theta.  
+  // We assume that x are given by the state variables (of dimension p) 
+  // and the uncertain variables specificy theta (of dimension q). 
   // We construct samples over both. 
  
-  //lhsSampler.samplingVarsMode = ALL;
   // run LHS to generate parameter sets and evaluate simulation at those sets
   
   lhsSampler.run_iterator(Cout);
- 
   const RealMatrix&     all_samples = lhsSampler.all_samples();
   const IntResponseMap& all_resp    = lhsSampler.all_responses();
   double **zt_raw;
+
   double **ysim;
 
   size_t num_problem_vars = iteratedModel.acv(); 
@@ -102,7 +93,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   size_t num_resp = iteratedModel.num_functions();
   Cout << "num_responses " << num_resp << '\n';
 
-  int i, j, num_obs_data = 0;
+  int i,j;
   zt_raw=new double*[numEmulatorSamples];
   for (int i=0; i<numEmulatorSamples; ++i)
     zt_raw[i]=new double[num_problem_vars];
@@ -118,49 +109,87 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
     for (j=0, resp_it=all_resp.begin(); j<numEmulatorSamples; ++j, ++resp_it)
       ysim[i][j]=resp_it->second.function_value(0);
   }
+  
+  Cout << "zt_raw" << '\n';
+  for (int i=0; i<num_problem_vars; ++i)
+   for (int j=0; j<numEmulatorSamples; ++j)
+     Cout << "zt_raw" << zt_raw[j][i];
+  Cout << '\n' ;
+  Cout << 'ysim', '\n';
+  for (int j=0; j<numEmulatorSamples; ++j)
+    Cout << ysim[0][j];
 
   // We read in the experimental data.  
-  // We assume for now that the number of calibration 
-  // parameters is the number of total uncertain variables 
-  // (num_problem_vars) less the number of x_observed data. 
-
-  // BMA: above may not be true any longer...
-
-  // a matrix with numExperiments rows and cols
+  // We read a matrix with numExperiments rows and cols
   // numExpConfigVars X, numFunctions Y, [numFunctions Sigma]
   RealMatrix experimental_data;
 
   size_t num_sigma_read = (expDataReadStdDeviations) ? numFunctions : 0;
   size_t num_cols = numExpConfigVars + numFunctions + num_sigma_read;
 
-  read_data_tabular(expDataFileName, "GPMSA Bayes Calibration", 
+  TabularIO::read_data_tabular(expDataFileName, "GPMSA Bayes Calibration", 
 		    experimental_data, numExperiments,  num_cols, 
 		    expDataFileAnnotated);
 
   // Get views of the data in 3 matrices for convenience
-  // TODO: make sure we don't create an empty view?
+  size_t start_row, start_col;
+  if (numExpConfigVars == 0) {
+    Cerr << "\nError (NonDGPMSABayesCalibration): must specify "
+           << "experimental_config_variables in experimental_data_file " 
+           << std::endl;
+   abort_handler(-1);
+  }
 
-  size_t start_row = 0;
-  size_t start_col = 0;
+  Cout << "num_sigma_read " << num_sigma_read << '\n';
+  Cout << "num_cols " << num_cols << '\n';
+  Cout << "numExpConfVariables " << numExpConfigVars << '\n';
+
+  start_row = 0;
+  start_col = 0;
   RealMatrix x_obs_data(Teuchos::View, experimental_data,
-			num_experiments, numExpConfigVars,
+			numExperiments, numExpConfigVars,
 			start_row, start_col);
-
+  Cout << 'xobs_data' << x_obs_data << '\n';
+  
   start_row = 0;
   start_col = numExpConfigVars;
   RealMatrix y_obs_data(Teuchos::View, experimental_data,
-			num_experiments, numFunctions,
+			numExperiments, numFunctions,
 			start_row, start_col);
+  Cout << 'yobs_data' << y_obs_data << '\n';
 
-  start_row = 0;
-  start_col = numExpConfigVars + numFunctions;
-  RealMatrix y_std_data(Teuchos::View, experimental_data,
-			num_experiments, numFunctions,
+  RealMatrix y_std_data;
+  y_std_data.reshape(numExperiments,numFunctions);
+  if (num_sigma_read > 0) {
+    start_row = 0;
+    start_col = numExpConfigVars + numFunctions;
+    RealMatrix y_std_data2(Teuchos::View, experimental_data,
+			numExperiments, numFunctions,
 			start_row, start_col);
-
-  // Now populate yObsData, yStdData, etc. (sized numExperiments currently)
- 
-
+    for (int i=0; i<numExperiments; i++) 
+      for (int j=0; j<numFunctions; j++) 
+        y_std_data(i,j)=y_std_data2(i,j);
+  }
+  else { 
+    if (expStdDeviations.length()==1) {
+      for (int i=0; i<numExperiments; i++) 
+        for (int j=0; j<numFunctions; j++)
+          y_std_data(i,j)=expStdDeviations(0);
+    }
+    else if (expStdDeviations.length()==numFunctions) {
+      for (int i=0; i<numExperiments; i++) 
+	for (int j=0; j<numFunctions; j++)
+          y_std_data(i,j)=expStdDeviations(j);
+    }
+    else {
+      Cerr << "\nError (NonDGPMSABayesCalibration): must specify "
+           << "experimental standard deviations either from experimental_data_file " 
+           << "or in the experimental_std_deviations specification." 
+           << std::endl;
+      abort_handler(-1);
+    }
+  }
+  Cout << 'ystd_data' << y_std_data << '\n';
 
  // Assuming we get all of this as input, we need to populate the following 
  // for GPM/SA: 
@@ -177,13 +206,12 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
 
 #ifdef DAKOTA_GPMSA 
  FILE *fp_raw, *fp_out, *fp_new;
- int num_cal_parameters = num_problem_vars-1; 
+ int num_cal_parameters = num_problem_vars-numExpConfigVars; 
  fp_new=fopen("gpmsa.rawinfo.dat","w");
  // type
  fprintf(fp_new, "%d \n", type); 
  //  n, m, p, q
- fprintf(fp_new, "%d %d %d %d \n", num_obs_data, numEmulatorSamples, 1,
-	 num_cal_parameters);
+ fprintf(fp_new, "%d %d %d %d \n", numExperiments, numEmulatorSamples, numExpConfigVars,num_cal_parameters);
  // zt [ m x (p+q) ]    read in column major order
  for (int i=0; i<num_problem_vars; ++i)
    for (int j=0; j<numEmulatorSamples; ++j)
@@ -207,14 +235,19 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
     //   lobs[ii] (element ii of vector lobs)
     //   yobs[ii] (elements jj=0, lobs[ii]-1 of vector yobs[ii])
     //   gobs[ii] (lobs[ii]*lsup, obs support matrix)
+    //   lobs[ii] (element ii of vector lobs)
+    //   yobs[ii] (elements jj=0, lobs[ii]-1 of vector yobs[ii])
+    //   gobs[ii] (lobs[ii]*lsup, obs support matrix)
     //   Sigy[ii] (lobs[ii] x lobs[ii])
  
- for (int j=0; j<num_obs_data; j++){
-   fprintf(fp_new,"%f \n",xObsData[j]);
+ for (int j=0; j<numExperiments; j++){
+   for (int w=0; w<numExpConfigVars; w++) 
+     fprintf(fp_new,"%f ",x_obs_data(j,w));
+   fprintf(fp_new,"\n");
    fprintf(fp_new,"%d \n",1);
-   fprintf(fp_new,"%f \n",yObsData[j]);
-   fprintf(fp_new,"%d \n",1.0);
-   fprintf(fp_new,"%f \n",yStdData[j]);
+   fprintf(fp_new,"%f \n",y_obs_data(j,0));
+   fprintf(fp_new,"%d \n",1);
+   fprintf(fp_new,"%f \n",y_std_data(j,0));
  }  
  fclose(fp_new); 
      
