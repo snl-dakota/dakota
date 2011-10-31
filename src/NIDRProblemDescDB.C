@@ -539,6 +539,8 @@ int not_executable(const char *driver_name, const char *tdir)
         int rc, sv;
         size_t clen, dlen, plen, tlen;
         void *a0;
+        std::string cwd;  // decalre here before any possible "goto"
+
 #ifdef _WIN32
         char dbuf[128];
 #else
@@ -598,7 +600,7 @@ int not_executable(const char *driver_name, const char *tdir)
                 goto ret;
 #endif
 
-        std::string cwd( get_cwd() );
+        cwd = get_cwd();
         clen = cwd.size();
         dlen = std::strlen(driver_name);
         tlen = std::strlen(tdir);
