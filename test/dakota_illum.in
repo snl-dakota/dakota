@@ -17,6 +17,20 @@
 # and commenting out unneeded lines marked with the #0. Specific lines
 # can be included in multiple tests by adding multiple #n designaters
 # seperated by a comma.
+#
+# the "hero solution" for the illumination problem found by using
+# ncsu_direct and then polishing that answer with conmin_frcg is
+# <<<<< Best parameters          =
+#                       1.0000000000e+00 x1
+#                       2.8186100902e-01 x2
+#                       0.0000000000e+00 x3
+#                       0.0000000000e+00 x4
+#                       0.0000000000e+00 x5
+#                       7.5621311116e-01 x6
+#                       1.0000000000e+00 x7
+# <<<<< Best objective function  =
+#                       1.0759888860e+00
+
 
 method,
 	optpp_q_newton,         			#0
