@@ -2505,7 +2505,7 @@ Specification detail for the NCSU DIRECT method
 <td>1.0e-4
 <tr>
 <td>Volume boxsize limit
-<td>\c vol_boxsize_limit 
+<td>\c volume_boxsize_limit 
 <td>real in [0,1]
 <td>Optional
 <td>1.0e-6
