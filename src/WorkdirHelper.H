@@ -28,6 +28,7 @@ namespace bfs = boost::filesystem;
 #if defined(_WIN32) || defined(_WIN64)
 
   #include <io.h>
+  #include <windows.h>
   #define DAK_CHDIR(s) (SetCurrentDirectory(s) == 0)
   #define DAK_MKDIR(a,b) mkdir(a)
   #define DAK_MAXPATHLEN MAX_PATH
