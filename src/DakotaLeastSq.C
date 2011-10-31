@@ -274,8 +274,18 @@ primary_resp_recast(const Variables& native_vars,
       native_response.active_set_request_vector(), 0,
       leastSqInstance->numLeastSqTerms);
 
+  // only need data transform if function data requested
+  bool functions_requested = false;
+  const ShortArray& asv = iterator_response.active_set_request_vector();
+  for (size_t i=0; i<leastSqInstance->numLeastSqTerms; ++i) {
+    if (asv[i] & 1) {
+      functions_requested = true;
+      break;
+    }
+  }
+
   // if necessary, compute residuals by subtracting observations, then scale
-  if (leastSqInstance->obsDataFlag) {
+  if (leastSqInstance->obsDataFlag && functions_requested) {
     const RealVector& fn_vals = native_response.function_values();
     // obs data plus scaling
     if (scale_transform_needed) {
@@ -325,7 +335,6 @@ primary_resp_recast(const Variables& native_vars,
     size_t i,j,k;
     SizetMultiArray var_ids;
 
-    const ShortArray& asv = iterator_response.active_set_request_vector();
     const SizetArray& dvv = iterator_response.active_set_derivative_vector();
     const size_t num_deriv_vars = dvv.size(); 
 
