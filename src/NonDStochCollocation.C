@@ -191,49 +191,4 @@ NonDStochCollocation::~NonDStochCollocation()
       numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
 }
 
-
-void NonDStochCollocation::print_moments(std::ostream& s)
-{
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
-
-  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
-  const StringArray& fn_labels = iteratedModel.response_labels();
-  size_t i, j, width = write_precision+7;
-
-  s << "\nMoment-based statistics for each response function:\n"
-    << std::setw(width+15) << "Mean"     << std::setw(width+1) << "Std Dev"
-    << std::setw(width+1)  << "Skewness" << std::setw(width+2) << "Kurtosis\n";
-  PecosApproximation* poly_approx_rep; size_t exp_mom, num_mom;
-  for (i=0; i<numFunctions; ++i) {
-    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
-    if (poly_approx_rep && poly_approx_rep->expansion_coefficient_flag()) {
-      const RealVector& exp_moments = poly_approx_rep->expansion_moments();
-      const RealVector& num_moments = poly_approx_rep->numerical_moments();
-      exp_mom = exp_moments.length(); num_mom = num_moments.length();
-      s << fn_labels[i];
-      if (exp_mom) {
-	s << '\n' << std::setw(14) << "expansion:  ";
-	for (j=0; j<exp_mom; ++j)
-	  if (j==1) s << ' ' << std::setw(width) << std::sqrt(exp_moments[j]);
-	  else      s << ' ' << std::setw(width) << exp_moments[j];
-      }
-      if (num_mom) {
-	s << '\n' << std::setw(14) << "numerical:  ";
-	for (j=0; j<num_mom; ++j)
-	  if (j==1) s << ' ' << std::setw(width) << std::sqrt(num_moments[j]);
-	  else      s << ' ' << std::setw(width) << num_moments[j];
-      }
-      s << '\n';
-
-      /* COV has been removed:
-      if (std::abs(mean) > 1.e-25)
-        s << "  " << std::setw(width)   << std_dev/mean << '\n';
-      else
-        s << "  " << std::setw(width+1) << "Undefined\n";
-      */
-    }
-  }
-}
-
 } // namespace Dakota

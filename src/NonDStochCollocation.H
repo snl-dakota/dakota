@@ -51,8 +51,6 @@ public:
 
   // print the SC coefficient array using a monomial basis
   //void print_coefficients(std::ostream& s);
-  /// print the numerical moments
-  void print_moments(std::ostream& s);
 
 private:
 

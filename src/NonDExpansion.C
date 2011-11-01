@@ -1213,9 +1213,9 @@ void NonDExpansion::compute_off_diagonal_covariance()
 	  respCovariance(i,j) = 0.;
       }
     else {
-      PCerr << "Warning: expansion coefficients unavailable in NonDExpansion::"
-	    << "compute_covariance().  Zeroing covariance terms for function "
-	    << i+1 << std::endl;
+      Cerr << "Warning: expansion coefficients unavailable in NonDExpansion::"
+	   << "compute_covariance().  Zeroing covariance terms for function "
+	   << i+1 << std::endl;
       for (j=0; j<i; ++j)
 	respCovariance(i,j) = 0.;
     }
@@ -1664,6 +1664,88 @@ void NonDExpansion::update_final_statistics()
     // then constructs PCE/SC approximations of these gradients, and
     // PecosApproximation::<mean,variance>_gradient()
     // are used above to generate dmu/ds, dsigma/ds, and dbeta/ds.
+  }
+}
+
+
+void NonDExpansion::print_moments(std::ostream& s)
+{
+  s.setf(std::ios::scientific);
+  s << std::setprecision(write_precision);
+
+  std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  const StringArray& fn_labels = iteratedModel.response_labels();
+  size_t i, j, width = write_precision+7;
+
+  s << "\nMoment-based statistics for each response function:\n";
+
+  // Handle cases of both expansion/numerical moments or only one or the other:
+  //   both exp/num: SC and PCE with numerical integration
+  //   exp only:     PCE with unstructured grids (regression, exp sampling)
+  // Also handle numerical exception of negative variance in either exp or num
+  PecosApproximation* poly_approx_rep;
+  size_t exp_mom, num_mom; bool prev_exception = false;
+  for (i=0; i<numFunctions; ++i) {
+    poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
+    if (poly_approx_rep && poly_approx_rep->expansion_coefficient_flag()) {
+      const RealVector& exp_moments = poly_approx_rep->expansion_moments();
+      const RealVector& num_moments = poly_approx_rep->numerical_moments();
+      exp_mom = exp_moments.length(); num_mom = num_moments.length();
+      if ( (exp_mom >= 2 && exp_moments[1] < 0.) || 
+	   (num_mom >= 2 && num_moments[1] < 0.) ) {
+	if (i==0 || !prev_exception)
+	  s << "\nNB: due to negative variance (resulting from under-resolved "
+	    << "numerical integration),\n    standardized moments have been "
+	    << "replaced with central moments.\n\n"
+	    << std::setw(width+15) << "Mean"
+	    << std::setw(width+1)  << "Variance"
+	    << std::setw(width+1)  << "3rdCentral"
+	    << std::setw(width+2)  << "4thCentral\n";
+	if (exp_mom && num_mom) s << fn_labels[i];
+	else                    s << std::setw(14) << fn_labels[i];
+	if (exp_mom) {
+	  if (num_mom)          s << '\n' << std::setw(14) << "expansion:  ";
+	  for (j=0; j<exp_mom; ++j)
+	    s << ' ' << std::setw(width) << exp_moments[j];
+	}
+	if (num_mom) {
+	  if (exp_mom)          s << '\n' << std::setw(14) << "numerical:  ";
+	  for (j=0; j<num_mom; ++j)
+	    s << ' ' << std::setw(width) << num_moments[j];
+	}
+	prev_exception = true;
+      }
+      else {
+	if (i==0 || prev_exception)
+	  s << std::setw(width+15) << "Mean"
+	    << std::setw(width+1)  << "Std Dev"
+	    << std::setw(width+1)  << "Skewness"
+	    << std::setw(width+2)  << "Kurtosis\n";
+	if (exp_mom && num_mom) s << fn_labels[i];
+	else                    s << std::setw(14) << fn_labels[i];
+	if (exp_mom) {
+	  if (num_mom)          s << '\n' << std::setw(14) << "expansion:  ";
+	  for (j=0; j<exp_mom; ++j)
+	    if (j==1) s << ' ' << std::setw(width) << std::sqrt(exp_moments[j]);
+	    else      s << ' ' << std::setw(width) << exp_moments[j];
+	}
+	if (num_mom) {
+	  if (exp_mom)          s << '\n' << std::setw(14) << "numerical:  ";
+	  for (j=0; j<num_mom; ++j)
+	    if (j==1) s << ' ' << std::setw(width) << std::sqrt(num_moments[j]);
+	    else      s << ' ' << std::setw(width) << num_moments[j];
+	}
+	prev_exception = false;
+      }
+      s << '\n';
+
+      /* COV has been removed:
+      if (std::abs(mean) > 1.e-25)
+        s << "  " << std::setw(width)   << std_dev/mean << '\n';
+      else
+        s << "  " << std::setw(width+1) << "Undefined\n";
+      */
+    }
   }
 }
 

@@ -56,8 +56,6 @@ public:
 
   /// print the PCE coefficient array for the orthogonal basis
   void print_coefficients(std::ostream& s);
-  /// print the expansion/numerical moments
-  void print_moments(std::ostream& s);
 
 private:
 

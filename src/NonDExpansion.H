@@ -64,8 +64,6 @@ protected:
   virtual void increment_expansion();
   /// print expansion coefficients, as supported by derived instance
   virtual void print_coefficients(std::ostream& s);
-  /// print expansion and numerical moments, as supported by derived instance
-  virtual void print_moments(std::ostream& s);
 
   //
   //- Heading: Member function definitions
@@ -186,6 +184,8 @@ private:
   /// calculate respCovariance(i,j) for j<i
   void compute_off_diagonal_covariance();
 
+  /// print expansion and numerical moments
+  void print_moments(std::ostream& s);
   /// print respCovariance
   void print_covariance(std::ostream& s);
   /// print global sensitivity indices
@@ -250,10 +250,6 @@ inline const Model& NonDExpansion::algorithm_space_model() const
 
 
 inline void NonDExpansion::print_coefficients(std::ostream& s)
-{ /* default is no-op */ }
-
-
-inline void NonDExpansion::print_moments(std::ostream& s)
 { /* default is no-op */ }
 
 } // namespace Dakota
