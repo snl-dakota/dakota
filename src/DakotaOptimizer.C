@@ -53,10 +53,10 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
 
   // Check for proper response function definition (optimization data set)
   // and manage requirements for local recasting
-  optimizationFlag  = true;
   numUserPrimaryFns = numFunctions - numNonlinearConstraints;
   bool local_nls_recast = false, local_moo_recast = false;
   if (numObjectiveFns == 0) {
+    optimizationFlag = false;
     // allow solution of NLS problems as single-objective optimization
     // through local recasting
     size_t num_lsq = probDescDB.get_sizet("responses.num_least_squares_terms");
@@ -92,16 +92,19 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
       Cerr << "Warning: coercing least squares data set into optimization data "
 	   << "set." << std::endl;
   }
-  else if (numObjectiveFns > 1)
-    local_moo_recast = (methodName != "moga");
+  else {
+    optimizationFlag = true;
+    if (numObjectiveFns > 1)
+      local_moo_recast = (methodName != "moga");
+  }
 
   // set flags and primary function counts for recasting
   localObjectiveRecast = (local_nls_recast || local_moo_recast);
   if (localObjectiveRecast) // iterators see single objective in recast model
     numObjectiveFns = 1;
 
-  // when scaling and/or multiobjective is enabled, create a RecastModel to 
-  // map between [user/native] space and [iterator/scaled] space
+  // when scaling and/or single objective transformation is enabled, create a
+  // RecastModel to map between [user/native] space and [iterator/scaled] space
   if (scaleFlag || localObjectiveRecast) {
 
     numIterPrimaryFns = numObjectiveFns; // used at Minimizer level
@@ -117,7 +120,7 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
       initialize_scaling();
 
     // setup recast model mappings and flags
-    // recast map is all one to one unless multiobjective active
+    // recast map is all one to one unless single objective transformation
     size_t i;
     size_t num_recast_fns = numObjectiveFns + numNonlinearConstraints;
     Sizet2DArray var_map_indices(numContinuousVars), 
@@ -168,6 +171,10 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
     // may need response recast when variables are scaled (for grad, hess)
     void (*vars_recast) (const Variables&, Variables&)
       = (varsScaleFlag) ? variables_recast : NULL;
+    // ************************************************************************
+    // TO DO: NLS requires a set mapping to ensure vals for grads,
+    // grads + ... for hessians
+    // ************************************************************************
     void (*pri_resp_recast) (const Variables&, const Variables&,
                              const Response&, Response&)
       = (localObjectiveRecast || primaryRespScaleFlag || varsScaleFlag) ? 
@@ -209,7 +216,7 @@ Optimizer::Optimizer(NoDBBaseConstructor, Model& model):
     abort_handler(-1);
   }
 
-  optimizationFlag  = true;
+  optimizationFlag = true;
 
   // Initialize a best variables instance
   bestVariablesArray.push_back(model.current_variables().copy());
@@ -297,7 +304,7 @@ void Optimizer::print_results(std::ostream& s)
 void Optimizer::
 local_objective_recast_retrieve(const Variables& vars, Response& response) const
 {
-  // only needed for multiobjective optimization
+  // only needed for single objective transformations
   if (numUserPrimaryFns <= 1)
     Cerr << "Warning: local_objective_recast_retrieve() called for single "
 	 << "objective optimization." << std::endl;
@@ -386,7 +393,7 @@ void Optimizer::objective_reduction(const Response& full_response,
   }
 
   if (outputLevel > NORMAL_OUTPUT)
-    Cout << "Multiobjective transformation:\n";
+    Cout << "Local single objective transformation:\n";
 
   short reduced_asv0 = reduced_response.active_set_request_vector()[0];
   if (reduced_asv0 & 1) { // build objective fn from full_response functions
@@ -464,13 +471,13 @@ void Optimizer::post_run(std::ostream& s)
     Variables& best_vars = bestVariablesArray[point_index];
     Response&  best_resp = bestResponseArray[point_index];
 
-    // transform variables back to user space (for multiobj or scaling)
+    // transform variables back to user space (for local obj recast or scaling)
     if (varsScaleFlag)
       best_vars.continuous_variables(
         modify_s2n(best_vars.continuous_variables(), cvScaleTypes,
 		   cvScaleMultipliers, cvScaleOffsets));
 
-    // transform responses back to user space (for multiobj or scaling)
+    // transform responses back to user space (for local obj recast or scaling)
     if (localObjectiveRecast)
       local_objective_recast_retrieve(best_vars, best_resp);
     else if (primaryRespScaleFlag || secondaryRespScaleFlag) {

@@ -143,6 +143,10 @@ SurrBasedLocalMinimizer::SurrBasedLocalMinimizer(Model& model):
     // iteratedModel becomes the sub-model of a RecastModel:
     size_t recast_offset
       = (approxSubProbCon == NO_CONSTRAINTS) ? 0 : numNonlinearIneqConstraints;
+    // ************************************************************************
+    // TO DO: NLS requires a set mapping to ensure vals for grads,
+    // grads + ... for hessians
+    // ************************************************************************
     approxSubProbModel.assign_rep(new RecastModel(iteratedModel,
       recast_vars_map, recast_vars_comps_total, false, NULL, NULL, 
       recast_primary_resp_map,
