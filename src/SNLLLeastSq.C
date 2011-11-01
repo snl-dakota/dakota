@@ -531,7 +531,7 @@ void SNLLLeastSq::initialize_run()
   //   for constraint2 evaluators (previously, OptppArray of Hessian matrices
   //   was not sized properly if mode did not contain 4).
   // > Without mode override, _all_ NIPS methods are inconsistent in their
-  //   objective and constraint evaluator calls, which previously lead to bad
+  //   objective and constraint evaluator calls, which previously led to bad
   //   data when the objective evaluator assumed that the constraint evaluator
   //   was called previously with the same mode (more checks are now in place).
   //if ( speculativeFlag || constantASVFlag || numNonlinearConstraints ||

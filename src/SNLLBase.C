@@ -161,7 +161,7 @@ snll_post_instantiate(const int& num_cv, bool vendor_num_grad_flag,
 }
 
 
-  void SNLLBase::init_fn(int n, Teuchos::SerialDenseVector<int, double>& x)
+void SNLLBase::init_fn(int n, Teuchos::SerialDenseVector<int, double>& x)
 {
   // This routine was previously called initial_guess which was misleading.
   // This is a mechanism provided by OPT++ to perform initialization functions.

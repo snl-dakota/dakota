@@ -56,7 +56,7 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
   numUserPrimaryFns = numFunctions - numNonlinearConstraints;
   bool local_nls_recast = false, local_moo_recast = false;
   if (numObjectiveFns == 0) {
-    optimizationFlag = false;
+    optimizationFlag = false; // used to distinguish NLS from MOO
     // allow solution of NLS problems as single-objective optimization
     // through local recasting
     size_t num_lsq = probDescDB.get_sizet("responses.num_least_squares_terms");
@@ -93,7 +93,7 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
 	   << "set." << std::endl;
   }
   else {
-    optimizationFlag = true;
+    optimizationFlag = true; // used to distinguish NLS from MOO
     if (numObjectiveFns > 1)
       local_moo_recast = (methodName != "moga");
   }
@@ -141,8 +141,8 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
       nonlinear_resp_map[0].resize(numUserPrimaryFns);
       for (i=0; i<numUserPrimaryFns; i++) {
 	primary_resp_map_indices[0][i] = i;
-	nonlinear_resp_map[0][i] = primaryRespScaleFlag &&
-	                           responseScaleTypes[i] & SCALE_LOG;
+	nonlinear_resp_map[0][i] = ( local_nls_recast ||
+	  ( primaryRespScaleFlag && responseScaleTypes[i] & SCALE_LOG ) );
       }
 
       // adjust active set vector to 1 + numNonlinearConstraints

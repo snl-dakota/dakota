@@ -1285,7 +1285,7 @@ objective(const RealVector& fn_vals, const RealVector& primary_wts) const
   else { // NLS
     if (primary_wts.empty())
       for (size_t i=0; i<numUserPrimaryFns; i++)
-	obj_fn += std::pow(fn_vals[i], 2);
+	obj_fn += std::pow(fn_vals[i], 2); // default weight = 1
     else
       for (size_t i=0; i<numUserPrimaryFns; i++)
 	obj_fn += std::pow(primary_wts[i]*fn_vals[i], 2);
@@ -1309,7 +1309,7 @@ objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
       for (size_t j=0; j<numContinuousVars; j++) {
 	for (size_t i=0; i<numUserPrimaryFns; i++)
 	  obj_grad[j] += fn_grads[i][j];
-	obj_grad[j] /= (Real)numUserPrimaryFns;
+	obj_grad[j] /= (Real)numUserPrimaryFns; // default weight = 1/n
       }
     }
     else {
@@ -1324,7 +1324,7 @@ objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
   else { // NLS
     for (size_t i=0; i<numUserPrimaryFns; i++) {
       Real wt2_2_fn_val = (primary_wts.empty()) ? 2. * fn_vals[i] :
-	std::pow(primary_wts[i], 2) * 2. * fn_vals[i];
+	std::pow(primary_wts[i], 2) * 2. * fn_vals[i]; // default weight = 1
       const Real* fn_grad_i = fn_grads[i];
       for (size_t j=0; j<numContinuousVars; j++)
 	obj_grad[j] += wt2_2_fn_val * fn_grad_i[j];
@@ -1351,7 +1351,7 @@ objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
 	  Real& sum = obj_hess(j,k); sum = 0.;
 	  for (size_t i=0; i<numUserPrimaryFns; i++)
 	    sum += fn_hessians[i](j,k);
-	  sum /= (Real)numUserPrimaryFns;
+	  sum /= (Real)numUserPrimaryFns; // default weight = 1/n
 	}
       }
     }
@@ -1366,7 +1366,6 @@ objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
     }
   }
   else { // NLS
-
     if (!fn_grads.empty()) {
       // TO DO
       if (fn_hessians.empty() || fn_vals.empty()) { // Gauss_Newton J^T J
