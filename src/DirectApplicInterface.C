@@ -97,6 +97,9 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   driverTypeMap["text_book3"]             = TEXT_BOOK3;
   driverTypeMap["text_book_ouu"]          = TEXT_BOOK_OUU;
   driverTypeMap["scalable_text_book"]     = SCALABLE_TEXT_BOOK;
+  driverTypeMap["herbie"]                 = HERBIE;
+  driverTypeMap["smooth_herbie"]          = SMOOTH_HERBIE;
+  driverTypeMap["shubert"]                = SHUBERT;
   driverTypeMap["salinas"]                = SALINAS;
   driverTypeMap["mc_api_run"]             = MODELCENTER;
   driverTypeMap["modelcenter"]            = MODELCENTER;
@@ -172,7 +175,9 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
     case SOBOL_G_FUNCTION:    case SOBOL_RATIONAL:
     case TEXT_BOOK:           case TEXT_BOOK_OUU:       case SCALABLE_TEXT_BOOK:
     case TEXT_BOOK1:          case TEXT_BOOK2:          case TEXT_BOOK3:
-    case SALINAS:             case MODELCENTER:         case MATLAB: case PYTHON:
+    case HERBIE:              case SMOOTH_HERBIE:       case SHUBERT:
+    case SALINAS:             case MODELCENTER:         case MATLAB:
+    case PYTHON:
       localDataView |= VARIABLES_VECTOR; break;
     }
 
@@ -489,6 +494,12 @@ int DirectApplicInterface::derived_map_ac(const String& ac_name)
     fail_code = text_book_ouu(); break;
   case SCALABLE_TEXT_BOOK:
     fail_code = scalable_text_book(); break;
+  case HERBIE:
+    fail_code = herbie(); break;
+  case SMOOTH_HERBIE:
+    fail_code = smooth_herbie(); break;
+  case SHUBERT:
+    fail_code = shubert(); break;
 #ifdef DAKOTA_SALINAS
   case SALINAS:
     fail_code = salinas(); break;
@@ -2852,6 +2863,259 @@ int DirectApplicInterface::scalable_text_book()
   return 0; // no failure
 }
 
+/// 1D Herbie function and its derivatives (apart from a multiplicative factor)
+void DirectApplicInterface::herbie1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders) {
+  w_and_ders[0]=w_and_ders[1]=w_and_ders[2]=0.0;
+  
+  Real rtemp1=xc_loc-1.0; 
+  Real rtemp1_sq=rtemp1*rtemp1;
+  Real rtemp2=xc_loc+1.0;
+  Real rtemp2_sq=rtemp2*rtemp2;
+  Real rtemp3=8.0*(xc_loc+0.1);
+  
+  if(der_mode & 1) //1=2^0: the 0th derivative of the response (the response itself)
+    w_and_ders[0]=
+      std::exp(-rtemp1_sq)
+      +std::exp(-0.8*rtemp2_sq)
+      -0.05*std::sin(rtemp3);
+  if(der_mode & 2) //2=2^1: the 1st derivative of the response
+    w_and_ders[1]=
+      -2.0*rtemp1*std::exp(-rtemp1_sq)
+      -1.6*rtemp2*std::exp(-0.8*rtemp2_sq)
+      -0.4*std::cos(rtemp3);
+  if(der_mode & 4) //4=2^2: the 2nd derivative of the response
+    w_and_ders[2]=
+      (-2.0+4.0*rtemp1_sq)*std::exp(-rtemp1_sq)
+      +(-1.6+2.56*rtemp2_sq)*std::exp(-0.8*rtemp2_sq)
+      +3.2*std::sin(rtemp3);
+  if(der_mode > 7) {
+    std::cerr << "only 0th through 2nd derivatives are implemented for herbie1D()\n";
+    assert(false); //should throw an exception get brian to help
+  }
+}
+
+/// 1D Smoothed Herbie= 1DHerbie minus the high frequency sine term, and its derivatives (apart from a multiplicative factor)
+void DirectApplicInterface::smooth_herbie1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders) {
+  w_and_ders[0]=w_and_ders[1]=w_and_ders[2]=0.0;
+  
+  Real rtemp1=xc_loc-1.0; 
+  Real rtemp1_sq=rtemp1*rtemp1;
+  Real rtemp2=xc_loc+1.0;
+  Real rtemp2_sq=rtemp2*rtemp2;
+  
+  if(der_mode & 1) //1=2^0: the 0th derivative of the response (the response itself)
+    w_and_ders[0]=
+      std::exp(-rtemp1_sq)
+      +std::exp(-0.8*rtemp2_sq);
+  if(der_mode & 2) //2=2^1: the 1st derivative of the response
+    w_and_ders[1]=
+      -2.0*rtemp1*std::exp(-rtemp1_sq)
+      -1.6*rtemp2*std::exp(-0.8*rtemp2_sq);
+  if(der_mode & 4) //4=2^2: the 2nd derivative of the response
+    w_and_ders[2]=
+      (-2.0+4.0*rtemp1_sq)*std::exp(-rtemp1_sq)
+      +(-1.6+2.56*rtemp2_sq)*std::exp(-0.8*rtemp2_sq);
+  if(der_mode > 7) {
+    std::cerr << "only 0th through 2nd derivatives are implemented for smooth_herbie1D()\n";
+    assert(false); //should throw an exception get brian to help
+  }
+  
+}
+
+/// 1D Shubert function and its derivatives (apart from a multiplicative factor)
+void DirectApplicInterface::shubert1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders) {
+  w_and_ders[0]=w_and_ders[1]=w_and_ders[2]=0.0;
+  
+  size_t k;
+  Real k_real;
+  
+  if(der_mode & 1) {
+    for (k=1; k<5; ++k) {
+      k_real=static_cast<Real>(k);
+      w_and_ders[0]+=k_real*std::cos(xc_loc*(k_real+1.0)+k_real);	
+    }
+  }
+  if(der_mode & 2) {
+    for (k=1; k<5; ++k) {
+      k_real=static_cast<Real>(k);
+      w_and_ders[1]+=k_real*(k_real+1.0)*-std::sin(xc_loc*(k_real+1.0)+k_real);
+    }
+  }
+  if(der_mode & 4) {
+    for (k=1; k<5; ++k) {
+      k_real=static_cast<Real>(k);
+      w_and_ders[2]+=k_real*(k_real+1.0)*(k_real+1.0)*-std::cos(xc_loc*(k_real+1.0)+k_real);
+    }
+  }
+  if(der_mode > 7) {
+    std::cerr << "only 0th through 2nd derivatives are implemented for shubert1D()\n";
+    assert(false); //should throw an exception get brian to help
+  }
+}
+
+
+/// N-D Herbie function and its derivatives
+int DirectApplicInterface::herbie()
+{
+  size_t i;
+  std::vector<size_t> der_mode(numVars); 
+  for (i=0; i<numVars; ++i)
+    der_mode[i]=1;
+  if(directFnASV[0] >= 2)
+    for (i=0; i<numDerivVars; ++i)
+      der_mode[directFnDVV[i]-1]=der_mode[directFnDVV[i]-1]+2;
+  if(directFnASV[0] >= 4)
+    for (i=0; i<numDerivVars; ++i)
+      der_mode[directFnDVV[i]-1]=der_mode[directFnDVV[i]-1]+4;
+  std::vector<Real> w(numVars);
+  std::vector<Real> d1w(numVars);
+  std::vector<Real> d2w(numVars);
+  std::vector<Real> w_and_ders(3);
+  
+  for(i=0; i<numVars; ++i) {
+    herbie1D(der_mode[i],xC[i],w_and_ders);
+    w[i]  =w_and_ders[0];      
+    d1w[i]=w_and_ders[1];      
+    d2w[i]=w_and_ders[2];
+  }      
+  
+  separable_combine(-1.0,w,d1w,d2w);
+  return 0;
+}
+
+/// N-D Smoothed Herbie function and its derivatives
+int DirectApplicInterface::smooth_herbie()
+{
+  size_t i;
+  std::vector<size_t> der_mode(numVars); 
+  for (i=0; i<numVars; ++i)
+    der_mode[i]=1;
+  if(directFnASV[0] >= 2)
+    for (i=0; i<numDerivVars; ++i)
+      der_mode[directFnDVV[i]-1]=der_mode[directFnDVV[i]-1]+2;
+  if(directFnASV[0] >= 4)
+    for (i=0; i<numDerivVars; ++i)
+      der_mode[directFnDVV[i]-1]=der_mode[directFnDVV[i]-1]+4;
+  std::vector<Real> w(numVars);
+  std::vector<Real> d1w(numVars);
+  std::vector<Real> d2w(numVars);
+  std::vector<Real> w_and_ders(3);
+  
+  for(i=0; i<numVars; ++i) {
+    smooth_herbie1D(der_mode[i], xC[i], w_and_ders);
+    w[i]  =w_and_ders[0];      
+    d1w[i]=w_and_ders[1];      
+    d2w[i]=w_and_ders[2];
+  }      
+  
+  separable_combine(-1.0,w,d1w,d2w);
+  return 0;
+}
+
+int DirectApplicInterface::shubert()
+{
+  size_t i;
+  std::vector<size_t> der_mode(numVars); 
+  for (i=0; i<numVars; ++i)
+    der_mode[i]=1;
+  if(directFnASV[0] >= 2)
+    for (i=0; i<numDerivVars; ++i)
+      der_mode[directFnDVV[i]-1]=der_mode[directFnDVV[i]-1]+2;
+  if(directFnASV[0] >= 4)
+    for (i=0; i<numDerivVars; ++i)
+      der_mode[directFnDVV[i]-1]=der_mode[directFnDVV[i]-1]+4;
+  std::vector<Real> w(numVars);
+  std::vector<Real> d1w(numVars);
+  std::vector<Real> d2w(numVars);
+  std::vector<Real> w_and_ders(3);
+  
+  for(i=0; i<numVars; ++i) {
+    shubert1D(der_mode[i],xC[i],w_and_ders);
+    w[i]  =w_and_ders[0];      
+    d1w[i]=w_and_ders[1];      
+    d2w[i]=w_and_ders[2];
+  }      
+  
+  separable_combine(1.0,w,d1w,d2w);
+  return 0;
+}
+
+/// this function combines N 1D functions and their derivatives to compute a N-D separable function and its derivatives, logic is general enough to support different 1D functions in different dimensions (can mix and match)
+void DirectApplicInterface::separable_combine(Real mult_scale_factor, std::vector<Real>& w, std::vector<Real>& d1w, std::vector<Real>& d2w)
+{
+  // *************************************************************
+  // **** now that w(x_i), dw(x_i)/dx_i, and d^2w(x_i)/dx_i^2 ****
+  // **** are defined we can calculate the response, gradient ****
+  // **** of the response, and Hessian of the response in an  ****
+  // **** identical fashion                                   ****
+  // *************************************************************
+  
+  Real local_val;
+  size_t i, j, k, i_var_index, j_var_index;
+  
+  // ****************************************
+  // **** response                       ****
+  // **** f=\prod_{i=1}^{numVars} w(x_i) ****
+  // ****************************************
+  if (directFnASV[0] & 1) {
+    local_val=mult_scale_factor;
+    for (i=0; i<numVars; ++i)
+      local_val*=w[i];
+    fnVals[0]=local_val;
+  }
+  
+  // **************************************************
+  // **** gradient of response                     ****
+  // **** df/dx_i=(\prod_{j=1}^{i-1} w(x_j)) ...   ****
+  // ****        *(dw(x_i)/dx_i) ...               ****
+  // ****        *(\prod_{j=i+1}^{numVars} w(x_j)) ****
+  // **************************************************
+  if (directFnASV[0] & 2) {
+    std::fill_n(fnGrads[0], fnGrads.numRows(), 0.);
+    for (i=0; i<numDerivVars; ++i) {
+      i_var_index = directFnDVV[i] - 1; 
+      local_val=mult_scale_factor*d1w[i_var_index];
+      for (j=0; j<i_var_index; ++j)
+	local_val*=w[j];
+      for (j=i_var_index+1; j<numVars; ++j)
+	local_val*=w[j];
+      fnGrads[0][i]=local_val;
+    }
+  }
+  
+  // ***********************************************************
+  // **** Hessian of response                               ****
+  // **** if(i==j)                                          ****
+  // **** d^2f/dx_i^2=(\prod_{k=1}^{i-1} w(x_k)) ...        ****
+  // ****            *(d^2w(x_i)/dx_i^2) ...                ****
+  // ****            *(\prod_{k=i+1}^{numVars} w(x_k))      ****
+  // ****                                                   ****
+  // **** if(i<j)                                           ****
+  // **** d^2f/(dx_i*dx_j)=(\prod_{k=1}^{i-1} w(x_k)) ...   ****
+  // ****                 *(dw(x_i)/dx_i) ...               ****
+  // ****                 *(\prod_{k=i+1}^{j-1} w(x_k)) ... ****
+  // ****                 *(dw(x_j)/dx_j) ...               ****
+  // ****                 *(\prod_{k=j+1}^{numVars} w(x_j)) ****
+  // ***********************************************************
+  if (directFnASV[0] & 4) {
+    fnHessians[0] = 0.; //what does this do? I think it's vestigal
+    for (i=0; i<numDerivVars; ++i) {
+      i_var_index = directFnDVV[i] - 1;
+      for (j=0; j<numDerivVars; ++j) {
+	j_var_index = directFnDVV[j] - 1;
+	if (i_var_index==j_var_index ) 
+	  local_val = mult_scale_factor*d2w[i_var_index];
+	else
+	  local_val = mult_scale_factor*d1w[i_var_index]*d1w[j_var_index];
+	for (k=0; k<numVars; ++k)
+	  if( (k!=i_var_index) && (k!=j_var_index) )
+	    local_val*=w[k];
+      }
+    }
+    fnHessians[0](i,j) =local_val;
+  }  
+}
+
 
 // -------------------------------------------
 // Begin direct interfaces to simulation codes
@@ -2931,7 +3195,8 @@ int DirectApplicInterface::salinas()
 	  fout << xdi_it->second << ' ';
 	else if (xdr_it != xDRM.end())
 	  fout << xdr_it->second << ' ';
-	else
+	elseint DirectApplicInterface::scalable_text_book()
+
 	  fout << token << ' ';
       }
     }

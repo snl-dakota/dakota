@@ -55,7 +55,8 @@ enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
 		SHORT_COLUMN, LF_SHORT_COLUMN,
 		SOBOL_RATIONAL, SOBOL_G_FUNCTION, SOBOL_ISHIGAMI,
 		STEEL_COLUMN_COST, STEEL_COLUMN_PERFORMANCE, TEXT_BOOK,
-		TEXT_BOOK1, TEXT_BOOK2, TEXT_BOOK3, TEXT_BOOK_OUU, SCALABLE_TEXT_BOOK,
+		TEXT_BOOK1, TEXT_BOOK2, TEXT_BOOK3, TEXT_BOOK_OUU,
+		SCALABLE_TEXT_BOOK, HERBIE, SMOOTH_HERBIE, SHUBERT,
 		SALINAS, MODELCENTER, MATLAB, PYTHON };
 
 /// enumeration for how local variables are stored (values must employ
@@ -239,6 +240,14 @@ private:
   int text_book_ouu();      ///< the text_book_ouu OUU test function
   int scalable_text_book(); ///< scalable version of the text_book test function
 
+  // suite of separable test functions TODO add docs
+  void herbie1D(size_t der_mode, Real xc_loc, std::vector<Real> &w_and_ders); ///< 1D components of herbie function
+  void smooth_herbie1D(size_t der_mode, Real xc_loc, std::vector<Real> &w_and_ders); ///< 1D components of smooth_herbie function
+  void shubert1D(size_t der_mode, Real xc_loc, std::vector<Real> &w_and_ders); ///< 1D components of shubert function
+  int herbie();        ///< returns the N-D herbie function
+  int smooth_herbie(); ///< returns the N-D smooth herbie function
+  int shubert();       ///< returns the N-D shubert function
+  void separable_combine(Real mult_scale_factor, std::vector<Real> & w, std::vector<Real> & d1w, std::vector<Real> & d2w);  ///< utility to combine components of seperable fns
 #ifdef DAKOTA_SALINAS
   int salinas(); ///< direct interface to the SALINAS structural dynamics code
 #endif // DAKOTA_SALINAS
