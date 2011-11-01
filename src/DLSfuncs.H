@@ -35,7 +35,7 @@ Dakota_probsize
 	int n_obj;	// number of objectives
 	int maxfe;	// maximum function evaluations
 	int numgflag;	// numerical gradient flag
-	int multiobj;	// multi-objective flag
+	int objrecast;	// local objective recast flag
 	};
 
  struct

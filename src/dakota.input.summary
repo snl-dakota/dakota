@@ -899,21 +899,25 @@ KEYWORD12 method
 	  )
 	|
 	( bayes_calibration ALIAS nond_bayes_calibration
-	  queso
-	  | gpmsa
-	  [ emulator
-	    ( gp
-	      [ emulator_samples INTEGER ]
-	      )
-	    |
-	    ( pce
-	      [ sparse_grid_level INTEGERLIST ]
-	      )
-	    |
-	    ( sc
-	      [ sparse_grid_level INTEGERLIST ]
-	      )
-	    ]
+	  ( queso
+	    [ emulator
+	      ( gp
+		[ emulator_samples INTEGER ]
+		)
+	      |
+	      ( pce
+		[ sparse_grid_level INTEGERLIST ]
+		)
+	      |
+	      ( sc
+		[ sparse_grid_level INTEGERLIST ]
+		)
+	      ]
+	    )
+	  |
+	  ( gpmsa
+	    emulator_samples INTEGER
+	    )
 	  [ rejection
 	    standard
 	    | delayed

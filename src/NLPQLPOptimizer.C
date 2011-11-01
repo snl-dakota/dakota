@@ -432,8 +432,8 @@ void NLPQLPOptimizer::find_optimum()
   RealVector local_cdv(N, false);
   copy_data(X, N, local_cdv); // Note: X is [NMAX,L]
   bestVariablesArray.front().continuous_variables(local_cdv);
-  if (!multiObjFlag) { // else multi_objective_retrieve() is used in
-                       // Optimizer::post_run()
+  if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
+                               // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
     best_fns[0] = F[0];
 

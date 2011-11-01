@@ -1840,7 +1840,7 @@ JEGAOptimizer::JEGAOptimizer(
     // The following is not performed in the Optimizer constructor since
     // maxConcurrency is updated above. The matching free_communicators()
     // appears in the Optimizer destructor.
-    if(this->scaleFlag || this->multiObjFlag)
+    if(this->scaleFlag || this->localObjectiveRecast)
       this->iteratedModel.init_communicators(this->maxConcurrency);
 }
 

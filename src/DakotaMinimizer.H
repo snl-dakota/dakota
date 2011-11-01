@@ -144,6 +144,19 @@ protected:
 		     const RealVector& scale_offsets, 
 		     const StringArray& labels);
 
+  /// compute a composite objective value from one or more primary functions
+  Real objective(const RealVector& fn_vals,
+		 const RealVector& primary_wts) const;
+  /// compute the gradient of the composite objective function
+  void objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
+			  const RealVector& primary_wts,
+			  RealVector& obj_grad) const;
+  /// compute the Hessian of the composite objective function
+  void objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
+			 const RealSymMatrixArray& fn_hessians,
+			 const RealVector& primary_wts,
+			 RealSymMatrix& obj_hess) const;
+
   //
   //- Heading: Data
   //
@@ -172,16 +185,18 @@ protected:
   /// total number of linear and nonlinear constraints
   int numConstraints;
 
+  /// flag for use where optimization and NLS must be distinguished
+  bool optimizationFlag;
+  /// number of objective functions or least squares terms in the user's model
+  size_t numUserPrimaryFns;
+  /// number of objective functions or least squares terms in iterator's view
+  size_t numIterPrimaryFns;
+
   /// convenience flag for denoting the presence of user-specified bound
   /// constraints.  Used for method selection and error checking.
   bool boundConstraintFlag;
 
   bool speculativeFlag; ///< flag for speculative gradient evaluations
-
-  /// number of objective functions or least squares terms in the user's model
-  size_t numUserPrimaryFns;
-  /// number of objective functions or least squares terms in iterator's view
-  size_t numIterPrimaryFns;
 
   // scaling data follow 
   bool       scaleFlag;              ///< flag for overall scaling status

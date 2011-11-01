@@ -75,6 +75,7 @@ protected:
 
   /// compute a Lagrangian function from a set of function values
   Real lagrangian_merit(const RealVector& fn_vals,
+			const RealVector& primary_wts,
 			const RealVector& nln_ineq_l_bnds,
 			const RealVector& nln_ineq_u_bnds,
 			const RealVector& nln_eq_tgts);
@@ -82,6 +83,7 @@ protected:
   /// compute the gradient of the Lagrangian function
   void lagrangian_gradient(const RealVector& fn_vals,
 			   const RealMatrix& fn_grads,
+			   const RealVector& primary_wts,
 			   const RealVector& nln_ineq_l_bnds,
 			   const RealVector& nln_ineq_u_bnds,
 			   const RealVector& nln_eq_tgts,
@@ -89,6 +91,7 @@ protected:
 
   /// compute an augmented Lagrangian function from a set of function values
   Real augmented_lagrangian_merit(const RealVector& fn_vals,
+				  const RealVector& primary_wts,
 				  const RealVector& nln_ineq_l_bnds,
 				  const RealVector& nln_ineq_u_bnds,
 				  const RealVector& nln_eq_tgts);
@@ -96,24 +99,18 @@ protected:
   /// compute the gradient of the augmented Lagrangian function
   void augmented_lagrangian_gradient(const RealVector& fn_vals,
 				     const RealMatrix& fn_grads,
+				     const RealVector& primary_wts,
 				     const RealVector& nln_ineq_l_bnds,
 				     const RealVector& nln_ineq_u_bnds,
 				     const RealVector& nln_eq_tgts,
 				     RealVector& alag_grad);
 
   /// compute a penalty function from a set of function values
-  Real penalty_merit(const RealVector& fn_vals);
+  Real penalty_merit(const RealVector& fn_vals, const RealVector& primary_wts);
 
   /// compute the gradient of the penalty function
   void penalty_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
-			RealVector& pen_grad);
-
-  /// compute a composite objective value from one or more objective functions
-  Real objective(const RealVector& fn_vals);
-
-  /// compute the gradient of the composite objective function
-  void objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
-			  RealVector& obj_grad);
+			const RealVector& primary_wts, RealVector& pen_grad);
 
   /// compute the constraint violation from a set of function values
   Real constraint_violation(const RealVector& fn_vals,
@@ -129,9 +126,6 @@ protected:
 
   /// surrogate-based minimization iteration number
   int sbIterNum;
-
-  /// flag for use where optimization and NLS must be distinguished
-  bool optimizationFlag;
 
   /// Set of response function vectors defining a filter (objective vs.
   /// constraint violation) for iterate selection/rejection

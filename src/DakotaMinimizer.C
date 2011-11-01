@@ -197,6 +197,7 @@ Minimizer::Minimizer(NoDBBaseConstructor, Model& model):
 			  numNonlinearEqConstraints),
   numLinearConstraints(numLinearIneqConstraints + numLinearEqConstraints),
   numConstraints(numNonlinearConstraints + numLinearConstraints),
+  numUserPrimaryFns(numFunctions - numNonlinearConstraints),
   boundConstraintFlag(false), speculativeFlag(false), scaleFlag(false),
   varsScaleFlag(false), primaryRespScaleFlag(false),
   secondaryRespScaleFlag(false)
@@ -255,9 +256,9 @@ Minimizer(NoDBBaseConstructor, size_t num_lin_ineq, size_t num_lin_eq,
   numNonlinearConstraints(num_nln_ineq + num_nln_eq),
   numLinearConstraints(num_lin_ineq + num_lin_eq),
   numConstraints(numNonlinearConstraints + numLinearConstraints),
-  boundConstraintFlag(false), speculativeFlag(false), scaleFlag(false),
-  varsScaleFlag(false), primaryRespScaleFlag(false),
-  secondaryRespScaleFlag(false)
+  numUserPrimaryFns(1), numIterPrimaryFns(1), boundConstraintFlag(false),
+  speculativeFlag(false), scaleFlag(false), varsScaleFlag(false),
+  primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 { }
 
 
@@ -786,7 +787,7 @@ modify_s2n(const RealVector& scaled_vars, const IntArray& scale_types,
 
 
 /** scaling response mapping: modifies response from a model (user/native) for
-    use in iterators (scaled) -- not including multi_objective_modify */
+    use in iterators (scaled) -- not including MOO/NLS objective reductions */
 void Minimizer::response_modify_n2s(const Variables& native_vars,
 				    const Response& native_response,
 				    Response& recast_response,
@@ -954,7 +955,7 @@ void Minimizer::response_modify_n2s(const Variables& native_vars,
 }
 
 /** scaling response mapping: modifies response from scaled (iterator) to 
-    native (user) space -- not including multi_objective_retrieve */
+    native (user) space -- not including MOO/NLS objective reductions */
 void Minimizer::response_modify_s2n(const Variables& native_vars,
 				    const Response& scaled_response,
 				    Response& native_response,
@@ -1127,7 +1128,6 @@ void Minimizer::response_modify_s2n(const Variables& native_vars,
 }
 
 
-
 // automatically compute scaling factor
 // bounds case allows for negative multipliers
 // returns true if a valid scaling factor was computed
@@ -1235,14 +1235,12 @@ void Minimizer::print_scaling(const String& info, const IntArray& scale_types,
 			      const RealVector& scale_offsets,
 			      const StringArray& labels)
 {
-
   // labels will be empty for linear constraints
   Cout << "\n" << info << ":\n";
   Cout << "scale type " << std::setw(write_precision+7) << "multiplier" << " "
        << std::setw(write_precision+7) << "offset"
        << (labels.empty() ? " constraint number" : " label") << std::endl; 
   for (size_t i=0; i<scale_types.size(); i++) {
-
     switch (scale_types[i]) {
     case SCALE_NONE: 
       Cout << "none       ";
@@ -1263,9 +1261,133 @@ void Minimizer::print_scaling(const String& info, const IntArray& scale_types,
       Cout << i << std::endl;
     else
       Cout << labels[i] << std::endl;
-
   }
+}
 
+
+/** The composite objective computation sums up the contributions from
+    one of more primary functions using the primary response fn weights. */
+Real Minimizer::
+objective(const RealVector& fn_vals, const RealVector& primary_wts) const
+{
+  Real obj_fn = 0.0;
+  if (optimizationFlag) { // MOO
+    if (primary_wts.empty()) {
+      for (size_t i=0; i<numUserPrimaryFns; i++)
+	obj_fn += fn_vals[i];
+      if (numUserPrimaryFns > 1)
+	obj_fn /= (Real)numUserPrimaryFns; // default weight = 1/n
+    }
+    else
+      for (size_t i=0; i<numUserPrimaryFns; i++)
+	obj_fn += primary_wts[i] * fn_vals[i];
+  }
+  else { // NLS
+    if (primary_wts.empty())
+      for (size_t i=0; i<numUserPrimaryFns; i++)
+	obj_fn += std::pow(fn_vals[i], 2);
+    else
+      for (size_t i=0; i<numUserPrimaryFns; i++)
+	obj_fn += std::pow(primary_wts[i]*fn_vals[i], 2);
+  }
+  return obj_fn;
+}
+
+
+/** The composite objective gradient computation sums up the
+    contributions from one of more primary function gradients using
+    the primary response fn weights. */
+void Minimizer::
+objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
+		   const RealVector& primary_wts, RealVector& obj_grad) const
+{
+  if (obj_grad.length() != numContinuousVars)
+    obj_grad.sizeUninitialized(numContinuousVars);
+  obj_grad = 0.;
+  if (optimizationFlag) { // MOO
+    if (primary_wts.empty()) {
+      for (size_t j=0; j<numContinuousVars; j++) {
+	for (size_t i=0; i<numUserPrimaryFns; i++)
+	  obj_grad[j] += fn_grads[i][j];
+	obj_grad[j] /= (Real)numUserPrimaryFns;
+      }
+    }
+    else {
+      for (size_t i=0; i<numUserPrimaryFns; i++) {
+	const Real& wt_i      = primary_wts[i];
+	const Real* fn_grad_i = fn_grads[i];
+	for (size_t j=0; j<numContinuousVars; j++)
+	  obj_grad[j] += wt_i * fn_grad_i[j];
+      }
+    }
+  }
+  else { // NLS
+    for (size_t i=0; i<numUserPrimaryFns; i++) {
+      Real wt2_2_fn_val = (primary_wts.empty()) ? 2. * fn_vals[i] :
+	std::pow(primary_wts[i], 2) * 2. * fn_vals[i];
+      const Real* fn_grad_i = fn_grads[i];
+      for (size_t j=0; j<numContinuousVars; j++)
+	obj_grad[j] += wt2_2_fn_val * fn_grad_i[j];
+    }
+  }
+}
+
+
+/** The composite objective gradient computation sums up the
+    contributions from one of more primary function gradients using
+    the primary response fn weights. */
+void Minimizer::
+objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
+		  const RealSymMatrixArray& fn_hessians,
+		  const RealVector& primary_wts, RealSymMatrix& obj_hess) const
+{
+  if (obj_hess.numRows() != numContinuousVars)
+    obj_hess.shapeUninitialized(numContinuousVars);
+  obj_hess = 0.;
+  if (optimizationFlag) { // MOO
+    if (primary_wts.empty()) {
+      for (size_t j=0; j<numContinuousVars; j++) {
+	for (size_t k=0; k<=j; k++) {
+	  Real& sum = obj_hess(j,k); sum = 0.;
+	  for (size_t i=0; i<numUserPrimaryFns; i++)
+	    sum += fn_hessians[i](j,k);
+	  sum /= (Real)numUserPrimaryFns;
+	}
+      }
+    }
+    else {
+      for (size_t j=0; j<numContinuousVars; j++) {
+	for (size_t k=0; k<=j; k++) {
+	  Real& sum = obj_hess(j,k); sum = 0.;
+	  for (size_t i=0; i<numUserPrimaryFns; i++)
+	    sum += fn_hessians[i](j,k) * primary_wts[i];
+	}
+      }
+    }
+  }
+  else { // NLS
+
+    if (!fn_grads.empty()) {
+      // TO DO
+      if (fn_hessians.empty() || fn_vals.empty()) { // Gauss_Newton J^T J
+	if (primary_wts.empty()) {
+	}
+	else {
+	}
+      }
+      else { // full f f'' + f' f'
+	if (primary_wts.empty()) {
+	}
+	else {
+	}
+      }
+    }
+    else {
+      Cerr << "Error: Hessian reduction for NLS requires a minimum of least "
+	   << "squares gradients for Gauss-Newton." << std::endl;
+      abort_handler(-1);
+    }
+  }
 }
 
 } // namespace Dakota

@@ -49,8 +49,6 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
     abort_handler(-1);
   }
 
-  bestVariablesArray.push_back(model.current_variables().copy());
-
   // read observation data for computation of least squares residuals if specified
   if (obsDataFlag) {
 
@@ -96,14 +94,14 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
   // set minimizer data for number of functions or least squares terms
   // and then instantiate RecastModel as necessary
   numIterPrimaryFns = numUserPrimaryFns = numLeastSqTerms;
+  optimizationFlag  = false;
   if (weightFlag || scaleFlag || obsDataFlag){
 
     // user-space model becomes the sub-model of a RecastModel:
     SizetArray recast_vars_comps_total; // default: empty; no change in size
-    iteratedModel.assign_rep(
-      new RecastModel(model, recast_vars_comps_total, numIterPrimaryFns, 
-		      numNonlinearConstraints, numNonlinearIneqConstraints), 
-      false);
+    iteratedModel.assign_rep(new
+      RecastModel(model, recast_vars_comps_total, numLeastSqTerms,
+		  numNonlinearConstraints, numNonlinearIneqConstraints), false);
 
     if (scaleFlag)
       initialize_scaling();
@@ -161,6 +159,9 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
   }
   else
     iteratedModel = model;
+
+  // Initialize a best variables instance
+  bestVariablesArray.push_back(model.current_variables().copy());
 }
 
 
@@ -183,11 +184,13 @@ LeastSq::LeastSq(NoDBBaseConstructor, Model& model):
     abort_handler(-1);
   }
 
-  bestVariablesArray.push_back(model.current_variables().copy());
-
   // set minimizer data for number of functions or least squares terms
   // and then instantiate RecastModel as necessary
   numIterPrimaryFns = numUserPrimaryFns = numLeastSqTerms;
+  optimizationFlag  = false;
+
+  // Initialize a best variables instance
+  bestVariablesArray.push_back(model.current_variables().copy());
 }
 
 

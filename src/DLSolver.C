@@ -303,7 +303,7 @@ DLSolver::find_optimum()
 		ps.n_obj = numObjectiveFunctions_();
 		ps.maxfe = maxFunctionEvals_();
 		ps.numgflag = vendorNumericalGradFlag_();
-		ps.multiobj = multiObjFlag_();
+		ps.objrecast = localObjectiveRecast_();
 		df->ps = &ps;
 		M = iteratedModel_();
 		(*dl_find_optimum)(dl_Optimizer, this, options);

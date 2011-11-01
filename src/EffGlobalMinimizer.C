@@ -92,7 +92,7 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
     false);
 
   // *** TO DO: support scaling and other forced Recasts. ***
-  //if (scaleFlag || multiObjFlag || ...)
+  //if (scaleFlag || localObjectiveRecast)
   //  iteratedModel.init_communicators(maxConcurrency);
 
   // eifModel.init_communicators() recursion is currently sufficient for
@@ -227,17 +227,18 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     Cout << "\n>>>>> Initiating global optimization\n";
     // no summary output since on-the-fly constructed:
     approxSubProbMinimizer.run_iterator(Cout);
-    const Variables&    vars_star = approxSubProbMinimizer.variables_results();
-    const RealVector&   c_vars = vars_star.continuous_variables();
-    const Response&     resp_star = approxSubProbMinimizer.response_results();
-    const Real&         eif_star  = resp_star.function_value(0);
+    const Variables&  vars_star = approxSubProbMinimizer.variables_results();
+    const RealVector& c_vars    = vars_star.continuous_variables();
+    const Response&   resp_star = approxSubProbMinimizer.response_results();
+    const Real&       eif_star  = resp_star.function_value(0);
 
     // Get expected value for output
     fHatModel.continuous_variables(c_vars);
     fHatModel.compute_response();
     const RealVector& mean = fHatModel.current_response().function_values();
-    Real aug_lag = augmented_lagrangian_merit(mean, origNonlinIneqLowerBnds,
-      origNonlinIneqUpperBnds, origNonlinEqTargets);
+    const RealVector& wts  = iteratedModel.primary_response_fn_weights();
+    Real aug_lag = augmented_lagrangian_merit(mean, wts,
+      origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets);
 
     Cout << "\nResults of EGO iteration:\nFinal point =\n";
     write_data(Cout, c_vars);
@@ -380,17 +381,19 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 	  const Response& gp_resp = fHatModel.current_response();
 	  const RealVector& gp_fn = gp_resp.function_values();
 	  
-	  gpOut << '\n' << std::setw(13) << test_pt[0] << ' ' 
-		<< std::setw(13) << test_pt[1] << ' ' << std::setw(13) << gp_fn[i];
+	  gpOut << '\n' << std::setw(13) << test_pt[0] << ' ' << std::setw(13)
+		<< test_pt[1] << ' ' << std::setw(13) << gp_fn[i];
 
 	  RealVector variances = fHatModel.approximation_variances(test_pt);
 
-	  varOut << '\n' << std::setw(13) << test_pt[0] << ' '
-		 << std::setw(13) << test_pt[1] << ' ' << std::setw(13) << variances[i];
+	  varOut << '\n' << std::setw(13) << test_pt[0] << ' ' << std::setw(13)
+		 << test_pt[1] << ' ' << std::setw(13) << variances[i];
 
 	  if (i==numFunctions-1) {
-	    Real m = augmented_lagrangian_merit(gp_fn, origNonlinIneqLowerBnds, 
-	      origNonlinIneqUpperBnds, origNonlinEqTargets);
+	    const RealVector& wts = iteratedModel.primary_response_fn_weights();
+	    Real m = augmented_lagrangian_merit(gp_fn, wts,
+	      origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
+	      origNonlinEqTargets);
 	    RealVector merit(1);
 	    merit[0] = m;
 
@@ -434,7 +437,8 @@ EIF_objective_eval(const Variables& sub_model_vars,
 Real EffGlobalMinimizer::
 expected_improvement(const RealVector& means, const RealVector& variances)
 {
-  Real mean = objective(means), stdv;
+  Real mean = objective(means, iteratedModel.primary_response_fn_weights()),
+       stdv;
   if ( numNonlinearConstraints ) {
     // mean_M = mean_f + lambda*EV + r_p*EV*EV
     // stdv_M = stdv_f
@@ -508,7 +512,8 @@ void EffGlobalMinimizer::get_best_sample()
     fHatModel.continuous_variables(sams);
     fHatModel.compute_response();
     const RealVector& f_hat = fHatModel.current_response().function_values();
-    fn = augmented_lagrangian_merit(f_hat, origNonlinIneqLowerBnds,
+    const RealVector& wts   = iteratedModel.primary_response_fn_weights();
+    fn = augmented_lagrangian_merit(f_hat, wts, origNonlinIneqLowerBnds,
       origNonlinIneqUpperBnds, origNonlinEqTargets);
 
     if (fn < fn_star) {

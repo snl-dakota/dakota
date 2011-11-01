@@ -95,7 +95,7 @@ SNLLOptimizer::SNLLOptimizer(Model& model): Optimizer(model), SNLLBase(model),
     // The following is not performed in the Optimizer constructor since
     // maxConcurrency is updated above. The matching free_communicators()
     // appears in the Optimizer destructor.
-    if (scaleFlag || multiObjFlag)
+    if (scaleFlag || localObjectiveRecast)
       iteratedModel.init_communicators(maxConcurrency);
     optpds->setSSS(search_scheme_size); 
     theOptimizer = optpds;
@@ -910,8 +910,8 @@ void SNLLOptimizer::post_run(std::ostream& s)
   snll_post_run(nlfObjective);
 
   // update best response to contain the final objectives/constraints
-  if (!multiObjFlag) { // else multi_objective_retrieve() is used in
-                       // Optimizer::post_run()
+  if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
+                               // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
     best_fns[0] = nlfObjective->getF(); // see opt++/libopt/nlp.h
     // OPT++ expects nonlinear equations followed by nonlinear inequalities.

@@ -520,8 +520,8 @@ void DOTOptimizer::find_optimum()
 
   // Set best data using DAKOTA constraint values (not DOT constraints):
   bestVariablesArray.front().continuous_variables(designVars);
-  if (!multiObjFlag) { // else multi_objective_retrieve() is used in
-                       // Optimizer::post_run()
+  if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
+                               // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
     best_fns[0] = objFnValue;
     // NOTE: best_fn_vals[i] may be recomputed multiple times, but this

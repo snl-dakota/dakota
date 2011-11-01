@@ -51,7 +51,7 @@ APPSOptimizer::APPSOptimizer(Model& model): Optimizer(model)
   // maxConcurrency is updated within set_apps_parameters().  The
   // matching free_communicators() appears in the Optimizer destructor.
 
-  if (scaleFlag || multiObjFlag)
+  if (scaleFlag || localObjectiveRecast)
     iteratedModel.init_communicators(maxConcurrency);
 }
 
@@ -67,7 +67,7 @@ APPSOptimizer::APPSOptimizer(NoDBBaseConstructor, Model& model):
   // maxConcurrency is updated within set_apps_parameters().  The
   // matching free_communicators() appears in the Optimizer destructor.
 
-  if (scaleFlag || multiObjFlag)
+  if (scaleFlag || localObjectiveRecast)
     iteratedModel.init_communicators(maxConcurrency);
 }
 
@@ -108,9 +108,8 @@ void APPSOptimizer::find_optimum()
   // Retrieve the best responses and convert from HOPS vector to
   // DAKOTA vector.
 
-  if (!multiObjFlag) {
-    // else multi_objective_retrieve() is used in
-    // Optimizer::post_run()
+  if (!localObjectiveRecast) {
+    // else local_objective_recast_retrieve() is used in Optimizer::post_run()
 
     RealVector best_fns(numFunctions);
     std::vector<double> bestEqs(numNonlinearEqConstraints);

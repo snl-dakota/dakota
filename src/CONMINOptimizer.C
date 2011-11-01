@@ -544,8 +544,8 @@ void CONMINOptimizer::find_optimum()
   // conminInfo = 0) which should be the last evaluation (?).
   copy_data(conminDesVars, num_cv, local_cdv);
   bestVariablesArray.front().continuous_variables(local_cdv);
-  if (!multiObjFlag) { // else multi_objective_retrieve() used in
-                       // Optimizer::post_run()
+  if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
+                               // used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
     best_fns[0] = objFnValue;
     // NOTE: best_fn_vals[i] may be recomputed multiple times, but this

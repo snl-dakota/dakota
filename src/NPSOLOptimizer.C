@@ -393,8 +393,8 @@ void NPSOLOptimizer::find_optimum_on_model()
   // (not the final fn. eval) since NPSOL performs this assignment internally 
   // prior to exiting (see "Subroutine npsol" section of NPSOL manual).
   bestVariablesArray.front().continuous_variables(local_des_vars);
-  if (!multiObjFlag) { // else multi_objective_retrieve() is used in
-                       // Optimizer::post_run()
+  if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
+                               // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions, false);
     best_fns[0] = local_f_val;
     if (numNonlinearConstraints)

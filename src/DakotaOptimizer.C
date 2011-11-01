@@ -34,24 +34,6 @@ Optimizer* Optimizer::optimizerInstance(NULL);
 Optimizer::Optimizer(Model& model): Minimizer(model),
   numObjectiveFns(probDescDB.get_sizet("responses.num_objective_functions"))
 {
-  // Check for proper function definition (optimization data set)
-  if (numObjectiveFns <= 0) {
-    if (probDescDB.get_sizet("responses.num_least_squares_terms")) {
-      // allow this unusual case for surrogate-based NLS using
-      // "approx_subproblem single_objective"
-      Cerr << "Warning: coercing least squares data set into optimization data "
-	   << "set." << std::endl;
-      // numFunctions and numNonlinearConstraints have been set from
-      // the incoming (recast) model
-      numObjectiveFns = numFunctions - numNonlinearConstraints;
-    }
-    else {
-      Cerr << "\nError: number of objective functions must be greater than "
-	   << "zero for optimization methods." << std::endl;
-      abort_handler(-1);
-    }
-  }
-
   // Check for bound constraint support/requirement in method selection
   if ( boundConstraintFlag && methodName == "optpp_cg" ) {
     Cerr << "\nError: bound constraints not currently supported by "
@@ -69,29 +51,66 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
     speculativeFlag = false;
   }
 
-  bestVariablesArray.push_back(model.current_variables().copy());
+  // Check for proper response function definition (optimization data set)
+  // and manage requirements for local recasting
+  optimizationFlag  = true;
+  numUserPrimaryFns = numFunctions - numNonlinearConstraints;
+  bool local_nls_recast = false, local_moo_recast = false;
+  if (numObjectiveFns == 0) {
+    // allow solution of NLS problems as single-objective optimization
+    // through local recasting
+    size_t num_lsq = probDescDB.get_sizet("responses.num_least_squares_terms");
+    bool err_flag = false;
+    if (num_lsq) {
+      // Distinguish NLS case requiring a local recast from one where the
+      // incoming model has already been recast (surrogate-based NLS with
+      // "approx_subproblem single_objective").  Note that numFunctions
+      // and numNonlinearConstraints have been set in the ctor chain based
+      // on the incoming model.  Honoring the (rare) case of a user spec
+      // of num_least_squares_terms = 1 requires special logic.
+      if (numUserPrimaryFns == num_lsq) { // local recasting _may_ be required
+	if (num_lsq == 1) // ambiguous; use local recast if not already recast
+	  local_nls_recast = (model.model_type() != "recast");
+	else              // not yet recast; local recasting is required
+	  local_nls_recast = true;
+      }
+      else { // a recasting of LSQ has already occurred
+	if (numUserPrimaryFns == 1) // since not equal, num_lsq > 1
+	  local_nls_recast = false;
+	else // prior recasting must be LSQ --> single obj fn
+	  err_flag = true;
+      }
+    }
+    else
+      err_flag = true;
+    if (err_flag) {
+      Cerr << "\nError: responses specification is incompatible with "
+	   << "optimization methods." << std::endl;
+      abort_handler(-1);
+    }
+    if (local_nls_recast)
+      Cerr << "Warning: coercing least squares data set into optimization data "
+	   << "set." << std::endl;
+  }
+  else if (numObjectiveFns > 1)
+    local_moo_recast = (methodName != "moga");
 
-  // Check for need to perform multiobjective combination
-  multiObjFlag = ( numObjectiveFns > 1 && methodName != "moga" );
+  // set flags and primary function counts for recasting
+  localObjectiveRecast = (local_nls_recast || local_moo_recast);
+  if (localObjectiveRecast) // iterators see single objective in recast model
+    numObjectiveFns = 1;
 
   // when scaling and/or multiobjective is enabled, create a RecastModel to 
   // map between [user/native] space and [iterator/scaled] space
+  if (scaleFlag || localObjectiveRecast) {
 
-  // set minimizer data for number of functions or least squares terms
-  numUserPrimaryFns = numUserObjectiveFns = numObjectiveFns;
-  if (scaleFlag || multiObjFlag) {
-
-    // number of objective functions in the recast -- iterators see
-    // single objective in the case of multiobjective opt
-    numObjectiveFns = multiObjFlag ? 1 : numObjectiveFns;
-    numIterPrimaryFns = numObjectiveFns;
+    numIterPrimaryFns = numObjectiveFns; // used at Minimizer level
 
     // user-space model becomes the sub-model of a RecastModel:
     SizetArray recast_vars_comps_total; // default: empty; no change in size
-    iteratedModel.assign_rep(
-      new RecastModel(model, recast_vars_comps_total, numIterPrimaryFns, 
-		      numNonlinearConstraints, numNonlinearIneqConstraints),
-      false);
+    iteratedModel.assign_rep(new
+      RecastModel(model, recast_vars_comps_total, numObjectiveFns, 
+		  numNonlinearConstraints, numNonlinearIneqConstraints), false);
 
     // initialize_scaling function needs to modify the iteratedModel
     if (scaleFlag)
@@ -100,9 +119,9 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
     // setup recast model mappings and flags
     // recast map is all one to one unless multiobjective active
     size_t i;
-    size_t num_recast_fns = numIterPrimaryFns + numNonlinearConstraints;
+    size_t num_recast_fns = numObjectiveFns + numNonlinearConstraints;
     Sizet2DArray var_map_indices(numContinuousVars), 
-                 primary_resp_map_indices(numIterPrimaryFns), 
+                 primary_resp_map_indices(numObjectiveFns), 
                  secondary_resp_map_indices(numNonlinearConstraints);
     bool nonlinear_vars_map = false;
     BoolDequeArray nonlinear_resp_map(num_recast_fns);
@@ -114,10 +133,10 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
 	nonlinear_vars_map = true;
     }
 
-    if (multiObjFlag) {
-      primary_resp_map_indices[0].resize(numUserObjectiveFns);
-      nonlinear_resp_map[0].resize(numUserObjectiveFns);
-      for (i=0; i<numUserObjectiveFns; i++) {
+    if (localObjectiveRecast) {
+      primary_resp_map_indices[0].resize(numUserPrimaryFns);
+      nonlinear_resp_map[0].resize(numUserPrimaryFns);
+      for (i=0; i<numUserPrimaryFns; i++) {
 	primary_resp_map_indices[0][i] = i;
 	nonlinear_resp_map[0][i] = primaryRespScaleFlag &&
 	                           responseScaleTypes[i] & SCALE_LOG;
@@ -129,7 +148,7 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
     }
     else {
       // in this case num iterator and user obj fns are same
-      for (i=0; i<numUserObjectiveFns; i++) {
+      for (i=0; i<numUserPrimaryFns; i++) {
 	primary_resp_map_indices[i].resize(1);
 	primary_resp_map_indices[i][0] = i;
 	nonlinear_resp_map[i].resize(1);
@@ -139,10 +158,10 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
     }
     for (i=0; i<numNonlinearConstraints; i++) {
       secondary_resp_map_indices[i].resize(1);
-      secondary_resp_map_indices[i][0] = numUserObjectiveFns + i;
+      secondary_resp_map_indices[i][0] = numUserPrimaryFns + i;
       nonlinear_resp_map[numObjectiveFns+i].resize(1);
       nonlinear_resp_map[numObjectiveFns+i][0] = secondaryRespScaleFlag &&
-	responseScaleTypes[numUserObjectiveFns + i] & SCALE_LOG;
+	responseScaleTypes[numUserPrimaryFns + i] & SCALE_LOG;
     }
 
     // complete initialization of the RecastModel after alternate construction
@@ -151,7 +170,7 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
       = (varsScaleFlag) ? variables_recast : NULL;
     void (*pri_resp_recast) (const Variables&, const Variables&,
                              const Response&, Response&)
-      = (multiObjFlag || primaryRespScaleFlag || varsScaleFlag) ? 
+      = (localObjectiveRecast || primaryRespScaleFlag || varsScaleFlag) ? 
       primary_resp_recast : NULL;
     void (*sec_resp_recast) (const Variables&, const Variables&,
                              const Response&, Response&)
@@ -174,13 +193,15 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
   }
   else
     iteratedModel = model;
+
+  // Initialize a best variables instance
+  bestVariablesArray.push_back(model.current_variables().copy());
 }
 
 
 Optimizer::Optimizer(NoDBBaseConstructor, Model& model):
-  Minimizer(NoDBBaseConstructor(), model),
-  numObjectiveFns(numFunctions - numNonlinearConstraints),
-  numUserObjectiveFns(numObjectiveFns), multiObjFlag(false)
+  Minimizer(NoDBBaseConstructor(), model), numObjectiveFns(numUserPrimaryFns),
+  localObjectiveRecast(false)
 {
   if (numObjectiveFns > 1) {
     Cerr << "Error: on-the-fly Optimizer instantiations do not currently "
@@ -188,6 +209,9 @@ Optimizer::Optimizer(NoDBBaseConstructor, Model& model):
     abort_handler(-1);
   }
 
+  optimizationFlag  = true;
+
+  // Initialize a best variables instance
   bestVariablesArray.push_back(model.current_variables().copy());
 }
 
@@ -198,12 +222,13 @@ Optimizer(NoDBBaseConstructor, size_t num_cv, size_t num_div, size_t num_drv,
 	  size_t num_nln_eq):
   Minimizer(NoDBBaseConstructor(), num_lin_ineq, num_lin_eq, num_nln_ineq,
 	    num_nln_eq),
-  numObjectiveFns(1), numUserObjectiveFns(1), multiObjFlag(false)
+  numObjectiveFns(1), localObjectiveRecast(false)
 {
   numContinuousVars   = num_cv;
   numDiscreteIntVars  = num_div;
   numDiscreteRealVars = num_drv;
-  numFunctions        = numUserObjectiveFns + numNonlinearConstraints;
+  numFunctions        = numUserPrimaryFns + numNonlinearConstraints;
+  optimizationFlag    = true;
 
   std::pair<short,short> view(MIXED_DISTINCT_DESIGN, EMPTY);
   SizetArray vc_totals(12, 0);
@@ -243,15 +268,15 @@ void Optimizer::print_results(std::ostream& s)
     s << "=\n" << bestVariablesArray[i]; 
     // output best response
     const RealVector& best_fns = bestResponseArray[i].function_values(); 
-    if (numUserObjectiveFns > 1) s << "<<<<< Best objective functions "; 
+    if (numUserPrimaryFns > 1) s << "<<<<< Best objective functions "; 
     else                       s << "<<<<< Best objective function  "; 
     if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-    write_data_partial(s, 0, numUserObjectiveFns, best_fns); 
-    size_t num_cons = numFunctions - numUserObjectiveFns; 
+    write_data_partial(s, 0, numUserPrimaryFns, best_fns); 
+    size_t num_cons = numFunctions - numUserPrimaryFns; 
     if (num_cons) { 
       s << "<<<<< Best constraint values   "; 
       if (num_best > 1) s << "(set " << i+1 << ") "; s << "=\n"; 
-      write_data_partial(s, numUserObjectiveFns, num_cons, best_fns); 
+      write_data_partial(s, numUserPrimaryFns, num_cons, best_fns); 
     } 
     // lookup evaluation id where best occurred.  This cannot be catalogued
     // directly because the optimizers track the best iterate internally and
@@ -267,15 +292,15 @@ void Optimizer::print_results(std::ostream& s)
 }
 
 
-/** Retrieve a full multiobjective response based on the data returned
-    by a single objective optimizer by performing a data_pairs search. */
+/** Retrieve a MOO/NLS response based on the data returned by a single
+    objective optimizer by performing a data_pairs search. */
 void Optimizer::
-multi_objective_retrieve(const Variables& vars, Response& response) const
+local_objective_recast_retrieve(const Variables& vars, Response& response) const
 {
   // only needed for multiobjective optimization
-  if (numUserObjectiveFns <= 1)
-    Cerr << "Warning: multi_objective_retrieve() called for single objective "
-	 << "optimization." << std::endl;
+  if (numUserPrimaryFns <= 1)
+    Cerr << "Warning: local_objective_recast_retrieve() called for single "
+	 << "objective optimization." << std::endl;
   else {
     extern PRPCache data_pairs; // global container
     Response desired_resp;
@@ -283,7 +308,7 @@ multi_objective_retrieve(const Variables& vars, Response& response) const
 		      response.active_set(), desired_resp))
       response.update(desired_resp);
     else
-      Cerr << "Warning: failure in recovery of final values for multiobjective "
+      Cerr << "Warning: failure in recovery of final values for locally recast "
 	   << "optimization." << std::endl;
   }
 }
@@ -308,36 +333,36 @@ primary_resp_recast(const Variables& native_vars, const Variables& scaled_vars,
   bool scale_transform_needed = optimizerInstance->primaryRespScaleFlag ||
     optimizerInstance->need_resp_trans_byvars(
       native_response.active_set_request_vector(), 0,
-      optimizerInstance->numUserObjectiveFns);
+      optimizerInstance->numUserPrimaryFns);
 
   // Keeping scaling and weighted_sum transformation separate since
   // may eventually want more general transformations (e.g.,
   // goal-oriented).  Using weighted_sum yields a resized
   // iterator_response, but does not copy constraints
-  if (optimizerInstance->multiObjFlag && scale_transform_needed) {
+  if (optimizerInstance->localObjectiveRecast && scale_transform_needed) {
     // tmp_response contains the intermediate result with scaled
-    // functions only (indices 0:(numUserObjectiveFns-1)) then apply
+    // functions only (indices 0:(numUserPrimaryFns-1)) then apply
     // weighted objective sum
     Response tmp_response = native_response.copy();
     optimizerInstance->response_modify_n2s(native_vars, native_response,
-      tmp_response, 0, 0, optimizerInstance->numUserObjectiveFns);
-    const Model& sub_model
-      = optimizerInstance->iteratedModel.subordinate_model();
-    const RealVector& wts  = sub_model.primary_response_fn_weights();
-    optimizerInstance->weighted_sum(tmp_response, iterator_response, wts);
+      tmp_response, 0, 0, optimizerInstance->numUserPrimaryFns);
+    const RealVector& native_wts = optimizerInstance->
+      iteratedModel.subordinate_model().primary_response_fn_weights();
+    optimizerInstance->objective_reduction(tmp_response, native_wts,
+					   iterator_response);
   }
   else if (scale_transform_needed)
     optimizerInstance->response_modify_n2s(native_vars, native_response,
-      iterator_response, 0, 0, optimizerInstance->numUserObjectiveFns);
-  else if (optimizerInstance->multiObjFlag) {
-    const Model& sub_model
-      = optimizerInstance->iteratedModel.subordinate_model();
-    const RealVector& wts  = sub_model.primary_response_fn_weights();
-    optimizerInstance->weighted_sum(native_response, iterator_response, wts);
+      iterator_response, 0, 0, optimizerInstance->numUserPrimaryFns);
+  else if (optimizerInstance->localObjectiveRecast) {
+    const RealVector& native_wts = optimizerInstance->
+      iteratedModel.subordinate_model().primary_response_fn_weights();
+    optimizerInstance->objective_reduction(native_response, native_wts,
+					   iterator_response);
   }
   else {
     // could reach this if variables are scaled and only functions are requested
-    iterator_response.update_partial(0, optimizerInstance->numUserObjectiveFns,
+    iterator_response.update_partial(0, optimizerInstance->numUserPrimaryFns,
 				     native_response, 0);
   }
 }
@@ -350,59 +375,32 @@ primary_resp_recast(const Variables& native_vars, const Variables& scaled_vars,
     approach (using primaryRespFnWts) is the only technique supported
     currently.  The weightings are used to scale function values,
     gradients, and Hessians as needed. */
-void Optimizer::weighted_sum(const Response& full_response, 
-			     Response& reduced_response,
-			     const RealVector& multiobj_wts) const
+void Optimizer::objective_reduction(const Response& full_response,
+				    const RealVector& full_wts, 
+				    Response& reduced_response) const
 {
-  if (numUserObjectiveFns <= 1) {
-    Cerr << "\nError: Optimizer::weighted_sum() reached with single objective." 
-	 << std::endl;
+  if (numUserPrimaryFns <= 1) {
+    Cerr << "\nError: Optimizer::objective_reduction() reached with single "
+	 << "objective." << std::endl;
     abort_handler(-1);
   }
-  // Since we're no longer returning a new Response object, the following now
-  // assumes the reduced_response is already prepared (arrays sized, asv 
-  // populated, etc.)
-
-  size_t i, j, k;
-  const ShortArray& reduced_asv = reduced_response.active_set_request_vector();
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Multiobjective transformation:\n";
 
-  if (reduced_asv[0] & 1) {
-    const RealVector& full_fn_vals = full_response.function_values();
-    Real sum = 0.;
-    if (multiobj_wts.empty()) {
-      for (i=0; i<numUserObjectiveFns; i++)
-	sum += full_fn_vals[i];
-      sum /= (Real)numUserObjectiveFns; // default wt = 1/n
-    }
-    else
-      for (i=0; i<numUserObjectiveFns; i++)
-	sum += full_fn_vals[i] * multiobj_wts[i];
+  short reduced_asv0 = reduced_response.active_set_request_vector()[0];
+  if (reduced_asv0 & 1) { // build objective fn from full_response functions
+    Real sum = objective(full_response.function_values(), full_wts);
     reduced_response.function_value(sum, 0);    
     if (outputLevel > NORMAL_OUTPUT)
       Cout << "                     " << std::setw(write_precision+7) << sum
 	   << " obj_fn\n";
   }
 
-  // build new_fn_grads from full_fn_grads
-  if (reduced_asv[0] & 2) {
-    const RealMatrix& full_fn_grads = full_response.function_gradients();
-    RealVector new_fn_grad = reduced_response.function_gradient_view(0);
-    for (j=0; j<numContinuousVars; j++) {
-      Real sum = 0.;
-      if (multiobj_wts.empty()) {
-	for (i=0; i<numUserObjectiveFns; i++)
-	  sum += full_fn_grads[i][j];
-	new_fn_grad[j] = sum / (Real)numUserObjectiveFns;
-      }
-      else {
-	for (i=0; i<numUserObjectiveFns; i++)
-	  sum += full_fn_grads[i][j] * multiobj_wts[i];
-	new_fn_grad[j] = sum;
-      }
-    }
+  if (reduced_asv0 & 2) { // build obj_grad from full_response gradients
+    RealVector obj_grad = reduced_response.function_gradient_view(0);
+    objective_gradient(full_response.function_values(),
+		       full_response.function_gradients(), full_wts, obj_grad);
     if (outputLevel > NORMAL_OUTPUT) {
       write_col_vector_trans(Cout, 0, true, true, false,
 			     reduced_response.function_gradients());
@@ -410,28 +408,13 @@ void Optimizer::weighted_sum(const Response& full_response,
     }
   }
 
-  // build new_fn_hessians from full_fn_hessians
-  if (reduced_asv[0] & 4) {
-    const RealSymMatrixArray& full_fn_hessians
-      = full_response.function_hessians();
-    RealSymMatrix new_fn_hessian = reduced_response.function_hessian_view(0);
-    for (j=0; j<numContinuousVars; j++) {
-      for (k=0; k<=j; k++) {
-	Real sum = 0.;
-	if (multiobj_wts.empty()) {
-	  for (i=0; i<numUserObjectiveFns; i++)
-	    sum += full_fn_hessians[i](j,k);
-	  new_fn_hessian(j,k) = sum / (Real)numUserObjectiveFns;
-	}
-	else {
-	  for (i=0; i<numUserObjectiveFns; i++)
-	    sum += full_fn_hessians[i](j,k) * multiobj_wts[i];
-	  new_fn_hessian(j,k) = sum;
-	}
-      }
-    }
+  if (reduced_asv0 & 4) { // build obj_hessian from full_response hessians
+    RealSymMatrix obj_hessian = reduced_response.function_hessian_view(0);
+    objective_hessian(full_response.function_values(),
+		      full_response.function_gradients(),
+		      full_response.function_hessians(), full_wts, obj_hessian);
     if (outputLevel > NORMAL_OUTPUT) {
-      write_data(Cout, new_fn_hessian, true, true, false);
+      write_data(Cout, obj_hessian, true, true, false);
       Cout << " obj_fn Hessian\n";
     }
   }
@@ -450,7 +433,7 @@ void Optimizer::initialize_run()
   Minimizer::initialize_run();
 
   // pull any late updates into the RecastModel
-  if (scaleFlag || multiObjFlag)
+  if (scaleFlag || localObjectiveRecast)
     iteratedModel.update_from_subordinate_model(false); // recursion not reqd
 
   // Track any previous object instance in case of recursion.  Note that
@@ -488,27 +471,25 @@ void Optimizer::post_run(std::ostream& s)
 		   cvScaleMultipliers, cvScaleOffsets));
 
     // transform responses back to user space (for multiobj or scaling)
-    if (multiObjFlag && methodName != "moga")
-      multi_objective_retrieve(best_vars, best_resp);
+    if (localObjectiveRecast)
+      local_objective_recast_retrieve(best_vars, best_resp);
     else if (primaryRespScaleFlag || secondaryRespScaleFlag) {
-
       Response tmp_response = best_resp.copy();
       if (primaryRespScaleFlag || 
 	  need_resp_trans_byvars(tmp_response.active_set_request_vector(), 0,
-				 numUserObjectiveFns)) {
+				 numUserPrimaryFns)) {
 	response_modify_s2n(best_vars, best_resp, tmp_response, 0, 0,
-			    numUserObjectiveFns);
-	best_resp.update_partial(0, numUserObjectiveFns, tmp_response, 0 );
+			    numUserPrimaryFns);
+	best_resp.update_partial(0, numUserPrimaryFns, tmp_response, 0 );
       }
       if (secondaryRespScaleFlag || 
 	  need_resp_trans_byvars(tmp_response.active_set_request_vector(),
-				 numUserObjectiveFns, 
-				 numNonlinearConstraints)) {
+				 numUserPrimaryFns, numNonlinearConstraints)) {
 	response_modify_s2n(best_vars, best_resp, tmp_response,
-			    numUserObjectiveFns, numUserObjectiveFns,
+			    numUserPrimaryFns, numUserPrimaryFns,
 			    numNonlinearConstraints);
-	best_resp.update_partial(numUserObjectiveFns, numNonlinearConstraints,
-				 tmp_response, numUserObjectiveFns);
+	best_resp.update_partial(numUserPrimaryFns, numNonlinearConstraints,
+				 tmp_response, numUserPrimaryFns);
       }
     }
 

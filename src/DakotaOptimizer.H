@@ -75,11 +75,9 @@ protected:
   
   /// number of objective functions (iterator view)
   size_t numObjectiveFns;
-  /// number of objective functions (user's model view)
-  size_t numUserObjectiveFns;
 
-  /// flag indicating whether multi-objective transformations are necessary
-  bool multiObjFlag;
+  /// flag indicating whether local recasting to a single objective is used
+  bool localObjectiveRecast;
 
   /// pointer to Optimizer instance used in static member functions
   static Optimizer* optimizerInstance;
@@ -100,15 +98,15 @@ private:
 				  const Response& native_response,
 				  Response& scaled_response);
 
-  /// forward mapping: maps multiple objective functions to a single
+  /// forward mapping: maps multiple primary response functions to a single
   /// weighted objective for single-objective optimizers
-  void weighted_sum(const Response& full_response, Response& reduced_response,
-		    const RealVector& wts) const;
+  void objective_reduction(const Response& full_response,
+			   const RealVector& full_wts,
+			   Response& reduced_response) const;
 
-  /// inverse mapping: retrieves values for multiple objective functions
-  /// from the solution of a single-objective optimizer
-  void multi_objective_retrieve(const Variables& vars,
-				Response& response) const;
+  /// infers MOO/NLS solution from the solution of a single-objective optimizer
+  void local_objective_recast_retrieve(const Variables& vars,
+				       Response& response) const;
 
   //
   //- Heading: Data
@@ -116,13 +114,13 @@ private:
 };
 
 
-inline Optimizer::Optimizer(): multiObjFlag(false)
+inline Optimizer::Optimizer(): localObjectiveRecast(false)
 { }
 
 
 inline Optimizer::~Optimizer()
 { 
-  if (scaleFlag || multiObjFlag)
+  if (scaleFlag || localObjectiveRecast)
     iteratedModel.free_communicators(maxConcurrency);
 }
 

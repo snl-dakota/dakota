@@ -163,7 +163,7 @@ void NonlinearCGOptimizer::find_optimum()
 
   // return the optimal point in best*; should do DB lookup?
   bestVariablesArray.front().continuous_variables(designVars);
-  if (!multiObjFlag)
+  if (!localObjectiveRecast) // else local_objective_recast_retrieve() used
     bestResponseArray.front().function_value(functionCurr, 0);
 }
 

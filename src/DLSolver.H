@@ -19,7 +19,7 @@ public:
 	inline Variables *bestVariables_() { return &bestVariablesArray.front(); }
 	inline Response  *bestResponse_() { return &bestResponseArray.front(); }
 	inline int maxFunctionEvals_() { return maxFunctionEvals; }
-	inline int multiObjFlag_() { return multiObjFlag; }
+	inline int localObjectiveRecast_() { return localObjectiveRecast; }
 	inline int numContinuousVars_() { return numContinuousVars; }
 	inline int numFunctions_() { return numFunctions; }
 	inline int numLinearConstraints_() { return numLinearConstraints; }

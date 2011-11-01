@@ -229,7 +229,7 @@ COLINOptimizer::COLINOptimizer(Model& model):
   // maxConcurrency is updated within set_method_parameters().  The
   // matching free_communicators() appears in the Optimizer destructor.
 
-  if (scaleFlag || multiObjFlag)
+  if (scaleFlag || localObjectiveRecast)
     iteratedModel.init_communicators(maxConcurrency);
 }
 
@@ -908,9 +908,8 @@ void COLINOptimizer::post_run(std::ostream& s)
   // If we have any recast model, need to get the native and/or
   // user-provided pieces to do database lookup and/or sort.
 
-  Model& model_for_sort(iteratedModel);
-  if (scaleFlag || multiObjFlag)
-    model_for_sort = iteratedModel.subordinate_model();
+  Model& model_for_sort = (scaleFlag || localObjectiveRecast) ?
+    iteratedModel.subordinate_model() : iteratedModel;
 
   // Temporary data structures needed for sort.
 
@@ -1011,14 +1010,14 @@ void COLINOptimizer::post_run(std::ostream& s)
 
       double constraintViolation = 0.0;
       for(size_t j=0; j<num_nln_ineq; j++) {
-	if (fn_vals[j+numUserObjectiveFns] > nln_ineq_upr_bnds[j])
-	  constraintViolation += std::pow(fn_vals[j+numUserObjectiveFns]-nln_ineq_upr_bnds[j],2);
-	else if (fn_vals[j+numUserObjectiveFns] < nln_ineq_lwr_bnds[j])
-	  constraintViolation += std::pow(nln_ineq_lwr_bnds[j]-fn_vals[j+numUserObjectiveFns],2);
+	if (fn_vals[j+numUserPrimaryFns] > nln_ineq_upr_bnds[j])
+	  constraintViolation += std::pow(fn_vals[j+numUserPrimaryFns]-nln_ineq_upr_bnds[j],2);
+	else if (fn_vals[j+numUserPrimaryFns] < nln_ineq_lwr_bnds[j])
+	  constraintViolation += std::pow(nln_ineq_lwr_bnds[j]-fn_vals[j+numUserPrimaryFns],2);
       }
       for (size_t j=0; j<num_nln_eq; j++) {
-	if (std::fabs(fn_vals[j+numUserObjectiveFns+num_nln_ineq] - nln_eq_targets[j]) > 0.)
-	  constraintViolation += std::pow(fn_vals[j+numUserObjectiveFns+num_nln_ineq]-nln_eq_targets[j], 2);
+	if (std::fabs(fn_vals[j+numUserPrimaryFns+num_nln_ineq] - nln_eq_targets[j]) > 0.)
+	  constraintViolation += std::pow(fn_vals[j+numUserPrimaryFns+num_nln_ineq]-nln_eq_targets[j], 2);
       }
 
       // For feasible points, compute (sum of) objectives.
@@ -1026,22 +1025,10 @@ void COLINOptimizer::post_run(std::ostream& s)
       double obj_fn_metric = 0.0;
       if (constraintViolation > 0.0)
 	obj_fn_metric = DBL_MAX;
-      else {
-	if (multiObjFlag) {
-	  const RealVector& mo_weights = model_for_sort.primary_response_fn_weights();
-	  if (mo_weights.empty()) {
-	    for (size_t j=0; j<numUserObjectiveFns; j++)
-	      obj_fn_metric += fn_vals[j];
-	    if (numUserObjectiveFns > 1)
-	      obj_fn_metric /= (double)numUserObjectiveFns;
-	  }
-	  else
-	    for (size_t j=0; j<numUserObjectiveFns; j++)
-	      obj_fn_metric += mo_weights[j] * fn_vals[j];
-	}
-	else
-	  obj_fn_metric = fn_vals[0];
-      }
+      else
+	obj_fn_metric = (localObjectiveRecast) ?
+	  objective(fn_vals, model_for_sort.primary_response_fn_weights()) :
+	  fn_vals[0];
 
       RealRealPair metrics(constraintViolation, obj_fn_metric);
 

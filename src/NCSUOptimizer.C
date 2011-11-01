@@ -344,8 +344,8 @@ void NCSUOptimizer::find_optimum()
   // Set best variables and response for use by strategy level.
   // local_des_vars, fmin contain the optimal design 
   bestVariablesArray.front().continuous_variables(local_des_vars);
-  if (!multiObjFlag) { // else multi_objective_retrieve() is used in
-                       // Optimizer::post_run()
+  if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
+                               // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
     best_fns[0] = fmin;
     bestResponseArray.front().function_values(best_fns);
