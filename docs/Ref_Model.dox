@@ -356,7 +356,7 @@ equals one-half divided by the square of the corresponding correlation
 length. This definition of the correlation lengths makes their effect
 on the Gaussian correlation function directly analogous to that of the
 standard deviation of a Gaussian (normal) distribution.)  When
-performing optmization to determine correlation parameters, the
+performing optimization to determine correlation parameters, the
 Kriging model searches in a much smaller "feasible region" of
 correlation lengths.  If the \c 'none' option is selected, and \c
 correlation_lengths are not directly specified, then the center (in
@@ -365,11 +365,50 @@ also used as the starting point for \c 'local' optimization.  The
 small feasible region typically contains small/large enough
 correlation lengths to include both well-conditioned correlation
 matrices and either the globally optimal, or at least a near-optimal,
-correlation matrix. Ill-conditioned correlation matrices are
-explicitly excluded from consideration based on (an estimate of) their
-condition number.  The \c max_trials option limits the number of
-internal likelihood function evaluations used in constructing the
-kriging model.
+correlation matrix. Note that a matrix being ill-conditioned means
+that its rows or columns contain a significant amount of duplicate 
+information.  As of DAKOTA 5.2, within the maximum likelihood
+optimization loop, the kriging model will perform a pivoted Cholesky
+factorization of ill-conditioned matrices.  This ranks the sample
+points according to how much unique information they contain.  A 
+bisection search is used to efficiently determine how many low 
+information points need to be discarded to tightly meet the constraint 
+on the condition number estimate.  If necessary, the trend order 
+will automatically be decreased until there are fewer unknowns than
+equations.  The (possibly improper) subset of points used to build the 
+kriging model will be the ones associated with the most likely set of 
+correlation lengths.  Since the points that are discarded contain the 
+least unique information, they should be the ones that are easiest to 
+predict and provide maximum improvement to the condition number.  Note 
+that the kriging model: will interpolate all of the retained points; 
+is not guaranteed to exactly interpolate the discarded points; and 
+typically predicts the discarded points well enough to be visually 
+indistinguishable from a surface that interpolates them.  Warning: 
+when two points that are very close together are on opposite sides of 
+a discontinuity, one of them may be discarded. The \c max_trials option 
+limits the number of internal likelihood function evaluations used in 
+constructing the kriging model. As of DAKOTA 5.2, the 
+\c use_derivatives keyword, when used in conjunction with the kriging 
+model, will cause a Gradient Enhanced Kriging (GEK) model to be 
+constructed.  This is only beneficial when: the derivatives are 
+accurate; the derivatives are not infinite or nearly so; and the 
+function value plus gradient can be obtained at a cost comparable to 
+the function value by itself.  This means that derivatives obtained by 
+finite differences are not cost effective; in test problems their 
+accuracy was also insufficient.  However, derivatives obtained 
+analytically, or through automatic differentiation or continuous adjoint 
+techniques are appropriate and beneficial. For GEK, a pivoted Cholesky 
+factorization of Kriging's correlation matrix (which is a small sub-matrix 
+within GEK's correlation matrix) is performed to rank points according to 
+their information content.  This reordering is applied to whole points (a 
+function value at a point immediately followed by its derivatives) in 
+GEK's correlation matrix. Then a non-pivoted Cholesky factorization is 
+performed on the reordered GEK correlation matrix and bisection is used 
+to determine the last reordered equation which meets the condition 
+number constraint.  Subsequent equations are discarded.  The GEK model
+will exactly interpolate all points and derivative equations that were
+retained but is not guaranteed to interpolate those that were discarded.
+
 
 <!-- TODO: document MARS, ANN, and RBF controls -->
 Tables \ref T6d4 "6.4" and \ref T6d5 "6.5" summarize the global 
@@ -451,6 +490,12 @@ approximation type, Part I
 <td>integer
 <td>Optional
 <td>
+<tr>
+<td>Kriging gradient enhancement
+<td>\c use_derivatives
+<td>none
+<td>Optional
+<td>no gradient enhancement
 <tr>
 <td>Artificial neural network
 <td>\c neural_network
