@@ -92,6 +92,8 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   Cout << "num_problem_vars " << num_problem_vars << '\n';
   size_t num_resp = iteratedModel.num_functions();
   Cout << "num_responses " << num_resp << '\n';
+  if (num_resp > 1)
+    Cout << "WARNING: GPMSA is only calibrating the first response currently." << '\n';
 
   int i,j;
   zt_raw=new double*[numEmulatorSamples];
