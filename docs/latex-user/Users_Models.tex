@@ -393,7 +393,7 @@ information on polynomial models.
 
 \subsubsection{Kriging Spatial Interpolation Models}\label{models:surf:kriging}
 
-In DAKOTA 5.1, we have 2 versions of spatial interpolation models.
+In DAKOTA 5.2, we have 2 versions of spatial interpolation models.
 They are denoted by \texttt{kriging} and \texttt{gaussian\_process},
  respectively.  We are in the process of merging the \texttt{kriging}
 and \texttt{gaussian\_process} models.  For now, both are supported.
@@ -401,8 +401,11 @@ They are very similar:  the differences are explained in more detail below.
 
 The Kriging method uses techniques developed in the geostatistics and
 spatial statistics communities (~\cite{Cre91},~\cite{Koe96}) to produce
-smooth, $C^{2}$-continuous surface fit models of the response values
-from a set of data points. The form of the Kriging model is
+smooth surface fit models of the response values from a set of data 
+points.  The number of times the fitted surface is differentiable will 
+depend on the correlation function that is used.  Currently the 
+Gaussian correlation function is the only option; this makes the Kriging 
+model $C^{\infty}$-continuous.  The form of the Kriging model is
 
 \begin{equation}
   \hat{f}(\underline{x}) \approx \underline{g}(\underline{x})^T\underline{\beta} +
@@ -425,8 +428,8 @@ and are dependent on an $n$-dimensional vector of correlation parameters,
 $\underline{\theta} = \{\theta_{1},\ldots,\theta_{n}\}^T$. By default, 
 DAKOTA determines the value of $\underline{\theta}$ using a Maximum
 Likelihood Estimation (MLE) procedure.  However, the user can also opt 
-to manually set them in the Kriging model by specifying a vector of 
-correlation lengths, $\underline{l}=\{\l_{1},\ldots,\l_{n}\}^T$ where 
+to manually set them in the \texttt{kriging} model by specifying a vector 
+of correlation lengths, $\underline{l}=\{\l_{1},\ldots,\l_{n}\}^T$ where 
 $\theta_i=1/(2 l_i^2)$. This definition of correlation lengths makes 
 their effect on the Kriging model's behavior directly analogous to the 
 role played by the standard deviation in a normal (a.k.a. Gaussian) 
@@ -459,14 +462,13 @@ $\underline{g}(\underline{x})^T\underline{\beta}$, when $\underline{x}$
 is far from any of the data points from which the Kriging model was 
 constructed (i.e., when the model is used for extrapolation). 
 
-As mentioned above, there are two surrogate models in DAKOTA 5.1
+As mentioned above, there are two surrogate models in DAKOTA 5.2
 which provide Gaussian process surrogates, the \texttt{kriging} 
 model and the \texttt{gaussian\_process} model.  More details on 
 the \texttt{gaussian\_process} model can be found in~\cite{McF08}. 
 The differences between these models are as follows: 
 
 \begin{itemize}
-
 \item Trend Function:  The Kriging and GP models may incorporate 
 a parametric trend function whose purpose is to capture large-scale 
 variations. In both models, the trend function can be a constant, 
@@ -477,7 +479,7 @@ followed by one of \texttt{constant}, \texttt{linear}, or
 quadratic option for the GP was selected using the keyword, 
 \texttt{quadratic}). The \texttt{kriging} model has the additional 
 option of a full (i.e. it includes interaction terms) quadratic 
-polynomial; this is accessed by folliwing the \texttt{trend} keyword
+polynomial; this is accessed by following the \texttt{trend} keyword
 with \texttt{quadratic}.
 
 \item Correlation Parameter Determination: Both the Kriging and 
@@ -507,26 +509,90 @@ Note that we have found the \texttt{'global'} optimization method to be
 the most robust.
 
 \item Ill-conditioning.  One of the major problems in determining 
-the governing values for a Gaussian process or Kriging model is the fact 
-that the correlation matrix can easily become ill-conditioned when there 
-are too many input points close together.  Since the predictions from 
-the Gaussian process model involve inverting the correlation matrix, 
-ill-conditioning can lead to poor predictive capability and should be 
-avoided. The \texttt{kriging} model's definition of a small feasible search 
-region for correlation lengths, which should (almost) always contain some well 
-conditioned correlation matrices, allows ill-conditioning to be avoided by 
-explicitly excluding poorly conditioned $\underline{\underline{R}}$ from 
-consideration on the basis of their having a large (estimate of) condition 
-number.  The \texttt{gaussian\_process} model has two features to overcome
-ill-conditioning.  The first is that the algorithm will add a small amount 
-of noise to the diagonal elements of the matrix (this is often referred to 
-as a ``nugget'') and sometimes this is enough to improve the conditioning. 
-The second is that the user can specify to build the GP based only on a subset 
-of points.  The algorithm chooses an optimal subset of points (with 
-respect to predictive capability on the remaining unchosen points) using a 
-greedy heuristic. This option is specified with the keyword 
-\texttt{point\_selection} in the input file.  
-
+      the governing values for a Gaussian process or Kriging model is 
+      the fact that the correlation matrix can easily become 
+      ill-conditioned when there are too many input points close together.
+      Since the predictions from the Gaussian process model involve 
+      inverting the correlation matrix, ill-conditioning can lead to poor 
+      predictive capability and should be avoided. The \texttt{kriging} 
+      model's definition of a small feasible search region for correlation 
+      lengths, which should (almost) always contain some well conditioned 
+      correlation matrices, allows ill-conditioning to be avoided by 
+      explicitly excluding poorly conditioned $\underline{\underline{R}}$ 
+      from consideration on the basis of their having a large (estimate of) 
+      condition number; this constraint acts to decrease the size of
+      admissible correlation lengths.  Note that a sufficiently bad sample 
+      design can require correlation lengths to be so short that any
+      interpolatory Kriging model would become inept at extrapolation and
+      interpolation. \\ \\
+      The \texttt{gaussian\_process} model has two features 
+      to overcome ill-conditioning.  The first is that the algorithm will 
+      add a small amount of noise to the diagonal elements of the matrix 
+      (this is often referred to as a ``nugget'') and sometimes this is 
+      enough to improve the conditioning.  The second is that the user can 
+      specify to build the GP based only on a subset of points.  The 
+      algorithm chooses an optimal subset of points (with respect to 
+      predictive capability on the remaining unchosen points) using a 
+      greedy heuristic. This option is specified with the keyword 
+      \texttt{point\_selection} in the input file.\\ \\
+      As of DAKOTA 5.2, the
+      \texttt{kriging} model has a similar capability. Points are 
+      {\bf not} discarded prior to the construction of the Kriging model.  
+      Instead, within the maximum likelihood optimization loop, when the
+      correlation matrix  violates the explicit (estimate of) condition 
+      number constraint, the \texttt{kriging} model will perform a pivoted 
+      Cholesky factorization of the correlation matrix.  A bisection search 
+      is then used to efficiently find that last point for which the 
+      reordered correlation matrix is not too ill-conditioned. Subsequent 
+      reordered points are excluded from Kriging model for the current set 
+      of correlation lengths, i.e. they are not used to construct this 
+      Kriging model or compute its likelihood. When necessary, the 
+      \texttt{kriging} model will automatically decrease the order of
+      the polynomial trend function.  Once the maximum likelihood 
+      optimization has been completed, the subset of points that is 
+      retained will be the one associated with the most likely set of 
+      correlation lengths.  Note that a matrix being ill-conditioned means 
+      that its rows or columns contain a significant amount of duplicate 
+      information.  Since the points that were discarded were the ones that 
+      contained the least unique information, they should be the ones that 
+      are the easiest to predict and provide maximum improvement of the 
+      condition number.  However, the \texttt{kriging} model is not 
+      guaranteed to exactly interpolate the discarded points.  Warning: 
+      when two very nearby points are on opposite sides of a discontinuity, 
+      it is possible for one of them to be discarded by this approach.
+\item Gradient Enhanced Kriging (GEK). As of Dakota 5.2, the 
+      \texttt{use\_derivatives}  keyword will cause the \texttt{kriging} 
+      model to be built from a combination of function value and gradient 
+      information.  The\\ \texttt{gaussian\_process} model does not have
+      this capability.  Incorporating gradient information will only be 
+      beneficial if accurate and inexpensive derivative information is 
+      available, and the derivatives are not infinite or nearly so.  Here 
+      ``inexpensive'' means that the cost of evaluating a function value 
+      plus gradient is comparable to the cost of evaluating only the 
+      function value, for example gradients computed by analytical, 
+      automatic differentiation, or continuous adjoint techniques. It is 
+      not cost effective to use derivatives computed by finite differences.
+      In tests, GEK models built from finite difference derivatives were 
+      also significantly less accurate than those built from analytical 
+      derivatives.  Note that GEK's correlation matrix tends to have a 
+      significantly worse condition number than Kriging for the same 
+      sample design.\\ \\
+      This issue was addressed by using a pivoted Cholesky 
+      factorization of Kriging's correlation matrix (which is a small 
+      sub-matrix within GEK's correlation matrix) to rank points by how 
+      much unique information they contain. This reordering is then 
+      applied to whole points (the function value at a point immediately 
+      followed by gradient information at the same point) in GEK's 
+      correlation matrix.  A standard non-pivoted Cholesky is then 
+      applied to the reordered GEK correlation matrix and a bisection 
+      search is used to find the last equation that meets the constraint on 
+      the (estimate of) condition number. The cost of performing pivoted
+      Cholesky on Kriging's correlation matrix is usually negligible 
+      compared to the cost of the non-pivoted Cholesky factorization of 
+      GEK's correlation matrix.  In tests, it also resulted in more
+      accurate GEK models than when pivoted Cholesky or 
+      whole-point-block pivoted Cholesky was performed on GEK's 
+      correlation matrix.
 \end{itemize}
 
 \subsubsection{Artificial Neural Network (ANN) Models}\label{models:surf:ann}

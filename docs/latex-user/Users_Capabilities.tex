@@ -3,8 +3,8 @@
 \section{Purpose}\label{capabilities:purpose}
 
 This chapter provides a brief overview of DAKOTA's capabilities.
-Emerging capabilites in solution verification and Bayesian
-calibration/uncertainty quantificaiton are not yet documented here.
+Emerging capabilities in solution verification and Bayesian
+calibration/uncertainty quantification are not yet documented here.
 Additional details and example problems are provided in subsequent
 chapters in this manual.
 
@@ -75,10 +75,10 @@ General Public License and is distributed with DAKOTA.
 
 \textbf{FSUDace (Florida State University Design and Analysis of
 Computer Experiments)}: The FSUDace package provides quasi-Monte Carlo
-sampling (Halton and Hammersley) and Centroidal Voronio Tesselation
+sampling (Halton and Hammersley) and Centroidal Voronoi Tessellation
 (CVT) methods.  The quasi-Monte Carlo and CVT methods are
 designed with the goal of low discrepancy. Discrepancy refers to the
-nonuniformity of the sample points within the unit hypercube. Low
+non-uniformity of the sample points within the unit hypercube. Low
 discrepancy sequences tend to cover the unit hypercube reasonably
 uniformly. Quasi-Monte Carlo methods produce low discrepancy
 sequences, especially if one is interested in the uniformity of
@@ -122,7 +122,7 @@ generally available for aleatory uncertainties, probabilistic methods
 are commonly used for computing response distribution statistics based
 on input probability distribution specifications.  Conversely, for
 epistemic uncertainties, data is generally sparse, making the use of
-probability theory questionable and leading to nonprobabilistic
+probability theory questionable and leading to non-probabilistic
 methods based on interval specifications.
 The aleatory UQ methods in DAKOTA include various
 sampling-based approaches (e.g., Monte Carlo and Latin Hypercube
@@ -212,7 +212,7 @@ evaluated by sampling on the expansion.
 epistemic uncertainty. In interval analysis, one assumes that nothing 
 is known about an epistemic uncertain variable except that its value lies 
 somewhere within an interval.  In this situation, it is NOT 
-assumed that the value has a uniform probability of occuring 
+assumed that the value has a uniform probability of occurring 
 within the interval.  Instead, the interpretation is that 
 any value within the interval is a possible value or a potential 
 realization of that variable.  In interval analysis, the 
@@ -245,7 +245,7 @@ overlapping, contiguous, or have gaps.  The intervals and their associated
 BPAs are then propagated through the simulation to obtain cumulative
 distribution functions on belief and plausibility.  Belief is the lower
 bound on a probability estimate that is consistent with the evidence, and
-plausibility is the uppder bound on a probability estimate that is consistent
+plausibility is the upper bound on a probability estimate that is consistent
 with the evidence. In addition to the full evidence theory structure, 
 we have a simplified capability for users wanting to perform pure 
 interval analysis (e.g. what is the interval on the output given 
@@ -642,11 +642,16 @@ currently no use of forward- or backward-stepping regression methods
 to eliminate unnecessary terms from the polynomial model.
 
 \textbf{Kriging Interpolation}: An implementation of spatial
-interpolation using kriging methods and Gaussian correlation functions
-~\cite{Giu98}. The algorithm used in the kriging process generates a
-$C^2$-continuous surface that exactly interpolates the data values.
+interpolation using Kriging methods and Gaussian correlation functions
+~\cite{Giu98}.  Ill-conditioning due to a poorly spaced sample design is 
+handled by discarding points that contribute the least unique information
+to the correlation matrix.  Therefore, the points that are discarded are 
+the ones that are easiest to predict.  The algorithm used in the Kriging 
+process generates a $C^\infty$-continuous surface that exactly interpolates 
+the data values at the retained points but are not guaranteed to 
+interpolate the discarded points.
 
-\textbf{Gaussian Process (GP)}: Closely related to kriging, this
+\textbf{Gaussian Process (GP)}: Closely related to Kriging, this
 technique is a spatial interpolation method that assumes the outputs
 of the simulation model follow a multivariate normal distribution.
 The implementation of a Gaussian process currently in DAKOTA assumes
@@ -695,7 +700,7 @@ and reduced-order model approximations:
 \textbf{Multifidelity Surrogates}: Multifidelity modeling involves the
 use of a low-fidelity physics-based model as a surrogate for the
 original high-fidelity model.  The low-fidelity model typically
-involves a coarsher mesh, looser convergence tolerances, reduced
+involves a coarser mesh, looser convergence tolerances, reduced
 element order, or omitted physics.  It is a separate model in its own
 right and does not require data from the high-fidelity model for
 construction.  Rather, the primary need for high-fidelity evaluations
@@ -757,7 +762,7 @@ analysis can use efficient optimization methods to obtain interval
 bound estimates.  Nested Dempster-Shafer refers to using
 Dempster-Shafer evidence theory on the outer loop, and an aleatory UQ
 method such as sampling or stochastic expansions on the inner loop.
-Evidence theory results in measures of belief and plausbility, so in a
+Evidence theory results in measures of belief and plausibility, so in a
 nested context, this produces belief and plausibility bounds on inner
 loop statistics.  More on mixed UQ approaches can be found
 in~\cite{Eld09b} and ~\cite{Eld11}.
@@ -812,7 +817,7 @@ serial and parallel simulation codes.
 Some engineering design applications call for the use of multiple
 simulation code executions (different disciplinary codes, the same
 code for different load cases or environments, etc.) in order to
-evaluate a single response data set (e.g., abjective functions and
+evaluate a single response data set (e.g., objective functions and
 constraints) for a single set of parameters. If these simulation code
 executions are independent (or if coupling is enforced at a higher
 level), DAKOTA can perform them in parallel.
