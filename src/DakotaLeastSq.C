@@ -288,7 +288,7 @@ primary_resp_recast(const Variables& native_vars,
       Response tmp_response = native_response.copy();
       for (size_t i=0; i<leastSqInstance->numLeastSqTerms; i++) {
 	if (asv[i] & 1) {
-	  tmp_response.function_value(fn_vals[i] - leastSqInstance->obsData[i],i);
+	  tmp_response.function_value(fn_vals[i]-leastSqInstance->obsData[i],i);
 	  functions_req = true;
 	}
       }
@@ -357,16 +357,18 @@ primary_resp_recast(const Variables& native_vars,
 
     RealVector fn_vals = iterator_response.function_values_view();
     for (size_t i=0; i<leastSqInstance->numLeastSqTerms; i++) {
+      // \Sum_i w_i T^2_i => residual scaling as \Sum_i [sqrt(w_i) T_i]^2
+      Real wt_i = std::sqrt(lsq_weights[i]);
       // functions
       if (asv[i] & 1)
-	fn_vals[i] *= lsq_weights[i];
+	fn_vals[i] *= wt_i;
       // gradients
       if (asv[i] & 2) {
 	RealVector fn_grad = iterator_response.function_gradient_view(i);
 	for (j=0; j<num_deriv_vars; ++j) {
 	  size_t xj_index = find_index(var_ids, dvv[j]);
 	  if (xj_index != _NPOS)
-	    fn_grad[xj_index] *= lsq_weights[i];
+	    fn_grad[xj_index] *= wt_i;
 	}
       }
       // hessians
@@ -378,7 +380,7 @@ primary_resp_recast(const Variables& native_vars,
 	    for (k=0; k<=j; ++k) {
 	      size_t xk_index = find_index(var_ids, dvv[k]);
 	      if (xk_index != _NPOS)
-		fn_hess(xj_index,xk_index) *= lsq_weights[i];
+		fn_hess(xj_index,xk_index) *= wt_i;
 	    }
 	  }
 	}
@@ -447,7 +449,7 @@ void LeastSq::post_run(std::ostream& s)
 	= iteratedModel.subordinate_model().primary_response_fn_weights();
       const RealVector& fn_vals = best_resp.function_values();
       for (size_t i=0; i<numLeastSqTerms; i++)
-	best_resp.function_value(fn_vals[i]/lsq_weights[i],i);
+	best_resp.function_value(fn_vals[i]/std::sqrt(lsq_weights[i]),i);
     }
   
     // TODO: need to transform back if gradients and CDV scaled

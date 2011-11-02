@@ -85,8 +85,6 @@ protected:
   /// pointer containing previous value of leastSqInstance
   LeastSq* prevLSqInstance;
 
-  // user-specified weights for weighted least squares
-  //RealVector leastSqWeights;
   /// flag indicating whether weighted least squares is active
   bool weightFlag;
   /// filename from which to read observed data

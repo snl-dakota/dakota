@@ -473,8 +473,8 @@ Specification detail for optimization data sets
 \subsection RespFnLS Least squares terms and constraint functions (least squares data set)
 
 A least squares data set is specified using \c num_least_squares_terms
-and optionally \c least_squares_data_file \c
-least_squares_term_scales, \c least_squares_weights \c
+and optionally \c least_squares_data_file, \c
+least_squares_term_scales, \c least_squares_weights, \c
 num_nonlinear_inequality_constraints, \c
 nonlinear_inequality_lower_bounds, \c
 nonlinear_inequality_upper_bounds, \c nonlinear_inequality_scales, \c
@@ -524,10 +524,11 @@ characteristic value to be used in scaling each term.  These values
 are ignored for scaling type <tt>'none'</tt>, required for
 <tt>'value'</tt>, and optional for <tt>'log'</tt>.  If a single real
 value is specified it will apply to each term.  The \c
-least_squares_weights specification provides a means to
-multiplicatively weight the vector of least squares residuals with a
-vector of weights.  If scaling is specified, it is applied before term
-weighting.
+least_squares_weights specification provides a means to specify a
+relative emphasis among the vector of squared residuals through
+multiplication of these squared residuals by a vector of weights:
+\f[f = \sum_{i=1}^{n} w_i (R_i)^2\f]
+If scaling is specified, it is applied before term weighting.
 
 \ref T9d4 "Table 9.4" summarizes the least squares
 data set specification.

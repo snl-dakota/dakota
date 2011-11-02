@@ -1288,15 +1288,20 @@ objective(const RealVector& fn_vals, const RealVector& primary_wts) const
 	obj_fn += std::pow(fn_vals[i], 2); // default weight = 1
     else
       for (size_t i=0; i<numUserPrimaryFns; i++)
-	obj_fn += std::pow(primary_wts[i]*fn_vals[i], 2);
+	obj_fn += primary_wts[i] * std::pow(fn_vals[i], 2);
   }
   return obj_fn;
 }
 
 
-/** The composite objective gradient computation sums up the
-    contributions from one of more primary function gradients using
-    the primary response fn weights. */
+/** The composite objective gradient computation combines the
+    contributions from one of more primary function gradients,
+    including the effect of any primary function weights.  In the case
+    of a linear mapping (MOO), only the primary function gradients are
+    required, but in the case of a nonlinear mapping (NLS), primary
+    function values are also needed.  Within RecastModel::set_mapping(),
+    the active set requests are automatically augmented to make values
+    available when needed, based on nonlinearRespMapping settings. */
 void Minimizer::
 objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
 		   const RealVector& primary_wts, RealVector& obj_grad) const
@@ -1323,19 +1328,26 @@ objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
   }
   else { // NLS
     for (size_t i=0; i<numUserPrimaryFns; i++) {
-      Real wt2_2_fn_val = (primary_wts.empty()) ? 2. * fn_vals[i] :
-	std::pow(primary_wts[i], 2) * 2. * fn_vals[i]; // default weight = 1
+      Real wt_2_fn_val = 2. * fn_vals[i]; // default weight = 1
+      if (!primary_wts.empty()) wt_2_fn_val *= primary_wts[i];
       const Real* fn_grad_i = fn_grads[i];
       for (size_t j=0; j<numContinuousVars; j++)
-	obj_grad[j] += wt2_2_fn_val * fn_grad_i[j];
+	obj_grad[j] += wt_2_fn_val * fn_grad_i[j];
     }
   }
 }
 
 
-/** The composite objective gradient computation sums up the
-    contributions from one of more primary function gradients using
-    the primary response fn weights. */
+/** The composite objective Hessian computation combines the
+    contributions from one of more primary function Hessians,
+    including the effect of any primary function weights.  In the case
+    of a linear mapping (MOO), only the primary function Hessians are
+    required, but in the case of a nonlinear mapping (NLS), primary
+    function values and gradients are also needed in general
+    (gradients only in the case of a Gauss-Newton approximation).
+    Within the default RecastModel::set_mapping(), the active set
+    requests are automatically augmented to make values and gradients
+    available when needed, based on nonlinearRespMapping settings. */
 void Minimizer::
 objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
 		  const RealSymMatrixArray& fn_hessians,
@@ -1344,47 +1356,69 @@ objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
   if (obj_hess.numRows() != numContinuousVars)
     obj_hess.shapeUninitialized(numContinuousVars);
   obj_hess = 0.;
+  size_t i, j, k;
   if (optimizationFlag) { // MOO
-    if (primary_wts.empty()) {
-      for (size_t j=0; j<numContinuousVars; j++) {
-	for (size_t k=0; k<=j; k++) {
+    if (primary_wts.empty())
+      for (j=0; j<numContinuousVars; j++)
+	for (k=0; k<=j; k++) {
 	  Real& sum = obj_hess(j,k); sum = 0.;
-	  for (size_t i=0; i<numUserPrimaryFns; i++)
+	  for (i=0; i<numUserPrimaryFns; i++)
 	    sum += fn_hessians[i](j,k);
 	  sum /= (Real)numUserPrimaryFns; // default weight = 1/n
 	}
-      }
-    }
-    else {
-      for (size_t j=0; j<numContinuousVars; j++) {
-	for (size_t k=0; k<=j; k++) {
+    else
+      for (j=0; j<numContinuousVars; j++)
+	for (k=0; k<=j; k++) {
 	  Real& sum = obj_hess(j,k); sum = 0.;
-	  for (size_t i=0; i<numUserPrimaryFns; i++)
+	  for (i=0; i<numUserPrimaryFns; i++)
 	    sum += fn_hessians[i](j,k) * primary_wts[i];
 	}
-      }
-    }
   }
   else { // NLS
-    if (!fn_grads.empty()) {
-      // TO DO
-      if (fn_hessians.empty() || fn_vals.empty()) { // Gauss_Newton J^T J
-	if (primary_wts.empty()) {
-	}
-	else {
-	}
-      }
-      else { // full f f'' + f' f'
-	if (primary_wts.empty()) {
-	}
-	else {
-	}
-      }
-    }
-    else {
+    if (fn_grads.empty()) {
       Cerr << "Error: Hessian reduction for NLS requires a minimum of least "
-	   << "squares gradients for Gauss-Newton." << std::endl;
+	   << "squares gradients (for Gauss-Newton)." << std::endl;
       abort_handler(-1);
+    }
+    // Gauss_Newton approx Hessian = J^T J (neglect f*H term)
+    if (fn_hessians.empty() || fn_vals.empty()) {
+      if (primary_wts.empty())
+	for (j=0; j<numContinuousVars; ++j)
+	  for (k=0; k<=j; ++k) {
+	    Real& sum = obj_hess(j,k); sum = 0.;
+	    for (i=0; i<numUserPrimaryFns; ++i)
+	      sum += fn_grads(j,i) * fn_grads(k,i); // default weight = 1
+	    sum *= 2.;
+	  }
+      else
+	for (j=0; j<numContinuousVars; ++j)
+	  for (k=0; k<=j; ++k) {
+	    Real& sum = obj_hess(j,k); sum = 0.;
+	    for (i=0; i<numUserPrimaryFns; ++i)
+	      sum += primary_wts[i] * fn_grads(j,i) * fn_grads(k,i);
+	    sum *= 2.;
+	  }
+    }
+    // full Hessian = f H + J^T J
+    else {
+      if (primary_wts.empty())
+	for (j=0; j<numContinuousVars; ++j)
+	  for (k=0; k<=j; ++k) {
+	    Real& sum = obj_hess(j,k); sum = 0.;
+	    for (i=0; i<numUserPrimaryFns; ++i)
+	      sum += fn_grads(j,i) * fn_grads(k,i) +
+		fn_vals[i] * fn_hessians[i](j,k);
+	    sum *= 2.;
+	  }
+      else
+	for (j=0; j<numContinuousVars; ++j)
+	  for (k=0; k<=j; ++k) {
+	    Real& sum = obj_hess(j,k); sum = 0.;
+	    for (i=0; i<numUserPrimaryFns; ++i)
+	      sum += primary_wts[i] * (fn_grads(j,i) * fn_grads(k,i) +
+				       fn_vals[i] * fn_hessians[i](j,k));
+	    sum *= 2.;
+	  }
     }
   }
 }

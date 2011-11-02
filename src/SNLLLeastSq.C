@@ -353,18 +353,12 @@ nlf2_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, double>
           dtmp += 2. * local_fn_grads(i,k) * local_fn_grads(j,k);
         hess_f(i, j) = dtmp;
       }
-      for (j=0; j<i; j++)
-        hess_f(j, i) = hess_f(i, j); // fill in symmetric values
+      //for (j=0; j<i; j++)
+      //  hess_f(j, i) = hess_f(i, j); // fill in symmetric values
     }
     if (snllLSqInstance->outputLevel > NORMAL_OUTPUT) {
-      Cout << "    nlf2_evaluator_gn results: objective fn. Hessian =\n[[ ";
-      for (i=1; i<=n; i++) {
-	for (j=1; j<=n; j++)
-	  Cout << std::setw(write_precision+7) << hess_f(i,j) << ' ';
-	if (i!=n) 
-	  Cout << "\n   ";
-      }
-      Cout << "]]\n";
+      Cout << "    nlf2_evaluator_gn results: objective fn. Hessian =\n";
+      write_data(Cout, hess_f, true, true, true);
     }
     result_mode |= NLPHessian;
   }
