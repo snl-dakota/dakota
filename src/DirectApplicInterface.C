@@ -2930,19 +2930,19 @@ void DirectApplicInterface::shubert1D(size_t der_mode, Real xc_loc, std::vector<
   Real k_real;
   
   if(der_mode & 1) {
-    for (k=1; k<5; ++k) {
+    for (k=1; k<=5; ++k) {
       k_real=static_cast<Real>(k);
       w_and_ders[0]+=k_real*std::cos(xc_loc*(k_real+1.0)+k_real);	
     }
   }
   if(der_mode & 2) {
-    for (k=1; k<5; ++k) {
+    for (k=1; k<=5; ++k) {
       k_real=static_cast<Real>(k);
       w_and_ders[1]+=k_real*(k_real+1.0)*-std::sin(xc_loc*(k_real+1.0)+k_real);
     }
   }
   if(der_mode & 4) {
-    for (k=1; k<5; ++k) {
+    for (k=1; k<=5; ++k) {
       k_real=static_cast<Real>(k);
       w_and_ders[2]+=k_real*(k_real+1.0)*(k_real+1.0)*-std::cos(xc_loc*(k_real+1.0)+k_real);
     }
@@ -2963,10 +2963,10 @@ int DirectApplicInterface::herbie()
     der_mode[i]=1;
   if(directFnASV[0] >= 2)
     for (i=0; i<numDerivVars; ++i)
-      der_mode[directFnDVV[i]-1]=der_mode[directFnDVV[i]-1]+2;
+      der_mode[directFnDVV[i]-1]+=2;
   if(directFnASV[0] >= 4)
     for (i=0; i<numDerivVars; ++i)
-      der_mode[directFnDVV[i]-1]=der_mode[directFnDVV[i]-1]+4;
+      der_mode[directFnDVV[i]-1]+=4;
   std::vector<Real> w(numVars);
   std::vector<Real> d1w(numVars);
   std::vector<Real> d2w(numVars);
@@ -2992,10 +2992,10 @@ int DirectApplicInterface::smooth_herbie()
     der_mode[i]=1;
   if(directFnASV[0] >= 2)
     for (i=0; i<numDerivVars; ++i)
-      der_mode[directFnDVV[i]-1]=der_mode[directFnDVV[i]-1]+2;
+      der_mode[directFnDVV[i]-1]+=2;
   if(directFnASV[0] >= 4)
     for (i=0; i<numDerivVars; ++i)
-      der_mode[directFnDVV[i]-1]=der_mode[directFnDVV[i]-1]+4;
+      der_mode[directFnDVV[i]-1]+=4;
   std::vector<Real> w(numVars);
   std::vector<Real> d1w(numVars);
   std::vector<Real> d2w(numVars);
@@ -3020,10 +3020,10 @@ int DirectApplicInterface::shubert()
     der_mode[i]=1;
   if(directFnASV[0] >= 2)
     for (i=0; i<numDerivVars; ++i)
-      der_mode[directFnDVV[i]-1]=der_mode[directFnDVV[i]-1]+2;
+      der_mode[directFnDVV[i]-1]+=2;
   if(directFnASV[0] >= 4)
     for (i=0; i<numDerivVars; ++i)
-      der_mode[directFnDVV[i]-1]=der_mode[directFnDVV[i]-1]+4;
+      der_mode[directFnDVV[i]-1]+=4;
   std::vector<Real> w(numVars);
   std::vector<Real> d1w(numVars);
   std::vector<Real> d2w(numVars);
