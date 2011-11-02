@@ -119,7 +119,7 @@ SurrBasedLocalMinimizer::SurrBasedLocalMinimizer(Model& model):
       nonlinear_resp_map[0].resize(numUserPrimaryFns);
       for (i=0; i<numUserPrimaryFns; i++) {
 	recast_primary_resp_map[0][i] = i;
-	nonlinear_resp_map[0][i] = (optimizationFlag) ? false : true;
+	nonlinear_resp_map[0][i] = !optimizationFlag; // nonlinear if NLS->Opt
       }
     }
     else { // LAGRANGIAN_OBJECTIVE or AUGMENTED_LAGRANGIAN_OBJECTIVE

@@ -55,7 +55,7 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
   // and manage requirements for local recasting
   numUserPrimaryFns = numFunctions - numNonlinearConstraints;
   bool local_nls_recast = false, local_moo_recast = false;
-  if (numObjectiveFns == 0) {
+  if (numObjectiveFns == 0) { // no user spec for num_objective_functions
     optimizationFlag = false; // used to distinguish NLS from MOO
     // allow solution of NLS problems as single-objective optimization
     // through local recasting
@@ -91,20 +91,19 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
     if (local_nls_recast)
       Cerr << "Warning: coercing least squares data set into optimization data "
 	   << "set." << std::endl;
-  }
-  else {
-    optimizationFlag = true; // used to distinguish NLS from MOO
-    if (numObjectiveFns > 1)
-      local_moo_recast = (methodName != "moga");
-  }
-
-  // set flags and primary function counts for recasting
-  localObjectiveRecast = (local_nls_recast || local_moo_recast);
-  if (localObjectiveRecast) // iterators see single objective in recast model
+    // For all NLS cases, reset numObjectiveFns to 1: optimizers see single
+    // objective in recast model, whether local or prior recast.
     numObjectiveFns = 1;
+  }
+  else { // user specification for num_objective_functions
+    optimizationFlag = true; // used to distinguish NLS from MOO
+    if (numObjectiveFns > 1 && methodName != "moga")
+      { local_moo_recast = true; numObjectiveFns = 1; }
+  }
 
   // when scaling and/or single objective transformation is enabled, create a
   // RecastModel to map between [user/native] space and [iterator/scaled] space
+  localObjectiveRecast = (local_nls_recast || local_moo_recast);
   if (scaleFlag || localObjectiveRecast) {
 
     numIterPrimaryFns = numObjectiveFns; // used at Minimizer level
