@@ -1,0 +1,34 @@
+
+
+
+method,
+	conmin_frcg				#0,#1,#4,#5,#8,#9
+#	optpp_newton				#2,#3,#6,#7,#10,#11
+	  max_iterations = 100           
+	  convergence_tolerance = 1e-8  
+
+
+variables,
+	continuous_design = 2
+	  initial_point  -0.9 -1.1		
+	  lower_bounds   -2.0 -2.0	
+	  upper_bounds    2.0  2.0	
+	  descriptors     'x1' 'x2'
+
+interface,
+#	system
+	direct
+	  analysis_driver = 'herbie'		#0,#1,#2,#3
+#	  analysis_driver = 'smooth_herbie'	#4,#5,#6,#7
+#	  analysis_driver = 'shubert'		#8,#9,#10,#11
+
+responses,
+	num_objective_functions = 1	
+	numerical_gradients			#0,#4,#8
+#	analytic_gradients			#1,#2,#3,#5,#6,#7,#9,#10,#11
+	no_hessians				#0,#1,#4,#5,#8,#9
+#	numerical_hessians			#2,#6,#10
+#	analytic_hessians			#3,#7,#11
+
+
+
