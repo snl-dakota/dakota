@@ -86,7 +86,11 @@ private:
   //- Heading: Data
   //
 
-  bool varBasedDecompFlag; ///< flags computation of VBD
+  /// number of response functions; used to distinguish NonD from opt/NLS usage
+  size_t numResponseFunctions;
+
+  /// flags computation of variance-based decomposition indices
+  bool varBasedDecompFlag;
 };
 
 

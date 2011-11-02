@@ -39,8 +39,8 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   numContAleatUncVars(0), numDiscIntAleatUncVars(0), numDiscRealAleatUncVars(0),
   numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
   numDiscRealEpistUncVars(0), numEpistemicUncVars(0),
-  numResponseFunctions(
-    probDescDB.get_sizet("responses.num_response_functions")),
+  //numResponseFunctions(
+  //  probDescDB.get_sizet("responses.num_response_functions")),
   requestedRespLevels(probDescDB.get_rdva("method.nond.response_levels")),
   requestedProbLevels(probDescDB.get_rdva("method.nond.probability_levels")),
   requestedRelLevels(probDescDB.get_rdva("method.nond.reliability_levels")),
@@ -138,12 +138,13 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
     numStateVars
       = numContStateVars + numDiscIntStateVars + numDiscRealStateVars;
   }
-  else if (!numUncertainVars || !numResponseFunctions) {
+  else if (!numUncertainVars) {// || !numResponseFunctions) {
     // if !all_variables, then response function type should be generic
     // (numResponseFunctions implies UQ usage; numFunctions has a broader
     // interpretation, e.g., general DACE usage of NonDLHSSampling iterator).
-    Cerr << "\nError: number of uncertain variables and number of response "
-	 << "functions must be nonzero in Dakota::NonD." << std::endl;
+    Cerr << "\nError: number of uncertain variables "
+       //<< "and number of response functions "
+	 << "must be nonzero in Dakota::NonD." << std::endl;
     err_flag = true;
   }
 
@@ -211,8 +212,8 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
   numContAleatUncVars(0), numDiscIntAleatUncVars(0), numDiscRealAleatUncVars(0),
   numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
   numDiscRealEpistUncVars(0), numEpistemicUncVars(0),
-  numResponseFunctions(numFunctions), totalLevelRequests(0), cdfFlag(true),
-  pdfOutput(false), distParamDerivs(false)
+  //numResponseFunctions(numFunctions),
+  totalLevelRequests(0), cdfFlag(true), pdfOutput(false), distParamDerivs(false)
 {
   // NonDEvidence and NonDAdaptImpSampling use this ctor
 
@@ -328,12 +329,13 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
     numDiscRealDesVars = model.drv();
     numDesignVars = numContDesVars + numDiscIntDesVars + numDiscRealDesVars;
   }
-  else if (!numUncertainVars || !numResponseFunctions) {
+  else if (!numUncertainVars) {// || !numResponseFunctions) {
     // if !all_variables, then response function type should be generic
     // (numResponseFunctions implies UQ usage; numFunctions has a broader
     // interpretation, e.g., general DACE usage of NonDLHSSampling iterator).
-    Cerr << "\nError: number of uncertain variables and number of response "
-	 << "functions must be nonzero in Dakota::NonD." << std::endl;
+    Cerr << "\nError: number of uncertain variables "
+       //<< "and number of response functions "
+	 << "must be nonzero in Dakota::NonD." << std::endl;
     err_flag = true;
   }
 
@@ -369,8 +371,8 @@ NonD::NonD(NoDBBaseConstructor, const RealVector& lower_bnds,
   numDiscRealAleatUncVars(0), numAleatoryUncVars(numUniformVars),
   numContEpistUncVars(0), numDiscIntEpistUncVars(0), numDiscRealEpistUncVars(0),
   numEpistemicUncVars(0), numUncertainVars(numUniformVars),
-  numResponseFunctions(0), totalLevelRequests(0), cdfFlag(true),
-  pdfOutput(false), distParamDerivs(false)
+  //numResponseFunctions(0),
+  totalLevelRequests(0), cdfFlag(true), pdfOutput(false), distParamDerivs(false)
 {
   // ConcurrentStrategy uses this ctor for design opt, either for multi-start
   // initial points or multibjective weight sets.

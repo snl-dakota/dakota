@@ -258,7 +258,7 @@ protected:
   /// total number of uncertain variables (native space)
   size_t numUncertainVars;
 
-  size_t numResponseFunctions; ///< number of response functions
+  //size_t numResponseFunctions; // number of response functions
 
   // map response level z -> probability level p, reliability level beta,
   // or generalized reliability level beta*

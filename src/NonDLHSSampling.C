@@ -28,6 +28,8 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDLHSSampling::NonDLHSSampling(Model& model): NonDSampling(model),
+  numResponseFunctions(
+    probDescDB.get_sizet("responses.num_response_functions")),
   varBasedDecompFlag(probDescDB.get_bool("method.variance_based_decomp"))
 { samplingVarsMode = ACTIVE; }
 
@@ -41,7 +43,7 @@ NonDLHSSampling::
 NonDLHSSampling(Model& model, const String& sample_type, int samples, int seed,
 		const String& rng, short sampling_vars_mode): 
   NonDSampling(NoDBBaseConstructor(), model, sample_type, samples, seed, rng),
-  varBasedDecompFlag(false)
+  numResponseFunctions(numFunctions), varBasedDecompFlag(false)
 { samplingVarsMode = sampling_vars_mode; }
 
 
@@ -59,7 +61,8 @@ NonDLHSSampling(const String& sample_type, int samples, int seed,
 		const String& rng, const RealVector& lower_bnds,
 		const RealVector& upper_bnds): 
   NonDSampling(NoDBBaseConstructor(), sample_type, samples, seed, rng,
-	       lower_bnds, upper_bnds), varBasedDecompFlag(false)
+	       lower_bnds, upper_bnds),
+  numResponseFunctions(0), varBasedDecompFlag(false)
 {
   samplingVarsMode = ACTIVE_UNIFORM; // not used but included for completeness
 
@@ -105,7 +108,7 @@ void NonDLHSSampling::quantify_uncertainty()
   // specified by the user and stored in allSamples
   else {
     bool log_resp_flag = (allDataFlag || statsFlag);
-    bool log_best_flag = (!numResponseFunctions); // DACE mode w/ opt or NLS
+    bool log_best_flag = !numResponseFunctions; // DACE mode w/ opt or NLS
     evaluate_parameter_sets(iteratedModel, log_resp_flag, log_best_flag);
   }
 }
@@ -123,7 +126,7 @@ void NonDLHSSampling::post_run(std::ostream& s)
 
 void NonDLHSSampling::print_results(std::ostream& s)
 {
-  if (!numResponseFunctions) // DACE usage
+  if (!numResponseFunctions) // DACE mode w/ opt or NLS
     Analyzer::print_results(s);
 
   if (varBasedDecompFlag)

@@ -139,22 +139,13 @@ ResponseRep(const Variables& vars, const ProblemDescDB& problem_db):
   referenceCount(1), functionLabels(problem_db.get_dsa("responses.labels")),
   responsesId(problem_db.get_string("responses.id"))
 {
-  size_t num_fns,
-    num_resp_fns = problem_db.get_sizet("responses.num_response_functions");
-  if (num_resp_fns)
-    num_fns = num_resp_fns;
-  else {
-    num_fns
-      = problem_db.get_sizet("responses.num_nonlinear_inequality_constraints")
-      + problem_db.get_sizet("responses.num_nonlinear_equality_constraints");
-    size_t num_obj_fns
-      = problem_db.get_sizet("responses.num_objective_functions"), num_lsq_terms
-      = problem_db.get_sizet("responses.num_least_squares_terms");
-    if (num_obj_fns)
-      num_fns += num_obj_fns;
-    else if (num_lsq_terms)
-      num_fns += num_lsq_terms;
-  }
+  size_t num_resp_fns
+    = problem_db.get_sizet("responses.num_response_functions");
+  size_t num_fns = (num_resp_fns) ? num_resp_fns :
+    problem_db.get_sizet("responses.num_nonlinear_inequality_constraints") +
+    problem_db.get_sizet("responses.num_nonlinear_equality_constraints")   +
+    std::max(problem_db.get_sizet("responses.num_objective_functions"),
+	     problem_db.get_sizet("responses.num_least_squares_terms"));
   if (num_fns == 0) {
     Cerr << "Error: total number of response functions must be nonzero."
 	 << std::endl;
