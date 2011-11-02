@@ -277,25 +277,22 @@ primary_resp_recast(const Variables& native_vars,
       native_response.active_set_request_vector(), 0,
       leastSqInstance->numLeastSqTerms);
 
-  // only need data transform if function data requested
-  bool functions_requested = false;
   const ShortArray& asv = iterator_response.active_set_request_vector();
-  for (size_t i=0; i<leastSqInstance->numLeastSqTerms; ++i) {
-    if (asv[i] & 1) {
-      functions_requested = true;
-      break;
-    }
-  }
 
   // if necessary, compute residuals by subtracting observations, then scale
-  if (leastSqInstance->obsDataFlag && functions_requested) {
+  if (leastSqInstance->obsDataFlag) {
+    bool functions_req = false; // toggle output on function transformation
     const RealVector& fn_vals = native_response.function_values();
     // obs data plus scaling
     if (scale_transform_needed) {
       Response tmp_response = native_response.copy();
-      for (size_t i=0; i<leastSqInstance->numLeastSqTerms; i++)
-	tmp_response.function_value(fn_vals[i] - leastSqInstance->obsData[i],i);
-      if (leastSqInstance->outputLevel > NORMAL_OUTPUT) {
+      for (size_t i=0; i<leastSqInstance->numLeastSqTerms; i++) {
+	if (asv[i] & 1) {
+	  tmp_response.function_value(fn_vals[i] - leastSqInstance->obsData[i],i);
+	  functions_req = true;
+	}
+      }
+      if (leastSqInstance->outputLevel > NORMAL_OUTPUT && functions_req) {
 	Cout << "Least squares data transformation:\n";
 	write_data(Cout, tmp_response.function_values(),
                    tmp_response.function_labels());
@@ -307,10 +304,14 @@ primary_resp_recast(const Variables& native_vars,
     // obs data only
     else {
       iterator_response.update(native_response);
-      for (size_t i=0; i<leastSqInstance->numLeastSqTerms; i++)
-	iterator_response.function_value(fn_vals[i] - 
-					 leastSqInstance->obsData[i],i);
-      if (leastSqInstance->outputLevel > NORMAL_OUTPUT) {
+      for (size_t i=0; i<leastSqInstance->numLeastSqTerms; i++) {
+	if (asv[i] & 1) {
+	  iterator_response.function_value(fn_vals[i] - 
+					   leastSqInstance->obsData[i],i);
+	  functions_req = true;
+	}
+      }
+      if (leastSqInstance->outputLevel > NORMAL_OUTPUT && functions_req) {
 	Cout << "Least squares data transformation:\n";
 	write_data(Cout, iterator_response.function_values(),
                    iterator_response.function_labels());
