@@ -97,7 +97,7 @@ noinst_PROGRAMS = text_book text_book1 text_book2 text_book3 \
 		  cyl_head container barnes barnes_lf \
 		  illumination quasi_sine_fcn \
 		  mogatest1 mogatest2 mogatest3 \
-		  nl2func morris
+		  nl2func morris herbie smooth_herbie shubert
 
 if !DAKOTA_HOST_OS_AIX
 noinst_PROGRAMS += text_book_par
@@ -204,6 +204,14 @@ nl2func_LDADD = $(TESTERLDADD)
 morris_SOURCES = morris.C
 morris_LDADD =  $(TESTERLDADD)
 
+herbie_SOURCES = herbie.C
+herbie_LDADD = $(TESTERLDADD)
+
+smooth_herbie_SOURCES = smooth_herbie.C
+smooth_herbie_LDADD = $(TESTERLDADD)
+
+shubert_SOURCES = shubert.C
+shubert_LDADD = $(TESTERLDADD)
 
 ## Need to add the Dakota/src directory to our list of header directories.
 INCLUDES += -I$(top_srcdir)/src
