@@ -227,17 +227,26 @@ manage_inputs(const char* dakota_input_file, const char* parser_options,
     post_process();
 
 #ifdef DAKOTA_HAVE_BOOST_FS
-    bfs::path startup_path( WorkdirHelper::startup_pwd() );
-    bfs::path infile_path;
+    bfs::path startup_pwd( WorkdirHelper::startup_pwd() );
+    bool inp_in_pwd = false;
 
     // If the dakota_input_file is NOT in the $PWD when dakota starts up, then
     // prepend the parent directory of the input file to the preferred $PATH
 
-    if( !dakInputFile.empty() )
-      if( !contains(startup_path, dakInputFile, infile_path) ) {
-        bfs::path abs_dak_inp_parent( parent_path(infile_path) );
+    if( !dakInputFile.empty() ) {
+      bfs::directory_iterator end_itr;
+      for(bfs::directory_iterator itr(startup_pwd); itr != end_itr; ++itr) {
+        if( filename(itr->path()) == dakInputFile ) {
+          inp_in_pwd = true;
+          break;
+        }
+      }
+
+      if( !inp_in_pwd ) {
+        bfs::path abs_dak_inp_parent( parent_path(bfs::path(dakInputFile)) );
         WorkdirHelper::prepend_preferred_env_path(abs_dak_inp_parent.string());
       }
+    }
 #endif
   }
 }
