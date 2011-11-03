@@ -87,9 +87,9 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
 
     // weight the terms with sigma from the file if active
     if (num_sigma_read > 0) {
-      if (!model.primary_response_fn_weights().empty()) {
-	Cerr << "\nError (least squares): both weights and sigma specified."
-	     << std::endl;
+      if (weightFlag) {
+	Cerr << "\nError: both weights and experimental standard deviations "
+	     << "specified in Dakota::LeastSq." << std::endl;
 	abort_handler(-1);
       }
       if (outputLevel >= NORMAL_OUTPUT)
@@ -99,21 +99,22 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
       if (num_sigma_read == 1) {
 	double sigma = 
 	  experimental_data(0, num_config_vars_read + numLeastSqTerms);
-	lsq_weights = 1.0/std::pow(sigma, 2);
+	lsq_weights = std::pow(sigma, -2.);
       }
       else if (num_sigma_read == numLeastSqTerms) {
 	for (size_t i=0; i<numLeastSqTerms; ++i) {
 	  double sigma = 
 	    experimental_data(0, num_config_vars_read + numLeastSqTerms + i);
-	  lsq_weights[i] = 1.0/std::pow(sigma, 2);
+	  lsq_weights[i] = std::pow(sigma, -2.);
 	}
       }
       else {
-	Cerr << "\nError (least squares): std_deviations read needs to be "
-	     << "length 1 or number of calibration_terms." << std::endl;
+	Cerr << "\nError: std_deviations read needs to be length 1 or number "
+	     << "of calibration_terms in Dakota::LeastSq." << std::endl;
 	abort_handler(-1);
       }
       model.primary_response_fn_weights(lsq_weights);
+      weightFlag = true;
     }
   }
 
