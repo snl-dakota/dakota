@@ -47,6 +47,6 @@ responses,
 #	num_least_squares_terms = 31		#2,#3
 #	num_least_squares_terms = 8		#4,#5,#8
 #	num_least_squares_terms = 65		#6,#7
-#	least_squares_weights = 1.0 100.0 1.0 100.0 1.0 50.0 1.0 50.0 #8
+#	least_squares_weights = 1. 10000. 1. 10000. 1. 2500. 1. 2500. #8
 	analytic_gradients
 	no_hessians
