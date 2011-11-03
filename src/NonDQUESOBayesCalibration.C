@@ -121,7 +121,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // numExpConfigVars X, numFunctions Y, [numFunctions Sigma]
   RealMatrix experimental_data;
 
-  size_t num_sigma_read = numExpStdDeviations;
+  size_t num_sigma_read = numExpStdDeviationsRead;
   size_t num_cols = numExpConfigVars + numFunctions + num_sigma_read;
 
   TabularIO::read_data_tabular(expDataFileName, "QUESO Bayes Calibration", 
@@ -178,7 +178,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
           yStdData(i,j)=expStdDeviations(j);
     }
     else {
-      Cerr << "\nError (NonDGPMSABayesCalibration): must specify "
+      Cerr << "\nError (NonDQUESOBayesCalibration): must specify "
            << "experimental standard deviations either from experimental_data_file "
            << "or in the experimental_std_deviations specification."
            << std::endl;

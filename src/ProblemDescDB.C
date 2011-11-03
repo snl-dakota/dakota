@@ -2161,14 +2161,14 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	Locked_db();
     #define P &DataResponsesRep::
     static KW<size_t, DataResponsesRep> Szdr[] = {	// must be sorted
-	{"exp_config_vars", P numExpConfigVars},
-	{"exp_std_deviations", P numExpStdDeviations},
+	{"config_vars", P numExpConfigVars},
 	{"experiments", P numExperiments},
 	{"least_squares_terms", P numLeastSqTerms},
 	{"nonlinear_equality_constraints", P numNonlinearEqConstraints},
 	{"nonlinear_inequality_constraints", P numNonlinearIneqConstraints},
 	{"objective_functions", P numObjectiveFunctions},
-	{"response_functions", P numResponseFunctions}};
+	{"response_functions", P numResponseFunctions},
+	{"std_deviations", P numExpStdDeviations}};
     #undef P
 
     KW<size_t, DataResponsesRep> *kw;

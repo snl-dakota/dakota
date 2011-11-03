@@ -55,9 +55,9 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
     // These may be promoted to members once we use state vars / sigma
     size_t num_experiments = probDescDB.get_sizet("responses.num_experiments");
     size_t num_config_vars_read = 
-      probDescDB.get_sizet("responses.num_exp_config_vars");
+      probDescDB.get_sizet("responses.num_config_vars");
     size_t num_sigma_read = 
-      probDescDB.get_sizet("responses.num_exp_std_deviations");
+      probDescDB.get_sizet("responses.num_std_deviations");
 
     if (num_experiments > 1 && outputLevel >= QUIET_OUTPUT)
       Cout << "\nWarning (least squares): num_experiments > 1 unsupported; " 
