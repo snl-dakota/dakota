@@ -532,7 +532,7 @@ If characteristic value scaling is additionally specified, then it is
 applied to each residual prior to squaring: 
 \f[f = \sum_{i=1}^{n} w_i (\frac{y^M_i - y^O_i}{s_i})^2\f]
 And in the case where experimental data uncertainties are supplied, then
-the weights are defined to be one over the experimental variance:
+the weights are defined to be the inverse of the experimental variance:
 \f[f = \sum_{i=1}^{n} \frac{1}{\sigma^2_i} (\frac{y^M_i - y^O_i}{s_i})^2\f]
 
 \ref T9d4 "Table 9.4" summarizes the least squares
