@@ -13,7 +13,7 @@ namespace Dakota {
   <ul>
   <li> <a href="RespCommands.html#RespFnOpt">Objective and constraint 
        functions (optimization data set)</a>
-  <li> <a href="RespCommands.html#RespFnLS">Least squares terms and 
+  <li> <a href="RespCommands.html#RespFnLS">Calibration terms and 
        constraint functions (least squares data set)</a>
   <li> <a href="RespCommands.html#RespFnGen">Response functions 
        (generic data set)</a>
@@ -40,74 +40,65 @@ namespace Dakota {
 \section RespDescr Responses Description
 
 
-The responses specification in a DAKOTA input file specifies the data
-set that can be recovered from the interface after the completion of a
-"function evaluation."  Here, the term function evaluation is used
-somewhat loosely to denote a data request from an iterator that is
-mapped through an interface in a single pass.  Strictly speaking, this
-data request may actually involve multiple response functions and
-their derivatives, but the term function evaluation is widely used for
-this purpose.  The data set is made up of a set of functions, their
-first derivative vectors (gradients), and their second derivative
-matrices (Hessians). This abstraction provides a generic data
-container (the Response class) whose contents are interpreted
-differently depending upon the type of iteration being performed. In
-the case of optimization, the set of functions consists of one or more
-objective functions, nonlinear inequality constraints, and nonlinear
-equality constraints. Linear constraints are not part of a response
-set since their coefficients can be communicated to an optimizer at
-start up and then computed internally for all function evaluations
-(see \ref MethodIndControl). In the case of least squares iterators,
-the functions consist of individual residual terms or model responses
-and an observed data file for comparison (as opposed to a sum of the
-squares objective function) as well as nonlinear inequality and
-equality constraints. In the case of nondeterministic iterators, the
-function set is made up of generic response functions for which the
-effect of parameter uncertainty is to be quantified. Lastly, parameter
-study and design of experiments iterators may be used with any of the
-response data set types. Within the C++ implementation, the same data
-structures are reused for each of these cases; only the interpretation
-of the data varies from iterator branch to iterator branch.
+Responses specify the data set produced by an interface after the
+completion of a "function evaluation."  Here, the term function
+evaluation is used loosely to denote a data request from an iterator
+that is mapped through an interface in a single pass.  Strictly
+speaking, this data request may actually involve multiple response
+functions and their derivatives, but the term function evaluation is
+widely used for this purpose.  The data set is potentially comprised
+of a set of functions, their first derivative vectors (gradients), and
+their second derivative matrices (Hessians). This abstraction provides
+a generic data container (the Response class) whose contents are
+interpreted differently depending upon the type of iteration being
+performed. In the case of optimization, the set of functions consists
+of one or more objective functions, nonlinear inequality constraints,
+and nonlinear equality constraints. (Linear constraints are not part of
+a response set since their coefficients can be communicated to an
+optimizer at start up and then computed internally for all function
+evaluations; see \ref MethodIndControl). In the case of least squares
+iterators, the functions consist of individual residual terms or model
+responses together with an observed data file for comparison (as
+opposed to a sum of the squares objective function) as well as
+nonlinear inequality and equality constraints. In the case of
+nondeterministic iterators, the function set is made up of generic
+response functions for which the effect of parameter uncertainty is to
+be quantified. Parameter study and design of experiments iterators may
+be used with any of the response data set types. Thus the
+interpretation of the response data varies from iterator to iterator.
 
-Gradient availability may be described by \c no_gradients, \c
-numerical_gradients, \c analytic_gradients, or \c mixed_gradients. The
-\c no_gradients selection means that gradient information is not
-needed in the study. The \c numerical_gradients selection means that
-gradient information is needed and will be computed with finite
-differences using either the native or one of the vendor finite
-differencing routines. The \c analytic_gradients selection means that
+Gradient specification types include none, numerical, analytic, and
+mixed.  The \c no_gradients selection indicates that gradient
+information is not needed in the study. The \c numerical_gradients
+selection means that gradient information is needed and will be
+computed with finite differences by DAKOTA or the optimization
+algorithm in use.  The \c analytic_gradients selection means that
 gradient information is available directly from the simulation (finite
 differencing is not required). And the \c mixed_gradients selection
 means that some gradient information is available directly from the
 simulation whereas the rest will have to be estimated with finite
 differences.
 
-Hessian availability may be described by \c no_hessians, \c
-numerical_hessians, \c quasi_hessians, \c analytic_hessians, or \c
-mixed_hessians.  As for the gradient specification, the \c no_hessians
-selection indicates that Hessian information is not needed/available in
-the study, and the \c analytic_hessians selection indicates that
-Hessian information is available directly from the simulation.  The \c
-numerical_hessians selection indicates that Hessian information is
-needed and will be estimated with finite differences using either
-first-order differences of gradients (for analytic gradients) or
-second-order differences of function values (for non-analytic
-gradients).  The \c quasi_hessians specification means that Hessian
-information is needed and will be accumulated over time using
-secant updates based on the existing gradient
-evaluations.  Finally, the \c mixed_hessians selection allows for a
-mixture of analytic, numerical, and quasi Hessian response data.
+Hessian availability is characterized as none, analytic, numerical,
+quasi, or mixed.  Similar to gradients, the \c no_hessians selection
+indicates that Hessian information is not needed/available in the
+study, and the \c analytic_hessians selection indicates that Hessian
+information is available directly from the simulation.  The \c
+numerical_hessians selection indicates that Hessian information will
+be estimated with finite differences.  The \c quasi_hessians
+specification means that Hessian information will be accumulated over
+time using secant updates based on the existing gradient evaluations.
+Finally, the \c mixed_hessians selection allows for a mixture of
+analytic, numerical, and quasi Hessian response data.
 
-The responses specification provides a description of the \e total
-data set that is available for use by the iterator during the course
-of its iteration. This should be distinguished from the data \e subset
-described in an active set vector (see DAKOTA File Data Formats in the
-Users Manual [\ref UsersMan "Adams et al., 2010"]) which describes the
-particular subset of the response data needed for an individual
-function evaluation. In other words, the responses specification is a
+Responses specify the \e total data set that is available for use by
+the method over the course of iteration. This is distinguished from
+the data \e subset described by an active set vector (see DAKOTA File
+Data Formats in the Users Manual [\ref UsersMan "Adams et al., 2010"])
+indicating the particular subset of the response data needed for a
+particular function evaluation. Thus, the responses specification is a
 broad description of the data to be used during a study whereas the
-active set vector describes the particular subset of the available
-data that is currently needed.
+active set vector indicates the subset currently needed.
 
 Several examples follow. The first example shows an optimization data
 set containing an objective function and two nonlinear inequality
@@ -116,20 +107,20 @@ and no Hessian availability.
 
 \verbatim
 responses,
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 2
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
 	analytic_gradients
 	no_hessians
 \endverbatim
 
-The next example shows a typical specification for a least squares data
+The next example shows a typical specification for a calibration data
 set. The six residual functions will have numerical gradients computed
 using the dakota finite differencing routine with central differences
 of 0.1% (plus/minus delta value = .001*value).
 
 \verbatim
 responses,
-	num_least_squares_terms = 6
+	calibration_terms = 6
 	numerical_gradients
 	  method_source dakota
 	  interval_type central
@@ -144,7 +135,7 @@ be used by the iterator.
 
 \verbatim
 responses,
-	num_response_functions = 3
+	response_functions = 3
 	no_gradients
 	no_hessians
 \endverbatim
@@ -157,7 +148,8 @@ be used with any of the function specification examples shown above.
 \section RespSpec Responses Specification
 
 
-The responses specification has the following structure:
+The responses specification has the following structure (see
+dakota.input.summary):
 
 \verbatim
 responses,
@@ -168,30 +160,16 @@ responses,
 	<Hessian specification>
 \endverbatim
 
-Referring to dakota.input.summary, it is evident from the enclosing
-brackets that the set identifier and response descriptors are
-optional. However, the function, gradient, and Hessian specifications
-are all required specifications, each of which contains several
-possible specifications separated by logical OR's. The function
-specification must be one of three types: \li objective and constraint
-functions \li least squares terms and constraint functions \li generic
-response functions
-
-The gradient specification must be one of four types:
-\li no gradients
-\li numerical gradients
-\li analytic gradients
-\li mixed gradients
-
-And the Hessian specification must be one of five types:
-\li no Hessians
-\li numerical Hessians
-\li quasi Hessians
-\li analytic Hessians
-\li mixed Hessians
+The set identifier and response descriptors are optional. However, the
+function, gradient, and Hessian specifications are all required, their
+type selected from the options discussed above.  For example, the
+function specification must be one of three types:
+  \li objective and constraint functions 
+  \li calibration (least squares) terms and constraint functions
+  \li generic response functions
 
 The following sections describe each of these specification
-components in additional detail.
+components and their options in additional detail.
 
 
 \section RespSetId Responses Set Identifier
@@ -240,17 +218,15 @@ Specification detail for set identifier
 
 \section RespLabels Response Labels
 
-
-The optional response labels specification uses the keyword \c
-response_descriptors to input a list of strings which will be
-replicated through the DAKOTA output to help identify the numerical
-values for particular response functions.  The default descriptor
+The optional response labels specification \c response_descriptors is
+a list of strings which will be printed in DAKOTA output to identify
+the values for particular response functions.  The default descriptor
 strings use a root string plus a numeric identifier.  This root string
-is \c "obj_fn" for objective functions, \c "least_sq_term" for least 
-squares terms, \c "response_fn" for generic response functions, \c 
-"nln_ineq_con" for nonlinear inequality constraints, and \c "nln_eq_con" 
-for nonlinear equality constraints.  \ref T9d2 "Table 9.2" summarizes 
-the response descriptors input.
+is \c "obj_fn" for objective functions, \c "least_sq_term" for least
+squares terms, \c "response_fn" for generic response functions, \c
+"nln_ineq_con" for nonlinear inequality constraints, and \c
+"nln_eq_con" for nonlinear equality constraints.  
+\ref T9d2 "Table 9.2" summarizes the response descriptors input.
 
 \anchor T9d2
 <table>
@@ -280,26 +256,27 @@ Specification detail for response labels
 
 The function specification must be one of three types: 1) a group
 containing objective and constraint functions, 2) a group containing
-least squares terms and constraint functions, or 3) a generic response
-functions specification. These function sets correspond to
-optimization, least squares, and uncertainty quantification iterators,
-respectively. Parameter study and design of experiments iterators may
-be used with any of the three function specifications.
+calibration (least squares) terms and constraint functions, or 3) a
+generic response functions specification. These function sets
+correspond to optimization, least squares, and uncertainty
+quantification iterators, respectively. Parameter study and design of
+experiments iterators may be used with any of the three function
+specifications.
 
 
 \subsection RespFnOpt Objective and constraint functions (optimization data set)
 
-An optimization data set is specified using \c num_objective_functions
+An optimization data set is specified using \c objective_functions
 and optionally \c objective_function_scale_types, \c
 objective_function_scales, \c multi_objective_weights, \c
-num_nonlinear_inequality_constraints, \c
+nonlinear_inequality_constraints, \c
 nonlinear_inequality_lower_bounds, \c
 nonlinear_inequality_upper_bounds, \c
 nonlinear_inequality_scale_types, \c nonlinear_inequality_scales, \c
-num_nonlinear_equality_constraints, \c nonlinear_equality_targets, \c
+nonlinear_equality_constraints, \c nonlinear_equality_targets, \c
 nonlinear_equality_scale_types, and \c nonlinear_equality_scales.  The
-\c num_objective_functions, \c num_nonlinear_inequality_constraints,
-and \c num_nonlinear_equality_constraints inputs specify the number of
+\c objective_functions, \c nonlinear_inequality_constraints,
+and \c nonlinear_equality_constraints inputs specify the number of
 objective functions, nonlinear inequality constraints, and nonlinear
 equality constraints, respectively.  The number of objective functions
 must be 1 or greater, and the number of inequality and equality
@@ -391,7 +368,7 @@ Specification detail for optimization data sets
 <td><b>Default</b>
 <tr>
 <td>Number of objective functions
-<td>\c num_objective_functions
+<td>\c objective_functions
 <td>integer
 <td>Required group
 <td>N/A
@@ -415,7 +392,7 @@ Specification detail for optimization data sets
 <td>equal weightings
 <tr>
 <td>Number of nonlinear inequality constraints
-<td>\c num_nonlinear_inequality_constraints
+<td>\c nonlinear_inequality_constraints
 <td>integer
 <td>Optional
 <td>\c 0
@@ -445,7 +422,7 @@ Specification detail for optimization data sets
 <td>vector values = \c 1. (no scaling)
 <tr>
 <td>Number of nonlinear equality constraints
-<td>\c num_nonlinear_equality_constraints
+<td>\c nonlinear_equality_constraints
 <td>integer
 <td>Optional
 <td>\c 0
@@ -470,73 +447,65 @@ Specification detail for optimization data sets
 </table>
 
 
-\subsection RespFnLS Least squares terms and constraint functions (least squares data set)
+\subsection RespFnLS Calibration terms and constraint functions (least squares data set)
 
-A least squares data set is specified using \c num_least_squares_terms
-and optionally \c least_squares_data_file, \c
-least_squares_term_scales, \c least_squares_weights, \c
-num_nonlinear_inequality_constraints, \c
-nonlinear_inequality_lower_bounds, \c
-nonlinear_inequality_upper_bounds, \c nonlinear_inequality_scales, \c
-num_nonlinear_equality_constraints, \c nonlinear_equality_targets, and
-\c nonlinear_equality_scales.  Each of the least squares terms is a
-residual function to be driven toward zero, and the nonlinear
-inequality and equality constraint specifications have identical
-meanings to those described in \ref RespFnOpt.  These types of
-problems are commonly encountered in parameter estimation, system
-identification, and model calibration. Least squares problems are most
-efficiently solved using special-purpose least squares solvers such as
-Gauss-Newton or Levenberg-Marquardt; however, they may also be solved
-using general-purpose optimization algorithms.
+A calibration data set is specified using \c calibration_terms and
+optionally the specifications summarized in \ref T9d4 "Table 9.4",
+including weighting/scaling, data, and constraints.  Each of the
+calibration terms is a residual function to be driven toward zero, and
+the nonlinear inequality and equality constraint specifications have
+identical meanings to those described in \ref RespFnOpt.  These types
+of problems are commonly encountered in parameter estimation, system
+identification, and model calibration. Least squares calibration
+problems are most efficiently solved using special-purpose least
+squares solvers such as Gauss-Newton or Levenberg-Marquardt; however,
+they may also be solved using general-purpose optimization algorithms.
 
-It is important to realize that, while DAKOTA can solve these problems
-with either least squares or optimization algorithms, the response
-data sets to be returned from the simulator are different. Least
-squares involves a set of residual functions whereas optimization
-involves a single objective function (sum of the squares of the
-residuals), i.e., \f[f = \sum_{i=1}^{n} R_i^2\f] where \e f is the
-objective function and the set of \f$R_i\f$ are the residual
-functions.  Therefore, function values and derivative data in the
-least squares case involve the values and derivatives of the residual
-functions, whereas the optimization case involves values and
-derivatives of the sum of squares objective function. Switching
-between the two approaches will likely require different simulation
+While DAKOTA can solve these problems with either least squares or
+optimization algorithms, the response data sets to be returned from
+the simulator are different. Least squares involves a set of residual
+functions whereas optimization involves a single objective function
+(sum of the squares of the residuals), i.e., \f[f = \sum_{i=1}^{n}
+R_i^2\f] where \e f is the objective function and the set of \f$R_i\f$
+are the residual functions.  Therefore, function values and derivative
+data in the least squares case involve the values and derivatives of
+the residual functions, whereas the optimization case involves values
+and derivatives of the sum of squares objective function. Switching
+between the two approaches sometimes requires different simulation
 interfaces capable of returning the different granularity of response
-data required.  The specification \c least_squares_data_file may be
-used to specify a text file containing \c num_least_squares_terms
-observed data values (one per line) to be used in computing the
-residuals \f[R_i = y^M_i - y^O_i \f] where \e M denotes model and \e
-O, observation.  In this case the simulator should return the actual
-model response, as DAKOTA will compute the residual internally using
-the supplied data.
+data required, although DAKOTA supports automatic recasting of
+residuals into a sum of squares for presentation to an optimization
+method.  The specification \c calibration_data_file may be used to
+specify a text file containing \c calibration_terms observed data
+values (in a supported DAKOTA tabular format) to be used in computing
+the residuals \f[R_i = y^M_i - y^O_i \f] where \e M denotes model and
+\e O, observation from the file.  In this case the simulator should
+return the actual model response, as DAKOTA will compute the residual
+internally using the supplied data.
 
-The \c least_squares_term_scale_types specification includes strings
-specifying the scaling type for each least squares term in methods
-that support scaling, when scaling is enabled (see \ref
-MethodIndControl for details). Each entry in \c
-least_squares_term_scale_types may be selected from <tt>'none'</tt>,
-<tt>'value'</tt>, or <tt>'log'</tt>, to select no, characteristic
-value, or logarithmic scaling, respectively.  Automatic scaling is not
-available for least squares terms.  If a single string is specified it
-will apply to each least squares terms.  Each entry in \c
-least_squares_term_scales may be a user-specified nonzero
+The \c calibration_term_scale_types specification includes strings
+specifying the scaling type for each residual term in methods that
+support scaling, when scaling is enabled (see \ref MethodIndControl
+for details). Each entry in \c calibration_term_scale_types may be
+selected from <tt>'none'</tt>, <tt>'value'</tt>, or <tt>'log'</tt>, to
+select no, characteristic value, or logarithmic scaling, respectively.
+Automatic scaling is not available for calibration terms.  If a single
+string is specified it will apply to each least squares terms.  Each
+entry in \c calibration_term_scales may be a user-specified nonzero
 characteristic value to be used in scaling each term.  These values
 are ignored for scaling type <tt>'none'</tt>, required for
 <tt>'value'</tt>, and optional for <tt>'log'</tt>.  If a single real
 value is specified it will apply to each term.  The \c
-least_squares_weights specification provides a means to specify a
+calibration_weights specification provides a means to specify a
 relative emphasis among the vector of squared residuals through
-multiplication of these squared residuals by a vector of weights:
-\f[f = \sum_{i=1}^{n} w_i R_i^2 = \sum_{i=1}^{n} w_i (y^M_i - y^O_i)^2\f]
-If characteristic value scaling is additionally specified, then it is 
-applied to each residual prior to squaring: 
-\f[f = \sum_{i=1}^{n} w_i (\frac{y^M_i - y^O_i}{s_i})^2\f]
-And in the case where experimental data uncertainties are supplied, then
-the weights are defined to be the inverse of the experimental variance:
-\f[f = \sum_{i=1}^{n} \frac{1}{\sigma^2_i} (\frac{y^M_i - y^O_i}{s_i})^2\f]
-
-\ref T9d4 "Table 9.4" summarizes the least squares
-data set specification.
+multiplication of these squared residuals by a vector of weights: \f[f
+= \sum_{i=1}^{n} w_i R_i^2 = \sum_{i=1}^{n} w_i (y^M_i - y^O_i)^2\f]
+If characteristic value scaling is additionally specified, then it is
+applied to each residual prior to squaring: \f[f = \sum_{i=1}^{n} w_i
+(\frac{y^M_i - y^O_i}{s_i})^2\f] And in the case where experimental
+data uncertainties are supplied, then the weights are automatically
+defined to be the inverse of the experimental variance: \f[f =
+\sum_{i=1}^{n} \frac{1}{\sigma^2_i} (\frac{y^M_i - y^O_i}{s_i})^2\f]
 
 \anchor T9d4
 <table>
@@ -553,38 +522,68 @@ Specification detail for nonlinear least squares data sets
 <td><b>Status</b>
 <td><b>Default</b>
 <tr>
-<td>Number of least squares terms
-<td>\c num_least_squares_terms
+<td>Number of calibration terms
+<td>\c calibration_terms
 <td>integer
 <td>Required
 <td>N/A
 <tr>
-<td>Least squares data source file
-<td>\c least_squares_data_file
+<td>Calibration data file name
+<td>\c calibration_data_file
 <td>string
 <td>Optional
 <td>none
 <tr>
-<td>Least squares term scaling types
-<td>\c least_squares_term_scale_types
+<td>Number experiments (rows) in file
+<td>\c num_experiments
+<td>integer
+<td>Optional
+<td>1
+<tr>
+<td>Data file in annotated format
+<td>\c annotated 
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>Data file in freeform format
+<td>\c freeform
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>Number configuration variable columns in file
+<td>\c num_config_variables
+<td>integer
+<td>Optional
+<td>0
+<tr>
+<td>Number standard deviation columns in file
+<td>\c num_std_deviations
+<td>integer
+<td>Optional
+<td>0
+<tr>
+<td>Calibration scaling types
+<td>\c calibration_term_scale_types
 <td>list of strings
 <td>Optional
 <td>vector values = <tt>'none'</tt>
 <tr>
-<td>Least squares terms scales
-<td>\c least_squares_term_scales
+<td>Calibration scales
+<td>\c calibration_term_scales
 <td>list of reals
 <td>Optional
 <td>no scaling (vector values = \c 1.)
 <tr>
-<td>Least squares terms weightings
-<td>\c least_squares_weights
+<td>Calibration term weights
+<td>\c calibration_weights
 <td>list of reals
 <td>Optional
-<td>equal weightings
+<td>equal weighting
 <tr>
 <td>Number of nonlinear inequality constraints
-<td>\c num_nonlinear_inequality_constraints
+<td>\c nonlinear_inequality_constraints
 <td>integer
 <td>Optional
 <td>\c 0
@@ -614,7 +613,7 @@ Specification detail for nonlinear least squares data sets
 <td>no scaling (vector values = \c 1.)
 <tr>
 <td>Number of nonlinear equality constraints
-<td>\c num_nonlinear_equality_constraints
+<td>\c nonlinear_equality_constraints
 <td>integer
 <td>Optional
 <td>\c 0
@@ -642,7 +641,7 @@ Specification detail for nonlinear least squares data sets
 \subsection RespFnGen Response functions (generic data set)
 
 A generic response data set is specified using \c
-num_response_functions. Each of these functions is simply a response
+response_functions. Each of these functions is simply a response
 quantity of interest with no special interpretation taken by the
 method in use. This type of data set is used by uncertainty
 quantification methods, in which the effect of parameter uncertainty
@@ -673,7 +672,7 @@ Specification detail for generic response function data sets
 <td><b>Default</b>
 <tr>
 <td>Number of response functions
-<td>\c num_response_functions
+<td>\c response_functions
 <td>integer
 <td>Required
 <td>N/A
