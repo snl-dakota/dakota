@@ -58,7 +58,7 @@ responses,
 # NOTE: This specifies the TOTAL RESPONSE for the optimization,
 #       which is a combination of nested & interface responses.
 	id_responses = 'EPIST_R'
-	num_response_functions = 3
+	response_functions = 3
 	response_descriptors = 'mean_wt' 'ccdf_beta_s' 'ccdf_beta_d'
 	no_gradients
 	no_hessians
@@ -101,7 +101,7 @@ interface,
 
 responses,
 	id_responses = 'ALEAT_R'
-	num_response_functions = 3
+	response_functions = 3
 	response_descriptors = 'weight' 'stress' 'displ'
 	analytic_gradients				#0,#1
 #	numerical_gradients				#p0

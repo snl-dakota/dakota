@@ -61,7 +61,7 @@ interface,
 
 responses,
 	id_responses = 'UQ_R'
-	num_response_functions = 3
+	response_functions = 3
 	analytic_gradients
 #	numerical_gradients
 #	  method_source dakota

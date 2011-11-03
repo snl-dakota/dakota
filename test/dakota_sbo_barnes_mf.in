@@ -95,8 +95,8 @@ variables,
 	  descriptors      'x1'  'x2'
 
 responses,
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 3
+	objective_functions = 1
+	nonlinear_inequality_constraints = 3
 	nonlinear_inequality_lower_bounds = 0.     0.     0.
 	nonlinear_inequality_upper_bounds = 1.e+50 1.e+50 1.e+50
 	analytic_gradients

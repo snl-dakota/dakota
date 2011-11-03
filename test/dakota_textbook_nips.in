@@ -44,14 +44,14 @@ interface,
 	  file_tag #file_save
 
 responses,
-	num_objective_functions = 1			#0,#1,#2,#3,#4
-	num_nonlinear_inequality_constraints = 2	#0,#1,#2,#3,#4
-#	num_least_squares_terms = 2			#5,#6
-# 	num_least_squares_terms = 3			#7,#8
+	objective_functions = 1			#0,#1,#2,#3,#4
+	nonlinear_inequality_constraints = 2	#0,#1,#2,#3,#4
+#	calibration_terms = 2			#5,#6
+# 	calibration_terms = 3			#7,#8
 #         calibration_data_file = 'least_squares_test.dat' #7
 # 	    freeform  #7
 #         calibration_data_file = 'least_squares_test.ann' #8
-#	num_nonlinear_inequality_constraints = 1	#5,#6
+#	nonlinear_inequality_constraints = 1	#5,#6
 	analytic_gradients	 			#0,#2,#4,#5,#6,#7,#8
 #	numerical_gradients	        		#1,#3
 #	  method_source vendor	        		#1,#3

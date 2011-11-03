@@ -27,7 +27,7 @@ interface,
 
 responses,
 #	response_descriptors = 'o1' 'c1' 'c2'
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 2
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
 	analytic_gradients
 	analytic_hessians

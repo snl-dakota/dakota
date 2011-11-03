@@ -129,6 +129,6 @@ interface,
 #	analysis_driver = 'generalized_rosenbrock'	#5,#11,#12,#13,#19
 
 responses,
-	num_response_functions = 1
+	response_functions = 1
 	no_gradients
 	no_hessians

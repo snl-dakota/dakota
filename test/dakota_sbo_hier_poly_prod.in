@@ -69,7 +69,7 @@ variables,
 	  descriptors      'x1'     'x2'
 
 responses,
-	num_objective_functions = 1
+	objective_functions = 1
  	analytic_gradients
 	analytic_hessians			#0,#1,#2
 #	numerical_hessians			#3,#4,#5

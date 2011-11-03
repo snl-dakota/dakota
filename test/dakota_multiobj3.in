@@ -32,7 +32,7 @@ interface,
 	  analysis_driver=  'cyl_head'
 
 responses,
-	num_objective_functions = 4
+	objective_functions = 4
 	multi_objective_weights = .7 .1 .1 .1
 	no_gradients
 	no_hessians

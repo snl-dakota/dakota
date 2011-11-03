@@ -8,7 +8,7 @@
 
 method,
 	efficient_global					#0,#1
-#	global_reliability x_gaussian_process		#2
+#	global_reliability x_gaussian_process			#2
 #	  num_response_levels = 0 2 2				#2
 #	  response_levels = 0.2 0.6 0.2 0.6			#2
 	  seed = 123457
@@ -33,9 +33,9 @@ interface,
 	  analysis_driver = 'cantilever'
 
 responses,
-	num_objective_functions = 1				#0
-	num_nonlinear_inequality_constraints = 2		#0
-#	num_least_squares_terms = 3				#1
-#       num_response_functions = 3				#2
+	objective_functions = 1				#0
+	nonlinear_inequality_constraints = 2		#0
+#	calibration_terms = 3				#1
+#       response_functions = 3				#2
 	no_gradients
 	no_hessians

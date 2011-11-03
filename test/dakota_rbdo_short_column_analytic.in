@@ -44,8 +44,8 @@ responses,
 # NOTE: This specifies the TOTAL RESPONSE for the optimization,
 #       which is a combination of nested & interface responses.
 	id_responses = 'OPTIM_R'
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 1
+	objective_functions = 1
+	nonlinear_inequality_constraints = 1
 	nonlinear_inequality_upper_bounds = .00621 #0,#1,#2
 #	nonlinear_inequality_lower_bounds = 2.5	   #3,#4,#5
 #	nonlinear_inequality_lower_bounds = 0.     #6,#7,#8,#9,#10,#11
@@ -101,6 +101,6 @@ interface,
 
 responses,
 	id_responses = 'UQ_R'
-	num_response_functions = 2
+	response_functions = 2
 	analytic_gradients
 	no_hessians

@@ -29,7 +29,7 @@ interface,
 #	  analysis_driver = 'plugin_text_book' #p0,#p1
 
 responses,
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 2
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
 	analytic_gradients
 	no_hessians

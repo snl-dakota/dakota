@@ -34,7 +34,7 @@ interface,
           analysis_driver = 'cantilever'
 
 responses,
-        num_response_functions = 3
+        response_functions = 3
         response_descriptors = 'weight' 'stress' 'displ'
 	no_gradients				#0,#1,#p0
 #	analytic_gradients			#2,#3

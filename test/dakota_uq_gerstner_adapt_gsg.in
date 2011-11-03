@@ -28,6 +28,6 @@ interface,
 #	  deactivate restart_file evaluation_cache
 
 responses,
-        num_response_functions = 1
+        response_functions = 1
         no_gradients
         no_hessians

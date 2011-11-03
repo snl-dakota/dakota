@@ -34,7 +34,7 @@ variables,
 
 responses,
         id_responses = 'EPIST_R'
-        num_response_functions = 3
+        response_functions = 3
         response_descriptors = 'mean_wt' 'ccdf_beta_s' 'ccdf_beta_d'
         no_gradients				#0,#1,#2,#3
 #	analytic_gradients			#4,#5,#6,#7
@@ -84,7 +84,7 @@ interface,
 
 responses,
         id_responses = 'ALEAT_R'
-        num_response_functions = 3
+        response_functions = 3
         response_descriptors = 'weight' 'stress' 'displ'
         no_gradients				#0,#1,#2,#3,#5,#7
 #	analytic_gradients			#4,#6

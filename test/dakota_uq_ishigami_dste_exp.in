@@ -35,7 +35,7 @@ variables,
 
 responses,
         id_responses = 'EPIST_R'
-        num_response_functions = 1
+        response_functions = 1
         analytic_gradients		#0	
 #	no_gradients			#1,#2
         no_hessians
@@ -81,6 +81,6 @@ interface,
 
 responses,
         id_responses = 'ALEAT_R'
-        num_response_functions = 1
+        response_functions = 1
 	analytic_gradients		
         no_hessians

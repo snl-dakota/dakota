@@ -175,10 +175,10 @@ interface,
 	  analysis_driver = 'text_book'
 
 responses,
-	num_objective_functions = 1
-#	num_nonlinear_inequality_constraints = 2 #1,#3,#5,#7
-#	num_nonlinear_inequality_constraints = 2 #9,#11,#13,#15,#17
-#	num_nonlinear_inequality_constraints = 2 #19,#21,#23,#25,#27
-#	num_nonlinear_inequality_constraints = 2 #29,#31
+	objective_functions = 1
+#	nonlinear_inequality_constraints = 2 #1,#3,#5,#7
+#	nonlinear_inequality_constraints = 2 #9,#11,#13,#15,#17
+#	nonlinear_inequality_constraints = 2 #19,#21,#23,#25,#27
+#	nonlinear_inequality_constraints = 2 #29,#31
 	no_gradients
 	no_hessians

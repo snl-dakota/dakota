@@ -41,7 +41,7 @@ interface,
 	  analysis_driver = 'portal_frame'
 
 responses,
-	num_response_functions = 1
+	response_functions = 1
 	analytic_gradients
 	no_hessians				#0
 #	analytic_hessians			#1,#2

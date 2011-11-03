@@ -37,7 +37,7 @@ variables,
 
 responses,
         id_responses = 'EPIST_R'
-        num_response_functions = 2
+        response_functions = 2
         response_descriptors = 'mean_area' 'cdf_beta'
         no_gradients				#0,#1,#2,#3,#p0,#p1
 #	analytic_gradients			#4,#5,#6,#7,#p2,#p3
@@ -94,7 +94,7 @@ interface,
 
 responses,
         id_responses = 'ALEAT_R'
-        num_response_functions = 2
+        response_functions = 2
         response_descriptors = 'area' 'limit_state'
         no_gradients				#0,#1,#2,#3,#5,#7
 #	analytic_gradients			#4,#6,#p0,#p1,#p2,#p3

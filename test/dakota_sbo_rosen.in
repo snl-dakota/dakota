@@ -78,7 +78,7 @@ variables,
 
 responses,
 	id_responses = 'SURROGATE_RESP'
-	num_objective_functions = 1
+	objective_functions = 1
 #	analytic_gradients			#3,#7,#8,#9,#10,#11
   	numerical_gradients			#0,#1,#2,#4,#5,#6
   	  method_source dakota			#0,#1,#2,#4,#5,#6
@@ -125,7 +125,7 @@ interface,
 
 responses,
 	id_responses = 'TRUE_RESP'
-	num_objective_functions = 1
+	objective_functions = 1
 	no_gradients		#0,#1,#2,#3,#4,#7,#8,#9
 #	analytic_gradients	#5,#6,#10,#11
 #	numerical_gradients

@@ -47,7 +47,7 @@ variables,
 					0.0 1.0
 
 responses,
-	num_response_functions = 1
+	response_functions = 1
 	no_gradients
 	no_hessians
 

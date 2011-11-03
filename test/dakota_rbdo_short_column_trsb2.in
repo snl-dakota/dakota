@@ -55,8 +55,8 @@ responses,
 # NOTE: This specifies the TOTAL RESPONSE for the optimization,
 #       as computed _from_ the surrogate model.
 	id_responses = 'OPTIM_R_SURR'
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 1
+	objective_functions = 1
+	nonlinear_inequality_constraints = 1
 	nonlinear_inequality_upper_bounds = .00621 #0,#1,#2
 #	nonlinear_inequality_lower_bounds = 2.5	   #3,#4,#5
 #	nonlinear_inequality_lower_bounds = 0.     #6,#7,#8,#9,#10,#11
@@ -81,8 +81,8 @@ responses,
 # NOTE: This specifies the TOTAL RESPONSE from the nested mapping
 #       used for constructing the surrogate.
 	id_responses = 'OPTIM_R_TRUTH'
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 1
+	objective_functions = 1
+	nonlinear_inequality_constraints = 1
 	analytic_gradients
 	quasi_hessians sr1
 
@@ -135,6 +135,6 @@ interface,
 
 responses,
 	id_responses = 'UQ_R'
-	num_response_functions = 2
+	response_functions = 2
 	analytic_gradients
 	analytic_hessians

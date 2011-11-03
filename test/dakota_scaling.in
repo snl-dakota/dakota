@@ -152,27 +152,27 @@ interface,
 #=======================================================================
 responses,
 # OPT
-	num_objective_functions = 1	#0,#1,#2,#3,#4,#5,#6,#7,#8,#9
-#	num_objective_functions = 1	#10,#11
+	objective_functions = 1	#0,#1,#2,#3,#4,#5,#6,#7,#8,#9
+#	objective_functions = 1	#10,#11
 	  objective_function_scale_types = 'value'	#0,#3,#4,#7,#8
 	  objective_function_scales = 10.0 		#0,#3,#4,#7,#8
 #	  objective_function_scale_types = 'none'	#1,#2,#5,#6,#9
 #	  objective_function_scale_types = 'log'	#11
-	num_nonlinear_inequality_constraints = 3     	#0,#2,#4,#5,#6,#7
+	nonlinear_inequality_constraints = 3     	#0,#2,#4,#5,#6,#7
 	  nonlinear_inequality_scale_types = 'value'	#0,#4
 	  nonlinear_inequality_scales = 0.5  2.0  5.0	#0,#4
 #	  nonlinear_inequality_scale_types = 'none'	#2,#7
 #	  nonlinear_inequality_scale_types = 'value' 'none' 'none'  #5
 #	  nonlinear_inequality_scale_types = 'value' 'value' 'none' #6
 #	  nonlinear_inequality_scales = 0.5  1.0  1.0	#5,#6
-#	num_nonlinear_inequality_constraints = 2     	#1,#3,#8,#9
+#	nonlinear_inequality_constraints = 2     	#1,#3,#8,#9
 #	  nonlinear_inequality_lower_bounds = -.2 -.2  	#1,#3,#8,#9
 #	  nonlinear_inequality_upper_bounds =  .2  .2  	#1,#3,#8,#9
 #	  nonlinear_inequality_scale_types  = 'auto' 'none'	#1,#9
 #	  nonlinear_inequality_scale_types  = 'value' 'none'  	#3
 #	  nonlinear_inequality_scale_types  = 'value' 'auto'  	#8
 #	  nonlinear_inequality_scales       = 0.5 1.0		#3,#8
-#	num_nonlinear_equality_constraints = 1		#1,#3,#8,#9
+#	nonlinear_equality_constraints = 1		#1,#3,#8,#9
 #	  nonlinear_equality_targets = -.2		#1,#3,#8,#9
 #	  nonlinear_equality_scale_types  = 'value' 	#1,#9
 #	  nonlinear_equality_scales  = 0.5		#1,#9
@@ -186,12 +186,12 @@ responses,
 #	numerical_hessians		#11
 #--------------------------------------------------------------------------
 # JEGA
-#	num_objective_functions = 2				#12,#13
+#	objective_functions = 2				#12,#13
 #	  objective_function_scale_types = 'value' 'none'   	#12
 #	  objective_function_scales = 2.5  1.0			#12
 #	  objective_function_scale_types = 'value'		#13
 #	  objective_function_scales = 2.5  1.5 			#13
-#	num_nonlinear_inequality_constraints = 2 		#12,#13
+#	nonlinear_inequality_constraints = 2 		#12,#13
 #	  nonlinear_inequality_upper_bounds = 0.0 0.0		#12,#13
 #	  nonlinear_inequality_scale_types = 'value' 		#12
 #	  nonlinear_inequality_scales =       2.0 2.5 		#12
@@ -201,15 +201,15 @@ responses,
 #	no_hessians						#12,#13
 #-----------------------------------------------------------------------
 # LSQ
-#	num_least_squares_terms = 3		#14,#15
-#	num_least_squares_terms = 2		#16,#17,#18,#19
+#	calibration_terms = 3		#14,#15
+#	calibration_terms = 2		#16,#17,#18,#19
 #	  least_squares_term_scale_types = 'value' 'none' 'value' #14,#15
 #	  least_squares_term_scales = 2.5 1.0 2.0	          #14,#15
 #	  least_squares_term_scale_types = 'value' 'none' #16,#18
 #	  least_squares_term_scales      = 2.5      1.0	  #16,#18
 #	  least_squares_term_scale_types = 'value'	#17,#19
 #	  least_squares_term_scales = 2.5 1.5		#17,#19
-#	num_nonlinear_inequality_constraints = 1	#16,#17,#18,#19
+#	nonlinear_inequality_constraints = 1	#16,#17,#18,#19
 #	  nonlinear_inequality_scale_types = 'value'	#16,#18
 #	  nonlinear_inequality_scales = 2.0		#16,#18
 #	  nonlinear_inequality_scale_types = 'none'     #17,#19
@@ -218,11 +218,11 @@ responses,
 #	no_hessians				#14,#15,#16,#17,#18,#19
 #-----------------------------------------------------------------------
 # MULTIOBJ
-#	num_objective_functions = 3				#20,#21
+#	objective_functions = 3				#20,#21
 #	objective_function_scale_types = 'value' 'value' 'none'	#20,#21
 #	objective_function_scales = 2.5 1.5 1.0			#20,#21
 #	multi_objective_weights = .7 .1 .1			#20,#21
-#	num_nonlinear_inequality_constraints = 1		#20,#21
+#	nonlinear_inequality_constraints = 1		#20,#21
 #	nonlinear_inequality_scale_types = 'none'		#20
 #	nonlinear_inequality_scale_types = 'value'		#21
 #	nonlinear_inequality_scales = 5.0			#21

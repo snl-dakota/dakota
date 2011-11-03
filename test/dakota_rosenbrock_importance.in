@@ -32,6 +32,6 @@ interface,
 	  analysis_driver = 'rosenbrock'
 
 responses,
-	num_response_functions = 1
+	response_functions = 1
 	no_gradients
 	no_hessians

@@ -42,7 +42,7 @@ interface,
 	  deactivate restart_file #evaluation_cache
 
 responses,
-        num_response_functions = 2
+        response_functions = 2
         response_descriptors = 'area' 'limit_state'
         no_gradients
         no_hessians

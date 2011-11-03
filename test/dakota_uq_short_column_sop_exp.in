@@ -35,7 +35,7 @@ variables,
 
 responses,
         id_responses = 'OUTER_R'
-        num_response_functions = 2
+        response_functions = 2
         response_descriptors = 'mean_area' 'cdf_beta'
         no_gradients
         no_hessians
@@ -92,7 +92,7 @@ interface,
 
 responses,
         id_responses = 'INNER_R'
-        num_response_functions = 2
+        response_functions = 2
         response_descriptors = 'area' 'limit_state'
         no_gradients
         no_hessians

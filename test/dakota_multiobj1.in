@@ -36,7 +36,7 @@ interface,
 	  analysis_driver=  'text_book'
 
 responses,
-	num_objective_functions = 3
+	objective_functions = 3
 	multi_objective_weights = .7 .2 .1
 #	multi_objective_weights = .333 .333 .333
 	analytic_gradients

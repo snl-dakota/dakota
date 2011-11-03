@@ -56,6 +56,6 @@ interface,
  	  analysis_driver = 'text_book'
 
 responses,
-	num_objective_functions = 3
+	objective_functions = 3
  	analytic_gradients
 	no_hessians

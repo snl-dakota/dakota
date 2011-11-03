@@ -75,7 +75,7 @@ interface,
 	  analysis_driver = 'log_ratio'
 
 responses,
-	num_response_functions = 1
+	response_functions = 1
 #	analytic_gradients
 	numerical_gradients
 	  method_source dakota

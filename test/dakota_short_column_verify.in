@@ -51,6 +51,6 @@ interface,
 	  deactivate evaluation_cache restart_file
 
 responses,
-	num_response_functions = 2
+	response_functions = 2
 	no_gradients
 	no_hessians

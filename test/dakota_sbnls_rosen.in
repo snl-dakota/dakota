@@ -12,9 +12,10 @@ method,
 	id_method = 'SBLLS'
 	surrogate_based_local
 	model_pointer = 'SURROGATE'
-	approx_method_pointer = 'NLP'		#0,#1,#2,#4,#5,#6
+	approx_method_pointer = 'NLP'		#0,#1,#2,#4,#5,#6,#7
 #	approx_method_name = 'nl2sol'		#3
-#	approx_method_name = 'npsol_sqp'	#7
+#	approx_method_name = 'npsol_sqp'	#8
+#	approx_method_name = 'dot_sqp'		#9
 	max_iterations = 500
 #	soft_convergence_limit = 10
 ###############################################
@@ -32,19 +33,20 @@ method,
 	  expansion_factor   = 1.50
 	approx_subproblem
 	  original_primary			#0,#1,#2,#3,#4,#5
-#	  single_objective			#6,#7
+#	  single_objective			#6,#7,#8,#9
 	  original_constraints
 
 ###############################################
 # begin opt specification
 ###############################################
-method,						#0,#1,#2,#4,#5,#6
-	id_method = 'NLP'			#0,#1,#2,#4,#5,#6
+method,						#0,#1,#2,#4,#5,#6,#7
+	id_method = 'NLP'			#0,#1,#2,#4,#5,#6,#7
 	nl2sol,					#0,#1,#2
 #	optpp_g_newton,				#4
 #	nlssol_sqp,				#5
 #	npsol_sqp,				#6
-	  convergence_tolerance = 1e-8		#0,#1,#2,#4,#5,#6
+#	dot_sqp,				#7
+	  convergence_tolerance = 1e-8		#0,#1,#2,#4,#5,#6,#7
 
 model,
 	id_model = 'SURROGATE'
@@ -53,19 +55,19 @@ model,
 	  dace_method_pointer = 'SAMPLING' 	#0
 	  correction additive first_order 	#0
 	  polynomial quadratic 			#0
-# 	surrogate local taylor_series		#1,#2,#3,#4,#5,#6,#7
-#	  actual_model_pointer = 'TRUTH' 	#1,#2,#3,#4,#5,#6,#7
+# 	surrogate local taylor_series		#1,#2,#3,#4,#5,#6,#7,#8,#9
+#	  actual_model_pointer = 'TRUTH' 	#1,#2,#3,#4,#5,#6,#7,#8,#9
 
 variables,
 	continuous_design = 2
 	  initial_point   -1.2	1.0
-	  lower_bounds    -2.0     -2.0
+	  lower_bounds    -2.0 -2.0
 	  upper_bounds     2.0 	2.0
-	  descriptors      'x1'     'x2'
+	  descriptors      'x1' 'x2'
 
 responses,
 	id_responses = 'SURROGATE_RESP'
-	num_least_squares_terms = 2
+	calibration_terms = 2
 	analytic_gradients
 	no_hessians
 
@@ -95,7 +97,7 @@ interface,
 
 responses,
 	id_responses = 'TRUE_RESP'
-	num_least_squares_terms = 2
+	calibration_terms = 2
 	analytic_gradients
 	no_hessians				#0,#1
-#	analytic_hessians			#2,#3,#4,#5,#6,#7
+#	analytic_hessians			#2,#3,#4,#5,#6,#7,#8,#9

@@ -45,9 +45,9 @@ interface,
 	  analysis_driver=  'cyl_head'
 
 responses,
-	num_objective_functions = 3
+	objective_functions = 3
 	multi_objective_weights = .7 .1 .1
-	num_nonlinear_inequality_constraints = 1
+	nonlinear_inequality_constraints = 1
 	numerical_gradients
 	  method_source dakota
 	  interval_type central

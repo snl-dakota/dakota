@@ -69,8 +69,8 @@ variables,
 
 responses,
 	id_responses = 'PS_R'
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 2
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
 	response_descriptors = 'mean_f1' 'ccdf_beta_f2' 'ccdf_beta_f3'
 	no_gradients
 	no_hessians
@@ -119,6 +119,6 @@ interface,
 
 responses,
 	id_responses = 'ALEAT_R'
-	num_response_functions = 3
+	response_functions = 3
 	no_gradients
 	no_hessians

@@ -49,9 +49,9 @@ interface,
 responses,
 	response_descriptors = 'force' 'energy'		#0,#2,#4,#6
 #	response_descriptors = 'force' 'ineq1' 'energy'	#1,#3,#5,#7
-	num_objective_functions = 1
-#	num_nonlinear_inequality_constraints = 1	#1,#3,#5,#7
-	num_nonlinear_equality_constraints = 1
+	objective_functions = 1
+#	nonlinear_inequality_constraints = 1	#1,#3,#5,#7
+	nonlinear_equality_constraints = 1
 	nonlinear_equality_targets = 20.0
 	analytic_gradients				#0,#1,#4,#5,#6,#7
 #	numerical_gradients				#2,#3

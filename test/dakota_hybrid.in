@@ -91,12 +91,12 @@ interface,
 
 responses,
 	id_responses = 'R1'
-	num_objective_functions = 1
+	objective_functions = 1
 	no_gradients
 	no_hessians
 
 responses,
 	id_responses = 'R2'
-	num_objective_functions = 1
+	objective_functions = 1
 	analytic_gradients
 	analytic_hessians

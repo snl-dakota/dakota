@@ -26,7 +26,7 @@ interface,
 #	  file_tag file_save aprepro
 
 responses,
-	num_response_functions = 3
+	response_functions = 3
 	  descriptors = 'W1' 'W2' 'W3'
 	no_gradients
 	no_hessians

@@ -44,6 +44,6 @@ interface,
 	  analysis_driver = 'short_column'
 
 responses,
-	num_response_functions = 2
+	response_functions = 2
 	analytic_gradients
 	no_hessians

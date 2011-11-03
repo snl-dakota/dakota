@@ -59,7 +59,7 @@ variables,
 
 responses,
     id_responses = 'SURROGATE_RESP'
-    num_objective_functions = 2
+    objective_functions = 2
     no_gradients
     no_hessians
 
@@ -85,6 +85,6 @@ interface,
 
 responses,
     id_responses = 'TRUE_RESP'
-    num_objective_functions = 2
+    objective_functions = 2
     no_gradients
     no_hessians

@@ -83,8 +83,8 @@ variables,
 
 responses,
 	id_responses = 'SURROGATE_RESP'
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 2
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
 #	analytic_gradients			
 #	no_gradients				
   	numerical_gradients			
@@ -122,8 +122,8 @@ interface,
 
 responses,
 	id_responses = 'TRUE_RESP'
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 2
+	objective_functions = 1
+	nonlinear_inequality_constraints = 2
 #	analytic_gradients		#3,#4,#7
 	no_gradients		 	#0,#1,#2,#5
 #  	numerical_gradients		#6,#p0

@@ -38,7 +38,7 @@ variables,
 
 responses,
         id_responses = 'OUTER_R'
-        num_response_functions = 3
+        response_functions = 3
         response_descriptors = 'mean_wt' 'ccdf_beta_s' 'ccdf_beta_d'
         no_gradients
         no_hessians
@@ -87,7 +87,7 @@ interface,
 
 responses,
         id_responses = 'INNER_R'
-        num_response_functions = 3
+        response_functions = 3
         response_descriptors = 'weight' 'stress' 'displ'
         no_gradients
         no_hessians

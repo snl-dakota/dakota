@@ -52,6 +52,6 @@ interface,
 
 responses,
 	id_responses = 'UQ_R'
-	num_response_functions = 1
+	response_functions = 1
 	analytic_gradients
 	analytic_hessians

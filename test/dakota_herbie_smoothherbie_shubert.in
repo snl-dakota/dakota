@@ -34,7 +34,7 @@ interface,
 #	  analysis_driver = 'shubert'		#8,#9,#10,#11,#14,#17
 
 responses,
-	num_objective_functions = 1	
+	objective_functions = 1	
 	numerical_gradients			#0,#4,#8
 #	analytic_gradients			#1,#2,#3,#5,#6,#7,#9,#10,#11,#12,#13,#14,#15,#16,#17
 	no_hessians				#0,#1,#4,#5,#8,#9,#12,#13,#14,#15,#16,#17

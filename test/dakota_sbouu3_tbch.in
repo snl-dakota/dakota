@@ -43,8 +43,8 @@ responses,
 # NOTE: This specifies the TOTAL RESPONSE for the optimization,
 #       which is a combination of nested & interface responses.
 	id_responses = 'OPTIM_R'
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 4
+	objective_functions = 1
+	nonlinear_inequality_constraints = 4
 	nonlinear_inequality_upper_bounds = 0.0 0.0 0.0 1.6e+5
 	numerical_gradients
 	  method_source dakota
@@ -63,8 +63,8 @@ interface,
 responses,
 # NOTE: This is the response set from the optional interface.
 	id_responses = 'OPTIONAL_I_R'
-	num_objective_functions = 1
-	num_nonlinear_inequality_constraints = 3
+	objective_functions = 1
+	nonlinear_inequality_constraints = 3
 	no_gradients
 	no_hessians
 
@@ -113,7 +113,7 @@ variables,
 
 responses,
 	id_responses = 'UQ_R'
-	num_response_functions = 3
+	response_functions = 3
 	no_gradients
 	no_hessians
 

@@ -47,6 +47,6 @@ interface,
 	  analysis_driver = 'text_book'
 
 responses,
-	num_response_functions = 1
+	response_functions = 1
 	no_gradients
 	no_hessians
