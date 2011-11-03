@@ -1179,7 +1179,6 @@ const RealVector& ProblemDescDB::get_rdv(const String& entry_name) const
 
     #define P &DataMethodRep::
     static KW<RealVector, DataMethodRep> RVdme[] = {	// must be sorted
-	{"exp_std_deviations", P expStdDeviations},
 	{"jega.distance_vector", P distanceVector},
 	{"jega.niche_vector", P nicheVector},
 	{"linear_equality_constraints", P linearEqConstraintCoeffs},
@@ -1295,6 +1294,9 @@ const RealVector& ProblemDescDB::get_rdv(const String& entry_name) const
 
     #define P &DataResponsesRep::
     static KW<RealVector, DataResponsesRep> RVdr[] = {	// must be sorted
+	{"exp_config_variables", P expConfigVars},
+	{"exp_observations", P expObservations},
+	{"exp_std_deviations", P expStdDeviations},
 	{"fd_gradient_step_size", P fdGradStepSize},
 	{"fd_hessian_step_size", P fdHessStepSize},
 	{"nonlinear_equality_scales", P nonlinearEqScales},
@@ -1695,7 +1697,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"crossover_type", P crossoverType},
 	{"dl_solver.dlDetails", P dlDetails},
 	{"dot.minmax_type", P minMaxType},
-	{"exp_data_filename", P expDataFileName},
 	{"fitness_type", P fitnessType},
 	{"flat_file", P flatFile},
 	{"id", P idMethod},
@@ -1794,6 +1795,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	Locked_db();
     #define P &DataResponsesRep::
     static KW<String, DataResponsesRep> Sdr[] = {	// must be sorted
+	{"exp_data_filename", P expDataFileName},
 	{"gradient_type", P gradientType},
 	{"hessian_type", P hessianType},
 	{"id", P idResponses},
@@ -1931,8 +1933,6 @@ int ProblemDescDB::get_int(const String& entry_name) const
 	{"nond.expansion_samples", P expansionSamples},
 	{"nond.expansion_terms", P expansionTerms},
 	{"npsol.verify_level", P verifyLevel},
-	{"num_exp_config_vars", P numExpConfigVars},
-	{"num_experiments", P numExperiments},
 	{"optpp.search_scheme_size", P searchSchemeSize},
 	{"parameter_study.num_steps", P numSteps},
 	{"population_size", P populationSize},
@@ -2152,6 +2152,9 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 	Locked_db();
     #define P &DataResponsesRep::
     static KW<size_t, DataResponsesRep> Szdr[] = {	// must be sorted
+	{"exp_config_vars", P numExpConfigVars},
+	{"exp_std_deviations", P numExpStdDeviations},
+	{"experiments", P numExperiments},
 	{"least_squares_terms", P numLeastSqTerms},
 	{"nonlinear_equality_constraints", P numNonlinearEqConstraints},
 	{"nonlinear_inequality_constraints", P numNonlinearIneqConstraints},
@@ -2194,8 +2197,6 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"coliny.randomize", P randomizeOrderFlag},
 	{"coliny.show_misc_options", P showMiscOptions},
 	{"derivative_usage", P methodUseDerivsFlag},
-	{"exp_data_file_annotated", P expDataFileAnnotated},
-	{"exp_data_read_std_deviations", P expDataReadStdDeviations},
 	{"fixed_seed", P fixedSeedFlag},
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
 	{"latinize", P latinizeFlag},
@@ -2266,6 +2267,7 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
     #define P &DataResponsesRep::
     static KW<bool, DataResponsesRep> Bdr[] = {	// must be sorted
 	{"central_hess", P centralHess},
+	{"exp_data_file_annotated", P expDataFileAnnotated},
 	{"ignore_bounds", P ignoreBounds}};
     #undef P
 

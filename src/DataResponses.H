@@ -75,6 +75,25 @@ public:
   /// specification in \ref RespFnOpt and the \c least_squares_weights
   /// specification in \ref RespFnLS)
   RealVector primaryRespFnWeights;
+
+  // experimental data (for least squares and Bayesian algorithms)
+  RealVector expConfigVars;
+  RealVector expObservations;
+  RealVector expStdDeviations;
+    /// name of experimental data file containing response data (with
+  /// optional state variable and sigma data) to read
+  String expDataFileName;
+  /// whether the experimental data is in annotated format
+  bool expDataFileAnnotated;
+  /// number of rows of experimental data (replicates or distinct experiments)
+  size_t numExperiments;
+  /// number of experimental configuration vars (state variables) in
+  /// each row of data
+  size_t numExpConfigVars;
+  /// whether to read num_responses standard deviations from each row
+  /// of data file
+  size_t numExpStdDeviations;
+
   /// vector of nonlinear inequality constraint lower bounds (from the \c
   /// nonlinear_inequality_lower_bounds specification in \ref RespFnOpt)
   RealVector nonlinearIneqLowerBnds;
@@ -96,7 +115,7 @@ public:
   /// vector of nonlinear equality constraint scaling factors (from the \c
   /// nonlinear_equality_scales specification in \ref RespFnOpt)
   RealVector nonlinearEqScales;
-
+ 
   /// gradient type: none, numerical, analytic, or mixed (from the \c
   /// no_gradients, \c numerical_gradients, \c analytic_gradients, and
   /// \c mixed_gradients specifications in \ref RespGrad)

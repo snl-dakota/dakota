@@ -130,20 +130,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  | dl_solver STRING {N_mdm(slit2,3methodName_dl_solver)}
 	  |
 	  ( npsol_sqp {N_mdm(lit,methodName_npsol_sqp)}
-	    | ( nlssol_sqp {N_mdm(lit,methodName_nlssol_sqp)}
-                [ experimental_data_file STRING {N_mdm(str,expDataFileName)}
-                  [ annotated {N_mdm(true,expDataFileAnnotated)} | 
-                    freeform  {N_mdm(false,expDataFileAnnotated)} 
-                    ]
-  	          [ num_experiments INTEGER {N_mdm(int,numExperiments)} ]
-                  [ experimental_config_variables INTEGER {N_mdm(int,numExpConfigVars)} ] 
-                  [ read_std_deviations {N_mdm(true,expDataReadStdDeviations)} ]
-                  ]
-                )
-#	    | (stanford {0}
-#		npsol {N_mdm(lit,methodName_npsol_sqp)}
-#		| nlssol {N_mdm(lit,methodName_nlssol_sqp)}
-#		)
+	    | nlssol_sqp {N_mdm(lit,methodName_nlssol_sqp)}
+	    | (stanford {0}
+		npsol {N_mdm(lit,methodName_npsol_sqp)}
+		| nlssol {N_mdm(lit,methodName_nlssol_sqp)}
+		)
 	    [ verify_level INTEGER {N_mdm(int,verifyLevel)} ]
 	    [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
 	    [ linesearch_tolerance REAL {N_mdm(Real,lineSearchTolerance)} ]
@@ -155,17 +146,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    |
 	    ( optpp_q_newton {N_mdf(litpp,methodName_optpp_q_newton)}
 	      | optpp_fd_newton {N_mdf(litpp,methodName_optpp_fd_newton)}
+	      | optpp_g_newton {N_mdf(litpp,methodName_optpp_g_newton)}
 	      | optpp_newton {N_mdf(litpp,methodName_optpp_newton)}
-	      | ( optpp_g_newton {N_mdf(litpp,methodName_optpp_g_newton)}
-                  [ experimental_data_file STRING {N_mdm(str,expDataFileName)}
-                    [ annotated {N_mdm(true,expDataFileAnnotated)} | 
-                      freeform  {N_mdm(false,expDataFileAnnotated)} 
-                      ]
-    	            [ num_experiments INTEGER {N_mdm(int,numExperiments)} ]
-                    [ experimental_config_variables INTEGER {N_mdm(int,numExpConfigVars)} ] 
-                    [ read_std_deviations {N_mdm(true,expDataReadStdDeviations)} ]
-                    ]
-                  )
 	      [ search_method {0}
 		value_based_line_search {N_mdm(lit,searchMethod_value_based_line_search)}
 		| gradient_based_line_search {N_mdm(lit,searchMethod_gradient_based_line_search)}
@@ -399,14 +381,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  [ initial_trust_radius REAL {N_mdm(Real,initTRRadius)} ]
 	  [ covariance INTEGER {N_mdm(int,covarianceType)} ]
 	  [ regression_diagnostics {N_mdm(true,regressDiag)} ]
-          [ experimental_data_file STRING {N_mdm(str,expDataFileName)}
-            [ annotated {N_mdm(true,expDataFileAnnotated)} | 
-              freeform  {N_mdm(false,expDataFileAnnotated)} 
-              ]
-	    [ num_experiments INTEGER {N_mdm(int,numExperiments)} ]
-            [ experimental_config_variables INTEGER {N_mdm(int,numExpConfigVars)} ] 
-            [ read_std_deviations {N_mdm(true,expDataReadStdDeviations)} ]
-            ]
 	  )
 	|
 	( nonlinear_cg {N_mdm(lit,methodName_nonlinear_cg)}
@@ -610,15 +584,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      [ rng {0}
 		mt19937 {N_mdm(lit,rngName_mt19937)}
 		| rnum2 {N_mdm(lit,rngName_rnum2)} ]
-	      [ experimental_std_deviations REALLIST {N_mdm(RealDL,expStdDeviations)} ]
-              [ experimental_data_file STRING {N_mdm(str,expDataFileName)}
-                [ annotated {N_mdm(true,expDataFileAnnotated)} | 
-                  freeform  {N_mdm(false,expDataFileAnnotated)} 
-                  ]
-	        [ num_experiments INTEGER {N_mdm(int,numExperiments)} ]
-                [ experimental_config_variables INTEGER {N_mdm(int,numExpConfigVars)} ] 
-                [ read_std_deviations {N_mdm(true,expDataReadStdDeviations)} ]
-                ]
               [ proposal_covariance_scale REAL {N_mdm(Real,proposalCovScale)} ]
               [ likelihood_scale REAL {N_mdm(Real,likelihoodScale)} ]
 	      )
@@ -1159,40 +1124,57 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
 KEYWORD12 responses {N_rem3(start,0,stop)}
 	[ id_responses STRING {N_rem(str,idResponses)} ]
 	[ descriptors ALIAS response_descriptors STRINGLIST {N_rem(strL,responseLabels)} ]
-	( num_objective_functions INTEGER >= 0 {N_rem(nnintz,numObjectiveFunctions)}
-	  [ objective_function_scale_types STRINGLIST LEN1 num_objective_functions {N_rem(strL,primaryRespFnScaleTypes)} ]
-	  [ objective_function_scales REALLIST LEN1 num_objective_functions {N_rem(RealDL,primaryRespFnScales)} ]
-	  [ multi_objective_weights REALLIST LEN num_objective_functions {N_rem(RealDL,primaryRespFnWeights)} ]
-	  [ num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearIneqConstraints)}
-	    [ nonlinear_inequality_lower_bounds REALLIST LEN num_nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
-	    [ nonlinear_inequality_upper_bounds REALLIST LEN num_nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
-	    [ nonlinear_inequality_scale_types STRINGLIST LEN1 num_nonlinear_inequality_constraints {N_rem(strL,nonlinearIneqScaleTypes)} ]
-	    [ nonlinear_inequality_scales REALLIST LEN1 num_nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqScales)} ]
+	( objective_functions ALIAS num_objective_functions INTEGER >= 0 {N_rem(nnintz,numObjectiveFunctions)}
+	  [ objective_function_scale_types STRINGLIST LEN1 objective_functions {N_rem(strL,primaryRespFnScaleTypes)} ]
+	  [ objective_function_scales REALLIST LEN1 objective_functions {N_rem(RealDL,primaryRespFnScales)} ]
+	  [ multi_objective_weights REALLIST LEN objective_functions {N_rem(RealDL,primaryRespFnWeights)} ]
+	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearIneqConstraints)}
+	    [ nonlinear_inequality_lower_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
+	    [ nonlinear_inequality_upper_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
+	    [ nonlinear_inequality_scale_types STRINGLIST LEN1 nonlinear_inequality_constraints {N_rem(strL,nonlinearIneqScaleTypes)} ]
+	    [ nonlinear_inequality_scales REALLIST LEN1 nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqScales)} ]
 	    ]
-	  [ num_nonlinear_equality_constraints INTEGER >= 0 LEN num_nonlinear_equality_constraints {N_rem(nnintz,numNonlinearEqConstraints)}
-	    [ nonlinear_equality_targets REALLIST LEN num_nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqTargets)} ]
-	    [ nonlinear_equality_scale_types STRINGLIST LEN1 num_nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
-	    [ nonlinear_equality_scales REALLIST LEN1 num_nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
+	  [ nonlinear_equality_constraints ALIAS num_nonlinear_equality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearEqConstraints)}
+	    [ nonlinear_equality_targets REALLIST LEN nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqTargets)} ]
+	    [ nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
+	    [ nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
 	    ]
 	  )
 	|
-	( num_least_squares_terms INTEGER >= 0 {N_rem(nnintz,numLeastSqTerms)}
-	  [ least_squares_term_scale_types STRINGLIST LEN1 num_least_squares_terms {N_rem(strL,primaryRespFnScaleTypes)} ]
-	  [ least_squares_term_scales REALLIST LEN1 num_least_squares_terms {N_rem(RealDL,primaryRespFnScales)} ]
-	  [ least_squares_weights REALLIST LEN num_least_squares_terms {N_rem(RealDL,primaryRespFnWeights)} ]
-	  [ num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearIneqConstraints)}
-	    [ nonlinear_inequality_lower_bounds REALLIST LEN num_nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
-	    [ nonlinear_inequality_upper_bounds REALLIST LEN num_nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
-	    [ nonlinear_inequality_scale_types STRINGLIST LEN1 num_nonlinear_inequality_constraints {N_rem(strL,nonlinearIneqScaleTypes)} ]
-	    [ nonlinear_inequality_scales REALLIST LEN1 num_nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqScales)} ]
-	    ]
-	  [ num_nonlinear_equality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearEqConstraints)}
-	    [ nonlinear_equality_targets REALLIST LEN num_nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqTargets)} ]
-	    [ nonlinear_equality_scale_types STRINGLIST LEN1 num_nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
-	    [ nonlinear_equality_scales REALLIST LEN1 num_nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
-	    ]
-	  )
-	| num_response_functions INTEGER >= 0 {N_rem(nnintz,numResponseFunctions)}
+	( calibration_terms ALIAS num_least_squares_terms INTEGER >= 0 {N_rem(nnintz,numLeastSqTerms)}
+	  [ least_squares_term_scale_types STRINGLIST LEN1 calibration_terms {N_rem(strL,primaryRespFnScaleTypes)} ]
+	  [ least_squares_term_scales REALLIST LEN1 calibration_terms {N_rem(RealDL,primaryRespFnScales)} ]
+	  [ calibration_weights ALIAS least_squares_weights REALLIST LEN calibration_terms {N_rem(RealDL,primaryRespFnWeights)} ]
+	  [ 
+#           ( calibration_data_arrays {0}
+#             [ num_experiments INTEGER >= 0 {N_rem(nnintz,numExperiments)} ]
+#             [ experimental_config_variables REALLIST {N_rem(RealDL,expConfigVars)} ]
+#	      [ experimental_observations REALLIST {N_rem(RealDL,expObservations)} ]
+#	      [ experimental_std_deviations REALLIST {N_rem(RealDL,expStdDeviations)} ]
+#             )
+#  	    |
+  	    ( calibration_data_file STRING {N_rem(str,expDataFileName)}
+              [ num_experiments INTEGER >= 0 {N_rem(nnintz,numExperiments)} ]
+              [ annotated {N_rem(true,expDataFileAnnotated)} | 
+                freeform  {N_rem(false,expDataFileAnnotated)} 
+                ]
+              [ num_config_variables INTEGER >= 0 {N_rem(nnintz,numExpConfigVars)} ] 
+              [ num_std_deviations INTEGER >= 0 {N_rem(nnintz,numExpStdDeviations)} ]
+              )
+            ]  
+    	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearIneqConstraints)}
+  	    [ nonlinear_inequality_lower_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
+  	    [ nonlinear_inequality_upper_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
+  	    [ nonlinear_inequality_scale_types STRINGLIST LEN1 nonlinear_inequality_constraints {N_rem(strL,nonlinearIneqScaleTypes)} ]
+  	    [ nonlinear_inequality_scales REALLIST LEN1 nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqScales)} ]
+  	    ]
+  	  [ nonlinear_equality_constraints ALIAS num_nonlinear_equality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearEqConstraints)}
+  	    [ nonlinear_equality_targets REALLIST LEN nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqTargets)} ]
+  	    [ nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
+  	    [ nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
+  	    ]
+  	  )
+  	| response_functions ALIAS num_response_functions INTEGER >= 0 {N_rem(nnintz,numResponseFunctions)}
 	no_gradients {N_rem(lit,gradientType_none)}
 	| analytic_gradients {N_rem(lit,gradientType_analytic)}
 	|

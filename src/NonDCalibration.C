@@ -25,12 +25,12 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDCalibration::NonDCalibration(Model& model): NonD(model),
-  expStdDeviations(probDescDB.get_rdv("method.exp_std_deviations")),
-  expDataFileName(probDescDB.get_string("method.exp_data_filename")),
-  expDataFileAnnotated(probDescDB.get_bool("method.exp_data_file_annotated")),
-  numExperiments(probDescDB.get_int("method.num_experiments")),
-  numExpConfigVars(probDescDB.get_int("method.num_exp_config_vars")),
-  expDataReadStdDeviations(probDescDB.get_bool("method.exp_data_read_std_deviations")),
+  expStdDeviations(probDescDB.get_rdv("responses.exp_std_deviations")),
+  expDataFileName(probDescDB.get_string("responses..exp_data_filename")),
+  expDataFileAnnotated(probDescDB.get_bool("responses.exp_data_file_annotated")),
+  numExperiments(probDescDB.get_sizet("responses.num_experiments")),
+  numExpConfigVars(probDescDB.get_sizet("responses.num_exp_config_vars")),
+  numExpStdDeviationsRead(probDescDB.get_sizet("method.num_exp_std_deviations")),
   continuousConfigVars(0), discreteIntConfigVars(0), discreteRealConfigVars(0),
   continuousConfigStart(0), discreteIntConfigStart(0),
   discreteRealConfigStart(0)

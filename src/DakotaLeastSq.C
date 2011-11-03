@@ -39,7 +39,7 @@ LeastSq* LeastSq::leastSqInstance(NULL);
 LeastSq::LeastSq(Model& model): Minimizer(model),
   numLeastSqTerms(probDescDB.get_sizet("responses.num_least_squares_terms")),
   weightFlag(!model.primary_response_fn_weights().empty()),
-  obsDataFilename(probDescDB.get_string("method.exp_data_filename")),
+  obsDataFilename(probDescDB.get_string("responses.exp_data_filename")),
   obsDataFlag(!obsDataFilename.empty())
 {
   // Check for proper function definition
@@ -49,34 +49,30 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
     abort_handler(-1);
   }
 
-  // read observation data for computation of least squares residuals if specified
+  // read observation data to compute least squares residuals if specified
   if (obsDataFlag) {
 
     // These may be promoted to members once we use state vars / sigma
-    int num_experiments = probDescDB.get_int("method.num_experiments");
-    int num_exp_config_vars = probDescDB.get_int("method.num_exp_config_vars");
-    bool exp_data_read_std_deviations = 
-      probDescDB.get_bool("method.exp_data_read_std_deviations");
+    size_t num_experiments = probDescDB.get_sizet("responses.num_experiments");
+    size_t num_config_vars_read = 
+      probDescDB.get_sizet("responses.num_exp_config_vars");
+    size_t num_sigma_read = 
+      probDescDB.get_sizet("responses.num_exp_std_deviations");
 
-    if (num_experiments> 1)
+    if (num_experiments > 1 && outputLevel >= QUIET_OUTPUT)
       Cout << "\nWarning (least squares): num_experiments > 1 unsupported; " 
 	   << "only first will be used." << std::endl;
-    if (num_exp_config_vars > 0)
+    if (num_config_vars_read > 0 && outputLevel >= QUIET_OUTPUT)
       Cout << "\nWarning (least squares): experimental_config_variables " 
-	   << "will be read from file, but ignored." << std::endl;
-    if (exp_data_read_std_deviations)
-      Cout << "\nWarning (least squares): experimental standard deviations "
 	   << "will be read from file, but ignored." << std::endl;
 
     // a matrix with numExperiments rows and cols
-    // numExpConfigVars X, numFunctions Y, [numFunctions Sigma]
+    // numExpConfigVars X, numFunctions Y, [1 or numFunctions Sigma]
     RealMatrix experimental_data;
     
-    size_t num_sigma_read = 
-      (exp_data_read_std_deviations) ? numLeastSqTerms : 0;
-    size_t num_cols = num_exp_config_vars + numLeastSqTerms + num_sigma_read;
+    size_t num_cols = num_config_vars_read + numLeastSqTerms + num_sigma_read;
 
-    bool annotated = probDescDB.get_bool("method.exp_data_file_annotated");
+    bool annotated = probDescDB.get_bool("responses.exp_data_file_annotated");
 
     TabularIO::read_data_tabular(obsDataFilename, "Least Squares", 
 				 experimental_data, num_experiments, num_cols, 
@@ -85,10 +81,40 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
     // copy the y portion of the data to obsData
     obsData.resize(numLeastSqTerms);
     for (int y_ind = 0; y_ind < numLeastSqTerms; ++y_ind) {
-      obsData[y_ind] = experimental_data(0, num_exp_config_vars + y_ind);
+      obsData[y_ind] = experimental_data(0, num_config_vars_read + y_ind);
       Cout << obsData[y_ind] << std::endl;
     }
 
+    // weight the terms with sigma from the file if active
+    if (num_sigma_read > 0) {
+      if (!model.primary_response_fn_weights().empty()) {
+	Cerr << "\nError (least squares): both weights and sigma specified."
+	     << std::endl;
+	abort_handler(-1);
+      }
+      if (outputLevel >= NORMAL_OUTPUT)
+	Cout << "\nLeast squares: weighting least squares terms with 1 / square"
+	     << " of standard deviations " << "read from file." << std::endl;
+      RealVector lsq_weights(numLeastSqTerms);
+      if (num_sigma_read == 1) {
+	double sigma = 
+	  experimental_data(0, num_config_vars_read + numLeastSqTerms);
+	lsq_weights = 1.0/std::pow(sigma, 2);
+      }
+      else if (num_sigma_read == numLeastSqTerms) {
+	for (size_t i=0; i<numLeastSqTerms; ++i) {
+	  double sigma = 
+	    experimental_data(0, num_config_vars_read + numLeastSqTerms + i);
+	  lsq_weights[i] = 1.0/std::pow(sigma, 2);
+	}
+      }
+      else {
+	Cerr << "\nError (least squares): std_deviations read needs to be "
+	     << "length 1 or number of calibration_terms." << std::endl;
+	abort_handler(-1);
+      }
+      model.primary_response_fn_weights(lsq_weights);
+    }
   }
 
   // set minimizer data for number of functions or least squares terms

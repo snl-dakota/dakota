@@ -126,7 +126,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
   // numExpConfigVars X, numFunctions Y, [numFunctions Sigma]
   RealMatrix experimental_data;
 
-  size_t num_sigma_read = (expDataReadStdDeviations) ? numFunctions : 0;
+  size_t num_sigma_read = numExpStdDeviationsRead;
   size_t num_cols = numExpConfigVars + numFunctions + num_sigma_read;
 
   TabularIO::read_data_tabular(expDataFileName, "GPMSA Bayes Calibration", 
@@ -160,6 +160,7 @@ void NonDGPMSABayesCalibration::quantify_uncertainty()
 			start_row, start_col);
   Cout << 'yobs_data' << y_obs_data << '\n';
 
+  // BMA: note that we now allow reading 1 or N sigmas from the file...
   RealMatrix y_std_data;
   y_std_data.reshape(numExperiments,numFunctions);
   if (num_sigma_read > 0) {

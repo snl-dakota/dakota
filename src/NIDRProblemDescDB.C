@@ -1296,10 +1296,6 @@ method_stop(const char *keyname, Values *val, void **g, void *v)
 		"linear_inequality", mr_scaletypes);
 	scale_chk(dm->linearEqScaleTypes, dm->linearEqScales,
 		"linear_equality", mr_scaletypes);
-	if (!dm->expStdDeviations.empty() && dm->expDataReadStdDeviations) {
-	  NIDRProblemDescDB::squawk("specify one of  \"experimental_std_deviations\" or "
-				    "\"read_std_deviations\", not both");
-	}
 	pDDBInstance->dataMethodList.push_back(*mi->dme0);
 	delete mi->dme0;
 	delete mi;
@@ -1569,6 +1565,10 @@ resp_stop(const char *keyname, Values *val, void **g, void *v)
 		"nonlinear_inequality", aln_scaletypes);
 	scale_chk(dr->nonlinearEqScaleTypes, dr->nonlinearEqScales,
 		"nonlinear_equality", aln_scaletypes);
+	if ( dr->primaryRespFnWeights.length() > 0 && 
+	     (dr->expStdDeviations.length() > 0 || dr->numExpStdDeviations > 0) ) {
+	  squawk("Specify calibration weights or experimental standard deviations, not both.");
+	}
 	if ((n = dr->responseLabels.size()) > 0) {
 		if (!(k = dr->numResponseFunctions)) {
 			if (!(k = dr->numObjectiveFunctions))
@@ -4455,7 +4455,6 @@ static Real
 
 static RealVector
 	MP_(anisoGridDimPref),
-	MP_(expStdDeviations),
 	MP_(finalPoint),
 	MP_(linearEqConstraintCoeffs),
 	MP_(linearEqScales),
@@ -4484,7 +4483,6 @@ static UShortArray
 
 static String
 	MP_(centralPath),
-	MP_(expDataFileName),
 	MP_(expansionImportFile),
 	MP_(idMethod),
 	MP_(logFile),
@@ -4501,8 +4499,6 @@ static StringArray
 static bool
 	MP_(allVarsFlag),
 	MP_(constantPenalty),
-	MP_(expDataFileAnnotated),
-	MP_(expDataReadStdDeviations),
 	MP_(expansionFlag),
 	MP_(fixedSeedFlag),
 	MP_(fixedSequenceFlag),
@@ -4539,8 +4535,6 @@ static int
 	MP_(maxIterations),
 	MP_(mutationRange),
 	MP_(newSolnsGenerated),
-	MP_(numExpConfigVars),
-	MP_(numExperiments),
 	MP_(numSamples),
 	MP_(numSteps),
 	MP_(numSymbols),
@@ -4717,6 +4711,9 @@ static IntList
 	MP_(idQuasiHessians);
 
 static RealVector
+	MP_(expConfigVars),
+	MP_(expObservations),
+	MP_(expStdDeviations),
 	MP_(primaryRespFnWeights),
 	MP_(nonlinearEqTargets),
 	MP_(nonlinearIneqLowerBnds),
@@ -4746,6 +4743,7 @@ static Resp_mp_lit
 	MP2(quasiHessianType,sr1);
 
 static String
+	MP_(expDataFileName),
         MP_(idResponses);
 
 static StringArray
@@ -4756,9 +4754,13 @@ static StringArray
 
 static bool
 	MP_(centralHess),
+	MP_(expDataFileAnnotated),
 	MP_(ignoreBounds);
 
 static size_t
+	MP_(numExpStdDeviations),
+	MP_(numExpConfigVars),
+        MP_(numExperiments),
 	MP_(numLeastSqTerms),
 	MP_(numNonlinearEqConstraints),
 	MP_(numNonlinearIneqConstraints),

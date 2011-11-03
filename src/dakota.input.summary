@@ -197,15 +197,11 @@ KEYWORD12 method
 	  [ linear_equality_scale_types STRINGLIST ]
 	  [ linear_equality_scales REALLIST ]
 	  )
+	| nlssol_sqp
 	|
-	( nlssol_sqp
-	  [ experimental_data_file STRING
-	    [ annotated
-	    | freeform ]
-	    [ num_experiments INTEGER ]
-	    [ experimental_config_variables INTEGER ]
-	    [ read_std_deviations ]
-	    ]
+	( stanford
+	  npsol
+	  | nlssol
 	  [ verify_level INTEGER ]
 	  [ function_precision REAL ]
 	  [ linesearch_tolerance REAL ]
@@ -247,39 +243,9 @@ KEYWORD12 method
 	  )
 	|
 	( optpp_q_newton
-	  [ search_method
-	    value_based_line_search
-	    | gradient_based_line_search
-	    | trust_region
-	    | tr_pds
-	    ]
-	  [ merit_function STRING ]
-	  [ central_path STRING ]
-	  [ steplength_to_boundary REAL ]
-	  [ centering_parameter REAL ]
-	  [ max_step REAL ]
-	  [ gradient_tolerance REAL ]
-	  [ linear_inequality_constraint_matrix REALLIST ]
-	  [ linear_inequality_lower_bounds REALLIST ]
-	  [ linear_inequality_upper_bounds REALLIST ]
-	  [ linear_inequality_scale_types STRINGLIST ]
-	  [ linear_inequality_scales REALLIST ]
-	  [ linear_equality_constraint_matrix REALLIST ]
-	  [ linear_equality_targets REALLIST ]
-	  [ linear_equality_scale_types STRINGLIST ]
-	  [ linear_equality_scales REALLIST ]
-	  )
-	| optpp_fd_newton
-	| optpp_newton
-	|
-	( optpp_g_newton
-	  [ experimental_data_file STRING
-	    [ annotated
-	    | freeform ]
-	    [ num_experiments INTEGER ]
-	    [ experimental_config_variables INTEGER ]
-	    [ read_std_deviations ]
-	    ]
+	  | optpp_fd_newton
+	  | optpp_g_newton
+	  | optpp_newton
 	  [ search_method
 	    value_based_line_search
 	    | gradient_based_line_search
@@ -600,13 +566,6 @@ KEYWORD12 method
 	  [ initial_trust_radius REAL ]
 	  [ covariance INTEGER ]
 	  [ regression_diagnostics ]
-	  [ experimental_data_file STRING
-	    [ annotated
-	    | freeform ]
-	    [ num_experiments INTEGER ]
-	    [ experimental_config_variables INTEGER ]
-	    [ read_std_deviations ]
-	    ]
 	  )
 	|
 	( nonlinear_cg
@@ -930,14 +889,6 @@ KEYWORD12 method
 	  [ rng
 	    mt19937
 	    | rnum2
-	    ]
-	  [ experimental_std_deviations REALLIST ]
-	  [ experimental_data_file STRING
-	    [ annotated
-	    | freeform ]
-	    [ num_experiments INTEGER ]
-	    [ experimental_config_variables INTEGER ]
-	    [ read_std_deviations ]
 	    ]
 	  [ proposal_covariance_scale REAL ]
 	  [ likelihood_scale REAL ]
@@ -1484,40 +1435,47 @@ KEYWORD12 interface
 KEYWORD12 responses
 	[ id_responses STRING ]
 	[ descriptors ALIAS response_descriptors STRINGLIST ]
-	( num_objective_functions INTEGER >= 0
+	( objective_functions ALIAS num_objective_functions INTEGER >= 0
 	  [ objective_function_scale_types STRINGLIST ]
 	  [ objective_function_scales REALLIST ]
 	  [ multi_objective_weights REALLIST ]
-	  [ num_nonlinear_inequality_constraints INTEGER >= 0
+	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0
 	    [ nonlinear_inequality_lower_bounds REALLIST ]
 	    [ nonlinear_inequality_upper_bounds REALLIST ]
 	    [ nonlinear_inequality_scale_types STRINGLIST ]
 	    [ nonlinear_inequality_scales REALLIST ]
 	    ]
-	  [ num_nonlinear_equality_constraints INTEGER >= 0
+	  [ nonlinear_equality_constraints ALIAS num_nonlinear_equality_constraints INTEGER >= 0
 	    [ nonlinear_equality_targets REALLIST ]
 	    [ nonlinear_equality_scale_types STRINGLIST ]
 	    [ nonlinear_equality_scales REALLIST ]
 	    ]
 	  )
 	|
-	( num_least_squares_terms INTEGER >= 0
+	( calibration_terms ALIAS num_least_squares_terms INTEGER >= 0
 	  [ least_squares_term_scale_types STRINGLIST ]
 	  [ least_squares_term_scales REALLIST ]
-	  [ least_squares_weights REALLIST ]
-	  [ num_nonlinear_inequality_constraints INTEGER >= 0
+	  [ calibration_weights ALIAS least_squares_weights REALLIST ]
+	  [ calibration_data_file STRING
+	    [ num_experiments INTEGER >= 0 ]
+	    [ annotated
+	    | freeform ]
+	    [ num_config_variables INTEGER >= 0 ]
+	    [ num_std_deviations INTEGER >= 0 ]
+	    ]
+	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0
 	    [ nonlinear_inequality_lower_bounds REALLIST ]
 	    [ nonlinear_inequality_upper_bounds REALLIST ]
 	    [ nonlinear_inequality_scale_types STRINGLIST ]
 	    [ nonlinear_inequality_scales REALLIST ]
 	    ]
-	  [ num_nonlinear_equality_constraints INTEGER >= 0
+	  [ nonlinear_equality_constraints ALIAS num_nonlinear_equality_constraints INTEGER >= 0
 	    [ nonlinear_equality_targets REALLIST ]
 	    [ nonlinear_equality_scale_types STRINGLIST ]
 	    [ nonlinear_equality_scales REALLIST ]
 	    ]
 	  )
-	| num_response_functions INTEGER >= 0
+	| response_functions ALIAS num_response_functions INTEGER >= 0
 	no_gradients
 	| analytic_gradients
 	|

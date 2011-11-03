@@ -19,8 +19,11 @@ namespace Dakota {
 // Default constructor:
 DataResponsesRep::DataResponsesRep(): numObjectiveFunctions(0),
   numNonlinearIneqConstraints(0), numNonlinearEqConstraints(0),
-  numLeastSqTerms(0), numResponseFunctions(0), ignoreBounds(false),
-  centralHess(false),
+  numLeastSqTerms(0), numResponseFunctions(0), 
+  // Experimental data
+  expDataFileAnnotated(true), numExperiments(1), numExpConfigVars(0),
+  numExpStdDeviations(0),
+  ignoreBounds(false), centralHess(false),
   methodSource("dakota"), intervalType("forward"), referenceCount(1)
 { }
 
@@ -30,10 +33,18 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
   s << numObjectiveFunctions << numNonlinearIneqConstraints
     << numNonlinearEqConstraints << numLeastSqTerms << numResponseFunctions
     << primaryRespFnScaleTypes << primaryRespFnScales << primaryRespFnWeights
+
+    // Experimental data
+    << expConfigVars << expObservations << expStdDeviations
+    << expStdDeviations << expDataFileName << expDataFileAnnotated
+    << numExperiments << numExpConfigVars << numExpStdDeviations
+
     << nonlinearIneqLowerBnds << nonlinearIneqUpperBnds
     << nonlinearIneqScaleTypes  << nonlinearIneqScales << nonlinearEqTargets
-    << nonlinearEqScaleTypes << nonlinearEqScales << gradientType << hessianType
-    << ignoreBounds << centralHess << quasiHessianType << methodSource << intervalType
+    << nonlinearEqScaleTypes << nonlinearEqScales 
+    << gradientType << hessianType
+    << ignoreBounds << centralHess << quasiHessianType << methodSource 
+    << intervalType
     << fdGradStepSize << fdHessStepSize << idNumericalGrads << idAnalyticGrads
     << idNumericalHessians << idQuasiHessians << idAnalyticHessians
     << idResponses << responseLabels;
@@ -45,10 +56,18 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
   s >> numObjectiveFunctions >> numNonlinearIneqConstraints
     >> numNonlinearEqConstraints >> numLeastSqTerms >> numResponseFunctions
     >> primaryRespFnScaleTypes >> primaryRespFnScales >> primaryRespFnWeights
+
+    // Experimental data
+    >> expConfigVars >> expObservations >> expStdDeviations
+    >> expStdDeviations >> expDataFileName >> expDataFileAnnotated
+    >> numExperiments >> numExpConfigVars >> numExpStdDeviations
+
     >> nonlinearIneqLowerBnds >> nonlinearIneqUpperBnds
     >> nonlinearIneqScaleTypes  >> nonlinearIneqScales >> nonlinearEqTargets
-    >> nonlinearEqScaleTypes >> nonlinearEqScales >> gradientType >> hessianType
-    >> ignoreBounds >> centralHess >> quasiHessianType >> methodSource >> intervalType
+    >> nonlinearEqScaleTypes >> nonlinearEqScales 
+    >> gradientType >> hessianType
+    >> ignoreBounds >> centralHess >> quasiHessianType >> methodSource
+    >> intervalType
     >> fdGradStepSize >> fdHessStepSize >> idNumericalGrads >> idAnalyticGrads
     >> idNumericalHessians >> idQuasiHessians >> idAnalyticHessians
     >> idResponses >> responseLabels;
@@ -60,10 +79,18 @@ void DataResponsesRep::write(std::ostream& s) const
   s << numObjectiveFunctions << numNonlinearIneqConstraints
     << numNonlinearEqConstraints << numLeastSqTerms << numResponseFunctions
     << primaryRespFnScaleTypes << primaryRespFnScales << primaryRespFnWeights
+
+    // Experimental data
+    << expConfigVars << expObservations << expStdDeviations
+    << expStdDeviations << expDataFileName << expDataFileAnnotated
+    << numExperiments << numExpConfigVars << numExpStdDeviations
+
     << nonlinearIneqLowerBnds << nonlinearIneqUpperBnds
     << nonlinearIneqScaleTypes  << nonlinearIneqScales << nonlinearEqTargets
-    << nonlinearEqScaleTypes << nonlinearEqScales << gradientType << hessianType
-    << ignoreBounds << centralHess << quasiHessianType << methodSource << intervalType
+    << nonlinearEqScaleTypes << nonlinearEqScales 
+    << gradientType << hessianType
+    << ignoreBounds << centralHess << quasiHessianType << methodSource
+    << intervalType
     << fdGradStepSize << fdHessStepSize << idNumericalGrads << idAnalyticGrads
     << idNumericalHessians << idQuasiHessians << idAnalyticHessians
     << idResponses << responseLabels;

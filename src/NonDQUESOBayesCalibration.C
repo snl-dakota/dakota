@@ -121,7 +121,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // numExpConfigVars X, numFunctions Y, [numFunctions Sigma]
   RealMatrix experimental_data;
 
-  size_t num_sigma_read = (expDataReadStdDeviations) ? numFunctions : 0;
+  size_t num_sigma_read = numExpStdDeviations;
   size_t num_cols = numExpConfigVars + numFunctions + num_sigma_read;
 
   TabularIO::read_data_tabular(expDataFileName, "QUESO Bayes Calibration", 
@@ -369,7 +369,7 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   
   //Cout << "numExperiments" << num_exp << '\n';
   //Cout << "numFunctions" << num_funcs << '\n';
-  //Cout << "ReadExpStdDev " << NonDQUESOInstance->expDataReadStdDeviations << '\n';
+  //Cout << "numExpStdDeviationsRead " << NonDQUESOInstance->numExpStdDeviationsRead << '\n';
 
   for (i=0; i<num_cont; i++) 
     x(i)=paramValues[i];
@@ -411,7 +411,8 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
  
   // Calculate the likelihood depending on what information is available 
   // for the standard deviations
-  if (NonDQUESOInstance->expDataReadStdDeviations) {
+  // BMA: note that we now allow reading 1 or N sigmas from the file...
+  if (NonDQUESOInstance->numExpStdDeviationsRead > 0) {
     for (i=0; i<num_exp; i++) 
       for (j=0; j<num_funcs; j++)
         result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j))/NonDQUESOInstance->yStdData(i,j),2.0);

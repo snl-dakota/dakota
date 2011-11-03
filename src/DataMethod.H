@@ -230,24 +230,6 @@ public:
   /// method (from the \c sub_method_pointer specification in SBL/SBG)
   String subMethodPointer;
 
-  // experimental data (for least squares and Bayesian algorithms)
-  
-  /// vector of 1 or num_responses experimental standard deviations
-  RealVector expStdDeviations;
-  /// name of experimental data file containing response data (with
-  /// optional state variable and sigma data) to read
-  String expDataFileName;
-  /// whether the experimental data is in annotated format
-  bool expDataFileAnnotated;
-  /// number of rows of experimental data (replicates or distinct experiments)
-  int numExperiments;
-  /// number of experimental configuration vars (state variables) in
-  /// each row of data
-  int numExpConfigVars;
-  /// whether to read num_responses standard deviations from each row
-  /// of data file
-  bool expDataReadStdDeviations;
-
   /// number of consecutive iterations with change less than
   /// convergenceTolerance required to trigger convergence within
   /// the surrogate-based local method (from the \c

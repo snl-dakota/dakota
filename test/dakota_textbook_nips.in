@@ -27,9 +27,6 @@ method,
 	  convergence_tolerance = 1e-8
 #	  linear_inequality_constraint_matrix = 1. 1.	#5,#6
 #	  linear_inequality_upper_bounds = 1.05	      	#5,#6
-#         experimental_data_file = 'least_squares_test.dat' #7
-# 	    freeform  #7
-#         experimental_data_file = 'least_squares_test.ann' #8
 #	  output debug
 
 variables,
@@ -51,6 +48,9 @@ responses,
 	num_nonlinear_inequality_constraints = 2	#0,#1,#2,#3,#4
 #	num_least_squares_terms = 2			#5,#6
 # 	num_least_squares_terms = 3			#7,#8
+#         calibration_data_file = 'least_squares_test.dat' #7
+# 	    freeform  #7
+#         calibration_data_file = 'least_squares_test.ann' #8
 #	num_nonlinear_inequality_constraints = 1	#5,#6
 	analytic_gradients	 			#0,#2,#4,#5,#6,#7,#8
 #	numerical_gradients	        		#1,#3

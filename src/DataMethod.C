@@ -22,9 +22,6 @@ DataMethodRep::DataMethodRep():
   speculativeFlag(false), methodUseDerivsFlag(false),
   convergenceTolerance(1.e-4), constraintTolerance(0.), methodScaling(false),
   numFinalSolutions(0),
-  // Experimental data
-  expDataFileAnnotated(true), numExperiments(1), numExpConfigVars(0),
-  expDataReadStdDeviations(false),
   // Local surrogate-based opt/NLS
   surrBasedLocalSoftConvLimit(5),        surrBasedLocalLayerBypass(false),
   surrBasedLocalTRInitSize(0.4),         surrBasedLocalTRMinSize(1.0e-6),
@@ -138,10 +135,6 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << linearEqConstraintCoeffs << linearEqTargets << linearEqScaleTypes
     << linearEqScales << methodName << subMethodName << subMethodPointer;
 
-  // Experimental data
-  s << expStdDeviations << expDataFileName << expDataFileAnnotated
-    << numExperiments << numExpConfigVars << expDataReadStdDeviations;
-
   // Surrogate-based
   s << surrBasedLocalSoftConvLimit << surrBasedLocalLayerBypass
     << surrBasedLocalTRInitSize << surrBasedLocalTRMinSize
@@ -246,10 +239,6 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> linearEqConstraintCoeffs >> linearEqTargets >> linearEqScaleTypes
     >> linearEqScales >> methodName >> subMethodName >> subMethodPointer;
 
-  // Experimental data
-  s >> expStdDeviations >> expDataFileName >> expDataFileAnnotated
-    >> numExperiments >> numExpConfigVars >> expDataReadStdDeviations;
-
   // Surrogate-based
   s >> surrBasedLocalSoftConvLimit >> surrBasedLocalLayerBypass
     >> surrBasedLocalTRInitSize >> surrBasedLocalTRMinSize
@@ -353,10 +342,6 @@ void DataMethodRep::write(std::ostream& s) const
     << linearIneqUpperBnds << linearIneqScaleTypes << linearIneqScales
     << linearEqConstraintCoeffs << linearEqTargets << linearEqScaleTypes
     << linearEqScales << methodName << subMethodName << subMethodPointer;
-
-  // Experimental data
-  s << expStdDeviations << expDataFileName << expDataFileAnnotated
-    << numExperiments << numExpConfigVars << expDataReadStdDeviations;
 
   // Surrogate-based
   s << surrBasedLocalSoftConvLimit << surrBasedLocalLayerBypass

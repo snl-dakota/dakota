@@ -59,11 +59,11 @@ protected:
   /// whether the data file is in annotated format
   bool expDataFileAnnotated;
   /// number of experiments to read from data file
-  int numExperiments;
+  size_t numExperiments;
   /// number of columns in data file which are state variables
-  int numExpConfigVars;
-  /// whether to read numFunctions sigmas from the data file
-  bool expDataReadStdDeviations;
+  size_t numExpConfigVars;
+  /// how many sigmas to read from the data file (1 or numFunctions)
+  size_t numExpStdDeviationsRead;
 
 private:
 
