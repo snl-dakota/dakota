@@ -167,7 +167,12 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
         yStdData(i,j)=y_std_data(i,j);
   }
   else {
-    if (expStdDeviations.length()==1) {
+    if (expStdDeviations.length()==0) {
+      for (int i=0; i<numExperiments; i++)
+        for (int j=0; j<numFunctions; j++)
+          yStdData(i,j)=1.0;
+    }
+    else if (expStdDeviations.length()==1) {
       for (int i=0; i<numExperiments; i++)
         for (int j=0; j<numFunctions; j++)
           yStdData(i,j)=expStdDeviations(0);
@@ -411,28 +416,14 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
  
   // Calculate the likelihood depending on what information is available 
   // for the standard deviations
-  // BMA: note that we now allow reading 1 or N sigmas from the file...
-  if (NonDQUESOInstance->numExpStdDeviationsRead > 0) {
-    for (i=0; i<num_exp; i++) 
-      for (j=0; j<num_funcs; j++)
-        result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j))/NonDQUESOInstance->yStdData(i,j),2.0);
-  }
-  else if (NonDQUESOInstance->expStdDeviations.length() == 0) {
- 	//assume y_sigma = 1, only take squared diffs for likelihood
-    for (i=0; i<num_exp; i++) 
-      for (j=0; j<num_funcs; j++)
-        result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j)),2.0);
-  }
-  else if (NonDQUESOInstance->expStdDeviations.length() == 1) {
-    for (i=0; i<num_exp; i++) 
-      for (j=0; j<num_funcs; j++)
-        result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j))/NonDQUESOInstance->yStdData(0,0),2.0);
-  }
-  else if (NonDQUESOInstance->expStdDeviations.length() == num_funcs) {
-    for (i=0; i<num_exp; i++) 
-      for (j=0; j<num_funcs; j++)
-      result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j))/NonDQUESOInstance->yStdData(i,j),2.0);
-  }
+  // NOTE:  now we assume that yStdData has already had the correct values 
+  // placed depending if there is zero, one, num_funcs, or a full num_exp*num_func 
+  // matrix of standard deviations.  Thus, we just have to iterate over this to 
+  // calculate the likelihood. 
+  for (i=0; i<num_exp; i++) 
+    for (j=0; j<num_funcs; j++)
+       result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j))/NonDQUESOInstance->yStdData(i,j),2.0);
+  
   result = (result*(NonDQUESOInstance->likelihoodScale));
   result = -1.0*result;
   Cout << "result final " << result << '\n';
