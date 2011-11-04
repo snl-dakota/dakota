@@ -22,6 +22,7 @@ D. Hough, Sophia Lefantzi, Laura P. Swiler
   <li> <a href="index.html#DevResponses">Responses</a>
   </ul>
 <li> <a href="index.html#DevServices">Services</a>
+<li> <a href="index.html#DevGuidance">Development Practices and Guidance</a>
 <li> <a href="index.html#DevAddtnl">Additional Resources</a>
 </ul>
 \endhtmlonly
@@ -517,23 +518,36 @@ etc.  These capabilities are encapsulated within the
 </ul>
 
 
+\section DevGuidance Development Practices and Guidance
+
+
+The following links provide guidance for core software components or 
+specific development activities:
+
+\li \ref RecommPract - coding style guidelines used by the DAKOTA
+    development team.
+\li \ref SpecChange - how to interact with NIDR and the associated DAKOTA
+    classes.
+\li \ref DakLibrary - embed DAKOTA as a service within your application.
+\li \ref IteratorFlow - explanation of the full granularity of steps in 
+    Iterator execution.
+\li \ref FnEvals - an overview of the classes and member functions involved
+    in performing function evaluations synchronously or asynchronously.
+\li Variable views - explanation of all, active, and inactive views of the
+    Variables container.
+
+
 \section DevAddtnl Additional Resources
 
 
 Additional development resources include:
 
-\li \ref RecommPract
-\li \ref SoftwareTools
-\li \ref SpecChange
-\li \ref IteratorFlow
-\li \ref DakLibrary
-\li The execution of function evaluations is a core component of DAKOTA
-    involving several class hierarchies.  An overview of the classes and
-    member functions involved in performing these evaluations is provided
-    in \ref FnEvals.
+\li \ref SoftwareTools - subversion and autotools guidance
+\li A Wiki with Cmake guidance is available from 
+    https://software.sandia.gov/trac/dakota/wiki/CMakeFAQ
 \li Project web pages are maintained at http://dakota.sandia.gov/ including
-    documentation at http://dakota.sandia.gov/documentation.html and a list of 
-    publications at http://dakota.sandia.gov/dakota/publications.html
+    links to frequently asked questions, documentation, publications, mailing 
+    lists, and other resources.
 
 */
 
