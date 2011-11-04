@@ -106,9 +106,9 @@ foreach my $file (@test_inputs) {
     # test timeout parameters (in seconds): these may be overridden by
     # individual test inputs through tdMM,taNN for delay and absolute timeout,
     # respectively
-    my $delay = 36000;      # delay before checking for file size changes (60 sec)
+    my $delay = 60;      # delay before checking for file size changes (60 sec)
                          # test terminated if output stagnant for this time
-    my $timeout = 36000;  # absolute timeout for a single job (20 minutes)
+    my $timeout = 1200;  # absolute timeout for a single job (20 minutes)
 
     # read input file until EOF
     while (<INPUT_MASTER>) { # read each line of file
