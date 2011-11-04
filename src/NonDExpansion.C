@@ -96,9 +96,22 @@ void NonDExpansion::initialize(Model& model, short u_space_type)
   if (iteratedModel.surrogate_type() == "hierarchical")
     iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 
+  // check compatibility of refinement type and u-space type
   initialize_random_variable_transformation();
-  if (refineType == Pecos::H_REFINEMENT) // override
+  if (refineType == Pecos::H_REFINEMENT) { // override
+    if (u_space_type == ASKEY_U) // non-default
+      Cerr << "\nWarning: overriding askey to piecewise for h-refinement.\n"
+	   << std::endl;
+    else if (u_space_type == STD_NORMAL_U) // non-default
+      Cerr << "\nWarning: overriding wiener to piecewise for h-refinement.\n"
+	   << std::endl;
     u_space_type = PIECEWISE_U;
+  }
+  else if (refineType == Pecos::P_REFINEMENT && u_space_type == PIECEWISE_U) {
+    Cerr << "\nError: fixed order piecewise bases are incompatible with "
+	 << "p-refinement." << std::endl;
+    abort_handler(-1);
+  }
   // use Wiener/Askey/extended/piecewise u-space defn in Nataf transformation
   initialize_random_variable_types(u_space_type); // need x/u_types below
   initialize_random_variable_correlations();
