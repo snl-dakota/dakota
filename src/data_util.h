@@ -677,6 +677,8 @@ void x_y_pairs_to_x_set(
 #if 0
 // MSE: this may be too generic and could hide special cases:
 //      can we rely on partial template specialization?
+
+/// generic find_index (inactive)
 template <typename MultiArrayType, typename DataType>
 size_t find_index(const MultiArrayType& a, const DataType& search_data)
 {
@@ -689,6 +691,7 @@ size_t find_index(const MultiArrayType& a, const DataType& search_data)
 }
 
 
+/// generic copy (inactive)
 template <typename MultiArrayType, typename DakArrayType>
 void copy_data(const MultiArrayType& ma, DakArrayType& da)
 {

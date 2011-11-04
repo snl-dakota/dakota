@@ -227,12 +227,12 @@ class DataResponses
   friend class ProblemDescDB;
   // the NIDR derived problem description database
   friend class NIDRProblemDescDB;
-  // library_mode default data initializer
+  /// library_mode default data initializer
   friend void run_dakota_data();
 
 public:
 
-  // comparison function
+  /// compares the idResponses attribute of DataResponses objects
   static bool id_compare(const DataResponses& dr, const std::string& id)
   { return id == dr.dataRespRep->idResponses; }
 

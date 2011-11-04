@@ -140,7 +140,7 @@ public:
   /// return the number of variables used in the approximation
   int num_variables() const;
 
-  // return approxData
+  /// return approxData
   const Pecos::SurrogateData& approximation_data() const;
 
   /// append to SurrogateData::varsData or assign to SurrogateData::anchorVars

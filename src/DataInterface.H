@@ -232,12 +232,12 @@ class DataInterface
   friend class ProblemDescDB;
   // the NIDR derived problem description database
   friend class NIDRProblemDescDB;
-  // library_mode default data initializer
+  /// library_mode default data initializer
   friend void run_dakota_data();
 
 public:
 
-  // comparison function
+  /// compares the idInterface attribute of DataInterface objects
   static bool id_compare(const DataInterface& di, const std::string& id)
   { return id == di.dataIfaceRep->idInterface; }
 

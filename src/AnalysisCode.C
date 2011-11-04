@@ -66,11 +66,13 @@ AnalysisCode::AnalysisCode(const ProblemDescDB& problem_db):
     boost::split( driver_and_args, programNames[0], boost::is_any_of("\t ") );
     //Cout << driver_and_args[0] << std::endl;
 
+    /*
     std::string driver_path = WorkdirHelper::which(driver_and_args[0]);
     if ( driver_path.empty() ) {
       Cout << programNames[0] << ": Command not found.\n" << std::endl;
       abort_handler(-1);
     }
+    */
     /* Uncomment for filename debugging
     else
       Cout << driver_path << std::endl;

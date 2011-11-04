@@ -136,10 +136,12 @@ protected:
   void primary_response_fn_weights(const RealVector& wts,
 				   bool recurse_flag = true);
 
-  /// forward to subModel
+  /// update the subModel's surrogate response function indices
+  /// (DataFitSurrModel::surrogateFnIndices)
   void surrogate_function_indices(const IntSet& surr_fn_indices);
 
-  // forward to subModel
+  /// update the subModel's surrogate response mode
+  /// (SurrogateModel::responseMode)
   void surrogate_response_mode(bool mode);
 
   /// builds the subModel approximation

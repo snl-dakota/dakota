@@ -556,12 +556,12 @@ class DataVariables
   friend class ProblemDescDB;
   // the NIDR derived problem description database
   friend class NIDRProblemDescDB;
-  // library_mode default data initializer
+  /// library_mode default data initializer
   friend void run_dakota_data();
 
 public:
 
-  // comparison function
+  /// compares the idVariables attribute of DataVariables objects
   static bool id_compare(const DataVariables& dv, const std::string& id)
   { return id == dv.dataVarsRep->idVariables; }
 

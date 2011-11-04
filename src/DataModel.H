@@ -258,7 +258,7 @@ class DataModel
 
 public:
 
-  // comparison function
+  /// compares the idModel attribute of DataModel objects
   static bool id_compare(const DataModel& dm, const std::string& id)
   { return id == dm.dataModelRep->idModel; }
 
