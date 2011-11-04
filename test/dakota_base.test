@@ -11474,22 +11474,22 @@ Test Number 2 succeeded
              W1: 72 val (26 n, 46 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
              W2: 72 val (26 n, 46 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
              W3: 72 val (26 n, 46 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-Tdakota_rosenbrock.in 
+dakota_rosenbrock.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 39 total (39 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0013529993e+00 x1
                       1.0026805414e+00 x2
 <<<<< Best objective function  =
-                      1.9050696347e-06
+                      1.9050696345e-06
 <<<<< Best data captured at function evaluation 38
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 58 total (58 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9950073456e-01 x1
-                      9.9880109967e-01 x2
+                      9.9950073763e-01 x1
+                      9.9880110556e-01 x2
 <<<<< Best objective function  =
-                      4.2740530775e-06
+                      4.2740595268e-06
 <<<<< Best data captured at function evaluation 56
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 109 total (109 new, 0 duplicate)
@@ -11502,10 +11502,10 @@ Test Number 2 succeeded
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 197 total (197 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9586771056e-01 x1
-                      9.9173958061e-01 x2
+                      9.9586770370e-01 x1
+                      9.9173956683e-01 x2
 <<<<< Best objective function  =
-                      1.7092499149e-05
+                      1.7092556167e-05
 <<<<< Best data captured at function evaluation 195
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 234 total (234 new, 0 duplicate)
@@ -11537,8 +11537,8 @@ Test Number 7 succeeded
                       9.9999668139e-01 x1
                       9.9999334619e-01 x2
 <<<<< Best residual terms      =
-                     -1.6598357564e-07
-                      3.3186106975e-06
+                     -1.6598357466e-07
+                      3.3186106952e-06
 <<<<< Best data captured at function evaluation 29
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 291 total (260 new, 31 duplicate)
@@ -11554,7 +11554,7 @@ Test Number 9 succeeded
                       9.9999990607e-01 x1
                       9.9999981455e-01 x2
 <<<<< Best residual terms      =
-                      2.4056026651e-08
+                      2.4056027170e-08
                       9.3928811951e-08
 <<<<< Best data captured at function evaluation 55
 Test Number 10 succeeded
@@ -11581,8 +11581,8 @@ Test Number 12 succeeded
                       1.0000000000e+00 x1
                       1.0000000000e+00 x2
 <<<<< Best residual terms      =
-                     -1.9959106033e-14
-                     -9.9745657338e-16
+                      1.5543122345e-14
+                      2.2204460493e-16
 <<<<< Best data captured at function evaluation 36
 Test Number 13 succeeded
 <<<<< Function evaluation summary: 15 total (14 new, 1 duplicate)
@@ -11599,9 +11599,54 @@ Test Number 14 succeeded
                       1.0000000000e+00 x1
                       1.0000000000e+00 x2
 <<<<< Best residual terms      =
-                     -1.9959106033e-14
-                     -9.9745657338e-16
+                     -1.3322676296e-14
+                      0.0000000000e+00
 <<<<< Best data captured at function evaluation 36
+Test Number 15 succeeded
+<<<<< Function evaluation summary: 39 total (39 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0013529993e+00 x1
+                      1.0026805414e+00 x2
+<<<<< Best objective functions =
+                     -2.7287821130e-04
+                     -1.3529993039e-03
+<<<<< Best data captured at function evaluation 39
+Test Number 16 succeeded
+<<<<< Function evaluation summary: 34 total (34 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9999713984e-01 x1
+                      9.9999402239e-01 x2
+<<<<< Best objective functions =
+                     -2.5729995978e-06
+                      2.8601572867e-06
+<<<<< Best data captured at function evaluation 34
+Test Number 17 succeeded
+<<<<< Function evaluation summary: 180 total (180 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9940112014e-01 x1
+                      9.9859369520e-01 x2
+<<<<< Best objective functions =
+                     -2.0890373837e-03
+                      5.9887986082e-04
+<<<<< Best data captured at function evaluation 180
+Test Number 18 succeeded
+<<<<< Function evaluation summary: 58 total (44 new, 14 duplicate)
+<<<<< Best parameters          =
+                      9.9999668139e-01 x1
+                      9.9999334619e-01 x2
+<<<<< Best objective functions =
+                     -1.6598357466e-07
+                      3.3186106952e-06
+<<<<< Best data captured at function evaluation 58
+Test Number 19 succeeded
+<<<<< Function evaluation summary: 74 total (74 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9972719897e-01 x1
+                      9.9941343413e-01 x2
+<<<<< Best objective functions =
+                     -4.1038226569e-04
+                      2.7280103193e-04
+<<<<< Best data captured at function evaluation 74
 dakota_rosenbrock_ego.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 52 total (52 new, 0 duplicate)
@@ -11783,8 +11828,8 @@ Test Number 0 succeeded
                       1.0000000000e+00 x1
                       1.0000000000e+00 x2
 <<<<< Best residual terms      =
-                     -2.2204460493e-15
-                     -8.8817841970e-16
+                      4.4408920985e-15
+                     -4.4408920985e-16
 <<<<< Best data not found in evaluation cache
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 88 total (88 new, 0 duplicate)
@@ -11830,8 +11875,8 @@ Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 70 total (70 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 11 total (11 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0000000000e-00 x1
-                      1.0000000000e-00 x2
+                      1.0000000000e+00 x1
+                      1.0000000000e+00 x2
 <<<<< Best residual terms      =
                       1.1102230246e-15
                       3.1086244690e-15
@@ -11847,6 +11892,16 @@ Test Number 6 succeeded
                       4.9862252105e-08
 <<<<< Best data not found in evaluation cache
 Test Number 7 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 3838 total (3838 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 781 total (781 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9999975533e-01 x1
+                      9.9999951034e-01 x2
+<<<<< Best residual terms      =
+                     -3.1506852682e-09
+                      2.4467070980e-07
+<<<<< Best data not found in evaluation cache
+Test Number 8 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 925 total (925 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 441 total (441 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -11855,6 +11910,16 @@ Test Number 7 succeeded
 <<<<< Best residual terms      =
                      -4.0113214217e-06
                       1.0892739685e-04
+<<<<< Best data not found in evaluation cache
+Test Number 9 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 3838 total (3838 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 781 total (781 new, 0 duplicate)
+<<<<< Best parameters          =
+                      9.9999975533e-01 x1
+                      9.9999951034e-01 x2
+<<<<< Best residual terms      =
+                     -3.1506852682e-09
+                      2.4467070980e-07
 <<<<< Best data not found in evaluation cache
 dakota_sbo_barnes.in
 Test Number 0 succeeded
