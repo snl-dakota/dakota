@@ -40,6 +40,11 @@ paper AIAA-2007-1946 in <i>Proceedings of the 48th AIAA/ASME/ASCE/AHS/ASC
 Structures, Structural Dynamics, and Materials Conference (9th AIAA 
 Non-Deterministic Approaches Conference)</i>, Honolulu, HI, April 23-26.
 
+\li \anchor Bichon2008 Bichon, B.J., Eldred, M.S., Swiler, L.P., 
+Mahadevan, S., and McFarland, J.M., 2008. "Efficient Global Reliability 
+Analysis for Nonlinear Implicit Performance Functions," 
+<i>AIAA Journal</i>, Vol. 46, No. 10, pp. 2459-2468. 
+
 \li \anchor Eldred2009 Eldred, M.S. and Swiler, L.P., 2009.
 "Efficient Algorithms for Mixed Aleatory-Epistemic Uncertainty 
 Quantification with Application to Radiation-Hardened Electronics. 
@@ -49,8 +54,8 @@ Technical report SAND2009-5805.
 \li \anchor Eldred2011 Eldred, M.S. and Swiler, L.P. and Tang, G., 2011.
 "Mixed Aleatory-Epistemic Uncertainty Quantification with 
 Stochastic Expansions and Optimization-Based Interval Estimation." 
-Revised paper accepted by Reliability Engineering and System Safety, 
-publication in 2011. 
+<i>Reliability Engineering and System Safety</i>,
+Vol. 96, No. 9, pp. 1092-1113. 
 
 \li \anchor Eldred2006a Eldred, M.S. and Dunlavy, D.M., 2006. 
 "Formulations for Surrogate-Based Optimization with Data Fit,

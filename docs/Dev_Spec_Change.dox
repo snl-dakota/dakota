@@ -140,7 +140,7 @@ When adding a keyword to dakota.input.nspec, you may need to
 add a structure definition or even introduce a new data type.
 NIDRProblemDescDB.C has sections corresponding to each top-level
 keyword.  The top-level keywords are in alphabetical order, and
-most entites in the section for a top-level keyword are also
+most entities in the section for a top-level keyword are also
 in alphabetical order.  While not required, it is probably good
 practice to maintain this structure, as it makes things easier to find.
 

@@ -4001,7 +4001,7 @@ With a few exceptions (\c global_reliability, \c importance,
 \c local_evidence, and \c global_evidence do not support
 mappings involving \c reliability_levels, and \c local_interval_est
 and \c global_interval_est do not support any level mappings),
-each of these techniques supports \c response_levels, \c
+each of these uncertainty quantification techniques supports \c response_levels, \c
 probability_levels, \c reliability_levels, and \c
 gen_reliability_levels specifications along with optional \c
 num_response_levels, \c num_probability_levels, \c
@@ -4024,10 +4024,16 @@ values for generating probabilities, reliabilities, or generalized
 reliabilities (forward mapping).  The selection among these possible
 results for the forward mapping is performed with the \c compute
 keyword followed by either \c probabilities, \c reliabilities, or \c
-gen_reliabilities.  Conversely, the \c probability_levels, \c
+gen_reliabilities.  For example, specifying a \c response_level of 52.3 
+followed with \c compute \c probabilities will result in the 
+calculation that the (uncertain) output value is less than or equal to 52.3, 
+given the uncertain distributions on the inputs.   
+Conversely, the \c probability_levels, \c
 reliability_levels, and \c gen_reliability_levels specifications
 provide target levels for which response values will be computed
-(inverse mapping).  Specifications of \c response_levels, \c
+(inverse mapping).  For example, specifying a \c probability_level of 
+0.95 will result in the calculation of a response value which corresponds 
+to the 95th percentile of the output distribution.  Specifications of \c response_levels, \c
 probability_levels, \c reliability_levels, and \c
 gen_reliability_levels may be combined within the calculations for
 each response function.  The mapping results (probabilities,
@@ -4956,7 +4962,8 @@ they use a Gaussian process model to form an approximation to the
 limit state (based either in x-space via the \c x_gaussian_process
 specification or in u-space via the \c u_gaussian_process
 specification), followed by probability estimation based on multimodal
-adaptive importance sampling (see [\ref Bichon2007 "Bichon et al., 2007"]).
+adaptive importance sampling (see [\ref Bichon2007 "Bichon et al., 2007"])
+and [\ref Bichon2008 "Bichon et al., 2008"]).
 These probability estimates may then be transformed into generalized
 reliability levels if desired.  At this time, inverse reliability
 analysis (mapping probability or generalized reliability levels into
