@@ -129,6 +129,7 @@ for d in examples test; do
   #foreach f ( Makefile\* config\* \*.\[Cc\] \*.\[Ff\] \*.m4 \*.o )
   #  find $d -name "$f" -exec rm -f '{}' \;
   #end
+  find $d -name 'CMakeLists.txt' -exec rm -f '{}' \;
   find $d -name 'Makefile*' -exec rm -f '{}' \;
   find $d -name 'config*' -exec rm -f '{}' \;
   find $d -name '*.[Cc]' -exec rm -f '{}' \;
