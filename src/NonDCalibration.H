@@ -68,6 +68,18 @@ protected:
 private:
 
   //
+  //- Heading: Member functions
+  //
+
+  /// helper function to lookup a state_type enum variable type in the
+  /// array of variables_types to find its start_index into the all
+  /// array
+  bool find_state_index(unsigned short state_type,
+			UShortMultiArrayConstView variable_types,
+			std::string context_message,
+			size_t& start_index);
+
+  //
   //- Heading: Data
   //
 

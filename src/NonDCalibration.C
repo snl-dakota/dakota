@@ -49,74 +49,61 @@ NonDCalibration::NonDCalibration(Model& model): NonD(model),
   if (!expDataFileName.empty() && numExperiments == 0)
     numExperiments = 1;
 
-  short active_view = iteratedModel.current_variables().view().first;
-
   if (numExpConfigVars > 0) {
 
-    // the difference between these are any left over design/state variables
-    // all uncertain should be active
-    //size_t total_active_vars = numDesignVars+numUncertainVars+numStateVars;
-    size_t total_vars = iteratedModel.current_variables().tv();
+    // would need to trap error if all_variables were later allowed
 
-    if (active_view == MERGED_ALL || active_view == MIXED_ALL) {
-      // all-variables mode
-      // in this case total_vars = total_active_vars so none are left for config
-      Cerr << "\nError (NonDCalibration): cannot use "
-	   << "experimental_config_variables = " << numExpConfigVars 
-	   << " read from file since all " << total_vars << " variables are "
-	   << "active.  Probably don't want \"all_variables\" mode."
-	   << std::endl;
+    // available config var counts
+    continuousConfigVars =
+      probDescDB.get_sizet("variables.continuous_state"); 
+    discreteIntConfigVars =
+      probDescDB.get_sizet("variables.discrete_state_range") + 
+      probDescDB.get_sizet("variables.discrete_state_set_int");
+    discreteRealConfigVars =
+      probDescDB.get_sizet("variables.discrete_state_set_real"); 
+
+    size_t total_state_config_vars = 
+      continuousConfigVars + discreteIntConfigVars + discreteRealConfigVars;
+
+    if (numExpConfigVars > 0 && numExpConfigVars != total_state_config_vars) {
+      Cerr << "\nError (NonDCalibration): experimental_config_variables = "
+	   << numExpConfigVars << " read from file must equal total state "
+	   << "variables = " << total_state_config_vars << std::endl;
       found_error = true;
     }
     else {
-      // we might have valid configuration vars X
-      // don't need this check; for debugging
-      //if (total_vars - total_active_vars < numExpConfigVars)
-      //Cerr << "Not enough left over variables!" << std::endl;
 
-      // available config var counts
-      continuousConfigVars =
-	probDescDB.get_sizet("variables.continuous_state"); 
-      discreteIntConfigVars =
-	probDescDB.get_sizet("variables.discrete_state_range") + 
-	probDescDB.get_sizet("variables.discrete_state_set_int");
-      discreteRealConfigVars =
-	probDescDB.get_sizet("variables.discrete_state_set_real"); 
-
-      size_t total_state_config_vars = 
-	continuousConfigVars + discreteIntConfigVars + discreteRealConfigVars;
-
-      if (numExpConfigVars > 0 && numExpConfigVars != total_state_config_vars) {
-	Cerr << "\nError (NonDCalibration): experimental_config_variables = "
-	     << numExpConfigVars << " read from file must equal total state "
-	     << "variables = " << total_state_config_vars << std::endl;
-	found_error = true;
+      // set indices of the state variables within the all* variable arrays
+      bool index_found = false;
+      if (continuousConfigVars > 0) {
+	index_found = 
+	  find_state_index(CONTINUOUS_STATE, 
+			   iteratedModel.all_continuous_variable_types(), 
+			   "continuous state", continuousConfigStart);
+	if (!index_found) found_error = true;
       }
-      else {
-	// set indices of the state variables within the all* variable arrays
-	// want to skip any design that might be present;
-	// plus any uncertain that are active
 
-	// continuous
-	size_t cd = probDescDB.get_sizet("variables.continuous_design"); 
-	// discrete int
-	size_t ddr = probDescDB.get_sizet("variables.discrete_design_range"); 
-	size_t ddsi = probDescDB.get_sizet("variables.discrete_design_set_int");
-	// discrete real
-	size_t ddsr 
-	  = probDescDB.get_sizet("variables.discrete_design_set_real");
-
-	continuousConfigStart = 
-	  cd + numContAleatUncVars + numContEpistUncVars; 
-	discreteIntConfigStart = 
-	  ddr + ddsi + numDiscIntAleatUncVars + numDiscIntEpistUncVars; 
-	discreteRealConfigStart =
-	  ddsr + numDiscRealAleatUncVars + numDiscRealEpistUncVars;
+      // this assumes that DISCRETE_STATE_RANGE and DISCRETE_STATE_SET_INT
+      // are continguous
+      if (discreteIntConfigVars > 0) {
+	index_found = 
+	  find_state_index(DISCRETE_STATE_RANGE, 
+			   iteratedModel.all_discrete_int_variable_types(), 
+			   "discrete state range", discreteIntConfigStart);
+	if (!index_found) found_error = true;
+      }
+      
+      if (discreteRealConfigVars > 0) {
+	index_found = 
+	  find_state_index(DISCRETE_STATE_SET_REAL, 
+			   iteratedModel.all_discrete_real_variable_types(), 
+			   "discrete state set real", discreteRealConfigStart);
+	if (!index_found) found_error = true;
       }
 
     }
-
-  }
+    
+  } // numExpConfigVars
 
   if (found_error)
     abort_handler(-1);
@@ -157,5 +144,23 @@ set_configuration_vars(Model& model, const RealVector& config_vars) {
 
 }
 
+
+bool NonDCalibration::
+find_state_index(unsigned short state_type,
+		 UShortMultiArrayConstView variable_types,
+		 std::string context_message,
+		 size_t& start_index)
+{
+  UShortMultiArray::const_iterator cit
+    = std::find(variable_types.begin(), variable_types.end(), state_type);
+  if (cit == variable_types.end()) { 
+    Cerr << "\nError looking up " << context_message << " state variable index "
+	 << "in (NonDCalibration)" << std::endl;
+    start_index = 0;
+    return(false);
+  }
+  start_index = std::distance(variable_types.begin(), cit);
+  return(true);
+}
 
 } // namespace Dakota
