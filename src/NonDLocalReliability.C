@@ -972,7 +972,7 @@ void NonDLocalReliability::initialize_class_data()
   for (size_t i=0; i<numFunctions; i++)
     if (!requestedRespLevels[i].empty() || !requestedProbLevels[i].empty() ||
 	!requestedRelLevels[i].empty()  || !requestedGenRelLevels[i].empty())
-      activeSet.request_value(i, 1); // only fn vals needed at median unc vars
+      activeSet.request_value(1, i); // only fn vals needed at median unc vars
   iteratedModel.compute_response(activeSet);
   medianFnVals = iteratedModel.current_response().function_values();
   */
@@ -1080,7 +1080,7 @@ void NonDLocalReliability::initialize_level_data()
       iteratedModel.continuous_variables(mostProbPointX);
       short mode = (taylorOrder == 2) ? 7 : 3;
       activeSet.request_values(0);
-      activeSet.request_value(respFnCount, mode);
+      activeSet.request_value(mode, respFnCount);
       iteratedModel.compute_response(activeSet);
       SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
       SizetArray x_dvv; copy_data(cv_ids, x_dvv);
@@ -1295,7 +1295,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
   case AMV_X: case AMV_U: {
     approxConverged = true; // break out of while loop
     uSpaceModel.component_parallel_mode(TRUTH_MODEL);
-    activeSet.request_values(0); activeSet.request_value(respFnCount, 1);
+    activeSet.request_values(0); activeSet.request_value(1, respFnCount);
     iteratedModel.continuous_variables(mostProbPointX);
     iteratedModel.compute_response(activeSet); 
     computedRespLevel
@@ -1344,7 +1344,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     // evaluate new expansion point
     uSpaceModel.component_parallel_mode(TRUTH_MODEL);
     activeSet.request_values(0);
-    activeSet.request_value(respFnCount, mode);
+    activeSet.request_value(mode, respFnCount);
     iteratedModel.continuous_variables(mostProbPointX);
     iteratedModel.compute_response(activeSet);
     computedRespLevel
@@ -1452,7 +1452,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       Cout << "\n>>>>> Evaluating limit state derivatives at MPP\n";
       iteratedModel.continuous_variables(mostProbPointX);
       activeSet.request_values(0);
-      activeSet.request_value(respFnCount, remaining_mode);
+      activeSet.request_value(remaining_mode, respFnCount);
       iteratedModel.compute_response(activeSet);
       const Response& curr_resp = iteratedModel.current_response();
       if (remaining_mode & 2)
@@ -1778,7 +1778,7 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
     iteratedModel.continuous_variables(x_vars);
     ActiveSet inactive_grad_set = activeSet;
     inactive_grad_set.request_values(0);
-    inactive_grad_set.request_value(respFnCount, 2);
+    inactive_grad_set.request_value(2, respFnCount);
     // final_dvv is mapped from the top-level DVV in NestedModel::set_mapping()
     // and includes augmented and inserted variable ids.  Since we only want the
     // augmented ids in this case, the UQ-level inactive ids are sufficient.

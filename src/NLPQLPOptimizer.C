@@ -279,16 +279,16 @@ void NLPQLPOptimizer::find_optimum()
     else if (IFAIL == -2) { // need ACTIVE gradients
       activeSet.request_values(0);
       for (i=0; i<numObjectiveFns; i++)
-        activeSet.request_value(i, 2); // objective function(s)
+        activeSet.request_value(2, i); // objective function(s)
       for (i=0; i<num_nln_eq; i++)     // nonlinear eq
 	if (ACTIVE[i])
-	  activeSet.request_value(numObjectiveFns+num_nln_ineq+i, 2);
+	  activeSet.request_value(2, numObjectiveFns+num_nln_ineq+i);
       size_t  cntr = numEqConstraints;
       StLIter i_iter;
       for (i_iter  = nonlinIneqConMappingIndices.begin(); // nonlinear ineq
 	   i_iter != nonlinIneqConMappingIndices.end(); i_iter++)
 	if (ACTIVE[cntr++])
-	  activeSet.request_value((*i_iter)+numObjectiveFns, 2);
+	  activeSet.request_value(2, (*i_iter)+numObjectiveFns);
     }
     else // initial evaluation: need all functions/gradients
       activeSet.request_values(3);

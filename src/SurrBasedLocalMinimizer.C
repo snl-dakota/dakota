@@ -143,15 +143,14 @@ SurrBasedLocalMinimizer::SurrBasedLocalMinimizer(Model& model):
     // iteratedModel becomes the sub-model of a RecastModel:
     size_t recast_offset
       = (approxSubProbCon == NO_CONSTRAINTS) ? 0 : numNonlinearIneqConstraints;
-    // ************************************************************************
-    // TO DO: NLS requires a set mapping to ensure vals for grads,
-    // grads + ... for hessians
-    // ************************************************************************
+    void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&)
+      = (!optimizationFlag && approxSubProbObj == SINGLE_OBJECTIVE &&
+	 hessianType == "none") ? gnewton_set_recast : NULL;
     approxSubProbModel.assign_rep(new RecastModel(iteratedModel,
-      recast_vars_map, recast_vars_comps_total, false, NULL, NULL, 
-      recast_primary_resp_map,
-      recast_secondary_resp_map, recast_offset, nonlinear_resp_map,
-      approx_subprob_objective_eval, approx_subprob_constraint_eval), false);
+      recast_vars_map, recast_vars_comps_total, false, NULL, set_recast, 
+      recast_primary_resp_map, recast_secondary_resp_map, recast_offset,
+      nonlinear_resp_map, approx_subprob_objective_eval,
+      approx_subprob_constraint_eval), false);
   }
 
   // Instantiate the approximate sub-problem minimizer

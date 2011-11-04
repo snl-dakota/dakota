@@ -307,7 +307,7 @@ void NonDGlobalInterval::post_process_gp_results()
     if (allResponsesPerIter)
       set.request_values(dataOrder);
     else
-      { set.request_values(0); set.request_value(respFnCntr, dataOrder); }
+      { set.request_values(0); set.request_value(dataOrder, respFnCntr); }
 
     iteratedModel.compute_response(set);
     IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),

@@ -430,7 +430,7 @@ void CONMINOptimizer::find_optimum()
       }
       activeSet.request_values(0);
       for (i=0; i<numObjectiveFns; i++)
-	activeSet.request_value(i, conminInfo); // objective function(s)
+	activeSet.request_value(conminInfo, i); // objective function(s)
       // CONMIN does not compute the number of active constraints and 
       // requires the user to do so.  Store this value in CONMIN's variable
       // NAC and store the indices of the constraints in array IC.
@@ -448,7 +448,7 @@ void CONMINOptimizer::find_optimum()
 	size_t conmin_constr = IC[i] - 1; // (0-based)
 	if (conmin_constr < numConminNlnConstr) {
 	  size_t dakota_constr = constraintMappingIndices[conmin_constr];
-	  activeSet.request_value(dakota_constr + numObjectiveFns, conminInfo);
+	  activeSet.request_value(conminInfo, dakota_constr + numObjectiveFns);
 	  // some DAKOTA equality and 2-sided inequality constraints may
 	  // have their ASV assigned multiple times depending on which of
 	  // CONMIN's 1-sided inequalities are active.

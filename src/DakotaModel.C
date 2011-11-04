@@ -2140,10 +2140,9 @@ bool Model::manage_asv(const ShortArray& asv_in, ShortArray& map_asv_out,
 	  map_asv_out[i] |= 1; // activate 1st bit
 	use_est_deriv = true;
       }
-      else {
-	// could happen if an iterator requiring gradients is selected with
-	// no_gradients or unsupported vendor numerical gradients and lacks
-	// a separate error check.
+      else { // could happen if an iterator requiring gradients is selected
+	     // with no_gradients or unsupported vendor numerical gradients
+	     // and lacks a separate error check.
 	Cerr << "Error: unsupported asv gradient request in Model::manage_asv."
 	     << std::endl;
 	abort_handler(-1);
@@ -2167,8 +2166,7 @@ bool Model::manage_asv(const ShortArray& asv_in, ShortArray& map_asv_out,
 	  fd_hess_asv_out[i] = 2;
 	  map_asv_out[i] |= 2; // activate 2nd bit
 	}
-	else {
-	  // numerical Hessians from 2nd-order function differences
+	else { // numerical Hessians from 2nd-order function differences
 	  fd_hess_asv_out[i] = 1;
 	  map_asv_out[i] |= 1; // activate 1st bit
 	}
@@ -2179,9 +2177,8 @@ bool Model::manage_asv(const ShortArray& asv_in, ShortArray& map_asv_out,
 	quasi_hess_asv_out[i] = 2; // value not currently used
 	use_est_deriv = true; // update_response needed even if no secant update
       }
-      else {
-	// could happen if an iterator requiring Hessians is selected with
-	// no_hessians and it lacks a separate error check.
+      else { // could happen if an iterator requiring Hessians is selected
+	     // with no_hessians and it lacks a separate error check.
 	Cerr << "Error: unsupported asv Hessian request in Model::manage_asv."
 	     << std::endl;
 	abort_handler(-1);

@@ -77,8 +77,10 @@ public:
   void request_vector(const ShortArray& rv);
   /// set all request vector values
   void request_values(const short rv_val);
+  /// get the value of an entry in the request vector
+  short request_value(const size_t index) const;
   /// set the value of an entry in the request vector
-  void request_value(const size_t index, const short rv_val);
+  void request_value(const short rv_val, const size_t index);
 
   /// return the derivative variables vector
   const SizetArray& derivative_vector() const;
@@ -174,7 +176,11 @@ inline void ActiveSet::request_values(const short rv_val)
 { requestVector.assign(requestVector.size(), rv_val); }
 
 
-inline void ActiveSet::request_value(const size_t index, const short rv_val)
+inline short ActiveSet::request_value(const size_t index) const
+{ return requestVector[index]; }
+
+
+inline void ActiveSet::request_value(const short rv_val, const size_t index)
 { requestVector[index] = rv_val; }
 
 

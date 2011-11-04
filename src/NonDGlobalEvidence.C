@@ -124,7 +124,7 @@ void NonDGlobalEvidence::get_best_sample(bool find_max, bool eval_approx)
       fHatModel.continuous_variables(gp_data.continuous_variables(index_star));
 		
     ActiveSet set = fHatModel.current_response().active_set();
-    set.request_values(0); set.request_value(respFnCntr, 1);
+    set.request_values(0); set.request_value(1, respFnCntr);
     fHatModel.compute_response(set);
     approxFnStar = fHatModel.current_response().function_value(respFnCntr);
   }

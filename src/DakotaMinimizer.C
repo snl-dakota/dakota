@@ -130,11 +130,6 @@ Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
          << "specification." << std::endl;
     abort_handler(-1);
   }
-  if ( hessianType == "none" && methodName == "optpp_newton" ) {
-    Cerr << "\nError: full Newton methods require a Hessian specification."
-	 << std::endl;
-    abort_handler(-1);
-  }
   if ( hessianType != "none" && methodName != "optpp_newton" )
     Cerr << "\nWarning: Hessians are only utilized by full Newton methods.\n\n";
   if ( ( gradientType != "none"     || hessianType != "none")      &&
@@ -695,6 +690,22 @@ variables_recast(const Variables& scaled_vars, Variables& native_vars)
   native_vars.continuous_variables(minimizerInstance->modify_s2n(
     scaled_vars.continuous_variables(),    minimizerInstance->cvScaleTypes,
     minimizerInstance->cvScaleMultipliers, minimizerInstance->cvScaleOffsets));
+}
+
+
+/** For Gauss-Newton Hessian requests, activate the 2 bit and mask the 4 bit. */
+void Minimizer::
+gnewton_set_recast(const Variables& recast_vars, const ActiveSet& recast_set,
+		   ActiveSet& sub_model_set)
+{
+  // AUGMENT standard mappings in RecastModel::set_mapping()
+  const ShortArray& sub_model_asv = sub_model_set.request_vector();
+  size_t i, num_sm_fns = sub_model_asv.size();
+  for (i=0; i<num_sm_fns; ++i)
+    if (sub_model_asv[i] & 4) { // add 2 bit and remove 4 bit
+      short sm_asv_val = ( (sub_model_asv[i] | 2) & 3);
+      sub_model_set.request_value(sm_asv_val, i);
+    }
 }
 
 

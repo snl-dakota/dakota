@@ -101,6 +101,11 @@ protected:
   /// variables from scaled to native (user) space
   static void variables_recast(const Variables& scaled_vars, 
 			       Variables& native_vars);
+  /// conversion of request vector values for the Gauss-Newton Hessian
+  /// approximation
+  static void gnewton_set_recast(const Variables& recast_vars,
+				 const ActiveSet& recast_set,
+				 ActiveSet& sub_model_set);
   /// secondary response conversion map for RecastModel used in scaling:
   /// transform constraints (fns, grads, Hessians) from native (user) to 
   // iterator space

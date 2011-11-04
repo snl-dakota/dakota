@@ -1833,6 +1833,8 @@ TAG "responses/descriptors"
 	DESC "{Response labels} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespLabels"
 
 TAG "responses/objective_functions"
+	DESC "{Number of objective functions} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
 TAG "responses/objective_functions/objective_function_scale_types"
 	DESC "{Objective function scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
 
@@ -1843,6 +1845,8 @@ TAG "responses/objective_functions/multi_objective_weights"
 	DESC "{Multiobjective weightings} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
 
 TAG "responses/objective_functions/nonlinear_inequality_constraints"
+	DESC "{Number of nonlinear inequality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
 TAG "responses/objective_functions/nonlinear_inequality_constraints/nonlinear_inequality_lower_bounds"
 	DESC "{Nonlinear inequality constraint lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
 
@@ -1856,6 +1860,8 @@ TAG "responses/objective_functions/nonlinear_inequality_constraints/nonlinear_in
 	DESC "{Nonlinear inequality constraint scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
 
 TAG "responses/objective_functions/nonlinear_equality_constraints"
+	DESC "{Number of nonlinear equality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
+
 TAG "responses/objective_functions/nonlinear_equality_constraints/nonlinear_equality_targets"
 	DESC "{Nonlinear equality constraint targets} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
 
@@ -1866,20 +1872,34 @@ TAG "responses/objective_functions/nonlinear_equality_constraints/nonlinear_equa
 	DESC "{Nonlinear equality constraint scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"
 
 TAG "responses/calibration_terms"
+	DESC "{Number of calibration terms} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
 TAG "responses/calibration_terms/least_squares_term_scale_types"
-	DESC "{Least squares term scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
-
 TAG "responses/calibration_terms/least_squares_term_scales"
-	DESC "{Least squares terms scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
-
 TAG "responses/calibration_terms/calibration_weights"
+	DESC "{Calibration term weights} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
 TAG "responses/calibration_terms/calibration_data_file"
+	DESC "{Calibration data file name} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
 TAG "responses/calibration_terms/calibration_data_file/num_experiments"
+	DESC "{Number experiments (rows) in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
 TAG "responses/calibration_terms/calibration_data_file/annotated"
+	DESC "{Data file in annotated format} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
 TAG "responses/calibration_terms/calibration_data_file/freeform"
+	DESC "{Data file in freeform format} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
 TAG "responses/calibration_terms/calibration_data_file/num_config_variables"
+	DESC "{Number configuration variable columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
 TAG "responses/calibration_terms/calibration_data_file/num_std_deviations"
+	DESC "{Number standard deviation columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
 TAG "responses/calibration_terms/nonlinear_inequality_constraints"
+	DESC "{Number of nonlinear inequality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
 TAG "responses/calibration_terms/nonlinear_inequality_constraints/nonlinear_inequality_lower_bounds"
 	DESC "{Nonlinear inequality constraint lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
@@ -1893,6 +1913,8 @@ TAG "responses/calibration_terms/nonlinear_inequality_constraints/nonlinear_ineq
 	DESC "{Nonlinear inequality constraint scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/nonlinear_equality_constraints"
+	DESC "{Number of nonlinear equality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
 TAG "responses/calibration_terms/nonlinear_equality_constraints/nonlinear_equality_targets"
 	DESC "{Nonlinear equality constraint targets} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
@@ -1903,6 +1925,8 @@ TAG "responses/calibration_terms/nonlinear_equality_constraints/nonlinear_equali
 	DESC "{Nonlinear equality constraint scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/response_functions"
+	DESC "{Number of response functions} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnGen"
+
 TAG "responses/no_gradients"
 	DESC "@"
 

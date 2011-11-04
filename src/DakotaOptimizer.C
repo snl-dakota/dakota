@@ -51,6 +51,19 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
     speculativeFlag = false;
   }
 
+  // Check for full Newton method w/o Hessian support (direct or via recast)
+  bool require_hessians = false;
+  size_t num_lsq = probDescDB.get_sizet("responses.num_least_squares_terms");
+  if ( methodName == "optpp_newton") { // || ...) {
+    require_hessians = true;
+    if ( ( num_lsq == 0 && hessianType  == "none" ) ||
+	 ( num_lsq      && gradientType == "none" ) ) {
+      Cerr << "\nError: full Newton optimization requires objective Hessians."
+	   << std::endl;
+      abort_handler(-1);
+    }
+  }
+
   // Check for proper response function definition (optimization data set)
   // and manage requirements for local recasting
   numUserPrimaryFns = numFunctions - numNonlinearConstraints;
@@ -59,7 +72,6 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
     optimizationFlag = false; // used to distinguish NLS from MOO
     // allow solution of NLS problems as single-objective optimization
     // through local recasting
-    size_t num_lsq = probDescDB.get_sizet("responses.num_least_squares_terms");
     bool err_flag = false;
     if (num_lsq) {
       // Distinguish NLS case requiring a local recast from one where the
@@ -170,10 +182,9 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
     // may need response recast when variables are scaled (for grad, hess)
     void (*vars_recast) (const Variables&, Variables&)
       = (varsScaleFlag) ? variables_recast : NULL;
-    // ************************************************************************
-    // TO DO: NLS requires a set mapping to ensure vals for grads,
-    // grads + ... for hessians
-    // ************************************************************************
+    void (*set_recast) (const Variables&, const ActiveSet&, ActiveSet&)
+      = (local_nls_recast && require_hessians && hessianType == "none") ?
+      gnewton_set_recast : NULL;
     void (*pri_resp_recast) (const Variables&, const Variables&,
                              const Response&, Response&)
       = (localObjectiveRecast || primaryRespScaleFlag || varsScaleFlag) ? 
@@ -184,10 +195,18 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
       secondary_resp_recast : NULL;
     RecastModel* recast_model_rep = (RecastModel*)iteratedModel.model_rep();
     recast_model_rep->initialize(var_map_indices, nonlinear_vars_map,
-				 vars_recast, NULL, primary_resp_map_indices,
+				 vars_recast, set_recast,
+				 primary_resp_map_indices,
 				 secondary_resp_map_indices, nonlinear_resp_map,
 				 pri_resp_recast, sec_resp_recast);
- 
+    // if Gauss-Newton recasting, then the RecastModel Response needs to
+    // allocate space for a Hessian (default copy of sub-model response
+    // is insufficient).
+    if (set_recast) {
+      Response recast_resp = iteratedModel.current_response(); // shared rep
+      recast_resp.reshape(num_recast_fns, numContinuousVars, true, true);
+    }
+
     // for gradient-based Optimizers, maxConcurrency has already been determined
     // from derivative concurrency in the Iterator initializer, so initialize
     // communicators in the RecastModel.  For nongradient methods (many COLINY

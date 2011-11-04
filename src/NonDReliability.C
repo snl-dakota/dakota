@@ -279,9 +279,10 @@ PMA2_set_mapping(const Variables& recast_vars, const ActiveSet& recast_set,
   // function into the PMA RecastModel instance.
   const ShortArray& recast_asv = recast_set.request_vector();
   if (recast_asv[1] & 1) {
-    ShortArray sub_model_asv = sub_model_set.request_vector();
-    sub_model_asv[nondRelInstance->respFnCount] |= 6;
-    sub_model_set.request_vector(sub_model_asv);
+    int sm_index = nondRelInstance->respFnCount;
+    short sub_model_request = sub_model_set.request_value(sm_index);
+    sub_model_request |= 6;
+    sub_model_set.request_value(sub_model_request, sm_index);
   }
 }
 

@@ -1235,11 +1235,11 @@ static GuiKeyWord
 		{"variables_pointer",11,0,2,0,1127,0,0.,0.,0.,0,"{Variables set pointer} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelIndControl"}
 		},
 	kw_177[5] = {
-		{"annotated",8,0,2,0,1703},
-		{"freeform",8,0,2,0,1705},
-		{"num_config_variables",0x29,0,3,0,1707},
-		{"num_experiments",0x29,0,1,0,1701},
-		{"num_std_deviations",0x29,0,4,0,1709}
+		{"annotated",8,0,2,0,1703,0,0.,0.,0.,0,"{Data file in annotated format} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+		{"freeform",8,0,2,0,1705,0,0.,0.,0.,0,"{Data file in freeform format} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+		{"num_config_variables",0x29,0,3,0,1707,0,0.,0.,0.,0,"{Number configuration variable columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+		{"num_experiments",0x29,0,1,0,1701,0,0.,0.,0.,0,"{Number experiments (rows) in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+		{"num_std_deviations",0x29,0,4,0,1709,0,0.,0.,0.,0,"{Number standard deviation columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"}
 		},
 	kw_178[3] = {
 		{"nonlinear_equality_scale_types",0x80f,0,2,0,1725,0,0.,0.,0.,0,"{Nonlinear equality scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"},
@@ -1253,13 +1253,13 @@ static GuiKeyWord
 		{"nonlinear_inequality_upper_bounds",14,0,2,0,1715,0,0.,0.,0.,0,"{Nonlinear inequality constraint upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"}
 		},
 	kw_180[9] = {
-		{"calibration_data_file",11,5,4,0,1699,kw_177},
-		{"calibration_weights",14,0,3,0,1697,0,0.,0.,0.,0,0,0,"calibration_terms"},
-		{"least_squares_term_scale_types",0x80f,0,1,0,1693,0,0.,0.,0.,0,"{Least squares term scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"calibration_terms"},
-		{"least_squares_term_scales",0x80e,0,2,0,1695,0,0.,0.,0.,0,"{Least squares terms scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"calibration_terms"},
+		{"calibration_data_file",11,5,4,0,1699,kw_177,0.,0.,0.,0,"{Calibration data file name} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+		{"calibration_weights",14,0,3,0,1697,0,0.,0.,0.,0,"{Calibration term weights} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"calibration_terms"},
+		{"least_squares_term_scale_types",0x80f,0,1,0,1693,0,0.,0.,0.,0,0,0,"calibration_terms"},
+		{"least_squares_term_scales",0x80e,0,2,0,1695,0,0.,0.,0.,0,0,0,"calibration_terms"},
 		{"least_squares_weights",6,0,3,0,1696,0,0.,0.,0.,0,0,0,"calibration_terms"},
-		{"nonlinear_equality_constraints",0x29,3,6,0,1721,kw_178},
-		{"nonlinear_inequality_constraints",0x29,4,5,0,1711,kw_179},
+		{"nonlinear_equality_constraints",0x29,3,6,0,1721,kw_178,0.,0.,0.,0,"{Number of nonlinear equality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+		{"nonlinear_inequality_constraints",0x29,4,5,0,1711,kw_179,0.,0.,0.,0,"{Number of nonlinear inequality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
 		{"num_nonlinear_equality_constraints",0x21,3,6,0,1720,kw_178},
 		{"num_nonlinear_inequality_constraints",0x21,4,5,0,1710,kw_179}
 		},
@@ -1309,8 +1309,8 @@ static GuiKeyWord
 		},
 	kw_189[7] = {
 		{"multi_objective_weights",14,0,3,0,1671,0,0.,0.,0.,0,"{Multiobjective weightings} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt",0,"objective_functions"},
-		{"nonlinear_equality_constraints",0x29,3,5,0,1683,kw_187},
-		{"nonlinear_inequality_constraints",0x29,4,4,0,1673,kw_188},
+		{"nonlinear_equality_constraints",0x29,3,5,0,1683,kw_187,0.,0.,0.,0,"{Number of nonlinear equality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"},
+		{"nonlinear_inequality_constraints",0x29,4,4,0,1673,kw_188,0.,0.,0.,0,"{Number of nonlinear inequality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"},
 		{"num_nonlinear_equality_constraints",0x21,3,5,0,1682,kw_187},
 		{"num_nonlinear_inequality_constraints",0x21,4,4,0,1672,kw_188},
 		{"objective_function_scale_types",0x80f,0,1,0,1667,0,0.,0.,0.,0,"{Objective function scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt",0,"objective_functions"},
@@ -1342,7 +1342,7 @@ static GuiKeyWord
 	kw_194[18] = {
 		{"analytic_gradients",8,0,4,2,1733,0,0.,0.,0.,0,"[CHOOSE gradient type]"},
 		{"analytic_hessians",8,0,5,3,1777,0,0.,0.,0.,0,"[CHOOSE Hessian type]"},
-		{"calibration_terms",0x29,9,3,1,1691,kw_180},
+		{"calibration_terms",0x29,9,3,1,1691,kw_180,0.,0.,0.,0,"{Number of calibration terms} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
 		{"descriptors",15,0,2,0,1663,0,0.,0.,0.,0,"{Response labels} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespLabels"},
 		{"id_responses",11,0,1,0,1661,0,0.,0.,0.,0,"{Responses set identifier} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespSetId"},
 		{"mixed_gradients",8,10,4,2,1735,kw_182,0.,0.,0.,0,"{Mixed gradients} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespGradMixed"},
@@ -1354,10 +1354,10 @@ static GuiKeyWord
 		{"num_response_functions",0x21,0,3,1,1728},
 		{"numerical_gradients",8,8,4,2,1741,kw_190,0.,0.,0.,0,"{Numerical gradients} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespGradNum"},
 		{"numerical_hessians",8,4,5,3,1761,kw_191,0.,0.,0.,0,"{Numerical Hessians} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessNum"},
-		{"objective_functions",0x29,7,3,1,1665,kw_189},
+		{"objective_functions",0x29,7,3,1,1665,kw_189,0.,0.,0.,0,"{Number of objective functions} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"},
 		{"quasi_hessians",8,2,5,3,1769,kw_193,0.,0.,0.,0,"{Quasi Hessians} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessQuasi"},
 		{"response_descriptors",7,0,2,0,1662},
-		{"response_functions",0x29,0,3,1,1729}
+		{"response_functions",0x29,0,3,1,1729,0,0.,0.,0.,0,"{Number of response functions} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnGen"}
 		},
 	kw_195[1] = {
 		{"method_list",15,0,1,1,33,0,0.,0.,0.,0,"{List of methods} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"}

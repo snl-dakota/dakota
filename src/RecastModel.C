@@ -465,24 +465,14 @@ set_mapping(const Variables& recast_vars, const ActiveSet& recast_set,
 	 << endl;
     abort_handler(-1);
   }
-  if (sub_model_set.request_vector().empty()) {
-    ShortArray sub_model_asv(subModel.num_functions(), 0);
-    sub_model_set.request_vector(sub_model_asv);
-  }
-  else
-    sub_model_set.request_values(0);
-  sub_model_set.derivative_vector(recast_set.derivative_vector());//default=copy
 
-  // perform any supplied ASV modifications that augment the standard
-  // mapping rules
-  if (setMapping)
-    setMapping(recast_vars, recast_set, sub_model_set);
-
-  // project each recast_asv request onto the contributing set of functions
-  // within the sub_model_asv.  In the case of nonlinear input/output mappings,
-  // the recast_asv request is augmented with additional data requirements
-  // derived from chain rule differentiation.
-  ShortArray sub_model_asv = sub_model_set.request_vector();
+  // Define default request vector and derivative vector mappings:
+  // For the ASV, project each recast_asv request onto the contributing
+  // set of functions within the sub_model_asv.  In the case of nonlinear
+  // input/output mappings, the recast_asv request is augmented with
+  // additional data requirements derived from chain rule differentiation.
+  // The default sub-model DVV is just a copy of the recast DVV.
+  ShortArray sub_model_asv(subModel.num_functions(), 0);
   for (i=0; i<num_recast_fns; i++) {
     short asv_val = recast_asv[i];
     // For nonlinear variable mappings, gradient required to transform Hessian.
@@ -496,8 +486,13 @@ set_mapping(const Variables& recast_vars, const ActiveSet& recast_set,
     size_t num_contributors = recast_fn_contributors.size();
     for (j=0; j<num_contributors; j++) {
       short sub_model_asv_val = asv_val;
-      // For nonlinear resp mappings, derivatives require all lower order data.
-      // The nonlinearity of each function contribution is employed.
+      // Bit deletions: for NLS recasting for full Newton without LeastSq term
+      // Hessians, could remove 4 bit based on {grad,hess}Type, but this is
+      // better accomplished from an Iterator's configuration using the
+      // setMapping plug-in below (e.g., see Optimizer::gnewton_set_recast()). 
+
+      // Bit additions: for nonlinear resp mappings, derivatives require all
+      // lower order data. The nonlinearity of each fn contribution is employed.
       if (nonlinearRespMapping[i][j]) {
 	if (asv_val & 4)
 	  sub_model_asv_val |= 3;
@@ -508,6 +503,20 @@ set_mapping(const Variables& recast_vars, const ActiveSet& recast_set,
     }
   }
   sub_model_set.request_vector(sub_model_asv);
+  sub_model_set.derivative_vector(recast_set.derivative_vector()); // copy
+
+  // a setMapping (provided in the RecastModel ctor or initialize()) augments
+  // the standard mappings.  Current examples include NonD::set_u_to_x_mapping,
+  // NonDReliability::PMA2_set_mapping, and Optimizer::gauss_newton_set_recast.
+  // This follows the standard mappings so that provided mappings don't get
+  // overwritten by the standard logic.  However, this means that any provided
+  // additions will not be automatically augmented by nonlinear mapping logic
+  // above.  This should not be a significant problem, since the provided
+  // additions have case-specific context whereas the logic above is generic.
+  // It would be preferable if provided mappings focused on updating the
+  // sub_model_set rather than generating it from recast_set.
+  if (setMapping)
+    setMapping(recast_vars, recast_set, sub_model_set);
 }
 
 

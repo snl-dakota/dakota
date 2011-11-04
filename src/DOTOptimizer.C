@@ -421,7 +421,7 @@ void DOTOptimizer::find_optimum()
 	     << "evaluated from database.";
       activeSet.request_values(0); // initialize all values to 0
       for (i=0; i<numObjectiveFns; i++)
-        activeSet.request_value(i, dotInfo); // objective function(s)
+        activeSet.request_value(dotInfo, i); // objective function(s)
       for (i=0; i<ngt; i++) {
         // IWK(1->NGT) = intWorkSpace[0->NGT-1] = active constraint #'s 
 	// While DOT returns 1-based constraint id's, work in 0-based id's for
@@ -429,7 +429,7 @@ void DOTOptimizer::find_optimum()
         size_t dot_constr = intWorkSpace[i] - 1; // (0-based)
         if (dot_constr < numDotNlnConstr) { // only nonlinear in ASV
           size_t dakota_constr = constraintMappingIndices[dot_constr];
-          activeSet.request_value(dakota_constr+numObjectiveFns, dotInfo);
+          activeSet.request_value(dotInfo, dakota_constr+numObjectiveFns);
 	  // some DAKOTA equality and 2-sided inequality constraints may have
 	  // their ASV assigned multiple times depending on which of DOT's
 	  // 1-sided inequalities are active.

@@ -161,7 +161,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     set.request_values(0);
     for (i=0; i<numFunctions; ++i)
       if (!computedRespLevels[i].empty()) // sized to total req levels above
-    	{ set.request_value(i, dataOrder); surr_fn_indices.insert(i); }
+    	{ set.request_value(dataOrder, i); surr_fn_indices.insert(i); }
     dace_iterator.active_set(set);
     //const Variables& curr_vars = iteratedModel.current_variables();
     g_hat_x_model.assign_rep(new DataFitSurrModel(dace_iterator, iteratedModel,
@@ -202,7 +202,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     set.request_values(0);
     for (i=0; i<numFunctions; ++i)
       if (!computedRespLevels[i].empty()) // sized to total req levels above
-    	{ set.request_value(i, dataOrder); surr_fn_indices.insert(i); }
+    	{ set.request_value(dataOrder, i); surr_fn_indices.insert(i); }
     dace_iterator.active_set(set);
 
     //const Variables& g_u_vars = g_u_model.current_variables();
@@ -562,7 +562,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  natafTransform.trans_U_to_X(c_vars_u, c_vars_x);
 	  iteratedModel.continuous_variables(c_vars_x);
 	  ActiveSet set = iteratedModel.current_response().active_set();
-	  set.request_values(0); set.request_value(respFnCount, dataOrder);
+	  set.request_values(0); set.request_value(dataOrder, respFnCount);
 	  iteratedModel.compute_response(set);
 	  IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),
 					  iteratedModel.current_response());
@@ -646,7 +646,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	    
 	    uSpaceModel.continuous_variables(u_pt);
 	    ActiveSet set = uSpaceModel.current_response().active_set();
-	    set.request_values(0); set.request_value(respFnCount, 1);
+	    set.request_values(0); set.request_value(1, respFnCount);
 	    uSpaceModel.compute_response(set);
 	    const Response& gp_resp = uSpaceModel.current_response();
 	    const RealVector& gp_fn = gp_resp.function_values();
@@ -677,7 +677,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	      natafTransform.trans_U_to_X(u_pt,x_pt);
 	      iteratedModel.continuous_variables(x_pt);
 	      set = iteratedModel.current_response().active_set();
-	      set.request_values(0); set.request_value(respFnCount, 1);
+	      set.request_values(0); set.request_value(1, respFnCount);
 	      iteratedModel.compute_response(set);
 	      const Response& true_resp = iteratedModel.current_response();
 	      const RealVector& true_fn = true_resp.function_values();
@@ -727,7 +727,7 @@ void NonDGlobalReliability::importance_sampling()
       uSpaceModel.component_parallel_mode(TRUTH_MODEL);
       // don't use derivatives in the importance sampling
       ActiveSet set = iteratedModel.current_response().active_set();
-      set.request_values(0); set.request_value(respFnCount, 1);
+      set.request_values(0); set.request_value(1, respFnCount);
       iteratedModel.compute_response(set);
       const Response& true_resp = iteratedModel.current_response();
       const RealVector& true_fn = true_resp.function_values();
