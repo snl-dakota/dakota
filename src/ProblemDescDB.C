@@ -225,29 +225,6 @@ manage_inputs(const char* dakota_input_file, const char* parser_options,
     // size default variables/responses specification vectors (avoid
     // sending large vectors over an MPI buffer).
     post_process();
-
-#ifdef DAKOTA_HAVE_BOOST_FS
-    bfs::path startup_pwd( WorkdirHelper::startup_pwd() );
-    bool inp_in_pwd = false;
-
-    // If the dakota_input_file is NOT in the $PWD when dakota starts up, then
-    // prepend the parent directory of the input file to the preferred $PATH
-
-    if( !dakInputFile.empty() ) {
-      bfs::directory_iterator end_itr;
-      for(bfs::directory_iterator itr(startup_pwd); itr != end_itr; ++itr) {
-        if( filename(itr->path()) == dakInputFile ) {
-          inp_in_pwd = true;
-          break;
-        }
-      }
-
-      if( !inp_in_pwd ) {
-        bfs::path abs_dak_inp_parent( parent_path(bfs::path(dakInputFile)) );
-        WorkdirHelper::prepend_preferred_env_path(abs_dak_inp_parent.string());
-      }
-    }
-#endif
   }
 }
 
@@ -262,9 +239,6 @@ parse_inputs(const char* dakota_input_file, const char* parser_options,
     dbRep->parse_inputs(dakota_input_file, parser_options,
 			callback, callback_data);
   else {
-    dakInputFile = (dakota_input_file != NULL) ?
-                   dakota_input_file : std::string();
-
     // Only the master parses the input file.
     if (parallelLib.world_rank() == 0) {
       // Parse the input file using one of the derived parser-specific classes
@@ -306,8 +280,7 @@ void ProblemDescDB::broadcast()
 #ifdef MPI_DEBUG
 	Cout << "DB buffer to send on world rank " << parallelLib.world_rank()
 	     << ":\n" << strategySpec << dataMethodList << dataVariablesList
-	     << dataInterfaceList << dataResponsesList
-	     << '\n' << dakInputFile << std::endl;
+	     << dataInterfaceList << dataResponsesList << std::endl;
 #endif // MPI_DEBUG
       }
       else {
@@ -315,8 +288,7 @@ void ProblemDescDB::broadcast()
 #ifdef MPI_DEBUG
 	Cout << "DB buffer received on world rank " << parallelLib.world_rank()
 	     << ":\n" << strategySpec << dataMethodList << dataVariablesList
-	     << dataInterfaceList << dataResponsesList
-	     << '\n' << dakInputFile << std::endl;
+	     << dataInterfaceList << dataResponsesList << std::endl;
 #endif // MPI_DEBUG
 	//derived_broadcast(); // post-processor
       }
@@ -325,7 +297,7 @@ void ProblemDescDB::broadcast()
 #ifdef DEBUG
       Cout << "DB parsed data:\n" << strategySpec << dataMethodList
 	   << dataVariablesList << dataInterfaceList << dataResponsesList
-	   << '\n' << dakInputFile << std::endl;
+	   << std::endl;
 #endif // DEBUG
       derived_broadcast();
     }
@@ -872,8 +844,7 @@ void ProblemDescDB::send_db_buffer()
 {
   MPIPackBuffer send_buffer;
   send_buffer << strategySpec      << dataMethodList    << dataModelList
-	      << dataVariablesList << dataInterfaceList << dataResponsesList
-	      << dakInputFile;
+	      << dataVariablesList << dataInterfaceList << dataResponsesList;
 
   // Broadcast length of buffer so that slaves can allocate MPIUnpackBuffer
   int buffer_len = send_buffer.size();
@@ -894,8 +865,7 @@ void ProblemDescDB::receive_db_buffer()
   MPIUnpackBuffer recv_buffer(buffer_len);
   parallelLib.bcast_w(recv_buffer);
   recv_buffer >> strategySpec      >> dataMethodList    >> dataModelList
-	      >> dataVariablesList >> dataInterfaceList >> dataResponsesList
-	      >> dakInputFile;
+	      >> dataVariablesList >> dataInterfaceList >> dataResponsesList;
 }
 
 

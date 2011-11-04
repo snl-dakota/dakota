@@ -388,9 +388,6 @@ private:
   /// list of response objects, one for each responses specification
   ResponseList responseList;
 
-  /// DAKOTA input filename
-  std::string dakInputFile;
-
   /// prevents use of get_<type> retrieval and set_<type> update functions 
   /// prior to setting the list node for the active method specification
   bool methodDBLocked;
