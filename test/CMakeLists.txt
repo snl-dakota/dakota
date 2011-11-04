@@ -151,10 +151,10 @@ if(ENABLE_TESTS)
 endif()
 
 install(TARGETS 
-  barnes barnes_lf cantilever container cyl_head illumination 
+  barnes barnes_lf cantilever container cyl_head herbie illumination 
   lf_rosenbrock lf_poly_prod log_ratio mod_cantilever 
   mogatest1 mogatest2 mogatest3 morris nl2func poly_prod portal_frame 
-  quasi_sine_fcn rosenbrock short_column 
+  quasi_sine_fcn rosenbrock short_column shubert smooth_herbie
   sobol_g_function sobol_ishigami sobol_rational 
   steel_column_cost steel_column_perf steel_section 
   text_book text_book1 text_book2 text_book3 text_book_ouu
