@@ -905,6 +905,9 @@ update_partial(size_t start_index_target, size_t num_items,
 	       const RealSymMatrixArray& source_fn_hessians,
 	       const ActiveSet& source_set, size_t start_index_source)
 {
+  if (!num_items)
+    return;
+
   // current response data
   const ShortArray& asv = responseActiveSet.request_vector();
   size_t i, j, k, num_fns = asv.size(), 
