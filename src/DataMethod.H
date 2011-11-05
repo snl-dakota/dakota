@@ -53,7 +53,7 @@ enum { PROBABILITIES, RELIABILITIES, GEN_RELIABILITIES };
 // --------------------
 // define special values for emulatorType
 enum { NO_EMULATOR, POLYNOMIAL_CHAOS, STOCHASTIC_COLLOCATION,
-       GAUSSIAN_PROCESS };
+       GAUSSIAN_PROCESS, KRIGING };
 
 // ------------
 // NonDSampling

@@ -579,6 +579,10 @@ KEYWORD12 method
 	  )
 	|
 	( efficient_global
+	  [ emulator
+	    kriging
+	    | gaussian_process
+	    ]
 	  [ use_derivatives ]
 	  [ seed INTEGER ]
 	  )
@@ -816,6 +820,10 @@ KEYWORD12 method
 	|
 	( global_evidence ALIAS nond_global_evidence
 	  [ ( ego
+	      [ emulator
+		kriging
+		| gaussian_process
+		]
 	      [ use_derivatives ]
 	      )
 	  | lhs ]
@@ -846,6 +854,10 @@ KEYWORD12 method
 	|
 	( global_interval_est ALIAS nond_global_interval_est
 	  [ ( ego
+	      [ emulator
+		kriging
+		| gaussian_process
+		]
 	      [ use_derivatives ]
 	      )
 	  | lhs ]
@@ -1020,6 +1032,10 @@ KEYWORD12 method
 	( global_reliability ALIAS nond_global_reliability
 	  x_gaussian_process
 	  | u_gaussian_process
+	  [ emulator
+	    kriging
+	    | gaussian_process
+	    ]
 	  [ all_variables ]
 	  [ use_derivatives ]
 	  [ seed INTEGER ]

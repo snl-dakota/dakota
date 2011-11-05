@@ -59,10 +59,19 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   truthFnStar.resize(numFunctions);
 
   // Always build a global Gaussian process model.  No correction is needed.
-  String approx_type = "global_gaussian", sample_reuse = "none";
+  String approx_type = "global_kriging";
+  if (probDescDB.get_short("method.nond.emulator") == GAUSSIAN_PROCESS)
+    approx_type = "global_gaussian";
+
+  String sample_reuse = "none";
   UShortArray approx_order; // empty
   short corr_order = -1, corr_type = NO_CORRECTION;
   if (probDescDB.get_bool("method.derivative_usage")) {
+    if (approx_type == "global_gaussian") {
+      Cerr << "\nError: efficient_global does not support gaussian_process "
+	   << "when derivatives present; use kriging instead." << std::endl;
+      abort_handler(-1);
+    }
     if (gradientType != "none") dataOrder |= 2;
     if (hessianType  != "none") dataOrder |= 4;
   }

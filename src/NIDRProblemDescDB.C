@@ -4555,6 +4555,7 @@ static size_t
 
 static Method_mp_type
 	MP2s(emulatorType,GAUSSIAN_PROCESS),
+	MP2s(emulatorType,KRIGING),
 	MP2s(emulatorType,POLYNOMIAL_CHAOS),
 	MP2s(emulatorType,STOCHASTIC_COLLOCATION),
 	MP2s(expansionType,ASKEY_U),

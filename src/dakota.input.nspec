@@ -394,6 +394,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  )
 	|
 	( ( efficient_global {N_mdm(lit,methodName_efficient_global)}
+	    [ emulator {0}
+	      kriging {N_mdm(type,emulatorType_KRIGING)}
+	      | gaussian_process {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
+              ]
             [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 	    )
 	  |
@@ -528,6 +532,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      |
 	      ( global_evidence ALIAS nond_global_evidence {N_mdm(lit,methodName_nond_global_evidence)}
 	        [ ( ego {N_mdm(lit,nondOptAlgorithm_ego)}
+	            [ emulator {0}
+	              kriging {N_mdm(type,emulatorType_KRIGING)}
+	              | gaussian_process {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
+                      ]
 		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] )
 		    | lhs {N_mdm(lit,nondOptAlgorithm_lhs)} ]
 		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
@@ -555,6 +563,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    |
             ( global_interval_est ALIAS nond_global_interval_est {N_mdm(lit,methodName_nond_global_interval_est)}
 	      [ ( ego {N_mdm(lit,nondOptAlgorithm_ego)}
+	          [ emulator {0}
+	            kriging {N_mdm(type,emulatorType_KRIGING)}
+                    | gaussian_process {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
+                    ]
 		  [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] )
 		  | lhs {N_mdm(lit,nondOptAlgorithm_lhs)} ]
 	      [ rng {0}
@@ -705,6 +717,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  ( global_reliability ALIAS nond_global_reliability {N_mdm(lit,methodName_nond_global_reliability)}
 	    x_gaussian_process {N_mdm(lit,reliabilitySearchType_egra_x)}
 	    | u_gaussian_process {N_mdm(lit,reliabilitySearchType_egra_u)}
+            [ emulator {0}
+	      kriging {N_mdm(type,emulatorType_KRIGING)}
+              | gaussian_process {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
+            ]
 	    [ all_variables {N_mdm(true,allVarsFlag)} ]
             [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 	    [ seed INTEGER {N_mdm(pint,randomSeed)} ]
