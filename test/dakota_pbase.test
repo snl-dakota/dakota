@@ -328,7 +328,7 @@ Test Number 6 succeeded
 <<<<< Best constraint values   =
                       8.6499094365e-02
                       5.1144161932e-02
-<<<<< Best data captured at function evaluation 479
+<<<<< Best data captured at function evaluation 485
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 1030 total (1030 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -340,7 +340,7 @@ Test Number 7 succeeded
 <<<<< Best constraint values   =
                       8.6499094365e-02
                       5.1144161932e-02
-<<<<< Best data captured at function evaluation 479
+<<<<< Best data captured at function evaluation 485
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 451 total (389 new, 62 duplicate)
 <<<<< Best parameters          =
