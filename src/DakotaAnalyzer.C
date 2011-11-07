@@ -541,7 +541,7 @@ void Analyzer::pre_output()
  
   bool active_only = compactMode;  // compactMode uses only active
   bool response_labels = true;     // write response labels for user
-  bool annotated = true;
+  bool annotated = true;           // pre/post only supports annotated
   if (annotated)
     TabularIO::write_header_tabular(tabular_file, "eval_id", 
 				    iteratedModel.current_variables(), 
@@ -600,7 +600,7 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 
   std::ifstream tabular_file;
   TabularIO::open_file(tabular_file, filename, "post-run input");
-  bool annotated = true;
+  bool annotated = true;  // pre/post only supports annotated
 
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "\nAttempting to read " << num_evals << " samples from file "

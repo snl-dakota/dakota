@@ -192,7 +192,7 @@ create_tabular_datastream(const Variables& vars, const Response& response,
 
   bool active_only = true;
   bool response_labels = true;
-  bool annotated = true;
+  bool annotated = true;  // tabular graphics data only supports annotated
   if (annotated)
     TabularIO::write_header_tabular(tabularDataFStream, tabularCntrLabel, 
 				    vars, response, active_only, 
@@ -253,7 +253,7 @@ void Graphics::add_datapoint(const Variables& vars, const Response& response)
     // user specification.
     bool active_only = true;
     bool write_responses = true;
-    bool annotated = true;
+    bool annotated = true;  // tabular graphics data only supports annotated
     TabularIO::write_data_tabular(tabularDataFStream, graphicsCntr, vars, 
 				  response, active_only, annotated, 
 				  write_responses);
