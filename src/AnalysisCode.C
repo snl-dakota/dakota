@@ -64,12 +64,17 @@ AnalysisCode::AnalysisCode(const ProblemDescDB& problem_db):
     std::vector<std::string> driver_and_args;
 
     boost::split( driver_and_args, programNames[0], boost::is_any_of("\t ") );
-    //Cout << driver_and_args[0] << std::endl;
 
     std::string driver_path = WorkdirHelper::which(driver_and_args[0]);
     if ( driver_path.empty() ) {
-      Cout << programNames[0] << ": Command not found.\n" << std::endl;
+      Cout << driver_and_args[0] << ": Command not found.\n" << std::endl;
       abort_handler(-1);
+    }
+    else if (driver_path.substr(0, 4) == DAK_PATH_ENV_NAME) {
+      ; // Allow legacy logic to proceed normally
+#ifdef DEBUG
+      Cout << driver_and_args[0] << " - FOUND in:\n" << driver_path <<std::endl;
+#endif
     }
     /* Uncomment for filename debugging
     else

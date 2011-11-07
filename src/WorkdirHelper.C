@@ -162,6 +162,7 @@ std::string WorkdirHelper::which(const std::string& driver_name)
 #else
 
   // WJB - NO BoostFS case: should I invoke the venerable "not_executable" func?
+  driver_path_str = dakPreferredEnvPath;
 
 #endif // DAKOTA_HAVE_BOOST_FS
 
