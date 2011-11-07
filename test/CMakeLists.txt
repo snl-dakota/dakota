@@ -29,7 +29,9 @@ if(BUILD_TESTING)
 
   # supplemental data
   list(APPEND TestFiles 
-    dakota_coliny.dat dakota_pce.txt least_squares_test.dat least_squares_test.ann
+    dakota_coliny.dat dakota_pce.txt 
+    least_squares_test.dat least_squares_test.ann
+    sbuq_textbook.annotated sbuq_textbook.freeform
     )
 
   foreach(file ${TestFiles})

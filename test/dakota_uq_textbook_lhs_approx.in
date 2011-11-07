@@ -33,9 +33,13 @@ model,
 	  dace_method_pointer = 'DACE'
 	  polynomial quadratic		#0
 # 	  neural_network		#1
-#	  kriging			#2
+#	  kriging			#2,#4,#5
 #	  mars				#3
 
+# Test 2 with a samples file, free-form or annotated
+#	samples_file = 'sbuq_textbook.annotated' 	#4
+#	samples_file = 'sbuq_textbook.freeform' 	#5
+#	  freeform 					#5
 
 variables,
 	lognormal_uncertain =  2
