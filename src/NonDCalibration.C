@@ -12,6 +12,7 @@
 //- Checked by:
 //- Version:
 
+#include <boost/math/special_functions/round.hpp>
 #include "NonDCalibration.H"
 #include "DakotaModel.H"
 #include "ProblemDescDB.H"
@@ -132,8 +133,9 @@ set_configuration_vars(Model& model, const RealVector& config_vars) {
   // don't reset the config index
   state_ins = discreteIntConfigStart;
   // TODO: read integer config vars as integers instead of rounding
+  //       (need file reader supporting partitioned matrices)
   for ( ; config_ind < discreteIntConfigVars; ++config_ind, ++state_ins) {
-    int int_config_var = (int) std::floor(config_vars[config_ind]+0.5);
+    int int_config_var = boost::math::iround(config_vars[config_ind]);
     model.all_discrete_int_variable(int_config_var, state_ins);
   }
 
