@@ -48,10 +48,8 @@ NonDQuadrature::NonDQuadrature(Model& model):
     = (u_space_type == PIECEWISE_U || refine_type == Pecos::H_REFINEMENT);
   bool use_derivs = probDescDB.get_bool("method.derivative_usage");
   bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
-  short nested_uniform_rule = Pecos::GAUSS_PATTERSON;//CLENSHAW_CURTIS,FEJER2
   tpqDriver->initialize_grid(natafTransform.u_types(), nestedRules,
-                             piecewise_basis, equidist_rules, use_derivs,
-			     nested_uniform_rule);
+                             piecewise_basis, equidist_rules, use_derivs);
 
   reset(); // init_dim_quad_order() uses integrationRules from initialize_grid()
   maxConcurrency *= tpqDriver->grid_size();
@@ -76,10 +74,9 @@ NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
 
-  bool  equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
-  short nested_uniform_rule = Pecos::GAUSS_PATTERSON;//CLENSHAW_CURTIS,FEJER2
+  bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
   tpqDriver->initialize_grid(u_types, nestedRules, piecewise_basis,
-			     equidist_rules, use_derivs, nested_uniform_rule);
+			     equidist_rules, use_derivs);
 
   reset(); // init_dim_quad_order() uses integrationRules from initialize_grid()
   maxConcurrency *= tpqDriver->grid_size();
@@ -104,10 +101,9 @@ NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
 
-  bool  equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
-  short nested_uniform_rule = Pecos::GAUSS_PATTERSON;//CLENSHAW_CURTIS,FEJER2
+  bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
   tpqDriver->initialize_grid(u_types, nestedRules, piecewise_basis,
-			     equidist_rules, use_derivs, nested_uniform_rule);
+			     equidist_rules, use_derivs);
   compute_minimum_quadrature_order();
   maxConcurrency *= numFilteredSamples;
 }

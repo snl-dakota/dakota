@@ -72,11 +72,10 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
     growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;
   else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
-  short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
   ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelRef,
     dimPrefSpec, /*refine_type,*/ refine_control, store_colloc,
     track_uniq_prod_wts, nested_rules, piecewise_basis, equidist_rules,
-    use_derivs, growth_rate, nested_uniform_rule);
+    use_derivs, growth_rate);
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
     iteratedModel.distribution_parameters());
   maxConcurrency *= ssgDriver->grid_size(); // requires polyParams
@@ -117,11 +116,9 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
     growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;
   else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
-  short nested_uniform_rule = Pecos::GAUSS_PATTERSON; //CLENSHAW_CURTIS,FEJER2
   ssgDriver->initialize_grid(u_types, ssgLevelRef, dimPrefSpec, //refine_type,
     refine_control, store_colloc, track_uniq_prod_wts, nested_rules,
-    piecewise_basis, equidist_rules, use_derivs, growth_rate,
-    nested_uniform_rule);
+    piecewise_basis, equidist_rules, use_derivs, growth_rate);
   ssgDriver->
     initialize_grid_parameters(u_types, model.distribution_parameters());
   maxConcurrency *= ssgDriver->grid_size(); // requires polyParams
