@@ -1,0 +1,28 @@
+# Test various dprepro delimiter options, including nosub
+
+# Default curly braces, including escaped
+{ test01 = +1e30 }
+mydefault = { 2 * test01 }
+test02 = { test02 = -1e30 }
+dontsub_curly = { dontsub = +1e30 ; test01 }
+
+# Alternate delimiters; internal 3105
+# Test verbatim delimiters escaped with backslashes; public Ticket #4066
+
+# test with --left-delimiter='<' --right-delimiter='>' and inline default
+1
+mydefault = 2
+test02 = 1e3
+dontsub_angle = < dontsub = +1e30 ; test01 >
+
+# test with --left-delimiter='||' --right-delimiter='@'
+|| test01 = +1e30 @
+mydefault = || 2 * test01 @
+test02 = || test02 = -1e30 @
+dontsub_random = || dontsub = +1e30 ; test01 @
+
+# test with --left-delimiter='[[' --right-delimiter=']]'
+[[ test01 = +1e30 ]]
+mydefault = [[ 2 * test01 ]]
+test02 = [[ test02 = -1e30 ]]
+dontsub_brackets = [[ dontsub = +1e30 ; test01 ]]
