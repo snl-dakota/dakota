@@ -57,6 +57,8 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
   surfData(NULL), model(NULL), factory(NULL)
 {
     ParamMap args;
+
+    args["verbosity"] = toString<short>(outputLevel);
     args["ndims"] = toString<size_t>(num_acv);
 
     // For now, not exposing Surfpack random seed in the DAKOTA UI;
