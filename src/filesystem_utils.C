@@ -763,7 +763,7 @@ cd_fail:
 			goto cd_fail;
 		}
 	else
-		appdir = cwd;
+		appdir = (char*)cwd;
 	dot = 1;
 	nrel2 = 0;
 #else
