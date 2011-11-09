@@ -448,6 +448,13 @@ expected_improvement(const RealVector& means, const RealVector& variances)
 {
   Real mean = objective(means, iteratedModel.primary_response_fn_weights()),
        stdv;
+  //double dtemp1=-50.0;
+  //double dtemp2=50.0;
+  //printf("Phi(%g)=%22.16g phi(%g)=%22.16g\nPhi(%g)=%22.16g phi(%g)=%22.16g\n",
+    // dtemp1,Pecos::Phi(dtemp1),dtemp1,Pecos::phi(dtemp1),
+    // dtemp2,Pecos::Phi(dtemp2),dtemp2,Pecos::phi(dtemp2));
+  
+
   if ( numNonlinearConstraints ) {
     // mean_M = mean_f + lambda*EV + r_p*EV*EV
     // stdv_M = stdv_f
@@ -463,9 +470,20 @@ expected_improvement(const RealVector& means, const RealVector& variances)
   }
 
   // Calculate the expected improvement
-  Real snv = (meritFnStar - mean)/stdv, // standard normal variate
-       cdf = Pecos::Phi(snv), pdf = Pecos::phi(snv),
-       ei  = (meritFnStar - mean)*cdf + stdv*pdf;
+  Real cdf, pdf;
+  Real snv = (meritFnStar - mean); // standard normal variate
+  if(std::fabs(snv)>=std::fabs(stdv)*50.0) {
+    //this will trap the denominator=0.0 case even if numerator=0.0
+    pdf=0.0;
+    cdf=(snv>0.0)?1.0:0.0;
+  }
+  else{
+    snv/=stdv; 
+    cdf = Pecos::Phi(snv);
+    pdf = Pecos::phi(snv);
+  }
+
+  Real ei  = (meritFnStar - mean)*cdf + stdv*pdf;
 
   return ei;
 }
@@ -484,11 +502,31 @@ expected_violation(const RealVector& means, const RealVector& variances)
     const Real& lbnd = origNonlinIneqLowerBnds[i];
     const Real& ubnd = origNonlinIneqUpperBnds[i];
     if (lbnd > -bigRealBoundSize) {
-      Real snv = (lbnd-mean)/stdv, cdf = Pecos::Phi(snv), pdf = Pecos::phi(snv);
+      Real cdf, pdf;
+      Real snv = (lbnd-mean);
+      if(std::fabs(snv)>=std::fabs(stdv)*50.0){
+	pdf=0.0;
+	cdf=(snv>0.0)?1.0:0.0;
+      }
+      else{
+	snv/=stdv; //now snv is the standard normal variate
+	cdf = Pecos::Phi(snv);
+	pdf = Pecos::phi(snv);
+      }
       ev[cntr++] = (lbnd-mean)*cdf + stdv*pdf;
     }
     if (ubnd < bigRealBoundSize) {
-      Real snv = (ubnd-mean)/stdv, cdf = Pecos::Phi(snv), pdf = Pecos::phi(snv);
+      Real cdf, pdf;
+      Real snv = (ubnd-mean);
+      if(std::fabs(snv)>=std::fabs(stdv)*50.0){
+	pdf=0.0;
+	cdf=(snv>0.0)?1.0:0.0;
+      }
+      else{
+	snv/=stdv;
+	cdf = Pecos::Phi(snv);
+	pdf = Pecos::phi(snv);
+      }
       ev[cntr++] = (mean-ubnd)*(1.-cdf) + stdv*pdf;
     }
   }
@@ -498,7 +536,17 @@ expected_violation(const RealVector& means, const RealVector& variances)
     const Real& stdv
       = std::sqrt(variances[numUserPrimaryFns+numNonlinearIneqConstraints+i]);
     const Real& zbar = origNonlinEqTargets[i];
-    Real snv = (zbar-mean)/stdv, cdf = Pecos::Phi(snv), pdf = Pecos::phi(snv);
+    Real cdf, pdf;
+    Real snv = (zbar-mean);
+    if(std::fabs(snv)*50.0>=std::fabs(stdv)) {
+      pdf=0.0;
+      cdf=(snv>=0.0)?1.0:0.0;
+    }
+    else{
+      snv/=stdv;
+      cdf = Pecos::Phi(snv);
+      pdf = Pecos::phi(snv);
+    }
     ev[cntr++] = (zbar-mean)*(2.*cdf-1.) + 2.*stdv*pdf;
   }
 

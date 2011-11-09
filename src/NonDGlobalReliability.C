@@ -872,11 +872,23 @@ expected_improvement(const RealVector& expected_values, const RealVector& u)
   
   // Calculate the expected improvement
   // Note: This is independent of the CDF/CCDF check
-  Real ei, snv = (fnStar-penalized_mean)/stdv; // standard normal variate
+
+  Real ei, cdf, pdf;
+  Real snv = (fnStar-penalized_mean); // not normalized yet
+  if(std::fabs(snv)>=std::fabs(stdv)*50.0) {
+    //this will trap the denominator=0.0 case even if numerator=0.0
+    pdf=0.0;
+    cdf=(snv>0.0)?1.0:0.0;
+  }
+  else{
+    snv/=stdv; // now snv is the standard normal variate
+    cdf = Pecos::Phi(snv);
+    pdf = Pecos::phi(snv);
+  }
   if (positive)
-    ei = (fnStar - penalized_mean)*Pecos::Phi(snv)      + stdv*Pecos::phi(snv);
+    ei = (fnStar - penalized_mean)*cdf      + stdv*pdf;
   else
-    ei = (penalized_mean - fnStar)*(1.-Pecos::Phi(snv)) + stdv*Pecos::phi(snv);
+    ei = (penalized_mean - fnStar)*(1.-cdf) + stdv*pdf;
   
   return -ei; // return -EI because we are maximizing EI
 }
@@ -903,14 +915,33 @@ expected_feasibility(const RealVector& expected_values,
        alpha = 2.; // may want to try values other than 2
 
   // calculate standard normal variate +/- alpha
-  Real snvz = (zbar - mean)/stdv, snvp = snvz + alpha, snvm = snvz - alpha;
-    
+  
+  Real cdfz, pdfz, cdfp, pdfp, cdfm, pdfm;
+  Real snvz = (zbar - mean);
+  if(std::fabs(snvz)>=std::fabs(stdv)*50.0) {
+    pdfm=pdfp=pdfz=0.0;
+    cdfm=cdfp=cdfz=(snvz>0.0)?1.0:0.0;
+  }
+  else{
+    using Pecos::phi;
+    using Pecos::Phi;
+    snvz/=stdv;
+    Real snvp = snvz + alpha;
+    Real snvm = snvz - alpha;
+    pdfz=phi(snvz);
+    cdfz=Phi(snvz);
+    pdfp=phi(snvp);
+    cdfp=Phi(snvp);
+    pdfm=phi(snvm);
+    cdfm=Phi(snvm);    
+  }
   // calculate expected feasibility function
-  using Pecos::phi;
-  using Pecos::Phi;
-  Real ef = (mean - zbar)*(2.*Phi(snvz) - Phi(snvm) - Phi(snvp)) -  //exploit
-                     stdv*(2.*phi(snvz) - phi(snvm) - phi(snvp)  -  //explore
-     		              alpha*Phi(snvp) + alpha*Phi(snvm));
+  Real ef = (mean - zbar)*(2.*cdfz     -cdfm -cdfp)- //exploit
+                     stdv*(2.*pdfz     -pdfm -pdfp - //explore
+			   alpha*cdfp + alpha*cdfm);
+  //Real ef = (mean - zbar)*(2.*Phi(snvz) - Phi(snvm) - Phi(snvp)) -  //exploit
+  //                   stdv*(2.*phi(snvz) - phi(snvm) - phi(snvp)  -  //explore
+  //   		              alpha*Phi(snvp) + alpha*Phi(snvm));
 
   return -ef;  // return -EF because we are maximizing
 }

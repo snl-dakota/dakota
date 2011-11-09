@@ -361,9 +361,18 @@ EIF_objective_min(const Variables& sub_model_vars, const Variables& recast_vars,
     Real stdv = sqrt(variances[nondGIInstance->respFnCntr]);
     const Real& approx_fn_star = nondGIInstance->approxFnStar;
     // Calculate the expected improvement
-    Real  snv = (approx_fn_star - mean)/stdv, // standard normal variate
-      Phi_snv = Pecos::Phi(snv), phi_snv = Pecos::phi(snv),
-      ei      = (approx_fn_star - mean)*Phi_snv + stdv*phi_snv;
+    Real Phi_snv, phi_snv;
+    Real  snv = (approx_fn_star - mean);
+    if(std::fabs(snv)>=std::fabs(stdv)*50.0) {
+      phi_snv=0.0;
+      Phi_snv=(snv>0.0)?1.0:0.0;
+    }
+    else{
+      snv/=stdv; // no snv is the standard normal variate
+      Phi_snv = Pecos::Phi(snv); 
+      phi_snv = Pecos::phi(snv);
+    }
+    Real ei = (approx_fn_star - mean)*Phi_snv + stdv*phi_snv;
     recast_response.function_value(-ei, 0);
 #ifdef DEBUG
     Cout << "(Evaluation,ApproxFnStar,Phi,phi,vars): (" << mean << "," 
@@ -393,9 +402,18 @@ EIF_objective_max(const Variables& sub_model_vars, const Variables& recast_vars,
          stdv = sqrt(variances[nondGIInstance->respFnCntr]);
     const Real& approx_fn_star = nondGIInstance->approxFnStar;
     // Calculate the expected improvement
-    Real  snv = (-approx_fn_star-mean)/stdv, // standard normal variate   
-      Phi_snv = Pecos::Phi(snv), phi_snv = Pecos::phi(snv),
-      ei      = (-approx_fn_star-mean)*Phi_snv + stdv*phi_snv;
+    Real Phi_snv, phi_snv;
+    Real  snv = (-approx_fn_star-mean);
+    if(std::fabs(snv)>=std::fabs(stdv)*50.0) {
+      phi_snv=0.0;
+      Phi_snv=(snv>0.0)?1.0:0.0;
+    }
+    else{
+      snv/=stdv; // now snv is the standard normal variate   
+      Phi_snv = Pecos::Phi(snv);
+      phi_snv = Pecos::phi(snv);
+    }
+    Real ei = (-approx_fn_star-mean)*Phi_snv + stdv*phi_snv;
     // minimize -EIF -> maximize EIF
     recast_response.function_value(-ei, 0);
 #ifdef DEBUG
