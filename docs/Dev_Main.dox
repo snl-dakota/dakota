@@ -50,18 +50,19 @@ analyses, the DAKOTA toolkit provides a flexible problem-solving
 environment as well as a platform for rapid prototyping of new
 solution approaches.
 
-The Developers Manual focuses on documentation of DAKOTA class
-structures; it derives directly from annotation of the source code.
-For information on input command syntax, refer to the <a
-href="../html-ref/index.html">Reference Manual</a>, and for a tour of
-DAKOTA features and capabilities, refer to the Users Manual.
+The Developers Manual focuses on documentation of DAKOTA design
+principles and class structures; it derives principally from annotated
+source code.  For information on input command syntax, refer to the <a
+href="../html-ref/index.html">Reference Manual</a>, and for more
+details on DAKOTA features and capabilities, refer to the Users
+Manual.
 
 
 \section DevOverview Overview of DAKOTA
 
 
-In DAKOTA, the \e strategy creates and manages \e iterators and \e
-models.  In the simplest case, the strategy creates a single iterator
+In DAKOTA, the \e strategy creates and manages \e iterators and 
+\e models.  In the simplest case, the strategy creates a single iterator
 and a single model and executes the iterator on the model to perform a
 single study.  In a more advanced case, a hybrid optimization strategy
 might manage a global optimizer operating on a low-fidelity model in
@@ -129,11 +130,13 @@ Class hierarchy: \ref Dakota::Iterator "Iterator".  Iterator
 implementations may choose to split operations up into run time phases
 as described in \ref IteratorFlow.
 
-The iterator hierarchy contains a variety of iterative algorithms for 
-optimization, uncertainty quantification, nonlinear least squares, 
-design of experiments, and parameter studies.  The hierarchy is divided
-into \ref Dakota::Minimizer "Minimizer" and \ref Dakota::Analyzer "Analyzer"
-branches.  The \ref Dakota::Minimizer "Minimizer" classes include:
+The iterator hierarchy contains a variety of iterative algorithms for
+optimization, uncertainty quantification, nonlinear least squares,
+design of experiments, and parameter studies.  The hierarchy is
+divided into \ref Dakota::Minimizer "Minimizer" and 
+\ref Dakota::Analyzer "Analyzer" branches.  The 
+\ref Dakota::Minimizer "Minimizer" classes address optimization and 
+deterministic calibration and are grouped into:
 
 <ul>
 <li> Optimization: \ref Dakota::Optimizer "Optimizer" provides a base
@@ -157,7 +160,7 @@ least-squares solver based on NL2SOL,
 solver, and \ref Dakota::NLSSOLLeastSq "NLSSOLLeastSq", an SQP-based 
 least-squares solver.
 
-<li> Surrogate-based minimization (optimization and nonlinear least
+<li> Surrogate-based minimization (both optimization and nonlinear least
 squares): \ref Dakota::SurrBasedMinimizer "SurrBasedMinimizer"
 provides a base class for \ref Dakota::SurrBasedLocalMinimizer
 "SurrBasedLocalMinimizer", \ref Dakota::SurrBasedGlobalMinimizer
@@ -173,7 +176,7 @@ models coupled with the DIRECT global optimizer to maximize an
 expected improvement function.
 </ul>
 
-and the \ref Dakota::Analyzer "Analyzer" classes include:
+The \ref Dakota::Analyzer "Analyzer" classes are grouped into:
 <ul>
 
 <li> Uncertainty quantification: \ref Dakota::NonD "NonD" provides a
@@ -183,8 +186,8 @@ base class for non-deterministic methods \ref Dakota::NonDSampling
 (stochastic expansion methods), \ref Dakota::NonDIntegration
 "NonDIntegration" (numerical integration methods), and \ref
 Dakota::NonDInterval "NonDInterval" (interval-based epistemic
-methods).  Bayesian calibration methods are prototyped in \ref
-Dakota::NonDBayesCalibration "NonDBayesCalibration".  At this point, we have an initial implementation of the LANL GPMSA code in \ref Dakota::NonDGPMSABayesCalibration "NonDGPMSABayesianCalibration".
+methods).  Bayesian calibration methods are prototyped in 
+\ref Dakota::NonDBayesCalibration "NonDBayesCalibration".
 
 <ul> <li> \ref Dakota::NonDSampling "NonDSampling" is further
 specialized with the \ref Dakota::NonDLHSSampling "NonDLHSSampling"
@@ -539,12 +542,12 @@ specific development activities:
 
 \section DevAddtnl Additional Resources
 
-
 Additional development resources include:
 
-\li \ref SoftwareTools - subversion and autotools guidance
-\li A Wiki with Cmake guidance is available from 
-    https://software.sandia.gov/trac/dakota/wiki/CMakeFAQ
+\li The DAKOTA Developer Portal linked from
+    http://dakota.sandia.gov/developer_tools.html includes information
+    on getting started as a developer and links to project management
+    resources.
 \li Project web pages are maintained at http://dakota.sandia.gov/ including
     links to frequently asked questions, documentation, publications, mailing 
     lists, and other resources.
