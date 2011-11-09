@@ -69,6 +69,7 @@ protected:
   //The likelihood routine is in the format that QUESO requires, 
   //with a particular argument list that QUESO expects. 
   //We are not using all of these arguments but may in the future.
+  /// Likelihood function for call-back from QUESO to DAKOTA for evaluation
   static double dakotaLikelihoodRoutine(
   const uqGslVectorClass& paramValues,
   const uqGslVectorClass* paramDirection,
@@ -99,6 +100,7 @@ private:
   /// STOCHASTIC_COLLOCATION
   short emulatorType;
   
+  /// Pointer to current class instance for use in static callback functions
   static NonDQUESOBayesCalibration* NonDQUESOInstance;
   
 };

@@ -83,14 +83,18 @@ private:
   //- Heading: Data
   //
 
-  // number of configuration variables of each type
+  /// number of continuous configuration variables
   size_t continuousConfigVars;
+  /// number of discrete integer configuration variables
   size_t discreteIntConfigVars;
+  /// number of discrete real configuration variables
   size_t discreteRealConfigVars;
   
-  // start indices for each type of config variable
+  /// index of configuration variables in all continuous array
   size_t continuousConfigStart;
+  /// index of configuration variables in all discrete integer array
   size_t discreteIntConfigStart;
+  /// index of configuration variables in all discrete real array
   size_t discreteRealConfigStart;
 
 };

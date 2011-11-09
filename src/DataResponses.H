@@ -77,10 +77,15 @@ public:
   RealVector primaryRespFnWeights;
 
   // experimental data (for least squares and Bayesian algorithms)
+
+  /// list of num_experiments x num_config_vars configuration variable values
   RealVector expConfigVars;
+  /// list of num_calibration_terms observation data
   RealVector expObservations;
+  /// list of 1 or num_calibration_terms observation standard deviations
   RealVector expStdDeviations;
-    /// name of experimental data file containing response data (with
+
+  /// name of experimental data file containing response data (with
   /// optional state variable and sigma data) to read
   String expDataFileName;
   /// whether the experimental data is in annotated format
