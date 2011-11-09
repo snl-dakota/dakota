@@ -65,7 +65,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   }
   short u_space_type = probDescDB.get_short("method.nond.expansion_type");
   bool  use_derivs = (data_order > 1), piecewise_basis
-    = (u_space_type == PIECEWISE_U); // H_REFINEMENT override in NonDExpansion
+    = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
