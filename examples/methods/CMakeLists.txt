@@ -77,4 +77,5 @@ endforeach()
 add_custom_target(examples-methods-inputs ALL DEPENDS ${all_generated_inputs})
 
 install(FILES ${all_generated_inputs} ${test_path}/least_squares_test.dat 
+  ${test_path}/dakota_separable_ego_5D.in
   DESTINATION examples/methods)

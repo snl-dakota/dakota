@@ -23,6 +23,7 @@ METHODS_INPUTS = dakota_uq_sampling.in \
                  dakota_container.in \
                  dakota_addtnl_rosen_opt.in \
                  dakota_addtnl_rosen_ls.in \
+                 dakota_separable_ego_5D.in \
                  dakota_addtnl_cylhead.in \
                  dakota_addtnl_cantilever.in \
                  dakota_mogatest2.in \
@@ -140,6 +141,9 @@ dakota_addtnl_rosen_opt.in: $(METHODS_TEST_PATH)/dakota_addtnl_users.in
 dakota_addtnl_rosen_ls.in: $(METHODS_TEST_PATH)/dakota_addtnl_users.in
 	-$(DAKOTA_TEST_PERL) --extract $< 1 --file-extract=$@
 
+dakota_separable_ego_5D.in: $(METHODS_TEST_PATH)/dakota_separable_ego_5D.in
+	-cp -f $< $@
+
 dakota_addtnl_cylhead.in: $(METHODS_TEST_PATH)/dakota_addtnl_users.in
 	-$(DAKOTA_TEST_PERL) --extract $< 4 --file-extract=$@
 
@@ -160,8 +164,8 @@ dakota_surr_uq.in: $(METHODS_TEST_PATH)/dakota_uq_users.in
 	-$(DAKOTA_TEST_PERL) --extract $< 4  --file-extract=$@
 
 # data file
-least_squares_test.dat: $(top_srcdir)/test/least_squares_test.dat
-	-cp -f $(top_srcdir)/test/least_squares_test.dat least_squares_test.dat
+least_squares_test.dat: $(METHODS_TEST_PATH)/least_squares_test.dat
+	-cp -f $< $@
 
 clean-local:
 	-rm -f $(METHODS_INPUTS) least_squares_test.dat

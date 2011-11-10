@@ -90,7 +90,8 @@ set(users_test_inputs ${users_test_inputs}
   "${test_path}/dakota_mogatest.in 1 dakota_mogatest2.in"
   "${test_path}/dakota_mogatest.in 2 dakota_mogatest3.in"
 )
-
+configure_file("${test_path}/dakota_separable_ego_5D.in"
+               dakota_separable_ego_5D.in COPYONLY)
 
 # Now iterate over the list, parsing and extracting with dakota_test.perl.
 # Also create all_generated_inputs to use in dependency management

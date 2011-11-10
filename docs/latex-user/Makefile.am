@@ -40,6 +40,7 @@ USERS_TEST_INPUTS = dakota_rosenbrock_2d.in \
 		    dakota_rosenbrock.in \
 		    dakota_addtnl_rosen_opt.in \
 		    dakota_addtnl_rosen_ls.in \
+                    dakota_separable_ego_5D.in \
 		    dakota_addtnl_cylhead.in \
 		    dakota_addtnl_cantilever.in \
 		    dakota_mogatest2.in \
@@ -54,7 +55,7 @@ USERS_GENERIC_INPUTS = dakota_rosenbrock.in \
 DAKOTA_TEST_PERL = $(USERS_TEST_PATH)/dakota_test.perl
 
 # LaTeX sources and dependencies for the User's Manual.
-USERS_SOURCES = Users_Preface.tex \
+USERS_TEX = Users_Preface.tex \
 		Users_Intro.tex \
 		Users_Tutorial.tex \
 		Users_Capabilities.tex \
@@ -147,6 +148,8 @@ USERS_EPS = images/dakota_flowchart.eps \
 	    images/mss_rel_speedup_3lev_determ.eps \
 	    images/mss_rel_eff_3lev_determ.eps \
 	    images/recursive_partitioning.eps \
+            images/DAK5pt2_2D__herbie__smooth_herbie.eps \
+	    images/DAK5pt2_2D_shubert.eps \
 	    images/end_cap.eps \
 	    images/graphical_container_opt.eps \
 	    images/log_ratio_cdf_ria.eps \
@@ -163,7 +166,7 @@ USERS_PNG = $(USERS_EPS:.eps=.png)
 
 USERS_INPUTS = $(USERS_TEST_INPUTS) $(USERS_GENERIC_INPUTS)
 
-pdf-local: Users_Main.tex $(USERS_SOURCES) $(USERS_PNG) $(USERS_INPUTS)
+pdf-local: Users_Main.tex $(USERS_TEX) $(USERS_PNG) $(USERS_INPUTS)
 	-rm -f $(basename $<).log
 	-$(pdflatex) $<
 	-$(bibtex) $(basename $<) 
@@ -183,7 +186,7 @@ Users_Main.ps: Users_Main.dvi
 
 Users_Main.dvi: dvi-local
 
-dvi-local: Users_Main.tex $(USERS_SOURCES) $(USERS_EPS) $(USERS_INPUTS)
+dvi-local: Users_Main.tex $(USERS_TEX) $(USERS_EPS) $(USERS_INPUTS)
 	-rm -f $(basename $<).log
 	-$(latex) $<
 	-$(bibtex) $(basename $<) 
@@ -319,6 +322,9 @@ dakota_addtnl_rosen_opt.in: $(USERS_TEST_PATH)/dakota_addtnl_users.in
 dakota_addtnl_rosen_ls.in: $(USERS_TEST_PATH)/dakota_addtnl_users.in
 	-$(DAKOTA_TEST_PERL) --extract $< 1 --file-extract=$@
 
+dakota_separable_ego_5D.in: $(USERS_TEST_PATH)/dakota_separable_ego_5D.in
+	-cp -f $< $@
+
 dakota_addtnl_cylhead.in: $(USERS_TEST_PATH)/dakota_addtnl_users.in
 	-$(DAKOTA_TEST_PERL) --extract $< 4 --file-extract=$@
 
@@ -340,4 +346,4 @@ clean-local:
 MAINTAINERCLEANFILES = Makefile.in
 
 ## These files need to be distributed.
-EXTRA_DIST = $(USERS_SOURCES) $(USERS_EPS) $(USERS_PNG) bigbox.sty
+EXTRA_DIST = $(USERS_TEX) $(USERS_EPS) $(USERS_PNG) bigbox.sty
