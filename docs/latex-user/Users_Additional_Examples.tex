@@ -374,6 +374,73 @@ DAKOTA execution time in seconds:
 \end{verbatim}
 \end{small}
 
+\section{Herbie, Smooth Herbie, and Shubert Example}
+\begin{figure}
+\centering
+\centerline{\includegraphics[scale=1.0]{images/DAK5pt2_2D__herbie__smooth_herbie}}
+\caption{Plots of the \texttt{herbie} (left) and \texttt{smooth\_herbie} (right) test functions in 2 dimensions.  They can accept an arbitrary number of inputs.}
+\label{fig:2D_herbie__smooth_herbie}
+\end{figure}
+Lee et al \cite{herbiefunc} %need to update citation from ToAppear to a date when it does appear
+developed the Herbie function as a 2D test problem for surrogate 
+based optimization. However, since it is separable and each dimension is 
+identical it is easily generalized to an arbitrary number of dimensions.  
+The generalized (to $M$ dimensions) Herbie function is
+\begin{displaymath}
+{\rm herb}(\underline{x})=-\prod_{k=1}^M w_{herb}\left(x_k\right)
+\end{displaymath}
+where 
+\begin{displaymath}
+w_{herb}\left(x_k\right)=\exp(-(x_k-1)^2)+\exp(-0.8(x_k+1)^2)-0.05\sin\left(8\left(x_k+0.1\right)\right).
+\end{displaymath}
+The Herbie function's high frequency sine component creates a large 
+number of local minima and maxima, which makes it a significantly 
+more challenging problem than it would otherwise be.  In some 
+situations, where one would like to test a method's ability to
+exploit smoothness in the true response, it is desirable to have a
+less oscillatory test problem.  For this reason, the ``smooth Herbie'' 
+test function omits the high frequency sign term but is otherwise 
+identical to the Herbie function.  The formula for smooth Herbie is
+\begin{displaymath}
+{\rm herb_{sm}}(\underline{x})=\prod_{k=1}^M w_{sm}\left(x_k\right)
+\end{displaymath}
+where 
+\begin{displaymath}
+w_{sm}\left(x_k\right)=\exp(-(x_k-1)^2)+\exp(-0.8(x_k+1)^2).
+\end{displaymath}
+Two dimensional versions of the \texttt{herbie} and \texttt{smooth\_herbie} 
+test functions are plotted in Figure \ref{fig:2D_herbie__smooth_herbie}.
+\begin{figure}
+\centering
+\centerline{\includegraphics[scale=1.0]{images/DAK5pt2_2D_shubert}}
+\caption{Plot of the \texttt{shubert} test function in 2 dimensions.  It can accept an arbitrary number of inputs.}
+\label{fig:2D_shubert}
+\end{figure}
+Shubert is another separable (and therefore arbitrary dimensional) 
+test function.  Its analytical formula is
+\begin{displaymath}
+{\rm shu}(\underline{x})=\prod_{k=1}^M w_{shu}\left(x_k\right)
+\end{displaymath}
+where 
+\begin{displaymath}
+w_{shu}\left(x_k\right)=\sum_{i=1}^5 i\cos((i+1)x_k+i)
+\end{displaymath}
+The 2D version of the \texttt{shubert} function is shown in 
+Figure \ref{fig:2D_shubert}. The DAKOTA input file \\
+\texttt{dakota\_separable\_ego\_5D.in} shows how
+to use efficient global optimization (ego) to minimize the 5D version
+of any of these 3 separable functions.  Note that in the variables 
+section the \texttt{5*} preceding the values -2.0 and 2.0 for the
+\texttt{lower\_bounds} and \texttt{upper\_bounds} respectively
+tells DAKOTA to repeat them 5 times.
+\begin{center}
+  \begin{small}
+    \begin{bigbox}
+      \verbatimtabinput[8]{dakota_separable_ego_5D.in}
+    \end{bigbox}
+  \end{small}
+\end{center}
+
 \section{Cylinder Head Example}\label{additional:cylinder}
 
 The cylinder head example problem is stated as:
