@@ -326,12 +326,13 @@ SurfpackApproximation(const String& approx_type,
       args["upper_bounds"] = fromVec<Real>(aub_ra);
     }
     //size_t krig_max_trials=(2*num_vars+1)*(num_vars+1)*10;
-    size_t krig_max_trials=20*(2*num_vars+1)*
-      (1+num_vars+((num_vars+1)*num_vars)/2); //#der0 + #der1 + #der2
-    if(krig_max_trials>10000)
-      krig_max_trials=10000;
+    //size_t krig_max_trials=20*(2*num_vars+1)*
+      //(1+num_vars+((num_vars+1)*num_vars)/2); //#der0 + #der1 + #der2
+    //if(krig_max_trials>10000)
+      //krig_max_trials=10000;
     //size_t krig_max_trials=1000;
-    args["max_trials"] = toString<size_t>(krig_max_trials);
+    //args["max_trials"] = toString<size_t>(krig_max_trials);
+    args["max_trials"] = toString<size_t>(5000);
     
 
 
