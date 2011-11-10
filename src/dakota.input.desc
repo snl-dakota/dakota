@@ -1882,8 +1882,12 @@ TAG "responses/objective_functions/nonlinear_equality_constraints/nonlinear_equa
 TAG "responses/calibration_terms"
 	DESC "{Number of calibration terms} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
-TAG "responses/calibration_terms/least_squares_term_scale_types"
-TAG "responses/calibration_terms/least_squares_term_scales"
+TAG "responses/calibration_terms/calibration_term_scale_types"
+	DESC "{Calibration scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
+TAG "responses/calibration_terms/calibration_term_scales"
+	DESC "{Calibration scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+
 TAG "responses/calibration_terms/calibration_weights"
 	DESC "{Calibration term weights} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 

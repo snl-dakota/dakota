@@ -1160,8 +1160,8 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 	  )
 	|
 	( calibration_terms ALIAS num_least_squares_terms INTEGER >= 0 {N_rem(nnintz,numLeastSqTerms)}
-	  [ least_squares_term_scale_types STRINGLIST LEN1 calibration_terms {N_rem(strL,primaryRespFnScaleTypes)} ]
-	  [ least_squares_term_scales REALLIST LEN1 calibration_terms {N_rem(RealDL,primaryRespFnScales)} ]
+	  [ calibration_term_scale_types ALIAS least_squares_term_scale_types STRINGLIST LEN1 calibration_terms {N_rem(strL,primaryRespFnScaleTypes)} ]
+	  [ calibration_term_scales ALIAS least_squares_term_scales REALLIST LEN1 calibration_terms {N_rem(RealDL,primaryRespFnScales)} ]
 	  [ calibration_weights ALIAS least_squares_weights REALLIST LEN calibration_terms {N_rem(RealDL,primaryRespFnWeights)} ]
 	  [ 
 #           ( calibration_data_arrays {0}

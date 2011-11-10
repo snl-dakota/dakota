@@ -1470,8 +1470,8 @@ KEYWORD12 responses
 	  )
 	|
 	( calibration_terms ALIAS num_least_squares_terms INTEGER >= 0
-	  [ least_squares_term_scale_types STRINGLIST ]
-	  [ least_squares_term_scales REALLIST ]
+	  [ calibration_term_scale_types ALIAS least_squares_term_scale_types STRINGLIST ]
+	  [ calibration_term_scales ALIAS least_squares_term_scales REALLIST ]
 	  [ calibration_weights ALIAS least_squares_weights REALLIST ]
 	  [ calibration_data_file STRING
 	    [ num_experiments INTEGER >= 0 ]

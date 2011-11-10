@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 911 distinct keywords (plus 118 aliases) **/
+/** 911 distinct keywords (plus 120 aliases) **/
 
 static GuiKeyWord
 	kw_1[3] = {
@@ -1281,11 +1281,13 @@ static GuiKeyWord
 		{"nonlinear_inequality_scales",0x80e,0,4,0,1743,0,0.,0.,0.,0,"{Nonlinear inequality constraint scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"},
 		{"nonlinear_inequality_upper_bounds",14,0,2,0,1739,0,0.,0.,0.,0,"{Nonlinear inequality constraint upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"}
 		},
-	kw_185[9] = {
+	kw_185[11] = {
 		{"calibration_data_file",11,5,4,0,1723,kw_182,0.,0.,0.,0,"{Calibration data file name} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+		{"calibration_term_scale_types",0x80f,0,1,0,1717,0,0.,0.,0.,0,"{Calibration scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"calibration_terms"},
+		{"calibration_term_scales",0x80e,0,2,0,1719,0,0.,0.,0.,0,"{Calibration scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"calibration_terms"},
 		{"calibration_weights",14,0,3,0,1721,0,0.,0.,0.,0,"{Calibration term weights} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"calibration_terms"},
-		{"least_squares_term_scale_types",0x80f,0,1,0,1717,0,0.,0.,0.,0,0,0,"calibration_terms"},
-		{"least_squares_term_scales",0x80e,0,2,0,1719,0,0.,0.,0.,0,0,0,"calibration_terms"},
+		{"least_squares_term_scale_types",0x807,0,1,0,1716,0,0.,0.,0.,0,0,0,"calibration_terms"},
+		{"least_squares_term_scales",0x806,0,2,0,1718,0,0.,0.,0.,0,0,0,"calibration_terms"},
 		{"least_squares_weights",6,0,3,0,1720,0,0.,0.,0.,0,0,0,"calibration_terms"},
 		{"nonlinear_equality_constraints",0x29,3,6,0,1745,kw_183,0.,0.,0.,0,"{Number of nonlinear equality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
 		{"nonlinear_inequality_constraints",0x29,4,5,0,1735,kw_184,0.,0.,0.,0,"{Number of nonlinear inequality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
@@ -1371,14 +1373,14 @@ static GuiKeyWord
 	kw_199[18] = {
 		{"analytic_gradients",8,0,4,2,1757,0,0.,0.,0.,0,"[CHOOSE gradient type]"},
 		{"analytic_hessians",8,0,5,3,1801,0,0.,0.,0.,0,"[CHOOSE Hessian type]"},
-		{"calibration_terms",0x29,9,3,1,1715,kw_185,0.,0.,0.,0,"{Number of calibration terms} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+		{"calibration_terms",0x29,11,3,1,1715,kw_185,0.,0.,0.,0,"{Number of calibration terms} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
 		{"descriptors",15,0,2,0,1687,0,0.,0.,0.,0,"{Response labels} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespLabels"},
 		{"id_responses",11,0,1,0,1685,0,0.,0.,0.,0,"{Responses set identifier} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespSetId"},
 		{"mixed_gradients",8,10,4,2,1759,kw_187,0.,0.,0.,0,"{Mixed gradients} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespGradMixed"},
 		{"mixed_hessians",8,5,5,3,1803,kw_191,0.,0.,0.,0,"{Mixed Hessians} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessMixed"},
 		{"no_gradients",8,0,4,2,1755,0,0.,0.,0.,0,"@"},
 		{"no_hessians",8,0,5,3,1783,0,0.,0.,0.,0,"@"},
-		{"num_least_squares_terms",0x21,9,3,1,1714,kw_185},
+		{"num_least_squares_terms",0x21,11,3,1,1714,kw_185},
 		{"num_objective_functions",0x21,7,3,1,1688,kw_194},
 		{"num_response_functions",0x21,0,3,1,1752},
 		{"numerical_gradients",8,8,4,2,1765,kw_195,0.,0.,0.,0,"{Numerical gradients} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespGradNum"},

@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 911 distinct keywords (plus 118 aliases) **/
+/** 911 distinct keywords (plus 120 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1189,11 +1189,13 @@ static KeyWord
 		{"nonlinear_inequality_scales",0x80e,0,4,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqScales)},
 		{"nonlinear_inequality_upper_bounds",14,0,2,0,0,0.,0.,0,N_rem(RealDL,nonlinearIneqUpperBnds)}
 		},
-	kw_199[9] = {
+	kw_199[11] = {
 		{"calibration_data_file",11,5,4,0,kw_196,0.,0.,0,N_rem(str,expDataFileName)},
+		{"calibration_term_scale_types",0x80f,0,1,0,0,0.,0.,0,N_rem(strL,primaryRespFnScaleTypes)},
+		{"calibration_term_scales",0x80e,0,2,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnScales)},
 		{"calibration_weights",14,0,3,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnWeights)},
-		{"least_squares_term_scale_types",0x80f,0,1,0,0,0.,0.,0,N_rem(strL,primaryRespFnScaleTypes)},
-		{"least_squares_term_scales",0x80e,0,2,0,0,0.,0.,0,N_rem(RealDL,primaryRespFnScales)},
+		{"least_squares_term_scale_types",0x807,0,1,0,0,0.,0.,-3,N_rem(strL,primaryRespFnScaleTypes)},
+		{"least_squares_term_scales",0x806,0,2,0,0,0.,0.,-3,N_rem(RealDL,primaryRespFnScales)},
 		{"least_squares_weights",6,0,3,0,0,0.,0.,-3,N_rem(RealDL,primaryRespFnWeights)},
 		{"nonlinear_equality_constraints",0x29,3,6,0,kw_197,0.,0.,0,N_rem(nnintz,numNonlinearEqConstraints)},
 		{"nonlinear_inequality_constraints",0x29,4,5,0,kw_198,0.,0.,0,N_rem(nnintz,numNonlinearIneqConstraints)},
@@ -1272,14 +1274,14 @@ static KeyWord
 	kw_213[18] = {
 		{"analytic_gradients",8,0,4,2,0,0.,0.,0,N_rem(lit,gradientType_analytic)},
 		{"analytic_hessians",8,0,5,3,0,0.,0.,0,N_rem(lit,hessianType_analytic)},
-		{"calibration_terms",0x29,9,3,1,kw_199,0.,0.,0,N_rem(nnintz,numLeastSqTerms)},
+		{"calibration_terms",0x29,11,3,1,kw_199,0.,0.,0,N_rem(nnintz,numLeastSqTerms)},
 		{"descriptors",15,0,2,0,0,0.,0.,0,N_rem(strL,responseLabels)},
 		{"id_responses",11,0,1,0,0,0.,0.,0,N_rem(str,idResponses)},
 		{"mixed_gradients",8,2,4,2,kw_202,0.,0.,0,N_rem(lit,gradientType_mixed)},
 		{"mixed_hessians",8,5,5,3,kw_206,0.,0.,0,N_rem(lit,hessianType_mixed)},
 		{"no_gradients",8,0,4,2,0,0.,0.,0,N_rem(lit,gradientType_none)},
 		{"no_hessians",8,0,5,3,0,0.,0.,0,N_rem(lit,hessianType_none)},
-		{"num_least_squares_terms",0x21,9,3,1,kw_199,0.,0.,-7,N_rem(nnintz,numLeastSqTerms)},
+		{"num_least_squares_terms",0x21,11,3,1,kw_199,0.,0.,-7,N_rem(nnintz,numLeastSqTerms)},
 		{"num_objective_functions",0x21,7,3,1,kw_209,0.,0.,4,N_rem(nnintz,numObjectiveFunctions)},
 		{"num_response_functions",0x21,0,3,1,0,0.,0.,6,N_rem(nnintz,numResponseFunctions)},
 		{"numerical_gradients",8,8,4,2,kw_201,0.,0.,0,N_rem(lit,gradientType_numerical)},
