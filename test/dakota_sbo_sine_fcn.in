@@ -70,7 +70,7 @@ model,
 #	  use_derivatives
 #	  neural_network
 	  polynomial quadratic	#(linear/quad/cubic)
-#	  kriging
+#	  gaussian_process surfpack
 #	    correlation_lengths =  0.707106781186547 0.707106781186547
 #	  mars
 # 	surrogate local taylor_series

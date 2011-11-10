@@ -52,7 +52,7 @@ model,
 	surrogate global                  	#0,#2,#3,#5,#6,#8,#9,#11,#14,#15
 	  dace_method_pointer = 'SAMPLING'	#0,#2,#3,#5,#6,#8,#9,#11,#14,#15
 	  polynomial quadratic			#0,#2,#3,#5,#6,#8,#9,#11
-#	  kriging				#14,#15
+#	  gaussian_process surfpack		#14,#15
 #	  use_derivatives			#15
 #	  correction additive first_order	#0,#3,#6,#9
 # 	surrogate local taylor_series		#1,#4,#7,#10

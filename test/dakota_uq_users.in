@@ -26,7 +26,7 @@ method,
 #          reuse_samples all			 #4
 ###       polynomial quadratic          	 #4
 ###       neural_network                	 #4
-###       kriging                      		 #4
+###       gaussian_process surfpack   		 #4
 #          mars                         	 #4 
 
 # method,                                        #4

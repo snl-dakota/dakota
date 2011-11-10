@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 911 distinct keywords (plus 111 aliases) **/
+/** 911 distinct keywords (plus 118 aliases) **/
 
 static GuiKeyWord
 	kw_1[3] = {
@@ -119,13 +119,14 @@ static GuiKeyWord
 	kw_17[1] = {
 		{"sparse_grid_level",13,0,1,0,855}
 		},
-	kw_18[3] = {
-		{"gp",8,1,1,1,845,kw_15},
+	kw_18[4] = {
+		{"gaussian_process",8,1,1,1,845,kw_15},
+		{"gp",0,1,1,1,844,kw_15},
 		{"pce",8,1,1,1,849,kw_16},
 		{"sc",8,1,1,1,853,kw_17}
 		},
 	kw_19[1] = {
-		{"emulator",8,3,1,0,843,kw_18}
+		{"emulator",8,4,1,0,843,kw_18}
 		},
 	kw_20[2] = {
 		{"delayed",8,0,1,1,865},
@@ -148,9 +149,9 @@ static GuiKeyWord
 		{"use_derivatives",8,0,4,0,873}
 		},
 	kw_23[3] = {
-		{"deltas_per_variable",5,0,2,2,1130},
-		{"step_vector",14,0,1,1,1129,0,0.,0.,0.,0,"{Step vector} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSCPS"},
-		{"steps_per_variable",13,0,2,2,1131,0,0.,0.,0.,0,"{Number of steps per variable} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSCPS"}
+		{"deltas_per_variable",5,0,2,2,1128},
+		{"step_vector",14,0,1,1,1127,0,0.,0.,0.,0,"{Step vector} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSCPS"},
+		{"steps_per_variable",13,0,2,2,1129,0,0.,0.,0.,0,"{Number of steps per variable} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSCPS"}
 		},
 	kw_24[7] = {
 		{"initial_delta",10,0,5,1,459,0,0.,0.,0.,0,"{Initial offset value} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
@@ -336,11 +337,12 @@ static GuiKeyWord
 		{"optimization_type",8,2,10,0,173,kw_42,0.,0.,0.,0,"{Optimization type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodDOTDC"}
 		},
 	kw_45[2] = {
-		{"gaussian_process",8,0,1,1,585},
-		{"kriging",8,0,1,1,583}
+		{"dakota",8,0,1,1,585},
+		{"surfpack",8,0,1,1,583}
 		},
-	kw_46[3] = {
-		{"emulator",8,2,1,0,581,kw_45},
+	kw_46[4] = {
+		{"gaussian_process",8,2,1,0,581,kw_45},
+		{"kriging",0,2,1,0,580,kw_45},
 		{"seed",9,0,3,0,941,0,0.,0.,0.,0,"{Random seed} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodEG"},
 		{"use_derivatives",8,0,2,0,587}
 		},
@@ -363,19 +365,19 @@ static GuiKeyWord
 		{"variance_based_decomp",8,1,3,0,919,kw_48,0.,0.,0.,0,"{Variance based decomposition} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"}
 		},
 	kw_50[1] = {
-		{"drop_tolerance",10,0,1,0,1103}
+		{"drop_tolerance",10,0,1,0,1101}
 		},
 	kw_51[10] = {
-		{"fixed_sequence",8,0,6,0,1107,0,0.,0.,0.,0,"{Fixed sequence flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
-		{"halton",8,0,1,1,1093,0,0.,0.,0.,0,"[CHOOSE sequence type]"},
-		{"hammersley",8,0,1,1,1095},
-		{"latinize",8,0,2,0,1097,0,0.,0.,0.,0,"{Latinization of samples} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
-		{"prime_base",13,0,9,0,1113,0,0.,0.,0.,0,"{Prime bases for sequences} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
-		{"quality_metrics",8,0,3,0,1099,0,0.,0.,0.,0,"{Quality metrics} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
-		{"samples",9,0,5,0,1105,0,0.,0.,0.,0,"{Number of samples} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
-		{"sequence_leap",13,0,8,0,1111,0,0.,0.,0.,0,"{Sequence leaping indices} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
-		{"sequence_start",13,0,7,0,1109,0,0.,0.,0.,0,"{Sequence starting indices} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
-		{"variance_based_decomp",8,1,4,0,1101,kw_50,0.,0.,0.,0,"{Variance based decomposition} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"}
+		{"fixed_sequence",8,0,6,0,1105,0,0.,0.,0.,0,"{Fixed sequence flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
+		{"halton",8,0,1,1,1091,0,0.,0.,0.,0,"[CHOOSE sequence type]"},
+		{"hammersley",8,0,1,1,1093},
+		{"latinize",8,0,2,0,1095,0,0.,0.,0.,0,"{Latinization of samples} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
+		{"prime_base",13,0,9,0,1111,0,0.,0.,0.,0,"{Prime bases for sequences} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
+		{"quality_metrics",8,0,3,0,1097,0,0.,0.,0.,0,"{Quality metrics} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
+		{"samples",9,0,5,0,1103,0,0.,0.,0.,0,"{Number of samples} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
+		{"sequence_leap",13,0,8,0,1109,0,0.,0.,0.,0,"{Sequence leaping indices} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
+		{"sequence_start",13,0,7,0,1107,0,0.,0.,0.,0,"{Sequence starting indices} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"},
+		{"variance_based_decomp",8,1,4,0,1099,kw_50,0.,0.,0.,0,"{Variance based decomposition} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodFSUDACE"}
 		},
 	kw_52[2] = {
 		{"complementary",8,0,1,1,803},
@@ -392,11 +394,12 @@ static GuiKeyWord
 		{"rnum2",8,0,1,1,817}
 		},
 	kw_56[2] = {
-		{"gaussian_process",8,0,1,1,783},
-		{"kriging",8,0,1,1,781}
+		{"dakota",8,0,1,1,783},
+		{"surfpack",8,0,1,1,781}
 		},
-	kw_57[2] = {
-		{"emulator",8,2,1,0,779,kw_56},
+	kw_57[3] = {
+		{"gaussian_process",8,2,1,0,779,kw_56},
+		{"kriging",0,2,1,0,778,kw_56},
 		{"use_derivatives",8,0,2,0,785}
 		},
 	kw_58[2] = {
@@ -409,7 +412,7 @@ static GuiKeyWord
 		},
 	kw_60[9] = {
 		{"distribution",8,2,5,0,799,kw_52,0.,0.,0.,0,"{Distribution type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonD"},
-		{"ego",8,2,1,0,777,kw_57},
+		{"ego",8,3,1,0,777,kw_57},
 		{"gen_reliability_levels",14,1,7,0,809,kw_53,0.,0.,0.,0,"{Generalized reliability levels} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonD"},
 		{"lhs",8,0,1,0,787},
 		{"probability_levels",14,1,6,0,805,kw_54,0.,0.,0.,0,"{Probability levels} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonD"},
@@ -419,11 +422,12 @@ static GuiKeyWord
 		{"seed",9,0,3,0,941,0,0.,0.,0.,0,"{Random seed} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodEG"}
 		},
 	kw_61[2] = {
-		{"gaussian_process",8,0,1,1,827},
-		{"kriging",8,0,1,1,825}
+		{"dakota",8,0,1,1,827},
+		{"surfpack",8,0,1,1,825}
 		},
-	kw_62[2] = {
-		{"emulator",8,2,1,0,823,kw_61},
+	kw_62[3] = {
+		{"gaussian_process",8,2,1,0,823,kw_61},
+		{"kriging",0,2,1,0,822,kw_61},
 		{"use_derivatives",8,0,2,0,829}
 		},
 	kw_63[2] = {
@@ -431,50 +435,51 @@ static GuiKeyWord
 		{"rnum2",8,0,1,1,837}
 		},
 	kw_64[5] = {
-		{"ego",8,2,1,0,821,kw_62},
+		{"ego",8,3,1,0,821,kw_62},
 		{"lhs",8,0,1,0,831},
 		{"rng",8,2,2,0,833,kw_63,0.,0.,0.,0,"{Random seed generator} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalIntervalEst"},
 		{"samples",9,0,4,0,939,0,0.,0.,0.,0,"{Number of samples} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
 		{"seed",9,0,3,0,941,0,0.,0.,0.,0,"{Random seed} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodEG"}
 		},
 	kw_65[2] = {
-		{"complementary",8,0,1,1,1081},
-		{"cumulative",8,0,1,1,1079}
+		{"complementary",8,0,1,1,1079},
+		{"cumulative",8,0,1,1,1077}
 		},
 	kw_66[1] = {
-		{"num_gen_reliability_levels",13,0,1,0,1089}
+		{"num_gen_reliability_levels",13,0,1,0,1087}
 		},
 	kw_67[1] = {
-		{"num_probability_levels",13,0,1,0,1085}
+		{"num_probability_levels",13,0,1,0,1083}
 		},
 	kw_68[2] = {
-		{"gaussian_process",8,0,1,1,1053},
-		{"kriging",8,0,1,1,1051}
+		{"gen_reliabilities",8,0,1,1,1073},
+		{"probabilities",8,0,1,1,1071}
 		},
 	kw_69[2] = {
-		{"gen_reliabilities",8,0,1,1,1075},
-		{"probabilities",8,0,1,1,1073}
+		{"compute",8,2,2,0,1069,kw_68},
+		{"num_response_levels",13,0,1,0,1067}
 		},
 	kw_70[2] = {
-		{"compute",8,2,2,0,1071,kw_69},
-		{"num_response_levels",13,0,1,0,1069}
+		{"mt19937",8,0,1,1,1061},
+		{"rnum2",8,0,1,1,1063}
 		},
 	kw_71[2] = {
-		{"mt19937",8,0,1,1,1063},
-		{"rnum2",8,0,1,1,1065}
+		{"dakota",8,0,1,0,1051},
+		{"surfpack",8,0,1,0,1049}
 		},
-	kw_72[11] = {
-		{"all_variables",8,0,3,0,1055,0,0.,0.,0.,0,"{All variables flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalRel"},
-		{"distribution",8,2,8,0,1077,kw_65},
-		{"emulator",8,2,2,0,1049,kw_68},
-		{"gen_reliability_levels",14,1,10,0,1087,kw_66},
-		{"probability_levels",14,1,9,0,1083,kw_67},
-		{"response_levels",14,2,7,0,1067,kw_70},
-		{"rng",8,2,6,0,1061,kw_71},
-		{"seed",9,0,5,0,1059,0,0.,0.,0.,0,"{Refinement seed} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"},
-		{"u_gaussian_process",8,0,1,1,1047},
-		{"use_derivatives",8,0,4,0,1057},
-		{"x_gaussian_process",8,0,1,1,1045}
+	kw_72[12] = {
+		{"all_variables",8,0,2,0,1053,0,0.,0.,0.,0,"{All variables flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalRel"},
+		{"distribution",8,2,7,0,1075,kw_65},
+		{"gen_reliability_levels",14,1,9,0,1085,kw_66},
+		{"probability_levels",14,1,8,0,1081,kw_67},
+		{"response_levels",14,2,6,0,1065,kw_69},
+		{"rng",8,2,5,0,1059,kw_70},
+		{"seed",9,0,4,0,1057,0,0.,0.,0.,0,"{Refinement seed} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"},
+		{"u_gaussian_process",8,2,1,1,1047,kw_71},
+		{"u_kriging",0,0,1,1,1046},
+		{"use_derivatives",8,0,3,0,1055},
+		{"x_gaussian_process",8,2,1,1,1045,kw_71},
+		{"x_kriging",0,2,1,1,1044,kw_71}
 		},
 	kw_73[2] = {
 		{"gen_reliabilities",8,0,1,1,773},
@@ -494,7 +499,7 @@ static GuiKeyWord
 		{"seed",9,0,2,0,941,0,0.,0.,0.,0,"{Random seed} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodEG"}
 		},
 	kw_76[1] = {
-		{"list_of_points",14,0,1,1,1125,0,0.,0.,0.,0,"{List of points to evaluate} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSLPS"}
+		{"list_of_points",14,0,1,1,1123,0,0.,0.,0.,0,"{List of points to evaluate} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSLPS"}
 		},
 	kw_77[2] = {
 		{"complementary",8,0,1,1,979},
@@ -562,11 +567,11 @@ static GuiKeyWord
 		{"num_response_levels",13,0,1,0,1029}
 		},
 	kw_90[7] = {
-		{"distribution",8,2,5,0,1077,kw_65},
-		{"gen_reliability_levels",14,1,7,0,1087,kw_66},
+		{"distribution",8,2,5,0,1075,kw_65},
+		{"gen_reliability_levels",14,1,7,0,1085,kw_66},
 		{"integration",8,3,2,0,1009,kw_85,0.,0.,0.,0,"{Integration method} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"},
 		{"mpp_search",8,9,1,0,989,kw_86,0.,0.,0.,0,"{MPP search type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"},
-		{"probability_levels",14,1,6,0,1083,kw_67},
+		{"probability_levels",14,1,6,0,1081,kw_67},
 		{"reliability_levels",14,1,4,0,1039,kw_87},
 		{"response_levels",14,2,3,0,1027,kw_89}
 		},
@@ -647,7 +652,7 @@ static GuiKeyWord
 		{"seed",9,0,21,0,391,0,0.,0.,0.,0,"{Random seed} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"}
 		},
 	kw_103[1] = {
-		{"partitions",13,0,1,1,1135,0,0.,0.,0.,0,"{Partitions per variable} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSMPS"}
+		{"partitions",13,0,1,1,1133,0,0.,0.,0.,0,"{Partitions per variable} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSMPS"}
 		},
 	kw_104[4] = {
 		{"min_boxsize_limit",10,0,2,0,947,0,0.,0.,0.,0,"{Min boxsize limit} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNCSUDC"},
@@ -915,10 +920,10 @@ static GuiKeyWord
 		{"seed",9,0,2,0,941,0,0.,0.,0.,0,"{Random seed} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodEG"}
 		},
 	kw_140[4] = {
-		{"converge_order",8,0,1,1,1141},
-		{"converge_qoi",8,0,1,1,1143},
-		{"estimate_order",8,0,1,1,1139},
-		{"refinement_rate",10,0,2,0,1145,0,0.,0.,0.,0,"{Refinement rate} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSolnRichardson"}
+		{"converge_order",8,0,1,1,1139},
+		{"converge_qoi",8,0,1,1,1141},
+		{"estimate_order",8,0,1,1,1137},
+		{"refinement_rate",10,0,2,0,1143,0,0.,0.,0.,0,"{Refinement rate} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSolnRichardson"}
 		},
 	kw_141[2] = {
 		{"num_generations",0x29,0,2,0,343},
@@ -1035,14 +1040,14 @@ static GuiKeyWord
 		{"truth_surrogate_bypass",8,0,3,0,99,0,0.,0.,0.,0,"{Flag for bypassing lower level surrogates in truth verifications} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSBL"}
 		},
 	kw_155[3] = {
-		{"final_point",14,0,1,1,1117,0,0.,0.,0.,0,"[CHOOSE final pt or increment]{Termination point of vector} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSVPS"},
-		{"num_steps",9,0,2,2,1121,0,0.,0.,0.,0,"{Number of steps along vector} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSVPS"},
-		{"step_vector",14,0,1,1,1119,0,0.,0.,0.,0,"{Step vector} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSVPS"}
+		{"final_point",14,0,1,1,1115,0,0.,0.,0.,0,"[CHOOSE final pt or increment]{Termination point of vector} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSVPS"},
+		{"num_steps",9,0,2,2,1119,0,0.,0.,0.,0,"{Number of steps along vector} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSVPS"},
+		{"step_vector",14,0,1,1,1117,0,0.,0.,0.,0,"{Step vector} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSVPS"}
 		},
 	kw_156[75] = {
 		{"asynch_pattern_search",8,18,11,1,239,kw_12,0.,0.,0.,0,0,"Optimization: Local, Derivative-free"},
 		{"bayes_calibration",8,10,11,1,839,kw_22},
-		{"centered_parameter_study",8,3,11,1,1127,kw_23,0.,0.,0.,0,"[CHOOSE PSTUDY method]{Centered parameter study} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSCPS","Parameter Studies"},
+		{"centered_parameter_study",8,3,11,1,1125,kw_23,0.,0.,0.,0,"[CHOOSE PSTUDY method]{Centered parameter study} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSCPS","Parameter Studies"},
 		{"coliny_apps",0,18,11,1,238,kw_12},
 		{"coliny_cobyla",8,7,11,1,457,kw_24,0.,0.,0.,0,0,"Optimization: Local, Derivative-free"},
 		{"coliny_direct",8,11,11,1,463,kw_26,0.,0.,0.,0,0,"Optimization: Global"},
@@ -1061,16 +1066,16 @@ static GuiKeyWord
 		{"dot_mmfd",8,10,11,1,153,kw_44,0.,0.,0.,0,0,"Optimization: Local, Derivative-based"},
 		{"dot_slp",8,10,11,1,157,kw_44,0.,0.,0.,0,0,"Optimization: Local, Derivative-based"},
 		{"dot_sqp",8,10,11,1,159,kw_44,0.,0.,0.,0,0,"Optimization: Local, Derivative-based"},
-		{"efficient_global",8,3,11,1,579,kw_46,0.,0.,0.,0,0,"Surrogate-based Methods"},
+		{"efficient_global",8,4,11,1,579,kw_46,0.,0.,0.,0,0,"Surrogate-based Methods"},
 		{"final_solutions",0x29,0,10,0,89,0,0.,0.,0.,0,"{Final solutions} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
 		{"fsu_cvt",8,8,11,1,913,kw_49,0.,0.,0.,0,0,"DACE"},
-		{"fsu_quasi_mc",8,10,11,1,1091,kw_51,0.,0.,0.,0,0,"DACE"},
+		{"fsu_quasi_mc",8,10,11,1,1089,kw_51,0.,0.,0.,0,0,"DACE"},
 		{"global_evidence",8,9,11,1,775,kw_60,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"global_interval_est",8,5,11,1,819,kw_64,0.,0.,0.,0,0,"Uncertainty Quantification"},
-		{"global_reliability",8,11,11,1,1043,kw_72,0.,0.,0.,0,0,"Uncertainty Quantification"},
+		{"global_reliability",8,12,11,1,1043,kw_72,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"id_method",11,0,1,0,61,0,0.,0.,0.,0,"{Method set identifier} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
 		{"importance_sampling",8,7,11,1,763,kw_75,0.,0.,0.,0,0,"Uncertainty Quantification"},
-		{"list_parameter_study",8,1,11,1,1123,kw_76,0.,0.,0.,0,"{List parameter study} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSLPS","Parameter Studies"},
+		{"list_parameter_study",8,1,11,1,1121,kw_76,0.,0.,0.,0,"{List parameter study} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSLPS","Parameter Studies"},
 		{"local_evidence",8,6,11,1,951,kw_82,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"local_interval_est",8,2,11,1,981,kw_83,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"local_reliability",8,7,11,1,987,kw_90,0.,0.,0.,0,"{Reliability method} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel","Uncertainty Quantification"},
@@ -1078,7 +1083,7 @@ static GuiKeyWord
 		{"max_iterations",9,0,4,0,77,0,0.,0.,0.,0,"{Maximum iterations} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
 		{"model_pointer",11,0,2,0,63,0,0.,0.,0.,0,"{Model pointer} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
 		{"moga",8,21,11,1,275,kw_102,0.,0.,0.,0,0,"Optimization: Global"},
-		{"multidim_parameter_study",8,1,11,1,1133,kw_103,0.,0.,0.,0,"{Multidimensional parameter study} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSMPS","Parameter Studies"},
+		{"multidim_parameter_study",8,1,11,1,1131,kw_103,0.,0.,0.,0,"{Multidimensional parameter study} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSMPS","Parameter Studies"},
 		{"ncsu_direct",8,4,11,1,943,kw_104,0.,0.,0.,0,0,"Optimization: Global"},
 		{"nl2sol",8,9,11,1,547,kw_105,0.,0.,0.,0,"[CHOOSE LSQ method]","Nonlinear Least Squares"},
 		{"nlpql_sqp",8,9,11,1,201,kw_39,0.,0.,0.,0,0,"Optimization: Local, Derivative-based"},
@@ -1086,7 +1091,7 @@ static GuiKeyWord
 		{"nond_bayes_calibration",0,10,11,1,838,kw_22},
 		{"nond_global_evidence",0,9,11,1,774,kw_60},
 		{"nond_global_interval_est",0,5,11,1,818,kw_64},
-		{"nond_global_reliability",0,11,11,1,1042,kw_72},
+		{"nond_global_reliability",0,12,11,1,1042,kw_72},
 		{"nond_importance_sampling",0,7,11,1,762,kw_75},
 		{"nond_local_evidence",0,6,11,1,950,kw_82},
 		{"nond_local_interval_est",0,2,11,1,980,kw_83},
@@ -1105,7 +1110,7 @@ static GuiKeyWord
 		{"output",8,5,3,0,65,kw_138,0.,0.,0.,0,"{Output verbosity} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
 		{"polynomial_chaos",8,23,11,1,589,kw_119,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"psuade_moat",8,3,11,1,935,kw_139,0.,0.,0.,0,"{PSUADE MOAT method} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSUADE","DACE"},
-		{"richardson_extrap",8,4,11,1,1137,kw_140,0.,0.,0.,0,"{Richardson extrapolation} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSolnRichardson"},
+		{"richardson_extrap",8,4,11,1,1135,kw_140,0.,0.,0.,0,"{Richardson extrapolation} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSolnRichardson"},
 		{"sampling",8,12,11,1,725,kw_123,0.,0.,0.,0,"{Nondeterministic sampling method} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC","Uncertainty Quantification"},
 		{"scaling",8,0,9,0,87,0,0.,0.,0.,0,"{Scaling flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
 		{"soga",8,19,11,1,313,kw_146,0.,0.,0.,0,0,"Optimization: Global"},
@@ -1114,7 +1119,7 @@ static GuiKeyWord
 		{"stoch_collocation",8,24,11,1,665,kw_131,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"surrogate_based_global",8,3,11,1,571,kw_148,0.,0.,0.,0,0,"Surrogate-based Methods"},
 		{"surrogate_based_local",8,18,11,1,91,kw_154,0.,0.,0.,0,0,"Surrogate-based Methods"},
-		{"vector_parameter_study",8,3,11,1,1115,kw_155,0.,0.,0.,0,"{Vector parameter study} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSVPS","Parameter Studies"}
+		{"vector_parameter_study",8,3,11,1,1113,kw_155,0.,0.,0.,0,"{Vector parameter study} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSVPS","Parameter Studies"}
 		},
 	kw_157[1] = {
 		{"optional_interface_responses_pointer",11,0,1,0,1311,0,0.,0.,0.,0,"{Responses pointer for nested model optional interfaces} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelNested"}
@@ -1130,7 +1135,7 @@ static GuiKeyWord
 		{"sub_method_pointer",11,4,2,1,1313,kw_158,0.,0.,0.,0,"{Sub-method pointer for nested models} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelNested"}
 		},
 	kw_160[1] = {
-		{"interface_pointer",11,0,1,0,1157,0,0.,0.,0.,0,"{Interface set pointer} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSingle"}
+		{"interface_pointer",11,0,1,0,1155,0,0.,0.,0.,0,"{Interface set pointer} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSingle"}
 		},
 	kw_161[6] = {
 		{"additive",8,0,2,2,1269,0,0.,0.,0.,0,"[CHOOSE correction type]"},
@@ -1141,7 +1146,7 @@ static GuiKeyWord
 		{"zeroth_order",8,0,1,1,1263}
 		},
 	kw_162[3] = {
-		{"constant",8,0,1,1,1171,0,0.,0.,0.,0,"[CHOOSE trend type]"},
+		{"constant",8,0,1,1,1171},
 		{"linear",8,0,1,1,1173},
 		{"reduced_quadratic",8,0,1,1,1175}
 		},
@@ -1150,75 +1155,79 @@ static GuiKeyWord
 		{"trend",8,3,2,0,1169,kw_162,0.,0.,0.,0,"{GP trend function} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
 		},
 	kw_164[4] = {
-		{"constant",8,0,1,1,1223},
-		{"linear",8,0,1,1,1225},
-		{"quadratic",8,0,1,1,1229},
-		{"reduced_quadratic",8,0,1,1,1227}
+		{"constant",8,0,1,1,1181},
+		{"linear",8,0,1,1,1183},
+		{"quadratic",8,0,1,1,1187},
+		{"reduced_quadratic",8,0,1,1,1185}
 		},
 	kw_165[4] = {
-		{"correlation_lengths",14,0,4,0,1235,0,0.,0.,0.,0,"{Kriging correlation lengths} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"max_trials",0x19,0,3,0,1233,0,0.,0.,0.,0,"{Kriging maximum trials} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"optimization_method",11,0,2,0,1231,0,0.,0.,0.,0,"{Kriging optimization method} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"trend",8,4,1,0,1221,kw_164,0.,0.,0.,0,"{Kriging trend function} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
+		{"correlation_lengths",14,0,4,0,1193,0,0.,0.,0.,0,"{Kriging correlation lengths} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"max_trials",0x19,0,3,0,1191,0,0.,0.,0.,0,"{Kriging maximum trials} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"optimization_method",11,0,2,0,1189,0,0.,0.,0.,0,"{Kriging optimization method} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"trend",8,4,1,0,1179,kw_164,0.,0.,0.,0,"{Kriging trend function} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
 		},
 	kw_166[2] = {
-		{"cubic",8,0,1,1,1185},
-		{"linear",8,0,1,1,1183}
+		{"dakota",8,2,1,1,1165,kw_163},
+		{"surfpack",8,4,1,1,1177,kw_165}
 		},
 	kw_167[2] = {
-		{"interpolation",8,2,2,0,1181,kw_166,0.,0.,0.,0,"{MARS interpolation} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"max_bases",9,0,1,0,1179,0,0.,0.,0.,0,"{MARS maximum bases} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
+		{"cubic",8,0,1,1,1203},
+		{"linear",8,0,1,1,1201}
 		},
 	kw_168[2] = {
-		{"poly_order",9,0,1,0,1189,0,0.,0.,0.,0,"{MLS polynomial order} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"weight_function",9,0,2,0,1191,0,0.,0.,0.,0,"{MLS weight function} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
+		{"interpolation",8,2,2,0,1199,kw_167,0.,0.,0.,0,"{MARS interpolation} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"max_bases",9,0,1,0,1197,0,0.,0.,0.,0,"{MARS maximum bases} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
 		},
-	kw_169[3] = {
-		{"nodes",9,0,1,0,1195,0,0.,0.,0.,0,"{ANN number nodes} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"random_weight",9,0,3,0,1199,0,0.,0.,0.,0,"{ANN random weight} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"range",10,0,2,0,1197,0,0.,0.,0.,0,"{ANN range} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
+	kw_169[2] = {
+		{"poly_order",9,0,1,0,1207,0,0.,0.,0.,0,"{MLS polynomial order} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"weight_function",9,0,2,0,1209,0,0.,0.,0.,0,"{MLS weight function} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
 		},
-	kw_170[2] = {
+	kw_170[3] = {
+		{"nodes",9,0,1,0,1213,0,0.,0.,0.,0,"{ANN number nodes} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"random_weight",9,0,3,0,1217,0,0.,0.,0.,0,"{ANN random weight} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"range",10,0,2,0,1215,0,0.,0.,0.,0,"{ANN range} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
+		},
+	kw_171[2] = {
 		{"annotated",8,0,1,0,1255},
 		{"freeform",8,0,1,0,1257}
 		},
-	kw_171[3] = {
-		{"cubic",8,0,1,1,1217,0,0.,0.,0.,0,"[CHOOSE polynomial order]"},
-		{"linear",8,0,1,1,1213},
-		{"quadratic",8,0,1,1,1215}
+	kw_172[3] = {
+		{"cubic",8,0,1,1,1235,0,0.,0.,0.,0,"[CHOOSE polynomial order]"},
+		{"linear",8,0,1,1,1231},
+		{"quadratic",8,0,1,1,1233}
 		},
-	kw_172[4] = {
-		{"bases",9,0,1,0,1203,0,0.,0.,0.,0,"{RBF number of bases} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"max_pts",9,0,2,0,1205,0,0.,0.,0.,0,"{RBF maximum points} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"max_subsets",9,0,4,0,1209},
-		{"min_partition",9,0,3,0,1207,0,0.,0.,0.,0,"{RBF minimum partitions} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
+	kw_173[4] = {
+		{"bases",9,0,1,0,1221,0,0.,0.,0.,0,"{RBF number of bases} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"max_pts",9,0,2,0,1223,0,0.,0.,0.,0,"{RBF maximum points} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"max_subsets",9,0,4,0,1227},
+		{"min_partition",9,0,3,0,1225,0,0.,0.,0.,0,"{RBF minimum partitions} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
 		},
-	kw_173[3] = {
+	kw_174[3] = {
 		{"all",8,0,1,1,1247},
 		{"none",8,0,1,1,1251},
 		{"region",8,0,1,1,1249}
 		},
-	kw_174[18] = {
+	kw_175[18] = {
 		{"correction",8,6,7,0,1261,kw_161,0.,0.,0.,0,"{Surrogate correction approach} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
 		{"dace_method_pointer",11,0,3,0,1243,0,0.,0.,0.,0,"{Design of experiments method pointer} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
 		{"diagnostics",15,0,8,0,1275,0,0.,0.,0.,0,"{Print diagnostic metrics about the surrogate goodness of fit} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"gaussian_process",8,2,1,1,1165,kw_163,0.,0.,0.,0,"[CHOOSE surrogate type]{Gaussian process} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"kriging",8,4,1,1,1219,kw_165,0.,0.,0.,0,"{Kriging interpolation} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"mars",8,2,1,1,1177,kw_167,0.,0.,0.,0,"{Multivariate adaptive regression splines} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"gaussian_process",8,2,1,1,1163,kw_166,0.,0.,0.,0,"[CHOOSE surrogate type]{Gaussian process} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"kriging",0,2,1,1,1162,kw_166},
+		{"mars",8,2,1,1,1195,kw_168,0.,0.,0.,0,"{Multivariate adaptive regression splines} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
 		{"minimum_points",8,0,2,0,1239},
-		{"moving_least_squares",8,2,1,1,1187,kw_168,0.,0.,0.,0,"{Moving least squares} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"neural_network",8,3,1,1,1193,kw_169,0.,0.,0.,0,"{Artificial neural network} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"points_file",11,2,5,0,1253,kw_170},
-		{"polynomial",8,3,1,1,1211,kw_171,0.,0.,0.,0,"{Polynomial} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"radial_basis",8,4,1,1,1201,kw_172},
+		{"moving_least_squares",8,2,1,1,1205,kw_169,0.,0.,0.,0,"{Moving least squares} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"neural_network",8,3,1,1,1211,kw_170,0.,0.,0.,0,"{Artificial neural network} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"points_file",11,2,5,0,1253,kw_171},
+		{"polynomial",8,3,1,1,1229,kw_172,0.,0.,0.,0,"{Polynomial} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"radial_basis",8,4,1,1,1219,kw_173},
 		{"recommended_points",8,0,2,0,1241},
-		{"reuse_points",8,3,4,0,1245,kw_173},
-		{"reuse_samples",0,3,4,0,1244,kw_173},
-		{"samples_file",3,2,5,0,1252,kw_170},
+		{"reuse_points",8,3,4,0,1245,kw_174},
+		{"reuse_samples",0,3,4,0,1244,kw_174},
+		{"samples_file",3,2,5,0,1252,kw_171},
 		{"total_points",9,0,2,0,1237},
 		{"use_derivatives",8,0,6,0,1259,0,0.,0.,0.,0,"{Kriging gradient enhancement} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
 		},
-	kw_175[6] = {
+	kw_176[6] = {
 		{"additive",8,0,2,2,1301,0,0.,0.,0.,0,"[CHOOSE correction type]"},
 		{"combined",8,0,2,2,1305},
 		{"first_order",8,0,1,1,1297,0,0.,0.,0.,0,"[CHOOSE correction order]"},
@@ -1226,69 +1235,69 @@ static GuiKeyWord
 		{"second_order",8,0,1,1,1299},
 		{"zeroth_order",8,0,1,1,1295}
 		},
-	kw_176[3] = {
-		{"correction",8,6,3,3,1293,kw_175,0.,0.,0.,0,"{Surrogate correction approach} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrH"},
+	kw_177[3] = {
+		{"correction",8,6,3,3,1293,kw_176,0.,0.,0.,0,"{Surrogate correction approach} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrH"},
 		{"high_fidelity_model_pointer",11,0,2,2,1291,0,0.,0.,0.,0,"{Pointer to the high fidelity model specification} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrH"},
 		{"low_fidelity_model_pointer",11,0,1,1,1289,0,0.,0.,0.,0,"{Pointer to the low fidelity model specification} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrH"}
 		},
-	kw_177[2] = {
+	kw_178[2] = {
 		{"actual_model_pointer",11,0,2,2,1285,0,0.,0.,0.,0,"{Pointer to the truth model specification} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrMP"},
 		{"taylor_series",8,0,1,1,1283,0,0.,0.,0.,0,"{Taylor series local approximation } http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrL"}
 		},
-	kw_178[2] = {
+	kw_179[2] = {
 		{"actual_model_pointer",11,0,2,2,1285,0,0.,0.,0.,0,"{Pointer to the truth model specification} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrMP"},
 		{"tana",8,0,1,1,1279,0,0.,0.,0.,0,"{Two-point adaptive nonlinear approximation } http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrMP"}
 		},
-	kw_179[5] = {
-		{"global",8,18,2,1,1163,kw_174,0.,0.,0.,0,"[CHOOSE surrogate category]{Global approximations } http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"hierarchical",8,3,2,1,1287,kw_176,0.,0.,0.,0,"{Hierarchical approximation } http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrH"},
-		{"id_surrogates",13,0,1,0,1161,0,0.,0.,0.,0,"{Surrogate response ids} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrogate"},
-		{"local",8,2,2,1,1281,kw_177,0.,0.,0.,0,"{Local approximation} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrL"},
-		{"multipoint",8,2,2,1,1277,kw_178,0.,0.,0.,0,"{Multipoint approximation} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrMP"}
+	kw_180[5] = {
+		{"global",8,18,2,1,1161,kw_175,0.,0.,0.,0,"[CHOOSE surrogate category]{Global approximations } http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"hierarchical",8,3,2,1,1287,kw_177,0.,0.,0.,0,"{Hierarchical approximation } http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrH"},
+		{"id_surrogates",13,0,1,0,1159,0,0.,0.,0.,0,"{Surrogate response ids} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrogate"},
+		{"local",8,2,2,1,1281,kw_178,0.,0.,0.,0,"{Local approximation} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrL"},
+		{"multipoint",8,2,2,1,1277,kw_179,0.,0.,0.,0,"{Multipoint approximation} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrMP"}
 		},
-	kw_180[6] = {
-		{"id_model",11,0,1,0,1149,0,0.,0.,0.,0,"{Model set identifier} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelIndControl"},
+	kw_181[6] = {
+		{"id_model",11,0,1,0,1147,0,0.,0.,0.,0,"{Model set identifier} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelIndControl"},
 		{"nested",8,2,4,1,1307,kw_159,0.,0.,0.,0,"[CHOOSE model type]"},
-		{"responses_pointer",11,0,3,0,1153,0,0.,0.,0.,0,"{Responses set pointer} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelIndControl"},
-		{"single",8,1,4,1,1155,kw_160,0.,0.,0.,0,"@"},
-		{"surrogate",8,5,4,1,1159,kw_179},
-		{"variables_pointer",11,0,2,0,1151,0,0.,0.,0.,0,"{Variables set pointer} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelIndControl"}
+		{"responses_pointer",11,0,3,0,1151,0,0.,0.,0.,0,"{Responses set pointer} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelIndControl"},
+		{"single",8,1,4,1,1153,kw_160,0.,0.,0.,0,"@"},
+		{"surrogate",8,5,4,1,1157,kw_180},
+		{"variables_pointer",11,0,2,0,1149,0,0.,0.,0.,0,"{Variables set pointer} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelIndControl"}
 		},
-	kw_181[5] = {
+	kw_182[5] = {
 		{"annotated",8,0,2,0,1727,0,0.,0.,0.,0,"{Data file in annotated format} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
 		{"freeform",8,0,2,0,1729,0,0.,0.,0.,0,"{Data file in freeform format} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
 		{"num_config_variables",0x29,0,3,0,1731,0,0.,0.,0.,0,"{Number configuration variable columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
 		{"num_experiments",0x29,0,1,0,1725,0,0.,0.,0.,0,"{Number experiments (rows) in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
 		{"num_std_deviations",0x29,0,4,0,1733,0,0.,0.,0.,0,"{Number standard deviation columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"}
 		},
-	kw_182[3] = {
+	kw_183[3] = {
 		{"nonlinear_equality_scale_types",0x80f,0,2,0,1749,0,0.,0.,0.,0,"{Nonlinear equality scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"},
 		{"nonlinear_equality_scales",0x80e,0,3,0,1751,0,0.,0.,0.,0,"{Nonlinear equality constraint scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"},
 		{"nonlinear_equality_targets",14,0,1,0,1747,0,0.,0.,0.,0,"{Nonlinear equality constraint targets} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"}
 		},
-	kw_183[4] = {
+	kw_184[4] = {
 		{"nonlinear_inequality_lower_bounds",14,0,1,0,1737,0,0.,0.,0.,0,"{Nonlinear inequality constraint lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"},
 		{"nonlinear_inequality_scale_types",0x80f,0,3,0,1741,0,0.,0.,0.,0,"{Nonlinear inequality scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"},
 		{"nonlinear_inequality_scales",0x80e,0,4,0,1743,0,0.,0.,0.,0,"{Nonlinear inequality constraint scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"},
 		{"nonlinear_inequality_upper_bounds",14,0,2,0,1739,0,0.,0.,0.,0,"{Nonlinear inequality constraint upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"}
 		},
-	kw_184[9] = {
-		{"calibration_data_file",11,5,4,0,1723,kw_181,0.,0.,0.,0,"{Calibration data file name} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+	kw_185[9] = {
+		{"calibration_data_file",11,5,4,0,1723,kw_182,0.,0.,0.,0,"{Calibration data file name} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
 		{"calibration_weights",14,0,3,0,1721,0,0.,0.,0.,0,"{Calibration term weights} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"calibration_terms"},
 		{"least_squares_term_scale_types",0x80f,0,1,0,1717,0,0.,0.,0.,0,0,0,"calibration_terms"},
 		{"least_squares_term_scales",0x80e,0,2,0,1719,0,0.,0.,0.,0,0,0,"calibration_terms"},
 		{"least_squares_weights",6,0,3,0,1720,0,0.,0.,0.,0,0,0,"calibration_terms"},
-		{"nonlinear_equality_constraints",0x29,3,6,0,1745,kw_182,0.,0.,0.,0,"{Number of nonlinear equality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
-		{"nonlinear_inequality_constraints",0x29,4,5,0,1735,kw_183,0.,0.,0.,0,"{Number of nonlinear inequality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
-		{"num_nonlinear_equality_constraints",0x21,3,6,0,1744,kw_182},
-		{"num_nonlinear_inequality_constraints",0x21,4,5,0,1734,kw_183}
+		{"nonlinear_equality_constraints",0x29,3,6,0,1745,kw_183,0.,0.,0.,0,"{Number of nonlinear equality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+		{"nonlinear_inequality_constraints",0x29,4,5,0,1735,kw_184,0.,0.,0.,0,"{Number of nonlinear inequality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+		{"num_nonlinear_equality_constraints",0x21,3,6,0,1744,kw_183},
+		{"num_nonlinear_inequality_constraints",0x21,4,5,0,1734,kw_184}
 		},
-	kw_185[1] = {
+	kw_186[1] = {
 		{"ignore_bounds",8,0,1,0,1771,0,0.,0.,0.,0,"{Ignore variable bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespGradMixed"}
 		},
-	kw_186[10] = {
+	kw_187[10] = {
 		{"central",8,0,6,0,1779,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
-		{"dakota",8,1,4,0,1769,kw_185,0.,0.,0.,0,"@[CHOOSE gradient source]"},
+		{"dakota",8,1,4,0,1769,kw_186,0.,0.,0.,0,"@[CHOOSE gradient source]"},
 		{"fd_gradient_step_size",0x406,0,7,0,1780,0,0.,0.,0.001},
 		{"fd_step_size",0x40e,0,7,0,1781,0,0.,0.,0.001,0,"{Finite difference step size} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespGradMixed"},
 		{"forward",8,0,6,0,1777,0,0.,0.,0.,0,"@"},
@@ -1298,47 +1307,47 @@ static GuiKeyWord
 		{"method_source",8,0,3,0,1767,0,0.,0.,0.,0,"{Method source} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespGradNum"},
 		{"vendor",8,0,4,0,1773}
 		},
-	kw_187[2] = {
+	kw_188[2] = {
 		{"fd_hessian_step_size",6,0,1,0,1806},
 		{"fd_step_size",14,0,1,0,1807,0,0.,0.,0.,0,"{Finite difference step size} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessMixed"}
 		},
-	kw_188[1] = {
+	kw_189[1] = {
 		{"damped",8,0,1,0,1817,0,0.,0.,0.,0,"{Numerical safeguarding of BFGS update} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessMixed"}
 		},
-	kw_189[2] = {
-		{"bfgs",8,1,1,1,1815,kw_188,0.,0.,0.,0,"[CHOOSE Hessian approx.]"},
+	kw_190[2] = {
+		{"bfgs",8,1,1,1,1815,kw_189,0.,0.,0.,0,"[CHOOSE Hessian approx.]"},
 		{"sr1",8,0,1,1,1819}
 		},
-	kw_190[5] = {
+	kw_191[5] = {
 		{"central",8,0,2,0,1811,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
 		{"forward",8,0,2,0,1809,0,0.,0.,0.,0,"@"},
 		{"id_analytic_hessians",13,0,4,0,1821,0,0.,0.,0.,0,"{Analytic Hessians function list} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessMixed"},
-		{"id_numerical_hessians",13,2,1,0,1805,kw_187,0.,0.,0.,0,"{Numerical Hessians function list} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessMixed"},
-		{"id_quasi_hessians",13,2,3,0,1813,kw_189,0.,0.,0.,0,"{Quasi Hessians function list} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessMixed"}
+		{"id_numerical_hessians",13,2,1,0,1805,kw_188,0.,0.,0.,0,"{Numerical Hessians function list} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessMixed"},
+		{"id_quasi_hessians",13,2,3,0,1813,kw_190,0.,0.,0.,0,"{Quasi Hessians function list} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessMixed"}
 		},
-	kw_191[3] = {
+	kw_192[3] = {
 		{"nonlinear_equality_scale_types",0x80f,0,2,0,1711,0,0.,0.,0.,0,"{Nonlinear equality constraint scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt",0,"nonlinear_equality_constraints"},
 		{"nonlinear_equality_scales",0x80e,0,3,0,1713,0,0.,0.,0.,0,"{Nonlinear equality constraint scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt",0,"nonlinear_equality_constraints"},
 		{"nonlinear_equality_targets",14,0,1,0,1709,0,0.,0.,0.,0,"{Nonlinear equality constraint targets} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt",0,"nonlinear_equality_constraints"}
 		},
-	kw_192[4] = {
+	kw_193[4] = {
 		{"nonlinear_inequality_lower_bounds",14,0,1,0,1699,0,0.,0.,0.,0,"{Nonlinear inequality constraint lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"},
 		{"nonlinear_inequality_scale_types",0x80f,0,3,0,1703,0,0.,0.,0.,0,"{Nonlinear inequality constraint scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"},
 		{"nonlinear_inequality_scales",0x80e,0,4,0,1705,0,0.,0.,0.,0,"{Nonlinear inequality constraint scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"},
 		{"nonlinear_inequality_upper_bounds",14,0,2,0,1701,0,0.,0.,0.,0,"{Nonlinear inequality constraint upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt",0,"nonlinear_inequality_constraints"}
 		},
-	kw_193[7] = {
+	kw_194[7] = {
 		{"multi_objective_weights",14,0,3,0,1695,0,0.,0.,0.,0,"{Multiobjective weightings} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt",0,"objective_functions"},
-		{"nonlinear_equality_constraints",0x29,3,5,0,1707,kw_191,0.,0.,0.,0,"{Number of nonlinear equality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"},
-		{"nonlinear_inequality_constraints",0x29,4,4,0,1697,kw_192,0.,0.,0.,0,"{Number of nonlinear inequality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"},
-		{"num_nonlinear_equality_constraints",0x21,3,5,0,1706,kw_191},
-		{"num_nonlinear_inequality_constraints",0x21,4,4,0,1696,kw_192},
+		{"nonlinear_equality_constraints",0x29,3,5,0,1707,kw_192,0.,0.,0.,0,"{Number of nonlinear equality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"},
+		{"nonlinear_inequality_constraints",0x29,4,4,0,1697,kw_193,0.,0.,0.,0,"{Number of nonlinear inequality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"},
+		{"num_nonlinear_equality_constraints",0x21,3,5,0,1706,kw_192},
+		{"num_nonlinear_inequality_constraints",0x21,4,4,0,1696,kw_193},
 		{"objective_function_scale_types",0x80f,0,1,0,1691,0,0.,0.,0.,0,"{Objective function scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt",0,"objective_functions"},
 		{"objective_function_scales",0x80e,0,2,0,1693,0,0.,0.,0.,0,"{Objective function scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt",0,"objective_functions"}
 		},
-	kw_194[8] = {
+	kw_195[8] = {
 		{"central",8,0,6,0,1779,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
-		{"dakota",8,1,4,0,1769,kw_185,0.,0.,0.,0,"@[CHOOSE gradient source]"},
+		{"dakota",8,1,4,0,1769,kw_186,0.,0.,0.,0,"@[CHOOSE gradient source]"},
 		{"fd_gradient_step_size",0x406,0,7,0,1780,0,0.,0.,0.001},
 		{"fd_step_size",0x40e,0,7,0,1781,0,0.,0.,0.001,0,"{Finite difference step size} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespGradMixed"},
 		{"forward",8,0,6,0,1777,0,0.,0.,0.,0,"@"},
@@ -1346,94 +1355,94 @@ static GuiKeyWord
 		{"method_source",8,0,3,0,1767,0,0.,0.,0.,0,"{Method source} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespGradNum"},
 		{"vendor",8,0,4,0,1773}
 		},
-	kw_195[4] = {
+	kw_196[4] = {
 		{"central",8,0,2,0,1791,0,0.,0.,0.,0,"[CHOOSE difference interval]"},
 		{"fd_hessian_step_size",6,0,1,0,1786},
 		{"fd_step_size",14,0,1,0,1787,0,0.,0.,0.,0,"{Finite difference step size} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessNum"},
 		{"forward",8,0,2,0,1789,0,0.,0.,0.,0,"@"}
 		},
-	kw_196[1] = {
+	kw_197[1] = {
 		{"damped",8,0,1,0,1797,0,0.,0.,0.,0,"{Numerical safeguarding of BFGS update} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessQuasi"}
 		},
-	kw_197[2] = {
-		{"bfgs",8,1,1,1,1795,kw_196,0.,0.,0.,0,"[CHOOSE Hessian approx.]"},
+	kw_198[2] = {
+		{"bfgs",8,1,1,1,1795,kw_197,0.,0.,0.,0,"[CHOOSE Hessian approx.]"},
 		{"sr1",8,0,1,1,1799}
 		},
-	kw_198[18] = {
+	kw_199[18] = {
 		{"analytic_gradients",8,0,4,2,1757,0,0.,0.,0.,0,"[CHOOSE gradient type]"},
 		{"analytic_hessians",8,0,5,3,1801,0,0.,0.,0.,0,"[CHOOSE Hessian type]"},
-		{"calibration_terms",0x29,9,3,1,1715,kw_184,0.,0.,0.,0,"{Number of calibration terms} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+		{"calibration_terms",0x29,9,3,1,1715,kw_185,0.,0.,0.,0,"{Number of calibration terms} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
 		{"descriptors",15,0,2,0,1687,0,0.,0.,0.,0,"{Response labels} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespLabels"},
 		{"id_responses",11,0,1,0,1685,0,0.,0.,0.,0,"{Responses set identifier} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespSetId"},
-		{"mixed_gradients",8,10,4,2,1759,kw_186,0.,0.,0.,0,"{Mixed gradients} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespGradMixed"},
-		{"mixed_hessians",8,5,5,3,1803,kw_190,0.,0.,0.,0,"{Mixed Hessians} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessMixed"},
+		{"mixed_gradients",8,10,4,2,1759,kw_187,0.,0.,0.,0,"{Mixed gradients} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespGradMixed"},
+		{"mixed_hessians",8,5,5,3,1803,kw_191,0.,0.,0.,0,"{Mixed Hessians} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessMixed"},
 		{"no_gradients",8,0,4,2,1755,0,0.,0.,0.,0,"@"},
 		{"no_hessians",8,0,5,3,1783,0,0.,0.,0.,0,"@"},
-		{"num_least_squares_terms",0x21,9,3,1,1714,kw_184},
-		{"num_objective_functions",0x21,7,3,1,1688,kw_193},
+		{"num_least_squares_terms",0x21,9,3,1,1714,kw_185},
+		{"num_objective_functions",0x21,7,3,1,1688,kw_194},
 		{"num_response_functions",0x21,0,3,1,1752},
-		{"numerical_gradients",8,8,4,2,1765,kw_194,0.,0.,0.,0,"{Numerical gradients} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespGradNum"},
-		{"numerical_hessians",8,4,5,3,1785,kw_195,0.,0.,0.,0,"{Numerical Hessians} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessNum"},
-		{"objective_functions",0x29,7,3,1,1689,kw_193,0.,0.,0.,0,"{Number of objective functions} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"},
-		{"quasi_hessians",8,2,5,3,1793,kw_197,0.,0.,0.,0,"{Quasi Hessians} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessQuasi"},
+		{"numerical_gradients",8,8,4,2,1765,kw_195,0.,0.,0.,0,"{Numerical gradients} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespGradNum"},
+		{"numerical_hessians",8,4,5,3,1785,kw_196,0.,0.,0.,0,"{Numerical Hessians} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessNum"},
+		{"objective_functions",0x29,7,3,1,1689,kw_194,0.,0.,0.,0,"{Number of objective functions} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnOpt"},
+		{"quasi_hessians",8,2,5,3,1793,kw_198,0.,0.,0.,0,"{Quasi Hessians} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespHessQuasi"},
 		{"response_descriptors",7,0,2,0,1686},
 		{"response_functions",0x29,0,3,1,1753,0,0.,0.,0.,0,"{Number of response functions} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnGen"}
 		},
-	kw_199[1] = {
+	kw_200[1] = {
 		{"method_list",15,0,1,1,33,0,0.,0.,0.,0,"{List of methods} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"}
 		},
-	kw_200[3] = {
+	kw_201[3] = {
 		{"global_method_pointer",11,0,1,1,25,0,0.,0.,0.,0,"{Pointer to the global method specification} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"},
 		{"local_method_pointer",11,0,2,2,27,0,0.,0.,0.,0,"{Pointer to the local method specification} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"},
 		{"local_search_probability",10,0,3,0,29,0,0.,0.,0.,0,"{Probability of executing local searches} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"}
 		},
-	kw_201[1] = {
+	kw_202[1] = {
 		{"method_list",15,0,1,1,21,0,0.,0.,0.,0,"{List of methods} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"}
 		},
-	kw_202[5] = {
-		{"collaborative",8,1,1,1,31,kw_199,0.,0.,0.,0,"[CHOOSE hybrid type]{Collaborative hybrid} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"},
-		{"coupled",0,3,1,1,22,kw_200},
-		{"embedded",8,3,1,1,23,kw_200,0.,0.,0.,0,"{Embedded hybrid} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"},
-		{"sequential",8,1,1,1,19,kw_201,0.,0.,0.,0,"{Sequential hybrid} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"},
-		{"uncoupled",0,1,1,1,18,kw_201}
+	kw_203[5] = {
+		{"collaborative",8,1,1,1,31,kw_200,0.,0.,0.,0,"[CHOOSE hybrid type]{Collaborative hybrid} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"},
+		{"coupled",0,3,1,1,22,kw_201},
+		{"embedded",8,3,1,1,23,kw_201,0.,0.,0.,0,"{Embedded hybrid} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"},
+		{"sequential",8,1,1,1,19,kw_202,0.,0.,0.,0,"{Sequential hybrid} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"},
+		{"uncoupled",0,1,1,1,18,kw_202}
 		},
-	kw_203[1] = {
+	kw_204[1] = {
 		{"seed",9,0,1,0,41,0,0.,0.,0.,0,"{Seed for random starting points} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratMultiStart"}
 		},
-	kw_204[3] = {
+	kw_205[3] = {
 		{"method_pointer",11,0,1,1,37,0,0.,0.,0.,0,"{Method pointer} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratMultiStart"},
-		{"random_starts",9,1,2,0,39,kw_203,0.,0.,0.,0,"{Number of random starting points} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratMultiStart"},
+		{"random_starts",9,1,2,0,39,kw_204,0.,0.,0.,0,"{Number of random starting points} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratMultiStart"},
 		{"starting_points",14,0,3,0,43,0,0.,0.,0.,0,"{List of user-specified starting points} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratMultiStart"}
 		},
-	kw_205[1] = {
+	kw_206[1] = {
 		{"seed",9,0,1,0,51,0,0.,0.,0.,0,"{Seed for random weighting sets} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratParetoSet"}
 		},
-	kw_206[5] = {
+	kw_207[5] = {
 		{"method_pointer",11,0,1,1,47,0,0.,0.,0.,0,"{Optimization method pointer} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratParetoSet"},
 		{"multi_objective_weight_sets",6,0,3,0,52},
 		{"opt_method_pointer",3,0,1,1,46},
-		{"random_weight_sets",9,1,2,0,49,kw_205,0.,0.,0.,0,"{Number of random weighting sets} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratParetoSet"},
+		{"random_weight_sets",9,1,2,0,49,kw_206,0.,0.,0.,0,"{Number of random weighting sets} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratParetoSet"},
 		{"weight_sets",14,0,3,0,53,0,0.,0.,0.,0,"{List of user-specified weighting sets} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratParetoSet"}
 		},
-	kw_207[1] = {
+	kw_208[1] = {
 		{"method_pointer",11,0,1,0,57,0,0.,0.,0.,0,"{Method pointer} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratSingle"}
 		},
-	kw_208[1] = {
+	kw_209[1] = {
 		{"tabular_graphics_file",11,0,1,0,7,0,0.,0.,0.,0,"{File name for tabular graphics data} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratIndControl"}
 		},
-	kw_209[10] = {
+	kw_210[10] = {
 		{"graphics",8,0,1,0,3,0,0.,0.,0.,0,"{Graphics flag} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratIndControl"},
-		{"hybrid",8,5,7,1,17,kw_202,0.,0.,0.,0,"[CHOOSE strategy type]{Hybrid strategy} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"},
+		{"hybrid",8,5,7,1,17,kw_203,0.,0.,0.,0,"[CHOOSE strategy type]{Hybrid strategy} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratHybrid"},
 		{"iterator_self_scheduling",8,0,5,0,13,0,0.,0.,0.,0,"{Self-scheduling of iterator jobs} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratIndControl"},
 		{"iterator_servers",9,0,4,0,11,0,0.,0.,0.,0,"{Number of iterator servers} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratIndControl"},
 		{"iterator_static_scheduling",8,0,6,0,15,0,0.,0.,0.,0,"{Static scheduling of iterator jobs} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratIndControl"},
-		{"multi_start",8,3,7,1,35,kw_204,0.,0.,0.,0,"{Multi-start iteration strategy} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratMultiStart"},
+		{"multi_start",8,3,7,1,35,kw_205,0.,0.,0.,0,"{Multi-start iteration strategy} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratMultiStart"},
 		{"output_precision",0x29,0,3,0,9,0,0.,0.,0.,0,"{Numeric output precision} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratIndControl"},
-		{"pareto_set",8,5,7,1,45,kw_206,0.,0.,0.,0,"{Pareto set optimization strategy} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratParetoSet"},
-		{"single_method",8,1,7,1,55,kw_207,0.,0.,0.,0,"@{Single method strategy} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratSingle"},
-		{"tabular_graphics_data",8,1,2,0,5,kw_208,0.,0.,0.,0,"{Tabulation of graphics data} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratIndControl"}
+		{"pareto_set",8,5,7,1,45,kw_207,0.,0.,0.,0,"{Pareto set optimization strategy} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratParetoSet"},
+		{"single_method",8,1,7,1,55,kw_208,0.,0.,0.,0,"@{Single method strategy} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratSingle"},
+		{"tabular_graphics_data",8,1,2,0,5,kw_209,0.,0.,0.,0,"{Tabulation of graphics data} http://dakota.sandia.gov/licensing/votd/html-ref/StratCommands.html#StratIndControl"}
 		},
-	kw_210[10] = {
+	kw_211[10] = {
 		{"alphas",14,0,1,1,1435,0,0.,0.,0.,0,"{beta uncertain alphas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Beta",0,"beta_uncertain"},
 		{"betas",14,0,2,2,1437,0,0.,0.,0.,0,"{beta uncertain betas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Beta",0,"beta_uncertain"},
 		{"buv_alphas",6,0,1,1,1434,0,0.,0.,0.,0,0,0,"beta_uncertain"},
@@ -1445,12 +1454,12 @@ static GuiKeyWord
 		{"lower_bounds",14,0,3,3,1439,0,0.,0.,0.,0,"{Distribution lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Beta",0,"beta_uncertain"},
 		{"upper_bounds",14,0,4,4,1441,0,0.,0.,0.,0,"{Distribution upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Beta",0,"beta_uncertain"}
 		},
-	kw_211[3] = {
+	kw_212[3] = {
 		{"descriptors",15,0,3,0,1501,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Binomial",0,"binomial_uncertain"},
 		{"num_trials",13,0,2,2,1499,0,0.,0.,0.,0,"{binomial uncertain num_trials} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Binomial",0,"binomial_uncertain"},
 		{"prob_per_trial",14,0,1,1,1497,0,0.,0.,0.,0,"{binomial uncertain prob_per_trial} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Binomial",0,"binomial_uncertain"}
 		},
-	kw_212[12] = {
+	kw_213[12] = {
 		{"cdv_descriptors",7,0,6,0,1338,0,0.,0.,0.,0,0,0,"continuous_design"},
 		{"cdv_initial_point",6,0,1,0,1328,0,0.,0.,0.,0,0,0,"continuous_design"},
 		{"cdv_lower_bounds",6,0,2,0,1330,0,0.,0.,0.,0,0,0,"continuous_design"},
@@ -1464,7 +1473,7 @@ static GuiKeyWord
 		{"scales",0x80e,0,5,0,1337,0,0.,0.,0.,0,"{Scales} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCDV",0,"continuous_design"},
 		{"upper_bounds",14,0,3,0,1333,0,0.,0.,0.,0,"{Upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCDV",0,"continuous_design"}
 		},
-	kw_213[8] = {
+	kw_214[8] = {
 		{"csv_descriptors",7,0,4,0,1556,0,0.,0.,0.,0,0,0,"continuous_state"},
 		{"csv_initial_state",6,0,1,0,1550,0,0.,0.,0.,0,0,0,"continuous_state"},
 		{"csv_lower_bounds",6,0,2,0,1552,0,0.,0.,0.,0,0,0,"continuous_state"},
@@ -1474,7 +1483,7 @@ static GuiKeyWord
 		{"lower_bounds",14,0,2,0,1553,0,0.,0.,0.,0,"{Lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCSV",0,"continuous_state"},
 		{"upper_bounds",14,0,3,0,1555,0,0.,0.,0.,0,"{Upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCSV",0,"continuous_state"}
 		},
-	kw_214[8] = {
+	kw_215[8] = {
 		{"ddv_descriptors",7,0,4,0,1348,0,0.,0.,0.,0,0,0,"discrete_design_range"},
 		{"ddv_initial_point",5,0,1,0,1342,0,0.,0.,0.,0,0,0,"discrete_design_range"},
 		{"ddv_lower_bounds",5,0,2,0,1344,0,0.,0.,0.,0,0,0,"discrete_design_range"},
@@ -1484,19 +1493,19 @@ static GuiKeyWord
 		{"lower_bounds",13,0,2,0,1345,0,0.,0.,0.,0,"{Lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDRIV",0,"discrete_design_range"},
 		{"upper_bounds",13,0,3,0,1347,0,0.,0.,0.,0,"{Upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDRIV",0,"discrete_design_range"}
 		},
-	kw_215[4] = {
+	kw_216[4] = {
 		{"descriptors",15,0,4,0,1359,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDSIV",0,"discrete_design_set_integer"},
 		{"initial_point",13,0,1,0,1353,0,0.,0.,0.,0,"{Initial point} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDSIV",0,"discrete_design_set_integer"},
 		{"num_set_values",13,0,2,0,1355,0,0.,0.,0.,0,"{Number of values for each variable} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDSIV",0,"discrete_design_set_integer"},
 		{"set_values",13,0,3,1,1357,0,0.,0.,0.,0,"{Set values} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDSIV"}
 		},
-	kw_216[4] = {
+	kw_217[4] = {
 		{"descriptors",15,0,4,0,1369,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDSRV",0,"discrete_design_set_real"},
 		{"initial_point",14,0,1,0,1363,0,0.,0.,0.,0,"{Initial point} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDSRV",0,"discrete_design_set_real"},
 		{"num_set_values",13,0,2,0,1365,0,0.,0.,0.,0,"{Number of values for each variable} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDSRV",0,"discrete_design_set_real"},
 		{"set_values",14,0,3,1,1367,0,0.,0.,0.,0,"{Set values} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDSRV"}
 		},
-	kw_217[8] = {
+	kw_218[8] = {
 		{"descriptors",15,0,4,0,1567,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSRIV",0,"discrete_state_range"},
 		{"dsv_descriptors",7,0,4,0,1566,0,0.,0.,0.,0,0,0,"discrete_state_range"},
 		{"dsv_initial_state",5,0,1,0,1560,0,0.,0.,0.,0,0,0,"discrete_state_range"},
@@ -1506,25 +1515,25 @@ static GuiKeyWord
 		{"lower_bounds",13,0,2,0,1563,0,0.,0.,0.,0,"{Lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSRIV",0,"discrete_state_range"},
 		{"upper_bounds",13,0,3,0,1565,0,0.,0.,0.,0,"{Upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSRIV",0,"discrete_state_range"}
 		},
-	kw_218[4] = {
+	kw_219[4] = {
 		{"descriptors",15,0,4,0,1577,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSSIV",0,"discrete_state_set_integer"},
 		{"initial_state",13,0,1,0,1571,0,0.,0.,0.,0,"{Initial state} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSSIV",0,"discrete_state_set_integer"},
 		{"num_set_values",13,0,2,0,1573,0,0.,0.,0.,0,"{Number of values for each variable} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSSIV",0,"discrete_state_set_integer"},
 		{"set_values",13,0,3,1,1575,0,0.,0.,0.,0,"{Set values} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSSIV"}
 		},
-	kw_219[4] = {
+	kw_220[4] = {
 		{"descriptors",15,0,4,0,1587,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSSRV",0,"discrete_state_set_real"},
 		{"initial_state",14,0,1,0,1581,0,0.,0.,0.,0,"{Initial state} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSSRV",0,"discrete_state_set_real"},
 		{"num_set_values",13,0,2,0,1583,0,0.,0.,0.,0,"{Number of values for each variable} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSSRV",0,"discrete_state_set_real"},
 		{"set_values",14,0,3,1,1585,0,0.,0.,0.,0,"{Set values} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSSRV"}
 		},
-	kw_220[4] = {
+	kw_221[4] = {
 		{"betas",14,0,1,1,1429,0,0.,0.,0.,0,"{exponential uncertain betas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Exponential",0,"exponential_uncertain"},
 		{"descriptors",15,0,2,0,1431,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Exponential",0,"exponential_uncertain"},
 		{"euv_betas",6,0,1,1,1428,0,0.,0.,0.,0,0,0,"exponential_uncertain"},
 		{"euv_descriptors",7,0,2,0,1430,0,0.,0.,0.,0,0,0,"exponential_uncertain"}
 		},
-	kw_221[6] = {
+	kw_222[6] = {
 		{"alphas",14,0,1,1,1463,0,0.,0.,0.,0,"{frechet uncertain alphas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Frechet",0,"frechet_uncertain"},
 		{"betas",14,0,2,2,1465,0,0.,0.,0.,0,"{frechet uncertain betas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Frechet",0,"frechet_uncertain"},
 		{"descriptors",15,0,3,0,1467,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Frechet",0,"frechet_uncertain"},
@@ -1532,7 +1541,7 @@ static GuiKeyWord
 		{"fuv_betas",6,0,2,2,1464,0,0.,0.,0.,0,0,0,"frechet_uncertain"},
 		{"fuv_descriptors",7,0,3,0,1466,0,0.,0.,0.,0,0,0,"frechet_uncertain"}
 		},
-	kw_222[6] = {
+	kw_223[6] = {
 		{"alphas",14,0,1,1,1447,0,0.,0.,0.,0,"{gamma uncertain alphas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gamma",0,"gamma_uncertain"},
 		{"betas",14,0,2,2,1449,0,0.,0.,0.,0,"{gamma uncertain betas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gamma",0,"gamma_uncertain"},
 		{"descriptors",15,0,3,0,1451,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gamma",0,"gamma_uncertain"},
@@ -1540,11 +1549,11 @@ static GuiKeyWord
 		{"gauv_betas",6,0,2,2,1448,0,0.,0.,0.,0,0,0,"gamma_uncertain"},
 		{"gauv_descriptors",7,0,3,0,1450,0,0.,0.,0.,0,0,0,"gamma_uncertain"}
 		},
-	kw_223[2] = {
+	kw_224[2] = {
 		{"descriptors",15,0,2,0,1515,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Geometric",0,"geometric_uncertain"},
 		{"prob_per_trial",14,0,1,1,1513,0,0.,0.,0.,0,"{geometric uncertain prob_per_trial} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Geometric",0,"geometric_uncertain"}
 		},
-	kw_224[6] = {
+	kw_225[6] = {
 		{"alphas",14,0,1,1,1455,0,0.,0.,0.,0,"{gumbel uncertain alphas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gumbel",0,"gumbel_uncertain"},
 		{"betas",14,0,2,2,1457,0,0.,0.,0.,0,"{gumbel uncertain betas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gumbel",0,"gumbel_uncertain"},
 		{"descriptors",15,0,3,0,1459,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gumbel",0,"gumbel_uncertain"},
@@ -1552,7 +1561,7 @@ static GuiKeyWord
 		{"guuv_betas",6,0,2,2,1456,0,0.,0.,0.,0,0,0,"gumbel_uncertain"},
 		{"guuv_descriptors",7,0,3,0,1458,0,0.,0.,0.,0,0,0,"gumbel_uncertain"}
 		},
-	kw_225[10] = {
+	kw_226[10] = {
 		{"abscissas",14,0,2,1,1481,0,0.,0.,0.,0,"{sets of abscissas for bin-based histogram variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Bin_Histogram"},
 		{"counts",14,0,3,2,1485,0,0.,0.,0.,0,"{sets of counts for bin-based histogram variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Bin_Histogram"},
 		{"descriptors",15,0,4,0,1487,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Bin_Histogram",0,"histogram_bin_uncertain"},
@@ -1564,7 +1573,7 @@ static GuiKeyWord
 		{"num_pairs",13,0,1,0,1479,0,0.,0.,0.,0,"{key to apportionment among bin-based histogram variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Bin_Histogram",0,"histogram_bin_uncertain"},
 		{"ordinates",14,0,3,2,1483,0,0.,0.,0.,0,"{sets of ordinates for bin-based histogram variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Bin_Histogram"}
 		},
-	kw_226[8] = {
+	kw_227[8] = {
 		{"abscissas",14,0,2,1,1531,0,0.,0.,0.,0,"{sets of abscissas for point-based histogram variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Point_Histogram"},
 		{"counts",14,0,3,2,1533,0,0.,0.,0.,0,"{sets of counts for point-based histogram variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Point_Histogram"},
 		{"descriptors",15,0,4,0,1535,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Point_Histogram",0,"histogram_point_uncertain"},
@@ -1574,13 +1583,13 @@ static GuiKeyWord
 		{"huv_point_descriptors",7,0,4,0,1534,0,0.,0.,0.,0,0,0,"histogram_point_uncertain"},
 		{"num_pairs",13,0,1,0,1529,0,0.,0.,0.,0,"{key to apportionment among point-based histogram variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Point_Histogram",0,"histogram_point_uncertain"}
 		},
-	kw_227[4] = {
+	kw_228[4] = {
 		{"descriptors",15,0,4,0,1525,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Hypergeometric",0,"hypergeometric_uncertain"},
 		{"num_drawn",13,0,3,3,1523,0,0.,0.,0.,0,"{hypergeometric uncertain num_drawn } http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Hypergeometric",0,"hypergeometric_uncertain"},
 		{"selected_population",13,0,2,2,1521,0,0.,0.,0.,0,"{hypergeometric uncertain selected_population} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Hypergeometric",0,"hypergeometric_uncertain"},
 		{"total_population",13,0,1,1,1519,0,0.,0.,0.,0,"{hypergeometric uncertain total_population} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Hypergeometric",0,"hypergeometric_uncertain"}
 		},
-	kw_228[8] = {
+	kw_229[8] = {
 		{"descriptors",15,0,4,0,1547,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCEUV_Interval",0,"interval_uncertain"},
 		{"interval_bounds",14,0,3,2,1545,0,0.,0.,0.,0,"{bounds per interval} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCEUV_Interval"},
 		{"interval_probs",14,0,2,1,1543,0,0.,0.,0.,0,"{basic probability assignments per interval} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCEUV_Interval"},
@@ -1590,29 +1599,29 @@ static GuiKeyWord
 		{"iuv_num_intervals",5,0,1,0,1540,0,0.,0.,0.,0,0,0,"interval_uncertain"},
 		{"num_intervals",13,0,1,0,1541,0,0.,0.,0.,0,"{number of intervals defined for each interval variable} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCEUV_Interval",0,"interval_uncertain"}
 		},
-	kw_229[2] = {
+	kw_230[2] = {
 		{"lnuv_zetas",6,0,1,1,1386,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
 		{"zetas",14,0,1,1,1387,0,0.,0.,0.,0,"{lognormal uncertain zetas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"}
 		},
-	kw_230[4] = {
+	kw_231[4] = {
 		{"error_factors",14,0,1,1,1393,0,0.,0.,0.,0,"[CHOOSE variance spec.]{lognormal uncertain error factors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
 		{"lnuv_error_factors",6,0,1,1,1392,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
 		{"lnuv_std_deviations",6,0,1,1,1390,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
 		{"std_deviations",14,0,1,1,1391,0,0.,0.,0.,0,"@{lognormal uncertain standard deviations} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"}
 		},
-	kw_231[10] = {
+	kw_232[10] = {
 		{"descriptors",15,0,4,0,1399,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
-		{"lambdas",14,2,1,1,1385,kw_229,0.,0.,0.,0,"[CHOOSE characterization]{lognormal uncertain lambdas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
+		{"lambdas",14,2,1,1,1385,kw_230,0.,0.,0.,0,"[CHOOSE characterization]{lognormal uncertain lambdas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
 		{"lnuv_descriptors",7,0,4,0,1398,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
-		{"lnuv_lambdas",6,2,1,1,1384,kw_229,0.,0.,0.,0,0,0,"lognormal_uncertain"},
+		{"lnuv_lambdas",6,2,1,1,1384,kw_230,0.,0.,0.,0,0,0,"lognormal_uncertain"},
 		{"lnuv_lower_bounds",6,0,2,0,1394,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
-		{"lnuv_means",6,4,1,1,1388,kw_230,0.,0.,0.,0,0,0,"lognormal_uncertain"},
+		{"lnuv_means",6,4,1,1,1388,kw_231,0.,0.,0.,0,0,0,"lognormal_uncertain"},
 		{"lnuv_upper_bounds",6,0,3,0,1396,0,0.,0.,0.,0,0,0,"lognormal_uncertain"},
 		{"lower_bounds",14,0,2,0,1395,0,0.,0.,0.,0,"{Distribution lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
-		{"means",14,4,1,1,1389,kw_230,0.,0.,0.,0,"@{lognormal uncertain means} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
+		{"means",14,4,1,1,1389,kw_231,0.,0.,0.,0,"@{lognormal uncertain means} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"},
 		{"upper_bounds",14,0,3,0,1397,0,0.,0.,0.,0,"{Distribution upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal",0,"lognormal_uncertain"}
 		},
-	kw_232[6] = {
+	kw_233[6] = {
 		{"descriptors",15,0,3,0,1415,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Loguniform",0,"loguniform_uncertain"},
 		{"lower_bounds",14,0,1,1,1411,0,0.,0.,0.,0,"{Distribution lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Loguniform",0,"loguniform_uncertain"},
 		{"luuv_descriptors",7,0,3,0,1414,0,0.,0.,0.,0,0,0,"loguniform_uncertain"},
@@ -1620,12 +1629,12 @@ static GuiKeyWord
 		{"luuv_upper_bounds",6,0,2,2,1412,0,0.,0.,0.,0,0,0,"loguniform_uncertain"},
 		{"upper_bounds",14,0,2,2,1413,0,0.,0.,0.,0,"{Distribution upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Loguniform",0,"loguniform_uncertain"}
 		},
-	kw_233[3] = {
+	kw_234[3] = {
 		{"descriptors",15,0,3,0,1509,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Negative_Binomial",0,"negative_binomial_uncertain"},
 		{"num_trials",13,0,2,2,1507,0,0.,0.,0.,0,"{negative binomial uncertain success num_trials} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Negative_Binomial",0,"negative_binomial_uncertain"},
 		{"prob_per_trial",14,0,1,1,1505,0,0.,0.,0.,0,"{negative binomial uncertain success prob_per_trial} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Negative_Binomial",0,"negative_binomial_uncertain"}
 		},
-	kw_234[10] = {
+	kw_235[10] = {
 		{"descriptors",15,0,5,0,1381,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Normal",0,"normal_uncertain"},
 		{"lower_bounds",14,0,3,0,1377,0,0.,0.,0.,0,"{Distribution lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Normal",0,"normal_uncertain"},
 		{"means",14,0,1,1,1373,0,0.,0.,0.,0,"{normal uncertain means} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Normal",0,"normal_uncertain"},
@@ -1637,11 +1646,11 @@ static GuiKeyWord
 		{"std_deviations",14,0,2,2,1375,0,0.,0.,0.,0,"{normal uncertain standard deviations} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Normal",0,"normal_uncertain"},
 		{"upper_bounds",14,0,4,0,1379,0,0.,0.,0.,0,"{Distribution upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Normal",0,"normal_uncertain"}
 		},
-	kw_235[2] = {
+	kw_236[2] = {
 		{"descriptors",15,0,2,0,1493,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Poisson",0,"poisson_uncertain"},
 		{"lambdas",14,0,1,1,1491,0,0.,0.,0.,0,"{poisson uncertain lambdas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Poisson",0,"poisson_uncertain"}
 		},
-	kw_236[8] = {
+	kw_237[8] = {
 		{"descriptors",15,0,4,0,1425,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Triangular",0,"triangular_uncertain"},
 		{"lower_bounds",14,0,2,2,1421,0,0.,0.,0.,0,"{Distribution lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Triangular",0,"triangular_uncertain"},
 		{"modes",14,0,1,1,1419,0,0.,0.,0.,0,"{triangular uncertain modes} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Triangular",0,"triangular_uncertain"},
@@ -1651,7 +1660,7 @@ static GuiKeyWord
 		{"tuv_upper_bounds",6,0,3,3,1422,0,0.,0.,0.,0,0,0,"triangular_uncertain"},
 		{"upper_bounds",14,0,3,3,1423,0,0.,0.,0.,0,"{Distribution upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Triangular",0,"triangular_uncertain"}
 		},
-	kw_237[6] = {
+	kw_238[6] = {
 		{"descriptors",15,0,3,0,1407,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Uniform",0,"uniform_uncertain"},
 		{"lower_bounds",14,0,1,1,1403,0,0.,0.,0.,0,"{Distribution lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Uniform",0,"uniform_uncertain"},
 		{"upper_bounds",14,0,2,2,1405,0,0.,0.,0.,0,"{Distribution upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Uniform",0,"uniform_uncertain"},
@@ -1659,7 +1668,7 @@ static GuiKeyWord
 		{"uuv_lower_bounds",6,0,1,1,1402,0,0.,0.,0.,0,0,0,"uniform_uncertain"},
 		{"uuv_upper_bounds",6,0,2,2,1404,0,0.,0.,0.,0,0,0,"uniform_uncertain"}
 		},
-	kw_238[6] = {
+	kw_239[6] = {
 		{"alphas",14,0,1,1,1471,0,0.,0.,0.,0,"{weibull uncertain alphas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Weibull",0,"weibull_uncertain"},
 		{"betas",14,0,2,2,1473,0,0.,0.,0.,0,"{weibull uncertain betas} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Weibull",0,"weibull_uncertain"},
 		{"descriptors",15,0,3,0,1475,0,0.,0.,0.,0,"{Descriptors} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Weibull",0,"weibull_uncertain"},
@@ -1667,46 +1676,46 @@ static GuiKeyWord
 		{"wuv_betas",6,0,2,2,1472,0,0.,0.,0.,0,0,0,"weibull_uncertain"},
 		{"wuv_descriptors",7,0,3,0,1474,0,0.,0.,0.,0,0,0,"weibull_uncertain"}
 		},
-	kw_239[29] = {
-		{"beta_uncertain",0x19,10,12,0,1433,kw_210,0.,0.,0.,0,"{beta uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Beta","Continuous Aleatory Uncertain"},
-		{"binomial_uncertain",0x19,3,19,0,1495,kw_211,0.,0.,0.,0,"{binomial uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Binomial","Discrete Aleatory Uncertain"},
-		{"continuous_design",0x19,12,2,0,1327,kw_212,0.,0.,0.,0,"{Continuous design variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCDV","Design Variables"},
-		{"continuous_state",0x19,8,26,0,1549,kw_213,0.,0.,0.,0,"{Continuous state variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCSV","State Variables"},
-		{"discrete_design_range",0x19,8,3,0,1341,kw_214,0.,0.,0.,0,"{Discrete design range variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDRIV","Design Variables"},
-		{"discrete_design_set_integer",0x19,4,4,0,1351,kw_215,0.,0.,0.,0,"{Discrete design set of integer variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDSIV","Design Variables"},
-		{"discrete_design_set_real",0x19,4,5,0,1361,kw_216,0.,0.,0.,0,"{Discrete design set of real variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDSRV","Design Variables"},
-		{"discrete_state_range",0x19,8,27,0,1559,kw_217,0.,0.,0.,0,"{Discrete state range variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSRIV","State Variables"},
-		{"discrete_state_set_integer",0x19,4,28,0,1569,kw_218,0.,0.,0.,0,"{Discrete state set of integer variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSSIV","State Variables"},
-		{"discrete_state_set_real",0x19,4,29,0,1579,kw_219,0.,0.,0.,0,"{Discrete state set of real variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSSRV","State Variables"},
-		{"exponential_uncertain",0x19,4,11,0,1427,kw_220,0.,0.,0.,0,"{exponential uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Exponential","Continuous Aleatory Uncertain"},
-		{"frechet_uncertain",0x19,6,15,0,1461,kw_221,0.,0.,0.,0,"{frechet uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Frechet","Continuous Aleatory Uncertain"},
-		{"gamma_uncertain",0x19,6,13,0,1445,kw_222,0.,0.,0.,0,"{gamma uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gamma","Continuous Aleatory Uncertain"},
-		{"geometric_uncertain",0x19,2,21,0,1511,kw_223,0.,0.,0.,0,"{geometric uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Geometric","Discrete Aleatory Uncertain"},
-		{"gumbel_uncertain",0x19,6,14,0,1453,kw_224,0.,0.,0.,0,"{gumbel uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gumbel","Continuous Aleatory Uncertain"},
-		{"histogram_bin_uncertain",0x19,10,17,0,1477,kw_225,0.,0.,0.,0,"{histogram bin uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Bin_Histogram","Continuous Aleatory Uncertain"},
-		{"histogram_point_uncertain",0x19,8,23,0,1527,kw_226,0.,0.,0.,0,"{histogram point uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Point_Histogram","Discrete Aleatory Uncertain"},
-		{"hypergeometric_uncertain",0x19,4,22,0,1517,kw_227,0.,0.,0.,0,"{hypergeometric uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Hypergeometric","Discrete Aleatory Uncertain"},
+	kw_240[29] = {
+		{"beta_uncertain",0x19,10,12,0,1433,kw_211,0.,0.,0.,0,"{beta uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Beta","Continuous Aleatory Uncertain"},
+		{"binomial_uncertain",0x19,3,19,0,1495,kw_212,0.,0.,0.,0,"{binomial uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Binomial","Discrete Aleatory Uncertain"},
+		{"continuous_design",0x19,12,2,0,1327,kw_213,0.,0.,0.,0,"{Continuous design variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCDV","Design Variables"},
+		{"continuous_state",0x19,8,26,0,1549,kw_214,0.,0.,0.,0,"{Continuous state variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCSV","State Variables"},
+		{"discrete_design_range",0x19,8,3,0,1341,kw_215,0.,0.,0.,0,"{Discrete design range variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDRIV","Design Variables"},
+		{"discrete_design_set_integer",0x19,4,4,0,1351,kw_216,0.,0.,0.,0,"{Discrete design set of integer variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDSIV","Design Variables"},
+		{"discrete_design_set_real",0x19,4,5,0,1361,kw_217,0.,0.,0.,0,"{Discrete design set of real variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDDSRV","Design Variables"},
+		{"discrete_state_range",0x19,8,27,0,1559,kw_218,0.,0.,0.,0,"{Discrete state range variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSRIV","State Variables"},
+		{"discrete_state_set_integer",0x19,4,28,0,1569,kw_219,0.,0.,0.,0,"{Discrete state set of integer variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSSIV","State Variables"},
+		{"discrete_state_set_real",0x19,4,29,0,1579,kw_220,0.,0.,0.,0,"{Discrete state set of real variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDSSRV","State Variables"},
+		{"exponential_uncertain",0x19,4,11,0,1427,kw_221,0.,0.,0.,0,"{exponential uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Exponential","Continuous Aleatory Uncertain"},
+		{"frechet_uncertain",0x19,6,15,0,1461,kw_222,0.,0.,0.,0,"{frechet uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Frechet","Continuous Aleatory Uncertain"},
+		{"gamma_uncertain",0x19,6,13,0,1445,kw_223,0.,0.,0.,0,"{gamma uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gamma","Continuous Aleatory Uncertain"},
+		{"geometric_uncertain",0x19,2,21,0,1511,kw_224,0.,0.,0.,0,"{geometric uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Geometric","Discrete Aleatory Uncertain"},
+		{"gumbel_uncertain",0x19,6,14,0,1453,kw_225,0.,0.,0.,0,"{gumbel uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Gumbel","Continuous Aleatory Uncertain"},
+		{"histogram_bin_uncertain",0x19,10,17,0,1477,kw_226,0.,0.,0.,0,"{histogram bin uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Bin_Histogram","Continuous Aleatory Uncertain"},
+		{"histogram_point_uncertain",0x19,8,23,0,1527,kw_227,0.,0.,0.,0,"{histogram point uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Point_Histogram","Discrete Aleatory Uncertain"},
+		{"hypergeometric_uncertain",0x19,4,22,0,1517,kw_228,0.,0.,0.,0,"{hypergeometric uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Hypergeometric","Discrete Aleatory Uncertain"},
 		{"id_variables",11,0,1,0,1325,0,0.,0.,0.,0,"{Variables set identifier} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarSetId"},
-		{"interval_uncertain",0x19,8,25,0,1539,kw_228,0.,0.,0.,0,"{interval uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCEUV_Interval","Epistemic Uncertain"},
-		{"lognormal_uncertain",0x19,10,7,0,1383,kw_231,0.,0.,0.,0,"{lognormal uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal","Continuous Aleatory Uncertain"},
-		{"loguniform_uncertain",0x19,6,9,0,1409,kw_232,0.,0.,0.,0,"{loguniform uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Loguniform","Continuous Aleatory Uncertain"},
-		{"negative_binomial_uncertain",0x19,3,20,0,1503,kw_233,0.,0.,0.,0,"{negative binomial uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Negative_Binomial","Discrete Aleatory Uncertain"},
-		{"normal_uncertain",0x19,10,6,0,1371,kw_234,0.,0.,0.,0,"{normal uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Normal","Continuous Aleatory Uncertain"},
-		{"poisson_uncertain",0x19,2,18,0,1489,kw_235,0.,0.,0.,0,"{poisson uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Poisson","Discrete Aleatory Uncertain"},
-		{"triangular_uncertain",0x19,8,10,0,1417,kw_236,0.,0.,0.,0,"{triangular uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Triangular","Continuous Aleatory Uncertain"},
+		{"interval_uncertain",0x19,8,25,0,1539,kw_229,0.,0.,0.,0,"{interval uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCEUV_Interval","Epistemic Uncertain"},
+		{"lognormal_uncertain",0x19,10,7,0,1383,kw_232,0.,0.,0.,0,"{lognormal uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Lognormal","Continuous Aleatory Uncertain"},
+		{"loguniform_uncertain",0x19,6,9,0,1409,kw_233,0.,0.,0.,0,"{loguniform uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Loguniform","Continuous Aleatory Uncertain"},
+		{"negative_binomial_uncertain",0x19,3,20,0,1503,kw_234,0.,0.,0.,0,"{negative binomial uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Negative_Binomial","Discrete Aleatory Uncertain"},
+		{"normal_uncertain",0x19,10,6,0,1371,kw_235,0.,0.,0.,0,"{normal uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Normal","Continuous Aleatory Uncertain"},
+		{"poisson_uncertain",0x19,2,18,0,1489,kw_236,0.,0.,0.,0,"{poisson uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarDAUV_Poisson","Discrete Aleatory Uncertain"},
+		{"triangular_uncertain",0x19,8,10,0,1417,kw_237,0.,0.,0.,0,"{triangular uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Triangular","Continuous Aleatory Uncertain"},
 		{"uncertain_correlation_matrix",14,0,24,0,1537,0,0.,0.,0.,0,"{correlations in aleatory uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarAUV_Correlations","Aleatory Uncertain Correlations"},
-		{"uniform_uncertain",0x19,6,8,0,1401,kw_237,0.,0.,0.,0,"{uniform uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Uniform","Continuous Aleatory Uncertain"},
-		{"weibull_uncertain",0x19,6,16,0,1469,kw_238,0.,0.,0.,0,"{weibull uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Weibull","Continuous Aleatory Uncertain"}
+		{"uniform_uncertain",0x19,6,8,0,1401,kw_238,0.,0.,0.,0,"{uniform uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Uniform","Continuous Aleatory Uncertain"},
+		{"weibull_uncertain",0x19,6,16,0,1469,kw_239,0.,0.,0.,0,"{weibull uncertain variables} http://dakota.sandia.gov/licensing/votd/html-ref/VarCommands.html#VarCAUV_Weibull","Continuous Aleatory Uncertain"}
 		},
-	kw_240[6] = {
+	kw_241[6] = {
 		{"interface",0x308,10,5,5,1589,kw_9,0.,0.,0.,0,"{Interface} An interface specifies how function evaluations will be performed in order to map a set of parameters into a set of responses. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/InterfCommands.html"},
 		{"method",0x308,75,2,2,59,kw_156,0.,0.,0.,0,"{Method} A method specifies the name and controls of an iterative procedure, e.g., a sensitivity analysis, uncertainty quantification, or optimization method. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/MethodCommands.html"},
-		{"model",8,6,3,3,1147,kw_180,0.,0.,0.,0,"{Model} A model consists of a model type and maps specified variables through an interface to generate responses. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/ModelCommands.html"},
-		{"responses",0x308,18,6,6,1683,kw_198,0.,0.,0.,0,"{Responses} A responses object specifies the data that can be returned to DAKOTA through the interface after the completion of a function evaluation. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/RespCommands.html"},
-		{"strategy",0x108,10,1,1,1,kw_209,0.,0.,0.,0,"{Strategy} The strategy specifies the top level technique which will govern the management of iterators and models in the solution of the problem of interest. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/StratCommands.html"},
-		{"variables",0x308,29,4,4,1323,kw_239,0.,0.,0.,0,"{Variables} A variables object specifies the parameter set to be iterated by a particular method. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/VarCommands.html"}
+		{"model",8,6,3,3,1145,kw_181,0.,0.,0.,0,"{Model} A model consists of a model type and maps specified variables through an interface to generate responses. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/ModelCommands.html"},
+		{"responses",0x308,18,6,6,1683,kw_199,0.,0.,0.,0,"{Responses} A responses object specifies the data that can be returned to DAKOTA through the interface after the completion of a function evaluation. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/RespCommands.html"},
+		{"strategy",0x108,10,1,1,1,kw_210,0.,0.,0.,0,"{Strategy} The strategy specifies the top level technique which will govern the management of iterators and models in the solution of the problem of interest. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/StratCommands.html"},
+		{"variables",0x308,29,4,4,1323,kw_240,0.,0.,0.,0,"{Variables} A variables object specifies the parameter set to be iterated by a particular method. http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/VarCommands.html"}
 		};
 
 } // namespace Dakota
 
-KeyWord Dakota_Keyword_Top = {"KeywordTop",0,6,0,0,Dakota::kw_240};
+KeyWord Dakota_Keyword_Top = {"KeywordTop",0,6,0,0,Dakota::kw_241};

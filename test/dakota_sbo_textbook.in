@@ -68,8 +68,8 @@ model,
 #	  use_derivatives			 #6,#7
 #	  neural_network
 	  polynomial quadratic			 #0,#1,#2,#3,#4,#p0	
-#	  kriging                                #5,#6,#7
-#	  kriging correlation_lengths =  0.707106781186547 0.707106781186547
+#	  gaussian_process surfpack                                #5,#6,#7
+#	  gaussian_process surfpack correlation_lengths =  0.707106781186547 0.707106781186547
 #	  mars
 # 	surrogate local taylor_series
 #	  actual_model_pointer = 'TRUTH'

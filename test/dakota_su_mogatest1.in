@@ -48,7 +48,7 @@ model,
         dace_method_pointer = 'SAMPLING'
         correction additive zeroth_order
       #  polynomial quadratic
-        gaussian_process 
+        gaussian_process dakota
 
 variables,
     continuous_design = 3

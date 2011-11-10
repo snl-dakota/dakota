@@ -5,9 +5,10 @@
 # Note on testing in this file:
 # These tests exercise the various surrogate model types that are
 # available in the surrogate based optimization strategy. Here, the
-# options are "polynomial," "neural network," "mars," "kriging,"
-# and "taylor_series". See the DAKOTA Users Manual for a description of
-# these surrogate model types.
+# options are "polynomial," "neural network," "mars,"
+# "gaussian_process surfpack (kriging)," and "taylor_series". See the
+# DAKOTA Users Manual for a description of these surrogate model
+# types.
 
 strategy,
 	single_method
@@ -61,7 +62,7 @@ model,
 ### Section to specify surface fit method.
 	  polynomial quadratic 			#0
 #	  neural_network			#1
-#	  kriging				#2,#3,#9,#10,#11
+#	  gaussian_process surfpack		#2,#3,#9,#10,#11
 #	   correlation_lengths 0.79 0.76	#3
 #	  mars					#4
 #	  moving_least_squares			#7

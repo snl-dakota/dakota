@@ -107,7 +107,7 @@ model,
 	  variables_pointer = 'UQ_V'
 	  responses_pointer = 'UQ_R'
 	  dace_method_pointer = 'UQ_DACE'
-	  polynomial quadratic #kriging
+	  polynomial quadratic #gaussian_process surfpack
 
 variables,
 	id_variables = 'UQ_V'

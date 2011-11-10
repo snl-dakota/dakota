@@ -33,7 +33,7 @@ model,
 	  dace_method_pointer = 'DACE'
 	  polynomial quadratic		#0
 # 	  neural_network		#1
-#	  kriging			#2,#4,#5
+#	  gaussian_process surfpack	#2,#4,#5
 #	  mars				#3
 
 # Test 2 with a samples file, free-form or annotated

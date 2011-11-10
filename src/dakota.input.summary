@@ -579,9 +579,9 @@ KEYWORD12 method
 	  )
 	|
 	( efficient_global
-	  [ emulator
-	    kriging
-	    | gaussian_process
+	  [ gaussian_process ALIAS kriging
+	    surfpack
+	    | dakota
 	    ]
 	  [ use_derivatives ]
 	  [ seed INTEGER ]
@@ -820,9 +820,9 @@ KEYWORD12 method
 	|
 	( global_evidence ALIAS nond_global_evidence
 	  [ ( ego
-	      [ emulator
-		kriging
-		| gaussian_process
+	      [ gaussian_process ALIAS kriging
+		surfpack
+		| dakota
 		]
 	      [ use_derivatives ]
 	      )
@@ -854,9 +854,9 @@ KEYWORD12 method
 	|
 	( global_interval_est ALIAS nond_global_interval_est
 	  [ ( ego
-	      [ emulator
-		kriging
-		| gaussian_process
+	      [ gaussian_process ALIAS kriging
+		surfpack
+		| dakota
 		]
 	      [ use_derivatives ]
 	      )
@@ -872,7 +872,7 @@ KEYWORD12 method
 	( bayes_calibration ALIAS nond_bayes_calibration
 	  ( queso
 	    [ emulator
-	      ( gp
+	      ( gaussian_process ALIAS gp
 		[ emulator_samples INTEGER ]
 		)
 	      |
@@ -1030,12 +1030,11 @@ KEYWORD12 method
 	  )
 	|
 	( global_reliability ALIAS nond_global_reliability
-	  x_gaussian_process
-	  | u_gaussian_process
-	  [ emulator
-	    kriging
-	    | gaussian_process
-	    ]
+	  ( x_gaussian_process ALIAS x_kriging
+	    | u_gaussian_process ALIAS u_kriging
+	    [ surfpack
+	    | dakota ]
+	    )
 	  [ all_variables ]
 	  [ use_derivatives ]
 	  [ seed INTEGER ]
@@ -1114,13 +1113,27 @@ KEYWORD model
 	( surrogate
 	  [ id_surrogates INTEGERLIST ]
 	  ( global
-	    ( gaussian_process
-	      [ point_selection ]
-	      [ trend
-		constant
-		| linear
-		| reduced_quadratic
-		]
+	    ( gaussian_process ALIAS kriging
+	      ( dakota
+		[ point_selection ]
+		[ trend
+		  constant
+		  | linear
+		  | reduced_quadratic
+		  ]
+		)
+	      |
+	      ( surfpack
+		[ trend
+		  constant
+		  | linear
+		  | reduced_quadratic
+		  | quadratic
+		  ]
+		[ optimization_method STRING ]
+		[ max_trials INTEGER > 0 ]
+		[ correlation_lengths REALLIST ]
+		)
 	      )
 	    |
 	    ( mars
@@ -1153,18 +1166,6 @@ KEYWORD model
 	      linear
 	      | quadratic
 	      | cubic
-	      )
-	    |
-	    ( kriging
-	      [ trend
-		constant
-		| linear
-		| reduced_quadratic
-		| quadratic
-		]
-	      [ optimization_method STRING ]
-	      [ max_trials INTEGER > 0 ]
-	      [ correlation_lengths REALLIST ]
 	      )
 	    [ total_points INTEGER
 	    | minimum_points
