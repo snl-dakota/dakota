@@ -7,8 +7,8 @@ yada1_sm=exp(-(x(:,1)-1).^2)+exp(-0.8*(x(:,1)+1).^2);
 yada1_h=yada1_sm-0.05*sin(8*(x(:,1)+0.1));
 yada2_sm=exp(-(x(:,2)-1).^2)+exp(-0.8*(x(:,2)+1).^2);
 yada2_h=yada2_sm-0.05*sin(8*(x(:,2)+0.1));
-herbie=reshape(yada1.*yada2,n1d,n1d); %herbie
-smooth_herbie=reshape(yada1s.*yada2s,n1d,n1d); %herbie
+herbie=-reshape(yada1_h.*yada2_h,n1d,n1d); %herbie
+smooth_herbie=-reshape(yada1_sm.*yada2_sm,n1d,n1d); %herbie
 max_hsmh=1.2;
 min_hsmh=-0.2;
 
@@ -23,21 +23,23 @@ ax0=[0.33 2.97]/WX;
 ay0=0.4/WY;
 awx=2.25/WX;
 awy=2.25/WY;
-caxis_lim=[0 1.2];
+caxis_lim=[-1.2 0];
 
-hax_herbie=axes('position',[ax0(1) ay0 awx awy]);
+hax_herbie=axes('position',[ax0(1) ay0 awx awy]); 
 surf(x1,x2,herbie); shading interp; 
 caxis(caxis_lim); 
 hold on; plot3(x1,x2,herbie,'-k',x1',x2',herbie','-k'); hold off; 
+set(hax_herbie,'zdir','reverse');
 axis([-2 2 -2 2 caxis_lim]);
 xlabel('x1','fontsize',14);
 ylabel('x2','fontsize',14);
 title('2D "herbie"','fontsize',16);
 
-hax_smooth_herbie=axes('position',[ax0(2) ay0 awx awy]);
+hax_smooth_herbie=axes('position',[ax0(2) ay0 awx awy]); 
 surf(x1,x2,smooth_herbie); shading interp; 
 caxis(caxis_lim); 
 hold on; plot3(x1,x2,smooth_herbie,'-k',x1',x2',smooth_herbie','-k'); hold off; 
+set(hax_smooth_herbie,'zdir','reverse');
 axis([-2 2 -2 2 caxis_lim]);
 xlabel('x1','fontsize',14);
 ylabel('x2','fontsize',14);
