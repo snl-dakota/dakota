@@ -527,15 +527,14 @@ nlf0_evaluator(int n, const Teuchos::SerialDenseVector<int, double>& x, double& 
   // Emulates NPSOLOptimizer::objective_eval() when nonlinear constraints are
   // present.  Unlike NPSOL, verify that vars are consistent since OPT++ does
   // not always have a 1-to-1 correspondence in evaluator calls.
-  RealVector local_des_vars;
-  SNLLBase::copy_data(x, local_des_vars);
+
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
-    Cout << "\nSNLLOptimizer::nlf0_evaluator vars = \n" << local_des_vars;
+    Cout << "\nSNLLOptimizer::nlf0_evaluator vars = \n" << x;
   if (!snllOptInstance->numNonlinearConstraints ||
-       lastFnEvalLocn != CONEvaluator || local_des_vars != lastEvalVars) {
+       lastFnEvalLocn != CONEvaluator || x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
-    snllOptInstance->iteratedModel.continuous_variables(local_des_vars);
+    snllOptInstance->iteratedModel.continuous_variables(x);
     snllOptInstance->iteratedModel.compute_response();// default active set
     // Should constraints be evaluated (if present)?  Depends on what OPT++ is
     // doing.  Since we know this eval is not aligned with a preceding
@@ -595,17 +594,15 @@ nlf1_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x
   // Emulates NPSOLOptimizer::objective_eval() when nonlinear constraints are
   // present.  Unlike NPSOL, verify that mode and vars are consistent since
   // OPT++ does not always have a 1-to-1 correspondence in evaluator calls.
-  RealVector local_des_vars;
-  SNLLBase::copy_data(x, local_des_vars);
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
-    Cout << "\nSNLLOptimizer::nlf1_evaluator vars = \n" << local_des_vars;
+    Cout << "\nSNLLOptimizer::nlf1_evaluator vars = \n" << x;
 
   if (!snllOptInstance->numNonlinearConstraints ||
       lastFnEvalLocn != CONEvaluator || mode != lastEvalMode ||
-      local_des_vars != lastEvalVars) {
+      x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
-    snllOptInstance->iteratedModel.continuous_variables(local_des_vars);
+    snllOptInstance->iteratedModel.continuous_variables(x);
 
     // Should constraints be evaluated (if present)?  Depends on what OPT++ is
     // doing.  Since we know this eval is not aligned with a preceding
@@ -630,7 +627,7 @@ nlf1_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x
     result_mode = NLPFunction;
   }
   if (mode & 2) { // 2nd bit is present, mode = 2 or 3
-    SNLLBase::copy_data(local_response.function_gradient(0), n, grad_f);
+    grad_f = local_response.function_gradient_copy(0);
     result_mode |= NLPGradient;
   }
 }
@@ -683,16 +680,15 @@ nlf2_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x
   // Emulates NPSOLOptimizer::objective_eval() when nonlinear constraints are
   // present.  Unlike NPSOL, verify that mode and vars are consistent since
   // OPT++ does not always have a 1-to-1 correspondence in evaluator calls.
-  RealVector local_des_vars;
-  SNLLBase::copy_data(x, local_des_vars);
+
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
-    Cout << "\nSNLLOptimizer::nlf2_evaluator vars = \n" << local_des_vars;
+    Cout << "\nSNLLOptimizer::nlf2_evaluator vars = \n" << x;
   if (!snllOptInstance->numNonlinearConstraints ||
       lastFnEvalLocn != CONEvaluator || mode != lastEvalMode ||
-      local_des_vars != lastEvalVars) {
+      x != lastEvalVars) {
     // data not available from constraint0_evaluator() so perform
     // a new function evaluation.
-    snllOptInstance->iteratedModel.continuous_variables(local_des_vars);
+    snllOptInstance->iteratedModel.continuous_variables(x);
     // Should constraints be evaluated (if present)?  Depends on what OPT++ is
     // doing.  Since we know this eval is not aligned with a preceding
     // constraint eval, assume for now that a matching constraint eval might
@@ -716,11 +712,11 @@ nlf2_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x
     result_mode = NLPFunction;
   }
   if (mode & 2) { // 2nd bit is present, mode = 2, 3, 6, or 7
-    SNLLBase::copy_data(local_response.function_gradient(0), n, grad_f);
+    grad_f = local_response.function_gradient_copy(0);
     result_mode |= NLPGradient;
   }
   if (mode & 4) { // 3rd bit is present, mode >= 4
-    SNLLBase::copy_data(local_response.function_hessian(0), hess_f);
+    hess_f = local_response.function_hessian(0);
     result_mode |= NLPHessian;
   }
 }
@@ -738,15 +734,13 @@ constraint0_evaluator(int n, const Teuchos::SerialDenseVector<int, double>& x,
     Cout << "\nSNLLOptimizer::constraint0_evaluator called with mode = 1";
 
   // set model variables prior to compute_response()
-  RealVector local_des_vars;
-  SNLLBase::copy_data(x, local_des_vars);
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
-    Cout << "\nSNLLOptimizer::constraint0_evaluator vars = \n" <<local_des_vars;
-  snllOptInstance->iteratedModel.continuous_variables(local_des_vars);
+    Cout << "\nSNLLOptimizer::constraint0_evaluator vars = \n" << x;
+  snllOptInstance->iteratedModel.continuous_variables(x);
 
   snllOptInstance->iteratedModel.compute_response(); // default active set
   lastFnEvalLocn = CONEvaluator;
-  lastEvalVars   = local_des_vars;
+  lastEvalVars   = x;
 
   snllOptInstance->copy_con_vals_dak_to_optpp(
     snllOptInstance->iteratedModel.current_response().function_values(), g,
@@ -767,18 +761,16 @@ constraint1_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, dou
          << mode;
 
   // set model variables and active set prior to compute_response()
-  RealVector local_des_vars;
-  SNLLBase::copy_data(x, local_des_vars);
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
-    Cout << "\nSNLLOptimizer::constraint1_evaluator vars = \n" <<local_des_vars;
-  snllOptInstance->iteratedModel.continuous_variables(local_des_vars);
+    Cout << "\nSNLLOptimizer::constraint1_evaluator vars = \n" << x;
+  snllOptInstance->iteratedModel.continuous_variables(x);
 
   snllOptInstance->activeSet.request_values(mode);
   snllOptInstance->
     iteratedModel.compute_response(snllOptInstance->activeSet);
   lastFnEvalLocn = CONEvaluator;
   lastEvalMode   = mode;
-  lastEvalVars   = local_des_vars;
+  lastEvalVars   = x;
 
   const Response& local_response
     = snllOptInstance->iteratedModel.current_response();
@@ -807,18 +799,16 @@ constraint2_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, dou
          << mode;
 
   // set model variables and active set prior to compute_response().
-  RealVector local_des_vars;
-  SNLLBase::copy_data(x, local_des_vars);
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
-    Cout << "\nSNLLOptimizer::constraint2_evaluator vars = \n" <<local_des_vars;
-  snllOptInstance->iteratedModel.continuous_variables(local_des_vars);
+    Cout << "\nSNLLOptimizer::constraint2_evaluator vars = \n" << x;
+  snllOptInstance->iteratedModel.continuous_variables(x);
 
   snllOptInstance->activeSet.request_values(mode);
   snllOptInstance->
     iteratedModel.compute_response(snllOptInstance->activeSet);
   lastFnEvalLocn = CONEvaluator;
   lastEvalMode   = mode;
-  lastEvalVars   = local_des_vars;
+  lastEvalVars   = x;
 
   const Response& local_response
     = snllOptInstance->iteratedModel.current_response();

@@ -197,8 +197,7 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
   // within opt++.  This occurs within the context of the run function so that
   // any variable reassignment at the strategy layer (after iterator
   // construction) is captured with setX.
-  Teuchos::SerialDenseVector<int, double> x;
-  copy_data(init_pt, x);
+  Teuchos::SerialDenseVector<int, double> x(init_pt);
   nlf_objective->setX(x);  // setX accepts a ColumnVector
   size_t num_cv = init_pt.length();
 
@@ -212,11 +211,7 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
   // so that any bounds modifications at the strategy layer (e.g., 
   // BranchBndStrategy, SurrBasedOptStrategy) are properly captured.
   if (bound_constr_flag) {
-    Teuchos::SerialDenseVector<int, double> bc_lower, bc_upper;
-    copy_data(lower_bounds, bc_lower);
-    copy_data(upper_bounds, bc_upper);
-
-    Constraint bc = new BoundConstraint(num_cv, bc_lower, bc_upper);
+    Constraint bc = new BoundConstraint(num_cv, lower_bounds, upper_bounds);
     constraint_array.append(bc);
   }
 
@@ -232,23 +227,12 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
   if (num_lin_con) {
 
     if (num_lin_ineq_con){
-      Teuchos::SerialDenseMatrix<int, double> A_i;
-      copy_data(lin_ineq_coeffs, A_i);
-      Teuchos::SerialDenseVector<int, double> b_l, b_u;
-      copy_data(lin_ineq_l_bnds, b_l);
-      copy_data(lin_ineq_u_bnds, b_u);
-
-      Constraint li = new LinearInequality(A_i, b_l, b_u);
+      Constraint li = new LinearInequality(lin_ineq_coeffs, lin_ineq_l_bnds, lin_ineq_u_bnds);
       constraint_array.append(li);
     }
 
     if (num_lin_eq_con) {
-      Teuchos::SerialDenseMatrix<int, double> A_e;
-      copy_data(lin_eq_coeffs,  A_e);
-      Teuchos::SerialDenseVector<int, double> b_e;
-      copy_data(lin_eq_targets, b_e);
-
-      Constraint le = new LinearEquation(A_e, b_e);
+      Constraint le = new LinearEquation(lin_eq_coeffs, lin_eq_targets);
       constraint_array.append(le);
     }
   }
@@ -298,10 +282,8 @@ void SNLLBase::snll_post_run(OPTPP::NLP0* nlf_objective)
   // the best response update is specialized in the derived classes,
   // but the best variables update is not
 
-  RealVector local_des_vars;
-  copy_data(nlf_objective->getXc(), local_des_vars); // see opt++/libopt/nlp.h
   optLSqInstance->
-    bestVariablesArray.front().continuous_variables(local_des_vars);
+    bestVariablesArray.front().continuous_variables(nlf_objective->getXc());
 
   // TO DO: Deallocate local memory allocations (is this needed w/ SmartPtr?).
   //if (bc) delete bc;
@@ -376,76 +358,9 @@ copy_con_hess(const RealSymMatrixArray& local_fn_hessians,
   size_t i, num_nln_eq_con = optLSqInstance->numNonlinearEqConstraints,
     num_nln_ineq_con = optLSqInstance->numNonlinearIneqConstraints;
   for (i=0; i<num_nln_eq_con; i++)
-    copy_data(local_fn_hessians[offset+num_nln_ineq_con+i], hess_g[i]);
+    hess_g[i] = local_fn_hessians[offset+num_nln_ineq_con+i];
   for (i=0; i<num_nln_ineq_con; i++)
-    copy_data(local_fn_hessians[offset+i], hess_g[num_nln_eq_con+i]);
+    hess_g[num_nln_eq_con+i] = local_fn_hessians[offset+i];
 }
-
-
-// Note: retaining these functions in a .C instead of inlining them
-// in a .H avoids collisions between NEWMAT and other headers.
-
-// copy RealSymMatrix to Teuchos::SerialSymDenseMatrix
-  void SNLLBase::copy_data(const RealSymMatrix& rsdm, Teuchos::SerialSymDenseMatrix<int, double>& sm)
-{
-  // SymmetricMatrix = symmetric and square, but Dakota::Matrix can be general
-  // (e.g., functionGradients = numFns x numVars).  Therefore, have to verify
-  // sanity of the copy.  Could copy square submatrix of rsdm into sm, but 
-  // aborting with an error seems better since this should only currently be
-  // used for copying Hessian matrices.
-  size_t nr = rsdm.numRows(), nc = rsdm.numCols();
-  if (nr != nc) {
-    Cerr << "Error: copy_data(const Dakota::RealSymMatrix& rsdm, "
-	 << "SymmetricMatrix& sm) called with nonsquare rsdm." << std::endl;
-    abort_handler(-1);
-  }
-  if (sm.numRows() != nr) // sm = symmetric & square -> only 1 dimension needed
-    sm.reshape(nr);
-  for (size_t i=0; i<nr; i++)
-    for (size_t j=0; j<nr; j++)
-      sm(i,j) = rsdm(i,j);
-}
-
-// copy RealMatrix to Teuchos::SerialDenseMatrix
-  void SNLLBase::copy_data(const RealMatrix& rdm, Teuchos::SerialDenseMatrix<int, double>& m)
-{
-  // Newmat Matrix and Dakota::RealMatrix are general rectangular matrices.
-  RealMatrix::ordinalType nr = rdm.numRows(), nc = rdm.numCols();
-  if (m.numRows() != nr || m.numCols() != nc)
-    m.reshape(nr, nc);
-  for (RealMatrix::ordinalType i=0; i<nr; ++i)
-    for (RealMatrix::ordinalType j=0; j<nc; ++j)
-      m(i,j) = rdm(i,j);
-}
-
-// copy Teuchos::SerialDenseVector to RealVector
-  void SNLLBase::copy_data_optpp_to_dak(const Teuchos::SerialDenseVector<int, double>& cv, RealVector& rdv)
-{
-  int size_cv = cv.numRows();
-  if (rdv.length() != size_cv)
-    rdv.sizeUninitialized(size_cv);
-  for (size_t i=0; i<size_cv; i++)
-    rdv[i] = cv(i);
-}
-
-// copy Real* (pointer to ColVec of Teuchos_SDMatrix) to Teuchos::SerialDenseVector
-  void SNLLBase::copy_data(const Real* rv, const int num_items, Teuchos::SerialDenseVector<int, double>& cv)
-{
-  if (cv.numRows() != num_items)
-    cv.resize(num_items);
-  for (size_t i=0; i<num_items; ++i)
-    cv(i) = rv[i];
-}
-
-// copy RealVector to Teuchos::SerialDenseVector
-  void SNLLBase::copy_data_dak_to_optpp(const RealVector& rv, Teuchos::SerialDenseVector<int, double>& cv)
-{
-  int size_rv = rv.length();
-  if (cv.numRows() != size_rv)
-    cv.resize(size_rv);
-  for (size_t i=0; i<size_rv; ++i)
-    cv(i) = rv[i];
-}
-
 
 } // namespace Dakota

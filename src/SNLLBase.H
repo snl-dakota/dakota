@@ -130,18 +130,6 @@ protected:
   /// method instantiations
   void snll_post_run(OPTPP::NLP0* nlf_objective);
 
-  /// copy RealSymMatrix to Teuchos::SerialSymDenseMatrix
-  static void copy_data(const RealSymMatrix& rsdm, Teuchos::SerialSymDenseMatrix<int, double>& sm);
-  /// copy RealMatrix to Teuchos::Matrix
-  static void copy_data(const RealMatrix& rdm, Teuchos::SerialDenseMatrix<int, double>& m);
-  /// copy Teuchos::SerialDenseVector to RealVector
-  static void copy_data_optpp_to_dak(const Teuchos::SerialDenseVector<int, double>& cv, RealVector& rdv);
-  /// copy RealVector to Teuchos::SerialDenseVector
-  static void copy_data_dak_to_optpp(const RealVector& rdv, Teuchos::SerialDenseVector<int, double>& cv);
-  /// copy Real* (column of Teuchos_SerialDenseMatrix) to Teuchos::SerialDenseVector
-  static void copy_data(const Real* rdv, const int num_items,
-			Teuchos::SerialDenseVector<int, double>& cv);
-
   //
   //- Heading: Data
   //

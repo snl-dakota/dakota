@@ -281,16 +281,14 @@ nlf2_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, double>
   // present.  Unlike NPSOL, verify that mode and vars are consistent since
   // OPT++ does not always have a 1-to-1 correspondence in evaluator calls.
   int i, j, k;
-  RealVector local_des_vars;
-  SNLLBase::copy_data(x, local_des_vars);
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
-    Cout << "\nSNLLLeastSq::nlf2_evaluator_gn vars = \n" << local_des_vars;
+    Cout << "\nSNLLLeastSq::nlf2_evaluator_gn vars = \n" << x;
   if (!snllLSqInstance->numNonlinearConstraints ||
       lastFnEvalLocn != CONEvaluator || lsq_mode != lastEvalMode ||
-      local_des_vars != lastEvalVars) {
+      x != lastEvalVars) {
     // data not available from constraint evaluator, so perform
     // a new function evaluation.
-    snllLSqInstance->iteratedModel.continuous_variables(local_des_vars);
+    snllLSqInstance->iteratedModel.continuous_variables(x);
     ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
     // Should constraints be evaluated (if present)?  Depends on what OPT++
     // is doing.  Since we know this eval is not aligned with a preceding
@@ -390,12 +388,10 @@ constraint1_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, 
   }
 
   // set model variables and asv prior to compute_response().
-  RealVector local_des_vars;
-  SNLLBase::copy_data(x, local_des_vars);
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint1_evaluator_gn vars = \n"
-         << local_des_vars;
-  snllLSqInstance->iteratedModel.continuous_variables(local_des_vars);
+         << x;
+  snllLSqInstance->iteratedModel.continuous_variables(x);
 
   size_t i;
   ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
@@ -406,7 +402,7 @@ constraint1_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, 
     iteratedModel.compute_response(snllLSqInstance->activeSet);
   lastFnEvalLocn = CONEvaluator;
   lastEvalMode   = lsq_mode;
-  lastEvalVars   = local_des_vars;
+  lastEvalVars   = x;
 
   const Response& local_response
     = snllLSqInstance->iteratedModel.current_response();
@@ -458,12 +454,10 @@ constraint2_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, 
   }
 
   // set model variables and asv prior to compute_response().
-  RealVector local_des_vars;
-  SNLLBase::copy_data(x, local_des_vars);
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint2_evaluator_gn vars = \n"
-         << local_des_vars;
-  snllLSqInstance->iteratedModel.continuous_variables(local_des_vars);
+         << x;
+  snllLSqInstance->iteratedModel.continuous_variables(x);
 
   size_t i;
   ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
@@ -474,7 +468,7 @@ constraint2_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, 
     iteratedModel.compute_response(snllLSqInstance->activeSet);
   lastFnEvalLocn = CONEvaluator;
   lastEvalMode   = lsq_mode;
-  lastEvalVars   = local_des_vars;
+  lastEvalVars   = x;
 
   const Response& local_response
     = snllLSqInstance->iteratedModel.current_response();
