@@ -246,9 +246,8 @@ SNLLLeastSq::~SNLLLeastSq()
     directly from the residual functions and their derivatives (which
     are returned from the Response object). */
 void SNLLLeastSq::
-nlf2_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
-		  double& f, Teuchos::SerialDenseVector<int, double>& grad_f,
-		  Teuchos::SerialSymDenseMatrix<int, double>& hess_f, int& result_mode)
+nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
+		  RealVector& grad_f, RealSymMatrix& hess_f, int& result_mode)
 {
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::nlf2_evaluator_gn called with mode = " << mode
@@ -365,9 +364,8 @@ nlf2_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, double>
 
 
 void SNLLLeastSq::
-constraint1_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
-                         Teuchos::SerialDenseVector<int, double>& g, Teuchos::SerialDenseMatrix<int, double>& grad_g,
-			 int& result_mode)
+constraint1_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
+			 RealMatrix& grad_g, int& result_mode)
 { 
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint1_evaluator_gn called with mode = "
@@ -420,9 +418,9 @@ constraint1_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, 
 
 
 void SNLLLeastSq::
-constraint2_evaluator_gn(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
-                         Teuchos::SerialDenseVector<int, double>& g, Teuchos::SerialDenseMatrix<int, double>& grad_g,
-                         OPTPP::OptppArray<Teuchos::SerialSymDenseMatrix<int, double> >& hess_g,
+constraint2_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
+			 RealMatrix& grad_g,
+			 OPTPP::OptppArray<RealSymMatrix>& hess_g,
 			 int& result_mode)
 { 
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)

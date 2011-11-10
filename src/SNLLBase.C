@@ -131,7 +131,7 @@ snll_post_instantiate(const int& num_cv, bool vendor_num_grad_flag,
       fcn_acc = std::pow(fdss, 2);
     }
     fcn_acc = std::max(mcheps,fcn_acc);
-    Teuchos::SerialDenseVector<int, double> fcn_accrcy(num_cv);
+    RealVector fcn_accrcy(num_cv);
     fcn_accrcy = fcn_acc;
     fd_nlf1->setFcnAccrcy(fcn_accrcy);
     if (num_constr)
@@ -161,7 +161,7 @@ snll_post_instantiate(const int& num_cv, bool vendor_num_grad_flag,
 }
 
 
-void SNLLBase::init_fn(int n, Teuchos::SerialDenseVector<int, double>& x)
+void SNLLBase::init_fn(int n, RealVector& x)
 {
   // This routine was previously called initial_guess which was misleading.
   // This is a mechanism provided by OPT++ to perform initialization functions.
@@ -197,7 +197,7 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
   // within opt++.  This occurs within the context of the run function so that
   // any variable reassignment at the strategy layer (after iterator
   // construction) is captured with setX.
-  Teuchos::SerialDenseVector<int, double> x(init_pt);
+  RealVector x(init_pt);
   nlf_objective->setX(x);  // setX accepts a ColumnVector
   size_t num_cv = init_pt.length();
 
@@ -239,21 +239,21 @@ snll_initialize_run(OPTPP::NLP0* nlf_objective, OPTPP::NLP* nlp_constraint,
 
   if (num_nln_con) {
 
-    Teuchos::SerialDenseVector<int, double> augmented_lower_bnds(num_nln_con);
-    Teuchos::SerialDenseVector<int, double> augmented_upper_bnds(num_nln_con);
+    RealVector augmented_lower_bnds(num_nln_con);
+    RealVector augmented_upper_bnds(num_nln_con);
 
     // Unlike Dakota, opt++ expects nonlinear equality constraints
     // followed by nonlinear inequality constraints.
     int i;
     if (num_nln_eq_con) {
-      //Teuchos::SerialDenseVector ne_targets(num_nln_eq_con);
+      //RealVector ne_targets(num_nln_eq_con);
       for (i=0; i<num_nln_eq_con; i++) {
 	augmented_lower_bnds(i) = nln_eq_targets[i];
 	augmented_upper_bnds(i) = nln_eq_targets[i];
       }
     }
     if (num_nln_ineq_con) {
-      //Teuchos::SerialDenseVector ni_lower_bnds, ni_upper_bnds;
+      //RealVector ni_lower_bnds, ni_upper_bnds;
       for (i=0; i<num_nln_ineq_con; i++) {
 	augmented_lower_bnds(i+num_nln_eq_con) = nln_ineq_l_bnds[i];
 	augmented_upper_bnds(i+num_nln_eq_con) = nln_ineq_u_bnds[i];
@@ -296,7 +296,7 @@ void SNLLBase::snll_post_run(OPTPP::NLP0* nlf_objective)
 
 
 void SNLLBase::
-copy_con_vals_dak_to_optpp(const RealVector& local_fn_vals, Teuchos::SerialDenseVector<int, double>& g,
+copy_con_vals_dak_to_optpp(const RealVector& local_fn_vals, RealVector& g,
               const size_t& offset)
 {
   // Unlike DAKOTA, OPT++ expects nonlinear equations followed by nonlinear
@@ -311,7 +311,7 @@ copy_con_vals_dak_to_optpp(const RealVector& local_fn_vals, Teuchos::SerialDense
 
 
 void SNLLBase::
-copy_con_vals_optpp_to_dak(const Teuchos::SerialDenseVector<int, double>& g, RealVector& local_fn_vals,
+copy_con_vals_optpp_to_dak(const RealVector& g, RealVector& local_fn_vals,
 	      const size_t& offset)
 {
   // Unlike DAKOTA, OPT++ expects nonlinear equations followed by nonlinear
@@ -326,7 +326,7 @@ copy_con_vals_optpp_to_dak(const Teuchos::SerialDenseVector<int, double>& g, Rea
 
 
 void SNLLBase::
-copy_con_grad(const RealMatrix& local_fn_grads, Teuchos::SerialDenseMatrix<int, double>& grad_g,
+copy_con_grad(const RealMatrix& local_fn_grads, RealMatrix& grad_g,
               const size_t& offset)
 {
   // Unlike DAKOTA, OPT++ expects nonlinear equations followed by nonlinear
@@ -350,7 +350,7 @@ copy_con_grad(const RealMatrix& local_fn_grads, Teuchos::SerialDenseMatrix<int, 
 
 void SNLLBase::
 copy_con_hess(const RealSymMatrixArray& local_fn_hessians,
-              OPTPP::OptppArray<Teuchos::SerialSymDenseMatrix<int, double> >& hess_g,
+              OPTPP::OptppArray<RealSymMatrix>& hess_g,
 	      const size_t& offset)
 {
   // Unlike DAKOTA, OPT++ expects nonlinear equations followed by nonlinear

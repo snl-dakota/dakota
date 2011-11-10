@@ -108,10 +108,9 @@ private:
   /// objective function evaluator function which obtains values and
   /// gradients for least square terms and computes objective function
   /// value, gradient, and Hessian using the Gauss-Newton approximation.
-  static void nlf2_evaluator_gn(int mode, int n, 
-	 const Teuchos::SerialDenseVector<int, double>& x, double& f,
-	 Teuchos::SerialDenseVector<int, double>& grad_f, Teuchos::SerialSymDenseMatrix<int, double>& hess_f,
-         int& result_mode);
+  static void nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
+				RealVector& grad_f, RealSymMatrix& hess_f,
+				int& result_mode);
 
   //- Constraint evaluation routines that invoke Model::compute_response
 
@@ -121,9 +120,9 @@ private:
       from constraint1_evaluator() due to its need to anticipate the required
       modes for the least squares terms.  This constraint evaluator function
       is used with diaggregated Hessian NIPS and is currently active. */
-  static void constraint1_evaluator_gn(int mode, int n, 
-				       const Teuchos::SerialDenseVector<int, double>& x, Teuchos::SerialDenseVector<int, double>& g, 
-				       Teuchos::SerialDenseMatrix<int, double>& grad_g, int& result_mode);
+  static void constraint1_evaluator_gn(int mode, int n, const RealVector& x,
+				       RealVector& g, RealMatrix& grad_g,
+				       int& result_mode);
 
   /// constraint evaluator function which provides constraint
   /// values, gradients, and Hessians to OPT++ Gauss-Newton methods.
@@ -131,10 +130,10 @@ private:
       from constraint2_evaluator() due to its need to anticipate the required
       modes for the least squares terms.  This constraint evaluator function
       is used with full Newton NIPS and is currently inactive. */
-  static void constraint2_evaluator_gn(int mode, int n,
-				       const Teuchos::SerialDenseVector<int, double>& x, Teuchos::SerialDenseVector<int, double>& g,
-				       Teuchos::SerialDenseMatrix<int, double>& grad_g, OPTPP::OptppArray<Teuchos::SerialSymDenseMatrix<int, double> >& hess_g,
-    int& result_mode);
+  static void constraint2_evaluator_gn(int mode, int n, const RealVector& x,
+				       RealVector& g, RealMatrix& grad_g,
+				       OPTPP::OptppArray<RealSymMatrix>& hess_g,
+				       int& result_mode);
 
   //
   //- Heading: Data

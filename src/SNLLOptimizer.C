@@ -415,11 +415,11 @@ SNLLOptimizer::SNLLOptimizer(const RealVector& initial_pt,
   const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
   const RealVector& lin_eq_tgts, const RealVector& nln_ineq_l_bnds,
   const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts, 
-			     void (*user_obj_eval) (int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
-						    double& f, Teuchos::SerialDenseVector<int, double>& grad_f,
+			     void (*user_obj_eval) (int mode, int n, const RealVector& x,
+						    double& f, RealVector& grad_f,
 			 int& result_mode),
-			     void (*user_con_eval) (int mode, int n, const Teuchos::SerialDenseVector<int, double>& x, 
-						    Teuchos::SerialDenseVector<int, double>& g, Teuchos::SerialDenseMatrix<int, double>& grad_g,
+			     void (*user_con_eval) (int mode, int n, const RealVector& x, 
+						    RealVector& g, RealMatrix& grad_g,
 			 int& result_mode) ): // use default SNLLBase ctor
   Optimizer(NoDBBaseConstructor(), initial_pt.length(), 0, 0,
 	    lin_ineq_coeffs.numRows(), lin_eq_coeffs.numRows(),
@@ -518,8 +518,7 @@ SNLLOptimizer::~SNLLOptimizer()
     PDS and by gradient-based optimizers in vendor numerical gradient
     mode (opt++'s internal finite difference routine is used). */
 void SNLLOptimizer::
-nlf0_evaluator(int n, const Teuchos::SerialDenseVector<int, double>& x, double& f,
-	       int& result_mode)
+nlf0_evaluator(int n, const RealVector& x, double& f, int& result_mode)
 {
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::nlf0_evaluator called with mode = 1";
@@ -556,8 +555,8 @@ nlf0_evaluator(int n, const Teuchos::SerialDenseVector<int, double>& x, double& 
 /** For use when DAKOTA computes f and df/dX (regardless of gradientType).
     Vendor numerical gradient case is handled by nlf0_evaluator. */
 void SNLLOptimizer::
-nlf1_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x, double& f, 
-               Teuchos::SerialDenseVector<int, double>& grad_f, int& result_mode)
+nlf1_evaluator(int mode, int n, const RealVector& x, double& f, 
+               RealVector& grad_f, int& result_mode)
 {
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::nlf1_evaluator called with mode = " << mode;
@@ -642,9 +641,8 @@ nlf1_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x
     fd-newton with nlf1.  Gauss-Newton does not fit this model; it uses
     nlf2_evaluator_gn instead of nlf2_evaluator. */
 void SNLLOptimizer::
-nlf2_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x, double& f, 
-               Teuchos::SerialDenseVector<int, double>& grad_f, Teuchos::SerialSymDenseMatrix<int, double>& hess_f,
-	       int& result_mode)
+nlf2_evaluator(int mode, int n, const RealVector& x, double& f, 
+               RealVector& grad_f, RealSymMatrix& hess_f, int& result_mode)
 {
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::nlf2_evaluator called with mode = " << mode;
@@ -727,8 +725,8 @@ nlf2_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x
     gradient-based optimizers in vendor numerical gradient mode
     (opt++'s internal finite difference routine is used). */
 void SNLLOptimizer::
-constraint0_evaluator(int n, const Teuchos::SerialDenseVector<int, double>& x,
-		      Teuchos::SerialDenseVector<int, double>& g, int& result_mode)
+constraint0_evaluator(int n, const RealVector& x, RealVector& g,
+		      int& result_mode)
 {
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint0_evaluator called with mode = 1";
@@ -752,9 +750,8 @@ constraint0_evaluator(int n, const Teuchos::SerialDenseVector<int, double>& x,
 /** For use when DAKOTA computes g and dg/dX (regardless of gradientType).
     Vendor numerical gradient case is handled by constraint0_evaluator. */
 void SNLLOptimizer::
-constraint1_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
-		      Teuchos::SerialDenseVector<int, double>& g, Teuchos::SerialDenseMatrix<int, double>& grad_g,
-		      int& result_mode)
+constraint1_evaluator(int mode, int n, const RealVector& x, RealVector& g,
+		      RealMatrix& grad_g, int& result_mode)
 { 
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLOptimizer::constraint1_evaluator called with mode = "
@@ -789,9 +786,9 @@ constraint1_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, dou
 
 /** For use when DAKOTA computes g, dg/dX, & d^2g/dx^2 (analytic only). */
 void SNLLOptimizer::
-constraint2_evaluator(int mode, int n, const Teuchos::SerialDenseVector<int, double>& x,
-		      Teuchos::SerialDenseVector<int, double>& g, Teuchos::SerialDenseMatrix<int, double>& grad_g,
-		      OPTPP::OptppArray<Teuchos::SerialSymDenseMatrix<int, double> >& hess_g,
+constraint2_evaluator(int mode, int n, const RealVector& x, RealVector& g,
+		      RealMatrix& grad_g,
+		      OPTPP::OptppArray<RealSymMatrix>& hess_g,
 		      int& result_mode)
 { 
   if (snllOptInstance->outputLevel == DEBUG_OUTPUT)

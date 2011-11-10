@@ -20,12 +20,6 @@
 #include "DakotaString.H"
 #include "globals.h"
 
-namespace Teuchos {
-template<typename OrdinalType, typename ScalarType> class SerialDenseVector;
-template<typename OrdinalType, typename ScalarType> class SerialDenseMatrix;
-template<typename OrdinalType, typename ScalarType> class SerialSymDenseMatrix;
-}
-
 namespace OPTPP {
 class NLP;
 class NLP0;
@@ -68,29 +62,30 @@ protected:
   //
 
   /// An initialization mechanism provided by OPT++ (not currently used).
-  static void init_fn(int n, Teuchos::SerialDenseVector<int, double>& x);
+  static void init_fn(int n, RealVector& x);
 
   //- Convenience routines
 
   /// convenience function for copying local_fn_vals to g; used by
   /// constraint evaluator functions
-  void copy_con_vals_dak_to_optpp(const RealVector& local_fn_vals, Teuchos::SerialDenseVector<int, double>& g,
-		     const size_t& offset);
+  void copy_con_vals_dak_to_optpp(const RealVector& local_fn_vals,
+				  RealVector& g, const size_t& offset);
 
   /// convenience function for copying g to local_fn_vals; used in
   /// final solution logging
-  void copy_con_vals_optpp_to_dak(const Teuchos::SerialDenseVector<int, double>& g, RealVector& local_fn_vals,
-  	     const size_t& offset);
+  void copy_con_vals_optpp_to_dak(const RealVector& g,
+				  RealVector& local_fn_vals,
+				  const size_t& offset);
 
   /// convenience function for copying local_fn_grads to grad_g;
   /// used by constraint evaluator functions
-  void copy_con_grad(const RealMatrix& local_fn_grads, Teuchos::SerialDenseMatrix<int, double>& grad_g,
+  void copy_con_grad(const RealMatrix& local_fn_grads, RealMatrix& grad_g,
 		     const size_t& offset);
 
   /// convenience function for copying local_fn_hessians to hess_g;
   /// used by constraint evaluator functions
   void copy_con_hess(const RealSymMatrixArray& local_fn_hessians,
-		     OPTPP::OptppArray<Teuchos::SerialSymDenseMatrix<int, double> >& hess_g, 
+		     OPTPP::OptppArray<RealSymMatrix>& hess_g, 
                      const size_t& offset);
 
   /// convenience function for setting OPT++ options prior to the
