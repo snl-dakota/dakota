@@ -3110,10 +3110,10 @@ void DirectApplicInterface::separable_combine(Real mult_scale_factor, std::vecto
 	for (k=0; k<numVars; ++k)
 	  if( (k!=i_var_index) && (k!=j_var_index) )
 	    local_val*=w[k];
+	fnHessians[0](i,j) =local_val;
       }
     }
-    fnHessians[0](i,j) =local_val;
-  }  
+  }
 }
 
 
