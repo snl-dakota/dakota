@@ -465,6 +465,7 @@ INPUT                  = Dev_Main.dox \
                          Dev_Iterator_Flow.dox \
                          Dev_Library.dox \
                          Dev_Fn_Evals.dox \
+                         Dev_Vars_ContViews.dox \
                          ../src
 
 # If the value of the INPUT tag contains directories, you can use the 

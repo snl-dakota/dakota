@@ -183,11 +183,12 @@ The \ref Dakota::Analyzer "Analyzer" classes are grouped into:
 base class for non-deterministic methods \ref Dakota::NonDSampling
 "NonDSampling", \ref Dakota::NonDReliability "NonDReliability"
 (reliability analysis), \ref Dakota::NonDExpansion "NonDExpansion"
-(stochastic expansion methods), \ref Dakota::NonDIntegration
-"NonDIntegration" (numerical integration methods), and \ref
-Dakota::NonDInterval "NonDInterval" (interval-based epistemic
-methods).  Bayesian calibration methods are prototyped in 
-\ref Dakota::NonDBayesCalibration "NonDBayesCalibration".
+(stochastic expansion methods, supported by the \ref
+Dakota::NonDIntegration "NonDIntegration" helper class for numerical
+integration methods), and \ref Dakota::NonDInterval "NonDInterval"
+(interval-based epistemic methods).  Bayesian calibration methods are
+prototyped in \ref Dakota::NonDBayesCalibration
+"NonDBayesCalibration".
 
 <ul> <li> \ref Dakota::NonDSampling "NonDSampling" is further
 specialized with the \ref Dakota::NonDLHSSampling "NonDLHSSampling"
@@ -523,7 +524,6 @@ etc.  These capabilities are encapsulated within the
 
 \section DevGuidance Development Practices and Guidance
 
-
 The following links provide guidance for core software components or 
 specific development activities:
 
@@ -536,18 +536,17 @@ specific development activities:
     Iterator execution.
 \li \ref FnEvals - an overview of the classes and member functions involved
     in performing function evaluations synchronously or asynchronously.
-\li Variable views - explanation of all, active, and inactive views of the
-    Variables container.
-
+\li \ref VarContainersViews - discussion of data storage for variables
+    and explanation of active and inactive views that may be taken of
+    it.
 
 \section DevAddtnl Additional Resources
 
 Additional development resources include:
 
 \li The DAKOTA Developer Portal linked from
-    http://dakota.sandia.gov/developer_tools.html includes information
-    on getting started as a developer and links to project management
-    resources.
+    http://dakota.sandia.gov/developer/ includes information on getting 
+    started as a developer and links to project management resources.
 \li Project web pages are maintained at http://dakota.sandia.gov/ including
     links to frequently asked questions, documentation, publications, mailing 
     lists, and other resources.
