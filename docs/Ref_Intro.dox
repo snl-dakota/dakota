@@ -15,7 +15,7 @@ namespace Dakota {
   <li> <a href="IntroCommands.html#IntroCmdsSampleOpt">
        Sample 1: Optimization</a>
   <li> <a href="IntroCommands.html#IntroCmdsSampleLS">
-       Sample 2: Least Squares</a>
+       Sample 2: Least Squares (Calibration)</a>
   <li> <a href="IntroCommands.html#IntroCmdsSampleUQ">
        Sample 3: Nondeterministic Analysis</a>
   <li> <a href="IntroCommands.html#IntroCmdsSamplePS">
@@ -102,7 +102,7 @@ analysis driver mappings, or both.  Within the analysis drivers
 specification, a system OR fork OR direct OR grid group specification
 must be selected.  Finally, within the responses keyword, the primary
 structure is the required specification of the function set (either
-optimization functions OR least squares functions OR generic response
+optimization functions OR calibration functions OR generic response
 functions), followed by the required specification of the gradients
 (either none OR numerical OR analytic OR mixed) and the required
 specification of the Hessians (either none OR numerical OR quasi OR
@@ -179,7 +179,7 @@ continuation lines for DAKOTA keywords.  For example, rather than
 \verbatim
 # Comment about the following "responses" keyword...
 responses,
-        num_objective_functions = 1
+        objective_functions = 1
         # Comment within keyword "responses"
         analytic_gradients
 # Another comment within keyword "responses"
@@ -189,7 +189,7 @@ you would need to write
 \verbatim
 # Comment about the following "responses" keyword...
 responses,                                              \
-        num_objective_functions = 1                     \
+        objective_functions = 1                     \
         # Comment within keyword "responses"            \
         analytic_gradients                              \
 # Another comment within keyword "responses"            \
@@ -241,8 +241,8 @@ interface,
           analysis_driver =       'text_book'
 
 responses,
-        num_objective_functions = 1
-        num_nonlinear_inequality_constraints = 2
+        objective_functions = 1
+        nonlinear_inequality_constraints = 2
         numerical_gradients
           method_source dakota
           interval_type central
@@ -251,11 +251,11 @@ responses,
 \endverbatim
 
 
-\subsection IntroCmdsSampleLS Sample 2: Least Squares
+\subsection IntroCmdsSampleLS Sample 2: Least Squares (Calibration)
 
 The following sample input file shows a nonlinear least squares
-solution of the Rosenbrock Example using the NL2SOL method. A similar
-file is available as \c
+(calibration) solution of the Rosenbrock Example using the NL2SOL
+method. A similar file is available as \c
 Dakota/examples/tutorial/dakota_rosenbrock_ls.in.
 
 <!-- \include dakota_rosenbrock_ls.in -->
@@ -280,11 +280,11 @@ variables,
           descriptor       'x1'   'x2'
 
 interface,
-        system
+        fork
           analysis_driver = 'rosenbrock'
 
 responses,
-        num_least_squares_terms = 2
+        calibration_terms = 2
         analytic_gradients
         no_hessians
 \endverbatim
@@ -336,11 +336,11 @@ variables,
           descriptors = 'TF3h'
 
 interface,
-        system asynch evaluation_concurrency = 5
+        fork asynch evaluation_concurrency = 5
           analysis_driver = 'text_book'
 
 responses,
-        num_response_functions = 3
+        response_functions = 3
         no_gradients
         no_hessians
 \endverbatim
@@ -378,7 +378,7 @@ interface,
           analysis_driver = 'rosenbrock'
 
 responses,
-        num_objective_functions = 1
+        objective_functions = 1
         no_gradients
         no_hessians
 \endverbatim
@@ -468,13 +468,13 @@ interface,
 
 responses,
         id_responses = 'R1'
-        num_objective_functions = 1
+        objective_functions = 1
         no_gradients
         no_hessians
 
 responses,
         id_responses = 'R2'
-        num_objective_functions = 1
+        objective_functions = 1
         analytic_gradients
         analytic_hessians
  \endverbatim

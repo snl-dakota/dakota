@@ -604,13 +604,14 @@ files, specify \c allow_existing_files.
 
 When performing concurrent evaluations and/or analyses, it is often
 necessary to cloister input and output files in separate directories
-to avoid conflicts.  When \c work_directory feature is enabled, DAKOTA
-will create a directory for each evaluation/analysis (with optional
-tagging and saving as with files), and execute the analysis driver
-from that working directory.  If an optional \c template_directory
-and/or list of \c template_files is specified, DAKOTA will link (or
-copy) those files into each working directory. The specifications for
-system call interfaces are summarized in \ref T8d5 "Table 8.5".
+to avoid conflicts.  When the \c work_directory feature is enabled,
+DAKOTA will create a directory for each evaluation/analysis (with
+optional tagging and saving as with files), and execute the analysis
+driver from that working directory.  If an optional \c
+template_directory and/or list of \c template_files is specified,
+DAKOTA will link (or copy) those files into each working
+directory. The specifications for system call interfaces are
+summarized in \ref T8d5 "Table 8.5".
   
 \anchor T8d5
 <table>
