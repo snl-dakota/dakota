@@ -106,7 +106,7 @@ to only rebuild generated dependencies of dakota.input.nspec.
 Many keywords have data associated with them:  an integer,
 a floating-point number, a string, or arrays of such entities.
 Data requirements are specified in dakota.input.nspec
-by the tokens INTEGER, REAL, STRING, INTERLIST, REALLIST, STRINGLIST.
+by the tokens INTEGER, REAL, STRING, INTEGERLIST, REALLIST, STRINGLIST.
 (Some keywords have no associated data and hence no such token.)
 After each keyword and data token, the dakota.input.nspec file specifies
 functions that the NIDR parser should call to record the appearance of the keyword

@@ -299,7 +299,7 @@ function
 \endcode
 to provide a finer grain of control.  The passed input file \c
 dakota_input_file must contain all required inputs.  Since vector data
-like variable values/bounds/tags, linear/nonlinear constaint
+like variable values/bounds/tags, linear/nonlinear constraint
 coefficients/bounds, etc. are optional, these potentially large vector
 specifications can be omitted from the input file.  Only the 
 variable/response counts, e.g.:
@@ -311,8 +311,8 @@ variables
 	continuous_design = 1000
 
 responses
-	num_objective_functions = 1
-	num_noninear_inequality_constraints = 100000
+	objective_functions = 1
+	nonlinear_inequality_constraints = 100000
 \endcode
 are required in this case.  To update the data omissions from their 
 defaults, one uses the \ref ProblemDescDB::set "ProblemDescDB::set()"
@@ -557,7 +557,7 @@ extracted from the ProblemDescDB) will be set to their defaults
 following construction of the base class instance for the derived
 class plug-in.  It is not until run-time (i.e., within
 derived_map_if/derived_map_ac/derived_map_of) that the parallel
-configuration settings are repropagated to the plug-in instance.  This
+configuration settings are re-propagated to the plug-in instance.  This
 is the reason that the analysis communicator should be passed in to
 the constructor of a parallel plug-in, if the constructor will be
 responsible for parallel application initialization.
@@ -618,15 +618,13 @@ case of uncertainty quantification, the final statistics are returned.
 \section DakLibraryLinking Linking against the DAKOTA library
 
 
-This section presumes DAKOTA has been compiled and installed to \c PREFIX
-using 'make install'.  While the DAKOTA build system offers the most
-up-to-date guidance for what libraries are needed to link against a
-particular version of DAKOTA, a typical case is presented here.  Note
-that depending on how you configured DAKOTA, some of the following
-libraries may not be available (for example NPSOL, DOT, NLPQL) --
-check which appear in \c $PREFIX/lib.  Also as of DAKOTA 4.2, the link
-process is not as sensitive to order of these libraries, with the
-possible exception of liblhs.a.
+This section presumes DAKOTA has been compiled with configure/make and
+installed to \c PREFIX using 'make install'.  While the DAKOTA build
+system offers the most up-to-date guidance for what libraries are
+needed to link against a particular version of DAKOTA, a typical case
+is presented here.  Note that depending on how you configured DAKOTA,
+some of the following libraries may not be available (for example
+NPSOL, DOT, NLPQL) -- check which appear in \c $PREFIX/lib.
 
 As of DAKOTA 5.0, \c -levidence is no longer required and \c -lgsl is
 optional (discouraged due to GPL), depending on how DAKOTA was configured.
@@ -639,19 +637,38 @@ libsurfpack, so \c -lnkm should not be needed.
 \code
 DAKOTA_LIBS = -L${PREFIX}/lib -ldakota -lteuchos -lpecos -llhs         \
               -lsparsegrid -lsurfpack -lconmin -lddace -ldot -lfsudace \
-	      -ljega -lcport -lnlpql -lnpsol -lopt -lpsuade -lnewmat   \
+	      -ljega -lcport -lnlpql -lnpsol -loptpp -lpsuade          \
               -lncsuopt -lcolin -linterfaces -lmomh -lscolib -lpebbl   \
-              -ltinyxml -lutilib -l3po -lboost_signals -lhopspack      \
-	      -lnidr -lamplsolver -llapack -lblas
+              -ltinyxml -lutilib -l3po -lhopspack -lnidr -lamplsolver  \
+              -lboost_signals -lboost_regex -lboost_filesystem         \
+              -lboost_system -llapack -lblas
 \endcode
 
-You may also need \c funcadd0.o, \c -lfl and, if linking with
-system-provided GSL, \c -lgslcblas. The AMPL solver library may
-require \c -ldl.  If configuring with graphics, you will need to add
-\c -lDGraphics and system X libraries (partial list here):
-
+You may also need \c funcadd0.o, \c -lfl, \c -lexpat, and, if linking
+with system-provided GSL, \c -lgslcblas. The AMPL solver library may
+require \c -ldl.  System compiler and math libraries may also need to
+be included.  If configuring with graphics, you will need to add \c
+-lDGraphics and system X libraries (partial list here):
 \code 
 -lXpm -lXm -lXt -lXmu -lXp -lXext -lX11 -lSM -lICE
+\endcode
+
+CMake support for library users is experimental.  At present library
+names and inclusion requirements differ slightly when using CMake,
+e.g, libpecos_src and libdakota_src instead of libpecos and libdakota,
+respectively.  A representative (non-authoritative) set of necessary
+link libraries is shown here for illustration purposes only:
+\code
+-ldakota_src -lteuchos -lnidr -lpecos -lpecos_src -llhs -lmods -lmod
+-ldfftpack -lsparsegrid -lsurfpack -lsurfpack -lutilib -lcolin -linterfaces
+-lscolib -l3po -lpebbl -ltinyxml -lconmin -ldace -lanalyzer -lrandom
+-lsampling -lbose -ldot -lfsudace -lhopspack -ljega -ljega_fe -lmoga
+-lsoga -leutils -lutilities -lncsuopt -lnlpql -lcport -lnpsol -loptpp
+-lpsuade -lDGraphics -lamplsolver -lboost_regex -lboost_signals
+-lboost_filesystem -lboost_system -lSM -lICE -lX11 -lXext -lXm -lXpm
+-lXmu -lpthread -llapack -lcurl -ldl -lutilib -ltinyxml -lm -lboost_regex
+-lboost_filesystem -lboost_system -lexpat -lboost_signals -ljega -lteuchos
+-lblas -llapack
 \endcode
 
 We have experienced problems with the creation of \c libamplsolver.a

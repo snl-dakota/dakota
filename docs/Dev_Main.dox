@@ -498,7 +498,7 @@ to allow for both efficiency and data independence as needed in a
 particular context.
 
 <li> Graphics: DAKOTA provides 2D iteration history graphics using
-Motif widgets. Graphics data can also be catalogued in a tabular data
+Motif widgets. Graphics data can also be cataloged in a tabular data
 file for post-processing with 3rd party tools such as Matlab, Tecplot,
 etc.  These capabilities are encapsulated within the 
 \ref Dakota::Graphics "Graphics" class.
@@ -510,8 +510,8 @@ etc.  These capabilities are encapsulated within the
 The following links provide guidance for core software components or 
 specific development activities:
 
-\li \ref RecommPract - coding style guidelines used by the DAKOTA
-    development team.
+\li \ref StyleConventions - coding style guidelines and conventions
+    used by the DAKOTA development team.
 \li \ref SpecChange - how to interact with NIDR and the associated DAKOTA
     classes.
 \li \ref DakLibrary - embed DAKOTA as a service within your application.
