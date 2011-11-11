@@ -10,16 +10,30 @@ namespace Dakota {
 </ul>
 \endhtmlonly
 
-Different subsets of the total problem variables may be active in
-different algorithm contexts, for example, in optimization under
-uncertainty, where design variables are active in the optimization
-portion, but the uncertain variables are active in the nested UQ
-algorithm.  For efficiency, contiguous arrays of data store variable
-information, but active and inactive views into them permit selecting
-subsets in a given context.  This management is encapsulated into the
-Variables and SharedVariablesData classes.  This page clarifies
-concepts of merged vs. mixed, fine-grained vs. aggregated types,
-domain types, and views into contiguous arrays.
+
+Variable views control the subset of variable types that are active
+and inactive within a particular iterative study.  For design
+optimization and uncertainty quantification, for example, the active
+variables view consists of design or uncertain types, respectively,
+and any other variable types are carried along invisible to the
+iterative algorithm being employed.  For parameter studies and design
+of experiments, however, a variable subset view is not imposed and all
+variables are active.  Selected uncertainty quantification methods can
+also be toggled into an "All" view using the \c all_variables input
+specification.  In a more advanced NestedModel use case such as
+optimization under uncertainty, design variables are active in the
+outer optimization context, but the uncertain variables are active in
+the nested UQ algorithm, but there might be "inactive" variables in
+the UQ context that the outer optimization loop wants derivatives with
+respect to..
+
+For efficiency, contiguous arrays of data store variable information,
+but active and inactive views into them permit selecting subsets in a
+given context.  This management is encapsulated into the Variables and
+SharedVariablesData classes.  This page clarifies concepts of merged
+vs. mixed, fine-grained vs. aggregated types, domain types, and views
+into contiguous arrays.  We begin with an overview of the storage and
+management concept and proceed to a discussion of views.
 
 \section VarStorage Storage in Variables and SharedVariablesData
 
@@ -55,21 +69,22 @@ types are flattened into single contiguous arrays.
 In addition to storing common data, the SharedVariablesData class
 maintains mappings between variable types, IDs, and indices into the
 storage arrays.  Variable "types" refer to the fine-grained variable
-types a user would specify, enumerated in DataVariables.H, e.g,
-CONTINUOUS_DESIGN, WEIBULL_UNCERTAIN, or DISCRETE_STATE_RANGE.
-\ref Dakota::SharedVariablesDataRep::variablesComponents "variablesComponents" 
-is a map from these variable types to counts of how many are present.
+types a user would specify in an input file, as enumerated in
+DataVariables.H, e.g, CONTINUOUS_DESIGN, WEIBULL_UNCERTAIN, or
+DISCRETE_STATE_RANGE.  \ref
+Dakota::SharedVariablesDataRep::variablesComponents
+"variablesComponents" is a map from these variable types to counts of
+how many are present.
 
 In contrast, the 
 \ref Dakota::SharedVariablesDataRep::variablesCompsTotals "variablesCompsTotals" 
-
 array stores total counts of each "aggregated type" (design, aleatory
 uncertain, epistemic uncertain, state) which might be selected to be
 active in a given view.  Thus this array has length 12 to track the
 combinations of three domain type storage arrays with four possible
 aggregated variable types: {continuous, discrete integer, discrete
 real} x {design, aleatory uncertain, epistemic uncertain, state}.  For
-example the first entry of this array stores the number of continuous
+example, the first entry of this array stores the number of continuous
 design variables, the second the number of discrete integer design
 (including both discrete design range and discrete design set integer
 types), and the last the number of discrete real state variables.
@@ -102,15 +117,22 @@ throughout.  When relaxing, the continuous variable and labels arrays
 potentially contain ALL design, then ALL uncertain, then ALL state
 variables, each in aggregated type order.
 
-The pair \ref Dakota::SharedVariablesDataRep::variablesView "variablesView"
+The pair 
+\ref Dakota::SharedVariablesDataRep::variablesView "SharedVariablesDataRep::variablesView"
 tracks the active and inactive views of the data, with values taken
 from the enum in DataVariables.H The valid values include EMPTY and
 the combinations {merged, mixed} x {all, design, aleatory uncertain,
 epistemic uncertain, all uncertain, state}.  TODO: Document what
-DISTINCT means in the enum.  The view is determined by the algorithm
-in use.  The method-dependent logic for setting the active and
-inactive views is in 
-\ref Variables::get_view "Variables::get_view()".
+DISTINCT means in the enum.  The active and inactive views are
+determined by the algorithm in use, managed in 
+\ref Variables::get_view "Variables::get_view()".  
+Any inactive view is set based on higher level iteration within a
+model recursion (e.g., a NestedModel), which enables lower level
+iteration to return derivatives with respect to variables that are
+active at the higher level.
+
+TODO: Discuss difference between active, inactive, and active
+complement in nested contexts.
 
 Given these groupings (views), the active subsets of the variables
 arrays are always contiguous, permitting vector views of the
@@ -125,9 +147,6 @@ to accomodate all the problem variables, and then initialize active
 and inactive views into them.  Thus a later query for active
 continuous variables might return contnuous all or a subset such as
 design, uncertain, only aleatory, etc., as described above.
-
-TODO: Discuss difference between active, inactive, and active
-complement in nested contexts.
 
 */
 

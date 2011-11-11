@@ -5,8 +5,8 @@ namespace Dakota { // for some reason, this doesn't work with mainpage
 \image html logo_3d_halfsize.jpg
 
 \author Brian M. Adams, William J. Bohnhoff, Keith R. Dalbey, John
-P. Eddy, Michael S. Eldred, David M. Gay, Karen Haskell, Patricia
-D. Hough, Sophia Lefantzi, Laura P. Swiler
+P. Eddy, Michael S. Eldred, Patricia D. Hough, Sophia Lefantzi, Laura
+P. Swiler
 
 \htmlonly
 <b>Main Page Table of Contents</b>
@@ -60,7 +60,6 @@ Manual.
 
 \section DevOverview Overview of DAKOTA
 
-
 In DAKOTA, the \e strategy creates and manages \e iterators and 
 \e models.  In the simplest case, the strategy creates a single iterator
 and a single model and executes the iterator on the model to perform a
@@ -90,10 +89,8 @@ small number of virtual function redefinitions.  These redefinitions
 define the coding portions specific to the new derived class, with the
 common portions already defined at the base class.  Thus, with a small
 amount of new code, the existing facilities can be extended, reused,
-and leveraged for new purposes.
-
-The software components are presented in the following sections using
-a top-down order.
+and leveraged for new purposes.  The following sections tour DAKOTA's
+class organization.
 
 
 \subsection DevStrategies Strategies
@@ -127,7 +124,7 @@ for different settings within the model.
 \subsection DevIterators Iterators
 
 Class hierarchy: \ref Dakota::Iterator "Iterator".  Iterator
-implementations may choose to split operations up into run time phases
+implementations may choose to split operations up into run-time phases
 as described in \ref IteratorFlow.
 
 The iterator hierarchy contains a variety of iterative algorithms for
@@ -183,12 +180,10 @@ The \ref Dakota::Analyzer "Analyzer" classes are grouped into:
 base class for non-deterministic methods \ref Dakota::NonDSampling
 "NonDSampling", \ref Dakota::NonDReliability "NonDReliability"
 (reliability analysis), \ref Dakota::NonDExpansion "NonDExpansion"
-(stochastic expansion methods, supported by the \ref
-Dakota::NonDIntegration "NonDIntegration" helper class for numerical
-integration methods), and \ref Dakota::NonDInterval "NonDInterval"
-(interval-based epistemic methods).  Bayesian calibration methods are
-prototyped in \ref Dakota::NonDBayesCalibration
-"NonDBayesCalibration".
+(stochastic expansion methods), and \ref Dakota::NonDInterval
+"NonDInterval" (interval-based epistemic methods).  Bayesian
+calibration methods are prototyped in \ref
+Dakota::NonDBayesCalibration "NonDBayesCalibration".
 
 <ul> <li> \ref Dakota::NonDSampling "NonDSampling" is further
 specialized with the \ref Dakota::NonDLHSSampling "NonDLHSSampling"
@@ -207,10 +202,10 @@ with local and global methods
 specializations for generalized polynomial chaos (\ref
 Dakota::NonDPolynomialChaos "NonDPolynomialChaos") and stochastic
 collocation (\ref Dakota::NonDStochCollocation "NonDStochCollocation")
-and is supported by \ref Dakota::NonDIntegration "NonDIntegration",
-which supplies cubature, tensor-product quadrature and Smolyak sparse
-grid methods (\ref Dakota::NonDCubature "NonDCubature", \ref
-Dakota::NonDQuadrature "NonDQuadrature", and \ref
+and is supported by the \ref Dakota::NonDIntegration "NonDIntegration"
+helper class, which supplies cubature, tensor-product quadrature and
+Smolyak sparse grid methods (\ref Dakota::NonDCubature "NonDCubature",
+\ref Dakota::NonDQuadrature "NonDQuadrature", and \ref
 Dakota::NonDSparseGrid "NonDSparseGrid").
 
 <li> \ref Dakota::NonDInterval "NonDInterval" provides a base class
@@ -326,28 +321,16 @@ at present.
 </ul>
 
 Whereas domain types are controlled through the derived class
-selection, variable types are handled within each of these derived
-classes using variable views.  These views control the subset of
-variable types that are active and inactive within a particular
-iterative study.  For design optimization and uncertainty
-quantification, for example, the active variables view consists of
-design or uncertain types, respectively, and any other variable types
-are carried along invisible to the iterative algorithm being employed.
-For parameter studies and design of experiments, however, a variable
-subset view is not imposed and all variables are active.  Selected
-uncertainty quantification methods can also be toggled into an "All"
-view using the \c all_variables input specification.
+selection, selection of active variable types are handled within each
+of these derived classes using variable views. These permit different
+algorithms to work on different subsets of variables.  For details,
+see \ref VarContainersViews.
 
-Any inactive view is set based on higher level iteration within a
-model recursion (e.g., a NestedModel), which enables lower level
-iteration to return derivatives with respect to variables that are
-active at the higher level.
-
-The \ref Dakota::Constraints "Constraints" hierarchy manages bound, 
-linear, and nonlinear constraints and utilizes the same 
-specializations for managing bounds on the variables (see 
-\ref Dakota::MixedConstraints "MixedConstraints" and
-\ref Dakota::MergedConstraints "MergedConstraints").
+The \ref Dakota::Constraints "Constraints" hierarchy manages bound,
+linear, and nonlinear constraints and utilizes the same
+specializations for managing bounds on the variables (see \ref
+Dakota::MixedConstraints "MixedConstraints" and \ref
+Dakota::MergedConstraints "MergedConstraints").
 
 
 \subsection DevInterfaces Interfaces
