@@ -634,6 +634,13 @@ Also the DFFTPACK library should be integrated into libpecos, so
 \c -ldfftpack should not be needed and NKM should be integrated into
 libsurfpack, so \c -lnkm should not be needed.
 
+Note that as of DAKOTA 5.2, \c -lnewmat is no longer required but additional
+Boost libraries are needed (\c -lboost_regex \c -lboost_filesystem
+\c -lboost_system) as a result of migration from legacy DAKOTA utilities to
+more modern Boost components.  It should also be noted that DAKOTA relies on
+VERSION 2 of Boost.Filesystem which is provided in the source distribution
+under packages/boost (Boost.Filesystem VERSION 3 is NOT supported at this time).
+
 \code
 DAKOTA_LIBS = -L${PREFIX}/lib -ldakota -lteuchos -lpecos -llhs         \
               -lsparsegrid -lsurfpack -lconmin -lddace -ldot -lfsudace \
