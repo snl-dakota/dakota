@@ -1171,7 +1171,7 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
 #	      [ experimental_std_deviations REALLIST {N_rem(RealDL,expStdDeviations)} ]
 #             )
 #  	    |
-  	    ( calibration_data_file STRING {N_rem(str,expDataFileName)}
+  	    ( calibration_data_file ALIAS least_squares_data_file STRING {N_rem(str,expDataFileName)}
               [ num_experiments INTEGER >= 0 {N_rem(nnintz,numExperiments)} ]
               [ annotated {N_rem(true,expDataFileAnnotated)} | 
                 freeform  {N_rem(false,expDataFileAnnotated)} 
