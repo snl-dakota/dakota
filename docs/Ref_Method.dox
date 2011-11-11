@@ -248,7 +248,7 @@ efficient_global, \c polynomial_chaos, \c stoch_collocation,
 \c sampling, \c importance, \c local_reliability, \c
 global_reliability, \c local_evidence, \c
 global_evidence, \c local_interval_est, \c
-global_interval_est, \c bayes_calib, \c dace, \c
+global_interval_est, \c bayes_calibration, \c dace, \c
 fsu_quasi_mc, \c fsu_cvt, \c psuade_moat, \c vector_parameter_study,
 \c list_parameter_study, \c centered_parameter_study, or \c
 multidim_parameter_study.
@@ -569,7 +569,7 @@ scaling
 <tr>
 <td>Output verbosity
 <td>\c output
-<td>\c silent | \c quiet | \c verbose | \c debug
+<td>\c silent | \c quiet | \c normal | \c verbose | \c debug
 <td>Optional
 <td>\c normal
 <tr>
@@ -3939,10 +3939,13 @@ The efficient global method is in prototype form.  Currently, we do
 not expose any specification controls for the underlying Gaussian
 process model used or for the optimization of the expected improvement
 function (which is currently performed by the NCSU DIRECT algorithm
-using its internal defaults).  Future releases may allow more
-specification detail.  The efficient global algorithm is specified by
-the keyword \c efficient_global along with an optional \c seed
-specification, as shown in in Table \ref T5d27 "5.27" below.
+using its internal defaults).  The efficient global algorithm is
+specified by the keyword \c efficient_global along with an optional \c
+seed specification, as shown in in Table \ref T5d27 "5.27" below.  By
+default, EGO uses the Surfpack GP (Kriging) model, but the DAKOTA
+implementation may be selected instead.  If \c use_derivatives is
+specified the GP model will be built using available derivative data
+(Surfpack GP only).
 
 \anchor T5d27
 <table>
@@ -3970,6 +3973,18 @@ Specification detail for the efficient global method
 <td>integer
 <td>Optional
 <td>Time based seed: nonrepeatable
+<tr>
+<td>GP selection
+<td>\c gaussian_process
+<td>\c surfpack | \c dakota
+<td>Optional
+<td>Surfpack Gaussian process
+<tr>
+<td>Derivative usage
+<td>\c use_derivatives
+<td>none
+<td>Optional
+<td>Use function values only
 </table>
 
 
@@ -4962,16 +4977,19 @@ they use a Gaussian process model to form an approximation to the
 limit state (based either in x-space via the \c x_gaussian_process
 specification or in u-space via the \c u_gaussian_process
 specification), followed by probability estimation based on multimodal
-adaptive importance sampling (see [\ref Bichon2007 "Bichon et al., 2007"])
-and [\ref Bichon2008 "Bichon et al., 2008"]).
-These probability estimates may then be transformed into generalized
+adaptive importance sampling (see [\ref Bichon2007 "Bichon et al.,
+2007"]) and [\ref Bichon2008 "Bichon et al., 2008"]).  These
+probability estimates may then be transformed into generalized
 reliability levels if desired.  At this time, inverse reliability
 analysis (mapping probability or generalized reliability levels into
-response levels) is not yet operational, although it may be supported
-in future releases.  The Gaussian process model approximation to the
-limit state is formed over the uncertain variables by default, but may
-be extended to also capture the effect of design and state variables
-via the \c all_variables flag.
+response levels) is not yet operational.  The Gaussian process model
+approximation to the limit state is formed over the uncertain
+variables by default, but may be extended to also capture the effect
+of design and state variables via the \c all_variables flag. By
+default, the Surfpack GP (Kriging) model is used, but the DAKOTA
+implementation may be selected instead. If \c use_derivatives is
+specified the GP model will be built using available derivative data
+(Surfpack GP only).
 
 \ref T5d34 "Table 5.34" provides details of the global reliability method
 specifications beyond those of \ref T5d28 "Table 5.28".
@@ -5002,6 +5020,18 @@ Specification detail for global reliability methods
 <td>none
 <td>Required
 <td>N/A
+<tr>
+<td>GP selection
+<td>\c gaussian_process
+<td>\c surfpack | \c dakota
+<td>Optional
+<td>Surfpack Gaussian process
+<tr>
+<td>Derivative usage
+<td>\c use_derivatives
+<td>none
+<td>Optional
+<td>Use function values only
 <tr>
 <td>All variables flag
 <td>\c all_variables
@@ -5954,12 +5984,14 @@ Latin Hypercube Sampling and takes the minimum and maximum of
 the samples as the bounds (no optimization is
 performed) or \c ego.  In the case of \c ego,
 the efficient global optimization (EGO) method is used to calculate
-bounds (see the EGO method on this page for more explanation). 
-When using \c lhs or \c ego, one can specify a seed for the 
-number of LHS samples, the random number generator, and the number 
-of samples. 
-\ref T5d42 "Table 5.42" provides the specification for the 
-global interval methods.
+bounds (see the EGO method on this page for more explanation).  By
+default, the Surfpack GP (Kriging) model is used, but the DAKOTA
+implementation may be selected instead.  If \c use_derivatives is
+specified the GP model will be built using available derivative data
+(Surfpack GP only). When using \c lhs or \c ego,
+one can specify a seed for the number of LHS samples, the random
+number generator, and the number of samples.  \ref T5d42 "Table 5.42"
+provides the specification for the global interval methods.
 
 \anchor T5d42
 <table>
@@ -5987,6 +6019,18 @@ Specification detail for global interval estimation used in epistemic uncertaint
 <td>none
 <td>Required group
 <td>N/A
+<tr>
+<td>EGO GP selection
+<td>\c gaussian_process
+<td>\c surfpack | \c dakota
+<td>Optional
+<td>Surfpack Gaussian process
+<tr>
+<td>Derivative usage
+<td>\c use_derivatives
+<td>none
+<td>Optional
+<td>Use function values only
 <tr>
 <td>Random seed generator
 <td>\c rng
@@ -6114,9 +6158,13 @@ either \c lhs or \c ego.  \c lhs performs Latin Hypercube Sampling and
 takes the minimum and maximum of the samples as the bounds per
 "interval cell combination."  In the case of \c ego, the efficient
 global optimization (EGO) method is used to calculate bounds (see the
-EGO method on this page for more explanation).  When using \c lhs or
-\c ego, one can specify a seed for the number of LHS samples, the
-random number generator, and the number of samples.
+EGO method on this page for more explanation).  By default, the
+Surfpack GP (Kriging) model is used, but the DAKOTA implementation may
+be selected instead.   If \c use_derivatives is
+specified the GP model will be built using available derivative data
+(Surfpack GP only).  When using \c lhs or \c ego, one can specify a
+seed for the number of LHS samples, the random number generator, and
+the number of samples.
 
 Note that to calculate the plausibility and belief cumulative
 distribution functions, one has to look at all combinations of
@@ -6160,6 +6208,18 @@ Specification detail for global evidence theory method for epistemic uncertainty
 <td>none
 <td>Required group
 <td>N/A
+<tr>
+<td>GP selection
+<td>\c gaussian_process
+<td>\c surfpack | \c dakota
+<td>Optional
+<td>Surfpack Gaussian process
+<tr>
+<td>Derivative usage
+<td>\c use_derivatives
+<td>none
+<td>Optional
+<td>Use function values only
 <tr>
 <td>Random seed generator
 <td>\c rng
