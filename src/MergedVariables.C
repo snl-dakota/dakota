@@ -148,16 +148,22 @@ void MergedVariables::build_active_views()
     Cerr << "Error: active view cannot be EMPTY in MergedVariables."
 	 << std::endl; abort_handler(-1);             break;
   case MERGED_ALL:
+    // start at the beginning
     cvStart = 0; numCV = num_mdv + num_muv + num_msv; break;
   case MERGED_DISTINCT_DESIGN:
+    // start at the beginning
     cvStart = 0; numCV = num_mdv;                     break;
   case MERGED_DISTINCT_ALEATORY_UNCERTAIN:
+    // skip over the merged design variables
     cvStart = num_mdv; numCV = num_mauv;              break;
   case MERGED_DISTINCT_EPISTEMIC_UNCERTAIN:
+    // skip over the merged design and aleatory variables
     cvStart = num_mdv+num_mauv;  numCV = num_meuv;    break;
   case MERGED_DISTINCT_UNCERTAIN:
+    // skip over the merged design variables
     cvStart = num_mdv; numCV = num_muv;               break;
   case MERGED_DISTINCT_STATE:
+    // skip over the merged design and uncertain variables
     cvStart = num_mdv + num_muv; numCV = num_msv;     break;
   }
   if (numCV)
@@ -188,14 +194,19 @@ void MergedVariables::build_inactive_views()
 	 << std::endl;
     abort_handler(-1);                                break;
   case MERGED_DISTINCT_DESIGN:
+    // start at the beginning
     icvStart = 0;                  numICV = num_mdv;  break;
   case MERGED_DISTINCT_ALEATORY_UNCERTAIN:
+    // skip over the merged design variables
     icvStart = num_mdv;            numICV = num_mauv; break;
   case MERGED_DISTINCT_EPISTEMIC_UNCERTAIN:
+    // skip over the merged design and aleatory variables
     icvStart = num_mdv + num_mauv; numICV = num_meuv; break;
   case MERGED_DISTINCT_UNCERTAIN:
+    // skip over the merged design variables
     icvStart = num_mdv;            numICV = num_muv;  break;
   case MERGED_DISTINCT_STATE:
+    // skip over the merged design and uncertain variables
     icvStart = num_mdv + num_muv;  numICV = num_msv;  break;
   }
   if (numICV)

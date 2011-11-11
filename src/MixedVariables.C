@@ -146,28 +146,34 @@ void MixedVariables::build_active_views()
 	 << std::endl;
     abort_handler(-1);                                              break;
   case MIXED_ALL:
+    // start at the beginning
     cvStart = divStart = drvStart = 0;
     numCV  = num_cdv  + num_cauv  + num_ceuv  + num_csv;
     numDIV = num_ddiv + num_dauiv + num_deuiv + num_dsiv;
     numDRV = num_ddrv + num_daurv + num_deurv + num_dsrv;           break;
   case MIXED_DISTINCT_DESIGN:
+    // start at the beginning
     cvStart = divStart = drvStart = 0;
     numCV  = num_cdv;
     numDIV = num_ddiv;
     numDRV = num_ddrv;                                              break;
   case MIXED_DISTINCT_ALEATORY_UNCERTAIN:
+    // skip over the design variables
     cvStart  = num_cdv;  numCV  = num_cauv;
     divStart = num_ddiv; numDIV = num_dauiv;
     drvStart = num_ddrv; numDRV = num_daurv;                        break;
   case MIXED_DISTINCT_EPISTEMIC_UNCERTAIN:
+    // skip over the design and aleatory uncertain variables
     cvStart  = num_cdv  + num_cauv;  numCV  = num_ceuv;
     divStart = num_ddiv + num_dauiv; numDIV = num_deuiv;
     drvStart = num_ddrv + num_daurv; numDRV = num_deurv;            break;
   case MIXED_DISTINCT_UNCERTAIN:
+    // skip over the design variables
     cvStart  = num_cdv;  numCV  = num_cauv + num_ceuv;
     divStart = num_ddiv; numDIV = num_dauiv + num_deuiv;
     drvStart = num_ddrv; numDRV = num_daurv + num_deurv;            break;
   case MIXED_DISTINCT_STATE:
+    // skip over all the design and uncertain variables
     cvStart  = num_cdv  + num_cauv  + num_ceuv;  numCV  = num_csv;
     divStart = num_ddiv + num_dauiv + num_deuiv; numDIV = num_dsiv;
     drvStart = num_ddrv + num_daurv + num_deurv; numDRV = num_dsrv; break;
@@ -205,23 +211,28 @@ void MixedVariables::build_inactive_views()
 	 << std::endl;
     abort_handler(-1);                                                 break;
   case MIXED_DISTINCT_DESIGN:
+    // start at the beginning
     icvStart = idivStart = idrvStart = 0;
     numICV  = num_cdv;
     numIDIV = num_ddiv;
     numIDRV = num_ddrv;                                                break;
   case MIXED_DISTINCT_ALEATORY_UNCERTAIN:
+    // skip over the design variables
     icvStart  = num_cdv;  numICV  = num_cauv;
     idivStart = num_ddiv; numIDIV = num_dauiv;
     idrvStart = num_ddrv; numIDRV = num_daurv;                         break;
   case MIXED_DISTINCT_EPISTEMIC_UNCERTAIN:
+    // skip over the design and aleatory uncertain variables
     icvStart  = num_cdv  + num_cauv;  numICV  = num_ceuv;
     idivStart = num_ddiv + num_dauiv; numIDIV = num_deuiv;
     idrvStart = num_ddrv + num_daurv; numIDRV = num_deurv;             break;
   case MIXED_DISTINCT_UNCERTAIN:
+    // skip over the design variables
     icvStart  = num_cdv;  numICV  = num_cauv + num_ceuv;
     idivStart = num_ddiv; numIDIV = num_dauiv + num_deuiv;
     idrvStart = num_ddrv; numIDRV = num_daurv + num_deurv;             break;
   case MIXED_DISTINCT_STATE:
+    // skip over all the design and uncertain variables
     icvStart  = num_cdv  + num_cauv  + num_ceuv;  numICV  = num_csv;
     idivStart = num_ddiv + num_dauiv + num_deuiv; numIDIV = num_dsiv;
     idrvStart = num_ddrv + num_daurv + num_deurv; numIDRV = num_dsrv;  break;

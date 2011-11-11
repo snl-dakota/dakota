@@ -272,7 +272,8 @@ public:
   const SizetArray& components_totals() const;
 
   /// retrieve the variables type count within
-  /// svdRep->variablesComponents corresponding to key
+  /// svdRep->variablesComponents corresponding to (a fine-grain
+  /// variables type) key
   size_t vc_lookup(unsigned short key) const;
 
 private:
