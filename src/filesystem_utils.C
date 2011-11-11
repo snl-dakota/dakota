@@ -618,13 +618,12 @@ static char slmap[256] = { /* Identity except that slmap['\\'] == slmap[0x5c] ==
 #define Map(x) slmap[x]
 #define N_wdpath 27
 #else
+// Should NOT be needed, but define anyway (candidate for replacement with BFS)
 #define Map(x) x
 #define N_wdpath 1
 #endif
 
 #ifdef DEBUG_GET_NPATH
-
-static char *wd_path[N_wdpath];
 
  static char *
 pathsimp(char *t0)
@@ -718,7 +717,7 @@ pathsimp(char *t0)
 
 // WJB:  Come back and re-enable if disabling does NOT work!
  void
-get_npath(int appdrive, char **pnpath)
+get_npath(int appdrive, std::string *pnpath)
 {
 	char *p, *q, *q0;
 
@@ -826,7 +825,7 @@ cd_fail:
 		L += nrel2*(std::strlen(appdir) + 1);
 
 	// WJB: for now, let the p/q funk go as long as pnpath is un-molested
-	//*pnpath = q = new char [L];
+	//pnpath_buf = q = new char [L];
 
 	q = new char [L];
 	std::memcpy(q, env_path, 5);
@@ -837,7 +836,7 @@ cd_fail:
 	L = env_path_strlen + nrel*(wd_strlen+1) + 3;
 
 	// WJB: for now, let the p/q funk go as long as pnpath is un-molested
-	//*pnpath = q = new char [L];
+	//pnpath_buf = q = new char [L];
 
 	q = new char [L];
 	std::memcpy(q, env_path, 5);
@@ -919,8 +918,8 @@ cd_fail:
 		}
 
 	// WJB: after ALL THE POINTER MANIP, restore PATH to its original state
-	*pnpath = (char*)WorkdirHelper::dakPreferredEnvPath.c_str();
-	delete [] q;
+	*pnpath = WorkdirHelper::dakPreferredEnvPath;
+	//delete [] q;
 
 #if defined(DEBUG)
 	Cout << "get_npath: CWD=" << cwd << '\n'
@@ -935,7 +934,7 @@ void workdir_adjust(const std::string& workdir)
 {
   size_t appdrive = 0;
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(_WIN64)
   if (workdir.c_str() && workdir[0] && workdir[1] == ':') {
     appdrive = Map(workdir[0] & 0xff);
     if (appdrive >= 'A' && appdrive <= 'Z')
@@ -946,7 +945,8 @@ void workdir_adjust(const std::string& workdir)
 #endif
 
 #ifdef DEBUG_GET_NPATH
-  if (!wd_path[appdrive])
+  static boost::array<std::string, N_wdpath> wd_path = { {std::string()} };
+  if ( wd_path[appdrive].empty() )
     get_npath(appdrive, &wd_path[appdrive]);
 #endif
 
@@ -957,7 +957,8 @@ void workdir_adjust(const std::string& workdir)
   }
 
 #ifdef DEBUG_GET_NPATH
-  putenv_impl( wd_path[appdrive] );
+  if ( !wd_path[appdrive].empty() )
+    putenv_impl( wd_path[appdrive].c_str() );
 #endif
 }
 

@@ -71,7 +71,7 @@ class WorkdirHelper
   /** get_npath "shuffles" the string representing the current $PATH variable
       definition so that '.' is first in the $PATH.  It then returns the new
       string as the result (last arg in the call). */
-  friend void get_npath(int,char**);               // dakPreferredEnvPath access
+  friend void get_npath(int,std::string*);         // dakPreferredEnvPath access
 #endif
 
   /// Treat my_cp as a legacy, "blackbox" utility
