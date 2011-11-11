@@ -664,7 +664,9 @@ data, reuse of all data available in the current trust region, and
 reuse of all data from a specified text file, respectively.  Both \c
 dace_method_pointer and \c reuse_samples are optional specifications,
 which gives the user maximum flexibility in using design of
-experiments data, restart/text file data, or both.
+experiments data, restart/text file data, or both.  Note that the
+default format for a samples data file has changed in DAKOTA 5.2 (see
+User's Manual).
 
 The \c use_derivatives flag specifies that any available derivative
 information should be used in global approximation builds. This
@@ -759,6 +761,18 @@ Specification detail for global approximations: build and correction controls
 <td>string
 <td>Optional
 <td>no sample import from a file
+<tr>
+<td>Data file in annotated format
+<td>\c annotated 
+<td>boolean
+<td>Optional
+<td>annotated
+<tr>
+<td>Data file in freeform format
+<td>\c freeform
+<td>boolean
+<td>Optional
+<td>annotated
 <tr>
 <td>Use of gradient data in global approximation builds
 <td>\c use_gradients

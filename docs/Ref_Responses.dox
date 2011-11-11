@@ -463,7 +463,8 @@ they may also be solved using general-purpose optimization algorithms.
 
 While DAKOTA can solve these problems with either least squares or
 optimization algorithms, the response data sets to be returned from
-the simulator are different. Least squares calibration involves a set of residual
+the simulator are different. Least squares calibration involves a set
+of residual
 functions whereas optimization involves a single objective function
 (sum of the squares of the residuals), i.e., \f[f = \sum_{i=1}^{n}
 R_i^2\f] where \e f is the objective function and the set of \f$R_i\f$
@@ -471,7 +472,8 @@ are the residual functions.  Therefore, function values and derivative
 data in the least squares case involve the values and derivatives of
 the residual functions, whereas the optimization case involves values
 and derivatives of the sum of squares objective function. This means that 
-in the least squares calibration case, the user must return each of \c n residuals 
+in the least squares calibration case, the user must return each of 
+\c n residuals 
 separately as a separate calibration term.   Switching
 between the two approaches sometimes requires different simulation
 interfaces capable of returning the different granularity of response
@@ -483,7 +485,8 @@ However, the user has the option of specifying the observational data
 (e.g. from physical experiments or other sources) in a file. 
 The specification \c calibration_data_file may be used to
 specify a text file containing \c calibration_terms observed data
-values (in a supported DAKOTA tabular format) to be used in computing
+values (in a supported DAKOTA tabular format; default formats change
+in DAKOTA .5.2 -- see User's Manual) to be used in computing
 the residuals \f[R_i = y^M_i - y^O_i \f] where \e M denotes model and
 \e O, observation from the file.  In this case the simulator should
 return the actual model response, as DAKOTA will compute the residual
