@@ -341,10 +341,10 @@ static GuiKeyWord
 		{"surfpack",8,0,1,1,583}
 		},
 	kw_46[4] = {
-		{"gaussian_process",8,2,1,0,581,kw_45},
+		{"gaussian_process",8,2,1,0,581,kw_45,0.,0.,0.,0,"{GP selection} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodEG"},
 		{"kriging",0,2,1,0,580,kw_45},
 		{"seed",9,0,3,0,941,0,0.,0.,0.,0,"{Random seed} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodEG"},
-		{"use_derivatives",8,0,2,0,587}
+		{"use_derivatives",8,0,2,0,587,0,0.,0.,0.,0,"{Derivative usage} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodEG"}
 		},
 	kw_47[3] = {
 		{"grid",8,0,1,1,927,0,0.,0.,0.,0,"[CHOOSE trial type]"},
@@ -426,9 +426,9 @@ static GuiKeyWord
 		{"surfpack",8,0,1,1,825}
 		},
 	kw_62[3] = {
-		{"gaussian_process",8,2,1,0,823,kw_61},
+		{"gaussian_process",8,2,1,0,823,kw_61,0.,0.,0.,0,"{EGO GP selection} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalIntervalEst"},
 		{"kriging",0,2,1,0,822,kw_61},
-		{"use_derivatives",8,0,2,0,829}
+		{"use_derivatives",8,0,2,0,829,0,0.,0.,0.,0,"{Derivative usage} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalIntervalEst"}
 		},
 	kw_63[2] = {
 		{"mt19937",8,0,1,1,835},
@@ -477,7 +477,7 @@ static GuiKeyWord
 		{"seed",9,0,4,0,1057,0,0.,0.,0.,0,"{Refinement seed} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"},
 		{"u_gaussian_process",8,2,1,1,1047,kw_71},
 		{"u_kriging",0,0,1,1,1046},
-		{"use_derivatives",8,0,3,0,1055},
+		{"use_derivatives",8,0,3,0,1055,0,0.,0.,0.,0,"{Derivative usage} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalRel"},
 		{"x_gaussian_process",8,2,1,1,1045,kw_71},
 		{"x_kriging",0,2,1,1,1044,kw_71}
 		},
@@ -1161,10 +1161,10 @@ static GuiKeyWord
 		{"reduced_quadratic",8,0,1,1,1185}
 		},
 	kw_165[4] = {
-		{"correlation_lengths",14,0,4,0,1193,0,0.,0.,0.,0,"{Kriging correlation lengths} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"max_trials",0x19,0,3,0,1191,0,0.,0.,0.,0,"{Kriging maximum trials} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"optimization_method",11,0,2,0,1189,0,0.,0.,0.,0,"{Kriging optimization method} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"trend",8,4,1,0,1179,kw_164,0.,0.,0.,0,"{Kriging trend function} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
+		{"correlation_lengths",14,0,4,0,1193,0,0.,0.,0.,0,"{Surfpack GP correlation lengths} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"max_trials",0x19,0,3,0,1191,0,0.,0.,0.,0,"{Surfpack GP maximum trials} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"optimization_method",11,0,2,0,1189,0,0.,0.,0.,0,"{Surfpack GP optimization method} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"trend",8,4,1,0,1179,kw_164,0.,0.,0.,0,"{Surfpack GP trend function} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
 		},
 	kw_166[2] = {
 		{"dakota",8,2,1,1,1165,kw_163},
@@ -1188,8 +1188,8 @@ static GuiKeyWord
 		{"range",10,0,2,0,1215,0,0.,0.,0.,0,"{ANN range} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
 		},
 	kw_171[2] = {
-		{"annotated",8,0,1,0,1255},
-		{"freeform",8,0,1,0,1257}
+		{"annotated",8,0,1,0,1255,0,0.,0.,0.,0,"{Data file in annotated format} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"freeform",8,0,1,0,1257,0,0.,0.,0.,0,"{Data file in freeform format} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
 		},
 	kw_172[3] = {
 		{"cubic",8,0,1,1,1235,0,0.,0.,0.,0,"[CHOOSE polynomial order]"},
@@ -1211,7 +1211,7 @@ static GuiKeyWord
 		{"correction",8,6,7,0,1261,kw_161,0.,0.,0.,0,"{Surrogate correction approach} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
 		{"dace_method_pointer",11,0,3,0,1243,0,0.,0.,0.,0,"{Design of experiments method pointer} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
 		{"diagnostics",15,0,8,0,1275,0,0.,0.,0.,0,"{Print diagnostic metrics about the surrogate goodness of fit} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"gaussian_process",8,2,1,1,1163,kw_166,0.,0.,0.,0,"[CHOOSE surrogate type]{Gaussian process} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
+		{"gaussian_process",8,2,1,1,1163,kw_166,0.,0.,0.,0,"[CHOOSE surrogate type]{DAKOTA Gaussian process} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
 		{"kriging",0,2,1,1,1162,kw_166},
 		{"mars",8,2,1,1,1195,kw_168,0.,0.,0.,0,"{Multivariate adaptive regression splines} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
 		{"minimum_points",8,0,2,0,1239},
@@ -1225,7 +1225,7 @@ static GuiKeyWord
 		{"reuse_samples",0,3,4,0,1244,kw_174},
 		{"samples_file",3,2,5,0,1252,kw_171},
 		{"total_points",9,0,2,0,1237},
-		{"use_derivatives",8,0,6,0,1259,0,0.,0.,0.,0,"{Kriging gradient enhancement} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
+		{"use_derivatives",8,0,6,0,1259,0,0.,0.,0.,0,"{Surfpack GP gradient enhancement} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"}
 		},
 	kw_176[6] = {
 		{"additive",8,0,2,2,1301,0,0.,0.,0.,0,"[CHOOSE correction type]"},

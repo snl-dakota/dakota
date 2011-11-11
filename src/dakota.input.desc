@@ -639,9 +639,13 @@ TAG "method/surrogate_based_global/replace_points"
 
 TAG "method/efficient_global" GROUP "Surrogate-based Methods"
 TAG "method/efficient_global/gaussian_process"
+	DESC "{GP selection} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodEG"
+
 TAG "method/efficient_global/gaussian_process/surfpack"
 TAG "method/efficient_global/gaussian_process/dakota"
 TAG "method/efficient_global/use_derivatives"
+	DESC "{Derivative usage} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodEG"
+
 TAG "method/polynomial_chaos" GROUP "Uncertainty Quantification"
 TAG "method/polynomial_chaos/p_refinement"
 	DESC "{Automated polynomial order refinement} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
@@ -842,9 +846,13 @@ TAG "method/polynomial_chaos/rng/rnum2"
 TAG "method/global_interval_est" GROUP "Uncertainty Quantification"
 TAG "method/global_interval_est/ego"
 TAG "method/global_interval_est/ego/gaussian_process"
+	DESC "{EGO GP selection} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalIntervalEst"
+
 TAG "method/global_interval_est/ego/gaussian_process/surfpack"
 TAG "method/global_interval_est/ego/gaussian_process/dakota"
 TAG "method/global_interval_est/ego/use_derivatives"
+	DESC "{Derivative usage} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalIntervalEst"
+
 TAG "method/global_interval_est/lhs"
 TAG "method/global_interval_est/rng"
 	DESC "{Random seed generator} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalIntervalEst"
@@ -1014,6 +1022,8 @@ TAG "method/global_reliability/all_variables"
 	DESC "{All variables flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalRel"
 
 TAG "method/global_reliability/use_derivatives"
+	DESC "{Derivative usage} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDGlobalRel"
+
 TAG "method/global_reliability/seed"
 	DESC "{Refinement seed} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"
 
@@ -1130,7 +1140,7 @@ TAG "model/surrogate/global"
 	DESC "[CHOOSE surrogate category]{Global approximations } http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/gaussian_process"
-	DESC "[CHOOSE surrogate type]{Gaussian process} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+	DESC "[CHOOSE surrogate type]{DAKOTA Gaussian process} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/gaussian_process/dakota"
 TAG "model/surrogate/global/gaussian_process/dakota/point_selection"
@@ -1144,20 +1154,20 @@ TAG "model/surrogate/global/gaussian_process/dakota/trend/linear"
 TAG "model/surrogate/global/gaussian_process/dakota/trend/reduced_quadratic"
 TAG "model/surrogate/global/gaussian_process/surfpack"
 TAG "model/surrogate/global/gaussian_process/surfpack/trend"
-	DESC "{Kriging trend function} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+	DESC "{Surfpack GP trend function} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/gaussian_process/surfpack/trend/constant"
 TAG "model/surrogate/global/gaussian_process/surfpack/trend/linear"
 TAG "model/surrogate/global/gaussian_process/surfpack/trend/reduced_quadratic"
 TAG "model/surrogate/global/gaussian_process/surfpack/trend/quadratic"
 TAG "model/surrogate/global/gaussian_process/surfpack/optimization_method"
-	DESC "{Kriging optimization method} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+	DESC "{Surfpack GP optimization method} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/gaussian_process/surfpack/max_trials"
-	DESC "{Kriging maximum trials} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+	DESC "{Surfpack GP maximum trials} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/gaussian_process/surfpack/correlation_lengths"
-	DESC "{Kriging correlation lengths} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+	DESC "{Surfpack GP correlation lengths} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/mars"
 	DESC "{Multivariate adaptive regression splines} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
@@ -1222,9 +1232,13 @@ TAG "model/surrogate/global/reuse_points/region"
 TAG "model/surrogate/global/reuse_points/none"
 TAG "model/surrogate/global/points_file"
 TAG "model/surrogate/global/points_file/annotated"
+	DESC "{Data file in annotated format} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/points_file/freeform"
+	DESC "{Data file in freeform format} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/use_derivatives"
-	DESC "{Kriging gradient enhancement} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+	DESC "{Surfpack GP gradient enhancement} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 
 TAG "model/surrogate/global/correction"
 	DESC "{Surrogate correction approach} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
