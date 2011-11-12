@@ -300,115 +300,107 @@ and \c hierarchical specification groups in further detail.
 \subsection ModelSurrG Global approximations
 
 The global surrogate model requires specification of one of the
-following approximation types: \c polynomial, \c gaussian_process / \c
-kriging (2 versions), \c neural_network, \c mars, \c moving_least_squares, 
-<!-- \c orthogonal_polynomial, --> or \c radial_basis.  These 
-specifications will create a polynomial, a Gaussian process (a.k.a. 
-kriging interpolation), layered perceptron artificial neural network 
-approximation, multivariate adaptive regression spline, moving least 
-squares, <!-- an orthogonal polynomial (Hermite, Legendre, Laguerre, 
-Jacobi, and/or generalized Laguerre) approximation, --> or radial basis 
-function approximation, respectively.  All these approximations are 
-implemented in \ref Giunta2006 "SurfPack" except the one of the two 
-Gaussian process/Kriging models, which is implemented directly in DAKOTA.
+following approximation types: \c polynomial, \c gaussian_process
+(Kriging), \c neural_network, \c mars, \c moving_least_squares, <!--
+\c orthogonal_polynomial, --> or \c radial_basis.  These
+specifications will create a polynomial, a Gaussian process (Kriging
+interpolation), layered perceptron artificial neural network
+approximation, multivariate adaptive regression spline, moving least
+squares, <!-- an orthogonal polynomial (Hermite, Legendre, Laguerre,
+Jacobi, and/or generalized Laguerre) approximation, --> or radial
+basis function approximation, respectively.  All these approximations
+are implemented in \ref Giunta2006 "SurfPack" except an alternate
+Gaussian process model, which is implemented directly in DAKOTA.
 
 In the polynomial case, the order of the polynomial (linear,
 quadratic, or cubic) must be specified. 
 
-DAKOTA 5.2 has 2 Gaussian process (GP) or Kriging models, one that resides
-in DAKOTA itself and the other within the Surfpack subpackage of DAKOTA.
-These can be accessed with either the \c gaussian_process or \c kriging
-(\c kriging is now an alias for \c gaussian_process) keywords followed by 
-either \c dakota or \c surfpack.  (Note that within a stand-alone 
-compilation of Surfpack, the \c gaussian_process \c surfpack model is 
-referred to as "kriging" and additional features, such as an arbitrary 
-order full or reduced polynomial trend function become accessible.)  
-Historically these models were drastically different, and in DAKOTA 5.1 
-and earlier the \c dakota model was accessed via the \c gaussian_process 
-keyword while the \c surfpack version was accessed via the \c kriging 
-keyword. However, they became quite similar in DAKOTA version 5.1.  They 
-now differ in that the \c surfpack GP has a richer set of features/options 
-and tends to be more accurate than the \c dakota version.  Because of how
-the \c surfpack GP handles ill-conditioned correlation matrices (which 
-significantly contributes to its greater accuracy), the \c surfpack GP can 
-also be a factor of 2 or 3 slower than the \c dakota GP.  As of DAKOTA 5.2 
-the \c surfpack GP has been made the default choice in all contexts except
-Bayesian calibration.  For now, the \c dakota GP is still available 
-to maintain continuity but its use is deprecated and it will be removed 
-in a future release.  
+DAKOTA has two Gaussian process (GP) or Kriging models, one that
+resides in DAKOTA proper and the other in DAKOTA's Surfpack
+subpackage.  Choice of the GP implmentation is made by specifying \c
+gaussian_process (alternately \c kriging) followed by either \c dakota
+or \c surfpack.  Historically these models were drastically different,
+but in DAKOTA 5.1, they became quite similar.  They now differ in that
+the Surfpack GP has a richer set of features/options and tends to be
+more accurate than the DAKOTA version.  Due to how the Surfpack GP
+handles ill-conditioned correlation matrices (which significantly
+contributes to its greater accuracy), the \c Surfpack GP can be a
+factor of two or three slower than DAKOTA's.  As of DAKOTA 5.2, the
+Surfpack implementation is the default in all contexts except Bayesian
+calibration.  The DAKOTA GP is provided for continuity, but may be
+deprecated in the future.
 
-The trend function of both GP/kriging models is selected using the 
-\c trend keyword, with options \c constant, \c linear, or \c reduced_quadratic
-(default).  The \c surfpack GP has the additional option of (a full) 
-\c quadratic.  The \c reduced_quadratic trend function includes
-the main effects, but not mixed/interaction terms; prior to DAKOTA
-5.1, it was selected for the (dakota) \c gaussian_process via the 
-\c quadratic option.
+The trend function of both GP models is selected using the \c trend
+keyword, with options \c constant, \c linear, or \c reduced_quadratic
+(default).  The Surfpack GP has the additional option of (a full) \c
+quadratic.  The \c reduced_quadratic trend function includes the main
+effects, but not mixed/interaction terms.  NOTE: prior to DAKOTA 5.1,
+\c reduced_quadratic was selected for the DAKOTA GP via the \c
+quadratic option.
 
-The \c dakota GP always chooses its correlation parameters via Maximum 
-Likelihood Estimate (MLE) using a global optimization procedure.
-Ill-conditioning is a common challenge in the construction of Gaussian
-process models, the root cause of this is that the sample design is 
-poorly spaced for the chosen set of correlation parameters.  The 
-\c dakota GP deals with ill-conditioning in two ways.  First, when it 
-encounters a non-invertible correlation matrix it iteratively increases 
-the size of a "nugget," but in such cases the resulting approximation 
-smooths rather than interpolates the data. Second, it has a 
-\c point_selection option that uses a greedy algorithm to select a 
-well spaced subset of points prior to the construct of the GP.  In 
-this case, the GP will only interpolate the selected subset.  By default,
-there is no point selection.  Typically, one should not need point
-selection in trust-region methods because a small number of points are
-used to develop a surrogate within each trust region.  Point selection
-is most beneficial when constructing with a "large" number of points,
-typically more than order one hundred, though this depends on the
-number of variables and spacing of the sample points.
+The DAKOTA GP always determines its correlation parameters via maximum
+likelihood estimate (MLE) using a global optimization procedure.
+Ill-conditioning induced by poorly spaced sample points is a common
+challenge in the construction of Gaussian process models.  DAKOTA's GP
+deals with ill-conditioning in two ways.  First, when it encounters a
+non-invertible correlation matrix it iteratively increases the size of
+a "nugget," but in such cases the resulting approximation smooths
+rather than interpolates the data. Second, it has a \c point_selection
+option (default off) that uses a greedy algorithm to select a
+well-spaced subset of points prior to the construction of the GP.  In
+this case, the GP will only interpolate the selected
+subset. Typically, one should not need point selection in trust-region
+methods because a small number of points are used to develop a
+surrogate within each trust region.  Point selection is most
+beneficial when constructing with a large number of points, typically
+more than order one hundred, though this depends on the number of
+variables and spacing of the sample points.
 
-By default, the \c surfpack GP select its correlation parameters using
-the same global optimizer as the \c dakota GP but its search is 
-concentrated in a much smaller "feasible" region for "good" correlation 
-parameters. However, one may force the \c surfpack GP to use a particular 
-search algorithm by specifying \c optimization_method followed by any of 
-\c 'global', \c 'local', \c 'sampling', or \c 'none'.  The \c 'none' 
-option and starting location of the \c 'local' search default to the center 
-of the small feasible region for correlation lengths.  However, these can 
-also be user specified with the \c correlation_lengths keyword 
-followed by a list of n real numbers where n is the number of input 
-dimensions.  As of DAKOTA 5.2, the \c surfpack GP handles 
-ill-conditioning by selecting the subset of points that tightly meets a 
-constraint on the condition number and provides the maximum amount of 
-useful information for the correlation lengths chosen by MLE. For each 
-set of correlation lengths examined during the MLE optimization, the 
-optimal subset of points for those correlation lengths is used.  The 
-subset of points used to build the \c surfpack GP is the one associated 
-with the most likely set of correlation lengths.  This differs from the 
-\c point_selection option of the \c dakota GP which initially chooses a 
-well spaced subset of points and finds the correlation parameters that 
-are most likely for that one subset.  It is similar to the \c dakota GP's 
-point selection in that the \c surfpack GP will only interpolate the 
-selected subset of points.  
+By default, the Surfpack GP also selects its correlation parameters
+using a global optimizer, but its search is concentrated in a smaller
+feasible region of correlation parameters. However, one may force the
+Surfpack GP to use a different search algorithm by specifying \c
+optimization_method followed by any of \c 'global', \c 'local', \c
+'sampling', or \c 'none'.  The none option and starting location of
+the local search default to the center of the small feasible region of
+correlation lengths.  However, one may also directly specify \c
+correlation_lengths as a list of N real numbers where N is the number
+of input dimensions.  As of DAKOTA 5.2, the Surfpack GP handles
+ill-conditioning by selecting the subset of points that tightly meets
+a constraint on the condition number and provides the maximum amount
+of useful information for the correlation lengths chosen by MLE. For
+each set of correlation lengths examined during the MLE optimization,
+the optimal subset of points for those correlation lengths is used.
+The subset of points used to build the Surfpack GP is the one
+associated with the most likely set of correlation lengths.  This
+differs from the \c point_selection option of the DAKOTA GP which
+initially chooses a well-spaced subset of points and finds the
+correlation parameters that are most likely for that one subset.  It
+is similar to the DAKOTA GP's point selection in that the Surfpack GP
+will only interpolate the selected subset of points.
 
-The \c use_derivatives keyword will cause the \c surfpack GP to be 
-constructed from a combination of function value and gradient information.  
-This is only beneficial when a function value plus a gradient can be 
-computed at a computational cost comparable to a function value only 
-simulation.  This rules out gradients computed by finite differences 
-(which also tend to be insufficiently accurate).  However, the accurate 
-and inexpensive derivatives calculated by analytical, automatic 
-differentiation, or continuous adjoint techniques can be cost effective
-and beneficial provided that they are not infinite or nearly so. 
-Although a function value plus gradient can be often be obtained more 
-cheaply than two function value only evaluations, each scalar 
-derivative equation costs as much as a scalar function value equation
-during the construction of the emulator.  Since the cost to build a 
-GP is cubic in the number of equations, the cost to build a gradient 
-enhanced GP/Kriging model will be roughly (1+n)^3 times greater than 
-one that is not gradient enhanced, where n is the number of input 
-dimensions.  Also, a poorly space sample design has a greater adverse 
-affect on the conditioning of the correlation matrix when derivative 
-information is included. This can result in significantly more points 
-being discarded and hence providing no benefit to the derivative 
-enhanced GP/Kriging model's accuracy.  
+The \c use_derivatives keyword will cause the Surfpack GP to be
+constructed from a combination of function value and gradient
+information (if available).  This is only beneficial when a function
+value plus a gradient can be computed at a computational cost
+comparable to a function value only.  This rules out gradients
+computed by finite differences (which also tend to be insufficiently
+accurate).  However, the accurate and inexpensive derivatives
+calculated by analytical, automatic differentiation, or continuous
+adjoint techniques can be cost effective and beneficial provided that
+they are not infinite or nearly so.  Although a function value plus
+gradient can be often be obtained more cheaply than two function value
+only evaluations, each scalar derivative equation costs as much as a
+scalar function value equation during the construction of the
+emulator.  Since the cost to build a GP is cubic in the number of
+equations, the cost to build a gradient-enhanced GP/Kriging model will
+be roughly (N+1)^3 times greater than one that is not
+gradient-enhanced, where N is the number of input dimensions.  Also, a
+poorly spaced sample design has a greater adverse affect on the
+conditioning of the correlation matrix when derivative information is
+included. This can result in significantly more points being discarded
+and hence providing no benefit to the derivative enhanced GP/Kriging
+model's accuracy.
 
 <!-- TODO: document MARS, ANN, and RBF controls -->
 Tables \ref T6d4 "6.4" and \ref T6d5 "6.5" summarize the global 
@@ -429,7 +421,6 @@ approximation type, Part I
 <td><b>Associated Data</b>
 <td><b>Status</b>
 <td><b>Default</b>
-<td><b>Comment</b>
 <tr>
 <td>Global approximations 
 <td>\c global
@@ -444,57 +435,55 @@ approximation type, Part I
 <td>N/A
 <tr>
 <td>DAKOTA Gaussian process
-<td>\c gaussian_process 
-<td>optional: \c dakota | \c surfpack
+<td>\c gaussian_process
+<td>dakota
 <td>Required (1 of 7 selections)
-<td>\c surfpack
-<td>same as \c kriging
+<td>N/A
 <tr>
-<td>Kriging interpolation
-<td>\c kriging
-<td>optional: \c dakota | \c surfpack
-<td>Required (1 of 7 selections)
-<td>\c surfpack
-<td>same as \c gaussian_process
-<tr>
-<td>\c gaussian_process \c dakota \n point selection
-<td>\c point_selection
-<td>none
-<td>Optional
-<td>no \c point_selection
-<tr>
-<td>\c gaussian_process \c dakota \n trend function
+<td>GP trend function
 <td>\c trend
 <td>\c constant | \c linear | \c reduced_quadratic
 <td>Optional
-<td>\c reduced_quadratic trend
+<td>reduced_quadratic trend
 <tr>
-<td>\c gaussian_process \c surfpack \n trend function
+<td>GP point selection
+<td>\c point_selection
+<td>none
+<td>Optional
+<td>no point selection
+<tr>
+<td>Surfpack Gaussian process (Kriging)
+<td>\c gaussian_process
+<td>surfpack
+<td>Required group (1 of 7 selections)
+<td>N/A
+<tr>
+<td>Surfpack GP trend function
 <td>\c trend
 <td>\c constant | \c linear | \c reduced_quadratic | \c quadratic
 <td>Optional
 <td>\c reduced_quadratic trend
 <td>
 <tr>
-<td>\c gaussian_process \c surfpack \n correlation lengths
+<td>Surfpack GP correlation lengths
 <td>\c correlation_lengths
 <td>list of reals
-<td>Optional for \c 'local' and \c 'none' \n choices of \c optimization_method 
+<td>Optional for none/local
 <td>internally computed correlation_lengths
 <tr>
-<td>\c gaussian_process \c surfpack \n optimization method
+<td>Surfpack GP optimization method
 <td>\c optimization_method
 <td>\c 'global' | \c 'local' | \c 'sampling' | \c 'none'
 <td>Optional 
 <td>global 
 <tr>
-<td>\c gaussian_process \c surfpack \n maximum trials
+<td>Surfpack GP maximum trials
 <td>\c max_trials
 <td>integer
 <td>Optional
 <td>
 <tr>
-<td>\c gaussian_process \c surfpack \n gradient enhancement
+<td>Surfpack GP gradient enhancement
 <td>\c use_derivatives
 <td>none
 <td>Optional
