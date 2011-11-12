@@ -41,14 +41,12 @@ public:
   //
 
   // alternate constructor for instantiations "on the fly"
-  NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
-		 const UShortArray& ssg_level, const RealVector& dim_pref,
-		 //short sparse_grid_usage,
+  NonDSparseGrid(Model& model, const UShortArray& ssg_level,
+		 const RealVector& dim_pref, //short sparse_grid_usage,
 		 //short refine_type  = Pecos::NO_REFINEMENT,
 		 short refine_control = Pecos::NO_CONTROL,
-		 bool track_uniq_prod_wts = true, bool nested_rules = true,
-		 bool unrestrict_growth = false,  bool piecewise_basis = false,
-		 bool use_derivs = false);
+		 bool track_uniq_prod_wts = true,
+		 short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH);
 
   //
   //- Heading: Virtual function redefinitions
@@ -107,12 +105,13 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis);
+
   void get_parameter_sets(Model& model);
 
   //void check_variables(const Pecos::ShortArray& x_types);
 
   void reset();
-
   void sampling_reset(int min_samples, bool all_data_flag, bool stats_flag);
 
 private:

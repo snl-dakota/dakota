@@ -17,6 +17,7 @@
 #include "NonDSparseGrid.H"
 #include "DakotaModel.H"
 #include "ProblemDescDB.H"
+#include "PolynomialApproximation.hpp"
 
 static const char rcsId[]="@(#) $Id: NonDSparseGrid.C,v 1.57 2004/06/21 19:57:32 mseldre Exp $";
 
@@ -72,12 +73,15 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
     growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;
   else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
+
+  Pecos::BasisConfigOptions bc_options(nested_rules, piecewise_basis,
+				       equidist_rules, use_derivs);
   ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelRef,
-    dimPrefSpec, /*refine_type,*/ refine_control, store_colloc,
-    track_uniq_prod_wts, nested_rules, piecewise_basis, equidist_rules,
-    use_derivs, growth_rate);
+    dimPrefSpec, bc_options, /*refine_type,*/ refine_control, store_colloc,
+    track_uniq_prod_wts, growth_rate);
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
     iteratedModel.distribution_parameters());
+
   maxConcurrency *= ssgDriver->grid_size(); // requires polyParams
 }
 
@@ -85,12 +89,9 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of sparse grids within PCE and SC. */
 NonDSparseGrid::
-NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
-	       const UShortArray& ssg_level, const RealVector& dim_pref,
-	       //short sparse_grid_usage, short refine_type,
-	       short refine_control, bool track_uniq_prod_wts,
-	       bool nested_rules,    bool unrestrict_growth,
-	       bool piecewise_basis, bool use_derivs): 
+NonDSparseGrid(Model& model, const UShortArray& ssg_level,
+	       const RealVector& dim_pref, short refine_control,
+	       bool track_uniq_prod_wts, short growth_rate): 
   NonDIntegration(NoDBBaseConstructor(), model, dim_pref),
   ssgLevelSpec(ssg_level), ssgLevelRef(ssgLevelSpec[sequenceIndex])
 {
@@ -98,29 +99,27 @@ NonDSparseGrid(Model& model, const Pecos::ShortArray& u_types,
   numIntDriver = Pecos::IntegrationDriver(Pecos::SPARSE_GRID);
   ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
 
+  // propagate general settings (not inferrable from the basis of polynomials)
+  // prior to initialize_grid()
+  ssgDriver->refinement_control(refine_control);
+  bool store_colloc = true; //(sparse_grid_usage == Pecos::INTERPOLATION);
+  ssgDriver->store_collocation_details(store_colloc);
+  ssgDriver->track_unique_product_weights(track_uniq_prod_wts);
+  ssgDriver->growth_rate(growth_rate);
+
   // local natafTransform not yet updated: x_types would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
-  bool store_colloc = true; //(sparse_grid_usage == Pecos::INTERPOLATION);
-  bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
-  short growth_rate;
-  if (unrestrict_growth ||
-      refine_control == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)
-    // unstructured index set evolution: no motivation to restrict
-    growth_rate = Pecos::UNRESTRICTED_GROWTH;
-  else if (piecewise_basis)
-    // no reason to match Gaussian precision, but restriction still useful:
-    // use SLOW i=2l+1 since it is more natural for NEWTON_COTES,CLENSHAW_CURTIS
-    // and is more consistent with UNRESTRICTED generalized sparse grids.
-    growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;
-  else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
-    growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
-  ssgDriver->initialize_grid(u_types, ssgLevelRef, dimPrefSpec, //refine_type,
-    refine_control, store_colloc, track_uniq_prod_wts, nested_rules,
-    piecewise_basis, equidist_rules, use_derivs, growth_rate);
-  ssgDriver->
-    initialize_grid_parameters(u_types, model.distribution_parameters());
+}
+
+
+void NonDSparseGrid::
+initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
+{
+  ssgDriver->initialize_grid(poly_basis);
+  ssgDriver->level(ssgLevelRef);
+  ssgDriver->dimension_preference(dimPrefSpec);
   maxConcurrency *= ssgDriver->grid_size(); // requires polyParams
 }
 

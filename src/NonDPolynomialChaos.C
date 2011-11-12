@@ -61,10 +61,15 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   short data_order = 1;
   if (probDescDB.get_bool("method.derivative_usage")) {// || iteratedModel.icv()
     if (gradientType != "none") data_order |= 2;
-    if (hessianType  != "none") data_order |= 4;
+    //if (hessianType  != "none") data_order |= 4; // not yet supported
+    if (data_order == 1)
+      Cerr << "\nWarning: use_derivatives option in polynomial_chaos requires "
+	   << "a response\n         gradient specification.  Option will be "
+	   << "ignored.\n" << std::endl;
   }
+  if (data_order > 1) useDerivs = true;
   short u_space_type = probDescDB.get_short("method.nond.expansion_type");
-  bool  use_derivs = (data_order > 1), piecewise_basis
+  bool piecewise_basis
     = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
@@ -86,14 +91,13 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     if (!quad_order_spec.empty()) {
       expansionCoeffsApproach = Pecos::QUADRATURE;
       construct_quadrature(u_space_sampler, g_u_model, quad_order_spec,
-	probDescDB.get_rdv("method.nond.dimension_preference"),
-	piecewise_basis, use_derivs);
+	probDescDB.get_rdv("method.nond.dimension_preference"));
     }
     else if (!ssg_level_spec.empty()) {
       expansionCoeffsApproach = Pecos::SPARSE_GRID;
       construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec,
 	probDescDB.get_rdv("method.nond.dimension_preference"),
-	piecewise_basis, use_derivs);
+	piecewise_basis);
     }
     else if (cub_int_spec != USHRT_MAX) {
       expansionCoeffsApproach = Pecos::CUBATURE;
@@ -144,7 +148,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  // the NonDQuad ctor to allow internal point set filtering.
 	  RealVector dim_pref; // empty (not part of regression spec)
 	  construct_quadrature(u_space_sampler, g_u_model, numSamplesOnModel,
-			       dim_pref, piecewise_basis, use_derivs);
+			       dim_pref);
 	}
 	else                  // "point collocation": LHS sampling
 	  // reuse seed/rng settings intended for the expansion_sampler
@@ -206,7 +210,7 @@ NonDPolynomialChaos::
 NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    unsigned short num_int_level, short u_space_type,
 		    bool use_derivs):
-  NonDExpansion(model, exp_coeffs_approach, u_space_type, use_derivs)
+  NonDExpansion(model, exp_coeffs_approach, u_space_type)
 {
   // -------------------
   // Recast g(x) to G(u)
@@ -222,8 +226,13 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   short data_order = 1;
   if (use_derivs) {// || iteratedModel.icv()
     if (gradientType != "none") data_order |= 2;
-    if (hessianType  != "none") data_order |= 4;
+    //if (hessianType  != "none") data_order |= 4; // not yet supported
+    if (data_order == 1)
+      Cerr << "\nWarning: use_derivatives option in polynomial_chaos requires "
+	   << "a response\n         gradient specification.  Option will be "
+	   << "ignored.\n" << std::endl;
   }
+  if (data_order > 1) useDerivs = true;
   bool piecewise_basis
     = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
@@ -232,14 +241,13 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   if (expansionCoeffsApproach == Pecos::QUADRATURE) {
     RealVector  dim_pref;                     // empty -> isotropic
     UShortArray quad_order(1, num_int_level); // single sequence
-    construct_quadrature(u_space_sampler, g_u_model, quad_order, dim_pref,
-			 piecewise_basis, use_derivs);
+    construct_quadrature(u_space_sampler, g_u_model, quad_order, dim_pref);
   }
   else if (expansionCoeffsApproach == Pecos::SPARSE_GRID) {
     RealVector  dim_pref;                    // empty -> isotropic
     UShortArray ssg_level(1, num_int_level); // single sequence
     construct_sparse_grid(u_space_sampler, g_u_model, ssg_level, dim_pref,
-			  piecewise_basis, use_derivs);
+			  piecewise_basis);
   }
   else if (expansionCoeffsApproach == Pecos::CUBATURE)
     construct_cubature(u_space_sampler, g_u_model, num_int_level);
@@ -277,10 +285,8 @@ NonDPolynomialChaos::~NonDPolynomialChaos()
 }
 
 
-void NonDPolynomialChaos::initialize_expansion()
+void NonDPolynomialChaos::initialize_u_space_model()
 {
-  NonDExpansion::initialize_expansion();
-
   // The expansion_order specification is passed through the DataFitSurrModel
   // ctor.  Any additional specification data needed by OrthogPolyApproximation
   // must be passed through by diving through the hierarchy.
@@ -291,28 +297,25 @@ void NonDPolynomialChaos::initialize_expansion()
   const Pecos::ShortArray& u_types = natafTransform.u_types();
 
   PecosApproximation *poly_approx_rep, *poly_approx_rep0;
-  NonDIntegration *u_space_sampler_rep = NULL;
-  Pecos::IntegrationDriver *driver_rep = NULL;
-  if (num_int) {
-    u_space_sampler_rep
-      = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
-    driver_rep = u_space_sampler_rep->driver().driver_rep();
-  }
+  NonDIntegration* u_space_sampler_rep = (num_int || tensorRegression) ?
+    (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep() : NULL;
 
-  // reuse polynomial bases since they are the same for all response fns
-  // (efficiency becomes more important for numerically-generated polynomials).
+  // Rather than automatically constructing the orthogonal polynomial
+  // basis within each OrthogPolyApproximation ctor invocation, manage
+  // it here so that we may reuse bases among the response function
+  // set and an integration driver (if present).  This efficiency
+  // becomes more important for numerically-generated polynomials.
   bool first = true;
+  Pecos::BasisConfigOptions bc_options(nestedRules, false, true, useDerivs);
   for (size_t i=0; i<numFunctions; i++) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep) { // may be NULL based on approxFnIndices
       if (first) {
-	if (num_int) { // reuse driver basis for rep0
-	  poly_approx_rep->distribution_types(u_types);
-	  poly_approx_rep->polynomial_basis(driver_rep->polynomial_basis());
-	}
-	else           // construct a new basis for rep0
-	  poly_approx_rep->
-	    distributions(u_types, iteratedModel.distribution_parameters());
+	poly_approx_rep->construct_basis(u_types,
+	  iteratedModel.distribution_parameters(), bc_options);
+	if (num_int || tensorRegression)
+	  u_space_sampler_rep->
+	    initialize_grid(poly_approx_rep->polynomial_basis());
 	poly_approx_rep0 = poly_approx_rep;
 	first = false;
       }
@@ -328,6 +331,9 @@ void NonDPolynomialChaos::initialize_expansion()
 	poly_approx_rep->expansion_terms(expansionTerms);
     }
   }
+
+  // perform last due to numSamplesOnModel update
+  NonDExpansion::initialize_u_space_model();
 }
 
 

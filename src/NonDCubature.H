@@ -61,6 +61,8 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis);
+
   void get_parameter_sets(Model& model);
 
   void sampling_reset(int min_samples,bool all_data_flag, bool stats_flag);

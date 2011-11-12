@@ -46,6 +46,9 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
+  /// initialize the surrogate model
+  void initialize_u_space_model();
+
   //void initialize_expansion();
   //void compute_expansion();
 

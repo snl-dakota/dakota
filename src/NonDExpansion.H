@@ -34,10 +34,12 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDExpansion(Model& model);    ///< standard constructor
-  NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type,
-		bool use_derivs); ///< alternate constructor
-  ~NonDExpansion();               ///< destructor
+  /// standard constructor
+  NonDExpansion(Model& model);
+  /// alternate constructor
+  NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type);
+  /// destructor
+  ~NonDExpansion();
 
   //
   //- Heading: Virtual function redefinitions
@@ -56,6 +58,8 @@ protected:
   //- Heading: Virtual functions
   //
 
+  /// initialize uSpaceModel polynomial approximations with PCE/SC data
+  virtual void initialize_u_space_model();
   /// initialize random variable definitions and final stats arrays
   virtual void initialize_expansion();
   /// form the expansion by calling uSpaceModel.build_approximation()
@@ -87,24 +91,20 @@ protected:
   /// a quad_order specification
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 			    const UShortArray& quad_order,
-			    const RealVector& dim_pref, bool piecewise_basis,
-			    bool use_derivs);
+			    const RealVector& dim_pref);
   /// assign a NonDQuadrature instance within u_space_sampler based on
   /// the size of a filtered tensor product sample set
   void construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-			    int filtered_samples, const RealVector& dim_pref,
-			    bool piecewise_basis, bool use_derivs);
+			    int filtered_samples, const RealVector& dim_pref);
   /// assign a NonDSparsegrid instance within u_space_sampler
   void construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 			     const UShortArray& ssg_level,
 			     const RealVector& ssg_dim_pref,
-			     bool piecewise_basis, bool use_derivs);
+			     bool piecewise_basis);
   // assign a NonDIncremLHSSampling instance within u_space_sampler
   //void construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
   //				 int num_samples, int seed, const String& rng);
 
-  /// initialize uSpaceModel polynomial approximations with PCE/SC data
-  void initialize_u_space_model();
   /// construct the expansionSampler operating on uSpaceModel
   void construct_expansion_sampler();
 
@@ -134,6 +134,10 @@ protected:
   /// expansion in order to estimate probabilities
   int numSamplesOnExpansion;
 
+  /// flag for indicating state of \c nested and \non_nested overrides of
+  /// default rule nesting, which depends on the type of integration driver
+  bool nestedRules;
+
   /// flag for \c use_derivatives specification, indicating usage of derivative
   /// data (with respect to expansion variables) to enhance the calculation of
   /// the stochastic expansion.
@@ -142,7 +146,7 @@ protected:
       behavior is distinct from the usage of response derivatives with respect
       to auxilliary variables (design, epistemic) for computing derivatives of
       aleatory expansion statistics with respect to these variables. */
-  bool useDerivsFlag;
+  bool useDerivs;
 
   /// refinement type: NO_REFINEMENT, P_REFINEMENT, or H_REFINEMENT
   short refineType;

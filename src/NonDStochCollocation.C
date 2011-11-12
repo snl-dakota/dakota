@@ -12,11 +12,13 @@
 
 #include "system_defs.h"
 #include "NonDStochCollocation.H"
+#include "NonDIntegration.H"
 #include "DakotaModel.H"
 #include "DakotaResponse.H"
 #include "ProblemDescDB.H"
 #include "DataFitSurrModel.H"
 #include "PecosApproximation.H"
+#include "InterpPolyApproximation.hpp"
 
 
 namespace Dakota {
@@ -50,10 +52,15 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   short data_order = 1;
   if (probDescDB.get_bool("method.derivative_usage")) {// || iteratedModel.icv()
     if (gradientType != "none") data_order |= 2;
-    if (hessianType  != "none") data_order |= 4;
+    //if (hessianType  != "none") data_order |= 4; // not yet supported
+    if (data_order == 1)
+      Cerr << "\nWarning: use_derivatives option in stoch_collocation requires "
+	   << "a response\n         gradient specification.  Option will be "
+	   << "ignored.\n" << std::endl;
   }
+  if (data_order > 1) useDerivs = true;
   short u_space_type = probDescDB.get_short("method.nond.expansion_type");
-  bool  use_derivs = (data_order > 1), piecewise_basis
+  bool piecewise_basis
     = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
@@ -66,13 +73,12 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
     = probDescDB.get_rdv("method.nond.dimension_preference");
   if (!quad_order_spec.empty()) {
     expansionCoeffsApproach = Pecos::QUADRATURE;
-    construct_quadrature(u_space_sampler, g_u_model, quad_order_spec, dim_pref,
-			 piecewise_basis, use_derivs);
+    construct_quadrature(u_space_sampler, g_u_model, quad_order_spec, dim_pref);
   }
   else if (!ssg_level_spec.empty()) {
     expansionCoeffsApproach = Pecos::SPARSE_GRID;
     construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec, dim_pref,
-			  piecewise_basis, use_derivs);
+			  piecewise_basis);
   }
   // iteratedModel concurrency is defined by the number of samples
   // used in constructing the expansion
@@ -121,7 +127,7 @@ NonDStochCollocation::
 NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     unsigned short num_int_level, short u_space_type,
 		     bool use_derivs):
-  NonDExpansion(model, exp_coeffs_approach, u_space_type, use_derivs)
+  NonDExpansion(model, exp_coeffs_approach, u_space_type)
 {
   // -------------------
   // Recast g(x) to G(u)
@@ -137,8 +143,13 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   short data_order = 1;
   if (use_derivs) {// || iteratedModel.icv()
     if (gradientType != "none") data_order |= 2;
-    if (hessianType  != "none") data_order |= 4;
+    //if (hessianType  != "none") data_order |= 4; // not yet supported
+    if (data_order == 1)
+      Cerr << "\nWarning: use_derivatives option in stoch_collocation requires "
+	   << "a response\n         gradient specification.  Option will be "
+	   << "ignored.\n" << std::endl;
   }
+  if (data_order > 1) useDerivs = true;
   RealVector  dim_pref;                      // empty -> isotropic
   UShortArray num_int_seq(1, num_int_level); // single sequence
   bool piecewise_basis
@@ -147,11 +158,10 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // generated using active sampling view:
   Iterator u_space_sampler;
   if (expansionCoeffsApproach == Pecos::QUADRATURE)
-    construct_quadrature(u_space_sampler, g_u_model, num_int_seq, dim_pref,
-			 piecewise_basis, use_derivs);
+    construct_quadrature(u_space_sampler, g_u_model, num_int_seq, dim_pref);
   else if (expansionCoeffsApproach == Pecos::SPARSE_GRID)
     construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref,
-			  piecewise_basis, use_derivs);
+			  piecewise_basis);
   // iteratedModel concurrency is defined by the number of samples
   // used in constructing the expansion
   if (numSamplesOnModel) // optional with default = 0
@@ -189,6 +199,31 @@ NonDStochCollocation::~NonDStochCollocation()
   if (numSamplesOnExpansion)
     uSpaceModel.free_communicators(
       numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
+}
+
+
+void NonDStochCollocation::initialize_u_space_model()
+{
+  if (expansionCoeffsApproach == Pecos::QUADRATURE ||
+      expansionCoeffsApproach == Pecos::CUBATURE ||
+      expansionCoeffsApproach == Pecos::SPARSE_GRID) {
+
+    // build a polynomial basis for purposes of defining collocation pts/wts
+    std::vector<Pecos::BasisPolynomial> num_int_poly_basis;
+    bool piecewise_basis = uSpaceModel.surrogate_type().begins("piecewise_");
+    Pecos::BasisConfigOptions bc_options(nestedRules, piecewise_basis,
+					 true, useDerivs);
+    Pecos::InterpPolyApproximation::construct_basis(natafTransform.u_types(),
+      iteratedModel.distribution_parameters(), bc_options, num_int_poly_basis);
+
+    // set the polynomial basis within the NonDIntegration instance
+    NonDIntegration* u_space_sampler_rep
+      = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
+    u_space_sampler_rep->initialize_grid(num_int_poly_basis);
+  }
+
+  // perform last due to numSamplesOnModel update
+  NonDExpansion::initialize_u_space_model();
 }
 
 } // namespace Dakota

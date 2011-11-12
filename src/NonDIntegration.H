@@ -37,15 +37,16 @@ public:
   //- Heading: Virtual functions
   //
 
+  /// initialize integration grid by drawing from polynomial basis settings
+  virtual void initialize_grid(
+    const std::vector<Pecos::BasisPolynomial>& poly_basis) = 0;
+
   /// increment SSG level/TPQ order
   virtual void increment_grid() = 0;
-
   /// increment SSG level/TPQ order and update anisotropy
   virtual void increment_grid_preference(const RealVector& dim_pref);
-
   /// increment SSG level/TPQ order and update anisotropy
   virtual void increment_grid_weights(const RealVector& aniso_wts);
-
   /// increment sequenceIndex and update active orders/levels
   virtual void increment_refinement_sequence();
 

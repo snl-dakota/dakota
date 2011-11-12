@@ -105,11 +105,12 @@ public:
   /// set pecosBasisApprox.driverRep
   void integration_iterator(const Iterator& iterator);
 
-  /// invoke Pecos::OrthogPolyApproximation::distribution_types()
-  void distribution_types(const Pecos::ShortArray& u_types);
-  /// invoke Pecos::OrthogPolyApproximation::distributions()
-  void distributions(const Pecos::ShortArray& u_types,
-		     const Pecos::DistributionParams& dp);
+  /// invoke Pecos::OrthogPolyApproximation::initialize_basis_types()
+  void initialize_basis_types(const Pecos::ShortArray& u_types);
+  /// invoke Pecos::OrthogPolyApproximation::construct_basis()
+  void construct_basis(const Pecos::ShortArray& u_types,
+		       const Pecos::DistributionParams& dp,
+		       const Pecos::BasisConfigOptions& bc_options);
 
   /// set Pecos::OrthogPolyApproximation::basisTypes
   void basis_types(const Pecos::ShortArray& basis_types);
@@ -331,17 +332,20 @@ random_variables_key(const Pecos::BoolDeque& random_vars_key)
 
 
 inline void PecosApproximation::
-distribution_types(const Pecos::ShortArray& u_types)
+initialize_basis_types(const Pecos::ShortArray& u_types)
 {
-  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->distribution_types(u_types);
+  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
+    initialize_basis_types(u_types);
 }
 
 
 inline void PecosApproximation::
-distributions(const Pecos::ShortArray& u_types,
-	      const Pecos::DistributionParams& dp)
+construct_basis(const Pecos::ShortArray& u_types,
+		const Pecos::DistributionParams& dp,
+		const Pecos::BasisConfigOptions& bc_options)
 {
-  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->distributions(u_types, dp);
+  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
+    construct_basis(u_types, dp, bc_options);
 }
 
 

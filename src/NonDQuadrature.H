@@ -47,17 +47,13 @@ public:
 
   /// alternate constructor for instantiations "on the fly" based on a
   /// quadrature order specification
-  NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
-		 const UShortArray& quad_order, const RealVector& dim_pref,
-		 bool nested_rules = false, bool piecewise_basis = false,
-		 bool use_derivs = false);
+  NonDQuadrature(Model& model, const UShortArray& quad_order,
+		 const RealVector& dim_pref);
 
   /// alternate constructor for instantiations "on the fly" based on
   /// the size of a filtered tensor product sample set
-  NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
-		 int num_filt_samples, const RealVector& dim_pref,
-		 bool nested_rules = false, bool piecewise_basis = false,
-		 bool use_derivs = false);
+  NonDQuadrature(Model& model, int num_filt_samples,
+		 const RealVector& dim_pref);
 
   //
   //- Heading: Member functions
@@ -89,16 +85,15 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis);
+
   void get_parameter_sets(Model& model);
 
   void reset();
-
   void sampling_reset(int min_samples,bool all_data_flag, bool stats_flag);
 
   void increment_grid();
-
   void increment_grid_preference(const RealVector& dim_pref);
-
   void increment_refinement_sequence();
 
   int num_samples() const;

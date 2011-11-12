@@ -57,14 +57,20 @@ NonDCubature(Model& model, const Pecos::ShortArray& u_types,
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::CUBATURE);
   cubDriver = (Pecos::CubatureDriver*)numIntDriver.driver_rep();
+  cubDriver->integrand_order(cubIntOrderRef);
 
   // local natafTransform not yet updated: x_types would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
   check_integration(u_types, iteratedModel.distribution_parameters());
+}
 
-  cubDriver->initialize_grid(u_types, cubIntOrderRef, cubIntRule);
+
+void NonDCubature::
+initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
+{
+  cubDriver->initialize_grid(poly_basis);
   maxConcurrency *= cubDriver->grid_size();
 }
 

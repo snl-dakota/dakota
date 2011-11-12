@@ -48,7 +48,7 @@ public:
   //
 
   /// initialize the polynomial chaos expansion
-  void initialize_expansion();
+  void initialize_u_space_model();
   /// form or import an orthogonal polynomial expansion using PCE methods
   void compute_expansion();
   /// uniformly increment the order of the polynomial chaos expansion
@@ -97,7 +97,7 @@ inline int NonDPolynomialChaos::
 terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio,
 		       Real terms_order)
 {
-  size_t data_per_pt = (useDerivsFlag) ? numContinuousVars + 1 : 1;;
+  size_t data_per_pt = (useDerivs) ? numContinuousVars + 1 : 1;;
   Real min_pts = std::pow((Real)num_exp_terms, terms_order) / (Real)data_per_pt;
   int min_samples = (int)std::ceil(min_pts),                    // lower bound
       tgt_samples = (int)std::floor(colloc_ratio*min_pts + .5); // rounded
@@ -108,7 +108,7 @@ terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio,
 inline Real NonDPolynomialChaos::
 terms_samples_to_ratio(size_t num_exp_terms, int samples, Real terms_order)
 {
-  size_t data_per_pt = (useDerivsFlag) ? numContinuousVars + 1 : 1;;
+  size_t data_per_pt = (useDerivs) ? numContinuousVars + 1 : 1;;
   return (Real)(samples * data_per_pt) /
     std::pow((Real)num_exp_terms, terms_order);
 }

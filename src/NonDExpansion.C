@@ -35,7 +35,7 @@ namespace Dakota {
 NonDExpansion::NonDExpansion(Model& model): NonD(model),
   expansionCoeffsApproach(-1), numUncertainQuant(0), numSamplesOnModel(0),
   numSamplesOnExpansion(probDescDB.get_int("method.samples")),
-  useDerivsFlag(probDescDB.get_bool("method.derivative_usage")),
+  nestedRules(false), useDerivs(false),
   ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
   ruleGrowthOverride(probDescDB.get_short("method.nond.growth_override")),
   refineType(probDescDB.get_short("method.nond.expansion_refinement_type")),
@@ -63,12 +63,11 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
 
 
 NonDExpansion::
-NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type,
-	      bool use_derivs):
+NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type):
   NonD(NoDBBaseConstructor(), model),
   expansionCoeffsApproach(exp_coeffs_approach),
   numUncertainQuant(0), numSamplesOnModel(0), numSamplesOnExpansion(0),
-  useDerivsFlag(use_derivs), refineType(Pecos::NO_REFINEMENT),
+  nestedRules(false), useDerivs(false), refineType(Pecos::NO_REFINEMENT),
   ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
   ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE),
   refineControl(Pecos::NO_CONTROL), impSampling(false), expSampling(false),
@@ -79,11 +78,6 @@ NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type,
 void NonDExpansion::initialize(Model& model, short u_space_type)
 {
   bool err_flag = false;
-  if (useDerivsFlag && gradientType == "none") { // && hessianType == "none"
-    Cerr << "\nError: use_derivatives option in NonDExpansion requires a "
-	 << "response gradient specification." << std::endl;
-    err_flag = true;
-  }
 
   // Check for suitable distribution types.
   if (numDiscreteIntVars || numDiscreteRealVars) {
@@ -173,17 +167,14 @@ construct_cubature(Iterator& u_space_sampler, Model& g_u_model,
     abort_handler(-1);
   }
 
-  u_space_sampler.assign_rep(new
+  u_space_sampler.assign_rep(new 
     NonDCubature(g_u_model, natafTransform.u_types(), cub_int_order), false);
-  numSamplesOnModel = u_space_sampler.maximum_concurrency()
-                    / g_u_model.derivative_concurrency();
 }
 
 
 void NonDExpansion::
 construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-		     const UShortArray& quad_order, const RealVector& dim_pref,
-		     bool piecewise_basis, bool use_derivs)
+		     const UShortArray& quad_order, const RealVector& dim_pref)
 {
   // sanity checks: no GSG for TPQ
   if (refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
@@ -191,24 +182,23 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 	 << "tensor grids." << std::endl;
     abort_handler(-1);
   }
+
   // enforce minimum required VBD control
   if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL)
     vbdControl = Pecos::UNIVARIATE_VBD;
 
-  bool nested_rules = (ruleNestingOverride == Pecos::NESTED || (refineType &&
-		       ruleNestingOverride != Pecos::NON_NESTED));
-  u_space_sampler.assign_rep(new 
-    NonDQuadrature(g_u_model, natafTransform.u_types(), quad_order, dim_pref,
-		   nested_rules, piecewise_basis, use_derivs), false);
-  numSamplesOnModel = u_space_sampler.maximum_concurrency()
-                    / g_u_model.derivative_concurrency();
+  // manage rule nesting override
+  nestedRules = ( ruleNestingOverride == Pecos::NESTED ||
+		  ( refineType && ruleNestingOverride != Pecos::NON_NESTED ) );
+
+  u_space_sampler.assign_rep(new
+    NonDQuadrature(g_u_model, quad_order, dim_pref), false);
 }
 
 
 void NonDExpansion::
 construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
-		     int filtered_samples, const RealVector& dim_pref,
-		     bool piecewise_basis, bool use_derivs)
+		     int filtered_samples, const RealVector& dim_pref)
 {
   // sanity checks: only uniform refinement supported for probabilistic
   // collocation (regression using filtered tensor grids)
@@ -217,36 +207,31 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 	 << "the tensor_grid option." << std::endl;
     abort_handler(-1);
   }
+
   /*
   // enforce minimum required VBD control
   if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL)
     vbdControl = Pecos::UNIVARIATE_VBD;
+  // nested overrides not currently part of tensor regression spec
+  nestedRules = (ruleNestingOverride == Pecos::NESTED ||
+    (refineType && ruleNestingOverride != Pecos::NON_NESTED));
   */
 
-  // nested/non_nested flag not supported in regression specification
-  bool nested_rules = false;//(ruleNestingOverride == Pecos::NESTED ||
-    //(ruleNestingOverride == Pecos::NO_NESTING_OVERRIDE &&
-    // refineType          != Pecos::NO_REFINEMENT));
   u_space_sampler.assign_rep(new
-    NonDQuadrature(g_u_model, natafTransform.u_types(), filtered_samples,
-		   dim_pref, nested_rules, piecewise_basis, use_derivs), false);
+    NonDQuadrature(g_u_model, filtered_samples, dim_pref), false);
 }
 
 
 void NonDExpansion::
 construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 		      const UShortArray& ssg_level, const RealVector& dim_pref,
-		      bool piecewise_basis, bool use_derivs)
+		      bool piecewise_basis)
 {
   // enforce minimum required VBD control
   if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL)
     vbdControl = Pecos::UNIVARIATE_VBD;
 
-  //short sparse_grid_usage;
-  //if (methodName == "nond_polynomial_chaos") // && TENSOR_INT_TENSOR_SUM_EXP
-  //  sparse_grid_usage = Pecos::INTEGRATION;
-  //else if (methodName == "nond_stoch_collocation")
-  //  sparse_grid_usage = Pecos::INTERPOLATION;
+  nestedRules = (ruleNestingOverride != Pecos::NON_NESTED);
 
   // tracking of unique product weights needed for PCE and SC standard modes
   // since both employ PolynomialApproximation::compute_numerical_moments(4).
@@ -256,16 +241,22 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   bool track_wts = !(numContDesVars || numContEpistUncVars || numContStateVars);
   // || pa_rep0->sparse_grid_expansion() >= Pecos::SPARSE_INT_TOTAL_ORD_EXP;
   // uSpaceModel not yet available! (no approxs until bottom of derived ctor)
-  bool nested_rules      = (ruleNestingOverride != Pecos::NON_NESTED);
-  bool unrestrict_growth = (ruleGrowthOverride  == Pecos::UNRESTRICTED);
-  u_space_sampler.assign_rep(
-    new NonDSparseGrid(g_u_model, natafTransform.u_types(), ssg_level, dim_pref,
-		       //sparse_grid_usage, refineType,
-		       refineControl, track_wts, nested_rules,
-		       unrestrict_growth, piecewise_basis, use_derivs), false);
+  short growth_rate;
+  if (ruleGrowthOverride == Pecos::UNRESTRICTED ||
+      refineControl      == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)
+    // unstructured index set evolution: no motivation to restrict
+    growth_rate = Pecos::UNRESTRICTED_GROWTH;
+  else if (piecewise_basis)
+    // no reason to match Gaussian precision, but restriction still useful:
+    // use SLOW i=2l+1 since it is more natural for NEWTON_COTES,CLENSHAW_CURTIS
+    // and is more consistent with UNRESTRICTED generalized sparse grids.
+    growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;
+  else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
+    growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
 
-  numSamplesOnModel = u_space_sampler.maximum_concurrency()
-                    / g_u_model.derivative_concurrency();
+  u_space_sampler.assign_rep(new
+    NonDSparseGrid(g_u_model, ssg_level, dim_pref, refineControl, track_wts,
+		   growth_rate), false);
 }
 
 
@@ -294,8 +285,10 @@ void NonDExpansion::initialize_u_space_model()
 {
   // if all variables mode, initialize key to random variable subset
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-  BoolDeque random_vars_key;
-  size_t i;
+  bool num_int  = (expansionCoeffsApproach == Pecos::QUADRATURE ||
+		   expansionCoeffsApproach == Pecos::CUBATURE ||
+		   expansionCoeffsApproach == Pecos::SPARSE_GRID);
+  BoolDeque random_vars_key; size_t i;
   if (all_vars) {
     random_vars_key.resize(numContinuousVars);
     for (i=0; i<numContinuousVars; ++i)
@@ -307,20 +300,23 @@ void NonDExpansion::initialize_u_space_model()
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   PecosApproximation* poly_approx_rep;
   Iterator& u_space_sampler = uSpaceModel.subordinate_iterator();
+  Model&    g_u_model       = uSpaceModel.subordinate_model();
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep) { // may be NULL based on approxFnIndices
       poly_approx_rep->solution_approach(expansionCoeffsApproach);
       poly_approx_rep->refinement_control(refineControl);
       poly_approx_rep->vbd_control(vbdControl);
-      if (expansionCoeffsApproach == Pecos::CUBATURE ||
-	  expansionCoeffsApproach == Pecos::QUADRATURE ||
-	  expansionCoeffsApproach == Pecos::SPARSE_GRID)
+      if (num_int)
 	poly_approx_rep->integration_iterator(u_space_sampler);
       if (all_vars)
 	poly_approx_rep->random_variables_key(random_vars_key);
     }
   }
+
+  if (num_int)
+    numSamplesOnModel = u_space_sampler.maximum_concurrency()
+                      / g_u_model.derivative_concurrency();
 }
 
 
@@ -407,7 +403,7 @@ void NonDExpansion::quantify_uncertainty()
     compute_print_converged_results(true);
     // store current state.  Note: a subsequent finalize_approximation()
     // within refine_expansion() must distinguish between saved trial sets
-    // and archived expansions.
+    // and stored expansions.
     uSpaceModel.store_approximation();
 
     update_hierarchy();
@@ -570,7 +566,7 @@ void NonDExpansion::compute_expansion()
     // PecosApproximation settings
     if (expansion_coeff_flag)
       sampler_asv[i] |= 1;
-    if (expansion_grad_flag || useDerivsFlag)
+    if (expansion_grad_flag || useDerivs)
       sampler_asv[i] |= 2;
     poly_approx_rep->expansion_coefficient_flag(expansion_coeff_flag);
     poly_approx_rep->expansion_gradient_flag(expansion_grad_flag);
@@ -622,7 +618,7 @@ void NonDExpansion::compute_expansion()
     // maps top-level optimizer derivative vars to sub-iterator derivative vars
     // in NestedModel::set_mapping() and then sets this DVV within finalStats
     // using subIterator.response_results_active_set().
-    if (useDerivsFlag) {
+    if (useDerivs) {
       SizetMultiArrayConstView cv_ids
 	= iteratedModel.continuous_variable_ids();
       if (sampler_grad) { // merge cv_ids with final_dvv

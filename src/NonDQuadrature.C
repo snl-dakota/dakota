@@ -29,8 +29,9 @@ namespace Dakota {
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there is not yet a
     separate nond_quadrature method specification. */
-NonDQuadrature::NonDQuadrature(Model& model):
-  NonDIntegration(model), nestedRules(false),
+NonDQuadrature::NonDQuadrature(Model& model): NonDIntegration(model),
+  nestedRules(
+    probDescDB.get_short("method.nond.nesting_override") == Pecos::NESTED),
   quadOrderSpec(probDescDB.get_dusa("method.nond.quadrature_order"))
 {
   // initialize the numerical integration driver
@@ -41,15 +42,16 @@ NonDQuadrature::NonDQuadrature(Model& model):
   // NonDIntegration ctor
   check_variables(natafTransform.x_types());
 
-  short u_space_type = probDescDB.get_short("method.nond.expansion_type");
-  short refine_type
-    = probDescDB.get_short("method.nond.expansion_refinement_type");
-  bool piecewise_basis
-    = (u_space_type == PIECEWISE_U || refine_type == Pecos::H_REFINEMENT);
+  bool piecewise_basis =
+    (probDescDB.get_short("method.nond.expansion_type") == PIECEWISE_U ||
+     probDescDB.get_short("method.nond.expansion_refinement_type") ==
+     Pecos::H_REFINEMENT);
   bool use_derivs = probDescDB.get_bool("method.derivative_usage");
   bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
-  tpqDriver->initialize_grid(natafTransform.u_types(), nestedRules,
-                             piecewise_basis, equidist_rules, use_derivs);
+
+  Pecos::BasisConfigOptions bc_options(nestedRules, piecewise_basis,
+				       equidist_rules, use_derivs);
+  tpqDriver->initialize_grid(natafTransform.u_types(), bc_options);
 
   reset(); // init_dim_quad_order() uses integrationRules from initialize_grid()
   maxConcurrency *= tpqDriver->grid_size();
@@ -59,11 +61,10 @@ NonDQuadrature::NonDQuadrature(Model& model):
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical quadrature points. */
 NonDQuadrature::
-NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
-	       const UShortArray& quad_order, const RealVector& dim_pref,
-	       bool nested_rules, bool piecewise_basis, bool use_derivs): 
-  NonDIntegration(NoDBBaseConstructor(), model, dim_pref),
-  nestedRules(nested_rules), quadOrderSpec(quad_order), numFilteredSamples(0)
+NonDQuadrature(Model& model, const UShortArray& quad_order,
+	       const RealVector& dim_pref):
+  NonDIntegration(NoDBBaseConstructor(), model, dim_pref), nestedRules(false),
+  quadOrderSpec(quad_order), numFilteredSamples(0)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
@@ -73,24 +74,15 @@ NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
-
-  bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
-  tpqDriver->initialize_grid(u_types, nestedRules, piecewise_basis,
-			     equidist_rules, use_derivs);
-
-  reset(); // init_dim_quad_order() uses integrationRules from initialize_grid()
-  maxConcurrency *= tpqDriver->grid_size();
 }
 
 
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical quadrature points. */
 NonDQuadrature::
-NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
-	       int num_filt_samples, const RealVector& dim_pref,
-	       bool nested_rules, bool piecewise_basis, bool use_derivs): 
-  NonDIntegration(NoDBBaseConstructor(), model, dim_pref),
-  numFilteredSamples(num_filt_samples), nestedRules(nested_rules)
+NonDQuadrature(Model& model, int num_filt_samples, const RealVector& dim_pref): 
+  NonDIntegration(NoDBBaseConstructor(), model, dim_pref), nestedRules(false),
+  numFilteredSamples(num_filt_samples)
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
@@ -100,17 +92,42 @@ NonDQuadrature(Model& model, const Pecos::ShortArray& u_types,
   // from NonDExpansion if check_variables() needed to be called here.  Instead,
   // it is deferred until run time in NonDIntegration::quantify_uncertainty().
   //check_variables(x_types);
-
-  bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
-  tpqDriver->initialize_grid(u_types, nestedRules, piecewise_basis,
-			     equidist_rules, use_derivs);
-  compute_minimum_quadrature_order();
-  maxConcurrency *= numFilteredSamples;
 }
 
 
 NonDQuadrature::~NonDQuadrature()
 { }
+
+
+/** Used in combination with alternate NonDQuadrature constructor. */
+void NonDQuadrature::
+initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
+{
+  tpqDriver->initialize_grid(poly_basis);
+  if (numFilteredSamples) {
+    // nested overrides not currently part of tensor regression spec
+    //for () if () { nestedRules = true; break; }
+    compute_minimum_quadrature_order();
+    maxConcurrency *= numFilteredSamples;
+  }
+  else {
+    // infer nestedRules
+    for (size_t i=0; i<numContinuousVars; ++i) {
+      short colloc_rule = poly_basis[i].collocation_rule();
+      if (colloc_rule == Pecos::GENZ_KEISTER    ||
+	  colloc_rule == Pecos::GAUSS_PATTERSON) //||
+	// don't need to enforce a growth pattern for these;
+	// also SLOW_RESTRICTED_GROWTH is not currently supported
+	// in nested_quadrature_order()
+	//colloc_rule == Pecos::NEWTON_COTES    ||
+	//colloc_rule == Pecos::CLENSHAW_CURTIS ||
+	//colloc_rule == Pecos::FEJER2)
+	{ nestedRules = true; break; }
+    }
+    reset();
+    maxConcurrency *= tpqDriver->grid_size();
+  }
+}
 
 
 void NonDQuadrature::
