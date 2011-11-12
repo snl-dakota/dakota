@@ -3202,32 +3202,45 @@ Test Number 0 succeeded
                      -2.9981378954e-02
                      -1.1676092295e-03
 <<<<< Best data captured at function evaluation 17
-Output delay overridden to 120 seconds
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.7243560433e+00 w
-                      2.5470456739e+00 t
+                      2.3108463592e+00 w
+                      3.3883582561e+00 t
+                      4.0000000000e+04 R
+                      2.9000000000e+07 E
+                      5.0000000000e+02 X
+                      1.0000000000e+03 Y
+<<<<< Best objective function  =
+                      7.8299753400e+00
+<<<<< Best constraint values   =
+                     -2.0113544406e-02
+                     -3.4314671884e-04
+<<<<< Best data captured at function evaluation 16
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.7276866106e+00 w
+                      2.5154843153e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best residual terms      =
-                      4.3920136004e+00
-                      1.3311917048e+00
-                      2.1790554008e+00
-<<<<< Best data captured at function evaluation 17
-Output delay overridden to 300 seconds
-Test Number 2 succeeded
-<<<<< Function evaluation summary: 300197 total (255117 new, 45080 duplicate)
+                      4.3459685706e+00
+                      1.3709631822e+00
+                      2.2433890035e+00
+<<<<< Best data captured at function evaluation 16
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 400187 total (355156 new, 45031 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-01   5.3015812487e-02                      1.6162900134e+00
-   6.0000000000e-01   8.4761402831e-01                     -1.0262538523e+00
+   2.0000000000e-01   5.3149565310e-02                      1.6150534029e+00
+   6.0000000000e-01   8.4385690823e-01                     -1.0104365512e+00
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-01   4.1587774720e-04                      3.3420050433e+00
-   6.0000000000e-01   1.8183983497e-01                      9.0837587011e-01
+   2.0000000000e-01   4.1997513625e-04                      3.3392827331e+00
+   6.0000000000e-01   1.8237120651e-01                      9.0636552671e-01
 dakota_coliny.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 105 total (105 new, 0 duplicate)
@@ -4410,6 +4423,7 @@ Test Number 0 succeeded
    1.3000000000e+00   7.9400076418e-01  -8.2038182780e-01  -8.2038182780e-01
    1.5000000000e+00   8.2526852037e-01  -9.3563148261e-01  -9.3563148261e-01
 dakota_herbie_smoothherbie_shubert.in
+
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -4435,13 +4449,13 @@ Test Number 2 succeeded
                      -1.1268717458e+00
 <<<<< Best data captured at function evaluation 13
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 12 total (12 new, 0 duplicate)
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
 <<<<< Best parameters          =
-                     -1.0408258720e+00 x1
-                     -1.0408253444e+00 x2
+                     -1.0408259093e+00 x1
+                     -1.0408260539e+00 x2
 <<<<< Best objective function  =
                      -1.1268717458e+00
-<<<<< Best data captured at function evaluation 11
+<<<<< Best data captured at function evaluation 9
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 32 total (30 new, 2 duplicate)
 <<<<< Best parameters          =
@@ -4467,13 +4481,13 @@ Test Number 6 succeeded
                      -1.0410873623e+00
 <<<<< Best data captured at function evaluation 8
 Test Number 7 succeeded
-<<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
+<<<<< Function evaluation summary: 6 total (6 new, 0 duplicate)
 <<<<< Best parameters          =
-                     -9.4444936668e-01 x1
-                     -9.4438726536e-01 x2
+                     -9.4444113884e-01 x1
+                     -9.4444015329e-01 x2
 <<<<< Best objective function  =
-                     -1.0410873605e+00
-<<<<< Best data captured at function evaluation 20
+                     -1.0410873623e+00
+<<<<< Best data captured at function evaluation 5
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 42 total (40 new, 2 duplicate)
 <<<<< Best parameters          =
@@ -4499,13 +4513,13 @@ Test Number 10 succeeded
                      -5.2503056750e+01
 <<<<< Best data captured at function evaluation 17
 Test Number 11 succeeded
-<<<<< Function evaluation summary: 41 total (41 new, 0 duplicate)
+<<<<< Function evaluation summary: 13 total (13 new, 0 duplicate)
 <<<<< Best parameters          =
-                     -8.0032121037e-01 x1
-                     -1.4251285541e+00 x2
+                     -1.9538580046e-01 x1
+                     -2.0000000000e+00 x2
 <<<<< Best objective function  =
-                     -1.8673090883e+02
-<<<<< Best data captured at function evaluation 40
+                     -5.2503056750e+01
+<<<<< Best data captured at function evaluation 12
 Test Number 12 succeeded
 <<<<< Function evaluation summary: 33 total (31 new, 2 duplicate)
 <<<<< Best parameters          =
@@ -11649,13 +11663,13 @@ Test Number 19 succeeded
 <<<<< Best data captured at function evaluation 74
 dakota_rosenbrock_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 52 total (52 new, 0 duplicate)
+<<<<< Function evaluation summary: 41 total (40 new, 1 duplicate)
 <<<<< Best parameters          =
-                      9.8765432099e-01 x1
-                      9.7552628921e-01 x2
+                      9.8793782690e-01 x1
+                      9.7576463490e-01 x2
 <<<<< Best objective function  =
-                      1.5284130447e-04
-<<<<< Best data captured at function evaluation 34
+                      1.5207601071e-04
+<<<<< Best data captured at function evaluation 27
 dakota_rosenbrock_hessians.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 74 total (74 new, 0 duplicate)
@@ -31804,13 +31818,13 @@ Moment-based statistics for each response function:
    0.0000000000e+00                     -3.5638648799e-02
 dakota_uq_cantilever_interval.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 88 total (87 new, 1 duplicate)
-         weight: 14 val (13 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 35 val (35 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-          displ: 51 val (51 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-weight:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
-stress:  Min = -9.7749982853e-01  Max = 2.1499428450e+01
-displ:  Min = -9.9315677360e-01  Max = 6.7429714485e+01
+<<<<< Function evaluation summary: 100 total (99 new, 1 duplicate)
+         weight: 13 val (12 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+         stress: 40 val (40 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 59 val (59 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+weight:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
+stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
+displ:  Min = -9.9315672724e-01  Max = 6.7429714485e+01
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 10000 total (10000 new, 0 duplicate)
          weight: 10000 val (10000 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -31837,11 +31851,11 @@ stress:  Min = -9.7750000000e-01  Max = 2.1500000000e+01
 displ:  Min = -9.9315679678e-01  Max = 6.7432032241e+01
 dakota_uq_cantilever_ivp_exp.in 
 Test Number 0 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 3920 total (3871 new, 49 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 4459 total (4410 new, 49 duplicate)
          weight: 637 val (588 n, 49 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 1911 val (1911 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-          displ: 1960 val (1960 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_wt:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
+         stress: 2646 val (2646 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 1764 val (1764 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_wt:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
 ccdf_beta_s:  Min = -1.0282373125e+01  Max = 1.9532427486e+01
 ccdf_beta_d:  Min = -9.6345245456e+00  Max = 1.4095788060e+03
 Test Number 1 succeeded
@@ -31849,24 +31863,24 @@ Test Number 1 succeeded
          weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_wt:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
-ccdf_beta_s:  Min = -1.3732302901e+01  Max = 1.9817241582e+01
-ccdf_beta_d:  Min = -1.4545923525e+01  Max = 1.2336146898e+03
+mean_wt:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
+ccdf_beta_s:  Min = -1.3732302901e+01  Max = 1.9808834781e+01
+ccdf_beta_d:  Min = -1.4545923525e+01  Max = 9.4539727705e+02
 Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 3920 total (3871 new, 49 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 4459 total (4410 new, 49 duplicate)
          weight: 637 val (588 n, 49 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-         stress: 1911 val (1911 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-          displ: 1960 val (1960 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_wt:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
+         stress: 2646 val (2646 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+          displ: 1764 val (1764 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+mean_wt:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
 ccdf_beta_s:  Min = -1.0282373125e+01  Max = 1.9532427486e+01
-ccdf_beta_d:  Min = -9.6345266678e+00  Max = 1.4095791179e+03
+ccdf_beta_d:  Min = -9.6345266678e+00  Max = 1.4095791165e+03
 Test Number 3 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 2381 total (2381 new, 0 duplicate)
          weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
          stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-mean_wt:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
-ccdf_beta_s:  Min = -1.5469449835e+01  Max = 2.0054892583e+01
+mean_wt:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
+ccdf_beta_s:  Min = -1.5469449835e+01  Max = 2.0064600892e+01
 ccdf_beta_d:  Min = -1.9523639887e+00  Max = 1.0000000000e+50
 Test Number 4 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 1078 total (931 new, 147 duplicate)
@@ -31891,7 +31905,7 @@ Test Number 6 succeeded
           displ: 196 val (147 n, 49 d), 196 grad (147 n, 49 d), 0 Hess (0 n, 0 d)
 mean_wt:  Min = 1.0000000000e+00  Max = 1.0000000000e+02
 ccdf_beta_s:  Min = -1.0282470041e+01  Max = 1.9532428718e+01
-ccdf_beta_d:  Min = -9.6345314753e+00  Max = 1.4095839272e+03
+ccdf_beta_d:  Min = -9.6345314753e+00  Max = 1.4095839239e+03
 Test Number 7 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 7143 total (7143 new, 0 duplicate)
          weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -41096,6 +41110,14 @@ Test Number 1 succeeded
    5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
    1.0000000000e+02   2.5000000000e-01   1.0000000000e+00
 Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 5000 total (4700 new, 300 duplicate)
+  response_fn_1: 5000 val (4700 n, 300 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+     Response Level  Belief Prob Level   Plaus Prob Level
+     --------------  -----------------   ----------------
+   1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
+   5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
+   1.0000000000e+02   2.5000000000e-01   1.0000000000e+00
+Test Number 3 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 1000 total (1000 new, 0 duplicate)
   response_fn_1: 1000 val (1000 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
@@ -41526,6 +41548,18 @@ Test Number 0 succeeded
    1.0000000000e+02   4.9966902886e-01                      8.2962171433e-04
    5.0000000000e+02   8.1938657108e-01                     -9.1302982095e-01
    1.0000000000e+03   9.0582708355e-01                     -1.3154883418e+00
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 137 total (75 new, 62 duplicate)
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   5.0000000000e-01   1.0153080424e-02                      2.3206422330e+00
+   1.0000000000e+00   2.0933133354e-02                      2.0348470351e+00
+   5.0000000000e+00   1.0514030178e-01                      1.2527942259e+00
+   1.0000000000e+01   1.6477060114e-01                      9.7503842055e-01
+   5.0000000000e+01   3.7498842431e-01                      3.1866989111e-01
+   1.0000000000e+02   5.0173239165e-01                     -4.3424755309e-03
+   5.0000000000e+02   8.1687248242e-01                     -9.0351046784e-01
+   1.0000000000e+03   9.0535794484e-01                     -1.3126998437e+00
 dakota_uq_rosenbrock_pce.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
@@ -52045,9 +52079,9 @@ Test Number 3 succeeded
    0.0000000000e+00   1.2189499948e-01   6.7590202943e-01
    2.5000000000e-01   1.2189499948e-01   6.7590202943e-01
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 122 total (116 new, 6 duplicate)  
-  response_fn_1: 98 val (98 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)  
-  response_fn_2: 30 val (24 n, 6 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 61 total (49 new, 12 duplicate)
+  response_fn_1: 37 val (33 n, 4 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 30 val (22 n, 8 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e-03   0.0000000000e+00   0.0000000000e+00
@@ -52056,9 +52090,9 @@ Test Number 4 succeeded
    8.0000000000e-01   9.3000000000e-01   1.0000000000e+00
   Probability Level  Belief Resp Level   Plaus Resp Level
   -----------------  -----------------   ----------------
-   2.5000000000e-01   2.6569900873e-01   6.2530201671e-02
+   2.5000000000e-01   2.6569966958e-01   6.2500094084e-02
    5.0000000000e-01   3.0259950662e-01   6.2600095213e-02
-   7.5000000000e-01   6.8169656331e-01   6.4100194189e-02
+   7.5000000000e-01   6.8169656331e-01   6.4105243264e-02
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e-03   3.0000000000e-02   6.5000000000e-01

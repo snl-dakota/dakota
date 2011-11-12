@@ -11,9 +11,11 @@ strategy,
 method,									 
         id_method = 'EPISTEMIC'
         model_pointer = 'EPIST_M'
-     	local_evidence		#0
-#	global_evidence ego	#1,#2
-#	  seed = 627431			#1,#2
+     	local_evidence		        #0
+#	global_evidence ego	        #1,#2,#3
+#         gaussian_process dakota       #1
+#         gaussian_process surfpack     #2,#3
+#	  seed = 627431			#1,#2,#3
           response_levels = 1. 5. 100.
 	  output verbose
 
@@ -37,7 +39,7 @@ responses,
         id_responses = 'EPIST_R'
         response_functions = 1
         analytic_gradients		#0	
-#	no_gradients			#1,#2
+#	no_gradients			#1,#2,#3
         no_hessians
   
 ################################
@@ -48,7 +50,7 @@ method,
         model_pointer = 'ALEAT_M'
 	stoch_collocation askey
 	  quadrature_order = 10
-#         all_variables			#2
+#         all_variables			#3
 
 ##########################################################################
 # Test 2 is the case where a combined expansion is performed.            # 

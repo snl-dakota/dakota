@@ -7,7 +7,8 @@ strategy,
 
 method,
 	global_reliability
-	  x_gaussian_process
+	  x_gaussian_process dakota   #0
+#	  x_gaussian_process surfpack #1
 #	  u_gaussian_process
 	  response_levels = .5 1. 5. 10. 50. 100. 500. 1000.
 	  seed = 123457
