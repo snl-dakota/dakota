@@ -15940,6 +15940,18 @@ Test Number 9 succeeded
 <<<<< Best constraint values   =
                       2.5000915276e+00
 <<<<< Best data not found in evaluation cache
+dakota_separable_ego_5D.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 145 total (145 new, 0 duplicate)
+<<<<< Best parameters          =
+                     -1.1120256059e+00 cdv_1
+                     -9.2181069959e-01 cdv_2
+                     -9.6021947874e-01 cdv_3
+                      9.1083676269e-01 cdv_4
+                      9.6021947874e-01 cdv_5
+<<<<< Best objective function  =
+                     -1.1387973115e+00
+<<<<< Best data captured at function evaluation 134
 dakota_short_column.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1 total (1 new, 0 duplicate)
