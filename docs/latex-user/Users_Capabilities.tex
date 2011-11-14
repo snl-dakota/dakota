@@ -641,24 +641,32 @@ computed using linear least squares regression methods. Note: there is
 currently no use of forward- or backward-stepping regression methods
 to eliminate unnecessary terms from the polynomial model.
 
-\textbf{Kriging Interpolation}: An implementation of spatial
-interpolation using Kriging methods and Gaussian correlation functions
-~\cite{Giu98}.  Ill-conditioning due to a poorly spaced sample design is 
-handled by discarding points that contribute the least unique information
-to the correlation matrix.  Therefore, the points that are discarded are 
-the ones that are easiest to predict.  The algorithm used in the Kriging 
-process generates a $C^\infty$-continuous surface that exactly interpolates 
-the data values at the retained points but are not guaranteed to 
-interpolate the discarded points.
-
-\textbf{Gaussian Process (GP)}: Closely related to Kriging, this
-technique is a spatial interpolation method that assumes the outputs
-of the simulation model follow a multivariate normal distribution.
-The implementation of a Gaussian process currently in DAKOTA assumes
-a constant mean function.  The hyperparameters governing the covariance
-matrix are obtained through Maximum Likelihood Estimation (MLE). We also use
-a jitter term to better condition the covariance matrix, so the Gaussian
-process may not exactly interpolate the data values.
+\textbf{Gaussian Process (GP) or Kriging Interpolation}
+DAKOTA contains two implementations of Gaussian process, also known as 
+Kriging ~\cite{Giu98}, spatial interpolation.  One of these resides in 
+the Surfpack sub-package of DAKOTA, the other resides in DAKOTA itself.
+Both versions use the Gaussian correlation function with parameters that
+are selected by Maximum Likelihood Estimation (MLE). This correlation 
+function results in a response surface that is $C^\infty$-continuous.
+Prior to DAKOTA 5.2, the Surfpack GP was referred to as the ``Kriging'' 
+model and the DAKOTA version was labeled as the ``Gaussian Process.''  
+These terms are now used interchangeably.  As of DAKOTA 5.2,the 
+Surfpack GP is used by default.  For now the user still has the option 
+to select the DAKOTA GP, but the DAKOTA GP is deprecated and will be 
+removed in a future release.
+\begin{itemize}
+\item \textbf{Surfpack GP}: Ill-conditioning due to a poorly spaced sample 
+      design is handled by discarding points that contribute the least 
+      unique information to the correlation matrix.  Therefore, the points 
+      that are discarded are the ones that are easiest to predict.  The 
+      resulting surface will exactly interpolate the data values at the 
+      retained points but is not guaranteed to interpolate the discarded 
+      points.
+\item \textbf{DAKOTA GP}: Ill-conditioning is handled by adding a jitter 
+      term or ``nugget'' to diagonal elements of the correlation matrix. 
+      When this happens, the DAKOTA GP may not exactly interpolate the 
+      data values.
+\end{itemize}
 
 \textbf{Artificial Neural Networks}: An implementation of the
 stochastic layered perceptron neural network developed by Prof. D. C.
