@@ -1,6 +1,6 @@
-Running MPI executable in serial mode.
-DAKOTA version 5.1 released 12/21/2010.
-Subversion revision 13 built Dec 19 2010 12:46:19.
+Running serial executable in serial mode.
+DAKOTA version 5.1+ developmental release.
+Subversion revision 734 built Nov 10 2011 10:40:22.
 Constructing Single Method Strategy...
 Writing new restart file dakota.rst
 methodName = nond_sampling
@@ -3019,7 +3019,7 @@ Statistics based on 200 samples:
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.5540183516e+02  5.3682678089e+02  1.6661798252e+00  2.7925726822e+00
- 
+
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
  response_fn_1  3.8054757609e+02  5.3025609422e+02  4.8886795789e+02  5.9530059589e+02
@@ -3029,6 +3029,13 @@ Cumulative Distribution Function (CDF) for response_fn_1:
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e+02   3.4000000000e-01
+
+Probability Density Function (PDF) histograms for each response function:
+PDF for response_fn_1:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   1.1623549854e-01   1.0000000000e+02   3.4039566059e-03
+   1.0000000000e+02   2.7101710856e+03   2.5285698843e-04
 
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 
@@ -3056,6 +3063,5 @@ Partial Rank Correlation Matrix between input and output:
 <<<<< Iterator nond_sampling completed.
 <<<<< Single Method Strategy completed.
 DAKOTA execution time in seconds:
-  Total CPU        =       0.08 [parent =   0.085987, child =  -0.005987]
-  Total wall clock =   0.115652
-Exit graphics window to terminate DAKOTA.
+  Total CPU        =       0.04 [parent =   0.043993, child =  -0.003993]
+  Total wall clock =  0.0435579
