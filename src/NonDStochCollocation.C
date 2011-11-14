@@ -20,6 +20,8 @@
 #include "PecosApproximation.H"
 #include "InterpPolyApproximation.hpp"
 
+//#define ALLOW_HERMITE_INTERPOLATION
+
 
 namespace Dakota {
 
@@ -38,6 +40,9 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
+  short u_space_type = probDescDB.get_short("method.nond.expansion_type");
+  bool piecewise_basis
+    = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
   // There are two derivative cases of interest: (1) derivatives used as
   // additional data for forming the approximation (derivatives w.r.t. the
   // expansion variables), and (2) derivatives that will be approximated 
@@ -51,17 +56,31 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   // within the NestedModel ctor prior to subIterator instantiation.
   short data_order = 1;
   if (probDescDB.get_bool("method.derivative_usage")) {// || iteratedModel.icv()
-    if (gradientType != "none") data_order |= 2;
-    //if (hessianType  != "none") data_order |= 4; // not yet supported
+    if (gradientType  != "none") data_order |= 2;
+    //if (hessianType != "none") data_order |= 4; // not yet supported
+#ifdef ALLOW_HERMITE_INTERPOLATION
     if (data_order == 1)
-      Cerr << "\nWarning: use_derivatives option in stoch_collocation requires "
-	   << "a response\n         gradient specification.  Option will be "
-	   << "ignored.\n" << std::endl;
+      Cerr << "\nWarning: use_derivatives option in stoch_collocation "
+	   << "requires a response\n         gradient specification.  "
+	   << "Option will be ignored.\n" << std::endl;
+#else
+    if (piecewise_basis) {
+      if (data_order == 1)
+	Cerr << "\nWarning: use_derivatives option in stoch_collocation "
+	     << "requires a response\n         gradient specification.  "
+	     << "Option will be ignored.\n" << std::endl;
+    }
+    else {
+      Cerr << "\nWarning: use of global gradient-enhanced interpolants is "
+	   << "disallowed in production\n         executables.  To activate "
+	   << "this research capability, define\n         ALLOW_HERMITE_"
+	   << "INTERPOLATION in Dakota::NonDStochCollocation and recompile.\n"
+	   << std::endl;
+      data_order = 1;
+    }
+#endif
   }
   if (data_order > 1) useDerivs = true;
-  short u_space_type = probDescDB.get_short("method.nond.expansion_type");
-  bool piecewise_basis
-    = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
@@ -140,20 +159,37 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
+  bool piecewise_basis
+    = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
   short data_order = 1;
   if (use_derivs) {// || iteratedModel.icv()
-    if (gradientType != "none") data_order |= 2;
-    //if (hessianType  != "none") data_order |= 4; // not yet supported
+    if (gradientType  != "none") data_order |= 2;
+    //if (hessianType != "none") data_order |= 4; // not yet supported
+#ifdef ALLOW_HERMITE_INTERPOLATION
     if (data_order == 1)
-      Cerr << "\nWarning: use_derivatives option in stoch_collocation requires "
-	   << "a response\n         gradient specification.  Option will be "
-	   << "ignored.\n" << std::endl;
+      Cerr << "\nWarning: use_derivatives option in stoch_collocation "
+	   << "requires a response\n         gradient specification.  "
+	   << "Option will be ignored.\n" << std::endl;
+#else
+    if (piecewise_basis) {
+      if (data_order == 1)
+	Cerr << "\nWarning: use_derivatives option in stoch_collocation "
+	     << "requires a response\n         gradient specification.  "
+	     << "Option will be ignored.\n" << std::endl;
+    }
+    else {
+      Cerr << "\nWarning: use of global gradient-enhanced interpolants is "
+	   << "disallowed in production\n         executables.  To activate "
+	   << "this research capability, define\n         ALLOW_HERMITE_"
+	   << "INTERPOLATION in Dakota::NonDStochCollocation and recompile.\n"
+	   << std::endl;
+      data_order = 1;
+    }
+#endif
   }
   if (data_order > 1) useDerivs = true;
   RealVector  dim_pref;                      // empty -> isotropic
   UShortArray num_int_seq(1, num_int_level); // single sequence
-  bool piecewise_basis
-    = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
