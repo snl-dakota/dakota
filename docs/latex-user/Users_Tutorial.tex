@@ -1352,6 +1352,13 @@ Cumulative Distribution Function (CDF) for response_fn_1:
      --------------  -----------------  -----------------  -----------------
    1.0000000000e+02   3.4000000000e-01
 
+Probability Density Function (PDF) histograms for each response function:
+PDF for response_fn_1:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   1.1623549854e-01   1.0000000000e+02   3.4039566059e-03
+   1.0000000000e+02   2.7101710856e+03   2.5285698843e-04
+
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 
           x1  1.00000e+00 
@@ -1556,7 +1563,8 @@ fewer function evaluations.
 \begin{figure}
 \centering
 \begin{bigbox}
-\begin{footnotesize}
+%\begin{footnotesize}
+\begin{scriptsize}
 \begin{verbatim}
 Polynomial Chaos coefficients for response_fn_1:
         coefficient   u1   u2
@@ -1602,6 +1610,18 @@ response_fn_1 Sobol indices:
 
 Statistics based on 10000 samples performed on polynomial expansion:
 
+Probability Density Function (PDF) histograms for each response function:
+PDF for response_fn_1:
+          Bin Lower          Bin Upper      Density Value
+          ---------          ---------      -------------
+   6.8311107124e-03   1.0000000000e-01   2.0393073423e-02
+   1.0000000000e-01   1.0000000000e+00   1.3000000000e-02
+   1.0000000000e+00   5.0000000000e+01   4.7000000000e-03
+   5.0000000000e+01   1.0000000000e+02   1.9680000000e-03
+   1.0000000000e+02   5.0000000000e+02   9.2150000000e-04
+   5.0000000000e+02   1.0000000000e+03   2.8300000000e-04
+   1.0000000000e+03   3.5755437782e+03   5.7308286215e-05
+
 Level mappings for each response function:
 Cumulative Distribution Function (CDF) for response_fn_1:
      Response Level  Probability Level  Reliability Index  General Rel Index
@@ -1614,7 +1634,8 @@ Cumulative Distribution Function (CDF) for response_fn_1:
    1.0000000000e+03   8.5240000000e-01
 -------------------------------------------------------------------
 \end{verbatim}
-\end{footnotesize}
+\end{scriptsize}
+%\end{footnotesize}
 \end{bigbox}
 \caption{Excerpt of UQ output for polynomial chaos example.}
 \label{tutorial:pce_out}
@@ -1671,9 +1692,9 @@ beam weight is approximately [1,100].
 \begin{verbatim}
 ------------------------------------------------------------------
 Min and Max estimated values for each response function:
-weight:  Min = 1.0000169352e+00  Max = 9.9999830649e+01
+weight:  Min = 1.0000169352e+00  Max = 9.9999491948e+01
 stress:  Min = -9.7749994284e-01  Max = 2.1499428450e+01
-displ:  Min = -9.9315677360e-01  Max = 6.7429714485e+01
+displ:  Min = -9.9315672724e-01  Max = 6.7429714485e+01
 -----------------------------------------------------------------
 \end{verbatim}
 \end{small}
@@ -1747,10 +1768,10 @@ listing for \texttt{params.in.1}:
                      -1.200000000000000e+00 x1
                       1.000000000000000e+00 x2
                                           1 functions
-                                          1 ASV_1
+                                          1 ASV_1:obj_fn
                                           2 derivative_variables
-                                          1 DVV_1
-                                          2 DVV_2
+                                          1 DVV_1:x1
+                                          2 DVV_2:x2
                                           0 analysis_components
 \end{verbatim}
 \end{small}
