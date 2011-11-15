@@ -2,490 +2,66 @@
 
 \section{Overview of Inputs}\label{input:overview}
 
-The DAKOTA executable supports a number of command line inputs, as
-described in Section~\ref{tutorial:installation:running}.  Among
-these are specifications for the DAKOTA input file and, optionally, a
-restart file.  The syntax of the DAKOTA input file is described in detail 
-in the DAKOTA Reference Manual~\cite{RefMan}, and the restart file is
+DAKOTA supports a number of command-line arguments, as described in
+Section~\ref{tutorial:installation:running}.  Among these are
+specifications for the DAKOTA input file and, optionally, a restart
+file.  The syntax of the DAKOTA input file is described in detail in
+the DAKOTA Reference Manual~\cite{RefMan}, and the restart file is
 described in Chapter~\ref{restart}.
 
-The DAKOTA input file may be prepared manually (e.g., using a text
-editor such as \texttt{xemacs} or \texttt{vi}), or it may be defined
-graphically using the JAGUAR graphical user interface, as described in
-Section~\ref{input:gui}.  Once prepared, the DAKOTA input file and/or
-command line may identify additional files for data import as
-described in Section~\ref{input:import}.
+A DAKOTA input file may be prepared manually with a text editor such
+as Emacs, Vi, or WordPad, or it may be defined with the JAGUAR DAKOTA
+graphical user interface.  The JAGUAR DAKOTA GUI is built on the
+Java-based Eclipse Framework \cite{Eclipse} and presents the DAKOTA
+input specification options in synchronized text-editing and graphical
+views.  JAGUAR includes templates and wizards for helping create
+DAKOTA studies and can invoke DAKOTA to run an analysis.  The DAKOTA
+GUI for Linux, Windows, and Mac, is available for download from the
+DAKOTA website \url{http://dakota.sandia.gov/}, along with licensing
+information, separate GUI documentation, and installation tips.
 
-\section{JAGUAR 2.0}\label{input:gui}
+\subsection{Tabular Data Formats}\label{input:tabularformat}
 
-JAGUAR (JAva GUi for Applied Research) is a Java software tool for
-automatically rendering a graphical user interface (GUI) from a
-structured input specification.  The dynamically-generated interface
-enables users to create, edit, and externally execute analysis
-application input files and then view the results.  JAGUAR is built on
-top of the Eclipse Framework \cite{Eclipse} as an Eclipse Rich
-Client Product, providing it the look, feel, and features of Eclipse
-Applications.
+The DAKOTA input file and/or command line may identify additional
+files for data import as described in Section~\ref{input:import}.
+Some of these files are in tabular data format.
 
-JAGUAR serves as a GUI for DAKOTA.  It parses a DAKOTA NIDR input
-specification and presents the user with linked graphical and plain
-text representations of problem set-up and option specification for
-DAKOTA studies. After the data have been input by the user, JAGUAR
-generates one or more input files for DAKOTA; it can also execute
-DAKOTA, capturing and (eventually) interpret the results.
-
-JAGUAR 2.0 is available for Windows, Mac (Intel processors), and Linux
-32- and 64-bit platforms.  While JAGUAR's core source is BSD licensed,
-binary distributions of JAGUAR include Eclipse Workbench components
-and are therefore subject to the terms of the Eclipse Public License.
-A short description of the steps for downloading, installing, and
-executing JAGUAR is provided below.
-
-\subsection{Downloading and Installing JAGUAR}
-
-A short description of the steps for downloading and installing JAGUAR
-is provided here.
+DAKOTA versions 5.1+ (October 2011) and newer use two formats for
+tabular data file input and output.  Tabular data refer to numeric
+data in text form related to, e.g., tabular graphics data, least
+squares and Bayesian calibration data, samples/points files for
+constructing surrogates, pre-run output, and post-run input.  Both
+formats are written/read with C++ stream operators/conversions, so
+most integer and floating point formats are acceptable for numeric
+data.  The formats are:
 
 \begin{itemize}
-\item \textbf{Install supporting JAVA software} (if needed).  JAGUAR
-  requires a Java Runtime Environment (JRE) version 5.0 or above. (Sun
-  has revised its 1.X.X versioning system, and version 5.0 is the same
-  as 1.5.0 in the old numbering scheme.)  If a Java Runtime
-  Environment is not already installed on your machine, you will need
-  to download and install a 5.0 JRE from:
+  \item {\bf Annotated Matrix} (default for all I/O; specified via
+    {\tt annotated}): text file with one leading row of comments/column
+    labels and one leading column of evaluation/row IDs surrounding
+    num\_rows x num\_cols whitespace-separated numeric data, (newlines
+    separating rows are not currently required, but may be in the
+    future).  The numeric data in a row may correspond to variables,
+    variables followed by responses, data point for calibration, etc.,
+    depending on context.
 
-\url{http://java.sun.com/j2se/1.5.0/download.jsp} 
-{\small [click on ``Java Runtime Environment (JRE) 5.0 ...'']}
-
-\item \textbf{Install JAGUAR}.  As per the DAKOTA download process
-  described in Section~\ref{tutorial:installation:how1}, the JAGUAR
-  distribution is accessed by clicking on the download link available
-  from:~\url{http://dakota.sandia.gov/download.html} and
-  filling out the short online registration form.  Download the JAGUAR
-  install for your platform (Windows, Mac, or Linux 32/64-bit).
-
-The JAGUAR package is provided as a zipped archive file.  Windows and
-Mac users should be able to double-click on the file's icon from a
-file system browser to perform the extraction.  Linux users can use
-the {\tt unzip} utility to unzip the archive from their command-line
-console.  The JAGUAR installation package is self-contained, so JAGUAR
-can be directly run immediately after extracting the archive. (See
-Figure~\ref{fig:input:jag_package}.)  Take note of where you installed
-as you may want to create a shortcut or link to the installed Jaguar
-executable.
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.6]{images/jag_package}
-  \caption{The JAGUAR installation package.}
-  \label{fig:input:jag_package}
-\end{figure}
-
+   \item {\bf Free-form Matrix} (optional; previously default for
+     samples files and least squares data; specified via {\tt
+       freeform}): text file with no leading row and no leading
+     column.  The num\_rows x num\_cols total numeric data entries may
+     appear separated with any whitespace including arbitrary spaces,
+     tabs, and newlines.  In this format, vectors may therefore appear
+     as a single row or single column (or mixture; entries will
+     populate the vector in order).
 \end{itemize}
 
-
-\subsection{Running JAGUAR for the First Time}
-
-When starting JAGUAR for the first time, you should see a ``Welcome''
-screen.  As can be seen in Figure~\ref{fig:input:jag_welcome}, the
-Welcome screen provides quick navigation to many JAGUAR features.
-This screen can be closed at anytime by clicking on the ``X'' located
-on the Welcome tab and returned to at anytime via the JAGUAR help menu
-({\bf Help $\rightarrow$ Welcome}).
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.4]{images/jag_welcome}
-  \caption{The JAGUAR ``Welcome'' screen.}
-  \label{fig:input:jag_welcome}
-\end{figure}
-
-\begin{itemize}
-\item {\bf Start Jaguar.}  The ``Start Jaguar'' link allows users to
-  directly proceed to an empty JAGUAR interface.  
-
-\item {\bf Tours.} The Tours section offers guides for beginning
-users.  As JAGUAR is built on the Eclipse Workbench, new users will
-benefit from the Eclipse Workbench Tour, a quick online reference for
-Eclipse framework features like Views, Perspectives, etc.  The next
-two links provides access to guided tours via JAGUAR Cheat Sheets
-which are shown in Figure~\ref{fig:input:jag_cheatsheets}.
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.6]{images/jag_cheatsheets}
-  \caption{A sample JAGUAR cheatsheet.}
-  \label{fig:input:jag_cheatsheets}
-\end{figure}
-JAGUAR Cheat Sheets are a useful mechanism for quickly learning how to
-perform important JAGUAR operations such as opening and saving files.
-They utilize an interactive step-by-step approach to guide new users
-through JAGUAR.  The Welcome screen is also accessible from Cheat
-Sheets.  Cheat Sheets usually dock on the side of the application so
-as to not obstruct user interactions, and can always be accessed from
-the JAGUAR help menu ({\bf Help $\rightarrow$ Cheat Sheets}).
-
-\item {\bf Create new input file.}  This link creates an empty DAKOTA
-  input file.  New input files can also be accessed by selecting {\bf
-    New $\rightarrow$ DAKOTA input file} from the File menu.  Users
-  must enter a file name for newly-created input files when attempting
-  to save them for the first time.
-
-\item {\bf Create new input file from template.}  This links creates a
-  new input file from existing DAKOTA templates.  Users must also
-  enter a file name when saving these newly-created input files.  This
-  action can also be accessed from the File menu by selecting {\bf New
-  $\rightarrow$ DAKOTA input file from template}.
-
-\end{itemize}
-
-The remaining two links are used for sending an email to the JAGUAR
-developers, and viewing existing JAGUAR bugs.
-
-
-\subsection{Text Editors}
-
-Figure \ref{fig:input:jag_texteditor} shows an example DAKOTA input
-file in the JAGUAR text editor.  The text editor interface is the
-first of two primary interfaces that JAGUAR contains for creating and
-modifying DAKOTA input files.  For text-based editing, the ``Source''
-tab toward the bottom of the JAGUAR window reveals the raw DAKOTA
-input file text (likely only comfortable for experienced DAKOTA
-users).
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.4]{images/jag_texteditor}
-  \caption{The JAGUAR text editor.}
-  \label{fig:input:jag_texteditor}
-\end{figure}
-
-This text editor supports simple syntax highlighting.  Additional text
-editor features planned include syntax completion and
-context-sensitive, on-demand tooltip help.
-
-
-\subsection{Graphical Editors}
-
-JAGUAR's graphical editors are the second primary interface for
-creating and modifying DAKOTA input files.  A unique feature of JAGUAR
-is that the graphical user interface of these editors is {\em
-dynamically} generated from the NIDR input specification for DAKOTA.
-When your locally installed version of DAKOTA is updated, you can
-point JAGUAR to the new version and it will re-render to match.
-
-Graphical-based editing is conveniently separated into ``Define
-Problem'' and ``Define Flow/Iteration'' sections; see the appropriate
-tabs toward the bottom of the JAGUAR window in Figure
-\ref{fig:input:jag_graphical1}.  ``Define Problem'' is where the
-problem to iterate on is defined in terms of models, which map
-variables through interfaces to responses.  ``Define Flow/Iteration''
-is where a method or methods and possibly a strategy are specified.
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.4]{images/jag_graphical1}
-  \caption{The ``Define Problem'' portion of the JAGUAR graphical
-    editor.}
-  \label{fig:input:jag_graphical1}
-\end{figure}
-
-Each pane in the graphical view has two components.  On the left is
-the tree hierarchy, which provides users with easy navigation across
-the structured input file.  The right side of the view is where
-content is displayed and selections may be made.  As an example, see
-Figure \ref{fig:input:jag_graphical2}.
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.4]{images/jag_graphical2}
-  \caption{Content selected from the left tree hierarchy is displayed
-    on the right side of the view.}
-  \label{fig:input:jag_graphical2}
-\end{figure}
-
-When a top-level element (i.e., Model, Variable Interface, Responses,
-Strategy, or Method), represented by a multi-colored brick, is
-selected by a user, the right pane will display a top-level overview
-of the selection.  From this page, certain top-level elements will
-show instance restrictions for a valid input file, allow the user to
-create a new instance, and to go directly to or delete an existing
-instance.
-
-Within each top-level instance lie unique instances (represented by a
-gray brick).  Each instance contains many possible configurable
-settings, which are all organized according to their hierarchy as
-shown in Figure \ref{fig:input:jag_graphical3}.  We call these
-``elements.''
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.8]{images/jag_graphical3}
-  \caption{An organized hierarchy of possible configurable settings.}
-  \label{fig:input:jag_graphical3}
-\end{figure}
-
-When an instance is selected, its elements are displayed in the right
-content pane. (See Figure \ref{fig:input:jag_graphical4}.)  Note that
-certain elements have nested elements, which are not immediately
-displayed in the content pane.  To view these child elements, select
-the element in the left hierarchy tree.
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.4]{images/jag_graphical4}
-  \caption{Display of elements from a selected instance.}
-  \label{fig:input:jag_graphical4}
-\end{figure}
-
-There are five basic types of elements in JAGUAR.
-\begin{enumerate}
-\item The first is an element without a value.  In Figure
-  \ref{fig:input:jag_graphical5}, notice the checkbox to the left of
-  the element; this allows the user to enable and disable the element.
-  Only enabled elements are represented in the input file, which of
-  course can be viewed in the ``Source'' representation (i.e., the
-  JAGUAR text editors).  Note that some elements are required, and
-  thus cannot be disabled.
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.8]{images/jag_graphical5}
-  \caption{Different element types in JAGUAR.}
-  \label{fig:input:jag_graphical5}
-\end{figure}
-
-\item The second element type allows users to set values of type
-  Integer, Real, String, or a space-delimited list.
-
-\item Nested elements are supported in JAGUAR, and are indicated by a
-  green bullet and the presence of a hyperlink.  Selecting a hyperlink
-  is one way to view the nested element in the right-side content
-  pane.  The up arrow allows quick return to a parent element in the
-  problem specification.
-
-\item Drop-down lists in JAGUAR are indicated by a choice icon.  When
-  the list is selected, it behaves like one of the former three
-  element types.  In terms of drop-down lists' contents, note that the
-  first element functions as a header text whose purpose is to aid the
-  user's selection of an appropriate element below.  Asterisks are
-  also used to indicate the default element of the list.
-
-\item The fifth and final element is a pointer element that allows the
-  reference of other existing elements.  Hyperlinks allow users to
-  quickly view that instance in the content pane.  In addition, when
-  an unrecognized instance name is manually entered in a pointer
-  element, JAGUAR automatically creates that new instance.
-
-\end{enumerate}
-
-Push-up elements allow sub-specifications to be displayed in the
-current pane instead of requiring a dive in the tree to see them.
-Figures~\ref{fig:input:jaguar_pushup_on}
-and~\ref{fig:input:jaguar_pushup_off} show JAGUAR with push-up
-elements on (default) and off, respectively.  Control behavior of
-push-ups with the upward facing arrow on the top right of the editor
-or in preferences.
-
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.4]{images/jaguar_pushup_on}
-  \caption{JAGUAR with push-up elements enabled (default).}
-  \label{fig:input:jaguar_pushup_on}
-\end{figure}
-
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.4]{images/jaguar_pushup_off}
-  \caption{JAGUAR with push-up elements disabled.}
-  \label{fig:input:jaguar_pushup_off}
-\end{figure}
-
-The JAGUAR toolbar, shown in Figure~\ref{fig:input:jaguar_toolbar}
-offers (from left to right) quick access for running DAKOTA input
-files, displaying pretty names instead of keywords, toggling help
-text, displaying comments, and toggling push-up elements.
-
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.4]{images/jaguar_toolbar}
-  \caption{JAGUAR toolbar for running DAKOTA or toggling many
-  options.}
-  \label{fig:input:jaguar_toolbar}
-\end{figure}
-
-
-\subsection{DAKOTA Execution}
-
-The ``Execute Problem'' tab contains several options for executing
-DAKOTA on the active input file, as shown in
-Figure~\ref{fig:input:jag_execute}.
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.4]{images/jag_execute}
-  \caption{The JAGUAR ``Execute Problem'' tab.}
-  \label{fig:input:jag_execute}
-\end{figure}
-The execute options all rely on a locally installed copy of DAKOTA,
-the path to which can be set via Window \textgreater Preferences
-\textgreater Jaguar.
-
-Currently four modes of DAKOTA execution are supported:
-\begin{itemize}
-
-\item {\bf Check:} While JAGUAR includes considerable input
-validation, additional validation is managed solely by DAKOTA's input
-parser.  To use DAKOTA to validate the active input file (via {\tt
-dakota -check}), click the Check button and view the console output on
-the Visualize tab.  You should see a message indicating that the check
-completed and should see no errors:
-
-\begin{small}
-\begin{verbatim}
-Input check completed: problem specification parsed and objects instantiated.
-\end{verbatim}
-\end{small}
-
-\item {\bf Run:} The run feature supports running DAKOTA on the local
-machine using the active input file.  Clicking Run will start DAKOTA
-in the same directory as the input file, so any necessary driver
-scripts or data files must be present.  View the output from DAKOTA in
-the console window:
-
-\begin{verbatim}
-<<<<< Iterator multidim_parameter_study completed.
-<<<<< Function evaluation summary: 25 total (25 new, 0 duplicate)
-<<<<< Best data metrics not defined for generic response functions
-<<<<< Single Method Strategy completed.
-\end{verbatim}
-
-\item {\bf Pre Run:} Pre-run is a component of the normal DAKOTA run
-process.  For select analyzer methods only, e.g., parameter studies
-and sampling methods, DAKOTA supports a pre-run mode ({\tt dakota
--pre\_run}), which will generate the set of points at which DAKOTA
-will evaluate the model and optionally write them to a tabular file.
-The optional checkbox permits saving this generated file.  A
-successful pre-run will terminate with a message:
-
-\begin{small}
-\begin{verbatim}
-Pre-run phase complete: variables written to tabular file my_vars.dat
-\end{verbatim}
-\end{small}
-
-\item {\bf Post Run:} Post-process user-supplied variables and
-function evaluation data, for example, to compute final statistics in
-a screening study (the analysis counterpart complementing Pre Run).
-Pre-run and post-run are central to the sensitivity analysis wizard.
-
-\end{itemize}
-
-Results from any execute option are displayed on the ``Visualize
-Results'' tab as shown in Figure~\ref{fig:input:jaguar_visualize}.
-
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.4]{images/jaguar_visualize}
-  \caption{JAGUAR Visualize Results tab.}
-  \label{fig:input:jaguar_visualize}
-\end{figure}
-
-Two additional modes will be supported in future JAGUAR versions:
-\begin{itemize} 
-\item {\bf Core Run:} Perform only the model evaluation (invoke {\tt
-analysis\_drivers}) to map variables to responses.  ({\tt dakota
--run})
-
-\item {\bf Remote job submission:} Submit DAKOTA job on a remote
-compute cluster and monitor job status.
-\end{itemize}
-
-
-\subsection{Sensitivity Analysis Wizard}
-
-JAGUAR will ultimately provide wizards for creating customized DAKOTA
-input files for a variety of common tasks such as optimization,
-parameter estimation, and uncertainty quantification.  Presently, one
-such wizard exists for creating a Latin hypercube sampling sensitivity
-analysis (screening) study, and is accessible from the Welcome screen
-and the main File menu ({\bf New $\rightarrow$ Sensitivity Analysis
-Wizard}).
-
-Upon launching, select either the variables definition (pre-run) phase
-or analysis (post-run) phase (Figure~\ref{fig:input:jaguar_sa_wizard})
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.5]{images/jaguar_sa_wizard}
-  \caption{The splash page for the JAGUAR Sensitivity Analysis
-  Wizard.}
-  \label{fig:input:jaguar_sa_wizard}
-\end{figure}
-
-Figure~\ref{fig:input:jag_wizard3} shows the second page of the
-sensitivity analysis wizard.  The number of samples, uncertain
-(uniformly-distributed) variables, and responses must be specified.
-For each specified variable, lower and upper bounds are required;
-there are also optional fields for specifying descriptors for each
-variable.  After these fields have been complete, the user can
-generate the LHS samples in the form of a run matrix using the
-``Generate samples'' option, and/or save the input file for the LHS
-study using the ``Save input file'' option and specifying a location
-for the input file. (Selecting ``Save input file'' will end the
-wizard.)
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.5]{images/jag_wizard3}
-  \caption{The second page of the JAGUAR Sensitivity Analysis Wizard,
-  pre-run phase.}
-  \label{fig:input:jag_wizard3}
-\end{figure}
-
-Figure~\ref{fig:input:jag_wizard4} shows an example of the final page
-of the wizard containing the generated run matrix if the ``Generate
-samples'' option is selected.  Note that this option actually executes
-the locally-installed version of DAKOTA (in ``pre-run'' mode) to
-generate the run matrix.  The page also provides options for saving
-both the input file and the generated run matrix.
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.5]{images/jag_wizard4}
-  \caption{The final page of the Sensitivity Analysis Wizard, pre-run
-  phase.}
-  \label{fig:input:jag_wizard4}
-\end{figure}
-
-After creating a samples file (run matrix), a use may either add
-columns for response data to the file, or run DAKOTA to perform
-variable to response mappings, then return to the wizard's post-run
-mode.  Figure~\ref{fig:input:jaguar_sa_post_run} shows specification
-of the saved input deck from pre-run and the location of the data file
-containing the variables and response data to analyze.
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.5]{images/jaguar_sa_post_run}
-  \caption{The second page of the JAGUAR Sensitivity Analysis Wizard,
-  post-run phase.}
-  \label{fig:input:jaguar_sa_post_run}
-\end{figure}
-
-\subsection{Generating Input Files from Templates}
-
-There exist many example input files for DAKOTA analysis and studies
-that users can build on, customizing their own studies from these
-templates.  JAGUAR provides easy access to these templates by allowing
-users to generate new input files from a library of templates.  These
-templates can be accessed from the Welcome screen, or from the main
-File menu ({\bf New $\rightarrow$ DAKOTA input file from template}).
-
-As shown in Figure~\ref{fig:input:jag_template1}, JAGUAR contains a
-large library of pre-made input file templates that users can select
-from.  After selecting a template upon which to base a new input file,
-specify a location to save the new input file (see
-Figure~\ref{fig:input:jag_template2}).
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.6]{images/jag_template1}
-  \caption{A list of DAKOTA input file templates in JAGUAR}
-  \label{fig:input:jag_template1}
-\end{figure}
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.6]{images/jag_template2}
-  \caption{Specifying a location for saving an input file generated
-    from a template.}
-  \label{fig:input:jag_template2}
-\end{figure}
+{\bf Attention:} Prior to October 2011, calibration and surrogate data
+files were free-form format.  They now default to annotated format,
+though {\tt freeform} remains an option.  For both formats, a warning
+will be generated if a specific number of data are expected, but extra
+is found and an error generated when there is insufficient data.  Some
+TPLs like Coliny and JEGA manage their own file I/O and only support
+the free-form option.
 
 \section{Data Imports}\label{input:import}
 
@@ -501,20 +77,37 @@ particular interface.
 
 \subsection{Genetic algorithm population import}
 
-Genetic algorithms (GAs) from the JEGA and COLINY packages support a 
-population import feature using the keywords 
-\texttt{initialization\_type flat\_file = \emph{STRING}}.  This is 
+Genetic algorithms (GAs) from the JEGA and COLINY packages support a
+population import feature using the keywords
+\texttt{initialization\_type flat\_file = \emph{STRING}}.  This is
 useful for warm starting GAs from available data or previous runs.
 Refer to the Method Specification chapter in the DAKOTA Reference
 Manual~\cite{RefMan} for additional information on this specification.
+The flat file must be in free-form format as described in
+Section~\ref{input:tabularformat}.
 
-\subsection{Least squares data import}
+\subsection{Calibration (least squares) data import}
 
-Least squares methods can read files of whitespace-separated
-experimental data to difference with model results, with one
-experimental data point given per model response returned to DAKOTA.
-See~\ref{nls:examples} and the DAKOTA Reference Manual for further
-details.
+Deterministic least squares and Bayesian Calibration methods allow
+specification of experimental observations to difference with
+responses in calculating a model misfit metric (such as a sum of
+squared residuals).  The default file format is {\tt annotated}, but
+the {\tt freeform} option is supported.  The data file should contain
+one row per experiment.   The columns of the data file contain, in sequence
+\begin{itemize}
+\item {\bf configuration variables (optional):} state variable values
+  indicating the configuration at which this experiment was conducted;
+  length must agree with thee number of state variables active in the
+  study.
+\item {\bf experimental observations (required):} experimental data
+  values to difference with model responses; length number of
+  responses.
+\item {\bf experimental standard deviations (optional):} measurement
+  errors (standard deviations) associated with the data; length 1
+  (same value for each model response) or num\_responses.
+\end{itemize}
+See~\ref{nls:examples} and the DAKOTA Reference Manual Responses
+section for further details.
 
 \subsection{PCE coefficient import}
 
@@ -524,7 +117,7 @@ polynomials.  Normally, the \texttt{polynomial\_chaos} method
 calculates these coefficients based either on a spectral projection or
 a linear regression (see Section~\ref{uq:expansion}).  However,
 DAKOTA also supports the option of importing a set of response PCE
-coefficients based on the specification
+coefficients based on the specification \\
 \texttt{expansion\_import\_file = \emph{STRING}}.  This is useful for
 evaluating moments analytically or computing probabilities numerically
 from a known response expansion.  Refer to the Method Specification
@@ -533,24 +126,26 @@ information on this specification.
 
 \subsection{Surrogate construction from data files}
 
-Global data fit surrogates may be constructed from a variety of
-data sources.  One of these sources is an auxiliary data file,
-as specified by the keywords 
-\texttt{reuse\_samples samples\_file = \emph{STRING}}.  Refer to the 
-Model Specification chapter in the DAKOTA Reference 
-Manual~\cite{RefMan} for additional information on this specification.
+Global data fit surrogates may be constructed from a variety of data
+sources.  One of these sources is an auxiliary data file, as specified
+by the keywords \texttt{reuse\_samples points\_file = \emph{STRING}}.
+The file may be in annotated (default) or free-form format with
+columns corresponding to variables and responses.  Refer to the Model
+Specification chapter in the DAKOTA Reference Manual~\cite{RefMan} for
+additional information on this specification.
 
 \subsection{Variables/responses import to post-run}
 
 The post-run mode (supported only for sampling, parameter study, and
 DACE methods) requires specification of a file containing parameter
-and response data in columnar format.  Columns for variables are
-followed by those for responses, with an ignored header row of labels
-and then one row per evaluation.  Typically this file would be
-generated by executing \texttt{dakota -i dakota.in -pre\_run
-::variables.dat} and then adding columns of response data to
-variables.dat to make varsresponses.dat.  The file is specified as
-follows at the command line:
+and response data in annotated tabular format (see Section
+~\ref{input:tabularformat}; free-form is not supported).  An
+evaluation ID column is followed by columns for variables, then those
+for responses, with an ignored header row of labels and then one row
+per evaluation.  Typically this file would be generated by executing
+\texttt{dakota -i dakota.in -pre\_run ::variables.dat} and then adding
+columns of response data to variables.dat to make varsresponses.dat.
+The file is specified at the command line with:
 \begin{small}
 \begin{verbatim}
     dakota -i dakota.in -post_run varsresponses.dat::

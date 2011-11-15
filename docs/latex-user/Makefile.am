@@ -120,26 +120,6 @@ USERS_EPS = images/dakota_flowchart.eps \
 	    images/sbouu.eps \
 	    images/dakota_components.eps \
 	    images/horsetail.eps \
-	    images/jag_package.eps \
-	    images/jag_welcome.eps \
-	    images/jag_cheatsheets.eps \
-	    images/jag_texteditor.eps \
-	    images/jag_graphical1.eps \
-	    images/jag_graphical2.eps \
-	    images/jag_graphical3.eps \
-	    images/jag_graphical4.eps \
-	    images/jag_graphical5.eps \
-            images/jaguar_pushup_on.eps \
-            images/jaguar_pushup_off.eps \
-            images/jaguar_toolbar.eps \
-	    images/jag_execute.eps \
-	    images/jaguar_visualize.eps \
-	    images/jaguar_sa_wizard.eps \
-	    images/jag_wizard3.eps \
-	    images/jag_wizard4.eps
-	    images/jaguar_sa_post_run.eps \
-	    images/jag_template1.eps \
-	    images/jag_template2.eps \
 	    images/container_graphic.eps \
 	    images/container_graphic_options.eps \
 	    images/sbo_3d_surface.eps \

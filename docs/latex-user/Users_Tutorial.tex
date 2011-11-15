@@ -1,151 +1,117 @@
 \chapter{DAKOTA Tutorial}\label{tutorial}
 
-\section{Installation Guide}\label{tutorial:installation}
+\section{Getting Started}\label{tutorial:installation}
 
-DAKOTA can be compiled for most common computer systems that run Unix
-and Linux operating systems. The computers and operating systems
-actively supported by the DAKOTA project include:
+DAKOTA operates on most systems running Unix or Linux operating
+systems as well as on Windows with the help of a MinGW or Cygwin
+emulation layer.  DAKOTA is developed and most extensively tested on
+Redhat Enterprise Linux with GNU compilers, but additional operating
+systems / compiler combinations are tested nightly as well.  See the
+DAKOTA website and/or the {\tt README} file included with DAKOTA
+distributions for more information on supported platforms for
+particular DAKOTA versions.
 
+Department of Energy users: DAKOTA may already be available on your
+target system. Sandia users should visit
+\url{http://dakota.sandia.gov/sandia_only/} for information on
+supported DAKOTA installations on engineering networks and cluster
+computers, as well as for Sandia-specific downloads.  At other DOE
+institutions, contact your system administrator about DAKOTA
+availability.  If not available for your target platform, you may
+still download DAKOTA as described below.
+
+\subsection {Quickstart}\label{tutorial:installation:quickstart}
+
+Getting started with DAKOTA typically involves the following steps:
 \begin{itemize}
-\item Intel/AMD Redhat Enterprise Linux 4,5,6 (RHEL4, RHEL5, RHEL6) with gcc and Intel compilers
-\item Sun Solaris 5.10 with SunPro CC compilers
-\item IBM AIX 5.3 with xlC compilers
-\item Mac OS X 10.5 with gcc compilers
-\end{itemize}
+  \item Download DAKOTA: binary executables and source code are
+    available from\\
+    \url{http://dakota.sandia.gov/download.html}.
 
-In addition, partial support is provided for PC Windows (via Cygwin)
-with gcc/g95 compilers, PC Windows (via MinGW) with gcc-4 compilers,
-and Sandia's ASC Red Storm with PGI compilers. Additional details are
-provided in the file \texttt{Dakota/README} in the distribution (see
-the following section for download instructions).  Further
-platform/operating system-specific guidance can be found in
-Dakota/examples/platforms included with DAKOTA.
-
-For answers to common questions and solutions to common problems in
-downloading, building, installing, or running DAKOTA, refer to
-\url{http://dakota.sandia.gov/faq.html} for additional information.
-
-\subsection{How to Obtain DAKOTA - External to Sandia Labs}\label{tutorial:installation:how1}
-
-Users outside of Sandia National Laboratories may obtain the DAKOTA
-binary executable files and source code files through the download
-link available here:\smallskip
-
-\url{http://dakota.sandia.gov/download.html}
-
-To receive the binary or source code files, you are asked to fill out
-a short online registration form. The information provided is used by
-the DAKOTA development team to collect software usage metrics; the
-form also lets you sign up for update announcements.
-
-If you wish to run DAKOTA on one of the supported or partially
-supported platforms, we suggest that you download the relevant binary
-executable distribution rather than the source code distribution. This
-gets you up and running quickly and lets you gain an understanding of
-DAKOTA by running the example problems that are provided with the
-binary distributions.  For more experienced users, DAKOTA can be
-customized with additional packages and ported to other computer
-platforms when building from the source code.
-
-\subsection{How to Obtain DAKOTA - Internal to Sandia Labs}\label{tutorial:installation:how2}
-
-DAKOTA binary executable files are routinely compiled and distributed
-to the engineering sciences LANs and common compute servers at Sandia,
-Los Alamos, and Lawrence Livermore.  At Sandia, consult the
-Codes \& Tools tab of the computing.sandia.gov web portal
-% analyst home page
-or the DAKOTA internal webpage for specific installation
-locations and preferred usage.  These installations are typically
-supported by modules, e.g., \texttt{module avail dakota}.  However,
-binaries can be located by absolute path as well, e.g.,
-\texttt{/usr/local/dakota/bin/dakota} or
-\texttt{/projects/dakota/bin/<system>/dakota}, where
-``\texttt{<system>}'' is \texttt{linux64}, \texttt{osx}, or other.  To
-see if DAKOTA is available on your computer system and accessible in
-your Unix environment path settings, type the command \texttt{which
-dakota} at the Unix prompt. If the DAKOTA executable file is in your
-path, its location will be echoed to the terminal. If the DAKOTA
-executable file is available on your system but not in your path, then
-you will need to locate it and add its directory to your path (the
-Unix \texttt{whereis} and \texttt{find} commands can be useful for
-locating the executable).
-
-If DAKOTA is not available on your system, consider getting an account
-on one of the common compute servers where DAKOTA is maintained.  If
-not practical, visit the DAKOTA internal webpage or consult the DAKOTA
-developers so we can provide you with the most complete DAKOTA
-distribution possible, i.e., including Sandia-specific and/or
-site-licensed software.  As a last resort, you can acquire external
-versions of DAKOTA as described above.
-
-\subsection{Installing DAKOTA - Binary Executable Files}\label{tutorial:installation:installing1}
-
-Once you have downloaded a binary distribution from the web site
-listed above, you will have a Unix tar file that has a name similar to
-\texttt{Dakota\_5\_x.OSversion.tar.gz}.
-
-Use the GNU utility \texttt{gunzip} to uncompress the tar file and
-the Unix \texttt{tar} utility to extract the files from the archive by
-executing the following commands:
-\begin{small}
+  \item After downloading, unpack the files, yielding a {\tt Dakota/}
+    directory.  For tar.gz or .tgz files, e.g.,\\
+    \texttt{Dakota\_5\_x.OSversion.tar.gz} either invoke
+    \begin{small}
 \begin{verbatim}
     gunzip Dakota_5_x.OSversion.tar.gz
     tar -xvf Dakota_5_x.OSversion.tar
 \end{verbatim}
-\end{small}
-Slightly faster and less demanding of disk space is to invoke
-\begin{small}
+    \end{small}
+    or (slightly faster and less demanding of disk space) invoke
+    \begin{small}
 \begin{verbatim}
     gzip -dc Dakota_5_x.OSversion.tar.gz | tar xf -
 \end{verbatim}
-\end{small}
+    \end{small}
+    A similar process applies to windows distributions which are
+    packaged as .zip files.  These can be extracted with the Windows
+    extractor or WinZIP, for example.
 
-The tar utility will create a subdirectory named \texttt{Dakota} in
-which the DAKOTA executables and example files will be stored. The
-executables are in \texttt{Dakota/bin}, and the example problems are
-\texttt{Dakota/test} and in subdirectories of \texttt{Dakota/examples}.
-See file \texttt{Dakota/examples/README} for more details about these
-subdirectories.
-
-A similar process applies to windows distributions which are packaged
-as ZIP files and can be extracted with the Windows extractor or
-WinZIP, for example.  For getting started on Windows, see the
-files \texttt{INSTALL.cygwin} and \texttt{INSTALL.mingw} in
-\texttt{Dakota/examples/platforms}.
-
-\subsection{Installing DAKOTA - Source Code Files}\label{tutorial:installation:installing2}
-
-Following the download, decompression, and extraction of the file
-\texttt{Dakota\_5\_x.src.tar.gz}, the basic steps follow the standard
-GNU distribution process of:
-\begin{small}
+  \item For binary packages, {\tt Dakota/bin} contains executable
+    files. Example input files and interfaces are in
+    \texttt{Dakota/examples} (see \texttt{Dakota/examples/README}) and
+    \texttt{Dakota/test}.  To get started, open a terminal shell or
+    Command Prompt and set your PATH to include {\tt Dakota/bin} (and
+    optionally DAKOTA's test or example directories).  On Linux:
+    \begin{small}
 \begin{verbatim}
+    export PATH=/path/to/Dakota/bin:$PATH
+\end{verbatim}
+    \end{small}
+    or on Windows:
+    \begin{small}
+\begin{verbatim}
+    set PATH=C:\path\to\Dakota\bin:%PATH%
+\end{verbatim}
+    \end{small}
+    then proceed with running as described below in 
+    Section~{tutorial:installation:running}.
+
+  \item For source packages, configure and compile using either GNU
+    configure/make or CMake/make.  For example, for configure:
+    \begin{small}
+\begin{verbatim}
+    cd Dakota/
     configure
     make
+    make install  # optional
 \end{verbatim}
-\end{small}
-to construct Makefiles and build the system, respectively.  After the build
-complete, one can optionally
-\begin{small}
+    \end{small}
+    or for CMake
+    \begin{small}
 \begin{verbatim}
-    make install
+    cd Dakota/
+    mkdir build && cd build/
+    cmake ..
+    make
+    make install  # optional
 \end{verbatim}
-\end{small}
-to install the executable in a desired location.  Please note that these
-simple steps imply a build process in which the configuration, object files,
-libraries, and binary executables all reside in the same directory as the
-extracted Dakota source distribution.  Many developers on the DAKOTA
-development team use this approach so it is encouraged.  That said, DAKOTA
-does support out-of-source build trees as long as GNU make (or other make
-installation that supports VPATH variable) is used.  Detailed instructions
-for building DAKOTA are given in the file
-\texttt{Dakota/INSTALL}.
+    \end{small}
+    Detailed configuration options are available on the DAKOTA
+    website, including the Developer Portal
+    \url{http://dakota.sandia.gov/developer/}.
+    
+  \item Verify that DAKOTA runs; see
+    Section~\ref{tutorial:installation:running}
+
+  \item Joining mailing lists and get help: the most up to date
+    guidance for downloading, compiling, installing, or running
+    DAKOTA, or seeking help is available on the DAKOTA website \\
+    (\url{http://dakota.sandia.gov/resources.html}). In addition,
+    guidance is also included in files included with DAKOTA, including
+    \texttt{Dakota/INSTALL}. Further platform/operating
+    system-specific guidance can be found in {\tt
+    Dakota/examples/platforms}.  For getting started on Windows, see
+    the files \texttt{INSTALL.cygwin} and \texttt{INSTALL.mingw} in
+    \texttt{Dakota/examples/platforms}.
+\end{itemize}
+
 
 \subsection{Running DAKOTA}\label{tutorial:installation:running}
 
-The DAKOTA executable file is named dakota. If this command is entered
-at the command prompt without any arguments, the following usage message
-appears (please ensure '.' is in your PATH):
+The DAKOTA executable file is named {\tt dakota} ({\tt dakota.exe} on
+Windows). If this command is entered at the command prompt without any
+arguments, a usage message similar to the following appears:
 \begin{small}
 \begin{verbatim}
 usage: dakota [options and <args>]

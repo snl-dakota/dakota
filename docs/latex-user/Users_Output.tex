@@ -8,10 +8,9 @@ to provide a succinct, text-based reporting of the progress of the
 iterations and function evaluations performed by an algorithm. In
 addition, DAKOTA provides a tabular output format that is useful for
 data visualization with external tools and a basic graphical output
-capability that is useful as a monitoring tool. The JAGUAR graphical
-user interface described in Section~\ref{input:gui} is also an
-emerging capability that will provide more advanced visualization
-facilities in time.
+capability that is useful as a monitoring tool. The JAGUAR DAKOTA GUI
+is an emerging capability that will provide more advanced
+visualization facilities in time.
 
 \section{Standard Output}\label{output:standard}
 
@@ -313,14 +312,15 @@ from finite differencing, can be saved to a file in tabular format.
 The default file name for the tabular output data is
 ``\texttt{dakota\_tabular.dat}'' and the output from the ``container''
 optimization problem is shown in Figure~\ref{output:tabcont}. This
-file contains the complete history of data requests from NPSOL (8
-requests map into a total of 40 function evaluations when including
-the central finite differencing). The first column is the data request
-number, the second and third columns are the design parameter values
-(labeled in the example as ``\texttt{H}'' and ``\texttt{D}''), the
-fourth column is the objective function (labeled
-``\texttt{obj\_fn}''), and the fifth column is the nonlinear equality
-constraint (labeled ``\texttt{nln\_eq\_con\_1}'').
+annotated tabular format (see Section~\ref{input:tabularformat}) file
+contains the complete history of data requests from NPSOL (8 requests
+map into a total of 40 function evaluations when including the central
+finite differencing). The first column is the data request number, the
+second and third columns are the design parameter values (labeled in
+the example as ``\texttt{H}'' and ``\texttt{D}''), the fourth column
+is the objective function (labeled ``\texttt{obj\_fn}''), and the
+fifth column is the nonlinear equality constraint (labeled
+``\texttt{nln\_eq\_con\_1}'').
 
 \begin{figure}
 \begin{bigbox}
@@ -444,21 +444,17 @@ following error message is generated:
 
 Unfortunately, descriptive error messages are not available for all
 possible failure modes of DAKOTA. If you encounter core dumps,
-segmentation faults, or other failures, please request help
-preferrably from the
-\href{mailto:dakota-users@software.sandia.gov}{dakota-users@software.sandia.gov}
-mailing list, or optionally from the DAKOTA developers, including the
-information specified in
-\href{http://dakota.sandia.gov/faq.html#S2}{the support FAQ}.
-
+segmentation faults, or other failures, please request help using the
+support mechanisms described on the
+\href{http://dakota.sandia.gov/}{DAKOTA website}.
 
 \section{Variables Output from Pre-run}
 
 The pre-run mode (supported only for select methods) permits
-specification of an output file containing parameter data in columnar
-format, one column per variable.  It contains a header row with
-variable labels and one row of numerical values per evaluation /
-variables set.  This file can be generated with sampling, parameter
+specification of an output file to which DAKOTA will write parameter
+(variables) data in annotated format (see
+Section~\ref{input:tabularformat}) with data columns corresponding to
+each variable.  This file can be generated with sampling, parameter
 study, and DACE methods by invoking
 \begin{small}
 \begin{verbatim}
