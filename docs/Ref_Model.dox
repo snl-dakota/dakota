@@ -649,7 +649,7 @@ from previous function evaluations performed in the run or from
 function evaluations read from a restart database or text file) in the
 building of new global approximations.  The default is no reuse of old
 data (since this can induce directional bias), and the settings of \c
-all, \c region, and \c samples_file result in reuse of all available
+all, \c region, and \c points_file result in reuse of all available
 data, reuse of all data available in the current trust region, and
 reuse of all data from a specified text file, respectively.  Both \c
 dace_method_pointer and \c reuse_samples are optional specifications,
@@ -744,13 +744,13 @@ Specification detail for global approximations: build and correction controls
 <td>\c reuse_samples
 <td>\c all | \c region | \c none
 <td>Optional group
-<td>\c all if \c samples_file defined, \c none otherwise
+<td>\c all if \c points_file defined, \c none otherwise
 <tr>
 <td>File import of samples for global approximation builds
-<td>\c samples_file
+<td>\c points_file
 <td>string
 <td>Optional
-<td>no sample import from a file
+<td>no point import from a file
 <tr>
 <td>Data file in annotated format
 <td>\c annotated 
