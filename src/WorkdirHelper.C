@@ -111,9 +111,9 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
 
 #if defined(DAKOTA_HAVE_BOOST_FS) && defined(DEBUG)
     if( !bfs::is_directory(dir_path) )
-      Cout << "WARNING - Absolute path: " << dir_path
-           << " MAY NOT be a directory\n"
-           << "\t But will check for existence of driver anyway" << std::endl;
+      Cout << "Warning - DAKOTA analysis driver resolution detects issue with: "
+           << dir_path << " on the environment path.\n\t"
+           << "Directory may not exist" << std::endl;
 #endif
   }
 
