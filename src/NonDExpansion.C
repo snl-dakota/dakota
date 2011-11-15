@@ -314,9 +314,11 @@ void NonDExpansion::initialize_u_space_model()
     }
   }
 
-  if (num_int)
+  if (num_int) {
+    u_space_sampler.output_level(outputLevel); // for tabular output of pts/wts
     numSamplesOnModel = u_space_sampler.maximum_concurrency()
                       / g_u_model.derivative_concurrency();
+  }
 }
 
 

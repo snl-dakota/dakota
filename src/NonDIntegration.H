@@ -92,6 +92,9 @@ protected:
   /// verify self-consistency of variables data
   void check_variables(const Pecos::ShortArray& x_types);
 
+  /// output integration points and weights to a tabular file
+  void print_points_weights(const String& tabular_name);
+
   //
   //- Heading: Data
   //

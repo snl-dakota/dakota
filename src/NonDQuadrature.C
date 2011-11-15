@@ -186,6 +186,8 @@ void NonDQuadrature::get_parameter_sets(Model& model)
   // retain a subset of the minimal order tensor grid
   if (numFilteredSamples)
     filter_parameter_sets();
+  else if (outputLevel > NORMAL_OUTPUT)
+    print_points_weights("dakota_quadrature_tabular.dat");
 }
 
 

@@ -139,6 +139,9 @@ void NonDSparseGrid::get_parameter_sets(Model& model)
   ssgDriver->compute_grid(allSamples);
   Cout << "\nSparse grid level = " << ssgDriver->level() << "\nTotal number "
        << "of integration points: " << allSamples.numCols() << '\n';
+
+  if (outputLevel > NORMAL_OUTPUT)
+    print_points_weights("dakota_sparse_tabular.dat");
 }
 
 

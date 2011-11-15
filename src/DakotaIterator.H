@@ -172,6 +172,8 @@ public:
   /// return the method identifier (methodId)
   const String& method_id() const;
 
+  /// set the method output level (outputLevel)
+  void output_level(short out_lev);
   /// return the method output level (outputLevel)
   short output_level() const;
   /// Set summary output control; true enables evaluation/results summary
@@ -399,6 +401,13 @@ inline const String& Iterator::method_name() const
 
 inline const String& Iterator::method_id() const
 { return (iteratorRep) ? iteratorRep->methodId : methodId; }
+
+
+inline void Iterator::output_level(short out_lev)
+{
+  if (iteratorRep) iteratorRep->outputLevel = out_lev;
+  else             outputLevel = out_lev; 
+}
 
 
 inline short Iterator::output_level() const

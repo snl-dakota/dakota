@@ -547,6 +547,18 @@ void write_data_tabular(std::ostream& s,
 }
 
 
+/// tabular ostream insertion operator for full SerialDenseVector
+template <typename OrdinalType, typename ScalarType>
+void write_data_tabular(std::ostream& s, const ScalarType* ptr,
+			OrdinalType num_items)
+{
+  s << std::setprecision(write_precision) 
+    << std::resetiosflags(std::ios::floatfield);
+  for (OrdinalType i=0; i<num_items; ++i)
+    s << std::setw(write_precision+4) << ptr[i] << ' ';
+}
+
+
 /// tabular ostream insertion operator for partial SerialDenseVector
 template <typename OrdinalType, typename ScalarType>
 void write_data_partial_tabular(std::ostream& s, size_t start_index,
@@ -566,7 +578,7 @@ void write_data_partial_tabular(std::ostream& s, size_t start_index,
 }
 
 /// tabular ostream insertion operator for vector of strings
- inline void write_data_tabular(std::ostream& s, const StringArray& sa)
+inline void write_data_tabular(std::ostream& s, const StringArray& sa)
 {
   s << std::setprecision(write_precision) 
     << std::resetiosflags(std::ios::floatfield);

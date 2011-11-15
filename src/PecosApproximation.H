@@ -105,8 +105,6 @@ public:
   /// set pecosBasisApprox.driverRep
   void integration_iterator(const Iterator& iterator);
 
-  /// invoke Pecos::OrthogPolyApproximation::initialize_basis_types()
-  void initialize_basis_types(const Pecos::ShortArray& u_types);
   /// invoke Pecos::OrthogPolyApproximation::construct_basis()
   void construct_basis(const Pecos::ShortArray& u_types,
 		       const Pecos::DistributionParams& dp,
@@ -329,14 +327,6 @@ dimension_decay_rates() const
 inline void PecosApproximation::
 random_variables_key(const Pecos::BoolDeque& random_vars_key)
 { polyApproxRep->random_variables_key(random_vars_key); }
-
-
-inline void PecosApproximation::
-initialize_basis_types(const Pecos::ShortArray& u_types)
-{
-  ((Pecos::OrthogPolyApproximation*)polyApproxRep)->
-    initialize_basis_types(u_types);
-}
 
 
 inline void PecosApproximation::
