@@ -99,10 +99,6 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
     construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec, dim_pref,
 			  piecewise_basis);
   }
-  // iteratedModel concurrency is defined by the number of samples
-  // used in constructing the expansion
-  if (numSamplesOnModel) // optional with default = 0
-    maxConcurrency *= numSamplesOnModel;
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -198,10 +194,6 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   else if (expansionCoeffsApproach == Pecos::SPARSE_GRID)
     construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref,
 			  piecewise_basis);
-  // iteratedModel concurrency is defined by the number of samples
-  // used in constructing the expansion
-  if (numSamplesOnModel) // optional with default = 0
-    maxConcurrency *= numSamplesOnModel;
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel

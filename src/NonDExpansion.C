@@ -318,6 +318,9 @@ void NonDExpansion::initialize_u_space_model()
     u_space_sampler.output_level(outputLevel); // for tabular output of pts/wts
     numSamplesOnModel = u_space_sampler.maximum_concurrency()
                       / g_u_model.derivative_concurrency();
+    // maxConcurrency already updated for expansion samples and regression
+    if (numSamplesOnModel) // optional with default = 0
+      maxConcurrency *= numSamplesOnModel;
   }
 }
 

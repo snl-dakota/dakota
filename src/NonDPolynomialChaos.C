@@ -160,12 +160,11 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	//    == "incremental_lhs"))
 	//  construct_incremental_lhs();
       }
+      // maxConcurrency updated here for expansion samples and regression
+      // and in initialize_u_space_model() for sparse/quad/cub
+      if (numSamplesOnModel) // optional with default = 0
+	maxConcurrency *= numSamplesOnModel;
     }
-
-    // iteratedModel concurrency is defined by the number of samples
-    // used in constructing the PC expansion
-    if (numSamplesOnModel) // optional with default = 0
-      maxConcurrency *= numSamplesOnModel;
   }
 
   // --------------------------------
@@ -251,11 +250,6 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   }
   else if (expansionCoeffsApproach == Pecos::CUBATURE)
     construct_cubature(u_space_sampler, g_u_model, num_int_level);
-
-  // iteratedModel concurrency is defined by the number of samples
-  // used in constructing the PC expansion
-  if (numSamplesOnModel) // optional with default = 0
-    maxConcurrency *= numSamplesOnModel;
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
