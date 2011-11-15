@@ -4423,7 +4423,6 @@ Test Number 0 succeeded
    1.3000000000e+00   7.9400076418e-01  -8.2038182780e-01  -8.2038182780e-01
    1.5000000000e+00   8.2526852037e-01  -9.3563148261e-01  -9.3563148261e-01
 dakota_herbie_smoothherbie_shubert.in
-
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
 <<<<< Best parameters          =
