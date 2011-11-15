@@ -109,7 +109,7 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
     std::string dir_path = *tok_iter;
     dirs.push_back(dir_path);
 
-#ifdef DAKOTA_HAVE_BOOST_FS
+#if defined(DAKOTA_HAVE_BOOST_FS) && defined(DEBUG)
     if( !bfs::is_directory(dir_path) )
       Cout << "WARNING - Absolute path: " << dir_path
            << " MAY NOT be a directory\n"
@@ -117,8 +117,8 @@ WorkdirHelper::tokenize_env_path(const std::string& env_path)
 #endif
   }
 
-#ifdef DEBUG
-  Cout << "Searchpath = " << env_path << '\n';
+#if defined(DEBUG)
+  Cout << "Search " << env_path << '\n';
   BOOST_FOREACH(const std::string& d, dirs)
     Cout << "\tDir = " << d << '\n';
   Cout << std::endl;
