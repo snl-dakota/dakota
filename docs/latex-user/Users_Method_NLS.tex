@@ -43,8 +43,11 @@ are significant.
 
 In order to specify a least-squares problem, the responses section of
 the DAKOTA input should be configured using
-\texttt{num\_least\_squares\_terms} (as opposed to
-\texttt{num\_objective\_functions} in the case of optimization). Any
+\texttt{calibration\_terms} (as opposed to
+\texttt{num\_objective\_functions} in the case of optimization). 
+The calibration terms refer to the residuals (e.g. typically the differences between 
+the simulation model and the data).  Note that DAKOTA expects the residuals and 
+not the square of the residuals.  Any
 linear or nonlinear constraints are handled in an identical way to
 that of optimization (see Section~\ref{opt:overview}; note that
 neither Gauss-Newton nor NLSSOL require any constraint augmentation
@@ -57,7 +60,7 @@ are not used by the least-squares methods,
 the \texttt{no\_hessians} specification should be used.  DAKOTA's
 scaling options, described in Section~\ref{opt:additional:scaling} can
 be used on least-squares problems, using the
-\texttt{least\_squares\_term\_scales} keyword to scale least-squares
+\texttt{calibration\_term\_scales} keyword to scale least-squares
 residuals, if desired.
 
 \section{Solution Techniques}\label{nls:solution}
@@ -159,7 +162,7 @@ using numerical gradients.
 
 DAKOTA also allows a form of weighted least squares.  The user can
 specify a set of weights that are used to weight each residual term
-using the keyword \texttt{least\_squares\_weights}.  Note that these
+using the keyword \texttt{calibration\_weights}.  Note that these
 weights must be pre-determined by the user and entered in the DAKOTA
 input file: they are not calculated on-the-fly.  The user can also
 specify scaling for the least-squares terms.  Scaling is applied
@@ -259,6 +262,7 @@ most other DAKOTA applications.
 
 To simplify specifying a least squares problem, a user may specify a
 data file containing experimental results or other calibration data.
+This file may be specified with \texttt{calibration\_data\_file}. 
 In this case, DAKOTA will calculate the residuals (that is, the
 simulation model results minus the experimental results), and the
 user-provided script can omit this step: the script can just return
@@ -269,4 +273,16 @@ are 3 residual terms.  The data file of experimental results
 associated with this example is \texttt{least\_squares\_test.dat}.
 These three values are subtracted from the least-squares terms to
 produce residuals for the nonlinear least-squares problem.
-
+Note that the file may be annotated (specified by \texttt{annotated}) or 
+freeform (specified by \texttt{freeform}). The number of experiments in the 
+calibration data file may be specified with \texttt{num\_experiments}, 
+with one row of data per experiment.
+Finally, this data file may contain additional information than just the observed 
+experimental responses.  If the observed data has measurement error associated with it, 
+this can be specified in columns of such error data after the response data. 
+The number of calibration terms which have associated error in the data 
+set is given by \texttt{num\_std\_deviations}.  Additionally, there is sometimes the 
+need to specify configuration variables.  These are often used in Bayesian calibration 
+analysis.  These are specified as \texttt{num\_config\_variables}.  If the user 
+specifies a positive number of configuration variables, it is expected that they will 
+occur in the text file before the responses. 
