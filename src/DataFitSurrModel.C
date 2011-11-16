@@ -155,10 +155,10 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 //const SharedVariablesData& svd, const ActiveSet& set,
 		 const String& approx_type, const UShortArray& approx_order,
 		 short corr_type, short corr_order, short data_order,
-		 const String& point_reuse):
+		 const String& point_reuse, short output_level):
   SurrogateModel(actual_model.parallel_library(), //view, vars_comps, set,
 		 actual_model.current_variables().shared_data(),
-		 actual_model.current_response().active_set()),
+		 actual_model.current_response().active_set(), output_level),
   daceIterator(dace_iterator), actualModel(actual_model), surrModelEvalCntr(0),
   pointsTotal(0), pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse)
 {
@@ -191,7 +191,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   // Interface::get_interface() does not need special logic for approximations.
   approxInterface.assign_rep(new ApproximationInterface(approx_type,
     approx_order, actualModel.current_variables(), cache,
-    actualModel.interface_id(), numFns, data_order), false);
+    actualModel.interface_id(), numFns, data_order, outputLevel), false);
 
   if (!daceIterator.is_null()) // global DACE approximations
     daceIterator.sub_iterator_flag(true);

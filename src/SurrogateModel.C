@@ -49,15 +49,14 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
 
 SurrogateModel::
 SurrogateModel(ParallelLibrary& parallel_lib, const SharedVariablesData& svd,
-	       const ActiveSet& set):
-  Model(NoDBBaseConstructor(), parallel_lib, svd, set),
+	       const ActiveSet& set, short output_level):
+  Model(NoDBBaseConstructor(), parallel_lib, svd, set, output_level),
   responseMode(AUTO_CORRECTED_SURROGATE), approxBuilds(0)
 {
   modelType = "surrogate";
 
   // set up surrogateFnIndices to use default (all fns are approximated)
-  int i;
-  for (i=0; i<numFns; i++)
+  for (int i=0; i<numFns; i++)
     surrogateFnIndices.insert(i);
 }
 

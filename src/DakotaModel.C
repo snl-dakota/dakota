@@ -179,13 +179,13 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
 
 Model::
 Model(NoDBBaseConstructor, ParallelLibrary& parallel_lib,
-      const SharedVariablesData& svd, const ActiveSet& set):
+      const SharedVariablesData& svd, const ActiveSet& set, short output_level):
   currentVariables(svd), numDerivVars(set.derivative_vector().size()),
   currentResponse(set), numFns(set.request_vector().size()),
   userDefinedConstraints(svd), supportsEstimDerivs(true),
   probDescDB(dummy_db), parallelLib(parallel_lib),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
-  componentParallelMode(0), asynchEvalFlag(false), outputLevel(NORMAL_OUTPUT),
+  componentParallelMode(0), asynchEvalFlag(false), outputLevel(output_level),
   modelId("NO_DB_MODEL"), modelEvalCntr(0), estDerivsFlag(false),
   evaluationCapacity(1), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)

@@ -118,8 +118,8 @@ ApproximationInterface(const String& approx_type,
 		       const UShortArray& approx_order,
 		       const Variables& am_vars, bool am_cache,
 		       const String& am_interface_id, size_t num_fns,
-		       short data_order):
-  Interface(NoDBBaseConstructor(), num_fns), //graph3DFlag(false),
+		       short data_order, short output_level):
+  Interface(NoDBBaseConstructor(), num_fns, output_level), //graph3DFlag(false),
   actualModelVars(am_vars.copy()), actualModelCache(am_cache),
   actualModelInterfaceId(am_interface_id)
 {

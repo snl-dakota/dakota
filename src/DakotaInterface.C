@@ -41,9 +41,9 @@ namespace Dakota {
 Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db): 
   interfaceType(problem_db.get_string("interface.type")),
   interfaceId(problem_db.get_string("interface.id")), algebraicMappings(false),
-  coreMappings(true), currEvalId(0), evalIdCntr(0), newEvalIdCntr(0),
-  evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
-  ieDedMasterFlag(false),
+  coreMappings(true), currEvalId(0), fineGrainEvalCounters(false),
+  evalIdCntr(0), newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0),
+  multiProcEvalFlag(false), ieDedMasterFlag(false),
   // See base constructor in DakotaIterator.C for full discussion of output
   // verbosity.  Interfaces support the full granularity in verbosity.
   outputLevel(problem_db.get_short("method.output")),
@@ -51,16 +51,12 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 {
 #ifdef DEBUG
   outputLevel = DEBUG_OUTPUT;
-  fineGrainEvalCounters = true;
-  fnLabels = problem_db.get_dsa("responses.labels");
-  init_evaluation_counters(fnLabels.size());
-#else
-  fineGrainEvalCounters = (outputLevel > NORMAL_OUTPUT);
-  if (fineGrainEvalCounters) { // detailed evaluation reporting
+#endif // DEBUG
+  if (outputLevel > NORMAL_OUTPUT) { // detailed evaluation reporting
+    fineGrainEvalCounters = true;
     fnLabels = problem_db.get_dsa("responses.labels");
     init_evaluation_counters(fnLabels.size());
   }
-#endif // DEBUG
 
   // set coreMappings flag based on presence of analysis_drivers specification
   if (problem_db.get_dsa("interface.application.analysis_drivers").empty())
@@ -148,18 +144,20 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 }
 
 
-Interface::Interface(NoDBBaseConstructor, size_t num_fns):
+Interface::Interface(NoDBBaseConstructor, size_t num_fns, short output_level):
   interfaceId("NO_DB_INTERFACE"), algebraicMappings(false), coreMappings(true),
-  fineGrainEvalCounters(false), currEvalId(0), evalIdCntr(0), newEvalIdCntr(0),
+  currEvalId(0), fineGrainEvalCounters(false), evalIdCntr(0), newEvalIdCntr(0),
   evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
-  ieDedMasterFlag(false), outputLevel(NORMAL_OUTPUT), interfaceRep(NULL),
+  ieDedMasterFlag(false), outputLevel(output_level), interfaceRep(NULL),
   referenceCount(1)
 {
 #ifdef DEBUG
   outputLevel = DEBUG_OUTPUT;
-  fineGrainEvalCounters = true;
-  init_evaluation_counters(num_fns);
 #endif // DEBUG
+  if (outputLevel > NORMAL_OUTPUT) {
+    fineGrainEvalCounters = true;
+    init_evaluation_counters(num_fns);
+  }
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Interface::Interface(NoDBBaseConstructor) called to build base "

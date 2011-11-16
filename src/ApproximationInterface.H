@@ -49,7 +49,7 @@ public:
 			 const UShortArray& approx_order,
 			 const Variables& am_vars, bool am_cache,
 			 const String& am_interface_id, size_t num_fns,
-			 short data_order);
+			 short data_order, short output_level);
   /// destructor
   ~ApproximationInterface();
 

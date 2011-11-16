@@ -256,7 +256,7 @@ protected:
 
   /// constructor initializes the base class part of letter classes
   /// (NoDBBaseConstructor used for on the fly instantiations without a DB)
-  Interface(NoDBBaseConstructor, size_t num_fns);
+  Interface(NoDBBaseConstructor, size_t num_fns, short output_level);
 
   //
   //- Heading: Convenience functions

@@ -747,7 +747,8 @@ protected:
   /// constructor initializing base class for derived model class instances
   /// constructed on the fly
   Model(NoDBBaseConstructor, ParallelLibrary& parallel_lib,
-	const SharedVariablesData& svd,	const ActiveSet& set);
+	const SharedVariablesData& svd,	const ActiveSet& set,
+	short output_level);
 
   /// constructor initializing base class for recast model class instances
   /// constructed on the fly

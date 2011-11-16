@@ -188,8 +188,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     //g_u_vars.view(), g_u_vars.variables_components(),
     //g_u_model.current_response().active_set(),
-    approx_type, exp_order, corr_type, corr_order, data_order, pt_reuse),
-    false);
+    approx_type, exp_order, corr_type, corr_order, data_order, pt_reuse,
+    outputLevel), false);
   initialize_u_space_model();
 
   // -------------------------------------
@@ -263,8 +263,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     "piecewise_orthogonal_polynomial" : "global_orthogonal_polynomial";
   UShortArray exp_order; // empty for numerical integration approaches
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    approx_type, exp_order, corr_type, corr_order, data_order, pt_reuse),
-    false);
+    approx_type, exp_order, corr_type, corr_order, data_order, pt_reuse,
+    outputLevel), false);
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion

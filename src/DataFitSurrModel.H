@@ -52,12 +52,13 @@ public:
   /// constructor
   DataFitSurrModel(ProblemDescDB& problem_db);
   /// alternate constructor for instantiations on the fly
-  DataFitSurrModel(Iterator& dace_iterator,   Model& actual_model,
+  DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		   //const std::pair<short,short>& view,
-		   //const Sizet2DArray& vars_comps,  const ActiveSet& set,
+		   //const Sizet2DArray& vars_comps, const ActiveSet& set,
 		   const String& approx_type, const UShortArray& approx_order,
 		   short corr_type, short corr_order, short data_order,
-		   const String& point_reuse);
+		   const String& point_reuse,
+		   short output_level = NORMAL_OUTPUT);
   /// destructor
   ~DataFitSurrModel();
 
