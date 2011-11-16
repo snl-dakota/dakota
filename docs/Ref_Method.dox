@@ -458,7 +458,7 @@ using scaling does not require rewriting the interface to the
 simulation code. The user may specify no, one, or a vector of scaling
 type strings through each of the \c scale_types (see \ref
 VarCommands); \c objective_function_scale_types, \c
-least_squares_term_scale_types, \c nonlinear_inequality_scale_types,
+calibration_term_scale_types, \c nonlinear_inequality_scale_types,
 \c nonlinear_equality_scale_types (see \ref RespFn); \c
 linear_inequality_scale_types, and \c linear_equality_scale_types (see
 \ref MethodIndControl below) specifications.  Valid options for types
@@ -473,7 +473,7 @@ to each component of the relevant vector, e.g., <tt>scale_types =
 continuous design variable. The user may specify no, one, or a vector
 of nonzero characteristic scale values through each of the \c
 scales (see \ref VarCommands); \c objective_function_scales, \c
-least_squares_term_scales, \c nonlinear_inequality_scales, \c
+calibration_term_scales, \c nonlinear_inequality_scales, \c
 nonlinear_equality_scales (see \ref RespFn); \c
 linear_inequality_scales, and \c linear_equality_scales (see \ref
 MethodIndControl below) specifications.  These values are ignored for
@@ -516,7 +516,7 @@ inequalities where necessary;
        scaling for this component 
   </ul> 
 
-Automatic scaling is not available for objective functions nor least squares
+Automatic scaling is not available for objective functions nor calibration 
 terms since they lack bound constraints.  Futher, when automatically
 scaled, linear constraints are scaled by characteristic values only, not
 affinely scaled into [0,1].  
@@ -3302,8 +3302,9 @@ Gauss-Newton, which supplies the Gauss-Newton Hessian approximation to
 the full-Newton optimizers from OPT++.
 
 The important difference of these algorithms from general-purpose
-optimization methods is that the response set is defined by least
-squares terms, rather than an objective function.  Thus, a finer
+optimization methods is that the response set is defined by calibration 
+terms (e.g. separate terms for each residual), 
+rather than an objective function.  Thus, a finer
 granularity of data is used by least squares solvers as compared to
 that used by optimizers.  This allows the exploitation of the special
 structure provided by a sum of squares objective function. Refer to
@@ -3694,7 +3695,7 @@ formulations exist as described in
 Advanced Examples section of the Models chapter of the Users Manual 
 [\ref UsersMan "Adams et al., 2010"].
 First, the "primary" functions (that is, the objective functions or
-least squares terms) in the approximate subproblem can be selected to
+calibration terms) in the approximate subproblem can be selected to
 be surrogates of the original primary functions (\c original_primary),
 a single objective function (\c single_objective) formed from the
 primary function surrogates, or either an augmented Lagrangian merit

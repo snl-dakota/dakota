@@ -5,8 +5,8 @@
 The \texttt{responses} specification in a DAKOTA input file controls
 the types of data that can be returned from an interface during
 DAKOTA's execution. The specification includes the number and type of
-response functions (objective functions, nonlinear constraints, least
-squares terms, etc.) as well as availability of first and second
+response functions (objective functions, nonlinear constraints, calibration 
+terms, etc.) as well as availability of first and second
 derivatives (gradient vectors and Hessian matrices) for these response
 functions.
 
@@ -32,8 +32,8 @@ iterative technique called for in the method specification:
   appropriate for use with optimization methods (e.g., the methods in
   Section~\ref{capabilities:optimization1}).
   
-\item a least squares data set comprised of 
-  \texttt{num\_least\_squares\_terms},\\
+\item a calibration data set comprised of 
+  \texttt{calibration\_terms},\\
   \texttt{num\_nonlinear\_inequality\_constraints}, and
   \texttt{num\_nonlinear\_equality\_constraints}.  This data set is
   appropriate for use with nonlinear least squares algorithms
@@ -118,7 +118,7 @@ for this data input/output. For the results file, only one format is
 supported (versus the two parameter-file formats described in
 Section~\ref{variables:parameters}). Ordering of response functions is
 as listed in Section~\ref{responses:overview:types} (e.g., objective
-functions or least squares terms are first, followed by nonlinear
+functions or calibration terms are first, followed by nonlinear
 inequality constraints, followed by nonlinear equality constraints).
 
 After a simulation, DAKOTA expects to read a file
@@ -210,7 +210,7 @@ derivatives are most commonly computed (see also
 Section~\ref{variables:mixed}).  Derivatives are never needed with
 respect to any discrete variables (since these derivatives do not in
 general exist) and the active continuous variables depend on the type
-of study being performed. For optimization and least-squares problems,
+of study being performed. For optimization and calibration problems,
 the active continuous variables are the \emph{continuous design
   variables} ($n_{dvv}=n_{cdv}$), since they are the variables the
 minimizer manipulates.  Similarly, for uncertainty quantification
@@ -271,7 +271,7 @@ are needed.
 
 In all cases, if the DVV is honored, then the correct derivative
 components are returned.  In simple cases, such as optimization and
-least squares studies that only specify design variables and for
+calibration studies that only specify design variables and for
 nondeterministic analyses that only specify uncertain variables,
 derivative component subsets are not an issue and the exact content of
 the DVV may be safely ignored.
