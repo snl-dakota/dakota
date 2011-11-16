@@ -31,6 +31,8 @@
 // on by default from consensus among Collis/Drake/Keiter/Salinger
 #define COMM_SPLIT_TO_SINGLE
 
+//#define MPI_DEBUG
+
 static const char rcsId[]="@(#) $Id: ParallelLibrary.C 7013 2010-10-08 01:03:38Z wjbohnh $";
 
 
@@ -45,7 +47,7 @@ extern ParallelLibrary *Dak_pl;
 /** This constructor is used for creation of the global dummy_lib
     object, which is used to satisfy initialization requirements when
     the real ParallelLibrary object is not available. */
-  ParallelLibrary::ParallelLibrary(const std::string& dummy): 
+ParallelLibrary::ParallelLibrary(const std::string& dummy): 
   dummyFlag(true), checkFlag(false),
   preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false)
 { }
@@ -385,7 +387,12 @@ init_communicators(const ParallelLevel& parent_pl, const int& num_servers,
     split_communicator_dedicated_master(parent_pl, child_pl, proc_remainder) :
     split_communicator_peer_partition(parent_pl,   child_pl, proc_remainder);
 
+  // update number of parallelism levels
+#ifdef COMM_SPLIT_TO_SINGLE
+  if (child_pl.commSplitFlag && (child_pl.procsPerServer > 1 || proc_remainder))
+#else
   if (child_pl.commSplitFlag)
+#endif
     ++currPCIter->numParallelLevels;
 
   parallelLevels.push_back(child_pl);
@@ -417,9 +424,19 @@ init_communicators(const ParallelLevel& parent_pl, const int& num_servers,
 bool ParallelLibrary::
 resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs, 
                int& proc_remainder, const int& max_concurrency, 
-               const int& capacity_multiplier, const std::string& default_config,
+               const int& capacity_multiplier,
+	       const std::string& default_config,
                const std::string& scheduling_override, bool print_rank)
 {
+#ifdef MPI_DEBUG
+  Cout << "ParallelLibrary::resolve_inputs() called with num_servers = "
+       << num_servers << " procs_per_server = " << procs_per_server
+       << " avail_procs = " << avail_procs << " max_concurrency = "
+       << max_concurrency << " capacity_multiplier = " << capacity_multiplier
+       << " default_config = " << default_config << " scheduling_override = "
+       << scheduling_override << std::endl;
+#endif
+
   const bool self_scheduling_override
     = (scheduling_override == "self")   ? true : false;
   const bool static_scheduling_override
@@ -755,7 +772,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
     Cout << "Slave: size = " << size <<" inter_comm remote_size = " 
          << remote_size << '\n';
   }
-  Cout << flush;
+  Cout << std::flush;
 #endif // MPI_DEBUG
 
   // Create parent-child intracommunicator used to avoid broadcasting over all
@@ -873,7 +890,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
 #ifdef MPI_DEBUG
   Cout << "worldRank = " << worldRank << " child comm rank = " 
        << child_pl.serverCommRank << " child comm size = "
-       <<  child_pl.serverCommSize << '\n';
+       << child_pl.serverCommSize << '\n';
   int size, remote_size;
   if (child_pl.serverId == 1) { // first peer
     for (int i=0; i<child_pl.numServers-1; ++i) {
@@ -889,7 +906,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
     Cout << "Peer " << child_pl.serverId << ": size = " << size 
          <<" inter_comm remote_size = " << remote_size << '\n';
   }
-  Cout << flush;
+  Cout << std::flush;
 #endif // MPI_DEBUG
 
   // Create parent-child intracommunicator used to avoid broadcasting over all
