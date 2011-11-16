@@ -80,6 +80,7 @@ public:
   bool message_pass() const;                   ///< return messagePass
   const int& num_servers() const;              ///< return numServers
   const int& processors_per_server() const;    ///< return procsPerServer
+  const int& processor_remainder() const;      ///< return procRemainder
   const MPI_Comm& server_intra_communicator() const; ///< return serverIntraComm
   const int& server_communicator_rank() const; ///< return serverCommRank
   const int& server_communicator_size() const; ///< return serverCommSize
@@ -112,6 +113,7 @@ private:
   bool messagePass;              ///< flag for message passing at this level
   int numServers;                ///< number of servers
   int procsPerServer;            ///< processors per server
+  int procRemainder;             ///< proc remainder after equal distribution
   MPI_Comm serverIntraComm;      ///< intracomm. for each server partition
   int serverCommRank;            ///< rank in serverIntraComm
   int serverCommSize;            ///< size of serverIntraComm
@@ -128,10 +130,10 @@ private:
 
 inline ParallelLevel::ParallelLevel(): dedicatedMasterFlag(false),
   commSplitFlag(false), serverMasterFlag(false), messagePass(false),
-  numServers(0), procsPerServer(0), serverIntraComm(MPI_COMM_NULL),
-  serverCommRank(0), serverCommSize(1), hubServerIntraComm(MPI_COMM_NULL),
-  hubServerCommRank(0), hubServerCommSize(1), hubServerInterComm(MPI_COMM_NULL),
-  hubServerInterComms(NULL), serverId(0)
+  numServers(0), procsPerServer(0), procRemainder(0),
+  serverIntraComm(MPI_COMM_NULL), serverCommRank(0), serverCommSize(1),
+  hubServerIntraComm(MPI_COMM_NULL), hubServerCommRank(0), hubServerCommSize(1),
+  hubServerInterComm(MPI_COMM_NULL), hubServerInterComms(NULL), serverId(0)
 { }
 
 inline ParallelLevel::~ParallelLevel()
@@ -140,10 +142,11 @@ inline ParallelLevel::~ParallelLevel()
 inline void ParallelLevel::assign(const ParallelLevel& pl)
 {
   dedicatedMasterFlag = pl.dedicatedMasterFlag;
-  commSplitFlag  = pl.commSplitFlag;  serverMasterFlag = pl.serverMasterFlag;
-  messagePass    = pl.messagePass;    numServers = pl.numServers;
-  procsPerServer = pl.procsPerServer; serverIntraComm  = pl.serverIntraComm;
-  serverCommRank = pl.serverCommRank; serverCommSize = pl.serverCommSize;
+  commSplitFlag   = pl.commSplitFlag;   serverMasterFlag = pl.serverMasterFlag;
+  messagePass     = pl.messagePass;     numServers       = pl.numServers;
+  procsPerServer  = pl.procsPerServer;  procRemainder    = pl.procRemainder;
+  serverIntraComm = pl.serverIntraComm; serverCommRank   = pl.serverCommRank;
+  serverCommSize  = pl.serverCommSize;
   hubServerIntraComm  = pl.hubServerIntraComm;
   hubServerCommRank   = pl.hubServerCommRank;
   hubServerCommSize   = pl.hubServerCommSize; 
@@ -174,6 +177,9 @@ inline const int& ParallelLevel::num_servers() const
 
 inline const int& ParallelLevel::processors_per_server() const
 { return procsPerServer; }
+
+inline const int& ParallelLevel::processor_remainder() const
+{ return procRemainder; }
 
 inline const MPI_Comm& ParallelLevel::server_intra_communicator() const
 { return serverIntraComm; }
@@ -593,12 +599,12 @@ private:
   /// split a parent communicator into a dedicated master processor
   /// and num_servers child communicators
   bool split_communicator_dedicated_master(const ParallelLevel& parent_pl,
-    ParallelLevel& child_pl, const int& proc_remainder);
+    ParallelLevel& child_pl);
 
   /// split a parent communicator into num_servers peer child
   /// communicators (no dedicated master processor)
   bool split_communicator_peer_partition(const ParallelLevel& parent_pl,
-    ParallelLevel& child_pl, const int& proc_remainder);
+    ParallelLevel& child_pl);
 
   /// resolve user inputs into a sensible partitioning scheme
   bool resolve_inputs(int& num_servers, int& procs_per_server,

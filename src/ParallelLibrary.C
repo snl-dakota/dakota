@@ -365,7 +365,6 @@ init_communicators(const ParallelLevel& parent_pl, const int& num_servers,
   child_pl.numServers     = num_servers;      // request/default to be updated
   child_pl.procsPerServer = procs_per_server; // request/default to be updated
 
-  int proc_remainder      = 0;                // default to be updated
   int capacity_multiplier = (asynch_local_concurrency > 1) ?
                              asynch_local_concurrency : 1;
   bool print_rank         = (parent_pl.serverCommRank == 0);
@@ -379,17 +378,18 @@ init_communicators(const ParallelLevel& parent_pl, const int& num_servers,
   // scheduling is supported by using settings which auto-config to a static 
   // schedule & then using the resulting peer partition for distr. scheduling.
   child_pl.dedicatedMasterFlag = resolve_inputs(child_pl.numServers,
-    child_pl.procsPerServer, parent_pl.serverCommSize, proc_remainder,
+    child_pl.procsPerServer, parent_pl.serverCommSize, child_pl.procRemainder,
     max_concurrency, capacity_multiplier, default_config, scheduling_override,
     print_rank);
 
   child_pl.commSplitFlag = (child_pl.dedicatedMasterFlag) ?
-    split_communicator_dedicated_master(parent_pl, child_pl, proc_remainder) :
-    split_communicator_peer_partition(parent_pl,   child_pl, proc_remainder);
+    split_communicator_dedicated_master(parent_pl, child_pl) :
+    split_communicator_peer_partition(parent_pl,   child_pl);
 
   // update number of parallelism levels
 #ifdef COMM_SPLIT_TO_SINGLE
-  if (child_pl.commSplitFlag && (child_pl.procsPerServer > 1 || proc_remainder))
+  if ( child_pl.commSplitFlag &&
+       ( child_pl.procsPerServer > 1 || child_pl.procRemainder ) )
 #else
   if (child_pl.commSplitFlag)
 #endif
@@ -428,6 +428,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
 	       const std::string& default_config,
                const std::string& scheduling_override, bool print_rank)
 {
+/*
 #ifdef MPI_DEBUG
   Cout << "ParallelLibrary::resolve_inputs() called with num_servers = "
        << num_servers << " procs_per_server = " << procs_per_server
@@ -436,12 +437,13 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
        << " default_config = " << default_config << " scheduling_override = "
        << scheduling_override << std::endl;
 #endif
-
+*/
   const bool self_scheduling_override
     = (scheduling_override == "self")   ? true : false;
   const bool static_scheduling_override
     = (scheduling_override == "static") ? true : false;
 
+  bool ded_master;
   if (avail_procs <= 1) {
     // ------------------------
     // insufficient avail_procs
@@ -455,7 +457,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
            << num_servers << " servers.\n         Reducing to 1.\n";
     procs_per_server = 1;
     num_servers = 1;
-    return false; // static schedule
+    ded_master = false; // static schedule
   }
   else if (num_servers > 0) { // needs to be 0 so that a user request of 1 
                               // executes this block as a manual override
@@ -508,15 +510,15 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
     if (self_scheduling_override || (!static_scheduling_override &&
         num_servers > 1 && max_concurrency > num_servers*capacity_multiplier)) {
       // dynamic sched. -> self or distributed (self only for now)
-      procs_per_server = (avail_procs-1)/num_servers;
-      proc_remainder = (avail_procs-1) % num_servers;    
-      return true;
+      procs_per_server = (avail_procs-1) / num_servers;
+      proc_remainder   = (avail_procs-1) % num_servers;
+      ded_master = true;
     }
     else { // static sched.
       // num_servers*capacity_multiplier must equal max_concurrency
-      procs_per_server = avail_procs/num_servers;
-      proc_remainder = avail_procs % num_servers;
-      return false;
+      procs_per_server = avail_procs / num_servers;
+      proc_remainder   = avail_procs % num_servers;
+      ded_master = false;
     }
   }
   else if (procs_per_server > 0) { // needs to be 0 so that a user request of 1
@@ -549,9 +551,9 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
 	       << ").\n         reducing servers to " << max_servers << ".\n";
         num_servers = max_servers;
       }
-      procs_per_server = avail_procs/num_servers;
+      procs_per_server = avail_procs / num_servers;
       proc_remainder   = avail_procs % num_servers;
-      return false;
+      ded_master = false;
     }
     else { // dynamic scheduling -> self or distr. (self only for now)
       num_servers = (avail_procs-1)/procs_per_server; // update config
@@ -569,11 +571,11 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
         // reducing procs by 1 dropped num_servers back to 1
         procs_per_server = avail_procs;
         num_servers = 1;
-        return false;
+        ded_master = false;
       }
       else {
         proc_remainder = (avail_procs-1) % procs_per_server;
-        return true;
+        ded_master = true;
       }
     }
 
@@ -620,7 +622,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
 	     << "nor procs_per_server is specified.\n";
       procs_per_server = avail_procs;
       num_servers = 1;
-      return false; // tau_i = 1 -> static scheduling
+      ded_master = false; // tau_i = 1 -> static scheduling
     }
     else { // concurrency pushed up
       if ( self_scheduling_override ||
@@ -634,7 +636,7 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
           num_servers = max_servers;
         procs_per_server = (avail_procs-1) / num_servers;
         proc_remainder   = (avail_procs-1) % num_servers;    
-        return true;
+        ded_master = true;
       }
       else { // static scheduling
         if (max_concurrency <= 1) { // default max_concurrency can be 0 in 
@@ -651,18 +653,25 @@ resolve_inputs(int& num_servers, int& procs_per_server, const int& avail_procs,
           procs_per_server = avail_procs / num_servers;
 	  proc_remainder   = avail_procs % num_servers;
 	}
-        return false; // tau_i = n_ij_max -> static scheduling
+        ded_master = false; // tau_i = n_ij_max -> static scheduling
       }
     }
   }
+/*
+#ifdef MPI_DEBUG
+  Cout << "ParallelLibrary::resolve_inputs() returns num_servers = "
+       << num_servers << " procs_per_server = " << procs_per_server
+       << " proc_remainder = " << proc_remainder << " dedicated master = "
+       << ded_master << std::endl;
+#endif
+*/
+  return ded_master;
 }
 
 
 bool ParallelLibrary::
 split_communicator_dedicated_master(const ParallelLevel& parent_pl,
-				    ParallelLevel& child_pl,
-				    const int& proc_remainder)
-// Values to be returned are passed by & and by *& so they may be updated
+				    ParallelLevel& child_pl)
 {
   // ----------------------------------------------------------------
   // Check to see if resulting partition sizes require comm splitting
@@ -685,7 +694,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
   // In some direct interfacing cases, the simulation requires its own comm
   // even if the comm is single processor.  In this case, the code block below
   // is bypassed and the additional comm split overhead is incurred.
-  if (child_pl.procsPerServer == 1 && !proc_remainder) { // single-proc servers
+  if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {//1-proc servers
     child_pl.serverMasterFlag = (parent_pl.serverCommRank) ? true : false;
     child_pl.serverId = parent_pl.serverCommRank;// 0 = master, 1/2/... = slaves
     child_pl.serverIntraComm = MPI_COMM_NULL; // prevent further subdivision
@@ -703,11 +712,11 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
 
   IntArray start(child_pl.numServers);
   int color = 0; // reassigned unless master proc.
-  // addtl_procs manages case where proc_remainder > num_servers that can occur
-  // for large procs_per_analysis --> ensures that proc_rem_cntr < num_servers
+  // addtl_procs manages case where procRemainder > numServers that can occur
+  // for large procsPerServer --> ensures that proc_rem_cntr < numServers
   int i, color_cntr = 1, end = 0,
-    addtl_procs   = proc_remainder / child_pl.numServers, // truncated
-    proc_rem_cntr = proc_remainder - addtl_procs*child_pl.numServers;
+    addtl_procs   = child_pl.procRemainder / child_pl.numServers, // truncated
+    proc_rem_cntr = child_pl.procRemainder - addtl_procs*child_pl.numServers;
   for (i=0; i<child_pl.numServers; ++i) {
     start[i] = end + 1;
     end = start[i] + child_pl.procsPerServer + addtl_procs - 1;
@@ -794,8 +803,7 @@ split_communicator_dedicated_master(const ParallelLevel& parent_pl,
 
 bool ParallelLibrary::
 split_communicator_peer_partition(const ParallelLevel& parent_pl, 
-				  ParallelLevel& child_pl,
-				  const int& proc_remainder)
+				  ParallelLevel& child_pl)
 {
   // ----------------------------------------------------------------
   // Check to see if resulting partition sizes require comm splitting
@@ -822,7 +830,7 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
   // In some direct interfacing cases, the simulation requires its own comm
   // even if the comm is single processor.  In this case, the code block below
   // is bypassed and the additional comm split overhead is incurred.
-  if (child_pl.procsPerServer == 1 && !proc_remainder) { // single-proc. peers
+  if (child_pl.procsPerServer == 1 && !child_pl.procRemainder) {// 1-proc. peers
     child_pl.serverMasterFlag = true; // each child is single proc. & a master
     child_pl.serverId = parent_pl.serverCommRank+1; // peer id's = 1/2/3/.../n
     child_pl.serverIntraComm = MPI_COMM_NULL; // prevent further subdivision
@@ -840,11 +848,11 @@ split_communicator_peer_partition(const ParallelLevel& parent_pl,
 
   IntArray start(child_pl.numServers);
   int color = 0; // reassigned for all procs. in peer case
-  // addtl_procs manages case where proc_remainder > num_servers that can occur
-  // for large procs_per_analysis --> ensures that proc_rem_cntr < num_servers
+  // addtl_procs manages case where procRemainder > numServers that can occur
+  // for large procsPerServer --> ensures that proc_rem_cntr < numServers
   int i, color_cntr = 1, end = -1,
-    addtl_procs   = proc_remainder / child_pl.numServers, // truncated
-    proc_rem_cntr = proc_remainder - addtl_procs*child_pl.numServers;
+    addtl_procs   = child_pl.procRemainder / child_pl.numServers, // truncated
+    proc_rem_cntr = child_pl.procRemainder - addtl_procs*child_pl.numServers;
   for (i=0; i<child_pl.numServers; ++i) {
     start[i] = end + 1;
     end = start[i] + child_pl.procsPerServer + addtl_procs - 1;
