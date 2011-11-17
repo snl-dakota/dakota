@@ -1217,7 +1217,7 @@ static GuiKeyWord
 		{"minimum_points",8,0,2,0,1239},
 		{"moving_least_squares",8,2,1,1,1205,kw_169,0.,0.,0.,0,"{Moving least squares} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
 		{"neural_network",8,3,1,1,1211,kw_170,0.,0.,0.,0,"{Artificial neural network} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
-		{"points_file",11,2,5,0,1253,kw_171},
+		{"points_file",11,2,5,0,1253,kw_171,0.,0.,0.,0,"{File import of samples for global approximation builds} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
 		{"polynomial",8,3,1,1,1229,kw_172,0.,0.,0.,0,"{Polynomial} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"},
 		{"radial_basis",8,4,1,1,1219,kw_173},
 		{"recommended_points",8,0,2,0,1241},

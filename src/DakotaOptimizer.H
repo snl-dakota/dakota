@@ -30,7 +30,7 @@ class Optimizer: public Minimizer
 {
 public:
 
-  // Static helper function third-party, opt packages which are not available
+  /// Static helper function: third-party opt packages which are not available
   static void not_available(const std::string& package_name);
 
 protected:

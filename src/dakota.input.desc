@@ -1231,6 +1231,8 @@ TAG "model/surrogate/global/reuse_points/all"
 TAG "model/surrogate/global/reuse_points/region"
 TAG "model/surrogate/global/reuse_points/none"
 TAG "model/surrogate/global/points_file"
+	DESC "{File import of samples for global approximation builds} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
+
 TAG "model/surrogate/global/points_file/annotated"
 	DESC "{Data file in annotated format} http://dakota.sandia.gov/licensing/votd/html-ref/ModelCommands.html#ModelSurrG"
 

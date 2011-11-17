@@ -118,7 +118,7 @@ namespace Dakota {
     <li> <a href="MethodCommands.html#MethodNonDLocalEvid">Local Evidence theory (Dempster-Shafer) methods</a>
     <li> <a href="MethodCommands.html#MethodNonDGlobalEvid">Global Evidence theory (Dempster-Shafer) methods</a>
     </ul>
-  <li> <a href="MethodCommands.html#MethodNonDCalibration">Bayesian Calibration Methods</a>
+  <li> <a href="MethodCommands.html#MethodNonDBayesCalib">Bayesian Calibration Methods</a>
   </ul>
 <li> <a href="MethodCommands.html#MethodSoln">Solution Verification Methods</a>
   <ul>
@@ -6242,7 +6242,7 @@ Specification detail for global evidence theory method for epistemic uncertainty
 <td>10,000 for LHS, approximately numVars^2 for EGO
 </table>
 
-\subsection MethodNonDCalibration Bayesian Calibration Methods
+\subsection MethodNonDBayesCalib Bayesian Calibration Methods
 Currently, we are in the process of incorporating Bayesian calibration 
 methods in DAKOTA.  These methods take prior information on parameter 
 values (in the form of prior distributions) and observational data 

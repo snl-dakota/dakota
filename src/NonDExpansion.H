@@ -134,7 +134,7 @@ protected:
   /// expansion in order to estimate probabilities
   int numSamplesOnExpansion;
 
-  /// flag for indicating state of \c nested and \non_nested overrides of
+  /// flag for indicating state of \c nested and \c non_nested overrides of
   /// default rule nesting, which depends on the type of integration driver
   bool nestedRules;
 

@@ -724,17 +724,17 @@ public:
   /// the \c all_variables specification in \ref MethodNonDMC
   bool allVarsFlag;
   /// the number of samples to construct a GP emulator for Bayesian 
-  /// calibration methods (\ref MethodNonDBayes)
+  /// calibration methods (\ref MethodNonDBayesCalib)
   int emulatorSamples;
-  /// the \c emulator specification in \ref MethodNonDBayes
+  /// the \c emulator specification in \ref MethodNonDBayesCalib
   short emulatorType;
-  /// the \c rejection type specification in \ref MethodNonDBayes
+  /// the \c rejection type specification in \ref MethodNonDBayesCalib
   String rejectionType;
-  /// the \c metropolis type specification in \ref MethodNonDBayes
+  /// the \c metropolis type specification in \ref MethodNonDBayesCalib
   String metropolisType;
-  /// the \c proposal covariance scale factor in \ref MethodNonDBayes
+  /// the \c proposal covariance scale factor in \ref MethodNonDBayesCalib
   Real proposalCovScale;
-  /// the \c likelihood scale factor in \ref MethodNonDBayes
+  /// the \c likelihood scale factor in \ref MethodNonDBayesCalib
   Real likelihoodScale;
 
   // Parameter Study
