@@ -118,6 +118,7 @@ namespace Dakota {
     <li> <a href="MethodCommands.html#MethodNonDLocalEvid">Local Evidence theory (Dempster-Shafer) methods</a>
     <li> <a href="MethodCommands.html#MethodNonDGlobalEvid">Global Evidence theory (Dempster-Shafer) methods</a>
     </ul>
+  <li> <a href="MethodCommands.html#MethodNonDCalibration">Bayesian Calibration Methods</a>
   </ul>
 <li> <a href="MethodCommands.html#MethodSoln">Solution Verification Methods</a>
   <ul>
@@ -6241,7 +6242,39 @@ Specification detail for global evidence theory method for epistemic uncertainty
 <td>10,000 for LHS, approximately numVars^2 for EGO
 </table>
 
+\subsection MethodNonDCalibration Bayesian Calibration Methods
+Currently, we are in the process of incorporating Bayesian calibration 
+methods in DAKOTA.  These methods take prior information on parameter 
+values (in the form of prior distributions) and observational data 
+(e.g. from experiments) and produce posterior distributions on the 
+parameter values.  When the computational simulation is then executed
+with samples from the posterior parameter distributions, the 
+results that are produced are consistent with ("agree with") the 
+experimental data.  In the case of calibrating parameters from a 
+computational simulation model, we require a "likelihood function" that 
+specifies the likelihood of observing a particular observation given 
+the model and its associated parameterization.  We assume a Gaussian 
+likelihood function currently.  The algorithms that produce 
+the posterior distributions on model parameters are Monte Carlo Markov 
+Chain (MCMC) sampling algorithms.  MCMC methods require many samples, often 
+tens of thousands, so in the case of model calibration, often emulators 
+of the computational simulation are used.   
 
+We have two Bayesian calibration methods under development 
+in DAKOTA.  GPMSA (Gaussian Process Models for Simulation Analysis) is 
+a code that has been developed at Los Alamos National Laboratory. 
+It uses a Gaussian process model as the emulator for the expensive 
+computational simulation.  GPMSA also has extensive features for 
+calibration, such as the capability to include a "model discrepancy" term
+and the capability to model functional data such as time series data. 
+The other method is using components from the QUESO library 
+(Quantification of Uncertainty for Estimation, Simulation, and 
+Optimization) developed at the University of Texas. 
+We are using a DRAM (Delayed Rejected Adaptive Metropolis) algorithm 
+for the MCMC sampling from the QUESO library. 
+
+These methods are under active development and are not included 
+in the current DAKOTA release.
 
 \section MethodSoln Solution Verification Methods
 
