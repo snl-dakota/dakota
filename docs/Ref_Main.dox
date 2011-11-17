@@ -37,8 +37,8 @@ aleatory-epistemic uncertainty quantification, or optimization under
 uncertainty. By employing object-oriented design to implement
 abstractions of the key components required for iterative systems
 analyses, the DAKOTA toolkit provides a flexible problem-solving
-environment as well as a platform for rapid prototyping of new
-solution approaches.
+environment for design and performance analysis of computational
+models on high performance computers.
 
 The Reference Manual focuses on documentation of the various input
 commands for DAKOTA.  It follows closely the structure of

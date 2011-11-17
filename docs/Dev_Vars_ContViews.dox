@@ -5,8 +5,10 @@ namespace Dakota {
 \htmlonly
 <b>Working with Variable Containers and Views Table of Contents</b>
 <ul>
-<li> <a href="VarContainersViews.html#VarStorage">Storage in Variables and SharedVariablesData</a> 
+<li> <a href="VarContainersViews.html#VarStorage">Storage in Variables</a> 
+<li> <a href="VarContainersViews.html#SharedVarStorage">Storage in SharedVariablesData</a>
 <li> <a href="VarContainersViews.html#VarActiveInactive">Active and inactive views</a> 
+
 </ul>
 \endhtmlonly
 
@@ -22,36 +24,43 @@ variables are active.  Selected uncertainty quantification methods can
 also be toggled into an "All" view using the \c all_variables input
 specification.  In a more advanced NestedModel use case such as
 optimization under uncertainty, design variables are active in the
-outer optimization context, but the uncertain variables are active in
-the nested UQ algorithm, but there might be "inactive" variables in
-the UQ context that the outer optimization loop wants derivatives with
-respect to..
+outer optimization context and the uncertain variables are active in
+the inner UQ context, with an additional requirement on the inner UQ
+level to return derivatives with respect to its "inactive" variables
+(i.e., the design variables) for use in the outer optimization loop.
 
 For efficiency, contiguous arrays of data store variable information,
 but active and inactive views into them permit selecting subsets in a
 given context.  This management is encapsulated into the Variables and
 SharedVariablesData classes.  This page clarifies concepts of merged
 vs. mixed, fine-grained vs. aggregated types, domain types, and views
-into contiguous arrays.  We begin with an overview of the storage and
-management concept and proceed to a discussion of views.
+into contiguous arrays.
 
-\section VarStorage Storage in Variables and SharedVariablesData
+We begin with an overview of the storage and management concept, for
+which the following two sections describe the storage of variable
+values and meta-data about their organization, used in part to manage
+views.  They are intended to communicate rationale to maintainers of
+Variables and SharedVariablesData classes.  The final section provides
+a discussion of active and inactive views.
 
-This section describes the storage of variable values and meta-data
-about their organization, used in part to manage views.  It is
-intended to communicate rationale to maintainers of Variables and
-SharedVariablesData.
+
+\section VarStorage Storage in Variables
+
+As described in the \ref DevVariables "Main Page Variables", a
+Variables object manages variable types (design, aleatory uncertain,
+epistemic uncertain, and state) and domain types (continuous, discrete
+integer, and discrete real) and supports different approaches to
+either distinguishing among these types or aggregating them.  Two
+techniques are used in cooperation to accomplish this management: (1)
+class specialization (MergedVariables or MixedVariables) and (2) views
+into contiguous variable arrays.
 
 The core data for a Variables instance is stored in a set of three
-continguous arrays, corresponding to the domain types: 
-\ref Dakota::Variables::allContinuousVars "allContinuousVars", 
-\ref Dakota::Variables::allDiscreteIntVars "allDiscreteIntVars", and
-\ref Dakota::Variables::allDiscreteRealVars "allDiscreteRealVars", unique
-to each Variables instance, together with a SharedVariablesData
-reference-counted object which stores information on the variables
-configuration and may be shared among Variables instances.  The shared
-data also include labels, which are often the same across many
-Variables instances.
+continguous arrays, corresponding to the domain types: \ref
+Dakota::Variables::allContinuousVars "allContinuousVars", \ref
+Dakota::Variables::allDiscreteIntVars "allDiscreteIntVars", and \ref
+Dakota::Variables::allDiscreteRealVars "allDiscreteRealVars", unique
+to each Variables instance.
 
 Within the core variable data arrays, data corresponding to different
 aggregated variable types are stored in sequence for each domain type:
@@ -60,18 +69,36 @@ aggregated variable types are stored in sequence for each domain type:
   <li> discrete integer: [design, aleatory uncertain, (epistemic uncertain), state]</li>
   <li> discrete real: [design, aleatory uncertain, (epistemic uncertain), state]</li>
 </ul>
-Note there are currently no epistemic discrete integer or real
-variables.  This domain type ordering (continuous, discrete integer,
-discrete real) and aggregated variable type ordering (design, aleatory
-uncertain, epistemic uncertain, state) is preserved whenever distinct
-types are flattened into single contiguous arrays.
+Note there are currently no epistemic discrete variables.  This domain
+type ordering (continuous, discrete integer, discrete real) and
+aggregated variable type ordering (design, aleatory uncertain,
+epistemic uncertain, state) is preserved whenever distinct types are
+flattened into single contiguous arrays.
 
-In addition to storing common data, the SharedVariablesData class
-maintains mappings between variable types, IDs, and indices into the
-storage arrays.  Variable "types" refer to the fine-grained variable
-types a user would specify in an input file, as enumerated in
-DataVariables.H, e.g, CONTINUOUS_DESIGN, WEIBULL_UNCERTAIN, or
-DISCRETE_STATE_RANGE.  \ref
+As noted in the \ref DevVariables "Main Page Variables" description, a
+MergedVariables object combines continuous and discrete types
+(relaxing integers to reals) whereas a MixedVariables object maintains
+the integer/real distinction throughout.  When relaxing, the
+allContinuous variable and labels arrays will also aggregate the
+discrete types, such that they contain ALL design, then ALL uncertain,
+then ALL state variables, each in aggregated type order.
+
+
+\section SharedVarStorage Storage in SharedVariablesData
+
+Each Variables instance contains a reference-counted
+SharedVariablesData object that stores information on the variables
+configuration.  This configuration data includes counts, types, IDs,
+and labels, which are often the same across many Variables instances.
+Thus, SharedVariablesData is intended to reduce the memory footprint
+by allowing the sharing of a single copy of redundant information
+among different Variables instances.  
+
+One of the purposes of this shared information is to support mappings
+between variable types, IDs, and indices into the storage arrays.
+Variable "types" refer to the fine-grained variable types a user would
+specify in an input file, as enumerated in DataVariables.H, e.g,
+CONTINUOUS_DESIGN, WEIBULL_UNCERTAIN, or DISCRETE_STATE_RANGE.  \ref
 Dakota::SharedVariablesDataRep::variablesComponents
 "variablesComponents" is a map from these variable types to counts of
 how many are present.
@@ -110,43 +137,46 @@ the continuous array.
 
 \section VarActiveInactive Active and inactive views
 
-As noted in the main page, a MergedVariables object combines
-continuous and discrete types (relaxing integers to reals) whereas a
-MixedVariables object maintains the integer/real distinction
-throughout.  When relaxing, the continuous variable and labels arrays
-potentially contain ALL design, then ALL uncertain, then ALL state
-variables, each in aggregated type order.
-
 The pair 
 \ref Dakota::SharedVariablesDataRep::variablesView "SharedVariablesDataRep::variablesView"
 tracks the active and inactive views of the data, with values taken
-from the enum in DataVariables.H The valid values include EMPTY and
+from the enum in DataVariables.H.  The valid values include EMPTY and
 the combinations {merged, mixed} x {all, design, aleatory uncertain,
-epistemic uncertain, all uncertain, state}.  TODO: Document what
-DISTINCT means in the enum.  The active and inactive views are
-determined by the algorithm in use, managed in 
-\ref Variables::get_view "Variables::get_view()".  
-Any inactive view is set based on higher level iteration within a
-model recursion (e.g., a NestedModel), which enables lower level
-iteration to return derivatives with respect to variables that are
-active at the higher level.
-
-TODO: Discuss difference between active, inactive, and active
-complement in nested contexts.
+epistemic uncertain, all uncertain, state}.  The ALL cases indicate
+aggregation of the design, aleatory uncertain, epistemic uncertain,
+and state types, whereas the DISTINCT cases indicate either no
+aggregation (design, aleatory uncertain, epistemic uncertain, state)
+or reduced aggregation (uncertain).  The active view is determined by
+the algorithm in use, managed in \ref Variables::get_view
+"Variables::get_view()".  Any inactive view is set based on higher
+level iteration within a model recursion (e.g., a NestedModel), which
+enables lower level iteration to return derivatives with respect to
+variables that are active at the higher level.  In the case where
+there is no higher level iteration, then the inactive view will remain
+EMPTY.  It is important to stress that "inactive" at one level
+corresponds to active at another, and therefore the inactive set of
+variables should not be interpreted as the strict complement of the
+active set of variables; rather, active and inactive are both subsets
+whose union may still be a subset of the total container.  An active
+complement view could potentially be supported in the future, should
+the need arise, although this view would require management of
+non-contiguous portions of the aggregated arrays.
 
 Given these groupings (views), the active subsets of the variables
 arrays are always contiguous, permitting vector views of the
-underlying data. This happens upon construction of the Variables
-objects, so subsequent active and inactive queries on a Variables
-object retrieve the appropriate contiguous view of the data.
+underlying data using either Teuchos::View (for numerical vectors) or
+Boost.MultiArray (for book-keeping arrays) views. This happens upon
+construction of the Variables objects, so subsequent active and
+inactive queries on a Variables object retrieve the appropriate
+contiguous view of the data.
 
 When a Variables envelope is constructed, its letter is initialized to
 either a MergedVariables or MixedVariables object depending on the
 active view.  The derived classes size the contiguous storage arrays
 to accomodate all the problem variables, and then initialize active
 and inactive views into them.  Thus a later query for active
-continuous variables might return contnuous all or a subset such as
-design, uncertain, only aleatory, etc., as described above.
+continuous variables might return continuous all or a subset such as
+design, uncertain, only aleatory uncertain, etc., as described above.
 
 */
 

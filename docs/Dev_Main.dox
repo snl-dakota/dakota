@@ -47,8 +47,8 @@ aleatory-epistemic uncertainty quantification, or optimization under
 uncertainty. By employing object-oriented design to implement
 abstractions of the key components required for iterative systems
 analyses, the DAKOTA toolkit provides a flexible problem-solving
-environment as well as a platform for rapid prototyping of new
-solution approaches.
+environment for design and performance analysis of computational
+models on high performance computers.
 
 The Developers Manual focuses on documentation of DAKOTA design
 principles and class structures; it derives principally from annotated
@@ -85,11 +85,11 @@ specifications.
 The use of class hierarchies provides a mechanism for extensibility in
 DAKOTA components.  In each of the various class hierarchies, adding a
 new capability typically involves deriving a new class and providing a
-small number of virtual function redefinitions.  These redefinitions
-define the coding portions specific to the new derived class, with the
-common portions already defined at the base class.  Thus, with a small
-amount of new code, the existing facilities can be extended, reused,
-and leveraged for new purposes.  The following sections tour DAKOTA's
+set of virtual function redefinitions.  These redefinitions define the
+coding portions specific to the new derived class, with the common
+portions already defined at the base class.  Thus, with a small amount
+of new code, the existing facilities can be extended, reused, and
+leveraged for new purposes.  The following sections tour DAKOTA's
 class organization.
 
 
@@ -235,11 +235,11 @@ and \ref Dakota::DDACEDesignCompExp "DDACEDesignCompExp" and
 for parameter space exploration through design and analysis of 
 computer experiments.  \ref Dakota::NonDLHSSampling "NonDLHSSampling" 
 from the uncertainty quantification branch also supports design of 
-experiments for design and state variables when in \c all_variables mode.
+experiments when in \c all_variables mode.
 
 <li> Solution verification studies: 
-\ref Dakota::Verification "Verification" provides a base class for the
-active \ref Dakota::RichExtrapVerification "RichExtrapVerification"
+\ref Dakota::Verification "Verification" provides a base class for
+\ref Dakota::RichExtrapVerification "RichExtrapVerification"
 (verification via Richardson extrapolation) and other solution
 verification methods in development.
 
@@ -359,10 +359,10 @@ functions).  Asynchronous invocation utilizes a nonblocking fork.
 Utilizes the \ref Dakota::ForkAnalysisCode "ForkAnalysisCode" class
 for lower level fork operations.
 
-<li> \ref Dakota::GridApplicInterface "GridApplicInterface": the
+<!-- <li> \ref Dakota::GridApplicInterface "GridApplicInterface": the
 simulation is invoked using distributed resource facilities.  This
 capability is experimental and still under development.  The design is
-evolving into the use of Condor and/or Globus tools.
+evolving into the use of Condor and/or Globus tools. -->
 </ul>
 
 and the following semi-intrusive approach
@@ -414,7 +414,7 @@ Class: \ref Dakota::Response "Response".
 The \ref Dakota::Response "Response" class provides an abstract data
 representation of response functions and their first and second
 derivatives (gradient vectors and Hessian matrices).  These response
-functions can be interpreted as an objective function and constraints
+functions can be interpreted as objective functions and constraints
 (optimization data set), residual functions and constraints (least
 squares data set), or generic response functions (uncertainty
 quantification data set).  This class is not currently part of a class
@@ -485,8 +485,8 @@ Dakota::Variables "Variables", \ref Dakota::Constraints "Constraints",
 \ref Dakota::ProblemDescDB "ProblemDescDB", and 
 \ref Dakota::Approximation "Approximation".  The latter 
 idiom provides for memory efficiency in data-intensive classes which
-do not involve a class hierarchy.  The \ref Dakota::Response "Response",
-parser data (\ref Dakota::DataStrategy "DataStrategy", 
+do not involve a class hierarchy.  The \ref Dakota::Response "Response"
+and parser data (\ref Dakota::DataStrategy "DataStrategy", 
 \ref Dakota::DataMethod "DataMethod", \ref Dakota::DataModel "DataModel", 
 \ref Dakota::DataVariables "DataVariables",
 \ref Dakota::DataInterface "DataInterface", and
@@ -510,8 +510,8 @@ etc.  These capabilities are encapsulated within the
 The following links provide guidance for core software components or 
 specific development activities:
 
-\li \ref StyleConventions - coding style guidelines and conventions
-    used by the DAKOTA development team.
+\li \ref StyleConventions - coding practices used by the DAKOTA 
+    development team.
 \li \ref SpecChange - how to interact with NIDR and the associated DAKOTA
     classes.
 \li \ref DakLibrary - embed DAKOTA as a service within your application.
@@ -520,8 +520,8 @@ specific development activities:
 \li \ref FnEvals - an overview of the classes and member functions involved
     in performing function evaluations synchronously or asynchronously.
 \li \ref VarContainersViews - discussion of data storage for variables
-    and explanation of active and inactive views that may be taken of
-    it.
+    and explanation of active and inactive views of this data.
+
 
 \section DevAddtnl Additional Resources
 
