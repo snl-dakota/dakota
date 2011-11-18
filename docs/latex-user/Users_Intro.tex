@@ -2,47 +2,43 @@
 
 \section{Motivation for DAKOTA Development}\label{introduction:motivation}
 
-Computational models are commonly used in engineering design
-activities for simulating complex physical systems in disciplines such
-as fluid mechanics, structural dynamics, heat transfer, nonlinear
-structural mechanics, shock physics, and many others. These simulators
-can be an enormous aid to engineers who want to develop an
-understanding and/or predictive capability for the complex behaviors
-that are often observed in the respective physical systems. Often,
-these simulators are employed as virtual prototypes, where a set of
+Computational models are commonly used in engineering design and
+scientific discovery activities for simulating complex physical
+systems in disciplines such as fluid mechanics, structural dynamics,
+heat transfer, nonlinear structural mechanics, shock physics, and many
+others. These simulators can be an enormous aid to engineers who want
+to develop an understanding and/or predictive capability for complex
+behaviors typically observed in the corresponding physical
+systems. Simulators often serve as virtual prototypes, where a set of
 predefined system parameters, such as size or location dimensions and
-material properties, are adjusted to improve or optimize the
-performance of a particular system, as defined by one or more system
-performance objectives. Optimization of the virtual prototype then
-requires execution of the simulator, evaluation of the performance
-objective(s), and adjustment of the system parameters in an iterative
-and directed way, such that an improved or optimal solution is
-obtained for the simulation as measured by the performance
-objective(s). System performance objectives can be formulated, for
-example, to minimize weight, cost, or defects; to limit a critical
-temperature, stress, or vibration response; or to maximize
-performance, reliability, throughput, agility, or design robustness.
-In addition, one would often like to design computer experiments, run
-parameter studies, or perform uncertainty quantification. These
-methods allow one to understand how the system performance changes as
-a design variable or an uncertain input changes.  Sampling strategies
-are often used in uncertainty quantification to calculate a
-distribution on system performance measures, and to understand which
-uncertain inputs are the biggest contributors to the variance of the
-outputs.
+material properties, are adjusted to improve the performance of a
+system, as defined by one or more system performance objectives. Such
+optimization or tuning of the virtual prototype requires executing the
+simulator, evaluating performance objective(s), and adjusting the
+system parameters in an iterative, automated, and directed way. System
+performance objectives can be formulated, for example, to minimize
+weight, cost, or defects; to limit a critical temperature, stress, or
+vibration response; or to maximize performance, reliability,
+throughput, agility, or design robustness.  In addition, one would
+often like to design computer experiments, run parameter studies, or
+perform uncertainty quantification. These approaches reveal how system
+performance changes as a design or uncertain input variable changes.
+Sampling strategies are often used in uncertainty quantification to
+calculate a distribution on system performance measures, and to
+understand which uncertain inputs contribute most to the variance of
+the outputs.
 
-A primary motivations for the development of DAKOTA (Design Analysis
-Kit for Optimization and Terascale Applications) is to provide
-engineers and other disciplinary scientists with a systematic and
-rapid means to obtain improved or optimal designs or understand
-sensitivity or uncertainty using simulation-based models. These
-capabilities generally lead to better designs and improved system
-performance in earlier design stages, and eliminate some dependence on
-physical prototypes and testing, shortening the design cycle and
-reducing overall product development costs. In addition to providing
-this environment for answering systems performance questions, the
-DAKOTA toolkit also provides an extensible platform for the research
-and rapid prototyping of customized methods and
+A primary goal for DAKOTA (Design Analysis Kit for Optimization and
+Terascale Applications) development is to provide engineers and other
+disciplinary scientists with a systematic and rapid means to obtain
+improved or optimal designs or understand sensitivity or uncertainty
+using simulation-based models. These capabilities generally lead to
+improved designs and system performance in earlier design stages,
+alleviating dependence on physical prototypes and testing, shortening
+design cycles, and reducing product development costs. In addition to
+providing this practical environment for answering system performance
+questions, the DAKOTA toolkit provides an extensible platform for the
+research and rapid prototyping of customized methods and
 strategies~\cite{Eld98b}.
 
 \section{Capabilities of DAKOTA}\label{introduction:capabilities}
@@ -192,15 +188,15 @@ Many different methods exist to solve the optimization problem given
 by Equation~\ref{introduction:equation01}, all of which iterate on
 $\mathbf{x}$ in some manner.  That is, an initial value for each
 parameter in $\mathbf{x}$ is chosen, the \emph{response quantities},
-$f(\mathbf{x})$, $\mathbf{g(x)}$, $\mathbf{h(x)}$, are computed, and
-some algorithm is applied to generate a new $\mathbf{x}$ that will
-either reduce the objective function, reduce the amount of
-infeasibility, or both.  To facilitate a general presentation of these
-methods, three criteria will be used in the following discussion to
-differentiate them: \underline{optimization problem type},
-\underline{search goal}, and \underline{search method}.
+$f(\mathbf{x})$, $\mathbf{g(x)}$, $\mathbf{h(x)}$, are computed, often
+by running a simulation, and some algorithm is applied to generate a
+new $\mathbf{x}$ that will either reduce the objective function,
+reduce the amount of infeasibility, or both.  To facilitate a general
+presentation of these methods, three criteria will be used in the
+following discussion to differentiate them: optimization problem type,
+search goal, and search method.
 
-The \underline{optimization problem type} can be characterized both by
+The {\bf optimization problem type} can be characterized both by
 the types of constraints present in the problem and by the linearity
 or nonlinearity of the objective and constraint functions. For
 constraint categorization, a hierarchy of complexity exists for
@@ -229,7 +225,7 @@ the objective and constraint functions are nonlinear is called a
 predominate in engineering applications and are the primary focus of
 DAKOTA.
 
-The \underline{search goal} refers to the ultimate objective of the
+The {\bf search goal} refers to the ultimate objective of the
 optimization algorithm, i.e., either global or local optimization. In
 \emph{global optimization}, the goal is to find the design point that
 gives the lowest feasible objective function value over the entire
@@ -241,7 +237,7 @@ optimization. Thus, the user must choose an optimization algorithm
 with an appropriate search scope that best fits the problem goals and
 the computational budget.
 
-The \underline{search method} refers to the approach taken in the
+The {\bf search method} refers to the approach taken in the
 optimization algorithm to locate a new design point that has a lower
 objective function or is more feasible than the current design point.
 The search method can be classified as either \emph{gradient-based} or
@@ -411,17 +407,18 @@ data generation methods for building response surface approximations.
 \subsection{Uncertainty Quantification}\label{introduction:background:uncertainty}
 
 Uncertainty quantification (UQ) is the process of determining the
-effect of input uncertainties on response metrics of interest.  These
-input uncertainties may be characterized as either aleatory
-uncertainties, which are irreducible variabilities inherent in nature,
-or epistemic uncertainties, which are reducible uncertainties
-resulting from a lack of knowledge.  Since sufficient data is
-generally available for aleatory uncertainties, probabilistic methods
-are commonly used for computing response distribution statistics based
-on input probability distribution specifications.  Conversely, for
-epistemic uncertainties, data is generally sparse, making the use of
-probability theory questionable and leading to nonprobabilistic
-methods based on interval specifications.
+effect of input uncertainties on response metrics of interest (forward
+propagating uncertainties through the model).  These input
+uncertainties may be characterized as either aleatory uncertainties,
+which are irreducible variabilities inherent in nature, or epistemic
+uncertainties, which are reducible uncertainties resulting from a lack
+of knowledge.  Since sufficient data is generally available for
+aleatory uncertainties, probabilistic methods are commonly used for
+computing response distribution statistics based on input probability
+distribution specifications.  Conversely, for epistemic uncertainties,
+data is generally sparse, making the use of probability theory
+questionable and leading to nonprobabilistic methods based on interval
+specifications.
 
 UQ is related to sensitivity analysis in that the common goal is to
 gain an understanding of how variations in the parameters affect the
@@ -433,8 +430,8 @@ assigning specific distributional structure to the inputs,
 distributional structure for the outputs (i.e., response statistics)
 can be inferred.
 
-Current methods for modeling aleatory uncertainty include sampling
-methods, local and global reliability methods, and stochastic
+Current DAKOTA methods for modeling aleatory uncertainty include
+sampling methods, local and global reliability methods, and stochastic
 expansion methods (polynomial chaos expansions and stochastic
 collocation).  Current methods for modeling epistemic uncertainties
 include Dempster-Shafer theory of evidence and local or global

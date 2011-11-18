@@ -5,70 +5,58 @@
 The DAKOTA (Design Analysis Kit for Optimization and Terascale
 Applications) project started in 1994 as an internal research and
 development activity at Sandia National Laboratories in Albuquerque,
-New Mexico. The original goal of this effort was to provide a common
-set of optimization tools for a group of engineers who were solving
-structural analysis and design problems. Prior to the start of the
-DAKOTA project, there was not a focused effort to archive the
-optimization methods for reuse on other projects. Thus, for each new
-project the engineers found themselves custom building new interfaces
-between the engineering analysis software and the optimization
-software. This was a particular burden when attempts were made to use
-parallel computing resources, where each project required the
-development of a unique master program that coordinated concurrent
-simulations on a network of workstations or a parallel computer. The
-initial DAKOTA toolkit provided the engineering and analysis community
-at Sandia Labs with access to a variety of different optimization
-methods and algorithms, with much of the complexity of the
-optimization software interfaces hidden from the user. Thus, the
-engineers were easily able to switch between optimization software
-packages simply by changing a few lines in the DAKOTA input file. In
-addition to applications in structural analysis, DAKOTA has been
-applied to applications in computational fluid dynamics, nonlinear
-dynamics, shock physics, heat transfer, and many others.
+New Mexico. The original goal was to provide a common set of
+optimization tools for a group of engineers solving structural
+analysis and design problems. Prior to the DAKOTA project, there was
+no focused effort to archive optimization methods for reuse on other
+projects. Thus, engineers found themselves repeatedly building new
+custom interfaces between the engineering analysis software and
+optimization software. This was especially burdensome when using
+parallel computing, as each project developed a unique master program
+to coordinate concurrent simulations on a network of workstations or a
+parallel computer. The initial DAKOTA toolkit provided the engineering
+and analysis community at Sandia access to a variety of optimization
+algorithms, hiding the complexity of the optimization software
+interfaces from the users. Engineers could readily switch between
+optimization software packages by simply changing a few lines in a
+DAKOTA input file. In addition to structural analysis, DAKOTA has been
+applied to computational fluid dynamics, nonlinear dynamics, shock
+physics, heat transfer, electrical circuits, and many other science
+and engineering models.
 
-DAKOTA has grown significantly beyond its original focus as a toolkit
-of optimization methods. In addition to having many state-of-the-art
-optimization methods, DAKOTA now includes methods for global
-sensitivity and variance analysis, parameter estimation, uncertainty
-quantification, and verification, as well as meta-level strategies for
-surrogate-based optimization, mixed-integer nonlinear programming,
-hybrid optimization, and optimization under uncertainty. Underlying
-all of these algorithms is support for parallel computation; ranging
-from the level of a desktop multiprocessor computer up to massively
-parallel computers found at national laboratories and supercomputer
-centers.
-
-This document corresponds to DAKOTA Version 5.1.  Release notes for
-this release, past releases, and current developmental releases are
-available from
-\url{http://dakota.sandia.gov/release_notes.html}.
+DAKOTA has grown significantly beyond an optimization toolkit.  In
+addition to its state-of-the-art optimization methods, DAKOTA includes
+methods for global sensitivity and variance analysis, parameter
+estimation, uncertainty quantification, and verification, as well as
+meta-level strategies for surrogate-based optimization, mixed-integer
+nonlinear programming, hybrid optimization, and optimization under
+uncertainty. Available to all these algorithms is parallel computation
+support; ranging from desktop multiprocessor computers to massively
+parallel computers typically found at national laboratories and
+supercomputer centers.
 
 As of Version 5.0, DAKOTA is publicly released as open source under a
 GNU Lesser General Public License and is available for free download
 world-wide.  See \url{http://www.gnu.org/licenses/lgpl.html} for more
 information on the LGPL software use agreement.  DAKOTA Versions 3.0
-through 4.2+ were licensed under the GNU General Public License.  The
-objective of DAKOTA public release is to facilitate research and
-software collaborations among the developers of DAKOTA at Sandia
-National Laboratories and other institutions, including academic,
-governmental, and corporate entities. For more information on the
-objectives of the open source release and how to contribute, refer to
-the DAKOTA FAQ at \url{http://dakota.sandia.gov/faq.html}.
+through 4.2+ were licensed under the GNU General Public License.
+DAKOTA public release facilitates research and software collaborations
+among DAKOTA developers at Sandia National Laboratories and other
+institutions, including academic, government, and corporate
+entities. See the DAKOTA FAQ at
+\url{http://dakota.sandia.gov/faq.html} for more information on the
+public release rationale and ways to contribute.
 
 The DAKOTA leadership team consists of Brian Adams (project lead),
-Mike Eldred (research lead), Sophia Lefantzi (support manager), and
-Jim Stewart (business manager).  DAKOTA development team members
-include Bill Bohnhoff, Keith Dalbey, John Eddy, David Gay, Patty
-Hough, and Laura Swiler.  Additional historical contributors to DAKOTA
-and its third-party libraries are acknowledged on the DAKOTA web page.
+Mike Eldred (research lead), Bill Bohnhoff (support manager), and Jim
+Stewart (business manager).  DAKOTA development team members include
+Keith Dalbey, John Eddy, Patty Hough, Sophia Lefantzi, Laura Swiler,
+and Dena Vigil.  Additional historical contributors to DAKOTA and its
+third-party libraries are acknowledged on the DAKOTA web page.
 
-\textbf{Contact Information}:
-
+\textbf{Contact Information}:\\
 {\small Brian M. Adams, DAKOTA Project Lead}\\
 {\small Sandia National Laboratories}\\
 {\small P.O. Box 5800, Mail Stop 1318}\\
-{\small Albuquerque, NM 87185-1318}
-
-{\small {\bf User community/help:} \href{mailto:dakota-users@software.sandia.gov}{dakota-users@software.sandia.gov}}\\
-{\small {\bf Development team:} \href{mailto:dakota-developers@development.sandia.gov}{dakota-developers@development.sandia.gov}}\\
-{\small {\bf Web:} \url{http://dakota.sandia.gov}}
+{\small Albuquerque, NM 87185-1318}\\
+{\small Web (including support information): \url{http://dakota.sandia.gov}}

@@ -382,10 +382,10 @@ problems involving discrete variables or a combination of continuous
 and discrete variables~\cite{Eck01}. The discrete variables must be
 noncategorical (see Section~\ref{variables:design:ddv}).  PICO is
 available to the public under the GNU LGPL (web page:
-\url{http://software.sandia.gov/trac/acro/wiki/Packages}) and the source code is included
-with DAKOTA as part of the Acro package.  \emph{Notes: (1) PICO's linear
-programming solvers are not included with DAKOTA, (2) PICO is being
-migrated into COLINY and is not operational in DAKOTA 5.2.}
+\url{http://software.sandia.gov/trac/acro/wiki/Packages}) and the
+source code is included with DAKOTA as part of the Acro package.
+\emph{Notes: (1) PICO's linear programming solvers are not included
+  with DAKOTA, (2) PICO is not currently active in DAKOTA.}
 
 %\textbf{SGOPT (Stochastic Global OPTimization)}: Access to this
 %library within DAKOTA has been deprecated; the methods have been
@@ -583,17 +583,16 @@ information can be useful in making trade-off decisions in engineering
 design problems.  \emph{[Refer to~\ref{capabilities:additional} for
 additional information on multiobjective optimization methods.]}
 
-\textbf{Mixed Integer Nonlinear Programming (MINLP)}: This strategy uses
-the branch and bound capabilities of the PICO package to perform
+\textbf{Mixed Integer Nonlinear Programming (MINLP)}: This strategy
+uses the branch and bound capabilities of the PICO package to perform
 optimization on problems that have both discrete and continuous design
 variables. PICO provides a branch and bound engine targeted at mixed
 integer linear programs (MILP), which when combined with DAKOTA's
 nonlinear optimization methods, results in a MINLP capability. In
 addition, the multiple NLPs solved within MINLP provide an opportunity
-for concurrent execution of multiple optimizations.
-\emph{For DAKOTA 5.2, branch and bound is currently inoperative due to 
-ongoing restructuring of PICO and its incorporation into COLINY.
-This will be supported again in future releases.}
+for concurrent execution of multiple optimizations.  \emph{Branch and
+  bound is inoperative in DAKOTA since its incorporation into COLINY.
+  This will be supported again in future releases.}
 
 These strategies are covered in more detail in Chapter~\ref{strat}.
 

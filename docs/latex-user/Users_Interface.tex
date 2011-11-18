@@ -909,11 +909,11 @@ used as placeholders.
 
 Sometimes it is convenient for simulators and filters to run in a
 directory different from the one where DAKOTA is invoked.  A simulator
-script used as an \texttt{analysis\_driver} can of course change to a
-different directory if desired (while still arranging to write a
-results file in the original directory), has facilities that may
-simplify the creation of simulator scripts.  If an interface
-specification includes the keyword
+script used as an \texttt{analysis\_driver} can of course include
+commands to change to a different directory if desired (while still
+arranging to write a results file in the original directory), but
+DAKOTA has facilities that may simplify the creation of simulator
+scripts.  If an interface specification includes the keyword
 \begin{small}
 \begin{verbatim}
        work_directory
