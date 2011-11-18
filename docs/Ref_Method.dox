@@ -4159,13 +4159,14 @@ Specification detail for forward/inverse level mappings
 </table>
 
 Different nondeterministic methods have differing support for
-uncertain variable distributions. Tables \ref T5d29 "5.29", 
-\ref T5d30 "5.30", and \ref T5d31 "5.31"
-summarize the uncertain variables that are available for use by the
-different methods, where a "-" indicates that the distribution is not
-supported by the method, a "U" means the uncertain input variables of
-this type must be uncorrelated, a "C" denotes that correlations are
-supported involving uncertain input variables of this type.  Additional
+uncertain variable distributions. Tables \ref T5d29 "5.29", \ref 
+T5d30 "5.30", and \ref T5d31 "5.31" summarize the uncertain variables
+that are available for use by the different methods, where a "-"
+indicates that the distribution is not supported by the method, a "U"
+means the uncertain input variables of this type must be uncorrelated,
+a "C" denotes that correlations are supported involving uncertain
+input variables of this type, and an "A" means the method must be in
+\c all_variables mode to support the given variable type.  Additional
 notes include:
 - we have three variants for stochastic expansions (SE), listed as
   Wiener, Askey, and Extended, which draw from different sets of basis 
@@ -4182,19 +4183,11 @@ notes include:
   and models these variables as simple bounded regions defined by the 
   cell extremes; and \c local_evidence and \c global_evidence
   model the interval specifications as true BPAs.
+
 <!-- could go into more detail on sub-options of local/global evidence, 
      but I think that's probably overkill. -->
-
 <!-- and a "C#" denotes that correlations are only supported between 
 variables of this type and other variables in the same numbered set. -->
-<!-- two versions of LHS available in DAKOTA, listed as old and new, and -->
-<!-- For LHS, the new version is preferred and is the default;
-however, it requires the presence of a Fortran 90 compiler which is
-not available on all platforms.  The old version does not support
-correlations and has limited distribution support, but is still
-maintained due to portability. -->
-<!-- (1) old LHS lognormal distributions require \c error_factor
-specifications and do not support \c std_deviation specifications, -->
 
 \anchor T5d29
 <table>
@@ -4206,34 +4199,34 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part I (Con
 </caption>
 <tr>
 <td><b>Distribution Type</b>
-<!-- <td><b>Old Sampling</b> -->
-<td><b><!-- New -->Sampling</b>
+<td><b>Sampling</b>
 <td><b>Local Reliability</b>
 <td><b>Global Reliability</b>
 <td><b>Wiener SE</b>
 <td><b>Askey SE</b>
 <td><b>Extended SE</b>
+<td><b>Piecewise SE</b>
 <td><b>Local Interval</b>
 <td><b>Global Interval</b>
 <td><b>Local Evidence</b>
 <td><b>Global Evidence</b>
 <tr>
 <td>Normal
-<!-- <td>U -->
 <td>C
 <td>C
 <td>C
 <td>C
 <td>C
 <td>C
+<td>-
 <td>-
 <td>-
 <td>-
 <td>-
 <tr>
 <td>Bounded Normal
-<!-- <td>- -->
 <td>C
+<td>U
 <td>U
 <td>U
 <td>U
@@ -4245,7 +4238,6 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part I (Con
 <td>-
 <tr>
 <td>Lognormal
-<!-- <td>U -->
 <td>C
 <td>C
 <td>C
@@ -4256,10 +4248,11 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part I (Con
 <td>-
 <td>-
 <td>-
+<td>-
 <tr>
 <td>Bounded Lognormal
-<!-- <td>- -->
 <td>C
+<td>U
 <td>U
 <td>U
 <td>U
@@ -4271,11 +4264,11 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part I (Con
 <td>-
 <tr>
 <td>Uniform
-<!-- <td>U -->
 <td>C
 <td>C
 <td>C
 <td>C
+<td>U
 <td>U
 <td>U
 <td>-
@@ -4284,8 +4277,8 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part I (Con
 <td>-
 <tr>
 <td>Loguniform
-<!-- <td>U -->
 <td>C
+<td>U
 <td>U
 <td>U
 <td>U
@@ -4297,8 +4290,8 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part I (Con
 <td>-
 <tr>
 <td>Triangular
-<!-- <td>- -->
 <td>C
+<td>U
 <td>U
 <td>U
 <td>U
@@ -4310,21 +4303,21 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part I (Con
 <td>-
 <tr>
 <td>Exponential
-<!-- <td>- -->
 <td>C
 <td>C
 <td>C
 <td>C
 <td>U
 <td>U
+<td>-
 <td>-
 <td>-
 <td>-
 <td>-
 <tr>
 <td>Beta
-<!-- <td>- -->
 <td>C
+<td>U
 <td>U
 <td>U
 <td>U
@@ -4336,46 +4329,45 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part I (Con
 <td>-
 <tr>
 <td>Gamma
-<!-- <td>- -->
 <td>C
 <td>C
 <td>C
 <td>C
 <td>U
 <td>U
+<td>-
 <td>-
 <td>-
 <td>-
 <td>-
 <tr>
 <td>Gumbel
-<!-- <td>- -->
 <td>C
 <td>C
 <td>C
 <td>C
 <td>C
 <td>U
+<td>-
 <td>-
 <td>-
 <td>-
 <td>-
 <tr>
 <td>Frechet
-<!-- <td>- -->
 <td>C
 <td>C
 <td>C
 <td>C
 <td>C
 <td>U
+<td>-
 <td>-
 <td>-
 <td>-
 <td>-
 <tr>
 <td>Weibull
-<!-- <td>U -->
 <td>C
 <td>C
 <td>C
@@ -4386,10 +4378,11 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part I (Con
 <td>-
 <td>-
 <td>-
+<td>-
 <tr>
 <td>Continuous Histogram Bin
-<!-- <td>U -->
 <td>C
+<td>U
 <td>U
 <td>U
 <td>U
@@ -4411,21 +4404,21 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part II (Di
 </caption>
 <tr>
 <td><b>Distribution Type</b>
-<!-- <td><b>Old Sampling</b> -->
-<td><b><!-- New -->Sampling</b>
+<td><b>Sampling</b>
 <td><b>Local Reliability</b>
 <td><b>Global Reliability</b>
 <td><b>Wiener SE</b>
 <td><b>Askey SE</b>
 <td><b>Extended SE</b>
+<td><b>Piecewise SE</b>
 <td><b>Local Interval</b>
 <td><b>Global Interval</b>
 <td><b>Local Evidence</b>
 <td><b>Global Evidence</b>
 <tr>
 <td>Poisson
-<!-- <td> -->
 <td>C
+<td>-
 <td>-
 <td>-
 <td>-
@@ -4437,8 +4430,8 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part II (Di
 <td>-
 <tr>
 <td>Binomial
-<!-- <td> -->
 <td>C
+<td>-
 <td>-
 <td>-
 <td>-
@@ -4450,8 +4443,8 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part II (Di
 <td>-
 <tr>
 <td>Negative Binomial
-<!-- <td> -->
 <td>C
+<td>-
 <td>-
 <td>-
 <td>-
@@ -4463,8 +4456,8 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part II (Di
 <td>-
 <tr>
 <td>Geometric
-<!-- <td> -->
 <td>C
+<td>-
 <td>-
 <td>-
 <td>-
@@ -4476,8 +4469,8 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part II (Di
 <td>-
 <tr>
 <td>Hypergeometric
-<!-- <td> -->
 <td>C
+<td>-
 <td>-
 <td>-
 <td>-
@@ -4489,8 +4482,8 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part II (Di
 <td>-
 <tr>
 <td>Discrete Histogram Point
-<!-- <td> -->
 <td>C
+<td>-
 <td>-
 <td>-
 <td>-
@@ -4512,73 +4505,73 @@ Summary of Distribution Types supported by Nondeterministic Methods, Part III (E
 </caption>
 <tr>
 <td><b>Distribution Type</b>
-<!-- <td><b>Old Sampling</b> -->
-<td><b><!-- New -->Sampling</b>
+<td><b>Sampling</b>
 <td><b>Local Reliability</b>
 <td><b>Global Reliability</b>
 <td><b>Wiener SE</b>
 <td><b>Askey SE</b>
 <td><b>Extended SE</b>
+<td><b>Piecewise SE</b>
 <td><b>Local Interval</b>
 <td><b>Global Interval</b>
 <td><b>Local Evidence</b>
 <td><b>Global Evidence</b>
 <tr>
 <td>Interval
-<!-- <td>- -->
 <td>U
 <td>-
-<td>-
-<td>-
-<td>-
-<td>-
+<td>U,A
+<td>U,A
+<td>U,A
+<td>U,A
+<td>U,A
 <td>U
 <td>U
 <td>U
 <td>U
 <tr>
-<td>Continuous Design (\c all_variables)
-<!-- <td>- -->
-<td>U
+<td>Continuous Design
+<td>U,A
 <td>-
-<td>U
-<td>U
-<td>U
-<td>U
-<td>-
-<td>-
-<td>-
-<td>-
-<tr>
-<td>Discrete Design Range, Int Set, Real Set (\c all_variables)
-<!-- <td>- -->
-<td>U
-<td>-
-<td>-
-<td>-
-<td>-
-<td>-
+<td>U,A
+<td>U,A
+<td>U,A
+<td>U,A
+<td>U,A
 <td>-
 <td>-
 <td>-
 <td>-
 <tr>
-<td>Continuous State (\c all_variables)
-<!-- <td>- -->
-<td>U
+<td>Discrete Design Range, Int Set, Real Set
+<td>U,A
 <td>-
-<td>U
-<td>U
-<td>U
-<td>U
+<td>-
+<td>-
+<td>-
+<td>-
+<td>-
 <td>-
 <td>-
 <td>-
 <td>-
 <tr>
-<td>Discrete State Range, Int Set, Real Set (\c all_variables)
-<!-- <td>- -->
-<td>U
+<td>Continuous State
+<td>U,A
+<td>-
+<td>U,A
+<td>U,A
+<td>U,A
+<td>U,A
+<td>U,A
+<td>-
+<td>-
+<td>-
+<td>-
+<tr>
+<td>Discrete State Range, Int Set, Real Set
+<td>U,A
+<td>-
 <td>-
 <td>-
 <td>-
@@ -5155,20 +5148,20 @@ dimensional problems.
 
 As for \ref MethodNonDMC and \ref MethodNonDGlobalRel, the \c
 all_variables flag can be used to form expansions over all continuous
-variables, rather than just the default aleatory uncertain variables.
-For continuous design, continuous state, and epistemic interval
-variables included in \c all_variables mode, Legendre chaos bases are
-used to model the bounded intervals for these variables.  However,
-these variables are not assumed to have any particular probability
-distribution, only that they are independent variables.  Moreover,
-when probability integrals are evaluated, only the aleatory random
-variable domain is integrated, leaving behind a polynomial
-relationship between the statistics and the remaining
+variables, rather than just the default aleatory uncertain continuous
+variables.  For continuous design, continuous state, and continuous
+epistemic uncertain variables included in \c all_variables mode,
+Legendre chaos bases are used to model the bounded intervals for these
+variables.  However, these variables are not assumed to have any
+particular probability distribution, only that they are independent
+variables.  Moreover, when probability integrals are evaluated, only
+the aleatory random variable domain is integrated, leaving behind a
+polynomial relationship between the statistics and the remaining
 design/state/epistemic variables.
 
-\ref T5d35 "Table 5.35" shows these general PCE controls, and it along
+\ref T5d35 "Table 5.35" shows these general PCE controls and it, along
 with Tables \ref T5d36 "5.36", \ref T5d37 "5.37", and \ref T5d38 "5.38" 
-to follow provide the details of the polynomial chaos expansion 
+to follow, provide the details of the polynomial chaos expansion 
 specifications beyond those of \ref T5d28 "Table 5.28".
 
 \anchor T5d35
@@ -5398,29 +5391,33 @@ cubature, and sparse grid approaches.
      (i.e., to avoid requiring the user to calculate \e N from \e n
      and \e p), \c collocation_ratio allows for specification of a
      constant oversampling factor applied to \e N (e.g., \c
-     collocation_ratio = \c 2. for factor of 2 oversampling).  The \c
-     use_derivatives flag informs the regression approach to include
-     derivative matching equations (limited to gradients at present)
-     in the least squares solutions, enabling the use of fewer
-     collocation points for a given expansion order and dimension
-     (number of points required becomes \f$\frac{rN}{n+1}\f$, where
-     \f$r\f$ is the \c collocation_ratio).  When admissible, a
-     constrained least squares approach is employed in which response
-     values are first reproduced exactly and error in reproducing
-     response derivatives is minimized.  Two collocation grid options
-     are supported: the default is Latin hypercube sampling ("point
-     collocation"), and an alternate approach of "probabilistic
-     collocation" is also available through inclusion of the \c
-     tensor_grid keyword.  In this alternate case, the collocation
-     grid is defined using a subset of tensor-product quadrature
-     points: the order of an isotropic tensor-product quadrature grid
-     is selected as the minimum required to meet or exceed the point
-     requirement, and then this set of points is filtered down to the
-     requirement based on the subset of points having highest product
-     integration weight.  In our experience, the alternate
-     probabilistic collocation approach using a structured grid tends
-     to suffer from ill-conditioning more quickly than the default
-     point collocation approach using an unstructured grid.
+     collocation_ratio = \c 2. produces samples = \e 2N).  In addition,
+     the default linear relationship with \e N can be overridden using a
+     real-valued exponent specified using \c ratio_order.  In this
+     case, the number of samples becomes \f$cN^o\f$ where \f$c\f$ is
+     the \c collocation_ratio and \f$o\f$ is the \c ratio_order.  The
+     \c use_derivatives flag informs the regression approach to
+     include derivative matching equations (limited to gradients at
+     present) in the least squares solutions, enabling the use of
+     fewer collocation points for a given expansion order and
+     dimension (number of points required becomes
+     \f$\frac{cN^o}{n+1}\f$).  When admissible, a constrained least
+     squares approach is employed in which response values are first
+     reproduced exactly and error in reproducing response derivatives
+     is minimized.  Two collocation grid options are supported: the
+     default is Latin hypercube sampling ("point collocation"), and an
+     alternate approach of "probabilistic collocation" is also
+     available through inclusion of the \c tensor_grid keyword.  In
+     this alternate case, the collocation grid is defined using a
+     subset of tensor-product quadrature points: the order of an
+     isotropic tensor-product quadrature grid is selected as the
+     minimum required to meet or exceed the point requirement, and
+     then this set of points is filtered down to the requirement based
+     on the subset of points having highest product integration
+     weight.  In our experience, the alternate probabilistic
+     collocation approach using a structured grid tends to suffer from
+     ill-conditioning more quickly than the default point collocation
+     approach using an unstructured grid.
 <li> coefficient import from a file (specified with \c
      expansion_import_file).  A total-order expansion is assumed and
      must be specified using either \c expansion_order or \c
@@ -5465,6 +5462,12 @@ sampling, regression, and expansion import options.
 <td>real
 <td>Required (1 of 7 selections)
 <td>N/A
+<tr>
+<td>Order of collocation oversampling relationship for PCE coefficient estimation
+<td>\c ratio_order
+<td>real
+<td>Optional
+<td>1.
 <tr>
 <td>Derivative usage flag for PCE coefficient estimation by \c collocation_points or \c collocation_ratio
 <td>\c use_derivatives
@@ -5617,24 +5620,57 @@ Specification detail for polynomial chaos expansion method: sampling controls.
 
 The stochastic collocation (SC) method is very similar to the PCE
 method described above, with the key difference that the orthogonal
-polynomial basis functions are replaced with Lagrange polynomial
-interpolants.  The expansion takes the form
+polynomial basis functions are replaced with interpolation polynomial
+bases.  The interpolation polynomials may be either local or global
+and either value-based or gradient-enhanced.  In the local case,
+valued-based are piecewise linear splines and gradient-enhanced are
+piecewise cubic splines, and in the global case, valued-based are
+Lagrange interpolants and gradient-enhanced are Hermite interpolants. 
+A value-based expansion takes the form
 
 \f[R = \sum_{i=1}^{N_p} r_i L_i(\xi) \f]
 
 where \f$N_p\f$ is the total number of collocation points, \f$r_i\f$
 is a response value at the \f$i^{th}\f$ collocation point, \f$L_i\f$
-is the \f$i^{th}\f$ multidimensional Lagrange interpolation
-polynomial, and \f$\xi\f$ is a vector of standardized random
-variables.  The \f$i^{th}\f$ Lagrange interpolation polynomial assumes
-the value of 1 at the \f$i^{th}\f$ collocation point and 0 at all
-other collocation points.  Thus, in PCE, one forms coefficients for
-known orthogonal polynomial basis functions, whereas SC forms
-multidimensional interpolation functions for known coefficients.
-DAKOTA provides access to SC methods through the NonDStochCollocation
-class.  Refer to the Uncertainty Quantification Capabilities chapter
-of the Users Manual [\ref UsersMan "Adams et al., 2010"] for
-additional information on the SC algorithm.
+is the \f$i^{th}\f$ multidimensional interpolation polynomial, and
+\f$\xi\f$ is a vector of standardized random variables.  The
+\f$i^{th}\f$ interpolation polynomial assumes the value of 1 at the
+\f$i^{th}\f$ collocation point and 0 at all other collocation points,
+involving either a global Lagrange polynomial basis or local piecewise
+splines.  It is easy to see that the approximation reproduces the
+response values at the collocation points and interpolates between
+these values at other points.  A gradient-enhanced expansion (selected
+via the \c use_derivatives keyword) involves both type 1 and type 2
+basis functions as follows:
+
+\f[R = \sum_{i=1}^{N_p} [ r_i L^{(1)}_i(\xi)
+     + \sum_{j=1}^n \frac{dr_i}{d\xi_j} L^{(2)}_{ij}(\xi) ] \f]
+
+where the \f$i^{th}\f$ type 1 interpolant produces 1 for the value at
+the \f$i^{th}\f$ collocation point, 0 for values at all other
+collocation points, and 0 for derivatives (when differentiated) at all
+collocation points, and the \f$ij^{th}\f$ type 2 interpolant produces
+0 for values at all collocation points, 1 for the \f$j^{th}\f$
+derivative component at the \f$i^{th}\f$ collocation point, and 0 for
+the \f$j^{th}\f$ derivative component at all other collocation points.
+Again, this expansion reproduces the response values at each of the
+collocation points, and when differentiated, also reproduces each
+component of the gradient at each of the collocation points.  Since
+this technique includes the derivative interpolation explicitly, it
+eliminates issues with matrix ill-conditioning that can occur in the
+gradient-enhanced PCE approach based on least squares regression.
+However, the calculation of high-order global polynomials with the
+desired interpolation properties can be similarly numerically
+challenging such that the use of local cubic splines is recommended 
+due to numerical stability.
+
+Thus, in PCE, one forms coefficients for known orthogonal polynomial
+basis functions, whereas SC forms multidimensional interpolation
+functions for known coefficients.  DAKOTA provides access to SC
+methods through the NonDStochCollocation class.  Refer to the
+Uncertainty Quantification Capabilities chapter of the Users Manual
+[\ref UsersMan "Adams et al., 2010"] for additional information on the
+SC algorithm.
 
 As for \ref MethodNonDPCE, the orthogonal polynomials used in defining
 the Gauss points that make up the interpolation grid are governed by
@@ -5654,23 +5690,23 @@ the Wiener/Askey/Extended selection defaults to Extended, can be
 overridden by the user using the keywords \c askey or \c wiener, and
 automatically falls back from Extended/Askey to Wiener on a per
 variable basis as needed to support prescribed correlations.  Unlike
-PCE, however, SC also supports the option of \c piecewise basis
-functions.  These are piecewise linear splines, or with an additional
-specification of \c use_derivatives, piecewise cubic Hermite splines.
-Both of these basis selections provide local support only over the
-range from the interpolated point to its nearest 1D neighbors (within
-a tensor grid or within each of the tensor grids underlying a sparse
-grid), which exchanges the fast convergence of global bases for smooth
-functions for robustness in the representation of nonsmooth response
-functions (that can induce Gibbs oscillations when using high-order
-global basis functions).  When local basis functions are used, the
-usage of nonequidistant collocation points (e.g., the Gauss point
-selections described above) are not well motivated, so equidistant
-Newton-Cotes points are employed in this case, and all random variable
-types are transformed to standard uniform probability space.  
-
-<!-- TO DO: add piecewise option to variable support tables -->
-<!-- TO DO: use_derivatives for global interpolants -->
+PCE, however, SC also supports the option of \c piecewise local basis
+functions.  These are piecewise linear splines, or in the case of
+gradient-enhanced interpolation via the \c use_derivatives
+specification, piecewise cubic Hermite splines.  Both of these basis
+selections provide local support only over the range from the
+interpolated point to its nearest 1D neighbors (within a tensor grid
+or within each of the tensor grids underlying a sparse grid), which
+exchanges the fast convergence of global bases for smooth functions
+for robustness in the representation of nonsmooth response functions
+(that can induce Gibbs oscillations when using high-order global basis
+functions).  When local basis functions are used, the usage of
+nonequidistant collocation points (e.g., the Gauss point selections
+described above) are not well motivated, so equidistant Newton-Cotes
+points are employed in this case, and all random variable types are
+transformed to standard uniform probability space (refer to Tables 
+\ref T5d29 "5.29", \ref T5d30 "5.30", and \ref T5d31 "5.31" for 
+variable types for which this transformation is supported).
 
 Automated expansion refinement can be selected as either \c
 p_refinement or \c h_refinement, and either refinement specification
@@ -5687,8 +5723,8 @@ specify \c piecewise in the case of \c h_refinement).
 The \c variance_based_decomp and \c all_variables specifications are
 identical to those described in \ref MethodNonDPCE.  The \c
 all_variables flag expands the dimensionality of the interpolation to
-include continuous design and state variables and epistemic uncertain
-variables, in addition to the default aleatory uncertain variables.
+include continuous design, state, and epistemic uncertain variables,
+in addition to the default continuous aleatory uncertain variables.
 Interpolation points for these dimensions are based on Gauss-Legendre
 rules if non-nested, Gauss-Patterson rules if nested, and Newton-Cotes
 points in the case of piecewise bases.  Again, when probability
