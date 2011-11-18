@@ -27,10 +27,22 @@ void NNLS_F77( double* a, int& mda, int& m, int& n, double* b, double* x,
 	       double& rnorm, double* w, double* zz, int* index, int& mode );
 
 #ifdef DAKOTA_F90
-#define BVLS_WRAPPER_FC FC_FUNC_(bvls_wrapper,BVLS_WRAPPER)
-void BVLS_WRAPPER_FC( double* a, int& m, int& n, double* b, double* bnd,
-		      double* x, double& rnorm, int& nsetp, double* w,
-		      int* index, int& ierr );
+  #if defined(HAVE_CONFIG_H) && !defined(DISABLE_DAKOTA_CONFIG_H)
+
+  // Deprecated; continue to support legacy, clashing macros for ONE RELEASE
+  #define BVLS_WRAPPER_FC FC_FUNC_(bvls_wrapper,BVLS_WRAPPER)
+  void BVLS_WRAPPER_FC( Dakota::Real* a, int& m, int& n, Dakota::Real* b,
+                        Dakota::Real* bnd, Dakota::Real* x, Dakota::Real& rnorm,
+                        int& nsetp, Dakota::Real* w, int* index, int& ierr );
+  #else
+
+  // Use the CMake-generated fortran name mangling macros (eliminate warnings)
+  #include "dak_f90_config.h"
+  #define BVLS_WRAPPER_FC DAK_F90_GLOBAL_(bvls_wrapper,BVLS_WRAPPER)
+  void BVLS_WRAPPER_FC( Dakota::Real* a, int& m, int& n, Dakota::Real* b,
+                        Dakota::Real* bnd, Dakota::Real* x, Dakota::Real& rnorm,
+                        int& nsetp, Dakota::Real* w, int* index, int& ierr );
+  #endif // HAVE_CONFIG_H and !DISABLE_DAKOTA_CONFIG_H
 #endif // DAKOTA_F90
 
 }

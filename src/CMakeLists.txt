@@ -94,15 +94,19 @@ elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
   set(FIXED_FLAG "-ffixed-form -std=legacy")
 elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "PGI")
   set(FIXED_FLAG "-Mfixed")
+elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "VisualAge")
+  set(FIXED_FLAG "-qfixed")
+elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "SunPro")
+  set(FIXED_FLAG "-fixed")
 endif()
 
 if(DAKOTA_F90)
-  # WJB - ToDo - ASAP: add_definitions("-DDAKOTA_F90")
+  add_definitions("-DDAKOTA_F90")
   list(APPEND CMAKE_Fortran_FLAGS ${FIXED_FLAG})
 endif(DAKOTA_F90)
 
-# WJB - ToDo: uncomment the following line when I begin using CMake gend FC_FUNC macros
-#include_directories(${Dakota_BINARY_DIR})
+include_directories(${Dakota_BINARY_DIR})
+FortranCInterface_HEADER(dak_f90_config.h MACRO_NAMESPACE DAK_F90_)
 
 
 option(HAVE_USAGE_TRACKING "Build the DAKOTA usage tracker module." OFF)
@@ -146,7 +150,6 @@ CheckPackage(PECOS)
 list(APPEND TPL_LIBS ${Pecos_LINK_LIBRARIES})
 list(APPEND EXPORT_TARGETS ${Pecos_LINK_LIBRARIES})
 if(HAVE_PECOS)
-  # WJB: really need Pecos_INCLUDE_DIRS for dakota
   include_directories(${Pecos_BINARY_DIR} ${Pecos_SOURCE_DIR}/src
                       ${VPISparseGrid_SOURCE_DIR}/src)
 endif(HAVE_PECOS)
@@ -226,6 +229,10 @@ set(iterator_src DakotaIterator.C DakotaAnalyzer.C DakotaPStudyDACE.C
     lawson_hanson1.f
     EffGlobalMinimizer.C
 )
+
+if(DAKOTA_F90)
+  list(APPEND iterator_src lawson_hanson2.f90)
+endif(DAKOTA_F90)
 
 if(HAVE_ACRO)
   add_definitions("-DDAKOTA_COLINY")
@@ -496,6 +503,9 @@ install(TARGETS dakota dakota_restart_util EXPORT DESTINATION bin)
 install(TARGETS dakota_library_mode DESTINATION bin)
 file(GLOB Dakota_hdr *.H *.h)
 install(FILES ${Dakota_hdr} DESTINATION include)
+if(DAKOTA_F90)
+  install(FILES ${Dakota_BINARY_DIR}/dak_f90_config.h DESTINATION include)
+endif(DAKOTA_F90)
 file(GLOB Dakota_spec_files dakota.input.*)
 install(FILES ${Dakota_spec_files} DESTINATION bin)
 
