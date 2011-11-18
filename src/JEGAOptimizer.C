@@ -1177,6 +1177,13 @@ JEGAOptimizer::LoadTheParameterDatabase(
         this->probDescDB.get_string("method.flat_file")
         );
 
+    // Dakota does not currently expose the input that allows one to specify
+    // the location of any data files written by JEGA.  Use the default but
+    // specify it explicitly here to prevent any problems.
+    this->_theParamDB->AddStringParam( 
+        "method.jega.data_directory", "./" 
+        );
+
     // Dakota does not currently expose the final data file name pattern
     // through the interface.
     this->_theParamDB->AddStringParam(
