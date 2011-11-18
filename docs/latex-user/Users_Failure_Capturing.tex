@@ -158,22 +158,26 @@ yet supported in DAKOTA.
 \section{Special values} \label{failure:special}
 
 In IEEE arithmetic, ``NaN'' indicates ``not a number'' and
-$\pm$``Inf'' or $\pm$``Infinity" indicates positive or negative infinity.  These special
-values may be returned directly in function evaluation results from a
-simulation interface or they may be specified in a user's input file
-within the \texttt{recover} specification described in
-Section~\ref{failure:mitigation:recover}.  There is a key difference
-between these two cases.  In the former case of direct simulation
-return, failure mitigation can be managed on a per response function
-basis.  When using \texttt{recover}, however, the failure applies to
-the complete set of simulation results.
+$\pm$``Inf'' or $\pm$``Infinity" indicates positive or negative
+infinity.  These special values may be returned directly in function
+evaluation results from a simulation interface or they may be
+specified in a user's input file within the \texttt{recover}
+specification described in Section~\ref{failure:mitigation:recover}.
+There is a key difference between these two cases.  In the former case
+of direct simulation return, failure mitigation can be managed on a
+per response function basis.  When using \texttt{recover}, however,
+the failure applies to the complete set of simulation results.
 
 In both of these cases, the handling of NaN or Inf is managed using
 iterator-specific approaches.  Currently, nondeterministic sampling
-methods (see Section~\ref{uq:sampling}) and the NL2SOL method
-for nonlinear least squares (see \S\ref{nls:solution:nl2sol}) are the only methods with
-special numerical exception handling:  the sampling methods simply omit any samples
-that are not finite from the statistics generation, and NL2SOL treats
+methods (see Section~\ref{uq:sampling}), polynomial chaos expansions
+using either regression approaches or spectral projection with random
+sampling (see Section~\ref{uq:expansion}), and the NL2SOL method for
+nonlinear least squares (see \S\ref{nls:solution:nl2sol}) are the only
+methods with special numerical exception handling: the sampling
+methods simply omit any samples that are not finite from the
+statistics generation, the polynomial chaos methods omit any samples
+that are not finite from the coefficient estimation, and NL2SOL treats
 NaN or Infinity in a residual vector (i.e., values in a results file
 for a function evaluation) computed for a trial step as an indication
 that the trial step was too long and violates an unstated constraint;

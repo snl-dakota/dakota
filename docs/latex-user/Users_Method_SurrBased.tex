@@ -40,12 +40,6 @@ convergence assessment, and constraint relaxation.
 
 \subsection{SBO with Data Fits}\label{sbm:sblm:surface}
 
-\begin{wrapfigure}{r}{.3\textwidth}
-  \centering
-  \includegraphics[width=.3\textwidth]{images/sbo_df}
-  \caption{SBO iteration progression for global data fits.}
-  \label{fig:sbo_df}
-\end{wrapfigure}
 When performing SBO with local, multipoint, and global data fit
 surrogates, it is necessary to regenerate or update the data fit for
 each new trust region.  In the global data fit case, this can mean
@@ -59,6 +53,12 @@ the original model into smooth, differentiable, easily navigated
 surrogates.  This allows SBO with global data fits to extract the
 relevant global design trends from noisy simulation data.
 
+\begin{wrapfigure}{r}{.3\textwidth}
+  \centering
+  \includegraphics[width=.3\textwidth]{images/sbo_df}
+  \caption{SBO iteration progression for global data fits.}
+  \label{fig:sbo_df}
+\end{wrapfigure}
 When enforcing local consistency between a global data fit surrogate
 and a high-fidelity model at a point, care must be taken to balance
 this local consistency requirement with the global accuracy of the
@@ -74,8 +74,9 @@ accuracy with its remaining degrees of freedom.
 Embedding the consistency within the data fit also reduces the
 sampling requirements.  For example, a quadratic polynomial normally
 requires at least $(n+1)(n+2)/2$ samples for $n$ variables to perform
-the fit.  However, with embedded first-order consistency constraints,
-the minimum number of samples is reduced by $n+1$ to $(n^2+n)/2$.
+the fit.  However, with an embedded first-order consistency constraint
+at a single point, the minimum number of samples is reduced by $n+1$ 
+to $(n^2+n)/2$.
 % With gradient information in each sample, this can be further
 % reduced to ceil(n/2) samples.
 %This corresponds to defining the terms of a symmetric Hessian matrix

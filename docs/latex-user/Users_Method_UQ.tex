@@ -862,14 +862,13 @@ element analysis through the utilization of the concepts of
 projection, orthogonality, and weak convergence. The polynomial chaos
 expansion is based on a multidimensional orthogonal polynomial
 approximation in standardized random variables, and the stochastic
-collocation approach is based on a multidimensional Lagrange
-interpolation in standardized random variables.  A distinguishing
-feature of these methodologies is that the final solution is expressed as
-a random process, and not merely as a set of statistics as is the case
-for many nondeterministic methodologies.  This makes these techniques
-particularly attractive for use in multi-physics applications which
-link different analysis packages.
-
+collocation approach is based on a multidimensional interpolation
+polynomial approximation in standardized random variables.  A
+distinguishing feature of these two methodologies is that the final
+solution is expressed as a random process, and not merely as a set of
+statistics as is the case for many nondeterministic methodologies.
+This makes these techniques particularly attractive for use in
+multi-physics applications which link different analysis packages.
 The first stochastic expansion method is the polynomial chaos
 expansion (PCE) described in Ghanem, et
 al.~\cite{Gha99},~\cite{Gha91}.  For smooth functions (i.e., analytic,
@@ -920,20 +919,33 @@ Gauss points with highest product weight (``probabilistic
 collocation''~\cite{Tat95}).
 
 Stochastic collocation (SC) is another stochastic expansion technique
-for UQ that is closely related to PCE.  As for PCE,
-exponential convergence rates can be obtained under order refinement
-for integrated statistical quantities of interest, provided that the
+for UQ that is closely related to PCE.  As for PCE, exponential
+convergence rates can be obtained under order refinement for
+integrated statistical quantities of interest, provided that the
 response functions are smooth with finite variance.  The primary
 distinction is that, whereas PCE estimates coefficients for known
-orthogonal polynomial basis functions, SC forms Lagrange interpolation
-functions for known coefficients.  
-Interpolation is performed on structured grids such as tensor-product
-or sparse grids.  Starting from a tensor-product multidimensional
-Lagrange interpolant, we have the feature that the $i^{th}$
-interpolation polynomial is 1 at collocation point $i$ and 0 for all
-other collocation points, leading to the use of expansion coefficients
-that are just the response values at each of the collocation points.
-Sparse interpolants are weighted sums of these tensor interpolants;
+multivariate orthogonal polynomial basis functions, SC forms
+multivariate interpolation polynomial bases for known coefficients.
+The interpolation polynomials may be local or global, value-based or
+gradient-enhanced, and nodal or hierarchical, with a total of six
+combinations currently supported: Lagrange (global value-based),
+Hermite (global gradient-enhanced), piecewise linear spline (local
+value-based) in nodal and hierarchical formulations, and piecewise
+cubic spline (local gradient-enhanced) in nodal and hierarchical
+formulations.  Interpolation is performed on structured grids such as
+tensor-product or sparse grids.  Starting from a tensor-product
+multidimensional interpolation polynomial in the value-based case
+(Lagrange or piecewise linear spline), we have the feature that the
+$i^{th}$ interpolation polynomial has a value of 1 at collocation
+point $i$ and a value of 0 for all other collocation points, leading
+to the use of expansion coefficients that are just the response values
+at each of the collocation points.  In the gradient-enhanced case
+(Hermite or piecewise cubic spline), SC includes both type 1 and type
+2 interpolation polynomials, where the former interpolate the values
+while producing zero gradients and the latter interpolate the
+gradients while producing zero values (refer to~\cite{TheoMan} for
+additional details).  Sparse interpolants are weighted sums of these
+tensor interpolants;
 %and retain the use of response values as expansion coefficients;
 however, they are only interpolatory for sparse grids based on fully 
 nested rules and will exhibit some interpolation error at the 
@@ -1008,12 +1020,14 @@ probabilities.  In Figure~\ref{uq:figure12}, excerpts from the results
 summary are presented.  We first see the moment statistics for mean,
 standard deviation, skewness, and kurtosis computed by numerical
 integration (see Analytic moments section in Stochastic Expansion
-Methods chapter in DAKOTA Theory Manual~\cite{TheoMan}).  The response
-covariance (collapsing to a single variance value for one response
-function) and global sensitivity indices (Sobol' indices) are
-presented next. This example shows that variable x1 has the largest
-main effect (0.99) as compared with variable x2 (0.0007) or the
-interaction between x1 and x2 (0.005).
+Methods chapter in DAKOTA Theory Manual~\cite{TheoMan}), where the
+numerical row corresponds to integration using the original response
+values and the expansion row corresponds to integration using values
+from the interpolant.  The response covariance (collapsing to a single
+variance value for one response function) and global sensitivity
+indices (Sobol' indices) are presented next. This example shows that
+variable x1 has the largest main effect (0.99) as compared with
+variable x2 (0.0007) or the interaction between x1 and x2 (0.005).
 %After the global sensitivity indices, the local, analytic random 
 %variable sensitivities are presented, as computed from
 %Eqs.~\ref{eq:dR_dx}-\ref{eq:dR_dxi_sc}, evaluated at the mean values.
@@ -1033,7 +1047,9 @@ Statistics derived analytically from polynomial expansion:
 
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5671972656e+02  2.0484189184e+03  2.7419241630e+02  1.9594567379e+06
+response_fn_1
+  expansion:    2.5671972656e+02  2.0484189184e+03  2.7419241630e+02  1.9594567379e+06
+  numerical:    2.5671972656e+02  2.0484189184e+03  2.7419241630e+02  1.9594567379e+06
 
 Covariance among response functions:
 [[  4.1960200651e+06 ]] 
