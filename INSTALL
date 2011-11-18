@@ -12,7 +12,7 @@ For more experienced users, building DAKOTA from source allows
 customization with additional packages and porting to additional
 platforms or operating systems.  This INSTALL file, in conjunction
 with platform-specific INSTALL.* files in Dakota/examples/platforms,
-describe how to install pre-built binaries and configure the
+describe how to install pre-built binaries and setup the
 environment, as well as how to compile from source code.
 
 
@@ -37,7 +37,7 @@ Binary Distributions
 
 DAKOTA binary distributions are provided in archive format (either
 tar.gz or zip).  To get started, unpack the archive into a suitable
-install location, e.g., /usr/local/Dakota or C:\Program Files\Dakota.
+install location, e.g., /usr/local/Dakota or C:\Dakota.
 
 Make sure the dakota executable (and optionally test files and current
 directory) are available on the PATH, e.g.:
@@ -51,29 +51,34 @@ Quick Start
 ===========
 
 For DAKOTA source distributions, the basic source-based install
-procedure is to 'configure' for the build platform to generate
-Makefiles, and then to execute 'make'.  Given the large number of
-supported packages, specifying a few configuration options and
+procedure is to use CMake to populate a build tree for the target platform with
+generated Makefiles, and then to execute 'make'.  Given the large number of
+supported packages, specifying a few 'cmake' options and
 environment variables may be required.  Building the software with all
 packages may take from 15 minutes to over an hour.  Typical process:
 
+  0) Install CMake 2.8.4 (or later) and ensure it is in your $PATH
   1) gunzip Dakota_releasename.tar.gz
   2) tar xvf Dakota_releasename.tar
-  3) cd Dakota
+  3) mkdir BuildDakota; cd BuildDakota
   4) export PATH=$PATH:.
-  5) configure [--disable-mpi] [--disable-f90]
-     * see NOTE below regarding GNU F90/F77 compatibility
+  5) cmake ../Dakota
+     * see NOTE below regarding specifying location of Boost
   6) make [-j#]
   [optional] 7) make install
-     * requires write privilege in $prefix (see "Installation Details" below).
-  [optional] 8) ./scripts/finish_install $prefix
-     * install DAKOTA dependencies and additional examples/tests into prefix
+     * requires write privilege in CMAKE_INSTALL_PREFIX
+       (see "Installation Details" below).
+  [optional] 8) ./scripts/finish_install CMAKE_INSTALL_PREFIX
+     * install DAKOTA dependencies and additional examples/tests into
+       CMAKE_INSTALL_PREFIX
 
-where support for the message-passing interface (MPI) and Fortran90
-compilation may not be available on all platforms.  If your platform
-has the GNU Fortran90 compiler installed, please set the following environment
-variable prior to configuring dakota to ensure compatible system, shared-object
-libs, e.g.
+Note that support for the message-passing interface (MPI) and Fortran90
+compilation may not be available on all platforms.  If your platform does NOT
+have a Fortran90 compiler, you must build DAKOTA using the deprecated,
+autotools technique (see additional notes below regarding "disable-f90").  If
+your platform has the GNU Fortran90 compiler installed, please set the following
+environment variable prior to building dakota to ensure compatible system,
+shared-object libs, e.g.
 
   export F77=gfortran    # SH/BASH
 
@@ -147,16 +152,19 @@ essential subset).  The following steps can then be executed:
    2) export SVNROOT=https://software.sandia.gov/svn/public/dakota # SH/BASH
    3) svn checkout $SVNROOT/private/trunk Dakota
    4) cd Dakota
-   5) autoreconf -i -v   
+   5) (optional) autoreconf -i -v   
 
 It is no longer necessary to check out the libraries associated with
 DAKOTA separately from their repositories, as Subversion externals
 have been defined in DAKOTA for that purpose.  They will be checked
 out as part of the DAKOTA checkout.  Command 5) creates the GNU
-Autotools-generated files that are necessary to configure DAKOTA.
+Autotools-generated files that can be used as a "worst-case" technique
+to 'configure' DAKOTA (e.g. cmake does not work on a particular platform,
+or perhaps, no Fortran90 compiler is available).
+
 Following these steps, your subversion distribution will have the same
 files as the source distribution tar file.  For further information on
-installing the versions of the Autotools used to develop DAKOTA,
+installing the versions of the CMake used to configure DAKOTA,
 consult the DAKOTA Developers Manual.
 
 
@@ -165,33 +173,39 @@ Basic Installation
 ==================
 
 For both the source distribution tar file and version control checkout 
-cases, there should now be a Dakota directory containing the
-autoconf-generated scripts to enable configuration.  External tools
+cases, there should now be a Dakota directory containing the source code
+and CMakeLists.txt files needed to enable builds.  Also provided
+are the legacy autoconf-generated scripts, but these are deprecated as of
+DAKOTA 5.2 and should only be used as a last resort.  External tools
 acro, hopspack, DDACE, JEGA, OPTPP, ampl, boost, pecos, surfpack, and teuchos
-in Dakota/packages.
+are in Dakota/packages.
 
 To build DAKOTA with all possible packages, some platform-dependent
-software dependencies exist.  These include the Message Passing
+software dependencies exist.  These include the Boost, Message Passing
 Interface (MPI) library, the Basic Linear Algebra Subprograms (BLAS)
-and Linear Algebra PACKage (LAPACK) libraries, support for lex and
-yacc (or flex and bison), X11 graphics libraries, and availability of
-a Fortran90 compiler.  Of these, support for MPI, X11 graphics, and
-Fortran90 are not strict requirements since they can be optionally
-omitted from the build by configuring with --disable-mpi,
---without-graphics, and --disable-f90, respectively (see "Installation
-Details" below).  However, BLAS/LAPACK and lex/yacc support are
-currently required.  To the extent possible, autoconf will
-automatically locate the required software for the build; however, in
-some cases, it will need some assistance to supplement or override the
-automatic detection capabilities.  See INSTALL.* files in the directory 
-Dakota/examples/platforms for examples of this, and for help installing 
-and running DAKOTA on specific operating systems or platforms.
+and Linear Algebra PACKage (LAPACK) libraries, X11 and Motif graphics
+libraries, and availability of a Fortran90 compiler.  Of these, support
+for MPI and X11/Motif graphics are not strict requirements since they can
+be optionally omitted from the build using CMake's "configuration" options,
+i.e. cmake variables that can be toggled-off when at "configure" time (see
+"Installation Details" below).  However, Boost and BLAS/LAPACK support are
+currently required.  Additionally, the default CMake build REQUIRES a Fortran90
+compiler.  If building DAKOTA on a platform that does not have a Fortran90
+compiler, users must fall-back to the legacy autotools build system (see
+additional notes below regarding "disable-f90").
+
+To the extent possible, CMake will automatically locate the required software
+for the build; however, in some cases, it will need some assistance to supplement
+or override the automatic detection capabilities.  See BuildSetup-*.cmake files
+in the directory Dakota/examples/platforms for examples of this.  Additionally,
+for help installing and running DAKOTA on specific operating systems or
+platforms, refer to the appropriate INSTALL.* file (also in the platform subdir).
 
 With respect to the MPI software, installation directories will vary
 from platform to platform.  To utilize message-passing parallelism
 within DAKOTA, it may be necessary to locate an MPI installation or
 download and build your own.  DAKOTA will look for C++ wrapper scripts
-provided by the MPI installation (such as mpiCC or mpCC) to build
+provided by the MPI installation (such as mpicxx, mpiCC, or mpCC) to build
 sources requiring MPI headers and to link executables requiring MPI
 libraries.  In some cases (e.g., Sun, IBM, Red Storm), a
 platform-optimized implementation of MPI is already provided as part
@@ -200,8 +214,8 @@ standard locations searched by the compilers (e.g., /usr/lib and
 /usr/include), then no additional setup is typically needed.
 
 In cases where MPI is not a standard part of the environment (e.g.,
-Mac OSX, Cygwin, Linux), you will either need to locate an MPI
-distribution installed by someone else (look for mpi or similar in
+Cygwin, and some Linux or MacOSX variants), you will either need to locate an
+MPI distribution installed by someone else (look for mpi or similar in
 /usr/local, /usr/netpub, /usr/share, etc.) or you will need to
 download MPI and build/install it yourself (MPICH downloads are
 available from http://www-unix.mcs.anl.gov/mpi/mpich1/download.html 
@@ -230,10 +244,11 @@ http://www.netlib.org/blas and http://www.netlib.org/lapack).  If
 these libraries are not installed in a location normally searched by
 the compilers (e.g., /usr/lib), or have non-standard library names (e.g.,
 Intel MKL, AMD Core Math Library, or Sun Performance Library) then 
-the path to these must be added to either the $BLAS_LIBS and $LAPACK_LIBS 
-environment variables or to the --with-blas and --with-lapack configure 
-options (see "Installation Details" below for information about environment
-variables and Cygwin (PC Windows) for an example).
+the path to these must be added to the $BLAS_LIBS and $LAPACK_LIBS 
+environment variables (or to the -DBLAS_LIBS=<path_to_blas> and
+-DLAPACK_LIBS=<path_to_lapack> 'cmake' options; see "Installation Details"
+below for information about environment variables and Cygwin (PC Windows)
+for an example).
 
 Most platforms provide the X11 graphics libraries needed to compile
 and link DAKOTA with graphics.  In some cases (e.g., older Red Hat
@@ -246,22 +261,21 @@ package require a Fortran90 compiler.  If the compiler is in a
 nonstandard location, it may be necessary to specify it at configure
 time, e.g., for the Portland Group compilers:
 
-  configure FC=pgf90 
+  cmake -DCMAKE_Fortran_COMPILER=pgf90 <path/to/source>
 
-(or via the full path if it's not on your current path).  See
-"Installation Details" for more information, or the MPICXX example  
-above for examples of doing this by setting an environment variable.  
-DAKOTA has been successfully built with the Intel, Portland Group, g95, 
-and gfortran Fortran90 compilers.  gfortran is preferred to g95 at this
+(or via the full path if it's not on your current path).
+DAKOTA has been successfully built with the Intel, Portland Group, IBM/xlf90,
+g95, and gfortran Fortran90 compilers.  gfortran is preferred to g95 at this
 time.  If no Fortran90 compiler is available, DAKOTA features that
-require it can be disabled with
+require it can ONLY be disabled with a (deprecated) autotools build, i.e.
 
   configure --disable-f90
+    (Please consider this technique only as a last resort.)
 
 At this point, the preliminaries have been completed and you are ready
 to configure and build the software.  First, the platform-specific
-Makefiles must be generated using the configure script.  Running
-configure without any options will result in an attempt to build with
+Makefiles must be generated using CMake.  Executing cmake
+without any options will result in an attempt to build with
 as many vendor algorithms and packages as are available in the
 distribution.  Finally, the Makefiles are executed by typing make.
 The DAKOTA build process supports parallel make using multiple
@@ -269,146 +283,104 @@ processors by passing the -j option (for example, 'make -j4' compiles
 4 source files concurrently during the build).  These steps are
 summarized as follows:
 
-   1) cd Dakota [if needed]
-   2) configure [config options] [environment variables]
+   1) cd BuildDakota [or other build_dir name as appropriate]
+   2) cmake [cmake options] <path/to/source>
    3) make [-j#]
 
 Once make has successfully completed, the generated DAKOTA executables
 (dakota and dakota_restart_util) will reside in Dakota/src.  Copies
-of the executables will be placed in $prefix/bin and copies of the
-libraries (libdakota.a et al.) are placed in $prefix/lib, where
-$prefix is specified as a path argument to the --prefix configure
-option (see "Installation Details" below).  Softlinks to executables
-are also created in Dakota/test, Dakota/examples/tutorial, 
-Dakota/examples/methods, Dakota/examples/script_interfaces/generic.
+of the executables will be placed in CMAKE_INSTALL_PREFIX/bin and copies of the
+libraries (libdakota.a et al.) are placed in CMAKE_INSTALL_PREFIX/lib, where
+CMAKE_INSTALL_PREFIX is specified as a path argument to the
+-DCMAKE_INSTALL_PREFIX=<path> 'cmake' option (see "Installation Details" below).
 
 
 ====================
 Installation Details 
 ====================
 
-The 'configure' shell script attempts to guess correct values for
+The CMake utility attempts to guess correct values for
 various system-dependent variables used during compilation.  It uses
 those values to create a 'Makefile' in each directory of the package.
 It may also create one or more *.h files containing system-dependent
-definitions.  Finally, it creates a shell script 'config.status' that
-can be run in the future to recreate the current configuration, and a
-file 'config.log' containing compiler output (useful mainly for
-debugging 'configure').
-
-It can also use an optional file (typically called 'config.cache' and
-enabled with '--cache-file=config.cache' or simply '-C') that saves
-the results of its tests to speed up reconfiguring.  (Caching is
-disabled by default to prevent problems with accidental use of stale
-cache files.)  If at some point 'config.cache' contains results you 
-don't want to keep, the file may be removed or edited. 
-
-If you need to do unusual things to compile the package, please try to
-figure out how 'configure' could check whether to do them, and mail
-diffs or instructions to the address given in the README file so they 
-can be considered for the next release.  
-
-The file 'configure.ac' (or 'configure.in') is used to create
-'configure' by a program called 'autoconf'.  You only need
-'configure.ac' if you want to change it or regenerate 'configure' using
-a recent version of 'autoconf' (2.60 or greater).
+definitions.  Finally, it caches the variables in a 'CMakeCache.txt' file that
+can be examined to verify the current configuration (and can also be useful for
+debugging 'cmake').
 
 The simplest way to compile a package is:
 
-  1. 'cd' to the directory containing the package's source code and type
-     './configure' to configure the package for your system.  If you're
-     using 'csh' on an old version of System V, you might need to type
-     'sh ./configure' instead to prevent 'csh' from trying to execute
-     'configure' itself.
-
-     Running 'configure' can take awhile.  While running, it prints some
-     messages telling which features it is checking for.
+  1. 'mkdir' and 'cd' to the newly created build directory which will contain
+     the package's binary targets and type 'cmake' to generate the packages
+     Makefiles for your system.
 
   2. Type 'make' to compile the package.
 
   3. Type 'make install' to install the programs and any data files and
      documentation.
 
-     If you used the --prefix=DIR option to configure, the executables
-     will be installed in the bin/ subdirectory of the prefix directory
-     specified. (Default prefix is /usr/local/dakota; see "Installation Names"
-     below.)
+     The executables will be installed in the bin/ subdirectory of the
+     CMAKE_INSTALL_PREFIX directory specified. (Default CMAKE_INSTALL_PREFIX
+     is /usr/local; see "Installation Names" below.)
 
   4. The program binaries and object files can be removed from the
-     source code directory by typing 'make clean'.  There is
-     also a 'make maintainer-clean' target, but that is intended mainly
-     for the package's developers.  If you use it, you may have to get
-     all sorts of other programs in order to regenerate build files that
-     came with the distribution, therefore it is discouraged.
+     build directory by typing 'make clean'.
 
 
 =====================
 Compilers and Options
 =====================
 
-Some systems require unusual options for compilation or linking that
-the 'configure' script does not know about.  Run 'configure --help'
-for details on some of the pertinent environment variables.
-
-Initial values for configuration parameters can be passed to 'configure' 
+Initial values for configuration parameters can be passed to 'cmake' 
 by setting variables in the command line or in the environment.  Here
 is a command-line example:
 
-  configure CC=c89 CFLAGS=-O2 LIBS=-lposix
+  CFLAGS=-O2 cmake -DCMAKE_C_COMPILER=c89
 
 
-====================================
-Compiling For Multiple Architectures
-====================================
+==============================================================
+Compiling For Multiple Architectures/Specifying Boost Location
+==============================================================
 
 The package can be compiled for more than one kind of computer at the
 same time, by placing the object files for each architecture in their
-own directory.  To do this, you must use a version of 'make' that
-supports the 'VPATH' variable, such as GNU 'make'.  The use of a 'make'
-that does not support the 'VPATH' variable is NOT SUPPORTED by DAKOTA.
+own directory.
 
-Prior to building DAKOTA in an empty build directory, locations of pre-
-requisite third-party libaries (aka TPLs, i.e. Teuchos and Boost) must be
-identified.  If Teuchos and Boost are already installed on the system,
-then it is easy to inform DAKOTA's configure of their respective locations.
-However, more typically, Teuchos has NOT been pre-built/installed, and
-therefore it MUST be built prior to building DAKOTA. Please ensure that a binary
-compatible version of the Teuchos libaray is avaiable PRIOR to building DAKOTA.
+Prior to building DAKOTA in an empty build directory, the location of the
+Boost libraries must be identified if not installed in a system area.
+If Boost is already installed on the system, then it is generally easy 
+for CMake to determine and set the proper paths in the generated Makefiles
+so compilation of the DAKOTA sources can proceed.
 
-To build Teuchos you must first obtain the Teuchos source code. For convenience,
-DAKOTA provides the teuchos source code in the Dakota/packages directory.
-Teuchos is a foundation library that has a similar autotools build harness
-as DAKOTA.  Please follow the typical configure/make/(optional)make install
-steps expected for a classic, autoconf-based library build to create the
-teuchos library (similar to "Installing Commercial Libs" below, but note,
-Teuchos is NOT a commercial library, it is just one of many core libraries
-that composes Sandia's Trilinos product).
+If Boost has NOT been installed in a system area, it MUST be built and installed
+by the user prior to building DAKOTA.  Please ensure that a binary
+compatible version of the Boost libraries are avaiable PRIOR to building DAKOTA.
 
-DAKOTA uses a subset of Boost (for convenience, provided in Dakota/packages)
-consisting of several header-only Boost components PLUS a single Boost library:
-Boost.signals.
-There is no prerequisite step to build the Boost signals library since the
-DAKOTA/packages/boost "snapshot" contains a autotools build-harness that
-is compatible with DAKOTA.  It should configure/make just like any other
-DAKOTA TPL.
+DAKOTA uses a subset of Boost (and for convenience provides Boost 1.45 source
+files in Dakota/packages) consisting of several header-only Boost components
+PLUS the following set of library components:  Boost.Signals, Boost.Regex,
+Boost.Filesystem, and Boost.System.
+
+In addition to the Boost source files, the DAKOTA "snapshot" also contains
+autotools and CMake build-harnesses for the four libraries that must be
+installed prior to initiating a DAKOTA build.  If users prefer BJAM for
+building Boost components, they should follow the guidelines for download,
+build, install provided at the boost.org website.
 
 Please note that many system Boost installations DO NOT meet the minimum 
-minimum version requirement for DAKOTA (Boost 1.40 or higher).  Attempting
-to configure with a Boost installation earlier than 1.40 will result in a
-configure error.
+minimum version requirement for DAKOTA (Boost 1.40 or higher).  Attempting to
+build DAKOTA against a Boost installation earlier than 1.40 will result in a
+CMake error.
 
-Once the locations locations of the TPLs have been identified, 'cd' to the
+Having determined the location of the Boost installation, 'cd' to the build
 directory where you want the object files and executables to go and run
-the 'configure' script.  'configure' automatically checks for the
-source code in the directory that 'configure' is in.  Locations of Boost
-and Teuchos must be provided as command line arguments to configure, e.g.
+'cmake'.  Since DAKOTA does not support in-source build trees, the directory
+containing the source tree must be specified as an argument to 'cmake'.  One
+technique for providing the location of Boost is via command line argument to
+'cmake', e.g.
 
-  $DAKSRC_ROOT/configure --with-boost=<dirpath_to_boost> \
-    --with-teuchos=<dirpath_to_teuchos>
+  cmake -DBoost_INCLUDE_DIR=<dirpath_to_boost_inc> <dirpath_to_dakota_src>
 
-Run 'configure --help' for additional options, especially those pertinent
-to Teuchos installations in which the library (--with-teuchos-lib=DIR_LIB) is
-in a different location than the header files (--with-teuchos-include=DIR_INC).
+Run 'cmake --help' for additional options.
 
 
 ==================
@@ -416,92 +388,36 @@ Installation Names
 ==================
 
 By default, 'make install' will try to install the package's files in
-'$prefix/bin', '$prefix/man', etc.  Please note DAKOTA's default prefix is
-/usr/local/dakota.  An alternate installation prefix can be specified by 
-giving 'configure' the option '--prefix=DIR'.
+'CMAKE_INSTALL_PREFIX/bin', 'CMAKE_INSTALL_PREFIX/man', etc.  Please note
+the default CMAKE_INSTALL_PREFIX is /usr/local.
+An alternate installation directory can be specified by 
+giving 'cmake' the option '-DCMAKE_INSTALL_PREFIX=<dir>'.
 
-Separate installation prefixes for architecture-specific files and 
+Separate installation directories for architecture-specific files and 
 architecture-independent files can be specified.  If you
-give 'configure' the option '--exec-prefix=DIR', the package will use
-DIR as the prefix for installing programs and libraries.
+give 'cmake' the option '-DCMAKE_INSTALL_EXEC_PREFIX=<dir>', the package will
+use <dir> as the directory for installing programs and libraries.
 Documentation and other data files will still be installed using the 
-regular prefix.
-
-In addition, an unusual directory layout can be specified with options 
-like '--bindir=DIR' to specify different values for particular
-kinds of files.  Run 'configure --help' for a list of the directories
-that can be set and what kinds of files go in them.
+regular CMAKE_INSTALL_PREFIX.
 
 
 ==================
 Defining Variables
 ==================
 
-Variables not defined in a site shell script can be set in the
-environment passed to 'configure'.  However, some packages may run
-configure again during the build, and the customized values of these
-variables may be lost.  In order to avoid this problem, it is preferable
-to set them in the 'configure' command line, using 'VAR=value'.  For 
-example:
+Some key variables, such as compiler and compiler flags, can be set in the
+environment passed to 'cmake'.  For example:
 
-  configure CC=/usr/local2/bin/gcc
+  CC=/usr/local2/bin/gcc cmake <path/to/source>
+or
+  cmake -DCMAKE_C_COMPILER=/usr/local2/bin/gcc <path/to/source>
 
-will cause the specified gcc to be used as the C compiler (unless it is
-overridden in the site shell script).
-
-
-======================
-'configure' Invocation
-======================
-
-'configure' recognizes the following options to control its operation.
-
---help
--h
-     Print a summary of the options to 'configure', and exit.
-
---version
--V
-     Print the version of Autoconf used to generate the 'configure'
-     script, and exit.
-
---cache-file=FILE
-     Enable the cache: use and save the results of the tests in FILE,
-     traditionally 'config.cache'.  FILE defaults to '/dev/null' to
-     disable caching.
-
---config-cache
--C
-     Alias for '--cache-file=config.cache'.
-
---quiet
---silent
--q
-     Do not print messages saying which checks are being made.  To
-     suppress all normal output, redirect it to '/dev/null' (any error
-     messages will still be shown).
-
---srcdir=DIR
-     Look for the package's source code in directory DIR.  Usually
-     'configure' can determine that directory automatically.
-
-'configure' also accepts some other, not widely useful, options.  Run
-'configure --help' for more details.
+will cause the specified gcc to be used as the C compiler.
 
 
 ===========================
 Useful Environment Settings
 ===========================
-
-The following environment settings are useful additions to your
-.bashrc file (or equivalent 'setenv' commands in .cshrc file).  
-
-For most platforms, the compiler option flags should be set to: 
-     export CFLAGS="-O2"
-     export CXXFLAGS="-O2"
-     export FFLAGS="-O2"
-     export FCFLAGS="-O2"
-Note that "-O2" can be switched to "-g -O0" for compiling in debug mode.
 
 Add man page paths for MPI and DAKOTA Manuals:
   export MANPATH=<your_default_man_paths>:<path_to_mpi_installation>/man:<path_to_your_dakota>/docs/man-dev:<path_to_your_dakota>/docs/man-ref
@@ -513,26 +429,6 @@ where to find the missing libraries, e.g.,
 
 Add search paths for shared object libraries:
   export LD_LIBRARY_PATH=/usr/local/X11R5/lib:$LD_LIBRARY_PATH
-
-
-========================================
-DAKOTA and standard GNU Makefile targets
-========================================
-
-One might expect that a software package shipped with a GNU autotools-based 
-build system to support many targets beyond the basic ones mentioned in this
-in this INSTALL file.  Unfortunately however, DAKOTA cannot guarantee support
-for some standard GNU Makefile targets such as 'make check' and 
-'make distclean'.  This is due to DAKOTA's approach of NOT imposing strict,
-build-system requirements upon the many third-party libraries that provide
-lower-level functionality for DAKOTA.  The DAKOTA team works with many code
-teams providing third-party libraries to ensure that, at the top-level of a
-DAKOTA build, you can expect 'make', 'make clean', and 'make install' all to
-work as designed.  At this time, DAKOTA cannot commit to supporting targets
-beyond those explicitly mentioned in this INSTALL guide.  We are hopeful
-that by encouraging our third-party providers to support targets such as
-'make check', we will be able to provide support for a more complete list
-of standard targets in future releases.
 
 
 ===============================
@@ -596,46 +492,6 @@ Versions 4 and 5 (line numbers are for Version 5):
            by the user in the DAKOTA input file.
 
 
-The Mathworks' Matlab:  To use the DAKOTA/Matlab interface described in
-Advanced Simulation Code Interfaces in the DAKOTA User's Manual,
-DAKOTA must be configured and compiled with the Matlab feature
-enabled.  The DAKOTA/Matlab interface has been built and tested on
-32-bit Linux with Matlab 7.0 (R14) and on 64-bit Linux with Matlab 7.1
-(R14SP3).  Configuration support for Solaris is included, but is
-untested.  Builds on other platforms or with other versions of Matlab
-may require modifications to the DAKOTA build system, including the
-Matlab section of config/dak_options.m4 (please send feedback on what
-modifications were necessary for your platform and environment to
-dakota-developers@development.sandia.gov).
-
-The Mathworks only provides shared object libraries for its engine
-API, so DAKOTA must be dynamically linked to at least the Matlab
-libraries.  To build Dakota with the Matlab interface enabled:
-
-  1. Configure Dakota with (at minimum) the following directive:
-
-       configure --with-matlab=$MATLAB_ROOT
-
-     where $MATLAB_ROOT is the root of your Matlab installation (it
-     should be a directory containing directories bin/YOURPLATFORM and
-     extern/include).
-
-  2. Make sure the path to the appropriate Matlab shared object
-     libraries is on your {\tt LD\_LIBRARY\_PATH}.  For example to
-     accomplish this in BASH on 32-bit Linux, one might type
-
-       export LD_LIBRARY_PATH=/usr/local/matlab/bin/glnx86:$LD_LIBRARY_PATH
-
-     or add such a command to the .bashrc file.
-
-  3. Make Dakota:
-
-      make
-
-The Matlab shared object libraries must also be on the library path at
-run-time.
-
-
 ==============================
 Generating Local Documentation
 ==============================
@@ -643,21 +499,16 @@ Generating Local Documentation
 The DAKOTA Users, Developers, and Reference Manuals are maintained in
 Dakota/docs.  
 
-To build a local copy of the Users Manual, include the --enable-docs switch
-when configuring DAKOTA and then execute one or more of the following make
-commands:
-
-  cd Dakota/docs/latex-user
-  make dvi               [generates Users_Main.dvi]
-  make ps                [generates Users_Main.ps]
-  make pdf               [generates Users_Main.pdf]
+To build a local copy of the Users Manual, include the
+'-DENABLE_DAKOTA_DOCS=on' command line argument to 'cmake'.  This feature is
+only supported on UNIX platforms.
 
 To build a local copy of the Developers and Reference manuals in HTML,
 LaTeX, and man page formats, you will need the doxygen tool available for
 download from http://www.doxygen.org under GNU GPL terms.  Once doxygen is
 downloaded and installed, the commands are:
 
-  cd Dakota/docs
+  cd docs
   doxygen Doxyfile       [Developers Manual]
   doxygen Doxyfile-ref   [Reference Manual]
 
@@ -667,18 +518,16 @@ Makefile is provided for which you can use one or more of the following
 make commands:
 
   cd latex-dev           [Developers Manual]
-  make                   [generates refman.dvi]
-  make ps                [generates refman.ps]
-  make pdf               [generates refman.pdf]
+  make                   [generates refman.dvi, refman.ps, and refman.pdf]
 
 These same commands can be replicated for the Reference Manual latex
-source in Dakota/docs/latex-ref.  For the highest quality Postscript 
+source in docs/latex-ref.  For the highest quality Postscript 
 or PDF manual, Dakota/docs/README.latex provides instructions for
 fine-tuning of chapter numbering and Dakota/docs/latex_modify.perl
 provides a Perl utility for automating these modifications.
 
-To access the man pages with the man command, add the Dakota/docs/man
-and Dakota/docs/man-ref directories to your $MANPATH as described in
+To access the man pages with the man command, add the <DAK_BUILD_DIR>/docs/man
+and <DAK_BUILD_DIR>/docs/man-ref directories to your $MANPATH as described in
 the Useful Environment Settings section.
 
 
