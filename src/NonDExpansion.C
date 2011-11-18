@@ -350,6 +350,8 @@ void NonDExpansion::construct_expansion_sampler()
       numSamplesOnExpansion, orig_seed, rng, UNCERTAIN), false);
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
     NonD* exp_sampler_rep = (NonD*)expansionSampler.iterator_rep();
+    // publish output verbosity
+    exp_sampler_rep->output_level(outputLevel);
     // publish level mappings to expansion sampler, but suppress reliability
     // moment mappings, which are performed locally within compute_statistics()
     RealVectorArray empty_rv_array; // empty
@@ -383,6 +385,7 @@ void NonDExpansion::construct_expansion_sampler()
  
       NonDAdaptImpSampling* imp_sampler_rep = 
         (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
+      imp_sampler_rep->output_level(outputLevel);
       imp_sampler_rep->requested_levels(req_resp_levs, empty_rv_array,
 	empty_rv_array, empty_rv_array, respLevelTarget, cdfFlag);
     }
