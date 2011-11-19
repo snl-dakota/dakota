@@ -167,11 +167,11 @@ parallelism) may still be available.
   line search capability for generating concurrency~\cite{Sch04}.
 
 \item Nongradient-based optimizers: HOPSPACK, JEGA methods, and most
-  COLINY methods support parallelism.  HOPSPACK and COLINY methods
+  SCOLIB methods support parallelism.  HOPSPACK and SCOLIB methods
   exploit parallelism through the use of DAKOTA's concurrent function
   evaluations; however, there are some limitations on the levels of
   concurrency and asynchrony that can be exploited.  These are detailed
-  in the DAKOTA Reference Manual. Serial COLINY methods include
+  in the DAKOTA Reference Manual. Serial SCOLIB methods include
   Solis-Wets (\texttt{coliny\_solis\_wets}) and certain
   \texttt{exploratory\_moves} options (\texttt{adaptive\_pattern} and
   \texttt{multi\_step}) in pattern search
@@ -243,8 +243,8 @@ parallelism are:
 solution points between methods, single-point minimizers will be executed
 concurrently using each of the transferred solution points.
 
-\item Branch and bound: optimization strategy for mixed-integer nonlinear
-programming with noncategorical discrete variables.
+%\item Branch and bound: optimization strategy for mixed-integer nonlinear
+%programming with noncategorical discrete variables.
 
 \item Pareto-set optimization: multiobjective optimization strategy for
 computing sets of points on the Pareto front of nondominated solutions.
@@ -767,30 +767,30 @@ message passing parallelism:
   no mechanism to adapt.
 \end{itemize}
 
-In addition, the following scheduling approach is provided by PICO for
-the scheduling of concurrent optimizations within the branch and bound
-strategy:
+%In addition, the following scheduling approach is provided by PICO for
+%the scheduling of concurrent optimizations within the branch and bound
+%strategy:
 
-\begin{itemize}
+%\begin{itemize}
 % TO DO: this could become multipoint nondedicated dynamic scheduling
-\item \emph{Distributed scheduling}: in this approach, a peer
-  partition is used and each peer maintains a separate queue of
-  pending jobs. When one peer's queue is smaller than the other
-  queues, it requests work from its peers (prior to idleness). In this
-  way, it can adapt to heterogeneous conditions, provided there are
-  sufficient instances to balance the variation. Each partition
-  performs communication between computations, and no processors are
-  dedicated to scheduling. Furthermore, it distributes scheduling load
-  beyond a single processor, which can be important for large numbers
-  of concurrent jobs (whose scheduling might overload a single master)
-  or for fault tolerance (avoiding a single point of failure).
-  However, it involves relatively complicated logic and additional
-  communication for queue status and job migration, and its
-  performance is not always superior since a partition can become
-  work-starved if its peers are locked in computation (Note: this
-  logic can be somewhat simplified if a separate thread can be created
-  for communication and migration of jobs).
-\end{itemize}
+%\item \emph{Distributed scheduling}: in this approach, a peer
+%  partition is used and each peer maintains a separate queue of
+%  pending jobs. When one peer's queue is smaller than the other
+%  queues, it requests work from its peers (prior to idleness). In this
+%  way, it can adapt to heterogeneous conditions, provided there are
+%  sufficient instances to balance the variation. Each partition
+%  performs communication between computations, and no processors are
+%  dedicated to scheduling. Furthermore, it distributes scheduling load
+%  beyond a single processor, which can be important for large numbers
+%  of concurrent jobs (whose scheduling might overload a single master)
+%  or for fault tolerance (avoiding a single point of failure).
+%  However, it involves relatively complicated logic and additional
+%  communication for queue status and job migration, and its
+%  performance is not always superior since a partition can become
+%  work-starved if its peers are locked in computation (Note: this
+%  logic can be somewhat simplified if a separate thread can be created
+%  for communication and migration of jobs).
+%\end{itemize}
 
 Message passing schedulers may be used for managing concurrent
 iterator executions within a strategy, concurrent evaluations within
@@ -1220,8 +1220,9 @@ for the next lower level of parallelism.
 DAKOTA is designed to allow the freedom to configure each parallelism
 level with either the dedicated master partition/self-scheduling
 combination or the peer partition/static scheduling combination. In
-addition, certain external libraries may provide additional options
-(e.g., PICO supports distributed scheduling in peer partitions). As an
+addition, certain external libraries may provide additional options.
+%(e.g., PICO supports distributed scheduling in peer partitions).
+As an
 example, Figure~\ref{parallel:figure02} shows a case in which a branch
 and bound strategy employs peer partition/distributed scheduling at
 level 1, each optimizer partition employs concurrent function

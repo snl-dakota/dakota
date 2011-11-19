@@ -8,12 +8,13 @@ available, some of which are commercial packages, some of which are
 developed internally to Sandia, and some of which are free software
 packages from the open source community. The downloaded version of
 DAKOTA excludes the commercially developed packages but includes
-HOPSPACK, COLINY, CONMIN, JEGA, OPT++, and PICO. Interfaces to DOT,
-NPSOL, and NLPQL are provided with DAKOTA, but to use these commercial
-optimizers, the user must obtain a software license and the source
-code for these packages separately. The commercial software can then
-be compiled into DAKOTA by following DAKOTA's installation procedures
-(see notes in \texttt{Dakota/INSTALL}).
+HOPSPACK, SCOLIB (formerly known as COLINY), CONMIN, JEGA, NCSUOpt,
+and OPT++. Interfaces to DOT, NPSOL, and NLPQL are provided with
+DAKOTA, but to use these commercial optimizers, the user must obtain a
+software license and the source code for these packages
+separately. The commercial software can then be compiled into DAKOTA
+by following DAKOTA's installation procedures (see notes in
+\texttt{Dakota/INSTALL}).
 
 DAKOTA's input commands permit the user to specify two-sided nonlinear
 inequality constraints of the form $g_{L_{i}} \leq g_{i}(\mathbf{x})
@@ -44,11 +45,11 @@ and CONMIN algorithms.  Other optimizers fall somewhere in between.
 NLPQL supports nonlinear equality constraints $h_{j}(\mathbf{x}) = 0$
 and nonlinear one-sided inequalities $g_{i}(\mathbf{x}) \geq 0$, but
 does not natively support linear constraints.  Constraint mappings are
-used with NLPQL for both linear and nonlinear cases.  Most COLINY
+used with NLPQL for both linear and nonlinear cases.  Most SCOLIB
 methods now support two-sided nonlinear inequality constraints and
 nonlinear constraints with targets, but do not natively support linear
 constraints.  Constraint augmentation is not currently used with
-COLINY, since linear constraints will soon be supported natively.
+SCOLIB since linear constraints will soon be supported natively.
 
 When gradient and Hessian information is used in the optimization,
 derivative components are most commonly computed with respect to the
@@ -92,11 +93,11 @@ See the DAKOTA Reference Manual~\cite{RefMan} for additional detail on
 the APPS commands and sample input specifications in {\tt
 Dakota/test/dakota\_apps.in}.
 
-\subsection{COLINY Library}\label{opt:software:coliny}
+\subsection{SCOLIB Library}\label{opt:software:coliny}
 
-The COLINY library~\cite{Har06} supersedes the SGOPT library and contains
-a variety of nongradient-based optimization algorithms. The suite of
-COLINY optimizers available in DAKOTA currently include the following:
+The SCOLIB library~\cite{Har06} contains a variety of
+nongradient-based optimization algorithms. The suite of SCOLIB
+optimizers available in DAKOTA currently include the following:
 
 \begin{itemize}
 
@@ -120,16 +121,16 @@ COLINY optimizers available in DAKOTA currently include the following:
 
 \end{itemize}
 
-For expensive optimization problems, COLINY's global optimizers are
+For expensive optimization problems, SCOLIB's global optimizers are
 best suited for identifying promising regions in the global design
 space. In multimodal design spaces, the combination of global
-identification (from COLINY) with efficient local convergence (from
+identification (from SCOLIB) with efficient local convergence (from
 CONMIN, DOT, NLPQL, NPSOL, or OPT++) can be highly effective. None of
-the COLINY methods are gradient-based, which makes them appropriate
+the SCOLIB methods are gradient-based, which makes them appropriate
 for problems for which gradient information is unavailable or is of
-questionable accuracy due to numerical noise. The COLINY methods
+questionable accuracy due to numerical noise. The SCOLIB methods
 support bound constraints and nonlinear constraints, but not linear
-constraints.  The nonlinear constraints in COLINY are currently
+constraints.  The nonlinear constraints in SCOLIB are currently
 satisfied using penalty function formulations~\cite{Pon96}. Support
 for methods which manage constraints internally is currently being
 developed and will be incorporated into future versions of DAKOTA.
@@ -139,7 +140,7 @@ constraints}.  Refer to Table 17.1 for additional method
 classification information.
 
 An example specification for a simplex-based pattern search algorithm
-from COLINY is:
+from SCOLIB is:
 \begin{small}
 \begin{verbatim}
     method,
@@ -155,7 +156,7 @@ from COLINY is:
 \end{small}
 
 The DAKOTA Reference Manual~\cite{RefMan} contains additional information
-on the COLINY options and settings.
+on the SCOLIB options and settings.
 
 \subsection{Constrained Minimization (CONMIN) Library}\label{opt:software:conmin}
 
@@ -230,8 +231,19 @@ algorithm is:
 \end{verbatim}
 \end{small}
 
-See the DAKOTA Reference Manual~\cite{RefMan} for additional detail on the
-DOT commands. More information on DOT can be obtained by contacting
+\emph{We here provide a caution regarding \texttt{dot\_frcg}.  In DOT
+Version 4.20, we have noticed inconsistent behavior of this algorithm
+across different versions of Linux.  Our best assessment is that it is
+due to different treatments of uninitialized variables.  As we do not
+know the intention of the code authors and maintaining DOT source code
+is outside of the DAKOTA project scope, we have not made nor are we
+recommending any code changes to address this.  However, all users who
+use \texttt{dot\_frcg} in DOT Version 4.20 should be aware that
+results may not be reliable.}
+
+See the DAKOTA
+Reference Manual~\cite{RefMan} for additional detail on the DOT
+commands. More information on DOT can be obtained by contacting
 Vanderplaats Research and Development at \url{http://www.vrand.com}.
 
 \subsection{dl\_solver --- Solvers via Shared Libraries}\label{opt:software:dlsolver}
@@ -441,22 +453,17 @@ The OPT++ library generates diagnostics in addition to those appearing
 in the DAKOTA output stream. These diagnostics are written to the file
 \texttt{OPT\_DEFAULT.out} in the working directory.
 
-\subsection{Parallel Integer Combinatorial Optimization (PICO)}\label{opt:software:pico}
+%\subsection{Parallel Integer Combinatorial Optimization (PICO)}\label{opt:software:pico}
 
-\emph{Branch and bound is inoperative in DAKOTA since its
-  incorporation into COLINY.  This will be supported again in future
-  releases.}
+%\emph{Branch and bound is inoperative in DAKOTA since its
+%  incorporation into COLINY.  This will be supported again in future
+%  releases.}
 
-DAKOTA employs the branch and bound capabilities of the PICO library
-for solving discrete and mixed continuous/discrete constrained
-nonlinear optimization problems. This capability is implemented in
-DAKOTA as a strategy and is discussed further in
-Section~\ref{strat:minlp}.
-
-\subsection{SGOPT}\label{opt:software:sgopt}
-
-The SGOPT library has been deprecated, and all methods have been
-migrated to the COLINY library.
+%DAKOTA employs the branch and bound capabilities of the PICO library
+%for solving discrete and mixed continuous/discrete constrained
+%nonlinear optimization problems. This capability is implemented in
+%DAKOTA as a strategy and is discussed further in
+%Section~\ref{strat:minlp}.
 
 \section{Additional Optimization Capabilities}\label{opt:additional}
 

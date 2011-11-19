@@ -278,16 +278,17 @@ integrated through it's successor (HOPSPACK).  HOPSPACK is available
 to the public under the GNU LGPL and the source code is included with
 DAKOTA (web page: \url{https://software.sandia.gov/trac/hopspack}).
 
-\textbf{COLINY}: Methods for nongradient-based local and global
+\textbf{SCOLIB}: Methods for nongradient-based local and global
 optimization which utilize the Common Optimization Library INterface
-(COLIN). %This algorithm library supersedes the SGOPT library. 
-COLINY currently includes evolutionary algorithms (including several
-genetic algorithms and Evolutionary Pattern Search), simple pattern
-search, Monte Carlo sampling, and the DIRECT and Solis-Wets
-algorithms. COLINY also include interfaces to third-party optimizer
-COBYLA2.  This software is available to the public under a GNU Lesser
-General Public License (LGPL) through ACRO (A Common Repository for
-Optimizers) and the source code for COLINY is included with DAKOTA
+(COLIN). %This algorithm library supersedes the SGOPT library.
+SCOLIB
+(formerly known as COLINY) currently includes evolutionary algorithms
+(including several genetic algorithms and Evolutionary Pattern
+Search), simple pattern search, Monte Carlo sampling, and the DIRECT
+and Solis-Wets algorithms. SCOLIB also include interfaces to
+third-party optimizer COBYLA2.  This software is available to the
+public under a BSD license through ACRO (A Common Repository for
+Optimizers) and the source code for SCOLIB is included with DAKOTA
 (web page: \url{http://software.sandia.gov/trac/acro}).
 
 \textbf{CONMIN (CONstrained MINimization)}: Methods for gradient-based
@@ -343,7 +344,7 @@ State University, including DIRECT and, eventually, impicit filtering
 (web site: \url{http://www4.ncsu.edu/~ctk/matlab_darts.html}).  We
 currently incorporate only an implementation of the DIRECT (DIviding
 RECTangles) algorithm~\cite{Gab01}.  While this is somewhat redundant
-with DIRECT supplied by Coliny, we have found that NCCSU DIRECT
+with DIRECT supplied by SCOLIB, we have found that NCCSU DIRECT
 performs better in some cases, and presently we maintain both versions
 in DAKOTA.
 
@@ -376,16 +377,16 @@ constraints.  OPT++ is available to the public under the GNU LGPL and
 the source code is included with DAKOTA (web page:
 \url{http://csmr.ca.sandia.gov/opt++}).
 
-\textbf{PICO (Parallel Integer Combinatorial Optimization)}: PICO's
-branch-and-bound algorithm can be applied to nonlinear optimization
-problems involving discrete variables or a combination of continuous
-and discrete variables~\cite{Eck01}. The discrete variables must be
-noncategorical (see Section~\ref{variables:design:ddv}).  PICO is
-available to the public under the GNU LGPL (web page:
-\url{http://software.sandia.gov/trac/acro/wiki/Packages}) and the
-source code is included with DAKOTA as part of the Acro package.
-\emph{Notes: (1) PICO's linear programming solvers are not included
-  with DAKOTA, (2) PICO is not currently active in DAKOTA.}
+%\textbf{PICO (Parallel Integer Combinatorial Optimization)}: PICO's
+%branch-and-bound algorithm can be applied to nonlinear optimization
+%problems involving discrete variables or a combination of continuous
+%and discrete variables~\cite{Eck01}. The discrete variables must be
+%noncategorical (see Section~\ref{variables:design:ddv}).  PICO is
+%available to the public under the GNU LGPL (web page:
+%\url{http://software.sandia.gov/trac/acro/wiki/Packages}) and the
+%source code is included with DAKOTA as part of the Acro package.
+%\emph{Notes: (1) PICO's linear programming solvers are not included
+%  with DAKOTA, (2) PICO is not currently active in DAKOTA.}
 
 %\textbf{SGOPT (Stochastic Global OPTimization)}: Access to this
 %library within DAKOTA has been deprecated; the methods have been
@@ -583,16 +584,16 @@ information can be useful in making trade-off decisions in engineering
 design problems.  \emph{[Refer to~\ref{capabilities:additional} for
 additional information on multiobjective optimization methods.]}
 
-\textbf{Mixed Integer Nonlinear Programming (MINLP)}: This strategy
-uses the branch and bound capabilities of the PICO package to perform
-optimization on problems that have both discrete and continuous design
-variables. PICO provides a branch and bound engine targeted at mixed
-integer linear programs (MILP), which when combined with DAKOTA's
-nonlinear optimization methods, results in a MINLP capability. In
-addition, the multiple NLPs solved within MINLP provide an opportunity
-for concurrent execution of multiple optimizations.  \emph{Branch and
-  bound is inoperative in DAKOTA since its incorporation into COLINY.
-  This will be supported again in future releases.}
+%\textbf{Mixed Integer Nonlinear Programming (MINLP)}: This strategy
+%uses the branch and bound capabilities of the PICO package to perform
+%optimization on problems that have both discrete and continuous design
+%variables. PICO provides a branch and bound engine targeted at mixed
+%integer linear programs (MILP), which when combined with DAKOTA's
+%nonlinear optimization methods, results in a MINLP capability. In
+%addition, the multiple NLPs solved within MINLP provide an opportunity
+%for concurrent execution of multiple optimizations.  \emph{Branch and
+%  bound is inoperative in DAKOTA since its incorporation into COLINY.
+%  This will be supported again in future releases.}
 
 These strategies are covered in more detail in Chapter~\ref{strat}.
 
@@ -840,7 +841,7 @@ independent, DAKOTA can perform them in parallel.
 \textbf{Concurrent Execution of Iterators within a Strategy}: Some of
 the DAKOTA strategies described in
 Section~\ref{capabilities:optimization2} generate a sequence of
-iterator subproblems. For example, the MINLP, Pareto-set, and
+iterator subproblems. For example, the Pareto-set and
 multi-start strategies generate sets of optimization subproblems, and
 the optimization under uncertainty strategy generates sets of
 uncertainty quantification subproblems. Whenever these subproblems are
