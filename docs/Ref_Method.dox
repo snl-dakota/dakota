@@ -54,19 +54,19 @@ namespace Dakota {
     <li> <a href="MethodCommands.html#MethodAPPSDC">
          APPS method dependent controls</a>
     </ul>
-  <li> <a href="MethodCommands.html#MethodCOLINY">Coliny Methods</a>
+  <li> <a href="MethodCommands.html#MethodSCOLIB">SCOLIB Methods</a>
     <ul>
-    <li> <a href="MethodCommands.html#MethodCOLINYIC">
-         Coliny method independent controls</a>
-    <li> <a href="MethodCommands.html#MethodCOLINYDC">
-         Coliny method dependent controls</a>
-    <li> <a href="MethodCommands.html#MethodCOLINYCOB">
+    <li> <a href="MethodCommands.html#MethodSCOLIBIC">
+         SCOLIB method independent controls</a>
+    <li> <a href="MethodCommands.html#MethodSCOLIBDC">
+         SCOLIB method dependent controls</a>
+    <li> <a href="MethodCommands.html#MethodSCOLIBCOB">
          Constrained Optimization BY Linear Approximations (COBYLA)</a>
-    <li> <a href="MethodCommands.html#MethodCOLINYDIR">
+    <li> <a href="MethodCommands.html#MethodSCOLIBDIR">
          DIviding RECTangles (DIRECT)</a>
-    <li> <a href="MethodCommands.html#MethodCOLINYEA">Evolutionary Algorithms</a>
-    <li> <a href="MethodCommands.html#MethodCOLINYPS">Pattern Search</a>
-    <li> <a href="MethodCommands.html#MethodCOLINYSW">Solis-Wets</a>
+    <li> <a href="MethodCommands.html#MethodSCOLIBEA">Evolutionary Algorithms</a>
+    <li> <a href="MethodCommands.html#MethodSCOLIBPS">Pattern Search</a>
+    <li> <a href="MethodCommands.html#MethodSCOLIBSW">Solis-Wets</a>
     </ul>
   <li> <a href="MethodCommands.html#MethodJEGA">JEGA Methods</a>
     <ul>
@@ -415,10 +415,10 @@ one iteration followed by significant progress on a subsequent
 iteration, some libraries require that the convergence tolerance be
 satisfied on two or more consecutive iterations prior to termination
 of iteration. This control is used with optimization and least squares
-iterators (DOT, CONMIN, NPSOL, NLSSOL, OPT++, and Coliny) and is not
+iterators (DOT, CONMIN, NPSOL, NLSSOL, OPT++, and SCOLIB) and is not
 used within the uncertainty quantification, design of experiments, or
 parameter study iterator branches. Refer to \ref MethodDOTIC, 
-\ref MethodNPSOLIC, \ref MethodOPTPPIC, and \ref MethodCOLINYIC for 
+\ref MethodNPSOLIC, \ref MethodOPTPPIC, and \ref MethodSCOLIBIC for 
 specific interpretations of the \c convergence_tolerance specification.
 
 The \c max_iterations and \c max_function_evaluations controls provide
@@ -647,7 +647,7 @@ of \c 0. for each constraint
 
 Currently, DOT, CONMIN, NPSOL, NLSSOL, and OPT++ all support
 specialized handling of linear constraints (either directly through
-the algorithm itself or indirectly through the DAKOTA wrapper). Coliny
+the algorithm itself or indirectly through the DAKOTA wrapper). SCOLIB
 optimizers will support linear constraints in future releases.  Linear
 constraints need not be computed by the user's interface on every
 function evaluation; rather the coefficients, bounds, and targets of
@@ -787,7 +787,7 @@ inequality and equality constraints
 
 The DAKOTA project started as an toolbox for optimization methods, and 
 has accumulated a broad variety of gradient-based and nongradient-based
-optimizers from the DOT, NPSOL, NLPQL, CONMIN, OPT++, APPS, COLINY, 
+optimizers from the DOT, NPSOL, NLPQL, CONMIN, OPT++, APPS, SCOLIB, 
 NCSU, and JEGA packages.  These capabilities are described below.
 
 
@@ -806,6 +806,15 @@ programming (DAKOTA's \c dot_sqp method) methods for constrained
 optimization. DAKOTA provides access to the DOT library through the
 DOTOptimizer class.
 
+We here provide a caution regarding \c dot_frcg.  In DOT
+Version 4.20, we have noticed inconsistent behavior of this algorithm
+across different versions of Linux.  Our best assessment is that it is
+due to different treatments of uninitialized variables.  As we do not
+know the intention of the code authors and maintaining DOT source code
+is outside of the DAKOTA project scope, we have not made nor are we
+recommending any code changes to address this.  However, all users who
+use \c dot_frcg in DOT Version 4.20 should be aware that
+results may not be reliable.
 
 \subsubsection MethodDOTIC DOT method independent controls
 
@@ -1392,8 +1401,8 @@ releases.
 
 The APPS method is invoked using a \c asynch_pattern_search group
 specification.  Some of the method dependent controls are similar to
-the Coliny controls for \c coliny_pattern_search described in \ref
-MethodCOLINYPS.  In particular, APPS supports the following step
+the SCOLIB controls for \c coliny_pattern_search described in \ref
+MethodSCOLIBPS.  In particular, APPS supports the following step
 length control parameters:
 
 \li \c initial_delta: the initial step length, must be positive
@@ -1510,18 +1519,19 @@ Specification detail for the APPS method
 </table>
 
 
-\subsection MethodCOLINY Coliny Methods
+\subsection MethodSCOLIB SCOLIB Methods
 
-Coliny is a collection of nongradient-based optimizers that support
-the Common Optimization Library INterface (COLIN).  Coliny optimizers
-currently include \c coliny_cobyla, \c coliny_direct, \c coliny_ea, \c
-coliny_pattern_search and \c coliny_solis_wets.  Additional Coliny
-information is available from https://software.sandia.gov/trac/acro.
+SCOLIB (formerly known as COLINY) is a collection of nongradient-based
+optimizers that support the Common Optimization Library INterface
+(COLIN).  SCOLIB optimizers currently include \c coliny_cobyla, \c
+coliny_direct, \c coliny_ea, \c coliny_pattern_search and \c
+coliny_solis_wets.  Additional SCOLIB information is available from
+https://software.sandia.gov/trac/acro.
 
-Coliny solvers now support bound constraints and general nonlinear
+SCOLIB solvers now support bound constraints and general nonlinear
 constraints.  Supported nonlinear constraints include both equality
-and two-sided inequality constraints.  Coliny solvers do not yet
-support linear constraints.  Most Coliny optimizers treat constraints
+and two-sided inequality constraints.  SCOLIB solvers do not yet
+support linear constraints.  Most SCOLIB optimizers treat constraints
 with a simple penalty scheme that adds \c constraint_penalty times the
 sum of squares of the constraint violations to the objective function.
 Specific exceptions to this method for handling constraint violations
@@ -1530,31 +1540,31 @@ are noted below.  (The default value of \c constraint_penalty is
 penalty, for which the default value is 1.0.)
 
 
-\subsubsection MethodCOLINYIC Coliny method independent controls
+\subsubsection MethodSCOLIBIC SCOLIB method independent controls
 
 The method independent controls for \c max_iterations and \c
 max_function_evaluations limit the number of major iterations and the
-number of function evaluations that can be performed during a Coliny
+number of function evaluations that can be performed during a SCOLIB
 optimization, respectively. The \c convergence_tolerance control
 defines the threshold value on relative change in the objective
 function that indicates convergence. The \c output verbosity
-specification controls the amount of information generated by Coliny:
+specification controls the amount of information generated by SCOLIB:
 the \c silent, \c quiet, and \c normal settings correspond to minimal
-reporting from Coliny, whereas the \c verbose setting corresponds to a
+reporting from SCOLIB, whereas the \c verbose setting corresponds to a
 higher level of information, and \c debug outputs method
-initialization and a variety of internal Coliny diagnostics.  The
-majority of Coliny's methods perform independent function evaluations
+initialization and a variety of internal SCOLIB diagnostics.  The
+majority of SCOLIB's methods perform independent function evaluations
 that can directly take advantage of DAKOTA's parallel
 capabilities. Only \c coliny_solis_wets, \c coliny_cobyla, and certain
 configurations of \c coliny_pattern_search are inherently serial (see
-\ref MethodCOLINYPS). The parallel methods automatically utilize
+\ref MethodSCOLIBPS). The parallel methods automatically utilize
 parallel logic when the DAKOTA configuration supports
 parallelism. Lastly, neither \c speculative gradients nor linear
-constraints are currently supported with Coliny.  Specification detail
+constraints are currently supported with SCOLIB.  Specification detail
 for method independent controls is provided in Tables \ref T5d1 "5.1"
 through \ref T5d2 "5.2".
 
-Some COLINY methods exploit parallelism through the use of DAKOTA's
+Some SCOLIB methods exploit parallelism through the use of DAKOTA's
 concurrent function evaluations.  The nature of the algorithms,
 however, limits the amount of concurrency that can be exploited.  The
 maximum amount of evaluation concurrency that can be leveraged by the
@@ -1566,27 +1576,27 @@ various methods is as follows:
 \li Pattern Search: size of the search pattern
 \li Solis-Wets: one
 
-\subsubsection MethodCOLINYDC Coliny method dependent controls
+\subsubsection MethodSCOLIBDC SCOLIB method dependent controls
 
-All Coliny methods support the \c show_misc_options optional
+All SCOLIB methods support the \c show_misc_options optional
 specification which results in a dump of all the allowable method
 inputs.  Note that the information provided by this command refers to
-optimizer parameters that are internal to Coliny, and which may differ
+optimizer parameters that are internal to SCOLIB, and which may differ
 from corresponding parameters used by the DAKOTA interface.  The \c
 misc_options optional specification provides a means for inputing
-additional settings supported by the Coliny methods but which are not
+additional settings supported by the SCOLIB methods but which are not
 currently mapped through the DAKOTA input specification. Care must be
 taken in using this specification; they should only be employed by
 users familiar with the full range of parameter specifications
-available directly from Coliny and understand any differences that
+available directly from SCOLIB and understand any differences that
 exist between those specifications and the ones available through
 DAKOTA.
 
-Each of the Coliny methods supports the \c solution_target control,
+Each of the SCOLIB methods supports the \c solution_target control,
 which defines a convergence criterion in which the optimizer will
 terminate if it finds an objective function value lower than the
 specified target.  Specification detail for method dependent
-controls for all Coliny methods is provided in Table \ref T5d9 "5.9".
+controls for all SCOLIB methods is provided in Table \ref T5d9 "5.9".
 
 \anchor T5d9
 <table>
@@ -1594,7 +1604,7 @@ controls for all Coliny methods is provided in Table \ref T5d9 "5.9".
 \htmlonly
 Table 5.9
 \endhtmlonly
-Specification detail for Coliny method dependent controls
+Specification detail for SCOLIB method dependent controls
 </caption>
 <tr>
 <td><b>Description</b>
@@ -1622,11 +1632,11 @@ Specification detail for Coliny method dependent controls
 <td>\c -DBL_MAX
 </table>
 
-Each Coliny method supplements the settings of \ref T5d9 "Table 5.9"
+Each SCOLIB method supplements the settings of \ref T5d9 "Table 5.9"
 with controls which are specific to its particular class of method.
 
 
-\subsubsection MethodCOLINYCOB COBYLA
+\subsubsection MethodSCOLIBCOB COBYLA
 <!-- dakota subcat coliny_cobyla -->
 
 The Constrained Optimization BY Linear Approximations (COBYLA)
@@ -1684,7 +1694,7 @@ Specification detail for the COBYLA method
 </table>
 
 
-\subsubsection MethodCOLINYDIR DIRECT
+\subsubsection MethodSCOLIBDIR DIRECT
 <!-- dakota subcat coliny_direct -->
 
 The DIviding RECTangles (DIRECT) optimization algorithm is a
@@ -1705,7 +1715,7 @@ optimizers.
 
 DIRECT uses the \c solution_target, \c constraint_penalty and
 \c show_misc_options specifications that are described in
-\ref MethodCOLINYDC.  Note, however, that DIRECT uses a fixed
+\ref MethodSCOLIBDC.  Note, however, that DIRECT uses a fixed
 penalty value for constraint violations (i.e. it is not dynamically
 adapted as is done in \c coliny_pattern_search).
 
@@ -1796,7 +1806,7 @@ Specification detail for the DIRECT method
 </table>
 
 
-\subsubsection MethodCOLINYEA Evolutionary Algorithms
+\subsubsection MethodSCOLIBEA Evolutionary Algorithms
 <!-- dakota subcat coliny_ea -->
 
 DAKOTA currently provides several variants of evolutionary algorithms,
@@ -1839,7 +1849,7 @@ selecting and replacing population members.
 \htmlonly
 Table 5.12
 \endhtmlonly
-Specification detail for the Coliny EA method dependent controls: 
+Specification detail for the SCOLIB EA method dependent controls: 
 seed, initialization, selection, and replacement
 </caption>
 <tr>
@@ -1983,7 +1993,7 @@ with crossover and mutation.
 \htmlonly
 Table 5.13
 \endhtmlonly
-Specification detail for the Coliny EA method: crossover and mutation
+Specification detail for the SCOLIB EA method: crossover and mutation
 </caption>
 <tr>
 <td><b>Description</b>
@@ -2044,13 +2054,13 @@ Specification detail for the Coliny EA method: crossover and mutation
 The \c crossover_type controls what approach is employed for combining
 parent genetic information to create offspring, and the \c
 crossover_rate specifies the probability of a crossover operation
-being performed to generate a new offspring.  The Coliny EA method
+being performed to generate a new offspring.  The SCOLIB EA method
 supports three forms of crossover, \c two_point, \c blend, and \c
 uniform, which generate a new individual through combinations of two
 parent individuals.  Two-point crossover divides each parent into
 three regions, where offspring are created from the combination of the
 middle region from one parent and the end regions from the other
-parent.  Since the Coliny EA does not utilize bit representations of
+parent.  Since the SCOLIB EA does not utilize bit representations of
 variable values, the crossover points only occur on coordinate
 boundaries, never within the bits of a particular coordinate.  Uniform
 crossover creates offspring through random combination of coordinates
@@ -2088,7 +2098,7 @@ Note that \c mutation_scale and \c mutation_range are not recognized
 by DAKOTA as valid keywords unless \c mutation_type has been
 specified and the type is an "offset" mutations.
 
-The Coliny EA method uses self-adaptive mutation, which modifies the mutation
+The SCOLIB EA method uses self-adaptive mutation, which modifies the mutation
 scale dynamically.  This mechanism is borrowed from EAs like 
 evolution strategies.  The \c non_adaptive flag can be used to deactivate
 the self-adaptation, which may facilitate a more global search.  
@@ -2097,18 +2107,18 @@ Note that \c non_adaptive is not recognized by DAKOTA as a valid
 keyword unless \c mutation_type has been specified.
 
 
-\subsubsection MethodCOLINYPS Pattern Search
+\subsubsection MethodSCOLIBPS Pattern Search
 <!-- dakota subcat coliny_pattern_search -->
 
 Pattern search techniques are nongradient-based optimization methods
 which use a set of offsets from the current iterate to locate improved
-points in the design space.  The Coliny pattern search technique is
+points in the design space.  The SCOLIB pattern search technique is
 invoked using a \c coliny_pattern_search group specification, which
 includes a variety of specification components.
 
 Traditional pattern search methods search with a fixed pattern of
 search directions to try to find improvements to the current iterate.
-The Coliny pattern search methods generalize this simple algorithmic
+The SCOLIB pattern search methods generalize this simple algorithmic
 strategy to enable control of how the search pattern is adapted, as
 well as how each search pattern is evaluated.  The \c stochastic and
 \c synchronization specifications denote how the the trial points are
@@ -2165,7 +2175,7 @@ search pattern is adapted. (The search pattern can be adapted after
 an improving trial point is found, or after all trial points in 
 a search pattern have been found to be unimproving points.) 
 The following exploratory moves selections are supported
-by Coliny:
+by SCOLIB:
 
 \li The \c basic_pattern case is the simple pattern search 
 approach, which uses the same pattern in each iteration.
@@ -2199,7 +2209,7 @@ for other dimensions, so search steps in those directions have length
 \c initial_delta.
 
 In general, pattern search methods can expand and contract their step
-lengths.  Coliny pattern search methods contract the step length by the
+lengths.  SCOLIB pattern search methods contract the step length by the
 value \c contraction_factor, and they expand the step length by the value
 (1/contraction_factor).  The \c expand_after_success control specifies
 how many successful objective function improvements must occur with a
@@ -2215,7 +2225,7 @@ constraint penalty is adapted to the value \c constraint_penalty/L,
 where L is the the smallest step length used so far.
 
 \ref T5d14 "Table 5.14" and \ref T5d15 "Table 5.15" provide the 
-specification detail for the Coliny pattern search method and its 
+specification detail for the SCOLIB pattern search method and its 
 method dependent controls.
 
 \anchor T5d14
@@ -2224,7 +2234,7 @@ method dependent controls.
 \htmlonly
 Table 5.14
 \endhtmlonly
-Specification detail for the Coliny pattern search method: randomization,
+Specification detail for the SCOLIB pattern search method: randomization,
 delta, and constraint controls
 </caption>
 <tr>
@@ -2234,7 +2244,7 @@ delta, and constraint controls
 <td><b>Status</b>
 <td><b>Default</b>
 <tr>
-<td>Coliny pattern search method
+<td>SCOLIB pattern search method
 <td>\c coliny_pattern_search
 <td>none
 <td>Required group
@@ -2283,7 +2293,7 @@ delta, and constraint controls
 \htmlonly
 Table 5.15
 \endhtmlonly
-Specification detail for the Coliny pattern search method: pattern controls
+Specification detail for the SCOLIB pattern search method: pattern controls
 </caption>
 <tr>
 <td><b>Description</b>
@@ -2336,9 +2346,9 @@ Specification detail for the Coliny pattern search method: pattern controls
 </table>
 
 
-\subsubsection MethodCOLINYSW Solis-Wets
+\subsubsection MethodSCOLIBSW Solis-Wets
 
-DAKOTA's implementation of Coliny also contains the Solis-Wets
+DAKOTA's implementation of SCOLIB also contains the Solis-Wets
 algorithm. The Solis-Wets method is a simple greedy local search
 heuristic for continuous parameter spaces.  Solis-Wets generates trial
 points using a multivariate normal distribution, and unsuccessful
@@ -2353,7 +2363,7 @@ detail for this method and its method dependent controls.
 \htmlonly
 Table 5.16
 \endhtmlonly
-Specification detail for the Coliny Solis-Wets method
+Specification detail for the SCOLIB Solis-Wets method
 <!-- dakota subcat coliny_solis_wets -->
 </caption>
 <tr>
@@ -2363,7 +2373,7 @@ Specification detail for the Coliny Solis-Wets method
 <td><b>Status</b>
 <td><b>Default</b>
 <tr>
-<td>Coliny Solis-Wets method
+<td>SCOLIB Solis-Wets method
 <td>\c coliny_solis_wets
 <td>none
 <td>Required group
@@ -2436,13 +2446,13 @@ contraction of the delta.
 
 North Carolina State University (NCSU) has an implementation of the
 DIRECT algorithm (DIviding RECTangles algorithm that is outlined in
-the Coliny method section above).  This version is documented in [\ref
+the SCOLIB method section above).  This version is documented in [\ref
 Gablonsky2001 "Gablonsky, 2001".]  We have found that the NCSU DIRECT
 implementation works better and is more robust for some problems than
 \c coliny_direct.  Currently, we maintain both versions of DIRECT in
 DAKOTA; in the future, we may deprecate one.  The NCSU DIRECT method
 is selected with \c ncsu_direct.  We have tried to maintain
-consistency between the keywords in COLINY and NCSU implementation of
+consistency between the keywords in SCOLIB and NCSU implementation of
 DIRECT, but the algorithms have different parameters, so the keywords
 sometimes have slightly different meaning.
 
@@ -3935,7 +3945,7 @@ Note that several major differences exist between our implementation
 and that of [\ref Jones1998 "Jones et al., 1998"].  First, rather than
 using a branch and bound method to find the point which maximizes the
 EIF, we use the DIRECT global optimization method (see \ref
-MethodCOLINYDIR and \ref MethodNCSU).  Second, we support both global
+MethodSCOLIBDIR and \ref MethodNCSU).  Second, we support both global
 optimization and global nonlinear least squares as well as general
 nonlinear constraints through abstraction and subproblem recasting
 within the SurrBasedMinimizer and EffGlobalMinimizer classes.
