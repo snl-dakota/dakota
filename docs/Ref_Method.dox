@@ -1525,7 +1525,8 @@ SCOLIB (formerly known as COLINY) is a collection of nongradient-based
 optimizers that support the Common Optimization Library INterface
 (COLIN).  SCOLIB optimizers currently include \c coliny_cobyla, \c
 coliny_direct, \c coliny_ea, \c coliny_pattern_search and \c
-coliny_solis_wets.  Additional SCOLIB information is available from
+coliny_solis_wets.  (Yes, the input spec still has "coliny" prepended
+to the method name.)  Additional SCOLIB information is available from
 https://software.sandia.gov/trac/acro.
 
 SCOLIB solvers now support bound constraints and general nonlinear
