@@ -4075,24 +4075,24 @@ values for generating probabilities, reliabilities, or generalized
 reliabilities (forward mapping).  The selection among these possible
 results for the forward mapping is performed with the \c compute
 keyword followed by either \c probabilities, \c reliabilities, or \c
-gen_reliabilities.  For example, specifying a \c response_level of 52.3 
-followed with \c compute \c probabilities will result in the 
-calculation that the (uncertain) output value is less than or equal to 52.3, 
-given the uncertain distributions on the inputs.   
-Conversely, the \c probability_levels, \c
-reliability_levels, and \c gen_reliability_levels specifications
-provide target levels for which response values will be computed
-(inverse mapping).  For example, specifying a \c probability_level of 
-0.95 will result in the calculation of a response value which corresponds 
-to the 95th percentile of the output distribution.  Specifications of \c response_levels, \c
-probability_levels, \c reliability_levels, and \c
+gen_reliabilities.  For example, specifying a \c response_level of
+52.3 followed with \c compute \c probabilities will result in the
+calculation that the (uncertain) output value is less than or equal to
+52.3, given the uncertain distributions on the inputs.  Conversely,
+the \c probability_levels, \c reliability_levels, and \c
+gen_reliability_levels specifications provide target levels for which
+response values will be computed (inverse mapping).  For example,
+specifying a \c probability_level of 0.95 will result in the
+calculation of a response value which corresponds to the 95th
+percentile of the output distribution.  Specifications of \c
+response_levels, \c probability_levels, \c reliability_levels, and \c
 gen_reliability_levels may be combined within the calculations for
 each response function.  The mapping results (probabilities,
 reliabilities, or generalized reliabilities for the forward mapping
 and response values for the inverse mapping) define the final
 statistics of the nondeterministic analysis that can be accessed for
 use at a higher level (via the primary and secondary mapping matrices
-for nested models; see \ref ModelNested).  
+for nested models; see \ref ModelNested).
 
 Sets of response-probability pairs computed with the forward/inverse
 mappings define either a cumulative distribution function (CDF) or a
@@ -5697,8 +5697,8 @@ these values at other points.  A gradient-enhanced expansion (selected
 via the \c use_derivatives keyword) involves both type 1 and type 2
 basis functions as follows:
 
-\f[R = \sum_{i=1}^{N_p} [ r_i L^{(1)}_i(\xi)
-     + \sum_{j=1}^n \frac{dr_i}{d\xi_j} L^{(2)}_{ij}(\xi) ] \f]
+\f[R = \sum_{i=1}^{N_p} [ r_i H^{(1)}_i(\xi)
+     + \sum_{j=1}^n \frac{dr_i}{d\xi_j} H^{(2)}_{ij}(\xi) ] \f]
 
 where the \f$i^{th}\f$ type 1 interpolant produces 1 for the value at
 the \f$i^{th}\f$ collocation point, 0 for values at all other

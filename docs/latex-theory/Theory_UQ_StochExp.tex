@@ -3,13 +3,17 @@
 
 %This chapter explores the polynomial chaos expansion (PCE) and
 %stochastic collocation (SC) in greater detail than that provided in
-%the uncertainty quantification chapter of the User's Manual.
-This chapter explores two approaches to forming stochastic expansions, 
-the polynomial chaos expansion (PCE) and stochastic collocation (SC).
-Both approaches capture the functional relationship between a set of
-output response metrics and a set of input random variables.
+%the uncertainty quantification chapter of the User's Manual.  
+This chapter explores two approaches to forming stochastic expansions,
+the polynomial chaos expansion (PCE), which employs bases of
+multivariate orthogonal polynomials, and stochastic collocation (SC),
+which employs bases of multivariate interpolation polynomials.  Both
+approaches capture the functional relationship between a set of output
+response metrics and a set of input random variables.
 
-\section{Orthogonal polynomials in the Askey scheme} \label{uq:expansion:askey}
+\section{Orthogonal polynomials} \label{uq:expansion:orth}
+
+\subsection{Askey scheme} \label{uq:expansion:orth:askey}
 
 Table~\ref{TAB:askey} shows the set of classical orthogonal
 polynomials which provide an optimal basis for different continuous
@@ -49,8 +53,8 @@ the orthogonal polynomial conventions~\cite{abram_stegun} differ from
 the common statistical PDF conventions.  The former conventions are
 used in Table~\ref{TAB:askey}.
 
-\section{Numerically generated orthogonal polynomials} 
-\label{uq:expansion:beyond_askey}
+\subsection{Numerically generated orthogonal polynomials} 
+\label{uq:expansion:orth:beyond_askey}
 
 If all random inputs can be described using independent normal, 
 uniform, exponential, beta, and gamma distributions, then Askey 
@@ -79,6 +83,19 @@ Section~\ref{uq:expansion:trans} for additional details).
 
 \section{Interpolation polynomials} \label{uq:expansion:interp}
 
+Interpolation polynomials may be local or global, value-based or
+gradient-enhanced, and nodal or hierarchical, with a total of six
+combinations currently supported: Lagrange (global value-based),
+Hermite (global gradient-enhanced), piecewise linear spline (local
+value-based) in nodal and hierarchical formulations, and piecewise
+cubic spline (local gradient-enhanced) in nodal and hierarchical
+formulations.  The subsections that follow describe the
+one-dimensional interpolation polynomials for these cases and
+Section~\ref{uq:expansion:sc} describes their use for multivariate
+interpolation within the stochastic collocation algorithm.
+
+\subsection{Global value-based} \label{uq:expansion:interp:Lagrange}
+
 Lagrange polynomials interpolate a set of points in a single dimension
 using the functional form
 \begin{equation}
@@ -94,27 +111,36 @@ points, the expression
 R(\xi) \cong \sum_{j=1}^m r(\xi_j)\,L_j(\xi) \label{eq:lagrange_interp_1d}
 \end{equation}
 reproduces the response values $r(\xi_j)$ at the interpolation points
-and smoothly interpolates between these values at other points.  For
-interpolation in multiple dimensions, a tensor-product approach is
-used wherein
+and smoothly interpolates between these values at other points.
+
+\subsection{Global gradient-enhanced} \label{uq:expansion:interp:Hermite}
+
+Hermite interpolation polynomials (not to be confused with Hermite
+orthogonal polynomials shown in Table~\ref{TAB:askey}) interpolate
+both values and derivatives.  In our case, we are interested in
+interpolating values and first derivatives, i.e, gradients.  In the
+gradient-enhanced case, interpolation of a one-dimensional function
+involves both type 1 and type 2 interpolation polynomials
 \begin{equation}
-R(\boldsymbol{\xi}) \cong \sum_{j_1=1}^{m_{i_1}}\cdots\sum_{j_n=1}^{m_{i_n}}
-r\left(\xi^{i_1}_{j_1},\dots , \xi^{i_n}_{j_n}\right)\,
-\left(L^{i_1}_{j_1}\otimes\cdots\otimes L^{i_n}_{j_n}\right)
-= \sum_{j=1}^{N_p} r_j(\boldsymbol{\xi}) \boldsymbol{L}_j(\boldsymbol{\xi})
-\label{eq:lagrange_interp_nd}
+R(\xi) \cong \sum_{i=1}^{N_p} \left[ r_i H_i^{(1)}(\xi) + 
+  \sum_{j=1}^n \frac{dr_i}{d\xi_j} H_{ij}^{(2)}(\xi) \right]
 \end{equation}
-where $\boldsymbol{i} = (m_1, m_2, \cdots, m_n)$ are the number of
-nodes used in the $n$-dimensional interpolation and $\xi^i_j$ is the
-$j$-th point in the $i$-th direction.  As will be seen later,
-interpolation on sparse grids involves a summation of these tensor
-products with varying $\boldsymbol{i}$ levels.
+where the former interpolate a particular value while producing zero
+gradients and the latter interpolate a particular gradient component
+while producing zero values.  One-dimensional polynomials satisfying
+these constraints for general point sets are generated using divided
+differences as described in~\cite{Burk11}.
+
+\subsection{Local value-based} \label{uq:expansion:interp:linear}
+
+\subsection{Local gradient-enhanced} \label{uq:expansion:interp:cubic}
+
 
 
 \section{Generalized Polynomial Chaos} \label{uq:expansion:pce}
 
-The set of polynomials from \ref{uq:expansion:askey}
-and~\ref{uq:expansion:beyond_askey} are used as an orthogonal basis to
+The set of polynomials from \ref{uq:expansion:orth:askey}
+and~\ref{uq:expansion:orth:beyond_askey} are used as an orthogonal basis to
 approximate the functional form between the stochastic response output
 and each of its random inputs.  The chaos expansion for a response $R$
 takes the form
@@ -270,31 +296,81 @@ expansion form.
 
 \section{Stochastic Collocation} \label{uq:expansion:sc}
 
+
 The SC expansion is formed as a sum of a set of multidimensional
-Lagrange interpolation polynomials, one polynomial per unique
-collocation point.  Since these polynomials have the feature of being
-equal to 1 at their particular collocation point and 0 at all other
-points\footnote{for tensor interpolants and sparse interpolants based
-on fully nested rules (e.g., Clenshaw-Curtis, Gauss-Patterson,
-Genz-Keister); sparse interpolants based on non-nested rules will
-exhibit some interpolation error at the collocation points}, the
-coefficients of the expansion are just the response values at each of
-the collocation points.  This can be written as:
+interpolation polynomials, one polynomial per interpolated response
+quantity (one response value and potentially multiple response
+gradient components) per unique collocation point.  
+
+\subsection{Value-based} \label{uq:expansion:sc:value}
+
+For value-based interpolation in multiple dimensions, a tensor-product
+of the one-dimensional polynomials described in
+Section~\ref{uq:expansion:interp:Lagrange} or
+Section~\ref{uq:expansion:interp:linear} is used:
 \begin{equation}
-R \cong \sum_{j=1}^{N_p} r_j \boldsymbol{L}_j(\boldsymbol{\xi}) 
-\label{eq:sc_exp_short}
+R(\boldsymbol{\xi}) \cong \sum_{j_1=1}^{m_{i_1}}\cdots\sum_{j_n=1}^{m_{i_n}}
+r\left(\xi^{i_1}_{j_1},\dots , \xi^{i_n}_{j_n}\right)\,
+\left(L^{i_1}_{j_1}\otimes\cdots\otimes L^{i_n}_{j_n}\right)
+= \sum_{j=1}^{N_p} r_j(\boldsymbol{\xi}) \boldsymbol{L}_j(\boldsymbol{\xi})
+\label{eq:lagrange_interp_nd}
 \end{equation}
-where the set of $N_p$ collocation points involves a structured
-multidimensional grid (a tensor-product grid as in
-Eq.~\ref{eq:lagrange_interp_nd} or a Smolyak sparse grid).  There is
-no need for tailoring of the expansion form as there is for PCE (i.e.,
-to synchronize the expansion polynomials with the set of integrable
-monomials) since the polynomials that appear in the expansion are
-determined by the Lagrange construction
-(Eq.~\ref{eq:lagrange_poly_1d}).  That is, any tailoring or refinement
-of the expansion occurs through the selection of points in the
-interpolation grid and the polynomial orders of the basis are adapted
-implicitly.
+where $\boldsymbol{i} = (m_1, m_2, \cdots, m_n)$ are the number of
+nodes used in the $n$-dimensional interpolation, $\xi^i_j$ is the
+$j$-th point in the $i$-th direction, and $N_p$ is the number of 
+unique collocation points in the multidimensional grid.  The 
+multidimensional interpolation polynomials are defined as
+\begin{equation}
+\boldsymbol{L}_j(\boldsymbol{\xi}) = \prod_{i=1}^{n} L_{m_i^j}(\xi_i) 
+\label{eq:multivar_L}
+\end{equation}
+for a multi-index $m_i^j$.  The tensor-product structure preserves the
+desired interpolation properties where the $j^{th}$ multivariate
+interpolation polynomial assumes the value of 1 at the $j^{th}$ point
+and assumes the value of 0 at all other points, thereby reproducing
+the response values at each of the collocation points and smoothly
+interpolating between these values at other unsampled points.
+
+Multivariate interpolation on Smolyak sparse grids involves a weighted
+sum of the tensor products in Eq.~\ref{eq:lagrange_interp_nd} with
+varying $\boldsymbol{i}$ levels.  For sparse interpolants based on
+nested quadrature rules (e.g., Clenshaw-Curtis, Gauss-Patterson,
+Genz-Keister), the inteprolation property is preserved, but sparse
+interpolants based on non-nested rules may exhibit some interpolation
+error at the collocation points.
+
+%There is no need for tailoring of the expansion form as there is for
+%PCE (i.e., to synchronize the expansion polynomials with the set of
+%integrable monomials) since the polynomials that appear in the
+%expansion are determined by the Lagrange construction
+%(Eq.~\ref{eq:lagrange_poly_1d}).  That is, any tailoring or refinement
+%of the expansion occurs through the selection of points in the
+%interpolation grid and the polynomial orders of the basis are adapted
+%implicitly.
+
+\subsection{Gradient-enhanced} \label{uq:expansion:sc:gradient}
+
+%UNDER CONSTRUCTION
+
+For gradient-enhanced interpolation in multple dimensions
+\begin{equation}
+R(\boldsymbol{\xi}) \cong \sum_{j=1}^{N_p} \left[ 
+r_j \boldsymbol{H}_j^{(1)}(\boldsymbol{\xi}) + 
+\sum_{k=1}^n \frac{dr_j}{d\xi_k} \boldsymbol{H}_{jk}^{(2)}(\boldsymbol{\xi}) 
+\right]
+\end{equation}
+where the multidimensional type 1 basis polynomials are simply
+\begin{equation}
+\boldsymbol{H}_j^{(1)}(\boldsymbol{\xi}) =
+\prod_{i=1}^{n} H^{(1)}_{m_i^j}(\xi_i) \label{eq:multivar_H1}
+\end{equation}
+The multidimensional type 2 basis polynomials for the $k^{th}$
+gradient component are the same as the type 1 polynomials for each
+dimension except $k$:
+\begin{equation}
+\boldsymbol{H}_{jk}^{(2)}(\boldsymbol{\xi}) = H^{(2)}_{m_k^j}(\xi_k)
+\prod_{\stackrel{\scriptstyle i=1}{i \ne k}}^{n} H^{(1)}_{m_i^j}(\xi_i) \label{eq:multivar_H2}
+\end{equation}
 
 
 \section{Transformations to uncorrelated standard variables} \label{uq:expansion:trans}
@@ -342,7 +418,7 @@ approaches are of interest:
   the corresponding Askey basis (Table~\ref{TAB:askey}).  For
   non-Askey types, numerically generate an optimal polynomial basis
   for each independent distribution as described in
-  Section~\ref{uq:expansion:beyond_askey}.
+  Section~\ref{uq:expansion:orth:beyond_askey}.
   % text below moved downstream from Intro:
   With usage of the optimal basis corresponding to each of the random
   variable types, we can exploit basis orthogonality under expectation
@@ -462,7 +538,7 @@ where the univariate inner products have simple closed form
 expressions for each polynomial in the Askey
 scheme~\cite{abram_stegun} and are readily computed as part of the
 numerically-generated solution procedures described in
-Section~\ref{uq:expansion:beyond_askey}. Thus, the primary
+Section~\ref{uq:expansion:orth:beyond_askey}. Thus, the primary
 computational effort resides in evaluating the numerator, which is
 evaluated numerically using sampling, quadrature, cubature, or sparse
 grid approaches (and this numerical approximation leads to use of the
