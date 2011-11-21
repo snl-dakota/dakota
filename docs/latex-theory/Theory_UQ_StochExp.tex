@@ -85,13 +85,14 @@ Section~\ref{uq:expansion:trans} for additional details).
 
 Interpolation polynomials may be local or global, value-based or
 gradient-enhanced, and nodal or hierarchical, with a total of six
-combinations currently supported: Lagrange (global value-based),
+combinations currently implemented: Lagrange (global value-based),
 Hermite (global gradient-enhanced), piecewise linear spline (local
 value-based) in nodal and hierarchical formulations, and piecewise
 cubic spline (local gradient-enhanced) in nodal and hierarchical
-formulations.  The subsections that follow describe the
-one-dimensional interpolation polynomials for these cases and
-Section~\ref{uq:expansion:sc} describes their use for multivariate
+formulations\footnote{hierarchical formulations, while implemented,
+  are not yet active in release 5.2}.  The subsections that follow
+describe the one-dimensional interpolation polynomials for these cases
+and Section~\ref{uq:expansion:sc} describes their use for multivariate
 interpolation within the stochastic collocation algorithm.
 
 \subsection{Global value-based} \label{uq:expansion:interp:Lagrange}
@@ -120,24 +121,93 @@ orthogonal polynomials shown in Table~\ref{TAB:askey}) interpolate
 both values and derivatives.  In our case, we are interested in
 interpolating values and first derivatives, i.e, gradients.  In the
 gradient-enhanced case, interpolation of a one-dimensional function
-involves both type 1 and type 2 interpolation polynomials
+involves both type 1 and type 2 interpolation polynomials,
 \begin{equation}
-R(\xi) \cong \sum_{i=1}^{N_p} \left[ r_i H_i^{(1)}(\xi) + 
-  \sum_{j=1}^n \frac{dr_i}{d\xi_j} H_{ij}^{(2)}(\xi) \right]
+R(\xi) \cong \sum_{j=1}^{m} \left[ r(\xi_j) H_j^{(1)}(\xi) + 
+  \frac{dr}{d\xi}(\xi_j) H_j^{(2)}(\xi) \right]
 \end{equation}
-where the former interpolate a particular value while producing zero
-gradients and the latter interpolate a particular gradient component
-while producing zero values.  One-dimensional polynomials satisfying
-these constraints for general point sets are generated using divided
-differences as described in~\cite{Burk11}.
+where the former interpolate a particular value while producing a zero
+gradient ($i^{th}$ type 1 interpolant produces a value of 1 for the
+$i^{th}$ collocation point, zero values for all other points, and zero
+gradients for all points) and the latter interpolate a particular
+gradient while producing a zero value ($i^{th}$ type 2 interpolant
+produces a gradient of 1 for the $i^{th}$ collocation point, zero
+gradients for all other points, and zero values for all points).
+One-dimensional polynomials satisfying these constraints for general
+point sets are generated using divided differences as described
+in~\cite{Burk11}.
 
 \subsection{Local value-based} \label{uq:expansion:interp:linear}
 
+Linear spline basis polynomials define a ``hat function,'' 
+which produces the value of one at its collocation point and decays 
+linearly to zero at its nearest neighbors.  In the case where its
+collocation point corresponds to a domain boundary, then the half
+interval that extends beyond the boundary is truncated.
+
+For the case of non-equidistant closed points (e.g., Clenshaw-Curtis),
+the linear spline polynomials are defined as
+\begin{equation}
+L_j(\xi) = 
+\begin{cases}
+1 - \frac{\xi - \xi_j}{\xi_{j-1} - \xi_j} & 
+\text{if $\xi_{j-1} \leq \xi \leq \xi_j$ (left half interval)}\\
+1 - \frac{\xi - \xi_j}{\xi_{j+1} - \xi_j} & 
+\text{if $\xi_j < \xi \leq \xi_{j+1}$ (right half interval)}\\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+
+For the case of equidistant closed points (i.e., Newton-Cotes), this
+can be simplified to
+\begin{equation}
+L_j(\xi) = 
+\begin{cases}
+1 - \frac{|\xi - \xi_j|}{h} & \text{if $|\xi - \xi_j| \leq h$}\\
+0                           & \text{otherwise}
+\end{cases}
+\end{equation}
+for $h$ defining the half-interval $\frac{b - a}{m - 1}$ of the hat
+function $L_j$ over the range $\xi \in [a, b]$.  For the special case
+of $m = 1$ point, $L_1(\xi) = 1$ for $\xi_1 = \frac{b+a}{2}$ in both 
+cases above.
+
 \subsection{Local gradient-enhanced} \label{uq:expansion:interp:cubic}
 
+Type 1 cubic spline interpolants are formulated as follows:
+\begin{equation}
+H_j^{(1)}(\xi) = 
+\begin{cases}
+t^2(3-2t) ~~\text{for}~~ t = \frac{\xi-\xi_{j-1}}{\xi_j-\xi_{j-1}} & 
+\text{if $\xi_{j-1} \leq \xi \leq \xi_j$ (left half interval)}\\
+(t-1)^2(1+2t) ~~\text{for}~~ t = \frac{\xi-\xi_j}{\xi_{j+1}-\xi_j} &
+\text{if $\xi_j < \xi \leq \xi_{j+1}$ (right half interval)}\\
+0     & \text{otherwise}
+\end{cases}
+\end{equation}
+which produce the desired zero-one-zero property for left-center-right
+values and zero-zero-zero property for left-center-right gradients.  
+Type 2 cubic spline interpolants are formulated as follows:
+\begin{equation}
+H_j^{(2)}(\xi) =
+\begin{cases}
+ht^2(t-1) ~~\text{for}~~ h = \xi_j-\xi_{j-1},~~ t = \frac{\xi-\xi_{j-1}}{h} & 
+\text{if $\xi_{j-1} \leq \xi \leq \xi_j$ (left half interval)}\\
+ht(t-1)^2 ~~\text{for}~~ h = \xi_{j+1}-\xi_j,~~ t = \frac{\xi-\xi_j}{h} &
+\text{if $\xi_j < \xi \leq \xi_{j+1}$ (right half interval)}\\
+0     & \text{otherwise}
+\end{cases}
+\end{equation}
+which produce the desired zero-zero-zero property for left-center-right
+values and zero-one-zero property for left-center-right gradients.  For 
+the special case of $m = 1$ point over the range $\xi \in [a, b]$, 
+$H_1^{(1)}(\xi) = 1$ and $H_1^{(2)}(\xi) = \xi$ for $\xi_1 = \frac{b+a}{2}$.
+
+% TO DO: could add discussion of collocation weights
 
 
 \section{Generalized Polynomial Chaos} \label{uq:expansion:pce}
+
 
 The set of polynomials from \ref{uq:expansion:orth:askey}
 and~\ref{uq:expansion:orth:beyond_askey} are used as an orthogonal basis to
