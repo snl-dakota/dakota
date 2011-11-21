@@ -1099,6 +1099,11 @@ JEGAOptimizer::LoadTheParameterDatabase(
             )
         );
 
+    // Dakota does not currently expose the input that indicates that there is
+    // a minimum allowable population size for the below limit selector.  Add
+    // a default explicitly here to prevent any problems.
+    this->_theParamDB->AddSizeTypeParam("method.jega.minimum_selections", 2);
+
     // Dakota does not currently expose the evaluation concurrency flag
     // through the interface nor should it b/c Dakota handles evaluations.
     this->_theParamDB->AddSizeTypeParam("method.jega.eval_concurrency", 1);
