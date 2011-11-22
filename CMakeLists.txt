@@ -145,6 +145,13 @@ if (HAVE_X_GRAPHICS)
   endif(X11_FOUND)
 endif(HAVE_X_GRAPHICS)
 
+# Manage option for f90 (default ON)
+option(DAKOTA_F90 "Build the f90, bvls_wrapper." ON)
+if(DAKOTA_F90)
+  FortranCInterface_HEADER(dak_f90_config.h MACRO_NAMESPACE DAK_F90_)
+  install(FILES ${Dakota_BINARY_DIR}/dak_f90_config.h DESTINATION include)
+endif(DAKOTA_F90)
+
 add_subdirectory(packages)
 add_subdirectory(src)
 
@@ -171,7 +178,6 @@ endif()
 
 add_subdirectory(examples)
 
-
 # Top-level install rules from source (binary rules are in subdirs)
 install(FILES INSTALL LICENSE COPYRIGHT README DESTINATION .)
 
@@ -191,3 +197,4 @@ install(DIRECTORY test DESTINATION .
   PATTERN "*.C" EXCLUDE 
   PATTERN "*.f" EXCLUDE 
   )
+

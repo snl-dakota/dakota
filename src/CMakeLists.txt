@@ -108,8 +108,7 @@ if(UNIX)
 endif(UNIX)
 
 
-#option(HAVE_BVLS "Build the f90, bvls_wrapper." ON)
-option(DAKOTA_F90 "Build the f90, bvls_wrapper." ON)
+#option(DAKOTA_F90 "Build the f90, bvls_wrapper." ON)
 
 # A future version of CMake should set the Fortran FIXED_FLAG automagically
 if(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
@@ -126,11 +125,9 @@ endif()
 
 if(DAKOTA_F90)
   add_definitions("-DDAKOTA_F90")
+  include_directories(${Dakota_BINARY_DIR})
   list(APPEND CMAKE_Fortran_FLAGS ${FIXED_FLAG})
 endif(DAKOTA_F90)
-
-include_directories(${Dakota_BINARY_DIR})
-FortranCInterface_HEADER(dak_f90_config.h MACRO_NAMESPACE DAK_F90_)
 
 
 option(HAVE_USAGE_TRACKING "Build the DAKOTA usage tracker module." OFF)
@@ -527,9 +524,6 @@ install(TARGETS dakota dakota_restart_util EXPORT DESTINATION bin)
 install(TARGETS dakota_library_mode DESTINATION bin)
 file(GLOB Dakota_hdr *.H *.h)
 install(FILES ${Dakota_hdr} DESTINATION include)
-if(DAKOTA_F90)
-  install(FILES ${Dakota_BINARY_DIR}/dak_f90_config.h DESTINATION include)
-endif(DAKOTA_F90)
 file(GLOB Dakota_spec_files dakota.input.*)
 install(FILES ${Dakota_spec_files} DESTINATION bin)
 
