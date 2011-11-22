@@ -908,12 +908,18 @@ used as placeholders.
 \subsection{Work Directories}\label{interfaces:workdir}
 
 Sometimes it is convenient for simulators and filters to run in a
-directory different from the one where DAKOTA is invoked.  A simulator
-script used as an \texttt{analysis\_driver} can of course include
-commands to change to a different directory if desired (while still
-arranging to write a results file in the original directory), but
-DAKOTA has facilities that may simplify the creation of simulator
-scripts.  If an interface specification includes the keyword
+directory different from the one where DAKOTA is invoked.  For instance,
+when performing concurrent evaluations and/or analyses, it is often
+necessary to cloister input and output files in separate directories to
+void conflicts.  A simulator script used as an \texttt{analysis\_driver}
+can of course include commands to change to a different directory if
+desired (while still arranging to write a results file in the original
+directory), but DAKOTA has facilities that may simplify the creation of
+simulator scripts.  When the \texttt{work\_directory} feature is enabled,
+DAKOTA will create a directory for each evaluation/analysis (with
+optional tagging and saving as with files).  To enable the
+\texttt{work\_directory} feature an interface specification includes
+the keyword
 \begin{small}
 \begin{verbatim}
        work_directory
