@@ -85,7 +85,7 @@ endif(UNIX)
 
 
 #option(HAVE_BVLS "Build the f90, bvls_wrapper." ON)
-option(DAKOTA_F90 "Build the f90, bvls_wrapper." OFF)
+option(DAKOTA_F90 "Build the f90, bvls_wrapper." ON)
 
 # A future version of CMake should set the Fortran FIXED_FLAG automagically
 if(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
