@@ -498,8 +498,14 @@ SIERRA (multiphysics).
 In addition to built-in polynomial test functions described in
 Section~\ref{interfaces:direct}, DAKOTA includes direct interfaces to
 Sandia's Salinas code for structural dynamics, Phoenix Integration's
-ModelCenter framework, and The Mathworks' Matlab scientific computing
-environment.
+ModelCenter framework, The Mathworks' Matlab scientific computing
+environment, and Python.  While these can be interfaced to with a
+script-based approach, some usability and efficiency gains may be
+realized by re-compiling DAKOTA with these direct interfaces enabled.
+Some details on Matlab and Python interfaces are provided here.  Note
+that these capabilities permit using Matlab or Python to evaluate a
+parameter to response mapping; they do not make DAKOTA algorithms
+available as a service, i.e., as a Matlab toolbox or Python module.
 
 \subsection{Matlab}\label{advint:existingdirect:matlab} 
 
@@ -511,29 +517,41 @@ performed exchanging parameters and results through the Matlab C API.
 This eliminates the need to use the file system and the expense of
 initializing the Matlab engine for each function evaluation.
 
-To use the DAKOTA/Matlab interface, DAKOTA must be configured and
-compiled with the Matlab feature enabled; see the INSTALL file
-included with the DAKOTA distribution for more information.  The
-DAKOTA/Matlab interface has been built and tested on 32-bit Linux with
-Matlab 7.0 (R14) and on 64-bit Linux with Matlab 7.1 (R14SP3).
+The DAKOTA/Matlab interface has been built and tested on 32-bit Linux
+with Matlab 7.0 (R14) and on 64-bit Linux with Matlab 7.1 (R14SP3).
 Configuration support for Solaris is included, but is untested.
 Builds on other platforms or with other versions of Matlab may require
-modifications to the DAKOTA build system as described in INSTALL.
+modifications to DAKOTA including its build system
 
-Since the Matlab libraries are linked dynamically, they must be
-accessible at run time.  Before running a DAKOTA binary that includes
-Matlab support, make sure the path to the Matlab shared object
-libraries is included in your {\tt LD\_LIBRARY\_PATH} environment
-variable.  For example to accomplish this in BASH on 32-bit Linux, one
-might type
-\begin{small}
+To use the DAKOTA/Matlab interface, DAKOTA must be configured and
+compiled with the Matlab feature enabled (currently only supported in
+autotools builds of DAKOTA).  The Mathworks only provides shared
+object libraries for its engine API, so DAKOTA must be dynamically
+linked to at least the Matlab libraries.  To compile DAKOTA with the
+Matlab interface enabled, one might, for example:
+\begin{enumerate}
+\item Configure DAKOTA with (at minimum) the following directive:
 \begin{verbatim}
-    export LD_LIBRARY_PATH=/usr/local/matlab/bin/glnx86:$LD_LIBRARY_PATH
-\end{verbatim}
-\end{small}
-or add such a command to the .bashrc file.
+configure --with-matlab=$MATLAB_ROOT
+\end{verbatim} %$
+where {\tt \$MATLAB\_ROOT} is the root of your Matlab installation (it should
+be a directory containing directories bin/YOURPLATFORM and
+extern/include).
 
-Example files corresponding to the following tutorial are available in \\ {\tt Dakota/examples/linked\_interfaces/Matlab}.
+\item Since the Matlab libraries are linked dynamically, they must be
+accessible at compile time and at run time. Make sure the path to the
+appropriate Matlab shared object libraries is on your 
+{\tt LD\_LIBRARY\_PATH}.  For example to accomplish this in BASH on
+32-bit Linux, one might type
+\begin{verbatim}
+export LD_LIBRARY_PATH=/usr/local/matlab/bin/glnx86:$LD_LIBRARY_PATH
+\end{verbatim} %$
+or add such a command to the .bashrc file.  Then proceed with
+compiling as usual.
+\end{enumerate}
+
+Example files corresponding to the following tutorial are available in \\ 
+{\tt Dakota/examples/linked\_interfaces/Matlab}.
 
 \subsubsection{DAKOTA/Matlab input file specification}
 
@@ -544,10 +562,10 @@ analysis is specified through the {\tt analysis\_components} keyword.
 Here is a sample DAKOTA {\tt interface} specification:
 \begin{small}
 \begin{verbatim}
-interface,
-  direct
-    analysis_driver = 'matlab'
-    analysis_components = 'myanalysis.m'
+  interface,
+    direct
+      analysis_driver = 'matlab'
+      analysis_components = 'myanalysis.m'
 \end{verbatim} 
 \end{small}
 
@@ -571,7 +589,7 @@ manual execution of the call to the analysis in Matlab should
 therefore look like:
 \begin{small}
 \begin{verbatim}
-    >> Dakota = myanalysis(Dakota)
+  >> Dakota = myanalysis(Dakota)
 \end{verbatim} 
 \end{small}
 Note that the structure named Dakota will be pushed into the Matlab
@@ -590,12 +608,15 @@ Dakota.
   numFns              number of functions (responses, constraints)
   numVars             total number of variables
   numACV              number active continuous variables
-  numADV              number active discrete variables
+  numADIV             number active discrete integer variables
+  numADRV             number active discrete real variables
   numDerivVars        number of derivative variables specified in directFnDVV
   xC                  continuous variable values ([1 x numACV]) 
-  xD                  discrete variable values ([1 x numADV])
-  xCLabels            continuous variable labels (cell array of numACV strings)
-  xDLabels            discrete variable labels (cell array of  numADV strings)
+  xDI                 discrete integer variable values ([1 x numADIV])
+  xDR                 discrete real variable values ([1 x numADRV])
+  xCLabels            continuous var labels (cell array of numACV strings)
+  xDILabels           discrete integer var labels (cell array of numADIV strings)
+  xDRLabels           discrete real var labels (cell array of numADIV strings)
   directFnASV         active set vector ([1 x numFns])
   directFnASM         active set matrix ([3 x numFns]) -- see below
   directFnDVV         derivative variables vector ([1 x numDerivVars])
@@ -603,6 +624,7 @@ Dakota.
   fnFlag              nonzero if function values requested
   gradFlag            nonzero if gradients requested
   hessFlag            nonzero if hessians requested
+  currEvalId          current evaluation ID
 \end{verbatim}
 \end{small}
 \end{bigbox}
@@ -773,3 +795,73 @@ function Dakota = rosenbrock(Dakota)
 \caption{Sample Matlab implementation of the Rosenbrock test function
 for the DAKOTA/Matlab interface.\label{advint:figure:matlabrosen}}
 \end{figure}
+
+\subsection{Python}\label{advint:existingdirect:python} 
+
+DAKOTA's Python direct interface has been tested on Linux with Python
+2.x.  When enabled, it allows DAKOTA to make function evaluation calls
+directly to an analysis function in a user-provided Python module.
+Data may flow between DAKOTA and Python either in multiply-subscripted
+lists or NumPy arrays.
+
+The Python direct interface must be enabled when compiling DAKOTA (and
+is only supported in autotools builds):
+\begin{verbatim}
+configure --with-python
+\end{verbatim}
+Configure will query the first available Python installation on the
+PATH to determine availability of necessary development headers and
+libraries.  If the available Python installation includes NumPy
+(detected via arrayobject.h), then DAKOTA will default to a NumPy
+array interface.  If not available, or if the variable
+DirectApplicInterface::userNumpyFlag is forced to be false, DAKOTA
+will use multiply-subscripted lists for data flow.
+
+An example of using the Python direct interface with both lists and
+arrays is included in \\
+{\tt examples/linked\_interfaces/Python}.  The Python direct driver is
+selected with, for example,
+\begin{verbatim}
+  analysis_drivers = 'python'				
+    analysis_components = 'python_module:analysis_function'
+\end{verbatim}
+where {\tt python\_module} denotes the module (file {\tt
+python\_module.py}) DAKOTA will attempt to import into the Python
+environment and {\tt analysis\_function} denotes the function to call
+when evaluating a parameter set.
+
+Whether using the list or array interface, data from DAKOTA is passed
+(via kwargs) into the user function in a dictionary containing the
+entries shown in Table~\ref{advint:table:pythonparams}.  The {\tt
+analysis\_function} must return a dictionary containing the data
+specified by the active set vector with fields ``fns'', ``fnGrads'',
+and ``fnHessians'', corresponding to function values, gradients, and
+Hessians, respectively.  The function may optionally include a failure
+code in ``failure'' (zero indicates success, nonzero failure) and
+function labels in ``fnLabels''.  See the linked interfaces example
+referenced above for more details.
+
+\begin{table}
+\centering
+\caption{Data dictionary passed to Python direct interface.}
+\label{advint:table:pythonparams}\vspace{2mm}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Entry Name} & \textbf{Description}  \\
+\hline
+functions  & number of functions (responses, constraints) \\
+variables  & total number of variables \\
+cv         & list/array of continuous variable values \\
+div        & list/array of discrete integer variable values \\
+drv        & list/array of discrete real variable values \\
+av         & single list/array of all variable values \\
+cv\_labels  & continuous variable labels \\
+div\_labels & discrete integer variable labels \\
+drv\_labels & discrete real variable labels \\
+av\_labels  & all variable labels \\
+asv        & active set vector \\
+dvv        & derivative variables vector \\
+currEvalId & current evaluation ID number \\
+\hline
+\end{tabular}
+\end{table}
