@@ -1104,7 +1104,7 @@ Eq.~\ref{eq:pc_exp_trunc},
 \end{equation}
 and then using Eq.~\ref{eq:multivar_prod}, 
 \begin{equation}
-\frac{d\Psi_j(\boldsymbol{\xi})}{d\xi_i} = \frac{d\psi_{t_i^j}}{d\xi_i}(\xi_i)
+\frac{d\Psi_j}{d\xi_i}(\boldsymbol{\xi}) = \frac{d\psi_{t_i^j}}{d\xi_i}(\xi_i)
 \prod_{\stackrel{\scriptstyle k=1}{k \ne i}}^n \psi_{t_k^j}(\xi_k)
 \label{eq:deriv_prod_pce}
 \end{equation}
@@ -1131,7 +1131,7 @@ For the former case, the derivative of the multidimensional
 interpolant $\boldsymbol{L}_j$ involves differentiation of 
 Eq.~\ref{eq:multivar_L}:
 \begin{equation}
-\frac{d\boldsymbol{L}_j(\boldsymbol{\xi})}{d\xi_i} = 
+\frac{d\boldsymbol{L}_j}{d\xi_i}(\boldsymbol{\xi}) = 
 \frac{dL_{c_i^j}}{d\xi_i}(\xi_i)
 \prod_{\stackrel{\scriptstyle k=1}{k \ne i}}^n L_{c_k^j}(\xi_k) \label{eq:deriv_prod_sc}
 \end{equation}
@@ -1146,12 +1146,12 @@ In addition to obtaining derivatives of stochastic expansions with
 respect to the random variables, it is possible to obtain
 variance-based sensitivity indices from the stochastic expansions.
 Variance-based sensitivity indices are explained in the Design of
-Experiments Chapter of the Users Manual.  The concepts are summarized
-here as well.  Variance-based decomposition is a global sensitivity
-method that summarizes how the uncertainty in model output can be
-apportioned to uncertainty in individual input variables.  VBD uses
-two primary measures, the main effect sensitivity index $S_{i}$ and
-the total effect index $T_{i}$.  These indices are also called the
+Experiments Chapter of the User's Manual~\cite{UserMan}.  The concepts
+are summarized here as well.  Variance-based decomposition is a global
+sensitivity method that summarizes how the uncertainty in model output
+can be apportioned to uncertainty in individual input variables.  VBD
+uses two primary measures, the main effect sensitivity index $S_{i}$
+and the total effect index $T_{i}$.  These indices are also called the
 Sobol' indices. The main effect sensitivity index corresponds to the
 fraction of the uncertainty in the output, $Y$, that can be attributed
 to input $x_{i}$ alone.  The total effects index corresponds to the
@@ -1188,19 +1188,66 @@ interactions such as the two-way interaction  $S_{i,j}$.
 \section{Automated Refinement}\label{uq:expansion:refine}
 
 Several approaches for refinement of stochastic expansions are
-presented here: uniform p-refinement with isotropic sparse and tensor
-grids, adaptive p-refinement using anisotropic sparse and tensor
-grids, and goal-oriented adaptive p-refinement using generalized
-sparse grids.  Each involves incrementing the grid upon which the 
-stochastic expansions are based, using differing refinement criteria
-and convergence controls.
+currently supported, involving uniform or dimension-adaptive approaches
+to p- or h-refinement using structured (isotropic, anisotropic, or
+generalized) or unstructured grids.  Specific combinations include:
+\begin{itemize}
+\item uniform refinement with unbiased grids
+  \begin{itemize}
+  \item p-refinement: isotropic global tensor/sparse grids (PCE, SC)
+    and regression (PCE only) with global basis polynomials
+  \item h-refinement: isotropic global tensor/sparse grids with local
+    basis polynomials (SC only)
+  \end{itemize}
+\item dimension-adaptive refinement with biased grids
+  \begin{itemize}
+  \item p-refinement: anisotropic global tensor/sparse grids with
+    global basis polynomials using global sensitivity analysis (PCE,
+    SC) or spectral decay rate estimation (PCE only)
+  \item h-refinement: anisotropic global tensor/sparse grids with
+    local basis polynomials (SC only) using global sensitivity analysis
+  \end{itemize}
+\item goal-oriented dimension-adaptive refinement with greedy adaptation
+  \begin{itemize}
+  \item p-refinement: generalized sparse grids with global basis
+    polynomials (PCE, SC)
+  \item h-refinement: generalized sparse grids with local basis
+    polynomials (SC only)
+  \end{itemize}
+\end{itemize}
+Each involves incrementing the global grid using differing grid
+refinement criteria, synchronizing the stochastic expansion specifics
+for the updated grid, and then updating the statistics and computing
+convergence criteria.  Future releases will support local h-refinement
+approaches that can replace or augment the global grids currently
+supported.  The sub-sections that follow enumerate each of the first
+level bullets above.
 
-\subsection{Uniform p-refinement with isotropic grids}
 
-Uniform p-refinement involves ramping the order of a tensor-product
-quadrature grid or the level of a Smolyak sparse grid isotropically.
-In this case, dimension preferences are not computed, and the only
-algorithmic requirements are:
+\subsection{Uniform refinement with unbiased grids}
+\label{uq:expansion:refine:uniform}
+
+Uniform refinement involves ramping the resolution of a global
+structured or unstructured grid in an unbiased manner and then
+refining an expansion to synchronize with this increased grid
+resolution.  In the case of increasing the order of an isotropic
+tensor-product quadrature grid or the level of an isotropic Smolyak
+sparse grid, a p-refinement approach increases the order of the global
+basis polynomials (Sections~\ref{uq:expansion:orth},
+\ref{uq:expansion:interp:Lagrange},
+and~\ref{uq:expansion:interp:Hermite}) in a synchronized manner and an
+h-refinement approach reduces the approximation range of fixed order
+local basis polynomials (Sections~\ref{uq:expansion:interp:linear}
+and~\ref{uq:expansion:interp:cubic}).  And in the case of uniform
+p-refinement with PCE regression, the collocation oversampling ratio
+(refer to Methods specification within DAKOTA Reference
+Manual~\cite{RefMan}) is held fixed, such that an increment in
+isotropic expansion order is matched with a corresponding increment in
+the number of structured (probabilistic collocation) or unstructured
+samples (point collocation) employed in the linear least squares solve.
+ 
+For uniform refinement, anisotropic dimension preferences are not
+computed, and the only algorithmic requirements are:
 \begin{itemize}
 \item With the usage of nested integration rules with restricted
   exponential growth, DAKOTA must ensure that a change in level
@@ -1214,39 +1261,63 @@ algorithmic requirements are:
 \end{itemize}
 
 
-\subsection{Adaptive p-refinement with anisotropic grids}
+\subsection{Dimension-adaptive refinement with biased grids}
 
-Adaptive p-refinement involves ramping the order of a tensor-product
-quadrature grid or the level of a Smolyak sparse grid anisotropically,
-that is, using a defined dimension preference.  This dimension
-preference may be computed from local sensitivity analysis, global
-sensitivity analysis, a posteriori error estimation, or decay rate
-estimation.  In the current release, we focus on global sensitivity
-analysis from low order isotropic expansions where dimension
-preference is defined from total Sobol' indices
-(Eq.~\ref{eq:total_sobol}) and is updated on every iteration.  This
-dimension preference vector supports anisotropic sparse grids based on
-a linear index-set constraint (Eq.~\ref{eq:aniso_smolyak_constr}) or
+Dimension-adaptive refinement involves ramping the order of a
+tensor-product quadrature grid or the level of a Smolyak sparse grid
+anisotropically, that is, using a defined dimension preference.  This
+dimension preference may be computed from local sensitivity analysis,
+global sensitivity analysis, a posteriori error estimation, or decay
+rate estimation.  In the current release, we focus on global
+sensitivity analysis and decay rate estimation.  In the former case,
+dimension preference is defined from total Sobol' indices
+(Eq.~\ref{eq:total_sobol}) and is updated on every iteration of the
+adaptive refinement procedure, where higher variance attribution for a
+dimension indicates higher preference for that dimension.  In the
+latter case, the spectral decay rates for the polynomial chaos
+coefficients are estimated using the available sets of univariate
+expansion terms (interaction terms are ignored).  Given a set of
+scaled univariate coefficients (scaled to correspond to a normalized
+basis), the decay rate can be inferred using a technique analogous to
+Richardson extrapolation.  The dimension preference is then defined
+from the inverse of the rate: slowly converging dimensions need
+greater refinement pressure.  For both of these cases, the dimension
+preference vector supports anisotropic sparse grids based on a linear
+index-set constraint (Eq.~\ref{eq:aniso_smolyak_constr}) or
 anisotropic tensor grids (Eq.~\ref{eq:multi_tensor}) with dimension
-order scaled proportionately to preference; in both cases, dimension
+order scaled proportionately to preference; for both grids, dimension
 refinement lower bound constraints are enforced to ensure that all
 previously evaluated points remain in new refined grids.
 %; with the introduction of interaction effects, nonlinear index-set
 %constraints can also be considered.
 
+Given an anisotropic global grid, the expansion refinement proceeds as
+for the uniform case, in that the p-refinement approach increases the
+order of the global basis polynomials
+(Sections~\ref{uq:expansion:orth}, \ref{uq:expansion:interp:Lagrange},
+and~\ref{uq:expansion:interp:Hermite}) in a synchronized manner and an
+h-refinement approach reduces the approximation range of fixed order
+local basis polynomials (Sections~\ref{uq:expansion:interp:linear}
+and~\ref{uq:expansion:interp:cubic}).  Also, the same grid change
+requirements and convergence criteria described for uniform refinement
+(Section~\ref{uq:expansion:refine:uniform}) are applied in this case.
 
-\subsection{Goal-oriented p-refinement with generalized sparse grids}
 
-The uniform and adaptive refinement capabilities described above
-define anisotropy and control convergence in a highly structured
-manner based on variance-related measures.  The generalized sparse
-grid algorithm~\cite{Gerstner_Griebel_2003}, on the other hand,
-supports greater flexibility in the definition of sparse grid index
-sets and supports refinement controls based on general statistical
-quantities of interest (QOI).  This algorithm was originally intended
-for adaptive numerical integration on a hypercube, but can be readily
-extended to the adaptive refinement of stochastic expansions using 
-the following customizations:
+\subsection{Goal-oriented dimension-adaptive refinement with greedy adaptation}
+
+%The uniform and dimension-adaptive refinement capabilities described above
+%define anisotropy and control convergence in a highly structured
+%manner based on variance-related measures.  
+
+Relative to the uniform and dimension-adaptive refinement capabilities
+described previously, the generalized sparse grid
+algorithm~\cite{Gerstner_Griebel_2003} supports greater flexibility in
+the definition of sparse grid index sets and supports refinement
+controls based on general statistical quantities of interest (QOI).
+This algorithm was originally intended for adaptive numerical
+integration on a hypercube, but can be readily extended to the
+adaptive refinement of stochastic expansions using the following
+customizations:
 \begin{itemize}
 \item In addition to hierarchical interpolants in SC, we employ
   independent polynomial chaos expansions for each active and accepted
@@ -1281,11 +1352,11 @@ the following customizations:
 %goal-oriented.  However, for other classes of problems (e.g.,
 %reliability-based design or stochastic inverse problems), we may
 %prefer to employ refinement approaches guided by assessments of
-%accuracy in other statistical quantities of interest.  A particular
-%focus in this effort is to refine adaptively with the goal of
-%accuracy in tail probability estimates.  There are two parts to this
-%effort: goal-oriented p-refinement using generalized sparse grids
-%and efficient tail probability estimation.
+%accuracy in other statistical QOI.  A particular focus in this effort
+%is to refine adaptively with the goal of accuracy in tail probability
+%estimates.  There are two parts to this effort: goal-oriented
+%p-refinement using generalized sparse grids and efficient tail
+%probability estimation.
 %
 %Since probability levels are not available analytically from
 %stochastic expansions, they must be evaluated numerically using some
@@ -1310,11 +1381,13 @@ Given these customizations, the algorithmic steps can be summarized as:
   bookkeeping to allow efficient restoration of previously evaluated
   tensor expansions.
 \item {\em Trial set selection:} Select the trial index set that
-  induces the largest change in the statistical quantity of interest.
-  In our implementation, we employ an $L^2$ norm of change in CDF/CCDF
-  probability/reliability/response level mappings, when level mappings
-  are present, or $L^2$ norm of change in response covariance, when
-  level mappings are not present.
+  induces the largest change in the statistical QOI, normalized by the
+  cost of evaluating the trial index set (as indicated by the number
+  of new collocation points in the trial grid).  In our
+  implementation, the statistical QOI is defined using an $L^2$ norm
+  of change in CDF/CCDF probability/reliability/response level
+  mappings, when level mappings are present, or $L^2$ norm of change
+  in response covariance, when level mappings are not present.
 \item {\em Update sets:} If the largest change induced by the trial
   sets exceeds a specified convergence tolerance, then promote the
   selected trial set from the active set to the old set and update the
@@ -1324,7 +1397,7 @@ Given these customizations, the algorithmic steps can be summarized as:
 \item {\em Finalization:} Promote all remaining active sets to the old
   set, update the Smolyak combinatorial coefficients, and perform a
   final combination of tensor expansions to arrive at the final result
-  for the statistical quantity of interest.
+  for the statistical QOI.
 \end{enumerate}
 
 
@@ -1346,7 +1419,8 @@ model discrepancy (the difference between response results if additive
 correction or the ratio of results if multiplicative correction).
 These discrepancy functions are the same functions approximated in
 surrogate-based minimization (see Surrogate Models section within the
-Models chapter of the Users Manual).  The exact discrepancy functions are
+Models chapter of the User's Manual~\cite{UserMan}).  The exact
+discrepancy functions are
 \begin{eqnarray}
 A(\boldsymbol{\xi}) & = & R_{hi}(\boldsymbol{\xi}) - R_{lo}(\boldsymbol{\xi})
 \label{eq:exact_A} \\

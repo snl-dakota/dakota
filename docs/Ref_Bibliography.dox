@@ -71,12 +71,11 @@ Non-Deterministic Approaches Conference)</i>, Newport, Rhode Island,
 May 1 - 4.
 
 \li \anchor UsersMan Adams, B. M., Bohnhoff, W. J., Dalbey, K. R.,
-Eddy, J. P., Eldred, M. S., Gay, D. M., Haskell, K., Hough, P. D., and
-Swiler, L. P., 2010.  "DAKOTA: A Multilevel Parallel Object-Oriented
+Eddy, J. P., Eldred, M. S., Hough, P. D., Lefantzi, S., Swiler, L.~P.,
+and Vigil, D.~M., 2011.  "DAKOTA: A Multilevel Parallel Object-Oriented
 Framework for Design Optimization, Parameter Estimation, Uncertainty
-Quantification, and Sensitivity Analysis.  Version 5.0 Users Manual,"
-Sandia Technical Report SAND2010-2183, December 2009; updated "Version
-5.1 Users Manual," December 2010.
+Quantification, and Sensitivity Analysis.  Version 5.2 Users Manual,"
+Sandia Technical Report SAND2010-2183, updated Nov. 2011.
 
 \li \anchor Eldred2004a Eldred, M. S., Giunta, A. A., and Collis,
 S. S., 2004. "Second-Order Corrections for Surrogate-Based
