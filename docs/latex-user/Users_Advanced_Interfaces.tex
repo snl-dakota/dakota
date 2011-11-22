@@ -828,7 +828,9 @@ selected with, for example,
 where {\tt python\_module} denotes the module (file {\tt
 python\_module.py}) DAKOTA will attempt to import into the Python
 environment and {\tt analysis\_function} denotes the function to call
-when evaluating a parameter set.
+when evaluating a parameter set.  It is likely necessary to set the
+{\tt PYTHONPATH} environment variable to include the location of the
+Python module you wish to load.
 
 Whether using the list or array interface, data from DAKOTA is passed
 (via kwargs) into the user function in a dictionary containing the
