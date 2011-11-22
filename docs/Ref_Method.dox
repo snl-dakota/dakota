@@ -5663,7 +5663,7 @@ is reused if not present) along with any specified refinement
 strategy.  Then the two expansions are combined (added or multiplied)
 into an expansion that approximates the high fidelity model, from
 which the final set of statistics are generated.  For polynomial chaos
-expansions, this high fidelity expansion can differ signficantly in 
+expansions, this high fidelity expansion can differ significantly in 
 form from the low fidelity and discrepancy expansions, particularly in
 the \c multiplicative case where it is expanded to include all of the
 basis products.

@@ -390,8 +390,8 @@ nodes used in the $n$-dimensional interpolation and $\xi_{j_k}^{i_k}$
 indicates the $j^{th}$ point out of $i$ possible collocation points 
 in the $k^{th}$ dimension.  This can be simplified to
 \begin{equation}
-R(\boldsymbol{\xi}) \cong \sum_{j=1}^{N_p} r_j(\boldsymbol{\xi}) 
-\boldsymbol{L}_j(\boldsymbol{\xi}) \label{eq:lagrange_interp_nd}
+R(\boldsymbol{\xi}) \cong \sum_{j=1}^{N_p} r_j \boldsymbol{L}_j(\boldsymbol{\xi})
+\label{eq:lagrange_interp_nd}
 \end{equation}
 where $N_p$ is the number of unique collocation points in the
 multidimensional grid.  The multidimensional interpolation polynomials
@@ -445,7 +445,7 @@ r_j \boldsymbol{H}_j^{(1)}(\boldsymbol{\xi}) +
 The multidimensional type 1 basis polynomials are
 \begin{equation}
 \boldsymbol{H}_j^{(1)}(\boldsymbol{\xi}) =
-\prod_{i=1}^{n} H^{(1)}_{c^j_i}(\xi_i) \label{eq:multivar_H1}
+\prod_{k=1}^{n} H^{(1)}_{c^j_k}(\xi_k) \label{eq:multivar_H1}
 \end{equation}
 where $c_k^j$ is the same collocation multi-index described for
 Eq.~\ref{eq:multivar_L} and the superscript notation indicating the
@@ -455,9 +455,13 @@ component are the same as the type 1 polynomials for each dimension
 except $k$:
 \begin{equation}
 \boldsymbol{H}_{jk}^{(2)}(\boldsymbol{\xi}) = H^{(2)}_{c^j_k}(\xi_k)
-\prod_{\stackrel{\scriptstyle i=1}{i \ne k}}^{n} H^{(1)}_{c^j_i}(\xi_i) 
+\prod_{\stackrel{\scriptstyle l=1}{l \ne k}}^{n} H^{(1)}_{c^j_l}(\xi_l) 
 \label{eq:multivar_H2}
 \end{equation}
+
+As for the value-based case, multivariate interpolation on Smolyak
+sparse grids involves a weighted sum of the tensor products in
+Eq.~\ref{eq:hermite_interp_nd} with varying $\boldsymbol{i}$ levels.
 
 
 \section{Transformations to uncorrelated standard variables} \label{uq:expansion:trans}
@@ -1322,3 +1326,106 @@ Given these customizations, the algorithmic steps can be summarized as:
   final combination of tensor expansions to arrive at the final result
   for the statistical quantity of interest.
 \end{enumerate}
+
+
+\section{Multifidelity methods}\label{uq:expansion:multifid}
+
+
+In a multifidelity uncertainty quantification approach employing
+stochastic expansions, we seek to utilize a predictive low-fidelity
+model to our advantage in reducing the number of high-fidelity model
+evaluations required to compute high-fidelity statistics to a
+particular precision.  When a low-fidelity model captures useful
+trends of the high-fidelity model, then the model discrepancy may have
+either lower complexity, lower variance, or both, requiring less
+computational effort to resolve its functional form than that required
+for the original high-fidelity model.
+
+To accomplish this goal, an expansion will first be formed for the
+model discrepancy (the difference between response results if additive
+correction or the ratio of results if multiplicative correction).
+These discrepancy functions are the same functions approximated in
+surrogate-based minimization (see Surrogate Models section within the
+Models chapter of the Users Manual).  The exact discrepancy functions are
+\begin{eqnarray}
+A(\boldsymbol{\xi}) & = & R_{hi}(\boldsymbol{\xi}) - R_{lo}(\boldsymbol{\xi})
+\label{eq:exact_A} \\
+B(\boldsymbol{\xi}) & = & 
+\frac{R_{hi}(\boldsymbol{\xi})}{R_{lo}(\boldsymbol{\xi})} \label{eq:exact_B}
+\end{eqnarray}
+
+Approximating the high-fidelity response functions using approximations of
+these discrepancy functions then involves
+\begin{eqnarray}
+\hat{R}_{hi_{\alpha}}(\boldsymbol{\xi}) & = & R_{lo}(\boldsymbol{\xi}) + 
+\hat{A}(\boldsymbol{\xi}) \label{eq:correct_val_add} \\
+\hat{R}_{hi_{\beta}}(\boldsymbol{\xi}) & = & 
+R_{lo}(\boldsymbol{\xi}) \hat{B}(\boldsymbol{\xi}) \label{eq:correct_val_mult}
+\end{eqnarray}
+where $\hat{A}(\boldsymbol{\xi})$ and $\hat{B}(\boldsymbol{\xi})$ are 
+stochastic expansion approximations to the exact correction functions:
+\begin{eqnarray}
+\hat{A}(\boldsymbol{\xi}) & = & 
+\sum_{j=0}^{P_{hi}} \alpha_j \Psi_j(\boldsymbol{\xi}) ~~~\text{or}~~~ 
+\sum_{j=1}^{N_{hi}} a_j \boldsymbol{L}_j(\boldsymbol{\xi}) \label{eq:stoch_exp_A} \\
+\hat{B}(\boldsymbol{\xi}) & = &  
+\sum_{j=0}^{P_{hi}} \beta_j \Psi_j(\boldsymbol{\xi}) ~~~\text{or}~~~ 
+\sum_{j=1}^{N_{hi}} b_j \boldsymbol{L}_j(\boldsymbol{\xi}) \label{eq:stoch_exp_B}
+\end{eqnarray}
+where $\alpha_j$ and $\beta_j$ are the spectral coefficients for a
+polynomial chaos expansion (evaluated via Eq.~\ref{eq:coeff_extract},
+for example) and $a_j$ and $b_j$ are the interpolation coefficients
+for stochastic collocation (values of the exact discrepancy evaluated
+at the collocation points).
+
+Second, an expansion will be formed for the low fidelity surrogate
+model, where the intent is for the level of resolution to be higher
+than that required to resolve the discrepancy ($P_{lo} >> P_{hi}$ or
+$N_{lo} >> N_{hi}$; either enforced statically through level
+selections or automatically through adaptive refinement):
+\begin{equation}
+R_{lo}(\boldsymbol{\xi}) \cong
+\sum_{j=0}^{P_{lo}} \gamma_j \Psi_j(\boldsymbol{\xi}) ~~~\text{or}~~~ 
+\sum_{j=1}^{N_{lo}} r_{lo_j} \boldsymbol{L}_j(\boldsymbol{\xi}) 
+\label{eq:stoch_exp_LF}
+\end{equation}
+
+Then the two expansions are combined (added or multiplied) into a new
+expansion that approximates the high fidelity model, from which the
+final set of statistics are generated.  For polynomial chaos
+expansions, this combination entails:
+\begin{itemize}
+\item in the additive case, the high-fidelity expansion is formed by
+  simply overlaying the expansion forms and adding the spectral
+  coefficients that correspond to the same basis polynomials.
+\item in the multiplicative case, the form of the high-fidelity
+  expansion must first be expanded to include all polynomial orders
+  indicated by the products of each of the basis polynomials in the
+  low fidelity and discrepancy expansions (most easily estimated
+  from total-order, tensor, or sum of tensor expansions).  Then the
+  coefficients of this product expansion are computed as follows (shown 
+  generically for expansion $z$ = expansion $x$ times expansion $y$):
+\begin{eqnarray}
+\sum_{k=0}^{P_z} z_k \Psi_k(\boldsymbol{\xi}) & = & \sum_{i=0}^{P_x} \sum_{j=0}^{P_y}
+x_i y_j \Psi_i(\boldsymbol{\xi}) \Psi_j(\boldsymbol{\xi}) \\
+z_k & = & \frac{\sum_{i=0}^{P_x} \sum_{j=0}^{P_y} x_i y_j 
+\langle \Psi_i \Psi_j \Psi_k \rangle}{\langle \Psi^2_k \rangle}
+\end{eqnarray}
+  where the basis triple products $\langle \Psi_i \Psi_j \Psi_k \rangle$ 
+  are typically sparse and can be precomputed efficiently using one 
+  dimensional quadrature for fast lookup within multidimensional integrals.
+\end{itemize}
+For stochastic collocation, the high-fidelity expansion generated from
+combining the low fidelity and discrepancy expansions retains the
+polynomial form of the more resolved expansion (typically the low
+fidelity expansion) and only the coefficients are updated in order to
+interpolate the sum or product values (and potentially their
+derivatives).  Since we will typically need to produce a value of a
+less resolved expansion on a more resolved grid to perform this
+combination, we utilize the less resolved expansion rather than the
+original response functions for both interpolated and non-interpolated 
+point values (and derivatives), in order to ensure consistency.
+
+%the low-fidelity model values are corrected to match the high-fidelity 
+%model values (and potentially their derivatives) at the high-fidelity 
+%collocation points.
