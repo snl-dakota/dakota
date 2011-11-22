@@ -243,16 +243,16 @@ e^{\frac{1}{2}\boldsymbol{\xi}^T\boldsymbol{\xi}} (-1)^n
 e^{-\frac{1}{2}\boldsymbol{\xi}^T\boldsymbol{\xi}} \label{eq:multivar_gen}
 \end{equation}
 which can be shown to be a product of one-dimensional Hermite polynomials
-involving a multi-index $m_i^j$:
+involving an expansion term multi-index $t_i^j$:
 \begin{equation}
 B_n(\xi_{i_1}, ..., \xi_{i_n}) = 
 \Psi_j(\boldsymbol{\xi}) = 
-\prod_{i=1}^{n} \psi_{m_i^j}(\xi_i) \label{eq:multivar_prod}
+\prod_{i=1}^{n} \psi_{t_i^j}(\xi_i) \label{eq:multivar_prod}
 \end{equation}
 %which provides a convenient form for sensitivity analysis as described
 %in \ref{uq:expansion:rvsa}.
 In the case of a mixed basis, the same multi-index definition is
-employed although the one-dimensional polynomials $\psi_{m_i^j}$ are
+employed although the one-dimensional polynomials $\psi_{t_i^j}$ are
 heterogeneous in type.
 
 \subsection{Expansion truncation and tailoring} \label{uq:expansion:pce:exp_tnt}
@@ -266,9 +266,9 @@ R \cong \sum_{j=0}^P \alpha_j \Psi_j(\boldsymbol{\xi})
 Traditionally, the polynomial chaos expansion includes a complete
 basis of polynomials up to a fixed total-order specification.  That is,
 for an expansion of total order $p$ involving $n$ random variables, the 
-multi-index defining the set of $\Psi_j$ is constrained by
+expansion term multi-index defining the set of $\Psi_j$ is constrained by
 \begin{equation}
-\sum_{i=1}^{n} m_i^j \leq p \label{eq:to_multi_index}
+\sum_{i=1}^{n} t_i^j \leq p \label{eq:to_multi_index}
 \end{equation}
 For example, the multidimensional basis polynomials for a second-order
 expansion over two random dimensions are
@@ -298,12 +298,13 @@ expansion.''
 An important alternative approach is to employ a ``tensor-product
 expansion,'' in which polynomial order bounds are applied on a
 per-dimension basis (no total-order bound is enforced) and all
-combinations of the one-dimensional polynomials are included.  That 
-is, the multi-index defining the set of $\Psi_j$ is constrained by
+combinations of the one-dimensional polynomials are included.  That
+is, the expansion term multi-index defining the set of $\Psi_j$ is
+constrained by
 \begin{equation}
-m_i^j \leq p_i \label{eq:tp_multi_index}
+t_i^j \leq p_i \label{eq:tp_multi_index}
 \end{equation}
-where $p_i$ is the polynomial order bound for the $i$-th dimension.
+where $p_i$ is the polynomial order bound for the $i^{th}$ dimension.
 In this case, the example basis for $p = 2, n = 2$ is
 \begin{eqnarray}
 \Psi_0(\boldsymbol{\xi}) & = & \psi_0(\xi_1) ~ \psi_0(\xi_2) ~~=~~ 1 
@@ -356,8 +357,8 @@ expansions (see Section~\ref{uq:expansion:spectral_sparse}).
 %forms that are neither tensor-product nor total-order (to be discussed
 %later in association with Figure~\ref{fig:pascal_sparse_lev4_Gauss}).
 In all cases, the specifics of the expansion are codified in the
-multi-index, and subsequent machinery for estimating response values
-and statistics from the expansion
+term multi-index, and subsequent machinery for estimating response 
+values and statistics from the expansion
 %(estimating response values at particular $\boldsymbol{\xi}$, evaluating
 %response statistics by integrating over $\boldsymbol{\xi}$, etc.)
 can be performed in a manner that is agnostic to the specific 
@@ -382,19 +383,29 @@ Section~\ref{uq:expansion:interp:linear} is used:
 R(\boldsymbol{\xi}) \cong \sum_{j_1=1}^{m_{i_1}}\cdots\sum_{j_n=1}^{m_{i_n}}
 r\left(\xi^{i_1}_{j_1},\dots , \xi^{i_n}_{j_n}\right)\,
 \left(L^{i_1}_{j_1}\otimes\cdots\otimes L^{i_n}_{j_n}\right)
-= \sum_{j=1}^{N_p} r_j(\boldsymbol{\xi}) \boldsymbol{L}_j(\boldsymbol{\xi})
-\label{eq:lagrange_interp_nd}
+\label{eq:lagrange_tensor}
 \end{equation}
 where $\boldsymbol{i} = (m_1, m_2, \cdots, m_n)$ are the number of
-nodes used in the $n$-dimensional interpolation, $\xi^i_j$ is the
-$j$-th point in the $i$-th direction, and $N_p$ is the number of 
-unique collocation points in the multidimensional grid.  The 
-multidimensional interpolation polynomials are defined as
+nodes used in the $n$-dimensional interpolation and $\xi_{j_k}^{i_k}$ 
+indicates the $j^{th}$ point out of $i$ possible collocation points 
+in the $k^{th}$ dimension.  This can be simplified to
 \begin{equation}
-\boldsymbol{L}_j(\boldsymbol{\xi}) = \prod_{i=1}^{n} L_{m_i^j}(\xi_i) 
+R(\boldsymbol{\xi}) \cong \sum_{j=1}^{N_p} r_j(\boldsymbol{\xi}) 
+\boldsymbol{L}_j(\boldsymbol{\xi}) \label{eq:lagrange_interp_nd}
+\end{equation}
+where $N_p$ is the number of unique collocation points in the
+multidimensional grid.  The multidimensional interpolation polynomials
+are defined as
+\begin{equation}
+\boldsymbol{L}_j(\boldsymbol{\xi}) = \prod_{k=1}^{n} L_{c_k^j}(\xi_k) 
 \label{eq:multivar_L}
 \end{equation}
-for a multi-index $m_i^j$.  The tensor-product structure preserves the
+where $c_k^j$ is a collocation multi-index (similar to the expansion
+term multi-index in Eq.~\ref{eq:multivar_prod}) that maps from the
+$j^{th}$ unique collocation point to the corresponding
+multidimensional indices within the tensor grid, and we have dropped
+the superscript notation indicating the number of nodes in each
+dimension for simplicity.  The tensor-product structure preserves the
 desired interpolation properties where the $j^{th}$ multivariate
 interpolation polynomial assumes the value of 1 at the $j^{th}$ point
 and assumes the value of 0 at all other points, thereby reproducing
@@ -402,7 +413,7 @@ the response values at each of the collocation points and smoothly
 interpolating between these values at other unsampled points.
 
 Multivariate interpolation on Smolyak sparse grids involves a weighted
-sum of the tensor products in Eq.~\ref{eq:lagrange_interp_nd} with
+sum of the tensor products in Eq.~\ref{eq:lagrange_tensor} with
 varying $\boldsymbol{i}$ levels.  For sparse interpolants based on
 nested quadrature rules (e.g., Clenshaw-Curtis, Gauss-Patterson,
 Genz-Keister), the inteprolation property is preserved, but sparse
@@ -420,26 +431,32 @@ error at the collocation points.
 
 \subsection{Gradient-enhanced} \label{uq:expansion:sc:gradient}
 
-%UNDER CONSTRUCTION
-
-For gradient-enhanced interpolation in multple dimensions
+For gradient-enhanced interpolation in multiple dimensions, we extend
+the formulation in Eq~\ref{eq:lagrange_interp_nd} to use a
+tensor-product of the one-dimensional type 1 and type 2 polynomials
+described in Section~\ref{uq:expansion:interp:Hermite} or
+Section~\ref{uq:expansion:interp:cubic}:
 \begin{equation}
 R(\boldsymbol{\xi}) \cong \sum_{j=1}^{N_p} \left[ 
 r_j \boldsymbol{H}_j^{(1)}(\boldsymbol{\xi}) + 
 \sum_{k=1}^n \frac{dr_j}{d\xi_k} \boldsymbol{H}_{jk}^{(2)}(\boldsymbol{\xi}) 
-\right]
+\right] \label{eq:hermite_interp_nd}
 \end{equation}
-where the multidimensional type 1 basis polynomials are simply
+The multidimensional type 1 basis polynomials are
 \begin{equation}
 \boldsymbol{H}_j^{(1)}(\boldsymbol{\xi}) =
-\prod_{i=1}^{n} H^{(1)}_{m_i^j}(\xi_i) \label{eq:multivar_H1}
+\prod_{i=1}^{n} H^{(1)}_{c^j_i}(\xi_i) \label{eq:multivar_H1}
 \end{equation}
-The multidimensional type 2 basis polynomials for the $k^{th}$
-gradient component are the same as the type 1 polynomials for each
-dimension except $k$:
+where $c_k^j$ is the same collocation multi-index described for
+Eq.~\ref{eq:multivar_L} and the superscript notation indicating the
+number of nodes in each dimension has again been omitted.  The
+multidimensional type 2 basis polynomials for the $k^{th}$ gradient
+component are the same as the type 1 polynomials for each dimension
+except $k$:
 \begin{equation}
-\boldsymbol{H}_{jk}^{(2)}(\boldsymbol{\xi}) = H^{(2)}_{m_k^j}(\xi_k)
-\prod_{\stackrel{\scriptstyle i=1}{i \ne k}}^{n} H^{(1)}_{m_i^j}(\xi_i) \label{eq:multivar_H2}
+\boldsymbol{H}_{jk}^{(2)}(\boldsymbol{\xi}) = H^{(2)}_{c^j_k}(\xi_k)
+\prod_{\stackrel{\scriptstyle i=1}{i \ne k}}^{n} H^{(1)}_{c^j_i}(\xi_i) 
+\label{eq:multivar_H2}
 \end{equation}
 
 
@@ -601,7 +618,7 @@ in Eq.~\ref{eq:coeff_extract} is the norm squared of the multivariate
 orthogonal polynomial, which can be computed analytically using the
 product of univariate norms squared
 \begin{equation}
-\langle \Psi^2_j \rangle ~=~ \prod_{i=1}^{n} \langle \psi_{m_i^j}^2 \rangle
+\langle \Psi^2_j \rangle ~=~ \prod_{i=1}^{n} \langle \psi_{t_i^j}^2 \rangle
 \label{eq:norm_squared}
 \end{equation}
 where the univariate inner products have simple closed form
@@ -1079,15 +1096,15 @@ the random variables~\cite{reagan_sens}.  First, using
 Eq.~\ref{eq:pc_exp_trunc},
 \begin{equation}
 \frac{dR}{d\xi_i} = \sum_{j=0}^P \alpha_j 
-\frac{d\Psi_j(\boldsymbol{\xi})}{d\xi_i}\label{eq:dR_dxi_pce}
+\frac{d\Psi_j}{d\xi_i}(\boldsymbol{\xi}) \label{eq:dR_dxi_pce}
 \end{equation}
 and then using Eq.~\ref{eq:multivar_prod}, 
 \begin{equation}
-\frac{d\Psi_j(\boldsymbol{\xi})}{d\xi_i} = \frac{d\psi_i}{d\xi_i}
-\prod_{\stackrel{\scriptstyle k=1}{k \ne i}}^n \psi_{m_k^j}(\xi_k)
+\frac{d\Psi_j(\boldsymbol{\xi})}{d\xi_i} = \frac{d\psi_{t_i^j}}{d\xi_i}(\xi_i)
+\prod_{\stackrel{\scriptstyle k=1}{k \ne i}}^n \psi_{t_k^j}(\xi_k)
 \label{eq:deriv_prod_pce}
 \end{equation}
-where the univariate polynomial derivatives $\frac{d\psi_i}{d\xi_i}$
+where the univariate polynomial derivatives $\frac{d\psi}{d\xi}$
 have simple closed form expressions for each polynomial in the Askey
 scheme~\cite{abram_stegun}.  Finally, using the Jacobian of the
 (extended) Nataf variable transformation,
@@ -1099,20 +1116,20 @@ which simplifies to $\frac{dR}{d\xi_i} \frac{d\xi_i}{dx_i}$ in the
 case of uncorrelated $x_i$.  
 
 Similar expressions may be derived for stochastic collocation, starting
-from Eq.~\ref{eq:sc_exp_short}:
+from Eq.~\ref{eq:lagrange_interp_nd}:
 \begin{equation}
 \frac{dR}{d\xi_i} = \sum_{j=1}^{N_p} r_j 
-\frac{d\boldsymbol{L}_j(\boldsymbol{\xi})}{d\xi_i}\label{eq:dR_dxi_sc}
+\frac{d\boldsymbol{L}_j}{d\xi_i}(\boldsymbol{\xi}) \label{eq:dR_dxi_sc}
 \end{equation}
 where the multidimensional interpolant $\boldsymbol{L}_j$ is formed
 over either tensor-product quadrature points or a Smolyak sparse grid.
 For the former case, the derivative of the multidimensional
-interpolant $\boldsymbol{L}_j$ involves a product rule of the
-one-dimensional interpolants $L_k$:
+interpolant $\boldsymbol{L}_j$ involves differentiation of 
+Eq.~\ref{eq:multivar_L}:
 \begin{equation}
-\frac{d\boldsymbol{L}_j(\boldsymbol{\xi})}{d\xi_i} = \frac{dL_i}{d\xi_i}
-\prod_{\stackrel{\scriptstyle k=1}{k \ne i}}^n L_k(\xi_k)
-\label{eq:deriv_prod_sc}
+\frac{d\boldsymbol{L}_j(\boldsymbol{\xi})}{d\xi_i} = 
+\frac{dL_{c_i^j}}{d\xi_i}(\xi_i)
+\prod_{\stackrel{\scriptstyle k=1}{k \ne i}}^n L_{c_k^j}(\xi_k) \label{eq:deriv_prod_sc}
 \end{equation}
 and for the latter case, the derivative involves a linear combination
 of these product rules, as dictated by the Smolyak recursion shown in
