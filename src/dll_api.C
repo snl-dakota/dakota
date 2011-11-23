@@ -63,7 +63,7 @@ public:
 
   /// Construct a runner object, currently no use cases for argc > 0
   DakotaRunner(int _argc, char** _argv)
-    : parallel_lib(0), numVars(0), varNames(NULL), numResp(0), respNames(NULL)
+    : parallel_lib(0), argsPassed(_argc), numVars(0), varNames(NULL), numResp(0), respNames(NULL)
 	{
 	signal_init();
 	// allocate additional pointers for the log and error files and the input argument
@@ -88,27 +88,48 @@ public:
   ///
   ~DakotaRunner()
 	{
-	if (parallel_lib) {
-		delete parallel_lib;
-		delete cmd_line_handler;
-		delete problem_db;
-		delete selected_strategy;
-		}
 
-	for (int i=0; i<argc; i++)
-		delete argv[i];
-	delete argv;
+	if (respNames) {
+	  for (size_t i=0; i<numResp; i++) {
+	    // memory allocated with strdup requires free, not delete
+	    std::free(respNames[i]);
+	  }
+	  delete[] respNames;
+	}
 
 	if (varNames) {
-	  for (size_t i=0; i<numVars; i++)
-	    delete[] varNames[i];
+	  for (size_t i=0; i<numVars; i++) {
+	    // memory allocated with strdup requires free, not delete
+	    std::free(varNames[i]);
+	  }
 	  delete[] varNames;
 	}
 
-	if (respNames) {
-	  for (size_t i=0; i<numResp; i++)
-	    delete[] respNames[i];
-	  delete[] respNames;
+	if (parallel_lib) {
+	  delete selected_strategy;
+	  delete problem_db;
+	  delete cmd_line_handler;
+	  delete parallel_lib;
+	}
+
+	if (argv) {
+	  if (argsPassed < 1) {
+	    // all argv done with strdup (0 plus supplemental 1--6)
+	    // memory allocated with strdup requires free, not delete
+	    for (int i=0; i<argc; ++i)
+	      std::free(argv[i]);
+	  }
+	  else {
+	    // argv[0:argsPassed-1] new/strcpy
+	    // new/strcp memory must be deleted
+	    // remaining 6 strdup must be free-ed
+	    int i=0;
+	    for ( ; i<argsPassed; ++i)
+	      delete argv[i];
+	    for ( ; i<argc; ++i)
+	      std::free(argv[i]);
+	  }
+	  delete[] argv;
 	}
 
 	}
@@ -236,6 +257,7 @@ public:
   ProblemDescDB* problem_db;            ///< ptr to DAKOTA problem DB
   Strategy* selected_strategy;          ///< ptr to DAKOTA strategy
 
+  int argsPassed;    ///< number of args passed to runner constructor
   int argc;          ///< number of command-line args to pass to DAKOTA
   char** argv;       ///< adjusted command-line args to pass to DAKOTA
 
