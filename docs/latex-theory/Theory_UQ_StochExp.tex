@@ -1412,7 +1412,7 @@ particular precision.  When a low-fidelity model captures useful
 trends of the high-fidelity model, then the model discrepancy may have
 either lower complexity, lower variance, or both, requiring less
 computational effort to resolve its functional form than that required
-for the original high-fidelity model.
+for the original high-fidelity model~\cite{Ng2001}.
 
 To accomplish this goal, an expansion will first be formed for the
 model discrepancy (the difference between response results if additive
@@ -1431,9 +1431,9 @@ B(\boldsymbol{\xi}) & = &
 Approximating the high-fidelity response functions using approximations of
 these discrepancy functions then involves
 \begin{eqnarray}
-\hat{R}_{hi_{\alpha}}(\boldsymbol{\xi}) & = & R_{lo}(\boldsymbol{\xi}) + 
+\hat{R}_{hi_A}(\boldsymbol{\xi}) & = & R_{lo}(\boldsymbol{\xi}) + 
 \hat{A}(\boldsymbol{\xi}) \label{eq:correct_val_add} \\
-\hat{R}_{hi_{\beta}}(\boldsymbol{\xi}) & = & 
+\hat{R}_{hi_B}(\boldsymbol{\xi}) & = & 
 R_{lo}(\boldsymbol{\xi}) \hat{B}(\boldsymbol{\xi}) \label{eq:correct_val_mult}
 \end{eqnarray}
 where $\hat{A}(\boldsymbol{\xi})$ and $\hat{B}(\boldsymbol{\xi})$ are 
@@ -1454,8 +1454,8 @@ at the collocation points).
 
 Second, an expansion will be formed for the low fidelity surrogate
 model, where the intent is for the level of resolution to be higher
-than that required to resolve the discrepancy ($P_{lo} >> P_{hi}$ or
-$N_{lo} >> N_{hi}$; either enforced statically through level
+than that required to resolve the discrepancy ($P_{lo} \gg P_{hi}$ or
+$N_{lo} \gg N_{hi}$; either enforced statically through order/level
 selections or automatically through adaptive refinement):
 \begin{equation}
 R_{lo}(\boldsymbol{\xi}) \cong
@@ -1473,32 +1473,34 @@ expansions, this combination entails:
   simply overlaying the expansion forms and adding the spectral
   coefficients that correspond to the same basis polynomials.
 \item in the multiplicative case, the form of the high-fidelity
-  expansion must first be expanded to include all polynomial orders
+  expansion must first be defined to include all polynomial orders
   indicated by the products of each of the basis polynomials in the
-  low fidelity and discrepancy expansions (most easily estimated
-  from total-order, tensor, or sum of tensor expansions).  Then the
-  coefficients of this product expansion are computed as follows (shown 
-  generically for expansion $z$ = expansion $x$ times expansion $y$):
+  low fidelity and discrepancy expansions (most easily estimated from
+  total-order, tensor, or sum of tensor expansions which involve
+  simple order additions).  Then the coefficients of this product
+  expansion are computed as follows (shown generically for $z = xy$
+  where $x$, $y$, and $z$ are each expansions of arbitrary form):
 \begin{eqnarray}
 \sum_{k=0}^{P_z} z_k \Psi_k(\boldsymbol{\xi}) & = & \sum_{i=0}^{P_x} \sum_{j=0}^{P_y}
 x_i y_j \Psi_i(\boldsymbol{\xi}) \Psi_j(\boldsymbol{\xi}) \\
 z_k & = & \frac{\sum_{i=0}^{P_x} \sum_{j=0}^{P_y} x_i y_j 
 \langle \Psi_i \Psi_j \Psi_k \rangle}{\langle \Psi^2_k \rangle}
 \end{eqnarray}
-  where the basis triple products $\langle \Psi_i \Psi_j \Psi_k \rangle$ 
-  are typically sparse and can be precomputed efficiently using one 
-  dimensional quadrature for fast lookup within multidimensional integrals.
+  where tensors of one-dimensional basis triple products $\langle
+  \psi_i \psi_j \psi_k \rangle$ are typically sparse and can be
+  efficiently precomputed using one dimensional quadrature for fast
+  lookup within the multidimensional triple products.
 \end{itemize}
 For stochastic collocation, the high-fidelity expansion generated from
 combining the low fidelity and discrepancy expansions retains the
-polynomial form of the more resolved expansion (typically the low
-fidelity expansion) and only the coefficients are updated in order to
-interpolate the sum or product values (and potentially their
-derivatives).  Since we will typically need to produce a value of a
-less resolved expansion on a more resolved grid to perform this
-combination, we utilize the less resolved expansion rather than the
-original response functions for both interpolated and non-interpolated 
-point values (and derivatives), in order to ensure consistency.
+polynomial form of the low fidelity expansion, for which only the
+coefficients are updated in order to interpolate the sum or product
+values (and potentially their derivatives).  Since we will typically
+need to produce values of a less resolved discrepancy expansion on a
+more resolved low fidelity grid to perform this combination, we
+utilize the discrepancy expansion rather than the original discrepancy
+function values for both interpolated and non-interpolated point
+values (and derivatives), in order to ensure consistency.
 
 %the low-fidelity model values are corrected to match the high-fidelity 
 %model values (and potentially their derivatives) at the high-fidelity 
