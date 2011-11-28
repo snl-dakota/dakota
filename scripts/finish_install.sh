@@ -4,33 +4,41 @@
 # install to finish placing DAKOTA files in the install directory
 # specified by prefix
 
-# To be run from build tree Dakota/ containing src, test, etc.
+# To be run from autotools build tree Dakota/ containing src, test, etc.
 
 # uses variable:
 UNAME=`uname`
 
 if [ $# -lt 1 ]; then
-  echo "usage: $0 prefix [distro_name]"
+  echo "usage: $0 prefix [distro_name] [install_shared]"
   exit
 fi
 
 prefix=$1
+
+if [ ! -d $prefix ]; then
+  echo "${0}: prefix directory does not exist; exiting"
+  exit
+fi
+
 if [ $# -gt 1 ]; then
   distro_name=$2
 else
   distro_name="ext_web"
 fi
 
-if [ ! -d $prefix ]; then
-  echo "${0}: prefix directory does not exist; exiting"
-  exit
-fi
-echo "${0}: using prefix: $prefix, and distro_name: $distro_name"
-
 if [ ! -d $prefix/bin ]; then
   echo "${0}: making directory $prefix/bin"
   mkdir $prefix/bin
 fi
+
+echo "${0}: using prefix: $prefix, and distro_name: $distro_name"
+
+if [ $# -gt 2 -a "$3" = "install_shared" ]; then
+  install_shared="true"
+  echo "Installing shared objects into $prefix"
+fi
+
 
 # default linking binary (may be overridden below)
 ln=/bin/ln
@@ -42,8 +50,7 @@ case $UNAME in
 
   *Linux*)
     # only do for nightly builds; not cluster installs
-    HOST=`uname -n`
-    if [ $HOST = "leoni.sandia.gov" -o $HOST = "face.sandia.gov" ]; then
+    if [ "$install_shared" = "true" ]; then
       echo "Copying DAKOTA's so dependencies to $prefix/bin"
       # for most deps
       deps3=`ldd ./src/dakota | awk '/=>/ {print $3}'` 
@@ -64,11 +71,13 @@ case $UNAME in
   # TODO: Do not symlink binaries in Windows distributions
   # typical uname is "CYGWIN_NT-5.1"
   *CYGWIN*|*Cygwin*|*cygwin* )
-    echo "Copying DAKOTA's CYGWIN DLL dependencies to $prefix/bin"
-    for f in `cygcheck ./src/dakota.exe | grep cyg`; do
-      echo $f
-      cp `cygpath $f` $prefix/bin
-    done
+    if [ "$install_shared" = "true" ]; then
+      echo "Copying DAKOTA's CYGWIN DLL dependencies to $prefix/bin"
+      for f in `cygcheck ./src/dakota.exe | grep cyg`; do
+        echo $f
+        cp `cygpath $f` $prefix/bin
+      done
+    fi
     # Do not perform links on Cygwin/MinGW as they break on Windows
     ln=/bin/true
     # override for windows
@@ -86,25 +95,27 @@ case $UNAME in
   # May want to package all as we do for Linux?
   # typical uname is "Darwin"
   Darwin*|darwin* )
-    echo "Copying DAKOTA's dylib dependencies to $prefix/bin"
-    # prune first line beginning with the object being examined
-    dakota_libs=`otool -L ./src/dakota | awk 'FNR > 1 {print $1}'` 
-    # for now, this loop isn't needed; may be later
-    all_libs="$dakota_libs"
-    for lib1 in $dakota_libs; do
-      secondary_libs=`otool -L $lib1 | awk 'FNR > 1 {print $1}'` 
-      all_libs="$all_libs $secondary_libs" 
-    done
-    # don't include system libs
-    dist_libs=`echo $all_libs | tr ' ' '\n' | sort -u | egrep -v "(^/System|^/usr/lib|^/usr/X11)"`
-    for libf in $dist_libs; do
-      if [ -f $libf ]; then
-        echo "Packaging: $f"
-        cp -v $libf $prefix/bin
-      else
-        echo "Could not find: $f"
-      fi
-    done
+    if [ "$install_shared" = "true" ]; then
+      echo "Copying DAKOTA's dylib dependencies to $prefix/bin"
+      # prune first line beginning with the object being examined
+      dakota_libs=`otool -L ./src/dakota | awk 'FNR > 1 {print $1}'` 
+      # for now, this loop isn't needed; may be later
+      all_libs="$dakota_libs"
+      for lib1 in $dakota_libs; do
+        secondary_libs=`otool -L $lib1 | awk 'FNR > 1 {print $1}'` 
+        all_libs="$all_libs $secondary_libs" 
+      done
+      # don't include system libs
+      dist_libs=`echo $all_libs | tr ' ' '\n' | sort -u | egrep -v "(^/System|^/usr/lib|^/usr/X11)"`
+      for libf in $dist_libs; do
+        if [ -f $libf ]; then
+          echo "Packaging: $f"
+          cp -v $libf $prefix/bin
+        else
+          echo "Could not find: $f"
+        fi
+      done
+    fi
     cp $HOME/local/openmpi-1.3.3/LICENSE $prefix/bin
     ;;
 
