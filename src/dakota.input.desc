@@ -447,153 +447,153 @@ TAG "method/surrogate_based_local/linear_equality_scales"
 
 TAG "method/coliny_pattern_search" GROUP "Optimization: Local, Derivative-free"
 TAG "method/coliny_pattern_search/constant_penalty"
-	DESC "{Control of dynamic penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+	DESC "{Control of dynamic penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"
 
 TAG "method/coliny_pattern_search/no_expansion"
-	DESC "{No expansion flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+	DESC "{No expansion flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"
 
 TAG "method/coliny_pattern_search/expand_after_success"
-	DESC "{Number of consecutive improvements before expansion} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+	DESC "{Number of consecutive improvements before expansion} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"
 
 TAG "method/coliny_pattern_search/pattern_basis"
-	DESC "{Pattern basis selection} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+	DESC "{Pattern basis selection} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"
 
 TAG "method/coliny_pattern_search/pattern_basis/coordinate"
 TAG "method/coliny_pattern_search/pattern_basis/simplex"
 TAG "method/coliny_pattern_search/stochastic"
-	DESC "{Stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+	DESC "{Stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"
 
 TAG "method/coliny_pattern_search/total_pattern_size"
-	DESC "{Total number of points in pattern} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+	DESC "{Total number of points in pattern} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"
 
 TAG "method/coliny_pattern_search/exploratory_moves"
-	DESC "{Exploratory moves selection} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+	DESC "{Exploratory moves selection} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"
 
 TAG "method/coliny_pattern_search/exploratory_moves/multi_step"
 TAG "method/coliny_pattern_search/exploratory_moves/adaptive_pattern"
 TAG "method/coliny_pattern_search/exploratory_moves/basic_pattern"
 TAG "method/coliny_pattern_search/synchronization"
-	DESC "{Evaluation synchronization} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+	DESC "{Evaluation synchronization} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"
 
 TAG "method/coliny_pattern_search/synchronization/blocking"
 TAG "method/coliny_pattern_search/synchronization/nonblocking"
 TAG "method/coliny_solis_wets" GROUP "Optimization: Local, Derivative-free"
 TAG "method/coliny_solis_wets/contract_after_failure"
-	DESC "{Number of consecutive failures before contraction} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"
+	DESC "{Number of consecutive failures before contraction} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBSW"
 
 TAG "method/coliny_solis_wets/no_expansion"
-	DESC "{No expansion flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"
+	DESC "{No expansion flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBSW"
 
 TAG "method/coliny_solis_wets/expand_after_success"
-	DESC "{Number of consecutive improvements before expansion} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"
+	DESC "{Number of consecutive improvements before expansion} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBSW"
 
 TAG "method/coliny_solis_wets/constant_penalty"
-	DESC "{Control of dynamic penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"
+	DESC "{Control of dynamic penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBSW"
 
 TAG "method/coliny_pattern_search/contraction_factor"
-	DESC "{Pattern contraction factor} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+	DESC "{Pattern contraction factor} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"
 
 TAG "method/coliny_pattern_search/constraint_penalty"
-	DESC "{Constraint penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+	DESC "{Constraint penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"
 
 TAG "method/coliny_cobyla" GROUP "Optimization: Local, Derivative-free"
 TAG "method/coliny_pattern_search/initial_delta"
-	DESC "{Initial offset value} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+	DESC "{Initial offset value} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"
 
 TAG "method/coliny_pattern_search/threshold_delta"
-	DESC "{Threshold for offset values} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+	DESC "{Threshold for offset values} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"
 
 TAG "method/coliny_direct" GROUP "Optimization: Global"
 TAG "method/coliny_direct/division"
-	DESC "{Box subdivision approach} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"
+	DESC "{Box subdivision approach} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDIR"
 
 TAG "method/coliny_direct/division/major_dimension"
 TAG "method/coliny_direct/division/all_dimensions"
 TAG "method/coliny_direct/global_balance_parameter"
-	DESC "{Global search balancing parameter} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"
+	DESC "{Global search balancing parameter} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDIR"
 
 TAG "method/coliny_direct/local_balance_parameter"
-	DESC "{Local search balancing parameter} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"
+	DESC "{Local search balancing parameter} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDIR"
 
 TAG "method/coliny_direct/max_boxsize_limit"
-	DESC "{Maximum boxsize limit} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"
+	DESC "{Maximum boxsize limit} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDIR"
 
 TAG "method/coliny_direct/min_boxsize_limit"
-	DESC "{Minimum boxsize limit} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"
+	DESC "{Minimum boxsize limit} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDIR"
 
 TAG "method/coliny_direct/constraint_penalty"
-	DESC "{Constraint penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"
+	DESC "{Constraint penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDIR"
 
 TAG "method/coliny_ea" GROUP "Optimization: Global"
 TAG "method/coliny_ea/population_size"
-	DESC "{Number of population members} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{Number of population members} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/initialization_type"
-	DESC "{Initialization type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{Initialization type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/initialization_type/simple_random"
 TAG "method/coliny_ea/initialization_type/unique_random"
 TAG "method/coliny_ea/initialization_type/flat_file"
 TAG "method/coliny_ea/fitness_type"
-	DESC "{Fitness type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{Fitness type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/fitness_type/linear_rank"
 TAG "method/coliny_ea/fitness_type/merit_function"
 TAG "method/coliny_ea/replacement_type"
-	DESC "{Replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{Replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/replacement_type/random"
-	DESC "{Random replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{Random replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/replacement_type/chc"
-	DESC "{CHC replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{CHC replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/replacement_type/elitist"
-	DESC "{Elitist replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{Elitist replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/replacement_type/new_solutions_generated"
-	DESC "{New solutions generated} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{New solutions generated} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/crossover_rate"
-	DESC "{Crossover rate} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{Crossover rate} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/crossover_type"
-	DESC "{Crossover type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{Crossover type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/crossover_type/two_point"
 TAG "method/coliny_ea/crossover_type/blend"
 TAG "method/coliny_ea/crossover_type/uniform"
 TAG "method/coliny_ea/mutation_rate"
-	DESC "{Mutation rate} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{Mutation rate} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/mutation_type"
-	DESC "{Mutation type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{Mutation type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/mutation_type/replace_uniform"
 TAG "method/coliny_ea/mutation_type/offset_normal"
 TAG "method/coliny_ea/mutation_type/offset_cauchy"
 TAG "method/coliny_ea/mutation_type/offset_uniform"
 TAG "method/coliny_ea/mutation_type/offset_normal/mutation_scale"
-	DESC "{Mutation scale} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{Mutation scale} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/mutation_type/offset_normal/mutation_range"
-	DESC "{Mutation range} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{Mutation range} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/mutation_type/non_adaptive"
-	DESC "{Non-adaptive mutation flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"
+	DESC "{Non-adaptive mutation flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"
 
 TAG "method/coliny_ea/constraint_penalty"
 TAG "method/coliny_pattern_search/solution_target"
-	DESC "{Desired solution target} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"
+	DESC "{Desired solution target} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"
 
 TAG "method/coliny_pattern_search/seed"
-	DESC "{Random seed for stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"
+	DESC "{Random seed for stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"
 
 TAG "method/coliny_pattern_search/show_misc_options"
-	DESC "{Show miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"
+	DESC "{Show miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"
 
 TAG "method/coliny_pattern_search/misc_options"
-	DESC "{Specify miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"
+	DESC "{Specify miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"
 
 TAG "method/nl2sol" GROUP "Nonlinear Least Squares"
 	DESC "[CHOOSE LSQ method]"

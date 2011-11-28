@@ -154,30 +154,30 @@ static GuiKeyWord
 		{"steps_per_variable",13,0,2,2,1129,0,0.,0.,0.,0,"{Number of steps per variable} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSCPS"}
 		},
 	kw_24[7] = {
-		{"initial_delta",10,0,5,1,459,0,0.,0.,0.,0,"{Initial offset value} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"misc_options",15,0,4,0,545,0,0.,0.,0.,0,"{Specify miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"},
-		{"seed",9,0,2,0,541,0,0.,0.,0.,0,"{Random seed for stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"show_misc_options",8,0,3,0,543,0,0.,0.,0.,0,"{Show miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"},
+		{"initial_delta",10,0,5,1,459,0,0.,0.,0.,0,"{Initial offset value} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"misc_options",15,0,4,0,545,0,0.,0.,0.,0,"{Specify miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"},
+		{"seed",9,0,2,0,541,0,0.,0.,0.,0,"{Random seed for stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"show_misc_options",8,0,3,0,543,0,0.,0.,0.,0,"{Show miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"},
 		{"solution_accuracy",2,0,1,0,538},
-		{"solution_target",10,0,1,0,539,0,0.,0.,0.,0,"{Desired solution target} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"},
-		{"threshold_delta",10,0,6,2,461,0,0.,0.,0.,0,"{Threshold for offset values} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"}
+		{"solution_target",10,0,1,0,539,0,0.,0.,0.,0,"{Desired solution target} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"},
+		{"threshold_delta",10,0,6,2,461,0,0.,0.,0.,0,"{Threshold for offset values} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"}
 		},
 	kw_25[2] = {
 		{"all_dimensions",8,0,1,1,469},
 		{"major_dimension",8,0,1,1,467}
 		},
 	kw_26[11] = {
-		{"constraint_penalty",10,0,6,0,479,0,0.,0.,0.,0,"{Constraint penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"},
-		{"division",8,2,1,0,465,kw_25,0.,0.,0.,0,"{Box subdivision approach} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"},
-		{"global_balance_parameter",10,0,2,0,471,0,0.,0.,0.,0,"{Global search balancing parameter} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"},
-		{"local_balance_parameter",10,0,3,0,473,0,0.,0.,0.,0,"{Local search balancing parameter} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"},
-		{"max_boxsize_limit",10,0,4,0,475,0,0.,0.,0.,0,"{Maximum boxsize limit} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"},
-		{"min_boxsize_limit",10,0,5,0,477,0,0.,0.,0.,0,"{Minimum boxsize limit} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDIR"},
-		{"misc_options",15,0,10,0,545,0,0.,0.,0.,0,"{Specify miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"},
-		{"seed",9,0,8,0,541,0,0.,0.,0.,0,"{Random seed for stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"show_misc_options",8,0,9,0,543,0,0.,0.,0.,0,"{Show miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"},
+		{"constraint_penalty",10,0,6,0,479,0,0.,0.,0.,0,"{Constraint penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDIR"},
+		{"division",8,2,1,0,465,kw_25,0.,0.,0.,0,"{Box subdivision approach} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDIR"},
+		{"global_balance_parameter",10,0,2,0,471,0,0.,0.,0.,0,"{Global search balancing parameter} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDIR"},
+		{"local_balance_parameter",10,0,3,0,473,0,0.,0.,0.,0,"{Local search balancing parameter} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDIR"},
+		{"max_boxsize_limit",10,0,4,0,475,0,0.,0.,0.,0,"{Maximum boxsize limit} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDIR"},
+		{"min_boxsize_limit",10,0,5,0,477,0,0.,0.,0.,0,"{Minimum boxsize limit} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDIR"},
+		{"misc_options",15,0,10,0,545,0,0.,0.,0.,0,"{Specify miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"},
+		{"seed",9,0,8,0,541,0,0.,0.,0.,0,"{Random seed for stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"show_misc_options",8,0,9,0,543,0,0.,0.,0.,0,"{Show miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"},
 		{"solution_accuracy",2,0,7,0,538},
-		{"solution_target",10,0,7,0,539,0,0.,0.,0.,0,"{Desired solution target} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"}
+		{"solution_target",10,0,7,0,539,0,0.,0.,0.,0,"{Desired solution target} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"}
 		},
 	kw_27[3] = {
 		{"blend",8,0,1,1,515},
@@ -194,37 +194,37 @@ static GuiKeyWord
 		{"unique_random",8,0,1,1,489}
 		},
 	kw_30[2] = {
-		{"mutation_range",9,0,2,0,533,0,0.,0.,0.,0,"{Mutation range} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"},
-		{"mutation_scale",10,0,1,0,531,0,0.,0.,0.,0,"{Mutation scale} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"}
+		{"mutation_range",9,0,2,0,533,0,0.,0.,0.,0,"{Mutation range} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"},
+		{"mutation_scale",10,0,1,0,531,0,0.,0.,0.,0,"{Mutation scale} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"}
 		},
 	kw_31[5] = {
-		{"non_adaptive",8,0,2,0,535,0,0.,0.,0.,0,"{Non-adaptive mutation flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"},
+		{"non_adaptive",8,0,2,0,535,0,0.,0.,0.,0,"{Non-adaptive mutation flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"},
 		{"offset_cauchy",8,2,1,1,527,kw_30},
 		{"offset_normal",8,2,1,1,525,kw_30},
 		{"offset_uniform",8,2,1,1,529,kw_30},
 		{"replace_uniform",8,0,1,1,523}
 		},
 	kw_32[4] = {
-		{"chc",9,0,1,1,503,0,0.,0.,0.,0,"{CHC replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"},
-		{"elitist",9,0,1,1,505,0,0.,0.,0.,0,"{Elitist replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"},
-		{"new_solutions_generated",9,0,2,0,507,0,0.,0.,0.,0,"{New solutions generated} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"},
-		{"random",9,0,1,1,501,0,0.,0.,0.,0,"{Random replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"}
+		{"chc",9,0,1,1,503,0,0.,0.,0.,0,"{CHC replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"},
+		{"elitist",9,0,1,1,505,0,0.,0.,0.,0,"{Elitist replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"},
+		{"new_solutions_generated",9,0,2,0,507,0,0.,0.,0.,0,"{New solutions generated} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"},
+		{"random",9,0,1,1,501,0,0.,0.,0.,0,"{Random replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"}
 		},
 	kw_33[14] = {
 		{"constraint_penalty",10,0,9,0,537},
-		{"crossover_rate",10,0,5,0,509,0,0.,0.,0.,0,"{Crossover rate} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"},
-		{"crossover_type",8,3,6,0,511,kw_27,0.,0.,0.,0,"{Crossover type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"},
-		{"fitness_type",8,2,3,0,493,kw_28,0.,0.,0.,0,"{Fitness type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"},
-		{"initialization_type",8,3,2,0,485,kw_29,0.,0.,0.,0,"{Initialization type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"},
-		{"misc_options",15,0,13,0,545,0,0.,0.,0.,0,"{Specify miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"},
-		{"mutation_rate",10,0,7,0,519,0,0.,0.,0.,0,"{Mutation rate} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"},
-		{"mutation_type",8,5,8,0,521,kw_31,0.,0.,0.,0,"{Mutation type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"},
-		{"population_size",9,0,1,0,483,0,0.,0.,0.,0,"{Number of population members} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"},
-		{"replacement_type",8,4,4,0,499,kw_32,0.,0.,0.,0,"{Replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYEA"},
-		{"seed",9,0,11,0,541,0,0.,0.,0.,0,"{Random seed for stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"show_misc_options",8,0,12,0,543,0,0.,0.,0.,0,"{Show miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"},
+		{"crossover_rate",10,0,5,0,509,0,0.,0.,0.,0,"{Crossover rate} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"},
+		{"crossover_type",8,3,6,0,511,kw_27,0.,0.,0.,0,"{Crossover type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"},
+		{"fitness_type",8,2,3,0,493,kw_28,0.,0.,0.,0,"{Fitness type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"},
+		{"initialization_type",8,3,2,0,485,kw_29,0.,0.,0.,0,"{Initialization type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"},
+		{"misc_options",15,0,13,0,545,0,0.,0.,0.,0,"{Specify miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"},
+		{"mutation_rate",10,0,7,0,519,0,0.,0.,0.,0,"{Mutation rate} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"},
+		{"mutation_type",8,5,8,0,521,kw_31,0.,0.,0.,0,"{Mutation type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"},
+		{"population_size",9,0,1,0,483,0,0.,0.,0.,0,"{Number of population members} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"},
+		{"replacement_type",8,4,4,0,499,kw_32,0.,0.,0.,0,"{Replacement type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBEA"},
+		{"seed",9,0,11,0,541,0,0.,0.,0.,0,"{Random seed for stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"show_misc_options",8,0,12,0,543,0,0.,0.,0.,0,"{Show miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"},
 		{"solution_accuracy",2,0,10,0,538},
-		{"solution_target",10,0,10,0,539,0,0.,0.,0.,0,"{Desired solution target} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"}
+		{"solution_target",10,0,10,0,539,0,0.,0.,0.,0,"{Desired solution target} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"}
 		},
 	kw_34[3] = {
 		{"adaptive_pattern",8,0,1,1,433},
@@ -240,38 +240,38 @@ static GuiKeyWord
 		{"nonblocking",8,0,1,1,441}
 		},
 	kw_37[17] = {
-		{"constant_penalty",8,0,1,0,413,0,0.,0.,0.,0,"{Control of dynamic penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"constraint_penalty",10,0,16,0,455,0,0.,0.,0.,0,"{Constraint penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"contraction_factor",10,0,15,0,453,0,0.,0.,0.,0,"{Pattern contraction factor} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"expand_after_success",9,0,3,0,417,0,0.,0.,0.,0,"{Number of consecutive improvements before expansion} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"exploratory_moves",8,3,7,0,429,kw_34,0.,0.,0.,0,"{Exploratory moves selection} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"initial_delta",10,0,13,1,459,0,0.,0.,0.,0,"{Initial offset value} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"misc_options",15,0,12,0,545,0,0.,0.,0.,0,"{Specify miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"},
-		{"no_expansion",8,0,2,0,415,0,0.,0.,0.,0,"{No expansion flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"pattern_basis",8,2,4,0,419,kw_35,0.,0.,0.,0,"{Pattern basis selection} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"seed",9,0,10,0,541,0,0.,0.,0.,0,"{Random seed for stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"show_misc_options",8,0,11,0,543,0,0.,0.,0.,0,"{Show miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"},
+		{"constant_penalty",8,0,1,0,413,0,0.,0.,0.,0,"{Control of dynamic penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"constraint_penalty",10,0,16,0,455,0,0.,0.,0.,0,"{Constraint penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"contraction_factor",10,0,15,0,453,0,0.,0.,0.,0,"{Pattern contraction factor} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"expand_after_success",9,0,3,0,417,0,0.,0.,0.,0,"{Number of consecutive improvements before expansion} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"exploratory_moves",8,3,7,0,429,kw_34,0.,0.,0.,0,"{Exploratory moves selection} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"initial_delta",10,0,13,1,459,0,0.,0.,0.,0,"{Initial offset value} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"misc_options",15,0,12,0,545,0,0.,0.,0.,0,"{Specify miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"},
+		{"no_expansion",8,0,2,0,415,0,0.,0.,0.,0,"{No expansion flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"pattern_basis",8,2,4,0,419,kw_35,0.,0.,0.,0,"{Pattern basis selection} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"seed",9,0,10,0,541,0,0.,0.,0.,0,"{Random seed for stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"show_misc_options",8,0,11,0,543,0,0.,0.,0.,0,"{Show miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"},
 		{"solution_accuracy",2,0,9,0,538},
-		{"solution_target",10,0,9,0,539,0,0.,0.,0.,0,"{Desired solution target} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"},
-		{"stochastic",8,0,5,0,425,0,0.,0.,0.,0,"{Stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"synchronization",8,2,8,0,437,kw_36,0.,0.,0.,0,"{Evaluation synchronization} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"threshold_delta",10,0,14,2,461,0,0.,0.,0.,0,"{Threshold for offset values} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"total_pattern_size",9,0,6,0,427,0,0.,0.,0.,0,"{Total number of points in pattern} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"}
+		{"solution_target",10,0,9,0,539,0,0.,0.,0.,0,"{Desired solution target} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"},
+		{"stochastic",8,0,5,0,425,0,0.,0.,0.,0,"{Stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"synchronization",8,2,8,0,437,kw_36,0.,0.,0.,0,"{Evaluation synchronization} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"threshold_delta",10,0,14,2,461,0,0.,0.,0.,0,"{Threshold for offset values} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"total_pattern_size",9,0,6,0,427,0,0.,0.,0.,0,"{Total number of points in pattern} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"}
 		},
 	kw_38[13] = {
-		{"constant_penalty",8,0,4,0,451,0,0.,0.,0.,0,"{Control of dynamic penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"},
-		{"constraint_penalty",10,0,12,0,455,0,0.,0.,0.,0,"{Constraint penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"contract_after_failure",9,0,1,0,445,0,0.,0.,0.,0,"{Number of consecutive failures before contraction} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"},
-		{"contraction_factor",10,0,11,0,453,0,0.,0.,0.,0,"{Pattern contraction factor} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"expand_after_success",9,0,3,0,449,0,0.,0.,0.,0,"{Number of consecutive improvements before expansion} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"},
-		{"initial_delta",10,0,9,1,459,0,0.,0.,0.,0,"{Initial offset value} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"misc_options",15,0,8,0,545,0,0.,0.,0.,0,"{Specify miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"},
-		{"no_expansion",8,0,2,0,447,0,0.,0.,0.,0,"{No expansion flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYSW"},
-		{"seed",9,0,6,0,541,0,0.,0.,0.,0,"{Random seed for stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"},
-		{"show_misc_options",8,0,7,0,543,0,0.,0.,0.,0,"{Show miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"},
+		{"constant_penalty",8,0,4,0,451,0,0.,0.,0.,0,"{Control of dynamic penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBSW"},
+		{"constraint_penalty",10,0,12,0,455,0,0.,0.,0.,0,"{Constraint penalty} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"contract_after_failure",9,0,1,0,445,0,0.,0.,0.,0,"{Number of consecutive failures before contraction} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBSW"},
+		{"contraction_factor",10,0,11,0,453,0,0.,0.,0.,0,"{Pattern contraction factor} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"expand_after_success",9,0,3,0,449,0,0.,0.,0.,0,"{Number of consecutive improvements before expansion} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBSW"},
+		{"initial_delta",10,0,9,1,459,0,0.,0.,0.,0,"{Initial offset value} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"misc_options",15,0,8,0,545,0,0.,0.,0.,0,"{Specify miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"},
+		{"no_expansion",8,0,2,0,447,0,0.,0.,0.,0,"{No expansion flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBSW"},
+		{"seed",9,0,6,0,541,0,0.,0.,0.,0,"{Random seed for stochastic pattern search} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"},
+		{"show_misc_options",8,0,7,0,543,0,0.,0.,0.,0,"{Show miscellaneous options} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"},
 		{"solution_accuracy",2,0,5,0,538},
-		{"solution_target",10,0,5,0,539,0,0.,0.,0.,0,"{Desired solution target} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYDC"},
-		{"threshold_delta",10,0,10,2,461,0,0.,0.,0.,0,"{Threshold for offset values} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodCOLINYPS"}
+		{"solution_target",10,0,5,0,539,0,0.,0.,0.,0,"{Desired solution target} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBDC"},
+		{"threshold_delta",10,0,10,2,461,0,0.,0.,0.,0,"{Threshold for offset values} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodSCOLIBPS"}
 		},
 	kw_39[9] = {
 		{"linear_equality_constraint_matrix",14,0,14,0,403,0,0.,0.,0.,0,"{Linear equality coefficient matrix} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
