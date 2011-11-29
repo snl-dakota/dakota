@@ -450,7 +450,8 @@ Specification detail for optimization data sets
 \subsection RespFnLS Calibration terms and constraint functions (least squares data set)
 
 A calibration data set is specified using \c calibration_terms and
-optionally the specifications summarized in \ref T9d4 "Table 9.4",
+optionally the specifications summarized in \ref T9d4 "Table 9.4" and 
+\ref T9d5 "Table 9.5",
 including weighting/scaling, data, and constraints.  Each of the
 calibration terms is a residual function to be driven toward zero, and
 the nonlinear inequality and equality constraint specifications have
@@ -522,7 +523,7 @@ defined to be the inverse of the experimental variance: \f[f =
 \htmlonly
 Table 9.4
 \endhtmlonly
-Specification detail for nonlinear least squares data sets
+Specification detail for nonlinear least squares data sets (calibration terms)
 </caption>
 <tr>
 <td><b>Description</b>
@@ -543,7 +544,7 @@ Specification detail for nonlinear least squares data sets
 <td>Optional
 <td>none
 <tr>
-<td>Number experiments (rows) in file
+<td>Experiments (rows) in file
 <td>\c num_experiments
 <td>integer
 <td>Optional
@@ -561,13 +562,13 @@ Specification detail for nonlinear least squares data sets
 <td>Optional
 <td>annotated
 <tr>
-<td>Number configuration variable columns in file
+<td>Configuration variable columns in file
 <td>\c num_config_variables
 <td>integer
 <td>Optional
 <td>0
 <tr>
-<td>Number standard deviation columns in file
+<td>Standard deviation columns in file
 <td>\c num_std_deviations
 <td>integer
 <td>Optional
@@ -590,6 +591,22 @@ Specification detail for nonlinear least squares data sets
 <td>list of reals
 <td>Optional
 <td>equal weighting
+</table>
+
+\anchor T9d5
+<table>
+<caption align = "top">
+\htmlonly
+Table 9.5
+\endhtmlonly
+Specification detail for nonlinear least squares data sets (constraints)
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
 <tr>
 <td>Number of nonlinear inequality constraints
 <td>\c nonlinear_inequality_constraints
@@ -597,13 +614,13 @@ Specification detail for nonlinear least squares data sets
 <td>Optional
 <td>\c 0
 <tr>
-<td>Nonlinear inequality constraint lower bounds
+<td>Nonlinear inequality lower bounds
 <td>\c nonlinear_inequality_lower_bounds
 <td>list of reals
 <td>Optional
 <td>vector values = \c -DBL_MAX
 <tr>
-<td>Nonlinear inequality constraint upper bounds
+<td>Nonlinear inequality upper bounds
 <td>\c nonlinear_inequality_upper_bounds
 <td>list of reals
 <td>Optional
@@ -615,7 +632,7 @@ Specification detail for nonlinear least squares data sets
 <td>Optional
 <td>vector values = <tt>'none'</tt>
 <tr>
-<td>Nonlinear inequality constraint scales
+<td>Nonlinear inequality scales
 <td>\c nonlinear_inequality_scales
 <td>list of reals
 <td>Optional
@@ -627,7 +644,7 @@ Specification detail for nonlinear least squares data sets
 <td>Optional
 <td>\c 0
 <tr>
-<td>Nonlinear equality constraint targets
+<td>Nonlinear equality targets
 <td>\c nonlinear_equality_targets
 <td>list of reals
 <td>Optional
@@ -639,7 +656,7 @@ Specification detail for nonlinear least squares data sets
 <td>Optional
 <td>vector values = <tt>'none'</tt>
 <tr>
-<td>Nonlinear equality constraint scales
+<td>Nonlinear equality scales
 <td>\c nonlinear_equality_scales
 <td>list of reals
 <td>Optional
@@ -662,14 +679,14 @@ constraint, and residual functions have special meanings for
 optimization and least squares algorithms, the generic response
 function data set need not have a specific interpretation and the user
 is free to define whatever functional form is convenient. 
-\ref T9d5 "Table 9.5" summarizes the generic response function data 
+\ref T9d6 "Table 9.6" summarizes the generic response function data 
 set specification.
 
-\anchor T9d5
+\anchor T9d6
 <table>
 <caption align = "top">
 \htmlonly
-Table 9.5
+Table 9.6
 \endhtmlonly
 Specification detail for generic response function data sets
 </caption>
@@ -801,14 +818,14 @@ and \f$x + h_2 e_i\f$ both satisfy the bounds, and then computes
 with \f$f_0 = f(x)\f$, \f$f_1 = f(x + h_1 e_i)\f$, and
 \f$f_2 = f(x + h_2 e_i)\f$.
 
-  \ref T9d6 "Table 9.6" summarizes the numerical
+  \ref T9d7 "Table 9.7" summarizes the numerical
 gradient specification.
 
-\anchor T9d6
+\anchor T9d7
 <table>
 <caption align = "top">
 \htmlonly
-Table 9.6
+Table 9.7
 \endhtmlonly
 Specification detail for numerical gradients
 </caption>
@@ -881,14 +898,14 @@ the union of the \c id_analytic_gradients and \c
 id_numerical_gradients lists.  The \c method_source, \c interval_type,
 and \c fd_gradient_step_size specifications are as described
 previously in \ref RespGradNum and pertain to those functions listed
-by the \c id_numerical_gradients list. \ref T9d7 "Table 9.7"
+by the \c id_numerical_gradients list. \ref T9d8 "Table 9.8"
 summarizes the mixed gradient specification.
 
-\anchor T9d7
+\anchor T9d8
 <table>
 <caption align = "top">
 \htmlonly
-Table 9.7
+Table 9.8
 \endhtmlonly
 Specification detail for mixed gradients
 </caption>
@@ -1010,14 +1027,14 @@ entered, one for each parameter.  The differencing intervals are
 computed by multiplying the \c fd_hessian_step_size with the current
 parameter value.  A minimum absolute differencing interval of
 <tt>.01*fd_hessian_step_size</tt> is used when the current parameter
-value is close to zero.  \ref T9d8 "Table 9.8" summarizes the
+value is close to zero.  \ref T9d9 "Table 9.9" summarizes the
 numerical Hessian specification.
 
-\anchor T9d8
+\anchor T9d9
 <table>
 <caption align = "top">
 \htmlonly
-Table 9.8
+Table 9.9
 \endhtmlonly
 Specification detail for numerical Hessians
 </caption>
@@ -1087,14 +1104,14 @@ This safeguarding skips the update if
 in the SR1 case.  In the BFGS case, additional safeguarding can be 
 added using the \c damped option, which utilizes an alternative 
 damped BFGS update when the curvature condition \f$y_k^T s_k > 0\f$ 
-is nearly violated.  \ref T9d9 "Table 9.9" summarizes the quasi 
+is nearly violated.  \ref T9d10 "Table 9.10" summarizes the quasi 
 Hessian specification.
 
-\anchor T9d9
+\anchor T9d10
 <table>
 <caption align = "top">
 \htmlonly
-Table 9.9
+Table 9.10
 \endhtmlonly
 Specification detail for quasi Hessians
 </caption>
@@ -1150,14 +1167,14 @@ fd_hessian_step_size and \c bfgs, \c damped \c bfgs, or \c sr1
 secant update selections are as described previously in \ref
 RespHessNum and \ref RespHessQuasi and pertain to those functions
 listed by the \c id_numerical_hessians and \c id_quasi_hessians
-lists. \ref T9d10 "Table 9.10" summarizes the mixed Hessian
+lists. \ref T9d11 "Table 9.11" summarizes the mixed Hessian
 specification.
 
-\anchor T9d10
+\anchor T9d11
 <table>
 <caption align = "top">
 \htmlonly
-Table 9.10
+Table 9.11
 \endhtmlonly
 Specification detail for mixed Hessians
 </caption>

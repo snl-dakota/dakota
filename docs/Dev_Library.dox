@@ -533,9 +533,11 @@ constructor.  For the latter case of looping over a set of models,
 the simplest approach of passing a single analysis communicator 
 would use code similar to
 \code
-  const ParallelLevel& ea_level = ml_iter->parallel_configuration_iterator()->ea_parallel_level();
+  const ParallelLevel& ea_level =
+    ml_iter->parallel_configuration_iterator()->ea_parallel_level();
   const MPI_Comm& analysis_comm = ea_level.server_intra_communicator();
-  interface.assign_rep(new SIM::ParallelDirectApplicInterface(problem_db, analysis_comm), false);
+  interface.assign_rep(new SIM::ParallelDirectApplicInterface(problem_db, analysis_comm),
+                       false);
 \endcode
 Since Models may be used in multiple parallel contexts and may 
 therefore have a set of parallel configurations, a more general

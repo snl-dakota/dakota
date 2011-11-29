@@ -459,9 +459,9 @@ void CommandLineHandler::output_version(std::ostream& s) const
   std::string version_info;
 
   // Major/interim releases:
-  //version_info += "DAKOTA version 5.1 released 12/21/2010.\n";
+  version_info += "DAKOTA version 5.2 released 11/30/2011.\n";
   // Developmental/VOTD releases:
-  version_info += "DAKOTA version 5.1+ developmental release.\n";
+  //version_info += "DAKOTA version 5.1+ developmental release.\n";
 
   version_info += "Subversion revision " 
     + DakotaBuildInfo::getRev()

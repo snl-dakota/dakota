@@ -111,8 +111,10 @@ Note that it is not necessary to always accept the returned data as a
 const reference.  If it is desired to be able change this data, then
 accepting the result as a new variable will generate a copy, e.g.:
 \code
-const RealVector& c_vars = model.continuous_variables(); // reference to continuousVariables cannot be changed
-RealVector c_vars = model.continuous_variables();        // local copy of continuousVariables can be changed
+// reference to continuousVariables cannot be changed
+const RealVector& c_vars = model.continuous_variables();
+// local copy of continuousVariables can be changed
+RealVector c_vars = model.continuous_variables();
 \endcode
 
 
@@ -249,7 +251,8 @@ NOTE: Previous class documentation utilities (class2frame and class2html)
 used the "//-" comment style and comment blocks such as this:
 \code
 //- Class:       Model
-//- Description: The model to be iterated by the Iterator.  Contains Variables, Interface, and Response objects.
+//- Description: The model to be iterated by the Iterator.  
+//-              Contains Variables, Interface, and Response objects.
 //- Owner:       Mike Eldred
 //- Version: $Id: Dev_Recomm_Pract.dox 4549 2007-09-20 18:25:03Z mseldre $
 \endcode
