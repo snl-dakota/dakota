@@ -581,8 +581,8 @@ scaling
 <td>\c max_iterations
 <td>integer
 <td>Optional
-<td>100 (exceptions: \c fsu_cvt/local_reliability: 25,
-\c global_{reliability,\c interval_est,\c evidence}/efficient_global: 25*n)
+<td>100 (exceptions: \c fsu_cvt, \c local_reliability: 25;
+\c global_{reliability, \c interval_est, \c evidence} / \c efficient_global: 25*n)
 <tr>
 <td>Maximum function evaluations
 <td>\c max_function_evaluations
@@ -5474,55 +5474,55 @@ sampling, regression, and expansion import options.
 <td><b>Status</b>
 <td><b>Default</b>
 <tr>
-<td>Number of LHS simulation samples for PCE coefficient estimation
+<td>Number simulation samples to estimate coeffs
 <td>\c expansion_samples
 <td>integer
 <td>Required (1 of 7 selections)
 <td>N/A
 <tr>
-<td>Incremental LHS flag for PCE coefficient estimation by \c expansion_samples
+<td>Use incremental LHS for \c expansion_samples
 <td>\c incremental_lhs
 <td>none
 <td>Optional
-<td>coefficient estimation does not reuse previous samples
+<td>no sample reuse in coefficient estimation
 <tr>
-<td>Number of collocation points for PCE coefficient estimation
+<td>Number collocation points to estimate coeffs
 <td>\c collocation_points
 <td>integer
 <td>Required (1 of 7 selections)
 <td>N/A
 <tr>
-<td>Collocation point oversampling ratio for PCE coefficient estimation
+<td>Collocation point oversampling ratio to estimate coeffs
 <td>\c collocation_ratio
 <td>real
 <td>Required (1 of 7 selections)
 <td>N/A
 <tr>
-<td>Order of collocation oversampling relationship for PCE coefficient estimation
+<td>Order of collocation oversampling relationship
 <td>\c ratio_order
 <td>real
 <td>Optional
 <td>1.
 <tr>
-<td>Derivative usage flag for PCE coefficient estimation by \c collocation_points or \c collocation_ratio
+<td>Derivative usage with \c collocation_{points or \c ratio}
 <td>\c use_derivatives
 <td>none
 <td>Optional
-<td>coefficient estimation by function values alone
+<td>estimate by function values alone
 <tr>
-<td>Reuse points flag for PCE coefficient estimation by \c collocation_points or \c collocation_ratio
+<td>Reuse points flag with \c collocation_{points or \c ratio}
 <td>\c reuse_points
 <td>none
 <td>Optional
-<td>coefficient estimation does not reuse previous samples
+<td>no sample reuse in coefficient estimation
 <tr>
-<td>Tensor grid flag ("probabilistic collocation") for PCE coefficient estimation by \c collocation_points or \c collocation_ratio
+<td>Tensor grid flag with \c collocation__{points or \c ratio}
 <td>\c tensor_grid
 <td>none
 <td>Optional
-<td>regression based on LHS sample set ("point collocation")
+<td>regression with LHS sample set ("point collocation")
 <tr>
-<td>File name for import of PCE coefficients
+<td>PCE coeffs import file
 <td>\c expansion_import_file
 <td>string
 <td>Required (1 of 7 selections)
@@ -5531,13 +5531,13 @@ sampling, regression, and expansion import options.
 <td>Expansion order
 <td>\c expansion_order
 <td>integer
-<td>Required (1 of 2 selections) for \c expansion_samples, \c collocation_points, \c collocation_ratio, or \c expansion_import_file
+<td>Required (1 of 2 selections) for any above required spec
 <td>N/A
 <tr>
 <td>Expansion terms
 <td>\c expansion_terms
 <td>integer
-<td>Required (1 of 2 selections) for \c expansion_samples, \c collocation_points, \c collocation_ratio, or \c expansion_import_file
+<td>Required (1 of 2 selections) for any above required spec
 <td>N/A
 </table>
 </ol>

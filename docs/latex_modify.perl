@@ -100,7 +100,7 @@ while (<INPUT>) { # read each line of file
   if (/^\\(chapter{DAKOTA Page Documentation}|include{todo})/) {
     print OUTPUT "%$_";
   }
-  elsif (/^\\include\{(DakLibrary|FnEvals|RecommPract|SoftwareTools|SpecChange)}/) {
+  elsif (/^\\include\{(DakLibrary|FnEvals|IteratorFlow|StyleConventions|SpecChange|VarContainersViews)}/) {
     s/\\include\{/\\input\{/;
     print OUTPUT;
   }
@@ -120,8 +120,9 @@ rename $newtexfile, $texfile;
 # Developers Manual: extra dox files #
 ######################################
 @texfiles = ("latex-dev/DakLibrary.tex",  "latex-dev/FnEvals.tex",
-             "latex-dev/RecommPract.tex", "latex-dev/SpecChange.tex",
-	     "latex-dev/SoftwareTools.tex");
+             "latex-dev/IteratorFlow.tex", "latex-dev/SpecChange.tex",
+             "latex-dev/StyleConventions.tex", 
+	     "latex-dev/VarContainersViews.tex");
 
 # for each LaTeX special topics file in latex-dev, perform modifications
 foreach $texfile (@texfiles) {
