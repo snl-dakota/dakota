@@ -674,29 +674,25 @@ TAG "method/polynomial_chaos/cubature_integrand"
 	DESC "{Cubature integrand order for PCE coefficient estimation} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
 
 TAG "method/polynomial_chaos/collocation_points"
-	DESC "{Number of collocation points for PCE coefficient estimation} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+	DESC "{Number collocation points to estimate coeffs} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
 
 TAG "method/polynomial_chaos/collocation_ratio"
-	DESC "{Collocation point oversampling ratio for PCE coefficient estimation} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+	DESC "{Collocation point oversampling ratio to estimate coeffs} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
 
 TAG "method/polynomial_chaos/collocation_points/ratio_order"
-	DESC "{Order of collocation oversampling relationship for PCE coefficient estimation} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+	DESC "{Order of collocation oversampling relationship} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
 
 TAG "method/polynomial_chaos/collocation_points/reuse_points"
-	DESC "{Reuse points flag for PCE coefficient estimation by collocation_points or collocation_ratio} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
-
 TAG "method/polynomial_chaos/collocation_points/use_derivatives"
-	DESC "{Derivative usage flag for PCE coefficient estimation by collocation_points or collocation_ratio} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
-
 TAG "method/polynomial_chaos/collocation_points/tensor_grid"
 TAG "method/polynomial_chaos/expansion_samples"
-	DESC "{Number of LHS simulation samples for PCE coefficient estimation} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+	DESC "{Number simulation samples to estimate coeffs} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
 
 TAG "method/polynomial_chaos/expansion_samples/incremental_lhs"
-	DESC "{Incremental LHS flag for PCE coefficient estimation by expansion_samples} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+	DESC "{Use incremental LHS for expansion_samples} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
 
 TAG "method/polynomial_chaos/expansion_import_file"
-	DESC "{File name for import of PCE coefficients} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
+	DESC "{PCE coeffs import file} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
 
 TAG "method/polynomial_chaos/collocation_points/expansion_order"
 	DESC "{Expansion order} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"
@@ -1913,7 +1909,7 @@ TAG "responses/calibration_terms/calibration_data_file"
 	DESC "{Calibration data file name} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/calibration_data_file/num_experiments"
-	DESC "{Number experiments (rows) in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+	DESC "{Experiments (rows) in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/calibration_data_file/annotated"
 	DESC "{Data file in annotated format} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
@@ -1922,37 +1918,37 @@ TAG "responses/calibration_terms/calibration_data_file/freeform"
 	DESC "{Data file in freeform format} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/calibration_data_file/num_config_variables"
-	DESC "{Number configuration variable columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+	DESC "{Configuration variable columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/calibration_data_file/num_std_deviations"
-	DESC "{Number standard deviation columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+	DESC "{Standard deviation columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/nonlinear_inequality_constraints"
 	DESC "{Number of nonlinear inequality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/nonlinear_inequality_constraints/nonlinear_inequality_lower_bounds"
-	DESC "{Nonlinear inequality constraint lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+	DESC "{Nonlinear inequality lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/nonlinear_inequality_constraints/nonlinear_inequality_upper_bounds"
-	DESC "{Nonlinear inequality constraint upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+	DESC "{Nonlinear inequality upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/nonlinear_inequality_constraints/nonlinear_inequality_scale_types"
 	DESC "{Nonlinear inequality scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/nonlinear_inequality_constraints/nonlinear_inequality_scales"
-	DESC "{Nonlinear inequality constraint scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+	DESC "{Nonlinear inequality scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/nonlinear_equality_constraints"
 	DESC "{Number of nonlinear equality constraints} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/nonlinear_equality_constraints/nonlinear_equality_targets"
-	DESC "{Nonlinear equality constraint targets} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+	DESC "{Nonlinear equality targets} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/nonlinear_equality_constraints/nonlinear_equality_scale_types"
 	DESC "{Nonlinear equality scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/calibration_terms/nonlinear_equality_constraints/nonlinear_equality_scales"
-	DESC "{Nonlinear equality constraint scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
+	DESC "{Nonlinear equality scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"
 
 TAG "responses/response_functions"
 	DESC "{Number of response functions} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnGen"

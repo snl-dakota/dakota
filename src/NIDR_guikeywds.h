@@ -686,11 +686,11 @@ static GuiKeyWord
 	kw_109[7] = {
 		{"expansion_order",13,0,5,1,641,0,0.,0.,0.,0,"{Expansion order} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
 		{"expansion_terms",9,0,5,1,643,0,0.,0.,0.,0,"{Expansion terms} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"ratio_order",10,0,1,0,627,0,0.,0.,0.,0,"{Order of collocation oversampling relationship for PCE coefficient estimation} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"reuse_points",8,0,2,0,629,0,0.,0.,0.,0,"{Reuse points flag for PCE coefficient estimation by collocation_points or collocation_ratio} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"ratio_order",10,0,1,0,627,0,0.,0.,0.,0,"{Order of collocation oversampling relationship} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"reuse_points",8,0,2,0,629},
 		{"reuse_samples",0,0,2,0,628},
 		{"tensor_grid",8,0,4,0,633},
-		{"use_derivatives",8,0,3,0,631,0,0.,0.,0.,0,"{Derivative usage flag for PCE coefficient estimation by collocation_points or collocation_ratio} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
+		{"use_derivatives",8,0,3,0,631}
 		},
 	kw_110[2] = {
 		{"expansion_order",13,0,5,1,641,0,0.,0.,0.,0,"{Expansion order} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
@@ -699,7 +699,7 @@ static GuiKeyWord
 	kw_111[3] = {
 		{"expansion_order",13,0,2,1,641,0,0.,0.,0.,0,"{Expansion order} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
 		{"expansion_terms",9,0,2,1,643,0,0.,0.,0.,0,"{Expansion terms} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"incremental_lhs",8,0,1,0,637,0,0.,0.,0.,0,"{Incremental LHS flag for PCE coefficient estimation by expansion_samples} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
+		{"incremental_lhs",8,0,1,0,637,0,0.,0.,0.,0,"{Use incremental LHS for expansion_samples} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"}
 		},
 	kw_112[3] = {
 		{"decay",8,0,1,1,599},
@@ -738,12 +738,12 @@ static GuiKeyWord
 	kw_119[23] = {
 		{"all_variables",8,0,15,0,743,0,0.,0.,0.,0,"{All variables flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
 		{"askey",8,0,2,0,603},
-		{"collocation_points",9,7,3,1,623,kw_109,0.,0.,0.,0,"{Number of collocation points for PCE coefficient estimation} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"collocation_ratio",10,7,3,1,625,kw_109,0.,0.,0.,0,"{Collocation point oversampling ratio for PCE coefficient estimation} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"collocation_points",9,7,3,1,623,kw_109,0.,0.,0.,0,"{Number collocation points to estimate coeffs} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"collocation_ratio",10,7,3,1,625,kw_109,0.,0.,0.,0,"{Collocation point oversampling ratio to estimate coeffs} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
 		{"cubature_integrand",9,0,3,1,621,0,0.,0.,0.,0,"{Cubature integrand order for PCE coefficient estimation} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
 		{"distribution",8,2,9,0,799,kw_52,0.,0.,0.,0,"{Distribution type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonD"},
-		{"expansion_import_file",11,2,3,1,639,kw_110,0.,0.,0.,0,"{File name for import of PCE coefficients} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
-		{"expansion_samples",9,3,3,1,635,kw_111,0.,0.,0.,0,"{Number of LHS simulation samples for PCE coefficient estimation} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"expansion_import_file",11,2,3,1,639,kw_110,0.,0.,0.,0,"{PCE coeffs import file} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
+		{"expansion_samples",9,3,3,1,635,kw_111,0.,0.,0.,0,"{Number simulation samples to estimate coeffs} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
 		{"fixed_seed",8,0,16,0,745,0,0.,0.,0.,0,"{Fixed seed flag} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDMC"},
 		{"gen_reliability_levels",14,1,11,0,809,kw_53,0.,0.,0.,0,"{Generalized reliability levels} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonD"},
 		{"p_refinement",8,2,1,0,591,kw_113,0.,0.,0.,0,"{Automated polynomial order refinement} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDPCE"},
@@ -1266,20 +1266,20 @@ static GuiKeyWord
 	kw_182[5] = {
 		{"annotated",8,0,2,0,1727,0,0.,0.,0.,0,"{Data file in annotated format} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
 		{"freeform",8,0,2,0,1729,0,0.,0.,0.,0,"{Data file in freeform format} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
-		{"num_config_variables",0x29,0,3,0,1731,0,0.,0.,0.,0,"{Number configuration variable columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
-		{"num_experiments",0x29,0,1,0,1725,0,0.,0.,0.,0,"{Number experiments (rows) in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
-		{"num_std_deviations",0x29,0,4,0,1733,0,0.,0.,0.,0,"{Number standard deviation columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"}
+		{"num_config_variables",0x29,0,3,0,1731,0,0.,0.,0.,0,"{Configuration variable columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+		{"num_experiments",0x29,0,1,0,1725,0,0.,0.,0.,0,"{Experiments (rows) in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
+		{"num_std_deviations",0x29,0,4,0,1733,0,0.,0.,0.,0,"{Standard deviation columns in file} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"}
 		},
 	kw_183[3] = {
 		{"nonlinear_equality_scale_types",0x80f,0,2,0,1749,0,0.,0.,0.,0,"{Nonlinear equality scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"},
-		{"nonlinear_equality_scales",0x80e,0,3,0,1751,0,0.,0.,0.,0,"{Nonlinear equality constraint scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"},
-		{"nonlinear_equality_targets",14,0,1,0,1747,0,0.,0.,0.,0,"{Nonlinear equality constraint targets} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"}
+		{"nonlinear_equality_scales",0x80e,0,3,0,1751,0,0.,0.,0.,0,"{Nonlinear equality scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"},
+		{"nonlinear_equality_targets",14,0,1,0,1747,0,0.,0.,0.,0,"{Nonlinear equality targets} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_equality_constraints"}
 		},
 	kw_184[4] = {
-		{"nonlinear_inequality_lower_bounds",14,0,1,0,1737,0,0.,0.,0.,0,"{Nonlinear inequality constraint lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_lower_bounds",14,0,1,0,1737,0,0.,0.,0.,0,"{Nonlinear inequality lower bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"},
 		{"nonlinear_inequality_scale_types",0x80f,0,3,0,1741,0,0.,0.,0.,0,"{Nonlinear inequality scaling types} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_scales",0x80e,0,4,0,1743,0,0.,0.,0.,0,"{Nonlinear inequality constraint scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"},
-		{"nonlinear_inequality_upper_bounds",14,0,2,0,1739,0,0.,0.,0.,0,"{Nonlinear inequality constraint upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"}
+		{"nonlinear_inequality_scales",0x80e,0,4,0,1743,0,0.,0.,0.,0,"{Nonlinear inequality scales} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"},
+		{"nonlinear_inequality_upper_bounds",14,0,2,0,1739,0,0.,0.,0.,0,"{Nonlinear inequality upper bounds} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS",0,"nonlinear_inequality_constraints"}
 		},
 	kw_185[12] = {
 		{"calibration_data_file",11,5,4,0,1723,kw_182,0.,0.,0.,0,"{Calibration data file name} http://dakota.sandia.gov/licensing/votd/html-ref/RespCommands.html#RespFnLS"},
