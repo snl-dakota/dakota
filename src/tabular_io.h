@@ -30,44 +30,6 @@
    * Allow reading into the transpose of the data structure
 */
 
-/*
-   Proposed user documentation:
-
-   DAKOTA versions 5.1+ (October 2011) and newer use two formats for
-   tabular data file input and output.  Tabular data refer to numeric
-   data in text form related to, e.g., tabular graphics data, least
-   squares and Bayesian calibration data, samples/points files for
-   surrogates, pre-run output, and post-run input.  Both formats are
-   written/read with C++ stream floating point ops, so most integer
-   and floating point formats are acceptable for numeric data.  The
-   formats are:
-
-   1. Annotated Matrix (default for all I/O; specified via 'annotated'): 
-   text file with 1 leading row of comments/labels and 1 leading
-   column of evaluation/row IDs surrounding num_rows x num_cols
-   whitespace-separated numeric data, (newlines separating rows not
-   currently required, but may be in the future).  The numeric data in
-   a row may correspond to variables, variables followed by responses,
-   data point for calibration, etc., depending on context.
-
-   2. Free-form (optional; previously default for samples files and
-   least squares data; specified via 'freeform'): text file with no
-   leading row and no leading column.  The num_rows x num_cols total
-   numeric data entries may appear separated with any whitespace
-   including arbitrary spaces, tabs, and newlines.  In this format,
-   vectors may therefore appear as a single row or single column (or
-   mixture, entries will populate the vector in order).  Matrices will
-   be populated row-wise as data is read (row 1 all cols, then row 2
-   all cols, etc.).
-
-   For both fomats, a warning will be generated if a specific number
-   of data are expected, but extra is found and an error generated
-   when there is insufficient data.
-
-   Note that some TPLs like Coliny and JEGA manage their own file I/O
-   and only support the free-form option.
-*/
-
 /* 
    Could consider class with attributes
    * filename
