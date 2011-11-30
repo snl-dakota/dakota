@@ -794,7 +794,7 @@ static KeyWord
 		{"nested",8,0,6,0,0,0.,0.,0,N_mdm(type,nestingOverride_NESTED)},
 		{"non_nested",8,0,6,0,0,0.,0.,0,N_mdm(type,nestingOverride_NON_NESTED)},
 		{"p_refinement",8,2,1,0,kw_136,0.,0.,0,N_mdm(type,refinementType_P_REFINEMENT)},
-		{"piecewise",8,2,2,0,kw_137,0.,0.,0,N_mdm(type,expansionType_PIECEWISE_U)},
+		{"piecewise",8,2,2,0,kw_137,0.,0.,0,NIDRProblemDescDB::method_piecewise},
 		{"quadrature_order",13,0,3,1,0,0.,0.,0,N_mdm(ushintL,quadratureOrder)},
 		{"sample_refinement",8,3,8,0,kw_138},
 		{"sample_type",8,2,9,0,kw_139},

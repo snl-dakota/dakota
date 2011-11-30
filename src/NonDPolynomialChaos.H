@@ -37,18 +37,22 @@ public:
   //- Heading: Constructors and destructor
   //
  
-  NonDPolynomialChaos(Model& model);    ///< standard constructor
+  /// standard constructor
+  NonDPolynomialChaos(Model& model);
+  /// alternate constructor
   NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		      unsigned short num_int_level, short u_space_type,
-		      bool use_derivs); ///< alternate constructor
- ~NonDPolynomialChaos();                ///< destructor
+		      bool piecewise_basis, bool use_derivs);
+  /// destructor
+  ~NonDPolynomialChaos();
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  /// initialize the polynomial chaos expansion
+  void resolve_inputs(short& u_space_type, short& data_order);
   void initialize_u_space_model();
+
   /// form or import an orthogonal polynomial expansion using PCE methods
   void compute_expansion();
   /// uniformly increment the order of the polynomial chaos expansion

@@ -29,6 +29,14 @@ namespace Dakota {
     instantiation using the ProblemDescDB. */
 NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
 {
+  // ----------------------------------------------
+  // Resolve settings and initialize natafTransform
+  // ----------------------------------------------
+  short data_order,
+      u_space_type = probDescDB.get_short("method.nond.expansion_type");
+  resolve_inputs(u_space_type, data_order);
+  initialize(u_space_type);
+
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
@@ -40,47 +48,6 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  short u_space_type = probDescDB.get_short("method.nond.expansion_type");
-  bool piecewise_basis
-    = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
-  // There are two derivative cases of interest: (1) derivatives used as
-  // additional data for forming the approximation (derivatives w.r.t. the
-  // expansion variables), and (2) derivatives that will be approximated 
-  // separately (derivatives w.r.t. auxilliary variables).  The data_order
-  // passed through the DataFitSurrModel defines Approximation::buildDataOrder,
-  // which is restricted to managing the former case.  If we need to manage the
-  // latter case in the future, we do not have a good way to detect this state
-  // at construct time, as neither the finalStats ASV/DVV nor subIteratorFlag
-  // have yet been defined.  One indicator that is defined is the presence of
-  // inactive continuous vars, since the subModel inactive view is updated
-  // within the NestedModel ctor prior to subIterator instantiation.
-  short data_order = 1;
-  if (probDescDB.get_bool("method.derivative_usage")) {// || iteratedModel.icv()
-    if (gradientType  != "none") data_order |= 2;
-    //if (hessianType != "none") data_order |= 4; // not yet supported
-#ifdef ALLOW_HERMITE_INTERPOLATION
-    if (data_order == 1)
-      Cerr << "\nWarning: use_derivatives option in stoch_collocation "
-	   << "requires a response\n         gradient specification.  "
-	   << "Option will be ignored.\n" << std::endl;
-#else
-    if (piecewise_basis) {
-      if (data_order == 1)
-	Cerr << "\nWarning: use_derivatives option in stoch_collocation "
-	     << "requires a response\n         gradient specification.  "
-	     << "Option will be ignored.\n" << std::endl;
-    }
-    else {
-      Cerr << "\nWarning: use of global gradient-enhanced interpolants is "
-	   << "disallowed in production\n         executables.  To activate "
-	   << "this research capability, define\n         ALLOW_HERMITE_"
-	   << "INTERPOLATION in Dakota::NonDStochCollocation and recompile.\n"
-	   << std::endl;
-      data_order = 1;
-    }
-#endif
-  }
-  if (data_order > 1) useDerivs = true;
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
@@ -96,8 +63,7 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   }
   else if (!ssg_level_spec.empty()) {
     expansionCoeffsApproach = Pecos::SPARSE_GRID;
-    construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec, dim_pref,
-			  piecewise_basis);
+    construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec, dim_pref);
   }
 
   // --------------------------------
@@ -109,7 +75,7 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
   String pt_reuse, approx_type;
-  if (piecewise_basis)
+  if (piecewiseBasis)
     approx_type = (probDescDB.get_short("method.nond.piecewise_basis_type") ==
 		   HIERARCHICAL_INTERPOLANT) ? 
       "piecewise_hierarchical_interpolation_polynomial" :
@@ -141,9 +107,17 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
 NonDStochCollocation::
 NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     unsigned short num_int_level, short u_space_type,
-		     bool use_derivs):
-  NonDExpansion(model, exp_coeffs_approach, u_space_type)
+		     bool piecewise_basis, bool use_derivs):
+  NonDExpansion(model, exp_coeffs_approach, u_space_type,
+		piecewise_basis, use_derivs)
 {
+  // ----------------------------------------------
+  // Resolve settings and initialize natafTransform
+  // ----------------------------------------------
+  short data_order;
+  resolve_inputs(u_space_type, data_order);
+  initialize(u_space_type);
+
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
@@ -155,35 +129,6 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  bool piecewise_basis
-    = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
-  short data_order = 1;
-  if (use_derivs) {// || iteratedModel.icv()
-    if (gradientType  != "none") data_order |= 2;
-    //if (hessianType != "none") data_order |= 4; // not yet supported
-#ifdef ALLOW_HERMITE_INTERPOLATION
-    if (data_order == 1)
-      Cerr << "\nWarning: use_derivatives option in stoch_collocation "
-	   << "requires a response\n         gradient specification.  "
-	   << "Option will be ignored.\n" << std::endl;
-#else
-    if (piecewise_basis) {
-      if (data_order == 1)
-	Cerr << "\nWarning: use_derivatives option in stoch_collocation "
-	     << "requires a response\n         gradient specification.  "
-	     << "Option will be ignored.\n" << std::endl;
-    }
-    else {
-      Cerr << "\nWarning: use of global gradient-enhanced interpolants is "
-	   << "disallowed in production\n         executables.  To activate "
-	   << "this research capability, define\n         ALLOW_HERMITE_"
-	   << "INTERPOLATION in Dakota::NonDStochCollocation and recompile.\n"
-	   << std::endl;
-      data_order = 1;
-    }
-#endif
-  }
-  if (data_order > 1) useDerivs = true;
   RealVector  dim_pref;                      // empty -> isotropic
   UShortArray num_int_seq(1, num_int_level); // single sequence
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
@@ -192,8 +137,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   if (expansionCoeffsApproach == Pecos::QUADRATURE)
     construct_quadrature(u_space_sampler, g_u_model, num_int_seq, dim_pref);
   else if (expansionCoeffsApproach == Pecos::SPARSE_GRID)
-    construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref,
-			  piecewise_basis);
+    construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref);
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -204,7 +148,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
   String pt_reuse, approx_type;
-  if (piecewise_basis)
+  if (piecewiseBasis)
     // for now, rather than mapping piecewise basis type through, hardwire
     // a reasonable selection (nodal OK outside of local refinement)
     approx_type = (refineType == Pecos::H_REFINEMENT) ? 
@@ -230,6 +174,64 @@ NonDStochCollocation::~NonDStochCollocation()
 }
 
 
+void NonDStochCollocation::
+resolve_inputs(short& u_space_type, short& data_order)
+{
+  // perform first due to piecewiseBasis overrides
+  NonDExpansion::resolve_inputs(u_space_type, data_order);
+
+  // There are two derivative cases of interest: (1) derivatives used as
+  // additional data for forming the approximation (derivatives w.r.t. the
+  // expansion variables), and (2) derivatives that will be approximated 
+  // separately (derivatives w.r.t. auxilliary variables).  The data_order
+  // passed through the DataFitSurrModel defines Approximation::buildDataOrder,
+  // which is restricted to managing the former case.  If we need to manage the
+  // latter case in the future, we do not have a good way to detect this state
+  // at construct time, as neither the finalStats ASV/DVV nor subIteratorFlag
+  // have yet been defined.  One indicator that is defined is the presence of
+  // inactive continuous vars, since the subModel inactive view is updated
+  // within the NestedModel ctor prior to subIterator instantiation.
+  data_order = 1;
+  if (useDerivs) { // input specification
+    if (gradientType  != "none") data_order |= 2;
+    //if (hessianType != "none") data_order |= 4; // not yet supported
+#ifdef ALLOW_HERMITE_INTERPOLATION
+    if (data_order == 1)
+      Cerr << "\nWarning: use_derivatives option in stoch_collocation "
+	   << "requires a response\n         gradient specification.  "
+	   << "Option will be ignored.\n" << std::endl;
+#else
+    if (piecewiseBasis) {
+      if (data_order == 1)
+	Cerr << "\nWarning: use_derivatives option in stoch_collocation "
+	     << "requires a response\n         gradient specification.  "
+	     << "Option will be ignored.\n" << std::endl;
+    }
+    else {
+      Cerr << "\nWarning: use of global gradient-enhanced interpolants is "
+	   << "disallowed in production\n         executables.  To activate "
+	   << "this research capability, define\n         ALLOW_HERMITE_"
+	   << "INTERPOLATION in Dakota::NonDStochCollocation and recompile.\n"
+	   << std::endl;
+      data_order = 1;
+    }
+#endif
+  }
+  useDerivs = (data_order > 1); // override input specification
+
+  // override u_space_type to STD_UNIFORM_U for global Hermite interpolation
+  if (useDerivs && !piecewiseBasis) {
+    if (u_space_type == ASKEY_U) // non-default
+      Cerr << "\nWarning: overriding ASKEY to STD_UNIFORM for Hermite "
+	   << "interpolation.\n" << std::endl;
+    else if (u_space_type == STD_NORMAL_U) // non-default
+      Cerr << "\nWarning: overriding WIENER to STD_UNIFORM for Hermite "
+	   << "interpolation.\n" << std::endl;
+    u_space_type = STD_UNIFORM_U;
+  }
+}
+
+
 void NonDStochCollocation::initialize_u_space_model()
 {
   if (expansionCoeffsApproach == Pecos::QUADRATURE ||
@@ -238,8 +240,7 @@ void NonDStochCollocation::initialize_u_space_model()
 
     // build a polynomial basis for purposes of defining collocation pts/wts
     std::vector<Pecos::BasisPolynomial> num_int_poly_basis;
-    bool piecewise_basis = uSpaceModel.surrogate_type().begins("piecewise_");
-    Pecos::BasisConfigOptions bc_options(nestedRules, piecewise_basis,
+    Pecos::BasisConfigOptions bc_options(nestedRules, piecewiseBasis,
 					 true, useDerivs);
     Pecos::InterpPolyApproximation::construct_basis(natafTransform.u_types(),
       iteratedModel.distribution_parameters(), bc_options, num_int_poly_basis);

@@ -914,6 +914,15 @@ method_coliny_ea(const char *keyname, Values *val, void **g, void *v)
 	dm->numberRetained = 1;
 	}
 
+// MSE: This function just sets two values for one keyword.
+ void NIDRProblemDescDB::
+method_piecewise(const char *keyname, Values *val, void **g, void *v)
+{
+	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+	dm->expansionType  = STD_UNIFORM_U;
+	dm->piecewiseBasis = true;
+	}
+
  void NIDRProblemDescDB::
 method_false(const char *keyname, Values *val, void **g, void *v)
 {
@@ -4559,7 +4568,6 @@ static Method_mp_type
 	MP2s(emulatorType,POLYNOMIAL_CHAOS),
 	MP2s(emulatorType,STOCHASTIC_COLLOCATION),
 	MP2s(expansionType,ASKEY_U),
-	MP2s(expansionType,PIECEWISE_U),
 	MP2s(expansionType,STD_NORMAL_U),
 	MP2p(growthOverride,RESTRICTED),                   // Pecos enumeration
 	MP2p(growthOverride,UNRESTRICTED),                 // Pecos enumeration

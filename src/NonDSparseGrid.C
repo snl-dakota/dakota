@@ -42,7 +42,6 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   // initialize_random_variables() called in NonDIntegration ctor
   check_variables(natafTransform.x_types());
 
-  short u_space_type = probDescDB.get_short("method.nond.expansion_type");
   short refine_type
     = probDescDB.get_short("method.nond.expansion_refinement_type");
   short refine_control
@@ -54,8 +53,8 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   bool nested_rules = (probDescDB.get_short("method.nond.nesting_override")
 		       != Pecos::NON_NESTED);
   bool track_uniq_prod_wts = false;
-  bool piecewise_basis
-    = (u_space_type == PIECEWISE_U || refine_type == Pecos::H_REFINEMENT);
+  bool piecewise_basis = (probDescDB.get_bool("method.nond.piecewise_basis") ||
+			  refine_type == Pecos::H_REFINEMENT);
   bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
   // moderate growth is helpful for iso and aniso sparse grids, but
   // not necessary for generalized grids
