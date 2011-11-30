@@ -36,23 +36,25 @@ public:
   //- Heading: Constructors and destructor
   //
 
-  NonDStochCollocation(Model& model);    ///< standard constructor
+  /// standard constructor
+  NonDStochCollocation(Model& model);
+  /// alternate constructor
   NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		       unsigned short num_int_level, short u_space_type,
-		       bool use_derivs); ///< alternate constructor
-  ~NonDStochCollocation();               ///< destructor
+		       bool piecewise_basis, bool use_derivs);
+  /// destructor
+  ~NonDStochCollocation();
+
+protected:
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  /// initialize the surrogate model
+  void resolve_inputs(short& u_space_type, short& data_order);
   void initialize_u_space_model();
-
   //void initialize_expansion();
   //void compute_expansion();
-
-  // print the SC coefficient array using a monomial basis
   //void print_coefficients(std::ostream& s);
 
 private:

@@ -36,6 +36,14 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   collocRatio(probDescDB.get_real("method.nond.collocation_ratio")),
   tensorRegression(probDescDB.get_bool("method.nond.tensor_grid"))
 {
+  // ----------------------------------------------
+  // Resolve settings and initialize natafTransform
+  // ----------------------------------------------
+  short data_order,
+      u_space_type = probDescDB.get_short("method.nond.expansion_type");
+  resolve_inputs(u_space_type, data_order);
+  initialize(u_space_type);
+
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
@@ -47,30 +55,6 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  // There are two derivative cases of interest: (1) derivatives used as
-  // additional data for forming the approximation (derivatives w.r.t. the
-  // expansion variables), and (2) derivatives that will be approximated 
-  // separately (derivatives w.r.t. auxilliary variables).  The data_order
-  // passed through the DataFitSurrModel defines Approximation::buildDataOrder,
-  // which is restricted to managing the former case.  If we need to manage the
-  // latter case in the future, we do not have a good way to detect this state
-  // at construct time, as neither the finalStats ASV/DVV nor subIteratorFlag
-  // have yet been defined.  One indicator that is defined is the presence of
-  // inactive continuous vars, since the subModel inactive view is updated
-  // within the NestedModel ctor prior to subIterator instantiation.
-  short data_order = 1;
-  if (probDescDB.get_bool("method.derivative_usage")) {// || iteratedModel.icv()
-    if (gradientType != "none") data_order |= 2;
-    //if (hessianType  != "none") data_order |= 4; // not yet supported
-    if (data_order == 1)
-      Cerr << "\nWarning: use_derivatives option in polynomial_chaos requires "
-	   << "a response\n         gradient specification.  Option will be "
-	   << "ignored.\n" << std::endl;
-  }
-  if (data_order > 1) useDerivs = true;
-  short u_space_type = probDescDB.get_short("method.nond.expansion_type");
-  bool piecewise_basis
-    = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
@@ -96,8 +80,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     else if (!ssg_level_spec.empty()) {
       expansionCoeffsApproach = Pecos::SPARSE_GRID;
       construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec,
-	probDescDB.get_rdv("method.nond.dimension_preference"),
-	piecewise_basis);
+	probDescDB.get_rdv("method.nond.dimension_preference"));
     }
     else if (cub_int_spec != USHRT_MAX) {
       expansionCoeffsApproach = Pecos::CUBATURE;
@@ -175,7 +158,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
-  String pt_reuse, approx_type = (piecewise_basis) ?
+  String pt_reuse, approx_type = (piecewiseBasis) ?
     "piecewise_orthogonal_polynomial" : "global_orthogonal_polynomial";
   if (expansionCoeffsApproach == Pecos::REGRESSION && !tensorRegression) {
     pt_reuse = probDescDB.get_string("method.nond.collocation_point_reuse");
@@ -208,9 +191,17 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 NonDPolynomialChaos::
 NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
 		    unsigned short num_int_level, short u_space_type,
-		    bool use_derivs):
-  NonDExpansion(model, exp_coeffs_approach, u_space_type)
+		    bool piecewise_basis, bool use_derivs):
+  NonDExpansion(model, exp_coeffs_approach, u_space_type,
+		piecewise_basis, use_derivs)
 {
+  // ----------------------------------------------
+  // Resolve settings and initialize natafTransform
+  // ----------------------------------------------
+  short data_order;
+  resolve_inputs(u_space_type, data_order);
+  initialize(u_space_type);
+
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
@@ -222,18 +213,6 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // -------------------------
   // Construct u_space_sampler
   // -------------------------
-  short data_order = 1;
-  if (use_derivs) {// || iteratedModel.icv()
-    if (gradientType != "none") data_order |= 2;
-    //if (hessianType  != "none") data_order |= 4; // not yet supported
-    if (data_order == 1)
-      Cerr << "\nWarning: use_derivatives option in polynomial_chaos requires "
-	   << "a response\n         gradient specification.  Option will be "
-	   << "ignored.\n" << std::endl;
-  }
-  if (data_order > 1) useDerivs = true;
-  bool piecewise_basis
-    = (u_space_type == PIECEWISE_U || refineType == Pecos::H_REFINEMENT);
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
@@ -245,8 +224,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   else if (expansionCoeffsApproach == Pecos::SPARSE_GRID) {
     RealVector  dim_pref;                    // empty -> isotropic
     UShortArray ssg_level(1, num_int_level); // single sequence
-    construct_sparse_grid(u_space_sampler, g_u_model, ssg_level, dim_pref,
-			  piecewise_basis);
+    construct_sparse_grid(u_space_sampler, g_u_model, ssg_level, dim_pref);
   }
   else if (expansionCoeffsApproach == Pecos::CUBATURE)
     construct_cubature(u_space_sampler, g_u_model, num_int_level);
@@ -259,7 +237,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
-  String pt_reuse, approx_type = (piecewise_basis) ?
+  String pt_reuse, approx_type = (piecewiseBasis) ?
     "piecewise_orthogonal_polynomial" : "global_orthogonal_polynomial";
   UShortArray exp_order; // empty for numerical integration approaches
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
@@ -276,6 +254,35 @@ NonDPolynomialChaos::~NonDPolynomialChaos()
   if (numSamplesOnExpansion)
     uSpaceModel.free_communicators(
       numSamplesOnExpansion*uSpaceModel.derivative_concurrency());
+}
+
+
+void NonDPolynomialChaos::
+resolve_inputs(short& u_space_type, short& data_order)
+{
+  NonDExpansion::resolve_inputs(u_space_type, data_order);
+
+  // There are two derivative cases of interest: (1) derivatives used as
+  // additional data for forming the approximation (derivatives w.r.t. the
+  // expansion variables), and (2) derivatives that will be approximated 
+  // separately (derivatives w.r.t. auxilliary variables).  The data_order
+  // passed through the DataFitSurrModel defines Approximation::buildDataOrder,
+  // which is restricted to managing the former case.  If we need to manage the
+  // latter case in the future, we do not have a good way to detect this state
+  // at construct time, as neither the finalStats ASV/DVV nor subIteratorFlag
+  // have yet been defined.  One indicator that is defined is the presence of
+  // inactive continuous vars, since the subModel inactive view is updated
+  // within the NestedModel ctor prior to subIterator instantiation.
+  data_order = 1;
+  if (useDerivs) { // input specification
+    if (gradientType  != "none") data_order |= 2;
+    //if (hessianType != "none") data_order |= 4; // not yet supported
+    if (data_order == 1)
+      Cerr << "\nWarning: use_derivatives option in polynomial_chaos "
+	   << "requires a response\n         gradient specification.  "
+	   << "Option will be ignored.\n" << std::endl;
+  }
+  useDerivs = (data_order > 1); // override input specification
 }
 
 

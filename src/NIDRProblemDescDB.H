@@ -135,6 +135,7 @@ public:
   KWH(method_nnint);
   KWH(method_nnintz);
   KWH(method_num_resplevs);
+  KWH(method_piecewise);
   KWH(method_pint);
   KWH(method_pintz);
   KWH(method_resplevs);

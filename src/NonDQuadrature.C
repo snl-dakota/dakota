@@ -42,10 +42,9 @@ NonDQuadrature::NonDQuadrature(Model& model): NonDIntegration(model),
   // NonDIntegration ctor
   check_variables(natafTransform.x_types());
 
-  bool piecewise_basis =
-    (probDescDB.get_short("method.nond.expansion_type") == PIECEWISE_U ||
-     probDescDB.get_short("method.nond.expansion_refinement_type") ==
-     Pecos::H_REFINEMENT);
+  bool piecewise_basis = (probDescDB.get_bool("method.nond.piecewise_basis") ||
+    probDescDB.get_short("method.nond.expansion_refinement_type") ==
+    Pecos::H_REFINEMENT);
   bool use_derivs = probDescDB.get_bool("method.derivative_usage");
   bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
 

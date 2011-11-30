@@ -36,7 +36,7 @@ enum { SILENT_OUTPUT, QUIET_OUTPUT, NORMAL_OUTPUT, VERBOSE_OUTPUT,
 // ----
 // define special values for u_space_type in
 // NonD::initialize_random_variable_types()
-enum { STD_NORMAL_U, ASKEY_U, EXTENDED_U, PIECEWISE_U };
+enum { STD_NORMAL_U, STD_UNIFORM_U, ASKEY_U, EXTENDED_U };
 // define special values for piecewiseBasisType
 enum { NODAL_INTERPOLANT, HIERARCHICAL_INTERPOLANT };
 // define special values for probability integration refinement
@@ -639,10 +639,12 @@ public:
   /// override for default point growth restriction policy: NO_GROWTH_OVERRIDE,
   /// RESTRICTED, or UNRESTRICTED
   short growthOverride;
-  /// enumeration for overriding the u-space type default from EXTENDED_U to
-  /// ASKEY_U, STD_NORMAL_U, or PIECEWISE_U based on input keywords \c askey,
-  /// \c wiener, or \c piecewise, respectively
+  /// enumeration for u-space type that defines u-space variable targets
+  /// for probability space transformations: EXTENDED_U (default), ASKEY_U,
+  /// STD_NORMAL_U, or STD_UNIFORM_U
   short expansionType;
+  /// boolean indicating presence of \c piecewise keyword
+  bool piecewiseBasis;
   /// enumeration for type of basis in piecewise interpolants:
   /// NODAL_INTERPOLANT or HIERARCHICAL_INTERPOLANT
   short piecewiseBasisType;

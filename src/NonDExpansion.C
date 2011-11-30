@@ -35,12 +35,14 @@ namespace Dakota {
 NonDExpansion::NonDExpansion(Model& model): NonD(model),
   expansionCoeffsApproach(-1), numUncertainQuant(0), numSamplesOnModel(0),
   numSamplesOnExpansion(probDescDB.get_int("method.samples")),
-  nestedRules(false), useDerivs(false),
-  ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
-  ruleGrowthOverride(probDescDB.get_short("method.nond.growth_override")),
+  nestedRules(false),
+  piecewiseBasis(probDescDB.get_bool("method.nond.piecewise_basis")),
+  useDerivs(probDescDB.get_bool("method.derivative_usage")),
   refineType(probDescDB.get_short("method.nond.expansion_refinement_type")),
   refineControl(
     probDescDB.get_short("method.nond.expansion_refinement_control")),
+  ruleNestingOverride(probDescDB.get_short("method.nond.nesting_override")),
+  ruleGrowthOverride(probDescDB.get_short("method.nond.growth_override")),
   expSampling(false), impSampling(false)
 {
   // Re-assign defaults specialized to refinement of stochastic expansions
@@ -57,25 +59,32 @@ NonDExpansion::NonDExpansion(Model& model): NonD(model),
   //       enforced in NonDExpansion::construct_{quadrature,sparse_grid}
   //Cout << "VBD control = " << vbdControl << std::endl;
 
-  initialize(model, probDescDB.get_short("method.nond.expansion_type"));
   initialize_final_statistics(); // level mappings are available
 }
 
 
 NonDExpansion::
-NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type):
+NonDExpansion(Model& model, short exp_coeffs_approach, short u_space_type,
+	      bool piecewise_basis, bool use_derivs):
   NonD(NoDBBaseConstructor(), model),
   expansionCoeffsApproach(exp_coeffs_approach),
   numUncertainQuant(0), numSamplesOnModel(0), numSamplesOnExpansion(0),
-  nestedRules(false), useDerivs(false), refineType(Pecos::NO_REFINEMENT),
+  nestedRules(false), piecewiseBasis(piecewise_basis), useDerivs(use_derivs),
+  refineType(Pecos::NO_REFINEMENT), refineControl(Pecos::NO_CONTROL),
   ruleNestingOverride(Pecos::NO_NESTING_OVERRIDE),
-  ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE),
-  refineControl(Pecos::NO_CONTROL), impSampling(false), expSampling(false),
-  vbdControl(Pecos::NO_VBD)
-{ initialize(model, u_space_type); /* level mappings not yet available */ }
+  ruleGrowthOverride(Pecos::NO_GROWTH_OVERRIDE), expSampling(false),
+  impSampling(false), vbdControl(Pecos::NO_VBD)
+{ } // level mappings not yet available (defer initialize_final_statistics())
 
 
-void NonDExpansion::initialize(Model& model, short u_space_type)
+NonDExpansion::~NonDExpansion()
+{ 
+  if (impSampling)
+    uSpaceModel.free_communicators(importanceSampler.maximum_concurrency());
+}
+
+
+void NonDExpansion::resolve_inputs(short& u_space_type, short& data_order)
 {
   bool err_flag = false;
 
@@ -86,27 +95,35 @@ void NonDExpansion::initialize(Model& model, short u_space_type)
     err_flag = true;
   }
 
+  // check compatibility of refinement type and u-space type
+  if (refineType == Pecos::H_REFINEMENT) { // override
+    if (u_space_type == ASKEY_U) // non-default
+      Cerr << "\nWarning: overriding ASKEY to STD_UNIFORM for h-refinement.\n"
+	   << std::endl;
+    else if (u_space_type == STD_NORMAL_U) // non-default
+      Cerr << "\nWarning: overriding WIENER to STD_UNIFORM for h-refinement.\n"
+	   << std::endl;
+    u_space_type = STD_UNIFORM_U; piecewiseBasis = true;
+  }
+  else if (refineType == Pecos::P_REFINEMENT && piecewiseBasis) {
+    Cerr << "\nError: fixed order piecewise bases are incompatible with "
+	 << "p-refinement." << std::endl;
+    err_flag = true;
+  }
+
+  if (err_flag)
+    abort_handler(-1);
+}
+
+
+void NonDExpansion::initialize(short u_space_type)
+{
   // if multifidelity UQ, initial phase captures the model discrepancy
   if (iteratedModel.surrogate_type() == "hierarchical")
     iteratedModel.surrogate_response_mode(MODEL_DISCREPANCY);
 
-  // check compatibility of refinement type and u-space type
-  initialize_random_variable_transformation();
-  if (refineType == Pecos::H_REFINEMENT) { // override
-    if (u_space_type == ASKEY_U) // non-default
-      Cerr << "\nWarning: overriding askey to piecewise for h-refinement.\n"
-	   << std::endl;
-    else if (u_space_type == STD_NORMAL_U) // non-default
-      Cerr << "\nWarning: overriding wiener to piecewise for h-refinement.\n"
-	   << std::endl;
-    u_space_type = PIECEWISE_U;
-  }
-  else if (refineType == Pecos::P_REFINEMENT && u_space_type == PIECEWISE_U) {
-    Cerr << "\nError: fixed order piecewise bases are incompatible with "
-	 << "p-refinement." << std::endl;
-    abort_handler(-1);
-  }
   // use Wiener/Askey/extended/piecewise u-space defn in Nataf transformation
+  initialize_random_variable_transformation();
   initialize_random_variable_types(u_space_type); // need x/u_types below
   initialize_random_variable_correlations();
   // for lightweight ctor, defer until call to requested_levels()
@@ -142,16 +159,6 @@ void NonDExpansion::initialize(Model& model, short u_space_type)
 
     verify_correlation_support(); // Der Kiureghian & Liu correlation warping
   }
-
-  if (err_flag)
-    abort_handler(-1);
-}
-
-
-NonDExpansion::~NonDExpansion()
-{ 
-  if (impSampling)
-    uSpaceModel.free_communicators(importanceSampler.maximum_concurrency());
 }
 
 
@@ -224,8 +231,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
 void NonDExpansion::
 construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
-		      const UShortArray& ssg_level, const RealVector& dim_pref,
-		      bool piecewise_basis)
+		      const UShortArray& ssg_level, const RealVector& dim_pref)
 {
   // enforce minimum required VBD control
   if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL)
@@ -246,7 +252,7 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
       refineControl      == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)
     // unstructured index set evolution: no motivation to restrict
     growth_rate = Pecos::UNRESTRICTED_GROWTH;
-  else if (piecewise_basis)
+  else if (piecewiseBasis)
     // no reason to match Gaussian precision, but restriction still useful:
     // use SLOW i=2l+1 since it is more natural for NEWTON_COTES,CLENSHAW_CURTIS
     // and is more consistent with UNRESTRICTED generalized sparse grids.
