@@ -97,6 +97,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   driverTypeMap["text_book3"]             = TEXT_BOOK3;
   driverTypeMap["text_book_ouu"]          = TEXT_BOOK_OUU;
   driverTypeMap["scalable_text_book"]     = SCALABLE_TEXT_BOOK;
+  driverTypeMap["scalable_monomials"]     = SCALABLE_MONOMIALS;
   driverTypeMap["herbie"]                 = HERBIE;
   driverTypeMap["smooth_herbie"]          = SMOOTH_HERBIE;
   driverTypeMap["shubert"]                = SHUBERT;
@@ -173,11 +174,10 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
     case GERSTNER:            case SCALABLE_GERSTNER:
     case EXTENDED_ROSENBROCK: case GENERALIZED_ROSENBROCK:
     case SOBOL_G_FUNCTION:    case SOBOL_RATIONAL:
-    case TEXT_BOOK:           case TEXT_BOOK_OUU:       case SCALABLE_TEXT_BOOK:
-    case TEXT_BOOK1:          case TEXT_BOOK2:          case TEXT_BOOK3:
-    case HERBIE:              case SMOOTH_HERBIE:       case SHUBERT:
-    case SALINAS:             case MODELCENTER:         case MATLAB:
-    case PYTHON:
+    case TEXT_BOOK:     case TEXT_BOOK1: case TEXT_BOOK2: case TEXT_BOOK3:
+    case TEXT_BOOK_OUU: case SCALABLE_TEXT_BOOK: case SCALABLE_MONOMIALS:
+    case HERBIE:        case SMOOTH_HERBIE:      case SHUBERT:
+    case SALINAS:       case MODELCENTER:        case MATLAB: case PYTHON:
       localDataView |= VARIABLES_VECTOR; break;
     }
 
@@ -494,6 +494,8 @@ int DirectApplicInterface::derived_map_ac(const String& ac_name)
     fail_code = text_book_ouu(); break;
   case SCALABLE_TEXT_BOOK:
     fail_code = scalable_text_book(); break;
+  case SCALABLE_MONOMIALS:
+    fail_code = scalable_monomials(); break;
   case HERBIE:
     fail_code = herbie(); break;
   case SMOOTH_HERBIE:
@@ -1250,7 +1252,6 @@ int DirectApplicInterface::cyl_head()
     fnGrads[3][1] = -0.1125*std::sqrt(4. - xC[1]);
   }
 
-  //sleep(5); // for faking a more expensive evaluation
   return 0; // no failure
 }
 
@@ -1377,7 +1378,6 @@ int DirectApplicInterface::rosenbrock()
 	    fnHessians[0](i,j) =  200.;
   }
 
-  //sleep(5); // for faking a more expensive evaluation
   return 0; // no failure
 }
 
@@ -1431,7 +1431,6 @@ int DirectApplicInterface::generalized_rosenbrock()
     }
   }
 
-  //sleep(5); // for faking a more expensive evaluation
   return 0; // no failure
 }
 
@@ -1486,7 +1485,6 @@ int DirectApplicInterface::extended_rosenbrock()
     }
   }
 
-  //sleep(5); // for faking a more expensive evaluation
   return 0; // no failure
 }
 
@@ -1536,7 +1534,6 @@ int DirectApplicInterface::lf_rosenbrock()
 	else if (varTypeDVV[i] == VAR_x2 && varTypeDVV[j] == VAR_x2)
 	  fnHessians[0](i,j) =  200.;
 
-  //sleep(5); // for faking a more expensive evaluation
   return 0; // no failure
 }
 
@@ -1562,8 +1559,9 @@ int DirectApplicInterface::gerstner()
   }
 
   const Real& x = xC[0]; const Real& y = xC[1];
-  const StringArray& an_comps = analysisComponents[analysisDriverIndex];
-  std::string an_comp((an_comps.size()) ? an_comps[0].c_str() : "iso1");
+  String an_comp = (!analysisComponents.empty() && 
+		    !analysisComponents[analysisDriverIndex].empty()) ?
+    analysisComponents[analysisDriverIndex][0] : "iso1";
   short test_fn; Real x_coeff, y_coeff, xy_coeff;
   if (an_comp        == "iso1")
     { test_fn = 1; x_coeff = y_coeff = 10.; }
@@ -1641,7 +1639,9 @@ int DirectApplicInterface::scalable_gerstner()
     abort_handler(-1);
   }
 
-  const std::string& an_comp = analysisComponents[analysisDriverIndex][0];
+  String an_comp = (!analysisComponents.empty() && 
+		    !analysisComponents[analysisDriverIndex].empty()) ?
+    analysisComponents[analysisDriverIndex][0] : "iso1";
   short test_fn; Real even_coeff, odd_coeff, inter_coeff;
   if (an_comp        == "iso1")
     { test_fn = 1; even_coeff = odd_coeff = 10.; }
@@ -1913,11 +1913,12 @@ int DirectApplicInterface::lf_short_column()
        Y = xCM[VAR_Y], b_sq = b*b, h_sq = h*h, P_sq = P*P, M_sq = M*M,
        Y_sq = Y*Y;
   short test_fn = 1;
-  const StringArray& an_comps = analysisComponents[analysisDriverIndex];
-  if (an_comps.size()) {
-    if (an_comps[0]      == "lf1") test_fn = 1;
-    else if (an_comps[0] == "lf2") test_fn = 2;
-    else if (an_comps[0] == "lf3") test_fn = 3;
+  if (!analysisComponents.empty() && 
+      !analysisComponents[analysisDriverIndex].empty()) {
+    const String& an_comp = analysisComponents[analysisDriverIndex][0];
+    if (an_comp      == "lf1") test_fn = 1;
+    else if (an_comp == "lf2") test_fn = 2;
+    else if (an_comp == "lf3") test_fn = 3;
   }
 
   // **** f (objective = bh = cross sectional area):
@@ -2863,8 +2864,74 @@ int DirectApplicInterface::scalable_text_book()
   return 0; // no failure
 }
 
+
+int DirectApplicInterface::scalable_monomials()
+{
+  if (numADIV || numADRV) {
+    Cerr << "Error: scalable_monomials direct fn does not support discrete "
+	 << "variables." << std::endl;
+    abort_handler(-1);
+  }
+  if (numFns != 1) {
+    Cerr << "Error: Bad number of functions in scalable_monomials direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  // get power of monomial from analysis components, if available (default to 1)
+  int power = 1;
+  if (!analysisComponents.empty() && 
+      !analysisComponents[analysisDriverIndex].empty())
+    power = std::atoi(analysisComponents[analysisDriverIndex][0].c_str());
+
+  // ***************************
+  // **** f: sum x[i]^power ****
+  // ***************************
+  if (directFnASV[0] & 1) {
+    fnVals[0] = 0.;
+    for (size_t i=0; i<numACV; ++i)
+      fnVals[0] += std::pow(xC[i], power);
+  }
+
+  // ****************
+  // **** df/dx: ****
+  // ****************
+  if (directFnASV[0] & 2) {
+    std::fill_n(fnGrads[0], fnGrads.numRows(), 0.);
+    for (size_t i=0; i<numDerivVars; ++i) {
+      size_t var_index = directFnDVV[i] - 1;
+      switch (power) {
+      case 0:  fnGrads[0][i] = 0;                                      break;
+      default: fnGrads[0][i] = power*std::pow(xC[var_index], power-1); break;
+      }
+    }
+  }
+
+  // ********************
+  // **** d^2f/dx^2: ****
+  // ********************
+  if (directFnASV[0] & 4) {
+    fnHessians[0] = 0.;
+    for (size_t i=0; i<numDerivVars; ++i) {
+      size_t var_index = directFnDVV[i] - 1;
+      switch (power) {
+      case 0: case 1:
+	fnHessians[0](i,i) = 0; break;
+      default:
+	fnHessians[0](i,i) = power*(power-1)*std::pow(xC[var_index], power-2);
+	break;
+      }
+    }
+  }
+
+  return 0; // no failure
+}
+
+
 /// 1D Herbie function and its derivatives (apart from a multiplicative factor)
-void DirectApplicInterface::herbie1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders) {
+void DirectApplicInterface::
+herbie1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders)
+{
   w_and_ders[0]=w_and_ders[1]=w_and_ders[2]=0.0;
   
   Real rtemp1=xc_loc-1.0; 
@@ -2894,8 +2961,11 @@ void DirectApplicInterface::herbie1D(size_t der_mode, Real xc_loc, std::vector<R
   }
 }
 
+
 /// 1D Smoothed Herbie= 1DHerbie minus the high frequency sine term, and its derivatives (apart from a multiplicative factor)
-void DirectApplicInterface::smooth_herbie1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders) {
+void DirectApplicInterface::
+smooth_herbie1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders)
+{
   w_and_ders[0]=w_and_ders[1]=w_and_ders[2]=0.0;
   
   Real rtemp1=xc_loc-1.0; 
@@ -2919,11 +2989,13 @@ void DirectApplicInterface::smooth_herbie1D(size_t der_mode, Real xc_loc, std::v
     std::cerr << "only 0th through 2nd derivatives are implemented for smooth_herbie1D()\n";
     assert(false); //should throw an exception get brian to help
   }
-  
 }
 
+
 /// 1D Shubert function and its derivatives (apart from a multiplicative factor)
-void DirectApplicInterface::shubert1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders) {
+void DirectApplicInterface::
+shubert1D(size_t der_mode, Real xc_loc, std::vector<Real>& w_and_ders)
+{
   w_and_ders[0]=w_and_ders[1]=w_and_ders[2]=0.0;
   
   size_t k;
@@ -3663,6 +3735,12 @@ int DirectApplicInterface::matlab_engine_run()
   buffer_char[BUFSIZE] = '\0';
   engOutputBuffer(matlabEngine, buffer_char, BUFSIZE);
 
+  if (analysisComponents.empty() ||
+      analysisComponents[analysisDriverIndex].empty()) {
+    Cerr << "\nError: MATLAB direct interface requires analysis_components "
+	 << "specification.\n" << std::endl;
+    abort_handler(-1);
+  }
   for (int aci=0; aci<analysisComponents[analysisDriverIndex].size(); aci++) {
 
     // strip away any .m the user might have included
@@ -3833,7 +3911,13 @@ int DirectApplicInterface::python_run()
   // analysisDriverIndex
 
   // for now we presume a single analysis component containing module:function
-  const std::string& an_comp = analysisComponents[analysisDriverIndex][0];
+  if (analysisComponents.empty() ||
+      analysisComponents[analysisDriverIndex].empty()) {
+    Cerr << "\nError: Python direct interface requires analysis_components "
+	 << "specification.\n" << std::endl;
+    abort_handler(-1);
+  }
+  const String& an_comp = analysisComponents[analysisDriverIndex][0];
   size_t pos = an_comp.find(":");
   std::string module_name = an_comp.substr(0,pos);
   std::string function_name = an_comp.substr(pos+1);
