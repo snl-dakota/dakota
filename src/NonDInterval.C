@@ -424,9 +424,8 @@ void NonDInterval::compute_evidence_statistics()
 void NonDInterval::print_results(std::ostream& s)
 {
   const StringArray& fn_labels = iteratedModel.response_labels();
-  s.setf(std::ios::scientific);
   s << "------------------------------------------------------------------\n"
-    << std::setprecision(write_precision);
+    << std::scientific << std::setprecision(write_precision);
 
   if (singleIntervalFlag) {
     // output response intervals

@@ -901,8 +901,7 @@ void NonDSampling::print_intervals(std::ostream& s) const
 {
   const StringArray& resp_labels = iteratedModel.response_labels();
 
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision)
+  s << std::scientific << std::setprecision(write_precision)
     << "\nMin and Max values for each response function:\n";
   for (size_t i=0; i<numFunctions; ++i)
     s << resp_labels[i] << ":  Min = " << minValues[i]
@@ -914,8 +913,7 @@ void NonDSampling::print_moments(std::ostream& s) const
 {
   const StringArray& resp_labels = iteratedModel.response_labels();
 
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
 
   size_t i, j, width = write_precision+7;
  
@@ -952,8 +950,7 @@ void NonDSampling::print_pdf_mappings(std::ostream& s) const
 
   // output CDF/CCDF probabilities resulting from binning or CDF/CCDF
   // reliabilities resulting from number of std devs separating mean & target
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision)
+  s << std::scientific << std::setprecision(write_precision)
     << "\nProbability Density Function (PDF) histograms for each response "
     << "function:\n";
   size_t i, j, width = write_precision+7;

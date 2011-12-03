@@ -1693,8 +1693,7 @@ void NonDExpansion::update_final_statistics()
 
 void NonDExpansion::print_moments(std::ostream& s)
 {
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const StringArray& fn_labels = iteratedModel.response_labels();
@@ -1862,8 +1861,7 @@ void NonDExpansion::print_local_sensitivity(std::ostream& s)
 
 void NonDExpansion::print_results(std::ostream& s)
 {
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
 
   print_coefficients(s);
   s << "-------------------------------------------------------------------"

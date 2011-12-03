@@ -686,14 +686,14 @@ void Analyzer::print_sobol_indices(std::ostream& s) const
     = iteratedModel.discrete_real_variable_labels();
   const StringArray& resp_labels = iteratedModel.response_labels();
   // output explanatory info
-  s.setf(std::ios::scientific);
   //s << "Variance Based Decomposition Sensitivity Indices\n"
   //  << "These Sobol' indices measure the importance of the uncertain input\n"
   //  << "variables in determining the uncertainty (variance) of the output.\n"
   //  << "Si measures the main effect for variable i itself, while Ti\n"
   //  << "measures the total effect (including the interaction effects\n" 
   //  << "of variable i with other uncertain variables.)\n";
-  s << "\nGlobal sensitivity indices for each response function:\n";
+  s << std::scientific 
+    << "\nGlobal sensitivity indices for each response function:\n";
 
   size_t i, k, offset;
   for (k=0; k<numFunctions; ++k) {

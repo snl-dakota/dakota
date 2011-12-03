@@ -429,8 +429,7 @@ print_correlations(std::ostream& s, StringMultiArrayConstView cv_labels,
 {
   // output correlation matrices
 
-  s.setf(std::ios::scientific);
-  s << std::setprecision(5);
+  s << std::scientific << std::setprecision(5);
 
   if (resp_labels.size() != numFns) { 
     Cerr << "Error: Number of response labels (" << resp_labels.size()

@@ -1618,8 +1618,7 @@ void NonD::print_distribution_mappings(std::ostream& s) const
 
   // output CDF/CCDF probabilities resulting from binning or CDF/CCDF
   // reliabilities resulting from number of std devs separating mean & target
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision)
+  s << std::scientific << std::setprecision(write_precision)
     << "\nLevel mappings for each response function:\n";
   size_t i, j, width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
   for (i=0; i<numFunctions; ++i) {

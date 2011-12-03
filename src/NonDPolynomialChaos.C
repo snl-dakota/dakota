@@ -413,8 +413,7 @@ void NonDPolynomialChaos::increment_expansion()
 
 void NonDPolynomialChaos::print_coefficients(std::ostream& s)
 {
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
 
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const StringArray& fn_labels = iteratedModel.response_labels();
