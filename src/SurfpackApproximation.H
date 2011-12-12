@@ -106,7 +106,7 @@ private:
   /// add Pecos::SurrogateData::SurrogateData{Vars,Resp} to SurfData,
   /// accounting for buildDataOrder available
   void add_sdp_to_surfdata(const Pecos::SurrogateDataVars& sdv,
-			   const Pecos::SurrogateDataResp& sdr,
+			   const Pecos::SurrogateDataResp& sdr, short fail_code,
 			   SurfData& surf_data);
 
   /// copy RealSymMatrix to SurfpackMatrix (Real type only)

@@ -576,7 +576,8 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
       add_anchor_to_surfdata(*surf_data);
     else
       add_sdp_to_surfdata(approxData.anchor_variables(),
-			  approxData.anchor_response(), *surf_data);
+			  approxData.anchor_response(),
+			  approxData.failed_anchor_data(), *surf_data);
   }
   // add the remaining surrogate data points
   if (outputLevel >= DEBUG_OUTPUT)
@@ -585,8 +586,14 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
   size_t i, num_data_pts = approxData.size();
   const Pecos::SDVArray& sdv_array = approxData.variables_data();
   const Pecos::SDRArray& sdr_array = approxData.response_data();
-  for (i=0; i<num_data_pts; ++i)
-    add_sdp_to_surfdata(sdv_array[i], sdr_array[i], *surf_data);
+  const Pecos::SizetShortMap& failed_resp = approxData.failed_response_data();
+  Pecos::SizetShortMap::const_iterator fit = failed_resp.begin();
+  for (i=0; i<num_data_pts; ++i) {
+    short fail_code = 0;
+    if (fit != failed_resp.end() && fit->first == i)
+      { fail_code = fit->second; ++fit; }
+    add_sdp_to_surfdata(sdv_array[i], sdr_array[i], fail_code, *surf_data);
+  }
 
   return surf_data;
 }
@@ -596,6 +603,10 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
     value.  Also add constraints for gradient and hessian, if applicable. */
 void SurfpackApproximation::add_anchor_to_surfdata(SurfData& surf_data)
 {
+  // coarse-grained fault tolerance for now: any failure qualifies for omission
+  if (approxData.failed_anchor_data())
+    return;
+
   // Surfpack's RealArray is std::vector<double>
   RealArray x; 
   Real f;
@@ -618,15 +629,12 @@ void SurfpackApproximation::add_anchor_to_surfdata(SurfData& surf_data)
 
   // Check for gradient in anchor point
   const RealVector& anchor_grad = approxData.anchor_gradient();
-  // Print the gradient out, if present
   if (!anchor_grad.empty()) {
     anchor_data_order |= 2;
     copy_data(anchor_grad, gradient);
     if (outputLevel > NORMAL_OUTPUT) {
       Cout << "Anchor gradient:\n";
-      std::copy(gradient.begin(),gradient.end(),
-		std::ostream_iterator<Real>(Cout," "));
-      Cout << '\n';
+      write_data(Cout, anchor_grad);
     }
   }
     
@@ -634,17 +642,10 @@ void SurfpackApproximation::add_anchor_to_surfdata(SurfData& surf_data)
   const RealSymMatrix& anchor_hess = approxData.anchor_hessian();
   if (!anchor_hess.empty()) {
     anchor_data_order |= 4;
-    hessian.reshape(anchor_hess.numRows(), anchor_hess.numCols());
-    ///\todo improve efficiency of conversion
-    for (size_t i = 0; i < anchor_hess.numRows();i++) {
-      for (size_t j = 0; j < anchor_hess.numCols();j++) {
-	if (outputLevel > NORMAL_OUTPUT)
-	  Cout << "hessian(" << i << ',' << j << "): " << anchor_hess(i,j)
-	       << ' ';
-	hessian(i,j) = anchor_hess(i,j);
-      }
-      if (outputLevel > NORMAL_OUTPUT)
-	Cout << '\n';
+    copy_matrix(anchor_hess, hessian);
+    if (outputLevel > NORMAL_OUTPUT) {
+      Cout << "Anchor hessian:\n";
+      write_data(Cout, anchor_hess, false, true, true);
     }
   }
    
@@ -666,10 +667,8 @@ void SurfpackApproximation::add_anchor_to_surfdata(SurfData& surf_data)
     break;
 
   case 7:
-    {
-      surf_data.setConstraintPoint(SurfPoint(x, f, gradient, hessian));
-      break;
-    }
+    surf_data.setConstraintPoint(SurfPoint(x, f, gradient, hessian));
+    break;
 
   default:
     Cerr << "\nError (SurfpackApproximation): derivative data may only be used"
@@ -685,15 +684,17 @@ void SurfpackApproximation::add_anchor_to_surfdata(SurfData& surf_data)
 
 void SurfpackApproximation::
 add_sdp_to_surfdata(const Pecos::SurrogateDataVars& sdv,
-		    const Pecos::SurrogateDataResp& sdr,
+		    const Pecos::SurrogateDataResp& sdr, short fail_code,
 		    SurfData& surf_data)
 {
+  // coarse-grained fault tolerance for now: any failure qualifies for omission
+  if (fail_code)
+    return;
+
   // Surfpack's RealArray is std::vector<double>; use DAKOTA copy_data helpers
   RealArray x; 
   copy_data(sdv.continuous_variables(), x);
-  
   Real f = sdr.response_function();
-  RealArray gradient;
 
   // for now only allow builds from exactly 1, 3=1+2, or 7=1+2+4; use
   // different set functions so the SurfPoint data remains empty if
@@ -704,19 +705,21 @@ add_sdp_to_surfdata(const Pecos::SurrogateDataVars& sdv,
     surf_data.addPoint(SurfPoint(x, f));
     break;
 
-  case 3:
+  case 3: {
+    RealArray gradient;
     copy_data(sdr.response_gradient(), gradient);
     surf_data.addPoint(SurfPoint(x, f, gradient));
     break;
+  }
 
-  case 7:
-    {
-      copy_data(sdr.response_gradient(), gradient);
-      SurfpackMatrix<Real> hessian(numVars,numVars); // only allocate if needed
-      copy_matrix(sdr.response_hessian(), hessian);
-      surf_data.addPoint(SurfPoint(x, f, gradient, hessian));
-      break;
-    }
+  case 7: {
+    RealArray gradient;
+    copy_data(sdr.response_gradient(), gradient);
+    SurfpackMatrix<Real> hessian;
+    copy_matrix(sdr.response_hessian(), hessian);
+    surf_data.addPoint(SurfPoint(x, f, gradient, hessian));
+    break;
+  }
 
   default:
     Cerr << "\nError (SurfpackApproximation): derivative data may only be used"
@@ -729,27 +732,25 @@ add_sdp_to_surfdata(const Pecos::SurrogateDataVars& sdv,
 }
 
 
-void SurfpackApproximation::copy_matrix(const RealSymMatrix& rsdm,
+void SurfpackApproximation::copy_matrix(const RealSymMatrix& rsm,
 					SurfpackMatrix<Real>& surfpack_matrix)
 {
   // SymmetricMatrix = symmetric and square, but Dakota::Matrix can be general
   // (e.g., functionGradients = numFns x numVars).  Therefore, have to verify
-  // sanity of the copy.  Could copy square submatrix of rsdm into sm, but 
+  // sanity of the copy.  Could copy square submatrix of rsm into sm, but 
   // aborting with an error seems better since this should only currently be
   // used for copying Hessian matrices.
-  size_t nr = rsdm.numRows(), nc = rsdm.numCols();
+  size_t nr = rsm.numRows(), nc = rsm.numCols();
   if (nr != nc) {
-    Cerr << "Error: copy_data(const Dakota::RealSymMatrix& rsdm, "
-	 << "SurfpackMatrix<Real>& sm) called with nonsquare rsdm."
-	 << std::endl;
+    Cerr << "Error: copy_data(const Dakota::RealSymMatrix& rsm, "
+	 << "SurfpackMatrix<Real>& sm) called with nonsquare rsm." << std::endl;
     abort_handler(-1);
   }
   if (surfpack_matrix.getNRows() != nr | surfpack_matrix.getNCols() != nc) 
     surfpack_matrix.resize(nr, nc);
   for (size_t i=0; i<nr; ++i)
     for (size_t j=0; j<nc; ++j)
-      surfpack_matrix(i,j) = rsdm(i,j);
+      surfpack_matrix(i,j) = rsm(i,j);
 }
-
 
 } // namespace Dakota
