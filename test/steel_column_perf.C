@@ -148,7 +148,7 @@ int main(int argc, char** argv)
 	fout << "1. ";
 	break;
       case E: // df/de
-	fout << 2.*f0*h*p*p*Pi2*s2/X2;
+	fout << 2.*f0*h*p*p*Pi2*s2/X2 << ' ';
 	break;
       }
     fout << "]\n";
