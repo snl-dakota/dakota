@@ -569,6 +569,9 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
 {
   SurfData* surf_data = new SurfData();
 
+  // screen approximation data for failures
+  approxData.data_checks();
+
   // some surrogates, e.g., global_polynomials and kriging, treat the anchor
   // point specially as a constraint; other treat as a regular data point
   if (approxData.anchor()) {

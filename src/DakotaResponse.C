@@ -279,7 +279,7 @@ void ResponseRep::read(std::istream& s)
   // NOTE: s.peek() triggering on 'f' or 'F' would be another possibility.
   // NOTE: reading the first token using "s >> fail_string;" should work for a
   //       file having less than four characters.
-  size_t i;
+  size_t i, j, k;
   int fail_code = 1;
   char fail_chars[4] = {0,0,0,0};
   std::string fail_string("fail");
@@ -318,10 +318,10 @@ void ResponseRep::read(std::istream& s)
 	//Cout << "Debug read: strtod of token = " << strtod(token, NULL)<<'\n';
 	functionValues[i] = std::atof(token.c_str()); // handles NaN and +/-Inf
       }
-      else {
+      else
         throw std::string( "At EOF: insufficient data for functionValue "
                            + boost::lexical_cast<std::string>(i+1) );
-      }
+
       if (s) { // get optional tag
 	//s.ignore(256, '\n'); // simple soln., but requires consistent '\n'
         int pos = s.tellg(); // save stream pos prior to token extraction
@@ -341,18 +341,24 @@ void ResponseRep::read(std::istream& s)
   // For brackets, chars are used rather than token strings to allow optional
   // white space between brackets and values.
   char l_bracket, r_bracket; // eat white space and grab 1 character
-  char l_brackets[2], r_brackets[2]; // eat white space and grab 2 characters
-  // l_bracket = '[' = 1 character; l_brackets = "[[" =2 characters
-  size_t ng = functionGradients.numCols();
+  size_t ng = functionGradients.numCols(), nv = functionGradients.numRows();
   for (i=0; i<ng; ++i) { // prevent loop if functionGradients not sized
     if (asv[i] & 2) { // & 2 masks off 1st and 3rd bit
       if (s)
         s >> l_bracket;
-      else {
+      else
         throw std::string( "At EOF: insufficient data for functionGradient "
                            + boost::lexical_cast<std::string>(i+1) );
+
+      // read function lacks fault tolerance for inf/nan:
+      //read_col_vector_trans(s, (int)i, functionGradients);
+      // for fault tolerance, use atof():
+      Real* fn_grad_i = functionGradients[i]; // column vector
+      for (j=0; j<nv; ++j) {
+	s >> token;
+	fn_grad_i[j] = std::atof(token.c_str()); // handles NaN and +/-Inf
       }
-      read_col_vector_trans(s, (int)i, functionGradients);
+
       if (s)
         s >> r_bracket;
       else {
@@ -367,16 +373,27 @@ void ResponseRep::read(std::istream& s)
   }
 
   // Get function Hessians as governed by ASV requests
+  char l_brackets[2], r_brackets[2]; // eat white space and grab 2 characters
   size_t nh = functionHessians.size();
   for (i=0; i<nh; i++) { // prevent loop if functionHessians not sized
     if (asv[i] & 4) { // & 4 masks off 1st and 2nd bit
       if (s)
         s >> l_brackets[0] >> l_brackets[1];
-      else {
+      else
         throw std::string( "At EOF: insufficient data for functionHessian "
                            + boost::lexical_cast<std::string>(i+1) );
-      }
-      Dakota::read_data(s, functionHessians[i]);
+
+      // read function lacks fault tolerance for inf/nan:
+      //Dakota::read_data(s, functionHessians[i]);
+      // for fault tolerance, use atof():
+      RealSymMatrix& fn_hess_i = functionHessians[i];
+      nv = fn_hess_i.numRows();
+      for (j=0; j<nv; ++j)
+	for (k=0; k<nv; ++k) { // read full matrix
+	  s >> token;
+	  fn_hess_i(j,k) = std::atof(token.c_str()); // handles NaN and +/-Inf
+	}
+
       if (s)
         s >> r_brackets[0] >> r_brackets[1];
       else {

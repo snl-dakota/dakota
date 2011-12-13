@@ -110,7 +110,7 @@ private:
 			   SurfData& surf_data);
 
   /// copy RealSymMatrix to SurfpackMatrix (Real type only)
-  void copy_matrix(const RealSymMatrix& rsdm,
+  void copy_matrix(const RealSymMatrix& rsm,
 		   SurfpackMatrix<Real>& surfpack_matrix);
 
 

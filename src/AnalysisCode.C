@@ -109,6 +109,7 @@ basename(const char *s)
 	return b;
 	}
 
+
 void AnalysisCode::define_filenames(const int id)
 {
   // Define modified file names by handling Unix temp file and tagging options.
@@ -490,7 +491,7 @@ void AnalysisCode::read_results_files(Response& response, const int id)
   else {
     std::ifstream recovery_stream(results_filename.c_str());
     if (!recovery_stream)
-	cleanup_and_abort(results_filename);
+      cleanup_and_abort(results_filename);
     recovery_stream >> response;
   }
 
@@ -536,8 +537,9 @@ void AnalysisCode::read_results_files(Response& response, const int id)
 
   // Prevent overwriting of files with reused names for which a file_save
   // request has been given.
-  if (fileSaveFlag && !fileTagFlag && !dirTag
-  && ( !specifiedParamsFileName.empty() || !specifiedResultsFileName.empty() ) ) {
+  if ( fileSaveFlag && !fileTagFlag && !dirTag &&
+       ( !specifiedParamsFileName.empty() ||
+	 !specifiedResultsFileName.empty() ) ) {
     // specifiedParamsFileName/specifiedResultsFileName are original user input
     if (!suppressOutputFlag && outputLevel > NORMAL_OUTPUT)
       Cout << "Files with nonunique names will be tagged for file_save:\n";
@@ -589,12 +591,14 @@ void AnalysisCode::read_results_files(Response& response, const int id)
   fileNameMap.erase(map_iter);
 }
 
+
 AnalysisCode::~AnalysisCode()
 {
   if (dirDel && 
       (templateDir.length() || templateFiles.size() || rmdir(workDir.c_str())))
     rec_rmdir(workDir.c_str());
 }
+
 
 void AnalysisCode::file_cleanup() const
 {
@@ -625,7 +629,5 @@ void AnalysisCode::file_cleanup() const
     }
   }
 }
-
-
 
 } // namespace Dakota

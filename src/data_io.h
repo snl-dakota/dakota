@@ -745,9 +745,10 @@ template <typename OrdinalType, typename ScalarType>
 void read_data(std::istream& s,
                Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
 {
-  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  // for istream, read full matrix
+  OrdinalType i, j, nrows = m.numRows();
   for (i=0; i<nrows; ++i)
-    for (j=0; j<ncols; ++j)
+    for (j=0; j<nrows; ++j)
       s >> m(i,j);
 }
 
@@ -757,9 +758,9 @@ template <typename OrdinalType, typename ScalarType>
 void read_data(BiStream& s,
                Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
 {
-  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  OrdinalType i, j, nrows = m.numRows();
   for (i=0; i<nrows; ++i)
-    for (j=0; j<ncols; ++j)
+    for (j=0; j<=i; ++j)
       s >> m(i,j);
 }
 
@@ -768,9 +769,9 @@ template <typename OrdinalType, typename ScalarType>
 void read_data(MPIUnpackBuffer& s,
                Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
 {
-  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  OrdinalType i, j, nrows = m.numRows();
   for (i=0; i<nrows; ++i)
-    for (j=0; j<ncols; ++j)
+    for (j=0; j<=i; ++j)
       s >> m(i,j);
 }
 
@@ -781,17 +782,17 @@ void write_data(std::ostream& s,
                 const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m,
                 bool brackets, bool row_rtn, bool final_rtn)
 {
-  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  OrdinalType i, j, nrows = m.numRows();
   s.setf(std::ios::scientific); // formatting optimized for T = double
   s << std::setprecision(write_precision);
   if (brackets) s << "[[ ";
   else          s << "   ";
   for (i=0; i<nrows; ++i) {
-    for (j=0; j<ncols; ++j)
+    for (j=0; j<nrows; ++j)
       s << std::setw(write_precision+7) << m(i,j) << ' ';
     // NOTE: newlines on every 4th component (as in the row vector case)
     // could lead to ambiguity in the matrix case.
-    if (row_rtn && i!=m.numRows()-1)
+    if (row_rtn && i!=nrows-1)
       s << "\n   ";
   }
   if (brackets)  s << "]] ";
@@ -804,9 +805,9 @@ template <typename OrdinalType, typename ScalarType>
 void write_data(BoStream& s,
                 const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
 {
-  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  OrdinalType i, j, nrows = m.numRows();
   for (i=0; i<nrows; ++i)
-    for (j=0; j<ncols; ++j)
+    for (j=0; j<=i; ++j)
       s << m(i,j);
 }
 
@@ -816,9 +817,9 @@ template <typename OrdinalType, typename ScalarType>
 void write_data(MPIPackBuffer& s,
                 const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
 {
-  OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
+  OrdinalType i, j, nrows = m.numRows();
   for (i=0; i<nrows; ++i)
-    for (j=0; j<ncols; ++j)
+    for (j=0; j<=i; ++j)
       s << m(i,j);
 }
 
