@@ -11669,6 +11669,50 @@ Test Number 0 succeeded
 <<<<< Best objective function  =
                       1.5207601071e-04
 <<<<< Best data captured at function evaluation 27
+dakota_rosenbrock_fail.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
+Polynomial Chaos coefficients for response_fn_1:
+   4.5566666667e+02   P0   P0
+  -4.0000000000e+00   P1   P0
+  -5.3333333333e+02   P0   P1
+   9.1695238095e+02   P2   P0
+  -9.0949470177e-13   P1   P1
+   2.6666666667e+02   P0   P2
+   1.4921397451e-13   P3   P0
+  -1.0666666667e+03   P2   P1
+   9.9475983006e-14   P1   P2
+  -7.1942451996e-14   P0   P3
+   3.6571428571e+02   P4   P0
+  -4.5474735089e-13   P3   P1
+  -8.5265128291e-14   P2   P2
+   3.4816594052e-13   P1   P3
+  -2.4323598691e-13   P0   P4
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  4.5566666667e+02  6.0656024184e+02
+response_fn_1 Sobol indices:
+                                  Main             Total
+                      4.9746891383e-01  7.0363551328e-01 x1
+                      2.9636448672e-01  5.0253108617e-01 x2
+                      2.0616659946e-01 x1 x2 
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01   1.9000000000e-03
+   1.0000000000e+00   1.3600000000e-02
+   5.0000000000e+01   2.4390000000e-01
+   1.0000000000e+02   3.4230000000e-01
+   5.0000000000e+02   7.1090000000e-01
+   1.0000000000e+03   8.5240000000e-01
+Test Number 1 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 339 total (339 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 841 total (837 new, 4 duplicate)
+<<<<< Best parameters          =
+                      9.9989086228e-01 x1
+                      9.9978133079e-01 x2
+<<<<< Best objective function  =
+                      1.1927499946e-08
+<<<<< Best data captured at function evaluation 841
 dakota_rosenbrock_hessians.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 74 total (74 new, 0 duplicate)

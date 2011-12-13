@@ -110,6 +110,7 @@ add_executable(poly_prod poly_prod.C)
 add_executable(portal_frame portal_frame.C)
 add_executable(quasi_sine_fcn quasi_sine_fcn.C)
 add_executable(rosenbrock rosenbrock.C)
+add_executable(rosenbrock_fail rosenbrock_fail.C)
 add_executable(short_column short_column.C)
 add_executable(shubert shubert.C)
 add_executable(smooth_herbie smooth_herbie.C)
@@ -156,7 +157,7 @@ install(TARGETS
   barnes barnes_lf cantilever container cyl_head herbie illumination 
   lf_rosenbrock lf_poly_prod log_ratio mod_cantilever 
   mogatest1 mogatest2 mogatest3 morris nl2func poly_prod portal_frame 
-  quasi_sine_fcn rosenbrock short_column shubert smooth_herbie
+  quasi_sine_fcn rosenbrock rosenbrock_fail short_column shubert smooth_herbie
   sobol_g_function sobol_ishigami sobol_rational 
   steel_column_cost steel_column_perf steel_section 
   text_book text_book1 text_book2 text_book3 text_book_ouu

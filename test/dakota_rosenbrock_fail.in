@@ -1,0 +1,62 @@
+
+strategy,
+	single_method #graphics
+#	method_pointer = 'SBLO'			#1
+
+##########################################
+
+#method,					#1
+#	id_method = 'SBLO'			#1
+#	surrogate_based_local			#1
+#	model_pointer = 'SURROGATE'		#1
+#	approx_method_name = 'npsol_sqp'	#1
+#	trust_region initial_size = 0.10	#1
+
+#model,						#1
+#	id_model = 'SURROGATE'			#1
+#	surrogate global		      	#1	
+#	  dace_method_pointer = 'SAMPLING' 	#1
+#	  use_derivatives			#1	
+#	  gaussian_process surfpack		#1	
+
+#method,					#1
+#	id_method = 'SAMPLING'			#1
+#	model_pointer = 'TRUTH'			#1
+#	sampling all_variables			#1
+#	  samples = 10 sample_type lhs		#1
+#	  seed = 531 rng rnum2			#1
+
+#model,						#1
+#	id_model = 'TRUTH'			#1
+#	single					#1
+#	  interface_pointer = 'TRUE_FN'		#1
+
+##########################################
+
+method,						#0
+	polynomial_chaos use_derivatives	#0
+ 	  expansion_order   = 4			#0
+	  collocation_ratio = 8.		#0
+	  samples = 10000			#0
+	  seed = 12347 rng rnum2		#0
+	  response_levels = .1 1. 50. 100. 500. 1000.	#0
+	  variance_based_decomp #univariate_effects	#0
+
+variables,
+	uniform_uncertain = 2			#0	
+#	continuous_design = 2			#1
+#	  initial_point     -1.2    1.0		#1
+      	  lower_bounds      = -2.  -2. 		
+	  upper_bounds      =  2.   2.		
+	  descriptors       = 'x1' 'x2'		
+
+interface,
+#	id_interface = 'TRUE_FN'		#1
+	fork
+	  analysis_driver = 'rosenbrock_fail'		
+
+responses,
+#	objective_functions = 1			#1
+	response_functions = 1			#0
+	analytic_gradients
+	no_hessians	
