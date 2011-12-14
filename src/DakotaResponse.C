@@ -307,8 +307,8 @@ void ResponseRep::read(std::istream& s)
   std::string token;
   boost::regex reg_exp("[\\+-]?[0-9]*\\.?[0-9]+\\.?[0-9]*[eEdD]?[\\+-]?[0-9]*|[Nn][Aa][Nn]|[\\+-]?[Ii][Nn][Ff]([Ii][Nn][Ii][Tt][Yy])?");
   const ShortArray& asv = responseActiveSet.request_vector();
-  size_t num_fns = asv.size();
-  for (i=0; i<num_fns; i++) {
+  size_t nf = asv.size();
+  for (i=0; i<nf; i++) {
     if (asv[i] & 1) { // & 1 masks off 2nd and 3rd bit
       if (s) { // get value
 	s >> token;
@@ -415,9 +415,9 @@ void ResponseRep::write(std::ostream& s) const
 {
   const ShortArray& asv = responseActiveSet.request_vector();
   const SizetArray& dvv = responseActiveSet.derivative_vector();
-  size_t i, num_fns = asv.size();
+  size_t i, nf = asv.size();
   bool deriv_flag = false;
-  for (i=0; i<num_fns; ++i)
+  for (i=0; i<nf; ++i)
     if (asv[i] & 6)
       { deriv_flag = true; break; }
 
@@ -436,13 +436,13 @@ void ResponseRep::write(std::ostream& s) const
   // Make sure a valid set of functionLabels exists. This has been a problem
   // since there is no way to build these labels in the default Response
   // constructor (used by lists & vectors of Response objects).
-  if (functionLabels.size() != num_fns) {
+  if (functionLabels.size() != nf) {
     Cerr << "Error with functionLabels in ResponseRep::write." << std::endl;
     abort_handler(-1);
   }
 
   // Write the function values if present
-  for (i=0; i<num_fns; ++i)
+  for (i=0; i<nf; ++i)
     if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
       s << "                     " << std::setw(write_precision+7) 
         << functionValues[i] << ' ' << functionLabels[i] << '\n';

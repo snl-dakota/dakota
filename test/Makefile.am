@@ -92,7 +92,7 @@ noinst_PROGRAMS = text_book text_book1 text_book2 text_book3 \
 		  portal_frame steel_section \
 		  steel_column_cost steel_column_perf \
 		  sobol_rational sobol_g_function sobol_ishigami \
-		  rosenbrock lf_rosenbrock \
+		  rosenbrock rosenbrock_fail lf_rosenbrock \
 		  poly_prod lf_poly_prod \
 		  cyl_head container barnes barnes_lf \
 		  illumination quasi_sine_fcn \
@@ -161,6 +161,9 @@ sobol_ishigami_LDADD = $(TESTERLDADD)
 
 rosenbrock_SOURCES = rosenbrock.C
 rosenbrock_LDADD = $(TESTERLDADD)
+
+rosenbrock_fail_SOURCES = rosenbrock_fail.C
+rosenbrock_fail_LDADD = $(TESTERLDADD)
 
 lf_rosenbrock_SOURCES = lf_rosenbrock.C
 lf_rosenbrock_LDADD = $(TESTERLDADD)

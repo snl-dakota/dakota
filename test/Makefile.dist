@@ -69,6 +69,7 @@ EXTRA_DIST = container_alt.c \
 	     dakota_rbdo_steel_column_mapvars.in \
 	     dakota_rbdo_steel_column_trsb2.in \
 	     dakota_repartition.in \
+	     dakota_rosenbrock_fail.in \
 	     dakota_rosenbrock_hessians.in \
 	     dakota_rosenbrock.in \
 	     dakota_rosenbrock_users.in \
