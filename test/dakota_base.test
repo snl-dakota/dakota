@@ -3188,20 +3188,20 @@ Test Number 13 succeeded
 <<<<< Best data captured at function evaluation 121
 dakota_cantilever_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+<<<<< Function evaluation summary: 20 total (20 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.2503937408e+00 w
-                      3.4936154719e+00 t
+                      2.2592620818e+00 w
+                      3.4814843040e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.8620103907e+00
+                      7.8655854763e+00
 <<<<< Best constraint values   =
-                     -2.9981378954e-02
-                     -1.1676092295e-03
-<<<<< Best data captured at function evaluation 17
+                     -3.0183429813e-02
+                     -3.3851969258e-03
+<<<<< Best data captured at function evaluation 18
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -3221,15 +3221,15 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.7276866106e+00 w
-                      2.5154843153e+00 t
+                      2.5154730252e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best residual terms      =
-                      4.3459685706e+00
-                      1.3709631822e+00
-                      2.2433890035e+00
+                      4.3459490649e+00
+                      1.3709799819e+00
+                      2.2434172713e+00
 <<<<< Best data captured at function evaluation 16
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 400187 total (355156 new, 45031 duplicate)
@@ -9698,10 +9698,10 @@ Test Number 1 succeeded
                       1.3500007066e-03
 <<<<< Best data not found in evaluation cache
 Test Number 2 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 25 total (25 new, 0 duplicate)
-         obj_fn: 25 val (25 n, 0 d), 25 grad (25 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 25 val (25 n, 0 d), 25 grad (25 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_2: 25 val (25 n, 0 d), 25 grad (25 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 28 total (28 new, 0 duplicate)
+         obj_fn: 28 val (28 n, 0 d), 28 grad (28 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 28 val (28 n, 0 d), 28 grad (28 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 28 val (28 n, 0 d), 28 grad (28 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 189 total (171 new, 18 duplicate)
   response_fn_1: 17 val (11 n, 6 d), 24 grad (18 n, 6 d), 0 Hess (0 n, 0 d)
   response_fn_2: 92 val (80 n, 12 d), 99 grad (87 n, 12 d), 0 Hess (0 n, 0 d)
@@ -9756,10 +9756,10 @@ Test Number 5 succeeded
          obj_fn: 84 val (84 n, 0 d), 84 grad (84 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_1: 84 val (84 n, 0 d), 84 grad (84 n, 0 d), 0 Hess (0 n, 0 d)
  nln_ineq_con_2: 84 val (84 n, 0 d), 84 grad (84 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 340 total (283 new, 57 duplicate)
+<<<<< Function evaluation summary (UQ_I): 340 total (284 new, 56 duplicate)
   response_fn_1: 26 val (10 n, 16 d), 38 grad (18 n, 20 d), 0 Hess (0 n, 0 d)
   response_fn_2: 146 val (130 n, 16 d), 158 grad (142 n, 16 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 132 val (111 n, 21 d), 144 grad (123 n, 21 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 132 val (112 n, 20 d), 144 grad (124 n, 20 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.4483795745e+00 w
                       3.8883749805e+00 t
@@ -9776,16 +9776,16 @@ Test Number 6 succeeded
  nln_ineq_con_2: 84 val (84 n, 0 d), 84 grad (84 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 231 total (178 new, 53 duplicate)
   response_fn_1: 26 val (10 n, 16 d), 38 grad (18 n, 20 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 100 val (68 n, 32 d), 112 grad (80 n, 32 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 121 val (88 n, 33 d), 133 grad (100 n, 33 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 100 val (67 n, 33 d), 112 grad (79 n, 33 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 121 val (89 n, 32 d), 133 grad (101 n, 32 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.4483806027e+00 w
                       3.8883792621e+00 t
 <<<<< Best objective function  =
                       9.5202323613e+00
 <<<<< Best constraint values   =
-                      2.8970108290e-06
-                      5.9923363580e-06
+                      2.8970108288e-06
+                      5.9923363587e-06
 <<<<< Best data not found in evaluation cache
 Test Number 7 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 84 total (84 new, 0 duplicate)
@@ -11662,13 +11662,14 @@ Test Number 19 succeeded
 <<<<< Best data captured at function evaluation 74
 dakota_rosenbrock_ego.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 41 total (40 new, 1 duplicate)
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 49 total (48 new, 1 duplicate)
 <<<<< Best parameters          =
-                      9.8793782690e-01 x1
-                      9.7576463490e-01 x2
+                      9.8785754204e-01 x1
+                      9.7575459929e-01 x2
 <<<<< Best objective function  =
-                      1.5207601071e-04
-<<<<< Best data captured at function evaluation 27
+                      1.4860404599e-04
+<<<<< Best data captured at function evaluation 28
 dakota_rosenbrock_fail.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
@@ -12618,50 +12619,50 @@ Test Number 17 succeeded
 <<<<< Best objective function  =
                       4.0400000000e+00
 <<<<< Best data captured at function evaluation 18
-dakota_sbo_illum.in 
+dakota_sbo_illum.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 958 total (958 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 961 total (961 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 862 total (862 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.8221244743e-01 x2
-                      2.4688298431e-15 x3
-                      7.5563923203e-17 x4
-                      2.7902803611e-17 x5
-                      7.5466589732e-01 x6
+                      2.8221072618e-01 x2
+                      2.6814152024e-15 x3
+                      2.5828659860e-16 x4
+                      3.5174815983e-17 x5
+                      7.5467030861e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.0759962566e+00
+                      1.0759894326e+00
 <<<<< Best data captured at function evaluation 780
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1867 total (1867 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 1108 total (1108 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.7149640193e-01 x2
-                      4.1238552321e-15 x3
-                      5.4051162063e-16 x4
-                      1.0142375575e-16 x5
-                      7.7045632452e-01 x6
+                      2.7149642728e-01 x2
+                      4.4639360445e-15 x3
+                      4.6525025702e-16 x4
+                      9.9351624579e-17 x5
+                      7.7045637644e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.0760219516e+00
+                      1.0760219517e+00
 <<<<< Best data captured at function evaluation 1108
 Test Number 2 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 386 total (386 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 389 total (389 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 463 total (463 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      2.8161663840e-01 x2
-                      1.2185550434e-15 x3
-                      3.2773287380e-16 x4
-                      1.1165063183e-16 x5
-                      7.5655802121e-01 x6
+                      2.8161203692e-01 x2
+                      2.9353300460e-15 x3
+                      6.9510505940e-16 x4
+                      1.9469842360e-16 x5
+                      7.5656364878e-01 x6
                       1.0000000000e+00 x7
 <<<<< Best objective function  =
-                      1.0759888896e+00
+                      1.0759888900e+00
 <<<<< Best data captured at function evaluation 463
-dakota_sbo_rosen.in 
+dakota_sbo_rosen.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 2490 total (2490 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 881 total (881 new, 0 duplicate)
@@ -12684,19 +12685,19 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1952 total (1952 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 353 total (353 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9899623265e-01 x1
-                      9.9799706083e-01 x2
+                      9.9899513010e-01 x1
+                      9.9799484972e-01 x2
 <<<<< Best objective function  =
-                      1.0088362498e-06
+                      1.0110449816e-06
 <<<<< Best data not found in evaluation cache
 Test Number 3 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 959 total (959 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 958 total (958 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 342 total (342 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9914238942e-01 x1
-                      9.9830257770e-01 x2
+                      9.9914530543e-01 x1
+                      9.9830812218e-01 x2
 <<<<< Best objective function  =
-                      7.6461175447e-07
+                      7.5866242041e-07
 <<<<< Best data not found in evaluation cache
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 21216 total (21216 new, 0 duplicate)
@@ -12747,28 +12748,28 @@ Test Number 9 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 1130 total (1130 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 353 total (353 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9899734043e-01 x1
-                      9.9799927769e-01 x2
+                      9.9899721064e-01 x1
+                      9.9799901776e-01 x2
 <<<<< Best objective function  =
-                      1.0066161037e-06
+                      1.0068759436e-06
 <<<<< Best data not found in evaluation cache
 Test Number 10 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 336 total (336 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 133 total (133 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 317 total (317 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 109 total (109 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9996140695e-01 x1
-                      9.9992278946e-01 x2
+                      9.9989485623e-01 x1
+                      9.9978928632e-01 x2
 <<<<< Best objective function  =
-                      1.4894909914e-09
+                      1.1074326143e-08
 <<<<< Best data not found in evaluation cache
 Test Number 11 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE): 614 total (614 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 141 total (141 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE): 559 total (559 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 120 total (120 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9992402051e-01 x1
-                      9.9984786047e-01 x2
+                      1.0000323746e+00 x1
+                      1.0000649880e+00 x2
 <<<<< Best objective function  =
-                      5.7763540552e-09
+                      1.0537664896e-09
 <<<<< Best data not found in evaluation cache
 dakota_sbo_sine_fcn.in
 Test Number 0 succeeded
@@ -12798,7 +12799,7 @@ Test Number 2 succeeded
 <<<<< Best objective function  =
                       9.9907647696e-02
 <<<<< Best data captured at function evaluation 243
-dakota_sbo_textbook.in 
+dakota_sbo_textbook.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 215 total (215 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 100 total (95 new, 5 duplicate)
@@ -12808,8 +12809,8 @@ Test Number 0 succeeded
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                      7.8936857051e-14
-                     -1.5787371410e-13
+                     -2.7755575616e-16
+                      5.5511151231e-16
 <<<<< Best data captured at function evaluation 45
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 215 total (215 new, 0 duplicate)
@@ -12820,8 +12821,8 @@ Test Number 1 succeeded
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                      7.8936857051e-14
-                     -1.5787371410e-13
+                     -2.7755575616e-16
+                      5.5511151231e-16
 <<<<< Best data captured at function evaluation 45
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 215 total (215 new, 0 duplicate)
@@ -12832,8 +12833,8 @@ Test Number 2 succeeded
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                      7.8936857051e-14
-                     -1.5787371410e-13
+                     -2.7755575616e-16
+                      5.5511151231e-16
 <<<<< Best data captured at function evaluation 45
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 232 total (232 new, 0 duplicate)
@@ -12844,9 +12845,9 @@ Test Number 3 succeeded
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                     -1.3394840792e-13
-                      2.6789681584e-13
-<<<<< Best data captured at function evaluation 61 
+                      0.0000000000e+00
+                      0.0000000000e+00
+<<<<< Best data captured at function evaluation 61
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 232 total (232 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 61 total (61 new, 0 duplicate)
@@ -12856,8 +12857,8 @@ Test Number 4 succeeded
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                     -1.3394840792e-13
-                      2.6789681584e-13
+                      0.0000000000e+00
+                      0.0000000000e+00
 <<<<< Best data captured at function evaluation 61
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 208 total (208 new, 0 duplicate)
@@ -12868,21 +12869,21 @@ Test Number 5 succeeded
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                     -1.9251267247e-13
-                      3.8502534494e-13
+                     -2.8410607200e-13
+                      5.6821214400e-13
 <<<<< Best data captured at function evaluation 45
 Test Number 6 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 229 total (226 new, 3 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 229 total (225 new, 4 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
-                      5.0000006732e-01 x2
+                      5.0000009312e-01 x2
 <<<<< Best objective function  =
-                      1.2499996634e-01
+                      1.2499995344e-01
 <<<<< Best constraint values   =
-                     -3.3660596477e-08
-                      6.7321197506e-08
-<<<<< Best data captured at function evaluation 225
+                     -4.6560905576e-08
+                      9.3121819977e-08
+<<<<< Best data captured at function evaluation 224
 Test Number 7 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 176 total (176 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 49 total (49 new, 0 duplicate)
@@ -41157,16 +41158,16 @@ Test Number 0 succeeded
    5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
    1.0000000000e+02   5.0000000000e-01   7.5000000000e-01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 13200 total (12400 new, 800 duplicate)
-  response_fn_1: 13200 val (12400 n, 800 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 15400 total (14300 new, 1100 duplicate)
+  response_fn_1: 15400 val (14300 n, 1100 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
    5.0000000000e+00   2.5000000000e-01   7.5000000000e-01
    1.0000000000e+02   2.5000000000e-01   1.0000000000e+00
 Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 5000 total (4700 new, 300 duplicate)
-  response_fn_1: 5000 val (4700 n, 300 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (ALEAT_I): 5900 total (5500 new, 400 duplicate)
+  response_fn_1: 5900 val (5500 n, 400 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
      Response Level  Belief Prob Level   Plaus Prob Level
      --------------  -----------------   ----------------
    1.0000000000e+00   0.0000000000e+00   7.5000000000e-01
@@ -41592,29 +41593,29 @@ Moment-based statistics for each response function:
  response_fn_1  4.0200000000e+02  1.0499552371e+03
 dakota_uq_rosenbrock_global.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 60 total (59 new, 1 duplicate)
+<<<<< Function evaluation summary: 49 total (49 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   5.0000000000e-01   1.0198596157e-02                      2.3189602395e+00
-   1.0000000000e+00   2.6606285968e-02                      1.9331918211e+00
-   5.0000000000e+00   1.0621647076e-01                      1.2469033411e+00
-   1.0000000000e+01   1.6425544078e-01                      9.7711770889e-01
-   5.0000000000e+01   3.7031223489e-01                      3.3102649873e-01
-   1.0000000000e+02   4.9966902886e-01                      8.2962171433e-04
-   5.0000000000e+02   8.1938657108e-01                     -9.1302982095e-01
-   1.0000000000e+03   9.0582708355e-01                     -1.3154883418e+00
+   5.0000000000e-01   9.9784986437e-03                      2.3271553724e+00
+   1.0000000000e+00   2.5280821122e-02                      1.9551815772e+00
+   5.0000000000e+00   1.0865158654e-01                      1.2337309604e+00
+   1.0000000000e+01   1.6440466648e-01                      9.7651497035e-01
+   5.0000000000e+01   3.7200074416e-01                      3.2655895992e-01
+   1.0000000000e+02   5.0100724242e-01                     -2.5247850170e-03
+   5.0000000000e+02   8.1750233240e-01                     -9.0588762462e-01
+   1.0000000000e+03   9.0601277350e-01                     -1.3165948888e+00
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 137 total (75 new, 62 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   5.0000000000e-01   1.0153080424e-02                      2.3206422330e+00
-   1.0000000000e+00   2.0933133354e-02                      2.0348470351e+00
-   5.0000000000e+00   1.0514030178e-01                      1.2527942259e+00
-   1.0000000000e+01   1.6477060114e-01                      9.7503842055e-01
-   5.0000000000e+01   3.7498842431e-01                      3.1866989111e-01
-   1.0000000000e+02   5.0173239165e-01                     -4.3424755309e-03
-   5.0000000000e+02   8.1687248242e-01                     -9.0351046784e-01
-   1.0000000000e+03   9.0535794484e-01                     -1.3126998437e+00
+   5.0000000000e-01   1.0138240086e-02                      2.3211920665e+00
+   1.0000000000e+00   2.1703639929e-02                      2.0197697154e+00
+   5.0000000000e+00   1.0689042956e-01                      1.2432360576e+00
+   1.0000000000e+01   1.6637218607e-01                      9.6860086395e-01
+   5.0000000000e+01   3.7003687206e-01                      3.3175569155e-01
+   1.0000000000e+02   4.9948492332e-01                      1.2911061251e-03
+   5.0000000000e+02   8.1754654969e-01                     -9.0605470021e-01
+   1.0000000000e+03   9.0616158039e-01                     -1.3174828105e+00
 dakota_uq_rosenbrock_pce.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
@@ -52185,7 +52186,7 @@ Test Number 5 succeeded
    2.5000000000e-01   6.6000000000e-01   0.0000000000e+00
    5.0000000000e-01   7.0000000000e-01   1.1000000000e-01
    7.5000000000e-01   8.5000000000e-01   1.1000000000e-01
-dakota_uq_textbook_lhs.in 
+dakota_uq_textbook_lhs.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 Moment-based statistics for each response function:
@@ -52803,25 +52804,25 @@ response_fn_2  1.00000e+00 -5.24812e-02  2.76148e-02  6.85269e-03 -9.43294e-03 -
 response_fn_3 -5.24812e-02  1.00000e+00  7.52475e-03  3.65197e-02  1.56016e-02 -2.87429e-02 -2.63426e-02 -1.01650e-02 -1.13075e-01 -4.66847e-03  5.38974e-02  3.73357e-02 -9.92499e-03 -1.56136e-02  9.84098e-03 -3.03270e-02 -1.38614e-02  2.04980e-02  3.84038e-03  3.78602e-01 -5.24812e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-        TF1n  1.09535e-01  1.00000e+00  2.18316e-02 
+        TF1n  1.09535e-01  1.00000e+00  2.18581e-02 
         TF2n  9.14045e-01  2.42039e-02  1.00000e+00 
-        TF1u  1.37858e-01 -1.90756e-02  4.00733e-03 
-        TF2u  9.83197e-01  1.64965e-03 -1.91182e-02 
-        TF1w  1.85722e-01  1.32319e-02 -1.08218e-02 
-        TF2w  8.54321e-01 -2.88067e-03  2.22423e-02 
-        TF1h  1.89562e-01  1.16650e-02  8.63776e-03 
-        TF2h  8.10567e-02 -2.33672e-02 -6.69827e-03 
-        TF1p -1.70777e-03 -3.03136e-02  6.37697e-02 
-        TF2p  2.62302e-01  4.06536e-03 -2.42721e-04 
-       TF1bi -2.11463e-01 -1.55430e-02 -2.13611e-02 
-       TF2bi -2.13118e-01  7.36497e-03 -3.33067e-02 
-       TF1nb  8.20874e-02 -1.89411e-02  1.25394e-02 
-       TF2nb -1.49335e-01 -2.03823e-02  8.61729e-03 
-       TF1ge  1.31653e-01 -1.24055e-02 -8.20983e-03 
-       TF2ge  1.78178e-01  1.77243e-02  1.98586e-02 
-       TF1hg  5.02524e-02 -1.79746e-02  6.59826e-03 
-       TF2hg -1.88390e-01 -7.67397e-03 -1.85692e-02 
-        TF3h -9.06116e-02 -8.69740e-02  6.61984e-03 
+        TF1u  1.37858e-01 -1.90756e-02  3.18209e-03 
+        TF2u  9.83197e-01  1.64965e-03 -1.96890e-02 
+        TF1w  1.85722e-01  1.32319e-02 -1.03891e-02 
+        TF2w  8.54321e-01 -2.88067e-03  2.13657e-02 
+        TF1h  1.89562e-01  1.16650e-02  9.44779e-03 
+        TF2h  8.10567e-02 -2.33672e-02 -5.40655e-03 
+        TF1p -1.70777e-03 -3.03136e-02  5.65768e-02 
+        TF2p  2.62302e-01  4.06536e-03 -1.05021e-04 
+       TF1bi -2.11463e-01 -1.55430e-02 -2.15198e-02 
+       TF2bi -2.13118e-01  7.36497e-03 -3.32019e-02 
+       TF1nb  8.20874e-02 -1.89411e-02  1.04387e-02 
+       TF2nb -1.49335e-01 -2.03823e-02  8.55456e-03 
+       TF1ge  1.31653e-01 -1.24055e-02 -6.09609e-03 
+       TF2ge  1.78178e-01  1.77243e-02  1.98413e-02 
+       TF1hg  5.02524e-02 -1.79746e-02  6.62783e-03 
+       TF2hg -1.88390e-01 -7.67397e-03 -1.88345e-02 
+        TF3h -9.06116e-02 -8.69740e-02  5.32300e-03 
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 Moment-based statistics for each response function:
