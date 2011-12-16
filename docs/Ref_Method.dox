@@ -5587,15 +5587,16 @@ sample_type options are restricted to \c random and \c lhs.  Each of
 these sampling specifications refer to sampling on the PCE
 approximation for the purposes of generating approximate statistics,
 which should be distinguished from simulation sampling for generating
-the chaos coefficients as described in options 4 and 5 above.  The \c
-sample_refinement specification is similar to that of \ref
-MethodNonDLocalRel, with the difference that the number of refinement
-samples is not under the user's control (these evaluations are
-approximation-based, so management of this expense is less critical).
-This option allows for refinement of probability and generalized
-reliability results using importance sampling. \ref T5d38 "Table 5.38"
-provide the details of these sampling specifications for polynomial
-chaos.
+the chaos coefficients as described in options 4 and 5 above (although
+options 4 and 5 will share the \c sample_type, \c seed, and \c rng
+settings, if provided).  The \c sample_refinement specification is
+similar to that of \ref MethodNonDLocalRel, with the difference that
+the number of refinement samples is not under the user's control
+(these evaluations are approximation-based, so management of this
+expense is less critical).  This option allows for refinement of
+probability and generalized reliability results using importance
+sampling. \ref T5d38 "Table 5.38" provide the details of these
+sampling specifications for polynomial chaos.
 
 \anchor T5d38
 <table>
