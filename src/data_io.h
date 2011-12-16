@@ -733,9 +733,10 @@ void read_data(std::istream& s,
   std::vector<Teuchos::SerialDenseVector<OrdinalType, ScalarType> >& va)
 {
   OrdinalType i, j, nrows = va.size(), ncols = (nrows > 0) ? va[0].length() : 0;
+  std::string token;
   for (i=0; i<nrows; ++i)
     for (j=0; j<ncols; ++j)
-      s >> va[i][j];
+      { s >> token; va[i][j] = std::atof(token.c_str()); }
 }
 
 
@@ -820,7 +821,8 @@ void write_data(std::ostream& s,
 }
 
 
-/// formatted ostream insertion operator for SerialSymDenseMatrix
+/// istream partial specialization for reading the lower triangle of a
+/// SerialSymDenseMatrix
 template <typename OrdinalType, typename ScalarType>
 void read_lower_triangle(std::istream& s,
   Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
@@ -832,10 +834,10 @@ void read_lower_triangle(std::istream& s,
       { s >> token; sm(i,j) = std::atof(token.c_str()); }
 }
 
-
-/// standard binary stream extraction operator for SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void read_lower_triangle(BiStream& s,
+/// generic input stream template for reading the lower triangle of a
+/// SerialSymDenseMatrix
+template <typename IStreamType, typename OrdinalType, typename ScalarType>
+void read_lower_triangle(IStreamType& s,
   Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
 {
   OrdinalType i, j, nrows = sm.numRows();
@@ -845,19 +847,7 @@ void read_lower_triangle(BiStream& s,
 }
 
 
-/// standard MPI buffer extraction operator for SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void read_lower_triangle(MPIUnpackBuffer& s,
-  Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
-{
-  OrdinalType i, j, nrows = sm.numRows();
-  for (i=0; i<nrows; ++i)
-    for (j=0; j<=i; ++j)
-      s >> sm(i,j);
-}
-
-
-/// formatted ostream insertion operator for SerialSymDenseMatrix
+/// ostream version for writing the lower triangle of a SerialSymDenseMatrix
 template <typename OrdinalType, typename ScalarType>
 void write_lower_triangle(std::ostream& s,
   const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm,
@@ -874,21 +864,10 @@ void write_lower_triangle(std::ostream& s,
 }
 
 
-/// standard binary stream insertion operator for SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void write_lower_triangle(BoStream& s,
-  const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
-{
-  OrdinalType i, j, nrows = sm.numRows();
-  for (i=0; i<nrows; ++i)
-    for (j=0; j<=i; ++j)
-      s << sm(i,j);
-}
-
-
-/// standard MPI buffer insertion operator for SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void write_lower_triangle(MPIPackBuffer& s,
+/// generic output stream template for writing the lower triangle of a
+/// SerialSymDenseMatrix
+template <typename OStreamType, typename OrdinalType, typename ScalarType>
+void write_lower_triangle(OStreamType& s,
   const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
 {
   OrdinalType i, j, nrows = sm.numRows();
@@ -912,7 +891,8 @@ void read_col_vector_trans(std::istream& s, OrdinalType col,
 }
 
 
-/// default template for reading a column vector of a SerialDenseMatrix
+/// generic input stream template for reading a column vector of a
+/// SerialDenseMatrix
 template <typename IStreamType, typename OrdinalType, typename ScalarType>
 void read_col_vector_trans(IStreamType& s, OrdinalType col,
   Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)

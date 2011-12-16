@@ -729,8 +729,10 @@ void NonD::construct_u_space_model(Model& x_model, Model& u_model,
 }
 
 
-void NonD::construct_lhs(Iterator& u_space_sampler, Model& u_model,
-			 int num_samples, int seed, const String& rng)
+void NonD::
+construct_lhs(Iterator& u_space_sampler, Model& u_model,
+	      const String& sample_type, int num_samples, int seed,
+	      const String& rng)
 {
   // sanity checks
   if (num_samples <= 0) {
@@ -739,9 +741,9 @@ void NonD::construct_lhs(Iterator& u_space_sampler, Model& u_model,
     abort_handler(-1);
   }
 
-  String sample_type; // default LHS sample_type
-  u_space_sampler.assign_rep(new NonDLHSSampling(u_model, sample_type,
-                             num_samples, seed, rng, ACTIVE), false);
+  // construct NonDLHSSampling with default sampling_vars_mode (ACTIVE)
+  u_space_sampler.assign_rep(new
+    NonDLHSSampling(u_model, sample_type, num_samples, seed, rng), false);
 }
 
 

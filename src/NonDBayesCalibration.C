@@ -80,6 +80,7 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
       if (gradientType != "none") data_order |= 2;
       if (hessianType  != "none") data_order |= 4;
     }
+    String sample_type("lhs"); // hard-wired for now
     int samples = probDescDB.get_int("method.nond.emulator_samples"),
         seed    = probDescDB.get_int("method.random_seed");
     const String& rng = probDescDB.get_string("method.random_number_generator");
@@ -88,13 +89,14 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     if (standardizedSpace) {
       Model g_u_model;
       construct_u_space_model(iteratedModel, g_u_model, true);//globally bounded
-      construct_lhs(lhs_iterator, g_u_model, samples, seed, rng);
+      construct_lhs(lhs_iterator, g_u_model, sample_type, samples, seed, rng);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, g_u_model,
         approx_type, approx_order, corr_type, corr_order, data_order,
         sample_reuse), false);
     }
     else {
-      construct_lhs(lhs_iterator, iteratedModel, samples, seed, rng);
+      construct_lhs(lhs_iterator, iteratedModel, sample_type, samples,
+		    seed, rng);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, iteratedModel,
         approx_type, approx_order, corr_type, corr_order, data_order,
         sample_reuse), false);

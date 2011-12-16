@@ -96,10 +96,11 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	}
 	numSamplesOnModel       = exp_samples;
 	expansionCoeffsApproach = Pecos::SAMPLING;
-	// reuse seed/rng settings intended for the expansion_sampler
-	construct_lhs(u_space_sampler, g_u_model, numSamplesOnModel,
-		      probDescDB.get_int("method.random_seed"),
-		      probDescDB.get_string("method.random_number_generator"));
+	// reuse type/seed/rng settings intended for the expansion_sampler
+	construct_lhs(u_space_sampler, g_u_model,
+	  probDescDB.get_string("method.sample_type"), numSamplesOnModel,
+	  probDescDB.get_int("method.random_seed"),
+	  probDescDB.get_string("method.random_number_generator"));
       }
       else { // regression
 	if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
@@ -134,8 +135,9 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 			       dim_pref);
 	}
 	else                  // "point collocation": LHS sampling
-	  // reuse seed/rng settings intended for the expansion_sampler
-	  construct_lhs(u_space_sampler, g_u_model, numSamplesOnModel,
+	  // reuse type/seed/rng settings intended for the expansion_sampler
+	  construct_lhs(u_space_sampler, g_u_model,
+	    probDescDB.get_string("method.sample_type"), numSamplesOnModel,
 	    probDescDB.get_int("method.random_seed"),
 	    probDescDB.get_string("method.random_number_generator"));
 	// TO DO:
