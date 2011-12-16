@@ -205,17 +205,17 @@ inline void ActiveSet::derivative_start_value(size_t dvv_start_val)
 
 
 inline void ActiveSet::read(std::istream& s)
-{ array_read(requestVector, s); array_read(derivVarsVector, s); }
+{ array_read(s, requestVector);  array_read(s, derivVarsVector); }
 
 
 inline void ActiveSet::write(std::ostream& s) const
-{ array_write(requestVector, s); array_write(derivVarsVector, s); }
+{ array_write(s, requestVector); array_write(s, derivVarsVector); }
 
 
 inline void ActiveSet::write_annotated(std::ostream& s) const
 {
-  array_write_annotated(requestVector, s, false);
-  array_write_annotated(derivVarsVector, s, false);
+  array_write_annotated(s,   requestVector, false);
+  array_write_annotated(s, derivVarsVector, false);
 }
 
 

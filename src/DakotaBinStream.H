@@ -180,7 +180,7 @@ private:
 
 /// Read an array from BiStream, s
 template <class ArrayT>
-inline void array_read(ArrayT& v, BiStream& s)
+inline void array_read(BiStream& s, ArrayT& v)
 {
   typename ArrayT::size_type len;
   s >> len;
@@ -192,7 +192,7 @@ inline void array_read(ArrayT& v, BiStream& s)
 
 /// Write an array to BoStream, s
 template <class ArrayT>
-inline void array_write(const ArrayT& v, BoStream& s)
+inline void array_write(BoStream& s, const ArrayT& v)
 {
   typename ArrayT::size_type len = v.size();
   s << len;
@@ -204,12 +204,12 @@ inline void array_write(const ArrayT& v, BoStream& s)
 /// global BiStream extraction operator for generic "array" container
 template <class ArrayT>
 inline BiStream& operator>>(BiStream& s, ArrayT& data)
-{ array_read(data, s); return s; }
+{ array_read(s, data); return s; }
 
 /// global BoStream insertion operator for generic "array" container
 template <class ArrayT>
 inline BoStream& operator<<(BoStream& s, const ArrayT& data)
-{ array_write(data, s); return s; }
+{ array_write(s, data); return s; }
 
 } // namespace Dakota
 

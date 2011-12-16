@@ -350,14 +350,8 @@ void ResponseRep::read(std::istream& s)
         throw std::string( "At EOF: insufficient data for functionGradient "
                            + boost::lexical_cast<std::string>(i+1) );
 
-      // read function lacks fault tolerance for inf/nan:
-      //read_col_vector_trans(s, (int)i, functionGradients);
-      // for fault tolerance, use atof():
-      Real* fn_grad_i = functionGradients[i]; // column vector
-      for (j=0; j<nv; ++j) {
-	s >> token;
-	fn_grad_i[j] = std::atof(token.c_str()); // handles NaN and +/-Inf
-      }
+      // istream read function includes fault tolerance for inf/nan:
+      read_col_vector_trans(s, (int)i, functionGradients);
 
       if (s)
         s >> r_bracket;
@@ -383,16 +377,8 @@ void ResponseRep::read(std::istream& s)
         throw std::string( "At EOF: insufficient data for functionHessian "
                            + boost::lexical_cast<std::string>(i+1) );
 
-      // read function lacks fault tolerance for inf/nan:
-      //Dakota::read_data(s, functionHessians[i]);
-      // for fault tolerance, use atof():
-      RealSymMatrix& fn_hess_i = functionHessians[i];
-      nv = fn_hess_i.numRows();
-      for (j=0; j<nv; ++j)
-	for (k=0; k<nv; ++k) { // read full matrix
-	  s >> token;
-	  fn_hess_i(j,k) = std::atof(token.c_str()); // handles NaN and +/-Inf
-	}
+      // read function supports fault tolerance for inf/nan:
+      Dakota::read_data(s, functionHessians[i]);
 
       if (s)
         s >> r_brackets[0] >> r_brackets[1];
@@ -423,11 +409,11 @@ void ResponseRep::write(std::ostream& s) const
 
   // Write ASV/DVV information
   s << "Active set vector = { ";
-  array_write_annotated(asv, s, false);
+  array_write_annotated(s, asv, false);
   if (deriv_flag) { // dvv != vars.continuous_variable_ids() ?,
                     // outputLevel > NORMAL_OUTPUT ?
     s << "} Deriv vars vector = { ";
-    array_write_annotated(dvv, s, false);
+    array_write_annotated(s, dvv, false);
     s << "}\n";
   }
   else
@@ -490,19 +476,21 @@ void ResponseRep::read_annotated(std::istream& s)
 
   // Get fn. values as governed by ASV requests
   const ShortArray& asv = responseActiveSet.request_vector();
+  std::string token; // used with atof() to handle +/-inf & nan
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
-      s >> functionValues[i];
+      { s >> token; functionValues[i] = std::atof(token.c_str()); }
 
   // Get function gradients as governed by ASV requests
+  size_t nv = functionGradients.numRows();
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
-      read_col_vector_trans(s, (int)i, functionGradients);
+      read_col_vector_trans(s, (int)i, functionGradients); // fault tolerant
 
   // Get function Hessians as governed by ASV requests
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
-      Dakota::read_data(s, functionHessians[i]);
+      read_lower_triangle(s, functionHessians[i]);
 }
 
 
@@ -515,8 +503,8 @@ void ResponseRep::write_annotated(std::ostream& s) const
   const ShortArray& asv = responseActiveSet.request_vector();
   size_t i, num_fns = asv.size(),
     num_params = responseActiveSet.derivative_vector().size();
-  bool grad_flag = (functionGradients.empty()) ? false : true;
-  bool hess_flag = (functionHessians.empty())  ? false : true;
+  bool grad_flag = !functionGradients.empty(),
+       hess_flag = !functionHessians.empty();
 
   // Write ResponseRep sizing data
   s << num_fns   << ' ' << num_params << ' '
@@ -525,7 +513,7 @@ void ResponseRep::write_annotated(std::ostream& s) const
   // Write responseActiveSet and functionLabels.  Don't separately annotate
   // arrays with sizing data since ResponseRep handles this all at once.
   responseActiveSet.write_annotated(s);
-  array_write_annotated(functionLabels, s, false);
+  array_write_annotated(s, functionLabels, false);
 
   // Write the function values if present
   for (i=0; i<num_fns; ++i)
@@ -533,14 +521,14 @@ void ResponseRep::write_annotated(std::ostream& s) const
       s << functionValues[i] << ' ';
 
   // Write the function gradients if present
-  for (int i=0; i<num_fns; ++i)
+  for (i=0; i<num_fns; ++i)
     if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
-      write_col_vector_trans(s, i, false, false, false, functionGradients);
+      write_col_vector_trans(s, (int)i, false, false, false, functionGradients);
 
   // Write the function Hessians if present
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
-      Dakota::write_data(s, functionHessians[i], false, false, false);
+      write_lower_triangle(s, functionHessians[i], false);
 }
 
 
@@ -553,15 +541,11 @@ void ResponseRep::read_tabular(std::istream& s)
 {
   // Read the function values, regardless of ASV.  Since this is a table
   // format, there must be a field read even when data is inactive.
-
-  // read_tabular_data(istream) continuously monitors for EOF
-  // WJB - ToDo - consult with MSE, but for now, impl fnVal read_tabular here!? (see the write_tabular below) read_data_tabular(s, functionValues);
-  //      ALSO, why is the asv NOT used for read (it is for the write step!?)
-  //const ShortArray& asv = responseActiveSet.request_vector();
   size_t i, num_fns = functionValues.length();
+  std::string token;
   for (i=0; i<num_fns; ++i) {
     if (s)
-      s >> functionValues[i];
+      { s >> token; functionValues[i] = std::atof(token.c_str()); }
     else {
       throw std::string( "At EOF: insufficient data for RealVector["
                          + boost::lexical_cast<std::string>(i) + "]" );
@@ -629,7 +613,7 @@ void ResponseRep::read(BiStream& s)
   // Get function Hessians as governed by ASV requests
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
-      Dakota::read_data(s, functionHessians[i]);
+      read_lower_triangle(s, functionHessians[i]);
 }
 
 
@@ -644,8 +628,8 @@ void ResponseRep::write(BoStream& s) const
   const ShortArray& asv = responseActiveSet.request_vector();
   size_t i, num_fns = asv.size(),
     num_params = responseActiveSet.derivative_vector().size();
-  bool grad_flag = (functionGradients.empty()) ? false : true;
-  bool hess_flag = (functionHessians.empty())  ? false : true;
+  bool grad_flag = !functionGradients.empty(),
+       hess_flag = !functionHessians.empty();
 
   // Write sizing data, responseActiveSet, and functionLabels
   s << num_fns << num_params << grad_flag << hess_flag
@@ -664,7 +648,7 @@ void ResponseRep::write(BoStream& s) const
   // Write the function Hessians if present
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
-      Dakota::write_data(s, functionHessians[i]);
+      write_lower_triangle(s, functionHessians[i]);
 }
 
 
@@ -698,7 +682,7 @@ void ResponseRep::read(MPIUnpackBuffer& s)
   // Get function Hessians as governed by ASV requests
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
-      Dakota::read_data(s, functionHessians[i]);
+      read_lower_triangle(s, functionHessians[i]);
 }
 
 
@@ -710,8 +694,8 @@ void ResponseRep::write(MPIPackBuffer& s) const
   const ShortArray& asv = responseActiveSet.request_vector();
   size_t i, num_fns = asv.size(),
     num_params = responseActiveSet.derivative_vector().size();
-  bool grad_flag = (functionGradients.empty()) ? false : true;
-  bool hess_flag = (functionHessians.empty())  ? false : true;
+  bool grad_flag = !functionGradients.empty(),
+       hess_flag = !functionHessians.empty();
 
   // Write sizing data and responseActiveSet
   s << num_fns << num_params << grad_flag << hess_flag
@@ -730,7 +714,7 @@ void ResponseRep::write(MPIPackBuffer& s) const
   // Write the function Hessians if present
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
-      Dakota::write_data(s, functionHessians[i]);
+      write_lower_triangle(s, functionHessians[i]);
 }
 
 

@@ -24,6 +24,7 @@ namespace Dakota {
 // templated I/O functions
 // -----------------------
 
+
 /// global std::ostream insertion operator for std::set
 template <class T>
 std::ostream& operator<<(std::ostream& s, const std::set<T>& data)
@@ -34,20 +35,22 @@ std::ostream& operator<<(std::ostream& s, const std::set<T>& data)
   return s;
 }
 
+
 /// global MPIUnpackBuffer extraction operator for std::set
 template <class T>
 MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::set<T>& data)
 {
   data.clear();
-  size_t len;
+  size_t i, len;
   s >> len;
   T val;
-  for (size_t i=0; i<len; ++i){
+  for (i=0; i<len; ++i){
     s >> val; 
     data.insert(val);
   }
   return s;
 }
+
 
 /// global MPIPackBuffer insertion operator for std::set
 template <class T>
@@ -61,6 +64,7 @@ MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::set<T>& data)
   return s;
 }
 
+
 /// global MPIPackBuffer insertion operator for Teuchos::SerialDenseVector
 template <typename OrdinalType, typename ScalarType> 
 MPIPackBuffer& operator<<(MPIPackBuffer& s,
@@ -72,6 +76,7 @@ MPIPackBuffer& operator<<(MPIPackBuffer& s,
     s << data[i];
   return s;
 }
+
 
 /// global MPIPackBuffer insertion operator for Teuchos::SerialDenseMatrix
 template <typename OrdinalType, typename ScalarType> 
@@ -86,6 +91,7 @@ MPIPackBuffer& operator<<(MPIPackBuffer& s,
   return s;
 }
 
+
 /// global MPIPackBuffer insertion operator for Teuchos::SerialSymDenseMatrix
 template <typename OrdinalType, typename ScalarType> 
 MPIPackBuffer& operator<<(MPIPackBuffer& s,
@@ -98,6 +104,7 @@ MPIPackBuffer& operator<<(MPIPackBuffer& s,
       s << data(i,j);
   return s;
 }
+
 
 /// global MPIUnpackBuffer extraction operator for Teuchos::SerialDenseVector
 template <typename OrdinalType, typename ScalarType> 
@@ -112,6 +119,7 @@ MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s,
   return s;
 }
 
+
 /// global MPIUnpackBuffer extraction operator for Teuchos::SerialDenseMatrix
 template <typename OrdinalType, typename ScalarType> 
 MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s,
@@ -125,6 +133,7 @@ MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s,
       s >> data(i,j);
   return s;
 }
+
 
 /// global MPIUnpackBuffer extraction operator for Teuchos::SerialSymDenseMatrix
 template <typename OrdinalType, typename ScalarType> 
@@ -329,8 +338,7 @@ void read_data_annotated(std::istream& s,
 template <typename OrdinalType, typename ScalarType>
 void write_data(std::ostream& s, const ScalarType* v, OrdinalType len)
 {
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
   for (OrdinalType i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i]
       << '\n';
@@ -343,8 +351,7 @@ void write_data(std::ostream& s,
 		const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& v)
 {
   OrdinalType i, len = v.length();
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
   for (i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i]
       << '\n';
@@ -363,8 +370,7 @@ void write_data(std::ostream& s,
 	 << "equal length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
   for (i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i] << ' '
       << label_array[i] << '\n';
@@ -389,8 +395,7 @@ void write_data(std::ostream& s,
 	 << "equal length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
   for (i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i] << ' '
       << label_array[i] << '\n';
@@ -411,8 +416,7 @@ void write_data(std::ostream& s,
 	 << "equal length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
   for (i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i] << ' '
       << label_array[i] << '\n';
@@ -431,8 +435,7 @@ void write_data_aprepro(std::ostream& s,
 	 << "does not equal length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
   for (i=0; i<len; ++i)
     s << "                    { " << std::setw(15)
       << std::setiosflags(std::ios::left)
@@ -452,8 +455,7 @@ void write_data_partial(std::ostream& s, size_t start_index, size_t num_items,
 	 << "length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
   for (OrdinalType i=start_index; i<end; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i] <<'\n';
 }
@@ -478,8 +480,7 @@ void write_data_partial(std::ostream& s, size_t start_index, size_t num_items,
 	 << "does not equal length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
   for (i=start_index; i<end; ++i)
     s << "                     " << std::setw(write_precision+7) << v[i] << ' '
       << label_array[i] << '\n';
@@ -505,8 +506,7 @@ void write_data_partial_aprepro(std::ostream& s, size_t start_index,
 	 << "(std::ostream) does not equal length of Vector." << std::endl;
     abort_handler(-1);
   }
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
   for (i=start_index; i<end; ++i)
     s << "                    { " << std::setw(15)
       << std::setiosflags(std::ios::left)
@@ -527,8 +527,7 @@ void write_data_annotated(std::ostream& s,
 	 << "does not equal length of SerialDenseVector." << std::endl;
     abort_handler(-1);
   }
-  s.setf(std::ios::scientific);
-  s << len << ' ' << std::setprecision(write_precision);
+  s << len << ' ' << std::scientific << std::setprecision(write_precision);
   for (i=0; i<len; ++i)
     s << v[i] << ' ' << label_array[i] << ' ';
 }
@@ -747,32 +746,10 @@ void read_data(std::istream& s,
 {
   // for istream, read full matrix
   OrdinalType i, j, nrows = m.numRows();
+  std::string token;
   for (i=0; i<nrows; ++i)
     for (j=0; j<nrows; ++j)
-      s >> m(i,j);
-}
-
-
-/// standard binary stream extraction operator for SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void read_data(BiStream& s,
-               Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
-{
-  OrdinalType i, j, nrows = m.numRows();
-  for (i=0; i<nrows; ++i)
-    for (j=0; j<=i; ++j)
-      s >> m(i,j);
-}
-
-/// standard MPI buffer extraction operator for SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void read_data(MPIUnpackBuffer& s,
-               Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
-{
-  OrdinalType i, j, nrows = m.numRows();
-  for (i=0; i<nrows; ++i)
-    for (j=0; j<=i; ++j)
-      s >> m(i,j);
+      { s >> token; m(i,j) = std::atof(token.c_str()); }
 }
 
 
@@ -783,8 +760,7 @@ void write_data(std::ostream& s,
                 bool brackets, bool row_rtn, bool final_rtn)
 {
   OrdinalType i, j, nrows = m.numRows();
-  s.setf(std::ios::scientific); // formatting optimized for T = double
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
   if (brackets) s << "[[ ";
   else          s << "   ";
   for (i=0; i<nrows; ++i) {
@@ -800,30 +776,6 @@ void write_data(std::ostream& s,
 }
 
 
-/// standard binary stream insertion operator for SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void write_data(BoStream& s,
-                const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
-{
-  OrdinalType i, j, nrows = m.numRows();
-  for (i=0; i<nrows; ++i)
-    for (j=0; j<=i; ++j)
-      s << m(i,j);
-}
-
-
-/// standard MPI buffer insertion operator for SerialSymDenseMatrix
-template <typename OrdinalType, typename ScalarType>
-void write_data(MPIPackBuffer& s,
-                const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
-{
-  OrdinalType i, j, nrows = m.numRows();
-  for (i=0; i<nrows; ++i)
-    for (j=0; j<=i; ++j)
-      s << m(i,j);
-}
-
-
 /// formatted ostream insertion operator for SerialDenseMatrix
 template <typename OrdinalType, typename ScalarType>
 void write_data(std::ostream& s,
@@ -831,8 +783,7 @@ void write_data(std::ostream& s,
                 bool brackets, bool row_rtn, bool final_rtn)
 {
   OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
-  s.setf(std::ios::scientific); // formatting optimized for T = double
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
   if (brackets) s << "[[ ";
   else          s << "   ";
   for (i=0; i<nrows; ++i) {
@@ -855,9 +806,8 @@ void write_data(std::ostream& s,
                 const StringArray& row_labels, const StringArray& col_labels)
 {
   OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
-  s.setf(std::ios::scientific); // formatting optimized for T = double
-  s << std::setprecision(write_precision);
-  s << "                 ";
+  s << std::scientific << std::setprecision(write_precision)
+    << "                 ";
   for (j=0; j<ncols; ++j)
     s << std::setw(write_precision+7) << col_labels[j] << ' ';
   s << '\n';
@@ -870,14 +820,117 @@ void write_data(std::ostream& s,
 }
 
 
+/// formatted ostream insertion operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void read_lower_triangle(std::istream& s,
+  Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
+{
+  OrdinalType i, j, nrows = sm.numRows();
+  std::string token;
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<=i; ++j)
+      { s >> token; sm(i,j) = std::atof(token.c_str()); }
+}
+
+
+/// standard binary stream extraction operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void read_lower_triangle(BiStream& s,
+  Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
+{
+  OrdinalType i, j, nrows = sm.numRows();
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<=i; ++j)
+      s >> sm(i,j);
+}
+
+
+/// standard MPI buffer extraction operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void read_lower_triangle(MPIUnpackBuffer& s,
+  Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
+{
+  OrdinalType i, j, nrows = sm.numRows();
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<=i; ++j)
+      s >> sm(i,j);
+}
+
+
+/// formatted ostream insertion operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void write_lower_triangle(std::ostream& s,
+  const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm,
+  bool row_rtn)
+{
+  OrdinalType i, j, nrows = sm.numRows();
+  s << std::scientific << std::setprecision(write_precision);
+  for (i=0; i<nrows; ++i) {
+    for (j=0; j<=i; ++j)
+      s << std::setw(write_precision+7) << sm(i,j) << ' ';
+    if (row_rtn)
+      s << '\n';
+  }
+}
+
+
+/// standard binary stream insertion operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void write_lower_triangle(BoStream& s,
+  const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
+{
+  OrdinalType i, j, nrows = sm.numRows();
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<=i; ++j)
+      s << sm(i,j);
+}
+
+
+/// standard MPI buffer insertion operator for SerialSymDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void write_lower_triangle(MPIPackBuffer& s,
+  const Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& sm)
+{
+  OrdinalType i, j, nrows = sm.numRows();
+  for (i=0; i<nrows; ++i)
+    for (j=0; j<=i; ++j)
+      s << sm(i,j);
+}
+
+
+/// istream partial specialization for reading a column vector of a
+/// SerialDenseMatrix
+template <typename OrdinalType, typename ScalarType>
+void read_col_vector_trans(std::istream& s, OrdinalType col,
+  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+{
+  OrdinalType nr = sdm.numRows();
+  ScalarType* sdm_c = sdm[col]; // column vector
+  std::string token; // handles NaN and +/-Inf
+  for (OrdinalType row=0; row<nr; ++row)
+    { s >> token; sdm_c[row] = std::atof(token.c_str()); }
+}
+
+
+/// default template for reading a column vector of a SerialDenseMatrix
+template <typename IStreamType, typename OrdinalType, typename ScalarType>
+void read_col_vector_trans(IStreamType& s, OrdinalType col,
+  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
+{
+  OrdinalType nr = sdm.numRows();
+  ScalarType* sdm_c = sdm[col]; // column vector
+  for (OrdinalType row=0; row<nr; ++row)
+    s >> sdm_c[row];
+}
+
+
 /// ostream insertion operator for a column vector from a SerialDenseMatrix
 template <typename OrdinalType, typename ScalarType>
 void write_col_vector_trans(std::ostream& s, OrdinalType col,
-  OrdinalType num_items, bool brackets, bool break_line,
-  bool final_rtn, const Teuchos::SerialDenseMatrix<OrdinalType,ScalarType>& sdm)
+  OrdinalType num_items, bool brackets, bool break_line, bool final_rtn,
+  const Teuchos::SerialDenseMatrix<OrdinalType,ScalarType>& sdm)
 {
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
+  s << std::scientific << std::setprecision(write_precision);
   if (brackets) s << " [ ";
   else          s << "   ";
   for (OrdinalType row=0; row < num_items; ++row) {
@@ -916,16 +969,9 @@ void write_col_vector_trans(OStreamType& s, OrdinalType col,
 { write_col_vector_trans(s, col, sdm.numRows(), sdm); }
 
 
-/// istream extraction operator for a column vector from a SerialDenseMatrix
-template <typename IStreamType, typename OrdinalType, typename ScalarType>
-void read_col_vector_trans(IStreamType& s, OrdinalType col,
-  Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
-{ for (OrdinalType row=0; row < sdm.numRows(); ++row) s >> sdm(row,col); }
-
-
 /// read array from std::istream
 template <class ArrayT>
-inline void array_read(ArrayT& v, std::istream& s)
+inline void array_read(std::istream& s, ArrayT& v)
 {
   typename ArrayT::size_type len = v.size();
   for (register typename ArrayT::size_type i=0; i<len; ++i)
@@ -935,11 +981,9 @@ inline void array_read(ArrayT& v, std::istream& s)
 
 /// write array to std::ostream
 template <class ArrayT>
-inline void array_write(const ArrayT& v, std::ostream& s)
+inline void array_write(std::ostream& s, const ArrayT& v)
 {
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
-
+  s << std::scientific << std::setprecision(write_precision);
   typename ArrayT::size_type len = v.size();
   for (register typename ArrayT::size_type i=0; i<len; ++i)
     s << "                     " << std::setw(write_precision+7)
@@ -960,13 +1004,13 @@ inline void list_write(const ListT& l, std::ostream& s)
 /// global std::istream extraction operator for std::vector
 template <class T>
 inline std::istream& operator>>(std::istream& s, std::vector<T>& data)
-{ array_read(data, s); return s; }
+{ array_read(s, data); return s; }
 
 
 /// global std::ostream insertion operator for std::vector
 template <class T>
 inline std::ostream& operator<<(std::ostream& s, const std::vector<T>& data)
-{ array_write(data, s); return s; }
+{ array_write(s, data); return s; }
 
 
 /// global std::ostream insertion operator for std::list
@@ -980,9 +1024,7 @@ template <class ArrayT>
 inline void array_write(std::ostream& s, const ArrayT& v,
                         const std::vector<String>& label_array)
 {
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
-
+  s << std::scientific << std::setprecision(write_precision);
   typename ArrayT::size_type len = v.size();
   if (label_array.size() != len) {
     Cerr << "Error: size of label_array in vector<T>::write() does not equal "
@@ -1001,9 +1043,7 @@ template <class ArrayT>
 inline void array_write_aprepro(std::ostream& s, const ArrayT& v,
                                 const std::vector<String>& label_array)
 {
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
-
+  s << std::scientific << std::setprecision(write_precision);
   typename ArrayT::size_type len = v.size();
   if (label_array.size() != len) {
     Cerr << "Error: size of label_array in vector<T>::write() does not equal "
@@ -1024,11 +1064,10 @@ inline void array_write_aprepro(std::ostream& s, const ArrayT& v,
 /// Write array to ostream as a row vector; precede with length if
 /// write_len = true
 template <class ArrayT>
-inline void array_write_annotated(const ArrayT& v, std::ostream& s, bool write_len)
+inline void array_write_annotated(std::ostream& s, const ArrayT& v,
+				  bool write_len)
 {
-  s.setf(std::ios::scientific);
-  s << std::setprecision(write_precision);
-
+  s << std::scientific << std::setprecision(write_precision);
   typename ArrayT::size_type len = v.size();
   if (write_len)
     s << len << ' ';
