@@ -16,6 +16,7 @@
 #include "NonDCubature.H"
 #include "NonDQuadrature.H"
 #include "NonDSparseGrid.H"
+#include "NonDLocalRefinement.H"
 #include "NonDLHSSampling.H"
 #include "NonDAdaptImpSampling.H" 
 #include "RecastModel.H"
@@ -185,7 +186,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 {
   // sanity checks: no GSG for TPQ
   if (refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
-    Cerr << "Error: generalized option not support for adaptive refinement of "
+    Cerr << "Error: generalized option does not support adaptive refinement of "
 	 << "tensor grids." << std::endl;
     abort_handler(-1);
   }
@@ -266,6 +267,30 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 }
 
 
+void NonDExpansion::
+construct_local_refinement(Iterator& u_space_sampler, Model& g_u_model,
+			   const UShortArray& lr_level,
+			   const RealVector& dim_pref)
+{
+  // sanity checks: no GSG for LR
+  //if (refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
+  //  Cerr << "Error: generalized option does not support adaptive refinement "
+  //       << "of local grids." << std::endl;
+  //  abort_handler(-1);
+  //}
+
+  // enforce minimum required VBD control
+  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL)
+    vbdControl = Pecos::UNIVARIATE_VBD;
+
+  // nesting override not supported
+  nestedRules = true;
+
+  u_space_sampler.assign_rep(new
+    NonDLocalRefinement(g_u_model, lr_level, dim_pref), false);
+}
+
+
 /*
 void NonDExpansion::
 construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
@@ -293,7 +318,8 @@ void NonDExpansion::initialize_u_space_model()
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   bool num_int  = (expansionCoeffsApproach == Pecos::QUADRATURE ||
 		   expansionCoeffsApproach == Pecos::CUBATURE ||
-		   expansionCoeffsApproach == Pecos::SPARSE_GRID);
+		   expansionCoeffsApproach == Pecos::SPARSE_GRID ||
+		   expansionCoeffsApproach == Pecos::LOCAL_REFINABLE);
   BoolDeque random_vars_key; size_t i;
   if (all_vars) {
     random_vars_key.resize(numContinuousVars);

@@ -350,8 +350,7 @@ void ResponseRep::read(std::istream& s)
         throw std::string( "At EOF: insufficient data for functionGradient "
                            + boost::lexical_cast<std::string>(i+1) );
 
-      // istream read function includes fault tolerance for inf/nan:
-      read_col_vector_trans(s, (int)i, functionGradients);
+      read_col_vector_trans(s, (int)i, functionGradients); // fault tolerant
 
       if (s)
         s >> r_bracket;
@@ -377,8 +376,7 @@ void ResponseRep::read(std::istream& s)
         throw std::string( "At EOF: insufficient data for functionHessian "
                            + boost::lexical_cast<std::string>(i+1) );
 
-      // read function supports fault tolerance for inf/nan:
-      Dakota::read_data(s, functionHessians[i]);
+      Dakota::read_data(s, functionHessians[i]); // fault tolerant
 
       if (s)
         s >> r_brackets[0] >> r_brackets[1];
@@ -490,7 +488,7 @@ void ResponseRep::read_annotated(std::istream& s)
   // Get function Hessians as governed by ASV requests
   for (i=0; i<num_fns; ++i)
     if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
-      read_lower_triangle(s, functionHessians[i]);
+      read_lower_triangle(s, functionHessians[i]); // fault tolerant
 }
 
 

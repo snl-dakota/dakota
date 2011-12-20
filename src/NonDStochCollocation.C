@@ -236,7 +236,8 @@ void NonDStochCollocation::initialize_u_space_model()
 {
   if (expansionCoeffsApproach == Pecos::QUADRATURE ||
       expansionCoeffsApproach == Pecos::CUBATURE ||
-      expansionCoeffsApproach == Pecos::SPARSE_GRID) {
+      expansionCoeffsApproach == Pecos::SPARSE_GRID ||
+      expansionCoeffsApproach == Pecos::LOCAL_REFINABLE) {
 
     // build a polynomial basis for purposes of defining collocation pts/wts
     std::vector<Pecos::BasisPolynomial> num_int_poly_basis;
