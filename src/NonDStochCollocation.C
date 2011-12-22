@@ -57,13 +57,23 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
     = probDescDB.get_dusa("method.nond.sparse_grid_level");
   const RealVector& dim_pref
     = probDescDB.get_rdv("method.nond.dimension_preference");
+  short pw_basis_type
+    = probDescDB.get_short("method.nond.piecewise_basis_type");
   if (!quad_order_spec.empty()) {
     expansionCoeffsApproach = Pecos::QUADRATURE;
     construct_quadrature(u_space_sampler, g_u_model, quad_order_spec, dim_pref);
   }
   else if (!ssg_level_spec.empty()) {
-    expansionCoeffsApproach = Pecos::SPARSE_GRID;
-    construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec, dim_pref);
+    if (piecewiseBasis && pw_basis_type == HIERARCHICAL_INTERPOLANT) {
+      expansionCoeffsApproach = Pecos::LOCAL_REFINABLE;
+      construct_local_refinement(u_space_sampler, g_u_model, ssg_level_spec,
+				 dim_pref);
+    }
+    else {
+      expansionCoeffsApproach = Pecos::SPARSE_GRID;
+      construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec,
+			    dim_pref);
+    }
   }
 
   // --------------------------------
@@ -76,8 +86,7 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   short  corr_order = -1, corr_type = NO_CORRECTION;
   String pt_reuse, approx_type;
   if (piecewiseBasis)
-    approx_type = (probDescDB.get_short("method.nond.piecewise_basis_type") ==
-		   HIERARCHICAL_INTERPOLANT) ? 
+    approx_type = (pw_basis_type == HIERARCHICAL_INTERPOLANT) ? 
       "piecewise_hierarchical_interpolation_polynomial" :
       "piecewise_nodal_interpolation_polynomial";
   else
@@ -138,6 +147,8 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
     construct_quadrature(u_space_sampler, g_u_model, num_int_seq, dim_pref);
   else if (expansionCoeffsApproach == Pecos::SPARSE_GRID)
     construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref);
+  else if (expansionCoeffsApproach == Pecos::LOCAL_REFINABLE)
+    construct_local_refinement(u_space_sampler, g_u_model,num_int_seq,dim_pref);
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
