@@ -22,6 +22,7 @@
 #include "NonDLHSSampling.H"
 #include "NonDIncremLHSSampling.H"
 #include "NonDAdaptImpSampling.H"
+#include "NonDGPImpSampling.H"
 #include "NonDGlobalEvidence.H"
 #include "NonDLocalEvidence.H"
 #include "NonDLHSEvidence.H"
@@ -325,7 +326,7 @@ Iterator* Iterator::get_iterator(Model& model)
       return new NonDLHSSampling(model);
   }
   else if (method_name == "nond_importance_sampling")
-    return new NonDAdaptImpSampling(model);
+    return new NonDGPImpSampling(model);
   else if (method_name == "surrogate_based_local")
     return new SurrBasedLocalMinimizer(model);
   else if (method_name == "surrogate_based_global")

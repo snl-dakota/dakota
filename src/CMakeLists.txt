@@ -245,7 +245,7 @@ set(iterator_src DakotaIterator.C DakotaAnalyzer.C DakotaPStudyDACE.C
     NonDQuadrature.C NonDSparseGrid.C NonDLocalRefinement.C
     NonDExpansion.C NonDPolynomialChaos.C NonDStochCollocation.C
     NonDCalibration.C NonDBayesCalibration.C NonDSampling.C NonDLHSSampling.C
-    NonDAdaptImpSampling.C NonDIncremLHSSampling.C
+    NonDAdaptImpSampling.C NonDGPImpSampling.C NonDIncremLHSSampling.C
     DakotaMinimizer.C DakotaOptimizer.C DakotaLeastSq.C NonlinearCGOptimizer.C 
     SurrBasedMinimizer.C SurrBasedLocalMinimizer.C SurrBasedGlobalMinimizer.C
     lawson_hanson1.f

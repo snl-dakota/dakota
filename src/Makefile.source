@@ -138,6 +138,7 @@ ITERATOR_SRCS   = DakotaIterator.C                  \
 		  NonDLocalRefinement.C             \
 		  NonDSampling.C                    \
 		  NonDAdaptImpSampling.C            \
+		  NonDGPImpSampling.C               \
 		  NonDExpansion.C                   \
 		  NonDPolynomialChaos.C             \
 		  NonDStochCollocation.C            \
@@ -274,6 +275,7 @@ include_HEADERS = ParallelLibrary.H             \
 		  NonDLocalRefinement.H         \
 		  NonDSampling.H                \
 		  NonDAdaptImpSampling.H        \
+		  NonDGPImpSampling.H           \
 		  NonDExpansion.H               \
 		  NonDPolynomialChaos.H         \
 		  NonDStochCollocation.H        \
