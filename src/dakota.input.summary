@@ -658,6 +658,10 @@ KEYWORD12 method
 	      probabilities
 	      | reliabilities
 	      | gen_reliabilities
+	      [ system
+		series
+		| parallel
+		]
 	      ]
 	    ]
 	  [ distribution
@@ -679,14 +683,23 @@ KEYWORD12 method
 	  )
 	|
 	( stoch_collocation ALIAS nond_stoch_collocation
-	  [ p_refinement
-	    | h_refinement
+	  [ ( p_refinement
+	      uniform
+	      |
+	      ( dimension_adaptive
+		sobol
+		| generalized
+		)
+	      )
+	  |
+	  ( h_refinement
 	    uniform
 	    |
 	    ( dimension_adaptive
 	      sobol
 	      | generalized
 	      )
+	    | local_adaptive
 	    ]
 	  [ ( piecewise
 	      [ nodal
@@ -728,6 +741,10 @@ KEYWORD12 method
 	      probabilities
 	      | reliabilities
 	      | gen_reliabilities
+	      [ system
+		series
+		| parallel
+		]
 	      ]
 	    ]
 	  [ distribution
@@ -772,6 +789,10 @@ KEYWORD12 method
 	      probabilities
 	      | reliabilities
 	      | gen_reliabilities
+	      [ system
+		series
+		| parallel
+		]
 	      ]
 	    ]
 	  [ distribution
@@ -798,6 +819,10 @@ KEYWORD12 method
 	    [ compute
 	      probabilities
 	      | gen_reliabilities
+	      [ system
+		series
+		| parallel
+		]
 	      ]
 	    ]
 	  [ distribution
@@ -832,6 +857,10 @@ KEYWORD12 method
 	    [ compute
 	      probabilities
 	      | gen_reliabilities
+	      [ system
+		series
+		| parallel
+		]
 	      ]
 	    ]
 	  [ distribution
@@ -964,6 +993,10 @@ KEYWORD12 method
 	    [ compute
 	      probabilities
 	      | gen_reliabilities
+	      [ system
+		series
+		| parallel
+		]
 	      ]
 	    ]
 	  [ probability_levels REALLIST
@@ -1012,6 +1045,10 @@ KEYWORD12 method
 	      probabilities
 	      | reliabilities
 	      | gen_reliabilities
+	      [ system
+		series
+		| parallel
+		]
 	      ]
 	    ]
 	  [ reliability_levels REALLIST
@@ -1047,6 +1084,10 @@ KEYWORD12 method
 	    [ compute
 	      probabilities
 	      | gen_reliabilities
+	      [ system
+		series
+		| parallel
+		]
 	      ]
 	    ]
 	  [ distribution

@@ -41,12 +41,17 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   numDiscRealEpistUncVars(0), numEpistemicUncVars(0),
   //numResponseFunctions(
   //  probDescDB.get_sizet("responses.num_response_functions")),
+  respLevelTarget(probDescDB.get_short("method.nond.response_level_target")),
+  respLevelTargetReduce(
+    probDescDB.get_short("method.nond.response_level_target_reduce")),
   requestedRespLevels(probDescDB.get_rdva("method.nond.response_levels")),
   requestedProbLevels(probDescDB.get_rdva("method.nond.probability_levels")),
   requestedRelLevels(probDescDB.get_rdva("method.nond.reliability_levels")),
   requestedGenRelLevels(
     probDescDB.get_rdva("method.nond.gen_reliability_levels")),
-  totalLevelRequests(0), cdfFlag(true), pdfOutput(false), distParamDerivs(false)
+  totalLevelRequests(0),
+  cdfFlag(probDescDB.get_short("method.nond.distribution") != COMPLEMENTARY),
+  pdfOutput(false), distParamDerivs(false)
 {
   bool err_flag = false;
   short active_view = iteratedModel.current_variables().view().first;
@@ -151,23 +156,6 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   if (numContinuousVars + numDiscreteIntVars + numDiscreteRealVars !=
       numDesignVars + numUncertainVars + numStateVars) {
     Cerr << "\nError: bad number of active variables in Dakota::NonD."
-	 << std::endl;
-    err_flag = true;
-  }
-
-  // initialize convenience flags & enums
-  if (probDescDB.get_string("method.nond.distribution") == "complementary")
-    cdfFlag = false;
-  const String& resp_mapping
-    = probDescDB.get_string("method.nond.response_level_mapping_type");
-  if (resp_mapping == "probabilities")
-    respLevelTarget = PROBABILITIES;
-  else if (resp_mapping == "reliabilities")
-    respLevelTarget = RELIABILITIES;
-  else if (resp_mapping == "gen_reliabilities")
-    respLevelTarget = GEN_RELIABILITIES;
-  else {
-    Cerr << "Error: bad response level mapping type in DakotaNonD constructor."
 	 << std::endl;
     err_flag = true;
   }
@@ -1522,9 +1510,22 @@ void NonD::verify_correlation_support()
     results to include means, standard deviations, and level mappings. */
 void NonD::initialize_final_statistics()
 {
-  size_t num_final_stats = 2*numFunctions, num_active_vars = iteratedModel.cv();
-  if (!numEpistemicUncVars) // aleatory UQ
+  size_t i, j, num_levels, cntr = 0, rl_len = 0,
+    num_final_stats = 2*numFunctions, num_active_vars = iteratedModel.cv();
+  if (!numEpistemicUncVars) { // aleatory UQ
     num_final_stats += totalLevelRequests;
+    if (respLevelTargetReduce) {
+      rl_len = requestedRespLevels[0].length();
+      for (i=1; i<numFunctions; ++i)
+	if (requestedRespLevels[i].length() != rl_len) {
+	  Cerr << "Error: system metric aggregation from component metrics "
+	       << "requires\n       consistency in length of response_levels "
+	       << "among response function set." << std::endl;
+	  abort_handler(-1);
+	}
+      num_final_stats += rl_len; // 1 aggregated system metric per resp level
+    }
+  }
   // default response ASV/DVV may be overridden by NestedModel update
   // in subIterator.response_results_active_set(sub_iterator_set)
   ActiveSet stats_set(num_final_stats);//, num_active_vars);
@@ -1532,40 +1533,51 @@ void NonD::initialize_final_statistics()
   finalStatistics = Response(stats_set);
 
   // Assign meaningful labels to finalStatistics (appear in NestedModel output)
-  size_t i, j, num_levels, cntr = 0;
-  char tag_string[10], lev_string[10];
+  char resp_tag[10];
   StringArray stats_labels(num_final_stats);
-  for (i=0; i<numFunctions; i++) {
-    std::sprintf(tag_string, "_r%i", i+1);
-    if (numEpistemicUncVars) { // epistemic & mixed aleatory/epistemic
-      stats_labels[cntr++] = String("z_lo") + String(tag_string);
-      stats_labels[cntr++] = String("z_up") + String(tag_string);
+  if (numEpistemicUncVars) { // epistemic & mixed aleatory/epistemic
+    for (i=0; i<numFunctions; ++i) {
+      std::sprintf(resp_tag, "_r%i", i+1);
+      stats_labels[cntr++] = String("z_lo") + String(resp_tag);
+      stats_labels[cntr++] = String("z_up") + String(resp_tag);
     }
-    else {                  // aleatory
-      stats_labels[cntr++] = String("mean")    + String(tag_string);
-      stats_labels[cntr++] = String("std_dev") + String(tag_string);
-      num_levels = (totalLevelRequests) ? requestedRespLevels[i].length() : 0;
-      for (j=0; j<num_levels; j++, cntr++) {
-	stats_labels[cntr] = (cdfFlag) ? String("cdf") : String("ccdf");
+  }
+  else {                     // aleatory
+    char lev_tag[10];
+    String dist_tag = (cdfFlag) ? String("cdf") : String("ccdf");
+    for (i=0; i<numFunctions; ++i) {
+      std::sprintf(resp_tag, "_r%i", i+1);
+      stats_labels[cntr++] = String("mean")    + String(resp_tag);
+      stats_labels[cntr++] = String("std_dev") + String(resp_tag);
+      num_levels = requestedRespLevels[i].length();
+      for (j=0; j<num_levels; ++j, ++cntr) {
 	switch (respLevelTarget) {
-	case PROBABILITIES:
-	  std::sprintf(lev_string, "_plev%i",  j+1); break;
-	case RELIABILITIES:
-	  std::sprintf(lev_string, "_blev%i",  j+1); break;
-	case GEN_RELIABILITIES:
-	  std::sprintf(lev_string, "_b*lev%i", j+1); break;
+	case PROBABILITIES:     std::sprintf(lev_tag, "_plev%i",  j+1); break;
+	case RELIABILITIES:     std::sprintf(lev_tag, "_blev%i",  j+1); break;
+	case GEN_RELIABILITIES: std::sprintf(lev_tag, "_b*lev%i", j+1); break;
 	}
-	stats_labels[cntr] += String(lev_string) + String(tag_string);
+	stats_labels[cntr] = dist_tag + String(lev_tag) + String(resp_tag);
       }
-      num_levels = (totalLevelRequests) ? requestedProbLevels[i].length() +
-	requestedRelLevels[i].length() + requestedGenRelLevels[i].length() : 0;
-      for (j=0; j<num_levels; j++, cntr++) {
-	stats_labels[cntr] = (cdfFlag) ? String("cdf") : String("ccdf");
-	std::sprintf(lev_string, "_zlev%i", j+1);
-	stats_labels[cntr] += String(lev_string) + String(tag_string);
+      num_levels = requestedProbLevels[i].length() +
+	requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
+      for (j=0; j<num_levels; ++j, ++cntr) {
+	std::sprintf(lev_tag, "_zlev%i", j+1);
+	stats_labels[cntr] = dist_tag + String(lev_tag) + String(resp_tag);
+      }
+    }
+    if (respLevelTargetReduce) {
+      String sys_tag("_sys");
+      for (j=0; j<rl_len; ++j, ++cntr) {
+	switch (respLevelTarget) {
+	case PROBABILITIES:     std::sprintf(lev_tag, "_plev%i",  j+1); break;
+	case RELIABILITIES:     std::sprintf(lev_tag, "_blev%i",  j+1); break;
+	case GEN_RELIABILITIES: std::sprintf(lev_tag, "_b*lev%i", j+1); break;
+	}
+	stats_labels[cntr] = dist_tag + String(lev_tag) + sys_tag;
       }
     }
   }
+
   finalStatistics.function_labels(stats_labels);
 }
 
@@ -1582,6 +1594,76 @@ void NonD::initialize_final_statistics_gradients()
       { final_grad_flag = true; break; }
   finalStatistics.reshape(num_final_stats, num_final_grad_vars,
 			  final_grad_flag, false);
+}
+
+
+void NonD::update_final_statistics()
+{
+  //if (finalStatistics.is_null())
+  //  initialize_final_statistics();
+
+  // update finalStatistics from computed{Resp,Prob,Rel,GenRel}Levels
+  size_t i, j, cntr = 0, rl_len, pl_bl_gl_len;
+  for (i=0; i<numFunctions; ++i) {
+    // final stats from compute_moments()
+    if (!momentStats.empty()) {
+      finalStatistics.function_value(momentStats(0,i), cntr++); // mean
+      finalStatistics.function_value(momentStats(1,i), cntr++); // std dev
+    }
+    else
+      cntr += 2;
+    // final stats from compute_distribution_mappings()
+    rl_len = requestedRespLevels[i].length();
+    switch (respLevelTarget) { // individual component p/beta/beta*
+    case PROBABILITIES:
+      for (j=0; j<rl_len; ++j, ++cntr)
+	finalStatistics.function_value(computedProbLevels[i][j], cntr);
+      break;
+    case RELIABILITIES:
+      for (j=0; j<rl_len; ++j, ++cntr)
+	finalStatistics.function_value(computedRelLevels[i][j], cntr);
+      break;
+    case GEN_RELIABILITIES:
+      for (j=0; j<rl_len; ++j, ++cntr)
+	finalStatistics.function_value(computedGenRelLevels[i][j], cntr);
+      break;
+    }
+    pl_bl_gl_len = requestedProbLevels[i].length()
+      + requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
+    for (j=0; j<pl_bl_gl_len; ++j, ++cntr)
+      finalStatistics.function_value(computedRespLevels[i][j], cntr);
+  }
+
+  if (respLevelTargetReduce) {
+    for (j=0; j<rl_len; ++j, ++cntr) { // all i vectors must have same j length
+      Real system_p = 1.;
+      if (respLevelTargetReduce == SYSTEM_SERIES) {
+	// system p_success is product of component p_success
+	for (i=0; i<numFunctions; ++i)
+	  system_p *= (1.-computedProbLevels[i][j]);
+	system_p = 1. - system_p; // convert back to p_fail
+      }
+      else if (respLevelTargetReduce == SYSTEM_PARALLEL)
+	// system p_fail is product of component p_fail
+	for (i=0; i<numFunctions; ++i)
+	  system_p *= computedProbLevels[i][j];
+      switch (respLevelTarget) {
+      case PROBABILITIES:
+	finalStatistics.function_value(system_p, cntr); break;
+      case RELIABILITIES: case GEN_RELIABILITIES:
+	finalStatistics.function_value(-Pecos::Phi_inverse(system_p), cntr);
+	break;
+      }
+    }
+  }
+}
+
+
+void NonD::update_final_statistics_gradients()
+{
+  // ---------------------------------------------------------------------------
+  // TO DO: pack or reduce individual level gradient data into finalStatistics
+  // ---------------------------------------------------------------------------
 }
 
 

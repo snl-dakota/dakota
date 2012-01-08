@@ -165,12 +165,6 @@ private:
   // state approximations
   //Approximation limitStateSurrogate;
 
-  /// means of response functions (calculated in initial_taylor_series())
-  RealVector meanStats;
-  /// std deviations of response functions (calculated in
-  /// initial_taylor_series())
-  RealVector stdDevStats;
-
   /// actual x-space gradient for current function from most recent response
   /// evaluation
   RealVector fnGradX;

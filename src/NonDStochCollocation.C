@@ -64,7 +64,12 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
     construct_quadrature(u_space_sampler, g_u_model, quad_order_spec, dim_pref);
   }
   else if (!ssg_level_spec.empty()) {
-    if (piecewiseBasis && pw_basis_type == HIERARCHICAL_INTERPOLANT) {
+    if (refineControl == Pecos::LOCAL_ADAPTIVE_CONTROL) {
+      if (!piecewiseBasis || pw_basis_type != HIERARCHICAL_INTERPOLANT) {
+	// TO DO: promote this error check to resolve_inputs()
+	PCerr << "Warning: overriding...\n";
+	piecewiseBasis = true; pw_basis_type = HIERARCHICAL_INTERPOLANT;
+      }
       expansionCoeffsApproach = Pecos::LOCAL_REFINABLE;
       construct_local_refinement(u_space_sampler, g_u_model, ssg_level_spec,
 				 dim_pref);
@@ -73,6 +78,9 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
       expansionCoeffsApproach = Pecos::SPARSE_GRID;
       construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec,
 			    dim_pref);
+      // TO DO: manage hierarchical option w/i construct_sparse_grid (not here)
+      //construct_hierarchical_sparse_grid(u_space_sampler, g_u_model,
+      //				   ssg_level_spec, dim_pref);
     }
   }
 

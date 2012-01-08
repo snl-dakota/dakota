@@ -1688,14 +1688,12 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 	{"model_pointer", P modelPointer},
 	{"mutation_type", P mutationType},
 	{"nond.collocation_point_reuse", P collocPtReuse},
-	{"nond.distribution", P distributionType},
 	{"nond.expansion_import_file", P expansionImportFile},
 	{"nond.expansion_sample_type", P expansionSampleType},
 	{"nond.integration_refinement", P integrationRefine},
 	{"nond.optimization_algorithm", P nondOptAlgorithm},
 	{"nond.reliability_integration", P reliabilityIntegration},
 	{"nond.reliability_search_type", P reliabilitySearchType},
-	{"nond.response_level_mapping_type", P responseLevelMappingType},
 	{"optpp.central_path", P centralPath},
 	{"optpp.merit_function", P meritFn},
 	{"optpp.search_method", P searchMethod},
@@ -1971,6 +1969,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	Locked_db();
     #define P &DataMethodRep::
     static KW<short, DataMethodRep> Shdme[] = {	// must be sorted
+	{"nond.distribution", P distributionType},
 	{"nond.emulator", P emulatorType},
 	{"nond.expansion_refinement_control", P refinementControl},
 	{"nond.expansion_refinement_type", P refinementType},
@@ -1978,6 +1977,8 @@ short ProblemDescDB::get_short(const String& entry_name) const
 	{"nond.growth_override", P growthOverride},
 	{"nond.nesting_override", P nestingOverride},
 	{"nond.piecewise_basis_type", P piecewiseBasisType},
+	{"nond.response_level_target", P responseLevelTarget},
+	{"nond.response_level_target_reduce", P responseLevelTargetReduce},
 	{"nond.vbd_control", P vbdControl},
 	{"output", P methodOutput},
 	{"sbl.acceptance_logic", P surrBasedLocalAcceptLogic},

@@ -62,7 +62,7 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   //  = probDescDB.get_short("method.nond.expansion_refinement_type");
   short growth_rate;
   if (growth_override == Pecos::UNRESTRICTED ||
-      refine_control  == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)
+      refine_control  == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)
     // unstructured index set evolution: no motivation to restrict
     growth_rate = Pecos::UNRESTRICTED_GROWTH;
   else if (piecewise_basis)

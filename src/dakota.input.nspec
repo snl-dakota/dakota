@@ -403,12 +403,12 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  |
 	  ( ( ( ( ( polynomial_chaos ALIAS nond_polynomial_chaos {N_mdm(lit,methodName_nond_polynomial_chaos)}
 		    [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
-#		      | h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
-		      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)} |
-		      ( dimension_adaptive {0}
-		        sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_TOTAL_SOBOL)}
-			| decay {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_SPECTRAL_DECAY)}
-			| generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)} )
+		      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+		      | ( dimension_adaptive {0}
+		          sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+			  | decay {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_DECAY)}
+			  | generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+			)
 		    ]
 		    [ askey {N_mdm(type,expansionType_ASKEY_U)}
 		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)} ]
@@ -453,12 +453,22 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    )
 		  |
 		  ( stoch_collocation ALIAS nond_stoch_collocation {N_mdm(lit,methodName_nond_stoch_collocation)}
-		    [ p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
-		      | h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
-		      uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)} |
-		      ( dimension_adaptive {0}
-		        sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_TOTAL_SOBOL)}
-			| generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)} )
+		    [ ( p_refinement {N_mdm(type,refinementType_P_REFINEMENT)}
+		        uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+		        | ( dimension_adaptive {0}
+		            sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+			    | generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+			  )
+		      )
+		      |
+		      ( h_refinement {N_mdm(type,refinementType_H_REFINEMENT)}
+		        uniform {N_mdm(type,refinementControl_UNIFORM_CONTROL)}
+		        | ( dimension_adaptive {0}
+			    sobol {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_SOBOL)}
+			    | generalized {N_mdm(type,refinementControl_DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)}
+			  )
+			| local_adaptive {N_mdm(type,refinementControl_LOCAL_ADAPTIVE_CONTROL)}
+		      )
 		    ]
 		    [ ( piecewise {NIDRProblemDescDB::method_piecewise}
 		        [ nodal {N_mdm(type,piecewiseBasisType_NODAL_INTERPOLANT)}
@@ -513,9 +523,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 		  [ compute {0}
-		    probabilities {N_mdm(lit,responseLevelMappingType_probabilities)}
-		    | reliabilities {N_mdm(lit,responseLevelMappingType_reliabilities)}
-		    | gen_reliabilities {N_mdm(lit,responseLevelMappingType_gen_reliabilities)}
+		    probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+		    | reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
+		    | gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+		    [ system {0}
+		      series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+		      | parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+		      ]
 		    ]
 		  ]
 		)
@@ -524,8 +538,12 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 		  [ compute {0}
-		    probabilities {N_mdm(lit,responseLevelMappingType_probabilities)}
-		    | gen_reliabilities {N_mdm(lit,responseLevelMappingType_gen_reliabilities)}
+		    probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+		    | gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+		    [ system {0}
+		      series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+		      | parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+		      ]
 		    ]
 		  ]
 		)
@@ -541,14 +559,18 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 		  [ compute {0}
-		    probabilities {N_mdm(lit,responseLevelMappingType_probabilities)}
-		    | gen_reliabilities {N_mdm(lit,responseLevelMappingType_gen_reliabilities)}
+		    probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+		    | gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+		    [ system {0}
+		      series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+		      | parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+		      ]
 		    ]
 		  ]
 		)
 	      [ distribution {0}
-		cumulative {N_mdm(lit,distributionType_cumulative)}
-		| complementary {N_mdm(lit,distributionType_complementary)}
+		cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+		| complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
 		]
 	      [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
 		[ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
@@ -657,8 +679,12 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 	  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 	  [ compute {0}
-	    probabilities {N_mdm(lit,responseLevelMappingType_probabilities)}
-	    | gen_reliabilities {N_mdm(lit,responseLevelMappingType_gen_reliabilities)}
+	    probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+	    | gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+	    [ system {0}
+	      series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+	      | parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+	      ]
 	    ]
 	  ]
 	  [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
@@ -668,8 +694,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
 	    ]
 	  [ distribution {0}
-	    cumulative {N_mdm(lit,distributionType_cumulative)}
-	    | complementary {N_mdm(lit,distributionType_complementary)}
+	    cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+	    | complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
 	    ]
 	)
 	|
@@ -704,9 +730,13 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 	      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 	      [ compute {0}
-		probabilities {N_mdm(lit,responseLevelMappingType_probabilities)}
-		| reliabilities {N_mdm(lit,responseLevelMappingType_reliabilities)}
-		| gen_reliabilities {N_mdm(lit,responseLevelMappingType_gen_reliabilities)}
+		probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+		| reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
+		| gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+		[ system {0}
+		  series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+		  | parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+		  ]
 		]
 	      ]
 	    [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
@@ -730,14 +760,18 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 	      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 	      [ compute {0}
-		probabilities {N_mdm(lit,responseLevelMappingType_probabilities)}
-		| gen_reliabilities {N_mdm(lit,responseLevelMappingType_gen_reliabilities)}
+		probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+		| gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+		[ system {0}
+		  series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+		  | parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+		  ]
 		]
 	      ]
 	    )
 	  [ distribution {0}
-	    cumulative {N_mdm(lit,distributionType_cumulative)}
-	    | complementary {N_mdm(lit,distributionType_complementary)}
+	    cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+	    | complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
 	    ]
 	  [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
 	    [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]

@@ -115,8 +115,9 @@ DataMethodRep::DataMethodRep():
   collocationPoints(0), collocationRatio(0.), collocRatioTermsOrder(1.),
   probCollocFlag(false), allVarsFlag(false),
   //expansionSampleType("lhs"), sampleType("lhs"),
-  distributionType("cumulative"), responseLevelMappingType("probabilities"),
-  emulatorSamples(0), emulatorType(NO_EMULATOR), rejectionType("delayed"),
+  distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
+  responseLevelTargetReduce(COMPONENT), emulatorSamples(0),
+  emulatorType(NO_EMULATOR), rejectionType("delayed"),
   metropolisType("hastings"), proposalCovScale(1.0), likelihoodScale(1.0),
   // Parameter Study
   numSteps(0),
@@ -215,10 +216,11 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << collocationRatio << collocRatioTermsOrder << collocPtReuse
     << probCollocFlag << expansionImportFile << sampleType
     << reliabilitySearchType << reliabilityIntegration << integrationRefine
-    << nondOptAlgorithm << distributionType << responseLevelMappingType
-    << responseLevels << probabilityLevels << reliabilityLevels
-    << genReliabilityLevels << allVarsFlag << emulatorSamples << emulatorType
-    << rejectionType << metropolisType << proposalCovScale << likelihoodScale;
+    << nondOptAlgorithm << distributionType << responseLevelTarget
+    << responseLevelTargetReduce << responseLevels << probabilityLevels
+    << reliabilityLevels << genReliabilityLevels << allVarsFlag
+    << emulatorSamples << emulatorType << rejectionType << metropolisType
+    << proposalCovScale << likelihoodScale;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -318,10 +320,11 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> collocationRatio >> collocRatioTermsOrder >> collocPtReuse
     >> probCollocFlag >> expansionImportFile >> sampleType
     >> reliabilitySearchType >> reliabilityIntegration >> integrationRefine
-    >> nondOptAlgorithm >> distributionType >> responseLevelMappingType
-    >> responseLevels >> probabilityLevels >> reliabilityLevels
-    >> genReliabilityLevels >> allVarsFlag >> emulatorSamples >> emulatorType
-    >> rejectionType >> metropolisType >> proposalCovScale >> likelihoodScale;
+    >> nondOptAlgorithm >> distributionType >> responseLevelTarget
+    >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
+    >> reliabilityLevels >> genReliabilityLevels >> allVarsFlag
+    >> emulatorSamples >> emulatorType >> rejectionType >> metropolisType
+    >> proposalCovScale >> likelihoodScale;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -421,10 +424,11 @@ void DataMethodRep::write(std::ostream& s) const
     << collocationRatio << collocRatioTermsOrder << collocPtReuse
     << probCollocFlag << expansionImportFile << sampleType
     << reliabilitySearchType << reliabilityIntegration << integrationRefine
-    << nondOptAlgorithm << distributionType << responseLevelMappingType
-    << responseLevels << probabilityLevels << reliabilityLevels
-    << genReliabilityLevels << allVarsFlag << emulatorSamples << emulatorType
-    << rejectionType << metropolisType << proposalCovScale << likelihoodScale;
+    << nondOptAlgorithm << distributionType << responseLevelTarget
+    << responseLevelTargetReduce << responseLevels << probabilityLevels
+    << reliabilityLevels << genReliabilityLevels << allVarsFlag
+    << emulatorSamples << emulatorType << rejectionType << metropolisType
+    << proposalCovScale << likelihoodScale;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

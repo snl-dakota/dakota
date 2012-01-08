@@ -109,6 +109,12 @@ protected:
 
   /// initializes finalStatistics for storing NonD final results
   virtual void initialize_final_statistics();
+  /// update finalStatistics from momentStats and
+  /// computed{Prob,Rel,GenRel,Resp}Levels
+  virtual void update_final_statistics();
+  /// update finalStatistics::functionGradients from gradients of
+  /// momentStats and computed{Prob,Rel,GenRel,Resp}Levels
+  virtual void update_final_statistics_gradients();
 
   //
   //- Heading: Utility routines
@@ -261,6 +267,10 @@ protected:
 
   //size_t numResponseFunctions; // number of response functions
 
+  /// moments of response functions (mean, std deviation, skewness, and
+  /// kurtosis calculated in compute_moments()), indexed as (moment,fn)
+  RealMatrix momentStats;
+
   // map response level z -> probability level p, reliability level beta,
   // or generalized reliability level beta*
 
@@ -278,6 +288,8 @@ protected:
   /// indicates mapping of z->p (PROBABILITIES), z->beta (RELIABILITIES),
   /// or z->beta* (GEN_RELIABILITIES)
   short respLevelTarget;
+  /// indicates component or system series/parallel failure metrics
+  short respLevelTargetReduce;
 
   // map probability level p, reliability level beta, or generalized
   // reliability level beta* -> response level z

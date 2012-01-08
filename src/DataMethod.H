@@ -41,8 +41,12 @@ enum { STD_NORMAL_U, STD_UNIFORM_U, ASKEY_U, EXTENDED_U };
 enum { NODAL_INTERPOLANT, HIERARCHICAL_INTERPOLANT };
 // define special values for probability integration refinement
 enum { NO_INT_REFINE, IS, AIS, MMAIS };
-// define special values for respLevelTarget
+// define special values for responseLevelTarget
 enum { PROBABILITIES, RELIABILITIES, GEN_RELIABILITIES };
+// define special values for responseLevelTargetReduce
+enum { COMPONENT=0, SYSTEM_SERIES, SYSTEM_PARALLEL };
+// define special values for distributionType
+enum { CUMULATIVE, COMPLEMENTARY };
 
 // -------------
 // NonDExpansion (enums delegated to Pecos in pecos_global_defs.hpp)
@@ -704,26 +708,22 @@ public:
   /// \ref MethodNonDLocalRel or the interval in \ref MethodNonDLocalIntervalEst
   String nondOptAlgorithm;
   /// the \c distribution \c cumulative or \c complementary specification
-  /// in \ref MethodNonDMC, \ref MethodNonDPCE, \ref MethodNonDLocalRel,
-  /// and \ref MethodNonDGlobalRel
-  String distributionType;
+  /// in \ref MethodNonD
+  short distributionType;
   /// the \c compute \c probabilities, \c reliabilities, or \c
-  /// gen_reliabilities specification in \ref MethodNonDMC, \ref MethodNonDPCE,
-  /// \ref MethodNonDLocalRel, and \ref MethodNonDGlobalRel
-  String responseLevelMappingType;
-  /// the \c response_levels specification in \ref MethodNonDMC,
-  /// \ref MethodNonDPCE, \ref MethodNonDLocalRel, and \ref MethodNonDGlobalRel
+  /// gen_reliabilities specification in \ref MethodNonD
+  short responseLevelTarget;
+  /// the \c system \c series or \c parallel specification in \ref MethodNonD
+  short responseLevelTargetReduce;
+  /// the \c response_levels specification in \ref MethodNonD
   RealVectorArray responseLevels;
-  /// the \c probability_levels specification in \ref MethodNonDMC,
-  /// \ref MethodNonDPCE, \ref MethodNonDLocalRel, and \ref MethodNonDGlobalRel
+  /// the \c probability_levels specification in \ref MethodNonD
   RealVectorArray probabilityLevels;
-  /// the \c reliability_levels specification in \ref MethodNonDMC,
-  /// \ref MethodNonDPCE, and \ref MethodNonDLocalRel
+  /// the \c reliability_levels specification in \ref MethodNonD
   RealVectorArray reliabilityLevels;
-  /// the \c gen_reliability_levels specification in \ref MethodNonDMC,
-  /// \ref MethodNonDPCE, \ref MethodNonDLocalRel, and \ref MethodNonDGlobalRel
+  /// the \c gen_reliability_levels specification in \ref MethodNonD
   RealVectorArray genReliabilityLevels;
-  /// the \c all_variables specification in \ref MethodNonDMC
+  /// the \c all_variables specification in \ref MethodNonD
   bool allVarsFlag;
   /// the number of samples to construct a GP emulator for Bayesian 
   /// calibration methods (\ref MethodNonDBayesCalib)

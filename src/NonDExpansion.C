@@ -185,14 +185,14 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 		     const UShortArray& quad_order, const RealVector& dim_pref)
 {
   // sanity checks: no GSG for TPQ
-  if (refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
+  if (refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED) {
     Cerr << "Error: generalized option does not support adaptive refinement of "
 	 << "tensor grids." << std::endl;
     abort_handler(-1);
   }
 
   // enforce minimum required VBD control
-  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL)
+  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
     vbdControl = Pecos::UNIVARIATE_VBD;
 
   // manage rule nesting override
@@ -218,7 +218,7 @@ construct_quadrature(Iterator& u_space_sampler, Model& g_u_model,
 
   /*
   // enforce minimum required VBD control
-  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL)
+  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
     vbdControl = Pecos::UNIVARIATE_VBD;
   // nested overrides not currently part of tensor regression spec
   nestedRules = (ruleNestingOverride == Pecos::NESTED ||
@@ -235,7 +235,7 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 		      const UShortArray& ssg_level, const RealVector& dim_pref)
 {
   // enforce minimum required VBD control
-  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL)
+  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
     vbdControl = Pecos::UNIVARIATE_VBD;
 
   nestedRules = (ruleNestingOverride != Pecos::NON_NESTED);
@@ -250,7 +250,7 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   // uSpaceModel not yet available! (no approxs until bottom of derived ctor)
   short growth_rate;
   if (ruleGrowthOverride == Pecos::UNRESTRICTED ||
-      refineControl      == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE)
+      refineControl      == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)
     // unstructured index set evolution: no motivation to restrict
     growth_rate = Pecos::UNRESTRICTED_GROWTH;
   else if (piecewiseBasis)
@@ -260,6 +260,10 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
     growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;
   else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
+
+  // TO DO: manage hierarchical option w/i NonDSparseGrid (not here)
+  //= (piecewiseBasis && pw_basis_type == HIERARCHICAL_INTERPOLANT) ?
+  //  new SparseGridDriver() : new HierarchSparseGridDriver();
 
   u_space_sampler.assign_rep(new
     NonDSparseGrid(g_u_model, ssg_level, dim_pref, refineControl, track_wts,
@@ -273,14 +277,14 @@ construct_local_refinement(Iterator& u_space_sampler, Model& g_u_model,
 			   const RealVector& dim_pref)
 {
   // sanity checks: no GSG for LR
-  //if (refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
+  //if (refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED) {
   //  Cerr << "Error: generalized option does not support adaptive refinement "
   //       << "of local grids." << std::endl;
   //  abort_handler(-1);
   //}
 
   // enforce minimum required VBD control
-  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL)
+  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
     vbdControl = Pecos::UNIVARIATE_VBD;
 
   // nesting override not supported
@@ -467,7 +471,7 @@ void NonDExpansion::quantify_uncertainty()
   
   // generate final results
   compute_print_converged_results();
-  update_final_statistics();
+  update_final_statistics_gradients();
   ++numUncertainQuant;
 }
 
@@ -708,7 +712,7 @@ void NonDExpansion::refine_expansion()
 
   // initialize refinement algorithms (if necessary)
   switch (refineControl) {
-  case Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
     initialize_sets(); break;
   }
 
@@ -734,7 +738,7 @@ void NonDExpansion::refine_expansion()
       }
       metric = compute_covariance_metric(respCovariance);
       break;
-    case Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL: {
+    case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL: {
       // Dimension adaptive refinement: define anisotropic preference
       // vector from total Sobol' indices, averaged over response fn set.
       RealVector dim_pref;
@@ -747,7 +751,7 @@ void NonDExpansion::refine_expansion()
       metric = compute_covariance_metric(respCovariance);
       break;
     }
-    case Pecos::DIMENSION_ADAPTIVE_SPECTRAL_DECAY: {
+    case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY: {
       // Dimension adaptive refinement: define anisotropic weight vector
       // from min of spectral decay rates (PCE only) over response fn set.
       RealVector aniso_wts;
@@ -760,7 +764,7 @@ void NonDExpansion::refine_expansion()
       metric = compute_covariance_metric(respCovariance);
       break;
     }
-    case Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE:
+    case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
       // Dimension adaptive refinement using generalized sparse grids.
       // > Start GSG from iso/aniso SSG: starting from scratch (w=0) is
       //   most efficient if fully nested; otherwise, unique points from
@@ -780,7 +784,7 @@ void NonDExpansion::refine_expansion()
 
   // finalize refinement algorithms (if necessary)
   switch (refineControl) {
-  case Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
     bool converged_within_tol = (metric <= convergenceTol);
     finalize_sets(converged_within_tol); break;
   }
@@ -939,7 +943,7 @@ void NonDExpansion::finalize_sets(bool converged_within_tol)
 void NonDExpansion::compute_print_increment_results()
 {
   switch (refineControl) {
-  case Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
     if (totalLevelRequests) { // both covariance and full results available
       if (outputLevel == DEBUG_OUTPUT) print_results(Cout);
       //else                           print_covariance(Cout);
@@ -964,7 +968,7 @@ void NonDExpansion::compute_print_iteration_results(bool initialize)
   iteratedModel.print_evaluation_summary(Cout);
   NonDExpansion::print_results(Cout);
   if (expansionCoeffsApproach == Pecos::SPARSE_GRID &&
-      refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
+      refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED) {
     NonDSparseGrid* nond_sparse
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
     const UShort2DArray& sm_multi_index = nond_sparse->smolyak_multi_index();
@@ -988,15 +992,15 @@ void NonDExpansion::compute_print_iteration_results(bool initialize)
     else // compute/print subset of stats required for convergence assessment
       { if (initialize) compute_covariance(); print_covariance(Cout); }
     break;
-  case Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL:
-  case Pecos::DIMENSION_ADAPTIVE_SPECTRAL_DECAY:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     // In these cases, metric calculations already performed are still valid
     if (outputLevel == DEBUG_OUTPUT) // compute/print all stats
       { compute_statistics(); print_results(Cout); }
     else // compute/print subset of stats required for convergence assessment
       { if (initialize) compute_covariance(); print_covariance(Cout); }
     break;
-  case Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
     // In this case, the last index set calculation may not be the selected
     // index set. However, in the case where of non-debug output, we are using
     // partial results updating to eliminate the need to recompute stats for
@@ -1028,7 +1032,7 @@ void NonDExpansion::compute_print_converged_results(bool print_override)
 #ifdef CONVERGENCE_DATA
   // output fine-grained data on generalized index sets
   if (expansionCoeffsApproach == Pecos::SPARSE_GRID &&
-      refineControl == Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE) {
+      refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED) {
     NonDSparseGrid* nond_sparse
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
     const UShort2DArray& sm_multi_index = nond_sparse->smolyak_multi_index();
@@ -1066,12 +1070,12 @@ void NonDExpansion::compute_print_converged_results(bool print_override)
     if (outputLevel != DEBUG_OUTPUT)
       compute_statistics();
     break;
-  case Pecos::DIMENSION_ADAPTIVE_TOTAL_SOBOL:
-  case Pecos::DIMENSION_ADAPTIVE_SPECTRAL_DECAY:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY:
     if (outputLevel != DEBUG_OUTPUT)
       compute_statistics();
     break;
-  case Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE:
+  case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
     compute_statistics();
     break;
   }
@@ -1282,7 +1286,7 @@ void NonDExpansion::compute_statistics()
   const SizetArray& final_dvv = finalStatistics.active_set_derivative_vector();
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   bool covariance_flag = (!subIteratorFlag ||
-    refineControl != Pecos::DIMENSION_ADAPTIVE_GENERALIZED_SPARSE);
+    refineControl != Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED);
   size_t i, j, k, rl_len, pl_len, bl_len, gl_len, cntr = 0, sampler_cntr = 0,
     num_final_grad_vars = final_dvv.size();
 
@@ -1649,73 +1653,74 @@ void NonDExpansion::compute_statistics()
 }
 
 
-void NonDExpansion::update_final_statistics()
+void NonDExpansion::update_final_statistics_gradients()
 {
-  if (!finalStatistics.function_gradients().empty()) {
-    // Augmented design vars:
-    // > All vars: transform dg/du to dg/dx -> provides desired dg/ds for x = s
-    // > Distinct vars: PCE/SC approximations for dg/ds are formed
-    // Inserted design vars:
-    // > All and Distinct views for the subIterator are equivalent
-    // > PCE/SC approximations for dg/ds are formed
-    // > Alternative: All view could force an artificial cdv augmentation
-    // Mixed augmented/inserted design vars:
-    // > All vars: bookkeep the two dg/ds approaches
-    // > Distinct vars: PCE/SC approximations for dg/ds are formed
+  if (finalStatistics.function_gradients().empty())
+    return;
 
-    // for all_variables, finalStatistics design grads are in extended u-space
-    // -> transform to the original design space
-    if (numContDesVars || numContEpistUncVars || numContStateVars) {
-      // this approach is more efficient but less general.  If we can assume
-      // that the DVV only contains design/state vars, then we know they are
-      // uncorrelated and the jacobian matrix is diagonal with terms 2./range.
-      SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
-      const SizetArray& final_dvv
-	= finalStatistics.active_set_derivative_vector();
-      size_t num_final_grad_vars = final_dvv.size();
-      Real factor;
-      const Pecos::RealVector& x_l_bnds = natafTransform.x_lower_bounds();
-      const Pecos::RealVector& x_u_bnds = natafTransform.x_upper_bounds();
+  // Augmented design vars:
+  // > All vars: transform dg/du to dg/dx -> provides desired dg/ds for x = s
+  // > Distinct vars: PCE/SC approximations for dg/ds are formed
+  // Inserted design vars:
+  // > All and Distinct views for the subIterator are equivalent
+  // > PCE/SC approximations for dg/ds are formed
+  // > Alternative: All view could force an artificial cdv augmentation
+  // Mixed augmented/inserted design vars:
+  // > All vars: bookkeep the two dg/ds approaches
+  // > Distinct vars: PCE/SC approximations for dg/ds are formed
 
-      RealMatrix final_stat_grads = finalStatistics.function_gradients_view();
-      int num_final_stats = final_stat_grads.numCols();
-      for (size_t j=0; j<num_final_grad_vars; ++j) {
-	size_t deriv_j = find_index(cv_ids, final_dvv[j]); //final_dvv[j]-1;
-	if ( deriv_j <  numContDesVars ||
-	     deriv_j >= numContDesVars+numContAleatUncVars ) {
-	  // augmented design variable sensitivity
-	  factor = 2. / (x_u_bnds(deriv_j) - x_l_bnds(deriv_j));
-	  for (size_t i=0; i<num_final_stats; ++i)
-	    final_stat_grads(j,i) *= factor; // see jacobian_dZ_dX()
-	}
-	// else inserted design variable sensitivity: no scaling required
+  // for all_variables, finalStatistics design grads are in extended u-space
+  // -> transform to the original design space
+  if (numContDesVars || numContEpistUncVars || numContStateVars) {
+    // this approach is more efficient but less general.  If we can assume
+    // that the DVV only contains design/state vars, then we know they are
+    // uncorrelated and the jacobian matrix is diagonal with terms 2./range.
+    SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
+    const SizetArray& final_dvv
+      = finalStatistics.active_set_derivative_vector();
+    size_t num_final_grad_vars = final_dvv.size();
+    Real factor;
+    const Pecos::RealVector& x_l_bnds = natafTransform.x_lower_bounds();
+    const Pecos::RealVector& x_u_bnds = natafTransform.x_upper_bounds();
+
+    RealMatrix final_stat_grads = finalStatistics.function_gradients_view();
+    int num_final_stats = final_stat_grads.numCols();
+    for (size_t j=0; j<num_final_grad_vars; ++j) {
+      size_t deriv_j = find_index(cv_ids, final_dvv[j]); //final_dvv[j]-1;
+      if ( deriv_j <  numContDesVars ||
+	   deriv_j >= numContDesVars+numContAleatUncVars ) {
+	// augmented design variable sensitivity
+	factor = 2. / (x_u_bnds(deriv_j) - x_l_bnds(deriv_j));
+	for (size_t i=0; i<num_final_stats; ++i)
+	  final_stat_grads(j,i) *= factor; // see jacobian_dZ_dX()
       }
-      
-      // This approach is more general, but is overkill for this purpose
-      // and incurs additional copying overhead.
-      /*
-      RealVector initial_pt_x_pv, fn_grad_u, fn_grad_x;
-      copy_data(initial_pt_x, initial_pt_x_pv);
-      RealMatrix jacobian_ux;
-      natafTransform.jacobian_dU_dX(initial_pt_x_pv, jacobian_ux);
-      RealBaseVector final_stat_grad;
-      for (i=0; i<num_final_stats; ++i) {
-	copy_data(finalStatistics.function_gradient_view(i), fn_grad_u);
-	natafTransform.trans_grad_U_to_X(fn_grad_u, fn_grad_x, jacobian_ux,
-	                                 final_dvv);
-	copy_data(fn_grad_x, final_stat_grad);
-	finalStatistics.function_gradient(final_stat_grad, i)
-      }
-      */
+      // else inserted design variable sensitivity: no scaling required
     }
-
-    // For distinct vars, nothing additional is needed since u_space_sampler
-    // has been configured to compute dg/ds at each of the sample points.
-    // uSpaceModel.build_approximation() -> PecosApproximation::build()
-    // then constructs PCE/SC approximations of these gradients, and
-    // PecosApproximation::<mean,variance>_gradient()
-    // are used above to generate dmu/ds, dsigma/ds, and dbeta/ds.
+      
+    // This approach is more general, but is overkill for this purpose
+    // and incurs additional copying overhead.
+    /*
+    RealVector initial_pt_x_pv, fn_grad_u, fn_grad_x;
+    copy_data(initial_pt_x, initial_pt_x_pv);
+    RealMatrix jacobian_ux;
+    natafTransform.jacobian_dU_dX(initial_pt_x_pv, jacobian_ux);
+    RealBaseVector final_stat_grad;
+    for (i=0; i<num_final_stats; ++i) {
+      copy_data(finalStatistics.function_gradient_view(i), fn_grad_u);
+      natafTransform.trans_grad_U_to_X(fn_grad_u, fn_grad_x, jacobian_ux,
+	                               final_dvv);
+      copy_data(fn_grad_x, final_stat_grad);
+      finalStatistics.function_gradient(final_stat_grad, i)
+    }
+    */
   }
+
+  // For distinct vars, nothing additional is needed since u_space_sampler
+  // has been configured to compute dg/ds at each of the sample points.
+  // uSpaceModel.build_approximation() -> PecosApproximation::build()
+  // then constructs PCE/SC approximations of these gradients, and
+  // PecosApproximation::<mean,variance>_gradient()
+  // are used above to generate dmu/ds, dsigma/ds, and dbeta/ds.
 }
 
 

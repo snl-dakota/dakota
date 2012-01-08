@@ -484,11 +484,8 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
   Real sum, var, skew, kurt;
   const StringArray& resp_labels = iteratedModel.response_labels();
 
-  if (meanStats.empty())           meanStats.resize(numFunctions);
-  if (stdDevStats.empty())         stdDevStats.resize(numFunctions);
-  if (skewnessStats.empty())       skewnessStats.resize(numFunctions);
-  if (kurtosisStats.empty())       kurtosisStats.resize(numFunctions);
-  if (mean95CIDeltas.empty())      mean95CIDeltas.resize(numFunctions);
+  if (momentStats.empty())    momentStats.shapeUninitialized(4,numFunctions);
+  if (mean95CIDeltas.empty()) mean95CIDeltas.resize(numFunctions);
   if (stdDev95CILowerBnds.empty()) stdDev95CILowerBnds.resize(numFunctions);
   if (stdDev95CIUpperBnds.empty()) stdDev95CIUpperBnds.resize(numFunctions);
 
@@ -517,14 +514,16 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
       abort_handler(-1);
     }
 
-    meanStats[i] = sum/((Real)num_samp);
+    Real* moments_i = momentStats[i];
+    Real& mean = moments_i[0];
+    mean = sum/((Real)num_samp);
 
     // accumulate variance, skewness, and kurtosis
     Real centered_fn, pow_fn;
     for (it=samples.begin(); it!=samples.end(); ++it) {
       const Real& sample = it->second.function_value(i);
       if (isfinite(sample)) { // neither NaN nor +/-Inf
-	pow_fn  = centered_fn = sample - meanStats[i];
+	pow_fn  = centered_fn = sample - mean;
 	pow_fn *= centered_fn; var  += pow_fn;
 	pow_fn *= centered_fn; skew += pow_fn;
 	pow_fn *= centered_fn; kurt += pow_fn;
@@ -532,10 +531,11 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
     }
 
     // sample std deviation
-    stdDevStats[i] = (num_samp > 1) ? std::sqrt(var/(Real)(num_samp-1)) : 0.;
+    Real& std_dev = moments_i[1];
+    std_dev = (num_samp > 1) ? std::sqrt(var/(Real)(num_samp-1)) : 0.;
 
     // skewness
-    skewnessStats[i] = (num_samp > 2 && var > 0.) ? 
+    moments_i[2] = (num_samp > 2 && var > 0.) ? 
       // sample skewness
       skew/(Real)num_samp/std::pow(var/(Real)num_samp,1.5) *
       // population skewness 
@@ -544,7 +544,7 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
       0.;
 
     // kurtosis
-    kurtosisStats[i] = (num_samp > 3 && var > 0.) ?
+    moments_i[3] = (num_samp > 3 && var > 0.) ?
       // sample kurtosis
       (Real)((num_samp+1)*num_samp*(num_samp-1))*kurt/
       (Real)((num_samp-2)*(num_samp-3)*var*var) -
@@ -555,42 +555,44 @@ void NonDSampling::compute_moments(const IntResponseMap& samples)
 
     if (num_samp > 1) {
       // 95% confidence intervals (2-sided interval, not 1-sided limit)
-      Real dof = num_samp - 1, s = stdDevStats[i];
+      Real dof = num_samp - 1;
 //#ifdef HAVE_BOOST
       // mean: the better formula does not assume known variance but requires
       // a function for the Student's t-distr. with (num_samp-1) degrees of
       // freedom (Haldar & Mahadevan, p. 127).
       Pecos::students_t_dist t_dist(dof);
       mean95CIDeltas[i]
-	= s*(bmth::quantile(t_dist,0.975))/std::sqrt((Real)num_samp);
+	= std_dev*bmth::quantile(t_dist,0.975)/std::sqrt((Real)num_samp);
       // std dev: chi-square distribution with (num_samp-1) degrees of freedom
       // (Haldar & Mahadevan, p. 132).
       Pecos::chi_squared_dist chisq(dof);
-      stdDev95CILowerBnds[i] = s*std::sqrt(dof/bmth::quantile(chisq,0.975));
-      stdDev95CIUpperBnds[i] = s*std::sqrt(dof/bmth::quantile(chisq,0.025));
+      stdDev95CILowerBnds[i]
+	= std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.975));
+      stdDev95CIUpperBnds[i]
+	= std_dev*std::sqrt(dof/bmth::quantile(chisq, 0.025));
 /*
 #elif HAVE_GSL
       // mean: the better formula does not assume known variance but requires
       // a function for the Student's t-distr. with (num_samp-1) degrees of
       // freedom (Haldar & Mahadevan, p. 127).
       mean95CIDeltas[i]
-	= s*gsl_cdf_tdist_Pinv(0.975,dof)/std::sqrt((Real)num_samp);
+	= std_dev*gsl_cdf_tdist_Pinv(0.975,dof)/std::sqrt((Real)num_samp);
       // std dev: chi-square distribution with (num_samp-1) degrees of freedom
       // (Haldar & Mahadevan, p. 132).
-      stdDev95CILowerBnds[i] = s*std::sqrt(dof/gsl_cdf_chisq_Pinv(0.975, dof));
-      stdDev95CIUpperBnds[i] = s*std::sqrt(dof/gsl_cdf_chisq_Pinv(0.025, dof));
+      stdDev95CILowerBnds[i]
+        = std_dev*std::sqrt(dof/gsl_cdf_chisq_Pinv(0.975, dof));
+      stdDev95CIUpperBnds[i]
+        = std_dev*std::sqrt(dof/gsl_cdf_chisq_Pinv(0.025, dof));
 #else
       // mean: k_(alpha/2) = Phi^(-1)(0.975) = 1.96 (Haldar & Mahadevan,
       // p. 123).  This simple formula assumes a known variance, which
       // requires a sample of sufficient size (i.e., greater than 10).
-      mean95CIDeltas[i] = 1.96*stdDevStats[i]/std::sqrt((Real)num_samp);
+      mean95CIDeltas[i] = 1.96*std_dev/std::sqrt((Real)num_samp);
 #endif // HAVE_BOOST
 */
     }
-    else {
-      mean95CIDeltas = 0.;
-      stdDev95CILowerBnds = stdDev95CIUpperBnds = stdDevStats;
-    }
+    else
+      mean95CIDeltas[i] = stdDev95CILowerBnds[i] = stdDev95CIUpperBnds[i] = 0.;
   }
 }
 
@@ -677,6 +679,7 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
     // ----------------
     // Process mappings
     // ----------------
+    Real& mean = momentStats(0,i); Real& std_dev = momentStats(1,i);
     if (rl_len) {
       switch (respLevelTarget) {
       case PROBABILITIES: case GEN_RELIABILITIES: {
@@ -696,13 +699,14 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
       case RELIABILITIES: // z -> beta (based on moment projection)
 	for (j=0; j<rl_len; j++) {
 	  const Real& z = requestedRespLevels[i][j];
-	  if (stdDevStats[i] > 1.e-25) {
-	    Real ratio = (meanStats[i] - z)/stdDevStats[i];
+	  if (std_dev > 1.e-25) {
+	    Real ratio = (mean - z)/std_dev;
 	    computedRelLevels[i][j] = (cdfFlag) ? ratio : -ratio;
 	  }
 	  else
-	    computedRelLevels[i][j] = ( (cdfFlag && meanStats[i] <= z) ||
-	      (!cdfFlag && meanStats[i] > z) ) ? -1.e50 : 1.e50;
+	    computedRelLevels[i][j]
+	      = ( (cdfFlag && mean <= z) || (!cdfFlag && mean > z) )
+	      ? -1.e50 : 1.e50;
 	}
 	break;
       }
@@ -731,8 +735,7 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
     for (j=0; j<bl_len; j++) { // beta -> z
       const Real& beta = requestedRelLevels[i][j];
       computedRespLevels[i][j+pl_len] = (cdfFlag) ?
-	meanStats[i] - beta * stdDevStats[i] :
-	meanStats[i] + beta * stdDevStats[i];
+	mean - beta * std_dev : mean + beta * std_dev;
     }
 
     // ---------------------------------------------------------------------
@@ -819,48 +822,20 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
 }
 
 
-
 void NonDSampling::update_final_statistics()
 {
   //if (finalStatistics.is_null())
   //  initialize_final_statistics();
 
-  size_t i, j, cntr = 0;
   if (numEpistemicUncVars) {
+    size_t i, cntr = 0;
     for (i=0; i<numFunctions; ++i) {
       finalStatistics.function_value(minValues[i], cntr++);
       finalStatistics.function_value(maxValues[i], cntr++);
     }
   }
-  else {
-    for (i=0; i<numFunctions; ++i) {
-      // final stats from compute_moments()
-      if (!meanStats.empty() && !stdDevStats.empty()) {
-	finalStatistics.function_value(meanStats[i],   cntr++);
-	finalStatistics.function_value(stdDevStats[i], cntr++);
-      }
-      else
-	cntr += 2;
-      // final stats from compute_distribution_mappings()
-      size_t rl_len = requestedRespLevels[i].length();
-      for (j=0; j<rl_len; j++)
-	switch (respLevelTarget) {
-	case PROBABILITIES:
-	  finalStatistics.function_value(computedProbLevels[i][j], cntr++);
-	  break;
-	case RELIABILITIES:
-	  finalStatistics.function_value(computedRelLevels[i][j], cntr++);
-	  break;
-	case GEN_RELIABILITIES:
-	  finalStatistics.function_value(computedGenRelLevels[i][j], cntr++);
-	  break;
-	}
-      size_t pl_bl_gl_len = requestedProbLevels[i].length() +
-	requestedRelLevels[i].length() + requestedGenRelLevels[i].length();
-      for (j=0; j<pl_bl_gl_len; j++)
-	finalStatistics.function_value(computedRespLevels[i][j], cntr++);
-    }
-  }
+  else // moments + level mappings
+    NonD::update_final_statistics();
 }
 
 
@@ -921,25 +896,27 @@ void NonDSampling::print_moments(std::ostream& s) const
     << std::setw(width+15) << "Mean"     << std::setw(width+1) << "Std Dev"
     << std::setw(width+1)  << "Skewness" << std::setw(width+2) << "Kurtosis\n";
   //<< std::setw(width+2)  << "Coeff of Var\n";
-  for (i=0; i<numFunctions; ++i)
-    s << std::setw(14) << resp_labels[i]
-      << ' ' << std::setw(width) << meanStats[i]
-      << ' ' << std::setw(width) << stdDevStats[i]
-      << ' ' << std::setw(width) << skewnessStats[i]
-      << ' ' << std::setw(width) << kurtosisStats[i] << '\n';
-
+  for (i=0; i<numFunctions; ++i) {
+    const Real* moments_i = momentStats[i];
+    s << std::setw(14) << resp_labels[i];
+    for (j=0; j<4; ++j)
+      s << ' ' << std::setw(width) << moments_i[j];
+    s << '\n';
+  }
   if (numSamples > 1) {
     // output 95% confidence intervals as (,) interval
     s << "\n95% confidence intervals for each response function:\n"
       << std::setw(width+15) << "LowerCI_Mean" << std::setw(width+1)
       << "UpperCI_Mean" << std::setw(width+1)  << "LowerCI_StdDev" 
       << std::setw(width+2) << "UpperCI_StdDev\n";
-    for (i=0; i<numFunctions; ++i)
+    for (i=0; i<numFunctions; ++i) {
+      const Real& mean_i = momentStats(0,i);
       s << std::setw(14) << resp_labels[i]
-	<< ' ' << std::setw(width) << meanStats[i] - mean95CIDeltas[i]
-	<< ' ' << std::setw(width) << meanStats[i] + mean95CIDeltas[i]
+	<< ' ' << std::setw(width) << mean_i - mean95CIDeltas[i]
+	<< ' ' << std::setw(width) << mean_i + mean95CIDeltas[i]
 	<< ' ' << std::setw(width) << stdDev95CILowerBnds[i]
 	<< ' ' << std::setw(width) << stdDev95CIUpperBnds[i] << '\n';
+    }
   }
 }
 

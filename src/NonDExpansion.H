@@ -119,8 +119,8 @@ protected:
 
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics();
-  /// update finalStatistics
-  void update_final_statistics();
+  /// update function gradients within finalStatistics
+  void update_final_statistics_gradients();
 
   //
   //- Heading: Data
@@ -163,9 +163,9 @@ protected:
 
   /// refinement type: NO_REFINEMENT, P_REFINEMENT, or H_REFINEMENT
   short refineType;
-  /// refinement control: NO_CONTROL, UNIFORM_CONTROL,
-  /// DIMENSION_ADAPTIVE_TOTAL_SOBOL, DIMENSION_ADAPTIVE_SPECTRAL_DECAY, or
-  /// DIMENSION_ADAPTIVE_GENERALIZED_SPARSE
+  /// refinement control: NO_CONTROL, UNIFORM_CONTROL, LOCAL_ADAPTIVE_CONTROL,
+  /// DIMENSION_ADAPTIVE_CONTROL_SOBOL, DIMENSION_ADAPTIVE_CONTROL_DECAY, or
+  /// DIMENSION_ADAPTIVE_CONTROL_GENERALIZED
   short refineControl;
 
 private:

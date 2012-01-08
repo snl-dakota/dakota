@@ -4259,8 +4259,6 @@ static Method_mp_lit
 	MP2(crossoverType,blend),
 	MP2(crossoverType,two_point),
 	MP2(crossoverType,uniform),
-	MP2(distributionType,complementary),
-	MP2(distributionType,cumulative),
 	MP2(evalSynchronization,blocking),
 	MP2(evalSynchronization,nonblocking),
 	MP2(evalSynchronize,blocking),
@@ -4365,9 +4363,6 @@ static Method_mp_lit
 	MP2(replacementType,favor_feasible),
 	MP2(replacementType,roulette_wheel),
 	MP2(replacementType,unique_roulette_wheel),
-	MP2(responseLevelMappingType,gen_reliabilities),
-	MP2(responseLevelMappingType,probabilities),
-	MP2(responseLevelMappingType,reliabilities),
 	MP2(rngName,mt19937),
 	MP2(rngName,rnum2),
 	MP2(sampleType,incremental_lhs),
@@ -4563,6 +4558,8 @@ static size_t
 	MP_(numParents);
 
 static Method_mp_type
+	MP2s(distributionType,COMPLEMENTARY),
+	MP2s(distributionType,CUMULATIVE),
 	MP2s(emulatorType,GAUSSIAN_PROCESS),
 	MP2s(emulatorType,KRIGING),
 	MP2s(emulatorType,POLYNOMIAL_CHAOS),
@@ -4580,12 +4577,18 @@ static Method_mp_type
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
 	MP2s(piecewiseBasisType,NODAL_INTERPOLANT),
 	MP2s(piecewiseBasisType,HIERARCHICAL_INTERPOLANT),
-	MP2p(refinementControl,DIMENSION_ADAPTIVE_GENERALIZED_SPARSE), // Pecos
-	MP2p(refinementControl,DIMENSION_ADAPTIVE_SPECTRAL_DECAY),     // Pecos
-	MP2p(refinementControl,DIMENSION_ADAPTIVE_TOTAL_SOBOL),        // Pecos
+	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
+	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_DECAY),      // Pecos
+	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_SOBOL),      // Pecos
+	MP2p(refinementControl,LOCAL_ADAPTIVE_CONTROL),                // Pecos
 	MP2p(refinementControl,UNIFORM_CONTROL),                       // Pecos
 	MP2p(refinementType,P_REFINEMENT),                 // Pecos enumeration
         MP2p(refinementType,H_REFINEMENT),                 // Pecos enumeration
+	MP2s(responseLevelTarget,GEN_RELIABILITIES),
+	MP2s(responseLevelTarget,PROBABILITIES),
+	MP2s(responseLevelTarget,RELIABILITIES),
+	MP2s(responseLevelTargetReduce,SYSTEM_PARALLEL),
+	MP2s(responseLevelTargetReduce,SYSTEM_SERIES),
 	MP2s(surrBasedLocalAcceptLogic,FILTER),
 	MP2s(surrBasedLocalAcceptLogic,TR_RATIO),
 	MP2s(surrBasedLocalConstrRelax,HOMOTOPY),
