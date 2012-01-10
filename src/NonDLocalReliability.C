@@ -1482,9 +1482,8 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     finalStatistics, warm start, and graphics data. */
 void NonDLocalReliability::update_level_data()
 {
-  // Update computed Resp/Prob/Rel levels arrays.  Note that finalStatistics
-  // uses generalized beta in the case of second-order integrations, but
-  // computedRelLevels does not.
+  // Update computed Resp/Prob/Rel/GenRel levels arrays.  finalStatistics
+  // is updated within update_final_statistics() for all resp fns & levels.
   Real computed_prob_level = probability(computedRelLevel, cdfFlag),
     computed_gen_rel_level = -Phi_inverse(computed_prob_level);
   computedRespLevels[respFnCount][levelCount]   = computedRespLevel;

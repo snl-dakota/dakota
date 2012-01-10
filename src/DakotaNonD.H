@@ -109,12 +109,8 @@ protected:
 
   /// initializes finalStatistics for storing NonD final results
   virtual void initialize_final_statistics();
-  /// update finalStatistics from momentStats and
-  /// computed{Prob,Rel,GenRel,Resp}Levels
+  /// update finalStatistics::functionValues
   virtual void update_final_statistics();
-  /// update finalStatistics::functionGradients from gradients of
-  /// momentStats and computed{Prob,Rel,GenRel,Resp}Levels
-  virtual void update_final_statistics_gradients();
 
   //
   //- Heading: Utility routines
@@ -135,6 +131,13 @@ protected:
 
   /// initializes finalStatistics::functionGradients
   void initialize_final_statistics_gradients();
+  /// update finalStatistics::functionValues from momentStats and
+  /// computed{Prob,Rel,GenRel,Resp}Levels
+  void update_aleatory_final_statistics();
+  /// update system metrics from component metrics within finalStatistics
+  void update_system_final_statistics();
+  /// update finalStatistics::functionGradients
+  void update_system_final_statistics_gradients();
 
   /// size computed{Resp,Prob,Rel,GenRel}Levels
   void initialize_distribution_mappings();

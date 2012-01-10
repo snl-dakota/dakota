@@ -471,8 +471,20 @@ void NonDExpansion::quantify_uncertainty()
   
   // generate final results
   compute_print_converged_results();
-  update_final_statistics_gradients();
+  update_final_statistics(); // virtual fn redefined below
   ++numUncertainQuant;
+}
+
+
+void NonDExpansion::update_final_statistics()
+{
+  // aleatory final stats & their grads are updated directly within
+  // compute_statistics() (NonD::update_aleatory_final_statistics() is awkward
+  // for NonDExpansion since Pecos manages the moment arrays), such that all
+  // that remains are system final stats and additional gradient scaling.
+  update_system_final_statistics();
+  update_system_final_statistics_gradients();
+  update_final_statistics_gradients();
 }
 
 

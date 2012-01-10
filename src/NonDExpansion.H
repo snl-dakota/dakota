@@ -73,6 +73,15 @@ protected:
   virtual void print_coefficients(std::ostream& s);
 
   //
+  //- Heading: Virtual function redefinitions
+  //
+
+  /// update function values within finalStatistics
+  void update_final_statistics();
+  /// update function gradients within finalStatistics
+  void update_final_statistics_gradients();
+
+  //
   //- Heading: Member function definitions
   //
 
@@ -119,8 +128,6 @@ protected:
 
   /// calculate analytic and numerical statistics from the expansion
   void compute_statistics();
-  /// update function gradients within finalStatistics
-  void update_final_statistics_gradients();
 
   //
   //- Heading: Data

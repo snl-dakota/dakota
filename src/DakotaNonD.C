@@ -1602,6 +1602,15 @@ void NonD::update_final_statistics()
   //if (finalStatistics.is_null())
   //  initialize_final_statistics();
 
+  // this default implementation gets overridden/augmented in derived classes
+  update_aleatory_final_statistics();
+  update_system_final_statistics();
+  update_system_final_statistics_gradients();
+}
+
+
+void NonD::update_aleatory_final_statistics()
+{
   // update finalStatistics from computed{Resp,Prob,Rel,GenRel}Levels
   size_t i, j, cntr = 0, rl_len, pl_bl_gl_len;
   for (i=0; i<numFunctions; ++i) {
@@ -1633,20 +1642,30 @@ void NonD::update_final_statistics()
     for (j=0; j<pl_bl_gl_len; ++j, ++cntr)
       finalStatistics.function_value(computedRespLevels[i][j], cntr);
   }
+}
 
+
+void NonD::update_system_final_statistics()
+{
   if (respLevelTargetReduce) {
-    for (j=0; j<rl_len; ++j, ++cntr) { // all i vectors must have same j length
+    // same rl_len enforced for all resp fns in initialize_final_statistics()
+    size_t i, j, rl_len = requestedRespLevels[0].length(),
+      cntr = 2*numFunctions + totalLevelRequests;
+    for (j=0; j<rl_len; ++j, ++cntr) {
+      // compute system probability
       Real system_p = 1.;
-      if (respLevelTargetReduce == SYSTEM_SERIES) {
-	// system p_success is product of component p_success
+      switch (respLevelTargetReduce) {
+      case SYSTEM_SERIES: // system p_success = product of component p_success
 	for (i=0; i<numFunctions; ++i)
 	  system_p *= (1.-computedProbLevels[i][j]);
 	system_p = 1. - system_p; // convert back to p_fail
-      }
-      else if (respLevelTargetReduce == SYSTEM_PARALLEL)
-	// system p_fail is product of component p_fail
+	break;
+      case SYSTEM_PARALLEL: // system p_fail = product of component p_fail
 	for (i=0; i<numFunctions; ++i)
 	  system_p *= computedProbLevels[i][j];
+	break;
+      }
+      // convert system probability to desired system metric
       switch (respLevelTarget) {
       case PROBABILITIES:
 	finalStatistics.function_value(system_p, cntr); break;
@@ -1659,11 +1678,70 @@ void NonD::update_final_statistics()
 }
 
 
-void NonD::update_final_statistics_gradients()
+void NonD::update_system_final_statistics_gradients()
 {
-  // ---------------------------------------------------------------------------
-  // TO DO: pack or reduce individual level gradient data into finalStatistics
-  // ---------------------------------------------------------------------------
+  if (respLevelTargetReduce) {
+    const ShortArray& final_asv = finalStatistics.active_set_request_vector();
+    const SizetArray& final_dvv
+      = finalStatistics.active_set_derivative_vector();
+    // same rl_len enforced for all resp fns in initialize_final_statistics()
+    size_t l, v, s, p, rl_len = requestedRespLevels[0].length(),
+      num_deriv_vars = final_dvv.size(),
+      cntr = 2*numFunctions + totalLevelRequests;
+    RealVector final_stat_grad(num_deriv_vars, false);
+    RealVectorArray component_grad(numFunctions);
+    Real prod;
+    for (l=0; l<rl_len; ++l, ++cntr) {
+      if (final_asv[cntr] & 2) {
+	// Retrieve component probability gradients from finalStatistics
+	size_t index = 0;
+	for (s=0; s<numFunctions; ++s) {
+	  index += 2;
+	  if (respLevelTarget == PROBABILITIES)
+	    component_grad[s] = finalStatistics.function_gradient_view(index+l);
+	  else {
+	    component_grad[s] = finalStatistics.function_gradient_copy(index+l);
+	    Real component_beta = finalStatistics.function_value(index+l);
+	    component_grad[s].scale(-Pecos::phi(-component_beta));
+	  }
+	  index += rl_len + requestedProbLevels[s].length() +
+	    requestedRelLevels[s].length() + requestedGenRelLevels[s].length();
+	}
+	// Compute system probability
+	for (v=0; v<num_deriv_vars; ++v) {
+	  // apply product rule over n factors
+	  Real& sum = final_stat_grad[v]; sum = 0.;
+	  for (s=0; s<numFunctions; ++s) {
+	    prod = 1.;
+	    switch (respLevelTargetReduce) {
+	    case SYSTEM_SERIES:// system p_success = prod of component p_success
+	      for (p=0; p<numFunctions; ++p)
+		prod *= (p == s) ? -component_grad[p][v] :
+		  1.-computedProbLevels[p][l];
+	      break;
+	    case SYSTEM_PARALLEL: // system p_fail = product of component p_fail
+	      for (p=0; p<numFunctions; ++p)
+		prod *= (p == s) ? component_grad[p][v] :
+		  computedProbLevels[p][l];
+	      break;
+	    }
+	    sum += prod;
+	  }
+	}
+	Real factor = 1.; bool scale = false;
+	// negate gradient if converting system p_success to system p_fail
+	if (respLevelTargetReduce == SYSTEM_SERIES)
+	  { factor *= -1.; scale = true; }
+	// define any scaling for system metric type
+	if (respLevelTarget != PROBABILITIES) {
+	  Real sys_beta = finalStatistics.function_value(cntr);
+	  factor *= -1./Pecos::phi(-sys_beta); scale = true;
+	}
+	if (scale) final_stat_grad.scale(factor);
+	finalStatistics.function_gradient(final_stat_grad, cntr);
+      }
+    }
+  }
 }
 
 
