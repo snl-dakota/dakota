@@ -1665,6 +1665,12 @@ void NonD::update_system_final_statistics()
 	  system_p *= computedProbLevels[i][j];
 	break;
       }
+#ifdef DEBUG
+      Cout << "\nSystem p = " << system_p << " from component p:\n";
+      for (i=0; i<numFunctions; ++i)
+	Cout << "  " << computedProbLevels[i][j] << '\n';
+      Cout << '\n';
+#endif // DEBUG
       // convert system probability to desired system metric
       switch (respLevelTarget) {
       case PROBABILITIES:
@@ -1706,6 +1712,10 @@ void NonD::update_system_final_statistics_gradients()
 	  }
 	  index += rl_len + requestedProbLevels[s].length() +
 	    requestedRelLevels[s].length() + requestedGenRelLevels[s].length();
+#ifdef DEBUG
+	  Cout << "component gradient " << s+1 << ":\n";
+	  write_data(Cout, component_grad[s]); Cout << '\n';
+#endif // DEBUG
 	}
 	// Compute system probability
 	for (v=0; v<num_deriv_vars; ++v) {

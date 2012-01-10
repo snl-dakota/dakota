@@ -1474,6 +1474,11 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
   // if <mppU, fnGradU> < 0, then G is decreasing along u and G(u*) < G(0)
   Real beta_cdf = (mostProbPointU.dot(fnGradU) > 0.)
                 ? -std::sqrt(norm_u_sq) : std::sqrt(norm_u_sq);
+#ifdef DEBUG
+  Cout << "\nSign of <mppU, fnGradU> is ";
+  if (mostProbPointU.dot(fnGradU) > 0.) Cout << " 1.\n\n";
+  else                                  Cout << "-1.\n\n";
+#endif
   computedRelLevel = (cdfFlag) ? beta_cdf : -beta_cdf;
 }
 
@@ -1491,13 +1496,16 @@ void NonDLocalReliability::update_level_data()
   computedRelLevels[respFnCount][levelCount]    = computedRelLevel;
   computedGenRelLevels[respFnCount][levelCount] = computed_gen_rel_level;
 
-  // ---------------------------------------------------------------------------
-  // TO DO: pack individual level gradient data into form suitable to
-  //        reduction within update_final_statistics_gradients().
-  // ---------------------------------------------------------------------------
   // Final statistic gradients are dz/ds, dbeta/ds, or dp/ds
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
-  if (final_asv[statCount] & 2) {
+  bool system_grad_contrib = false;
+  if (respLevelTargetReduce &&
+      levelCount < requestedRespLevels[respFnCount].length()) {
+    size_t sys_stat_count = 2*numFunctions + totalLevelRequests + levelCount;
+    if (final_asv[sys_stat_count] & 2)
+      system_grad_contrib = true;
+  }
+  if ( (final_asv[statCount] & 2) || system_grad_contrib ) {
 
     // evaluate dg/ds at the MPP and store in final_stat_grad
     RealVector final_stat_grad;
@@ -1587,8 +1595,6 @@ void NonDLocalReliability::update_level_data()
     }
     finalStatistics.function_gradient(final_stat_grad, statCount);
   }
-  // ---------------------------------------------------------------------------
-  // ---------------------------------------------------------------------------
 
   // Update warm-start data and graphics
   if (warmStartFlag && subIteratorFlag && levelCount == 0) {
