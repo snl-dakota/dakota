@@ -250,6 +250,7 @@ check_configuration(const int& max_iterator_concurrency)
       ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) );
 
   bool err_flag = false;
+  /* Deactivated due to batch processing in PluginSerialDirectApplicInterface.C
   // Check for asynchronous local use of the direct interface.
   if (interfaceType == "direct") {  // direct: check for asynch evals/analyses
     if (asynch_local_eval_flag || asynchLocalAnalysisFlag ) {
@@ -258,6 +259,7 @@ check_configuration(const int& max_iterator_concurrency)
       err_flag = true;
     }
   }
+  */
   // Verify that multiprocessor analyses are only being invoked for synchronous
   // direct interfaces.  Neither system calls (synch or asynch), forks (synch
   // or asynch), nor POSIX threads (asynch direct) can share a communicator.
@@ -265,7 +267,7 @@ check_configuration(const int& max_iterator_concurrency)
   // correct answers if analysisComm's local leader computes the total result,
   // but it does NOT perform the intended multiprocessor analysis and is
   // therefore misleading and should be explicitly prevented.
-  else if (multiProcAnalysisFlag) { // system/fork: check for multiprocessor
+  if (multiProcAnalysisFlag && interfaceType != "direct") { // system/fork
     // Note: processors_per_analysis only read by DB for direct interfaces,
     //       so currently should not happen.
     Cerr << "Error: Multiprocessor analyses are not valid with "

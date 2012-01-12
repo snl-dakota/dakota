@@ -29,50 +29,20 @@ SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db):
 int SerialDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
 {
 #ifdef MPI_DEBUG
-    Cout << "analysis server " << analysisServerId << " invoking " << ac_name
-         << " within SIM::SerialDirectApplicInterface." << std::endl;
+  Cout << "analysis server " << analysisServerId << " invoking " << ac_name
+       << " within SIM::SerialDirectApplicInterface." << std::endl;
 #endif // MPI_DEBUG
+
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: plugin serial direct fn does not support multiprocessor "
+	 << "analyses." << std::endl;
+    Dakota::abort_handler(-1);
+  }
 
   int fail_code = 0;
   if (ac_name == "plugin_rosenbrock") {
-
-    if (multiProcAnalysisFlag) {
-      Cerr << "Error: rosenbrock direct fn does not yet support multiprocessor "
-	   << "analyses." << std::endl;
-      Dakota::abort_handler(-1);
-    }
-    if ( numVars!=2 || numADIV || numADRV ||
-	 ( ( gradFlag || hessFlag ) && numDerivVars != 2 ) ) {
-      Cerr << "Error: Bad number of variables in rosenbrock direct fn."
-	   << std::endl;
-      Dakota::abort_handler(-1);
-    }
-    if (numFns > 1) { // 1 fn -> opt
-      Cerr << "Error: Bad number of functions in rosenbrock direct fn."
-	   << std::endl;
-      Dakota::abort_handler(-1);
-    }
-
-    double f0 = xC[1]-xC[0]*xC[0];
-    double f1 = 1.-xC[0];
-
-    // **** f:
-    if (directFnASV[0] & 1)
-      fnVals[0] = 100.*f0*f0+f1*f1;
-
-    // **** df/dx:
-    if (directFnASV[0] & 2) {
-      fnGrads[0][0] = -400.*f0*xC[0] - 2.*f1;
-      fnGrads[0][1] =  200.*f0;
-    }
-    
-    // **** d^2f/dx^2:
-    if (directFnASV[0] & 4) {
-      double fx = xC[1] - 3.*xC[0]*xC[0];
-      fnHessians[0](0,0) = -400.*fx + 2.0;
-      fnHessians[0](0,1) = fnHessians[0](1,0) = -400.*xC[0];
-      fnHessians[0](1,1) =  200.;
-    }
+    Dakota::RealVector grad0 = Teuchos::getCol(Teuchos::View, fnGrads, 0);
+    rosenbrock(xC, directFnASV[0], fnVals[0], grad0, fnHessians[0]);
   }
   else {
     Cerr << ac_name << " is not available as an analysis within "
@@ -85,6 +55,84 @@ int SerialDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
     throw fail_code;
 
   return 0;
+}
+
+
+void SerialDirectApplicInterface::
+derived_map_asynch(const Dakota::ParamResponsePair& pair)
+{
+  // no-op (just hides base class error throw). Jobs are run exclusively within
+  // derived_synch(), prior to there existing true batch processing facilities.
+}
+
+
+void SerialDirectApplicInterface::derived_synch(Dakota::PRPQueue& prp_queue)
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: plugin serial direct fn does not support multiprocessor "
+	 << "analyses." << std::endl;
+    Dakota::abort_handler(-1);
+  }
+
+  for (Dakota::PRPQueueIter prp_iter = prp_queue.begin();
+       prp_iter != prp_queue.end(); prp_iter++) {
+    // For each job in the processing queue, evaluate the response
+    int fn_eval_id = prp_iter->eval_id();
+    const Dakota::Variables& vars = prp_iter->prp_parameters();
+    const Dakota::ActiveSet& set  = prp_iter->active_set();
+    Dakota::Response         resp = prp_iter->prp_response(); // shared rep
+    if (outputLevel > Dakota::SILENT_OUTPUT)
+      Cout << "SerialDirectApplicInterface:: evaluating function evaluation "
+	   << fn_eval_id << " in batch mode." << std::endl;
+    double fn_val; Dakota::RealVector fn_grad; Dakota::RealSymMatrix fn_hess;
+    //if (ac_name == "plugin_rosenbrock") { // not provided in this API
+      short asv = set.request_vector()[0];
+      rosenbrock(vars.continuous_variables(), asv, fn_val, fn_grad, fn_hess);
+      if (asv & 1) resp.function_value(fn_val, 0);
+      if (asv & 2) resp.function_gradient(fn_grad, 0);
+      if (asv & 4) resp.function_hessian(fn_hess, 0);
+    //}
+    //else {
+    //  Cerr << ac_name << " is not available as an analysis within "
+    //       << "SIM::SerialDirectApplicInterface." << std::endl;
+    //  Dakota::abort_handler(-1);
+    //}
+
+    // indicate completion of job to ApplicationInterface schedulers
+    completionSet.insert(fn_eval_id);
+  }
+}
+
+
+void SerialDirectApplicInterface::
+rosenbrock(const Dakota::RealVector& c_vars, short asv, double& fn_val, 
+	   Dakota::RealVector& fn_grad, Dakota::RealSymMatrix& fn_hess)
+{
+  if (c_vars.length() != 2) {
+    Cerr << "Error: Bad number of variables in rosenbrock direct fn."
+	 << std::endl;
+    Dakota::abort_handler(-1);
+  }
+
+  double x1 = c_vars[0], x2 = c_vars[1], f0 = x2 - x1*x1, f1 = 1. - x1;
+
+  // **** f:
+  if (asv & 1)
+    fn_val = 100.*f0*f0 + f1*f1;
+
+  // **** df/dx:
+  if (asv & 2) {
+    fn_grad[0] = -400.*f0*x1 - 2.*f1;
+    fn_grad[1] =  200.*f0;
+  }
+    
+  // **** d^2f/dx^2:
+  if (asv & 4) {
+    double fx = x2 - 3.*x1*x1;
+    fn_hess(0,0) = -400.*fx + 2.;
+    fn_hess(0,1) = fnHessians[0](1,0) = -400.*x1;
+    fn_hess(1,1) =  200.;
+  }
 }
 
 } // namespace SIM

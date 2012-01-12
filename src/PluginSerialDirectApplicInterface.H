@@ -61,16 +61,33 @@ protected:
 
   // execute the input filter portion of a direct evaluation invocation
   //int derived_map_if(const Dakota::String& if_name);
+
   /// execute an analysis code portion of a direct evaluation invocation
   int derived_map_ac(const Dakota::String& ac_name);
+
   // execute the output filter portion of a direct evaluation invocation
   //int derived_map_of(const Dakota::String& of_name);
+
+  /// no-op hides base error; job batching occurs within derived_synch()
+  void derived_map_asynch(const Dakota::ParamResponsePair& pair);
+
+  /// evaluate the batch of jobs contained in prp_queue
+  void derived_synch(Dakota::PRPQueue& prp_queue);
 
 private:
 
   //
+  //- Heading: Convenience functions
+  //
+
+  /// Rosenbrock plug-in test function
+  void rosenbrock(const Dakota::RealVector& c_vars, short asv, double& fn_val, 
+		  Dakota::RealVector& fn_grad, Dakota::RealSymMatrix& fn_hess);
+
+  //
   //- Heading: Data
   //
+
 };
 
 
