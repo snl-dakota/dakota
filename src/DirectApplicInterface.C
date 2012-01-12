@@ -86,6 +86,8 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   driverTypeMap["multimodal"]             = MULTIMODAL;
   driverTypeMap["lf_short_column"]        = LF_SHORT_COLUMN;
   driverTypeMap["short_column"]           = SHORT_COLUMN;
+  driverTypeMap["side_impact_cost"]       = SIDE_IMPACT_COST;
+  driverTypeMap["side_impact_perf"]       = SIDE_IMPACT_PERFORMANCE;
   driverTypeMap["sobol_rational"]         = SOBOL_RATIONAL;
   driverTypeMap["sobol_g_function"]       = SOBOL_G_FUNCTION;
   driverTypeMap["sobol_ishigami"]         = SOBOL_ISHIGAMI;
@@ -173,6 +175,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
     case CYLINDER_HEAD:       case LOGNORMAL_RATIO:     case MULTIMODAL:
     case GERSTNER:            case SCALABLE_GERSTNER:
     case EXTENDED_ROSENBROCK: case GENERALIZED_ROSENBROCK:
+    case SIDE_IMPACT_COST:    case SIDE_IMPACT_PERFORMANCE:
     case SOBOL_G_FUNCTION:    case SOBOL_RATIONAL:
     case TEXT_BOOK:     case TEXT_BOOK1: case TEXT_BOOK2: case TEXT_BOOK3:
     case TEXT_BOOK_OUU: case SCALABLE_TEXT_BOOK: case SCALABLE_MONOMIALS:
@@ -472,6 +475,10 @@ int DirectApplicInterface::derived_map_ac(const String& ac_name)
     fail_code = short_column(); break;
   case LF_SHORT_COLUMN:
     fail_code = lf_short_column(); break;
+  case SIDE_IMPACT_COST:
+    fail_code = side_impact_cost(); break;
+  case SIDE_IMPACT_PERFORMANCE:
+    fail_code = side_impact_perf(); break;
   case SOBOL_RATIONAL:
     fail_code = sobol_rational(); break;
   case SOBOL_G_FUNCTION:
@@ -1937,6 +1944,99 @@ int DirectApplicInterface::lf_short_column()
 	               - 4.*(P - M)/(b*h*Y);                      break;
     }
   }
+
+  return 0; // no failure
+}
+
+
+int DirectApplicInterface::side_impact_cost()
+{
+  if (numVars != 7 || numFns != 1) {
+    Cerr << "Error: wrong number of inputs/outputs in side_impact_cost."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  // **** f:
+  if (directFnASV[0] & 1)
+    fnVals[0] = 1.98 + 4.9*xC[0] + 6.67*xC[1] + 6.98*xC[2] + 4.01*xC[3]
+              + 1.78*xC[4] + 2.73*xC[6];
+
+  // **** df/dx:
+  if (directFnASV[0] & 2) {
+    Real* fn_grad = fnGrads[0];
+    fn_grad[0] = 4.9;  fn_grad[1] = 6.67; fn_grad[2] = 6.98;
+    fn_grad[3] = 4.01; fn_grad[4] = 1.78; fn_grad[5] = 0.;
+    fn_grad[6] = 2.73;
+  }
+
+  // **** d^2f/dx^2:
+  if (directFnASV[0] & 4)
+    fnHessians[0] = 0.;
+
+  return 0; // no failure
+}
+
+
+int DirectApplicInterface::side_impact_perf()
+{
+  if (numVars != 11 || numFns != 10) {
+    Cerr << "Error: wrong number of inputs/outputs in side_impact_perf."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  // **** f:
+  if (directFnASV[0] & 1)
+    fnVals[0] = 1.16 - 0.3717*xC[1]*xC[3] - 0.00931*xC[1]*xC[9]
+              - 0.484*xC[2]*xC[8] + 0.01343*xC[5]*xC[9];
+  if (directFnASV[1] & 1)
+    fnVals[1] = 28.98 + 3.818*xC[2] - 4.2*xC[0]*xC[1] + 0.0207*xC[4]*xC[9]
+              + 6.63*xC[5]*xC[8] - 7.7*xC[6]*xC[7] + 0.32*xC[8]*xC[9];
+  if (directFnASV[2] & 1)
+    fnVals[2] = 33.86 + 2.95*xC[2] + 0.1792*xC[9] - 5.057*xC[0]*xC[1]
+              - 11*xC[1]*xC[7] - 0.0215*xC[4]*xC[9] - 9.98*xC[6]*xC[7]
+              + 22*xC[7]*xC[8];
+  if (directFnASV[3] & 1)
+    fnVals[3] = 46.36 - 9.9*xC[1] - 12.9*xC[0]*xC[7] + 0.1107*xC[2]*xC[9];
+  if (directFnASV[4] & 1)
+    fnVals[4] = 0.261 - 0.0159*xC[0]*xC[1] - 0.188*xC[0]*xC[7]
+              - 0.019*xC[1]*xC[6] + 0.0144*xC[2]*xC[4] + 0.0008757*xC[4]*xC[9]
+              + 0.08045*xC[5]*xC[8] + 0.00139*xC[7]*xC[10]
+              + 0.00001575*xC[9]*xC[10];
+  if (directFnASV[5] & 1)
+    fnVals[5] = 0.214 + 0.00817*xC[4] - 0.131*xC[0]*xC[7] - 0.0704*xC[0]*xC[8]
+              + 0.03099*xC[1]*xC[5] - 0.018*xC[1]*xC[6] + 0.0208*xC[2]*xC[7]
+              + 0.121*xC[2]*xC[8] - 0.00364*xC[4]*xC[5] + 0.0007715*xC[4]*xC[9]
+              - 0.0005354*xC[5]*xC[9] + 0.00121*xC[7]*xC[10];
+  if (directFnASV[6] & 1)
+    fnVals[6] = 0.74 - 0.61*xC[1] - 0.163*xC[2]*xC[7] + 0.001232*xC[2]*xC[9]
+              - 0.166*xC[6]*xC[8] + 0.227*xC[1]*xC[1];
+  if (directFnASV[7] & 1)
+    fnVals[7] = 4.72 - 0.5*xC[3] - 0.19*xC[1]*xC[2] - 0.0122*xC[3]*xC[9]
+              + 0.009325*xC[5]*xC[9] + 0.000191*xC[10]*xC[10];
+  if (directFnASV[8] & 1)
+    fnVals[8] = 10.58 - 0.674*xC[0]*xC[1] - 1.95*xC[1]*xC[7]
+              + 0.02054*xC[2]*xC[9] - 0.0198*xC[3]*xC[9] + 0.028*xC[5]*xC[9];
+  if (directFnASV[9] & 1)
+    fnVals[9] = 16.45 - 0.489*xC[2]*xC[6] - 0.843*xC[4]*xC[5]
+              + 0.0432*xC[8]*xC[9] - 0.0556*xC[8]*xC[10]
+              - 0.000786*xC[10]*xC[10];
+
+  // **** df/dx and d^2f/dx^2:
+  bool grad_flag = false, hess_flag = false;
+  for (size_t i=0; i<numFns; ++i) {
+    if (directFnASV[i] & 2) grad_flag = true;
+    if (directFnASV[i] & 4) hess_flag = true;
+  }
+  if (grad_flag)
+    Cerr << "Error: gradients not currently supported in side_impact_perf()."
+	 << std::endl;
+  if (hess_flag)
+    Cerr << "Error: Hessians not currently supported in side_impact_perf()."
+	 << std::endl;
+  if (grad_flag || hess_flag)
+    abort_handler(-1);
 
   return 0; // no failure
 }

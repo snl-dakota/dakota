@@ -53,6 +53,7 @@ enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
 		LOGNORMAL_RATIO, MULTIMODAL,
 		PLUGIN_ROSENBROCK, PLUGIN_TEXT_BOOK,
 		SHORT_COLUMN, LF_SHORT_COLUMN,
+		SIDE_IMPACT_COST, SIDE_IMPACT_PERFORMANCE,
 		SOBOL_RATIONAL, SOBOL_G_FUNCTION, SOBOL_ISHIGAMI,
 		STEEL_COLUMN_COST, STEEL_COLUMN_PERFORMANCE, TEXT_BOOK,
 		TEXT_BOOK1, TEXT_BOOK2, TEXT_BOOK3, TEXT_BOOK_OUU,
@@ -216,8 +217,12 @@ private:
   int cyl_head();     ///< the cylinder head constrained optimization test fn
   int multimodal();   ///< multimodal UQ test function
   int log_ratio();    ///< the log_ratio UQ test function
+
   int short_column(); ///< the short_column UQ/OUU test function
   int lf_short_column(); ///< a low fidelity short_column test function
+
+  int side_impact_cost(); ///< the side_impact_cost UQ/OUU test function
+  int side_impact_perf(); ///< the side_impact_perf UQ/OUU test function
 
   int rosenbrock();  ///< the Rosenbrock optimization and least squares test fn
   int generalized_rosenbrock(); ///< n-dimensional Rosenbrock (Schittkowski)

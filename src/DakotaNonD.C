@@ -1838,26 +1838,29 @@ void NonD::print_system_mappings(std::ostream& s) const
 {
   size_t rl_len = requestedRespLevels[0].length();
   if (respLevelTargetReduce && rl_len) {
-    size_t i, width = write_precision+7, tgt_width,
+    size_t i, width = write_precision+7, g_width = 2*width+2,
       cntr = 2*numFunctions + totalLevelRequests;
     const RealVector& final_stats = finalStatistics.function_values();
     s << std::scientific << std::setprecision(write_precision)
       << "\nSystem response level mappings:\n";
-    if (cdfFlag) s << "Cumulative Distribution Function (CDF) ";
-    else         s << "Complementary Cumulative Distribution Function (CCDF) ";
+    if (cdfFlag) s << "Cumulative distribution metrics ";
+    else         s << "Complementary cumulative distribution metrics ";
     if (respLevelTargetReduce == SYSTEM_SERIES)        s << "for series ";
     else if (respLevelTargetReduce == SYSTEM_PARALLEL) s << "for parallel ";
     s << "system:\n     Resp Level Set  Probability Level  Reliability Index  "
       << "General Rel Index\n     --------------  -----------------  "
       << "-----------------  -----------------\n";
-    switch (respLevelTarget) {
-    case PROBABILITIES:     tgt_width = width;     break;
-    case RELIABILITIES:     tgt_width = 2*width+2; break;
-    case GEN_RELIABILITIES: tgt_width = 3*width+4; break;
+    Real prob, gen_rel;
+    for (i=0; i<rl_len; ++i, ++cntr) {
+      switch (respLevelTarget) {
+      case PROBABILITIES:
+	prob    = final_stats[cntr]; gen_rel = -Pecos::Phi_inverse(prob); break;
+      default:
+	gen_rel = final_stats[cntr]; prob    =  Pecos::Phi(-gen_rel);     break;
+      }
+      s << "  " << std::setw(width) << i+1 << "  " << std::setw(width) << prob
+	<< "  " << std::setw(g_width) << gen_rel << '\n';
     }
-    for (i=0; i<rl_len; ++i, ++cntr)
-      s << "  " << std::setw(width) << i+1 << "  "
-	<< std::setw(tgt_width) << final_stats[cntr] << '\n';
   }
 }
 

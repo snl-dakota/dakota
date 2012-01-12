@@ -1933,6 +1933,7 @@ void NonDExpansion::print_results(std::ostream& s)
     }
 
     print_distribution_mappings(s);
+    print_system_mappings(s);
   }
   s << "-------------------------------------------------------------------"
     << std::endl;
