@@ -849,6 +849,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
       print_distribution_mappings(s);
       if (pdfOutput)
 	print_pdf_mappings(s);
+      print_system_mappings(s);
     }
   }
   if (!subIteratorFlag) {

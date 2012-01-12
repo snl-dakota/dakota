@@ -1726,7 +1726,8 @@ void NonDExpansion::update_final_statistics_gradients()
   }
 
   // For distinct vars, nothing additional is needed since u_space_sampler
-  // has been configured to compute dg/ds at each of the sample points.
+  // has been configured to compute dg/ds at each of the sample points (these
+  // are already in user-space and are not part of the variable transform).
   // uSpaceModel.build_approximation() -> PecosApproximation::build()
   // then constructs PCE/SC approximations of these gradients, and
   // PecosApproximation::<mean,variance>_gradient()

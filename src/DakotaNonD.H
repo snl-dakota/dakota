@@ -144,6 +144,8 @@ protected:
   /// prints the z/p/beta/beta* mappings reflected in
   /// {requested,computed}{Resp,Prob,Rel,GenRel}Levels
   void print_distribution_mappings(std::ostream& s) const;
+  /// print system series/parallel mappings for response levels
+  void print_system_mappings(std::ostream& s) const;
 
   /// recast x_model from x-space to u-space to create u_model
   void construct_u_space_model(Model& x_model, Model& u_model,
