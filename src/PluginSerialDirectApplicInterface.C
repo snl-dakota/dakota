@@ -84,13 +84,13 @@ void SerialDirectApplicInterface::derived_synch(Dakota::PRPQueue& prp_queue)
     if (outputLevel > Dakota::SILENT_OUTPUT)
       Cout << "SerialDirectApplicInterface:: evaluating function evaluation "
 	   << fn_eval_id << " in batch mode." << std::endl;
-    double fn_val; Dakota::RealVector fn_grad; Dakota::RealSymMatrix fn_hess;
+    Dakota::RealVector fn_grad; Dakota::RealSymMatrix fn_hess;
     //if (ac_name == "plugin_rosenbrock") { // not provided in this API
       short asv = set.request_vector()[0];
+      Dakota::Real& fn_val = resp.function_value_view(0);
+      if (asv & 2) fn_grad = resp.function_gradient_view(0);
+      if (asv & 4) fn_hess = resp.function_hessian_view(0);
       rosenbrock(vars.continuous_variables(), asv, fn_val, fn_grad, fn_hess);
-      if (asv & 1) resp.function_value(fn_val, 0);
-      if (asv & 2) resp.function_gradient(fn_grad, 0);
-      if (asv & 4) resp.function_hessian(fn_hess, 0);
     //}
     //else {
     //  Cerr << ac_name << " is not available as an analysis within "
@@ -105,7 +105,7 @@ void SerialDirectApplicInterface::derived_synch(Dakota::PRPQueue& prp_queue)
 
 
 void SerialDirectApplicInterface::
-rosenbrock(const Dakota::RealVector& c_vars, short asv, double& fn_val, 
+rosenbrock(const Dakota::RealVector& c_vars, short asv, Dakota::Real& fn_val, 
 	   Dakota::RealVector& fn_grad, Dakota::RealSymMatrix& fn_hess)
 {
   if (c_vars.length() != 2) {
@@ -114,7 +114,7 @@ rosenbrock(const Dakota::RealVector& c_vars, short asv, double& fn_val,
     Dakota::abort_handler(-1);
   }
 
-  double x1 = c_vars[0], x2 = c_vars[1], f0 = x2 - x1*x1, f1 = 1. - x1;
+  Dakota::Real x1 = c_vars[0], x2 = c_vars[1], f0 = x2 - x1*x1, f1 = 1. - x1;
 
   // **** f:
   if (asv & 1)
@@ -128,7 +128,7 @@ rosenbrock(const Dakota::RealVector& c_vars, short asv, double& fn_val,
     
   // **** d^2f/dx^2:
   if (asv & 4) {
-    double fx = x2 - 3.*x1*x1;
+    Dakota::Real fx = x2 - 3.*x1*x1;
     fn_hess(0,0) = -400.*fx + 2.;
     fn_hess(0,1) = fnHessians[0](1,0) = -400.*x1;
     fn_hess(1,1) =  200.;
