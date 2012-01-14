@@ -41,9 +41,9 @@ public:
   NonDAdaptImpSampling(Model& model); ///< standard constructor
   
   NonDAdaptImpSampling(Model& model, const String& sample_type, int samples,
-		       int seed, const String& rng, short is_type,
-		       bool cdf_flag, bool x_space_data, bool x_space_model,
-		       bool bounded_model);
+		       int seed, const String& rng, bool vary_pattern,
+		       short is_type, bool cdf_flag, bool x_space_data,
+		       bool x_space_model, bool bounded_model);
 
   ~NonDAdaptImpSampling(); ///< destructor
 

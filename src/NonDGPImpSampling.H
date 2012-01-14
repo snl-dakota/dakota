@@ -69,6 +69,10 @@ private:
   //- Heading: Data
   //
 
+  /// LHS iterator for building the initial GP
+  Iterator gpBuild;
+  /// LHS iterator for sampling on the GP
+  Iterator gpEval;
   /// GP model of response, one approximation per response function
   Model gpModel;
   

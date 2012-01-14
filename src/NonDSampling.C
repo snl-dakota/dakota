@@ -73,11 +73,11 @@ NonDSampling::NonDSampling(Model& model): NonD(model),
     of on-the-fly sample sets. */
 NonDSampling::
 NonDSampling(NoDBBaseConstructor, Model& model, const String& sample_type,
-	     int samples, int seed, const String& rng):
+	     int samples, int seed, const String& rng, bool vary_pattern):
   NonD(NoDBBaseConstructor(), model), seedSpec(seed), randomSeed(seed),
   samplesSpec(samples), samplesRef(samples), numSamples(samples), rngName(rng),
   sampleType(sample_type), statsFlag(false), allDataFlag(true),
-  sampleRanksMode(IGNORE_RANKS), varyPattern(false), numLHSRuns(0)
+  sampleRanksMode(IGNORE_RANKS), varyPattern(vary_pattern), numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output
 
@@ -100,7 +100,7 @@ NonDSampling(NoDBBaseConstructor, const String& sample_type, int samples,
   NonD(NoDBBaseConstructor(), lower_bnds, upper_bnds), seedSpec(seed),
   randomSeed(seed), samplesSpec(samples), samplesRef(samples),
   numSamples(samples), rngName(rng), sampleType(sample_type), statsFlag(false),
-  allDataFlag(true), sampleRanksMode(IGNORE_RANKS), varyPattern(false),
+  allDataFlag(true), sampleRanksMode(IGNORE_RANKS), varyPattern(true),
   numLHSRuns(0)
 {
   subIteratorFlag = true; // suppress some output

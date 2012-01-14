@@ -154,6 +154,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   int samples  = (numContinuousVars+1)*(numContinuousVars+2)/2,
       lhs_seed = probDescDB.get_int("method.random_seed");
   const String& rng = probDescDB.get_string("method.random_number_generator");
+  bool vary_pattern = false; // for consistency across outer loop invocations
 
   //int symbols = samples; // symbols needed for DDACE
   Iterator dace_iterator;
@@ -165,7 +166,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
 
     // The following uses on the fly derived ctor:
     dace_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-      samples, lhs_seed, rng, ACTIVE_UNIFORM), false);
+      samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM), false);
     //String dace_method = "lhs";
     //dace_iterator.assign_rep(new DDACEDesignCompExp(iteratedModel, samples,
     //                         symbols, lhs_seed, dace_method), false);
@@ -206,7 +207,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
 
     // The following use on-the-fly derived ctors:
     dace_iterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
-      samples, lhs_seed, rng, ACTIVE_UNIFORM), false);
+      samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM), false);
     //String dace_method = "lhs";
     //dace_iterator.assign_rep(new DDACEDesignCompExp(g_u_model, samples,
     //                         symbols, lhs_seed, dace_method), false);
@@ -299,12 +300,12 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   // these flags control if/when space transformation is needed in the sampler
   bool x_model_flag = false, bounded_model = true;
   bool x_data_flag = (mppSearchType == EGRA_X) ? true : false;
-  integrationRefinement = MMAIS;
+  integrationRefinement = MMAIS; vary_pattern = true;
 
-  importanceSampler.assign_rep(
-    new NonDAdaptImpSampling(uSpaceModel, sample_type, refinement_samples,
-    refinement_seed, rng, integrationRefinement, cdfFlag, x_data_flag,
-    x_model_flag, bounded_model), false);
+  importanceSampler.assign_rep(new NonDAdaptImpSampling(uSpaceModel,
+    sample_type, refinement_samples, refinement_seed, rng, vary_pattern,
+    integrationRefinement, cdfFlag, x_data_flag, x_model_flag, bounded_model),
+    false);
 
   uSpaceModel.init_communicators(importanceSampler.maximum_concurrency());
 }

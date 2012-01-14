@@ -38,25 +38,31 @@ NonDGPImpSampling::NonDGPImpSampling(Model& model): NonDSampling(model)
 { 
   samplingVarsMode = ACTIVE_UNIFORM;
   String sample_reuse, approx_type("global_gaussian");/*("global_kriging");*/
-    UShortArray approx_order; // not used by GP/kriging
-    short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
-    if (probDescDB.get_bool("method.derivative_usage")) {
-      if (gradientType != "none") data_order |= 2;
-      if (hessianType  != "none") data_order |= 4;
-    }
-    String sample_type("lhs"); // hard-wired for now
-    Iterator lhs_iterator;
-    construct_lhs(lhs_iterator, iteratedModel, sample_type, numSamples,
-                    randomSeed, rngName);
-    gpModel.assign_rep(new DataFitSurrModel(lhs_iterator, iteratedModel,
-        approx_type, approx_order, corr_type, corr_order, data_order,
-        sample_reuse), false);
-    // need to determine how we handle concurrency
-    gpModel.init_communicators(1);
- }
+  UShortArray approx_order; // not used by GP/kriging
+  short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
+  if (probDescDB.get_bool("method.derivative_usage")) {
+    if (gradientType != "none") data_order |= 2;
+    if (hessianType  != "none") data_order |= 4;
+  }
+  String sample_type("lhs"); // hard-wired for now
+  bool vary_pattern = false; // for consistency across outer loop invocations
+  construct_lhs(gpBuild, iteratedModel, sample_type, numSamples, randomSeed,
+		rngName, vary_pattern);
+  gpModel.assign_rep(new DataFitSurrModel(gpBuild, iteratedModel, approx_type,
+    approx_order, corr_type, corr_order, data_order, sample_reuse), false);
+  vary_pattern = true; // allow seed to run among multiple approx sample sets
+  construct_lhs(gpEval, gpModel, sample_type, numEmulEval, randomSeed,
+		rngName, vary_pattern);
+
+  //gpModel.init_communicators(gpBuild.maximum_concurrency());
+  gpModel.init_communicators(gpEval.maximum_concurrency());
+}
 
 NonDGPImpSampling::~NonDGPImpSampling()
-{ gpModel.free_communicators(1); }
+{
+  //gpModel.free_communicators(gpBuild.maximum_concurrency());
+  gpModel.free_communicators(gpEval.maximum_concurrency());
+}
  
 
 //NonDGPImpSampling::
@@ -79,26 +85,23 @@ void NonDGPImpSampling::quantify_uncertainty()
   numPtsTotal = numSamples + numPtsAdd;
   numEmulEval = 10; // perhaps add to input spect?
  
-  // Build initial GP model.  This will be over the initial LHS sample set
-  // defined in the constructor.
-  gpModel.build_approximation();
-  
-  Iterator lhsSampler;
-  lhsSampler.assign_rep(new NonDLHSSampling(gpModel, "lhs", numEmulEval,
-                    randomSeed, rngName, ALL_UNIFORM), false);
-  gpModel.init_communicators(lhsSampler.maximum_concurrency());
-  lhsSampler.run_iterator(Cout);
+  // Build initial GP model using truth model evals.  This will be
+  // over the initial LHS sample set defined in the constructor.
+  gpModel.build_approximation(); // runs gpBuild on iteratedModel
+
+  // Evaluate approximate samples on the GP
+  gpEval.run_iterator(Cout);
 
   //KEITH:  Currently I have gpCvars, gpVar, and gpMeans as variables 
   //holding the GP surrogate results.  We should discuss if these 
   //should be class variables or local variables.
  
-  const RealMatrix&  all_samples = lhsSampler.all_samples();
+  const RealMatrix&  all_samples = gpEval.all_samples();
   RealVectorArray  gpCvars(numEmulEval);
   RealVector temp_cvars;
   RealVectorArray gpVar(numEmulEval);
   RealVectorArray gpMeans(numEmulEval);
-  const IntResponseMap& all_resp    = lhsSampler.all_responses();
+  const IntResponseMap& all_resp = gpEval.all_responses();
   int num_problem_vars=iteratedModel.acv();
   int i,j;
  

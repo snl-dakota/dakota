@@ -65,6 +65,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     exp_order.resize(numContinuousVars);
     exp_order.assign(numContinuousVars, order);
   }
+  String pt_reuse; // empty default gets overridden for unstructured grids
   if (expansionImportFile.empty()) {
     const UShortArray& quad_order_spec
       = probDescDB.get_dusa("method.nond.quadrature_order");
@@ -87,6 +88,9 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
       construct_cubature(u_space_sampler, g_u_model, cub_int_spec);
     }
     else { // expansion_samples or collocation_points
+      // default pattern is static for consistency in any outer loop,
+      // but gets overridden below for unstructured grid refinement.
+      bool vary_pattern = false;
       int exp_samples = probDescDB.get_int("method.nond.expansion_samples");
       if (exp_samples > 0) { // expectation
 	if (refineType) { // no obvious logic for sample refinement
@@ -96,11 +100,14 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	}
 	numSamplesOnModel       = exp_samples;
 	expansionCoeffsApproach = Pecos::SAMPLING;
-	// reuse type/seed/rng settings intended for the expansion_sampler
+	// reuse type/seed/rng settings intended for the expansion_sampler.
+	// Unlike expansion_sampler, allow sampling pattern to vary under
+	// unstructured grid refinement/replacement/augmentation.
 	construct_lhs(u_space_sampler, g_u_model,
 	  probDescDB.get_string("method.sample_type"), numSamplesOnModel,
 	  probDescDB.get_int("method.random_seed"),
-	  probDescDB.get_string("method.random_number_generator"));
+	  probDescDB.get_string("method.random_number_generator"),
+	  vary_pattern);
       }
       else { // regression
 	if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
@@ -134,12 +141,22 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  construct_quadrature(u_space_sampler, g_u_model, numSamplesOnModel,
 			       dim_pref);
 	}
-	else                  // "point collocation": LHS sampling
-	  // reuse type/seed/rng settings intended for the expansion_sampler
+	else {                 // "point collocation": LHS sampling
+	  pt_reuse
+	    = probDescDB.get_string("method.nond.collocation_point_reuse");
+	  // if reusing samples within a refinement strategy, ensure different
+	  // random numbers are generated for points within the grid (even if
+	  // the number of samples differs)
+	  vary_pattern = (refineType && !pt_reuse.empty());
+	  // reuse type/seed/rng settings intended for the expansion_sampler.
+	  // Unlike expansion_sampler, allow sampling pattern to vary under
+	  // unstructured grid refinement/replacement/augmentation.
 	  construct_lhs(u_space_sampler, g_u_model,
 	    probDescDB.get_string("method.sample_type"), numSamplesOnModel,
 	    probDescDB.get_int("method.random_seed"),
-	    probDescDB.get_string("method.random_number_generator"));
+	    probDescDB.get_string("method.random_number_generator"),
+	    vary_pattern);
+	}
 	// TO DO:
 	//if (probDescDB.get_string("method.nond.expansion_sample_type")
 	//    == "incremental_lhs"))
@@ -160,15 +177,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // not the typical All view for DACE).  No correction is employed.
   // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
   short  corr_order = -1, corr_type = NO_CORRECTION;
-  String pt_reuse, approx_type = (piecewiseBasis) ?
+  String approx_type = (piecewiseBasis) ?
     "piecewise_orthogonal_polynomial" : "global_orthogonal_polynomial";
-  if (expansionCoeffsApproach == Pecos::REGRESSION && !tensorRegression) {
-    pt_reuse = probDescDB.get_string("method.nond.collocation_point_reuse");
-    // if reusing samples within a refinement strategy ensure different random
-    // numbers are generated for points w/i the grid (even if #samples differs)
-    if (refineType && !pt_reuse.empty())
-      ((Analyzer*)u_space_sampler.iterator_rep())->vary_pattern(true);
-  }
   //const Variables& g_u_vars = g_u_model.current_variables();
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     //g_u_vars.view(), g_u_vars.variables_components(),

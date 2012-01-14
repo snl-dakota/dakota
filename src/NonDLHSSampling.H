@@ -46,7 +46,7 @@ public:
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonDLHSSampling(Model& model, const String& sample_type,
 		  int samples, int seed, const String& rng,
-		  short sampling_vars_mode = ACTIVE);
+		  bool vary_pattern = true, short sampling_vars_mode = ACTIVE);
 
   /// alternate constructor for sample generation "on the fly"
   NonDLHSSampling(const String& sample_type, int samples, int seed,

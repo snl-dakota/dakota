@@ -66,7 +66,7 @@ protected:
 
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonDSampling(NoDBBaseConstructor, Model& model, const String& sample_type,
-	       int samples, int seed, const String& rng);
+	       int samples, int seed, const String& rng, bool vary_pattern);
 
   /// alternate constructor for sample generation "on the fly"
   NonDSampling(NoDBBaseConstructor, const String& sample_type, int samples,

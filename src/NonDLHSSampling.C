@@ -40,9 +40,11 @@ NonDLHSSampling::NonDLHSSampling(Model& model): NonDSampling(model),
     It's purpose is to avoid the need for a separate LHS specification
     within methods that use LHS sampling. */
 NonDLHSSampling::
-NonDLHSSampling(Model& model, const String& sample_type, int samples, int seed,
-		const String& rng, short sampling_vars_mode): 
-  NonDSampling(NoDBBaseConstructor(), model, sample_type, samples, seed, rng),
+NonDLHSSampling(Model& model, const String& sample_type, int samples,
+		int seed, const String& rng, bool vary_pattern,
+		short sampling_vars_mode): 
+  NonDSampling(NoDBBaseConstructor(), model, sample_type, samples, seed, rng,
+	       vary_pattern),
   numResponseFunctions(numFunctions), varBasedDecompFlag(false)
 { samplingVarsMode = sampling_vars_mode; }
 

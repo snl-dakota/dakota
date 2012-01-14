@@ -33,7 +33,7 @@ namespace Dakota {
 PSUADEDesignCompExp::PSUADEDesignCompExp(Model& model): PStudyDACE(model),
   samplesSpec(probDescDB.get_int("method.samples")), numSamples(samplesSpec),
   varPartitionsSpec(probDescDB.get_dusa("method.partitions")), numPartitions(0),
-  allDataFlag(false), numDACERuns(0), varyPattern(false), 
+  allDataFlag(false), numDACERuns(0), varyPattern(true), 
   seedSpec(probDescDB.get_int("method.random_seed")), randomSeed(seedSpec)
 {
   if (methodName != "psuade_moat") {

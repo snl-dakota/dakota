@@ -720,7 +720,7 @@ void NonD::construct_u_space_model(Model& x_model, Model& u_model,
 void NonD::
 construct_lhs(Iterator& u_space_sampler, Model& u_model,
 	      const String& sample_type, int num_samples, int seed,
-	      const String& rng)
+	      const String& rng, bool vary_pattern)
 {
   // sanity checks
   if (num_samples <= 0) {
@@ -730,8 +730,8 @@ construct_lhs(Iterator& u_space_sampler, Model& u_model,
   }
 
   // construct NonDLHSSampling with default sampling_vars_mode (ACTIVE)
-  u_space_sampler.assign_rep(new
-    NonDLHSSampling(u_model, sample_type, num_samples, seed, rng), false);
+  u_space_sampler.assign_rep(new NonDLHSSampling(u_model, sample_type,
+    num_samples, seed, rng, vary_pattern), false);
 }
 
 

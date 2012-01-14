@@ -153,7 +153,7 @@ protected:
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& u_model,
 		     const String& sample_type, int num_samples, int seed,
-		     const String& rng);
+		     const String& rng, bool vary_pattern);
 
   /// static function for RecastModels used to map u-space variables
   /// from NonD Iterators to x-space variables for Model evaluations.

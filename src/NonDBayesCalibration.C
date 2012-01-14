@@ -89,14 +89,15 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     if (standardizedSpace) {
       Model g_u_model;
       construct_u_space_model(iteratedModel, g_u_model, true);//globally bounded
-      construct_lhs(lhs_iterator, g_u_model, sample_type, samples, seed, rng);
+      construct_lhs(lhs_iterator, g_u_model, sample_type, samples, seed, rng,
+		    true);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, g_u_model,
         approx_type, approx_order, corr_type, corr_order, data_order,
         sample_reuse), false);
     }
     else {
       construct_lhs(lhs_iterator, iteratedModel, sample_type, samples,
-		    seed, rng);
+		    seed, rng, true);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, iteratedModel,
         approx_type, approx_order, corr_type, corr_order, data_order,
         sample_reuse), false);

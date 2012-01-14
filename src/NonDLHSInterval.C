@@ -35,8 +35,9 @@ NonDLHSInterval::NonDLHSInterval(Model& model): NonDInterval(model),
     numSamples = 10000;
 
   String sample_type; // empty string: use default sample type
+  bool vary_pattern = false; // for consistency across outer loop invocations
   lhsSampler.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-    numSamples, seedSpec, rngName), false);  
+    numSamples, seedSpec, rngName, vary_pattern), false);
   iteratedModel.init_communicators(lhsSampler.maximum_concurrency());      
 }
 

@@ -66,7 +66,7 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
 
   // The following uses on the fly derived ctor:
   daceIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-    numSamples, seedSpec, rngName, ACTIVE_UNIFORM), false);
+    numSamples, seedSpec, rngName, false, ACTIVE_UNIFORM), false);
   // only use derivatives if the user requested and they are available
   ActiveSet dace_set = daceIterator.active_set(); // copy
   dace_set.request_values(dataOrder);

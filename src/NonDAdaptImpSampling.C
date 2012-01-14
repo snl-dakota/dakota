@@ -50,9 +50,11 @@ NonDAdaptImpSampling::NonDAdaptImpSampling(Model& model):
     using a Model but no ProblemDescDB. */
 NonDAdaptImpSampling::
 NonDAdaptImpSampling(Model& model, const String& sample_type, int samples,
-		     int seed, const String& rng, short is_type, bool cdf_flag,
-		     bool x_space_data, bool x_space_model, bool bounded_model):
-  NonDSampling(NoDBBaseConstructor(), model, sample_type, samples, seed, rng),
+		     int seed, const String& rng, bool vary_pattern,
+		     short is_type, bool cdf_flag, bool x_space_data,
+		     bool x_space_model, bool bounded_model):
+  NonDSampling(NoDBBaseConstructor(), model, sample_type, samples, seed, rng,
+	       vary_pattern),
   initLHS(false), importanceSamplingType(is_type),
   // if initial points in x-space, they must be transformed because method
   //   expects all points in u-space
@@ -678,7 +680,7 @@ void NonDAdaptImpSampling::generate_samples(RealVectorArray& samples)
     }
   }
 
-  varyPattern = true;
+  //varyPattern = true;
   initialize_lhs(false);
   RealMatrix lhs_samples_array;
   lhsDriver.generate_normal_samples(n_means, n_std_devs, n_l_bnds, n_u_bnds,

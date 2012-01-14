@@ -379,12 +379,14 @@ void NonDExpansion::construct_expansion_sampler()
       abort_handler(-1);
     }
 
-    // could use construct_lhs() except for non-default UNCERTAIN sampling mode
+    // could use construct_lhs() except for non-default UNCERTAIN sampling mode.
+    // Don't vary sampling pattern since we want to reuse same sampling stencil
+    // for different design/epistemic vars or for (goal-oriented) adaptivity.
     const String& sample_type = probDescDB.get_string("method.sample_type");
     int orig_seed = probDescDB.get_int("method.random_seed");
     const String& rng = probDescDB.get_string("method.random_number_generator");
     expansionSampler.assign_rep(new NonDLHSSampling(uSpaceModel, sample_type,
-      numSamplesOnExpansion, orig_seed, rng, UNCERTAIN), false);
+      numSamplesOnExpansion, orig_seed, rng, false, UNCERTAIN), false);
 
     //expansionSampler.sampling_reset(numSamplesOnExpansion, true, false);
     NonD* exp_sampler_rep = (NonD*)expansionSampler.iterator_rep();
@@ -415,10 +417,10 @@ void NonDExpansion::construct_expansion_sampler()
 	is_type = MMAIS;
       Cout << "IS refinement type " << is_type;
 
-      int refine_samples = 1000;
+      int refine_samples = 1000; bool vary_pattern = true;
       importanceSampler.assign_rep(new NonDAdaptImpSampling(uSpaceModel,
-	sample_type, refine_samples, orig_seed, rng, is_type, cdfFlag,
-	false, false, false), false);
+	sample_type, refine_samples, orig_seed, rng, vary_pattern, is_type,
+	cdfFlag, false, false, false), false);
       uSpaceModel.init_communicators(importanceSampler.maximum_concurrency());
  
       NonDAdaptImpSampling* imp_sampler_rep = 

@@ -80,11 +80,12 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
       lhs_seed = probDescDB.get_int("method.random_seed");
   String sample_type, rng; // empty strings: use defaults
   //int symbols = samples; // symbols needed for DDACE
+  bool vary_pattern = false;// for consistency across any outer loop invocations
 
   Iterator dace_iterator;
   // The following uses on the fly derived ctor:
   dace_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-    samples, lhs_seed, rng, ACTIVE_UNIFORM), false);
+    samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM), false);
   // only use derivatives if the user requested and they are available
   ActiveSet dace_set = dace_iterator.active_set(); // copy
   dace_set.request_values(dataOrder);
@@ -137,10 +138,8 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   int max_iterations = 10000, max_fn_evals = 50000;
   double min_box_size = 1.e-15, vol_box_size = 1.e-15;
 #ifdef HAVE_NCSU
-  approxSubProbMinimizer.assign_rep(new
-				    NCSUOptimizer(eifModel, max_iterations, 
-						  max_fn_evals, min_box_size, 
-						  vol_box_size), false);
+  approxSubProbMinimizer.assign_rep(new NCSUOptimizer(eifModel, max_iterations, 
+    max_fn_evals, min_box_size, vol_box_size), false);
   eifModel.init_communicators(approxSubProbMinimizer.maximum_concurrency());
 #else
   Cerr << "NCSU DIRECT is not available to optimize the GP subproblems. " 

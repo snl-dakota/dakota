@@ -356,12 +356,13 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       String sample_type, rng; // empty strings: use defaults
 
       // flags control if/when transformation is needed in importanceSampler
-      bool x_data_flag = false, x_model_flag = true, bounded_model = false;
+      bool x_data_flag = false, x_model_flag = true, bounded_model = false,
+	   vary_pattern = true;
 
       importanceSampler.assign_rep(
 	new NonDAdaptImpSampling(iteratedModel, sample_type, refinement_samples,
-	refinement_seed, rng, integrationRefinement, cdfFlag, x_data_flag,
-	x_model_flag, bounded_model), false);
+	refinement_seed, rng, vary_pattern, integrationRefinement, cdfFlag,
+	x_data_flag, x_model_flag, bounded_model), false);
 
       iteratedModel.init_communicators(importanceSampler.maximum_concurrency());
     }
