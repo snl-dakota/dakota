@@ -82,10 +82,33 @@ private:
   int numPtsTotal;
   /// the number of points evaluated by the GP each iteration
   int numEmulEval;
-  /// rhoDrawThis
-  RealVector rhoDrawThis; 
   /// the final calculated probability (p)
   Real finalProb;
+  /// Vector to hold the current values of the current sample inputs on the GP
+  RealVectorArray gpCvars;
+  /// Vector to hold the current values of the current mean estimates 
+  /// for the sample values on the GP
+  RealVectorArray gpMeans;
+  /// Vector to hold the current values of the current variance estimates 
+  /// for the sample values on the GP
+  RealVectorArray gpVar;
+  /// Vector to hold the expected indicator values for the current GP samples
+  RealVector expIndicator; 
+  /// Vector to hold the normalization constant calculated for each 
+  /// point added
+  RealVector normConst;
+  /// IntVector to hold indicator for actual simulation values vs. threshold
+  IntVector indicator;
+  /// xDrawThis, appended to locally to hold the X values of emulator points chosen
+  RealVectorArray xDrawThis; 
+  /// expIndThis, appended locally to hold the expected indicator 
+  RealVector expIndThis; 
+  /// rhoDrawThis, appended locally to hold the rhoDraw density for calculating draws
+  RealVector rhoDrawThis; 
+  /// function to calculate the expected indicator probabilities
+  RealVector calcExpIndicator(const int respFnCount, const Real respThresh);
+  ///
+  void calcRhoDraw();
 
 };
 
