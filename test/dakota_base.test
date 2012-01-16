@@ -52138,7 +52138,7 @@ cdf_beta Sobol indices:
                       6.2963112185e-01  6.8945667658e-01 uuv_1
                       3.1054332342e-01  3.7036887815e-01 uuv_2
                       5.9825554728e-02 uuv_1 uuv_2 
-dakota_uq_sideimpact.in
+dakota_uq_side_impact.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (UQ_I): 100000 total (100000 new, 0 duplicate)
 Moment-based statistics for each response function:
