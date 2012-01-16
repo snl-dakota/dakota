@@ -12,6 +12,7 @@ use POSIX "sys_wait_h";
 
 # set default options (global to this script)
 my $baseline_filename = "";  # default is dakota_[p]base.test.new
+my $bin_dir = "";            # default binary location is pwd (none)
 my $extract_filename = "";   # default is dakota_*.in_
 my $input_dir = "";          # default test file source is pwd
 my $mode = "run";            # modes are run, base, extract
@@ -318,6 +319,7 @@ sub process_command_line {
 
   # Process long options
   GetOptions('base'           => \$opt_base,
+  	     'bin-dir=s'      => \$bin_dir,
   	     'extract'        => \$opt_extract,
   	     'file-base=s'    => \$baseline_filename,
   	     'file-extract=s' => \$extract_filename,
@@ -357,6 +359,9 @@ sub process_command_line {
 
   # directory options
   # (only append a slash if using an alternate path, so local tests still work)
+  if ($bin_dir) {
+    $bin_dir .= "/";
+  }
   if ($input_dir) {
     $input_dir .= "/";
   }
@@ -604,7 +609,7 @@ sub form_test_command {
   my ($num_proc, $dakota_command, $restart_command, $dakota_input, 
       $output, $error) = @_;
 
-  my $fulldakota = "$dakota_command $restart_command $dakota_input";
+  my $fulldakota = "${bin_dir}${dakota_command} $restart_command $dakota_input";
   my $redir = "> $output 2> $error";     
 
   # default serial command
@@ -1038,6 +1043,9 @@ options
 extract test specified by test_number (required) from specified single
 test to specified filename; cannot be specified with base options
 
+=item B<--bin-dir=filepath>
+
+directory containing executables such as dakota
 
 =item B<--input-dir=filepath>
 
