@@ -1027,16 +1027,16 @@ KEYWORD12 method
 	    | no_approx
 	    [ sqp
 	    | nip ]
-	    ]
-	  [ integration
-	    first_order
-	    | second_order
-	    [ sample_refinement
-	      import
-	      | adapt_import
-	      | mm_adapt_import
-	      [ samples INTEGER ]
-	      [ seed INTEGER ]
+	    [ integration
+	      first_order
+	      | second_order
+	      [ sample_refinement
+		import
+		| adapt_import
+		| mm_adapt_import
+		[ samples INTEGER ]
+		[ seed INTEGER ]
+		]
 	      ]
 	    ]
 	  [ response_levels REALLIST

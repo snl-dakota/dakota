@@ -563,7 +563,8 @@ static GuiKeyWord
 		{"sample_refinement",8,5,2,0,1049,kw_88},
 		{"second_order",8,0,1,1,1047}
 		},
-	kw_90[9] = {
+	kw_90[10] = {
+		{"integration",8,3,3,0,1043,kw_89,0.,0.,0.,0,"{Integration method} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"},
 		{"nip",8,0,2,0,1041},
 		{"no_approx",8,0,1,1,1037},
 		{"sqp",8,0,2,0,1039},
@@ -591,14 +592,13 @@ static GuiKeyWord
 		{"compute",8,4,2,0,1065,kw_93},
 		{"num_response_levels",13,0,1,0,1063}
 		},
-	kw_95[7] = {
-		{"distribution",8,2,5,0,1121,kw_66},
-		{"gen_reliability_levels",14,1,7,0,1131,kw_67},
-		{"integration",8,3,2,0,1043,kw_89,0.,0.,0.,0,"{Integration method} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"},
-		{"mpp_search",8,9,1,0,1023,kw_90,0.,0.,0.,0,"{MPP search type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"},
-		{"probability_levels",14,1,6,0,1127,kw_68},
-		{"reliability_levels",14,1,4,0,1079,kw_91},
-		{"response_levels",14,2,3,0,1061,kw_94}
+	kw_95[6] = {
+		{"distribution",8,2,4,0,1121,kw_66},
+		{"gen_reliability_levels",14,1,6,0,1131,kw_67},
+		{"mpp_search",8,10,1,0,1023,kw_90,0.,0.,0.,0,"{MPP search type} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel"},
+		{"probability_levels",14,1,5,0,1127,kw_68},
+		{"reliability_levels",14,1,3,0,1079,kw_91},
+		{"response_levels",14,2,2,0,1061,kw_94}
 		},
 	kw_96[2] = {
 		{"num_offspring",0x19,0,2,0,371,0,0.,0.,0.,0,"{Number of offspring in random shuffle crossover} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodJEGADC"},
@@ -1117,7 +1117,7 @@ static GuiKeyWord
 		{"list_parameter_study",8,1,11,1,1167,kw_79,0.,0.,0.,0,"{List parameter study} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodPSLPS","Parameter Studies"},
 		{"local_evidence",8,6,11,1,979,kw_86,0.,0.,0.,0,0,"Uncertainty Quantification"},
 		{"local_interval_est",8,2,11,1,1015,kw_87,0.,0.,0.,0,0,"Uncertainty Quantification"},
-		{"local_reliability",8,7,11,1,1021,kw_95,0.,0.,0.,0,"{Reliability method} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel","Uncertainty Quantification"},
+		{"local_reliability",8,6,11,1,1021,kw_95,0.,0.,0.,0,"{Reliability method} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodNonDLocalRel","Uncertainty Quantification"},
 		{"max_function_evaluations",9,0,5,0,79,0,0.,0.,0.,0,"{Maximum function evaluations} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
 		{"max_iterations",9,0,4,0,77,0,0.,0.,0.,0,"{Maximum iterations} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
 		{"model_pointer",11,0,2,0,63,0,0.,0.,0.,0,"{Model pointer} http://dakota.sandia.gov/licensing/votd/html-ref/MethodCommands.html#MethodIndControl"},
@@ -1134,7 +1134,7 @@ static GuiKeyWord
 		{"nond_importance_sampling",0,7,11,1,778,kw_78},
 		{"nond_local_evidence",0,6,11,1,978,kw_86},
 		{"nond_local_interval_est",0,2,11,1,1014,kw_87},
-		{"nond_local_reliability",0,7,11,1,1020,kw_95},
+		{"nond_local_reliability",0,6,11,1,1020,kw_95},
 		{"nond_polynomial_chaos",0,23,11,1,588,kw_125},
 		{"nond_sampling",0,12,11,1,734,kw_129},
 		{"nond_stoch_collocation",0,24,11,1,664,kw_139},

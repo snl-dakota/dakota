@@ -543,7 +543,8 @@ static KeyWord
 		{"sample_refinement",8,5,2,0,kw_96},
 		{"second_order",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilityIntegration_second_order)}
 		},
-	kw_98[9] = {
+	kw_98[10] = {
+		{"integration",8,3,3,0,kw_97},
 		{"nip",8,0,2,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_nip)},
 		{"no_approx",8,0,1,1,0,0.,0.,0,N_mdm(lit,reliabilitySearchType_no_approx)},
 		{"sqp",8,0,2,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_sqp)},
@@ -571,12 +572,11 @@ static KeyWord
 		{"compute",8,4,2,0,kw_101},
 		{"num_response_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,responseLevels)}
 		},
-	kw_103[5] = {
+	kw_103[4] = {
 		{0,0,3,0,0,kw_76},
-		{"integration",8,3,2,0,kw_97},
-		{"mpp_search",8,9,1,0,kw_98},
-		{"reliability_levels",14,1,4,0,kw_99,0.,0.,0,N_mdm(resplevs,reliabilityLevels)},
-		{"response_levels",14,2,3,0,kw_102,0.,0.,0,N_mdm(resplevs,responseLevels)}
+		{"mpp_search",8,10,1,0,kw_98},
+		{"reliability_levels",14,1,3,0,kw_99,0.,0.,0,N_mdm(resplevs,reliabilityLevels)},
+		{"response_levels",14,2,2,0,kw_102,0.,0.,0,N_mdm(resplevs,responseLevels)}
 		},
 	kw_104[2] = {
 		{"num_offspring",0x19,0,2,0,0,0.,0.,0,N_mdm(pintz,numOffspring)},
@@ -1022,7 +1022,7 @@ static KeyWord
 		{"list_parameter_study",8,1,11,1,kw_87,0.,0.,0,N_mdm(lit,methodName_list_parameter_study)},
 		{"local_evidence",8,6,11,1,kw_94,0.,0.,0,N_mdm(lit,methodName_nond_local_evidence)},
 		{"local_interval_est",8,2,11,1,kw_95,0.,0.,0,N_mdm(lit,methodName_nond_local_interval_est)},
-		{"local_reliability",8,4,11,1,kw_103,0.,0.,0,N_mdm(lit2,methodName_nond_local_reliability)},
+		{"local_reliability",8,3,11,1,kw_103,0.,0.,0,N_mdm(lit2,methodName_nond_local_reliability)},
 		{"max_function_evaluations",9,0,5,0,0,0.,0.,0,N_mdm(nnint,maxFunctionEvaluations)},
 		{"max_iterations",9,0,4,0,0,0.,0.,0,N_mdm(nnint,maxIterations)},
 		{"model_pointer",11,0,2,0,0,0.,0.,0,N_mdm(str,modelPointer)},
@@ -1039,7 +1039,7 @@ static KeyWord
 		{"nond_importance_sampling",0,1,11,1,kw_86,0.,0.,-18,N_mdm(lit,methodName_nond_importance_sampling)},
 		{"nond_local_evidence",0,6,11,1,kw_94,0.,0.,-17,N_mdm(lit,methodName_nond_local_evidence)},
 		{"nond_local_interval_est",0,2,11,1,kw_95,0.,0.,-17,N_mdm(lit,methodName_nond_local_interval_est)},
-		{"nond_local_reliability",0,4,11,1,kw_103,0.,0.,-17,N_mdm(lit2,methodName_nond_local_reliability)},
+		{"nond_local_reliability",0,3,11,1,kw_103,0.,0.,-17,N_mdm(lit2,methodName_nond_local_reliability)},
 		{"nond_polynomial_chaos",0,13,11,1,kw_136,0.,0.,12,N_mdm(lit,methodName_nond_polynomial_chaos)},
 		{"nond_sampling",0,2,11,1,kw_140,0.,0.,14,N_mdm(lit,methodName_nond_sampling)},
 		{"nond_stoch_collocation",0,14,11,1,kw_150,0.,0.,18,N_mdm(lit,methodName_nond_stoch_collocation)},

@@ -715,18 +715,18 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      | no_approx {N_mdm(lit,reliabilitySearchType_no_approx)}
 	      [ sqp {N_mdm(lit,nondOptAlgorithm_sqp)}
 	        | nip {N_mdm(lit,nondOptAlgorithm_nip)} ]
-	      ]
-	    [ integration {0}
-	      first_order {N_mdm(lit,reliabilityIntegration_first_order)}
-	      | second_order {N_mdm(lit,reliabilityIntegration_second_order)}
-	      [ sample_refinement {0}
-		import {N_mdm(lit,integrationRefine_is)}
-		| adapt_import {N_mdm(lit,integrationRefine_ais)}
-		| mm_adapt_import {N_mdm(lit,integrationRefine_mmais)}
-		[ samples INTEGER {N_mdm(int,numSamples)} ]
-		[ seed INTEGER {N_mdm(pint,randomSeed)} ]
+	      [ integration {0}
+	        first_order {N_mdm(lit,reliabilityIntegration_first_order)}
+	        | second_order {N_mdm(lit,reliabilityIntegration_second_order)}
+	        [ sample_refinement {0}
+		  import {N_mdm(lit,integrationRefine_is)}
+		  | adapt_import {N_mdm(lit,integrationRefine_ais)}
+		  | mm_adapt_import {N_mdm(lit,integrationRefine_mmais)}
+		  [ samples INTEGER {N_mdm(int,numSamples)} ]
+		  [ seed INTEGER {N_mdm(pint,randomSeed)} ]
 		]
 	      ]
+	    ]
 	    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 	      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 	      [ compute {0}
