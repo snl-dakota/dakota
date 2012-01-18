@@ -98,6 +98,7 @@ void NonDGPImpSampling::quantify_uncertainty()
   indicator.resize(numPtsTotal);
   expIndicator.resize(numEmulEval);
   normConst.resize(numPtsAdd);
+  rhoMix.resize(numPtsTotal);
   //RealVector rhoEmul0(numEmulEval);
   //RealVector rhoEmul2(numEmulEval);
   int num_problem_vars=iteratedModel.acv();
@@ -118,7 +119,8 @@ void NonDGPImpSampling::quantify_uncertainty()
 // results per response level, not probability level or reliability index.
    
    int respFnCount, levelCount, iter;
-
+   RealVector new_X;
+ 
    for (respFnCount=0; respFnCount<numFunctions; respFnCount++) {
      size_t num_levels = requestedRespLevels[respFnCount].length();
      for (levelCount=0; levelCount<num_levels; levelCount++) {
@@ -184,7 +186,7 @@ void NonDGPImpSampling::quantify_uncertainty()
          calcRhoDraw();
           
          iter = 1;
-         while ((iter<3) && (normConst(k)*numEmulEval<16)) {
+         while ((iter<4) && (temp_norm_const*numEmulEval<16)) {
 	   iter = iter+1;
            gpEval.run_iterator(Cout);
            // obtain results 
@@ -218,28 +220,140 @@ void NonDGPImpSampling::quantify_uncertainty()
            calcRhoDraw();
 
          }     
-       //   calculate importance density and probability of hitting failure reg
-       //   calculate mixture model estimate
-       //   NOTE:  when you need to append to the gpModel, use: 
-       //   gpModel.append_approximation(new_vars, resp_truth, true), 
-       //   where you need to run the simulation model at your suggested point 
-       //   using something like: 
-       //   iteratedModel.continuous_variables(new_vars);
-       //   iteratedModel.compute_response();
-       //   IntResponsePair resp_truth(iteratedModel.evaluation_id(),
-       //                            iteratedModel.current_response());
+       // xDrawThis, rhoDrawThis, and expIndThis should be populated now
+         normConst(k)=temp_norm_const/iter;
+         Cout << "NormConstk " << normConst(k) << '\n';
+ 
+         int num_eval_kept = xDrawThis.size();  
+         Real est_prob_hit_failregion; 
+ 
+         if (num_eval_kept==0) {
+	   normConst(k)=0.;
+           /// need to determine how to sample x_new 
+           est_prob_hit_failregion = 0.;
+         }
+         else {
+           new_X = drawNewX(k);
+         }
+          
+         // add new_X to the build points and append approximation
+         iteratedModel.continuous_variables(new_X);
+         iteratedModel.compute_response();
+         IntResponsePair resp_truth(iteratedModel.evaluation_id(),
+                                   iteratedModel.current_response());
+         
+         gpModel.append_approximation(iteratedModel.current_variables(), resp_truth, true);
+         if (gp_data.response_function(numSamples+k-1)<z) 
+	   indicator(numSamples+k-1)=1;
+         else indicator(numSamples+k-1)=0;
+         Cout << "Done with iteration k "; 
        }
+//
+//This is where we need some re-architecting.  I want to evaluated the GPmodel at a 
+//set of pre-defined points.  We will need to use a parameter list study. 
+//something like the following
+//Iterator listStudy;
+//The list of points will be the full X data, consisting of the original plus added points
+//We have this stored in the Surrogate data
+//VariablesArray list_points;
+//list_points.resize(numPtsTotal);
+//for (j = 0; j < numSamples; j++) {
+//    list_points[j]=gp_data.continuous_variables(j);
+//}
+//
+//listStudy.assign_rep(new ParamStudy(gpModel,"LIST", list_points));
+//
+       rhoOne.resize(numPtsTotal);
+//not sure if I have this correct 
+//for now, since we are assuming rho0=rho1=rho2=all uniform, just set rho1 to 1.
+       for (j = 0; j < numPtsTotal; j++) 
+         rhoOne(j)=1;
+  
+       for (j = 0; j < numPtsTotal; j++)
+         rhoMix(j)=rhoOne(j)*numSamples;
+         
+       for (j = 0; j < numPtsAdd; j++){
+         if (normConst(k)==0) {
+           for (k = 0; k < numPtsTotal; k++) 
+           rhoMix(k)=rhoMix(k)+rhoOne(k);
+         }
+         else {
+//Since we need to evaluate the SUCCESSIVE SEQUENCES of GPs built using numSamples-->numPtsTotal
+//it might be most efficient to "pop" the data and go backward: 
+//listStudy.run_iterator();
+//obtain results and expected indicator functions
+//gpModel.pop_approximation();
+//
+         }
+       }            
+
+       for (j = 0; j < numPtsTotal; j++)
+         rhoMix(j)/=numPtsTotal;
+       Real prob_mix=0.0;
+       for (j = 0; j < numPtsTotal; j++) 
+         prob_mix+=1*indicator(j)/rhoMix(j);
+       prob_mix/=numPtsTotal;
+       Cout << "Prob Mix IS " << prob_mix << '\n'; 
+ 
+       Real fract_fail_mix = 0.0;
+       for (j = 0; j < numPtsTotal; j++) 
+         fract_fail_mix+=indicator(j);
+       fract_fail_mix/=numPtsTotal;
+       Cout << "Fraction Fail IS " << fract_fail_mix << '\n'; 
+        
      }
    }
 }
 
+
+RealVector NonDGPImpSampling::drawNewX(int this_k)
+{
+  int i,j,templength;
+  templength = xDrawThis.size();
+  RealVector binEnds;
+  binEnds.size(templength);
+  Real cum_sum = 0.; 
+  Real est_prob_hit_failregion = 0;
+  
+  Cout << "templength " << templength << '\n'; 
+  for (i=0; i<templength; i++) {
+    rhoDrawThis(i)/=normConst(this_k);
+    if (i==0)
+      binEnds(i)=rhoDrawThis(i);
+    else
+      binEnds(i)=rhoDrawThis(i)+rhoDrawThis(i-1);
+  }
+  cum_sum = binEnds(templength-1);
+  Cout << "Cum Sum"  << cum_sum << '\n';
+  Cout << "BinEnds " << binEnds << '\n';
+  Cout << "RhoDrawThis " << rhoDrawThis << '\n';
+  for (i=0; i<templength; i++) {
+    binEnds(i)=binEnds(i)/cum_sum;
+  }
+  //std::srand(randomSeed);
+  double rand_cdf = (double)std::rand()/RAND_MAX;
+  Cout << "randcdf " << rand_cdf << '\n';
+  bool found_cdf=false; 
+  i=0; 
+  while ((i<templength) && !found_cdf) {
+    if (binEnds(i) > rand_cdf)
+      found_cdf = true;
+    else 
+      i = i+1;
+  }
+  for (j=0; j<templength; j++) {
+    est_prob_hit_failregion+=expIndThis(j)*rhoDrawThis(j)/cum_sum;
+  } 
+  Cout << "Estimated prob of hitting failure region " << est_prob_hit_failregion << '\n';
+  return xDrawThis[i];
+}
 
 void NonDGPImpSampling::calcRhoDraw()
 { 
   int i, templength;
   templength = xDrawThis.size();
 
-  for (i = 0; i< numEmulEval; i++) {
+  for (i = 0; i<numEmulEval; i++) {
     if (expIndicator(i)!=0.0) {
       xDrawThis.resize(templength+1);
       expIndThis.resize(templength+1);

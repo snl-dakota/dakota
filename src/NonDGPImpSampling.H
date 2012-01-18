@@ -105,10 +105,17 @@ private:
   RealVector expIndThis; 
   /// rhoDrawThis, appended locally to hold the rhoDraw density for calculating draws
   RealVector rhoDrawThis; 
+  /// rhoMix, mixture density
+  RealVector rhoMix; 
+  /// rhoOne, original importance density
+  RealVector rhoOne; 
   /// function to calculate the expected indicator probabilities
   RealVector calcExpIndicator(const int respFnCount, const Real respThresh);
-  ///
+  /// function to update the rhoDraw data, adding x values and rho draw values
   void calcRhoDraw();
+  /// function to pick the next X value to be evaluated by the Iterated model
+  RealVector drawNewX(int this_k);
+  
 
 };
 
