@@ -143,9 +143,10 @@ void NonDGPImpSampling::quantify_uncertainty()
          gpEval.run_iterator(Cout);
          // obtain results 
          const RealMatrix&  all_samples = gpEval.all_samples();
-         const IntResponseMap& all_resp  = gpEval.all_responses();
+         const IntResponseMap& all_resp = gpEval.all_responses();
          for (i = 0; i< numEmulEval; i++) {
-           temp_cvars = RealVector(Teuchos::View, (Real*)all_samples[i], num_problem_vars);
+           temp_cvars = Teuchos::getCol(Teuchos::View,
+	     const_cast<RealMatrix&>(all_samples), i);
            gpCvars[i]=temp_cvars;
            Cout << "input is " << gpCvars[i] << '\n';
            gpVar[i] = gpModel.approximation_variances(temp_cvars);
@@ -188,9 +189,10 @@ void NonDGPImpSampling::quantify_uncertainty()
            gpEval.run_iterator(Cout);
            // obtain results 
            const RealMatrix&  this_samples = gpEval.all_samples();
-           const IntResponseMap& this_resp  = gpEval.all_responses();
+           const IntResponseMap& this_resp = gpEval.all_responses();
            for (i = 0; i< numEmulEval; i++) {
-             temp_cvars = RealVector(Teuchos::View, (Real*)this_samples[i], num_problem_vars);
+	     temp_cvars = Teuchos::getCol(Teuchos::View,
+	       const_cast<RealMatrix&>(this_samples), i);
              gpCvars[i]=temp_cvars;
              Cout << "input is " << gpCvars[i] << '\n';
              gpVar[i] = gpModel.approximation_variances(temp_cvars);

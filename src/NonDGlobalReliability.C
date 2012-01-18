@@ -977,7 +977,8 @@ void NonDGlobalReliability::get_best_sample()
   // If GP built in x-space, transform true_vars_x to u-space to calculate beta
   RealVectorArray true_c_vars_u(num_samples); RealVector true_vars_x_cv;
   for (i=0; i<num_samples; i++) {
-    true_vars_x_cv = RealVector(Teuchos::View, (Real*)true_vars_x[i], num_vars);
+    true_vars_x_cv = Teuchos::getCol(Teuchos::View,
+      const_cast<RealMatrix&>(true_vars_x), (int)i);
     if (mppSearchType == EGRA_X)
       natafTransform.trans_X_to_U(true_vars_x_cv, true_c_vars_u[i]);
     else

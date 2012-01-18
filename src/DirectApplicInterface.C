@@ -2483,8 +2483,7 @@ int DirectApplicInterface::text_book1()
       parallelLib.reduce_sum_a((Real*)fnGrads[0], sum_fns, 
 			       numDerivVars);
       if (analysisCommRank == 0) {
-	// wjbVERIFY: copying data into a Teuchos VIEW of a colVec works fine
-	RealVector fn_grad_col_vec(Teuchos::View,fnGrads[0], numDerivVars);
+	RealVector fn_grad_col_vec = Teuchos::getCol(Teuchos::View, fnGrads, 0);
 	copy_data(sum_fns, (int)numDerivVars, fn_grad_col_vec);
 	delete [] sum_fns;
       }
@@ -2602,8 +2601,7 @@ int DirectApplicInterface::text_book2()
       parallelLib.reduce_sum_a((Real*)fnGrads[1], sum_fns, 
 			       numDerivVars);
       if (analysisCommRank == 0) {
-	RealVector fn_grad_col_vec(Teuchos::View,fnGrads[1], numDerivVars);
-	//copy_data(sum_fns, numDerivVars, fnGrads[1]);
+	RealVector fn_grad_col_vec = Teuchos::getCol(Teuchos::View, fnGrads, 1);
 	copy_data(sum_fns, (int)numDerivVars, fn_grad_col_vec);
 	delete [] sum_fns;
       }
@@ -2721,8 +2719,7 @@ int DirectApplicInterface::text_book3()
       parallelLib.reduce_sum_a((Real*)fnGrads[2], sum_fns, 
 			       numDerivVars);
       if (analysisCommRank == 0) {
-	RealVector fn_grad_col_vec(Teuchos::View,fnGrads[2], numDerivVars);
-	//copy_data(sum_fns, numDerivVars, fnGrads[2]);
+	RealVector fn_grad_col_vec = Teuchos::getCol(Teuchos::View, fnGrads, 2);
 	copy_data(sum_fns, (int)numDerivVars, fn_grad_col_vec);
 	delete [] sum_fns;
       }

@@ -1814,9 +1814,8 @@ update_response(const Variables& vars, Response& new_response,
 	// overwrite partial_fn_grads with new_fn_grads based on fd_grad_asv
 	// (needed for case of mixed gradients)
 	if (fd_grad_asv[i]) {
-	  RealVector new_fn_gradi_col_vector( Teuchos::View,
-	                                           (Real*)new_fn_grads[i],
-	                                           new_fn_grads.numRows() );
+	  RealVector new_fn_gradi_col_vector = Teuchos::getCol(Teuchos::View,
+	    const_cast<RealMatrix&>(new_fn_grads), (int)i);
 	  Teuchos::setCol(new_fn_gradi_col_vector, (int)i, partial_fn_grads);
         }
       }
@@ -2089,9 +2088,8 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
 	// as at least one previous data pt has been stored, we do not need
 	// to track the presence of active grads in particular responses.
 	copy_data(x, xPrev[i]); // view->copy
-
-	RealVector tmp_col_vector( Teuchos::View, (Real*)fn_grads[i],
-	                           fn_grads.numRows() );
+	RealVector tmp_col_vector = Teuchos::getCol(Teuchos::View,
+	  const_cast<RealMatrix&>(fn_grads), (int)i);
 	Teuchos::setCol(tmp_col_vector, (int)i, fnGradsPrev);
 	++numQuasiUpdates[i];
       }

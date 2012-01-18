@@ -335,7 +335,7 @@ add(const Real* sample_c_vars, bool anchor_flag, bool deep_copy)
   else { // not virtual: all derived classes use following definition
     // create view of first numVars entries within column of sample Matrix
     // --> any discrete {int,real} vars (e.g., from NonDSampling) are ignored.
-    RealVector c_vars(Teuchos::View, (Real*)sample_c_vars, numVars);
+    RealVector c_vars(Teuchos::View, const_cast<Real*>(sample_c_vars), numVars);
     add(c_vars, anchor_flag, deep_copy);
   }
 }

@@ -165,22 +165,29 @@ void NonDSampling::get_parameter_sets(Model& model)
       // {MERGED,MIXED}_DISTINCT_{,_ALEATORY,_EPISTEMIC}UNCERTAIN
       RealVector uncertain_l_bnds, uncertain_u_bnds;
       size_t num_cuv = numContAleatUncVars + numContEpistUncVars;
-      if (model_view == MERGED_ALL || model_view == MIXED_ALL) {
-	const RealVector& c_l_bnds = model.continuous_lower_bounds();
-	const RealVector& c_u_bnds = model.continuous_upper_bounds();
-	uncertain_l_bnds = RealVector(Teuchos::View,
-	  const_cast<Real*>(&c_l_bnds[numContDesVars]), num_cuv);
-	uncertain_u_bnds = RealVector(Teuchos::View,
-	  const_cast<Real*>(&c_u_bnds[numContDesVars]), num_cuv);
+      if (num_cuv) {
+	if (model_view == MERGED_ALL || model_view == MIXED_ALL) {
+	  const RealVector& c_l_bnds = model.continuous_lower_bounds();
+	  const RealVector& c_u_bnds = model.continuous_upper_bounds();
+	  uncertain_l_bnds = RealVector(Teuchos::View,
+	    const_cast<Real*>(&c_l_bnds[numContDesVars]), num_cuv);
+	  uncertain_u_bnds = RealVector(Teuchos::View,
+	    const_cast<Real*>(&c_u_bnds[numContDesVars]), num_cuv);
+	}
+	else { // MERGED/MIXED_DISTINCT_DESIGN or MERGED/MIXED_DISTINCT_STATE
+	  // case should not occur; if it does, numContDesVars may not be set
+	  const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
+	  const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
+	  uncertain_l_bnds = RealVector(Teuchos::View,
+	    const_cast<Real*>(&all_c_l_bnds[numContDesVars]), num_cuv);
+	  uncertain_u_bnds = RealVector(Teuchos::View,
+	    const_cast<Real*>(&all_c_u_bnds[numContDesVars]), num_cuv);
+	}
       }
-      else { // MERGED/MIXED_DISTINCT_DESIGN or MERGED/MIXED_DISTINCT_STATE
-	// This case should not occur; if it does, numContDesVars may not be set
-	const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
-	const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
-	uncertain_l_bnds = RealVector(Teuchos::View,
-	  const_cast<Real*>(&all_c_l_bnds[numContDesVars]), num_cuv);
-	uncertain_u_bnds = RealVector(Teuchos::View,
-	  const_cast<Real*>(&all_c_u_bnds[numContDesVars]), num_cuv);
+      else {
+	Cerr << "Error: no active continuous variables for sampling in "
+	     << "UNCERTAIN_UNIFORM mode" << std::endl;
+	abort_handler(-1);
       }
       // TO DO: verify loss of sampleRanks control is OK
       // TO DO: add support for uniform discrete design/uncertain/state
@@ -206,42 +213,62 @@ void NonDSampling::get_parameter_sets(Model& model)
 	 ( model_view == MERGED_ALL || model_view == MIXED_ALL ) ) ) {
       const RealVector& c_l_bnds = model.continuous_lower_bounds();
       const RealVector& c_u_bnds = model.continuous_upper_bounds();
-      cdv_l_bnds = RealVector(Teuchos::View, c_l_bnds.values(), numContDesVars);
-      cdv_u_bnds = RealVector(Teuchos::View, c_u_bnds.values(), numContDesVars);
-      csv_l_bnds = RealVector(Teuchos::View,
-	const_cast<Real*>(&c_l_bnds[numContDesVars+num_cuv]), numContStateVars);
-      csv_u_bnds  = RealVector(Teuchos::View,
-	const_cast<Real*>(&c_u_bnds[numContDesVars+num_cuv]), numContStateVars);
+      if (numContDesVars) {
+	cdv_l_bnds = RealVector(Teuchos::View,c_l_bnds.values(),numContDesVars);
+	cdv_u_bnds = RealVector(Teuchos::View,c_u_bnds.values(),numContDesVars);
+      }
+      if (numContStateVars) {
+	size_t num_cduv = numContDesVars+num_cuv;
+	csv_l_bnds = RealVector(Teuchos::View,
+	  const_cast<Real*>(&c_l_bnds[num_cduv]), numContStateVars);
+	csv_u_bnds  = RealVector(Teuchos::View,
+	  const_cast<Real*>(&c_u_bnds[num_cduv]), numContStateVars);
+      }
       const IntVector& di_l_bnds = model.discrete_int_lower_bounds();
       const IntVector& di_u_bnds = model.discrete_int_upper_bounds();
-      ddriv_l_bnds = IntVector(Teuchos::View, di_l_bnds.values(), num_ddriv);
-      ddriv_u_bnds = IntVector(Teuchos::View, di_u_bnds.values(), num_ddriv);
-      dsriv_l_bnds = IntVector(Teuchos::View,
-	const_cast<int*>(&di_l_bnds[numDiscIntDesVars+num_diuv]), num_dsriv);
-      dsriv_u_bnds = IntVector(Teuchos::View,
-	const_cast<int*>(&di_u_bnds[numDiscIntDesVars+num_diuv]), num_dsriv);
+      if (num_ddriv) {
+	ddriv_l_bnds = IntVector(Teuchos::View, di_l_bnds.values(), num_ddriv);
+	ddriv_u_bnds = IntVector(Teuchos::View, di_u_bnds.values(), num_ddriv);
+      }
+      if (num_dsriv) {
+	size_t num_diduv = numDiscIntDesVars+num_diuv;
+	dsriv_l_bnds = IntVector(Teuchos::View,
+	  const_cast<int*>(&di_l_bnds[num_diduv]), num_dsriv);
+	dsriv_u_bnds = IntVector(Teuchos::View,
+	  const_cast<int*>(&di_u_bnds[num_diduv]), num_dsriv);
+      }
     }
     else if (samplingVarsMode == ALL) {
       const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
       const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
-      cdv_l_bnds = RealVector(Teuchos::View, all_c_l_bnds.values(),
-	numContDesVars);
-      cdv_u_bnds = RealVector(Teuchos::View, all_c_u_bnds.values(),
-	numContDesVars);
-      csv_l_bnds = RealVector(Teuchos::View,
-	const_cast<Real*>(&all_c_l_bnds[numContDesVars+num_cuv]),
-	numContStateVars);
-      csv_u_bnds  = RealVector(Teuchos::View,
-	const_cast<Real*>(&all_c_u_bnds[numContDesVars+num_cuv]),
-	numContStateVars);
+      if (numContDesVars) {
+	cdv_l_bnds = RealVector(Teuchos::View, all_c_l_bnds.values(),
+	  numContDesVars);
+	cdv_u_bnds = RealVector(Teuchos::View, all_c_u_bnds.values(),
+	  numContDesVars);
+      }
+      if (numContStateVars) {
+	size_t num_cduv = numContDesVars+num_cuv;
+	csv_l_bnds = RealVector(Teuchos::View,
+	  const_cast<Real*>(&all_c_l_bnds[num_cduv]), numContStateVars);
+	csv_u_bnds  = RealVector(Teuchos::View,
+	  const_cast<Real*>(&all_c_u_bnds[num_cduv]), numContStateVars);
+      }
       const IntVector& all_di_l_bnds = model.all_discrete_int_lower_bounds();
       const IntVector& all_di_u_bnds = model.all_discrete_int_upper_bounds();
-      ddriv_l_bnds = IntVector(Teuchos::View, all_di_l_bnds.values(),num_ddriv);
-      ddriv_u_bnds = IntVector(Teuchos::View, all_di_u_bnds.values(),num_ddriv);
-      dsriv_l_bnds = IntVector(Teuchos::View,
-	const_cast<int*>(&all_di_l_bnds[numDiscIntDesVars+num_diuv]),num_dsriv);
-      dsriv_u_bnds = IntVector(Teuchos::View,
-	const_cast<int*>(&all_di_u_bnds[numDiscIntDesVars+num_diuv]),num_dsriv);
+      if (num_ddriv) {
+	ddriv_l_bnds
+	  = IntVector(Teuchos::View, all_di_l_bnds.values(), num_ddriv);
+	ddriv_u_bnds
+	  = IntVector(Teuchos::View, all_di_u_bnds.values(), num_ddriv);
+      }
+      if (num_dsriv) {
+	size_t num_diduv = numDiscIntDesVars+num_diuv;
+	dsriv_l_bnds = IntVector(Teuchos::View,
+	  const_cast<int*>(&all_di_l_bnds[num_diduv]), num_dsriv);
+	dsriv_u_bnds = IntVector(Teuchos::View,
+	  const_cast<int*>(&all_di_u_bnds[num_diduv]), num_dsriv);
+      }
     }
 
     // Call LHS to generate the specified samples within the specified

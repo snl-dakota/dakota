@@ -121,10 +121,9 @@ int ParallelDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
 			       numDerivVars);
       if (analysisCommRank == 0) {
 	//wjbVERIFY: Dakota::copy_data(sum_fns, static_cast<int>(numDerivVars), fnGrads[0]);
-	Teuchos::setCol( Teuchos::SerialDenseVector<int,double>(Teuchos::View,
-                                                                sum_fns,
-                                                                numDerivVars),
-	                 0, fnGrads );
+	Teuchos::setCol(
+	  Teuchos::SerialDenseVector<int,double>(Teuchos::View, sum_fns,
+                                                 numDerivVars), 0, fnGrads );
 	delete [] sum_fns;
       }
     }
@@ -213,10 +212,9 @@ int ParallelDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
       parallelLib.reduce_sum_a(fnGrads[1], sum_fns,
 			       numDerivVars);
       if (analysisCommRank == 0) {
-	Teuchos::setCol( Teuchos::SerialDenseVector<int,double>(Teuchos::View,
-                                                                sum_fns,
-                                                                numDerivVars),
-	                 1, fnGrads );
+	Teuchos::setCol(
+	  Teuchos::SerialDenseVector<int,double>(Teuchos::View, sum_fns,
+                                                 numDerivVars), 1, fnGrads );
 	delete [] sum_fns;
       }
     }
@@ -304,10 +302,9 @@ int ParallelDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
       parallelLib.reduce_sum_a(fnGrads[2], sum_fns,
 			       numDerivVars);
       if (analysisCommRank == 0) {
-	Teuchos::setCol( Teuchos::SerialDenseVector<int,double>(Teuchos::View,
-                                                                sum_fns,
-                                                                numDerivVars),
-	                 2, fnGrads );
+	Teuchos::setCol(
+	  Teuchos::SerialDenseVector<int,double>(Teuchos::View, sum_fns,
+                                                 numDerivVars), 2, fnGrads );
 	delete [] sum_fns;
       }
     }
