@@ -23,6 +23,19 @@ my $test_num = undef;        # undef since can be zero
 my $using_qsub = 0;
 my $using_slurm = 0;
 
+# exit code summarizing worst test condition found
+#   0 PASS
+#  70 PASS, but baseline lookup failure
+#  80 DIFF
+#  90 FAIL, consistent with baseline
+# 100 killed due to timeout
+# 101 killed due to stale output
+# 102 killed due to no output
+# 103 aborted by SIG_INT
+# 104 error or abort appeared in output
+# 105 unknown or other FAIL
+my $summary_exitcode = 0;
+
 # numeric regular expressions
 my $e = "-?\\d\\.\\d+e(?:\\+|-)\\d+"; # numerical field: exponential
 my $f = "-?\\d+\\.?\\d*";             # numerical field: floating point
@@ -267,6 +280,11 @@ foreach my $file (@test_inputs) {
 	     "dakota_base.test $test >> $output_dir" .
 	     "dakota_diffs.out");
     }
+
+    # track the worst exit code seen; have to shift since this is the
+    # output of wait
+    my $dd_exitcode = $? >> 8;
+    $summary_exitcode = $dd_exitcode if $summary_exitcode < $dd_exitcode;
   }
   # remove unneeded files (especially $input since the last instance of this
   # file corresponds to the #(n+1) tests for which $found == false).
@@ -289,7 +307,7 @@ if ($mode eq "base") {
 
 print "Testing Script Complete.\n";
 
-
+exit $summary_exitcode;
 
 # ---------------
 # STARTUP Helpers

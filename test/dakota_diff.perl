@@ -21,6 +21,9 @@ $file2  = @ARGV[2]; # reduced test results file name, e.g. dakota_dace.tst
 open (DAKOTA_BASE, $file1) || die "cannot open file $!" ;
 open (DAKOTA_TEST, $file2) || die "cannot open file $!" ;
 
+# exit code tracking the worst test result status (see dakota_test.perl)
+my $exitcode = 0;
+
 # numerical field in exponential notation
 $expo = "-?\\d\\.\\d+e(?:\\+|-)\\d+"; 
 # invalid numerical field
@@ -185,6 +188,7 @@ while ( $test_found == 0 && defined ($base = <DAKOTA_BASE>) ) {
           }
           elsif ($test_diff == 1) {
             print "DIFF test $test_num\n";
+            $exitcode = 80 if $exitcode < 80;
             foreach (@base_diffs) {
               print "base< $_";
             }
@@ -215,6 +219,7 @@ while ( $test_found == 0 && defined ($base = <DAKOTA_BASE>) ) {
 	  # determine if test failure is consistent in baseline
 	  if ($base_code) {
 	    print "FAIL test $test_num (consistent with baseline)\n";
+            $exitcode = 90 if $exitcode < 90;
 	    # increment to next test (required for while loop)
             $test = <DAKOTA_TEST>;
 	    $base = <DAKOTA_BASE>;
@@ -222,9 +227,11 @@ while ( $test_found == 0 && defined ($base = <DAKOTA_BASE>) ) {
 	  else {
 	    if (100 <= $test_code && $test_code <= 104) {
 	      print "FAIL test $test_num$msg\n";
+	      $exitcode = $test_code if $exitcode < $test_code;
 	    }
 	    else {
 	      print "FAIL test $test_num (*** new ***)\n";
+	      $exitcode = 105 if $exitcode < 105;
 	    }
             # Offset problem.  Advance $test and $base to next test.
             $test = <DAKOTA_TEST>;
@@ -419,6 +426,8 @@ while ( $test_found == 0 && defined ($base = <DAKOTA_BASE>) ) {
 }
 close (DAKOTA_BASE);
 close (DAKOTA_TEST);
+
+exit $exitcode;
 
 
 # subroutine diff assesses whether two numbers differ by more than an epsilon
