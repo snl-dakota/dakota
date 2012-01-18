@@ -569,7 +569,8 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
 	  dataMethodIter--; // last entry in list
 	}
 	else if (parallelLib.world_rank() == 0 &&
-		 count_if(dataMethodList,DataMethod::id_compare,method_tag) > 1)
+		 std::count_if(dataMethodList.begin(), dataMethodList.end(),
+                   boost::bind(DataMethod::id_compare, _1, method_tag)) > 1)
 	  Cerr << "\nWarning: empty method id string is ambiguous.\n         "
 	       << "First matching method specification will be used.\n";
       }
@@ -584,7 +585,8 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
 	abort_handler(-1);
       }
       else if (parallelLib.world_rank() == 0 &&
-	       count_if(dataMethodList, DataMethod::id_compare, method_tag) > 1)
+		 std::count_if(dataMethodList.begin(), dataMethodList.end(),
+                   boost::bind(DataMethod::id_compare, _1, method_tag)) > 1)
 	Cerr << "\nWarning: method id string " << method_tag << " is ambiguous."
 	     << "\n         First matching method specification will be used."
 	     << '\n';
@@ -658,7 +660,8 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
 	  dataModelIter--; // last entry in list
 	}
 	else if (parallelLib.world_rank() == 0 &&
-	         count_if(dataModelList, DataModel::id_compare, model_tag) > 1)
+		 std::count_if(dataModelList.begin(), dataModelList.end(),
+                   boost::bind(DataModel::id_compare, _1, model_tag)) > 1)
 	  Cerr << "\nWarning: empty model id string is ambiguous.\n         "
 	       << "First matching model specification will be used.\n";
       }
@@ -673,7 +676,8 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
 	abort_handler(-1);
       }
       else if (parallelLib.world_rank() == 0 &&
-	       count_if(dataModelList, DataModel::id_compare, model_tag) > 1)
+               std::count_if(dataModelList.begin(), dataModelList.end(),
+                 boost::bind(DataModel::id_compare, _1, model_tag)) > 1)
 	Cerr << "\nWarning: model id string " << model_tag << " is ambiguous."
 	     << "\n         First matching model specification will be used.\n";
     }
@@ -707,8 +711,8 @@ void ProblemDescDB::set_db_variables_node(const String& variables_tag)
 	  dataVariablesIter--; // last entry in list
 	}
 	else if (parallelLib.world_rank() == 0 &&
-	         count_if(dataVariablesList, DataVariables::id_compare,
-                          variables_tag) > 1)
+		 std::count_if(dataVariablesList.begin(),dataVariablesList.end(),
+                   boost::bind(DataVariables::id_compare,_1, variables_tag)) > 1)
 	  Cerr << "\nWarning: empty variables id string is ambiguous."
 	       << "\n         First matching variables specification will be "
 	       << "used.\n";
@@ -724,8 +728,8 @@ void ProblemDescDB::set_db_variables_node(const String& variables_tag)
 	abort_handler(-1);
       }
       else if (parallelLib.world_rank() == 0 &&
-	       count_if(dataVariablesList, DataVariables::id_compare,
-                        variables_tag) > 1)
+               std::count_if(dataVariablesList.begin(), dataVariablesList.end(),
+                 boost::bind(DataVariables::id_compare, _1, variables_tag)) > 1)
 	Cerr << "\nWarning: variables id string " << variables_tag
 	     << " is ambiguous.\n         First matching variables "
 	     << "specification will be used.\n";
@@ -764,8 +768,8 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
 	}
 	else if (parallelLib.world_rank() == 0        &&
 		 MoRep->modelType == "single" &&
-	         count_if(dataInterfaceList, DataInterface::id_compare,
-                          interface_tag) > 1)
+		 std::count_if(dataInterfaceList.begin(),dataInterfaceList.end(),
+                   boost::bind(DataInterface::id_compare,_1, interface_tag)) > 1)
 	  Cerr << "\nWarning: empty interface id string is ambiguous."
 	       << "\n         First matching interface specification will be "
 	       << "used.\n";
@@ -781,8 +785,8 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
 	abort_handler(-1);
       }
       else if (parallelLib.world_rank() == 0 &&
-	       count_if(dataInterfaceList, DataInterface::id_compare,
-                        interface_tag) > 1)
+               std::count_if(dataInterfaceList.begin(), dataInterfaceList.end(),
+                 boost::bind(DataInterface::id_compare, _1, interface_tag)) > 1)
 	Cerr << "\nWarning: interface id string " << interface_tag
 	     << " is ambiguous.\n         First matching interface "
 	     << "specification will be used.\n";
@@ -812,8 +816,8 @@ void ProblemDescDB::set_db_responses_node(const String& responses_tag)
 	  dataResponsesIter--; // last entry in list
 	}
 	else if (parallelLib.world_rank() == 0 &&
-	         count_if(dataResponsesList, DataResponses::id_compare,
-		          responses_tag) > 1)
+		 std::count_if(dataResponsesList.begin(),dataResponsesList.end(),
+                   boost::bind(DataResponses::id_compare,_1, responses_tag)) > 1)
 	  Cerr << "\nWarning: empty responses id string is ambiguous."
 	       << "\n         First matching responses specification will be "
 	       << "used.\n";
@@ -829,8 +833,8 @@ void ProblemDescDB::set_db_responses_node(const String& responses_tag)
 	abort_handler(-1);
       }
       else if (parallelLib.world_rank() == 0 &&
-	       count_if(dataResponsesList, DataResponses::id_compare,
-		        responses_tag) > 1)
+               std::count_if(dataResponsesList.begin(), dataResponsesList.end(),
+                 boost::bind(DataResponses::id_compare, _1, responses_tag)) > 1)
 	Cerr << "\nWarning: responses id string " << responses_tag
 	     << " is ambiguous.\n         First matching responses "
 	     << "specification will be used.\n";

@@ -803,21 +803,6 @@ inline bool contains(const DakContainerType& v,
 }
 
 
-/// count the number of elements in the list satisfying the predicate
-/// test_fn w.r.t. the passed test_fn_data
-template <class ListT>
-typename ListT::size_type
-count_if(const ListT& l,
-         bool (*test_fn)(const typename ListT::value_type&, const std::string&),         const std::string& test_fn_data)
-{
-  typename ListT::size_type cntr = 0;
-  BOOST_FOREACH(const typename ListT::value_type& entry, l) {
-    if ( test_fn(entry, test_fn_data) )
-      ++cntr;
-  }
-  return cntr;
-}
-
 /// return an iterator to the first list element satisfying the
 /// predicate test_fn w.r.t. the passed test_fn_data; end if not found
 template <class ListT>
