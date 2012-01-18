@@ -674,19 +674,24 @@ void x_y_pairs_to_x_set(
 // ---------------------------------
 // templated array utility functions
 // ---------------------------------
-#if 0
+#if defined(_MSC_VER)
 // MSE: this may be too generic and could hide special cases:
 //      can we rely on partial template specialization?
 
 /// generic find_index (inactive)
-template <typename MultiArrayType, typename DataType>
-size_t find_index(const MultiArrayType& a, const DataType& search_data)
+template <class ContainerType>
+typename ContainerType::size_type
+find_index(const ContainerType& c,
+           const typename ContainerType::value_type& search_data)
 {
   // should be more efficient than find() + distance()
-  const size_t num_items = a.size();
-  for (size_t i=0; i<num_items; ++i)
-    if (a[i] == search_data)
-      return i;
+  typename ContainerType::size_type cntr = 0;
+  BOOST_FOREACH(const typename ContainerType::value_type& entry, c) {
+    if (entry == search_data)
+      return cntr;
+    else
+      ++cntr;
+  }
   return _NPOS;
 }
 
@@ -697,7 +702,7 @@ void copy_data(const MultiArrayType& ma, DakArrayType& da)
 {
   size_t size_ma = ma.size();
   if (size_ma != da.size())
-    da.reshape(size_ma);
+    da.resize(size_ma);
   for (size_t i=0; i<size_ma; ++i)
     da[i] = ma[i];
 }
@@ -794,15 +799,6 @@ inline void copy_data(StringMultiArrayConstView ma, StringArray& da)
 }
 
 
-/// return true if the item val appears in container v
-template <typename DakContainerType>
-inline bool contains(const DakContainerType& v,
-                     const typename DakContainerType::value_type& val)
-{
-  return ( std::find(v.begin(), v.end(), val) != v.end() ) ? true : false;
-}
-
-
 /// return an iterator to the first list element satisfying the
 /// predicate test_fn w.r.t. the passed test_fn_data; end if not found
 template <class ListT>
@@ -822,22 +818,17 @@ find_if(const ListT& c,
   //return find_if(begin(), end(), FunctionCompare<T>(test_fn, test_fn_data));
 }
 
-
-/** Removes the first instance matching object a from the list (and
-    therefore differs from the STL list::remove() which removes all
-    instances).  Uses the STL find() algorithm to find the object and
-    the list.erase() method to perform the remove.//
-//  WJB: Only used in ProblemDescDB.C!
-template <class ListT>
-void remove(ListT& l, typename ListT::value_type a)
-{
-  typename ListT::iterator it = std::find(l.begin(), l.end(), a);
-  if (it != l.end()) {
-    l.erase(it);
-  }
-} */
-
 #endif
+
+
+/// return true if the item val appears in container v
+template <typename DakContainerType>
+inline bool contains(const DakContainerType& v,
+                     const typename DakContainerType::value_type& val)
+{
+  return ( std::find(v.begin(), v.end(), val) != v.end() ) ? true : false;
+}
+
 
 // ---------------------------------
 // miscellaneous numerical utilities

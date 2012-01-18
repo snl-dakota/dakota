@@ -512,7 +512,6 @@ void ProblemDescDB::resolve_top_method()
       for (std::list<DataMethod>::iterator it=dataMethodList.begin();
 	   it!=dataMethodList.end(); it++)
 	if (!it->dataMethodRep->subMethodPointer.empty()) {
-	  //method_ids.remove(it->dataMethodRep->subMethodPointer);
           StringList::iterator slit
             = std::find(method_ids.begin(), method_ids.end(),
                         it->dataMethodRep->subMethodPointer);
@@ -522,7 +521,6 @@ void ProblemDescDB::resolve_top_method()
       for (std::list<DataModel>::iterator it=dataModelList.begin();
 	   it!=dataModelList.end(); it++)
 	if (!it->dataModelRep->subMethodPointer.empty()) {
-	  //method_ids.remove(it->dataModelRep->subMethodPointer);
           StringList::iterator slit
             = std::find(method_ids.begin(), method_ids.end(),
                         it->dataModelRep->subMethodPointer);
