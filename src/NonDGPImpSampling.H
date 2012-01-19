@@ -111,6 +111,8 @@ private:
   RealVector rhoOne; 
   /// function to calculate the expected indicator probabilities
   RealVector calcExpIndicator(const int respFnCount, const Real respThresh);
+  /// function to calculate the expected indicator probabilities for one point
+  Real calcExpIndPoint(const int respFnCount, const Real respThresh, const RealVector this_mean, const RealVector this_var);
   /// function to update the rhoDraw data, adding x values and rho draw values
   void calcRhoDraw();
   /// function to pick the next X value to be evaluated by the Iterated model
