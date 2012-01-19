@@ -6,6 +6,7 @@ set(CMAKE_MODULE_PATH
   ${CMAKE_CURRENT_SOURCE_DIR}/config/share/utils
   ${CMAKE_CURRENT_SOURCE_DIR}/config/share/package_arch
   ${CMAKE_CURRENT_SOURCE_DIR}/config/share/config_tests
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/semsCMake
   ${CMAKE_MODULE_PATH}
 )
 

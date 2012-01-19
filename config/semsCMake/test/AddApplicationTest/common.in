@@ -1,0 +1,11 @@
+# check the current directory and error if it doesn't have the expected name.
+function(test_directory_name expected_name)
+  message("CMAKE_CURRENT_LIST_FILE=${CMAKE_CURRENT_LIST_FILE}")
+  get_filename_component(_current_directory ${CMAKE_CURRENT_LIST_FILE} PATH) 
+  message("Current directory is ${_current_directory}")
+  get_filename_component(_directory_name "${_current_directory}" NAME)
+  
+  if(NOT "${_directory_name}" STREQUAL "${expected_name}")
+    message(FATAL_ERROR "+${_directory_name}+ is not equal to the expected value of +${expected_name}+.")
+  endif()
+endfunction()

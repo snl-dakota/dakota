@@ -9,6 +9,7 @@ use Getopt::Long;
 use Pod::Usage;
 use File::Basename;
 use POSIX "sys_wait_h";
+use Cwd 'abs_path';
 
 # set default options (global to this script)
 my $baseline_filename = "";  # default is dakota_[p]base.test.new
@@ -269,14 +270,16 @@ foreach my $file (@test_inputs) {
   if ($mode eq "run" && $output_generated == 1) { 
     # if normal mode, generate diffs
     close(TEST_OUT);
+	my $diff_path = abs_path($0);
+	$diff_path = dirname($diff_path);
     # diff the test output against the base output and save to a file
     if ($parallelism eq "parallel") {
-      system("dakota_diff.perl $base_filename $input_dir" . 
+      system("$diff_path/dakota_diff.perl $base_filename $input_dir" . 
 	     "dakota_pbase.test $test >> $output_dir" . 
 	     "dakota_pdiffs.out");
     }
     else {
-      system("dakota_diff.perl $base_filename $input_dir" . 
+      system("$diff_path/dakota_diff.perl $base_filename $input_dir" . 
 	     "dakota_base.test $test >> $output_dir" .
 	     "dakota_diffs.out");
     }

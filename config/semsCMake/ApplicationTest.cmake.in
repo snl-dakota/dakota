@@ -1,0 +1,40 @@
+# This file expects the following named arguments:
+# PREPROCESS_COMMAND
+# APPLICATION_COMMAND
+# POSTPROCESS_COMMAND
+# WORKING_DIRECTORY
+
+set(PREPROCESS_COMMAND @_application_test_PREPROCESS_COMMAND@)
+set(PREPROCESS_EXIT_CODE @_application_test_PREPROCESS_EXIT_CODE@)
+set(APPLICATION_COMMAND @_application_test_APPLICATION_COMMAND@)
+set(APPLICATION_EXIT_CODE @_application_test_APPLICATION_EXIT_CODE@)
+set(POSTPROCESS_COMMAND @_application_test_POSTPROCESS_COMMAND@)
+set(POSTPROCESS_EXIT_CODE @_application_test_POSTPROCESS_EXIT_CODE@)
+set(WORKING_DIRECTORY @_application_test_WORKING_DIRECTORY@)
+
+set(_phases PREPROCESS APPLICATION POSTPROCESS)
+
+foreach(_phase ${_phases})
+  if(${_phase}_COMMAND)
+    
+    set(_exe_string)
+    foreach(arg ${${_phase}_COMMAND})
+      set(_exe_string "${_exe_string} ${arg}")
+    endforeach()
+    
+    message("\n***")
+    message("*** ${_phase} step executing ${_exe_string}")
+    message("***\n")
+    
+    execute_process(COMMAND ${${_phase}_COMMAND}
+      WORKING_DIRECTORY ${WORKING_DIRECTORY}
+      RESULT_VARIABLE _exit_code)
+    
+    if(NOT ${_exit_code} EQUAL ${${_phase}_EXIT_CODE})
+      message(FATAL_ERROR 
+	"${_phase} step failed with exit code ${_exit_code}"
+	" (Expected ${${_phase}_EXIT_CODE})")
+    endif()
+ 
+  endif()
+endforeach()

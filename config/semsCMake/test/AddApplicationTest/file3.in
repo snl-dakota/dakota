@@ -1,0 +1,4 @@
+
+get_filename_component(_this_dir ${CMAKE_CURRENT_LIST_FILE} PATH)
+include(${_this_dir}/common.in)
+test_directory_name(run_app_file3)

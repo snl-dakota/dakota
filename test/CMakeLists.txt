@@ -1,4 +1,8 @@
 # CMakeLists.txt for DAKOTA tests
+
+include(AddApplicationTest)
+include(AddFileCopyTarget)
+
 remove_definitions("-DHAVE_CONFIG_H")
 
 check_include_files(unistd.h HAVE_UNISTD_H)
@@ -8,6 +12,14 @@ endif(HAVE_UNISTD_H)
 
 # The 'morris' tester depends on Boost
 include_directories(${Boost_INCLUDE_DIRS})
+
+function(add_named_file_copy_target _source _destination)
+  get_filename_component(filename ${_source} NAME)
+  add_file_copy_target(
+    copy_${filename}
+    ${_source}
+    ${_destination})
+endfunction()
 
 if(BUILD_TESTING)
 
@@ -35,9 +47,9 @@ if(BUILD_TESTING)
     )
 
   foreach(file ${TestFiles})
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${file}
-      ${CMAKE_CURRENT_BINARY_DIR}/${file}
-      COPYONLY)
+    add_named_file_copy_target(
+      ${CMAKE_CURRENT_SOURCE_DIR}/${file}
+      ${CMAKE_CURRENT_BINARY_DIR}/${file})
   endforeach()
 
   # Configure supplementary AMPL files
@@ -49,9 +61,9 @@ if(BUILD_TESTING)
     text_book_mixed.mod text_book_mixed_unc.mod    text_book_unc.col text_book_unc.mod text_book_unc.nl text_book_unc.row
   )
   foreach(file ${AmplTests})
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ampl/${file}
-      ${CMAKE_CURRENT_BINARY_DIR}/ampl/${file}
-      COPYONLY)
+    add_named_file_copy_target(
+      ${CMAKE_CURRENT_SOURCE_DIR}/ampl/${file}
+      ${CMAKE_CURRENT_BINARY_DIR}/ampl/${file})
   endforeach()
 
   # Copy any necessary executables into the BINARY_DIR/test directory
@@ -66,20 +78,29 @@ if(BUILD_TESTING)
     ${CMAKE_COMMAND} -E copy ${LIBMODE_EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS dakota_library_mode)  
 
+  get_target_property(Dakota_EXECUTABLE_OUTPUT_DIR dakota LOCATION)
+  get_filename_component(
+    Dakota_EXECUTABLE_OUTPUT_DIR
+    ${Dakota_EXECUTABLE_OUTPUT_DIR} PATH)
+
   # Create one CTest per DAKOTA input file
   file(GLOB DakotaTestsFQ RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in")
   foreach(DakotaTest ${DakotaTestsFQ})
 
     get_filename_component(TestName ${DakotaTest} NAME)
-    add_test(${TestName}
-             ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl 
+    add_application_test(
+         ${TestName}
+         PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_diffs.out
+         APPLICATION COMMAND ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl 
 	     --input-dir=${CMAKE_CURRENT_SOURCE_DIR}
+         --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
 	     ${DakotaTest}
-	     )
+         UNIQUE_DIRECTORY)
+
     # TODO: The following regex needs to be based on output of dakota_diff.perl
     #       and account for consistency with baseline
-    set_tests_properties(${DAKOTA_SYSTEST} PROPERTIES 
-      FAIL_REGULAR_EXPRESSION "fail")
+    # set_tests_properties(${DAKOTA_SYSTEST} PROPERTIES 
+    #  FAIL_REGULAR_EXPRESSION "fail")
   endforeach()
 
   # Clean up test dir

@@ -1,0 +1,7 @@
+# Configure this file with PASSED_TEST_OUTPUT_SIZE and FAILED_TEST_OUTPUT_SIZE
+# to specify the maximum length of test output desired for each category.
+# Set the value to 0 for unlimited output.
+
+set(CTEST_CUSTOM_MAXIMUM_PASSED_TEST_OUTPUT_SIZE @PASSED_TEST_OUTPUT_SIZE@)
+set(CTEST_CUSTOM_MAXIMUM_PASSED_TEST_OUTPUT_SIZE @FAILED_TEST_OUTPUT_SIZE@)
+
