@@ -46,8 +46,15 @@ NonDGPImpSampling::NonDGPImpSampling(Model& model): NonDSampling(model)
   }
   String sample_type("lhs"); // hard-wired for now
   bool vary_pattern = false; // for consistency across outer loop invocations
+
   construct_lhs(gpBuild, iteratedModel, sample_type, numSamples, randomSeed,
-		rngName, vary_pattern);
+		rngName, vary_pattern); //these are being drawn from 
+  //distribution 1 which is the distribution that the initial set of samples
+  //used to build the initial GP are drawn from this should "ALWAYS" be 
+  //uniform in the input of the GP (even if the nominal distribution is not
+  //uniform) because it is a set of samples to build a good GP and nothing
+  //else.  Rho 0 is the nonminal distribution of the input variable
+
   gpModel.assign_rep(new DataFitSurrModel(gpBuild, iteratedModel, approx_type,
     approx_order, corr_type, corr_order, data_order, sample_reuse), false);
   vary_pattern = true; // allow seed to run among multiple approx sample sets
@@ -230,7 +237,8 @@ void NonDGPImpSampling::quantify_uncertainty()
  
         if (num_eval_kept==0) {
 	  normConst(k)=0.;
-           /// need to determine how to sample x_new 
+          /// need to determine how to sample x_new 
+	  /// KRD says draw from distribution 1 in this case
           est_prob_hit_failregion = 0.;
         }
         else 
@@ -252,7 +260,7 @@ void NonDGPImpSampling::quantify_uncertainty()
         gp_final_data[j]=gp_data.continuous_variables(j);
       Cout << "GP final data size " <<  gp_final_data.size() << '\n'; 
 //
-//This is where we need some re-architecting.  I want to evaluated the GPmodel at a 
+//This is where we need some re-architecting.  I want to evaluate the GPmodel at a 
 //set of pre-defined points.  We will need to use a parameter list study. 
 //something like the following
 //Iterator listStudy;
@@ -270,7 +278,7 @@ void NonDGPImpSampling::quantify_uncertainty()
 //not sure if I have this correct 
 //for now, since we are assuming rho0=rho1=rho2=all uniform, just set rho1 to 1.
       for (j = 0; j < numPtsTotal; j++) 
-        rhoOne(j)=1;
+        rhoOne(j)=1; //for uniform this should be 1.0/prod(xmax-xmin) across all dimensions... ok now I see this isn't rhoOne it's rhoOne/rhoZero... if rho0=rho1=rho2 this should be ok
   
       for (j = 0; j < numPtsTotal; j++)
         rhoMix(j)=rhoOne(j)*numSamples;
@@ -292,7 +300,8 @@ void NonDGPImpSampling::quantify_uncertainty()
             exp_ind_this(k) = calcExpIndPoint(respFnCount,z,this_mean,this_var);
           }
           for (k = 0; k < numPtsTotal; k++) 
-            rhoMix(k)=rhoMix(k)+exp_ind_this(k)*1/normConst(j);
+            rhoMix(k)=rhoMix(k)+exp_ind_this(k)*1.0/normConst(j);
+	  //the 1.0 here is reall rhoZero/rhoZero (ok for rho0=rho1=rho2)
           gpModel.pop_approximation(false);
           Cout << "Size of build data set " << gp_data.size() << '\n';
         } 
@@ -309,7 +318,8 @@ void NonDGPImpSampling::quantify_uncertainty()
         rhoMix(j)/=numPtsTotal;
       Real prob_mix=0.0;
       for (j = 0; j < numPtsTotal; j++) 
-        prob_mix+=1*indicator(j)/rhoMix(j);
+        prob_mix+=1.0*indicator(j)/rhoMix(j);
+      //the 1.0 here is reall rhoZero/rhoZero (ok for rho0=rho1=rho2)
       prob_mix/=numPtsTotal;
       Cout << "Prob Mix IS " << prob_mix << '\n'; 
  
@@ -402,13 +412,14 @@ RealVector NonDGPImpSampling::calcExpIndicator(const int respFnCount, const Real
     stdv = std::sqrt(gpVar[i][respFnCount]); 
     if(std::fabs(snv)>=std::fabs(stdv)*50.0) {
     //this will trap the denominator=0.0 case even if numerator=0.0
-      cdf=(snv>0.0)?1.0:0.0;
+      ei(i)=(snv>=0.0)?1.0:0.0;
     }
     else{
       snv/=stdv;
       cdf = Pecos::Phi(snv);
+      ei(i)=cdf;
     }
-    ei(i)=cdf;
+
     Cout << "EI " << ei(i) << " respThresh= " << respThresh << " mu= " << gpMeans[i][respFnCount] << " stdv= " << stdv << '\n';
   }    
   return ei;
@@ -426,13 +437,14 @@ Real NonDGPImpSampling::calcExpIndPoint(const int respFnCount, const Real respTh
   stdv = std::sqrt(this_var(respFnCount)); 
   if(std::fabs(snv)>=std::fabs(stdv)*50.0) {
     //this will trap the denominator=0.0 case even if numerator=0.0
-    cdf=(snv>0.0)?1.0:0.0;
+    ei=(snv>=0.0)?1.0:0.0;
   }
   else{
     snv/=stdv;
     cdf = Pecos::Phi(snv);
+    ei=cdf;
   }
-  ei=cdf;
+
   Cout << "EI " << ei << " respThresh= " << respThresh << " mu= " << this_mean(respFnCount) << " stdv= " << stdv << '\n';
       
   return ei;
