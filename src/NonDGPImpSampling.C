@@ -65,6 +65,11 @@ NonDGPImpSampling::NonDGPImpSampling(Model& model): NonDSampling(model)
 
   //gpModel.init_communicators(gpBuild.maximum_concurrency());
   gpModel.init_communicators(gpEval.maximum_concurrency());
+ 
+  //construct sampler to generate one draw from rhoOne distribution, with 
+  //seed varying between invocations
+  construct_lhs(sampleRhoOne, iteratedModel, sample_type, 1, randomSeed,
+		rngName, vary_pattern); 
 }
 
 NonDGPImpSampling::~NonDGPImpSampling()
@@ -237,10 +242,14 @@ void NonDGPImpSampling::quantify_uncertainty()
  
         if (num_eval_kept==0) {
 	  normConst(k)=0.;
-          /// need to determine how to sample x_new 
-	  /// KRD says draw from distribution 1 in this case
-          est_prob_hit_failregion = 0.;
-        }
+          sampleRhoOne.run_iterator(Cout);
+         // obtain results 
+          const RealMatrix&  rho1_samples = sampleRhoOne.all_samples();
+          // For now, we always only draw one sample
+            new_X = Teuchos::getCol(Teuchos::View,
+	      const_cast<RealMatrix&>(all_samples), 0);
+            Cout << "Draw from Rho One is " << new_X << '\n';
+        }  
         else 
           new_X = drawNewX(k);
          

@@ -75,6 +75,8 @@ private:
   Iterator gpEval;
   /// GP model of response, one approximation per response function
   Model gpModel;
+  /// LHS iterator for sampling from the rhoOneDistribution 
+  Iterator sampleRhoOne;
   
   /// the number of points added to the original set of LHS samples
   int numPtsAdd;
