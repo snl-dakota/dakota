@@ -417,16 +417,26 @@ RealVector NonDGPImpSampling::calcExpIndicator(const int respFnCount, const Real
   for (i = 0; i< numEmulEval; i++) {
     //Cout << "GPmean  " << gpMeans[i][respFnCount];
     //Cout << "GPvar  " << gpVar[i][respFnCount];
-    snv = respThresh-gpMeans[i][respFnCount];
+    snv = (respThresh-gpMeans[i][respFnCount])*(cdfFlag?1.0:-1.0);
+    //this conditional sign maps the problem to the case where the mean being
+    //"below" the threshold (i.e. snv > 0) indicates "mostly failure" and the
+    //mean being "above" the threshold (i.e. snv < 0) indicates "mostly not
+    //failure" this allows the mapped problem to ALWAYS use the cdf (instead
+    //of complimentary cdf)
+
     stdv = std::sqrt(gpVar[i][respFnCount]); 
     if(std::fabs(snv)>=std::fabs(stdv)*50.0) {
-    //this will trap the denominator=0.0 case even if numerator=0.0
+      //this will trap the denominator=0.0 case even if numerator=0.0
       ei(i)=(snv>=0.0)?1.0:0.0;
+      //the mean being exactly at the threshold when variance=0.0 is 
+      //considered to indicate failure
     }
     else{
       snv/=stdv;
-      cdf = Pecos::Phi(snv);
-      ei(i)=cdf;
+      ei(i)= Pecos::Phi(snv); //the expected indicator is the fraction of the 
+      //mapped problem's cdf that fails, the simple mapping is at most a 
+      //change in sign of the snv and might be the identity mapping (not 
+      //even a change in sign)
     }
 
     Cout << "EI " << ei(i) << " respThresh= " << respThresh << " mu= " << gpMeans[i][respFnCount] << " stdv= " << stdv << '\n';
@@ -442,16 +452,25 @@ Real NonDGPImpSampling::calcExpIndPoint(const int respFnCount, const Real respTh
   Real cdf,snv,stdv;
   //  Cout << "GPmean  " << this_mean(respFnCount);
   //  Cout << "GPvar  " << this_var(respFnCount);
-  snv = respThresh-this_mean(respFnCount);
+  snv = (respThresh-this_mean(respFnCount))*(cdfFlag?1.0:-1.0);
+    //this conditional sign maps the problem to the case where the mean being
+    //"below" the threshold (i.e. snv > 0) indicates "mostly failure" and the
+    //mean being "above" the threshold (i.e. snv < 0) indicates "mostly not
+    //failure" this allows the mapped problem to ALWAYS use the cdf (instead
+    //of complimentary cdf)
   stdv = std::sqrt(this_var(respFnCount)); 
   if(std::fabs(snv)>=std::fabs(stdv)*50.0) {
     //this will trap the denominator=0.0 case even if numerator=0.0
     ei=(snv>=0.0)?1.0:0.0;
+    //the mean being exactly at the threshold when variance=0.0 is 
+    //considered to indicate failure
   }
   else{
     snv/=stdv;
-    cdf = Pecos::Phi(snv);
-    ei=cdf;
+    ei= Pecos::Phi(snv); //the expected indicator is the fraction of the 
+    //mapped problem's cdf that fails, the simple mapping is at most a 
+    //change in sign of the snv and might be the identity mapping (not 
+    //even a change in sign)
   }
 
   Cout << "EI " << ei << " respThresh= " << respThresh << " mu= " << this_mean(respFnCount) << " stdv= " << stdv << '\n';
