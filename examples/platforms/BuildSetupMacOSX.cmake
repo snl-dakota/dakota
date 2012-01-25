@@ -9,7 +9,7 @@
 # Boost base directory
 
 set(Boost_INCLUDE_DIR
-  "$ENV{HOME}/local/boost.gnu-4.3.2/include"
+  "/Users/dakota/local/boost.gnu-4.3.2/include"
   CACHE PATH "Always use pre-installed Boost1.45 subset" FORCE)
 
 ##############################################################################
