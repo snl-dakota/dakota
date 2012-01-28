@@ -73,6 +73,8 @@ protected:
 
   /// evaluate the batch of jobs contained in prp_queue
   void derived_synch(Dakota::PRPQueue& prp_queue);
+  /// invokes derived_synch() (no special nowait support)
+  void derived_synch_nowait(Dakota::PRPQueue& prp_queue);
 
 private:
 

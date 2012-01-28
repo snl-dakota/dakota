@@ -104,6 +104,16 @@ void SerialDirectApplicInterface::derived_synch(Dakota::PRPQueue& prp_queue)
 }
 
 
+/** For use by ApplicationInterface::serve_evaluations_asynch(), which can
+    provide a batch processing capability within message passing schedulers
+    (called using chain Strategy::run_iterator() --> Model::serve() -->
+    ApplicationInterface::serve_evaluations() -->
+    ApplicationInterface::serve_evaluations_asynch()). */
+void SerialDirectApplicInterface::
+derived_synch_nowait(Dakota::PRPQueue& prp_queue)
+{ derived_synch(prp_queue); }
+
+
 void SerialDirectApplicInterface::
 rosenbrock(const Dakota::RealVector& c_vars, short asv, Dakota::Real& fn_val, 
 	   Dakota::RealVector& fn_grad, Dakota::RealSymMatrix& fn_hess)

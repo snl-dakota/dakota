@@ -250,7 +250,10 @@ check_configuration(const int& max_iterator_concurrency)
       ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) );
 
   bool err_flag = false;
-  /* Deactivated due to batch processing in PluginSerialDirectApplicInterface.C
+
+// Deactivate if plug-in to allow batch processing in
+// Plugin{Serial,Parallel}DirectApplicInterface.C
+#ifndef DAKOTA_PLUGIN
   // Check for asynchronous local use of the direct interface.
   if (interfaceType == "direct") {  // direct: check for asynch evals/analyses
     if (asynch_local_eval_flag || asynchLocalAnalysisFlag ) {
@@ -259,7 +262,8 @@ check_configuration(const int& max_iterator_concurrency)
       err_flag = true;
     }
   }
-  */
+#endif
+
   // Verify that multiprocessor analyses are only being invoked for synchronous
   // direct interfaces.  Neither system calls (synch or asynch), forks (synch
   // or asynch), nor POSIX threads (asynch direct) can share a communicator.
@@ -278,6 +282,9 @@ check_configuration(const int& max_iterator_concurrency)
     err_flag = true;
   }
 
+// Deactivate if plug-in to allow batch processing in
+// PluginParallellDirectApplicInterface.C
+#ifndef DAKOTA_PLUGIN
   // Performing asynch local concurrency requires a single processor.
   // multiProcEvalFlag & asynchLocalAnalysisConcurrency can coexist provided
   // that evalComm is divided into single-processor analysis servers.
@@ -288,6 +295,7 @@ check_configuration(const int& max_iterator_concurrency)
 	 << "allocation may need adjustment." << std::endl;
     err_flag = true;
   }
+#endif
 
   if (err_flag)
     abort_handler(-1);

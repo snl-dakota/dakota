@@ -60,10 +60,20 @@ protected:
 
   // execute the input filter portion of a direct evaluation invocation
   //int derived_map_if(const Dakota::String& if_name);
+
   /// execute an analysis code portion of a direct evaluation invocation
   int derived_map_ac(const Dakota::String& ac_name);
+
   // execute the output filter portion of a direct evaluation invocation
   //int derived_map_of(const Dakota::String& of_name);
+
+  /// no-op hides base error; job batching occurs within derived_synch()
+  void derived_map_asynch(const Dakota::ParamResponsePair& pair);
+
+  /// evaluate the batch of jobs contained in prp_queue
+  void derived_synch(Dakota::PRPQueue& prp_queue);
+  /// invokes derived_synch() (no special nowait support)
+  void derived_synch_nowait(Dakota::PRPQueue& prp_queue);
 
 private:
 
@@ -73,6 +83,11 @@ private:
 
   // intracommunicator for a multiprocessor analysis server
   //MPI_Comm analysisComm;
+
+  /// demo evaluator function for parallel plug-ins
+  int text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
+		Dakota::RealVector& fn_vals, Dakota::RealMatrix& fn_grads,
+		Dakota::RealSymMatrixArray& fn_hessians);
 };
 
 
