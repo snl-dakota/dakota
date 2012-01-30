@@ -10,9 +10,10 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
-#include "PluginSerialDirectApplicInterface.H"
 #include "DakotaResponse.H"
 #include "ParamResponsePair.H"
+#include "PluginSerialDirectApplicInterface.H"
+#include "system_defs.h"
 #include "ProblemDescDB.H"
 #include "ParallelLibrary.H"
 
