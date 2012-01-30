@@ -16,13 +16,13 @@
 #define DAKOTA_INTERFACE_H
 
 #include "system_defs.h"
-#include "global_defs.h"  // for BaseConstructor
+#include "global_defs.h" // for BaseConstructor
 #include "data_types.h"
 #include "DakotaString.H"
 
-//#ifdef HAVE_AMPL
+#ifdef HAVE_AMPL
 struct ASL; // forward declaration
-//#endif // HAVE_AMPL
+#endif // HAVE_AMPL
 
 // likely need more general _WIN32 here
 #ifdef __MINGW32__
@@ -397,7 +397,6 @@ private:
   /// pointer to an AMPL solver library (ASL) object
   ASL *asl;
 #endif // HAVE_AMPL
-
 };
 
 

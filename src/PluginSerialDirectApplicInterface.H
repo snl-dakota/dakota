@@ -1,4 +1,4 @@
-X1/*  _______________________________________________________________________
+/*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
     Copyright (c) 2010, Sandia National Laboratories.
