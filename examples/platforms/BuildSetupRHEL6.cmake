@@ -9,6 +9,11 @@
 # EXAMPLE BuildSetup.cmake file for DAKOTA (GNU-4.4.4/RHEL6)
 #
 ##############################################################################
+
+# CMake 2.8.6 has problems with RHEL6/Boost -- the following is a workaround
+set(Boost_NO_BOOST_CMAKE ON CACHE BOOL "Obtain desired behavior on RHEL6" FORCE)
+
+##############################################################################
 # Enforce shared library build for DAKOTA and all of its TPLs
 ##############################################################################
 
