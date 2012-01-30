@@ -1,4 +1,4 @@
-/*  _______________________________________________________________________
+X1/*  _______________________________________________________________________
 
     DAKOTA: Design Analysis Kit for Optimization and Terascale Applications
     Copyright (c) 2010, Sandia National Laboratories.
@@ -76,6 +76,9 @@ protected:
   /// invokes derived_synch() (no special nowait support)
   void derived_synch_nowait(Dakota::PRPQueue& prp_queue);
 
+  /// no-op hides base error checks
+  void check_configuration(int max_iterator_concurrency);
+
 private:
 
   //
@@ -92,6 +95,12 @@ private:
   //
 
 };
+
+
+inline SerialDirectApplicInterface::
+SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db):
+  Dakota::DirectApplicInterface(problem_db)
+{ }
 
 
 inline SerialDirectApplicInterface::~SerialDirectApplicInterface()

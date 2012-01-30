@@ -10,21 +10,14 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
+#include "PluginSerialDirectApplicInterface.H"
 #include "DakotaResponse.H"
 #include "ParamResponsePair.H"
-#include "PluginSerialDirectApplicInterface.H"
-#include "system_defs.h"
 #include "ProblemDescDB.H"
 #include "ParallelLibrary.H"
 
 
 namespace SIM {
-
-SerialDirectApplicInterface::
-SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db):
-  Dakota::DirectApplicInterface(problem_db)
-{ }
-
 
 int SerialDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
 {
@@ -112,6 +105,12 @@ void SerialDirectApplicInterface::derived_synch(Dakota::PRPQueue& prp_queue)
 void SerialDirectApplicInterface::
 derived_synch_nowait(Dakota::PRPQueue& prp_queue)
 { derived_synch(prp_queue); }
+
+
+// Hide default error checks at ApplicationInterface level
+void SerialDirectApplicInterface::
+check_configuration(int max_iterator_concurrency)
+{ }
 
 
 void SerialDirectApplicInterface::

@@ -108,6 +108,11 @@ protected:
   /// used by the iterator master to terminate evaluation servers
   void stop_evaluation_servers();
 
+  /// default checks on multiprocessor analysis configuration
+  bool check_multiprocessor_configuration();
+  /// default checks on asynchonous configuration for direct interfaces
+  bool check_direct_asynchronous_configuration(int max_iterator_concurrency);
+
   //
   //- Heading: Virtual functions (evaluations)
   //
@@ -138,6 +143,9 @@ protected:
 
   // clears any bookkeeping in derived classes
   //virtual void clear_bookkeeping();
+
+  /// perform some error checks on the parallel configuration
+  virtual void check_configuration(int max_iterator_concurrency);
 
   //
   //- Heading: Member functions (analyses)
@@ -279,8 +287,6 @@ private:
   /// convenience function for updating the local analysis partition data
   /// following ParallelLibrary::init_analysis_communicators().
   void set_analysis_communicators();
-  /// perform some error checks on the parallel configuration
-  void check_configuration(const int& max_iterator_concurrency);
 
   // Routines employed by manage_failure():
 

@@ -241,29 +241,23 @@ void ApplicationInterface::set_analysis_communicators()
 }
 
 
-void ApplicationInterface::
-check_configuration(const int& max_iterator_concurrency)
+/** Override this definition if plug-in to allow batch processing in
+    Plugin{Serial,Parallel}DirectApplicInterface.C */
+void ApplicationInterface::check_configuration(int max_iterator_concurrency)
 {
-  bool asynch_local_eval_flag = ( max_iterator_concurrency > 1 &&
-    interfaceSynchronization == "asynchronous" &&
-    ( asynchLocalEvalConcurrency > 1 ||
-      ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) );
-
   bool err_flag = false;
+  if (check_multiprocessor_configuration())
+    err_flag = true;
+  if (check_direct_asynchronous_configuration(max_iterator_concurrency))
+    err_flag = true;
+  if (err_flag)
+    abort_handler(-1);
+}
 
-// Deactivate if plug-in to allow batch processing in
-// Plugin{Serial,Parallel}DirectApplicInterface.C
-#ifndef DAKOTA_PLUGIN
-  // Check for asynchronous local use of the direct interface.
-  if (interfaceType == "direct") {  // direct: check for asynch evals/analyses
-    if (asynch_local_eval_flag || asynchLocalAnalysisFlag ) {
-      Cerr << "Error: asynchronous capability not yet supported in direct "
-	   << "interfaces." << std::endl;
-      err_flag = true;
-    }
-  }
-#endif
 
+bool ApplicationInterface::check_multiprocessor_configuration()
+{
+  bool err_flag = false;
   // Verify that multiprocessor analyses are only being invoked for synchronous
   // direct interfaces.  Neither system calls (synch or asynch), forks (synch
   // or asynch), nor POSIX threads (asynch direct) can share a communicator.
@@ -281,10 +275,28 @@ check_configuration(const int& max_iterator_concurrency)
 	 << "excess processors to the analysis level." << std::endl;
     err_flag = true;
   }
+  return err_flag;
+}
 
-// Deactivate if plug-in to allow batch processing in
-// PluginParallellDirectApplicInterface.C
-#ifndef DAKOTA_PLUGIN
+
+bool ApplicationInterface::
+check_direct_asynchronous_configuration(int max_iterator_concurrency)
+{
+  bool err_flag = false, asynch_local_eval_flag
+    = ( max_iterator_concurrency > 1 &&
+	interfaceSynchronization == "asynchronous" &&
+	( asynchLocalEvalConcurrency > 1 ||
+	  ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) );
+
+  // Check for asynchronous local use of the direct interface.
+  if (interfaceType == "direct") {  // direct: check for asynch evals/analyses
+    if (asynch_local_eval_flag || asynchLocalAnalysisFlag ) {
+      Cerr << "Error: asynchronous capability not yet supported in direct "
+	   << "interfaces." << std::endl;
+      err_flag = true;
+    }
+  }
+
   // Performing asynch local concurrency requires a single processor.
   // multiProcEvalFlag & asynchLocalAnalysisConcurrency can coexist provided
   // that evalComm is divided into single-processor analysis servers.
@@ -295,10 +307,7 @@ check_configuration(const int& max_iterator_concurrency)
 	 << "allocation may need adjustment." << std::endl;
     err_flag = true;
   }
-#endif
-
-  if (err_flag)
-    abort_handler(-1);
+  return err_flag;
 }
 
 

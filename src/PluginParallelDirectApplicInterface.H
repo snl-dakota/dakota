@@ -75,6 +75,9 @@ protected:
   /// invokes derived_synch() (no special nowait support)
   void derived_synch_nowait(Dakota::PRPQueue& prp_queue);
 
+  /// no-op hides base error checks
+  void check_configuration(int max_iterator_concurrency);
+
 private:
 
   //

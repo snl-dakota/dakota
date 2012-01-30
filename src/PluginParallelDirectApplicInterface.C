@@ -116,6 +116,12 @@ derived_synch_nowait(Dakota::PRPQueue& prp_queue)
 // serve_evaluations_asynch())
 
 
+// Hide default error checks at ApplicationInterface level
+void ParallelDirectApplicInterface::
+check_configuration(int max_iterator_concurrency)
+{ }
+
+
 int ParallelDirectApplicInterface::
 text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
 	  Dakota::RealVector& fn_vals, Dakota::RealMatrix& fn_grads,
