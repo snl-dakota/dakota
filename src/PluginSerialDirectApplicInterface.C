@@ -10,10 +10,9 @@
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
+#include "PluginSerialDirectApplicInterface.H"
 #include "DakotaResponse.H"
 #include "ParamResponsePair.H"
-#include "PluginSerialDirectApplicInterface.H"
-#include "system_defs.h"
 #include "ProblemDescDB.H"
 #include "ParallelLibrary.H"
 
@@ -36,7 +35,7 @@ int SerialDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
   int fail_code = 0;
   if (ac_name == "plugin_rosenbrock") {
     Dakota::RealVector grad0 = Teuchos::getCol(Teuchos::View, fnGrads, 0);
-    rosenbrock(xC, directFnASV[0], fnVals[0], grad0, fnHessians[0]);
+    fail_code = rosenbrock(xC, directFnASV[0], fnVals[0], grad0, fnHessians[0]);
   }
   else {
     Cerr << ac_name << " is not available as an analysis within "
@@ -114,7 +113,7 @@ check_configuration(int max_iterator_concurrency)
 { }
 
 
-void SerialDirectApplicInterface::
+int SerialDirectApplicInterface::
 rosenbrock(const Dakota::RealVector& c_vars, short asv, Dakota::Real& fn_val, 
 	   Dakota::RealVector& fn_grad, Dakota::RealSymMatrix& fn_hess)
 {
@@ -143,6 +142,8 @@ rosenbrock(const Dakota::RealVector& c_vars, short asv, Dakota::Real& fn_val,
     fn_hess(0,1) = fnHessians[0](1,0) = -400.*x1;
     fn_hess(1,1) =  200.;
   }
+
+  return 0;
 }
 
 } // namespace SIM

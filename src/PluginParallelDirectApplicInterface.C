@@ -63,6 +63,8 @@ int ParallelDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
   // Failure capturing
   if (fail_code)
     throw fail_code;
+
+  return 0;
 }
 
 

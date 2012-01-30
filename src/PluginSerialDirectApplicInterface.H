@@ -86,9 +86,9 @@ private:
   //
 
   /// Rosenbrock plug-in test function
-  void rosenbrock(const Dakota::RealVector& c_vars, short asv,
-		  Dakota::Real& fn_val, Dakota::RealVector& fn_grad,
-		  Dakota::RealSymMatrix& fn_hess);
+  int rosenbrock(const Dakota::RealVector& c_vars, short asv,
+		 Dakota::Real& fn_val, Dakota::RealVector& fn_grad,
+		 Dakota::RealSymMatrix& fn_hess);
 
   //
   //- Heading: Data
