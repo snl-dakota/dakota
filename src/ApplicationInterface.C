@@ -1520,16 +1520,27 @@ void ApplicationInterface::serve_evaluations_peer()
     at start up). */
 void ApplicationInterface::serve_evaluations_asynch()
 {
+  // ---------------------------------------------------------------------------
+  // multiprocessor system calls, forks, and threads can't share a communicator,
+  // only synchronous direct interfaces can.  Therefore, derived_map_asynch
+  // would not normally need to support a multiprocessor evalComm
+  // (ApplicationInterface::check_configuration() normally prevents this in its
+  // check for multiprocessor evalComm and asynchLocalEvalConcurrency > 1).
+  // However, direct interface plug-ins can use derived_{synch,synch_nowait} to
+  // provide a poor man's batch processing capability, so this function has been
+  // extended to allow for multiProcEvalFlag to accommodate this case.
+  // ---------------------------------------------------------------------------
+
   // ----------------------------------------------------------
   // Step 1: block on first message before entering while loops
   // ----------------------------------------------------------
   MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
   MPI_Status status; // holds MPI_SOURCE, MPI_TAG, & MPI_ERROR
-  parallelLib.recv_ie(recv_buffer, 0, MPI_ANY_TAG, status);
-
   int fn_eval_id = 1, num_active = 0;
   MPI_Request recv_request = MPI_REQUEST_NULL; // bypass MPI_Test on first pass
   PRPQueue prp_queue;
+  if (evalCommRank == 0) // 1-level or local comm. leader in 2-level
+    parallelLib.recv_ie(recv_buffer, 0, MPI_ANY_TAG, status);
 
   do { // main loop
 
@@ -1544,21 +1555,23 @@ void ApplicationInterface::serve_evaluations_asynch()
     while (mpi_test_flag && fn_eval_id &&
            num_active < asynchLocalEvalConcurrency) {
       // test for completion
-      if (recv_request != MPI_REQUEST_NULL) // MPI_REQUEST_NULL = -1 only on IBM
-        parallelLib.test(recv_request, mpi_test_flag, status);
-
+      if (recv_request != MPI_REQUEST_NULL) { // MPI_REQUEST_NULL != 0 on IBM
+	if (evalCommRank == 0)
+	  parallelLib.test(recv_request, mpi_test_flag, status);
+	if (multiProcEvalFlag)
+	  parallelLib.bcast_e(mpi_test_flag);
+      }
       // if test indicates a completion: unpack, execute, & repost
       if (mpi_test_flag) {
-        fn_eval_id = status.MPI_TAG;
-	// ------------------------------------------------------------------
-	// NOTE on omission of bcast over evalComm (see serve_evaluation_synch):
-	// multiprocessor system calls, forks, and threads can't share a 
-	// communicator, only synchronous direct interfaces can.  Therefore, 
-	// derived_map_asynch will not support a multiprocessor evalComm.
-	// The possibility of multiprocessor evalComm and
-	// asynchLocalEvalConcurrency > 1 is prevented in init_communicators.
-	// ------------------------------------------------------------------
+
+	if (evalCommRank == 0)
+	  fn_eval_id = status.MPI_TAG;
+	if (multiProcEvalFlag)
+	  parallelLib.bcast_e(fn_eval_id);
+
         if (fn_eval_id) {
+	  if (multiProcEvalFlag)
+	    parallelLib.bcast_e(recv_buffer);
 	  // unpack
           Variables vars;
           ActiveSet set;
@@ -1571,8 +1584,10 @@ void ApplicationInterface::serve_evaluations_asynch()
           derived_map_asynch(prp);
           ++num_active;
 	  // repost
-          recv_buffer.reset();
-          parallelLib.irecv_ie(recv_buffer, 0, MPI_ANY_TAG, recv_request);
+	  if (evalCommRank == 0) {
+	    recv_buffer.reset();
+	    parallelLib.irecv_ie(recv_buffer, 0, MPI_ANY_TAG, recv_request);
+	  }
 	}
       }
     }
@@ -1594,12 +1609,14 @@ void ApplicationInterface::serve_evaluations_asynch()
 	       << "serve_evaluations_asynch()." << std::endl;
 	  abort_handler(-1);
 	}
-	// In this case, use a blocking send to avoid having to manage waits on
-	// multiple send buffers (which would be a pain since the number of
-	// send_buffers would vary with completionSet length).
-        MPIPackBuffer send_buffer(lenResponseMessage);
-        send_buffer << qit->prp_response();
-        parallelLib.send_ie(send_buffer, 0, completed_eval_id);
+	if (evalCommRank == 0) {
+	  // In this case, use a blocking send to avoid having to manage waits
+	  // on multiple send buffers (which would be a pain since the number
+	  // of send_buffers would vary with completionSet length).
+	  MPIPackBuffer send_buffer(lenResponseMessage);
+	  send_buffer << qit->prp_response();
+	  parallelLib.send_ie(send_buffer, 0, completed_eval_id);
+	}
         prp_queue.erase(qit);
       }
     }
