@@ -137,7 +137,7 @@ text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
   // the text_book derivative logic does not currently account for.
   if (numADIV || numADRV) {
     Cerr << "Error: plug-in parallel direct interface assumes no discrete "
-        << "variables." << std::endl;
+	 << "variables." << std::endl;
     Dakota::abort_handler(-1);
   }
 

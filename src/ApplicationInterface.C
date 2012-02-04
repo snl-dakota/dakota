@@ -248,8 +248,8 @@ void ApplicationInterface::check_configuration(int max_iterator_concurrency)
   bool err_flag = false;
   if (check_multiprocessor_configuration())
     err_flag = true;
-  //if (check_direct_asynchronous_configuration(max_iterator_concurrency))
-  //  err_flag = true;
+  if (check_direct_asynchronous_configuration(max_iterator_concurrency))
+    err_flag = true;
   if (err_flag)
     abort_handler(-1);
 }
