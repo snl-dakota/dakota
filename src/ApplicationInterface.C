@@ -248,8 +248,8 @@ void ApplicationInterface::check_configuration(int max_iterator_concurrency)
   bool err_flag = false;
   if (check_multiprocessor_configuration())
     err_flag = true;
-  if (check_direct_asynchronous_configuration(max_iterator_concurrency))
-    err_flag = true;
+  //if (check_direct_asynchronous_configuration(max_iterator_concurrency))
+  //  err_flag = true;
   if (err_flag)
     abort_handler(-1);
 }
@@ -435,12 +435,8 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       else { // local synchronous evaluation
 
 	// bcast the job to other processors within peer 1 (if required)
-	if (multiProcEvalFlag) {
-	  parallelLib.bcast_e(evalIdCntr); // matches serve_peer
-	  MPIPackBuffer send_buffer(lenVarsActSetMessage);
-	  send_buffer << vars << core_set;
-	  parallelLib.bcast_e(send_buffer); // matches serve_peer
-	}
+	if (multiProcEvalFlag)
+	  broadcast_evaluation(evalIdCntr, vars, core_set);
 
 	//common_input_filtering(vars);
 
@@ -1003,6 +999,9 @@ void ApplicationInterface::asynchronous_local_evaluations(PRPQueue& prp_queue)
   for (i=0, prp_iter = prp_queue.begin(); i<num_sends; i++, prp_iter++) {
     if (outputLevel > SILENT_OUTPUT)
       Cout << "Initiating function evaluation " << prp_iter->eval_id() << '\n';
+    // bcast job to other processors within peer 1 (added for direct plugins)
+    if (multiProcEvalFlag)
+      broadcast_evaluation(*prp_iter);
     derived_map_asynch(*prp_iter);
   }
 
@@ -1034,8 +1033,12 @@ void ApplicationInterface::asynchronous_local_evaluations(PRPQueue& prp_queue)
       }
 
       if (send_cntr < num_jobs) {
+	int fn_eval_id = prp_iter->eval_id();
         if (outputLevel > SILENT_OUTPUT)
-          Cout << "Initiating function evaluation " <<prp_iter->eval_id()<<'\n';
+          Cout << "Initiating function evaluation " << fn_eval_id << '\n';
+	// bcast job to other procs within peer 1 (added for direct plugins)
+	if (multiProcEvalFlag)
+	  broadcast_evaluation(*prp_iter);
         derived_map_asynch(*prp_iter);
         ++send_cntr;
         ++prp_iter;
@@ -1050,31 +1053,26 @@ void ApplicationInterface::asynchronous_local_evaluations(PRPQueue& prp_queue)
 }
 
 
-/** Locally statically-scheduled counterpart to
-    asynchronous_local_evaluations.  This scheduling policy
-    specifically ensures that a completed asynchronous evaluation
-    eval_id is replaced with an equivalent one, modulo
-    asynchLocalEvalConcurrency.  Designed to help with parallel
+/** Statically-scheduled counterpart to asynchronous_local_evaluations.
+    This scheduling policy specifically ensures that a completed
+    asynchronous evaluation eval_id is replaced with an equivalent one,
+    modulo asynchLocalEvalConcurrency.  Designed to help with parallel
     tiling.  A disadvantage of this scheduling policy is that is could
     leave local asynchronous worker "servers" idle in parsing the
-    prp_queue, e.g., when restarting and some evals are already
-    complete.  In fact, anytime this function is called with
-    non-contiguous eval_id's the full possible concurrency won't be
-    leveraged.
+    prp_queue, e.g., when restarting and some evals are already complete.
+    In fact, anytime this function is called with non-contiguous
+    eval_id's, the full possible concurrency won't be leveraged.
 
     This is currently only supported when DAKOTA is running in serial.
-    Supporting in the MPI static / asynch local hybrid mode would
-    require MPI static schedule that is either fully round-robin or
-    fully block scheduled, not the present hybrid.  It is not clear
-    how to support this in the MPI self scheduled / asynch local
-    hybrid mode.
+    Supporting in the MPI static / asynch local hybrid mode would require
+    MPI static schedule that is either fully round-robin or fully block
+    scheduled, not the present hybrid.  It is not clear how to support
+    this in the MPI self scheduled / asynch local hybrid mode.
 
-    If local evaluation concurrency is unlimited, this function is not
-    needed. */
+    If local evaluation concurrency is unlimited, this fn is not needed. */
 void ApplicationInterface::
 asynchronous_local_evaluations_static(PRPQueue& prp_queue)
 {
-
   // TODO: could remove tests for asynchLocalEvalConcurrency
 
   // special data for static-scheduling case
@@ -1114,6 +1112,9 @@ asynchronous_local_evaluations_static(PRPQueue& prp_queue)
     if (localServerJobMap[server_num] == 0) {
       if (outputLevel > SILENT_OUTPUT)
 	Cout << "Initiating function evaluation " << fn_eval_id << '\n';
+      // bcast job to other processors within peer 1 (added for direct plugins)
+      if (multiProcEvalFlag)
+	broadcast_evaluation(*prp_iter);
       derived_map_asynch(*prp_iter);
       runningSet.insert(fn_eval_id);
       localServerJobMap[server_num] = fn_eval_id;
@@ -1170,6 +1171,9 @@ asynchronous_local_evaluations_static(PRPQueue& prp_queue)
 	if (localServerJobMap[server_num] == 0) {
 	  if (outputLevel > SILENT_OUTPUT)
 	    Cout << "Initiating function evaluation " << fn_eval_id << '\n';
+	  // bcast job to other procs within peer 1 (added for direct plugins)
+	  if (multiProcEvalFlag)
+	    broadcast_evaluation(*prp_iter);
 	  derived_map_asynch(*prp_iter);
 	  runningSet.insert(fn_eval_id);
 	  localServerJobMap[server_num] = fn_eval_id;
@@ -1237,12 +1241,15 @@ asynchronous_local_evaluations_nowait(PRPQueue& prp_queue)
     if ( !runningSet.count(fn_eval_id) && (!asynchLocalEvalConcurrency
        || runningSet.size() < asynchLocalEvalConcurrency) ) {
 
-      if(asynchLocalEvalConcurrency && asynchLocalEvalStatic) {
+      if (asynchLocalEvalConcurrency && asynchLocalEvalStatic) {
 	// only schedule if local "server" not busy
 	server_num = (fn_eval_id - 1) % asynchLocalEvalConcurrency;
 	if (localServerJobMap[server_num] == 0) {
 	  if (outputLevel > SILENT_OUTPUT)
 	    Cout << "Initiating function evaluation " << fn_eval_id << '\n';
+	  // bcast job to other procs within peer 1 (added for direct plugins)
+	  if (multiProcEvalFlag)
+	    broadcast_evaluation(*prp_iter);
 	  derived_map_asynch(*prp_iter);
 	  runningSet.insert(fn_eval_id);
 	  localServerJobMap[server_num] = fn_eval_id;
@@ -1252,6 +1259,8 @@ asynchronous_local_evaluations_nowait(PRPQueue& prp_queue)
       else {
 	if (outputLevel > SILENT_OUTPUT)
 	  Cout << "Initiating function evaluation " << fn_eval_id << '\n';
+	if (multiProcEvalFlag)
+	  broadcast_evaluation(*prp_iter);
 	derived_map_asynch(*prp_iter);
 	runningSet.insert(fn_eval_id);
       }
@@ -1280,7 +1289,7 @@ asynchronous_local_evaluations_nowait(PRPQueue& prp_queue)
     runningSet.erase(fn_eval_id);
 
     // free this local server
-    if(asynchLocalEvalConcurrency && asynchLocalEvalStatic) {
+    if (asynchLocalEvalConcurrency && asynchLocalEvalStatic) {
       server_num = (fn_eval_id - 1) % asynchLocalEvalConcurrency;
       localServerJobMap[server_num] = 0;
     }
@@ -1291,12 +1300,14 @@ asynchronous_local_evaluations_nowait(PRPQueue& prp_queue)
     for (prp_iter = prp_queue.begin(); prp_iter != prp_queue.end(); prp_iter++){
       fn_eval_id = prp_iter->eval_id();
       if ( !runningSet.count(fn_eval_id) && !completionSet.count(fn_eval_id) ) {
-	if(asynchLocalEvalConcurrency && asynchLocalEvalStatic) {
+	if (asynchLocalEvalConcurrency && asynchLocalEvalStatic) {
 	  // only schedule if local "server" not busy
 	  server_num = (fn_eval_id - 1) % asynchLocalEvalConcurrency;
 	  if (localServerJobMap[server_num] == 0) {
 	    if (outputLevel > SILENT_OUTPUT)
 	      Cout << "Initiating function evaluation " << fn_eval_id << '\n';
+	    if (multiProcEvalFlag)
+	      broadcast_evaluation(*prp_iter);
 	    derived_map_asynch(*prp_iter);
 	    runningSet.insert(fn_eval_id);
 	    completed--;
@@ -1306,6 +1317,8 @@ asynchronous_local_evaluations_nowait(PRPQueue& prp_queue)
 	else {
 	  if (outputLevel > SILENT_OUTPUT)
 	    Cout << "Initiating function evaluation " << fn_eval_id << '\n';
+	  if (multiProcEvalFlag)
+	    broadcast_evaluation(*prp_iter);
 	  derived_map_asynch(*prp_iter);
 	  runningSet.insert(fn_eval_id);
 	  completed--; // use as counter & decrement back towards zero
@@ -1339,12 +1352,8 @@ void ApplicationInterface::synchronous_local_evaluations(PRPQueue& prp_queue)
       Cout << "Evaluating function evaluation " << currEvalId << std::endl;
 
     // bcast the job to other processors within peer 1 (if required)
-    if (multiProcEvalFlag) {
-      parallelLib.bcast_e(currEvalId); // matches serve_peer
-      MPIPackBuffer send_buffer(lenVarsActSetMessage);
-      send_buffer << vars << set;
-      parallelLib.bcast_e(send_buffer); // matches serve_peer
-    }
+    if (multiProcEvalFlag)
+      broadcast_evaluation(*prp_iter);
 
     try { derived_map(vars, set, local_response, currEvalId); } // synch. local
 
@@ -1359,6 +1368,18 @@ void ApplicationInterface::synchronous_local_evaluations(PRPQueue& prp_queue)
     if (restartFileFlag)
       write_restart << *prp_iter;
   }
+}
+
+
+void ApplicationInterface::
+broadcast_evaluation(int fn_eval_id, const Variables& vars,
+		     const ActiveSet& set)
+{
+  // match bcast_e()'s in serve_evaluations_{synch,asynch,peer}
+  parallelLib.bcast_e(fn_eval_id);
+  MPIPackBuffer send_buffer(lenVarsActSetMessage);
+  send_buffer << vars << set;
+  parallelLib.bcast_e(send_buffer);
 }
 
 
@@ -1377,15 +1398,18 @@ void ApplicationInterface::serve_evaluations()
   // exposes the run to race conditions from the asynch processing procedure.
   // Thus, it is up to the user to avoid specifying asynch local concurrency
   // when num_jobs is not strictly greater than numEvalServers.
-  if (asynchLocalEvalConcurrency>1)
-    // Since evalCommSize must be 1 (see init_comms), serve_peer is not used.
-    serve_evaluations_asynch();
+
+  // test for server 1 within a static schedule: multiProcEvalFlag is implied
+  // since evalCommRank 0 is running the iterator/job schedulers
+  bool peer_server1 = (!ieDedMasterFlag && evalServerId == 1);
+
+  if (asynchLocalEvalConcurrency > 1) {
+    if (peer_server1) serve_evaluations_asynch_peer();
+    else              serve_evaluations_asynch();
+  }
   else {
-    if (!ieDedMasterFlag && evalServerId==1) // server 1, static schedule
-      // Must be a multiproc. evalComm, as the 1st evalServer runs the iterator
-      serve_evaluations_peer(); // blocks until the iterator proc joins server 1
-    else
-      serve_evaluations_synch(); // does complete evals assigned to a server
+    if (peer_server1) serve_evaluations_synch_peer();
+    else              serve_evaluations_synch();
   }
 }
 
@@ -1467,9 +1491,9 @@ void ApplicationInterface::serve_evaluations_synch()
     synchronous evaluation in coordination with the iteratorCommRank 0
     processor (the iterator) for static schedules.  The bcast()
     matches either the bcast() in synchronous_local_evaluations(),
-    which is invoked by static_schedule_evaluations()), or the bcast()
+    which is invoked by static_schedule_evaluations(), or the bcast()
     in map(). */
-void ApplicationInterface::serve_evaluations_peer()
+void ApplicationInterface::serve_evaluations_synch_peer()
 { 
   // update class member eval id for usage on iteratorCommRank!=0 processors
   // (Use case: special logic within derived direct interface plug-ins)
@@ -1522,8 +1546,8 @@ void ApplicationInterface::serve_evaluations_asynch()
 {
   // ---------------------------------------------------------------------------
   // multiprocessor system calls, forks, and threads can't share a communicator,
-  // only synchronous direct interfaces can.  Therefore, derived_map_asynch
-  // would not normally need to support a multiprocessor evalComm
+  // only synchronous direct interfaces can.  Therefore, this asynch job
+  // scheduler would not normally need to support a multiprocessor evalComm
   // (ApplicationInterface::check_configuration() normally prevents this in its
   // check for multiprocessor evalComm and asynchLocalEvalConcurrency > 1).
   // However, direct interface plug-ins can use derived_{synch,synch_nowait} to
@@ -1573,10 +1597,9 @@ void ApplicationInterface::serve_evaluations_asynch()
 	  if (multiProcEvalFlag)
 	    parallelLib.bcast_e(recv_buffer);
 	  // unpack
-          Variables vars;
-          ActiveSet set;
+          Variables vars; ActiveSet set;
           recv_buffer >> vars >> set;
-          Response local_response(set); // special constructor
+	  Response local_response(set); // special constructor
           ParamResponsePair prp(vars, interfaceId, local_response,
 				fn_eval_id, false); // shallow copy
           prp_queue.insert(prp);
@@ -1616,6 +1639,70 @@ void ApplicationInterface::serve_evaluations_asynch()
 	  MPIPackBuffer send_buffer(lenResponseMessage);
 	  send_buffer << qit->prp_response();
 	  parallelLib.send_ie(send_buffer, 0, completed_eval_id);
+	}
+        prp_queue.erase(qit);
+      }
+    }
+
+  } while (fn_eval_id || num_active > 0);
+
+  //clear_bookkeeping(); // clear any bookkeeping lists in derived classes
+}
+
+
+/** This code is invoked by serve_evaluations() to perform multiple
+    asynchronous jobs on multiprocessor slave/peer servers.  It
+    matches the multiProcEvalFlag bcasts in
+    ApplicationInterface::asynchronous_local_evaluations(). */
+void ApplicationInterface::serve_evaluations_asynch_peer()
+{
+  MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
+  int fn_eval_id = 1, num_active = 0;
+  PRPQueue prp_queue;
+
+  do { // main loop
+
+    // -------------------------------------------------------------------
+    // check for incoming messages & unpack/execute all jobs received
+    // -------------------------------------------------------------------
+    while (fn_eval_id && num_active < asynchLocalEvalConcurrency) {
+      // TO DO: mirror num_sends !!!
+      parallelLib.bcast_e(fn_eval_id);
+      //Cout << "evalCommRank " << evalCommRank
+      //     << ": fn_eval_id = " << fn_eval_id << std::endl;
+      if (fn_eval_id) {
+	parallelLib.bcast_e(recv_buffer);
+	// unpack
+	Variables vars;	ActiveSet set;
+	recv_buffer >> vars >> set;
+	//Cout << "evalCommRank " << evalCommRank << " vars:\n" << vars
+	//     << "set:\n" << set << std::endl;
+	Response local_response(set); // special constructor
+	ParamResponsePair prp(vars, interfaceId, local_response,
+			      fn_eval_id, false); // shallow copy
+	prp_queue.insert(prp);
+	// execute
+	derived_map_asynch(prp);
+	++num_active;
+      }
+    }
+
+    // -----------------------------------------------------------------
+    // check for any completed jobs and return results to master
+    // -----------------------------------------------------------------
+    if (num_active > 0) {
+      completionSet.clear();
+      derived_synch_nowait(prp_queue); // rebuilds completionSet
+      num_active -= completionSet.size();
+      PRPQueueIter qit;
+      for (ISCIter id_iter = completionSet.begin();
+	   id_iter != completionSet.end(); ++id_iter) {
+        int completed_eval_id = *id_iter;
+	qit = lookup_by_eval_id(prp_queue, completed_eval_id);
+	if (qit == prp_queue.end()) {
+	  Cerr << "Error: failure in queue lookup within ApplicationInterface::"
+	       << "serve_evaluations_asynch_peer()." << std::endl;
+	  abort_handler(-1);
 	}
         prp_queue.erase(qit);
       }

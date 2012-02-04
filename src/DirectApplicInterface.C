@@ -631,8 +631,7 @@ void DirectApplicInterface::derived_synch_nowait(PRPQueue& prp_queue)
 // Begin utilities used by derived_map
 // -----------------------------------
 void DirectApplicInterface::
-set_local_data(const Variables& vars, const ActiveSet& set,
-	       const Response& response)
+set_local_data(const Variables& vars, const ActiveSet& set)
 {
   // This function is performed once per evaluation, which may involve multiple
   // analyses.  Since the data has class scope, it has persistence from one
@@ -654,8 +653,8 @@ set_local_data(const Variables& vars, const ActiveSet& set,
 
   // Initialize copies of incoming data
   //directFnVars = vars; // shared rep
-  size_t i;
   if (localDataView & VARIABLES_MAP) {
+    size_t i;
     // set labels once (all processors)
     if (xCMLabels.size()  != numACV || xDIMLabels.size() != numADIV ||
 	xDRMLabels.size() != numADRV) {
@@ -670,7 +669,7 @@ set_local_data(const Variables& vars, const ActiveSet& set,
       xDRMLabels.resize(numADRV);
       //String label_i;
       std::map<String, var_t>::iterator v_iter;
-      for (size_t i=0; i<numACV; ++i) {
+      for (i=0; i<numACV; ++i) {
 	//label_i = toLower(acv_labels[i]);
 	v_iter = varTypeMap.find(acv_labels[i]);//(label_i);
 	if (v_iter == varTypeMap.end()) {
@@ -681,7 +680,7 @@ set_local_data(const Variables& vars, const ActiveSet& set,
 	else
 	  xCMLabels[i] = v_iter->second;
       }
-      for (size_t i=0; i<numADIV; ++i) {
+      for (i=0; i<numADIV; ++i) {
 	//label_i = toLower(adiv_labels[i]);
 	v_iter = varTypeMap.find(adiv_labels[i]);//(label_i);
 	if (v_iter == varTypeMap.end()) {
@@ -692,7 +691,7 @@ set_local_data(const Variables& vars, const ActiveSet& set,
 	else
 	  xDIMLabels[i] = v_iter->second;
       }
-      for (size_t i=0; i<numADRV; ++i) {
+      for (i=0; i<numADRV; ++i) {
 	//label_i = toLower(adrv_labels[i]);
 	v_iter = varTypeMap.find(adrv_labels[i]);//(label_i);
 	if (v_iter == varTypeMap.end()) {
@@ -742,7 +741,7 @@ set_local_data(const Variables& vars, const ActiveSet& set,
   if (localDataView & VARIABLES_MAP) {
     SizetMultiArrayConstView acv_ids = vars.all_continuous_variable_ids();
     varTypeDVV.resize(numDerivVars);
-    for (i=0; i<numDerivVars; ++i) {
+    for (size_t i=0; i<numDerivVars; ++i) {
       size_t acv_index = find_index(acv_ids, directFnDVV[i]);
       if (acv_index == _NPOS) {
 	Cerr << "Error: dvv value " << directFnDVV[i] << " not present in all "
@@ -753,7 +752,11 @@ set_local_data(const Variables& vars, const ActiveSet& set,
 	varTypeDVV[i] = xCMLabels[acv_index];
     }
   }
+}
 
+
+void DirectApplicInterface::set_local_data(const Response& response)
+{
   // -----------------------
   // Set local response data
   // -----------------------
@@ -761,6 +764,7 @@ set_local_data(const Variables& vars, const ActiveSet& set,
   numFns = directFnASV.size();
   gradFlag = false;
   hessFlag = false;
+  size_t i;
   for (i=0; i<numFns; ++i) {
     if (directFnASV[i] & 2)
       gradFlag = true;

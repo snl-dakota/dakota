@@ -78,22 +78,21 @@ derived_map_asynch(const Dakota::ParamResponsePair& pair)
 
 void ParallelDirectApplicInterface::derived_synch(Dakota::PRPQueue& prp_queue)
 {
+  // For each job in the processing queue, evaluate the response
   for (Dakota::PRPQueueIter prp_iter = prp_queue.begin();
        prp_iter != prp_queue.end(); prp_iter++) {
-    // For each job in the processing queue, evaluate the response
+    // set local variable/set data, but update resp directly for efficiency
+    set_local_data(prp_iter->prp_parameters(), prp_iter->active_set());
+    Dakota::Response           resp     = prp_iter->prp_response();// shared rep
+    Dakota::RealVector         fn_vals  = resp.function_values_view();
+    Dakota::RealMatrix         fn_grads = resp.function_gradients_view();
+    Dakota::RealSymMatrixArray fn_hessians = resp.function_hessians_view();
     int fn_eval_id = prp_iter->eval_id();
-    const Dakota::Variables& vars = prp_iter->prp_parameters();
-    const Dakota::ActiveSet& set  = prp_iter->active_set();
-    Dakota::Response         resp = prp_iter->prp_response(); // shared rep
     if (outputLevel > Dakota::SILENT_OUTPUT)
       Cout << "ParallelDirectApplicInterface:: evaluating function evaluation "
 	   << fn_eval_id << " in batch mode." << std::endl;
     //if (ac_name == "plugin_text_book") { // not provided in this API
-      Dakota::RealVector         fn_vals     = resp.function_values_view();
-      Dakota::RealMatrix         fn_grads    = resp.function_gradients_view();
-      Dakota::RealSymMatrixArray fn_hessians = resp.function_hessians_view();
-      text_book(vars.continuous_variables(), set.request_vector(), fn_vals,
-		fn_grads, fn_hessians);
+      text_book(xC, directFnASV, fn_vals, fn_grads, fn_hessians);
     //}
     //else {
     //  Cerr << ac_name << " is not available as an analysis within "
@@ -138,7 +137,7 @@ text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
   // the text_book derivative logic does not currently account for.
   if (numADIV || numADRV) {
     Cerr << "Error: plug-in parallel direct interface assumes no discrete "
-	 << "variables." << std::endl;
+        << "variables." << std::endl;
     Dakota::abort_handler(-1);
   }
 

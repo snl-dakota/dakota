@@ -267,17 +267,26 @@ private:
   /// static-scheduling cases)
   void asynchronous_local_evaluations_nowait(PRPQueue& prp_queue);
 
+  /// convenience function for broadcasting an evaluation over an evalComm
+  void broadcast_evaluation(const ParamResponsePair& pair);
+  /// convenience function for broadcasting an evaluation over an evalComm
+  void broadcast_evaluation(int fn_eval_id, const Variables& vars,
+			    const ActiveSet& set);
+
   // Server routines employed by serve_evaluations():
 
   /// serve the evaluation message passing schedulers and perform
   /// one synchronous evaluation at a time
   void serve_evaluations_synch();
+  /// serve the evaluation message passing schedulers and perform
+  /// one synchronous evaluation at a time as part of the 1st peer
+  void serve_evaluations_synch_peer();
   /// serve the evaluation message passing schedulers and manage
   /// multiple asynchronous evaluations
   void serve_evaluations_asynch();
   /// serve the evaluation message passing schedulers and perform
-  /// one synchronous evaluation at a time as part of the 1st peer
-  void serve_evaluations_peer();
+  /// multiple asynchronous evaluations as part of the 1st peer
+  void serve_evaluations_asynch_peer();
 
   // Routines employed by init/set_communicators():
 
@@ -494,6 +503,14 @@ derived_synchronous_local_analysis(const int& analysis_id)
        << "analysis() function defined in ApplicationInterface\n." << std::endl;
   abort_handler(-1);
   return 0;
+}
+
+
+inline void ApplicationInterface::
+broadcast_evaluation(const ParamResponsePair& pair)
+{
+  broadcast_evaluation(pair.eval_id(), pair.prp_parameters(),
+		       pair.active_set());
 }
 
 

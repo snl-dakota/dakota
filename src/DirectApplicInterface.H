@@ -118,7 +118,13 @@ protected:
   //
 
   /// convenience function for local test simulators which sets per-evaluation
-  /// variable and response attributes
+  /// variable and active set attributes
+  void set_local_data(const Variables& vars, const ActiveSet& set);
+  /// convenience function for local test simulators which sets per-evaluation
+  /// response attributes
+  void set_local_data(const Response& response);
+  /// convenience function for local test simulators which sets per-evaluation
+  /// variable, active set, and response attributes
   void set_local_data(const Variables& vars, const ActiveSet& set,
 		      const Response& response);
 
@@ -335,6 +341,12 @@ inline const StringArray& DirectApplicInterface::analysis_drivers() const
 
 //inline void DirectApplicInterface::clear_bookkeeping()
 //{ threadIdMap.clear(); }
+
+
+inline void DirectApplicInterface::
+set_local_data(const Variables& vars, const ActiveSet& set,
+	       const Response& response)
+{ set_local_data(vars, set); set_local_data(response); }
 
 } // namespace Dakota
 
