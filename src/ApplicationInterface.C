@@ -248,8 +248,8 @@ void ApplicationInterface::check_configuration(int max_iterator_concurrency)
   bool err_flag = false;
   if (check_multiprocessor_configuration())
     err_flag = true;
-  if (check_direct_asynchronous_configuration(max_iterator_concurrency))
-    err_flag = true;
+  //if (check_direct_asynchronous_configuration(max_iterator_concurrency))
+  //  err_flag = true;
   if (err_flag)
     abort_handler(-1);
 }
@@ -988,7 +988,9 @@ void ApplicationInterface::asynchronous_local_evaluations(PRPQueue& prp_queue)
   extern PRPCache data_pairs;
   extern BoStream write_restart;
 
-  size_t i, num_sends, num_jobs = prp_queue.size();
+  size_t i, num_sends; int num_jobs = prp_queue.size();
+  if (multiProcEvalFlag)
+    parallelLib.bcast_e(num_jobs);
   if (asynchLocalEvalConcurrency) // concurrency limited by user spec.
     num_sends = (asynchLocalEvalConcurrency < num_jobs) ? 
       asynchLocalEvalConcurrency : num_jobs;
@@ -1015,6 +1017,7 @@ void ApplicationInterface::asynchronous_local_evaluations(PRPQueue& prp_queue)
     if (outputLevel > SILENT_OUTPUT)
       Cout << "Waiting on completed jobs" << std::endl;
     completionSet.clear();
+    // *** TO DO: SHOULD THIS BE THE ACTIVE SUBSET OF PRP_QUEUE? ***:
     derived_synch(prp_queue); // rebuilds completionSet
     recv_cntr += completionSet.size();
     for (ISCIter id_iter = completionSet.begin();
@@ -1599,6 +1602,7 @@ void ApplicationInterface::serve_evaluations_asynch()
 	  // unpack
           Variables vars; ActiveSet set;
           recv_buffer >> vars >> set;
+	  recv_buffer.reset();
 	  Response local_response(set); // special constructor
           ParamResponsePair prp(vars, interfaceId, local_response,
 				fn_eval_id, false); // shallow copy
@@ -1607,10 +1611,8 @@ void ApplicationInterface::serve_evaluations_asynch()
           derived_map_asynch(prp);
           ++num_active;
 	  // repost
-	  if (evalCommRank == 0) {
-	    recv_buffer.reset();
+	  if (evalCommRank == 0)
 	    parallelLib.irecv_ie(recv_buffer, 0, MPI_ANY_TAG, recv_request);
-	  }
 	}
       }
     }
@@ -1657,26 +1659,26 @@ void ApplicationInterface::serve_evaluations_asynch()
 void ApplicationInterface::serve_evaluations_asynch_peer()
 {
   MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
-  int fn_eval_id = 1, num_active = 0;
+  int fn_eval_id = 1, num_jobs;
+  size_t num_active = 0, num_completed;
   PRPQueue prp_queue;
+
+  parallelLib.bcast_e(num_jobs);
+  int num_launch = std::min(asynchLocalEvalConcurrency, num_jobs);
 
   do { // main loop
 
     // -------------------------------------------------------------------
     // check for incoming messages & unpack/execute all jobs received
     // -------------------------------------------------------------------
-    while (fn_eval_id && num_active < asynchLocalEvalConcurrency) {
-      // TO DO: mirror num_sends !!!
+    while (fn_eval_id && num_active < num_launch) {
       parallelLib.bcast_e(fn_eval_id);
-      //Cout << "evalCommRank " << evalCommRank
-      //     << ": fn_eval_id = " << fn_eval_id << std::endl;
       if (fn_eval_id) {
 	parallelLib.bcast_e(recv_buffer);
 	// unpack
 	Variables vars;	ActiveSet set;
 	recv_buffer >> vars >> set;
-	//Cout << "evalCommRank " << evalCommRank << " vars:\n" << vars
-	//     << "set:\n" << set << std::endl;
+	recv_buffer.reset();
 	Response local_response(set); // special constructor
 	ParamResponsePair prp(vars, interfaceId, local_response,
 			      fn_eval_id, false); // shallow copy
@@ -1693,18 +1695,22 @@ void ApplicationInterface::serve_evaluations_asynch_peer()
     if (num_active > 0) {
       completionSet.clear();
       derived_synch_nowait(prp_queue); // rebuilds completionSet
-      num_active -= completionSet.size();
-      PRPQueueIter qit;
-      for (ISCIter id_iter = completionSet.begin();
-	   id_iter != completionSet.end(); ++id_iter) {
-        int completed_eval_id = *id_iter;
-	qit = lookup_by_eval_id(prp_queue, completed_eval_id);
-	if (qit == prp_queue.end()) {
-	  Cerr << "Error: failure in queue lookup within ApplicationInterface::"
-	       << "serve_evaluations_asynch_peer()." << std::endl;
-	  abort_handler(-1);
+      num_completed = completionSet.size();
+      if (num_completed == num_active)
+	{ num_active = 0; prp_queue.clear(); }
+      else {
+	num_active -= num_completed; //num_jobs_remaining -= num_completed;
+	PRPQueueIter q_it; ISCIter id_it;
+	for (id_it=completionSet.begin(); id_it!=completionSet.end(); ++id_it) {
+	  q_it = lookup_by_eval_id(prp_queue, *id_it);
+	  if (q_it == prp_queue.end()) {
+	    Cerr << "Error: failure in queue lookup within ApplicationInterface"
+		 << "::serve_evaluations_asynch_peer()." << std::endl;
+	    abort_handler(-1);
+	  }
+	  else
+	    prp_queue.erase(q_it);
 	}
-        prp_queue.erase(qit);
       }
     }
 

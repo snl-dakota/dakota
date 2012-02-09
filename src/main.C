@@ -56,8 +56,10 @@ using namespace Dakota;
 
 int main(int argc, char* argv[])
 {
-  nidr_save_exedir(argv[0], 3);	// 3 ==> add both the directory containing this binary
-				// and . to the end of $PATH if not already on $PATH.
+  // 3 ==> add both the directory containing this binary and . to the end
+  // of $PATH if not already on $PATH.
+  nidr_save_exedir(argv[0], 3);
+
 #ifdef HAVE_AMPL
   fpinit_ASL();	// Switch to 53-bit rounding if appropriate, to
 		// eliminate some cross-platform differences.
@@ -82,8 +84,7 @@ int main(int argc, char* argv[])
   // a debugger on them, set breakpoints, and execute "echo >$DAKOTA_DEBUGPIPE"
   // to write something to $DAKOTA_DEBUGPIPE, thus releasing dakota from
   // a wait at the open invocation below.
-  char *pname;
-  int dfd;
+  char *pname; int dfd;
   if ( ( pname = getenv("DAKOTA_DEBUGPIPE") ) &&
        ( dfd = open(pname,O_RDONLY) ) > 0 ) {
     char buf[80];

@@ -25,6 +25,14 @@
 #include "PluginSerialDirectApplicInterface.H"
 #include "PluginParallelDirectApplicInterface.H"
 
+//#define MPI_DEBUG
+#if defined(MPI_DEBUG) && defined(MPICH2)
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#endif
+
 /// Set input to NIDR via string argument instead of input file
 extern "C" void nidr_set_input_string(const char *);
 extern "C" int nidr_save_exedir(const char*, int);
@@ -54,9 +62,36 @@ void model_interface_plugins(Dakota::ProblemDescDB& problem_db);
 
 int main(int argc, char* argv[])
 {
-  nidr_save_exedir(argv[0], 3);	// 3 ==> add both the directory containing this binary
-				// and . to the end of $PATH if not already on $PATH.
+  // 3 ==> add both the directory containing this binary and . to the end
+  // of $PATH if not already on $PATH.
+  nidr_save_exedir(argv[0], 3);
   bool parallel = Dakota::ParallelLibrary::detect_parallel_launch(argc, argv);
+
+#ifdef MPI_DEBUG
+  // hold parallel job prior to MPI_Init() in order to attach debugger to
+  // master process.  Then step past ParallelLibrary instantiation and attach
+  // debugger to other processes.
+#ifdef MPICH2
+  // To use this approach, set $DAKOTA_DEBUGPIPE to a suitable name,
+  // and create $DAKOTA_DEBUGPIPE by executing "mkfifo $DAKOTA_DEBUGPIPE".
+  // After invoking "mpirun ... dakota ...", find the processes, invoke
+  // a debugger on them, set breakpoints, and execute "echo >$DAKOTA_DEBUGPIPE"
+  // to write something to $DAKOTA_DEBUGPIPE, thus releasing dakota from
+  // a wait at the open invocation below.
+  char *pname; int dfd;
+  if ( ( pname = getenv("DAKOTA_DEBUGPIPE") ) &&
+       ( dfd = open(pname,O_RDONLY) ) > 0 ) {
+    char buf[80];
+    read(dfd,buf,sizeof(buf));
+    close(dfd);
+  }
+#else
+  // This simple scheme has been observed to fail with MPICH2
+  int test;
+  std::cin >> test;
+#endif // MPICH2
+#endif // MPI_DEBUG
+
 #ifdef DAKOTA_HAVE_MPI
   if (parallel)
     MPI_Init(&argc, &argv); // initialize MPI
