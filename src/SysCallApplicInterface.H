@@ -58,6 +58,8 @@ public:
 
   const AnalysisCode* analysis_code() const;
 
+  void init_communicators_checks(int max_iterator_concurrency);
+
 private:
 
   //
@@ -135,6 +137,14 @@ SysCallApplicInterface::analysis_drivers() const
 inline const AnalysisCode* SysCallApplicInterface::analysis_code() const
 { return &sysCallSimulator; }
 
+
+// define construct-time checks since no derived interface plug-ins
+inline void SysCallApplicInterface::
+init_communicators_checks(int max_iterator_concurrency)
+{
+  if (check_multiprocessor_analysis())
+    abort_handler(-1);
+}
 
 } // namespace Dakota
 

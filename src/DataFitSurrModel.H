@@ -183,16 +183,16 @@ protected:
   void component_parallel_mode(short mode);
 
   /// set up actualModel for parallel operations
-  void derived_init_communicators(const int& max_iterator_concurrency,
+  void derived_init_communicators(int max_iterator_concurrency,
 				  bool recurse_flag = true);
   /// set up actualModel for serial operations.
   void derived_init_serial();
   /// set active parallel configuration within actualModel
-  void derived_set_communicators(const int& max_iterator_concurrency,
+  void derived_set_communicators(int max_iterator_concurrency,
 				 bool recurse_flag = true);
   /// deallocate communicator partitions for the DataFitSurrModel
   /// (request forwarded to actualModel)
-  void derived_free_communicators(const int& max_iterator_concurrency,
+  void derived_free_communicators(int max_iterator_concurrency,
 				  bool recurse_flag = true);
 
   /// Service actualModel job requests received from the master.
@@ -415,8 +415,7 @@ approximation_data(size_t index)
     message_lengths on the sub-model is probably not a bad idea either.
     Therefore, recompute everything on actualModel using init_communicators. */
 inline void DataFitSurrModel::
-derived_init_communicators(const int& max_iterator_concurrency,
-			   bool recurse_flag)
+derived_init_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   // initialize approxInterface (for serial operations).
   // Note: this is where max_iterator_concurrency would be used.
@@ -464,8 +463,7 @@ inline void DataFitSurrModel::derived_init_serial()
 
 
 inline void DataFitSurrModel::
-derived_set_communicators(const int& max_iterator_concurrency,
-			  bool recurse_flag)
+derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   //parallelLib.parallel_configuration_iterator(modelPCIter);
   //approxInterface.set_communicators(messageLengths);
@@ -476,8 +474,7 @@ derived_set_communicators(const int& max_iterator_concurrency,
 
 
 inline void DataFitSurrModel::
-derived_free_communicators(const int& max_iterator_concurrency,
-			   bool recurse_flag)
+derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   //parallelLib.parallel_configuration_iterator(modelPCIter);
   //approxInterface.free_communicators();

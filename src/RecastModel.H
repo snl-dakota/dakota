@@ -202,16 +202,16 @@ protected:
   bool derived_master_overload() const;
 
   /// set up RecastModel for parallel operations (request forwarded to subModel)
-  void derived_init_communicators(const int& max_iterator_concurrency,
+  void derived_init_communicators(int max_iterator_concurrency,
 				  bool recurse_flag = true);
   /// set up RecastModel for serial operations (request forwarded to subModel).
   void derived_init_serial();
   /// set active parallel configuration within subModel
-  void derived_set_communicators(const int& max_iterator_concurrency,
+  void derived_set_communicators(int max_iterator_concurrency,
 				 bool recurse_flag = true);
   /// deallocate communicator partitions for the RecastModel (request forwarded
   /// to subModel)
-  void derived_free_communicators(const int& max_iterator_concurrency,
+  void derived_free_communicators(int max_iterator_concurrency,
 				  bool recurse_flag = true);
 
   /// Service subModel job requests received from the master.
@@ -511,8 +511,7 @@ inline bool RecastModel::derived_master_overload() const
 
 
 inline void RecastModel::
-derived_init_communicators(const int& max_iterator_concurrency,
-			   bool recurse_flag)
+derived_init_communicators(int max_iterator_concurrency, bool recurse_flag)
 { if (recurse_flag) subModel.init_communicators(max_iterator_concurrency); }
 
 
@@ -521,8 +520,7 @@ inline void RecastModel::derived_init_serial()
 
 
 inline void RecastModel::
-derived_set_communicators(const int& max_iterator_concurrency,
-			  bool recurse_flag)
+derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   if (recurse_flag)
     subModel.set_communicators(max_iterator_concurrency);
@@ -534,8 +532,7 @@ derived_set_communicators(const int& max_iterator_concurrency,
 
 
 inline void RecastModel::
-derived_free_communicators(const int& max_iterator_concurrency,
-			   bool recurse_flag)
+derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
 { if (recurse_flag) subModel.free_communicators(max_iterator_concurrency); }
 
 

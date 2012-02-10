@@ -818,7 +818,7 @@ void Interface::stop_evaluation_servers()
 
 
 void Interface::init_communicators(const IntArray& message_lengths,
-				   const int& max_iterator_concurrency)
+				   int max_iterator_concurrency)
 {
   if (interfaceRep) // envelope fwd to letter
     interfaceRep->init_communicators(message_lengths,max_iterator_concurrency);
@@ -828,10 +828,11 @@ void Interface::init_communicators(const IntArray& message_lengths,
 }
 
 
-void Interface::set_communicators(const IntArray& message_lengths)
+void Interface::set_communicators(const IntArray& message_lengths,
+				  int max_iterator_concurrency)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->set_communicators(message_lengths);
+    interfaceRep->set_communicators(message_lengths, max_iterator_concurrency);
   else { // letter lacking redefinition of virtual fn.
     // ApproximationInterfaces: do nothing
   }

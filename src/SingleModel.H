@@ -83,18 +83,18 @@ protected:
   bool derived_master_overload() const;
   /// set up SingleModel for parallel operations (request forwarded to
   /// userDefinedInterface)
-  void derived_init_communicators(const int& max_iterator_concurrency,
+  void derived_init_communicators(int max_iterator_concurrency,
 				  bool recurse_flag = true);
   /// set up SingleModel for serial operations (request forwarded to
   /// userDefinedInterface).
   void derived_init_serial();
   /// set active parallel configuration for the SingleModel
   /// (request forwarded to userDefinedInterface)
-  void derived_set_communicators(const int& max_iterator_concurrency,
+  void derived_set_communicators(int max_iterator_concurrency,
 				 bool recurse_flag = true);
   /// deallocate communicator partitions for the SingleModel
   /// (request forwarded to userDefinedInterface)
-  void derived_free_communicators(const int& max_iterator_concurrency,
+  void derived_free_communicators(int max_iterator_concurrency,
 				  bool recurse_flag = true);
 
   /// Service userDefinedInterface job requests received from the master.
@@ -181,8 +181,7 @@ inline bool SingleModel::derived_master_overload() const
 
 
 inline void SingleModel::
-derived_init_communicators(const int& max_iterator_concurrency,
-			   bool recurse_flag)
+derived_init_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   userDefinedInterface.init_communicators(messageLengths, 
 					  max_iterator_concurrency);
@@ -194,17 +193,16 @@ inline void SingleModel::derived_init_serial()
 
 
 inline void SingleModel::
-derived_set_communicators(const int& max_iterator_concurrency,
-			  bool recurse_flag)
+derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   parallelLib.parallel_configuration_iterator(modelPCIter);
-  userDefinedInterface.set_communicators(messageLengths);
+  userDefinedInterface.set_communicators(messageLengths, 
+					 max_iterator_concurrency);
 }
 
 
 inline void SingleModel::
-derived_free_communicators(const int& max_iterator_concurrency,
-			   bool recurse_flag)
+derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   parallelLib.parallel_configuration_iterator(modelPCIter);
   userDefinedInterface.free_communicators();

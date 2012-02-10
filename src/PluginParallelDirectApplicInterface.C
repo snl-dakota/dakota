@@ -68,14 +68,6 @@ int ParallelDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
 }
 
 
-void ParallelDirectApplicInterface::
-derived_map_asynch(const Dakota::ParamResponsePair& pair)
-{
-  // no-op (just hides base class error throw). Jobs are run exclusively within
-  // derived_synch(), prior to there existing true batch processing facilities.
-}
-
-
 void ParallelDirectApplicInterface::derived_synch(Dakota::PRPQueue& prp_queue)
 {
   // For each job in the processing queue, evaluate the response
@@ -104,23 +96,6 @@ void ParallelDirectApplicInterface::derived_synch(Dakota::PRPQueue& prp_queue)
     completionSet.insert(fn_eval_id);
   }
 }
-
-
-/** For use by ApplicationInterface::serve_evaluations_asynch(), which can
-    provide a batch processing capability within message passing schedulers
-    (called using chain ApplicationInterface::serve_evaluations() from
-    Model::serve() from Strategy::run_iterator()). */
-void ParallelDirectApplicInterface::
-derived_synch_nowait(Dakota::PRPQueue& prp_queue)
-{ derived_synch(prp_queue); }
-// TO DO: perform bcast? (see NOTE in ApplicationInterface::
-// serve_evaluations_asynch())
-
-
-// Hide default error checks at ApplicationInterface level
-void ParallelDirectApplicInterface::
-check_configuration(int max_iterator_concurrency)
-{ }
 
 
 int ParallelDirectApplicInterface::

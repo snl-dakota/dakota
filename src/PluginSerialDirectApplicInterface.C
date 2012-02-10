@@ -51,14 +51,6 @@ int SerialDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
 }
 
 
-void SerialDirectApplicInterface::
-derived_map_asynch(const Dakota::ParamResponsePair& pair)
-{
-  // no-op (just hides base class error throw). Jobs are run exclusively within
-  // derived_synch(), prior to there existing true batch processing facilities.
-}
-
-
 void SerialDirectApplicInterface::derived_synch(Dakota::PRPQueue& prp_queue)
 {
   if (multiProcAnalysisFlag) {
@@ -95,22 +87,6 @@ void SerialDirectApplicInterface::derived_synch(Dakota::PRPQueue& prp_queue)
     completionSet.insert(fn_eval_id);
   }
 }
-
-
-/** For use by ApplicationInterface::serve_evaluations_asynch(), which can
-    provide a batch processing capability within message passing schedulers
-    (called using chain Strategy::run_iterator() --> Model::serve() -->
-    ApplicationInterface::serve_evaluations() -->
-    ApplicationInterface::serve_evaluations_asynch()). */
-void SerialDirectApplicInterface::
-derived_synch_nowait(Dakota::PRPQueue& prp_queue)
-{ derived_synch(prp_queue); }
-
-
-// Hide default error checks at ApplicationInterface level
-void SerialDirectApplicInterface::
-check_configuration(int max_iterator_concurrency)
-{ }
 
 
 int SerialDirectApplicInterface::

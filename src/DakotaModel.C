@@ -2817,8 +2817,7 @@ void Model::stop_servers()
     init_communicators() (not virtual) performs the estimation and then
     forwards the results to derived_init_communicators (virtual) which uses
     the data in different contexts. */
-void Model::
-init_communicators(const int& max_iterator_concurrency, bool recurse_flag)
+void Model::init_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->init_communicators(max_iterator_concurrency, recurse_flag);
@@ -2905,8 +2904,7 @@ int Model::serve_configurations()
 }
 
 
-void Model::
-set_communicators(const int& max_iterator_concurrency, bool recurse_flag)
+void Model::set_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->set_communicators(max_iterator_concurrency, recurse_flag);
@@ -2962,8 +2960,7 @@ set_communicators(const int& max_iterator_concurrency, bool recurse_flag)
 }
 
 
-void Model::
-free_communicators(const int& max_iterator_concurrency, bool recurse_flag)
+void Model::free_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->free_communicators(max_iterator_concurrency, recurse_flag);
@@ -3054,8 +3051,7 @@ void Model::init_serial()
 
 
 void Model::
-derived_init_communicators(const int& max_iterator_concurrency,
-			   bool recurse_flag)
+derived_init_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->derived_init_communicators(max_iterator_concurrency,
@@ -3082,8 +3078,7 @@ void Model::derived_init_serial()
 
 
 void Model::
-derived_set_communicators(const int& max_iterator_concurrency,
-			  bool recurse_flag)
+derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->derived_set_communicators(max_iterator_concurrency, recurse_flag);
@@ -3092,8 +3087,7 @@ derived_set_communicators(const int& max_iterator_concurrency,
 
 
 void Model::
-derived_free_communicators(const int& max_iterator_concurrency,
-			   bool recurse_flag)
+derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   if (modelRep) // envelope fwd to letter
     modelRep->derived_free_communicators(max_iterator_concurrency,

@@ -94,8 +94,8 @@ ApplicationInterface::~ApplicationInterface()
 
 
 void ApplicationInterface::
-init_communicators(const IntArray& message_lengths, 
-		   const int& max_iterator_concurrency)
+init_communicators(const IntArray& message_lengths,
+		   int max_iterator_concurrency)
 {
   // Initialize comms for evaluations (partitions of iteratorComm).
   int min_procs_per_eval = procsPerAnalysis; // could add *numAnalysisDrivers
@@ -125,11 +125,12 @@ init_communicators(const IntArray& message_lengths,
     parallelLib.print_configuration();
 
   // check for configuration errors
-  check_configuration(max_iterator_concurrency);
+  init_communicators_checks(max_iterator_concurrency);
 }
 
 
-void ApplicationInterface::set_communicators(const IntArray& message_lengths)
+void ApplicationInterface::
+set_communicators(const IntArray& message_lengths, int max_iterator_concurrency)
 {
   set_evaluation_communicators(message_lengths);
 
@@ -139,6 +140,9 @@ void ApplicationInterface::set_communicators(const IntArray& message_lengths)
   // ParallelLibrary::resolve_inputs).
   if ( !ieDedMasterFlag || iteratorCommRank )
     set_analysis_communicators();
+
+  // check for configuration errors
+  set_communicators_checks(max_iterator_concurrency);
 }
 
 
@@ -241,31 +245,31 @@ void ApplicationInterface::set_analysis_communicators()
 }
 
 
-/** Override this definition if plug-in to allow batch processing in
-    Plugin{Serial,Parallel}DirectApplicInterface.C */
-void ApplicationInterface::check_configuration(int max_iterator_concurrency)
-{
-  bool err_flag = false;
-  if (check_multiprocessor_configuration())
-    err_flag = true;
-  //if (check_direct_asynchronous_configuration(max_iterator_concurrency))
-  //  err_flag = true;
-  if (err_flag)
-    abort_handler(-1);
-}
+/** Override DirectApplicInterface definition if plug-in to allow batch
+    processing in Plugin{Serial,Parallel}DirectApplicInterface.C */
+void ApplicationInterface::
+init_communicators_checks(int max_iterator_concurrency)
+{ } // default is no-op
 
 
-bool ApplicationInterface::check_multiprocessor_configuration()
+/** Override DirectApplicInterface definition if plug-in to allow batch
+    processing in Plugin{Serial,Parallel}DirectApplicInterface.C */
+void ApplicationInterface::
+set_communicators_checks(int max_iterator_concurrency)
+{ } // default is no-op
+
+
+bool ApplicationInterface::check_multiprocessor_analysis()
 {
   bool err_flag = false;
-  // Verify that multiprocessor analyses are only being invoked for synchronous
-  // direct interfaces.  Neither system calls (synch or asynch), forks (synch
-  // or asynch), nor POSIX threads (asynch direct) can share a communicator.
-  // Attempting parallel analyses without a shared communicator can result in
-  // correct answers if analysisComm's local leader computes the total result,
-  // but it does NOT perform the intended multiprocessor analysis and is
-  // therefore misleading and should be explicitly prevented.
-  if (multiProcAnalysisFlag && interfaceType != "direct") { // system/fork
+  // multiprocessor analyses are only valid for synchronous direct interfaces.
+  // Neither system calls (synch or asynch), forks (synch or asynch), nor POSIX
+  // threads (asynch direct) can share a communicator.  Attempting parallel
+  // analyses without a shared communicator can result in correct answers if
+  // analysisComm's local leader computes the total result, but it does NOT
+  // perform the intended multiprocessor analysis and is therefore misleading
+  // and should be explicitly prevented.
+  if (multiProcAnalysisFlag) { // not valid for system/fork
     // Note: processors_per_analysis only read by DB for direct interfaces,
     //       so currently should not happen.
     Cerr << "Error: Multiprocessor analyses are not valid with "
@@ -279,23 +283,32 @@ bool ApplicationInterface::check_multiprocessor_configuration()
 }
 
 
-bool ApplicationInterface::
-check_direct_asynchronous_configuration(int max_iterator_concurrency)
+bool ApplicationInterface::check_asynchronous(int max_iterator_concurrency)
 {
   bool err_flag = false, asynch_local_eval_flag
     = ( max_iterator_concurrency > 1 &&
 	interfaceSynchronization == "asynchronous" &&
-	( asynchLocalEvalConcurrency > 1 ||
-	  ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) );
+	( asynchLocalEvalConcurrency > 1 ||           // captures hybrid mode
+	  ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) ); // unlimited
 
-  // Check for asynchronous local use of the direct interface.
-  if (interfaceType == "direct") {  // direct: check for asynch evals/analyses
-    if (asynch_local_eval_flag || asynchLocalAnalysisFlag ) {
-      Cerr << "Error: asynchronous capability not yet supported in direct "
-	   << "interfaces." << std::endl;
-      err_flag = true;
-    }
+  // Check for asynchronous local evaluations or analyses
+  if (asynch_local_eval_flag || asynchLocalAnalysisFlag ) {
+    Cerr << "Error: asynchronous capability not supported in "
+	 << interfaceType << " interfaces." << std::endl;
+    err_flag = true;
   }
+  return err_flag;
+}
+
+
+bool ApplicationInterface::
+check_multiprocessor_asynchronous(int max_iterator_concurrency)
+{
+  bool err_flag = false, asynch_local_eval_flag
+    = ( max_iterator_concurrency > 1 &&
+	interfaceSynchronization == "asynchronous" &&
+	( asynchLocalEvalConcurrency > 1 ||           // captures hybrid mode
+	  ( !ieMessagePass && !asynchLocalEvalConcurrency ) ) ); // unlimited
 
   // Performing asynch local concurrency requires a single processor.
   // multiProcEvalFlag & asynchLocalAnalysisConcurrency can coexist provided
@@ -303,8 +316,8 @@ check_direct_asynchronous_configuration(int max_iterator_concurrency)
   if ( (multiProcEvalFlag     && asynch_local_eval_flag) ||
        (multiProcAnalysisFlag && asynchLocalAnalysisFlag) ) {
     Cerr << "Error: asynchronous local jobs are not supported for "
-	 << "multiprocessor\n       communicator partitions.  Your processor "
-	 << "allocation may need adjustment." << std::endl;
+	 << "multiprocessor\n       communicator partitions.  Your "
+	 << "processor allocation may need adjustment." << std::endl;
     err_flag = true;
   }
   return err_flag;
@@ -1574,8 +1587,8 @@ void ApplicationInterface::serve_evaluations_asynch()
   // multiprocessor system calls, forks, and threads can't share a communicator,
   // only synchronous direct interfaces can.  Therefore, this asynch job
   // scheduler would not normally need to support a multiprocessor evalComm
-  // (ApplicationInterface::check_configuration() normally prevents this in its
-  // check for multiprocessor evalComm and asynchLocalEvalConcurrency > 1).
+  // (ApplicationInterface::init_communicators_checks() normally prevents this
+  // in its check for multiproc evalComm and asynchLocalEvalConcurrency > 1).
   // However, direct interface plug-ins can use derived_{synch,synch_nowait} to
   // provide a poor man's batch processing capability, so this function has been
   // extended to allow for multiProcEvalFlag to accommodate this case.

@@ -61,8 +61,9 @@ protected:
   //
 
   void init_communicators(const IntArray& message_lengths, 
-			  const int& max_iterator_concurrency);
-  void set_communicators(const IntArray& message_lengths);
+			  int max_iterator_concurrency);
+  void set_communicators(const IntArray& message_lengths, 
+			 int max_iterator_concurrency);
   void free_communicators();
 
   void init_serial();
@@ -108,10 +109,12 @@ protected:
   /// used by the iterator master to terminate evaluation servers
   void stop_evaluation_servers();
 
-  /// default checks on multiprocessor analysis configuration
-  bool check_multiprocessor_configuration();
-  /// default checks on asynchonous configuration for direct interfaces
-  bool check_direct_asynchronous_configuration(int max_iterator_concurrency);
+  /// checks on multiprocessor analysis configuration
+  bool check_multiprocessor_analysis();
+  /// checks on asynchronous configuration (for direct interfaces)
+  bool check_asynchronous(int max_iterator_concurrency);
+  /// checks on asynchronous settings for multiprocessor partitions
+  bool check_multiprocessor_asynchronous(int max_iterator_concurrency);
 
   //
   //- Heading: Virtual functions (evaluations)
@@ -144,8 +147,10 @@ protected:
   // clears any bookkeeping in derived classes
   //virtual void clear_bookkeeping();
 
-  /// perform some error checks on the parallel configuration
-  virtual void check_configuration(int max_iterator_concurrency);
+  /// perform construct-time error checks on the parallel configuration
+  virtual void init_communicators_checks(int max_iterator_concurrency);
+  /// perform run-time error checks on the parallel configuration
+  virtual void set_communicators_checks(int max_iterator_concurrency);
 
   //
   //- Heading: Member functions (analyses)

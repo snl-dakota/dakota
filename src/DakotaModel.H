@@ -266,17 +266,17 @@ public:
 
   /// allocate communicator partitions for a model and store
   /// configuration in modelPCIterMap
-  void init_communicators(const int& max_iterator_concurrency,
+  void init_communicators(int max_iterator_concurrency,
 			  bool recurse_flag = true);
   /// for cases where init_communicators() will not be called,
   /// modify some default settings to behave properly in serial.
   void init_serial();
   /// set active parallel configuration for the model (set modelPCIter
   /// from modelPCIterMap)
-  void set_communicators(const int& max_iterator_concurrency,
+  void set_communicators(int max_iterator_concurrency,
 			 bool recurse_flag = true);
   /// deallocate communicator partitions for a model
-  void free_communicators(const int& max_iterator_concurrency,
+  void free_communicators(int max_iterator_concurrency,
 			  bool recurse_flag = true);
 
   /// called from Strategy::init_iterator() for iteratorComm rank 0 to
@@ -770,15 +770,15 @@ protected:
   virtual const IntResponseMap& derived_synchronize_nowait();
 
   /// portion of init_communicators() specific to derived model classes
-  virtual void derived_init_communicators(const int& max_iterator_concurrency,
+  virtual void derived_init_communicators(int max_iterator_concurrency,
 					  bool recurse_flag = true);
   /// portion of init_serial() specific to derived model classes
   virtual void derived_init_serial();
   /// portion of set_communicators() specific to derived model classes
-  virtual void derived_set_communicators(const int& max_iterator_concurrency,
+  virtual void derived_set_communicators(int max_iterator_concurrency,
 					 bool recurse_flag = true);
   /// portion of free_communicators() specific to derived model classes
-  virtual void derived_free_communicators(const int& max_iterator_concurrency,
+  virtual void derived_free_communicators(int max_iterator_concurrency,
 					  bool recurse_flag = true);
 
   //

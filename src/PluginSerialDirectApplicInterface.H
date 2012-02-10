@@ -76,8 +76,8 @@ protected:
   /// invokes derived_synch() (no special nowait support)
   void derived_synch_nowait(Dakota::PRPQueue& prp_queue);
 
-  /// no-op hides base error checks
-  void check_configuration(int max_iterator_concurrency);
+  /// no-op hides default run-time error checks at DirectApplicInterface level
+  void set_communicators_checks(int max_iterator_concurrency);
 
 private:
 
@@ -105,6 +105,30 @@ SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db):
 
 inline SerialDirectApplicInterface::~SerialDirectApplicInterface()
 { /* Virtual destructor handles referenceCount at Interface level. */ }
+
+
+inline void SerialDirectApplicInterface::
+derived_map_asynch(const Dakota::ParamResponsePair& pair)
+{
+  // no-op (just hides base class error throw). Jobs are run exclusively within
+  // derived_synch(), prior to there existing true batch processing facilities.
+}
+
+
+/** For use by ApplicationInterface::serve_evaluations_asynch(), which can
+    provide a batch processing capability within message passing schedulers
+    (called using chain Strategy::run_iterator() --> Model::serve() -->
+    ApplicationInterface::serve_evaluations() -->
+    ApplicationInterface::serve_evaluations_asynch()). */
+inline void SerialDirectApplicInterface::
+derived_synch_nowait(Dakota::PRPQueue& prp_queue)
+{ derived_synch(prp_queue); }
+
+
+// Hide default run-time error checks at DirectApplicInterface level
+inline void SerialDirectApplicInterface::
+set_communicators_checks(int max_iterator_concurrency)
+{ }
 
 } // namespace Dakota
 

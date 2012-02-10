@@ -98,6 +98,8 @@ public:
 
   const StringArray& analysis_drivers() const;
 
+  void set_communicators_checks(int max_iterator_concurrency);
+
   //void clear_bookkeeping(); // clears threadIdMap
 
 protected:
@@ -337,6 +339,16 @@ derived_synchronous_local_analysis(const int& analysis_id)
 
 inline const StringArray& DirectApplicInterface::analysis_drivers() const
 { return analysisDrivers; }
+
+
+// define default run-time checks allowing override by derived plug-ins
+inline void DirectApplicInterface::
+set_communicators_checks(int max_iterator_concurrency)
+{
+  if (check_asynchronous(max_iterator_concurrency) ||
+      check_multiprocessor_asynchronous(max_iterator_concurrency))
+    abort_handler(-1);
+}
 
 
 //inline void DirectApplicInterface::clear_bookkeeping()

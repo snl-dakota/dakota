@@ -59,6 +59,8 @@ public:
 
   const AnalysisCode* analysis_code() const;
 
+  void init_communicators_checks(int max_iterator_concurrency);
+
 private:
 
   //
@@ -136,6 +138,16 @@ inline const StringArray& ForkApplicInterface::analysis_drivers() const
 
 inline const AnalysisCode* ForkApplicInterface::analysis_code() const
 { return &forkSimulator; }
+
+
+// define construct-time checks since no derived interface plug-ins
+inline void ForkApplicInterface::
+init_communicators_checks(int max_iterator_concurrency)
+{
+  if (check_multiprocessor_analysis() ||
+      check_multiprocessor_asynchronous(max_iterator_concurrency))
+    abort_handler(-1);
+}
 
 
 //inline void ForkApplicInterface::clear_bookkeeping()

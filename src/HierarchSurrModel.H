@@ -98,17 +98,17 @@ protected:
   void component_parallel_mode(short mode);
 
   /// set up lowFidelityModel and highFidelityModel for parallel operations
-  void derived_init_communicators(const int& max_iterator_concurrency,
+  void derived_init_communicators(int max_iterator_concurrency,
 				  bool recurse_flag = true);
   /// set up lowFidelityModel and highFidelityModel for serial operations.
   void derived_init_serial();
   /// set active parallel configuration within lowFidelityModel and
   /// highFidelityModel
-  void derived_set_communicators(const int& max_iterator_concurrency,
+  void derived_set_communicators(int max_iterator_concurrency,
 				 bool recurse_flag = true);
   /// deallocate communicator partitions for the HierarchSurrModel
   /// (request forwarded to lowFidelityModel and highFidelityModel)
-  void derived_free_communicators(const int& max_iterator_concurrency,
+  void derived_free_communicators(int max_iterator_concurrency,
 				  bool recurse_flag = true);
 
   /// Service lowFidelityModel and highFidelityModel job requests received
@@ -227,8 +227,7 @@ surrogate_function_indices(const IntSet& surr_fn_indices)
 
 
 inline void HierarchSurrModel::
-derived_init_communicators(const int& max_iterator_concurrency,
-			   bool recurse_flag)
+derived_init_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   if (recurse_flag) {
     // initialize lowFidelityModel for parallel operations
@@ -243,8 +242,7 @@ derived_init_communicators(const int& max_iterator_concurrency,
 
 
 inline void HierarchSurrModel::
-derived_set_communicators(const int& max_iterator_concurrency,
-			  bool recurse_flag)
+derived_set_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   if (recurse_flag) {
     lowFidelityModel.set_communicators(max_iterator_concurrency);
@@ -262,8 +260,7 @@ inline void HierarchSurrModel::derived_init_serial()
 
 
 inline void HierarchSurrModel::
-derived_free_communicators(const int& max_iterator_concurrency,
-			   bool recurse_flag)
+derived_free_communicators(int max_iterator_concurrency, bool recurse_flag)
 {
   if (recurse_flag) {
     lowFidelityModel.free_communicators(max_iterator_concurrency);
