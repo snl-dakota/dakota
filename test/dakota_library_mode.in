@@ -28,26 +28,44 @@
 # p1=D'dakota_library_mode', p1=I'', p1=Rn
 # p2=D'dakota_library_mode -m', p2=Rn
 # p3=D'dakota_library_mode -m', p3=I'', p3=Rn
+# p4=D'dakota_library_mode', p4=Rn
+# p5=D'dakota_library_mode', p5=Rn
+# p6=D'dakota_library_mode', p6=Rn
+# p7=D'dakota_library_mode', p7=Rn
 
 # Processor counts:
-# p0=2,p1=2,p2=2,p3=2
+# p0=2,p1=2,p2=2,p3=2,p4=2,p5=2,p6=4,p7=4
 
 method,
-	optpp_q_newton
-	  max_iterations = 50
-	  convergence_tolerance = 1e-5
+	optpp_q_newton				#0,#1,#2,#3,#p0,#p1,#p2,#p3
+	  max_iterations = 50			#0,#1,#2,#3,#p0,#p1,#p2,#p3
+	  convergence_tolerance = 1e-5		#0,#1,#2,#3,#p0,#p1,#p2,#p3
+#	polynomial_chaos				#p4,#p5,#p6,#p7
+#	  expansion_order = 4 collocation_ratio = 2	#p4,#p5,#p6,#p7
+#	  use_derivatives     				#p4,#p5,#p6,#p7
 
 variables,
-	continuous_design = 2
+	continuous_design = 2			#0,#1,#2,#3,#p0,#p1,#p2,#p3
+#	uniform_uncertain = 2				#p4,#p5,#p6,#p7
+	  lower_bounds   -2.0 -2.0	
+	  upper_bounds    2.0  2.0	
 	  descriptors     'x1' 'x2'
 
 interface,
 	direct
 	  analysis_driver = 'plugin_rosenbrock'		#0,#1,#2,#3
-#	  analysis_driver = 'plugin_text_book'		#p0,#p1,#p2,#p3
+#	  analysis_driver = 'plugin_text_book'	#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7
+#	  asynchronous processors_per_analysis = 2	#p4,#p5,#p6,#p7
+# one server/single pass:
+#	    evaluation_concurrency = 10			#p4
+# one server/multiple passes and two servers/single pass:
+#	    evaluation_concurrency = 5			#p5,#p6
+# two servers/multiple passes:
+#	    evaluation_concurrency = 2	      		#p7
 
 responses,
-	objective_functions = 1
-#	nonlinear_inequality_constraints = 2	#p0,#p1,#p2,#p3
+	objective_functions = 1			#0,#1,#2,#3,#p0,#p1,#p2,#p3
+#	nonlinear_inequality_constraints = 2		#p0,#p1,#p2,#p3
+#	response_functions = 3		   		#p4,#p5,#p6,#p7
 	analytic_gradients
 	no_hessians
