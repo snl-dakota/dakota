@@ -128,7 +128,8 @@ text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
 	  Dakota::RealVector& fn_vals, Dakota::RealMatrix& fn_grads,
 	  Dakota::RealSymMatrixArray& fn_hessians)
 {
-  if (numFns > 3) {
+  size_t i, num_fns = asv.size();
+  if (num_fns > 3) {
     Cerr << "Error: Bad number of functions in plug-in parallel direct "
 	 << "interface." << std::endl;
     Dakota::abort_handler(-1);
@@ -144,7 +145,6 @@ text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
   // **********************************
   // **** f: sum (x[i] - POWVAL)^4 ****
   // **********************************
-  size_t i;
   if (asv[0] & 1) {
     double local_val = 0.0;
     for (i=analysisCommRank; i<numVars; i+=analysisCommSize)
@@ -219,7 +219,7 @@ text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
   // **********************************
   // **** c1: x[0]*x[0] - 0.5*x[1] ****
   // **********************************
-  if (numFns > 1 && (asv[1] & 1)) {
+  if (num_fns > 1 && (asv[1] & 1)) {
     double local_val = 0.0;
     // Definitely not the most efficient way to do this, but the point is to
     // demonstrate Comm communication.
@@ -248,7 +248,7 @@ text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
   // *****************
   // **** dc1/dx: ****
   // *****************
-  if (numFns > 1 && (asv[1] & 2)) {
+  if (num_fns > 1 && (asv[1] & 2)) {
     //fn_grads[1] = 0.;
     std::fill(fn_grads[1], fn_grads[1] + numDerivVars, 0.);
     //fn_grads[1][0] = 2.*c_vars[0];
@@ -276,7 +276,7 @@ text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
   // *********************
   // **** d^2c1/dx^2: ****
   // *********************
-  if (numFns > 1 && (asv[1] & 4)) {
+  if (num_fns > 1 && (asv[1] & 4)) {
     fn_hessians[1] = 0.;
     //fn_hessians[1][0][0] = 2.;
     for (i=analysisCommRank; i<numDerivVars; i+=analysisCommSize) {
@@ -302,7 +302,7 @@ text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
   // **********************************
   // **** c2: x[1]*x[1] - 0.5*x[0] ****
   // **********************************
-  if (numFns > 2 && (asv[2] & 1)) {
+  if (num_fns > 2 && (asv[2] & 1)) {
     double local_val = 0.0;
     // Definitely not the most efficient way to do this, but the point is to
     // demonstrate Comm communication.
@@ -331,7 +331,7 @@ text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
   // *****************
   // **** dc2/dx: ****
   // *****************
-  if (numFns > 2 && (asv[2] & 2)) {
+  if (num_fns > 2 && (asv[2] & 2)) {
     //fn_grads[2] = 0.;
     std::fill(fn_grads[2], fn_grads[2] + numDerivVars, 0.);
     //fn_grads[2][0] = -0.5;
@@ -359,7 +359,7 @@ text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
   // *********************
   // **** d^2c2/dx^2: ****
   // *********************
-  if (numFns > 2 && (asv[2] & 4)) {
+  if (num_fns > 2 && (asv[2] & 4)) {
     fn_hessians[2] = 0.;
     //fn_hessians[2][1][1] = 2.;
     for (i=analysisCommRank; i<numDerivVars; i+=analysisCommSize) {

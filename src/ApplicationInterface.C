@@ -1623,13 +1623,11 @@ void ApplicationInterface::serve_evaluations_asynch()
     // this from the master side)
     while (mpi_test_flag && fn_eval_id &&
            num_active < asynchLocalEvalConcurrency) {
-      // test for completion
-      if (recv_request != MPI_REQUEST_NULL) { // MPI_REQUEST_NULL != 0 on IBM
-	if (evalCommRank == 0)
-	  parallelLib.test(recv_request, mpi_test_flag, status);
-	if (multiProcEvalFlag)
-	  parallelLib.bcast_e(mpi_test_flag);
-      }
+      // test for completion (Note: MPI_REQUEST_NULL != 0 on IBM)
+      if (evalCommRank == 0 && recv_request != MPI_REQUEST_NULL)
+	parallelLib.test(recv_request, mpi_test_flag, status);
+      if (multiProcEvalFlag)
+	parallelLib.bcast_e(mpi_test_flag);
       // if test indicates a completion: unpack, execute, & repost
       if (mpi_test_flag) {
 
