@@ -456,10 +456,8 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 	  // manage shallow/deep copy of vars/response with evalCacheFlag
 	  ParamResponsePair prp(vars, interfaceId, core_resp, currEvalId,
 				evalCacheFlag);
-	  if (evalCacheFlag)
-	    data_pairs.insert(prp);
-	  if (restartFileFlag)
-	    write_restart << prp;
+	  if (evalCacheFlag)   data_pairs.insert(prp);
+	  if (restartFileFlag) write_restart << prp;
 	}
       }
     }
@@ -780,6 +778,7 @@ void ApplicationInterface::self_schedule_evaluations()
     int send_cntr = num_sends, recv_cntr = 0, out_count;
     MPI_Status* status_array = new MPI_Status [num_sends];
     int* index_array = new int [num_sends];
+    PRPQueueIter q_it;
     while (recv_cntr < num_jobs) {
       if (outputLevel > SILENT_OUTPUT)
         Cout << "Waiting on completed jobs" << std::endl;
@@ -796,15 +795,12 @@ void ApplicationInterface::self_schedule_evaluations()
 
         // Process buffer and insert into restart file ASAP.  Avoid
         // multiple key-value lookups.
-	PRPQueueIter qit
-	  = lookup_by_eval_id(beforeSynchCorePRPQueue, fn_eval_id);
+        q_it = lookup_by_eval_id(beforeSynchCorePRPQueue, fn_eval_id);
 	Response raw_response
-	  = rawResponseMap[fn_eval_id] = qit->prp_response(); // shared rep
-        recv_buffers[index] >> raw_response;                  // rep updated
-        if (evalCacheFlag)
-          data_pairs.insert(*qit);
-        if (restartFileFlag)
-          write_restart << *qit;
+	  = rawResponseMap[fn_eval_id] = q_it->prp_response(); // shared rep
+        recv_buffers[index] >> raw_response;                   // rep updated
+        if (evalCacheFlag)   data_pairs.insert(*q_it);
+        if (restartFileFlag) write_restart << *q_it;
 
         if (send_cntr < num_jobs) {
           fn_eval_id = prp_iter->eval_id();
@@ -843,10 +839,8 @@ void ApplicationInterface::self_schedule_evaluations()
 	= prp_iter->prp_response();    // shared rep
       recv_buffers[i] >> raw_response; // rep updated
 
-      if (evalCacheFlag)
-        data_pairs.insert(*prp_iter);
-      if (restartFileFlag)
-        write_restart << *prp_iter;
+      if (evalCacheFlag)   data_pairs.insert(*prp_iter);
+      if (restartFileFlag) write_restart << *prp_iter;
     }
   }
   // deallocate MPI & buffer arrays
@@ -958,10 +952,8 @@ void ApplicationInterface::static_schedule_evaluations()
 	= prp_iter->prp_response();
       recv_buffers[i] >> raw_response;
 
-      if (evalCacheFlag)
-        data_pairs.insert(*prp_iter);
-      if (restartFileFlag)
-        write_restart << *prp_iter;
+      if (evalCacheFlag)   data_pairs.insert(*prp_iter);
+      if (restartFileFlag) write_restart << *prp_iter;
     }
   }
 
@@ -988,9 +980,9 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
   // globals: cache of param-response pairs & binary restart log
   extern PRPCache data_pairs;
   extern BoStream write_restart;
-  PRPQueue active_prp_queue;
 
-  size_t i, num_sends; int num_jobs = local_prp_queue.size();
+  PRPQueue active_prp_queue; PRPQueueIter prp_iter;
+  size_t i, num_sends; int fn_eval_id, num_jobs = local_prp_queue.size();
   if (multiProcEvalFlag)
     parallelLib.bcast_e(num_jobs);
   if (asynchLocalEvalConcurrency) // concurrency limited by user spec.
@@ -999,7 +991,6 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
   else // default: no limit, launch all jobs in first pass
     num_sends = num_jobs;
   Cout << "First pass: initiating " << num_sends << " asynchronous jobs\n";
-  PRPQueueIter prp_iter;
   for (i=0, prp_iter = local_prp_queue.begin(); i<num_sends; ++i, ++prp_iter) {
     if (outputLevel > SILENT_OUTPUT)
       Cout << "Initiating function evaluation " << prp_iter->eval_id() << '\n';
@@ -1014,7 +1005,6 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
     Cout << "Second pass: self-scheduling " << num_jobs-num_sends 
          << " remaining jobs\n";
 
-  int fn_eval_id;
   size_t send_cntr = num_sends, recv_cntr = 0;
   while (recv_cntr < num_jobs) {
     if (outputLevel > SILENT_OUTPUT)
@@ -1022,6 +1012,7 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
     completionSet.clear();
     derived_synch(active_prp_queue); // rebuild completionSet from active queue
     recv_cntr += completionSet.size();
+    PRPQueueIter q_it;
     for (ISCIter id_iter = completionSet.begin();
 	 id_iter != completionSet.end(); ++id_iter) {
       fn_eval_id = *id_iter;
@@ -1029,20 +1020,16 @@ asynchronous_local_evaluations(PRPQueue& local_prp_queue)
         Cout << "Function evaluation " << fn_eval_id << " has completed\n";
 
       // Insert into restart file ASAP. Do not wait for loop below.
-      if (evalCacheFlag || restartFileFlag) {
-	PRPQueueIter qit = lookup_by_eval_id(active_prp_queue, fn_eval_id);
-	if (qit == active_prp_queue.end()) {
-	  Cerr << "Error: failure in eval id lookup in ApplicationInterface::"
-	       << "asynchronous_local_evaluations()." << std::endl;
-	  abort_handler(-1);
-	}
-	else {
-	  if (evalCacheFlag)
-	    data_pairs.insert(*qit);
-	  if (restartFileFlag)
-	    write_restart << *qit;
-	  active_prp_queue.erase(qit);
-	}
+      q_it = lookup_by_eval_id(active_prp_queue, fn_eval_id);
+      if (q_it == active_prp_queue.end()) {
+	Cerr << "Error: failure in eval id lookup in ApplicationInterface::"
+	     << "asynchronous_local_evaluations()." << std::endl;
+	abort_handler(-1);
+      }
+      else {
+	if (evalCacheFlag)   data_pairs.insert(*q_it);
+	if (restartFileFlag) write_restart << *q_it;
+	active_prp_queue.erase(q_it);
       }
 
       if (send_cntr < num_jobs) {
@@ -1091,21 +1078,21 @@ asynchronous_local_evaluations_static(PRPQueue& local_prp_queue)
   // TODO: could remove tests for asynchLocalEvalConcurrency
 
   // special data for static-scheduling case
-  int first_eval_id = local_prp_queue.begin()->eval_id();
-  int server_num;
+  int server_num, first_eval_id = local_prp_queue.begin()->eval_id();
   // need to track all completed evaluations, unlike nowait
   IntSet allCompleted;
   // in the wait case, always reset the job map to zero
-  if(localServerJobMap.size() != asynchLocalEvalConcurrency)
+  if (localServerJobMap.size() != asynchLocalEvalConcurrency)
     localServerJobMap.resize(asynchLocalEvalConcurrency);
   localServerJobMap.assign(asynchLocalEvalConcurrency, 0);
 
   // globals: cache of param-response pairs & binary restart log
   extern PRPCache data_pairs;
   extern BoStream write_restart;
-  PRPQueue active_prp_queue;
 
-  size_t i, num_sends; int num_jobs = local_prp_queue.size();
+  PRPQueue active_prp_queue; PRPQueueIter prp_iter;
+  size_t i, num_sends;
+  int fn_eval_id, num_jobs = local_prp_queue.size(), num_active = 0;
   if (multiProcEvalFlag)
     parallelLib.bcast_e(num_jobs);
   if (asynchLocalEvalConcurrency) // concurrency limited by user spec.
@@ -1115,13 +1102,10 @@ asynchronous_local_evaluations_static(PRPQueue& local_prp_queue)
     num_sends = num_jobs;
   Cout << "First pass: initiating at most " << num_sends 
        << " asynchronous jobs\n";
-  PRPQueueIter prp_iter;
 
   // have to handle the case of non-contiguous eval IDs as it could
   // happen with restart; fill jobs until all servers busy or at end of queue
   // this is similar to nowait case
-  runningSet.clear();
-  int fn_eval_id;
   for (prp_iter  = local_prp_queue.begin();
        prp_iter != local_prp_queue.end(); ++prp_iter) {
 
@@ -1134,18 +1118,16 @@ asynchronous_local_evaluations_static(PRPQueue& local_prp_queue)
       // bcast job to other processors within peer 1 (added for direct plugins)
       if (multiProcEvalFlag)
 	broadcast_evaluation(*prp_iter);
-      active_prp_queue.insert(*prp_iter);
+      active_prp_queue.insert(*prp_iter); ++num_active;
       derived_map_asynch(*prp_iter);
-      runningSet.insert(fn_eval_id);
       localServerJobMap[server_num] = fn_eval_id;
     }
-    if (asynchLocalEvalConcurrency && 
-	runningSet.size() == asynchLocalEvalConcurrency)
+    if (asynchLocalEvalConcurrency && num_active == asynchLocalEvalConcurrency)
       break;
   }
 
-  if (runningSet.size() < num_jobs)
-    Cout << "Second pass: static-scheduling " << num_jobs - runningSet.size()
+  if (num_active < num_jobs)
+    Cout << "Second pass: static-scheduling " << num_jobs - num_active
 	 << " remaining jobs\n";
 
   size_t recv_cntr = 0;
@@ -1153,8 +1135,9 @@ asynchronous_local_evaluations_static(PRPQueue& local_prp_queue)
     if (outputLevel > SILENT_OUTPUT)
       Cout << "Waiting on completed jobs" << std::endl;
     completionSet.clear();
-    derived_synch(local_prp_queue); // rebuilds completionSet
+    derived_synch(active_prp_queue); // rebuilds completionSet
     recv_cntr += completionSet.size();
+    PRPQueueIter q_it;
     for (ISCIter id_iter = completionSet.begin();
 	 id_iter != completionSet.end(); ++id_iter) {
       fn_eval_id = *id_iter;
@@ -1162,24 +1145,19 @@ asynchronous_local_evaluations_static(PRPQueue& local_prp_queue)
         Cout << "Function evaluation " << fn_eval_id << " has completed\n";
 
       // Insert into restart file ASAP. Do not wait for loop below.
-      if (evalCacheFlag || restartFileFlag) {
-	PRPQueueIter qit = lookup_by_eval_id(active_prp_queue, fn_eval_id);
-	if (qit == active_prp_queue.end()) {
-	  Cerr << "Error: failure in eval id lookup in ApplicationInterface::"
-	       << "asynchronous_local_evaluations_static()." << std::endl;
-	  abort_handler(-1);
-	}
-	else {
-	  if (evalCacheFlag)
-	    data_pairs.insert(*qit);
-	  if (restartFileFlag)
-	    write_restart << *qit;
-	  active_prp_queue.erase(qit);
-	}
+      q_it = lookup_by_eval_id(active_prp_queue, fn_eval_id);
+      if (q_it == active_prp_queue.end()) {
+	Cerr << "Error: failure in eval id lookup in ApplicationInterface::"
+	     << "asynchronous_local_evaluations_static()." << std::endl;
+	abort_handler(-1);
+      }
+      else {
+	if (evalCacheFlag)   data_pairs.insert(*q_it);
+	if (restartFileFlag) write_restart << *q_it;
+	active_prp_queue.erase(q_it); --num_active;
       }
       // record the completion and free the local "server"
       allCompleted.insert(fn_eval_id);
-      runningSet.erase(fn_eval_id);
       server_num = (fn_eval_id - 1) % asynchLocalEvalConcurrency;
       localServerJobMap[server_num] = 0;
     }
@@ -1192,7 +1170,8 @@ asynchronous_local_evaluations_static(PRPQueue& local_prp_queue)
       fn_eval_id = prp_iter->eval_id();
       
       // see if this queue request still needs scheduling
-      if ( !runningSet.count(fn_eval_id) && !allCompleted.count(fn_eval_id) ) {
+      if (lookup_by_eval_id(active_prp_queue, fn_eval_id) ==
+	  active_prp_queue.end() && !allCompleted.count(fn_eval_id) ) {
 
 	server_num = (fn_eval_id - 1) % asynchLocalEvalConcurrency;
 	// only schedule if local "server" not busy
@@ -1202,13 +1181,12 @@ asynchronous_local_evaluations_static(PRPQueue& local_prp_queue)
 	  // bcast job to other procs within peer 1 (added for direct plugins)
 	  if (multiProcEvalFlag)
 	    broadcast_evaluation(*prp_iter);
-	  active_prp_queue.insert(*prp_iter);
+	  active_prp_queue.insert(*prp_iter); ++num_active;
 	  derived_map_asynch(*prp_iter);
-	  runningSet.insert(fn_eval_id);
 	  localServerJobMap[server_num] = fn_eval_id;
 	}
-	if (asynchLocalEvalConcurrency && 
-	    runningSet.size() == asynchLocalEvalConcurrency)
+	if (asynchLocalEvalConcurrency &&
+	    num_active == asynchLocalEvalConcurrency)
 	  break;
       }
     }
@@ -1259,13 +1237,20 @@ asynchronous_local_evaluations_nowait(PRPQueue& local_prp_queue)
   // globals: cache of param-response pairs & binary restart log
   extern PRPCache data_pairs;
   extern BoStream write_restart;
-  PRPQueue active_prp_queue;
 
   // Step 1: launch any new jobs up to asynchLocalEvalConcurrency limit (if 
   // specified.
-  int fn_eval_id;
-  size_t num_jobs = local_prp_queue.size();
-  PRPQueueIter prp_iter;
+  int fn_eval_id, num_jobs = local_prp_queue.size();
+  if (multiProcEvalFlag)
+    parallelLib.bcast_e(num_jobs);
+  PRPQueue active_prp_queue; PRPQueueIter prp_iter; ISCIter id_iter;
+  // reconstruct active_prp_queue if jobs are running from previous _nowait()
+  if (!runningSet.empty()) {
+    for (id_iter = runningSet.begin(); id_iter != runningSet.end(); ++id_iter) {
+      prp_iter = lookup_by_eval_id(local_prp_queue, *id_iter);
+      active_prp_queue.insert(*prp_iter);
+    }
+  }
   for (prp_iter  = local_prp_queue.begin();
        prp_iter != local_prp_queue.end(); ++prp_iter) {
     fn_eval_id = prp_iter->eval_id();
@@ -1304,29 +1289,27 @@ asynchronous_local_evaluations_nowait(PRPQueue& local_prp_queue)
   if (outputLevel == DEBUG_OUTPUT) // explicit debug user specification
     Cout << "Testing for completed jobs\n";
   completionSet.clear();
-  derived_synch_nowait(local_prp_queue); // rebuilds completionSet
+  derived_synch_nowait(active_prp_queue); // rebuilds completionSet
   size_t completed = completionSet.size();
-  for (ISCIter id_iter = completionSet.begin();
+  for (id_iter  = completionSet.begin();
        id_iter != completionSet.end(); ++id_iter) {
     fn_eval_id = *id_iter;
     if (outputLevel > SILENT_OUTPUT)
-      Cout << "Function evaluation " << fn_eval_id <<" has completed\n";
+      Cout << "Function evaluation " << fn_eval_id << " has completed\n";
     // Insert into restart file ASAP.
-    PRPQueueIter qit = lookup_by_eval_id(active_prp_queue, fn_eval_id);
-    if (qit == active_prp_queue.end()) {
+    prp_iter = lookup_by_eval_id(active_prp_queue, fn_eval_id);
+    if (prp_iter == active_prp_queue.end()) {
       Cerr << "Error: failure in eval id lookup in ApplicationInterface::"
 	   << "asynchronous_local_evaluations_nowait()." << std::endl;
       abort_handler(-1);
     }
     else {
-      if (evalCacheFlag)
-	data_pairs.insert(*qit);
-      if (restartFileFlag)
-	write_restart << *qit;
-      active_prp_queue.erase(qit);
+      if (evalCacheFlag)   data_pairs.insert(*prp_iter);
+      if (restartFileFlag) write_restart << *prp_iter;
+      active_prp_queue.erase(prp_iter);
     }
     // move job from active to completed status and update bookkeeping
-    rawResponseMap[fn_eval_id] = qit->prp_response();
+    rawResponseMap[fn_eval_id] = prp_iter->prp_response();
     runningSet.erase(fn_eval_id);
 
     // free this local server
@@ -1408,10 +1391,8 @@ synchronous_local_evaluations(PRPQueue& local_prp_queue)
 
     rawResponseMap[currEvalId] = local_response; // shares local_prp_queue rep
     //prp_iter->prp_response(local_response); // not needed since shared rep
-    if (evalCacheFlag)
-      data_pairs.insert(*prp_iter);
-    if (restartFileFlag)
-      write_restart << *prp_iter;
+    if (evalCacheFlag)   data_pairs.insert(*prp_iter);
+    if (restartFileFlag) write_restart << *prp_iter;
   }
 }
 
@@ -1664,25 +1645,27 @@ void ApplicationInterface::serve_evaluations_asynch()
       completionSet.clear();
       derived_synch_nowait(active_prp_queue); // rebuilds completionSet
       num_active -= completionSet.size();
-      PRPQueueIter qit;
+      PRPQueueIter q_it;
       for (ISCIter id_iter = completionSet.begin();
 	   id_iter != completionSet.end(); ++id_iter) {
         int completed_eval_id = *id_iter;
-	qit = lookup_by_eval_id(active_prp_queue, completed_eval_id);
-	if (qit == active_prp_queue.end()) {
+	q_it = lookup_by_eval_id(active_prp_queue, completed_eval_id);
+	if (q_it == active_prp_queue.end()) {
 	  Cerr << "Error: failure in queue lookup within ApplicationInterface::"
 	       << "serve_evaluations_asynch()." << std::endl;
 	  abort_handler(-1);
 	}
-	if (evalCommRank == 0) {
-	  // In this case, use a blocking send to avoid having to manage waits
-	  // on multiple send buffers (which would be a pain since the number
-	  // of send_buffers would vary with completionSet length).
-	  MPIPackBuffer send_buffer(lenResponseMessage);
-	  send_buffer << qit->prp_response();
-	  parallelLib.send_ie(send_buffer, 0, completed_eval_id);
+	else {
+	  if (evalCommRank == 0) {
+	    // In this case, use a blocking send to avoid having to manage waits
+	    // on multiple send buffers (which would be a pain since the number
+	    // of send_buffers would vary with completionSet length).
+	    MPIPackBuffer send_buffer(lenResponseMessage);
+	    send_buffer << q_it->prp_response();
+	    parallelLib.send_ie(send_buffer, 0, completed_eval_id);
+	  }
+	  active_prp_queue.erase(q_it);
 	}
-        active_prp_queue.erase(qit);
       }
     }
 
