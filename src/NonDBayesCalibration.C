@@ -58,10 +58,10 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
       = probDescDB.get_dusa("method.nond.sparse_grid_level")[0];
     if (emulatorType == POLYNOMIAL_CHAOS)
       stochExpIterator.assign_rep(new NonDPolynomialChaos(iteratedModel,
-	Pecos::SPARSE_GRID, level, EXTENDED_U, false, use_derivs));
+	Pecos::COMBINED_SPARSE_GRID, level, EXTENDED_U, false, use_derivs));
     else
       stochExpIterator.assign_rep(new NonDStochCollocation(iteratedModel,
-	Pecos::SPARSE_GRID, level, EXTENDED_U, false, use_derivs));
+	Pecos::COMBINED_SPARSE_GRID, level, EXTENDED_U, false, use_derivs));
     // no level mappings
     NonD* se_rep = (NonD*)stochExpIterator.iterator_rep();
     RealVectorArray empty_rv_array; // empty

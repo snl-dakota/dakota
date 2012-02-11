@@ -41,8 +41,9 @@ public:
   //
 
   // alternate constructor for instantiations "on the fly"
-  NonDSparseGrid(Model& model, const UShortArray& ssg_level,
-		 const RealVector& dim_pref, //short sparse_grid_usage,
+  NonDSparseGrid(Model& model, short exp_coeffs_approach,
+		 const UShortArray& ssg_level, const RealVector& dim_pref,
+		 //short sparse_grid_usage,
 		 //short refine_type  = Pecos::NO_REFINEMENT,
 		 short refine_control = Pecos::NO_CONTROL,
 		 bool track_uniq_prod_wts = true,
@@ -64,10 +65,9 @@ public:
   const std::set<UShortArray>& active_multi_index() const;
   /// returns SparseGridDriver::old_multi_index()
   const std::set<UShortArray>& old_multi_index() const;
-  /// returns SparseGridDriver::smolyak_multi_index()
-  const UShort2DArray& smolyak_multi_index() const;
-  /// returns SparseGridDriver::smolyak_coefficients()
-  const IntArray& smolyak_coefficients() const;
+
+  /// invokes SparseGridDriver::print_smolyak_multi_index()
+  void print_smolyak_multi_index() const;
 
   /// invokes SparseGridDriver::initialize_sets()
   void initialize_sets();
@@ -157,12 +157,8 @@ inline const std::set<UShortArray>& NonDSparseGrid::old_multi_index() const
 { return ssgDriver->old_multi_index(); }
 
 
-inline const UShort2DArray& NonDSparseGrid::smolyak_multi_index() const
-{ return ssgDriver->smolyak_multi_index(); }
-
-
-inline const IntArray& NonDSparseGrid::smolyak_coefficients() const
-{ return ssgDriver->smolyak_coefficients(); }
+inline void NonDSparseGrid::print_smolyak_multi_index() const
+{ return ssgDriver->print_smolyak_multi_index(); }
 
 
 inline void NonDSparseGrid::initialize_sets()

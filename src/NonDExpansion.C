@@ -266,8 +266,8 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   //  new SparseGridDriver() : new HierarchSparseGridDriver();
 
   u_space_sampler.assign_rep(new
-    NonDSparseGrid(g_u_model, ssg_level, dim_pref, refineControl, track_wts,
-		   growth_rate), false);
+    NonDSparseGrid(g_u_model, expansionCoeffsApproach, ssg_level, dim_pref,
+		   refineControl, track_wts, growth_rate), false);
 }
 
 
@@ -322,7 +322,8 @@ void NonDExpansion::initialize_u_space_model()
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   bool num_int  = (expansionCoeffsApproach == Pecos::QUADRATURE ||
 		   expansionCoeffsApproach == Pecos::CUBATURE ||
-		   expansionCoeffsApproach == Pecos::SPARSE_GRID ||
+		   expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+		   expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID ||
 		   expansionCoeffsApproach == Pecos::LOCAL_REFINABLE);
   BoolDeque random_vars_key; size_t i;
   if (all_vars) {
@@ -735,7 +736,8 @@ void NonDExpansion::refine_expansion()
     switch (refineControl) {
     case Pecos::UNIFORM_CONTROL:
       switch (expansionCoeffsApproach) {
-      case Pecos::QUADRATURE: case Pecos::SPARSE_GRID: {
+      case Pecos::QUADRATURE: case Pecos::COMBINED_SPARSE_GRID:
+      case Pecos::HIERARCHICAL_SPARSE_GRID: {
 	// ramp SSG level or TPQ order, keeping initial isotropy/anisotropy
 	NonDIntegration* nond_integration = (NonDIntegration*)
 	  uSpaceModel.subordinate_iterator().iterator_rep();
@@ -835,7 +837,8 @@ void NonDExpansion::update_hierarchy()
 
   // update grid order/level, if multiple values were provided
   switch (expansionCoeffsApproach) {
-  case Pecos::QUADRATURE: case Pecos::SPARSE_GRID: {
+  case Pecos::QUADRATURE: case Pecos::COMBINED_SPARSE_GRID:
+  case Pecos::HIERARCHICAL_SPARSE_GRID: {
     NonDIntegration* nond_integration
       = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
     nond_integration->increment_refinement_sequence(); // TPQ or SSG
@@ -981,21 +984,12 @@ void NonDExpansion::compute_print_iteration_results(bool initialize)
   compute_statistics();
   iteratedModel.print_evaluation_summary(Cout);
   NonDExpansion::print_results(Cout);
-  if (expansionCoeffsApproach == Pecos::SPARSE_GRID &&
-      refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED) {
+  if ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
+       ( expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+	 expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID ) ) {
     NonDSparseGrid* nond_sparse
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-    const UShort2DArray& sm_multi_index = nond_sparse->smolyak_multi_index();
-    const IntArray&      sm_coeffs      = nond_sparse->smolyak_coefficients();
-    size_t i, j, smi_len = sm_multi_index.size();
-    for (i=0; i<smi_len; ++i) {
-      if (sm_coeffs[i]) {
-	Cout << "Smolyak index set " << i << ':';
-	for (j=0; j<numContinuousVars; ++j)
-	  Cout << ' ' << sm_multi_index[i][j];
-	Cout << '\n';
-      }
-    }
+    nond_sparse->print_smolyak_multi_index();
   }
 #else
   switch (refineControl) {
@@ -1045,21 +1039,12 @@ void NonDExpansion::compute_print_converged_results(bool print_override)
 {
 #ifdef CONVERGENCE_DATA
   // output fine-grained data on generalized index sets
-  if (expansionCoeffsApproach == Pecos::SPARSE_GRID &&
-      refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED) {
+  if ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
+       ( expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+	 expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID ) ) {
     NonDSparseGrid* nond_sparse
       = (NonDSparseGrid*)uSpaceModel.subordinate_iterator().iterator_rep();
-    const UShort2DArray& sm_multi_index = nond_sparse->smolyak_multi_index();
-    const IntArray&      sm_coeffs      = nond_sparse->smolyak_coefficients();
-    size_t i, j, smi_len = sm_multi_index.size();
-    for (i=0; i<smi_len; ++i) {
-      if (sm_coeffs[i]) {
-	Cout << "Smolyak index set " << i << ':';
-	for (j=0; j<numContinuousVars; ++j)
-	  Cout << ' ' << sm_multi_index[i][j];
-	Cout << '\n';
-      }
-    }
+    nond_sparse->print_smolyak_multi_index();
   }
   // output spectral data for multifidelity UQ.  To get finer grain data,
   // activate DECAY_DEBUG in packages/pecos/src/OrthogPolyApproximation.cpp
@@ -1479,7 +1464,8 @@ void NonDExpansion::compute_statistics()
 
     // *** global sensitivities
     if (vbdControl && poly_approx_rep->expansion_coefficient_flag()) {
-      poly_approx_rep->compute_component_effects();
+      if (vbdControl == Pecos::ALL_VBD)
+	poly_approx_rep->compute_component_effects();
       poly_approx_rep->compute_total_effects();
     }
   }

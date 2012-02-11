@@ -20,7 +20,7 @@
 #include "PecosApproximation.H"
 #include "InterpPolyApproximation.hpp"
 
-//#define ALLOW_HERMITE_INTERPOLATION
+//#define ALLOW_GLOBAL_HERMITE_INTERPOLATION
 
 
 namespace Dakota {
@@ -33,7 +33,7 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   // Resolve settings and initialize natafTransform
   // ----------------------------------------------
   short data_order,
-      u_space_type = probDescDB.get_short("method.nond.expansion_type");
+    u_space_type = probDescDB.get_short("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
   initialize(u_space_type);
 
@@ -67,21 +67,20 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
     if (refineControl == Pecos::LOCAL_ADAPTIVE_CONTROL) {
       if (!piecewiseBasis || pw_basis_type != HIERARCHICAL_INTERPOLANT) {
 	// TO DO: promote this error check to resolve_inputs()
-	PCerr << "Warning: overriding...\n";
+	PCerr << "Warning: overriding basis type to local hierarchical\n.";
 	piecewiseBasis = true; pw_basis_type = HIERARCHICAL_INTERPOLANT;
       }
-      expansionCoeffsApproach = Pecos::LOCAL_REFINABLE;
-      construct_local_refinement(u_space_sampler, g_u_model, ssg_level_spec,
-				 dim_pref);
+      expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
+      // TO DO: remove construct_local_refinement()
+      //construct_local_refinement(u_space_sampler, g_u_model, ssg_level_spec,
+      //			   dim_pref);
     }
-    else {
-      expansionCoeffsApproach = Pecos::SPARSE_GRID;
-      construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec,
-			    dim_pref);
-      // TO DO: manage hierarchical option w/i construct_sparse_grid (not here)
-      //construct_hierarchical_sparse_grid(u_space_sampler, g_u_model,
-      //				   ssg_level_spec, dim_pref);
-    }
+    else if (refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
+	     u_space_type == STD_UNIFORM_U && nestedRules)// TO DO:retire nested
+      expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
+    else
+      expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;
+    construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec, dim_pref);
   }
 
   // --------------------------------
@@ -98,7 +97,8 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
       "piecewise_hierarchical_interpolation_polynomial" :
       "piecewise_nodal_interpolation_polynomial";
   else
-    approx_type = "global_interpolation_polynomial";
+    approx_type = "global_nodal_interpolation_polynomial"; // TO DO
+                //"global_hierarchical_interpolation_polynomial"; // TO DO
   UShortArray approx_order; // empty
   //const Variables& g_u_vars = g_u_model.current_variables();
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
@@ -153,7 +153,8 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   Iterator u_space_sampler;
   if (expansionCoeffsApproach == Pecos::QUADRATURE)
     construct_quadrature(u_space_sampler, g_u_model, num_int_seq, dim_pref);
-  else if (expansionCoeffsApproach == Pecos::SPARSE_GRID)
+  else if (expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+	   expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID)
     construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref);
   else if (expansionCoeffsApproach == Pecos::LOCAL_REFINABLE)
     construct_local_refinement(u_space_sampler, g_u_model,num_int_seq,dim_pref);
@@ -174,7 +175,8 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
       "piecewise_hierarchical_interpolation_polynomial" :
       "piecewise_nodal_interpolation_polynomial";
   else
-    approx_type = "global_interpolation_polynomial";
+    approx_type = "global_nodal_interpolation_polynomial"; // TO DO
+                //"global_hierarchical_interpolation_polynomial"; // TO DO
   UShortArray approx_order; // empty
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     approx_type, approx_order, corr_type, corr_order, data_order, pt_reuse,
@@ -214,7 +216,7 @@ resolve_inputs(short& u_space_type, short& data_order)
   if (useDerivs) { // input specification
     if (gradientType  != "none") data_order |= 2;
     //if (hessianType != "none") data_order |= 4; // not yet supported
-#ifdef ALLOW_HERMITE_INTERPOLATION
+#ifdef ALLOW_GLOBAL_HERMITE_INTERPOLATION
     if (data_order == 1)
       Cerr << "\nWarning: use_derivatives option in stoch_collocation "
 	   << "requires a response\n         gradient specification.  "
@@ -229,7 +231,7 @@ resolve_inputs(short& u_space_type, short& data_order)
     else {
       Cerr << "\nWarning: use of global gradient-enhanced interpolants is "
 	   << "disallowed in production\n         executables.  To activate "
-	   << "this research capability, define\n         ALLOW_HERMITE_"
+	   << "this research capability, define\n         ALLOW_GLOBAL_HERMITE_"
 	   << "INTERPOLATION in Dakota::NonDStochCollocation and recompile.\n"
 	   << std::endl;
       data_order = 1;
@@ -255,7 +257,8 @@ void NonDStochCollocation::initialize_u_space_model()
 {
   if (expansionCoeffsApproach == Pecos::QUADRATURE ||
       expansionCoeffsApproach == Pecos::CUBATURE ||
-      expansionCoeffsApproach == Pecos::SPARSE_GRID ||
+      expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
+      expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID ||
       expansionCoeffsApproach == Pecos::LOCAL_REFINABLE) {
 
     // build a polynomial basis for purposes of defining collocation pts/wts

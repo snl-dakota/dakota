@@ -47,12 +47,14 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
   if (problem_db.get_bool("model.surrogate.derivative_usage")  &&
       approxType != "global_polynomial"                        &&
       approxType != "global_kriging"                           &&
+#ifdef ALLOW_GLOBAL_HERMITE_INTERPOLATION
+      !approxType.ends("_interpolation_polynomial") &&
+      !approxType.ends("_orthogonal_polynomial"))
+#else
       approxType != "global_orthogonal_polynomial"             &&
       approxType != "piecewise_nodal_interpolation_polynomial" &&
       approxType != "piecewise_hierarchical_interpolation_polynomial")
-    // need global_interpolation_polynomial to be able to replace with this:
-    //!approxType.ends("_interpolation_polynomial") &&
-    //!approxType.ends("_orthogonal_polynomial"))
+#endif
     Cerr << "\nWarning: use_derivatives is not currently supported by "
 	 << approxType << ".\n\n";
 

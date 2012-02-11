@@ -36,7 +36,10 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   ssgLevelRef(ssgLevelSpec[sequenceIndex])
 {
   // initialize the numerical integration driver
-  numIntDriver = Pecos::IntegrationDriver(Pecos::SPARSE_GRID);
+  short exp_coeffs_approach =
+    //problemDescDB.get_short("method.nond.sparse_grid_type")
+    Pecos::COMBINED_SPARSE_GRID;
+  numIntDriver = Pecos::IntegrationDriver(exp_coeffs_approach);
   ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
 
   // initialize_random_variables() called in NonDIntegration ctor
@@ -88,14 +91,15 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of sparse grids within PCE and SC. */
 NonDSparseGrid::
-NonDSparseGrid(Model& model, const UShortArray& ssg_level,
+NonDSparseGrid(Model& model, short exp_coeffs_approach,
+	       const UShortArray& ssg_level,
 	       const RealVector& dim_pref, short refine_control,
 	       bool track_uniq_prod_wts, short growth_rate): 
   NonDIntegration(NoDBBaseConstructor(), model, dim_pref),
   ssgLevelSpec(ssg_level), ssgLevelRef(ssgLevelSpec[sequenceIndex])
 {
   // initialize the numerical integration driver
-  numIntDriver = Pecos::IntegrationDriver(Pecos::SPARSE_GRID);
+  numIntDriver = Pecos::IntegrationDriver(exp_coeffs_approach);
   ssgDriver = (Pecos::SparseGridDriver*)numIntDriver.driver_rep();
 
   // propagate general settings (not inferrable from the basis of polynomials)

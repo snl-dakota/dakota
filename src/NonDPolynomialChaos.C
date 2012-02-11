@@ -79,7 +79,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	probDescDB.get_rdv("method.nond.dimension_preference"));
     }
     else if (!ssg_level_spec.empty()) {
-      expansionCoeffsApproach = Pecos::SPARSE_GRID;
+      expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;
       construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec,
 	probDescDB.get_rdv("method.nond.dimension_preference"));
     }
@@ -233,7 +233,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     UShortArray quad_order(1, num_int_level); // single sequence
     construct_quadrature(u_space_sampler, g_u_model, quad_order, dim_pref);
   }
-  else if (expansionCoeffsApproach == Pecos::SPARSE_GRID) {
+  else if (expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID) {
     RealVector  dim_pref;                    // empty -> isotropic
     UShortArray ssg_level(1, num_int_level); // single sequence
     construct_sparse_grid(u_space_sampler, g_u_model, ssg_level, dim_pref);
@@ -305,7 +305,7 @@ void NonDPolynomialChaos::initialize_u_space_model()
   // must be passed through by diving through the hierarchy.
   bool num_int = (expansionCoeffsApproach == Pecos::QUADRATURE ||
 		  expansionCoeffsApproach == Pecos::CUBATURE ||
-		  expansionCoeffsApproach == Pecos::SPARSE_GRID);
+		  expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   const Pecos::ShortArray& u_types = natafTransform.u_types();
 
