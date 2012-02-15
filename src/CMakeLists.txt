@@ -61,7 +61,9 @@ if (DAKOTA_HAVE_BOOST_FS)
 endif (DAKOTA_HAVE_BOOST_FS)
 
 
-check_include_files(unistd.h HAVE_UNISTD_H)
+include(CheckIncludeFile)
+
+check_include_file(unistd.h HAVE_UNISTD_H)
 if(HAVE_UNISTD_H)
   add_definitions("-DHAVE_UNISTD_H")
 endif(HAVE_UNISTD_H)
@@ -87,14 +89,14 @@ if(HAVE_USLEEP)
   add_definitions("-DHAVE_USLEEP")
 endif(HAVE_USLEEP)
 
-check_include_files(pdb.h HAVE_PDB_H)
+check_include_file(pdb.h HAVE_PDB_H)
 if(HAVE_PDB_H)
   add_definitions("-DHAVE_PDB_H")
 endif(HAVE_PDB_H)
 
 if(UNIX)
   #check_include_files("rpc/types.h" HAVE_RPC_TYPES_H)
-  check_include_files("rpc/xdr.h" HAVE_RPC_XDR_H)
+  check_include_file("rpc/xdr.h" HAVE_RPC_XDR_H)
   find_program(RPCGEN rpcgen)
 
   if(HAVE_RPC_XDR_H)

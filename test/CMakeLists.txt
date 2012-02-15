@@ -2,10 +2,11 @@
 
 include(AddApplicationTest)
 include(AddFileCopyTarget)
+include(CheckIncludeFile)
 
 remove_definitions("-DHAVE_CONFIG_H")
 
-check_include_files(unistd.h HAVE_UNISTD_H)
+check_include_file(unistd.h HAVE_UNISTD_H)
 if(HAVE_UNISTD_H)
   add_definitions("-DHAVE_UNISTD_H")
 endif(HAVE_UNISTD_H)
