@@ -135,7 +135,6 @@ ITERATOR_SRCS   = DakotaIterator.C                  \
 		  NonDCubature.C		    \
 		  NonDQuadrature.C                  \
 		  NonDSparseGrid.C                  \
-		  NonDLocalRefinement.C             \
 		  NonDSampling.C                    \
 		  NonDAdaptImpSampling.C            \
 		  NonDGPImpSampling.C               \
@@ -272,7 +271,6 @@ include_HEADERS = ParallelLibrary.H             \
 		  NonDCubature.H		\
 		  NonDQuadrature.H              \
 	          NonDSparseGrid.H		\
-		  NonDLocalRefinement.H         \
 		  NonDSampling.H                \
 		  NonDAdaptImpSampling.H        \
 		  NonDGPImpSampling.H           \

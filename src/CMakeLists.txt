@@ -240,11 +240,10 @@ set(strategy_src DakotaStrategy.C SingleMethodStrategy.C HybridStrategy.C
 set(iterator_src DakotaIterator.C DakotaAnalyzer.C DakotaPStudyDACE.C
     ParamStudy.C DakotaVerification.C RichExtrapVerification.C DakotaNonD.C
     NonDReliability.C NonDLocalReliability.C NonDGlobalReliability.C
-    NonDInterval.C NonDLHSInterval.C NonDLHSEvidence.C
-    NonDLHSSingleInterval.C NonDLocalInterval.C NonDLocalEvidence.C
-    NonDLocalSingleInterval.C NonDGlobalInterval.C NonDGlobalEvidence.C
-    NonDGlobalSingleInterval.C NonDIntegration.C NonDCubature.C
-    NonDQuadrature.C NonDSparseGrid.C NonDLocalRefinement.C
+    NonDInterval.C NonDLHSInterval.C NonDLHSEvidence.C NonDLHSSingleInterval.C
+    NonDLocalInterval.C NonDLocalEvidence.C NonDLocalSingleInterval.C
+    NonDGlobalInterval.C NonDGlobalEvidence.C NonDGlobalSingleInterval.C
+    NonDIntegration.C NonDCubature.C NonDQuadrature.C NonDSparseGrid.C
     NonDExpansion.C NonDPolynomialChaos.C NonDStochCollocation.C
     NonDCalibration.C NonDBayesCalibration.C NonDSampling.C NonDLHSSampling.C
     NonDAdaptImpSampling.C NonDGPImpSampling.C NonDIncremLHSSampling.C

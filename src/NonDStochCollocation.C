@@ -71,9 +71,6 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
 	piecewiseBasis = true; pw_basis_type = HIERARCHICAL_INTERPOLANT;
       }
       expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
-      // TO DO: remove construct_local_refinement()
-      //construct_local_refinement(u_space_sampler, g_u_model, ssg_level_spec,
-      //			   dim_pref);
     }
     else if (refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
 	     u_space_type == STD_UNIFORM_U && nestedRules)// TO DO:retire nested
@@ -151,13 +148,14 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
   // generated using active sampling view:
   Iterator u_space_sampler;
-  if (expansionCoeffsApproach == Pecos::QUADRATURE)
+  switch (expansionCoeffsApproach) {
+  case Pecos::QUADRATURE:
     construct_quadrature(u_space_sampler, g_u_model, num_int_seq, dim_pref);
-  else if (expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
-	   expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID)
+    break;
+  case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID:
     construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref);
-  else if (expansionCoeffsApproach == Pecos::LOCAL_REFINABLE)
-    construct_local_refinement(u_space_sampler, g_u_model,num_int_seq,dim_pref);
+    break;
+  }
 
   // --------------------------------
   // Construct G-hat(u) = uSpaceModel
@@ -255,24 +253,17 @@ resolve_inputs(short& u_space_type, short& data_order)
 
 void NonDStochCollocation::initialize_u_space_model()
 {
-  if (expansionCoeffsApproach == Pecos::QUADRATURE ||
-      expansionCoeffsApproach == Pecos::CUBATURE ||
-      expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
-      expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID ||
-      expansionCoeffsApproach == Pecos::LOCAL_REFINABLE) {
+  // build a polynomial basis for purposes of defining collocation pts/wts
+  std::vector<Pecos::BasisPolynomial> num_int_poly_basis;
+  Pecos::BasisConfigOptions bc_options(nestedRules, piecewiseBasis,
+				       true, useDerivs);
+  Pecos::InterpPolyApproximation::construct_basis(natafTransform.u_types(),
+    iteratedModel.distribution_parameters(), bc_options, num_int_poly_basis);
 
-    // build a polynomial basis for purposes of defining collocation pts/wts
-    std::vector<Pecos::BasisPolynomial> num_int_poly_basis;
-    Pecos::BasisConfigOptions bc_options(nestedRules, piecewiseBasis,
-					 true, useDerivs);
-    Pecos::InterpPolyApproximation::construct_basis(natafTransform.u_types(),
-      iteratedModel.distribution_parameters(), bc_options, num_int_poly_basis);
-
-    // set the polynomial basis within the NonDIntegration instance
-    NonDIntegration* u_space_sampler_rep
-      = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
-    u_space_sampler_rep->initialize_grid(num_int_poly_basis);
-  }
+  // set the polynomial basis within the NonDIntegration instance
+  NonDIntegration* u_space_sampler_rep
+    = (NonDIntegration*)uSpaceModel.subordinate_iterator().iterator_rep();
+  u_space_sampler_rep->initialize_grid(num_int_poly_basis);
 
   // perform last due to numSamplesOnModel update
   NonDExpansion::initialize_u_space_model();

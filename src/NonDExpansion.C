@@ -16,7 +16,6 @@
 #include "NonDCubature.H"
 #include "NonDQuadrature.H"
 #include "NonDSparseGrid.H"
-#include "NonDLocalRefinement.H"
 #include "NonDLHSSampling.H"
 #include "NonDAdaptImpSampling.H" 
 #include "RecastModel.H"
@@ -271,30 +270,6 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 }
 
 
-void NonDExpansion::
-construct_local_refinement(Iterator& u_space_sampler, Model& g_u_model,
-			   const UShortArray& lr_level,
-			   const RealVector& dim_pref)
-{
-  // sanity checks: no GSG for LR
-  //if (refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED) {
-  //  Cerr << "Error: generalized option does not support adaptive refinement "
-  //       << "of local grids." << std::endl;
-  //  abort_handler(-1);
-  //}
-
-  // enforce minimum required VBD control
-  if (!vbdControl && refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL)
-    vbdControl = Pecos::UNIVARIATE_VBD;
-
-  // nesting override not supported
-  nestedRules = true;
-
-  u_space_sampler.assign_rep(new
-    NonDLocalRefinement(g_u_model, lr_level, dim_pref), false);
-}
-
-
 /*
 void NonDExpansion::
 construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
@@ -323,8 +298,7 @@ void NonDExpansion::initialize_u_space_model()
   bool num_int  = (expansionCoeffsApproach == Pecos::QUADRATURE ||
 		   expansionCoeffsApproach == Pecos::CUBATURE ||
 		   expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID ||
-		   expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID ||
-		   expansionCoeffsApproach == Pecos::LOCAL_REFINABLE);
+		   expansionCoeffsApproach == Pecos::HIERARCHICAL_SPARSE_GRID);
   BoolDeque random_vars_key; size_t i;
   if (all_vars) {
     random_vars_key.resize(numContinuousVars);

@@ -115,10 +115,6 @@ protected:
   void construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
 			     const UShortArray& ssg_level,
 			     const RealVector& ssg_dim_pref);
-  /// assign a NonDLocalRefinement instance within u_space_sampler
-  void construct_local_refinement(Iterator& u_space_sampler, Model& g_u_model,
-				  const UShortArray& lr_level,
-				  const RealVector& dim_pref);
   // assign a NonDIncremLHSSampling instance within u_space_sampler
   //void construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
   //				 int num_samples, int seed, const String& rng);
