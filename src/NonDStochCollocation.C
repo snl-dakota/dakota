@@ -57,26 +57,41 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
     = probDescDB.get_dusa("method.nond.sparse_grid_level");
   const RealVector& dim_pref
     = probDescDB.get_rdv("method.nond.dimension_preference");
-  short pw_basis_type
-    = probDescDB.get_short("method.nond.piecewise_basis_type");
+  short sg_basis_type
+    = probDescDB.get_short("method.nond.sparse_grid_basis_type");
   if (!quad_order_spec.empty()) {
     expansionCoeffsApproach = Pecos::QUADRATURE;
     construct_quadrature(u_space_sampler, g_u_model, quad_order_spec, dim_pref);
   }
   else if (!ssg_level_spec.empty()) {
+    switch (sg_basis_type) {
+    case HIERARCHICAL_INTERPOLANT:
+      expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;          break;
+    case NODAL_INTERPOLANT:
+      expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;              break;
+    case DEFAULT_INTERPOLANT:
+      if ( u_space_type == STD_UNIFORM_U && nestedRules &&// TO DO:retire nested
+	   ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED ||
+	     refineControl == Pecos::LOCAL_ADAPTIVE_CONTROL ) ) {
+	expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
+	sg_basis_type = HIERARCHICAL_INTERPOLANT;
+      }
+      else {
+	expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;
+	sg_basis_type = NODAL_INTERPOLANT;
+      }
+      break;
+    }
+    /*
     if (refineControl == Pecos::LOCAL_ADAPTIVE_CONTROL) {
-      if (!piecewiseBasis || pw_basis_type != HIERARCHICAL_INTERPOLANT) {
+      if (!piecewiseBasis || sg_basis_type != HIERARCHICAL_INTERPOLANT) {
 	// TO DO: promote this error check to resolve_inputs()
 	PCerr << "Warning: overriding basis type to local hierarchical\n.";
-	piecewiseBasis = true; pw_basis_type = HIERARCHICAL_INTERPOLANT;
+	piecewiseBasis = true; sg_basis_type = HIERARCHICAL_INTERPOLANT;
       }
       expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
     }
-    else if (refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED &&
-	     u_space_type == STD_UNIFORM_U && nestedRules)// TO DO:retire nested
-      expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
-    else
-      expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;
+    */
     construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec, dim_pref);
   }
 
@@ -90,12 +105,13 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   short  corr_order = -1, corr_type = NO_CORRECTION;
   String pt_reuse, approx_type;
   if (piecewiseBasis)
-    approx_type = (pw_basis_type == HIERARCHICAL_INTERPOLANT) ? 
+    approx_type = (sg_basis_type == HIERARCHICAL_INTERPOLANT) ? 
       "piecewise_hierarchical_interpolation_polynomial" :
       "piecewise_nodal_interpolation_polynomial";
   else
-    approx_type = "global_nodal_interpolation_polynomial"; // TO DO
-                //"global_hierarchical_interpolation_polynomial"; // TO DO
+    approx_type = (sg_basis_type == HIERARCHICAL_INTERPOLANT) ?
+      "global_hierarchical_interpolation_polynomial" :
+      "global_nodal_interpolation_polynomial";
   UShortArray approx_order; // empty
   //const Variables& g_u_vars = g_u_model.current_variables();
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,

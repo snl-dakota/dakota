@@ -37,8 +37,8 @@ enum { SILENT_OUTPUT, QUIET_OUTPUT, NORMAL_OUTPUT, VERBOSE_OUTPUT,
 // define special values for u_space_type in
 // NonD::initialize_random_variable_types()
 enum { STD_NORMAL_U, STD_UNIFORM_U, ASKEY_U, EXTENDED_U };
-// define special values for piecewiseBasisType
-enum { NODAL_INTERPOLANT, HIERARCHICAL_INTERPOLANT };
+// define special values for sparseGridBasisType
+enum { DEFAULT_INTERPOLANT, NODAL_INTERPOLANT, HIERARCHICAL_INTERPOLANT };
 // define special values for probability integration refinement
 enum { NO_INT_REFINE, IS, AIS, MMAIS };
 // define special values for responseLevelTarget
@@ -649,9 +649,9 @@ public:
   short expansionType;
   /// boolean indicating presence of \c piecewise keyword
   bool piecewiseBasis;
-  /// enumeration for type of basis in piecewise interpolants:
-  /// NODAL_INTERPOLANT or HIERARCHICAL_INTERPOLANT
-  short piecewiseBasisType;
+  /// enumeration for type of basis in sparse grid interpolation:
+  /// DEFAULT_INTERPOLANT, NODAL_INTERPOLANT, or HIERARCHICAL_INTERPOLANT
+  short sparseGridBasisType;
   /// the \c expansion_terms specification in \ref MethodNonDPCE
   int expansionTerms;
   /// the \c expansion_order specification in \ref MethodNonDPCE

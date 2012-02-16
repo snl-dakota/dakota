@@ -4575,8 +4575,6 @@ static Method_mp_type
 	MP2s(methodOutput,VERBOSE_OUTPUT),
 	MP2p(nestingOverride,NESTED),                      // Pecos enumeration
 	MP2p(nestingOverride,NON_NESTED),                  // Pecos enumeration
-	MP2s(piecewiseBasisType,NODAL_INTERPOLANT),
-	MP2s(piecewiseBasisType,HIERARCHICAL_INTERPOLANT),
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_DECAY),      // Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_SOBOL),      // Pecos
@@ -4589,6 +4587,8 @@ static Method_mp_type
 	MP2s(responseLevelTarget,RELIABILITIES),
 	MP2s(responseLevelTargetReduce,SYSTEM_PARALLEL),
 	MP2s(responseLevelTargetReduce,SYSTEM_SERIES),
+	MP2s(sparseGridBasisType,NODAL_INTERPOLANT),
+	MP2s(sparseGridBasisType,HIERARCHICAL_INTERPOLANT),
 	MP2s(surrBasedLocalAcceptLogic,FILTER),
 	MP2s(surrBasedLocalAcceptLogic,TR_RATIO),
 	MP2s(surrBasedLocalConstrRelax,HOMOTOPY),

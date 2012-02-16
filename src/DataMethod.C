@@ -110,7 +110,7 @@ DataMethodRep::DataMethodRep():
   refinementType(Pecos::NO_REFINEMENT), refinementControl(Pecos::NO_CONTROL),
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
-  piecewiseBasis(false), piecewiseBasisType(NODAL_INTERPOLANT),
+  piecewiseBasis(false), sparseGridBasisType(DEFAULT_INTERPOLANT),
   expansionTerms(0), expansionSamples(0), cubIntOrder(USHRT_MAX),
   collocationPoints(0), collocationRatio(0.), collocRatioTermsOrder(1.),
   probCollocFlag(false), allVarsFlag(false),
@@ -210,7 +210,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   // NonD
   s << vbdControl << rngName << refinementType << refinementControl
     << nestingOverride << growthOverride << expansionType << piecewiseBasis
-    << piecewiseBasisType << expansionTerms << expansionOrder
+    << sparseGridBasisType << expansionTerms << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << collocPtReuse
@@ -314,7 +314,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   // NonD
   s >> vbdControl >> rngName >> refinementType >> refinementControl
     >> nestingOverride >> growthOverride >> expansionType >> piecewiseBasis
-    >> piecewiseBasisType >> expansionTerms >> expansionOrder
+    >> sparseGridBasisType >> expansionTerms >> expansionOrder
     >> expansionSamples >> expansionSampleType >> quadratureOrder
     >> sparseGridLevel >> anisoGridDimPref >> cubIntOrder >> collocationPoints
     >> collocationRatio >> collocRatioTermsOrder >> collocPtReuse
@@ -418,7 +418,7 @@ void DataMethodRep::write(std::ostream& s) const
   // NonD
   s << vbdControl << rngName << refinementType << refinementControl
     << nestingOverride << growthOverride << expansionType << piecewiseBasis
-    << piecewiseBasisType << expansionTerms << expansionOrder
+    << sparseGridBasisType << expansionTerms << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
     << collocationRatio << collocRatioTermsOrder << collocPtReuse

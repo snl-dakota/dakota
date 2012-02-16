@@ -701,10 +701,7 @@ KEYWORD12 method
 	      )
 	    | local_adaptive
 	    ]
-	  [ ( piecewise
-	      [ nodal
-	      | hierarchical ]
-	      )
+	  [ piecewise
 	  | askey
 	  | wiener ]
 	  quadrature_order INTEGERLIST
@@ -712,6 +709,8 @@ KEYWORD12 method
 	  ( sparse_grid_level INTEGERLIST
 	    [ restricted
 	    | unrestricted ]
+	    [ nodal
+	    | hierarchical ]
 	    )
 	  [ dimension_preference REALLIST ]
 	  [ use_derivatives ]
