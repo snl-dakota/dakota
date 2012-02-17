@@ -62,9 +62,9 @@
 #ifdef HAVE_NL2SOL
 #include "NL2SOLLeastSq.H"
 #endif
-#ifdef DAKOTA_RSQP
-#include "rSQPOptimizer.H"
-#endif
+//#ifdef DAKOTA_RSQP
+//#include "rSQPOptimizer.H"
+//#endif
 #ifdef HAVE_OPTPP
 #include "SNLLOptimizer.H"
 #include "SNLLLeastSq.H"
