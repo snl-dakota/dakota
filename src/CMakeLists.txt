@@ -261,14 +261,8 @@ if(HAVE_ACRO)
   add_definitions("-DDAKOTA_COLINY")
   add_definitions("-DDAKOTA_UTILIB")
 
-  #include_directories(${Acro_BINARY_DIR} ${Acro_SOURCE_DIR}/include
-  #                    ${Acro_BINARY_DIR}/src ${Acro_SOURCE_DIR}/src)
-  include_directories(${Acro_BINARY_DIR}/include
-                      ${Acro_BINARY_DIR}/packages
+  include_directories(${Acro_BINARY_DIR}/packages
                       ${Acro_BINARY_DIR}/packages/utilib
-                      ${Acro_BINARY_DIR}/packages/colin/src
-                      ${Acro_BINARY_DIR}/packages/interfaces/src
-                      ${Acro_BINARY_DIR}/scolib/interfaces/src
                       ${Acro_SOURCE_DIR}/packages/interfaces/src
                       ${Acro_SOURCE_DIR}/packages/scolib/src
                       ${Acro_SOURCE_DIR}/packages/utilib/src
@@ -374,9 +368,8 @@ endif(HAVE_HOPSPACK)
 
 if(HAVE_JEGA)
   add_definitions("-DHAVE_JEGA")
-  include_directories(${JEGA_BINARY_DIR} ${JEGA_SOURCE_DIR}/include
-                      ${JEGA_SOURCE_DIR}/src ${JEGA_SOURCE_DIR}/eddy
-                      ${JEGA_BINARY_DIR}/src ${JEGA_BINARY_DIR}/eddy)
+  include_directories(${JEGA_BINARY_DIR} ${JEGA_BINARY_DIR}/eddy
+                      ${JEGA_SOURCE_DIR}/eddy ${JEGA_SOURCE_DIR}/include)
   list(APPEND iterator_src JEGAOptimizer.C)
   #link_directories(${Dakota_BINARY_DIR}/packages/JEGA)
   # WJB: "jega_link_libs: looks fishy; confer with Zack about JEGA commit 692
