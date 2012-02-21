@@ -1,8 +1,26 @@
 EXTRA_DIST = container_alt.c \
 	     container_alt.f \
+	     dakota_3pc.in \
 	     dakota_4level.in \
 	     dakota_addtnl_users.in \
-	     dakota_ampl.in \
+	     dakota_ampl_fma.in \
+	     dakota_ampl_tb.in \
+	     dakota_ampl_fma.col \
+	     dakota_ampl_fma.in \
+	     dakota_ampl_fma.mod \
+	     dakota_ampl_fma.nl \
+	     dakota_ampl_fma.row \
+	     dakota_ampl_tb.col \
+	     dakota_ampl_tb.in \
+	     dakota_ampl_tb.mixed.mod \
+	     dakota_ampl_tb.mixed_unc.mod \
+	     dakota_ampl_tb.mod \
+	     dakota_ampl_tb.nl \
+	     dakota_ampl_tb.row \
+	     dakota_ampl_tb.unc.col \
+             dakota_ampl_tb.unc.mod \
+             dakota_ampl_tb.unc.nl \
+             dakota_ampl_tb.unc.row \
 	     dakota_big_dataset.in \
 	     dakota_bug_2434.in \
 	     dakota_cantilever.in \
@@ -106,8 +124,6 @@ EXTRA_DIST = container_alt.c \
 	     dakota_short_column_verify.in \
 	     dakota_steel_section.in \
 	     dakota_su_mogatest1.in \
-	     dakota_textbook_3pc.in \
-	     dakota_textbook_ampl.in \
 	     dakota_textbook.in \
 	     dakota_textbook_lhs_approx.in \
 	     dakota_textbook_lhs.in \
@@ -186,20 +202,6 @@ EXTRA_DIST = container_alt.c \
 	     acro/ampl/text_book_unc.res \
 	     acro/ampl/text_book_unc.var \
 	     acro/ampl/text_book.var \
-	     ampl/fma \
-	     ampl/fma.col \
-	     ampl/fma.nl \
-	     ampl/fma.row \
-	     ampl/text_book.col \
-	     ampl/text_book_mixed.mod \
-	     ampl/text_book_mixed_unc.mod \
-	     ampl/text_book.mod \
-	     ampl/text_book.nl \
-	     ampl/text_book.row \
-	     ampl/text_book_unc.col \
-	     ampl/text_book_unc.mod \
-	     ampl/text_book_unc.nl \
-	     ampl/text_book_unc.row \
 	     sqa/crontabs.txt \
 	     sqa/dakota_base.test \
 	     sqa/dakota_pbase.test \

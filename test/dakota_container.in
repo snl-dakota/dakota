@@ -16,8 +16,8 @@ variables,
 
 interface,
 	system
-	  analysis_driver = 'container'		#0
-#	  analysis_driver = 'container.script'	#1
+	  analysis_driver = 'container'			#0
+#	  analysis_driver = 'dakota_container.sh'	#1
 	  parameters_file = 'container.in'
 	  results_file    = 'container.out'
 	  file_tag

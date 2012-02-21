@@ -10,7 +10,7 @@ method,
 	  expansion_samples  = 250			#0,#1
 #	  quadrature_order   = 3			#2
 #	  collocation_points = 12			#3
-#	  expansion_import_file = 'dakota_pce.txt'	#4
+#	  expansion_import_file = 'dakota_logratio_pce.txt'	#4
 	  samples = 10000 seed = 12347 rng rnum2
 	  sample_type lhs
 	  response_levels = .4 .5 .55 .6 .65 .7

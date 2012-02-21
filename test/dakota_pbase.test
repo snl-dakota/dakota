@@ -819,7 +819,7 @@ Test Number 0 succeeded
                       1.0000901016e+00 x2
 <<<<< Best response functions  (set 3) =
                       6.5906715132e-17
-dakota_library_mode.in
+dakota_lib_mode.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -1084,7 +1084,7 @@ Moment-based statistics for each response function:
  response_fn_1  2.4400000000e+01  2.8211266465e+01
  response_fn_2  1.3333333333e+00  1.3249737943e+00
  response_fn_3  1.3333333333e+00  1.3249737943e+00
-dakota_library_split.in
+dakota_lib_split.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 56 total (56 new, 0 duplicate)
 <<<<< Best parameters          =

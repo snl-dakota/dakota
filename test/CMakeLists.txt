@@ -25,7 +25,8 @@ endfunction()
 if(BUILD_TESTING)
 
   # Copy the dakota_test support files into the build tree
-  # with dependency to source files
+  # with dependency to source files (needed for legacy behavior, but
+  # ultimately not new separate directory CTest)
 
   # configured primary scripts
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dakota_test.perl
@@ -36,35 +37,29 @@ if(BUILD_TESTING)
 
   # analysis driver scripts
   list(APPEND TestFiles
-    container.script test_3pc_ac test_3pc_if test_3pc_of
-    test_3pc_ac_verb test_3pc_if_verb test_3pc_of_verb
+    dakota_container.sh dakota_3pc.ac.sh dakota_3pc.if.sh dakota_3pc.of.sh
+    dakota_3pc.ac_verb.sh dakota_3pc.if_verb.sh dakota_3pc.of_verb.sh
     )
 
   # supplemental data
   list(APPEND TestFiles 
-    dakota_coliny.dat dakota_pce.txt 
-    least_squares_test.dat least_squares_test.ann
-    sbuq_textbook.annotated sbuq_textbook.freeform
+    dakota_coliny.dat dakota_logratio_pce.txt 
+    dakota_textbook_nips.lsq.dat dakota_textbook_nips.lsq.ann
+    dakota_uq_textbook_lhs_approx.annotated 
+    dakota_uq_textbook_lhs_approx.freeform
+    )
+
+  # supplementary AMPL files
+  list(APPEND TestFiles
+    dakota_ampl_fma.nl dakota_ampl_fma.row dakota_ampl_fma.col
+    dakota_ampl_tb.nl dakota_ampl_tb.row dakota_ampl_tb.col
+    dakota_ampl_tb.unc.nl dakota_ampl_tb.unc.row dakota_ampl_tb.unc.col
     )
 
   foreach(file ${TestFiles})
     add_named_file_copy_target(
       ${CMAKE_CURRENT_SOURCE_DIR}/${file}
       ${CMAKE_CURRENT_BINARY_DIR}/${file})
-  endforeach()
-
-  # Configure supplementary AMPL files
-  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ampl)
-  #set(GLOB AmplTests ${CMAKE_CURRENT_SOURCE_DIR}/ampl/*.*)
-  set(AmplTests
-    fma fma.col fma.nl fma.row
-    text_book.col text_book.mod text_book.nl text_book.row
-    text_book_mixed.mod text_book_mixed_unc.mod    text_book_unc.col text_book_unc.mod text_book_unc.nl text_book_unc.row
-  )
-  foreach(file ${AmplTests})
-    add_named_file_copy_target(
-      ${CMAKE_CURRENT_SOURCE_DIR}/ampl/${file}
-      ${CMAKE_CURRENT_BINARY_DIR}/ampl/${file})
   endforeach()
 
   # Copy any necessary executables into the BINARY_DIR/test directory

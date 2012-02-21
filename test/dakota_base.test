@@ -1,3 +1,70 @@
+dakota_3pc.in 
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      4.9493093074e-01 x2
+<<<<< Best objective function  =
+                      1.2757333899e-01
+<<<<< Best constraint values   =
+                      2.5345346280e-03
+                     -5.0433737929e-03
+<<<<< Best data captured at function evaluation 22
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      4.9493093074e-01 x2
+<<<<< Best objective function  =
+                      1.2757333899e-01
+<<<<< Best constraint values   =
+                      2.5345346280e-03
+                     -5.0433737929e-03
+<<<<< Best data captured at function evaluation 22
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      4.9493093074e-01 x2
+<<<<< Best objective function  =
+                      1.2757333899e-01
+<<<<< Best constraint values   =
+                      2.5345346280e-03
+                     -5.0433737929e-03
+<<<<< Best data captured at function evaluation 22
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      4.9493093074e-01 x2
+<<<<< Best objective function  =
+                      1.2757333899e-01
+<<<<< Best constraint values   =
+                      2.5345346280e-03
+                     -5.0433737929e-03
+<<<<< Best data captured at function evaluation 22
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      4.9493093074e-01 x2
+<<<<< Best objective function  =
+                      1.2757333899e-01
+<<<<< Best constraint values   =
+                      2.5345346280e-03
+                     -5.0433737929e-03
+<<<<< Best data captured at function evaluation 22
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
+<<<<< Best parameters          =
+                      5.0000000000e-01 x1
+                      4.9493093074e-01 x2
+<<<<< Best objective function  =
+                      1.2757333899e-01
+<<<<< Best constraint values   =
+                      2.5345346280e-03
+                     -5.0433737929e-03
+<<<<< Best data captured at function evaluation 22
 dakota_4level.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1536 total (1536 new, 0 duplicate)
@@ -2584,7 +2651,7 @@ Test Number 5 succeeded
                      -1.6009000260e-02
                      -3.7081115956e-11
 <<<<< Best data captured at function evaluation 31
-dakota_ampl.in 
+dakota_ampl_fma.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 21 total (21 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -5195,7 +5262,7 @@ Partial Rank Correlation Matrix between input and output:
              response_fn_1 
           x1 -1.27175e-02 
           x2 -5.26223e-01 
-dakota_library_mode.in
+dakota_lib_mode.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 43 total (43 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -5228,7 +5295,7 @@ Test Number 3 succeeded
 <<<<< Best objective function  =
                       2.1802510651e-06
 <<<<< Best data captured at function evaluation 54
-dakota_library_split.in
+dakota_lib_split.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -17802,73 +17869,6 @@ Test Number 7 succeeded
 <<<<< Best constraint values  =
                       2.5345360850e-03
                      -5.0433766773e-03
-<<<<< Best data captured at function evaluation 22
-dakota_textbook_3pc.in 
-Test Number 0 succeeded
-<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
-<<<<< Best parameters          =
-                      5.0000000000e-01 x1
-                      4.9493093074e-01 x2
-<<<<< Best objective function  =
-                      1.2757333899e-01
-<<<<< Best constraint values   =
-                      2.5345346280e-03
-                     -5.0433737929e-03
-<<<<< Best data captured at function evaluation 22
-Test Number 1 succeeded
-<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
-<<<<< Best parameters          =
-                      5.0000000000e-01 x1
-                      4.9493093074e-01 x2
-<<<<< Best objective function  =
-                      1.2757333899e-01
-<<<<< Best constraint values   =
-                      2.5345346280e-03
-                     -5.0433737929e-03
-<<<<< Best data captured at function evaluation 22
-Test Number 2 succeeded
-<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
-<<<<< Best parameters          =
-                      5.0000000000e-01 x1
-                      4.9493093074e-01 x2
-<<<<< Best objective function  =
-                      1.2757333899e-01
-<<<<< Best constraint values   =
-                      2.5345346280e-03
-                     -5.0433737929e-03
-<<<<< Best data captured at function evaluation 22
-Test Number 3 succeeded
-<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
-<<<<< Best parameters          =
-                      5.0000000000e-01 x1
-                      4.9493093074e-01 x2
-<<<<< Best objective function  =
-                      1.2757333899e-01
-<<<<< Best constraint values   =
-                      2.5345346280e-03
-                     -5.0433737929e-03
-<<<<< Best data captured at function evaluation 22
-Test Number 4 succeeded
-<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
-<<<<< Best parameters          =
-                      5.0000000000e-01 x1
-                      4.9493093074e-01 x2
-<<<<< Best objective function  =
-                      1.2757333899e-01
-<<<<< Best constraint values   =
-                      2.5345346280e-03
-                     -5.0433737929e-03
-<<<<< Best data captured at function evaluation 22
-Test Number 5 succeeded
-<<<<< Function evaluation summary: 26 total (26 new, 0 duplicate)
-<<<<< Best parameters          =
-                      5.0000000000e-01 x1
-                      4.9493093074e-01 x2
-<<<<< Best objective function  =
-                      1.2757333899e-01
-<<<<< Best constraint values   =
-                      2.5345346280e-03
-                     -5.0433737929e-03
 <<<<< Best data captured at function evaluation 22
 dakota_textbook_increment.in
 Test Number 0 succeeded

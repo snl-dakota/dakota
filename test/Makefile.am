@@ -221,10 +221,10 @@ INCLUDES += -I$(top_srcdir)/src
 
 ## Define what files in this directory and below are scripts.
 dist_noinst_SCRIPTS = acro_test.pl \
-		      container.script \
-		      test_3pc_ac \
-		      test_3pc_if \
-		      test_3pc_of \
+		      dakota_container.sh \
+		      dakota_3pc.ac.sh \
+		      dakota_3pc.if.sh \
+		      dakota_3pc.of.sh \
 		      acro/dakota_test \
 		      dakota_diff.perl \
 		      dakota_test.perl

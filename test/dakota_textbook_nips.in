@@ -48,9 +48,9 @@ responses,
 	nonlinear_inequality_constraints = 2	#0,#1,#2,#3,#4
 #	calibration_terms = 2			#5,#6
 # 	calibration_terms = 3			#7,#8
-#         calibration_data_file = 'least_squares_test.dat' #7
+#         calibration_data_file = 'dakota_textbook_nips.lsq.dat' #7
 # 	    freeform  #7
-#         calibration_data_file = 'least_squares_test.ann' #8
+#         calibration_data_file = 'dakota_textbook_nips.lsq.ann' #8
 #	nonlinear_inequality_constraints = 1	#5,#6
 	analytic_gradients	 			#0,#2,#4,#5,#6,#7,#8
 #	numerical_gradients	        		#1,#3

@@ -1,4 +1,4 @@
-# dakota_textbook_ampl.in
+# dakota_ampl_tb.in
 
 strategy,
 	single_method
@@ -17,8 +17,8 @@ variables,
 	  descriptors      'x1'   'x2'
 
 interface,
-	  algebraic_mappings = 'ampl/text_book_unc.nl' 	#0,#2,#4,#6
-#	  algebraic_mappings = 'ampl/text_book.nl' 	#1,#3,#5,#7
+	  algebraic_mappings = 'dakota_ampl_tb.unc.nl' 	#0,#2,#4,#6
+#	  algebraic_mappings = 'dakota_ampl_tb.nl' 	#1,#3,#5,#7
 
 responses,
 	objective_functions = 1

@@ -44,7 +44,7 @@ ALL_LOCAL_LINKS = dakota$(EXEEXT) rosenbrock$(EXEEXT) text_book$(EXEEXT) \
 		  log_ratio$(EXEEXT) mogatest2$(EXEEXT) mogatest3$(EXEEXT) \
 		  quasi_sine_fcn$(EXEEXT) text_book_ouu$(EXEEXT)
 
-all-local: $(ALL_LOCAL_LINKS) $(METHODS_INPUTS) least_squares_test.dat
+all-local: $(ALL_LOCAL_LINKS) $(METHODS_INPUTS) dakota_textbook_nips.lsq.dat
 
 dakota$(EXEEXT): $(top_builddir)/src/dakota$(EXEEXT)
 	$(LN_S) $(top_builddir)/src/dakota$(EXEEXT) dakota$(EXEEXT)
@@ -164,11 +164,11 @@ dakota_surr_uq.in: $(METHODS_TEST_PATH)/dakota_uq_users.in
 	-$(DAKOTA_TEST_PERL) --extract $< 4  --file-extract=$@
 
 # data file
-least_squares_test.dat: $(METHODS_TEST_PATH)/least_squares_test.dat
+dakota_textbook_nips.lsq.dat: $(METHODS_TEST_PATH)/dakota_textbook_nips.lsq.dat
 	-cp -f $< $@
 
 clean-local:
-	-rm -f $(METHODS_INPUTS) least_squares_test.dat
+	-rm -f $(METHODS_INPUTS) dakota_textbook_nips.lsq.dat
 
 
 ## This file should be removed on 'make maintainer-clean'.

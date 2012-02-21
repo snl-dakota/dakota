@@ -1,4 +1,4 @@
-# DAKOTA INPUT FILE - dakota_textbook_3pc.in
+# DAKOTA INPUT FILE - dakota_3pc.in
 
 # Each DAKOTA test file is capable of running multiple tests. The
 # manual process for doing this is to add or uncomment specific lines
@@ -15,10 +15,11 @@
 # can be included in multiple tests by adding multiple #n designaters
 # seperated by a comma.
 
-# This tester populates a test matrix of fork/system vs. synch/asynch for
-# the 3 piece interface (Note: the temporary/named files testing dimension
-# is not available as it is in dakota_textbook.in due to the use of tagged
-# working directories within test_3pc_if/test_3pc_ac/test_3pc_of).
+# This tester populates a test matrix of fork/system vs. synch/asynch
+# for the 3 piece interface (Note: the temporary/named files testing
+# dimension is not available as it is in dakota_textbook.in due to the
+# use of tagged working directories within
+# dakota_3pc.if.sh/dakota_3pc.ac.sh/dakota_3pc.of.sh).
 
 strategy,
 	single_method
@@ -39,12 +40,12 @@ interface,
 	fork					#0,#1,#4
 #	system 					#2,#3,#5
 #	  asynchronous				#1,#3
-	  input_filter    = 'test_3pc_if'	#0,#1,#2,#3
-	  output_filter   = 'test_3pc_of'	#0,#1,#2,#3
-	  analysis_driver = 'test_3pc_ac'	#0,#1,#2,#3
-#	  input_filter    = 'test_3pc_if_verb'	#4,#5
-#	  output_filter   = 'test_3pc_of_verb'	#4,#5
-#	  analysis_driver = 'test_3pc_ac_verb'	#4,#5
+	  input_filter    = 'dakota_3pc.if.sh'	#0,#1,#2,#3
+	  output_filter   = 'dakota_3pc.of.sh'	#0,#1,#2,#3
+	  analysis_driver = 'dakota_3pc.ac.sh'	#0,#1,#2,#3
+#	  input_filter    = 'dakota_3pc.if_verb.sh'	#4,#5
+#	  output_filter   = 'dakota_3pc.of_verb.sh'	#4,#5
+#	  analysis_driver = 'dakota_3pc.ac_verb.sh'	#4,#5
 	  parameters_file = 'tb.in'
 	  results_file    = 'tb.out'
 	  file_tag				#0,#1,#2,#3

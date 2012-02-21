@@ -37,8 +37,8 @@ model,
 #	  mars				#3
 
 # Test 2 with a samples file, free-form or annotated
-#	samples_file = 'sbuq_textbook.annotated' 	#4
-#	samples_file = 'sbuq_textbook.freeform' 	#5
+#	samples_file = 'dakota_uq_textbook_lhs_approx.annotated' 	#4
+#	samples_file = 'dakota_uq_textbook_lhs_approx.freeform' 	#5
 #	  freeform 					#5
 
 variables,
