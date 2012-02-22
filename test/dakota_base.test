@@ -5264,13 +5264,13 @@ Partial Rank Correlation Matrix between input and output:
           x2 -5.26223e-01 
 dakota_lib_mode.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 43 total (43 new, 0 duplicate)
+<<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9993898143e-01 x1
-                      9.9986790999e-01 x2
+                      9.9988634067e-01 x1
+                      9.9977383466e-01 x2
 <<<<< Best objective function  =
-                      1.3836753853e-08
-<<<<< Best data captured at function evaluation 42
+                      1.3048494096e-08
+<<<<< Best data captured at function evaluation 39
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 41 total (41 new, 0 duplicate)
 <<<<< Best parameters          =
