@@ -56,6 +56,8 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   bool nested_rules = (probDescDB.get_short("method.nond.nesting_override")
 		       != Pecos::NON_NESTED);
   bool track_uniq_prod_wts = false;
+  bool track_colloc_indices
+    = (exp_coeffs_approach == Pecos::COMBINED_SPARSE_GRID);
   bool piecewise_basis = (probDescDB.get_bool("method.nond.piecewise_basis") ||
 			  refine_type == Pecos::H_REFINEMENT);
   bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
@@ -79,8 +81,8 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
   Pecos::BasisConfigOptions bc_options(nested_rules, piecewise_basis,
 				       equidist_rules, use_derivs);
   ssgDriver->initialize_grid(natafTransform.u_types(), ssgLevelRef,
-    dimPrefSpec, bc_options, /*refine_type,*/ refine_control, store_colloc,
-    track_uniq_prod_wts, growth_rate);
+    dimPrefSpec, bc_options, growth_rate, /*refine_type,*/ refine_control,
+    store_colloc, track_uniq_prod_wts, track_colloc_indices);
   ssgDriver->initialize_grid_parameters(natafTransform.u_types(),
     iteratedModel.distribution_parameters());
 
@@ -93,8 +95,9 @@ NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
 NonDSparseGrid::
 NonDSparseGrid(Model& model, short exp_coeffs_approach,
 	       const UShortArray& ssg_level,
-	       const RealVector& dim_pref, short refine_control,
-	       bool track_uniq_prod_wts, short growth_rate): 
+	       const RealVector& dim_pref, short growth_rate,
+	       short refine_control, bool track_uniq_prod_wts,
+	       bool track_colloc_indices): 
   NonDIntegration(NoDBBaseConstructor(), model, dim_pref),
   ssgLevelSpec(ssg_level), ssgLevelRef(ssgLevelSpec[sequenceIndex])
 {
@@ -104,11 +107,12 @@ NonDSparseGrid(Model& model, short exp_coeffs_approach,
 
   // propagate general settings (not inferrable from the basis of polynomials)
   // prior to initialize_grid()
+  ssgDriver->growth_rate(growth_rate);
   ssgDriver->refinement_control(refine_control);
   bool store_colloc = true; //(sparse_grid_usage == Pecos::INTERPOLATION);
   ssgDriver->store_collocation_details(store_colloc);
   ssgDriver->track_unique_product_weights(track_uniq_prod_wts);
-  ssgDriver->growth_rate(growth_rate);
+  ssgDriver->track_collocation_indices(track_colloc_indices);
 
   // local natafTransform not yet updated: x_types would have to be passed in
   // from NonDExpansion if check_variables() needed to be called here.  Instead,

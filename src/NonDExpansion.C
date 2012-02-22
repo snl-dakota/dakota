@@ -247,6 +247,11 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   bool track_wts = !(numContDesVars || numContEpistUncVars || numContStateVars);
   // || pa_rep0->sparse_grid_expansion() >= Pecos::SPARSE_INT_TOTAL_ORD_EXP;
   // uSpaceModel not yet available! (no approxs until bottom of derived ctor)
+
+  // tracking of collocation indices within the SparseGridDriver
+  bool track_colloc = (expansionCoeffsApproach == Pecos::COMBINED_SPARSE_GRID
+    || refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED);
+
   short growth_rate;
   if (ruleGrowthOverride == Pecos::UNRESTRICTED ||
       refineControl      == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)
@@ -260,13 +265,9 @@ construct_sparse_grid(Iterator& u_space_sampler, Model& g_u_model,
   else // standardize rules on linear Gaussian prec: i = 2m-1 = 2(2l+1)-1 = 4l+1
     growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
 
-  // TO DO: manage hierarchical option w/i NonDSparseGrid (not here)
-  //= (piecewiseBasis && pw_basis_type == HIERARCHICAL_INTERPOLANT) ?
-  //  new SparseGridDriver() : new HierarchSparseGridDriver();
-
   u_space_sampler.assign_rep(new
     NonDSparseGrid(g_u_model, expansionCoeffsApproach, ssg_level, dim_pref,
-		   refineControl, track_wts, growth_rate), false);
+		   growth_rate, refineControl, track_wts, track_colloc), false);
 }
 
 
@@ -1217,7 +1218,8 @@ void NonDExpansion::compute_covariance()
     else
       respCovariance(i,i) = 0.;
   }
-  compute_off_diagonal_covariance();
+  if (numFunctions > 1)
+    compute_off_diagonal_covariance();
 }
 
 

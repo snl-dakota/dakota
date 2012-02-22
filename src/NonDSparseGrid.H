@@ -44,10 +44,11 @@ public:
   NonDSparseGrid(Model& model, short exp_coeffs_approach,
 		 const UShortArray& ssg_level, const RealVector& dim_pref,
 		 //short sparse_grid_usage,
+		 short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH,
 		 //short refine_type  = Pecos::NO_REFINEMENT,
 		 short refine_control = Pecos::NO_CONTROL,
 		 bool track_uniq_prod_wts = true,
-		 short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH);
+		 bool track_colloc_indices = true);
 
   //
   //- Heading: Virtual function redefinitions
