@@ -83,16 +83,19 @@ if(BUILD_TESTING)
   file(GLOB DakotaTestsFQ RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in")
   foreach(DakotaTest ${DakotaTestsFQ})
 
-    get_filename_component(TestName ${DakotaTest} NAME)
+    get_filename_component(TestName ${DakotaTest} NAME_WE)
+    file(GLOB DakotaAuxAll RELATIVE 
+         ${CMAKE_CURRENT_SOURCE_DIR} "${TestName}.*")
     add_application_test(
          ${TestName}
+	 FILE_DEPENDENCIES "${DakotaAuxAll}"
          PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_diffs.out
          APPLICATION COMMAND ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl 
-	     --input-dir=${CMAKE_CURRENT_SOURCE_DIR}
-         --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
-	     ${DakotaTest}
-         UNIQUE_DIRECTORY)
-
+	   --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${TestName}
+           --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
+	   ${DakotaTest}
+         UNIQUE_DIRECTORY
+	 )
     # TODO: The following regex needs to be based on output of dakota_diff.perl
     #       and account for consistency with baseline
     # set_tests_properties(${DAKOTA_SYSTEST} PROPERTIES 
