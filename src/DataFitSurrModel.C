@@ -119,34 +119,9 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
     deltaCorr.initialize(*this, surrogateFnIndices, corr_type,
       problem_db.get_short("model.surrogate.correction_order"));
 
-  // read the points_file once and then reuse this data as appropriate
-  // within build_global()
-  if (!pointReuseFile.empty()) {
+  bool annotated = problem_db.get_bool("model.surrogate.point_file_annotated");
+  import_points(annotated);
 
-    // Data needed to reconstruct the variables and responses
-    const SharedVariablesData& svd = (actualModel.is_null()) ?
-      currentVariables.shared_data() :
-      actualModel.current_variables().shared_data();	
-    size_t num_c_vars = (actualModel.is_null()) ? 
-      currentVariables.cv() :
-      actualModel.cv();
-    SizetMultiArrayConstView cv_ids = (actualModel.is_null()) ?
-      currentVariables.continuous_variable_ids() :
-      actualModel.continuous_variable_ids();
-    ActiveSet temp_set(numFns); // function values only
-    temp_set.derivative_vector(cv_ids);
-
-    // read the data into continuous variables and responses
-    Cout << "Surrogate model retrieving points from file " << pointReuseFile 
-	 << '\n';
-    bool annotated = problem_db.get_bool("model.surrogate.point_file_annotated");
-    bool verbose = (outputLevel < NORMAL_OUTPUT);
-    TabularIO::read_data_tabular(pointReuseFile, 
-      "DataFitSurrModel samples file", reuseFileVars, reuseFileResponses, svd, 
-      num_c_vars, temp_set, annotated, verbose);
-    Cout << "Surrogate model retrieved " << reuseFileVars.size()
-	 << " total points." << std::endl;
-  }
 }
 
 
@@ -155,12 +130,14 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 //const SharedVariablesData& svd, const ActiveSet& set,
 		 const String& approx_type, const UShortArray& approx_order,
 		 short corr_type, short corr_order, short data_order,
-		 const String& point_reuse, short output_level):
+		 const String& point_reuse, short output_level,
+		 const String& point_reuse_file, bool point_file_annotated):
   SurrogateModel(actual_model.parallel_library(), //view, vars_comps, set,
 		 actual_model.current_variables().shared_data(),
 		 actual_model.current_response().active_set(), output_level),
   daceIterator(dace_iterator), actualModel(actual_model), surrModelEvalCntr(0),
-  pointsTotal(0), pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse)
+  pointsTotal(0), pointsManagement(DEFAULT_POINTS), pointReuse(point_reuse),
+  pointReuseFile(point_reuse_file)
 {
   // dace_iterator may be an empty envelope (local, multipoint approx),
   // but actual_model must be defined.
@@ -171,6 +148,9 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
   }
 
   surrogateType = approx_type;
+
+  if (pointReuse.empty()) // assign default
+    pointReuse = (pointReuseFile.empty()) ? "none" : "all";
 
   // update constraint counts in userDefinedConstraints.
   userDefinedConstraints.reshape(actualModel.num_nonlinear_ineq_constraints(),
@@ -240,6 +220,8 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
       fdHessByGradSS[0] = 0.001;
     }
   }
+
+  import_points(point_file_annotated);
 }
 
 
@@ -1279,6 +1261,42 @@ const IntResponseMap& DataFitSurrModel::derived_synchronize_nowait()
   }
 
   return surrResponseMap;
+}
+
+
+/** Constructor helper to read the points file once, if provided, and
+    then reuse its data as appropriate within build_global() */
+void DataFitSurrModel::import_points(bool annotated)
+{
+  if (pointReuseFile.empty())
+    return;
+
+  // Data needed to reconstruct the variables and responses
+  const SharedVariablesData& svd = (actualModel.is_null()) ?
+    currentVariables.shared_data() :
+    actualModel.current_variables().shared_data();	
+  size_t num_c_vars = (actualModel.is_null()) ? 
+    currentVariables.cv() :
+    actualModel.cv();
+  SizetMultiArrayConstView cv_ids = (actualModel.is_null()) ?
+    currentVariables.continuous_variable_ids() :
+    actualModel.continuous_variable_ids();
+  ActiveSet temp_set(numFns); // function values only
+  temp_set.derivative_vector(cv_ids);
+
+  // read the data into continuous variables and responses
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "Surrogate model retrieving points with " << num_c_vars 
+	 << " continuous variables and " << numFns 
+	 << " response functions from file " << pointReuseFile << '\n';
+  bool verbose = (outputLevel > NORMAL_OUTPUT);
+  TabularIO::read_data_tabular(pointReuseFile, 
+			       "DataFitSurrModel samples file", 
+			       reuseFileVars, reuseFileResponses, svd, 
+			       num_c_vars, temp_set, annotated, verbose);
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "Surrogate model retrieved " << reuseFileVars.size()
+	 << " total points." << std::endl;
 }
 
 

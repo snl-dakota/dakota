@@ -58,7 +58,9 @@ public:
 		   const String& approx_type, const UShortArray& approx_order,
 		   short corr_type, short corr_order, short data_order,
 		   const String& point_reuse,
-		   short output_level = NORMAL_OUTPUT);
+		   short output_level = NORMAL_OUTPUT,
+		   const String& point_reuse_file = String(),
+		   bool point_file_annotated = true);
   /// destructor
   ~DataFitSurrModel();
 
@@ -227,6 +229,9 @@ private:
   //
   //- Heading: Convenience functions
   //
+
+  /// optionally read surrogate data points from provided file
+  void import_points(bool annotated);
 
   /// Common code for processing of approximate response maps shared by
   /// derived_synchronize() and derived_synchronize_nowait()
