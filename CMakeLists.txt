@@ -13,6 +13,13 @@ set(CMAKE_MODULE_PATH
 # Check for compilers after initializing MPI
 project("Dakota" NONE)
 
+# DAKOTA versions for packaging
+set(Dakota_VERSION_MAJOR 5)
+set(Dakota_VERSION_MINOR 1)
+# Set this to append to the version number
+set(Dakota_VERSION_APPEND_STABLE "+")
+#set(Dakota_VERSION_APPEND_STABLE "")
+
 # Attempt to detect MPI if not specified
 option(DAKOTA_HAVE_MPI "Enable MPI in DAKOTA" OFF)
 if(DAKOTA_HAVE_MPI AND NOT DEFINED MPI_INCLUDE_PATH AND NOT DEFINED MPI_LIBRARY)
@@ -199,3 +206,22 @@ install(DIRECTORY test DESTINATION .
   PATTERN "*.f" EXCLUDE 
   )
 
+# CPack Settings
+set(CPACK_PACKAGE_VENDOR "Sandia National Laboratories")
+
+set(local_version "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}${Dakota_VERSION_APPEND_STABLE}")
+set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
+
+set(CPACK_PACKAGE_FILE_NAME "dakota-${local_version}.${local_arch}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "dakota-${local_version}.src")
+set(CPACK_SOURCE_IGNORE_FILES ".svn")
+
+if (WIN32)
+  set(CPACK_GENERATOR ZIP)
+  set(CPACK_SOURCE_GENERATOR ZIP)
+else()
+  set(CPACK_GENERATOR TGZ)
+  set(CPACK_SOURCE_GENERATOR TGZ)
+endif()
+
+include(CPack)
