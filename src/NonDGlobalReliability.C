@@ -69,7 +69,7 @@ NonDGlobalReliability* NonDGlobalReliability::nondGlobRelInstance(NULL);
 
 using std::setw;
 
-NonDGlobalReliability::NonDGlobalReliability(Model& model):
+NonDGlobalReliability::NonDGlobalReliability(Model& model): 
   NonDReliability(model), meritFunctionType(AUGMENTED_LAGRANGIAN_MERIT),
   dataOrder(1)
 {
@@ -128,7 +128,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
 
   // The Gaussian process model of the limit state in u-space [G-hat(u)] is 
   // constructed here one time.
-
+  
   // Always build a global Gaussian process model.  No correction is needed.
   String approx_type = "global_kriging";
   if (probDescDB.get_short("method.nond.emulator") == GAUSSIAN_PROCESS)
@@ -155,6 +155,12 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
       lhs_seed = probDescDB.get_int("method.random_seed");
   const String& rng = probDescDB.get_string("method.random_number_generator");
   bool vary_pattern = false; // for consistency across outer loop invocations
+  // get point samples file
+  short this_output_level = probDescDB.get_short("method.output");
+  const String& point_reuse_file = probDescDB.get_string("method.point_reuse_file");
+  bool point_file_annotated = probDescDB.get_bool("method.point_file_annotated");
+  if (!point_reuse_file.empty())
+    samples = 0;
 
   //int symbols = samples; // symbols needed for DDACE
   Iterator dace_iterator;
@@ -190,7 +196,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
       //curr_vars.view(), curr_vars.variables_components(),
       //iteratedModel.current_response().active_set(),
       approx_type, approx_order, corr_type, corr_order, dataOrder,
-      sample_reuse), false);
+      sample_reuse, this_output_level, point_reuse_file, point_file_annotated), false);
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
     // Recast g-hat(x) to G-hat(u)
@@ -232,7 +238,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
       //g_u_vars.view(), g_u_vars.variables_components(),
       //g_u_model.current_response().active_set(),
       approx_type, approx_order, corr_type, corr_order, dataOrder,
-      sample_reuse), false);
+      sample_reuse, this_output_level, point_reuse_file, point_file_annotated), false);
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
   }
 

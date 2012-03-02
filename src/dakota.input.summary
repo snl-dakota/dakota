@@ -584,6 +584,10 @@ KEYWORD12 method
 	    | dakota
 	    ]
 	  [ use_derivatives ]
+	  [ points_file STRING
+	    [ annotated
+	    | freeform ]
+	    ]
 	  [ seed INTEGER ]
 	  )
 	|
@@ -813,6 +817,10 @@ KEYWORD12 method
 	  )
 	|
 	( importance_sampling ALIAS nond_importance_sampling
+	  [ points_file STRING
+	    [ annotated
+	    | freeform ]
+	    ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute
@@ -851,6 +859,10 @@ KEYWORD12 method
 	      [ use_derivatives ]
 	      )
 	  | lhs ]
+	  [ points_file STRING
+	    [ annotated
+	    | freeform ]
+	    ]
 	  [ response_levels REALLIST
 	    [ num_response_levels INTEGERLIST ]
 	    [ compute
@@ -889,6 +901,10 @@ KEYWORD12 method
 	      [ use_derivatives ]
 	      )
 	  | lhs ]
+	  [ points_file STRING
+	    [ annotated
+	    | freeform ]
+	    ]
 	  [ rng
 	    mt19937
 	    | rnum2
@@ -902,6 +918,10 @@ KEYWORD12 method
 	    [ emulator
 	      ( gaussian_process ALIAS gp
 		[ emulator_samples INTEGER ]
+		[ points_file STRING
+		  [ annotated
+		  | freeform ]
+		  ]
 		)
 	      |
 	      ( pce
@@ -1071,6 +1091,10 @@ KEYWORD12 method
 	    [ surfpack
 	    | dakota ]
 	    )
+	  [ points_file STRING
+	    [ annotated
+	    | freeform ]
+	    ]
 	  [ all_variables ]
 	  [ use_derivatives ]
 	  [ seed INTEGER ]

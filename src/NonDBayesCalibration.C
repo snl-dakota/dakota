@@ -84,6 +84,13 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     int samples = probDescDB.get_int("method.nond.emulator_samples"),
         seed    = probDescDB.get_int("method.random_seed");
     const String& rng = probDescDB.get_string("method.random_number_generator");
+    // get point samples file
+    short this_output_level = probDescDB.get_short("method.output");
+    const String& point_reuse_file = probDescDB.get_string("method.point_reuse_file");
+    bool point_file_annotated = probDescDB.get_bool("method.point_file_annotated");
+    //         if (!point_reuse_file.empty())
+    //             samples = 0;
+     
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
     Iterator lhs_iterator;
     if (standardizedSpace) {
@@ -93,14 +100,14 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
 		    true);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, g_u_model,
         approx_type, approx_order, corr_type, corr_order, data_order,
-        sample_reuse), false);
+        sample_reuse, this_output_level, point_reuse_file, point_file_annotated), false);
     }
     else {
       construct_lhs(lhs_iterator, iteratedModel, sample_type, samples,
 		    seed, rng, true);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, iteratedModel,
         approx_type, approx_order, corr_type, corr_order, data_order,
-        sample_reuse), false);
+        sample_reuse, this_output_level, point_reuse_file, point_file_annotated), false);
     }
     emulatorModel.init_communicators(mcmc_concurrency);
     break;

@@ -399,6 +399,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
               ]
             [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+	    [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
+               [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
+                 freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+              ] 
 	    )
 	  |
 	  ( ( ( ( ( polynomial_chaos ALIAS nond_polynomial_chaos {N_mdm(lit,methodName_nond_polynomial_chaos)}
@@ -535,6 +539,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		)
 	      |
 	      ( importance_sampling ALIAS nond_importance_sampling {N_mdm(lit,methodName_nond_importance_sampling)}
+	        [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
+                   [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
+                     freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+                   ] 
 		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 		  [ compute {0}
@@ -556,6 +564,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                       ]
 		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] )
 		    | lhs {N_mdm(lit,nondOptAlgorithm_lhs)} ]
+	        [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
+                   [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
+                     freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+                   ] 
 		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 		  [ compute {0}
@@ -591,6 +603,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                     ]
 		  [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] )
 		  | lhs {N_mdm(lit,nondOptAlgorithm_lhs)} ]
+	          [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
+                    [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
+                      freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+                    ]
 	      [ rng {0}
 		mt19937 {N_mdm(lit,rngName_mt19937)}
 		| rnum2 {N_mdm(lit,rngName_rnum2)} ]
@@ -600,7 +616,12 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               ( (queso {N_mdm(lit,subMethodName_queso)}
                 [ emulator {0}
 	        ( gaussian_process ALIAS gp {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
-		  [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ] ) |
+		  [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]  
+	          [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
+                    [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
+                    freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+                    ]
+                ) |
 		( pce {N_mdm(type,emulatorType_POLYNOMIAL_CHAOS)}
 		  [ sparse_grid_level INTEGERLIST {N_mdm(ushintL,sparseGridLevel)} ] ) |
 		( sc {N_mdm(type,emulatorType_STOCHASTIC_COLLOCATION)}
@@ -751,6 +772,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	        | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
                 ]
               )
+	    [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
+              [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
+                freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+              ]
  	    [ all_variables {N_mdm(true,allVarsFlag)} ]
             [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 	    [ seed INTEGER {N_mdm(pint,randomSeed)} ]

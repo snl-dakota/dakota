@@ -4486,6 +4486,7 @@ static UShortArray
 	MP_(varPartitions);
 
 static String
+	MP_(approxPointReuseFile),
 	MP_(centralPath),
 	MP_(expansionImportFile),
 	MP_(idMethod),
@@ -4502,6 +4503,7 @@ static StringArray
 
 static bool
 	MP_(allVarsFlag),
+	MP_(approxPointFileAnnotated),
 	MP_(constantPenalty),
 	MP_(expansionFlag),
 	MP_(fixedSeedFlag),

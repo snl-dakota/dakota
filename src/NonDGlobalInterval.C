@@ -64,6 +64,13 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
 
   // instantiate the Gaussian Process DataFit recursions
 
+  // get point samples file
+  short this_output_level = probDescDB.get_short("method.output");
+  const String& point_reuse_file = probDescDB.get_string("method.point_reuse_file");
+  bool point_file_annotated = probDescDB.get_bool("method.point_file_annotated");
+  //if (!point_reuse_file.empty())
+  //           samples = 0;
+ 
   // The following uses on the fly derived ctor:
   daceIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
     numSamples, seedSpec, rngName, false, ACTIVE_UNIFORM), false);
@@ -82,7 +89,8 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   fHatModel.assign_rep(new DataFitSurrModel(daceIterator, iteratedModel,
     //curr_vars.view(), curr_vars.variables_components(),
     //iteratedModel.current_response().active_set(),
-    approx_type, approx_order, corr_type, corr_order, dataOrder, sample_reuse),
+    approx_type, approx_order, corr_type, corr_order, dataOrder, sample_reuse, 
+    this_output_level, point_reuse_file, point_file_annotated),
     false);
 
   // eifModel.init_communicators() recursion is currently sufficient for
