@@ -20,6 +20,15 @@ set(Dakota_VERSION_MINOR 1)
 set(Dakota_VERSION_APPEND_STABLE "+")
 #set(Dakota_VERSION_APPEND_STABLE "")
 
+# Manage developer convenience options (experimental)
+if(DevDebug)
+  include(DakotaDebug)
+  include(DakotaDev)
+elseif (DevDistro)
+  include(DakotaDistro)
+  include(DakotaDev)
+endif()
+
 # Attempt to detect MPI if not specified
 option(DAKOTA_HAVE_MPI "Enable MPI in DAKOTA" OFF)
 if(DAKOTA_HAVE_MPI AND NOT DEFINED MPI_INCLUDE_PATH AND NOT DEFINED MPI_LIBRARY)
