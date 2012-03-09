@@ -31,8 +31,9 @@ endif (BOOST_DISABLE_ASSERTS)
 
 option(DAKOTA_HAVE_BOOST_FS "Toggle FS support, default is BoostFS enabled" ON)
 if (DAKOTA_HAVE_BOOST_FS)
+  add_definitions("-DDAKOTA_HAVE_BOOST_FS")
 
-  # Boost Version information to ensure Boost.Filesystem Version 2 Library
+  # Boost Version info (to determine default Boost.Filesystem Version support)
   file(STRINGS ${Boost_INCLUDE_DIR}/boost/version.hpp BOOST_VERSIONSTR
        REGEX "#define[ ]+BOOST_VERSION[ ]+[0-9]+")
 
@@ -41,19 +42,16 @@ if (DAKOTA_HAVE_BOOST_FS)
     math(EXPR BOOST_VN_MINOR "${BOOST_VERSIONSTR} / 100 % 1000")
     math(EXPR BOOST_VN_SUBMINOR "${BOOST_VERSIONSTR} % 100")
     set(DAK_BOOST_VN "${BOOST_VN_MAJOR}.${BOOST_VN_MINOR}.${BOOST_VN_SUBMINOR}")
+    message(STATUS "Boost version: ${DAK_BOOST_VN}")
 
-    if(NOT ${BOOST_VN_MINOR} VERSION_LESS "48")
+    if(NOT ${BOOST_VN_MINOR} VERSION_LESS "46")
       #add_definitions("-DBOOST_FILESYSTEM_VERSION=3")
-      set(DAKOTA_HAVE_BOOST_FS OFF)
-      message(FATAL_ERROR 
-        "DAKOTA cannot link with Boost.FilesystemV3 from  ${DAK_BOOST_VN}")
-    else()
-      add_definitions("-DDAKOTA_HAVE_BOOST_FS")
-      message(STATUS "Boost version: ${DAK_BOOST_VN}")
+      #set(DAKOTA_HAVE_BOOST_FS OFF)
+      message(WARNING 
+        "DAKOTA will NOT support Boost.FilesystemV3 (externally) until Rel5.3")
     endif()
 
   else()
-    set(DAKOTA_HAVE_BOOST_FS OFF)
     message(FATAL_ERROR 
       "Problem with Boost version from ${Boost_INCLUDE_DIR}/boost/version.hpp")
   endif(BOOST_VERSIONSTR)
