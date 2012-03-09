@@ -14,10 +14,6 @@
 #
 ##############################################################################
 
-# CMake Boost probes in ACRO result in "multiple targets with same name" error
-set(HAVE_ACRO OFF CACHE BOOL
-    "Do NOT use ACRO for when DakBld with Boost.Filesytem V3" FORCE)
-
 set(Boost_NO_SYSTEM_PATHS ON CACHE BOOL
     "Do NOT use system boost for when linking with Boost.Filesytem V3" FORCE)
  

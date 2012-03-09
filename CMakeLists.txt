@@ -15,7 +15,7 @@ project("Dakota" NONE)
 
 # DAKOTA versions for packaging
 set(Dakota_VERSION_MAJOR 5)
-set(Dakota_VERSION_MINOR 1)
+set(Dakota_VERSION_MINOR 2)
 # Set this to append to the version number
 set(Dakota_VERSION_APPEND_STABLE "+")
 #set(Dakota_VERSION_APPEND_STABLE "")
