@@ -85,8 +85,10 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   short this_output_level = probDescDB.get_short("method.output");
   const String& point_reuse_file = probDescDB.get_string("method.point_reuse_file");
   bool point_file_annotated = probDescDB.get_bool("method.point_file_annotated");
-  //         if (!point_reuse_file.empty())
-  //             samples = 0;
+  if (!point_reuse_file.empty()){
+    samples = 0;
+    sample_reuse = "all";
+  }
 
   Iterator dace_iterator;
   // The following uses on the fly derived ctor:

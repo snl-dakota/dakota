@@ -159,8 +159,10 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   short this_output_level = probDescDB.get_short("method.output");
   const String& point_reuse_file = probDescDB.get_string("method.point_reuse_file");
   bool point_file_annotated = probDescDB.get_bool("method.point_file_annotated");
-  if (!point_reuse_file.empty())
+  if (!point_reuse_file.empty()){
     samples = 0;
+    sample_reuse = "all";
+  }
 
   //int symbols = samples; // symbols needed for DDACE
   Iterator dace_iterator;

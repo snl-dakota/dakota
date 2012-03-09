@@ -17,6 +17,7 @@
 #include "DataFitSurrModel.H"
 #include "NonDPolynomialChaos.H"
 #include "NonDStochCollocation.H"
+#include "NonDLHSSampling.H"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -88,23 +89,24 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     short this_output_level = probDescDB.get_short("method.output");
     const String& point_reuse_file = probDescDB.get_string("method.point_reuse_file");
     bool point_file_annotated = probDescDB.get_bool("method.point_file_annotated");
-    //         if (!point_reuse_file.empty())
-    //             samples = 0;
+    if (!point_reuse_file.empty()){
+      samples = 0;
+      sample_reuse = "all";
+    }
      
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
     Iterator lhs_iterator;
     if (standardizedSpace) {
       Model g_u_model;
       construct_u_space_model(iteratedModel, g_u_model, true);//globally bounded
-      construct_lhs(lhs_iterator, g_u_model, sample_type, samples, seed, rng,
-		    true);
+      lhs_iterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type, samples, seed, rng, 
+        true, ACTIVE_UNIFORM), false);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, g_u_model,
         approx_type, approx_order, corr_type, corr_order, data_order,
         sample_reuse, this_output_level, point_reuse_file, point_file_annotated), false);
     }
     else {
-      construct_lhs(lhs_iterator, iteratedModel, sample_type, samples,
-		    seed, rng, true);
+      lhs_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type, samples, seed, rng,         true, ACTIVE_UNIFORM), false);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, iteratedModel,
         approx_type, approx_order, corr_type, corr_order, data_order,
         sample_reuse, this_output_level, point_reuse_file, point_file_annotated), false);

@@ -50,11 +50,14 @@ NonDGPImpSampling::NonDGPImpSampling(Model& model): NonDSampling(model)
   short this_output_level = probDescDB.get_short("method.output");
   const String& point_reuse_file = probDescDB.get_string("method.point_reuse_file");
   bool point_file_annotated = probDescDB.get_bool("method.point_file_annotated");
-  //         if (!point_reuse_file.empty())
-  //             samples = 0;
+  int samples = numSamples;
+  if (!point_reuse_file.empty()){
+    samples = 0;
+    sample_reuse = "all";
+  }
 
-  construct_lhs(gpBuild, iteratedModel, sample_type, numSamples, randomSeed,
-		rngName, vary_pattern); //these are being drawn from 
+  gpBuild.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
+     samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM), false);
   //distribution 1 which is the distribution that the initial set of samples
   //used to build the initial GP are drawn from this should "ALWAYS" be 
   //uniform in the input of the GP (even if the nominal distribution is not
