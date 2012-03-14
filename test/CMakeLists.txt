@@ -157,10 +157,11 @@ add_dependencies(text_book dakota)
 
 # UNIT TESTS
 
-if(ENABLE_TESTS)
+# WJB - ToDo:  decide on a unit test framework and probe for it
+option(DAKOTA_ENABLE_UNIT_TESTS "Enable unit tests in DAKOTA" OFF)
+if(DAKOTA_ENABLE_UNIT_TESTS)
   # Complete these for each specific test.
 
-  # WJB - ToDo:  add a probe for CppUnit
   add_executable(stream_unit_tests stream_unit_tests.C)
   #target_link_libraries(stream_unit_tests dakota_src)
   add_test(stream_unit_tests stream_unit_tests)
