@@ -131,7 +131,6 @@ sub process_tags_dox {
     }
 
     # Initialize variables                                                                                                                   
-    my $htmlroot = "http://dakota.sandia.gov/licensing/votd/html-ref/";
     my $pageroot;
     my $category;
     my $lower_cat;
@@ -182,7 +181,7 @@ sub process_tags_dox {
         while (<REF_FILE>) {
 
             if (/\\page ([\w]+) /) {
-                $pageroot = "$htmlroot$1.html#";
+                $pageroot = "$1.html#";
                 if ($GLOBAL_VERBOSE) {
                     print "INFO: Using root $pageroot\n";
                 }
@@ -418,22 +417,22 @@ sub gui_groups {
     kw_nest_desc("responses/num_response_functions", "{Generic responses} ");                                                                
                                             
     # Add top-level keyword help text"
-    $url = "http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/StratCommands.html";
+    $url = "StratCommands.html";
     kw_add_desc("strategy", "{Strategy} The strategy specifies the top level technique which will govern the management of iterators and models in the solution of the problem of interest. $url");
 
-    $url = "http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/MethodCommands.html";
+    $url = "MethodCommands.html";
     kw_add_desc("method", "{Method} A method specifies the name and controls of an iterative procedure, e.g., a sensitivity analysis, uncertainty quantification, or optimization method. $url");
 
-    $url = "http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/ModelCommands.html";
+    $url = "ModelCommands.html";
     kw_add_desc("model", "{Model} A model consists of a model type and maps specified variables through an interface to generate responses. $url");
 
-    $url = "http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/VarCommands.html";
+    $url = "VarCommands.html";
     kw_add_desc("variables", "{Variables} A variables object specifies the parameter set to be iterated by a particular method. $url");
 
-    $url = "http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/InterfCommands.html";
+    $url = "InterfCommands.html";
     kw_add_desc("interface", "{Interface} An interface specifies how function evaluations will be performed in order to map a set of parameters into a set of responses. $url");
 
-    $url = "http://www.cs.sandia.gov/DAKOTA/licensing/votd/html-ref/RespCommands.html";
+    $url = "RespCommands.html";
     kw_add_desc("responses", "{Responses} A responses object specifies the data that can be returned to DAKOTA through the interface after the completion of a function evaluation. $url");
 
     if ($GLOBAL_VERBOSE) {
