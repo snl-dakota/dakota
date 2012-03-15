@@ -3,7 +3,7 @@
 include_directories(
   ${Dakota_BINARY_DIR} ${Dakota_BINARY_DIR}/src
   ${Dakota_SOURCE_DIR}/src ${Dakota_SOURCE_DIR}/packages
-  ${Boost_INCLUDE_DIRS} ${Teuchos_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${Teuchos_INCLUDE_DIRS}
   )
 
 add_definitions("-DHAVE_CONFIG_H")
