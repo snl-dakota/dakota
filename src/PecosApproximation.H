@@ -174,6 +174,9 @@ public:
   const RealVector& expansion_moments() const;
   /// return Pecos::PolynomialApproximation::numericalMoments
   const RealVector& numerical_moments() const;
+  /// standardize the central moments returned from Pecos
+  void standardize_moments(const Pecos::RealVector& central_moments,
+			   Pecos::RealVector& std_moments);
 
   /// return pecosBasisApprox
   Pecos::BasisApproximation& pecos_basis_approximation();
@@ -442,6 +445,12 @@ inline const RealVector& PecosApproximation::expansion_moments() const
 
 inline const RealVector& PecosApproximation::numerical_moments() const
 { return polyApproxRep->numerical_moments(); }
+
+
+inline void PecosApproximation::
+standardize_moments(const Pecos::RealVector& central_moments,
+		    Pecos::RealVector& std_moments)
+{ polyApproxRep->standardize_moments(central_moments, std_moments); }
 
 
 inline Pecos::BasisApproximation& PecosApproximation::

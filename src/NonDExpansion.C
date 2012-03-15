@@ -1299,11 +1299,11 @@ void NonDExpansion::compute_statistics()
       else          poly_approx_rep->compute_moments();
 
       const RealVector& moments = poly_approx_rep->moments(); // virtual
-      // moments are standardized if possible, or central if numerical exception
-      mu = moments[0]; const Real& m1 = moments[1];
-      if (covariance_flag) respCovariance(i,i) = (m1 > 0.) ? m1*m1 : m1;
-      if (m1 >= 0.)
-	sigma = m1;
+      // Pecos provides central moments
+      mu = moments[0]; const Real& var = moments[1];
+      if (covariance_flag) respCovariance(i,i) = var;
+      if (var >= 0.)
+	sigma = std::sqrt(var);
       else { // negative variance can happen with SC on sparse grids
 	Cerr << "Warning: stochastic expansion variance is negative in "
 	     << "computation of std deviation.\n         Setting std "
@@ -1715,9 +1715,11 @@ void NonDExpansion::print_moments(std::ostream& s)
   // Also handle numerical exception of negative variance in either exp or num
   PecosApproximation* poly_approx_rep;
   size_t exp_mom, num_mom; bool prev_exception = false;
+  RealVector std_exp_moments, std_num_moments;
   for (i=0; i<numFunctions; ++i) {
     poly_approx_rep = (PecosApproximation*)poly_approxs[i].approx_rep();
     if (poly_approx_rep && poly_approx_rep->expansion_coefficient_flag()) {
+      // Pecos provides central moments
       const RealVector& exp_moments = poly_approx_rep->expansion_moments();
       const RealVector& num_moments = poly_approx_rep->numerical_moments();
       exp_mom = exp_moments.length(); num_mom = num_moments.length();
@@ -1726,7 +1728,7 @@ void NonDExpansion::print_moments(std::ostream& s)
 	   (exp_mom >  2 && exp_moments[1] <= 0.) ||
 	   (num_mom >  2 && num_moments[1] <= 0.) ) {
 	if (i==0 || !prev_exception)
-	  s << "\nNB: due to non-positive variance (resulting from under-"
+	  s << "\nNote: due to non-positive variance (resulting from under-"
 	    << "resolved numerical integration),\n    standardized moments "
 	    << "have been replaced with central moments.\n\n"
 	    << std::setw(width+15) << "Mean" << std::setw(width+1) << "Variance"
@@ -1754,14 +1756,16 @@ void NonDExpansion::print_moments(std::ostream& s)
 	if (exp_mom && num_mom) s << fn_labels[i];
 	else                    s << std::setw(14) << fn_labels[i];
 	if (exp_mom) {
+	  poly_approx_rep->standardize_moments(exp_moments, std_exp_moments);
 	  if (num_mom)          s << '\n' << std::setw(14) << "expansion:  ";
 	  for (j=0; j<exp_mom; ++j)
-	    s << ' ' << std::setw(width) << exp_moments[j];
+	    s << ' ' << std::setw(width) << std_exp_moments[j];
 	}
 	if (num_mom) {
+	  poly_approx_rep->standardize_moments(num_moments, std_num_moments);
 	  if (exp_mom)          s << '\n' << std::setw(14) << "numerical:  ";
 	  for (j=0; j<num_mom; ++j)
-	    s << ' ' << std::setw(width) << num_moments[j];
+	    s << ' ' << std::setw(width) << std_num_moments[j];
 	}
 	prev_exception = false;
       }
