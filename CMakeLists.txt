@@ -41,6 +41,7 @@ enable_language(C)
 enable_language(CXX)
 enable_language(Fortran)
 
+include(AddExtraTeuchosPaths)
 include(FortranCInterface)
 include(CheckFunctionExists)
 include(CheckIncludeFile)
@@ -110,21 +111,31 @@ endif()
 
 # when building inside Trilinos, the path to Teuchos will already be set
 if (NOT BUILD_IN_TRILINOS)
+
 # first probe for system-installed Trilinos
 # this will respect Trilinos_DIR if already set
+if(NOT Extra_Teuchos_INCLUDE_DIR OR NOT Extra_Teuchos_LIBRARY_DIR)
 find_package(Trilinos QUIET)
+endif()
+
 if ( NOT Trilinos_DIR )
 
-  # if no one has configured a local src Teuchos, do so
-  # this will respect Teuchos_DIR if already set
-  if( NOT Teuchos_DIR )
-    set( Teuchos_DIR ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos )
-    message( "Setting Teuchos_DIR to ${Teuchos_DIR}" )
-    add_subdirectory(packages/teuchos)
+  # Check a special case in which PATHs to Teuchos headers/lib
+  # are specified, indepedent of a "prefix"
+  if(Extra_Teuchos_INCLUDE_DIR AND Extra_Teuchos_LIBRARY_DIR)
+    AddExtraTeuchosPaths()
   else()
-    message( "in ${CMAKE_CURRENT_BINARY_DIR} Teuchos_DIR already set to ${Teuchos_DIR}" )
-  endif()
-  find_package( Teuchos NO_MODULE REQUIRED )
+    # if no one has configured a local src Teuchos, do so
+    # this will respect Teuchos_DIR if already set
+    if( NOT Teuchos_DIR )
+      set( Teuchos_DIR ${CMAKE_CURRENT_BINARY_DIR}/packages/teuchos )
+      message( "Setting Teuchos_DIR to ${Teuchos_DIR}" )
+      add_subdirectory(packages/teuchos)
+    else()
+      message( "in ${CMAKE_CURRENT_BINARY_DIR} Teuchos_DIR already set to ${Teuchos_DIR}" )
+    endif()
+    find_package( Teuchos NO_MODULE REQUIRED )
+  endif() # Extra_Teuchos_INCLUDE_DIR AND Extra_Teuchos_LIBRARY_DIR
 else()
   message( "Using system trilinos in ${Trilinos_DIR}" )
 endif()
