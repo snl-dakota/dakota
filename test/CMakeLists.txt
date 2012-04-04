@@ -86,16 +86,33 @@ if(BUILD_TESTING)
     get_filename_component(TestName ${DakotaTest} NAME_WE)
     file(GLOB DakotaAuxAll RELATIVE 
          ${CMAKE_CURRENT_SOURCE_DIR} "${TestName}.*")
+
+    # add serial test
     add_application_test(
-         ${TestName}
-	 FILE_DEPENDENCIES "${DakotaAuxAll}"
-         PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_diffs.out
-         APPLICATION COMMAND ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl 
-	   --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${TestName}
-           --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
-	   ${DakotaTest}
-         UNIQUE_DIRECTORY
-	 )
+      ${TestName}
+      FILE_DEPENDENCIES "${DakotaAuxAll}"
+      PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_diffs.out
+      APPLICATION COMMAND ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl 
+      --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${TestName}
+      --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
+      ${DakotaTest}
+      UNIQUE_DIRECTORY)
+
+    # if Dakota test has parallel tests (i.e. #p[0-9]+), add parallel test
+    file(STRINGS ${DakotaTest} PTestList REGEX "#p[0-9]+" LIMIT_COUNT 1)
+    if (NOT ${PTestList} EQUAL "")
+        add_application_test(
+	  p${TestName}
+	  FILE_DEPENDENCIES "${DakotaAuxAll}"
+	  PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_diffs.out
+	  APPLICATION COMMAND ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl 
+	  --parallel
+ 	  --output-dir=${CMAKE_CURRENT_BINARY_DIR}/p${TestName}
+	  --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
+	  ${DakotaTest}
+	  UNIQUE_DIRECTORY)
+    endif()
+
     # TODO: The following regex needs to be based on output of dakota_diff.perl
     #       and account for consistency with baseline
     # set_tests_properties(${DAKOTA_SYSTEST} PROPERTIES 
