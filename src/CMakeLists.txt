@@ -47,8 +47,7 @@ if (DAKOTA_HAVE_BOOST_FS)
     if(NOT ${BOOST_VN_MINOR} VERSION_LESS "46")
       #add_definitions("-DBOOST_FILESYSTEM_VERSION=3")
       #set(DAKOTA_HAVE_BOOST_FS OFF)
-      message(WARNING 
-        "DAKOTA will NOT support Boost.FilesystemV3 (externally) until Rel5.3")
+      message(STATUS "DAKOTA using Boost.FilesystemV3")
     endif()
 
   else()
