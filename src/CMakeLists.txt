@@ -19,6 +19,12 @@ endif()
 include(DakotaEnableSpecMaint)
 DakotaEnableSpecMaint()
 
+set(TPL_LIBS teuchos nidr)
+set(EXTRA_TPL_LIBS "")
+
+set(EXPORT_TARGETS dakota_src teuchos nidr)
+link_directories(${Teuchos_LIBRARY_DIRS})
+
 option(DAKOTA_PLUGIN "Toggle Plugin support, default is PluginEnabled" ON)
 if(DAKOTA_PLUGIN)
   add_definitions("-DDAKOTA_PLUGIN")
@@ -142,17 +148,36 @@ if(HAVE_USAGE_TRACKING)
   endif(CURL_FOUND)
 endif(HAVE_USAGE_TRACKING)
 
+option(DAKOTA_MATLAB "Toggle MATLAB support, default is disabled" OFF)
+if(DAKOTA_MATLAB)
+  include(FindMatlab)
 
-set(TPL_LIBS teuchos nidr)
-set(EXTRA_TPL_LIBS "")
-set(EXPORT_TARGETS dakota_src teuchos nidr)
+  #exec_program("$ENV{MATLAB_CONFIG}" ARGS --prefix OUTPUT_VARIABLE MATLAB_PREFIX)
+  ## check_include_file("$ENV{MATLAB_ROOT}/extern/include/engine.h"
+                      ##DAKOTA_HAVE_MATLAB_H)
+  ##if(DAKOTA_HAVE_MATLAB_H)
+  if(MATLAB_FOUND)
+    message(STATUS "MATLAB header found in: ${MATLAB_INCLUDE_DIR}")
+    #include_directories($ENV{MATLAB_ROOT}/extern/include)
+    include_directories(${MATLAB_INCLUDE_DIR})
+    add_definitions("-DDAKOTA_MATLAB")
+    list(APPEND EXTRA_TPL_LIBS ${MATLAB_LIBRARIES})
+  else()
+    message(FATAL_ERROR "Unable to find installed MATLAB in ${MATLAB_ROOT}")
+    #set(DAKOTA_MATLAB OFF)
+  endif(MATLAB_FOUND)
+endif(DAKOTA_MATLAB)
+
+option(DAKOTA_MODELCENTER "Toggle ModelCenter support, default is disabled" OFF)
+if(DAKOTA_MODELCENTER)
+  add_definitions("-DDAKOTA_MODELCENTER")
+endif(DAKOTA_MODELCENTER)
+
 
 if(DAKOTA_HAVE_MPI)
   add_definitions("-DDAKOTA_HAVE_MPI")
   list(APPEND EXTRA_TPL_LIBS ${MPI_LIBRARIES})
 endif(DAKOTA_HAVE_MPI)
-
-link_directories(${Teuchos_LIBRARY_DIRS})
 
 
 # Couple with "external" packages based on user preference
