@@ -169,33 +169,40 @@ if(DAKOTA_MATLAB)
   endif(MATLAB_FOUND)
 endif(DAKOTA_MATLAB)
 
-option(DAKOTA_PYTHON "Toggle PYTHON support, default is disabled" OFF)
-option(DAKOTA_PYTHON_NUMPY "NUMPY support is enabled if it is found" OFF)
+option(DAKOTA_PYTHON "Toggle Python interface, default is disabled" OFF)
+option(DAKOTA_PYTHON_NUMPY
+  "Use Python NumPy for data structures, default is disabled" OFF
+  )
+if(DAKOTA_PYTHON_NUMPY AND NOT DAKOTA_PYTHON)
+  message(FATAL_ERROR "DAKOTA_PYTHON_NUMPY option requires DAKOTA_PYTHON")
+endif()
 if(DAKOTA_PYTHON)
   include(FindPythonInterp)
   include(FindPythonLibs)
 
   if(PYTHONLIBS_FOUND)
-    message(STATUS "Python.h found in: ${PYTHON_INCLUDE_DIRS}")
+    # Have a valid Python.h and libraries
+    message(STATUS "Using Python headers in: ${PYTHON_INCLUDE_DIRS}")
+    message(STATUS "Using Python libraries in: ${PYTHON_LIBRARIES}")
     include_directories(${PYTHON_INCLUDE_DIRS})
     add_definitions("-DDAKOTA_PYTHON")
     list(APPEND EXTRA_TPL_LIBS ${PYTHON_LIBRARIES})
 
-    # Probe for NumPy -- check_include_file("arrayobject.h" DAKOTA_NUMPY_H)
-    include(FindNUMARRAY)
-
-    if(PYTHON_NUMARRAY_FOUND)
-      message(STATUS "NumPy FOUND: ${PYTHON_NUMARRAY_INCLUDE_DIR}")
-      set(DAKOTA_PYTHON_NUMPY ON)
-      add_definitions("-DDAKOTA_PYTHON_NUMPY")
-    else()
-      message(WARNING "** NumPy NOT found; continuing anyway..")
-      set(DAKOTA_PYTHON_NUMPY OFF)
-    endif(PYTHON_NUMARRAY_FOUND)
-
-  else()
-    message(FATAL_ERROR "Cannot find installed PYTHON in ${PYTHON_EXECUTABLE}")
-    #set(DAKOTA_PYTHON OFF)
+    if(DAKOTA_PYTHON_NUMPY)
+      include(FindNUMARRAY)
+      if(PYTHON_NUMARRAY_FOUND)
+	# Have a valid arrayobject.h
+	message(STATUS "Using NumPy headers in: ${PYTHON_NUMARRAY_INCLUDE_DIR}")
+	include_directories(${PYTHON_NUMARRAY_INCLUDE_DIR})
+	add_definitions("-DDAKOTA_PYTHON_NUMPY")
+      else(PYTHON_NUMARRAY_FOUND)
+	message(SEND_ERROR
+	  "Python NumPy requested, but headers/libaries not found")
+	set(DAKOTA_PYTHON_NUMPY OFF)
+      endif(PYTHON_NUMARRAY_FOUND)
+    endif()
+  else(PYTHONLIBS_FOUN)
+    message(SEND_ERROR "Python requested, but Python headers/libraries associated with Python installed in ${PYTHON_EXECUTABLE} not found")
   endif(PYTHONLIBS_FOUND)
 endif(DAKOTA_PYTHON)
 

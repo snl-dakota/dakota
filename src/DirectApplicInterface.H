@@ -29,7 +29,11 @@
 //struct mxArray; //forward declaration for mxArray argument
 #endif
 #ifdef DAKOTA_PYTHON
-#include <Python.h>  //eventually use forward declaration of PyObject
+// The following to forward declare, but avoid clash with include
+#ifndef PyObject_HEAD
+struct _object;
+typedef _object PyObject;
+#endif
 #endif
 
 namespace Dakota {
