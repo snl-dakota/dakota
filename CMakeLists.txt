@@ -45,7 +45,6 @@ include(AddExtraTeuchosPaths)
 include(FortranCInterface)
 include(CheckFunctionExists)
 include(CheckIncludeFile)
-include(FindCURL)
 
 if( CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR AND NOT MSVC_IDE )
   message(FATAL_ERROR "In-source builds are not allowed.

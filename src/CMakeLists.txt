@@ -136,17 +136,23 @@ if(DAKOTA_F90)
 endif(DAKOTA_F90)
 
 
-option(HAVE_USAGE_TRACKING "Build the DAKOTA usage tracker module." OFF)
+option(DAKOTA_USAGE_TRACKING
+  "Toggle DAKOTA usage tracking, default is disabled." OFF
+  )
 set(TRACKING_LOCATION_AND_PROXY "" CACHE STRING 
-    "<URL;proxy> for usage tracking")
-if(HAVE_USAGE_TRACKING)
+  "<URL;proxy> for usage tracking"
+  )
+if(DAKOTA_USAGE_TRACKING)
+  find_package(CURL)
   if(CURL_FOUND)
-    add_definitions("-DHAVE_USAGE_TRACKING=\"${TRACKING_LOCATION_AND_PROXY}\"")
-  else(CURL_FOUND)
+    message(STATUS "DAKOTA usage tracking enabled with <URL;proxy> = <${TRACKING_LOCATION_AND_PROXY}>")
+    add_definitions("-DDAKOTA_USAGE_TRACKING=\"${TRACKING_LOCATION_AND_PROXY}\"")
+  else()
     message(WARNING "Tracking requested, but curl not found; disabling.")
-    set(HAVE_USAGE_TRACKING OFF FORCE)
+    set(DAKOTA_USAGE_TRACKING OFF CACHE BOOL 
+      "Toggle DAKOTA usage tracking, default is disabled." FORCE)
   endif(CURL_FOUND)
-endif(HAVE_USAGE_TRACKING)
+endif(DAKOTA_USAGE_TRACKING)
 
 option(DAKOTA_MATLAB "Toggle MATLAB interface, default is disabled" OFF)
 if(DAKOTA_MATLAB)
@@ -189,13 +195,13 @@ if(DAKOTA_PYTHON)
 	message(STATUS "Using NumPy headers in: ${PYTHON_NUMARRAY_INCLUDE_DIR}")
 	include_directories(${PYTHON_NUMARRAY_INCLUDE_DIR})
 	add_definitions("-DDAKOTA_PYTHON_NUMPY")
-      else(PYTHON_NUMARRAY_FOUND)
+      else()
 	message(SEND_ERROR
 	  "Python NumPy requested, but headers/libaries not found")
 	set(DAKOTA_PYTHON_NUMPY OFF)
       endif(PYTHON_NUMARRAY_FOUND)
     endif()
-  else(PYTHONLIBS_FOUN)
+  else()
     message(SEND_ERROR "Python requested, but Python headers/libraries associated with Python installed in ${PYTHON_EXECUTABLE} not found")
   endif(PYTHONLIBS_FOUND)
 endif(DAKOTA_PYTHON)
@@ -300,9 +306,9 @@ if(HAVE_RPC_XDR_H)
   list(APPEND util_src dak_xdr_interface.c)
 endif(HAVE_RPC_XDR_H)
 
-if(HAVE_USAGE_TRACKING)
+if(DAKOTA_USAGE_TRACKING)
   list(APPEND util_src TrackerHTTP.C)
-endif(HAVE_USAGE_TRACKING)
+endif(DAKOTA_USAGE_TRACKING)
 
 ## EVALDATA sources.
 set(evaldata_src DakotaVariables.C MergedVariables.C MixedVariables.C

@@ -95,7 +95,7 @@ AC_DEFUN([DAK_OPTIONS],[
   if test -n "$tracking_url"; then
     LIBCURL_CHECK_CONFIG([yes],[],[],
                          AC_MSG_ERROR([DAKOTA tracking requires libcurl]))
-    AC_DEFINE_UNQUOTED([HAVE_USAGE_TRACKING], "$tracking_url",
+    AC_DEFINE_UNQUOTED([DAKOTA_USAGE_TRACKING], "$tracking_url",
 	               [URL and optional proxy for DAKOTA usage tracking])
   fi
   AM_CONDITIONAL([ENABLE_TRACKING], [test -n "$tracking_url"])

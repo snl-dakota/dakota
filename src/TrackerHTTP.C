@@ -143,8 +143,8 @@ void TrackerHTTP::initialize(int world_rank)
     return;
 
   // get the URL and optional proxy from configure
-#ifdef HAVE_USAGE_TRACKING
-  std::string dt = HAVE_USAGE_TRACKING;
+#ifdef DAKOTA_USAGE_TRACKING
+  std::string dt = DAKOTA_USAGE_TRACKING;
 #else
   std::string dt;
 #endif
