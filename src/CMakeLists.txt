@@ -622,8 +622,7 @@ add_executable(dakota main.C)
 add_executable(dakota_restart_util restart_util.C)
 add_executable(dakota_library_mode library_mode.C)
   
-## WJB: request macro from Kitware? FindLibDL.cmake (e.g. digidoc++ or casacore)
-list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${CURL_LIBRARIES} dl)
+list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${CURL_LIBRARIES} ${CMAKE_DL_LIBS})
 
 target_link_libraries(dakota dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
