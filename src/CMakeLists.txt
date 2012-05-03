@@ -136,6 +136,27 @@ if(DAKOTA_F90)
 endif(DAKOTA_F90)
 
 
+# WJB - ToDo: Improve logic to support WinDLL case
+option(DAKOTA_DL_SOLVER
+  "Toggle DAKOTA DL Solvers, default is disabled." OFF
+  )
+if(DAKOTA_DL_SOLVER)
+  check_include_file(dlfcn.h DAKOTA_HAVE_DLFCN_H)
+
+  if(DAKOTA_HAVE_DLFCN_H)
+    # WJB - ToDo:  Test/debug on cygwin ("lgdi32" vs "" ?)
+    message(STATUS "DAKOTA DL Solver enabled, LibDL = ${CMAKE_DL_LIBS}")
+    add_definitions("-DDAKOTA_DL_SOLVER")
+    add_definitions("-DDAKOTA_HAVE_DLFCN_H")
+    list(APPEND EXTRA_TPL_LIBS ${CMAKE_DL_LIBS})
+  else()
+    message(WARNING "DL solver requested, but dlfcn.h not found; disabling.")
+    add_definitions("-DNO_NIDR_DYNLIB")
+    set(DAKOTA_DL_SOLVER OFF CACHE BOOL 
+      "DAKOTA DL solver is disabled due to no dlfcn.h" FORCE)
+  endif(DAKOTA_HAVE_DLFCN_H)
+endif(DAKOTA_DL_SOLVER)
+
 option(DAKOTA_USAGE_TRACKING
   "Toggle DAKOTA usage tracking, default is disabled." OFF
   )
@@ -305,6 +326,10 @@ set(util_src ParallelLibrary.C MPIPackBuffer.C
 if(HAVE_RPC_XDR_H)
   list(APPEND util_src dak_xdr_interface.c)
 endif(HAVE_RPC_XDR_H)
+
+if(DAKOTA_DL_SOLVER)
+  list(APPEND util_src DLSolver.C)
+endif(DAKOTA_DL_SOLVER)
 
 if(DAKOTA_USAGE_TRACKING)
   list(APPEND util_src TrackerHTTP.C)
