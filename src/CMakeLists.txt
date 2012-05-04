@@ -168,6 +168,7 @@ if(DAKOTA_USAGE_TRACKING)
   if(CURL_FOUND)
     message(STATUS "DAKOTA usage tracking enabled with <URL;proxy> = <${TRACKING_LOCATION_AND_PROXY}>")
     add_definitions("-DDAKOTA_USAGE_TRACKING=\"${TRACKING_LOCATION_AND_PROXY}\"")
+    list(APPEND EXTRA_TPL_LIBS ${CURL_LIBRARIES})
   else()
     message(WARNING "Tracking requested, but curl not found; disabling.")
     set(DAKOTA_USAGE_TRACKING OFF CACHE BOOL 
@@ -647,7 +648,7 @@ add_executable(dakota main.C)
 add_executable(dakota_restart_util restart_util.C)
 add_executable(dakota_library_mode library_mode.C)
   
-list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${CURL_LIBRARIES} ${CMAKE_DL_LIBS})
+list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS})
 
 target_link_libraries(dakota dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
@@ -663,9 +664,9 @@ install(FILES ${Dakota_spec_files} DESTINATION bin)
 
 if (DAKOTA_HAVE_MPI)
   add_executable(dakota_library_split library_split.C)
-  install(TARGETS dakota_library_split DESTINATION bin)
   target_link_libraries(dakota_library_split
     dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
+  install(TARGETS dakota_library_split DESTINATION bin)
 endif()
 
 if(Teuchos_TPL_LIST MATCHES "LAPACK;BLAS")
