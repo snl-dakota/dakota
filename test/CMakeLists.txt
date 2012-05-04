@@ -65,6 +65,7 @@ if(BUILD_TESTING)
   # Copy any necessary executables into the BINARY_DIR/test directory
   get_target_property(EXE_LOC dakota LOCATION)
   get_target_property(LIBMODE_EXE_LOC dakota_library_mode LOCATION)
+  get_target_property(LIBSPLIT_EXE_LOC dakota_library_split LOCATION)
 
   add_custom_target(test_dakota ALL
     ${CMAKE_COMMAND} -E copy ${EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}
@@ -73,6 +74,10 @@ if(BUILD_TESTING)
   add_custom_target(test_lib_mode_dakota ALL
     ${CMAKE_COMMAND} -E copy ${LIBMODE_EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS dakota_library_mode)  
+
+  add_custom_target(test_lib_split ALL
+    ${CMAKE_COMMAND} -E copy ${LIBSPLIT_EXE_LOC} ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS dakota_library_split)
 
   get_target_property(Dakota_EXECUTABLE_OUTPUT_DIR dakota LOCATION)
   get_filename_component(
