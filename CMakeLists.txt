@@ -96,14 +96,7 @@ else()
   find_package(Boost 1.37 REQUIRED COMPONENTS regex filesystem system)
 endif()
 
-#
-option(DAKOTA_PUBLIC_CDASH "Submit build results to public CDash installation?" OFF)
 include(CTest)
-if(DAKOTA_PUBLIC_CDASH)
-  file(READ ${Dakota_BINARY_DIR}/DartConfiguration.tcl dashboard_config)
-  string(REPLACE "cdash.sandia.gov" "dakota.sandia.gov" dashboard_config "${dashboard_config}")
-  file(WRITE ${Dakota_BINARY_DIR}/DartConfiguration.tcl "${dashboard_config}")
-endif()
 
 # Set the export name for install targets; parent packages likely want
 # to override this to the name of their target
