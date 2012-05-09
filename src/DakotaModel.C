@@ -698,7 +698,7 @@ FDstep1(const Real& x0_j, const Real& lb_j, const Real& ub_j, Real h_mag)
   shortStep = false;
   if (x0_j < 0.) {
     h = -h_mag;
-    if (x0_j + h < lb_j) {
+    if (!ignoreBounds && x0_j + h < lb_j) {
       if (x0_j + h_mag <= ub_j)
 	h = h_mag;
       else
@@ -707,7 +707,7 @@ FDstep1(const Real& x0_j, const Real& lb_j, const Real& ub_j, Real h_mag)
   }
   else {
     h = h_mag;
-    if (x0_j + h > ub_j) {
+    if (!ignoreBounds && x0_j + h > ub_j) {
       if (x0_j - h_mag >= lb_j)
 	h = -h_mag;
       else {
