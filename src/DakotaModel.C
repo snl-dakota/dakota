@@ -928,25 +928,32 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     }
     else // general derivatives
       copy_data(currentVariables.all_continuous_variables(), x0); // view->copy
-    // define l_bnds, u_bnds, var_ids
-    const RealVector& l_bnds = (active_derivs) ? continuous_lower_bounds() :
+
+    // define c_l_bnds, c_u_bnds, cv_ids, cv_types
+    const RealVector& c_l_bnds = (active_derivs) ? continuous_lower_bounds() :
       ( (inactive_derivs) ? inactive_continuous_lower_bounds() :
 	                         all_continuous_lower_bounds() );
-    const RealVector& u_bnds = (active_derivs) ? continuous_upper_bounds() :
+    const RealVector& c_u_bnds = (active_derivs) ? continuous_upper_bounds() :
       ( (inactive_derivs) ? inactive_continuous_upper_bounds() :
 	                         all_continuous_upper_bounds() );
-    SizetMultiArrayConstView var_ids = (active_derivs) ?
+    SizetMultiArrayConstView cv_ids = (active_derivs) ?
       continuous_variable_ids() : ( (inactive_derivs) ?
       inactive_continuous_variable_ids() : all_continuous_variable_ids() );
+    UShortMultiArrayConstView cv_types = (active_derivs) ?
+      continuous_variable_types() : ( (inactive_derivs) ?
+      inactive_continuous_variable_types() : all_continuous_variable_types() );
 
     // ------------------------
     // Loop over num_deriv_vars
     // ------------------------
-    RealVector x = x0;
+    RealVector x = x0; Real x0_j, lb_j = -DBL_MAX, ub_j = DBL_MAX;
     for (j=0; j<num_deriv_vars; j++) { // difference the 1st num_deriv_vars vars
-      size_t xj_index = find_index(var_ids, original_dvv[j]);
-      const Real& lb_j = l_bnds[xj_index]; const Real& ub_j = u_bnds[xj_index];
-      const Real& x0_j = x0[xj_index];
+      size_t xj_index = find_index(cv_ids, original_dvv[j]);
+      x0_j = x0[xj_index];
+      if (!ignoreBounds) { // manage global/inferred vs. distribution bounds
+	lb_j = finite_difference_lower_bound(cv_types, c_l_bnds, xj_index);
+	ub_j = finite_difference_upper_bound(cv_types, c_u_bnds, xj_index);
+      }
 
       if (fd_grad_flag) {
 	if (!ignoreBounds && lb_j >= ub_j) {
@@ -1135,7 +1142,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
 	    // evaluate off-diagonal terms
 
 	    for (k=j+1; k<num_deriv_vars; k++) {
-	      size_t xk_index = find_index(var_ids, original_dvv[k]);
+	      size_t xk_index = find_index(cv_ids, original_dvv[k]);
 	      RealVector fn_vals_x_plus_h_plus_h,  fn_vals_x_plus_h_minus_h,
 		         fn_vals_x_minus_h_plus_h, fn_vals_x_minus_h_minus_h;
 
@@ -1338,7 +1345,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
 	    // evaluate off-diagonal terms
 
 	    for (k = 0; k < j; k++) {
-	      size_t xk_index = find_index(var_ids, original_dvv[k]);
+	      size_t xk_index = find_index(cv_ids, original_dvv[k]);
 
 	      // --------------------------------
 	      // Evaluate fn_vals_x12
@@ -1547,23 +1554,23 @@ synchronize_derivatives(const Variables& vars,
 
   // Postprocess the finite difference responses
   if (fd_grad_flag || fd_hess_flag) {
-    SizetMultiArray var_ids;
+    SizetMultiArray cv_ids;
     if (original_dvv == currentVariables.continuous_variable_ids()) {
-      var_ids.resize(boost::extents[cv()]);
-      var_ids = currentVariables.continuous_variable_ids();
+      cv_ids.resize(boost::extents[cv()]);
+      cv_ids = currentVariables.continuous_variable_ids();
     }
     else if (original_dvv ==
 	     currentVariables.inactive_continuous_variable_ids()) {
-      var_ids.resize(boost::extents[icv()]);
-      var_ids = currentVariables.inactive_continuous_variable_ids();
+      cv_ids.resize(boost::extents[icv()]);
+      cv_ids = currentVariables.inactive_continuous_variable_ids();
     }
     else { // general derivatives
-      var_ids.resize(boost::extents[acv()]);
-      var_ids = currentVariables.all_continuous_variable_ids();
+      cv_ids.resize(boost::extents[acv()]);
+      cv_ids = currentVariables.all_continuous_variable_ids();
     }
     const RealVector& fn_vals_x0 = initial_map_response.function_values();
     for (j=0; j<num_deriv_vars; j++) {
-      size_t xj_index = find_index(var_ids, original_dvv[j]);
+      size_t xj_index = find_index(cv_ids, original_dvv[j]);
 
       if (fd_grad_flag) { // numerical gradients
 	Real h = deltaList.front(); deltaList.pop_front();// first in, first out
@@ -1637,7 +1644,7 @@ synchronize_derivatives(const Variables& vars,
 	    // off-diagonal terms
 
 	    for (k=j+1; k<num_deriv_vars; k++) {
-	      size_t xk_index = find_index(var_ids, original_dvv[k]);
+	      size_t xk_index = find_index(cv_ids, original_dvv[k]);
 	      const RealVector& fn_vals_x_plus_h_plus_h
 		= fd_resp_cit->second.function_values();
 	      ++fd_resp_cit;
@@ -1689,7 +1696,7 @@ synchronize_derivatives(const Variables& vars,
 	    // off-diagonal terms
 
 	    for(k = 0; k < j; ++k) {
-	      size_t xk_index = find_index(var_ids, original_dvv[k]);
+	      size_t xk_index = find_index(cv_ids, original_dvv[k]);
 	      h2 = dx[k];
 	      denom = h1*h2;
 	      fx2 = fx[k];
@@ -2094,6 +2101,57 @@ update_quasi_hessians(const Variables& vars, Response& new_response,
 	++numQuasiUpdates[i];
       }
     }
+  }
+}
+
+
+Real Model::
+finite_difference_lower_bound(UShortMultiArrayConstView cv_types,
+			      const RealVector& global_c_l_bnds,
+			      size_t cv_index)
+{
+  // replace inferred lower bounds for unbounded distributions
+  switch (cv_types[cv_index]) {
+  case NORMAL_UNCERTAIN: {    // -infinity or user-specified
+    size_t n_index = cv_index -
+      find_index(cv_types, (unsigned short)NORMAL_UNCERTAIN);
+    return distParams.normal_lower_bound(n_index);    break;
+  }
+  case LOGNORMAL_UNCERTAIN: { // 0 or user-specified
+    size_t ln_index = cv_index -
+      find_index(cv_types, (unsigned short)LOGNORMAL_UNCERTAIN);
+    return distParams.lognormal_lower_bound(ln_index); break;
+  }
+  case GUMBEL_UNCERTAIN:      // -infinity
+    return -DBL_MAX;                                break;
+  default:
+    return global_c_l_bnds[cv_index];               break;
+  }
+}
+
+
+Real Model::
+finite_difference_upper_bound(UShortMultiArrayConstView cv_types,
+			      const RealVector& global_c_u_bnds,
+			      size_t cv_index)
+{
+  // replace inferred upper bounds for unbounded/semi-bounded distributions
+  switch (cv_types[cv_index]) {
+  case NORMAL_UNCERTAIN: {    // infinity or user-specified
+    size_t n_index = cv_index -
+      find_index(cv_types, (unsigned short)NORMAL_UNCERTAIN);
+    return distParams.normal_upper_bound(n_index);    break;
+  }
+  case LOGNORMAL_UNCERTAIN: { // infinity or user-specified
+    size_t ln_index = cv_index -
+      find_index(cv_types, (unsigned short)LOGNORMAL_UNCERTAIN);
+    return distParams.lognormal_upper_bound(ln_index); break;
+  }
+  case EXPONENTIAL_UNCERTAIN: case GAMMA_UNCERTAIN: // infinity
+  case GUMBEL_UNCERTAIN:      case FRECHET_UNCERTAIN: case WEIBULL_UNCERTAIN:
+    return DBL_MAX;                                 break;
+  default:
+    return global_c_u_bnds[cv_index];               break;
   }
 }
 

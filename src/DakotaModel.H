@@ -353,6 +353,8 @@ public:
   /// set the inactive discrete variables in currentVariables
   void inactive_discrete_real_variables(const RealVector& i_d_vars);
 
+  /// return the inactive continuous variable types from currentVariables
+  UShortMultiArrayConstView inactive_continuous_variable_types() const;
   /// return the inactive continuous variable identifiers from currentVariables
   SizetMultiArrayConstView inactive_continuous_variable_ids() const;
 
@@ -927,6 +929,17 @@ private:
   void update_quasi_hessians(const Variables& vars, Response& new_response,
 			     const ActiveSet& original_set);
 
+  /// return the lower bound for a finite difference offset, drawn from
+  /// global or distribution bounds
+  Real finite_difference_lower_bound(UShortMultiArrayConstView cv_types,
+				     const RealVector& global_c_l_bnds,
+				     size_t cv_index);
+  /// return the upper bound for a finite difference offset, drawn from
+  /// global or distribution bounds
+  Real finite_difference_upper_bound(UShortMultiArrayConstView cv_types,
+				     const RealVector& global_c_u_bnds,
+				     size_t cv_index);
+
   /// Coordinates usage of estimate_derivatives() calls based on asv_in
   bool manage_asv(const ShortArray& asv_in, ShortArray& map_asv_out, 
 		  ShortArray& fd_grad_asv_out, ShortArray& fd_hess_asv_out,
@@ -1260,6 +1273,15 @@ inline void Model::inactive_discrete_real_variables(const RealVector& i_d_vars)
     modelRep->currentVariables.inactive_discrete_real_variables(i_d_vars);
   else // letter
     currentVariables.inactive_discrete_real_variables(i_d_vars);
+}
+
+
+inline UShortMultiArrayConstView Model::
+inactive_continuous_variable_types() const
+{
+  return (modelRep) ?
+    modelRep->currentVariables.inactive_continuous_variable_types() :
+    currentVariables.inactive_continuous_variable_types();
 }
 
 
