@@ -111,7 +111,7 @@ if(BUILD_TESTING)
         add_application_test(
 	  p${TestName}
 	  FILE_DEPENDENCIES "${DakotaAuxAll}"
-	  PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_diffs.out
+	  PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_pdiffs.out
 	  APPLICATION COMMAND ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl 
 	  --parallel
  	  --output-dir=${CMAKE_CURRENT_BINARY_DIR}/p${TestName}
