@@ -148,7 +148,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     if (hessianType  != "none") dataOrder |= 4;
   }
   String sample_reuse
-    = (active_view == MERGED_ALL || active_view == MIXED_ALL) ? "all" : "none";
+    = (active_view == RELAXED_ALL || active_view == MIXED_ALL) ? "all" : "none";
 
   // Use a hardwired minimal initial samples
   int samples  = (numContinuousVars+1)*(numContinuousVars+2)/2,

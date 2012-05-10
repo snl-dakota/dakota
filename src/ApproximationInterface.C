@@ -217,14 +217,14 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
     RealVector x; // view
     if (approx_active_view == actual_active_view)
       x = vars.continuous_variables();
-    else if ( ( actual_active_view == MERGED_ALL ||
+    else if ( ( actual_active_view == RELAXED_ALL ||
 		actual_active_view == MIXED_ALL ) &&
-	      approx_active_view >= MERGED_DISTINCT_DESIGN ) // Distinct to All
+	      approx_active_view >= RELAXED_DESIGN ) // Distinct to All
       //actualModelVars.continuous_variables(vars.all_continuous_variables());
       x = vars.all_continuous_variables();
-    else if ( ( approx_active_view == MERGED_ALL ||
+    else if ( ( approx_active_view == RELAXED_ALL ||
 		approx_active_view == MIXED_ALL ) &&
-	      actual_active_view >= MERGED_DISTINCT_DESIGN) { // All to Distinct
+	      actual_active_view >= RELAXED_DESIGN) { // All to Distinct
       actualModelVars.all_continuous_variables(vars.continuous_variables());
       x = actualModelVars.continuous_variables();
     }

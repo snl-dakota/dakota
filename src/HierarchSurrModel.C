@@ -802,7 +802,7 @@ void HierarchSurrModel::update_model(Model& model)
     model.discrete_real_variable_labels(
       currentVariables.discrete_real_variable_labels());
     short active_view = currentVariables.view().first;
-    if (active_view != MERGED_ALL && active_view != MIXED_ALL) {
+    if (active_view != RELAXED_ALL && active_view != MIXED_ALL) {
       // inactive needed for Nested/Surrogate propagation
       model.inactive_continuous_variable_labels(
         currentVariables.inactive_continuous_variable_labels());

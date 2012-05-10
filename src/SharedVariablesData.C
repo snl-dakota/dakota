@@ -168,9 +168,9 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
     num_adrv  = variablesCompsTotals[2] + num_daurv + num_deurv
               + variablesCompsTotals[11];
 
-  bool relax = ( variablesView.first == MERGED_ALL ||
-    ( variablesView.first >= MERGED_DISTINCT_DESIGN &&
-      variablesView.first <= MERGED_DISTINCT_STATE ) );
+  bool relax = ( variablesView.first == RELAXED_ALL ||
+    ( variablesView.first >= RELAXED_DESIGN &&
+      variablesView.first <= RELAXED_STATE ) );
   if (relax)
     num_acv += num_adiv + num_adrv;
   else {
@@ -312,9 +312,9 @@ SharedVariablesDataRep(const std::pair<short,short>& view,
   referenceCount(1)
 {
   // totals are sufficient to size variables
-  bool relax = ( variablesView.first == MERGED_ALL ||
-    ( variablesView.first >= MERGED_DISTINCT_DESIGN &&
-      variablesView.first <= MERGED_DISTINCT_STATE ) );
+  bool relax = ( variablesView.first == RELAXED_ALL ||
+    ( variablesView.first >= RELAXED_DESIGN &&
+      variablesView.first <= RELAXED_STATE ) );
   size_all_continuous_labels(relax);
   if (!relax) {
     size_all_discrete_int_labels();
@@ -487,59 +487,59 @@ void SharedVariablesDataRep::initialize_all_continuous_ids(bool relax)
     for (i=0; i<num_dsv; ++i, ++acv_cntr, ++id)
       allContinuousIds[acv_cntr] = id;
 
-  // initialize mergedDiscreteIds
+  // initialize relaxedDiscreteIds
   if (relax) {
     size_t i, offset = 1, cntr = 0,
       num_mdv  = num_cdv  + num_ddv,  num_mauv = num_cauv + num_dauv,
       num_meuv = num_ceuv + num_deuv, num_muv  = num_mauv + num_meuv;
     switch (variablesView.first) {
-    case MERGED_ALL:
-      mergedDiscreteIds.resize(num_ddv + num_dauv + num_deuv + num_dsv);
+    case RELAXED_ALL:
+      relaxedDiscreteIds.resize(num_ddv + num_dauv + num_deuv + num_dsv);
       offset += num_cdv;
       for (i=0; i<num_ddv; ++i, ++cntr)
-      mergedDiscreteIds[cntr] = i + offset;
+      relaxedDiscreteIds[cntr] = i + offset;
       offset += num_ddv + num_cauv;
       for (i=0; i<num_dauv; ++i, ++cntr)
-	mergedDiscreteIds[cntr] = i + offset;
+	relaxedDiscreteIds[cntr] = i + offset;
       offset += num_dauv + num_ceuv;
       for (i=0; i<num_deuv; ++i, ++cntr)
-	mergedDiscreteIds[cntr] = i + offset;
+	relaxedDiscreteIds[cntr] = i + offset;
       offset += num_deuv + num_csv;
       for (i=0; i<num_dsv; ++i, ++cntr)
-	mergedDiscreteIds[cntr] = i + offset;
+	relaxedDiscreteIds[cntr] = i + offset;
       break;
-    case MERGED_DISTINCT_DESIGN:
-      mergedDiscreteIds.resize(num_ddv);
+    case RELAXED_DESIGN:
+      relaxedDiscreteIds.resize(num_ddv);
       offset += num_cdv;
       for (i=0; i<num_ddv; ++i)
-	mergedDiscreteIds[i] = i + offset;
+	relaxedDiscreteIds[i] = i + offset;
       break;
-    case MERGED_DISTINCT_ALEATORY_UNCERTAIN:
-      mergedDiscreteIds.resize(num_dauv);
+    case RELAXED_ALEATORY_UNCERTAIN:
+      relaxedDiscreteIds.resize(num_dauv);
       offset += num_mdv + num_cauv;
       for (i=0; i<num_dauv; ++i, ++cntr)
-	mergedDiscreteIds[i] = i + offset;
+	relaxedDiscreteIds[i] = i + offset;
       break;
-    case MERGED_DISTINCT_EPISTEMIC_UNCERTAIN:
-      mergedDiscreteIds.resize(num_deuv);
+    case RELAXED_EPISTEMIC_UNCERTAIN:
+      relaxedDiscreteIds.resize(num_deuv);
       offset += num_mdv + num_mauv + num_ceuv;
       for (i=0; i<num_deuv; ++i, ++cntr)
-	mergedDiscreteIds[i] = i + offset;
+	relaxedDiscreteIds[i] = i + offset;
       break;
-    case MERGED_DISTINCT_UNCERTAIN:
-      mergedDiscreteIds.resize(num_dauv + num_deuv);
+    case RELAXED_UNCERTAIN:
+      relaxedDiscreteIds.resize(num_dauv + num_deuv);
       offset += num_mdv + num_cauv;
       for (i=0; i<num_dauv; ++i, ++cntr)
-	mergedDiscreteIds[cntr] = i + offset;
+	relaxedDiscreteIds[cntr] = i + offset;
       offset += num_dauv + num_ceuv;
       for (i=0; i<num_deuv; ++i, ++cntr)
-	mergedDiscreteIds[cntr] = i + offset;
+	relaxedDiscreteIds[cntr] = i + offset;
       break;
-    case MERGED_DISTINCT_STATE:
-      mergedDiscreteIds.resize(num_dsv);
+    case RELAXED_STATE:
+      relaxedDiscreteIds.resize(num_dsv);
       offset += num_mdv + num_muv + num_csv;
       for (i=0; i<num_dsv; ++i)
-	mergedDiscreteIds[i] = i + offset;
+	relaxedDiscreteIds[i] = i + offset;
       break;
     }
   }

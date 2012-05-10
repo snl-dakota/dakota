@@ -255,7 +255,7 @@ Optimizer(NoDBBaseConstructor, size_t num_cv, size_t num_div, size_t num_drv,
   numFunctions        = numUserPrimaryFns + numNonlinearConstraints;
   optimizationFlag    = true;
 
-  std::pair<short,short> view(MIXED_DISTINCT_DESIGN, EMPTY);
+  std::pair<short,short> view(MIXED_DESIGN, EMPTY);
   SizetArray vc_totals(12, 0);
   vc_totals[0] = num_cv; vc_totals[1] = num_div; vc_totals[2] = num_drv;
   SharedVariablesData svd(view, vc_totals);

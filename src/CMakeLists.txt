@@ -337,7 +337,7 @@ if(DAKOTA_USAGE_TRACKING)
 endif(DAKOTA_USAGE_TRACKING)
 
 ## EVALDATA sources.
-set(evaldata_src DakotaVariables.C MergedVariables.C MixedVariables.C
+set(evaldata_src DakotaVariables.C MixedVariables.C RelaxedVariables.C
     SharedVariablesData.C DakotaActiveSet.C DakotaResponse.C ParamResponsePair.C)
 
 ## DB sources.
@@ -351,7 +351,8 @@ set(model_src DakotaModel.C SingleModel.C RecastModel.C NestedModel.C
     DiscrepancyCorrection.C)
 
 ## Constraint sources.
-set(constraint_src DakotaConstraints.C MergedConstraints.C MixedConstraints.C)
+set(constraint_src DakotaConstraints.C MixedVarConstraints.C
+    RelaxedVarConstraints.C)
 
 ## Interface sources.
 set(interface_src DakotaInterface.C ApproximationInterface.C

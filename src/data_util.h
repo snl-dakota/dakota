@@ -602,11 +602,11 @@ void copy_data_partial(const std::vector<T>& da1, size_t start_index1,
 }
 
 
-// ---------------------------------------------------
-// Non-templated functions for creating merged vectors
-// ---------------------------------------------------
+// ----------------------------------------------------
+// Non-templated functions for creating relaxed vectors
+// ----------------------------------------------------
 
-/// aggregate continuous and discrete arrays into a single merged array
+/// aggregate continuous and discrete arrays into a single relaxed array
 inline void merge_data_partial(const IntVector& d_array,
 			       RealVector& m_array, size_t start_index_ma)
 {

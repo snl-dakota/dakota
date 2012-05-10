@@ -7,10 +7,7 @@
     _______________________________________________________________________ */
 
 //- Class:       Variables
-//- Description: Base class for variables.  Using the foundational
-//-              cdv/ddv/uv/csv/dsv arrays from an input specification,
-//-              derived classes use different views (All, Distinct, Merged)
-//-              to define active and inactive variable sets.
+//- Description: Base class for variables
 //- Owner:       Mike Eldred
 //- Version: $Id: DakotaVariables.H 7037 2010-10-23 01:18:08Z mseldre $
 
@@ -202,8 +199,8 @@ public:
   /// return the active continuous variable position identifiers
   SizetMultiArrayConstView continuous_variable_ids() const;
 
-  /// returns the list of discrete variables merged into a continuous array
-  const SizetArray& merged_discrete_ids() const;
+  /// returns the set of discrete variable ids relaxed into a continuous array
+  const SizetArray& relaxed_discrete_ids() const;
 
   // INACTIVE VARIABLES
 
@@ -733,10 +730,10 @@ inline SizetMultiArrayConstView Variables::continuous_variable_ids() const
 }
 
 
-inline const SizetArray& Variables::merged_discrete_ids() const
+inline const SizetArray& Variables::relaxed_discrete_ids() const
 {
-  return (variablesRep) ? variablesRep->sharedVarsData.merged_discrete_ids() :
-    sharedVarsData.merged_discrete_ids();
+  return (variablesRep) ? variablesRep->sharedVarsData.relaxed_discrete_ids() :
+    sharedVarsData.relaxed_discrete_ids();
 }
 
 

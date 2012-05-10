@@ -6,11 +6,11 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:        MergedVariables
+//- Class:        RelaxedVariables
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
-#include "MergedVariables.H"
+#include "RelaxedVariables.H"
 #include "ProblemDescDB.H"
 #include "data_io.h"
 #include "data_util.h"
@@ -20,7 +20,7 @@ static const char rcsId[]="@(#) $Id";
 
 namespace Dakota {
 
-/** In this class, a merged data approach is used in which continuous
+/** In this class, a relaxed data approach is used in which continuous
     and discrete arrays are combined into a single continuous array
     (integrality is relaxed; the converse of truncating reals is not
     currently supported but could be in the future if needed).
@@ -28,8 +28,8 @@ namespace Dakota {
     BranchBndOptimizer.  Extract fundamental variable types and labels
     and merge continuous and discrete domains to create aggregate
     arrays and views.  */
-MergedVariables::
-MergedVariables(const ProblemDescDB& problem_db,
+RelaxedVariables::
+RelaxedVariables(const ProblemDescDB& problem_db,
 		const std::pair<short,short>& view):
   Variables(BaseConstructor(), problem_db, view)
 {
@@ -115,7 +115,7 @@ MergedVariables(const ProblemDescDB& problem_db,
 }
 
 
-void MergedVariables::reshape(const SizetArray& vc_totals)
+void RelaxedVariables::reshape(const SizetArray& vc_totals)
 {
   size_t i, num_acv = 0, num_totals = vc_totals.size();
   for (i=0; i<num_totals; ++i)
@@ -127,7 +127,7 @@ void MergedVariables::reshape(const SizetArray& vc_totals)
 }
 
 
-void MergedVariables::build_active_views()
+void RelaxedVariables::build_active_views()
 {
   // Initialize active view vectors and counts.  Don't bleed over any logic
   // about supported view combinations; rather, keep this class general and
@@ -145,25 +145,25 @@ void MergedVariables::build_active_views()
   divStart = drvStart = numDIV = numDRV = 0;
   switch (sharedVarsData.view().first) {
   case EMPTY:
-    Cerr << "Error: active view cannot be EMPTY in MergedVariables."
+    Cerr << "Error: active view cannot be EMPTY in RelaxedVariables."
 	 << std::endl; abort_handler(-1);             break;
-  case MERGED_ALL:
+  case RELAXED_ALL:
     // start at the beginning
     cvStart = 0; numCV = num_mdv + num_muv + num_msv; break;
-  case MERGED_DISTINCT_DESIGN:
+  case RELAXED_DESIGN:
     // start at the beginning
     cvStart = 0; numCV = num_mdv;                     break;
-  case MERGED_DISTINCT_ALEATORY_UNCERTAIN:
-    // skip over the merged design variables
+  case RELAXED_ALEATORY_UNCERTAIN:
+    // skip over the relaxed design variables
     cvStart = num_mdv; numCV = num_mauv;              break;
-  case MERGED_DISTINCT_EPISTEMIC_UNCERTAIN:
-    // skip over the merged design and aleatory variables
+  case RELAXED_EPISTEMIC_UNCERTAIN:
+    // skip over the relaxed design and aleatory variables
     cvStart = num_mdv+num_mauv;  numCV = num_meuv;    break;
-  case MERGED_DISTINCT_UNCERTAIN:
-    // skip over the merged design variables
+  case RELAXED_UNCERTAIN:
+    // skip over the relaxed design variables
     cvStart = num_mdv; numCV = num_muv;               break;
-  case MERGED_DISTINCT_STATE:
-    // skip over the merged design and uncertain variables
+  case RELAXED_STATE:
+    // skip over the relaxed design and uncertain variables
     cvStart = num_mdv + num_muv; numCV = num_msv;     break;
   }
   if (numCV)
@@ -172,7 +172,7 @@ void MergedVariables::build_active_views()
 }
 
 
-void MergedVariables::build_inactive_views()
+void RelaxedVariables::build_inactive_views()
 {
   // Initialize inactive view vectors and counts.  Don't bleed over any logic
   // about supported view combinations; rather, keep this class general and
@@ -189,24 +189,24 @@ void MergedVariables::build_inactive_views()
   switch (sharedVarsData.view().second) {
   case EMPTY:
     icvStart = numICV = 0;                            break;
-  case MERGED_ALL:
-    Cerr << "Error: inactive view cannot be MERGED_ALL in MergedVariables."
+  case RELAXED_ALL:
+    Cerr << "Error: inactive view cannot be RELAXED_ALL in RelaxedVariables."
 	 << std::endl;
     abort_handler(-1);                                break;
-  case MERGED_DISTINCT_DESIGN:
+  case RELAXED_DESIGN:
     // start at the beginning
     icvStart = 0;                  numICV = num_mdv;  break;
-  case MERGED_DISTINCT_ALEATORY_UNCERTAIN:
-    // skip over the merged design variables
+  case RELAXED_ALEATORY_UNCERTAIN:
+    // skip over the relaxed design variables
     icvStart = num_mdv;            numICV = num_mauv; break;
-  case MERGED_DISTINCT_EPISTEMIC_UNCERTAIN:
-    // skip over the merged design and aleatory variables
+  case RELAXED_EPISTEMIC_UNCERTAIN:
+    // skip over the relaxed design and aleatory variables
     icvStart = num_mdv + num_mauv; numICV = num_meuv; break;
-  case MERGED_DISTINCT_UNCERTAIN:
-    // skip over the merged design variables
+  case RELAXED_UNCERTAIN:
+    // skip over the relaxed design variables
     icvStart = num_mdv;            numICV = num_muv;  break;
-  case MERGED_DISTINCT_STATE:
-    // skip over the merged design and uncertain variables
+  case RELAXED_STATE:
+    // skip over the relaxed design and uncertain variables
     icvStart = num_mdv + num_muv;  numICV = num_msv;  break;
   }
   if (numICV)
@@ -220,20 +220,20 @@ void MergedVariables::build_inactive_views()
 // ordering for clarity.  Neutral file I/O, binary streams, and packed buffers
 // do not need to reorder (so long as read/write are consistent) since this data
 // is not intended for public consumption.
-void MergedVariables::read(std::istream& s)
+void RelaxedVariables::read(std::istream& s)
 { read_data(s, allContinuousVars, all_continuous_variable_labels()); }
 
 
-void MergedVariables::write(std::ostream& s) const
+void RelaxedVariables::write(std::ostream& s) const
 { write_data(s, allContinuousVars, all_continuous_variable_labels()); }
 
 
-void MergedVariables::write_aprepro(std::ostream& s) const
+void RelaxedVariables::write_aprepro(std::ostream& s) const
 { write_data_aprepro(s, allContinuousVars, all_continuous_variable_labels()); }
 
 
 /** Presumes variables object is appropriately sized to receive data */
-void MergedVariables::read_tabular(std::istream& s)
+void RelaxedVariables::read_tabular(std::istream& s)
 {
   // Tabular format ordering is allCV,allDIV,allDRV, or in particular,
   // cdv:cauv:ceuv:csv,ddiv:dauiv:deuiv:dsiv,ddrv:daurv:deurv:dsrv
@@ -265,7 +265,7 @@ void MergedVariables::read_tabular(std::istream& s)
 }
 
 
-void MergedVariables::write_tabular(std::ostream& s) const
+void RelaxedVariables::write_tabular(std::ostream& s) const
 {
   // Tabular format ordering is allCV,allDIV,allDRV, or in particular,
   // cdv:cauv:ceuv:csv,ddiv:dauiv:deuiv:dsiv,ddrv:daurv:deurv:dsrv

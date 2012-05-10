@@ -47,8 +47,8 @@ UTIL_SRCS       = ParallelLibrary.C                 \
 		  WorkdirHelper.C
 
 EVALDATA_SRCS   = DakotaVariables.C                 \
-		  MergedVariables.C                 \
 		  MixedVariables.C                  \
+		  RelaxedVariables.C                \
 		  SharedVariablesData.C             \
 		  DakotaActiveSet.C                 \
 		  DakotaResponse.C                  \
@@ -74,8 +74,8 @@ MODEL_SRCS      = DakotaModel.C                     \
 		  DiscrepancyCorrection.C
 
 CONSTRAINT_SRCS = DakotaConstraints.C               \
-		  MergedConstraints.C               \
-		  MixedConstraints.C
+		  MixedVarConstraints.C             \
+		  RelaxedVarConstraints.C
 
 INTERFACE_SRCS	= DakotaInterface.C		    \
 		  ApproximationInterface.C	    \
@@ -191,8 +191,8 @@ include_HEADERS = ParallelLibrary.H             \
 		  DakotaBinStream.H             \
                   SensAnalysisGlobal.H          \
 		  DakotaVariables.H             \
-		  MergedVariables.H             \
 		  MixedVariables.H              \
+		  RelaxedVariables.H            \
 		  SharedVariablesData.H         \
 		  DakotaActiveSet.H             \
 		  DakotaResponse.H              \
@@ -217,8 +217,8 @@ include_HEADERS = ParallelLibrary.H             \
 		  HierarchSurrModel.H           \
 		  DiscrepancyCorrection.H       \
 		  DakotaConstraints.H           \
-		  MergedConstraints.H           \
-		  MixedConstraints.H            \
+		  MixedVarConstraints.H         \
+		  RelaxedVarConstraints.H       \
 		  DakotaInterface.H		\
 		  ApproximationInterface.H	\
 		  DakotaApproximation.H		\

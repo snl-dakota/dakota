@@ -6,11 +6,11 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:        MixedConstraints
+//- Class:        MixedVarConstraints
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
-#include "MixedConstraints.H"
+#include "MixedVarConstraints.H"
 #include "ProblemDescDB.H"
 #include "data_io.h"
 #include "data_util.h"
@@ -25,9 +25,9 @@ namespace Dakota {
 /** In this class, mixed continuous/discrete variables are used.  Most
     iterators/strategies use this approach, which is the default in
     Constraints::get_constraints(). */
-MixedConstraints::
-MixedConstraints(const ProblemDescDB& problem_db,
-		 const SharedVariablesData& svd):
+MixedVarConstraints::
+MixedVarConstraints(const ProblemDescDB& problem_db,
+		    const SharedVariablesData& svd):
   Constraints(BaseConstructor(), problem_db, svd)
 {
   const SizetArray& vc_totals = svd.components_totals();
@@ -153,9 +153,9 @@ MixedConstraints(const ProblemDescDB& problem_db,
   // Manage linear constraints.  Verify specification sanity and set defaults
   // if needed.
   const std::pair<short,short>& view = sharedVarsData.view();
-  if (view.first == MIXED_DISTINCT_ALEATORY_UNCERTAIN  ||
-      view.first == MIXED_DISTINCT_EPISTEMIC_UNCERTAIN ||
-      view.first == MIXED_DISTINCT_UNCERTAIN) {
+  if (view.first == MIXED_ALEATORY_UNCERTAIN  ||
+      view.first == MIXED_EPISTEMIC_UNCERTAIN ||
+      view.first == MIXED_UNCERTAIN) {
     if ( problem_db.get_rdv("method.linear_inequality_constraints").length()
       || problem_db.get_rdv("method.linear_equality_constraints").length() )
       Cerr << "Warning: linear constraints not supported with nondeterministic "
@@ -172,7 +172,7 @@ MixedConstraints(const ProblemDescDB& problem_db,
 }
 
 
-void MixedConstraints::reshape(const SizetArray& vc_totals)
+void MixedVarConstraints::reshape(const SizetArray& vc_totals)
 {
   size_t num_acv  = vc_totals[0] + vc_totals[3] + vc_totals[6] + vc_totals[9],
          num_adiv = vc_totals[1] + vc_totals[4] + vc_totals[7] + vc_totals[10],
@@ -192,7 +192,7 @@ void MixedConstraints::reshape(const SizetArray& vc_totals)
 }
 
 
-void MixedConstraints::build_active_views()
+void MixedVarConstraints::build_active_views()
 {
   // Initialize continuousVarTypes/discreteVarTypes/continuousVarIds.
   // Don't bleed over any logic about supported view combinations; rather,
@@ -208,7 +208,7 @@ void MixedConstraints::build_active_views()
   size_t cv_start, div_start, drv_start, num_cv, num_div, num_drv;
   switch (sharedVarsData.view().first) {
   case EMPTY:
-    Cerr << "Error: active view cannot be EMPTY in MixedConstraints."
+    Cerr << "Error: active view cannot be EMPTY in MixedVarConstraints."
 	 << std::endl;
     abort_handler(-1);                                                break;
   case MIXED_ALL:
@@ -216,24 +216,24 @@ void MixedConstraints::build_active_views()
     num_cv  = num_cdv  + num_cauv  + num_ceuv  + num_csv;
     num_div = num_ddiv + num_dauiv + num_deuiv + num_dsiv;
     num_drv = num_ddrv + num_daurv + num_deurv + num_dsrv;            break;
-  case MIXED_DISTINCT_DESIGN:
+  case MIXED_DESIGN:
     cv_start = div_start = drv_start = 0;
     num_cv  = num_cdv;
     num_div = num_ddiv;
     num_drv = num_ddrv;                                               break;
-  case MIXED_DISTINCT_ALEATORY_UNCERTAIN:
+  case MIXED_ALEATORY_UNCERTAIN:
     cv_start  = num_cdv;  num_cv  = num_cauv;
     div_start = num_ddiv; num_div = num_dauiv;
     drv_start = num_ddrv; num_drv = num_daurv;                        break;
-  case MIXED_DISTINCT_EPISTEMIC_UNCERTAIN:
+  case MIXED_EPISTEMIC_UNCERTAIN:
     cv_start  = num_cdv  + num_cauv;  num_cv  = num_ceuv;
     div_start = num_ddiv + num_dauiv; num_div = num_deuiv;
     drv_start = num_ddrv + num_daurv; num_drv = num_deurv;            break;
-  case MIXED_DISTINCT_UNCERTAIN:
+  case MIXED_UNCERTAIN:
     cv_start  = num_cdv;  num_cv  = num_cauv + num_ceuv;
     div_start = num_ddiv; num_div = num_dauiv + num_deuiv;
     drv_start = num_ddrv; num_drv = num_daurv + num_deurv;            break;
-  case MIXED_DISTINCT_STATE:
+  case MIXED_STATE:
     cv_start  = num_cdv  + num_cauv  + num_ceuv;  num_cv  = num_csv;
     div_start = num_ddiv + num_dauiv + num_deuiv; num_div = num_dsiv;
     drv_start = num_ddrv + num_daurv + num_deurv; num_drv = num_dsrv; break;
@@ -259,7 +259,7 @@ void MixedConstraints::build_active_views()
 }
 
 
-void MixedConstraints::build_inactive_views()
+void MixedVarConstraints::build_inactive_views()
 {
   // Initialize continuousVarTypes/discreteVarTypes/continuousVarIds.
   // Don't bleed over any logic about supported view combinations; rather,
@@ -278,27 +278,27 @@ void MixedConstraints::build_inactive_views()
     icv_start = idiv_start = idrv_start = num_icv = num_idiv = num_idrv = 0;
     break;
   case MIXED_ALL:
-    Cerr << "Error: inactive view cannot be MIXED_ALL in MixedConstraints."
+    Cerr << "Error: inactive view cannot be MIXED_ALL in MixedVarConstraints."
 	 << std::endl;
     abort_handler(-1);                                                  break;
-  case MIXED_DISTINCT_DESIGN:
+  case MIXED_DESIGN:
     icv_start = idiv_start = idrv_start = 0;
     num_icv  = num_cdv;
     num_idiv = num_ddiv;
     num_idrv = num_ddrv;                                                break;
-  case MIXED_DISTINCT_ALEATORY_UNCERTAIN:
+  case MIXED_ALEATORY_UNCERTAIN:
     icv_start  = num_cdv;  num_icv  = num_cauv;
     idiv_start = num_ddiv; num_idiv = num_dauiv;
     idrv_start = num_ddrv; num_idrv = num_daurv;                        break;
-  case MIXED_DISTINCT_EPISTEMIC_UNCERTAIN:
+  case MIXED_EPISTEMIC_UNCERTAIN:
     icv_start  = num_cdv  + num_cauv;  num_icv  = num_ceuv;
     idiv_start = num_ddiv + num_dauiv; num_idiv = num_deuiv;
     idrv_start = num_ddrv + num_daurv; num_idrv = num_deurv;            break;
-  case MIXED_DISTINCT_UNCERTAIN:
+  case MIXED_UNCERTAIN:
     icv_start  = num_cdv;  num_icv  = num_cauv + num_ceuv;
     idiv_start = num_ddiv; num_idiv = num_dauiv + num_deuiv;
     idrv_start = num_ddrv; num_idrv = num_daurv + num_deurv;            break;
-  case MIXED_DISTINCT_STATE:
+  case MIXED_STATE:
     icv_start  = num_cdv  + num_cauv  + num_ceuv;  num_icv  = num_csv;
     idiv_start = num_ddiv + num_dauiv + num_deuiv; num_idiv = num_dsiv;
     idrv_start = num_ddrv + num_daurv + num_deurv; num_idrv = num_dsrv; break;
@@ -324,7 +324,7 @@ void MixedConstraints::build_inactive_views()
 }
 
 
-void MixedConstraints::read(std::istream& s)
+void MixedVarConstraints::read(std::istream& s)
 {
   const SizetArray& vc_totals = sharedVarsData.components_totals();
   size_t num_cdv = vc_totals[0], num_ddiv = vc_totals[1],
@@ -371,7 +371,7 @@ void MixedConstraints::read(std::istream& s)
 }
 
 
-void MixedConstraints::write(std::ostream& s) const
+void MixedVarConstraints::write(std::ostream& s) const
 {
   const SizetArray& vc_totals = sharedVarsData.components_totals();
   size_t num_cdv = vc_totals[0], num_ddiv = vc_totals[1],

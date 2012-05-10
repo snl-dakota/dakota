@@ -13,8 +13,8 @@
 #include "system_defs.h"
 #include "ProblemDescDB.H"
 #include "DakotaConstraints.H"
-#include "MergedConstraints.H"
-#include "MixedConstraints.H"
+#include "RelaxedVarConstraints.H"
+#include "MixedVarConstraints.H"
 #include "data_util.h"
 
 static const char rcsId[]="@(#) $Id: DakotaConstraints.C 7029 2010-10-22 00:17:02Z mseldre $";
@@ -124,24 +124,16 @@ get_constraints(const ProblemDescDB& problem_db, const SharedVariablesData& svd)
 
   short active_view = svd.view().first;
   switch (active_view) {
-  case MIXED_ALL:
-  case MIXED_DISTINCT_DESIGN:
-  case MIXED_DISTINCT_ALEATORY_UNCERTAIN:
-  case MIXED_DISTINCT_EPISTEMIC_UNCERTAIN:
-  case MIXED_DISTINCT_UNCERTAIN:
-  case MIXED_DISTINCT_STATE:
-    return new MixedConstraints(problem_db, svd); break;
-  case MERGED_ALL:
-  case MERGED_DISTINCT_DESIGN:
-  case MERGED_DISTINCT_ALEATORY_UNCERTAIN:
-  case MERGED_DISTINCT_EPISTEMIC_UNCERTAIN:
-  case MERGED_DISTINCT_UNCERTAIN:
-  case MERGED_DISTINCT_STATE:
-    return new MergedConstraints(problem_db, svd); break;
+  case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
+  case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_UNCERTAIN: case MIXED_STATE:
+    return new MixedVarConstraints(problem_db, svd);   break;
+  case RELAXED_ALL: case RELAXED_DESIGN: case RELAXED_ALEATORY_UNCERTAIN:
+  case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_UNCERTAIN: case RELAXED_STATE:
+    return new RelaxedVarConstraints(problem_db, svd); break;
   default:
     Cerr << "Constraints active view " << active_view << " not currently "
 	 << "supported in derived Constraints classes." << std::endl;
-    return NULL; break;
+    return NULL;                                       break;
   }
 }
 
@@ -176,24 +168,16 @@ Constraints* Constraints::get_constraints(const SharedVariablesData& svd) const
 
   short active_view = svd.view().first;
   switch (active_view) {
-  case MIXED_ALL:
-  case MIXED_DISTINCT_DESIGN:
-  case MIXED_DISTINCT_ALEATORY_UNCERTAIN:
-  case MIXED_DISTINCT_EPISTEMIC_UNCERTAIN:
-  case MIXED_DISTINCT_UNCERTAIN:
-  case MIXED_DISTINCT_STATE:
-    return new MixedConstraints(svd); break;
-  case MERGED_ALL:
-  case MERGED_DISTINCT_DESIGN:
-  case MERGED_DISTINCT_ALEATORY_UNCERTAIN:
-  case MERGED_DISTINCT_EPISTEMIC_UNCERTAIN:
-  case MERGED_DISTINCT_UNCERTAIN:
-  case MERGED_DISTINCT_STATE:
-    return new MergedConstraints(svd); break;
+  case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
+  case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_UNCERTAIN: case MIXED_STATE:
+    return new MixedVarConstraints(svd);   break;
+  case RELAXED_ALL: case RELAXED_DESIGN: case RELAXED_ALEATORY_UNCERTAIN:
+  case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_UNCERTAIN: case RELAXED_STATE:
+    return new RelaxedVarConstraints(svd); break;
   default:
     Cerr << "Constraints active view " << active_view << " not currently "
 	 << "supported in derived Constraints classes." << std::endl;
-    return NULL; break;
+    return NULL;                           break;
   }
 }
 
@@ -296,7 +280,7 @@ void Constraints::inactive_view(short view2)
     constraintsRep->inactive_view(view2);
   else {
     short view1 = sharedVarsData.view().first;
-    // If active view is {MERGED,MIXED}_ALL, outer level active view is
+    // If active view is {RELAXED,MIXED}_ALL, outer level active view is
     // aggregated in inner loop all view and inactive view remains EMPTY.
     // Disallow assignment of an inactive ALL view.
     if (view1 > MIXED_ALL && view2 > MIXED_ALL) {

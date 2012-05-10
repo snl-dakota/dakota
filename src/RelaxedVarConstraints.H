@@ -6,14 +6,14 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:       MergedConstraints
-//- Description: Container class of linear constraints and bounds employing 
-//-              the "merged" approach to variables usage.
+//- Class:       RelaxedVarConstraints
+//- Description: Derived class for variable bounds employing relaxation of
+//-              discrete variables.
 //- Owner:       Mike Eldred
-//- Version: $Id: MergedConstraints.H 7024 2010-10-16 01:24:42Z mseldre $
+//- Version: $Id: RelaxedVarConstraints.H 7024 2010-10-16 01:24:42Z mseldre $
 
-#ifndef MERGED_CONSTRAINTS_H
-#define MERGED_CONSTRAINTS_H
+#ifndef RELAXED_VAR_CONSTRAINTS_H
+#define RELAXED_VAR_CONSTRAINTS_H
 
 #include "DakotaConstraints.H"
 #include "DataVariables.H"
@@ -22,23 +22,17 @@
 namespace Dakota {
 
 /// Derived class within the Constraints hierarchy which employs
-/// the merged data view.
+/// relaxation of discrete variables.
 
 /** Derived variable constraints classes take different views of the
     design, uncertain, and state variable types and the continuous and
-    discrete domain types.  The MergedConstraints derived class
-    combines continuous and discrete domain types but separates
-    design, uncertain, and state variable types.  The result is merged
-    design bounds arrays (mergedDesignLowerBnds,
-    mergedDesignUpperBnds), uncertain distribution bounds arrays
-    (uncertainLowerBnds, uncertainUpperBnds), and merged state
-    bounds arrays (mergedStateLowerBnds, mergedStateUpperBnds).  The
-    branch and bound strategy uses this approach (see
-    Variables::get_variables(problem_db) for variables type
-    selection; variables type is passed to the Constraints
-    constructor in Model). */
+    discrete domain types.  The RelaxedVarConstraints derived class
+    combines continuous and discrete domain types through integer
+    relaxation.  The branch and bound method uses this approach (see
+    Variables::get_variables(problem_db) for variables type selection;
+    variables type is passed to the Constraints constructor in Model). */
 
-class MergedConstraints: public Constraints
+class RelaxedVarConstraints: public Constraints
 {
 public:
 
@@ -47,12 +41,12 @@ public:
   //
 
   /// lightweight constructor
-  MergedConstraints(const SharedVariablesData& svd);
+  RelaxedVarConstraints(const SharedVariablesData& svd);
   /// standard constructor
-  MergedConstraints(const ProblemDescDB& problem_db,
+  RelaxedVarConstraints(const ProblemDescDB& problem_db,
 		    const SharedVariablesData& svd);
   /// destructor
-  ~MergedConstraints();
+  ~RelaxedVarConstraints();
 
   //
   //- Heading: Virtual function redefinitions
@@ -79,12 +73,13 @@ private:
 };
 
 
-inline MergedConstraints::MergedConstraints(const SharedVariablesData& svd):
+inline RelaxedVarConstraints::
+RelaxedVarConstraints(const SharedVariablesData& svd):
   Constraints(BaseConstructor(), svd)
 { reshape(svd.components_totals()); }
 
 
-inline MergedConstraints::~MergedConstraints()
+inline RelaxedVarConstraints::~RelaxedVarConstraints()
 { }
 
 } // namespace Dakota

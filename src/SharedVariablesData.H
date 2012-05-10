@@ -115,7 +115,7 @@ private:
 
   /// array of discrete variable identifiers for which the discrete
   /// requirement is relaxed by merging them into a continuous array
-  SizetArray mergedDiscreteIds;
+  SizetArray relaxedDiscreteIds;
 
   /// number of handle objects sharing svdRep
   int referenceCount;
@@ -256,8 +256,9 @@ public:
   /// get num_items continuous ids beginning at index start
   SizetMultiArrayConstView
     all_continuous_ids(size_t start, size_t num_items) const;
-  /// get ids of discrete variables that have been merged into continuous arrays
-  const SizetArray& merged_discrete_ids() const;
+  /// get ids of discrete variables that have been relaxed into
+  /// continuous variable arrays
+  const SizetArray& relaxed_discrete_ids() const;
 
   /// retreive the Variables view
   const std::pair<short,short>& view() const;
@@ -470,8 +471,8 @@ all_continuous_ids(size_t start, size_t num_items) const
 }
 
 
-inline const SizetArray& SharedVariablesData::merged_discrete_ids() const
-{ return svdRep->mergedDiscreteIds; }
+inline const SizetArray& SharedVariablesData::relaxed_discrete_ids() const
+{ return svdRep->relaxedDiscreteIds; }
 
 
 inline const std::pair<short,short>& SharedVariablesData::view() const

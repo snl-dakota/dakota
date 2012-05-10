@@ -599,7 +599,7 @@ void DataFitSurrModel::update_local_multipoint()
   // precedes update_local_multipoint()
 
   const Variables& actual_vars = actualModel.current_variables();
-  if (actual_vars.view().first >= MERGED_DISTINCT_DESIGN) { // Distinct view
+  if (actual_vars.view().first >= RELAXED_DESIGN) { // Distinct view
     copy_data(actual_vars.inactive_continuous_variables(),    referenceICVars);
     copy_data(actual_vars.inactive_discrete_int_variables(),  referenceIDIVars);
     copy_data(actual_vars.inactive_discrete_real_variables(), referenceIDRVars);
@@ -618,7 +618,7 @@ void DataFitSurrModel::update_global()
 
   const Variables& vars = (actualModel.is_null()) ? currentVariables :
     actualModel.current_variables();
-  if (vars.view().first >= MERGED_DISTINCT_DESIGN) { // Distinct view
+  if (vars.view().first >= RELAXED_DESIGN) { // Distinct view
     copy_data(vars.inactive_continuous_variables(),    referenceICVars);
     copy_data(vars.inactive_discrete_int_variables(),  referenceIDIVars);
     copy_data(vars.inactive_discrete_real_variables(), referenceIDRVars);
@@ -1466,7 +1466,7 @@ void DataFitSurrModel::update_actual_model()
         currentVariables.discrete_int_variable_labels());
       actualModel.discrete_real_variable_labels(
         currentVariables.discrete_real_variable_labels());
-      if (approx_active_view >= MERGED_DISTINCT_DESIGN) {
+      if (approx_active_view >= RELAXED_DESIGN) {
 	// inactive needed for Nested/Surrogate propagation
 	actualModel.inactive_continuous_variable_labels(
           currentVariables.inactive_continuous_variable_labels());
@@ -1477,8 +1477,8 @@ void DataFitSurrModel::update_actual_model()
       }
     }
   }
-  else if ( approx_active_view >= MERGED_DISTINCT_DESIGN &&
-	    ( actual_active_view == MERGED_ALL ||
+  else if ( approx_active_view >= RELAXED_DESIGN &&
+	    ( actual_active_view == RELAXED_ALL ||
 	      actual_active_view == MIXED_ALL ) ) {
     // update active actualModel vars/cons using "All" view of
     // currentVariables/userDefinedConstraints data.
@@ -1509,8 +1509,8 @@ void DataFitSurrModel::update_actual_model()
         currentVariables.all_discrete_real_variable_labels());
     }
   }
-  else if ( actual_active_view >= MERGED_DISTINCT_DESIGN &&
-	    ( approx_active_view == MERGED_ALL ||
+  else if ( actual_active_view >= RELAXED_DESIGN &&
+	    ( approx_active_view == RELAXED_ALL ||
 	      approx_active_view == MIXED_ALL ) ) {
     // update "All" view of actualModel vars/cons using active
     // currentVariables/userDefinedConstraints data.

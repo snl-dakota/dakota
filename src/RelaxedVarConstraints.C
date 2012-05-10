@@ -6,11 +6,11 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:        MergedConstraints
+//- Class:        RelaxedVarConstraints
 //- Description:  Class implementation
 //- Owner:        Mike Eldred
 
-#include "MergedConstraints.H"
+#include "RelaxedVarConstraints.H"
 #include "ProblemDescDB.H"
 #include "data_io.h"
 #include "data_util.h"
@@ -20,18 +20,14 @@ static const char rcsId[]="@(#) $Id";
 
 namespace Dakota {
 
-/** In this class, a merged data approach is used in which continuous
+/** In this class, a relaxed data approach is used in which continuous
     and discrete arrays are combined into a single continuous array
     (integrality is relaxed; the converse of truncating reals is not
     currently supported but could be in the future if needed).
-    Iterators/strategies which use this class include:
-    BranchBndOptimizer.  Extract fundamental lower and upper bounds
-    and merge continuous and discrete domains to create
-    mergedDesignLowerBnds, mergedDesignUpperBnds,
-    mergedStateLowerBnds, and mergedStateUpperBnds. */
-MergedConstraints::
-MergedConstraints(const ProblemDescDB& problem_db,
-		  const SharedVariablesData& svd):
+    Iterators which use this class include: BranchBndOptimizer. */
+RelaxedVarConstraints::
+RelaxedVarConstraints(const ProblemDescDB& problem_db,
+		      const SharedVariablesData& svd):
   Constraints(BaseConstructor(), problem_db, svd)
 {
   const SizetArray& vc_totals = svd.components_totals();
@@ -159,7 +155,7 @@ MergedConstraints(const ProblemDescDB& problem_db,
 }
 
 
-void MergedConstraints::reshape(const SizetArray& vc_totals)
+void RelaxedVarConstraints::reshape(const SizetArray& vc_totals)
 {
   size_t i, num_acv = 0, num_vc_totals = vc_totals.size();
   for (i=0; i<num_vc_totals; ++i)
@@ -175,7 +171,7 @@ void MergedConstraints::reshape(const SizetArray& vc_totals)
 }
 
 
-void MergedConstraints::build_active_views()
+void RelaxedVarConstraints::build_active_views()
 {
   const SizetArray& vc_totals = sharedVarsData.components_totals();
   size_t num_mdv  = vc_totals[0] + vc_totals[1]  + vc_totals[2],
@@ -188,21 +184,21 @@ void MergedConstraints::build_active_views()
   size_t cv_start, num_cv;
   switch (sharedVarsData.view().first) {
   case EMPTY:
-    Cerr << "Error: active view cannot be EMPTY in MergedConstraints."
+    Cerr << "Error: active view cannot be EMPTY in RelaxedVarConstraints."
 	 << std::endl;
     abort_handler(-1);
     break;
-  case MERGED_ALL:
+  case RELAXED_ALL:
     cv_start = 0;                 num_cv = num_mdv + num_muv + num_msv; break;
-  case MERGED_DISTINCT_DESIGN:
+  case RELAXED_DESIGN:
     cv_start = 0;                 num_cv = num_mdv;                     break;
-  case MERGED_DISTINCT_ALEATORY_UNCERTAIN:
+  case RELAXED_ALEATORY_UNCERTAIN:
     cv_start = num_mdv;           num_cv = num_mauv;                    break;
-  case MERGED_DISTINCT_EPISTEMIC_UNCERTAIN:
+  case RELAXED_EPISTEMIC_UNCERTAIN:
     cv_start = num_mdv+num_mauv;  num_cv = num_meuv;                    break;
-  case MERGED_DISTINCT_UNCERTAIN:
+  case RELAXED_UNCERTAIN:
     cv_start = num_mdv;           num_cv = num_muv;                     break;
-  case MERGED_DISTINCT_STATE:
+  case RELAXED_STATE:
     cv_start = num_mdv + num_muv; num_cv = num_msv;                     break;
   }
   if (num_cv) {
@@ -214,7 +210,7 @@ void MergedConstraints::build_active_views()
 }
 
 
-void MergedConstraints::build_inactive_views()
+void RelaxedVarConstraints::build_inactive_views()
 {
   const SizetArray& vc_totals = sharedVarsData.components_totals();
   size_t num_mdv  = vc_totals[0] + vc_totals[1]  + vc_totals[2],
@@ -228,19 +224,19 @@ void MergedConstraints::build_inactive_views()
   switch (sharedVarsData.view().second) {
   case EMPTY:
     icv_start = num_icv = 0;                           break;
-  case MERGED_ALL:
-    Cerr << "Error: inactive view cannot be MERGED_ALL in MergedConstraints."
-	 << std::endl;
+  case RELAXED_ALL:
+    Cerr << "Error: inactive view cannot be RELAXED_ALL in "
+	 << "RelaxedVarConstraints." << std::endl;
     abort_handler(-1);                                 break;
-  case MERGED_DISTINCT_DESIGN:
+  case RELAXED_DESIGN:
     icv_start = 0;                 num_icv = num_mdv;  break;
-  case MERGED_DISTINCT_ALEATORY_UNCERTAIN:
+  case RELAXED_ALEATORY_UNCERTAIN:
     icv_start = num_mdv;           num_icv = num_mauv; break;
-  case MERGED_DISTINCT_EPISTEMIC_UNCERTAIN:
+  case RELAXED_EPISTEMIC_UNCERTAIN:
     icv_start = num_mdv+num_mauv;  num_icv = num_meuv; break;
-  case MERGED_DISTINCT_UNCERTAIN:
+  case RELAXED_UNCERTAIN:
     icv_start = num_mdv;           num_icv = num_muv;  break;
-  case MERGED_DISTINCT_STATE:
+  case RELAXED_STATE:
     icv_start = num_mdv + num_muv; num_icv = num_msv;  break;
   }
   if (num_icv) {
@@ -252,14 +248,14 @@ void MergedConstraints::build_inactive_views()
 }
 
 
-void MergedConstraints::read(std::istream& s)
+void RelaxedVarConstraints::read(std::istream& s)
 {
   read_data(s, allContinuousLowerBnds);
   read_data(s, allContinuousUpperBnds);
 }
 
 
-void MergedConstraints::write(std::ostream& s) const
+void RelaxedVarConstraints::write(std::ostream& s) const
 {
   write_data(s, allContinuousLowerBnds);
   write_data(s, allContinuousUpperBnds);

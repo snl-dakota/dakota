@@ -57,10 +57,10 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   short active_view = iteratedModel.current_variables().view().first;
 
   // initialize aleatory uncertain variables
-  if (active_view == MERGED_ALL || active_view == MERGED_DISTINCT_UNCERTAIN ||
-      active_view == MERGED_DISTINCT_ALEATORY_UNCERTAIN ||
-      active_view == MIXED_ALL || active_view == MIXED_DISTINCT_UNCERTAIN ||
-      active_view == MIXED_DISTINCT_ALEATORY_UNCERTAIN) {
+  if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
+      active_view == RELAXED_ALEATORY_UNCERTAIN ||
+      active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
+      active_view == MIXED_ALEATORY_UNCERTAIN) {
     numNormalVars = probDescDB.get_sizet("variables.normal_uncertain");
     numLognormalVars = probDescDB.get_sizet("variables.lognormal_uncertain");
     numUniformVars = probDescDB.get_sizet("variables.uniform_uncertain");
@@ -87,7 +87,7 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
     numGeometricVars = probDescDB.get_sizet("variables.geometric_uncertain");
     numHyperGeomVars
       = probDescDB.get_sizet("variables.hypergeometric_uncertain");
-    if (active_view == MIXED_ALL || active_view >= MIXED_DISTINCT_DESIGN)
+    if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN)
       numDiscIntAleatUncVars = numPoissonVars + numBinomialVars +
 	numNegBinomialVars + numGeometricVars + numHyperGeomVars;
     else
@@ -96,7 +96,7 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
 
     numHistogramPtVars
       = probDescDB.get_sizet("variables.histogram_uncertain.point");
-    if (active_view == MIXED_ALL || active_view >= MIXED_DISTINCT_DESIGN)
+    if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN)
       numDiscRealAleatUncVars = numHistogramPtVars;
     else
       numContAleatUncVars += numHistogramPtVars;
@@ -105,10 +105,10 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
       numDiscRealAleatUncVars;
   }
   // initialize epistemic uncertain variables
-  if (active_view == MERGED_ALL || active_view == MERGED_DISTINCT_UNCERTAIN ||
-      active_view == MERGED_DISTINCT_EPISTEMIC_UNCERTAIN ||
-      active_view == MIXED_ALL || active_view == MIXED_DISTINCT_UNCERTAIN ||
-      active_view == MIXED_DISTINCT_EPISTEMIC_UNCERTAIN) // epistemic or both
+  if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
+      active_view == RELAXED_EPISTEMIC_UNCERTAIN ||
+      active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
+      active_view == MIXED_EPISTEMIC_UNCERTAIN) // epistemic or both
     numEpistemicUncVars = numContEpistUncVars = numIntervalVars
       = probDescDB.get_sizet("variables.interval_uncertain");
 
@@ -116,10 +116,10 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   numUncertainVars = numAleatoryUncVars + numEpistemicUncVars;
 
   // initialize design/state variables for all_variables mode
-  if (active_view == MERGED_ALL || active_view == MIXED_ALL) {
+  if (active_view == RELAXED_ALL || active_view == MIXED_ALL) {
     numContDesVars   = probDescDB.get_sizet("variables.continuous_design");
     numContStateVars = probDescDB.get_sizet("variables.continuous_state");
-    if (active_view == MERGED_ALL) {
+    if (active_view == RELAXED_ALL) {
       numContDesVars += probDescDB.get_sizet("variables.discrete_design_range")
 	+ probDescDB.get_sizet("variables.discrete_design_set_int")
 	+ probDescDB.get_sizet("variables.discrete_design_set_real");
@@ -209,10 +209,10 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
   short active_view = model.current_variables().view().first;
 
   // initialize aleatory uncertain variables
-  if (active_view == MERGED_ALL || active_view == MERGED_DISTINCT_UNCERTAIN ||
-      active_view == MERGED_DISTINCT_ALEATORY_UNCERTAIN ||
-      active_view == MIXED_ALL || active_view == MIXED_DISTINCT_UNCERTAIN ||
-      active_view == MIXED_DISTINCT_ALEATORY_UNCERTAIN) { // aleatory or both
+  if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
+      active_view == RELAXED_ALEATORY_UNCERTAIN ||
+      active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
+      active_view == MIXED_ALEATORY_UNCERTAIN) { // aleatory or both
     Pecos::DistributionParams& dp = model.distribution_parameters();
     numNormalVars = dp.normal_means().length();
     numLognormalVars = dp.lognormal_means().length();
@@ -237,7 +237,7 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
       = dp.negative_binomial_probabilities_per_trial().length();
     numGeometricVars = dp.geometric_probabilities_per_trial().length();
     numHyperGeomVars = dp.hypergeometric_num_drawn().length();
-    if (active_view == MIXED_ALL || active_view >= MIXED_DISTINCT_DESIGN)
+    if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN)
       numDiscIntAleatUncVars = numPoissonVars + numBinomialVars +
 	numNegBinomialVars + numGeometricVars + numHyperGeomVars;
     else
@@ -245,7 +245,7 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
 	numNegBinomialVars + numGeometricVars + numHyperGeomVars;
 
     numHistogramPtVars = dp.histogram_point_pairs().size();
-    if (active_view == MIXED_ALL || active_view >= MIXED_DISTINCT_DESIGN)
+    if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN)
       numDiscRealAleatUncVars = numHistogramPtVars;
     else
       numContAleatUncVars += numHistogramPtVars;
@@ -255,10 +255,10 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
   }
 
   // initialize epistemic uncertain variables
-  if (active_view == MERGED_ALL || active_view == MERGED_DISTINCT_UNCERTAIN ||
-      active_view == MERGED_DISTINCT_EPISTEMIC_UNCERTAIN ||
-      active_view == MIXED_ALL || active_view == MIXED_DISTINCT_UNCERTAIN ||
-      active_view == MIXED_DISTINCT_EPISTEMIC_UNCERTAIN) // epistemic or both
+  if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
+      active_view == RELAXED_EPISTEMIC_UNCERTAIN ||
+      active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
+      active_view == MIXED_EPISTEMIC_UNCERTAIN) // epistemic or both
     numEpistemicUncVars = numContEpistUncVars = numIntervalVars
       = model.distribution_parameters().interval_probabilities().size();
 
@@ -266,13 +266,13 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
   numUncertainVars = numAleatoryUncVars + numEpistemicUncVars;
 
   // initialize design/state variables for all_variables mode
-  if (active_view == MERGED_ALL || active_view == MIXED_ALL) {
+  if (active_view == RELAXED_ALL || active_view == MIXED_ALL) {
     UShortMultiArrayConstView acv_types = model.all_continuous_variable_types();
     numContDesVars   = std::count(acv_types.begin(), acv_types.end(),
 				  (unsigned short)CONTINUOUS_DESIGN);
     numContStateVars = std::count(acv_types.begin(), acv_types.end(),
 				  (unsigned short)CONTINUOUS_STATE);
-    if (active_view == MERGED_ALL) {
+    if (active_view == RELAXED_ALL) {
       numContDesVars   += std::count(acv_types.begin(), acv_types.end(),
 				     (unsigned short)DISCRETE_DESIGN_RANGE) +
 	                  std::count(acv_types.begin(), acv_types.end(),
@@ -308,8 +308,7 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
     numStateVars
       = numContStateVars + numDiscIntStateVars + numDiscRealStateVars;
   }
-  else if (active_view == MERGED_DISTINCT_DESIGN ||
-	   active_view == MIXED_DISTINCT_DESIGN) {
+  else if (active_view == RELAXED_DESIGN || active_view == MIXED_DESIGN) {
     // can happen with EGO usage of on-the-fly NonDLHSSampling construction.
     // TO DO: would selecting samplingVarsMode=ALL_UNIFORM from EGO be OK?
     numContDesVars     = model.cv();

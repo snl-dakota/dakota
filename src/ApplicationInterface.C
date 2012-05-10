@@ -2039,8 +2039,7 @@ ApplicationInterface::get_source_pair(const Variables& target_vars)
     abort_handler(-1);
   }
 
-  // TO DO: should check both continuous_variables and discrete_variables (or 
-  // use all_merged_variables).
+  // TO DO: should check both continuous_variables and discrete_variables
   const RealVector& xc_target = target_vars.continuous_variables();
 
   size_t i, num_vars = xc_target.length();
@@ -2080,8 +2079,7 @@ continuation(const Variables& target_vars, const ActiveSet& set,
 	     Response& response, const ParamResponsePair& source_pair, 
 	     int failed_eval_id)
 {
-  // TO DO: should use all_merged_variables or use both continuous_variables
-  // and discrete_variables.
+  // TO DO: should use both continuous_variables and discrete_variables
   const Variables&     source_vars = source_pair.prp_parameters();
   const RealVector& source_pt = source_vars.continuous_variables();
   const RealVector& target_pt = target_vars.continuous_variables();

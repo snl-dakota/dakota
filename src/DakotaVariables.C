@@ -12,7 +12,7 @@
 
 #include "DakotaVariables.H"
 #include "ProblemDescDB.H"
-#include "MergedVariables.H"
+#include "RelaxedVariables.H"
 #include "MixedVariables.H"
 #include "DakotaBinStream.H"
 #include "data_io.h"
@@ -119,20 +119,12 @@ Variables* Variables::get_variables(const ProblemDescDB& problem_db)
   // This get_variables version invokes the standard constructor.
   short active_view = view.first;
   switch (active_view) {
-  case MIXED_ALL:
-  case MIXED_DISTINCT_DESIGN:
-  case MIXED_DISTINCT_ALEATORY_UNCERTAIN:
-  case MIXED_DISTINCT_EPISTEMIC_UNCERTAIN:
-  case MIXED_DISTINCT_UNCERTAIN:
-  case MIXED_DISTINCT_STATE:
+  case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
+  case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_UNCERTAIN: case MIXED_STATE:
     return new MixedVariables(problem_db, view); break;
-  case MERGED_ALL:
-  case MERGED_DISTINCT_DESIGN:
-  case MERGED_DISTINCT_ALEATORY_UNCERTAIN:
-  case MERGED_DISTINCT_EPISTEMIC_UNCERTAIN:
-  case MERGED_DISTINCT_UNCERTAIN:
-  case MERGED_DISTINCT_STATE:
-    return new MergedVariables(problem_db, view); break;
+  case RELAXED_ALL: case RELAXED_DESIGN: case RELAXED_ALEATORY_UNCERTAIN:
+  case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_UNCERTAIN: case RELAXED_STATE:
+    return new RelaxedVariables(problem_db, view); break;
   default:
     Cerr << "Variables active view " << active_view << " not currently "
 	 << "supported in derived Variables classes." << std::endl;
@@ -170,20 +162,12 @@ Variables* Variables::get_variables(const SharedVariablesData& svd) const
 
   short active_view = svd.view().first;
   switch (active_view) {
-  case MIXED_ALL:
-  case MIXED_DISTINCT_DESIGN:
-  case MIXED_DISTINCT_ALEATORY_UNCERTAIN:
-  case MIXED_DISTINCT_EPISTEMIC_UNCERTAIN:
-  case MIXED_DISTINCT_UNCERTAIN:
-  case MIXED_DISTINCT_STATE:
+  case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
+  case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_UNCERTAIN: case MIXED_STATE:
     return new MixedVariables(svd); break;
-  case MERGED_ALL:
-  case MERGED_DISTINCT_DESIGN:
-  case MERGED_DISTINCT_ALEATORY_UNCERTAIN:
-  case MERGED_DISTINCT_EPISTEMIC_UNCERTAIN:
-  case MERGED_DISTINCT_UNCERTAIN:
-  case MERGED_DISTINCT_STATE:
-    return new MergedVariables(svd); break;
+  case RELAXED_ALL: case RELAXED_DESIGN: case RELAXED_ALEATORY_UNCERTAIN:
+  case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_UNCERTAIN: case RELAXED_STATE:
+    return new RelaxedVariables(svd); break;
   default:
     Cerr << "Variables active view " << active_view << " not currently "
 	 << "supported in derived Variables classes." << std::endl;
@@ -198,7 +182,7 @@ Variables::get_view(const ProblemDescDB& problem_db) const
   // Default variables behavior uses the distinct arrays for continuous
   // and discrete vars/bnds (used by most iterators as well as mixed variable 
   // strategies with separate continuous and discrete iterators).  In some 
-  // cases (e.g., branch & bound), a merged data approach is used in which 
+  // cases (e.g., branch & bound), a relaxed data approach is used in which 
   // continuous and discrete arrays are combined into a single continuous array
   // (integrality is relaxed; the converse of truncating or discretizing reals
   // could also be used in the future if needed).  And in other cases (e.g., 
@@ -210,31 +194,31 @@ Variables::get_view(const ProblemDescDB& problem_db) const
   std::pair<short,short> view; // view.first = active, view.second = inactive
 
   // Possibilities:  distinct types vs. all types combined
-  //                 mixed cont./discrete vs. merged cont./discrete
+  //                 mixed cont./discrete vs. relaxed cont./discrete
   // If distinct, then active/inactive could be design, uncertain, or state.
   const String& method_name = problem_db.get_string("method.algorithm");
   if (method_name == "branch_and_bound")
-    view.first = MERGED_DISTINCT_DESIGN;                 // active
+    view.first = RELAXED_DESIGN;                // active
   else if ( method_name.ends("_parameter_study") || method_name == "dace" ||
 	    method_name.begins("fsu_") || method_name.begins("psuade_") || 
 	    ( method_name.begins("nond_") &&
 	      problem_db.get_bool("method.nond.all_variables") ) )
-    view.first = MIXED_ALL;                              // active
+    view.first = MIXED_ALL;                     // active
   else if (method_name.begins("nond_")) {
     if (method_name == "nond_sampling") { // MC/LHS, Incremental MC/LHS
       size_t num_auv = problem_db.get_sizet("variables.aleatory_uncertain"),
 	     num_euv = problem_db.get_sizet("variables.epistemic_uncertain");
       //if (problem_db.get_bool("method.nond.aleatory_variables"))
-      //  view.first = MIXED_DISTINCT_ALEATORY_UNCERTAIN;  // active
+      //  view.first = MIXED_ALEATORY_UNCERTAIN;  // active
       //else if (problem_db.get_bool("method.nond.epistemic_variables"))
-      //  view.first = MIXED_DISTINCT_EPISTEMIC_UNCERTAIN; // active
+      //  view.first = MIXED_EPISTEMIC_UNCERTAIN; // active
       //else { // default is whatever is specified
       if (num_auv && num_euv)
-	view.first = MIXED_DISTINCT_UNCERTAIN;           // active
+	view.first = MIXED_UNCERTAIN;           // active
       else if (num_euv)
-	view.first = MIXED_DISTINCT_EPISTEMIC_UNCERTAIN; // active
+	view.first = MIXED_EPISTEMIC_UNCERTAIN; // active
       else if (num_auv)
-	view.first = MIXED_DISTINCT_ALEATORY_UNCERTAIN;  // active
+	view.first = MIXED_ALEATORY_UNCERTAIN;  // active
       else {
 	Cerr << "Error: uncertain variables required for nond_sampling in "
 	     << "Variables::get_view()." << std::endl;
@@ -244,14 +228,14 @@ Variables::get_view(const ProblemDescDB& problem_db) const
     }
     else if (method_name.ends("_evidence") ||
 	     method_name.ends("_interval_est"))
-      view.first = MIXED_DISTINCT_EPISTEMIC_UNCERTAIN;   // active
+      view.first = MIXED_EPISTEMIC_UNCERTAIN;   // active
     else // stoch exp and reliability methods
-      view.first = MIXED_DISTINCT_ALEATORY_UNCERTAIN;    // active
+      view.first = MIXED_ALEATORY_UNCERTAIN;    // active
   }
   else if (method_name == "richardson_extrap")
-    view.first = MIXED_DISTINCT_STATE;                   // active
+    view.first = MIXED_STATE;                   // active
   else
-    view.first = MIXED_DISTINCT_DESIGN;                  // active
+    view.first = MIXED_DESIGN;                  // active
 
   view.second = EMPTY;                                   // inactive
   return view;
@@ -354,7 +338,7 @@ void Variables::inactive_view(short view2)
     variablesRep->inactive_view(view2);
   else {
     short view1 = sharedVarsData.view().first;
-    // If active view is {MERGED,MIXED}_ALL, outer level active view is
+    // If active view is {RELAXED,MIXED}_ALL, outer level active view is
     // aggregated in inner loop all view and inactive view remains EMPTY.
     // Disallow assignment of an inactive ALL view.
     if (view1 > MIXED_ALL && view2 > MIXED_ALL) {
@@ -382,21 +366,20 @@ void Variables::check_view_compatibility()
   // check assigned active and inactive views for compatibility
   bool error_flag = false;
 
-  // don't allow any combination of MERGED and MIXED
-  if ( ( ( active_view == MERGED_ALL ||
-	   ( active_view >= MERGED_DISTINCT_DESIGN &&
-	     active_view <= MERGED_DISTINCT_STATE ) ) &&
+  // don't allow any combination of RELAXED and MIXED
+  if ( ( ( active_view == RELAXED_ALL ||
+	   ( active_view >= RELAXED_DESIGN &&
+	     active_view <= RELAXED_STATE ) ) &&
 	 ( inactive_view == MIXED_ALL ||
-	   ( inactive_view >= MIXED_DISTINCT_DESIGN  &&
-	     inactive_view <= MIXED_DISTINCT_STATE ) ) ) ||
+	   ( inactive_view >= MIXED_DESIGN &&
+	     inactive_view <= MIXED_STATE ) ) ) ||
        ( ( active_view == MIXED_ALL ||
-	   ( active_view >= MIXED_DISTINCT_DESIGN &&
-	     active_view <= MIXED_DISTINCT_STATE ) ) &&
-	 ( inactive_view == MERGED_ALL ||
-	   ( inactive_view >= MERGED_DISTINCT_DESIGN  &&
-	     inactive_view <= MERGED_DISTINCT_STATE ) ) ) ) {
+	   ( active_view >= MIXED_DESIGN && active_view <= MIXED_STATE ) ) &&
+	 ( inactive_view == RELAXED_ALL ||
+	   ( inactive_view >= RELAXED_DESIGN &&
+	     inactive_view <= RELAXED_STATE ) ) ) ) {
     Cerr << "Error: subModel active and inactive views are inconsistent in "
-	 << "MERGED/MIXED definition in Variables::check_view_compatibility()."
+	 << "RELAXED/MIXED definition in Variables::check_view_compatibility()."
 	 << std::endl;
     error_flag = true;
   }
@@ -404,25 +387,23 @@ void Variables::check_view_compatibility()
   // don't overlap any types as both active and inactive
   if ( active_view == inactive_view ||
        // don't overlap ALL and DISTINCT
-       ( ( active_view == MERGED_ALL || active_view == MIXED_ALL ) &&
-	 inactive_view >= MERGED_DISTINCT_DESIGN &&
-	 inactive_view <= MIXED_DISTINCT_STATE ) ||
-       ( active_view >= MERGED_DISTINCT_DESIGN &&
-	 active_view <= MIXED_DISTINCT_STATE &&
-	 ( inactive_view == MERGED_ALL || inactive_view == MIXED_ALL ) ) ||
+       ( ( active_view == RELAXED_ALL || active_view == MIXED_ALL ) &&
+	 inactive_view >= RELAXED_DESIGN && inactive_view <= MIXED_STATE ) ||
+       ( active_view >= RELAXED_DESIGN && active_view <= MIXED_STATE &&
+	 ( inactive_view == RELAXED_ALL || inactive_view == MIXED_ALL ) ) ||
        // don't overlap aggregated and separated UNCERTAIN
-       ( ( active_view   == MERGED_DISTINCT_UNCERTAIN ||
-	   active_view   == MIXED_DISTINCT_UNCERTAIN ) &&
-	 ( inactive_view == MERGED_DISTINCT_ALEATORY_UNCERTAIN  ||
-	   inactive_view == MERGED_DISTINCT_EPISTEMIC_UNCERTAIN ||
-	   inactive_view == MIXED_DISTINCT_ALEATORY_UNCERTAIN   ||
-	   inactive_view == MIXED_DISTINCT_EPISTEMIC_UNCERTAIN ) ) ||
-       ( ( active_view   == MERGED_DISTINCT_ALEATORY_UNCERTAIN  ||
-	   active_view   == MERGED_DISTINCT_EPISTEMIC_UNCERTAIN ||
-	   active_view   == MIXED_DISTINCT_ALEATORY_UNCERTAIN   ||
-	   active_view   == MIXED_DISTINCT_EPISTEMIC_UNCERTAIN ) &&
-	 ( inactive_view == MERGED_DISTINCT_UNCERTAIN ||
-	   inactive_view == MIXED_DISTINCT_UNCERTAIN ) ) ) {
+       ( ( active_view   == RELAXED_UNCERTAIN ||
+	   active_view   == MIXED_UNCERTAIN ) &&
+	 ( inactive_view == RELAXED_ALEATORY_UNCERTAIN  ||
+	   inactive_view == RELAXED_EPISTEMIC_UNCERTAIN ||
+	   inactive_view == MIXED_ALEATORY_UNCERTAIN   ||
+	   inactive_view == MIXED_EPISTEMIC_UNCERTAIN ) ) ||
+       ( ( active_view   == RELAXED_ALEATORY_UNCERTAIN  ||
+	   active_view   == RELAXED_EPISTEMIC_UNCERTAIN ||
+	   active_view   == MIXED_ALEATORY_UNCERTAIN   ||
+	   active_view   == MIXED_EPISTEMIC_UNCERTAIN ) &&
+	 ( inactive_view == RELAXED_UNCERTAIN ||
+	   inactive_view == MIXED_UNCERTAIN ) ) ) {
     Cerr << "Error: subModel active and inactive views must not overlap in "
 	 << "Variables::check_view_compatibility()." << std::endl;
     error_flag = true;

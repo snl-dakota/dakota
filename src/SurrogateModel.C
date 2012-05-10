@@ -103,8 +103,8 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
     }
   }
   else {
-    if ( ( sm_active_view == MERGED_ALL || sm_active_view == MIXED_ALL ) &&
-	 cv_active_view >= MERGED_DISTINCT_DESIGN ) {
+    if ( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
+	 cv_active_view >= RELAXED_DESIGN ) {
       // common case: Distinct on All (e.g., opt/UQ on global surrogate)
       size_t sm_cv  = sub_model.cv(), sm_div  = sub_model.div(),
 	sm_drv  = sub_model.drv(), cv_acv = currentVariables.acv(),
@@ -120,8 +120,8 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
 	error_flag = true;
       }
     }
-    else if ( ( cv_active_view == MERGED_ALL || cv_active_view == MIXED_ALL ) &&
-	      sm_active_view >= MERGED_DISTINCT_DESIGN ) {
+    else if ( ( cv_active_view == RELAXED_ALL || cv_active_view == MIXED_ALL )
+	      && sm_active_view >= RELAXED_DESIGN ) {
       // common case: All on Distinct (e.g., DACE/PStudy on local/multipt/hier)
       size_t sm_acv = sub_model.acv(), sm_adiv = sub_model.adiv(),
 	sm_adrv = sub_model.adrv(), cv_cv = currentVariables.cv(),
@@ -191,7 +191,7 @@ bool SurrogateModel::force_rebuild()
       return true;
   }
   else if ( approx_active_view == sub_model_active_view  &&
-	    approx_active_view >= MERGED_DISTINCT_DESIGN &&
+	    approx_active_view >= RELAXED_DESIGN &&
         // compare inactive top-level data against inactive sub-model data
         ( referenceICVars != currentVariables.inactive_continuous_variables() ||
 	  referenceIDIVars !=
@@ -199,9 +199,9 @@ bool SurrogateModel::force_rebuild()
 	  referenceIDRVars !=
 	  currentVariables.inactive_discrete_real_variables() ) )
     return true;
-  else if ( ( approx_active_view == MERGED_ALL ||
+  else if ( ( approx_active_view == RELAXED_ALL ||
 	      approx_active_view == MIXED_ALL ) &&
-	    sub_model_active_view >= MERGED_DISTINCT_DESIGN ) {
+	    sub_model_active_view >= RELAXED_DESIGN ) {
     // coerce top level data to sub-model view, but don't update sub-model
     if (truthModelVars.is_null())
       truthModelVars = actual_vars.copy();
@@ -286,8 +286,8 @@ bool SurrogateModel::force_rebuild()
 	  referenceDRUBnds !=
 	  userDefinedConstraints.discrete_real_upper_bounds() ) )
       return true;
-    else if ( approx_active_view >= MERGED_DISTINCT_DESIGN &&
-	      ( sub_model_active_view == MERGED_ALL ||
+    else if ( approx_active_view >= RELAXED_DESIGN &&
+	      ( sub_model_active_view == RELAXED_ALL ||
 		sub_model_active_view == MIXED_ALL ) && 
 	// compare top-level data in All view against active sub-model data
         ( referenceCLBnds !=
@@ -303,9 +303,9 @@ bool SurrogateModel::force_rebuild()
 	  referenceDRUBnds !=
 	  userDefinedConstraints.all_discrete_real_upper_bounds() ) )
       return true;
-    else if ( ( approx_active_view  == MERGED_ALL ||
+    else if ( ( approx_active_view  == RELAXED_ALL ||
 		approx_active_view  == MIXED_ALL ) &&
-	      sub_model_active_view >= MERGED_DISTINCT_DESIGN ) {
+	      sub_model_active_view >= RELAXED_DESIGN ) {
       // coerce top level data to sub-model view, but don't update sub-model
       if (truthModelCons.is_null())
 	truthModelCons = actual_model.user_defined_constraints().copy();
@@ -337,13 +337,13 @@ bool SurrogateModel::force_rebuild()
 	 // OUU All view: rebuild over {u}+{d} for each new TR of {d}
 	 active_bounds_differ ||
 	 // OUU Distinct view: rebuild over {u} for each new instance of {d}
-	 ( sub_model_active_view >= MERGED_DISTINCT_DESIGN &&
+	 ( sub_model_active_view >= RELAXED_DESIGN &&
 	   inactive_values_differ ) )
       return true;
 
     // -----------------------EXPANDED-----------------------------------
     if (approx_active_view == sub_model_active_view &&
-	approx_active_view >= MERGED_DISTINCT_DESIGN) { // Distinct to Distinct
+	approx_active_view >= RELAXED_DESIGN) { // Distinct to Distinct
       // SBO: rebuild over {d} for each new TR of {d} 
       // OUU: force rebuild over {u} for each new instance of {d}
       // inactive bounds are irrelevant
@@ -351,23 +351,23 @@ bool SurrogateModel::force_rebuild()
 	return true;
     }
     else if ( approx_active_view   == sub_model_active_view &&
-              ( approx_active_view == MERGED_ALL || 
+              ( approx_active_view == RELAXED_ALL || 
 	        approx_active_view == MIXED_ALL ) ) { // All to All
       // unusual case: Surrogate-based DACE,PStudy
       // there are no inactive vars/bounds
       if (active_bounds_differ)
 	return true;
     }
-    else if ( approx_active_view >= MERGED_DISTINCT_DESIGN &&
-              ( sub_model_active_view == MERGED_ALL ||
+    else if ( approx_active_view >= RELAXED_DESIGN &&
+              ( sub_model_active_view == RELAXED_ALL ||
 	        sub_model_active_view == MIXED_ALL ) ) { // Distinct to All
       // OUU: force rebuild over {u}+{d} for each new TR of {d}
       if (active_bounds_differ)
 	return true;
     }
-    else if ( ( approx_active_view  == MERGED_ALL ||
+    else if ( ( approx_active_view  == RELAXED_ALL ||
                 approx_active_view  == MIXED_ALL ) &&
-	      sub_model_active_view >= MERGED_DISTINCT_DESIGN ) {//All->Distinct
+	      sub_model_active_view >= RELAXED_DESIGN ) { // All->Distinct
       // unusual case: approx over subset of active top-level vars
       if (active_bounds_differ || inactive_values_differ)
 	return true;
@@ -386,13 +386,13 @@ bool SurrogateModel::force_rebuild()
 
     // -------------------------COLLAPSED------------------------------
     if ( // OUU Distinct view: rebuild over {u} for each new instance of {d}
-	 sub_model_active_view >= MERGED_DISTINCT_DESIGN &&
+	 sub_model_active_view >= RELAXED_DESIGN &&
 	 inactive_values_differ )
       return true;
 
     // -------------------------EXPANDED-------------------------------
     if (approx_active_view == sub_model_active_view &&
-	approx_active_view >= MERGED_DISTINCT_DESIGN) { // Distinct to Distinct
+	approx_active_view >= RELAXED_DESIGN) { // Distinct to Distinct
       // SBO: rebuild over {d} for each new TR of {d} 
       // OUU: force rebuild over {u} for each new instance of {d}
       // inactive bounds are irrelevant
@@ -400,19 +400,19 @@ bool SurrogateModel::force_rebuild()
 	return true;
     }
     else if ( approx_active_view   == sub_model_active_view &&
-              ( approx_active_view == MERGED_ALL || 
+              ( approx_active_view == RELAXED_ALL || 
 	        approx_active_view == MIXED_ALL ) ) { // All to All
       // unusual case: Surrogate-based DACE,PStudy
       // there are no inactive vars
     }
-    else if ( approx_active_view >= MERGED_DISTINCT_DESIGN &&
-              ( sub_model_active_view == MERGED_ALL ||
+    else if ( approx_active_view >= RELAXED_DESIGN &&
+              ( sub_model_active_view == RELAXED_ALL ||
 	        sub_model_active_view == MIXED_ALL ) ) { // Distinct to All
       // OUU: force rebuild over {u}+{d} for each new TR of {d}
     }
-    else if ( ( approx_active_view  == MERGED_ALL ||
+    else if ( ( approx_active_view  == RELAXED_ALL ||
                 approx_active_view  == MIXED_ALL ) &&
-	      sub_model_active_view >= MERGED_DISTINCT_DESIGN ) {//All->Distinct
+	      sub_model_active_view >= RELAXED_DESIGN ) { // All->Distinct
       // unusual case: approx over subset of active top-level vars
       if (inactive_values_differ)
 	return true;

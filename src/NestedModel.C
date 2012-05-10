@@ -1418,7 +1418,7 @@ void NestedModel::update_inactive_view(short new_view, short& view)
   // checking occurs within Variables::inactive_view() and Variables::
   // check_view_compatibility().
 
-  if (new_view == MERGED_ALL || new_view == MIXED_ALL) {
+  if (new_view == RELAXED_ALL || new_view == MIXED_ALL) {
     // outer level has an ALL view --> infer what subset of this view should
     // be inner inactive by computing the complement of the inner active.
     // Can't use inactive types/ids, since inactive is either not defined
@@ -1428,7 +1428,7 @@ void NestedModel::update_inactive_view(short new_view, short& view)
       sm_cv_start = sm_vars.cv_start();
     UShortMultiArrayConstView sm_acv_types
       = sm_vars.all_continuous_variable_types();
-    bool merged = (new_view == MERGED_ALL);
+    bool relaxed = (new_view == RELAXED_ALL);
     // TO DO: THIS IS NOT GOOD ENOUGH SINCE THIS DOES NOT DISCRIMINATE INACTIVE
     // VARIABLES THAT ARE ACTUALLY BEING MAPPED FROM INACTIVE VARIABLES THAT
     // ARE MERELY PRESENT.
@@ -1438,36 +1438,35 @@ void NestedModel::update_inactive_view(short new_view, short& view)
 	if (type_i == CONTINUOUS_DESIGN ||
 	    ( type_i >= DISCRETE_DESIGN_RANGE &&
 	      type_i <= DISCRETE_DESIGN_SET_REAL ) )
-	  view = (merged) ? MERGED_DISTINCT_DESIGN : MIXED_DISTINCT_DESIGN;
+	  view = (relaxed) ? RELAXED_DESIGN : MIXED_DESIGN;
 	else if ( type_i == CONTINUOUS_STATE ||
 		  ( type_i >= DISCRETE_STATE_RANGE &&
 		    type_i <= DISCRETE_STATE_SET_REAL ) )
-	  view = (merged) ? MERGED_DISTINCT_STATE : MIXED_DISTINCT_STATE;
+	  view = (relaxed) ? RELAXED_STATE : MIXED_STATE;
 	else if (type_i >= NORMAL_UNCERTAIN && type_i <= INTERVAL_UNCERTAIN)
-	  view = (merged) ? MERGED_DISTINCT_UNCERTAIN
-	                  :  MIXED_DISTINCT_UNCERTAIN;
+	  view = (relaxed) ? RELAXED_UNCERTAIN : MIXED_UNCERTAIN;
       }
   }
   else if (view == EMPTY)
     view = new_view;   
   else if (view != new_view) {
     // there are a few acceptable view promotions
-    if ( ( view     == MIXED_DISTINCT_ALEATORY_UNCERTAIN &&
-	   new_view == MIXED_DISTINCT_EPISTEMIC_UNCERTAIN ) ||
-	 ( view     == MIXED_DISTINCT_EPISTEMIC_UNCERTAIN &&
-	   new_view == MIXED_DISTINCT_ALEATORY_UNCERTAIN ) )
-      view = MIXED_DISTINCT_UNCERTAIN; // aggregate
-    else if ( ( view     == MERGED_DISTINCT_ALEATORY_UNCERTAIN &&
-		new_view == MERGED_DISTINCT_EPISTEMIC_UNCERTAIN ) ||
-	      ( view     == MERGED_DISTINCT_EPISTEMIC_UNCERTAIN &&
-		new_view == MERGED_DISTINCT_ALEATORY_UNCERTAIN ) )
-      view = MERGED_DISTINCT_UNCERTAIN; // aggregate
-    else if ( ( view == MIXED_DISTINCT_UNCERTAIN &&
-		( new_view == MIXED_DISTINCT_ALEATORY_UNCERTAIN ||
-		  new_view == MIXED_DISTINCT_EPISTEMIC_UNCERTAIN ) ) ||
-	      ( view == MERGED_DISTINCT_UNCERTAIN &&
-		( new_view == MERGED_DISTINCT_ALEATORY_UNCERTAIN ||
-		  new_view == MERGED_DISTINCT_EPISTEMIC_UNCERTAIN ) ) )
+    if ( ( view     == MIXED_ALEATORY_UNCERTAIN &&
+	   new_view == MIXED_EPISTEMIC_UNCERTAIN ) ||
+	 ( view     == MIXED_EPISTEMIC_UNCERTAIN &&
+	   new_view == MIXED_ALEATORY_UNCERTAIN ) )
+      view = MIXED_UNCERTAIN; // aggregate
+    else if ( ( view     == RELAXED_ALEATORY_UNCERTAIN &&
+		new_view == RELAXED_EPISTEMIC_UNCERTAIN ) ||
+	      ( view     == RELAXED_EPISTEMIC_UNCERTAIN &&
+		new_view == RELAXED_ALEATORY_UNCERTAIN ) )
+      view = RELAXED_UNCERTAIN; // aggregate
+    else if ( ( view == MIXED_UNCERTAIN &&
+		( new_view == MIXED_ALEATORY_UNCERTAIN ||
+		  new_view == MIXED_EPISTEMIC_UNCERTAIN ) ) ||
+	      ( view == RELAXED_UNCERTAIN &&
+		( new_view == RELAXED_ALEATORY_UNCERTAIN ||
+		  new_view == RELAXED_EPISTEMIC_UNCERTAIN ) ) )
       { } // already aggregated
     else {
       Cerr << "\nError: inactive sub-model view discrepancy in NestedModel::"
@@ -1480,27 +1479,27 @@ void NestedModel::update_inactive_view(short new_view, short& view)
 
 void NestedModel::update_inactive_view(unsigned short type, short& view)
 {
-  // determine MERGED or MIXED primary view at sub-model level
+  // determine RELAXED or MIXED primary view at sub-model level
   short new_view, active_sm_view = subModel.current_variables().view().first;
-  bool merged = ( active_sm_view == MERGED_ALL ||
-		  ( active_sm_view >= MERGED_DISTINCT_DESIGN &&
-		    active_sm_view <= MERGED_DISTINCT_STATE ) );
+  bool relaxed = ( active_sm_view == RELAXED_ALL ||
+		   ( active_sm_view >= RELAXED_DESIGN &&
+		     active_sm_view <= RELAXED_STATE ) );
 
   if (type >= CONTINUOUS_DESIGN && type <= DISCRETE_DESIGN_SET_REAL) {
-    new_view = (merged) ? MERGED_DISTINCT_DESIGN : MIXED_DISTINCT_DESIGN;
+    new_view = (relaxed) ? RELAXED_DESIGN : MIXED_DESIGN;
     update_inactive_view(new_view, view);
   }
   else if (type >= CONTINUOUS_STATE && type <= DISCRETE_STATE_SET_REAL) {
-    new_view = (merged) ? MERGED_DISTINCT_STATE : MIXED_DISTINCT_STATE;
+    new_view = (relaxed) ? RELAXED_STATE : MIXED_STATE;
     update_inactive_view(new_view, view);
   }
   else if (type >= NORMAL_UNCERTAIN && type <= INTERVAL_UNCERTAIN) {
     if (type == INTERVAL_UNCERTAIN)
-      new_view = (merged) ? MERGED_DISTINCT_EPISTEMIC_UNCERTAIN :
-	                    MIXED_DISTINCT_EPISTEMIC_UNCERTAIN;
+      new_view = (relaxed) ? RELAXED_EPISTEMIC_UNCERTAIN :
+	                     MIXED_EPISTEMIC_UNCERTAIN;
     else
-      new_view = (merged) ? MERGED_DISTINCT_ALEATORY_UNCERTAIN :
-			    MIXED_DISTINCT_ALEATORY_UNCERTAIN;
+      new_view = (relaxed) ? RELAXED_ALEATORY_UNCERTAIN :
+			     MIXED_ALEATORY_UNCERTAIN;
     update_inactive_view(new_view, view);
   }
 }
@@ -1756,7 +1755,7 @@ size_t NestedModel::cv_index_map(size_t cv_index)
 {
   size_t offset;
   switch (currentVariables.view().first) { // active view
-  case MIXED_DISTINCT_UNCERTAIN: {
+  case MIXED_UNCERTAIN: {
     const SizetArray& vc_totals
       = currentVariables.variables_components_totals();
     size_t num_cauv = vc_totals[3], num_dauv = vc_totals[4] + vc_totals[5];
@@ -1784,7 +1783,7 @@ size_t NestedModel::cv_index_map(size_t cv_index)
       offset = num_ddv + num_dauv + num_deuv;
     break;
   }
-  default: // MIXED for single variable types, MERGED for all variable types
+  default: // MIXED for single variable types, RELAXED for all variable types
     offset = 0; break;
   }
   return cv_index + offset;
@@ -1797,7 +1796,7 @@ size_t NestedModel::div_index_map(size_t div_index)
 {
   size_t offset;
   switch (currentVariables.view().first) { // active view
-  case MIXED_DISTINCT_UNCERTAIN: {
+  case MIXED_UNCERTAIN: {
     const SizetArray& vc_totals
       = currentVariables.variables_components_totals();
     size_t num_cauv  = vc_totals[3], num_dauiv = vc_totals[4],
@@ -1829,7 +1828,7 @@ size_t NestedModel::div_index_map(size_t div_index)
 	     + num_csv;
     break;
   }
-  default: // MIXED for single variable types; MERGED should not occur
+  default: // MIXED for single variable types; RELAXED should not occur
     offset = currentVariables.cv(); break;
   }
   return div_index + offset;
@@ -1842,7 +1841,7 @@ size_t NestedModel::drv_index_map(size_t drv_index)
 {
   size_t offset;
   switch (currentVariables.view().first) { // active view
-  case MIXED_DISTINCT_UNCERTAIN: {
+  case MIXED_UNCERTAIN: {
     const SizetArray& vc_totals
       = currentVariables.variables_components_totals();
     size_t num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
@@ -1876,7 +1875,7 @@ size_t NestedModel::drv_index_map(size_t drv_index)
 	     + num_csv + num_dsiv;
     break;
   }
-  default: // MIXED for single variable types; MERGED should not occur
+  default: // MIXED for single variable types; RELAXED should not occur
     offset = currentVariables.cv() + currentVariables.div(); break;
   }
   return drv_index + offset;
@@ -1891,44 +1890,44 @@ size_t NestedModel::ccv_index_map(size_t ccv_index)
   const SizetArray& vc_totals = currentVariables.variables_components_totals();
   size_t num_cdv = vc_totals[0];
   switch (currentVariables.view().first) { // active view
-  case MIXED_DISTINCT_DESIGN:  // complement is cauv/ceuv/csv
+  case MIXED_DESIGN:  // complement is cauv/ceuv/csv
     offset = num_cdv; break;
-  case MIXED_DISTINCT_ALEATORY_UNCERTAIN: { // complement is cdv/ceuv/csv
+  case MIXED_ALEATORY_UNCERTAIN: { // complement is cdv/ceuv/csv
     size_t num_cauv = vc_totals[3];
     offset = (ccv_index < num_cdv) ? 0 : num_cauv; break;
   }
-  case MIXED_DISTINCT_EPISTEMIC_UNCERTAIN: { // complement is cdv/cauv/csv
+  case MIXED_EPISTEMIC_UNCERTAIN: { // complement is cdv/cauv/csv
     size_t num_cauv = vc_totals[3], num_ceuv = vc_totals[6];
     offset = (ccv_index < num_cdv+num_cauv) ? 0 : num_ceuv; break;
   }
-  case MIXED_DISTINCT_UNCERTAIN: { // complement is cdv/csv
+  case MIXED_UNCERTAIN: { // complement is cdv/csv
     size_t num_cauv = vc_totals[3], num_ceuv = vc_totals[6];
     offset = (ccv_index < num_cdv) ? 0 : num_cauv+num_ceuv; break;
   }
-  case MERGED_DISTINCT_DESIGN: { // complement is auv/euv/sv
+  case RELAXED_DESIGN: { // complement is auv/euv/sv
     size_t num_dv = num_cdv + vc_totals[1] + vc_totals[2];
     offset = num_dv; break;
   }
-  case MERGED_DISTINCT_ALEATORY_UNCERTAIN: { // complement is dv/euv/sv
+  case RELAXED_ALEATORY_UNCERTAIN: { // complement is dv/euv/sv
     size_t num_dv  = num_cdv + vc_totals[1] + vc_totals[2],
            num_auv = vc_totals[3] + vc_totals[4] + vc_totals[5];
     offset = (ccv_index < num_dv) ? 0 : num_auv; break;
   }
-  case MERGED_DISTINCT_EPISTEMIC_UNCERTAIN: { // complement is dv/auv/sv
+  case RELAXED_EPISTEMIC_UNCERTAIN: { // complement is dv/auv/sv
     size_t num_dv  = num_cdv + vc_totals[1] + vc_totals[2],
            num_auv = vc_totals[3] + vc_totals[4] + vc_totals[5],
            num_euv = vc_totals[6] + vc_totals[7] + vc_totals[8];
     offset = (ccv_index < num_dv+num_auv) ? 0 : num_euv; break;
   }
-  case MERGED_DISTINCT_UNCERTAIN: { // complement is dv/sv
+  case RELAXED_UNCERTAIN: { // complement is dv/sv
     size_t num_dv  = num_cdv + vc_totals[1] + vc_totals[2],
            num_auv = vc_totals[3] + vc_totals[4] + vc_totals[5],
            num_euv = vc_totals[6] + vc_totals[7] + vc_totals[8];
     offset = (ccv_index < num_dv) ? 0 : num_auv+num_euv; break;
   }
-  case MIXED_DISTINCT_STATE: case MERGED_DISTINCT_STATE:
+  case MIXED_STATE: case RELAXED_STATE:
     offset = 0; break;
-  default: // MIXED_ALL, MERGED_ALL
+  default: // MIXED_ALL, RELAXED_ALL
     Cerr << "Error: unsupported active view in NestedModel::ccv_index_map()."
 	 << std::endl;
     abort_handler(-1); break;
@@ -1945,23 +1944,23 @@ size_t NestedModel::cdiv_index_map(size_t cdiv_index)
   const SizetArray& vc_totals = currentVariables.variables_components_totals();
   size_t num_ddiv = vc_totals[1];
   switch (currentVariables.view().first) { // active view
-  case MIXED_DISTINCT_DESIGN:  // complement is dauiv/deuiv/dsiv
+  case MIXED_DESIGN:  // complement is dauiv/deuiv/dsiv
     offset = num_ddiv; break;
-  case MIXED_DISTINCT_ALEATORY_UNCERTAIN: { // complement is ddiv/deuiv/dsiv
+  case MIXED_ALEATORY_UNCERTAIN: { // complement is ddiv/deuiv/dsiv
     size_t num_dauiv = vc_totals[4];
     offset = (cdiv_index < num_ddiv) ? 0 : num_dauiv; break;
   }
-  case MIXED_DISTINCT_EPISTEMIC_UNCERTAIN: { // complement is ddiv/dauiv/dsiv
+  case MIXED_EPISTEMIC_UNCERTAIN: { // complement is ddiv/dauiv/dsiv
     size_t num_dauiv = vc_totals[4], num_deuiv = vc_totals[7];
     offset = (cdiv_index < num_ddiv+num_dauiv) ? 0 : num_deuiv; break;
   }
-  case MIXED_DISTINCT_UNCERTAIN: { // complement is ddiv/dsiv
+  case MIXED_UNCERTAIN: { // complement is ddiv/dsiv
     size_t num_dauiv = vc_totals[4], num_deuiv = vc_totals[7];
     offset = (cdiv_index < num_ddiv) ? 0 : num_dauiv+num_deuiv; break;
   }
-  case MIXED_DISTINCT_STATE:
+  case MIXED_STATE:
     offset = 0; break;
-  default: // MIXED_ALL, MERGED_*
+  default: // MIXED_ALL, RELAXED_*
     Cerr << "Error: unsupported active view in NestedModel::cdiv_index_map()."
 	 << std::endl;
     abort_handler(-1); break;
@@ -1978,23 +1977,23 @@ size_t NestedModel::cdrv_index_map(size_t cdrv_index)
   const SizetArray& vc_totals = currentVariables.variables_components_totals();
   size_t num_ddrv = vc_totals[2];
   switch (currentVariables.view().first) { // active view
-  case MIXED_DISTINCT_DESIGN:  // complement is daurv/deurv/dsrv
+  case MIXED_DESIGN:  // complement is daurv/deurv/dsrv
     offset = num_ddrv; break;
-  case MIXED_DISTINCT_ALEATORY_UNCERTAIN: { // complement is ddrv/deurv/dsrv
+  case MIXED_ALEATORY_UNCERTAIN: { // complement is ddrv/deurv/dsrv
     size_t num_daurv = vc_totals[5];
     offset = (cdrv_index < num_ddrv) ? 0 : num_daurv; break;
   }
-  case MIXED_DISTINCT_EPISTEMIC_UNCERTAIN: { // complement is ddrv/daurv/dsrv
+  case MIXED_EPISTEMIC_UNCERTAIN: { // complement is ddrv/daurv/dsrv
     size_t num_daurv = vc_totals[5], num_deurv = vc_totals[8];
     offset = (cdrv_index < num_ddrv+num_daurv) ? 0 : num_deurv; break;
   }
-  case MIXED_DISTINCT_UNCERTAIN: { // complement is ddrv/dsrv
+  case MIXED_UNCERTAIN: { // complement is ddrv/dsrv
     size_t num_daurv = vc_totals[5], num_deurv = vc_totals[8];
     offset = (cdrv_index < num_ddrv) ? 0 : num_daurv+num_deurv; break;
   }
-  case MIXED_DISTINCT_STATE:
+  case MIXED_STATE:
     offset = 0; break;
-  default: // MIXED_ALL, MERGED_*
+  default: // MIXED_ALL, RELAXED_*
     Cerr << "Error: unsupported active view in NestedModel::cdrv_index_map()."
 	 << std::endl;
     abort_handler(-1); break;

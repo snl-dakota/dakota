@@ -6,14 +6,14 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-//- Class:       MergedVariables
-//- Description: Container class of variables employing the "merged" approach
-//-              to variables usage.
+//- Class:       RelaxedVariables
+//- Description: Container class of variables employing relaxation of
+//-              discrete variables.
 //- Owner:       Mike Eldred
-//- Version: $Id: MergedVariables.H 7024 2010-10-16 01:24:42Z mseldre $
+//- Version: $Id: RelaxedVariables.H 7024 2010-10-16 01:24:42Z mseldre $
 
-#ifndef MERGED_VARIABLES_H
-#define MERGED_VARIABLES_H
+#ifndef RELAXED_VARIABLES_H
+#define RELAXED_VARIABLES_H
 
 #include "DakotaVariables.H"
 #include "DataVariables.H"
@@ -22,20 +22,17 @@
 namespace Dakota {
 
 /// Derived class within the Variables hierarchy which employs the
-/// merged data view.
+/// relaxation of discrete variables.
 
 /** Derived variables classes take different views of the design,
     uncertain, and state variable types and the continuous and
-    discrete domain types.  The MergedVariables derived class combines
+    discrete domain types.  The RelaxedVariables derived class combines
     continuous and discrete domain types but separates design,
-    uncertain, and state variable types.  The result is a single
-    continuous array of design variables (mergedDesignVars), a single
-    continuous array of uncertain variables (uncertainVars), and a
-    single continuous array of state variables (mergedStateVars).  The
-    branch and bound strategy uses this approach (see
+    uncertain, and state variable types.  The
+    branch and bound method uses this approach (see
     Variables::get_variables(problem_db)). */
 
-class MergedVariables: public Variables
+class RelaxedVariables: public Variables
 {
 public:
 
@@ -44,12 +41,12 @@ public:
   //
 
   /// standard constructor
-  MergedVariables(const ProblemDescDB& problem_db,
+  RelaxedVariables(const ProblemDescDB& problem_db,
 		  const std::pair<short,short>& view);
   /// lightweight constructor
-  MergedVariables(const SharedVariablesData& svd);
+  RelaxedVariables(const SharedVariablesData& svd);
   /// destructor
-  ~MergedVariables();
+  ~RelaxedVariables();
 
 protected:
 
@@ -77,12 +74,12 @@ private:
 };
 
 
-inline MergedVariables::MergedVariables(const SharedVariablesData& svd):
+inline RelaxedVariables::RelaxedVariables(const SharedVariablesData& svd):
   Variables(BaseConstructor(), svd)
 { reshape(svd.components_totals()); }
 
 
-inline MergedVariables::~MergedVariables()
+inline RelaxedVariables::~RelaxedVariables()
 { }
 
 } // namespace Dakota

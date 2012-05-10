@@ -131,14 +131,14 @@ void NonDSampling::get_parameter_sets(Model& model)
       samplingVarsMode == ALL_UNIFORM) {
     if ( samplingVarsMode == ACTIVE_UNIFORM ||
 	 ( samplingVarsMode == ALL_UNIFORM && 
-	   ( model_view == MERGED_ALL || model_view == MIXED_ALL ) ) ||
+	   ( model_view == RELAXED_ALL || model_view == MIXED_ALL ) ) ||
 	 ( samplingVarsMode == UNCERTAIN_UNIFORM && 
-	   ( model_view == MERGED_DISTINCT_UNCERTAIN           ||
-	     model_view == MERGED_DISTINCT_ALEATORY_UNCERTAIN  ||
-	     model_view == MERGED_DISTINCT_EPISTEMIC_UNCERTAIN ||
-	     model_view == MIXED_DISTINCT_UNCERTAIN            ||
-	     model_view == MIXED_DISTINCT_ALEATORY_UNCERTAIN   ||
-	     model_view == MIXED_DISTINCT_EPISTEMIC_UNCERTAIN ) ) ) {
+	   ( model_view == RELAXED_UNCERTAIN           ||
+	     model_view == RELAXED_ALEATORY_UNCERTAIN  ||
+	     model_view == RELAXED_EPISTEMIC_UNCERTAIN ||
+	     model_view == MIXED_UNCERTAIN            ||
+	     model_view == MIXED_ALEATORY_UNCERTAIN   ||
+	     model_view == MIXED_EPISTEMIC_UNCERTAIN ) ) ) {
       // sample uniformly from ACTIVE lower/upper bounds (regardless of model
       // view), from UNCERTAIN lower/upper bounds (with model in DISTINCT view),
       // or from ALL lower/upper bounds (with model in ALL view).
@@ -162,11 +162,11 @@ void NonDSampling::get_parameter_sets(Model& model)
     else if (samplingVarsMode == UNCERTAIN_UNIFORM) {
       // sample uniformly from UNCERTAIN lower/upper bounds with model
       // using a view other than
-      // {MERGED,MIXED}_DISTINCT_{,_ALEATORY,_EPISTEMIC}UNCERTAIN
+      // {RELAXED,MIXED}_{,ALEATORY_,EPISTEMIC_}UNCERTAIN
       RealVector uncertain_l_bnds, uncertain_u_bnds;
       size_t num_cuv = numContAleatUncVars + numContEpistUncVars;
       if (num_cuv) {
-	if (model_view == MERGED_ALL || model_view == MIXED_ALL) {
+	if (model_view == RELAXED_ALL || model_view == MIXED_ALL) {
 	  const RealVector& c_l_bnds = model.continuous_lower_bounds();
 	  const RealVector& c_u_bnds = model.continuous_upper_bounds();
 	  uncertain_l_bnds = RealVector(Teuchos::View,
@@ -174,7 +174,7 @@ void NonDSampling::get_parameter_sets(Model& model)
 	  uncertain_u_bnds = RealVector(Teuchos::View,
 	    const_cast<Real*>(&c_u_bnds[numContDesVars]), num_cuv);
 	}
-	else { // MERGED/MIXED_DISTINCT_DESIGN or MERGED/MIXED_DISTINCT_STATE
+	else { // RELAXED/MIXED_DESIGN or RELAXED/MIXED_STATE
 	  // case should not occur; if it does, numContDesVars may not be set
 	  const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
 	  const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
@@ -210,7 +210,7 @@ void NonDSampling::get_parameter_sets(Model& model)
       num_dssrv = model.discrete_state_set_real_values().size(),
       num_dsriv = numDiscIntStateVars - num_dssiv;
     if ( samplingVarsMode == ACTIVE || ( samplingVarsMode == ALL && 
-	 ( model_view == MERGED_ALL || model_view == MIXED_ALL ) ) ) {
+	 ( model_view == RELAXED_ALL || model_view == MIXED_ALL ) ) ) {
       const RealVector& c_l_bnds = model.continuous_lower_bounds();
       const RealVector& c_u_bnds = model.continuous_upper_bounds();
       if (numContDesVars) {
@@ -332,7 +332,7 @@ view_counts(const Model& model, size_t& cv_start, size_t& num_cv,
   case UNCERTAIN: {
     const Variables& vars = model.current_variables();
     short active_view = vars.view().first;
-    bool all_vars = (active_view == MERGED_ALL || active_view == MIXED_ALL);
+    bool all_vars = (active_view == RELAXED_ALL || active_view == MIXED_ALL);
     if (all_vars) { // UNCERTAIN is a subset of ACTIVE
       cv_start  = numContDesVars;
       num_cv    = numContAleatUncVars + numContEpistUncVars;
@@ -351,7 +351,7 @@ view_counts(const Model& model, size_t& cv_start, size_t& num_cv,
   case UNCERTAIN_UNIFORM: {
     const Variables& vars = model.current_variables();
     short active_view = vars.view().first;
-    bool all_vars = (active_view == MERGED_ALL || active_view == MIXED_ALL);
+    bool all_vars = (active_view == RELAXED_ALL || active_view == MIXED_ALL);
     if (all_vars) { // UNCERTAIN is a subset of ACTIVE
       cv_start = numContDesVars;
       num_cv   = numContAleatUncVars + numContEpistUncVars;

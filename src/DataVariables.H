@@ -25,14 +25,12 @@ namespace Dakota {
 
 // special values for active and inactive views include EMPTY plus the 12
 // combinations of All, Design, A Uncertain, E Uncertain, A+E Uncertain, or
-// State [6 total] and Merged or Mixed [2 total].
-enum { EMPTY, MERGED_ALL, MIXED_ALL,
-       MERGED_DISTINCT_DESIGN, MERGED_DISTINCT_UNCERTAIN,
-       MERGED_DISTINCT_ALEATORY_UNCERTAIN, MERGED_DISTINCT_EPISTEMIC_UNCERTAIN,
-       MERGED_DISTINCT_STATE,
-       MIXED_DISTINCT_DESIGN, MIXED_DISTINCT_UNCERTAIN,
-       MIXED_DISTINCT_ALEATORY_UNCERTAIN, MIXED_DISTINCT_EPISTEMIC_UNCERTAIN,
-       MIXED_DISTINCT_STATE };
+// State [6 total] and Relaxed or Mixed [2 total].
+enum { EMPTY, RELAXED_ALL, MIXED_ALL,
+       RELAXED_DESIGN, RELAXED_UNCERTAIN, RELAXED_ALEATORY_UNCERTAIN,
+       RELAXED_EPISTEMIC_UNCERTAIN, RELAXED_STATE,
+       MIXED_DESIGN, MIXED_UNCERTAIN, MIXED_ALEATORY_UNCERTAIN,
+       MIXED_EPISTEMIC_UNCERTAIN, MIXED_STATE };
 
 // special values for SharedVariablesData::variablesComponents and
 // SharedVariablesData::all*Types (Note: these differ from the

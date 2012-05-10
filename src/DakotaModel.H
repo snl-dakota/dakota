@@ -623,8 +623,8 @@ public:
   void nonlinear_eq_constraint_targets(const RealVector& nln_eq_targets);
 
   // return the array of discrete variable identifiers that were
-  // merged into a continuous array in currentVariables
-  //const SizetArray& merged_discrete_ids() const;
+  // relaxed into a continuous array in currentVariables
+  //const SizetArray& relaxed_discrete_ids() const;
 
   /// return the current variables (currentVariables)
   const Variables& current_variables() const;
@@ -2256,10 +2256,10 @@ nonlinear_eq_constraint_targets(const RealVector& nln_eq_targets)
 }
 
 
-//inline const SizetArray& Model::merged_discrete_ids() const
+//inline const SizetArray& Model::relaxed_discrete_ids() const
 //{
-//  return (modelRep) ? modelRep->currentVariables.merged_discrete_ids()
-//                    : currentVariables.merged_discrete_ids();
+//  return (modelRep) ? modelRep->currentVariables.relaxed_discrete_ids()
+//                    : currentVariables.relaxed_discrete_ids();
 //}
 
 

@@ -21,18 +21,13 @@
 
 namespace Dakota {
 
-/// Derived class within the Variables hierarchy which employs
-/// the default data view (no variable or domain type array merging).
+/// Derived class within the Variables hierarchy which separates
+/// continuous and discrete variables (no domain type array merging).
 
 /** Derived variables classes take different views of the design,
     uncertain, and state variable types and the continuous and
     discrete domain types.  The MixedVariables derived class
-    separates the design, uncertain, and state variable types as well
-    as the continuous and discrete domain types.  The result is
-    separate arrays for continuous design, discrete design, uncertain,
-    continuous state, and discrete state variables.  This is the
-    default approach, so all iterators and strategies not specifically
-    utilizing the All or Merged views use this approach (see
+    separates the continuous and discrete domain types (see
     Variables::get_variables(problem_db)). */
 
 class MixedVariables: public Variables
