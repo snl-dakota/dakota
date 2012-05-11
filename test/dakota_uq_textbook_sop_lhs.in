@@ -22,7 +22,7 @@ method,
 #	centered_parameter_study			#1
 #	  step_vector = 1 1				#1
 #	  steps_per_variable = 2			#1
-#	sampling all_variables			#2
+#	sampling	     				#2
 #	  samples = 10 seed = 12347			#2
 
 model,
@@ -60,6 +60,7 @@ variables,
 			  30. 40. 50. 60. 70.		#0,#1,#4
 	  descriptors = 'X1_mean' 'X3_mean'		#0,#1
 #	  descriptors = 'X3_mean' 'X4_mean'		#4
+#	active all    		  			#2
 #	histogram_point = 2				#2
 #	  abscissas     = 50. 60. 70. 80. 90.		#2
 #			  30. 40. 50. 60. 70.		#2

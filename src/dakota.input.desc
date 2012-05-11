@@ -785,9 +785,6 @@ TAG "method/sampling/sample_type/incremental_lhs/previous_samples"
 
 TAG "method/sampling/variance_based_decomp"
 TAG "method/sampling/variance_based_decomp/drop_tolerance"
-TAG "method/polynomial_chaos/all_variables"
-	DESC "{All variables flag} MethodCommands.html#MethodNonDMC"
-
 TAG "method/polynomial_chaos/fixed_seed"
 	DESC "{Fixed seed flag} MethodCommands.html#MethodNonDMC"
 
@@ -1054,9 +1051,6 @@ TAG "method/global_reliability/x_gaussian_process/dakota"
 TAG "method/global_reliability/points_file"
 TAG "method/global_reliability/points_file/annotated"
 TAG "method/global_reliability/points_file/freeform"
-TAG "method/global_reliability/all_variables"
-	DESC "{All variables flag} MethodCommands.html#MethodNonDGlobalRel"
-
 TAG "method/global_reliability/use_derivatives"
 	DESC "{Derivative usage} MethodCommands.html#MethodNonDGlobalRel"
 
@@ -1364,6 +1358,15 @@ TAG "variables"
 TAG "variables/id_variables"
 	DESC "{Variables set identifier} VarCommands.html#VarSetId"
 
+TAG "variables/active"
+TAG "variables/active/all"
+TAG "variables/active/design"
+TAG "variables/active/uncertain"
+TAG "variables/active/aleatory"
+TAG "variables/active/epistemic"
+TAG "variables/active/state"
+TAG "variables/mixed"
+TAG "variables/relaxed"
 TAG "variables/continuous_design" GROUP "Design Variables"
 	DESC "{Continuous design variables} VarCommands.html#VarCDV"
 

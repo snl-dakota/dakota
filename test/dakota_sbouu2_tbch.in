@@ -55,7 +55,7 @@ responses,
 method,
 	id_method = 'DACE'
 	model_pointer = 'DACE_M'
-	sampling all_variables
+	sampling
 	  sample_type lhs #samples = 9
 	  seed = 12347 rng rnum2
 #	dace lhs seed = 5

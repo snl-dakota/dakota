@@ -2020,6 +2020,19 @@ short ProblemDescDB::get_short(const String& entry_name) const
     if ((kw = (KW<short, DataModelRep>*)Binsearch(Shdmo, L)))
 	return dbRep->dataModelIter->dataModelRep->*kw->p;
   }
+  else if ((L = Begins(entry_name, "variables."))) {
+    if (dbRep->variablesDBLocked)
+	Locked_db();
+    #define P &DataVariablesRep::
+    static KW<short, DataVariablesRep> Shdv[] = { // must be sorted
+	{"domain", P varsDomain},
+	{"view", P varsView}};
+    #undef P
+
+    KW<short, DataVariablesRep> *kw;
+    if ((kw = (KW<short, DataVariablesRep>*)Binsearch(Shdv, L)))
+	return dbRep->dataVariablesIter->dataVarsRep->*kw->p;
+  }
   Bad_name(entry_name, "get_short");
   return abort_handler_t<short>(-1);
 }
@@ -2186,7 +2199,6 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"main_effects", P mainEffectsFlag},
 	{"mutation_adaptive", P mutationAdaptive},
 	{"nl2sol.regression_diagnostics", P regressDiag},
-	{"nond.all_variables", P allVarsFlag},
 	{"nond.piecewise_basis", P piecewiseBasis},
 	{"nond.tensor_grid", P probCollocFlag},
 	{"point_file_annotated", P approxPointFileAnnotated},

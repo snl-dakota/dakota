@@ -150,9 +150,9 @@ public:
   KWH(method_strL);
   KWH(method_true);
   KWH(method_tr_final);
-  KWH(method_type);
   KWH(method_ushint);
   KWH(method_ushintL);
+  KWH(method_type);
 
   KWH(model_Real);
   KWH(model_RealDL);
@@ -207,6 +207,7 @@ public:
   KWH(var_true);
   KWH(var_vil);
   KWH(var_vrl);
+  KWH(var_type);
 
 #undef KWH
 };

@@ -455,6 +455,12 @@ Var_brv {
 	Real b;
 	};
 
+ struct
+Var_mp_type {
+	short DataVariablesRep::* sp;
+	short type;
+	};
+
  void NIDRProblemDescDB::
 iface_Rlit(const char *keyname, Values *val, void **g, void *v)
 {
@@ -1978,6 +1984,12 @@ var_vil(const char *keyname, Values *val, void **g, void *v)
 	z = val->i;
 	for(i = 0; i < n; i++)
 		(*iv)[i] = z[i];
+	}
+
+ void NIDRProblemDescDB::
+var_type(const char *keyname, Values *val, void **g, void *v)
+{
+	(*(Var_Info**)g)->dv->*((Var_mp_type*)v)->sp = ((Var_mp_type*)v)->type;
 	}
 
  void NIDRProblemDescDB::
@@ -4502,7 +4514,6 @@ static StringArray
         MP_(miscOptions);
 
 static bool
-	MP_(allVarsFlag),
 	MP_(approxPointFileAnnotated),
 	MP_(constantPenalty),
 	MP_(expansionFlag),
@@ -4838,6 +4849,7 @@ static int
 #define Vchv(x,y,z) {#x,&DataVariablesRep::y,0,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds,&DataVariablesRep::z##Vars,&DataVariablesRep::z##Labels}
 #define Vchi(x,y,z) {#x,&DataVariablesRep::y,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds,&DataVariablesRep::z##Vars,&DataVariablesRep::z##Labels}
 #define VP_(x) *Var_Info::* var_mp_Var_Info_##x = &Var_Info::x
+#define Vtype(x,y) var_mp_##x##_##y = {&DataVariablesRep::x,y}
 
 static size_t
 	MP_(numBetaUncVars),
@@ -5023,6 +5035,16 @@ static Var_brv //* change _ to 2s
 	MP2s(weibullUncAlphas,0.),
 	MP2s(weibullUncBetas,0.);
 
+static Var_mp_type
+	Vtype(varsDomain,MIXED_DOMAIN),
+	Vtype(varsDomain,RELAXED_DOMAIN),
+	Vtype(varsView,ALL_VIEW),
+	Vtype(varsView,DESIGN_VIEW),
+	Vtype(varsView,UNCERTAIN_VIEW),
+	Vtype(varsView,ALEATORY_UNCERTAIN_VIEW),
+	Vtype(varsView,EPISTEMIC_UNCERTAIN_VIEW),
+        Vtype(varsView,STATE_VIEW);
+
 #undef VP_
 #undef Vchi
 #undef Vchv
@@ -5030,6 +5052,7 @@ static Var_brv //* change _ to 2s
 #undef Vchu
 #undef MP2s
 #undef MP_
+#undef Vtype
 
  static const char *
 Var_Name(StringArray *sa, char *buf, size_t i)

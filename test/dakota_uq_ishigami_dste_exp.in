@@ -50,12 +50,6 @@ method,
         model_pointer = 'ALEAT_M'
 	stoch_collocation askey
 	  quadrature_order = 10
-#         all_variables			#3
-
-##########################################################################
-# Test 2 is the case where a combined expansion is performed.            # 
-# The other tests involve an expansion only over the aleatory variables. #
-##########################################################################
 
 model,
         id_model = 'ALEAT_M'
@@ -64,8 +58,14 @@ model,
           interface_pointer = 'ALEAT_I'
           responses_pointer = 'ALEAT_R'
 
+##########################################################################
+# Test 3 is the case where a combined expansion is performed.            # 
+# The other tests involve an expansion only over the aleatory variables. #
+##########################################################################
+
 variables,
         id_variables = 'ALEAT_V'
+	active all			#3
 	continuous_design = 1
 	  initial_point 1
 	  lower_bounds 	0.

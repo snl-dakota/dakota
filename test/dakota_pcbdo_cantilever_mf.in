@@ -90,7 +90,7 @@ model,
 method,
 	id_method = 'UQ_COMBINED_EXP'
 	model_pointer = 'UQ_M_LO_FI'
-	polynomial_chaos all_variables			#0,#1,#4,#5
+	polynomial_chaos					#0,#1,#4,#5
  	  expansion_order = 4					#0,#1
 	  collocation_ratio = 2 seed = 12347 rng rnum2		#0,#1
 #	  sparse_grid_level = 4 non_nested			#4,#5
@@ -133,19 +133,28 @@ method,
 model,
 	id_model = 'UQ_M_LO_FI'
 	single
-	  variables_pointer = 'UQ_V'
+	  variables_pointer = 'UQ_V_LO_FI'
 	  interface_pointer = 'UQ_I'
 	  responses_pointer = 'UQ_R_LO_FI'
 
 model,
 	id_model = 'UQ_M_HI_FI'
 	single
-	  variables_pointer = 'UQ_V'
+	  variables_pointer = 'UQ_V_HI_FI'
 	  interface_pointer = 'UQ_I'
 	  responses_pointer = 'UQ_R_HI_FI'
 
 variables,
-	id_variables = 'UQ_V'
+	id_variables = 'UQ_V_LO_FI'
+	active all				#0,#1,#4,#5
+	continuous_design = 2
+	normal_uncertain = 4
+	  means             =  40000. 29.E+6 500. 1000.
+	  std_deviations    =  2000. 1.45E+6 100. 100.
+	  descriptors       =  'R' 'E' 'X' 'Y'
+
+variables,
+	id_variables = 'UQ_V_HI_FI'
 	continuous_design = 2
 	normal_uncertain = 4
 	  means             =  40000. 29.E+6 500. 1000.

@@ -651,7 +651,6 @@ KEYWORD12 method
 	    lhs
 	    | random
 	    ]
-	  [ all_variables ]
 	  [ fixed_seed ]
 	  [ reliability_levels REALLIST
 	    [ num_reliability_levels INTEGERLIST ]
@@ -733,7 +732,6 @@ KEYWORD12 method
 	    lhs
 	    | random
 	    ]
-	  [ all_variables ]
 	  [ fixed_seed ]
 	  [ reliability_levels REALLIST
 	    [ num_reliability_levels INTEGERLIST ]
@@ -781,7 +779,6 @@ KEYWORD12 method
 	  [ variance_based_decomp
 	    [ drop_tolerance REAL ]
 	    ]
-	  [ all_variables ]
 	  [ fixed_seed ]
 	  [ reliability_levels REALLIST
 	    [ num_reliability_levels INTEGERLIST ]
@@ -1095,7 +1092,6 @@ KEYWORD12 method
 	    [ annotated
 	    | freeform ]
 	    ]
-	  [ all_variables ]
 	  [ use_derivatives ]
 	  [ seed INTEGER ]
 	  [ rng
@@ -1294,6 +1290,16 @@ KEYWORD model
 
 KEYWORD12 variables
 	[ id_variables STRING ]
+	[ active
+	  all
+	  | design
+	  | uncertain
+	  | aleatory
+	  | epistemic
+	  | state
+	  ]
+	[ mixed
+	| relaxed ]
 	[ continuous_design INTEGER > 0
 	  [ initial_point ALIAS cdv_initial_point REALLIST ]
 	  [ lower_bounds ALIAS cdv_lower_bounds REALLIST ]

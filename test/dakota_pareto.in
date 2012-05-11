@@ -30,7 +30,7 @@ method,
 #method,					#2
 #	id_method = 'SAMPLING'			#2
 #	model_pointer = 'TRUTH'			#2
-#	sampling all_variables		#2
+#	sampling				#2
 #	  seed = 531				#2
 #	  sample_type lhs			#2
 

@@ -26,7 +26,6 @@ method,
         sampling,
 	  samples = 100 seed = 1
 	  complementary distribution
-#         all_variables                                 #8
 	  response_levels = 3.6e+11 4.0e+11 4.4e+11	#0,#1,#2,#3,#p0
 			    6.0e+04 6.5e+04 7.0e+04	#0,#1,#2,#3,#p0
 			    3.5e+05 4.0e+05 4.5e+05	#0,#1,#2,#3,#p0
@@ -41,6 +40,7 @@ method,
 #	  sample_type random   				#1,#3
 
 variables,
+#	active all                                    #8
 #       discrete_design_range = 2                     #8
 #         lower_bounds  = 0. 0.                       #8
 #         upper_bounds  = 5. 5.                       #8

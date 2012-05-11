@@ -115,46 +115,50 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   // initialize total uncertain variables
   numUncertainVars = numAleatoryUncVars + numEpistemicUncVars;
 
-  // initialize design/state variables for all_variables mode
-  if (active_view == RELAXED_ALL || active_view == MIXED_ALL) {
-    numContDesVars   = probDescDB.get_sizet("variables.continuous_design");
-    numContStateVars = probDescDB.get_sizet("variables.continuous_state");
-    if (active_view == RELAXED_ALL) {
+  // initialize design variables (if active)
+  if (active_view == RELAXED_ALL    || active_view == MIXED_ALL ||
+      active_view == RELAXED_DESIGN || active_view == MIXED_DESIGN) {
+    numContDesVars = probDescDB.get_sizet("variables.continuous_design");
+    if (active_view == RELAXED_ALL)
       numContDesVars += probDescDB.get_sizet("variables.discrete_design_range")
 	+ probDescDB.get_sizet("variables.discrete_design_set_int")
 	+ probDescDB.get_sizet("variables.discrete_design_set_real");
-      numContStateVars += probDescDB.get_sizet("variables.discrete_state_range")
-	+ probDescDB.get_sizet("variables.discrete_state_set_int")
-	+ probDescDB.get_sizet("variables.discrete_state_set_real");
-    }
     else {
       numDiscIntDesVars
 	= probDescDB.get_sizet("variables.discrete_design_range")
 	+ probDescDB.get_sizet("variables.discrete_design_set_int");
       numDiscRealDesVars
 	= probDescDB.get_sizet("variables.discrete_design_set_real");
+    }
+    numDesignVars = numContDesVars + numDiscIntDesVars + numDiscRealDesVars;
+  }
+
+  // initialize state variables (if active)
+  if (active_view == RELAXED_ALL   || active_view == MIXED_ALL ||
+      active_view == RELAXED_STATE || active_view == MIXED_STATE) {
+    numContStateVars = probDescDB.get_sizet("variables.continuous_state");
+    if (active_view == RELAXED_ALL)
+      numContStateVars += probDescDB.get_sizet("variables.discrete_state_range")
+	+ probDescDB.get_sizet("variables.discrete_state_set_int")
+	+ probDescDB.get_sizet("variables.discrete_state_set_real");
+    else {
       numDiscIntStateVars
 	= probDescDB.get_sizet("variables.discrete_state_range")
 	+ probDescDB.get_sizet("variables.discrete_state_set_int");
       numDiscRealStateVars
 	= probDescDB.get_sizet("variables.discrete_state_set_real");
     }
-    numDesignVars = numContDesVars + numDiscIntDesVars + numDiscRealDesVars;
     numStateVars
       = numContStateVars + numDiscIntStateVars + numDiscRealStateVars;
   }
-  else if (!numUncertainVars) {// || !numResponseFunctions) {
-    // if !all_variables, then response function type should be generic
-    // (numResponseFunctions implies UQ usage; numFunctions has a broader
-    // interpretation, e.g., general DACE usage of NonDLHSSampling iterator).
-    Cerr << "\nError: number of uncertain variables "
-       //<< "and number of response functions "
-	 << "must be nonzero in Dakota::NonD." << std::endl;
+
+  if ( !numUncertainVars && !numDesignVars && !numStateVars ) {
+    Cerr << "\nError: number of active variables must be nonzero in Dakota::"
+	 << "NonD." << std::endl;
     err_flag = true;
   }
-
   if (numContinuousVars + numDiscreteIntVars + numDiscreteRealVars !=
-      numDesignVars + numUncertainVars + numStateVars) {
+      numDesignVars     + numUncertainVars   + numStateVars) {
     Cerr << "\nError: bad number of active variables in Dakota::NonD."
 	 << std::endl;
     err_flag = true;
@@ -316,6 +320,15 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
     numDiscRealDesVars = model.drv();
     numDesignVars = numContDesVars + numDiscIntDesVars + numDiscRealDesVars;
   }
+  else if (active_view == RELAXED_STATE || active_view == MIXED_STATE) {
+    // can happen with EGO usage of on-the-fly NonDLHSSampling construction.
+    // TO DO: would selecting samplingVarsMode=ALL_UNIFORM from EGO be OK?
+    numContStateVars     = model.cv();
+    numDiscIntStateVars  = model.div();
+    numDiscRealStateVars = model.drv();
+    numStateVars
+      = numContStateVars + numDiscIntStateVars + numDiscRealStateVars;
+  }
   else if (!numUncertainVars) {// || !numResponseFunctions) {
     // if !all_variables, then response function type should be generic
     // (numResponseFunctions implies UQ usage; numFunctions has a broader
@@ -327,7 +340,7 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
   }
 
   if (numContinuousVars + numDiscreteIntVars + numDiscreteRealVars !=
-      numDesignVars + numUncertainVars + numStateVars) {
+      numDesignVars     + numUncertainVars   + numStateVars) {
     Cerr << "\nError: bad number of active variables in Dakota::NonD."
 	 << std::endl;
     err_flag = true;

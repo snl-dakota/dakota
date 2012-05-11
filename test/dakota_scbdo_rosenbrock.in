@@ -48,7 +48,6 @@ method,
 	id_method = 'UQ'
 	model_pointer = 'UQ_M'
 	stoch_collocation
-#	  all_variables				#1,#3,#5,#7
 	  quadrature_order = 5			#0,#1,#2,#3
 #	  sparse_grid_level = 1			#4,#6
 #	  sparse_grid_level = 2 non_nested	#5,#7
@@ -67,6 +66,7 @@ model,
 
 variables,
 	id_variables = 'UQ_V'
+#	active all				#1,#3,#5,#7
 	continuous_design = 1
 	normal_uncertain = 1
       	  means             =  0.

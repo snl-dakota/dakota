@@ -91,7 +91,7 @@ responses,
 method,
 	id_method = 'DACE'
 	model_pointer = 'DACE_M'
-        sampling all_variables
+        sampling
 	  seed = 12347 rng rnum2
 	  sample_type lhs #samples = 42
 #	dace lhs seed = 5
@@ -100,9 +100,18 @@ method,
 model,
 	id_model = 'DACE_M'
 	single
-	  variables_pointer = 'UQ_V'
+	  variables_pointer = 'DACE_V'
 	  interface_pointer = 'UQ_ACTUAL'
 	  responses_pointer = 'UQ_R'
+
+variables,
+	id_variables = 'DACE_V'
+	active all
+	continuous_design = 2
+	normal_uncertain = 4
+	  means             =  40000. 29.E+6 500. 1000.
+	  std_deviations    =  2000. 1.45E+6 100. 100.
+	  descriptors       =  'R' 'E' 'X' 'Y'
 
 interface,
 	id_interface = 'UQ_ACTUAL'

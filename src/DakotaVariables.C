@@ -179,65 +179,48 @@ Variables* Variables::get_variables(const SharedVariablesData& svd) const
 std::pair<short,short>
 Variables::get_view(const ProblemDescDB& problem_db) const
 {
-  // Default variables behavior uses the distinct arrays for continuous
-  // and discrete vars/bnds (used by most iterators as well as mixed variable 
-  // strategies with separate continuous and discrete iterators).  In some 
-  // cases (e.g., branch & bound), a relaxed data approach is used in which 
-  // continuous and discrete arrays are combined into a single continuous array
-  // (integrality is relaxed; the converse of truncating or discretizing reals
-  // could also be used in the future if needed).  And in other cases (e.g., 
-  // parameter studies and dace), no distinction is drawn between design,
-  // uncertain, and state variable types and all types are collected into 
-  // allVars arrays.
+  // Manage variable views (all, design, uncertain, aleatory, epistemic,
+  // or state) and continuous-discrete domain types (mixed or relaxed).
+  // The former are accomplished with Teuchos/Boost views, whereas the
+  // latter utilize subclassing (they are not views).
 
   // Since this is used by the envelope, don't set variablesView
   std::pair<short,short> view; // view.first = active, view.second = inactive
 
-  // Possibilities:  distinct types vs. all types combined
-  //                 mixed cont./discrete vs. relaxed cont./discrete
-  // If distinct, then active/inactive could be design, uncertain, or state.
-  const String& method_name = problem_db.get_string("method.algorithm");
-  if (method_name == "branch_and_bound")
-    view.first = RELAXED_DESIGN;                // active
-  else if ( method_name.ends("_parameter_study") || method_name == "dace" ||
-	    method_name.begins("fsu_") || method_name.begins("psuade_") || 
-	    ( method_name.begins("nond_") &&
-	      problem_db.get_bool("method.nond.all_variables") ) )
-    view.first = MIXED_ALL;                     // active
-  else if (method_name.begins("nond_")) {
-    if (method_name == "nond_sampling") { // MC/LHS, Incremental MC/LHS
-      size_t num_auv = problem_db.get_sizet("variables.aleatory_uncertain"),
-	     num_euv = problem_db.get_sizet("variables.epistemic_uncertain");
-      //if (problem_db.get_bool("method.nond.aleatory_variables"))
-      //  view.first = MIXED_ALEATORY_UNCERTAIN;  // active
-      //else if (problem_db.get_bool("method.nond.epistemic_variables"))
-      //  view.first = MIXED_EPISTEMIC_UNCERTAIN; // active
-      //else { // default is whatever is specified
-      if (num_auv && num_euv)
-	view.first = MIXED_UNCERTAIN;           // active
-      else if (num_euv)
-	view.first = MIXED_EPISTEMIC_UNCERTAIN; // active
-      else if (num_auv)
-	view.first = MIXED_ALEATORY_UNCERTAIN;  // active
-      else {
-	Cerr << "Error: uncertain variables required for nond_sampling in "
-	     << "Variables::get_view()." << std::endl;
-	abort_handler(-1);
-      }
-      //}
-    }
-    else if (method_name.ends("_evidence") ||
-	     method_name.ends("_interval_est"))
-      view.first = MIXED_EPISTEMIC_UNCERTAIN;   // active
-    else // stoch exp and reliability methods
-      view.first = MIXED_ALEATORY_UNCERTAIN;    // active
-  }
-  else if (method_name == "richardson_extrap")
-    view.first = MIXED_STATE;                   // active
-  else
-    view.first = MIXED_DESIGN;                  // active
+  // View logic has 3 levels, listed in order of precedence:
+  // 1. Explicit view selection in variables specification
+  // 2. Peek at responses spec, and infer design view from optimization or
+  //    calibration response data types
+  // 3. For generic response data, peek at method spec and infer view
 
-  view.second = EMPTY;                                   // inactive
+  // Domain logic has 2 levels, listed in order of precedence:
+  // 1. Explicit mixed/relaxed domain selection in variables specification
+  // 2. Peek at method spec and infer mixed/relaxed domain
+
+  // ---------------------------------------------------------------
+  // ACTIVE VIEW: ALL, DESIGN, UNCERTAIN, ALEATORY, EPISTEMIC, STATE
+  // ---------------------------------------------------------------
+  short view_spec = problem_db.get_short("variables.view"),
+      domain_spec = problem_db.get_short("variables.domain");
+  bool relaxed = ( domain_spec   == RELAXED_DOMAIN ||      // level 1 domain
+		   ( domain_spec == DEFAULT_DOMAIN &&      // level 2 domain
+		     method_domain(problem_db) == RELAXED_DOMAIN ) );
+  switch (view_spec) {
+  case DEFAULT_VIEW: // no view selection in variables spec -> level 2,3 view
+    if (response_view(problem_db) == DESIGN_VIEW) // precedence level 2 view
+      view.first = (relaxed) ? RELAXED_DESIGN : MIXED_DESIGN;
+    else                                          // precedence level 3 view
+      view.first = method_map(method_view(problem_db), relaxed);
+    break;
+  default: // view selection: ALL, DESIGN, UNCERTAIN, and STATE views
+    view.first = method_map(view_spec, relaxed);
+  }
+
+  view.second = EMPTY; // inactive views only set by NestedModel
+#ifdef DEBUG
+  Cout << "Variables view: active_view = " << view.first
+       << " inactive_view = " << view.second << std::endl;
+#endif // DEBUG
   return view;
 }
 
@@ -350,6 +333,80 @@ void Variables::inactive_view(short view2)
       build_inactive_views();
     }
   }
+}
+
+
+/** Aggregate view and domain settings. */
+short Variables::method_map(short view_spec, bool relaxed) const
+{
+  switch (view_spec) {
+  case ALL_VIEW: // precedence level 1 view selection
+    return (relaxed) ? RELAXED_ALL : MIXED_ALL;             break;
+  case DESIGN_VIEW: // precedence level 1 view selection
+    return (relaxed) ? RELAXED_DESIGN : MIXED_DESIGN;       break;
+  case UNCERTAIN_VIEW: // precedence level 1 view selection
+    return (relaxed) ? RELAXED_UNCERTAIN : MIXED_UNCERTAIN; break;
+  case ALEATORY_UNCERTAIN_VIEW: // precedence level 1 view selection
+    return (relaxed) ? RELAXED_ALEATORY_UNCERTAIN  : MIXED_ALEATORY_UNCERTAIN;
+    break;
+  case EPISTEMIC_UNCERTAIN_VIEW: // precedence level 1 view selection
+    return (relaxed) ? RELAXED_EPISTEMIC_UNCERTAIN : MIXED_EPISTEMIC_UNCERTAIN;
+    break;
+  case STATE_VIEW: // precedence level 1 view selection
+    return (relaxed) ? RELAXED_STATE : MIXED_STATE;         break;
+  default:
+    Cerr << "Error: unsupported view selection in Variables::method_map()"
+	 << std::endl;
+    abort_handler(-1);                                      break;
+  }
+}
+
+
+short Variables::method_domain(const ProblemDescDB& problem_db) const
+{
+  // B&B employs relaxation, all other employ mixed continuous-discrete
+  return (problem_db.get_string("method.algorithm") == "branch_and_bound") ?
+    RELAXED_DOMAIN : MIXED_DOMAIN;
+}
+
+
+short Variables::method_view(const ProblemDescDB& problem_db) const
+{
+  // last resort: active view if no user spec and no responses inference
+
+  const String& method_name = problem_db.get_string("method.algorithm");
+  if ( method_name.ends("_parameter_study") || method_name == "dace" ||
+       method_name.begins("fsu_") || method_name.begins("psuade_") )
+    return ALL_VIEW;
+  else if (method_name.begins("nond_")) {
+    if (method_name == "nond_sampling") { // MC/LHS, Incremental MC/LHS
+      size_t num_auv = problem_db.get_sizet("variables.aleatory_uncertain"),
+	     num_euv = problem_db.get_sizet("variables.epistemic_uncertain");
+      if (num_auv && num_euv) return UNCERTAIN_VIEW;
+      else if (num_euv)       return EPISTEMIC_UNCERTAIN_VIEW;
+      else if (num_auv)       return ALEATORY_UNCERTAIN_VIEW;
+      else {
+	Cerr << "Error: uncertain variables required for nond_sampling in "
+	     << "Variables::get_view()." << std::endl;
+	abort_handler(-1);    return DEFAULT_VIEW;
+      }
+    }
+    else if (method_name.ends("_evidence") || method_name.ends("_interval_est"))
+      return EPISTEMIC_UNCERTAIN_VIEW;
+    else // stoch exp and reliability methods
+      return ALEATORY_UNCERTAIN_VIEW;
+  }
+  else if (method_name == "richardson_extrap") return STATE_VIEW;
+  else                                         return DESIGN_VIEW;
+}
+
+
+short Variables::response_view(const ProblemDescDB& problem_db) const
+{
+  // if optimization or calibration response set, infer an active design view
+  return (problem_db.get_sizet("responses.num_least_squares_terms") ||
+	  problem_db.get_sizet("responses.num_objective_functions")) ?
+    DESIGN_VIEW : DEFAULT_VIEW;
 }
 
 

@@ -518,7 +518,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
                     ]
 		    )
-		  [ all_variables {N_mdm(true,allVarsFlag)} ]
 		  [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
 		  )
 		[ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
@@ -776,7 +775,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
                 freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
               ]
- 	    [ all_variables {N_mdm(true,allVarsFlag)} ]
             [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 	    [ seed INTEGER {N_mdm(pint,randomSeed)} ]
 	    [ rng {0}
@@ -981,6 +979,15 @@ KEYWORD model {N_mom3(start,0,stop)}
 
 KEYWORD12 variables {N_vam3(start,0,stop)}
 	[ id_variables STRING {N_vam(str,idVariables)} ]
+ 	[ active {0}
+	  all         {N_vam(type,varsView_ALL_VIEW)}
+	  | design    {N_vam(type,varsView_DESIGN_VIEW)}
+	  | uncertain {N_vam(type,varsView_UNCERTAIN_VIEW)}
+	  | aleatory  {N_vam(type,varsView_ALEATORY_UNCERTAIN_VIEW)}
+	  | epistemic {N_vam(type,varsView_EPISTEMIC_UNCERTAIN_VIEW)}
+	  | state     {N_vam(type,varsView_STATE_VIEW)} ]
+	[ mixed       {N_vam(type,varsDomain_MIXED_DOMAIN)}
+	  | relaxed   {N_vam(type,varsDomain_RELAXED_DOMAIN)} ]
 	[ continuous_design INTEGER > 0 {N_vam(intz,numContinuousDesVars)}
 	  [ initial_point ALIAS cdv_initial_point REALLIST LEN continuous_design {N_vam(RealLd,continuousDesignVars)} ]
 	  [ lower_bounds ALIAS cdv_lower_bounds REALLIST LEN continuous_design {N_vam(RealLd,continuousDesignLowerBnds)} ]

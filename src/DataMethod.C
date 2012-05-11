@@ -91,8 +91,7 @@ DataMethodRep::DataMethodRep():
   logFile("JEGAGlobal.log"),
   printPopFlag(false),
   // JEGA/COLINY
-  initializationType("unique_random"), populationSize(50),
-  flatFile(),
+  initializationType("unique_random"), populationSize(50), flatFile(),
   // NCSU 
   volBoxSize(-1.),
   // DDACE
@@ -113,8 +112,7 @@ DataMethodRep::DataMethodRep():
   piecewiseBasis(false), sparseGridBasisType(DEFAULT_INTERPOLANT),
   expansionTerms(0), expansionSamples(0), cubIntOrder(USHRT_MAX),
   collocationPoints(0), collocationRatio(0.), collocRatioTermsOrder(1.),
-  probCollocFlag(false), allVarsFlag(false),
-  //expansionSampleType("lhs"), sampleType("lhs"),
+  probCollocFlag(false), //expansionSampleType("lhs"), sampleType("lhs"),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0),
   emulatorType(NO_EMULATOR), rejectionType("delayed"),
@@ -220,9 +218,9 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << reliabilitySearchType << reliabilityIntegration << integrationRefine
     << nondOptAlgorithm << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << allVarsFlag
-    << emulatorSamples << emulatorType << rejectionType << metropolisType
-    << proposalCovScale << likelihoodScale;
+    << reliabilityLevels << genReliabilityLevels << emulatorSamples
+    << emulatorType << rejectionType << metropolisType << proposalCovScale
+    << likelihoodScale;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints
@@ -327,9 +325,9 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> reliabilitySearchType >> reliabilityIntegration >> integrationRefine
     >> nondOptAlgorithm >> distributionType >> responseLevelTarget
     >> responseLevelTargetReduce >> responseLevels >> probabilityLevels
-    >> reliabilityLevels >> genReliabilityLevels >> allVarsFlag
-    >> emulatorSamples >> emulatorType >> rejectionType >> metropolisType
-    >> proposalCovScale >> likelihoodScale;
+    >> reliabilityLevels >> genReliabilityLevels >> emulatorSamples
+    >> emulatorType >> rejectionType >> metropolisType >> proposalCovScale
+    >> likelihoodScale;
 
   // Parameter Study
   s >> finalPoint >> stepVector >> numSteps >> stepsPerVariable >> listOfPoints
@@ -434,9 +432,9 @@ void DataMethodRep::write(std::ostream& s) const
     << reliabilitySearchType << reliabilityIntegration << integrationRefine
     << nondOptAlgorithm << distributionType << responseLevelTarget
     << responseLevelTargetReduce << responseLevels << probabilityLevels
-    << reliabilityLevels << genReliabilityLevels << allVarsFlag
-    << emulatorSamples << emulatorType << rejectionType << metropolisType
-    << proposalCovScale << likelihoodScale;
+    << reliabilityLevels << genReliabilityLevels << emulatorSamples
+    << emulatorType << rejectionType << metropolisType << proposalCovScale
+    << likelihoodScale;
 
   // Parameter Study
   s << finalPoint << stepVector << numSteps << stepsPerVariable << listOfPoints

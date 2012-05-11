@@ -51,7 +51,6 @@ method,
         model_pointer = 'INNER_M'
 	polynomial_chaos non_nested	#0,#1
 #	stoch_collocation non_nested	#2,#3
-#	  all_variables				#1,#3
 	  sparse_grid_level = 4			#0,#2
 #	  sparse_grid_level = 6			#1,#3
           num_response_levels = 0 1 1
@@ -69,8 +68,9 @@ model,
 
 variables,
         id_variables = 'INNER_V'
+#	active all				#1,#3
         continuous_design = 2
-# bounds needed for all_variables mode
+# bounds needed for all view
 	  upper_bounds    10.0   10.0
 	  lower_bounds     1.0    1.0
           descriptors 'w' 't'

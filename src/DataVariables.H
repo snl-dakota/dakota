@@ -23,9 +23,14 @@
 
 namespace Dakota {
 
+// special values for domain: Relaxed or Mixed
+enum { DEFAULT_DOMAIN, RELAXED_DOMAIN, MIXED_DOMAIN };
+// special values for active view: All, Design, {A+E,A,E} Uncertain, or State
+enum { DEFAULT_VIEW, ALL_VIEW, DESIGN_VIEW, UNCERTAIN_VIEW,
+       ALEATORY_UNCERTAIN_VIEW, EPISTEMIC_UNCERTAIN_VIEW, STATE_VIEW };
 // special values for active and inactive views include EMPTY plus the 12
-// combinations of All, Design, A Uncertain, E Uncertain, A+E Uncertain, or
-// State [6 total] and Relaxed or Mixed [2 total].
+// combinations of All, Design, {A+E,A,E} Uncertain, or State active view
+// [6 total] and Relaxed or Mixed domain [2 total].
 enum { EMPTY, RELAXED_ALL, MIXED_ALL,
        RELAXED_DESIGN, RELAXED_UNCERTAIN, RELAXED_ALEATORY_UNCERTAIN,
        RELAXED_EPISTEMIC_UNCERTAIN, RELAXED_STATE,
@@ -73,6 +78,12 @@ public:
   /// string identifier for the variables specification data set
   /// (from the \c id_variables specification in \ref VarSetId)
   String idVariables;
+  /// user selection/override of variables view: {DEFAULT,ALL,DESIGN,
+  /// UNCERTAIN,ALEATORY_UNCERTAIN,EPISTEMIC_UNCERTAIN,STATE}_VIEW
+  short varsView;
+  /// user selection/override of variables domain:
+  /// {DEFAULT,MIXED,RELAXED}_DOMAIN
+  short varsDomain;
   /// number of continuous design variables (from the \c continuous_design
   /// specification in \ref VarDV)
   size_t numContinuousDesVars;

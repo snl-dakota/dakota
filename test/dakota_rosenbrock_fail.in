@@ -22,7 +22,7 @@ strategy,
 #method,					#1
 #	id_method = 'SAMPLING'			#1
 #	model_pointer = 'TRUTH'			#1
-#	sampling all_variables			#1
+#	sampling      				#1
 #	  samples = 10 sample_type lhs		#1
 #	  seed = 531 rng rnum2			#1
 

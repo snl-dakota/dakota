@@ -17,7 +17,6 @@
 #include "data_types.h"
 #include "global_defs.h"  // for BaseConstructor
 #include "SharedVariablesData.H"
-#include "DakotaString.H"
 
 
 namespace Dakota {
@@ -405,6 +404,15 @@ private:
   /// Used by the alternate envelope constructors, by read functions,
   /// and by copy() to instantiate a new letter class
   Variables* get_variables(const SharedVariablesData& svd) const;
+
+  /// infer domain from method selection
+  short method_map(short view_spec, bool relaxed) const;
+  /// infer domain from method selection
+  short method_domain(const ProblemDescDB& problem_db) const;
+  /// infer view from method selection
+  short method_view(const ProblemDescDB& problem_db) const;
+  /// infer view from type of response data set
+  short response_view(const ProblemDescDB& problem_db) const;
 
   /// perform sanity checks on view.first and view.second after update
   void check_view_compatibility();

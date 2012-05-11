@@ -73,9 +73,9 @@ model,
 variables,
 	continuous_design = 2
 	  initial_point   -1.2	1.0
-	  lower_bounds    -2.0     -2.0
+	  lower_bounds    -2.0 -2.0
 	  upper_bounds     2.0 	2.0
-	  descriptors      'x1'     'x2'
+	  descriptors      'x1' 'x2'
 
 responses,
 	id_responses = 'SURROGATE_RESP'
@@ -110,7 +110,6 @@ method,
 #	  samples =  5		#11
 	  seed = 531 rng rnum2
 	  sample_type lhs
-	  all_variables
 
 model,
 	id_model = 'TRUTH'

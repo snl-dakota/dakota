@@ -70,7 +70,6 @@ method,
       samples = 100
       seed = 531
       sample_type lhs
-      all_variables
 
 model,
     id_model = 'TRUTH'

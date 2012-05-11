@@ -5,7 +5,6 @@ strategy,
 
 method,
 	stoch_collocation
-#	  all_variables			
 	  quadrature_order = 5			#0,#1,#2,#3,#4,#5,#12,#13,#14,#15,#16,#17,#18,#19,#20
 	  dimension_preference = 5 3		#0,#1,#2,#3,#4,#12,#13,#14,#15,#16,#17,#18,#19,#20
 #	  sparse_grid_level = 2			#6,#7,#8,#9,#10,#11,#21,#22,#23,#24,#25,#26,#27,#28,#29

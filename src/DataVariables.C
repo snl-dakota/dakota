@@ -18,6 +18,7 @@ namespace Dakota {
 
 // Default constructor:
 DataVariablesRep::DataVariablesRep():
+  varsView(DEFAULT_VIEW), varsDomain(DEFAULT_DOMAIN),
   numContinuousDesVars(0), numDiscreteDesRangeVars(0),
   numDiscreteDesSetIntVars(0), numDiscreteDesSetRealVars(0),
   numNormalUncVars(0), numLognormalUncVars(0), numUniformUncVars(0),
@@ -34,17 +35,17 @@ DataVariablesRep::DataVariablesRep():
 
 void DataVariablesRep::write(MPIPackBuffer& s) const
 {
-  s << idVariables << numContinuousDesVars << numDiscreteDesRangeVars
-    << numDiscreteDesSetIntVars << numDiscreteDesSetRealVars << numNormalUncVars
-    << numLognormalUncVars << numUniformUncVars << numLoguniformUncVars
-    << numTriangularUncVars << numExponentialUncVars << numBetaUncVars
-    << numGammaUncVars << numGumbelUncVars << numFrechetUncVars
-    << numWeibullUncVars << numHistogramBinUncVars << numPoissonUncVars
-    << numBinomialUncVars << numNegBinomialUncVars  
-    << numGeometricUncVars << numHyperGeomUncVars 
-    << numHistogramPtUncVars  << numIntervalUncVars 
-    << numContinuousStateVars << numDiscreteStateRangeVars
-    << numDiscreteStateSetIntVars << numDiscreteStateSetRealVars;
+  s << idVariables << varsView << varsDomain << numContinuousDesVars
+    << numDiscreteDesRangeVars << numDiscreteDesSetIntVars
+    << numDiscreteDesSetRealVars << numNormalUncVars << numLognormalUncVars
+    << numUniformUncVars << numLoguniformUncVars << numTriangularUncVars
+    << numExponentialUncVars << numBetaUncVars << numGammaUncVars
+    << numGumbelUncVars << numFrechetUncVars << numWeibullUncVars
+    << numHistogramBinUncVars << numPoissonUncVars << numBinomialUncVars
+    << numNegBinomialUncVars << numGeometricUncVars << numHyperGeomUncVars 
+    << numHistogramPtUncVars << numIntervalUncVars << numContinuousStateVars
+    << numDiscreteStateRangeVars << numDiscreteStateSetIntVars
+    << numDiscreteStateSetRealVars;
 
   // Design arrays
   s << continuousDesignVars         << continuousDesignLowerBnds
@@ -104,17 +105,17 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
 
 void DataVariablesRep::read(MPIUnpackBuffer& s)
 {
-  s >> idVariables >> numContinuousDesVars >> numDiscreteDesRangeVars
-    >> numDiscreteDesSetIntVars >> numDiscreteDesSetRealVars >> numNormalUncVars
-    >> numLognormalUncVars >> numUniformUncVars >> numLoguniformUncVars
-    >> numTriangularUncVars >> numExponentialUncVars >> numBetaUncVars
-    >> numGammaUncVars >> numGumbelUncVars >> numFrechetUncVars
-    >> numWeibullUncVars >> numHistogramBinUncVars >> numPoissonUncVars
-    >> numBinomialUncVars >> numNegBinomialUncVars  
-    >> numGeometricUncVars >> numHyperGeomUncVars 
-    >> numHistogramPtUncVars >> numIntervalUncVars 
-    >> numContinuousStateVars >> numDiscreteStateRangeVars
-    >> numDiscreteStateSetIntVars >> numDiscreteStateSetRealVars;
+  s >> idVariables >> varsView >> varsDomain >> numContinuousDesVars
+    >> numDiscreteDesRangeVars >> numDiscreteDesSetIntVars
+    >> numDiscreteDesSetRealVars >> numNormalUncVars >> numLognormalUncVars
+    >> numUniformUncVars >> numLoguniformUncVars >> numTriangularUncVars
+    >> numExponentialUncVars >> numBetaUncVars >> numGammaUncVars
+    >> numGumbelUncVars >> numFrechetUncVars >> numWeibullUncVars
+    >> numHistogramBinUncVars >> numPoissonUncVars >> numBinomialUncVars
+    >> numNegBinomialUncVars >> numGeometricUncVars >> numHyperGeomUncVars 
+    >> numHistogramPtUncVars >> numIntervalUncVars >> numContinuousStateVars
+    >> numDiscreteStateRangeVars >> numDiscreteStateSetIntVars
+    >> numDiscreteStateSetRealVars;
 
   // Design arrays
   s >> continuousDesignVars         >> continuousDesignLowerBnds
@@ -174,17 +175,17 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
 
 void DataVariablesRep::write(std::ostream& s) const
 {
-  s << idVariables << numContinuousDesVars << numDiscreteDesRangeVars
-    << numDiscreteDesSetIntVars << numDiscreteDesSetRealVars << numNormalUncVars
-    << numLognormalUncVars << numUniformUncVars << numLoguniformUncVars
-    << numTriangularUncVars << numExponentialUncVars << numBetaUncVars
-    << numGammaUncVars << numGumbelUncVars << numFrechetUncVars
-    << numWeibullUncVars << numHistogramBinUncVars << numPoissonUncVars
-    << numBinomialUncVars << numNegBinomialUncVars 
-    << numGeometricUncVars << numHyperGeomUncVars
-    << numHistogramPtUncVars  << numIntervalUncVars
-    << numContinuousStateVars << numDiscreteStateRangeVars
-    << numDiscreteStateSetIntVars << numDiscreteStateSetRealVars;
+  s << idVariables << varsView << varsDomain << numContinuousDesVars
+    << numDiscreteDesRangeVars << numDiscreteDesSetIntVars
+    << numDiscreteDesSetRealVars << numNormalUncVars << numLognormalUncVars
+    << numUniformUncVars << numLoguniformUncVars << numTriangularUncVars
+    << numExponentialUncVars << numBetaUncVars << numGammaUncVars
+    << numGumbelUncVars << numFrechetUncVars << numWeibullUncVars
+    << numHistogramBinUncVars << numPoissonUncVars << numBinomialUncVars
+    << numNegBinomialUncVars << numGeometricUncVars << numHyperGeomUncVars 
+    << numHistogramPtUncVars << numIntervalUncVars << numContinuousStateVars
+    << numDiscreteStateRangeVars << numDiscreteStateSetIntVars
+    << numDiscreteStateSetRealVars;
 
   // Design arrays
   s << continuousDesignVars         << continuousDesignLowerBnds

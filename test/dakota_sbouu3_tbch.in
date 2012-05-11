@@ -123,7 +123,7 @@ responses,
 method,
 	id_method = 'DACE'
 	model_pointer = 'DACE_M'
-        sampling all_variables
+        sampling
 	  seed = 12347 rng rnum2
 	  sample_type lhs #samples = 68
 #	dace lhs seed = 5
@@ -132,9 +132,31 @@ method,
 model,
 	id_model = 'DACE_M'
 	single
-	  variables_pointer = 'UQ_V'
+	  variables_pointer = 'DACE_V'
 	  interface_pointer = 'UQ_ACTUAL'
 	  responses_pointer = 'UQ_R'
+
+variables,
+	id_variables = 'DACE_V'
+	active all
+	continuous_design = 2
+	normal_uncertain = 2
+	  means          =  248.89, 593.33
+	  std_deviations =   12.4,  29.7
+# 3 sigma bounds for DDACE:
+#	  lower_bounds =  211.7,  504.2
+#	  upper_bounds =  286.1,  682.4
+	  descriptors  =  'nuv1'  'nuv2'
+	uniform_uncertain = 2
+	  lower_bounds =  199.3,  474.63
+	  upper_bounds =  298.5,  712.
+	  descriptors  =  'uuv1'  'uuv2'
+	weibull_uncertain = 2
+	  alphas       =    12., 30.
+	  betas        =   250., 590.
+#	  lower_bounds =   225., 540.
+#	  upper_bounds =   275., 640.
+	  descriptors  =  'wuv1'  'wuv2'
 
 interface,
 	id_interface = 'UQ_ACTUAL'

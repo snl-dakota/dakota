@@ -80,7 +80,7 @@ model,
 method,
 	id_method = 'UQ_COMBINED_EXP'
 	model_pointer = 'UQ_M_LO_FI'
-	stoch_collocation all_variables	#0,#1,#4,#5
+	stoch_collocation			#0,#1,#4,#5
 #	local_reliability			#2,#3,#6,#7
 	  quadrature_order = 5			#0,#1
 #	  sparse_grid_level = 2 non_nested	#4,#5
@@ -115,19 +115,28 @@ method,
 model,
 	id_model = 'UQ_M_LO_FI'
 	single
-	  variables_pointer = 'UQ_V'
+	  variables_pointer = 'UQ_V_LO_FI'
 	  interface_pointer = 'UQ_I'
 	  responses_pointer = 'UQ_R_LO_FI'
 
 model,
 	id_model = 'UQ_M_HI_FI'
 	single
-	  variables_pointer = 'UQ_V'
+	  variables_pointer = 'UQ_V_HI_FI'
 	  interface_pointer = 'UQ_I'
 	  responses_pointer = 'UQ_R_HI_FI'
 
 variables,
-	id_variables = 'UQ_V'
+	id_variables = 'UQ_V_LO_FI'
+	active all				#0,#1,#4,#5
+	continuous_design = 1
+	normal_uncertain = 1
+      	  means             =  0.
+	  std_deviations    =  1.
+	  descriptors       = 'x2'
+
+variables,
+	id_variables = 'UQ_V_HI_FI'
 	continuous_design = 1
 	normal_uncertain = 1
       	  means             =  0.

@@ -723,8 +723,6 @@ public:
   RealVectorArray reliabilityLevels;
   /// the \c gen_reliability_levels specification in \ref MethodNonD
   RealVectorArray genReliabilityLevels;
-  /// the \c all_variables specification in \ref MethodNonD
-  bool allVarsFlag;
   /// the number of samples to construct a GP emulator for Bayesian 
   /// calibration methods (\ref MethodNonDBayesCalib)
   int emulatorSamples;
