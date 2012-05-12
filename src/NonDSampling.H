@@ -127,7 +127,8 @@ protected:
   /// prints the moments computed in compute_moments()
   void print_moments(std::ostream& s) const;
 
-  /// compute sampled subsets of all cv/div/drv from samplingVarsMode and model
+  /// compute sampled subsets (all, active, uncertain) within all
+  /// variables (acv/adiv/adrv) from samplingVarsMode and model
   void view_counts(const Model& model, size_t& cv_start, size_t& num_cv,
 		   size_t& div_start, size_t& num_div,
 		   size_t& drv_start, size_t& num_drv) const;

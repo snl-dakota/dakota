@@ -401,6 +401,8 @@ public:
 
   /// return distribParams
   Pecos::DistributionParams& distribution_parameters();
+  /// return distribParams
+  const Pecos::DistributionParams& distribution_parameters() const;
   /// set distribParams
   void distribution_parameters(const Pecos::DistributionParams& dp);
 
@@ -1433,6 +1435,10 @@ inline void Model::discrete_design_set_real_values(const RealSetArray& rsa)
 
 
 inline Pecos::DistributionParams& Model::distribution_parameters()
+{ return (modelRep) ? modelRep->distParams : distParams; }
+
+
+inline const Pecos::DistributionParams& Model::distribution_parameters() const
 { return (modelRep) ? modelRep->distParams : distParams; }
 
 

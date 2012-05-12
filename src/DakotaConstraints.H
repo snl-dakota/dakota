@@ -620,7 +620,7 @@ inactive_discrete_int_lower_bounds(const IntVector& idil_bnds)
 inline const IntVector& Constraints::inactive_discrete_int_upper_bounds() const
 {
   return(constraintsRep) ?
-    constraintsRep-> inactiveDiscreteIntUpperBnds : inactiveDiscreteIntUpperBnds;
+    constraintsRep->inactiveDiscreteIntUpperBnds : inactiveDiscreteIntUpperBnds;
 }
 
 
@@ -634,7 +634,8 @@ inactive_discrete_int_upper_bounds(const IntVector& idiu_bnds)
 }
 
 
-inline const RealVector& Constraints::inactive_discrete_real_lower_bounds() const
+inline const RealVector& Constraints::
+inactive_discrete_real_lower_bounds() const
 {
   return (constraintsRep) ?
     constraintsRep->inactiveDiscreteRealLowerBnds : inactiveDiscreteRealLowerBnds;
@@ -651,10 +652,11 @@ inactive_discrete_real_lower_bounds(const RealVector& idrl_bnds)
 }
 
 
-inline const RealVector& Constraints::inactive_discrete_real_upper_bounds() const
+inline const RealVector& Constraints::
+inactive_discrete_real_upper_bounds() const
 {
-  return(constraintsRep) ?
-    constraintsRep-> inactiveDiscreteRealUpperBnds : inactiveDiscreteRealUpperBnds;
+  return(constraintsRep) ? constraintsRep-> inactiveDiscreteRealUpperBnds :
+    inactiveDiscreteRealUpperBnds;
 }
 
 

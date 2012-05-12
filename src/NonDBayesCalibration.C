@@ -87,9 +87,10 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     const String& rng = probDescDB.get_string("method.random_number_generator");
     // get point samples file
     short this_output_level = probDescDB.get_short("method.output");
-    const String& point_reuse_file = probDescDB.get_string("method.point_reuse_file");
-    bool point_file_annotated = probDescDB.get_bool("method.point_file_annotated");
-    if (!point_reuse_file.empty()){
+    const String& pt_reuse_file
+      = probDescDB.get_string("method.point_reuse_file");
+    bool pt_file_annotated = probDescDB.get_bool("method.point_file_annotated");
+    if (!pt_reuse_file.empty()){
       samples = 0;
       sample_reuse = "all";
     }
@@ -99,17 +100,20 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     if (standardizedSpace) {
       Model g_u_model;
       construct_u_space_model(iteratedModel, g_u_model, true);//globally bounded
-      lhs_iterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type, samples, seed, rng, 
-        true, ACTIVE_UNIFORM), false);
+      lhs_iterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
+	samples, seed, rng, true, ACTIVE_UNIFORM), false);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, g_u_model,
         approx_type, approx_order, corr_type, corr_order, data_order,
-        sample_reuse, this_output_level, point_reuse_file, point_file_annotated), false);
+        sample_reuse, this_output_level, pt_reuse_file, pt_file_annotated),
+	false);
     }
     else {
-      lhs_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type, samples, seed, rng,         true, ACTIVE_UNIFORM), false);
+      lhs_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
+	samples, seed, rng, true, ACTIVE_UNIFORM), false);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, iteratedModel,
         approx_type, approx_order, corr_type, corr_order, data_order,
-        sample_reuse, this_output_level, point_reuse_file, point_file_annotated), false);
+        sample_reuse, this_output_level, pt_reuse_file, pt_file_annotated),
+	false);
     }
     emulatorModel.init_communicators(mcmc_concurrency);
     break;
