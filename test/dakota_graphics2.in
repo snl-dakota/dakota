@@ -13,6 +13,7 @@ method,
 	  samples = 49 symbols = 7
 
 variables,
+	active all
 	continuous_design = 3
 	  lower_bounds        0.0 0.0 0.0
 	  upper_bounds        2000.0 2000.0 2000.0
