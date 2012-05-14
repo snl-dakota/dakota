@@ -132,17 +132,13 @@ void NonDSampling::get_parameter_sets(Model& model)
     if ( samplingVarsMode == ACTIVE_UNIFORM ||
 	 ( samplingVarsMode == ALL_UNIFORM && 
 	   ( model_view == RELAXED_ALL || model_view == MIXED_ALL ) ) ||
-	 ( samplingVarsMode == UNCERTAIN_UNIFORM && 
-	   ( model_view == RELAXED_UNCERTAIN           ||
-	     model_view == RELAXED_ALEATORY_UNCERTAIN  ||
-	     model_view == RELAXED_EPISTEMIC_UNCERTAIN ||
-	     model_view == MIXED_UNCERTAIN            ||
-	     model_view == MIXED_ALEATORY_UNCERTAIN   ||
-	     model_view == MIXED_EPISTEMIC_UNCERTAIN ) ) ) {
+	 ( samplingVarsMode == UNCERTAIN_UNIFORM &&
+	   ( model_view == RELAXED_UNCERTAIN ||
+	     model_view == MIXED_UNCERTAIN ) ) ) {
       // sample uniformly from ACTIVE lower/upper bounds (regardless of model
       // view), from UNCERTAIN lower/upper bounds (with model in DISTINCT view),
       // or from ALL lower/upper bounds (with model in ALL view).
-      // TO DO: verify loss of sampleRanks control is OK
+      // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode.
       // TO DO: add support for uniform discrete design/uncertain/state
       //        (must manage ordering: discrete int/real among cdv/cuv/csv)
       lhsDriver.generate_uniform_samples(model.continuous_lower_bounds(),
@@ -150,20 +146,23 @@ void NonDSampling::get_parameter_sets(Model& model)
 					 numSamples, allSamples);
     }
     else if (samplingVarsMode == ALL_UNIFORM) {
-      // sample uniformly from ALL lower/upper bounds with model using
-      // a DISTINCT view
-      // TO DO: verify loss of sampleRanks control is OK
+      // sample uniformly from ALL lower/upper bnds with model in distinct view.
+      // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode.
       // TO DO: add support for uniform discrete design/uncertain/state
       //        (must manage ordering: discrete int/real among cdv/cuv/csv)
       lhsDriver.generate_uniform_samples(model.all_continuous_lower_bounds(),
 					 model.all_continuous_upper_bounds(),
 					 numSamples, allSamples);
     }
-    else if (samplingVarsMode == UNCERTAIN_UNIFORM) {
-      // sample uniformly from UNCERTAIN lower/upper bounds with model using
-      // a view other than {RELAXED,MIXED}_{,ALEATORY_,EPISTEMIC_}UNCERTAIN
+    else if (samplingVarsMode == UNCERTAIN_UNIFORM) { // A+E UNCERTAIN
+      // sample uniformly from A+E UNCERTAIN lower/upper bounds with model
+      // using a view other than {RELAXED,MIXED}_UNCERTAIN
       // (these views handled in first case at top of this fn)
-      size_t num_cuv = numContAleatUncVars + numContEpistUncVars;
+      size_t num_cdv, num_cuv, dummy;
+      // design vars define starting indices
+      view_design_counts(model, num_cdv, dummy, dummy);
+      // A+E uncertain vars define counts
+      view_uncertain_counts(model, num_cuv, dummy, dummy);
       if (!num_cuv) {
 	Cerr << "Error: no active continuous variables for sampling in "
 	     << "UNCERTAIN_UNIFORM mode" << std::endl;
@@ -171,61 +170,67 @@ void NonDSampling::get_parameter_sets(Model& model)
       }
       const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
       const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
-      RealVector uncertain_l_bnds(Teuchos::View,
-	const_cast<Real*>(&all_c_l_bnds[numContDesVars]), num_cuv);
-      RealVector uncertain_u_bnds(Teuchos::View,
-	const_cast<Real*>(&all_c_u_bnds[numContDesVars]), num_cuv);
-      // TO DO: verify loss of sampleRanks control is OK
+      RealVector uncertain_c_l_bnds(Teuchos::View,
+	const_cast<Real*>(&all_c_l_bnds[num_cdv]), num_cuv);
+      RealVector uncertain_c_u_bnds(Teuchos::View,
+	const_cast<Real*>(&all_c_u_bnds[num_cdv]), num_cuv);
+      // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode
       // TO DO: add support for uniform discrete design/uncertain/state
       //        (must manage ordering: discrete int/real among cdv/cuv/csv)
-      lhsDriver.generate_uniform_samples(uncertain_l_bnds, uncertain_u_bnds,
+      lhsDriver.generate_uniform_samples(uncertain_c_l_bnds, uncertain_c_u_bnds,
 					 numSamples, allSamples);
     }
     break;
-  case UNCERTAIN: case ACTIVE: case ALL: {
-    // extract design and state bounds for ACTIVE/ALL
+  case UNCERTAIN:
+    // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode
+    lhsDriver.generate_samples(model.distribution_parameters(), numSamples,
+			       allSamples);
+    break;
+  case ACTIVE: case ALL: {
+    // extract design and state bounds
     RealVector  cdv_l_bnds,   cdv_u_bnds,   csv_l_bnds,   csv_u_bnds;
     IntVector ddriv_l_bnds, ddriv_u_bnds, dsriv_l_bnds, dsriv_u_bnds;
-    if (samplingVarsMode == ACTIVE || samplingVarsMode == ALL) {
-      size_t num_ddsiv = model.discrete_design_set_int_values().size(),
-	num_ddsrv = model.discrete_design_set_real_values().size(),
-	num_ddriv = numDiscIntDesVars - num_ddsiv,
-	num_cuv   = numContAleatUncVars + numContEpistUncVars,
-	num_diuv  = numDiscIntAleatUncVars + numDiscIntEpistUncVars,
-	num_dssiv = model.discrete_state_set_int_values().size(),
-	num_dssrv = model.discrete_state_set_real_values().size(),
-	num_dsriv = numDiscIntStateVars - num_dssiv;
-      const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
-      const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
-      if (numContDesVars) {
-	cdv_l_bnds = RealVector(Teuchos::View, all_c_l_bnds.values(),
-	  numContDesVars);
-	cdv_u_bnds = RealVector(Teuchos::View, all_c_u_bnds.values(),
-	  numContDesVars);
-      }
-      if (numContStateVars) {
-	size_t num_cduv = numContDesVars+num_cuv;
-	csv_l_bnds = RealVector(Teuchos::View,
-	  const_cast<Real*>(&all_c_l_bnds[num_cduv]), numContStateVars);
-	csv_u_bnds  = RealVector(Teuchos::View,
-	  const_cast<Real*>(&all_c_u_bnds[num_cduv]), numContStateVars);
-      }
-      const IntVector& all_di_l_bnds = model.all_discrete_int_lower_bounds();
-      const IntVector& all_di_u_bnds = model.all_discrete_int_upper_bounds();
-      if (num_ddriv) {
-	ddriv_l_bnds
-	  = IntVector(Teuchos::View, all_di_l_bnds.values(), num_ddriv);
-	ddriv_u_bnds
-	  = IntVector(Teuchos::View, all_di_u_bnds.values(), num_ddriv);
-      }
-      if (num_dsriv) {
-	size_t num_diduv = numDiscIntDesVars+num_diuv;
-	dsriv_l_bnds = IntVector(Teuchos::View,
-	  const_cast<int*>(&all_di_l_bnds[num_diduv]), num_dsriv);
-	dsriv_u_bnds = IntVector(Teuchos::View,
-	  const_cast<int*>(&all_di_u_bnds[num_diduv]), num_dsriv);
-      }
+    const RealVector& all_c_l_bnds = model.all_continuous_lower_bounds();
+    const RealVector& all_c_u_bnds = model.all_continuous_upper_bounds();
+    if (numContDesVars) {
+      cdv_l_bnds
+	= RealVector(Teuchos::View, all_c_l_bnds.values(), numContDesVars);
+      cdv_u_bnds
+	= RealVector(Teuchos::View, all_c_u_bnds.values(), numContDesVars);
     }
+    if (numContStateVars) {
+      size_t cv_start = model.acv() - numContStateVars;
+      csv_l_bnds = RealVector(Teuchos::View,
+	const_cast<Real*>(&all_c_l_bnds[cv_start]), numContStateVars);
+      csv_u_bnds = RealVector(Teuchos::View,
+	const_cast<Real*>(&all_c_u_bnds[cv_start]), numContStateVars);
+    }
+    const IntVector& all_di_l_bnds = model.all_discrete_int_lower_bounds();
+    const IntVector& all_di_u_bnds = model.all_discrete_int_upper_bounds();
+    size_t num_ddriv = (numDiscIntDesVars) ?
+      numDiscIntDesVars - model.discrete_design_set_int_values().size() : 0;
+    if (num_ddriv) {
+      ddriv_l_bnds = IntVector(Teuchos::View, all_di_l_bnds.values(),num_ddriv);
+      ddriv_u_bnds = IntVector(Teuchos::View, all_di_u_bnds.values(),num_ddriv);
+    }
+    size_t num_dsriv = (numDiscIntStateVars) ?
+      numDiscIntStateVars - model.discrete_state_set_int_values().size() : 0;
+    if (num_dsriv) {
+      size_t di_start = model.adiv() - numDiscIntStateVars;
+      dsriv_l_bnds = IntVector(Teuchos::View,
+	const_cast<int*>(&all_di_l_bnds[di_start]), num_dsriv);
+      dsriv_u_bnds = IntVector(Teuchos::View,
+	const_cast<int*>(&all_di_u_bnds[di_start]), num_dsriv);
+    }
+    RealSetArray empty_rsa; IntSetArray empty_isa;
+    const IntSetArray&  di_design_sets = (numDiscIntDesVars) ?
+      model.discrete_design_set_int_values()  : empty_isa;
+    const RealSetArray& dr_design_sets = (numDiscRealDesVars) ?
+      model.discrete_design_set_real_values() : empty_rsa;
+    const IntSetArray&  di_state_sets  = (numDiscIntStateVars) ?
+      model.discrete_state_set_int_values()   : empty_isa;
+    const RealSetArray& dr_state_sets  = (numDiscRealStateVars) ?
+      model.discrete_state_set_real_values()  : empty_rsa;
 
     // Call LHS to generate the specified samples within the specified
     // distributions.  Use model DistributionParams unless ACTIVE excludes
@@ -235,19 +240,15 @@ void NonDSampling::get_parameter_sets(Model& model)
 	   model_view ==   MIXED_DESIGN || model_view ==   MIXED_STATE ) ) {
       Pecos::DistributionParams empty_dp;
       lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-        ddriv_u_bnds, model.discrete_design_set_int_values(),
-        model.discrete_design_set_real_values(), csv_l_bnds, csv_u_bnds,
-        dsriv_l_bnds, dsriv_u_bnds, model.discrete_state_set_int_values(),
-        model.discrete_state_set_real_values(), empty_dp, numSamples,
-	allSamples, sampleRanks);
+	ddriv_u_bnds, di_design_sets, dr_design_sets, csv_l_bnds, csv_u_bnds,
+	dsriv_l_bnds, dsriv_u_bnds, di_state_sets, dr_state_sets, empty_dp,
+	numSamples, allSamples, sampleRanks);
     }
     else
       lhsDriver.generate_samples(cdv_l_bnds, cdv_u_bnds, ddriv_l_bnds,
-        ddriv_u_bnds, model.discrete_design_set_int_values(),
-        model.discrete_design_set_real_values(), csv_l_bnds, csv_u_bnds,
-        dsriv_l_bnds, dsriv_u_bnds, model.discrete_state_set_int_values(),
-        model.discrete_state_set_real_values(), model.distribution_parameters(),
-	numSamples, allSamples, sampleRanks);
+        ddriv_u_bnds, di_design_sets, dr_design_sets, csv_l_bnds, csv_u_bnds,
+	dsriv_l_bnds, dsriv_u_bnds, di_state_sets, dr_state_sets,
+	model.distribution_parameters(), numSamples, allSamples, sampleRanks);
     break;
   }
   }
@@ -272,7 +273,7 @@ void NonDSampling::
 update_model_from_sample(Model& model, const Real* sample_vars)
 {
   size_t i, cv_start, num_cv, div_start, num_div, drv_start, num_drv;
-  view_counts(model, cv_start, num_cv, div_start, num_div, drv_start, num_drv);
+  mode_counts(model, cv_start, num_cv, div_start, num_div, drv_start, num_drv);
 
   // sampled continuous vars
   for (i=0; i<num_cv; ++i)
@@ -289,147 +290,177 @@ update_model_from_sample(Model& model, const Real* sample_vars)
 
 
 void NonDSampling::
-view_counts(const Model& model, size_t& cv_start, size_t& num_cv,
+view_design_counts(const Model& model, size_t& num_cdv, size_t& num_didv,
+		   size_t& num_drdv) const
+{
+  const Variables& vars = model.current_variables();
+  short active_view = vars.view().first;
+  switch (active_view) {
+  case RELAXED_ALL: case MIXED_ALL: case RELAXED_DESIGN: case MIXED_DESIGN:
+    // design vars are included in active counts from NonD
+    num_cdv  = numContDesVars;
+    num_didv = numDiscIntDesVars;
+    num_drdv = numDiscRealDesVars; break;
+  case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_STATE: {
+    // design vars are not included in active counts from NonD
+    UShortMultiArrayConstView acv_types
+      = model.all_continuous_variable_types();
+    num_cdv = std::count(acv_types.begin(), acv_types.end(),
+			 (unsigned short)CONTINUOUS_DESIGN) +
+	      std::count(acv_types.begin(), acv_types.end(),
+			 (unsigned short)DISCRETE_DESIGN_RANGE) +
+	      std::count(acv_types.begin(), acv_types.end(),
+			 (unsigned short)DISCRETE_DESIGN_SET_INT) +
+	      std::count(acv_types.begin(), acv_types.end(),
+			 (unsigned short)DISCRETE_DESIGN_SET_REAL);
+    num_didv = num_drdv = 0; break;
+  }
+  case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_STATE: {
+    // design vars are not included in active counts from NonD
+    UShortMultiArrayConstView acv_types
+      = model.all_continuous_variable_types();
+    UShortMultiArrayConstView adiv_types
+      = model.all_discrete_int_variable_types();
+    UShortMultiArrayConstView adrv_types
+      = model.all_discrete_real_variable_types();
+    num_cdv  = std::count(acv_types.begin(), acv_types.end(),
+			  (unsigned short)CONTINUOUS_DESIGN);
+    num_didv = std::count(adiv_types.begin(), adiv_types.end(),
+			  (unsigned short)DISCRETE_DESIGN_RANGE) +
+	       std::count(adiv_types.begin(), adiv_types.end(),
+			  (unsigned short)DISCRETE_DESIGN_SET_INT);
+    num_drdv = std::count(adrv_types.begin(), adrv_types.end(),
+			  (unsigned short)DISCRETE_DESIGN_SET_REAL);
+    break;
+  }
+  case RELAXED_UNCERTAIN: case RELAXED_ALEATORY_UNCERTAIN:
+  case   MIXED_UNCERTAIN: case   MIXED_ALEATORY_UNCERTAIN:
+    num_cdv  = vars.cv_start();
+    num_didv = vars.div_start();
+    num_drdv = vars.drv_start(); break;
+  }
+}
+
+
+void NonDSampling::
+view_uncertain_counts(const Model& model, size_t& num_cuv, size_t& num_diuv,
+		      size_t& num_druv) const
+{
+  // total uncertain counts: aleatory + epistemic --> consistent with
+  // UNCERTAIN/UNCERTAIN_UNIFORM samplingVarsModes
+
+  const Variables& vars = model.current_variables();
+  short active_view = vars.view().first;
+  switch (active_view) {
+  case RELAXED_ALL: case MIXED_ALL: // UNCERTAIN = subset of ACTIVE
+    num_cuv  = numContAleatUncVars     + numContEpistUncVars;
+    num_diuv = numDiscIntAleatUncVars  + numDiscIntEpistUncVars;
+    num_druv = numDiscRealAleatUncVars + numDiscRealEpistUncVars;      break;
+  case RELAXED_DESIGN:             case RELAXED_STATE:
+  case RELAXED_ALEATORY_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN: {
+    const Pecos::DistributionParams& dp = model.distribution_parameters();
+    num_cuv = dp.cuv() + dp.duv(); num_diuv = num_druv = 0;            break;
+  }
+  case MIXED_DESIGN:               case MIXED_STATE:
+  case MIXED_ALEATORY_UNCERTAIN:   case MIXED_EPISTEMIC_UNCERTAIN: {
+    const Pecos::DistributionParams& dp = model.distribution_parameters();
+    num_cuv = dp.cuv();  num_diuv = dp.diuv();  num_druv = dp.druv();  break;
+  }
+  case RELAXED_UNCERTAIN: case MIXED_UNCERTAIN: // UNCERTAIN = same as ACTIVE
+    num_cuv = vars.cv(); num_diuv = vars.div(); num_druv = vars.drv(); break;
+  }
+}
+
+
+void NonDSampling::
+view_state_counts(const Model& model, size_t& num_csv, size_t& num_disv,
+		  size_t& num_drsv) const
+{
+  const Variables& vars = model.current_variables();
+  short active_view = vars.view().first;
+  switch (active_view) {
+  case RELAXED_ALL: case MIXED_ALL: case RELAXED_STATE: case MIXED_STATE:
+    // state vars are included in active counts from NonD
+    num_csv  = numContStateVars;
+    num_disv = numDiscIntStateVars;
+    num_drsv = numDiscRealStateVars; break;
+  case RELAXED_ALEATORY_UNCERTAIN: case RELAXED_DESIGN: {
+    // state vars are not included in active counts from NonD
+    UShortMultiArrayConstView acv_types
+      = model.all_continuous_variable_types();
+    num_csv = std::count(acv_types.begin(), acv_types.end(),
+			 (unsigned short)CONTINUOUS_STATE) +
+	      std::count(acv_types.begin(), acv_types.end(),
+			 (unsigned short)DISCRETE_STATE_RANGE) +
+	      std::count(acv_types.begin(), acv_types.end(),
+			 (unsigned short)DISCRETE_STATE_SET_INT) +
+	      std::count(acv_types.begin(), acv_types.end(),
+			 (unsigned short)DISCRETE_STATE_SET_REAL);
+    num_disv = num_drsv = 0; break;
+  }
+  case MIXED_ALEATORY_UNCERTAIN: case MIXED_DESIGN: {
+    // state vars are not included in active counts from NonD
+    UShortMultiArrayConstView acv_types
+      = model.all_continuous_variable_types();
+    UShortMultiArrayConstView adiv_types
+      = model.all_discrete_int_variable_types();
+    UShortMultiArrayConstView adrv_types
+      = model.all_discrete_real_variable_types();
+    num_csv  = std::count(acv_types.begin(), acv_types.end(),
+			  (unsigned short)CONTINUOUS_STATE);
+    num_disv = std::count(adiv_types.begin(), adiv_types.end(),
+			  (unsigned short)DISCRETE_STATE_RANGE) +
+	       std::count(adiv_types.begin(), adiv_types.end(),
+			  (unsigned short)DISCRETE_STATE_SET_INT);
+    num_drsv = std::count(adrv_types.begin(), adrv_types.end(),
+			  (unsigned short)DISCRETE_STATE_SET_REAL);
+    break;
+  }
+  case RELAXED_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
+  case   MIXED_UNCERTAIN: case   MIXED_EPISTEMIC_UNCERTAIN:
+    num_csv  = vars.acv()  - vars.cv_start()  - vars.cv();
+    num_disv = vars.adiv() - vars.div_start() - vars.div();
+    num_drsv = vars.adrv() - vars.drv_start() - vars.drv(); break;
+  }
+}
+
+
+void NonDSampling::
+mode_counts(const Model& model, size_t& cv_start, size_t& num_cv,
 	    size_t& div_start, size_t& num_div,
 	    size_t& drv_start, size_t& num_drv) const
 {
   cv_start = num_cv = div_start = num_div = drv_start = num_drv = 0;
   switch (samplingVarsMode) {
-  case UNCERTAIN: {
-    const Pecos::DistributionParams& dp = model.distribution_parameters();
-    const Variables& vars = model.current_variables();
-    short active_view = vars.view().first;
-    // starting indices
-    switch (active_view) {
-    case RELAXED_ALL:    case MIXED_ALL:
-    case RELAXED_DESIGN: case MIXED_DESIGN:
-      cv_start  = numContDesVars;
-      div_start = numDiscIntDesVars;
-      drv_start = numDiscRealDesVars; break; // UNCERTAIN = subset of ACTIVE
-    case RELAXED_STATE:  case RELAXED_ALEATORY_UNCERTAIN:
-    case RELAXED_EPISTEMIC_UNCERTAIN: {
-      UShortMultiArrayConstView acv_types
-	= model.all_continuous_variable_types();
-      cv_start = std::count(acv_types.begin(), acv_types.end(),
-			    (unsigned short)CONTINUOUS_DESIGN) +
-	         std::count(acv_types.begin(), acv_types.end(),
-			    (unsigned short)DISCRETE_DESIGN_RANGE) +
-	         std::count(acv_types.begin(), acv_types.end(),
-			    (unsigned short)DISCRETE_DESIGN_SET_INT) +
-	         std::count(acv_types.begin(), acv_types.end(),
-			    (unsigned short)DISCRETE_DESIGN_SET_REAL);
-      break;
-    }
-    case MIXED_STATE:    case MIXED_ALEATORY_UNCERTAIN:
-    case MIXED_EPISTEMIC_UNCERTAIN: {
-      UShortMultiArrayConstView acv_types
-	= model.all_continuous_variable_types();
-      UShortMultiArrayConstView adiv_types
-	= model.all_discrete_int_variable_types();
-      UShortMultiArrayConstView adrv_types
-	= model.all_discrete_real_variable_types();
-      cv_start  = std::count(acv_types.begin(), acv_types.end(),
-			     (unsigned short)CONTINUOUS_DESIGN);
-      div_start = std::count(adiv_types.begin(), adiv_types.end(),
-			     (unsigned short)DISCRETE_DESIGN_RANGE) +
-	          std::count(adiv_types.begin(), adiv_types.end(),
-			     (unsigned short)DISCRETE_DESIGN_SET_INT);
-      drv_start = std::count(adrv_types.begin(), adrv_types.end(),
-			     (unsigned short)DISCRETE_DESIGN_SET_REAL);
-      break;
-    }
-    case RELAXED_UNCERTAIN: case MIXED_UNCERTAIN:
-      cv_start  = vars.cv_start();
-      div_start = vars.div_start();
-      drv_start = vars.drv_start(); break; // UNCERTAIN = same as ACTIVE
-    }
-    // counts
-    switch (active_view) {
-    case RELAXED_ALL: case MIXED_ALL: // UNCERTAIN = subset of ACTIVE
-      num_cv  = numContAleatUncVars     + numContEpistUncVars;
-      num_div = numDiscIntAleatUncVars  + numDiscIntEpistUncVars;
-      num_drv = numDiscRealAleatUncVars + numDiscRealEpistUncVars;    break;
-    case RELAXED_DESIGN:             case RELAXED_STATE:
-    case RELAXED_ALEATORY_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
-      num_cv = dp.cuv() + dp.diuv() + dp.druv();                      break;
-    case MIXED_DESIGN:               case MIXED_STATE:
-    case MIXED_ALEATORY_UNCERTAIN:   case MIXED_EPISTEMIC_UNCERTAIN:
-      num_cv = dp.cuv();  num_div = dp.diuv();  num_drv = dp.druv();  break;
-    case RELAXED_UNCERTAIN: case MIXED_UNCERTAIN: // UNCERTAIN = same as ACTIVE
-      num_cv = vars.cv(); num_div = vars.div(); num_drv = vars.drv(); break;
-    }
-    break;
-  }
+  case UNCERTAIN:
+    // design vars define starting indices
+    view_design_counts(model, cv_start, div_start, drv_start);
+    // A+E uncertain vars define counts
+    view_uncertain_counts(model, num_cv, num_div, num_drv);               break;
   case UNCERTAIN_UNIFORM: {
-    const Pecos::DistributionParams& dp = model.distribution_parameters();
-    const Variables& vars = model.current_variables();
-    short active_view = vars.view().first;
-    // starting indices
-    switch (active_view) {
-    case RELAXED_ALL:    case MIXED_ALL:
-    case RELAXED_DESIGN: case MIXED_DESIGN:
-      cv_start = numContDesVars; break; // UNCERTAIN = subset of ACTIVE
-    case RELAXED_STATE:  case RELAXED_ALEATORY_UNCERTAIN:
-    case RELAXED_EPISTEMIC_UNCERTAIN: {
-      UShortMultiArrayConstView acv_types
-	= model.all_continuous_variable_types();
-      cv_start = std::count(acv_types.begin(), acv_types.end(),
-			    (unsigned short)CONTINUOUS_DESIGN) +
-	std::count(acv_types.begin(), acv_types.end(),
-		   (unsigned short)DISCRETE_DESIGN_RANGE) +
-	std::count(acv_types.begin(), acv_types.end(),
-		   (unsigned short)DISCRETE_DESIGN_SET_INT) +
-	std::count(acv_types.begin(), acv_types.end(),
-		   (unsigned short)DISCRETE_DESIGN_SET_REAL);
-      break;
-    }
-    case MIXED_STATE:    case MIXED_ALEATORY_UNCERTAIN:
-    case MIXED_EPISTEMIC_UNCERTAIN: {
-      UShortMultiArrayConstView acv_types
-	= model.all_continuous_variable_types();
-      cv_start = std::count(acv_types.begin(), acv_types.end(),
-			    (unsigned short)CONTINUOUS_DESIGN);
-      break;
-    }
-    case RELAXED_UNCERTAIN: case MIXED_UNCERTAIN:
-      cv_start = vars.cv_start(); break; // UNCERTAIN = same as ACTIVE
-    }
-    // counts
-    switch (active_view) {
-    case RELAXED_ALL: case MIXED_ALL: // UNCERTAIN = subset of ACTIVE
-      num_cv = numContAleatUncVars + numContEpistUncVars; break;
-    case RELAXED_DESIGN:             case RELAXED_STATE:
-    case RELAXED_ALEATORY_UNCERTAIN: case RELAXED_EPISTEMIC_UNCERTAIN:
-      num_cv = dp.cuv() + dp.diuv() + dp.druv();          break;
-    case MIXED_DESIGN:               case MIXED_STATE:
-    case MIXED_ALEATORY_UNCERTAIN:   case MIXED_EPISTEMIC_UNCERTAIN:
-      num_cv = dp.cuv();                                  break;
-    case RELAXED_UNCERTAIN: case MIXED_UNCERTAIN: // UNCERTAIN = same as ACTIVE
-      num_cv = vars.cv();                                 break;
-    }
     // UNIFORM views do not currently support non-relaxed discrete
-    break;
+    size_t dummy;
+    // continuous design vars define starting indices
+    view_design_counts(model, cv_start, dummy, dummy);
+    // continuous A+E uncertain vars define counts
+    view_uncertain_counts(model, num_cv, dummy, dummy);                   break;
   }
   case ACTIVE: {
     const Variables& vars = model.current_variables();
     cv_start  = vars.cv_start();  num_cv  = vars.cv();
     div_start = vars.div_start(); num_div = vars.div();
-    drv_start = vars.drv_start(); num_drv = vars.drv();
-    break;
+    drv_start = vars.drv_start(); num_drv = vars.drv();                   break;
   }
   case ACTIVE_UNIFORM: {
+    // UNIFORM views do not currently support non-relaxed discrete
     const Variables& vars = model.current_variables();
-    cv_start = vars.cv_start(); num_cv = vars.cv();
-    // UNIFORM views do not currently support discrete
-    break;
+    cv_start = vars.cv_start(); num_cv = vars.cv();                       break;
   }
   case ALL:
-    num_cv = model.acv(); num_div = model.adiv(); num_drv = model.adrv();
-    break;
+    num_cv = model.acv(); num_div = model.adiv(); num_drv = model.adrv(); break;
   case ALL_UNIFORM:
-    num_cv = model.acv();
-    // UNIFORM views do not currently support discrete
-    break;
+    // UNIFORM views do not currently support non-relaxed discrete
+    num_cv = model.acv();                                                 break;
   }
 }
 
@@ -932,7 +963,7 @@ void NonDSampling::print_statistics(std::ostream& s) const
       adiv_labels = iteratedModel.all_discrete_int_variable_labels(),
       adrv_labels = iteratedModel.all_discrete_real_variable_labels();
     size_t cv_start, num_cv, div_start, num_div, drv_start, num_drv;
-    view_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
+    mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div,
 		drv_start, num_drv);
     StringMultiArrayConstView
       cv_labels  =

@@ -45,6 +45,7 @@ method,
 	  output quiet
 
 variables,
+	active all
 	continuous_design = 3
 	  initial_point       1.0 1.0 1.0
 	  lower_bounds        0.0 0.0 0.0

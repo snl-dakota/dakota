@@ -88,7 +88,7 @@ void NonDLHSSampling::pre_run()
 void NonDLHSSampling::post_input()
 {
   size_t cv_start, num_cv, div_start, num_div, drv_start, num_drv;
-  view_counts(iteratedModel, cv_start, num_cv, div_start, num_div, drv_start, 
+  mode_counts(iteratedModel, cv_start, num_cv, div_start, num_div, drv_start, 
 	      num_drv);
   size_t num_vars = num_cv + num_div + num_drv;
   // call convenience function from Analyzer

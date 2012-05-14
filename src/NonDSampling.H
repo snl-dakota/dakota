@@ -129,10 +129,21 @@ protected:
 
   /// compute sampled subsets (all, active, uncertain) within all
   /// variables (acv/adiv/adrv) from samplingVarsMode and model
-  void view_counts(const Model& model, size_t& cv_start, size_t& num_cv,
-		   size_t& div_start, size_t& num_div,
-		   size_t& drv_start, size_t& num_drv) const;
-
+  void view_design_counts(const Model& model, size_t& num_cdv,
+			  size_t& num_didv,   size_t& num_drdv) const;
+  /// compute sampled subsets (all, active, uncertain) within all
+  /// variables (acv/adiv/adrv) from samplingVarsMode and model
+  void view_uncertain_counts(const Model& model, size_t& num_cuv,
+			     size_t& num_diuv,   size_t& num_druv) const;
+  /// compute sampled subsets (all, active, uncertain) within all
+  /// variables (acv/adiv/adrv) from samplingVarsMode and model
+  void view_state_counts(const Model& model, size_t& num_csv,
+			 size_t& num_disv,   size_t& num_drsv) const;
+  /// compute sampled subsets (all, active, uncertain) within all
+  /// variables (acv/adiv/adrv) from samplingVarsMode and model
+  void mode_counts(const Model& model, size_t& cv_start, size_t& num_cv,
+		   size_t& div_start,  size_t& num_div,
+		   size_t& drv_start,  size_t& num_drv) const;
 
   //
   //- Heading: Data members
