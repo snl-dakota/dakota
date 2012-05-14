@@ -65,7 +65,7 @@ model,
 
 variables,
         id_variables = 'ALEAT_V'
-	active all			#3
+#	active all			#3
 	continuous_design = 1
 	  initial_point 1
 	  lower_bounds 	0.
