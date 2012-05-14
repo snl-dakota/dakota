@@ -50,10 +50,8 @@ responses,
 	nonlinear_inequality_constraints  = 1
 	nonlinear_inequality_upper_bounds = 1.e+50	#0,#1,#2,#3
 	nonlinear_inequality_lower_bounds = 1.28155	#0,#1
-#	nonlinear_inequality_upper_bounds = 0.1
 # enforces series parallel beta* > 20.
 #	nonlinear_inequality_lower_bounds = 20.		#2,#3
-#	nonlinear_inequality_upper_bounds = 1.e-50
 	analytic_gradients				
 #	numerical_gradients				
 #	  interval_type central
