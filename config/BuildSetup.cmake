@@ -16,8 +16,6 @@ set(BOOST_LIBRARYDIR
   "/Net/dakota/utils/Linux_x86_64/boost_1.49.gnu-4.1.2/lib/boost-1.49.0"
   CACHE PATH "Always use pre-installed Boost1.49 subset -- BFSV3! " FORCE)
 
-set(USE_SYSTEM_TEUCHOS ON CACHE BOOL "Always use installed, Teuchos DSO" FORCE)
-
 # Path to "custom", local build of Trilinos: shared-objects, Teuchos ONLY!
 set(Trilinos_DIR
   "/Net/dakota/utils/Linux_x86_64/trilinos-10.6.0/gnu-4.3.2_nompi_install"
