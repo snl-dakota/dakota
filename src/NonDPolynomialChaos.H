@@ -103,9 +103,10 @@ terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio,
 {
   size_t data_per_pt = (useDerivs) ? numContinuousVars + 1 : 1;;
   Real min_pts = std::pow((Real)num_exp_terms, terms_order) / (Real)data_per_pt;
-  int min_samples = (int)std::ceil(min_pts),                    // lower bound
-      tgt_samples = (int)std::floor(colloc_ratio*min_pts + .5); // rounded
-  return std::max(min_samples, tgt_samples);
+  //int min_samples = (int)std::ceil(min_pts),                    // lower bound
+  int tgt_samples = (int)std::floor(colloc_ratio*min_pts + .5); // rounded
+  return tgt_samples;
+  //return std::max(min_samples, tgt_samples);
 }
 
 

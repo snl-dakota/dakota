@@ -433,6 +433,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		        [ reuse_points ALIAS reuse_samples {N_mdm(lit,collocPtReuse_all)} ]
 		        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 			[ tensor_grid {N_mdm(true,probCollocFlag)} ]
+#			[ compressed_sensing {0} # l1_regression () | l2_regression????
+# want different defaults for over/under-determined, so need an alternation, but don't preclude LASSO/LARS for CS
+#			  bpdn {N_(type,csAlgorithm_BPDN)}
+#			  | omp {N_(type,csAlgorithm_OMP)} ]
 		        )
 		    	| ( expansion_samples INTEGER {N_mdm(int,expansionSamples)}
 		          [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
