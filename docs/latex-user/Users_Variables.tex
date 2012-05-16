@@ -312,17 +312,17 @@ adaptivity through the use of a coarse mesh or loose solver tolerances
 in the initial stages of an optimization with continuous model
 refinement as the algorithm nears the optimal solution.
 
-\section{Mixed Variables}\label{variables:mixed}
-
+\section{Management of Mixed Variables by Iterator}\label{variables:mixed}
+\subsection{View}\label{variables:mixedview}
 As alluded to in the previous section, the iterative method selected
 for use in DAKOTA determines what subset, or view, of the variables
 data is active in the iteration. The general case of having a mixture
 of various different types of variables is supported within all of the
 DAKOTA methods even though certain methods will only modify certain
 types of variables (e.g., optimizers and least squares methods only
-modify design variables, and uncertainty quantification methods, with
-the exception of \texttt{all\_variables} mode, only utilize uncertain
-variables).  This implies that variables which are not under the
+modify design variables, and uncertainty quantification methods 
+typically only utilize uncertain variables).  
+This implies that variables which are not under the
 direct control of a particular iterator will be mapped through the
 interface in an unmodified state. This allows for a variety of
 parameterizations within the model in addition to those which are
@@ -333,6 +333,56 @@ that the variable set that is active with a particular iterator is the
 same variable set for which derivatives are typically computed (see
 Section~\ref{responses:active}).
 
+There are certain situations where the user may want to explicitly 
+control the subset of variables that is considered active for a 
+certain DAKOTA method.  This is done by specifying the keyword 
+\texttt{active} in the variables specification block, followed by 
+one of the following:  \texttt{all}, \texttt{design}, \texttt{uncertain},
+\texttt{aleatory}, \texttt{epistemic}, or \texttt{state}.  
+Specifying one of these subsets of variables will allow the 
+DAKOTA method to operate on the specified variable types and override 
+the defaults.  For example, the default behavior for a 
+nondeterministic sampling method is to sample the  uncertain 
+variables.  However, if the user specifed \texttt{active}  \texttt{all} 
+in the variables specification block, the sampling would be performed 
+over all variables (e.g. design and state variables as well as 
+uncertain variables).  This may be desired in situations such as 
+surrogate based optimization under uncertainty, where a surrogate may 
+be built over both design and uncertain variables.  
+Another situation where one may want the fine-grained control 
+available by specifying one of these variable types is when one 
+has state variables but only wants to sample over the design 
+variables when constructing a surrogate model.  Finally, 
+more sophisticated uncertainty studies may involve various 
+combinations of epistemic vs. aleatory variables being active 
+in nested models.
+
+\subsection{Domain}\label{variables:domain}
+Another control that the user can specify in the variables specification 
+block controls the domain type.  We have two domains currently:  
+continuous variables and discrete variables.  Both domain types 
+can have design, uncertain, and state variables.  If the user 
+specifies \texttt{mixed} in the variable specification block, 
+the continuous and discrete variables are treated separately. 
+If the user specifies \texttt{relaxed} in the variable specification block, 
+the discrete variables are relaxed and treated as continuous variables. 
+This is used in the Branch and Bound method, for example. 
+
+\subsection{Precedence}\label{variables:precedence}
+If the user does not specify any explicit override of the active view 
+of the variables, DAKOTA then considers the domain type. 
+If the user does not explicitly specify the domain type, then 
+the active variables are inferred from the method specification. 
+If the method is an optimization or least squares method, the design 
+variables are active.  If the method is an uncertainty quantification 
+method, than uncertain variables (both aleatory and epistemic) are active. 
+Note that in surrogate-based optimization, where the surrogate 
+is built on points defined by the method defined by the 
+\texttt{dace\_method\_pointer}, the sampling used to generate the points 
+is performed only over the design variables as a default unless 
+otherwise specified (e.g. state variables will not be sampled 
+for surrogate construction). 
+  
 \section{DAKOTA Parameters File Data Format}\label{variables:parameters}
 
 Simulation interfaces which employ system calls and forks to create
