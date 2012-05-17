@@ -225,17 +225,49 @@ install(DIRECTORY test DESTINATION .
   PATTERN "*.f" EXCLUDE 
   )
 
+
+# More widely distributed packages exclude more content
+#  * ideally use an enumeration
+#  * consider reversing the ordering
+set(DAKOTA_InternalFull 0)
+set(DAKOTA_InternalSupervised 1)
+set(DAKOTA_InternalWeb 2)
+set(DAKOTA_ExternalWeb 3)
+
+# The permission level of the distribution (to be made an option)
+set(DAKOTA_DISTRO ${DAKOTA_InternalFull})
+
 # CPack Settings
 set(CPACK_PACKAGE_VENDOR "Sandia National Laboratories")
 
 set(local_version "${Dakota_VERSION_MAJOR}.${Dakota_VERSION_MINOR}${Dakota_VERSION_APPEND_STABLE}")
 set(local_arch "${CMAKE_SYSTEM_NAME}.${CMAKE_SYSTEM_PROCESSOR}")
 
+# TODO: insert distribution type into package names, i.e., instead of 
+# ${local_version} use ${local_version}.int_web, based on DAKOTA_DISTRO
 set(CPACK_PACKAGE_FILE_NAME "dakota-${local_version}.${local_arch}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "dakota-${local_version}.src")
+
 set(CPACK_SOURCE_IGNORE_FILES ".svn")
 
-if (WIN32)
+if(DAKOTA_DISTRO GREATER DAKOTA_InternalFull)
+  list(APPEND CPACK_SOURCE_IGNORE_FILES "local/buildscripts")
+  list(APPEND CPACK_SOURCE_IGNORE_FILES "local/examples")
+  list(APPEND CPACK_SOURCE_IGNORE_FILES "local/miscscripts")
+  list(APPEND CPACK_SOURCE_IGNORE_FILES "local/sqa")
+  list(APPEND CPACK_SOURCE_IGNORE_FILES "local/www.sandia.gov")
+endif()
+
+if(DAKOTA_DISTRO GREATER DAKOTA_InternalSupervised)
+  list(APPEND CPACK_SOURCE_IGNORE_FILES "packages/DOT")
+endif()
+
+if(DAKOTA_DISTRO GREATER DAKOTA_InternalWeb)
+  list(APPEND CPACK_SOURCE_IGNORE_FILES "packages/NPSOL")
+  list(APPEND CPACK_SOURCE_IGNORE_FILES "packages/NLPQL")
+endif()
+
+if(WIN32 OR CYGWIN)
   set(CPACK_GENERATOR ZIP)
   set(CPACK_SOURCE_GENERATOR ZIP)
 else()
