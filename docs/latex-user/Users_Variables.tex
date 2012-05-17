@@ -342,7 +342,7 @@ one of the following:  \texttt{all}, \texttt{design}, \texttt{uncertain},
 Specifying one of these subsets of variables will allow the 
 DAKOTA method to operate on the specified variable types and override 
 the defaults.  For example, the default behavior for a 
-nondeterministic sampling method is to sample the  uncertain 
+nondeterministic sampling method is to sample the uncertain 
 variables.  However, if the user specifed \texttt{active}  \texttt{all} 
 in the variables specification block, the sampling would be performed 
 over all variables (e.g. design and state variables as well as 
@@ -360,28 +360,56 @@ in nested models.
 \subsection{Domain}\label{variables:domain}
 Another control that the user can specify in the variables specification 
 block controls the domain type.  We have two domains currently:  
-continuous variables and discrete variables.  Both domain types 
-can have design, uncertain, and state variables.  If the user 
+mixed and relaxed.  Both domain types can have design, uncertain, 
+and state variables.  The domain specifies how the discrete variables 
+are treated. If the user 
 specifies \texttt{mixed} in the variable specification block, 
 the continuous and discrete variables are treated separately. 
 If the user specifies \texttt{relaxed} in the variable specification block, 
 the discrete variables are relaxed and treated as continuous variables. 
-This is used in the Branch and Bound method, for example. 
+This may be useful in optimization problems involving both 
+continuous and discrete variables when a user would like 
+to use an optimization method that is designed for continuous variable 
+optimization.  All DAKOTA methods have a default value of mixed for the 
+domain type except for the branch-and-bound method which has a default 
+domain type of relaxed.  Note that the branch-and-bound method is 
+under development at this time. 
 
 \subsection{Precedence}\label{variables:precedence}
 If the user does not specify any explicit override of the active view 
-of the variables, DAKOTA then considers the domain type. 
-If the user does not explicitly specify the domain type, then 
-the active variables are inferred from the method specification. 
-If the method is an optimization or least squares method, the design 
-variables are active.  If the method is an uncertainty quantification 
-method, than uncertain variables (both aleatory and epistemic) are active. 
+of the variables, DAKOTA then considers the response function 
+specification.  If the user specifies objective functions or calibration 
+terms in the response specification block, the active variables will 
+be the design variables.  If the user specifies the more generic 
+response type, \texttt{response\_functions}, general response 
+functions do not have a specific interpretation the way 
+\texttt{objective\_functions} or \texttt{calibration\_terms} do. 
+In the case of generic response functions, DAKOTA then tries to 
+infer the active view from the method.  If the method is a parameter 
+study, or any of the methods available under dace, psuade, or fsu methods, 
+the active view is set to all variables.  For uncertainty quantification 
+methods, if the method is sampling, 
+then the view is set to aleatory if only aleatory variables are present, 
+epistemic if only epistemic variables are present, or uncertain (covering
+both aleatory and epistemic) if both are present.  If the uncertainty method 
+involves interval estimation or evidence calculations, the view is set 
+to epistemic. For other uncertainty quantification methods not mentioned 
+in the previous sentences (e.g., reliability methods or stochastic 
+expansion methods), the view is set to aleatory. 
+Finally, for verification studies using the Richardson extrapolation 
+method, the active view is set to state.   
 Note that in surrogate-based optimization, where the surrogate 
 is built on points defined by the method defined by the 
 \texttt{dace\_method\_pointer}, the sampling used to generate the points 
 is performed only over the design variables as a default unless 
 otherwise specified (e.g. state variables will not be sampled 
 for surrogate construction). 
+
+With respect to domain type, if the user does not specify an 
+explicit override of \texttt{mixed} or \texttt{relaxed}, DAKOTA infers
+the domain type from the method.  As mentioned above, 
+all methods currently use a mixed domain as a default, except 
+the branch-and-bound method which is under development.
   
 \section{DAKOTA Parameters File Data Format}\label{variables:parameters}
 
