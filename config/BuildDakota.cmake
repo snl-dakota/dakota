@@ -66,8 +66,6 @@ include( RHEL6 )
 # want to use a system Trilinos, uncomment the following lines and
 # define appropriate paths.
 ##############################################################################
-#set( USE_SYSTEM_TEUCHOS ON 
-#     CACHE BOOL "Use installed Teuchos" FORCE)
 #set( Trilinos_DIR
 #      "/path/to/Trilinos/install"
 #      CACHE FILEPATH "Path to installed Trilinos" FORCE )
