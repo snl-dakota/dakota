@@ -172,6 +172,9 @@ protected:
   /// DIMENSION_ADAPTIVE_CONTROL_GENERALIZED
   short refineControl;
 
+  /// symmetric matrix of analytic response covariance
+  RealSymMatrix respCovariance;
+
   /// stores the initial variables data in u-space
   RealVector initialPtU;
 
@@ -247,9 +250,6 @@ private:
   /// derivative of the expansion with respect to the x-space variables
   /// evaluated at the means (used as uncertainty importance metrics)
   RealMatrix expGradsMeanX;
-
-  /// symmetric matrix of analytic response covariance
-  RealSymMatrix respCovariance;
 
   /// enumeration for controlling VBD calculation and output: NO_VBD,
   /// UNIVARIATE_VBD, or ALL_VBD

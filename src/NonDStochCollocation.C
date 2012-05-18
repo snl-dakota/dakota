@@ -336,7 +336,9 @@ Real NonDStochCollocation::compute_covariance_metric()
     if (warn_flag)
       Cerr << "Warning: expansion coefficients unavailable in "
 	   << "NonDStochCollocation::compute_covariance_metric().\n         "
-	   << "Zeroing affected covariance terms." << std::endl;
+	   << "Zeroing affected delta_covariance terms." << std::endl;
+    // reference covariance gets restored in NonDExpansion::increment_sets()
+    respCovariance += delta_resp_covar;
     return delta_resp_covar.normFrobenius();
   }
   else // use default implementation
