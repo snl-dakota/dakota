@@ -55,13 +55,18 @@ protected:
   void initialize_u_space_model();
   //void initialize_expansion();
   //void compute_expansion();
+  void update_expansion();
   //void print_coefficients(std::ostream& s);
+
+  Real compute_covariance_metric();
 
 private:
 
   //
   //- Heading: Data
   //
+
+  short sgBasisType;
 };
 
 } // namespace Dakota

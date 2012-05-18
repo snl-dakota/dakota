@@ -727,7 +727,7 @@ void NonDExpansion::refine_expansion()
 	update_expansion(); // invokes uSpaceModel.build_approximation()
 	break;
       }
-      metric = compute_covariance_metric(respCovariance);
+      metric = compute_covariance_metric();
       break;
     case Pecos::DIMENSION_ADAPTIVE_CONTROL_SOBOL: {
       // Dimension adaptive refinement: define anisotropic preference
@@ -739,7 +739,7 @@ void NonDExpansion::refine_expansion()
 	uSpaceModel.subordinate_iterator().iterator_rep();
       nond_integration->increment_grid_preference(dim_pref); // TPQ or SSG
       update_expansion();
-      metric = compute_covariance_metric(respCovariance);
+      metric = compute_covariance_metric();
       break;
     }
     case Pecos::DIMENSION_ADAPTIVE_CONTROL_DECAY: {
@@ -752,7 +752,7 @@ void NonDExpansion::refine_expansion()
 	uSpaceModel.subordinate_iterator().iterator_rep();
       nond_integration->increment_grid_weights(aniso_wts); // TPQ or SSG
       update_expansion();
-      metric = compute_covariance_metric(respCovariance);
+      metric = compute_covariance_metric();
       break;
     }
     case Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED:
@@ -859,7 +859,7 @@ Real NonDExpansion::increment_sets()
   Real delta, delta_star = -1.;
   RealSymMatrix covar_ref, covar_star; RealVector stats_ref, stats_star;
 
-  // set reference points for refinement assessment
+  // store reference points for computing refinement metrics
   if (totalLevelRequests) stats_ref = finalStatistics.function_values();
   else                    covar_ref = respCovariance;
 
@@ -882,8 +882,8 @@ Real NonDExpansion::increment_sets()
     }
 
     // assess effect of increment (non-negative norm)
-    delta = (totalLevelRequests) ? compute_final_statistics_metric(stats_ref)
-                                 : compute_covariance_metric(covar_ref);
+    delta = (totalLevelRequests) ? compute_final_statistics_metric()
+                                 : compute_covariance_metric();
     // normalize effect of increment based on cost (# of collocation pts)
     delta /= nond_sparse->increment_size();
     // track best increment evaluated thus far
@@ -902,6 +902,9 @@ Real NonDExpansion::increment_sets()
     // restore previous state (destruct order is reversed from construct order)
     uSpaceModel.pop_approximation(true); // store SDP set for use in restore
     nond_sparse->decrement_set();
+    // restore reference point for next metric calculation
+    if (totalLevelRequests) finalStatistics.function_values(stats_ref);
+    else                    respCovariance = covar_ref;
   }
   Cout << "\n<<<<< Evaluation of active index sets completed.\n"
        << "\n<<<<< Index set selection:\n" << *cit_star;
@@ -1061,12 +1064,11 @@ void NonDExpansion::compute_print_converged_results(bool print_override)
 }
 
 
-Real NonDExpansion::
-compute_covariance_metric(const RealSymMatrix& resp_covar_ref)
+Real NonDExpansion::compute_covariance_metric()
 {
-  RealSymMatrix delta_resp_covar = resp_covar_ref;
-  compute_covariance();
-  delta_resp_covar -= respCovariance;
+  RealSymMatrix delta_resp_covar = respCovariance; // deep copy
+  compute_covariance();                            // update
+  delta_resp_covar -= respCovariance;              // compute change
 #ifdef DEBUG
   Cout << "resp_covar_ref:\n"; write_data(Cout, resp_covar_ref,false,true,true);
   Cout << "respCovariance:\n"; write_data(Cout, respCovariance,false,true,true);
@@ -1078,12 +1080,11 @@ compute_covariance_metric(const RealSymMatrix& resp_covar_ref)
 
 
 /** computes a "goal-oriented" refinement metric employing finalStatistics */
-Real NonDExpansion::
-compute_final_statistics_metric(const RealVector& final_stats_ref)
+Real NonDExpansion::compute_final_statistics_metric()
 {
-  RealVector delta_final_stats = final_stats_ref;
-  compute_statistics();
-  delta_final_stats -= finalStatistics.function_values();
+  RealVector delta_final_stats = finalStatistics.function_values(); // deep copy
+  compute_statistics();                                             //    update
+  delta_final_stats -= finalStatistics.function_values();      // compute change
 #ifdef DEBUG
   Cout << "final_stats_ref:\n" << final_stats_ref
        << "final_stats:\n" << finalStatistics.function_values()
@@ -1207,7 +1208,8 @@ void NonDExpansion::compute_covariance()
   if (respCovariance.empty())
     respCovariance.shapeUninitialized(numFunctions);
 
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false,
+    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (size_t i=0; i<numFunctions; ++i) {
     PecosApproximation* poly_approx_rep_i
@@ -1216,8 +1218,12 @@ void NonDExpansion::compute_covariance()
       respCovariance(i,i) = (all_vars) ?
 	poly_approx_rep_i->variance(initialPtU) : poly_approx_rep_i->variance();
     else
-      respCovariance(i,i) = 0.;
+      { warn_flag = true; respCovariance(i,i) = 0.; }
   }
+  if (warn_flag)
+    Cerr << "Warning: expansion coefficients unavailable in NonDExpansion::"
+	 << "compute_covariance().\n         Zeroing affected variance terms."
+	 << std::endl;
   if (numFunctions > 1)
     compute_off_diagonal_covariance();
 }
@@ -1226,7 +1232,8 @@ void NonDExpansion::compute_covariance()
 void NonDExpansion::compute_off_diagonal_covariance()
 {
   size_t i, j;
-  bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+  bool warn_flag = false,
+    all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (i=0; i<numFunctions; ++i) {
     PecosApproximation* poly_approx_rep_i
@@ -1240,16 +1247,18 @@ void NonDExpansion::compute_off_diagonal_covariance()
 	    poly_approx_rep_i->covariance(initialPtU, poly_approx_rep_j) :
 	    poly_approx_rep_i->covariance(poly_approx_rep_j);
 	else
-	  respCovariance(i,j) = 0.;
+	  { warn_flag = true; respCovariance(i,j) = 0.; }
       }
     else {
-      Cerr << "Warning: expansion coefficients unavailable in NonDExpansion::"
-	   << "compute_covariance().  Zeroing covariance terms for function "
-	   << i+1 << std::endl;
+      warn_flag = true;
       for (j=0; j<i; ++j)
 	respCovariance(i,j) = 0.;
     }
   }
+  if (warn_flag)
+    Cerr << "Warning: expansion coefficients unavailable in NonDExpansion::"
+	 << "compute_off_diagonal_covariance().\n         Zeroing affected "
+	 << "covariance terms." << std::endl;
 }
 
 

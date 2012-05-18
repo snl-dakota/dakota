@@ -27,7 +27,8 @@ namespace Dakota {
 
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
-NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
+NonDStochCollocation::NonDStochCollocation(Model& model):
+  NonDExpansion(model), sgBasisType(DEFAULT_INTERPOLANT)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -57,14 +58,13 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
     = probDescDB.get_dusa("method.nond.sparse_grid_level");
   const RealVector& dim_pref
     = probDescDB.get_rdv("method.nond.dimension_preference");
-  short sg_basis_type
-    = probDescDB.get_short("method.nond.sparse_grid_basis_type");
   if (!quad_order_spec.empty()) {
     expansionCoeffsApproach = Pecos::QUADRATURE;
     construct_quadrature(u_space_sampler, g_u_model, quad_order_spec, dim_pref);
   }
   else if (!ssg_level_spec.empty()) {
-    switch (sg_basis_type) {
+    sgBasisType = probDescDB.get_short("method.nond.sparse_grid_basis_type");
+    switch (sgBasisType) {
     case HIERARCHICAL_INTERPOLANT:
       expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;          break;
     case NODAL_INTERPOLANT:
@@ -74,20 +74,20 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
 	   ( refineControl == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED ||
 	     refineControl == Pecos::LOCAL_ADAPTIVE_CONTROL ) ) {
 	expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
-	sg_basis_type = HIERARCHICAL_INTERPOLANT;
+	sgBasisType = HIERARCHICAL_INTERPOLANT;
       }
       else {
 	expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;
-	sg_basis_type = NODAL_INTERPOLANT;
+	sgBasisType = NODAL_INTERPOLANT;
       }
       break;
     }
     /*
     if (refineControl == Pecos::LOCAL_ADAPTIVE_CONTROL) {
-      if (!piecewiseBasis || sg_basis_type != HIERARCHICAL_INTERPOLANT) {
+      if (!piecewiseBasis || sgBasisType != HIERARCHICAL_INTERPOLANT) {
 	// TO DO: promote this error check to resolve_inputs()
 	PCerr << "Warning: overriding basis type to local hierarchical\n.";
-	piecewiseBasis = true; sg_basis_type = HIERARCHICAL_INTERPOLANT;
+	piecewiseBasis = true; sgBasisType = HIERARCHICAL_INTERPOLANT;
       }
       expansionCoeffsApproach = Pecos::HIERARCHICAL_SPARSE_GRID;
     }
@@ -105,11 +105,11 @@ NonDStochCollocation::NonDStochCollocation(Model& model): NonDExpansion(model)
   short  corr_order = -1, corr_type = NO_CORRECTION;
   String pt_reuse, approx_type;
   if (piecewiseBasis)
-    approx_type = (sg_basis_type == HIERARCHICAL_INTERPOLANT) ? 
+    approx_type = (sgBasisType == HIERARCHICAL_INTERPOLANT) ? 
       "piecewise_hierarchical_interpolation_polynomial" :
       "piecewise_nodal_interpolation_polynomial";
   else
-    approx_type = (sg_basis_type == HIERARCHICAL_INTERPOLANT) ?
+    approx_type = (sgBasisType == HIERARCHICAL_INTERPOLANT) ?
       "global_hierarchical_interpolation_polynomial" :
       "global_nodal_interpolation_polynomial";
   UShortArray approx_order; // empty
@@ -139,7 +139,7 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
 		     unsigned short num_int_level, short u_space_type,
 		     bool piecewise_basis, bool use_derivs):
   NonDExpansion(model, exp_coeffs_approach, u_space_type,
-		piecewise_basis, use_derivs)
+		piecewise_basis, use_derivs), sgBasisType(DEFAULT_INTERPOLANT)
 {
   // ----------------------------------------------
   // Resolve settings and initialize natafTransform
@@ -166,9 +166,15 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   Iterator u_space_sampler;
   switch (expansionCoeffsApproach) {
   case Pecos::QUADRATURE:
+    // sgBasisType left as DEFAULT_INTERPOLANT
     construct_quadrature(u_space_sampler, g_u_model, num_int_seq, dim_pref);
     break;
-  case Pecos::COMBINED_SPARSE_GRID: case Pecos::HIERARCHICAL_SPARSE_GRID:
+  case Pecos::COMBINED_SPARSE_GRID:
+    sgBasisType = NODAL_INTERPOLANT;
+    construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref);
+    break;
+  case Pecos::HIERARCHICAL_SPARSE_GRID:
+    sgBasisType = HIERARCHICAL_INTERPOLANT;
     construct_sparse_grid(u_space_sampler, g_u_model, num_int_seq, dim_pref);
     break;
   }
@@ -183,14 +189,13 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
   short  corr_order = -1, corr_type = NO_CORRECTION;
   String pt_reuse, approx_type;
   if (piecewiseBasis)
-    // for now, rather than mapping piecewise basis type through, hardwire
-    // a reasonable selection (nodal OK outside of local refinement)
-    approx_type = (refineType == Pecos::H_REFINEMENT) ? 
+    approx_type = (sgBasisType == HIERARCHICAL_INTERPOLANT) ?
       "piecewise_hierarchical_interpolation_polynomial" :
       "piecewise_nodal_interpolation_polynomial";
   else
-    approx_type = "global_nodal_interpolation_polynomial"; // TO DO
-                //"global_hierarchical_interpolation_polynomial"; // TO DO
+    approx_type = (sgBasisType == HIERARCHICAL_INTERPOLANT) ?
+      "global_hierarchical_interpolation_polynomial" :
+      "global_nodal_interpolation_polynomial";
   UShortArray approx_order; // empty
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     approx_type, approx_order, corr_type, corr_order, data_order, pt_reuse,
@@ -283,6 +288,59 @@ void NonDStochCollocation::initialize_u_space_model()
 
   // perform last due to numSamplesOnModel update
   NonDExpansion::initialize_u_space_model();
+}
+
+
+void NonDStochCollocation::update_expansion()
+{
+  if (sgBasisType == HIERARCHICAL_INTERPOLANT) {
+    //nond_sparse->compute_grid_increment(); // TO DO
+    //uSpaceModel.append_approximation(true); // rebuild
+
+    // keep things operational in the short term
+    NonDExpansion::update_expansion();
+  }
+  else // use default implementation
+    NonDExpansion::update_expansion();
+}
+
+
+Real NonDStochCollocation::compute_covariance_metric()
+{
+  if (sgBasisType == HIERARCHICAL_INTERPOLANT) {
+    size_t i, j;
+    RealSymMatrix delta_resp_covar(numFunctions, false);
+    bool warn_flag = false,
+      all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    for (i=0; i<numFunctions; ++i) {
+      PecosApproximation* pa_rep_i
+	= (PecosApproximation*)poly_approxs[i].approx_rep();
+      if (pa_rep_i->expansion_coefficient_flag())
+	for (j=0; j<=i; ++j) {
+	  PecosApproximation* pa_rep_j
+	    = (PecosApproximation*)poly_approxs[j].approx_rep();
+	  if (pa_rep_j->expansion_coefficient_flag())
+	    delta_resp_covar(i,j) = (all_vars) ?
+	      pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
+	      pa_rep_i->delta_covariance(pa_rep_j);
+	  else
+	    { warn_flag = true; delta_resp_covar(i,j) = 0.; }
+	}
+      else {
+	warn_flag = true;
+	for (j=0; j<=i; ++j)
+	  delta_resp_covar(i,j) = 0.;
+      }
+    }
+    if (warn_flag)
+      Cerr << "Warning: expansion coefficients unavailable in "
+	   << "NonDStochCollocation::compute_covariance_metric().\n         "
+	   << "Zeroing affected covariance terms." << std::endl;
+    return delta_resp_covar.normFrobenius();
+  }
+  else // use default implementation
+    return NonDExpansion::compute_covariance_metric();
 }
 
 } // namespace Dakota

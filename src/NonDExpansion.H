@@ -69,8 +69,13 @@ protected:
   virtual void compute_expansion();
   /// uniformly increment the expansion order (PCE only)
   virtual void increment_expansion();
+  /// update an expansion; avoids overhead in compute_expansion()
+  virtual void update_expansion();
   /// print expansion coefficients, as supported by derived instance
   virtual void print_coefficients(std::ostream& s);
+
+  /// compute 2-norm of change in response covariance
+  virtual Real compute_covariance_metric();
 
   //
   //- Heading: Virtual function redefinitions
@@ -91,10 +96,6 @@ protected:
   /// refine the reference expansion found by compute_expansion() using
   /// uniform/adaptive p-/h-refinement strategies
   void refine_expansion();
-
-  /// update the expansion by calling uSpaceModel.build_approximation();
-  /// avoids unnecessary overhead in compute_expansion()
-  void update_expansion();
 
   /// update settings for subsequent passes in the case of multifidelity models
   void update_hierarchy();
@@ -171,6 +172,9 @@ protected:
   /// DIMENSION_ADAPTIVE_CONTROL_GENERALIZED
   short refineControl;
 
+  /// stores the initial variables data in u-space
+  RealVector initialPtU;
+
 private:
 
   //
@@ -191,10 +195,8 @@ private:
   /// finalization of adaptive refinement using generalized sparse grids
   void finalize_sets(bool converged_within_tol);
 
-  /// compute 2-norm of change in response covariance
-  Real compute_covariance_metric(const RealSymMatrix& resp_covar_ref);
   /// compute 2-norm of change in final statistics
-  Real compute_final_statistics_metric(const RealVector& final_stats_ref);
+  Real compute_final_statistics_metric();
 
   /// calculate respCovariance
   void compute_covariance();
@@ -241,9 +243,6 @@ private:
   bool expSampling;
   /// flag to use LHS sampling or MMAIS sampling on the expansion
   bool impSampling;
-
-  /// stores the initial variables data in u-space
-  RealVector initialPtU;
 
   /// derivative of the expansion with respect to the x-space variables
   /// evaluated at the means (used as uncertainty importance metrics)

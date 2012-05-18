@@ -155,12 +155,21 @@ public:
   const Pecos::RealVector& variance_gradient(const Pecos::RealVector& x,
 					     const Pecos::SizetArray& dvv);
 
-  /// return the variance of the expansion, treating all variables as random
+  /// return the covariance between two response expansions, treating
+  /// all variables as random
   Real covariance(PecosApproximation* pecos_approx_2);
-  /// return the variance of the expansion, treating a subset of the
-  /// variables as random
+  /// return the covariance between two response expansions, treating
+  /// a subset of the variables as random
   Real covariance(const Pecos::RealVector& x,
-		      PecosApproximation* pecos_approx_2);
+		  PecosApproximation* pecos_approx_2);
+
+  /// return the change in covariance between two response expansions,
+  /// treating all variables as random
+  Real delta_covariance(PecosApproximation* pecos_approx_2);
+  /// return the change in covariance between two response expansions,
+  /// treating a subset of the variables as random
+  Real delta_covariance(const Pecos::RealVector& x,
+			PecosApproximation* pecos_approx_2);
 
   /// compute moments up to the order supported by the Pecos
   /// polynomial approximation
@@ -425,6 +434,16 @@ covariance(PecosApproximation* pecos_approx_2)
 inline Real PecosApproximation::
 covariance(const Pecos::RealVector& x, PecosApproximation* pecos_approx_2)
 { return polyApproxRep->covariance(x, pecos_approx_2->polyApproxRep); }
+
+
+inline Real PecosApproximation::
+delta_covariance(PecosApproximation* pecos_approx_2)
+{ return polyApproxRep->delta_covariance(pecos_approx_2->polyApproxRep); }
+
+
+inline Real PecosApproximation::
+delta_covariance(const Pecos::RealVector& x, PecosApproximation* pecos_approx_2)
+{ return polyApproxRep->delta_covariance(x, pecos_approx_2->polyApproxRep); }
 
 
 inline void PecosApproximation::compute_moments()

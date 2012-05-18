@@ -181,6 +181,12 @@ void NonDSampling::get_parameter_sets(Model& model)
 					 numSamples, allSamples);
     }
     break;
+  //case ALEATORY_UNCERTAIN:  // TO DO: split dp class into two parts
+    //lhsDriver.generate_samples(model.aleatory_parameters(), empty_ep,
+    //                           numSamples, allSamples);
+  //case EPISTEMIC_UNCERTAIN: // TO DO: split dp class into two parts
+    //lhsDriver.generate_samples(empty_ap, model.epistemic_parameters(),
+    //                           numSamples, allSamples);
   case UNCERTAIN:
     // loss of sampleRanks control is OK since NonDIncremLHS uses ACTIVE mode
     lhsDriver.generate_samples(model.distribution_parameters(), numSamples,
