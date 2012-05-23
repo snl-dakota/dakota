@@ -687,8 +687,14 @@ void COLINOptimizer::set_solver_parameters()
 
     double mutation_rate  = 
       probDescDB.get_real("method.mutation_rate");
-    if (colinSolver->has_property("mutation_rate"))
-      colinSolver->property("mutation_rate") = mutation_rate;
+    if (mutation_rate >= 0.0 && mutation_rate <= 1.0) {
+      if (colinSolver->has_property("mutation_rate"))
+	colinSolver->property("mutation_rate") = mutation_rate;
+    }
+    else {
+      Cerr << "\nWarning: mutation_rate outside acceptable range of [0,1]."
+           << "\n         Using default value of 1.0.\n\n";
+    }
 
     const String& mutation_type = 
       probDescDB.get_string("method.mutation_type");
