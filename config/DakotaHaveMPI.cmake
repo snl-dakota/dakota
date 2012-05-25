@@ -39,7 +39,7 @@ function(DakotaHaveMPI)
     else(CMAKE_CXX_COMPILER)
   
       # Try to find only the C++ compiler wrappers 
-      # (FindMPI.cmake doesn't discriminate)
+      # (CMake pre-2.8.5 FindMPI.cmake doesn't discriminate)
       # autotools names: mpic++ mpicxx mpiCC hcp mpxlC_r mpxlC mpCC cmpic++
       # Trilinos names: mpicxx mpic++ mpiCC
       set(possible_wrappers 
@@ -86,7 +86,8 @@ function(DakotaHaveMPI)
     # Use the native CMake MPI probe
     find_package(MPI REQUIRED)
   
-    if(NOT MPI_FOUND)
+    # cmake-2.8.5 and newer discriminate among compiler types
+    if(NOT MPI_FOUND AND NOT MPI_CXX_FOUND)
       message(FATAL_ERROR "DAKOTA MPI requested, but not found. "
         " Please build a serial configuration instead")
     endif()
