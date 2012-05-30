@@ -57,17 +57,20 @@
 
 SET(MATLAB_FOUND 0)
 IF(WIN32)
+  IF(NOT MATLAB_DIR)
+    SET(MATLAB_DIR "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB\\7.0;MATLABROOT]")
+  ENDIF(MATLAB_DIR)
   IF(${CMAKE_GENERATOR} MATCHES "Visual Studio 6")
-    SET(MATLAB_ROOT "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB\\7.0;MATLABROOT]/extern/lib/win32/microsoft/msvc60")
+    SET(MATLAB_ROOT "${MATLAB_DIR}/extern/lib/win32/microsoft/msvc60")
   ELSE(${CMAKE_GENERATOR} MATCHES "Visual Studio 6")
     IF(${CMAKE_GENERATOR} MATCHES "Visual Studio 7")
       # Assume people are generally using 7.1,
       # if using 7.0 need to link to: ../extern/lib/win32/microsoft/msvc70
-      SET(MATLAB_ROOT "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB\\7.0;MATLABROOT]/extern/lib/win32/microsoft/msvc71")
+      SET(MATLAB_ROOT "${MATLAB_DIR}/extern/lib/win32/microsoft/msvc71")
     ELSE(${CMAKE_GENERATOR} MATCHES "Visual Studio 7")
       IF(${CMAKE_GENERATOR} MATCHES "Borland")
         # Same here, there are also: bcc50 and bcc51 directories
-        SET(MATLAB_ROOT "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB\\7.0;MATLABROOT]/extern/lib/win32/microsoft/bcc54")
+        SET(MATLAB_ROOT "${MATLAB_DIR}/extern/lib/win32/microsoft/bcc54")
       ELSE(${CMAKE_GENERATOR} MATCHES "Borland")
         IF(MATLAB_FIND_REQUIRED)
           MESSAGE(FATAL_ERROR "Generator not compatible: ${CMAKE_GENERATOR}")
@@ -90,32 +93,56 @@ IF(WIN32)
 
   FIND_PATH(MATLAB_INCLUDE_DIR
     "mex.h"
-    "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB\\7.0;MATLABROOT]/extern/include"
+    "${MATLAB_DIR}/extern/include"
     )
 ELSE( WIN32 )
-  IF(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    # Regular x86
-    SET(MATLAB_ROOT
-      "${MATLAB_DIR}/bin/glnx86/"
-      /usr/local/matlab-7sp1/bin/glnx86/
-      /opt/matlab-7sp1/bin/glnx86/
-      $ENV{HOME}/matlab-7sp1/bin/glnx86/
-      $ENV{HOME}/redhat-matlab/bin/glnx86/
-      )
-  ELSE(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    # AMD64:
-    SET(MATLAB_ROOT
-      "${MATLAB_DIR}/bin/glnxa64/"
-      /usr/local/matlab-7sp1/bin/glnxa64/
-      /opt/matlab-7sp1/bin/glnxa64/
-      $ENV{HOME}/matlab7_64/bin/glnxa64/
-      $ENV{HOME}/matlab-7sp1/bin/glnxa64/
-      $ENV{HOME}/redhat-matlab/bin/glnxa64/
-      )
-  ENDIF(CMAKE_SIZEOF_VOID_P EQUAL 4)
+  IF( APPLE )
+    IF(NOT MATLAB_DIR)
+      FILE(GLOB MATLAB_DIRS "/Applications/MATLAB_*.app")
+      LIST(REVERSE MATLAB_DIRS)
+      LIST(GET MATLAB_DIRS 0 MATLAB_DIR)
+    ENDIF(NOT MATLAB_DIR)
+    IF(CMAKE_SIZEOF_VOID_P EQUAL 4)
+      # Regular x86
+      SET(MATLAB_ROOT "${MATLAB_DIR}/bin/maci")
+    ELSE(CMAKE_SIZEOF_VOID_P EQUAL 4)
+      # AMD64:
+      SET(MATLAB_ROOT "${MATLAB_DIR}/bin/maci64")
+    ENDIF(CMAKE_SIZEOF_VOID_P EQUAL 4)
+  ELSE( APPLE ) #UNIX case
+    IF(CMAKE_SIZEOF_VOID_P EQUAL 4)
+      # Regular x86
+      SET(MATLAB_ROOT
+        "${MATLAB_DIR}/bin/glnx86/"
+        /usr/local/matlab-7sp1/bin/glnx86/
+        /opt/matlab-7sp1/bin/glnx86/
+        $ENV{HOME}/matlab-7sp1/bin/glnx86/
+        $ENV{HOME}/redhat-matlab/bin/glnx86/
+        )
+    ELSE(CMAKE_SIZEOF_VOID_P EQUAL 4)
+      # AMD64:
+      SET(MATLAB_ROOT
+        "${MATLAB_DIR}/bin/glnxa64/"
+        /usr/local/matlab-7sp1/bin/glnxa64/
+        /opt/matlab-7sp1/bin/glnxa64/
+        $ENV{HOME}/matlab7_64/bin/glnxa64/
+        $ENV{HOME}/matlab-7sp1/bin/glnxa64/
+        $ENV{HOME}/redhat-matlab/bin/glnxa64/
+        )
+    ENDIF(CMAKE_SIZEOF_VOID_P EQUAL 4)
+  ENDIF(APPLE)
+  # This is common to Mac & UNIX:
   FIND_LIBRARY(MATLAB_MEX_LIBRARY
     mex
     ${MATLAB_ROOT}
+    )
+  # libmx is installed by default on some Mac systems.
+  # Search for it with NO_DEFAULT_PATH first so we are more likely to find
+  # the copy that shipped with MATLAB.
+  FIND_LIBRARY(MATLAB_MX_LIBRARY
+    mx
+    ${MATLAB_ROOT}
+    NO_DEFAULT_PATH
     )
   FIND_LIBRARY(MATLAB_MX_LIBRARY
     mx
@@ -133,10 +160,9 @@ ELSE( WIN32 )
     "$ENV{HOME}/matlab-7sp1/extern/include/"
     "$ENV{HOME}/redhat-matlab/extern/include/"
     )
-
 ENDIF(WIN32)
 
-# This is common to UNIX and Win32:
+# This is common to UNIX and Win32 and Mac:
 SET(MATLAB_LIBRARIES
   ${MATLAB_MEX_LIBRARY}
   ${MATLAB_MX_LIBRARY}
