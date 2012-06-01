@@ -88,13 +88,23 @@ endif()
 
 # Mandate a system or user-provided Boost, including some libraries
 # DAKOTA requires Boost 1.37 or newer; PGI may demand 1.40 or newer
+set(dakota_boost_components "regex;filesystem;system")
+
+# Acro requires the signals library in addition
 option(HAVE_ACRO "Build the ACRO package." ON)
 if(HAVE_ACRO)
-  # Acro requires the signals library in addition
-  find_package(Boost 1.37 REQUIRED COMPONENTS regex signals filesystem system)
-else()
-  find_package(Boost 1.37 REQUIRED COMPONENTS regex filesystem system)
+  list(APPEND dakota_boost_components "signals")
 endif()
+
+# Surfpack requires the serialization library in addition, if building
+# the standalone executable
+option(HAVE_SURFPACK "Build the Surfpack package." ON)
+if(HAVE_SURFPACK AND SURFPACK_STANDALONE)
+  list(APPEND dakota_boost_components "serialization")
+endif()
+
+find_package(Boost 1.37 REQUIRED COMPONENTS "${dakota_boost_components}")
+
 
 include(CTest)
 
