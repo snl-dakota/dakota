@@ -54,6 +54,8 @@ public:
   Real proposalCovScale;
   /// scale factor for likelihood
   Real likelihoodScale;
+  /// flag to indicated if the sigma terms should be calibrated (default true)
+  bool calibrateSigmaFlag;
          
 protected:
 

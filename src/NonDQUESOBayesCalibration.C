@@ -65,8 +65,11 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   Cout << "Rejection type  "<< rejectionType << '\n';
   Cout << "Metropolis type " << metropolisType << '\n';
   Cout << "Num Samples " << numSamples << '\n';
+  // For now, set calcSigmaFlag to true: this should be read from input
+  calibrateSigmaFlag = true;
+
   ////////////////////////////////////////////////////////
-  // Step 2 of 5: Instantiate the QUESO environment 
+  // Step 1 of 5: Instantiate the QUESO environment 
   ////////////////////////////////////////////////////////
   // NOTE:  for now we are assuming that DAKOTA will be run with 
   // mpiexec to call MPI_Init.  Eventually we need to generalize this 
@@ -80,49 +83,20 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   envOptionsValues->m_displayVerbosity     = 2;
   envOptionsValues->m_seed                 = randomSeed;
   uqFullEnvironmentClass* env = new uqFullEnvironmentClass(MPI_COMM_SELF,"","",envOptionsValues);
+ 
+  // Read in all of the experimental data:  any x configuration 
+  // variables, y observations, and y_std if available 
 
-  uqVectorSpaceClass<uqGslVectorClass,uqGslMatrixClass>
-    paramSpace(*env, "param_", numContinuousVars, NULL);
-
-  ////////////////////////////////////////////////////////
-  // Step 2 of 5: Instantiate the parameter domain
-  ////////////////////////////////////////////////////////
-  uqGslVectorClass paramMins(paramSpace.zeroVector());
-  uqGslVectorClass paramMaxs(paramSpace.zeroVector());
-  const RealVector& lower_bounds = emulatorModel.continuous_lower_bounds();
-  const RealVector& upper_bounds = emulatorModel.continuous_upper_bounds();
-  if (emulatorType == GAUSSIAN_PROCESS || emulatorType == NO_EMULATOR) {
-    for (size_t i=0;i<numContinuousVars;i++) {
-      paramMins[i]=0.0;
-      paramMaxs[i]=1.0;
-    }
-  }
-  else { // case POLYNOMIAL_CHAOS: case STOCHASTIC_COLLOCATION:
-    Iterator* se_iter = NonDQUESOInstance->stochExpIterator.iterator_rep();
-    Pecos::ProbabilityTransformation& nataf = ((NonD*)se_iter)->variable_transformation(); 
-    RealVector lower_u, upper_u;
-    nataf.trans_X_to_U(lower_bounds,lower_u);
-    nataf.trans_X_to_U(upper_bounds,upper_u);
-    for (size_t i=0;i<numContinuousVars;i++) {
-//      paramMins[i]=lower_bounds[i];
-//      paramMaxs[i]=upper_bounds[i];
-      paramMins[i]=lower_u[i];
-      paramMaxs[i]=upper_u[i];
-    }
-  }
-  uqBoxSubsetClass<uqGslVectorClass,uqGslMatrixClass>
-    paramDomain("param_",paramSpace,paramMins,paramMaxs);
-
-  ////////////////////////////////////////////////////////
-  // Step 3 of 5: Instantiate the likelihood function object
-  ////////////////////////////////////////////////////////
-  
-  // a matrix with numExperiments rows and cols
-  // numExpConfigVars X, numFunctions Y, [numFunctions Sigma]
+  // Read from a matrix with numExperiments rows and a number of cols
+  // columns:  numExpConfigVars X, numFunctions Y, [numFunctions Sigma]
   RealMatrix experimental_data;
 
   size_t num_sigma_read = numExpStdDeviationsRead;
   size_t num_cols = numExpConfigVars + numFunctions + num_sigma_read;
+  // for now, assume that if you are reading in experimental 
+  // standard deviations, you do NOT want to calibrate sigma terms
+  if (num_sigma_read > 0)
+    calibrateSigmaFlag = false;
 
   TabularIO::read_data_tabular(expDataFileName, "QUESO Bayes Calibration", 
 			       experimental_data, numExperiments,  num_cols, 
@@ -165,14 +139,7 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
     for (int i=0; i<y_std_data.numRows(); i++)
       for (int j=0; j<y_std_data.numCols(); j++)
         yStdData(i,j)=y_std_data(i,j);
-  }
-  else {
-    if (expStdDeviations.length()==0) {
-      for (int i=0; i<numExperiments; i++)
-        for (int j=0; j<numFunctions; j++)
-          yStdData(i,j)=1.0;
-    }
-    else if (expStdDeviations.length()==1) {
+    if (expStdDeviations.length()==1) {
       for (int i=0; i<numExperiments; i++)
         for (int j=0; j<numFunctions; j++)
           yStdData(i,j)=expStdDeviations(0);
@@ -182,16 +149,74 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
         for (int j=0; j<numFunctions; j++)
           yStdData(i,j)=expStdDeviations(j);
     }
-    else {
-      Cerr << "\nError (NonDQUESOBayesCalibration): must specify "
-           << "experimental standard deviations either from experimental_data_file "
-           << "or in the experimental_std_deviations specification."
-           << std::endl;
-      abort_handler(-1);
+  }
+  else {
+    // calculate sigma terms
+    Real mean_est, var_est;
+    for (int j=0; j<numFunctions; j++){
+      mean_est = 0;
+      for (int i=0; i<numExperiments; i++)
+        mean_est += yObsData(i,j);
+      mean_est = mean_est/((Real)numExperiments);
+      var_est = 0;
+      for (int i=0; i<numExperiments; i++)
+        var_est += (yObsData(i,j)-mean_est)*(yObsData(i,j)-mean_est); 
+      for (int i=0; i<numExperiments; i++)
+        yStdData(i,j)=(numExperiments > 1) ? std::sqrt(var_est/(Real)(numExperiments-1)) : 1.0;
     }
   }
   Cout << "ystd_data" << yStdData << '\n';
-    
+
+  ////////////////////////////////////////////////////////
+  // Step 2 of 5: Instantiate the parameter domain
+  ////////////////////////////////////////////////////////
+  int total_num_params;
+  if (calibrateSigmaFlag) 
+    total_num_params = numContinuousVars + numFunctions;
+  else 
+    total_num_params = numContinuousVars; 
+  
+  uqVectorSpaceClass<uqGslVectorClass,uqGslMatrixClass>
+    paramSpace(*env, "param_", total_num_params, NULL);
+
+  uqGslVectorClass paramMins(paramSpace.zeroVector());
+  uqGslVectorClass paramMaxs(paramSpace.zeroVector());
+  const RealVector& lower_bounds = emulatorModel.continuous_lower_bounds();
+  const RealVector& upper_bounds = emulatorModel.continuous_upper_bounds();
+  if (emulatorType == GAUSSIAN_PROCESS || emulatorType == NO_EMULATOR) {
+    for (size_t i=0;i<numContinuousVars;i++) {
+      paramMins[i]=0.0;
+      paramMaxs[i]=1.0;
+    }
+  }
+  else { // case POLYNOMIAL_CHAOS: case STOCHASTIC_COLLOCATION:
+    Iterator* se_iter = NonDQUESOInstance->stochExpIterator.iterator_rep();
+    Pecos::ProbabilityTransformation& nataf = ((NonD*)se_iter)->variable_transformation(); 
+    RealVector lower_u, upper_u;
+    nataf.trans_X_to_U(lower_bounds,lower_u);
+    nataf.trans_X_to_U(upper_bounds,upper_u);
+    for (size_t i=0;i<numContinuousVars;i++) {
+//      paramMins[i]=lower_bounds[i];
+//      paramMaxs[i]=upper_bounds[i];
+      paramMins[i]=lower_u[i];
+      paramMaxs[i]=upper_u[i];
+    }
+  }
+  // the parameter domain will now be expanded by sigma terms if 
+  // calibrateSigmaFlag is true
+  if (calibrateSigmaFlag) {
+    for (int j=0; j<numFunctions; j++){
+      paramMins[numContinuousVars+j]=0.01*yStdData(0,j);
+      paramMaxs[numContinuousVars+j]=2.0*yStdData(0,j);
+    }
+  }
+  // instantiate QUESO parameters and likelihood
+  uqBoxSubsetClass<uqGslVectorClass,uqGslMatrixClass>
+    paramDomain("param_",paramSpace,paramMins,paramMaxs);
+  
+  ////////////////////////////////////////////////////////
+  // Step 3 of 5: Instantiate the likelihood function object
+  ////////////////////////////////////////////////////////
   uqGenericScalarFunctionClass<uqGslVectorClass,uqGslMatrixClass>
     likelihoodFunctionObj("like_",
                           paramDomain,
@@ -327,11 +352,11 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   ////////////////////////////////////////////////////////
   uqGslVectorClass paramInitials(paramSpace.zeroVector());
   uqGslMatrixClass proposalCovMatrix(paramSpace.zeroVector());
-  for (size_t i=0;i<numContinuousVars;i++) {
+  for (size_t i=0;i<total_num_params;i++) {
     paramInitials[i]=(paramMaxs[i]+paramMins[i])/2.0;
     //paramInitials[i]=0.75;
     //paramInitials[i]=0.25;
-    for (size_t j=0;j<numContinuousVars;j++) 
+    for (size_t j=0;j<total_num_params;j++) 
       proposalCovMatrix(i,j)=0.;
     proposalCovMatrix(i,i)=(paramMaxs[i]-paramMins[i])*proposalCovScale;
   }
@@ -416,14 +441,24 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
  
   // Calculate the likelihood depending on what information is available 
   // for the standard deviations
-  // NOTE:  now we assume that yStdData has already had the correct values 
+  // NOTE:  If the calibration of the sigma terms is included, we assume 
+  // ONE sigma term per function is calibrated. 
+  // Otherwise, we assume that yStdData has already had the correct values 
   // placed depending if there is zero, one, num_funcs, or a full num_exp*num_func 
   // matrix of standard deviations.  Thus, we just have to iterate over this to 
   // calculate the likelihood. 
-  for (i=0; i<num_exp; i++) 
-    for (j=0; j<num_funcs; j++)
-       result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j))/NonDQUESOInstance->yStdData(i,j),2.0);
-  
+  if (NonDQUESOInstance->calibrateSigmaFlag) {
+    for (i=0; i<num_exp; i++) 
+      for (j=0; j<num_funcs; j++){
+         result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j))/paramValues[num_cont+j],2.0);
+      }
+  }
+  else {	
+    for (i=0; i<num_exp; i++) 
+      for (j=0; j<num_funcs; j++)
+        result = result+pow((fn_vals(j)-NonDQUESOInstance->yObsData(i,j))/NonDQUESOInstance->yStdData(i,j),2.0);
+  }
+
   result = (result*(NonDQUESOInstance->likelihoodScale));
   result = -1.0*result;
   Cout << "result final " << result << '\n';
