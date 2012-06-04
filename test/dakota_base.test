@@ -41725,6 +41725,31 @@ Test Number 1 succeeded
    1.0000000000e+02   4.9948492332e-01                      1.2911061251e-03
    5.0000000000e+02   8.1754654969e-01                     -9.0605470021e-01
    1.0000000000e+03   9.0616158039e-01                     -1.3174828105e+00
+dakota_uq_rosenbrock_hier_sc.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary: 49 total (49 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.1743610344e+00
+  numerical:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.1743610344e+00
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
+  numerical:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 72 total (49 new, 23 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.1743610344e+00
+  numerical:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.1743610344e+00
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
+  numerical:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
 dakota_uq_rosenbrock_pce.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)

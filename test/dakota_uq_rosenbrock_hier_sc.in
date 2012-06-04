@@ -1,0 +1,32 @@
+strategy,
+	single_method #graphics
+
+method,
+	stoch_collocation #piecewise use_derivatives
+#	  quadrature_order  = 5		
+	  sparse_grid_level = 0
+	    hierarchical					#0,#1
+#	    nodal						#2,#3
+	  uniform p_refinement					#0,#2
+#	  dimension_adaptive p_refinement generalized		#1,#3
+#	  dimension_adaptive p_refinement sobol
+#	  samples = 10000 seed = 12347 rng rnum2
+#	  response_levels = .1 1. 50. 100. 500. 1000.
+#	  variance_based_decomp #univariate_effects
+#	  output silent
+
+variables,
+	uniform_uncertain = 2			
+      	  lower_bounds      = -2.  -2. 		
+	  upper_bounds      =  2.   2.		
+	  descriptors       = 'x1' 'x2'		
+
+interface,
+	direct
+	analysis_driver = 'rosenbrock'		
+
+responses,
+	num_response_functions = 1
+#	no_gradients
+	analytic_gradients			
+	no_hessians
