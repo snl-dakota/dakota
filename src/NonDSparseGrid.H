@@ -91,6 +91,9 @@ public:
   /// invokes SparseGridDriver::finalize_sets()
   void finalize_sets();
 
+  /// invokes SparseGridDriver::evaluate_grid_increment()
+  void evaluate_grid_increment();
+
   int num_samples() const;
 
 protected:
@@ -204,6 +207,14 @@ inline void NonDSparseGrid::print_final_sets(bool converged_within_tol)
 
 inline void NonDSparseGrid::finalize_sets()
 { ssgDriver->finalize_sets(); }
+
+
+inline void NonDSparseGrid::evaluate_grid_increment()
+{
+  ssgDriver->compute_grid_increment(allSamples);
+  evaluate_parameter_sets(iteratedModel, true, false);
+  ++numIntegrations;
+}
 
 
 inline int NonDSparseGrid::num_samples() const

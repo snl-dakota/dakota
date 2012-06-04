@@ -389,7 +389,7 @@ void NonDPolynomialChaos::compute_expansion()
 
 
 /** Used for uniform refinement of regression-based PCE. */
-void NonDPolynomialChaos::increment_expansion()
+void NonDPolynomialChaos::increment_order()
 {
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   PecosApproximation* poly_approx_rep; size_t exp_terms = 0;

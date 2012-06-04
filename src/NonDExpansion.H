@@ -68,7 +68,7 @@ protected:
   /// form the expansion by calling uSpaceModel.build_approximation()
   virtual void compute_expansion();
   /// uniformly increment the expansion order (PCE only)
-  virtual void increment_expansion();
+  virtual void increment_order();
   /// update an expansion; avoids overhead in compute_expansion()
   virtual void update_expansion();
   /// print expansion coefficients, as supported by derived instance

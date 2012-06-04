@@ -723,7 +723,7 @@ void NonDExpansion::refine_expansion()
       case Pecos::REGRESSION:
 	// ramp expansion order and update regression samples, keeping
 	// initial collocation ratio (either user specified or inferred)
-	increment_expansion(); // virtual fn defined for NonDPCE
+	increment_order(); // virtual fn defined for NonDPCE
 	update_expansion(); // invokes uSpaceModel.build_approximation()
 	break;
       }
@@ -782,9 +782,9 @@ void NonDExpansion::refine_expansion()
 }
 
 
-void NonDExpansion::increment_expansion()
+void NonDExpansion::increment_order()
 {
-  Cerr << "Error: virtual increment_expansion() not redefined by NonDExpansion "
+  Cerr << "Error: virtual increment_order() not redefined by NonDExpansion "
        << "derived class.  This class foes not support uniform expansion order "
        << "increments." << std::endl;
   abort_handler(-1);
@@ -793,15 +793,16 @@ void NonDExpansion::increment_expansion()
 
 void NonDExpansion::update_expansion()
 {
-  // leave sampler_set, expansion flags, and distribution parameter
-  // settings as set previously by compute_expansion(); there should
-  // be no need to update for an expansion refinement.
+  // leave sampler_set, expansion flags, and distribution parameter settings
+  // as set previously by compute_expansion(); there should be no need to
+  // update these for an expansion refinement.
 
-  // Ultimately want to be more incremental than this, but need
-  // incremental support from sgmg/sgmga before this can be implemented.
-  uSpaceModel.build_approximation();
-  //u_space_sampler->run_iterator(Cout);
-  //uSpaceModel.update_approximation(true); // append_approximation() ?
+  // Ultimately want to be more incremental than this, but need to support
+  // sgmgg usage for incremental grid updates following initial sgmg/sgmga
+  // before this can be implemented.  For now, employ incremental rebuilds
+  // only for hierarchical SC and rely on evaluation duplicate detection
+  // within non-incremental builds from scratch.
+  uSpaceModel.build_approximation();//.rebuild_approximation();
 }
 
 

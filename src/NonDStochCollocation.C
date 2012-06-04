@@ -12,7 +12,7 @@
 
 #include "system_defs.h"
 #include "NonDStochCollocation.H"
-#include "NonDIntegration.H"
+#include "NonDSparseGrid.H"
 #include "DakotaModel.H"
 #include "DakotaResponse.H"
 #include "ProblemDescDB.H"
@@ -294,14 +294,15 @@ void NonDStochCollocation::initialize_u_space_model()
 void NonDStochCollocation::update_expansion()
 {
   if (sgBasisType == HIERARCHICAL_INTERPOLANT) {
-    //nond_sparse->compute_grid_increment(); // TO DO
-    //uSpaceModel.append_approximation(true); // rebuild
-
-    // keep things operational in the short term
-    NonDExpansion::update_expansion();
+    // grid levels have been updated, now evaluate the new points
+    NonDSparseGrid* nond_sparse = (NonDSparseGrid*)
+      uSpaceModel.subordinate_iterator().iterator_rep();
+    nond_sparse->evaluate_grid_increment(); // like NonDSG::evaluate_set()
+    // append the new data to the existing approximation and rebuild
+    uSpaceModel.append_approximation(true); // rebuild
   }
-  else // use default implementation
-    NonDExpansion::update_expansion();
+  else
+    NonDExpansion::update_expansion(); // default: build from scratch
 }
 
 

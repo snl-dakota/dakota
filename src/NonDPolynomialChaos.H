@@ -55,8 +55,9 @@ public:
 
   /// form or import an orthogonal polynomial expansion using PCE methods
   void compute_expansion();
+
   /// uniformly increment the order of the polynomial chaos expansion
-  void increment_expansion();
+  void increment_order();
 
   /// print the PCE coefficient array for the orthogonal basis
   void print_coefficients(std::ostream& s);
