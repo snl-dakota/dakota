@@ -1,8 +1,26 @@
+# DAKOTA directory structure assumption:
+# {Dakota-source}
+# |- config                        (directory-to be renamed to cmake)
+# |  |- compilers                  (directory)
+# |  |- platforms                  (directory)
+# |  |- utilities                  (directory)
+# |  |- Build<Plaform1>.cmake      (file)
+# |  |- Build<Plaform2>.cmake      (file)
+# |- local                         (directory)
+# |  |- cmake                      (directory)
+# |  |  |- compilers               (directory)
+# |  |  |- platforms               (directory)
+# |  |  |- utilities               (directory)
+# |  |  |- Build<Plaform1>.cmake   (file)
+# |  |  |- Build<Plaform2>.cmake   (file)
+# |  |  |- Build<Plaform2>.sh      (file)
+
 message( "Reading Script: ${CMAKE_CURRENT_LIST_FILE}" )
 
 if ( NOT DAKOTA_PATHS_SET )
   message( "Setting DAKOTA configuration paths..." )
-  if ( ${CTEST_SCRIPT_DIRECTORY} MATCHES "/local/" ) 
+
+  if ( ${CTEST_SCRIPT_DIRECTORY} MATCHES "/local/cmake" ) 
     set( DAKOTA_LOCAL_CONFIG_DIR ${CTEST_SCRIPT_DIRECTORY} )
     get_filename_component( scriptParent ${CTEST_SCRIPT_DIRECTORY} PATH ) 
     get_filename_component( dakotaSrc ${scriptParent} PATH )
