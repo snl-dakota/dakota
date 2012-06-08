@@ -19,11 +19,13 @@ method,
 	  output verbose
 
 variables,
-	interval_uncertain = 2
+	continuous_interval_uncertain = 2
 	  num_intervals   = 3 2
 	  interval_probs  = 0.5 0.1 0.4 0.7 0.3
-#	  interval_bounds = 0.1 0.5 0.5 1.0 0.7 1.2 0.3 0.5 0.5 0.8
-	  interval_bounds = 0.6 0.9 0.1 0.5 0.5 1.0 0.3 0.5 0.6 0.8
+#	  lower_bounds    = 0.1 0.5 0.7 0.3 0.5
+#	  upper_bounds    = 0.5 1.0 1.2 0.5 0.8
+	  lower_bounds    = 0.6 0.1 0.5 0.3 0.6
+	  upper_bounds    = 0.9 0.5 1.0 0.5 0.8
 
 interface,
 	direct

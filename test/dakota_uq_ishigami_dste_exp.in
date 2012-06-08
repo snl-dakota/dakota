@@ -30,10 +30,11 @@ model,
 
 variables,
         id_variables = 'EPIST_V'
-        interval_uncertain = 1				
-	num_intervals   = 4.                                   
-        interval_probs  = 0.25 0.25 0.25 0.25
-	interval_bounds = 0 0.5 0.5 1.5 .9 2. 1.6 1.8 
+        continuous_interval_uncertain = 1				
+	  num_intervals   = 4.                                   
+          interval_probs  = 0.25 0.25 0.25 0.25
+	  lower_bounds    = 0.0  0.5  0.9  1.6
+	  upper_bounds    = 0.5  1.5  2.0  1.8 
 
 responses,
         id_responses = 'EPIST_R'

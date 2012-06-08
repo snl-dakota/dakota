@@ -41,10 +41,11 @@ model,
 
 variables,
 	id_variables = 'EPIST_V'
-        interval_uncertain =2                       #0,#p0
+        continuous_interval_uncertain =2	    #0,#p0
           num_intervals = 1 1                       #0,#p0
-          interval_probs = 1.0 1.0                  #0,#p0
-          interval_bounds = 400. 600. 800. 1200.    #0,#p0
+          interval_probs = 1.0   1.0		    #0,#p0
+          lower_bounds =   400.  800.		    #0,#p0
+          upper_bounds =   600. 1200.		    #0,#p0
           descriptors       'X_mean' 'Y_mean'       #0,#p0
 #	uniform_uncertain = 2				#1
 #	  lower_bounds    400.   800.			#1
