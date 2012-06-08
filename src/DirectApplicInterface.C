@@ -66,9 +66,9 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   oFilterName(problem_db.get_string("interface.application.output_filter")),
   gradFlag(false), hessFlag(false), numFns(0), numVars(0), numDerivVars(0),
   analysisDrivers(
-    problem_db.get_dsa("interface.application.analysis_drivers")),
+    problem_db.get_sa("interface.application.analysis_drivers")),
   analysisComponents(
-    problem_db.get_ds2a("interface.application.analysis_components"))
+    problem_db.get_s2a("interface.application.analysis_components"))
 {
   // define driverMap for string to enum mapping
   std::string empty;

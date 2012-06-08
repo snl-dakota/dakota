@@ -31,7 +31,7 @@ ConcurrentStrategy::ConcurrentStrategy(ProblemDescDB& problem_db):
   multiStartFlag = (strategyName == "multi_start");
 
   const RealVector& raw_param_sets
-    = problem_db.get_rdv("strategy.concurrent.parameter_sets");
+    = problem_db.get_rv("strategy.concurrent.parameter_sets");
   int num_random_jobs = problem_db.get_int("strategy.concurrent.random_jobs");
 
   const String& concurrent_iterator
@@ -80,9 +80,9 @@ ConcurrentStrategy::ConcurrentStrategy(ProblemDescDB& problem_db):
   if (iteratorCommRank == 0) {
     // define paramsMsgLen
     if (stratIterDedMaster) {
-      RealVector rdv(param_set_len);
+      RealVector rv(param_set_len);
       MPIPackBuffer send_buffer;
-      send_buffer << rdv;
+      send_buffer << rv;
       paramsMsgLen = send_buffer.size();
     }
     // define resultsMsgLen

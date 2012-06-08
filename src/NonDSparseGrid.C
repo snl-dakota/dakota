@@ -32,7 +32,7 @@ namespace Dakota {
     specification.  It is not currently used, as there is not a
     separate sparse_grid method specification. */
 NonDSparseGrid::NonDSparseGrid(Model& model): NonDIntegration(model),
-  ssgLevelSpec(probDescDB.get_dusa("method.nond.sparse_grid_level")),
+  ssgLevelSpec(probDescDB.get_usa("method.nond.sparse_grid_level")),
   ssgLevelRef(ssgLevelSpec[sequenceIndex])
 {
   // initialize the numerical integration driver

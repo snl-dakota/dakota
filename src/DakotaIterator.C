@@ -162,7 +162,7 @@ Iterator::Iterator(BaseConstructor, Model& model):
   if (gradientType == "numerical") {
     if (methodSource == "vendor") {
       const RealVector& fdgss
-	= probDescDB.get_rdv("responses.fd_gradient_step_size");
+	= probDescDB.get_rv("responses.fd_gradient_step_size");
       if (fdgss.length()) // else use default from initializer list
 	fdGradStepSize = fdgss[0];
     }
@@ -179,9 +179,9 @@ Iterator::Iterator(BaseConstructor, Model& model):
       abort_handler(-1);
     }
     const IntList& mixed_grad_analytic_ids
-      = probDescDB.get_dil("responses.gradients.mixed.id_analytic");
+      = probDescDB.get_il("responses.gradients.mixed.id_analytic");
     const IntList& mixed_grad_numerical_ids
-      = probDescDB.get_dil("responses.gradients.mixed.id_numerical");
+      = probDescDB.get_il("responses.gradients.mixed.id_numerical");
     Cout << "Mixed gradients: analytic gradients for functions { ";
     for (ILCIter cit=mixed_grad_analytic_ids.begin();
 	 cit!=mixed_grad_analytic_ids.end(); cit++)
@@ -196,9 +196,9 @@ Iterator::Iterator(BaseConstructor, Model& model):
 
   Cout << "hessianType = " << hessianType << '\n';
   if ( hessianType == "numerical" || ( hessianType == "mixed" &&
-      !probDescDB.get_dil("responses.hessians.mixed.id_numerical").empty() ) ) {
+      !probDescDB.get_il("responses.hessians.mixed.id_numerical").empty() ) ) {
     const RealVector& fdhss
-      = probDescDB.get_rdv("responses.fd_hessian_step_size");
+      = probDescDB.get_rv("responses.fd_hessian_step_size");
     if (fdhss.length()) // else use defaults from initializer list
       fdHessByGradStepSize = fdHessByFnStepSize = fdhss[0];
   }

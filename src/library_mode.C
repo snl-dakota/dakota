@@ -261,7 +261,7 @@ static void my_callback_function(void *ptr)
   if (db->get_string("interface.type") != "direct")
     return;
   const Dakota::StringArray& drivers
-    = db->get_dsa("interface.application.analysis_drivers");
+    = db->get_sa("interface.application.analysis_drivers");
   if (contains(drivers, "plugin_rosenbrock")) {
     // Rosenbrock
     Dakota::RealVector rv(2);
@@ -378,7 +378,7 @@ void run_dakota_mixed(const char* dakota_input_file)
   if (world_rank == 0) {
     problem_db.resolve_top_method(); // allow DB set/get operations
     const Dakota::StringArray& drivers
-      = problem_db.get_dsa("interface.application.analysis_drivers");
+      = problem_db.get_sa("interface.application.analysis_drivers");
     if (drivers.size() == 1 && drivers[0] == "plugin_rosenbrock") {
       Dakota::RealVector ip(2);
       ip[0] =  1.1;

@@ -54,12 +54,12 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 #endif // DEBUG
   if (outputLevel > NORMAL_OUTPUT) { // detailed evaluation reporting
     fineGrainEvalCounters = true;
-    fnLabels = problem_db.get_dsa("responses.labels");
+    fnLabels = problem_db.get_sa("responses.labels");
     init_evaluation_counters(fnLabels.size());
   }
 
   // set coreMappings flag based on presence of analysis_drivers specification
-  if (problem_db.get_dsa("interface.application.analysis_drivers").empty())
+  if (problem_db.get_sa("interface.application.analysis_drivers").empty())
     coreMappings = false;
 
   // Process the algebraic_mappings file (an AMPL .nl file) to get the number

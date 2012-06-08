@@ -157,7 +157,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
       // old parameters
 
       const RealVector& correlation_rv
-        = problem_db.get_rdv("model.surrogate.kriging_correlations");
+        = problem_db.get_rv("model.surrogate.kriging_correlations");
       if (!correlation_rv.empty()) {
 	RealArray correlation_ra; //std::vector<double>
 	copy_data(correlation_rv, correlation_ra);
@@ -166,7 +166,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
       }
      
 //       const RealVector& max_correlations_rv 
-//         = problem_db.get_rdv("model.surrogate.kriging_max_correlations");
+//         = problem_db.get_rv("model.surrogate.kriging_max_correlations");
 //       if (!max_correlations_rv.empty()) {
 // 	RealArray max_correlation_ra; //std::vector<double>
 // 	copy_data(max_correlations_rv, max_correlation_ra);
@@ -174,7 +174,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
 //       }
 
 //       const RealVector& min_correlations_rv 
-//         = problem_db.get_rdv("model.surrogate.kriging_min_correlations");
+//         = problem_db.get_rv("model.surrogate.kriging_min_correlations");
 //       if (!min_correlations_rv.empty()) {
 // 	RealArray min_correlation_ra; //std::vector<double>
 // 	copy_data(min_correlations_rv, min_correlation_ra);

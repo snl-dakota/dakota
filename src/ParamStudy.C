@@ -35,7 +35,7 @@ ParamStudy::ParamStudy(Model& model): PStudyDACE(model), pStudyType(0)
 
   // Set pStudyType
   const RealVector& step_vector
-    = probDescDB.get_rdv("method.parameter_study.step_vector");
+    = probDescDB.get_rv("method.parameter_study.step_vector");
   if (methodName.begins("list_"))
     pStudyType = LIST;
   else if (methodName.begins("vector_"))
@@ -51,12 +51,12 @@ ParamStudy::ParamStudy(Model& model): PStudyDACE(model), pStudyType(0)
   switch (pStudyType) {
   case LIST: // list_parameter_study
     if (distribute_list_of_points(
-	probDescDB.get_rdv("method.parameter_study.list_of_points")))
+	probDescDB.get_rv("method.parameter_study.list_of_points")))
       err_flag = true;
     break;
   case VECTOR_FP: // vector_parameter_study (final_point & num_steps spec.)
     if (check_final_point(
-	probDescDB.get_rdv("method.parameter_study.final_point")))
+	probDescDB.get_rv("method.parameter_study.final_point")))
       err_flag = true;
     if (check_num_steps(probDescDB.get_int("method.parameter_study.num_steps")))
       err_flag = true;
@@ -84,7 +84,7 @@ ParamStudy::ParamStudy(Model& model): PStudyDACE(model), pStudyType(0)
     if (distribute_step_vector(step_vector))
       err_flag = true;
     if (check_steps_per_variable(
-	probDescDB.get_idv("method.parameter_study.steps_per_variable")))
+	probDescDB.get_iv("method.parameter_study.steps_per_variable")))
       err_flag = true;
     initialDIVPoint = iteratedModel.discrete_int_variables();  // view
     initialDRVPoint = iteratedModel.discrete_real_variables(); // view
@@ -93,7 +93,7 @@ ParamStudy::ParamStudy(Model& model): PStudyDACE(model), pStudyType(0)
     break;
   }
   case MULTIDIM: // multidim_parameter_study
-    if (check_variable_partitions(probDescDB.get_dusa("method.partitions")))
+    if (check_variable_partitions(probDescDB.get_usa("method.partitions")))
       err_flag = true;
     if (check_finite_bounds())
       err_flag = true;

@@ -33,9 +33,9 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
 
   // Retrieve the variable mapping inputs
   const StringArray& primary_var_mapping
-    = problem_db.get_dsa("model.nested.primary_variable_mapping");
+    = problem_db.get_sa("model.nested.primary_variable_mapping");
   const StringArray& secondary_var_mapping
-    = problem_db.get_dsa("model.nested.secondary_variable_mapping");
+    = problem_db.get_sa("model.nested.secondary_variable_mapping");
 
   // NestedModel may set the DB list nodes, but is required to restore them
   // to their previous setting in order to remove the need to continuously
@@ -67,11 +67,11 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
       // Echo a warning if there is a user specification of constraint bounds/
       // targets that will be superceded by top level constraint bounds/targets.
       const RealVector& interf_ineq_l_bnds
-	= problem_db.get_rdv("responses.nonlinear_inequality_lower_bounds");
+	= problem_db.get_rv("responses.nonlinear_inequality_lower_bounds");
       const RealVector& interf_ineq_u_bnds
-	= problem_db.get_rdv("responses.nonlinear_inequality_upper_bounds");
+	= problem_db.get_rv("responses.nonlinear_inequality_upper_bounds");
       const RealVector& interf_eq_targets
-	= problem_db.get_rdv("responses.nonlinear_equality_targets");
+	= problem_db.get_rv("responses.nonlinear_equality_targets");
       bool warning_flag = false;
       size_t i;
       for (i=0; i<numOptInterfIneqCon; ++i)
@@ -419,9 +419,9 @@ NestedModel::NestedModel(ProblemDescDB& problem_db):
   problem_db.set_db_method_node(method_index); // restore method only
   problem_db.set_db_model_nodes(model_index);  // restore all model nodes
   const RealVector& primary_resp_coeffs
-    = problem_db.get_rdv("model.nested.primary_response_mapping");
+    = problem_db.get_rv("model.nested.primary_response_mapping");
   const RealVector& secondary_resp_coeffs
-    = problem_db.get_rdv("model.nested.secondary_response_mapping");
+    = problem_db.get_rv("model.nested.secondary_response_mapping");
 
   if (primary_resp_coeffs.empty() && secondary_resp_coeffs.empty()) {
     Cerr << "\nError: no mappings provided for sub-iterator functions."

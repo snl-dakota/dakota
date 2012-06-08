@@ -87,7 +87,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
 
   // standard reliability indices are not defined and should be precluded via
   // the input spec.  requestedRelLevels cannot be used for empty() tests.
-  if (!probDescDB.get_rdva("method.nond.reliability_levels").empty() ||
+  if (!probDescDB.get_rva("method.nond.reliability_levels").empty() ||
       respLevelTarget == RELIABILITIES) {
     Cerr << "Error: reliability indices are not defined for global reliability "
 	 << "methods.  Use generalized reliability instead." << std::endl;
@@ -97,8 +97,8 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   // requestedProbLevels & requestedGenRelLevels are not yet supported
   // since PMA EGRA is currently a research issue.  requestedProbLevels
   // and requestedGenRelLevels cannot be used for empty() tests.
-  if (!probDescDB.get_rdva("method.nond.probability_levels").empty() ||
-      !probDescDB.get_rdva("method.nond.gen_reliability_levels").empty()) {
+  if (!probDescDB.get_rva("method.nond.probability_levels").empty() ||
+      !probDescDB.get_rva("method.nond.gen_reliability_levels").empty()) {
     Cerr << "Error: Inverse reliability mappings not currently supported in "
 	 << "global_reliability."<< std::endl;
     abort_handler(-1); 

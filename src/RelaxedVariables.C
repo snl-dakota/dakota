@@ -50,57 +50,57 @@ RelaxedVariables(const ProblemDescDB& problem_db,
   allContinuousVars.sizeUninitialized(num_acv);
 
   int start = 0;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.continuous_design.initial_point"), allContinuousVars, start);
   start += num_cdv;
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_design_range.initial_point"),
     allContinuousVars, start);
   start += num_ddrv;
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_design_set_int.initial_point"),
     allContinuousVars, start);
   start += num_ddsiv;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.discrete_design_set_real.initial_point"),
     allContinuousVars, start);
   start += num_ddsrv;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.continuous_aleatory_uncertain.initial_point"),
     allContinuousVars, start);
   start += num_cauv;
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_aleatory_uncertain_int.initial_point"),
     allContinuousVars, start);
   start += num_dauiv;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.discrete_aleatory_uncertain_real.initial_point"),
     allContinuousVars, start);
   start += num_daurv;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.continuous_epistemic_uncertain.initial_point"),
     allContinuousVars, start);
   start += num_ceuv;
-  //merge_data_partial(problem_db.get_idv(
+  //merge_data_partial(problem_db.get_iv(
   //  "variables.discrete_epistemic_uncertain_int.initial_point"),
   //  allContinuousVars, start);
   //start += num_deuiv;
-  //copy_data_partial(problem_db.get_rdv(
+  //copy_data_partial(problem_db.get_rv(
   //  "variables.discrete_epistemic_uncertain_real.initial_point"),
   //  allContinuousVars, start);
   //start += num_deurv;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.continuous_state.initial_state"), allContinuousVars, start);
   start += num_csv;
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_state_range.initial_state"),
     allContinuousVars, start);
   start += num_dsrv;
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_state_set_int.initial_state"),
     allContinuousVars, start);
   start += num_dssiv;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.discrete_state_set_real.initial_state"),
     allContinuousVars, start);
 

@@ -1405,17 +1405,17 @@ KEYWORD12 variables
 	  [ descriptors STRINGLIST ]
 	  ]
 	[ binomial_uncertain INTEGER > 0
-	  prob_per_trial REALLIST
+	  probability_per_trial ALIAS prob_per_trial REALLIST
 	  num_trials INTEGERLIST
 	  [ descriptors STRINGLIST ]
 	  ]
 	[ negative_binomial_uncertain INTEGER > 0
-	  prob_per_trial REALLIST
+	  probability_per_trial ALIAS prob_per_trial REALLIST
 	  num_trials INTEGERLIST
 	  [ descriptors STRINGLIST ]
 	  ]
 	[ geometric_uncertain INTEGER > 0
-	  prob_per_trial REALLIST
+	  probability_per_trial ALIAS prob_per_trial REALLIST
 	  [ descriptors STRINGLIST ]
 	  ]
 	[ hypergeometric_uncertain INTEGER > 0
@@ -1431,11 +1431,31 @@ KEYWORD12 variables
 	  [ descriptors ALIAS huv_point_descriptors STRINGLIST ]
 	  ]
 	[ uncertain_correlation_matrix REALLIST ]
-	[ interval_uncertain INTEGER > 0
+	[ continuous_interval_uncertain ALIAS interval_uncertain INTEGER > 0
 	  [ num_intervals ALIAS iuv_num_intervals INTEGERLIST ]
-	  interval_probs ALIAS iuv_interval_probs REALLIST
-	  interval_bounds ALIAS iuv_interval_bounds REALLIST
+	  [ interval_probabilities ALIAS interval_probs ALIAS iuv_interval_probs REALLIST ]
+	  lower_bounds REALLIST
+	  upper_bounds REALLIST
 	  [ descriptors ALIAS iuv_descriptors STRINGLIST ]
+	  ]
+	[ discrete_interval_uncertain ALIAS discrete_uncertain_range INTEGER > 0
+	  [ num_intervals INTEGERLIST ]
+	  [ interval_probabilities ALIAS range_probabilities ALIAS range_probs REALLIST ]
+	  lower_bounds INTEGERLIST
+	  upper_bounds INTEGERLIST
+	  [ descriptors STRINGLIST ]
+	  ]
+	[ discrete_uncertain_set_integer INTEGER > 0
+	  [ num_set_values INTEGERLIST ]
+	  set_values INTEGERLIST
+	  [ set_probabilities ALIAS set_probs REALLIST ]
+	  [ descriptors STRINGLIST ]
+	  ]
+	[ discrete_uncertain_set_real INTEGER > 0
+	  [ num_set_values INTEGERLIST ]
+	  set_values REALLIST
+	  [ set_probabilities ALIAS set_probs REALLIST ]
+	  [ descriptors STRINGLIST ]
 	  ]
 	[ continuous_state INTEGER > 0
 	  [ initial_state ALIAS csv_initial_state REALLIST ]

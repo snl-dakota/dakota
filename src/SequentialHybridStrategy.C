@@ -28,7 +28,7 @@ SequentialHybridStrategy::SequentialHybridStrategy(ProblemDescDB& problem_db):
   if (worldRank == 0)
     std::cout << "Constructing Sequential Hybrid Optimizer Strategy...\n";
 
-  methodList = problem_db.get_dsa("strategy.hybrid.method_list");
+  methodList = problem_db.get_sa("strategy.hybrid.method_list");
   numIterators = methodList.size();
   if (!numIterators) { // verify at least one method in list
     std::cerr << "Error: method_list must have a least one entry." << std::endl;

@@ -31,7 +31,7 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   asynchLocalAnalysisConcurrency(
     problem_db.get_int("interface.asynch_local_analysis_concurrency")),
   numAnalysisDrivers(
-    problem_db.get_dsa("interface.application.analysis_drivers").size()),
+    problem_db.get_sa("interface.application.analysis_drivers").size()),
   worldSize(parallelLib.world_size()), worldRank(parallelLib.world_rank()),
   iteratorCommSize(1), iteratorCommRank(0), ieMessagePass(false),
   numEvalServers(problem_db.get_int("interface.evaluation_servers")),
@@ -54,14 +54,14 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   failAction(problem_db.get_string("interface.failure_capture.action")),
   failRetryLimit(problem_db.get_int("interface.failure_capture.retry_limit")),
   failRecoveryFnVals(
-    problem_db.get_rdv("interface.failure_capture.recovery_fn_vals"))
+    problem_db.get_rv("interface.failure_capture.recovery_fn_vals"))
 {
   // If the user has specified active_set_vector as off, then map() uses a
   // default ASV which is constant for all function evaluations (so that the
   // user need not check the content of the ASV on each evaluation).
   if (!asvControlFlag) {
     size_t num_fns = (outputLevel > NORMAL_OUTPUT) ? fnLabels.size() :
-      problem_db.get_dsa("responses.labels").size();
+      problem_db.get_sa("responses.labels").size();
     defaultASV.resize(num_fns);
     short asv_value = 1;
     const std::string& grad_type
@@ -75,13 +75,13 @@ ApplicationInterface(const ProblemDescDB& problem_db):
     defaultASV.assign(defaultASV.size(), asv_value);
     if (grad_type == "mixed") {
       const IntList& id_anal_grad
-	= problem_db.get_dil("responses.gradients.mixed.id_analytic");
+	= problem_db.get_il("responses.gradients.mixed.id_analytic");
       for (ILCIter cit=id_anal_grad.begin(); cit!=id_anal_grad.end(); ++cit)
         defaultASV[*cit - 1] += 2;
     }
     if (hess_type == "mixed") {
       const IntList& id_anal_hess
-	= problem_db.get_dil("responses.hessians.mixed.id_analytic");
+	= problem_db.get_il("responses.hessians.mixed.id_analytic");
       for (ILCIter cit=id_anal_hess.begin(); cit!=id_anal_hess.end(); ++cit)
         defaultASV[*cit - 1] += 4;
     }

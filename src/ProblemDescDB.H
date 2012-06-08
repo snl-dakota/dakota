@@ -198,28 +198,29 @@ public:
   // function here.
 
   /// get a RealVector out of the database based on an identifier string
-  const RealVector& get_rdv(const String& entry_name) const;
+  const RealVector& get_rv(const String& entry_name) const;
   /// get an IntVector out of the database based on an identifier string
-  const IntVector& get_idv(const String& entry_name) const;
+  const IntVector& get_iv(const String& entry_name) const;
   /// get an UShortArray out of the database based on an identifier string
-  const UShortArray& get_dusa(const String& entry_name) const;
+  const UShortArray& get_usa(const String& entry_name) const;
   /// get a RealSymMatrix out of the database based on an identifier string
-  const RealSymMatrix& get_rsdm(const String& entry_name) const;
-  /// get a RealVectorArray out of the database based on an
-  /// identifier string
-  const RealVectorArray& get_rdva(const String& entry_name) const;
+  const RealSymMatrix& get_rsm(const String& entry_name) const;
+  /// get a RealVectorArray out of the database based on an identifier string
+  const RealVectorArray& get_rva(const String& entry_name) const;
+  /// get an IntVectorArray out of the database based on an identifier string
+  const IntVectorArray& get_iva(const String& entry_name) const;
   /// get an IntList out of the database based on an identifier string
-  const IntList& get_dil(const String& entry_name) const;
+  const IntList& get_il(const String& entry_name) const;
   /// get an IntSet out of the database based on an identifier string
-  const IntSet& get_dis(const String& entry_name) const;
+  const IntSet& get_is(const String& entry_name) const;
   /// get an IntSetArray out of the database based on an identifier string
-  const IntSetArray& get_disa(const String& entry_name) const;
+  const IntSetArray& get_isa(const String& entry_name) const;
   /// get a RealSetArray out of the database based on an identifier string
-  const RealSetArray& get_drsa(const String& entry_name) const;
+  const RealSetArray& get_rsa(const String& entry_name) const;
   /// get a StringArray out of the database based on an identifier string
-  const StringArray& get_dsa(const String& entry_name) const;
+  const StringArray& get_sa(const String& entry_name) const;
   /// get a String2DArray out of the database based on an identifier string
-  const String2DArray& get_ds2a(const String& entry_name) const;
+  const String2DArray& get_s2a(const String& entry_name) const;
   /// get a String out of the database based on an identifier string
   const String& get_string(const String& entry_name) const;
   /// get a Real out of the database based on an identifier string
@@ -259,16 +260,17 @@ public:
   // may be large and inconvenient to include in the DAKOTA input.
 
   /// set a RealVector within the database based on an identifier string
-  void set(const String& entry_name, const RealVector& rdv);
+  void set(const String& entry_name, const RealVector& rv);
   /// set an IntVector within the database based on an identifier string
-  void set(const String& entry_name, const IntVector& idv);
+  void set(const String& entry_name, const IntVector& iv);
   /// set a RealMatrix within the database based on an identifier string
-  void set(const String& entry_name, const RealSymMatrix& rsdm);
-  /// set a RealVectorArray within the database based on an
-  /// identifier string
-  void set(const String& entry_name, const RealVectorArray& rdva);
+  void set(const String& entry_name, const RealSymMatrix& rsm);
+  /// set a RealVectorArray within the database based on an identifier string
+  void set(const String& entry_name, const RealVectorArray& rva);
+  /// set an IntVectorArray within the database based on an identifier string
+  void set(const String& entry_name, const IntVectorArray& iva);
   /// set a StringArray within the database based on an identifier string
-  void set(const String& entry_name, const StringArray& dsa);
+  void set(const String& entry_name, const StringArray& sa);
 
   /// function to check dbRep (does this envelope contain a letter)
   bool is_null() const;

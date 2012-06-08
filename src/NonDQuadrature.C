@@ -32,7 +32,7 @@ namespace Dakota {
 NonDQuadrature::NonDQuadrature(Model& model): NonDIntegration(model),
   nestedRules(
     probDescDB.get_short("method.nond.nesting_override") == Pecos::NESTED),
-  quadOrderSpec(probDescDB.get_dusa("method.nond.quadrature_order"))
+  quadOrderSpec(probDescDB.get_usa("method.nond.quadrature_order"))
 {
   // initialize the numerical integration driver
   numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);

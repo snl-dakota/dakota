@@ -1092,40 +1092,60 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  ]
 	[ poisson_uncertain INTEGER > 0 {N_vam(intz,numPoissonUncVars)}
 	  lambdas REALLIST LEN poisson_uncertain {N_vam(RealLd,poissonUncLambdas)}
-	  [ descriptors STRINGLIST LEN poisson_uncertain {N_vae(dailbl,DAUIVar_poisson)} ]
+	  [ descriptors STRINGLIST LEN poisson_uncertain {N_vae(dauilbl,DAUIVar_poisson)} ]
 	  ]
 	[ binomial_uncertain INTEGER > 0 {N_vam(intz,numBinomialUncVars)}
-	  prob_per_trial REALLIST LEN binomial_uncertain {N_vam(RealLd,binomialUncProbPerTrial)}
+	  probability_per_trial ALIAS prob_per_trial REALLIST LEN binomial_uncertain {N_vam(RealLd,binomialUncProbPerTrial)}
 	  num_trials INTEGERLIST LEN binomial_uncertain {N_vam(intDL,binomialUncNumTrials)}
-	  [ descriptors STRINGLIST LEN binomial_uncertain {N_vae(dailbl,DAUIVar_binomial)} ]
+	  [ descriptors STRINGLIST LEN binomial_uncertain {N_vae(dauilbl,DAUIVar_binomial)} ]
 	  ]
 	[ negative_binomial_uncertain INTEGER > 0 {N_vam(intz,numNegBinomialUncVars)}
-	  prob_per_trial REALLIST LEN negative_binomial_uncertain {N_vam(RealLd,negBinomialUncProbPerTrial)}
+	  probability_per_trial ALIAS prob_per_trial REALLIST LEN negative_binomial_uncertain {N_vam(RealLd,negBinomialUncProbPerTrial)}
 	  num_trials INTEGERLIST LEN negative_binomial_uncertain {N_vam(intDL,negBinomialUncNumTrials)}
-	  [ descriptors STRINGLIST LEN negative_binomial_uncertain {N_vae(dailbl,DAUIVar_negative_binomial)} ]
+	  [ descriptors STRINGLIST LEN negative_binomial_uncertain {N_vae(dauilbl,DAUIVar_negative_binomial)} ]
 	  ]
 	[ geometric_uncertain INTEGER > 0 {N_vam(intz,numGeometricUncVars)}
-	  prob_per_trial REALLIST LEN geometric_uncertain {N_vam(RealLd,geometricUncProbPerTrial)}
-	  [ descriptors STRINGLIST LEN geometric_uncertain {N_vae(dailbl,DAUIVar_geometric)} ]
+	  probability_per_trial ALIAS prob_per_trial REALLIST LEN geometric_uncertain {N_vam(RealLd,geometricUncProbPerTrial)}
+	  [ descriptors STRINGLIST LEN geometric_uncertain {N_vae(dauilbl,DAUIVar_geometric)} ]
 	  ]
 	[ hypergeometric_uncertain INTEGER > 0 {N_vam(intz,numHyperGeomUncVars)}
 	  total_population INTEGERLIST LEN hypergeometric_uncertain {N_vam(intDL,hyperGeomUncTotalPop)}
 	  selected_population INTEGERLIST LEN hypergeometric_uncertain {N_vam(intDL,hyperGeomUncSelectedPop)}
 	  num_drawn INTEGERLIST LEN hypergeometric_uncertain {N_vam(intDL,hyperGeomUncNumDrawn)}
-	  [ descriptors STRINGLIST LEN hypergeometric_uncertain {N_vae(dailbl,DAUIVar_hypergeometric)} ]
+	  [ descriptors STRINGLIST LEN hypergeometric_uncertain {N_vae(dauilbl,DAUIVar_hypergeometric)} ]
 	  ]
 	[ histogram_point_uncertain INTEGER > 0 {N_vam(intz,numHistogramPtUncVars)}
 	  [ num_pairs ALIAS huv_num_point_pairs INTEGERLIST LEN histogram_point_uncertain {N_vam(vil,Var_Info_npp)} ]
 	  abscissas ALIAS huv_point_abscissas REALLIST {N_vam(vrl,Var_Info_pa)}
 	  counts ALIAS huv_point_counts REALLIST {N_vam(vrl,Var_Info_pc)}
-	  [ descriptors ALIAS huv_point_descriptors STRINGLIST LEN histogram_point_uncertain {N_vae(darlbl,DAURVar_histogram_point)} ]
+	  [ descriptors ALIAS huv_point_descriptors STRINGLIST LEN histogram_point_uncertain {N_vae(daurlbl,DAURVar_histogram_point)} ]
 	  ]
 	[ uncertain_correlation_matrix REALLIST {N_vam(vrl,Var_Info_ucm)} ]
-	[ interval_uncertain INTEGER > 0 {N_vam(intz,numIntervalUncVars)}
-	  [ num_intervals ALIAS iuv_num_intervals INTEGERLIST LEN interval_uncertain {N_vam(vil,Var_Info_nIv)} ]
-	  interval_probs ALIAS iuv_interval_probs REALLIST {N_vam(vrl,Var_Info_Ivp)}
-	  interval_bounds ALIAS iuv_interval_bounds REALLIST {N_vam(vrl,Var_Info_Ivb)}
-	  [ descriptors ALIAS iuv_descriptors STRINGLIST LEN interval_uncertain {N_vae(ceulbl,CEUVar_interval)} ]
+	[ continuous_interval_uncertain ALIAS interval_uncertain INTEGER > 0 {N_vam(intz,numContinuousIntervalUncVars)}
+	  [ num_intervals ALIAS iuv_num_intervals INTEGERLIST LEN continuous_interval_uncertain {N_vam(vil,Var_Info_nCIv)} ]
+	  [ interval_probabilities ALIAS interval_probs ALIAS iuv_interval_probs REALLIST {N_vam(vrl,Var_Info_CIvp)} ]
+	  lower_bounds REALLIST {N_vam(vrl,Var_Info_CIvlb)}
+	  upper_bounds REALLIST {N_vam(vrl,Var_Info_CIvub)}
+	  [ descriptors ALIAS iuv_descriptors STRINGLIST LEN continuous_interval_uncertain {N_vae(ceulbl,CEUVar_interval)} ]
+	  ]
+	[ discrete_interval_uncertain ALIAS discrete_uncertain_range INTEGER > 0 {N_vam(intz,numDiscreteIntervalUncVars)}
+	  [ num_intervals INTEGERLIST LEN discrete_interval_uncertain {N_vam(vil,Var_Info_nDIv)} ]
+	  [ interval_probabilities ALIAS range_probabilities ALIAS range_probs REALLIST {N_vam(vrl,Var_Info_DIvp)} ]
+	  lower_bounds INTEGERLIST {N_vam(vrl,Var_Info_DIvlb)}
+	  upper_bounds INTEGERLIST {N_vam(vrl,Var_Info_DIvub)}
+	  [ descriptors STRINGLIST LEN discrete_interval_uncertain {N_vae(deuilbl,DEUIVar_interval)} ]
+	  ]
+	[ discrete_uncertain_set_integer INTEGER > 0 {N_vam(intz,numDiscreteUncSetIntVars)}
+	  [ num_set_values INTEGERLIST LEN discrete_uncertain_set_integer {N_vam(vil,Var_Info_nusvi)} ]
+	  set_values INTEGERLIST {N_vam(vil,Var_Info_usvi)}
+	  [ set_probabilities ALIAS set_probs REALLIST {N_vam(vrl,Var_Info_DSIvp)} ]
+	  [ descriptors STRINGLIST LEN discrete_uncertain_set_integer {N_vae(deuilbl,DEUIVar_set_int)} ]
+	  ]
+	[ discrete_uncertain_set_real INTEGER > 0 {N_vam(intz,numDiscreteUncSetRealVars)}
+	  [ num_set_values INTEGERLIST LEN discrete_uncertain_set_real {N_vam(vil,Var_Info_nusvr)} ]
+	  set_values REALLIST {N_vam(vrl,Var_Info_usvr)}
+	  [ set_probabilities ALIAS set_probs REALLIST {N_vam(vrl,Var_Info_DSRvp)} ]
+	  [ descriptors STRINGLIST LEN discrete_uncertain_set_real {N_vae(deurlbl,DEURVar_set_real)} ]
 	  ]
 	[ continuous_state INTEGER > 0 {N_vam(intz,numContinuousStateVars)}
 	  [ initial_state ALIAS csv_initial_state REALLIST LEN continuous_state {N_vam(RealLd,continuousStateVars)} ]

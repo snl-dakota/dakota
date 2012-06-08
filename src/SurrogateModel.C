@@ -29,7 +29,7 @@ namespace Dakota {
 
 SurrogateModel::SurrogateModel(ProblemDescDB& problem_db):
   Model(BaseConstructor(), problem_db),
-  surrogateFnIndices(problem_db.get_dis("model.surrogate.function_indices")),
+  surrogateFnIndices(problem_db.get_is("model.surrogate.function_indices")),
   responseMode(AUTO_CORRECTED_SURROGATE), approxBuilds(0)
 {
   // process surrogateFnIndices. IntSets are sorted and unique.

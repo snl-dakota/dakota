@@ -59,7 +59,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   // generated using active sampling view:
   Iterator u_space_sampler;
   // expansion_order defined for expansion_samples/collocation_pts
-  UShortArray exp_order = probDescDB.get_dusa("method.nond.expansion_order");
+  UShortArray exp_order = probDescDB.get_usa("method.nond.expansion_order");
   if (exp_order.size() == 1) {
     unsigned short order = exp_order[0];
     exp_order.resize(numContinuousVars);
@@ -68,20 +68,20 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   String pt_reuse; // empty default gets overridden for unstructured grids
   if (expansionImportFile.empty()) {
     const UShortArray& quad_order_spec
-      = probDescDB.get_dusa("method.nond.quadrature_order");
+      = probDescDB.get_usa("method.nond.quadrature_order");
     const UShortArray& ssg_level_spec
-      = probDescDB.get_dusa("method.nond.sparse_grid_level");
+      = probDescDB.get_usa("method.nond.sparse_grid_level");
     unsigned short cub_int_spec
       = probDescDB.get_ushort("method.nond.cubature_integrand");
     if (!quad_order_spec.empty()) {
       expansionCoeffsApproach = Pecos::QUADRATURE;
       construct_quadrature(u_space_sampler, g_u_model, quad_order_spec,
-	probDescDB.get_rdv("method.nond.dimension_preference"));
+	probDescDB.get_rv("method.nond.dimension_preference"));
     }
     else if (!ssg_level_spec.empty()) {
       expansionCoeffsApproach = Pecos::COMBINED_SPARSE_GRID;
       construct_sparse_grid(u_space_sampler, g_u_model, ssg_level_spec,
-	probDescDB.get_rdv("method.nond.dimension_preference"));
+	probDescDB.get_rv("method.nond.dimension_preference"));
     }
     else if (cub_int_spec != USHRT_MAX) {
       expansionCoeffsApproach = Pecos::CUBATURE;

@@ -53,11 +53,11 @@ NonDStochCollocation::NonDStochCollocation(Model& model):
   // generated using active sampling view:
   Iterator u_space_sampler;
   const UShortArray& quad_order_spec
-    = probDescDB.get_dusa("method.nond.quadrature_order");
+    = probDescDB.get_usa("method.nond.quadrature_order");
   const UShortArray& ssg_level_spec
-    = probDescDB.get_dusa("method.nond.sparse_grid_level");
+    = probDescDB.get_usa("method.nond.sparse_grid_level");
   const RealVector& dim_pref
-    = probDescDB.get_rdv("method.nond.dimension_preference");
+    = probDescDB.get_rv("method.nond.dimension_preference");
   if (!quad_order_spec.empty()) {
     expansionCoeffsApproach = Pecos::QUADRATURE;
     construct_quadrature(u_space_sampler, g_u_model, quad_order_spec, dim_pref);

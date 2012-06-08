@@ -49,9 +49,9 @@ FSUDesignCompExp::FSUDesignCompExp(Model& model): PStudyDACE(model),
   }
   else if (methodName == "fsu_halton" || methodName == "fsu_hammersley") {
     // QMC inputs
-    sequenceStart =  probDescDB.get_idv("method.fsu_quasi_mc.sequenceStart");
-    sequenceLeap  =  probDescDB.get_idv("method.fsu_quasi_mc.sequenceLeap");
-    primeBase     =  probDescDB.get_idv("method.fsu_quasi_mc.primeBase");
+    sequenceStart =  probDescDB.get_iv("method.fsu_quasi_mc.sequenceStart");
+    sequenceLeap  =  probDescDB.get_iv("method.fsu_quasi_mc.sequenceLeap");
+    primeBase     =  probDescDB.get_iv("method.fsu_quasi_mc.primeBase");
     varyPattern   = !probDescDB.get_bool("method.fsu_quasi_mc.fixed_sequence");
     // perform error checks and initialize defaults
     if (sequenceStart.empty()) {

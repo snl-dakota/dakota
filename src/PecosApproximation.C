@@ -42,7 +42,7 @@ PecosApproximation(ProblemDescDB& problem_db, size_t num_vars):
   short basis_type; approx_type_to_basis_type(approxType, basis_type);
   UShortArray approx_order;
   if (basis_type == Pecos::GLOBAL_ORTHOGONAL_POLYNOMIAL)
-    approx_order = problem_db.get_dusa("method.nond.expansion_order");
+    approx_order = problem_db.get_usa("method.nond.expansion_order");
   bool use_derivs = problem_db.get_bool("model.surrogate.derivative_usage");
   buildDataOrder = 1;
   if (use_derivs) {

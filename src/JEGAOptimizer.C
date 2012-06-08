@@ -1228,12 +1228,12 @@ JEGAOptimizer::LoadTheParameterDatabase(
     this->_theParamDB->AddStringParam("method.jega.initializer_delimiter", "");
 
     // now get all vector of doubles.
-    const RealVector *dak_rdv
-        = &this->probDescDB.get_rdv("method.jega.niche_vector");
+    const RealVector *dak_rv
+        = &this->probDescDB.get_rv("method.jega.niche_vector");
 
     JEGA::DoubleVector niche_vector(
-        dak_rdv->values(),
-        dak_rdv->values() + dak_rdv->length()
+        dak_rv->values(),
+        dak_rv->values() + dak_rv->length()
         );
 
     this->_theParamDB->AddDoubleVectorParam(
@@ -1241,10 +1241,10 @@ JEGAOptimizer::LoadTheParameterDatabase(
         niche_vector
         );
 
-    dak_rdv = &this->probDescDB.get_rdv("method.jega.distance_vector");
+    dak_rv = &this->probDescDB.get_rv("method.jega.distance_vector");
     JEGA::DoubleVector distance_vector(
-        dak_rdv->values(),
-        dak_rdv->values() + dak_rdv->length()
+        dak_rv->values(),
+        dak_rv->values() + dak_rv->length()
         );
 
     this->_theParamDB->AddDoubleVectorParam(
@@ -1252,14 +1252,14 @@ JEGAOptimizer::LoadTheParameterDatabase(
         distance_vector
         );
  
-    dak_rdv = 
-        &this->probDescDB.get_rdv("responses.primary_response_fn_weights");
+    dak_rv = 
+        &this->probDescDB.get_rv("responses.primary_response_fn_weights");
     // BMA  why needed; discuss with JE; otherwise get seg fault in GetBestSO
-    if(!dak_rdv->empty())
+    if(!dak_rv->empty())
     {
         JEGA::DoubleVector mow_vector(
-            dak_rdv->values(),
-            dak_rdv->values() + dak_rdv->length()
+            dak_rv->values(),
+            dak_rv->values() + dak_rv->length()
             );
 
         this->_theParamDB->AddDoubleVectorParam(

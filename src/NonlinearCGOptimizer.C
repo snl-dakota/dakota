@@ -629,7 +629,7 @@ void NonlinearCGOptimizer::parse_options()
   search_type["ls_wolfe"]   = 3;
 
   map<string,string> opts;
-  const StringArray& db_opts = probDescDB.get_dsa("method.coliny.misc_options");
+  const StringArray& db_opts = probDescDB.get_sa("method.coliny.misc_options");
   StringArray::const_iterator db_it = db_opts.begin();
   StringArray::const_iterator db_end = db_opts.end();
   String::const_iterator delim;

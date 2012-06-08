@@ -150,9 +150,18 @@ public:
   /// number of histogram point uncertain variables (from the \c
   /// histogram_point_uncertain specification in \ref VarAUV)
   size_t numHistogramPtUncVars;
-  /// number of interval uncertain variables (from the \c interval_uncertain
-  /// specification in \ref VarEUV)
-  size_t numIntervalUncVars;
+  /// number of continuous epistemic interval uncertain variables (from
+  /// the \c continuous_interval_uncertain specification in \ref VarEUV)
+  size_t numContinuousIntervalUncVars;
+  /// number of discrete epistemic interval uncertain variables (from the
+  /// \c discrete_interval_uncertain specification in \ref VarEUV)
+  size_t numDiscreteIntervalUncVars;
+  /// number of discrete epistemic uncertain integer set variables (from
+  /// the \c discrete_uncertain_set_integer specification in \ref VarEUV)
+  size_t numDiscreteUncSetIntVars;
+  /// number of discrete epistemic uncertain real set variables (from
+  /// the \c discrete_uncertain_set_real specification in \ref VarEUV)
+  size_t numDiscreteUncSetRealVars;
   /// number of continuous state variables (from the \c continuous_state
   /// specification in \ref VarSV)
   size_t numContinuousStateVars;
@@ -227,7 +236,7 @@ public:
   /// specification in \ref VarDV)
   StringArray discreteDesignSetRealLabels;
 
-  // Uncertain arrays
+  // Aleatory uncertain arrays
 
   /// means of the normal uncertain variables (from the \c nuv_means
   /// specification in \ref VarAUV)
@@ -359,18 +368,47 @@ public:
   /// histogram uncertain variable (see discrete histogram in LHS manual;
   /// from the \c histogram_point_uncertain specification in \ref VarAUV)
   RealVectorArray histogramUncPointPairs;
-  /// Probability values per interval uncertain variable (from the \c
-  /// iuv_interval_probs specification in \ref VarEUV)
-  RealVectorArray intervalUncBasicProbs;
-  /// Interval Bounds per interval uncertain variable (from the \c
-  /// iuv_interval_bounds specification in \ref VarEUV)
-  RealVectorArray intervalUncBounds;
   /// correlation matrix for all uncertain variables (from the \c
   /// uncertain_correlation_matrix specification in \ref VarAUV). This
   /// matrix specifies rank correlations for sampling methods (i.e.,
   /// LHS) and correlation coefficients (rho_ij = normalized covariance
   /// matrix) for analytic reliability methods.
   RealSymMatrix uncertainCorrelations;
+
+  // Epistemic uncertain arrays
+
+  /// Probability values per interval cell per epistemic interval uncertain
+  /// variable (from the \c continuous_interval_uncertain \c interval_probs
+  /// specification in \ref VarEUV)
+  RealVectorArray continuousIntervalUncBasicProbs;
+  /// lower bounds defining cells for each epistemic interval uncertain
+  /// variable (from the \c continuous_interval_uncertain \c lower_bounds
+  /// specification in \ref VarEUV)
+  RealVectorArray continuousIntervalUncLowerBounds;
+  /// upper bounds defining cells for each epistemic interval uncertain
+  /// variable (from the \c continuous_interval_uncertain \c upper_bounds
+  /// specification in \ref VarEUV)
+  RealVectorArray continuousIntervalUncUpperBounds;
+  /// Probability values per interval cell per epistemic interval uncertain
+  /// variable (from the \c continuous_interval_uncertain \c interval_probs
+  /// specification in \ref VarEUV)
+  RealVectorArray discreteIntervalUncBasicProbs;
+  /// lower bounds defining cells for each epistemic interval uncertain
+  /// variable (from the \c continuous_interval_uncertain \c lower_bounds
+  /// specification in \ref VarEUV)
+  IntVectorArray discreteIntervalUncLowerBounds;
+  /// upper bounds defining cells for each epistemic interval uncertain
+  /// variable (from the \c continuous_interval_uncertain \c upper_bounds
+  /// specification in \ref VarEUV)
+  IntVectorArray discreteIntervalUncUpperBounds;
+  /// complete set of admissible values for each of the discrete epistemic
+  /// uncertain variables defined by an integer set (from the \c
+  /// discrete_uncertain_set_integer \c set_values specification in \ref VarEUV)
+  IntSetArray discreteUncSetInt;
+  /// complete set of admissible values for each of the discrete epistemic
+  /// uncertain variables defined by a real set (from the \c
+  /// discrete_uncertain_set_real \c set_values specification in \ref VarEUV)
+  RealSetArray discreteUncSetReal;
 
   // State arrays
 
@@ -486,26 +524,26 @@ public:
   RealVector continuousEpistemicUncUpperBnds;
   /// labels for all continuous epistemic uncertain variables
   StringArray continuousEpistemicUncLabels;
-  // array of values for all discrete integer epistemic uncertain variables
-  //IntVector discreteIntEpistemicUncVars;
-  // distribution lower bounds for all discrete integer epistemic
-  // uncertain variables
-  //IntVector discreteIntEpistemicUncLowerBnds;
-  // distribution upper bounds for all discrete integer epistemic
-  // uncertain variables
-  //IntVector discreteIntEpistemicUncUpperBnds;
-  // labels for all discrete integer epistemic uncertain variables
-  //StringArray discreteIntEpistemicUncLabels;
-  // array of values for all discrete real epistemic uncertain variables
-  //RealVector discreteRealEpistemicUncVars;
-  // distribution lower bounds for all discrete real epistemic
-  // uncertain variables
-  //RealVector discreteRealEpistemicUncLowerBnds;
-  // distribution upper bounds for all discrete real epistemic
-  // uncertain variables
-  //RealVector discreteRealEpistemicUncUpperBnds;
-  // labels for all discrete real epistemic uncertain variables
-  //StringArray discreteRealEpistemicUncLabels;
+  /// array of values for all discrete integer epistemic uncertain variables
+  IntVector discreteIntEpistemicUncVars;
+  /// distribution lower bounds for all discrete integer epistemic
+  /// uncertain variables
+  IntVector discreteIntEpistemicUncLowerBnds;
+  /// distribution upper bounds for all discrete integer epistemic
+  /// uncertain variables
+  IntVector discreteIntEpistemicUncUpperBnds;
+  /// labels for all discrete integer epistemic uncertain variables
+  StringArray discreteIntEpistemicUncLabels;
+  /// array of values for all discrete real epistemic uncertain variables
+  RealVector discreteRealEpistemicUncVars;
+  /// distribution lower bounds for all discrete real epistemic
+  /// uncertain variables
+  RealVector discreteRealEpistemicUncLowerBnds;
+  /// distribution upper bounds for all discrete real epistemic
+  /// uncertain variables
+  RealVector discreteRealEpistemicUncUpperBnds;
+  /// labels for all discrete real epistemic uncertain variables
+  StringArray discreteRealEpistemicUncLabels;
   /// discrete state integer set lower bounds inferred from set values
   IntVector discreteStateSetIntLowerBnds;
   /// discrete state integer set upper bounds inferred from set values
@@ -616,7 +654,11 @@ public:
     dataVarsRep->numGeometricUncVars + dataVarsRep->numHyperGeomUncVars +
     dataVarsRep->numHistogramPtUncVars; }
   /// return total number of epistemic uncertain variables
-  size_t epistemic_uncertain() { return dataVarsRep->numIntervalUncVars; }
+  size_t epistemic_uncertain() { return
+    dataVarsRep->numContinuousIntervalUncVars +
+    dataVarsRep->numDiscreteIntervalUncVars +
+    dataVarsRep->numDiscreteUncSetIntVars +
+    dataVarsRep->numDiscreteUncSetRealVars; }
   /// return total number of uncertain variables
   size_t uncertain() { return aleatory_uncertain() + epistemic_uncertain(); }
   /// return total number of state variables

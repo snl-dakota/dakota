@@ -47,40 +47,37 @@ extern "C" int nidr_parse(const char*, FILE*);
 int NIDRProblemDescDB::nerr = 0;
 NIDRProblemDescDB* NIDRProblemDescDB::pDDBInstance(NULL);
 
- void NIDRProblemDescDB::
-botch(const char *fmt, ...)
+void NIDRProblemDescDB::botch(const char *fmt, ...)
 {
-	va_list ap;
-	va_start(ap, fmt);
-	std::fprintf(stderr, "\nError: ");
-	std::vfprintf(stderr, fmt, ap);
-	std::fputs(".\n", stderr);
-	va_end(ap);
-	abort_handler(-1);
-	}
+  va_list ap;
+  va_start(ap, fmt);
+  std::fprintf(stderr, "\nError: ");
+  std::vfprintf(stderr, fmt, ap);
+  std::fputs(".\n", stderr);
+  va_end(ap);
+  abort_handler(-1);
+}
 
- void NIDRProblemDescDB::
-squawk(const char *fmt, ...)
+void NIDRProblemDescDB::squawk(const char *fmt, ...)
 {
-	va_list ap;
-	va_start(ap, fmt);
-	std::fprintf(stderr, "\nError: ");
-	std::vfprintf(stderr, fmt, ap);
-	std::fputs(".\n", stderr);
-	va_end(ap);
-	++nerr;
-	}
+  va_list ap;
+  va_start(ap, fmt);
+  std::fprintf(stderr, "\nError: ");
+  std::vfprintf(stderr, fmt, ap);
+  std::fputs(".\n", stderr);
+  va_end(ap);
+  ++nerr;
+}
 
- void NIDRProblemDescDB::
-warn(const char *fmt, ...)
+void NIDRProblemDescDB::warn(const char *fmt, ...)
 {
-	va_list ap;
-	va_start(ap, fmt);
-	std::fprintf(stderr, "\nWarning: ");
-	std::vfprintf(stderr, fmt, ap);
-	std::fputs(".\n", stderr);
-	va_end(ap);
-	}
+  va_list ap;
+  va_start(ap, fmt);
+  std::fprintf(stderr, "\nWarning: ");
+  std::vfprintf(stderr, fmt, ap);
+  std::fputs(".\n", stderr);
+  va_end(ap);
+}
 
 
 /** Parse the input file using the Input Deck Reader (IDR) parsing system.
@@ -108,57 +105,57 @@ derived_parse_inputs(const char* dakota_input_file, const char* parser_options)
   if (nerr)
     abort_handler(-1);
   if (parallel_library().command_line_run()) {
-	const char *s;
+    const char *s;
 #ifdef DAKOTA_DL_SOLVER
-	std::list<DataMethod>::iterator
-		Dml  = dataMethodList.begin(),
-		Dmle = dataMethodList.end();
-	DataMethodRep *Dr;
-	const char *s0;
-	char *s1;
-	size_t L;
+    std::list<DataMethod>::iterator
+      Dml  = dataMethodList.begin(),
+      Dmle = dataMethodList.end();
+    DataMethodRep *Dr;
+    const char *s0;
+    char *s1;
+    size_t L;
 
-	for(; Dml != Dmle; ++Dml) {
-		Dr = Dml->dataMethodRep;
-		if ((s0 = Dr->dlDetails) && *(s = s0) > ' ') {
-			while(*s > ' ')
-				++s;
-			s1 = 0;
-			if (*s) {
-				L = s - s0;
-				s1 = new char[L+1];
-				memcpy(s1, s0, L);
-				s1[L] = 0;
-				s0 = s1;
-				}
-			if (!(Dr->dlLib = dlopen(s0, RTLD_NOW))) {
-#ifndef _WIN32
-				const char *se;
-				if ((se = dlerror()))
-					squawk("Cannot open dl_solver \"%s\":\n\t%s", s0, se);
-				else
-#endif
-					squawk("Cannot open dl_solver \"%s\"", s0);
-				}
-			if (s1)
-				delete[] s1;
-			}
-		}
-#endif
-	if (parallel_library().mpirun_flag()) {
-		std::list<DataInterface>::iterator
-			Ifl  = dataInterfaceList.begin(),
-			Ifle = dataInterfaceList.end();
-		DataInterfaceRep *Ir;
-		struct stat sb;
-
-		for(; Ifl != Ifle; Ifl++) {
-			Ir = Ifl->dataIfaceRep;
-			if ((s = Ir->workDir) && *s && stat(s,&sb))
-				DAK_MKDIR(s, 0700);
-			}
-		}
+    for(; Dml != Dmle; ++Dml) {
+      Dr = Dml->dataMethodRep;
+      if ((s0 = Dr->dlDetails) && *(s = s0) > ' ') {
+	while(*s > ' ')
+	  ++s;
+	s1 = 0;
+	if (*s) {
+	  L = s - s0;
+	  s1 = new char[L+1];
+	  memcpy(s1, s0, L);
+	  s1[L] = 0;
+	  s0 = s1;
 	}
+	if (!(Dr->dlLib = dlopen(s0, RTLD_NOW))) {
+#ifndef _WIN32
+	  const char *se;
+	  if ((se = dlerror()))
+	    squawk("Cannot open dl_solver \"%s\":\n\t%s", s0, se);
+	  else
+#endif
+	    squawk("Cannot open dl_solver \"%s\"", s0);
+	}
+	if (s1)
+	  delete[] s1;
+      }
+    }
+#endif
+    if (parallel_library().mpirun_flag()) {
+      std::list<DataInterface>::iterator
+	Ifl  = dataInterfaceList.begin(),
+	Ifle = dataInterfaceList.end();
+      DataInterfaceRep *Ir;
+      struct stat sb;
+
+      for(; Ifl != Ifle; Ifl++) {
+	Ir = Ifl->dataIfaceRep;
+	if ((s = Ir->workDir) && *s && stat(s,&sb))
+	  DAK_MKDIR(s, 0700);
+      }
+    }
+  }
 }
 
 
@@ -204,330 +201,308 @@ NIDRProblemDescDB::NIDRProblemDescDB(ParallelLibrary& parallel_lib):
 #define Squawk NIDRProblemDescDB::squawk
 #define Warn NIDRProblemDescDB::warn
 
- typedef unsigned long UL;
+typedef unsigned long UL;
 
- struct
-Iface_Info {
-	DataInterfaceRep *di;
-	DataInterface *di0;
-	};
+struct Iface_Info {
+  DataInterfaceRep *di;
+  DataInterface *di0;
+};
 
- struct
-Iface_mp_Rlit {
-	String DataInterfaceRep::* sp;
-	RealVector DataInterfaceRep::* rv;
-	const char *lit;
-	};
+struct Iface_mp_Rlit {
+  String DataInterfaceRep::* sp;
+  RealVector DataInterfaceRep::* rv;
+  const char *lit;
+};
 
- struct
-Iface_mp_ilit {
-	String DataInterfaceRep::* sp;
-	int DataInterfaceRep::* iv;
-	const char *lit;
-	};
+struct Iface_mp_ilit {
+  String DataInterfaceRep::* sp;
+  int DataInterfaceRep::* iv;
+  const char *lit;
+};
 
- struct
-Iface_mp_lit {
-	String DataInterfaceRep::* sp;
-	const char *lit;
-	};
+struct Iface_mp_lit {
+  String DataInterfaceRep::* sp;
+  const char *lit;
+};
 
- struct
-Meth_Info {
-	DataMethodRep *dme;
-	DataMethod *dme0;
-	};
+struct Meth_Info {
+  DataMethodRep *dme;
+  DataMethod *dme0;
+};
 
- struct
-Method_mp_ilit2 {
-	String DataMethodRep::* sp;
-	int DataMethodRep::* ip;
-	const char *lit;
-	};
+struct Method_mp_ilit2 {
+  String DataMethodRep::* sp;
+  int DataMethodRep::* ip;
+  const char *lit;
+};
 
- struct
-Method_mp_ilit2z {
-	String DataMethodRep::* sp;
-	size_t DataMethodRep::* ip;
-	const char *lit;
-	};
+struct Method_mp_ilit2z {
+  String DataMethodRep::* sp;
+  size_t DataMethodRep::* ip;
+  const char *lit;
+};
 
- struct
-Method_mp_lit {
-	String DataMethodRep::* sp;
-	const char *lit;
-	};
+struct Method_mp_lit {
+  String DataMethodRep::* sp;
+  const char *lit;
+};
 
- struct
-Method_mp_lit2 {
-	String DataMethodRep::* sp;
-	String DataMethodRep::* sp2;
-	const char *lit;
-	const char *lit2;
-	};
+struct Method_mp_lit2 {
+  String DataMethodRep::* sp;
+  String DataMethodRep::* sp2;
+  const char *lit;
+  const char *lit2;
+};
 
- struct
-Method_mp_litc {
-	String DataMethodRep::* sp;
-	Real DataMethodRep::* rp;
-	const char *lit;
-	};
+struct Method_mp_litc {
+  String DataMethodRep::* sp;
+  Real DataMethodRep::* rp;
+  const char *lit;
+};
 
- struct
-Method_mp_litrv {
-	String DataMethodRep::* sp;
-	RealVector DataMethodRep::* rp;
-	const char *lit;
-	};
+struct Method_mp_litrv {
+  String DataMethodRep::* sp;
+  RealVector DataMethodRep::* rp;
+  const char *lit;
+};
 
- struct
-Method_mp_slit2 {
-	String DataMethodRep::* sp;
-	String DataMethodRep::* sp2;
-	const char *lit;
-	};
+struct Method_mp_slit2 {
+  String DataMethodRep::* sp;
+  String DataMethodRep::* sp2;
+  const char *lit;
+};
 
- struct
-Method_mp_type {
-	short DataMethodRep::* sp;
-	short type;
-	};
+struct Method_mp_type {
+  short DataMethodRep::* sp;
+  short type;
+};
 
- struct
-Mod_Info {
-	DataModelRep *dmo;
-	DataModel *dmo0;
-	};
+struct Mod_Info {
+  DataModelRep *dmo;
+  DataModel *dmo0;
+};
 
- struct
-Model_mp_lit {
-	String DataModelRep::* sp;
-	const char *lit;
-	};
+struct Model_mp_lit {
+  String DataModelRep::* sp;
+  const char *lit;
+};
 
- struct
-Model_mp_ord {
-	short DataModelRep::* sp;
-	int ord;
-	};
+struct Model_mp_ord {
+  short DataModelRep::* sp;
+  int ord;
+};
 
- struct
-Model_mp_type {
-	short DataModelRep::* sp;
-	short type;
-	};
+struct Model_mp_type {
+  short DataModelRep::* sp;
+  short type;
+};
 
- struct
-Resp_Info {
-	DataResponsesRep *dr;
-	DataResponses *dr0;
-	};
+struct Resp_Info {
+  DataResponsesRep *dr;
+  DataResponses *dr0;
+};
 
- struct
+struct
 Resp_mp_lit {
-	String DataResponsesRep::* sp;
-	const char *lit;
-	};
+  String DataResponsesRep::* sp;
+  const char *lit;
+};
 
- struct
-Strategy_mp_lit {
-	String DataStrategyRep::* sp;
-	const char *lit;
-	};
+struct Strategy_mp_lit {
+  String DataStrategyRep::* sp;
+  const char *lit;
+};
 
- enum { // kinds of continuous aleatory uncertain variables
-	CAUVar_normal = 0,
-	CAUVar_lognormal = 1,
-	CAUVar_uniform = 2,
-	CAUVar_loguniform = 3,
-	CAUVar_triangular = 4,
-	CAUVar_exponential = 5,
-	CAUVar_beta = 6,
-	CAUVar_gamma = 7,
-	CAUVar_gumbel = 8,
-	CAUVar_frechet = 9,
-	CAUVar_weibull = 10,
-	CAUVar_histogram_bin = 11,
-	CAUVar_Nkinds = 12	// number of kinds of cauv variables
-	};
+enum { // kinds of continuous aleatory uncertain variables
+  CAUVar_normal = 0,
+  CAUVar_lognormal = 1,
+  CAUVar_uniform = 2,
+  CAUVar_loguniform = 3,
+  CAUVar_triangular = 4,
+  CAUVar_exponential = 5,
+  CAUVar_beta = 6,
+  CAUVar_gamma = 7,
+  CAUVar_gumbel = 8,
+  CAUVar_frechet = 9,
+  CAUVar_weibull = 10,
+  CAUVar_histogram_bin = 11,
+  CAUVar_Nkinds = 12	// number of kinds of cauv variables
+};
 
- enum { // kinds of discrete aleatory uncertain integer variables
-        DAUIVar_poisson = 0,
-	DAUIVar_binomial = 1,
-        DAUIVar_negative_binomial = 2,
-        DAUIVar_geometric = 3,
-        DAUIVar_hypergeometric = 4,
-	DAUIVar_Nkinds = 5	// number of kinds of dauiv variables
-	};
+enum { // kinds of discrete aleatory uncertain integer variables
+  DAUIVar_poisson = 0,
+  DAUIVar_binomial = 1,
+  DAUIVar_negative_binomial = 2,
+  DAUIVar_geometric = 3,
+  DAUIVar_hypergeometric = 4,
+  DAUIVar_Nkinds = 5	// number of kinds of dauiv variables
+};
 
- enum { // kinds of discrete aleatory uncertain real variables
-	DAURVar_histogram_point = 0,
-	DAURVar_Nkinds = 1	// number of kinds of daurv variables
-	};
+enum { // kinds of discrete aleatory uncertain real variables
+  DAURVar_histogram_point = 0,
+  DAURVar_Nkinds = 1	// number of kinds of daurv variables
+};
 
- enum { // kinds of continuous epistemic uncertain variables
-	CEUVar_interval = 0,
-	CEUVar_Nkinds = 1	// number of kinds of cauv variables
-	};
+enum { // kinds of continuous epistemic uncertain variables
+  CEUVar_interval = 0,
+  CEUVar_Nkinds = 1	// number of kinds of cauv variables
+};
 
-// enum { // kinds of discrete epistemic uncertain integer variables
-//	DEUIVar_Nkinds = 0	// number of kinds of deuiv variables
-//	};
+enum { // kinds of discrete epistemic uncertain integer variables
+  DEUIVar_interval = 0,
+  DEUIVar_set_int = 1,
+  DEUIVar_Nkinds = 2	// number of kinds of deuiv variables
+};
 
-// enum { // kinds of discrete epistemic uncertain real variables
-//	DEURVar_Nkinds = 0	// number of kinds of deurv variables
-//	};
+enum { // kinds of discrete epistemic uncertain real variables
+  DEURVar_set_real = 0,
+  DEURVar_Nkinds = 1	// number of kinds of deurv variables
+};
 
- enum { // kinds of discrete set variables
-	DiscSetVar_design_set_int = 0,
-	DiscSetVar_design_set_real = 1,
-	DiscSetVar_state_set_int = 2,
-	DiscSetVar_state_set_real = 3,
-	DiscSetVar_Nkinds = 4	// number of kinds of discrete set variables
-	};
+enum { // kinds of discrete set variables
+  DiscSetVar_design_set_int = 0,
+  DiscSetVar_design_set_real = 1,
+  DiscSetVar_state_set_int = 2,
+  DiscSetVar_state_set_real = 3,
+  DiscSetVar_Nkinds = 4	// number of kinds of discrete set variables
+};
 
- struct
-VarLabel {
-	size_t n;
-	const char **s;
-	};
+struct VarLabel {
+  size_t n;
+  const char **s;
+};
 
- struct
-Var_Info {
-	DataVariablesRep *dv;
-	DataVariables *dv0;
-	VarLabel CAUv[CAUVar_Nkinds], CEUv[CEUVar_Nkinds];
-	VarLabel DAUIv[DAUIVar_Nkinds], DAURv[DAURVar_Nkinds];
-	// VarLabel, DEUIv[DEUIVar_Nkinds], DEURv[DEURVar_Nkinds];
-        IntArray *dsvi, *ndsvi, *ndsvr, *nIv, *nbp, *npp, *nssvi, *nssvr, *ssvi;
-        RealVector *dsvr, *Ivb, *Ivp, *ba, *bo, *bc, *pa, *pc, *ucm, *ssvr;
-	};
+struct Var_Info {
+  DataVariablesRep *dv;
+  DataVariables    *dv0;
+  VarLabel  CAUv[ CAUVar_Nkinds],  CEUv[ CEUVar_Nkinds];
+  VarLabel DAUIv[DAUIVar_Nkinds], DAURv[DAURVar_Nkinds];
+  VarLabel DEUIv[DEUIVar_Nkinds], DEURv[DEURVar_Nkinds];
+  IntArray   *ndsvi, *ndsvr, *nCIv, *nDIv, *nbp, *npp, *nusvi, *nusvr,
+             *nssvi, *nssvr;
+  RealVector *dsvr, *CIvlb, *CIvub, *CIvp, *DIvp, *DSIvp, *DSRvp, *usvr,
+             *ba, *bo, *bc, *pa, *pc, *ucm, *ssvr;
+  IntVector  *dsvi, *DIvlb, *DIvub, *usvi, *ssvi;
+};
 
- struct
-Var_bchk
+struct Var_bchk
 {
-	const char *name;
-	size_t DataVariablesRep::* n;
-	void (*vbgen)(DataVariablesRep*, size_t);
-	RealVector DataVariablesRep::* L;
-	RealVector DataVariablesRep::* U;
-	RealVector DataVariablesRep::* V;	// initial guess, possibly null
-	StringArray DataVariablesRep::* Lbl;	// possibly null
-	int no_init;
-	};
+  const char *name;
+  size_t DataVariablesRep::* n;
+  void (*vbgen)(DataVariablesRep*, size_t);
+  RealVector DataVariablesRep::* L;
+  RealVector DataVariablesRep::* U;
+  RealVector DataVariablesRep::* V;	// initial guess, possibly null
+  StringArray DataVariablesRep::* Lbl;	// possibly null
+  int no_init;
+};
 
- struct
-Var_bgen
+struct Var_bgen
 {
-	const char *name;
-	size_t DataVariablesRep::* n;
-	void (*vbgen)(DataVariablesRep*, size_t);
-	};
+  const char *name;
+  size_t DataVariablesRep::* n;
+  void (*vbgen)(DataVariablesRep*, size_t);
+};
 
- struct
-VarBgen {
-	Var_bgen *bgen;
-	size_t nbgen;
-	};
+struct VarBgen {
+  Var_bgen *bgen;
+  size_t nbgen;
+};
 
- struct
-Var_ibchk
+struct Var_ibchk
 {
-	const char *name;
-	size_t DataVariablesRep::* n;
-	IntVector DataVariablesRep::* L;
-	IntVector DataVariablesRep::* U;
-	IntVector DataVariablesRep::* V;
-	StringArray DataVariablesRep::* Lbl;
-	};
+  const char *name;
+  size_t DataVariablesRep::* n;
+  IntVector DataVariablesRep::* L;
+  IntVector DataVariablesRep::* U;
+  IntVector DataVariablesRep::* V;
+  StringArray DataVariablesRep::* Lbl;
+};
 
- struct
-Var_uinfo {
-	const char *lbl;
-	const char *vkind;
-	size_t DataVariablesRep::* n;
-	void(*vadj)(DataVariablesRep*, size_t, Var_Info*);
-	};
+struct Var_uinfo {
+  const char *lbl;
+  const char *vkind;
+  size_t DataVariablesRep::* n;
+  void(*vadj)(DataVariablesRep*, size_t, Var_Info*);
+};
 
- struct
-Var_brv {
-	RealVector DataVariablesRep::* rv;
-	Real b;
-	};
+struct Var_brv {
+  RealVector DataVariablesRep::* rv;
+  Real b;
+};
 
- struct
-Var_mp_type {
-	short DataVariablesRep::* sp;
-	short type;
-	};
+struct Var_mp_type {
+  short DataVariablesRep::* sp;
+  short type;
+};
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 iface_Rlit(const char *keyname, Values *val, void **g, void *v)
 {
-	DataInterfaceRep *di = (*(Iface_Info**)g)->di;
-	Iface_mp_Rlit *R = (Iface_mp_Rlit*)v;
-	Real *r;
-	RealVector *rv;
-	size_t i, n;
+  DataInterfaceRep *di = (*(Iface_Info**)g)->di;
+  Iface_mp_Rlit *R = (Iface_mp_Rlit*)v;
+  Real *r;
+  RealVector *rv;
+  size_t i, n;
 
-	di->*R->sp = R->lit;
-	rv = &(di->*R->rv);
-	n = val->n;
-	rv->sizeUninitialized(n);
-	r = val->r;
-	for(i = 0; i < n; ++i)
-		(*rv)[i] = r[i];
-	}
+  di->*R->sp = R->lit;
+  rv = &(di->*R->rv);
+  n = val->n;
+  rv->sizeUninitialized(n);
+  r = val->r;
+  for(i = 0; i < n; ++i)
+    (*rv)[i] = r[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 iface_false(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Iface_Info**)g)->di->**(bool DataInterfaceRep::**)v = false;
-	}
+  (*(Iface_Info**)g)->di->**(bool DataInterfaceRep::**)v = false;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 iface_ilit(const char *keyname, Values *val, void **g, void *v)
 {
-	DataInterfaceRep *di = (*(Iface_Info**)g)->di;
-	Iface_mp_ilit *I = (Iface_mp_ilit*)v;
+  DataInterfaceRep *di = (*(Iface_Info**)g)->di;
+  Iface_mp_ilit *I = (Iface_mp_ilit*)v;
 
-	di->*I->sp = I->lit;
-	di->*I->iv = *val->i;
-	}
+  di->*I->sp = I->lit;
+  di->*I->iv = *val->i;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 iface_pint(const char *keyname, Values *val, void **g, void *v)
 {
-	int n = *val->i;
-	if (n <= 0)
-		botch("%s must be positive", keyname);
-	(*(Iface_Info**)g)->di->**(int DataInterfaceRep::**)v = n;
-	}
+  int n = *val->i;
+  if (n <= 0)
+    botch("%s must be positive", keyname);
+  (*(Iface_Info**)g)->di->**(int DataInterfaceRep::**)v = n;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 iface_lit(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Iface_Info**)g)->di->*((Iface_mp_lit*)v)->sp = ((Iface_mp_lit*)v)->lit;
-	}
+  (*(Iface_Info**)g)->di->*((Iface_mp_lit*)v)->sp = ((Iface_mp_lit*)v)->lit;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 iface_start(const char *keyname, Values *val, void **g, void *v)
 {
-	Iface_Info *ii;
+  Iface_Info *ii;
 
-	if (!(ii = new Iface_Info))
- Botch:		botch("new failure in iface_start");
-	if (!(ii->di0 = new DataInterface))
-		goto Botch;
-	ii->di = ii->di0->dataIfaceRep;
-	*g = (void*)ii;
-	}
+  if (!(ii = new Iface_Info))
+  Botch:		botch("new failure in iface_start");
+  if (!(ii->di0 = new DataInterface))
+    goto Botch;
+  ii->di = ii->di0->dataIfaceRep;
+  *g = (void*)ii;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 iface_true(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Iface_Info**)g)->di->**(bool DataInterfaceRep::**)v = true;
-	}
+  (*(Iface_Info**)g)->di->**(bool DataInterfaceRep::**)v = true;
+}
 
 /*
  *  not_executable(const char *driver_name) checks whether driver_name is an 
@@ -536,1078 +511,1078 @@ iface_true(const char *keyname, Values *val, void **g, void *v)
  */
 int not_executable(const char *driver_name, const char *tdir)
 {
-        static const char *p0;
-        struct stat sb;
-        const char *p;
-        const char *p1;
-        char *b, buf[2048];
-        const char *a2[2], **al;
-        int rc, sv;
-        size_t clen, dlen, plen, tlen;
-        void *a0;
-        std::string cwd;  // decalre here before any possible "goto"
+  static const char *p0;
+  struct stat sb;
+  const char *p;
+  const char *p1;
+  char *b, buf[2048];
+  const char *a2[2], **al;
+  int rc, sv;
+  size_t clen, dlen, plen, tlen;
+  void *a0;
+  std::string cwd;  // decalre here before any possible "goto"
 
 #ifdef _WIN32
-        char dbuf[128];
+  char dbuf[128];
 #else
-        static uid_t myuid;
-        static gid_t mygid;
+  static uid_t myuid;
+  static gid_t mygid;
 #endif
 
-        /* allow shell assignments and quotes around executable names */
-        /* that may involve blanks */
-        a2[0] = driver_name;
-        a2[1] = 0;
-        al = arg_list_adjust(a2,&a0);
-        driver_name = al[0];
+  /* allow shell assignments and quotes around executable names */
+  /* that may involve blanks */
+  a2[0] = driver_name;
+  a2[1] = 0;
+  al = arg_list_adjust(a2,&a0);
+  driver_name = al[0];
 
-        rc = 0;
-        if (!p0) {
-                p0 = std::getenv("PATH");
+  rc = 0;
+  if (!p0) {
+    p0 = std::getenv("PATH");
 #ifdef _WIN32
-                if (!p0)
-                        p0 = std::getenv("Path");
+    if (!p0)
+      p0 = std::getenv("Path");
 #else
-                myuid = geteuid();
-                mygid = getegid();
+    myuid = geteuid();
+    mygid = getegid();
 #endif
-                if (p0)
-                        while(*p0 <= ' ' && *p0)
-                                ++p0;
-                else
-                        p0 = "";
-                }
+    if (p0)
+      while(*p0 <= ' ' && *p0)
+	++p0;
+    else
+      p0 = "";
+  }
 #ifdef _WIN32
-        // make sure we have a suitable suffix
-        if ((p = strrchr(driver_name, '.'))) {
-                if (std::strlen(++p) != 3)
-                        p = 0;
-                else {
-                        for(b = dbuf; *p; ++b, ++p)
-                                *b = tolower(*p);
-                        *b = 0;
-                        if (std::strcmp(dbuf,"exe") && std::strcmp(dbuf,"bat") && std::strcmp(dbuf, "cmd"))
-                                p = 0;
-                        }
-                }
-        if (!p) {
-                dlen = std::strlen(driver_name);
-                if (dlen + 5 > sizeof(dbuf)) {
-                        rc = 1;
-                        goto ret;
-                        }
-                std::strcpy(dbuf, driver_name);
-                std::strcpy(dbuf+dlen, ".exe");
-                driver_name = dbuf;
-                }
+  // make sure we have a suitable suffix
+  if ((p = strrchr(driver_name, '.'))) {
+    if (std::strlen(++p) != 3)
+      p = 0;
+    else {
+      for(b = dbuf; *p; ++b, ++p)
+	*b = tolower(*p);
+      *b = 0;
+      if (std::strcmp(dbuf,"exe") && std::strcmp(dbuf,"bat") && std::strcmp(dbuf, "cmd"))
+	p = 0;
+    }
+  }
+  if (!p) {
+    dlen = std::strlen(driver_name);
+    if (dlen + 5 > sizeof(dbuf)) {
+      rc = 1;
+      goto ret;
+    }
+    std::strcpy(dbuf, driver_name);
+    std::strcpy(dbuf+dlen, ".exe");
+    driver_name = dbuf;
+  }
 
-        // . is always implicitly in $Path under MS Windows; check it now
-        if (!stat(driver_name, &sb))
-                goto ret;
+  // . is always implicitly in $Path under MS Windows; check it now
+  if (!stat(driver_name, &sb))
+    goto ret;
 #endif
 
-        cwd = get_cwd();
-        clen = cwd.size();
-        dlen = std::strlen(driver_name);
-        tlen = std::strlen(tdir);
-        rc = 1;
-        p = p0;
-        if (std::strchr(driver_name, '/')
+  cwd = get_cwd();
+  clen = cwd.size();
+  dlen = std::strlen(driver_name);
+  tlen = std::strlen(tdir);
+  rc = 1;
+  p = p0;
+  if (std::strchr(driver_name, '/')
 #ifdef _WIN32
-                || std::strchr(driver_name, '\\')
-                || (dlen > 2 && driver_name[1] == ':')
+      || std::strchr(driver_name, '\\')
+      || (dlen > 2 && driver_name[1] == ':')
 #endif
-                )
-                p = "";
+      )
+    p = "";
 
-        else if (clen + dlen + 2 < sizeof(buf)) {
-                std::memcpy(buf,cwd.c_str(),clen);
-                buf[clen] = '/';
-                std::strcpy(buf+clen+1, driver_name);
-                sv = stat(buf,&sb);
-                if (sv == 0)
-                        goto stat_check;
-                }
-        else if (tdir && *tdir && tlen + dlen + 2 < sizeof(buf)) {
-                std::memcpy(buf,tdir,tlen);
-                buf[tlen] = '/';
-                std::strcpy(buf+tlen+1, driver_name);
-                sv = stat(buf,&sb);
-                if (sv == 0)
-                        goto stat_check;
-                }
-        for(;;) {
-                for(p1 = p;; ++p1) {
-                        switch(*p1) {
-                          case 0:
+  else if (clen + dlen + 2 < sizeof(buf)) {
+    std::memcpy(buf,cwd.c_str(),clen);
+    buf[clen] = '/';
+    std::strcpy(buf+clen+1, driver_name);
+    sv = stat(buf,&sb);
+    if (sv == 0)
+      goto stat_check;
+  }
+  else if (tdir && *tdir && tlen + dlen + 2 < sizeof(buf)) {
+    std::memcpy(buf,tdir,tlen);
+    buf[tlen] = '/';
+    std::strcpy(buf+tlen+1, driver_name);
+    sv = stat(buf,&sb);
+    if (sv == 0)
+      goto stat_check;
+  }
+  for(;;) {
+    for(p1 = p;; ++p1) {
+      switch(*p1) {
+      case 0:
 #ifdef _WIN32
-                          case ';':
+      case ';':
 #else
-                          case ':':
+      case ':':
 #endif
-                                goto break2;
-                          }
-                        }
- break2:
-                if (p1 == p || (p1 == p + 1 && *p == '.'))
-                        sv = stat(driver_name, &sb);
-                else {
-                        plen = p1 - p;
-                        while(plen && p[plen-1] <= ' ')
-                                --plen;
-                        if (plen + dlen + 2 > sizeof(buf))
-                                sv = 1;
-                        else {
-                                std::strncpy(buf,p,plen);
-                                b = buf + plen;
-                                *b++ = '/';
-                                std::strcpy(b, driver_name);
-                                sv = stat(buf, &sb);
-                                }
-                        }
-                if (!sv) {
- stat_check:
+	goto break2;
+      }
+    }
+  break2:
+    if (p1 == p || (p1 == p + 1 && *p == '.'))
+      sv = stat(driver_name, &sb);
+    else {
+      plen = p1 - p;
+      while(plen && p[plen-1] <= ' ')
+	--plen;
+      if (plen + dlen + 2 > sizeof(buf))
+	sv = 1;
+      else {
+	std::strncpy(buf,p,plen);
+	b = buf + plen;
+	*b++ = '/';
+	std::strcpy(b, driver_name);
+	sv = stat(buf, &sb);
+      }
+    }
+    if (!sv) {
+    stat_check:
 #ifdef __CYGWIN__
-                        rc = 2;
-                        if (sb.st_mode & (S_IXUSR|S_IXGRP|S_IXOTH)) {
-                                rc = 0;
-                                goto ret;
-                                }
+      rc = 2;
+      if (sb.st_mode & (S_IXUSR|S_IXGRP|S_IXOTH)) {
+	rc = 0;
+	goto ret;
+      }
 #elif defined(_WIN32) || defined(_WIN64)
-                        rc = 0;
-                        goto ret;
+      rc = 0;
+      goto ret;
 #else
-                        rc = 2;
-                        if (sb.st_uid == myuid) {
-                                if (sb.st_mode & S_IXUSR)
-                                        goto ret0;
-                                }
-                        else if (sb.st_gid == mygid) {
-                                if (sb.st_mode & S_IXGRP)
-                                        goto ret0;
-                                }
-                        else if (sb.st_mode & S_IXOTH) {
- ret0:                          rc = 0;
-                                goto ret;
-                                }
+      rc = 2;
+      if (sb.st_uid == myuid) {
+	if (sb.st_mode & S_IXUSR)
+	  goto ret0;
+      }
+      else if (sb.st_gid == mygid) {
+	if (sb.st_mode & S_IXGRP)
+	  goto ret0;
+      }
+      else if (sb.st_mode & S_IXOTH) {
+      ret0:                          rc = 0;
+	goto ret;
+      }
 #endif
-                        }
-                if (p1 == 0)
-                        goto ret;
-                else if (!*p1)
-                        break;
-                for(p = p1 + 1; *p <= ' '; ++p)
-                while(*p <= ' ' && *p)
-                        if (!*p)
-                                goto ret;
-                }
+    }
+    if (p1 == 0)
+      goto ret;
+    else if (!*p1)
+      break;
+    for(p = p1 + 1; *p <= ' '; ++p)
+      while(*p <= ' ' && *p)
+	if (!*p)
+	  goto ret;
+  }
  ret:
-        if (a0)
-                std::free(a0);
-        return rc;
-        }
+  if (a0)
+    std::free(a0);
+  return rc;
+}
 
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 iface_stop(const char *keyname, Values *val, void **g, void *v)
 {
-	Iface_Info *ii = *(Iface_Info**)g;
-	DataInterfaceRep *di = ii->di;
-	StringArray *sa;
-	const char *s;
-	int ac, ec, j, nd, same;
-	void (*Complain)(const char *fmt, ...);
-	size_t i, n;
-	extern ProblemDescDB *Dak_pddb;
-	static const char samefmt[] =
-		"template_directory and work_directory name are both \"%s\"";
-	static const char samefmt2[] =
-		"work_directory template file %d are both \"%s\"";
-	struct stat sb1;
+  Iface_Info *ii = *(Iface_Info**)g;
+  DataInterfaceRep *di = ii->di;
+  StringArray *sa;
+  const char *s;
+  int ac, ec, j, nd, same;
+  void (*Complain)(const char *fmt, ...);
+  size_t i, n;
+  extern ProblemDescDB *Dak_pddb;
+  static const char samefmt[] =
+    "template_directory and work_directory name are both \"%s\"";
+  static const char samefmt2[] =
+    "work_directory template file %d are both \"%s\"";
+  struct stat sb1;
 #ifndef _WIN32
-	struct stat sb2;
+  struct stat sb2;
 #endif
 
-	nd = di->analysisDrivers.size();
-	ac = di->asynchLocalAnalysisConcurrency;
-	ec = di->asynchLocalEvalConcurrency;
+  nd = di->analysisDrivers.size();
+  ac = di->asynchLocalAnalysisConcurrency;
+  ec = di->asynchLocalEvalConcurrency;
 
-	if (di->algebraicMappings == "" && nd == 0)
-		squawk("interface specification must provide algebraic_mappings,\n\t"
-			"analysis_drivers, or both");
-	if (nd > 0 && di->asynchLocalAnalysisConcurrency > nd) {
-		warn("analysis_concurrency specification greater than length of\n\t"
-			"analysis_drivers list.  Truncating analysis_concurrency to %d",nd);
-		di->asynchLocalAnalysisConcurrency = nd;
-		}
-	if (ec && ec < 2 && ac && ac < 2) {
-		warn("asynchronous option not required for evaluation and analysis.\n\t"
-			"Concurrency limited to %d and %d.\n\t"
-			"Synchronous operations will be used", ec, ac);
-		di->interfaceSynchronization = "synchronous";
-		}
-	if ((di->interfaceType == "system" || di->interfaceType == "fork")
-	 && (Complain = Dak_pddb->parallel_library().command_line_check() ? warn
-			: Dak_pddb->parallel_library().command_line_run() ? squawk : 0)) {
-		sa = &di->analysisDrivers;
-		n = sa->size();
-		if (di->templateDir.c_str())
- 			WorkdirHelper::prepend_preferred_env_path(di->templateDir.c_str());
+  if (di->algebraicMappings == "" && nd == 0)
+    squawk("interface specification must provide algebraic_mappings,\n\t"
+	   "analysis_drivers, or both");
+  if (nd > 0 && di->asynchLocalAnalysisConcurrency > nd) {
+    warn("analysis_concurrency specification greater than length of\n\t"
+	 "analysis_drivers list.  Truncating analysis_concurrency to %d",nd);
+    di->asynchLocalAnalysisConcurrency = nd;
+  }
+  if (ec && ec < 2 && ac && ac < 2) {
+    warn("asynchronous option not required for evaluation and analysis.\n\t"
+	 "Concurrency limited to %d and %d.\n\t"
+	 "Synchronous operations will be used", ec, ac);
+    di->interfaceSynchronization = "synchronous";
+  }
+  if ((di->interfaceType == "system" || di->interfaceType == "fork")
+      && (Complain = Dak_pddb->parallel_library().command_line_check() ? warn
+	  : Dak_pddb->parallel_library().command_line_run() ? squawk : 0)) {
+    sa = &di->analysisDrivers;
+    n = sa->size();
+    if (di->templateDir.c_str())
+      WorkdirHelper::prepend_preferred_env_path(di->templateDir.c_str());
 #ifdef DEBUG_NOT_EXECUTABLE
- 		for(i = 0; i < n; ++i)
- 			if ((j = not_executable(s = (*sa)[i], di->templateDir)))
- 				Complain("analysis driver \"%s\" %s", s,
- 					j == 1	? "not found"
- 						: "exists but is not executable");
+    for(i = 0; i < n; ++i)
+      if ((j = not_executable(s = (*sa)[i], di->templateDir)))
+	Complain("analysis driver \"%s\" %s", s,
+		 j == 1	? "not found"
+		 : "exists but is not executable");
 #endif
-		}
-	same = 0;
-	if (di->workDir.length() > 0) {
-		if (di->templateDir.length() > 0) {
-			same = di->templateDir == di->workDir;
+  }
+  same = 0;
+  if (di->workDir.length() > 0) {
+    if (di->templateDir.length() > 0) {
+      same = di->templateDir == di->workDir;
 #ifndef _WIN32
-			if (!same
-			 && !stat(di->workDir.data(), &sb1)
-			 && !stat(di->templateDir.data(), &sb2))
-				same = sb1.st_dev == sb2.st_dev
-					&& sb1.st_rdev == sb2.st_rdev
-					&& sb1.st_ino == sb2.st_ino;
+      if (!same
+	  && !stat(di->workDir.data(), &sb1)
+	  && !stat(di->templateDir.data(), &sb2))
+	same = sb1.st_dev == sb2.st_dev
+	  && sb1.st_rdev == sb2.st_rdev
+	  && sb1.st_ino == sb2.st_ino;
 #endif
-			if (same)
-				squawk(samefmt, di->workDir.data());
-			}
-		else if ((n = di->templateFiles.size() > 0)
-				&& !stat(di->workDir.data(), &sb1)) {
-			for(i = 0; i < n; ++i) {
-				if (di->templateFiles[i] == di->workDir
+      if (same)
+	squawk(samefmt, di->workDir.data());
+    }
+    else if ((n = di->templateFiles.size() > 0)
+	     && !stat(di->workDir.data(), &sb1)) {
+      for(i = 0; i < n; ++i) {
+	if (di->templateFiles[i] == di->workDir
 #ifndef _WIN32
-				 || (!stat(di->templateFiles[i].data(), &sb2)
-				 && sb1.st_dev == sb2.st_dev
-				 && sb1.st_rdev == sb2.st_rdev
-				 && sb1.st_ino == sb2.st_ino)
+	    || (!stat(di->templateFiles[i].data(), &sb2)
+		&& sb1.st_dev == sb2.st_dev
+		&& sb1.st_rdev == sb2.st_rdev
+		&& sb1.st_ino == sb2.st_ino)
 #endif
-					) {
-					squawk(samefmt2, (int)(i+1), di->workDir.data());
-					break;
-					}
-				}
-			}
-		}
-	pDDBInstance->dataInterfaceList.push_back(*ii->di0);
-	delete ii->di0;
-	delete ii;
+	    ) {
+	  squawk(samefmt2, (int)(i+1), di->workDir.data());
+	  break;
 	}
+      }
+    }
+  }
+  pDDBInstance->dataInterfaceList.push_back(*ii->di0);
+  delete ii->di0;
+  delete ii;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 iface_str(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Iface_Info**)g)->di->**(String DataInterfaceRep::**)v = *val->s;
-	}
+  (*(Iface_Info**)g)->di->**(String DataInterfaceRep::**)v = *val->s;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 iface_str2D(const char *keyname, Values *val, void **g, void *v)
 {
-	DataInterfaceRep *di = (*(Iface_Info**)g)->di;
-	String2DArray *sa2 = &(di->**(String2DArray DataInterfaceRep::**)v);
-	StringArray *sa;
-	const char **s = val->s;
-	size_t i, j, k, n, nc, nd;
+  DataInterfaceRep *di = (*(Iface_Info**)g)->di;
+  String2DArray *sa2 = &(di->**(String2DArray DataInterfaceRep::**)v);
+  StringArray *sa;
+  const char **s = val->s;
+  size_t i, j, k, n, nc, nd;
 
-	// This is just for analysisComponents -- the only String2DArray in a DataInterfaceRep.
+  // This is just for analysisComponents -- the only String2DArray in a DataInterfaceRep.
 
-	nd = di->analysisDrivers.size();
-	n = val->n;
-	if (nd <= 0)
-		botch("num_drivers = %d in iface_str2D", (int)nd);
-	if (n % nd) {
-		squawk("number of analysis_components not evenly divisible "
-			"by number of analysis_drivers");
-		return;
-		}
-	nc = n / nd;
-	sa2->resize(nd);
-	for(i = k = 0; i < nd; i++) {
-		sa = &((*sa2)[i]);
-		sa->resize(nc);
-		for(j = 0; j < nc; ++j, ++k)
-			(*sa)[j] = s[k];
-		}
-	}
+  nd = di->analysisDrivers.size();
+  n = val->n;
+  if (nd <= 0)
+    botch("num_drivers = %d in iface_str2D", (int)nd);
+  if (n % nd) {
+    squawk("number of analysis_components not evenly divisible "
+	   "by number of analysis_drivers");
+    return;
+  }
+  nc = n / nd;
+  sa2->resize(nd);
+  for(i = k = 0; i < nd; i++) {
+    sa = &((*sa2)[i]);
+    sa->resize(nc);
+    for(j = 0; j < nc; ++j, ++k)
+      (*sa)[j] = s[k];
+  }
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 iface_strL(const char *keyname, Values *val, void **g, void *v)
 {
-	StringArray *sa = &((*(Iface_Info**)g)->di->**(StringArray DataInterfaceRep::**)v);
-	const char **s = val->s;
-	size_t i, n = val->n;
+  StringArray *sa = &((*(Iface_Info**)g)->di->**(StringArray DataInterfaceRep::**)v);
+  const char **s = val->s;
+  size_t i, n = val->n;
 
-	sa->resize(n);
-	for(i = 0; i < n; i++)
-		(*sa)[i] = s[i];
-	}
+  sa->resize(n);
+  for(i = 0; i < n; i++)
+    (*sa)[i] = s[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_Real(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Meth_Info**)g)->dme->**(Real DataMethodRep::**)v = *val->r;
-	}
+  (*(Meth_Info**)g)->dme->**(Real DataMethodRep::**)v = *val->r;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_Real01(const char *keyname, Values *val, void **g, void *v)
 {
-	Real t = *val->r;
-	if (t < 0. || t > 1.)
-		botch("%s must be in [0, 1]", keyname);
-	(*(Meth_Info**)g)->dme->**(Real DataMethodRep::**)v = t;
-	}
+  Real t = *val->r;
+  if (t < 0. || t > 1.)
+    botch("%s must be in [0, 1]", keyname);
+  (*(Meth_Info**)g)->dme->**(Real DataMethodRep::**)v = t;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_RealDL(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	RealVector DataMethodRep::* sa = *(RealVector DataMethodRep::**)v;
-	Real *r = val->r;
-	size_t i, n = val->n;
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  RealVector DataMethodRep::* sa = *(RealVector DataMethodRep::**)v;
+  Real *r = val->r;
+  size_t i, n = val->n;
 
-	(dm->*sa).sizeUninitialized(n);
-	for(i = 0; i < n; i++)
-		(dm->*sa)[i] = r[i];
-	}
+  (dm->*sa).sizeUninitialized(n);
+  for(i = 0; i < n; i++)
+    (dm->*sa)[i] = r[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_RealLlit(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	Real *r;
-	RealVector *rv = &(dm->*((Method_mp_litrv*)v)->rp);
-	size_t i, n;
-	dm->*((Method_mp_litrv*)v)->sp = ((Method_mp_litrv*)v)->lit;
-	r = val->r;
-	n = val->n;
-	rv->resize(n);
-	for(i = 0; i < n; i++)
-		(*rv)[i] = r[i];
-	}
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  Real *r;
+  RealVector *rv = &(dm->*((Method_mp_litrv*)v)->rp);
+  size_t i, n;
+  dm->*((Method_mp_litrv*)v)->sp = ((Method_mp_litrv*)v)->lit;
+  r = val->r;
+  n = val->n;
+  rv->resize(n);
+  for(i = 0; i < n; i++)
+    (*rv)[i] = r[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_Realp(const char *keyname, Values *val, void **g, void *v)
 {
-	Real t = *val->r;
-	if (t <= 0.)
-		botch("%s must be positive", keyname);
-	(*(Meth_Info**)g)->dme->**(Real DataMethodRep::**)v = t;
-	}
+  Real t = *val->r;
+  if (t <= 0.)
+    botch("%s must be positive", keyname);
+  (*(Meth_Info**)g)->dme->**(Real DataMethodRep::**)v = t;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_Realz(const char *keyname, Values *val, void **g, void *v)
 {
-	Real t = *val->r;
-	if (t < 0.)
-		botch("%s must be nonnegative", keyname);
-	(*(Meth_Info**)g)->dme->**(Real DataMethodRep::**)v = t;
-	}
+  Real t = *val->r;
+  if (t < 0.)
+    botch("%s must be nonnegative", keyname);
+  (*(Meth_Info**)g)->dme->**(Real DataMethodRep::**)v = t;
+}
 
 // MSE: This COLINY function mirrors method-dependent default assignments
 // from old IDRProblemDescDB.C.  Could be moved to COLINOptimizer ctor for
 // greater consistency with, e.g., maxIterations method-dependent default.
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_coliny_ea(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	dm->methodName = "coliny_ea";
-	dm->fitnessType = "linear_rank";
-	dm->replacementType = "elitist";
-	dm->numberRetained = 1;
-	}
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  dm->methodName = "coliny_ea";
+  dm->fitnessType = "linear_rank";
+  dm->replacementType = "elitist";
+  dm->numberRetained = 1;
+}
 
 // MSE: This function just sets two values for one keyword.
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_piecewise(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	dm->expansionType  = STD_UNIFORM_U;
-	dm->piecewiseBasis = true;
-	}
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  dm->expansionType  = STD_UNIFORM_U;
+  dm->piecewiseBasis = true;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_false(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Meth_Info**)g)->dme->**(bool DataMethodRep::**)v = false;
-	}
+  (*(Meth_Info**)g)->dme->**(bool DataMethodRep::**)v = false;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_int(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Meth_Info**)g)->dme->**(int DataMethodRep::**)v = *val->i;
-	}
+  (*(Meth_Info**)g)->dme->**(int DataMethodRep::**)v = *val->i;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_intDL(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	int *z = val->i;
-	IntVector *iv = &(dm->**(IntVector DataMethodRep::**)v);
-	size_t i, n = val->n;
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  int *z = val->i;
+  IntVector *iv = &(dm->**(IntVector DataMethodRep::**)v);
+  size_t i, n = val->n;
 
-	iv->resize(n);
-	for(i = 0; i < n; i++)
-		(*iv)[i] = z[i];
-	}
+  iv->resize(n);
+  for(i = 0; i < n; i++)
+    (*iv)[i] = z[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_ilit2(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	dm->*((Method_mp_ilit2*)v)->sp = ((Method_mp_ilit2*)v)->lit;
-	dm->*((Method_mp_ilit2*)v)->ip = *val->i;
-	}
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  dm->*((Method_mp_ilit2*)v)->sp = ((Method_mp_ilit2*)v)->lit;
+  dm->*((Method_mp_ilit2*)v)->ip = *val->i;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_ilit2p(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	dm->*((Method_mp_ilit2z*)v)->sp = ((Method_mp_ilit2z*)v)->lit;
-	if ((dm->*((Method_mp_ilit2z*)v)->ip = *val->i) <= 0)
-		botch("%s must be positive", keyname);
-	}
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  dm->*((Method_mp_ilit2z*)v)->sp = ((Method_mp_ilit2z*)v)->lit;
+  if ((dm->*((Method_mp_ilit2z*)v)->ip = *val->i) <= 0)
+    botch("%s must be positive", keyname);
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_lit(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Meth_Info**)g)->dme->*((Method_mp_lit*)v)->sp = ((Method_mp_lit*)v)->lit;
-	}
+  (*(Meth_Info**)g)->dme->*((Method_mp_lit*)v)->sp = ((Method_mp_lit*)v)->lit;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_lit2(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	dm->*((Method_mp_lit2*)v)->sp  = ((Method_mp_lit2*)v)->lit;
-	dm->*((Method_mp_lit2*)v)->sp2 = ((Method_mp_lit2*)v)->lit2;
-	}
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  dm->*((Method_mp_lit2*)v)->sp  = ((Method_mp_lit2*)v)->lit;
+  dm->*((Method_mp_lit2*)v)->sp2 = ((Method_mp_lit2*)v)->lit2;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_litc(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	if (dm->*((Method_mp_litc*)v)->rp > 0.)
-		dm->*((Method_mp_litc*)v)->sp = ((Method_mp_litc*)v)->lit;
-	}
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  if (dm->*((Method_mp_litc*)v)->rp > 0.)
+    dm->*((Method_mp_litc*)v)->sp = ((Method_mp_litc*)v)->lit;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_litp(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	Real t = *val->r;
-	if (t <= 0.)
-		botch("%s must be positive",keyname);
-	dm->*((Method_mp_litc*)v)->sp = ((Method_mp_litc*)v)->lit;
-	dm->*((Method_mp_litc*)v)->rp = t;
-	}
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  Real t = *val->r;
+  if (t <= 0.)
+    botch("%s must be positive",keyname);
+  dm->*((Method_mp_litc*)v)->sp = ((Method_mp_litc*)v)->lit;
+  dm->*((Method_mp_litc*)v)->rp = t;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_litpp(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	dm->*((Method_mp_lit*)v)->sp = ((Method_mp_lit*)v)->lit;
-	dm->stepLenToBoundary = dm->centeringParam = -1.;
-	}
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  dm->*((Method_mp_lit*)v)->sp = ((Method_mp_lit*)v)->lit;
+  dm->stepLenToBoundary = dm->centeringParam = -1.;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_litz(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	Real t = *val->r;
-	if (t < 0.)
-		botch("%s must be nonnegative",keyname);
-	if ((dm->*((Method_mp_litc*)v)->rp = t) == 0.)
-		dm->*((Method_mp_litc*)v)->sp = ((Method_mp_litc*)v)->lit;
-	}
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  Real t = *val->r;
+  if (t < 0.)
+    botch("%s must be nonnegative",keyname);
+  if ((dm->*((Method_mp_litc*)v)->rp = t) == 0.)
+    dm->*((Method_mp_litc*)v)->sp = ((Method_mp_litc*)v)->lit;
+}
 
 // MSE: This OPT++ function mirrors method-dependent default assignments
 // from old IDRProblemDescDB.C.  Could be moved to SNLLOptimizer ctor for
 // greater consistency with, e.g., maxIterations method-dependent default.
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_litpp_final(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
 
-	if (dm->stepLenToBoundary == -1.) {
-		if (dm->meritFn == "el_bakry")
-			dm->stepLenToBoundary = 0.8;
-		else if (dm->meritFn == "argaez_tapia")
-			dm->stepLenToBoundary = 0.99995;
-		else if (dm->meritFn == "van_shanno")
-			dm->stepLenToBoundary = 0.95;
-		else
- Botch:			botch("Unexpected meritFn in method_litpp_final");
-		}
-	if (dm->centeringParam == -1.) {
-		if (dm->meritFn == "el_bakry")
-			dm->centeringParam = 0.2;
-		else if (dm->meritFn == "argaez_tapia")
-			dm->centeringParam = 0.2;
-		else if (dm->meritFn == "van_shanno")
-			dm->centeringParam = 0.1;
-		else
-			goto Botch;
-		}
-	}
+  if (dm->stepLenToBoundary == -1.) {
+    if (dm->meritFn == "el_bakry")
+      dm->stepLenToBoundary = 0.8;
+    else if (dm->meritFn == "argaez_tapia")
+      dm->stepLenToBoundary = 0.99995;
+    else if (dm->meritFn == "van_shanno")
+      dm->stepLenToBoundary = 0.95;
+    else
+    Botch:			botch("Unexpected meritFn in method_litpp_final");
+  }
+  if (dm->centeringParam == -1.) {
+    if (dm->meritFn == "el_bakry")
+      dm->centeringParam = 0.2;
+    else if (dm->meritFn == "argaez_tapia")
+      dm->centeringParam = 0.2;
+    else if (dm->meritFn == "van_shanno")
+      dm->centeringParam = 0.1;
+    else
+      goto Botch;
+  }
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_meritFn(const char *keyname, Values *val, void **g, void *v)
 {
-	const char *s;
+  const char *s;
 
-	(*(Meth_Info**)g)->dme->**(String DataMethodRep::**)v = s = *val->s;
-	if (strcmp(s,"el_bakry")
-	 && strcmp(s,"argaez_tapia")
-	 && strcmp(s,"van_shanno"))
-		botch("merit_function %s not supported", s);
-	}
+  (*(Meth_Info**)g)->dme->**(String DataMethodRep::**)v = s = *val->s;
+  if (strcmp(s,"el_bakry")
+      && strcmp(s,"argaez_tapia")
+      && strcmp(s,"van_shanno"))
+    botch("merit_function %s not supported", s);
+}
 
 // MSE: These moga functions mirror method-dependent default assignments
 // from old IDRProblemDescDB.C.  Could be moved to JEGAOptimizer ctor for
 // greater consistency with, e.g., maxIterations method-dependent default.
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_moga_begin(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	dm->methodName = "moga";
-	dm->randomSeed = -1;	// MOGA should "randomly" choose a seed.
-	dm->crossoverRate = 0.75;
-	dm->mutationType = "";
-	}
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  dm->methodName = "moga";
+  dm->randomSeed = -1;	// MOGA should "randomly" choose a seed.
+  dm->crossoverRate = 0.75;
+  dm->mutationType = "";
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_moga_final(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
 
-	if (dm->mutationType == "") {
-		dm->mutationType = "replace_uniform";
-		dm->mutationRate = 0.1;
-		}
-	}
+  if (dm->mutationType == "") {
+    dm->mutationType = "replace_uniform";
+    dm->mutationRate = 0.1;
+  }
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_nnint(const char *keyname, Values *val, void **g, void *v)
 {
-	int n = *val->i;
-	if (n < 0)
-		botch("%s must be non-negative", keyname);
-	(*(Meth_Info**)g)->dme->**(int DataMethodRep::**)v = n;
-	}
+  int n = *val->i;
+  if (n < 0)
+    botch("%s must be non-negative", keyname);
+  (*(Meth_Info**)g)->dme->**(int DataMethodRep::**)v = n;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_nnintz(const char *keyname, Values *val, void **g, void *v)
 {
-	int n = *val->i;
+  int n = *val->i;
 #if 0
-	if (n < 0)
-		botch("%s must be non-negative", keyname);
+  if (n < 0)
+    botch("%s must be non-negative", keyname);
 #endif
-	(*(Meth_Info**)g)->dme->**(size_t DataMethodRep::**)v = n;
-	}
+  (*(Meth_Info**)g)->dme->**(size_t DataMethodRep::**)v = n;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_num_resplevs(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	Real *r;
-	RealVectorArray *rva = &(dm->**(RealVectorArray DataMethodRep::**)v);
-	RealVector *ra = &(*rva)[0];
-	int m, *z = val->i;
-	size_t i, i1, j, je, k, n;
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  Real *r;
+  RealVectorArray *rva = &(dm->**(RealVectorArray DataMethodRep::**)v);
+  RealVector *ra = &(*rva)[0];
+  int m, *z = val->i;
+  size_t i, i1, j, je, k, n;
 
-	n = val->n;
-	for(i = k = 0; i < n; ++i)
-		k += z[i];
-	if (ra->length() != (int)k)
-		botch("number of %s = %u does not match\n"
-			"%s specification of %u response levels",
-			keyname+4, (Uint)ra->length(), keyname, (Uint)k);
-	r = new Real[k];
-	for(i = 0; i < k; i++)
-		r[i] = (*ra)[i];
-	(*rva).resize(n);
-	for(i = j = je = 0; i < n; i++) {
-		m = z[i];
-		(*rva)[i].resize(m);
-		ra = &(*rva)[i];
-		for(i1 = 0, je += m; j < je; ++i1, ++j)
-			(*ra)[i1] = r[j];
-		}
-	delete[] r;
-	}
+  n = val->n;
+  for(i = k = 0; i < n; ++i)
+    k += z[i];
+  if (ra->length() != (int)k)
+    botch("number of %s = %u does not match\n"
+	  "%s specification of %u response levels",
+	  keyname+4, (Uint)ra->length(), keyname, (Uint)k);
+  r = new Real[k];
+  for(i = 0; i < k; i++)
+    r[i] = (*ra)[i];
+  (*rva).resize(n);
+  for(i = j = je = 0; i < n; i++) {
+    m = z[i];
+    (*rva)[i].resize(m);
+    ra = &(*rva)[i];
+    for(i1 = 0, je += m; j < je; ++i1, ++j)
+      (*ra)[i1] = r[j];
+  }
+  delete[] r;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_pint(const char *keyname, Values *val, void **g, void *v)
 {
-	int n = *val->i;
-	if (n <= 0)
-		botch("%s must be positive", keyname);
-	(*(Meth_Info**)g)->dme->**(int DataMethodRep::**)v = n;
-	}
+  int n = *val->i;
+  if (n <= 0)
+    botch("%s must be positive", keyname);
+  (*(Meth_Info**)g)->dme->**(int DataMethodRep::**)v = n;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_pintz(const char *keyname, Values *val, void **g, void *v)
 {
-	int n = *val->i;
+  int n = *val->i;
 #if 0
-	if (n <= 0)
-		botch("%s must be positive", keyname);
+  if (n <= 0)
+    botch("%s must be positive", keyname);
 #endif
-	(*(Meth_Info**)g)->dme->**(size_t DataMethodRep::**)v = n;
-	}
+  (*(Meth_Info**)g)->dme->**(size_t DataMethodRep::**)v = n;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_resplevs(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	Real *r = val->r;
-	RealVector *ra;
-	RealVectorArray *rva = &(dm->**(RealVectorArray DataMethodRep::**)v);
-	size_t i, n = val->n;
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  Real *r = val->r;
+  RealVector *ra;
+  RealVectorArray *rva = &(dm->**(RealVectorArray DataMethodRep::**)v);
+  size_t i, n = val->n;
 
-	(*rva).resize(1);
-	ra = &(*rva)[0];
-	ra->resize(n);
-	for(i = 0; i < n; ++i)
-		(*ra)[i] = r[i];
-	}
+  (*rva).resize(1);
+  ra = &(*rva)[0];
+  ra->resize(n);
+  for(i = 0; i < n; ++i)
+    (*ra)[i] = r[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_resplevs01(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	Real *r = val->r, t;
-	RealVector *ra;
-	RealVectorArray *rva = &(dm->**(RealVectorArray DataMethodRep::**)v);
-	size_t i, n = val->n;
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  Real *r = val->r, t;
+  RealVector *ra;
+  RealVectorArray *rva = &(dm->**(RealVectorArray DataMethodRep::**)v);
+  size_t i, n = val->n;
 
-	(*rva).resize(1);
-	ra = &(*rva)[0];
-	ra->resize(n);
-	for(i = 0; i < n; ++i) {
-		(*ra)[i] = t = r[i];
-		if (t < 0. || t > 1.)
-			botch("%s must be between 0 and 1", keyname);
-		}
-	}
+  (*rva).resize(1);
+  ra = &(*rva)[0];
+  ra->resize(n);
+  for(i = 0; i < n; ++i) {
+    (*ra)[i] = t = r[i];
+    if (t < 0. || t > 1.)
+      botch("%s must be between 0 and 1", keyname);
+  }
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_shint(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Meth_Info**)g)->dme->**(short DataMethodRep::**)v = *val->i;
-	}
+  (*(Meth_Info**)g)->dme->**(short DataMethodRep::**)v = *val->i;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_ushint(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Meth_Info**)g)->dme->**(unsigned short DataMethodRep::**)v = *val->i;
-	}
+  (*(Meth_Info**)g)->dme->**(unsigned short DataMethodRep::**)v = *val->i;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_ushintL(const char *keyname, Values *val, void **g, void *v)
 {
-	UShortArray *usa
-	  = &((*(Meth_Info**)g)->dme->**(UShortArray DataMethodRep::**)v);
-	int *z = val->i;
-	size_t i, n = val->n;
+  UShortArray *usa
+    = &((*(Meth_Info**)g)->dme->**(UShortArray DataMethodRep::**)v);
+  int *z = val->i;
+  size_t i, n = val->n;
 
-	usa->resize(n);
-	for(i = 0; i < n; i++)
-		(*usa)[i] = z[i];
-	}
+  usa->resize(n);
+  for(i = 0; i < n; i++)
+    (*usa)[i] = z[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_slit2(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
 
-	dm->*((Method_mp_slit2*)v)->sp  = ((Method_mp_slit2*)v)->lit;
-	dm->*((Method_mp_slit2*)v)->sp2 = *val->s;
-	}
+  dm->*((Method_mp_slit2*)v)->sp  = ((Method_mp_slit2*)v)->lit;
+  dm->*((Method_mp_slit2*)v)->sp2 = *val->s;
+}
 
 // MSE: These soga functions mirror method-dependent default assignments
 // from old IDRProblemDescDB.C.  Could be moved to JEGAOptimizer ctor for
 // greater consistency with, e.g., maxIterations method-dependent default.
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_soga_begin(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
-	dm->methodName = "soga";
-	dm->constraintPenalty = 1.;
-	dm->crossoverType = "multi_point_parameterized_binary";
-	dm->fitnessType = "";
-	dm->mutationType = "";
-	dm->randomSeed = -1;	// SOGA should "randomly" choose a seed.
-	}
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  dm->methodName = "soga";
+  dm->constraintPenalty = 1.;
+  dm->crossoverType = "multi_point_parameterized_binary";
+  dm->fitnessType = "";
+  dm->mutationType = "";
+  dm->randomSeed = -1;	// SOGA should "randomly" choose a seed.
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_soga_final(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep *dm = (*(Meth_Info**)g)->dme;
+  DataMethodRep *dm = (*(Meth_Info**)g)->dme;
 
-	if (dm->fitnessType == "") {
-		dm->fitnessType = "merit_function";
-		dm->constraintPenalty = 1.0;
-		}
-	if (dm->mutationType == "") {
-		dm->mutationType == "replace_uniform";
-		dm->mutationRate = 0.1;
-		}
-	}
+  if (dm->fitnessType == "") {
+    dm->fitnessType = "merit_function";
+    dm->constraintPenalty = 1.0;
+  }
+  if (dm->mutationType == "") {
+    dm->mutationType == "replace_uniform";
+    dm->mutationRate = 0.1;
+  }
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_start(const char *keyname, Values *val, void **g, void *v)
 {
-	Meth_Info *mi;
+  Meth_Info *mi;
 
-	if (!(mi = new Meth_Info))
- Botch:		botch("new failure in method_start");
-	if (!(mi->dme0 = new DataMethod))
-		goto Botch;
-	mi->dme = mi->dme0->dataMethodRep;
-	*g = (void*)mi;
-	}
+  if (!(mi = new Meth_Info))
+  Botch:		botch("new failure in method_start");
+  if (!(mi->dme0 = new DataMethod))
+    goto Botch;
+  mi->dme = mi->dme0->dataMethodRep;
+  *g = (void*)mi;
+}
 
- static void
+static void
 scale_chk(StringArray &ST, RealVector &S, const char *what, const char **univ)
 {
-	const char *s, **u;
-	size_t i, n, nbad, vseen;
+  const char *s, **u;
+  size_t i, n, nbad, vseen;
 
-	n = ST.size();
-	for(i = nbad = vseen = 0; i < n; ++i) {
-		s = ST[i].data();
-		if (!strcmp(s,"value")) {
-			++vseen;
-			goto break2;
-			}
-		for(u = univ; *u; ++u)
-			if (!strcmp(s,*u)) {
-				goto break2;
-				}
-		NIDRProblemDescDB::squawk("\"%s\" cannot appear in %s_scale_types", s, what);
-		++nbad;
- break2:	;
-		}
-	if (vseen && S.length() <= 0)
-		NIDRProblemDescDB::squawk(
-			"\"value\" in %s_scale_types requires at least one value for %s_scales",
-			what, what);
-	}
+  n = ST.size();
+  for(i = nbad = vseen = 0; i < n; ++i) {
+    s = ST[i].data();
+    if (!strcmp(s,"value")) {
+      ++vseen;
+      goto break2;
+    }
+    for(u = univ; *u; ++u)
+      if (!strcmp(s,*u)) {
+	goto break2;
+      }
+    NIDRProblemDescDB::squawk("\"%s\" cannot appear in %s_scale_types", s, what);
+    ++nbad;
+  break2:	;
+  }
+  if (vseen && S.length() <= 0)
+    NIDRProblemDescDB::squawk(
+			      "\"value\" in %s_scale_types requires at least one value for %s_scales",
+			      what, what);
+}
 
- static const char *aln_scaletypes[] = { "auto", "log", "none", 0 };
+static const char *aln_scaletypes[] = { "auto", "log", "none", 0 };
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_stop(const char *keyname, Values *val, void **g, void *v)
 {
-	static const char *mr_scaletypes[] = { "auto", "none", 0 };
-	Meth_Info *mi = *(Meth_Info**)g;
-	DataMethodRep *dm = mi->dme;
-	scale_chk(dm->linearIneqScaleTypes, dm->linearIneqScales,
-		"linear_inequality", mr_scaletypes);
-	scale_chk(dm->linearEqScaleTypes, dm->linearEqScales,
-		"linear_equality", mr_scaletypes);
-	pDDBInstance->dataMethodList.push_back(*mi->dme0);
-	delete mi->dme0;
-	delete mi;
-	}
+  static const char *mr_scaletypes[] = { "auto", "none", 0 };
+  Meth_Info *mi = *(Meth_Info**)g;
+  DataMethodRep *dm = mi->dme;
+  scale_chk(dm->linearIneqScaleTypes, dm->linearIneqScales,
+	    "linear_inequality", mr_scaletypes);
+  scale_chk(dm->linearEqScaleTypes, dm->linearEqScales,
+	    "linear_equality", mr_scaletypes);
+  pDDBInstance->dataMethodList.push_back(*mi->dme0);
+  delete mi->dme0;
+  delete mi;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_str(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Meth_Info**)g)->dme->**(String DataMethodRep::**)v = *val->s;
-	}
+  (*(Meth_Info**)g)->dme->**(String DataMethodRep::**)v = *val->s;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_strL(const char *keyname, Values *val, void **g, void *v)
 {
-	StringArray *sa = &((*(Meth_Info**)g)->dme->**(StringArray DataMethodRep::**)v);
-	const char **s = val->s;
-	size_t i, n = val->n;
+  StringArray *sa = &((*(Meth_Info**)g)->dme->**(StringArray DataMethodRep::**)v);
+  const char **s = val->s;
+  size_t i, n = val->n;
 
-	sa->resize(n);
-	for(i = 0; i < n; i++)
-		(*sa)[i] = s[i];
-	}
+  sa->resize(n);
+  for(i = 0; i < n; i++)
+    (*sa)[i] = s[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_true(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Meth_Info**)g)->dme->**(bool DataMethodRep::**)v = true;
-	}
+  (*(Meth_Info**)g)->dme->**(bool DataMethodRep::**)v = true;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_type(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Meth_Info**)g)->dme->*((Method_mp_type*)v)->sp = ((Method_mp_type*)v)->type;
-	}
+  (*(Meth_Info**)g)->dme->*((Method_mp_type*)v)->sp = ((Method_mp_type*)v)->type;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_Real(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Mod_Info**)g)->dmo->**(Real DataModelRep::**)v = *val->r;
-	}
+  (*(Mod_Info**)g)->dmo->**(Real DataModelRep::**)v = *val->r;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_RealDL(const char *keyname, Values *val, void **g, void *v)
 {
-	Real *r = val->r;
-	RealVector *rdv = &((*(Mod_Info**)g)->dmo->**(RealVector DataModelRep::**)v);
-	size_t i, n = val->n;
+  Real *r = val->r;
+  RealVector *rdv = &((*(Mod_Info**)g)->dmo->**(RealVector DataModelRep::**)v);
+  size_t i, n = val->n;
 
-	rdv->sizeUninitialized(n);
-	for(i = 0; i < n; i++)
-		(*rdv)[i] = r[i];
-	}
+  rdv->sizeUninitialized(n);
+  for(i = 0; i < n; i++)
+    (*rdv)[i] = r[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_false(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Mod_Info**)g)->dmo->**(bool DataModelRep::**)v = false;
-	}
+  (*(Mod_Info**)g)->dmo->**(bool DataModelRep::**)v = false;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_int(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Mod_Info**)g)->dmo->**(int DataModelRep::**)v = *val->i;
-	}
+  (*(Mod_Info**)g)->dmo->**(int DataModelRep::**)v = *val->i;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_intset(const char *keyname, Values *val, void **g, void *v)
 {
-	IntSet *is = &((*(Mod_Info**)g)->dmo->**(IntSet DataModelRep::**)v);
-	int *z = val->i;
-	size_t i, n = val->n;
+  IntSet *is = &((*(Mod_Info**)g)->dmo->**(IntSet DataModelRep::**)v);
+  int *z = val->i;
+  size_t i, n = val->n;
 
-	for(i = 0; i < n; i++)
-		is->insert(z[i]-1);
-	}
+  for(i = 0; i < n; i++)
+    is->insert(z[i]-1);
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_lit(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Mod_Info**)g)->dmo->*((Model_mp_lit*)v)->sp = ((Model_mp_lit*)v)->lit;
-	}
+  (*(Mod_Info**)g)->dmo->*((Model_mp_lit*)v)->sp = ((Model_mp_lit*)v)->lit;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_order(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Mod_Info**)g)->dmo->*((Model_mp_ord*)v)->sp = ((Model_mp_ord*)v)->ord;
-	}
+  (*(Mod_Info**)g)->dmo->*((Model_mp_ord*)v)->sp = ((Model_mp_ord*)v)->ord;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_type(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Mod_Info**)g)->dmo->*((Model_mp_type*)v)->sp = ((Model_mp_type*)v)->type;
-	}
+  (*(Mod_Info**)g)->dmo->*((Model_mp_type*)v)->sp = ((Model_mp_type*)v)->type;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_shint(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Mod_Info**)g)->dmo->**(short DataModelRep::**)v = (short)*val->i;
-	}
+  (*(Mod_Info**)g)->dmo->**(short DataModelRep::**)v = (short)*val->i;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_start(const char *keyname, Values *val, void **g, void *v)
 {
-	DataModelRep *dm;
-	Mod_Info *mi;
+  DataModelRep *dm;
+  Mod_Info *mi;
 
-	if (!(mi = new Mod_Info))
- Botch:		botch("new failure in model_start");
-	if (!(mi->dmo0 = new DataModel))
-		goto Botch;
-	dm = mi->dmo = mi->dmo0->dataModelRep;
-	*g = (void*)mi;
-	}
+  if (!(mi = new Mod_Info))
+  Botch:		botch("new failure in model_start");
+  if (!(mi->dmo0 = new DataModel))
+    goto Botch;
+  dm = mi->dmo = mi->dmo0->dataModelRep;
+  *g = (void*)mi;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_stop(const char *keyname, Values *val, void **g, void *v)
 {
-	Mod_Info *mi = *(Mod_Info**)g;
-	pDDBInstance->dataModelList.push_back(*mi->dmo0);
-	delete mi->dmo0;
-	delete mi;
-	}
+  Mod_Info *mi = *(Mod_Info**)g;
+  pDDBInstance->dataModelList.push_back(*mi->dmo0);
+  delete mi->dmo0;
+  delete mi;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_str(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Mod_Info**)g)->dmo->**(String DataModelRep::**)v = *val->s;
-	}
+  (*(Mod_Info**)g)->dmo->**(String DataModelRep::**)v = *val->s;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_strL(const char *keyname, Values *val, void **g, void *v)
 {
-	DataModelRep *dm = (*(Mod_Info**)g)->dmo;
-	StringArray DataModelRep::* sa = *(StringArray DataModelRep::**)v;
-	const char **s = val->s;
-	size_t i, n = val->n;
+  DataModelRep *dm = (*(Mod_Info**)g)->dmo;
+  StringArray DataModelRep::* sa = *(StringArray DataModelRep::**)v;
+  const char **s = val->s;
+  size_t i, n = val->n;
 
-	(dm->*sa).resize(n);
-	for(i = 0; i < n; i++)
-		(dm->*sa)[i] = s[i];
-	}
+  (dm->*sa).resize(n);
+  for(i = 0; i < n; i++)
+    (dm->*sa)[i] = s[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 model_true(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Mod_Info**)g)->dmo->**(bool DataModelRep::**)v = true;
-	}
+  (*(Mod_Info**)g)->dmo->**(bool DataModelRep::**)v = true;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 resp_RealDL(const char *keyname, Values *val, void **g, void *v)
 {
-	Real *r = val->r;
-	RealVector *rv = &((*(Resp_Info**)g)->dr->**(RealVector DataResponsesRep::**)v);
-	size_t i, n = val->n;
+  Real *r = val->r;
+  RealVector *rv = &((*(Resp_Info**)g)->dr->**(RealVector DataResponsesRep::**)v);
+  size_t i, n = val->n;
 
-	rv->sizeUninitialized(n);
-	for(i = 0; i < n; i++)
-		(*rv)[i] = r[i];
-	}
+  rv->sizeUninitialized(n);
+  for(i = 0; i < n; i++)
+    (*rv)[i] = r[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 resp_RealL(const char *keyname, Values *val, void **g, void *v)
 {
-        NIDRProblemDescDB::resp_RealDL(keyname, val, g, v);
-	}
+  NIDRProblemDescDB::resp_RealDL(keyname, val, g, v);
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 resp_intL(const char *keyname, Values *val, void **g, void *v)
 {
-	DataResponsesRep *dr = (*(Resp_Info**)g)->dr;
-	int *z = val->i;
-	IntList *il = &(dr->**(IntList DataResponsesRep::**)v);
-	size_t i, n = val->n;
+  DataResponsesRep *dr = (*(Resp_Info**)g)->dr;
+  int *z = val->i;
+  IntList *il = &(dr->**(IntList DataResponsesRep::**)v);
+  size_t i, n = val->n;
 
-	for(i = 0; i < n; i++)
-		il->push_back(z[i]);
-	}
+  for(i = 0; i < n; i++)
+    il->push_back(z[i]);
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 resp_lit(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Resp_Info**)g)->dr->*((Resp_mp_lit*)v)->sp = ((Resp_mp_lit*)v)->lit;
-	}
+  (*(Resp_Info**)g)->dr->*((Resp_mp_lit*)v)->sp = ((Resp_mp_lit*)v)->lit;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 resp_nnintz(const char *keyname, Values *val, void **g, void *v)
 {
-	int n = *val->i;
+  int n = *val->i;
 #if 0
-	if (n < 0)
-		botch("%s must be non-negative", keyname);
+  if (n < 0)
+    botch("%s must be non-negative", keyname);
 #endif
-	(*(Resp_Info**)g)->dr->**(size_t DataResponsesRep::**)v = n;
-	}
+  (*(Resp_Info**)g)->dr->**(size_t DataResponsesRep::**)v = n;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 resp_start(const char *keyname, Values *val, void **g, void *v)
 {
-	Resp_Info *ri;
+  Resp_Info *ri;
 
-	if (!(ri = new Resp_Info))
- Botch:		botch("new failure in resp_start");
-	if (!(ri->dr0 = new DataResponses))
-		goto Botch;
-	ri->dr = ri->dr0->dataRespRep;
-	*g = (void*)ri;
-	}
+  if (!(ri = new Resp_Info))
+  Botch:		botch("new failure in resp_start");
+  if (!(ri->dr0 = new DataResponses))
+    goto Botch;
+  ri->dr = ri->dr0->dataRespRep;
+  *g = (void*)ri;
+}
 
- static void
+static void
 BuildLabels(StringArray *sa, size_t nsa, size_t n1, size_t n2, const char *stub)
 {
-	char buf[64];
-	size_t i, n0;
-	if (nsa)
-		sa->resize(nsa);
-	i = n0 = n1;
-	while(n1 < n2) {
-		std::sprintf(buf, "%s%lu", stub, (UL)(++n1 - n0));
-		(*sa)[i++] = buf;
-		}
-	}
+  char buf[64];
+  size_t i, n0;
+  if (nsa)
+    sa->resize(nsa);
+  i = n0 = n1;
+  while(n1 < n2) {
+    std::sprintf(buf, "%s%lu", stub, (UL)(++n1 - n0));
+    (*sa)[i++] = buf;
+  }
+}
 
- static int
+static int
 flist_check(IntList *L, int n, IntArray *iv, const char *what)
 {
-	int nbad, j;
+  int nbad, j;
 
-	nbad = 0;
-	for(ILCIter it = L->begin(), ite = L->end(); it != ite; ++it) {
-		j = *it;
-		if (j < 1 || j > n) {
-			if (!nbad++)
-			 Squawk("%s values must be between 1 and %d", what, n);
-			}
-		else {
-			++(iv->operator[](j-1));
-			}
-		}
-	return nbad;
-	}
+  nbad = 0;
+  for(ILCIter it = L->begin(), ite = L->end(); it != ite; ++it) {
+    j = *it;
+    if (j < 1 || j > n) {
+      if (!nbad++)
+	Squawk("%s values must be between 1 and %d", what, n);
+    }
+    else {
+      ++(iv->operator[](j-1));
+    }
+  }
+  return nbad;
+}
 
- static void
+static void
 flist_check2(size_t n, IntArray *iv, const char *what)
 {
-	int j;
-	size_t i;
+  int j;
+  size_t i;
 
-	for(i = 0; i < n; ) {
-		j = (*iv)[i++];
-		if (j == 0)
-			Squawk("Function %lu missing from mixed %s lists", (UL)i);
-		else if (j > 1)
-			Squawk("Function %lu replicated in mixed %s lists", (UL)i);
-		}
-	}
+  for(i = 0; i < n; ) {
+    j = (*iv)[i++];
+    if (j == 0)
+      Squawk("Function %lu missing from mixed %s lists", (UL)i);
+    else if (j > 1)
+      Squawk("Function %lu replicated in mixed %s lists", (UL)i);
+  }
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 resp_stop(const char *keyname, Values *val, void **g, void *v)
 {
-	size_t k, n;
-	static const char *osc[] = { "log", "none", 0 };
-	Resp_Info *ri = *(Resp_Info**)g;
-	DataResponsesRep *dr = ri->dr;
-	scale_chk(dr->primaryRespFnScaleTypes, dr->primaryRespFnScales,
-		dr->numLeastSqTerms ? "least_squares_term" : "objective_function", osc);
-	scale_chk(dr->nonlinearIneqScaleTypes, dr->nonlinearIneqScales,
-		"nonlinear_inequality", aln_scaletypes);
-	scale_chk(dr->nonlinearEqScaleTypes, dr->nonlinearEqScales,
-		"nonlinear_equality", aln_scaletypes);
-	if ( dr->primaryRespFnWeights.length() > 0 && 
-	     (dr->expStdDeviations.length() > 0 || dr->numExpStdDeviations > 0) ) {
-	  squawk("Specify calibration weights or experimental standard deviations, not both.");
-	}
-	if ((n = dr->responseLabels.size()) > 0) {
-		if (!(k = dr->numResponseFunctions)) {
-			if (!(k = dr->numObjectiveFunctions))
-				k = dr->numLeastSqTerms;
-			k += dr->numNonlinearIneqConstraints + dr->numNonlinearEqConstraints;
-			}
-		if (n != k)
-			squawk("Expected %ld response descriptors but found %ld",
-				(long)k, (long) n);
-		}
-	pDDBInstance->dataResponsesList.push_back(*ri->dr0);
-	delete ri->dr0;
-	delete ri;
-	}
+  size_t k, n;
+  static const char *osc[] = { "log", "none", 0 };
+  Resp_Info *ri = *(Resp_Info**)g;
+  DataResponsesRep *dr = ri->dr;
+  scale_chk(dr->primaryRespFnScaleTypes, dr->primaryRespFnScales,
+	    dr->numLeastSqTerms ? "least_squares_term" : "objective_function", osc);
+  scale_chk(dr->nonlinearIneqScaleTypes, dr->nonlinearIneqScales,
+	    "nonlinear_inequality", aln_scaletypes);
+  scale_chk(dr->nonlinearEqScaleTypes, dr->nonlinearEqScales,
+	    "nonlinear_equality", aln_scaletypes);
+  if ( dr->primaryRespFnWeights.length() > 0 && 
+       (dr->expStdDeviations.length() > 0 || dr->numExpStdDeviations > 0) ) {
+    squawk("Specify calibration weights or experimental standard deviations, not both.");
+  }
+  if ((n = dr->responseLabels.size()) > 0) {
+    if (!(k = dr->numResponseFunctions)) {
+      if (!(k = dr->numObjectiveFunctions))
+	k = dr->numLeastSqTerms;
+      k += dr->numNonlinearIneqConstraints + dr->numNonlinearEqConstraints;
+    }
+    if (n != k)
+      squawk("Expected %ld response descriptors but found %ld",
+	     (long)k, (long) n);
+  }
+  pDDBInstance->dataResponsesList.push_back(*ri->dr0);
+  delete ri->dr0;
+  delete ri;
+}
 
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 check_responses(std::list<DataResponses>* drl)
 {
   // TO DO: move Schk from below?
 }
 
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 make_response_defaults(std::list<DataResponses>* drl)
 {
   IntArray *iv;
@@ -1650,959 +1625,959 @@ make_response_defaults(std::list<DataResponses>* drl)
   std::list<DataResponses>::iterator It = drl->begin(), Ite = drl->end();
   for(; It != Ite; It++) {
 
-	DataResponsesRep *dr = It->dataRespRep;
+    DataResponsesRep *dr = It->dataRespRep;
 
-	for(sc = Str_chk, i = 0; i < Numberof(Str_chk); ++sc, ++i)
-		if ((n1 = dr->*sc->n) && (n = (dr->*sc->sa).size()) > 0
-			&& n != n1 && n != 1)
-				squawk("%s must have length 1 or %lu, not %lu",
-					sc->what, (UL)n1, (UL)n);
-	rl = &dr->responseLabels;
-	nrl = rl->size();
-	no = dr->numObjectiveFunctions;
-	if ((n = dr->numLeastSqTerms)) {
-		nf = n + dr->numNonlinearEqConstraints + dr->numNonlinearIneqConstraints;
-		if (!nrl) {
-			BuildLabels(rl, nf, 0, n, "least_sq_term_");
-			n1 = n + dr->numNonlinearIneqConstraints;
-			BuildLabels(rl, 0, n, n1, "nln_ineq_con_");
-			BuildLabels(rl, 0, n1, nf, "nln_eq_con_");
-			}
-		}
-	else if ((nf = no + dr->numNonlinearEqConstraints + dr->numNonlinearIneqConstraints)) {
-		if (!nrl) {
-			rl->resize(nf);
-			if (no == 1)
-				(*rl)[0] = "obj_fn";
-			else
-				BuildLabels(rl, 0, 0, no, "obj_fn_");
-			n1 = no + dr->numNonlinearIneqConstraints;
-			BuildLabels(rl, 0, no, n1, "nln_ineq_con_");
-			BuildLabels(rl, 0, n1, nf, "nln_eq_con_");
-			}
-		}
-	else if ((nf = dr->numResponseFunctions)) {
-		if (!nrl)
-			BuildLabels(rl, nf, 0, nf, "response_fn_");
-		}
-	for(rdvc = RespVec_chk_Bound, i = 0; i < Numberof(RespVec_chk_Bound); ++rdvc, ++i)
-		if ((n1 = dr->*rdvc->n) && (n = (dr->*rdvc->rv).length()) && n != n1)
-			squawk("%s needs %lu elements, not %lu",
-				rdvc->what, (UL)(dr->*rdvc->n), (UL)n);
-	for(rdvc = RespVec_chk_Scale, i = 0; i < Numberof(RespVec_chk_Scale); ++rdvc, ++i)
-		if ((n1 = dr->*rdvc->n) && (n = (dr->*rdvc->rv).length())
-		 && n != n1 && n != 1)
-			squawk("%s needs %lu elements (or just one), not %lu",
-				rdvc->what, (UL)n1, (UL)n);
-	if (dr->methodSource == "vendor" && dr->fdGradStepSize.length() > 1)
-		squawk("vendor numerical gradients only support a single fd_gradient_step_size");
+    for(sc = Str_chk, i = 0; i < Numberof(Str_chk); ++sc, ++i)
+      if ((n1 = dr->*sc->n) && (n = (dr->*sc->sa).size()) > 0
+	  && n != n1 && n != 1)
+	squawk("%s must have length 1 or %lu, not %lu",
+	       sc->what, (UL)n1, (UL)n);
+    rl = &dr->responseLabels;
+    nrl = rl->size();
+    no = dr->numObjectiveFunctions;
+    if ((n = dr->numLeastSqTerms)) {
+      nf = n + dr->numNonlinearEqConstraints + dr->numNonlinearIneqConstraints;
+      if (!nrl) {
+	BuildLabels(rl, nf, 0, n, "least_sq_term_");
+	n1 = n + dr->numNonlinearIneqConstraints;
+	BuildLabels(rl, 0, n, n1, "nln_ineq_con_");
+	BuildLabels(rl, 0, n1, nf, "nln_eq_con_");
+      }
+    }
+    else if ((nf = no + dr->numNonlinearEqConstraints + dr->numNonlinearIneqConstraints)) {
+      if (!nrl) {
+	rl->resize(nf);
+	if (no == 1)
+	  (*rl)[0] = "obj_fn";
+	else
+	  BuildLabels(rl, 0, 0, no, "obj_fn_");
+	n1 = no + dr->numNonlinearIneqConstraints;
+	BuildLabels(rl, 0, no, n1, "nln_ineq_con_");
+	BuildLabels(rl, 0, n1, nf, "nln_eq_con_");
+      }
+    }
+    else if ((nf = dr->numResponseFunctions)) {
+      if (!nrl)
+	BuildLabels(rl, nf, 0, nf, "response_fn_");
+    }
+    for(rdvc = RespVec_chk_Bound, i = 0; i < Numberof(RespVec_chk_Bound); ++rdvc, ++i)
+      if ((n1 = dr->*rdvc->n) && (n = (dr->*rdvc->rv).length()) && n != n1)
+	squawk("%s needs %lu elements, not %lu",
+	       rdvc->what, (UL)(dr->*rdvc->n), (UL)n);
+    for(rdvc = RespVec_chk_Scale, i = 0; i < Numberof(RespVec_chk_Scale); ++rdvc, ++i)
+      if ((n1 = dr->*rdvc->n) && (n = (dr->*rdvc->rv).length())
+	  && n != n1 && n != 1)
+	squawk("%s needs %lu elements (or just one), not %lu",
+	       rdvc->what, (UL)n1, (UL)n);
+    if (dr->methodSource == "vendor" && dr->fdGradStepSize.length() > 1)
+      squawk("vendor numerical gradients only support a single fd_gradient_step_size");
 
-	ni = (int)nf;
-	if (dr->gradientType == "mixed") {
-		iv = new IntArray;
-		iv->resize(nf);
-		iv->assign(nf, 0);
-		if (!(flist_check(&dr->idAnalyticGrads, ni, iv, "id_analytic_gradients")
-		    + flist_check(&dr->idNumericalGrads, ni, iv, "id_numerical_gradients")))
-			flist_check2(nf, iv, "gradient");
-		delete iv;
-		}
-	if ((n = dr->numNonlinearEqConstraints) > 0
-	 && dr->nonlinearEqTargets.length() == 0) {
-		dr->nonlinearEqTargets.sizeUninitialized(n);
-		dr->nonlinearEqTargets = 0.;
-		}
-	if ((n = dr->numNonlinearIneqConstraints) > 0) {
-		if (dr->nonlinearIneqLowerBnds.length() == 0) {
-			dr->nonlinearIneqLowerBnds.sizeUninitialized(n);
-			dr->nonlinearIneqLowerBnds = -DBL_MAX;
-			}
-		if (dr->nonlinearIneqUpperBnds.length() == 0) {
-			dr->nonlinearIneqUpperBnds.sizeUninitialized(n);
-			dr->nonlinearIneqUpperBnds = 0.;
-			// default is a one-sided inequality <= 0.0
-			}
-		}
-	if (dr->hessianType == "mixed") {
-		iv = new IntArray;
-		iv->resize(nf);
-		iv->assign(nf, 0);
-		if (!(flist_check(&dr->idAnalyticHessians, ni, iv, "id_analytic_hessians")
-		    + flist_check(&dr->idNumericalHessians, ni, iv, "id_numerical_hessians")
-		    + flist_check(&dr->idQuasiHessians, ni, iv, "id_quasi_hessians")))
-			flist_check2(nf, iv, "Hessian");
-		delete iv;
-		}
-	if (nerr)
-		abort_handler(-1);
+    ni = (int)nf;
+    if (dr->gradientType == "mixed") {
+      iv = new IntArray;
+      iv->resize(nf);
+      iv->assign(nf, 0);
+      if (!(flist_check(&dr->idAnalyticGrads, ni, iv, "id_analytic_gradients")
+	    + flist_check(&dr->idNumericalGrads, ni, iv, "id_numerical_gradients")))
+	flist_check2(nf, iv, "gradient");
+      delete iv;
+    }
+    if ((n = dr->numNonlinearEqConstraints) > 0
+	&& dr->nonlinearEqTargets.length() == 0) {
+      dr->nonlinearEqTargets.sizeUninitialized(n);
+      dr->nonlinearEqTargets = 0.;
+    }
+    if ((n = dr->numNonlinearIneqConstraints) > 0) {
+      if (dr->nonlinearIneqLowerBnds.length() == 0) {
+	dr->nonlinearIneqLowerBnds.sizeUninitialized(n);
+	dr->nonlinearIneqLowerBnds = -DBL_MAX;
+      }
+      if (dr->nonlinearIneqUpperBnds.length() == 0) {
+	dr->nonlinearIneqUpperBnds.sizeUninitialized(n);
+	dr->nonlinearIneqUpperBnds = 0.;
+	// default is a one-sided inequality <= 0.0
+      }
+    }
+    if (dr->hessianType == "mixed") {
+      iv = new IntArray;
+      iv->resize(nf);
+      iv->assign(nf, 0);
+      if (!(flist_check(&dr->idAnalyticHessians, ni, iv, "id_analytic_hessians")
+	    + flist_check(&dr->idNumericalHessians, ni, iv, "id_numerical_hessians")
+	    + flist_check(&dr->idQuasiHessians, ni, iv, "id_quasi_hessians")))
+	flist_check2(nf, iv, "Hessian");
+      delete iv;
+    }
+    if (nerr)
+      abort_handler(-1);
   }
 }
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 resp_str(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Resp_Info**)g)->dr->**(String DataResponsesRep::**)v = *val->s;
-	}
+  (*(Resp_Info**)g)->dr->**(String DataResponsesRep::**)v = *val->s;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 resp_strL(const char *keyname, Values *val, void **g, void *v)
 {
-	StringArray *sa = &((*(Resp_Info**)g)->dr->**(StringArray DataResponsesRep::**)v);
-	const char **s = val->s;
-	size_t i, n = val->n;
+  StringArray *sa = &((*(Resp_Info**)g)->dr->**(StringArray DataResponsesRep::**)v);
+  const char **s = val->s;
+  size_t i, n = val->n;
 
-	sa->resize(n);
-	for(i = 0; i < n; i++)
-		(*sa)[i] = s[i];
-	}
+  sa->resize(n);
+  for(i = 0; i < n; i++)
+    (*sa)[i] = s[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 resp_false(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Resp_Info**)g)->dr->**(bool DataResponsesRep::**)v = false;
-	}
+  (*(Resp_Info**)g)->dr->**(bool DataResponsesRep::**)v = false;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 resp_true(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Resp_Info**)g)->dr->**(bool DataResponsesRep::**)v = true;
-	}
+  (*(Resp_Info**)g)->dr->**(bool DataResponsesRep::**)v = true;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 strategy_Real(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(DataStrategyRep**)g)->**(Real DataStrategyRep::**)v = *val->r;
-	}
+  (*(DataStrategyRep**)g)->**(Real DataStrategyRep::**)v = *val->r;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 strategy_RealL(const char *keyname, Values *val, void **g, void *v)
 {
-	Real *r = val->r;
-	RealVector *rdv = &((*(DataStrategyRep**)g)->**(RealVector DataStrategyRep::**)v);
-	size_t i, n = val->n;
+  Real *r = val->r;
+  RealVector *rdv = &((*(DataStrategyRep**)g)->**(RealVector DataStrategyRep::**)v);
+  size_t i, n = val->n;
 
-	rdv->sizeUninitialized(n);
-	for(i = 0; i < n; i++)
-		(*rdv)[i] = r[i];
-	}
+  rdv->sizeUninitialized(n);
+  for(i = 0; i < n; i++)
+    (*rdv)[i] = r[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 strategy_true(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(DataStrategyRep**)g)->**(bool DataStrategyRep::**)v = true;
-	}
+  (*(DataStrategyRep**)g)->**(bool DataStrategyRep::**)v = true;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 strategy_int(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(DataStrategyRep**)g)->**(int DataStrategyRep::**)v = *val->i;
-	}
+  (*(DataStrategyRep**)g)->**(int DataStrategyRep::**)v = *val->i;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 strategy_lit(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(DataStrategyRep**)g)->*((Strategy_mp_lit*)v)->sp = ((Strategy_mp_lit*)v)->lit;
-	}
+  (*(DataStrategyRep**)g)->*((Strategy_mp_lit*)v)->sp = ((Strategy_mp_lit*)v)->lit;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 strategy_start(const char *keyname, Values *val, void **g, void *v)
 {
-	*g = (void*)pDDBInstance->strategySpec.dataStratRep;
-	}
+  *g = (void*)pDDBInstance->strategySpec.dataStratRep;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 strategy_str(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(DataStrategyRep**)g)->**(String DataStrategyRep::**)v = *val->s;
-	}
+  (*(DataStrategyRep**)g)->**(String DataStrategyRep::**)v = *val->s;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 strategy_strL(const char *keyname, Values *val, void **g, void *v)
 {
-	StringArray *sa = &((*(DataStrategyRep**)g)->**(StringArray DataStrategyRep::**)v);
-	const char **s = val->s;
-	size_t i, n = val->n;
+  StringArray *sa = &((*(DataStrategyRep**)g)->**(StringArray DataStrategyRep::**)v);
+  const char **s = val->s;
+  size_t i, n = val->n;
 
-	sa->resize(n);
-	for(i = 0; i < n; i++)
-		(*sa)[i] = s[i];
-	}
+  sa->resize(n);
+  for(i = 0; i < n; i++)
+    (*sa)[i] = s[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 method_tr_final(const char *keyname, Values *val, void **g, void *v)
 {
-	DataMethodRep &data_method = *(*(Meth_Info**)g)->dme;
+  DataMethodRep &data_method = *(*(Meth_Info**)g)->dme;
 
-      // sanity checks on trust region user-defined values
-      if ( data_method.surrBasedLocalTRInitSize <= 0.0 ||
-	   data_method.surrBasedLocalTRInitSize >  1.0 )
-		botch("initial_size must be in (0,1]");
-      if ( data_method.surrBasedLocalTRMinSize <= 0.0 ||
-	   data_method.surrBasedLocalTRMinSize >  1.0 ||
-	   data_method.surrBasedLocalTRMinSize >
-	   data_method.surrBasedLocalTRInitSize )
-		botch("minimum_size must be in (0,1]");
-      if( data_method.surrBasedLocalTRContractTrigger <= 0.0 ||
-	  data_method.surrBasedLocalTRContractTrigger >
-	    data_method.surrBasedLocalTRExpandTrigger        ||
-	  data_method.surrBasedLocalTRExpandTrigger   >  1.0 )
-		botch("expand/contract threshold values must satisfy\n\t"
-			"0 < contract_threshold <= expand_threshold < 1");
-      if ( data_method.surrBasedLocalTRContract == 1.0 )
-		warn("contraction_factor = 1.0 is valid, but should be < 1\n\t"
-			"to assure convergence of the surrrogate_based_opt method");
-      if ( data_method.surrBasedLocalTRContract <= 0.0 ||
-	   data_method.surrBasedLocalTRContract >  1.0 )
-		botch("contraction_factor must be in (0,1]");
-      if (data_method.surrBasedLocalTRExpand < 1.0)
-		botch("expansion_factor must be >= 1");
-    }
+  // sanity checks on trust region user-defined values
+  if ( data_method.surrBasedLocalTRInitSize <= 0.0 ||
+       data_method.surrBasedLocalTRInitSize >  1.0 )
+    botch("initial_size must be in (0,1]");
+  if ( data_method.surrBasedLocalTRMinSize <= 0.0 ||
+       data_method.surrBasedLocalTRMinSize >  1.0 ||
+       data_method.surrBasedLocalTRMinSize >
+       data_method.surrBasedLocalTRInitSize )
+    botch("minimum_size must be in (0,1]");
+  if( data_method.surrBasedLocalTRContractTrigger <= 0.0 ||
+      data_method.surrBasedLocalTRContractTrigger >
+      data_method.surrBasedLocalTRExpandTrigger        ||
+      data_method.surrBasedLocalTRExpandTrigger   >  1.0 )
+    botch("expand/contract threshold values must satisfy\n\t"
+	  "0 < contract_threshold <= expand_threshold < 1");
+  if ( data_method.surrBasedLocalTRContract == 1.0 )
+    warn("contraction_factor = 1.0 is valid, but should be < 1\n\t"
+	 "to assure convergence of the surrrogate_based_opt method");
+  if ( data_method.surrBasedLocalTRContract <= 0.0 ||
+       data_method.surrBasedLocalTRContract >  1.0 )
+    botch("contraction_factor must be in (0,1]");
+  if (data_method.surrBasedLocalTRExpand < 1.0)
+    botch("expansion_factor must be >= 1");
+}
 
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_RealLd(const char *keyname, Values *val, void **g, void *v)
 {
-	Real *r = val->r;
-	RealVector *rv = &((*(Var_Info**)g)->dv->**(RealVector DataVariablesRep::**)v);
-	size_t i, n = val->n;
+  Real *r = val->r;
+  RealVector *rv = &((*(Var_Info**)g)->dv->**(RealVector DataVariablesRep::**)v);
+  size_t i, n = val->n;
 
-	rv->sizeUninitialized(n);
-	for(i = 0; i < n; i++)
-		(*rv)[i] = r[i];
-	}
+  rv->sizeUninitialized(n);
+  for(i = 0; i < n; i++)
+    (*rv)[i] = r[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_RealLb(const char *keyname, Values *val, void **g, void *v)
 {
-	Real b, *r;
-	RealVector *rv;
-	Var_brv *V;
-	size_t i, n;
+  Real b, *r;
+  RealVector *rv;
+  Var_brv *V;
+  size_t i, n;
 
-	V = (Var_brv*)v;
-	rv = &((*(Var_Info**)g)->dv->*V->rv);
-	b = V->b;
-	r = val->r;
-	n = val->n;
-	for(i = 0; i < n; i++)
-		if (r[i] <= b) {
-			squawk("%s values must be > %g", keyname, b);
-			break;
-			}
-	rv->sizeUninitialized(n);
-	for(i = 0; i < n; i++)
-		(*rv)[i] = r[i];
-	}
+  V = (Var_brv*)v;
+  rv = &((*(Var_Info**)g)->dv->*V->rv);
+  b = V->b;
+  r = val->r;
+  n = val->n;
+  for(i = 0; i < n; i++)
+    if (r[i] <= b) {
+      squawk("%s values must be > %g", keyname, b);
+      break;
+    }
+  rv->sizeUninitialized(n);
+  for(i = 0; i < n; i++)
+    (*rv)[i] = r[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_RealUb(const char *keyname, Values *val, void **g, void *v)
 {
-	Real b, *r;
-	RealVector *rv;
-	Var_brv *V;
-	size_t i, n;
+  Real b, *r;
+  RealVector *rv;
+  Var_brv *V;
+  size_t i, n;
 
-	V = (Var_brv*)v;
-	rv = &((*(Var_Info**)g)->dv->*V->rv);
-	b = V->b;
-	r = val->r;
-	n = val->n;
-	for(i = 0; i < n; i++)
-		if (r[i] >= b) {
-			squawk("%s values must be < %g", keyname, b);
-			break;
-			}
-	rv->sizeUninitialized(n);
-	for(i = 0; i < n; i++)
-		(*rv)[i] = r[i];
-	}
+  V = (Var_brv*)v;
+  rv = &((*(Var_Info**)g)->dv->*V->rv);
+  b = V->b;
+  r = val->r;
+  n = val->n;
+  for(i = 0; i < n; i++)
+    if (r[i] >= b) {
+      squawk("%s values must be < %g", keyname, b);
+      break;
+    }
+  rv->sizeUninitialized(n);
+  for(i = 0; i < n; i++)
+    (*rv)[i] = r[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_vrl(const char *keyname, Values *val, void **g, void *v)
 {
-	Var_Info *vi = *(Var_Info**)g;
-	Real *r;
-	RealVector *rv;
-	size_t i, n = val->n;
+  Var_Info *vi = *(Var_Info**)g;
+  Real *r;
+  RealVector *rv;
+  size_t i, n = val->n;
 
-	if (!(rv = new RealVector))
-		botch("new failure in var_vrl");
-	vi->**(RealVector *Var_Info::**)v = rv;
-	rv->sizeUninitialized(n);
-	r = val->r;
-	for(i = 0; i < n; i++)
-		(*rv)[i] = r[i];
-	}
+  if (!(rv = new RealVector))
+    botch("new failure in var_vrl");
+  vi->**(RealVector *Var_Info::**)v = rv;
+  rv->sizeUninitialized(n);
+  r = val->r;
+  for(i = 0; i < n; i++)
+    (*rv)[i] = r[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_intDL(const char *keyname, Values *val, void **g, void *v)
 {
-	IntVector *iv = &((*(Var_Info**)g)->dv->**(IntVector DataVariablesRep::**)v);
-	int *z = val->i;
-	size_t i, n = val->n;
+  IntVector *iv = &((*(Var_Info**)g)->dv->**(IntVector DataVariablesRep::**)v);
+  int *z = val->i;
+  size_t i, n = val->n;
 
-	iv->sizeUninitialized(n);
-	for(i = 0; i < n; i++)
-		(*iv)[i] = z[i];
-	}
+  iv->sizeUninitialized(n);
+  for(i = 0; i < n; i++)
+    (*iv)[i] = z[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_intL(const char *keyname, Values *val, void **g, void *v)
 {
-	IntArray *iv = &((*(Var_Info**)g)->dv->**(IntArray DataVariablesRep::**)v);
-	int *z = val->i;
-	size_t i, n = val->n;
+  IntArray *iv = &((*(Var_Info**)g)->dv->**(IntArray DataVariablesRep::**)v);
+  int *z = val->i;
+  size_t i, n = val->n;
 
-	iv->resize(n);
-	for(i = 0; i < n; i++)
-		(*iv)[i] = z[i];
-	}
+  iv->resize(n);
+  for(i = 0; i < n; i++)
+    (*iv)[i] = z[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_intz(const char *keyname, Values *val, void **g, void *v)
 {
-	int n = *val->i;
+  int n = *val->i;
 #if 0		/* now handled in the .nspec file */
-	if (n <= 0)
-		botch("%s must be positive", keyname);
+  if (n <= 0)
+    botch("%s must be positive", keyname);
 #endif
-	(*(Var_Info**)g)->dv->**(size_t DataVariablesRep::**)v = n;
-	}
+  (*(Var_Info**)g)->dv->**(size_t DataVariablesRep::**)v = n;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_vil(const char *keyname, Values *val, void **g, void *v)
 {
-	Var_Info *vi = *(Var_Info**)g;
-	IntArray *iv;
-	int *z;
-	size_t i, n = val->n;
+  Var_Info *vi = *(Var_Info**)g;
+  IntArray *iv;
+  int *z;
+  size_t i, n = val->n;
 
-	if (!(iv = new IntArray))
-		botch("new failure in var_vil");
-	vi->**(IntArray *Var_Info::**)v = iv;
-	iv->resize(n);
-	z = val->i;
-	for(i = 0; i < n; i++)
-		(*iv)[i] = z[i];
-	}
+  if (!(iv = new IntArray))
+    botch("new failure in var_vil");
+  vi->**(IntArray *Var_Info::**)v = iv;
+  iv->resize(n);
+  z = val->i;
+  for(i = 0; i < n; i++)
+    (*iv)[i] = z[i];
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_type(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Var_Info**)g)->dv->*((Var_mp_type*)v)->sp = ((Var_mp_type*)v)->type;
-	}
+  (*(Var_Info**)g)->dv->*((Var_mp_type*)v)->sp = ((Var_mp_type*)v)->type;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_start(const char *keyname, Values *val, void **g, void *v)
 {
-	Var_Info *vi;
+  Var_Info *vi;
 
-	if (!(vi = new Var_Info))
- Botch:		botch("new failure in var_start");
-	memset(vi, 0, sizeof(Var_Info));
-	if (!(vi->dv0 = new DataVariables))
-		goto Botch;
-	vi->dv = vi->dv0->dataVarsRep;
-	*g = (void*)vi;
-	}
+  if (!(vi = new Var_Info))
+  Botch:		botch("new failure in var_start");
+  memset(vi, 0, sizeof(Var_Info));
+  if (!(vi->dv0 = new DataVariables))
+    goto Botch;
+  vi->dv = vi->dv0->dataVarsRep;
+  *g = (void*)vi;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_true(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Var_Info**)g)->dv->**(bool DataVariablesRep::**)v = true;
-	}
+  (*(Var_Info**)g)->dv->**(bool DataVariablesRep::**)v = true;
+}
 
- static int
+static int
 wronglen(size_t n, RealVector *V, const char *what)
 {
-	size_t n1 = V->length();
-	if (n != n1) {
-		Squawk("Expected %d numbers for %s, but got %d", (int)n, what, (int)n1);
-		return 1;
-		}
-	return 0;
-	}
+  size_t n1 = V->length();
+  if (n != n1) {
+    Squawk("Expected %d numbers for %s, but got %d", (int)n, what, (int)n1);
+    return 1;
+  }
+  return 0;
+}
 
- static int
+static int
 wronglen2(size_t n, IntVector *V, const char *what)
 {
-	size_t n1 = V->length();
-	if (n != n1) {
-		Squawk("Expected %d numbers for %s, but got %d", (int)n, what, (int)n1);
-		return 1;
-		}
-	return 0;
-	}
+  size_t n1 = V->length();
+  if (n != n1) {
+    Squawk("Expected %d numbers for %s, but got %d", (int)n, what, (int)n1);
+    return 1;
+  }
+  return 0;
+}
 
- static void
+static void
 Vcopyup(RealVector *V, RealVector *M, size_t i, size_t n)
 {
-	size_t j;
-	for(j = 0; j < n; ++i, ++j)
-		(*V)[i] = (*M)[j];
-	}
+  size_t j;
+  for(j = 0; j < n; ++i, ++j)
+    (*V)[i] = (*M)[j];
+}
 
- static void
+static void
 Set_rdv(RealVector *V, double d, size_t n)
 {
-	size_t i;
-	V->sizeUninitialized(n);
-	for(i = 0; i < n; ++i)
-		(*V)[i] = d;
-	}
+  size_t i;
+  V->sizeUninitialized(n);
+  for(i = 0; i < n; ++i)
+    (*V)[i] = d;
+}
 
- static void
-Vadj_Normal(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vadj_NormalUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	size_t n;
-	RealVector *B, *M, *Sd;
+  size_t n;
+  RealVector *B, *M, *Sd;
 
-	n = dv->numNormalUncVars;
-	if (wronglen(n, M = &dv->normalUncMeans, "nuv_means")
-	 || wronglen(n, Sd = &dv->normalUncStdDevs, "nuv_std_deviations"))
-		return;
-	B = &dv->normalUncLowerBnds;
-	if (B->length() && wronglen(n, B, "nuv_lower_bounds"))
-		return;
-	B = &dv->normalUncUpperBnds;
-	if (B->length())
-		wronglen(n, B, "nuv_upper_bounds");
-	}
+  n = dv->numNormalUncVars;
+  if (wronglen(n, M = &dv->normalUncMeans, "nuv_means")
+      || wronglen(n, Sd = &dv->normalUncStdDevs, "nuv_std_deviations"))
+    return;
+  B = &dv->normalUncLowerBnds;
+  if (B->length() && wronglen(n, B, "nuv_lower_bounds"))
+    return;
+  B = &dv->normalUncUpperBnds;
+  if (B->length())
+    wronglen(n, B, "nuv_upper_bounds");
+}
 
- static void
-Vbgen_normalUnc(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_NormalUnc(DataVariablesRep *dv, size_t i0)
 {
-	int bds;
-	size_t j, n;
-	Real stdev, w;
-	RealVector *B, *L, *M, *Sd, *U, *V;
+  int bds;
+  size_t j, n;
+  Real stdev, w;
+  RealVector *B, *L, *M, *Sd, *U, *V;
 
-	n  = dv->numNormalUncVars;
-	L = &dv->normalUncLowerBnds;
-	M  = &dv->normalUncMeans;
-	Sd = &dv->normalUncStdDevs;
-	V  = &dv->continuousAleatoryUncVars;
-	U = &dv->normalUncUpperBnds;
-	Vcopyup(V, M, i0, n);
-	B = &dv->continuousAleatoryUncLowerBnds;
-	if (!L->length()) {
-		Set_rdv(L, -DBL_MAX, n);
-		for(j = 0; j < n; ++j)
-			(*B)[i0+j] = (*M)[j] - 3.*(*Sd)[j];
-		bds = 0;
-		}
-	else {
-		Vcopyup(B, L, i0, n);
-		bds = 1;
-		}
-	B = &dv->continuousAleatoryUncUpperBnds;
-	if (!U->length()) {
-		Set_rdv(U, DBL_MAX, n);
-		for(j = 0; j < n; ++j)
-			(*B)[i0+j] = (*M)[j] + 3.*(*Sd)[j];
-		}
-	else {
-		Vcopyup(B, U, i0, n);
-		bds += 2;
-		}
+  n  = dv->numNormalUncVars;
+  L  = &dv->normalUncLowerBnds;
+  M  = &dv->normalUncMeans;
+  Sd = &dv->normalUncStdDevs;
+  V  = &dv->continuousAleatoryUncVars;
+  U  = &dv->normalUncUpperBnds;
+  Vcopyup(V, M, i0, n);
+  B = &dv->continuousAleatoryUncLowerBnds;
+  if (!L->length()) {
+    Set_rdv(L, -DBL_MAX, n);
+    for(j = 0; j < n; ++j)
+      (*B)[i0+j] = (*M)[j] - 3.*(*Sd)[j];
+    bds = 0;
+  }
+  else {
+    Vcopyup(B, L, i0, n);
+    bds = 1;
+  }
+  B = &dv->continuousAleatoryUncUpperBnds;
+  if (!U->length()) {
+    Set_rdv(U, DBL_MAX, n);
+    for(j = 0; j < n; ++j)
+      (*B)[i0+j] = (*M)[j] + 3.*(*Sd)[j];
+  }
+  else {
+    Vcopyup(B, U, i0, n);
+    bds += 2;
+  }
 
-	// now bds is 0, 1, 2, or 3
-	// bds == 0 ==> no bounds given and nothing more to do
+  // now bds is 0, 1, 2, or 3
+  // bds == 0 ==> no bounds given and nothing more to do
 
-	switch(bds) {
-	  case 1: // only lower bounds given
-		for(j = 0; j < n; ++j, ++i0) {
-			if ((*V)[i0] <= (*L)[j])
-				(*V)[i0] = (*L)[j] + 0.5*(*Sd)[j];
-			}
-		break;
+  switch(bds) {
+  case 1: // only lower bounds given
+    for(j = 0; j < n; ++j, ++i0) {
+      if ((*V)[i0] <= (*L)[j])
+	(*V)[i0] = (*L)[j] + 0.5*(*Sd)[j];
+    }
+    break;
 
-	  case 2: // only upper bounds given
-		for(j = 0; j < n; ++j, ++i0) {
-			if ((*V)[i0] >= (*U)[j])
-				(*V)[i0] = (*U)[j] - 0.5*(*Sd)[j];
-			}
-		break;
+  case 2: // only upper bounds given
+    for(j = 0; j < n; ++j, ++i0) {
+      if ((*V)[i0] >= (*U)[j])
+	(*V)[i0] = (*U)[j] - 0.5*(*Sd)[j];
+    }
+    break;
 
-	  case 3: // both lower and upper bounds given
-		for(j = 0; j < n; ++j, ++i0) {
-			if ((*V)[i0] <= (*L)[j]) {
-				w = (*U)[j] - (*L)[j];
-				if ((stdev = (*Sd)[j]) > w)
-					stdev = w;
-				(*V)[i0] = (*L)[j] + 0.5*stdev;
-				}
-			else if ((*V)[i0] >= (*U)[j]) {
-				w = (*U)[j] - (*L)[j];
-				if ((stdev = (*Sd)[j]) > w)
-					stdev = w;
-				(*V)[i0] = (*U)[j] - 0.5*stdev;
-				}
-			}
-	  }
-	}
+  case 3: // both lower and upper bounds given
+    for(j = 0; j < n; ++j, ++i0) {
+      if ((*V)[i0] <= (*L)[j]) {
+	w = (*U)[j] - (*L)[j];
+	if ((stdev = (*Sd)[j]) > w)
+	  stdev = w;
+	(*V)[i0] = (*L)[j] + 0.5*stdev;
+      }
+      else if ((*V)[i0] >= (*U)[j]) {
+	w = (*U)[j] - (*L)[j];
+	if ((stdev = (*Sd)[j]) > w)
+	  stdev = w;
+	(*V)[i0] = (*U)[j] - 0.5*stdev;
+      }
+    }
+  }
+}
 
- static void
-Vadj_Lognormal(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vadj_LognormalUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	size_t n;
-	RealVector *B, *L, *M, *Sd, *Z;
+  size_t n;
+  RealVector *B, *L, *M, *Sd, *Z;
 
-	// lambda/zeta, mean/std_deviation, or mean/error_factor
-	n = dv->numLognormalUncVars;
-	L = &dv->lognormalUncLambdas;
-	M = &dv->lognormalUncMeans;
-	if (L->length()) {
-		if (wronglen(n, L, "lnuv_lambdas"))
-			return;
-		if (wronglen(n, Z = &dv->lognormalUncZetas, "lnuv_zetas"))
-			return;
-	}
-	else if (M->length()) {
-		if (wronglen(n, M, "lnuv_means"))
-			return;
-		Sd = &dv->lognormalUncStdDevs;
-		if (Sd->length() && wronglen(n, Sd, "lnuv_std_deviations"))
-			return;
-		}
-	else if (wronglen(n, &dv->lognormalUncErrFacts, "lnuv_error_factors"))
-		return;
+  // lambda/zeta, mean/std_deviation, or mean/error_factor
+  n = dv->numLognormalUncVars;
+  L = &dv->lognormalUncLambdas;
+  M = &dv->lognormalUncMeans;
+  if (L->length()) {
+    if (wronglen(n, L, "lnuv_lambdas"))
+      return;
+    if (wronglen(n, Z = &dv->lognormalUncZetas, "lnuv_zetas"))
+      return;
+  }
+  else if (M->length()) {
+    if (wronglen(n, M, "lnuv_means"))
+      return;
+    Sd = &dv->lognormalUncStdDevs;
+    if (Sd->length() && wronglen(n, Sd, "lnuv_std_deviations"))
+      return;
+  }
+  else if (wronglen(n, &dv->lognormalUncErrFacts, "lnuv_error_factors"))
+    return;
 
-	// lower bounds
-	B = &dv->lognormalUncLowerBnds;
-	if (B->length() && wronglen(n, B, "lnuv_lower_bounds"))
-		return;
+  // lower bounds
+  B = &dv->lognormalUncLowerBnds;
+  if (B->length() && wronglen(n, B, "lnuv_lower_bounds"))
+    return;
 
-	// upper bounds
-	B = &dv->lognormalUncUpperBnds;
-	if (B->length())
-		wronglen(n, B, "lnuv_upper_bounds");
-	}
+  // upper bounds
+  B = &dv->lognormalUncUpperBnds;
+  if (B->length())
+    wronglen(n, B, "lnuv_upper_bounds");
+}
 
- static void
-Vbgen_lognormalUnc(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_LognormalUnc(DataVariablesRep *dv, size_t i0)
 {
-	size_t i, j, n, num_Sd, num_L;
-	Real mean, stdev, t;
-	RealVector *B, *Ef, *Lam, *L, *M, *Sd, *U, *V, *Z;
+  size_t i, j, n, num_Sd, num_L;
+  Real mean, stdev, t;
+  RealVector *B, *Ef, *Lam, *L, *M, *Sd, *U, *V, *Z;
 
-	// lambda/zeta, mean/std_deviation, or mean/error_factor
-	n = dv->numLognormalUncVars;
-	Lam = &dv->lognormalUncLambdas;
-	M = &dv->lognormalUncMeans;
-	V = &dv->continuousAleatoryUncVars;
-	num_Sd = 0;
-	Sd = &dv->lognormalUncStdDevs;
-	if (!(num_L = Lam->length()) && M->length()) {
-		num_Sd = Sd->length();
-		Vcopyup(V, M, i0, n);
-		}
+  // lambda/zeta, mean/std_deviation, or mean/error_factor
+  n = dv->numLognormalUncVars;
+  Lam = &dv->lognormalUncLambdas;
+  M = &dv->lognormalUncMeans;
+  V = &dv->continuousAleatoryUncVars;
+  num_Sd = 0;
+  Sd = &dv->lognormalUncStdDevs;
+  if (!(num_L = Lam->length()) && M->length()) {
+    num_Sd = Sd->length();
+    Vcopyup(V, M, i0, n);
+  }
 
-	// lower bounds
-	L = &dv->lognormalUncLowerBnds;
-	if (!L->length())
-		L->size(n); // sets L to all zeros
-	Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
+  // lower bounds
+  L = &dv->lognormalUncLowerBnds;
+  if (!L->length())
+    L->size(n); // sets L to all zeros
+  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
 
-	// upper bounds
-	U = &dv->lognormalUncUpperBnds;
-	B = &dv->continuousAleatoryUncUpperBnds;
-	Ef = &dv->lognormalUncErrFacts;
-	Z = &dv->lognormalUncZetas;
-	if (!U->length()) {
-		Set_rdv(U, DBL_MAX, n);
-		if (num_L) {
-			for(i = i0, j = 0; j < n; ++i, ++j) {
-				Pecos::moments_from_lognormal_params((*Lam)[j], (*Z)[j], mean, stdev);
-				(*B)[i] = mean + 3.*stdev;
-				(*V)[i] = mean;
-				}
-			}
-		else if (num_Sd)
-			for(i = i0, j = 0; j < n; ++i, ++j) {
-				(*V)[i] = mean = (*M)[j];
-				(*B)[i] = mean + 3.*(*Sd)[j];
-				}
-		else {
-			for(i = i0, j = 0; j < n; ++i, ++j) {
-				(*V)[i] = mean = (*M)[j];
-				Pecos::lognormal_std_deviation_from_err_factor(mean, (*Ef)[i], stdev);
-				(*B)[i] = mean + 3.*stdev;
-				}
-			}
-		}
-	else {
-		Vcopyup(B, U, i0, n);
-		for(i = i0, j = 0; j < n; ++i, ++j) {
-			if (num_L)
-				Pecos::moments_from_lognormal_params((*Lam)[j], (*Z)[j], mean, stdev);
-			else {
-				mean = (*M)[j];
-				if (num_Sd)
-					stdev = (*Sd)[j];
-				else
-					Pecos::lognormal_std_deviation_from_err_factor(mean,
-						(*Ef)[j], stdev);
-				}
-			if (mean <= (*L)[j]) {
-				mean = (*L)[j];
-				if (stdev > (t = (*U)[j] - mean))
-					stdev = t;
-				mean += 0.5 * stdev;
-				}
-			else if (mean >= (*U)[j]) {
-				mean= (*U)[j];
-				if (stdev > (t = mean - (*L)[j]))
-					stdev = t;
-				mean -= 0.5 * stdev;
-				}
-			(*V)[i] = mean;
-			}
-		}
-	}
+  // upper bounds
+  U = &dv->lognormalUncUpperBnds;
+  B = &dv->continuousAleatoryUncUpperBnds;
+  Ef = &dv->lognormalUncErrFacts;
+  Z = &dv->lognormalUncZetas;
+  if (!U->length()) {
+    Set_rdv(U, DBL_MAX, n);
+    if (num_L) {
+      for(i = i0, j = 0; j < n; ++i, ++j) {
+	Pecos::moments_from_lognormal_params((*Lam)[j], (*Z)[j], mean, stdev);
+	(*B)[i] = mean + 3.*stdev;
+	(*V)[i] = mean;
+      }
+    }
+    else if (num_Sd)
+      for(i = i0, j = 0; j < n; ++i, ++j) {
+	(*V)[i] = mean = (*M)[j];
+	(*B)[i] = mean + 3.*(*Sd)[j];
+      }
+    else {
+      for(i = i0, j = 0; j < n; ++i, ++j) {
+	(*V)[i] = mean = (*M)[j];
+	Pecos::lognormal_std_deviation_from_err_factor(mean, (*Ef)[i], stdev);
+	(*B)[i] = mean + 3.*stdev;
+      }
+    }
+  }
+  else {
+    Vcopyup(B, U, i0, n);
+    for(i = i0, j = 0; j < n; ++i, ++j) {
+      if (num_L)
+	Pecos::moments_from_lognormal_params((*Lam)[j], (*Z)[j], mean, stdev);
+      else {
+	mean = (*M)[j];
+	if (num_Sd)
+	  stdev = (*Sd)[j];
+	else
+	  Pecos::lognormal_std_deviation_from_err_factor(mean,
+							 (*Ef)[j], stdev);
+      }
+      if (mean <= (*L)[j]) {
+	mean = (*L)[j];
+	if (stdev > (t = (*U)[j] - mean))
+	  stdev = t;
+	mean += 0.5 * stdev;
+      }
+      else if (mean >= (*U)[j]) {
+	mean= (*U)[j];
+	if (stdev > (t = mean - (*L)[j]))
+	  stdev = t;
+	mean -= 0.5 * stdev;
+      }
+      (*V)[i] = mean;
+    }
+  }
+}
 
- static void
-Vadj_Uniform(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vadj_UniformUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	size_t n;
-	RealVector *L, *U;
+  size_t n;
+  RealVector *L, *U;
 
-	n = dv->numUniformUncVars;
-	L = &dv->uniformUncLowerBnds;
-	U = &dv->uniformUncUpperBnds;
-	if (wronglen(n, L, "uuv_lower_bounds"))
-		return;
-	wronglen(n, U, "uuv_upper_bounds");
-	}
+  n = dv->numUniformUncVars;
+  L = &dv->uniformUncLowerBnds;
+  U = &dv->uniformUncUpperBnds;
+  if (wronglen(n, L, "uuv_lower_bounds"))
+    return;
+  wronglen(n, U, "uuv_upper_bounds");
+}
 
- static void
-Vbgen_uniformUnc(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_UniformUnc(DataVariablesRep *dv, size_t i0)
 {
-	size_t i, j, n;
-	Real stdev;
-	RealVector *L, *U, *V;
+  size_t i, j, n;
+  Real stdev;
+  RealVector *L, *U, *V;
 
-	n = dv->numUniformUncVars;
-	L = &dv->uniformUncLowerBnds;
-	U = &dv->uniformUncUpperBnds;
-	Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
-	Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, i0, n);
-	V = &dv->continuousAleatoryUncVars;
-	for(i = i0, j = 0; j < n; ++i, ++j)
-		Pecos::moments_from_uniform_params((*L)[j], (*U)[j],
-						   (*V)[i], stdev);
-	}
+  n = dv->numUniformUncVars;
+  L = &dv->uniformUncLowerBnds;
+  U = &dv->uniformUncUpperBnds;
+  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
+  Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, i0, n);
+  V = &dv->continuousAleatoryUncVars;
+  for(i = i0, j = 0; j < n; ++i, ++j)
+    Pecos::moments_from_uniform_params((*L)[j], (*U)[j],
+				       (*V)[i], stdev);
+}
 
- static void
-Vadj_Loguniform(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vadj_LoguniformUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	size_t j, n;
-	Real Lj, Uj;
-	RealVector *L, *U;
+  size_t j, n;
+  Real Lj, Uj;
+  RealVector *L, *U;
 
-	n = dv->numLoguniformUncVars;
-	L = &dv->loguniformUncLowerBnds;
-	U = &dv->loguniformUncUpperBnds;
-	if (wronglen(n, L, "luuv_lower_bounds")
-	 || wronglen(n, U, "luuv_upper_bounds"))
-		return;
-	for(j = 0; j < n; ++j) {
-		Lj = (*L)[j];
-		Uj = (*U)[j];
-		if (Lj <= 0. || Uj <= 0.) {
-			Squawk("loguniform bounds must be positive");
-			return;
-			}
-		if (Lj >= DBL_MAX || Uj >= DBL_MAX) {
-			Squawk("loguniform bounds must be finite");
-			return;
-			}
-		if (Lj > Uj) {
-			Squawk("loguniform lower bound greater than upper bound");
-			return;
-			}
-		}
-	}
+  n = dv->numLoguniformUncVars;
+  L = &dv->loguniformUncLowerBnds;
+  U = &dv->loguniformUncUpperBnds;
+  if (wronglen(n, L, "luuv_lower_bounds")
+      || wronglen(n, U, "luuv_upper_bounds"))
+    return;
+  for(j = 0; j < n; ++j) {
+    Lj = (*L)[j];
+    Uj = (*U)[j];
+    if (Lj <= 0. || Uj <= 0.) {
+      Squawk("loguniform bounds must be positive");
+      return;
+    }
+    if (Lj >= DBL_MAX || Uj >= DBL_MAX) {
+      Squawk("loguniform bounds must be finite");
+      return;
+    }
+    if (Lj > Uj) {
+      Squawk("loguniform lower bound greater than upper bound");
+      return;
+    }
+  }
+}
 
- static void
-Vbgen_loguniformUnc(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_LoguniformUnc(DataVariablesRep *dv, size_t i0)
 {
-	size_t i, j, n;
-	Real stdev;
-	RealVector *L, *U, *V;
+  size_t i, j, n;
+  Real stdev;
+  RealVector *L, *U, *V;
 
-	n = dv->numLoguniformUncVars;
-	L = &dv->loguniformUncLowerBnds;
-	U = &dv->loguniformUncUpperBnds;
-	Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
-	Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, i0, n);
-	V = &dv->continuousAleatoryUncVars;
-	for(i = i0, j = 0; j < n; ++i, ++j)
-		Pecos::moments_from_loguniform_params((*L)[j], (*U)[j], (*V)[i],
-						      stdev);
-	}
+  n = dv->numLoguniformUncVars;
+  L = &dv->loguniformUncLowerBnds;
+  U = &dv->loguniformUncUpperBnds;
+  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
+  Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, i0, n);
+  V = &dv->continuousAleatoryUncVars;
+  for(i = i0, j = 0; j < n; ++i, ++j)
+    Pecos::moments_from_loguniform_params((*L)[j], (*U)[j], (*V)[i],
+					  stdev);
+}
 
- static void
-Vadj_Triangular(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vadj_TriangularUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	size_t j, n;
-	Real Lj, Mj, Uj;
-	RealVector *L, *M, *U;
+  size_t j, n;
+  Real Lj, Mj, Uj;
+  RealVector *L, *M, *U;
 
-	n = dv->numTriangularUncVars;
-	L = &dv->triangularUncLowerBnds;
-	M = &dv->triangularUncModes;
-	U = &dv->triangularUncUpperBnds;
-	if (wronglen(n, L, "tuv_lower_bounds")
-	 || wronglen(n, M, "tuv_modes")
-	 || wronglen(n, U, "tuv_upper_bounds"))
-		return;
-	for(j = 0; j < n; ++j) {
-		Lj = (*L)[j];
-		Mj = (*M)[j];
-		Uj = (*U)[j];
-		if (Lj > Mj || Mj > Uj) {
-			Squawk("triangular uncertain variables must have\n\t"
-				"tuv_lower_bounds <= tuv_modes <= tuv_upper_bounds");
-			return;
-			}
-		}
-	}
+  n = dv->numTriangularUncVars;
+  L = &dv->triangularUncLowerBnds;
+  M = &dv->triangularUncModes;
+  U = &dv->triangularUncUpperBnds;
+  if (wronglen(n, L, "tuv_lower_bounds")
+      || wronglen(n, M, "tuv_modes")
+      || wronglen(n, U, "tuv_upper_bounds"))
+    return;
+  for(j = 0; j < n; ++j) {
+    Lj = (*L)[j];
+    Mj = (*M)[j];
+    Uj = (*U)[j];
+    if (Lj > Mj || Mj > Uj) {
+      Squawk("triangular uncertain variables must have\n\t"
+	     "tuv_lower_bounds <= tuv_modes <= tuv_upper_bounds");
+      return;
+    }
+  }
+}
 
- static void
-Vbgen_triangularUnc(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_TriangularUnc(DataVariablesRep *dv, size_t i0)
 {
-	size_t i, j, n;
-	Real stdev;
-	RealVector *L, *M, *U, *V;
+  size_t i, j, n;
+  Real stdev;
+  RealVector *L, *M, *U, *V;
 
-	n = dv->numTriangularUncVars;
-	L = &dv->triangularUncLowerBnds;
-	M = &dv->triangularUncModes;
-	U = &dv->triangularUncUpperBnds;
-	Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
-	Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, i0, n);
-	V = &dv->continuousAleatoryUncVars;
-	for(i = i0, j = 0; j < n; ++i, ++j)
-		Pecos::moments_from_triangular_params((*L)[j], (*U)[j], (*M)[j],
-						      (*V)[i], stdev);
-	}
+  n = dv->numTriangularUncVars;
+  L = &dv->triangularUncLowerBnds;
+  M = &dv->triangularUncModes;
+  U = &dv->triangularUncUpperBnds;
+  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
+  Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, i0, n);
+  V = &dv->continuousAleatoryUncVars;
+  for(i = i0, j = 0; j < n; ++i, ++j)
+    Pecos::moments_from_triangular_params((*L)[j], (*U)[j], (*M)[j],
+					  (*V)[i], stdev);
+}
 
- static void
-Vadj_Exponential(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vadj_ExponentialUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	size_t n;
-	RealVector *B;
+  size_t n;
+  RealVector *B;
 
-	n = dv->numExponentialUncVars;
-	B = &dv->exponentialUncBetas;
-	if (wronglen(n, B, "euv_betas"))
-		return;
-	}
+  n = dv->numExponentialUncVars;
+  B = &dv->exponentialUncBetas;
+  if (wronglen(n, B, "euv_betas"))
+    return;
+}
 
- static void
-Vbgen_Exponential(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_ExponentialUnc(DataVariablesRep *dv, size_t i0)
 {
-	size_t i, j, n;
-	Real mean, stdev;
-	RealVector *B, *L, *U, *V;
+  size_t i, j, n;
+  Real mean, stdev;
+  RealVector *B, *L, *U, *V;
 
-	n = dv->numExponentialUncVars;
-	B = &dv->exponentialUncBetas;
-	L = &dv->continuousAleatoryUncLowerBnds;
-	U = &dv->continuousAleatoryUncUpperBnds;
-	V = &dv->continuousAleatoryUncVars;
-	for(i = i0, j = 0; j < n; ++i, ++j) {
-		Pecos::moments_from_exponential_params((*B)[j], mean, stdev);
-		(*L)[i] = 0.;
-		(*U)[i] = mean + 3.*stdev;
-		(*V)[i] = mean;
-		}
-	}
+  n = dv->numExponentialUncVars;
+  B = &dv->exponentialUncBetas;
+  L = &dv->continuousAleatoryUncLowerBnds;
+  U = &dv->continuousAleatoryUncUpperBnds;
+  V = &dv->continuousAleatoryUncVars;
+  for(i = i0, j = 0; j < n; ++i, ++j) {
+    Pecos::moments_from_exponential_params((*B)[j], mean, stdev);
+    (*L)[i] = 0.;
+    (*U)[i] = mean + 3.*stdev;
+    (*V)[i] = mean;
+  }
+}
 
- static void
-Vadj_Beta(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vadj_BetaUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	size_t n;
-	RealVector *A, *B, *L, *U;
+  size_t n;
+  RealVector *A, *B, *L, *U;
 
-	n = dv->numBetaUncVars;
-	A = &dv->betaUncAlphas;
-	B = &dv->betaUncBetas;
-	L = &dv->betaUncLowerBnds;
-	U = &dv->betaUncUpperBnds;
-	if (wronglen(n, A, "buv_alphas")
-	 || wronglen(n, B, "buv_betas")
-	 || wronglen(n, L, "buv_lower_bounds")
-	 || wronglen(n, U, "buv_upper_bounds"))
-		return;
-	}
+  n = dv->numBetaUncVars;
+  A = &dv->betaUncAlphas;
+  B = &dv->betaUncBetas;
+  L = &dv->betaUncLowerBnds;
+  U = &dv->betaUncUpperBnds;
+  if (wronglen(n, A, "buv_alphas")
+      || wronglen(n, B, "buv_betas")
+      || wronglen(n, L, "buv_lower_bounds")
+      || wronglen(n, U, "buv_upper_bounds"))
+    return;
+}
 
- static void
-Vbgen_betaUnc(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_BetaUnc(DataVariablesRep *dv, size_t i0)
 {
-	size_t i, j, n;
-	Real stdev;
-	RealVector *A, *B, *L, *U, *V;
+  size_t i, j, n;
+  Real stdev;
+  RealVector *A, *B, *L, *U, *V;
 
-	n = dv->numBetaUncVars;
-	A = &dv->betaUncAlphas;
-	B = &dv->betaUncBetas;
-	L = &dv->betaUncLowerBnds;
-	U = &dv->betaUncUpperBnds;
-	V = &dv->continuousAleatoryUncVars;
-	Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
-	Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, i0, n);
-	for(i = i0, j = 0; j < n; ++i, ++j)
-		Pecos::moments_from_beta_params((*L)[j], (*U)[j], (*A)[j],
-						(*B)[j], (*V)[i], stdev);
-	}
+  n = dv->numBetaUncVars;
+  A = &dv->betaUncAlphas;
+  B = &dv->betaUncBetas;
+  L = &dv->betaUncLowerBnds;
+  U = &dv->betaUncUpperBnds;
+  V = &dv->continuousAleatoryUncVars;
+  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
+  Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, i0, n);
+  for(i = i0, j = 0; j < n; ++i, ++j)
+    Pecos::moments_from_beta_params((*L)[j], (*U)[j], (*A)[j],
+				    (*B)[j], (*V)[i], stdev);
+}
 
- static void
-Vadj_Gamma(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vadj_GammaUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	size_t n;
-	RealVector *A, *B;
+  size_t n;
+  RealVector *A, *B;
 
-	n = dv->numGammaUncVars;
-	A = &dv->gammaUncAlphas;
-	B = &dv->gammaUncBetas;
-	if (wronglen(n, A, "gauv_alphas")
-	 || wronglen(n, B, "gauv_betas"))
-		return;
-	}
+  n = dv->numGammaUncVars;
+  A = &dv->gammaUncAlphas;
+  B = &dv->gammaUncBetas;
+  if (wronglen(n, A, "gauv_alphas")
+      || wronglen(n, B, "gauv_betas"))
+    return;
+}
 
- static void
-Vbgen_Gamma(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_GammaUnc(DataVariablesRep *dv, size_t i0)
 {
-	size_t i, j, n;
-	Real mean, stdev;
-	RealVector *A, *B, *L, *U, *V;
+  size_t i, j, n;
+  Real mean, stdev;
+  RealVector *A, *B, *L, *U, *V;
 
-	n = dv->numGammaUncVars;
-	A = &dv->gammaUncAlphas;
-	B = &dv->gammaUncBetas;
-	L = &dv->continuousAleatoryUncLowerBnds;
-	U = &dv->continuousAleatoryUncUpperBnds;
-	V = &dv->continuousAleatoryUncVars;
-	for(i = i0, j = 0; j < n; ++i, ++j) {
-		Pecos::moments_from_gamma_params((*A)[j], (*B)[j], mean, stdev);
-		(*L)[i] = 0.;
-		(*U)[i] = mean + 3.*stdev;
-		(*V)[i] = mean;
-		}
-	}
+  n = dv->numGammaUncVars;
+  A = &dv->gammaUncAlphas;
+  B = &dv->gammaUncBetas;
+  L = &dv->continuousAleatoryUncLowerBnds;
+  U = &dv->continuousAleatoryUncUpperBnds;
+  V = &dv->continuousAleatoryUncVars;
+  for(i = i0, j = 0; j < n; ++i, ++j) {
+    Pecos::moments_from_gamma_params((*A)[j], (*B)[j], mean, stdev);
+    (*L)[i] = 0.;
+    (*U)[i] = mean + 3.*stdev;
+    (*V)[i] = mean;
+  }
+}
 
- static void
-Vadj_Gumbel(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vadj_GumbelUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	size_t n;
-	RealVector *A, *B;
+  size_t n;
+  RealVector *A, *B;
 
-	n = dv->numGumbelUncVars;
-	A = &dv->gumbelUncAlphas;
-	B = &dv->gumbelUncBetas;
-	if (wronglen(n, A, "guuv_alphas")
-	 || wronglen(n, B, "guuv_betas"))
-		return;
-	}
+  n = dv->numGumbelUncVars;
+  A = &dv->gumbelUncAlphas;
+  B = &dv->gumbelUncBetas;
+  if (wronglen(n, A, "guuv_alphas")
+      || wronglen(n, B, "guuv_betas"))
+    return;
+}
 
- static void
-Vbgen_Gumbel(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_GumbelUnc(DataVariablesRep *dv, size_t i0)
 {
-	size_t i, j, n;
-	Real mean, stdev;
-	RealVector *A, *B, *L, *U, *V;
+  size_t i, j, n;
+  Real mean, stdev;
+  RealVector *A, *B, *L, *U, *V;
 
-	n = dv->numGumbelUncVars;
-	A = &dv->gumbelUncAlphas;
-	B = &dv->gumbelUncBetas;
-	L = &dv->continuousAleatoryUncLowerBnds;
-	U = &dv->continuousAleatoryUncUpperBnds;
-	V = &dv->continuousAleatoryUncVars;
-	for(i = i0, j = 0; j < n; ++i, ++j) {
-		Pecos::moments_from_gumbel_params((*A)[j], (*B)[j],
-						  mean, stdev);
-		(*L)[i] = mean - 3.*stdev;
-		(*U)[i] = mean + 3.*stdev;
-		(*V)[i] = mean;
-		}
-	}
+  n = dv->numGumbelUncVars;
+  A = &dv->gumbelUncAlphas;
+  B = &dv->gumbelUncBetas;
+  L = &dv->continuousAleatoryUncLowerBnds;
+  U = &dv->continuousAleatoryUncUpperBnds;
+  V = &dv->continuousAleatoryUncVars;
+  for(i = i0, j = 0; j < n; ++i, ++j) {
+    Pecos::moments_from_gumbel_params((*A)[j], (*B)[j],
+				      mean, stdev);
+    (*L)[i] = mean - 3.*stdev;
+    (*U)[i] = mean + 3.*stdev;
+    (*V)[i] = mean;
+  }
+}
 
- static void
-Vadj_Frechet(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vadj_FrechetUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	size_t n;
-	RealVector *A, *B;
+  size_t n;
+  RealVector *A, *B;
 
-	n = dv->numFrechetUncVars;
-	A = &dv->frechetUncAlphas;
-	B = &dv->frechetUncBetas;
-	if (wronglen(n, A, "fuv_alphas")
-	 || wronglen(n, B, "fuv_betas"))
-		return;
-	}
+  n = dv->numFrechetUncVars;
+  A = &dv->frechetUncAlphas;
+  B = &dv->frechetUncBetas;
+  if (wronglen(n, A, "fuv_alphas")
+      || wronglen(n, B, "fuv_betas"))
+    return;
+}
 
- static void
-Vbgen_Frechet(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_FrechetUnc(DataVariablesRep *dv, size_t i0)
 {
-	size_t i, j, n;
-	Real mean, stdev;
-	RealVector *A, *B, *L, *U, *V;
+  size_t i, j, n;
+  Real mean, stdev;
+  RealVector *A, *B, *L, *U, *V;
 
-	n = dv->numFrechetUncVars;
-	A = &dv->frechetUncAlphas;
-	B = &dv->frechetUncBetas;
-	L = &dv->continuousAleatoryUncLowerBnds;
-	U = &dv->continuousAleatoryUncUpperBnds;
-	V = &dv->continuousAleatoryUncVars;
-	for(i = i0, j = 0; j < n; ++i, ++j) {
-		Pecos::moments_from_frechet_params((*A)[j], (*B)[j],
-						   mean, stdev);
-		(*L)[i] = 0.;
-		(*U)[i] = mean + 3.*stdev;
-		(*V)[i] = mean;
-		}
-	}
+  n = dv->numFrechetUncVars;
+  A = &dv->frechetUncAlphas;
+  B = &dv->frechetUncBetas;
+  L = &dv->continuousAleatoryUncLowerBnds;
+  U = &dv->continuousAleatoryUncUpperBnds;
+  V = &dv->continuousAleatoryUncVars;
+  for(i = i0, j = 0; j < n; ++i, ++j) {
+    Pecos::moments_from_frechet_params((*A)[j], (*B)[j],
+				       mean, stdev);
+    (*L)[i] = 0.;
+    (*U)[i] = mean + 3.*stdev;
+    (*V)[i] = mean;
+  }
+}
 
- static void
-Vadj_Weibull(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vadj_WeibullUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	size_t n;
-	RealVector *A, *B;
+  size_t n;
+  RealVector *A, *B;
 
-	n = dv->numWeibullUncVars;
-	A = &dv->weibullUncAlphas;
-	B = &dv->weibullUncBetas;
-	if (wronglen(n, A, "wuv_alphas")
-	 || wronglen(n, B, "wuv_betas"))
-		return;
-	}
+  n = dv->numWeibullUncVars;
+  A = &dv->weibullUncAlphas;
+  B = &dv->weibullUncBetas;
+  if (wronglen(n, A, "wuv_alphas")
+      || wronglen(n, B, "wuv_betas"))
+    return;
+}
 
- static void
-Vbgen_Weibull(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_WeibullUnc(DataVariablesRep *dv, size_t i0)
 {
-	size_t i, j, n;
-	Real mean, stdev;
-	RealVector *A, *B, *L, *U, *V;
+  size_t i, j, n;
+  Real mean, stdev;
+  RealVector *A, *B, *L, *U, *V;
 
-	n = dv->numWeibullUncVars;
-	A = &dv->weibullUncAlphas;
-	B = &dv->weibullUncBetas;
-	L = &dv->continuousAleatoryUncLowerBnds;
-	U = &dv->continuousAleatoryUncUpperBnds;
-	V = &dv->continuousAleatoryUncVars;
-	for(i = i0, j = 0; j < n; ++i, ++j) {
-		Pecos::moments_from_weibull_params((*A)[j], (*B)[j],
-						   mean, stdev);
-		(*L)[i] = 0.;
-		(*U)[i] = mean + 3.*stdev;
-		(*V)[i] = mean;
-		}
-	}
+  n = dv->numWeibullUncVars;
+  A = &dv->weibullUncAlphas;
+  B = &dv->weibullUncBetas;
+  L = &dv->continuousAleatoryUncLowerBnds;
+  U = &dv->continuousAleatoryUncUpperBnds;
+  V = &dv->continuousAleatoryUncVars;
+  for(i = i0, j = 0; j < n; ++i, ++j) {
+    Pecos::moments_from_weibull_params((*A)[j], (*B)[j],
+				       mean, stdev);
+    (*L)[i] = 0.;
+    (*U)[i] = mean + 3.*stdev;
+    (*V)[i] = mean;
+  }
+}
 
- static void
-Vadj_HistogramBin(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vadj_HistogramBinUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
   IntArray *nbp;
   RealVector *ba, *bo, *bc, *bpi;
@@ -2688,8 +2663,30 @@ Vadj_HistogramBin(DataVariablesRep *dv, size_t i0, Var_Info *vi)
   }
 }
 
- static void
-Vadj_Poisson(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vbgen_HistogramBinUnc(DataVariablesRep *dv, size_t i0)
+{
+  RealVector *L, *U, *V, *r;
+  RealVectorArray *A;
+  size_t i, m;
+  Real mean, stdev;
+
+  L = &dv->continuousAleatoryUncLowerBnds;
+  U = &dv->continuousAleatoryUncUpperBnds;
+  V = &dv->continuousAleatoryUncVars;
+  A = &dv->histogramUncBinPairs;
+  if ((m = A->size())) {
+    for(i = 0; i < m; i++) {
+      r = &((*A)[i]);
+      (*L)[i0] = (*r)[0];
+      (*U)[i0] = (*r)[r->length() - 2];
+      Pecos::moments_from_histogram_bin_params(*r, (*V)[i0++], stdev);
+    }
+  }
+}
+
+static void
+Vadj_PoissonUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
   size_t n;
   RealVector *A;
@@ -2700,8 +2697,30 @@ Vadj_Poisson(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
- static void
-Vadj_Binomial(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vbgen_PoissonUnc(DataVariablesRep *dv, size_t i0)
+{
+  IntVector *L, *U, *V;
+  Real mean, std_dev;
+  RealVector *Lam;
+  size_t i, n;
+
+  L = &dv->discreteIntAleatoryUncLowerBnds;
+  U = &dv->discreteIntAleatoryUncUpperBnds;
+  V = &dv->discreteIntAleatoryUncVars;
+  Lam = &dv->poissonUncLambdas;
+  n = dv->numPoissonUncVars;
+
+  for(i = 0; i < n; ++i, ++i0) {
+    Pecos::moments_from_poisson_params((*Lam)[i], mean, std_dev);
+    (*L)[i0] = 0;
+    (*U)[i0] = (int)std::ceil(mean + 3.*std_dev);
+    (*V)[i0] = (int)mean;
+  }
+}
+
+static void
+Vadj_BinomialUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
   size_t n;
   RealVector *A;
@@ -2715,8 +2734,31 @@ Vadj_Binomial(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
- static void
-Vadj_NegBinomial(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vbgen_BinomialUnc(DataVariablesRep *dv, size_t i0)
+{
+  IntVector *L, *NT, *U, *V;
+  Real mean, std_dev;
+  RealVector *Pr;
+  size_t i, n;
+
+  L = &dv->discreteIntAleatoryUncLowerBnds;
+  U = &dv->discreteIntAleatoryUncUpperBnds;
+  V = &dv->discreteIntAleatoryUncVars;
+  NT = &dv->binomialUncNumTrials;
+  Pr = &dv->binomialUncProbPerTrial;
+  n = dv->numBinomialUncVars;
+
+  for(i = 0; i < n; ++i, ++i0) {
+    (*L)[i0] = 0;
+    Pecos::moments_from_binomial_params((*Pr)[i], (*NT)[i], mean, std_dev);
+    (*V)[i0] = (int)mean;
+    (*U)[i0] = (*NT)[i];
+  }
+}
+
+static void
+Vadj_NegBinomialUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
   size_t n;
   RealVector *A;
@@ -2730,8 +2772,31 @@ Vadj_NegBinomial(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
- static void
-Vadj_Geometric(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vbgen_NegBinomialUnc(DataVariablesRep *dv, size_t i0)
+{
+  IntVector *L, *NT, *U, *V;
+  Real mean, std_dev;
+  RealVector *Pr;
+  size_t i, n;
+
+  L = &dv->discreteIntAleatoryUncLowerBnds;
+  U = &dv->discreteIntAleatoryUncUpperBnds;
+  V = &dv->discreteIntAleatoryUncVars;
+  NT = &dv->negBinomialUncNumTrials;
+  Pr = &dv->negBinomialUncProbPerTrial;
+  n = dv->numNegBinomialUncVars;
+
+  for(i = 0; i < n; ++i, ++i0) {
+    (*L)[i0] = (*NT)[i];
+    Pecos::moments_from_negative_binomial_params((*Pr)[i], (*NT)[i], mean, std_dev);
+    (*U)[i0] = (int)std::ceil(mean + 3.*std_dev);
+    (*V)[i0] = (int)mean;
+  }
+}
+
+static void
+Vadj_GeometricUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
   size_t n;
   RealVector *A;
@@ -2742,8 +2807,30 @@ Vadj_Geometric(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
- static void
-Vadj_HyperGeom(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vbgen_GeometricUnc(DataVariablesRep *dv, size_t i0)
+{
+  IntVector *L, *U, *V;
+  Real mean, std_dev;
+  RealVector *Pr;
+  size_t i, n;
+
+  L = &dv->discreteIntAleatoryUncLowerBnds;
+  U = &dv->discreteIntAleatoryUncUpperBnds;
+  V = &dv->discreteIntAleatoryUncVars;
+  Pr = &dv->geometricUncProbPerTrial;
+  n = dv->numGeometricUncVars;
+
+  for(i = 0; i < n; ++i, ++i0) {
+    (*L)[i0] = 0;
+    Pecos::moments_from_geometric_params((*Pr)[i], mean, std_dev);
+    (*U)[i0] = (int)std::ceil(mean + 3.*std_dev);
+    (*V)[i0] = (int)mean;
+  }
+}
+
+static void
+Vadj_HyperGeomUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
   size_t n;
   IntVector *A, *B, *C;
@@ -2758,8 +2845,36 @@ Vadj_HyperGeom(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
- static void
-Vadj_HistogramPt(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void
+Vbgen_HyperGeomUnc(DataVariablesRep *dv, size_t i0)
+{
+  IntVector *L, *ND, *NS, *TP, *U, *V;
+  Real mean, std_dev;
+  int j,k;
+  size_t i, n;
+
+  L = &dv->discreteIntAleatoryUncLowerBnds;
+  U = &dv->discreteIntAleatoryUncUpperBnds;
+  V = &dv->discreteIntAleatoryUncVars;
+  ND = &dv->hyperGeomUncNumDrawn;
+  NS = &dv->hyperGeomUncSelectedPop;
+  TP = &dv->hyperGeomUncTotalPop;
+  n = dv->numHyperGeomUncVars;
+
+  for(i = 0; i < n; ++i, ++i0) {
+    (*L)[i0] = 0;
+    Pecos::moments_from_hypergeometric_params((*TP)[i], (*NS)[i], (*ND)[i],  mean, std_dev);
+    (*V)[i0] = (int)mean;
+    j = (*ND)[i];
+    k = (*NS)[i];
+    if (k < j)
+      j = k;
+    (*U)[i0] = j;
+  }
+}
+
+static void
+Vadj_HistogramPtUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
   IntArray *npp;
   RealVector *pa, *pc, *ppi;
@@ -2831,80 +2946,58 @@ Vadj_HistogramPt(DataVariablesRep *dv, size_t i0, Var_Info *vi)
   }
 }
 
- static void
-Vbgen_HistogramBin(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_HistogramPtUnc(DataVariablesRep *dv, size_t i0)
 {
-	RealVector *L, *U, *V, *r;
-	RealVectorArray *A;
-	size_t i, m;
-	Real mean, stdev;
+  RealVector *L, *U, *V, *r;
+  RealVectorArray *A;
+  size_t i, j, je, m;
+  Real mean, stdev;
 
-	L = &dv->continuousAleatoryUncLowerBnds;
-	U = &dv->continuousAleatoryUncUpperBnds;
-	V = &dv->continuousAleatoryUncVars;
-	A = &dv->histogramUncBinPairs;
-	if ((m = A->size())) {
-		for(i = 0; i < m; i++) {
-			r = &((*A)[i]);
-			(*L)[i0] = (*r)[0];
-			(*U)[i0] = (*r)[r->length() - 2];
-			Pecos::moments_from_histogram_bin_params(*r, (*V)[i0++], stdev);
-			}
-		}
-	}
+  L = &dv->discreteRealAleatoryUncLowerBnds;
+  U = &dv->discreteRealAleatoryUncUpperBnds;
+  V = &dv->discreteRealAleatoryUncVars;
+  A = &dv->histogramUncPointPairs;
+  if ((m = A->size())) {
+    for(i = 0; i < m; ++i) {
+      r = &((*A)[i]);
+      je = r->length() - 2;
+      (*L)[i0] = (*r)[0];
+      (*U)[i0] = (*r)[je];
+      Pecos::moments_from_histogram_pt_params(*r, mean, stdev);
+      for(j = 0; j < je && (*r)[j+2] <= mean; j += 2);
+      if (j < je && mean - (*r)[j] > (*r)[j+2] - mean)
+	j += 2;
+      (*V)[i0++] = (*r)[j];
+    }
+  }
+}
 
- static void
-Vbgen_HistogramPt(DataVariablesRep *dv, size_t i0)
+static void
+Vadj_ContinuousIntervalUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	RealVector *L, *U, *V, *r;
-	RealVectorArray *A;
-	size_t i, j, je, m;
-	Real mean, stdev;
-
-	L = &dv->discreteRealAleatoryUncLowerBnds;
-	U = &dv->discreteRealAleatoryUncUpperBnds;
-	V = &dv->discreteRealAleatoryUncVars;
-	A = &dv->histogramUncPointPairs;
-	if ((m = A->size())) {
-		for(i = 0; i < m; ++i) {
-			r = &((*A)[i]);
-			je = r->length() - 2;
-			(*L)[i0] = (*r)[0];
-			(*U)[i0] = (*r)[je];
-			Pecos::moments_from_histogram_pt_params(*r, mean, stdev);
-			for(j = 0; j < je && (*r)[j+2] <= mean; j += 2);
-			if (j < je && mean - (*r)[j] > (*r)[j+2] - mean)
-				j += 2;
-			(*V)[i0++] = (*r)[j];
-			}
-		}
-	}
-
- static void
-Vadj_Interval(DataVariablesRep *dv, size_t i0, Var_Info *vi)
-{
-  size_t i, j, j2, k, k2, m, num_p, num_b;
+  size_t i, j, k, m, num_p, num_lb, num_ub;
   IntArray *nIv;
   int totni, nii, avg_nii;
   Real lb, lbj, ub, ubj;
-  RealVector *Bi, *Ivb, *Ivp, *Pi;
-  RealVectorArray *B, *P;
+  RealVector *LBi, *UBi, *Ivlb, *Ivub, *Ivp, *Pi;
+  RealVectorArray *LB, *UB, *P;
 
-  if ((Ivp = vi->Ivp) && (Ivb = vi->Ivb)) {
-    num_p = Ivp->length(); // interval_probs
-    num_b = Ivb->length(); // interval_bounds
-    if (num_b != 2*num_p) {
-      Squawk("Expected twice as many bounds (%d) as probabilities (%d)",
-	     num_b, num_p);
+  if ((Ivp = vi->CIvp) && (Ivlb = vi->CIvlb) && (Ivub = vi->CIvub)) {
+    num_p  =  Ivp->length(); // interval_probs
+    num_lb = Ivlb->length(); // interval lower_bounds
+    num_ub = Ivub->length(); // interval upper_bounds
+    if (num_lb != num_p || num_ub != num_p) {
+      Squawk("Expected as many lower bounds (%d) and upper bounds (%d) as probabilities (%d)", num_lb, num_ub, num_p);
       return;
     }
     bool key;
-    if (nIv = vi->nIv) {
+    if (nIv = vi->nCIv) {
       key = true;
       m = nIv->size();
-      if (m != dv->numIntervalUncVars) {
+      if (m != dv->numContinuousIntervalUncVars) {
 	Squawk("Expected %d numbers for num_intervals, but got %d",
-	       dv->numIntervalUncVars, m);
+	       dv->numContinuousIntervalUncVars, m);
 	return;
       }
       for(i=totni=0; i<m; ++i) {
@@ -2914,13 +3007,14 @@ Vadj_Interval(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 	  return;
 	}
       }
-      if (wronglen(  totni, Ivp, "interval_probs") ||
-	  wronglen(2*totni, Ivb, "interval_bounds"))
+      if (wronglen(totni,  Ivp, "interval_probs") ||
+	  wronglen(totni, Ivlb, "interval lower_bounds") ||
+	  wronglen(totni, Ivub, "interval upper_bounds"))
 	return;
     }
     else {
       key = false;
-      m = dv->numIntervalUncVars;
+      m = dv->numContinuousIntervalUncVars;
       if (num_p % m) {
 	Squawk("Number of probabilities (%d) not evenly divisible by number of variables (%d); Use num_intervals for unequal apportionment", num_p, m);
 	return;
@@ -2928,385 +3022,294 @@ Vadj_Interval(DataVariablesRep *dv, size_t i0, Var_Info *vi)
       else
 	avg_nii = num_p / m;
     }
-    B = &dv->intervalUncBounds;
-    P = &dv->intervalUncBasicProbs;
-    B->resize(m);
-    P->resize(m);
-    for(i = k = k2 = 0; i < m; ++i) {
-      Bi = &((*B)[i]);
-      Pi = &((*P)[i]);
+    LB = &dv->continuousIntervalUncLowerBounds; LB->resize(m);
+    UB = &dv->continuousIntervalUncUpperBounds; UB->resize(m);
+    P  = &dv->continuousIntervalUncBasicProbs;   P->resize(m);
+    for(i = k = 0; i < m; ++i) {
       nii = (key) ? (*nIv)[i] : avg_nii;
-      Pi->sizeUninitialized(nii);
-      Bi->sizeUninitialized(2*nii);
+      LBi = &((*LB)[i]); LBi->sizeUninitialized(nii);
+      UBi = &((*UB)[i]); UBi->sizeUninitialized(nii);
+      Pi  = &((*P)[i]);   Pi->sizeUninitialized(nii);
       ub = -(lb = DBL_MAX);
-      for(j = j2 = 0; j < nii; ++j, ++k, j2 += 2, k2 += 2) {
-	(*Pi)[j]          = (*Ivp)[k];
-	(*Bi)[j2]   = lbj = (*Ivb)[k2];
-	(*Bi)[j2+1] = ubj = (*Ivb)[k2+1];
-	if (lb > lbj)
-	  lb = lbj;
-	if (ub < ubj)
-	  ub = ubj;
+      for(j=0; j<nii; ++j, ++k) {
+	(*Pi)[j]        = (*Ivp)[k];
+	(*LBi)[j] = lbj = (*Ivlb)[k];
+	(*UBi)[j] = ubj = (*Ivub)[k];
+	if (lb > lbj) lb = lbj;
+	if (ub < ubj) ub = ubj;
       }
       if (lb > ub)
-	Squawk("Inconsistent interval uncertain bounds: %g > %g",
-	       lb, ub);
+	Squawk("Inconsistent interval uncertain bounds: %g > %g", lb, ub);
     }
   }
 }
 
- static void
-Vbgen_Interval(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t i0)
 {
-	size_t i, j, j2, k, m, n;
-	Real lb, lbj, ub, ubj, stdev;
-	RealVector *Bi, *L, *Pi, *U, *V;
-	RealVectorArray *B, *P;
+  size_t i, j, m, n;
+  Real lb, lbj, ub, ubj, stdev;
+  RealVector *ciLBi, *ciUBi, *ceuLB, *Pi, *ceuUB, *V;
+  RealVectorArray *ciLB, *ciUB, *P;
 
-	n = dv->numIntervalUncVars;
-	L = &dv->continuousEpistemicUncLowerBnds;
-	U = &dv->continuousEpistemicUncUpperBnds;
-	V = &dv->continuousEpistemicUncVars;
-	B = &dv->intervalUncBounds;
-	P = &dv->intervalUncBasicProbs;
-	for(i = k = 0; i < n; ++i0, ++i) {
-		Bi = &((*B)[i]);
-		Pi = &((*P)[i]);
-		m = Pi->length();
-		ub = -(lb = DBL_MAX);
-		for(j = j2 = 0; j < m; ++j, ++k, j2 += 2) {
-			lbj = (*Bi)[j2];
-			ubj = (*Bi)[j2+1];
-			if (lb > lbj)
-				lb = lbj;
-			if (ub < ubj)
-				ub = ubj;
-			}
-		(*L)[i0] = lb;
-		(*U)[i0] = ub;
-		Pecos::moments_from_uniform_params(lb, ub, (*V)[i0], stdev);
-		}
-	}
+  n     = dv->numContinuousIntervalUncVars;
+  ceuLB = &dv->continuousEpistemicUncLowerBnds;
+  ceuUB = &dv->continuousEpistemicUncUpperBnds;
+  V     = &dv->continuousEpistemicUncVars;
+  ciLB  = &dv->continuousIntervalUncLowerBounds;
+  ciUB  = &dv->continuousIntervalUncUpperBounds;
+  P     = &dv->continuousIntervalUncBasicProbs;
+  for (i=0; i<n; ++i0, ++i) {
+    ciLBi = &((*ciLB)[i]); ciUBi = &((*ciUB)[i]); Pi = &((*P)[i]);
+    m = Pi->length();
+    ub = -(lb = DBL_MAX);
+    for (j=0; j<m; ++j) {
+      lbj = (*ciLBi)[j]; ubj = (*ciUBi)[j];
+      if (lb > lbj) lb = lbj;
+      if (ub < ubj) ub = ubj;
+    }
+    (*ceuLB)[i0] = lb; (*ceuUB)[i0] = ub;
+    Pecos::moments_from_uniform_params(lb, ub, (*V)[i0], stdev);
+  }
+}
 
- static void
-Vbgen_Poisson(DataVariablesRep *dv, size_t i0)
+static void
+Vadj_DiscreteIntervalUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	IntVector *L, *U, *V;
-	Real mean, std_dev;
-	RealVector *Lam;
-	size_t i, n;
+  // TO DO: incomplete...
+}
 
-	L = &dv->discreteIntAleatoryUncLowerBnds;
-	U = &dv->discreteIntAleatoryUncUpperBnds;
-	V = &dv->discreteIntAleatoryUncVars;
-	Lam = &dv->poissonUncLambdas;
-	n = dv->numPoissonUncVars;
-
-	for(i = 0; i < n; ++i, ++i0) {
-		Pecos::moments_from_poisson_params((*Lam)[i], mean, std_dev);
-		(*L)[i0] = 0;
-		(*U)[i0] = (int)std::ceil(mean + 3.*std_dev);
-		(*V)[i0] = (int)mean;
-		}
-	}
-
- static void
-Vbgen_Binomial(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_DiscreteIntervalUnc(DataVariablesRep *dv, size_t i0)
 {
-	IntVector *L, *NT, *U, *V;
-        Real mean, std_dev;
-	RealVector *Pr;
-	size_t i, n;
+  // TO DO: incomplete...
+}
 
-	L = &dv->discreteIntAleatoryUncLowerBnds;
-	U = &dv->discreteIntAleatoryUncUpperBnds;
-	V = &dv->discreteIntAleatoryUncVars;
-	NT = &dv->binomialUncNumTrials;
-	Pr = &dv->binomialUncProbPerTrial;
-	n = dv->numBinomialUncVars;
-
-	for(i = 0; i < n; ++i, ++i0) {
-		(*L)[i0] = 0;
-		Pecos::moments_from_binomial_params((*Pr)[i], (*NT)[i], mean, std_dev);
-                (*V)[i0] = (int)mean;
-		(*U)[i0] = (*NT)[i];
-		}
-	}
-
- static void
-Vbgen_NegBinomial(DataVariablesRep *dv, size_t i0)
+static void
+Vadj_DiscreteUncSetInt(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	IntVector *L, *NT, *U, *V;
-	Real mean, std_dev;
-	RealVector *Pr;
-	size_t i, n;
+  // TO DO: incomplete...
+}
 
-	L = &dv->discreteIntAleatoryUncLowerBnds;
-	U = &dv->discreteIntAleatoryUncUpperBnds;
-	V = &dv->discreteIntAleatoryUncVars;
-	NT = &dv->negBinomialUncNumTrials;
-	Pr = &dv->negBinomialUncProbPerTrial;
-	n = dv->numNegBinomialUncVars;
-
-	for(i = 0; i < n; ++i, ++i0) {
-		(*L)[i0] = (*NT)[i];
-		Pecos::moments_from_negative_binomial_params((*Pr)[i], (*NT)[i], mean, std_dev);
-		(*U)[i0] = (int)std::ceil(mean + 3.*std_dev);
-		(*V)[i0] = (int)mean;
-		}
-	}
-
- static void
-Vbgen_Geometric(DataVariablesRep *dv, size_t i0)
+static void
+Vbgen_DiscreteUncSetInt(DataVariablesRep *dv, size_t i0)
 {
-	IntVector *L, *U, *V;
-	Real mean, std_dev;
-	RealVector *Pr;
-	size_t i, n;
+  // TO DO: incomplete...
+}
 
-	L = &dv->discreteIntAleatoryUncLowerBnds;
-	U = &dv->discreteIntAleatoryUncUpperBnds;
-	V = &dv->discreteIntAleatoryUncVars;
-	Pr = &dv->geometricUncProbPerTrial;
-	n = dv->numGeometricUncVars;
-
-	for(i = 0; i < n; ++i, ++i0) {
-		(*L)[i0] = 0;
-		Pecos::moments_from_geometric_params((*Pr)[i], mean, std_dev);
-		(*U)[i0] = (int)std::ceil(mean + 3.*std_dev);
-		(*V)[i0] = (int)mean;
-		}
-	}
-
- static void
-Vbgen_HyperGeom(DataVariablesRep *dv, size_t i0)
+static void
+Vadj_DiscreteUncSetReal(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 {
-	IntVector *L, *ND, *NS, *TP, *U, *V;
-        Real mean, std_dev;
-	int j,k;
-	size_t i, n;
+  // TO DO: incomplete...
+}
 
-	L = &dv->discreteIntAleatoryUncLowerBnds;
-	U = &dv->discreteIntAleatoryUncUpperBnds;
-	V = &dv->discreteIntAleatoryUncVars;
-	ND = &dv->hyperGeomUncNumDrawn;
-	NS = &dv->hyperGeomUncSelectedPop;
-	TP = &dv->hyperGeomUncTotalPop;
-	n = dv->numHyperGeomUncVars;
+static void
+Vbgen_DiscreteUncSetReal(DataVariablesRep *dv, size_t i0)
+{
+  // TO DO: incomplete...
+}
 
-	for(i = 0; i < n; ++i, ++i0) {
-		(*L)[i0] = 0;
-		Pecos::moments_from_hypergeometric_params((*TP)[i], (*NS)[i], (*ND)[i],  mean, std_dev);
-                (*V)[i0] = (int)mean;
-		j = (*ND)[i];
-                k = (*NS)[i];
-                if (k < j)
-		  j = k;
-		(*U)[i0] = j;
-		}
-	}
-
- static void
+static void
 DIset(size_t n, IntSetArray *a, IntVector *L, IntVector *U, IntVector *V)
 {
-	IntSet *s;
-	IntSet::const_iterator ie, it;
-	Real t, t1;
-	int i, k, km, kx;
-	size_t m;
+  IntSet *s;
+  IntSet::const_iterator ie, it;
+  Real t, t1;
+  int i, k, km, kx;
+  size_t m;
 
-	L->sizeUninitialized(n);
-	U->sizeUninitialized(n);
-	if (V->length() == n)
-		V = 0;
-	else
-		V->sizeUninitialized(n);
-	for(i = 0; i < n; ++i) {
-		s = &(*a)[i];
-		it = s->begin();
-		ie = s->end();
-		(*L)[i] = *it;
-		(*U)[i] = *(--ie);
-		if (!V)
-			continue;
-		if ((m = s->size()) <= 1)
-			(*V)[i] = *it;
-		else {
-			for(t = 0., ++ie; it != ie; ++it)
-				t += *it;
-			t /= m;
-			kx = INT_MAX;
-			km = -kx;
-			for(it = s->begin(); it != ie; ++it) {
-				if ((t1 = k = *it) > t) {
-					if (kx > k)
-						kx = k;
-					}
-				else if (t1 < t) {
-					if (km < k)
-						km = k;
-					}
-				else {
-					km = kx = k;
-					break;
-					}
-				}
-			if (kx - t < t - km)
-				km = kx;
-			(*V)[i] = km;
-			}
-		}
+  L->sizeUninitialized(n);
+  U->sizeUninitialized(n);
+  if (V->length() == n)
+    V = 0;
+  else
+    V->sizeUninitialized(n);
+  for(i = 0; i < n; ++i) {
+    s = &(*a)[i];
+    it = s->begin();
+    ie = s->end();
+    (*L)[i] = *it;
+    (*U)[i] = *(--ie);
+    if (!V)
+      continue;
+    if ((m = s->size()) <= 1)
+      (*V)[i] = *it;
+    else {
+      for(t = 0., ++ie; it != ie; ++it)
+	t += *it;
+      t /= m;
+      kx = INT_MAX;
+      km = -kx;
+      for(it = s->begin(); it != ie; ++it) {
+	if ((t1 = k = *it) > t) {
+	  if (kx > k)
+	    kx = k;
 	}
+	else if (t1 < t) {
+	  if (km < k)
+	    km = k;
+	}
+	else {
+	  km = kx = k;
+	  break;
+	}
+      }
+      if (kx - t < t - km)
+	km = kx;
+      (*V)[i] = km;
+    }
+  }
+}
 
- static void
+static void
 DRset(size_t n, RealSetArray *a, RealVector *L, RealVector *U, RealVector *V)
 {
-	Real t, t1, tm, tx;
-	RealSet *s;
-	RealSet::const_iterator ie, it;
-	int i;
-	size_t m;
+  Real t, t1, tm, tx;
+  RealSet *s;
+  RealSet::const_iterator ie, it;
+  int i;
+  size_t m;
 
-	L->sizeUninitialized(n);
-	U->sizeUninitialized(n);
-	if (V->length() == n)
-		V = 0;
-	else
-		V->sizeUninitialized(n);
-	for(i = 0; i < n; ++i) {
-		s = &(*a)[i];
-		it = s->begin();
-		ie = s->end();
-		(*L)[i] = *it;
-		(*U)[i] = *(--ie);
-		if (!V)
-			continue;
-		if ((m = s->size()) <= 1)
-			(*V)[i] = *it;
-		else {
-			for(t = 0., ++ie; it != ie; ++it)
-				t += *it;
-			t /= m;
-			tx = DBL_MAX;
-			tm = -tx;
-			for(it = s->begin(); it != ie; ++it) {
-				if ((t1 = *it) > t) {
-					if (tx > t1)
-						tx = t1;
-					}
-				else if (t1 < t) {
-					if (tm < t1)
-						tm = t1;
-					}
-				else {
-					tm = tx = t1;
-					break;
-					}
-				}
-			if (tx - t < t - tm)
-				tm = tx;
-			(*V)[i] = tm;
-			}
-		}
+  L->sizeUninitialized(n);
+  U->sizeUninitialized(n);
+  if (V->length() == n)
+    V = 0;
+  else
+    V->sizeUninitialized(n);
+  for(i = 0; i < n; ++i) {
+    s = &(*a)[i];
+    it = s->begin();
+    ie = s->end();
+    (*L)[i] = *it;
+    (*U)[i] = *(--ie);
+    if (!V)
+      continue;
+    if ((m = s->size()) <= 1)
+      (*V)[i] = *it;
+    else {
+      for(t = 0., ++ie; it != ie; ++it)
+	t += *it;
+      t /= m;
+      tx = DBL_MAX;
+      tm = -tx;
+      for(it = s->begin(); it != ie; ++it) {
+	if ((t1 = *it) > t) {
+	  if (tx > t1)
+	    tx = t1;
 	}
+	else if (t1 < t) {
+	  if (tm < t1)
+	    tm = t1;
+	}
+	else {
+	  tm = tx = t1;
+	  break;
+	}
+      }
+      if (tx - t < t - tm)
+	tm = tx;
+      (*V)[i] = tm;
+    }
+  }
+}
 
- static void
-Vbgen_DDSI(DataVariablesRep *dv, size_t n)
+static void
+Vbgen_DiscreteDesSetInt(DataVariablesRep *dv, size_t n)
 {
-	DIset(n,
-		&dv->discreteDesignSetInt,
-		&dv->discreteDesignSetIntLowerBnds,
-		&dv->discreteDesignSetIntUpperBnds,
-		&dv->discreteDesignSetIntVars);
-	}
+  DIset(n,
+	&dv->discreteDesignSetInt,
+	&dv->discreteDesignSetIntLowerBnds,
+	&dv->discreteDesignSetIntUpperBnds,
+	&dv->discreteDesignSetIntVars);
+}
 
- static void
-Vbgen_DDSR(DataVariablesRep *dv, size_t n)
+static void
+Vbgen_DiscreteDesSetReal(DataVariablesRep *dv, size_t n)
 {
-	DRset(n,
-		&dv->discreteDesignSetReal,
-		&dv->discreteDesignSetRealLowerBnds,
-		&dv->discreteDesignSetRealUpperBnds,
-		&dv->discreteDesignSetRealVars);
-	}
+  DRset(n,
+	&dv->discreteDesignSetReal,
+	&dv->discreteDesignSetRealLowerBnds,
+	&dv->discreteDesignSetRealUpperBnds,
+	&dv->discreteDesignSetRealVars);
+}
 
- static void
-Vbgen_DSSI(DataVariablesRep *dv, size_t n)
+static void
+Vbgen_DiscreteStateSetInt(DataVariablesRep *dv, size_t n)
 {
-	DIset(n,
-		&dv->discreteStateSetInt,
-		&dv->discreteStateSetIntLowerBnds,
-		&dv->discreteStateSetIntUpperBnds,
-		&dv->discreteStateSetIntVars);
-	}
+  DIset(n,
+	&dv->discreteStateSetInt,
+	&dv->discreteStateSetIntLowerBnds,
+	&dv->discreteStateSetIntUpperBnds,
+	&dv->discreteStateSetIntVars);
+}
 
- static void
-Vbgen_DSSR(DataVariablesRep *dv, size_t n)
+static void
+Vbgen_DiscreteStateSetReal(DataVariablesRep *dv, size_t n)
 {
-	DRset(n,
-		&dv->discreteStateSetReal,
-		&dv->discreteStateSetRealLowerBnds,
-		&dv->discreteStateSetRealUpperBnds,
-		&dv->discreteStateSetRealVars);
-	}
+  DRset(n,
+	&dv->discreteStateSetReal,
+	&dv->discreteStateSetRealLowerBnds,
+	&dv->discreteStateSetRealUpperBnds,
+	&dv->discreteStateSetRealVars);
+}
 
- static void
+static void
 not_div(const char *kind, size_t nsv, size_t m)
 {
-	Squawk("Number of %s set_values (%d)\n"
-		"not evenly divisible by numberof variables (%d).\n"
-		"Use num_set_values for unequal apportionment",
-		kind, (int)nsv, (int)m);
-	}
+  Squawk("Number of %s set_values (%d)\n"
+	 "not evenly divisible by numberof variables (%d).\n"
+	 "Use num_set_values for unequal apportionment",
+	 kind, (int)nsv, (int)m);
+}
 
- static void
+static void
 wrong_number(const char *what, const char *kind, size_t nsv, size_t m)
 {
-	Squawk("Expected %d %s for %s, not %d", (int)nsv, what, kind, (int)m);
-	}
+  Squawk("Expected %d %s for %s, not %d", (int)nsv, what, kind, (int)m);
+}
 
- static void
+static void
 too_small(const char *kind)
 {
-	Squawk("num_set_values values for %s must be >= 1", kind);
-	}
+  Squawk("num_set_values values for %s must be >= 1", kind);
+}
 
- static void
+static void
 suppressed(const char *kind, int ndup, int *ip, Real *rp)
 {
-	const char *s;
-	int i, nother;
+  const char *s;
+  int i, nother;
 
-	nother = 0;
-	if (ndup > 2) {
-		nother = ndup - 1;
-		ndup = 1;
-		}
-	for(i = 0; i < ndup; ++i)
-		if (ip)
-			Squawk("Duplicate %s value %d", kind, ip[i]);
-		else
-			Squawk("Duplicate %s value %.17g", kind, rp[i]);
-	if (nother) {
-		s = "s" + (nother == 1);
-		Squawk("Warning%s of %d other duplicate %s value%s suppressed",
-			s, nother, kind, s);
-		}
-	}
+  nother = 0;
+  if (ndup > 2) {
+    nother = ndup - 1;
+    ndup = 1;
+  }
+  for(i = 0; i < ndup; ++i)
+    if (ip)
+      Squawk("Duplicate %s value %d", kind, ip[i]);
+    else
+      Squawk("Duplicate %s value %.17g", kind, rp[i]);
+  if (nother) {
+    s = "s" + (nother == 1);
+    Squawk("Warning%s of %d other duplicate %s value%s suppressed",
+	   s, nother, kind, s);
+  }
+}
 
- static void
+static void
 bad_initial_ivalue(const char *kind, int val)
 {
-	Squawk("invalid initial value %d for %s", val, kind);
-	}
+  Squawk("invalid initial value %d for %s", val, kind);
+}
 
- static void
+static void
 bad_initial_rvalue(const char *kind, Real val)
 {
-	Squawk("invalid initial value %.17g for %s", val, kind);
-	}
+  Squawk("invalid initial value %.17g for %s", val, kind);
+}
 
- static void
+static void
 Vadj_DiscreteDesSetReal(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 // This should be combined suitably with Vadj_DiscreteStateSetReal
 {
@@ -3361,39 +3364,39 @@ Vadj_DiscreteDesSetReal(DataVariablesRep *dv, size_t i0, Var_Info *vi)
       dsvr_all_i  = &((*dsvr_all)[i]);
       for (j=0; j<num_dsvr_i; ++j, ++cntr)
 	if (!dsvr_all_i->insert(val = (*dsvr)[cntr]).second) {
-		if (++ndup <= 2)
-			dupval[ndup-1] = val;
-		}
+	  if (++ndup <= 2)
+	    dupval[ndup-1] = val;
+	}
     }
     if (ndup)
-   	 suppressed(kind, ndup, 0, dupval);
+      suppressed(kind, ndup, 0, dupval);
     dsvr_ip = &dv->discreteDesignSetRealVars;
     if ((i = dsvr_ip->length()) > 0) {
-	if (i != m)
-		wrong_number("initial_point value(s)", kind, m, i);
-	else
-		for(i = 0; i < m; ++i) {
-			dsvr_all_i  = &((*dsvr_all)[i]);
-			if (dsvr_all_i->find(val = (*dsvr_ip)[i]) == dsvr_all_i->end())
-				bad_initial_rvalue(kind, val);
-			}
+      if (i != m)
+	wrong_number("initial_point value(s)", kind, m, i);
+      else
+	for(i = 0; i < m; ++i) {
+	  dsvr_all_i  = &((*dsvr_all)[i]);
+	  if (dsvr_all_i->find(val = (*dsvr_ip)[i]) == dsvr_all_i->end())
+	    bad_initial_rvalue(kind, val);
 	}
-#if 0 // now done in Vbgen_DDSR
+    }
+#if 0 // now done in Vbgen_DiscreteDesSetReal
     else {
-	dsvr_ip->sizeUninitialized(m);
-	for (i=0; i<m; ++i)
-		(*dsvr_ip)[i] = *(*dsvr_all)[i].begin(); // initialize to 1st value in set
-	}
+      dsvr_ip->sizeUninitialized(m);
+      for (i=0; i<m; ++i)
+	(*dsvr_ip)[i] = *(*dsvr_all)[i].begin(); // initialize to 1st value in set
+    }
 #endif
   }
 }
 
- static void
+static void
 Vadj_DiscreteDesSetInt(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 // This should be combined suitably with Vadj_DiscreteStateSetInt
 {
-  IntArray *num_dsvi, *dsvi;
-  IntVector *dsvi_ip;
+  IntArray *num_dsvi;
+  IntVector *dsvi, *dsvi_ip;
   IntSet *dsvi_all_i;
   IntSetArray *dsvi_all;
   int avg_num_dsvi, dupval[2], ndup, num_dsvi_i, total_dsvi, val;
@@ -3401,7 +3404,7 @@ Vadj_DiscreteDesSetInt(DataVariablesRep *dv, size_t i0, Var_Info *vi)
   static char kind[] = "discrete_design_set_integer";
 
   if (dsvi = vi->dsvi) {
-    dsvi_len = dsvi->size();
+    dsvi_len = dsvi->length();
 
     bool key;
     if ((num_dsvi = vi->ndsvi)) {
@@ -3442,33 +3445,33 @@ Vadj_DiscreteDesSetInt(DataVariablesRep *dv, size_t i0, Var_Info *vi)
       dsvi_all_i  = &((*dsvi_all)[i]);
       for (j=0; j<num_dsvi_i; ++j, ++cntr)
 	if (!dsvi_all_i->insert(val = (*dsvi)[cntr]).second)
-		if (++ndup <= 2)
-			dupval[ndup-1] = val;
+	  if (++ndup <= 2)
+	    dupval[ndup-1] = val;
     }
     if (ndup)
-   	 suppressed(kind, ndup, dupval, 0);
+      suppressed(kind, ndup, dupval, 0);
     dsvi_ip = &dv->discreteDesignSetIntVars;
     if ((i = dsvi_ip->length()) > 0) {
-	if (i != m)
-		wrong_number("initial_point value(s)", kind, m, i);
-	else
-		for(i = 0; i < m; ++i) {
-			dsvi_all_i  = &((*dsvi_all)[i]);
-			if (dsvi_all_i->find(val = (*dsvi_ip)[i]) == dsvi_all_i->end())
-				bad_initial_rvalue(kind, val);
-			}
+      if (i != m)
+	wrong_number("initial_point value(s)", kind, m, i);
+      else
+	for(i = 0; i < m; ++i) {
+	  dsvi_all_i  = &((*dsvi_all)[i]);
+	  if (dsvi_all_i->find(val = (*dsvi_ip)[i]) == dsvi_all_i->end())
+	    bad_initial_rvalue(kind, val);
 	}
-#if 0 // now done in Vbgen_DDSI
+    }
+#if 0 // now done in Vbgen_DiscreteDesSetInt
     else {
-	dsvi_ip->sizeUninitialized(m);
-	for (i=0; i<m; ++i)
-		(*dsvi_ip)[i] = *(*dsvi_all)[i].begin(); // initialize to 1st value in set
-	}
+      dsvi_ip->sizeUninitialized(m);
+      for (i=0; i<m; ++i)
+	(*dsvi_ip)[i] = *(*dsvi_all)[i].begin(); // initialize to 1st value in set
+    }
 #endif
   }
 }
 
- static void
+static void
 Vadj_DiscreteStateSetReal(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 // This should be combined suitably with Vadj_DiscreteDesSetReal
 {
@@ -3523,38 +3526,38 @@ Vadj_DiscreteStateSetReal(DataVariablesRep *dv, size_t i0, Var_Info *vi)
       ssvr_all_i  = &((*ssvr_all)[i]);
       for (j=0; j<num_ssvr_i; ++j, ++cntr)
 	if (!ssvr_all_i->insert(val = (*ssvr)[cntr]).second)
-		if (++ndup <= 2)
-			dupval[ndup-1] = val;
+	  if (++ndup <= 2)
+	    dupval[ndup-1] = val;
     }
     if (ndup)
-   	 suppressed(kind, ndup, 0, dupval);
+      suppressed(kind, ndup, 0, dupval);
     ssvr_ip = &dv->discreteStateSetRealVars;
     if ((i = ssvr_ip->length()) > 0) {
-	if (i != m)
-		wrong_number("initial_point value(s)", kind, m, i);
-	else
-		for(i = 0; i < m; ++i) {
-			ssvr_all_i  = &((*ssvr_all)[i]);
-			if (ssvr_all_i->find(val = (*ssvr_ip)[i]) == ssvr_all_i->end())
-				bad_initial_rvalue(kind, val);
-			}
+      if (i != m)
+	wrong_number("initial_point value(s)", kind, m, i);
+      else
+	for(i = 0; i < m; ++i) {
+	  ssvr_all_i  = &((*ssvr_all)[i]);
+	  if (ssvr_all_i->find(val = (*ssvr_ip)[i]) == ssvr_all_i->end())
+	    bad_initial_rvalue(kind, val);
 	}
-#if 0 // now done in Vbgen_DSSR
+    }
+#if 0 // now done in Vbgen_DiscreteStateSetReal
     else {
-	ssvr_ip->sizeUninitialized(m);
-	for (i=0; i<m; ++i)
-		(*ssvr_ip)[i] = *(*ssvr_all)[i].begin(); // initialize to 1st value in set
-	}
+      ssvr_ip->sizeUninitialized(m);
+      for (i=0; i<m; ++i)
+	(*ssvr_ip)[i] = *(*ssvr_all)[i].begin(); // initialize to 1st value in set
+    }
 #endif
   }
 }
 
- static void
+static void
 Vadj_DiscreteStateSetInt(DataVariablesRep *dv, size_t i0, Var_Info *vi)
 // This should be combined suitably with Vadj_DiscreteDesSetInt
 {
-  IntArray *num_ssvi, *ssvi;
-  IntVector *ssvi_ip;
+  IntArray *num_ssvi;
+  IntVector *ssvi, *ssvi_ip;
   IntSet *ssvi_all_i;
   IntSetArray *ssvi_all;
   int avg_num_ssvi, dupval[2], ndup, num_ssvi_i, total_ssvi, val;
@@ -3562,7 +3565,7 @@ Vadj_DiscreteStateSetInt(DataVariablesRep *dv, size_t i0, Var_Info *vi)
   static char kind[] = "discrete_state_set_integer";
 
   if (ssvi = vi->ssvi) {
-    ssvi_len = ssvi->size();
+    ssvi_len = ssvi->length();
 
     bool key;
     if ((num_ssvi = vi->nssvi)) {
@@ -3603,418 +3606,500 @@ Vadj_DiscreteStateSetInt(DataVariablesRep *dv, size_t i0, Var_Info *vi)
       ssvi_all_i  = &((*ssvi_all)[i]);
       for (j=0; j<num_ssvi_i; ++j, ++cntr)
 	if (!ssvi_all_i->insert(val = (*ssvi)[cntr]).second)
-		if (++ndup <= 2)
-			dupval[ndup-1] = val;
+	  if (++ndup <= 2)
+	    dupval[ndup-1] = val;
     }
     if (ndup)
-   	 suppressed(kind, ndup, dupval, 0);
+      suppressed(kind, ndup, dupval, 0);
     ssvi_ip = &dv->discreteStateSetIntVars;
     if ((i = ssvi_ip->length()) > 0) {
-	if (i != m)
-		wrong_number("initial_point value(s)", kind, m, i);
-	else
-		for(i = 0; i < m; ++i) {
-			ssvi_all_i  = &((*ssvi_all)[i]);
-			if (ssvi_all_i->find(val = (*ssvi_ip)[i]) == ssvi_all_i->end())
-				bad_initial_rvalue(kind, val);
-			}
+      if (i != m)
+	wrong_number("initial_point value(s)", kind, m, i);
+      else
+	for(i = 0; i < m; ++i) {
+	  ssvi_all_i  = &((*ssvi_all)[i]);
+	  if (ssvi_all_i->find(val = (*ssvi_ip)[i]) == ssvi_all_i->end())
+	    bad_initial_rvalue(kind, val);
 	}
-#if 0 // now done in Vbgen_DSSI
+    }
+#if 0 // now done in Vbgen_DiscreteStateSetInt
     else {
-	ssvi_ip->sizeUninitialized(m);
-	for (i=0; i<m; ++i)
-		(*ssvi_ip)[i] = *(*ssvi_all)[i].begin(); // initialize to 1st value in set
-	}
+      ssvi_ip->sizeUninitialized(m);
+      for (i=0; i<m; ++i)
+	(*ssvi_ip)[i] = *(*ssvi_all)[i].begin(); // initialize to 1st value in set
+    }
 #endif
   }
 }
 
-#define UncInfo(a,b)     { #a, #b, &DataVariablesRep::num##b##UncVars, Vadj_##b }
- static Var_uinfo CAUVLbl[CAUVar_Nkinds] = {
-	UncInfo(nuv_, Normal),
-	UncInfo(lnuv_, Lognormal),
-	UncInfo(uuv_, Uniform),
-	UncInfo(luuv_, Loguniform),
-	UncInfo(tuv_, Triangular),
-	UncInfo(euv_, Exponential),
-	UncInfo(beuv_, Beta),
-	UncInfo(gauv_, Gamma),
-	UncInfo(guuv_, Gumbel),
-	UncInfo(fuv_, Frechet),
-	UncInfo(wuv_, Weibull),
-	UncInfo(hbuv_, HistogramBin)
-	};
- static Var_uinfo DAUIVLbl[DAUIVar_Nkinds] = {
-	UncInfo(puv_, Poisson),
-        UncInfo(biuv_, Binomial),
-        UncInfo(nbuv_, NegBinomial),
-        UncInfo(geuv_, Geometric),
-        UncInfo(hguv_, HyperGeom)
-	};
- static Var_uinfo DAURVLbl[DAURVar_Nkinds] = {
-	UncInfo(hpuv_, HistogramPt)
-	};
- static Var_uinfo CEUVLbl[CEUVar_Nkinds] = {
-	UncInfo(iuv_, Interval)
-	};
-// static Var_uinfo DEUIVLbl[DEUIVar_Nkinds] = {
-//	};
-// static Var_uinfo DEURVLbl[DEURVar_Nkinds] = {
-//	};
-#undef UncInfo
+#define VarLabelInfo(a,b)     { #a, #b, &DataVariablesRep::num##b##Vars, Vadj_##b }
+static Var_uinfo CAUVLbl[CAUVar_Nkinds] = {
+  VarLabelInfo(nuv_, NormalUnc),
+  VarLabelInfo(lnuv_, LognormalUnc),
+  VarLabelInfo(uuv_, UniformUnc),
+  VarLabelInfo(luuv_, LoguniformUnc),
+  VarLabelInfo(tuv_, TriangularUnc),
+  VarLabelInfo(euv_, ExponentialUnc),
+  VarLabelInfo(beuv_, BetaUnc),
+  VarLabelInfo(gauv_, GammaUnc),
+  VarLabelInfo(guuv_, GumbelUnc),
+  VarLabelInfo(fuv_, FrechetUnc),
+  VarLabelInfo(wuv_, WeibullUnc),
+  VarLabelInfo(hbuv_, HistogramBinUnc)
+};
+static Var_uinfo DAUIVLbl[DAUIVar_Nkinds] = {
+  VarLabelInfo(puv_, PoissonUnc),
+  VarLabelInfo(biuv_, BinomialUnc),
+  VarLabelInfo(nbuv_, NegBinomialUnc),
+  VarLabelInfo(geuv_, GeometricUnc),
+  VarLabelInfo(hguv_, HyperGeomUnc)
+};
+static Var_uinfo DAURVLbl[DAURVar_Nkinds] = {
+  VarLabelInfo(hpuv_, HistogramPtUnc)
+};
+static Var_uinfo CEUVLbl[CEUVar_Nkinds] = {
+  VarLabelInfo(ciuv_, ContinuousIntervalUnc)
+};
+static Var_uinfo DEUIVLbl[DEUIVar_Nkinds] = {
+  VarLabelInfo(diuv_, DiscreteIntervalUnc),
+  VarLabelInfo(dusiv_, DiscreteUncSetInt)
+};
+static Var_uinfo DEURVLbl[DEURVar_Nkinds] = {
+  VarLabelInfo(dusrv_, DiscreteUncSetReal)
+};
+static Var_uinfo DiscSetLbl[DiscSetVar_Nkinds] = {
+  VarLabelInfo(ddsiv_, DiscreteDesSetInt),
+  VarLabelInfo(ddsrv_, DiscreteDesSetReal),
+  VarLabelInfo(dssiv_, DiscreteStateSetInt),
+  VarLabelInfo(dssrv_, DiscreteStateSetReal)
+};
+#undef VarLabelInfo
 
-#define DiscSetInfo(a,b)     { #a, #b, &DataVariablesRep::numDiscrete##b##Vars, Vadj_Discrete##b }
- static Var_uinfo DiscSetLbl[DiscSetVar_Nkinds] = {
-	DiscSetInfo(ddsiv_, DesSetInt),
-	DiscSetInfo(ddsrv_, DesSetReal),
-	DiscSetInfo(dssiv_, StateSetInt),
-	DiscSetInfo(dssrv_, StateSetReal)
-	};
-#undef DiscSetInfo
-
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_stop(const char *keyname, Values *val, void **g, void *v)
 {
-	Var_Info *vi = *(Var_Info**)g;
-	DataVariablesRep *dv = vi->dv;
-	scale_chk(dv->continuousDesignScaleTypes, dv->continuousDesignScales, "cdv", aln_scaletypes);
-	pDDBInstance->VIL.push_back(vi);
-	pDDBInstance->dataVariablesList.push_back(*vi->dv0);
-	delete vi->dv0;
-	}
+  Var_Info *vi = *(Var_Info**)g;
+  DataVariablesRep *dv = vi->dv;
+  scale_chk(dv->continuousDesignScaleTypes, dv->continuousDesignScales,
+	    "cdv", aln_scaletypes);
+  pDDBInstance->VIL.push_back(vi);
+  pDDBInstance->dataVariablesList.push_back(*vi->dv0);
+  delete vi->dv0;
+}
 
 struct VarLabelChk {
-	size_t DataVariablesRep::* n;
-	StringArray DataVariablesRep::* sa;
-	const char *stub;
-	const char *name;
-	};
+  size_t DataVariablesRep::* n;
+  StringArray DataVariablesRep::* sa;
+  const char *stub;
+  const char *name;
+};
 
 #define AVI &DataVariablesRep::
-	static VarLabelChk Vlch[] = {
-	 { AVI numContinuousDesVars, AVI continuousDesignLabels, "cdv_", "cdv_descriptors" },
-	 { AVI numDiscreteDesRangeVars,	AVI discreteDesignRangeLabels, "ddriv_", "ddriv_descriptors" },
-	 { AVI numDiscreteDesSetIntVars, AVI discreteDesignSetIntLabels, "ddsiv_", "ddsiv_descriptors" },
-	 { AVI numDiscreteDesSetRealVars, AVI discreteDesignSetRealLabels, "ddsrv_", "ddsrv_descriptors" },
-	 { AVI numContinuousStateVars, AVI continuousStateLabels, "csv_", "csv_descriptors" },
-	 { AVI numDiscreteStateRangeVars, AVI discreteStateRangeLabels, "dsriv_", "dsriv_descriptors" },
-	 { AVI numDiscreteStateSetIntVars, AVI discreteStateSetIntLabels, "dssiv_", "dssiv_descriptors" },
-	 { AVI numDiscreteStateSetRealVars, AVI discreteStateSetRealLabels, "dssrv_", "dssrv_descriptors" },
-	 { AVI numContinuousDesVars, AVI continuousDesignScaleTypes, 0, "cdv_scale_types" }
-	 };
+static VarLabelChk Vlch[] = {
+  { AVI numContinuousDesVars, AVI continuousDesignLabels, "cdv_", "cdv_descriptors" },
+  { AVI numDiscreteDesRangeVars,	AVI discreteDesignRangeLabels, "ddriv_", "ddriv_descriptors" },
+  { AVI numDiscreteDesSetIntVars, AVI discreteDesignSetIntLabels, "ddsiv_", "ddsiv_descriptors" },
+  { AVI numDiscreteDesSetRealVars, AVI discreteDesignSetRealLabels, "ddsrv_", "ddsrv_descriptors" },
+  { AVI numContinuousStateVars, AVI continuousStateLabels, "csv_", "csv_descriptors" },
+  { AVI numDiscreteStateRangeVars, AVI discreteStateRangeLabels, "dsriv_", "dsriv_descriptors" },
+  { AVI numDiscreteStateSetIntVars, AVI discreteStateSetIntLabels, "dssiv_", "dssiv_descriptors" },
+  { AVI numDiscreteStateSetRealVars, AVI discreteStateSetRealLabels, "dssrv_", "dssrv_descriptors" },
+  { AVI numContinuousDesVars, AVI continuousDesignScaleTypes, 0, "cdv_scale_types" }
+};
 #undef  AVI
 
- struct VLstuff {
-	int n;
-	int isreal;
-	VarLabel Var_Info::* VL; // should be "VarLabel *Var_Info::* VL"
-				 // but g++ is buggy (versions 4.3.1, 4.4.2 anyway)
-	Var_uinfo *vui;
-	StringArray DataVariablesRep::* Labels;
-	RealVector DataVariablesRep::* LowerBnds;
-	RealVector DataVariablesRep::* UpperBnds;
-	RealVector DataVariablesRep::* UncVars;
-	};
+struct VLreal {
+  int n;
+  VarLabel Var_Info::* VL; // should be "VarLabel *Var_Info::* VL"
+  // but g++ is buggy (versions 4.3.1, 4.4.2 anyway)
+  Var_uinfo *vui;
+  StringArray DataVariablesRep::* Labels;
+  RealVector DataVariablesRep::* LowerBnds;
+  RealVector DataVariablesRep::* UpperBnds;
+  RealVector DataVariablesRep::* UncVars;
+};
+struct VLint {
+  int n;
+  VarLabel Var_Info::* VL; // should be "VarLabel *Var_Info::* VL"
+  // but g++ is buggy (versions 4.3.1, 4.4.2 anyway)
+  Var_uinfo *vui;
+  StringArray DataVariablesRep::* Labels;
+  IntVector DataVariablesRep::* LowerBnds;
+  IntVector DataVariablesRep::* UpperBnds;
+  IntVector DataVariablesRep::* UncVars;
+};
 
-enum { N_VLS = 4 };
+enum { N_VLR = 4 };
+enum { N_VLI = 2 };
 
 #define AVI (VarLabel Var_Info::*) &Var_Info::	// cast to bypass g++ bug
 #define DVR &DataVariablesRep::
-#define RDVR (RealVector DataVariablesRep::*) DVR
 
-static VLstuff VLS[N_VLS] = {
- {CAUVar_Nkinds,  1, AVI CAUv,  CAUVLbl,
+static VLreal VLR[N_VLR] = {
+ {CAUVar_Nkinds,  AVI CAUv,  CAUVLbl,
 	DVR continuousAleatoryUncLabels,
 	DVR continuousAleatoryUncLowerBnds,
 	DVR continuousAleatoryUncUpperBnds,
 	DVR continuousAleatoryUncVars},
- {CEUVar_Nkinds,  1, AVI CEUv,  CEUVLbl,
+ {CEUVar_Nkinds,  AVI CEUv,  CEUVLbl,
 	DVR continuousEpistemicUncLabels,
 	DVR continuousEpistemicUncLowerBnds,
 	DVR continuousEpistemicUncUpperBnds,
 	DVR continuousEpistemicUncVars},
- {DAUIVar_Nkinds, 0, AVI DAUIv, DAUIVLbl,
-	DVR  discreteIntAleatoryUncLabels,
-	RDVR discreteIntAleatoryUncLowerBnds,
-	RDVR discreteIntAleatoryUncUpperBnds,
-	RDVR discreteIntAleatoryUncVars},
- {DAURVar_Nkinds, 1, AVI DAURv, DAURVLbl,
+ {DAURVar_Nkinds, AVI DAURv, DAURVLbl,
 	DVR discreteRealAleatoryUncLabels,
 	DVR discreteRealAleatoryUncLowerBnds,
 	DVR discreteRealAleatoryUncUpperBnds,
-	DVR discreteRealAleatoryUncVars}};
+        DVR discreteRealAleatoryUncVars},
+ {DEURVar_Nkinds, AVI DEURv, DEURVLbl,
+	DVR discreteRealEpistemicUncLabels,
+	DVR discreteRealEpistemicUncLowerBnds,
+	DVR discreteRealEpistemicUncUpperBnds,
+	DVR discreteRealEpistemicUncVars}};
 
-#undef RDVR
+static VLint VLI[N_VLI] = {
+ {DAUIVar_Nkinds, AVI DAUIv, DAUIVLbl,
+	DVR discreteIntAleatoryUncLabels,
+        DVR discreteIntAleatoryUncLowerBnds,
+        DVR discreteIntAleatoryUncUpperBnds,
+        DVR discreteIntAleatoryUncVars},
+ {DEUIVar_Nkinds, AVI DEUIv, DEUIVLbl,
+	DVR discreteIntEpistemicUncLabels,
+	DVR discreteIntEpistemicUncLowerBnds,
+	DVR discreteIntEpistemicUncUpperBnds,
+	DVR discreteIntEpistemicUncVars}};
+
+//#undef RDVR
 #undef	DVR
 #undef  AVI
 
-static int VL_aleatory[N_VLS] = { 1, 0, 1, 1 };
+static int VLR_aleatory[N_VLR] = { 1, 0, 1, 0 };
+static int VLI_aleatory[N_VLI] = { 1, 0 };
 
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 make_variable_defaults(std::list<DataVariables>* dvl)
 {
-	DataVariablesRep *dv;
-	IntVector *IL, *IU, *IV;
-	RealVector *L, *U, *V;
-	StringArray *sa;
-	VLstuff *vls;
-	VarLabel *vl;
-	VarLabelChk *vlc, *vlce;
-	Var_uinfo *vui, *vuie;
-	char buf[32];
-	size_t i, j, k, n, nu, nusave[N_VLS];
-	static const char Inconsistent_bounds[] =
-		"Inconsistent bounds on %s uncertain variables";
+  DataVariablesRep *dv;
+  IntVector *IL, *IU, *IV;
+  RealVector *L, *U, *V;
+  StringArray *sa;
+  VLreal *vlr;
+  VLint  *vli;
+  VarLabel *vl;
+  VarLabelChk *vlc, *vlce;
+  Var_uinfo *vui, *vuie;
+  char buf[32];
+  size_t i, j, k, n, nu, nursave[N_VLR], nuisave[N_VLI];
+  static const char Inconsistent_bounds[] =
+    "Inconsistent bounds on %s uncertain variables";
 
-	std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
-	for(; It != Ite; ++It) {
-		dv = It->dataVarsRep;
-		for(k = 0; k < N_VLS; ++k) {
-			vls = &VLS[k];
-			vui = vls->vui;
-			vuie = vui + vls->n;
-			for(nu = 0; vui < vuie; ++vui)
-				nu += dv->*vui->n;
-			nusave[k] = nu;
-			if (!nu)
-				continue;
-			if (vls->isreal) {
-				L = &(dv->*vls->LowerBnds);
-				U = &(dv->*vls->UpperBnds);
-				V = &(dv->*vls->UncVars);
-				L->sizeUninitialized(nu);
-				U->sizeUninitialized(nu);
-				V->sizeUninitialized(nu);
-				}
-			else {
-				#define IVp IntVector DataVariablesRep::*
-				IL = &(dv->*(IVp)vls->LowerBnds);
-				IU = &(dv->*(IVp)vls->UpperBnds);
-				IV = &(dv->*(IVp)vls->UncVars);
-				IL->sizeUninitialized(nu);
-				IU->sizeUninitialized(nu);
-				IV->sizeUninitialized(nu);
-				#undef IVp
-				}
-			}
-		Var_boundgen(dv);
-		Var_iboundgen(dv);
-		for(k = 0; k < N_VLS; ++k) {
-			nu = nusave[k];
-			if (!nu)
-				continue;
-			vls = &VLS[k];
-			vui = vls->vui;
-			vuie = vui + vls->n;
-			if (vls->isreal) {
-				L = &(dv->*vls->LowerBnds);
-				U = &(dv->*vls->UpperBnds);
-				V = &(dv->*vls->UncVars);
-				}
-			else {
-				L = 0;
-				#define IVp IntVector DataVariablesRep::*
-				IL = &(dv->*(IVp)vls->LowerBnds);
-				IU = &(dv->*(IVp)vls->UpperBnds);
-				IV = &(dv->*(IVp)vls->UncVars);
-				#undef IVp
-				}
-			sa = &(dv->*vls->Labels);
-			if (!sa->size())
-				sa->resize(nu);
-			i = 0;
-			for(vui = vls->vui; vui < vuie; ++vui) {
-				if ((n = dv->*vui->n) == 0)
-					continue;
-				if (L) {
-				    for(j = 0; j < n; ++j)
-					if ((*L)[i+j] > (*U)[i+j]) {
-						squawk(Inconsistent_bounds, vui->vkind);
-						break;
-						}
-				    }
-				else {
-				    for(j = 0; j < n; ++j)
-					if ((*IL)[i+j] > (*IU)[i+j]) {
-						squawk(Inconsistent_bounds, vui->vkind);
-						break;
-						}
-				    }
-				if ((*sa)[i] == "")
-					for(j = 1; j <= n; ++j) {
-						std::sprintf(buf, "%s%d", vui->lbl, (int)j);
-						(*sa)[i++] = buf;
-						}
-				else
-					i += n;
-				}
-			}
-		for(vlc = Vlch, vlce = vlc + Numberof(Vlch); vlc < vlce; ++vlc)
-			if (vlc->stub && (n = dv->*vlc->n)) {
-				sa = &(dv->*vlc->sa);
-				if (sa->size() == 0)
-					BuildLabels(sa, n, 0, n, vlc->stub);
-				}
-		}
-	}
+  std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
+  for(; It != Ite; ++It) {
+    dv = It->dataVarsRep;
+    for(k = 0; k < N_VLR; ++k) {
+      vlr = &VLR[k];
+      vui = vlr->vui;
+      vuie = vui + vlr->n;
+      for(nu = 0; vui < vuie; ++vui)
+	nu += dv->*vui->n;
+      nursave[k] = nu;
+      if (!nu)
+	continue;
+      L = &(dv->*vlr->LowerBnds);
+      U = &(dv->*vlr->UpperBnds);
+      V = &(dv->*vlr->UncVars);
+      L->sizeUninitialized(nu);
+      U->sizeUninitialized(nu);
+      V->sizeUninitialized(nu);
+    }
+    for(k = 0; k < N_VLI; ++k) {
+      vli = &VLI[k];
+      vui = vli->vui;
+      vuie = vui + vli->n;
+      for(nu = 0; vui < vuie; ++vui)
+	nu += dv->*vui->n;
+      nuisave[k] = nu;
+      if (!nu)
+	continue;
+      IL = &(dv->*vli->LowerBnds);
+      IU = &(dv->*vli->UpperBnds);
+      IV = &(dv->*vli->UncVars);
+      IL->sizeUninitialized(nu);
+      IU->sizeUninitialized(nu);
+      IV->sizeUninitialized(nu);
+    }
+    Var_boundgen(dv);
+    Var_iboundgen(dv);
+    for(k = 0; k < N_VLR; ++k) {
+      nu = nursave[k];
+      if (!nu)
+	continue;
+      vlr = &VLR[k];
+      vui = vlr->vui;
+      vuie = vui + vlr->n;
+      L = &(dv->*vlr->LowerBnds);
+      U = &(dv->*vlr->UpperBnds);
+      V = &(dv->*vlr->UncVars);
+      sa = &(dv->*vlr->Labels);
+      if (!sa->size())
+	sa->resize(nu);
+      i = 0;
+      for(vui = vlr->vui; vui < vuie; ++vui) {
+	if ((n = dv->*vui->n) == 0)
+	  continue;
+	for(j = 0; j < n; ++j)
+	  if ((*L)[i+j] > (*U)[i+j]) {
+	    squawk(Inconsistent_bounds, vui->vkind);
+	    break;
+	  }
+	if ((*sa)[i] == "")
+	  for(j = 1; j <= n; ++j) {
+	    std::sprintf(buf, "%s%d", vui->lbl, (int)j);
+	    (*sa)[i++] = buf;
+	  }
+	else
+	  i += n;
+      }
+    }
+    for(k = 0; k < N_VLI; ++k) {
+      nu = nuisave[k];
+      if (!nu)
+	continue;
+      vli = &VLI[k];
+      vui = vli->vui;
+      vuie = vui + vli->n;
+      IL = &(dv->*vli->LowerBnds);
+      IU = &(dv->*vli->UpperBnds);
+      IV = &(dv->*vli->UncVars);
+      sa = &(dv->*vli->Labels);
+      if (!sa->size())
+	sa->resize(nu);
+      i = 0;
+      for(vui = vli->vui; vui < vuie; ++vui) {
+	if ((n = dv->*vui->n) == 0)
+	  continue;
+	for(j = 0; j < n; ++j)
+	  if ((*IL)[i+j] > (*IU)[i+j]) {
+	    squawk(Inconsistent_bounds, vui->vkind);
+	    break;
+	  }
+	if ((*sa)[i] == "")
+	  for(j = 1; j <= n; ++j) {
+	    std::sprintf(buf, "%s%d", vui->lbl, (int)j);
+	    (*sa)[i++] = buf;
+	  }
+	else
+	  i += n;
+      }
+    }
+    for(vlc = Vlch, vlce = vlc + Numberof(Vlch); vlc < vlce; ++vlc)
+      if (vlc->stub && (n = dv->*vlc->n)) {
+	sa = &(dv->*vlc->sa);
+	if (sa->size() == 0)
+	  BuildLabels(sa, n, 0, n, vlc->stub);
+      }
+  }
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_stop1(void *v)
 {
-	DataVariablesRep *dv;
-	IntArray *Iv;
-	RealSymMatrix *Rm;
-	RealVector *Rv;
-	StringArray *sa;
-	VLstuff *vls;
-	VarLabel *vl;
-	VarLabelChk *vlc, *vlce;
-	Var_Info *vi;
-	Var_uinfo *vui, *vuie;
-	const char **sp;
-	int havelabels;
-	size_t i, j, k, n, nd, nu, nuk, nutot, nv;
+  DataVariablesRep *dv;
+  IntArray *Iv;
+  RealSymMatrix *Rm;
+  RealVector *Rv;
+  StringArray *sa;
+  VLreal *vlr;
+  VLint  *vli;
+  VarLabel *vl;
+  VarLabelChk *vlc, *vlce;
+  Var_Info *vi;
+  Var_uinfo *vui, *vuie;
+  const char **sp;
+  int havelabels;
+  size_t i, j, k, n, nd, nu, nuk, nutot, nv;
 #define AVI &Var_Info::
-	static IntArray *Var_Info::* Ivzap[] = { AVI nIv, AVI nbp, AVI npp };
-	static RealVector *Var_Info::* Rvzap[] = { AVI Ivb, AVI Ivp, AVI ba, AVI bo,
-						   AVI bc, AVI pa, AVI pc, AVI ucm };
+  // TO DO: incomplete...
+  static IntArray   *Var_Info::* Ivzap[]
+    = { AVI nCIv, AVI nDIv, AVI nbp, AVI npp };
+  static RealVector *Var_Info::* Rvzap[]
+    = { AVI CIvlb, AVI CIvub, AVI CIvp, AVI ba, AVI bo,	AVI bc, AVI pa,
+	AVI pc, AVI ucm };
 #undef AVI
-	static char ucmerr[] = "Got %lu entries for the uncertain_correlation_matrix\n\
+  static char ucmerr[]
+    = "Got %lu entries for the uncertain_correlation_matrix\n\
 	but needed %lu for %lu uncertain variables";
 
-	vi = (Var_Info*)v;
-	dv = vi->dv;
+  vi = (Var_Info*)v;
+  dv = vi->dv;
 
-	/* check and generate labels for design and state variables */
+  /* check and generate labels for design and state variables */
 
-	nv = 0;
-	for(vlc = Vlch, vlce = vlc + Numberof(Vlch); vlc < vlce; ++vlc)
-		if ((n = dv->*vlc->n)) {
-			if (vlc->stub)
-				nv += n;
-			sa = &(dv->*vlc->sa);
-			if ((nu = sa->size())) {
-				if (nu != n) {
-					if (nu == 1 && !vlc->stub)
-						continue;
-					squawk("Found %lu rather than %lu %s values",
-						(UL)nu, (UL)n, vlc->name);
-					}
-				}
-			}
-
-	/* now deal with uncertain variables */
-
-	for(k = nu = nutot = 0; k < N_VLS; ++k) {
-		vls = &VLS[k];
-		havelabels = 0;
-		nuk = 0;
-		vl = &(vi->*vls->VL);	// "&(...)" to bypass a g++ bug
-		vui = vls->vui;
-		for(vuie = vui + vls->n; vui < vuie; ++vl, ++vui) {
-			nuk += dv->*vui->n;
-			if (vl->s)
-				++havelabels;
-			}
-		if (nuk > 0) {
-			nutot += nuk;
-			if (VL_aleatory[k])
-				nu += nuk;
-			if (havelabels)
-				(sa = &(dv->*vls->Labels))->resize(nuk);
-			i = 0;
-			vl = &(vi->*vls->VL);
-			for(vui = vls->vui; vui < vuie; ++vl, ++vui) {
-				if ((n = dv->*vui->n) == 0)
-					continue;
-				vui->vadj(dv,i,vi);
-				if ((sp = vl->s)) {
-					if (vl->n != n)
-						squawk("Expected %d %s_descriptors, but got %d",
-							n, vui->lbl, vl->n);
-					else
-						for(j = 0; j < n; ++i, ++j)
-							(*sa)[i] = sp[j];
-					free(sp);
-					}
-				else
-					i += n;
-				}
-			}
-		}
-
-	if ((Rv = vi->ucm)) { // uncertain_correlation_matrix
-		n = Rv->length();
-		if (n != nu*nu)
-			squawk(ucmerr, (UL)n, (UL)nu*nu, (UL)nu);
-		else {
-			Rm = &dv->uncertainCorrelations;
-			Rm->reshape(nu);
-			for(i = k = 0; i < nu; ++i) {
-				for(j = 0; j < nu;)
-					(*Rm)(i,j++) = (*Rv)[k++];
-				}
-			}
-		}
-
-	/* check discrete variables */
-
-	vuie = DiscSetLbl + DiscSetVar_Nkinds;
-	nd = 0;
-	for(vui = DiscSetLbl; vui < vuie; ++vui) {
-		if ((n = dv->*vui->n) > 0) {
-			vui->vadj(dv,0,vi);
-			nd += n;
-			}
-		}
-
-	if (nd + nv + nutot == 0)
-		squawk("at least one variable must be specified");
-
-	/* check bounds */
-
-	Var_boundchk(dv);
-	Var_iboundchk(dv);
-
-
-	/* finish up and clean up */
-
-	n = Numberof(Ivzap);
-	for(i = 0; i < n; i++) {
-		if ((Iv = vi->*Ivzap[i]))
-			delete Iv;
-		}
-	n = Numberof(Rvzap);
-	for(i = 0; i < n; i++) {
-		if ((Rv = vi->*Rvzap[i]))
-			delete Rv;
-		}
-	delete vi;
-	if (nerr)
-		abort_handler(-1);
+  nv = 0;
+  for(vlc = Vlch, vlce = vlc + Numberof(Vlch); vlc < vlce; ++vlc)
+    if ((n = dv->*vlc->n)) {
+      if (vlc->stub)
+	nv += n;
+      sa = &(dv->*vlc->sa);
+      if ((nu = sa->size())) {
+	if (nu != n) {
+	  if (nu == 1 && !vlc->stub)
+	    continue;
+	  squawk("Found %lu rather than %lu %s values",
+		 (UL)nu, (UL)n, vlc->name);
 	}
+      }
+    }
 
- static void
+  /* now deal with uncertain variables */
+
+  for(k = nu = nutot = 0; k < N_VLR; ++k) {
+    vlr = &VLR[k];
+    havelabels = 0;
+    nuk = 0;
+    vl = &(vi->*vlr->VL);	// "&(...)" to bypass a g++ bug
+    vui = vlr->vui;
+    for(vuie = vui + vlr->n; vui < vuie; ++vl, ++vui) {
+      nuk += dv->*vui->n;
+      if (vl->s)
+	++havelabels;
+    }
+    if (nuk > 0) {
+      nutot += nuk;
+      if (VLR_aleatory[k])
+	nu += nuk;
+      if (havelabels)
+	(sa = &(dv->*vlr->Labels))->resize(nuk);
+      i = 0;
+      vl = &(vi->*vlr->VL);
+      for(vui = vlr->vui; vui < vuie; ++vl, ++vui) {
+	if ((n = dv->*vui->n) == 0)
+	  continue;
+	vui->vadj(dv,i,vi);
+	if ((sp = vl->s)) {
+	  if (vl->n != n)
+	    squawk("Expected %d %s_descriptors, but got %d",
+		   n, vui->lbl, vl->n);
+	  else
+	    for(j = 0; j < n; ++i, ++j)
+	      (*sa)[i] = sp[j];
+	  free(sp);
+	}
+	else
+	  i += n;
+      }
+    }
+  }
+  for(k = nu = 0; k < N_VLI; ++k) {
+    vli = &VLI[k];
+    havelabels = 0;
+    nuk = 0;
+    vl = &(vi->*vli->VL);	// "&(...)" to bypass a g++ bug
+    vui = vli->vui;
+    for(vuie = vui + vli->n; vui < vuie; ++vl, ++vui) {
+      nuk += dv->*vui->n;
+      if (vl->s)
+	++havelabels;
+    }
+    if (nuk > 0) {
+      nutot += nuk;
+      if (VLI_aleatory[k])
+	nu += nuk;
+      if (havelabels)
+	(sa = &(dv->*vli->Labels))->resize(nuk);
+      i = 0;
+      vl = &(vi->*vli->VL);
+      for(vui = vli->vui; vui < vuie; ++vl, ++vui) {
+	if ((n = dv->*vui->n) == 0)
+	  continue;
+	vui->vadj(dv,i,vi);
+	if ((sp = vl->s)) {
+	  if (vl->n != n)
+	    squawk("Expected %d %s_descriptors, but got %d",
+		   n, vui->lbl, vl->n);
+	  else
+	    for(j = 0; j < n; ++i, ++j)
+	      (*sa)[i] = sp[j];
+	  free(sp);
+	}
+	else
+	  i += n;
+      }
+    }
+  }
+
+  if ((Rv = vi->ucm)) { // uncertain_correlation_matrix
+    n = Rv->length();
+    if (n != nu*nu)
+      squawk(ucmerr, (UL)n, (UL)nu*nu, (UL)nu);
+    else {
+      Rm = &dv->uncertainCorrelations;
+      Rm->reshape(nu);
+      for(i = k = 0; i < nu; ++i) {
+	for(j = 0; j < nu;)
+	  (*Rm)(i,j++) = (*Rv)[k++];
+      }
+    }
+  }
+
+  /* check discrete variables */
+
+  vuie = DiscSetLbl + DiscSetVar_Nkinds;
+  nd = 0;
+  for(vui = DiscSetLbl; vui < vuie; ++vui) {
+    if ((n = dv->*vui->n) > 0) {
+      vui->vadj(dv,0,vi);
+      nd += n;
+    }
+  }
+
+  if (nd + nv + nutot == 0)
+    squawk("at least one variable must be specified");
+
+  /* check bounds */
+
+  Var_boundchk(dv);
+  Var_iboundchk(dv);
+
+
+  /* finish up and clean up */
+
+  n = Numberof(Ivzap);
+  for(i = 0; i < n; i++) {
+    if ((Iv = vi->*Ivzap[i]))
+      delete Iv;
+  }
+  n = Numberof(Rvzap);
+  for(i = 0; i < n; i++) {
+    if ((Rv = vi->*Rvzap[i]))
+      delete Rv;
+  }
+  delete vi;
+  if (nerr)
+    abort_handler(-1);
+}
+
+static void
 Rdv_copy(RealVector **prdv, RealVectorArray *rdva)
 {
-	size_t i, j, k, m, n;
-	RealVector *rdv, *rdv1;
+  size_t i, j, k, m, n;
+  RealVector *rdv, *rdv1;
 
-	*prdv = rdv = new RealVector();
-	m = rdva->size();
-	for(i = n = 0; i < m; ++i)
-		n += (*rdva)[i].length();
-	rdv->sizeUninitialized(n);
-	for(i = k = 0; i < m; ++i) {
-		rdv1 = &(*rdva)[i];
-		n = rdv1->length();
-		for(j = 0; j < n; ++j)
-			(*rdv)[k++] = (*rdv1)[j];
-		}
-	}
+  *prdv = rdv = new RealVector();
+  m = rdva->size();
+  for(i = n = 0; i < m; ++i)
+    n += (*rdva)[i].length();
+  rdv->sizeUninitialized(n);
+  for(i = k = 0; i < m; ++i) {
+    rdv1 = &(*rdva)[i];
+    n = rdv1->length();
+    for(j = 0; j < n; ++j)
+      (*rdv)[k++] = (*rdv1)[j];
+  }
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 check_variables(std::list<DataVariables>* dvl)
 {
   if (pDDBInstance) {
@@ -4043,15 +4128,17 @@ check_variables(std::list<DataVariables>* dvl)
       memset(vi, 0, sizeof(Var_Info));
       vi->dv0 = &*It;
       vi->dv = dv = It->dataVarsRep;
-      if ((n = dv->numIntervalUncVars)) {
-	rdva = &dv->intervalUncBasicProbs;
+      if ((n = dv->numContinuousIntervalUncVars)) {
+	rdva = &dv->continuousIntervalUncBasicProbs;
 	m = rdva->size();
-	vi->nIv = iv = new IntArray(m);
+	vi->nCIv = iv = new IntArray(m);
 	for(i = 0; i < m; ++i)
 	  (*iv)[i] = (*rdva)[i].length();
-	Rdv_copy(&vi->Ivb, &dv->intervalUncBounds);
-	Rdv_copy(&vi->Ivp, rdva);
+	Rdv_copy(&vi->CIvlb, &dv->continuousIntervalUncLowerBounds);
+	Rdv_copy(&vi->CIvub, &dv->continuousIntervalUncUpperBounds);
+	Rdv_copy(&vi->CIvp, rdva);
       }
+      // TO DO: incomplete...
       rdva = &dv->histogramUncBinPairs;
       if ((m = rdva->size())) {
 	vi->nbp = iv = new IntArray(m);
@@ -4066,7 +4153,7 @@ check_variables(std::list<DataVariables>* dvl)
 	    (*rva)[cntr] = (*rdva)[i][2*j];   // abscissas
 	    (*rvc)[cntr] = (*rdva)[i][2*j+1]; // counts only (no ordinates)
 	  }
-	  // normalization occurs in Vadj_HistogramBin going the other direction
+	  // normalization occurs in Vadj_HistogramBinUnc going other direction
 	}
       }
       rdva = &dv->histogramUncPointPairs;
@@ -4082,7 +4169,7 @@ check_variables(std::list<DataVariables>* dvl)
 	    (*rva)[cntr] = (*rdva)[i][2*j];   // abscissas
 	    (*rvc)[cntr] = (*rdva)[i][2*j+1]; // counts
 	  }
-	  // normalization occurs in Vadj_HistogramPt going the other direction
+	  // normalization occurs in Vadj_HistogramPtUnc going other direction
 	}
       }
       rsdm = &dv->uncertainCorrelations;
@@ -4097,75 +4184,89 @@ check_variables(std::list<DataVariables>* dvl)
   }
 }
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_str(const char *keyname, Values *val, void **g, void *v)
 {
-	(*(Var_Info**)g)->dv->**(String DataVariablesRep::**)v = *val->s;
-	}
+  (*(Var_Info**)g)->dv->**(String DataVariablesRep::**)v = *val->s;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_strL(const char *keyname, Values *val, void **g, void *v)
 {
-	StringArray *sa = &((*(Var_Info**)g)->dv->**(StringArray DataVariablesRep::**)v);
-	const char **s = val->s;
-	size_t i, n = val->n;
+  StringArray *sa = &((*(Var_Info**)g)->dv->**(StringArray DataVariablesRep::**)v);
+  const char **s = val->s;
+  size_t i, n = val->n;
 
-	sa->resize(n);
-	for(i = 0; i < n; i++)
-		(*sa)[i] = s[i];
-	}
+  sa->resize(n);
+  for(i = 0; i < n; i++)
+    (*sa)[i] = s[i];
+}
 
- static void
+static void
 var_iulbl(const char *keyname, Values *val, VarLabel *vl)
 {
-	char *t;
-	const char **s, **sl;
-	size_t i, L, n;
+  char *t;
+  const char **s, **sl;
+  size_t i, L, n;
 
-	L = n = val->n;	// n for null
-	s = val->s;
-	for(i = 0; i < n; i++)
-		L += strlen(s[i]);
-	vl->s = sl = (const char **)malloc(n*sizeof(char*) + L);
-	if (!sl)
-		NIDRProblemDescDB::botch("malloc failure in var_ulbl");
-	vl->n = n;
-	t = (char*)(sl + n);
-	for(i = 0; i < n; i++) {
-		strcpy(t, s[i]);
-		sl[i] = (const char*)t;
-		t += strlen(t) + 1;
-		}
-	}
+  L = n = val->n;	// n for null
+  s = val->s;
+  for(i = 0; i < n; i++)
+    L += strlen(s[i]);
+  vl->s = sl = (const char **)malloc(n*sizeof(char*) + L);
+  if (!sl)
+    NIDRProblemDescDB::botch("malloc failure in var_ulbl");
+  vl->n = n;
+  t = (char*)(sl + n);
+  for(i = 0; i < n; i++) {
+    strcpy(t, s[i]);
+    sl[i] = (const char*)t;
+    t += strlen(t) + 1;
+  }
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_caulbl(const char *keyname, Values *val, void **g, void *v)
 {
-	// IRIX disallows (int)v, so we use the circumlocution (char*)v - (char*)0.
-	VarLabel *vl = &(*(Var_Info**)g)->CAUv[(char*)v - (char*)0];
-	var_iulbl(keyname, val, vl);
-	}
+  // IRIX disallows (int)v, so we use the circumlocution (char*)v - (char*)0.
+  VarLabel *vl = &(*(Var_Info**)g)->CAUv[(char*)v - (char*)0];
+  var_iulbl(keyname, val, vl);
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 var_ceulbl(const char *keyname, Values *val, void **g, void *v)
 {
-	VarLabel *vl = &(*(Var_Info**)g)->CEUv[(char*)v - (char*)0];
-	var_iulbl(keyname, val, vl);
-	}
+  VarLabel *vl = &(*(Var_Info**)g)->CEUv[(char*)v - (char*)0];
+  var_iulbl(keyname, val, vl);
+}
 
- void NIDRProblemDescDB::
-var_dailbl(const char *keyname, Values *val, void **g, void *v)
+void NIDRProblemDescDB::
+var_dauilbl(const char *keyname, Values *val, void **g, void *v)
 {
-	VarLabel *vl = &(*(Var_Info**)g)->DAUIv[(char*)v - (char*)0];
-	var_iulbl(keyname, val, vl);
-	}
+  VarLabel *vl = &(*(Var_Info**)g)->DAUIv[(char*)v - (char*)0];
+  var_iulbl(keyname, val, vl);
+}
 
- void NIDRProblemDescDB::
-var_darlbl(const char *keyname, Values *val, void **g, void *v)
+void NIDRProblemDescDB::
+var_deuilbl(const char *keyname, Values *val, void **g, void *v)
 {
-	VarLabel *vl = &(*(Var_Info**)g)->DAURv[(char*)v - (char*)0];
-	var_iulbl(keyname, val, vl);
-	}
+  VarLabel *vl = &(*(Var_Info**)g)->DEUIv[(char*)v - (char*)0];
+  var_iulbl(keyname, val, vl);
+}
+
+void NIDRProblemDescDB::
+var_daurlbl(const char *keyname, Values *val, void **g, void *v)
+{
+  VarLabel *vl = &(*(Var_Info**)g)->DAURv[(char*)v - (char*)0];
+  var_iulbl(keyname, val, vl);
+}
+
+void NIDRProblemDescDB::
+var_deurlbl(const char *keyname, Values *val, void **g, void *v)
+{
+  VarLabel *vl = &(*(Var_Info**)g)->DEURv[(char*)v - (char*)0];
+  var_iulbl(keyname, val, vl);
+}
 
 #define MP_(x) DataInterfaceRep::* iface_mp_##x = &DataInterfaceRep::x
 #define MP2(x,y) iface_mp_##x##_##y = {&DataInterfaceRep::x,#y}
@@ -4843,10 +4944,10 @@ static int
 
 #define MP_(x) DataVariablesRep::* var_mp_##x = &DataVariablesRep::x
 #define MP2s(x,y) var_mp_##x = {&DataVariablesRep::x,y}
-#define Vchu(x,y,z) {#x,&DataVariablesRep::y,Vbgen_##z,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds}
-#define Vchu1(x,y,z) {#x,&DataVariablesRep::y,Vbgen_##z,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds,0,0,1}
-#define Vchu0(x,y,z) {#x,&DataVariablesRep::y,Vbgen_##z}
-#define Vchv(x,y,z) {#x,&DataVariablesRep::y,0,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds,&DataVariablesRep::z##Vars,&DataVariablesRep::z##Labels}
+#define Vchu5(x,y,z) {#x,&DataVariablesRep::num##y##Vars,Vbgen_##y,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds}
+#define Vchu8(x,y,z) {#x,&DataVariablesRep::num##y##Vars,Vbgen_##y,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds,0,0,1}
+#define Vchu2(x,y) {#x,&DataVariablesRep::num##y##Vars,Vbgen_##y}
+#define Vchv(x,y,z) {#x,&DataVariablesRep::num##y##Vars,0,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds,&DataVariablesRep::z##Vars,&DataVariablesRep::z##Labels}
 #define Vchi(x,y,z) {#x,&DataVariablesRep::y,&DataVariablesRep::z##LowerBnds,&DataVariablesRep::z##UpperBnds,&DataVariablesRep::z##Vars,&DataVariablesRep::z##Labels}
 #define VP_(x) *Var_Info::* var_mp_Var_Info_##x = &Var_Info::x
 #define Vtype(x,y) var_mp_##x##_##y = {&DataVariablesRep::x,y}
@@ -4855,13 +4956,17 @@ static size_t
 	MP_(numBetaUncVars),
 	MP_(numBinomialUncVars),
 	MP_(numContinuousDesVars),
+	MP_(numContinuousIntervalUncVars),
 	MP_(numContinuousStateVars),
 	MP_(numDiscreteDesRangeVars),
 	MP_(numDiscreteDesSetIntVars),
 	MP_(numDiscreteDesSetRealVars),
+	MP_(numDiscreteIntervalUncVars),
 	MP_(numDiscreteStateRangeVars),
 	MP_(numDiscreteStateSetIntVars),
 	MP_(numDiscreteStateSetRealVars),
+	MP_(numDiscreteUncSetIntVars),
+	MP_(numDiscreteUncSetRealVars),
 	MP_(numExponentialUncVars),
 	MP_(numFrechetUncVars),
 	MP_(numGammaUncVars),
@@ -4870,7 +4975,6 @@ static size_t
 	MP_(numHistogramBinUncVars),
 	MP_(numHistogramPtUncVars),
 	MP_(numHyperGeomUncVars),
-	MP_(numIntervalUncVars),
 	MP_(numLognormalUncVars),
 	MP_(numLoguniformUncVars),
 	MP_(numNegBinomialUncVars),
@@ -4890,21 +4994,27 @@ static IntVector
 	MP_(discreteDesignRangeUpperBnds),
 	MP_(discreteDesignRangeVars),
 	MP_(discreteDesignSetIntVars),
-	MP_(discreteStateRangeLowerBnds),
+	VP_(dsvi),
+	VP_(DIvlb),
+	VP_(DIvub),
+        VP_(usvi),
+        VP_(ssvi),
+        MP_(discreteStateRangeLowerBnds),
 	MP_(discreteStateRangeUpperBnds),
 	MP_(discreteStateRangeVars),
 	MP_(discreteStateSetIntVars);
 
 static IntArray
-	VP_(dsvi),
 	VP_(ndsvi),
 	VP_(ndsvr),
-	VP_(nIv),
 	VP_(nbp),
 	VP_(npp),
+	VP_(nCIv),
+	VP_(nDIv),
+	VP_(nusvi),
+	VP_(nusvr),
 	VP_(nssvi),
-	VP_(nssvr),
-	VP_(ssvi);
+	VP_(nssvr);
 
 static RealVector
 	MP_(betaUncLowerBnds),
@@ -4929,8 +5039,13 @@ static RealVector
         MP_(poissonUncLambdas),
 	MP_(triangularUncModes),
 	VP_(dsvr),
-	VP_(Ivb),
-	VP_(Ivp),
+	VP_(CIvlb),
+	VP_(CIvub),
+	VP_(CIvp),
+	VP_(DIvp),
+	VP_(DSIvp),
+	VP_(DSRvp),
+	VP_(usvr),
 	VP_(ba),
 	VP_(bo),
 	VP_(bc),
@@ -4956,34 +5071,37 @@ static StringArray
 static Var_bgen
 
 	var_mp_bgen[] = {
-		Vchu0(gamma_uncertain,numGammaUncVars,Gamma),
-		Vchu0(gumbel_uncertain,numGumbelUncVars,Gumbel),
-		Vchu0(frechet_uncertain,numFrechetUncVars,Frechet),
-		Vchu0(weibull_uncertain,numWeibullUncVars,Weibull),
-		Vchu0(histogram_bin_uncertain,numHistogramBinUncVars,HistogramBin)
+		Vchu2(gamma_uncertain,GammaUnc),
+		Vchu2(gumbel_uncertain,GumbelUnc),
+		Vchu2(frechet_uncertain,FrechetUnc),
+		Vchu2(weibull_uncertain,WeibullUnc),
+		Vchu2(histogram_bin_uncertain,HistogramBinUnc)
 		},
 
 	var_mp_bgen_audr[] = {
-		Vchu0(histogram_point_uncertain,numHistogramPtUncVars,HistogramPt)
+		Vchu2(histogram_point_uncertain,HistogramPtUnc)
 		},
 
 	var_mp_bgen_audi[] = {
-		Vchu0(poisson_uncertain,numPoissonUncVars,Poisson),
-		Vchu0(binomial_uncertain,numBinomialUncVars,Binomial),
-		Vchu0(negative_binomial_uncertain,numNegBinomialUncVars,NegBinomial),
-		Vchu0(geometric_uncertain,numGeometricUncVars,Geometric),
-		Vchu0(hypergeometric_uncertain,numHyperGeomUncVars,HyperGeom)
+		Vchu2(poisson_uncertain,PoissonUnc),
+		Vchu2(binomial_uncertain,BinomialUnc),
+		Vchu2(negative_binomial_uncertain,NegBinomialUnc),
+		Vchu2(geometric_uncertain,GeometricUnc),
+		Vchu2(hypergeometric_uncertain,HyperGeomUnc)
 		},
 
 	var_mp_bgen_eu[] = {
-		Vchu0(interval_uncertain,numIntervalUncVars,Interval)
+		Vchu2(continuous_interval_uncertain,ContinuousIntervalUnc),
+		Vchu2(discrete_interval_uncertain,DiscreteIntervalUnc),
+		Vchu2(discrete_uncertain_set_integer,DiscreteUncSetInt),
+		Vchu2(discrete_uncertain_set_real,DiscreteUncSetReal)
 		},
 
 	var_mp_bgen_dis[] = {
-		Vchu0(discrete_design_set_integer,numDiscreteDesSetIntVars,DDSI),
-		Vchu0(discrete_design_set_real,numDiscreteDesSetRealVars,DDSR),
-		Vchu0(discrete_state_set_integer,numDiscreteStateSetIntVars,DSSI),
-		Vchu0(discrete_state_set_real,numDiscreteStateSetRealVars,DSSR)
+		Vchu2(discrete_design_set_integer,DiscreteDesSetInt),
+		Vchu2(discrete_design_set_real,DiscreteDesSetReal),
+		Vchu2(discrete_state_set_integer,DiscreteStateSetInt),
+		Vchu2(discrete_state_set_real,DiscreteStateSetReal)
 		};
 
 #define BgenInit(x) {x, Numberof(x)}
@@ -4994,15 +5112,15 @@ static Var_bgen
 #undef BgenInit
 
 static Var_bchk var_mp_bndchk[] = {
-	Vchv(continuous_design,numContinuousDesVars,continuousDesign),
-	Vchu1(normal_uncertain,numNormalUncVars,normalUnc),
-	Vchu1(lognormal_uncertain,numLognormalUncVars,lognormalUnc),
-	Vchu(uniform_uncertain,numUniformUncVars,uniformUnc),
-	Vchu(loguniform_uncertain,numLoguniformUncVars,loguniformUnc),
-	Vchu(triangular_uncertain,numTriangularUncVars,triangularUnc),
-	Vchu0(exponential_uncertain,numExponentialUncVars,Exponential),
-	Vchu(beta_uncertain,numBetaUncVars,betaUnc),
-	Vchv(continuous_state,numContinuousStateVars,continuousState)
+	Vchv(continuous_design,ContinuousDes,continuousDesign),
+	Vchu8(normal_uncertain,NormalUnc,normalUnc),
+	Vchu8(lognormal_uncertain,LognormalUnc,lognormalUnc),
+	Vchu5(uniform_uncertain,UniformUnc,uniformUnc),
+	Vchu5(loguniform_uncertain,LoguniformUnc,loguniformUnc),
+	Vchu5(triangular_uncertain,TriangularUnc,triangularUnc),
+	Vchu2(exponential_uncertain,ExponentialUnc),
+	Vchu5(beta_uncertain,BetaUnc,betaUnc),
+	Vchv(continuous_state,ContinuousState,continuousState)
 	};
 
 static Var_ibchk var_mp_ibndchk[] = {
@@ -5048,279 +5166,280 @@ static Var_mp_type
 #undef VP_
 #undef Vchi
 #undef Vchv
-#undef Vchu0
-#undef Vchu
+#undef Vchu2
+#undef Vchu8
+#undef Vchu5
 #undef MP2s
 #undef MP_
 #undef Vtype
 
- static const char *
+static const char *
 Var_Name(StringArray *sa, char *buf, size_t i)
 {
-	if (sa)
-		return (*sa)[i].data();
-	std::sprintf(buf,"%lu", (UL)(i+1));
-	return (const char*)buf;
-	}
+  if (sa)
+    return (*sa)[i].data();
+  std::sprintf(buf,"%lu", (UL)(i+1));
+  return (const char*)buf;
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 Var_boundchk(DataVariablesRep *dv)
 {
-	Var_bchk *b, *be;
-	RealVector *L, *U, *V;
-	StringArray *sa;
-	char namebuf[32];
-	int i, n, ndflt;	// length() values here are int rather than size_t
+  Var_bchk *b, *be;
+  RealVector *L, *U, *V;
+  StringArray *sa;
+  char namebuf[32];
+  int i, n, ndflt; // length() values here are int rather than size_t
 
-	b = var_mp_bndchk;
-	be = b + Numberof(var_mp_bndchk);
-	for(; b < be; ++b) {
-		if ((n = dv->*b->n) == 0)
-			continue;
-		ndflt = -1;
-		if (b->L) {
-			ndflt = 0;
-			L = &(dv->*b->L);
-			if (L->length() == 0)
-				++ndflt;
-			else if (L->length() != n) {
-				squawk("%s_lower_bounds needs %lu elements, not %lu",
-					b->name, (UL)n, (UL)L->length());
-				continue;
-				}
-			U = &(dv->*b->U);
-			if (U->length() == 0)
-				++ndflt;
-			else if (U->length() != n) {
-				squawk("%s_upper_bounds needs %lu elements, not %lu",
-					b->name, (UL)n, (UL)L->length());
-				continue;
-				}
-			}
-		sa = 0;
-		if (b->Lbl) {
-			sa = &(dv->*b->Lbl);
-			if (sa->size() == 0)
-				sa = 0;
-			}
-		if (ndflt == 0)
-		     for(i = 0; i < n; i++) {
-			if ((*L)[i] > (*U)[i])
-			  squawk("lower bound for %s variable %s exceeds upper bound",
-					b->name, Var_Name(sa,namebuf,i));
-			}
-		if (b->V == 0)
-			continue;
-		V = &(dv->*b->V);
-		if (V->length() == 0)
-			continue;
-		if (V->length() != n) {
-			squawk("initial point for %s needs %lu elements, not %lu",
-				b->name, (UL)n, (UL)V->length());
-			continue;
-			}
-		if (L->length() > 0) {
-		    for(i = 0; i < n; i++)
-			if ((*V)[i] < (*L)[i]) {
-				Warn("Setting initial_value for %s variable %s to its lower bound",
-					b->name, Var_Name(sa,namebuf,i));
-				(*V)[i] = (*L)[i];
-				}
-			}
-		if (U->length() > 0) {
-		    for(i = 0; i < n; i++)
-			if ((*V)[i] > (*U)[i]) {
-				Warn("Setting initial_value for %s variable %s to its upper bound",
-					b->name, Var_Name(sa,namebuf,i));
-				(*V)[i] = (*U)[i];
-				}
-			}
-		}
+  b = var_mp_bndchk;
+  be = b + Numberof(var_mp_bndchk);
+  for(; b < be; ++b) {
+    if ((n = dv->*b->n) == 0)
+      continue;
+    ndflt = -1;
+    if (b->L) {
+      ndflt = 0;
+      L = &(dv->*b->L);
+      if (L->length() == 0)
+	++ndflt;
+      else if (L->length() != n) {
+	squawk("%s_lower_bounds needs %lu elements, not %lu",
+	       b->name, (UL)n, (UL)L->length());
+	continue;
+      }
+      U = &(dv->*b->U);
+      if (U->length() == 0)
+	++ndflt;
+      else if (U->length() != n) {
+	squawk("%s_upper_bounds needs %lu elements, not %lu",
+	       b->name, (UL)n, (UL)L->length());
+	continue;
+      }
+    }
+    sa = 0;
+    if (b->Lbl) {
+      sa = &(dv->*b->Lbl);
+      if (sa->size() == 0)
+	sa = 0;
+    }
+    if (ndflt == 0)
+      for(i = 0; i < n; i++) {
+	if ((*L)[i] > (*U)[i])
+	  squawk("lower bound for %s variable %s exceeds upper bound",
+		 b->name, Var_Name(sa,namebuf,i));
+      }
+    if (b->V == 0)
+      continue;
+    V = &(dv->*b->V);
+    if (V->length() == 0)
+      continue;
+    if (V->length() != n) {
+      squawk("initial point for %s needs %lu elements, not %lu",
+	     b->name, (UL)n, (UL)V->length());
+      continue;
+    }
+    if (L->length() > 0) {
+      for(i = 0; i < n; i++)
+	if ((*V)[i] < (*L)[i]) {
+	  Warn("Setting initial_value for %s variable %s to its lower bound",
+	       b->name, Var_Name(sa,namebuf,i));
+	  (*V)[i] = (*L)[i];
 	}
+    }
+    if (U->length() > 0) {
+      for(i = 0; i < n; i++)
+	if ((*V)[i] > (*U)[i]) {
+	  Warn("Setting initial_value for %s variable %s to its upper bound",
+	       b->name, Var_Name(sa,namebuf,i));
+	  (*V)[i] = (*U)[i];
+	}
+    }
+  }
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 Var_boundgen(DataVariablesRep *dv)
 {
-	Var_bchk *b, *be;
-	Var_bgen *b1, *b1e;
-	Real t;
-	RealVector *L, *U, *V;
-	size_t i, i0, n;
+  Var_bchk *b, *be;
+  Var_bgen *b1, *b1e;
+  Real t;
+  RealVector *L, *U, *V;
+  size_t i, i0, n;
 
-	b = var_mp_bndchk;
-	be = b + Numberof(var_mp_bndchk);
-	i0 = 0;
-	for(; b < be; ++b) {
-		if ((n = dv->*b->n) == 0)
-			continue;
-		L = U = 0;
-		if (b->L && !b->no_init) {
-			L = &(dv->*b->L);
-			if (L->length() == 0)
-				Set_rdv(L, -DBL_MAX, n);
-			U = &(dv->*b->U);
-			if (U->length() == 0)
-				Set_rdv(U, DBL_MAX, n);
-			}
-		if (b->vbgen) {
-			(*b->vbgen)(dv, i0);
-			i0 += n;
-			}
-		if (b->V == 0)
-			continue;
-		V = &(dv->*b->V);
-		if (V->length() == 0) {
-			V->sizeUninitialized(n);
-			for(i = 0; i < n; i++) {
-				t = 0.;
-				if ((*L)[i] > t)
-					t = (*L)[i];
-				else if ((*U)[i] < t)
-					t = (*U)[i];
-				(*V)[i] = t;
-				}
-			}
-		}
-	b1 = var_mp_bgen;
-	b1e = b1 + Numberof(var_mp_bgen);
-	for(; b1 < b1e; ++b1) {
-		if ((n = dv->*b1->n) == 0)
-			continue;
-		(*b1->vbgen)(dv, i0);
-		i0 += n;
-		}
-	}
+  b = var_mp_bndchk;
+  be = b + Numberof(var_mp_bndchk);
+  i0 = 0;
+  for(; b < be; ++b) {
+    if ((n = dv->*b->n) == 0)
+      continue;
+    L = U = 0;
+    if (b->L && !b->no_init) {
+      L = &(dv->*b->L);
+      if (L->length() == 0)
+	Set_rdv(L, -DBL_MAX, n);
+      U = &(dv->*b->U);
+      if (U->length() == 0)
+	Set_rdv(U, DBL_MAX, n);
+    }
+    if (b->vbgen) {
+      (*b->vbgen)(dv, i0);
+      i0 += n;
+    }
+    if (b->V == 0)
+      continue;
+    V = &(dv->*b->V);
+    if (V->length() == 0) {
+      V->sizeUninitialized(n);
+      for(i = 0; i < n; i++) {
+	t = 0.;
+	if ((*L)[i] > t)
+	  t = (*L)[i];
+	else if ((*U)[i] < t)
+	  t = (*U)[i];
+	(*V)[i] = t;
+      }
+    }
+  }
+  b1 = var_mp_bgen;
+  b1e = b1 + Numberof(var_mp_bgen);
+  for(; b1 < b1e; ++b1) {
+    if ((n = dv->*b1->n) == 0)
+      continue;
+    (*b1->vbgen)(dv, i0);
+    i0 += n;
+  }
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 Var_iboundchk(DataVariablesRep *dv)
 {
-	Var_ibchk *b, *be;
-	IntVector *L, *U, *V;
-	StringArray *sa;
-	char namebuf[32];
-	int i, n, ndflt;	// length() values here are int rather than size_t
+  Var_ibchk *b, *be;
+  IntVector *L, *U, *V;
+  StringArray *sa;
+  char namebuf[32];
+  int i, n, ndflt;	// length() values here are int rather than size_t
 
-	b = var_mp_ibndchk;
-	be = b + Numberof(var_mp_ibndchk);
-	for(; b < be; ++b) {
-		if ((n = dv->*b->n) == 0)
-			continue;
-		L = &(dv->*b->L);
-		ndflt = 0;
-		if (L->length() == 0)
-			++ndflt;
-		else if (L->length() != n) {
-			squawk("%s_lower_bounds needs %lu elements, not %lu",
-				b->name, (UL)n, (UL)L->length());
-			continue;
-			}
-		U = &(dv->*b->U);
-		if (U->length() == 0)
-			++ndflt;
-		else if (U->length() != n) {
-			squawk("%s_upper_bounds needs %lu elements, not %lu",
-				b->name, (UL)n, (UL)L->length());
-			continue;
-			}
-		sa = 0;
-		if (b->Lbl) {
-			sa = &(dv->*b->Lbl);
-			if (sa->size() == 0)
-				sa = 0;
-			}
-		if (ndflt == 0)
-		     for(i = 0; i < n; i++) {
-			if ((*L)[i] > (*U)[i])
-			  squawk("lower bound for %s variable %s exceeds upper bound",
-					b->name, Var_Name(sa,namebuf,i));
-			}
-		if (b->V == 0)
-			continue;	// won't happen for discrete variables
-		V = &(dv->*b->V);
-		if (V->length() == 0)
-			continue;
-		if (V->length() != n) {
-			squawk("initial point for %s needs %lu elements, not %lu",
-				b->name, (UL)n, (UL)V->length());
-			continue;
-			}
-		if (L->length() > 0) {
-		    for(i = 0; i < n; i++)
-			if ((*V)[i] < (*L)[i]) {
-				warn("Setting initial_value for %s variable %s to its lower bound",
-					b->name, Var_Name(sa,namebuf,i));
-				(*V)[i] = (*L)[i];
-				}
-			}
-		if (U->length() > 0) {
-		    for(i = 0; i < n; i++)
-			if ((*V)[i] > (*U)[i]) {
-				warn("Setting initial_value for %s variable %s to its upper bound",
-					b->name, Var_Name(sa,namebuf,i));
-				(*V)[i] = (*U)[i];
-				}
-			}
-		}
+  b = var_mp_ibndchk;
+  be = b + Numberof(var_mp_ibndchk);
+  for(; b < be; ++b) {
+    if ((n = dv->*b->n) == 0)
+      continue;
+    L = &(dv->*b->L);
+    ndflt = 0;
+    if (L->length() == 0)
+      ++ndflt;
+    else if (L->length() != n) {
+      squawk("%s_lower_bounds needs %lu elements, not %lu",
+	     b->name, (UL)n, (UL)L->length());
+      continue;
+    }
+    U = &(dv->*b->U);
+    if (U->length() == 0)
+      ++ndflt;
+    else if (U->length() != n) {
+      squawk("%s_upper_bounds needs %lu elements, not %lu",
+	     b->name, (UL)n, (UL)L->length());
+      continue;
+    }
+    sa = 0;
+    if (b->Lbl) {
+      sa = &(dv->*b->Lbl);
+      if (sa->size() == 0)
+	sa = 0;
+    }
+    if (ndflt == 0)
+      for(i = 0; i < n; i++) {
+	if ((*L)[i] > (*U)[i])
+	  squawk("lower bound for %s variable %s exceeds upper bound",
+		 b->name, Var_Name(sa,namebuf,i));
+      }
+    if (b->V == 0)
+      continue;	// won't happen for discrete variables
+    V = &(dv->*b->V);
+    if (V->length() == 0)
+      continue;
+    if (V->length() != n) {
+      squawk("initial point for %s needs %lu elements, not %lu",
+	     b->name, (UL)n, (UL)V->length());
+      continue;
+    }
+    if (L->length() > 0) {
+      for(i = 0; i < n; i++)
+	if ((*V)[i] < (*L)[i]) {
+	  warn("Setting initial_value for %s variable %s to its lower bound",
+	       b->name, Var_Name(sa,namebuf,i));
+	  (*V)[i] = (*L)[i];
 	}
+    }
+    if (U->length() > 0) {
+      for(i = 0; i < n; i++)
+	if ((*V)[i] > (*U)[i]) {
+	  warn("Setting initial_value for %s variable %s to its upper bound",
+	       b->name, Var_Name(sa,namebuf,i));
+	  (*V)[i] = (*U)[i];
+	}
+    }
+  }
+}
 
- void NIDRProblemDescDB::
+void NIDRProblemDescDB::
 Var_iboundgen(DataVariablesRep *dv)
 {
-	VarBgen *g, *ge;
-	Var_bgen *b1, *b1e;
-	Var_ibchk *b, *be;
-	IntVector *L, *U, *V;
-	int t;
-	size_t i, j, n;
+  VarBgen *g, *ge;
+  Var_bgen *b1, *b1e;
+  Var_ibchk *b, *be;
+  IntVector *L, *U, *V;
+  int t;
+  size_t i, j, n;
 
-	b = var_mp_ibndchk;
-	be = b + Numberof(var_mp_ibndchk);
-	for(; b < be; ++b) {
-		if ((n = dv->*b->n) == 0)
-			continue;
-		L = &(dv->*b->L);
-		if (L->length() == 0) {
-			L->sizeUninitialized(n);
-			*L = INT_MIN;
-			}
-		U = &(dv->*b->U);
-		if (U->length() == 0) {
-			U->sizeUninitialized(n);
-			*U = INT_MAX;
-			}
-		if (b->V == 0)
-			continue;	// won't happen for discrete variables
-		V = &(dv->*b->V);
-		if (V->length() == 0) {
-			V->sizeUninitialized(n);
-			for(i = 0; i < n; i++) {
-				t = 0;
-				if ((*L)[i] > t)
-					t = (*L)[i];
-				else if ((*U)[i] < t)
-					t = (*U)[i];
-				(*V)[i] = t;
-				}
-			}
-		}
+  b = var_mp_ibndchk;
+  be = b + Numberof(var_mp_ibndchk);
+  for(; b < be; ++b) {
+    if ((n = dv->*b->n) == 0)
+      continue;
+    L = &(dv->*b->L);
+    if (L->length() == 0) {
+      L->sizeUninitialized(n);
+      *L = INT_MIN;
+    }
+    U = &(dv->*b->U);
+    if (U->length() == 0) {
+      U->sizeUninitialized(n);
+      *U = INT_MAX;
+    }
+    if (b->V == 0)
+      continue;	// won't happen for discrete variables
+    V = &(dv->*b->V);
+    if (V->length() == 0) {
+      V->sizeUninitialized(n);
+      for(i = 0; i < n; i++) {
+	t = 0;
+	if ((*L)[i] > t)
+	  t = (*L)[i];
+	else if ((*U)[i] < t)
+	  t = (*U)[i];
+	(*V)[i] = t;
+      }
+    }
+  }
 
-	ge = Bgen + Numberof(Bgen);
-	for(g = Bgen; g < ge; ++g) {
-		b1 = g->bgen;
-		b1e = b1 + g->nbgen;
-		j = 0;
-		for(; b1 < b1e; ++b1)
-			if ((n = dv->*b1->n) > 0) {
-				(*b1->vbgen)(dv, j);
-				j += n;
-				}
-		}
+  ge = Bgen + Numberof(Bgen);
+  for(g = Bgen; g < ge; ++g) {
+    b1 = g->bgen;
+    b1e = b1 + g->nbgen;
+    j = 0;
+    for(; b1 < b1e; ++b1)
+      if ((n = dv->*b1->n) > 0) {
+	(*b1->vbgen)(dv, j);
+	j += n;
+      }
+  }
 
-	b1e = var_mp_bgen_dis + Numberof(var_mp_bgen_dis);
-	for(b1 = var_mp_bgen_dis; b1 < b1e; ++b1)
-		if ((n = dv->*b1->n) > 0)
-				(*b1->vbgen)(dv, n);
-	}
+  b1e = var_mp_bgen_dis + Numberof(var_mp_bgen_dis);
+  for(b1 = var_mp_bgen_dis; b1 < b1e; ++b1)
+    if ((n = dv->*b1->n) > 0)
+      (*b1->vbgen)(dv, n);
+}
 
 NIDRProblemDescDB::~NIDRProblemDescDB()
 {

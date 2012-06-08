@@ -130,7 +130,7 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
     variablesCompsTotals[5] += count;
   }
   // continuous epistemic uncertain
-  if (count = problem_db.get_sizet("variables.interval_uncertain")) {
+  if (count = problem_db.get_sizet("variables.continuous_interval_uncertain")) {
     variablesComponents[INTERVAL_UNCERTAIN] = count;
     variablesCompsTotals[6] += count;
   }
@@ -181,110 +181,110 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
 
   int cv_start = 0, div_start = 0, drv_start = 0;
   // design
-  copy_data_partial(problem_db.get_dsa("variables.continuous_design.labels"),
+  copy_data_partial(problem_db.get_sa("variables.continuous_design.labels"),
     allContinuousLabels, cv_start);
   cv_start += num_cdv;
   if (relax) {
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_design_range.labels"), allContinuousLabels, cv_start);
     cv_start += num_ddrv;
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_design_set_int.labels"),
       allContinuousLabels, cv_start);
     cv_start += num_ddsiv;
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_design_set_real.labels"),
       allContinuousLabels, cv_start);
     cv_start += num_ddsrv;
   }
   else {
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_design_range.labels"),
       allDiscreteIntLabels, div_start);
     div_start += num_ddrv;
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_design_set_int.labels"),
       allDiscreteIntLabels, div_start);
     div_start += num_ddsiv;
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_design_set_real.labels"),
       allDiscreteRealLabels, drv_start);
     drv_start += num_ddsrv;
   }
   // aleatory uncertain
-  copy_data_partial(problem_db.get_dsa(
+  copy_data_partial(problem_db.get_sa(
     "variables.continuous_aleatory_uncertain.labels"),
     allContinuousLabels, cv_start);
   cv_start += num_cauv;
   if (relax) {
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_aleatory_uncertain_int.labels"),
       allContinuousLabels, cv_start);
     cv_start += num_dauiv;
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_aleatory_uncertain_real.labels"),
       allContinuousLabels, cv_start);
     cv_start += num_daurv;
   }
   else {
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_aleatory_uncertain_int.labels"),
       allDiscreteIntLabels, div_start);
     div_start += num_dauiv;
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_aleatory_uncertain_real.labels"),
       allDiscreteRealLabels, drv_start);
     drv_start += num_daurv;
   }
   // epistemic uncertain
-  copy_data_partial(problem_db.get_dsa(
+  copy_data_partial(problem_db.get_sa(
     "variables.continuous_epistemic_uncertain.labels"),
     allContinuousLabels, cv_start);
   cv_start += num_ceuv;
   //if (relax) {
-    //copy_data_partial(problem_db.get_dsa(
+    //copy_data_partial(problem_db.get_sa(
     //  "variables.discrete_epistemic_uncertain_int.labels"),
     //  allContinuousLabels, cv_start);
     //cv_start += num_deuiv;
-    //copy_data_partial(problem_db.get_dsa(
+    //copy_data_partial(problem_db.get_sa(
     //  "variables.discrete_epistemic_uncertain_real.labels"),
     //  allContinuousLabels, cv_start);
     //cv_start += num_deurv;
   //}
   //else {
-    //copy_data_partial(problem_db.get_dsa(
+    //copy_data_partial(problem_db.get_sa(
     //  "variables.discrete_epistemic_uncertain_int.labels"),
     //  allDiscreteIntLabels, div_start);
     //div_start += num_deuiv;
-    //copy_data_partial(problem_db.get_dsa(
+    //copy_data_partial(problem_db.get_sa(
     //  "variables.discrete_epistemic_uncertain_real.labels"),
     //  allDiscreteRealLabels, drv_start);
     //drv_start += num_deurv;
   //}
   // state
-  copy_data_partial(problem_db.get_dsa("variables.continuous_state.labels"),
+  copy_data_partial(problem_db.get_sa("variables.continuous_state.labels"),
     allContinuousLabels, cv_start);
   if (relax) {
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_state_range.labels"), allContinuousLabels, cv_start);
     cv_start += num_dsrv;
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_state_set_int.labels"),
       allContinuousLabels, cv_start);
     cv_start += num_dssiv;
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_state_set_real.labels"),
       allContinuousLabels, cv_start);
   }
   else {
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_state_range.labels"),
       allDiscreteIntLabels, div_start);
     div_start += num_dsrv;
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_state_set_int.labels"),
       allDiscreteIntLabels, div_start);
-    copy_data_partial(problem_db.get_dsa(
+    copy_data_partial(problem_db.get_sa(
       "variables.discrete_state_set_real.labels"),
       allDiscreteRealLabels, drv_start);
   }

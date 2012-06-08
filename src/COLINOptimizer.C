@@ -816,7 +816,7 @@ void COLINOptimizer::set_solver_parameters()
     }
 
     const StringArray& misc_options
-      = probDescDB.get_dsa("method.coliny.misc_options");
+      = probDescDB.get_sa("method.coliny.misc_options");
     size_t num_mo = misc_options.size();
     for (size_t i=0; i<num_mo; i++) {
       string thisOption(misc_options[i]);

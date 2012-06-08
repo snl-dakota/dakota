@@ -39,7 +39,7 @@ AnalysisCode::AnalysisCode(const ProblemDescDB& problem_db):
   multipleParamsFiles(false),
   iFilterName(problem_db.get_string("interface.application.input_filter")),
   oFilterName(problem_db.get_string("interface.application.output_filter")),
-  programNames(problem_db.get_dsa("interface.application.analysis_drivers")),
+  programNames(problem_db.get_sa("interface.application.analysis_drivers")),
   numPrograms(programNames.size()),
   specifiedParamsFileName(
     problem_db.get_string("interface.application.parameters_file")),
@@ -47,14 +47,14 @@ AnalysisCode::AnalysisCode(const ProblemDescDB& problem_db):
     problem_db.get_string("interface.application.results_file")),
   allowExistingResults(problem_db.get_bool("interface.allow_existing_results")),
   analysisComponents(
-    problem_db.get_ds2a("interface.application.analysis_components")),
+    problem_db.get_s2a("interface.application.analysis_components")),
   parallelLib(problem_db.parallel_library()),
   useWorkdir(problem_db.get_bool("interface.useWorkdir")),
   workDir(problem_db.get_string("interface.workDir")),
   dirTag(problem_db.get_bool("interface.dirTag")),
   dirSave(problem_db.get_bool("interface.dirSave")), dirDel(false),
   templateDir(problem_db.get_string("interface.templateDir")),
-  templateFiles(problem_db.get_dsa("interface.templateFiles")),
+  templateFiles(problem_db.get_sa("interface.templateFiles")),
   templateCopy(problem_db.get_bool("interface.templateCopy")),
   templateReplace(problem_db.get_bool("interface.templateReplace")),
   haveTemplateDir(false), haveWorkdir(false)

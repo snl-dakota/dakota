@@ -36,20 +36,20 @@ Constraints(BaseConstructor, const ProblemDescDB& problem_db,
   numNonlinearIneqCons(
     problem_db.get_sizet("responses.num_nonlinear_inequality_constraints")),
   nonlinearIneqConLowerBnds(
-    problem_db.get_rdv("responses.nonlinear_inequality_lower_bounds")),
+    problem_db.get_rv("responses.nonlinear_inequality_lower_bounds")),
   nonlinearIneqConUpperBnds(
-    problem_db.get_rdv("responses.nonlinear_inequality_upper_bounds")),
+    problem_db.get_rv("responses.nonlinear_inequality_upper_bounds")),
   numNonlinearEqCons(
     problem_db.get_sizet("responses.num_nonlinear_equality_constraints")),
   nonlinearEqConTargets(
-    problem_db.get_rdv("responses.nonlinear_equality_targets")), 
+    problem_db.get_rv("responses.nonlinear_equality_targets")), 
   numLinearIneqCons(0), numLinearEqCons(0),
   linearIneqConLowerBnds(
-    problem_db.get_rdv("method.linear_inequality_lower_bounds")),
+    problem_db.get_rv("method.linear_inequality_lower_bounds")),
   linearIneqConUpperBnds(
-    problem_db.get_rdv("method.linear_inequality_upper_bounds")),
+    problem_db.get_rv("method.linear_inequality_upper_bounds")),
   linearEqConTargets(
-    problem_db.get_rdv("method.linear_equality_targets")),
+    problem_db.get_rv("method.linear_equality_targets")),
   constraintsRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -456,9 +456,9 @@ void Constraints::reshape(const SizetArray& vc_totals)
 void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
 {
   const RealVector& linear_ineq_cons
-    = problem_db.get_rdv("method.linear_inequality_constraints");
+    = problem_db.get_rv("method.linear_inequality_constraints");
   const RealVector& linear_eq_cons
-    = problem_db.get_rdv("method.linear_equality_constraints");
+    = problem_db.get_rv("method.linear_equality_constraints");
   size_t lin_ineq_len = linear_ineq_cons.length(),
          lin_eq_len   = linear_eq_cons.length();
   // get number of active variables to which linear constraints are applied.

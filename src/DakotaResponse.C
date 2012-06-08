@@ -136,7 +136,7 @@ Response Response::copy() const
 /** The standard constructor used by Dakota::ModelRep. */
 ResponseRep::
 ResponseRep(const Variables& vars, const ProblemDescDB& problem_db):
-  referenceCount(1), functionLabels(problem_db.get_dsa("responses.labels")),
+  referenceCount(1), functionLabels(problem_db.get_sa("responses.labels")),
   responsesId(problem_db.get_string("responses.id"))
 {
   size_t num_resp_fns

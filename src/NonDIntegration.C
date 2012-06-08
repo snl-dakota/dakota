@@ -31,7 +31,7 @@ namespace Dakota {
     separate nond_quadrature/nond_sparse_grid method specifications. */
 NonDIntegration::NonDIntegration(Model& model):
   NonD(model), numIntegrations(0), sequenceIndex(0),
-  dimPrefSpec(probDescDB.get_rdv("method.nond.dimension_preference"))
+  dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference"))
   //, standAloneMode(true)
 {
   // Check for suitable distribution types.

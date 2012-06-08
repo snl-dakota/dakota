@@ -314,9 +314,9 @@ void Minimizer::initialize_scaling()
   // CONTINUOUS DESIGN
   // -----------------
   const StringArray& cdv_scale_strings
-    = probDescDB.get_dsa("variables.continuous_design.scale_types");
+    = probDescDB.get_sa("variables.continuous_design.scale_types");
   const RealVector& cdv_scales
-    = probDescDB.get_rdv("variables.continuous_design.scales");
+    = probDescDB.get_rv("variables.continuous_design.scales");
   varsScaleFlag = !cdv_scale_strings.empty();
 
   copy_data(sub_model.continuous_lower_bounds(), lbs); // view->copy
@@ -350,9 +350,9 @@ void Minimizer::initialize_scaling()
   // OBJECTIVE FNS / LSQ TERMS
   // -------------------------
   const StringArray& primary_scale_strings
-    = probDescDB.get_dsa("responses.primary_response_fn_scale_types");
+    = probDescDB.get_sa("responses.primary_response_fn_scale_types");
   const RealVector& primary_scales
-    = probDescDB.get_rdv("responses.primary_response_fn_scales");
+    = probDescDB.get_rv("responses.primary_response_fn_scales");
   primaryRespScaleFlag = !primary_scale_strings.empty();
 
   lbs.size(0); ubs.size(0);
@@ -370,9 +370,9 @@ void Minimizer::initialize_scaling()
   // NONLINEAR INEQUALITY
   // --------------------
   const StringArray& nln_ineq_scale_strings =
-    probDescDB.get_dsa("responses.nonlinear_inequality_scale_types");
+    probDescDB.get_sa("responses.nonlinear_inequality_scale_types");
   const RealVector& nln_ineq_scales
-    = probDescDB.get_rdv("responses.nonlinear_inequality_scales"); 
+    = probDescDB.get_rv("responses.nonlinear_inequality_scales"); 
   secondaryRespScaleFlag = !nln_ineq_scale_strings.empty();
 
   lbs = sub_model.nonlinear_ineq_constraint_lower_bounds();
@@ -395,9 +395,9 @@ void Minimizer::initialize_scaling()
   // NONLINEAR EQUALITY
   // --------------------
   const StringArray& nln_eq_scale_strings
-    = probDescDB.get_dsa("responses.nonlinear_equality_scale_types");
+    = probDescDB.get_sa("responses.nonlinear_equality_scale_types");
   const RealVector& nln_eq_scales
-    = probDescDB.get_rdv("responses.nonlinear_equality_scales");
+    = probDescDB.get_rv("responses.nonlinear_equality_scales");
   secondaryRespScaleFlag
     = (secondaryRespScaleFlag || !nln_eq_scale_strings.empty());
 
@@ -434,9 +434,9 @@ void Minimizer::initialize_scaling()
   // LINEAR INEQUALITY
   // -----------------
   const StringArray& lin_ineq_scale_strings
-    = probDescDB.get_dsa("method.linear_inequality_scale_types");
+    = probDescDB.get_sa("method.linear_inequality_scale_types");
   const RealVector& lin_ineq_scales
-    = probDescDB.get_rdv("method.linear_inequality_scales");
+    = probDescDB.get_rv("method.linear_inequality_scales");
 
   if ( ( lin_ineq_scale_strings.size() != 0 &&
 	 lin_ineq_scale_strings.size() != 1 && 
@@ -488,9 +488,9 @@ void Minimizer::initialize_scaling()
   // LINEAR EQUALITY
   // ---------------
   const StringArray& lin_eq_scale_strings
-    = probDescDB.get_dsa("method.linear_equality_scale_types");
+    = probDescDB.get_sa("method.linear_equality_scale_types");
   const RealVector& lin_eq_scales
-    = probDescDB.get_rdv("method.linear_equality_scales");
+    = probDescDB.get_rv("method.linear_equality_scales");
 
   if ( ( lin_eq_scale_strings.size() != 0 && lin_eq_scale_strings.size() != 1 &&
 	 lin_eq_scale_strings.size() != numLinearEqConstraints ) ||

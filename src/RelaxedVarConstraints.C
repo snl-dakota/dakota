@@ -48,97 +48,97 @@ RelaxedVarConstraints(const ProblemDescDB& problem_db,
   allContinuousUpperBnds.sizeUninitialized(num_acv);
 
   int start = 0;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.continuous_design.lower_bounds"), allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.continuous_design.upper_bounds"), allContinuousUpperBnds, start);
   start += num_cdv;
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_design_range.lower_bounds"),
     allContinuousLowerBnds, start);
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_design_range.upper_bounds"),
     allContinuousUpperBnds, start);
   start += num_ddrv;
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_design_set_int.lower_bounds"),
     allContinuousLowerBnds, start);
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_design_set_int.upper_bounds"),
     allContinuousUpperBnds, start);
   start += num_ddsiv;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.discrete_design_set_real.lower_bounds"),
     allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.discrete_design_set_real.upper_bounds"),
     allContinuousUpperBnds, start);
   start += num_ddsrv;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.continuous_aleatory_uncertain.lower_bounds"),
     allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.continuous_aleatory_uncertain.upper_bounds"),
     allContinuousUpperBnds, start);
   start += num_cauv;
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_aleatory_uncertain_int.lower_bounds"),
     allContinuousLowerBnds, start);
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_aleatory_uncertain_int.upper_bounds"),
     allContinuousUpperBnds, start);
   start += num_dauiv;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.discrete_aleatory_uncertain_real.lower_bounds"),
     allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.discrete_aleatory_uncertain_real.upper_bounds"),
     allContinuousUpperBnds, start);
   start += num_daurv;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.continuous_epistemic_uncertain.lower_bounds"),
     allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.continuous_epistemic_uncertain.upper_bounds"),
     allContinuousUpperBnds, start);
   start += num_ceuv;
-  //merge_data_partial(problem_db.get_idv(
+  //merge_data_partial(problem_db.get_iv(
   //  "variables.discrete_epistemic_uncertain_int.lower_bounds"),
   //  allContinuousLowerBnds, start);
-  //merge_data_partial(problem_db.get_idv(
+  //merge_data_partial(problem_db.get_iv(
   //  "variables.discrete_epistemic_uncertain_int.upper_bounds"),
   //  allContinuousUpperBnds, start);
   //start += num_deuiv;
-  //copy_data_partial(problem_db.get_rdv(
+  //copy_data_partial(problem_db.get_rv(
   //  "variables.discrete_epistemic_uncertain_real.lower_bounds"),
   //  allContinuousLowerBnds, start);
-  //copy_data_partial(problem_db.get_rdv(
+  //copy_data_partial(problem_db.get_rv(
   //  "variables.discrete_epistemic_uncertain_real.upper_bounds"),
   //  allContinuousUpperBnds, start);
   //start += num_deurv;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.continuous_state.lower_bounds"), allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.continuous_state.upper_bounds"), allContinuousUpperBnds, start);
   start += num_csv;
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_state_range.lower_bounds"),
     allContinuousLowerBnds, start);
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_state_range.upper_bounds"),
     allContinuousUpperBnds, start);
   start += num_dsrv;
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_state_set_int.lower_bounds"),
     allContinuousLowerBnds, start);
-  merge_data_partial(problem_db.get_idv(
+  merge_data_partial(problem_db.get_iv(
     "variables.discrete_state_set_int.upper_bounds"),
     allContinuousUpperBnds, start);
   start += num_dssiv;
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.discrete_state_set_real.lower_bounds"),
     allContinuousLowerBnds, start);
-  copy_data_partial(problem_db.get_rdv(
+  copy_data_partial(problem_db.get_rv(
     "variables.discrete_state_set_real.upper_bounds"),
     allContinuousUpperBnds, start);
 

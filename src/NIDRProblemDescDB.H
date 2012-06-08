@@ -194,9 +194,11 @@ public:
   KWH(var_RealLd);
   KWH(var_RealUb);
   KWH(var_caulbl);
+  KWH(var_dauilbl);
+  KWH(var_daurlbl);
   KWH(var_ceulbl);
-  KWH(var_dailbl);
-  KWH(var_darlbl);
+  KWH(var_deuilbl);
+  KWH(var_deurlbl);
   KWH(var_intDL);
   KWH(var_intL);
   KWH(var_intz);

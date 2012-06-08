@@ -1622,9 +1622,7 @@ TAG "variables/poisson_uncertain/descriptors"
 TAG "variables/binomial_uncertain" GROUP "Discrete Aleatory Uncertain"
 	DESC "{binomial uncertain variables} VarCommands.html#VarDAUV_Binomial"
 
-TAG "variables/binomial_uncertain/prob_per_trial"
-	DESC "{binomial uncertain prob_per_trial} VarCommands.html#VarDAUV_Binomial"
-
+TAG "variables/binomial_uncertain/probability_per_trial"
 TAG "variables/binomial_uncertain/num_trials"
 	DESC "{binomial uncertain num_trials} VarCommands.html#VarDAUV_Binomial"
 
@@ -1634,9 +1632,7 @@ TAG "variables/binomial_uncertain/descriptors"
 TAG "variables/negative_binomial_uncertain" GROUP "Discrete Aleatory Uncertain"
 	DESC "{negative binomial uncertain variables} VarCommands.html#VarDAUV_Negative_Binomial"
 
-TAG "variables/negative_binomial_uncertain/prob_per_trial"
-	DESC "{negative binomial uncertain success prob_per_trial} VarCommands.html#VarDAUV_Negative_Binomial"
-
+TAG "variables/negative_binomial_uncertain/probability_per_trial"
 TAG "variables/negative_binomial_uncertain/num_trials"
 	DESC "{negative binomial uncertain success num_trials} VarCommands.html#VarDAUV_Negative_Binomial"
 
@@ -1646,9 +1642,7 @@ TAG "variables/negative_binomial_uncertain/descriptors"
 TAG "variables/geometric_uncertain" GROUP "Discrete Aleatory Uncertain"
 	DESC "{geometric uncertain variables} VarCommands.html#VarDAUV_Geometric"
 
-TAG "variables/geometric_uncertain/prob_per_trial"
-	DESC "{geometric uncertain prob_per_trial} VarCommands.html#VarDAUV_Geometric"
-
+TAG "variables/geometric_uncertain/probability_per_trial"
 TAG "variables/geometric_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarDAUV_Geometric"
 
@@ -1685,20 +1679,53 @@ TAG "variables/histogram_point_uncertain/descriptors"
 TAG "variables/uncertain_correlation_matrix" GROUP "Aleatory Uncertain Correlations"
 	DESC "{correlations in aleatory uncertain variables} VarCommands.html#VarAUV_Correlations"
 
-TAG "variables/interval_uncertain" GROUP "Epistemic Uncertain"
-	DESC "{interval uncertain variables} VarCommands.html#VarCEUV_Interval"
-
-TAG "variables/interval_uncertain/num_intervals"
+TAG "variables/continuous_interval_uncertain" GROUP "Epistemic Uncertain"
+TAG "variables/continuous_interval_uncertain/num_intervals"
 	DESC "{number of intervals defined for each interval variable} VarCommands.html#VarCEUV_Interval"
 
-TAG "variables/interval_uncertain/interval_probs"
-	DESC "{basic probability assignments per interval} VarCommands.html#VarCEUV_Interval"
+TAG "variables/continuous_interval_uncertain/interval_probabilities"
+TAG "variables/continuous_interval_uncertain/lower_bounds"
+	DESC "{Lower bounds} VarCommands.html#VarCSV"
 
-TAG "variables/interval_uncertain/interval_bounds"
-	DESC "{bounds per interval} VarCommands.html#VarCEUV_Interval"
+TAG "variables/continuous_interval_uncertain/upper_bounds"
+	DESC "{Upper bounds} VarCommands.html#VarCSV"
 
-TAG "variables/interval_uncertain/descriptors"
+TAG "variables/continuous_interval_uncertain/descriptors"
 	DESC "{Descriptors} VarCommands.html#VarCEUV_Interval"
+
+TAG "variables/discrete_interval_uncertain" GROUP "Epistemic Uncertain"
+TAG "variables/discrete_interval_uncertain/num_intervals"
+TAG "variables/discrete_interval_uncertain/interval_probabilities"
+TAG "variables/discrete_interval_uncertain/lower_bounds"
+	DESC "{Lower bounds} VarCommands.html#VarDSRIV"
+
+TAG "variables/discrete_interval_uncertain/upper_bounds"
+	DESC "{Upper bounds} VarCommands.html#VarDSRIV"
+
+TAG "variables/discrete_interval_uncertain/descriptors"
+	DESC "{Descriptors} VarCommands.html#VarCSV"
+
+TAG "variables/discrete_uncertain_set_integer"
+TAG "variables/discrete_uncertain_set_integer/num_set_values"
+	DESC "{Number of values for each variable} VarCommands.html#VarDSSIV"
+
+TAG "variables/discrete_uncertain_set_integer/set_values"
+	DESC "{Set values} VarCommands.html#VarDSSIV"
+
+TAG "variables/discrete_uncertain_set_integer/set_probabilities"
+TAG "variables/discrete_uncertain_set_integer/descriptors"
+	DESC "{Descriptors} VarCommands.html#VarDSRIV"
+
+TAG "variables/discrete_uncertain_set_real"
+TAG "variables/discrete_uncertain_set_real/num_set_values"
+	DESC "{Number of values for each variable} VarCommands.html#VarDSSRV"
+
+TAG "variables/discrete_uncertain_set_real/set_values"
+	DESC "{Set values} VarCommands.html#VarDSSRV"
+
+TAG "variables/discrete_uncertain_set_real/set_probabilities"
+TAG "variables/discrete_uncertain_set_real/descriptors"
+	DESC "{Descriptors} VarCommands.html#VarDSSIV"
 
 TAG "variables/continuous_state" GROUP "State Variables"
 	DESC "{Continuous state variables} VarCommands.html#VarCSV"
@@ -1707,13 +1734,9 @@ TAG "variables/continuous_state/initial_state"
 	DESC "{Initial states} VarCommands.html#VarCSV"
 
 TAG "variables/continuous_state/lower_bounds"
-	DESC "{Lower bounds} VarCommands.html#VarCSV"
-
 TAG "variables/continuous_state/upper_bounds"
-	DESC "{Upper bounds} VarCommands.html#VarCSV"
-
 TAG "variables/continuous_state/descriptors"
-	DESC "{Descriptors} VarCommands.html#VarCSV"
+	DESC "{Descriptors} VarCommands.html#VarDSSRV"
 
 TAG "variables/discrete_state_range" GROUP "State Variables"
 	DESC "{Discrete state range variables} VarCommands.html#VarDSRIV"
@@ -1722,14 +1745,8 @@ TAG "variables/discrete_state_range/initial_state"
 	DESC "{Initial states} VarCommands.html#VarDSRIV"
 
 TAG "variables/discrete_state_range/lower_bounds"
-	DESC "{Lower bounds} VarCommands.html#VarDSRIV"
-
 TAG "variables/discrete_state_range/upper_bounds"
-	DESC "{Upper bounds} VarCommands.html#VarDSRIV"
-
 TAG "variables/discrete_state_range/descriptors"
-	DESC "{Descriptors} VarCommands.html#VarDSRIV"
-
 TAG "variables/discrete_state_set_integer" GROUP "State Variables"
 	DESC "{Discrete state set of integer variables} VarCommands.html#VarDSSIV"
 
@@ -1737,14 +1754,8 @@ TAG "variables/discrete_state_set_integer/initial_state"
 	DESC "{Initial state} VarCommands.html#VarDSSIV"
 
 TAG "variables/discrete_state_set_integer/num_set_values"
-	DESC "{Number of values for each variable} VarCommands.html#VarDSSIV"
-
 TAG "variables/discrete_state_set_integer/set_values"
-	DESC "{Set values} VarCommands.html#VarDSSIV"
-
 TAG "variables/discrete_state_set_integer/descriptors"
-	DESC "{Descriptors} VarCommands.html#VarDSSIV"
-
 TAG "variables/discrete_state_set_real" GROUP "State Variables"
 	DESC "{Discrete state set of real variables} VarCommands.html#VarDSSRV"
 
@@ -1752,14 +1763,8 @@ TAG "variables/discrete_state_set_real/initial_state"
 	DESC "{Initial state} VarCommands.html#VarDSSRV"
 
 TAG "variables/discrete_state_set_real/num_set_values"
-	DESC "{Number of values for each variable} VarCommands.html#VarDSSRV"
-
 TAG "variables/discrete_state_set_real/set_values"
-	DESC "{Set values} VarCommands.html#VarDSSRV"
-
 TAG "variables/discrete_state_set_real/descriptors"
-	DESC "{Descriptors} VarCommands.html#VarDSSRV"
-
 TAG "interface"
 	DESC "{Interface} An interface specifies how function evaluations will be performed in order to map a set of parameters into a set of responses. InterfCommands.html"
 
