@@ -102,20 +102,20 @@ RelaxedVarConstraints(const ProblemDescDB& problem_db,
     "variables.continuous_epistemic_uncertain.upper_bounds"),
     allContinuousUpperBnds, start);
   start += num_ceuv;
-  //merge_data_partial(problem_db.get_iv(
-  //  "variables.discrete_epistemic_uncertain_int.lower_bounds"),
-  //  allContinuousLowerBnds, start);
-  //merge_data_partial(problem_db.get_iv(
-  //  "variables.discrete_epistemic_uncertain_int.upper_bounds"),
-  //  allContinuousUpperBnds, start);
-  //start += num_deuiv;
-  //copy_data_partial(problem_db.get_rv(
-  //  "variables.discrete_epistemic_uncertain_real.lower_bounds"),
-  //  allContinuousLowerBnds, start);
-  //copy_data_partial(problem_db.get_rv(
-  //  "variables.discrete_epistemic_uncertain_real.upper_bounds"),
-  //  allContinuousUpperBnds, start);
-  //start += num_deurv;
+  merge_data_partial(problem_db.get_iv(
+   "variables.discrete_epistemic_uncertain_int.lower_bounds"),
+   allContinuousLowerBnds, start);
+  merge_data_partial(problem_db.get_iv(
+   "variables.discrete_epistemic_uncertain_int.upper_bounds"),
+   allContinuousUpperBnds, start);
+  start += num_deuiv;
+  copy_data_partial(problem_db.get_rv(
+   "variables.discrete_epistemic_uncertain_real.lower_bounds"),
+   allContinuousLowerBnds, start);
+  copy_data_partial(problem_db.get_rv(
+   "variables.discrete_epistemic_uncertain_real.upper_bounds"),
+   allContinuousUpperBnds, start);
+  start += num_deurv;
   copy_data_partial(problem_db.get_rv(
     "variables.continuous_state.lower_bounds"), allContinuousLowerBnds, start);
   copy_data_partial(problem_db.get_rv(

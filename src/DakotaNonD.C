@@ -35,7 +35,8 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   numBetaVars(0), numGammaVars(0), numGumbelVars(0), numFrechetVars(0),
   numWeibullVars(0), numHistogramBinVars(0), numPoissonVars(0),
   numBinomialVars(0), numNegBinomialVars(0), numGeometricVars(0),
-  numHyperGeomVars(0), numHistogramPtVars(0), numIntervalVars(0),
+  numHyperGeomVars(0), numHistogramPtVars(0), numContIntervalVars(0),
+  numDiscIntervalVars(0), numDiscSetIntUncVars(0), numDiscSetRealUncVars(0),
   numContAleatUncVars(0), numDiscIntAleatUncVars(0), numDiscRealAleatUncVars(0),
   numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
   numDiscRealEpistUncVars(0), numEpistemicUncVars(0),
@@ -87,18 +88,18 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
     numGeometricVars = probDescDB.get_sizet("variables.geometric_uncertain");
     numHyperGeomVars
       = probDescDB.get_sizet("variables.hypergeometric_uncertain");
-    if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN)
+    if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN) // mixed
       numDiscIntAleatUncVars = numPoissonVars + numBinomialVars +
 	numNegBinomialVars + numGeometricVars + numHyperGeomVars;
-    else
+    else                                                       // relaxed
       numContAleatUncVars += numPoissonVars + numBinomialVars +
 	numNegBinomialVars + numGeometricVars + numHyperGeomVars;
 
     numHistogramPtVars
       = probDescDB.get_sizet("variables.histogram_uncertain.point");
-    if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN)
+    if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN) // mixed
       numDiscRealAleatUncVars = numHistogramPtVars;
-    else
+    else                                                       // relaxed
       numContAleatUncVars += numHistogramPtVars;
 
     numAleatoryUncVars = numContAleatUncVars + numDiscIntAleatUncVars +
@@ -108,9 +109,29 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
       active_view == RELAXED_EPISTEMIC_UNCERTAIN ||
       active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
-      active_view == MIXED_EPISTEMIC_UNCERTAIN) // epistemic or both
-    numEpistemicUncVars = numContEpistUncVars = numIntervalVars
+      active_view == MIXED_EPISTEMIC_UNCERTAIN) { // epistemic or both
+    numContEpistUncVars = numContIntervalVars
       = probDescDB.get_sizet("variables.continuous_interval_uncertain");
+
+    numDiscIntervalVars
+      = probDescDB.get_sizet("variables.discrete_interval_uncertain");
+    numDiscSetIntUncVars
+      = probDescDB.get_sizet("variables.discrete_uncertain_set_int");
+    if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN) // mixed
+      numDiscIntEpistUncVars = numDiscIntervalVars + numDiscSetIntUncVars;
+    else                                                       // relaxed
+      numContEpistUncVars += numDiscIntervalVars + numDiscSetIntUncVars;
+
+    numDiscSetRealUncVars
+      = probDescDB.get_sizet("variables.discrete_uncertain_set_real");
+    if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN) // mixed
+      numDiscRealEpistUncVars = numDiscSetRealUncVars;
+    else                                                       // relaxed
+      numContEpistUncVars += numDiscSetRealUncVars;
+
+    numEpistemicUncVars = numContEpistUncVars + numDiscIntEpistUncVars +
+      numDiscRealEpistUncVars;
+  }
 
   // initialize total uncertain variables
   numUncertainVars = numAleatoryUncVars + numEpistemicUncVars;
@@ -119,7 +140,7 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   if (active_view == RELAXED_ALL    || active_view == MIXED_ALL ||
       active_view == RELAXED_DESIGN || active_view == MIXED_DESIGN) {
     numContDesVars = probDescDB.get_sizet("variables.continuous_design");
-    if (active_view == RELAXED_ALL)
+    if (active_view == RELAXED_ALL || active_view == RELAXED_DESIGN)
       numContDesVars += probDescDB.get_sizet("variables.discrete_design_range")
 	+ probDescDB.get_sizet("variables.discrete_design_set_int")
 	+ probDescDB.get_sizet("variables.discrete_design_set_real");
@@ -137,7 +158,7 @@ NonD::NonD(Model& model): Analyzer(model), numContDesVars(0),
   if (active_view == RELAXED_ALL   || active_view == MIXED_ALL ||
       active_view == RELAXED_STATE || active_view == MIXED_STATE) {
     numContStateVars = probDescDB.get_sizet("variables.continuous_state");
-    if (active_view == RELAXED_ALL)
+    if (active_view == RELAXED_ALL || active_view == RELAXED_STATE)
       numContStateVars += probDescDB.get_sizet("variables.discrete_state_range")
 	+ probDescDB.get_sizet("variables.discrete_state_set_int")
 	+ probDescDB.get_sizet("variables.discrete_state_set_real");
@@ -200,7 +221,8 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
   numBetaVars(0), numGammaVars(0), numGumbelVars(0), numFrechetVars(0),
   numWeibullVars(0), numHistogramBinVars(0), numPoissonVars(0),
   numBinomialVars(0), numNegBinomialVars(0), numGeometricVars(0),
-  numHyperGeomVars(0), numHistogramPtVars(0), numIntervalVars(0),
+  numHyperGeomVars(0), numHistogramPtVars(0), numContIntervalVars(0),
+  numDiscIntervalVars(0), numDiscSetIntUncVars(0), numDiscSetRealUncVars(0),
   numContAleatUncVars(0), numDiscIntAleatUncVars(0), numDiscRealAleatUncVars(0),
   numAleatoryUncVars(0), numContEpistUncVars(0), numDiscIntEpistUncVars(0),
   numDiscRealEpistUncVars(0), numEpistemicUncVars(0),
@@ -218,29 +240,28 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
       active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
       active_view == MIXED_ALEATORY_UNCERTAIN) { // aleatory or both
     Pecos::DistributionParams& dp = model.distribution_parameters();
-    numNormalVars = dp.normal_means().length();
-    numLognormalVars = dp.lognormal_means().length();
-    numUniformVars = dp.uniform_lower_bounds().length();
-    numLoguniformVars = dp.loguniform_lower_bounds().length();
-    numTriangularVars = dp.triangular_modes().length();
-    numExponentialVars = dp.exponential_betas().length();
-    numBetaVars = dp.beta_alphas().length();
-    numGammaVars = dp.gamma_alphas().length();
-    numGumbelVars = dp.gumbel_alphas().length();
-    numFrechetVars = dp.frechet_alphas().length();
-    numWeibullVars = dp.weibull_alphas().length();
+    numNormalVars       = dp.normal_means().length();
+    numLognormalVars    = dp.lognormal_means().length();
+    numUniformVars      = dp.uniform_lower_bounds().length();
+    numLoguniformVars   = dp.loguniform_lower_bounds().length();
+    numTriangularVars   = dp.triangular_modes().length();
+    numExponentialVars  = dp.exponential_betas().length();
+    numBetaVars         = dp.beta_alphas().length();
+    numGammaVars        = dp.gamma_alphas().length();
+    numGumbelVars       = dp.gumbel_alphas().length();
+    numFrechetVars      = dp.frechet_alphas().length();
+    numWeibullVars      = dp.weibull_alphas().length();
     numHistogramBinVars = dp.histogram_bin_pairs().size();
     numContAleatUncVars = numNormalVars + numLognormalVars + numUniformVars +
       numLoguniformVars + numTriangularVars + numExponentialVars + numBetaVars +
       numGammaVars + numGumbelVars + numFrechetVars + numWeibullVars +
       numHistogramBinVars;
 
-    numPoissonVars = dp.poisson_lambdas().length();
-    numBinomialVars = dp.binomial_probabilities_per_trial().length();
-    numNegBinomialVars
-      = dp.negative_binomial_probabilities_per_trial().length();
-    numGeometricVars = dp.geometric_probabilities_per_trial().length();
-    numHyperGeomVars = dp.hypergeometric_num_drawn().length();
+    numPoissonVars     = dp.poisson_lambdas().length();
+    numBinomialVars    = dp.binomial_probability_per_trial().length();
+    numNegBinomialVars = dp.negative_binomial_probability_per_trial().length();
+    numGeometricVars   = dp.geometric_probability_per_trial().length();
+    numHyperGeomVars   = dp.hypergeometric_num_drawn().length();
     if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN)
       numDiscIntAleatUncVars = numPoissonVars + numBinomialVars +
 	numNegBinomialVars + numGeometricVars + numHyperGeomVars;
@@ -262,9 +283,27 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
   if (active_view == RELAXED_ALL || active_view == RELAXED_UNCERTAIN ||
       active_view == RELAXED_EPISTEMIC_UNCERTAIN ||
       active_view == MIXED_ALL || active_view == MIXED_UNCERTAIN ||
-      active_view == MIXED_EPISTEMIC_UNCERTAIN) // epistemic or both
-    numEpistemicUncVars = numContEpistUncVars = numIntervalVars
-      = model.distribution_parameters().interval_probabilities().size();
+      active_view == MIXED_EPISTEMIC_UNCERTAIN) { // epistemic or both
+    Pecos::DistributionParams& dp = model.distribution_parameters();
+    numContEpistUncVars = numContIntervalVars
+      = dp.continuous_interval_probabilities().size();
+
+    numDiscIntervalVars  = dp.discrete_interval_probabilities().size();
+    numDiscSetIntUncVars = dp.discrete_set_int_probabilities().size();
+    if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN) // mixed
+      numDiscIntEpistUncVars = numDiscIntervalVars + numDiscSetIntUncVars;
+    else                                                       // relaxed
+      numContEpistUncVars += numDiscIntervalVars + numDiscSetIntUncVars;
+
+    numDiscSetRealUncVars = dp.discrete_set_real_probabilities().size();
+    if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN) // mixed
+      numDiscRealEpistUncVars = numDiscSetRealUncVars;
+    else                                                       // relaxed
+      numContEpistUncVars += numDiscSetRealUncVars;
+
+    numEpistemicUncVars = numContEpistUncVars + numDiscIntEpistUncVars +
+      numDiscRealEpistUncVars;
+  }
 
   // initialize total uncertain variables
   numUncertainVars = numAleatoryUncVars + numEpistemicUncVars;
@@ -366,7 +405,8 @@ NonD::NonD(NoDBBaseConstructor, const RealVector& lower_bnds,
   numBetaVars(0), numGammaVars(0), numGumbelVars(0), numFrechetVars(0),
   numWeibullVars(0), numHistogramBinVars(0), numPoissonVars(0),
   numBinomialVars(0), numNegBinomialVars(0), numGeometricVars(0),
-  numHyperGeomVars(0), numHistogramPtVars(0), numIntervalVars(0),
+  numHyperGeomVars(0), numHistogramPtVars(0), numContIntervalVars(0),
+  numDiscIntervalVars(0), numDiscSetIntUncVars(0), numDiscSetRealUncVars(0),
   numContAleatUncVars(numUniformVars), numDiscIntAleatUncVars(0),
   numDiscRealAleatUncVars(0), numAleatoryUncVars(numUniformVars),
   numContEpistUncVars(0), numDiscIntEpistUncVars(0), numDiscRealEpistUncVars(0),
@@ -847,9 +887,11 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
   for (i=0; i<num_types; ++i)
     if ( x_types[i] != u_types[i] &&
 	 !( x_types[i] == Pecos::NORMAL && u_types[i] == Pecos::STD_NORMAL ) &&
-	 !( ( x_types[i] == Pecos::DESIGN || x_types[i] == Pecos::UNIFORM ||
+	 !( ( x_types[i] == Pecos::CONTINUOUS_DESIGN ||
+	      x_types[i] == Pecos::UNIFORM ||
 	      x_types[i] == Pecos::HISTOGRAM_BIN ||
-	      x_types[i] == Pecos::INTERVAL || x_types[i] == Pecos::STATE ) &&
+	      x_types[i] == Pecos::CONTINUOUS_INTERVAL ||
+	      x_types[i] == Pecos::CONTINUOUS_STATE ) &&
 	    u_types[i] == Pecos::STD_UNIFORM ) &&
 	 !( x_types[i] == Pecos::EXPONENTIAL &&
 	    u_types[i] == Pecos::STD_EXPONENTIAL ) &&
@@ -991,10 +1033,10 @@ initialize_random_variables(const Pecos::ProbabilityTransformation& transform)
   // infer numContDesVars and numContStateVars, but don't update continuous
   // aleatory/epistemic uncertain counts (these may be u-space counts).
   const Pecos::ShortArray& x_types = transform.x_types();
-  numContDesVars
-    = std::count(x_types.begin(), x_types.end(), (short)Pecos::DESIGN);
-  numContStateVars
-    = std::count(x_types.begin(), x_types.end(), (short)Pecos::STATE);
+  numContDesVars = std::count(x_types.begin(), x_types.end(),
+			      (short)Pecos::CONTINUOUS_DESIGN);
+  numContStateVars = std::count(x_types.begin(), x_types.end(),
+				(short)Pecos::CONTINUOUS_STATE);
 }
 
 
@@ -1023,7 +1065,7 @@ void NonD::initialize_random_variable_types(short u_space_type)
   bool err_flag = false;
 
   for (i=0; i<numContDesVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::DESIGN;
+    x_types[av_cntr] = Pecos::CONTINUOUS_DESIGN;
     u_types[av_cntr] = Pecos::STD_UNIFORM; // STD_NORMAL not supported
   }
   Pecos::DistributionParams& dp = iteratedModel.distribution_parameters();
@@ -1194,12 +1236,12 @@ void NonD::initialize_random_variable_types(short u_space_type)
       u_types[av_cntr] = Pecos::HISTOGRAM_POINT; break;
     }
   }
-  for (i=0; i<numIntervalVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::INTERVAL;
+  for (i=0; i<numContIntervalVars; ++i, ++av_cntr) {
+    x_types[av_cntr] = Pecos::CONTINUOUS_INTERVAL;
     u_types[av_cntr] = Pecos::STD_UNIFORM; // STD_NORMAL not supported
   }
   for (i=0; i<numContStateVars; ++i, ++av_cntr) {
-    x_types[av_cntr] = Pecos::STATE;
+    x_types[av_cntr] = Pecos::CONTINUOUS_STATE;
     u_types[av_cntr] = Pecos::STD_UNIFORM; // STD_NORMAL not supported
   }
 
@@ -1441,7 +1483,7 @@ void NonD::initialize_random_variable_parameters()
       x_addtl[av_cntr] = hist_pt_prs[i];
     }
   }
-  for (i=0; i<numIntervalVars; ++i, ++av_cntr) {
+  for (i=0; i<numContIntervalVars; ++i, ++av_cntr) {
     // interval bnds already processed for global bnds in NIDRProblemDescDB
     const Real& lwr = x_l_bnds[av_cntr] = c_l_bnds[av_cntr];
     const Real& upr = x_u_bnds[av_cntr] = c_u_bnds[av_cntr];

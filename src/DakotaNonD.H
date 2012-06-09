@@ -248,8 +248,14 @@ protected:
   size_t numHyperGeomVars;
   /// number of histogram point uncertain variables (native space)
   size_t numHistogramPtVars;
-  /// number of interval uncertain variables (native space)
-  size_t numIntervalVars;
+  /// number of continuous interval uncertain variables (native space)
+  size_t numContIntervalVars;
+  /// number of discrete interval uncertain variables (native space)
+  size_t numDiscIntervalVars;
+  /// number of discrete integer set uncertain variables (native space)
+  size_t numDiscSetIntUncVars;
+  /// number of discrete real set uncertain variables (native space)
+  size_t numDiscSetRealUncVars;
 
   /// total number of aleatory uncertain variables (native space)
   size_t numContAleatUncVars;

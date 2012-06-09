@@ -131,13 +131,23 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
   }
   // continuous epistemic uncertain
   if (count = problem_db.get_sizet("variables.continuous_interval_uncertain")) {
-    variablesComponents[INTERVAL_UNCERTAIN] = count;
+    variablesComponents[CONTINUOUS_INTERVAL_UNCERTAIN] = count;
     variablesCompsTotals[6] += count;
   }
   // discrete integer epistemic uncertain
-  //variablesCompsTotals[7] = 0;
+  if (count = problem_db.get_sizet("variables.discrete_interval_uncertain")) {
+    variablesComponents[DISCRETE_INTERVAL_UNCERTAIN] = count;
+    variablesCompsTotals[7] += count;
+  }
+  if (count = problem_db.get_sizet("variables.discrete_uncertain_set_int")) {
+    variablesComponents[DISCRETE_UNCERTAIN_SET_INT] = count;
+    variablesCompsTotals[7] += count;
+  }
   // discrete real epistemic uncertain
-  //variablesCompsTotals[8] = 0;
+  if (count = problem_db.get_sizet("variables.discrete_uncertain_set_real")) {
+    variablesComponents[DISCRETE_UNCERTAIN_SET_REAL] = count;
+    variablesCompsTotals[8] += count;
+  }
   // continuous state
   if (count = problem_db.get_sizet("variables.continuous_state")) {
     variablesComponents[CONTINUOUS_STATE] = count;
@@ -241,26 +251,26 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
     "variables.continuous_epistemic_uncertain.labels"),
     allContinuousLabels, cv_start);
   cv_start += num_ceuv;
-  //if (relax) {
-    //copy_data_partial(problem_db.get_sa(
-    //  "variables.discrete_epistemic_uncertain_int.labels"),
-    //  allContinuousLabels, cv_start);
-    //cv_start += num_deuiv;
-    //copy_data_partial(problem_db.get_sa(
-    //  "variables.discrete_epistemic_uncertain_real.labels"),
-    //  allContinuousLabels, cv_start);
-    //cv_start += num_deurv;
-  //}
-  //else {
-    //copy_data_partial(problem_db.get_sa(
-    //  "variables.discrete_epistemic_uncertain_int.labels"),
-    //  allDiscreteIntLabels, div_start);
-    //div_start += num_deuiv;
-    //copy_data_partial(problem_db.get_sa(
-    //  "variables.discrete_epistemic_uncertain_real.labels"),
-    //  allDiscreteRealLabels, drv_start);
-    //drv_start += num_deurv;
-  //}
+  if (relax) {
+    copy_data_partial(problem_db.get_sa(
+     "variables.discrete_epistemic_uncertain_int.labels"),
+     allContinuousLabels, cv_start);
+    cv_start += num_deuiv;
+    copy_data_partial(problem_db.get_sa(
+     "variables.discrete_epistemic_uncertain_real.labels"),
+     allContinuousLabels, cv_start);
+    cv_start += num_deurv;
+  }
+  else {
+    copy_data_partial(problem_db.get_sa(
+     "variables.discrete_epistemic_uncertain_int.labels"),
+     allDiscreteIntLabels, div_start);
+    div_start += num_deuiv;
+    copy_data_partial(problem_db.get_sa(
+     "variables.discrete_epistemic_uncertain_real.labels"),
+     allDiscreteRealLabels, drv_start);
+    drv_start += num_deurv;
+  }
   // state
   copy_data_partial(problem_db.get_sa("variables.continuous_state.labels"),
     allContinuousLabels, cv_start);
@@ -342,7 +352,7 @@ void SharedVariablesDataRep::initialize_all_continuous_types(bool relax)
     num_fuv  = vc_lookup(FRECHET_UNCERTAIN),
     num_wuv  = vc_lookup(WEIBULL_UNCERTAIN),
     num_hbuv = vc_lookup(HISTOGRAM_BIN_UNCERTAIN),
-    num_iuv  = vc_lookup(INTERVAL_UNCERTAIN),
+    num_ciuv = vc_lookup(CONTINUOUS_INTERVAL_UNCERTAIN),
     num_csv  = vc_lookup(CONTINUOUS_STATE),
     num_acv  = variablesCompsTotals[0]  + variablesCompsTotals[3] +
                variablesCompsTotals[6]  + variablesCompsTotals[9];
@@ -416,8 +426,19 @@ void SharedVariablesDataRep::initialize_all_continuous_types(bool relax)
   }
 
   // EPISTEMIC UNCERTAIN
-  for (i=0; i<num_iuv; ++i, ++acv_cntr)
-    allContinuousTypes[acv_cntr] = INTERVAL_UNCERTAIN;
+  for (i=0; i<num_ciuv; ++i, ++acv_cntr)
+    allContinuousTypes[acv_cntr] = CONTINUOUS_INTERVAL_UNCERTAIN;
+  if (relax) {
+    size_t num_diuv  = vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
+           num_dusiv = vc_lookup(DISCRETE_UNCERTAIN_SET_INT),
+           num_dusrv = vc_lookup(DISCRETE_UNCERTAIN_SET_REAL);
+    for (i=0; i<num_diuv; ++i, ++acv_cntr)
+      allContinuousTypes[acv_cntr] = DISCRETE_INTERVAL_UNCERTAIN;
+    for (i=0; i<num_dusiv; ++i, ++acv_cntr)
+      allContinuousTypes[acv_cntr] = DISCRETE_UNCERTAIN_SET_INT;
+    for (i=0; i<num_dusrv; ++i, ++acv_cntr)
+      allContinuousTypes[acv_cntr] = DISCRETE_UNCERTAIN_SET_REAL;
+  }
 
   // STATE
   for (i=0; i<num_csv; ++i, ++acv_cntr)
@@ -559,6 +580,8 @@ void SharedVariablesDataRep::initialize_all_discrete_int_types()
     num_nbuv  = vc_lookup(NEGATIVE_BINOMIAL_UNCERTAIN),
     num_geuv  = vc_lookup(GEOMETRIC_UNCERTAIN),
     num_hguv  = vc_lookup(HYPERGEOMETRIC_UNCERTAIN),
+    num_diuv  = vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
+    num_dusiv = vc_lookup(DISCRETE_UNCERTAIN_SET_INT),
     num_dsrv  = vc_lookup(DISCRETE_STATE_RANGE),
     num_dssiv = vc_lookup(DISCRETE_STATE_SET_INT);
   // DESIGN
@@ -577,6 +600,11 @@ void SharedVariablesDataRep::initialize_all_discrete_int_types()
     allDiscreteIntTypes[adiv_cntr] = GEOMETRIC_UNCERTAIN;
   for (i=0; i<num_hguv; ++i, ++adiv_cntr)
     allDiscreteIntTypes[adiv_cntr] = HYPERGEOMETRIC_UNCERTAIN;
+  // EPISTEMIC UNCERTAIN
+  for (i=0; i<num_diuv; ++i, ++adiv_cntr)
+    allDiscreteIntTypes[adiv_cntr] = DISCRETE_INTERVAL_UNCERTAIN;
+  for (i=0; i<num_dusiv; ++i, ++adiv_cntr)
+    allDiscreteIntTypes[adiv_cntr] = DISCRETE_UNCERTAIN_SET_INT;
   // STATE
   for (i=0; i<num_dsrv; ++i, ++adiv_cntr)
     allDiscreteIntTypes[adiv_cntr] = DISCRETE_STATE_RANGE;
@@ -593,6 +621,7 @@ void SharedVariablesDataRep::initialize_all_discrete_real_types()
 
   size_t i, adrv_cntr = 0, num_ddsrv = vc_lookup(DISCRETE_DESIGN_SET_REAL),
     num_hpuv  = vc_lookup(HISTOGRAM_POINT_UNCERTAIN),
+    num_dusrv = vc_lookup(DISCRETE_UNCERTAIN_SET_REAL),
     num_dssrv = vc_lookup(DISCRETE_STATE_SET_REAL);
   // DESIGN
   for (i=0; i<num_ddsrv; ++i, ++adrv_cntr)
@@ -600,6 +629,9 @@ void SharedVariablesDataRep::initialize_all_discrete_real_types()
   // ALEATORY UNCERTAIN
   for (i=0; i<num_hpuv; ++i, ++adrv_cntr)
     allDiscreteRealTypes[adrv_cntr] = HISTOGRAM_POINT_UNCERTAIN;
+  // EPISTEMIC UNCERTAIN
+  for (i=0; i<num_dusrv; ++i, ++adrv_cntr)
+    allDiscreteRealTypes[adrv_cntr] = DISCRETE_UNCERTAIN_SET_REAL;
   // STATE
   for (i=0; i<num_dssrv; ++i, ++adrv_cntr)
     allDiscreteRealTypes[adrv_cntr] = DISCRETE_STATE_SET_REAL;

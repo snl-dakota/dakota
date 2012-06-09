@@ -1443,7 +1443,8 @@ void NestedModel::update_inactive_view(short new_view, short& view)
 		  ( type_i >= DISCRETE_STATE_RANGE &&
 		    type_i <= DISCRETE_STATE_SET_REAL ) )
 	  view = (relaxed) ? RELAXED_STATE : MIXED_STATE;
-	else if (type_i >= NORMAL_UNCERTAIN && type_i <= INTERVAL_UNCERTAIN)
+	else if (type_i >= NORMAL_UNCERTAIN &&
+		 type_i <= DISCRETE_UNCERTAIN_SET_REAL)
 	  view = (relaxed) ? RELAXED_UNCERTAIN : MIXED_UNCERTAIN;
       }
   }
@@ -1493,8 +1494,8 @@ void NestedModel::update_inactive_view(unsigned short type, short& view)
     new_view = (relaxed) ? RELAXED_STATE : MIXED_STATE;
     update_inactive_view(new_view, view);
   }
-  else if (type >= NORMAL_UNCERTAIN && type <= INTERVAL_UNCERTAIN) {
-    if (type == INTERVAL_UNCERTAIN)
+  else if (type >= NORMAL_UNCERTAIN && type <= DISCRETE_UNCERTAIN_SET_REAL) {
+    if (type >= CONTINUOUS_INTERVAL_UNCERTAIN)
       new_view = (relaxed) ? RELAXED_EPISTEMIC_UNCERTAIN :
 	                     MIXED_EPISTEMIC_UNCERTAIN;
     else
@@ -2086,10 +2087,10 @@ size_t NestedModel::sm_adiv_index_map(size_t padivm_index, short sadivm_target)
       num_ddsiv = std::count(adiv_types.begin(), adiv_types.end(),
 			     (unsigned short)DISCRETE_DESIGN_SET_INT),
       num_puv   = submodel_dp.poisson_lambdas().length(),
-      num_biuv  = submodel_dp.binomial_probabilities_per_trial().length(),
+      num_biuv  = submodel_dp.binomial_probability_per_trial().length(),
       num_nbiuv
-        = submodel_dp.negative_binomial_probabilities_per_trial().length(),
-      num_geuv  = submodel_dp.geometric_probabilities_per_trial().length();
+        = submodel_dp.negative_binomial_probability_per_trial().length(),
+      num_geuv  = submodel_dp.geometric_probability_per_trial().length();
 
     size_t dist_index = padivm_index - num_ddriv - num_ddsiv;
     switch (sadivm_target) {

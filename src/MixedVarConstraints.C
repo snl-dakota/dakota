@@ -97,13 +97,13 @@ MixedVarConstraints(const ProblemDescDB& problem_db,
     "variables.discrete_aleatory_uncertain_int.upper_bounds"),
     allDiscreteIntUpperBnds, start);
   start += num_dauiv;
-  //copy_data_partial(problem_db.get_iv(
-  //  "variables.discrete_epistemic_uncertain_int.lower_bounds"),
-  //  allDiscreteIntLowerBnds, start);
-  //copy_data_partial(problem_db.get_iv(
-  //  "variables.discrete_epistemic_uncertain_int.upper_bounds"),
-  //  allDiscreteIntUpperBnds, start);
-  //start += num_deuiv;
+  copy_data_partial(problem_db.get_iv(
+   "variables.discrete_epistemic_uncertain_int.lower_bounds"),
+   allDiscreteIntLowerBnds, start);
+  copy_data_partial(problem_db.get_iv(
+   "variables.discrete_epistemic_uncertain_int.upper_bounds"),
+   allDiscreteIntUpperBnds, start);
+  start += num_deuiv;
   copy_data_partial(problem_db.get_iv(
     "variables.discrete_state_range.lower_bounds"),
     allDiscreteIntLowerBnds, start);
@@ -133,13 +133,13 @@ MixedVarConstraints(const ProblemDescDB& problem_db,
     "variables.discrete_aleatory_uncertain_real.upper_bounds"),
     allDiscreteRealUpperBnds, start);
   start += num_daurv;
-  //copy_data_partial(problem_db.get_rv(
-  //  "variables.discrete_epistemic_uncertain_real.lower_bounds"),
-  //  allDiscreteRealLowerBnds, start);
-  //copy_data_partial(problem_db.get_rv(
-  //  "variables.discrete_epistemic_uncertain_real.upper_bounds"),
-  //  allDiscreteRealUpperBnds, start);
-  //start += num_deurv;
+  copy_data_partial(problem_db.get_rv(
+   "variables.discrete_epistemic_uncertain_real.lower_bounds"),
+   allDiscreteRealLowerBnds, start);
+  copy_data_partial(problem_db.get_rv(
+   "variables.discrete_epistemic_uncertain_real.upper_bounds"),
+   allDiscreteRealUpperBnds, start);
+  start += num_deurv;
   copy_data_partial(problem_db.get_rv(
     "variables.discrete_state_set_real.lower_bounds"),
     allDiscreteRealLowerBnds, start);
@@ -340,10 +340,8 @@ void MixedVarConstraints::read(std::istream& s)
   read_data_partial(s, num_ddiv, num_dauiv, allDiscreteIntLowerBnds);
   read_data_partial(s, num_ddrv, num_daurv, allDiscreteRealLowerBnds);
   read_data_partial(s, num_cdv+num_cauv, num_ceuv, allContinuousLowerBnds);
-  //read_data_partial(s, num_ddiv+num_dauiv, num_deuiv,
-  //                  allDiscreteIntLowerBnds);
-  //read_data_partial(s, num_ddrv+num_daurv, num_deurv,
-  //                  allDiscreteRealLowerBnds);
+  read_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntLowerBnds);
+  read_data_partial(s, num_ddrv+num_daurv, num_deurv, allDiscreteRealLowerBnds);
   read_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv,
 		    allContinuousLowerBnds);
   read_data_partial(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv,
@@ -358,10 +356,8 @@ void MixedVarConstraints::read(std::istream& s)
   read_data_partial(s, num_ddiv, num_dauiv, allDiscreteIntUpperBnds);
   read_data_partial(s, num_ddrv, num_daurv, allDiscreteRealUpperBnds);
   read_data_partial(s, num_cdv+num_cauv, num_ceuv, allContinuousUpperBnds);
-  //read_data_partial(s, num_ddiv+num_dauiv, num_deuiv,
-  //                  allDiscreteIntUpperBnds);
-  //read_data_partial(s, num_ddrv+num_daurv, num_deurv,
-  //                  allDiscreteRealUpperBnds);
+  read_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntUpperBnds);
+  read_data_partial(s, num_ddrv+num_daurv, num_deurv, allDiscreteRealUpperBnds);
   read_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv,
 		    allContinuousUpperBnds);
   read_data_partial(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv,
@@ -387,10 +383,9 @@ void MixedVarConstraints::write(std::ostream& s) const
   write_data_partial(s, num_ddiv, num_dauiv, allDiscreteIntLowerBnds);
   write_data_partial(s, num_ddrv, num_daurv, allDiscreteRealLowerBnds);
   write_data_partial(s, num_cdv+num_cauv, num_ceuv, allContinuousLowerBnds);
-  //write_data_partial(s, num_ddiv+num_dauiv, num_deuiv,
-  //                   allDiscreteIntLowerBnds);
-  //write_data_partial(s, num_ddrv+num_daurv, num_deurv,
-  //		       allDiscreteRealLowerBnds);
+  write_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntLowerBnds);
+  write_data_partial(s, num_ddrv+num_daurv, num_deurv,
+		     allDiscreteRealLowerBnds);
   write_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv,
 		     allContinuousLowerBnds);
   write_data_partial(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv,
@@ -405,10 +400,9 @@ void MixedVarConstraints::write(std::ostream& s) const
   write_data_partial(s, num_ddiv, num_dauiv, allDiscreteIntUpperBnds);
   write_data_partial(s, num_ddrv, num_daurv, allDiscreteRealUpperBnds);
   write_data_partial(s, num_cdv+num_cauv, num_ceuv, allContinuousUpperBnds);
-  //write_data_partial(s, num_ddiv+num_dauiv, num_deuiv,
-  //                   allDiscreteIntUpperBnds);
-  //write_data_partial(s, num_ddrv+num_daurv, num_deurv,
-  //		       allDiscreteRealUpperBnds);
+  write_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntUpperBnds);
+  write_data_partial(s, num_ddrv+num_daurv, num_deurv,
+		     allDiscreteRealUpperBnds);
   write_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv,
 		     allContinuousUpperBnds);
   write_data_partial(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv,

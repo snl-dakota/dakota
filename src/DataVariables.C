@@ -61,7 +61,7 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << continuousDesignLabels       << discreteDesignRangeLabels
     << discreteDesignSetIntLabels   << discreteDesignSetRealLabels;
 
-  // Uncertain arrays
+  // Aleatory uncertain arrays
   s << normalUncMeans << normalUncStdDevs << normalUncLowerBnds
     << normalUncUpperBnds << lognormalUncLambdas << lognormalUncZetas
     << lognormalUncMeans << lognormalUncStdDevs << lognormalUncErrFacts
@@ -76,11 +76,14 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << negBinomialUncProbPerTrial << negBinomialUncNumTrials 
     << geometricUncProbPerTrial << hyperGeomUncTotalPop
     << hyperGeomUncSelectedPop << hyperGeomUncNumDrawn << histogramUncPointPairs
-    << uncertainCorrelations << continuousIntervalUncBasicProbs
-    << continuousIntervalUncLowerBounds << continuousIntervalUncUpperBounds
-    << discreteIntervalUncBasicProbs << discreteIntervalUncLowerBounds
-    << discreteIntervalUncUpperBounds << discreteUncSetInt
-    << discreteUncSetReal;
+    << uncertainCorrelations;
+
+  // Epistemic uncertain arrays
+  s << continuousIntervalUncBasicProbs << continuousIntervalUncLowerBounds
+    << continuousIntervalUncUpperBounds << discreteIntervalUncBasicProbs
+    << discreteIntervalUncLowerBounds << discreteIntervalUncUpperBounds
+    << discreteUncSetInt << discreteUncSetIntBasicProbs << discreteUncSetReal
+    << discreteUncSetRealBasicProbs;
 
   // State arrays
   s << continuousStateVars         << continuousStateLowerBnds
@@ -137,7 +140,7 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> continuousDesignLabels       >> discreteDesignRangeLabels
     >> discreteDesignSetIntLabels   >> discreteDesignSetRealLabels;
 
-  // Uncertain arrays
+  // Aleatory uncertain arrays
   s >> normalUncMeans >> normalUncStdDevs >> normalUncLowerBnds
     >> normalUncUpperBnds >> lognormalUncLambdas >> lognormalUncZetas
     >> lognormalUncMeans >> lognormalUncStdDevs >> lognormalUncErrFacts
@@ -152,11 +155,14 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> negBinomialUncProbPerTrial >> negBinomialUncNumTrials 
     >> geometricUncProbPerTrial >> hyperGeomUncTotalPop
     >> hyperGeomUncSelectedPop >> hyperGeomUncNumDrawn >> histogramUncPointPairs
-    >> uncertainCorrelations >> continuousIntervalUncBasicProbs
-    >> continuousIntervalUncLowerBounds >> continuousIntervalUncUpperBounds
-    >> discreteIntervalUncBasicProbs >> discreteIntervalUncLowerBounds
-    >> discreteIntervalUncUpperBounds >> discreteUncSetInt
-    >> discreteUncSetReal;
+    >> uncertainCorrelations;
+
+  // Epistemic uncertain arrays
+  s >> continuousIntervalUncBasicProbs >> continuousIntervalUncLowerBounds
+    >> continuousIntervalUncUpperBounds >> discreteIntervalUncBasicProbs
+    >> discreteIntervalUncLowerBounds >> discreteIntervalUncUpperBounds
+    >> discreteUncSetInt >> discreteUncSetIntBasicProbs >> discreteUncSetReal
+    >> discreteUncSetRealBasicProbs;
 
   // State arrays
   s >> continuousStateVars         >> continuousStateLowerBnds
@@ -213,7 +219,7 @@ void DataVariablesRep::write(std::ostream& s) const
     << continuousDesignLabels       << discreteDesignRangeLabels
     << discreteDesignSetIntLabels   << discreteDesignSetRealLabels;
 
-  // Uncertain arrays
+  // Aleatory uncertain arrays
   s << normalUncMeans << normalUncStdDevs << normalUncLowerBnds
     << normalUncUpperBnds << lognormalUncLambdas << lognormalUncZetas
     << lognormalUncMeans << lognormalUncStdDevs << lognormalUncErrFacts
@@ -228,11 +234,14 @@ void DataVariablesRep::write(std::ostream& s) const
     << negBinomialUncProbPerTrial << negBinomialUncNumTrials 
     << geometricUncProbPerTrial << hyperGeomUncTotalPop
     << hyperGeomUncSelectedPop << hyperGeomUncNumDrawn << histogramUncPointPairs
-    << uncertainCorrelations << continuousIntervalUncBasicProbs
-    << continuousIntervalUncLowerBounds << continuousIntervalUncUpperBounds
-    << discreteIntervalUncBasicProbs << discreteIntervalUncLowerBounds
-    << discreteIntervalUncUpperBounds << discreteUncSetInt
-    << discreteUncSetReal;
+    << uncertainCorrelations;
+
+  // Epistemic uncertain arrays
+  s << continuousIntervalUncBasicProbs << continuousIntervalUncLowerBounds
+    << continuousIntervalUncUpperBounds << discreteIntervalUncBasicProbs
+    << discreteIntervalUncLowerBounds << discreteIntervalUncUpperBounds
+    << discreteUncSetInt << discreteUncSetIntBasicProbs << discreteUncSetReal
+    << discreteUncSetRealBasicProbs;
 
   // State arrays
   s << continuousStateVars         << continuousStateLowerBnds

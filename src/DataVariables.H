@@ -47,8 +47,10 @@ enum { CONTINUOUS_DESIGN, DISCRETE_DESIGN_RANGE, DISCRETE_DESIGN_SET_INT,
        FRECHET_UNCERTAIN, WEIBULL_UNCERTAIN, HISTOGRAM_BIN_UNCERTAIN,
        POISSON_UNCERTAIN, BINOMIAL_UNCERTAIN, NEGATIVE_BINOMIAL_UNCERTAIN,
        GEOMETRIC_UNCERTAIN, HYPERGEOMETRIC_UNCERTAIN, HISTOGRAM_POINT_UNCERTAIN,
-       INTERVAL_UNCERTAIN, CONTINUOUS_STATE, DISCRETE_STATE_RANGE,
-       DISCRETE_STATE_SET_INT, DISCRETE_STATE_SET_REAL };
+       CONTINUOUS_INTERVAL_UNCERTAIN, DISCRETE_INTERVAL_UNCERTAIN,
+       DISCRETE_UNCERTAIN_SET_INT, DISCRETE_UNCERTAIN_SET_REAL,
+       CONTINUOUS_STATE, DISCRETE_STATE_RANGE, DISCRETE_STATE_SET_INT,
+       DISCRETE_STATE_SET_REAL };
 
 
 /// Body class for variables specification data.
@@ -390,25 +392,33 @@ public:
   /// specification in \ref VarEUV)
   RealVectorArray continuousIntervalUncUpperBounds;
   /// Probability values per interval cell per epistemic interval uncertain
-  /// variable (from the \c continuous_interval_uncertain \c interval_probs
+  /// variable (from the \c discrete_interval_uncertain \c interval_probs
   /// specification in \ref VarEUV)
   RealVectorArray discreteIntervalUncBasicProbs;
   /// lower bounds defining cells for each epistemic interval uncertain
-  /// variable (from the \c continuous_interval_uncertain \c lower_bounds
+  /// variable (from the \c discrete_interval_uncertain \c lower_bounds
   /// specification in \ref VarEUV)
   IntVectorArray discreteIntervalUncLowerBounds;
   /// upper bounds defining cells for each epistemic interval uncertain
-  /// variable (from the \c continuous_interval_uncertain \c upper_bounds
+  /// variable (from the \c discrete_interval_uncertain \c upper_bounds
   /// specification in \ref VarEUV)
   IntVectorArray discreteIntervalUncUpperBounds;
   /// complete set of admissible values for each of the discrete epistemic
   /// uncertain variables defined by an integer set (from the \c
   /// discrete_uncertain_set_integer \c set_values specification in \ref VarEUV)
   IntSetArray discreteUncSetInt;
+  /// Probability values per set value per epistemic uncertain integer set
+  /// variable (from the \c discrete_uncertain_set_integer \c set_probs
+  /// specification in \ref VarEUV)
+  RealVectorArray discreteUncSetIntBasicProbs;
   /// complete set of admissible values for each of the discrete epistemic
   /// uncertain variables defined by a real set (from the \c
   /// discrete_uncertain_set_real \c set_values specification in \ref VarEUV)
   RealSetArray discreteUncSetReal;
+  /// Probability values per set value per epistemic uncertain real set
+  /// variable (from the \c discrete_uncertain_set_real \c set_probs
+  /// specification in \ref VarEUV)
+  RealVectorArray discreteUncSetRealBasicProbs;
 
   // State arrays
 

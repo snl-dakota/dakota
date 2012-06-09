@@ -62,7 +62,7 @@ void NonDLHSEvidence::post_process_samples()
       const Real& fn_val = it->second.function_value(respFnCntr);
       const Real* c_vars = all_samples[i]; // column vector
 
-      RealVector in_cell(numIntervalVars);
+      RealVector in_cell(numContIntervalVars);
       Real total_incell;
 
       for (cellCntr=0; cellCntr<numCells; ++cellCntr) {
@@ -70,7 +70,7 @@ void NonDLHSEvidence::post_process_samples()
 	j=0;
 	const RealVector& cell_l_bnds = cellLowerBounds[cellCntr];
 	const RealVector& cell_u_bnds = cellUpperBounds[cellCntr];
-	while (total_incell && j<numIntervalVars) {
+	while (total_incell && j<numContIntervalVars) {
 	  in_cell[j]=0;
 	  if (cell_l_bnds[j] < c_vars[j] && c_vars[j] < cell_u_bnds[j])
 	    in_cell[j] = 1;

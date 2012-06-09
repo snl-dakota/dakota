@@ -74,13 +74,12 @@ MixedVariables(const ProblemDescDB& problem_db,
     "variables.discrete_aleatory_uncertain_int.initial_point"),
     allDiscreteIntVars, start);
   start += num_dauiv;
-  //copy_data_partial(problem_db.get_iv(
-  //  "variables.discrete_epistemic_uncertain_int.initial_point"),
-  //  allDiscreteIntVars, start);
-  //start += num_deuiv;
   copy_data_partial(problem_db.get_iv(
-    "variables.discrete_state_range.initial_state"),
-    allDiscreteIntVars, start);
+   "variables.discrete_epistemic_uncertain_int.initial_point"),
+   allDiscreteIntVars, start);
+  start += num_deuiv;
+  copy_data_partial(problem_db.get_iv(
+    "variables.discrete_state_range.initial_state"), allDiscreteIntVars, start);
   start += num_dsrv;
   copy_data_partial(problem_db.get_iv(
     "variables.discrete_state_set_int.initial_state"),
@@ -95,10 +94,10 @@ MixedVariables(const ProblemDescDB& problem_db,
     "variables.discrete_aleatory_uncertain_real.initial_point"),
     allDiscreteRealVars, start);
   start += num_daurv;
-  //copy_data_partial(problem_db.get_rv(
-  //  "variables.discrete_epistemic_uncertain_real.initial_point"),
-  //  allDiscreteRealVars, start);
-  //start += num_deurv;
+  copy_data_partial(problem_db.get_rv(
+   "variables.discrete_epistemic_uncertain_real.initial_point"),
+   allDiscreteRealVars, start);
+  start += num_deurv;
   copy_data_partial(problem_db.get_rv(
     "variables.discrete_state_set_real.initial_state"),
     allDiscreteRealVars, start);
@@ -277,10 +276,10 @@ void MixedVariables::read(std::istream& s)
 		    all_discrete_real_variable_labels());
   read_data_partial(s, num_cdv+num_cauv, num_ceuv, allContinuousVars,
 		    all_continuous_variable_labels());
-  //read_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntVars,
-  //		      all_discrete_int_variable_labels());
-  //read_data_partial(s, num_ddrv+num_daurv, num_deurv, allDiscreteRealVars,
-    //		      all_discrete_real_variable_labels());
+  read_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntVars,
+		    all_discrete_int_variable_labels());
+  read_data_partial(s, num_ddrv+num_daurv, num_deurv, allDiscreteRealVars,
+		    all_discrete_real_variable_labels());
   read_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv, allContinuousVars,
 		    all_continuous_variable_labels());
   read_data_partial(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv,
@@ -313,10 +312,10 @@ void MixedVariables::write(std::ostream& s) const
 		     all_discrete_real_variable_labels());
   write_data_partial(s, num_cdv+num_cauv, num_ceuv, allContinuousVars,
 		     all_continuous_variable_labels());
-  //write_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntVars,
-  //		       all_discrete_int_variable_labels());
-  //write_data_partial(s, num_ddrv+num_daurv, num_deurv, allDiscreteRealVars,
-  //		       all_discrete_real_variable_labels());
+  write_data_partial(s, num_ddiv+num_dauiv, num_deuiv, allDiscreteIntVars,
+		     all_discrete_int_variable_labels());
+  write_data_partial(s, num_ddrv+num_daurv, num_deurv, allDiscreteRealVars,
+		     all_discrete_real_variable_labels());
   write_data_partial(s, num_cdv+num_cauv+num_ceuv, num_csv, allContinuousVars,
 		     all_continuous_variable_labels());
   write_data_partial(s, num_ddiv+num_dauiv+num_deuiv, num_dsiv,
@@ -349,12 +348,12 @@ void MixedVariables::write_aprepro(std::ostream& s) const
 			     all_discrete_real_variable_labels());
   write_data_partial_aprepro(s, num_cdv+num_cauv, num_ceuv, allContinuousVars,
 			     all_continuous_variable_labels());
-  //write_data_partial_aprepro(s, num_ddiv+num_dauiv, num_deuiv,
-  //			       allDiscreteIntVars,
-  //                           all_discrete_int_variable_labels());
-  //write_data_partial_aprepro(s, num_ddrv+num_daurv, num_deurv,
-  //			       allDiscreteRealVars,
-  //                           all_discrete_real_variable_labels());
+  write_data_partial_aprepro(s, num_ddiv+num_dauiv, num_deuiv,
+			     allDiscreteIntVars,
+			     all_discrete_int_variable_labels());
+  write_data_partial_aprepro(s, num_ddrv+num_daurv, num_deurv,
+			     allDiscreteRealVars,
+			     all_discrete_real_variable_labels());
   write_data_partial_aprepro(s, num_cdv+num_cauv+num_ceuv, num_csv,
 			     allContinuousVars,
 			     all_continuous_variable_labels());

@@ -57,13 +57,13 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
   curvatureThresh(1.e-10), warningBits(0)
 {
   // check for suitable gradient and variables specifications
-  if ( gradientType == "none" ) {
+  if (gradientType == "none") {
     Cerr << "\nError: local_reliability requires a gradient specification."
 	 << std::endl;
     abort_handler(-1);
   }
-  if (numIntervalVars) {
-    Cerr << "Error: interval distributions are not supported in local "
+  if (numEpistemicUncVars) {
+    Cerr << "Error: epistemic variables are not supported in local "
 	 << "reliability methods." << std::endl;
     abort_handler(-1);
   }

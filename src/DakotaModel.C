@@ -130,11 +130,17 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
       "variables.hypergeometric_uncertain.selected_population"),
     problem_db.get_iv("variables.hypergeometric_uncertain.num_drawn"),
     problem_db.get_rva("variables.histogram_uncertain.point_pairs"),
+    problem_db.get_rsm("variables.uncertain.correlation_matrix"),
     problem_db.get_rva("variables.continuous_interval_uncertain.basic_probs"),
     problem_db.get_rva("variables.continuous_interval_uncertain.lower_bounds"),
-    // TO DO: incommplete...
-    //problem_db.get_rva("variables.continuous_interval_uncertain.upper_bounds"),
-    problem_db.get_rsm("variables.uncertain.correlation_matrix")),
+    problem_db.get_rva("variables.continuous_interval_uncertain.upper_bounds"),
+    problem_db.get_rva("variables.discrete_interval_uncertain.basic_probs"),
+    problem_db.get_iva("variables.discrete_interval_uncertain.lower_bounds"),
+    problem_db.get_iva("variables.discrete_interval_uncertain.upper_bounds"),
+    problem_db.get_isa("variables.discrete_uncertain_set_int.set_values"),
+    problem_db.get_rva("variables.discrete_uncertain_set_int.basic_probs"),
+    problem_db.get_rsa("variables.discrete_uncertain_set_real.set_values"),
+    problem_db.get_rva("variables.discrete_uncertain_set_real.basic_probs")),
   discreteStateSetIntValues(
     problem_db.get_isa("variables.discrete_state_set_int.set_values")),
   discreteStateSetRealValues(

@@ -169,7 +169,7 @@ void NonDGlobalInterval::quantify_uncertainty()
 
   convergenceTol = 1.e-12;
   maxIterations  = 25*numContinuousVars;
-  prevCStar.size(numIntervalVars);
+  prevCStar.size(numContIntervalVars);
 
   initialize(); // virtual fn
 

@@ -112,10 +112,10 @@ void NonDIntegration::check_variables(const Pecos::ShortArray& x_types)
   // base class default definition of virtual function
   bool err_flag = false;
 
-  numContDesVars
-    = std::count(x_types.begin(), x_types.end(), (short)Pecos::DESIGN);
-  numContStateVars
-    = std::count(x_types.begin(), x_types.end(), (short)Pecos::STATE);
+  numContDesVars   = std::count(x_types.begin(), x_types.end(),
+				(short)Pecos::CONTINUOUS_DESIGN);
+  numContStateVars = std::count(x_types.begin(), x_types.end(),
+				(short)Pecos::CONTINUOUS_STATE);
 
   if (x_types.size()    != numContinuousVars ||
       numContinuousVars != numContDesVars      + numContAleatUncVars +

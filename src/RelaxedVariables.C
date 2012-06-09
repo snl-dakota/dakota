@@ -54,8 +54,7 @@ RelaxedVariables(const ProblemDescDB& problem_db,
     "variables.continuous_design.initial_point"), allContinuousVars, start);
   start += num_cdv;
   merge_data_partial(problem_db.get_iv(
-    "variables.discrete_design_range.initial_point"),
-    allContinuousVars, start);
+    "variables.discrete_design_range.initial_point"), allContinuousVars, start);
   start += num_ddrv;
   merge_data_partial(problem_db.get_iv(
     "variables.discrete_design_set_int.initial_point"),
@@ -81,20 +80,19 @@ RelaxedVariables(const ProblemDescDB& problem_db,
     "variables.continuous_epistemic_uncertain.initial_point"),
     allContinuousVars, start);
   start += num_ceuv;
-  //merge_data_partial(problem_db.get_iv(
-  //  "variables.discrete_epistemic_uncertain_int.initial_point"),
-  //  allContinuousVars, start);
-  //start += num_deuiv;
-  //copy_data_partial(problem_db.get_rv(
-  //  "variables.discrete_epistemic_uncertain_real.initial_point"),
-  //  allContinuousVars, start);
-  //start += num_deurv;
+  merge_data_partial(problem_db.get_iv(
+   "variables.discrete_epistemic_uncertain_int.initial_point"),
+   allContinuousVars, start);
+  start += num_deuiv;
+  copy_data_partial(problem_db.get_rv(
+   "variables.discrete_epistemic_uncertain_real.initial_point"),
+   allContinuousVars, start);
+  start += num_deurv;
   copy_data_partial(problem_db.get_rv(
     "variables.continuous_state.initial_state"), allContinuousVars, start);
   start += num_csv;
   merge_data_partial(problem_db.get_iv(
-    "variables.discrete_state_range.initial_state"),
-    allContinuousVars, start);
+    "variables.discrete_state_range.initial_state"), allContinuousVars, start);
   start += num_dsrv;
   merge_data_partial(problem_db.get_iv(
     "variables.discrete_state_set_int.initial_state"),
@@ -251,15 +249,15 @@ void RelaxedVariables::read_tabular(std::istream& s)
   read_data_partial_tabular(s, num_dv+num_uv, num_csv, allContinuousVars);
   read_data_partial_tabular(s, num_cdv, num_ddiv, allContinuousVars);
   read_data_partial_tabular(s, num_dv+num_cauv, num_dauiv, allContinuousVars);
-  //read_data_partial_tabular(s, num_dv+num_auv+num_ceuv, num_deuiv,
-  //			       allContinuousVars);
+  read_data_partial_tabular(s, num_dv+num_auv+num_ceuv, num_deuiv,
+			    allContinuousVars);
   read_data_partial_tabular(s, num_dv+num_uv+num_csv, num_dsiv,
 			    allContinuousVars);
   read_data_partial_tabular(s, num_cdv+num_ddiv, num_ddrv, allContinuousVars);
   read_data_partial_tabular(s, num_dv+num_cauv+num_dauiv, num_daurv,
 			    allContinuousVars);
-  //read_data_partial_tabular(s, num_dv+num_auv+num_ceuv+num_dauiv, num_deurv,
-  //			       allContinuousVars);
+  read_data_partial_tabular(s, num_dv+num_auv+num_ceuv+num_deuiv, num_deurv,
+			    allContinuousVars);
   read_data_partial_tabular(s, num_dv+num_uv+num_csv+num_dsiv, num_dsrv,
 			    allContinuousVars);
 }
@@ -283,15 +281,15 @@ void RelaxedVariables::write_tabular(std::ostream& s) const
   write_data_partial_tabular(s, num_dv+num_uv, num_csv, allContinuousVars);
   write_data_partial_tabular(s, num_cdv, num_ddiv, allContinuousVars);
   write_data_partial_tabular(s, num_dv+num_cauv, num_dauiv, allContinuousVars);
-  //write_data_partial_tabular(s, num_dv+num_auv+num_ceuv, num_deuiv,
-  //			       allContinuousVars);
+  write_data_partial_tabular(s, num_dv+num_auv+num_ceuv, num_deuiv,
+			     allContinuousVars);
   write_data_partial_tabular(s, num_dv+num_uv+num_csv, num_dsiv,
 			     allContinuousVars);
   write_data_partial_tabular(s, num_cdv+num_ddiv, num_ddrv, allContinuousVars);
   write_data_partial_tabular(s, num_dv+num_cauv+num_dauiv, num_daurv,
 			     allContinuousVars);
-  //write_data_partial_tabular(s, num_dv+num_auv+num_ceuv+num_dauiv, num_deurv,
-  //			       allContinuousVars);
+  write_data_partial_tabular(s, num_dv+num_auv+num_ceuv+num_deuiv, num_deurv,
+			     allContinuousVars);
   write_data_partial_tabular(s, num_dv+num_uv+num_csv+num_dsiv, num_dsrv,
 			     allContinuousVars);
 }

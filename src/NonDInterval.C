@@ -37,7 +37,7 @@ NonDInterval::NonDInterval(Model& model): NonD(model),
 	 << "NonDInterval." << std::endl;
     err_flag = true;
   }
-  if (numUncertainVars != numIntervalVars) {
+  if (numUncertainVars != numContIntervalVars) {
     Cerr << "Error: only interval distributions are currently supported in "
 	 << "NonDInterval." << std::endl;
     err_flag = true;
@@ -148,18 +148,20 @@ void NonDInterval::calculate_cells_and_bpas()
 {
   Pecos::DistributionParams& dp = iteratedModel.distribution_parameters();
   // Information we want: for each hyper cube i, give the bpa, and bounds on i.
-  // interval_bpa[i][j] gives jth bpa of jth interval of ith variable
-  const Pecos::RealVectorArray& interval_bpa = dp.interval_probabilities();
-  // interval_bounds[i][j] gives the bounds for the ith variable
-  // bounds are given in n pairs at 2j and 2j+1, j = 0...n
-  const Pecos::RealVectorArray& interval_bounds = dp.interval_bounds();
+  // ci_bpa[i][j] gives jth bpa of jth interval of ith variable
+  const Pecos::RealVectorArray& ci_bpa = dp.continuous_interval_probabilities();
+  // ci_{l,u}_bnds[i][j] gives jth {lower,upper} bound for the ith variable
+  const Pecos::RealVectorArray& ci_l_bnds
+    = dp.continuous_interval_lower_bounds();
+  const Pecos::RealVectorArray& ci_u_bnds
+    = dp.continuous_interval_upper_bounds();
 
   size_t i,j;
-  UShortArray scale_factor(numIntervalVars,1);
-  numCells = interval_bpa[0].length();
-  for (i=1; i<numIntervalVars; ++i){
-    numCells *= interval_bpa[i].length();
-    scale_factor[i] = scale_factor[i-1]*interval_bpa[i-1].length();
+  UShortArray scale_factor(numContIntervalVars,1);
+  numCells = ci_bpa[0].length();
+  for (i=1; i<numContIntervalVars; ++i){
+    numCells *= ci_bpa[i].length();
+    scale_factor[i] = scale_factor[i-1]*ci_bpa[i-1].length();
   }
   // shape cell length
   cellLowerBounds.resize(numCells);		
@@ -167,19 +169,19 @@ void NonDInterval::calculate_cells_and_bpas()
   cellBPA.resize(numCells);
   cellBPA.assign(numCells, 1);
   for (i=0;i<numCells;++i) {
-    cellLowerBounds[i].resize(numIntervalVars);
-    cellUpperBounds[i].resize(numIntervalVars);
+    cellLowerBounds[i].resize(numContIntervalVars);
+    cellUpperBounds[i].resize(numContIntervalVars);
   }
 
   // This loops num_variables*num_cells
   size_t cell_cntr;
-  for (j=0; j<numIntervalVars; ++j) {
-    int intervals_in_var_j = interval_bpa[j].length();
+  for (j=0; j<numContIntervalVars; ++j) {
+    int intervals_in_var_j = ci_bpa[j].length();
     double bpa_j = 1;
     for (i=0; i<intervals_in_var_j; ++i){
-      double lower_bound_i_of_j = interval_bounds[j][2*i];
-      double upper_bound_i_of_j = interval_bounds[j][2*i+1];
-      double bpa_j = interval_bpa[j][i];
+      double lower_bound_i_of_j = ci_l_bnds[j][i];
+      double upper_bound_i_of_j = ci_u_bnds[j][i];
+      double bpa_j = ci_bpa[j][i];
       cell_cntr = i*scale_factor[j];
       while (cell_cntr < numCells){
 	for (size_t k=0; k<scale_factor[j]; k++) {

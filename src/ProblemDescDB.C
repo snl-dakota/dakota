@@ -1430,6 +1430,10 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 	 P continuousIntervalUncUpperBounds},
 	{"discrete_interval_uncertain.basic_probs",
 	 P discreteIntervalUncBasicProbs},
+	{"discrete_uncertain_set_int.basic_probs",
+	 P discreteUncSetIntBasicProbs},
+	{"discrete_uncertain_set_real.basic_probs",
+	 P discreteUncSetRealBasicProbs},
 	{"histogram_uncertain.bin_pairs",   P histogramUncBinPairs},
 	{"histogram_uncertain.point_pairs", P histogramUncPointPairs}};
     #undef P
@@ -2575,6 +2579,10 @@ void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
 	 P continuousIntervalUncUpperBounds},
 	{"discrete_interval_uncertain.basic_probs",
 	 P discreteIntervalUncBasicProbs},
+	{"discrete_uncertain_set_int.basic_probs",
+	 P discreteUncSetIntBasicProbs},
+	{"discrete_uncertain_set_real.basic_probs",
+	 P discreteUncSetRealBasicProbs},
 	{"histogram_uncertain.bin_pairs",   P histogramUncBinPairs},
 	{"histogram_uncertain.point_pairs", P histogramUncPointPairs}};
     #undef P

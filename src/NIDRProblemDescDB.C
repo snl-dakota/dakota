@@ -3920,7 +3920,7 @@ var_stop1(void *v)
   int havelabels;
   size_t i, j, k, n, nd, nu, nuk, nutot, nv;
 #define AVI &Var_Info::
-  // TO DO: incomplete...
+  // TO DO: incomplete... ?
   static IntArray   *Var_Info::* Ivzap[]
     = { AVI nCIv, AVI nDIv, AVI nbp, AVI npp };
   static RealVector *Var_Info::* Rvzap[]

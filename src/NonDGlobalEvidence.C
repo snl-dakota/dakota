@@ -62,7 +62,7 @@ void NonDGlobalEvidence::post_process_final_results()
 #ifdef DEBUG
   for (size_t i=0; i<numCells; i++) {
     Cout << "Cell " << i << "\nBPA: " << cellBPA[i] << std::endl;;
-    for (size_t ii=0; ii<numIntervalVars; ii++) {
+    for (size_t ii=0; ii<numContIntervalVars; ii++) {
       Cout << "Cell Bounds for variable " << ii << ": ("
 	   << cellLowerBounds[i][ii] << ", " << cellUpperBounds[i][ii] << ")"
 	   << std::endl;
@@ -92,7 +92,7 @@ void NonDGlobalEvidence::get_best_sample(bool find_max, bool eval_approx)
     const Real&       truth_fn   = gp_data.response_function(i);
     const RealVector& truth_data = gp_data.continuous_variables(i);
     bool in_bounds = true;
-    for (j=0; j < numIntervalVars; ++j) {
+    for (j=0; j < numContIntervalVars; ++j) {
       if ((truth_data[j] < cellLowerBounds[cellCntr][j]) ||
 	  (truth_data[j] > cellUpperBounds[cellCntr][j])) {	
 	in_bounds = false;
@@ -113,8 +113,8 @@ void NonDGlobalEvidence::get_best_sample(bool find_max, bool eval_approx)
 	   << "at midpoint.\n";
       RealVector midpoint;
       Variables cell_midpoint(gpOptimizer.variables_results());
-      midpoint.size(numIntervalVars);
-      for (size_t i=0; i<numIntervalVars; i++) {
+      midpoint.size(numContIntervalVars);
+      for (size_t i=0; i<numContIntervalVars; i++) {
 	midpoint[i] = 0.5*cellLowerBounds[cellCntr][i]
 	            + 0.5*cellUpperBounds[cellCntr][i];
       }	
