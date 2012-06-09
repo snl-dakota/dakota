@@ -3991,7 +3991,7 @@ var_stop1(void *v)
       }
     }
   }
-  for(k = nu = 0; k < N_VLI; ++k) {
+  for(k = 0; k < N_VLI; ++k) {
     vli = &VLI[k];
     havelabels = 0;
     nuk = 0;
