@@ -191,7 +191,6 @@ public:
   KWH(strategy_true);
 
   KWH(var_RealLb);
-  KWH(var_RealLd);
   KWH(var_RealUb);
   KWH(var_caulbl);
   KWH(var_dauilbl);
@@ -209,6 +208,7 @@ public:
   KWH(var_newivec);
   KWH(var_newrvec);
   KWH(var_ivec);
+  KWH(var_rvec);
   KWH(var_type);
 
 #undef KWH

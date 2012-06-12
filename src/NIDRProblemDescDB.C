@@ -206,7 +206,7 @@ typedef unsigned long UL;
 
 struct Iface_Info {
   DataInterfaceRep *di;
-  DataInterface *di0;
+  DataInterface *di_handle;
 };
 
 struct Iface_mp_Rlit {
@@ -488,9 +488,9 @@ iface_start(const char *keyname, Values *val, void **g, void *v)
 
   if (!(ii = new Iface_Info))
   Botch:		botch("new failure in iface_start");
-  if (!(ii->di0 = new DataInterface))
+  if (!(ii->di_handle = new DataInterface))
     goto Botch;
-  ii->di = ii->di0->dataIfaceRep;
+  ii->di = ii->di_handle->dataIfaceRep;
   *g = (void*)ii;
 }
 
@@ -557,7 +557,8 @@ int not_executable(const char *driver_name, const char *tdir)
       for(b = dbuf; *p; ++b, ++p)
 	*b = tolower(*p);
       *b = 0;
-      if (std::strcmp(dbuf,"exe") && std::strcmp(dbuf,"bat") && std::strcmp(dbuf, "cmd"))
+      if (std::strcmp(dbuf, "exe") && std::strcmp(dbuf, "bat") &&
+	  std::strcmp(dbuf, "cmd"))
 	p = 0;
     }
   }
@@ -764,8 +765,8 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
       }
     }
   }
-  pDDBInstance->dataInterfaceList.push_back(*ii->di0);
-  delete ii->di0;
+  pDDBInstance->dataInterfaceList.push_back(*ii->di_handle);
+  delete ii->di_handle;
   delete ii;
 }
 
@@ -784,7 +785,7 @@ iface_str2D(const char *keyname, Values *val, void **g, void *v)
   const char **s = val->s;
   size_t i, j, k, n, nc, nd;
 
-  // This is just for analysisComponents -- the only String2DArray in a DataInterfaceRep.
+  // This is for analysisComponents -- only String2DArray in a DataInterfaceRep
 
   nd = di->analysisDrivers.size();
   n = val->n;
@@ -808,7 +809,8 @@ iface_str2D(const char *keyname, Values *val, void **g, void *v)
 void NIDRProblemDescDB::
 iface_strL(const char *keyname, Values *val, void **g, void *v)
 {
-  StringArray *sa = &((*(Iface_Info**)g)->di->**(StringArray DataInterfaceRep::**)v);
+  StringArray *sa
+    = &((*(Iface_Info**)g)->di->**(StringArray DataInterfaceRep::**)v);
   const char **s = val->s;
   size_t i, n = val->n;
 
@@ -1010,7 +1012,7 @@ method_litpp_final(const char *keyname, Values *val, void **g, void *v)
     else if (dm->meritFn == "van_shanno")
       dm->stepLenToBoundary = 0.95;
     else
-    Botch:			botch("Unexpected meritFn in method_litpp_final");
+    Botch: botch("Unexpected meritFn in method_litpp_final");
   }
   if (dm->centeringParam == -1.) {
     if (dm->meritFn == "el_bakry")
@@ -1260,14 +1262,15 @@ scale_chk(StringArray &ST, RealVector &S, const char *what, const char **univ)
       if (!strcmp(s,*u)) {
 	goto break2;
       }
-    NIDRProblemDescDB::squawk("\"%s\" cannot appear in %s_scale_types", s, what);
+    NIDRProblemDescDB::squawk("\"%s\" cannot appear in %s_scale_types",
+			      s, what);
     ++nbad;
   break2:	;
   }
   if (vseen && S.length() <= 0)
     NIDRProblemDescDB::squawk(
-			      "\"value\" in %s_scale_types requires at least one value for %s_scales",
-			      what, what);
+      "\"value\" in %s_scale_types requires at least one value for %s_scales",
+      what, what);
 }
 
 static const char *aln_scaletypes[] = { "auto", "log", "none", 0 };
@@ -1504,8 +1507,7 @@ BuildLabels(StringArray *sa, size_t nsa, size_t n1, size_t n2, const char *stub)
   }
 }
 
-static int
-flist_check(IntList *L, int n, IntArray *iv, const char *what)
+static int flist_check(IntList *L, int n, IntArray *iv, const char *what)
 {
   int nbad, j;
 
@@ -1718,7 +1720,8 @@ resp_str(const char *keyname, Values *val, void **g, void *v)
 void NIDRProblemDescDB::
 resp_strL(const char *keyname, Values *val, void **g, void *v)
 {
-  StringArray *sa = &((*(Resp_Info**)g)->dr->**(StringArray DataResponsesRep::**)v);
+  StringArray *sa
+    = &((*(Resp_Info**)g)->dr->**(StringArray DataResponsesRep::**)v);
   const char **s = val->s;
   size_t i, n = val->n;
 
@@ -1749,7 +1752,8 @@ void NIDRProblemDescDB::
 strategy_RealL(const char *keyname, Values *val, void **g, void *v)
 {
   Real *r = val->r;
-  RealVector *rdv = &((*(DataStrategyRep**)g)->**(RealVector DataStrategyRep::**)v);
+  RealVector *rdv
+    = &((*(DataStrategyRep**)g)->**(RealVector DataStrategyRep::**)v);
   size_t i, n = val->n;
 
   rdv->sizeUninitialized(n);
@@ -1772,7 +1776,8 @@ strategy_int(const char *keyname, Values *val, void **g, void *v)
 void NIDRProblemDescDB::
 strategy_lit(const char *keyname, Values *val, void **g, void *v)
 {
-  (*(DataStrategyRep**)g)->*((Strategy_mp_lit*)v)->sp = ((Strategy_mp_lit*)v)->lit;
+  (*(DataStrategyRep**)g)->*((Strategy_mp_lit*)v)->sp
+    = ((Strategy_mp_lit*)v)->lit;
 }
 
 void NIDRProblemDescDB::
@@ -1790,7 +1795,8 @@ strategy_str(const char *keyname, Values *val, void **g, void *v)
 void NIDRProblemDescDB::
 strategy_strL(const char *keyname, Values *val, void **g, void *v)
 {
-  StringArray *sa = &((*(DataStrategyRep**)g)->**(StringArray DataStrategyRep::**)v);
+  StringArray *sa
+    = &((*(DataStrategyRep**)g)->**(StringArray DataStrategyRep::**)v);
   const char **s = val->s;
   size_t i, n = val->n;
 
@@ -1829,18 +1835,6 @@ method_tr_final(const char *keyname, Values *val, void **g, void *v)
     botch("expansion_factor must be >= 1");
 }
 
-
-void NIDRProblemDescDB::
-var_RealLd(const char *keyname, Values *val, void **g, void *v)
-{
-  Real *r = val->r;
-  RealVector *rv = &((*(Var_Info**)g)->dv->**(RealVector DataVariablesRep::**)v);
-  size_t i, n = val->n;
-
-  rv->sizeUninitialized(n);
-  for(i = 0; i < n; i++)
-    (*rv)[i] = r[i];
-}
 
 void NIDRProblemDescDB::
 var_RealLb(const char *keyname, Values *val, void **g, void *v)
@@ -1937,13 +1931,26 @@ var_newiarray(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
+var_rvec(const char *keyname, Values *val, void **g, void *v)
+{
+  RealVector *rv
+    = &((*(Var_Info**)g)->dv->**(RealVector DataVariablesRep::**)v);
+  size_t i, n = val->n;
+  rv->sizeUninitialized(n);
+
+  Real *r = val->r;
+  for(i = 0; i < n; i++)
+    (*rv)[i] = r[i];
+}
+
+void NIDRProblemDescDB::
 var_ivec(const char *keyname, Values *val, void **g, void *v)
 {
   IntVector *iv = &((*(Var_Info**)g)->dv->**(IntVector DataVariablesRep::**)v);
-  int *z = val->i;
   size_t i, n = val->n;
-
   iv->sizeUninitialized(n);
+
+  int *z = val->i;
   for(i = 0; i < n; i++)
     (*iv)[i] = z[i];
 }
@@ -1985,8 +1992,7 @@ var_true(const char *keyname, Values *val, void **g, void *v)
   (*(Var_Info**)g)->dv->**(bool DataVariablesRep::**)v = true;
 }
 
-static int
-wronglen(size_t n, RealVector *V, const char *what)
+static int wronglen(size_t n, RealVector *V, const char *what)
 {
   size_t n1 = V->length();
   if (n != n1) {
@@ -1996,8 +2002,7 @@ wronglen(size_t n, RealVector *V, const char *what)
   return 0;
 }
 
-static int
-wronglen2(size_t n, IntVector *V, const char *what)
+static int wronglen2(size_t n, IntVector *V, const char *what)
 {
   size_t n1 = V->length();
   if (n != n1) {
@@ -2007,16 +2012,14 @@ wronglen2(size_t n, IntVector *V, const char *what)
   return 0;
 }
 
-static void
-Vcopyup(RealVector *V, RealVector *M, size_t i, size_t n)
+static void Vcopyup(RealVector *V, RealVector *M, size_t i, size_t n)
 {
   size_t j;
   for(j = 0; j < n; ++i, ++j)
     (*V)[i] = (*M)[j];
 }
 
-static void
-Set_rdv(RealVector *V, double d, size_t n)
+static void Set_rdv(RealVector *V, double d, size_t n)
 {
   size_t i;
   V->sizeUninitialized(n);
@@ -2024,8 +2027,7 @@ Set_rdv(RealVector *V, double d, size_t n)
     (*V)[i] = d;
 }
 
-static void
-Vadj_NormalUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_NormalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *B, *M, *Sd;
@@ -2042,8 +2044,7 @@ Vadj_NormalUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     wronglen(n, B, "nuv_upper_bounds");
 }
 
-static void
-Vbgen_NormalUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_NormalUnc(DataVariablesRep *dv, size_t offset)
 {
   int bds;
   size_t j, n;
@@ -2056,26 +2057,26 @@ Vbgen_NormalUnc(DataVariablesRep *dv, size_t i0)
   Sd = &dv->normalUncStdDevs;
   V  = &dv->continuousAleatoryUncVars;
   U  = &dv->normalUncUpperBnds;
-  Vcopyup(V, M, i0, n);
+  Vcopyup(V, M, offset, n);
   B = &dv->continuousAleatoryUncLowerBnds;
   if (!L->length()) {
     Set_rdv(L, -DBL_MAX, n);
     for(j = 0; j < n; ++j)
-      (*B)[i0+j] = (*M)[j] - 3.*(*Sd)[j];
+      (*B)[offset+j] = (*M)[j] - 3.*(*Sd)[j];
     bds = 0;
   }
   else {
-    Vcopyup(B, L, i0, n);
+    Vcopyup(B, L, offset, n);
     bds = 1;
   }
   B = &dv->continuousAleatoryUncUpperBnds;
   if (!U->length()) {
     Set_rdv(U, DBL_MAX, n);
     for(j = 0; j < n; ++j)
-      (*B)[i0+j] = (*M)[j] + 3.*(*Sd)[j];
+      (*B)[offset+j] = (*M)[j] + 3.*(*Sd)[j];
   }
   else {
-    Vcopyup(B, U, i0, n);
+    Vcopyup(B, U, offset, n);
     bds += 2;
   }
 
@@ -2084,39 +2085,38 @@ Vbgen_NormalUnc(DataVariablesRep *dv, size_t i0)
 
   switch(bds) {
   case 1: // only lower bounds given
-    for(j = 0; j < n; ++j, ++i0) {
-      if ((*V)[i0] <= (*L)[j])
-	(*V)[i0] = (*L)[j] + 0.5*(*Sd)[j];
+    for(j = 0; j < n; ++j, ++offset) {
+      if ((*V)[offset] <= (*L)[j])
+	(*V)[offset] = (*L)[j] + 0.5*(*Sd)[j];
     }
     break;
 
   case 2: // only upper bounds given
-    for(j = 0; j < n; ++j, ++i0) {
-      if ((*V)[i0] >= (*U)[j])
-	(*V)[i0] = (*U)[j] - 0.5*(*Sd)[j];
+    for(j = 0; j < n; ++j, ++offset) {
+      if ((*V)[offset] >= (*U)[j])
+	(*V)[offset] = (*U)[j] - 0.5*(*Sd)[j];
     }
     break;
 
   case 3: // both lower and upper bounds given
-    for(j = 0; j < n; ++j, ++i0) {
-      if ((*V)[i0] <= (*L)[j]) {
+    for(j = 0; j < n; ++j, ++offset) {
+      if ((*V)[offset] <= (*L)[j]) {
 	w = (*U)[j] - (*L)[j];
 	if ((stdev = (*Sd)[j]) > w)
 	  stdev = w;
-	(*V)[i0] = (*L)[j] + 0.5*stdev;
+	(*V)[offset] = (*L)[j] + 0.5*stdev;
       }
-      else if ((*V)[i0] >= (*U)[j]) {
+      else if ((*V)[offset] >= (*U)[j]) {
 	w = (*U)[j] - (*L)[j];
 	if ((stdev = (*Sd)[j]) > w)
 	  stdev = w;
-	(*V)[i0] = (*U)[j] - 0.5*stdev;
+	(*V)[offset] = (*U)[j] - 0.5*stdev;
       }
     }
   }
 }
 
-static void
-Vadj_LognormalUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_LognormalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *B, *L, *M, *Sd, *Z;
@@ -2152,8 +2152,7 @@ Vadj_LognormalUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     wronglen(n, B, "lnuv_upper_bounds");
 }
 
-static void
-Vbgen_LognormalUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_LognormalUnc(DataVariablesRep *dv, size_t offset)
 {
   size_t i, j, n, num_Sd, num_L;
   Real mean, stdev, t;
@@ -2168,14 +2167,14 @@ Vbgen_LognormalUnc(DataVariablesRep *dv, size_t i0)
   Sd = &dv->lognormalUncStdDevs;
   if (!(num_L = Lam->length()) && M->length()) {
     num_Sd = Sd->length();
-    Vcopyup(V, M, i0, n);
+    Vcopyup(V, M, offset, n);
   }
 
   // lower bounds
   L = &dv->lognormalUncLowerBnds;
   if (!L->length())
     L->size(n); // sets L to all zeros
-  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
+  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, offset, n);
 
   // upper bounds
   U = &dv->lognormalUncUpperBnds;
@@ -2185,19 +2184,19 @@ Vbgen_LognormalUnc(DataVariablesRep *dv, size_t i0)
   if (!U->length()) {
     Set_rdv(U, DBL_MAX, n);
     if (num_L) {
-      for(i = i0, j = 0; j < n; ++i, ++j) {
+      for(i = offset, j = 0; j < n; ++i, ++j) {
 	Pecos::moments_from_lognormal_params((*Lam)[j], (*Z)[j], mean, stdev);
 	(*B)[i] = mean + 3.*stdev;
 	(*V)[i] = mean;
       }
     }
     else if (num_Sd)
-      for(i = i0, j = 0; j < n; ++i, ++j) {
+      for(i = offset, j = 0; j < n; ++i, ++j) {
 	(*V)[i] = mean = (*M)[j];
 	(*B)[i] = mean + 3.*(*Sd)[j];
       }
     else {
-      for(i = i0, j = 0; j < n; ++i, ++j) {
+      for(i = offset, j = 0; j < n; ++i, ++j) {
 	(*V)[i] = mean = (*M)[j];
 	Pecos::lognormal_std_deviation_from_err_factor(mean, (*Ef)[i], stdev);
 	(*B)[i] = mean + 3.*stdev;
@@ -2205,8 +2204,8 @@ Vbgen_LognormalUnc(DataVariablesRep *dv, size_t i0)
     }
   }
   else {
-    Vcopyup(B, U, i0, n);
-    for(i = i0, j = 0; j < n; ++i, ++j) {
+    Vcopyup(B, U, offset, n);
+    for(i = offset, j = 0; j < n; ++i, ++j) {
       if (num_L)
 	Pecos::moments_from_lognormal_params((*Lam)[j], (*Z)[j], mean, stdev);
       else {
@@ -2234,8 +2233,7 @@ Vbgen_LognormalUnc(DataVariablesRep *dv, size_t i0)
   }
 }
 
-static void
-Vadj_UniformUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_UniformUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *L, *U;
@@ -2248,8 +2246,7 @@ Vadj_UniformUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
   wronglen(n, U, "uuv_upper_bounds");
 }
 
-static void
-Vbgen_UniformUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_UniformUnc(DataVariablesRep *dv, size_t offset)
 {
   size_t i, j, n;
   Real stdev;
@@ -2258,16 +2255,16 @@ Vbgen_UniformUnc(DataVariablesRep *dv, size_t i0)
   n = dv->numUniformUncVars;
   L = &dv->uniformUncLowerBnds;
   U = &dv->uniformUncUpperBnds;
-  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
-  Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, i0, n);
+  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, offset, n);
+  Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, offset, n);
   V = &dv->continuousAleatoryUncVars;
-  for(i = i0, j = 0; j < n; ++i, ++j)
+  for(i = offset, j = 0; j < n; ++i, ++j)
     Pecos::moments_from_uniform_params((*L)[j], (*U)[j],
 				       (*V)[i], stdev);
 }
 
-static void
-Vadj_LoguniformUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void 
+Vadj_LoguniformUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t j, n;
   Real Lj, Uj;
@@ -2297,8 +2294,7 @@ Vadj_LoguniformUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
   }
 }
 
-static void
-Vbgen_LoguniformUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_LoguniformUnc(DataVariablesRep *dv, size_t offset)
 {
   size_t i, j, n;
   Real stdev;
@@ -2307,16 +2303,15 @@ Vbgen_LoguniformUnc(DataVariablesRep *dv, size_t i0)
   n = dv->numLoguniformUncVars;
   L = &dv->loguniformUncLowerBnds;
   U = &dv->loguniformUncUpperBnds;
-  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
-  Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, i0, n);
+  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, offset, n);
+  Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, offset, n);
   V = &dv->continuousAleatoryUncVars;
-  for(i = i0, j = 0; j < n; ++i, ++j)
+  for(i = offset, j = 0; j < n; ++i, ++j)
     Pecos::moments_from_loguniform_params((*L)[j], (*U)[j], (*V)[i],
 					  stdev);
 }
 
-static void
-Vadj_TriangularUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_TriangularUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t j, n;
   Real Lj, Mj, Uj;
@@ -2342,8 +2337,7 @@ Vadj_TriangularUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
   }
 }
 
-static void
-Vbgen_TriangularUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_TriangularUnc(DataVariablesRep *dv, size_t offset)
 {
   size_t i, j, n;
   Real stdev;
@@ -2353,16 +2347,15 @@ Vbgen_TriangularUnc(DataVariablesRep *dv, size_t i0)
   L = &dv->triangularUncLowerBnds;
   M = &dv->triangularUncModes;
   U = &dv->triangularUncUpperBnds;
-  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
-  Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, i0, n);
+  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, offset, n);
+  Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, offset, n);
   V = &dv->continuousAleatoryUncVars;
-  for(i = i0, j = 0; j < n; ++i, ++j)
+  for(i = offset, j = 0; j < n; ++i, ++j)
     Pecos::moments_from_triangular_params((*L)[j], (*U)[j], (*M)[j],
 					  (*V)[i], stdev);
 }
 
-static void
-Vadj_ExponentialUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_ExponentialUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *B;
@@ -2373,8 +2366,7 @@ Vadj_ExponentialUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
-static void
-Vbgen_ExponentialUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_ExponentialUnc(DataVariablesRep *dv, size_t offset)
 {
   size_t i, j, n;
   Real mean, stdev;
@@ -2385,7 +2377,7 @@ Vbgen_ExponentialUnc(DataVariablesRep *dv, size_t i0)
   L = &dv->continuousAleatoryUncLowerBnds;
   U = &dv->continuousAleatoryUncUpperBnds;
   V = &dv->continuousAleatoryUncVars;
-  for(i = i0, j = 0; j < n; ++i, ++j) {
+  for(i = offset, j = 0; j < n; ++i, ++j) {
     Pecos::moments_from_exponential_params((*B)[j], mean, stdev);
     (*L)[i] = 0.;
     (*U)[i] = mean + 3.*stdev;
@@ -2393,8 +2385,7 @@ Vbgen_ExponentialUnc(DataVariablesRep *dv, size_t i0)
   }
 }
 
-static void
-Vadj_BetaUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_BetaUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *A, *B, *L, *U;
@@ -2411,8 +2402,7 @@ Vadj_BetaUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
-static void
-Vbgen_BetaUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_BetaUnc(DataVariablesRep *dv, size_t offset)
 {
   size_t i, j, n;
   Real stdev;
@@ -2424,15 +2414,14 @@ Vbgen_BetaUnc(DataVariablesRep *dv, size_t i0)
   L = &dv->betaUncLowerBnds;
   U = &dv->betaUncUpperBnds;
   V = &dv->continuousAleatoryUncVars;
-  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, i0, n);
-  Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, i0, n);
-  for(i = i0, j = 0; j < n; ++i, ++j)
+  Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, offset, n);
+  Vcopyup(&dv->continuousAleatoryUncUpperBnds, U, offset, n);
+  for(i = offset, j = 0; j < n; ++i, ++j)
     Pecos::moments_from_beta_params((*L)[j], (*U)[j], (*A)[j],
 				    (*B)[j], (*V)[i], stdev);
 }
 
-static void
-Vadj_GammaUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_GammaUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *A, *B;
@@ -2445,8 +2434,7 @@ Vadj_GammaUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
-static void
-Vbgen_GammaUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_GammaUnc(DataVariablesRep *dv, size_t offset)
 {
   size_t i, j, n;
   Real mean, stdev;
@@ -2458,7 +2446,7 @@ Vbgen_GammaUnc(DataVariablesRep *dv, size_t i0)
   L = &dv->continuousAleatoryUncLowerBnds;
   U = &dv->continuousAleatoryUncUpperBnds;
   V = &dv->continuousAleatoryUncVars;
-  for(i = i0, j = 0; j < n; ++i, ++j) {
+  for(i = offset, j = 0; j < n; ++i, ++j) {
     Pecos::moments_from_gamma_params((*A)[j], (*B)[j], mean, stdev);
     (*L)[i] = 0.;
     (*U)[i] = mean + 3.*stdev;
@@ -2466,8 +2454,7 @@ Vbgen_GammaUnc(DataVariablesRep *dv, size_t i0)
   }
 }
 
-static void
-Vadj_GumbelUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_GumbelUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *A, *B;
@@ -2480,8 +2467,7 @@ Vadj_GumbelUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
-static void
-Vbgen_GumbelUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_GumbelUnc(DataVariablesRep *dv, size_t offset)
 {
   size_t i, j, n;
   Real mean, stdev;
@@ -2493,7 +2479,7 @@ Vbgen_GumbelUnc(DataVariablesRep *dv, size_t i0)
   L = &dv->continuousAleatoryUncLowerBnds;
   U = &dv->continuousAleatoryUncUpperBnds;
   V = &dv->continuousAleatoryUncVars;
-  for(i = i0, j = 0; j < n; ++i, ++j) {
+  for(i = offset, j = 0; j < n; ++i, ++j) {
     Pecos::moments_from_gumbel_params((*A)[j], (*B)[j],
 				      mean, stdev);
     (*L)[i] = mean - 3.*stdev;
@@ -2502,8 +2488,7 @@ Vbgen_GumbelUnc(DataVariablesRep *dv, size_t i0)
   }
 }
 
-static void
-Vadj_FrechetUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_FrechetUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *A, *B;
@@ -2516,8 +2501,7 @@ Vadj_FrechetUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
-static void
-Vbgen_FrechetUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_FrechetUnc(DataVariablesRep *dv, size_t offset)
 {
   size_t i, j, n;
   Real mean, stdev;
@@ -2529,7 +2513,7 @@ Vbgen_FrechetUnc(DataVariablesRep *dv, size_t i0)
   L = &dv->continuousAleatoryUncLowerBnds;
   U = &dv->continuousAleatoryUncUpperBnds;
   V = &dv->continuousAleatoryUncVars;
-  for(i = i0, j = 0; j < n; ++i, ++j) {
+  for(i = offset, j = 0; j < n; ++i, ++j) {
     Pecos::moments_from_frechet_params((*A)[j], (*B)[j],
 				       mean, stdev);
     (*L)[i] = 0.;
@@ -2538,8 +2522,7 @@ Vbgen_FrechetUnc(DataVariablesRep *dv, size_t i0)
   }
 }
 
-static void
-Vadj_WeibullUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_WeibullUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *A, *B;
@@ -2552,8 +2535,7 @@ Vadj_WeibullUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
-static void
-Vbgen_WeibullUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_WeibullUnc(DataVariablesRep *dv, size_t offset)
 {
   size_t i, j, n;
   Real mean, stdev;
@@ -2565,7 +2547,7 @@ Vbgen_WeibullUnc(DataVariablesRep *dv, size_t i0)
   L = &dv->continuousAleatoryUncLowerBnds;
   U = &dv->continuousAleatoryUncUpperBnds;
   V = &dv->continuousAleatoryUncVars;
-  for(i = i0, j = 0; j < n; ++i, ++j) {
+  for(i = offset, j = 0; j < n; ++i, ++j) {
     Pecos::moments_from_weibull_params((*A)[j], (*B)[j],
 				       mean, stdev);
     (*L)[i] = 0.;
@@ -2574,8 +2556,8 @@ Vbgen_WeibullUnc(DataVariablesRep *dv, size_t i0)
   }
 }
 
-static void
-Vadj_HistogramBinUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void 
+Vadj_HistogramBinUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   IntArray *nhbp;
   RealVector *hba, *hbo, *hbc, *hbpi;
@@ -2661,8 +2643,7 @@ Vadj_HistogramBinUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
   }
 }
 
-static void
-Vbgen_HistogramBinUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_HistogramBinUnc(DataVariablesRep *dv, size_t offset)
 {
   RealVector *L, *U, *V, *r;
   RealVectorArray *A;
@@ -2676,15 +2657,14 @@ Vbgen_HistogramBinUnc(DataVariablesRep *dv, size_t i0)
   if ((m = A->size())) {
     for(i = 0; i < m; i++) {
       r = &((*A)[i]);
-      (*L)[i0] = (*r)[0];
-      (*U)[i0] = (*r)[r->length() - 2];
-      Pecos::moments_from_histogram_bin_params(*r, (*V)[i0++], stdev);
+      (*L)[offset] = (*r)[0];
+      (*U)[offset] = (*r)[r->length() - 2];
+      Pecos::moments_from_histogram_bin_params(*r, (*V)[offset++], stdev);
     }
   }
 }
 
-static void
-Vadj_PoissonUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_PoissonUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *A;
@@ -2695,8 +2675,7 @@ Vadj_PoissonUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
-static void
-Vbgen_PoissonUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_PoissonUnc(DataVariablesRep *dv, size_t offset)
 {
   IntVector *L, *U, *V;
   Real mean, std_dev;
@@ -2709,16 +2688,15 @@ Vbgen_PoissonUnc(DataVariablesRep *dv, size_t i0)
   Lam = &dv->poissonUncLambdas;
   n = dv->numPoissonUncVars;
 
-  for(i = 0; i < n; ++i, ++i0) {
+  for(i = 0; i < n; ++i, ++offset) {
     Pecos::moments_from_poisson_params((*Lam)[i], mean, std_dev);
-    (*L)[i0] = 0;
-    (*U)[i0] = (int)std::ceil(mean + 3.*std_dev);
-    (*V)[i0] = (int)mean;
+    (*L)[offset] = 0;
+    (*U)[offset] = (int)std::ceil(mean + 3.*std_dev);
+    (*V)[offset] = (int)mean;
   }
 }
 
-static void
-Vadj_BinomialUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_BinomialUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *A;
@@ -2732,8 +2710,7 @@ Vadj_BinomialUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
-static void
-Vbgen_BinomialUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_BinomialUnc(DataVariablesRep *dv, size_t offset)
 {
   IntVector *L, *NT, *U, *V;
   Real mean, std_dev;
@@ -2747,16 +2724,16 @@ Vbgen_BinomialUnc(DataVariablesRep *dv, size_t i0)
   Pr = &dv->binomialUncProbPerTrial;
   n = dv->numBinomialUncVars;
 
-  for(i = 0; i < n; ++i, ++i0) {
-    (*L)[i0] = 0;
+  for(i = 0; i < n; ++i, ++offset) {
+    (*L)[offset] = 0;
     Pecos::moments_from_binomial_params((*Pr)[i], (*NT)[i], mean, std_dev);
-    (*V)[i0] = (int)mean;
-    (*U)[i0] = (*NT)[i];
+    (*V)[offset] = (int)mean;
+    (*U)[offset] = (*NT)[i];
   }
 }
 
-static void
-Vadj_NegBinomialUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void 
+Vadj_NegBinomialUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *A;
@@ -2770,8 +2747,7 @@ Vadj_NegBinomialUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
-static void
-Vbgen_NegBinomialUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_NegBinomialUnc(DataVariablesRep *dv, size_t offset)
 {
   IntVector *L, *NT, *U, *V;
   Real mean, std_dev;
@@ -2785,16 +2761,16 @@ Vbgen_NegBinomialUnc(DataVariablesRep *dv, size_t i0)
   Pr = &dv->negBinomialUncProbPerTrial;
   n = dv->numNegBinomialUncVars;
 
-  for(i = 0; i < n; ++i, ++i0) {
-    (*L)[i0] = (*NT)[i];
-    Pecos::moments_from_negative_binomial_params((*Pr)[i], (*NT)[i], mean, std_dev);
-    (*U)[i0] = (int)std::ceil(mean + 3.*std_dev);
-    (*V)[i0] = (int)mean;
+  for(i = 0; i < n; ++i, ++offset) {
+    (*L)[offset] = (*NT)[i];
+    Pecos::moments_from_negative_binomial_params((*Pr)[i], (*NT)[i],
+						 mean, std_dev);
+    (*U)[offset] = (int)std::ceil(mean + 3.*std_dev);
+    (*V)[offset] = (int)mean;
   }
 }
 
-static void
-Vadj_GeometricUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_GeometricUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *A;
@@ -2805,8 +2781,7 @@ Vadj_GeometricUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
-static void
-Vbgen_GeometricUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_GeometricUnc(DataVariablesRep *dv, size_t offset)
 {
   IntVector *L, *U, *V;
   Real mean, std_dev;
@@ -2819,16 +2794,15 @@ Vbgen_GeometricUnc(DataVariablesRep *dv, size_t i0)
   Pr = &dv->geometricUncProbPerTrial;
   n = dv->numGeometricUncVars;
 
-  for(i = 0; i < n; ++i, ++i0) {
-    (*L)[i0] = 0;
+  for(i = 0; i < n; ++i, ++offset) {
+    (*L)[offset] = 0;
     Pecos::moments_from_geometric_params((*Pr)[i], mean, std_dev);
-    (*U)[i0] = (int)std::ceil(mean + 3.*std_dev);
-    (*V)[i0] = (int)mean;
+    (*U)[offset] = (int)std::ceil(mean + 3.*std_dev);
+    (*V)[offset] = (int)mean;
   }
 }
 
-static void
-Vadj_HyperGeomUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void Vadj_HyperGeomUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   IntVector *A, *B, *C;
@@ -2843,8 +2817,7 @@ Vadj_HyperGeomUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
     return;
 }
 
-static void
-Vbgen_HyperGeomUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_HyperGeomUnc(DataVariablesRep *dv, size_t offset)
 {
   IntVector *L, *ND, *NS, *TP, *U, *V;
   Real mean, std_dev;
@@ -2859,20 +2832,20 @@ Vbgen_HyperGeomUnc(DataVariablesRep *dv, size_t i0)
   TP = &dv->hyperGeomUncTotalPop;
   n = dv->numHyperGeomUncVars;
 
-  for(i = 0; i < n; ++i, ++i0) {
-    (*L)[i0] = 0;
+  for(i = 0; i < n; ++i, ++offset) {
+    (*L)[offset] = 0;
     Pecos::moments_from_hypergeometric_params((*TP)[i], (*NS)[i], (*ND)[i],  mean, std_dev);
-    (*V)[i0] = (int)mean;
+    (*V)[offset] = (int)mean;
     j = (*ND)[i];
     k = (*NS)[i];
     if (k < j)
       j = k;
-    (*U)[i0] = j;
+    (*U)[offset] = j;
   }
 }
 
-static void
-Vadj_HistogramPtUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void 
+Vadj_HistogramPtUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   IntArray *nhpp;
   RealVector *hpa, *hpc, *hppi;
@@ -2944,8 +2917,7 @@ Vadj_HistogramPtUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
   }
 }
 
-static void
-Vbgen_HistogramPtUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_HistogramPtUnc(DataVariablesRep *dv, size_t offset)
 {
   RealVector *L, *U, *V, *r;
   RealVectorArray *A;
@@ -2960,19 +2932,19 @@ Vbgen_HistogramPtUnc(DataVariablesRep *dv, size_t i0)
     for(i = 0; i < m; ++i) {
       r = &((*A)[i]);
       je = r->length() - 2;
-      (*L)[i0] = (*r)[0];
-      (*U)[i0] = (*r)[je];
+      (*L)[offset] = (*r)[0];
+      (*U)[offset] = (*r)[je];
       Pecos::moments_from_histogram_pt_params(*r, mean, stdev);
       for(j = 0; j < je && (*r)[j+2] <= mean; j += 2);
       if (j < je && mean - (*r)[j] > (*r)[j+2] - mean)
 	j += 2;
-      (*V)[i0++] = (*r)[j];
+      (*V)[offset++] = (*r)[j];
     }
   }
 }
 
-static void
-Vadj_ContinuousIntervalUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void 
+Vadj_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t i, j, k, m, num_p, num_lb, num_ub;
   IntArray *nI;
@@ -3042,8 +3014,7 @@ Vadj_ContinuousIntervalUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
   }
 }
 
-static void
-Vbgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
 {
   size_t i, j, m, n;
   Real lb, lbj, ub, ubj, stdev;
@@ -3057,7 +3028,7 @@ Vbgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t i0)
   ciLB  = &dv->continuousIntervalUncLowerBounds;
   ciUB  = &dv->continuousIntervalUncUpperBounds;
   P     = &dv->continuousIntervalUncBasicProbs;
-  for (i=0; i<n; ++i0, ++i) {
+  for (i=0; i<n; ++offset, ++i) {
     ciLBi = &((*ciLB)[i]); ciUBi = &((*ciUB)[i]); Pi = &((*P)[i]);
     m = Pi->length();
     ub = -(lb = DBL_MAX);
@@ -3066,49 +3037,45 @@ Vbgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t i0)
       if (lb > lbj) lb = lbj;
       if (ub < ubj) ub = ubj;
     }
-    (*ceuLB)[i0] = lb; (*ceuUB)[i0] = ub;
-    Pecos::moments_from_uniform_params(lb, ub, (*V)[i0], stdev);
+    (*ceuLB)[offset] = lb; (*ceuUB)[offset] = ub;
+    Pecos::moments_from_uniform_params(lb, ub, (*V)[offset], stdev);
   }
 }
 
-static void
-Vadj_DiscreteIntervalUnc(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void 
+Vadj_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   // TO DO: incomplete...
 }
 
-static void
-Vbgen_DiscreteIntervalUnc(DataVariablesRep *dv, size_t i0)
+static void Vbgen_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset)
 {
   // TO DO: incomplete...
 }
 
-static void
-Vadj_DiscreteUncSetInt(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void 
+Vadj_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   // TO DO: incomplete...
 }
 
-static void
-Vbgen_DiscreteUncSetInt(DataVariablesRep *dv, size_t i0)
+static void Vbgen_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset)
 {
   // TO DO: incomplete...
 }
 
-static void
-Vadj_DiscreteUncSetReal(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void 
+Vadj_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   // TO DO: incomplete...
 }
 
-static void
-Vbgen_DiscreteUncSetReal(DataVariablesRep *dv, size_t i0)
+static void Vbgen_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset)
 {
   // TO DO: incomplete...
 }
 
-static void
-not_div(const char *kind, size_t nsv, size_t m)
+static void not_div(const char *kind, size_t nsv, size_t m)
 {
   Squawk("Number of %s set_values (%d)\n"
 	 "not evenly divisible by numberof variables (%d).\n"
@@ -3122,14 +3089,12 @@ wrong_number(const char *what, const char *kind, size_t nsv, size_t m)
   Squawk("Expected %d %s for %s, not %d", (int)nsv, what, kind, (int)m);
 }
 
-static void
-too_small(const char *kind)
+static void too_small(const char *kind)
 {
   Squawk("num_set_values values for %s must be >= 1", kind);
 }
 
-static void
-suppressed(const char *kind, int ndup, int *ip, Real *rp)
+static void suppressed(const char *kind, int ndup, int *ip, Real *rp)
 {
   const char *s;
   int i, nother;
@@ -3151,19 +3116,17 @@ suppressed(const char *kind, int ndup, int *ip, Real *rp)
   }
 }
 
-static void
-bad_initial_ivalue(const char *kind, int val)
+static void bad_initial_ivalue(const char *kind, int val)
 {
   Squawk("invalid initial value %d for %s", val, kind);
 }
 
-static void
-bad_initial_rvalue(const char *kind, Real val)
+static void bad_initial_rvalue(const char *kind, Real val)
 {
   Squawk("invalid initial value %.17g for %s", val, kind);
 }
 
-static void
+static void 
 Vadj_DIset(size_t num_v, const char *kind,
 	   IntArray *input_ndsi, IntVector *input_dsi,
 	   IntSetArray& dsi_all, IntVector& dsi_init_pt)
@@ -3228,24 +3191,23 @@ Vadj_DIset(size_t num_v, const char *kind,
   }
 }
 
-static void
-Vadj_DiscreteDesSetInt(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void 
+Vadj_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_design_set_integer";
   Vadj_DIset(dv->numDiscreteDesSetIntVars, kind, vi->nddsi, vi->ddsi,
 	     dv->discreteDesignSetInt, dv->discreteDesignSetIntVars);
 }
 
-static void
-Vadj_DiscreteStateSetInt(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void 
+Vadj_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_state_set_integer";
   Vadj_DIset(dv->numDiscreteStateSetIntVars, kind, vi->ndssi, vi->dssi, 
 	     dv->discreteStateSetInt, dv->discreteStateSetIntVars);
 }
 
-static void
-Vadj_DRset(size_t num_v, const char *kind,
+static void Vadj_DRset(size_t num_v, const char *kind,
 	   IntArray  *input_ndsr, RealVector *input_dsr,
 	   RealSetArray& dsr_all, RealVector& dsr_init_pt)
 {
@@ -3310,70 +3272,77 @@ Vadj_DRset(size_t num_v, const char *kind,
   }
 }
 
-static void
-Vadj_DiscreteDesSetReal(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void 
+Vadj_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_design_set_real";
   Vadj_DRset(dv->numDiscreteDesSetRealVars, kind, vi->nddsr, vi->ddsr,
 	     dv->discreteDesignSetReal, dv->discreteDesignSetRealVars);
 }
 
-static void
-Vadj_DiscreteStateSetReal(DataVariablesRep *dv, size_t i0, Var_Info *vi)
+static void 
+Vadj_DiscreteStateSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_state_set_real";
   Vadj_DRset(dv->numDiscreteStateSetRealVars, kind, vi->ndssr, vi->dssr,
 	     dv->discreteStateSetReal, dv->discreteStateSetRealVars);
 }
 
-static void
-Vbgen_DIset(size_t n, IntSetArray& a, IntVector& L, IntVector& U, IntVector& V)
+static void 
+Vbgen_DIset(size_t n, IntSetArray& sets, IntVector& L, IntVector& U,
+	    IntVector& V)
 {
   IntSet::const_iterator ie, it;
-  Real t, t1;
-  int i, k, km, kx;
+  Real avg_val, r_val;
+  int i, i_val, i_left, i_right;
   size_t m;
+  bool init_V = true;
 
   L.sizeUninitialized(n);
   U.sizeUninitialized(n);
-  V.sizeUninitialized(n);
+  if (V.length() == n) // user spec --> already assigned by var_ivec()
+    init_V = false;
+  else
+    V.sizeUninitialized(n);
   for(i = 0; i < n; ++i) {
-    IntSet& s = a[i];
-    it = s.begin();
-    ie = s.end();
-    L[i] = *it;
-    U[i] = *(--ie);
-    if ((m = s.size()) <= 1)
-      V[i] = *it;
+    IntSet& set_i = sets[i];
+    it = set_i.begin(); ie = set_i.end(); m = set_i.size();
+    if (m == 0) // should not occur
+      L[i] = U[i] = V[i] = 0;
+    else if (m == 1)
+      L[i] = U[i] = V[i] = *it;
     else {
-      for(t = 0., ++ie; it != ie; ++it)
-	t += *it;
-      t /= m;
-      kx = INT_MAX;
-      km = -kx;
-      for(it = s.begin(); it != ie; ++it) {
-	if ((t1 = k = *it) > t) {
-	  if (kx > k)
-	    kx = k;
+      L[i] = *it;     // lower bound is first value
+      U[i] = *(--ie); // upper bound is final value
+      if (init_V) {
+	// select the initial value to be closest set value to avg_val
+	for(avg_val = 0., ++ie; it != ie; ++it)
+	  avg_val += *it;
+	avg_val /= m;
+	// bracket avg_val between [i_left,i_right]
+	i_right = INT_MAX; i_left = -INT_MAX;
+	for(it = set_i.begin(); it != ie; ++it) {
+	  r_val = i_val = *it;
+	  if (r_val > avg_val) {      // update nearest neighbor to right
+	    if (i_val < i_right)
+	      i_right = i_val;
+	  }
+	  else if (r_val < avg_val) { // update nearest neighbor to left
+	    if (i_val > i_left)
+	      i_left = i_val;
+	  }
+	  else { // r_val equals avg_val
+	    i_left = i_right = i_val;
+	    break;
+	  }
 	}
-	else if (t1 < t) {
-	  if (km < k)
-	    km = k;
-	}
-	else {
-	  km = kx = k;
-	  break;
-	}
+	V[i] = (i_right - avg_val < avg_val - i_left) ? i_right : i_left;
       }
-      if (kx - t < t - km)
-	km = kx;
-      V[i] = km;
     }
   }
 }
 
-static void
-Vbgen_DiscreteDesSetInt(DataVariablesRep *dv, size_t i0)
+static void Vbgen_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset)
 {
   Vbgen_DIset(dv->numDiscreteDesSetIntVars, dv->discreteDesignSetInt,
 	      dv->discreteDesignSetIntLowerBnds,
@@ -3381,8 +3350,7 @@ Vbgen_DiscreteDesSetInt(DataVariablesRep *dv, size_t i0)
 	      dv->discreteDesignSetIntVars);
 }
 
-static void
-Vbgen_DiscreteStateSetInt(DataVariablesRep *dv, size_t i0)
+static void Vbgen_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset)
 {
   Vbgen_DIset(dv->numDiscreteStateSetIntVars, dv->discreteStateSetInt,
 	      dv->discreteStateSetIntLowerBnds,
@@ -3390,55 +3358,61 @@ Vbgen_DiscreteStateSetInt(DataVariablesRep *dv, size_t i0)
 	      dv->discreteStateSetIntVars);
 }
 
-static void
-Vbgen_DRset(size_t n, RealSetArray& a, RealVector& L, RealVector& U,
+static void 
+Vbgen_DRset(size_t n, RealSetArray& sets, RealVector& L, RealVector& U,
 	    RealVector& V)
 {
-  Real t, t1, tm, tx;
+  Real avg_val, set_val, s_left, s_right;
   RealSet::const_iterator ie, it;
   int i;
   size_t m;
+  bool init_V = true;
 
   L.sizeUninitialized(n);
   U.sizeUninitialized(n);
-  V.sizeUninitialized(n);
+  if (V.length() == n) // user spec --> already assigned by var_rvec()
+    init_V = false;
+  else
+    V.sizeUninitialized(n);
   for(i = 0; i < n; ++i) {
-    RealSet& s = a[i];
-    it = s.begin();
-    ie = s.end();
-    L[i] = *it;
-    U[i] = *(--ie);
-    if ((m = s.size()) <= 1)
-      V[i] = *it;
+    RealSet& set_i = sets[i];
+    it = set_i.begin(); ie = set_i.end(); m = set_i.size();
+    if (m == 0) // should not occur
+      L[i] = U[i] = V[i] = 0.;
+    else if (m == 1)
+      L[i] = U[i] = V[i] = *it;
     else {
-      for(t = 0., ++ie; it != ie; ++it)
-	t += *it;
-      t /= m;
-      tx = DBL_MAX;
-      tm = -tx;
-      for(it = s.begin(); it != ie; ++it) {
-	if ((t1 = *it) > t) {
-	  if (tx > t1)
-	    tx = t1;
+      L[i] = *it;     // lower bound is first value
+      U[i] = *(--ie); // upper bound is final value
+      if (init_V) {
+	// select the initial value to be closest set value to avg_val
+	for(avg_val = 0., ++ie; it != ie; ++it)
+	  avg_val += *it;
+	avg_val /= m;
+	// bracket avg_val between [s_left,s_right]
+	s_right = DBL_MAX; s_left = -DBL_MAX;
+	for(it = set_i.begin(); it != ie; ++it) {
+	  set_val = *it;
+	  if (set_val > avg_val) {      // update nearest neighbor to right
+	    if (set_val < s_right)
+	      s_right = set_val;
+	  }
+	  else if (set_val < avg_val) { // update nearest neighbor to left
+	    if (set_val > s_left)
+	      s_left = set_val;
+	  }
+	  else { // set_val equals avg_val
+	    s_left = s_right = set_val;
+	    break;
+	  }
 	}
-	else if (t1 < t) {
-	  if (tm < t1)
-	    tm = t1;
-	}
-	else {
-	  tm = tx = t1;
-	  break;
-	}
+	V[i] = (s_right - avg_val < avg_val - s_left) ? s_right : s_left;
       }
-      if (tx - t < t - tm)
-	tm = tx;
-      V[i] = tm;
     }
   }
 }
 
-static void
-Vbgen_DiscreteDesSetReal(DataVariablesRep *dv, size_t i0)
+static void Vbgen_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset)
 {
   Vbgen_DRset(dv->numDiscreteDesSetRealVars, dv->discreteDesignSetReal,
 	      dv->discreteDesignSetRealLowerBnds,
@@ -3446,8 +3420,7 @@ Vbgen_DiscreteDesSetReal(DataVariablesRep *dv, size_t i0)
 	      dv->discreteDesignSetRealVars);
 }
 
-static void
-Vbgen_DiscreteStateSetReal(DataVariablesRep *dv, size_t i0)
+static void Vbgen_DiscreteStateSetReal(DataVariablesRep *dv, size_t offset)
 {
   Vbgen_DRset(dv->numDiscreteStateSetRealVars, dv->discreteStateSetReal,
 	      dv->discreteStateSetRealLowerBnds,
@@ -5070,11 +5043,11 @@ void NIDRProblemDescDB::Var_boundgen(DataVariablesRep *dv)
   Var_bgen *b1, *b1e;
   Real t;
   RealVector *L, *U, *V;
-  size_t i, i0, n;
+  size_t i, offset, n;
 
   // loop over cdv/nuv/lnuv/uuv/luuv/truv/euv/buv/csv
   // TO DO: exclude euv as it does not support bounds spec
-  i0 = 0;
+  offset = 0;
   for(b = var_mp_bndchk, be = b + Numberof(var_mp_bndchk); b < be; ++b) {
     if ((n = dv->*b->n) == 0)
       continue;
@@ -5088,8 +5061,8 @@ void NIDRProblemDescDB::Var_boundgen(DataVariablesRep *dv)
 	Set_rdv(U, DBL_MAX, n);
     }
     if (b->vbgen) { // null for continuous design,state from Vchv
-      (*b->vbgen)(dv, i0);
-      i0 += n;
+      (*b->vbgen)(dv, offset);
+      offset += n;
     }
     if (b->V == 0)
       continue;
@@ -5110,13 +5083,13 @@ void NIDRProblemDescDB::Var_boundgen(DataVariablesRep *dv)
   // loop over gauv/guuv/fuv/wuv/hbuv
   for(b1=var_mp_bgen_cau, b1e=b1 + Numberof(var_mp_bgen_cau); b1 < b1e; ++b1)
     if ((n = dv->*b1->n) > 0)
-      { (*b1->vbgen)(dv, i0); i0 += n; }
+      { (*b1->vbgen)(dv, offset); offset += n; }
 
   // continuous epistemic uncertain
-  i0 = 0; // reset for combined epistemic arrays
+  offset = 0; // reset for combined epistemic arrays
   for(b1=var_mp_bgen_ceu, b1e=b1 + Numberof(var_mp_bgen_ceu); b1 < b1e; ++b1)
     if ((n = dv->*b1->n) > 0)
-      { (*b1->vbgen)(dv, i0); i0 += n; }
+      { (*b1->vbgen)(dv, offset); offset += n; }
 }
 
 void NIDRProblemDescDB::Var_iboundchk(DataVariablesRep *dv)
@@ -5195,7 +5168,7 @@ void NIDRProblemDescDB::Var_iboundgen(DataVariablesRep *dv)
   Var_ibchk *b, *be;
   IntVector *L, *U, *V;
   int t;
-  size_t i, i0, n;
+  size_t i, offset, n;
 
   // discrete design,state ranges
   for(b = var_mp_ibndchk, be = b + Numberof(var_mp_ibndchk); b < be; ++b) {
@@ -5227,28 +5200,28 @@ void NIDRProblemDescDB::Var_iboundgen(DataVariablesRep *dv)
     }
   }
 
-  // discrete int uncertain use running counter i0 passed into Vbgen_*Unc
-  i0 = 0;
+  // discrete int uncertain use running counter offset passed into Vbgen_*Unc
+  offset = 0;
   for(b1=var_mp_bgen_daui, b1e=b1 + Numberof(var_mp_bgen_daui); b1 < b1e; ++b1)
     if ((n = dv->*b1->n) > 0)
-      {	(*b1->vbgen)(dv, i0); i0 += n; }
+      {	(*b1->vbgen)(dv, offset); offset += n; }
   for(b1=var_mp_bgen_deui, b1e=b1 + Numberof(var_mp_bgen_deui); b1 < b1e; ++b1)
     if ((n = dv->*b1->n) > 0)
-      {	(*b1->vbgen)(dv, i0); i0 += n; }
-  // discrete real uncertain use running counter i0 passed into Vbgen_*Unc
-  i0 = 0;
+      {	(*b1->vbgen)(dv, offset); offset += n; }
+  // discrete real uncertain use running counter offset passed into Vbgen_*Unc
+  offset = 0;
   for(b1=var_mp_bgen_daur, b1e=b1 + Numberof(var_mp_bgen_daur); b1 < b1e; ++b1)
     if ((n = dv->*b1->n) > 0)
-      {	(*b1->vbgen)(dv, i0); i0 += n; }
+      {	(*b1->vbgen)(dv, offset); offset += n; }
   for(b1=var_mp_bgen_deur, b1e=b1 + Numberof(var_mp_bgen_deur); b1 < b1e; ++b1)
     if ((n = dv->*b1->n) > 0)
-      {	(*b1->vbgen)(dv, i0); i0 += n; }
+      {	(*b1->vbgen)(dv, offset); offset += n; }
 
   // these don't use an offset passed into Vbgen_*Unc
-  i0 = 0;
+  offset = 0;
   for(b1=var_mp_bgen_dsi, b1e=b1 + Numberof(var_mp_bgen_dsi); b1 < b1e; ++b1)
     if ((n = dv->*b1->n) > 0)
-      (*b1->vbgen)(dv, i0); // i0 not used
+      (*b1->vbgen)(dv, offset); // offset not used
 }
 
 NIDRProblemDescDB::~NIDRProblemDescDB()

@@ -993,11 +993,11 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	[ mixed       {N_vam(type,varsDomain_MIXED_DOMAIN)}
 	  | relaxed   {N_vam(type,varsDomain_RELAXED_DOMAIN)} ]
 	[ continuous_design INTEGER > 0 {N_vam(intz,numContinuousDesVars)}
-	  [ initial_point ALIAS cdv_initial_point REALLIST LEN continuous_design {N_vam(RealLd,continuousDesignVars)} ]
-	  [ lower_bounds ALIAS cdv_lower_bounds REALLIST LEN continuous_design {N_vam(RealLd,continuousDesignLowerBnds)} ]
-	  [ upper_bounds ALIAS cdv_upper_bounds REALLIST LEN continuous_design {N_vam(RealLd,continuousDesignUpperBnds)} ]
+	  [ initial_point ALIAS cdv_initial_point REALLIST LEN continuous_design {N_vam(rvec,continuousDesignVars)} ]
+	  [ lower_bounds ALIAS cdv_lower_bounds REALLIST LEN continuous_design {N_vam(rvec,continuousDesignLowerBnds)} ]
+	  [ upper_bounds ALIAS cdv_upper_bounds REALLIST LEN continuous_design {N_vam(rvec,continuousDesignUpperBnds)} ]
 	  [ scale_types ALIAS cdv_scale_types STRINGLIST LEN1 continuous_design {N_vam(strL,continuousDesignScaleTypes)} ]
-	  [ scales ALIAS cdv_scales REALLIST LEN1 continuous_design {N_vam(RealLd,continuousDesignScales)} ]
+	  [ scales ALIAS cdv_scales REALLIST LEN1 continuous_design {N_vam(rvec,continuousDesignScales)} ]
 	  [ descriptors ALIAS cdv_descriptors STRINGLIST LEN continuous_design {N_vam(strL,continuousDesignLabels)} ]
 	  ]
 	[ discrete_design_range INTEGER > 0 {N_vam(intz,numDiscreteDesRangeVars)}
@@ -1013,20 +1013,20 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ descriptors STRINGLIST LEN discrete_design_set_integer {N_vam(strL,discreteDesignSetIntLabels)} ]
 	  ]
 	[ discrete_design_set_real INTEGER > 0 {N_vam(intz,numDiscreteDesSetRealVars)}
-	  [ initial_point REALLIST LEN discrete_design_set_real {N_vam(RealLd,discreteDesignSetRealVars)} ]
+	  [ initial_point REALLIST LEN discrete_design_set_real {N_vam(rvec,discreteDesignSetRealVars)} ]
 	  [ num_set_values INTEGERLIST LEN discrete_design_set_real {N_vam(newiarray,Var_Info_nddsr)} ]
 	  set_values REALLIST {N_vam(newrvec,Var_Info_ddsr)}
 	  [ descriptors STRINGLIST LEN discrete_design_set_real {N_vam(strL,discreteDesignSetRealLabels)} ]
 	  ]
 	[ normal_uncertain INTEGER > 0 {N_vam(intz,numNormalUncVars)}
-	  means ALIAS nuv_means REALLIST LEN normal_uncertain {N_vam(RealLd,normalUncMeans)}
+	  means ALIAS nuv_means REALLIST LEN normal_uncertain {N_vam(rvec,normalUncMeans)}
 	  std_deviations ALIAS nuv_std_deviations REALLIST LEN normal_uncertain {N_vam(RealLb,normalUncStdDevs)}
-	  [ lower_bounds ALIAS nuv_lower_bounds REALLIST LEN normal_uncertain {N_vam(RealLd,normalUncLowerBnds)} ]
-	  [ upper_bounds ALIAS nuv_upper_bounds REALLIST LEN normal_uncertain {N_vam(RealLd,normalUncUpperBnds)} ]
+	  [ lower_bounds ALIAS nuv_lower_bounds REALLIST LEN normal_uncertain {N_vam(rvec,normalUncLowerBnds)} ]
+	  [ upper_bounds ALIAS nuv_upper_bounds REALLIST LEN normal_uncertain {N_vam(rvec,normalUncUpperBnds)} ]
 	  [ descriptors ALIAS nuv_descriptors STRINGLIST LEN normal_uncertain {N_vae(caulbl,CAUVar_normal)} ]
 	  ]
 	[ lognormal_uncertain INTEGER > 0 {N_vam(intz,numLognormalUncVars)}
-	  ( lambdas ALIAS lnuv_lambdas REALLIST LEN lognormal_uncertain {N_vam(RealLd,lognormalUncLambdas)}
+	  ( lambdas ALIAS lnuv_lambdas REALLIST LEN lognormal_uncertain {N_vam(rvec,lognormalUncLambdas)}
 	    zetas ALIAS lnuv_zetas REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncZetas)} )
 	  |
 	  ( means ALIAS lnuv_means REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncMeans)}
@@ -1047,7 +1047,7 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ descriptors ALIAS luuv_descriptors STRINGLIST LEN loguniform_uncertain {N_vae(caulbl,CAUVar_loguniform)} ]
 	  ]
 	[ triangular_uncertain INTEGER > 0 {N_vam(intz,numTriangularUncVars)}
-	  modes ALIAS tuv_modes REALLIST LEN triangular_uncertain {N_vam(RealLd,triangularUncModes)}
+	  modes ALIAS tuv_modes REALLIST LEN triangular_uncertain {N_vam(rvec,triangularUncModes)}
 	  lower_bounds ALIAS tuv_lower_bounds REALLIST LEN triangular_uncertain {N_vam(RealLb,triangularUncLowerBnds)}
 	  upper_bounds ALIAS tuv_upper_bounds REALLIST LEN triangular_uncertain {N_vam(RealUb,triangularUncUpperBnds)}
 	  [ descriptors ALIAS tuv_descriptors STRINGLIST LEN triangular_uncertain {N_vae(caulbl,CAUVar_triangular)} ]
@@ -1059,8 +1059,8 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	[ beta_uncertain INTEGER > 0 {N_vam(intz,numBetaUncVars)}
 	  alphas ALIAS buv_alphas REALLIST LEN beta_uncertain {N_vam(RealLb,betaUncAlphas)}
 	  betas ALIAS buv_betas REALLIST LEN beta_uncertain {N_vam(RealLb,betaUncBetas)}
-	  lower_bounds ALIAS buv_lower_bounds REALLIST LEN beta_uncertain {N_vam(RealLd,betaUncLowerBnds)}
-	  upper_bounds ALIAS buv_upper_bounds REALLIST LEN beta_uncertain {N_vam(RealLd,betaUncUpperBnds)}
+	  lower_bounds ALIAS buv_lower_bounds REALLIST LEN beta_uncertain {N_vam(rvec,betaUncLowerBnds)}
+	  upper_bounds ALIAS buv_upper_bounds REALLIST LEN beta_uncertain {N_vam(rvec,betaUncUpperBnds)}
 	  [ descriptors ALIAS buv_descriptors STRINGLIST LEN beta_uncertain {N_vae(caulbl,CAUVar_beta)} ]
 	  ]
 	[ gamma_uncertain INTEGER > 0 {N_vam(intz,numGammaUncVars)}
@@ -1070,12 +1070,12 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  ]
 	[ gumbel_uncertain INTEGER > 0 {N_vam(intz,numGumbelUncVars)}
 	 alphas ALIAS guuv_alphas REALLIST LEN gumbel_uncertain {N_vam(RealLb,gumbelUncAlphas)}
-	 betas ALIAS guuv_betas REALLIST LEN gumbel_uncertain {N_vam(RealLd,gumbelUncBetas)}
+	 betas ALIAS guuv_betas REALLIST LEN gumbel_uncertain {N_vam(rvec,gumbelUncBetas)}
 	  [ descriptors ALIAS guuv_descriptors STRINGLIST LEN gumbel_uncertain {N_vae(caulbl,CAUVar_gumbel)} ]
 	  ]
 	[ frechet_uncertain INTEGER > 0 {N_vam(intz,numFrechetUncVars)}
 	 alphas ALIAS fuv_alphas REALLIST LEN frechet_uncertain {N_vam(RealLb,frechetUncAlphas)}
-	 betas ALIAS fuv_betas REALLIST LEN frechet_uncertain {N_vam(RealLd,frechetUncBetas)}
+	 betas ALIAS fuv_betas REALLIST LEN frechet_uncertain {N_vam(rvec,frechetUncBetas)}
 	  [ descriptors ALIAS fuv_descriptors STRINGLIST LEN frechet_uncertain {N_vae(caulbl,CAUVar_frechet)} ]
 	  ]
 	[ weibull_uncertain INTEGER > 0 {N_vam(intz,numWeibullUncVars)}
@@ -1091,21 +1091,21 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ descriptors ALIAS huv_bin_descriptors STRINGLIST LEN histogram_bin_uncertain {N_vae(caulbl,CAUVar_histogram_bin)} ]
 	  ]
 	[ poisson_uncertain INTEGER > 0 {N_vam(intz,numPoissonUncVars)}
-	  lambdas REALLIST LEN poisson_uncertain {N_vam(RealLd,poissonUncLambdas)}
+	  lambdas REALLIST LEN poisson_uncertain {N_vam(rvec,poissonUncLambdas)}
 	  [ descriptors STRINGLIST LEN poisson_uncertain {N_vae(dauilbl,DAUIVar_poisson)} ]
 	  ]
 	[ binomial_uncertain INTEGER > 0 {N_vam(intz,numBinomialUncVars)}
-	  probability_per_trial ALIAS prob_per_trial REALLIST LEN binomial_uncertain {N_vam(RealLd,binomialUncProbPerTrial)}
+	  probability_per_trial ALIAS prob_per_trial REALLIST LEN binomial_uncertain {N_vam(rvec,binomialUncProbPerTrial)}
 	  num_trials INTEGERLIST LEN binomial_uncertain {N_vam(ivec,binomialUncNumTrials)}
 	  [ descriptors STRINGLIST LEN binomial_uncertain {N_vae(dauilbl,DAUIVar_binomial)} ]
 	  ]
 	[ negative_binomial_uncertain INTEGER > 0 {N_vam(intz,numNegBinomialUncVars)}
-	  probability_per_trial ALIAS prob_per_trial REALLIST LEN negative_binomial_uncertain {N_vam(RealLd,negBinomialUncProbPerTrial)}
+	  probability_per_trial ALIAS prob_per_trial REALLIST LEN negative_binomial_uncertain {N_vam(rvec,negBinomialUncProbPerTrial)}
 	  num_trials INTEGERLIST LEN negative_binomial_uncertain {N_vam(ivec,negBinomialUncNumTrials)}
 	  [ descriptors STRINGLIST LEN negative_binomial_uncertain {N_vae(dauilbl,DAUIVar_negative_binomial)} ]
 	  ]
 	[ geometric_uncertain INTEGER > 0 {N_vam(intz,numGeometricUncVars)}
-	  probability_per_trial ALIAS prob_per_trial REALLIST LEN geometric_uncertain {N_vam(RealLd,geometricUncProbPerTrial)}
+	  probability_per_trial ALIAS prob_per_trial REALLIST LEN geometric_uncertain {N_vam(rvec,geometricUncProbPerTrial)}
 	  [ descriptors STRINGLIST LEN geometric_uncertain {N_vae(dauilbl,DAUIVar_geometric)} ]
 	  ]
 	[ hypergeometric_uncertain INTEGER > 0 {N_vam(intz,numHyperGeomUncVars)}
@@ -1148,9 +1148,9 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ descriptors STRINGLIST LEN discrete_uncertain_set_real {N_vae(deurlbl,DEURVar_set_real)} ]
 	  ]
 	[ continuous_state INTEGER > 0 {N_vam(intz,numContinuousStateVars)}
-	  [ initial_state ALIAS csv_initial_state REALLIST LEN continuous_state {N_vam(RealLd,continuousStateVars)} ]
-	  [ lower_bounds ALIAS csv_lower_bounds REALLIST LEN continuous_state {N_vam(RealLd,continuousStateLowerBnds)} ]
-	  [ upper_bounds ALIAS csv_upper_bounds REALLIST LEN continuous_state {N_vam(RealLd,continuousStateUpperBnds)} ]
+	  [ initial_state ALIAS csv_initial_state REALLIST LEN continuous_state {N_vam(rvec,continuousStateVars)} ]
+	  [ lower_bounds ALIAS csv_lower_bounds REALLIST LEN continuous_state {N_vam(rvec,continuousStateLowerBnds)} ]
+	  [ upper_bounds ALIAS csv_upper_bounds REALLIST LEN continuous_state {N_vam(rvec,continuousStateUpperBnds)} ]
 	  [ descriptors ALIAS csv_descriptors STRINGLIST LEN continuous_state {N_vam(strL,continuousStateLabels)} ]
 	  ]
 	[ discrete_state_range INTEGER > 0 {N_vam(intz,numDiscreteStateRangeVars)}
@@ -1166,7 +1166,7 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ descriptors STRINGLIST LEN discrete_state_set_integer {N_vam(strL,discreteStateSetIntLabels)} ]
 	  ]
 	[ discrete_state_set_real INTEGER > 0 {N_vam(intz,numDiscreteStateSetRealVars)}
-	  [ initial_state REALLIST LEN discrete_state_set_real {N_vam(RealLd,discreteStateSetRealVars)} ]
+	  [ initial_state REALLIST LEN discrete_state_set_real {N_vam(rvec,discreteStateSetRealVars)} ]
 	  [ num_set_values INTEGERLIST LEN discrete_state_set_real {N_vam(newiarray,Var_Info_ndssr)} ]
 	  set_values REALLIST {N_vam(newrvec,Var_Info_dssr)}
 	  [ descriptors STRINGLIST LEN discrete_state_set_real {N_vam(strL,discreteStateSetRealLabels)} ]
