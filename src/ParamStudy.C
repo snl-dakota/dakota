@@ -1088,8 +1088,9 @@ bool ParamStudy::check_sets(const IntVector& steps)
       int terminal_index = set_value_to_index(initialDIVPoint[di_index], 
 	ddsi_values[i]) + discStepVector[d_index] * steps[s_index];
       if (terminal_index < 0 || terminal_index >= ddsi_values[i].size()) {
-	Cerr << "\nError: index " << terminal_index << " not admissible for "
-	     << "set of size " << ddsi_values[i].size() << '.' << std::endl;
+	Cerr << "\nError: ParamStudy index " << terminal_index
+	     << " not admissible for discrete design int set of size "
+	     << ddsi_values[i].size() << '.' << std::endl;
 	err = true;
       }
     }
@@ -1101,8 +1102,9 @@ bool ParamStudy::check_sets(const IntVector& steps)
       int terminal_index = set_value_to_index(initialDRVPoint[dr_index],
 	ddsr_values[i]) + discStepVector[d_index] * steps[s_index];
       if (terminal_index < 0 || terminal_index >= ddsr_values[i].size()) {
-	Cerr << "\nError: index " << terminal_index << " not admissible for "
-	     << "set of size " << ddsr_values[i].size() << '.' << std::endl;
+	Cerr << "\nError: ParamStudy index " << terminal_index
+	     << " not admissible for discrete design real set of size "
+	     << ddsr_values[i].size() << '.' << std::endl;
 	err = true;
       }
     }
@@ -1120,8 +1122,9 @@ bool ParamStudy::check_sets(const IntVector& steps)
       int terminal_index = set_value_to_index(initialDRVPoint[dr_index], x_set)
 	+ discStepVector[d_index] * steps[s_index];
       if (terminal_index < 0 || terminal_index >= h_pt_prs[i].length()/2) {
-	Cerr << "\nError: index " << terminal_index << " not admissible for "
-	     << h_pt_prs[i].length()/2 << " abscissas." << std::endl;
+	Cerr << "\nError: ParamStudy index " << terminal_index
+	     << " not admissible for " << h_pt_prs[i].length()/2
+	     << " histogram point abscissas." << std::endl;
 	err = true;
       }
     }
@@ -1136,8 +1139,9 @@ bool ParamStudy::check_sets(const IntVector& steps)
       int terminal_index = set_value_to_index(initialDIVPoint[di_index],
 	dssi_values[i]) + discStepVector[d_index] * steps[s_index];
       if (terminal_index < 0 || terminal_index >= dssi_values[i].size()) {
-	Cerr << "\nError: index " << terminal_index << " not admissible for "
-	     << "set of size " << dssi_values[i].size() << '.' << std::endl;
+	Cerr << "\nError: ParamStudy index " << terminal_index
+	     << " not admissible for discrete state int set of size "
+	     << dssi_values[i].size() << '.' << std::endl;
 	err = true;
       }
     }
@@ -1149,8 +1153,9 @@ bool ParamStudy::check_sets(const IntVector& steps)
       int terminal_index = set_value_to_index(initialDRVPoint[dr_index],
 	dssr_values[i]) + discStepVector[d_index] * steps[s_index];
       if (terminal_index < 0 || terminal_index >= dssr_values[i].size()) {
-	Cerr << "\nError: index " << terminal_index << " not admissible for "
-	     << "set of size " << dssr_values[i].size() << '.' << std::endl;
+	Cerr << "\nError: ParamStudy index " << terminal_index
+	     << " not admissible for discrete state real set of size "
+	     << dssr_values[i].size() << '.' << std::endl;
 	err = true;
       }
     }

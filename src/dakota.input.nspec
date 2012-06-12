@@ -417,8 +417,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		    [ askey {N_mdm(type,expansionType_ASKEY_U)}
 		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)} ]
 #		      | piecewise {NIDRProblemDescDB::method_piecewise} ]
-		    ( quadrature_order INTEGERLIST {N_mdm(ushintL,quadratureOrder)}
-		      | ( sparse_grid_level INTEGERLIST {N_mdm(ushintL,sparseGridLevel)}
+		    ( quadrature_order INTEGERLIST {N_mdm(usharray,quadratureOrder)}
+		      | ( sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
 		          [ restricted {N_mdm(type,growthOverride_RESTRICTED)}
 			    | unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)} ]
 			)
@@ -442,7 +442,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		          [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
 		          )
 		    	| expansion_import_file STRING {N_mdm(str,expansionImportFile)}
-		      	expansion_order INTEGERLIST {N_mdm(ushintL,expansionOrder)}
+		      	expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
 		      	| expansion_terms INTEGER {N_mdm(int,expansionTerms)}
                       )
 		    [ variance_based_decomp {N_mdm(true,vbdFlag)}
@@ -482,8 +482,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		      | askey {N_mdm(type,expansionType_ASKEY_U)}
 		      | wiener {N_mdm(type,expansionType_STD_NORMAL_U)}
 		    ]
-		    quadrature_order INTEGERLIST {N_mdm(ushintL,quadratureOrder)}
-		    | ( sparse_grid_level INTEGERLIST {N_mdm(ushintL,sparseGridLevel)}
+		    quadrature_order INTEGERLIST {N_mdm(usharray,quadratureOrder)}
+		    | ( sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)}
 		        [ restricted {N_mdm(type,growthOverride_RESTRICTED)}
 			  | unrestricted {N_mdm(type,growthOverride_UNRESTRICTED)} ]
 			[ nodal {N_mdm(type,sparseGridBasisType_NODAL_INTERPOLANT)}
@@ -626,9 +626,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                     ]
                 ) |
 		( pce {N_mdm(type,emulatorType_POLYNOMIAL_CHAOS)}
-		  [ sparse_grid_level INTEGERLIST {N_mdm(ushintL,sparseGridLevel)} ] ) |
+		  [ sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)} ] ) |
 		( sc {N_mdm(type,emulatorType_STOCHASTIC_COLLOCATION)}
-		  [ sparse_grid_level INTEGERLIST {N_mdm(ushintL,sparseGridLevel)} ] ) ] )
+		  [ sparse_grid_level INTEGERLIST {N_mdm(usharray,sparseGridLevel)} ] ) ] )
 	        | ( gpmsa {N_mdm(lit,subMethodName_gpmsa)} 
 	            emulator_samples INTEGER {N_mdm(int,emulatorSamples)} )
               )  
@@ -679,7 +679,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      )
 	    |
 	    ( psuade_moat {N_mdm(lit,methodName_psuade_moat)}
-	      [ partitions INTEGERLIST {N_mdm(ushintL,varPartitions)} ]
+	      [ partitions INTEGERLIST {N_mdm(usharray,varPartitions)} ]
 	      )
 	    [ samples INTEGER {N_mdm(int,numSamples)} ]
 	    )
@@ -818,9 +818,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
           ]
 	  [ samples INTEGER {N_mdm(int,numSamples)} ]
 	  [ fixed_sequence {N_mdm(true,fixedSequenceFlag)} ]
-	  [ sequence_start INTEGERLIST {N_mdm(intDL,sequenceStart)} ]
-	  [ sequence_leap INTEGERLIST {N_mdm(intDL,sequenceLeap)} ]
-	  [ prime_base INTEGERLIST {N_mdm(intDL,primeBase)} ]
+	  [ sequence_start INTEGERLIST {N_mdm(ivec,sequenceStart)} ]
+	  [ sequence_leap INTEGERLIST {N_mdm(ivec,sequenceLeap)} ]
+	  [ prime_base INTEGERLIST {N_mdm(ivec,primeBase)} ]
 	  )
 	|
 	( vector_parameter_study {N_mdm(lit,methodName_vector_parameter_study)}
@@ -835,11 +835,11 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	|
 	( centered_parameter_study {N_mdm(lit,methodName_centered_parameter_study)}
 	  step_vector REALLIST {N_mdm(RealDL,stepVector)}
-	  steps_per_variable ALIAS deltas_per_variable INTEGERLIST {N_mdm(intDL,stepsPerVariable)}
+	  steps_per_variable ALIAS deltas_per_variable INTEGERLIST {N_mdm(ivec,stepsPerVariable)}
 	  )
 	|
 	( multidim_parameter_study {N_mdm(lit,methodName_multidim_parameter_study)}
-	  partitions INTEGERLIST {N_mdm(ushintL,varPartitions)}
+	  partitions INTEGERLIST {N_mdm(usharray,varPartitions)}
 	  )
 	|
 	( richardson_extrap {N_mdm(lit,methodName_richardson_extrap)}
@@ -1001,21 +1001,21 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ descriptors ALIAS cdv_descriptors STRINGLIST LEN continuous_design {N_vam(strL,continuousDesignLabels)} ]
 	  ]
 	[ discrete_design_range INTEGER > 0 {N_vam(intz,numDiscreteDesRangeVars)}
-	  [ initial_point ALIAS ddv_initial_point INTEGERLIST LEN discrete_design_range {N_vam(intDL,discreteDesignRangeVars)} ]
-	  [ lower_bounds ALIAS ddv_lower_bounds INTEGERLIST LEN discrete_design_range {N_vam(intDL,discreteDesignRangeLowerBnds)} ]
-	  [ upper_bounds ALIAS ddv_upper_bounds INTEGERLIST LEN discrete_design_range {N_vam(intDL,discreteDesignRangeUpperBnds)} ]
+	  [ initial_point ALIAS ddv_initial_point INTEGERLIST LEN discrete_design_range {N_vam(ivec,discreteDesignRangeVars)} ]
+	  [ lower_bounds ALIAS ddv_lower_bounds INTEGERLIST LEN discrete_design_range {N_vam(ivec,discreteDesignRangeLowerBnds)} ]
+	  [ upper_bounds ALIAS ddv_upper_bounds INTEGERLIST LEN discrete_design_range {N_vam(ivec,discreteDesignRangeUpperBnds)} ]
 	  [ descriptors ALIAS ddv_descriptors STRINGLIST LEN discrete_design_range {N_vam(strL,discreteDesignRangeLabels)} ]
 	  ]
 	[ discrete_design_set_integer INTEGER > 0 {N_vam(intz,numDiscreteDesSetIntVars)}
-	  [ initial_point INTEGERLIST LEN discrete_design_set_integer {N_vam(intDL,discreteDesignSetIntVars)} ]
-	  [ num_set_values INTEGERLIST LEN discrete_design_set_integer {N_vam(vil,Var_Info_ndsvi)} ]
-	  set_values INTEGERLIST {N_vam(vil,Var_Info_dsvi)}
+	  [ initial_point INTEGERLIST LEN discrete_design_set_integer {N_vam(ivec,discreteDesignSetIntVars)} ]
+	  [ num_set_values INTEGERLIST LEN discrete_design_set_integer {N_vam(newiarray,Var_Info_nddsi)} ]
+	  set_values INTEGERLIST {N_vam(newivec,Var_Info_ddsi)}
 	  [ descriptors STRINGLIST LEN discrete_design_set_integer {N_vam(strL,discreteDesignSetIntLabels)} ]
 	  ]
 	[ discrete_design_set_real INTEGER > 0 {N_vam(intz,numDiscreteDesSetRealVars)}
 	  [ initial_point REALLIST LEN discrete_design_set_real {N_vam(RealLd,discreteDesignSetRealVars)} ]
-	  [ num_set_values INTEGERLIST LEN discrete_design_set_real {N_vam(vil,Var_Info_ndsvr)} ]
-	  set_values REALLIST {N_vam(vrl,Var_Info_dsvr)}
+	  [ num_set_values INTEGERLIST LEN discrete_design_set_real {N_vam(newiarray,Var_Info_nddsr)} ]
+	  set_values REALLIST {N_vam(newrvec,Var_Info_ddsr)}
 	  [ descriptors STRINGLIST LEN discrete_design_set_real {N_vam(strL,discreteDesignSetRealLabels)} ]
 	  ]
 	[ normal_uncertain INTEGER > 0 {N_vam(intz,numNormalUncVars)}
@@ -1084,10 +1084,10 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ descriptors ALIAS wuv_descriptors STRINGLIST LEN weibull_uncertain {N_vae(caulbl,CAUVar_weibull)} ]
 	  ]
 	[ histogram_bin_uncertain INTEGER > 0 {N_vam(intz,numHistogramBinUncVars)}
-	  [ num_pairs ALIAS huv_num_bin_pairs INTEGERLIST LEN histogram_bin_uncertain {N_vam(vil,Var_Info_nbp)} ]
-	  abscissas ALIAS huv_bin_abscissas REALLIST {N_vam(vrl,Var_Info_ba)}
-	  ordinates ALIAS huv_bin_ordinates REALLIST {N_vam(vrl,Var_Info_bo)}
-	  | counts ALIAS huv_bin_counts REALLIST {N_vam(vrl,Var_Info_bc)}
+	  [ num_pairs ALIAS huv_num_bin_pairs INTEGERLIST LEN histogram_bin_uncertain {N_vam(newiarray,Var_Info_nhbp)} ]
+	  abscissas ALIAS huv_bin_abscissas REALLIST {N_vam(newrvec,Var_Info_hba)}
+	  ordinates ALIAS huv_bin_ordinates REALLIST {N_vam(newrvec,Var_Info_hbo)}
+	  | counts ALIAS huv_bin_counts REALLIST {N_vam(newrvec,Var_Info_hbc)}
 	  [ descriptors ALIAS huv_bin_descriptors STRINGLIST LEN histogram_bin_uncertain {N_vae(caulbl,CAUVar_histogram_bin)} ]
 	  ]
 	[ poisson_uncertain INTEGER > 0 {N_vam(intz,numPoissonUncVars)}
@@ -1096,12 +1096,12 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  ]
 	[ binomial_uncertain INTEGER > 0 {N_vam(intz,numBinomialUncVars)}
 	  probability_per_trial ALIAS prob_per_trial REALLIST LEN binomial_uncertain {N_vam(RealLd,binomialUncProbPerTrial)}
-	  num_trials INTEGERLIST LEN binomial_uncertain {N_vam(intDL,binomialUncNumTrials)}
+	  num_trials INTEGERLIST LEN binomial_uncertain {N_vam(ivec,binomialUncNumTrials)}
 	  [ descriptors STRINGLIST LEN binomial_uncertain {N_vae(dauilbl,DAUIVar_binomial)} ]
 	  ]
 	[ negative_binomial_uncertain INTEGER > 0 {N_vam(intz,numNegBinomialUncVars)}
 	  probability_per_trial ALIAS prob_per_trial REALLIST LEN negative_binomial_uncertain {N_vam(RealLd,negBinomialUncProbPerTrial)}
-	  num_trials INTEGERLIST LEN negative_binomial_uncertain {N_vam(intDL,negBinomialUncNumTrials)}
+	  num_trials INTEGERLIST LEN negative_binomial_uncertain {N_vam(ivec,negBinomialUncNumTrials)}
 	  [ descriptors STRINGLIST LEN negative_binomial_uncertain {N_vae(dauilbl,DAUIVar_negative_binomial)} ]
 	  ]
 	[ geometric_uncertain INTEGER > 0 {N_vam(intz,numGeometricUncVars)}
@@ -1109,42 +1109,42 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ descriptors STRINGLIST LEN geometric_uncertain {N_vae(dauilbl,DAUIVar_geometric)} ]
 	  ]
 	[ hypergeometric_uncertain INTEGER > 0 {N_vam(intz,numHyperGeomUncVars)}
-	  total_population INTEGERLIST LEN hypergeometric_uncertain {N_vam(intDL,hyperGeomUncTotalPop)}
-	  selected_population INTEGERLIST LEN hypergeometric_uncertain {N_vam(intDL,hyperGeomUncSelectedPop)}
-	  num_drawn INTEGERLIST LEN hypergeometric_uncertain {N_vam(intDL,hyperGeomUncNumDrawn)}
+	  total_population INTEGERLIST LEN hypergeometric_uncertain {N_vam(ivec,hyperGeomUncTotalPop)}
+	  selected_population INTEGERLIST LEN hypergeometric_uncertain {N_vam(ivec,hyperGeomUncSelectedPop)}
+	  num_drawn INTEGERLIST LEN hypergeometric_uncertain {N_vam(ivec,hyperGeomUncNumDrawn)}
 	  [ descriptors STRINGLIST LEN hypergeometric_uncertain {N_vae(dauilbl,DAUIVar_hypergeometric)} ]
 	  ]
 	[ histogram_point_uncertain INTEGER > 0 {N_vam(intz,numHistogramPtUncVars)}
-	  [ num_pairs ALIAS huv_num_point_pairs INTEGERLIST LEN histogram_point_uncertain {N_vam(vil,Var_Info_npp)} ]
-	  abscissas ALIAS huv_point_abscissas REALLIST {N_vam(vrl,Var_Info_pa)}
-	  counts ALIAS huv_point_counts REALLIST {N_vam(vrl,Var_Info_pc)}
+	  [ num_pairs ALIAS huv_num_point_pairs INTEGERLIST LEN histogram_point_uncertain {N_vam(newiarray,Var_Info_nhpp)} ]
+	  abscissas ALIAS huv_point_abscissas REALLIST {N_vam(newrvec,Var_Info_hpa)}
+	  counts ALIAS huv_point_counts REALLIST {N_vam(newrvec,Var_Info_hpc)}
 	  [ descriptors ALIAS huv_point_descriptors STRINGLIST LEN histogram_point_uncertain {N_vae(daurlbl,DAURVar_histogram_point)} ]
 	  ]
-	[ uncertain_correlation_matrix REALLIST {N_vam(vrl,Var_Info_ucm)} ]
+	[ uncertain_correlation_matrix REALLIST {N_vam(newrvec,Var_Info_ucm)} ]
 	[ continuous_interval_uncertain ALIAS interval_uncertain INTEGER > 0 {N_vam(intz,numContinuousIntervalUncVars)}
-	  [ num_intervals ALIAS iuv_num_intervals INTEGERLIST LEN continuous_interval_uncertain {N_vam(vil,Var_Info_nCIv)} ]
-	  [ interval_probabilities ALIAS interval_probs ALIAS iuv_interval_probs REALLIST {N_vam(vrl,Var_Info_CIvp)} ]
-	  lower_bounds REALLIST {N_vam(vrl,Var_Info_CIvlb)}
-	  upper_bounds REALLIST {N_vam(vrl,Var_Info_CIvub)}
+	  [ num_intervals ALIAS iuv_num_intervals INTEGERLIST LEN continuous_interval_uncertain {N_vam(newiarray,Var_Info_nCI)} ]
+	  [ interval_probabilities ALIAS interval_probs ALIAS iuv_interval_probs REALLIST {N_vam(newrvec,Var_Info_CIp)} ]
+	  lower_bounds REALLIST {N_vam(newrvec,Var_Info_CIlb)}
+	  upper_bounds REALLIST {N_vam(newrvec,Var_Info_CIub)}
 	  [ descriptors ALIAS iuv_descriptors STRINGLIST LEN continuous_interval_uncertain {N_vae(ceulbl,CEUVar_interval)} ]
 	  ]
 	[ discrete_interval_uncertain ALIAS discrete_uncertain_range INTEGER > 0 {N_vam(intz,numDiscreteIntervalUncVars)}
-	  [ num_intervals INTEGERLIST LEN discrete_interval_uncertain {N_vam(vil,Var_Info_nDIv)} ]
-	  [ interval_probabilities ALIAS range_probabilities ALIAS range_probs REALLIST {N_vam(vrl,Var_Info_DIvp)} ]
-	  lower_bounds INTEGERLIST {N_vam(vrl,Var_Info_DIvlb)}
-	  upper_bounds INTEGERLIST {N_vam(vrl,Var_Info_DIvub)}
+	  [ num_intervals INTEGERLIST LEN discrete_interval_uncertain {N_vam(newiarray,Var_Info_nDI)} ]
+	  [ interval_probabilities ALIAS range_probabilities ALIAS range_probs REALLIST {N_vam(newrvec,Var_Info_DIp)} ]
+	  lower_bounds INTEGERLIST {N_vam(newrvec,Var_Info_DIlb)}
+	  upper_bounds INTEGERLIST {N_vam(newrvec,Var_Info_DIub)}
 	  [ descriptors STRINGLIST LEN discrete_interval_uncertain {N_vae(deuilbl,DEUIVar_interval)} ]
 	  ]
 	[ discrete_uncertain_set_integer INTEGER > 0 {N_vam(intz,numDiscreteUncSetIntVars)}
-	  [ num_set_values INTEGERLIST LEN discrete_uncertain_set_integer {N_vam(vil,Var_Info_nusvi)} ]
-	  set_values INTEGERLIST {N_vam(vil,Var_Info_usvi)}
-	  [ set_probabilities ALIAS set_probs REALLIST {N_vam(vrl,Var_Info_DSIvp)} ]
+	  [ num_set_values INTEGERLIST LEN discrete_uncertain_set_integer {N_vam(newiarray,Var_Info_ndusi)} ]
+	  set_values INTEGERLIST {N_vam(newivec,Var_Info_dusi)}
+	  [ set_probabilities ALIAS set_probs REALLIST {N_vam(newrvec,Var_Info_DSIp)} ]
 	  [ descriptors STRINGLIST LEN discrete_uncertain_set_integer {N_vae(deuilbl,DEUIVar_set_int)} ]
 	  ]
 	[ discrete_uncertain_set_real INTEGER > 0 {N_vam(intz,numDiscreteUncSetRealVars)}
-	  [ num_set_values INTEGERLIST LEN discrete_uncertain_set_real {N_vam(vil,Var_Info_nusvr)} ]
-	  set_values REALLIST {N_vam(vrl,Var_Info_usvr)}
-	  [ set_probabilities ALIAS set_probs REALLIST {N_vam(vrl,Var_Info_DSRvp)} ]
+	  [ num_set_values INTEGERLIST LEN discrete_uncertain_set_real {N_vam(newiarray,Var_Info_ndusr)} ]
+	  set_values REALLIST {N_vam(newrvec,Var_Info_dusr)}
+	  [ set_probabilities ALIAS set_probs REALLIST {N_vam(newrvec,Var_Info_DSRp)} ]
 	  [ descriptors STRINGLIST LEN discrete_uncertain_set_real {N_vae(deurlbl,DEURVar_set_real)} ]
 	  ]
 	[ continuous_state INTEGER > 0 {N_vam(intz,numContinuousStateVars)}
@@ -1154,21 +1154,21 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	  [ descriptors ALIAS csv_descriptors STRINGLIST LEN continuous_state {N_vam(strL,continuousStateLabels)} ]
 	  ]
 	[ discrete_state_range INTEGER > 0 {N_vam(intz,numDiscreteStateRangeVars)}
-	  [ initial_state ALIAS dsv_initial_state INTEGERLIST LEN discrete_state_range {N_vam(intDL,discreteStateRangeVars)} ]
-	  [ lower_bounds ALIAS dsv_lower_bounds INTEGERLIST LEN discrete_state_range {N_vam(intDL,discreteStateRangeLowerBnds)} ]
-	  [ upper_bounds ALIAS dsv_upper_bounds INTEGERLIST LEN discrete_state_range {N_vam(intDL,discreteStateRangeUpperBnds)} ]
+	  [ initial_state ALIAS dsv_initial_state INTEGERLIST LEN discrete_state_range {N_vam(ivec,discreteStateRangeVars)} ]
+	  [ lower_bounds ALIAS dsv_lower_bounds INTEGERLIST LEN discrete_state_range {N_vam(ivec,discreteStateRangeLowerBnds)} ]
+	  [ upper_bounds ALIAS dsv_upper_bounds INTEGERLIST LEN discrete_state_range {N_vam(ivec,discreteStateRangeUpperBnds)} ]
 	  [ descriptors ALIAS dsv_descriptors STRINGLIST LEN discrete_state_range {N_vam(strL,discreteStateRangeLabels)} ]
 	  ]
 	[ discrete_state_set_integer INTEGER > 0 {N_vam(intz,numDiscreteStateSetIntVars)}
-	  [ initial_state INTEGERLIST LEN discrete_state_set_integer {N_vam(intDL,discreteStateSetIntVars)} ]
-	  [ num_set_values INTEGERLIST LEN discrete_state_set_integer {N_vam(vil,Var_Info_nssvi)} ]
-	  set_values INTEGERLIST {N_vam(vil,Var_Info_ssvi)}
+	  [ initial_state INTEGERLIST LEN discrete_state_set_integer {N_vam(ivec,discreteStateSetIntVars)} ]
+	  [ num_set_values INTEGERLIST LEN discrete_state_set_integer {N_vam(newiarray,Var_Info_ndssi)} ]
+	  set_values INTEGERLIST {N_vam(newivec,Var_Info_dssi)}
 	  [ descriptors STRINGLIST LEN discrete_state_set_integer {N_vam(strL,discreteStateSetIntLabels)} ]
 	  ]
 	[ discrete_state_set_real INTEGER > 0 {N_vam(intz,numDiscreteStateSetRealVars)}
 	  [ initial_state REALLIST LEN discrete_state_set_real {N_vam(RealLd,discreteStateSetRealVars)} ]
-	  [ num_set_values INTEGERLIST LEN discrete_state_set_real {N_vam(vil,Var_Info_nssvr)} ]
-	  set_values REALLIST {N_vam(vrl,Var_Info_ssvr)}
+	  [ num_set_values INTEGERLIST LEN discrete_state_set_real {N_vam(newiarray,Var_Info_ndssr)} ]
+	  set_values REALLIST {N_vam(newrvec,Var_Info_dssr)}
 	  [ descriptors STRINGLIST LEN discrete_state_set_real {N_vam(strL,discreteStateSetRealLabels)} ]
 	  ]
 

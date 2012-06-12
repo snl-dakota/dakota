@@ -71,7 +71,7 @@ public:
 private:
 
   std::list<void*> VIL;
-  static void var_stop1(void*);
+  static void check_variables_node(void*);
 
 public:
 
@@ -119,7 +119,7 @@ public:
   KWH(method_ilit2);
   KWH(method_ilit2p);
   KWH(method_int);
-  KWH(method_intDL);
+  KWH(method_ivec);
   KWH(method_lit);
   KWH(method_lit2);
   KWH(method_litc);
@@ -151,7 +151,7 @@ public:
   KWH(method_true);
   KWH(method_tr_final);
   KWH(method_ushint);
-  KWH(method_ushintL);
+  KWH(method_usharray);
   KWH(method_type);
 
   KWH(model_Real);
@@ -199,16 +199,16 @@ public:
   KWH(var_ceulbl);
   KWH(var_deuilbl);
   KWH(var_deurlbl);
-  KWH(var_intDL);
-  KWH(var_intL);
   KWH(var_intz);
   KWH(var_start);
   KWH(var_stop);
   KWH(var_str);
   KWH(var_strL);
   KWH(var_true);
-  KWH(var_vil);
-  KWH(var_vrl);
+  KWH(var_newiarray);
+  KWH(var_newivec);
+  KWH(var_newrvec);
+  KWH(var_ivec);
   KWH(var_type);
 
 #undef KWH
