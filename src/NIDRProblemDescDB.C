@@ -3701,26 +3701,27 @@ make_variable_defaults(std::list<DataVariables>* dvl)
 
 void NIDRProblemDescDB::check_variables_node(void *v)
 {
-  IntArray *Iv;
-  RealSymMatrix *Rm;
-  RealVector *Rv;
+  IntArray *Ia; IntVector *Iv; RealVector *Rv; RealSymMatrix *Rm;
   StringArray *sa;
-  VLreal *vlr;
-  VLint  *vli;
+  VLreal *vlr; VLint *vli;
   VarLabel *vl;
   VarLabelChk *vlc, *vlce;
   Var_uinfo *vui, *vuie;
   const char **sp;
   int havelabels;
   size_t i, j, k, n, nd, nu, nuk, nutot, nv;
+
 #define AVI &Var_Info::
-  // TO DO: incomplete... ?
-  // Used for deallocation of original data forms that are recast
-  static IntArray   *Var_Info::* Ivzap[]
-    = { AVI nCI, AVI nDI, AVI nhbp, AVI nhpp };
-  static RealVector *Var_Info::* Rvzap[]
-    = { AVI CIlb, AVI CIub, AVI CIp, AVI hba, AVI hbo, AVI hbc, AVI hpa,
-	AVI hpc, AVI ucm };
+  // Used for deallocation of Var_Info temporary data
+  static IntArray   *Var_Info::* Ia_delete[]
+    = { AVI nddsi, AVI nddsr, AVI nCI, AVI nDI, AVI nhbp, AVI nhpp, AVI ndusi,
+	AVI ndusr, AVI ndssi, AVI ndssr };
+  static RealVector *Var_Info::* Rv_delete[]
+    = { AVI ddsr, AVI CIlb, AVI CIub, AVI CIp, AVI DIp, AVI DSIp, AVI DSRp,
+	AVI dusr, AVI hba, AVI hbo, AVI hbc, AVI hpa, AVI hpc, AVI ucm,
+	AVI dssr };
+  static IntVector *Var_Info::* Iv_delete[]
+    = { AVI ddsi, AVI DIlb, AVI DIub, AVI dusi, AVI dssi };
 #undef AVI
   static char ucmerr[]
     = "Got %lu entries for the uncertain_correlation_matrix\n\
@@ -3856,18 +3857,20 @@ void NIDRProblemDescDB::check_variables_node(void *v)
   Var_boundchk(dv);
   Var_iboundchk(dv);
 
-  /* finish up and clean up */
+  /* finish up and deallocate temporary Var_Info data */
 
-  n = Numberof(Ivzap);
-  for(i = 0; i < n; i++) {
-    if ((Iv = vi->*Ivzap[i]))
-      delete Iv;
-  }
-  n = Numberof(Rvzap);
-  for(i = 0; i < n; i++) {
-    if ((Rv = vi->*Rvzap[i]))
+  n = Numberof(Ia_delete);
+  for(i = 0; i < n; i++)
+    if ((Ia = vi->*Ia_delete[i]))
+      delete Ia;
+  n = Numberof(Rv_delete);
+  for(i = 0; i < n; i++)
+    if ((Rv = vi->*Rv_delete[i]))
       delete Rv;
-  }
+  n = Numberof(Iv_delete);
+  for(i = 0; i < n; i++)
+    if ((Iv = vi->*Iv_delete[i]))
+      delete Iv;
   delete vi;
   if (nerr)
     abort_handler(-1);
