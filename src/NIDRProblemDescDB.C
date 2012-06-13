@@ -2002,7 +2002,7 @@ static int wronglen(size_t n, RealVector *V, const char *what)
   return 0;
 }
 
-static int wronglen2(size_t n, IntVector *V, const char *what)
+static int wronglen(size_t n, IntVector *V, const char *what)
 {
   size_t n1 = V->length();
   if (n != n1) {
@@ -2027,14 +2027,63 @@ static void Set_rdv(RealVector *V, double d, size_t n)
     (*V)[i] = d;
 }
 
+static void
+wrong_number(const char *what, const char *kind, size_t nsv, size_t m)
+{
+  Squawk("Expected %d %s for %s, not %d", (int)nsv, what, kind, (int)m);
+}
+
+static void too_small(const char *kind)
+{
+  Squawk("num_set_values values for %s must be >= 1", kind);
+}
+
+static void not_div(const char *kind, size_t nsv, size_t m)
+{
+  Squawk("Number of %s set_values (%d)\n"
+	 "not evenly divisible by numberof variables (%d).\n"
+	 "Use num_set_values for unequal apportionment",
+	 kind, (int)nsv, (int)m);
+}
+
+static void suppressed(const char *kind, int ndup, int *ip, Real *rp)
+{
+  const char *s;
+  int i, nother;
+
+  nother = 0;
+  if (ndup > 2) {
+    nother = ndup - 1;
+    ndup = 1;
+  }
+  for(i = 0; i < ndup; ++i)
+    if (ip)
+      Squawk("Duplicate %s value %d", kind, ip[i]);
+    else
+      Squawk("Duplicate %s value %.17g", kind, rp[i]);
+  if (nother) {
+    s = "s" + (nother == 1);
+    Squawk("Warning%s of %d other duplicate %s value%s suppressed",
+	   s, nother, kind, s);
+  }
+}
+
+// *****************************************************************************
+//  Vadj functions called earlier from within check_variables_node(), which
+//   immediately {precedes,follows} DB buffer {send,receive} in broadcast().
+// Vbgen functions called later from within Var_{,i}boundgen (from
+//   make_variable_defaults() within post_process() following broadcast()).
+// As documented in ProblemDescDB::manage_inputs(), Vadj applies to minimal
+//   spec data, whereas Vbgen constructs any large inferred vectors.
+// *****************************************************************************
 static void Vadj_NormalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t n;
   RealVector *B, *M, *Sd;
 
   n = dv->numNormalUncVars;
-  if (wronglen(n, M = &dv->normalUncMeans, "nuv_means")
-      || wronglen(n, Sd = &dv->normalUncStdDevs, "nuv_std_deviations"))
+  if (wronglen(n, M = &dv->normalUncMeans, "nuv_means") ||
+      wronglen(n, Sd = &dv->normalUncStdDevs, "nuv_std_deviations"))
     return;
   B = &dv->normalUncLowerBnds;
   if (B->length() && wronglen(n, B, "nuv_lower_bounds"))
@@ -2273,8 +2322,8 @@ Vadj_LoguniformUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   n = dv->numLoguniformUncVars;
   L = &dv->loguniformUncLowerBnds;
   U = &dv->loguniformUncUpperBnds;
-  if (wronglen(n, L, "luuv_lower_bounds")
-      || wronglen(n, U, "luuv_upper_bounds"))
+  if (wronglen(n, L, "luuv_lower_bounds") ||
+      wronglen(n, U, "luuv_upper_bounds"))
     return;
   for(j = 0; j < n; ++j) {
     Lj = (*L)[j];
@@ -2321,9 +2370,8 @@ static void Vadj_TriangularUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi
   L = &dv->triangularUncLowerBnds;
   M = &dv->triangularUncModes;
   U = &dv->triangularUncUpperBnds;
-  if (wronglen(n, L, "tuv_lower_bounds")
-      || wronglen(n, M, "tuv_modes")
-      || wronglen(n, U, "tuv_upper_bounds"))
+  if (wronglen(n, L, "tuv_lower_bounds") || wronglen(n, M, "tuv_modes") ||
+      wronglen(n, U, "tuv_upper_bounds"))
     return;
   for(j = 0; j < n; ++j) {
     Lj = (*L)[j];
@@ -2395,10 +2443,8 @@ static void Vadj_BetaUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   B = &dv->betaUncBetas;
   L = &dv->betaUncLowerBnds;
   U = &dv->betaUncUpperBnds;
-  if (wronglen(n, A, "buv_alphas")
-      || wronglen(n, B, "buv_betas")
-      || wronglen(n, L, "buv_lower_bounds")
-      || wronglen(n, U, "buv_upper_bounds"))
+  if (wronglen(n, A, "buv_alphas")       || wronglen(n, B, "buv_betas") ||
+      wronglen(n, L, "buv_lower_bounds") || wronglen(n, U, "buv_upper_bounds"))
     return;
 }
 
@@ -2429,8 +2475,7 @@ static void Vadj_GammaUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   n = dv->numGammaUncVars;
   A = &dv->gammaUncAlphas;
   B = &dv->gammaUncBetas;
-  if (wronglen(n, A, "gauv_alphas")
-      || wronglen(n, B, "gauv_betas"))
+  if (wronglen(n, A, "gauv_alphas") || wronglen(n, B, "gauv_betas"))
     return;
 }
 
@@ -2462,8 +2507,7 @@ static void Vadj_GumbelUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   n = dv->numGumbelUncVars;
   A = &dv->gumbelUncAlphas;
   B = &dv->gumbelUncBetas;
-  if (wronglen(n, A, "guuv_alphas")
-      || wronglen(n, B, "guuv_betas"))
+  if (wronglen(n, A, "guuv_alphas") || wronglen(n, B, "guuv_betas"))
     return;
 }
 
@@ -2496,8 +2540,7 @@ static void Vadj_FrechetUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   n = dv->numFrechetUncVars;
   A = &dv->frechetUncAlphas;
   B = &dv->frechetUncBetas;
-  if (wronglen(n, A, "fuv_alphas")
-      || wronglen(n, B, "fuv_betas"))
+  if (wronglen(n, A, "fuv_alphas") || wronglen(n, B, "fuv_betas"))
     return;
 }
 
@@ -2530,8 +2573,7 @@ static void Vadj_WeibullUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   n = dv->numWeibullUncVars;
   A = &dv->weibullUncAlphas;
   B = &dv->weibullUncBetas;
-  if (wronglen(n, A, "wuv_alphas")
-      || wronglen(n, B, "wuv_betas"))
+  if (wronglen(n, A, "wuv_alphas") || wronglen(n, B, "wuv_betas"))
     return;
 }
 
@@ -2655,11 +2697,11 @@ static void Vbgen_HistogramBinUnc(DataVariablesRep *dv, size_t offset)
   V = &dv->continuousAleatoryUncVars;
   A = &dv->histogramUncBinPairs;
   if ((m = A->size())) {
-    for(i = 0; i < m; i++) {
+    for(i = 0; i < m; ++i, ++offset) {
       r = &((*A)[i]);
       (*L)[offset] = (*r)[0];
       (*U)[offset] = (*r)[r->length() - 2];
-      Pecos::moments_from_histogram_bin_params(*r, (*V)[offset++], stdev);
+      Pecos::moments_from_histogram_bin_params(*r, (*V)[offset], stdev);
     }
   }
 }
@@ -2705,8 +2747,7 @@ static void Vadj_BinomialUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   n = dv->numBinomialUncVars;
   A = &dv->binomialUncProbPerTrial;
   B = &dv->binomialUncNumTrials;
-  if (wronglen(n,  A, "prob_per_trial") ||
-      wronglen2(n, B, "num_trials"))
+  if (wronglen(n, A, "prob_per_trial") ||  wronglen(n, B, "num_trials"))
     return;
 }
 
@@ -2742,8 +2783,7 @@ Vadj_NegBinomialUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   n = dv->numNegBinomialUncVars;
   A = &dv->negBinomialUncProbPerTrial;
   B = &dv->negBinomialUncNumTrials;
-  if (wronglen(n,  A, "prob_per_trial") ||
-      wronglen2(n, B, "num_trials"))
+  if (wronglen(n, A, "prob_per_trial") || wronglen(n, B, "num_trials"))
     return;
 }
 
@@ -2811,9 +2851,9 @@ static void Vadj_HyperGeomUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   A = &dv->hyperGeomUncTotalPop;
   B = &dv->hyperGeomUncSelectedPop;
   C = &dv->hyperGeomUncNumDrawn;
-  if (wronglen2(n, A, "total_population") ||
-      wronglen2(n, B, "selected_population") ||
-      wronglen2(n, C, "num_drawn"))
+  if (wronglen(n, A, "total_population") ||
+      wronglen(n, B, "selected_population") ||
+      wronglen(n, C, "num_drawn"))
     return;
 }
 
@@ -3039,97 +3079,117 @@ static void Vbgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
     }
     (*ceuLB)[offset] = lb; (*ceuUB)[offset] = ub;
     Pecos::moments_from_uniform_params(lb, ub, (*V)[offset], stdev);
+    // TO DO: if disjoint cells, repair V[offset] to lie inside nearest cell
   }
 }
 
 static void 
 Vadj_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
-  // TO DO: incomplete...
+  size_t i, j, k, m, num_p, num_lb, num_ub;
+  IntArray *nI;
+  int totni, nii, avg_nii, lb, lbj, ub, ubj;
+  RealVector *Ip, *Pi;
+  RealVectorArray *P;
+  IntVector *LBi, *UBi, *Ilb, *Iub;
+  IntVectorArray *LB, *UB;
+
+  if ((Ip = vi->DIp) && (Ilb = vi->DIlb) && (Iub = vi->DIub)) {
+    num_p  =  Ip->length(); // interval_probs
+    num_lb = Ilb->length(); // interval lower_bounds
+    num_ub = Iub->length(); // interval upper_bounds
+    if (num_lb != num_p || num_ub != num_p) {
+      Squawk("Expected as many lower bounds (%d) and upper bounds (%d) as probabilities (%d)", num_lb, num_ub, num_p);
+      return;
+    }
+    bool key;
+    if (nI = vi->nDI) {
+      key = true;
+      m = nI->size();
+      if (m != dv->numDiscreteIntervalUncVars) {
+	Squawk("Expected %d numbers for num_intervals, but got %d",
+	       dv->numDiscreteIntervalUncVars, m);
+	return;
+      }
+      for(i=totni=0; i<m; ++i) {
+	totni += nii = (*nI)[i];
+	if (nii < 1) {
+	  Squawk("num_intervals values should be positive");
+	  return;
+	}
+      }
+      if (wronglen(totni,  Ip, "interval_probs") ||
+	  wronglen(totni, Ilb, "interval lower_bounds") ||
+	  wronglen(totni, Iub, "interval upper_bounds"))
+	return;
+    }
+    else {
+      key = false;
+      m = dv->numDiscreteIntervalUncVars;
+      if (num_p % m) {
+	Squawk("Number of probabilities (%d) not evenly divisible by number of variables (%d); Use num_intervals for unequal apportionment", num_p, m);
+	return;
+      }
+      else
+	avg_nii = num_p / m;
+    }
+    LB = &dv->discreteIntervalUncLowerBounds; LB->resize(m);
+    UB = &dv->discreteIntervalUncUpperBounds; UB->resize(m);
+    P  = &dv->discreteIntervalUncBasicProbs;   P->resize(m);
+    for(i = k = 0; i < m; ++i) {
+      nii = (key) ? (*nI)[i] : avg_nii;
+      LBi = &((*LB)[i]); LBi->sizeUninitialized(nii);
+      UBi = &((*UB)[i]); UBi->sizeUninitialized(nii);
+      Pi  = &((*P)[i]);   Pi->sizeUninitialized(nii);
+      lb = INT_MAX; ub = INT_MIN;
+      for(j=0; j<nii; ++j, ++k) {
+	(*Pi)[j]        = (*Ip)[k];
+	(*LBi)[j] = lbj = (*Ilb)[k];
+	(*UBi)[j] = ubj = (*Iub)[k];
+	if (lb > lbj) lb = lbj;
+	if (ub < ubj) ub = ubj;
+      }
+      if (lb > ub)
+	Squawk("Inconsistent interval uncertain bounds: %g > %g", lb, ub);
+    }
+  }
 }
 
 static void Vbgen_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset)
 {
-  // TO DO: incomplete...
-}
+  size_t i, j, m, n;
+  int lb, lbj, ub, ubj, stdev;
+  RealVector *Pi;
+  RealVectorArray *P;
+  IntVector *diLBi, *diUBi, *deuLB, *deuUB, *V;
+  IntVectorArray *diLB, *diUB;
 
-static void 
-Vadj_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
-{
-  // TO DO: incomplete...
-}
-
-static void Vbgen_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset)
-{
-  // TO DO: incomplete...
-}
-
-static void 
-Vadj_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
-{
-  // TO DO: incomplete...
-}
-
-static void Vbgen_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset)
-{
-  // TO DO: incomplete...
-}
-
-static void not_div(const char *kind, size_t nsv, size_t m)
-{
-  Squawk("Number of %s set_values (%d)\n"
-	 "not evenly divisible by numberof variables (%d).\n"
-	 "Use num_set_values for unequal apportionment",
-	 kind, (int)nsv, (int)m);
-}
-
-static void
-wrong_number(const char *what, const char *kind, size_t nsv, size_t m)
-{
-  Squawk("Expected %d %s for %s, not %d", (int)nsv, what, kind, (int)m);
-}
-
-static void too_small(const char *kind)
-{
-  Squawk("num_set_values values for %s must be >= 1", kind);
-}
-
-static void suppressed(const char *kind, int ndup, int *ip, Real *rp)
-{
-  const char *s;
-  int i, nother;
-
-  nother = 0;
-  if (ndup > 2) {
-    nother = ndup - 1;
-    ndup = 1;
-  }
-  for(i = 0; i < ndup; ++i)
-    if (ip)
-      Squawk("Duplicate %s value %d", kind, ip[i]);
-    else
-      Squawk("Duplicate %s value %.17g", kind, rp[i]);
-  if (nother) {
-    s = "s" + (nother == 1);
-    Squawk("Warning%s of %d other duplicate %s value%s suppressed",
-	   s, nother, kind, s);
+  n     = dv->numDiscreteIntervalUncVars;
+  deuLB = &dv->discreteIntEpistemicUncLowerBnds;
+  deuUB = &dv->discreteIntEpistemicUncUpperBnds;
+  V     = &dv->discreteIntEpistemicUncVars;
+  diLB  = &dv->discreteIntervalUncLowerBounds;
+  diUB  = &dv->discreteIntervalUncUpperBounds;
+  P     = &dv->discreteIntervalUncBasicProbs;
+  for (i=0; i<n; ++i, ++offset) {
+    diLBi = &((*diLB)[i]); diUBi = &((*diUB)[i]); Pi = &((*P)[i]);
+    m = Pi->length();
+    ub = INT_MIN; lb = INT_MAX;
+    for (j=0; j<m; ++j) {
+      lbj = (*diLBi)[j]; ubj = (*diUBi)[j];
+      if (lb > lbj) lb = lbj;
+      if (ub < ubj) ub = ubj;
+    }
+    (*deuLB)[offset] = lb; (*deuUB)[offset] = ub;
+    // no user spec for initial pt to detect
+    (*V)[offset] = (lb + ub) / 2; // int truncation if odd sum
+    // TO DO: if disjoint cells, repair V[offset] to lie inside nearest cell
   }
 }
 
-static void bad_initial_ivalue(const char *kind, int val)
-{
-  Squawk("invalid initial value %d for %s", val, kind);
-}
-
-static void bad_initial_rvalue(const char *kind, Real val)
-{
-  Squawk("invalid initial value %.17g for %s", val, kind);
-}
-
 static void 
-Vadj_DIset(size_t num_v, const char *kind,
-	   IntArray *input_ndsi, IntVector *input_dsi,
-	   IntSetArray& dsi_all, IntVector& dsi_init_pt)
+Vadj_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
+	   IntVector *input_dsi, IntSetArray& dsi_all)
 {
   if (input_dsi) {
     int avg_num_dsi, ndup, dupval[2], num_dsi_i, total_dsi, val;
@@ -3170,46 +3230,90 @@ Vadj_DIset(size_t num_v, const char *kind,
     }
     if (ndup)
       suppressed(kind, ndup, dupval, 0);
-    // Allocate the initial pt array
-    if ((i = dsi_init_pt.length()) > 0) {
-      if (i != num_v)
-	wrong_number("initial_point value(s)", kind, num_v, i);
-      else
-	for(i = 0; i < num_v; ++i) {
-	  IntSet& dsi_all_i = dsi_all[i];
-	  if (dsi_all_i.find(val = dsi_init_pt[i]) == dsi_all_i.end())
-	    bad_initial_rvalue(kind, val);
-	}
-    }
-#if 0 // now done in Vbgen_DIset
-    else {
-      dsi_init_pt->sizeUninitialized(num_v);
-      for (i=0; i<num_v; ++i)
-	dsi_init_pt[i] = *dsi_all[i].begin(); // init to 1st value in set
-    }
-#endif
   }
 }
 
 static void 
-Vadj_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+Vadj_DIsetP(const char *kind, IntSetArray& dsi_all, RealVectorArray& dsi_probs)
 {
-  static char kind[] = "discrete_design_set_integer";
-  Vadj_DIset(dv->numDiscreteDesSetIntVars, kind, vi->nddsi, vi->ddsi,
-	     dv->discreteDesignSetInt, dv->discreteDesignSetIntVars);
+  // TO DO: check Var_Info spec
+  // --> if none, then assign default 1.'s or aportion equally?
 }
 
 static void 
-Vadj_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+Vbgen_DIset(size_t n, IntSetArray& sets, IntVector& L, IntVector& U,
+	    IntVector& V, size_t offset)
 {
-  static char kind[] = "discrete_state_set_integer";
-  Vadj_DIset(dv->numDiscreteStateSetIntVars, kind, vi->ndssi, vi->dssi, 
-	     dv->discreteStateSetInt, dv->discreteStateSetIntVars);
+  IntSet::const_iterator ie, it;
+  Real avg_val, r_val;
+  int i, i_val, i_left, i_right;
+  size_t m;
+  bool init_V = true;
+
+  L.sizeUninitialized(n);
+  U.sizeUninitialized(n);
+  if (V.length() == n) // user spec --> already assigned by var_ivec()
+    init_V = false;
+  else
+    V.sizeUninitialized(n);
+  for(i = 0; i < n; ++i, ++offset) {
+    IntSet& set_i = sets[i];
+    it = set_i.begin(); ie = set_i.end(); m = set_i.size();
+    if (m == 0) // should not occur
+      L[offset] = U[offset] = V[offset] = 0;
+    else if (m == 1)
+      L[offset] = U[offset] = V[offset] = *it;
+    else {
+      L[offset] = *it;     // lower bound is first value
+      U[offset] = *(--ie); // upper bound is final value
+      if (init_V) {
+	// select the initial value to be closest set value to avg_val
+	for(avg_val = 0., ++ie; it != ie; ++it)
+	  avg_val += *it;
+	avg_val /= m;
+	// bracket avg_val between [i_left,i_right]
+	i_right = INT_MAX; i_left = INT_MIN;
+	for(it = set_i.begin(); it != ie; ++it) {
+	  r_val = i_val = *it;
+	  if (r_val > avg_val) {      // update nearest neighbor to right
+	    if (i_val < i_right)
+	      i_right = i_val;
+	  }
+	  else if (r_val < avg_val) { // update nearest neighbor to left
+	    if (i_val > i_left)
+	      i_left = i_val;
+	  }
+	  else { // r_val equals avg_val
+	    i_left = i_right = i_val;
+	    break;
+	  }
+	}
+	V[offset] = (i_right - avg_val < avg_val - i_left) ? i_right : i_left;
+      }
+    }
+  }
 }
 
-static void Vadj_DRset(size_t num_v, const char *kind,
-	   IntArray  *input_ndsr, RealVector *input_dsr,
-	   RealSetArray& dsr_all, RealVector& dsr_init_pt)
+static void 
+Vadj_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  static char kind[] = "discrete_uncertain_set_integer";
+  Vadj_DIset(dv->numDiscreteUncSetIntVars, kind, vi->ndusi, vi->dusi, 
+	     dv->discreteUncSetInt);
+  Vadj_DIsetP(kind, dv->discreteUncSetInt, dv->discreteUncSetIntBasicProbs);
+}
+
+static void Vbgen_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset)
+{
+  Vbgen_DIset(dv->numDiscreteUncSetIntVars, dv->discreteUncSetInt,
+	      dv->discreteIntEpistemicUncLowerBnds,
+	      dv->discreteIntEpistemicUncUpperBnds,
+	      dv->discreteIntEpistemicUncVars, offset);
+}
+
+static void 
+Vadj_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
+	   RealVector *input_dsr, RealSetArray& dsr_all)
 {
   if (input_dsr) {
     int avg_num_dsr, ndup, num_dsr_i, total_dsr;
@@ -3251,116 +3355,19 @@ static void Vadj_DRset(size_t num_v, const char *kind,
     }
     if (ndup)
       suppressed(kind, ndup, 0, dupval);
-    // Allocate the initial pt array
-    if ((i = dsr_init_pt.length()) > 0) {
-      if (i != num_v)
-	wrong_number("initial_point value(s)", kind, num_v, i);
-      else
-	for(i = 0; i < num_v; ++i) {
-	  RealSet& dsr_all_i = dsr_all[i];
-	  if (dsr_all_i.find(val = dsr_init_pt[i]) == dsr_all_i.end())
-	    bad_initial_rvalue(kind, val);
-	}
-    }
-#if 0 // now done in Vbgen_DiscreteDesSetReal
-    else {
-      dsr_init_pt.sizeUninitialized(num_v);
-      for (i=0; i<num_v; ++i)
-	dsr_init_pt[i] = *dsr_all[i].begin(); // init to 1st value in set
-    }
-#endif
   }
 }
 
 static void 
-Vadj_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+Vadj_DRsetP(const char *kind, RealSetArray& dsr_all, RealVectorArray& dsi_probs)
 {
-  static char kind[] = "discrete_design_set_real";
-  Vadj_DRset(dv->numDiscreteDesSetRealVars, kind, vi->nddsr, vi->ddsr,
-	     dv->discreteDesignSetReal, dv->discreteDesignSetRealVars);
-}
-
-static void 
-Vadj_DiscreteStateSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
-{
-  static char kind[] = "discrete_state_set_real";
-  Vadj_DRset(dv->numDiscreteStateSetRealVars, kind, vi->ndssr, vi->dssr,
-	     dv->discreteStateSetReal, dv->discreteStateSetRealVars);
-}
-
-static void 
-Vbgen_DIset(size_t n, IntSetArray& sets, IntVector& L, IntVector& U,
-	    IntVector& V)
-{
-  IntSet::const_iterator ie, it;
-  Real avg_val, r_val;
-  int i, i_val, i_left, i_right;
-  size_t m;
-  bool init_V = true;
-
-  L.sizeUninitialized(n);
-  U.sizeUninitialized(n);
-  if (V.length() == n) // user spec --> already assigned by var_ivec()
-    init_V = false;
-  else
-    V.sizeUninitialized(n);
-  for(i = 0; i < n; ++i) {
-    IntSet& set_i = sets[i];
-    it = set_i.begin(); ie = set_i.end(); m = set_i.size();
-    if (m == 0) // should not occur
-      L[i] = U[i] = V[i] = 0;
-    else if (m == 1)
-      L[i] = U[i] = V[i] = *it;
-    else {
-      L[i] = *it;     // lower bound is first value
-      U[i] = *(--ie); // upper bound is final value
-      if (init_V) {
-	// select the initial value to be closest set value to avg_val
-	for(avg_val = 0., ++ie; it != ie; ++it)
-	  avg_val += *it;
-	avg_val /= m;
-	// bracket avg_val between [i_left,i_right]
-	i_right = INT_MAX; i_left = -INT_MAX;
-	for(it = set_i.begin(); it != ie; ++it) {
-	  r_val = i_val = *it;
-	  if (r_val > avg_val) {      // update nearest neighbor to right
-	    if (i_val < i_right)
-	      i_right = i_val;
-	  }
-	  else if (r_val < avg_val) { // update nearest neighbor to left
-	    if (i_val > i_left)
-	      i_left = i_val;
-	  }
-	  else { // r_val equals avg_val
-	    i_left = i_right = i_val;
-	    break;
-	  }
-	}
-	V[i] = (i_right - avg_val < avg_val - i_left) ? i_right : i_left;
-      }
-    }
-  }
-}
-
-static void Vbgen_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset)
-{
-  Vbgen_DIset(dv->numDiscreteDesSetIntVars, dv->discreteDesignSetInt,
-	      dv->discreteDesignSetIntLowerBnds,
-	      dv->discreteDesignSetIntUpperBnds,
-	      dv->discreteDesignSetIntVars);
-}
-
-static void Vbgen_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset)
-{
-  Vbgen_DIset(dv->numDiscreteStateSetIntVars, dv->discreteStateSetInt,
-	      dv->discreteStateSetIntLowerBnds,
-	      dv->discreteStateSetIntUpperBnds,
-	      dv->discreteStateSetIntVars);
+  // TO DO: check Var_Info spec
+  // --> if none, then assign default 1.'s or aportion equally?
 }
 
 static void 
 Vbgen_DRset(size_t n, RealSetArray& sets, RealVector& L, RealVector& U,
-	    RealVector& V)
+	    RealVector& V, size_t offset)
 {
   Real avg_val, set_val, s_left, s_right;
   RealSet::const_iterator ie, it;
@@ -3378,12 +3385,12 @@ Vbgen_DRset(size_t n, RealSetArray& sets, RealVector& L, RealVector& U,
     RealSet& set_i = sets[i];
     it = set_i.begin(); ie = set_i.end(); m = set_i.size();
     if (m == 0) // should not occur
-      L[i] = U[i] = V[i] = 0.;
+      L[offset] = U[offset] = V[offset] = 0.;
     else if (m == 1)
-      L[i] = U[i] = V[i] = *it;
+      L[offset] = U[offset] = V[offset] = *it;
     else {
-      L[i] = *it;     // lower bound is first value
-      U[i] = *(--ie); // upper bound is final value
+      L[offset] = *it;     // lower bound is first value
+      U[offset] = *(--ie); // upper bound is final value
       if (init_V) {
 	// select the initial value to be closest set value to avg_val
 	for(avg_val = 0., ++ie; it != ie; ++it)
@@ -3406,10 +3413,141 @@ Vbgen_DRset(size_t n, RealSetArray& sets, RealVector& L, RealVector& U,
 	    break;
 	  }
 	}
-	V[i] = (s_right - avg_val < avg_val - s_left) ? s_right : s_left;
+	V[offset] = (s_right - avg_val < avg_val - s_left) ? s_right : s_left;
       }
     }
   }
+}
+
+static void 
+Vadj_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  static char kind[] = "discrete_uncertain_set_real";
+  Vadj_DRset(dv->numDiscreteUncSetRealVars, kind, vi->ndusr, vi->dusr,
+	     dv->discreteUncSetReal);
+  Vadj_DRsetP(kind, dv->discreteUncSetReal, dv->discreteUncSetRealBasicProbs);
+}
+
+static void Vbgen_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset)
+{
+  Vbgen_DRset(dv->numDiscreteUncSetRealVars, dv->discreteUncSetReal,
+	      dv->discreteRealEpistemicUncLowerBnds,
+	      dv->discreteRealEpistemicUncUpperBnds,
+	      dv->discreteRealEpistemicUncVars, offset);
+}
+
+static void bad_initial_ivalue(const char *kind, int val)
+{
+  Squawk("invalid initial value %d for %s", val, kind);
+}
+
+static void bad_initial_rvalue(const char *kind, Real val)
+{
+  Squawk("invalid initial value %.17g for %s", val, kind);
+}
+
+static void 
+Vadj_DIsetV(const char *kind, IntSetArray& dsi_all, IntVector& dsi_init_pt)
+{
+  size_t i, num_v = dsi_all.size();
+  int val;
+
+  // Allocate the initial pt array
+  if ((i = dsi_init_pt.length()) > 0) {
+    if (i != num_v)
+      wrong_number("initial_point value(s)", kind, num_v, i);
+    else
+      for(i = 0; i < num_v; ++i) {
+	IntSet& dsi_all_i = dsi_all[i];
+	if (dsi_all_i.find(val = dsi_init_pt[i]) == dsi_all_i.end())
+	  bad_initial_rvalue(kind, val);
+      }
+  }
+#if 0 // now done in Vbgen_DIset
+  else {
+    dsi_init_pt->sizeUninitialized(num_v);
+    for (i=0; i<num_v; ++i)
+      dsi_init_pt[i] = *dsi_all[i].begin(); // init to 1st value in set
+  }
+#endif
+}
+
+static void 
+Vadj_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  static char kind[] = "discrete_design_set_integer";
+  Vadj_DIset(dv->numDiscreteDesSetIntVars, kind, vi->nddsi, vi->ddsi,
+	     dv->discreteDesignSetInt);
+  Vadj_DIsetV(kind, dv->discreteDesignSetInt, dv->discreteDesignSetIntVars);
+}
+
+static void 
+Vadj_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  static char kind[] = "discrete_state_set_integer";
+  Vadj_DIset(dv->numDiscreteStateSetIntVars, kind, vi->ndssi, vi->dssi, 
+	     dv->discreteStateSetInt);
+  Vadj_DIsetV(kind, dv->discreteStateSetInt, dv->discreteStateSetIntVars);
+}
+
+static void 
+Vadj_DRsetV(const char *kind, RealSetArray& dsr_all, RealVector& dsr_init_pt)
+{
+  size_t i, num_v = dsr_all.size();
+  Real val;
+
+  // Allocate the initial pt array
+  if ((i = dsr_init_pt.length()) > 0) {
+    if (i != num_v)
+      wrong_number("initial_point value(s)", kind, num_v, i);
+    else
+      for(i = 0; i < num_v; ++i) {
+	RealSet& dsr_all_i = dsr_all[i];
+	if (dsr_all_i.find(val = dsr_init_pt[i]) == dsr_all_i.end())
+	  bad_initial_rvalue(kind, val);
+      }
+  }
+#if 0 // now done in Vbgen_DiscreteDesSetReal
+  else {
+    dsr_init_pt.sizeUninitialized(num_v);
+    for (i=0; i<num_v; ++i)
+      dsr_init_pt[i] = *dsr_all[i].begin(); // init to 1st value in set
+  }
+#endif
+}
+
+static void 
+Vadj_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  static char kind[] = "discrete_design_set_real";
+  Vadj_DRset(dv->numDiscreteDesSetRealVars, kind, vi->nddsr, vi->ddsr,
+	     dv->discreteDesignSetReal);
+  Vadj_DRsetV(kind, dv->discreteDesignSetReal, dv->discreteDesignSetRealVars);
+}
+
+static void 
+Vadj_DiscreteStateSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  static char kind[] = "discrete_state_set_real";
+  Vadj_DRset(dv->numDiscreteStateSetRealVars, kind, vi->ndssr, vi->dssr,
+	     dv->discreteStateSetReal);
+  Vadj_DRsetV(kind, dv->discreteStateSetReal, dv->discreteStateSetRealVars);
+}
+
+static void Vbgen_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset)
+{
+  Vbgen_DIset(dv->numDiscreteDesSetIntVars, dv->discreteDesignSetInt,
+	      dv->discreteDesignSetIntLowerBnds,
+	      dv->discreteDesignSetIntUpperBnds,
+	      dv->discreteDesignSetIntVars, 0); // offset not valid: same L/U/V
+}
+
+static void Vbgen_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset)
+{
+  Vbgen_DIset(dv->numDiscreteStateSetIntVars, dv->discreteStateSetInt,
+	      dv->discreteStateSetIntLowerBnds,
+	      dv->discreteStateSetIntUpperBnds,
+	      dv->discreteStateSetIntVars, 0); // offset not valid: same L/U/V
 }
 
 static void Vbgen_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset)
@@ -3417,7 +3555,7 @@ static void Vbgen_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset)
   Vbgen_DRset(dv->numDiscreteDesSetRealVars, dv->discreteDesignSetReal,
 	      dv->discreteDesignSetRealLowerBnds,
 	      dv->discreteDesignSetRealUpperBnds,
-	      dv->discreteDesignSetRealVars);
+	      dv->discreteDesignSetRealVars, 0); // offset not valid: same L/U/V
 }
 
 static void Vbgen_DiscreteStateSetReal(DataVariablesRep *dv, size_t offset)
@@ -3425,7 +3563,7 @@ static void Vbgen_DiscreteStateSetReal(DataVariablesRep *dv, size_t offset)
   Vbgen_DRset(dv->numDiscreteStateSetRealVars, dv->discreteStateSetReal,
 	      dv->discreteStateSetRealLowerBnds,
 	      dv->discreteStateSetRealUpperBnds,
-	      dv->discreteStateSetRealVars);
+	      dv->discreteStateSetRealVars, 0); // offset not valid: same L/U/V
 }
 
 #define VarLabelInfo(a,b)     { #a, #b, &DataVariablesRep::num##b##Vars, Vadj_##b }
@@ -5040,61 +5178,6 @@ void NIDRProblemDescDB::Var_boundchk(DataVariablesRep *dv)
   }
 }
 
-void NIDRProblemDescDB::Var_boundgen(DataVariablesRep *dv)
-{
-  Var_bchk *b, *be;
-  Var_bgen *b1, *b1e;
-  Real t;
-  RealVector *L, *U, *V;
-  size_t i, offset, n;
-
-  // loop over cdv/nuv/lnuv/uuv/luuv/truv/euv/buv/csv
-  // TO DO: exclude euv as it does not support bounds spec
-  offset = 0;
-  for(b = var_mp_bndchk, be = b + Numberof(var_mp_bndchk); b < be; ++b) {
-    if ((n = dv->*b->n) == 0)
-      continue;
-    L = U = 0;
-    if (b->L && !b->no_init) { // Vchu8 sets no_init=1 for normal/lognormal
-      L = &(dv->*b->L);
-      if (L->length() == 0)
-	Set_rdv(L, -DBL_MAX, n);
-      U = &(dv->*b->U);
-      if (U->length() == 0)
-	Set_rdv(U, DBL_MAX, n);
-    }
-    if (b->vbgen) { // null for continuous design,state from Vchv
-      (*b->vbgen)(dv, offset);
-      offset += n;
-    }
-    if (b->V == 0)
-      continue;
-    V = &(dv->*b->V);
-    if (V->length() == 0) {
-      V->sizeUninitialized(n);
-      for(i = 0; i < n; i++) {
-	t = 0.;
-	if ((*L)[i] > t)
-	  t = (*L)[i];
-	else if ((*U)[i] < t)
-	  t = (*U)[i];
-	(*V)[i] = t;
-      }
-    }
-  }
-
-  // loop over gauv/guuv/fuv/wuv/hbuv
-  for(b1=var_mp_bgen_cau, b1e=b1 + Numberof(var_mp_bgen_cau); b1 < b1e; ++b1)
-    if ((n = dv->*b1->n) > 0)
-      { (*b1->vbgen)(dv, offset); offset += n; }
-
-  // continuous epistemic uncertain
-  offset = 0; // reset for combined epistemic arrays
-  for(b1=var_mp_bgen_ceu, b1e=b1 + Numberof(var_mp_bgen_ceu); b1 < b1e; ++b1)
-    if ((n = dv->*b1->n) > 0)
-      { (*b1->vbgen)(dv, offset); offset += n; }
-}
-
 void NIDRProblemDescDB::Var_iboundchk(DataVariablesRep *dv)
 {
   Var_ibchk *b, *be;
@@ -5104,6 +5187,7 @@ void NIDRProblemDescDB::Var_iboundchk(DataVariablesRep *dv)
   int i, n, ndflt; // length() values here are int rather than size_t
 
   // discrete design,state ranges
+  // TO DO: push code below into Vadj_Discrete{Des,State}Range ?
   for(b = var_mp_ibndchk, be = b + Numberof(var_mp_ibndchk); b < be; ++b) {
     if ((n = dv->*b->n) == 0)
       continue;
@@ -5165,15 +5249,70 @@ void NIDRProblemDescDB::Var_iboundchk(DataVariablesRep *dv)
   }
 }
 
+void NIDRProblemDescDB::Var_boundgen(DataVariablesRep *dv)
+{
+  Var_bchk *b, *be;
+  Var_bgen *b1, *b1e;
+  Real t;
+  RealVector *L, *U, *V;
+  size_t i, offset, n;
+
+  // loop over cdv/nuv/lnuv/uuv/luuv/truv/euv/buv/csv
+  // TO DO: exclude euv as it does not support bounds spec
+  offset = 0;
+  for(b = var_mp_bndchk, be = b + Numberof(var_mp_bndchk); b < be; ++b) {
+    if ((n = dv->*b->n) == 0)
+      continue;
+    L = U = 0;
+    if (b->L && !b->no_init) { // Vchu8 sets no_init=1 for normal/lognormal
+      L = &(dv->*b->L);
+      if (L->length() == 0)
+	Set_rdv(L, -DBL_MAX, n);
+      U = &(dv->*b->U);
+      if (U->length() == 0)
+	Set_rdv(U, DBL_MAX, n);
+    }
+    if (b->vbgen) { // null for continuous design,state from Vchv
+      (*b->vbgen)(dv, offset);
+      offset += n;
+    }
+    if (b->V == 0)
+      continue;
+    V = &(dv->*b->V);
+    if (V->length() == 0) {
+      V->sizeUninitialized(n);
+      for(i = 0; i < n; i++) {
+	t = 0.;
+	if ((*L)[i] > t)
+	  t = (*L)[i];
+	else if ((*U)[i] < t)
+	  t = (*U)[i];
+	(*V)[i] = t;
+      }
+    }
+  }
+
+  // loop over gauv/guuv/fuv/wuv/hbuv
+  for(b1=var_mp_bgen_cau, b1e=b1 + Numberof(var_mp_bgen_cau); b1 < b1e; ++b1)
+    if ((n = dv->*b1->n) > 0)
+      { (*b1->vbgen)(dv, offset); offset += n; }
+
+  // continuous epistemic uncertain
+  offset = 0; // reset for combined epistemic arrays
+  for(b1=var_mp_bgen_ceu, b1e=b1 + Numberof(var_mp_bgen_ceu); b1 < b1e; ++b1)
+    if ((n = dv->*b1->n) > 0)
+      { (*b1->vbgen)(dv, offset); offset += n; }
+}
+
 void NIDRProblemDescDB::Var_iboundgen(DataVariablesRep *dv)
 {
   Var_bgen *b1, *b1e;
   Var_ibchk *b, *be;
   IntVector *L, *U, *V;
-  int t;
   size_t i, offset, n;
 
   // discrete design,state ranges
+  // TO DO: push code below into Vbgen_Discrete{Des,State}Range
   for(b = var_mp_ibndchk, be = b + Numberof(var_mp_ibndchk); b < be; ++b) {
     if ((n = dv->*b->n) == 0)
       continue;
@@ -5192,30 +5331,31 @@ void NIDRProblemDescDB::Var_iboundgen(DataVariablesRep *dv)
     V = &(dv->*b->V);
     if (V->length() == 0) {
       V->sizeUninitialized(n);
-      for(i = 0; i < n; i++) {
-	t = 0;
-	if ((*L)[i] > t)
-	  t = (*L)[i];
-	else if ((*U)[i] < t)
-	  t = (*U)[i];
-	(*V)[i] = t;
+      for(i = 0; i < n; ++i) { // init to 0, repairing to bounds if needed
+	if ((*L)[i] > 0)      (*V)[i] = (*L)[i];
+	else if ((*U)[i] < 0) (*V)[i] = (*U)[i];
+	else                  (*V)[i] = 0;
       }
     }
   }
 
-  // discrete int uncertain use running counter offset passed into Vbgen_*Unc
+  // discrete int aleatory uncertain use running offset passed into Vbgen_*Unc
   offset = 0;
   for(b1=var_mp_bgen_daui, b1e=b1 + Numberof(var_mp_bgen_daui); b1 < b1e; ++b1)
     if ((n = dv->*b1->n) > 0)
       {	(*b1->vbgen)(dv, offset); offset += n; }
+  // discrete int epistemic uncertain use running offset passed into Vbgen_*Unc
+  offset = 0;
   for(b1=var_mp_bgen_deui, b1e=b1 + Numberof(var_mp_bgen_deui); b1 < b1e; ++b1)
     if ((n = dv->*b1->n) > 0)
       {	(*b1->vbgen)(dv, offset); offset += n; }
-  // discrete real uncertain use running counter offset passed into Vbgen_*Unc
+  // discrete real aleatory uncertain use running offset passed into Vbgen_*Unc
   offset = 0;
   for(b1=var_mp_bgen_daur, b1e=b1 + Numberof(var_mp_bgen_daur); b1 < b1e; ++b1)
     if ((n = dv->*b1->n) > 0)
       {	(*b1->vbgen)(dv, offset); offset += n; }
+  // discrete real epistemic uncertain use running offset passed into Vbgen_*Unc
+  offset = 0;
   for(b1=var_mp_bgen_deur, b1e=b1 + Numberof(var_mp_bgen_deur); b1 < b1e; ++b1)
     if ((n = dv->*b1->n) > 0)
       {	(*b1->vbgen)(dv, offset); offset += n; }
