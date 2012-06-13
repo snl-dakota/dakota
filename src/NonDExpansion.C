@@ -901,7 +901,7 @@ Real NonDExpansion::increment_sets()
     Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
 
     // restore previous state (destruct order is reversed from construct order)
-    uSpaceModel.pop_approximation(true); // store SDP set for use in restore
+    uSpaceModel.pop_approximation(true,false); // store SDP set for use in restore
     nond_sparse->decrement_set();
     // restore reference point for next metric calculation
     if (totalLevelRequests) finalStatistics.function_values(stats_ref);

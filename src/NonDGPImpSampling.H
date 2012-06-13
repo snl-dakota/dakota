@@ -96,11 +96,13 @@ private:
   RealVectorArray gpVar;
   /// Vector to hold the expected indicator values for the current GP samples
   RealVector expIndicator; 
+  /// Vector to hold the rhoDraw values for the current GP samples
+  RealVector rhoDraw; 
   /// Vector to hold the normalization constant calculated for each 
   /// point added
   RealVector normConst;
   /// IntVector to hold indicator for actual simulation values vs. threshold
-  IntVector indicator;
+  RealVector indicator;
   /// xDrawThis, appended to locally to hold the X values of emulator points chosen
   RealVectorArray xDrawThis; 
   /// expIndThis, appended locally to hold the expected indicator 

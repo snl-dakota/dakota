@@ -2602,10 +2602,10 @@ append_approximation(const VariablesArray& vars_array,
 }
 
 
-void Model::pop_approximation(bool save_surr_data)
+void Model::pop_approximation(bool save_surr_data, bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->pop_approximation(save_surr_data);
+    modelRep->pop_approximation(save_surr_data, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
 	 << "(bool) function.\nThis model does not support approximation data "

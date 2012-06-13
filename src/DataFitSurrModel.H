@@ -151,7 +151,7 @@ protected:
 			    const IntResponseMap& resp_map, bool rebuild_flag);
 
   /// remove approximation data added on previous append_approximation() call
-  void pop_approximation(bool save_surr_data);
+  void pop_approximation(bool save_surr_data, bool rebuild_flag);
 
   /// restore a previous approximation data state
   void restore_approximation();
