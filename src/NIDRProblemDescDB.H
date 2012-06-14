@@ -76,10 +76,6 @@ private:
 public:
 
   static int nerr;
-  static void Var_boundchk(DataVariablesRep*);
-  static void Var_boundgen(DataVariablesRep*);
-  static void Var_iboundchk(DataVariablesRep*);
-  static void Var_iboundgen(DataVariablesRep*);
   static void botch(const char *fmt, ...);
   static void check_variables(std::list<DataVariables>*);
   static void check_responses(std::list<DataResponses>*);
