@@ -53,8 +53,14 @@ endif()
 if ( NOT CTEST_SITE )
   find_program(HOSTNAME hostname)
 
-  #TODO: change to execute_process, verify works in Windows
-  exec_program(${HOSTNAME} ARGS -s OUTPUT_VARIABLE hostname)
+  # TODO: change to execute_process, verify works in Windows
+  # NOTE: Cygwin uses hostname from coreutils; doesn't support options
+  if (CYGWIN)
+    exec_program(${HOSTNAME} OUTPUT_VARIABLE hostname)
+    # TODO: only keep up to the first dot, since no -s option
+  else()
+    exec_program(${HOSTNAME} ARGS -s OUTPUT_VARIABLE hostname)
+  endif()
   string(REGEX REPLACE "[/\\\\+<> #]" "-" hostname "${hostname}")
 
   set( CTEST_SITE "${hostname}" )
