@@ -269,6 +269,10 @@ public:
   void set(const String& entry_name, const RealVectorArray& rva);
   /// set an IntVectorArray within the database based on an identifier string
   void set(const String& entry_name, const IntVectorArray& iva);
+  /// set a RealSetArray within the database based on an identifier string
+  void set(const String& entry_name, const RealSetArray& rsa);
+  /// set an IntSetArray within the database based on an identifier string
+  void set(const String& entry_name, const IntSetArray& isa);
   /// set a StringArray within the database based on an identifier string
   void set(const String& entry_name, const StringArray& sa);
 

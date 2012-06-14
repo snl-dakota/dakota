@@ -2040,9 +2040,7 @@ static void too_small(const char *kind)
 
 static void not_div(const char *kind, size_t nsv, size_t m)
 {
-  Squawk("Number of %s set_values (%d)\n"
-	 "not evenly divisible by numberof variables (%d).\n"
-	 "Use num_set_values for unequal apportionment",
+  Squawk("Number of %s set_values (%d) not evenly divisible by number of variables (%d); use num_set_values for unequal apportionment",
 	 kind, (int)nsv, (int)m);
 }
 
@@ -2066,6 +2064,16 @@ static void suppressed(const char *kind, int ndup, int *ip, Real *rp)
     Squawk("Warning%s of %d other duplicate %s value%s suppressed",
 	   s, nother, kind, s);
   }
+}
+
+static void bad_initial_ivalue(const char *kind, int val)
+{
+  Squawk("invalid initial value %d for %s", val, kind);
+}
+
+static void bad_initial_rvalue(const char *kind, Real val)
+{
+  Squawk("invalid initial value %.17g for %s", val, kind);
 }
 
 // *****************************************************************************
@@ -2986,21 +2994,31 @@ static void Vbgen_HistogramPtUnc(DataVariablesRep *dv, size_t offset)
 static void 
 Vadj_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
-  size_t i, j, k, m, num_p, num_lb, num_ub;
+  size_t i, j, k, m, num_p = 0, num_lb, num_ub;
   IntArray *nI;
-  int totni, nii, avg_nii;
-  Real lb, lbj, ub, ubj;
+  int tot_nI, nIi, avg_nI;
+  Real lb, lbj, ub, ubj, default_p;
   RealVector *LBi, *UBi, *Ilb, *Iub, *Ip, *Pi;
   RealVectorArray *LB, *UB, *P;
 
-  if ((Ip = vi->CIp) && (Ilb = vi->CIlb) && (Iub = vi->CIub)) {
-    num_p  =  Ip->length(); // interval_probs
+  if ((Ilb = vi->CIlb) && (Iub = vi->CIub)) {
     num_lb = Ilb->length(); // interval lower_bounds
     num_ub = Iub->length(); // interval upper_bounds
-    if (num_lb != num_p || num_ub != num_p) {
-      Squawk("Expected as many lower bounds (%d) and upper bounds (%d) as probabilities (%d)", num_lb, num_ub, num_p);
+
+    // error check on array lengths; bounds are reqd, probs are optional
+    if ((Ip = vi->CIp)) {
+      num_p = Ip->length(); // interval_probs
+      if (num_lb != num_p || num_ub != num_p) {
+	Squawk("Expected as many lower bounds (%d) and upper bounds (%d) as probabilities (%d)", num_lb, num_ub, num_p);
+	return;
+      }
+    }
+    else if (num_lb != num_ub) {
+      Squawk("Expected as many lower bounds (%d) as upper bounds (%d)", num_lb, num_ub);
       return;
     }
+
+    // define apportionment
     bool key;
     if (nI = vi->nCI) {
       key = true;
@@ -3010,39 +3028,40 @@ Vadj_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 	       dv->numContinuousIntervalUncVars, m);
 	return;
       }
-      for(i=totni=0; i<m; ++i) {
-	totni += nii = (*nI)[i];
-	if (nii < 1) {
+      for(i=tot_nI=0; i<m; ++i) {
+	tot_nI += nIi = (*nI)[i];
+	if (nIi < 1) {
 	  Squawk("num_intervals values should be positive");
 	  return;
 	}
       }
-      if (wronglen(totni,  Ip, "interval_probs") ||
-	  wronglen(totni, Ilb, "interval lower_bounds") ||
-	  wronglen(totni, Iub, "interval upper_bounds"))
+      if ( (num_p && wronglen(tot_nI,  Ip, "interval_probs") ) ||
+	   wronglen(tot_nI, Ilb, "interval lower_bounds") ||
+	   wronglen(tot_nI, Iub, "interval upper_bounds"))
 	return;
     }
     else {
       key = false;
       m = dv->numContinuousIntervalUncVars;
-      if (num_p % m) {
-	Squawk("Number of probabilities (%d) not evenly divisible by number of variables (%d); Use num_intervals for unequal apportionment", num_p, m);
+      if (num_lb % m) {
+	Squawk("Number of bounds (%d) not evenly divisible by number of variables (%d); Use num_intervals for unequal apportionment", num_lb, m);
 	return;
       }
       else
-	avg_nii = num_p / m;
+	avg_nI = num_lb / m;
     }
     LB = &dv->continuousIntervalUncLowerBounds; LB->resize(m);
     UB = &dv->continuousIntervalUncUpperBounds; UB->resize(m);
     P  = &dv->continuousIntervalUncBasicProbs;   P->resize(m);
     for(i = k = 0; i < m; ++i) {
-      nii = (key) ? (*nI)[i] : avg_nii;
-      LBi = &((*LB)[i]); LBi->sizeUninitialized(nii);
-      UBi = &((*UB)[i]); UBi->sizeUninitialized(nii);
-      Pi  = &((*P)[i]);   Pi->sizeUninitialized(nii);
+      nIi = (key) ? (*nI)[i] : avg_nI;
+      LBi = &((*LB)[i]); LBi->sizeUninitialized(nIi);
+      UBi = &((*UB)[i]); UBi->sizeUninitialized(nIi);
+      Pi  = &((*P)[i]);   Pi->sizeUninitialized(nIi);
       ub = -(lb = DBL_MAX);
-      for(j=0; j<nii; ++j, ++k) {
-	(*Pi)[j]        = (*Ip)[k];
+      if (!num_p) default_p = 1./nIi; // default = equal p per cell
+      for(j=0; j<nIi; ++j, ++k) {
+	(*Pi)[j]  = (num_p) ? (*Ip)[k] : default_p;
 	(*LBi)[j] = lbj = (*Ilb)[k];
 	(*UBi)[j] = ubj = (*Iub)[k];
 	if (lb > lbj) lb = lbj;
@@ -3088,20 +3107,31 @@ Vadj_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   size_t i, j, k, m, num_p, num_lb, num_ub;
   IntArray *nI;
-  int totni, nii, avg_nii, lb, lbj, ub, ubj;
+  int tot_nI, nIi, avg_nI, lb, lbj, ub, ubj;
+  Real default_p;
   RealVector *Ip, *Pi;
   RealVectorArray *P;
   IntVector *LBi, *UBi, *Ilb, *Iub;
   IntVectorArray *LB, *UB;
 
-  if ((Ip = vi->DIp) && (Ilb = vi->DIlb) && (Iub = vi->DIub)) {
-    num_p  =  Ip->length(); // interval_probs
+  if ((Ilb = vi->DIlb) && (Iub = vi->DIub)) {
     num_lb = Ilb->length(); // interval lower_bounds
     num_ub = Iub->length(); // interval upper_bounds
-    if (num_lb != num_p || num_ub != num_p) {
-      Squawk("Expected as many lower bounds (%d) and upper bounds (%d) as probabilities (%d)", num_lb, num_ub, num_p);
+
+    // error check on array lengths; bounds are reqd, probs are optional
+    if ((Ip = vi->DIp)) {
+      num_p = Ip->length(); // interval_probs
+      if (num_lb != num_p || num_ub != num_p) {
+	Squawk("Expected as many lower bounds (%d) and upper bounds (%d) as probabilities (%d)", num_lb, num_ub, num_p);
+	return;
+      }
+    }
+    else if (num_lb != num_ub) {
+      Squawk("Expected as many lower bounds (%d) as upper bounds (%d)", num_lb, num_ub);
       return;
     }
+
+    // define apportionment
     bool key;
     if (nI = vi->nDI) {
       key = true;
@@ -3111,39 +3141,40 @@ Vadj_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 	       dv->numDiscreteIntervalUncVars, m);
 	return;
       }
-      for(i=totni=0; i<m; ++i) {
-	totni += nii = (*nI)[i];
-	if (nii < 1) {
+      for(i=tot_nI=0; i<m; ++i) {
+	tot_nI += nIi = (*nI)[i];
+	if (nIi < 1) {
 	  Squawk("num_intervals values should be positive");
 	  return;
 	}
       }
-      if (wronglen(totni,  Ip, "interval_probs") ||
-	  wronglen(totni, Ilb, "interval lower_bounds") ||
-	  wronglen(totni, Iub, "interval upper_bounds"))
+      if ( (num_p && wronglen(tot_nI,  Ip, "interval_probs") ) ||
+	   wronglen(tot_nI, Ilb, "interval lower_bounds") ||
+	   wronglen(tot_nI, Iub, "interval upper_bounds"))
 	return;
     }
     else {
       key = false;
       m = dv->numDiscreteIntervalUncVars;
-      if (num_p % m) {
-	Squawk("Number of probabilities (%d) not evenly divisible by number of variables (%d); Use num_intervals for unequal apportionment", num_p, m);
+      if (num_lb % m) {
+	Squawk("Number of bounds (%d) not evenly divisible by number of variables (%d); Use num_intervals for unequal apportionment", num_lb, m);
 	return;
       }
       else
-	avg_nii = num_p / m;
+	avg_nI = num_lb / m;
     }
     LB = &dv->discreteIntervalUncLowerBounds; LB->resize(m);
     UB = &dv->discreteIntervalUncUpperBounds; UB->resize(m);
     P  = &dv->discreteIntervalUncBasicProbs;   P->resize(m);
     for(i = k = 0; i < m; ++i) {
-      nii = (key) ? (*nI)[i] : avg_nii;
-      LBi = &((*LB)[i]); LBi->sizeUninitialized(nii);
-      UBi = &((*UB)[i]); UBi->sizeUninitialized(nii);
-      Pi  = &((*P)[i]);   Pi->sizeUninitialized(nii);
+      nIi = (key) ? (*nI)[i] : avg_nI;
+      LBi = &((*LB)[i]); LBi->sizeUninitialized(nIi);
+      UBi = &((*UB)[i]); UBi->sizeUninitialized(nIi);
+      Pi  = &((*P)[i]);   Pi->sizeUninitialized(nIi);
       lb = INT_MAX; ub = INT_MIN;
-      for(j=0; j<nii; ++j, ++k) {
-	(*Pi)[j]        = (*Ip)[k];
+      if (!num_p) default_p = 1./nIi; // default = equal p per cell
+      for(j=0; j<nIi; ++j, ++k) {
+	(*Pi)[j]  = (num_p) ? (*Ip)[k] : default_p;
 	(*LBi)[j] = lbj = (*Ilb)[k];
 	(*UBi)[j] = ubj = (*Iub)[k];
 	if (lb > lbj) lb = lbj;
@@ -3234,10 +3265,140 @@ Vadj_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
 }
 
 static void 
-Vadj_DIsetP(const char *kind, IntSetArray& dsi_all, RealVectorArray& dsi_probs)
+Vadj_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
+	   RealVector *input_dsr, RealSetArray& dsr_all)
 {
-  // TO DO: check Var_Info spec
-  // --> if none, then assign default 1.'s or aportion equally?
+  if (input_dsr) {
+    int avg_num_dsr, ndup, num_dsr_i, total_dsr;
+    Real dupval[2], val;
+    size_t i, j, cntr, dsr_len = input_dsr->length();
+    bool key;
+    if (input_ndsr) {
+      key = true;
+      if (input_ndsr->size() != num_v) {
+	wrong_number("num_set_values value(s)", kind, num_v,
+		     input_ndsr->size());
+	return;
+      }
+      for(i = total_dsr = 0; i < num_v; ++i) {
+	total_dsr += num_dsr_i = (*input_ndsr)[i];
+	if (num_dsr_i < 1)
+	  { too_small(kind); return; }
+      }
+      if (dsr_len != total_dsr)
+	{ wrong_number("set_values", kind, total_dsr, dsr_len); return; }
+    }
+    else { // num_set_pairs is optional; use average len if no spec
+      key = false;
+      if (dsr_len % num_v)
+	{ not_div(kind, dsr_len, num_v); return; }
+      else
+	avg_num_dsr = dsr_len / num_v;
+    }
+    // Insert values into the RealSetArray
+    dsr_all.resize(num_v);
+    for (i=cntr=ndup=0; i<num_v; ++i) {
+      num_dsr_i = (key) ? (*input_ndsr)[i] : avg_num_dsr;
+      RealSet& dsr_all_i = dsr_all[i];
+      for (j=0; j<num_dsr_i; ++j, ++cntr)
+	if (!dsr_all_i.insert(val = (*input_dsr)[cntr]).second) {
+	  if (++ndup <= 2)
+	    dupval[ndup-1] = val;
+	}
+    }
+    if (ndup)
+      suppressed(kind, ndup, 0, dupval);
+  }
+}
+
+static void 
+Vadj_DIsetV(const char *kind, IntSetArray& dsi_all, IntVector& dsi_init_pt)
+{
+  size_t i, num_v = dsi_all.size();
+  int val;
+
+  // Allocate the initial pt array
+  if ((i = dsi_init_pt.length()) > 0) {
+    if (i != num_v)
+      wrong_number("initial_point value(s)", kind, num_v, i);
+    else
+      for(i = 0; i < num_v; ++i) {
+	IntSet& dsi_all_i = dsi_all[i];
+	if (dsi_all_i.find(val = dsi_init_pt[i]) == dsi_all_i.end())
+	  bad_initial_rvalue(kind, val);
+      }
+  }
+#if 0 // now done in Vbgen_DIset
+  else {
+    dsi_init_pt->sizeUninitialized(num_v);
+    for (i=0; i<num_v; ++i)
+      dsi_init_pt[i] = *dsi_all[i].begin(); // init to 1st value in set
+  }
+#endif
+}
+
+static void 
+Vadj_DRsetV(const char *kind, RealSetArray& dsr_all, RealVector& dsr_init_pt)
+{
+  size_t i, num_v = dsr_all.size();
+  Real val;
+
+  // Allocate the initial pt array
+  if ((i = dsr_init_pt.length()) > 0) {
+    if (i != num_v)
+      wrong_number("initial_point value(s)", kind, num_v, i);
+    else
+      for(i = 0; i < num_v; ++i) {
+	RealSet& dsr_all_i = dsr_all[i];
+	if (dsr_all_i.find(val = dsr_init_pt[i]) == dsr_all_i.end())
+	  bad_initial_rvalue(kind, val);
+      }
+  }
+#if 0 // now done in Vbgen_DiscreteDesSetReal
+  else {
+    dsr_init_pt.sizeUninitialized(num_v);
+    for (i=0; i<num_v; ++i)
+      dsr_init_pt[i] = *dsr_all[i].begin(); // init to 1st value in set
+  }
+#endif
+}
+
+static void 
+Vadj_DIsetP(size_t num_v, const char *kind, IntSetArray& dsi,
+	    RealVector* dsip, RealVectorArray& dsi_probs)
+{
+  size_t i, j, k, num_dsi_i, num_p = (dsip) ? dsip->length() : 0;
+  Real default_p;
+
+  // assign ds_probs
+  dsi_probs.resize(num_v);
+  for(i = k = 0; i < num_v; ++i) {
+    num_dsi_i = dsi[i].size();
+    RealVector& dsi_probs_i = dsi_probs[i];
+    dsi_probs_i.sizeUninitialized(num_dsi_i);
+    if (!num_p) default_p = 1./num_dsi_i;
+    for(j=0; j<num_dsi_i; ++j, ++k)
+      dsi_probs_i[j] = (num_p) ? (*dsip)[k] : default_p;
+  }
+}
+
+static void 
+Vadj_DRsetP(size_t num_v, const char *kind, RealSetArray& dsr,
+	    RealVector* dsrp, RealVectorArray& dsr_probs)
+{
+  size_t i, j, k, num_dsr_i, num_p = (dsrp) ? dsrp->length() : 0;
+  Real default_p;
+
+  // assign ds_probs
+  dsr_probs.resize(num_v);
+  for(i = k = 0; i < num_v; ++i) {
+    num_dsr_i = dsr[i].size();
+    RealVector& dsr_probs_i = dsr_probs[i];
+    dsr_probs_i.sizeUninitialized(num_dsr_i);
+    if (!num_p) default_p = 1./num_dsr_i;
+    for(j=0; j<num_dsr_i; ++j, ++k)
+      dsr_probs_i[j] = (num_p) ? (*dsrp)[k] : default_p;
+  }
 }
 
 static void 
@@ -3295,77 +3456,6 @@ Vbgen_DIset(size_t n, IntSetArray& sets, IntVector& L, IntVector& U,
 }
 
 static void 
-Vadj_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
-{
-  static char kind[] = "discrete_uncertain_set_integer";
-  Vadj_DIset(dv->numDiscreteUncSetIntVars, kind, vi->ndusi, vi->dusi, 
-	     dv->discreteUncSetInt);
-  Vadj_DIsetP(kind, dv->discreteUncSetInt, dv->discreteUncSetIntBasicProbs);
-}
-
-static void Vbgen_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset)
-{
-  Vbgen_DIset(dv->numDiscreteUncSetIntVars, dv->discreteUncSetInt,
-	      dv->discreteIntEpistemicUncLowerBnds,
-	      dv->discreteIntEpistemicUncUpperBnds,
-	      dv->discreteIntEpistemicUncVars, offset);
-}
-
-static void 
-Vadj_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
-	   RealVector *input_dsr, RealSetArray& dsr_all)
-{
-  if (input_dsr) {
-    int avg_num_dsr, ndup, num_dsr_i, total_dsr;
-    Real dupval[2], val;
-    size_t i, j, cntr, dsr_len = input_dsr->length();
-    bool key;
-    if (input_ndsr) {
-      key = true;
-      if (input_ndsr->size() != num_v) {
-	wrong_number("num_set_values value(s)", kind, num_v,
-		     input_ndsr->size());
-	return;
-      }
-      for(i = total_dsr = 0; i < num_v; ++i) {
-	total_dsr += num_dsr_i = (*input_ndsr)[i];
-	if (num_dsr_i < 1)
-	  { too_small(kind); return; }
-      }
-      if (dsr_len != total_dsr)
-	{ wrong_number("set_values", kind, total_dsr, dsr_len); return; }
-    }
-    else { // num_set_pairs is optional; use average len if no spec
-      key = false;
-      if (dsr_len % num_v)
-	{ not_div(kind, dsr_len, num_v); return; }
-      else
-	avg_num_dsr = dsr_len / num_v;
-    }
-    // Insert values into the RealSetArray
-    dsr_all.resize(num_v);
-    for (i=cntr=ndup=0; i<num_v; ++i) {
-      num_dsr_i = (key) ? (*input_ndsr)[i] : avg_num_dsr;
-      RealSet& dsr_all_i = dsr_all[i];
-      for (j=0; j<num_dsr_i; ++j, ++cntr)
-	if (!dsr_all_i.insert(val = (*input_dsr)[cntr]).second) {
-	  if (++ndup <= 2)
-	    dupval[ndup-1] = val;
-	}
-    }
-    if (ndup)
-      suppressed(kind, ndup, 0, dupval);
-  }
-}
-
-static void 
-Vadj_DRsetP(const char *kind, RealSetArray& dsr_all, RealVectorArray& dsi_probs)
-{
-  // TO DO: check Var_Info spec
-  // --> if none, then assign default 1.'s or aportion equally?
-}
-
-static void 
 Vbgen_DRset(size_t n, RealSetArray& sets, RealVector& L, RealVector& U,
 	    RealVector& V, size_t offset)
 {
@@ -3420,12 +3510,31 @@ Vbgen_DRset(size_t n, RealSetArray& sets, RealVector& L, RealVector& U,
 }
 
 static void 
+Vadj_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  static char kind[] = "discrete_uncertain_set_integer";
+  Vadj_DIset(dv->numDiscreteUncSetIntVars, kind, vi->ndusi, vi->dusi, 
+	     dv->discreteUncSetInt);
+  Vadj_DIsetP(dv->numDiscreteUncSetIntVars, kind, dv->discreteUncSetInt,
+	      vi->DSIp, dv->discreteUncSetIntBasicProbs);
+}
+
+static void Vbgen_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset)
+{
+  Vbgen_DIset(dv->numDiscreteUncSetIntVars, dv->discreteUncSetInt,
+	      dv->discreteIntEpistemicUncLowerBnds,
+	      dv->discreteIntEpistemicUncUpperBnds,
+	      dv->discreteIntEpistemicUncVars, offset);
+}
+
+static void 
 Vadj_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_uncertain_set_real";
   Vadj_DRset(dv->numDiscreteUncSetRealVars, kind, vi->ndusr, vi->dusr,
 	     dv->discreteUncSetReal);
-  Vadj_DRsetP(kind, dv->discreteUncSetReal, dv->discreteUncSetRealBasicProbs);
+  Vadj_DRsetP(dv->numDiscreteUncSetRealVars, kind, dv->discreteUncSetReal,
+	      vi->DSRp, dv->discreteUncSetRealBasicProbs);
 }
 
 static void Vbgen_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset)
@@ -3434,42 +3543,6 @@ static void Vbgen_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset)
 	      dv->discreteRealEpistemicUncLowerBnds,
 	      dv->discreteRealEpistemicUncUpperBnds,
 	      dv->discreteRealEpistemicUncVars, offset);
-}
-
-static void bad_initial_ivalue(const char *kind, int val)
-{
-  Squawk("invalid initial value %d for %s", val, kind);
-}
-
-static void bad_initial_rvalue(const char *kind, Real val)
-{
-  Squawk("invalid initial value %.17g for %s", val, kind);
-}
-
-static void 
-Vadj_DIsetV(const char *kind, IntSetArray& dsi_all, IntVector& dsi_init_pt)
-{
-  size_t i, num_v = dsi_all.size();
-  int val;
-
-  // Allocate the initial pt array
-  if ((i = dsi_init_pt.length()) > 0) {
-    if (i != num_v)
-      wrong_number("initial_point value(s)", kind, num_v, i);
-    else
-      for(i = 0; i < num_v; ++i) {
-	IntSet& dsi_all_i = dsi_all[i];
-	if (dsi_all_i.find(val = dsi_init_pt[i]) == dsi_all_i.end())
-	  bad_initial_rvalue(kind, val);
-      }
-  }
-#if 0 // now done in Vbgen_DIset
-  else {
-    dsi_init_pt->sizeUninitialized(num_v);
-    for (i=0; i<num_v; ++i)
-      dsi_init_pt[i] = *dsi_all[i].begin(); // init to 1st value in set
-  }
-#endif
 }
 
 static void 
@@ -3488,32 +3561,6 @@ Vadj_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
   Vadj_DIset(dv->numDiscreteStateSetIntVars, kind, vi->ndssi, vi->dssi, 
 	     dv->discreteStateSetInt);
   Vadj_DIsetV(kind, dv->discreteStateSetInt, dv->discreteStateSetIntVars);
-}
-
-static void 
-Vadj_DRsetV(const char *kind, RealSetArray& dsr_all, RealVector& dsr_init_pt)
-{
-  size_t i, num_v = dsr_all.size();
-  Real val;
-
-  // Allocate the initial pt array
-  if ((i = dsr_init_pt.length()) > 0) {
-    if (i != num_v)
-      wrong_number("initial_point value(s)", kind, num_v, i);
-    else
-      for(i = 0; i < num_v; ++i) {
-	RealSet& dsr_all_i = dsr_all[i];
-	if (dsr_all_i.find(val = dsr_init_pt[i]) == dsr_all_i.end())
-	  bad_initial_rvalue(kind, val);
-      }
-  }
-#if 0 // now done in Vbgen_DiscreteDesSetReal
-  else {
-    dsr_init_pt.sizeUninitialized(num_v);
-    for (i=0; i<num_v; ++i)
-      dsr_init_pt[i] = *dsr_all[i].begin(); // init to 1st value in set
-  }
-#endif
 }
 
 static void 
@@ -4014,22 +4061,118 @@ void NIDRProblemDescDB::check_variables_node(void *v)
     abort_handler(-1);
 }
 
-static void
-Rdv_copy(RealVector **prdv, RealVectorArray *rdva)
+static void flatten_num_rva(RealVectorArray *rva, IntArray **pia)
+{
+  size_t i, m;
+  IntArray *ia;
+
+  m = rva->size();
+  *pia = ia = new IntArray(m);
+  for(i = 0; i < m; ++i)
+    (*ia)[i] = (*rva)[i].length();
+}
+
+static void flatten_num_rsa(RealSetArray *rsa, IntArray **pia)
+{
+  size_t i, m;
+  IntArray *ia;
+
+  m = rsa->size();
+  *pia = ia = new IntArray(m);
+  for(i = 0; i < m; ++i)
+    (*ia)[i] = (*rsa)[i].size();
+}
+
+static void flatten_num_isa(IntSetArray *isa, IntArray **pia)
+{
+  size_t i, m;
+  IntArray *ia;
+
+  m = isa->size();
+  *pia = ia = new IntArray(m);
+  for(i = 0; i < m; ++i)
+    (*ia)[i] = (*isa)[i].size();
+}
+
+static void flatten_rva(RealVectorArray *rva, RealVector **prv)
 {
   size_t i, j, k, m, n;
-  RealVector *rdv, *rdv1;
+  RealVector *rv, *rv_i;
 
-  *prdv = rdv = new RealVector();
-  m = rdva->size();
+  m = rva->size();
   for(i = n = 0; i < m; ++i)
-    n += (*rdva)[i].length();
-  rdv->sizeUninitialized(n);
+    n += (*rva)[i].length();
+  *prv = rv = new RealVector(n, false);
   for(i = k = 0; i < m; ++i) {
-    rdv1 = &(*rdva)[i];
-    n = rdv1->length();
-    for(j = 0; j < n; ++j)
-      (*rdv)[k++] = (*rdv1)[j];
+    rv_i = &(*rva)[i];
+    n = rv_i->length();
+    for(j = 0; j < n; ++j, ++k)
+      (*rv)[k] = (*rv_i)[j];
+  }
+}
+
+static void flatten_iva(IntVectorArray *iva, IntVector **piv)
+{
+  size_t i, j, k, m, n;
+  IntVector *iv, *iv_i;
+
+  m = iva->size();
+  for(i = n = 0; i < m; ++i)
+    n += (*iva)[i].length();
+  *piv = iv = new IntVector(n, false);
+  for(i = k = 0; i < m; ++i) {
+    iv_i = &(*iva)[i];
+    n = iv_i->length();
+    for(j = 0; j < n; ++j, ++k)
+      (*iv)[k] = (*iv_i)[j];
+  }
+}
+
+static void flatten_rsm(RealSymMatrix *rsm, RealVector **prv)
+{
+  size_t i, j, m, n;
+  RealVector *rv;
+
+  m = rsm->numRows();
+  *prv = rv = new RealVector(m*m, false);
+  for(i = n = 0; i < m; ++i)
+    for(j = 0; j < m; ++j, ++n)
+      (*rv)[n] = (*rsm)(i,j);
+}
+
+static void flatten_rsa(RealSetArray *rsa, RealVector **prv)
+{
+  size_t i, j, k, m, n;
+  RealVector *rv;
+  RealSet *rs_i;
+  RealSet::iterator rs_it, rs_ite;
+
+  m = rsa->size();
+  for(i = n = 0; i < m; ++i)
+    n += (*rsa)[i].size();
+  *prv = rv = new RealVector(n, false);
+  for(i = k = 0; i < m; ++i) {
+    rs_i = &(*rsa)[i];
+    for(rs_it=rs_i->begin(), rs_ite=rs_i->end(); rs_it!=rs_ite; ++rs_it, ++k)
+      (*rv)[k] = *rs_it;
+  }
+}
+
+static void flatten_isa(IntSetArray *isa, IntVector **piv)
+{
+  size_t i, j, k, m, n;
+  IntVector *iv;
+  IntSet *is_i;
+  IntSet::iterator is_it, is_ite;
+
+  m = isa->size();
+  for(i = n = 0; i < m; ++i)
+    n += (*isa)[i].size();
+  *piv = iv = new IntVector(n, false);
+  for(i = k = 0; i < m; ++i) {
+    is_i = &(*isa)[i];
+    for(is_it=is_i->begin(), is_ite=is_i->end(); is_it!=is_ite; ++is_it, ++k)
+      (*iv)[k] = *is_it;
   }
 }
 
@@ -4045,10 +4188,10 @@ check_variables(std::list<DataVariables>* dvl)
   else {
     // library mode with manual provision of everything
     DataVariablesRep *dv;
-    IntArray *iv;
-    RealSymMatrix *rsdm;
-    RealVector *rdv, *rva, *rvc;
-    RealVectorArray *rdva;
+    IntArray *ia;
+    RealSymMatrix *rsm;
+    RealVector *rv, *rv_a, *rv_c;
+    RealVectorArray *rva;
     Var_Info *vi;
     size_t i, j, m, n, cntr;
     int num_prs_i, total_prs;
@@ -4057,61 +4200,101 @@ check_variables(std::list<DataVariables>* dvl)
     // go the other direction.  TO DO: can we eliminate this circular update?
     std::list<DataVariables>::iterator It = dvl->begin(), Ite = dvl->end();
     for(; It != Ite; ++It) {
+
+      // create new Var_Info instance to hold DataVariables data
+
       vi = new Var_Info;
       memset(vi, 0, sizeof(Var_Info));
       vi->dv_handle = &*It;
       vi->dv = dv = It->dataVarsRep;
-      if ((n = dv->numContinuousIntervalUncVars)) {
-	rdva = &dv->continuousIntervalUncBasicProbs;
-	m = rdva->size();
-	vi->nCI = iv = new IntArray(m);
-	for(i = 0; i < m; ++i)
-	  (*iv)[i] = (*rdva)[i].length();
-	Rdv_copy(&vi->CIlb, &dv->continuousIntervalUncLowerBounds);
-	Rdv_copy(&vi->CIub, &dv->continuousIntervalUncUpperBounds);
-	Rdv_copy(&vi->CIp, rdva);
+
+      // flatten 2D {Real,Int}{Vector,Set}Arrays back into Var_Info 1D arrays
+
+      // discrete design set int vars
+      if ((n = dv->numDiscreteDesSetIntVars)) {
+	flatten_num_isa(&dv->discreteDesignSetInt, &vi->nddsi);
+	flatten_isa(&dv->discreteDesignSetInt,     &vi->ddsi);
       }
-      // TO DO: incomplete...
-      rdva = &dv->histogramUncBinPairs;
-      if ((m = rdva->size())) {
-	vi->nhbp = iv = new IntArray(m);
+      // discrete design set real vars
+      if ((n = dv->numDiscreteDesSetRealVars)) {
+	flatten_num_rsa(&dv->discreteDesignSetReal, &vi->nddsr);
+	flatten_rsa(&dv->discreteDesignSetReal,     &vi->ddsr);
+      }
+      // histogram bin uncertain vars
+      rva = &dv->histogramUncBinPairs;
+      if ((m = rva->size())) {
+	vi->nhbp = ia = new IntArray(m);
 	for(i = 0; i < m; ++i)
-	  total_prs += (*iv)[i] = (*rdva)[i].length() / 2;
-	vi->hba = rva = new RealVector(total_prs); // abscissas
-	vi->hbc = rvc = new RealVector(total_prs); // counts
+	  total_prs += (*ia)[i] = (*rva)[i].length() / 2;
+	vi->hba = rv_a = new RealVector(total_prs); // abscissas
+	vi->hbc = rv_c = new RealVector(total_prs); // counts
 	vi->hbo = NULL;                            // no ordinates
 	for(i = cntr = 0; i < m; ++i) {
-	  num_prs_i = (*iv)[i];
+	  num_prs_i = (*ia)[i];
 	  for(j = 0; j < num_prs_i; ++j, ++cntr) {
-	    (*rva)[cntr] = (*rdva)[i][2*j];   // abscissas
-	    (*rvc)[cntr] = (*rdva)[i][2*j+1]; // counts only (no ordinates)
+	    (*rv_a)[cntr] = (*rva)[i][2*j];   // abscissas
+	    (*rv_c)[cntr] = (*rva)[i][2*j+1]; // counts only (no ordinates)
 	  }
 	  // normalization occurs in Vadj_HistogramBinUnc going other direction
 	}
       }
-      rdva = &dv->histogramUncPointPairs;
-      if ((m = rdva->size())) {
-	vi->nhpp = iv = new IntArray(m);
+      // histogram point uncertain vars
+      rva = &dv->histogramUncPointPairs;
+      if ((m = rva->size())) {
+	vi->nhpp = ia = new IntArray(m);
 	for(i = 0; i < m; ++i)
-	  total_prs += (*iv)[i] = (*rdva)[i].length() / 2;
-	vi->hpa = rva = new RealVector(total_prs); // abscissas
-	vi->hpc = rvc = new RealVector(total_prs); // counts
+	  total_prs += (*ia)[i] = (*rva)[i].length() / 2;
+	vi->hpa = rv_a = new RealVector(total_prs); // abscissas
+	vi->hpc = rv_c = new RealVector(total_prs); // counts
 	for(i = cntr = 0; i < m; ++i) {
-	  num_prs_i = (*iv)[i];
+	  num_prs_i = (*ia)[i];
 	  for(j = 0; j < num_prs_i; ++j, ++cntr) {
-	    (*rva)[cntr] = (*rdva)[i][2*j];   // abscissas
-	    (*rvc)[cntr] = (*rdva)[i][2*j+1]; // counts
+	    (*rv_a)[cntr] = (*rva)[i][2*j];   // abscissas
+	    (*rv_c)[cntr] = (*rva)[i][2*j+1]; // counts
 	  }
 	  // normalization occurs in Vadj_HistogramPtUnc going other direction
 	}
       }
-      rsdm = &dv->uncertainCorrelations;
-      if ((m = rsdm->numRows())) {
-	vi->ucm = rdv = new RealVector(m*m, false);
-	for(i = n = 0; i < m; ++i)
-	  for(j = 0; j < m; ++j)
-	    (*rdv)[n++] = (*rsdm)(i,j);
+      // uncertain correlation matrix
+      if (dv->uncertainCorrelations.numRows())
+	flatten_rsm(&dv->uncertainCorrelations, &vi->ucm);
+      // continuous interval uncertain vars
+      if ((n = dv->numContinuousIntervalUncVars)) {
+	flatten_num_rva(&dv->continuousIntervalUncBasicProbs, &vi->nCI);
+	flatten_rva(&dv->continuousIntervalUncBasicProbs,     &vi->CIp);
+	flatten_rva(&dv->continuousIntervalUncLowerBounds,    &vi->CIlb);
+	flatten_rva(&dv->continuousIntervalUncUpperBounds,    &vi->CIub);
       }
+      // discrete interval uncertain vars
+      if ((n = dv->numDiscreteIntervalUncVars)) {
+	flatten_num_rva(&dv->discreteIntervalUncBasicProbs, &vi->nDI);
+	flatten_rva(&dv->discreteIntervalUncBasicProbs,     &vi->DIp);
+	flatten_iva(&dv->discreteIntervalUncLowerBounds,    &vi->DIlb);
+	flatten_iva(&dv->discreteIntervalUncUpperBounds,    &vi->DIub);
+      }
+      // discrete uncertain set int vars
+      if ((n = dv->numDiscreteUncSetIntVars)) {
+	flatten_num_isa(&dv->discreteUncSetInt,       &vi->ndusi);
+	flatten_isa(&dv->discreteUncSetInt,           &vi->dusi);
+	flatten_rva(&dv->discreteUncSetIntBasicProbs, &vi->DSIp);
+      }
+      // discrete uncertain set real vars
+      if ((n = dv->numDiscreteUncSetRealVars)) {
+	flatten_num_rsa(&dv->discreteUncSetReal,       &vi->ndusr);
+	flatten_rsa(&dv->discreteUncSetReal,           &vi->dusr);
+	flatten_rva(&dv->discreteUncSetRealBasicProbs, &vi->DSRp);
+      }
+      // discrete state set int vars
+      if ((n = dv->numDiscreteStateSetIntVars)) {
+	flatten_num_isa(&dv->discreteStateSetInt, &vi->ndssi);
+	flatten_isa(&dv->discreteStateSetInt,     &vi->dssi);
+      }
+      // discrete state set real vars
+      if ((n = dv->numDiscreteStateSetRealVars)) {
+	flatten_num_rsa(&dv->discreteStateSetReal, &vi->ndssr);
+	flatten_rsa(&dv->discreteStateSetReal,     &vi->dssr);
+      }
+
       check_variables_node((void*)vi);
     }
   }
