@@ -258,7 +258,11 @@ void ParamStudy::vector_loop()
     = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsr_values
     = iteratedModel.discrete_design_set_real_values();
-  const IntSetArray& dssi_values
+  const IntSetArray&  dusi_values
+    = iteratedModel.discrete_uncertain_set_int_values();
+  const RealSetArray& dusr_values
+    = iteratedModel.discrete_uncertain_set_real_values();
+  const IntSetArray&  dssi_values
     = iteratedModel.discrete_state_set_int_values();
   const RealSetArray& dssr_values
     = iteratedModel.discrete_state_set_real_values();
@@ -272,8 +276,10 @@ void ParamStudy::vector_loop()
     num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT),
     num_ddsrv = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
     num_daurv = vc_totals[5], num_ceuv = vc_totals[6],
-    //num_deuiv = vc_totals[7], num_deurv = vc_totals[8],
-    num_csv   = vc_totals[9], num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE),
+    num_diuv  = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
+    num_dusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT),
+    num_deurv = vc_totals[8], num_csv  = vc_totals[9],
+    num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE),
     num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT),
     num_dssrv = vc_totals[11];
 
@@ -284,27 +290,35 @@ void ParamStudy::vector_loop()
   for (i=0; i<=numSteps; ++i) {
     Variables& vars = allVariables[i];
     size_t c_cntr = 0, d_cntr = 0, di_cntr = 0, dr_cntr = 0;
-    for (j=0; j<num_cdv; ++j, ++c_cntr)                                   // cdv
+    for (j=0; j<num_cdv; ++j, ++c_cntr)                               // cdv
       c_step(c_cntr, i, vars);
-    for (j=0; j<num_ddriv; ++j, ++d_cntr, ++di_cntr)                    // ddriv
+    for (j=0; j<num_ddriv; ++j, ++d_cntr, ++di_cntr)                  // ddiv 1
       dri_step(d_cntr, di_cntr, i, vars);
-    for (j=0; j<num_ddsiv; ++j, ++d_cntr, ++di_cntr)                    // ddsiv
+    for (j=0; j<num_ddsiv; ++j, ++d_cntr, ++di_cntr)                  // ddiv 2
       dsi_step(d_cntr, di_cntr, i, ddsi_values[j], vars);
-    for (j=0; j<num_ddsrv; ++j, ++d_cntr, ++dr_cntr)                    // ddsrv
+    for (j=0; j<num_ddsrv; ++j, ++d_cntr, ++dr_cntr)                  // ddrv
       dsr_step(d_cntr, dr_cntr, i, ddsr_values[j], vars);
-    for (j=0; j<num_cauv; ++j, ++c_cntr)                                 // cauv
+    for (j=0; j<num_cauv; ++j, ++c_cntr)                              // cauv
       c_step(c_cntr, i, vars);
-    for (j=0; j<num_dauiv; ++j, ++d_cntr, ++di_cntr)                    // dauiv
+    for (j=0; j<num_dauiv; ++j, ++d_cntr, ++di_cntr)                  // dauiv
       dri_step(d_cntr, di_cntr, i, vars);
-    for (j=0; j<num_daurv; ++j, ++d_cntr, ++dr_cntr)                    // daurv
+    for (j=0; j<num_daurv; ++j, ++d_cntr, ++dr_cntr)                  // daurv
       dsr_step(d_cntr, dr_cntr, i, x_sets[j], vars);
-    for (j=0; j<num_ceuv + num_csv; ++j, ++c_cntr)                   // ceuv,csv
+    for (j=0; j<num_ceuv; ++j, ++c_cntr)                              // ceuv
       c_step(c_cntr, i, vars);
-    for (j=0; j<num_dsriv; ++j, ++d_cntr, ++di_cntr)                    // dsriv
+    for (j=0; j<num_diuv; ++j, ++d_cntr, ++di_cntr)                   // deuiv 1
       dri_step(d_cntr, di_cntr, i, vars);
-    for (j=0; j<num_dssiv; ++j, ++d_cntr, ++di_cntr)                    // dssiv
+    for (j=0; j<num_dusiv; ++j, ++d_cntr, ++di_cntr)                  // deuiv 2
+      dsi_step(d_cntr, di_cntr, i, dusi_values[j], vars);
+    for (j=0; j<num_deurv; ++j, ++d_cntr, ++dr_cntr)                  // deurv
+      dsr_step(d_cntr, dr_cntr, i, dusr_values[j], vars);
+    for (j=0; j<num_csv; ++j, ++c_cntr)                               // csv
+      c_step(c_cntr, i, vars);
+    for (j=0; j<num_dsriv; ++j, ++d_cntr, ++di_cntr)                  // dsiv 1
+      dri_step(d_cntr, di_cntr, i, vars);
+    for (j=0; j<num_dssiv; ++j, ++d_cntr, ++di_cntr)                  // dsiv 2
       dsi_step(d_cntr, di_cntr, i, dssi_values[j], vars);
-    for (j=0; j<num_dssrv; ++j, ++d_cntr, ++dr_cntr)                    // dssrv
+    for (j=0; j<num_dssrv; ++j, ++d_cntr, ++dr_cntr)                  // dsrv
       dsr_step(d_cntr, dr_cntr, i, dssr_values[j], vars);
 
     // store each output header in allHeaders
@@ -329,7 +343,11 @@ void ParamStudy::centered_loop()
     = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsr_values
     = iteratedModel.discrete_design_set_real_values();
-  const IntSetArray& dssi_values
+  const IntSetArray&  dusi_values
+    = iteratedModel.discrete_uncertain_set_int_values();
+  const RealSetArray& dusr_values
+    = iteratedModel.discrete_uncertain_set_real_values();
+  const IntSetArray&  dssi_values
     = iteratedModel.discrete_state_set_int_values();
   const RealSetArray& dssr_values
     = iteratedModel.discrete_state_set_real_values();
@@ -339,20 +357,23 @@ void ParamStudy::centered_loop()
     = iteratedModel.current_variables().shared_data();
   const SizetArray& vc_totals = svd.components_totals();
   size_t i, j, k, cntr = 0,
-    num_vars = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
+    num_vars  = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
     num_cdv   = vc_totals[0],
     num_ddriv = svd.vc_lookup(DISCRETE_DESIGN_RANGE),
     num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT),
-    num_ddsrv = vc_totals[2],
-    num_ddv   = num_ddriv + num_ddsiv + num_ddsrv, num_dv = num_cdv + num_ddv,
-    num_cauv  = vc_totals[3],  num_dauiv = vc_totals[4],
-    num_daurv = vc_totals[5],  num_dauv = num_dauiv + num_daurv,
-    num_auv = num_cauv + num_dauv, num_ceuv = vc_totals[6],
-    //num_deuiv = vc_totals[7], num_deurv = vc_totals[8],
-    num_uv = num_auv + num_ceuv,   num_csv = vc_totals[9],
+    num_ddiv  = num_ddriv + num_ddsiv, num_ddsrv = vc_totals[2],
+    num_ddv   = num_ddiv + num_ddsrv, num_dv = num_cdv + num_ddv,
+    num_cauv  = vc_totals[3], num_dauiv = vc_totals[4],
+    num_daurv = vc_totals[5], num_dauv = num_dauiv + num_daurv,
+    num_auv   = num_cauv + num_dauv, num_ceuv = vc_totals[6],
+    num_diuv  = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
+    num_dusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT),
+    num_deuiv = num_diuv + num_dusiv,  num_deurv = vc_totals[8],
+    num_deuv  = num_deuiv + num_deurv, num_euv   = num_ceuv + num_deuv,
+    num_uv    = num_auv + num_euv,     num_csv   = vc_totals[9],
     num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE),
     num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT),
-    num_dssrv = vc_totals[11];
+    num_dsiv  = num_dsriv + num_dssiv, num_dssrv = vc_totals[11];
 
   // Always evaluate center point, even if steps_per_variable = 0
   if (outputLevel > SILENT_OUTPUT) {
@@ -411,11 +432,11 @@ void ParamStudy::centered_loop()
 	// compute modified parameter by adding multiple of step_k to start
 	if (k < num_cdv)                                                // cdv
 	  c_step(k, i, vars);
-	else if (k < num_cdv + num_ddriv) {                             // ddriv
+	else if (k < num_cdv + num_ddriv) {                            // ddiv 1
 	  size_t offset = k - num_cdv;
 	  dri_step(offset, offset, i, vars);
 	}
-	else if (k < num_cdv + num_ddriv + num_ddsiv) {                 // ddsiv
+	else if (k < num_cdv + num_ddriv + num_ddsiv) {                // ddiv 2
 	  size_t offset = k - num_cdv;
 	  dsi_step(offset, offset, i, ddsi_values[offset - num_ddriv], vars);
 	}
@@ -437,26 +458,45 @@ void ParamStudy::centered_loop()
 	         offset_dsr = offset_dr - num_ddsrv;
 	  dsr_step(offset_d, offset_dr, i, x_sets[offset_dsr], vars);
 	}
-	else if (k < num_dv + num_uv + num_csv)                      // ceuv,csv
+	else if (k < num_dv + num_auv + num_ceuv)                        // ceuv
 	  c_step(k - num_ddv - num_dauv, i, vars);
-	else if (k < num_dv + num_uv + num_csv + num_dsriv) {           // dsriv
-	  size_t offset_d  = k - num_cdv - num_cauv - num_ceuv - num_csv,
+	else if (k < num_dv + num_auv + num_ceuv + num_diuv) {        // deuiv 1
+	  size_t offset_d  = k - num_cdv - num_cauv - num_ceuv,
 	         offset_di = offset_d - num_ddsrv - num_daurv;
 	  dri_step(offset_d, offset_di, i, vars);
 	}
-	else if (k < num_dv + num_uv + num_csv + num_dsriv + num_dssiv) {//dssiv
-	  size_t offset_d   = k - num_cdv - num_cauv - num_ceuv - num_csv,
+	else if (k < num_dv + num_auv + num_ceuv + num_deuiv) {       // deuiv 2
+	  size_t offset_d   = k - num_cdv - num_cauv - num_ceuv,
 	         offset_di  = offset_d - num_ddsrv - num_daurv,
-	         offset_dsi = offset_di - num_ddriv - num_ddsiv - num_dauiv
+	         offset_dsi = offset_di - num_ddiv - num_dauiv - num_diuv;
+	  dsi_step(offset_d, offset_di, i, dusi_values[offset_dsi], vars);
+	}
+	else if (k < num_dv + num_uv) {                                 // deurv
+	  size_t offset_d   = k - num_cdv - num_cauv - num_ceuv,
+	         offset_dr  = offset_d - num_ddiv - num_dauiv - num_deuiv,
+	         offset_dsr = offset_dr - num_ddsrv - num_daurv;
+	  dsr_step(offset_d, offset_dr, i, dusr_values[offset_dsr], vars);
+	}
+	else if (k < num_dv + num_uv + num_csv)                           // csv
+	  c_step(k - num_ddv - num_dauv - num_deuv, i, vars);
+	else if (k < num_dv + num_uv + num_csv + num_dsriv) {          // dsiv 1
+	  size_t offset_d  = k - num_cdv - num_cauv - num_ceuv - num_csv,
+	         offset_di = offset_d - num_ddsrv - num_daurv - num_deurv;
+	  dri_step(offset_d, offset_di, i, vars);
+	}
+	else if (k < num_dv + num_uv + num_csv + num_dsiv) {           // dsiv 2
+	  size_t offset_d   = k - num_cdv - num_cauv - num_ceuv - num_csv,
+	         offset_di  = offset_d - num_ddsrv - num_daurv - num_deurv,
+	         offset_dsi = offset_di - num_ddiv - num_dauiv - num_deuiv
 	                    - num_dsriv;
 	  dsi_step(offset_d, offset_di, i, dssi_values[offset_dsi], vars);
 	}
-	else {                                                          // dssrv
+	else {                                                           // dsrv
 	  size_t offset_d   = k - num_cdv - num_cauv - num_ceuv - num_csv,
-	         offset_dr  = offset_d - num_ddriv - num_ddsiv - num_dauiv
-	                    - num_dsriv - num_dssiv,
-	         offset_dsr = offset_dr - num_ddsrv - num_daurv;
-	  dsr_step(offset_d, offset_dr, i, ddsr_values[offset_dsr], vars);
+	         offset_dr  = offset_d - num_ddiv - num_dauiv - num_deuiv
+	                    - num_dsiv,
+	         offset_dsr = offset_dr - num_ddsrv - num_daurv - num_deurv;
+	  dsr_step(offset_d, offset_dr, i, dssr_values[offset_dsr], vars);
 	}
 	++cntr;
       }
@@ -474,6 +514,10 @@ void ParamStudy::multidim_loop()
     = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsr_values
     = iteratedModel.discrete_design_set_real_values();
+  const IntSetArray&  dusi_values
+    = iteratedModel.discrete_uncertain_set_int_values();
+  const RealSetArray& dusr_values
+    = iteratedModel.discrete_uncertain_set_real_values();
   const IntSetArray& dssi_values
     = iteratedModel.discrete_state_set_int_values();
   const RealSetArray& dssr_values
@@ -489,8 +533,10 @@ void ParamStudy::multidim_loop()
     num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT),
     num_ddsrv = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
     num_daurv = vc_totals[5], num_ceuv = vc_totals[6],
-    //num_deuiv = vc_totals[7], num_deurv = vc_totals[8],
-    num_csv   = vc_totals[9], num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE),
+    num_diuv  = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
+    num_dusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT),
+    num_dusrv = vc_totals[8], num_csv  = vc_totals[9],
+    num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE),
     num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT),
     num_dssrv = vc_totals[11];
 
@@ -515,7 +561,15 @@ void ParamStudy::multidim_loop()
       dri_step(d_cntr, di_cntr, multidim_indices[p_cntr], vars);
     for (j=0; j<num_daurv; ++j, ++p_cntr, ++d_cntr, ++dr_cntr)          // daurv
       dsr_step(d_cntr, dr_cntr, multidim_indices[p_cntr], x_sets[j], vars);
-    for (j=0; j<num_ceuv + num_csv; ++j, ++p_cntr, ++c_cntr)         // ceuv,csv
+    for (j=0; j<num_ceuv; ++j, ++p_cntr, ++c_cntr)                       // ceuv
+      c_step(c_cntr, multidim_indices[p_cntr], vars);
+    for (j=0; j<num_diuv; ++j, ++p_cntr, ++d_cntr, ++di_cntr)            // diuv
+      dri_step(d_cntr, di_cntr, multidim_indices[p_cntr], vars);
+    for (j=0; j<num_dusiv; ++j, ++p_cntr, ++d_cntr, ++di_cntr)          // dusiv
+      dsi_step(d_cntr, di_cntr, multidim_indices[p_cntr], dusi_values[j], vars);
+    for (j=0; j<num_dusrv; ++j, ++p_cntr, ++d_cntr, ++dr_cntr)          // dusrv
+      dsr_step(d_cntr, dr_cntr, multidim_indices[p_cntr], dusr_values[j], vars);
+    for (j=0; j<num_csv; ++j, ++p_cntr, ++c_cntr)                         // csv
       c_step(c_cntr, multidim_indices[p_cntr], vars);
     for (j=0; j<num_dsriv; ++j, ++p_cntr, ++d_cntr, ++di_cntr)          // dsriv
       dri_step(d_cntr, di_cntr, multidim_indices[p_cntr], vars);
@@ -550,6 +604,10 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
     = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsr_values
     = iteratedModel.discrete_design_set_real_values();
+  const IntSetArray& dusi_values
+    = iteratedModel.discrete_uncertain_set_int_values();
+  const RealSetArray& dusr_values
+    = iteratedModel.discrete_uncertain_set_real_values();
   const IntSetArray& dssi_values
     = iteratedModel.discrete_state_set_int_values();
   const RealSetArray& dssr_values
@@ -563,11 +621,13 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
     num_ddriv = svd.vc_lookup(DISCRETE_DESIGN_RANGE),
     num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT),
     num_ddsrv = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
-    num_daurv = vc_totals[5], num_ceuv  = vc_totals[6],
-    //num_deuiv = vc_totals[7], num_deurv = vc_totals[8],
-    num_csv   = vc_totals[9], num_dsriv =svd.vc_lookup(DISCRETE_STATE_RANGE),
+    num_daurv = vc_totals[5], num_ceuv = vc_totals[6],
+    num_diuv  = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
+    num_dusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT),
+    num_dusrv = vc_totals[8], num_csv  = vc_totals[9],
+    num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE),
     num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT),
-    num_dssrv = vc_totals[11], num_dsrv = num_dssrv, l_cntr = 0;
+    num_dssrv = vc_totals[11], l_cntr = 0;
 
   RealSetArray x_sets(num_daurv);
   for (i=0; i<num_daurv; ++i)
@@ -623,10 +683,28 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
     }
     for (j=0; j<num_ceuv; ++j, ++l_cntr, ++c_cntr)
       listCVPoints[i][c_cntr] = list_of_pts[l_cntr];
-    //for (j=0; j<num_deuiv; ++j, ++l_cntr, ++di_cntr)
-    //  listDIVPoints[i][di_cntr] = truncate(list_of_pts[l_cntr]);
-    //for (j=0; j<num_deurv; ++j, ++l_cntr, ++dr_cntr)
-    //  listDRVPoints[i][dr_cntr] = list_of_pts[l_cntr];
+    for (j=0; j<num_diuv; ++j, ++l_cntr, ++di_cntr)
+      listDIVPoints[i][di_cntr] = truncate(list_of_pts[l_cntr]);
+    for (j=0; j<num_dusiv; ++j, ++l_cntr, ++di_cntr) {
+      int list_val = truncate(list_of_pts[l_cntr]);
+      if (dusi_values[j].find(list_val) != dusi_values[j].end())
+	listDIVPoints[i][di_cntr] = list_val;
+      else {
+	Cerr << "Error: discrete uncertain integer set does not contain value "
+	     << list_val << '.' << std::endl;
+	abort_handler(-1);
+      }
+    }
+    for (j=0; j<num_dusrv; ++j, ++l_cntr, ++dr_cntr) {
+      const Real& list_val = list_of_pts[l_cntr];
+      if (dusr_values[j].find(list_val) != dusr_values[j].end())
+	listDRVPoints[i][dr_cntr] = list_val;
+      else {
+	Cerr << "Error: discrete uncertain real set does not contain value "
+	     << list_val << '.' << std::endl;
+	abort_handler(-1);
+      }
+    }
     for (j=0; j<num_csv; ++j, ++l_cntr, ++c_cntr)
       listCVPoints[i][c_cntr] = list_of_pts[l_cntr];
     for (j=0; j<num_dsriv; ++j, ++l_cntr, ++di_cntr)
@@ -694,8 +772,8 @@ bool ParamStudy::distribute_step_vector(const RealVector& step_vector)
   size_t i, num_cdv = vc_totals[0],
     num_ddv  = vc_totals[1] + vc_totals[2], num_cauv = vc_totals[3],
     num_dauv = vc_totals[4] + vc_totals[5], num_ceuv = vc_totals[6],
-    //num_deuv = vc_totals[7] + vc_totals[8],
-    num_csv = vc_totals[9], num_dsv = vc_totals[10] + vc_totals[11],
+    num_deuv = vc_totals[7] + vc_totals[8], num_csv = vc_totals[9],
+    num_dsv  = vc_totals[10] + vc_totals[11],
     s_cntr = 0, c_cntr = 0, d_cntr = 0;
   for (i=0; i<num_cdv; ++i, ++s_cntr, ++c_cntr)
     contStepVector[c_cntr] = step_vector[s_cntr];
@@ -707,8 +785,8 @@ bool ParamStudy::distribute_step_vector(const RealVector& step_vector)
     discStepVector[d_cntr] = truncate(step_vector[s_cntr]);
   for (i=0; i<num_ceuv; ++i, ++s_cntr, ++c_cntr)
     contStepVector[c_cntr] = step_vector[s_cntr];
-  //for (i=0; i<num_deuv; ++i, ++s_cntr, ++d_cntr)
-  //  discStepVector[d_cntr] = truncate(step_vector[s_cntr]);
+  for (i=0; i<num_deuv; ++i, ++s_cntr, ++d_cntr)
+    discStepVector[d_cntr] = truncate(step_vector[s_cntr]);
   for (i=0; i<num_csv; ++i, ++s_cntr, ++c_cntr)
     contStepVector[c_cntr] = step_vector[s_cntr];
   for (i=0; i<num_dsv; ++i, ++s_cntr, ++d_cntr)
@@ -753,6 +831,10 @@ void ParamStudy::distribute_partitions()
     = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsr_values
     = iteratedModel.discrete_design_set_real_values();
+  const IntSetArray& dusi_values
+    = iteratedModel.discrete_uncertain_set_int_values();
+  const RealSetArray& dusr_values
+    = iteratedModel.discrete_uncertain_set_real_values();
   const IntSetArray& dssi_values
     = iteratedModel.discrete_state_set_int_values();
   const RealSetArray& dssr_values
@@ -766,9 +848,11 @@ void ParamStudy::distribute_partitions()
     num_ddriv = svd.vc_lookup(DISCRETE_DESIGN_RANGE),
     num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT),
     num_ddsrv = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
-    num_daurv = vc_totals[5], num_ceuv  = vc_totals[6],
-    //num_deuiv = vc_totals[7], num_deurv = vc_totals[8],
-    num_csv   = vc_totals[9], num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE),
+    num_daurv = vc_totals[5], num_ceuv = vc_totals[6],
+    num_diuv  = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
+    num_dusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT),
+    num_dusrv = vc_totals[8], num_csv  = vc_totals[9],
+    num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE),
     num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT),
     num_dssrv = vc_totals[11], p_cntr = 0, c_cntr = 0, d_cntr = 0,
     di_cntr = 0, dr_cntr = 0;
@@ -863,10 +947,40 @@ void ParamStudy::distribute_partitions()
       contStepVector[c_cntr] = 0.;
     }
   }
-  //for (i=0; i<num_deuiv; ++i, ++p_cntr, ++d_cntr, ++di_cntr)
-  //  discStepVector[d_cntr] = integer_step(, variablePartitions[p_cntr]);
-  //for (i=0; i<num_deurv; ++i, ++p_cntr, ++d_cntr, ++dr_cntr)
-  //  discStepVector[d_cntr] = integer_step(, variablePartitions[p_cntr]);
+  for (i=0; i<num_diuv; ++i, ++p_cntr, ++d_cntr, ++di_cntr) {
+    unsigned short part = variablePartitions[p_cntr];
+    if (part) {
+      initialDIVPoint[di_cntr] = di_l_bnds[di_cntr];
+      discStepVector[d_cntr]
+	= integer_step(di_u_bnds[di_cntr]-di_l_bnds[di_cntr], part);
+    }
+    else {
+      initialDIVPoint[di_cntr] = di_vars[di_cntr];
+      discStepVector[d_cntr]   = 0;
+    }
+  }
+  for (i=0; i<num_dusiv; ++i, ++p_cntr, ++d_cntr, ++di_cntr) {
+    unsigned short part = variablePartitions[p_cntr];
+    if (part) {
+      initialDIVPoint[di_cntr] = di_l_bnds[di_cntr];
+      discStepVector[d_cntr]   = integer_step(dusi_values[i].size()-1, part);
+    }
+    else {
+      initialDIVPoint[di_cntr] = di_vars[di_cntr];
+      discStepVector[d_cntr]   = 0;
+    }
+  }
+  for (i=0; i<num_dusrv; ++i, ++p_cntr, ++d_cntr, ++dr_cntr) {
+    unsigned short part = variablePartitions[p_cntr];
+    if (part) {
+      initialDRVPoint[dr_cntr] = dr_l_bnds[dr_cntr];
+      discStepVector[d_cntr]   = integer_step(dusr_values[i].size()-1, part);
+    }
+    else {
+      initialDRVPoint[dr_cntr] = dr_vars[dr_cntr];
+      discStepVector[d_cntr]   = 0;
+    }
+  }
   for (i=0; i<num_csv; ++i, ++p_cntr, ++c_cntr) {
     unsigned short part = variablePartitions[p_cntr];
     if (part) {
@@ -962,6 +1076,10 @@ void ParamStudy::final_point_to_step_vector()
     = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsr_values
     = iteratedModel.discrete_design_set_real_values();
+  const IntSetArray& dusi_values
+    = iteratedModel.discrete_uncertain_set_int_values();
+  const RealSetArray& dusr_values
+    = iteratedModel.discrete_uncertain_set_real_values();
   const IntSetArray& dssi_values
     = iteratedModel.discrete_state_set_int_values();
   const RealSetArray& dssr_values
@@ -981,8 +1099,10 @@ void ParamStudy::final_point_to_step_vector()
     num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT),
     num_ddsrv = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
     num_daurv = vc_totals[5], num_ceuv = vc_totals[6],
-    //num_deuiv = vc_totals[7], num_deurv = vc_totals[8],
-    num_csv   = vc_totals[9],  num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE),
+    num_diuv  = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
+    num_dusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT),
+    num_dusrv = vc_totals[8], num_csv  = vc_totals[9],
+    num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE),
     num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT),
     num_dssrv  = vc_totals[11], f_cntr = 0, c_cntr = 0, d_cntr = 0,
     di_cntr = 0, dr_cntr = 0;
@@ -1023,8 +1143,18 @@ void ParamStudy::final_point_to_step_vector()
   for (i=0; i<num_ceuv; ++i, ++c_cntr, ++f_cntr)
     contStepVector[c_cntr]
       = (finalPoint[f_cntr] - initialCVPoint[c_cntr]) / numSteps;
-  // discrete int  epistemic uncertain
-  // discrete real epistemic uncertain
+  for (i=0; i<num_diuv; ++i, ++d_cntr, ++di_cntr, ++f_cntr)
+    discStepVector[d_cntr] = integer_step(
+      truncate(finalPoint[f_cntr])-initialDIVPoint[di_cntr], numSteps);
+  for (i=0; i<num_dusiv; ++i, ++d_cntr, ++di_cntr, ++f_cntr)
+    discStepVector[d_cntr] = index_step(
+      set_value_to_index(initialDIVPoint[di_cntr],     dusi_values[i]),
+      set_value_to_index(truncate(finalPoint[f_cntr]), dusi_values[i]),
+      numSteps);
+  for (i=0; i<num_dusrv; ++i, ++d_cntr, ++dr_cntr, ++f_cntr)
+    discStepVector[d_cntr] = index_step(
+      set_value_to_index(initialDRVPoint[dr_cntr], dusr_values[i]),
+      set_value_to_index(finalPoint[f_cntr],       dusr_values[i]), numSteps);
 
   // state
   for (i=0; i<num_csv; ++i, ++c_cntr, ++f_cntr)
@@ -1077,7 +1207,10 @@ bool ParamStudy::check_sets(const IntVector& steps)
     num_ddsiv = svd.vc_lookup(DISCRETE_DESIGN_SET_INT),
     num_ddsrv = vc_totals[2], num_cauv = vc_totals[3], num_dauiv = vc_totals[4],
     num_daurv = vc_totals[5], num_ceuv = vc_totals[6],
-    num_csv   = vc_totals[9], num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE),
+    num_diuv  = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN),
+    num_dusiv = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT),
+    num_dusrv = vc_totals[8], num_csv  = vc_totals[9],
+    num_dsriv = svd.vc_lookup(DISCRETE_STATE_RANGE),
     num_dssiv = svd.vc_lookup(DISCRETE_STATE_SET_INT),
     num_dssrv = vc_totals[11], s_index = num_cdv + num_ddriv,
     d_index = num_ddriv, di_index = num_ddriv, dr_index = 0;
@@ -1129,7 +1262,38 @@ bool ParamStudy::check_sets(const IntVector& steps)
       }
     }
   }
-  s_index  += num_ceuv + num_csv + num_dsriv;
+  s_index  += num_ceuv + num_diuv;
+  d_index  += num_diuv;
+  di_index += num_diuv;
+  if (num_dusiv) {
+    const IntSetArray& dusi_values
+      = iteratedModel.discrete_state_set_int_values();
+    for (i=0; i<num_dusiv; ++i, ++s_index, ++d_index, ++di_index) {
+      int terminal_index = set_value_to_index(initialDIVPoint[di_index],
+	dusi_values[i]) + discStepVector[d_index] * steps[s_index];
+      if (terminal_index < 0 || terminal_index >= dusi_values[i].size()) {
+	Cerr << "\nError: ParamStudy index " << terminal_index
+	     << " not admissible for discrete uncertain int set of size "
+	     << dusi_values[i].size() << '.' << std::endl;
+	err = true;
+      }
+    }
+  }
+  if (num_dusrv) {
+    const RealSetArray& dusr_values
+      = iteratedModel.discrete_state_set_real_values();
+    for (i=0; i<num_dusrv; ++i, ++s_index, ++d_index, ++dr_index) {
+      int terminal_index = set_value_to_index(initialDRVPoint[dr_index],
+	dusr_values[i]) + discStepVector[d_index] * steps[s_index];
+      if (terminal_index < 0 || terminal_index >= dusr_values[i].size()) {
+	Cerr << "\nError: ParamStudy index " << terminal_index
+	     << " not admissible for discrete uncertain real set of size "
+	     << dusr_values[i].size() << '.' << std::endl;
+	err = true;
+      }
+    }
+  }
+  s_index  += num_csv + num_dsriv;
   d_index  += num_dsriv;
   di_index += num_dsriv;
   if (num_dssiv) {

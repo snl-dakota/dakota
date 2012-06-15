@@ -399,12 +399,18 @@ public:
   /// design set integer variables
   void discrete_design_set_real_values(const RealSetArray& rsa);
 
-  /// return distribParams
-  Pecos::DistributionParams& distribution_parameters();
-  /// return distribParams
-  const Pecos::DistributionParams& distribution_parameters() const;
-  /// set distribParams
-  void distribution_parameters(const Pecos::DistributionParams& dp);
+  /// return the sets of values available for each of the discrete
+  /// uncertain set integer variables
+  const IntSetArray& discrete_uncertain_set_int_values() const;
+  /// define the sets of values available for each of the discrete
+  /// uncertain set integer variables
+  void discrete_uncertain_set_int_values(const IntSetArray& isa);
+  /// return the sets of values available for each of the discrete
+  /// uncertain set integer variables
+  const RealSetArray& discrete_uncertain_set_real_values() const;
+  /// define the sets of values available for each of the discrete
+  /// uncertain set integer variables
+  void discrete_uncertain_set_real_values(const RealSetArray& rsa);
 
   /// return the sets of values available for each of the discrete
   /// state set integer variables
@@ -418,6 +424,13 @@ public:
   /// define the sets of values available for each of the discrete
   /// state set integer variables
   void discrete_state_set_real_values(const RealSetArray& rsa);
+
+  /// return distribParams
+  Pecos::DistributionParams& distribution_parameters();
+  /// return distribParams
+  const Pecos::DistributionParams& distribution_parameters() const;
+  /// set distribParams
+  void distribution_parameters(const Pecos::DistributionParams& dp);
 
   // LABELS and TAGS
 
@@ -868,21 +881,28 @@ protected:
   short outputLevel;
 
   /// array of IntSet's, each containing the set of allowable integer
-  /// values corresponding to discrete design integer set variable
+  /// values corresponding to a discrete design integer set variable
   IntSetArray discreteDesignSetIntValues;
   /// array of RealSet's, each containing the set of allowable real
-  /// values corresponding to discrete design real set variable
+  /// values corresponding to a discrete design real set variable
   RealSetArray discreteDesignSetRealValues;
+
+  /// array of IntSet's, each containing the set of allowable integer
+  /// values corresponding to a discrete uncertain integer set variable
+  IntSetArray discreteUncertainSetIntValues;
+  /// array of RealSet's, each containing the set of allowable real
+  /// values corresponding to a discrete uncertain real set variable
+  RealSetArray discreteUncertainSetRealValues;
+
+  /// array of IntSet's, each containing the set of allowable integer
+  /// values corresponding to a discrete state integer set variable
+  IntSetArray discreteStateSetIntValues;
+  /// array of RealSet's, each containing the set of allowable real
+  /// values corresponding to a discrete state real set variable
+  RealSetArray discreteStateSetRealValues;
 
   /// container for random variable distribution parameters
   Pecos::DistributionParams distParams;
-
-  /// array of IntSet's, each containing the set of allowable integer
-  /// values corresponding to discrete state integer set variable
-  IntSetArray discreteStateSetIntValues;
-  /// array of RealSet's, each containing the set of allowable real
-  /// values corresponding to discrete state real set variable
-  RealSetArray discreteStateSetRealValues;
 
   /// primary response function weightings (either weights for
   /// multiobjective optimization or weighted least squares)
@@ -1434,20 +1454,35 @@ inline void Model::discrete_design_set_real_values(const RealSetArray& rsa)
 }
 
 
-inline Pecos::DistributionParams& Model::distribution_parameters()
-{ return (modelRep) ? modelRep->distParams : distParams; }
+inline const IntSetArray& Model::discrete_uncertain_set_int_values() const
+{
+  return (modelRep) ? modelRep->discreteUncertainSetIntValues
+                    : discreteUncertainSetIntValues;
+}
 
 
-inline const Pecos::DistributionParams& Model::distribution_parameters() const
-{ return (modelRep) ? modelRep->distParams : distParams; }
-
-
-inline void Model::distribution_parameters(const Pecos::DistributionParams& dp)
+inline void Model::discrete_uncertain_set_int_values(const IntSetArray& isa)
 {
   if (modelRep)
-    modelRep->distParams = dp;
+    modelRep->discreteUncertainSetIntValues = isa;
   else
-    distParams = dp;
+    discreteUncertainSetIntValues = isa;
+}
+
+
+inline const RealSetArray& Model::discrete_uncertain_set_real_values() const
+{
+  return (modelRep) ? modelRep->discreteUncertainSetRealValues
+                    : discreteUncertainSetRealValues;
+}
+
+
+inline void Model::discrete_uncertain_set_real_values(const RealSetArray& rsa)
+{
+  if (modelRep)
+    modelRep->discreteUncertainSetRealValues = rsa;
+  else
+    discreteUncertainSetRealValues = rsa;
 }
 
 
@@ -1480,6 +1515,23 @@ inline void Model::discrete_state_set_real_values(const RealSetArray& rsa)
     modelRep->discreteStateSetRealValues = rsa;
   else
     discreteStateSetRealValues = rsa;
+}
+
+
+inline Pecos::DistributionParams& Model::distribution_parameters()
+{ return (modelRep) ? modelRep->distParams : distParams; }
+
+
+inline const Pecos::DistributionParams& Model::distribution_parameters() const
+{ return (modelRep) ? modelRep->distParams : distParams; }
+
+
+inline void Model::distribution_parameters(const Pecos::DistributionParams& dp)
+{
+  if (modelRep)
+    modelRep->distParams = dp;
+  else
+    distParams = dp;
 }
 
 
