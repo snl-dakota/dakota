@@ -137,8 +137,9 @@ if(HAVE_HOPSPACK)
     message("HOPSPACK caches the variable mpi = ${mpi}")
   endif(DAKOTA_HAVE_MPI)
 
-  # See hopspack/buildMacDist.sh for BLAS/LAPACK "help"
+  # HOPSPACK expects BLAS symbol ddot to be found in LAPACK libs 
   set(LAPACK_ADD_LIBS ${BLAS_LIBS})
+  set(HOPSPACK_TEST_LAPACK_FUNCS FALSE)
   add_subdirectory(hopspack)
 endif(HAVE_HOPSPACK)
 
