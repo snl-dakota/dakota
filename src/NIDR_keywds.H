@@ -1497,11 +1497,11 @@ static KeyWord
 	kw_247[7] = {
 		{"descriptors",15,0,5,0,0,0.,0.,0,N_vae(deuilbl,DEUIVar_interval)},
 		{"interval_probabilities",14,0,2,0,0,0.,0.,0,N_vam(newrvec,Var_Info_DIp)},
-		{"lower_bounds",13,0,3,1,0,0.,0.,0,N_vam(newrvec,Var_Info_DIlb)},
+		{"lower_bounds",13,0,3,1,0,0.,0.,0,N_vam(newivec,Var_Info_DIlb)},
 		{"num_intervals",13,0,1,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nDI)},
 		{"range_probabilities",6,0,2,0,0,0.,0.,-3,N_vam(newrvec,Var_Info_DIp)},
 		{"range_probs",6,0,2,0,0,0.,0.,-4,N_vam(newrvec,Var_Info_DIp)},
-		{"upper_bounds",13,0,4,2,0,0.,0.,0,N_vam(newrvec,Var_Info_DIub)}
+		{"upper_bounds",13,0,4,2,0,0.,0.,0,N_vam(newivec,Var_Info_DIub)}
 		},
 	kw_248[8] = {
 		{"descriptors",15,0,4,0,0,0.,0.,0,N_vam(strL,discreteStateRangeLabels)},

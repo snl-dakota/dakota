@@ -1131,8 +1131,8 @@ KEYWORD12 variables {N_vam3(start,0,stop)}
 	[ discrete_interval_uncertain ALIAS discrete_uncertain_range INTEGER > 0 {N_vam(intz,numDiscreteIntervalUncVars)}
 	  [ num_intervals INTEGERLIST LEN discrete_interval_uncertain {N_vam(newiarray,Var_Info_nDI)} ]
 	  [ interval_probabilities ALIAS range_probabilities ALIAS range_probs REALLIST {N_vam(newrvec,Var_Info_DIp)} ]
-	  lower_bounds INTEGERLIST {N_vam(newrvec,Var_Info_DIlb)}
-	  upper_bounds INTEGERLIST {N_vam(newrvec,Var_Info_DIub)}
+	  lower_bounds INTEGERLIST {N_vam(newivec,Var_Info_DIlb)}
+	  upper_bounds INTEGERLIST {N_vam(newivec,Var_Info_DIub)}
 	  [ descriptors STRINGLIST LEN discrete_interval_uncertain {N_vae(deuilbl,DEUIVar_interval)} ]
 	  ]
 	[ discrete_uncertain_set_integer INTEGER > 0 {N_vam(intz,numDiscreteUncSetIntVars)}
