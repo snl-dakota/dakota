@@ -55012,6 +55012,49 @@ Partial Rank Correlation Matrix between input and output:
      ddsrv_2 -6.66435e-02 -1.26786e-02  1.84138e-02 
      dssrv_1 -1.39465e-01 -6.01548e-02 -6.97095e-03 
      dssrv_2  7.75480e-02  3.09745e-02  3.45567e-02 
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+response_fn_1:  Min = 5.7244254213e+02  Max = 3.5615151128e+04
+response_fn_2:  Min = -1.2289143677e+00  Max = 5.9547348870e+01
+response_fn_3:  Min = -2.6477441467e+00  Max = 1.9009186620e+02
+Simple Correlation Matrix among all inputs and outputs:
+                   ciuv_1       ciuv_2       diuv_1       diuv_2      dusiv_1      dusrv_1 response_fn_1 response_fn_2 response_fn_3
+      ciuv_1  1.00000e+00
+      ciuv_2 -2.19408e-02  1.00000e+00
+      diuv_1  4.01802e-03  4.15460e-03  1.00000e+00
+      diuv_2  4.14971e-03 -7.45883e-03  1.01084e-02  1.00000e+00
+     dusiv_1 -8.51062e-02  2.58342e-02  3.65963e-02 -1.64413e-03  1.00000e+00
+     dusrv_1 -5.86201e-02  1.85904e-02  1.52564e-02 -5.16345e-02 -2.72960e-02  1.00000e+00
+response_fn_1  4.46266e-02  7.46740e-01  1.06160e-01  3.39794e-01  1.60067e-01  1.15457e-01  1.00000e+00
+response_fn_2  9.80858e-01 -1.34797e-01 -7.82160e-03  3.94135e-02 -6.95062e-02 -5.67114e-02 -1.79144e-02  1.00000e+00
+response_fn_3 -3.27453e-02  9.67483e-01  1.52473e-03  4.43444e-03  3.99893e-02  4.67344e-02  8.52515e-01 -1.38298e-01  1.00000e+00
+Partial Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3
+      ciuv_1  1.49001e-01  9.87888e-01 -3.39806e-02
+      ciuv_2  8.18289e-01 -5.95460e-01  9.68023e-01
+      diuv_1  1.72926e-01 -8.04302e-02 -1.43581e-02
+      diuv_2  5.56884e-01  2.22171e-01  5.28289e-02
+     dusiv_1  2.71611e-01  1.12961e-01  6.05044e-02
+     dusrv_1  2.35312e-01  3.46058e-02  1.16304e-01
+Simple Rank Correlation Matrix among all inputs and outputs:
+                   ciuv_1       ciuv_2       diuv_1       diuv_2      dusiv_1      dusrv_1 response_fn_1 response_fn_2 response_fn_3
+      ciuv_1  1.00000e+00
+      ciuv_2 -3.73237e-02  1.00000e+00
+      diuv_1  4.64806e-02 -3.27633e-03  1.00000e+00
+      diuv_2  2.03780e-02  1.31893e-02  2.91629e-02  1.00000e+00
+     dusiv_1 -9.79178e-02  4.48485e-02 -1.37774e-02  1.45215e-02  1.00000e+00
+     dusrv_1 -6.02220e-02 -6.36064e-04  7.57276e-02 -5.15332e-02 -7.15032e-02  1.00000e+00
+response_fn_1  4.78488e-02  6.29463e-01  1.69565e-01  5.52439e-01  1.29217e-01  1.27921e-01  1.00000e+00
+response_fn_2  9.92679e-01 -1.37474e-01  4.68887e-02  2.25623e-02 -1.06427e-01 -5.94059e-02 -2.47945e-02  1.00000e+00
+response_fn_3 -6.40264e-02  9.99112e-01 -4.11641e-03  1.73417e-02  5.39094e-02 -2.08821e-03  6.28647e-01 -1.63432e-01  1.00000e+00
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 response_fn_2 response_fn_3
+      ciuv_1  1.46340e-01  9.97689e-01 -6.39786e-01
+      ciuv_2  7.80793e-01 -8.32550e-01  9.99502e-01
+      diuv_1  2.73914e-01  6.74470e-03  1.64209e-02
+      diuv_2  7.39116e-01  5.67720e-02  1.40986e-01
+     dusiv_1  2.22245e-01 -7.72167e-02  1.96018e-01
+     dusrv_1  3.01613e-01 -2.41447e-03 -7.53569e-02
 dakota_uq_textbook_lhs_approx.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)

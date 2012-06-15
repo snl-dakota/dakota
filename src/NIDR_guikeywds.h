@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 976 distinct keywords (plus 130 aliases) **/
+/** 976 distinct keywords (plus 131 aliases) **/
 
 static GuiKeyWord
 	kw_1[3] = {
@@ -1591,9 +1591,10 @@ static GuiKeyWord
 		{"num_set_values",13,0,2,0,1461,0,0.,0.,0.,0,"{Number of values for each variable} VarCommands.html#VarDDSRV",0,"discrete_design_set_real"},
 		{"set_values",14,0,3,1,1463,0,0.,0.,0.,0,"{Set values} VarCommands.html#VarDDSRV"}
 		},
-	kw_233[7] = {
+	kw_233[8] = {
 		{"descriptors",15,0,5,0,1657,0,0.,0.,0.,0,"{Descriptors} VarCommands.html#VarCSV",0,"discrete_interval_uncertain"},
 		{"interval_probabilities",14,0,2,0,1651},
+		{"interval_probs",6,0,2,0,1650},
 		{"lower_bounds",13,0,3,1,1653,0,0.,0.,0.,0,"{Lower bounds} VarCommands.html#VarDSRIV"},
 		{"num_intervals",13,0,1,0,1649,0,0.,0.,0.,0,0,0,"discrete_interval_uncertain"},
 		{"range_probabilities",6,0,2,0,1650},
@@ -1787,11 +1788,11 @@ static GuiKeyWord
 		{"discrete_design_range",0x19,8,5,0,1437,kw_230,0.,0.,0.,0,"{Discrete design range variables} VarCommands.html#VarDDRIV","Design Variables"},
 		{"discrete_design_set_integer",0x19,4,6,0,1447,kw_231,0.,0.,0.,0,"{Discrete design set of integer variables} VarCommands.html#VarDDSIV","Design Variables"},
 		{"discrete_design_set_real",0x19,4,7,0,1457,kw_232,0.,0.,0.,0,"{Discrete design set of real variables} VarCommands.html#VarDDSRV","Design Variables"},
-		{"discrete_interval_uncertain",0x19,7,28,0,1647,kw_233,0.,0.,0.,0,0,"Epistemic Uncertain"},
+		{"discrete_interval_uncertain",0x19,8,28,0,1647,kw_233,0.,0.,0.,0,0,"Epistemic Uncertain"},
 		{"discrete_state_range",0x19,8,32,0,1689,kw_234,0.,0.,0.,0,"{Discrete state range variables} VarCommands.html#VarDSRIV","State Variables"},
 		{"discrete_state_set_integer",0x19,4,33,0,1699,kw_235,0.,0.,0.,0,"{Discrete state set of integer variables} VarCommands.html#VarDSSIV","State Variables"},
 		{"discrete_state_set_real",0x19,4,34,0,1709,kw_236,0.,0.,0.,0,"{Discrete state set of real variables} VarCommands.html#VarDSSRV","State Variables"},
-		{"discrete_uncertain_range",0x11,7,28,0,1646,kw_233},
+		{"discrete_uncertain_range",0x11,8,28,0,1646,kw_233},
 		{"discrete_uncertain_set_integer",0x19,5,29,0,1659,kw_237},
 		{"discrete_uncertain_set_real",0x19,5,30,0,1669,kw_238},
 		{"exponential_uncertain",0x19,4,13,0,1523,kw_239,0.,0.,0.,0,"{exponential uncertain variables} VarCommands.html#VarCAUV_Exponential","Continuous Aleatory Uncertain"},

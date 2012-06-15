@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 976 distinct keywords (plus 130 aliases) **/
+/** 976 distinct keywords (plus 131 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -1494,13 +1494,14 @@ static KeyWord
 		{"num_set_values",13,0,2,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nddsr)},
 		{"set_values",14,0,3,1,0,0.,0.,0,N_vam(newrvec,Var_Info_ddsr)}
 		},
-	kw_247[7] = {
+	kw_247[8] = {
 		{"descriptors",15,0,5,0,0,0.,0.,0,N_vae(deuilbl,DEUIVar_interval)},
 		{"interval_probabilities",14,0,2,0,0,0.,0.,0,N_vam(newrvec,Var_Info_DIp)},
+		{"interval_probs",6,0,2,0,0,0.,0.,-1,N_vam(newrvec,Var_Info_DIp)},
 		{"lower_bounds",13,0,3,1,0,0.,0.,0,N_vam(newivec,Var_Info_DIlb)},
 		{"num_intervals",13,0,1,0,0,0.,0.,0,N_vam(newiarray,Var_Info_nDI)},
-		{"range_probabilities",6,0,2,0,0,0.,0.,-3,N_vam(newrvec,Var_Info_DIp)},
-		{"range_probs",6,0,2,0,0,0.,0.,-4,N_vam(newrvec,Var_Info_DIp)},
+		{"range_probabilities",6,0,2,0,0,0.,0.,-4,N_vam(newrvec,Var_Info_DIp)},
+		{"range_probs",6,0,2,0,0,0.,0.,-5,N_vam(newrvec,Var_Info_DIp)},
 		{"upper_bounds",13,0,4,2,0,0.,0.,0,N_vam(newivec,Var_Info_DIub)}
 		},
 	kw_248[8] = {
@@ -1690,11 +1691,11 @@ static KeyWord
 		{"discrete_design_range",0x19,8,5,0,kw_244,0.,0.,0,N_vam(intz,numDiscreteDesRangeVars)},
 		{"discrete_design_set_integer",0x19,4,6,0,kw_245,0.,0.,0,N_vam(intz,numDiscreteDesSetIntVars)},
 		{"discrete_design_set_real",0x19,4,7,0,kw_246,0.,0.,0,N_vam(intz,numDiscreteDesSetRealVars)},
-		{"discrete_interval_uncertain",0x19,7,28,0,kw_247,0.,0.,0,N_vam(intz,numDiscreteIntervalUncVars)},
+		{"discrete_interval_uncertain",0x19,8,28,0,kw_247,0.,0.,0,N_vam(intz,numDiscreteIntervalUncVars)},
 		{"discrete_state_range",0x19,8,32,0,kw_248,0.,0.,0,N_vam(intz,numDiscreteStateRangeVars)},
 		{"discrete_state_set_integer",0x19,4,33,0,kw_249,0.,0.,0,N_vam(intz,numDiscreteStateSetIntVars)},
 		{"discrete_state_set_real",0x19,4,34,0,kw_250,0.,0.,0,N_vam(intz,numDiscreteStateSetRealVars)},
-		{"discrete_uncertain_range",0x11,7,28,0,kw_247,0.,0.,-4,N_vam(intz,numDiscreteIntervalUncVars)},
+		{"discrete_uncertain_range",0x11,8,28,0,kw_247,0.,0.,-4,N_vam(intz,numDiscreteIntervalUncVars)},
 		{"discrete_uncertain_set_integer",0x19,5,29,0,kw_251,0.,0.,0,N_vam(intz,numDiscreteUncSetIntVars)},
 		{"discrete_uncertain_set_real",0x19,5,30,0,kw_252,0.,0.,0,N_vam(intz,numDiscreteUncSetRealVars)},
 		{"exponential_uncertain",0x19,4,13,0,kw_253,0.,0.,0,N_vam(intz,numExponentialUncVars)},

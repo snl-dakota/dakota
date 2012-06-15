@@ -3201,7 +3201,7 @@ static void Vgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
 static void 
 Vchk_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
-  size_t i, j, k, m, num_p, num_lb, num_ub;
+  size_t i, j, k, m, num_p = 0, num_lb, num_ub;
   IntArray *nI;
   int tot_nI, nIi, avg_nI, lb, lbj, ub, ubj;
   Real default_p;

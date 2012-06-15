@@ -1440,7 +1440,7 @@ KEYWORD12 variables
 	  ]
 	[ discrete_interval_uncertain ALIAS discrete_uncertain_range INTEGER > 0
 	  [ num_intervals INTEGERLIST ]
-	  [ interval_probabilities ALIAS range_probabilities ALIAS range_probs REALLIST ]
+	  [ interval_probabilities ALIAS interval_probs ALIAS range_probabilities ALIAS range_probs REALLIST ]
 	  lower_bounds INTEGERLIST
 	  upper_bounds INTEGERLIST
 	  [ descriptors STRINGLIST ]
