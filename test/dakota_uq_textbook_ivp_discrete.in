@@ -1,0 +1,85 @@
+
+
+strategy,
+	single_method
+	  method_pointer = 'EPISTEMIC'
+
+#################################
+# begin EPISTEMIC specification #
+#################################
+method,
+	id_method = 'EPISTEMIC'
+	model_pointer = 'EPIST_M'
+	global_interval_est lhs
+#	sampling			
+	  samples = 10 seed = 12347			
+
+model,
+	id_model = 'EPIST_M'
+	nested
+	  variables_pointer  = 'EPIST_V'
+	  sub_method_pointer = 'ALEATORY'
+	  responses_pointer  = 'EPIST_R'
+	  primary_variable_mapping   = 'dssi_ModelForm'	
+	  primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0.
+	  			       0. 0. 0. 0. 1. 0. 0. 0.
+				       0. 0. 0. 0. 0. 0. 0. 1.
+
+variables,
+	id_variables = 'EPIST_V'
+	discrete_uncertain_set_int = 1
+	  set_probs  = .1 .2 .4 .2 .1
+	  set_values =  1  2  3  4  5
+	  descriptors = 'ModelForm'		
+
+responses,
+	id_responses = 'EPIST_R'
+	response_functions = 3
+	response_descriptors = 'mean_f1' 'ccdf_beta_f2' 'ccdf_beta_f3'
+	no_gradients
+	no_hessians
+
+################################
+# begin ALEATORY specification #
+################################
+method,
+	id_method = 'ALEATORY'
+	model_pointer = 'ALEAT_M'
+#	sampling samples = 50 seed = 12347
+	polynomial_chaos  #non_nested
+#	stoch_collocation #non_nested
+	  sparse_grid_level = 1
+	  num_response_levels = 0 1 1
+	  response_levels = 10000. 10000.
+	  compute reliabilities
+	  complementary distribution
+
+model,
+	id_model = 'ALEAT_M'
+	single
+	  variables_pointer = 'ALEAT_V'
+	  interface_pointer = 'ALEAT_I'
+	  responses_pointer = 'ALEAT_R'
+
+variables,
+	id_variables = 'ALEAT_V'
+	normal_uncertain = 4				
+	  means          =  40.  30.  20.  10.	
+	  std_deviations =   8.   6.   4.   2.	
+	  descriptors      'X1' 'X2' 'X3' 'X4'	
+	discrete_state_set_integer = 1
+	  set_values     = 1 2 3 4 5
+	  descriptors    = 'dssi_ModelForm'	
+
+interface,
+	id_interface = 'ALEAT_I'
+	direct
+	  analysis_driver = 'text_book'
+	  deactivate evaluation_cache restart_file
+
+responses,
+	id_responses = 'ALEAT_R'
+	response_functions = 3
+	no_gradients
+	no_hessians
+
