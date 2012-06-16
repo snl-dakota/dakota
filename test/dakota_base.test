@@ -54293,6 +54293,12 @@ Test Number 5 succeeded
    2.5000000000e-01   6.6000000000e-01   0.0000000000e+00
    5.0000000000e-01   7.0000000000e-01   1.1000000000e-01
    7.5000000000e-01   8.5000000000e-01   1.1000000000e-01
+dakota_uq_textbook_ivp_discrete.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 90 total (90 new, 0 duplicate)
+mean_f1:  Min = 3.9769160000e+06  Max = 3.9771720000e+06
+ccdf_beta_f2:  Min = 1.2919739174e+01  Max = 1.2919739174e+01
+ccdf_beta_f3:  Min = 2.4983211112e+01  Max = 2.4983211112e+01
 dakota_uq_textbook_lhs.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
