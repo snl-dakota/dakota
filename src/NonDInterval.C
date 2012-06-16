@@ -31,18 +31,6 @@ NonDInterval::NonDInterval(Model& model): NonD(model),
 {
   bool err_flag = false;
 
-  // Check for suitable distribution types
-  if (numDiscreteIntVars || numDiscreteRealVars) {
-    Cerr << "\nError: discrete random variables are not currently supported in "
-	 << "NonDInterval." << std::endl;
-    err_flag = true;
-  }
-  if (numUncertainVars != numContIntervalVars) {
-    Cerr << "Error: only interval distributions are currently supported in "
-	 << "NonDInterval." << std::endl;
-    err_flag = true;
-  }
-
   // initialize finalStatistics using non-default definition (there is no mean
   // or standard deviation and each level mapping involves lower/upper bounds).
   initialize_final_statistics();

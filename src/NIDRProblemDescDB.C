@@ -3467,7 +3467,7 @@ Vchk_DIsetP(size_t num_v, const char *kind, IntSetArray& dsi,
   Real default_p;
 
   // assign dsi_probs
-  // TO DO: track any reordering or non-uniqueness for set insertions
+  // TO DO: track any reordering or duplicate removal from set insertions
   dsi_probs.resize(num_v);
   for(i = k = 0; i < num_v; ++i) {
     num_dsi_i = dsi[i].size();
@@ -3487,7 +3487,7 @@ Vchk_DRsetP(size_t num_v, const char *kind, RealSetArray& dsr,
   Real default_p;
 
   // assign dsr_probs
-  // TO DO: track any reordering or non-uniqueness for set insertions
+  // TO DO: track any reordering or duplicate removal from set insertions
   dsr_probs.resize(num_v);
   for(i = k = 0; i < num_v; ++i) {
     num_dsr_i = dsr[i].size();

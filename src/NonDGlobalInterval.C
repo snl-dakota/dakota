@@ -41,6 +41,22 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   allResponsesPerIter(false), // obtain all response values on each fn call
   dataOrder(1)
 {
+  bool err_flag = false;
+
+  /*
+  // Check for suitable active var types (discrete epistemic not yet supported)
+  if (numDiscreteIntVars || numDiscreteRealVars) {
+    Cerr << "\nError: discrete variables are not currently supported in "
+	 << "NonDGlobalInterval." << std::endl;
+    err_flag = true;
+  }
+  if (numUncertainVars != numContIntervalVars) {
+    Cerr << "\nError: only continuous interval distributions are currently "
+	 << "supported in NonDGlobalInterval." << std::endl;
+    err_flag = true;
+  }
+  */
+
   // Use a hardwired minimal initial samples
   if (!numSamples) // use a default of #terms in a quadratic polynomial
     numSamples = (numContinuousVars+1)*(numContinuousVars+2)/2;
@@ -56,7 +72,7 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
     if (approx_type == "global_gaussian") {
       Cerr << "\nError: efficient_global does not support gaussian_process "
 	   << "when derivatives present; use kriging instead." << std::endl;
-      abort_handler(-1);
+      err_flag = true;
     }
     if (gradientType != "none") dataOrder |= 2;
     if (hessianType  != "none") dataOrder |= 4;
@@ -66,13 +82,18 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
 
   // get point samples file
   short this_output_level = probDescDB.get_short("method.output");
-  const String& point_reuse_file = probDescDB.get_string("method.point_reuse_file");
-  bool point_file_annotated = probDescDB.get_bool("method.point_file_annotated");
+  const String& point_reuse_file
+    = probDescDB.get_string("method.point_reuse_file");
+  bool point_file_annotated
+    = probDescDB.get_bool("method.point_file_annotated");
   if (!point_reuse_file.empty()){
     numSamples = 0;
     sample_reuse = "all";
   }
  
+  if (err_flag)
+    abort_handler(-1);
+
   // The following uses on the fly derived ctor:
   daceIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
     numSamples, seedSpec, rngName, false, ACTIVE_UNIFORM), false);
@@ -92,8 +113,7 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
     //curr_vars.view(), curr_vars.variables_components(),
     //iteratedModel.current_response().active_set(),
     approx_type, approx_order, corr_type, corr_order, dataOrder, sample_reuse, 
-    this_output_level, point_reuse_file, point_file_annotated),
-    false);
+    this_output_level, point_reuse_file, point_file_annotated), false);
 
   // eifModel.init_communicators() recursion is currently sufficient for
   // fHatModel.  An additional fHatModel.init_communicators() call would be
@@ -120,8 +140,7 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   // each level within the run fn.
   SizetArray recast_vars_comps_total; // default: empty; no change in size
   eifModel.assign_rep(
-    new RecastModel(fHatModel, recast_vars_comps_total, 1, 0, 0), 
-    false);
+    new RecastModel(fHatModel, recast_vars_comps_total, 1, 0, 0), false);
 
   // instantiate the optimizer used to improve the GP
   int max_iter = 1000, max_eval = 10000;

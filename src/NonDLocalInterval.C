@@ -34,6 +34,20 @@ NonDLocalInterval* NonDLocalInterval::nondLIInstance(NULL);
 
 NonDLocalInterval::NonDLocalInterval(Model& model): NonDInterval(model)
 {
+  bool err_flag = false;
+
+  // Check for suitable active var types (discrete epistemic not supported)
+  if (numDiscreteIntVars || numDiscreteRealVars) {
+    Cerr << "\nError: discrete variables are not currently supported in "
+	 << "NonDLocalInterval." << std::endl;
+    err_flag = true;
+  }
+  if (numUncertainVars != numContIntervalVars) {
+    Cerr << "\nError: only continuous interval distributions are currently "
+	 << "supported in NonDLocalInterval." << std::endl;
+    err_flag = true;
+  }
+
   // Configure a RecastModel with one objective and no constraints using the
   // alternate minimalist constructor: the recast fn pointers are reset for
   // each level within the run fn.
@@ -46,7 +60,7 @@ NonDLocalInterval::NonDLocalInterval(Model& model): NonDInterval(model)
   Cerr << "Error: this executable not configured with NPSOL or OPT++.\n"
        << "       NonDLocalInterval requires a gradient-based optimizer."
        << std::endl;
-  abort_handler(-1);
+  err_flag = true;
 #endif
   const String& opt_algorithm
     = probDescDB.get_string("method.nond.optimization_algorithm");
@@ -57,7 +71,7 @@ NonDLocalInterval::NonDLocalInterval(Model& model): NonDInterval(model)
     Cerr << "\nError: this executable not configured with NPSOL SQP.\n"
 	 << "         Please select OPT++ NIP within local_interval_est."
 	 << std::endl;
-    abort_handler(-1);
+    err_flag = true;
 #endif
   }
   else if (opt_algorithm == "nip") {
@@ -67,7 +81,7 @@ NonDLocalInterval::NonDLocalInterval(Model& model): NonDInterval(model)
     Cerr << "\nError: this executable not configured with OPT++ NIP.\n"
 	 << "         please select NPSOL SQP within local_interval_est."
 	 << std::endl;
-    abort_handler(-1);
+    err_flag = true;
 #endif
   }
   else if (opt_algorithm.empty()) {
@@ -77,6 +91,9 @@ NonDLocalInterval::NonDLocalInterval(Model& model): NonDInterval(model)
     npsolFlag = false;
 #endif
   }
+ 
+  if (err_flag)
+    abort_handler(-1);
 
   // instantiate the optimizer used to compute the output interval bounds
   if (npsolFlag) {
