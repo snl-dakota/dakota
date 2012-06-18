@@ -153,7 +153,8 @@ public:
   /// data point by either appending to SurrogateData::varsData or
   /// assigning to SurrogateData::anchorVars, as dictated by anchor_flag.
   /// Uses add_point() and add_anchor().
-  void add(const RealVector& sample_c_vars, bool anchor_flag, bool deep_copy);
+  void add(const RealVector& c_vars, const IntVector& di_vars,
+	   const RealVector& dr_vars, bool anchor_flag, bool deep_copy);
 
   /// append to SurrogateData::respData or assign to SurrogateData::anchorResp
   void add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag);
@@ -312,15 +313,16 @@ add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag)
 
 
 inline void Approximation::
-add(const RealVector& c_vars, bool anchor_flag, bool deep_copy)
+add(const RealVector& c_vars, const IntVector& di_vars,
+    const RealVector& dr_vars, bool anchor_flag, bool deep_copy)
 {
   if (approxRep)
-    approxRep->add(c_vars, anchor_flag, deep_copy);
+    approxRep->add(c_vars, di_vars, dr_vars, anchor_flag, deep_copy);
   else { // not virtual: all derived classes use following definition
     // Map DAKOTA's deep_copy bool into Pecos' copy mode
     // (Pecos::DEFAULT_COPY is not supported through DAKOTA).
     short mode = (deep_copy) ? Pecos::DEEP_COPY : Pecos::SHALLOW_COPY;
-    Pecos::SurrogateDataVars sdv(c_vars, mode);
+    Pecos::SurrogateDataVars sdv(c_vars, di_vars, dr_vars, mode);
     if (anchor_flag) approxData.anchor_variables(sdv);
     else             approxData.push_back(sdv);
   }
@@ -333,10 +335,13 @@ add(const Real* sample_c_vars, bool anchor_flag, bool deep_copy)
   if (approxRep)
     approxRep->add(sample_c_vars, anchor_flag, deep_copy);
   else { // not virtual: all derived classes use following definition
-    // create view of first numVars entries within column of sample Matrix
-    // --> any discrete {int,real} vars (e.g., from NonDSampling) are ignored.
+    // create view of numVars entries within column of sample Matrix;
+    // for compact mode, any active discrete {int,real} vars are managed
+    // as real values (e.g., NonDSampling::update_model_from_sample())
+    // and we do not convert them back to {di,dr}_vars here.
     RealVector c_vars(Teuchos::View, const_cast<Real*>(sample_c_vars), numVars);
-    add(c_vars, anchor_flag, deep_copy);
+    IntVector di_vars; RealVector dr_vars; // empty
+    add(c_vars, di_vars, dr_vars, anchor_flag, deep_copy);
   }
 }
 

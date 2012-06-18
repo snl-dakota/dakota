@@ -139,7 +139,8 @@ compute(const RealVector& c_vars, const Response& truth_response,
 					  numVars, dataOrder);
   }
 
-  Pecos::SurrogateDataVars sdv(c_vars, Pecos::DEEP_COPY);
+  IntVector empty_iv; RealVector empty_rv;
+  Pecos::SurrogateDataVars sdv(c_vars, empty_iv, empty_rv, Pecos::DEEP_COPY);
   if (computeAdditive || badScalingFlag) {
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;

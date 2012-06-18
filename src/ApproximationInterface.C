@@ -55,7 +55,8 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   // assure proper list node settings.
   functionSurfaces.resize(num_fns);
   // despite view mappings, x in map() always = size of active actualModelVars
-  size_t num_vars = actualModelVars.cv();
+  size_t num_vars = actualModelVars.cv() + actualModelVars.div()
+                  + actualModelVars.drv();
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it)
     functionSurfaces[*it] = Approximation(problem_db, num_vars);
 
@@ -128,7 +129,8 @@ ApproximationInterface(const String& approx_type,
 
   functionSurfaces.resize(num_fns);
   // despite view mappings, x in map() always = size of active actualModelVars
-  size_t num_vars = actualModelVars.cv();
+  size_t num_vars = actualModelVars.cv() + actualModelVars.div()
+                  + actualModelVars.drv();
   for (int i=0; i<num_fns; i++) {
     approxFnIndices.insert(i);
     functionSurfaces[i]
