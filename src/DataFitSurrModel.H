@@ -151,7 +151,7 @@ protected:
 			    const IntResponseMap& resp_map, bool rebuild_flag);
 
   /// remove approximation data added on previous append_approximation() call
-  void pop_approximation(bool save_surr_data, bool rebuild_flag);
+  void pop_approximation(bool save_surr_data, bool rebuild_flag = false);
 
   /// restore a previous approximation data state
   void restore_approximation();
@@ -176,7 +176,7 @@ protected:
   void approximation_coefficients(const RealVectorArray& approx_coeffs);
   /// return the approximation variance from each Approximation
   /// (request forwarded to approxInterface)
-  const RealVector& approximation_variances(const RealVector& c_vars);
+  const RealVector& approximation_variances(const Variables& vars);
   /// return the approximation data from a particular Approximation
   /// (request forwarded to approxInterface)
   const Pecos::SurrogateData& approximation_data(size_t index);
@@ -405,8 +405,8 @@ approximation_coefficients(const RealVectorArray& approx_coeffs)
 
 
 inline const RealVector& DataFitSurrModel::
-approximation_variances(const RealVector& c_vars)
-{ return approxInterface.approximation_variances(c_vars); }
+approximation_variances(const Variables& vars)
+{ return approxInterface.approximation_variances(vars); }
 
 
 inline const Pecos::SurrogateData& DataFitSurrModel::

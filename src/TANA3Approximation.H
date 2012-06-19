@@ -56,11 +56,11 @@ protected:
 
   void build();
 
-  Real get_value(const RealVector& x);
+  Real value(const Variables& vars);
 
-  const RealVector& get_gradient(const RealVector& x);
+  const RealVector& gradient(const Variables& vars);
 
-  //const RealMatrix& get_hessian(const RealVector& x);
+  //const RealMatrix& hessian(const Variables& vars);
 
   void clear_current();
 

@@ -84,6 +84,7 @@ void DiscrepancyCorrection::initialize_corrections()
       multCorrections[*it] = Approximation("local_taylor", approx_order, 
 					   numVars, dataOrder);
   }
+  correctionPrevCenterPt = surrModel.current_variables().copy();
 }
 
 
@@ -96,7 +97,7 @@ void DiscrepancyCorrection::initialize_corrections()
     scalar values, linear scaling functions, and quadratic scaling
     functions, respectively, for each response function. */
 void DiscrepancyCorrection::
-compute(const RealVector& c_vars, const Response& truth_response, 
+compute(const Variables& vars, const Response& truth_response, 
 	const Response& approx_response, bool quiet_flag)
 {
   // The incoming approx_response is assumed to be uncorrected (i.e.,
@@ -114,9 +115,16 @@ compute(const RealVector& c_vars, const Response& truth_response,
     approxFnsPrevCenter = approxFnsCenter;
     truthFnsPrevCenter  = truthFnsCenter;
     it = surrogateFnIndices.begin();
-    correctionPrevCenterPt = (computeAdditive || badScalingFlag) ?
-      addCorrections[*it].approximation_data().anchor_continuous_variables() :
-      multCorrections[*it].approximation_data().anchor_continuous_variables();
+    const Pecos::SurrogateDataVars& anchor_sdv
+      = (computeAdditive || badScalingFlag) ?
+      addCorrections[*it].approximation_data().anchor_variables() :
+      multCorrections[*it].approximation_data().anchor_variables();
+    correctionPrevCenterPt.continuous_variables(
+      anchor_sdv.continuous_variables());
+    correctionPrevCenterPt.discrete_int_variables(
+      anchor_sdv.discrete_int_variables());
+    correctionPrevCenterPt.discrete_real_variables(
+      anchor_sdv.discrete_real_variables());
   }
   // update current center data arrays
   const RealVector&  truth_fns =  truth_response.function_values();
@@ -139,8 +147,9 @@ compute(const RealVector& c_vars, const Response& truth_response,
 					  numVars, dataOrder);
   }
 
-  IntVector empty_iv; RealVector empty_rv;
-  Pecos::SurrogateDataVars sdv(c_vars, empty_iv, empty_rv, Pecos::DEEP_COPY);
+  Pecos::SurrogateDataVars sdv(vars.continuous_variables(),
+    vars.discrete_int_variables(), vars.discrete_real_variables(),
+    Pecos::DEEP_COPY);
   if (computeAdditive || badScalingFlag) {
     for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
       index = *it;
@@ -220,7 +229,7 @@ compute(const RealVector& c_vars, const Response& truth_response,
 
 
 void DiscrepancyCorrection::
-compute(//const RealVector& c_vars,
+compute(//const Variables& vars,
 	const Response& truth_response, const Response& approx_response,
 	Response& discrep_response,
         //Response& add_discrep_response, Response& mult_discrep_response,
@@ -427,23 +436,23 @@ check_scaling(const RealVector& truth_fns, const RealVector& approx_fns)
 
 
 void DiscrepancyCorrection::
-apply(const RealVector& c_vars, Response& approx_response, bool quiet_flag)
+apply(const Variables& vars, Response& approx_response, bool quiet_flag)
 {
   if (!correctionComputed)
     return;
 
   // update approx_response with the alpha/beta/combined corrected data
   if (correctionType == ADDITIVE_CORRECTION || badScalingFlag) // use alpha
-    apply_additive(c_vars, approx_response);
+    apply_additive(vars, approx_response);
   else if (correctionType == MULTIPLICATIVE_CORRECTION) // use beta
-    apply_multiplicative(c_vars, approx_response);
+    apply_multiplicative(vars, approx_response);
   else if (correctionType == COMBINED_CORRECTION) { // use both alpha and beta
 
     // compute {add,mult}_response contributions to combined correction
     Response add_response = approx_response.copy(),
             mult_response = approx_response.copy();
-    apply_additive(c_vars, add_response);
-    apply_multiplicative(c_vars, mult_response);
+    apply_additive(vars, add_response);
+    apply_multiplicative(vars, mult_response);
 
     // compute convex combination of add_response and mult_response
     ISIter it; int index; size_t j, k;
@@ -482,7 +491,7 @@ apply(const RealVector& c_vars, Response& approx_response, bool quiet_flag)
 
 
 void DiscrepancyCorrection::
-apply_additive(const RealVector& c_vars, Response& approx_response)
+apply_additive(const Variables& vars, Response& approx_response)
 {
   size_t index; ISIter it;
   const ShortArray& asv = approx_response.active_set_request_vector();
@@ -491,23 +500,23 @@ apply_additive(const RealVector& c_vars, Response& approx_response)
     Approximation& add_corr = addCorrections[index];
     if (asv[index] & 1)
       approx_response.function_value(approx_response.function_value(index) +
-				     add_corr.get_value(c_vars), index);
+				     add_corr.value(vars), index);
     if (correctionOrder >= 1 && asv[index] & 2) {
       // update view (no reassignment):
       RealVector approx_grad = approx_response.function_gradient_view(index);
-      approx_grad += add_corr.get_gradient(c_vars);
+      approx_grad += add_corr.gradient(vars);
     }
     if (correctionOrder == 2 && asv[index] & 4) {
       // update view (no reassignment):
       RealSymMatrix approx_hess = approx_response.function_hessian_view(index);
-      approx_hess += add_corr.get_hessian(c_vars);
+      approx_hess += add_corr.hessian(vars);
     }
   }
 }
 
 
 void DiscrepancyCorrection::
-apply_multiplicative(const RealVector& c_vars, Response& approx_response)
+apply_multiplicative(const Variables& vars, Response& approx_response)
 {
   // Determine needs for retrieving uncorrected data due to cases where
   // the data required to apply the correction is different from the
@@ -549,7 +558,7 @@ apply_multiplicative(const RealVector& c_vars, Response& approx_response)
 	  uncorr_fns[i] = approxFnsCenter[i];
     }
     else {
-      const Response& db_resp = search_db(c_vars, fn_db_asv);
+      const Response& db_resp = search_db(vars, fn_db_asv);
       for (size_t i=0; i<numFns; ++i)
 	if (fn_db_asv[i])
 	  uncorr_fns[i] = db_resp.function_value(i);
@@ -567,7 +576,7 @@ apply_multiplicative(const RealVector& c_vars, Response& approx_response)
 			  i, uncorr_grads);
     }
     else {
-      const Response& db_resp = search_db(c_vars, grad_db_asv);
+      const Response& db_resp = search_db(vars, grad_db_asv);
       for (int i=0; i<numFns; ++i)
 	if (grad_db_asv[i])
 	  Teuchos::setCol(db_resp.function_gradient_view(i), i, uncorr_grads);
@@ -577,9 +586,9 @@ apply_multiplicative(const RealVector& c_vars, Response& approx_response)
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     index = *it;
     Approximation&    mult_corr = multCorrections[index];
-    Real                fn_corr = mult_corr.get_value(c_vars);
+    Real                fn_corr = mult_corr.value(vars);
     const RealVector& grad_corr = (correctionOrder >= 1 && (asv[index] & 6)) ?
-      mult_corr.get_gradient(c_vars) : empty_rv;
+      mult_corr.gradient(vars) : empty_rv;
     // apply corrections in descending derivative order to avoid
     // disturbing original approx fn/grad values
     if (asv[index] & 4) {
@@ -589,7 +598,7 @@ apply_multiplicative(const RealVector& c_vars, Response& approx_response)
 	approx_response.function_gradient(index);
       switch (correctionOrder) {
       case 2: {
-	const RealSymMatrix& hess_corr = mult_corr.get_hessian(c_vars);
+	const RealSymMatrix& hess_corr = mult_corr.hessian(vars);
 	const Real& approx_fn = (fn_db_search) ? uncorr_fns[index] :
 	  approx_response.function_value(index);
 	for (j=0; j<numVars; ++j)
@@ -628,7 +637,7 @@ apply_multiplicative(const RealVector& c_vars, Response& approx_response)
 
 
 const Response& DiscrepancyCorrection::
-search_db(const RealVector& c_vars, const ShortArray& search_asv)
+search_db(const Variables& search_vars, const ShortArray& search_asv)
 {
   // Retrieve missing uncorrected approximate data for use in derivative
   // multiplicative corrections.  The correct approach is to retrieve the
@@ -642,8 +651,6 @@ search_db(const RealVector& c_vars, const ShortArray& search_asv)
   // neither of these data sets are catalogued in data_pairs.
 
   // query data_pairs to extract the response at the current pt
-  Variables search_vars = surrModel.current_variables().copy();     // copy
-  search_vars.continuous_variables(c_vars);
   ActiveSet search_set = surrModel.current_response().active_set(); // copy
   search_set.request_vector(search_asv);
   extern PRPCache data_pairs; // global container
@@ -652,7 +659,7 @@ search_db(const RealVector& c_vars, const ShortArray& search_asv)
 
   if (cache_it == data_pairs.get<hashed>().end()) {
     // perform approx fn eval to retrieve missing data
-    surrModel.continuous_variables(c_vars);
+    surrModel.active_variables(search_vars);
     surrModel.compute_response(search_set);
     return surrModel.current_response();
   }

@@ -176,8 +176,8 @@ void NonDGPImpSampling::quantify_uncertainty()
        // where each time we calculate the expected indicator function 
        // and add to the approximation. 
       for (k = 0; k < numPtsAdd; k++) { 
-         // generate new set of emulator samples.  Note this will have a different 
-         // seed each time.
+	// generate new set of emulator samples.
+	// Note this will have a different seed each time.
         gpEval.run_iterator(Cout);
          // obtain results 
         const RealMatrix&  all_samples = gpEval.all_samples();
@@ -185,9 +185,12 @@ void NonDGPImpSampling::quantify_uncertainty()
         for (i = 0; i< numEmulEval; i++) {
           temp_cvars = Teuchos::getCol(Teuchos::View,
 	    const_cast<RealMatrix&>(all_samples), i);
-          gpCvars[i]=temp_cvars;
+          gpCvars[i] = temp_cvars;
           //Cout << "input is " << gpCvars[i] << '\n';
-          gpVar[i] = gpModel.approximation_variances(temp_cvars);
+	  // update gpModel currentVariables for use in approx_variances()
+	  gpModel.continuous_variables(temp_cvars);
+          gpVar[i]
+	    = gpModel.approximation_variances(gpModel.current_variables());
           //Cout << "variance is " << gpVar[i];
         }
 
@@ -238,9 +241,12 @@ void NonDGPImpSampling::quantify_uncertainty()
           for (i = 0; i< numEmulEval; i++) {
 	    temp_cvars = Teuchos::getCol(Teuchos::View,
 	       const_cast<RealMatrix&>(this_samples), i);
-            gpCvars[i]=temp_cvars;
+            gpCvars[i] = temp_cvars;
             //Cout << "input is " << gpCvars[i] << '\n';
-            gpVar[i] = gpModel.approximation_variances(temp_cvars);
+	    // update gpModel currentVariables for use in approx_variances()
+	    gpModel.continuous_variables(temp_cvars);
+            gpVar[i]
+	      = gpModel.approximation_variances(gpModel.current_variables());
             //Cout << "variance is " << gpVar[i];
            }
 
@@ -338,14 +344,15 @@ void NonDGPImpSampling::quantify_uncertainty()
             gpModel.continuous_variables(gp_final_data[k]);
             gpModel.compute_response();
             this_mean = gpModel.current_response().function_values();
-            this_var = gpModel.approximation_variances(gp_final_data[k]);
+            this_var
+	      = gpModel.approximation_variances(gpModel.current_variables());
             exp_ind_this(k) = calcExpIndPoint(respFnCount,z,this_mean,this_var);
             Cout << "exp_ind_final " << k << " " <<  exp_ind_this(k) << '\n';
           }
           for (k = 0; k < numPtsTotal; k++) 
             rhoMix(k)=rhoMix(k)+exp_ind_this(k)*rho0const/normConst(j);
 	  //the 1.0 here is reall rhoZero/rhoZero (ok for rho0=rho1=rho2)
-          gpModel.pop_approximation(false,true);
+          gpModel.pop_approximation(false, true);
           //gpModel.update_approximation(true);
           Cout << "Size of build data set " << gp_data.size() << '\n';
         } 

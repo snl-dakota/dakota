@@ -381,8 +381,7 @@ EIF_objective_min(const Variables& sub_model_vars, const Variables& recast_vars,
   // Means are passed in, but must retrieve variance from the GP
   const RealVector& means = sub_model_response.function_values();
   const RealVector& variances
-    = nondGIInstance->fHatModel.approximation_variances(
-      recast_vars.continuous_variables());
+    = nondGIInstance->fHatModel.approximation_variances(recast_vars);
 
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
   if (recast_asv[0] & 1) { // return -EI since we are maximizing
@@ -422,8 +421,7 @@ EIF_objective_max(const Variables& sub_model_vars, const Variables& recast_vars,
   // Means are passed in, but must retrieve variance from the GP
   const RealVector& means = sub_model_response.function_values();
   const RealVector& variances
-    = nondGIInstance->fHatModel.approximation_variances(
-      recast_vars.continuous_variables());
+    = nondGIInstance->fHatModel.approximation_variances(recast_vars);
 
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
   if (recast_asv[0] & 1) { // return -EI to the minimizer

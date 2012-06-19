@@ -154,8 +154,10 @@ public:
 				    const IntResponseMap& resp_map);
 
   /// builds the approximation
-  virtual void build_approximation(const RealVector& lower_bnds,
-				   const RealVector& upper_bnds);
+  virtual void build_approximation(const RealVector& c_l_bnds,
+    const RealVector&  c_u_bnds, const IntVector&  di_l_bnds,
+    const IntVector&  di_u_bnds, const RealVector& dr_l_bnds,
+    const RealVector& dr_u_bnds);
 
   /// rebuilds the approximation after a data update
   virtual void rebuild_approximation(const BoolDeque& rebuild_deque);
@@ -195,8 +197,7 @@ public:
   virtual void approximation_coefficients(const RealVectorArray& approx_coeffs);
   /// retrieve the approximation variances from each Approximation
   /// within an ApproximationInterface
-  virtual const RealVector& approximation_variances(
-    const RealVector& c_variables);
+  virtual const RealVector& approximation_variances(const Variables& vars);
 
   /// retrieve the analysis drivers specification for application interfaces
   virtual const StringArray& analysis_drivers() const;

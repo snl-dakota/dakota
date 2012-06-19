@@ -149,7 +149,7 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
       if (it->diagnostics_available()) {
 
 	// Start the check with the r-squared value.
-	Real r2_diagnostic = it->get_diagnostic("rsquared");
+	Real r2_diagnostic = it->diagnostic("rsquared");
 	if (outputLevel > NORMAL_OUTPUT)
 	  Cout << "R-squared = " << r2_diagnostic << std::endl;
 
@@ -247,7 +247,7 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
     else {
       // restore state prior to previous append_approximation()
       if (replacePoints && sbIterNum > 1)
-	approx_model.pop_approximation(false, false);// don't store SDP set; no restore
+	approx_model.pop_approximation(false);// don't store SDP set; no restore
       // update the data set and rebuild the approximation
       approx_model.append_approximation(vars_results, truth_resp_results, true);
 

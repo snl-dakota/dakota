@@ -55,8 +55,7 @@ public:
   /// alternate constructor
   GaussProcApproximation(size_t num_vars, short data_order);
   /// standard constructor
-  GaussProcApproximation(const ProblemDescDB& problem_db,
-			 const size_t& num_acv);
+  GaussProcApproximation(const ProblemDescDB& problem_db, size_t num_vars);
   /// destructor
   ~GaussProcApproximation();
 
@@ -73,16 +72,16 @@ protected:
   /// find the covariance parameters governing the Gaussian process response
   void build();
 
-  /// retrieve the function value for a given parameter set x
-  Real get_value(const RealVector& x);
-
-  /// retrieve the variance of the predicted value for a given parameter set x
-  Real get_prediction_variance(const RealVector& x);
+  /// retrieve the function value for a given parameter set
+  Real value(const Variables& vars);
 
   /// retrieve the function gradient at the predicted value 
-  /// for a given parameter set x
-  const RealVector& get_gradient(const RealVector& x);
-  
+  /// for a given parameter set
+  const RealVector& gradient(const Variables& vars);
+
+  /// retrieve the variance of the predicted value for a given parameter set
+  Real prediction_variance(const Variables& vars);
+
 private: 
 
   //
@@ -192,9 +191,9 @@ private:
   /// pointer to the active object instance used within the static evaluator
   static GaussProcApproximation* GPinstance;
 
-  /// value of the approximation returned by get_value()
+  /// value of the approximation returned by value()
   Real approxValue;
-  /// value of the approximation returned by get_prediction_variance()
+  /// value of the approximation returned by prediction_variance()
   Real approxVariance;
 
   /// A 2-D array (num sample sites = rows, num vars = columns) 

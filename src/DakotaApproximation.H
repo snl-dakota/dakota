@@ -89,15 +89,15 @@ public:
   virtual void combine(short corr_type);
 
   /// retrieve the approximate function value for a given parameter vector
-  virtual Real get_value(const RealVector& x);
+  virtual Real value(const Variables& vars);
   /// retrieve the approximate function gradient for a given parameter vector
-  virtual const RealVector& get_gradient(const RealVector& x);
+  virtual const RealVector& gradient(const Variables& vars);
   /// retrieve the approximate function Hessian for a given parameter vector
-  virtual const RealSymMatrix& get_hessian(const RealVector& x);
+  virtual const RealSymMatrix& hessian(const Variables& vars);
   /// retrieve the variance of the predicted value for a given parameter vector
-  virtual Real get_prediction_variance(const RealVector& x);
+  virtual Real prediction_variance(const Variables& vars);
   /// retrieve the diagnostic metric for the diagnostic type specified
-  virtual Real get_diagnostic(const String& metric_type);
+  virtual Real diagnostic(const String& metric_type);
 
   /// return the coefficient array computed by build()/rebuild()
   virtual const RealVector& approximation_coefficients() const;
@@ -145,9 +145,10 @@ public:
 
   /// append to SurrogateData::varsData or assign to SurrogateData::anchorVars
   void add(const Pecos::SurrogateDataVars& sdv, bool anchor_flag);
-  /// extract the relevant RealVector from Variables and invoke add(RealVector&)
+  /// extract the relevant vectors from Variables and invoke
+  /// add(RealVector&, IntVector&, RealVector&)
   void add(const Variables& vars, bool anchor_flag, bool deep_copy);
-  /// create a RealVector view and invoke add(RealVector&)
+  /// create a RealVector view and invoke add(RealVector&, empty, empty)
   void add(const Real* sample_c_vars, bool anchor_flag, bool deep_copy);
   /// shared code among add(Variables&) and add(Real*); adds a new
   /// data point by either appending to SurrogateData::varsData or
@@ -179,7 +180,9 @@ public:
   void clear_data();
 
   /// set approximation lower and upper bounds (currently only used by graphics)
-  void set_bounds(const RealVector& lower, const RealVector& upper);
+  void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
+		  const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
+		  const RealVector& dr_l_bnds, const RealVector& dr_u_bnds);
 
   // render the approximate surface using the 3D graphics (2 variables only)
   //void draw_surface();
@@ -229,19 +232,29 @@ protected:
       a trust region), but not require gradient evaluations at every point. */
   short buildDataOrder;
 
-  /// gradient of the approximation returned by get_gradient()
+  /// gradient of the approximation returned by gradient()
   RealVector approxGradient;
-  /// Hessian of the approximation returned by get_hessian()
+  /// Hessian of the approximation returned by hessian()
   RealSymMatrix approxHessian;
 
   /// contains the variables/response data for constructing a single
   /// approximation model (one response function)
   Pecos::SurrogateData approxData;
 
-  /// approximation lower bounds (used by 3D graphics and Surfpack KrigingModel)
-  RealVector approxLowerBounds;
-  /// approximation upper bounds (used by 3D graphics and Surfpack KrigingModel)
-  RealVector approxUpperBounds;
+  /// approximation continuous lower bounds (used by 3D graphics and
+  /// Surfpack KrigingModel)
+  RealVector approxCLowerBnds;
+  /// approximation continuous upper bounds (used by 3D graphics and
+  /// Surfpack KrigingModel)
+  RealVector approxCUpperBnds;
+  /// approximation continuous lower bounds
+  IntVector approxDILowerBnds;
+  /// approximation continuous upper bounds
+  IntVector approxDIUpperBnds;
+  /// approximation continuous lower bounds
+  RealVector approxDRLowerBnds;
+  /// approximation continuous upper bounds
+  RealVector approxDRUpperBnds;
 
 private:
 
@@ -282,16 +295,26 @@ inline const Pecos::SurrogateData& Approximation::approximation_data() const
 
 
 inline void Approximation::
-set_bounds(const RealVector& lower, const RealVector& upper)
+set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
+	   const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
+	   const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)
 {
   // enforce deep copies since lower/upper may be active views
   if (approxRep) {
-    copy_data(lower, approxRep->approxLowerBounds);
-    copy_data(upper, approxRep->approxUpperBounds);
+    copy_data(c_l_bnds,  approxRep->approxCLowerBnds);
+    copy_data(c_u_bnds,  approxRep->approxCUpperBnds);
+    copy_data(di_l_bnds, approxRep->approxDILowerBnds);
+    copy_data(di_u_bnds, approxRep->approxDIUpperBnds);
+    copy_data(dr_l_bnds, approxRep->approxDRLowerBnds);
+    copy_data(dr_u_bnds, approxRep->approxDRUpperBnds);
   }
   else {
-    copy_data(lower, approxLowerBounds);
-    copy_data(upper, approxUpperBounds);
+    copy_data(c_l_bnds,  approxCLowerBnds);
+    copy_data(c_u_bnds,  approxCUpperBnds);
+    copy_data(di_l_bnds, approxDILowerBnds);
+    copy_data(di_u_bnds, approxDIUpperBnds);
+    copy_data(dr_l_bnds, approxDRLowerBnds);
+    copy_data(dr_u_bnds, approxDRUpperBnds);
   }
 }
 

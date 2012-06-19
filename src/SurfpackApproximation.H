@@ -53,7 +53,7 @@ public:
 			const UShortArray& approx_order, size_t num_vars,
 			short data_order);
   /// standard constructor: Surfpack surface of appropriate type will be created
-  SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv);
+  SurfpackApproximation(const ProblemDescDB& problem_db, size_t num_vars);
   /// destructor
   ~SurfpackApproximation();
 
@@ -77,16 +77,16 @@ protected:
   //void approximation_coefficients(const RealVector& approx_coeffs);
 
   /// Return the value of the Surfpack surface for a given parameter vector x
-  Real get_value(const RealVector& x);
+  Real value(const Variables& vars);
+  /// retrieve the approximate function gradient for a given parameter vector x
+  const RealVector& gradient(const Variables& vars);
+  /// retrieve the approximate function Hessian for a given parameter vector x
+  const RealSymMatrix& hessian(const Variables& vars);
   /// retrieve the variance of the predicted value for a given parameter set x
   /// (KrigingModel only)
-  Real get_prediction_variance(const RealVector& x);
-  /// retrieve the approximate function gradient for a given parameter vector x
-  const RealVector& get_gradient(const RealVector& x);
-  /// retrieve the approximate function Hessian for a given parameter vector x
-  const RealSymMatrix& get_hessian(const RealVector& x);
+  Real prediction_variance(const Variables& vars);
   /// retrieve the diagnostic metric for the diagnostic type specified
-  Real get_diagnostic(const String& metric_type);
+  Real diagnostic(const String& metric_type);
   /// check if the diagnostics are available (true for the Surfpack types)
   const bool diagnostics_available();
 

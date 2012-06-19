@@ -408,51 +408,51 @@ size_t Approximation::finalization_index(size_t i)
 }
 
 
-Real Approximation::get_value(const RealVector& x)
+Real Approximation::value(const Variables& vars)
 {
   if (!approxRep) {
-    Cerr << "Error: get_value() not available for this approximation type."
+    Cerr << "Error: value() not available for this approximation type."
 	 << std::endl;
     abort_handler(-1);
   }
 
-  return approxRep->get_value(x);
+  return approxRep->value(vars);
 }
 
 
-const RealVector& Approximation::get_gradient(const RealVector& x)
+const RealVector& Approximation::gradient(const Variables& vars)
 {
   if (!approxRep) {
-    Cerr << "Error: get_gradient() not available for this approximation type."
+    Cerr << "Error: gradient() not available for this approximation type."
 	 << std::endl;
     abort_handler(-1);
   }
 
-  return approxRep->get_gradient(x);
+  return approxRep->gradient(vars);
 }
 
 
-const RealSymMatrix& Approximation::get_hessian(const RealVector& x)
+const RealSymMatrix& Approximation::hessian(const Variables& vars)
 {
   if (!approxRep) {
-    Cerr << "Error: get_hessian() not available for this approximation type."
+    Cerr << "Error: hessian() not available for this approximation type."
 	 << std::endl;
     abort_handler(-1);
   }
     
-  return approxRep->get_hessian(x);
+  return approxRep->hessian(vars);
 }
 
 
-Real Approximation::get_prediction_variance(const RealVector& x)
+Real Approximation::prediction_variance(const Variables& vars)
 {
   if (!approxRep) {
-    Cerr << "Error: get_prediction_variance() not available for this "
-	 << "approximation type." << std::endl;
+    Cerr << "Error: prediction_variance() not available for this approximation "
+	 << "type." << std::endl;
     abort_handler(-1);
   }
 
-  return approxRep->get_prediction_variance(x);
+  return approxRep->prediction_variance(vars);
 }
 
 
@@ -465,15 +465,15 @@ const bool Approximation::diagnostics_available()
 }
 
 
-Real Approximation::get_diagnostic(const String& metric_type)
+Real Approximation::diagnostic(const String& metric_type)
 {
   //if (!approxRep) {
-  //  Cerr << "Error: get_diagnostic() not available for this approximation " 
-  //	   << "type." << std::endl;
+  //  Cerr << "Error: diagnostic() not available for this approximation type." 
+  //	   << std::endl;
   //  abort_handler(-1);
   //}
 
-  return approxRep->get_diagnostic(metric_type);
+  return approxRep->diagnostic(metric_type);
 }
 
 
@@ -659,20 +659,20 @@ void Approximation::draw_surface()
     approxRep->draw_surface();
   else { // draw surface of 2 independent variables
 
-    if (approxLowerBounds.length() != 2 ||
-	approxUpperBounds.length() != 2 || numVars != 2)
+    if (approxCLowerBnds.length() != 2 ||
+	approxCUpperBnds.length() != 2 || numVars != 2)
       return;
 
     // define number of equally spaced points in each direction
     int i, j, num_intervals = 50, num_axis_pts = num_intervals + 1;
-    Real dx = (approxUpperBounds[0] - approxLowerBounds[0])/num_intervals,
-         dy = (approxUpperBounds[1] - approxLowerBounds[1])/num_intervals;
+    Real dx = (approxCUpperBnds[0] - approxCLowerBnds[0])/num_intervals,
+         dy = (approxCUpperBnds[1] - approxCLowerBnds[1])/num_intervals;
     RealMatrix F(num_axis_pts, num_axis_pts);
     RealVector X(num_axis_pts), Y(num_axis_pts);
   
     // fill X & Y with grid of values to be displayed in graphics
-    X[0] = approxLowerBounds[0];
-    Y[0] = approxLowerBounds[1];
+    X[0] = approxCLowerBnds[0];
+    Y[0] = approxCLowerBnds[1];
     for (i=1; i<num_axis_pts; i++) {
       X[i] = X[i-1] + dx;
       Y[i] = Y[i-1] + dy;
@@ -685,7 +685,7 @@ void Approximation::draw_surface()
       for (j=0; j<num_axis_pts; j++) {  
         xtemp[0] = X[i];
         xtemp[1] = Y[j];
-        F(j,i)   = get_value(xtemp);
+        F(j,i)   = value(xtemp);
       }
     }
     extern Graphics dakota_graphics; // defined in ParallelLibrary.C

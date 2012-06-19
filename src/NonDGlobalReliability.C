@@ -168,7 +168,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   //int symbols = samples; // symbols needed for DDACE
   Iterator dace_iterator;
   // instantiate the Nataf Recast and Gaussian Process DataFit recursions
-  if (mppSearchType == EGRA_X) { // Recast( DataFit( iteratedModel ) ) )
+  if (mppSearchType == EGRA_X) { // Recast( DataFit( iteratedModel ) )
 
     // For additional generality, could develop on the fly envelope ctor:
     //Iterator dace_iterator(iteratedModel, dace_method, ...);
@@ -205,7 +205,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     // Recast g-hat(x) to G-hat(u)
     construct_u_space_model(g_hat_x_model, uSpaceModel, true, 5.);// global bnds
   }
-  else { // DataFit( Recast( iteratedModel ) ) )
+  else { // DataFit( Recast( iteratedModel ) )
 
     // Recast g(x) to G(u)
     Model g_u_model;
@@ -533,10 +533,10 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	const RealVector& g_hat_fns
 	  = uSpaceModel.current_response().function_values();
 
-	// Re-evaluate the expected improvement/feasibility at c_vars_u
+	// Re-evaluate the expected improvement/feasibility at vars_star
 	Real exp_fns_star = (ria_flag) ?
-	  expected_feasibility(g_hat_fns, c_vars_u) :
-	  expected_improvement(g_hat_fns, c_vars_u);
+	  expected_feasibility(g_hat_fns, vars_star) :
+	  expected_improvement(g_hat_fns, vars_star);
     
 	// Calculate beta^2 for output (and aug_lag update)
 	Real beta_sq = 0.;
@@ -599,10 +599,10 @@ void NonDGlobalReliability::optimize_gaussian_process()
 					  iteratedModel.current_response());
 
 	  // Update the GP approximation
-	  if (mppSearchType == EGRA_X) // update with c_vars_x
+	  if (mppSearchType == EGRA_X) // update with x-space current vars
 	    uSpaceModel.append_approximation(
 	      iteratedModel.current_variables(), resp_star_truth, true);
-	  else                         // update with c_vars_u
+	  else                         // update with u-space vars_star
 	    uSpaceModel.append_approximation(vars_star, resp_star_truth, true);
 	}
       } // end approx convergence while loop
@@ -651,7 +651,7 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	}
       }
       samsOut << std::endl;
-      
+
 #ifdef DEBUG_PLOTS
       // Plotting the GP, etc over a grid is intended for visualization and
       //   is therefore only available for 2D problems
@@ -686,13 +686,15 @@ void NonDGlobalReliability::optimize_gaussian_process()
 		  << u_pt[1] << ' ' << setw(13) << gp_fn[respFnCount];
 	    
 	    RealVector variance;
-	    if (mppSearchType == EGRA_X) {
-	      natafTransform.trans_U_to_X(u_pt, x_pt);
-	      variance
-		= uSpaceModel.subordinate_model().approximation_variances(x_pt);
+	    if (mppSearchType == EGRA_X) { // Recast( DataFit( iteratedModel ) )
+	      // RecastModel::derived_compute_response() propagates u_pt to x_pt
+	      Model& dfs_model = uSpaceModel.subordinate_model();
+	      variance = dfs_model.approximation_variances(
+		dfs_model.current_variables()); // x_pt
 	    }
-	    else
-	      variance = uSpaceModel.approximation_variances(u_pt);
+	    else // EGRA_U: DataFit( Recast( iteratedModel ) )
+	      variance = uSpaceModel.approximation_variances(
+		uSpaceModel.current_variables()); // u_pt
 	    
 	    varOut << '\n' << setw(13) << u_pt[0] << ' ' << setw(13)
 		   << u_pt[1] << ' ' << setw(13) << variance[respFnCount];
@@ -828,12 +830,10 @@ EIF_objective_eval(const Variables& sub_model_vars,
 		   const Response& sub_model_response,
 		   Response& recast_response)
 {
-  const ShortArray& recast_asv    = recast_response.active_set_request_vector();
-  const RealVector& sub_model_fns = sub_model_response.function_values();
-  const RealVector& u        = recast_vars.continuous_variables();
-
+  const ShortArray& recast_asv = recast_response.active_set_request_vector();
   if (recast_asv[0] & 1) {
-    Real ei = nondGlobRelInstance->expected_improvement(sub_model_fns, u);
+    Real ei = nondGlobRelInstance->expected_improvement(
+      sub_model_response.function_values(), recast_vars);
     recast_response.function_value(ei, 0);
   }
 }
@@ -845,30 +845,30 @@ EFF_objective_eval(const Variables& sub_model_vars,
 		   const Response& sub_model_response,
 		   Response& recast_response)
 {
-  const ShortArray& recast_asv    = recast_response.active_set_request_vector();
-  const RealVector& sub_model_fns = sub_model_response.function_values();
-  const RealVector& u        = recast_vars.continuous_variables();
-
+  const ShortArray& recast_asv = recast_response.active_set_request_vector();
   if (recast_asv[0] & 1) {
-    Real ef = nondGlobRelInstance->expected_feasibility(sub_model_fns, u);
+    Real ef = nondGlobRelInstance->expected_feasibility(
+      sub_model_response.function_values(), recast_vars);
     recast_response.function_value(ef, 0);
   }
 }
 
 
 Real NonDGlobalReliability::
-expected_improvement(const RealVector& expected_values, const RealVector& u)
+expected_improvement(const RealVector& expected_values,
+		     const Variables& recast_vars)
 {
   // Get variance from the GP; Expected values are passed in
   // If GP built in x-space, transform input point to x-space to get variance
   RealVector variances;
-  if (mppSearchType == EGRA_X) {
-    RealVector x;
-    natafTransform.trans_U_to_X(u, x);
-    variances = uSpaceModel.subordinate_model().approximation_variances(x);
+  if (mppSearchType == EGRA_X) { // uSpaceModel = Recast(DataFit(iteratedModel))
+    Model& dfs_model = uSpaceModel.subordinate_model();
+    // assume recast_vars have been propagated to GP just prior to call
+    variances
+      = dfs_model.approximation_variances(dfs_model.current_variables());
   }
-  else
-    variances = uSpaceModel.approximation_variances(u);
+  else                   // EGRA_U: uSpaceModel = DataFit(Recast(iteratedModel))
+    variances = uSpaceModel.approximation_variances(recast_vars);
     
   Real mean = expected_values[respFnCount];
   Real stdv = std::sqrt(variances[respFnCount]);
@@ -881,6 +881,7 @@ expected_improvement(const RealVector& expected_values, const RealVector& u)
   // Calculate and apply penalty to the mean
   Real beta_sq = 0., penalized_mean;
   // calculate the reliability index (beta)
+  const RealVector& u = recast_vars.continuous_variables();
   size_t i, num_vars = u.length();
   for (i=0; i<num_vars; i++)
     beta_sq += std::pow(u[i],2);
@@ -918,18 +919,19 @@ expected_improvement(const RealVector& expected_values, const RealVector& u)
 
 Real NonDGlobalReliability::
 expected_feasibility(const RealVector& expected_values,
-		     const RealVector& u)
+		     const Variables& recast_vars)
 {
   // Get variance from the GP; Expected values are passed in
   // If GP built in x-space, transform input point to x-space to get variance
   RealVector variances;
-  if (mppSearchType == EGRA_X) {
-    RealVector x;
-    natafTransform.trans_U_to_X(u, x);
-    variances = uSpaceModel.subordinate_model().approximation_variances(x);
+  if (mppSearchType == EGRA_X) { // uSpaceModel = Recast(DataFit(iteratedModel))
+    Model& dfs_model = uSpaceModel.subordinate_model();
+    // assume recast_vars have been propagated to GP just prior to call
+    variances
+      = dfs_model.approximation_variances(dfs_model.current_variables());
   }
-  else
-    variances = uSpaceModel.approximation_variances(u);
+  else                   // EGRA_U: uSpaceModel = DataFit(Recast(iteratedModel))
+    variances = uSpaceModel.approximation_variances(recast_vars);
   
   Real mean  = expected_values[respFnCount],
        stdv  = std::sqrt(variances[respFnCount]),

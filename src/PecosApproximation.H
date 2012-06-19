@@ -15,8 +15,8 @@
 #define PECOS_APPROXIMATION_H
 
 #include "DakotaApproximation.H"
+#include "DakotaVariables.H"
 #include "OrthogPolyApproximation.hpp"
-
 
 namespace Dakota {
 
@@ -199,11 +199,11 @@ protected:
   // redocumenting these since they use Pecos:: qualification
 
   /// retrieve the approximate function value for a given parameter vector
-  Real                        get_value(const Pecos::RealVector& x);
+  Real                        value(const Variables& vars);
   /// retrieve the approximate function gradient for a given parameter vector
-  const Pecos::RealVector&    get_gradient(const Pecos::RealVector& x);
+  const Pecos::RealVector&    gradient(const Variables& vars);
   /// retrieve the approximate function Hessian for a given parameter vector
-  const Pecos::RealSymMatrix& get_hessian(const Pecos::RealVector& x);
+  const Pecos::RealSymMatrix& hessian(const Variables& vars);
 
   int min_coefficients() const;
   //int num_constraints() const; // use default implementation
@@ -477,21 +477,24 @@ pecos_basis_approximation()
 { return pecosBasisApprox; }
 
 
-inline Real PecosApproximation::get_value(const Pecos::RealVector& x)
-{ return pecosBasisApprox.value(x); }
+// ignore discrete variables for now
+inline Real PecosApproximation::value(const Variables& vars)
+{ return pecosBasisApprox.value(vars.continuous_variables()); }
 
 
+// ignore discrete variables for now
 inline const Pecos::RealVector& PecosApproximation::
-get_gradient(const Pecos::RealVector& x)
+gradient(const Variables& vars)
 {
-  //return pecosBasisApprox.gradient(x);
-  return polyApproxRep->gradient_basis_variables(x); // bypass a layer
+  //return pecosBasisApprox.gradient(x); // bypass this layer
+  return polyApproxRep->gradient_basis_variables(vars.continuous_variables());
 }
 
 
+// ignore discrete variables for now
 inline const Pecos::RealSymMatrix& PecosApproximation::
-get_hessian(const Pecos::RealVector& x)
-{ return pecosBasisApprox.hessian(x); }
+hessian(const Variables& vars)
+{ return pecosBasisApprox.hessian(vars.continuous_variables()); }
 
 
 inline int PecosApproximation::min_coefficients() const

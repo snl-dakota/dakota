@@ -88,8 +88,12 @@ protected:
   void append_approximation(const VariablesArray& vars_array,
 			    const IntResponseMap& resp_map);
 
-  void build_approximation(const RealVector& lower_bnds,
-			   const RealVector& upper_bnds);
+  void build_approximation(const RealVector&  c_l_bnds,
+			   const RealVector&  c_u_bnds,
+			   const IntVector&  di_l_bnds,
+			   const IntVector&  di_u_bnds,
+			   const RealVector& dr_l_bnds,
+			   const RealVector& dr_u_bnds);
 
   void rebuild_approximation(const BoolDeque& rebuild_deque);
   void pop_approximation(bool save_surr_data);
@@ -109,7 +113,7 @@ protected:
   const RealVectorArray& approximation_coefficients();
   void approximation_coefficients(const RealVectorArray& approx_coeffs);
 
-  const RealVector& approximation_variances(const RealVector& c_vars);
+  const RealVector& approximation_variances(const Variables& vars);
 
   // mimic asynchronous operations for those iterators which call
   // asynch_compute_response and synchronize/synchronize_nowait on an

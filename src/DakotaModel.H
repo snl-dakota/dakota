@@ -137,7 +137,8 @@ public:
   /// remove the previous data set addition to a surrogate (e.g., due
   /// to a previous append_approximation() call); flag manages storing
   /// of surrogate data for use in a subsequent restore_approximation()
-  virtual void pop_approximation(bool save_surr_data, bool rebuild_flag);
+  virtual void pop_approximation(bool save_surr_data,
+				 bool rebuild_flag = false);
 
   /// restore a previous approximation data state within a surrogate
   virtual void restore_approximation();
@@ -175,8 +176,7 @@ public:
   virtual void approximation_coefficients(const RealVectorArray& approx_coeffs);
   /// retrieve the approximation variances from each
   /// Approximation within a DataFitSurrModel
-  virtual const RealVector& approximation_variances(
-    const RealVector& c_vars);
+  virtual const RealVector& approximation_variances(const Variables& vars);
 
   /// set response computation mode used in SurrogateModels for
   /// forming currentResponse

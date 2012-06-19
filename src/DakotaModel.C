@@ -2761,7 +2761,7 @@ void Model::approximation_coefficients(const RealVectorArray& approx_coeffs)
 }
 
 
-const RealVector& Model::approximation_variances(const RealVector& c_vars)
+const RealVector& Model::approximation_variances(const Variables& vars)
 {
   if (!modelRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_"
@@ -2771,7 +2771,7 @@ const RealVector& Model::approximation_variances(const RealVector& c_vars)
   }
 
   // envelope fwd to letter
-  return modelRep->approximation_variances(c_vars);
+  return modelRep->approximation_variances(vars);
 }
 
 

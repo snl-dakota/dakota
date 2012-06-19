@@ -901,7 +901,7 @@ Real NonDExpansion::increment_sets()
     Cout << "\n<<<<< Trial set refinement metric = " << delta << '\n';
 
     // restore previous state (destruct order is reversed from construct order)
-    uSpaceModel.pop_approximation(true,false); // store SDP set for use in restore
+    uSpaceModel.pop_approximation(true); // store SDP set for use in restore
     nond_sparse->decrement_set();
     // restore reference point for next metric calculation
     if (totalLevelRequests) finalStatistics.function_values(stats_ref);
@@ -1437,8 +1437,9 @@ void NonDExpansion::compute_statistics()
       // expansion sensitivities are defined from the coefficients and basis
       // polynomial derivatives.  They are computed for the means of the
       // uncertain varables and are intended to serve as importance factors.
+      uSpaceModel.continuous_variables(initialPtU);
       const RealVector& exp_grad_u_rv
-	= poly_approxs[i].get_gradient(initialPtU);
+	= poly_approxs[i].gradient(uSpaceModel.current_variables());
       RealVector exp_grad_u_pv, exp_grad_x_pv;
       copy_data(exp_grad_u_rv, exp_grad_u_pv);
       SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();

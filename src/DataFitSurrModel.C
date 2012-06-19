@@ -256,10 +256,18 @@ void DataFitSurrModel::build_approximation()
   if (actualModel.is_null())
     approxInterface.build_approximation(
       userDefinedConstraints.continuous_lower_bounds(),
-      userDefinedConstraints.continuous_upper_bounds());
+      userDefinedConstraints.continuous_upper_bounds(),
+      userDefinedConstraints.discrete_int_lower_bounds(),
+      userDefinedConstraints.discrete_int_upper_bounds(),
+      userDefinedConstraints.discrete_real_lower_bounds(),
+      userDefinedConstraints.discrete_real_upper_bounds());
   else // employ sub-model vars view, if available
     approxInterface.build_approximation(actualModel.continuous_lower_bounds(),
-      actualModel.continuous_upper_bounds());
+      actualModel.continuous_upper_bounds(),
+      actualModel.discrete_int_lower_bounds(),
+      actualModel.discrete_int_upper_bounds(),
+      actualModel.discrete_real_lower_bounds(),
+      actualModel.discrete_real_upper_bounds());
   approxBuilds++;
 
   Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
@@ -304,10 +312,18 @@ build_approximation(const Variables& vars, const IntResponsePair& response_pr)
   if (actualModel.is_null())
     approxInterface.build_approximation(
       userDefinedConstraints.continuous_lower_bounds(),
-      userDefinedConstraints.continuous_upper_bounds());
+      userDefinedConstraints.continuous_upper_bounds(),
+      userDefinedConstraints.discrete_int_lower_bounds(),
+      userDefinedConstraints.discrete_int_upper_bounds(),
+      userDefinedConstraints.discrete_real_lower_bounds(),
+      userDefinedConstraints.discrete_real_upper_bounds());
   else // employ sub-model vars view, if available
     approxInterface.build_approximation(actualModel.continuous_lower_bounds(),
-      actualModel.continuous_upper_bounds());
+      actualModel.continuous_upper_bounds(),
+      actualModel.discrete_int_lower_bounds(),
+      actualModel.discrete_int_upper_bounds(),
+      actualModel.discrete_real_lower_bounds(),
+      actualModel.discrete_real_upper_bounds());
   approxBuilds++;
 
   Cout << "\n<<<<< " << surrogateType << " approximation builds completed.\n";
@@ -510,7 +526,7 @@ append_approximation(const VariablesArray& vars_array,
 
 
 void DataFitSurrModel::
-pop_approximation(bool save_surr_data,bool rebuild_flag)
+pop_approximation(bool save_surr_data, bool rebuild_flag)
 {
   Cout << "\n>>>>> Popping data from " << surrogateType << " approximations.\n";
 
@@ -928,10 +944,9 @@ void DataFitSurrModel::derived_compute_response(const ActiveSet& set)
       if (deltaCorr.active()) {
 	bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
 	//if (!deltaCorr.computed())
-	//  deltaCorr.compute(currentVariables.continuous_variables(),
-	//	              centerResponse, approx_response, quiet_flag);
-	deltaCorr.apply(currentVariables.continuous_variables(),
-			approx_response, quiet_flag);
+	//  deltaCorr.compute(currentVariables, centerResponse, approx_response,
+	//                    quiet_flag);
+	deltaCorr.apply(currentVariables, approx_response, quiet_flag);
       }
       break;
     }
@@ -1029,8 +1044,7 @@ void DataFitSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     // post-process
     switch (responseMode) {
     case AUTO_CORRECTED_SURROGATE:
-      copy_data(currentVariables.continuous_variables(),
-		rawCVarsMap[surrModelEvalCntr]);           break;
+      rawVarsMap[surrModelEvalCntr] = currentVariables.copy(); break;
     }
     // store map from approxInterface eval id to DataFitSurrModel id
     surrIdMap[approxInterface.evaluation_id()] = surrModelEvalCntr;
@@ -1319,14 +1333,14 @@ derived_synchronize_approx(const IntResponseMap& approx_resp_map,
 
     bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
     //if (!deltaCorr.computed() && !approx_resp_map_proxy.empty())
-    //  deltaCorr.compute(rawCVarsMap.begin()->second, ...,
+    //  deltaCorr.compute(rawVarsMap.begin()->second, ...,
     //                    approx_resp_map_proxy.begin()->second, quiet_flag);
-    IntRDVMIter v_it; IntRespMIter r_it;
-    for (r_it  = approx_resp_map_proxy.begin(), v_it = rawCVarsMap.begin();
+    IntVarsMIter v_it; IntRespMIter r_it;
+    for (r_it  = approx_resp_map_proxy.begin(), v_it = rawVarsMap.begin();
 	 r_it != approx_resp_map_proxy.end(); ++r_it, ++v_it)
-      deltaCorr.apply(v_it->second, r_it->second, quiet_flag);//rawCVarsMap
+      deltaCorr.apply(v_it->second, r_it->second, quiet_flag);//rawVarsMap
                                                               //[r_it->first]
-    rawCVarsMap.clear();
+    rawVarsMap.clear();
   }
 
   // add cached evals (synchronized approx evals that could not be returned

@@ -990,10 +990,13 @@ append_approximation(const VariablesArray& vars_array,
 
 
 void Interface::
-build_approximation(const RealVector& lower_bnds, const RealVector& upper_bnds)
+build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
+		    const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
+		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->build_approximation(lower_bnds, upper_bnds);
+    interfaceRep->build_approximation(c_l_bnds, c_u_bnds, di_l_bnds, di_u_bnds,
+				      dr_l_bnds, dr_u_bnds);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
          << "() function.\n       This interface does not support "
@@ -1169,8 +1172,7 @@ void Interface::approximation_coefficients(const RealVectorArray& approx_coeffs)
 }
 
 
-const RealVector& Interface::
-approximation_variances(const RealVector& c_variables)
+const RealVector& Interface::approximation_variances(const Variables& vars)
 {
   if (!interfaceRep) { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual approximation_"
@@ -1180,7 +1182,7 @@ approximation_variances(const RealVector& c_variables)
   }
   
   // envelope fwd to letter
-  return interfaceRep->approximation_variances(c_variables);
+  return interfaceRep->approximation_variances(vars);
 }
 
 

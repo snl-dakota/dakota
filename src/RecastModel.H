@@ -170,7 +170,7 @@ protected:
   void append_approximation(const VariablesArray& vars_array,
 			    const IntResponseMap& resp_map, bool rebuild_flag);
 
-  void pop_approximation(bool save_surr_data, bool rebuild_flag);
+  void pop_approximation(bool save_surr_data, bool rebuild_flag = false);
   void restore_approximation();
   bool restore_available();
   void finalize_approximation();
@@ -185,7 +185,7 @@ protected:
   /// set the approximation coefficients within the subModel
   void approximation_coefficients(const RealVectorArray& approx_coeffs);
   /// retrieve the approximation variances from the subModel
-  const RealVector& approximation_variances(const RealVector& c_vars);
+  const RealVector& approximation_variances(const Variables& vars);
   /// retrieve the approximation data from the subModel
   const Pecos::SurrogateData& approximation_data(size_t index);
 
@@ -436,7 +436,8 @@ append_approximation(const VariablesArray& vars_array,
 { subModel.append_approximation(vars_array, resp_map, rebuild_flag); }
 
 
-inline void RecastModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
+inline void RecastModel::
+pop_approximation(bool save_surr_data, bool rebuild_flag)
 { subModel.pop_approximation(save_surr_data, rebuild_flag); }
 
 
@@ -474,8 +475,8 @@ approximation_coefficients(const RealVectorArray& approx_coeffs)
 
 
 inline const RealVector& RecastModel::
-approximation_variances(const RealVector& c_vars)
-{ return subModel.approximation_variances(c_vars); }
+approximation_variances(const Variables& vars)
+{ return subModel.approximation_variances(vars); }
 
 
 inline const Pecos::SurrogateData& RecastModel::approximation_data(size_t index)

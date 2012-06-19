@@ -265,7 +265,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 	 << aug_lag << " [merit]\n";
 
 #ifdef DEBUG
-    RealVector variance = fHatModel.approximation_variances(c_vars);
+    RealVector variance = fHatModel.approximation_variances(vars_star);
     RealVector ev = expected_violation(mean,variance);
     RealVector stdv(numFunctions);
     for (size_t i=0; i<numFunctions; i++)
@@ -401,7 +401,8 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 	  gpOut << '\n' << std::setw(13) << test_pt[0] << ' ' << std::setw(13)
 		<< test_pt[1] << ' ' << std::setw(13) << gp_fn[i];
 
-	  RealVector variances = fHatModel.approximation_variances(test_pt);
+	  RealVector variances
+	    = fHatModel.approximation_variances(fHatModel.current_variables());
 
 	  varOut << '\n' << std::setw(13) << test_pt[0] << ' ' << std::setw(13)
 		 << test_pt[1] << ' ' << std::setw(13) << variances[i];
@@ -440,8 +441,7 @@ EIF_objective_eval(const Variables& sub_model_vars,
   // Means are passed in, but must retrieve variance from the GP
   const RealVector& means = sub_model_response.function_values();
   const RealVector& variances
-    = effGlobalInstance->fHatModel.approximation_variances(
-      recast_vars.continuous_variables());
+    = effGlobalInstance->fHatModel.approximation_variances(recast_vars);
 
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
   if (recast_asv[0] & 1) { // return -EI since we are maximizing

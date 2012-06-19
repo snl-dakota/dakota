@@ -58,11 +58,11 @@ protected:
 
   void build();
 
-  Real get_value(const RealVector& x);
+  Real value(const Variables& vars);
 
-  const RealVector& get_gradient(const RealVector& x);
+  const RealVector& gradient(const Variables& vars);
 
-  const RealSymMatrix& get_hessian(const RealVector& x);
+  const RealSymMatrix& hessian(const Variables& vars);
 
 private:
 

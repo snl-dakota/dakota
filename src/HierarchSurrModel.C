@@ -237,10 +237,9 @@ void HierarchSurrModel::derived_compute_response(const ActiveSet& set)
       lo_fi_response = lowFidelityModel.current_response().copy();
       bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
       if (!deltaCorr.computed())
-	deltaCorr.compute(currentVariables.continuous_variables(),
-			  highFidRefResponse, lo_fi_response, quiet_flag);
-      deltaCorr.apply(currentVariables.continuous_variables(), lo_fi_response,
-		      quiet_flag);
+	deltaCorr.compute(currentVariables, highFidRefResponse, lo_fi_response,
+			  quiet_flag);
+      deltaCorr.apply(currentVariables, lo_fi_response, quiet_flag);
       if (!mixed_eval) {
 	currentResponse.active_set(lo_fi_set);
 	currentResponse.update(lo_fi_response);
@@ -348,8 +347,7 @@ void HierarchSurrModel::derived_asynch_compute_response(const ActiveSet& set)
     // post-process
     switch (responseMode) {
     case AUTO_CORRECTED_SURROGATE:
-      copy_data(currentVariables.continuous_variables(),
-		rawCVarsMap[hierModelEvalCntr]);           break;
+      rawVarsMap[hierModelEvalCntr] = currentVariables.copy(); break;
     }
     // store map from LF eval id to HierarchSurrModel id
     surrIdMap[lowFidelityModel.evaluation_id()] = hierModelEvalCntr;
@@ -424,17 +422,17 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize()
       // if a correction has not been computed, compute it now
       bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
       if (!deltaCorr.computed() && !lo_fi_resp_map_proxy.empty())
-	deltaCorr.compute(rawCVarsMap.begin()->second, highFidRefResponse,
+	deltaCorr.compute(rawVarsMap.begin()->second, highFidRefResponse,
 			  lo_fi_resp_map_proxy.begin()->second, quiet_flag);
 
-      // Apply the correction.  A rawCVarsMap lookup is not needed since
-      // rawCVarsMap and lo_fi_resp_map are complete and consistently ordered.
-      IntRDVMIter v_it; IntRespMIter r_it;
-      for (r_it  = lo_fi_resp_map_proxy.begin(), v_it = rawCVarsMap.begin();
+      // Apply the correction.  A rawVarsMap lookup is not needed since
+      // rawVarsMap and lo_fi_resp_map are complete and consistently ordered.
+      IntVarsMIter v_it; IntRespMIter r_it;
+      for (r_it  = lo_fi_resp_map_proxy.begin(), v_it = rawVarsMap.begin();
 	   r_it != lo_fi_resp_map_proxy.end(); ++r_it, ++v_it)
-        deltaCorr.apply(v_it->second, r_it->second, quiet_flag); //rawCVarsMap
+        deltaCorr.apply(v_it->second, r_it->second, quiet_flag); //rawVarsMap
                                                                  //[r_it->first]
-      rawCVarsMap.clear();
+      rawVarsMap.clear();
     }
 
     // add cached approx evals (synchronized evals that could not be returned
@@ -571,16 +569,16 @@ const IntResponseMap& HierarchSurrModel::derived_synchronize_nowait()
       // if a correction has not been computed, compute it now
       bool quiet_flag = (outputLevel < NORMAL_OUTPUT);
       if (!deltaCorr.computed() && !lo_fi_resp_map_proxy.empty())
-	deltaCorr.compute(rawCVarsMap.begin()->second, highFidRefResponse,
+	deltaCorr.compute(rawVarsMap.begin()->second, highFidRefResponse,
 			  lo_fi_resp_map_proxy.begin()->second, quiet_flag);
 
-      // Apply the correction.  Must use rawCVarsMap lookup in this case since
-      // rawCVarsMap is complete, but lo_fi_resp_map may not be.
+      // Apply the correction.  Must use rawVarsMap lookup in this case since
+      // rawVarsMap is complete, but lo_fi_resp_map may not be.
       for (IntRespMIter r_it = lo_fi_resp_map_proxy.begin();
 	   r_it != lo_fi_resp_map_proxy.end(); ++r_it) {
 	int hier_eval_id = r_it->first;
-        deltaCorr.apply(rawCVarsMap[hier_eval_id], r_it->second, quiet_flag);
-        rawCVarsMap.erase(hier_eval_id);
+        deltaCorr.apply(rawVarsMap[hier_eval_id], r_it->second, quiet_flag);
+        rawVarsMap.erase(hier_eval_id);
       }
     }
 

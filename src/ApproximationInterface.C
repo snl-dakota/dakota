@@ -216,19 +216,32 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
     // the approximation).
     short approx_active_view = vars.view().first,
           actual_active_view = actualModelVars.view().first;
-    RealVector x; // view
+    bool am_vars = true;
     if (approx_active_view == actual_active_view)
-      x = vars.continuous_variables();
+      am_vars = false;
     else if ( ( actual_active_view == RELAXED_ALL ||
 		actual_active_view == MIXED_ALL ) &&
-	      approx_active_view >= RELAXED_DESIGN ) // Distinct to All
-      //actualModelVars.continuous_variables(vars.all_continuous_variables());
-      x = vars.all_continuous_variables();
+	      approx_active_view >= RELAXED_DESIGN ) { // Distinct to All
+      if (vars.acv())
+	actualModelVars.continuous_variables(vars.all_continuous_variables());
+      if (vars.adiv())
+	actualModelVars.discrete_int_variables(
+	  vars.all_discrete_int_variables());
+      if (vars.adrv())
+	actualModelVars.discrete_real_variables(
+	  vars.all_discrete_real_variables());
+    }
     else if ( ( approx_active_view == RELAXED_ALL ||
 		approx_active_view == MIXED_ALL ) &&
 	      actual_active_view >= RELAXED_DESIGN) { // All to Distinct
-      actualModelVars.all_continuous_variables(vars.continuous_variables());
-      x = actualModelVars.continuous_variables();
+      if (vars.cv())
+	actualModelVars.all_continuous_variables(vars.continuous_variables());
+      if (vars.div())
+	actualModelVars.all_discrete_int_variables(
+	  vars.discrete_int_variables());
+      if (vars.drv())
+	actualModelVars.all_discrete_real_variables(
+	  vars.discrete_real_variables());
     }
     // TO DO: extend for aleatory/epistemic uncertain views
     else {
@@ -236,10 +249,9 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
 	   << "ApproximationInterface::map()" << std::endl;
       abort_handler(-1);
     }
-    // avoid unnecessary data copying
-    //const RealVector& x = (approx_active_view == actual_active_view) ?
-    //  vars.continuous_variables() :          //Distinct to Distinct,All to All
-    //  actualModelVars.continuous_variables();//Distinct to All,All to Distinct
+    // active subsets of actualModelVars are used in surrogate construction
+    // and evaluation
+    const Variables& surf_vars = (am_vars) ? actualModelVars : vars;
 
     //size_t num_core_vars = x.length(), 
     //bool approx_scale_len  = (approxScale.length())  ? true : false;
@@ -247,7 +259,7 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
     for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
       int index = *it;
       if (core_asv[index] & 1) {
-	Real fn_val = functionSurfaces[index].get_value(x);
+	Real fn_val = functionSurfaces[index].value(surf_vars);
 	//if (approx_scale_len)
 	//  fn_val *= approxScale[index];
 	//if (approx_offset_len)
@@ -255,14 +267,15 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
 	core_response.function_value(fn_val, index);
       }
       if (core_asv[index] & 2) { // TO DO: ACV->DVV
-	const RealVector& fn_grad = functionSurfaces[index].get_gradient(x);
+	const RealVector& fn_grad = functionSurfaces[index].gradient(surf_vars);
 	//if (approx_scale_len)
 	//  for (size_t j=0; j<num_core_vars; j++)
 	//    fn_grad[j] *= approxScale[index];
 	core_response.function_gradient(fn_grad, index);
       }
       if (core_asv[index] & 4) { // TO DO: ACV->DVV
-	const RealSymMatrix& fn_hess = functionSurfaces[index].get_hessian(x);
+	const RealSymMatrix& fn_hess
+	  = functionSurfaces[index].hessian(surf_vars);
 	//if (approx_scale_len)
 	//  for (size_t j=0; j<num_core_vars; j++)
 	//    for (size_t k=0; k<num_core_vars; k++)
@@ -503,13 +516,16 @@ append_approximation(const VariablesArray& vars_array,
     on the data passed through update_approximation() calls.  The
     bounds are used only for graphics visualization. */
 void ApproximationInterface::
-build_approximation(const RealVector& lower_bnds, const RealVector& upper_bnds)
+build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
+		    const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
+		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)
 {
   // build the approximation surfaces
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int index = *it;
     // always set bounds since needed for some approximation models
-    functionSurfaces[index].set_bounds(lower_bnds, upper_bnds);
+    functionSurfaces[index].set_bounds(c_l_bnds, c_u_bnds, di_l_bnds, di_u_bnds,
+				       dr_l_bnds, dr_u_bnds);
     // construct the approximation
     functionSurfaces[index].build();
     // manage diagnostics
@@ -517,12 +533,12 @@ build_approximation(const RealVector& lower_bnds, const RealVector& upper_bnds)
       if (!diagnosticSet.empty()) {
 	int num_diag = diagnosticSet.size();
 	for (int j = 0; j < num_diag; ++j)
-	  functionSurfaces[index].get_diagnostic(diagnosticSet[j]);
+	  functionSurfaces[index].diagnostic(diagnosticSet[j]);
       }
       if (outputLevel > NORMAL_OUTPUT) {
-	functionSurfaces[index].get_diagnostic("rsquared");
-	functionSurfaces[index].get_diagnostic("root_mean_squared");	
-	functionSurfaces[index].get_diagnostic("mean_abs");
+	functionSurfaces[index].diagnostic("rsquared");
+	functionSurfaces[index].diagnostic("root_mean_squared");	
+	functionSurfaces[index].diagnostic("mean_abs");
       }
     }
   }
@@ -735,7 +751,7 @@ approximation_coefficients(const RealVectorArray& approx_coeffs)
 
 
 const RealVector& ApproximationInterface::
-approximation_variances(const RealVector& c_vars)
+approximation_variances(const Variables& vars)
 {
   // only assign the functionSurfaceVariances array if it's requested
   // (i.e., do it here rather than in build/update functions above).
@@ -744,7 +760,7 @@ approximation_variances(const RealVector& c_vars)
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
     int index = *it;
     functionSurfaceVariances[index]
-      = functionSurfaces[index].get_prediction_variance(c_vars);
+      = functionSurfaces[index].prediction_variance(vars);
   }
   return functionSurfaceVariances;
 }

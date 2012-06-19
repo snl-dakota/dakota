@@ -75,11 +75,11 @@ private:
 
   /// expected improvement function for the GP
   Real expected_improvement(const RealVector& expected_values,
-			    const RealVector& c_variables);
+			    const Variables& recast_vars);
 
   /// expected feasibility function for the GP
   Real expected_feasibility(const RealVector& expected_values,
-			    const RealVector& c_variables);
+			    const Variables& recast_vars);
 
   //
   //- Heading: Objective/constraint evaluators passed to RecastModel

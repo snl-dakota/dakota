@@ -134,8 +134,8 @@ Real getRmax(const RealMatrix& xset)
 
 
 GaussProcApproximation::
-GaussProcApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
-  Approximation(BaseConstructor(), problem_db, num_acv),
+GaussProcApproximation(const ProblemDescDB& problem_db, size_t num_vars):
+  Approximation(BaseConstructor(), problem_db, num_vars),
   usePointSelection(problem_db.get_bool("model.surrogate.point_selection"))
 {
   const String& trend_string = 
@@ -218,16 +218,17 @@ void GaussProcApproximation::build()
 }
 
 
-Real GaussProcApproximation::get_value(const RealVector& x)
-{ GPmodel_apply(x,false,false); return approxValue; }
+Real GaussProcApproximation::value(const Variables& vars)
+{ GPmodel_apply(vars.continuous_variables(),false,false); return approxValue; }
 
 
-Real GaussProcApproximation::get_prediction_variance(const RealVector& x)
-{ GPmodel_apply(x,true,false); return approxVariance;}
+const RealVector& GaussProcApproximation::gradient(const Variables& vars)
+{ GPmodel_apply(vars.continuous_variables(),false,true); return approxGradient;}
 
-const RealVector& GaussProcApproximation::
-get_gradient(const RealVector& x)
-{ GPmodel_apply(x,false,true); return approxGradient;}
+
+Real GaussProcApproximation::prediction_variance(const Variables& vars)
+{ GPmodel_apply(vars.continuous_variables(),true,false); return approxVariance;}
+
 
 void GaussProcApproximation::GPmodel_build()
 {

@@ -13,6 +13,7 @@
  
 #include "TaylorApproximation.H"
 #include "ProblemDescDB.H"
+#include "DakotaVariables.H"
 
 
 namespace Dakota {
@@ -80,23 +81,24 @@ void TaylorApproximation::build()
 }
 
 
-Real TaylorApproximation::get_value(const RealVector& x)
+Real TaylorApproximation::value(const Variables& vars)
 {
   if (buildDataOrder == 1)
     return approxData.anchor_function();
   else { // build up approx value from constant and derivative terms
     Real approx_val = (buildDataOrder & 1) ? approxData.anchor_function() : 0.;
     if (buildDataOrder & 6) {
-      const RealVector&  c_vars = approxData.anchor_continuous_variables();
+      const RealVector&       x = vars.continuous_variables();
+      const RealVector&      x0 = approxData.anchor_continuous_variables();
       const RealVector&    grad = approxData.anchor_gradient();
       const RealSymMatrix& hess = approxData.anchor_hessian();
       for (size_t i=0; i<numVars; i++) {
-	Real dist_i = x[i] - c_vars[i];
+	Real dist_i = x[i] - x0[i];
 	if (buildDataOrder & 2) // include gradient terms
 	  approx_val += grad[i] * dist_i;
 	if (buildDataOrder & 4) // include Hessian terms
 	  for (size_t j=0; j<numVars; j++)
-	    approx_val += dist_i * hess(i,j) * (x[j] - c_vars[j])/2.;
+	    approx_val += dist_i * hess(i,j) * (x[j] - x0[j])/2.;
       }
     }
     return approx_val;
@@ -104,7 +106,7 @@ Real TaylorApproximation::get_value(const RealVector& x)
 }
 
 
-const RealVector& TaylorApproximation::get_gradient(const RealVector& x)
+const RealVector& TaylorApproximation::gradient(const Variables& vars)
 {
   if (buildDataOrder == 2)
     return approxData.anchor_gradient();
@@ -116,18 +118,19 @@ const RealVector& TaylorApproximation::get_gradient(const RealVector& x)
       else                                    approxGradient = 0.;
     }
     if (buildDataOrder & 4) { // include Hessian terms
-      const RealVector&  c_vars = approxData.anchor_continuous_variables();
+      const RealVector&       x = vars.continuous_variables();
+      const RealVector&      x0 = approxData.anchor_continuous_variables();
       const RealSymMatrix& hess = approxData.anchor_hessian();
       for (size_t i=0; i<numVars; i++)
 	for (size_t j=0; j<numVars; j++)
-	  approxGradient[i] += hess(i,j) * (x[j] - c_vars[j]);
+	  approxGradient[i] += hess(i,j) * (x[j] - x0[j]);
     }
     return approxGradient;
   }
 }
 
 
-const RealSymMatrix& TaylorApproximation::get_hessian(const RealVector& x)
+const RealSymMatrix& TaylorApproximation::hessian(const Variables& vars)
 {
   if (buildDataOrder & 4)
     return approxData.anchor_hessian();

@@ -513,9 +513,9 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
 	  // -->> hierarchical needs compute_correction if new center
 	  // -->> global needs compute_correction if new center or new bounds
 	  DiscrepancyCorrection& delta = iteratedModel.discrepancy_correction();
-	  delta.compute(varsCenter.continuous_variables(),
-			responseCenterTruth.second, responseCenterApprox);
-	  delta.apply(varsCenter.continuous_variables(), responseCenterApprox);
+	  delta.compute(varsCenter, responseCenterTruth.second,
+			responseCenterApprox);
+	  delta.apply(varsCenter, responseCenterApprox);
 	}
       }
     } // end of "if (globalApproxFlag || newCenterFlag)" block

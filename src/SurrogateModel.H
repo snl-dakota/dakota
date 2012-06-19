@@ -101,7 +101,7 @@ protected:
   /// map of raw continuous variables used by apply_correction().
   /// Model::varsList cannot be used for this purpose since it does
   /// not contain lower level variables sets from finite differencing.
-  IntRealVectorMap rawCVarsMap;
+  IntVariablesMap rawVarsMap;
 
   /// map from actualModel/highFidelityModel evaluation ids to
   /// DataFitSurrModel/HierarchSurrModel ids

@@ -60,16 +60,16 @@ public:
 
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response and store in {add,mult}Corrections
-  void compute(const RealVector& c_vars, const Response& truth_response, 
+  void compute(const Variables& vars, const Response& truth_response, 
 	       const Response& approx_response, bool quiet_flag = false);
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response and store in discrepancy_response
-  void compute(//const RealVector& c_vars,
+  void compute(//const Variables& vars,
 	       const Response& truth_response, const Response& approx_response,
 	       Response& discrepancy_response, bool quiet_flag = false);
 
   /// apply the correction computed in compute() to approx_response
-  void apply(const RealVector& c_vars, Response& approx_response,
+  void apply(const Variables& vars, Response& approx_response,
 	     bool quiet_flag = false);
 
   /// indicates an active correction via non-empty correctionType
@@ -139,21 +139,21 @@ private:
 
   /// internal convenience function for applying additive corrections
   /// to an approximate response
-  void apply_additive(const RealVector& c_vars, Response& approx_response);
+  void apply_additive(const Variables& vars, Response& approx_response);
   /// internal convenience function for applying multiplicative
   /// corrections to an approximate response
-  void apply_multiplicative(const RealVector& c_vars,
+  void apply_multiplicative(const Variables& vars,
 			    Response& approx_response);
 
   /// internal convenience function for applying additive corrections
   /// to a set of response functions
-  void apply_additive(const RealVector& c_vars, RealVector& approx_fns);
+  void apply_additive(const Variables& vars, RealVector& approx_fns);
   /// internal convenience function for applying multiplicative corrections
   /// to a set of response functions
-  void apply_multiplicative(const RealVector& c_vars, RealVector& approx_fns);
+  void apply_multiplicative(const Variables& vars, RealVector& approx_fns);
 
   /// search data_pairs for missing approximation data
-  const Response& search_db(const RealVector& c_vars,
+  const Response& search_db(const  Variables& search_vars,
 			    const ShortArray& search_asv);
 
   //
@@ -193,7 +193,7 @@ private:
   // (often the center of the current trust region)
   //RealVector correctionCenterPt;
   /// copy of center point from the previous correction cycle
-  RealVector correctionPrevCenterPt;
+  Variables correctionPrevCenterPt;
   /// truth function values at the current correction point
   RealVector truthFnsCenter;
   /// Surrogate function values at the current correction point
@@ -243,18 +243,18 @@ inline bool DiscrepancyCorrection::computed() const
 
 
 inline void DiscrepancyCorrection::
-apply_additive(const RealVector& c_vars, RealVector& approx_fns)
+apply_additive(const Variables& vars, RealVector& approx_fns)
 {
   for (ISIter it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
-    approx_fns[*it] += addCorrections[*it].get_value(c_vars);
+    approx_fns[*it] += addCorrections[*it].value(vars);
 }
 
 
 inline void DiscrepancyCorrection::
-apply_multiplicative(const RealVector& c_vars, RealVector& approx_fns)
+apply_multiplicative(const Variables& vars, RealVector& approx_fns)
 {
   for (ISIter it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
-    approx_fns[*it] *= multCorrections[*it].get_value(c_vars);
+    approx_fns[*it] *= multCorrections[*it].value(vars);
 }
 
 } // namespace Dakota

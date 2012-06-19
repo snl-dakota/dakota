@@ -16,6 +16,7 @@
 
 #include "SurfpackApproximation.H"
 #include "ProblemDescDB.H"
+#include "DakotaVariables.H"
 #include "data_io.h"
 
 // Headers from Surfpack
@@ -52,14 +53,14 @@ using surfpack::fromVec;
 
 
 SurfpackApproximation::
-SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
-  Approximation(BaseConstructor(), problem_db, num_acv), //surface(NULL),
+SurfpackApproximation(const ProblemDescDB& problem_db, size_t num_vars):
+  Approximation(BaseConstructor(), problem_db, num_vars), //surface(NULL),
   surfData(NULL), model(NULL), factory(NULL)
 {
     ParamMap args;
 
     args["verbosity"] = toString<short>(outputLevel);
-    args["ndims"] = toString<size_t>(num_acv);
+    args["ndims"] = toString<size_t>(num_vars);
 
     // For now, not exposing Surfpack random seed in the DAKOTA UI;
     // instead fixing at an arbitrary value (treated as int in Surfpack)
@@ -181,15 +182,15 @@ SurfpackApproximation(const ProblemDescDB& problem_db, const size_t& num_acv):
 //         args["min_correlations"] = fromVec<Real>(min_correlation_ra);
 //       }
 
-      if (!approxLowerBounds.empty()) {
+      if (!approxCLowerBnds.empty()) {
 	RealArray alb_ra;
-	copy_data(approxLowerBounds, alb_ra);
+	copy_data(approxCLowerBnds, alb_ra);
 	args["lower_bounds"] = fromVec<Real>(alb_ra);
       }
 
-      if (!approxUpperBounds.empty()) {
+      if (!approxCUpperBnds.empty()) {
 	RealArray aub_ra;
-	copy_data(approxUpperBounds, aub_ra);
+	copy_data(approxCUpperBnds, aub_ra);
 	args["upper_bounds"] = fromVec<Real>(aub_ra);
       }
 
@@ -315,14 +316,14 @@ SurfpackApproximation(const String& approx_type,
     args["order"] = toString<unsigned int>(2);
     args["reduced_polynomial"] = toString<bool>(true);
     args["type"] = "kriging";
-    if (!approxLowerBounds.empty()) {
+    if (!approxCLowerBnds.empty()) {
       RealArray alb_ra;
-      copy_data(approxLowerBounds, alb_ra);
+      copy_data(approxCLowerBnds, alb_ra);
       args["lower_bounds"] = fromVec<Real>(alb_ra);
     }
-    if (!approxUpperBounds.empty()) {
+    if (!approxCUpperBnds.empty()) {
       RealArray aub_ra;
-      copy_data(approxUpperBounds, aub_ra);
+      copy_data(approxCUpperBnds, aub_ra);
       args["upper_bounds"] = fromVec<Real>(aub_ra);
     }
     //size_t krig_max_trials=(2*num_vars+1)*(num_vars+1)*10;
@@ -417,14 +418,14 @@ void SurfpackApproximation::build()
     surfData = surrogates_to_surf_data();
  
     // send any late updates to bounds (as in SBO); will overwrite existing
-    if (!approxLowerBounds.empty()) {
+    if (!approxCLowerBnds.empty()) {
       RealArray alb;
-      copy_data(approxLowerBounds, alb);
+      copy_data(approxCLowerBnds, alb);
       factory->add("lower_bounds", fromVec<Real>(alb));
     }
-    if (!approxUpperBounds.empty()) {
+    if (!approxCUpperBnds.empty()) {
       RealArray aub;
-      copy_data(approxUpperBounds, aub);
+      copy_data(approxCUpperBnds, aub);
       factory->add("upper_bounds", fromVec<Real>(aub));
     }
 
@@ -463,53 +464,39 @@ void SurfpackApproximation::build()
 }
 
 
-Real SurfpackApproximation::get_value(const RealVector& x)
+Real SurfpackApproximation::value(const Variables& vars)
 { 
   //static int times_called = 0;
   if (!model) { 
-    Cerr << "Error: surface is null in get_value" << std::endl;  
+    Cerr << "Error: surface is null in SurfpackApproximation::value()"
+	 << std::endl;  
     abort_handler(-1);
   }
   // check incoming x for correct length
-  else if (x.length() != numVars) {
+  else if (vars.cv() != numVars) {
     Cerr << "Error: bad parameter vector length in SurfpackApproximation::"
-	 << "get_value" << std::endl;
+	 << "value()" << std::endl;
     abort_handler(-1);
   }
   RealArray x_vec;
-  copy_data(x, x_vec);
+  copy_data(vars.continuous_variables(), x_vec);
   return (*model)(x_vec);
 }
   
 
-Real SurfpackApproximation::get_prediction_variance(const RealVector& x)
+const RealVector& SurfpackApproximation::gradient(const Variables& vars)
 {
+  approxGradient.sizeUninitialized(vars.cv());
   try {
     RealArray x_vec;
-    copy_data(x, x_vec);
-    return model->variance(x_vec);
-  }
-  catch (...) {
-    Cerr << "Error: get_prediction_variance not available for this "
-	 << "approximation type." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-const RealVector& SurfpackApproximation::get_gradient(const RealVector& x)
-{
-  approxGradient.sizeUninitialized(x.length());
-  try {
-    RealArray x_vec;
-    copy_data(x, x_vec);
+    copy_data(vars.continuous_variables(), x_vec);
     VecDbl local_grad = model->gradient(x_vec);
     for (unsigned i = 0; i < surfData->xSize(); i++) {
       approxGradient[i] = local_grad[i];
     }
   }
   catch (...) {
-    Cerr << "Error: get_gradient() not available for this approximation type."
+    Cerr << "Error: gradient() not available for this approximation type."
 	 << std::endl;
     abort_handler(-1);
   }
@@ -517,9 +504,10 @@ const RealVector& SurfpackApproximation::get_gradient(const RealVector& x)
 }
 
 
-const RealSymMatrix& SurfpackApproximation::get_hessian(const RealVector& x)
+const RealSymMatrix& SurfpackApproximation::hessian(const Variables& vars)
 {
-  approxHessian.reshape(x.length());
+  size_t num_cv = vars.cv();
+  approxHessian.reshape(num_cv);
   try {
     if (approxType == "global_moving_least_squares") {
       Cerr << "Have not implemented analytical hessians in this surfpack class"
@@ -527,15 +515,15 @@ const RealSymMatrix& SurfpackApproximation::get_hessian(const RealVector& x)
       abort_handler(-1);
     }
     RealArray x_vec;
-    copy_data(x, x_vec);
+    copy_data(vars.continuous_variables(), x_vec);
     MtxDbl sm = model->hessian(x_vec);
     ///\todo Make this acceptably efficient
-    for (size_t i = 0; i < x.length(); i++)
-      for(size_t j = 0; j < x.length(); j++)
+    for (size_t i = 0; i < num_cv; i++)
+      for(size_t j = 0; j < num_cv; j++)
         approxHessian(i,j) = sm(i,j);
   }
   catch (...) {
-    Cerr << "Error: get_hessian() not available for this approximation type."
+    Cerr << "Error: hessian() not available for this approximation type."
 	 << std::endl;
     abort_handler(-1);
   }
@@ -543,14 +531,30 @@ const RealSymMatrix& SurfpackApproximation::get_hessian(const RealVector& x)
 }
 
 
+Real SurfpackApproximation::prediction_variance(const Variables& vars)
+{
+  try {
+    RealArray x_vec;
+    copy_data(vars.continuous_variables(), x_vec);
+    return model->variance(x_vec);
+  }
+  catch (...) {
+    Cerr << "Error: prediction_variance() not available for this "
+	 << "approximation type." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 const bool SurfpackApproximation::diagnostics_available()
 { return true; }
 
 
-Real SurfpackApproximation::get_diagnostic(const String& metric_type)
+Real SurfpackApproximation::diagnostic(const String& metric_type)
 { 
   if (!model) { 
-    Cerr << "Error: surface is null in get_diagnostic" << std::endl;  
+    Cerr << "Error: surface is null in SurfpackApproximation::diagnostic()"
+	 << std::endl;  
     abort_handler(-1);
   }
 
@@ -616,7 +620,7 @@ void SurfpackApproximation::add_anchor_to_surfdata(SurfData& surf_data)
   RealArray gradient;
   SurfpackMatrix<Real> hessian;
 
-  // Print out the continuous design variables
+  // Print out the anchor continuous variables
   const RealVector& c_vars = approxData.anchor_continuous_variables();
   if (outputLevel > NORMAL_OUTPUT) {
     Cout << "Anchor point continuous vars\n";
@@ -694,7 +698,11 @@ add_sdp_to_surfdata(const Pecos::SurrogateDataVars& sdv,
   if (fail_code)
     return;
 
-  // Surfpack's RealArray is std::vector<double>; use DAKOTA copy_data helpers
+  // Surfpack's RealArray is std::vector<double>; use DAKOTA copy_data helpers.
+  // For DAKOTA's compact mode, any active discrete {int,real} variables are
+  // contained within SDV's continuousVars (see Approximation::add(Real*).  So
+  // sdv.discrete_int_variables() and sdv.discrete_real_variables() are not
+  // currently used by Surfpack.
   RealArray x; 
   copy_data(sdv.continuous_variables(), x);
   Real f = sdr.response_function();

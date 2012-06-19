@@ -13,6 +13,7 @@
  
 #include "TANA3Approximation.H"
 #include "ProblemDescDB.H"
+#include "DakotaVariables.H"
 
 
 namespace Dakota {
@@ -275,16 +276,16 @@ void TANA3Approximation::offset(const RealVector& x, RealVector& s)
 }
 
 
-Real TANA3Approximation::get_value(const RealVector& x)
+Real TANA3Approximation::value(const Variables& vars)
 {
   Real approx_val;
+  const RealVector& x = vars.continuous_variables();
   if (approxData.size()) { // TANA-3 approximation
 
     // Check existing scaling to verify that it is sufficient for x
-    size_t i;
-    bool rescale_flag = false;
     RealVector s_eval;
     offset(x, s_eval);
+    size_t i; bool rescale_flag = false;
     for (i=0; i<numVars; i++)
       if (x[i] < minX[i] && s_eval[i] < 0.) { // *** change from old NonDRel ***
 	minX[i] = x[i];
@@ -314,11 +315,11 @@ Real TANA3Approximation::get_value(const RealVector& x)
 #endif // DEBUG
   }
   else { // First-order Taylor series (interim approx)
-    approx_val              = approxData.anchor_function();
-    const RealVector& c_vars = approxData.anchor_continuous_variables();
-    const RealVector& grad   = approxData.anchor_gradient();
+    approx_val             = approxData.anchor_function();
+    const RealVector&   x0 = approxData.anchor_continuous_variables();
+    const RealVector& grad = approxData.anchor_gradient();
     for (size_t i=0; i<numVars; i++) {
-      Real dist_i = x[i] - c_vars[i];
+      Real dist_i = x[i] - x0[i];
       approx_val += grad[i] * dist_i;
     }
   }
@@ -327,15 +328,15 @@ Real TANA3Approximation::get_value(const RealVector& x)
 }
 
 
-const RealVector& TANA3Approximation::get_gradient(const RealVector& x)
+const RealVector& TANA3Approximation::gradient(const Variables& vars)
 {
   if (approxData.size()) { // TANA-3 approximation
 
     // Check existing scaling to verify that it is sufficient for x
-    size_t i;
-    bool rescale_flag = false;
+    const RealVector& x = vars.continuous_variables();
     RealVector s_eval;
     offset(x, s_eval);
+    size_t i; bool rescale_flag = false;
     for (i=0; i<numVars; i++)
       if (x[i] < minX[i] && s_eval[i] < 0.) {
 	minX[i] = x[i];
@@ -375,7 +376,7 @@ const RealVector& TANA3Approximation::get_gradient(const RealVector& x)
 }
 
 
-//const RealMatrix& TANA3Approximation::get_hessian(const RealVector& x)
+//const RealMatrix& TANA3Approximation::hessian(const Variables& vars)
 //{ return approxHessian; }
 
 } // namespace Dakota
