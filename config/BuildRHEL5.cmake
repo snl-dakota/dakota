@@ -4,9 +4,9 @@
 #
 ##############################################################################
 
-set( CTEST_BUILD_NAME "dakota_rhel6" )
+set( CTEST_BUILD_NAME "dakota_rhel5" )
 
-set( DAKOTA_CMAKE_PLATFORM "RHEL6.cmake")
+set( DAKOTA_CMAKE_PLATFORM "RHEL5.cmake")
 set( DAKOTA_CMAKE_BUILD_TYPE "DakotaDistro.cmake")
 
 #********* MUST SET CORRECTLY!!! *********** #

@@ -23,15 +23,14 @@ if ( NOT DAKOTA_JENKINS_BUILD AND NOT CTEST_BUILD_NAME )
 endif()
 
 #*****************************************************************
+# Error checking on required variables
+
+#*****************************************************************
 # Get|set default CTEST_[SOURCE|BINARY]_DIRECTORY
 #   (default: ${CTEST_DASHBOARD_ROOT}/[source|build])
 
 if ( DAKOTA_JENKINS_BUILD )
-  set( CTEST_BUILD_NAME "$ENV{JOB_NAME}" )
-  set( CTEST_DASHBOARD_ROOT "$ENV{WORKSPACE}" )
-  set( CTEST_BINARY_DIRECTORY "${CTEST_DASHBOARD_ROOT}/build")
-  set( CTEST_SOURCE_DIRECTORY "${CTEST_DASHBOARD_ROOT}/source")
-
+  include( DakotaJenkins )
 else ()
   if ( NOT CTEST_BINARY_DIRECTORY )
     set( CTEST_BINARY_DIRECTORY
@@ -45,24 +44,17 @@ else ()
 endif()
 
 #*****************************************************************
-# Set CTEST_SITE 
-#    (default: hostname)
-# and DAKOTA_HOSTFILE
-#    (default hostname.cmake)
+# Set CTEST_SITE and DAKOTA_CMAKE_HOSTFILE 
+#    (default: hostname and hostname.cmake )
 
 if ( NOT CTEST_SITE )
-  find_program(HOSTNAME hostname)
+  find_program( HOSTNAME hostname )
 
   # TODO: change to execute_process, verify works in Windows
-  # NOTE: Cygwin uses hostname from coreutils; doesn't support options
-  if (CYGWIN)
-    exec_program(${HOSTNAME} OUTPUT_VARIABLE hostname)
-    # TODO: only keep up to the first dot, since no -s option
-  else()
-    exec_program(${HOSTNAME} ARGS -s OUTPUT_VARIABLE hostname)
-  endif()
-  string(REGEX REPLACE "[/\\\\+<> #]" "-" hostname "${hostname}")
-
+  #exec_program(${HOSTNAME} OUTPUT_VARIABLE hostname)
+  #string(REGEX REPLACE "[/\\\\+<> #]" "-" hostname "${hostname}")
+  execute_process( COMMAND ${HOSTNAME} OUTPUT_VARIABLE hostname )
+  string( REGEX REPLACE "([^.]+).*" "\\1" hostname "${hostname}" )
   set( CTEST_SITE "${hostname}" )
   if ( NOT DAKOTA_CMAKE_HOSTFILE )
     set( DAKOTA_CMAKE_HOSTFILE "${hostname}.cmake" )
