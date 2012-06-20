@@ -105,14 +105,23 @@ private:
 
   /// add Pecos::SurrogateData::SurrogateData{Vars,Resp} to SurfData,
   /// accounting for buildDataOrder available
-  void add_sdp_to_surfdata(const Pecos::SurrogateDataVars& sdv,
-			   const Pecos::SurrogateDataResp& sdr, short fail_code,
-			   SurfData& surf_data);
+  void add_sd_to_surfdata(const Pecos::SurrogateDataVars& sdv,
+			  const Pecos::SurrogateDataResp& sdr, short fail_code,
+			  SurfData& surf_data);
 
   /// copy RealSymMatrix to SurfpackMatrix (Real type only)
   void copy_matrix(const RealSymMatrix& rsm,
 		   SurfpackMatrix<Real>& surfpack_matrix);
 
+  /// merge cv, div, and drv vectors into a single ra array
+  void merge_variable_arrays(const RealVector& cv,  const IntVector& div,
+			     const RealVector& drv, RealArray& ra);
+  /// aggregate {continuous,discrete int,discrete real} variables 
+  /// from SurrogateDataVars into ra
+  void sdv_to_realarray(const Pecos::SurrogateDataVars& sdv, RealArray& ra);
+  /// aggregate {active,all} {continuous,discrete int,discrete real}
+  /// variables into ra
+  void vars_to_realarray(const Variables& vars, RealArray& ra);
 
   //
   //- Heading: Data

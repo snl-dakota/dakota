@@ -602,12 +602,12 @@ add(const Variables& vars, bool anchor_flag, bool deep_copy)
       add(vars.all_continuous_variables(), vars.all_discrete_int_variables(),
 	  vars.all_discrete_real_variables(), anchor_flag, deep_copy);
     /*
-    else if (vars.cv() == numVars) {
+    else if (vars.cv() == numVars) {  // compactMode does not affect vars
       IntVector empty_iv; RealVector empty_rv;
       add(vars.continuous_variables(), empty_iv, empty_rv,
 	  anchor_flag, deep_copy);
     }
-    else if (vars.acv() == numVars) { // possible conflict with cv()+div()+drv()
+    else if (vars.acv() == numVars) { // potential conflict with cv/div/drv
       IntVector empty_iv; RealVector empty_rv;
       add(vars.all_continuous_variables(), empty_iv, empty_rv,
 	  anchor_flag, deep_copy);

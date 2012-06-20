@@ -532,6 +532,25 @@ void copy_data_partial(
     sdv2[start_index2+i] = sdv1[start_index1+i];
 }
 
+/// copy all of first SerialDenseVector to portion of second SerialDenseVector
+template <typename OrdinalType, typename ScalarType>
+void copy_data_partial(
+  const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv1,
+  std::vector<ScalarType>& da2, size_t start_index2)
+{
+  size_t num_items = sdv1.length();
+  // In this case, incoming da2 must already be sized and will be
+  // indexed from start_index2 to start_index2+num_items-1
+  if (start_index2 + num_items > da2.size()) {
+    Cerr << "Error: indexing out of bounds in copy_data_partial(Teuchos::"
+	 << "SerialDenseVector<OrdinalType, ScalarType>, "
+	 << "std::vector<ScalarType>, OrdinalType)." << std::endl;
+    abort_handler(-1);
+  }
+  for (size_t i=0; i<num_items; ++i)
+    da2[start_index2+i] = sdv1[i];
+}
+
 /// copy portion of first Array<T> to all of second Array<T>
 template <class T>
 void copy_data_partial(const std::vector<T>& da1, size_t start_index1,
@@ -606,20 +625,36 @@ void copy_data_partial(const std::vector<T>& da1, size_t start_index1,
 // Non-templated functions for creating relaxed vectors
 // ----------------------------------------------------
 
-/// aggregate continuous and discrete arrays into a single relaxed array
-inline void merge_data_partial(const IntVector& d_array,
-			       RealVector& m_array, size_t start_index_ma)
+/// merge a discrete integer vector into a single continuous vector
+inline void merge_data_partial(const IntVector& d_vec,
+			       RealVector& m_vec, size_t start_index_ma)
 {
-  size_t i, num_items = d_array.length();
-  // In this case, incoming m_array must already be sized and will be
+  size_t i, num_items = d_vec.length();
+  // In this case, incoming m_vec must already be sized and will be
   // indexed from start_index_ma to start_index_ma+num_items-1
-  if (start_index_ma + num_items > m_array.length()) {
-    Cerr << "Error: indexing out of bounds in copy_data_partial("
-	 << "Dakota::Array<T>, boost::multi_array<T, 1>, size_t)." << std::endl;
+  if (start_index_ma + num_items > m_vec.length()) {
+    Cerr << "Error: indexing out of bounds in merge_data_partial(IntVector, "
+	 << "RealVector, size_t)." << std::endl;
     abort_handler(-1);
   }
   for (i=0; i<num_items; ++i)
-    m_array[start_index_ma+i] = (Real)d_array[i];
+    m_vec[start_index_ma+i] = (Real)d_vec[i];
+}
+
+/// merge a discrete integer vector into a single continuous array
+inline void merge_data_partial(const IntVector& d_vec,
+			       RealArray& m_array, size_t start_index_ma)
+{
+  size_t i, num_items = d_vec.length();
+  // In this case, incoming m_array must already be sized and will be
+  // indexed from start_index_ma to start_index_ma+num_items-1
+  if (start_index_ma + num_items > m_array.size()) {
+    Cerr << "Error: indexing out of bounds in merge_data_partial(IntVector, "
+	 << "RealArray, size_t)." << std::endl;
+    abort_handler(-1);
+  }
+  for (i=0; i<num_items; ++i)
+    m_array[start_index_ma+i] = (Real)d_vec[i];
 }
 
 

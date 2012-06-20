@@ -55192,6 +55192,32 @@ Partial Rank Correlation Matrix between input and output:
        TF1ln -1.74668e-01 
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
+<<<<< Function evaluation summary (I1): 20 total (20 new, 0 duplicate)
+response_fn_1:  Min = -9.6206835975e-03  Max = 2.5600498066e+02
+Simple Correlation Matrix among all inputs and outputs:
+                    TF1ln        TF1ln    ModelForm response_fn_1 
+       TF1ln  1.00000e+00 
+       TF1ln  5.21092e-05  1.00000e+00 
+   ModelForm  9.86778e-03  1.55960e-03  1.00000e+00 
+response_fn_1  5.07668e-03 -3.55170e-04  8.17876e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       TF1ln -5.20347e-03 
+       TF1ln -2.83396e-03 
+   ModelForm  8.17878e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    TF1ln        TF1ln    ModelForm response_fn_1 
+       TF1ln  1.00000e+00 
+       TF1ln -5.18345e-03  1.00000e+00 
+   ModelForm  4.98285e-03  3.41675e-03  1.00000e+00 
+response_fn_1  5.77963e-02  1.15724e-01  9.19819e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       TF1ln  1.43144e-01 
+       TF1ln  2.90340e-01 
+   ModelForm  9.26969e-01 
+Test Number 5 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -55222,7 +55248,7 @@ Partial Rank Correlation Matrix between input and output:
              response_fn_1 
        TF1ln  2.23170e-02 
        TF1ln  1.75199e-01 
-Test Number 5 succeeded
+Test Number 6 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 Moment-based statistics for each response function:

@@ -25,7 +25,7 @@ method,
 	sampling
 	  samples = 5000 seed = 5
 	  sample_type lhs
-	  response_levels = 2.e-5 3.e-5 4.e-5
+	  response_levels = 2.e-5 3.e-5 4.e-5		#0,#1,#2,#3,#5,#6
 
 model,
 	id_model = 'UQ_M'
@@ -33,13 +33,13 @@ model,
 	  dace_method_pointer = 'DACE'
 	  polynomial quadratic		#0
 # 	  neural_network		#1
-#	  gaussian_process surfpack	#2,#4,#5
+#	  gaussian_process surfpack	#2,#4,#5,#6
 #	  mars				#3
 
 # Test 2 with a samples file, free-form or annotated
-#	samples_file = 'dakota_uq_textbook_lhs_approx.annotated' 	#4
-#	samples_file = 'dakota_uq_textbook_lhs_approx.freeform' 	#5
-#	  freeform 					#5
+#	samples_file = 'dakota_uq_textbook_lhs_approx.annotated' #5
+#	samples_file = 'dakota_uq_textbook_lhs_approx.freeform'	 #6
+#	  freeform     						 #6
 
 variables,
 	lognormal_uncertain =  2
@@ -47,8 +47,12 @@ variables,
 #	  std_deviations    =  0.5	 0.5
 	  error_factors     =  1.1  1.1
 	  descriptors       =  'TF1ln' 'TF1ln'
-	uncertain_correlation_matrix =  1.0 0.0
-					0.0 1.0
+#	discrete_uncertain_set_int = 1				#4
+#	  set_probs  = .1 .2 .4 .2 .1				#4
+#	  set_values =  1  2  3  4  5				#4
+#	  descriptors = 'ModelForm'				#4
+	uncertain_correlation_matrix =  1. 0.
+					0. 1.
 
 responses,
 	response_functions = 1
@@ -64,7 +68,7 @@ method,
 	model_pointer = 'DACE_M'
 	sampling
 	  samples = 2			#0
-#	  samples = 20			#3
+#	  samples = 20			#3,#4
 	  seed = 50
 	  sample_type lhs
 

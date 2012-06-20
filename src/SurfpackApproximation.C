@@ -165,34 +165,36 @@ SurfpackApproximation(const ProblemDescDB& problem_db, size_t num_vars):
         args["correlation_lengths"] = fromVec<Real>(correlation_ra);
 	args["optimization_method"] = "none";
       }
-     
-//       const RealVector& max_correlations_rv 
-//         = problem_db.get_rv("model.surrogate.kriging_max_correlations");
-//       if (!max_correlations_rv.empty()) {
-// 	RealArray max_correlation_ra; //std::vector<double>
-// 	copy_data(max_correlations_rv, max_correlation_ra);
-//         args["max_correlations"] = fromVec<Real>(max_correlation_ra);
-//       }
 
-//       const RealVector& min_correlations_rv 
-//         = problem_db.get_rv("model.surrogate.kriging_min_correlations");
-//       if (!min_correlations_rv.empty()) {
-// 	RealArray min_correlation_ra; //std::vector<double>
-// 	copy_data(min_correlations_rv, min_correlation_ra);
-//         args["min_correlations"] = fromVec<Real>(min_correlation_ra);
-//       }
+      /*
+      const RealVector& max_correlations_rv 
+        = problem_db.get_rv("model.surrogate.kriging_max_correlations");
+      if (!max_correlations_rv.empty()) {
+	RealArray max_correlation_ra; //std::vector<double>
+	copy_data(max_correlations_rv, max_correlation_ra);
+        args["max_correlations"] = fromVec<Real>(max_correlation_ra);
+      }
 
+      const RealVector& min_correlations_rv 
+        = problem_db.get_rv("model.surrogate.kriging_min_correlations");
+      if (!min_correlations_rv.empty()) {
+	RealArray min_correlation_ra; //std::vector<double>
+	copy_data(min_correlations_rv, min_correlation_ra);
+        args["min_correlations"] = fromVec<Real>(min_correlation_ra);
+      }
+
+      // bounds set at run time within build()
       if (!approxCLowerBnds.empty()) {
 	RealArray alb_ra;
 	copy_data(approxCLowerBnds, alb_ra);
 	args["lower_bounds"] = fromVec<Real>(alb_ra);
       }
-
       if (!approxCUpperBnds.empty()) {
 	RealArray aub_ra;
 	copy_data(approxCUpperBnds, aub_ra);
 	args["upper_bounds"] = fromVec<Real>(aub_ra);
       }
+      */
 
       // unused for now
       IntVector dimension_groups_iv;
@@ -316,6 +318,8 @@ SurfpackApproximation(const String& approx_type,
     args["order"] = toString<unsigned int>(2);
     args["reduced_polynomial"] = toString<bool>(true);
     args["type"] = "kriging";
+    /*
+    // bounds set at run time within build():
     if (!approxCLowerBnds.empty()) {
       RealArray alb_ra;
       copy_data(approxCLowerBnds, alb_ra);
@@ -326,6 +330,7 @@ SurfpackApproximation(const String& approx_type,
       copy_data(approxCUpperBnds, aub_ra);
       args["upper_bounds"] = fromVec<Real>(aub_ra);
     }
+    */
     //size_t krig_max_trials=(2*num_vars+1)*(num_vars+1)*10;
     //size_t krig_max_trials=20*(2*num_vars+1)*
       //(1+num_vars+((num_vars+1)*num_vars)/2); //#der0 + #der1 + #der2
@@ -417,15 +422,19 @@ void SurfpackApproximation::build()
     }
     surfData = surrogates_to_surf_data();
  
-    // send any late updates to bounds (as in SBO); will overwrite existing
-    if (!approxCLowerBnds.empty()) {
+    // set bounds at run time since they are updated by some methods (e.g., SBO)
+    if (!approxCLowerBnds.empty() || !approxDILowerBnds.empty() ||
+	!approxDRLowerBnds.empty()) {
       RealArray alb;
-      copy_data(approxCLowerBnds, alb);
+      merge_variable_arrays(approxCLowerBnds, approxDILowerBnds,
+			    approxDRLowerBnds, alb);
       factory->add("lower_bounds", fromVec<Real>(alb));
     }
-    if (!approxCUpperBnds.empty()) {
+    if (!approxCUpperBnds.empty() || !approxDIUpperBnds.empty() ||
+	!approxDRUpperBnds.empty()) {
       RealArray aub;
-      copy_data(approxCUpperBnds, aub);
+      merge_variable_arrays(approxCUpperBnds, approxDIUpperBnds,
+			    approxDRUpperBnds, aub);
       factory->add("upper_bounds", fromVec<Real>(aub));
     }
 
@@ -464,6 +473,56 @@ void SurfpackApproximation::build()
 }
 
 
+void SurfpackApproximation::
+merge_variable_arrays(const RealVector& cv,  const IntVector& div,
+		      const RealVector& drv, RealArray& ra)
+{
+  size_t num_cv = cv.length(), num_div = div.length(), num_drv = drv.length(),
+         num_v  = num_cv + num_div + num_drv;
+  ra.resize(num_v);
+  if (num_cv)   copy_data_partial(cv,  ra, 0);
+  if (num_div) merge_data_partial(div, ra, num_cv);
+  if (num_drv)  copy_data_partial(drv, ra, num_cv+num_div);
+}
+
+
+void SurfpackApproximation::
+sdv_to_realarray(const Pecos::SurrogateDataVars& sdv, RealArray& ra)
+{
+  // check incoming vars for correct length (active or all views)
+  const RealVector&  cv = sdv.continuous_variables();
+  const IntVector&  div = sdv.discrete_int_variables();
+  const RealVector& drv = sdv.discrete_real_variables();
+  if (cv.length() + div.length() + drv.length() == numVars)
+    merge_variable_arrays(cv, div, drv, ra);
+  else {
+    Cerr << "Error: bad parameter set length in SurfpackApproximation::"
+	 << "sdv_to_realarray()." << std::endl;
+    abort_handler(-1);
+  }
+}
+  
+
+void SurfpackApproximation::
+vars_to_realarray(const Variables& vars, RealArray& ra)
+{
+  // check incoming vars for correct length (active or all views)
+  if (vars.cv() + vars.div() + vars.drv() == numVars)
+    merge_variable_arrays(vars.continuous_variables(),
+			  vars.discrete_int_variables(),
+			  vars.discrete_real_variables(), ra);
+  else if (vars.acv() + vars.adiv() + vars.adrv() == numVars)
+    merge_variable_arrays(vars.all_continuous_variables(),
+			  vars.all_discrete_int_variables(),
+			  vars.all_discrete_real_variables(), ra);
+  else {
+    Cerr << "Error: bad parameter set length in SurfpackApproximation::"
+	 << "vars_to_realarray()." << std::endl;
+    abort_handler(-1);
+  }
+}
+  
+
 Real SurfpackApproximation::value(const Variables& vars)
 { 
   //static int times_called = 0;
@@ -472,28 +531,22 @@ Real SurfpackApproximation::value(const Variables& vars)
 	 << std::endl;  
     abort_handler(-1);
   }
-  // check incoming x for correct length
-  else if (vars.cv() != numVars) {
-    Cerr << "Error: bad parameter vector length in SurfpackApproximation::"
-	 << "value()" << std::endl;
-    abort_handler(-1);
-  }
-  RealArray x_vec;
-  copy_data(vars.continuous_variables(), x_vec);
-  return (*model)(x_vec);
+
+  RealArray x_array;
+  vars_to_realarray(vars, x_array);
+  return (*model)(x_array);
 }
-  
+
 
 const RealVector& SurfpackApproximation::gradient(const Variables& vars)
 {
   approxGradient.sizeUninitialized(vars.cv());
   try {
-    RealArray x_vec;
-    copy_data(vars.continuous_variables(), x_vec);
-    VecDbl local_grad = model->gradient(x_vec);
-    for (unsigned i = 0; i < surfData->xSize(); i++) {
+    RealArray x_array;
+    vars_to_realarray(vars, x_array);
+    VecDbl local_grad = model->gradient(x_array);
+    for (unsigned i = 0; i < surfData->xSize(); i++)
       approxGradient[i] = local_grad[i];
-    }
   }
   catch (...) {
     Cerr << "Error: gradient() not available for this approximation type."
@@ -514,9 +567,9 @@ const RealSymMatrix& SurfpackApproximation::hessian(const Variables& vars)
 	   << std::endl;
       abort_handler(-1);
     }
-    RealArray x_vec;
-    copy_data(vars.continuous_variables(), x_vec);
-    MtxDbl sm = model->hessian(x_vec);
+    RealArray x_array;
+    vars_to_realarray(vars, x_array);
+    MtxDbl sm = model->hessian(x_array);
     ///\todo Make this acceptably efficient
     for (size_t i = 0; i < num_cv; i++)
       for(size_t j = 0; j < num_cv; j++)
@@ -534,9 +587,9 @@ const RealSymMatrix& SurfpackApproximation::hessian(const Variables& vars)
 Real SurfpackApproximation::prediction_variance(const Variables& vars)
 {
   try {
-    RealArray x_vec;
-    copy_data(vars.continuous_variables(), x_vec);
-    return model->variance(x_vec);
+    RealArray x_array;
+    vars_to_realarray(vars, x_array);
+    return model->variance(x_array);
   }
   catch (...) {
     Cerr << "Error: prediction_variance() not available for this "
@@ -582,9 +635,9 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
     if (factory->supports_constraints())
       add_anchor_to_surfdata(*surf_data);
     else
-      add_sdp_to_surfdata(approxData.anchor_variables(),
-			  approxData.anchor_response(),
-			  approxData.failed_anchor_data(), *surf_data);
+      add_sd_to_surfdata(approxData.anchor_variables(),
+			 approxData.anchor_response(),
+			 approxData.failed_anchor_data(), *surf_data);
   }
   // add the remaining surrogate data points
   if (outputLevel >= DEBUG_OUTPUT)
@@ -599,7 +652,7 @@ SurfData* SurfpackApproximation::surrogates_to_surf_data()
     short fail_code = 0;
     if (fit != failed_resp.end() && fit->first == i)
       { fail_code = fit->second; ++fit; }
-    add_sdp_to_surfdata(sdv_array[i], sdr_array[i], fail_code, *surf_data);
+    add_sd_to_surfdata(sdv_array[i], sdr_array[i], fail_code, *surf_data);
   }
 
   return surf_data;
@@ -621,12 +674,9 @@ void SurfpackApproximation::add_anchor_to_surfdata(SurfData& surf_data)
   SurfpackMatrix<Real> hessian;
 
   // Print out the anchor continuous variables
-  const RealVector& c_vars = approxData.anchor_continuous_variables();
-  if (outputLevel > NORMAL_OUTPUT) {
-    Cout << "Anchor point continuous vars\n";
-    write_data(Cout, c_vars);
-  }
-  copy_data(c_vars, x);
+  sdv_to_realarray(approxData.anchor_variables(), x);
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << "Anchor point vars\n" << x;
 
   // At a minimum, there should be a response value
   unsigned short anchor_data_order = 1;
@@ -690,21 +740,21 @@ void SurfpackApproximation::add_anchor_to_surfdata(SurfData& surf_data)
 
 
 void SurfpackApproximation::
-add_sdp_to_surfdata(const Pecos::SurrogateDataVars& sdv,
-		    const Pecos::SurrogateDataResp& sdr, short fail_code,
-		    SurfData& surf_data)
+add_sd_to_surfdata(const Pecos::SurrogateDataVars& sdv,
+		   const Pecos::SurrogateDataResp& sdr, short fail_code,
+		   SurfData& surf_data)
 {
   // coarse-grained fault tolerance for now: any failure qualifies for omission
   if (fail_code)
     return;
 
   // Surfpack's RealArray is std::vector<double>; use DAKOTA copy_data helpers.
-  // For DAKOTA's compact mode, any active discrete {int,real} variables are
-  // contained within SDV's continuousVars (see Approximation::add(Real*).  So
-  // sdv.discrete_int_variables() and sdv.discrete_real_variables() are not
-  // currently used by Surfpack.
+  // For DAKOTA's compact mode, any active discrete {int,real} variables could
+  // be contained within SDV's continuousVars (see Approximation::add(Real*)),
+  // although it depends on eval cache lookups as shown in
+  // ApproximationInterface::update_approximation().
   RealArray x; 
-  copy_data(sdv.continuous_variables(), x);
+  sdv_to_realarray(sdv, x);
   Real f = sdr.response_function();
 
   // for now only allow builds from exactly 1, 3=1+2, or 7=1+2+4; use
