@@ -19,7 +19,6 @@ set( CTEST_SOURCE_DIRECTORY
 set( DAKOTA_CTEST_PROJECT_TAG "Experimental" )
 set( CTEST_BUILD_CONFIGURATION RelWithDebInfo )
 
-set( DAKOTA_CTEST_REGEXP "dakota_*" )
 set( DAKOTA_DEBUG ON )
 
 ##############################################################################

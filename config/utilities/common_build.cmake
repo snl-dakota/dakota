@@ -194,19 +194,16 @@ if ( ${ConfigStatus} EQUAL 0 )
   # Test if build is successful
   if ( ${BuildStatus} EQUAL 0 )
 
-    if ( DEFINED DAKOTA_CTEST_REGEXP )
-      message("DAKOTA_CTESTREGEXP: ${DAKOTA_CTEST_REGEXP}")
-      message("DAKOTA_CTEST_PARALLEL_LEVEL: ${DAKOTA_CTEST_PARALLEL_LEVEL} ")	
-      ctest_test(
-        INCLUDE ${DAKOTA_CTEST_REGEXP}
-    	PARALLEL_LEVEL ${DAKOTA_CTEST_PARALLEL_LEVEL}
-    	RETURN_VALUE CtestStatus)
-    else ()
-      message("DAKOTA_CTEST_PARALLEL_LEVEL: ${DAKOTA_CTEST_PARALLEL_LEVEL} ")	
-      ctest_test(
-        PARALLEL_LEVEL ${DAKOTA_CTEST_PARALLEL_LEVEL}
-        RETURN_VALUE CtestStatus)
+    # default tests run are dakota_*
+    if ( NOT DEFINED DAKOTA_CTEST_REGEXP )
+      set( DAKOTA_CTEST_REGEXP "dakota_*" )
     endif()
+    message("DAKOTA_CTESTREGEXP: ${DAKOTA_CTEST_REGEXP}")
+    message("DAKOTA_CTEST_PARALLEL_LEVEL: ${DAKOTA_CTEST_PARALLEL_LEVEL} ")	
+    ctest_test(
+      INCLUDE ${DAKOTA_CTEST_REGEXP}
+      PARALLEL_LEVEL ${DAKOTA_CTEST_PARALLEL_LEVEL}
+      RETURN_VALUE CtestStatus )
     
     message("ctest_test: Test return code: ${CtestStatus}")
     file( APPEND ${dakotaCtestResultsFile} "ctest_test: ${CtestStatus}\n" ) 

@@ -27,7 +27,7 @@ set( Boost_NO_BOOST_CMAKE ON
 #      "/usr/lib64"
 #      CACHE FILEPATH "Use non-standard BLAS library path" FORCE )
 ############################################################################
-#TODO: move Dakota options like this to another file
+# All Unix platforms build DAKOTA with MPI
 set( DAKOTA_HAVE_MPI ON
      CACHE BOOL "Always build with MPI enabled" FORCE)
 
