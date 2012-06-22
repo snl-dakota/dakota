@@ -39,8 +39,8 @@ void NonDGlobalEvidence::initialize()
 
 void NonDGlobalEvidence::set_cell_bounds()
 {
-  eifModel.continuous_lower_bounds(cellLowerBounds[cellCntr]);
-  eifModel.continuous_upper_bounds(cellUpperBounds[cellCntr]);
+  gpOptModel.continuous_lower_bounds(cellLowerBounds[cellCntr]);
+  gpOptModel.continuous_upper_bounds(cellUpperBounds[cellCntr]);
 }
 
 

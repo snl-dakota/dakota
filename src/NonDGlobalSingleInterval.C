@@ -33,10 +33,6 @@ void NonDGlobalSingleInterval::initialize()
 { numCells = 1; statCntr = 0; }
 
 
-void NonDGlobalSingleInterval::post_process_cell_results(bool minimize)
-{ finalStatistics.function_value(truthFnStar, statCntr++); }
-
-
 void NonDGlobalSingleInterval::get_best_sample(bool find_max, bool eval_approx)
 {
   // Pull the samples and responses from data used to build latest GP
@@ -64,5 +60,9 @@ void NonDGlobalSingleInterval::get_best_sample(bool find_max, bool eval_approx)
     approxFnStar = fHatModel.current_response().function_value(respFnCntr);
   }
 }
+
+
+void NonDGlobalSingleInterval::post_process_cell_results(bool minimize)
+{ finalStatistics.function_value(truthFnStar, statCntr++); }
 
 } // namespace Dakota

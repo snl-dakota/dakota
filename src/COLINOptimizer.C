@@ -221,7 +221,7 @@ COLINOptimizer::COLINOptimizer(Model& model):
   // (iteratedModel initialized in Optimizer(Model&))
   // Set solver properties.
 
-  solver_setup(model);
+  solver_setup(probDescDB.get_string("method.algorithm"), model);
   set_rng(probDescDB.get_int("method.random_seed"));
   set_solver_parameters();
 
@@ -235,25 +235,30 @@ COLINOptimizer::COLINOptimizer(Model& model):
 
   /// Alternate constructor for on-the-fly instantiations.
 
-COLINOptimizer::COLINOptimizer(Model& model, int seed):
+COLINOptimizer::
+COLINOptimizer(const String& method_name, Model& model, int seed,
+	       int max_iter, int max_eval):
   Optimizer(NoDBBaseConstructor(), model), blockingSynch(false)
 {
   // (iteratedModel initialized in Optimizer(Model&))
   // Set solver properties.
 
-  solver_setup(model);
+  solver_setup(method_name, model);
   set_rng(seed);
+
+  maxIterations = max_iter; maxFunctionEvals = max_eval;
   set_solver_parameters();
 }
 
   /// Alternate constructor for Iterator instantiations by name.
 
-COLINOptimizer::COLINOptimizer(NoDBBaseConstructor, Model& model):
+COLINOptimizer::
+COLINOptimizer(const String& method_name, Model& model):
   Optimizer(NoDBBaseConstructor(), model), rng(NULL), blockingSynch(false)
 {
   // (iteratedModel initialized in Optimizer(Model&))
   // Set solver properties.
-  solver_setup(model);
+  solver_setup(method_name, model);
   set_solver_parameters();
 }
 
@@ -432,7 +437,7 @@ bool COLINOptimizer::returns_multiple_points() const
   /// This convenience function is called by the constructors in order to
   /// instantiate the solver.
 
-void COLINOptimizer::solver_setup(Model& model)
+void COLINOptimizer::solver_setup(const String& method_name, Model& model)
 {
    // This exception should never be thrown.  Normally, static_casting
    // the registration indicators to void is sufficient to have the
@@ -459,8 +464,6 @@ void COLINOptimizer::solver_setup(Model& model)
   // Determine which solver is specified.
 
   string solverstr;
-  string method_name = probDescDB.get_string("method.algorithm");
-
   if (method_name == "coliny_cobyla") {
     solverType = COBYLA;
     solverstr = "cobyla:Cobyla";

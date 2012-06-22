@@ -505,7 +505,7 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
 #endif
 #ifdef DAKOTA_COLINY
   else if (method_name.begins("coliny_"))
-    return new COLINOptimizer(NoDBBaseConstructor(), model);
+    return new COLINOptimizer(method_name, model);
 #endif
 #ifdef HAVE_JEGA
   //else if (method_name == "moga" || method_name == "soga")

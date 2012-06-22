@@ -24,6 +24,9 @@
 #ifdef HAVE_NCSU
 #include "NCSUOptimizer.H"
 #endif
+#ifdef DAKOTA_COLINY
+#include "COLINOptimizer.H"
+#endif
 #include "pecos_stat_util.hpp"
 
 //#define DEBUG
@@ -38,8 +41,7 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   NonDInterval(model), seedSpec(probDescDB.get_int("method.random_seed")),
   numSamples(probDescDB.get_int("method.samples")),
   rngName(probDescDB.get_string("method.random_number_generator")),
-  allResponsesPerIter(false), // obtain all response values on each fn call
-  dataOrder(1)
+  eifFlag(true), allResponsesPerIter(false), dataOrder(1)
 {
   bool err_flag = false;
 
@@ -115,7 +117,7 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
     approx_type, approx_order, corr_type, corr_order, dataOrder, sample_reuse, 
     this_output_level, point_reuse_file, point_file_annotated), false);
 
-  // eifModel.init_communicators() recursion is currently sufficient for
+  // gpOptModel.init_communicators() recursion is currently sufficient for
   // fHatModel.  An additional fHatModel.init_communicators() call would be
   // motivated by special parallel usage of fHatModel below that is not
   // otherwise covered by the recursion.
@@ -139,30 +141,50 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   // alternate minimalist constructor: the recast fn pointers are reset for
   // each level within the run fn.
   SizetArray recast_vars_comps_total; // default: empty; no change in size
-  eifModel.assign_rep(
-    new RecastModel(fHatModel, recast_vars_comps_total, 1, 0, 0), false);
+  gpOptModel.assign_rep(new RecastModel(fHatModel, recast_vars_comps_total,
+					1, 0, 0), false);
 
-  // instantiate the optimizer used to improve the GP
-  int max_iter = 1000, max_eval = 10000;
-  double min_box_size = 1.e-15, vol_box_size = 1.e-15;
-#ifdef HAVE_NCSU  
-  gpOptimizer.assign_rep(new NCSUOptimizer(eifModel, max_iter, max_eval, 
-					   min_box_size, vol_box_size), false);
-  eifModel.init_communicators(gpOptimizer.maximum_concurrency());
+  // Instantiate the optimizer used on the GP.
+  // Branch on discrete variables for short term.
+  // TO DO: longer term would allow discrete EGIE & switch on input selection
+  int max_iter = 1000, max_eval = 10000; // 10*defaults
+  if (numDiscIntEpistUncVars || numDiscRealEpistUncVars) {
+    eifFlag = false; // mixed EA (ignores GP variance)
+#ifdef DAKOTA_COLINY
+    gpOptimizer.assign_rep(new COLINOptimizer("coliny_ea", gpOptModel, seedSpec,
+					      max_iter, max_eval), false);
+//#elif HAVE_JEGA
+//    gpOptimizer.assign_rep(new JEGAOptimizer(gpOptModel, max_iter, max_eval,
+//      min_box_size, vol_box_size), false);
 #else
-  Cerr << "NCSU DIRECT Optimizer is not available to use to find the" 
-       << " interval bounds from the GP model." << std::endl;
-  abort_handler(-1);
+    Cerr << "Mixed EA not available to solve mixed continuous-discrete "
+	 << "optimization for computing interval bounds on the GP model."
+	 << std::endl;
+    abort_handler(-1);
 #endif // HAVE_NCSU
+  }
+  else {
+    eifFlag = true; // EGO with DIRECT (exploits GP variance)
+    double min_box_size = 1.e-15, vol_box_size = 1.e-15;
+#ifdef HAVE_NCSU  
+    gpOptimizer.assign_rep(new NCSUOptimizer(gpOptModel, max_iter, max_eval,
+      min_box_size, vol_box_size), false);
+#else
+    Cerr << "NCSU DIRECT Optimizer is not available to use to find the" 
+	 << " interval bounds from the GP model." << std::endl;
+    abort_handler(-1);
+#endif // HAVE_NCSU
+  }
+  gpOptModel.init_communicators(gpOptimizer.maximum_concurrency());
 }
 
 
 NonDGlobalInterval::~NonDGlobalInterval()
 {  
-  // deallocate communicators for DIRECT on eifModel
-  eifModel.free_communicators(gpOptimizer.maximum_concurrency());
+  // deallocate communicators for DIRECT on gpOptModel
+  gpOptModel.free_communicators(gpOptimizer.maximum_concurrency());
 
-  // eifModel.free_communicators() recursion is currently sufficient for
+  // gpOptModel.free_communicators() recursion is currently sufficient for
   // fHatModel.  An additional fHatModel.free_communicators() call would be
   // motivated by special parallel usage of fHatModel below that is not
   // otherwise covered by the recursion.
@@ -176,10 +198,10 @@ void NonDGlobalInterval::quantify_uncertainty()
   NonDGlobalInterval* prev_instance = nondGIInstance;
   nondGIInstance = this;
 
-  eifModel.update_from_subordinate_model();
+  gpOptModel.update_from_subordinate_model();
   // Build initial GP once for all response functions
   fHatModel.build_approximation();
-  RecastModel* eif_model_rep = (RecastModel*)eifModel.model_rep();
+  RecastModel* gp_opt_model_rep = (RecastModel*)gpOptModel.model_rep();
 
   Sizet2DArray vars_map, primary_resp_map(1), secondary_resp_map;
   primary_resp_map[0].resize(1);
@@ -202,19 +224,25 @@ void NonDGlobalInterval::quantify_uncertainty()
       set_cell_bounds(); // virtual fn for setting bounds for local min/max
 
       // Iterate until EGO converges
-      distConvergenceCntr = eifConvergenceCntr = sbIterNum = 0;
+      distanceConvergeCntr = improveConvergeCntr = sbIterNum = 0;
       prevCStar	= -DBL_MAX;	
       approxConverged = false;
       while (!approxConverged) {
 	++sbIterNum;
 
-	// initialize EIF recast model
-	eif_model_rep->initialize(vars_map, false, NULL, NULL, primary_resp_map,
-				  secondary_resp_map, nonlinear_resp_map,
-				  EIF_objective_min, NULL);
+	// initialize the recast model
+	if (eifFlag)
+	  gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	    primary_resp_map, secondary_resp_map, nonlinear_resp_map,
+	    EIF_objective_min, NULL);
+	else
+	  gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	    primary_resp_map, secondary_resp_map, nonlinear_resp_map,
+	    objective_min, NULL);
 
 	// determine approxFnStar from minimum among sample data
-	get_best_sample(false, true);
+	if (eifFlag)
+	  get_best_sample(false, true);
 
 	// Execute GLOBAL search and retrieve results
 	Cout << "\n>>>>> Initiating global minimization\n";
@@ -228,19 +256,25 @@ void NonDGlobalInterval::quantify_uncertainty()
       post_process_cell_results(true); // virtual fn: post-process min
 
       // Iterate until EGO converges
-      distConvergenceCntr = eifConvergenceCntr = sbIterNum = 0;
+      distanceConvergeCntr = improveConvergeCntr = sbIterNum = 0;
       prevCStar	= -DBL_MAX;	
       approxConverged = false;
       while (!approxConverged) {
 	++sbIterNum;
 
 	// initialize EIF recast model
-	eif_model_rep->initialize(vars_map, false, NULL, NULL, primary_resp_map,
-				  secondary_resp_map, nonlinear_resp_map,
-				  EIF_objective_max, NULL);
+	if (eifFlag)
+	  gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	    primary_resp_map, secondary_resp_map, nonlinear_resp_map,
+	    EIF_objective_max, NULL);
+	else
+	  gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	    primary_resp_map, secondary_resp_map, nonlinear_resp_map,
+	    objective_max, NULL);
 
 	// determine approxFnStar from maximum among sample data
-	get_best_sample(true, true);
+	if (eifFlag)
+	  get_best_sample(true, true);
 
 	// Execute GLOBAL search
 	Cout << "\n>>>>> Initiating global maximization\n";
@@ -273,88 +307,94 @@ void NonDGlobalInterval::set_cell_bounds()
 
 void NonDGlobalInterval::post_process_gp_results()
 {
-  const Variables& vars_star = gpOptimizer.variables_results();
-  const RealVector& c_vars_star = vars_star.continuous_variables();
-  Cout << "\nResults of EGO minimization:\nFinal point             =\n";
+  const RealVector& c_vars_star
+    = gpOptimizer.variables_results().continuous_variables();
+  Cout << "\nResults of optimization:\nFinal point             =\n";
   write_data(Cout, c_vars_star);
 
-  const Response& resp_star_approx = gpOptimizer.response_results();
-  Real eif_star = -resp_star_approx.function_value(0);
-  Cout << "Expected Improvement    =\n                     "
-       << std::setw(write_precision+7) << eif_star << "\n";
+  if (eifFlag) {
+    const Response& resp_star_approx = gpOptimizer.response_results();
+    Real eif_star = -resp_star_approx.function_value(0);
+    Cout << "Expected Improvement    =\n                     "
+	 << std::setw(write_precision+7) << eif_star << "\n";
 
-  // GT: Check Euclidean distance of successive optimal points
-  // as second criteria for convergence
-  // EIF encourages exploration through the variance of the point on GP 
-  // But if the new point is very close to the previous point
-  // this represents a failing of the variance to go to zero when evaluated near
-  // data points.
-  Real dist_tol = 1.e-8, rdcstar = rel_change_rv(c_vars_star, prevCStar);
-  // update prevCStar
-  copy_data(c_vars_star, prevCStar);
+    // GT: Check Euclidean distance of successive optimal points as second
+    // criterion for convergence.
+    // EIF encourages exploration through the variance of the point on GP 
+    // But if the new point is very close to the previous point, this represents
+    // a failing of the variance to go to zero when evaluated near data points.
+    const RealVector& c_vars_star
+      = gpOptimizer.variables_results().continuous_variables();
+    Real dist_tol = 1.e-8, rdcstar = rel_change_rv(c_vars_star, prevCStar);
+    copy_data(c_vars_star, prevCStar); // update prevCStar
 
-  // If DIRECT failed to find a point with EIF>0, it returns the
-  //   center point as the optimal solution. EGO may have converged,
-  //   but DIRECT may have just failed to find a point with a good
-  //   EIF value. Adding this midpoint can alter the GPs enough to
-  //   to allow DIRECT to find something useful, so we force 
-  //   max(EIF)<tol twice to make sure. Note that we cannot make
-  //   this check more than 2 because it would cause EGO to add
-  //   the center point more than once, which will damage the GPs.
-  //   Unfortunately, when it happens the second time, it may still
-  //   be that DIRECT failed and not that EGO converged.
+    // If DIRECT failed to find a point with EIF>0, it returns the center point
+    // as the optimal solution. EGO may have converged, but DIRECT may have just
+    // failed to find a point with a good EIF value. Adding this midpoint can
+    // alter the GPs enough to allow DIRECT to find something useful, so we
+    // force max(EIF)<tol twice to make sure. Note that we cannot make this
+    // check more than 2 because it would cause EGO to add the center point
+    // more than once, which will damage the GPs.  Unfortunately, when it
+    // happens the second time, it may still be that DIRECT failed and not
+    // that EGO converged.
 	
-  // GT:
-  // The only reason we introduce this additional level of convergence is the
-  // hope that adding the midpoint will improve the GP enough so that
-  // 1. non-monotonic convergence can be addressed by improving the quality of
-  // the GP in the hope that if a better soln exists, it can be captured by the
-  // new GP or
-  // 2. we construct a 'better' GP in the hope that DIRECT will actually find a
-  // soln pt.  Furthermore, we do not require this to occur on consecutive runs
-  // because if indeed we are not truly converged (e.g. bad GP, non-monotonic
-  // nature of EIF convergence), if we allow the midpoint to be added as another
-  // training point
-  // >> theoretically does not change GP and there are no gains to be had
-  // >> we could also add variance to the system as an artifact of the 
-  // >>   numerical implementation
-  if  ( eif_star < convergenceTol )
-    ++eifConvergenceCntr;
+    // GT: The only reason we introduce this additional level of convergence is
+    // the hope that adding the midpoint will improve the GP enough so that
+    // 1. non-monotonic convergence can be addressed by improving the quality of
+    // the GP in the hope that if a better soln exists, it can be captured by
+    // the new GP or
+    // 2. we construct a 'better' GP in the hope that DIRECT will actually find
+    // a soln pt.  Furthermore, we do not require this to occur on consecutive
+    // runs because if indeed we are not truly converged (e.g. bad GP,
+    // non-monotonic nature of EIF convergence), if we allow the midpoint to be
+    // added as another training point
+    // >> theoretically does not change GP and there are no gains to be had
+    // >> we could also add variance to the system as an artifact of the 
+    // >>   numerical implementation
+    if (eif_star < convergenceTol) ++improveConvergeCntr;
 
-  if ( rdcstar < dist_tol)
-    ++distConvergenceCntr;
-  // if the dist between successive points is very small
-  // there is no point in asking this to happen consecutively 
-  // since the new training point will essentially be the prev
-  // optimal point 
-  // >> theoretically does not change GP and there are no gains to be had
-  // >> we could also add variance to the system as an artifact of the 
-  // >> 	numerical implementation
+    // if the dist between successive points is very small, there is no point
+    // in asking this to happen consecutively since the new training point will
+    // essentially be the prev optimal point 
+    // >> theoretically does not change GP and there are no gains to be had
+    // >> we could also add variance to the system as an artifact of the 
+    //    numerical implementation
+    if (rdcstar < dist_tol)        ++distanceConvergeCntr;
 
-  if ( distConvergenceCntr == 1 || eifConvergenceCntr == 2 ||
-       sbIterNum >= maxIterations )
-    approxConverged = true;
-  else {
-    // Evaluate response_star_truth
-    //fHatModel.component_parallel_mode(TRUTH_MODEL);
-    iteratedModel.continuous_variables(c_vars_star);
-    ActiveSet set = iteratedModel.current_response().active_set();
-    // GT:
-    // Get all responses per function evaluation
-    // changing this might break some of the logic needed to determine
-    // whether the inner loop surrogate needs to be reconstructed
-    if (allResponsesPerIter)
-      set.request_values(dataOrder);
-    else
-      { set.request_values(0); set.request_value(dataOrder, respFnCntr); }
-
-    iteratedModel.compute_response(set);
-    IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),
-				    iteratedModel.current_response());
-
-    // Update the GP approximation
-    fHatModel.append_approximation(vars_star, resp_star_truth, true);
+    if (distanceConvergeCntr || improveConvergeCntr > 1 ||
+	sbIterNum >= maxIterations)
+      approxConverged = true;
+    else // evaluate truth response at optimal variables solution
+      evaluate_response_star_truth();
   }
+  else {
+    // evaluate approx optimum but don't iterate (similar to AMV local rel)
+    evaluate_response_star_truth();
+    approxConverged = true;
+  }
+}
+
+
+void NonDGlobalInterval::evaluate_response_star_truth()
+{
+  //fHatModel.component_parallel_mode(TRUTH_MODEL);
+  const Variables&    vars_star = gpOptimizer.variables_results();
+  const RealVector& c_vars_star = vars_star.continuous_variables();
+  iteratedModel.continuous_variables(c_vars_star);
+  ActiveSet set = iteratedModel.current_response().active_set();
+  // GT: Get all responses per function evaluation
+  // changing this might break some of the logic needed to determine
+  // whether the inner loop surrogate needs to be reconstructed
+  if (allResponsesPerIter)
+    set.request_values(dataOrder);
+  else
+    { set.request_values(0); set.request_value(dataOrder, respFnCntr); }
+  iteratedModel.compute_response(set);
+
+  // Update the GP approximation
+  IntResponsePair resp_star_truth(iteratedModel.evaluation_id(),
+				  iteratedModel.current_response());
+  fHatModel.append_approximation(vars_star, resp_star_truth, true);
 }
 
 
@@ -375,6 +415,30 @@ void NonDGlobalInterval::post_process_final_results()
 
 
 void NonDGlobalInterval::
+objective_min(const Variables& sub_model_vars, const Variables& recast_vars,
+	      const Response& sub_model_response, Response& recast_response)
+{
+  Real sub_model_fn
+    = sub_model_response.function_values()[nondGIInstance->respFnCntr];
+  const ShortArray& recast_asv = recast_response.active_set_request_vector();
+  if (recast_asv[0] & 1)
+    recast_response.function_value(sub_model_fn, 0);  // minimize with minimizer
+}
+
+
+void NonDGlobalInterval::
+objective_max(const Variables& sub_model_vars, const Variables& recast_vars,
+	      const Response& sub_model_response, Response& recast_response)
+{
+  Real sub_model_fn
+    = sub_model_response.function_values()[nondGIInstance->respFnCntr];
+  const ShortArray& recast_asv = recast_response.active_set_request_vector();
+  if (recast_asv[0] & 1)
+    recast_response.function_value(-sub_model_fn, 0); // maximize with minimizer
+}
+
+
+void NonDGlobalInterval::
 EIF_objective_min(const Variables& sub_model_vars, const Variables& recast_vars,
 		  const Response& sub_model_response, Response& recast_response)
 {
@@ -384,28 +448,29 @@ EIF_objective_min(const Variables& sub_model_vars, const Variables& recast_vars,
     = nondGIInstance->fHatModel.approximation_variances(recast_vars);
 
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
-  if (recast_asv[0] & 1) { // return -EI since we are maximizing
+  if (recast_asv[0] & 1) {
+    // max(EI) for both interval bounds --> return -EI to the minimizer
     const Real& mean = means[nondGIInstance->respFnCntr];
     Real stdv = sqrt(variances[nondGIInstance->respFnCntr]);
     const Real& approx_fn_star = nondGIInstance->approxFnStar;
-    // Calculate the expected improvement
-    Real Phi_snv, phi_snv;
-    Real  snv = (approx_fn_star - mean);
+    // Calculate expected improvement: +/-approx_fn_star used for EIF_min/max
+    Real Phi_snv, phi_snv, snv = approx_fn_star - mean;
     if(std::fabs(snv)>=std::fabs(stdv)*50.0) {
-      phi_snv=0.0;
-      Phi_snv=(snv>0.0)?1.0:0.0;
+      phi_snv = 0.;
+      Phi_snv = (snv > 0.) ? 1. : 0.;
     }
     else{
-      snv/=stdv; // no snv is the standard normal variate
+      snv /= stdv; // now snv is the standard normal variate
       Phi_snv = Pecos::Phi(snv); 
       phi_snv = Pecos::phi(snv);
     }
     Real ei = (approx_fn_star - mean)*Phi_snv + stdv*phi_snv;
+    // both bounds maximize EIF -> minimize -EIF
     recast_response.function_value(-ei, 0);
 #ifdef DEBUG
     Cout << "(Evaluation,ApproxFnStar,Phi,phi,vars): (" << mean << "," 
 	 << approx_fn_star << "," << Phi_snv << "," << phi_snv;
-    RealVector eval_vars = recast_vars.continuous_variables();
+    const RealVector& eval_vars = recast_vars.continuous_variables();
     for (size_t i=0; i < eval_vars.length(); i++)
       Cout << ", " << eval_vars[i];
     Cout << ")\n";
@@ -424,29 +489,29 @@ EIF_objective_max(const Variables& sub_model_vars, const Variables& recast_vars,
     = nondGIInstance->fHatModel.approximation_variances(recast_vars);
 
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
-  if (recast_asv[0] & 1) { // return -EI to the minimizer
+  if (recast_asv[0] & 1) {
+    // max(EI) for both interval bounds --> return -EI to the minimizer
     Real mean = -means[nondGIInstance->respFnCntr],
          stdv = sqrt(variances[nondGIInstance->respFnCntr]);
     const Real& approx_fn_star = nondGIInstance->approxFnStar;
-    // Calculate the expected improvement
-    Real Phi_snv, phi_snv;
-    Real  snv = (-approx_fn_star-mean);
+    // Calculate expected improvement: +/-approx_fn_star used for EIF_min/max
+    Real Phi_snv, phi_snv, snv = -approx_fn_star - mean;
     if(std::fabs(snv)>=std::fabs(stdv)*50.0) {
-      phi_snv=0.0;
-      Phi_snv=(snv>0.0)?1.0:0.0;
+      phi_snv = 0.;
+      Phi_snv = (snv > 0.) ? 1. : 0.;
     }
     else{
-      snv/=stdv; // now snv is the standard normal variate   
+      snv /= stdv; // now snv is the standard normal variate   
       Phi_snv = Pecos::Phi(snv);
       phi_snv = Pecos::phi(snv);
     }
-    Real ei = (-approx_fn_star-mean)*Phi_snv + stdv*phi_snv;
-    // minimize -EIF -> maximize EIF
+    Real ei = (-approx_fn_star - mean)*Phi_snv + stdv*phi_snv;
+    // both bounds maximize EIF -> minimize -EIF
     recast_response.function_value(-ei, 0);
 #ifdef DEBUG
     Cout << "(Evaluation,ApproxFnStar,Phi,phi,vars): (" << mean << "," 
 	 << approx_fn_star << "," << Phi_snv << "," << phi_snv;
-    RealVector eval_vars = recast_vars.continuous_variables();
+    const RealVector& eval_vars = recast_vars.continuous_variables();
     for (size_t i=0; i < eval_vars.length(); i++)
       Cout << ", " << eval_vars[i];
     Cout << ")\n";	

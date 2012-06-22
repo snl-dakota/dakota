@@ -77,9 +77,12 @@ protected:
   //- Heading: Convenience functions
   //
 
-  /// post-process a GP-based optimization iteration: output EIF maximization
-  /// results, update convergence controls, and update GP approximation
+  /// post-process a GP-based optimization iteration: output results,
+  /// update convergence controls, and update GP approximation
   void post_process_gp_results();
+  /// evaluate the truth response at the optimal variables solution
+  /// and update the GP with the new data
+  void evaluate_response_star_truth();
 
   //
   //- Heading: Data
@@ -87,14 +90,16 @@ protected:
 
   /// LHS iterator for constructing initial GP for all response functions
   Iterator daceIterator;
-  /// NCSU DIRECT optimizer for maximizing expected improvement
-  Iterator gpOptimizer;
-
   /// GP model of response, one approximation per response function
   Model fHatModel;
-  /// recast model which assimilates mean and variance to solve the
-  /// max(EIF) sub-problem
-  Model eifModel;
+
+  /// optimizer for solving surrogate-based subproblem: NCSU DIRECT optimizer
+  /// for maximizing expected improvement or mixed EA if discrete variables.
+  Iterator gpOptimizer;
+  /// recast model which formulates the surrogate-based optimization 
+  /// subproblem (recasts as design problem; may assimilate mean and
+  /// variance to enable max(expected improvement))
+  Model gpOptModel;
 
   /// approximate response corresponding to minimum/maximum truth response
   Real approxFnStar;
@@ -120,6 +125,17 @@ private:
 				const Response& sub_model_response,
 				Response& recast_response);
 
+  /// static function used as the objective function when minimizing the GP
+  static void objective_min(const Variables& sub_model_vars,
+			    const Variables& recast_vars,
+			    const Response& sub_model_response,
+			    Response& recast_response);
+  /// static function used as the objective function when maximizing the GP
+  static void objective_max(const Variables& sub_model_vars,
+			    const Variables& recast_vars,
+			    const Response& sub_model_response,
+			    Response& recast_response);
+
   //
   //- Heading: Data
   //
@@ -132,19 +148,23 @@ private:
   int       numSamples; ///< the number of samples used in the surrogate
   String    rngName;	///< name of the random number generator
 
-  /// counter for number of successive iterations that the optimal EIF
-  /// is less than the convergenceTol
-  size_t eifConvergenceCntr;
+  /// flag indicating use of maximized expected improvement for GP
+  /// iterate selection
+  bool eifFlag;
+  /// counter for number of successive iterations that the iteration
+  /// improvement is less than the convergenceTol
+  size_t improveConvergeCntr;
   /// counter for number of successive iterations that the L_2 change
   /// in optimal solution is less than the convergenceTol
-  size_t distConvergenceCntr;
+  size_t distanceConvergeCntr;
  /// stores previous optimal points for convergence
   RealVector prevCStar;
   /// surrogate-based minimization/maximization iteration count
   size_t sbIterNum;
   /// flag indicating convergence of a GP minimization or maximization
   bool approxConverged;
-  /// flag for maximal response extraction
+  /// flag for maximal response extraction (all response values
+  /// obtained on each function call)
   bool allResponsesPerIter;
 
   /// order of the data used for surrogate construction, in ActiveSet

@@ -59,9 +59,10 @@ public:
   /// constructor
   COLINOptimizer(Model& model);
   /// alternate constructor for on-the-fly instantiations
-  COLINOptimizer(Model& model, int seed);
+  COLINOptimizer(const String& method_name, Model& model, int seed,
+		 int max_iter, int max_eval);
   /// alternate constructor for Iterator instantiations by name
-  COLINOptimizer(NoDBBaseConstructor, Model& model);
+  COLINOptimizer(const String& method_name, Model& model);
   /// destructor
   ~COLINOptimizer() {
     if (rng) delete rng;
@@ -88,7 +89,7 @@ protected:
   
   /// convenience function for setting up the particular COLIN solver
   /// and appropriate Application
-  void solver_setup(Model &model);
+  void solver_setup(const String& method_name, Model &model);
 
   /// sets up the random number generator for stochastic methods
   void set_rng(int seed);
