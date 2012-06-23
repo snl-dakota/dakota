@@ -54296,9 +54296,14 @@ Test Number 5 succeeded
 dakota_uq_textbook_ivp_discrete.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 90 total (90 new, 0 duplicate)
-mean_f1:  Min = 3.9769160000e+06  Max = 3.9771720000e+06
-ccdf_beta_f2:  Min = 1.2919739174e+01  Max = 1.2919739174e+01
-ccdf_beta_f3:  Min = 2.4983211112e+01  Max = 2.4983211112e+01
+mean_f1:  Min = 2.6660723049e+06  Max = 5.0839299608e+06
+ccdf_beta_f2:  Min = 1.1140063093e+01  Max = 1.4997877200e+01
+ccdf_beta_f3:  Min = 2.1142441716e+01  Max = 2.9959806072e+01
+Test Number 1 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 144 total (144 new, 0 duplicate)
+mean_f1:  Min = 2.6660723049e+06  Max = 5.0839299608e+06
+ccdf_beta_f2:  Min = 1.1140063093e+01  Max = 1.4997877200e+01
+ccdf_beta_f3:  Min = 2.1142441716e+01  Max = 2.9959806072e+01
 dakota_uq_textbook_lhs.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
