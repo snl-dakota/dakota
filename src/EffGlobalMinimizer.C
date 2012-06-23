@@ -49,9 +49,9 @@ EffGlobalMinimizer::EffGlobalMinimizer(Model& model):
   size_t num_multipliers = numNonlinearEqConstraints;
   for (size_t i=0; i<numNonlinearIneqConstraints; i++) {
     if (origNonlinIneqLowerBnds[i] > -bigRealBoundSize) // g has a lower bound
-      num_multipliers++;
+      ++num_multipliers;
     if (origNonlinIneqUpperBnds[i] <  bigRealBoundSize) // g has an upper bound
-      num_multipliers++;
+      ++num_multipliers;
   }
   augLagrangeMult.resize(num_multipliers);
   augLagrangeMult = 0.;
@@ -216,15 +216,15 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
   fHatModel.build_approximation();
 
   // Iterate until EGO converges
-  size_t eif_convergence_cntr = 0,dist_convergence_cntr=0;
+  unsigned short eif_convergence_cntr = 0, dist_convergence_cntr = 0,
+    eif_convergence_limit = 2, dist_convergence_limit = 1;
   sbIterNum = 0;
   bool approxConverged = false;
-  convergenceTol = 1.e-12;
+  convergenceTol = 1.e-12; Real dist_tol = 1.e-8;
   maxIterations  = 25*numContinuousVars;
-  RealVector prevCStar;
-  prevCStar	= -DBL_MAX;
+  RealVector prev_cv_star;
   while (!approxConverged) {
-    sbIterNum++;
+    ++sbIterNum;
 
     // initialize EIF recast model
     Sizet2DArray vars_map, primary_resp_map(1), secondary_resp_map;
@@ -277,7 +277,7 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 
     // Check for convergence based on max EIF
     if ( -eif_star < convergenceTol )
-      eif_convergence_cntr++;
+      ++eif_convergence_cntr;
 
     // Check for convergence based in distance between successive points
     // if the dist between successive points is very small
@@ -285,10 +285,11 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     // since the new training point will essentially be the prev
     // optimal point 
 
-    Real dist_tol = 1.e-8, rdcstar = rel_change_rv(c_vars, prevCStar);
-    // update prevCStar
-    copy_data(c_vars, prevCStar);
-    if ( rdcstar < dist_tol)
+    Real dist_cstar = (prev_cv_star.empty()) ? DBL_MAX :
+      rel_change_rv(c_vars, prev_cv_star);
+    // update prev_cv_star
+    copy_data(c_vars, prev_cv_star);
+    if ( dist_cstar < dist_tol)
       ++dist_convergence_cntr;
 
     // If DIRECT failed to find a point with EIF>0, it returns the
@@ -303,14 +304,14 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     //   be that DIRECT failed and not that EGO converged.
 
 #ifdef DEBUG
-    Cout << "sboIterNum " << sbIterNum << "\n";
-    Cout << "eif_star " << eif_star << "\n";
-    Cout << "rdcstar " << rdcstar << "\n";  
-    Cout << "dist_convergence_cntr " << dist_convergence_cntr << "\n";
+    Cout << "sboIterNum " << sbIterNum << "\neif_star " << eif_star
+	 << "\ndist_cstar " << dist_cstar << "\ndist_convergence_cntr "
+	 << dist_convergence_cntr << '\n';
 #endif //DEBUG
 
-    if ( dist_convergence_cntr == 1 || eif_convergence_cntr==2 || 
-	 sbIterNum >= maxIterations )
+    if ( dist_convergence_cntr >= dist_convergence_limit ||
+	 eif_convergence_cntr  >= eif_convergence_limit || 
+	 sbIterNum             >= maxIterations )
       approxConverged = true;
     else {
       // Evaluate response_star_truth

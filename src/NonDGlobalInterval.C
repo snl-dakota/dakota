@@ -41,7 +41,8 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   NonDInterval(model), seedSpec(probDescDB.get_int("method.random_seed")),
   numSamples(probDescDB.get_int("method.samples")),
   rngName(probDescDB.get_string("method.random_number_generator")),
-  eifFlag(true), allResponsesPerIter(false), dataOrder(1)
+  allResponsesPerIter(false), dataOrder(1), distanceTol(convergenceTol),
+  distanceConvergeLimit(1), improvementConvergeLimit(2)
 {
   bool err_flag = false;
 
@@ -58,6 +59,8 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
     err_flag = true;
   }
   */
+
+  eifFlag == !(numDiscIntEpistUncVars || numDiscRealEpistUncVars);
 
   // Use a hardwired minimal initial samples
   if (!numSamples) // use a default of #terms in a quadratic polynomial
@@ -97,8 +100,9 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
     abort_handler(-1);
 
   // The following uses on the fly derived ctor:
+  short mode = (eifFlag) ? ACTIVE_UNIFORM : ACTIVE;
   daceIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-    numSamples, seedSpec, rngName, false, ACTIVE_UNIFORM), false);
+    numSamples, seedSpec, rngName, false, mode), false);
   // only use derivatives if the user requested and they are available
   ActiveSet dace_set = daceIterator.active_set(); // copy
   dace_set.request_values(dataOrder);
@@ -149,8 +153,8 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   // TO DO: longer term would allow discrete EGIE & switch on input selection
   int max_iter = 1000, max_eval = 10000; // 10*defaults
   if (numDiscIntEpistUncVars || numDiscRealEpistUncVars) {
-    eifFlag = false; // mixed EA (ignores GP variance)
 #ifdef DAKOTA_COLINY
+    // mixed EA (ignores GP variance)
     gpOptimizer.assign_rep(new COLINOptimizer("coliny_ea", gpOptModel, seedSpec,
 					      max_iter, max_eval), false);
 //#elif HAVE_JEGA
@@ -164,9 +168,9 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
 #endif // HAVE_NCSU
   }
   else {
-    eifFlag = true; // EGO with DIRECT (exploits GP variance)
     double min_box_size = 1.e-15, vol_box_size = 1.e-15;
 #ifdef HAVE_NCSU  
+    // EGO with DIRECT (exploits GP variance)
     gpOptimizer.assign_rep(new NCSUOptimizer(gpOptModel, max_iter, max_eval,
       min_box_size, vol_box_size), false);
 #else
@@ -208,9 +212,8 @@ void NonDGlobalInterval::quantify_uncertainty()
   BoolDequeArray nonlinear_resp_map(1);
   nonlinear_resp_map[0] = BoolDeque(numFunctions, false);
 
-  convergenceTol = 1.e-12;
+  convergenceTol = 1.e-12; distanceTol = 1.e-8;
   maxIterations  = 25*numContinuousVars;
-  prevCStar.size(numContIntervalVars);
 
   initialize(); // virtual fn
 
@@ -224,8 +227,8 @@ void NonDGlobalInterval::quantify_uncertainty()
       set_cell_bounds(); // virtual fn for setting bounds for local min/max
 
       // Iterate until EGO converges
-      distanceConvergeCntr = improveConvergeCntr = sbIterNum = 0;
-      prevCStar	= -DBL_MAX;	
+      distanceConvergeCntr = improvementConvergeCntr = sbIterNum = 0;
+      prevCVStar.size(0); prevDIVStar.size(0); prevDRVStar.size(0);	
       approxConverged = false;
       while (!approxConverged) {
 	++sbIterNum;
@@ -256,8 +259,8 @@ void NonDGlobalInterval::quantify_uncertainty()
       post_process_cell_results(true); // virtual fn: post-process min
 
       // Iterate until EGO converges
-      distanceConvergeCntr = improveConvergeCntr = sbIterNum = 0;
-      prevCStar	= -DBL_MAX;	
+      distanceConvergeCntr = improvementConvergeCntr = sbIterNum = 0;
+      prevCVStar.size(0); prevDIVStar.size(0); prevDRVStar.size(0);	
       approxConverged = false;
       while (!approxConverged) {
 	++sbIterNum;
@@ -307,27 +310,26 @@ void NonDGlobalInterval::set_cell_bounds()
 
 void NonDGlobalInterval::post_process_gp_results()
 {
-  const RealVector& c_vars_star
-    = gpOptimizer.variables_results().continuous_variables();
-  Cout << "\nResults of optimization:\nFinal point             =\n";
-  write_data(Cout, c_vars_star);
+  const Variables&       vars_star = gpOptimizer.variables_results();
+  const RealVector&    c_vars_star = vars_star.continuous_variables();
+  const IntVector&    di_vars_star = vars_star.discrete_int_variables();
+  const RealVector&   dr_vars_star = vars_star.discrete_real_variables();
+  const Response& resp_star_approx = gpOptimizer.response_results();
+  Real fn_star = resp_star_approx.function_value(0), fn_conv, dist_conv;
 
-  if (eifFlag) {
-    const Response& resp_star_approx = gpOptimizer.response_results();
-    Real eif_star = -resp_star_approx.function_value(0);
+  Cout << "\nResults of interval optimization:\nFinal point             =\n";
+  if (vars_star.cv()) write_data(Cout, c_vars_star);
+
+  if (prevCVStar.empty() && prevDIVStar.empty() && prevDRVStar.empty())
+    dist_conv = fn_conv = DBL_MAX; // first iteration
+  else if (eifFlag) {
+    // Euclidean distance of successive optimal solns: continuous variables only
+    dist_conv = rel_change_rv(c_vars_star, prevCVStar);
+
+    // EIF values directly provide estimates of soln convergence
+    fn_conv = -fn_star; // EI negated for minimization
     Cout << "Expected Improvement    =\n                     "
-	 << std::setw(write_precision+7) << eif_star << "\n";
-
-    // GT: Check Euclidean distance of successive optimal points as second
-    // criterion for convergence.
-    // EIF encourages exploration through the variance of the point on GP 
-    // But if the new point is very close to the previous point, this represents
-    // a failing of the variance to go to zero when evaluated near data points.
-    const RealVector& c_vars_star
-      = gpOptimizer.variables_results().continuous_variables();
-    Real dist_tol = 1.e-8, rdcstar = rel_change_rv(c_vars_star, prevCStar);
-    copy_data(c_vars_star, prevCStar); // update prevCStar
-
+	 << std::setw(write_precision+7) << fn_conv << "\n";
     // If DIRECT failed to find a point with EIF>0, it returns the center point
     // as the optimal solution. EGO may have converged, but DIRECT may have just
     // failed to find a point with a good EIF value. Adding this midpoint can
@@ -337,7 +339,7 @@ void NonDGlobalInterval::post_process_gp_results()
     // more than once, which will damage the GPs.  Unfortunately, when it
     // happens the second time, it may still be that DIRECT failed and not
     // that EGO converged.
-	
+
     // GT: The only reason we introduce this additional level of convergence is
     // the hope that adding the midpoint will improve the GP enough so that
     // 1. non-monotonic convergence can be addressed by improving the quality of
@@ -345,32 +347,43 @@ void NonDGlobalInterval::post_process_gp_results()
     // the new GP or
     // 2. we construct a 'better' GP in the hope that DIRECT will actually find
     // a soln pt.  Furthermore, we do not require this to occur on consecutive
-    // runs because if indeed we are not truly converged (e.g. bad GP,
-    // non-monotonic nature of EIF convergence), if we allow the midpoint to be
-    // added as another training point
-    // >> theoretically does not change GP and there are no gains to be had
-    // >> we could also add variance to the system as an artifact of the 
-    // >>   numerical implementation
-    if (eif_star < convergenceTol) ++improveConvergeCntr;
-
-    // if the dist between successive points is very small, there is no point
-    // in asking this to happen consecutively since the new training point will
-    // essentially be the prev optimal point 
-    // >> theoretically does not change GP and there are no gains to be had
-    // >> we could also add variance to the system as an artifact of the 
-    //    numerical implementation
-    if (rdcstar < dist_tol)        ++distanceConvergeCntr;
-
-    if (distanceConvergeCntr || improveConvergeCntr > 1 ||
-	sbIterNum >= maxIterations)
-      approxConverged = true;
-    else // evaluate truth response at optimal variables solution
-      evaluate_response_star_truth();
+    // runs for the same reasons that we do not add points within the dist_tol.
   }
   else {
-    // evaluate approx optimum but don't iterate (similar to AMV local rel)
-    evaluate_response_star_truth();
+    if (vars_star.div()) write_data(Cout, di_vars_star);
+    if (vars_star.drv()) write_data(Cout, dr_vars_star);
+
+    // Euclidean distance of successive optimal solns: continuous,
+    // discrete int, and discrete real variables
+    dist_conv = rel_change_rv_iv_rv(c_vars_star, prevCVStar, di_vars_star,
+				    prevDIVStar, dr_vars_star, prevDRVStar);
+
+    // for SBO, reference fn_star to previous value
+    Cout << "Estimate of bound       =\n                     "
+	 << std::setw(write_precision+7) << fn_star << "\n";
+    fn_conv = std::abs(1. - fn_star / prevFnStar);// change in lower,upper bound
+  }
+
+  // update convergence counters
+  if (dist_conv < distanceTol)    ++distanceConvergeCntr;
+  if (fn_conv   < convergenceTol) ++improvementConvergeCntr;
+
+  // depending on convergence assessment, we may update the GP, converge
+  // the iteration and update the GP, or converge without updating the GP.
+  if (sbIterNum >= maxIterations)
+    { approxConverged = true; evaluate_response_star_truth(); }
+  else if (distanceConvergeCntr    >= distanceConvergeLimit ||
+	   improvementConvergeCntr >= improvementConvergeLimit)
+    // if successive iterates are very similar, we do not add the training pt,
+    // since the danger of damaging the GP outweighs small possible gains.
     approxConverged = true;
+  else { // evaluate truth response and update GP + prev solution trackers
+    evaluate_response_star_truth();
+    // update previous solution tracking
+    if (vars_star.cv())  copy_data( c_vars_star, prevCVStar);
+    if (vars_star.div()) copy_data(di_vars_star, prevDIVStar);
+    if (vars_star.drv()) copy_data(dr_vars_star, prevDRVStar);
+    if (!eifFlag) prevFnStar = fn_star;
   }
 }
 

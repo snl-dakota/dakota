@@ -4973,7 +4973,7 @@ static Method_mp_lit
 	MP2(nondOptAlgorithm,nip),
 	MP2(nondOptAlgorithm,sqp),
 	MP2(nondOptAlgorithm,lhs),
-	MP2(nondOptAlgorithm,ego),
+	MP2(nondOptAlgorithm,sbo),
 	MP2(patternBasis,coordinate),
 	MP2(patternBasis,simplex),
 	MP2(rejectionType,standard),

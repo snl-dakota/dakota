@@ -10,7 +10,8 @@ strategy,
 method,
 	id_method = 'EPISTEMIC'
 	model_pointer = 'EPIST_M'
-	global_interval_est lhs
+	global_interval_est lhs			#0
+#	global_interval_est sbo			#1
 #	sampling			
 	  samples = 10 seed = 12347			
 
@@ -20,15 +21,21 @@ model,
 	  variables_pointer  = 'EPIST_V'
 	  sub_method_pointer = 'ALEATORY'
 	  responses_pointer  = 'EPIST_R'
-	  primary_variable_mapping   = 'dssi_ModelForm'	
+	  primary_variable_mapping   = 'X1'   'X2'   'dssi_ModelForm'	
+	  secondary_variable_mapping = 'mean' 'mean' ''
 	  primary_response_mapping   = 1. 0. 0. 0. 0. 0. 0. 0.
 	  			       0. 0. 0. 0. 1. 0. 0. 0.
 				       0. 0. 0. 0. 0. 0. 0. 1.
 
 variables,
 	id_variables = 'EPIST_V'
+	continuous_interval_uncertain = 2
+#	  interval_probs = 1. 1.
+	  lower_bounds = 35. 25.
+	  upper_bounds = 45. 35.
+	  descriptors = 'X1_mean' 'X2_mean'		
 	discrete_uncertain_set_int = 1
-	  set_probs  = .1 .2 .4 .2 .1
+#	  set_probs  = .1 .2 .4 .2 .1
 	  set_values =  1  2  3  4  5
 	  descriptors = 'ModelForm'		
 

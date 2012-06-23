@@ -153,12 +153,29 @@ private:
   bool eifFlag;
   /// counter for number of successive iterations that the iteration
   /// improvement is less than the convergenceTol
-  size_t improveConvergeCntr;
+  unsigned short improvementConvergeCntr;
+  /// counter for number of successive iterations that the iteration
+  /// improvement is less than the convergenceTol
+  unsigned short improvementConvergeLimit;
+  /// tolerance for L_2 change in optimal solution
+  Real distanceTol;
   /// counter for number of successive iterations that the L_2 change
   /// in optimal solution is less than the convergenceTol
-  size_t distanceConvergeCntr;
- /// stores previous optimal points for convergence
-  RealVector prevCStar;
+  unsigned short distanceConvergeCntr;
+  /// counter for number of successive iterations that the L_2 change
+  /// in optimal solution is less than the convergenceTol
+  unsigned short distanceConvergeLimit;
+  /// stores previous optimal point for continuous variables; used for
+  /// assessing convergence
+  RealVector prevCVStar;
+  /// stores previous optimal point for discrete integer variables;
+  /// used for assessing convergence
+  IntVector prevDIVStar;
+  /// stores previous optimal point for discrete real variables; used
+  /// for assessing convergence
+  RealVector prevDRVStar;
+  /// stores previous solution value for assessing convergence
+  Real prevFnStar;
   /// surrogate-based minimization/maximization iteration count
   size_t sbIterNum;
   /// flag indicating convergence of a GP minimization or maximization

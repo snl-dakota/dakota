@@ -848,7 +848,7 @@ KEYWORD12 method
 	  )
 	|
 	( global_evidence ALIAS nond_global_evidence
-	  [ ( ego
+	  [ ( sbo
 	      [ gaussian_process ALIAS kriging
 		surfpack
 		| dakota
@@ -890,7 +890,7 @@ KEYWORD12 method
 	  )
 	|
 	( global_interval_est ALIAS nond_global_interval_est
-	  [ ( ego
+	  [ ( sbo
 	      [ gaussian_process ALIAS kriging
 		surfpack
 		| dakota

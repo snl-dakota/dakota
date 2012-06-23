@@ -404,66 +404,66 @@ static GuiKeyWord
 		{"rnum2",8,0,1,1,861}
 		},
 	kw_58[2] = {
-		{"dakota",8,0,1,1,815},
-		{"surfpack",8,0,1,1,813}
-		},
-	kw_59[3] = {
-		{"gaussian_process",8,2,1,0,811,kw_58},
-		{"kriging",0,2,1,0,810,kw_58},
-		{"use_derivatives",8,0,2,0,817}
-		},
-	kw_60[2] = {
 		{"annotated",8,0,1,0,823},
 		{"freeform",8,0,1,0,825}
 		},
-	kw_61[2] = {
+	kw_59[2] = {
 		{"parallel",8,0,1,1,841},
 		{"series",8,0,1,1,839}
 		},
-	kw_62[3] = {
+	kw_60[3] = {
 		{"gen_reliabilities",8,0,1,1,835},
 		{"probabilities",8,0,1,1,833},
-		{"system",8,2,2,0,837,kw_61}
+		{"system",8,2,2,0,837,kw_59}
 		},
-	kw_63[2] = {
-		{"compute",8,3,2,0,831,kw_62},
+	kw_61[2] = {
+		{"compute",8,3,2,0,831,kw_60},
 		{"num_response_levels",13,0,1,0,829}
+		},
+	kw_62[2] = {
+		{"dakota",8,0,1,1,815},
+		{"surfpack",8,0,1,1,813}
+		},
+	kw_63[3] = {
+		{"gaussian_process",8,2,1,0,811,kw_62},
+		{"kriging",0,2,1,0,810,kw_62},
+		{"use_derivatives",8,0,2,0,817}
 		},
 	kw_64[10] = {
 		{"distribution",8,2,6,0,843,kw_54,0.,0.,0.,0,"{Distribution type} MethodCommands.html#MethodNonD"},
-		{"ego",8,3,1,0,809,kw_59},
 		{"gen_reliability_levels",14,1,8,0,853,kw_55,0.,0.,0.,0,"{Generalized reliability levels} MethodCommands.html#MethodNonD"},
 		{"lhs",8,0,1,0,819},
-		{"points_file",11,2,2,0,821,kw_60},
+		{"points_file",11,2,2,0,821,kw_58},
 		{"probability_levels",14,1,7,0,849,kw_56,0.,0.,0.,0,"{Probability levels} MethodCommands.html#MethodNonD"},
-		{"response_levels",14,2,3,0,827,kw_63},
+		{"response_levels",14,2,3,0,827,kw_61},
 		{"rng",8,2,9,0,857,kw_57,0.,0.,0.,0,"{Random number generator} MethodCommands.html#MethodNonDMC"},
 		{"samples",9,0,5,0,995,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
+		{"sbo",8,3,1,0,809,kw_63},
 		{"seed",9,0,4,0,997,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodEG"}
 		},
 	kw_65[2] = {
-		{"dakota",8,0,1,1,871},
-		{"surfpack",8,0,1,1,869}
-		},
-	kw_66[3] = {
-		{"gaussian_process",8,2,1,0,867,kw_65,0.,0.,0.,0,"{EGO GP selection} MethodCommands.html#MethodNonDGlobalIntervalEst"},
-		{"kriging",0,2,1,0,866,kw_65},
-		{"use_derivatives",8,0,2,0,873,0,0.,0.,0.,0,"{Derivative usage} MethodCommands.html#MethodNonDGlobalIntervalEst"}
-		},
-	kw_67[2] = {
 		{"annotated",8,0,1,0,879},
 		{"freeform",8,0,1,0,881}
 		},
-	kw_68[2] = {
+	kw_66[2] = {
 		{"mt19937",8,0,1,1,885},
 		{"rnum2",8,0,1,1,887}
 		},
+	kw_67[2] = {
+		{"dakota",8,0,1,1,871},
+		{"surfpack",8,0,1,1,869}
+		},
+	kw_68[3] = {
+		{"gaussian_process",8,2,1,0,867,kw_67,0.,0.,0.,0,"{EGO GP selection} MethodCommands.html#MethodNonDGlobalIntervalEst"},
+		{"kriging",0,2,1,0,866,kw_67},
+		{"use_derivatives",8,0,2,0,873,0,0.,0.,0.,0,"{Derivative usage} MethodCommands.html#MethodNonDGlobalIntervalEst"}
+		},
 	kw_69[6] = {
-		{"ego",8,3,1,0,865,kw_66},
 		{"lhs",8,0,1,0,875},
-		{"points_file",11,2,2,0,877,kw_67},
-		{"rng",8,2,3,0,883,kw_68,0.,0.,0.,0,"{Random seed generator} MethodCommands.html#MethodNonDGlobalIntervalEst"},
+		{"points_file",11,2,2,0,877,kw_65},
+		{"rng",8,2,3,0,883,kw_66,0.,0.,0.,0,"{Random seed generator} MethodCommands.html#MethodNonDGlobalIntervalEst"},
 		{"samples",9,0,5,0,995,0,0.,0.,0.,0,"{Number of samples} MethodCommands.html#MethodNonDMC"},
+		{"sbo",8,3,1,0,865,kw_68},
 		{"seed",9,0,4,0,997,0,0.,0.,0.,0,"{Random seed} MethodCommands.html#MethodEG"}
 		},
 	kw_70[2] = {

@@ -387,64 +387,64 @@ static KeyWord
 		{"rng",8,2,4,0,kw_63}
 		},
 	kw_65[2] = {
-		{"dakota",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_GAUSSIAN_PROCESS)},
-		{"surfpack",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING)}
-		},
-	kw_66[3] = {
-		{"gaussian_process",8,2,1,0,kw_65},
-		{"kriging",0,2,1,0,kw_65,0.,0.,-1},
-		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
-		},
-	kw_67[2] = {
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxPointFileAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxPointFileAnnotated)}
 		},
-	kw_68[2] = {
+	kw_66[2] = {
 		{"parallel",8,0,1,1,0,0.,0.,0,N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)},
 		{"series",8,0,1,1,0,0.,0.,0,N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
 		},
-	kw_69[3] = {
+	kw_67[3] = {
 		{"gen_reliabilities",8,0,1,1,0,0.,0.,0,N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)},
 		{"probabilities",8,0,1,1,0,0.,0.,0,N_mdm(type,responseLevelTarget_PROBABILITIES)},
-		{"system",8,2,2,0,kw_68}
+		{"system",8,2,2,0,kw_66}
 		},
-	kw_70[2] = {
-		{"compute",8,3,2,0,kw_69},
+	kw_68[2] = {
+		{"compute",8,3,2,0,kw_67},
 		{"num_response_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,responseLevels)}
+		},
+	kw_69[2] = {
+		{"dakota",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_GAUSSIAN_PROCESS)},
+		{"surfpack",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING)}
+		},
+	kw_70[3] = {
+		{"gaussian_process",8,2,1,0,kw_69},
+		{"kriging",0,2,1,0,kw_69,0.,0.,-1},
+		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
 		},
 	kw_71[7] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{0,0,4,0,0,kw_64},
-		{"ego",8,3,1,0,kw_66,0.,0.,0,N_mdm(lit,nondOptAlgorithm_ego)},
 		{"lhs",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_lhs)},
-		{"points_file",11,2,2,0,kw_67,0.,0.,0,N_mdm(str,approxPointReuseFile)},
-		{"response_levels",14,2,3,0,kw_70,0.,0.,0,N_mdm(resplevs,responseLevels)}
+		{"points_file",11,2,2,0,kw_65,0.,0.,0,N_mdm(str,approxPointReuseFile)},
+		{"response_levels",14,2,3,0,kw_68,0.,0.,0,N_mdm(resplevs,responseLevels)},
+		{"sbo",8,3,1,0,kw_70,0.,0.,0,N_mdm(lit,nondOptAlgorithm_sbo)}
 		},
 	kw_72[2] = {
-		{"dakota",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_GAUSSIAN_PROCESS)},
-		{"surfpack",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING)}
-		},
-	kw_73[3] = {
-		{"gaussian_process",8,2,1,0,kw_72},
-		{"kriging",0,2,1,0,kw_72,0.,0.,-1},
-		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
-		},
-	kw_74[2] = {
 		{"annotated",8,0,1,0,0,0.,0.,0,N_mdm(true,approxPointFileAnnotated)},
 		{"freeform",8,0,1,0,0,0.,0.,0,N_mdm(false,approxPointFileAnnotated)}
 		},
-	kw_75[2] = {
+	kw_73[2] = {
 		{"mt19937",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_mt19937)},
 		{"rnum2",8,0,1,1,0,0.,0.,0,N_mdm(lit,rngName_rnum2)}
+		},
+	kw_74[2] = {
+		{"dakota",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_GAUSSIAN_PROCESS)},
+		{"surfpack",8,0,1,1,0,0.,0.,0,N_mdm(type,emulatorType_KRIGING)}
+		},
+	kw_75[3] = {
+		{"gaussian_process",8,2,1,0,kw_74},
+		{"kriging",0,2,1,0,kw_74,0.,0.,-1},
+		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
 		},
 	kw_76[6] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
-		{"ego",8,3,1,0,kw_73,0.,0.,0,N_mdm(lit,nondOptAlgorithm_ego)},
 		{"lhs",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_lhs)},
-		{"points_file",11,2,2,0,kw_74,0.,0.,0,N_mdm(str,approxPointReuseFile)},
-		{"rng",8,2,3,0,kw_75}
+		{"points_file",11,2,2,0,kw_72,0.,0.,0,N_mdm(str,approxPointReuseFile)},
+		{"rng",8,2,3,0,kw_73},
+		{"sbo",8,3,1,0,kw_75,0.,0.,0,N_mdm(lit,nondOptAlgorithm_sbo)}
 		},
 	kw_77[2] = {
 		{"complementary",8,0,1,1,0,0.,0.,0,N_mdm(type,distributionType_COMPLEMENTARY)},

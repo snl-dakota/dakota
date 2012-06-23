@@ -7,7 +7,7 @@ strategy,
 	single_method tabular_graphics_data    
 
 method,									 
-	global_interval_est ego		#0,#p0
+	global_interval_est sbo		#0,#p0
 #	global_interval_est lhs		#1
 	  seed = 1234567 rng rnum2		#0,#1,#p0
 #	local_interval_est sqp		#2,#p1

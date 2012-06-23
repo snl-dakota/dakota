@@ -12,7 +12,7 @@ method,
         id_method = 'EPISTEMIC'
         model_pointer = 'EPIST_M'
      	local_evidence		        #0
-#	global_evidence ego	        #1,#2,#3
+#	global_evidence sbo	        #1,#2,#3
 #         gaussian_process dakota       #1
 #         gaussian_process surfpack     #2,#3
 #	  seed = 627431			#1,#2,#3

@@ -872,12 +872,41 @@ inline bool contains(const DakContainerType& v,
 /// Computes relative change between successive RealVectors using Euclidean norm
 inline Real rel_change_rv(const RealVector& curr_rv, const RealVector& prev_rv)
 {
-  Real norm_prev_rv = 0., norm_diff_rv = 0.;
-  for (size_t i=0; i < prev_rv.length(); i++) {
-    norm_diff_rv += std::pow(std::abs(curr_rv[i]-prev_rv[i]),2.);
-    norm_prev_rv += std::pow(std::abs(prev_rv[i]),2.);
+  Real norm_prev = 0., norm_diff = 0.;
+  size_t i, prev_rv_len = prev_rv.length();
+  for (i=0; i<prev_rv_len; ++i) {
+    norm_diff += std::pow(curr_rv[i] - prev_rv[i], 2.);
+    norm_prev += prev_rv[i] * prev_rv[i];
   }
-  return std::sqrt(norm_diff_rv)/std::sqrt(norm_prev_rv);
+  return std::sqrt(norm_diff/norm_prev);
+}
+
+
+/// Computes relative change between successive vector triples using
+/// Euclidean norm
+inline Real rel_change_rv_iv_rv(const RealVector& curr_rv1,
+				const RealVector& prev_rv1,
+				const IntVector&  curr_iv,
+				const IntVector&  prev_iv,
+				const RealVector& curr_rv2,
+				const RealVector& prev_rv2)
+{
+  Real norm_prev = 0., norm_diff = 0.;
+  size_t i, prev_rv1_len = prev_rv1.length(), prev_iv_len = prev_iv.length(),
+    prev_rv2_len = prev_rv2.length();
+  for (i=0; i<prev_rv1_len; ++i) {
+    norm_diff += std::pow(curr_rv1[i] - prev_rv1[i], 2.);
+    norm_prev += prev_rv1[i] * prev_rv1[i];
+  }
+  for (i=0; i<prev_iv_len; ++i) {
+    norm_diff += std::pow(curr_iv[i] - prev_iv[i], 2.);
+    norm_prev += prev_iv[i] * prev_iv[i];
+  }
+  for (i=0; i<prev_rv2_len; ++i) {
+    norm_diff += std::pow(curr_rv2[i] - prev_rv2[i], 2.);
+    norm_prev += prev_rv2[i] * prev_rv2[i];
+  }
+  return std::sqrt(norm_diff/norm_prev);
 }
 
 } // namespace Dakota
