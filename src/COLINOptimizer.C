@@ -43,6 +43,9 @@ using utilib::MixedIntVars;
 #include <colin/ApplicationMngr.h>
 using colin::ApplicationHandle;
 #include <colin/reformulation/ConstraintPenalty.h>
+#include <colin/AppResponseInfo.h>
+using colin::mf_info;
+using colin::nlcf_info;
 using colin::ConstraintPenaltyApplication;
 #include <colin/SolverMngr.h>
 using colin::SolverMngr;
@@ -454,6 +457,11 @@ void COLINOptimizer::solver_setup(const String& method_name, Model& model)
                      << ","
                      << interfaces::StaticInitializers::static_interfaces_registrations
                      << ").");
+
+   // Tell COLIN solver to use COLIN's cache.
+
+   colin::CacheFactory().set_default_cache_type("Local");
+   colin::CacheFactory().intersolver_cache() = colin::CacheFactory().evaluation_cache();
 
   // Initialize constraint-related buffer variables.  Explanation for
   // why these are need is in set_method_parameters().
@@ -914,6 +922,14 @@ void COLINOptimizer::post_run(std::ostream& s)
   std::multimap<RealRealPair, Variables> variableSortMap;
   std::multimap<RealRealPair, Response> responseSortMap;
 
+  // Also need a COLIN Cache iterator for the case when function
+  // values aren't in the DAKOTA cache (e.g., when using surrogates).
+  // Ultimately won't need both points and cache iterators when switch
+  // to COLIN cache is complete but do for now.
+
+  colin::Cache::iterator cache_it = ps->begin(colinProblem.second);
+  colin::Cache::iterator cache_itEnd = ps->end();
+
   // If we have any recast model, need to get the native and/or
   // user-provided pieces to do database lookup and/or sort.
 
@@ -955,7 +971,7 @@ void COLINOptimizer::post_run(std::ostream& s)
 
   // Iterate through points returned by COLIN.
 
-  for(size_t i=0; pt_it!=pt_end; i++, pt_it++) {
+  for(size_t i=0; pt_it!=pt_end; i++, pt_it++, cache_it++) {
      //std::cerr << "Point #" << i << ": ";
      //::operator<<(std::cerr, *pt_it) << endl;
 
@@ -1003,21 +1019,29 @@ void COLINOptimizer::post_run(std::ostream& s)
 
     if (varsScaleFlag)
       tmpVariableHolder.continuous_variables(
-			modify_s2n(tmpVariableHolder.continuous_variables(), 
-				   cvScaleTypes, cvScaleMultipliers, cvScaleOffsets));
+	    modify_s2n(tmpVariableHolder.continuous_variables(), 
+	    cvScaleTypes, cvScaleMultipliers, cvScaleOffsets));
+
+    // For first step of switching over to using COLIN Cache, need
+    // this outside the "if/else" block because it constraintViolation
+    // needs to be 0.0 after "else" block is executed (if it is
+    // executed).  It will be computed appropriately in the "if" block
+    // if necessary in that case.
+
+    double constraintViolation = 0.0;
+    RealVector fn_vals(numFunctions);
 
     // Get the optimal response and constraint values associated with
     // the point.
 
     if (lookup_by_val(data_pairs, model_for_sort.interface_id(), 
-		      tmpVariableHolder, search_set, tmpResponseHolder)) {
-      const RealVector& fn_vals = tmpResponseHolder.function_values();
+    		      tmpVariableHolder, search_set, tmpResponseHolder)) {
+      fn_vals = tmpResponseHolder.function_values();
 
       // Compute constraint violation for nonlinear inequality and
       // equality constraints using sum of squares of component-wise
       // differences.  Only done for infeasible points.
 
-      double constraintViolation = 0.0;
       for(size_t j=0; j<num_nln_ineq; j++) {
 	if (fn_vals[j+numUserPrimaryFns] > nln_ineq_upr_bnds[j])
 	  constraintViolation += std::pow(fn_vals[j+numUserPrimaryFns]-nln_ineq_upr_bnds[j],2);
@@ -1028,48 +1052,67 @@ void COLINOptimizer::post_run(std::ostream& s)
 	if (std::fabs(fn_vals[j+numUserPrimaryFns+num_nln_ineq] - nln_eq_targets[j]) > 0.)
 	  constraintViolation += std::pow(fn_vals[j+numUserPrimaryFns+num_nln_ineq]-nln_eq_targets[j], 2);
       }
-
-      // For feasible points, compute (sum of) objectives.
-
-      double obj_fn_metric = 0.0;
-      if (constraintViolation > 0.0)
-	obj_fn_metric = DBL_MAX;
-      else
-	obj_fn_metric = (localObjectiveRecast) ?
-	  objective(fn_vals, model_for_sort.primary_response_fn_weights()) :
-	  fn_vals[0];
-
-      RealRealPair metrics(constraintViolation, obj_fn_metric);
-
-      if (variableSortMap.size() < numFinalSolutions) {
-	// If there's still room in the map, insert the point.
-
-	variableSortMap.insert(std::make_pair(metrics, tmpVariableHolder.copy()));
-	responseSortMap.insert(std::make_pair(metrics, tmpResponseHolder.copy()));
-      }
-      else {
-	// Otherwise, boot out the worst point first and then insert
-	// the new point.
-
-	std::multimap<RealRealPair, Variables>::iterator var_worst_it = 
-	  --variableSortMap.end();
-	std::multimap<RealRealPair, Response>::iterator resp_worst_it = 
-	  --responseSortMap.end();
-
- 	if(metrics < var_worst_it->first) {
-	  variableSortMap.erase(var_worst_it);
-	  variableSortMap.insert(std::make_pair(metrics, tmpVariableHolder.copy()));
-	}
-	if(metrics < resp_worst_it->first) {
-	  responseSortMap.erase(resp_worst_it);
-	  responseSortMap.insert(std::make_pair(metrics, tmpResponseHolder.copy()));
-	}
-      }
     }
     else {
-      Cerr << "Warning: failure in recovery of final objective/constraints."
+      Cerr << "Warning: Final points obtained directly from COLIN cache, currently only implemented for unconstrained, single-objective problems.  If you have constraints, some points returned may be infeasible."
 	   <<endl;
       //abort_handler(-1);
+
+      // Get the response object from the COLIN cache.
+
+      colin::AppResponse colinResponse = cache_it->second.asResponse(colinProblem.second);
+
+      // If a function value has been computed, get it from the
+      // response object.  Need both fn_vals[0] and a DAKOTA response
+      // object for the ensuing sort of returned points.  This should
+      // be a lot cleaner after switching over to getting all info
+      // from the COLIN cache.
+
+      if (colinResponse.is_computed(mf_info)) {
+	colinResponse.get(mf_info, fn_vals[0]);
+	tmpResponseHolder.function_value(fn_vals[0], 0);
+      }
+    }
+
+    // All of this sort logic applies whether function value came from
+    // DAKOTA cache or COLIN cache, so put it here after the "if"
+    // block.
+
+    // For feasible points, compute (sum of) objectives.
+
+    double obj_fn_metric = 0.0;
+    if (constraintViolation > 0.0)
+      obj_fn_metric = DBL_MAX;
+    else
+      obj_fn_metric = (localObjectiveRecast) ?
+	objective(fn_vals, model_for_sort.primary_response_fn_weights()) :
+	fn_vals[0];
+
+    RealRealPair metrics(constraintViolation, obj_fn_metric);
+
+    if (variableSortMap.size() < numFinalSolutions) {
+      // If there's still room in the map, insert the point.
+
+      variableSortMap.insert(std::make_pair(metrics, tmpVariableHolder.copy()));
+      responseSortMap.insert(std::make_pair(metrics, tmpResponseHolder.copy()));
+    }
+    else {
+      // Otherwise, boot out the worst point first and then insert
+      // the new point.
+
+      std::multimap<RealRealPair, Variables>::iterator var_worst_it = 
+	--variableSortMap.end();
+      std::multimap<RealRealPair, Response>::iterator resp_worst_it = 
+	--responseSortMap.end();
+
+      if(metrics < var_worst_it->first) {
+	variableSortMap.erase(var_worst_it);
+	variableSortMap.insert(std::make_pair(metrics, tmpVariableHolder.copy()));
+      }
+      if(metrics < resp_worst_it->first) {
+	responseSortMap.erase(resp_worst_it);
+	responseSortMap.insert(std::make_pair(metrics, tmpResponseHolder.copy()));
+      }
     }
   }
 
