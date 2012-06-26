@@ -52,7 +52,7 @@ public:
 
   void initialize();
   void set_cell_bounds();
-  void get_best_sample(bool find_max, bool eval_approx);
+  void get_best_sample(bool minimize, bool eval_approx);
   void post_process_cell_results(bool minimize);
   void post_process_response_fn_results();
   void post_process_final_results();

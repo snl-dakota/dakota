@@ -833,7 +833,7 @@ void COLINOptimizer::set_solver_parameters()
       string thisOption(misc_options[i]);
       size_t equalPos = thisOption.find("=",0);
       if (equalPos == string::npos)
-	Cout << "Warning - COLINY ignoring option " << misc_options[i] <<endl;
+	Cout << "Warning - COLINY ignoring option " << misc_options[i] << endl;
       else {
 	string option(thisOption.substr(0, equalPos));
 	string value(thisOption.substr(equalPos+1, thisOption.size()-1));
@@ -971,6 +971,7 @@ void COLINOptimizer::post_run(std::ostream& s)
 
   // Iterate through points returned by COLIN.
 
+  bool colin_cache_warn = false;
   for(size_t i=0; pt_it!=pt_end; i++, pt_it++, cache_it++) {
      //std::cerr << "Point #" << i << ": ";
      //::operator<<(std::cerr, *pt_it) << endl;
@@ -1054,9 +1055,7 @@ void COLINOptimizer::post_run(std::ostream& s)
       }
     }
     else {
-      Cerr << "Warning: Final points obtained directly from COLIN cache, currently only implemented for unconstrained, single-objective problems.  If you have constraints, some points returned may be infeasible."
-	   <<endl;
-      //abort_handler(-1);
+      colin_cache_warn = true;
 
       // Get the response object from the COLIN cache.
 
@@ -1115,6 +1114,12 @@ void COLINOptimizer::post_run(std::ostream& s)
       }
     }
   }
+
+  if (colin_cache_warn)
+    Cerr << "Warning: Final points obtained directly from COLIN cache, "
+	 << "currently only implemented for unconstrained,\n         "
+	 << "single-objective problems.  If you have constraints, some points "
+	 << "returned may be infeasible." << endl;
 
   // Make sure bestVariablesArray and bestResponseArray are the right
   // size.

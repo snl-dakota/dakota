@@ -151,8 +151,8 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   // Instantiate the optimizer used on the GP.
   // Branch on discrete variables for short term.
   // TO DO: longer term would allow discrete EGIE & switch on input selection
-  int max_iter = 1000, max_eval = 10000; // 10*defaults
   if (numDiscIntEpistUncVars || numDiscRealEpistUncVars) {
+    int max_iter = 50, max_eval = 5000; // default pop_size = 100
 #ifdef DAKOTA_COLINY
     // mixed EA (ignores GP variance)
     gpOptimizer.assign_rep(new COLINOptimizer("coliny_ea", gpOptModel, seedSpec,
@@ -169,6 +169,7 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   }
   else {
     double min_box_size = 1.e-15, vol_box_size = 1.e-15;
+    int max_iter = 1000, max_eval = 10000; // 10*defaults
 #ifdef HAVE_NCSU  
     // EGO with DIRECT (exploits GP variance)
     gpOptimizer.assign_rep(new NCSUOptimizer(gpOptModel, max_iter, max_eval,
@@ -226,37 +227,50 @@ void NonDGlobalInterval::quantify_uncertainty()
 
       set_cell_bounds(); // virtual fn for setting bounds for local min/max
 
+      // initialize the recast model for lower bound estimation
+      if (eifFlag)
+	gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
+	  EIF_objective_min, NULL);
+      else
+	gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
+	  objective_min, NULL);
+
       // Iterate until EGO converges
       distanceConvergeCntr = improvementConvergeCntr = sbIterNum = 0;
       prevCVStar.size(0); prevDIVStar.size(0); prevDRVStar.size(0);	
       approxConverged = false;
       while (!approxConverged) {
 	++sbIterNum;
-
-	// initialize the recast model
-	if (eifFlag)
-	  gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
-	    primary_resp_map, secondary_resp_map, nonlinear_resp_map,
-	    EIF_objective_min, NULL);
-	else
-	  gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
-	    primary_resp_map, secondary_resp_map, nonlinear_resp_map,
-	    objective_min, NULL);
 
 	// determine approxFnStar from minimum among sample data
 	if (eifFlag)
-	  get_best_sample(false, true);
+	  get_best_sample(true, true);
 
 	// Execute GLOBAL search and retrieve results
-	Cout << "\n>>>>> Initiating global minimization\n";
+	Cout << "\n>>>>> Initiating global minimization: response "
+	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
+	     << sbIterNum << "\n\n";
 	// no summary output since on-the-fly constructed:
+	gpOptimizer.reset();
 	gpOptimizer.run_iterator(Cout);
 
 	// output iteration results, update convergence controls, and update GP
-	post_process_gp_results();
+	post_process_gp_results(true);
       }
-      get_best_sample(false, false); // pull truthFnStar from sample data
+      get_best_sample(true, false); // pull truthFnStar from sample data
       post_process_cell_results(true); // virtual fn: post-process min
+
+      // initialize the recast model for upper bound estimation
+      if (eifFlag)
+	gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
+	  EIF_objective_max, NULL);
+      else
+	gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
+	  objective_max, NULL);
 
       // Iterate until EGO converges
       distanceConvergeCntr = improvementConvergeCntr = sbIterNum = 0;
@@ -265,29 +279,22 @@ void NonDGlobalInterval::quantify_uncertainty()
       while (!approxConverged) {
 	++sbIterNum;
 
-	// initialize EIF recast model
-	if (eifFlag)
-	  gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
-	    primary_resp_map, secondary_resp_map, nonlinear_resp_map,
-	    EIF_objective_max, NULL);
-	else
-	  gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
-	    primary_resp_map, secondary_resp_map, nonlinear_resp_map,
-	    objective_max, NULL);
-
 	// determine approxFnStar from maximum among sample data
 	if (eifFlag)
-	  get_best_sample(true, true);
+	  get_best_sample(false, true);
 
 	// Execute GLOBAL search
-	Cout << "\n>>>>> Initiating global maximization\n";
+	Cout << "\n>>>>> Initiating global maximization: response "
+	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
+	     << sbIterNum << "\n\n";
 	// no summary output since on-the-fly constructed:
+	gpOptimizer.reset();
 	gpOptimizer.run_iterator(Cout);
 
 	// output iteration results, update convergence controls, and update GP
-	post_process_gp_results();
+	post_process_gp_results(false);
       }
-      get_best_sample(true, false); // pull truthFnStar from sample data
+      get_best_sample(false, false); // pull truthFnStar from sample data
       post_process_cell_results(false); // virtual fn: post-process max
     }
     post_process_response_fn_results(); // virtual fn: post-process respFn
@@ -308,7 +315,7 @@ void NonDGlobalInterval::set_cell_bounds()
 { } // default is no-op
 
 
-void NonDGlobalInterval::post_process_gp_results()
+void NonDGlobalInterval::post_process_gp_results(bool minimize)
 {
   const Variables&       vars_star = gpOptimizer.variables_results();
   const RealVector&    c_vars_star = vars_star.continuous_variables();
@@ -318,7 +325,18 @@ void NonDGlobalInterval::post_process_gp_results()
   Real fn_star = resp_star_approx.function_value(0), fn_conv, dist_conv;
 
   Cout << "\nResults of interval optimization:\nFinal point             =\n";
-  if (vars_star.cv()) write_data(Cout, c_vars_star);
+  if (vars_star.cv())  write_data(Cout,  c_vars_star);
+  if (vars_star.div()) write_data(Cout, di_vars_star);
+  if (vars_star.drv()) write_data(Cout, dr_vars_star);
+  if (eifFlag)
+    Cout << "Expected Improvement    =\n                     "
+	 << std::setw(write_precision+7) << -fn_star << '\n';
+  else if (minimize)
+    Cout << "Estimate of lower bound =\n                     "
+	 << std::setw(write_precision+7) <<  fn_star << '\n';
+  else
+    Cout << "Estimate of upper bound =\n                     "
+	 << std::setw(write_precision+7) << -fn_star << '\n';
 
   if (prevCVStar.empty() && prevDIVStar.empty() && prevDRVStar.empty())
     dist_conv = fn_conv = DBL_MAX; // first iteration
@@ -328,8 +346,6 @@ void NonDGlobalInterval::post_process_gp_results()
 
     // EIF values directly provide estimates of soln convergence
     fn_conv = -fn_star; // EI negated for minimization
-    Cout << "Expected Improvement    =\n                     "
-	 << std::setw(write_precision+7) << fn_conv << "\n";
     // If DIRECT failed to find a point with EIF>0, it returns the center point
     // as the optimal solution. EGO may have converged, but DIRECT may have just
     // failed to find a point with a good EIF value. Adding this midpoint can
@@ -350,17 +366,11 @@ void NonDGlobalInterval::post_process_gp_results()
     // runs for the same reasons that we do not add points within the dist_tol.
   }
   else {
-    if (vars_star.div()) write_data(Cout, di_vars_star);
-    if (vars_star.drv()) write_data(Cout, dr_vars_star);
-
     // Euclidean distance of successive optimal solns: continuous,
     // discrete int, and discrete real variables
     dist_conv = rel_change_rv_iv_rv(c_vars_star, prevCVStar, di_vars_star,
 				    prevDIVStar, dr_vars_star, prevDRVStar);
-
     // for SBO, reference fn_star to previous value
-    Cout << "Estimate of bound       =\n                     "
-	 << std::setw(write_precision+7) << fn_star << "\n";
     fn_conv = std::abs(1. - fn_star / prevFnStar);// change in lower,upper bound
   }
 
@@ -411,7 +421,7 @@ void NonDGlobalInterval::evaluate_response_star_truth()
 }
 
 
-void NonDGlobalInterval::get_best_sample(bool find_max, bool eval_approx)
+void NonDGlobalInterval::get_best_sample(bool minimize, bool eval_approx)
 { } // default is no-op
 
 
@@ -436,6 +446,7 @@ objective_min(const Variables& sub_model_vars, const Variables& recast_vars,
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
   if (recast_asv[0] & 1)
     recast_response.function_value(sub_model_fn, 0);  // minimize with minimizer
+  // Note: could track c/di/drVarsStar and approxFnStar here 
 }
 
 
@@ -448,6 +459,7 @@ objective_max(const Variables& sub_model_vars, const Variables& recast_vars,
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
   if (recast_asv[0] & 1)
     recast_response.function_value(-sub_model_fn, 0); // maximize with minimizer
+  // Note: could track c/di/drVarsStar and approxFnStar here 
 }
 
 

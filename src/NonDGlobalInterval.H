@@ -65,7 +65,7 @@ protected:
   /// set the optimization variable bounds for each cell
   virtual void set_cell_bounds();
   /// determine truthFnStar and approxFnStar
-  virtual void get_best_sample(bool find_max, bool eval_approx);
+  virtual void get_best_sample(bool minimize, bool eval_approx);
   /// post-process a cell minimization/maximization result
   virtual void post_process_cell_results(bool minimize);
   /// post-process the interval computed for a response function
@@ -79,7 +79,7 @@ protected:
 
   /// post-process a GP-based optimization iteration: output results,
   /// update convergence controls, and update GP approximation
-  void post_process_gp_results();
+  void post_process_gp_results(bool minimize);
   /// evaluate the truth response at the optimal variables solution
   /// and update the GP with the new data
   void evaluate_response_star_truth();

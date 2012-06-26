@@ -72,6 +72,9 @@ public:
   //- Heading: Virtual member function redefinitions
   //
 
+  /// clears internal optimizer state
+  void reset();
+
   /// iterates the COLIN solver to determine the optimal solution
   void find_optimum();
 
@@ -143,6 +146,10 @@ protected:
   /// Buffer to hold problem constant_penalty parameter
   bool constant_penalty;
 };
+
+
+inline void COLINOptimizer::reset()
+{ colinSolver->reset(); }
 
 } // namespace Dakota
 

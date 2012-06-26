@@ -76,7 +76,7 @@ void NonDGlobalEvidence::post_process_final_results()
 }
 
 
-void NonDGlobalEvidence::get_best_sample(bool find_max, bool eval_approx)
+void NonDGlobalEvidence::get_best_sample(bool minimize, bool eval_approx)
 {
   // Pull the samples and responses from data used to build latest GP
   // to determine fnStar for use in the expected improvement function
@@ -87,7 +87,7 @@ void NonDGlobalEvidence::get_best_sample(bool find_max, bool eval_approx)
   // GT:
   // We want to make sure that we pick a data point that lies inside the cell
   size_t i, j, index_star, num_data_pts = gp_data.size();
-  truthFnStar = (find_max) ? -DBL_MAX : DBL_MAX;
+  truthFnStar = (minimize) ? DBL_MAX : -DBL_MAX;
   for (i=0; i<num_data_pts; ++i) {
     const Real&       truth_fn   = gp_data.response_function(i);
     const RealVector& truth_data = gp_data.continuous_variables(i);
@@ -99,8 +99,8 @@ void NonDGlobalEvidence::get_best_sample(bool find_max, bool eval_approx)
 	break;
       }
     }
-    if ( ( (  find_max && truth_fn > truthFnStar ) ||
-	   ( !find_max && truth_fn < truthFnStar ) ) && in_bounds ){
+    if ( ( ( !minimize && truth_fn > truthFnStar ) ||
+	   (  minimize && truth_fn < truthFnStar ) ) && in_bounds ){
       index_star  = i;
       truthFnStar = truth_fn;
     }
