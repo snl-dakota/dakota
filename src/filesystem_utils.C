@@ -276,6 +276,10 @@ ftw1(char *name, size_t namelen, size_t namemaxlen, ftw_fn fn, int depth, void *
 		ftype = sFTW_O;
 	return (*fn)(name, &sb, ftype, depth, v);
 #else /*!S_ISLNK*/
+#ifndef S_ISDIR
+#define	S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)	/* directory */
+#define	S_ISREG(m)	(((m) & S_IFMT) == S_IFREG)
+#endif
 	if (stat(name,&sb))
 		ftype = sFTW_NS;
 	else if (S_ISREG(sb.st_mode))
@@ -471,6 +475,9 @@ my_cp(const char *file, const struct stat *sb, int ftype, int depth, void *v)
 	const char *what;
 	int ff, rc, tf;
 	size_t L, Lf, Lt;
+#ifdef _MSC_VER
+   typedef __int64 ssize_t;
+#endif
 	ssize_t m, n;
 	struct stat sb1;
 
@@ -524,6 +531,11 @@ my_cp(const char *file, const struct stat *sb, int ftype, int depth, void *v)
 					std::fprintf(stderr, "\nrec_cp: could not open \"%s\".\n", file);
 					return sFTWret_quit;
 					}
+#if defined( _MSC_VER ) || defined( __MINGW32__ )
+#define S_IRUSR S_IREAD
+#define S_IWUSR S_IWRITE
+#define S_IXUSR S_IEXEC
+#endif
 				tf = creat(s, S_IRUSR | S_IWUSR | (sb->st_mode & S_IXUSR));
 				if (tf < 0) {
 					std::fprintf(stderr, "\nrec_cp: could not create \"%s\".\n",s);

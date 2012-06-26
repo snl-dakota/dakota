@@ -29,6 +29,7 @@ static const char rcsId[]="@(#) $Id: DakotaLeastSq.C 7031 2010-10-22 16:23:52Z m
 using namespace std;
 
 namespace Dakota {
+  extern PRPCache data_pairs; // global container
 
 // initialization of static needed by RecastModel
 LeastSq* LeastSq::leastSqInstance(NULL);
@@ -257,7 +258,6 @@ void LeastSq::print_results(std::ostream& s)
   // directly because the optimizers track the best iterate internally and 
   // return the best results after iteration completion.  Therfore, perform a
   // search in the data_pairs cache to extract the evalId for the best fn. eval.
-  extern PRPCache data_pairs; // global container
   int eval_id;
   activeSet.request_values(1);
   if (lookup_by_val(data_pairs, iteratedModel.interface_id(), best_vars,

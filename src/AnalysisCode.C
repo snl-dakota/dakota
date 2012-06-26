@@ -231,6 +231,9 @@ void AnalysisCode::define_filenames(const int id)
 					dirDel = true;
 			}
 		}
+#if !defined(S_ISDIR)
+# define S_ISDIR(mode) ((mode) & _S_IFDIR)
+#endif
 		else if (!S_ISDIR(sb.st_mode)) {
 			Cerr << "\nError: \"" << wd << "\" exists but is not a directory."
 				<< std::endl;

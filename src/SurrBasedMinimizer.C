@@ -51,6 +51,8 @@ void NNLS_F77( double* a, int& mda, int& m, int& n, double* b, double* x,
 using namespace std;
 
 namespace Dakota {
+  extern Graphics dakota_graphics; // defined in ParallelLibrary.C
+  extern PRPCache data_pairs; // global container
 
 SurrBasedMinimizer::SurrBasedMinimizer(Model& model):
   Minimizer(model), sbIterNum(0),
@@ -117,7 +119,6 @@ initialize_graphics(bool graph_2d, bool tabular_data,
   // Hybrid & Concurrent Strategies
   //if (!strategyFlag) {
 
-  extern Graphics dakota_graphics; // defined in ParallelLibrary.C
   // Customizations must follow 2D plot initialization (setting axis labels
   // calls SciPlotUpdate) and must precede tabular data file initialization
   // (so that the file header includes any updates to tabularCntrLabel).
@@ -697,7 +698,6 @@ void SurrBasedMinimizer::print_results(std::ostream& s)
     abort_handler(-1); 
   } 
 
-  extern PRPCache data_pairs; // global container
   const String& interface_id = (methodName.begins("surrogate_based_")) ?
     iteratedModel.truth_model().interface_id() : iteratedModel.interface_id();
   int eval_id;

@@ -33,6 +33,7 @@ static const char rcsId[]="@(#) $Id: SNLLLeastSq.C 7029 2010-10-22 00:17:02Z mse
 
 
 namespace Dakota {
+extern PRPCache data_pairs; // global container
 
 SNLLLeastSq* SNLLLeastSq::snllLSqInstance(NULL);
 
@@ -559,7 +560,6 @@ void SNLLLeastSq::post_run(std::ostream& s)
     search_asv[i] = 0; // don't need constr from DB due to getConstraintValue()
   activeSet.request_vector(search_asv);
 
-  extern PRPCache data_pairs; // global container
   Response desired_resp;
   if (lookup_by_val(data_pairs, iteratedModel.interface_id(),
 		    bestVariablesArray.front(), activeSet, desired_resp))

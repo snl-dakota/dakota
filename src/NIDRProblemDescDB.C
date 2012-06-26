@@ -35,11 +35,12 @@
 
 extern "C" void nidr_lib_cleanup(void);
 
-char nidr_please_refer[] =
+extern "C" char nidr_please_refer[] =
 	"Please refer to the DAKOTA Reference and/or User's Manual or the\n"
 	"dakota.input.summary file distributed with this executable.";
 
 namespace Dakota {
+extern ProblemDescDB *Dak_pddb;
 
 extern "C" FILE *nidrin;
 extern "C" int nidr_parse(const char*, FILE*);
@@ -697,7 +698,6 @@ iface_stop(const char *keyname, Values *val, void **g, void *v)
   int ac, ec, j, nd, same;
   void (*Complain)(const char *fmt, ...);
   size_t i, n;
-  extern ProblemDescDB *Dak_pddb;
   static const char samefmt[] =
     "template_directory and work_directory name are both \"%s\"";
   static const char samefmt2[] =

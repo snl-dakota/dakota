@@ -24,6 +24,7 @@ static const char rcsId[]="@(#) $Id: DakotaOptimizer.C 7031 2010-10-22 16:23:52Z
 
 
 namespace Dakota {
+  extern PRPCache data_pairs; // global container
 
 // initialization of static needed by RecastModel
 Optimizer* Optimizer::optimizerInstance(NULL);
@@ -278,7 +279,6 @@ void Optimizer::print_results(std::ostream& s)
     abort_handler(-1); 
   } 
 
-  extern PRPCache data_pairs; // global container
   const String& interface_id = iteratedModel.interface_id(); 
   int eval_id; 
   ActiveSet search_set(numFunctions, numContinuousVars); // asv = 1's
@@ -327,7 +327,6 @@ local_objective_recast_retrieve(const Variables& vars, Response& response) const
     Cerr << "Warning: local_objective_recast_retrieve() called for single "
 	 << "objective optimization." << std::endl;
   else {
-    extern PRPCache data_pairs; // global container
     Response desired_resp;
     if (lookup_by_val(data_pairs, iteratedModel.interface_id(), vars,
 		      response.active_set(), desired_resp))

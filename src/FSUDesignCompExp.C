@@ -19,6 +19,9 @@
 #elif defined(DAKOTA_UTILIB)
 #include <utilib/seconds.h>
 #endif
+#ifdef _MSC_VER
+#undef min
+#endif
 
 static const char rcsId[]="@(#) $Id: FSUDesignCompExp.C 7035 2010-10-22 21:45:39Z mseldre $";
 

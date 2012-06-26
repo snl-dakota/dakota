@@ -84,6 +84,7 @@ using std::runtime_error;
     controls. */
 
 namespace Dakota {
+  extern PRPCache data_pairs; // global container
 
 //
 // - TypeManager registrations
@@ -940,7 +941,6 @@ void COLINOptimizer::post_run(std::ostream& s)
 
   RealVector cdv;
   IntVector ddv;
-  extern PRPCache data_pairs; // global container
   ActiveSet search_set(numFunctions, numContinuousVars); // asv = 1's
   Variables tmpVariableHolder = model_for_sort.current_variables().copy();
   Response tmpResponseHolder = model_for_sort.current_response().copy();

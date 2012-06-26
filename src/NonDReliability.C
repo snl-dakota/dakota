@@ -21,6 +21,7 @@
 static const char rcsId[] = "@(#) $Id: NonDReliability.C 6793 2010-05-21 00:07:25Z mseldre $";
 
 namespace Dakota {
+extern Graphics dakota_graphics; // defined in ParallelLibrary.C
 
 // initialization of statics
 NonDReliability* NonDReliability::nondRelInstance(NULL);
@@ -61,7 +62,6 @@ void NonDReliability::initialize_graphics(bool graph_2d, bool tabular_data,
 {
   // Set up special graphics for CDF/CCDF visualization
   if (totalLevelRequests) {
-    extern Graphics dakota_graphics; // defined in ParallelLibrary.C
     // Customizations must follow 2D plot initialization (setting axis labels
     // calls SciPlotUpdate) and must precede tabular data file initialization
     // (so that the file header includes any updates to tabularCntrLabel).

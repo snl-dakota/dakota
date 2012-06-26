@@ -23,6 +23,7 @@ static const char rcsId[]="@(#) $Id: DataFitSurrModel.C 7034 2010-10-22 20:16:32
 
 
 namespace Dakota {
+  extern PRPCache data_pairs;
 
 // define special values for componentParallelMode
 #define APPROX_INTERFACE 1
@@ -731,7 +732,6 @@ void DataFitSurrModel::build_global()
     // Process the PRPCache
     // (this relies on data_pairs being in eval_id order so variables
     // and responses are correctly ordered)
-    extern PRPCache data_pairs;
     for (PRPCacheCIter prp_iter = data_pairs.begin();
 	 prp_iter != data_pairs.end(); ++prp_iter) {
       const Variables&  db_vars    = prp_iter->prp_parameters();

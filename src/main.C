@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
   fpinit_ASL();	// Switch to 53-bit rounding if appropriate, to
 		// eliminate some cross-platform differences.
 #endif
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(_MSC_VER)
   std::signal(WM_QUIT, abort_handler);
   std::signal(WM_CHAR, abort_handler);
 #else

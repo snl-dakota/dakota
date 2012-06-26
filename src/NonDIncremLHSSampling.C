@@ -35,6 +35,7 @@
 static const char rcsId[]="@(#) $Id: NonDIncremLHSSampling.C 6715 2010-04-02 21:58:15Z wjbohnh $";
 
 namespace Dakota {
+  extern PRPCache data_pairs;
 
 RealArray NonDIncremLHSSampling::rawData;
 
@@ -81,7 +82,6 @@ void NonDIncremLHSSampling::quantify_uncertainty()
   //LHS with the seed, we read it from the restart file.
 
   // Now read in variable and response data
-  extern PRPCache data_pairs;
   size_t num_evals = data_pairs.size();
   if (num_evals > numSamples){
     Cout << "Warning: The number of function evaluations in the restart " 

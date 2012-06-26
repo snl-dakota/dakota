@@ -21,7 +21,7 @@
 
 
 namespace Dakota {
-
+extern PRPCache data_pairs;
 ApproximationInterface::
 ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 		       bool am_cache, const String& am_interface_id,
@@ -337,7 +337,7 @@ update_approximation(const Variables& vars, const IntResponsePair& response_pr)
   if (actualModelCache && response_pr.first > 0) {
     // anchor vars/resp are not sufficiently persistent for use in shallow
     // copies.  Therefore, use ordered id lookup in global PRPCache.
-    extern PRPCache data_pairs;
+//
     IntStringPair ids(response_pr.first, actualModelInterfaceId);
     PRPCacheCIter p_it = lookup_by_ids(data_pairs, ids);
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
@@ -369,7 +369,6 @@ update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
     if (actualModelCache && r_it->first > 0) { // valid evaluation id
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
-      extern PRPCache data_pairs;
       IntStringPair ids(r_it->first, actualModelInterfaceId);
       PRPCacheCIter p_it = lookup_by_ids(data_pairs, ids);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
@@ -402,7 +401,6 @@ update_approximation(const VariablesArray& vars_array,
     if (actualModelCache && r_it->first > 0) { // valid evaluation id
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
-      extern PRPCache data_pairs;
       IntStringPair ids(r_it->first, actualModelInterfaceId);
       PRPCacheCIter p_it = lookup_by_ids(data_pairs, ids);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
@@ -425,7 +423,6 @@ append_approximation(const Variables& vars, const IntResponsePair& response_pr)
   if (actualModelCache && response_pr.first > 0) {
     // anchor vars/resp are not sufficiently persistent for use in shallow
     // copies.  Therefore, use ordered id lookup in global PRPCache.
-    extern PRPCache data_pairs;
     IntStringPair ids(response_pr.first, actualModelInterfaceId);
     PRPCacheCIter p_it = lookup_by_ids(data_pairs, ids);
     if (p_it == data_pairs.end()) // deep response copies with vars sharing
@@ -462,7 +459,6 @@ append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map)
     if (actualModelCache && r_it->first > 0) { // valid evaluation id
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
-      extern PRPCache data_pairs;
       IntStringPair ids(r_it->first, actualModelInterfaceId);
       PRPCacheCIter p_it = lookup_by_ids(data_pairs, ids);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing
@@ -496,7 +492,6 @@ append_approximation(const VariablesArray& vars_array,
     if (actualModelCache && r_it->first > 0) { // valid evaluation id
       // allVariables/allResponses are not sufficiently persistent for use in
       // shallow copies.  Therefore, use ordered id lookup in global PRPCache.
-      extern PRPCache data_pairs;
       IntStringPair ids(r_it->first, actualModelInterfaceId);
       PRPCacheCIter p_it = lookup_by_ids(data_pairs, ids);
       if (p_it == data_pairs.end()) // deep response copies with vars sharing

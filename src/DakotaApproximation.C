@@ -28,6 +28,7 @@
 
 
 namespace Dakota {
+  extern Graphics dakota_graphics; // defined in ParallelLibrary.C
 
 /** This constructor is the one which must build the base class data
     for all derived classes.  get_approx() instantiates a derived
@@ -688,7 +689,6 @@ void Approximation::draw_surface()
         F(j,i)   = value(xtemp);
       }
     }
-    extern Graphics dakota_graphics; // defined in ParallelLibrary.C
     dakota_graphics.show_data_3d(X, Y, F);
   }
 }

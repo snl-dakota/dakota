@@ -31,6 +31,8 @@ static const char rcsId[]="@(#) $Id: SurrBasedLocalMinimizer.C 7031 2010-10-22 1
 
 
 namespace Dakota {
+  extern Graphics dakota_graphics;
+  extern PRPCache data_pairs; // global container
 
 // define special values for componentParallelMode
 //#define SURROGATE_MODEL 1
@@ -414,7 +416,6 @@ void SurrBasedLocalMinimizer::minimize_surrogates()
   responseCenterTruth.second.active_set(full_truth_set);
 
   newCenterFlag = true;
-  extern Graphics dakota_graphics;
   while ( !convergenceFlag ) {
 
     // Compute trust region bounds.  If the trust region extends outside
@@ -869,7 +870,6 @@ void SurrBasedLocalMinimizer::find_center_approx()
     search_set.request_values(1);
     const Variables& search_vars = iteratedModel.current_variables();
     const String& search_id = iteratedModel.surrogate_model().interface_id();
-    extern PRPCache data_pairs; // global container
     if ( lookup_by_val(data_pairs, search_id, search_vars, search_set,
 		       desired_resp) ) {
       responseCenterApprox.function_values(desired_resp.function_values());

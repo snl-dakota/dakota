@@ -18,7 +18,9 @@
 #include "ParallelLibrary.H"
 
 namespace Dakota {
-
+  extern BoStream write_restart;
+  // globals: cache of param-response pairs & binary restart log
+  extern PRPCache data_pairs; // global container
 
 ApplicationInterface::
 ApplicationInterface(const ProblemDescDB& problem_db):
@@ -464,8 +466,6 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
 	//common_output_filtering(core_resp);
 
 	if (evalCacheFlag || restartFileFlag) {
-	  extern PRPCache data_pairs;
-	  extern BoStream write_restart;
 	  // manage shallow/deep copy of vars/response with evalCacheFlag
 	  ParamResponsePair prp(vars, interfaceId, core_resp, currEvalId,
 				evalCacheFlag);
@@ -526,7 +526,6 @@ duplication_detect(const Variables& vars, Response& response,
 		   const bool asynch_flag)
 {
   // check data_pairs list
-  extern PRPCache data_pairs; // global container
   Response desired_resp;
 
   // The incoming response's responseActiveSet was updated in map(), but
@@ -747,10 +746,6 @@ const IntResponseMap& ApplicationInterface::synch_nowait()
     syntax is encapsulated within ParallelLibrary. */
 void ApplicationInterface::self_schedule_evaluations()
 {
-  // globals: list of param-response pairs & binary restart log
-  extern PRPCache data_pairs;
-  extern BoStream write_restart;
-
   int num_jobs  = beforeSynchCorePRPQueue.size();
   int capacity  = (asynchLocalEvalConcurrency) ?
                    asynchLocalEvalConcurrency * numEvalServers : numEvalServers;
@@ -882,10 +877,6 @@ void ApplicationInterface::self_schedule_evaluations()
     of this function (and therefore the job list) were distributed. */
 void ApplicationInterface::static_schedule_evaluations()
 {
-  // globals: list of param-response pairs & binary restart log
-  extern PRPCache data_pairs;
-  extern BoStream write_restart;
-
   // rounding down num_peer1_jobs offloads this processor (which has additional
   // work relative to other peers), but results in a few more passed messages.
   int num_jobs       = beforeSynchCorePRPQueue.size(), 
@@ -990,10 +981,6 @@ void ApplicationInterface::static_schedule_evaluations()
 void ApplicationInterface::
 asynchronous_local_evaluations(PRPQueue& local_prp_queue)
 {
-  // globals: cache of param-response pairs & binary restart log
-  extern PRPCache data_pairs;
-  extern BoStream write_restart;
-
   PRPQueue active_prp_queue; PRPQueueIter prp_iter;
   size_t i, num_sends; int fn_eval_id, num_jobs = local_prp_queue.size();
   if (multiProcEvalFlag)
@@ -1098,10 +1085,6 @@ asynchronous_local_evaluations_static(PRPQueue& local_prp_queue)
   if (localServerJobMap.size() != asynchLocalEvalConcurrency)
     localServerJobMap.resize(asynchLocalEvalConcurrency);
   localServerJobMap.assign(asynchLocalEvalConcurrency, 0);
-
-  // globals: cache of param-response pairs & binary restart log
-  extern PRPCache data_pairs;
-  extern BoStream write_restart;
 
   PRPQueue active_prp_queue; PRPQueueIter prp_iter;
   size_t i, num_sends;
@@ -1247,10 +1230,6 @@ asynchronous_local_evaluations_nowait(PRPQueue& local_prp_queue)
     localServerJobMap.assign(asynchLocalEvalConcurrency, 0);
   }
 
-  // globals: cache of param-response pairs & binary restart log
-  extern PRPCache data_pairs;
-  extern BoStream write_restart;
-
   // Step 1: launch any new jobs up to asynchLocalEvalConcurrency limit (if 
   // specified.
   int fn_eval_id, num_jobs = local_prp_queue.size();
@@ -1379,9 +1358,6 @@ asynchronous_local_evaluations_nowait(PRPQueue& local_prp_queue)
 void ApplicationInterface::
 synchronous_local_evaluations(PRPQueue& local_prp_queue)
 {
-  // globals: list of param-response pairs & binary restart log
-  extern PRPCache data_pairs;
-  extern BoStream write_restart;
 
   for (PRPQueueIter prp_iter = local_prp_queue.begin();
        prp_iter != local_prp_queue.end(); ++prp_iter) {
@@ -2033,7 +2009,6 @@ manage_failure(const Variables& vars, const ActiveSet& set, Response& response,
 const ParamResponsePair& 
 ApplicationInterface::get_source_pair(const Variables& target_vars)
 {
-  extern PRPCache data_pairs; // global cache of ParamResponsePairs
   if (data_pairs.size() == 0) {
     Cerr << "Failure captured: No points available, aborting" << std::endl;
     abort_handler(-1);

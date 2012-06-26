@@ -45,6 +45,9 @@ using Pecos::Phi_inverse;
 static const char rcsId[] = "@(#) $Id: NonDLocalReliability.C 4058 2006-10-25 01:39:40Z mseldre $";
 
 namespace Dakota {
+extern Graphics dakota_graphics; // defined in ParallelLibrary.C
+extern PRPCache data_pairs; // global container
+
 
 // define special values for componentParallelMode
 //#define SURROGATE_MODEL 1
@@ -565,8 +568,6 @@ void NonDLocalReliability::mean_value()
   // CDF/CCDF data points for each response function and store in 
   // finalStatistics.  Additionally, if uncorrelated variables, compute
   // importance factors.
-
-  extern Graphics dakota_graphics; // defined in ParallelLibrary.C
 
   // initialize arrays
   impFactor.shapeUninitialized(numUncertainVars, numFunctions);
@@ -1397,7 +1398,6 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     }
 
     // retrieve previously evaluated gradient information, if possible
-    extern PRPCache data_pairs; // global container
     if (mode & 2) { // avail in all RIA/PMA cases (exception: numerical grads)
       // query data_pairs to retrieve the fn gradient at the MPP
       Variables search_vars = iteratedModel.current_variables().copy();
@@ -1606,7 +1606,6 @@ void NonDLocalReliability::update_level_data()
       prevFnGradULev0(i,respFnCount) = fnGradU[i];
   }
   if (!subIteratorFlag) {
-    extern Graphics dakota_graphics; // defined in ParallelLibrary.C
     dakota_graphics.add_datapoint(respFnCount, computedRespLevel,
 				  computed_prob_level);
     for (size_t i=0; i<numUncertainVars; i++) {

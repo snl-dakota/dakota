@@ -37,7 +37,9 @@ static const char rcsId[]="@(#) $Id: ParallelLibrary.C 7013 2010-10-08 01:03:38Z
 
 
 namespace Dakota {
-
+extern PRPCache data_pairs;
+extern BoStream write_restart;
+extern Graphics dakota_graphics;
 /** Heartbeat function provided by not_executable.C; pass output
     interval in seconds, or -1 to use $DAKOTA_HEARTBEAT */
 void start_dakota_heartbeat(int);
@@ -1297,8 +1299,6 @@ manage_outputs_restart(const ParallelLevel& pl)
   // ------------
   // Read restart
   // ------------
-  extern PRPCache data_pairs;
-  extern BoStream write_restart;
   // Process the evaluations from the restart file
   if (read_restart_flag) {
     BiStream read_restart(read_restart_filename.c_str());
@@ -1415,7 +1415,6 @@ void ParallelLibrary::close_streams()
   }
 
   // clean up data from manage_restart
-  extern BoStream write_restart;
   if (pl.serverMasterFlag) // && !deactivateRestartFlag)
     write_restart.close();
 
@@ -1562,7 +1561,6 @@ ParallelLibrary::~ParallelLibrary()
       Cout << std::endl;
 #endif // DAKOTA_UTILIB
     }
-    extern Graphics dakota_graphics;
     if (worldRank == 0)
       dakota_graphics.close(); // after completion of timings
   }

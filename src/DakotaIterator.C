@@ -94,6 +94,7 @@
 static const char rcsId[]="@(#) $Id: DakotaIterator.C 7029 2010-10-22 00:17:02Z mseldre $";
 
 namespace Dakota {
+  extern Graphics dakota_graphics; // defined in ParallelLibrary.C
 
 extern ProblemDescDB dummy_db;    // defined in global_defs.C
 
@@ -920,7 +921,6 @@ initialize_graphics(bool graph_2d, bool tabular_data,
   if (iteratorRep)
     iteratorRep->initialize_graphics(graph_2d, tabular_data, tabular_file);
   else { // no redefinition of virtual fn., use default initialization
-    extern Graphics dakota_graphics; // defined in ParallelLibrary.C
     if (graph_2d)     // initialize the 2D plots
       dakota_graphics.create_plots_2d(
 	iteratedModel.current_variables(), iteratedModel.current_response());

@@ -24,6 +24,7 @@ static const char rcsId[]="@(#) $Id: DiscrepancyCorrection.C 7024 2010-10-16 01:
 
 
 namespace Dakota {
+  extern PRPCache data_pairs; // global container
 
 void DiscrepancyCorrection::
 initialize(Model& surr_model, const IntSet& surr_fn_indices, short corr_type,
@@ -653,7 +654,6 @@ search_db(const Variables& search_vars, const ShortArray& search_asv)
   // query data_pairs to extract the response at the current pt
   ActiveSet search_set = surrModel.current_response().active_set(); // copy
   search_set.request_vector(search_asv);
-  extern PRPCache data_pairs; // global container
   PRPCacheHIter cache_it = lookup_by_val(data_pairs, surrModel.interface_id(),
 					 search_vars, search_set);
 
