@@ -1,3 +1,4 @@
+include(FindPerl)
 add_subdirectory(tutorial)
 add_subdirectory(methods)
 
