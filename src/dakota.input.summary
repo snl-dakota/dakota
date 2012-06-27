@@ -848,13 +848,14 @@ KEYWORD12 method
 	  )
 	|
 	( global_evidence ALIAS nond_global_evidence
-	  [ ( sbo
-	      [ gaussian_process ALIAS kriging
-		surfpack
-		| dakota
-		]
-	      [ use_derivatives ]
-	      )
+	  [ sbo
+	    | ego
+	    [ gaussian_process ALIAS kriging
+	      surfpack
+	      | dakota
+	      ]
+	    [ use_derivatives ]
+	    ]
 	  | lhs ]
 	  [ points_file STRING
 	    [ annotated
@@ -890,13 +891,14 @@ KEYWORD12 method
 	  )
 	|
 	( global_interval_est ALIAS nond_global_interval_est
-	  [ ( sbo
-	      [ gaussian_process ALIAS kriging
-		surfpack
-		| dakota
-		]
-	      [ use_derivatives ]
-	      )
+	  [ sbo
+	    | ego
+	    [ gaussian_process ALIAS kriging
+	      surfpack
+	      | dakota
+	      ]
+	    [ use_derivatives ]
+	    ]
 	  | lhs ]
 	  [ points_file STRING
 	    [ annotated

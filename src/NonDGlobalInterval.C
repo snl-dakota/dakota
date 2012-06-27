@@ -46,21 +46,34 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
 {
   bool err_flag = false;
 
-  /*
-  // Check for suitable active var types (discrete epistemic not yet supported)
-  if (numDiscreteIntVars || numDiscreteRealVars) {
-    Cerr << "\nError: discrete variables are not currently supported in "
-	 << "NonDGlobalInterval." << std::endl;
+  // Define optimization sub-problem solver
+  const String& opt_alg
+    = probDescDB.get_string("method.nond.optimization_algorithm");
+  bool discrete = (numDiscIntEpistUncVars || numDiscRealEpistUncVars);
+  if (opt_alg == "ego") {
+    eifFlag = true;
+    if (discrete) {
+      Cerr << "Error: discrete variables are not currently supported for EGO "
+	   << "solver in NonDGlobalInterval.  Please select SBO." << std::endl;
+      err_flag = true;
+    }
+  }
+  else if (opt_alg == "sbo")
+    eifFlag = false;
+  else if (opt_alg.empty()) 
+    eifFlag = (discrete) ? false : true;
+  else {
+    Cerr << "Error: unsupported optimization algorithm selection in "
+	 << "NonDGlobalInterval.  Please select EGO or SBO." << std::endl;
     err_flag = true;
   }
-  if (numUncertainVars != numContIntervalVars) {
-    Cerr << "\nError: only continuous interval distributions are currently "
-	 << "supported in NonDGlobalInterval." << std::endl;
-    err_flag = true;
-  }
-  */
 
-  eifFlag == !(numDiscIntEpistUncVars || numDiscRealEpistUncVars);
+  if (numUncertainVars != numContIntervalVars + numDiscIntervalVars +
+      numDiscSetIntUncVars + numDiscSetRealUncVars) {
+    Cerr << "\nError: only continuous and discrete epistemic variables are "
+	 << "currently supported in NonDGlobalInterval." << std::endl;
+    err_flag = true;
+  }
 
   // Use a hardwired minimal initial samples
   if (!numSamples) // use a default of #terms in a quadratic polynomial
@@ -149,9 +162,21 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
 					1, 0, 0), false);
 
   // Instantiate the optimizer used on the GP.
-  // Branch on discrete variables for short term.
-  // TO DO: longer term would allow discrete EGIE & switch on input selection
-  if (numDiscIntEpistUncVars || numDiscRealEpistUncVars) {
+  // TO DO: add support for discrete EGO
+  if (eifFlag) { // EGO solver
+    double min_box_size = 1.e-15, vol_box_size = 1.e-15;
+    int max_iter = 1000, max_eval = 10000; // 10*defaults
+#ifdef HAVE_NCSU  
+    // EGO with DIRECT (exploits GP variance)
+    gpOptimizer.assign_rep(new NCSUOptimizer(gpOptModel, max_iter, max_eval,
+      min_box_size, vol_box_size), false);
+#else
+    Cerr << "NCSU DIRECT Optimizer is not available to use to find the" 
+	 << " interval bounds from the GP model." << std::endl;
+    abort_handler(-1);
+#endif // HAVE_NCSU
+  }
+  else { // SBGO solver with EAminlp
     int max_iter = 50, max_eval = 5000; // default pop_size = 100
 #ifdef DAKOTA_COLINY
     // mixed EA (ignores GP variance)
@@ -164,19 +189,6 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
     Cerr << "Mixed EA not available to solve mixed continuous-discrete "
 	 << "optimization for computing interval bounds on the GP model."
 	 << std::endl;
-    abort_handler(-1);
-#endif // HAVE_NCSU
-  }
-  else {
-    double min_box_size = 1.e-15, vol_box_size = 1.e-15;
-    int max_iter = 1000, max_eval = 10000; // 10*defaults
-#ifdef HAVE_NCSU  
-    // EGO with DIRECT (exploits GP variance)
-    gpOptimizer.assign_rep(new NCSUOptimizer(gpOptModel, max_iter, max_eval,
-      min_box_size, vol_box_size), false);
-#else
-    Cerr << "NCSU DIRECT Optimizer is not available to use to find the" 
-	 << " interval bounds from the GP model." << std::endl;
     abort_handler(-1);
 #endif // HAVE_NCSU
   }
@@ -253,7 +265,7 @@ void NonDGlobalInterval::quantify_uncertainty()
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
 	     << sbIterNum << "\n\n";
 	// no summary output since on-the-fly constructed:
-	gpOptimizer.reset();
+	//gpOptimizer.reset(); // redundant of reset() call in find_optimum()
 	gpOptimizer.run_iterator(Cout);
 
 	// output iteration results, update convergence controls, and update GP
@@ -288,7 +300,7 @@ void NonDGlobalInterval::quantify_uncertainty()
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
 	     << sbIterNum << "\n\n";
 	// no summary output since on-the-fly constructed:
-	gpOptimizer.reset();
+	//gpOptimizer.reset(); // redundant of reset() call in find_optimum()
 	gpOptimizer.run_iterator(Cout);
 
 	// output iteration results, update convergence controls, and update GP

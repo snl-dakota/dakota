@@ -561,6 +561,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      |
 	      ( global_evidence ALIAS nond_global_evidence {N_mdm(lit,methodName_nond_global_evidence)}
 	        [ ( sbo {N_mdm(lit,nondOptAlgorithm_sbo)}
+		    | ego {N_mdm(lit,nondOptAlgorithm_ego)}
 	            [ gaussian_process ALIAS kriging {0}
 	              surfpack {N_mdm(type,emulatorType_KRIGING)}
 	              | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
@@ -600,6 +601,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    |
             ( global_interval_est ALIAS nond_global_interval_est {N_mdm(lit,methodName_nond_global_interval_est)}
 	      [ ( sbo {N_mdm(lit,nondOptAlgorithm_sbo)}
+		  | ego {N_mdm(lit,nondOptAlgorithm_ego)}
 	          [ gaussian_process ALIAS kriging {0}
 	            surfpack {N_mdm(type,emulatorType_KRIGING)}
 	            | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}

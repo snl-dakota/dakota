@@ -343,7 +343,8 @@ Iterator* Iterator::get_iterator(Model& model)
       = probDescDB.get_string("method.nond.optimization_algorithm");
     if (nond_opt_alg == "lhs")
       return new NonDLHSEvidence(model);
-    else if (nond_opt_alg == "sbo" || nond_opt_alg.empty())
+    else if (nond_opt_alg == "sbo" || nond_opt_alg == "ego" ||
+	     nond_opt_alg.empty())
       return new NonDGlobalEvidence(model);
     else
       return NULL;
@@ -355,7 +356,8 @@ Iterator* Iterator::get_iterator(Model& model)
       = probDescDB.get_string("method.nond.optimization_algorithm");
     if (nond_opt_alg == "lhs")
       return new NonDLHSSingleInterval(model);
-    else if (nond_opt_alg == "sbo" || nond_opt_alg.empty())
+    else if (nond_opt_alg == "sbo" || nond_opt_alg == "ego" ||
+	     nond_opt_alg.empty())
       return new NonDGlobalSingleInterval(model);
     else
       return NULL;
@@ -379,12 +381,10 @@ Iterator* Iterator::get_iterator(Model& model)
   else if (method_name == "nonlinear_cg")
     return new NonlinearCGOptimizer(model);
 #ifdef HAVE_OPTPP
-  else if (method_name == "optpp_cg"        || method_name == "optpp_q_newton"
-        || method_name == "optpp_fd_newton" || method_name == "optpp_newton"
-        || method_name == "optpp_pds")
-    return new SNLLOptimizer(model);
-  else if (method_name == "optpp_g_newton")
-    return new SNLLLeastSq(model);
+  else if (method_name.begins("optpp_")) {
+    if (method_name.ends("_g_newton")) return new SNLLLeastSq(model);
+    else                               return new SNLLOptimizer(model);
+  }
 #endif
 #ifdef DAKOTA_HOPS
   else if (method_name == "asynch_pattern_search")
@@ -493,12 +493,12 @@ Iterator* Iterator::get_iterator(const String& method_name, Model& model)
 
   if (false) { } // dummy anchor for else blocks to avoid issues with #ifdef's
 #ifdef HAVE_OPTPP
-  else if (method_name == "optpp_cg"   || method_name == "optpp_q_newton" ||
-      method_name == "optpp_fd_newton" || method_name == "optpp_newton"   ||
-      method_name == "optpp_pds")
-    return new SNLLOptimizer(method_name, model);
-  else if (method_name == "optpp_g_newton")
-    return new SNLLLeastSq(method_name, model);
+  else if (method_name.begins("optpp_")) {
+    if (method_name.ends("_g_newton"))
+      return new SNLLLeastSq(method_name, model);
+    else
+      return new SNLLOptimizer(method_name, model);
+  }
 #endif
 #ifdef DAKOTA_HOPS
   else if (method_name == "asynch_pattern_search")
