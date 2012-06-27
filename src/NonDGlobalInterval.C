@@ -164,12 +164,18 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
   // Instantiate the optimizer used on the GP.
   // TO DO: add support for discrete EGO
   if (eifFlag) { // EGO solver
+
+    // preserve these EGO settings for now, but eventually map through
+    // from spec and update test baselines
+    convergenceTol = 1.e-12; distanceTol = 1.e-8;
+    maxIterations  = 25*numContinuousVars;
+
     double min_box_size = 1.e-15, vol_box_size = 1.e-15;
-    int max_iter = 1000, max_eval = 10000; // 10*defaults
+    int max_gp_iter = 1000, max_gp_eval = 10000; // 10*defaults
 #ifdef HAVE_NCSU  
     // EGO with DIRECT (exploits GP variance)
-    gpOptimizer.assign_rep(new NCSUOptimizer(gpOptModel, max_iter, max_eval,
-      min_box_size, vol_box_size), false);
+    gpOptimizer.assign_rep(new NCSUOptimizer(gpOptModel, max_gp_iter,
+      max_gp_eval, min_box_size, vol_box_size), false);
 #else
     Cerr << "NCSU DIRECT Optimizer is not available to use to find the" 
 	 << " interval bounds from the GP model." << std::endl;
@@ -177,11 +183,14 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
 #endif // HAVE_NCSU
   }
   else { // SBGO solver with EAminlp
-    int max_iter = 50, max_eval = 5000; // default pop_size = 100
+
+    // SBGO option uses maxIterations and convergenceTol from user spec
+
+    int max_gp_iter = 50, max_gp_eval = 5000; // default EA pop_size = 100
 #ifdef DAKOTA_COLINY
     // mixed EA (ignores GP variance)
     gpOptimizer.assign_rep(new COLINOptimizer("coliny_ea", gpOptModel, seedSpec,
-					      max_iter, max_eval), false);
+					      max_gp_iter, max_gp_eval), false);
 //#elif HAVE_JEGA
 //    gpOptimizer.assign_rep(new JEGAOptimizer(gpOptModel, max_iter, max_eval,
 //      min_box_size, vol_box_size), false);
@@ -225,9 +234,6 @@ void NonDGlobalInterval::quantify_uncertainty()
   BoolDequeArray nonlinear_resp_map(1);
   nonlinear_resp_map[0] = BoolDeque(numFunctions, false);
 
-  convergenceTol = 1.e-12; distanceTol = 1.e-8;
-  maxIterations  = 25*numContinuousVars;
-
   initialize(); // virtual fn
 
   for (respFnCntr=0; respFnCntr<numFunctions; ++respFnCntr) {
@@ -265,7 +271,7 @@ void NonDGlobalInterval::quantify_uncertainty()
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
 	     << sbIterNum << "\n\n";
 	// no summary output since on-the-fly constructed:
-	//gpOptimizer.reset(); // redundant of reset() call in find_optimum()
+	//gpOptimizer.reset(); // redundant for COLINOptimizer::find_optimum()
 	gpOptimizer.run_iterator(Cout);
 
 	// output iteration results, update convergence controls, and update GP
@@ -300,7 +306,7 @@ void NonDGlobalInterval::quantify_uncertainty()
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
 	     << sbIterNum << "\n\n";
 	// no summary output since on-the-fly constructed:
-	//gpOptimizer.reset(); // redundant of reset() call in find_optimum()
+	//gpOptimizer.reset(); // redundant for COLINOptimizer::find_optimum()
 	gpOptimizer.run_iterator(Cout);
 
 	// output iteration results, update convergence controls, and update GP
