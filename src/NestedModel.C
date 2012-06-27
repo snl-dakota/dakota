@@ -1061,8 +1061,10 @@ set_mapping(const ActiveSet& mapped_set, ActiveSet& opt_interface_set,
 
   if (mapped_asv.size() != num_mapped_primary + num_opt_interf_con +
                            num_sub_iter_mapped_con) {
-    Cerr << "\nError: mapped_asv length mismatch in NestedModel::asv_mapping()"
-	 << std::endl;
+    Cerr << "\nError: mismatch is ASV lengths in NestedModel::set_mapping()."
+	 << "\n       expected " << mapped_asv.size() << " total, received "
+	 << num_mapped_primary << " primary plus " << num_opt_interf_con +
+            num_sub_iter_mapped_con << " secondary." << std::endl;
     abort_handler(-1);
   }
 
