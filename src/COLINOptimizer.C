@@ -461,8 +461,10 @@ void COLINOptimizer::solver_setup(const String& method_name, Model& model)
 
    // Tell COLIN solver to use COLIN's cache.
 
-   colin::CacheFactory().set_default_cache_type("Local");
+   //   colin::CacheFactory().set_default_cache_type("Local");
+   colinCache = colin::CacheFactory().create("Local");
    colin::CacheFactory().intersolver_cache() = colin::CacheFactory().evaluation_cache();
+   colin::CacheFactory().register_cache(colinCache, "useThisCache");
 
   // Initialize constraint-related buffer variables.  Explanation for
   // why these are need is in set_method_parameters().
@@ -1036,7 +1038,7 @@ void COLINOptimizer::post_run(std::ostream& s)
     // the point.
 
     if (lookup_by_val(data_pairs, model_for_sort.interface_id(), 
-    		      tmpVariableHolder, search_set, tmpResponseHolder)) {
+		      tmpVariableHolder, search_set, tmpResponseHolder)) {
       fn_vals = tmpResponseHolder.function_values();
 
       // Compute constraint violation for nonlinear inequality and
@@ -1141,6 +1143,8 @@ void COLINOptimizer::post_run(std::ostream& s)
     bestVariablesArray[index] = var_best_it->second.copy();
     bestResponseArray[index] = resp_best_it->second.copy();
   }
+
+  ps->clear();
 
   // Call Optimizer::post_run() to finish up.
 

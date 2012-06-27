@@ -66,6 +66,7 @@ public:
   /// destructor
   ~COLINOptimizer() {
     if (rng) delete rng;
+    colin::CacheFactory().unregister_cache("useThisCache");
   }
 
   //
@@ -126,6 +127,9 @@ protected:
 
   /// handle to the COLIN solver
   colin::SolverHandle colinSolver;
+
+  /// handle to the COLIN cache
+  colin::CacheHandle colinCache;
 
   /// handle and pointer to the COLINApplication object
   std::pair<colin::ApplicationHandle, COLINApplication*> colinProblem;
