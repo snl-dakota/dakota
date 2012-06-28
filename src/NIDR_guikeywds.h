@@ -1830,4 +1830,10 @@ static GuiKeyWord
 
 } // namespace Dakota
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 KeyWord Dakota_Keyword_Top = {"KeywordTop",0,6,0,0,Dakota::kw_258};
+#ifdef __cplusplus
+}
+#endif
