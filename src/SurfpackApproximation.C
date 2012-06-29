@@ -301,7 +301,24 @@ SurfpackApproximation(const String& approx_type,
   Approximation(BaseConstructor(), approx_type, num_vars, data_order),
   surfData(NULL), model(NULL), factory(NULL)
 {
-  approxOrder = (approx_order.empty()) ? 2 : approx_order[0];
+  if (approx_order.empty())
+    approxOrder = 2;
+  else {
+    approxOrder = approx_order[0];
+    if (approx_order.size() != num_vars) {
+      Cerr << "Error: bad size of " << approx_order.size()
+	   << " for approx_order in SurfpackApproximation lightweight "
+	   << "constructor.  Expected " << num_vars << "." << std::endl;
+      abort_handler(-1);
+    }
+    for (size_t i=1; i<num_vars; ++i)
+      if (approx_order[i] != approxOrder) {
+	Cerr << "Warning: SurfpackApproximation lightweight constructor "
+	     << "requires homogeneous approximation order.  Promoting to max "
+	     << "value." << std::endl;
+	approxOrder = std::max(approx_order[i], approxOrder);
+      }
+  }
 
   ParamMap args;
 
@@ -315,7 +332,7 @@ SurfpackApproximation(const String& approx_type,
   }
   else if (approxType == "global_kriging") {
 
-    args["order"] = toString<unsigned int>(2);
+    args["order"] = toString<unsigned int>(approxOrder);
     args["reduced_polynomial"] = toString<bool>(true);
     args["type"] = "kriging";
     /*

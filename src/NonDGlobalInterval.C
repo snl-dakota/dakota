@@ -77,15 +77,13 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
 
   // Use a hardwired minimal initial samples
   if (!numSamples) // use a default of #terms in a quadratic polynomial
-    numSamples = (numContinuousVars+1)*(numContinuousVars+2)/2;
+    numSamples = (numUncertainVars+1)*(numUncertainVars+2)/2;
 
   String approx_type = "global_kriging";
   if (probDescDB.get_short("method.nond.emulator") == GAUSSIAN_PROCESS)
     approx_type = "global_gaussian";
   
   String sample_type, sample_reuse = "none";
-  UShortArray approx_order; 
-  short corr_order = -1, corr_type = NO_CORRECTION;
   if (probDescDB.get_bool("method.derivative_usage")) {
     if (approx_type == "global_gaussian") {
       Cerr << "\nError: efficient_global does not support gaussian_process "
@@ -123,10 +121,12 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
 
   // Construct fHatModel using a GP approximation over the active/uncertain
   // vars (same view as iteratedModel: not the typical All view for DACE).
- 
-  // Construct f-hat using a GP approximation for each response function over
-  // the active/design vars (same view as iteratedModel: not the typical All
-  // view for DACE).
+  //
+  // Note: constant trend fn is more robust when there is limited data, such as
+  // a few discrete values --> nan's observed for quad trend with 2 model forms
+  unsigned short trend_order = (discrete) ? 0 : 2;
+  UShortArray approx_order(numUncertainVars, trend_order);
+  short corr_order = -1, corr_type = NO_CORRECTION;
   //const Variables& curr_vars = iteratedModel.current_variables();
   fHatModel.assign_rep(new DataFitSurrModel(daceIterator, iteratedModel,
     //curr_vars.view(), curr_vars.variables_components(),
@@ -464,7 +464,7 @@ objective_min(const Variables& sub_model_vars, const Variables& recast_vars,
   const ShortArray& recast_asv = recast_response.active_set_request_vector();
   if (recast_asv[0] & 1)
     recast_response.function_value(sub_model_fn, 0);  // minimize with minimizer
-  // Note: could track c/di/drVarsStar and approxFnStar here 
+  // Note: could track c/di/drVarsStar and approxFnStar here
 }
 
 

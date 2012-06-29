@@ -43,7 +43,8 @@ enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
 	     VAR_b, VAR_h, VAR_P, VAR_M, VAR_Y, // short column
 	     VAR_w, VAR_t, VAR_R, VAR_E, VAR_X, /* VAR_Y, */ // cantilever beam
 	     VAR_Fs, VAR_P1, VAR_P2, VAR_P3, VAR_B, VAR_D, VAR_H,
-	     VAR_F0, VAR_d }; /* VAR_b, VAR_h, VAR_E */ // steel column
+	     VAR_F0, VAR_d, /* VAR_b, VAR_h, VAR_E */ // steel column
+	     VAR_MForm }; // mf_*() test functions
 //enum x3_var_t  { X1, X2, X3 }; // generic up to 3 dimensions
 //enum shc_var_t { SHC_B, SHC_H, SHC_P, SHC_M, SHC_Y }; // short column
 //enum cb_var_t  { CB_W, CB_T, CB_R, CB_E, CB_X, CB_Y }; // cantilever beam
@@ -53,10 +54,10 @@ enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
 /// enumeration of possible driver types (to index to names)
 enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
 		CYLINDER_HEAD, EXTENDED_ROSENBROCK, GENERALIZED_ROSENBROCK,
-		LF_ROSENBROCK, ROSENBROCK, GERSTNER, SCALABLE_GERSTNER,
-		LOGNORMAL_RATIO, MULTIMODAL,
+		LF_ROSENBROCK, MF_ROSENBROCK, ROSENBROCK,
+		GERSTNER, SCALABLE_GERSTNER, LOGNORMAL_RATIO, MULTIMODAL,
 		PLUGIN_ROSENBROCK, PLUGIN_TEXT_BOOK,
-		SHORT_COLUMN, LF_SHORT_COLUMN,
+		SHORT_COLUMN, LF_SHORT_COLUMN, MF_SHORT_COLUMN,
 		SIDE_IMPACT_COST, SIDE_IMPACT_PERFORMANCE,
 		SOBOL_RATIONAL, SOBOL_G_FUNCTION, SOBOL_ISHIGAMI,
 		STEEL_COLUMN_COST, STEEL_COLUMN_PERFORMANCE, TEXT_BOOK,
@@ -232,6 +233,9 @@ private:
 
   int short_column(); ///< the short_column UQ/OUU test function
   int lf_short_column(); ///< a low fidelity short_column test function
+  int mf_short_column(); ///< alternate short_column formulations for
+                         ///< multifidelity or model form studies
+  int alternate_short_column_forms(int form); ///< helper fn for alternate forms
 
   int side_impact_cost(); ///< the side_impact_cost UQ/OUU test function
   int side_impact_perf(); ///< the side_impact_perf UQ/OUU test function
@@ -240,6 +244,8 @@ private:
   int generalized_rosenbrock(); ///< n-dimensional Rosenbrock (Schittkowski)
   int extended_rosenbrock();    ///< n-dimensional Rosenbrock (Nocedal/Wright)
   int lf_rosenbrock(); ///< a low fidelity version of the Rosenbrock function
+  int mf_rosenbrock(); ///< alternate Rosenbrock formulations for
+                       ///< multifidelity or model form studies
 
   int gerstner(); ///< the isotropic/anisotropic Gerstner test function family
   int scalable_gerstner(); ///< scalable versions of the Gerstner test family

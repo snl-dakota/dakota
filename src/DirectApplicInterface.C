@@ -79,12 +79,14 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   driverTypeMap["extended_rosenbrock"]    = EXTENDED_ROSENBROCK;
   driverTypeMap["generalized_rosenbrock"] = GENERALIZED_ROSENBROCK;
   driverTypeMap["lf_rosenbrock"]          = LF_ROSENBROCK;
+  driverTypeMap["mf_rosenbrock"]          = MF_ROSENBROCK;
   driverTypeMap["rosenbrock"]             = ROSENBROCK;
   driverTypeMap["gerstner"]               = GERSTNER;
   driverTypeMap["scalable_gerstner"]      = SCALABLE_GERSTNER;
   driverTypeMap["log_ratio"]              = LOGNORMAL_RATIO;
   driverTypeMap["multimodal"]             = MULTIMODAL;
   driverTypeMap["lf_short_column"]        = LF_SHORT_COLUMN;
+  driverTypeMap["mf_short_column"]        = MF_SHORT_COLUMN;
   driverTypeMap["short_column"]           = SHORT_COLUMN;
   driverTypeMap["side_impact_cost"]       = SIDE_IMPACT_COST;
   driverTypeMap["side_impact_perf"]       = SIDE_IMPACT_PERFORMANCE;
@@ -167,8 +169,9 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   localDataView = 0;
   for (size_t i=0; i<numAnalysisDrivers; ++i)
     switch (analysisDriverTypes[i]) {
-    case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM: case ROSENBROCK:
-    case LF_ROSENBROCK:  case SHORT_COLUMN:      case LF_SHORT_COLUMN:
+    case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM:
+    case ROSENBROCK:   case LF_ROSENBROCK:   case MF_ROSENBROCK:
+    case SHORT_COLUMN: case LF_SHORT_COLUMN: case MF_SHORT_COLUMN:
     case SOBOL_ISHIGAMI: case STEEL_COLUMN_COST: case STEEL_COLUMN_PERFORMANCE:
       localDataView |= VARIABLES_MAP;    break;
     case NO_DRIVER: // assume VARIABLES_VECTOR approach for plug-ins for now
@@ -188,16 +191,19 @@ DirectApplicInterface(const ProblemDescDB& problem_db):
   if (localDataView & VARIABLES_MAP) {
     // define the string to enumeration map
     //switch (ac_name) {
-    //case ROSENBROCK: case LF_ROSENBROCK: case SOBOL_ISHIGAMI:
+    //case ROSENBROCK: case LF_ROSENBROCK: case MF_ROSENBROCK:
+    //case SOBOL_ISHIGAMI:
       varTypeMap["x1"] = VAR_x1; varTypeMap["x2"] = VAR_x2;
       varTypeMap["x3"] = VAR_x3; //varTypeMap["x4"]  = VAR_x4;
       //varTypeMap["x5"] = VAR_x5; varTypeMap["x6"]  = VAR_x6;
       //varTypeMap["x7"] = VAR_x7; varTypeMap["x8"]  = VAR_x8;
       //varTypeMap["x9"] = VAR_x9; varTypeMap["x10"] = VAR_x10; break;
-    //case SHORT_COLUMN: case LF_SHORT_COLUMN:
+    //case SHORT_COLUMN: case LF_SHORT_COLUMN: case MF_SHORT_COLUMN:
       varTypeMap["b"] = VAR_b; varTypeMap["h"] = VAR_h;
       varTypeMap["P"] = VAR_P; varTypeMap["M"] = VAR_M; varTypeMap["Y"] = VAR_Y;
       //break;
+    //case MF_ROSENBROCK: case MF_SHORT_COLUMN: (add to previous)
+      varTypeMap["ModelForm"] = VAR_MForm;
     //case CANTILEVER_BEAM: case MOD_CANTILEVER_BEAM:
       varTypeMap["w"] = VAR_w; varTypeMap["t"] = VAR_t; varTypeMap["R"] = VAR_R;
       varTypeMap["E"] = VAR_E; varTypeMap["X"] = VAR_X;
@@ -463,6 +469,8 @@ int DirectApplicInterface::derived_map_ac(const String& ac_name)
     fail_code = extended_rosenbrock(); break;
   case LF_ROSENBROCK:
     fail_code = lf_rosenbrock(); break;
+  case MF_ROSENBROCK:
+    fail_code = mf_rosenbrock(); break;
   case GERSTNER:
     fail_code = gerstner(); break;
   case SCALABLE_GERSTNER:
@@ -475,6 +483,8 @@ int DirectApplicInterface::derived_map_ac(const String& ac_name)
     fail_code = short_column(); break;
   case LF_SHORT_COLUMN:
     fail_code = lf_short_column(); break;
+  case MF_SHORT_COLUMN:
+    fail_code = mf_short_column(); break;
   case SIDE_IMPACT_COST:
     fail_code = side_impact_cost(); break;
   case SIDE_IMPACT_PERFORMANCE:
@@ -1314,7 +1324,7 @@ int DirectApplicInterface::rosenbrock()
 	 << "analyses." << std::endl;
     abort_handler(-1);
   }
-  if (numVars != 2 || numADIV || numADRV) {
+  if (numACV != 2 || numADIV > 1 || numADRV) { // allow ModelForm discrete int
     Cerr << "Error: Bad number of variables in rosenbrock direct fn."
 	 << std::endl;
     abort_handler(-1);
@@ -1507,7 +1517,7 @@ int DirectApplicInterface::lf_rosenbrock()
 	 << "multiprocessor analyses." << std::endl;
     abort_handler(-1);
   }
-  if (numVars != 2 || numADIV || numADRV) {
+  if (numACV != 2 || numADIV > 1 || numADRV) { // allow ModelForm discrete int
     Cerr << "Error: Bad number of variables in lf_rosenbrock direct fn."
 	 << std::endl;
     abort_handler(-1);
@@ -1544,6 +1554,34 @@ int DirectApplicInterface::lf_rosenbrock()
 	  fnHessians[0](i,j) = -400.*x1;
 	else if (varTypeDVV[i] == VAR_x2 && varTypeDVV[j] == VAR_x2)
 	  fnHessians[0](i,j) =  200.;
+
+  return 0; // no failure
+}
+
+
+int DirectApplicInterface::mf_rosenbrock()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: mf_rosenbrock direct fn does not support "
+	 << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numVars != 3 || numADRV) {
+    Cerr << "Error: Bad number of variables in mf_rosenbrock direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  if (numFns > 1) {
+    Cerr << "Error: Bad number of functions in mf_rosenbrock direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  switch (xDIM[VAR_MForm]) {
+  case 1:    rosenbrock(); break;
+  case 2: lf_rosenbrock(); break;
+  default:       return 1; break; 
+  }
 
   return 0; // no failure
 }
@@ -1784,7 +1822,7 @@ int DirectApplicInterface::short_column()
 	 << "analyses." << std::endl;
     abort_handler(-1);
   }
-  if (numVars != 5 || numADIV || numADRV) {
+  if (numACV != 5 || numADIV > 1 || numADRV) { // allow ModelForm discrete int
     Cerr << "Error: Bad number of variables in short_column direct fn."
 	 << std::endl;
     abort_handler(-1);
@@ -1904,14 +1942,55 @@ int DirectApplicInterface::lf_short_column()
 	 << std::endl;
     abort_handler(-1);
   }
+
+  short form = 2; // high fidelity case is form 1
+  if (!analysisComponents.empty() && 
+      !analysisComponents[analysisDriverIndex].empty()) {
+    const String& an_comp = analysisComponents[analysisDriverIndex][0];
+    if (an_comp      == "lf1") form = 2;
+    else if (an_comp == "lf2") form = 3;
+    else if (an_comp == "lf3") form = 4;
+  }
+  return alternate_short_column_forms(form);
+}
+
+
+int DirectApplicInterface::mf_short_column()
+{
+  if (multiProcAnalysisFlag) {
+    Cerr << "Error: mf_short_column direct fn does not support "
+	 << "multiprocessor analyses." << std::endl;
+    abort_handler(-1);
+  }
+  if (numACV != 5 || numADIV > 1 || numADRV) {
+    Cerr << "Error: Bad number of variables in mf_short_column direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  if (numFns > 2) {
+    Cerr << "Error: Bad number of functions in mf_short_column direct fn."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  int form = xDIM[VAR_MForm];
+  switch (form) {
+  case 1:  return short_column();                     break;
+  default: return alternate_short_column_forms(form); break;
+  }
+}
+
+
+int DirectApplicInterface::alternate_short_column_forms(int form)
+{
   size_t ai, lsi;
   if (numFns == 1)      // option for limit state only
     lsi = 0;
   else if (numFns == 2) // option for area + limit state
     { ai = 0; lsi = 1; }
   else {
-    Cerr << "Error: Bad number of functions in lf_short_column direct fn."
-	 << std::endl;
+    Cerr << "Error: Bad number of functions in alternate_short_column_forms "
+	 << "direct fn." << std::endl;
     abort_handler(-1);
   }
 
@@ -1923,14 +2002,6 @@ int DirectApplicInterface::lf_short_column()
   Real b = xCM[VAR_b], h = xCM[VAR_h], P = xCM[VAR_P], M = xCM[VAR_M],
        Y = xCM[VAR_Y], b_sq = b*b, h_sq = h*h, P_sq = P*P, M_sq = M*M,
        Y_sq = Y*Y;
-  short test_fn = 1;
-  if (!analysisComponents.empty() && 
-      !analysisComponents[analysisDriverIndex].empty()) {
-    const String& an_comp = analysisComponents[analysisDriverIndex][0];
-    if (an_comp      == "lf1") test_fn = 1;
-    else if (an_comp == "lf2") test_fn = 2;
-    else if (an_comp == "lf3") test_fn = 3;
-  }
 
   // **** f (objective = bh = cross sectional area):
   if (numFns > 1 && (directFnASV[ai] & 1))
@@ -1938,14 +2009,16 @@ int DirectApplicInterface::lf_short_column()
 
   // **** g (limit state = short column response):
   if (directFnASV[lsi] & 1) {
-    switch (test_fn) {
-    case 1:
-      fnVals[lsi] = 1. - 4.*P/(b*h_sq*Y) - P_sq/(b_sq*h_sq*Y_sq); break;
+    switch (form) {
+    //case 1: short_column(); // original high fidelity case
     case 2:
-      fnVals[lsi] = 1. - 4.*M/(b*h_sq*Y) - M_sq/(b_sq*h_sq*Y_sq); break;
+      fnVals[lsi] = 1. - 4.*P/(b*h_sq*Y) - P_sq/(b_sq*h_sq*Y_sq); break;
     case 3:
+      fnVals[lsi] = 1. - 4.*M/(b*h_sq*Y) - M_sq/(b_sq*h_sq*Y_sq); break;
+    case 4:
       fnVals[lsi] = 1. - 4.*M/(b*h_sq*Y) - P_sq/(b_sq*h_sq*Y_sq)
 	               - 4.*(P - M)/(b*h*Y);                      break;
+    default: return 1;                                            break;
     }
   }
 
