@@ -464,7 +464,12 @@ void COLINOptimizer::solver_setup(const String& method_name, Model& model)
    //   colin::CacheFactory().set_default_cache_type("Local");
    colinCache = colin::CacheFactory().create("Local");
    colin::CacheFactory().intersolver_cache() = colin::CacheFactory().evaluation_cache();
-   colin::CacheFactory().register_cache(colinCache, "useThisCache");
+   //colin::CacheFactory().register_cache(colinCache, "useThisCache");
+   // BMA: temporary fix (try to generate a unique cache name, even for 
+   // some lightweight constructed solvers)
+   String unique_cache_name(method_id());
+   unique_cache_name += methodName;
+   colin::CacheFactory().register_cache(colinCache, unique_cache_name);
 
   // Initialize constraint-related buffer variables.  Explanation for
   // why these are need is in set_method_parameters().

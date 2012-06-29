@@ -66,7 +66,10 @@ public:
   /// destructor
   ~COLINOptimizer() {
     if (rng) delete rng;
-    colin::CacheFactory().unregister_cache("useThisCache");
+    //colin::CacheFactory().unregister_cache("useThisCache");
+    String unique_cache_name(method_id());
+    unique_cache_name += methodName;
+    colin::CacheFactory().unregister_cache(unique_cache_name);
   }
 
   //
