@@ -22,7 +22,7 @@ function(add_named_file_copy_target _source _destination)
     ${_destination})
 endfunction()
 
-if(BUILD_TESTING)
+if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
   # Copy the dakota_test support files into the build tree
   # with dependency to source files (needed for legacy behavior, but
@@ -129,7 +129,7 @@ if(BUILD_TESTING)
   # Clean up test dir
   #file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/dakota_diffs.out)
 
-endif(BUILD_TESTING)
+endif() # BUILD_TESTING AND DAKOTA_ENABLE_TESTS
 
 
 # Executables needed for DAKOTA testing, but NOT unit tests

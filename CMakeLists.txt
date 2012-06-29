@@ -192,8 +192,9 @@ endif(DAKOTA_F90)
 add_subdirectory(packages)
 add_subdirectory(src)
 
-option(ENABLE_DAKOTA_TESTS "Enable Dakota tests." ON)
-if(ENABLE_DAKOTA_TESTS)
+option(DAKOTA_ENABLE_TESTS "Enable Dakota-specific tests?" ON)
+# Build the executables in the test directory even if BUILD_TESTING is OFF
+if(DAKOTA_ENABLE_TESTS)
   add_subdirectory(test)
 endif()
 
