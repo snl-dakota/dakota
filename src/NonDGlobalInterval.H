@@ -77,9 +77,9 @@ protected:
   //- Heading: Convenience functions
   //
 
-  /// post-process a GP-based optimization iteration: output results,
+  /// post-process an optimization execution: output results,
   /// update convergence controls, and update GP approximation
-  void post_process_gp_results(bool minimize);
+  void post_process_run_results(bool minimize);
   /// evaluate the truth response at the optimal variables solution
   /// and update the GP with the new data
   void evaluate_response_star_truth();
@@ -95,11 +95,11 @@ protected:
 
   /// optimizer for solving surrogate-based subproblem: NCSU DIRECT optimizer
   /// for maximizing expected improvement or mixed EA if discrete variables.
-  Iterator gpOptimizer;
+  Iterator intervalOptimizer;
   /// recast model which formulates the surrogate-based optimization 
   /// subproblem (recasts as design problem; may assimilate mean and
   /// variance to enable max(expected improvement))
-  Model gpOptModel;
+  Model intervalOptModel;
 
   /// approximate response corresponding to minimum/maximum truth response
   Real approxFnStar;
@@ -148,6 +148,8 @@ private:
   int       numSamples; ///< the number of samples used in the surrogate
   String    rngName;	///< name of the random number generator
 
+  /// flag indicating use of GP surrogate emulation
+  bool gpModelFlag;
   /// flag indicating use of maximized expected improvement for GP
   /// iterate selection
   bool eifFlag;
@@ -178,8 +180,8 @@ private:
   Real prevFnStar;
   /// surrogate-based minimization/maximization iteration count
   size_t sbIterNum;
-  /// flag indicating convergence of a GP minimization or maximization
-  bool approxConverged;
+  /// flag indicating convergence of a minimization or maximization cycle
+  bool boundConverged;
   /// flag for maximal response extraction (all response values
   /// obtained on each function call)
   bool allResponsesPerIter;

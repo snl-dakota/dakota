@@ -4972,6 +4972,7 @@ static Method_mp_lit
 	MP2(mutationType,replace_uniform),
 	MP2(nondOptAlgorithm,nip),
 	MP2(nondOptAlgorithm,sqp),
+	MP2(nondOptAlgorithm,ea),
 	MP2(nondOptAlgorithm,ego),
 	MP2(nondOptAlgorithm,lhs),
 	MP2(nondOptAlgorithm,sbo),

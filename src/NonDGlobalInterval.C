@@ -51,7 +51,7 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
     = probDescDB.get_string("method.nond.optimization_algorithm");
   bool discrete = (numDiscIntEpistUncVars || numDiscRealEpistUncVars);
   if (opt_alg == "ego") {
-    eifFlag = true;
+    eifFlag = gpModelFlag = true;
     if (discrete) {
       Cerr << "Error: discrete variables are not currently supported for EGO "
 	   << "solver in NonDGlobalInterval.  Please select SBO." << std::endl;
@@ -59,12 +59,14 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
     }
   }
   else if (opt_alg == "sbo")
-    eifFlag = false;
+    { eifFlag = false; gpModelFlag = true; }
+  else if (opt_alg == "ea")
+    eifFlag = gpModelFlag = false;
   else if (opt_alg.empty()) 
-    eifFlag = (discrete) ? false : true;
+    { gpModelFlag = true; eifFlag = (discrete) ? false : true; }
   else {
     Cerr << "Error: unsupported optimization algorithm selection in "
-	 << "NonDGlobalInterval.  Please select EGO or SBO." << std::endl;
+	 << "NonDGlobalInterval.  Please select EGO, SBO, or EA." << std::endl;
     err_flag = true;
   }
 
@@ -75,144 +77,147 @@ NonDGlobalInterval::NonDGlobalInterval(Model& model):
     err_flag = true;
   }
 
-  // Use a hardwired minimal initial samples
-  if (!numSamples) // use a default of #terms in a quadratic polynomial
-    numSamples = (numUncertainVars+1)*(numUncertainVars+2)/2;
-
-  String approx_type = "global_kriging";
-  if (probDescDB.get_short("method.nond.emulator") == GAUSSIAN_PROCESS)
-    approx_type = "global_gaussian";
-  
-  String sample_type, sample_reuse = "none";
-  if (probDescDB.get_bool("method.derivative_usage")) {
-    if (approx_type == "global_gaussian") {
-      Cerr << "\nError: efficient_global does not support gaussian_process "
-	   << "when derivatives present; use kriging instead." << std::endl;
-      err_flag = true;
+  if (gpModelFlag) {
+    if (!numSamples) // use a default of #terms in a quadratic polynomial
+      numSamples = (numUncertainVars+1)*(numUncertainVars+2)/2;
+    String approx_type = 
+      (probDescDB.get_short("method.nond.emulator") == GAUSSIAN_PROCESS) ?
+      "global_gaussian" : "global_kriging";
+      String sample_type, sample_reuse = "none";
+    if (probDescDB.get_bool("method.derivative_usage")) {
+      if (approx_type == "global_gaussian") {
+	Cerr << "\nError: efficient_global does not support gaussian_process "
+	     << "when derivatives present; use kriging instead." << std::endl;
+	err_flag = true;
+      }
+      if (gradientType != "none") dataOrder |= 2;
+      if (hessianType  != "none") dataOrder |= 4;
     }
-    if (gradientType != "none") dataOrder |= 2;
-    if (hessianType  != "none") dataOrder |= 4;
-  }
-
-  // instantiate the Gaussian Process DataFit recursions
-
-  // get point samples file
-  short this_output_level = probDescDB.get_short("method.output");
-  const String& point_reuse_file
-    = probDescDB.get_string("method.point_reuse_file");
-  bool point_file_annotated
-    = probDescDB.get_bool("method.point_file_annotated");
-  if (!point_reuse_file.empty()){
-    numSamples = 0;
-    sample_reuse = "all";
-  }
+    // get point samples file
+    short output_level = probDescDB.get_short("method.output");
+    const String& point_reuse_file
+      = probDescDB.get_string("method.point_reuse_file");
+    bool point_file_annotated
+      = probDescDB.get_bool("method.point_file_annotated");
+    if (!point_reuse_file.empty())
+      { numSamples = 0; sample_reuse = "all"; }
  
+    // instantiate the Gaussian Process Model/Iterator recursions
+
+    // The following uses on the fly derived ctor:
+    short mode = (eifFlag) ? ACTIVE_UNIFORM : ACTIVE;
+    daceIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
+      numSamples, seedSpec, rngName, false, mode), false);
+    // only use derivatives if the user requested and they are available
+    ActiveSet dace_set = daceIterator.active_set(); // copy
+    dace_set.request_values(dataOrder);
+    daceIterator.active_set(dace_set);
+
+    // Construct fHatModel using a GP approximation over the active/uncertain
+    // vars (same view as iteratedModel: not the typical All view for DACE).
+    //
+    // Note: low order trend is more robust when there is limited data, such as
+    // a few discrete values --> nan's observed for quad trend w/ 2 model forms
+    unsigned short trend_order = (discrete) ? 1 : 2;
+    UShortArray approx_order(numUncertainVars, trend_order);
+    short corr_order = -1, corr_type = NO_CORRECTION;
+    //const Variables& curr_vars = iteratedModel.current_variables();
+    fHatModel.assign_rep(new DataFitSurrModel(daceIterator, iteratedModel,
+      //curr_vars.view(), curr_vars.variables_components(),
+      //iteratedModel.current_response().active_set(),
+      approx_type, approx_order, corr_type, corr_order, dataOrder, sample_reuse,
+      output_level, point_reuse_file, point_file_annotated), false);
+
+    // intervalOptModel.init_communicators() recursion is currently sufficient
+    // for fHatModel.  An additional fHatModel.init_communicators() call would
+    // be motivated by special parallel usage of fHatModel below that is not
+    // otherwise covered by the recursion.
+    //fHatMaxConcurrency = maxConcurrency; // local derivative concurrency
+    //fHatModel.init_communicators(fHatMaxConcurrency);
+
+    // Following this ctor, Strategy::init_iterator() initializes the parallel
+    // configuration for NonDGlobalInterval + iteratedModel using
+    // NonDGlobalInterval's maxConcurrency.  During fHatModel construction
+    // above, DataFitSurrModel::derived_init_communicators() initializes the
+    // parallel configuration for daceIterator + iteratedModel using
+    // daceIterator's maxConcurrency.  The only iteratedModel concurrency
+    // currently exercised is that used by daceIterator within the initial GP
+    // construction, but the NonDGlobalInterval maxConcurrency must still be
+    // set so as to avoid parallel config errors resulting from avail_procs
+    // > max_concurrency within Strategy::init_iterator().  A max of the local
+    // derivative concurrency and the DACE concurrency is used for this purpose.
+    maxConcurrency
+      = std::max(maxConcurrency, daceIterator.maximum_concurrency());
+  }
+  else
+    fHatModel = iteratedModel; // shared rep
+
   if (err_flag)
     abort_handler(-1);
-
-  // The following uses on the fly derived ctor:
-  short mode = (eifFlag) ? ACTIVE_UNIFORM : ACTIVE;
-  daceIterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
-    numSamples, seedSpec, rngName, false, mode), false);
-  // only use derivatives if the user requested and they are available
-  ActiveSet dace_set = daceIterator.active_set(); // copy
-  dace_set.request_values(dataOrder);
-  daceIterator.active_set(dace_set);
-
-  // Construct fHatModel using a GP approximation over the active/uncertain
-  // vars (same view as iteratedModel: not the typical All view for DACE).
-  //
-  // Note: constant trend fn is more robust when there is limited data, such as
-  // a few discrete values --> nan's observed for quad trend with 2 model forms
-  unsigned short trend_order = (discrete) ? 0 : 2;
-  UShortArray approx_order(numUncertainVars, trend_order);
-  short corr_order = -1, corr_type = NO_CORRECTION;
-  //const Variables& curr_vars = iteratedModel.current_variables();
-  fHatModel.assign_rep(new DataFitSurrModel(daceIterator, iteratedModel,
-    //curr_vars.view(), curr_vars.variables_components(),
-    //iteratedModel.current_response().active_set(),
-    approx_type, approx_order, corr_type, corr_order, dataOrder, sample_reuse, 
-    this_output_level, point_reuse_file, point_file_annotated), false);
-
-  // gpOptModel.init_communicators() recursion is currently sufficient for
-  // fHatModel.  An additional fHatModel.init_communicators() call would be
-  // motivated by special parallel usage of fHatModel below that is not
-  // otherwise covered by the recursion.
-  //fHatMaxConcurrency = maxConcurrency; // local derivative concurrency
-  //fHatModel.init_communicators(fHatMaxConcurrency);
-
-  // Following this ctor, Strategy::init_iterator() initializes the parallel
-  // configuration for NonDGlobalInterval + iteratedModel using
-  // NonDGlobalInterval's maxConcurrency.  During fHatModel construction
-  // above, DataFitSurrModel::derived_init_communicators() initializes the
-  // parallel configuration for daceIterator + iteratedModel using
-  // daceIterator's maxConcurrency.  The only iteratedModel concurrency
-  // currently exercised is that used by daceIterator within the initial GP
-  // construction, but the NonDGlobalInterval maxConcurrency must still be
-  // set so as to avoid parallel configuration errors resulting from avail_procs
-  // > max_concurrency within Strategy::init_iterator().  A max of the local
-  // derivative concurrency and the DACE concurrency is used for this purpose.
-  maxConcurrency = std::max(maxConcurrency, daceIterator.maximum_concurrency());
 
   // Configure a RecastModel with one objective and no constraints using the
   // alternate minimalist constructor: the recast fn pointers are reset for
   // each level within the run fn.
   SizetArray recast_vars_comps_total; // default: empty; no change in size
-  gpOptModel.assign_rep(new RecastModel(fHatModel, recast_vars_comps_total,
-					1, 0, 0), false);
+  intervalOptModel.assign_rep(new
+    RecastModel(fHatModel, recast_vars_comps_total, 1, 0, 0), false);
 
   // Instantiate the optimizer used on the GP.
   // TO DO: add support for discrete EGO
   if (eifFlag) { // EGO solver
 
     // preserve these EGO settings for now, but eventually map through
-    // from spec and update test baselines
+    // from spec (and update test baselines)
     convergenceTol = 1.e-12; distanceTol = 1.e-8;
     maxIterations  = 25*numContinuousVars;
 
     double min_box_size = 1.e-15, vol_box_size = 1.e-15;
-    int max_gp_iter = 1000, max_gp_eval = 10000; // 10*defaults
+    int max_direct_iter = 1000, max_direct_eval = 10000; // 10*defaults
 #ifdef HAVE_NCSU  
     // EGO with DIRECT (exploits GP variance)
-    gpOptimizer.assign_rep(new NCSUOptimizer(gpOptModel, max_gp_iter,
-      max_gp_eval, min_box_size, vol_box_size), false);
+    intervalOptimizer.assign_rep(new
+      NCSUOptimizer(intervalOptModel, max_direct_iter, max_direct_eval,
+		    min_box_size, vol_box_size), false);
 #else
     Cerr << "NCSU DIRECT Optimizer is not available to use to find the" 
 	 << " interval bounds from the GP model." << std::endl;
     abort_handler(-1);
 #endif // HAVE_NCSU
   }
-  else { // SBGO solver with EAminlp
+  else { // EAminlp, with or without GP emulation
+    int max_ea_iter, max_ea_eval;
+    if (gpModelFlag) // SBGO controls from user spec; EA controls hard-wired
+      { max_ea_iter = 50; max_ea_eval = 5000; } // default EA pop_size = 100
+    else // EA controls from user spec
+      { max_ea_iter = maxIterations; max_ea_eval = maxFunctionEvals; }
 
-    // SBGO option uses maxIterations and convergenceTol from user spec
-
-    int max_gp_iter = 50, max_gp_eval = 5000; // default EA pop_size = 100
 #ifdef DAKOTA_COLINY
     // mixed EA (ignores GP variance)
-    gpOptimizer.assign_rep(new COLINOptimizer("coliny_ea", gpOptModel, seedSpec,
-					      max_gp_iter, max_gp_eval), false);
+    intervalOptimizer.assign_rep(new
+      COLINOptimizer("coliny_ea", intervalOptModel, seedSpec, max_ea_iter,
+		     max_ea_eval), false);
 //#elif HAVE_JEGA
-//    gpOptimizer.assign_rep(new JEGAOptimizer(gpOptModel, max_iter, max_eval,
-//      min_box_size, vol_box_size), false);
+//    intervalOptimizer.assign_rep(new
+//      JEGAOptimizer(intervalOptModel, max_iter, max_eval, min_box_size,
+//      vol_box_size), false);
 #else
-    Cerr << "Mixed EA not available to solve mixed continuous-discrete "
-	 << "optimization for computing interval bounds on the GP model."
+    Cerr << "Error: mixed EA not available for computing interval bounds."
 	 << std::endl;
     abort_handler(-1);
 #endif // HAVE_NCSU
   }
-  gpOptModel.init_communicators(gpOptimizer.maximum_concurrency());
+  intervalOptModel.init_communicators(intervalOptimizer.maximum_concurrency());
 }
 
 
 NonDGlobalInterval::~NonDGlobalInterval()
 {  
-  // deallocate communicators for DIRECT on gpOptModel
-  gpOptModel.free_communicators(gpOptimizer.maximum_concurrency());
+  // deallocate communicators for DIRECT on intervalOptModel
+  intervalOptModel.free_communicators(intervalOptimizer.maximum_concurrency());
 
-  // gpOptModel.free_communicators() recursion is currently sufficient for
-  // fHatModel.  An additional fHatModel.free_communicators() call would be
-  // motivated by special parallel usage of fHatModel below that is not
+  // intervalOptModel.free_communicators() recursion is currently sufficient
+  // for fHatModel.  An additional fHatModel.free_communicators() call would
+  // be motivated by special parallel usage of fHatModel below that is not
   // otherwise covered by the recursion.
   //fHatModel.free_communicators(fHatMaxConcurrency);
 }
@@ -224,15 +229,16 @@ void NonDGlobalInterval::quantify_uncertainty()
   NonDGlobalInterval* prev_instance = nondGIInstance;
   nondGIInstance = this;
 
-  gpOptModel.update_from_subordinate_model();
+  intervalOptModel.update_from_subordinate_model();
   // Build initial GP once for all response functions
-  fHatModel.build_approximation();
-  RecastModel* gp_opt_model_rep = (RecastModel*)gpOptModel.model_rep();
+  if (gpModelFlag)
+    fHatModel.build_approximation();
 
   Sizet2DArray vars_map, primary_resp_map(1), secondary_resp_map;
   primary_resp_map[0].resize(1);
   BoolDequeArray nonlinear_resp_map(1);
   nonlinear_resp_map[0] = BoolDeque(numFunctions, false);
+  RecastModel* int_opt_model_rep = (RecastModel*)intervalOptModel.model_rep();
 
   initialize(); // virtual fn
 
@@ -247,19 +253,19 @@ void NonDGlobalInterval::quantify_uncertainty()
 
       // initialize the recast model for lower bound estimation
       if (eifFlag)
-	gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	int_opt_model_rep->initialize(vars_map, false, NULL, NULL,
 	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	  EIF_objective_min, NULL);
       else
-	gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	int_opt_model_rep->initialize(vars_map, false, NULL, NULL,
 	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	  objective_min, NULL);
 
       // Iterate until EGO converges
       distanceConvergeCntr = improvementConvergeCntr = sbIterNum = 0;
       prevCVStar.size(0); prevDIVStar.size(0); prevDRVStar.size(0);	
-      approxConverged = false;
-      while (!approxConverged) {
+      boundConverged = false;
+      while (!boundConverged) {
 	++sbIterNum;
 
 	// determine approxFnStar from minimum among sample data
@@ -271,30 +277,30 @@ void NonDGlobalInterval::quantify_uncertainty()
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
 	     << sbIterNum << "\n\n";
 	// no summary output since on-the-fly constructed:
-	//gpOptimizer.reset(); // redundant for COLINOptimizer::find_optimum()
-	gpOptimizer.run_iterator(Cout);
-
+	//intervalOptimizer.reset(); // redundant for COLINOpt::find_optimum()
+	intervalOptimizer.run_iterator(Cout);
 	// output iteration results, update convergence controls, and update GP
-	post_process_gp_results(true);
+	post_process_run_results(true);
       }
-      get_best_sample(true, false); // pull truthFnStar from sample data
+      if (gpModelFlag)
+	get_best_sample(true, false); // pull truthFnStar from sample data
       post_process_cell_results(true); // virtual fn: post-process min
 
       // initialize the recast model for upper bound estimation
       if (eifFlag)
-	gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	int_opt_model_rep->initialize(vars_map, false, NULL, NULL,
 	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	  EIF_objective_max, NULL);
       else
-	gp_opt_model_rep->initialize(vars_map, false, NULL, NULL,
+	int_opt_model_rep->initialize(vars_map, false, NULL, NULL,
 	  primary_resp_map, secondary_resp_map, nonlinear_resp_map,
 	  objective_max, NULL);
 
       // Iterate until EGO converges
       distanceConvergeCntr = improvementConvergeCntr = sbIterNum = 0;
       prevCVStar.size(0); prevDIVStar.size(0); prevDRVStar.size(0);	
-      approxConverged = false;
-      while (!approxConverged) {
+      boundConverged = false;
+      while (!boundConverged) {
 	++sbIterNum;
 
 	// determine approxFnStar from maximum among sample data
@@ -306,13 +312,13 @@ void NonDGlobalInterval::quantify_uncertainty()
 	     << respFnCntr+1 << " cell " << cellCntr+1 << " iteration "
 	     << sbIterNum << "\n\n";
 	// no summary output since on-the-fly constructed:
-	//gpOptimizer.reset(); // redundant for COLINOptimizer::find_optimum()
-	gpOptimizer.run_iterator(Cout);
-
+	//intervalOptimizer.reset(); // redundant for COLINOpt::find_optimum()
+	intervalOptimizer.run_iterator(Cout);
 	// output iteration results, update convergence controls, and update GP
-	post_process_gp_results(false);
+	post_process_run_results(false);
       }
-      get_best_sample(false, false); // pull truthFnStar from sample data
+      if (gpModelFlag)
+	get_best_sample(false, false); // pull truthFnStar from sample data
       post_process_cell_results(false); // virtual fn: post-process max
     }
     post_process_response_fn_results(); // virtual fn: post-process respFn
@@ -333,14 +339,14 @@ void NonDGlobalInterval::set_cell_bounds()
 { } // default is no-op
 
 
-void NonDGlobalInterval::post_process_gp_results(bool minimize)
+void NonDGlobalInterval::post_process_run_results(bool minimize)
 {
-  const Variables&       vars_star = gpOptimizer.variables_results();
-  const RealVector&    c_vars_star = vars_star.continuous_variables();
-  const IntVector&    di_vars_star = vars_star.discrete_int_variables();
-  const RealVector&   dr_vars_star = vars_star.discrete_real_variables();
-  const Response& resp_star_approx = gpOptimizer.response_results();
-  Real fn_star = resp_star_approx.function_value(0), fn_conv, dist_conv;
+  const Variables&     vars_star = intervalOptimizer.variables_results();
+  const RealVector&  c_vars_star = vars_star.continuous_variables();
+  const IntVector&  di_vars_star = vars_star.discrete_int_variables();
+  const RealVector& dr_vars_star = vars_star.discrete_real_variables();
+  const Response&      resp_star = intervalOptimizer.response_results();
+  Real fn_star = resp_star.function_value(0), fn_conv, dist_conv;
 
   Cout << "\nResults of interval optimization:\nFinal point             =\n";
   if (vars_star.cv())  write_data(Cout,  c_vars_star);
@@ -349,12 +355,21 @@ void NonDGlobalInterval::post_process_gp_results(bool minimize)
   if (eifFlag)
     Cout << "Expected Improvement    =\n                     "
 	 << std::setw(write_precision+7) << -fn_star << '\n';
-  else if (minimize)
-    Cout << "Estimate of lower bound =\n                     "
-	 << std::setw(write_precision+7) <<  fn_star << '\n';
-  else
-    Cout << "Estimate of upper bound =\n                     "
-	 << std::setw(write_precision+7) << -fn_star << '\n';
+  else if (minimize) {
+    if (gpModelFlag) Cout << "Estimate of lower bound =\n                     ";
+    else             Cout <<             "Lower bound =\n                     ";
+    Cout << std::setw(write_precision+7) <<  fn_star << '\n';
+  }
+  else {
+    if (gpModelFlag) Cout << "Estimate of upper bound =\n                     ";
+    else             Cout <<             "Upper bound =\n                     ";
+    Cout << std::setw(write_precision+7) << -fn_star << '\n';
+  }
+
+  if (!gpModelFlag) {
+    truthFnStar = (minimize) ? fn_star : -fn_star;
+    boundConverged = true; return;
+  }
 
   if (prevCVStar.empty() && prevDIVStar.empty() && prevDRVStar.empty())
     dist_conv = fn_conv = DBL_MAX; // first iteration
@@ -399,12 +414,12 @@ void NonDGlobalInterval::post_process_gp_results(bool minimize)
   // depending on convergence assessment, we may update the GP, converge
   // the iteration and update the GP, or converge without updating the GP.
   if (sbIterNum >= maxIterations)
-    { approxConverged = true; evaluate_response_star_truth(); }
+    { boundConverged = true; evaluate_response_star_truth(); }
   else if (distanceConvergeCntr    >= distanceConvergeLimit ||
 	   improvementConvergeCntr >= improvementConvergeLimit)
     // if successive iterates are very similar, we do not add the training pt,
     // since the danger of damaging the GP outweighs small possible gains.
-    approxConverged = true;
+    boundConverged = true;
   else { // evaluate truth response and update GP + prev solution trackers
     evaluate_response_star_truth();
     // update previous solution tracking
@@ -419,7 +434,7 @@ void NonDGlobalInterval::post_process_gp_results(bool minimize)
 void NonDGlobalInterval::evaluate_response_star_truth()
 {
   //fHatModel.component_parallel_mode(TRUTH_MODEL);
-  const Variables&    vars_star = gpOptimizer.variables_results();
+  const Variables&    vars_star = intervalOptimizer.variables_results();
   const RealVector& c_vars_star = vars_star.continuous_variables();
   iteratedModel.continuous_variables(c_vars_star);
   ActiveSet set = iteratedModel.current_response().active_set();

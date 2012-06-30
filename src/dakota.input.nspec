@@ -567,6 +567,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	              | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
                       ]
 		    [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] )
+		    | ea {N_mdm(lit,nondOptAlgorithm_ea)}
 		    | lhs {N_mdm(lit,nondOptAlgorithm_lhs)} ]
 	        [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
                    [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
@@ -607,6 +608,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	            | dakota {N_mdm(type,emulatorType_GAUSSIAN_PROCESS)}
                     ]
 		  [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ] )
+		  | ea {N_mdm(lit,nondOptAlgorithm_ea)}
 		  | lhs {N_mdm(lit,nondOptAlgorithm_lhs)} ]
 	          [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
                     [ annotated {N_mdm(true,approxPointFileAnnotated)} | 

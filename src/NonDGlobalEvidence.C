@@ -39,8 +39,8 @@ void NonDGlobalEvidence::initialize()
 
 void NonDGlobalEvidence::set_cell_bounds()
 {
-  gpOptModel.continuous_lower_bounds(cellLowerBounds[cellCntr]);
-  gpOptModel.continuous_upper_bounds(cellUpperBounds[cellCntr]);
+  intervalOptModel.continuous_lower_bounds(cellLowerBounds[cellCntr]);
+  intervalOptModel.continuous_upper_bounds(cellUpperBounds[cellCntr]);
 }
 
 
@@ -112,7 +112,7 @@ void NonDGlobalEvidence::get_best_sample(bool minimize, bool eval_approx)
 	   << "Truth function is set to DBL_MAX and approxFnStar is evaluated "
 	   << "at midpoint.\n";
       RealVector midpoint;
-      Variables cell_midpoint(gpOptimizer.variables_results());
+      Variables cell_midpoint(intervalOptimizer.variables_results());
       midpoint.size(numContIntervalVars);
       for (size_t i=0; i<numContIntervalVars; i++) {
 	midpoint[i] = 0.5*cellLowerBounds[cellCntr][i]

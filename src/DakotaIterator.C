@@ -344,7 +344,7 @@ Iterator* Iterator::get_iterator(Model& model)
     if (nond_opt_alg == "lhs")
       return new NonDLHSEvidence(model);
     else if (nond_opt_alg == "sbo" || nond_opt_alg == "ego" ||
-	     nond_opt_alg.empty())
+	     nond_opt_alg == "ea"  || nond_opt_alg.empty())
       return new NonDGlobalEvidence(model);
     else
       return NULL;
@@ -357,7 +357,7 @@ Iterator* Iterator::get_iterator(Model& model)
     if (nond_opt_alg == "lhs")
       return new NonDLHSSingleInterval(model);
     else if (nond_opt_alg == "sbo" || nond_opt_alg == "ego" ||
-	     nond_opt_alg.empty())
+	     nond_opt_alg == "ea"  || nond_opt_alg.empty())
       return new NonDGlobalSingleInterval(model);
     else
       return NULL;

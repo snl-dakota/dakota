@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 978 distinct keywords (plus 131 aliases) **/
+/** 980 distinct keywords (plus 131 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -412,10 +412,11 @@ static KeyWord
 		{"kriging",0,2,1,0,kw_69,0.,0.,-1},
 		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
 		},
-	kw_71[8] = {
+	kw_71[9] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{0,0,4,0,0,kw_64},
+		{"ea",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_ea)},
 		{"ego",8,3,1,0,kw_70,0.,0.,0,N_mdm(lit,nondOptAlgorithm_ego)},
 		{"lhs",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_lhs)},
 		{"points_file",11,2,2,0,kw_65,0.,0.,0,N_mdm(str,approxPointReuseFile)},
@@ -439,9 +440,10 @@ static KeyWord
 		{"kriging",0,2,1,0,kw_74,0.,0.,-1},
 		{"use_derivatives",8,0,2,0,0,0.,0.,0,N_mdm(true,methodUseDerivsFlag)}
 		},
-	kw_76[7] = {
+	kw_76[8] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
+		{"ea",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_ea)},
 		{"ego",8,3,1,0,kw_75,0.,0.,0,N_mdm(lit,nondOptAlgorithm_ego)},
 		{"lhs",8,0,1,0,0,0.,0.,0,N_mdm(lit,nondOptAlgorithm_lhs)},
 		{"points_file",11,2,2,0,kw_72,0.,0.,0,N_mdm(str,approxPointReuseFile)},
@@ -1042,8 +1044,8 @@ static KeyWord
 		{"final_solutions",0x29,0,10,0,0,0.,0.,0,N_mdm(nnintz,numFinalSolutions)},
 		{"fsu_cvt",8,6,11,1,kw_57,0.,0.,0,N_mdm(lit,methodName_fsu_cvt)},
 		{"fsu_quasi_mc",8,10,11,1,kw_59},
-		{"global_evidence",8,5,11,1,kw_71,0.,0.,0,N_mdm(lit,methodName_nond_global_evidence)},
-		{"global_interval_est",8,5,11,1,kw_76,0.,0.,0,N_mdm(lit,methodName_nond_global_interval_est)},
+		{"global_evidence",8,6,11,1,kw_71,0.,0.,0,N_mdm(lit,methodName_nond_global_evidence)},
+		{"global_interval_est",8,6,11,1,kw_76,0.,0.,0,N_mdm(lit,methodName_nond_global_interval_est)},
 		{"global_reliability",8,9,11,1,kw_87,0.,0.,0,N_mdm(lit,methodName_nond_global_reliability)},
 		{"id_method",11,0,1,0,0,0.,0.,0,N_mdm(str,idMethod)},
 		{"importance_sampling",8,2,11,1,kw_92,0.,0.,0,N_mdm(lit,methodName_nond_importance_sampling)},
@@ -1061,8 +1063,8 @@ static KeyWord
 		{"nlpql_sqp",8,9,11,1,kw_10,0.,0.,0,N_mdm(lit,methodName_nlpql_sqp)},
 		{"nlssol_sqp",8,0,11,1,kw_158,0.,0.,0,N_mdm(lit,methodName_nlssol_sqp)},
 		{"nond_bayes_calibration",0,8,11,1,kw_26,0.,0.,-42,N_mdm(lit,methodName_nond_bayes_calibration)},
-		{"nond_global_evidence",0,5,11,1,kw_71,0.,0.,-19,N_mdm(lit,methodName_nond_global_evidence)},
-		{"nond_global_interval_est",0,5,11,1,kw_76,0.,0.,-19,N_mdm(lit,methodName_nond_global_interval_est)},
+		{"nond_global_evidence",0,6,11,1,kw_71,0.,0.,-19,N_mdm(lit,methodName_nond_global_evidence)},
+		{"nond_global_interval_est",0,6,11,1,kw_76,0.,0.,-19,N_mdm(lit,methodName_nond_global_interval_est)},
 		{"nond_global_reliability",0,9,11,1,kw_87,0.,0.,-19,N_mdm(lit,methodName_nond_global_reliability)},
 		{"nond_importance_sampling",0,2,11,1,kw_92,0.,0.,-18,N_mdm(lit,methodName_nond_importance_sampling)},
 		{"nond_local_evidence",0,6,11,1,kw_100,0.,0.,-17,N_mdm(lit,methodName_nond_local_evidence)},

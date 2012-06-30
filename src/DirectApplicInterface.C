@@ -1977,6 +1977,16 @@ int DirectApplicInterface::mf_short_column()
   switch (form) {
   case 1:  return short_column();                     break;
   default: return alternate_short_column_forms(form); break;
+  // monotonic mean: 3 1 2 4
+  //case 1: return alternate_short_column_forms(3); break;
+  //case 2: return short_column();                  break;
+  //case 3: return alternate_short_column_forms(2); break;
+  //case 4: return alternate_short_column_forms(4); break;
+  // monotonic std dev: 2 1 4 3
+  //case 1: return alternate_short_column_forms(2); break;
+  //case 2: return short_column();                  break;
+  //case 3: return alternate_short_column_forms(4); break;
+  //case 4: return alternate_short_column_forms(3); break;
   }
 }
 

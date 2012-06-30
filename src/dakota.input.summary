@@ -856,6 +856,7 @@ KEYWORD12 method
 	      ]
 	    [ use_derivatives ]
 	    ]
+	  | ea
 	  | lhs ]
 	  [ points_file STRING
 	    [ annotated
@@ -899,6 +900,7 @@ KEYWORD12 method
 	      ]
 	    [ use_derivatives ]
 	    ]
+	  | ea
 	  | lhs ]
 	  [ points_file STRING
 	    [ annotated
