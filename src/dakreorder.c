@@ -42,10 +42,6 @@ extern void nidr_parse(const char*, FILE*);
 extern int nidr_save_exedir(const char*, int);
 extern FILE *nidrin;
 
-char nidr_please_refer[] =
-	"Please refer to the DAKOTA Reference and/or User's Manual or the\n"
-	"dakota.input.summary file distributed with this executable.";
-
  static char *progname, version[];
 
  static int

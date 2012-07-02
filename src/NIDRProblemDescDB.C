@@ -35,10 +35,6 @@
 
 extern "C" void nidr_lib_cleanup(void);
 
-extern "C" char nidr_please_refer[] =
-	"Please refer to the DAKOTA Reference and/or User's Manual or the\n"
-	"dakota.input.summary file distributed with this executable.";
-
 namespace Dakota {
 extern ProblemDescDB *Dak_pddb;
 
