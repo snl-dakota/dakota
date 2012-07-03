@@ -114,10 +114,6 @@ set(ExportTarget ${CMAKE_PROJECT_NAME}-targets CACHE STRING
   "Name for the export target for ${CMAKE_PROJECT_NAME}")
 
 # TODO: Have etphipp remove Trilinos-specific code and instead set in TriKota
-if (BUILD_IN_TRILINOS)
-  set(ExportTarget Trilinos)
-endif()
-
 # when building inside Trilinos, the path to Teuchos will already be set
 if (NOT BUILD_IN_TRILINOS)
 

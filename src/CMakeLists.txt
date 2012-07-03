@@ -694,7 +694,9 @@ set(Dakota_LIBRARIES ${Dakota_LIBS} CACHE INTERNAL
     "Dakota libraries")
 set(Dakota_EXTRA_LIBRARIES ${EXTRA_TPL_LIBS} CACHE INTERNAL 
     "Dakota extra libraries")
-message(STATUS "Export targets: ${EXPORT_TARGETS}")
+message(STATUS 
+  "Export targets to <export-name> = ${ExportTarget}: ${EXPORT_TARGETS}"
+  )
 export(TARGETS ${EXPORT_TARGETS} FILE
        "${CMAKE_CURRENT_BINARY_DIR}/DakotaTargets.cmake")
 endif()
