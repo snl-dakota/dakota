@@ -1,7 +1,7 @@
 # CMakeLists.txt for DAKOTA tests
 
 include(AddApplicationTest)
-include(AddFileCopyTarget)
+include(AddFileCopyCommand)
 include(CheckIncludeFile)
 
 remove_definitions("-DHAVE_CONFIG_H")
@@ -14,35 +14,27 @@ endif(HAVE_UNISTD_H)
 # The 'morris' tester depends on Boost
 include_directories(${Boost_INCLUDE_DIRS})
 
-function(add_named_file_copy_target _source _destination)
-  get_filename_component(filename ${_source} NAME)
-  add_file_copy_target(
-    copy_${filename}
-    ${_source}
-    ${_destination})
-endfunction()
-
 if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
-  # Copy the dakota_test support files into the build tree
-  # with dependency to source files (needed for legacy behavior, but
-  # ultimately not new separate directory CTest)
+  # Configure or copy the dakota_test support files into the build
+  # tree with dependency to source files (needed for legacy behavior,
+  # but ultimately would like to eliminate)
 
   # configured primary scripts
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dakota_test.perl
     ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl @ONLY)
 
   # copied primary scripts
-  set(TestFiles dakota_diff.perl) 
+  set(test_support_files dakota_diff.perl) 
 
   # analysis driver scripts
-  list(APPEND TestFiles
+  list(APPEND test_support_files
     dakota_container.sh dakota_3pc.ac.sh dakota_3pc.if.sh dakota_3pc.of.sh
     dakota_3pc.ac_verb.sh dakota_3pc.if_verb.sh dakota_3pc.of_verb.sh
     )
 
   # supplemental data
-  list(APPEND TestFiles 
+  list(APPEND test_support_files
     dakota_coliny.dat dakota_logratio_pce.txt 
     dakota_textbook_nips.lsq.dat dakota_textbook_nips.lsq.ann
     dakota_uq_textbook_lhs_approx.annotated 
@@ -50,19 +42,29 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     )
 
   # supplementary AMPL files
-  list(APPEND TestFiles
+  list(APPEND test_support_files
     dakota_ampl_fma.nl dakota_ampl_fma.row dakota_ampl_fma.col
     dakota_ampl_tb.nl dakota_ampl_tb.row dakota_ampl_tb.col
     dakota_ampl_tb.unc.nl dakota_ampl_tb.unc.row dakota_ampl_tb.unc.col
     )
 
-  foreach(file ${TestFiles})
-    add_named_file_copy_target(
-      ${CMAKE_CURRENT_SOURCE_DIR}/${file}
-      ${CMAKE_CURRENT_BINARY_DIR}/${file})
+  # Create a custom command to copy each file to the build directory, but
+  # group them all into a single target
+  set(test_support_files_abs "")
+  foreach(file ${test_support_files})
+    add_file_copy_command(
+      ${CMAKE_CURRENT_SOURCE_DIR}/${file} 
+      ${CMAKE_CURRENT_BINARY_DIR}/${file}
+      )
+    list(APPEND test_support_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")  
   endforeach()
+  add_custom_target(dakota_test_support_files ALL 
+    DEPENDS ${test_support_files_abs}
+    COMMENT "Copy DAKOTA test support files to binary test/ directory"
+    )
 
   # Copy any necessary executables into the BINARY_DIR/test directory
+  # TODO: review for whether works on Windows and remove these on make clean
   get_target_property(EXE_LOC dakota LOCATION)
   get_target_property(LIBMODE_EXE_LOC dakota_library_mode LOCATION)
   get_target_property(LIBSPLIT_EXE_LOC dakota_library_split LOCATION)
@@ -86,45 +88,76 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     Dakota_EXECUTABLE_OUTPUT_DIR
     ${Dakota_EXECUTABLE_OUTPUT_DIR} PATH)
 
-  # Create one CTest per DAKOTA input file
-  file(GLOB DakotaTestsFQ RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in")
-  foreach(DakotaTest ${DakotaTestsFQ})
+  # Create one CTest per DAKOTA input file, in a protected subdirectory
+  set(copied_test_files_abs "")
 
-    get_filename_component(TestName ${DakotaTest} NAME_WE)
-    file(GLOB DakotaAuxAll RELATIVE 
-         ${CMAKE_CURRENT_SOURCE_DIR} "${TestName}.*")
+  file(GLOB dakota_test_input_files 
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in"
+    )
+  foreach(test_input_file ${dakota_test_input_files})
 
-    # add serial test
+    # Glob up all files associated with this test input file
+    get_filename_component(test_name ${test_input_file} NAME_WE)
+    file(GLOB test_all_files
+      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${test_name}.*"
+      )
+
+    # add serial test, but don't create custom target
     add_application_test(
-      ${TestName}
-      FILE_DEPENDENCIES "${DakotaAuxAll}"
+      ${test_name}
+      FILE_DEPENDENCIES "${test_all_files}"
       PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_diffs.out
       APPLICATION COMMAND ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl 
-      --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${TestName}
-      --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
-      ${DakotaTest}
-      UNIQUE_DIRECTORY)
+        --output-dir=${CMAKE_CURRENT_BINARY_DIR}/${test_name}
+        --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
+        ${test_input_file}
+      UNIQUE_DIRECTORY
+      NO_TARGET
+      )
+
+    # track all the copied files for later addition to a custom target
+    foreach(file ${test_all_files})
+      set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/${test_name}/${file}")
+      list(APPEND copied_test_files_abs "${copied_file}")
+    endforeach()
+
 
     # if Dakota test has parallel tests (i.e. #p[0-9]+), add parallel test
-    file(STRINGS ${DakotaTest} PTestList REGEX "#p[0-9]+" LIMIT_COUNT 1)
+    file(STRINGS ${test_input_file} PTestList REGEX "#p[0-9]+" LIMIT_COUNT 1)
     if (NOT ${PTestList} EQUAL "")
         add_application_test(
-	  p${TestName}
-	  FILE_DEPENDENCIES "${DakotaAuxAll}"
+	  p${test_name}
+	  FILE_DEPENDENCIES "${test_all_files}"
 	  PREPROCESS COMMAND ${CMAKE_COMMAND} -E remove dakota_pdiffs.out
 	  APPLICATION COMMAND ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl 
-	  --parallel
- 	  --output-dir=${CMAKE_CURRENT_BINARY_DIR}/p${TestName}
-	  --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
-	  ${DakotaTest}
-	  UNIQUE_DIRECTORY)
-    endif()
+	    --parallel
+ 	    --output-dir=${CMAKE_CURRENT_BINARY_DIR}/p${test_name}
+	    --bin-dir=${CMAKE_CURRENT_BINARY_DIR}
+	    ${test_input_file}
+	  UNIQUE_DIRECTORY
+	  NO_TARGET
+	  )
+	# track all the copied files for later addition to a custom target
+	foreach(file ${test_all_files})
+	  set(copied_file "${CMAKE_CURRENT_BINARY_DIR}/p${test_name}/${file}")
+	  list(APPEND copied_test_files_abs "${copied_file}")
+	endforeach()
+
+      endif() # add parallel test
 
     # TODO: The following regex needs to be based on output of dakota_diff.perl
     #       and account for consistency with baseline
     # set_tests_properties(${DAKOTA_SYSTEST} PROPERTIES 
     #  FAIL_REGULAR_EXPRESSION "fail")
-  endforeach()
+
+  endforeach() # foreach test_input_file
+
+  # Create a single target to copy all the testing files
+  add_custom_target(dakota_test_files ALL 
+    DEPENDS ${copied_test_files_abs}
+    COMMENT 
+      "Copy DAKOTA test inputs and aux files to binary test/ subdirectories"
+    )
 
   # Clean up test dir
   #file(REMOVE_RECURSE ${CMAKE_CURRENT_BINARY_DIR}/dakota_diffs.out)

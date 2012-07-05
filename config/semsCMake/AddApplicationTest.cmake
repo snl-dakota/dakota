@@ -15,6 +15,8 @@
 #   [POSTPROCESS COMMAND <command> [EXIT_CODE <exit-code>]] 
 #   [LABELS [label1 [label2 [...]]]]
 #   [UNIQUE_DIRECTORY]
+#   [NO_TARGET]
+#   )
 #
 # The WEIGHT argument specifies the number of processes that will be occupied
 # by the test. The TIMEOUT argument specifies how long the test should be
@@ -27,6 +29,10 @@
 #
 # The UNIQUE_DIRECTORY toggle will ensure that the test runs in an isolated
 # subdirectory of the current binary directory.
+# 
+# If specified, the NO_TARGET toggle will create a custom command for
+# this test, but not a custom target (so the caller can group tests
+# into a single custom target)
 
 include(AddFileCopyTarget)
 include(CMakeParseArguments)
@@ -34,7 +40,7 @@ include(CMakeParseArguments)
 get_filename_component(_add_application_test_dir ${CMAKE_CURRENT_LIST_FILE} PATH)
 
 function(add_application_test _test_name)
-  set(_option_args UNIQUE_DIRECTORY)
+  set(_option_args UNIQUE_DIRECTORY NO_TARGET)
   set(_one_value_keyword_args 
     WEIGHT
     TIMEOUT)
@@ -74,11 +80,21 @@ function(add_application_test _test_name)
   # directory at build time.
   foreach(_file ${_application_test_FILE_DEPENDENCIES}) 
     get_filename_component(_filename ${_file} NAME)
-    add_file_copy_target(
-      copy_${_test_name}_${_filename}
-      ${CMAKE_CURRENT_SOURCE_DIR}/${_file}
-      ${_application_test_WORKING_DIRECTORY}/${_file})
-  endforeach()
+
+    # Add custom command and optional target
+    if(_application_test_NO_TARGET)
+      add_file_copy_command(
+	${CMAKE_CURRENT_SOURCE_DIR}/${_file}
+	${_application_test_WORKING_DIRECTORY}/${_file}
+	)
+    else()
+      add_file_copy_target(
+	copy_${_test_name}_${_filename}
+	${CMAKE_CURRENT_SOURCE_DIR}/${_file}
+	${_application_test_WORKING_DIRECTORY}/${_file})
+    endif()
+
+  endforeach() # file in dependencies
 
   # Parse each of the PREPROCESS, APPLICATION, POSTPROCESS argument lists.
   set(_phases PREPROCESS APPLICATION POSTPROCESS)
