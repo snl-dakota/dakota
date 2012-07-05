@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 980 distinct keywords (plus 131 aliases) **/
+/** 981 distinct keywords (plus 131 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -519,10 +519,11 @@ static KeyWord
 		{"compute",8,3,2,0,kw_90},
 		{"num_response_levels",13,0,1,0,0,0.,0.,0,N_mdm(num_resplevs,responseLevels)}
 		},
-	kw_92[5] = {
+	kw_92[6] = {
 		{0,0,1,0,0,kw_14},
 		{0,0,1,0,0,kw_15},
 		{0,0,4,0,0,kw_64},
+		{"misc_options",15,0,3,0,0,0.,0.,0,N_mdm(strL,miscOptions)},
 		{"points_file",11,2,1,0,kw_88,0.,0.,0,N_mdm(str,approxPointReuseFile)},
 		{"response_levels",14,2,2,0,kw_91,0.,0.,0,N_mdm(resplevs,responseLevels)}
 		},
@@ -1048,7 +1049,7 @@ static KeyWord
 		{"global_interval_est",8,6,11,1,kw_76,0.,0.,0,N_mdm(lit,methodName_nond_global_interval_est)},
 		{"global_reliability",8,9,11,1,kw_87,0.,0.,0,N_mdm(lit,methodName_nond_global_reliability)},
 		{"id_method",11,0,1,0,0,0.,0.,0,N_mdm(str,idMethod)},
-		{"importance_sampling",8,2,11,1,kw_92,0.,0.,0,N_mdm(lit,methodName_nond_importance_sampling)},
+		{"importance_sampling",8,3,11,1,kw_92,0.,0.,0,N_mdm(lit,methodName_nond_importance_sampling)},
 		{"list_parameter_study",8,1,11,1,kw_93,0.,0.,0,N_mdm(lit,methodName_list_parameter_study)},
 		{"local_evidence",8,6,11,1,kw_100,0.,0.,0,N_mdm(lit,methodName_nond_local_evidence)},
 		{"local_interval_est",8,2,11,1,kw_101,0.,0.,0,N_mdm(lit,methodName_nond_local_interval_est)},
@@ -1066,7 +1067,7 @@ static KeyWord
 		{"nond_global_evidence",0,6,11,1,kw_71,0.,0.,-19,N_mdm(lit,methodName_nond_global_evidence)},
 		{"nond_global_interval_est",0,6,11,1,kw_76,0.,0.,-19,N_mdm(lit,methodName_nond_global_interval_est)},
 		{"nond_global_reliability",0,9,11,1,kw_87,0.,0.,-19,N_mdm(lit,methodName_nond_global_reliability)},
-		{"nond_importance_sampling",0,2,11,1,kw_92,0.,0.,-18,N_mdm(lit,methodName_nond_importance_sampling)},
+		{"nond_importance_sampling",0,3,11,1,kw_92,0.,0.,-18,N_mdm(lit,methodName_nond_importance_sampling)},
 		{"nond_local_evidence",0,6,11,1,kw_100,0.,0.,-17,N_mdm(lit,methodName_nond_local_evidence)},
 		{"nond_local_interval_est",0,2,11,1,kw_101,0.,0.,-17,N_mdm(lit,methodName_nond_local_interval_est)},
 		{"nond_local_reliability",0,3,11,1,kw_109,0.,0.,-17,N_mdm(lit2,methodName_nond_local_reliability)},

@@ -557,6 +557,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		      ]
 		    ]
 		  ]
+		[ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
 		)
 	      |
 	      ( global_evidence ALIAS nond_global_evidence {N_mdm(lit,methodName_nond_global_evidence)}
