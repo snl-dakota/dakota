@@ -34,8 +34,14 @@ int SerialDirectApplicInterface::derived_map_ac(const Dakota::String& ac_name)
 
   int fail_code = 0;
   if (ac_name == "plugin_rosenbrock") {
-    Dakota::RealVector grad0 = Teuchos::getCol(Teuchos::View, fnGrads, 0);
-    fail_code = rosenbrock(xC, directFnASV[0], fnVals[0], grad0, fnHessians[0]);
+    Dakota::RealVector fn_grad; 
+    Dakota::RealSymMatrix fn_hess;
+    if (directFnASV[0] & 2)
+      fn_grad = Teuchos::getCol(Teuchos::View, fnGrads, 0);
+    if (directFnASV[0] & 4)
+      fn_hess = Dakota::RealSymMatrix(Teuchos::View, fnHessians[0],
+				      fnHessians[0].numRows());
+    fail_code = rosenbrock(xC, directFnASV[0], fnVals[0], fn_grad, fn_hess);
   }
   else {
     Cerr << ac_name << " is not available as an analysis within "
