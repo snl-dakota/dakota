@@ -65,7 +65,7 @@ else()
       "--prefix" "${GRVY_EXT_BINARY_DIR}"
     )
     externalproject_add(grvy_ext
-      URL ${CMAKE_CURRENT_SOURCE_DIR}/queso_tarballs/grvy-0.30.0.tgz
+      URL ${CMAKE_CURRENT_SOURCE_DIR}/queso/grvy-0.32.0.tar.gz
       BUILD_IN_SOURCE 1
       CONFIGURE_COMMAND "${grvy_config_cmd}"
     )
@@ -82,14 +82,13 @@ else()
       "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
       "--without-hdf5" "--without-glpk" "--with-grvy=${GRVY_EXT_BINARY_DIR}"
       "--with-boost=${Boost_INCLUDE_DIR}/.."
-      "--with-trilinos=${Trilinos_DIR}"
-      #"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${Trilinos_DIR}/lib:/Net/dakota/utils/Linux_x86_64/gsl-1.14.gcc-4.3.2/lib"
-      "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${Trilinos_DIR}/lib"
-      "CXXFLAGS=${CMAKE_CXX_FLAGS} -Wl,-lepetra"
+      #"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:/Net/dakota/utils/Linux_x86_64/gsl-1.14.gcc-4.3.2/lib"
+      "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${Boost_LIBRARY_DIR}"
+      "CXXFLAGS=${CMAKE_CXX_FLAGS}"
       "--prefix" "${QUESO_EXT_BINARY_DIR}"
     )
     externalproject_add(queso_ext
-      URL ${CMAKE_CURRENT_SOURCE_DIR}/queso_tarballs/queso-0.45.0.tar.gz
+      URL ${CMAKE_CURRENT_SOURCE_DIR}/queso/queso-0.45.1.tar.gz
       BUILD_IN_SOURCE 1
       CONFIGURE_COMMAND "${queso_config_cmd}"
     )
