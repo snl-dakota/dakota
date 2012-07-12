@@ -83,12 +83,13 @@ if( WIN32 AND NOT CYGWIN AND NOT MSYS )
     )
   endif( GSL_FOUND )
 
-else( WIN32 AND NOT CYGWIN AND NOT MSYS )
+else()
   # Respect relevant environment variables while searching for gsl-config
-  if($ENV{GSL_CONFIG})
+  #message("Dbg GSL_CONFIG=$ENV{GSL_CONFIG}")
+  if(DEFINED ENV{GSL_CONFIG})
     set(GSL_CONFIG_EXECUTABLE "$ENV{GSL_CONFIG}")
   else()
-    if($ENV{GSL_HOME})
+    if(DEFINED ENV{GSL_HOME})
       set(GSL_CONFIG_PREFER_PATH "$ENV{GSL_HOME}/bin")
     endif()
     find_program(GSL_CONFIG_EXECUTABLE gsl-config
