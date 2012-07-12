@@ -390,22 +390,17 @@ if(HAVE_QUESO)
   # WJB - supported outside of Queso now -- exec_program("$ENV{GSL_CONFIG}" ARGS --prefix OUTPUT_VARIABLE GSL_PREFIX)
   message(STATUS "QUESO support -- GSL prefix: ${GSL_PREFIX}")
 
-  # QUESO depends on additional Trilinos packages (NOT just teuchos)
-  include(${Trilinos_DIR}/TrilinosConfig_install.cmake)
-
   #include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
   include_directories(${Dakota_BINARY_DIR}/packages/queso_ext/include
                       ${Dakota_BINARY_DIR}/packages/grvy_ext/include
-                      ${GSL_PREFIX}/include
-                      ${Trilinos_INCLUDE_DIRS})
+                      ${GSL_PREFIX}/include)
 
   #list(APPEND link_directories "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
   list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso_ext/lib
-       ${Dakota_BINARY_DIR}/packages/grvy_ext/lib
-       ${Trilinos_LIBRARY_DIRS})
+       ${Dakota_BINARY_DIR}/packages/grvy_ext/lib)
 
-  list(APPEND TPL_LIBS grvy ${Trilinos_LIBRARIES})
-  list(APPEND EXPORT_TARGETS queso grvy ${Trilinos_LIBRARIES})
+  list(APPEND TPL_LIBS grvy)
+  list(APPEND EXPORT_TARGETS queso grvy)
 endif(HAVE_QUESO)
 
 
