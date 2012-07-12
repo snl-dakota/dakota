@@ -1,5 +1,4 @@
 
-
 strategy,
 	single_method
 	  method_pointer = 'EPISTEMIC'

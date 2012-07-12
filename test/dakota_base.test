@@ -41736,6 +41736,19 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
+dakota_uq_rosenbrock_ivp_discrete.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 210 total (210 new, 0 duplicate)
+mean:  Min = 3.4615198127e+02  Max = 1.1533050900e+03
+std_dev:  Min = 1.0052201478e+03  Max = 2.5527136417e+03
+Test Number 1 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 546 total (525 new, 21 duplicate)
+mean:  Min = 3.0164173552e+02  Max = 1.4850400000e+03
+std_dev:  Min = 7.7604393197e+02  Max = 3.0275696788e+03
+Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 49980 total (44457 new, 5523 duplicate)
+mean:  Min = 3.0200260044e+02  Max = 1.6050000000e+03
+std_dev:  Min = 7.7895759933e+02  Max = 3.1243588142e+03
 dakota_uq_rosenbrock_global.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 49 total (49 new, 0 duplicate)
@@ -51823,6 +51836,19 @@ Moment-based statistics for each response function:
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    0.0000000000e+00                      2.5284593683e-01
+dakota_uq_short_column_ivp_discrete.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 850 total (850 new, 0 duplicate)
+mean_limit:  Min = -4.5345662316e+00  Max = 8.4015062163e+00
+std_dev_limit:  Min = 3.0646437941e-01  Max = 4.9053184652e+00
+Test Number 1 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 4250 total (3825 new, 425 duplicate)
+mean_limit:  Min = -4.5345662316e+00  Max = 8.4015062163e+00
+std_dev_limit:  Min = 2.8535326947e-01  Max = 4.9053184652e+00
+Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 202300 total (197350 new, 4950 duplicate)
+mean_limit:  Min = -7.1729868283e+00  Max = 8.2244762016e+00
+std_dev_limit:  Min = 2.8535326947e-01  Max = 6.9608134883e+00
 dakota_uq_short_column_ivp_exp.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 620 total (589 new, 31 duplicate)
@@ -54300,7 +54326,7 @@ mean_f1:  Min = 2.6660723049e+06  Max = 5.0839299608e+06
 ccdf_beta_f2:  Min = 1.1140063093e+01  Max = 1.4997877200e+01
 ccdf_beta_f3:  Min = 2.1142441716e+01  Max = 2.9959806072e+01
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 216 total (216 new, 0 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 252 total (252 new, 0 duplicate)
 mean_f1:  Min = 2.4271620000e+06  Max = 6.2682820000e+06
 ccdf_beta_f2:  Min = 1.0918832972e+01  Max = 1.5386715423e+01
 ccdf_beta_f3:  Min = 2.0696377241e+01  Max = 3.0762469002e+01
