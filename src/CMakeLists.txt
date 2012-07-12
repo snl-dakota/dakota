@@ -236,54 +236,12 @@ endif(DAKOTA_MODELCENTER)
 option(DAKOTA_HAVE_GSL "Toggle GSL support, default is disabled" OFF)
 if(DAKOTA_HAVE_GSL)
   if(UNIX)
-    if($ENV{GSL_CONFIG})
-      # WJB - ToDo:  coverage?? consider "adding a unit test" for this case
-      set(DAKOTA_GSL_CONFIG "$ENV{GSL_CONFIG}")
-      #message("WJBdbg DAKOTA_GSL_CONFIG=${DAK_GSL_CONFIG}")
-    else()
-      message(WARNING
-        "** GSL_CONFIG env var NOT set..  will attempt to find anyway...")
-      find_program(DAKOTA_GSL_CONFIG gsl-config)
-      #message("WJBdbg DAKOTA_GSL_CONFIG=${DAKOTA_GSL_CONFIG}")
-    endif()
 
-    if(DAKOTA_GSL_CONFIG)
-      set(GSL_CXX_FLAGS "`${DAKOTA_GSL_CONFIG} --cflags`")
-      exec_program(${DAKOTA_GSL_CONFIG} ARGS --prefix OUTPUT_VARIABLE GSL_PREFIX)
-      message(STATUS "GSL prefix: ${GSL_PREFIX}")
-
-      # WJB: commented-out block, seems overkill.. (cleanup later)
-      #check_include_file("${GSL_PREFIX}/include/gsl_version.h" HAVE_GSL_H)
-      #if(HAVE_GSL_H)
-        #message("  Found GSL header files.")
-        #set(DAKOTA_GSL_FOUND 1)
-        #add_definitions("-DDAKOTA_HAVE_GSL")
-      #endif(HAVE_GSL_H)
-
-      exec_program(${DAKOTA_GSL_CONFIG} ARGS --libs-without-cblas
-        OUTPUT_VARIABLE GSL_LIBRARIES)
-
-      include_directories(${GSL_PREFIX}/include)
-      list(APPEND link_directories "${GSL_PREFIX}/lib")
-      #message("WJBdbg GSL_LINK_DIRS=${GSL_PREFIX}/lib")
-      list(APPEND EXTRA_TPL_LIBS gsl m)
-
-      # WJB - ToDo:  strip-off the '-l' preceding the library names (-lgsl)
-      #list(APPEND EXTRA_TPL_LIBS ${GSL_LIBRARIES})
-
-    else()
-      #set(DAKOTA_HAVE_GSL OFF)
-      message(FATAL_ERROR
-        "** GSL NOT found. Please clear cache, set GSL_CONFIG and cmake...")
-    endif(DAKOTA_GSL_CONFIG)
-
-  else() # Windows block
-
-    # WJB - ToDo:  Add ExternalProject build of GSL on Cygwin
-    #set(DAKOTA_GSL_FOUND 0)
-    message(FATAL_ERROR
-      "** GSL NOT supported on Windows (yet). Please set DAKOTA_HAVE_GSL=OFF and cmake...")
-    message(FATAL_ERROR "Unable to find installed MATLAB in ${MATLAB_ROOT}")
+  set(GSL_WITHOUT_CBLAS TRUE)
+  find_package(GSL REQUIRED)
+  include_directories("${GSL_INCLUDE_DIRS}")
+  list(APPEND link_directories "${GSL_LIBRARY_DIRS}")
+  list(APPEND EXTRA_TPL_LIBS gsl m)
 
   endif(UNIX)
 endif(DAKOTA_HAVE_GSL)
