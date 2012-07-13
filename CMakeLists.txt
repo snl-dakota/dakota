@@ -40,6 +40,11 @@ endif()
 enable_language(C)
 enable_language(CXX)
 enable_language(Fortran)
+if(MSVC_VERSION EQUAL 1400 OR MSVC_VERSION GREATER 1400 OR MSVC10)
+  add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE 
+    -D_CRT_SECURE_NO_WARNINGS)
+  add_definitions(-D_SCL_SECURE_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
+endif()
 
 include(AddExtraTeuchosPaths)
 include(FortranCInterface)
@@ -68,6 +73,12 @@ if(CMAKE_SYSTEM_NAME MATCHES Darwin)
       "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
 endif()
 
+# TODO: Can't this be integrated into the following logic?
+if(MSVC)
+  find_package(LAPACK REQUIRED NO_MODULE)
+  set(BLAS_LIBS blas)
+  set(LAPACK_LIBS lapack)
+endif()
 # first check for a system blas and lapack
 if(NOT DEFINED BLAS_LIBS OR NOT DEFINED LAPACK_LIBS)
   if(NOT DEFINED BLAS_LIBS)
@@ -111,6 +122,9 @@ if(HAVE_SURFPACK AND SURFPACK_STANDALONE)
   list(APPEND dakota_boost_components "serialization")
 endif()
 
+if(WIN32)
+  set(Boost_USE_STATIC_LIBS TRUE)
+endif()
 find_package(Boost 1.37 REQUIRED COMPONENTS "${dakota_boost_components}")
 
 
@@ -192,6 +206,23 @@ if(DAKOTA_F90)
   FortranCInterface_HEADER(dak_f90_config.h MACRO_NAMESPACE DAK_F90_)
   install(FILES ${Dakota_BINARY_DIR}/dak_f90_config.h DESTINATION include)
 endif(DAKOTA_F90)
+
+# Option to turn off key DAKOTA TPL tests, default OFF
+# Needs to go before adding the packages subdirectory
+option(DAKOTA_ENABLE_TPL_TESTS "Enable DAKOTA TPL tests?" OFF)
+if(DAKOTA_ENABLE_TPL_TESTS)
+  set(DDACE_ENABLE_TESTS    ON CACHE BOOL "Enable DDACE tests.")
+  set(HOPSPACK_ENABLE_TESTS ON CACHE BOOL "Enable HOPSPACK tests.")
+  set(LHS_ENABLE_TESTS      ON CACHE BOOL "Enable LHS tests.")
+  set(OPTPP_ENABLE_TESTS    ON CACHE BOOL "Enable OPT++ tests.")
+  set(PECOS_ENABLE_TESTS    ON CACHE BOOL "Enable PECOS tests.")
+else()
+  set(DDACE_ENABLE_TESTS    OFF CACHE BOOL "Enable DDACE tests.")
+  set(HOPSPACK_ENABLE_TESTS OFF CACHE BOOL "Enable HOPSPACK tests.")
+  set(LHS_ENABLE_TESTS      OFF CACHE BOOL "Enable LHS tests.")
+  set(OPTPP_ENABLE_TESTS    OFF CACHE BOOL "Enable OPT++ tests.")
+  set(PECOS_ENABLE_TESTS    OFF CACHE BOOL "Enable PECOS tests.")
+endif()
 
 add_subdirectory(packages)
 add_subdirectory(src)
