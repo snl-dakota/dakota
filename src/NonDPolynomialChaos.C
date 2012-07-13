@@ -50,7 +50,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   Model g_u_model;
   bool global_bnds
     = (numContDesVars || numContEpistUncVars || numContStateVars);
-  construct_u_space_model(iteratedModel, g_u_model, global_bnds);
+  transform_model(iteratedModel, g_u_model, global_bnds);
 
   // -------------------------
   // Construct u_space_sampler
@@ -220,7 +220,7 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
   Model g_u_model;
   bool global_bnds
     = (numContDesVars || numContEpistUncVars || numContStateVars);
-  construct_u_space_model(iteratedModel, g_u_model, global_bnds);
+  transform_model(iteratedModel, g_u_model, global_bnds);
 
   // -------------------------
   // Construct u_space_sampler

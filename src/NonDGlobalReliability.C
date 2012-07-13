@@ -203,13 +203,13 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
     // Recast g-hat(x) to G-hat(u)
-    construct_u_space_model(g_hat_x_model, uSpaceModel, true, 5.);// global bnds
+    transform_model(g_hat_x_model, uSpaceModel, true, 5.); // global bounds
   }
   else { // DataFit( Recast( iteratedModel ) )
 
     // Recast g(x) to G(u)
     Model g_u_model;
-    construct_u_space_model(iteratedModel, g_u_model, true, 5.); // global bnds
+    transform_model(iteratedModel, g_u_model, true, 5.); // global bounds
 
     // For additional generality, could develop on the fly envelope ctor:
     //Iterator dace_iterator(g_u_model, dace_method, ...);

@@ -99,7 +99,7 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
     Iterator lhs_iterator;
     if (standardizedSpace) {
       Model g_u_model;
-      construct_u_space_model(iteratedModel, g_u_model, true);//globally bounded
+      transform_model(iteratedModel, g_u_model, true); // globally bounded
       lhs_iterator.assign_rep(new NonDLHSSampling(g_u_model, sample_type,
 	samples, seed, rng, true, ACTIVE_UNIFORM), false);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, g_u_model,
@@ -120,7 +120,7 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
   }
   case NO_EMULATOR:
     if (standardizedSpace) { // recast to standardized probability space
-      construct_u_space_model(iteratedModel, emulatorModel); // no global bounds
+      transform_model(iteratedModel, emulatorModel); // no global bounds
       emulatorModel.init_communicators(mcmc_concurrency);
     }
     else

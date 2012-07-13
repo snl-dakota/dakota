@@ -148,8 +148,8 @@ protected:
   void print_system_mappings(std::ostream& s) const;
 
   /// recast x_model from x-space to u-space to create u_model
-  void construct_u_space_model(Model& x_model, Model& u_model,
-			       bool global_bounds = false, Real bound = 10.);
+  void transform_model(Model& x_model, Model& u_model,
+		       bool global_bounds = false, Real bound = 10.);
   /// assign a NonDLHSSampling instance within u_space_sampler
   void construct_lhs(Iterator& u_space_sampler, Model& u_model,
 		     const String& sample_type, int num_samples, int seed,

@@ -473,9 +473,21 @@ void NonDExpansion::initialize_expansion()
   initialize_final_statistics_gradients();
   natafTransform.transform_correlations();
 
-  // now that labels have flowed down at run-time from any higher level
-  // recursions, propagate them up the instantiate-on-the-fly Model
-  // recursion so that they are correct when they propagate back down.
+  // now that data has flowed down at run-time from any higher level recursions
+  // to iteratedModel, it must be propagated up through the local g_u_model and
+  // uSpaceModel recursions (so they are correct when propagated back down).
+  //
+  // RecastModel::update_from_sub_model() has insufficient context to update
+  // distribution params for variables that are not transformed (i.e., 
+  // numerically-generated bases/points); it assumes that the presence of any
+  // variable transformation precludes flow of distribution parameters.  So
+  // we handle that special case here prior to the general recursion.
+  Pecos::DistributionParams& dp_u
+    = uSpaceModel.subordinate_model().distribution_parameters();
+  const Pecos::DistributionParams& dp_x
+    = iteratedModel.distribution_parameters();
+  dp_u.update_partial(dp_x, natafTransform.x_types(), natafTransform.u_types());
+  // now perform the general recursion
   uSpaceModel.update_from_subordinate_model(); // recurse_flag = true
 
   // propagate latest natafTransform settings to u-space sampler

@@ -558,6 +558,9 @@ void RecastModel::update_from_sub_model()
 
     // any label, uncertain variable distributions, and linear
     // constraint mappings must be performed explicitly
+
+    // for partial mapping of distribution parameters that are unmodified by a
+    // variable transformation, see NonDExpansion::initialize_expansion()
   }
   else {
     // variable values

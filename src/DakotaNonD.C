@@ -525,8 +525,8 @@ void NonD::distribute_levels(RealVectorArray& levels, bool ascending)
 }
 
 
-void NonD::construct_u_space_model(Model& x_model, Model& u_model,
-				   bool global_bounds, Real bound)
+void NonD::
+transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
 {
   size_t i;
   Sizet2DArray vars_map, primary_resp_map, secondary_resp_map;

@@ -216,14 +216,14 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       sample_reuse), false);
 
     // transform g_hat_x_model from x-space to u-space
-    construct_u_space_model(g_hat_x_model, uSpaceModel, true);//globally bounded
+    transform_model(g_hat_x_model, uSpaceModel, true); // globally bounded
   }
   else if (mppSearchType ==  AMV_U || mppSearchType == AMV_PLUS_U ||
 	   mppSearchType == TANA_U) { // DataFit( Recast( iteratedModel ) )
 
     // Recast g(x) to G(u)
     Model g_u_model;
-    construct_u_space_model(iteratedModel, g_u_model, true); // globally bounded
+    transform_model(iteratedModel, g_u_model, true); // globally bounded
 
     // Construct G-hat(u) using a local/multipoint approximation over the
     // uncertain variables (using the same view as iteratedModel/g_u_model).
@@ -243,7 +243,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
   }
   else if (mppSearchType == NO_APPROX) // Recast( iteratedModel )
     // Recast g(x) to G(u)
-    construct_u_space_model(iteratedModel, uSpaceModel, true);//globally bounded
+    transform_model(iteratedModel, uSpaceModel, true); // globally bounded
 
   // configure a RecastModel with one objective and one equality constraint
   // using the alternate minimalist constructor
