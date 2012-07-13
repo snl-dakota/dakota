@@ -73,17 +73,30 @@ else()
     ############################################################################
     # Queso
     #
+
+    # Queso depends onf GSL, so ensure GSL is detected
+    set(DAKOTA_HAVE_GSL ON)
+    set(GSL_WITHOUT_CBLAS TRUE)
+    find_package(GSL REQUIRED)
+
+    exec_program("$ENV{GSL_CONFIG}" ARGS --prefix OUTPUT_VARIABLE Q_GSL_PREFIX)
+    message(STATUS "QUESO support -- GSL prefix: ${Q_GSL_PREFIX}")
+    set($ENV{GSL_PREFIX} ${Q_GSL_PREFIX})
+
+    #include_directories("${GSL_INCLUDE_DIRS}")
+    message(STATUS "QUESO support -- GSL libdir: ${GSL_LIBRARY_DIRS}")
+
     set(QUESO_EXT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/queso_ext)
     execute_process(
       COMMAND ${CMAKE_COMMAND} -E make_directory ${QUESO_EXT_BINARY_DIR} )
 
     set(queso_config_cmd
       ${SH} ${CMAKE_CURRENT_BINARY_DIR}/queso_ext-prefix/src/queso_ext/configure
+      "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
       "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
       "--without-hdf5" "--without-glpk" "--with-grvy=${GRVY_EXT_BINARY_DIR}"
-      "--with-boost=${Boost_INCLUDE_DIR}/.."
-      #"LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:/Net/dakota/utils/Linux_x86_64/gsl-1.14.gcc-4.3.2/lib"
-      "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${Boost_LIBRARY_DIR}"
+      "--with-boost=$ENV{BOOST_ROOT}"
+      "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:$ENV{BOOST_LIBRARYDIR}:${GSL_LIBRARY_DIRS}"
       "CXXFLAGS=${CMAKE_CXX_FLAGS}"
       "--prefix" "${QUESO_EXT_BINARY_DIR}"
     )

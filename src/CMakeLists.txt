@@ -237,11 +237,12 @@ option(DAKOTA_HAVE_GSL "Toggle GSL support, default is disabled" OFF)
 if(DAKOTA_HAVE_GSL)
   if(UNIX)
 
-  set(GSL_WITHOUT_CBLAS TRUE)
-  find_package(GSL REQUIRED)
-  include_directories("${GSL_INCLUDE_DIRS}")
-  list(APPEND link_directories "${GSL_LIBRARY_DIRS}")
-  list(APPEND EXTRA_TPL_LIBS gsl m)
+  # WJB: move to top-level CMakeLists.txt file since used in src and packages
+  #set(GSL_WITHOUT_CBLAS TRUE)
+  #find_package(GSL REQUIRED)
+  #include_directories("${GSL_INCLUDE_DIRS}")
+  #list(APPEND link_directories "${GSL_LIBRARY_DIRS}")
+  #list(APPEND EXTRA_TPL_LIBS gsl m)
 
   endif(UNIX)
 endif(DAKOTA_HAVE_GSL)
@@ -387,13 +388,17 @@ if(HAVE_QUESO)
   list(APPEND iterator_src NonDQUESOBayesCalibration.C)
   add_definitions("-DDAKOTA_QUESO")
 
-  # WJB - supported outside of Queso now -- exec_program("$ENV{GSL_CONFIG}" ARGS --prefix OUTPUT_VARIABLE GSL_PREFIX)
-  message(STATUS "QUESO support -- GSL prefix: ${GSL_PREFIX}")
+  #if(DEFINED ENV{GSL_PREFIX}) 
+  #  message(STATUS "QUESO support -- GSL prefix: $ENV{GSL_PREFIX}")
+  #  message(STATUS "QUESO support -- GSL headers: ${GSL_INCLUDE_DIRS}")
+  #else() # TODO: exit with failure
+  #endif()
+  #message(STATUS "QUESO support -- GSL headers: ${GSL_INCLUDE_DIRS}")
 
   #include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
   include_directories(${Dakota_BINARY_DIR}/packages/queso_ext/include
                       ${Dakota_BINARY_DIR}/packages/grvy_ext/include
-                      ${GSL_PREFIX}/include)
+                      ${GSL_INCLUDE_DIRS})
 
   #list(APPEND link_directories "$ENV{QUESO_PREFIX}/lib" "$ENV{GRVY_PREFIX}/lib"
   list(APPEND link_directories ${Dakota_BINARY_DIR}/packages/queso_ext/lib
