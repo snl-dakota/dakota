@@ -81,7 +81,11 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   envOptionsValues->m_subDisplayAllowedSet.insert(0);
   envOptionsValues->m_subDisplayAllowedSet.insert(1);
   envOptionsValues->m_displayVerbosity     = 2;
-  envOptionsValues->m_seed                 = randomSeed;
+  if (randomSeed) 
+    envOptionsValues->m_seed                 = randomSeed;
+  else
+    envOptionsValues->m_seed                 = 1 + (int)clock(); 
+      
   uqFullEnvironmentClass* env = new uqFullEnvironmentClass(MPI_COMM_SELF,"","",envOptionsValues);
  
   // Read in all of the experimental data:  any x configuration 
@@ -183,10 +187,13 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   uqGslVectorClass paramMaxs(paramSpace.zeroVector());
   const RealVector& lower_bounds = emulatorModel.continuous_lower_bounds();
   const RealVector& upper_bounds = emulatorModel.continuous_upper_bounds();
+  const RealVector& init_point = emulatorModel.continuous_variables();
+  Cout << "Initial Points " << init_point << '\n';
+
   if (emulatorType == GAUSSIAN_PROCESS || emulatorType == NO_EMULATOR) {
     for (size_t i=0;i<numContinuousVars;i++) {
-      paramMins[i]=0.0;
-      paramMaxs[i]=1.0;
+      paramMins[i]=lower_bounds[i];
+      paramMaxs[i]=upper_bounds[i];
     }
   }
   else { // case POLYNOMIAL_CHAOS: case STOCHASTIC_COLLOCATION:
@@ -210,6 +217,10 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
       paramMaxs[numContinuousVars+j]=2.0*yStdData(0,j);
     }
   }
+ 
+  Cout << "calibrateSigmaFlag  " << calibrateSigmaFlag << '\n';
+  Cout << "paramMins  " << paramMins << '\n';
+  Cout << "paramMaxs  " << paramMaxs << '\n';
   // instantiate QUESO parameters and likelihood
   uqBoxSubsetClass<uqGslVectorClass,uqGslMatrixClass>
     paramDomain("param_",paramSpace,paramMins,paramMaxs);
@@ -351,23 +362,39 @@ void NonDQUESOBayesCalibration::quantify_uncertainty()
   // Step 5 of 5: Solve the inverse problem
   ////////////////////////////////////////////////////////
   uqGslVectorClass paramInitials(paramSpace.zeroVector());
-  uqGslMatrixClass proposalCovMatrix(paramSpace.zeroVector());
-  for (size_t i=0;i<total_num_params;i++) {
+  uqGslVectorClass covDiag(paramSpace.zeroVector());
+  //uqGslMatrixClass proposalCovMatrix(paramSpace.zeroVector());
+  for (int i=0;i<numContinuousVars;i++) {
+    if (init_point[i])
+      paramInitials[i]=init_point[i];
+    else 
+      paramInitials[i]=(paramMaxs[i]+paramMins[i])/2.0;
+  }
+  for (int i=numContinuousVars;i<total_num_params;i++) {
     paramInitials[i]=(paramMaxs[i]+paramMins[i])/2.0;
-    //paramInitials[i]=0.75;
-    //paramInitials[i]=0.25;
+  }
+  for (int i=0;i<total_num_params;i++) {
+    covDiag[i] =(1.0/12.0)*(paramMaxs[i]-paramMins[i])*(paramMaxs[i]-paramMins[i])*proposalCovScale;
+  }
+  Cout << "covDiag " << covDiag << '\n';
+  Cout << "initParams " << paramInitials << '\n';
+
+  uqGslMatrixClass* proposalCovMatrix = postRv.imageSet().vectorSpace().newProposalMatrix(&covDiag,&paramInitials); 
+  //uqGslMatrixClass proposalCovMatrix(covDiag);
+  Cout << "ProposalCovMatrix " << '\n'; 
+  for (size_t i=0;i<total_num_params;i++) {
     for (size_t j=0;j<total_num_params;j++) 
-      proposalCovMatrix(i,j)=0.;
-    proposalCovMatrix(i,i)=(paramMaxs[i]-paramMins[i])*proposalCovScale;
+       Cout <<  (*proposalCovMatrix)(i,j) << "  " ; 
   }
   ip.solveWithBayesMetropolisHastings(calIpMhOptionsValues,
-                                    paramInitials, &proposalCovMatrix);
+                                    paramInitials, proposalCovMatrix);
 
   // Return
+  delete proposalCovMatrix;
   delete calIpMhOptionsValues;
-  delete env;
+  //delete env;
   delete envOptionsValues;
-  MPI_Finalize();
+  //MPI_Finalize();
 
   return;
 
@@ -404,12 +431,8 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   for (i=0; i<num_cont; i++) 
     x(i)=paramValues[i];
   
-  // FOR NOW:  THE GP and the NO EMULATOR case use a standard uniform [0,1] 
-  // space and the PCE or SC cases use a more general standardized space.  
-  // The standardization for the GP was not fully working, so the 
-  // standardization for the GP and the NO EMULATOR case are done manually. 
-  // This eventually needs to be fixed. 
-  // For now, QUESO is searching in a standardized case in all cases. 
+  // FOR NOW:  THE GP and the NO EMULATOR case use an unstandardized 
+  // space (original) and the PCE or SC cases use a more general standardized space.  
   // We had discussed having QUESO search in the original space:  this may 
   // difficult for high dimensional spaces depending on the scaling, 
   // because QUESO calculates the volume of the hypercube in which it is 
@@ -417,11 +440,11 @@ double NonDQUESOBayesCalibration::dakotaLikelihoodRoutine(
   // of small magnitude, searching in the original space will not be viable).
   // 
   if (NonDQUESOInstance->emulatorType == GAUSSIAN_PROCESS || NonDQUESOInstance->emulatorType == NO_EMULATOR) {
-    const RealVector& xLow = NonDQUESOInstance->emulatorModel.continuous_lower_bounds();
-    const RealVector& xHigh = NonDQUESOInstance->emulatorModel.continuous_upper_bounds();
+    //const RealVector& xLow = NonDQUESOInstance->emulatorModel.continuous_lower_bounds();
+    //const RealVector& xHigh = NonDQUESOInstance->emulatorModel.continuous_upper_bounds();
     //Cout << "Queso X" << x << '\n';
-    for (i=0; i<num_cont; i++) 
-      x(i)=xLow(i)+x(i)*(xHigh(i)-xLow(i));
+    //for (i=0; i<num_cont; i++) 
+    //  x(i)=xLow(i)+x(i)*(xHigh(i)-xLow(i));
     NonDQUESOInstance->emulatorModel.continuous_variables(x); 
     //Cout << "DAKOTA X" << x << '\n';
   }
