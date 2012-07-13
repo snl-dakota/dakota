@@ -86,6 +86,14 @@ if(NOT DEFINED BLAS_LIBS OR NOT DEFINED LAPACK_LIBS)
 endif()
 
 
+# GSL check at top-level due to need for settings in BOTH packages
+# and src subdirectories
+option(DAKOTA_HAVE_GSL "Toggle GSL support, default is disabled" OFF)
+if(DAKOTA_HAVE_GSL)
+  set(GSL_WITHOUT_CBLAS TRUE)
+  find_package(GSL REQUIRED)
+endif(DAKOTA_HAVE_GSL)
+
 # Mandate a system or user-provided Boost, including some libraries
 # DAKOTA requires Boost 1.37 or newer; PGI may demand 1.40 or newer
 set(dakota_boost_components "regex;filesystem;system")

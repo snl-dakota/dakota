@@ -233,20 +233,16 @@ if(DAKOTA_MODELCENTER)
   add_definitions("-DDAKOTA_MODELCENTER")
 endif(DAKOTA_MODELCENTER)
 
-option(DAKOTA_HAVE_GSL "Toggle GSL support, default is disabled" OFF)
 if(DAKOTA_HAVE_GSL)
-  if(UNIX)
+  # Ensure only INDIRECT dependency of Dakota/src on GSL
+  #add_definitions("-DDAKOTA_HAVE_GSL")
 
-  # WJB: move to top-level CMakeLists.txt file since used in src and packages
-  #set(GSL_WITHOUT_CBLAS TRUE)
-  #find_package(GSL REQUIRED)
-  #include_directories("${GSL_INCLUDE_DIRS}")
-  #list(APPEND link_directories "${GSL_LIBRARY_DIRS}")
-  #list(APPEND EXTRA_TPL_LIBS gsl m)
+  #message(STATUS "Enable GSL support -- headers: ${GSL_INCLUDE_DIRS}")
+  include_directories("${GSL_INCLUDE_DIRS}")
 
-  endif(UNIX)
+  list(APPEND link_directories "${GSL_LIBRARY_DIRS}")
+  list(APPEND EXTRA_TPL_LIBS gsl m)
 endif(DAKOTA_HAVE_GSL)
-
 
 if(DAKOTA_HAVE_MPI)
   add_definitions("-DDAKOTA_HAVE_MPI")
@@ -387,13 +383,6 @@ CheckPackage(QUESO)
 if(HAVE_QUESO)
   list(APPEND iterator_src NonDQUESOBayesCalibration.C)
   add_definitions("-DDAKOTA_QUESO")
-
-  #if(DEFINED ENV{GSL_PREFIX}) 
-  #  message(STATUS "QUESO support -- GSL prefix: $ENV{GSL_PREFIX}")
-  #  message(STATUS "QUESO support -- GSL headers: ${GSL_INCLUDE_DIRS}")
-  #else() # TODO: exit with failure
-  #endif()
-  #message(STATUS "QUESO support -- GSL headers: ${GSL_INCLUDE_DIRS}")
 
   #include_directories("$ENV{QUESO_PREFIX}/include" "$ENV{GRVY_PREFIX}/include"
   include_directories(${Dakota_BINARY_DIR}/packages/queso_ext/include

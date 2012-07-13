@@ -74,16 +74,23 @@ else()
     # Queso
     #
 
-    # Queso depends onf GSL, so ensure GSL is detected
-    set(DAKOTA_HAVE_GSL ON)
-    set(GSL_WITHOUT_CBLAS TRUE)
-    find_package(GSL REQUIRED)
+    # Queso depends onf GSL, so ensure GSL detection and proper lib settings
+    if(NOT DAKOTA_HAVE_GSL)
+      message(FATAL_ERROR "Enabling QUESO without GSL is not allowed.")
+    endif()
+
+    if(NOT DEFINED ENV{GSL_CONFIG})
+      message(FATAL_ERROR "QUESO currently requires GSL_CONFIG set as an envVar.")
+    endif()
+
+    if(NOT DEFINED ENV{BOOST_ROOT})
+      message(FATAL_ERROR "QUESO currently requires BOOST_ROOT set as an envVar.")
+    endif()
 
     exec_program("$ENV{GSL_CONFIG}" ARGS --prefix OUTPUT_VARIABLE Q_GSL_PREFIX)
     message(STATUS "QUESO support -- GSL prefix: ${Q_GSL_PREFIX}")
     set($ENV{GSL_PREFIX} ${Q_GSL_PREFIX})
 
-    #include_directories("${GSL_INCLUDE_DIRS}")
     message(STATUS "QUESO support -- GSL libdir: ${GSL_LIBRARY_DIRS}")
 
     set(QUESO_EXT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/queso_ext)
@@ -95,8 +102,8 @@ else()
       "CC=${CMAKE_C_COMPILER}" "CXX=${CMAKE_CXX_COMPILER}"
       "F77=${CMAKE_Fortran_COMPILER}" "FC=${CMAKE_Fortran_COMPILER}"
       "--without-hdf5" "--without-glpk" "--with-grvy=${GRVY_EXT_BINARY_DIR}"
-      "--with-boost=$ENV{BOOST_ROOT}"
-      "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:$ENV{BOOST_LIBRARYDIR}:${GSL_LIBRARY_DIRS}"
+      "--with-boost=${Boost_INCLUDE_DIR}/.."
+      "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:${Boost_LIBRARY_DIRS}:${GSL_LIBRARY_DIRS}"
       "CXXFLAGS=${CMAKE_CXX_FLAGS}"
       "--prefix" "${QUESO_EXT_BINARY_DIR}"
     )
