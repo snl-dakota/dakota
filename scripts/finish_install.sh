@@ -199,14 +199,4 @@ rm -f dakota$exeext rosenbrock$exeext
 $ln -s ../../../bin/dakota$exeext dakota$exeext
 $ln -s ../../../test/rosenbrock$exeext rosenbrock$exeext
 
-# Limit read access permissions for certain binaries and libraries
-# when in int_supervised distribution mode
-if [ "$distro_name" = "int_supervised" -o "$distro_name" = "int_full" ]; then
-  echo "Setting permissions on supervised distribution"
-  cd $prefix/bin
-  chmod -f o-r dakota$exeext dakota_restart_util$exeext dakota_library_mode$exeext dakota_library_split$exeext
-  cd $prefix/lib
-  chmod -f o-r libdakota.a libdakota.la libdot.a libdot.la
-fi
-
 echo "${0}: done"
