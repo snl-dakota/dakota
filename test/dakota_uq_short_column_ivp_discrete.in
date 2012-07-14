@@ -58,7 +58,7 @@ responses,
 method,
 	id_method = 'ALEATORY'
 	model_pointer = 'ALEAT_M'
-	polynomial_chaos
+	polynomial_chaos askey
 	  sparse_grid_level = 2
 #	  num_response_levels = 0 1
 	  response_levels = 0.0

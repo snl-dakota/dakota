@@ -41742,9 +41742,9 @@ Test Number 0 succeeded
 mean:  Min = 3.4615198127e+02  Max = 1.1533050900e+03
 std_dev:  Min = 1.0052201478e+03  Max = 2.5527136417e+03
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 546 total (525 new, 21 duplicate)
-mean:  Min = 3.0164173552e+02  Max = 1.4850400000e+03
-std_dev:  Min = 7.7604393197e+02  Max = 3.0275696788e+03
+<<<<< Function evaluation summary (ALEAT_I): 567 total (546 new, 21 duplicate)
+mean:  Min = 3.0200131522e+02  Max = 1.6010000000e+03
+std_dev:  Min = 7.7606185691e+02  Max = 3.1217946761e+03
 Test Number 2 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 49980 total (44457 new, 5523 duplicate)
 mean:  Min = 3.0200260044e+02  Max = 1.6050000000e+03
@@ -51838,17 +51838,17 @@ Moment-based statistics for each response function:
    0.0000000000e+00                      2.5284593683e-01
 dakota_uq_short_column_ivp_discrete.in
 Test Number 0 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 850 total (850 new, 0 duplicate)
-mean_limit:  Min = -4.5345662316e+00  Max = 8.4015062163e+00
-std_dev_limit:  Min = 3.0646437941e-01  Max = 4.9053184652e+00
+<<<<< Function evaluation summary (ALEAT_I): 770 total (770 new, 0 duplicate)
+mean_limit:  Min = -7.1726082293e+00  Max = 8.4492360254e+00
+std_dev_limit:  Min = 2.2123955936e-01  Max = 7.4099283986e+00
 Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 4250 total (3825 new, 425 duplicate)
-mean_limit:  Min = -4.5345662316e+00  Max = 8.4015062163e+00
-std_dev_limit:  Min = 2.8535326947e-01  Max = 4.9053184652e+00
+<<<<< Function evaluation summary (ALEAT_I): 2695 total (2541 new, 154 duplicate)
+mean_limit:  Min = -1.1807930097e+01  Max = 1.0327710960e+01
+std_dev_limit:  Min = 2.0229642834e-01  Max = 1.1201081379e+01
 Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 202300 total (197350 new, 4950 duplicate)
-mean_limit:  Min = -7.1729868283e+00  Max = 8.2244762016e+00
-std_dev_limit:  Min = 2.8535326947e-01  Max = 6.9608134883e+00
+<<<<< Function evaluation summary (ALEAT_I): 183260 total (181951 new, 1309 duplicate)
+mean_limit:  Min = -1.1807930097e+01  Max = 9.1037752388e+00
+std_dev_limit:  Min = 2.1475320873e-01  Max = 1.1201081379e+01
 dakota_uq_short_column_ivp_exp.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 620 total (589 new, 31 duplicate)
@@ -54327,7 +54327,7 @@ ccdf_beta_f2:  Min = 1.1140063093e+01  Max = 1.4997877200e+01
 ccdf_beta_f3:  Min = 2.1142441716e+01  Max = 2.9959806072e+01
 Test Number 1 succeeded
 <<<<< Function evaluation summary (ALEAT_I): 252 total (252 new, 0 duplicate)
-mean_f1:  Min = 2.4271620000e+06  Max = 6.2682820000e+06
+mean_f1:  Min = 2.4269060000e+06  Max = 6.2680260000e+06
 ccdf_beta_f2:  Min = 1.0918832972e+01  Max = 1.5386715423e+01
 ccdf_beta_f3:  Min = 2.0696377241e+01  Max = 3.0762469002e+01
 dakota_uq_textbook_lhs.in
