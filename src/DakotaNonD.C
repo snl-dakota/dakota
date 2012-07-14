@@ -1227,6 +1227,11 @@ void NonD::initialize_random_variable_types(short u_space_type)
       u_types[av_cntr] = Pecos::HISTOGRAM_BIN; break;
     }
   }
+
+  // discrete int aleatory uncertain
+
+  // discrete real aleatory uncertain
+  /*
   for (i=0; i<numHistogramPtVars; ++i, ++av_cntr) {
     x_types[av_cntr] = Pecos::HISTOGRAM_POINT;
     switch (u_space_type) {
@@ -1236,10 +1241,18 @@ void NonD::initialize_random_variable_types(short u_space_type)
       u_types[av_cntr] = Pecos::HISTOGRAM_POINT; break;
     }
   }
+  */
+
+  // continuous epistemic uncertain
   for (i=0; i<numContIntervalVars; ++i, ++av_cntr) {
     x_types[av_cntr] = Pecos::CONTINUOUS_INTERVAL;
     u_types[av_cntr] = Pecos::STD_UNIFORM; // STD_NORMAL not supported
   }
+
+  // discrete int epistemic uncertain
+
+  // discrete real epistemic uncertain
+
   for (i=0; i<numContStateVars; ++i, ++av_cntr) {
     x_types[av_cntr] = Pecos::CONTINUOUS_STATE;
     u_types[av_cntr] = Pecos::STD_UNIFORM; // STD_NORMAL not supported
@@ -1472,6 +1485,11 @@ void NonD::initialize_random_variable_parameters()
       x_addtl[av_cntr] = hist_bin_prs[i];
     }
   }
+
+  // discrete int aleatory uncertain
+
+  // discrete real aleatory uncertain
+  /*
   if (numHistogramPtVars) {
     const Pecos::RealVectorArray& hist_pt_prs = dp.histogram_point_pairs();
     for (i=0; i<numHistogramPtVars; ++i, ++av_cntr) {
@@ -1483,6 +1501,9 @@ void NonD::initialize_random_variable_parameters()
       x_addtl[av_cntr] = hist_pt_prs[i];
     }
   }
+  */
+
+  // continuous epistemic uncertain
   for (i=0; i<numContIntervalVars; ++i, ++av_cntr) {
     // interval bnds already processed for global bnds in NIDRProblemDescDB
     const Real& lwr = x_l_bnds[av_cntr] = c_l_bnds[av_cntr];
@@ -1490,6 +1511,11 @@ void NonD::initialize_random_variable_parameters()
     Pecos::moments_from_uniform_params(lwr, upr, x_means[av_cntr],
 				       x_std_devs[av_cntr]);
   }
+
+  // discrete int epistemic uncertain
+
+  // discrete real epistemic uncertain
+
   for (i=0; i<numContStateVars; ++i, ++av_cntr) {
     const Real& lwr = x_l_bnds[av_cntr] = c_l_bnds[av_cntr];
     const Real& upr = x_u_bnds[av_cntr] = c_u_bnds[av_cntr];

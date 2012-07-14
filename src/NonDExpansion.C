@@ -481,7 +481,9 @@ void NonDExpansion::initialize_expansion()
   // distribution params for variables that are not transformed (i.e., 
   // numerically-generated bases/points); it assumes that the presence of any
   // variable transformation precludes flow of distribution parameters.  So
-  // we handle that special case here prior to the general recursion.
+  // we handle that special case here prior to the general recursion.  The
+  // alternative would be to supply another function pointer to RecastModel
+  // to support partial distribution parameter mappings.
   Pecos::DistributionParams& dp_u
     = uSpaceModel.subordinate_model().distribution_parameters();
   const Pecos::DistributionParams& dp_x
