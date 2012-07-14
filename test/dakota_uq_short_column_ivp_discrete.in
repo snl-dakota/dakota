@@ -11,11 +11,11 @@ method,
 	id_method = 'EPISTEMIC'
 	model_pointer = 'EPIST_M'
 	global_interval_est lhs					#0
-#	global_interval_est sbo					#1
-	  samples = 10						#0,#1
-#	  max_iterations = 10					#1
-#	global_interval_est ea					#2
-#	  max_iterations = 5					#2
+#	global_interval_est sbo					#1,#2,#3,#4
+	  samples = 10						#0,#1,#2,#3,#4
+#	  max_iterations = 10					#1,#2,#3,#4
+#	global_interval_est ea					#5
+#	  max_iterations = 5					#5
 	  seed = 12347
 	  output quiet
 
@@ -58,7 +58,10 @@ responses,
 method,
 	id_method = 'ALEATORY'
 	model_pointer = 'ALEAT_M'
-	polynomial_chaos askey
+	polynomial_chaos askey			#0,#1,#5
+#	polynomial_chaos 			#2
+#	stoch_collocation askey			#3
+#	stoch_collocation 			#4
 	  sparse_grid_level = 2
 #	  num_response_levels = 0 1
 	  response_levels = 0.0
