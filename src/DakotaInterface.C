@@ -14,7 +14,9 @@
 #include "ProblemDescDB.H"
 #include "DakotaVariables.H"
 #include "SysCallApplicInterface.H"
+#ifndef _MSC_VER
 #include "ForkApplicInterface.H"
+#endif // _MSC_VER
 #ifdef DAKOTA_GRID
 #include "GridApplicInterface.H"
 #endif // DAKOTA_GRID
@@ -209,8 +211,10 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
 
   if (interf_type == "system")
     return new SysCallApplicInterface(problem_db);
+#ifndef _MSC_VER
   else if (interf_type == "fork")
     return new ForkApplicInterface(problem_db);
+#endif // _MSC_VER
   else if (interf_type == "direct")
     return new DirectApplicInterface(problem_db);
   // Note: in the case of a plug-in direct interface, this object gets replaced

@@ -313,8 +313,11 @@ set(constraint_src DakotaConstraints.C MixedVarConstraints.C
 set(interface_src DakotaInterface.C ApproximationInterface.C
     DakotaApproximation.C TaylorApproximation.C TANA3Approximation.C
     GaussProcApproximation.C PecosApproximation.C ApplicationInterface.C
-    SysCallApplicInterface.C ForkApplicInterface.C DirectApplicInterface.C
-    AnalysisCode.C ForkAnalysisCode.C SysCallAnalysisCode.C CommandShell.C)
+    SysCallApplicInterface.C DirectApplicInterface.C
+    AnalysisCode.C SysCallAnalysisCode.C CommandShell.C)
+if(NOT MSVC)
+  list(APPEND interface_src ForkApplicInterface.C ForkAnalysisCode.C)
+endif()
 
 CheckPackage(SURFPACK)
 if(HAVE_SURFPACK)
@@ -349,9 +352,9 @@ set(iterator_src DakotaIterator.C DakotaAnalyzer.C DakotaPStudyDACE.C
     lawson_hanson1.f
     EffGlobalMinimizer.C
 )
-
+set(Dakota_src_fortran lawson_hanson1.f)
 if(DAKOTA_F90)
-  list(APPEND iterator_src lawson_hanson2.f90)
+  list(APPEND Dakota_src_fortran lawson_hanson2.f90)
 endif(DAKOTA_F90)
 
 if(HAVE_ACRO)
@@ -546,7 +549,18 @@ set(Dakota_src ${Dakota_src} ${util_src} ${evaldata_src} ${db_src}
     ${model_src} ${constraint_src} ${interface_src} ${strategy_src}
     ${iterator_src})
 
+if(MSVC)
+  list(APPEND Dakota_src dirent.h dirent.c)
+endif()
+
+add_library(dakota_src_fortran ${Dakota_src_fortran})
+# the intel fortran compiler can  not handle all the -I stuff
+# that is coming from the C++ files, but it does not need any of it
+# so clear out the includes for this target
+set_target_properties(dakota_src_fortran PROPERTIES INCLUDE_DIRECTORIES "")
 add_library(dakota_src ${Dakota_src})
+target_link_libraries(dakota_src dakota_src_fortran)
+
 
 if(HAVE_ACRO)
   target_link_libraries(dakota_src utilib colin interfaces scolib)
@@ -606,6 +620,7 @@ target_link_libraries(dakota dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 target_link_libraries(dakota_library_mode dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 
+install(TARGETS dakota_src_fortran EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota_src EXPORT ${ExportTarget} DESTINATION lib)
 install(TARGETS dakota dakota_restart_util EXPORT DESTINATION bin)
 install(TARGETS dakota_library_mode DESTINATION bin)
