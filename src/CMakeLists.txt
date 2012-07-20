@@ -648,7 +648,7 @@ if (BUILD_IN_TRILINOS)
 get_directory_property(Dakota_INC_DIRS INCLUDE_DIRECTORIES)
 set(Dakota_INCLUDE_DIRS ${Dakota_INC_DIRS} CACHE INTERNAL 
     "Dakota include directories")
-set(Dakota_LIBS dakota_src ${TPL_LIBS})
+set(Dakota_LIBS dakota_src dakota_src_fortran ${TPL_LIBS})
 # Remove teuchos from Dakota_LIBS
 list(REMOVE_ITEM Dakota_LIBS teuchos)
 
