@@ -22,6 +22,8 @@ DakotaEnableSpecMaint()
 set(TPL_LIBS teuchos nidr)
 set(EXTRA_TPL_LIBS "")
 
+# WJB - ToDo:  convince myself that dakota_src_fortran should have a
+#              better name and be specified in the initial EXPORTS_TARGETS set
 set(EXPORT_TARGETS dakota_src teuchos nidr)
 link_directories(${Teuchos_LIBRARY_DIRS})
 
@@ -560,6 +562,7 @@ add_library(dakota_src_fortran ${Dakota_src_fortran})
 set_target_properties(dakota_src_fortran PROPERTIES INCLUDE_DIRECTORIES "")
 add_library(dakota_src ${Dakota_src})
 target_link_libraries(dakota_src dakota_src_fortran)
+list(APPEND EXPORT_TARGETS dakota_src_fortran)
 
 
 if(HAVE_ACRO)
