@@ -178,7 +178,7 @@ if(DAKOTA_USAGE_TRACKING)
   endif(CURL_FOUND)
 endif(DAKOTA_USAGE_TRACKING)
 
-option(DAKOTA_MATLAB "Toggle MATLAB interface, default is disabled" OFF)
+option(DAKOTA_MATLAB "Toggle Matlab interface, default is disabled" OFF)
 if(DAKOTA_MATLAB)
   include(FindMatlab)
 
@@ -192,6 +192,48 @@ if(DAKOTA_MATLAB)
     message(SEND_ERROR "MATLAB requested, but not found in ${MATLAB_ROOT}; consider setting MATLAB_DIR")
   endif(MATLAB_FOUND)
 endif(DAKOTA_MATLAB)
+
+# TODO: consider rework of Scilab options more like original patch,
+# separating whether to build from whether we have?
+# SCILAB provides its own BLAS/LAPACK.  Should probably use those instead.
+option(DAKOTA_SCILAB "Toggle Scilab interface, default is disabled" OFF)
+if(DAKOTA_SCILAB)
+  find_package(Scilab)
+  if (SCILAB_ROOT)
+
+    # Scilab compilation options
+    add_definitions("-DDAKOTA_SCILAB")
+    include_directories(${SCILAB_INCLUDES_PATH})
+      
+    # Scilab linking options 
+    # TODO: Don't appear to get used anywhere!
+    set(SCI_LINK_FLAGS "${SCI_LINK_FLAGS} -Wl,-rpath,${SCILAB_ROOT}/lib/scilab")
+    set(SCI_LINK_FLAGS "${SCI_LINK_FLAGS} -Wl,-rpath-link,${SCILAB_ROOT}/lib/scilab")
+    set(SCI_LINK_FLAGS "${SCI_LINK_FLAGS} -Wl,-rpath,${SCILAB_ROOT}/lib/thirdparty")
+    set(SCI_LINK_FLAGS "${SCI_LINK_FLAGS} -Wl,-rpath-link,${SCILAB_ROOT}/lib/thirdparty")
+      
+    if (EXISTS ${SCILAB_ROOT}/thirdparty/java/lib/amd64)
+      set(SCI_ARCH "amd64")
+    else()
+      set(SCI_ARCH "i386")
+    endif()
+      
+    set(SCI_LINK_FLAGS
+      "${SCI_LINK_FLAGS} -Wl,-rpath,${SCILAB_ROOT}/thirdparty/java/lib/${SCI_ARCH}")
+    set(SCI_LINK_FLAGS 
+      "${SCI_LINK_FLAGS} -Wl,-rpath-link,${SCILAB_ROOT}/thirdparty/java/lib/${SCI_ARCH}")
+    set(SCI_LINK_FLAGS 
+      "${SCI_LINK_FLAGS} -Wl,-rpath,${SCILAB_ROOT}/thirdparty/java/lib/${SCI_ARCH}/server")
+    set(SCI_LINK_FLAGS 
+      "${SCI_LINK_FLAGS} -Wl,-rpath-link,${SCILAB_ROOT}/thirdparty/java/lib/${SCI_ARCH}/")
+
+    list(APPEND EXTRA_TPL_LIBS ${SCILAB_LIBRARY})
+
+  else() # SCILAB_ROOT
+    message(SEND_ERROR 
+      "Scilab requested, but not found; consider setting SCILAB_USER_PATH")
+  endif() # SCILAB_ROOT
+endif() #DAKOTA_SCILAB
 
 option(DAKOTA_PYTHON "Toggle Python interface, default is disabled" OFF)
 option(DAKOTA_PYTHON_NUMPY
@@ -618,6 +660,12 @@ add_executable(dakota_restart_util restart_util.C)
 add_executable(dakota_library_mode library_mode.C)
   
 list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS})
+
+if(DAKOTA_SCILAB)
+  set_target_properties(dakota PROPERTIES LINK_FLAGS "${SCI_LINK_FLAGS}")
+  set_target_properties(dakota_restart_util PROPERTIES LINK_FLAGS "${SCI_LINK_FLAGS}")
+  set_target_properties(dakota_library_mode PROPERTIES LINK_FLAGS "${SCI_LINK_FLAGS}")
+endif()
 
 target_link_libraries(dakota dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})
 target_link_libraries(dakota_restart_util dakota_src ${TPL_LIBS} ${EXTRA_TPL_LIBS})

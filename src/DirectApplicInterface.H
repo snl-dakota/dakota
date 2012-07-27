@@ -28,6 +28,13 @@
 //struct engine;  //forward declaration for engine pointer
 //struct mxArray; //forward declaration for mxArray argument
 #endif
+
+#ifdef DAKOTA_SCILAB
+#include <api_scilab.h>
+#include <call_scilab.h>
+#include <string.h>
+#endif
+
 #ifdef DAKOTA_PYTHON
 // The following to forward declare, but avoid clash with include
 #ifndef PyObject_HEAD
@@ -64,7 +71,7 @@ enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
 		TEXT_BOOK1, TEXT_BOOK2, TEXT_BOOK3, TEXT_BOOK_OUU,
 		SCALABLE_TEXT_BOOK, SCALABLE_MONOMIALS,
 		HERBIE, SMOOTH_HERBIE, SHUBERT,
-		SALINAS, MODELCENTER, MATLAB, PYTHON };
+		SALINAS, MODELCENTER, MATLAB, SCILAB, PYTHON };
 
 /// enumeration for how local variables are stored (values must employ
 /// a bit representation)
@@ -219,6 +226,10 @@ protected:
   engine *matlabEngine;
 #endif
 
+#ifdef DAKOTA_SCILAB
+  int scilabEngine;
+#endif
+
 private:
 
   //
@@ -297,6 +308,10 @@ private:
   /// add if necessary; free structure memory in preparation for new alloc
   int matlab_field_prep(mxArray* dakota_matlab, const char* field_name);
 #endif // DAKOTA_MATLAB
+
+#ifdef DAKOTA_SCILAB
+  int scilab_engine_run();
+#endif
 
 #ifdef DAKOTA_PYTHON
   /// direct interface to Python via API, BMA 07/02/07
