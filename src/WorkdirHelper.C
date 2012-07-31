@@ -145,8 +145,9 @@ std::string WorkdirHelper::which(const std::string& driver_name)
 
     BOOST_FOREACH(const std::string& d, search_dirs) {
       boost::filesystem::path f;
+      boost::filesystem::path d_path(d);
 
-      if( contains(d, driver_name, f) ) {
+      if( contains(d_path, driver_name, f) ) {
         //Cout << driver_name << " FOUND in: " << d << std::endl;
         driver_path_str = f.string();
         break;
