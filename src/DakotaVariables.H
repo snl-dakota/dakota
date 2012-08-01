@@ -141,6 +141,8 @@ public:
 
   /// return sharedVarsData
   const SharedVariablesData& shared_data() const;
+  /// return sharedVarsData
+  SharedVariablesData& shared_data();
 
   // ACTIVE VARIABLES
 
@@ -360,25 +362,6 @@ protected:
   //- Heading: Data views
   //
 
-  /// start index of active continuous variables within allContinuousVars
-  size_t cvStart;
-  /// start index of active discrete integer variables within allDiscreteIntVars
-  size_t divStart;
-  /// start index of active discrete real variables within allDiscreteRealVars
-  size_t drvStart;
-  /// start index of inactive continuous variables within allContinuousVars
-  size_t icvStart;
-  /// start index of inactive discrete integer variables w/i allDiscreteIntVars
-  size_t idivStart;
-  /// start index of inactive discrete real variables within allDiscreteRealVars
-  size_t idrvStart;
-  size_t numCV;   ///< number of active continuous variables
-  size_t numDIV;  ///< number of active discrete integer variables
-  size_t numDRV;  ///< number of active discrete real variables
-  size_t numICV;  ///< number of inactive continuous variables
-  size_t numIDIV; ///< number of inactive discrete integer variables
-  size_t numIDRV; ///< number of inactive discrete real variables
-
   /// the active continuous variables array view
   RealVector continuousVars;
   /// the active discrete integer variables array view
@@ -428,6 +411,14 @@ private:
 };
 
 
+inline const SharedVariablesData& Variables::shared_data() const
+{ return (variablesRep) ? variablesRep->sharedVarsData : sharedVarsData; }
+
+
+inline SharedVariablesData& Variables::shared_data()
+{ return (variablesRep) ? variablesRep->sharedVarsData : sharedVarsData; }
+
+
 // nonvirtual functions can access letter attributes directly (only need to fwd
 // member function call when the function could be redefined).
 inline size_t Variables::tv() const
@@ -441,93 +432,85 @@ inline size_t Variables::tv() const
 
 
 inline size_t Variables::cv() const
-{ return (variablesRep) ? variablesRep->numCV : numCV; }
+{ return shared_data().cv(); }
 
 
 inline size_t Variables::cv_start() const
-{ return (variablesRep) ? variablesRep->cvStart : cvStart; }
+{ return shared_data().cv_start(); }
 
 
 inline size_t Variables::div() const
-{ return (variablesRep) ? variablesRep->numDIV : numDIV; }
+{ return shared_data().div(); }
 
 
 inline size_t Variables::div_start() const
-{ return (variablesRep) ? variablesRep->divStart : divStart; }
+{ return shared_data().div_start(); }
 
 
 inline size_t Variables::drv() const
-{ return (variablesRep) ? variablesRep->numDRV : numDRV; }
+{ return shared_data().drv(); }
 
 
 inline size_t Variables::drv_start() const
-{ return (variablesRep) ? variablesRep->drvStart : drvStart; }
+{ return shared_data().drv_start(); }
 
 
 inline size_t Variables::icv() const
-{ return (variablesRep) ? variablesRep->numICV : numICV; }
+{ return shared_data().icv(); }
 
 
 inline size_t Variables::icv_start() const
-{ return (variablesRep) ? variablesRep->icvStart : icvStart; }
+{ return shared_data().icv_start(); }
 
 
 inline size_t Variables::idiv() const
-{ return (variablesRep) ? variablesRep->numIDIV : numIDIV; }
+{ return shared_data().idiv(); }
 
 
 inline size_t Variables::idiv_start() const
-{ return (variablesRep) ? variablesRep->idivStart : idivStart; }
+{ return shared_data().idiv_start(); }
 
 
 inline size_t Variables::idrv() const
-{ return (variablesRep) ? variablesRep->numIDRV : numIDRV; }
+{ return shared_data().idrv(); }
 
 
 inline size_t Variables::idrv_start() const
-{ return (variablesRep) ? variablesRep->idrvStart : idrvStart; }
+{ return shared_data().idrv_start(); }
 
 
 inline size_t Variables::acv() const
 {
-  return (variablesRep) ?
-    variablesRep->allContinuousVars.length() : allContinuousVars.length();
+  return (variablesRep) ? variablesRep->allContinuousVars.length() :
+    allContinuousVars.length();
 }
 
 
 inline size_t Variables::adiv() const
 {
-  return (variablesRep) ?
-    variablesRep->allDiscreteIntVars.length() : allDiscreteIntVars.length();
+  return (variablesRep) ? variablesRep->allDiscreteIntVars.length() :
+    allDiscreteIntVars.length();
 }
 
 
 inline size_t Variables::adrv() const
 {
-  return (variablesRep) ?
-    variablesRep->allDiscreteRealVars.length() : allDiscreteRealVars.length();
+  return (variablesRep) ? variablesRep->allDiscreteRealVars.length() :
+    allDiscreteRealVars.length();
 }
-
-
-inline const SharedVariablesData& Variables::shared_data() const
-{ return (variablesRep) ? variablesRep->sharedVarsData : sharedVarsData; }
 
 
 inline void Variables::continuous_variable(const Real& c_var, size_t index)
 {
-  if (variablesRep)
-    variablesRep->continuousVars[index] = c_var;
-  else
-    continuousVars[index] = c_var;
+  if (variablesRep) variablesRep->continuousVars[index] = c_var;
+  else              continuousVars[index] = c_var;
 }
 
 
 inline const Real& Variables::continuous_variable(size_t index) const
 {
-  if (variablesRep)
-    return variablesRep->continuousVars[index];
-  else
-    return continuousVars[index];
+  if (variablesRep) return variablesRep->continuousVars[index];
+  else              return continuousVars[index];
 }
 
 
@@ -538,28 +521,22 @@ inline const RealVector& Variables::continuous_variables() const
 inline void Variables::
 continuous_variables(const RealVector& c_vars)
 {
-  if (variablesRep)
-    variablesRep->continuousVars.assign(c_vars);
-  else
-    continuousVars.assign(c_vars);
+  if (variablesRep) variablesRep->continuousVars.assign(c_vars);
+  else              continuousVars.assign(c_vars);
 }
 
 
 inline void Variables::discrete_int_variable(int di_var, size_t index)
 {
-  if (variablesRep)
-    variablesRep->discreteIntVars[index] = di_var;
-  else
-    discreteIntVars[index] = di_var;
+  if (variablesRep) variablesRep->discreteIntVars[index] = di_var;
+  else              discreteIntVars[index] = di_var;
 }
 
 
 inline int Variables::discrete_int_variable(size_t index) const
 {
-  if (variablesRep)
-    return variablesRep->discreteIntVars[index];
-  else
-    return discreteIntVars[index];
+  if (variablesRep) return variablesRep->discreteIntVars[index];
+  else              return discreteIntVars[index];
 }
 
 
@@ -569,29 +546,23 @@ inline const IntVector& Variables::discrete_int_variables() const
 
 inline void Variables::discrete_int_variables(const IntVector& di_vars)
 {
-  if (variablesRep)
-    variablesRep->discreteIntVars.assign(di_vars);
-  else
-    discreteIntVars.assign(di_vars);
+  if (variablesRep) variablesRep->discreteIntVars.assign(di_vars);
+  else              discreteIntVars.assign(di_vars);
 }
 
 
 inline void Variables::
 discrete_real_variable(const Real& dr_var, size_t index)
 {
-  if (variablesRep)
-    variablesRep->discreteRealVars[index] = dr_var;
-  else
-    discreteRealVars[index] = dr_var;
+  if (variablesRep) variablesRep->discreteRealVars[index] = dr_var;
+  else              discreteRealVars[index] = dr_var;
 }
 
 
 inline const Real& Variables::discrete_real_variable(size_t index) const
 {
-  if (variablesRep)
-    return variablesRep->discreteRealVars[index];
-  else
-    return discreteRealVars[index];
+  if (variablesRep) return variablesRep->discreteRealVars[index];
+  else              return discreteRealVars[index];
 }
 
 
@@ -601,148 +572,111 @@ inline const RealVector& Variables::discrete_real_variables() const
 
 inline void Variables::discrete_real_variables(const RealVector& dr_vars)
 {
-  if (variablesRep)
-    variablesRep->discreteRealVars.assign(dr_vars);
-  else
-    discreteRealVars.assign(dr_vars);
+  if (variablesRep) variablesRep->discreteRealVars.assign(dr_vars);
+  else              discreteRealVars.assign(dr_vars);
 }
 
 
 inline StringMultiArrayConstView Variables::continuous_variable_labels() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_continuous_labels(variablesRep->cvStart,
-						       variablesRep->numCV) :
-    sharedVarsData.all_continuous_labels(cvStart, numCV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_continuous_labels(svd.cv_start(), svd.cv());
 }
 
 
 inline void Variables::
 continuous_variable_labels(StringMultiArrayConstView cv_labels)
 {
-  if (variablesRep)
-    variablesRep->sharedVarsData.all_continuous_labels(cv_labels,
-      variablesRep->cvStart, variablesRep->numCV);
-  else
-    sharedVarsData.all_continuous_labels(cv_labels, cvStart, numCV);
+  SharedVariablesData& svd = shared_data();
+  svd.all_continuous_labels(cv_labels, svd.cv_start(), svd.cv());
 }
 
 
 inline void Variables::
 continuous_variable_label(const String& cv_label, size_t index)
 {
-  if (variablesRep)
-    variablesRep->sharedVarsData.all_continuous_label(cv_label,
-      variablesRep->cvStart+index);
-  else
-    sharedVarsData.all_continuous_label(cv_label, cvStart+index);
+  SharedVariablesData& svd = shared_data();
+  svd.all_continuous_label(cv_label, svd.cv_start()+index);
 }
 
 
 inline StringMultiArrayConstView Variables::discrete_int_variable_labels() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_discrete_int_labels(
-      variablesRep->divStart, variablesRep->numDIV) :
-    sharedVarsData.all_discrete_int_labels(divStart, numDIV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_discrete_int_labels(svd.div_start(), svd.div());
 }
 
 
 inline void Variables::
 discrete_int_variable_labels(StringMultiArrayConstView div_labels)
 {
-  if (variablesRep)
-    variablesRep->sharedVarsData.all_discrete_int_labels(div_labels,
-      variablesRep->divStart, variablesRep->numDIV);
-  else
-    sharedVarsData.all_discrete_int_labels(div_labels, divStart, numDIV);
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_int_labels(div_labels, svd.div_start(), svd.div());
 }
 
 
 inline void Variables::
 discrete_int_variable_label(const String& div_label, size_t index)
 {
-  if (variablesRep)
-    variablesRep->sharedVarsData.all_discrete_int_label(div_label,
-      variablesRep->divStart+index);
-  else
-    sharedVarsData.all_discrete_int_label(div_label, divStart+index);
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_int_label(div_label, svd.div_start()+index);
 }
 
 
 inline StringMultiArrayConstView Variables::
 discrete_real_variable_labels() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_discrete_real_labels(
-      variablesRep->drvStart, variablesRep->numDRV) :
-    sharedVarsData.all_discrete_real_labels(drvStart, numDRV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_discrete_real_labels(svd.drv_start(), svd.drv());
 }
 
 
 inline void Variables::
 discrete_real_variable_labels(StringMultiArrayConstView drv_labels)
 {
-  if (variablesRep)
-    variablesRep->sharedVarsData.all_discrete_real_labels(drv_labels,
-      variablesRep->drvStart, variablesRep->numDRV);
-  else
-    sharedVarsData.all_discrete_real_labels(drv_labels, drvStart, numDRV);
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_real_labels(drv_labels, svd.drv_start(), svd.drv());
 }
 
 
 inline void Variables::
 discrete_real_variable_label(const String& drv_label, size_t index)
 {
-  if (variablesRep)
-    variablesRep->sharedVarsData.all_discrete_real_label(drv_label,
-      variablesRep->drvStart+index);
-  else
-    sharedVarsData.all_discrete_real_label(drv_label, drvStart+index);
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_real_label(drv_label, svd.drv_start()+index);
 }
 
 
 inline UShortMultiArrayConstView Variables::continuous_variable_types() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_continuous_types(
-      variablesRep->cvStart, variablesRep->numCV) :
-    sharedVarsData.all_continuous_types(cvStart, numCV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_continuous_types(svd.cv_start(), svd.cv());
 }
 
 
 inline UShortMultiArrayConstView Variables::discrete_int_variable_types() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_discrete_int_types(
-      variablesRep->divStart, variablesRep->numDIV) :
-    sharedVarsData.all_discrete_int_types(divStart, numDIV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_discrete_int_types(svd.div_start(), svd.div());
 }
 
 
 inline UShortMultiArrayConstView Variables::discrete_real_variable_types() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_discrete_real_types(
-      variablesRep->drvStart, variablesRep->numDRV) :
-    sharedVarsData.all_discrete_real_types(drvStart, numDRV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_discrete_real_types(svd.drv_start(), svd.drv());
 }
 
 
 inline SizetMultiArrayConstView Variables::continuous_variable_ids() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_continuous_ids(
-      variablesRep->cvStart, variablesRep->numCV) :
-    sharedVarsData.all_continuous_ids(cvStart, numCV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_continuous_ids(svd.cv_start(), svd.cv());
 }
 
 
 inline const SizetArray& Variables::relaxed_discrete_ids() const
-{
-  return (variablesRep) ? variablesRep->sharedVarsData.relaxed_discrete_ids() :
-    sharedVarsData.relaxed_discrete_ids();
-}
+{ return shared_data().relaxed_discrete_ids(); }
 
 
 inline const RealVector& Variables::inactive_continuous_variables() const
@@ -755,147 +689,118 @@ inline const RealVector& Variables::inactive_continuous_variables() const
 inline void Variables::
 inactive_continuous_variables(const RealVector& ic_vars)
 {
-  if (variablesRep)
-    variablesRep->inactiveContinuousVars.assign(ic_vars);
-  else
-    inactiveContinuousVars.assign(ic_vars);
+  if (variablesRep) variablesRep->inactiveContinuousVars.assign(ic_vars);
+  else              inactiveContinuousVars.assign(ic_vars);
 }
 
 
 inline const IntVector& Variables::inactive_discrete_int_variables() const
 {
-  return (variablesRep) ?
-    variablesRep->inactiveDiscreteIntVars : inactiveDiscreteIntVars;
+  return (variablesRep) ? variablesRep->inactiveDiscreteIntVars :
+    inactiveDiscreteIntVars;
 }
 
 
 inline void Variables::
 inactive_discrete_int_variables(const IntVector& idi_vars)
 {
-  if (variablesRep)
-    variablesRep->inactiveDiscreteIntVars.assign(idi_vars);
-  else
-    inactiveDiscreteIntVars.assign(idi_vars);
+  if (variablesRep) variablesRep->inactiveDiscreteIntVars.assign(idi_vars);
+  else              inactiveDiscreteIntVars.assign(idi_vars);
 }
 
 
 inline const RealVector& Variables::inactive_discrete_real_variables() const
 {
-  return (variablesRep) ?
-    variablesRep->inactiveDiscreteRealVars : inactiveDiscreteRealVars;
+  return (variablesRep) ? variablesRep->inactiveDiscreteRealVars :
+    inactiveDiscreteRealVars;
 }
 
 
 inline void Variables::
 inactive_discrete_real_variables(const RealVector& idr_vars)
 {
-  if (variablesRep)
-    variablesRep->inactiveDiscreteRealVars.assign(idr_vars);
-  else
-    inactiveDiscreteRealVars.assign(idr_vars);
+  if (variablesRep) variablesRep->inactiveDiscreteRealVars.assign(idr_vars);
+  else              inactiveDiscreteRealVars.assign(idr_vars);
 }
 
 
 inline StringMultiArrayConstView Variables::
 inactive_continuous_variable_labels() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_continuous_labels(variablesRep->icvStart,
-						       variablesRep->numICV) :
-    sharedVarsData.all_continuous_labels(icvStart, numICV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_continuous_labels(svd.icv_start(), svd.icv());
 }
 
 
 inline void Variables::
 inactive_continuous_variable_labels(StringMultiArrayConstView icv_labels)
 {
-  if (variablesRep)
-    variablesRep->sharedVarsData.all_continuous_labels(icv_labels,
-      variablesRep->icvStart, variablesRep->numICV);
-  else
-    sharedVarsData.all_continuous_labels(icv_labels, icvStart, numICV);
+  SharedVariablesData& svd = shared_data();
+  svd.all_continuous_labels(icv_labels, svd.icv_start(), svd.icv());
 }
 
 
 inline StringMultiArrayConstView Variables::
 inactive_discrete_int_variable_labels() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_discrete_int_labels(
-      variablesRep->idivStart, variablesRep->numIDIV) :
-    sharedVarsData.all_discrete_int_labels(idivStart, numIDIV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_discrete_int_labels(svd.idiv_start(), svd.idiv());
 }
 
 
 inline void Variables::
 inactive_discrete_int_variable_labels(StringMultiArrayConstView idiv_labels)
 {
-  if (variablesRep)
-    variablesRep->sharedVarsData.all_discrete_int_labels(idiv_labels,
-      variablesRep->idivStart, variablesRep->numIDIV);
-  else
-    sharedVarsData.all_discrete_int_labels(idiv_labels, idivStart, numIDIV);
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_int_labels(idiv_labels, svd.idiv_start(), svd.idiv());
 }
 
 
 inline StringMultiArrayConstView Variables::
 inactive_discrete_real_variable_labels() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_discrete_real_labels(
-      variablesRep->idrvStart, variablesRep->numIDRV) :
-    sharedVarsData.all_discrete_real_labels(idrvStart, numIDRV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_discrete_real_labels(svd.idrv_start(), svd.idrv());
 }
 
 
 inline void Variables::
 inactive_discrete_real_variable_labels(StringMultiArrayConstView idrv_labels)
 {
-  if (variablesRep)
-    variablesRep->sharedVarsData.all_discrete_real_labels(idrv_labels,
-      variablesRep->idrvStart, variablesRep->numIDRV);
-  else
-    sharedVarsData.all_discrete_real_labels(idrv_labels, idrvStart, numIDRV);
+  SharedVariablesData& svd = shared_data();
+  svd.all_discrete_real_labels(idrv_labels, svd.idrv_start(), svd.idrv());
 }
 
 
 inline UShortMultiArrayConstView Variables::
 inactive_continuous_variable_types() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_continuous_types(
-      variablesRep->icvStart, variablesRep->numICV) :
-    sharedVarsData.all_continuous_types(icvStart, numICV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_continuous_types(svd.icv_start(), svd.icv());
 }
 
 
 inline UShortMultiArrayConstView Variables::
 inactive_discrete_int_variable_types() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_discrete_int_types(
-      variablesRep->idivStart, variablesRep->numIDIV) :
-    sharedVarsData.all_discrete_int_types(idivStart, numIDIV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_discrete_int_types(svd.idiv_start(), svd.idiv());
 }
 
 
 inline UShortMultiArrayConstView Variables::
 inactive_discrete_real_variable_types() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_discrete_real_types(
-      variablesRep->idrvStart, variablesRep->numIDRV) :
-    sharedVarsData.all_discrete_real_types(idrvStart, numIDRV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_discrete_real_types(svd.idrv_start(), svd.idrv());
 }
 
 
 inline SizetMultiArrayConstView Variables::
 inactive_continuous_variable_ids() const
 {
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_continuous_ids(
-      variablesRep->icvStart, variablesRep->numICV) :
-    sharedVarsData.all_continuous_ids(icvStart, numICV);
+  const SharedVariablesData& svd = shared_data();
+  return svd.all_continuous_ids(svd.icv_start(), svd.icv());
 }
 
 
@@ -905,20 +810,16 @@ inline const RealVector& Variables::all_continuous_variables() const
 
 inline void Variables::all_continuous_variables(const RealVector& ac_vars)
 {
-  if (variablesRep)
-    variablesRep->allContinuousVars.assign(ac_vars);
-  else
-    allContinuousVars.assign(ac_vars);
+  if (variablesRep) variablesRep->allContinuousVars.assign(ac_vars);
+  else              allContinuousVars.assign(ac_vars);
 }
 
 
 inline void Variables::
 all_continuous_variable(const Real& ac_var, size_t index)
 {
-  if (variablesRep)
-    variablesRep->allContinuousVars[index] = ac_var;
-  else
-    allContinuousVars[index] = ac_var;
+  if (variablesRep) variablesRep->allContinuousVars[index] = ac_var;
+  else              allContinuousVars[index] = ac_var;
 }
 
 
@@ -931,189 +832,111 @@ inline const IntVector& Variables::all_discrete_int_variables() const
 
 inline void Variables::all_discrete_int_variables(const IntVector& adi_vars)
 {
-  if (variablesRep)
-    variablesRep->allDiscreteIntVars.assign(adi_vars);
-  else
-    allDiscreteIntVars.assign(adi_vars);
+  if (variablesRep) variablesRep->allDiscreteIntVars.assign(adi_vars);
+  else              allDiscreteIntVars.assign(adi_vars);
 }
 
 
 inline void Variables::all_discrete_int_variable(int adi_var, size_t index)
 {
-  if (variablesRep)
-    variablesRep->allDiscreteIntVars[index] = adi_var;
-  else
-    allDiscreteIntVars[index] = adi_var;
+  if (variablesRep) variablesRep->allDiscreteIntVars[index] = adi_var;
+  else              allDiscreteIntVars[index] = adi_var;
 }
 
 
 inline const RealVector& Variables::all_discrete_real_variables() const
 {
-  return (variablesRep) ? variablesRep->allDiscreteRealVars
-                        : allDiscreteRealVars;
+  return (variablesRep) ? variablesRep->allDiscreteRealVars :
+    allDiscreteRealVars;
 }
 
 
 inline void Variables::all_discrete_real_variables(const RealVector& adr_vars)
 {
-  if (variablesRep)
-    variablesRep->allDiscreteRealVars.assign(adr_vars);
-  else
-    allDiscreteRealVars.assign(adr_vars);
+  if (variablesRep) variablesRep->allDiscreteRealVars.assign(adr_vars);
+  else              allDiscreteRealVars.assign(adr_vars);
 }
 
 
 inline void Variables::
 all_discrete_real_variable(const Real& adr_var, size_t index)
 {
-  if (variablesRep)
-    variablesRep->allDiscreteRealVars[index] = adr_var;
-  else
-    allDiscreteRealVars[index] = adr_var;
+  if (variablesRep) variablesRep->allDiscreteRealVars[index] = adr_var;
+  else              allDiscreteRealVars[index] = adr_var;
 }
 
 
 inline StringMultiArrayView Variables::all_continuous_variable_labels() const
-{
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_continuous_labels(0, acv()) :
-    sharedVarsData.all_continuous_labels(0, acv());
-}
+{ return shared_data().all_continuous_labels(0, acv()); }
 
 
 inline void Variables::
 all_continuous_variable_labels(StringMultiArrayConstView acv_labels)
-{
-  if (variablesRep)
-    variablesRep->sharedVarsData.all_continuous_labels(acv_labels, 0, acv());
-  else
-    sharedVarsData.all_continuous_labels(acv_labels, 0, acv());
-}
+{ shared_data().all_continuous_labels(acv_labels, 0, acv()); }
 
 
 inline void Variables::
 all_continuous_variable_label(const String& acv_label, size_t index)
-{
-  if (variablesRep)
-    variablesRep->sharedVarsData.all_continuous_label(acv_label, index);
-  else
-    sharedVarsData.all_continuous_label(acv_label, index);
-}
+{ shared_data().all_continuous_label(acv_label, index); }
 
 
 inline StringMultiArrayView Variables::all_discrete_int_variable_labels() const
-{
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_discrete_int_labels(0, adiv()) :
-    sharedVarsData.all_discrete_int_labels(0, adiv());
-}
+{ return shared_data().all_discrete_int_labels(0, adiv()); }
 
 
 inline void Variables::
 all_discrete_int_variable_labels(StringMultiArrayConstView adiv_labels)
-{
-  if (variablesRep)
-    variablesRep->
-      sharedVarsData.all_discrete_int_labels(adiv_labels, 0, adiv());
-  else
-    sharedVarsData.all_discrete_int_labels(adiv_labels, 0, adiv());
-}
+{ shared_data().all_discrete_int_labels(adiv_labels, 0, adiv()); }
 
 
 inline void Variables::
 all_discrete_int_variable_label(const String& adiv_label, size_t index)
-{
-  if (variablesRep)
-    variablesRep->sharedVarsData.all_discrete_int_label(adiv_label, index);
-  else
-    sharedVarsData.all_discrete_int_label(adiv_label, index);
-}
+{ shared_data().all_discrete_int_label(adiv_label, index); }
 
 
 inline StringMultiArrayView Variables::all_discrete_real_variable_labels() const
-{
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_discrete_real_labels(0, adrv()) :
-    sharedVarsData.all_discrete_real_labels(0, adrv());
-}
+{ return shared_data().all_discrete_real_labels(0, adrv()); }
 
 
 inline void Variables::
 all_discrete_real_variable_labels(StringMultiArrayConstView adrv_labels)
-{
-  if (variablesRep)
-    variablesRep->
-      sharedVarsData.all_discrete_real_labels(adrv_labels, 0, adrv());
-  else
-    sharedVarsData.all_discrete_real_labels(adrv_labels, 0, adrv());
-}
+{ shared_data().all_discrete_real_labels(adrv_labels, 0, adrv()); }
 
 
 inline void Variables::
 all_discrete_real_variable_label(const String& adrv_label, size_t index)
-{
-  if (variablesRep)
-    variablesRep->sharedVarsData.all_discrete_real_label(adrv_label, index);
-  else
-    sharedVarsData.all_discrete_real_label(adrv_label, index);
-}
+{ shared_data().all_discrete_real_label(adrv_label, index); }
 
 
 inline UShortMultiArrayConstView Variables::
 all_continuous_variable_types() const
-{
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_continuous_types(0, acv()) :
-    sharedVarsData.all_continuous_types(0, acv());
-}
+{ return shared_data().all_continuous_types(0, acv()); }
 
 
 inline UShortMultiArrayConstView Variables::
 all_discrete_int_variable_types() const
-{
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_discrete_int_types(0, adiv()) :
-    sharedVarsData.all_discrete_int_types(0, adiv());
-}
+{ return shared_data().all_discrete_int_types(0, adiv()); }
 
 
 inline UShortMultiArrayConstView Variables::
 all_discrete_real_variable_types() const
-{
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_discrete_real_types(0, adrv()) :
-    sharedVarsData.all_discrete_real_types(0, adrv());
-}
+{ return shared_data().all_discrete_real_types(0, adrv()); }
 
 
 inline SizetMultiArrayConstView Variables::all_continuous_variable_ids() const
-{
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.all_continuous_ids(0, acv()) :
-    sharedVarsData.all_continuous_ids(0, acv());
-}
+{ return shared_data().all_continuous_ids(0, acv()); }
 
 
 inline const std::pair<short,short>& Variables::view() const
-{
-  return (variablesRep) ? variablesRep->sharedVarsData.view() :
-    sharedVarsData.view();
-}
+{ return shared_data().view(); }
 
 
 inline const String& Variables::variables_id() const
-{
-  return (variablesRep) ? variablesRep->sharedVarsData.id() :
-    sharedVarsData.id();
-}
+{ return shared_data().id(); }
 
 
 inline const SizetArray& Variables::variables_components_totals() const
-{
-  return (variablesRep) ?
-    variablesRep->sharedVarsData.components_totals() :
-    sharedVarsData.components_totals();
-}
+{ return shared_data().components_totals(); }
 
 
 inline bool Variables::is_null() const

@@ -31,8 +31,10 @@ namespace Dakota {
 SharedVariablesDataRep::
 SharedVariablesDataRep(const ProblemDescDB& problem_db,
 		       const std::pair<short,short>& view):
-  variablesId(problem_db.get_string("variables.id")), variablesView(view),
-  variablesCompsTotals(12, 0), referenceCount(1)
+  variablesId(problem_db.get_string("variables.id")),
+  variablesCompsTotals(12, 0), variablesView(view), cvStart(0), divStart(0),
+  drvStart(0), icvStart(0), idivStart(0), idrvStart(0), numCV(0), numDIV(0),
+  numDRV(0), numICV(0), numIDIV(0), numIDRV(0), referenceCount(1)
 {
   size_t num_cdv, num_ddrv, num_ddsiv, num_ddsrv, num_dsrv, num_dssiv, count;
   // continuous design
@@ -189,114 +191,116 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
   }
   allContinuousLabels.resize(boost::extents[num_acv]);
 
-  int cv_start = 0, div_start = 0, drv_start = 0;
+  int acv_offset = 0, adiv_offset = 0, adrv_offset = 0;
   // design
   copy_data_partial(problem_db.get_sa("variables.continuous_design.labels"),
-    allContinuousLabels, cv_start);
-  cv_start += num_cdv;
+    allContinuousLabels, acv_offset);
+  acv_offset += num_cdv;
   if (relax) {
     copy_data_partial(problem_db.get_sa(
-      "variables.discrete_design_range.labels"), allContinuousLabels, cv_start);
-    cv_start += num_ddrv;
+      "variables.discrete_design_range.labels"),
+      allContinuousLabels, acv_offset);
+    acv_offset += num_ddrv;
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_design_set_int.labels"),
-      allContinuousLabels, cv_start);
-    cv_start += num_ddsiv;
+      allContinuousLabels, acv_offset);
+    acv_offset += num_ddsiv;
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_design_set_real.labels"),
-      allContinuousLabels, cv_start);
-    cv_start += num_ddsrv;
+      allContinuousLabels, acv_offset);
+    acv_offset += num_ddsrv;
   }
   else {
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_design_range.labels"),
-      allDiscreteIntLabels, div_start);
-    div_start += num_ddrv;
+      allDiscreteIntLabels, adiv_offset);
+    adiv_offset += num_ddrv;
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_design_set_int.labels"),
-      allDiscreteIntLabels, div_start);
-    div_start += num_ddsiv;
+      allDiscreteIntLabels, adiv_offset);
+    adiv_offset += num_ddsiv;
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_design_set_real.labels"),
-      allDiscreteRealLabels, drv_start);
-    drv_start += num_ddsrv;
+      allDiscreteRealLabels, adrv_offset);
+    adrv_offset += num_ddsrv;
   }
   // aleatory uncertain
   copy_data_partial(problem_db.get_sa(
     "variables.continuous_aleatory_uncertain.labels"),
-    allContinuousLabels, cv_start);
-  cv_start += num_cauv;
+    allContinuousLabels, acv_offset);
+  acv_offset += num_cauv;
   if (relax) {
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_aleatory_uncertain_int.labels"),
-      allContinuousLabels, cv_start);
-    cv_start += num_dauiv;
+      allContinuousLabels, acv_offset);
+    acv_offset += num_dauiv;
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_aleatory_uncertain_real.labels"),
-      allContinuousLabels, cv_start);
-    cv_start += num_daurv;
+      allContinuousLabels, acv_offset);
+    acv_offset += num_daurv;
   }
   else {
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_aleatory_uncertain_int.labels"),
-      allDiscreteIntLabels, div_start);
-    div_start += num_dauiv;
+      allDiscreteIntLabels, adiv_offset);
+    adiv_offset += num_dauiv;
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_aleatory_uncertain_real.labels"),
-      allDiscreteRealLabels, drv_start);
-    drv_start += num_daurv;
+      allDiscreteRealLabels, adrv_offset);
+    adrv_offset += num_daurv;
   }
   // epistemic uncertain
   copy_data_partial(problem_db.get_sa(
     "variables.continuous_epistemic_uncertain.labels"),
-    allContinuousLabels, cv_start);
-  cv_start += num_ceuv;
+    allContinuousLabels, acv_offset);
+  acv_offset += num_ceuv;
   if (relax) {
     copy_data_partial(problem_db.get_sa(
      "variables.discrete_epistemic_uncertain_int.labels"),
-     allContinuousLabels, cv_start);
-    cv_start += num_deuiv;
+     allContinuousLabels, acv_offset);
+    acv_offset += num_deuiv;
     copy_data_partial(problem_db.get_sa(
      "variables.discrete_epistemic_uncertain_real.labels"),
-     allContinuousLabels, cv_start);
-    cv_start += num_deurv;
+     allContinuousLabels, acv_offset);
+    acv_offset += num_deurv;
   }
   else {
     copy_data_partial(problem_db.get_sa(
      "variables.discrete_epistemic_uncertain_int.labels"),
-     allDiscreteIntLabels, div_start);
-    div_start += num_deuiv;
+     allDiscreteIntLabels, adiv_offset);
+    adiv_offset += num_deuiv;
     copy_data_partial(problem_db.get_sa(
      "variables.discrete_epistemic_uncertain_real.labels"),
-     allDiscreteRealLabels, drv_start);
-    drv_start += num_deurv;
+     allDiscreteRealLabels, adrv_offset);
+    adrv_offset += num_deurv;
   }
   // state
   copy_data_partial(problem_db.get_sa("variables.continuous_state.labels"),
-    allContinuousLabels, cv_start);
+    allContinuousLabels, acv_offset);
   if (relax) {
     copy_data_partial(problem_db.get_sa(
-      "variables.discrete_state_range.labels"), allContinuousLabels, cv_start);
-    cv_start += num_dsrv;
+      "variables.discrete_state_range.labels"),
+      allContinuousLabels, acv_offset);
+    acv_offset += num_dsrv;
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_state_set_int.labels"),
-      allContinuousLabels, cv_start);
-    cv_start += num_dssiv;
+      allContinuousLabels, acv_offset);
+    acv_offset += num_dssiv;
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_state_set_real.labels"),
-      allContinuousLabels, cv_start);
+      allContinuousLabels, acv_offset);
   }
   else {
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_state_range.labels"),
-      allDiscreteIntLabels, div_start);
-    div_start += num_dsrv;
+      allDiscreteIntLabels, adiv_offset);
+    adiv_offset += num_dsrv;
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_state_set_int.labels"),
-      allDiscreteIntLabels, div_start);
+      allDiscreteIntLabels, adiv_offset);
     copy_data_partial(problem_db.get_sa(
       "variables.discrete_state_set_real.labels"),
-      allDiscreteRealLabels, drv_start);
+      allDiscreteRealLabels, adrv_offset);
   }
 
   initialize_all_continuous_types(relax);
@@ -318,8 +322,9 @@ SharedVariablesDataRep(const ProblemDescDB& problem_db,
 SharedVariablesDataRep::
 SharedVariablesDataRep(const std::pair<short,short>& view,
 		       const SizetArray& vars_comps_totals):
-  variablesView(view), variablesCompsTotals(vars_comps_totals),
-  referenceCount(1)
+  variablesCompsTotals(vars_comps_totals), variablesView(view), cvStart(0),
+  divStart(0), drvStart(0), icvStart(0), idivStart(0), idrvStart(0), numCV(0),
+  numDIV(0), numDRV(0), numICV(0), numIDIV(0), numIDRV(0), referenceCount(1)
 {
   // totals are sufficient to size variables
   bool relax = ( variablesView.first == RELAXED_ALL ||

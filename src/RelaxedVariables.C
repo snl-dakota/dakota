@@ -140,33 +140,36 @@ void RelaxedVariables::build_active_views()
     num_msv  = num_csv + num_dsv;
 
   // Initialize active views
-  divStart = drvStart = numDIV = numDRV = 0;
+  size_t cv_start, num_cv;
   switch (sharedVarsData.view().first) {
   case EMPTY:
     Cerr << "Error: active view cannot be EMPTY in RelaxedVariables."
 	 << std::endl; abort_handler(-1);             break;
   case RELAXED_ALL:
     // start at the beginning
-    cvStart = 0; numCV = num_mdv + num_muv + num_msv; break;
+    cv_start = 0; num_cv = num_mdv + num_muv + num_msv; break;
   case RELAXED_DESIGN:
     // start at the beginning
-    cvStart = 0; numCV = num_mdv;                     break;
+    cv_start = 0; num_cv = num_mdv;                     break;
   case RELAXED_ALEATORY_UNCERTAIN:
     // skip over the relaxed design variables
-    cvStart = num_mdv; numCV = num_mauv;              break;
+    cv_start = num_mdv; num_cv = num_mauv;              break;
   case RELAXED_EPISTEMIC_UNCERTAIN:
     // skip over the relaxed design and aleatory variables
-    cvStart = num_mdv+num_mauv;  numCV = num_meuv;    break;
+    cv_start = num_mdv+num_mauv;  num_cv = num_meuv;    break;
   case RELAXED_UNCERTAIN:
     // skip over the relaxed design variables
-    cvStart = num_mdv; numCV = num_muv;               break;
+    cv_start = num_mdv; num_cv = num_muv;               break;
   case RELAXED_STATE:
     // skip over the relaxed design and uncertain variables
-    cvStart = num_mdv + num_muv; numCV = num_msv;     break;
+    cv_start = num_mdv + num_muv; num_cv = num_msv;     break;
   }
-  if (numCV)
+  sharedVarsData.cv_start(cv_start); sharedVarsData.cv(num_cv);
+  sharedVarsData.div_start(0);       sharedVarsData.div(0);
+  sharedVarsData.drv_start(0);       sharedVarsData.drv(0);
+  if (num_cv)
     continuousVars
-      = RealVector(Teuchos::View, &allContinuousVars[cvStart], numCV);
+      = RealVector(Teuchos::View, &allContinuousVars[cv_start], num_cv);
 }
 
 
@@ -183,33 +186,36 @@ void RelaxedVariables::build_inactive_views()
     num_msv  = vc_totals[9] + vc_totals[10] + vc_totals[11];
 
   // Initialize inactive views
-  idivStart = idrvStart = numIDIV = numIDRV = 0;
+  size_t icv_start, num_icv;
   switch (sharedVarsData.view().second) {
   case EMPTY:
-    icvStart = numICV = 0;                            break;
+    icv_start = num_icv = 0;                            break;
   case RELAXED_ALL:
     Cerr << "Error: inactive view cannot be RELAXED_ALL in RelaxedVariables."
 	 << std::endl;
     abort_handler(-1);                                break;
   case RELAXED_DESIGN:
     // start at the beginning
-    icvStart = 0;                  numICV = num_mdv;  break;
+    icv_start = 0;                  num_icv = num_mdv;  break;
   case RELAXED_ALEATORY_UNCERTAIN:
     // skip over the relaxed design variables
-    icvStart = num_mdv;            numICV = num_mauv; break;
+    icv_start = num_mdv;            num_icv = num_mauv; break;
   case RELAXED_EPISTEMIC_UNCERTAIN:
     // skip over the relaxed design and aleatory variables
-    icvStart = num_mdv + num_mauv; numICV = num_meuv; break;
+    icv_start = num_mdv + num_mauv; num_icv = num_meuv; break;
   case RELAXED_UNCERTAIN:
     // skip over the relaxed design variables
-    icvStart = num_mdv;            numICV = num_muv;  break;
+    icv_start = num_mdv;            num_icv = num_muv;  break;
   case RELAXED_STATE:
     // skip over the relaxed design and uncertain variables
-    icvStart = num_mdv + num_muv;  numICV = num_msv;  break;
+    icv_start = num_mdv + num_muv;  num_icv = num_msv;  break;
   }
-  if (numICV)
+  sharedVarsData.icv_start(icv_start); sharedVarsData.icv(num_icv);
+  sharedVarsData.idiv_start(0);        sharedVarsData.idiv(0);
+  sharedVarsData.idrv_start(0);        sharedVarsData.idrv(0);
+  if (num_icv)
     inactiveContinuousVars
-      = RealVector(Teuchos::View, &allContinuousVars[icvStart], numICV);
+      = RealVector(Teuchos::View, &allContinuousVars[icv_start], num_icv);
 }
 
 

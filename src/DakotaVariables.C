@@ -37,8 +37,6 @@ namespace Dakota {
 Variables::
 Variables(BaseConstructor, const ProblemDescDB& problem_db,
 	  const std::pair<short,short>& view):
-  cvStart(0), divStart(0), drvStart(0), icvStart(0), idivStart(0), idrvStart(0),
-  numCV(0), numDIV(0), numDRV(0), numICV(0), numIDIV(0), numIDRV(0),
   sharedVarsData(problem_db, view), variablesRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -57,8 +55,6 @@ Variables(BaseConstructor, const ProblemDescDB& problem_db,
     problems in ~Variables). */
 Variables::
 Variables(BaseConstructor, const SharedVariablesData& svd):
-  cvStart(0), divStart(0), drvStart(0), icvStart(0), idivStart(0), idrvStart(0),
-  numCV(0), numDIV(0), numDRV(0), numICV(0), numIDIV(0), numIDRV(0),
   sharedVarsData(svd), variablesRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
@@ -73,8 +69,6 @@ Variables(BaseConstructor, const SharedVariablesData& svd):
     makes it necessary to check for NULL in the copy constructor, assignment
     operator, and destructor. */
 Variables::Variables():
-  cvStart(0), divStart(0), drvStart(0), icvStart(0), idivStart(0), idrvStart(0),
-  numCV(0), numDIV(0), numDRV(0), numICV(0), numIDIV(0), numIDRV(0),
   variablesRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
