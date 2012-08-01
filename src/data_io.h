@@ -26,18 +26,19 @@ namespace Dakota {
 
 
 /// global std::ostream insertion operator for std::set
-template <class T>
+template <typename T>
 std::ostream& operator<<(std::ostream& s, const std::set<T>& data)
 {
+  size_t width = write_precision+7;
   for (typename std::set<T>::const_iterator cit = data.begin();
        cit != data.end(); ++cit)
-    s << "                     " << std::setw(write_precision+7) << *cit <<'\n';
+    s << "                     " << std::setw(width) << *cit << '\n';
   return s;
 }
 
 
 /// global MPIUnpackBuffer extraction operator for std::set
-template <class T>
+template <typename T>
 MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::set<T>& data)
 {
   data.clear();
@@ -53,7 +54,7 @@ MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::set<T>& data)
 
 
 /// global MPIPackBuffer insertion operator for std::set
-template <class T>
+template <typename T>
 MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::set<T>& data)
 {
   size_t len = data.size();
@@ -61,6 +62,47 @@ MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::set<T>& data)
   for (typename std::set<T>::const_iterator cit = data.begin();
        cit != data.end(); ++cit)
     s << *cit;
+  return s;
+}
+
+
+/// global std::ostream insertion operator for std::map
+template <typename KeyT, typename ValueT>
+std::ostream& operator<<(std::ostream& s, const std::map<KeyT, ValueT>& data)
+{
+  size_t width = write_precision+7;
+  for (typename std::map<KeyT, ValueT>::const_iterator cit = data.begin();
+       cit != data.end(); ++cit)
+    s << "                     " << std::setw(width) << cit->first
+      << "  " << std::setw(width) << cit->second << '\n';
+  return s;
+}
+
+
+/// global MPIUnpackBuffer extraction operator for std::map
+template <typename KeyT, typename ValueT>
+MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, std::map<KeyT, ValueT>& data)
+{
+  data.clear();
+  size_t i, len; KeyT key; ValueT val;
+  s >> len;
+  for (i=0; i<len; ++i){
+    s >> key >> val; 
+    data[key] = val;
+  }
+  return s;
+}
+
+
+/// global MPIPackBuffer insertion operator for std::map
+template <typename KeyT, typename ValueT>
+MPIPackBuffer& operator<<(MPIPackBuffer& s, const std::map<KeyT, ValueT>& data)
+{
+  size_t len = data.size();
+  s << len;
+  for (typename std::map<KeyT, ValueT>::const_iterator cit = data.begin();
+       cit != data.end(); ++cit)
+    s << cit->first << cit->second;
   return s;
 }
 
@@ -950,7 +992,7 @@ void write_col_vector_trans(OStreamType& s, OrdinalType col,
 
 
 /// read array from std::istream
-template <class ArrayT>
+template <typename ArrayT>
 inline void array_read(std::istream& s, ArrayT& v)
 {
   typename ArrayT::size_type len = v.size();
@@ -960,7 +1002,7 @@ inline void array_read(std::istream& s, ArrayT& v)
 
 
 /// write array to std::ostream
-template <class ArrayT>
+template <typename ArrayT>
 inline void array_write(std::ostream& s, const ArrayT& v)
 {
   s << std::scientific << std::setprecision(write_precision);
@@ -972,7 +1014,7 @@ inline void array_write(std::ostream& s, const ArrayT& v)
 
 
 /// write list to std::ostream
-template <class ListT>
+template <typename ListT>
 inline void list_write(const ListT& l, std::ostream& s)
 {
   BOOST_FOREACH(const typename ListT::value_type& entry, l) {
@@ -982,25 +1024,25 @@ inline void list_write(const ListT& l, std::ostream& s)
 
 
 /// global std::istream extraction operator for std::vector
-template <class T>
+template <typename T>
 inline std::istream& operator>>(std::istream& s, std::vector<T>& data)
 { array_read(s, data); return s; }
 
 
 /// global std::ostream insertion operator for std::vector
-template <class T>
+template <typename T>
 inline std::ostream& operator<<(std::ostream& s, const std::vector<T>& data)
 { array_write(s, data); return s; }
 
 
 /// global std::ostream insertion operator for std::list
-template <class T>
+template <typename T>
 inline std::ostream& operator<<(std::ostream& s, const std::list<T>& data)
 { list_write(data, s); return s; }
 
 
 /// write array to std::ostream with labels
-template <class ArrayT>
+template <typename ArrayT>
 inline void array_write(std::ostream& s, const ArrayT& v,
                         const std::vector<String>& label_array)
 {
@@ -1019,7 +1061,7 @@ inline void array_write(std::ostream& s, const ArrayT& v,
 
 
 /// write array to std::ostream (APREPRO format)
-template <class ArrayT>
+template <typename ArrayT>
 inline void array_write_aprepro(std::ostream& s, const ArrayT& v,
                                 const std::vector<String>& label_array)
 {
@@ -1043,7 +1085,7 @@ inline void array_write_aprepro(std::ostream& s, const ArrayT& v,
 //                              order of the argument list; mv to data_io.h??
 /// Write array to ostream as a row vector; precede with length if
 /// write_len = true
-template <class ArrayT>
+template <typename ArrayT>
 inline void array_write_annotated(std::ostream& s, const ArrayT& v,
 				  bool write_len)
 {

@@ -85,17 +85,13 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   // SILENT_OUTPUT additionally turns off fd_gradient parameter set reporting.
   outputLevel(problem_db.get_short("method.output")),
   discreteDesignSetIntValues(
-    problem_db.get_isa("variables.discrete_design_set_int.set_values")),
+    problem_db.get_isa("variables.discrete_design_set_int.values")),
   discreteDesignSetRealValues(
-    problem_db.get_rsa("variables.discrete_design_set_real.set_values")),
-  discreteUncertainSetIntValues(
-    problem_db.get_isa("variables.discrete_uncertain_set_int.set_values")),
-  discreteUncertainSetRealValues(
-    problem_db.get_rsa("variables.discrete_uncertain_set_real.set_values")),
+    problem_db.get_rsa("variables.discrete_design_set_real.values")),
   discreteStateSetIntValues(
-    problem_db.get_isa("variables.discrete_state_set_int.set_values")),
+    problem_db.get_isa("variables.discrete_state_set_int.values")),
   discreteStateSetRealValues(
-    problem_db.get_rsa("variables.discrete_state_set_real.set_values")),
+    problem_db.get_rsa("variables.discrete_state_set_real.values")),
   distParams(problem_db.get_rv("variables.normal_uncertain.means"),
     problem_db.get_rv("variables.normal_uncertain.std_deviations"),
     problem_db.get_rv("variables.normal_uncertain.lower_bounds"),
@@ -146,10 +142,8 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
     problem_db.get_rva("variables.discrete_interval_uncertain.basic_probs"),
     problem_db.get_iva("variables.discrete_interval_uncertain.lower_bounds"),
     problem_db.get_iva("variables.discrete_interval_uncertain.upper_bounds"),
-    problem_db.get_isa("variables.discrete_uncertain_set_int.set_values"),
-    problem_db.get_rva("variables.discrete_uncertain_set_int.basic_probs"),
-    problem_db.get_rsa("variables.discrete_uncertain_set_real.set_values"),
-    problem_db.get_rva("variables.discrete_uncertain_set_real.basic_probs")),
+    problem_db.get_irma("variables.discrete_uncertain_set_int.values_probs"),
+    problem_db.get_rrma("variables.discrete_uncertain_set_real.values_probs")),
   primaryRespFnWts(probDescDB.get_rv("responses.primary_response_fn_weights")),
   modelId(problem_db.get_string("model.id")), modelEvalCntr(0),
   estDerivsFlag(false), evaluationCapacity(1), initCommsBcastFlag(false),

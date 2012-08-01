@@ -127,9 +127,17 @@ private:
   /// helper function for performing a discrete step in an integer set variable
   void dsi_step(size_t d_index, size_t di_index, int increment,
 		const IntSet& values, Variables& vars);
+  /// helper function for performing a discrete step in an uncertain
+  /// integer set variable
+  void dsi_step(size_t d_index, size_t di_index, int increment,
+		const IntRealMap& vals_probs, Variables& vars);
   /// helper function for performing a discrete step in a real set variable
   void dsr_step(size_t d_index, size_t dr_index, int increment,
 		const RealSet& values, Variables& vars);
+  /// helper function for performing a discrete step in an uncertain
+  /// real set variable
+  void dsr_step(size_t d_index, size_t dr_index, int increment,
+		const RealRealMap& vals_probs, Variables& vars);
 
   //
   //- Heading: Data
@@ -421,7 +429,7 @@ dsi_step(size_t d_index, size_t di_index, int increment, const IntSet& values,
 	 Variables& vars)
 {
   // valid values and indices are checked for set types
-  size_t index0 = (int)set_value_to_index(initialDIVPoint[di_index], values);
+  size_t index0 = set_value_to_index(initialDIVPoint[di_index], values);
   if (index0 == _NPOS) {
     Cerr << "\nError: value " << initialDIVPoint[di_index] << " does not exist "
 	 << "within discrete integer set in ParamStudy::dsi_step()."<<std::endl;
@@ -430,6 +438,28 @@ dsi_step(size_t d_index, size_t di_index, int increment, const IntSet& values,
   int index = index0 + increment * discStepVector[d_index]; // +/- increments
   if (index >= 0 && index < values.size())
     vars.discrete_int_variable(set_index_to_value(index, values), di_index);
+  else {
+    Cerr << "\nError: index " << index << " out of range within discrete "
+	 << "integer set in ParamStudy::dsi_step()." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+inline void ParamStudy::
+dsi_step(size_t d_index, size_t di_index, int increment,
+	 const IntRealMap& vals_probs, Variables& vars)
+{
+  // valid values and indices are checked for set types
+  size_t index0 = map_key_to_index(initialDIVPoint[di_index], vals_probs);
+  if (index0 == _NPOS) {
+    Cerr << "\nError: value " << initialDIVPoint[di_index] << " does not exist "
+	 << "within discrete integer set in ParamStudy::dsi_step()."<<std::endl;
+    abort_handler(-1);
+  }
+  int index = index0 + increment * discStepVector[d_index]; // +/- increments
+  if (index >= 0 && index < vals_probs.size())
+    vars.discrete_int_variable(map_index_to_key(index, vals_probs), di_index);
   else {
     Cerr << "\nError: index " << index << " out of range within discrete "
 	 << "integer set in ParamStudy::dsi_step()." << std::endl;
@@ -452,6 +482,28 @@ dsr_step(size_t d_index, size_t dr_index, int increment,
   int index = index0 + increment * discStepVector[d_index]; // +/- increments
   if (index >= 0 && index < values.size())
     vars.discrete_real_variable(set_index_to_value(index, values), dr_index);
+  else {
+    Cerr << "\nError: index " << index << " out of range within discrete "
+	 << "real set in ParamStudy::dsr_step()." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+inline void ParamStudy::
+dsr_step(size_t d_index, size_t dr_index, int increment,
+	 const RealRealMap& vals_probs, Variables& vars)
+{
+  // valid values and indices are checked for set types
+  size_t index0 = map_key_to_index(initialDRVPoint[dr_index], vals_probs);
+  if (index0 == _NPOS) {
+    Cerr << "\nError: value " << initialDRVPoint[dr_index] << " does not exist "
+	 << "within discrete real set in ParamStudy::dsr_step()." << std::endl;
+    abort_handler(-1);
+  }
+  int index = index0 + increment * discStepVector[d_index]; // +/- increments
+  if (index >= 0 && index < vals_probs.size())
+    vars.discrete_real_variable(map_index_to_key(index, vals_probs), dr_index);
   else {
     Cerr << "\nError: index " << index << " out of range within discrete "
 	 << "real set in ParamStudy::dsr_step()." << std::endl;

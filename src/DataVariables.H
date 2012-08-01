@@ -403,22 +403,16 @@ public:
   /// variable (from the \c discrete_interval_uncertain \c upper_bounds
   /// specification in \ref VarEUV)
   IntVectorArray discreteIntervalUncUpperBounds;
-  /// complete set of admissible values for each of the discrete epistemic
-  /// uncertain variables defined by an integer set (from the \c
-  /// discrete_uncertain_set_integer \c set_values specification in \ref VarEUV)
-  IntSetArray discreteUncSetInt;
-  /// Probability values per set value per epistemic uncertain integer set
-  /// variable (from the \c discrete_uncertain_set_integer \c set_probs
-  /// specification in \ref VarEUV)
-  RealVectorArray discreteUncSetIntBasicProbs;
-  /// complete set of admissible values for each of the discrete epistemic
-  /// uncertain variables defined by a real set (from the \c
-  /// discrete_uncertain_set_real \c set_values specification in \ref VarEUV)
-  RealSetArray discreteUncSetReal;
-  /// Probability values per set value per epistemic uncertain real set
-  /// variable (from the \c discrete_uncertain_set_real \c set_probs
-  /// specification in \ref VarEUV)
-  RealVectorArray discreteUncSetRealBasicProbs;
+  /// complete set of admissible values with associated basic probability
+  /// assignments for each of the discrete epistemic uncertain variables
+  /// defined by an integer set (from the \c discrete_uncertain_set_integer
+  /// \c set_values specification in \ref VarEUV)
+  IntRealMapArray discreteUncSetIntValuesProbs;
+  /// complete set of admissible values with associated basic probability
+  /// assignments for each of the discrete epistemic uncertain variables
+  /// defined by a real set (from the \c discrete_uncertain_set_real
+  /// \c set_values specification in \ref VarEUV)
+  RealRealMapArray discreteUncSetRealValuesProbs;
 
   // State arrays
 

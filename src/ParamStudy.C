@@ -258,10 +258,10 @@ void ParamStudy::vector_loop()
     = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsr_values
     = iteratedModel.discrete_design_set_real_values();
-  const IntSetArray&  dusi_values
-    = iteratedModel.discrete_uncertain_set_int_values();
-  const RealSetArray& dusr_values
-    = iteratedModel.discrete_uncertain_set_real_values();
+  const IntRealMapArray&  dusi_vals_probs
+    = iteratedModel.discrete_uncertain_set_int_values_probabilities();
+  const RealRealMapArray& dusr_vals_probs
+    = iteratedModel.discrete_uncertain_set_real_values_probabilities();
   const IntSetArray&  dssi_values
     = iteratedModel.discrete_state_set_int_values();
   const RealSetArray& dssr_values
@@ -309,9 +309,9 @@ void ParamStudy::vector_loop()
     for (j=0; j<num_diuv; ++j, ++d_cntr, ++di_cntr)                   // deuiv 1
       dri_step(d_cntr, di_cntr, i, vars);
     for (j=0; j<num_dusiv; ++j, ++d_cntr, ++di_cntr)                  // deuiv 2
-      dsi_step(d_cntr, di_cntr, i, dusi_values[j], vars);
+      dsi_step(d_cntr, di_cntr, i, dusi_vals_probs[j], vars);
     for (j=0; j<num_deurv; ++j, ++d_cntr, ++dr_cntr)                  // deurv
-      dsr_step(d_cntr, dr_cntr, i, dusr_values[j], vars);
+      dsr_step(d_cntr, dr_cntr, i, dusr_vals_probs[j], vars);
     for (j=0; j<num_csv; ++j, ++c_cntr)                               // csv
       c_step(c_cntr, i, vars);
     for (j=0; j<num_dsriv; ++j, ++d_cntr, ++di_cntr)                  // dsiv 1
@@ -343,10 +343,10 @@ void ParamStudy::centered_loop()
     = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsr_values
     = iteratedModel.discrete_design_set_real_values();
-  const IntSetArray&  dusi_values
-    = iteratedModel.discrete_uncertain_set_int_values();
-  const RealSetArray& dusr_values
-    = iteratedModel.discrete_uncertain_set_real_values();
+  const IntRealMapArray&  dusi_vals_probs
+    = iteratedModel.discrete_uncertain_set_int_values_probabilities();
+  const RealRealMapArray& dusr_vals_probs
+    = iteratedModel.discrete_uncertain_set_real_values_probabilities();
   const IntSetArray&  dssi_values
     = iteratedModel.discrete_state_set_int_values();
   const RealSetArray& dssr_values
@@ -469,13 +469,13 @@ void ParamStudy::centered_loop()
 	  size_t offset_d   = k - num_cdv - num_cauv - num_ceuv,
 	         offset_di  = offset_d - num_ddsrv - num_daurv,
 	         offset_dsi = offset_di - num_ddiv - num_dauiv - num_diuv;
-	  dsi_step(offset_d, offset_di, i, dusi_values[offset_dsi], vars);
+	  dsi_step(offset_d, offset_di, i, dusi_vals_probs[offset_dsi], vars);
 	}
 	else if (k < num_dv + num_uv) {                                 // deurv
 	  size_t offset_d   = k - num_cdv - num_cauv - num_ceuv,
 	         offset_dr  = offset_d - num_ddiv - num_dauiv - num_deuiv,
 	         offset_dsr = offset_dr - num_ddsrv - num_daurv;
-	  dsr_step(offset_d, offset_dr, i, dusr_values[offset_dsr], vars);
+	  dsr_step(offset_d, offset_dr, i, dusr_vals_probs[offset_dsr], vars);
 	}
 	else if (k < num_dv + num_uv + num_csv)                           // csv
 	  c_step(k - num_ddv - num_dauv - num_deuv, i, vars);
@@ -514,10 +514,10 @@ void ParamStudy::multidim_loop()
     = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsr_values
     = iteratedModel.discrete_design_set_real_values();
-  const IntSetArray&  dusi_values
-    = iteratedModel.discrete_uncertain_set_int_values();
-  const RealSetArray& dusr_values
-    = iteratedModel.discrete_uncertain_set_real_values();
+  const IntRealMapArray&  dusi_vals_probs
+    = iteratedModel.discrete_uncertain_set_int_values_probabilities();
+  const RealRealMapArray& dusr_vals_probs
+    = iteratedModel.discrete_uncertain_set_real_values_probabilities();
   const IntSetArray& dssi_values
     = iteratedModel.discrete_state_set_int_values();
   const RealSetArray& dssr_values
@@ -566,9 +566,11 @@ void ParamStudy::multidim_loop()
     for (j=0; j<num_diuv; ++j, ++p_cntr, ++d_cntr, ++di_cntr)            // diuv
       dri_step(d_cntr, di_cntr, multidim_indices[p_cntr], vars);
     for (j=0; j<num_dusiv; ++j, ++p_cntr, ++d_cntr, ++di_cntr)          // dusiv
-      dsi_step(d_cntr, di_cntr, multidim_indices[p_cntr], dusi_values[j], vars);
+      dsi_step(d_cntr, di_cntr, multidim_indices[p_cntr],
+	       dusi_vals_probs[j], vars);
     for (j=0; j<num_dusrv; ++j, ++p_cntr, ++d_cntr, ++dr_cntr)          // dusrv
-      dsr_step(d_cntr, dr_cntr, multidim_indices[p_cntr], dusr_values[j], vars);
+      dsr_step(d_cntr, dr_cntr, multidim_indices[p_cntr],
+	       dusr_vals_probs[j], vars);
     for (j=0; j<num_csv; ++j, ++p_cntr, ++c_cntr)                         // csv
       c_step(c_cntr, multidim_indices[p_cntr], vars);
     for (j=0; j<num_dsriv; ++j, ++p_cntr, ++d_cntr, ++di_cntr)          // dsriv
@@ -604,10 +606,10 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
     = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsr_values
     = iteratedModel.discrete_design_set_real_values();
-  const IntSetArray& dusi_values
-    = iteratedModel.discrete_uncertain_set_int_values();
-  const RealSetArray& dusr_values
-    = iteratedModel.discrete_uncertain_set_real_values();
+  const IntRealMapArray& dusi_vals_probs
+    = iteratedModel.discrete_uncertain_set_int_values_probabilities();
+  const RealRealMapArray& dusr_vals_probs
+    = iteratedModel.discrete_uncertain_set_real_values_probabilities();
   const IntSetArray& dssi_values
     = iteratedModel.discrete_state_set_int_values();
   const RealSetArray& dssr_values
@@ -687,7 +689,7 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
       listDIVPoints[i][di_cntr] = truncate(list_of_pts[l_cntr]);
     for (j=0; j<num_dusiv; ++j, ++l_cntr, ++di_cntr) {
       int list_val = truncate(list_of_pts[l_cntr]);
-      if (dusi_values[j].find(list_val) != dusi_values[j].end())
+      if (dusi_vals_probs[j].find(list_val) != dusi_vals_probs[j].end())
 	listDIVPoints[i][di_cntr] = list_val;
       else {
 	Cerr << "Error: discrete uncertain integer set does not contain value "
@@ -697,7 +699,7 @@ bool ParamStudy::distribute_list_of_points(const RealVector& list_of_pts)
     }
     for (j=0; j<num_dusrv; ++j, ++l_cntr, ++dr_cntr) {
       const Real& list_val = list_of_pts[l_cntr];
-      if (dusr_values[j].find(list_val) != dusr_values[j].end())
+      if (dusr_vals_probs[j].find(list_val) != dusr_vals_probs[j].end())
 	listDRVPoints[i][dr_cntr] = list_val;
       else {
 	Cerr << "Error: discrete uncertain real set does not contain value "
@@ -831,10 +833,10 @@ void ParamStudy::distribute_partitions()
     = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsr_values
     = iteratedModel.discrete_design_set_real_values();
-  const IntSetArray& dusi_values
-    = iteratedModel.discrete_uncertain_set_int_values();
-  const RealSetArray& dusr_values
-    = iteratedModel.discrete_uncertain_set_real_values();
+  const IntRealMapArray& dusi_vals_probs
+    = iteratedModel.discrete_uncertain_set_int_values_probabilities();
+  const RealRealMapArray& dusr_vals_probs
+    = iteratedModel.discrete_uncertain_set_real_values_probabilities();
   const IntSetArray& dssi_values
     = iteratedModel.discrete_state_set_int_values();
   const RealSetArray& dssr_values
@@ -963,7 +965,7 @@ void ParamStudy::distribute_partitions()
     unsigned short part = variablePartitions[p_cntr];
     if (part) {
       initialDIVPoint[di_cntr] = di_l_bnds[di_cntr];
-      discStepVector[d_cntr]   = integer_step(dusi_values[i].size()-1, part);
+      discStepVector[d_cntr] = integer_step(dusi_vals_probs[i].size()-1, part);
     }
     else {
       initialDIVPoint[di_cntr] = di_vars[di_cntr];
@@ -974,7 +976,7 @@ void ParamStudy::distribute_partitions()
     unsigned short part = variablePartitions[p_cntr];
     if (part) {
       initialDRVPoint[dr_cntr] = dr_l_bnds[dr_cntr];
-      discStepVector[d_cntr]   = integer_step(dusr_values[i].size()-1, part);
+      discStepVector[d_cntr] = integer_step(dusr_vals_probs[i].size()-1, part);
     }
     else {
       initialDRVPoint[dr_cntr] = dr_vars[dr_cntr];
@@ -1076,10 +1078,10 @@ void ParamStudy::final_point_to_step_vector()
     = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsr_values
     = iteratedModel.discrete_design_set_real_values();
-  const IntSetArray& dusi_values
-    = iteratedModel.discrete_uncertain_set_int_values();
-  const RealSetArray& dusr_values
-    = iteratedModel.discrete_uncertain_set_real_values();
+  const IntRealMapArray& dusi_vals_probs
+    = iteratedModel.discrete_uncertain_set_int_values_probabilities();
+  const RealRealMapArray& dusr_vals_probs
+    = iteratedModel.discrete_uncertain_set_real_values_probabilities();
   const IntSetArray& dssi_values
     = iteratedModel.discrete_state_set_int_values();
   const RealSetArray& dssr_values
@@ -1148,13 +1150,13 @@ void ParamStudy::final_point_to_step_vector()
       truncate(finalPoint[f_cntr])-initialDIVPoint[di_cntr], numSteps);
   for (i=0; i<num_dusiv; ++i, ++d_cntr, ++di_cntr, ++f_cntr)
     discStepVector[d_cntr] = index_step(
-      set_value_to_index(initialDIVPoint[di_cntr],     dusi_values[i]),
-      set_value_to_index(truncate(finalPoint[f_cntr]), dusi_values[i]),
+      map_key_to_index(initialDIVPoint[di_cntr],     dusi_vals_probs[i]),
+      map_key_to_index(truncate(finalPoint[f_cntr]), dusi_vals_probs[i]),
       numSteps);
   for (i=0; i<num_dusrv; ++i, ++d_cntr, ++dr_cntr, ++f_cntr)
     discStepVector[d_cntr] = index_step(
-      set_value_to_index(initialDRVPoint[dr_cntr], dusr_values[i]),
-      set_value_to_index(finalPoint[f_cntr],       dusr_values[i]), numSteps);
+      map_key_to_index(initialDRVPoint[dr_cntr], dusr_vals_probs[i]),
+      map_key_to_index(finalPoint[f_cntr],       dusr_vals_probs[i]), numSteps);
 
   // state
   for (i=0; i<num_csv; ++i, ++c_cntr, ++f_cntr)
@@ -1266,29 +1268,29 @@ bool ParamStudy::check_sets(const IntVector& steps)
   d_index  += num_diuv;
   di_index += num_diuv;
   if (num_dusiv) {
-    const IntSetArray& dusi_values
-      = iteratedModel.discrete_state_set_int_values();
+    const IntRealMapArray& dusi_vals_probs
+      = iteratedModel.discrete_uncertain_set_int_values_probabilities();
     for (i=0; i<num_dusiv; ++i, ++s_index, ++d_index, ++di_index) {
-      int terminal_index = set_value_to_index(initialDIVPoint[di_index],
-	dusi_values[i]) + discStepVector[d_index] * steps[s_index];
-      if (terminal_index < 0 || terminal_index >= dusi_values[i].size()) {
+      int terminal_index = map_key_to_index(initialDIVPoint[di_index],
+	dusi_vals_probs[i]) + discStepVector[d_index] * steps[s_index];
+      if (terminal_index < 0 || terminal_index >= dusi_vals_probs[i].size()) {
 	Cerr << "\nError: ParamStudy index " << terminal_index
 	     << " not admissible for discrete uncertain int set of size "
-	     << dusi_values[i].size() << '.' << std::endl;
+	     << dusi_vals_probs[i].size() << '.' << std::endl;
 	err = true;
       }
     }
   }
   if (num_dusrv) {
-    const RealSetArray& dusr_values
-      = iteratedModel.discrete_state_set_real_values();
+    const RealRealMapArray& dusr_vals_probs
+      = iteratedModel.discrete_uncertain_set_real_values_probabilities();
     for (i=0; i<num_dusrv; ++i, ++s_index, ++d_index, ++dr_index) {
-      int terminal_index = set_value_to_index(initialDRVPoint[dr_index],
-	dusr_values[i]) + discStepVector[d_index] * steps[s_index];
-      if (terminal_index < 0 || terminal_index >= dusr_values[i].size()) {
+      int terminal_index = map_key_to_index(initialDRVPoint[dr_index],
+	dusr_vals_probs[i]) + discStepVector[d_index] * steps[s_index];
+      if (terminal_index < 0 || terminal_index >= dusr_vals_probs[i].size()) {
 	Cerr << "\nError: ParamStudy index " << terminal_index
 	     << " not admissible for discrete uncertain real set of size "
-	     << dusr_values[i].size() << '.' << std::endl;
+	     << dusr_vals_probs[i].size() << '.' << std::endl;
 	err = true;
       }
     }

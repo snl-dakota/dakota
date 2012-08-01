@@ -134,7 +134,7 @@ inline void copy_row_vector(const RealMatrix& m, RealMatrix::ordinalType i,
 
 
 /// copy Array<T> to T*
-template <class T>
+template <typename T>
 void copy_data(const std::vector<T>& dbv, T* ptr, const int ptr_len)
 {
   if (ptr_len != dbv.size()) { // could use <, but enforce exact match
@@ -245,7 +245,8 @@ void copy_data(const Teuchos::SerialDenseVector<OrdinalType, ScalarType>& sdv,
 }
 
 /// copy std::list<T> to std::vector<T>
-template <class T> void copy_data(const std::list<T>& dl, std::vector<T>& da)
+template <typename T> 
+void copy_data(const std::list<T>& dl, std::vector<T>& da)
 {
   size_t size_dl = dl.size();
   if (size_dl != da.size())
@@ -254,9 +255,9 @@ template <class T> void copy_data(const std::list<T>& dl, std::vector<T>& da)
 }
 
 /// copy std::list<T> to std::vector<std::vector<T> >
-template <class T> void 
-copy_data(const std::list<T>& dl, std::vector<std::vector<T> >& d2a,
-          size_t num_a, size_t a_len)
+template <typename T>
+void copy_data(const std::list<T>& dl, std::vector<std::vector<T> >& d2a,
+	       size_t num_a, size_t a_len)
 {
   size_t i, j, size_dl = dl.entries();
 
@@ -306,8 +307,8 @@ copy_data(const std::list<T>& dl, std::vector<std::vector<T> >& d2a,
 }
 
 /// copy std::vector<vector<T> > to std::vector<T>(unroll vecOfvecs into vector)
-template <class T> void copy_data(const std::vector<std::vector<T> >& d2a,
-                                  std::vector<T>& da)
+template <typename T> 
+void copy_data(const std::vector<std::vector<T> >& d2a, std::vector<T>& da)
 {
   typename std::vector<T>::size_type i, j, size_d2a = 0,
                                      num_arrays = d2a.size(), cntr = 0;
@@ -323,7 +324,7 @@ template <class T> void copy_data(const std::vector<std::vector<T> >& d2a,
 }
 
 /// copy map<int, T> to std::vector<T> (discard integer keys)
-template <class T> 
+template <typename T> 
 void copy_data(const std::map<int, T>& im, std::vector<T>& da)
 {
   size_t i, size_im = im.size();
@@ -552,7 +553,7 @@ void copy_data_partial(
 }
 
 /// copy portion of first Array<T> to all of second Array<T>
-template <class T>
+template <typename T>
 void copy_data_partial(const std::vector<T>& da1, size_t start_index1,
 		       size_t num_items, std::vector<T>& da2)
 {
@@ -569,7 +570,7 @@ void copy_data_partial(const std::vector<T>& da1, size_t start_index1,
 }
 
 /// copy all of first Array<T> to portion of second Array<T>
-template <class T>
+template <typename T>
 void copy_data_partial(const std::vector<T>& da1, std::vector<T>& da2,
                        size_t start_index2)
 {
@@ -586,7 +587,7 @@ void copy_data_partial(const std::vector<T>& da1, std::vector<T>& da2,
 }
 
 /// copy all of first Array<T> to portion of boost::multi_array<T, 1>
-template <class T>
+template <typename T>
 void copy_data_partial(const std::vector<T>& da, boost::multi_array<T, 1>& bma,
 		       size_t start_index_bma)
 {
@@ -603,7 +604,7 @@ void copy_data_partial(const std::vector<T>& da, boost::multi_array<T, 1>& bma,
 }
 
 /// copy portion of first Array<T> to portion of second Array<T>
-template <class T>
+template <typename T>
 void copy_data_partial(const std::vector<T>& da1, size_t start_index1,
 		       size_t num_items,std::vector<T>& da2,size_t start_index2)
 {
@@ -692,6 +693,47 @@ size_t set_value_to_index(const ScalarType& value,
 }
 
 
+/// retrieve the set value corresponding to the passed index
+template <typename OrdinalType, typename KeyType, typename ValueType>
+const KeyType& map_index_to_key(OrdinalType index,
+				const std::map<KeyType, ValueType>& pairs)
+{
+  typename std::map<KeyType, ValueType>::const_iterator cit = pairs.begin();
+  std::advance(cit, index);
+  return cit->first;
+}
+
+
+/// retrieve the set value corresponding to the passed index
+template <typename OrdinalType, typename KeyType, typename ValueType>
+const ValueType& map_index_to_value(OrdinalType index,
+				    const std::map<KeyType, ValueType>& pairs)
+{
+  typename std::map<KeyType, ValueType>::const_iterator cit = pairs.begin();
+  std::advance(cit, index);
+  return cit->second;
+}
+
+
+/// calculate the map index corresponding to the passed key
+template <typename KeyType, typename ValueType>
+size_t map_key_to_index(const KeyType& key,
+			const std::map<KeyType, ValueType>& pairs)
+{
+  typename std::map<KeyType, ValueType>::const_iterator cit = pairs.find(key);
+  return (cit == pairs.end()) ? _NPOS : std::distance(pairs.begin(), cit);
+
+  // linear search provides index in one pass, but find() plus distance()
+  // should be faster for sorted associative containers
+  //size_t index = 0;
+  //typename std::set<ScalarType>::const_iterator cit;
+  //for (cit=values.begin(); cit!=values.end(); ++cit, ++index)
+  //  if (*cit == value)
+  //    return index;
+  //return _NPOS;
+}
+
+
 /// convert a SerialDenseVector of head-to-tail (x,y) pairs into a
 /// std::set of (x), discarding the y values
 template <typename OrdinalType, typename ScalarType>
@@ -714,7 +756,7 @@ void x_y_pairs_to_x_set(
 //      can we rely on partial template specialization?
 
 /// generic find_index (inactive)
-template <class ContainerType>
+template <typename ContainerType>
 typename ContainerType::size_type
 find_index(const ContainerType& c,
            const typename ContainerType::value_type& search_data)
@@ -745,7 +787,7 @@ void copy_data(const MultiArrayType& ma, DakArrayType& da)
 
 #else
 /// compute the index of an entry within a boost::multi_array
-template <class T> 
+template <typename T> 
 size_t find_index(const boost::multi_array<T, 1>& bma, const T& search_data)
 {
   // should be more efficient than find() + distance()
@@ -757,7 +799,7 @@ size_t find_index(const boost::multi_array<T, 1>& bma, const T& search_data)
 }
 
 
-//template <class T> 
+//template <typename T> 
 //size_t find_index(boost::multi_array<T, 1>::const_array_view<1>::type bmav,
 //	            const T& search_data)
 // TO DO: difficulty with compilation of ::type --> work-around by enumeration
@@ -789,7 +831,7 @@ inline size_t find_index(StringMultiArrayConstView bmacv,
 
 
 /// compute the index of an entry within a std::list
-template <class ListT>
+template <typename ListT>
 typename ListT::size_type find_index(const ListT& l,
                                      const typename ListT::value_type& val)
 {
@@ -806,7 +848,7 @@ typename ListT::size_type find_index(const ListT& l,
 
 
 // copy MultiArrayView<T> to Array<T>
-//template <class T>
+//template <typename T>
 //void copy_data(boost::multi_array<T, 1>::const_array_view<1>::type ma,
 //	         Array<T>& da)
 // TO DO: difficulty with compilation of ::type --> work-around by enumeration
@@ -836,7 +878,7 @@ inline void copy_data(StringMultiArrayConstView ma, StringArray& da)
 
 /// return an iterator to the first list element satisfying the
 /// predicate test_fn w.r.t. the passed test_fn_data; end if not found
-template <class ListT>
+template <typename ListT>
 typename ListT::const_iterator
 find_if(const ListT& c,
         bool (*test_fn)(const typename ListT::value_type&, const std::string&),

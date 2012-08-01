@@ -289,13 +289,13 @@ NonD::NonD(NoDBBaseConstructor, Model& model):
       = dp.continuous_interval_probabilities().size();
 
     numDiscIntervalVars  = dp.discrete_interval_probabilities().size();
-    numDiscSetIntUncVars = dp.discrete_set_int_probabilities().size();
+    numDiscSetIntUncVars = dp.discrete_set_int_values_probabilities().size();
     if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN) // mixed
       numDiscIntEpistUncVars = numDiscIntervalVars + numDiscSetIntUncVars;
     else                                                       // relaxed
       numContEpistUncVars += numDiscIntervalVars + numDiscSetIntUncVars;
 
-    numDiscSetRealUncVars = dp.discrete_set_real_probabilities().size();
+    numDiscSetRealUncVars = dp.discrete_set_real_values_probabilities().size();
     if (active_view == MIXED_ALL || active_view >= MIXED_DESIGN) // mixed
       numDiscRealEpistUncVars = numDiscSetRealUncVars;
     else                                                       // relaxed

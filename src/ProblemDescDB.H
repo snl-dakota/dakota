@@ -217,6 +217,10 @@ public:
   const IntSetArray& get_isa(const String& entry_name) const;
   /// get a RealSetArray out of the database based on an identifier string
   const RealSetArray& get_rsa(const String& entry_name) const;
+  /// get an IntRealMapArray out of the database based on an identifier string
+  const IntRealMapArray& get_irma(const String& entry_name) const;
+  /// get a RealRealMapArray out of the database based on an identifier string
+  const RealRealMapArray& get_rrma(const String& entry_name) const;
   /// get a StringArray out of the database based on an identifier string
   const StringArray& get_sa(const String& entry_name) const;
   /// get a String2DArray out of the database based on an identifier string
@@ -269,10 +273,14 @@ public:
   void set(const String& entry_name, const RealVectorArray& rva);
   /// set an IntVectorArray within the database based on an identifier string
   void set(const String& entry_name, const IntVectorArray& iva);
-  /// set a RealSetArray within the database based on an identifier string
-  void set(const String& entry_name, const RealSetArray& rsa);
   /// set an IntSetArray within the database based on an identifier string
   void set(const String& entry_name, const IntSetArray& isa);
+  /// set a RealSetArray within the database based on an identifier string
+  void set(const String& entry_name, const RealSetArray& rsa);
+  /// set an IntRealMapArray within the database based on an identifier string
+  void set(const String& entry_name, const IntRealMapArray& irma);
+  /// set a RealRealMapArray within the database based on an identifier string
+  void set(const String& entry_name, const RealRealMapArray& rrma);
   /// set a StringArray within the database based on an identifier string
   void set(const String& entry_name, const StringArray& sa);
 

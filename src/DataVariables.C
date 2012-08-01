@@ -82,8 +82,7 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
   s << continuousIntervalUncBasicProbs << continuousIntervalUncLowerBounds
     << continuousIntervalUncUpperBounds << discreteIntervalUncBasicProbs
     << discreteIntervalUncLowerBounds << discreteIntervalUncUpperBounds
-    << discreteUncSetInt << discreteUncSetIntBasicProbs << discreteUncSetReal
-    << discreteUncSetRealBasicProbs;
+    << discreteUncSetIntValuesProbs << discreteUncSetRealValuesProbs;
 
   // State arrays
   s << continuousStateVars         << continuousStateLowerBnds
@@ -161,8 +160,7 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
   s >> continuousIntervalUncBasicProbs >> continuousIntervalUncLowerBounds
     >> continuousIntervalUncUpperBounds >> discreteIntervalUncBasicProbs
     >> discreteIntervalUncLowerBounds >> discreteIntervalUncUpperBounds
-    >> discreteUncSetInt >> discreteUncSetIntBasicProbs >> discreteUncSetReal
-    >> discreteUncSetRealBasicProbs;
+    >> discreteUncSetIntValuesProbs >> discreteUncSetRealValuesProbs;
 
   // State arrays
   s >> continuousStateVars         >> continuousStateLowerBnds
@@ -240,8 +238,7 @@ void DataVariablesRep::write(std::ostream& s) const
   s << continuousIntervalUncBasicProbs << continuousIntervalUncLowerBounds
     << continuousIntervalUncUpperBounds << discreteIntervalUncBasicProbs
     << discreteIntervalUncLowerBounds << discreteIntervalUncUpperBounds
-    << discreteUncSetInt << discreteUncSetIntBasicProbs << discreteUncSetReal
-    << discreteUncSetRealBasicProbs;
+    << discreteUncSetIntValuesProbs << discreteUncSetRealValuesProbs;
 
   // State arrays
   s << continuousStateVars         << continuousStateLowerBnds

@@ -2092,23 +2092,6 @@ static void bad_initial_rvalue(const char *kind, Real val)
 // As documented in ProblemDescDB::manage_inputs(), Vchk applies to minimal
 //   spec data, whereas Vgen constructs any large inferred vectors.
 // *****************************************************************************
-static void Vchk_NormalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
-{
-  size_t n;
-  RealVector *B, *M, *Sd;
-
-  n = dv->numNormalUncVars;
-  if (wronglen(n, M = &dv->normalUncMeans, "nuv_means") ||
-      wronglen(n, Sd = &dv->normalUncStdDevs, "nuv_std_deviations"))
-    return;
-  B = &dv->normalUncLowerBnds;
-  if (B->length() && wronglen(n, B, "nuv_lower_bounds"))
-    return;
-  B = &dv->normalUncUpperBnds;
-  if (B->length())
-    wronglen(n, B, "nuv_upper_bounds");
-}
-
 static void Vgen_ContinuousDes(DataVariablesRep *dv, size_t offset)
 {
   RealVector *L, *U, *V;
@@ -2117,28 +2100,6 @@ static void Vgen_ContinuousDes(DataVariablesRep *dv, size_t offset)
   L = &dv->continuousDesignLowerBnds;
   U = &dv->continuousDesignUpperBnds;
   V = &dv->continuousDesignVars;
-  if (L->length() == 0)
-    Set_rv(L, -DBL_MAX, n);
-  if (U->length() == 0)
-    Set_rv(U, DBL_MAX, n);
-  if (V->length() == 0) {
-    V->sizeUninitialized(n);
-    for(i = 0; i < n; i++) { // init to 0, repairing to bounds if needed
-      if      ((*L)[i] > 0.) (*V)[i] = (*L)[i];
-      else if ((*U)[i] < 0.) (*V)[i] = (*U)[i];
-      else                   (*V)[i] = 0;
-    }
-  }
-}
-
-static void Vgen_ContinuousState(DataVariablesRep *dv, size_t offset)
-{
-  RealVector *L, *U, *V;
-  size_t i, n = dv->numContinuousStateVars;
-
-  L = &dv->continuousStateLowerBnds;
-  U = &dv->continuousStateUpperBnds;
-  V = &dv->continuousStateVars;
   if (L->length() == 0)
     Set_rv(L, -DBL_MAX, n);
   if (U->length() == 0)
@@ -2175,6 +2136,28 @@ static void Vgen_DiscreteDesRange(DataVariablesRep *dv, size_t offset)
   }
 }
 
+static void Vgen_ContinuousState(DataVariablesRep *dv, size_t offset)
+{
+  RealVector *L, *U, *V;
+  size_t i, n = dv->numContinuousStateVars;
+
+  L = &dv->continuousStateLowerBnds;
+  U = &dv->continuousStateUpperBnds;
+  V = &dv->continuousStateVars;
+  if (L->length() == 0)
+    Set_rv(L, -DBL_MAX, n);
+  if (U->length() == 0)
+    Set_rv(U, DBL_MAX, n);
+  if (V->length() == 0) {
+    V->sizeUninitialized(n);
+    for(i = 0; i < n; i++) { // init to 0, repairing to bounds if needed
+      if      ((*L)[i] > 0.) (*V)[i] = (*L)[i];
+      else if ((*U)[i] < 0.) (*V)[i] = (*U)[i];
+      else                   (*V)[i] = 0;
+    }
+  }
+}
+
 static void Vgen_DiscreteStateRange(DataVariablesRep *dv, size_t offset)
 {
   IntVector *L, *U, *V;
@@ -2195,6 +2178,23 @@ static void Vgen_DiscreteStateRange(DataVariablesRep *dv, size_t offset)
       else                  (*V)[i] = 0;
     }
   }
+}
+
+static void Vchk_NormalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  size_t n;
+  RealVector *B, *M, *Sd;
+
+  n = dv->numNormalUncVars;
+  if (wronglen(n, M = &dv->normalUncMeans, "nuv_means") ||
+      wronglen(n, Sd = &dv->normalUncStdDevs, "nuv_std_deviations"))
+    return;
+  B = &dv->normalUncLowerBnds;
+  if (B->length() && wronglen(n, B, "nuv_lower_bounds"))
+    return;
+  B = &dv->normalUncUpperBnds;
+  if (B->length())
+    wronglen(n, B, "nuv_upper_bounds");
 }
 
 static void Vgen_NormalUnc(DataVariablesRep *dv, size_t offset)
@@ -3311,202 +3311,211 @@ static void Vgen_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset)
 }
 
 static void 
-Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
-	   IntVector *input_dsi, IntSetArray& dsi_all)
+check_set_keys(size_t num_v, size_t ds_len, const char *kind,
+	       IntArray *input_nds, bool& key, int& avg_num_ds)
 {
-  if (input_dsi) {
-    int avg_num_dsi, ndup, dupval[2], num_dsi_i, total_dsi, val;
-    size_t i, j, cntr, dsi_len = input_dsi->length();
-    bool key;
-    // Check num_set_values key
-    if (input_ndsi) {
-      key = true;
-      if (input_ndsi->size() != num_v) {
-	wrong_number("num_set_values value(s)", kind, num_v,
-		     input_ndsi->size());
-	return;
-      }
-      for(i = total_dsi = 0; i < num_v; ++i) {
-	total_dsi += num_dsi_i = (*input_ndsi)[i];
-	if (num_dsi_i < 1)
-	  { too_small(kind); return; }
-      }
-      if (dsi_len != total_dsi)
-	{ wrong_number("set_values", kind, total_dsi, dsi_len); return; }
+  // Process num_set_values key or define default allocation
+  if (input_nds) {
+    key = true;
+    if (input_nds->size() != num_v) {
+      wrong_number("num_set_values value(s)", kind, num_v, input_nds->size());
+      return;
     }
-    else { // num_set_pairs is optional; use average len if no spec
-      key = false;
-      if (dsi_len % num_v)
-	{ not_div(kind, dsi_len, num_v); return; }
-      else
-	avg_num_dsi = dsi_len / num_v;
+    int num_ds_i, total_ds = 0;
+    for (size_t i=0; i<num_v; ++i) {
+      total_ds += num_ds_i = (*input_nds)[i];
+      if (num_ds_i < 1)
+	{ too_small(kind); return; }
     }
-    // Insert values into the IntSetArray
-    dsi_all.resize(num_v);
-    for (i=cntr=ndup=0; i<num_v; ++i) {
-      num_dsi_i = (key) ? (*input_ndsi)[i] : avg_num_dsi;
-      IntSet& dsi_all_i = dsi_all[i];
-      for (j=0; j<num_dsi_i; ++j, ++cntr)
-	if (!dsi_all_i.insert(val = (*input_dsi)[cntr]).second)
-	  if (++ndup <= 2)
-	    dupval[ndup-1] = val;
-    }
-    if (ndup)
-      suppressed(kind, ndup, dupval, 0);
+    if (ds_len != total_ds)
+      { wrong_number("set_values", kind, total_ds, ds_len); return; }
   }
+  else { // num_set_values is optional; use average len if no spec
+    key = false;
+    if (ds_len % num_v)
+      { not_div(kind, ds_len, num_v); return; }
+    else
+      avg_num_ds = ds_len / num_v;
+  }
+}
+
+static void 
+Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
+	   IntVector *input_dsi, IntSetArray& dsi_all, IntVector& dsi_init_pt)
+{
+  if (!input_dsi)
+    return;
+
+  int avg_num_dsi, ndup, dupval[2], num_dsi_i, val;
+  size_t i, j, cntr, dsi_len = input_dsi->length();
+  bool key;
+
+  // Process num_set_values key or define default allocation
+  check_set_keys(num_v, dsi_len, kind, input_ndsi, key, avg_num_dsi);
+
+  // Insert values into the IntSetArray
+  dsi_all.resize(num_v);
+  for (i=cntr=ndup=0; i<num_v; ++i) {
+    num_dsi_i = (key) ? (*input_ndsi)[i] : avg_num_dsi;
+    IntSet& dsi_all_i = dsi_all[i];
+    for (j=0; j<num_dsi_i; ++j, ++cntr) {
+      val = (*input_dsi)[cntr];
+      if (!dsi_all_i.insert(val).second) // insert returns pair<iterator,bool>
+	if (++ndup <= 2) // warnings suppressed beyond two duplicates
+	  dupval[ndup-1] = val;
+    }
+  }
+  if (ndup)
+    suppressed(kind, ndup, dupval, 0);
+
+  // Checks on user-specified initial pt array
+  if (!dsi_init_pt.empty()) {
+    if (dsi_init_pt.length() != num_v)
+      wrong_number("initial_point value(s)", kind, num_v, dsi_init_pt.length());
+    else // check within admissible set for specified initial pt
+      for (i=0; i<num_v; ++i) {
+	IntSet& dsi_all_i = dsi_all[i]; val = dsi_init_pt[i];
+	if (dsi_all_i.find(val) == dsi_all_i.end())
+	  bad_initial_rvalue(kind, val);
+      }
+  }
+  //else: default initialization performed in Vgen_DIset
+}
+
+static void 
+Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
+	   IntVector *input_dsi, RealVector *input_dsip,
+	   IntRealMapArray& dsi_vals_probs)
+{
+  if (!input_dsi)
+    return;
+
+  int avg_num_dsi, ndup, dupval[2], num_dsi_i, val;
+  size_t i, j, cntr, dsi_len = input_dsi->length(),
+    num_p = (input_dsip) ? input_dsip->length() : 0;
+  if (num_p && num_p != dsi_len)
+    wrong_number("set_probabilities", kind, dsi_len, num_p);
+  Real prob, default_p;
+  bool key;
+
+  // Process num_set_values key or define default allocation
+  check_set_keys(num_v, dsi_len, kind, input_ndsi, key, avg_num_dsi);
+
+  // Insert values into the IntRealMapArray
+  dsi_vals_probs.resize(num_v);
+  for (i=cntr=ndup=0; i<num_v; ++i) {
+    IntRealMap& dsi_v_p_i = dsi_vals_probs[i];
+    num_dsi_i = (key) ? (*input_ndsi)[i] : avg_num_dsi;
+    if (!num_p) default_p = 1./num_dsi_i;
+    for (j=0; j<num_dsi_i; ++j, ++cntr) {
+      val  = (*input_dsi)[cntr];
+      prob = (num_p) ? (*input_dsip)[cntr] : default_p;
+      if (dsi_v_p_i.find(val) == dsi_v_p_i.end())
+	dsi_v_p_i[val]  = prob; // insert new
+      else {
+	dsi_v_p_i[val] += prob; // add to existing
+	if (++ndup <= 2) // warnings suppressed beyond two duplicates
+	  dupval[ndup-1] = val;
+      }
+    }
+  }
+  if (ndup)
+    suppressed(kind, ndup, dupval, 0);
 }
 
 static void 
 Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
-	   RealVector *input_dsr, RealSetArray& dsr_all)
+	   RealVector *input_dsr, RealSetArray& dsr_all,
+	   RealVector& dsr_init_pt)
 {
-  if (input_dsr) {
-    int avg_num_dsr, ndup, num_dsr_i, total_dsr;
-    Real dupval[2], val;
-    size_t i, j, cntr, dsr_len = input_dsr->length();
-    bool key;
-    if (input_ndsr) {
-      key = true;
-      if (input_ndsr->size() != num_v) {
-	wrong_number("num_set_values value(s)", kind, num_v,
-		     input_ndsr->size());
-	return;
-      }
-      for(i = total_dsr = 0; i < num_v; ++i) {
-	total_dsr += num_dsr_i = (*input_ndsr)[i];
-	if (num_dsr_i < 1)
-	  { too_small(kind); return; }
-      }
-      if (dsr_len != total_dsr)
-	{ wrong_number("set_values", kind, total_dsr, dsr_len); return; }
+  if (!input_dsr)
+    return;
+
+  int avg_num_dsr, ndup, num_dsr_i;
+  Real dupval[2], val;
+  size_t i, j, cntr, dsr_len = input_dsr->length();
+  bool key;
+
+  // Process num_set_values key or define default allocation
+  check_set_keys(num_v, dsr_len, kind, input_ndsr, key, avg_num_dsr);
+
+  // Insert values into the RealSetArray
+  dsr_all.resize(num_v);
+  for (i=cntr=ndup=0; i<num_v; ++i) {
+    num_dsr_i = (key) ? (*input_ndsr)[i] : avg_num_dsr;
+    RealSet& dsr_all_i = dsr_all[i];
+    for (j=0; j<num_dsr_i; ++j, ++cntr) {
+      val = (*input_dsr)[cntr];
+      if (!dsr_all_i.insert(val).second) // insert returns pair<iterator,bool>
+	if (++ndup <= 2) // warnings suppressed beyond two duplicates
+	  dupval[ndup-1] = val;
     }
-    else { // num_set_pairs is optional; use average len if no spec
-      key = false;
-      if (dsr_len % num_v)
-	{ not_div(kind, dsr_len, num_v); return; }
-      else
-	avg_num_dsr = dsr_len / num_v;
-    }
-    // Insert values into the RealSetArray
-    dsr_all.resize(num_v);
-    for (i=cntr=ndup=0; i<num_v; ++i) {
-      num_dsr_i = (key) ? (*input_ndsr)[i] : avg_num_dsr;
-      RealSet& dsr_all_i = dsr_all[i];
-      for (j=0; j<num_dsr_i; ++j, ++cntr)
-	if (!dsr_all_i.insert(val = (*input_dsr)[cntr]).second) {
-	  if (++ndup <= 2)
-	    dupval[ndup-1] = val;
-	}
-    }
-    if (ndup)
-      suppressed(kind, ndup, 0, dupval);
   }
-}
+  if (ndup)
+    suppressed(kind, ndup, 0, dupval);
 
-static void 
-Vchk_DIsetV(const char *kind, IntSetArray& dsi_all, IntVector& dsi_init_pt)
-{
-  size_t i, num_v = dsi_all.size();
-  int val;
-
-  // Allocate the initial pt array
-  if ((i = dsi_init_pt.length()) > 0) {
-    if (i != num_v)
-      wrong_number("initial_point value(s)", kind, num_v, i);
+  // Checks on user-specified initial pt array
+  if (!dsr_init_pt.empty()) {
+    if (dsr_init_pt.length() != num_v)
+      wrong_number("initial_point value(s)", kind, num_v, dsr_init_pt.length());
     else
-      for(i = 0; i < num_v; ++i) {
-	IntSet& dsi_all_i = dsi_all[i];
-	if (dsi_all_i.find(val = dsi_init_pt[i]) == dsi_all_i.end())
+      for (i=0; i<num_v; ++i) {
+	RealSet& dsr_all_i = dsr_all[i]; val = dsr_init_pt[i];
+	if (dsr_all_i.find(val) == dsr_all_i.end())
 	  bad_initial_rvalue(kind, val);
       }
   }
-#if 0 // now done in Vgen_DIset
-  else {
-    dsi_init_pt->sizeUninitialized(num_v);
-    for (i=0; i<num_v; ++i)
-      dsi_init_pt[i] = *dsi_all[i].begin(); // init to 1st value in set
-  }
-#endif
+  //else: default initialization performed in Vgen_DRset
 }
 
 static void 
-Vchk_DRsetV(const char *kind, RealSetArray& dsr_all, RealVector& dsr_init_pt)
+Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
+	   RealVector *input_dsr, RealVector* input_dsrp,
+	   RealRealMapArray& dsr_vals_probs)
 {
-  size_t i, num_v = dsr_all.size();
-  Real val;
+  if (!input_dsr)
+    return;
 
-  // Allocate the initial pt array
-  if ((i = dsr_init_pt.length()) > 0) {
-    if (i != num_v)
-      wrong_number("initial_point value(s)", kind, num_v, i);
-    else
-      for(i = 0; i < num_v; ++i) {
-	RealSet& dsr_all_i = dsr_all[i];
-	if (dsr_all_i.find(val = dsr_init_pt[i]) == dsr_all_i.end())
-	  bad_initial_rvalue(kind, val);
-      }
-  }
-#if 0 // now done in Vgen_DRset
-  else {
-    dsr_init_pt.sizeUninitialized(num_v);
-    for (i=0; i<num_v; ++i)
-      dsr_init_pt[i] = *dsr_all[i].begin(); // init to 1st value in set
-  }
-#endif
-}
+  size_t i, j, cntr, dsr_len = input_dsr->length();
+  int avg_num_dsr, ndup, num_dsr_i,
+    num_p = (input_dsrp) ? input_dsrp->length() : 0;
+  if (num_p && num_p != dsr_len)
+    wrong_number("set_probabilities", kind, dsr_len, num_p);
+  Real prob, default_p, dupval[2], val;
+  bool key;
 
-static void 
-Vchk_DIsetP(size_t num_v, const char *kind, IntSetArray& dsi,
-	    RealVector* dsip, RealVectorArray& dsi_probs)
-{
-  size_t i, j, k, num_dsi_i, num_p = (dsip) ? dsip->length() : 0;
-  Real default_p;
+  // Process num_set_values key or define default allocation
+  check_set_keys(num_v, dsr_len, kind, input_ndsr, key, avg_num_dsr);
 
-  // assign dsi_probs
-  // TO DO: track any reordering or duplicate removal from set insertions
-  dsi_probs.resize(num_v);
-  for(i = k = 0; i < num_v; ++i) {
-    num_dsi_i = dsi[i].size();
-    RealVector& dsi_probs_i = dsi_probs[i];
-    dsi_probs_i.sizeUninitialized(num_dsi_i);
-    if (!num_p) default_p = 1./num_dsi_i;
-    for(j=0; j<num_dsi_i; ++j, ++k)
-      dsi_probs_i[j] = (num_p) ? (*dsip)[k] : default_p;
-  }
-}
-
-static void 
-Vchk_DRsetP(size_t num_v, const char *kind, RealSetArray& dsr,
-	    RealVector* dsrp, RealVectorArray& dsr_probs)
-{
-  size_t i, j, k, num_dsr_i, num_p = (dsrp) ? dsrp->length() : 0;
-  Real default_p;
-
-  // assign dsr_probs
-  // TO DO: track any reordering or duplicate removal from set insertions
-  dsr_probs.resize(num_v);
-  for(i = k = 0; i < num_v; ++i) {
-    num_dsr_i = dsr[i].size();
-    RealVector& dsr_probs_i = dsr_probs[i];
-    dsr_probs_i.sizeUninitialized(num_dsr_i);
+  // Insert values into the RealRealMapArray
+  dsr_vals_probs.resize(num_v);
+  for (i=cntr=ndup=0; i<num_v; ++i) {
+    RealRealMap& dsr_v_p_i = dsr_vals_probs[i];
+    num_dsr_i = (key) ? (*input_ndsr)[i] : avg_num_dsr;
     if (!num_p) default_p = 1./num_dsr_i;
-    for(j=0; j<num_dsr_i; ++j, ++k)
-      dsr_probs_i[j] = (num_p) ? (*dsrp)[k] : default_p;
+    for (j=0; j<num_dsr_i; ++j, ++cntr) {
+      val  = (*input_dsr)[cntr];
+      prob = (num_p) ? (*input_dsrp)[cntr] : default_p;
+      if (dsr_v_p_i.find(val) == dsr_v_p_i.end())
+	dsr_v_p_i[val]  = prob; // insert new
+      else {
+	dsr_v_p_i[val] += prob; // add to existing
+	if (++ndup <= 2) // warnings suppressed beyond two duplicates
+	  dupval[ndup-1] = val;
+      }
+    }
   }
+  if (ndup)
+    suppressed(kind, ndup, 0, dupval);
 }
 
 static void 
-Vgen_DIset(size_t n, IntSetArray& sets, IntVector& L, IntVector& U,
-	   IntVector& V, bool aggregate_LUV = false, size_t offset = 0)
+check_LUV_size(size_t num_v, IntVector& L, IntVector& U, IntVector& V,
+	       bool aggregate_LUV, size_t offset, bool& init_V)
 {
-  IntSet::const_iterator ie, it;
-  Real avg_val, r_val;
-  int i, i_val, i_left, i_right;
-  size_t m;
-  bool init_V = true;
-
+  init_V = true;
   if (aggregate_LUV) {
-    int max_index = offset + n - 1;
+    int max_index = offset + num_v - 1;
     if (max_index >= L.length() || max_index >= U.length() ||
 	max_index >= V.length()) {
       Squawk("max index %d out of range for aggregate updates in Vgen_DIset",
@@ -3516,24 +3525,66 @@ Vgen_DIset(size_t n, IntSetArray& sets, IntVector& L, IntVector& U,
   }
   else {
     if (offset) {
-      Squawk(
-	"unexpected nonzero offset (%d) for non-aggregate mode in Vgen_DIset",
-	(int)offset);
+      Squawk("unexpected offset (%d) for non-aggregate mode in Vgen_DIset",
+	     (int)offset);
       return;
     }
-    L.sizeUninitialized(n);
-    U.sizeUninitialized(n);
-    if (V.length() == n) // user spec --> already assigned by var_ivec()
+    L.sizeUninitialized(num_v);
+    U.sizeUninitialized(num_v);
+    if (V.length() == num_v) // user spec --> already assigned by var_ivec()
       init_V = false;
     else
-      V.sizeUninitialized(n);
+      V.sizeUninitialized(num_v);
   }
-  for(i = 0; i < n; ++i, ++offset) {
+}
+
+static void 
+check_LUV_size(size_t num_v, RealVector& L, RealVector& U, RealVector& V,
+	       bool aggregate_LUV, size_t offset, bool& init_V)
+{
+  init_V = true;
+  if (aggregate_LUV) {
+    int max_index = offset + num_v - 1;
+    if (max_index >= L.length() || max_index >= U.length() ||
+	max_index >= V.length()) {
+      Squawk("max index %d out of range for aggregate updates in Vgen_DRset",
+	     max_index);
+      return;
+    }
+  }
+  else {
+    if (offset) {
+      Squawk("unexpected offset (%d) for non-aggregate mode in Vgen_DRset",
+	     (int)offset);
+      return;
+    }
+    L.sizeUninitialized(num_v);
+    U.sizeUninitialized(num_v);
+    if (V.length() == num_v) // user spec --> already assigned by var_rvec()
+      init_V = false;
+    else
+      V.sizeUninitialized(num_v);
+  }
+}
+
+static void 
+Vgen_DIset(size_t num_v, IntSetArray& sets, IntVector& L, IntVector& U,
+	   IntVector& V, bool aggregate_LUV = false, size_t offset = 0)
+{
+  ISCIter ie, it;
+  Real avg_val, r_val;
+  int i, i_val, i_left, i_right;
+  size_t num_set_i;
+  bool init_V;
+
+  check_LUV_size(num_v, L, U, V, aggregate_LUV, offset, init_V);
+
+  for(i = 0; i < num_v; ++i, ++offset) {
     IntSet& set_i = sets[i];
-    it = set_i.begin(); ie = set_i.end(); m = set_i.size();
-    if (m == 0) // should not occur
+    it = set_i.begin(); ie = set_i.end(); num_set_i = set_i.size();
+    if (num_set_i == 0) // should not occur
       L[offset] = U[offset] = V[offset] = 0;
-    else if (m == 1)
+    else if (num_set_i == 1)
       L[offset] = U[offset] = V[offset] = *it;
     else {
       L[offset] = *it;     // lower bound is first value
@@ -3542,7 +3593,7 @@ Vgen_DIset(size_t n, IntSetArray& sets, IntVector& L, IntVector& U,
 	// select the initial value to be closest set value to avg_val
 	for(avg_val = 0., ++ie; it != ie; ++it)
 	  avg_val += *it;
-	avg_val /= m;
+	avg_val /= num_set_i;
 	// bracket avg_val between [i_left,i_right]
 	i_right = INT_MAX; i_left = INT_MIN;
 	for(it = set_i.begin(); it != ie; ++it) {
@@ -3567,44 +3618,74 @@ Vgen_DIset(size_t n, IntSetArray& sets, IntVector& L, IntVector& U,
 }
 
 static void 
-Vgen_DRset(size_t n, RealSetArray& sets, RealVector& L, RealVector& U,
+Vgen_DIset(size_t num_v, IntRealMapArray& vals_probs,
+	   IntVector& L, IntVector& U, IntVector& V,
+	   bool aggregate_LUV = false, size_t offset = 0)
+{
+  IRMCIter ie, it;
+  Real avg_val, r_val;
+  int i, i_val, i_left, i_right;
+  size_t num_vp_i;
+  bool init_V;
+
+  check_LUV_size(num_v, L, U, V, aggregate_LUV, offset, init_V);
+
+  for(i = 0; i < num_v; ++i, ++offset) {
+    IntRealMap& vp_i = vals_probs[i];
+    it = vp_i.begin(); ie = vp_i.end(); num_vp_i = vp_i.size();
+    if (num_vp_i == 0) // should not occur
+      L[offset] = U[offset] = V[offset] = 0;
+    else if (num_vp_i == 1)
+      L[offset] = U[offset] = V[offset] = it->first;
+    else {
+      L[offset] = it->first;     // lower bound is first value
+      U[offset] = (--ie)->first; // upper bound is final value
+      if (init_V) {
+	// select the initial value to be closest set value to avg_val
+	for(avg_val = 0., ++ie; it != ie; ++it)
+	  avg_val += it->first;
+	avg_val /= num_vp_i;
+	// bracket avg_val between [i_left,i_right]
+	i_right = INT_MAX; i_left = INT_MIN;
+	for(it = vp_i.begin(); it != ie; ++it) {
+	  r_val = i_val = it->first;
+	  if (r_val > avg_val) {      // update nearest neighbor to right
+	    if (i_val < i_right)
+	      i_right = i_val;
+	  }
+	  else if (r_val < avg_val) { // update nearest neighbor to left
+	    if (i_val > i_left)
+	      i_left = i_val;
+	  }
+	  else { // r_val equals avg_val
+	    i_left = i_right = i_val;
+	    break;
+	  }
+	}
+	V[offset] = (i_right - avg_val < avg_val - i_left) ? i_right : i_left;
+      }
+    }
+  }
+}
+
+static void 
+Vgen_DRset(size_t num_v, RealSetArray& sets, RealVector& L, RealVector& U,
 	   RealVector& V, bool aggregate_LUV = false, size_t offset = 0)
 {
   Real avg_val, set_val, s_left, s_right;
-  RealSet::const_iterator ie, it;
+  RSCIter ie, it;
   int i;
-  size_t m;
-  bool init_V = true;
+  size_t num_set_i;
+  bool init_V;
 
-  if (aggregate_LUV) {
-    int max_index = offset + n - 1;
-    if (max_index >= L.length() || max_index >= U.length() ||
-	max_index >= V.length()) {
-      Squawk("max index %d out of range for aggregate updates in Vgen_DRset",
-	     max_index);
-      return;
-    }
-  }
-  else {
-    if (offset) {
-      Squawk(
-	"unexpected nonzero offset (%d) for non-aggregate mode in Vgen_DRset",
-	(int)offset);
-      return;
-    }
-    L.sizeUninitialized(n);
-    U.sizeUninitialized(n);
-    if (V.length() == n) // user spec --> already assigned by var_rvec()
-      init_V = false;
-    else
-      V.sizeUninitialized(n);
-  }
-  for(i = 0; i < n; ++i) {
+  check_LUV_size(num_v, L, U, V, aggregate_LUV, offset, init_V);
+
+  for(i = 0; i < num_v; ++i) {
     RealSet& set_i = sets[i];
-    it = set_i.begin(); ie = set_i.end(); m = set_i.size();
-    if (m == 0) // should not occur
+    it = set_i.begin(); ie = set_i.end(); num_set_i = set_i.size();
+    if (num_set_i == 0) // should not occur
       L[offset] = U[offset] = V[offset] = 0.;
-    else if (m == 1)
+    else if (num_set_i == 1)
       L[offset] = U[offset] = V[offset] = *it;
     else {
       L[offset] = *it;     // lower bound is first value
@@ -3613,7 +3694,7 @@ Vgen_DRset(size_t n, RealSetArray& sets, RealVector& L, RealVector& U,
 	// select the initial value to be closest set value to avg_val
 	for(avg_val = 0., ++ie; it != ie; ++it)
 	  avg_val += *it;
-	avg_val /= m;
+	avg_val /= num_set_i;
 	// bracket avg_val between [s_left,s_right]
 	s_right = DBL_MAX; s_left = -DBL_MAX;
 	for(it = set_i.begin(); it != ie; ++it) {
@@ -3638,39 +3719,54 @@ Vgen_DRset(size_t n, RealSetArray& sets, RealVector& L, RealVector& U,
 }
 
 static void 
-Vchk_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+Vgen_DRset(size_t num_v, RealRealMapArray& vals_probs,
+	   RealVector& L, RealVector& U, RealVector& V,
+	   bool aggregate_LUV = false, size_t offset = 0)
 {
-  static char kind[] = "discrete_uncertain_set_integer";
-  Vchk_DIset(dv->numDiscreteUncSetIntVars, kind, vi->ndusi, vi->dusi, 
-	     dv->discreteUncSetInt);
-  Vchk_DIsetP(dv->numDiscreteUncSetIntVars, kind, dv->discreteUncSetInt,
-	      vi->DSIp, dv->discreteUncSetIntBasicProbs);
-}
+  Real avg_val, set_val, s_left, s_right;
+  RRMCIter ie, it;
+  int i;
+  size_t num_vp_i;
+  bool init_V;
 
-static void Vgen_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset)
-{
-  Vgen_DIset(dv->numDiscreteUncSetIntVars, dv->discreteUncSetInt,
-	     dv->discreteIntEpistemicUncLowerBnds,
-	     dv->discreteIntEpistemicUncUpperBnds,
-	     dv->discreteIntEpistemicUncVars, true, offset);
-}
+  check_LUV_size(num_v, L, U, V, aggregate_LUV, offset, init_V);
 
-static void 
-Vchk_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
-{
-  static char kind[] = "discrete_uncertain_set_real";
-  Vchk_DRset(dv->numDiscreteUncSetRealVars, kind, vi->ndusr, vi->dusr,
-	     dv->discreteUncSetReal);
-  Vchk_DRsetP(dv->numDiscreteUncSetRealVars, kind, dv->discreteUncSetReal,
-	      vi->DSRp, dv->discreteUncSetRealBasicProbs);
-}
-
-static void Vgen_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset)
-{
-  Vgen_DRset(dv->numDiscreteUncSetRealVars, dv->discreteUncSetReal,
-	     dv->discreteRealEpistemicUncLowerBnds,
-	     dv->discreteRealEpistemicUncUpperBnds,
-	     dv->discreteRealEpistemicUncVars, true, offset);
+  for(i = 0; i < num_v; ++i) {
+    RealRealMap& vp_i = vals_probs[i];
+    it = vp_i.begin(); ie = vp_i.end(); num_vp_i = vp_i.size();
+    if (num_vp_i == 0) // should not occur
+      L[offset] = U[offset] = V[offset] = 0.;
+    else if (num_vp_i == 1)
+      L[offset] = U[offset] = V[offset] = it->first;
+    else {
+      L[offset] = it->first;     // lower bound is first value
+      U[offset] = (--ie)->first; // upper bound is final value
+      if (init_V) {
+	// select the initial value to be closest set value to avg_val
+	for(avg_val = 0., ++ie; it != ie; ++it)
+	  avg_val += it->first;
+	avg_val /= num_vp_i;
+	// bracket avg_val between [s_left,s_right]
+	s_right = DBL_MAX; s_left = -DBL_MAX;
+	for(it = vp_i.begin(); it != ie; ++it) {
+	  set_val = it->first;
+	  if (set_val > avg_val) {      // update nearest neighbor to right
+	    if (set_val < s_right)
+	      s_right = set_val;
+	  }
+	  else if (set_val < avg_val) { // update nearest neighbor to left
+	    if (set_val > s_left)
+	      s_left = set_val;
+	  }
+	  else { // set_val equals avg_val
+	    s_left = s_right = set_val;
+	    break;
+	  }
+	}
+	V[offset] = (s_right - avg_val < avg_val - s_left) ? s_right : s_left;
+      }
+    }
+  }
 }
 
 static void 
@@ -3678,35 +3774,7 @@ Vchk_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
   static char kind[] = "discrete_design_set_integer";
   Vchk_DIset(dv->numDiscreteDesSetIntVars, kind, vi->nddsi, vi->ddsi,
-	     dv->discreteDesignSetInt);
-  Vchk_DIsetV(kind, dv->discreteDesignSetInt, dv->discreteDesignSetIntVars);
-}
-
-static void 
-Vchk_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
-{
-  static char kind[] = "discrete_state_set_integer";
-  Vchk_DIset(dv->numDiscreteStateSetIntVars, kind, vi->ndssi, vi->dssi, 
-	     dv->discreteStateSetInt);
-  Vchk_DIsetV(kind, dv->discreteStateSetInt, dv->discreteStateSetIntVars);
-}
-
-static void 
-Vchk_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
-{
-  static char kind[] = "discrete_design_set_real";
-  Vchk_DRset(dv->numDiscreteDesSetRealVars, kind, vi->nddsr, vi->ddsr,
-	     dv->discreteDesignSetReal);
-  Vchk_DRsetV(kind, dv->discreteDesignSetReal, dv->discreteDesignSetRealVars);
-}
-
-static void 
-Vchk_DiscreteStateSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
-{
-  static char kind[] = "discrete_state_set_real";
-  Vchk_DRset(dv->numDiscreteStateSetRealVars, kind, vi->ndssr, vi->dssr,
-	     dv->discreteStateSetReal);
-  Vchk_DRsetV(kind, dv->discreteStateSetReal, dv->discreteStateSetRealVars);
+	     dv->discreteDesignSetInt, dv->discreteDesignSetIntVars);
 }
 
 static void Vgen_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset)
@@ -3717,12 +3785,12 @@ static void Vgen_DiscreteDesSetInt(DataVariablesRep *dv, size_t offset)
 	     dv->discreteDesignSetIntVars); // no offset, not aggregate L/U/V
 }
 
-static void Vgen_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset)
+static void 
+Vchk_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
 {
-  Vgen_DIset(dv->numDiscreteStateSetIntVars, dv->discreteStateSetInt,
-	     dv->discreteStateSetIntLowerBnds,
-	     dv->discreteStateSetIntUpperBnds,
-	     dv->discreteStateSetIntVars); // no offset, not aggregate L/U/V
+  static char kind[] = "discrete_design_set_real";
+  Vchk_DRset(dv->numDiscreteDesSetRealVars, kind, vi->nddsr, vi->ddsr,
+	     dv->discreteDesignSetReal, dv->discreteDesignSetRealVars);
 }
 
 static void Vgen_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset)
@@ -3731,6 +3799,62 @@ static void Vgen_DiscreteDesSetReal(DataVariablesRep *dv, size_t offset)
 	     dv->discreteDesignSetRealLowerBnds,
 	     dv->discreteDesignSetRealUpperBnds,
 	     dv->discreteDesignSetRealVars); // no offset, not aggregate L/U/V
+}
+
+static void 
+Vchk_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  static char kind[] = "discrete_uncertain_set_integer";
+  Vchk_DIset(dv->numDiscreteUncSetIntVars, kind, vi->ndusi, vi->dusi, vi->DSIp,
+	     dv->discreteUncSetIntValuesProbs);
+}
+
+static void Vgen_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset)
+{
+  Vgen_DIset(dv->numDiscreteUncSetIntVars, dv->discreteUncSetIntValuesProbs,
+	     dv->discreteIntEpistemicUncLowerBnds,
+	     dv->discreteIntEpistemicUncUpperBnds,
+	     dv->discreteIntEpistemicUncVars, true, offset);
+}
+
+static void 
+Vchk_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  static char kind[] = "discrete_uncertain_set_real";
+  Vchk_DRset(dv->numDiscreteUncSetRealVars, kind, vi->ndusr, vi->dusr, vi->DSRp,
+	     dv->discreteUncSetRealValuesProbs);
+}
+
+static void Vgen_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset)
+{
+  Vgen_DRset(dv->numDiscreteUncSetRealVars, dv->discreteUncSetRealValuesProbs,
+	     dv->discreteRealEpistemicUncLowerBnds,
+	     dv->discreteRealEpistemicUncUpperBnds,
+	     dv->discreteRealEpistemicUncVars, true, offset);
+}
+
+static void 
+Vchk_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  static char kind[] = "discrete_state_set_integer";
+  Vchk_DIset(dv->numDiscreteStateSetIntVars, kind, vi->ndssi, vi->dssi, 
+	     dv->discreteStateSetInt, dv->discreteStateSetIntVars);
+}
+
+static void Vgen_DiscreteStateSetInt(DataVariablesRep *dv, size_t offset)
+{
+  Vgen_DIset(dv->numDiscreteStateSetIntVars, dv->discreteStateSetInt,
+	     dv->discreteStateSetIntLowerBnds,
+	     dv->discreteStateSetIntUpperBnds,
+	     dv->discreteStateSetIntVars); // no offset, not aggregate L/U/V
+}
+
+static void 
+Vchk_DiscreteStateSetReal(DataVariablesRep *dv, size_t offset, Var_Info *vi)
+{
+  static char kind[] = "discrete_state_set_real";
+  Vchk_DRset(dv->numDiscreteStateSetRealVars, kind, vi->ndssr, vi->dssr,
+	     dv->discreteStateSetReal, dv->discreteStateSetRealVars);
 }
 
 static void Vgen_DiscreteStateSetReal(DataVariablesRep *dv, size_t offset)
@@ -4491,6 +4615,28 @@ static void flatten_num_isa(IntSetArray *isa, IntArray **pia)
     (*ia)[i] = (*isa)[i].size();
 }
 
+static void flatten_num_rrma(RealRealMapArray *rrma, IntArray **pia)
+{
+  size_t i, m;
+  IntArray *ia;
+
+  m = rrma->size();
+  *pia = ia = new IntArray(m);
+  for(i = 0; i < m; ++i)
+    (*ia)[i] = (*rrma)[i].size();
+}
+
+static void flatten_num_irma(IntRealMapArray *irma, IntArray **pia)
+{
+  size_t i, m;
+  IntArray *ia;
+
+  m = irma->size();
+  *pia = ia = new IntArray(m);
+  for(i = 0; i < m; ++i)
+    (*ia)[i] = (*irma)[i].size();
+}
+
 static void flatten_rva(RealVectorArray *rva, RealVector **prv)
 {
   size_t i, j, k, m, n;
@@ -4573,6 +4719,82 @@ static void flatten_isa(IntSetArray *isa, IntVector **piv)
   }
 }
 
+static void flatten_rrma_keys(RealRealMapArray *rrma, RealVector **prv)
+{
+  size_t i, j, k, m, n;
+  RealVector *rv;
+  RealRealMap *rrm_i;
+  RealRealMap::iterator rrm_it, rrm_ite;
+
+  m = rrma->size();
+  for(i = n = 0; i < m; ++i)
+    n += (*rrma)[i].size();
+  *prv = rv = new RealVector(n, false);
+  for(i = k = 0; i < m; ++i) {
+    rrm_i = &(*rrma)[i];
+    for (rrm_it=rrm_i->begin(), rrm_ite=rrm_i->end();
+	 rrm_it!=rrm_ite; ++rrm_it, ++k)
+      (*rv)[k] = rrm_it->first;
+  }
+}
+
+static void flatten_rrma_values(RealRealMapArray *rrma, RealVector **prv)
+{
+  size_t i, j, k, m, n;
+  RealVector *rv;
+  RealRealMap *rrm_i;
+  RealRealMap::iterator rrm_it, rrm_ite;
+
+  m = rrma->size();
+  for(i = n = 0; i < m; ++i)
+    n += (*rrma)[i].size();
+  *prv = rv = new RealVector(n, false);
+  for(i = k = 0; i < m; ++i) {
+    rrm_i = &(*rrma)[i];
+    for (rrm_it=rrm_i->begin(), rrm_ite=rrm_i->end();
+	 rrm_it!=rrm_ite; ++rrm_it, ++k)
+      (*rv)[k] = rrm_it->second;
+  }
+}
+
+static void flatten_irma_keys(IntRealMapArray *irma, IntVector **piv)
+{
+  size_t i, j, k, m, n;
+  IntVector *iv;
+  IntRealMap *irm_i;
+  IntRealMap::iterator irm_it, irm_ite;
+
+  m = irma->size();
+  for(i = n = 0; i < m; ++i)
+    n += (*irma)[i].size();
+  *piv = iv = new IntVector(n, false);
+  for(i = k = 0; i < m; ++i) {
+    irm_i = &(*irma)[i];
+    for (irm_it=irm_i->begin(), irm_ite=irm_i->end();
+	 irm_it!=irm_ite; ++irm_it, ++k)
+      (*iv)[k] = irm_it->first;
+  }
+}
+
+static void flatten_irma_values(IntRealMapArray *irma, RealVector **prv)
+{
+  size_t i, j, k, m, n;
+  RealVector *rv;
+  IntRealMap *irm_i;
+  IntRealMap::iterator irm_it, irm_ite;
+
+  m = irma->size();
+  for(i = n = 0; i < m; ++i)
+    n += (*irma)[i].size();
+  *prv = rv = new RealVector(n, false);
+  for(i = k = 0; i < m; ++i) {
+    irm_i = &(*irma)[i];
+    for (irm_it=irm_i->begin(), irm_ite=irm_i->end();
+	 irm_it!=irm_ite; ++irm_it, ++k)
+      (*rv)[k] = irm_it->second;
+  }
+}
+
 void NIDRProblemDescDB::
 check_variables(std::list<DataVariables>* dvl)
 {
@@ -4609,11 +4831,13 @@ check_variables(std::list<DataVariables>* dvl)
 
       // discrete design set int vars
       if ((n = dv->numDiscreteDesSetIntVars)) {
+	// Note: set consolidation and/or reordering cannot be undone
 	flatten_num_isa(&dv->discreteDesignSetInt, &vi->nddsi);
 	flatten_isa(&dv->discreteDesignSetInt,     &vi->ddsi);
       }
       // discrete design set real vars
       if ((n = dv->numDiscreteDesSetRealVars)) {
+	// Note: set consolidation and/or reordering cannot be undone
 	flatten_num_rsa(&dv->discreteDesignSetReal, &vi->nddsr);
 	flatten_rsa(&dv->discreteDesignSetReal,     &vi->ddsr);
       }
@@ -4671,23 +4895,27 @@ check_variables(std::list<DataVariables>* dvl)
       }
       // discrete uncertain set int vars
       if ((n = dv->numDiscreteUncSetIntVars)) {
-	flatten_num_isa(&dv->discreteUncSetInt,       &vi->ndusi);
-	flatten_isa(&dv->discreteUncSetInt,           &vi->dusi);
-	flatten_rva(&dv->discreteUncSetIntBasicProbs, &vi->DSIp);
+	// Note: map consolidation and/or reordering cannot be undone
+	flatten_num_irma(&dv->discreteUncSetIntValuesProbs,    &vi->ndusi);
+	flatten_irma_keys(&dv->discreteUncSetIntValuesProbs,   &vi->dusi);
+	flatten_irma_values(&dv->discreteUncSetIntValuesProbs, &vi->DSIp);
       }
       // discrete uncertain set real vars
       if ((n = dv->numDiscreteUncSetRealVars)) {
-	flatten_num_rsa(&dv->discreteUncSetReal,       &vi->ndusr);
-	flatten_rsa(&dv->discreteUncSetReal,           &vi->dusr);
-	flatten_rva(&dv->discreteUncSetRealBasicProbs, &vi->DSRp);
+	// Note: map consolidation and/or reordering cannot be undone
+	flatten_num_rrma(&dv->discreteUncSetRealValuesProbs,    &vi->ndusr);
+	flatten_rrma_keys(&dv->discreteUncSetRealValuesProbs,   &vi->dusr);
+	flatten_rrma_values(&dv->discreteUncSetRealValuesProbs, &vi->DSRp);
       }
       // discrete state set int vars
       if ((n = dv->numDiscreteStateSetIntVars)) {
+	// Note: set consolidation and/or reordering cannot be undone
 	flatten_num_isa(&dv->discreteStateSetInt, &vi->ndssi);
 	flatten_isa(&dv->discreteStateSetInt,     &vi->dssi);
       }
       // discrete state set real vars
       if ((n = dv->numDiscreteStateSetRealVars)) {
+	// Note: set consolidation and/or reordering cannot be undone
 	flatten_num_rsa(&dv->discreteStateSetReal, &vi->ndssr);
 	flatten_rsa(&dv->discreteStateSetReal,     &vi->dssr);
       }
