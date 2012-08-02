@@ -375,7 +375,7 @@ void NonDGlobalInterval::post_process_run_results(bool minimize)
     dist_conv = fn_conv = DBL_MAX; // first iteration
   else if (eifFlag) {
     // Euclidean distance of successive optimal solns: continuous variables only
-    dist_conv = rel_change_rv(c_vars_star, prevCVStar);
+    dist_conv = rel_change_L2(c_vars_star, prevCVStar);
 
     // EIF values directly provide estimates of soln convergence
     fn_conv = -fn_star; // EI negated for minimization
@@ -401,8 +401,8 @@ void NonDGlobalInterval::post_process_run_results(bool minimize)
   else {
     // Euclidean distance of successive optimal solns: continuous,
     // discrete int, and discrete real variables
-    dist_conv = rel_change_rv_iv_rv(c_vars_star, prevCVStar, di_vars_star,
-				    prevDIVStar, dr_vars_star, prevDRVStar);
+    dist_conv = rel_change_L2(c_vars_star, prevCVStar, di_vars_star,
+			      prevDIVStar, dr_vars_star, prevDRVStar);
     // for SBO, reference fn_star to previous value
     fn_conv = std::abs(1. - fn_star / prevFnStar);// change in lower,upper bound
   }

@@ -73,4 +73,119 @@ bool operator==(const SizetArray& sa, SizetMultiArrayConstView smav)
 }
 
 
+// ---------------------------------
+// miscellaneous numerical utilities
+// ---------------------------------
+
+Real rel_change_L2(const RealVector& curr_rv, const RealVector& prev_rv)
+{
+  size_t i, rv_len = prev_rv.length();
+  Real norm = 0., tol = 1.e-50;
+
+  // check previous vector for zeros
+  bool zero_prev = false, zero_curr = false;
+  for (i=0; i<rv_len; ++i)
+    if (std::abs(prev_rv[i]) < tol)
+      { zero_prev = true; break; }
+  // check current vector for zeros
+  if (zero_prev)
+    for (i=0; i<rv_len; ++i)
+      if (std::abs(curr_rv[i]) < tol)
+	{ zero_curr = true; break; }
+
+  // Compute norm of relative change one of three ways
+  if (!zero_prev) { // change relative to previous
+    for (i=0; i<rv_len; ++i)
+      norm += std::pow(curr_rv[i] / prev_rv[i] - 1., 2.);
+    return std::sqrt(norm);
+  }
+  else if (!zero_curr) { // change relative to current
+    for (i=0; i<rv_len; ++i)
+      norm += std::pow(prev_rv[i] / curr_rv[i] - 1., 2.);
+    return std::sqrt(norm);
+  }
+  else { // absolute change scaled by norm of previous
+    Real scaling = 0.;
+    for (i=0; i<rv_len; ++i) {
+      norm    += std::pow(curr_rv[i] - prev_rv[i], 2.);
+      scaling += std::pow(prev_rv[i], 2.);
+    }
+    return (scaling > tol) ? std::sqrt(norm / scaling) : std::sqrt(norm);
+  }
+}
+
+
+Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
+		   const IntVector&  curr_iv,  const IntVector&  prev_iv,
+		   const RealVector& curr_rv2, const RealVector& prev_rv2)
+{
+  size_t i, rv1_len = prev_rv1.length(), iv_len = prev_iv.length(),
+    rv2_len = prev_rv2.length();
+  Real norm = 0., tol = 1.e-50;
+
+  // check previous vectors for zeros
+  bool zero_prev = false, zero_curr = false;
+  for (i=0; i<rv1_len; ++i)
+    if (std::abs(prev_rv1[i]) < tol)
+      { zero_prev = true; break; }
+  if (!zero_prev)
+    for (i=0; i<iv_len; ++i)
+      if (std::abs(prev_iv[i]))
+	{ zero_prev = true; break; }
+  if (!zero_prev)
+    for (i=0; i<rv2_len; ++i)
+      if (std::abs(prev_rv2[i]) < tol)
+	{ zero_prev = true; break; }
+  // check current vectors for zeros
+  if (zero_prev) {
+    for (i=0; i<rv1_len; ++i)
+      if (std::abs(curr_rv1[i]) < tol)
+	{ zero_curr = true; break; }
+    if (!zero_prev)
+      for (i=0; i<iv_len; ++i)
+	if (std::abs(curr_iv[i]))
+	  { zero_curr = true; break; }
+    if (!zero_prev)
+      for (i=0; i<rv2_len; ++i)
+	if (std::abs(curr_rv2[i]) < tol)
+	  { zero_curr = true; break; }
+  }
+
+  // Compute norm of relative change one of three ways
+  if (!zero_prev) { // change relative to previous
+    for (i=0; i<rv1_len; ++i)
+      norm += std::pow(curr_rv1[i] / prev_rv1[i] - 1., 2.);
+    for (i=0; i<iv_len; ++i)
+      norm += std::pow(curr_iv[i]  / prev_iv[i]  - 1., 2.);
+    for (i=0; i<rv2_len; ++i)
+      norm += std::pow(curr_rv2[i] / prev_rv2[i] - 1., 2.);
+    return std::sqrt(norm);
+  }
+  else if (!zero_curr) { // change relative to current
+    for (i=0; i<rv1_len; ++i)
+      norm += std::pow(prev_rv1[i] / curr_rv1[i] - 1., 2.);
+    for (i=0; i<iv_len; ++i)
+      norm += std::pow(prev_iv[i]  / curr_iv[i]  - 1., 2.);
+    for (i=0; i<rv2_len; ++i)
+      norm += std::pow(prev_rv2[i] / curr_rv2[i] - 1., 2.);
+    return std::sqrt(norm);
+  }
+  else { // absolute change scaled by norm of previous
+    Real scaling = 0.;
+    for (i=0; i<rv1_len; ++i) {
+      norm    += std::pow(curr_rv1[i] - prev_rv1[i], 2.);
+      scaling += prev_rv1[i] * prev_rv1[i];
+    }
+    for (i=0; i<iv_len; ++i) {
+      norm    += std::pow(curr_iv[i] - prev_iv[i], 2.);
+      scaling += prev_iv[i] * prev_iv[i];
+    }
+    for (i=0; i<rv2_len; ++i) {
+      norm    += std::pow(curr_rv2[i] - prev_rv2[i], 2.);
+      scaling += prev_rv2[i] * prev_rv2[i];
+    }
+    return (scaling > tol) ? std::sqrt(norm / scaling) : std::sqrt(norm);
+  }
+}
+
 } // namespace Dakota

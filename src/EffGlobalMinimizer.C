@@ -279,14 +279,13 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     if ( -eif_star < convergenceTol )
       ++eif_convergence_cntr;
 
-    // Check for convergence based in distance between successive points
-    // if the dist between successive points is very small
-    // there is no point in asking this to happen consecutively 
-    // since the new training point will essentially be the prev
-    // optimal point 
+    // Check for convergence based in distance between successive points.
+    // If the dist between successive points is very small, then there is
+    // little value in updating the GP since the new training point will
+    // essentially be the previous optimal point.
 
     Real dist_cstar = (prev_cv_star.empty()) ? DBL_MAX :
-      rel_change_rv(c_vars, prev_cv_star);
+      rel_change_L2(c_vars, prev_cv_star);
     // update prev_cv_star
     copy_data(c_vars, prev_cv_star);
     if ( dist_cstar < dist_tol)
