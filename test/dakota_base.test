@@ -12090,6 +12090,18 @@ Test Number 9 succeeded
 <<<<< Best objective function  =
                       7.6180045513e-05
 <<<<< Best data captured at function evaluation 109
+dakota_sbgouu_short_column_discrete.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (APPROX_INTERFACE): 126250 total (126250 new, 0 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 2695 total (1463 new, 1232 duplicate)
+<<<<< Best parameters          =
+                      4.0041083032e+02 P_mean
+                      2.0120630901e+03 M_mean
+                      5.9774221182e+00 Y_mean
+                                     2 ddsi_ModelForm
+<<<<< Best objective function  =
+                     -3.6671042144e+00
+<<<<< Best data not found in evaluation cache
 dakota_sbnls_rosen.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE): 49 total (49 new, 0 duplicate)

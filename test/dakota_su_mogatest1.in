@@ -44,24 +44,10 @@ method,
 model,
     id_model = 'SURROGATE'
     surrogate global
-        responses_pointer = 'SURROGATE_RESP'
         dace_method_pointer = 'SAMPLING'
         correction additive zeroth_order
-      #  polynomial quadratic
+#	polynomial quadratic
         gaussian_process dakota
-
-variables,
-    continuous_design = 3
-        initial_point      0     0     0
-        upper_bounds       4     4     4
-        lower_bounds      -4    -4    -4
-        descriptors      'x1'  'x2'  'x3'
-
-responses,
-    id_responses = 'SURROGATE_RESP'
-    objective_functions = 2
-    no_gradients
-    no_hessians
 
 method,
     id_method = 'SAMPLING'
@@ -75,7 +61,13 @@ model,
     id_model = 'TRUTH'
     single
       interface_pointer = 'TRUE_FN'
-      responses_pointer = 'TRUE_RESP'
+
+variables,
+    continuous_design = 3
+        initial_point      0     0     0
+        upper_bounds       4     4     4
+        lower_bounds      -4    -4    -4
+        descriptors      'x1'  'x2'  'x3'
 
 interface,
     id_interface = 'TRUE_FN'
@@ -83,7 +75,6 @@ interface,
       analysis_driver = 'mogatest1'
 
 responses,
-    id_responses = 'TRUE_RESP'
     objective_functions = 2
     no_gradients
     no_hessians

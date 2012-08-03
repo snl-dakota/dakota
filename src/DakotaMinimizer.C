@@ -55,39 +55,26 @@ Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
   if (!numFinalSolutions && methodName != "moga")
     numFinalSolutions = 1;
 
-  // Check for active design variables
-  size_t num_ddrv = probDescDB.get_sizet("variables.discrete_design_range"),
-    num_ddsiv = probDescDB.get_sizet("variables.discrete_design_set_int"),
-    num_ddsrv = probDescDB.get_sizet("variables.discrete_design_set_real");
-  if (methodName == "moga" || methodName == "soga") {
+  bool err_flag = false;
+  // Check for active design variables and discrete variable support
+  if (methodName == "moga"      || methodName == "soga" ||
+      methodName == "coliny_ea" || methodName == "surrogate_based_global") {
     if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteRealVars) {
-      Cerr << "\nError: " << methodName << " requires active continuous or "
-	   << "active discrete variables." << std::endl;
-      abort_handler(-1);
+      Cerr << "\nError: " << methodName << " requires active variables."
+	   << std::endl;
+      err_flag = true;
     }
   }
-  else if (methodName == "coliny_ea") {
-    if (!numContinuousVars && !num_ddrv) {
-      Cerr << "\nError: " << methodName << " requires active continuous or "
-	   << "active discrete range variables." << std::endl;
-      abort_handler(-1);
+  else { // methods supporting only continuous design variables
+    if (!numContinuousVars) {
+      Cerr << "\nError: " << methodName << " requires active continuous "
+	   << "variables." << std::endl;
+      err_flag = true;
     }
+    if (numDiscreteIntVars || numDiscreteRealVars)
+      Cerr << "\nWarning: discrete design variables ignored by " << methodName
+	   << std::endl;
   }
-  else if (!numContinuousVars) {
-    Cerr << "\nError: " << methodName << " requires active continuous "
-	 << "variables." << std::endl;
-    abort_handler(-1);
-  }
-
-  // check for discrete variable support
-  if (num_ddrv && (methodName != "moga" && methodName != "soga" &&
-		   methodName != "coliny_ea") )
-    Cerr << "\nWarning: discrete design range variables ignored by "
-	 << methodName << std::endl;
-  if ( (num_ddsiv || num_ddsrv) && (methodName != "moga" &&
-				    methodName != "soga") )
-    Cerr << "\nWarning: discrete design set variables ignored by "
-	 << methodName << std::endl;
 
   // Check for linear constraint support in method selection
   if ( ( numLinearIneqConstraints || numLinearEqConstraints )       &&
@@ -99,7 +86,7 @@ Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
     Cerr << "\nError: linear constraints not currently supported by "
 	 << methodName << ".\n       Please select a different method for "
          << "generally constrained problems." << std::endl;
-    abort_handler(-1);
+    err_flag = true;
   }
 
   // Check for nonlinear constraint support in method selection.  Note that
@@ -114,7 +101,7 @@ Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
     Cerr << "\nError: nonlinear constraints not currently supported by "
 	 << methodName << ".\n       Please select a different method for "
 	 << "generally constrained problems." << std::endl;
-    abort_handler(-1);
+    err_flag = true;
   }
 
   // check for gradient/Hessian/optimizer match: abort with an error for cases
@@ -128,7 +115,7 @@ Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
 	 methodName.ends("_newton")   || methodName == "nl2sol"	      ) ) {
     Cerr << "\nError: gradient-based optimizers require a gradient "
          << "specification." << std::endl;
-    abort_handler(-1);
+    err_flag = true;
   }
   if ( hessianType != "none" && methodName != "optpp_newton" )
     Cerr << "\nWarning: Hessians are only utilized by full Newton methods.\n\n";
@@ -138,6 +125,9 @@ Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
 	 methodName == "moga"       || methodName == "soga" ) )
     Cerr << "\nWarning: Gradient/Hessian specification for a nongradient-based "
 	 << "optimizer is ignored.\n\n";
+
+  if (err_flag)
+    abort_handler(-1);
 
   // set boundConstraintFlag
   size_t i;

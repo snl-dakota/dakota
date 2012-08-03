@@ -1,0 +1,134 @@
+
+strategy,
+	single_method
+	  method_pointer = 'SBGO'
+
+#################################
+# begin SBGO specification #
+#################################
+method,
+	id_method = 'SBGO'
+	model_pointer = 'SBGO_M'
+	surrogate_based_global
+#	  approx_method_name = 'coliny_ea'
+	  approx_method_pointer = 'EA_MINLP'
+	  max_iterations = 25
+	  output quiet
+
+model,
+	id_model = 'SBGO_M'
+	variables_pointer  = 'SBGO_V'
+	responses_pointer  = 'SBGO_R'
+	surrogate global
+          dace_method_pointer = 'SAMPLING'
+	  gaussian_process surfpack
+#	  correction additive zeroth_order
+	  minimum_points
+
+variables,
+	id_variables = 'SBGO_V'
+	continuous_design = 3
+#	  initial_point = 500 2000 5
+	  lower_bounds = 400 1750 4
+	  upper_bounds = 600 2250 6
+	  descriptors = 'P_mean' 'M_mean' 'Y_mean'		
+	discrete_design_set_int = 1
+#	  initial_point = 1
+	  set_values =  1   2   3   4
+	  descriptors = 'ddsi_ModelForm'		
+
+responses,
+	id_responses = 'SBGO_R'
+	objective_functions = 1
+#	response_descriptors = 'mean_limit'
+	response_descriptors = 'beta_cdf_limit'
+	no_gradients
+	no_hessians
+
+################################
+# begin EA_MINLP specification #
+################################
+method,
+	id_method = 'EA_MINLP'
+	coliny_ea
+	  population_size = 100
+	  max_iterations = 50 max_function_evaluations = 5000
+	  seed = 1237
+
+############################
+# begin DACE specification #
+############################
+method,
+	id_method = 'SAMPLING'
+	model_pointer = 'NESTED_UQ'
+	sampling
+	  samples = 10 seed = 12347
+	  sample_type lhs
+
+model,
+	id_model = 'NESTED_UQ'
+	nested
+	  variables_pointer  = 'SBGO_V'
+	  sub_method_pointer = 'ALEATORY'
+	  responses_pointer  = 'SBGO_R'
+	  primary_variable_mapping   = 'P'    'M'    'Y'    'ModelForm'	
+	  secondary_variable_mapping = 'mean' 'mean' 'mean' ''
+	  primary_response_mapping   = 0.  0. -1.
+#	  primary_response_mapping   = 1.  0.  0.
+
+################################
+# begin ALEATORY specification #
+################################
+method,
+	id_method = 'ALEATORY'
+	model_pointer = 'ALEAT_M'
+	polynomial_chaos askey
+	  sparse_grid_level = 2
+	  response_levels = 0.0
+	  compute reliabilities
+	  cumulative distribution
+	  output silent
+
+model,
+	id_model = 'ALEAT_M'
+	single
+	  variables_pointer = 'ALEAT_V'
+	  interface_pointer = 'ALEAT_I'
+	  responses_pointer = 'ALEAT_R'
+
+variables,
+	id_variables = 'ALEAT_V'
+	normal_uncertain = 2
+	  means             =  500.0   2000.0
+	  std_deviations    =  100.0    400.0
+	  descriptors       =   'P'      'M'
+	lognormal_uncertain = 1
+       	  means             =  5.0
+	  std_deviations    =  0.5
+	  descriptors       =  'Y'
+        uniform_uncertain = 2
+	  lower_bounds      5.    15.
+	  upper_bounds     15.    25.
+          descriptors      'b'    'h'
+	uncertain_correlation_matrix =  1   0.5 0 0 0
+					0.5 1   0 0 0
+					0   0   1 0 0
+					0   0   0 1 0
+					0   0   0 0 1
+	discrete_state_set_integer = 1
+	  set_values     = 1   2   3   4
+	  descriptors    = 'ModelForm'	
+
+interface,
+	id_interface = 'ALEAT_I'
+	direct
+	  analysis_driver = 'mf_short_column'
+#	  deactivate evaluation_cache restart_file
+
+responses,
+	id_responses = 'ALEAT_R'
+	response_descriptors = 'limit_state'
+	response_functions = 1
+	no_gradients
+	no_hessians
+
