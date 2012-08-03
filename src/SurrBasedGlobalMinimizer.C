@@ -187,11 +187,10 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
     iteratedModel.component_parallel_mode(TRUTH_MODEL);
     IntResponseMap truth_resp_results;
     for (i=0; i<num_results; i++) {
-      // first, set the current values of the variables in the model.
-      const Variables& vars_results_i = vars_results[i];
-      truth_model.continuous_variables(vars_results_i.continuous_variables());
+      // set the current values of the active variables in the truth model
+      truth_model.active_variables(vars_results[i]);
 
-      // now request the evaluation in synchronous or asyncronous mode.
+      // request the evaluation in synchronous or asyncronous mode.
       if (truth_asynch_flag)
         truth_model.asynch_compute_response();
       else {
@@ -221,12 +220,18 @@ void SurrBasedGlobalMinimizer::minimize_surrogates()
       ofile.precision(12);
       IntRespMCIter it = truth_resp_results.begin();
       for (i=0; i<num_results; ++i, ++it) {
-	const RealVector& c_vars  = vars_results[i].continuous_variables();
+	const RealVector&  c_vars = vars_results[i].continuous_variables();
+	const IntVector&  di_vars = vars_results[i].discrete_int_variables();
+	const RealVector& dr_vars = vars_results[i].discrete_real_variables();
 	const RealVector& fn_vals = it->second.function_values();
 	std::copy(c_vars.values(), c_vars.values() + c_vars.length(),
-	          std::ostream_iterator<double>(ofile,"\t"));
+	          std::ostream_iterator<Real>(ofile,"\t"));
+	std::copy(di_vars.values(), di_vars.values() + di_vars.length(),
+	          std::ostream_iterator<int>(ofile,"\t"));
+	std::copy(dr_vars.values(), dr_vars.values() + dr_vars.length(),
+	          std::ostream_iterator<Real>(ofile,"\t"));
 	std::copy(fn_vals.values(), fn_vals.values() + fn_vals.length(),
-	          std::ostream_iterator<double>(ofile,"\t"));
+	          std::ostream_iterator<Real>(ofile,"\t"));
 	ofile << '\n';
       }
       ofile.close();
