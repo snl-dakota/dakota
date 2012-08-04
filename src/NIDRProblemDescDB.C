@@ -3069,7 +3069,7 @@ static void Vgen_HistogramPtUnc(DataVariablesRep *dv, size_t offset)
   V = &dv->discreteRealAleatoryUncVars;
   A = &dv->histogramUncPointPairs;
   if ((m = A->size())) {
-    for(i = 0; i < m; ++i) {
+    for(i = 0; i < m; ++i, ++offset) {
       r = &((*A)[i]);
       je = r->length() - 2;
       (*L)[offset] = (*r)[0];
@@ -3078,7 +3078,7 @@ static void Vgen_HistogramPtUnc(DataVariablesRep *dv, size_t offset)
       for(j = 0; j < je && (*r)[j+2] <= mean; j += 2);
       if (j < je && mean - (*r)[j] > (*r)[j+2] - mean)
 	j += 2;
-      (*V)[offset++] = (*r)[j];
+      (*V)[offset] = (*r)[j];
     }
   }
 }
@@ -3179,7 +3179,7 @@ static void Vgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
   ciLB  = &dv->continuousIntervalUncLowerBounds;
   ciUB  = &dv->continuousIntervalUncUpperBounds;
   P     = &dv->continuousIntervalUncBasicProbs;
-  for (i=0; i<n; ++offset, ++i) {
+  for (i=0; i<n; ++i, ++offset) {
     ciLBi = &((*ciLB)[i]); ciUBi = &((*ciUB)[i]); Pi = &((*P)[i]);
     m = Pi->length();
     ub = -(lb = DBL_MAX);
@@ -3310,33 +3310,33 @@ static void Vgen_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset)
   }
 }
 
-static void 
+static bool 
 check_set_keys(size_t num_v, size_t ds_len, const char *kind,
-	       IntArray *input_nds, bool& key, int& avg_num_ds)
+	       IntArray *input_nds, int& avg_num_ds)
 {
   // Process num_set_values key or define default allocation
-  if (input_nds) {
-    key = true;
+  bool key = (input_nds);
+  if (key) {
     if (input_nds->size() != num_v) {
       wrong_number("num_set_values value(s)", kind, num_v, input_nds->size());
-      return;
+      return key;
     }
     int num_ds_i, total_ds = 0;
     for (size_t i=0; i<num_v; ++i) {
       total_ds += num_ds_i = (*input_nds)[i];
       if (num_ds_i < 1)
-	{ too_small(kind); return; }
+	{ too_small(kind); return key; }
     }
     if (ds_len != total_ds)
-      { wrong_number("set_values", kind, total_ds, ds_len); return; }
+      { wrong_number("set_values", kind, total_ds, ds_len); return key; }
   }
   else { // num_set_values is optional; use average len if no spec
-    key = false;
     if (ds_len % num_v)
-      { not_div(kind, ds_len, num_v); return; }
+      { not_div(kind, ds_len, num_v); return key; }
     else
       avg_num_ds = ds_len / num_v;
   }
+  return key;
 }
 
 static void 
@@ -3348,10 +3348,9 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
 
   int avg_num_dsi, ndup, dupval[2], num_dsi_i, val;
   size_t i, j, cntr, dsi_len = input_dsi->length();
-  bool key;
 
   // Process num_set_values key or define default allocation
-  check_set_keys(num_v, dsi_len, kind, input_ndsi, key, avg_num_dsi);
+  bool key = check_set_keys(num_v, dsi_len, kind, input_ndsi, avg_num_dsi);
 
   // Insert values into the IntSetArray
   dsi_all.resize(num_v);
@@ -3396,10 +3395,9 @@ Vchk_DIset(size_t num_v, const char *kind, IntArray *input_ndsi,
   if (num_p && num_p != dsi_len)
     wrong_number("set_probabilities", kind, dsi_len, num_p);
   Real prob, default_p;
-  bool key;
 
   // Process num_set_values key or define default allocation
-  check_set_keys(num_v, dsi_len, kind, input_ndsi, key, avg_num_dsi);
+  bool key = check_set_keys(num_v, dsi_len, kind, input_ndsi, avg_num_dsi);
 
   // Insert values into the IntRealMapArray
   dsi_vals_probs.resize(num_v);
@@ -3434,10 +3432,9 @@ Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
   int avg_num_dsr, ndup, num_dsr_i;
   Real dupval[2], val;
   size_t i, j, cntr, dsr_len = input_dsr->length();
-  bool key;
 
   // Process num_set_values key or define default allocation
-  check_set_keys(num_v, dsr_len, kind, input_ndsr, key, avg_num_dsr);
+  bool key = check_set_keys(num_v, dsr_len, kind, input_ndsr, avg_num_dsr);
 
   // Insert values into the RealSetArray
   dsr_all.resize(num_v);
@@ -3482,10 +3479,9 @@ Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
   if (num_p && num_p != dsr_len)
     wrong_number("set_probabilities", kind, dsr_len, num_p);
   Real prob, default_p, dupval[2], val;
-  bool key;
 
   // Process num_set_values key or define default allocation
-  check_set_keys(num_v, dsr_len, kind, input_ndsr, key, avg_num_dsr);
+  bool key = check_set_keys(num_v, dsr_len, kind, input_ndsr, avg_num_dsr);
 
   // Insert values into the RealRealMapArray
   dsr_vals_probs.resize(num_v);
@@ -3509,26 +3505,22 @@ Vchk_DRset(size_t num_v, const char *kind, IntArray  *input_ndsr,
     suppressed(kind, ndup, 0, dupval);
 }
 
-static void 
+static bool 
 check_LUV_size(size_t num_v, IntVector& L, IntVector& U, IntVector& V,
-	       bool aggregate_LUV, size_t offset, bool& init_V)
+	       bool aggregate_LUV, size_t offset)
 {
-  init_V = true;
+  bool init_V = true;
   if (aggregate_LUV) {
     int max_index = offset + num_v - 1;
     if (max_index >= L.length() || max_index >= U.length() ||
-	max_index >= V.length()) {
+	max_index >= V.length())
       Squawk("max index %d out of range for aggregate updates in Vgen_DIset",
 	     max_index);
-      return;
-    }
   }
   else {
-    if (offset) {
+    if (offset)
       Squawk("unexpected offset (%d) for non-aggregate mode in Vgen_DIset",
 	     (int)offset);
-      return;
-    }
     L.sizeUninitialized(num_v);
     U.sizeUninitialized(num_v);
     if (V.length() == num_v) // user spec --> already assigned by var_ivec()
@@ -3536,28 +3528,25 @@ check_LUV_size(size_t num_v, IntVector& L, IntVector& U, IntVector& V,
     else
       V.sizeUninitialized(num_v);
   }
+  return init_V;
 }
 
-static void 
+static bool 
 check_LUV_size(size_t num_v, RealVector& L, RealVector& U, RealVector& V,
-	       bool aggregate_LUV, size_t offset, bool& init_V)
+	       bool aggregate_LUV, size_t offset)
 {
-  init_V = true;
+  bool init_V = true;
   if (aggregate_LUV) {
     int max_index = offset + num_v - 1;
     if (max_index >= L.length() || max_index >= U.length() ||
-	max_index >= V.length()) {
+	max_index >= V.length())
       Squawk("max index %d out of range for aggregate updates in Vgen_DRset",
 	     max_index);
-      return;
-    }
   }
   else {
-    if (offset) {
+    if (offset)
       Squawk("unexpected offset (%d) for non-aggregate mode in Vgen_DRset",
 	     (int)offset);
-      return;
-    }
     L.sizeUninitialized(num_v);
     U.sizeUninitialized(num_v);
     if (V.length() == num_v) // user spec --> already assigned by var_rvec()
@@ -3565,6 +3554,7 @@ check_LUV_size(size_t num_v, RealVector& L, RealVector& U, RealVector& V,
     else
       V.sizeUninitialized(num_v);
   }
+  return init_V;
 }
 
 static void 
@@ -3575,9 +3565,8 @@ Vgen_DIset(size_t num_v, IntSetArray& sets, IntVector& L, IntVector& U,
   Real avg_val, r_val;
   int i, i_val, i_left, i_right;
   size_t num_set_i;
-  bool init_V;
 
-  check_LUV_size(num_v, L, U, V, aggregate_LUV, offset, init_V);
+  bool init_V = check_LUV_size(num_v, L, U, V, aggregate_LUV, offset);
 
   for(i = 0; i < num_v; ++i, ++offset) {
     IntSet& set_i = sets[i];
@@ -3626,9 +3615,8 @@ Vgen_DIset(size_t num_v, IntRealMapArray& vals_probs,
   Real avg_val, r_val;
   int i, i_val, i_left, i_right;
   size_t num_vp_i;
-  bool init_V;
 
-  check_LUV_size(num_v, L, U, V, aggregate_LUV, offset, init_V);
+  bool init_V = check_LUV_size(num_v, L, U, V, aggregate_LUV, offset);
 
   for(i = 0; i < num_v; ++i, ++offset) {
     IntRealMap& vp_i = vals_probs[i];
@@ -3676,11 +3664,10 @@ Vgen_DRset(size_t num_v, RealSetArray& sets, RealVector& L, RealVector& U,
   RSCIter ie, it;
   int i;
   size_t num_set_i;
-  bool init_V;
 
-  check_LUV_size(num_v, L, U, V, aggregate_LUV, offset, init_V);
+  bool init_V = check_LUV_size(num_v, L, U, V, aggregate_LUV, offset);
 
-  for(i = 0; i < num_v; ++i) {
+  for(i = 0; i < num_v; ++i, ++offset) {
     RealSet& set_i = sets[i];
     it = set_i.begin(); ie = set_i.end(); num_set_i = set_i.size();
     if (num_set_i == 0) // should not occur
@@ -3727,11 +3714,10 @@ Vgen_DRset(size_t num_v, RealRealMapArray& vals_probs,
   RRMCIter ie, it;
   int i;
   size_t num_vp_i;
-  bool init_V;
 
-  check_LUV_size(num_v, L, U, V, aggregate_LUV, offset, init_V);
+  bool init_V = check_LUV_size(num_v, L, U, V, aggregate_LUV, offset);
 
-  for(i = 0; i < num_v; ++i) {
+  for(i = 0; i < num_v; ++i, ++offset) {
     RealRealMap& vp_i = vals_probs[i];
     it = vp_i.begin(); ie = vp_i.end(); num_vp_i = vp_i.size();
     if (num_vp_i == 0) // should not occur
@@ -4167,7 +4153,7 @@ static Var_check
   var_mp_check_cv[] = {
 	Vchk_3(continuous_design,ContinuousDes),
 	Vchk_3(continuous_state,ContinuousState) },
-  var_mp_check_dsi[] = {
+  var_mp_check_dset[] = {
 	Vchk_3(discrete_design_set_integer,DiscreteDesSetInt),
 	Vchk_3(discrete_design_set_real,DiscreteDesSetReal),
 	Vchk_3(discrete_state_set_integer,DiscreteStateSetInt),
@@ -4203,7 +4189,7 @@ static Var_check
 
 // This is used within check_variables_node(): Var_boundchk() is applied
 static Var_rcheck
-  var_mp_rcheck[] = {
+  var_mp_cbound[] = {
 	Vchk_7(continuous_design,ContinuousDes,continuousDesign),
 	Vchk_7(continuous_state,ContinuousState,continuousState),
 	Vchk_5(normal_uncertain,NormalUnc,normalUnc),
@@ -4215,7 +4201,7 @@ static Var_rcheck
 
 // This is used within check_variables_node(): Var_iboundchk() is applied
 static Var_icheck
-  var_mp_icheck[] = {
+  var_mp_drange[] = {
 	Vchk_7(discrete_design_range,DiscreteDesRange,discreteDesignRange),
 	Vchk_7(discrete_state_range,DiscreteStateRange,discreteStateRange) };
 
@@ -4299,7 +4285,7 @@ make_variable_defaults(std::list<DataVariables>* dvl)
     // discrete design,state ranges
     Var_icheck *ic, *ice;
     offset = 0;
-    for(ic=var_mp_icheck, ice=ic + Numberof(var_mp_icheck); ic<ice; ++ic)
+    for(ic=var_mp_drange, ice=ic + Numberof(var_mp_drange); ic<ice; ++ic)
       if ((n = dv->*ic->n) > 0)
 	{ (*ic->vgen)(dv, offset); } // offset not used
     // discrete int aleatory uncertain use offset passed into Vgen_*Unc
@@ -4321,9 +4307,9 @@ make_variable_defaults(std::list<DataVariables>* dvl)
     for(c=var_mp_check_deur, ce=c + Numberof(var_mp_check_deur); c<ce; ++c)
       if ((n = dv->*c->n) > 0)
 	{ (*c->vgen)(dv, offset); offset += n; }
-    // these don't use an offset passed into Vgen_*Unc
+    // these don't use an offset passed into Vgen_Discrete*Set*
     offset = 0;
-    for(c=var_mp_check_dsi, ce=c + Numberof(var_mp_check_dsi); c<ce; ++c)
+    for(c=var_mp_check_dset, ce=c + Numberof(var_mp_check_dset); c<ce; ++c)
       if ((n = dv->*c->n) > 0)
 	(*c->vgen)(dv, offset); // offset not used
 
@@ -4556,11 +4542,11 @@ void NIDRProblemDescDB::check_variables_node(void *v)
 
   // loop over continuous bound specs: cdv/csv/nuv/lnuv/uuv/luuv/truv/buv
   Var_rcheck *rc, *rce;
-  for(rc = var_mp_rcheck, rce = rc + Numberof(var_mp_rcheck); rc < rce; ++rc)
+  for(rc = var_mp_cbound, rce = rc + Numberof(var_mp_cbound); rc < rce; ++rc)
     Var_boundchk(dv, rc);
   // loop over discrete bound specs: design,state ranges
   Var_icheck *ic, *ice;
-  for(ic = var_mp_icheck, ice = ic + Numberof(var_mp_icheck); ic < ice; ++ic)
+  for(ic = var_mp_drange, ice = ic + Numberof(var_mp_drange); ic < ice; ++ic)
     Var_iboundchk(dv, ic);
 
   /* finish up and deallocate temporary Var_Info data */

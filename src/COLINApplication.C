@@ -87,7 +87,7 @@ void COLINApplication::set_problem(Model& model) {
   const RealSetArray& ddsrv_values
     = iteratedModel.discrete_design_set_real_values();
   size_t i, num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
-    num_ddrv  = model.div() - num_ddsiv;
+    num_ddrv = model.div() - num_ddsiv;
 
   // Get the upper and lower bounds on the discrete variables.
 
@@ -366,8 +366,8 @@ colin_request_to_dakota_request(const utilib::Any &domain,
     = iteratedModel.discrete_design_set_int_values();
   const RealSetArray& ddsrv_values
     = iteratedModel.discrete_design_set_real_values();
-  size_t  num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
-    num_ddrv  = iteratedModel.div() - num_ddsiv, offset;
+  size_t num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
+    num_ddrv = iteratedModel.div() - num_ddsiv, offset;
 
   // Get the mixed variables for the point.
 
@@ -384,7 +384,7 @@ colin_request_to_dakota_request(const utilib::Any &domain,
   IntVector ddv;
   TypeManager()->lexical_cast(miv.Integer(), ddv);
 
-  IntVector intVariableHolder(iteratedModel.div());
+  IntVector   intVariableHolder(iteratedModel.div());
   RealVector realVariableHolder(iteratedModel.drv());
 
   // Assign non-set integer variables to DAKOTA integer variables.
@@ -402,9 +402,9 @@ colin_request_to_dakota_request(const utilib::Any &domain,
     intVariableHolder[j+offset] = set_index_to_value(colin_index, ddsiv_values[j]);
   }
 
-  // Likewise for the real set discrete variables.
-
   iteratedModel.discrete_int_variables(intVariableHolder);
+
+  // Likewise for the real set discrete variables.
 
   offset += num_ddsiv;
   for (size_t j=0; j<num_ddsrv; j++) {

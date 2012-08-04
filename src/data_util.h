@@ -682,6 +682,11 @@ template <typename OrdinalType, typename ScalarType>
 const ScalarType& set_index_to_value(OrdinalType index,
 				     const std::set<ScalarType>& values)
 {
+  // TO DO: conditional activation for automatic bounds checking
+  if (index < 0 || index >= values.size()) {
+    Cerr << "\nError: index out of range in set_index_to_value()" << std::endl;
+    abort_handler(-1);
+  }
   typename std::set<ScalarType>::const_iterator cit = values.begin();
   std::advance(cit, index);
   return *cit;
@@ -712,6 +717,11 @@ template <typename OrdinalType, typename KeyType, typename ValueType>
 const KeyType& map_index_to_key(OrdinalType index,
 				const std::map<KeyType, ValueType>& pairs)
 {
+  // TO DO: conditional activation for automatic bounds checking
+  if (index < 0 || index >= pairs.size()) {
+    Cerr << "\nError: index out of range in map_index_to_key()" << std::endl;
+    abort_handler(-1);
+  }
   typename std::map<KeyType, ValueType>::const_iterator cit = pairs.begin();
   std::advance(cit, index);
   return cit->first;
@@ -723,6 +733,11 @@ template <typename OrdinalType, typename KeyType, typename ValueType>
 const ValueType& map_index_to_value(OrdinalType index,
 				    const std::map<KeyType, ValueType>& pairs)
 {
+  // TO DO: conditional activation for automatic bounds checking
+  if (index < 0 || index >= pairs.size()) {
+    Cerr << "\nError: index out of range in map_index_to_value()" << std::endl;
+    abort_handler(-1);
+  }
   typename std::map<KeyType, ValueType>::const_iterator cit = pairs.begin();
   std::advance(cit, index);
   return cit->second;

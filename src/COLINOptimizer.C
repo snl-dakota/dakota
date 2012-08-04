@@ -325,7 +325,7 @@ void COLINOptimizer::find_optimum()
     // variables.  COLIN does not distinguish between discrete integer
     // and discrete real.
 
-    const RealVector& cv_init = iteratedModel.continuous_variables();
+    const RealVector&  cv_init = iteratedModel.continuous_variables();
     const IntVector&  div_init = iteratedModel.discrete_int_variables();
     const RealVector& drv_init = iteratedModel.discrete_real_variables();
     IntVector dv_init(numDiscreteIntVars+numDiscreteRealVars);
@@ -339,8 +339,8 @@ void COLINOptimizer::find_optimum()
       = iteratedModel.discrete_design_set_int_values();
     const RealSetArray& ddsrv_values
       = iteratedModel.discrete_design_set_real_values();
-    size_t  num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
-      num_ddrv  = numDiscreteIntVars - num_ddsiv, offset;
+    size_t num_ddsiv = ddsiv_values.size(), num_ddsrv = ddsrv_values.size(),
+      num_ddrv = numDiscreteIntVars - num_ddsiv, offset;
 
     // Initialize the continuous variables in COLIN's mixed-variable
     // object.
@@ -368,7 +368,13 @@ void COLINOptimizer::find_optimum()
     offset = num_ddrv;
     for (size_t i=0; i<num_ddsiv; i++) {
       size_t index = set_value_to_index(div_init[i+offset], ddsiv_values[i]);
-      dv_init[i+offset] = (int)index;
+      if (index == _NPOS) {
+	Cerr << "\nError: failure in discrete integer set lookup within "
+	     << "COLINOptimizer::find_optimum()" << std::endl;
+	abort_handler(-1);
+      }
+      else
+	dv_init[i+offset] = (int)index;
     }
 
     // Do the same for the real set variables.
@@ -376,7 +382,13 @@ void COLINOptimizer::find_optimum()
     offset += num_ddsiv;
     for (size_t i=0; i<num_ddsrv; i++) {
       size_t index = set_value_to_index(drv_init[i], ddsrv_values[i]);
-      dv_init[i+offset] = (int)index;
+      if (index == _NPOS) {
+	Cerr << "\nError: failure in discrete real set lookup within "
+	     << "COLINOptimizer::find_optimum()" << std::endl;
+	abort_handler(-1);
+      }
+      else
+	dv_init[i+offset] = (int)index;
     }
 
     // Now initialize the discrete variables in COLIN's mixed-variable
