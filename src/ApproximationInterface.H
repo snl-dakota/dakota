@@ -96,7 +96,7 @@ protected:
 			   const RealVector& dr_u_bnds);
 
   void rebuild_approximation(const BoolDeque& rebuild_deque);
-  void pop_approximation(bool save_surr_data);
+  void pop_approximation(bool save_surr_data, size_t pop_count = 0);
   void restore_approximation();
   bool restore_available();
   void finalize_approximation();

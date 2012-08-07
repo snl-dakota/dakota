@@ -163,7 +163,7 @@ public:
   virtual void rebuild_approximation(const BoolDeque& rebuild_deque);
 
   /// removes data from last append from the approximation
-  virtual void pop_approximation(bool save_surr_data);
+  virtual void pop_approximation(bool save_surr_data, size_t pop_count = 0);
 
   /// restores the approximation to a selected previous state
   virtual void restore_approximation();

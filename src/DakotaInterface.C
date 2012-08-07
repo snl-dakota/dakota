@@ -1024,14 +1024,14 @@ rebuild_approximation(const BoolDeque& rebuild_deque)
 }
 
 
-void Interface::pop_approximation(bool save_surr_data)
+void Interface::pop_approximation(bool save_surr_data, size_t pop_count)
 {
   if (interfaceRep) // envelope fwd to letter
-    interfaceRep->pop_approximation(save_surr_data);
+    interfaceRep->pop_approximation(save_surr_data, pop_count);
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
-	 << "(bool) function.\n       This interface does not support "
-	 << "approximation data removal." << std::endl;
+	 << "(bool, size_t)\n       function. This interface does not support "
+	 << "approximation\n       data removal." << std::endl;
     abort_handler(-1);
   }
 }

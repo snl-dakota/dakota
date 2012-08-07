@@ -70,8 +70,8 @@ public:
   /// rebuilds the approximation incrementally
   virtual void rebuild();
   /// removes entries from end of SurrogateData::{vars,resp}Data
-  /// (last points appended)
-  virtual void pop(bool save_data);
+  /// (last points appended, or as specified in args)
+  virtual void pop(bool save_data, size_t pop_count = 0);
   /// restores state prior to previous append()
   virtual void restore();
   /// queries availability of restoration for trial set

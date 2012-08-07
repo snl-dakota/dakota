@@ -138,7 +138,8 @@ public:
   /// to a previous append_approximation() call); flag manages storing
   /// of surrogate data for use in a subsequent restore_approximation()
   virtual void pop_approximation(bool save_surr_data,
-				 bool rebuild_flag = false);
+				 bool rebuild_flag = false,
+				 size_t pop_count = 0);
 
   /// restore a previous approximation data state within a surrogate
   virtual void restore_approximation();

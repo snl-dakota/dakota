@@ -321,12 +321,18 @@ void Approximation::rebuild()
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void Approximation::pop(bool save_data)
+void Approximation::pop(bool save_data, size_t pop_count)
 {
   if (approxRep)
-    approxRep->pop(save_data);
-  else
-    approxData.pop(popCount, save_data);
+    approxRep->pop(save_data, pop_count);
+  else {
+    if (pop_count > 0)
+      // use passed count
+      approxData.pop(pop_count, save_data);
+    else
+      // use stored count
+      approxData.pop(popCount, save_data);
+  }
 }
 
 
