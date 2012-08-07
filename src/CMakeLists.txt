@@ -367,7 +367,7 @@ CheckPackage(SURFPACK)
 if(HAVE_SURFPACK)
   list(APPEND interface_src SurfpackApproximation.C)
   include_directories(${Surfpack_BINARY_DIR} ${Surfpack_SOURCE_DIR}/src)
-  list(APPEND TPL_LIBS surfpack)
+  list(APPEND TPL_LIBS surfpack surfpack_fortran)
 endif(HAVE_SURFPACK)
 
 if(DAKOTA_PLUGIN)
