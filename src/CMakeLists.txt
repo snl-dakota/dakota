@@ -425,6 +425,25 @@ if(HAVE_ACRO)
   endforeach()
 endif(HAVE_ACRO)
 
+option(HAVE_ADAPTIVE_SAMPLING "Enable Morse-Smale-related sampling" OFF)
+option(HAVE_MORSE_SMALE 
+  "Use Morse-Smale; requires ANN and Dionysus libraries" OFF)
+if(HAVE_ADAPTIVE_SAMPLING)
+  add_definitions("-DHAVE_ADAPTIVE_SAMPLING")
+  list(APPEND iterator_src NonDAdaptiveSampling.C)
+  if(HAVE_MORSE_SMALE)
+    add_definitions("-DHAVE_MORSE_SMALE")
+    list(APPEND iterator_src MS_Complex.cpp)
+    # ANN does approximate k-nearest neighbor search
+    include_directories(${Dakota_SOURCE_DIR}/packages/ann/include)
+    list(APPEND link_directories ${Dakota_SOURCE_DIR}/packages/ann/lib)
+    list(APPEND EXTRA_TPL_LIBS ANN)
+    # Dionysus provides persistence diagram and bottleneck distance
+    # The MS_Complex class requires this unconditionally
+    add_definitions("-DHAVE_DIONYSUS")
+    include_directories(${Dakota_SOURCE_DIR}/packages/dionysus/include)
+  endif()
+endif()
 
 CheckPackage(QUESO)
 if(HAVE_QUESO)
