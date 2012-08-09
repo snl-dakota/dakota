@@ -557,8 +557,26 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		      ]
 		    ]
 		  ]
-		[ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
 		)
+	      |
+	      ( adaptive_sampling ALIAS nond_adaptive_sampling {N_mdm(lit,methodName_nond_adaptive_sampling)}
+	        [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
+                   [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
+                     freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+                   ] 
+		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+		  [ compute {0}
+		    probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+		    | gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+		    [ system {0}
+		      series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+		      | parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+		      ]
+		    ]
+		  ]
+		[ misc_options STRINGLIST {N_mdm(strL,miscOptions)} ]
+                ) 
 	      |
 	      ( global_evidence ALIAS nond_global_evidence {N_mdm(lit,methodName_nond_global_evidence)}
 	        [ ( sbo {N_mdm(lit,nondOptAlgorithm_sbo)}

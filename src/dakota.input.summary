@@ -829,6 +829,40 @@ KEYWORD12 method
 		]
 	      ]
 	    ]
+	  [ distribution
+	    cumulative
+	    | complementary
+	    ]
+	  [ probability_levels REALLIST
+	    [ num_probability_levels INTEGERLIST ]
+	    ]
+	  [ gen_reliability_levels REALLIST
+	    [ num_gen_reliability_levels INTEGERLIST ]
+	    ]
+	  [ rng
+	    mt19937
+	    | rnum2
+	    ]
+	  [ samples INTEGER ]
+	  [ seed INTEGER ]
+	  )
+	|
+	( adaptive_sampling ALIAS nond_adaptive_sampling
+	  [ points_file STRING
+	    [ annotated
+	    | freeform ]
+	    ]
+	  [ response_levels REALLIST
+	    [ num_response_levels INTEGERLIST ]
+	    [ compute
+	      probabilities
+	      | gen_reliabilities
+	      [ system
+		series
+		| parallel
+		]
+	      ]
+	    ]
 	  [ misc_options STRINGLIST ]
 	  [ distribution
 	    cumulative

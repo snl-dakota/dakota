@@ -87,6 +87,9 @@
 #ifdef DAKOTA_QUESO
 #include "NonDQUESOBayesCalibration.H"
 #endif
+#ifdef HAVE_ADAPTIVE_SAMPLING 
+#include "NonDAdaptiveSampling.H"
+#endif
 #include "ProblemDescDB.H"
 #include "ParallelLibrary.H"
 #include "DakotaGraphics.H"
@@ -443,6 +446,10 @@ Iterator* Iterator::get_iterator(Model& model)
 #ifdef HAVE_NCSU
   else if (method_name == "ncsu_direct")
     return new NCSUOptimizer(model);
+#endif
+#ifdef HAVE_ADAPTIVE_SAMPLING 
+  else if (method_name == "nond_adaptive_sampling")
+    return new NonDAdaptiveSampling(model);
 #endif
   else {
     Cerr << "Invalid iterator: " << method_name << " not available."

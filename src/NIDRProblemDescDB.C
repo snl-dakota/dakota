@@ -5145,6 +5145,7 @@ static Method_mp_lit
 	MP2(methodName,nl2sol),
 	MP2(methodName,nlpql_sqp),
 	MP2(methodName,nlssol_sqp),
+        MP2(methodName,nond_adaptive_sampling),
 	MP2(methodName,nond_bayes_calibration),
 	MP2(methodName,nond_global_evidence),
         MP2(methodName,nond_global_interval_est),
