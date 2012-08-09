@@ -142,17 +142,22 @@ void NonDAdaptiveSampling::quantify_uncertainty() {
   gpVar.resize(numEmulEval);
   gpMeans.resize(numEmulEval);
   indicator.resize(numPtsTotal);
-  int num_problem_vars=iteratedModel.acv();
+  //  int num_problem_vars=iteratedModel.acv();
 
   predictionErrors.resize(numRounds+1);
 
   RealVector temp_cvars;
+#ifdef HAVE_MORSE_SMALE
   update_amsc(); 
+#endif
 
 ////***ATTENTION***
 //// I do this all over the place, but there has to be a better way to obtain
 //// the dimensionality of the domain under test search "dim ="
 ////***END ATTENTION***
+
+  // BMA: you should just be able to use numContinuousVars for now, or this:
+  //  size_t dim = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars;
   int dim = 0;
   const Pecos::SurrogateData& gp_data = gpModel.approximation_data(0);
 
@@ -391,7 +396,9 @@ void NonDAdaptiveSampling::quantify_uncertainty() {
           points_to_add.push_back(iteratedModel.current_variables());
         }
         gpModel.append_approximation(points_to_add,responses_to_add, true);
+#ifdef HAVE_MORSE_SMALE
         update_amsc(respFnCount);
+#endif
         Cout << "Done with iteration  " << k << std::endl; 
       }
       RealVectorArray gp_final_data(numPtsTotal);
@@ -701,7 +708,9 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount) {
       IntResponsePair response_to_add(gpModel.evaluation_id(),current_response);
       Variables point_to_add(gpModel.current_variables());
       gpModel.append_approximation(point_to_add,response_to_add, true);
+#ifdef HAVE_MORSE_SMALE
       update_amsc(respFnCount);
+#endif
     }
     gpModel.pop_approximation(false, true, batchSize);
   }
@@ -713,6 +722,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount) {
 //// I do this all over the place, but there has to be a better way to obtain
 //// the dimensionality of the domain under test
 ////***END ATTENTION***
+    // BMA: See note above
     int dim = 
       gpModel.approximation_data(respFnCount).continuous_variables(0).length();
 
@@ -954,11 +964,7 @@ void NonDAdaptiveSampling::calc_score_topo_bottleneck(int respFnCount) {
        << "Morse-Smale complex or bottleneck score, setting all scores to " 
        << "zero" << std::endl;
   #endif
-////***ATTENTION***
-//// I am also not sure what should be the right behavior when this function
-//// is disabled. Should it abort?
-////***END ATTENTION***
-  emulEvalScores = 0.0;
+  abort_handler(-1);
 #endif
 }
 
@@ -981,11 +987,7 @@ void NonDAdaptiveSampling::calc_score_topo_avg_persistence(int respFnCount) {
   Cout << "ANN library not enabled, therefore cannot compute approximate "
        << "Morse-Smale complex or avg_persistence score, setting all scores to " 
        << "zero" << std::endl;
-////***ATTENTION***
-//// I am also not sure what should be the right behavior when this function
-//// is disabled. Should it abort?
-////***END ATTENTION***
-  emulEvalScores = 0.0;
+  abort_handler(-1);
 #endif
 }
 
@@ -1017,11 +1019,7 @@ void NonDAdaptiveSampling::calc_score_topo_alm_hybrid(int respFnCount) {
   Cout << "ANN library not enabled, therefore cannot compute approximate "
        << "Morse-Smale complex or hybrid score, setting all scores to " 
        << "zero" << std::endl;
-////***ATTENTION***
-//// I am also not sure what should be the right behavior when this function
-//// is disabled. Should it abort?
-////***END ATTENTION***
-  emulEvalScores = 0.0;
+  abort_handler(-1);
 #endif
 }
 
@@ -1031,9 +1029,7 @@ void NonDAdaptiveSampling::calc_score_topo_highest_persistence(int respFnCount) 
 
   //Just in case we don't make it far, at least these will be initialized
   // The scorer will randomly select a point if all scores are equal
-  for(int i = 0; i < numEmulEval; i++) {
-    emulEvalScores(i) = 0;
-  }
+  emulEvalScores = 0.0;
 
   const Pecos::SurrogateData& gp_data = gpModel.approximation_data(respFnCount);
   if(gp_data.size() < 1)
@@ -1065,12 +1061,9 @@ void NonDAdaptiveSampling::calc_score_topo_highest_persistence(int respFnCount) 
   std::vector<int> ordered_indices = ScoreTOPOHP(dim, numKneighbors, 
     train_x, train_y, n_train, cand_x, cand_y, n_cand);
 
-////***ATTENTION***
-//// This shouldn't happen, but if the MS_Complex code does not give you a list
-//// of all the vertices, then I figure we would at least like to know
-////***END ATTENTION***
   if(ordered_indices.size() != numEmulEval)
-    Cout << "This is a problem\n";
+    Cout << "\nWarning: Mismatch in size of ranked Morse-Smale points" 
+	 << std::endl;
 
   //The score will just be the inverse of the ranked order
   // e.g. the first ranked point will be given a score of numEmulEval
@@ -1089,11 +1082,7 @@ void NonDAdaptiveSampling::calc_score_topo_highest_persistence(int respFnCount) 
   Cout << "ANN library not enabled, therefore cannot compute approximate "
        << "Morse-Smale complex or highest_persistence score, setting all scores" 
        << " to zero" << std::endl;
-////***ATTENTION***
-//// I am also not sure what should be the right behavior when this function
-//// is disabled. Should it abort?
-////***END ATTENTION***
-  emulEvalScores = 0.0;
+  abort_handler(-1);
 #endif
 }
 
@@ -1178,12 +1167,8 @@ Real NonDAdaptiveSampling::calc_score_topo_bottleneck(int respFnCount,
        << "Morse-Smale complex or bottleneck distance score, returning NaN" 
        << std::endl;
   #endif
-////***ATTENTION***
-//// This works in Linux to generate a nan, but may not be platform-independent,
-//// I am also not sure what should be the right return value when this function
-//// is disabled. Should it abort?
-////***END ATTENTION***
-  return 0./0.;
+  abort_handler(-1);
+  return -DBL_MAX;
 #endif
 }
 
@@ -1207,12 +1192,8 @@ Real NonDAdaptiveSampling::calc_score_topo_avg_persistence(int respFnCount,
   Cout << "ANN library not enabled, therefore cannot compute approximate "
        << "Morse-Smale complex or avg_persistence score, returning NaN" 
        << std::endl;
-////***ATTENTION***
-//// This works in Linux to generate a nan, but may not be platform-independent,
-//// I am also not sure what should be the right return value when this function
-//// is disabled. Should it abort?
-////***END ATTENTION***
-  return 0./0.;
+  abort_handler(-1);
+  return -DBL_MAX;
 #endif
 }
 
@@ -1245,13 +1226,8 @@ Real NonDAdaptiveSampling::calc_score_topo_alm_hybrid(int respFnCount,
 #else
   Cout << "ANN library not enabled, therefore cannot compute approximate "
        << "Morse-Smale complex or hybrid score, returning NaN" << std::endl;
-
-////***ATTENTION***
-//// This works in Linux to generate a nan, but may not be platform-independent,
-//// I am also not sure what should be the right return value when this function
-//// is disabled. Should it abort?
-////***END ATTENTION***
-  return 0./0.;
+  abort_handler(-1);
+  return -DBL_MAX;
 #endif
 }
 
@@ -1281,6 +1257,7 @@ void NonDAdaptiveSampling::update_amsc(int respFnCount) {
 #else
   Cout << "ANN library not enabled, therefore cannot compute approximate "
        << "Morse-Smale complex" << std::endl;
+  abort_handler(-1);
 #endif
 }
 
@@ -1635,6 +1612,7 @@ void NonDAdaptiveSampling::output_for_optimization(int dim) {
 ////***ATTENTION***
 //// Bounds should not be hard-coded
 ////***END ATTENTION***
+// BMA: SHould be able to do continuous_lower/upper_)bounds from Model
 	        << "\t\tlower_bounds\t" << dim << "*-2.0" << std::endl
           << "\t\tupper_bounds\t" << dim << "*2.0" << std::endl
           << std::endl
@@ -1648,6 +1626,9 @@ void NonDAdaptiveSampling::output_for_optimization(int dim) {
 //// In lieu of this, I am hard-coding the function name and other things like
 //// the domain boundaries, in a general framework this is inadequate
 ////***END ATTENTION***
+    // BMA: Should be able to do
+    // iteratedModel.interface().analysis_drivers()[0]\
+    // to get the first driver in the list...
           << "herbie\'" << std:: endl
           << std::endl
           << "responses," << std::endl
