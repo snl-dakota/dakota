@@ -210,7 +210,7 @@ protected:
 
   void build();
   void rebuild();
-  void pop(bool save_data);
+  void pop(bool save_data, size_t pop_count = 0);
   //size_t pop_count();
   void restore();
   bool restore_available();
@@ -531,10 +531,10 @@ inline void PecosApproximation::rebuild()
 }
 
 
-inline void PecosApproximation::pop(bool save_data)
+inline void PecosApproximation::pop(bool save_data, size_t pop_count)
 {
   // base class implementation removes data from currentPoints
-  Approximation::pop(save_data);
+  Approximation::pop(save_data, pop_count);
   // map to Pecos::BasisApproximation
   pecosBasisApprox.decrement_coefficients();
 }
