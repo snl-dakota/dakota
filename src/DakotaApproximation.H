@@ -168,9 +168,9 @@ public:
   /// appends to popCountStack (number of entries to pop from end of
   /// SurrogateData::{vars,resp}Data, based on size of last data set appended)
   void pop_count(size_t count);
-  /// returns popCountStack.back() (number of entries to pop from end of
-  /// SurrogateData::{vars,resp}Data, based on size of last data set appended)
-  size_t pop_count() const;
+  // returns popCountStack.back() (number of entries to pop from end of
+  // SurrogateData::{vars,resp}Data, based on size of last data set appended)
+  //size_t pop_count() const;
   // clear popCountStack
   //void clear_stack();
 
@@ -386,8 +386,23 @@ add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag)
 }
 
 
+/*
 inline size_t Approximation::pop_count() const
-{ return (approxRep) ? approxRep->popCountStack.back() : popCountStack.back(); }
+{
+  if (approxRep) // envelope fwd to letter
+    return approxRep->pop_count();
+  else { // not virtual: base class implementation
+    if (popCountStack.empty()) {
+      Cerr << "\nError: empty count stack in Approximation::pop_count()."
+	   << std::endl;
+      abort_handler(-1);
+      return 0;
+    }
+    else
+      return popCountStack.back();
+  }
+}
+*/
 
 
 inline void Approximation::pop_count(size_t count)

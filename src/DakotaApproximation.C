@@ -326,6 +326,11 @@ void Approximation::pop(bool save_data)
   if (approxRep)
     approxRep->pop(save_data);
   else {
+    if (popCountStack.empty()) {
+      Cerr << "\nError: empty count stack in Approximation::pop()."
+	   << std::endl;
+      abort_handler(-1);
+    }
     approxData.pop(popCountStack.back(), save_data);
     popCountStack.pop_back();
   }
