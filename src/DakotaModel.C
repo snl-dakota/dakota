@@ -2600,15 +2600,14 @@ append_approximation(const VariablesArray& vars_array,
 }
 
 
-void Model::pop_approximation(bool save_surr_data, bool rebuild_flag,
-			      size_t pop_count)
+void Model::pop_approximation(bool save_surr_data, bool rebuild_flag)
 {
   if (modelRep) // envelope fwd to letter
-    modelRep->pop_approximation(save_surr_data, rebuild_flag, pop_count);
+    modelRep->pop_approximation(save_surr_data, rebuild_flag);
   else { // letter lacking redefinition of virtual fn.
-    Cerr << "Error: Letter lacking redefinition of virtual\n"
-	 << "       pop_approximation(bool, bool, size_t) function.  This model"
-	 << "does not\n       support approximation data removal." << std::endl;
+    Cerr << "Error: Letter lacking redefinition of virtual\n       "
+	 << "pop_approximation(bool, bool) function.  This model does not\n"
+	 << "       support approximation data removal." << std::endl;
     abort_handler(-1);
   }
 }

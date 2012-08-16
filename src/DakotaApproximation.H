@@ -71,7 +71,7 @@ public:
   virtual void rebuild();
   /// removes entries from end of SurrogateData::{vars,resp}Data
   /// (last points appended, or as specified in args)
-  virtual void pop(bool save_data, size_t pop_count = 0);
+  virtual void pop(bool save_data);
   /// restores state prior to previous append()
   virtual void restore();
   /// queries availability of restoration for trial set
@@ -165,12 +165,14 @@ public:
   void add(const Response& response, int fn_index, bool anchor_flag,
 	   bool deep_copy);
 
-  /// sets popCount (number of entries to pop from end of
+  /// appends to popCountStack (number of entries to pop from end of
   /// SurrogateData::{vars,resp}Data, based on size of last data set appended)
   void pop_count(size_t count);
-  /// returns popCount (number of entries to pop from end of
+  /// returns popCountStack.back() (number of entries to pop from end of
   /// SurrogateData::{vars,resp}Data, based on size of last data set appended)
   size_t pop_count() const;
+  // clear popCountStack
+  //void clear_stack();
 
   /// clear all build data (current and history) to restore original state
   void clear_all();
@@ -178,6 +180,8 @@ public:
   void clear_anchor();
   /// clear SurrogateData::{vars,resp}Data
   void clear_data();
+  /// clear popCountStack and SurrogateData::saved{Vars,Resp}Trials
+  void clear_saved();
 
   /// set approximation lower and upper bounds (currently only used by graphics)
   void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
@@ -276,8 +280,9 @@ private:
   //- Heading: Data
   //
 
-  /// number of points previously added by append() to be removed by pop()
-  size_t popCount;
+  /// a stack managing the number of points previously added by calls
+  /// to append() that can be removed by calls to pop()
+  SizetArray popCountStack;
 
   /// pointer to the letter (initialized only for the envelope)
   Approximation* approxRep;
@@ -382,14 +387,21 @@ add(const Pecos::SurrogateDataResp& sdr, bool anchor_flag)
 
 
 inline size_t Approximation::pop_count() const
-{ return (approxRep) ? approxRep->popCount : popCount; }
+{ return (approxRep) ? approxRep->popCountStack.back() : popCountStack.back(); }
 
 
 inline void Approximation::pop_count(size_t count)
 {
-  if (approxRep) approxRep->popCount = count;
-  else           popCount = count;
+  if (approxRep) approxRep->popCountStack.push_back(count);
+  else           popCountStack.push_back(count);
 }
+
+
+//inline void Approximation::clear_stack()
+//{
+//  if (approxRep) approxRep->popCountStack.clear();
+//  else           popCountStack.clear();
+//}
 
 
 /** Clears out any history (e.g., TANA3Approximation use for a
@@ -432,6 +444,17 @@ inline void Approximation::clear_data()
     approxRep->approxData.clear_data();
   else // not virtual: base class implementation
     approxData.clear_data();
+}
+
+
+inline void Approximation::clear_saved()
+{
+  if (approxRep) // envelope fwd to letter
+    approxRep->clear_saved();
+  else { // not virtual: base class implementation
+    popCountStack.clear();
+    approxData.clear_saved();
+  }
 }
 
 } // namespace Dakota

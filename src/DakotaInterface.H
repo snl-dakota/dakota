@@ -163,7 +163,7 @@ public:
   virtual void rebuild_approximation(const BoolDeque& rebuild_deque);
 
   /// removes data from last append from the approximation
-  virtual void pop_approximation(bool save_surr_data, size_t pop_count = 0);
+  virtual void pop_approximation(bool save_surr_data);
 
   /// restores the approximation to a selected previous state
   virtual void restore_approximation();
@@ -182,6 +182,8 @@ public:
   virtual void clear_current();
   /// clears all data from an approximation interface
   virtual void clear_all();
+  /// clears saved data (from pop invocations) from an approximation interface
+  virtual void clear_saved();
 
   /// retrieve the Approximations within an ApproximationInterface
   virtual std::vector<Approximation>& approximations();

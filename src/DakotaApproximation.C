@@ -43,7 +43,7 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
   // verbosity.  For approximations, verbose adds quad poly coeff reporting.
   outputLevel(problem_db.get_short("method.output")),
   numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
-  buildDataOrder(1), popCount(0), approxRep(NULL), referenceCount(1)
+  buildDataOrder(1), approxRep(NULL), referenceCount(1)
 {
   if (problem_db.get_bool("model.surrogate.derivative_usage")  &&
       approxType != "global_polynomial"                        &&
@@ -76,7 +76,7 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 Approximation::Approximation(BaseConstructor, const String& approx_type,
 			     size_t num_vars, short data_order):
   outputLevel(NORMAL_OUTPUT), numVars(num_vars), approxType(approx_type),
-  buildDataOrder(data_order), popCount(0), approxRep(NULL), referenceCount(1)
+  buildDataOrder(data_order), approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation(BaseConstructor) called to build base "
@@ -91,7 +91,7 @@ Approximation::Approximation(BaseConstructor, const String& approx_type,
     This makes it necessary to check for NULL in the copy constructor,
     assignment operator, and destructor. */
 Approximation::Approximation(): buildDataOrder(1), outputLevel(NORMAL_OUTPUT),
-  popCount(0), approxRep(NULL), referenceCount(1)
+  approxRep(NULL), referenceCount(1)
 {
 #ifdef REFCOUNT_DEBUG
   Cout << "Approximation::Approximation() called to build empty approximation "
@@ -313,7 +313,7 @@ void Approximation::rebuild()
 {
   if (approxRep)
     approxRep->rebuild();
-  else  // virtual fn: no default, error if not supplied in derived class
+  else // virtual fn: default definition
     build(); // if no special rebuild optimization, fall back on full build()
 }
 
@@ -321,17 +321,13 @@ void Approximation::rebuild()
 /** This is the common base class portion of the virtual fn and is
     insufficient on its own; derived implementations should explicitly
     invoke (or reimplement) this base class contribution. */
-void Approximation::pop(bool save_data, size_t pop_count)
+void Approximation::pop(bool save_data)
 {
   if (approxRep)
-    approxRep->pop(save_data, pop_count);
+    approxRep->pop(save_data);
   else {
-    if (pop_count > 0)
-      // use passed count
-      approxData.pop(pop_count, save_data);
-    else
-      // use stored count
-      approxData.pop(popCount, save_data);
+    approxData.pop(popCountStack.back(), save_data);
+    popCountStack.pop_back();
   }
 }
 
@@ -344,7 +340,7 @@ void Approximation::restore()
   if (approxRep)
     approxRep->restore();
   else
-    popCount = approxData.restore(restoration_index());
+    popCountStack.push_back(approxData.restore(restoration_index()));
 }
 
 
@@ -384,7 +380,7 @@ void Approximation::finalize()
     size_t i, num_restore = approxData.saved_trials(); // # of saved trial sets
     for (i=0; i<num_restore; ++i)
       approxData.restore(finalization_index(i), false);
-    approxData.clear_saved(); // clear only after process completed
+    clear_saved(); // clear only after process completed
   }
 }
 

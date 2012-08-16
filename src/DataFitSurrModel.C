@@ -526,13 +526,12 @@ append_approximation(const VariablesArray& vars_array,
 }
 
 
-void DataFitSurrModel::
-pop_approximation(bool save_surr_data, bool rebuild_flag, size_t pop_count)
+void DataFitSurrModel::pop_approximation(bool save_surr_data, bool rebuild_flag)
 {
   Cout << "\n>>>>> Popping data from " << surrogateType << " approximations.\n";
 
   // append to the current points for each approximation
-  approxInterface.pop_approximation(save_surr_data, pop_count);
+  approxInterface.pop_approximation(save_surr_data);
 
   if (rebuild_flag) { // update the coefficients for each approximation
     BoolDeque rebuild_deque; // empty array: default rebuild of all fns

@@ -7,8 +7,8 @@
     _______________________________________________________________________ */
 
 //- Class:        ApproximationInterface
-//- Description:  Abstract base class for approximation classes used
-//-               to provide approximate function evaluations
+//- Description:  derived Interface class that manages approximate function
+//-               evaluations
 //- Owner:        Mike Eldred
 //- Version: $Id: ApproximationInterface.H 7034 2010-10-22 20:16:32Z mseldre $
 
@@ -96,7 +96,7 @@ protected:
 			   const RealVector& dr_u_bnds);
 
   void rebuild_approximation(const BoolDeque& rebuild_deque);
-  void pop_approximation(bool save_surr_data, size_t pop_count = 0);
+  void pop_approximation(bool save_surr_data);
   void restore_approximation();
   bool restore_available();
   void finalize_approximation();
@@ -106,6 +106,7 @@ protected:
 
   void clear_current();
   void clear_all();
+  void clear_saved();
 
   std::vector<Approximation>& approximations();
   const Pecos::SurrogateData& approximation_data(size_t index);
@@ -137,8 +138,8 @@ private:
   void shallow_add(const Variables& vars, const Response& response,
 		   bool anchor);
 
-  /// update the popCount within each of the functionSurfaces based on the
-  /// active set definitions within resp_map
+  /// append to the popCountStack within each of the functionSurfaces
+  /// based on the active set definitions within resp_map
   void update_pop_counts(const IntResponseMap& resp_map);
 
   //
@@ -237,6 +238,13 @@ inline void ApproximationInterface::clear_all()
 {
   for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
     functionSurfaces[*it].clear_all();
+}
+
+
+inline void ApproximationInterface::clear_saved()
+{
+  for (ISIter it=approxFnIndices.begin(); it!=approxFnIndices.end(); it++)
+    functionSurfaces[*it].clear_saved();
 }
 
 
