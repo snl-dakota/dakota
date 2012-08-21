@@ -379,8 +379,8 @@ Constraints Constraints::copy() const
 
 
 void Constraints::
-reshape(const size_t& num_nln_ineq_cons, const size_t& num_nln_eq_cons,
-	const size_t& num_lin_ineq_cons, const size_t& num_lin_eq_cons,
+reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
+	size_t num_lin_ineq_cons, size_t num_lin_eq_cons,
 	const SizetArray& vc_totals)
 {
   if (constraintsRep) { // envelope
@@ -398,8 +398,8 @@ reshape(const size_t& num_nln_ineq_cons, const size_t& num_nln_eq_cons,
 /** Resizes the linear and nonlinear constraint arrays at the base
     class.  Does NOT currently resize the derived bounds arrays. */
 void Constraints::
-reshape(const size_t& num_nln_ineq_cons, const size_t& num_nln_eq_cons,
-	const size_t& num_lin_ineq_cons, const size_t& num_lin_eq_cons)
+reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
+	size_t num_lin_ineq_cons, size_t num_lin_eq_cons)
       //const SizetArray& vc_totals)
 {
   if (constraintsRep) // envelope

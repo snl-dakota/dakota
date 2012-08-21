@@ -317,19 +317,19 @@ public:
   /// set the active continuous variables in currentVariables
   void continuous_variables(const RealVector& c_vars);
   /// set an active continuous variable in currentVariables
-  void continuous_variable(const Real& c_var, const size_t& i);
+  void continuous_variable(Real c_var, size_t i);
   /// return the active discrete integer variables from currentVariables
   const IntVector& discrete_int_variables() const;
   /// set the active discrete integer variables in currentVariables
   void discrete_int_variables(const IntVector& d_vars);
   /// set an active discrete integer variable in currentVariables
-  void discrete_int_variable(const int& d_var, const size_t& i);
+  void discrete_int_variable(int d_var, size_t i);
   /// return the active discrete real variables from currentVariables
   const RealVector& discrete_real_variables() const;
   /// set the active discrete real variables in currentVariables
   void discrete_real_variables(const RealVector& d_vars);
   /// set an active discrete real variable in currentVariables
-  void discrete_real_variable(const Real& d_var, const size_t& i);
+  void discrete_real_variable(Real d_var, size_t i);
 
   /// return the active continuous variable types from currentVariables
   UShortMultiArrayConstView continuous_variable_types()    const;
@@ -363,19 +363,19 @@ public:
   /// set all continuous variables in currentVariables
   void all_continuous_variables(const RealVector& a_c_vars);
   /// set a variable within the all continuous variables in currentVariables
-  void all_continuous_variable(const Real& a_c_var, const size_t& i);
+  void all_continuous_variable(Real a_c_var, size_t i);
   /// return all discrete variables in currentVariables
   const IntVector& all_discrete_int_variables() const;
   /// set all discrete variables in currentVariables
   void all_discrete_int_variables(const IntVector& a_d_vars);
   /// set a variable within the all discrete variables in currentVariables
-  void all_discrete_int_variable(const int& a_d_var, const size_t& i);
+  void all_discrete_int_variable(int a_d_var, size_t i);
   /// return all discrete variables in currentVariables
   const RealVector& all_discrete_real_variables() const;
   /// set all discrete variables in currentVariables
   void all_discrete_real_variables(const RealVector& a_d_vars);
   /// set a variable within the all discrete variables in currentVariables
-  void all_discrete_real_variable(const Real& a_d_var, const size_t& i);
+  void all_discrete_real_variable(Real a_d_var, size_t i);
 
   /// return all continuous variable types from currentVariables
   UShortMultiArrayConstView all_continuous_variable_types()    const;
@@ -472,22 +472,21 @@ public:
   /// set all continuous variable labels in currentVariables
   void all_continuous_variable_labels(StringMultiArrayConstView a_c_v_labels);
   /// set a label within the all continuous labels in currentVariables
-  void all_continuous_variable_label(const String& a_c_v_label,const size_t& i);
+  void all_continuous_variable_label(const String& a_c_v_label,size_t i);
   /// return all discrete variable labels in currentVariables
   StringMultiArrayConstView all_discrete_int_variable_labels() const;
   /// set all discrete variable labels in currentVariables
   void all_discrete_int_variable_labels(StringMultiArrayConstView a_d_v_labels);
   /// set a label within the all discrete labels in currentVariables
   void all_discrete_int_variable_label(const String& a_d_v_label,
-				       const size_t& i);
+				       size_t i);
   /// return all discrete variable labels in currentVariables
   StringMultiArrayConstView all_discrete_real_variable_labels() const;
   /// set all discrete variable labels in currentVariables
   void all_discrete_real_variable_labels(
     StringMultiArrayConstView a_d_v_labels);
   /// set a label within the all discrete labels in currentVariables
-  void all_discrete_real_variable_label(const String& a_d_v_label,
-					const size_t& i);
+  void all_discrete_real_variable_label(const String& a_d_v_label, size_t i);
 
   /// return the response labels from currentResponse
   const StringArray& response_labels() const;
@@ -500,26 +499,38 @@ public:
   const RealVector& continuous_lower_bounds() const;
   /// set the active continuous lower bounds in userDefinedConstraints
   void continuous_lower_bounds(const RealVector& c_l_bnds);
+  /// set the i-th active continuous lower bound in userDefinedConstraints
+  void continuous_lower_bound(Real c_l_bnd, size_t i);
   /// return the active continuous upper bounds from userDefinedConstraints
   const RealVector& continuous_upper_bounds() const;
   /// set the active continuous upper bounds in userDefinedConstraints
   void continuous_upper_bounds(const RealVector& c_u_bnds);
-  /// return the active discrete lower bounds from userDefinedConstraints
+  /// set the i-th active continuous upper bound from userDefinedConstraints
+  void continuous_upper_bound(Real c_u_bnd, size_t i);
+  /// return the active discrete int lower bounds from userDefinedConstraints
   const IntVector& discrete_int_lower_bounds() const;
-  /// set the active discrete lower bounds in userDefinedConstraints
+  /// set the active discrete int lower bounds in userDefinedConstraints
   void discrete_int_lower_bounds(const IntVector& d_l_bnds);
-  /// return the active discrete upper bounds from userDefinedConstraints
+  /// set the i-th active discrete int lower bound in userDefinedConstraints
+  void discrete_int_lower_bound(int d_l_bnd, size_t i);
+  /// return the active discrete int upper bounds from userDefinedConstraints
   const IntVector& discrete_int_upper_bounds() const;
-  /// set the active discrete upper bounds in userDefinedConstraints
+  /// set the active discrete int upper bounds in userDefinedConstraints
   void discrete_int_upper_bounds(const IntVector& d_u_bnds);
-  /// return the active discrete lower bounds from userDefinedConstraints
+  /// set the i-th active discrete int upper bound in userDefinedConstraints
+  void discrete_int_upper_bound(int d_u_bnd, size_t i);
+  /// return the active discrete real lower bounds from userDefinedConstraints
   const RealVector& discrete_real_lower_bounds() const;
-  /// set the active discrete lower bounds in userDefinedConstraints
+  /// set the active discrete real lower bounds in userDefinedConstraints
   void discrete_real_lower_bounds(const RealVector& d_l_bnds);
-  /// return the active discrete upper bounds from userDefinedConstraints
+  /// set the i-th active discrete real lower bound in userDefinedConstraints
+  void discrete_real_lower_bound(Real d_l_bnd, size_t i);
+  /// return the active discrete real upper bounds from userDefinedConstraints
   const RealVector& discrete_real_upper_bounds() const;
-  /// set the active discrete upper bounds in userDefinedConstraints
+  /// set the active discrete real upper bounds in userDefinedConstraints
   void discrete_real_upper_bounds(const RealVector& d_u_bnds);
+  /// set the i-th active discrete real upper bound in userDefinedConstraints
+  void discrete_real_upper_bound(Real d_u_bnd, size_t i);
 
   /// return the inactive continuous lower bounds in userDefinedConstraints
   const RealVector& inactive_continuous_lower_bounds() const;
@@ -552,42 +563,42 @@ public:
   void all_continuous_lower_bounds(const RealVector& a_c_l_bnds);
   /// set a lower bound within continuous lower bounds in
   /// userDefinedConstraints
-  void all_continuous_lower_bound(const Real& a_c_l_bnd, const size_t& i);
+  void all_continuous_lower_bound(Real a_c_l_bnd, size_t i);
   /// return all continuous upper bounds in userDefinedConstraints
   const RealVector& all_continuous_upper_bounds() const;
   /// set all continuous upper bounds in userDefinedConstraints
   void all_continuous_upper_bounds(const RealVector& a_c_u_bnds);
   /// set an upper bound within all continuous upper bounds in
   /// userDefinedConstraints
-  void all_continuous_upper_bound(const Real& a_c_u_bnd, const size_t& i);
+  void all_continuous_upper_bound(Real a_c_u_bnd, size_t i);
   /// return all discrete lower bounds in userDefinedConstraints
   const IntVector& all_discrete_int_lower_bounds() const;
   /// set all discrete lower bounds in userDefinedConstraints
   void all_discrete_int_lower_bounds(const IntVector& a_d_l_bnds);
   /// set a lower bound within all discrete lower bounds in
   /// userDefinedConstraints
-  void all_discrete_int_lower_bound(const int& a_d_l_bnd, const size_t& i);
+  void all_discrete_int_lower_bound(int a_d_l_bnd, size_t i);
   /// return all discrete upper bounds in userDefinedConstraints
   const IntVector& all_discrete_int_upper_bounds() const;
   /// set all discrete upper bounds in userDefinedConstraints
   void all_discrete_int_upper_bounds(const IntVector& a_d_u_bnds);
   /// set an upper bound within all discrete upper bounds in
   /// userDefinedConstraints
-  void all_discrete_int_upper_bound(const int& a_d_u_bnd, const size_t& i);
+  void all_discrete_int_upper_bound(int a_d_u_bnd, size_t i);
   /// return all discrete lower bounds in userDefinedConstraints
   const RealVector& all_discrete_real_lower_bounds() const;
   /// set all discrete lower bounds in userDefinedConstraints
   void all_discrete_real_lower_bounds(const RealVector& a_d_l_bnds);
   /// set a lower bound within all discrete lower bounds in
   /// userDefinedConstraints
-  void all_discrete_real_lower_bound(const Real& a_d_l_bnd, const size_t& i);
+  void all_discrete_real_lower_bound(Real a_d_l_bnd, size_t i);
   /// return all discrete upper bounds in userDefinedConstraints
   const RealVector& all_discrete_real_upper_bounds() const;
   /// set all discrete upper bounds in userDefinedConstraints
   void all_discrete_real_upper_bounds(const RealVector& a_d_u_bnds);
   /// set an upper bound within all discrete upper bounds in
   /// userDefinedConstraints
-  void all_discrete_real_upper_bound(const Real& a_d_u_bnd, const size_t& i);
+  void all_discrete_real_upper_bound(Real a_d_u_bnd, size_t i);
 
   // LINEAR CONSTRAINTS
 
@@ -748,11 +759,10 @@ public:
   /// flags finite-difference step size adjusted by bounds
   bool shortStep;
   /// function returning finite-difference step size (affected by bounds)
-  Real FDstep1(const Real& x0_j, const Real& lb_j, const Real& ub_j,
-	       Real h_mag);
+  Real FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag);
   /// function returning second central-difference step size (affected
   /// by bounds)
-  Real FDstep2(const Real& x0_j, const Real& lb_j, const Real& ub_j, Real h);
+  Real FDstep2(Real x0_j, Real lb_j, Real ub_j, Real h);
 
 protected:
 
@@ -1128,9 +1138,9 @@ inline void Model::active_variables(const Variables& vars)
 {
   // Set active variables only.  Leave remainder of currentVariables unchanged
   // (so that inactive vars can vary between iterators/models w/i a strategy).
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->active_variables(vars);
-  else { // letter
+  else {
     if (vars.cv())
       currentVariables.continuous_variables(vars.continuous_variables());
     if (vars.div())
@@ -1150,19 +1160,15 @@ inline const RealVector& Model::continuous_variables() const
 
 inline void Model::continuous_variables(const RealVector& c_vars) 
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->currentVariables.continuous_variables(c_vars);
-  else // letter
-    currentVariables.continuous_variables(c_vars);
+  if (modelRep) modelRep->currentVariables.continuous_variables(c_vars);
+  else          currentVariables.continuous_variables(c_vars);
 }
 
 
-inline void Model::continuous_variable(const Real& c_var, const size_t& i) 
+inline void Model::continuous_variable(Real c_var, size_t i) 
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->currentVariables.continuous_variable(c_var, i);
-  else // letter
-    currentVariables.continuous_variable(c_var, i);
+  if (modelRep) modelRep->currentVariables.continuous_variable(c_var, i);
+  else          currentVariables.continuous_variable(c_var, i);
 }
 
 
@@ -1175,19 +1181,15 @@ inline const IntVector& Model::discrete_int_variables() const
 
 inline void Model::discrete_int_variables(const IntVector& d_vars) 
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->currentVariables.discrete_int_variables(d_vars);
-  else // letter
-    currentVariables.discrete_int_variables(d_vars);
+  if (modelRep) modelRep->currentVariables.discrete_int_variables(d_vars);
+  else          currentVariables.discrete_int_variables(d_vars);
 }
 
 
-inline void Model::discrete_int_variable(const int& d_var, const size_t& i) 
+inline void Model::discrete_int_variable(int d_var, size_t i) 
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->currentVariables.discrete_int_variable(d_var, i);
-  else // letter
-    currentVariables.discrete_int_variable(d_var, i);
+  if (modelRep) modelRep->currentVariables.discrete_int_variable(d_var, i);
+  else          currentVariables.discrete_int_variable(d_var, i);
 }
 
 
@@ -1200,19 +1202,15 @@ inline const RealVector& Model::discrete_real_variables() const
 
 inline void Model::discrete_real_variables(const RealVector& d_vars) 
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->currentVariables.discrete_real_variables(d_vars);
-  else // letter
-    currentVariables.discrete_real_variables(d_vars);
+  if (modelRep) modelRep->currentVariables.discrete_real_variables(d_vars);
+  else          currentVariables.discrete_real_variables(d_vars);
 }
 
 
-inline void Model::discrete_real_variable(const Real& d_var, const size_t& i) 
+inline void Model::discrete_real_variable(Real d_var, size_t i) 
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->currentVariables.discrete_real_variable(d_var, i);
-  else // letter
-    currentVariables.discrete_real_variable(d_var, i);
+  if (modelRep) modelRep->currentVariables.discrete_real_variable(d_var, i);
+  else          currentVariables.discrete_real_variable(d_var, i);
 }
 
 
@@ -1254,9 +1252,9 @@ inline const RealVector& Model::inactive_continuous_variables() const
 inline void Model::
 inactive_continuous_variables(const RealVector& i_c_vars)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.inactive_continuous_variables(i_c_vars);
-  else // letter
+  else
     currentVariables.inactive_continuous_variables(i_c_vars);
 }
 
@@ -1271,9 +1269,9 @@ inline const IntVector& Model::inactive_discrete_int_variables() const
 
 inline void Model::inactive_discrete_int_variables(const IntVector& i_d_vars)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.inactive_discrete_int_variables(i_d_vars);
-  else // letter
+  else
     currentVariables.inactive_discrete_int_variables(i_d_vars);
 }
 
@@ -1288,9 +1286,9 @@ inline const RealVector& Model::inactive_discrete_real_variables() const
 
 inline void Model::inactive_discrete_real_variables(const RealVector& i_d_vars)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.inactive_discrete_real_variables(i_d_vars);
-  else // letter
+  else
     currentVariables.inactive_discrete_real_variables(i_d_vars);
 }
 
@@ -1321,19 +1319,15 @@ inline const RealVector& Model::all_continuous_variables() const
 
 inline void Model::all_continuous_variables(const RealVector& a_c_vars)
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->currentVariables.all_continuous_variables(a_c_vars);
-  else // letter
-    currentVariables.all_continuous_variables(a_c_vars);
+  if (modelRep) modelRep->currentVariables.all_continuous_variables(a_c_vars);
+  else          currentVariables.all_continuous_variables(a_c_vars);
 }
 
 
-inline void Model::all_continuous_variable(const Real& a_c_var, const size_t& i)
+inline void Model::all_continuous_variable(Real a_c_var, size_t i)
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->currentVariables.all_continuous_variable(a_c_var, i);
-  else // letter
-    currentVariables.all_continuous_variable(a_c_var, i);
+  if (modelRep) modelRep->currentVariables.all_continuous_variable(a_c_var, i);
+  else          currentVariables.all_continuous_variable(a_c_var, i);
 }
 
 
@@ -1346,19 +1340,16 @@ inline const IntVector& Model::all_discrete_int_variables() const
 
 inline void Model::all_discrete_int_variables(const IntVector& a_d_vars)
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->currentVariables.all_discrete_int_variables(a_d_vars);
-  else // letter
-    currentVariables.all_discrete_int_variables(a_d_vars);
+  if (modelRep) modelRep->currentVariables.all_discrete_int_variables(a_d_vars);
+  else          currentVariables.all_discrete_int_variables(a_d_vars);
 }
 
 
-inline void Model::
-all_discrete_int_variable(const int& a_d_var, const size_t& i)
+inline void Model::all_discrete_int_variable(int a_d_var, size_t i)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.all_discrete_int_variable(a_d_var, i);
-  else // letter
+  else
     currentVariables.all_discrete_int_variable(a_d_var, i);
 }
 
@@ -1372,19 +1363,18 @@ inline const RealVector& Model::all_discrete_real_variables() const
 
 inline void Model::all_discrete_real_variables(const RealVector& a_d_vars)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.all_discrete_real_variables(a_d_vars);
-  else // letter
+  else
     currentVariables.all_discrete_real_variables(a_d_vars);
 }
 
 
-inline void Model::
-all_discrete_real_variable(const Real& a_d_var, const size_t& i)
+inline void Model::all_discrete_real_variable(Real a_d_var, size_t i)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.all_discrete_real_variable(a_d_var, i);
-  else // letter
+  else
     currentVariables.all_discrete_real_variable(a_d_var, i);
 }
 
@@ -1428,10 +1418,8 @@ inline const IntSetArray& Model::discrete_design_set_int_values() const
 
 inline void Model::discrete_design_set_int_values(const IntSetArray& isa)
 {
-  if (modelRep)
-    modelRep->discreteDesignSetIntValues = isa;
-  else
-    discreteDesignSetIntValues = isa;
+  if (modelRep) modelRep->discreteDesignSetIntValues = isa;
+  else          discreteDesignSetIntValues = isa;
 }
 
 
@@ -1444,10 +1432,8 @@ inline const RealSetArray& Model::discrete_design_set_real_values() const
 
 inline void Model::discrete_design_set_real_values(const RealSetArray& rsa)
 {
-  if (modelRep)
-    modelRep->discreteDesignSetRealValues = rsa;
-  else
-    discreteDesignSetRealValues = rsa;
+  if (modelRep) modelRep->discreteDesignSetRealValues = rsa;
+  else          discreteDesignSetRealValues = rsa;
 }
 
 
@@ -1498,10 +1484,8 @@ inline const IntSetArray& Model::discrete_state_set_int_values() const
 
 inline void Model::discrete_state_set_int_values(const IntSetArray& isa)
 {
-  if (modelRep)
-    modelRep->discreteStateSetIntValues = isa;
-  else
-    discreteStateSetIntValues = isa;
+  if (modelRep) modelRep->discreteStateSetIntValues = isa;
+  else          discreteStateSetIntValues = isa;
 }
 
 
@@ -1514,10 +1498,8 @@ inline const RealSetArray& Model::discrete_state_set_real_values() const
 
 inline void Model::discrete_state_set_real_values(const RealSetArray& rsa)
 {
-  if (modelRep)
-    modelRep->discreteStateSetRealValues = rsa;
-  else
-    discreteStateSetRealValues = rsa;
+  if (modelRep) modelRep->discreteStateSetRealValues = rsa;
+  else          discreteStateSetRealValues = rsa;
 }
 
 
@@ -1531,10 +1513,8 @@ inline const Pecos::DistributionParams& Model::distribution_parameters() const
 
 inline void Model::distribution_parameters(const Pecos::DistributionParams& dp)
 {
-  if (modelRep)
-    modelRep->distParams = dp;
-  else
-    distParams = dp;
+  if (modelRep) modelRep->distParams = dp;
+  else          distParams = dp;
 }
 
 
@@ -1548,9 +1528,9 @@ inline StringMultiArrayConstView Model::continuous_variable_labels() const
 inline void Model::
 continuous_variable_labels(StringMultiArrayConstView c_v_labels)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.continuous_variable_labels(c_v_labels);
-  else // letter
+  else
     currentVariables.continuous_variable_labels(c_v_labels);
 }
 
@@ -1565,9 +1545,9 @@ inline StringMultiArrayConstView Model::discrete_int_variable_labels() const
 inline void Model::
 discrete_int_variable_labels(StringMultiArrayConstView d_v_labels)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.discrete_int_variable_labels(d_v_labels);
-  else // letter
+  else
     currentVariables.discrete_int_variable_labels(d_v_labels);
 }
 
@@ -1582,9 +1562,9 @@ inline StringMultiArrayConstView Model::discrete_real_variable_labels() const
 inline void Model::
 discrete_real_variable_labels(StringMultiArrayConstView d_v_labels)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.discrete_real_variable_labels(d_v_labels);
-  else // letter
+  else
     currentVariables.discrete_real_variable_labels(d_v_labels);
 }
 
@@ -1601,10 +1581,10 @@ inactive_continuous_variable_labels() const
 inline void Model::
 inactive_continuous_variable_labels(StringMultiArrayConstView i_c_v_labels)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->
       currentVariables.inactive_continuous_variable_labels(i_c_v_labels);
-  else // letter
+  else
     currentVariables.inactive_continuous_variable_labels(i_c_v_labels);
 }
 
@@ -1621,10 +1601,10 @@ inactive_discrete_int_variable_labels() const
 inline void Model::
 inactive_discrete_int_variable_labels(StringMultiArrayConstView i_d_v_labels)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->
       currentVariables.inactive_discrete_int_variable_labels(i_d_v_labels);
-  else // letter
+  else
     currentVariables.inactive_discrete_int_variable_labels(i_d_v_labels);
 }
 
@@ -1641,10 +1621,10 @@ inactive_discrete_real_variable_labels() const
 inline void Model::
 inactive_discrete_real_variable_labels(StringMultiArrayConstView i_d_v_labels)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->
       currentVariables.inactive_discrete_real_variable_labels(i_d_v_labels);
-  else // letter
+  else
     currentVariables.inactive_discrete_real_variable_labels(i_d_v_labels);
 }
 
@@ -1660,19 +1640,19 @@ inline StringMultiArrayConstView Model::all_continuous_variable_labels() const
 inline void Model::
 all_continuous_variable_labels(StringMultiArrayConstView a_c_v_labels)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.all_continuous_variable_labels(a_c_v_labels);
-  else // letter
+  else
     currentVariables.all_continuous_variable_labels(a_c_v_labels);
 }
 
 
 inline void Model::
-all_continuous_variable_label(const String& a_c_v_label, const size_t& i)
+all_continuous_variable_label(const String& a_c_v_label, size_t i)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.all_continuous_variable_label(a_c_v_label, i);
-  else // letter
+  else
     currentVariables.all_continuous_variable_label(a_c_v_label, i);
 }
 
@@ -1688,19 +1668,19 @@ inline StringMultiArrayConstView Model::all_discrete_int_variable_labels() const
 inline void Model::
 all_discrete_int_variable_labels(StringMultiArrayConstView a_d_v_labels)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.all_discrete_int_variable_labels(a_d_v_labels);
-  else // letter
+  else
     currentVariables.all_discrete_int_variable_labels(a_d_v_labels);
 }
 
 
 inline void Model::
-all_discrete_int_variable_label(const String& a_d_v_label, const size_t& i)
+all_discrete_int_variable_label(const String& a_d_v_label, size_t i)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.all_discrete_int_variable_label(a_d_v_label, i);
-  else // letter
+  else
     currentVariables.all_discrete_int_variable_label(a_d_v_label, i);
 }
 
@@ -1717,19 +1697,19 @@ all_discrete_real_variable_labels() const
 inline void Model::
 all_discrete_real_variable_labels(StringMultiArrayConstView a_d_v_labels)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.all_discrete_real_variable_labels(a_d_v_labels);
-  else // letter
+  else
     currentVariables.all_discrete_real_variable_labels(a_d_v_labels);
 }
 
 
 inline void Model::
-all_discrete_real_variable_label(const String& a_d_v_label, const size_t& i)
+all_discrete_real_variable_label(const String& a_d_v_label, size_t i)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentVariables.all_discrete_real_variable_label(a_d_v_label, i);
-  else // letter
+  else
     currentVariables.all_discrete_real_variable_label(a_d_v_label, i);
 }
 
@@ -1743,9 +1723,9 @@ inline const StringArray& Model::response_labels() const
 
 inline void Model::response_labels(const StringArray& resp_labels)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->currentResponse.function_labels(resp_labels);
-  else // letter
+  else
     currentResponse.function_labels(resp_labels);
 }
 
@@ -1759,10 +1739,19 @@ inline const RealVector& Model::continuous_lower_bounds() const
 
 inline void Model::continuous_lower_bounds(const RealVector& c_l_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.continuous_lower_bounds(c_l_bnds);
-  else // letter
+  else
     userDefinedConstraints.continuous_lower_bounds(c_l_bnds);
+}
+
+
+inline void Model::continuous_lower_bound(Real c_l_bnd, size_t i)
+{
+  if (modelRep)
+    modelRep->userDefinedConstraints.continuous_lower_bound(c_l_bnd, i);
+  else
+    userDefinedConstraints.continuous_lower_bound(c_l_bnd, i);
 }
 
 
@@ -1775,10 +1764,19 @@ inline const RealVector& Model::continuous_upper_bounds() const
 
 inline void Model::continuous_upper_bounds(const RealVector& c_u_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.continuous_upper_bounds(c_u_bnds);
-  else // letter
+  else
     userDefinedConstraints.continuous_upper_bounds(c_u_bnds);
+}
+
+
+inline void Model::continuous_upper_bound(Real c_u_bnd, size_t i)
+{
+  if (modelRep)
+    modelRep->userDefinedConstraints.continuous_upper_bound(c_u_bnd, i);
+  else
+    userDefinedConstraints.continuous_upper_bound(c_u_bnd, i);
 }
 
 
@@ -1792,10 +1790,19 @@ inline const IntVector& Model::discrete_int_lower_bounds() const
 
 inline void Model::discrete_int_lower_bounds(const IntVector& d_l_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.discrete_int_lower_bounds(d_l_bnds);
-  else // letter
+  else
     userDefinedConstraints.discrete_int_lower_bounds(d_l_bnds);
+}
+
+
+inline void Model::discrete_int_lower_bound(int d_l_bnd, size_t i)
+{
+  if (modelRep)
+    modelRep->userDefinedConstraints.discrete_int_lower_bound(d_l_bnd, i);
+  else
+    userDefinedConstraints.discrete_int_lower_bound(d_l_bnd, i);
 }
 
 
@@ -1809,10 +1816,19 @@ inline const IntVector& Model::discrete_int_upper_bounds() const
 
 inline void Model::discrete_int_upper_bounds(const IntVector& d_u_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.discrete_int_upper_bounds(d_u_bnds);
-  else // letter
+  else
     userDefinedConstraints.discrete_int_upper_bounds(d_u_bnds);
+}
+
+
+inline void Model::discrete_int_upper_bound(int d_u_bnd, size_t i)
+{
+  if (modelRep)
+    modelRep->userDefinedConstraints.discrete_int_upper_bound(d_u_bnd, i);
+  else
+    userDefinedConstraints.discrete_int_upper_bound(d_u_bnd, i);
 }
 
 
@@ -1826,10 +1842,19 @@ inline const RealVector& Model::discrete_real_lower_bounds() const
 
 inline void Model::discrete_real_lower_bounds(const RealVector& d_l_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.discrete_real_lower_bounds(d_l_bnds);
-  else // letter
+  else
     userDefinedConstraints.discrete_real_lower_bounds(d_l_bnds);
+}
+
+
+inline void Model::discrete_real_lower_bound(Real d_l_bnd, size_t i)
+{
+  if (modelRep)
+    modelRep->userDefinedConstraints.discrete_real_lower_bound(d_l_bnd, i);
+  else
+    userDefinedConstraints.discrete_real_lower_bound(d_l_bnd, i);
 }
 
 
@@ -1843,10 +1868,19 @@ inline const RealVector& Model::discrete_real_upper_bounds() const
 
 inline void Model::discrete_real_upper_bounds(const RealVector& d_u_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.discrete_real_upper_bounds(d_u_bnds);
-  else // letter
+  else
     userDefinedConstraints.discrete_real_upper_bounds(d_u_bnds);
+}
+
+
+inline void Model::discrete_real_upper_bound(Real d_u_bnd, size_t i)
+{
+  if (modelRep)
+    modelRep->userDefinedConstraints.discrete_real_upper_bound(d_u_bnd, i);
+  else
+    userDefinedConstraints.discrete_real_upper_bound(d_u_bnd, i);
 }
 
 
@@ -1861,10 +1895,10 @@ inline const RealVector& Model::inactive_continuous_lower_bounds() const
 inline void Model::
 inactive_continuous_lower_bounds(const RealVector& i_c_l_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->
       userDefinedConstraints.inactive_continuous_lower_bounds(i_c_l_bnds);
-  else // letter
+  else
     userDefinedConstraints.inactive_continuous_lower_bounds(i_c_l_bnds);
 }
 
@@ -1880,10 +1914,10 @@ inline const RealVector& Model::inactive_continuous_upper_bounds() const
 inline void Model::
 inactive_continuous_upper_bounds(const RealVector& i_c_u_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->
       userDefinedConstraints.inactive_continuous_upper_bounds(i_c_u_bnds);
-  else // letter
+  else
     userDefinedConstraints.inactive_continuous_upper_bounds(i_c_u_bnds);
 }
 
@@ -1899,10 +1933,10 @@ inline const IntVector& Model::inactive_discrete_int_lower_bounds() const
 inline void Model::
 inactive_discrete_int_lower_bounds(const IntVector& i_d_l_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->
       userDefinedConstraints.inactive_discrete_int_lower_bounds(i_d_l_bnds);
-  else // letter
+  else
     userDefinedConstraints.inactive_discrete_int_lower_bounds(i_d_l_bnds);
 }
 
@@ -1918,10 +1952,10 @@ inline const IntVector& Model::inactive_discrete_int_upper_bounds() const
 inline void Model::
 inactive_discrete_int_upper_bounds(const IntVector& i_d_u_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->
       userDefinedConstraints.inactive_discrete_int_upper_bounds(i_d_u_bnds);
-  else // letter
+  else
     userDefinedConstraints.inactive_discrete_int_upper_bounds(i_d_u_bnds);
 }
 
@@ -1937,10 +1971,10 @@ inline const RealVector& Model::inactive_discrete_real_lower_bounds() const
 inline void Model::
 inactive_discrete_real_lower_bounds(const RealVector& i_d_l_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->
       userDefinedConstraints.inactive_discrete_real_lower_bounds(i_d_l_bnds);
-  else // letter
+  else
     userDefinedConstraints.inactive_discrete_real_lower_bounds(i_d_l_bnds);
 }
 
@@ -1956,10 +1990,10 @@ inline const RealVector& Model::inactive_discrete_real_upper_bounds() const
 inline void Model::
 inactive_discrete_real_upper_bounds(const RealVector& i_d_u_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->
       userDefinedConstraints.inactive_discrete_real_upper_bounds(i_d_u_bnds);
-  else // letter
+  else
     userDefinedConstraints.inactive_discrete_real_upper_bounds(i_d_u_bnds);
 }
 
@@ -1972,22 +2006,20 @@ inline const RealVector& Model::all_continuous_lower_bounds() const
 }
 
 
-inline void Model::
-all_continuous_lower_bounds(const RealVector& a_c_l_bnds)
+inline void Model::all_continuous_lower_bounds(const RealVector& a_c_l_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.all_continuous_lower_bounds(a_c_l_bnds);
-  else // letter
+  else
     userDefinedConstraints.all_continuous_lower_bounds(a_c_l_bnds);
 }
 
 
-inline void Model::
-all_continuous_lower_bound(const Real& a_c_l_bnd, const size_t& i)
+inline void Model::all_continuous_lower_bound(Real a_c_l_bnd, size_t i)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.all_continuous_lower_bound(a_c_l_bnd, i);
-  else // letter
+  else
     userDefinedConstraints.all_continuous_lower_bound(a_c_l_bnd, i);
 }
 
@@ -2000,22 +2032,20 @@ inline const RealVector& Model::all_continuous_upper_bounds() const
 }
 
 
-inline void Model::
-all_continuous_upper_bounds(const RealVector& a_c_u_bnds)
+inline void Model::all_continuous_upper_bounds(const RealVector& a_c_u_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.all_continuous_upper_bounds(a_c_u_bnds);
-  else // letter
+  else
     userDefinedConstraints.all_continuous_upper_bounds(a_c_u_bnds);
 }
 
 
-inline void Model::
-all_continuous_upper_bound(const Real& a_c_u_bnd, const size_t& i)
+inline void Model::all_continuous_upper_bound(Real a_c_u_bnd, size_t i)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.all_continuous_upper_bound(a_c_u_bnd, i);
-  else // letter
+  else
     userDefinedConstraints.all_continuous_upper_bound(a_c_u_bnd, i);
 }
 
@@ -2030,19 +2060,18 @@ inline const IntVector& Model::all_discrete_int_lower_bounds() const
 
 inline void Model::all_discrete_int_lower_bounds(const IntVector& a_d_l_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.all_discrete_int_lower_bounds(a_d_l_bnds);
-  else // letter
+  else
     userDefinedConstraints.all_discrete_int_lower_bounds(a_d_l_bnds);
 }
 
 
-inline void Model::
-all_discrete_int_lower_bound(const int& a_d_l_bnd, const size_t& i)
+inline void Model::all_discrete_int_lower_bound(int a_d_l_bnd, size_t i)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.all_discrete_int_lower_bound(a_d_l_bnd, i);
-  else // letter
+  else
     userDefinedConstraints.all_discrete_int_lower_bound(a_d_l_bnd, i);
 }
 
@@ -2057,19 +2086,18 @@ inline const IntVector& Model::all_discrete_int_upper_bounds() const
 
 inline void Model::all_discrete_int_upper_bounds(const IntVector& a_d_u_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.all_discrete_int_upper_bounds(a_d_u_bnds);
-  else // letter
+  else
     userDefinedConstraints.all_discrete_int_upper_bounds(a_d_u_bnds);
 }
 
 
-inline void Model::
-all_discrete_int_upper_bound(const int& a_d_u_bnd, const size_t& i)
+inline void Model::all_discrete_int_upper_bound(int a_d_u_bnd, size_t i)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.all_discrete_int_upper_bound(a_d_u_bnd, i);
-  else // letter
+  else
     userDefinedConstraints.all_discrete_int_upper_bound(a_d_u_bnd, i);
 }
 
@@ -2084,20 +2112,19 @@ inline const RealVector& Model::all_discrete_real_lower_bounds() const
 
 inline void Model::all_discrete_real_lower_bounds(const RealVector& a_d_l_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.all_discrete_real_lower_bounds(a_d_l_bnds);
-  else // letter
+  else
     userDefinedConstraints.all_discrete_real_lower_bounds(a_d_l_bnds);
 }
 
 
-inline void Model::
-all_discrete_real_lower_bound(const Real& a_d_l_bnd, const size_t& i)
+inline void Model::all_discrete_real_lower_bound(Real a_d_l_bnd, size_t i)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->
       userDefinedConstraints.all_discrete_real_lower_bound(a_d_l_bnd, i);
-  else // letter
+  else
     userDefinedConstraints.all_discrete_real_lower_bound(a_d_l_bnd, i);
 }
 
@@ -2112,20 +2139,19 @@ inline const RealVector& Model::all_discrete_real_upper_bounds() const
 
 inline void Model::all_discrete_real_upper_bounds(const RealVector& a_d_u_bnds)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->userDefinedConstraints.all_discrete_real_upper_bounds(a_d_u_bnds);
-  else // letter
+  else
     userDefinedConstraints.all_discrete_real_upper_bounds(a_d_u_bnds);
 }
 
 
-inline void Model::
-all_discrete_real_upper_bound(const Real& a_d_u_bnd, const size_t& i)
+inline void Model::all_discrete_real_upper_bound(Real a_d_u_bnd, size_t i)
 {
-  if (modelRep) // envelope fwd to letter
+  if (modelRep)
     modelRep->
       userDefinedConstraints.all_discrete_real_upper_bound(a_d_u_bnd, i);
-  else // letter
+  else
     userDefinedConstraints.all_discrete_real_upper_bound(a_d_u_bnd, i);
 }
 
@@ -2440,19 +2466,15 @@ inline bool Model::derivative_estimation()
 
 inline void Model::supports_derivative_estimation(bool sed_flag)
 {
-  if (modelRep)
-    modelRep->supportsEstimDerivs = sed_flag;
-  else
-    supportsEstimDerivs = sed_flag;
+  if (modelRep) modelRep->supportsEstimDerivs = sed_flag;
+  else          supportsEstimDerivs = sed_flag;
 }
 
 
 inline void Model::init_comms_bcast_flag(bool icb_flag) 
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->initCommsBcastFlag = icb_flag;
-  else // letter
-    initCommsBcastFlag = icb_flag;
+  if (modelRep) modelRep->initCommsBcastFlag = icb_flag;
+  else          initCommsBcastFlag = icb_flag;
 }
 
 
@@ -2466,10 +2488,8 @@ inline bool Model::asynch_flag() const
 
 inline void Model::asynch_flag(const bool flag)
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->asynchEvalFlag = flag;
-  else // letter
-    asynchEvalFlag = flag;
+  if (modelRep) modelRep->asynchEvalFlag = flag;
+  else          asynchEvalFlag = flag;
 }
 
 
@@ -2479,10 +2499,8 @@ inline short Model::output_level() const
 
 inline void Model::output_level(const short level)
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->outputLevel = level;
-  else // letter
-    outputLevel = level;
+  if (modelRep) modelRep->outputLevel = level;
+  else          outputLevel = level;
 }
 
 
@@ -2493,10 +2511,8 @@ inline const IntArray& Model::message_lengths() const
 inline void Model::
 parallel_configuration_iterator(const ParConfigLIter& pc_iter)
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->modelPCIter = pc_iter;
-  else // letter
-    modelPCIter = pc_iter;
+  if (modelRep) modelRep->modelPCIter = pc_iter;
+  else          modelPCIter = pc_iter;
 }
 
 
@@ -2506,10 +2522,8 @@ inline const ParConfigLIter& Model::parallel_configuration_iterator() const
 
 inline void Model::auto_graphics(const bool flag)
 {
-  if (modelRep) // envelope fwd to letter
-    modelRep->modelAutoGraphicsFlag = flag;
-  else // letter
-    modelAutoGraphicsFlag = flag;
+  if (modelRep) modelRep->modelAutoGraphicsFlag = flag;
+  else          modelAutoGraphicsFlag = flag;
 }
 
 

@@ -698,8 +698,7 @@ const IntResponseMap& Model::synchronize_nowait()
 
 /** Auxiliary function to compute forward or first central-difference
     step size. */
-Real Model::
-FDstep1(const Real& x0_j, const Real& lb_j, const Real& ub_j, Real h_mag)
+Real Model::FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag)
 {
   Real h, h1, h2;
   shortStep = false;
@@ -735,8 +734,7 @@ FDstep1(const Real& x0_j, const Real& lb_j, const Real& ub_j, Real h_mag)
 
 /** Auxiliary function to second central-difference step size,
     honoring bounds. */
-Real Model::
-FDstep2(const Real& x0_j, const Real& lb_j, const Real& ub_j, Real h)
+Real Model::FDstep2(Real x0_j, Real lb_j, Real ub_j, Real h)
 {
   Real h2 = -h;
 

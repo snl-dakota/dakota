@@ -147,11 +147,11 @@ public:
   // ACTIVE VARIABLES
 
   /// return an active continuous variable
-  const Real& continuous_variable(size_t index) const;
+  Real continuous_variable(size_t index) const;
   /// return the active continuous variables
   const RealVector& continuous_variables() const;
   /// set an active continuous variable
-  void continuous_variable(const Real& c_var, size_t index);
+  void continuous_variable(Real c_var, size_t index);
   /// set the active continuous variables
   void continuous_variables(const RealVector& c_vars);
   /// return an active discrete integer variable
@@ -163,11 +163,11 @@ public:
   /// set the active discrete integer variables
   void discrete_int_variables(const IntVector& di_vars);
   /// return an active discrete real variable
-  const Real& discrete_real_variable(size_t index) const;
+  Real discrete_real_variable(size_t index) const;
   /// return the active discrete real variables
   const RealVector& discrete_real_variables() const;
   /// set an active discrete real variable
-  void discrete_real_variable(const Real& dr_var, size_t index);
+  void discrete_real_variable(Real dr_var, size_t index);
   /// set the active discrete real variables
   void discrete_real_variables(const RealVector& dr_vars);
 
@@ -250,7 +250,7 @@ public:
   /// sets all continuous variables using a single array
   void all_continuous_variables(const RealVector& ac_vars);
   /// set a variable within the all continuous array
-  void all_continuous_variable(const Real& ac_var, size_t index);
+  void all_continuous_variable(Real ac_var, size_t index);
   /// returns a single array with all discrete variables
   const IntVector& all_discrete_int_variables() const;
   /// sets all discrete variables using a single array
@@ -262,7 +262,7 @@ public:
   /// sets all discrete variables using a single array
   void all_discrete_real_variables(const RealVector& adr_vars);
   /// set a variable within the all discrete array
-  void all_discrete_real_variable(const Real& adr_var, size_t index);
+  void all_discrete_real_variable(Real adr_var, size_t index);
 
   /// returns a single array with all continuous variable labels
   StringMultiArrayView all_continuous_variable_labels() const;
@@ -500,14 +500,14 @@ inline size_t Variables::adrv() const
 }
 
 
-inline void Variables::continuous_variable(const Real& c_var, size_t index)
+inline void Variables::continuous_variable(Real c_var, size_t index)
 {
   if (variablesRep) variablesRep->continuousVars[index] = c_var;
   else              continuousVars[index] = c_var;
 }
 
 
-inline const Real& Variables::continuous_variable(size_t index) const
+inline Real Variables::continuous_variable(size_t index) const
 {
   if (variablesRep) return variablesRep->continuousVars[index];
   else              return continuousVars[index];
@@ -552,14 +552,14 @@ inline void Variables::discrete_int_variables(const IntVector& di_vars)
 
 
 inline void Variables::
-discrete_real_variable(const Real& dr_var, size_t index)
+discrete_real_variable(Real dr_var, size_t index)
 {
   if (variablesRep) variablesRep->discreteRealVars[index] = dr_var;
   else              discreteRealVars[index] = dr_var;
 }
 
 
-inline const Real& Variables::discrete_real_variable(size_t index) const
+inline Real Variables::discrete_real_variable(size_t index) const
 {
   if (variablesRep) return variablesRep->discreteRealVars[index];
   else              return discreteRealVars[index];
@@ -816,7 +816,7 @@ inline void Variables::all_continuous_variables(const RealVector& ac_vars)
 
 
 inline void Variables::
-all_continuous_variable(const Real& ac_var, size_t index)
+all_continuous_variable(Real ac_var, size_t index)
 {
   if (variablesRep) variablesRep->allContinuousVars[index] = ac_var;
   else              allContinuousVars[index] = ac_var;
@@ -859,7 +859,7 @@ inline void Variables::all_discrete_real_variables(const RealVector& adr_vars)
 
 
 inline void Variables::
-all_discrete_real_variable(const Real& adr_var, size_t index)
+all_discrete_real_variable(Real adr_var, size_t index)
 {
   if (variablesRep) variablesRep->allDiscreteRealVars[index] = adr_var;
   else              allDiscreteRealVars[index] = adr_var;

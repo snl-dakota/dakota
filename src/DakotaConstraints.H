@@ -88,39 +88,39 @@ public:
   /// set the active continuous variable lower bounds
   void continuous_lower_bounds(const RealVector& cl_bnds);
   /// set an active continuous variable lower bound
-  void continuous_lower_bound(const Real& cl_bnd, const size_t& i);
+  void continuous_lower_bound(Real cl_bnd, size_t i);
   /// return the active continuous variable upper bounds
   const RealVector& continuous_upper_bounds() const;
   /// set the active continuous variable upper bounds
   void continuous_upper_bounds(const RealVector& cu_bnds);
   /// set an active continuous variable upper bound
-  void continuous_upper_bound(const Real& cu_bnd, const size_t& i);
+  void continuous_upper_bound(Real cu_bnd, size_t i);
 
   /// return the active discrete variable lower bounds
   const IntVector& discrete_int_lower_bounds() const;
   /// set the active discrete variable lower bounds
   void discrete_int_lower_bounds(const IntVector& dil_bnds);
   /// set an active discrete variable lower bound
-  void discrete_int_lower_bound(const int& dil_bnd, const size_t& i);
+  void discrete_int_lower_bound(int dil_bnd, size_t i);
   /// return the active discrete variable upper bounds
   const IntVector& discrete_int_upper_bounds() const;
   /// set the active discrete variable upper bounds
   void discrete_int_upper_bounds(const IntVector& diu_bnds);
   /// set an active discrete variable upper bound
-  void discrete_int_upper_bound(const int& diu_bnd, const size_t& i);
+  void discrete_int_upper_bound(int diu_bnd, size_t i);
 
   /// return the active discrete variable lower bounds
   const RealVector& discrete_real_lower_bounds() const;
   /// set the active discrete variable lower bounds
   void discrete_real_lower_bounds(const RealVector& drl_bnds);
   /// set an active discrete variable lower bound
-  void discrete_real_lower_bound(const Real& drl_bnd, const size_t& i);
+  void discrete_real_lower_bound(Real drl_bnd, size_t i);
   /// return the active discrete variable upper bounds
   const RealVector& discrete_real_upper_bounds() const;
   /// set the active discrete variable upper bounds
   void discrete_real_upper_bounds(const RealVector& dru_bnds);
   /// set an active discrete variable upper bound
-  void discrete_real_upper_bound(const Real& dru_bnd, const size_t& i);
+  void discrete_real_upper_bound(Real dru_bnd, size_t i);
 
   // INACTIVE VARIABLES
 
@@ -158,39 +158,39 @@ public:
   /// sets all continuous lower bounds using a single array
   void all_continuous_lower_bounds(const RealVector& acl_bnds);
   /// set a lower bound within the all continuous lower bounds array
-  void all_continuous_lower_bound(const Real& acl_bnd, const size_t& i);
+  void all_continuous_lower_bound(Real acl_bnd, size_t i);
   /// returns a single array with all continuous upper bounds
   const RealVector& all_continuous_upper_bounds() const;
   /// sets all continuous upper bounds using a single array
   void all_continuous_upper_bounds(const RealVector& acu_bnds);
   /// set an upper bound within the all continuous upper bounds array
-  void all_continuous_upper_bound(const Real& acu_bnd, const size_t& i);
+  void all_continuous_upper_bound(Real acu_bnd, size_t i);
 
   /// returns a single array with all discrete lower bounds
   const IntVector& all_discrete_int_lower_bounds() const;
   /// sets all discrete lower bounds using a single array
   void all_discrete_int_lower_bounds(const IntVector& adil_bnds);
   /// set a lower bound within the all discrete lower bounds array
-  void all_discrete_int_lower_bound(const int& adil_bnd, const size_t& i);
+  void all_discrete_int_lower_bound(int adil_bnd, size_t i);
   /// returns a single array with all discrete upper bounds
   const IntVector& all_discrete_int_upper_bounds() const;
   /// sets all discrete upper bounds using a single array
   void all_discrete_int_upper_bounds(const IntVector& adiu_bnds);
   /// set an upper bound within the all discrete upper bounds array
-  void all_discrete_int_upper_bound(const int& adiu_bnd, const size_t& i);
+  void all_discrete_int_upper_bound(int adiu_bnd, size_t i);
 
   /// returns a single array with all discrete lower bounds
   const RealVector& all_discrete_real_lower_bounds() const;
   /// sets all discrete lower bounds using a single array
   void all_discrete_real_lower_bounds(const RealVector& adrl_bnds);
   /// set a lower bound within the all discrete lower bounds array
-  void all_discrete_real_lower_bound(const Real& adrl_bnd, const size_t& i);
+  void all_discrete_real_lower_bound(Real adrl_bnd, size_t i);
   /// returns a single array with all discrete upper bounds
   const RealVector& all_discrete_real_upper_bounds() const;
   /// sets all discrete upper bounds using a single array
   void all_discrete_real_upper_bounds(const RealVector& adru_bnds);
   /// set an upper bound within the all discrete upper bounds array
-  void all_discrete_real_upper_bound(const Real& adru_bnd, const size_t& i);
+  void all_discrete_real_upper_bound(Real adru_bnd, size_t i);
 
   // LINEAR CONSTRAINTS
 
@@ -249,13 +249,13 @@ public:
 
   /// reshape the linear/nonlinear/bound constraint arrays arrays within the
   /// Constraints hierarchy
-  void reshape(const size_t& num_nln_ineq_cons, const size_t& num_nln_eq_cons,
-	       const size_t& num_lin_ineq_cons, const size_t& num_lin_eq_cons,
+  void reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
+	       size_t num_lin_ineq_cons, size_t num_lin_eq_cons,
 	       const SizetArray& vc_totals);
   /// reshape the linear/nonlinear constraint arrays within the
   /// Constraints hierarchy
-  void reshape(const size_t& num_nln_ineq_cons, const size_t& num_nln_eq_cons,
-	       const size_t& num_lin_ineq_cons, const size_t& num_lin_eq_cons);
+  void reshape(size_t num_nln_ineq_cons, size_t num_nln_eq_cons,
+	       size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
 
   /// sets the inactive view based on higher level (nested) context
   void inactive_view(short view2);
@@ -413,23 +413,17 @@ inline const RealVector& Constraints::continuous_lower_bounds() const
 }
 
 
-inline void Constraints::
-continuous_lower_bounds(const RealVector& cl_bnds)
+inline void Constraints::continuous_lower_bounds(const RealVector& cl_bnds)
 {
-  if (constraintsRep)
-    constraintsRep->continuousLowerBnds.assign(cl_bnds);
-  else
-    continuousLowerBnds.assign(cl_bnds);
+  if (constraintsRep) constraintsRep->continuousLowerBnds.assign(cl_bnds);
+  else                continuousLowerBnds.assign(cl_bnds);
 }
 
 
-inline void Constraints::
-continuous_lower_bound(const Real& cl_bnd, const size_t& i)
+inline void Constraints::continuous_lower_bound(Real cl_bnd, size_t i)
 {
-  if (constraintsRep)
-    constraintsRep->continuousLowerBnds[i] = cl_bnd;
-  else
-    continuousLowerBnds[i] = cl_bnd;
+  if (constraintsRep) constraintsRep->continuousLowerBnds[i] = cl_bnd;
+  else                continuousLowerBnds[i] = cl_bnd;
 }
 
 
@@ -440,23 +434,17 @@ inline const RealVector& Constraints::continuous_upper_bounds() const
 }
 
 
-inline void Constraints::
-continuous_upper_bounds(const RealVector& cu_bnds)
+inline void Constraints::continuous_upper_bounds(const RealVector& cu_bnds)
 {
-  if (constraintsRep)
-    constraintsRep->continuousUpperBnds.assign(cu_bnds);
-  else
-    continuousUpperBnds.assign(cu_bnds);
+  if (constraintsRep) constraintsRep->continuousUpperBnds.assign(cu_bnds);
+  else                continuousUpperBnds.assign(cu_bnds);
 }
 
 
-inline void Constraints::
-continuous_upper_bound(const Real& cu_bnd, const size_t& i)
+inline void Constraints::continuous_upper_bound(Real cu_bnd, size_t i)
 {
-  if (constraintsRep)
-    constraintsRep->continuousUpperBnds[i] = cu_bnd;
-  else
-    continuousUpperBnds[i] = cu_bnd;
+  if (constraintsRep) constraintsRep->continuousUpperBnds[i] = cu_bnd;
+  else                continuousUpperBnds[i] = cu_bnd;
 }
 
 
@@ -469,20 +457,15 @@ inline const IntVector& Constraints::discrete_int_lower_bounds() const
 
 inline void Constraints::discrete_int_lower_bounds(const IntVector& dil_bnds)
 {
-  if (constraintsRep)
-    constraintsRep->discreteIntLowerBnds.assign(dil_bnds);
-  else
-    discreteIntLowerBnds.assign(dil_bnds);
+  if (constraintsRep) constraintsRep->discreteIntLowerBnds.assign(dil_bnds);
+  else                discreteIntLowerBnds.assign(dil_bnds);
 }
 
 
-inline void Constraints::
-discrete_int_lower_bound(const int& dil_bnd, const size_t& i)
+inline void Constraints::discrete_int_lower_bound(int dil_bnd, size_t i)
 {
-  if (constraintsRep)
-    constraintsRep->discreteIntLowerBnds[i] = dil_bnd;
-  else
-    discreteIntLowerBnds[i] = dil_bnd;
+  if (constraintsRep) constraintsRep->discreteIntLowerBnds[i] = dil_bnd;
+  else                discreteIntLowerBnds[i] = dil_bnd;
 }
 
 
@@ -495,20 +478,15 @@ inline const IntVector& Constraints::discrete_int_upper_bounds() const
 
 inline void Constraints::discrete_int_upper_bounds(const IntVector& diu_bnds)
 {
-  if (constraintsRep)
-    constraintsRep->discreteIntUpperBnds.assign(diu_bnds);
-  else
-    discreteIntUpperBnds.assign(diu_bnds);
+  if (constraintsRep) constraintsRep->discreteIntUpperBnds.assign(diu_bnds);
+  else                discreteIntUpperBnds.assign(diu_bnds);
 }
 
 
-inline void Constraints::
-discrete_int_upper_bound(const int& diu_bnd, const size_t& i)
+inline void Constraints::discrete_int_upper_bound(int diu_bnd, size_t i)
 {
-  if (constraintsRep)
-    constraintsRep->discreteIntUpperBnds[i] = diu_bnd;
-  else
-    discreteIntUpperBnds[i] = diu_bnd;
+  if (constraintsRep) constraintsRep->discreteIntUpperBnds[i] = diu_bnd;
+  else                discreteIntUpperBnds[i] = diu_bnd;
 }
 
 
@@ -521,20 +499,15 @@ inline const RealVector& Constraints::discrete_real_lower_bounds() const
 
 inline void Constraints::discrete_real_lower_bounds(const RealVector& drl_bnds)
 {
-  if (constraintsRep)
-    constraintsRep->discreteRealLowerBnds.assign(drl_bnds);
-  else
-    discreteRealLowerBnds.assign(drl_bnds);
+  if (constraintsRep) constraintsRep->discreteRealLowerBnds.assign(drl_bnds);
+  else                discreteRealLowerBnds.assign(drl_bnds);
 }
 
 
-inline void Constraints::
-discrete_real_lower_bound(const Real& drl_bnd, const size_t& i)
+inline void Constraints::discrete_real_lower_bound(Real drl_bnd, size_t i)
 {
-  if (constraintsRep)
-    constraintsRep->discreteRealLowerBnds[i] = drl_bnd;
-  else
-    discreteRealLowerBnds[i] = drl_bnd;
+  if (constraintsRep) constraintsRep->discreteRealLowerBnds[i] = drl_bnd;
+  else                discreteRealLowerBnds[i] = drl_bnd;
 }
 
 
@@ -547,25 +520,19 @@ inline const RealVector& Constraints::discrete_real_upper_bounds() const
 
 inline void Constraints::discrete_real_upper_bounds(const RealVector& dru_bnds)
 {
-  if (constraintsRep)
-    constraintsRep->discreteRealUpperBnds.assign(dru_bnds);
-  else
-    discreteRealUpperBnds.assign(dru_bnds);
+  if (constraintsRep) constraintsRep->discreteRealUpperBnds.assign(dru_bnds);
+  else                discreteRealUpperBnds.assign(dru_bnds);
 }
 
 
-inline void Constraints::
-discrete_real_upper_bound(const Real& dru_bnd, const size_t& i)
+inline void Constraints::discrete_real_upper_bound(Real dru_bnd, size_t i)
 {
-  if (constraintsRep)
-    constraintsRep->discreteRealUpperBnds[i] = dru_bnd;
-  else
-    discreteRealUpperBnds[i] = dru_bnd;
+  if (constraintsRep) constraintsRep->discreteRealUpperBnds[i] = dru_bnd;
+  else                discreteRealUpperBnds[i] = dru_bnd;
 }
 
 
-inline const RealVector& Constraints::
-inactive_continuous_lower_bounds() const
+inline const RealVector& Constraints::inactive_continuous_lower_bounds() const
 {
   return (constraintsRep) ?
     constraintsRep->inactiveContinuousLowerBnds : inactiveContinuousLowerBnds;
@@ -582,8 +549,7 @@ inactive_continuous_lower_bounds(const RealVector& icl_bnds)
 }
 
 
-inline const RealVector& Constraints::
-inactive_continuous_upper_bounds() const
+inline const RealVector& Constraints::inactive_continuous_upper_bounds() const
 {
   return (constraintsRep) ?
     constraintsRep->inactiveContinuousUpperBnds : inactiveContinuousUpperBnds;
@@ -637,8 +603,8 @@ inactive_discrete_int_upper_bounds(const IntVector& idiu_bnds)
 inline const RealVector& Constraints::
 inactive_discrete_real_lower_bounds() const
 {
-  return (constraintsRep) ?
-    constraintsRep->inactiveDiscreteRealLowerBnds : inactiveDiscreteRealLowerBnds;
+  return (constraintsRep) ? constraintsRep->inactiveDiscreteRealLowerBnds :
+    inactiveDiscreteRealLowerBnds;
 }
 
 
@@ -680,20 +646,15 @@ inline const RealVector& Constraints::all_continuous_lower_bounds() const
 inline void Constraints::
 all_continuous_lower_bounds(const RealVector& acl_bnds)
 {
-  if (constraintsRep)
-    constraintsRep->allContinuousLowerBnds.assign(acl_bnds);
-  else
-    allContinuousLowerBnds.assign(acl_bnds);
+  if (constraintsRep) constraintsRep->allContinuousLowerBnds.assign(acl_bnds);
+  else                allContinuousLowerBnds.assign(acl_bnds);
 }
 
 
-inline void Constraints::
-all_continuous_lower_bound(const Real& acl_bnd, const size_t& i)
+inline void Constraints::all_continuous_lower_bound(Real acl_bnd, size_t i)
 {
-  if (constraintsRep)
-    constraintsRep->allContinuousLowerBnds[i] = acl_bnd;
-  else
-    allContinuousLowerBnds[i] = acl_bnd;
+  if (constraintsRep) constraintsRep->allContinuousLowerBnds[i] = acl_bnd;
+  else                allContinuousLowerBnds[i] = acl_bnd;
 }
 
 
@@ -704,23 +665,17 @@ inline const RealVector& Constraints::all_continuous_upper_bounds() const
 }
 
 
-inline void Constraints::
-all_continuous_upper_bounds(const RealVector& acu_bnds)
+inline void Constraints::all_continuous_upper_bounds(const RealVector& acu_bnds)
 {
-  if (constraintsRep)
-    constraintsRep->allContinuousUpperBnds.assign(acu_bnds);
-  else
-    allContinuousUpperBnds.assign(acu_bnds);
+  if (constraintsRep) constraintsRep->allContinuousUpperBnds.assign(acu_bnds);
+  else                allContinuousUpperBnds.assign(acu_bnds);
 }
 
 
-inline void Constraints::
-all_continuous_upper_bound(const Real& acu_bnd, const size_t& i)
+inline void Constraints::all_continuous_upper_bound(Real acu_bnd, size_t i)
 {
-  if (constraintsRep)
-    constraintsRep->allContinuousUpperBnds[i] = acu_bnd;
-  else
-    allContinuousUpperBnds[i] = acu_bnd;
+  if (constraintsRep) constraintsRep->allContinuousUpperBnds[i] = acu_bnd;
+  else                allContinuousUpperBnds[i] = acu_bnd;
 }
 
 
@@ -734,20 +689,15 @@ inline const IntVector& Constraints::all_discrete_int_lower_bounds() const
 inline void Constraints::
 all_discrete_int_lower_bounds(const IntVector& adil_bnds)
 {
-  if (constraintsRep)
-    constraintsRep->allDiscreteIntLowerBnds.assign(adil_bnds);
-  else
-    allDiscreteIntLowerBnds.assign(adil_bnds);
+  if (constraintsRep) constraintsRep->allDiscreteIntLowerBnds.assign(adil_bnds);
+  else                allDiscreteIntLowerBnds.assign(adil_bnds);
 }
 
 
-inline void Constraints::
-all_discrete_int_lower_bound(const int& adil_bnd, const size_t& i)
+inline void Constraints::all_discrete_int_lower_bound(int adil_bnd, size_t i)
 {
-  if (constraintsRep)
-    constraintsRep->allDiscreteIntLowerBnds[i] = adil_bnd;
-  else
-    allDiscreteIntLowerBnds[i] = adil_bnd;
+  if (constraintsRep) constraintsRep->allDiscreteIntLowerBnds[i] = adil_bnd;
+  else                allDiscreteIntLowerBnds[i] = adil_bnd;
 }
 
 
@@ -768,13 +718,10 @@ all_discrete_int_upper_bounds(const IntVector& adiu_bnds)
 }
 
 
-inline void Constraints::
-all_discrete_int_upper_bound(const int& adiu_bnd, const size_t& i)
+inline void Constraints::all_discrete_int_upper_bound(int adiu_bnd, size_t i)
 {
-  if (constraintsRep)
-    constraintsRep->allDiscreteIntUpperBnds[i] = adiu_bnd;
-  else
-    allDiscreteIntUpperBnds[i] = adiu_bnd;
+  if (constraintsRep) constraintsRep->allDiscreteIntUpperBnds[i] = adiu_bnd;
+  else                allDiscreteIntUpperBnds[i] = adiu_bnd;
 }
 
 
@@ -795,13 +742,10 @@ all_discrete_real_lower_bounds(const RealVector& adrl_bnds)
 }
 
 
-inline void Constraints::
-all_discrete_real_lower_bound(const Real& adrl_bnd, const size_t& i)
+inline void Constraints::all_discrete_real_lower_bound(Real adrl_bnd, size_t i)
 {
-  if (constraintsRep)
-    constraintsRep->allDiscreteRealLowerBnds[i] = adrl_bnd;
-  else
-    allDiscreteRealLowerBnds[i] = adrl_bnd;
+  if (constraintsRep) constraintsRep->allDiscreteRealLowerBnds[i] = adrl_bnd;
+  else                allDiscreteRealLowerBnds[i] = adrl_bnd;
 }
 
 
@@ -822,13 +766,10 @@ all_discrete_real_upper_bounds(const RealVector& adru_bnds)
 }
 
 
-inline void Constraints::
-all_discrete_real_upper_bound(const Real& adru_bnd, const size_t& i)
+inline void Constraints::all_discrete_real_upper_bound(Real adru_bnd, size_t i)
 {
-  if (constraintsRep)
-    constraintsRep->allDiscreteRealUpperBnds[i] = adru_bnd;
-  else
-    allDiscreteRealUpperBnds[i] = adru_bnd;
+  if (constraintsRep) constraintsRep->allDiscreteRealUpperBnds[i] = adru_bnd;
+  else                allDiscreteRealUpperBnds[i] = adru_bnd;
 }
 
 
@@ -855,10 +796,8 @@ inline const RealMatrix& Constraints::linear_ineq_constraint_coeffs() const
 inline void Constraints::
 linear_ineq_constraint_coeffs(const RealMatrix& lin_ineq_coeffs)
 {
-  if (constraintsRep)
-    constraintsRep->linearIneqConCoeffs = lin_ineq_coeffs;
-  else
-    linearIneqConCoeffs = lin_ineq_coeffs;
+  if (constraintsRep) constraintsRep->linearIneqConCoeffs = lin_ineq_coeffs;
+  else                linearIneqConCoeffs = lin_ineq_coeffs;
 }
 
 
@@ -873,10 +812,8 @@ linear_ineq_constraint_lower_bounds() const
 inline void Constraints::
 linear_ineq_constraint_lower_bounds(const RealVector& lin_ineq_l_bnds)
 {
-  if (constraintsRep)
-    constraintsRep->linearIneqConLowerBnds = lin_ineq_l_bnds;
-  else
-    linearIneqConLowerBnds = lin_ineq_l_bnds;
+  if (constraintsRep) constraintsRep->linearIneqConLowerBnds = lin_ineq_l_bnds;
+  else                linearIneqConLowerBnds = lin_ineq_l_bnds;
 }
 
 
@@ -891,10 +828,8 @@ linear_ineq_constraint_upper_bounds() const
 inline void Constraints::
 linear_ineq_constraint_upper_bounds(const RealVector& lin_ineq_u_bnds)
 {
-  if (constraintsRep)
-    constraintsRep->linearIneqConUpperBnds = lin_ineq_u_bnds;
-  else
-    linearIneqConUpperBnds = lin_ineq_u_bnds;
+  if (constraintsRep) constraintsRep->linearIneqConUpperBnds = lin_ineq_u_bnds;
+  else                linearIneqConUpperBnds = lin_ineq_u_bnds;
 }
 
 
@@ -908,10 +843,8 @@ inline const RealMatrix& Constraints::linear_eq_constraint_coeffs() const
 inline void Constraints::
 linear_eq_constraint_coeffs(const RealMatrix& lin_eq_coeffs)
 {
-  if (constraintsRep)
-    constraintsRep->linearEqConCoeffs = lin_eq_coeffs;
-  else
-    linearEqConCoeffs = lin_eq_coeffs;
+  if (constraintsRep) constraintsRep->linearEqConCoeffs = lin_eq_coeffs;
+  else                linearEqConCoeffs = lin_eq_coeffs;
 }
 
 
@@ -925,10 +858,8 @@ inline const RealVector& Constraints::linear_eq_constraint_targets() const
 inline void Constraints::
 linear_eq_constraint_targets(const RealVector& lin_eq_targets)
 {
-  if (constraintsRep)
-    constraintsRep->linearEqConTargets = lin_eq_targets;
-  else
-    linearEqConTargets = lin_eq_targets;
+  if (constraintsRep) constraintsRep->linearEqConTargets = lin_eq_targets;
+  else                linearEqConTargets = lin_eq_targets;
 }
 
 
@@ -993,10 +924,8 @@ nonlinear_eq_constraint_targets() const
 inline void Constraints::
 nonlinear_eq_constraint_targets(const RealVector& nln_eq_targets)
 {
-  if (constraintsRep)
-    constraintsRep->nonlinearEqConTargets = nln_eq_targets;
-  else
-    nonlinearEqConTargets = nln_eq_targets;
+  if (constraintsRep) constraintsRep->nonlinearEqConTargets = nln_eq_targets;
+  else                nonlinearEqConTargets = nln_eq_targets;
 }
 
 
