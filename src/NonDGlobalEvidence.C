@@ -41,26 +41,27 @@ void NonDGlobalEvidence::set_cell_bounds()
 {
   // TO DO: av_cntr assumes all active variables are interval variables
   size_t j, v_cntr, av_cntr; 
-  for (j=0, v_cntr=0, av_cntr=0; j<numContIntervalVars; ++j, ++v_cntr) {
+  for (j=0, v_cntr=0, av_cntr=0; j<numContIntervalVars;
+       ++j, ++v_cntr, ++av_cntr) {
     intervalOptModel.continuous_lower_bound(cellLowerBounds[cellCntr][v_cntr],
 					    av_cntr);
     intervalOptModel.continuous_upper_bound(cellLowerBounds[cellCntr][v_cntr],
 					    av_cntr);
   }
    
-  for (j=0, av_cntr=0; j<numDiscIntervalVars; ++j, ++v_cntr) {
+  for (j=0, av_cntr=0; j<numDiscIntervalVars; ++j, ++v_cntr, ++av_cntr) {
     intervalOptModel.discrete_int_lower_bound(cellLowerBounds[cellCntr][v_cntr],
 					      av_cntr);
     intervalOptModel.discrete_int_upper_bound(cellLowerBounds[cellCntr][v_cntr],
 					      av_cntr);
   } 
 
-  for (j=0; j<numDiscSetIntUncVars; ++j, ++v_cntr) {
+  for (j=0; j<numDiscSetIntUncVars; ++j, ++v_cntr, ++av_cntr) {
     intervalOptModel.discrete_int_variable(cellLowerBounds[cellCntr][v_cntr],
 					   av_cntr);
   } 
 
-  for (j=0, av_cntr=0; j<numDiscSetRealUncVars; ++j, ++v_cntr) {
+  for (j=0, av_cntr=0; j<numDiscSetRealUncVars; ++j, ++v_cntr, ++av_cntr) {
     intervalOptModel.discrete_real_variable(cellLowerBounds[cellCntr][v_cntr],
 					    av_cntr);
   } 
