@@ -108,7 +108,7 @@ else()
       "--prefix" "${QUESO_EXT_BINARY_DIR}"
     )
     externalproject_add(queso_ext
-      URL ${CMAKE_CURRENT_SOURCE_DIR}/queso/queso-0.45.1.tar.gz
+      URL ${CMAKE_CURRENT_SOURCE_DIR}/queso/queso-0.45.2.tar.gz
       BUILD_IN_SOURCE 1
       CONFIGURE_COMMAND "${queso_config_cmd}"
     )
