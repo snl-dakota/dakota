@@ -37,8 +37,25 @@ void NonDLocalEvidence::initialize()
 
 void NonDLocalEvidence::set_cell_bounds()
 {
-  minMaxModel.continuous_lower_bounds(cellLowerBounds[cellCntr]);
-  minMaxModel.continuous_upper_bounds(cellUpperBounds[cellCntr]);
+  size_t j, cntr=0;
+  for (j=0; j<numContIntervalVars; j++,cntr++) {
+    minMaxModel.continuous_lower_bound(cellLowerBounds[cellCntr][cntr],j);
+    minMaxModel.continuous_upper_bound(cellLowerBounds[cellCntr][cntr],j);
+  }
+
+  for (j=0; j<(numDiscIntervalVars); j++,cntr++) {
+    minMaxModel.discrete_int_lower_bound(cellLowerBounds[cellCntr][cntr],j);
+    minMaxModel.discrete_int_upper_bound(cellLowerBounds[cellCntr][cntr],j);
+  }
+
+  for (j=0; j<numDiscSetIntUncVars; j++,cntr++) {
+    minMaxModel.discrete_int_variable(cellLowerBounds[cellCntr][cntr],j);
+  }
+
+  for (j=0; j<numDiscSetRealUncVars; j++,cntr++) {
+    minMaxModel.discrete_real_variable(cellLowerBounds[cellCntr][cntr],j);
+  }
+
 }
 
 

@@ -39,8 +39,24 @@ void NonDGlobalEvidence::initialize()
 
 void NonDGlobalEvidence::set_cell_bounds()
 {
-  intervalOptModel.continuous_lower_bounds(cellLowerBounds[cellCntr]);
-  intervalOptModel.continuous_upper_bounds(cellUpperBounds[cellCntr]);
+  size_t j, cntr=0; 
+  for (j=0; j<numContIntervalVars; j++,cntr++) {
+    intervalOptModel.continuous_lower_bound(cellLowerBounds[cellCntr][cntr],j);
+    intervalOptModel.continuous_upper_bound(cellLowerBounds[cellCntr][cntr],j);
+  }
+   
+  for (j=0; j<(numDiscIntervalVars); j++,cntr++) {
+    intervalOptModel.discrete_int_lower_bound(cellLowerBounds[cellCntr][cntr],j);
+    intervalOptModel.discrete_int_upper_bound(cellLowerBounds[cellCntr][cntr],j);
+  } 
+
+  for (j=0; j<numDiscSetIntUncVars; j++,cntr++) {
+    intervalOptModel.discrete_int_variable(cellLowerBounds[cellCntr][cntr],j);
+  } 
+
+  for (j=0; j<numDiscSetRealUncVars; j++,cntr++) {
+    intervalOptModel.discrete_real_variable(cellLowerBounds[cellCntr][cntr],j);
+  } 
 }
 
 
@@ -99,6 +115,14 @@ void NonDGlobalEvidence::get_best_sample(bool minimize, bool eval_approx)
 	break;
       }
     }
+    // Not sure we need to check for the equality of the discrete set vars?
+    //for (j= numContIntervalVars+numDiscIntervalVars; 
+    //        j<numDiscSetIntUncVars+numDiscSetRealUncVars; ++j) {
+    //   if (in_bounds && truth_data[j] !=  cellLowerBounds[cellCntr][j]) {	
+    //	in_bounds = false;
+    //	break;
+    //  }
+    //}
     if ( ( ( !minimize && truth_fn > truthFnStar ) ||
 	   (  minimize && truth_fn < truthFnStar ) ) && in_bounds ){
       index_star  = i;
@@ -118,9 +142,9 @@ void NonDGlobalEvidence::get_best_sample(bool minimize, bool eval_approx)
 	midpoint[i] = 0.5*cellLowerBounds[cellCntr][i]
 	            + 0.5*cellUpperBounds[cellCntr][i];
       }	
-      fHatModel.continuous_variables(midpoint);
+      fHatModel.continuous_variables(midpoint);  
     }
-    else
+    else // I don't think we need to set the discrete variables in this case?
       fHatModel.continuous_variables(gp_data.continuous_variables(index_star));
 		
     ActiveSet set = fHatModel.current_response().active_set();

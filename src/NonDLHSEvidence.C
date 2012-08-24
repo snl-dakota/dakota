@@ -62,7 +62,9 @@ void NonDLHSEvidence::post_process_samples()
       const Real& fn_val = it->second.function_value(respFnCntr);
       const Real* c_vars = all_samples[i]; // column vector
 
-      RealVector in_cell(numContIntervalVars);
+      int num_total_vars = numContIntervalVars+numDiscIntervalVars+
+                           numDiscSetIntUncVars+numDiscSetRealUncVars;
+      RealVector in_cell(num_total_vars);
       Real total_incell;
 
       for (cellCntr=0; cellCntr<numCells; ++cellCntr) {
@@ -70,10 +72,13 @@ void NonDLHSEvidence::post_process_samples()
 	j=0;
 	const RealVector& cell_l_bnds = cellLowerBounds[cellCntr];
 	const RealVector& cell_u_bnds = cellUpperBounds[cellCntr];
-	while (total_incell && j<numContIntervalVars) {
+        // for now, treat ContIntervalVars and DiscInterval vars as the same (real bounds
+        // but check for equality of the discrete set types when calculating 
+        // number in a cell.  Note we need to redo getting all the samples in a RealMatrix 
+        while (total_incell && j<num_total_vars) {
 	  in_cell[j]=0;
-	  if (cell_l_bnds[j] < c_vars[j] && c_vars[j] < cell_u_bnds[j])
-	    in_cell[j] = 1;
+	  if ((cell_l_bnds[j] < c_vars[j] && c_vars[j] < cell_u_bnds[j]) || (cell_l_bnds[j] == c_vars[j]))
+	      in_cell[j] = 1;
 	  total_incell = in_cell[j]*total_incell;
 	  ++j;
 	}
