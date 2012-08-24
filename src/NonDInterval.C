@@ -137,174 +137,134 @@ void NonDInterval::calculate_cells_and_bpas()
   Pecos::DistributionParams& dp = iteratedModel.distribution_parameters();
   // Information we want: for each hyper cube i, give the bpa, and bounds on i.
   // ci_bpa[i][j] gives jth bpa of jth interval of ith variable
-  const Pecos::RealVectorArray& ci_bpa = dp.continuous_interval_probabilities();
   // ci_{l,u}_bnds[i][j] gives jth {lower,upper} bound for the ith variable
-  const Pecos::RealVectorArray& ci_l_bnds
-    = dp.continuous_interval_lower_bounds();
-  const Pecos::RealVectorArray& ci_u_bnds
-    = dp.continuous_interval_upper_bounds();
-  const RealVectorArray& dp_int_probs=dp.discrete_interval_probabilities();
-  const Pecos::IntVectorArray& di_l_bnds  = dp.discrete_interval_lower_bounds();
-  const Pecos::IntVectorArray& di_u_bnds = dp.discrete_interval_upper_bounds();
-  const Pecos::IntRealMapArray& di_set_vals_probs = dp.discrete_set_int_values_probabilities();
-  const Pecos::RealRealMapArray& dr_set_vals_probs = dp.discrete_set_real_values_probabilities();
+  const RealVectorArray& ci_bpa    = dp.continuous_interval_probabilities();
+  const RealVectorArray& ci_l_bnds = dp.continuous_interval_lower_bounds();
+  const RealVectorArray& ci_u_bnds = dp.continuous_interval_upper_bounds();
+  const RealVectorArray& di_bpa    = dp.discrete_interval_probabilities();
+  const IntVectorArray&  di_l_bnds = dp.discrete_interval_lower_bounds();
+  const IntVectorArray&  di_u_bnds = dp.discrete_interval_upper_bounds();
+  const IntRealMapArray& dsi_vals_probs
+    = dp.discrete_set_int_values_probabilities();
+  const RealRealMapArray& dsr_vals_probs
+    = dp.discrete_set_real_values_probabilities();
 
-  size_t i,j,k,var_cntr,interval_cntr;
-  int numTotalVars = numContIntervalVars + numDiscIntervalVars + numDiscSetIntUncVars + numDiscSetRealUncVars;
-  Real previous_bpa;
+  size_t i, j, k, var_cntr, cell_cntr, prev_bpa_len;
+  int num_total_vars = numContIntervalVars  + numDiscIntervalVars
+                     + numDiscSetIntUncVars + numDiscSetRealUncVars;
 
-  UShortArray scale_factor(numTotalVars,1);
-  //continuous interval variables, for now we are assuming at least one continuous var
+  UShortArray scale_factor(num_total_vars, 1);
   numCells = 1;
-  if (numContIntervalVars > 0) {
-    numCells = ci_bpa[0].length();
-    for (i=1; i<numContIntervalVars; ++i){
-      numCells *= ci_bpa[i].length();
-      scale_factor[i] = scale_factor[i-1]*ci_bpa[i-1].length();
-    }
-    previous_bpa = ci_bpa[numContIntervalVars-1].length();
+
+  // continuous interval variables
+  for (i=0, var_cntr=0; i<numContIntervalVars; ++i, ++var_cntr) {
+    if (var_cntr)
+      scale_factor[i] = scale_factor[i-1] * prev_bpa_len;
+    numCells *= prev_bpa_len = ci_bpa[i].length();
   }
 
-  //discrete interval variables
-  if (numDiscIntervalVars>0) {
-    var_cntr = numContIntervalVars;
-    numCells *= dp_int_probs[0].length();
-    scale_factor[var_cntr] = scale_factor[var_cntr-1]*previous_bpa;
-    var_cntr++;
-    for (i=1; i<numDiscIntervalVars; ++i, ++var_cntr){
-      numCells *= dp_int_probs[i].length();
-      scale_factor[var_cntr] = 
-        scale_factor[var_cntr-1]*dp_int_probs[i-1].length();
-    }
-    previous_bpa = dp_int_probs[numDiscIntervalVars-1].length();
+  // discrete interval variables
+  for (i=0; i<numDiscIntervalVars; ++i, ++var_cntr) {
+    if (var_cntr)
+      scale_factor[var_cntr] = scale_factor[var_cntr-1] * prev_bpa_len;
+    numCells *= prev_bpa_len = di_bpa[i].length();
   }
 
-  //discrete interval sets
-  if (numDiscSetIntUncVars>0) {
-    var_cntr=numContIntervalVars+numDiscIntervalVars;
-    numCells *= di_set_vals_probs[0].size();
-    scale_factor[var_cntr] = scale_factor[var_cntr-1]*previous_bpa;
-    var_cntr++;
-    for (i=1; i<numDiscSetIntUncVars; ++i, ++var_cntr){
-      numCells *= di_set_vals_probs[i].size();
-      scale_factor[var_cntr] = 
-        scale_factor[var_cntr-1]*di_set_vals_probs[i-1].size();
-    }
-    previous_bpa=di_set_vals_probs[numDiscSetIntUncVars-1].size(); 
+  // discrete interval sets
+  for (i=0; i<numDiscSetIntUncVars; ++i, ++var_cntr) {
+    if (var_cntr)
+      scale_factor[var_cntr] = scale_factor[var_cntr-1] * prev_bpa_len;
+    numCells *= prev_bpa_len = dsi_vals_probs[i].size();
   }
   
-  //discrete real sets
-  if (numDiscSetRealUncVars>0) {
-    var_cntr=numContIntervalVars+numDiscIntervalVars+numDiscSetIntUncVars;
-    numCells *= dr_set_vals_probs[0].size();
-    scale_factor[var_cntr] = scale_factor[var_cntr-1]*previous_bpa;
-    var_cntr++;
-    for (i=1; i<numDiscSetRealUncVars; ++i, ++var_cntr){
-      numCells *= dr_set_vals_probs[i].size();
-      scale_factor[var_cntr] = 
-        scale_factor[var_cntr-1]*dr_set_vals_probs[i-1].size();
-    }
-    previous_bpa=dr_set_vals_probs[numDiscSetRealUncVars-1].size();
+  // discrete real sets
+  for (i=0; i<numDiscSetRealUncVars; ++i, ++var_cntr){
+    if (var_cntr)
+      scale_factor[var_cntr] = scale_factor[var_cntr-1] * prev_bpa_len;
+    numCells *= prev_bpa_len = dsr_vals_probs[i].size();
   }
  
-  Cout << "scale factor " << scale_factor;
-  Cout << "previous_bpa " << previous_bpa;
-  Cout << "numCells " << numCells << '\n';
+  Cout << "scale factor " << scale_factor << " prev_bpa_len " << prev_bpa_len
+       << " numCells "     << numCells << '\n';
 
   // shape cell length
-  cellLowerBounds.resize(numCells);		
-  cellUpperBounds.resize(numCells);
-  cellBPA.resize(numCells);
-  cellBPA.assign(numCells, 1);
-  for (i=0;i<numCells;++i) {
-    cellLowerBounds[i].resize(numTotalVars);
-    cellUpperBounds[i].resize(numTotalVars);
+  cellLowerBounds.resize(numCells); cellUpperBounds.resize(numCells);
+  cellBPA.resize(numCells);         cellBPA.assign(numCells, 1);
+  for (i=0; i<numCells; ++i) {
+    cellLowerBounds[i].resize(num_total_vars);
+    cellUpperBounds[i].resize(num_total_vars);
   }
 
   // This loops num_variables*num_cells
-  size_t cell_cntr;
-  size_t var_cntr2=numContIntervalVars+numDiscIntervalVars;
-  size_t var_cntr3=numContIntervalVars+numDiscIntervalVars+numDiscSetIntUncVars;
-  Real bpa_j, lower_bound_i_of_j, upper_bound_i_of_j;
+  Real lower_bound_i_of_j, upper_bound_i_of_j;
   int intervals_in_var_j;
 
-  for (j=0; j<numTotalVars; ++j) {
-    bpa_j = 1.;
-    if (j<numContIntervalVars) { 
-      intervals_in_var_j = ci_bpa[j].length();
-      for (i=0; i<intervals_in_var_j; ++i){
-        cell_cntr = i*scale_factor[j];
-        while (cell_cntr < numCells){
-          for (k=0; k<scale_factor[j]; k++) {
-	    cellLowerBounds[cell_cntr+k][j] = ci_l_bnds[j][i];
-	    cellUpperBounds[cell_cntr+k][j] = ci_u_bnds[j][i];
-	    cellBPA[cell_cntr+k] *= ci_bpa[j][i];
-          }
-	  cell_cntr += intervals_in_var_j*scale_factor[j]; 
-        }
-      }
-    }
-    else if (j<var_cntr2) {
-      intervals_in_var_j = dp_int_probs[j-numContIntervalVars].length();
-      for (i=0; i<intervals_in_var_j; ++i){
-        cell_cntr = i*scale_factor[j];
-        while (cell_cntr < numCells){
-          for (k=0; k<scale_factor[j]; k++) {
-	    cellLowerBounds[cell_cntr+k][j] = di_l_bnds[j-numContIntervalVars][i]; 
-	    cellUpperBounds[cell_cntr+k][j] = di_u_bnds[j-numContIntervalVars][i];
-	    cellBPA[cell_cntr+k] *= dp_int_probs[j-numContIntervalVars][i];
-          }
-	  cell_cntr += intervals_in_var_j*scale_factor[j]; 
-        }
-      }
-    }
-    else if (j<var_cntr3) { 
-      intervals_in_var_j = di_set_vals_probs[j-var_cntr2].size();
-      for (i=0; i<intervals_in_var_j; ++i){
-        cell_cntr = i*scale_factor[j];
-        while (cell_cntr < numCells){
-          for (k=0; k<scale_factor[j]; k++) {
-            IRMCIter iteri = di_set_vals_probs[j-var_cntr2].begin();
-            interval_cntr=0;
-            while(interval_cntr<i){
-              iteri++;
-              interval_cntr++;
-            }
-	    cellLowerBounds[cell_cntr+k][j] = iteri->first;
-	    cellUpperBounds[cell_cntr+k][j] = iteri->first;
-	    cellBPA[cell_cntr+k] *= iteri->second;
-          }
-	  cell_cntr += intervals_in_var_j*scale_factor[j]; 
-        }
-      }
-    }
-    else { 
-      intervals_in_var_j = dr_set_vals_probs[j-var_cntr3].size();
-      for (i=0; i<intervals_in_var_j; ++i){
-        cell_cntr = i*scale_factor[j];
-        while (cell_cntr < numCells){
-          for (k=0; k<scale_factor[j]; k++) {
-            RRMCIter iteri = dr_set_vals_probs[j-var_cntr3].begin();
-            interval_cntr=0;
-            while(interval_cntr<i){
-              iteri++;
-              interval_cntr++;
-            }
-	    cellLowerBounds[cell_cntr+k][j] = iteri->first;
-	    cellUpperBounds[cell_cntr+k][j] = iteri->first;
-	    cellBPA[cell_cntr+k] *= iteri->second;
-          }
-	  cell_cntr += intervals_in_var_j*scale_factor[j]; 
+  for (j=0, var_cntr=0; j<numContIntervalVars; ++j, ++var_cntr) {
+    intervals_in_var_j = ci_bpa[j].length();
+    for (i=0; i<intervals_in_var_j; ++i) {
+      cell_cntr = i*scale_factor[var_cntr];
+      while (cell_cntr < numCells) {
+	for (k=0; k<scale_factor[var_cntr]; k++) {
+	  cellLowerBounds[cell_cntr+k][var_cntr] = ci_l_bnds[j][i];
+	  cellUpperBounds[cell_cntr+k][var_cntr] = ci_u_bnds[j][i];
+	  cellBPA[cell_cntr+k] *= ci_bpa[j][i];
 	}
+	cell_cntr += intervals_in_var_j*scale_factor[var_cntr]; 
       }
     }
   }
 
-  for (i=0;i<numCells;++i) {
-    Cout << "Cell " << i << '\n';
-    for (j=0;j<numTotalVars;j++) {
-      Cout << cellLowerBounds[i][j] << " " << '\n';
+  for (j=0; j<numDiscIntervalVars; ++j, ++var_cntr) {
+    intervals_in_var_j = di_bpa[j].length();
+    for (i=0; i<intervals_in_var_j; ++i) {
+      cell_cntr = i*scale_factor[var_cntr];
+      while (cell_cntr < numCells) {
+	for (k=0; k<scale_factor[var_cntr]; k++) {
+	  cellLowerBounds[cell_cntr+k][var_cntr] = di_l_bnds[j][i];
+	  cellUpperBounds[cell_cntr+k][var_cntr] = di_u_bnds[j][i];
+	  cellBPA[cell_cntr+k] *= di_bpa[j][i];
+	}
+	cell_cntr += intervals_in_var_j*scale_factor[var_cntr]; 
+      }
     }
+  }
+
+  for (j=0; j<numDiscSetIntUncVars; ++j, ++var_cntr) {
+    intervals_in_var_j = dsi_vals_probs[j].size();
+    IRMCIter cit = dsi_vals_probs[j].begin();
+    for (i=0; i<intervals_in_var_j; ++i, ++cit) {
+      cell_cntr = i*scale_factor[var_cntr];
+      while (cell_cntr < numCells) {
+	for (k=0; k<scale_factor[var_cntr]; k++) {
+	  cellLowerBounds[cell_cntr+k][var_cntr] = cit->first;
+	  cellUpperBounds[cell_cntr+k][var_cntr] = cit->first;
+	  cellBPA[cell_cntr+k] *= cit->second;
+	}
+	cell_cntr += intervals_in_var_j*scale_factor[var_cntr]; 
+      }
+    }
+  }
+
+  for (j=0; j<numDiscSetRealUncVars; ++j, ++var_cntr) {
+    intervals_in_var_j = dsr_vals_probs[j].size();
+    RRMCIter cit = dsr_vals_probs[j].begin();
+    for (i=0; i<intervals_in_var_j; ++i, ++cit) {
+      cell_cntr = i*scale_factor[var_cntr];
+      while (cell_cntr < numCells) {
+	for (k=0; k<scale_factor[var_cntr]; k++) {
+	  cellLowerBounds[cell_cntr+k][var_cntr] = cit->first;
+	  cellUpperBounds[cell_cntr+k][var_cntr] = cit->first;
+	  cellBPA[cell_cntr+k] *= cit->second;
+	}
+	cell_cntr += intervals_in_var_j*scale_factor[var_cntr]; 
+      }
+    }
+  }
+
+  for (i=0; i<numCells; ++i) {
+    Cout << "Cell " << i << '\n';
+    for (j=0; j<num_total_vars; ++j)
+      Cout << cellLowerBounds[i][j] << " \n";
   }
 
   // shape belief/plausibility structure arrays
