@@ -57,7 +57,14 @@ void NonDGlobalSingleInterval::get_best_sample(bool minimize, bool eval_approx)
 
   // If needed, evaluate GP to update approxFnStar
   if (eval_approx) {
-    fHatModel.continuous_variables(gp_data.continuous_variables(index_star));
+    if (numContIntervalVars)
+      fHatModel.continuous_variables(gp_data.continuous_variables(index_star));
+    if (numDiscIntervalVars || numDiscSetIntUncVars)
+      fHatModel.discrete_int_variables(
+        gp_data.discrete_int_variables(index_star));
+    if (numDiscSetRealUncVars)
+      fHatModel.discrete_real_variables(
+        gp_data.discrete_real_variables(index_star));
     ActiveSet set = fHatModel.current_response().active_set();
     set.request_values(0); set.request_value(1, respFnCntr);
     fHatModel.compute_response(set);

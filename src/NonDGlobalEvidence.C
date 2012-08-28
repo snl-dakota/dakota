@@ -82,15 +82,27 @@ void NonDGlobalEvidence::post_process_response_fn_results()
 void NonDGlobalEvidence::post_process_final_results()
 {
 #ifdef DEBUG
-  for (size_t i=0; i<numCells; i++) {
+  size_t i, j, v_cntr;
+  for (i=0; i<numCells; ++i) {
     Cout << "Cell " << i << "\nBPA: " << cellBPA[i] << std::endl;;
-    for (size_t ii=0; ii<numContIntervalVars; ii++) {
-      Cout << "Cell Bounds for variable " << ii << ": ("
-	   << cellLowerBounds[i][ii] << ", " << cellUpperBounds[i][ii] << ")"
-	   << std::endl;
-    }
-    Cout << "(min,max) for cell " << i << ": (" << cellFnLowerBounds[0][i]
-	 << ", " << cellFnUpperBounds[0][i] << ")\n";
+    for (j=0, v_cntr=0; j<numContIntervalVars; ++j, ++v_cntr)
+      Cout << "Cell bounds for continuous variable " << j << ": ("
+	   << cellLowerBounds[i][v_cntr] << ", "
+	   << cellUpperBounds[i][v_cntr] << ")\n";
+    for (j=0; j<numDiscIntervalVars; ++j, ++v_cntr)
+      Cout << "Cell bounds for discrete int range variable " << j << ": ("
+	   << (int)cellLowerBounds[i][v_cntr] << ", "
+	   << (int)cellUpperBounds[i][v_cntr] << ")\n"; // TO DO
+    for (j=0; j<numDiscSetIntUncVars; ++j, ++v_cntr)
+      Cout << "Cell value for discrete int set variable " << j << ": "
+	   << (int)cellLowerBounds[i][v_cntr] << '\n'; // TO DO
+    for (j=0; j<numDiscSetRealUncVars; ++j, ++v_cntr)
+      Cout << "Cell value for discrete real set variable " << j << ": "
+	   << cellLowerBounds[i][v_cntr] << '\n'; // TO DO
+    for (j=0; j<numFunctions; ++j)
+      Cout << "Response fn " << j << " (min,max) for cell " << i << ": ("
+	   << cellFnLowerBounds[j][i] << ", " << cellFnUpperBounds[j][i]
+	   << ")\n";
   }
 #endif
   // compute statistics 
@@ -108,50 +120,70 @@ void NonDGlobalEvidence::get_best_sample(bool minimize, bool eval_approx)
 
   // GT:
   // We want to make sure that we pick a data point that lies inside the cell
-  size_t i, j, index_star, num_data_pts = gp_data.size();
+  size_t i, j, v_cntr, av_cntr, index_star, num_data_pts = gp_data.size();
   truthFnStar = (minimize) ? DBL_MAX : -DBL_MAX;
   for (i=0; i<num_data_pts; ++i) {
-    const Real&       truth_fn   = gp_data.response_function(i);
-    const RealVector& truth_data = gp_data.continuous_variables(i);
+    const Real&      truth_fn = gp_data.response_function(i);
+    const RealVector&  c_vars = gp_data.continuous_variables(i);
+    const IntVector&  di_vars = gp_data.discrete_int_variables(i);
+    const RealVector& dr_vars = gp_data.discrete_real_variables(i);
     bool in_bounds = true;
-    for (j=0; j < numContIntervalVars; ++j) {
-      if ((truth_data[j] < cellLowerBounds[cellCntr][j]) ||
-	  (truth_data[j] > cellUpperBounds[cellCntr][j])) {	
-	in_bounds = false;
-	break;
-      }
-    }
-    // Not sure we need to check for the equality of the discrete set vars?
-    //for (j= numContIntervalVars+numDiscIntervalVars; 
-    //        j<numDiscSetIntUncVars+numDiscSetRealUncVars; ++j) {
-    //   if (in_bounds && truth_data[j] !=  cellLowerBounds[cellCntr][j]) {	
-    //	in_bounds = false;
-    //	break;
-    //  }
-    //}
-    if ( ( ( !minimize && truth_fn > truthFnStar ) ||
-	   (  minimize && truth_fn < truthFnStar ) ) && in_bounds ){
+    for (j=0, v_cntr=0; j<numContIntervalVars; ++j, ++v_cntr)
+      if (c_vars[j] < cellLowerBounds[cellCntr][v_cntr] ||
+	  c_vars[j] > cellUpperBounds[cellCntr][v_cntr])
+	{ in_bounds = false; break; }
+    if (in_bounds)
+      for (j=0; j<numDiscIntervalVars; ++j, ++v_cntr)
+	if (di_vars[j] < (int)cellLowerBounds[cellCntr][v_cntr] ||
+	    di_vars[j] > (int)cellUpperBounds[cellCntr][v_cntr]) // TO DO
+	  { in_bounds = false; break; }
+    if (in_bounds)
+      for (j=0; j<numDiscSetIntUncVars; ++j, ++v_cntr)
+	if (di_vars[j] != (int)cellLowerBounds[cellCntr][v_cntr]) // TO DO
+	  { in_bounds = false; break; }
+    if (in_bounds)
+      for (j=0; j<numDiscSetRealUncVars; ++j, ++v_cntr)
+	if (dr_vars[j] != cellLowerBounds[cellCntr][v_cntr]) // TO DO
+	  { in_bounds = false; break; }
+
+    if ( in_bounds && ( ( !minimize && truth_fn > truthFnStar ) ||
+			(  minimize && truth_fn < truthFnStar ) ) ) {
       index_star  = i;
       truthFnStar = truth_fn;
     }
   }
 
   if (eval_approx) {
-    if ((truthFnStar == DBL_MAX) || (truthFnStar == -DBL_MAX)) {
-      Cout << "No function evaluations were found in cell. "
-	   << "Truth function is set to DBL_MAX and approxFnStar is evaluated "
-	   << "at midpoint.\n";
-      RealVector midpoint;
-      Variables cell_midpoint(intervalOptimizer.variables_results());
-      midpoint.size(numContIntervalVars);
-      for (size_t i=0; i<numContIntervalVars; i++) {
-	midpoint[i] = 0.5*cellLowerBounds[cellCntr][i]
-	            + 0.5*cellUpperBounds[cellCntr][i];
-      }	
-      fHatModel.continuous_variables(midpoint);  
+    if (truthFnStar == DBL_MAX || truthFnStar == -DBL_MAX) {
+      Cout << "No function evaluations were found in cell. Truth function is "
+	   << "set to DBL_MAX and approxFnStar is evaluated at midpoint.\n";
+      for (i=0, v_cntr=0, av_cntr=0; i<numContIntervalVars;
+	   ++i, ++v_cntr, ++av_cntr)
+	fHatModel.continuous_variable(
+	  ( cellLowerBounds[cellCntr][v_cntr] + 
+	    cellUpperBounds[cellCntr][v_cntr] ) / 2., av_cntr);
+      for (i=0, av_cntr=0; i<numDiscIntervalVars; ++i, ++v_cntr, ++av_cntr)
+	fHatModel.discrete_int_variable(
+	  (int)( cellLowerBounds[cellCntr][v_cntr] + 
+		 cellUpperBounds[cellCntr][v_cntr] ) / 2, av_cntr); // TO DO
+      for (i=0; i<numDiscSetIntUncVars; ++i, ++v_cntr, ++av_cntr)
+	fHatModel.discrete_int_variable(
+	  (int)cellLowerBounds[cellCntr][v_cntr], av_cntr); // TO DO
+      for (i=0, av_cntr=0; i<numDiscSetRealUncVars; ++i, ++v_cntr, ++av_cntr)
+	fHatModel.discrete_real_variable(
+	  cellLowerBounds[cellCntr][v_cntr], av_cntr); // TO DO
     }
-    else // I don't think we need to set the discrete variables in this case?
-      fHatModel.continuous_variables(gp_data.continuous_variables(index_star));
+    else {
+      if (numContIntervalVars)
+	fHatModel.continuous_variables(
+	  gp_data.continuous_variables(index_star));
+      if (numDiscIntervalVars || numDiscSetIntUncVars)
+	fHatModel.discrete_int_variables(
+          gp_data.discrete_int_variables(index_star));
+      if (numDiscSetRealUncVars)
+	fHatModel.discrete_real_variables(
+          gp_data.discrete_real_variables(index_star));
+    }
 		
     ActiveSet set = fHatModel.current_response().active_set();
     set.request_values(0); set.request_value(1, respFnCntr);
