@@ -231,6 +231,7 @@ if(DAKOTA_ENABLE_UNIT_TESTS)
 
 endif()
 
+# TODO: install to bin/?
 install(TARGETS 
   barnes barnes_lf cantilever container cyl_head herbie illumination 
   lf_rosenbrock lf_poly_prod log_ratio mod_cantilever 
@@ -239,8 +240,8 @@ install(TARGETS
   sobol_g_function sobol_ishigami sobol_rational 
   steel_column_cost steel_column_perf steel_section 
   text_book text_book1 text_book2 text_book3 text_book_ouu
-  DESTINATION test)
+  DESTINATION "${DAKOTA_TEST_INSTALL}/test")
 
 if(DAKOTA_HAVE_MPI)
-  install(TARGETS text_book_par DESTINATION test)
+  install(TARGETS text_book_par DESTINATION "${DAKOTA_TEST_INSTALL}/test")
 endif()

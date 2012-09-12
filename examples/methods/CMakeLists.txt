@@ -79,4 +79,4 @@ add_custom_target(examples-methods-inputs ALL DEPENDS ${all_generated_inputs})
 install(FILES ${all_generated_inputs} 
   ${test_path}/dakota_textbook_nips.lsq.dat 
   ${test_path}/dakota_separable_ego_5D.in
-  DESTINATION examples/methods)
+  DESTINATION "${DAKOTA_EXAMPLES_INSTALL}/examples/methods")

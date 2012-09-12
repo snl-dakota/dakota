@@ -41,4 +41,5 @@ endforeach()
 
 add_custom_target(examples-tutorial-inputs ALL DEPENDS ${all_generated_inputs})
 
-install(FILES ${all_generated_inputs} DESTINATION examples/tutorial)
+install(FILES ${all_generated_inputs} DESTINATION
+  "${DAKOTA_EXAMPLES_INSTALL}/examples/tutorial")

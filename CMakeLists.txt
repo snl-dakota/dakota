@@ -130,6 +130,17 @@ find_package(Boost 1.37 REQUIRED COMPONENTS "${dakota_boost_components}")
 
 include(CTest)
 
+
+# Installation destination options 
+# (relative to ${CMAKE_INSTALL_PREFIX}, unless absolute)
+set(DAKOTA_EXAMPLES_INSTALL . CACHE FILEPATH 
+  "Installation destination for DAKOTA examples/ dir")
+set(DAKOTA_TEST_INSTALL . CACHE FILEPATH 
+  "Installation destination for DAKOTA test/ dir")
+set(DAKOTA_TOPFILES_INSTALL . CACHE FILEPATH 
+  "Installation destination for DAKOTA top-level files")
+
+
 # Set the export name for install targets; parent packages likely want
 # to override this to the name of their target
 set(ExportTarget ${CMAKE_PROJECT_NAME}-targets CACHE STRING 
@@ -252,9 +263,10 @@ endif()
 add_subdirectory(examples)
 
 # Top-level install rules from source (binary rules are in subdirs)
-install(FILES INSTALL LICENSE COPYRIGHT README DESTINATION .)
+install(FILES INSTALL LICENSE COPYRIGHT README 
+  DESTINATION ${DAKOTA_TOPFILES_INSTALL})
 
-install(DIRECTORY examples DESTINATION .
+install(DIRECTORY examples DESTINATION ${DAKOTA_EXAMPLES_INSTALL}
   PATTERN "CMakeLists.txt" EXCLUDE
   PATTERN "Makefile.am" EXCLUDE
   PATTERN ".svn" EXCLUDE
@@ -262,7 +274,7 @@ install(DIRECTORY examples DESTINATION .
   PATTERN "*.f" EXCLUDE 
   )
 
-install(DIRECTORY test DESTINATION .
+install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
   PATTERN "CMakeLists.txt" EXCLUDE
   PATTERN "Makefile.*" EXCLUDE
   PATTERN ".svn" EXCLUDE
