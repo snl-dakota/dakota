@@ -148,7 +148,10 @@ public:
 
   /// return an active continuous variable
   Real continuous_variable(size_t index) const;
-  /// return the active continuous variables
+  /// return the active continuous variables (Note: returns a view by const
+  /// reference, but initializing a RealVector from this reference invokes
+  /// the Teuchos matrix copy constructor to create a Teuchos::Copy instance;
+  /// to obtain a mutable view, use continuous_variables_view())
   const RealVector& continuous_variables() const;
   /// set an active continuous variable
   void continuous_variable(Real c_var, size_t index);
@@ -156,7 +159,10 @@ public:
   void continuous_variables(const RealVector& c_vars);
   /// return an active discrete integer variable
   int discrete_int_variable(size_t index) const;
-  /// return the active discrete integer variables
+  /// return the active discrete integer variables (Note: returns a view by
+  /// const reference, but initializing an IntVector from this reference
+  /// invokes the Teuchos matrix copy constructor to create a Teuchos::Copy
+  /// instance; to obtain a mutable view, use discrete_int_variables_view())
   const IntVector& discrete_int_variables() const;
   /// set an active discrete integer variable
   void discrete_int_variable(int di_var, size_t index);
@@ -164,12 +170,22 @@ public:
   void discrete_int_variables(const IntVector& di_vars);
   /// return an active discrete real variable
   Real discrete_real_variable(size_t index) const;
-  /// return the active discrete real variables
+  /// return the active discrete real variables (Note: returns a view by
+  /// const reference, but initializing a RealVector from this reference
+  /// invokes the Teuchos matrix copy constructor to create a Teuchos::Copy
+  /// instance; to obtain a mutable view, use discrete_real_variables_view())
   const RealVector& discrete_real_variables() const;
   /// set an active discrete real variable
   void discrete_real_variable(Real dr_var, size_t index);
   /// set the active discrete real variables
   void discrete_real_variables(const RealVector& dr_vars);
+
+  /// return a mutable view of the active continuous variables
+  RealVector continuous_variables_view() const;
+  /// return a mutable view of the active discrete integer variables
+  IntVector discrete_int_variables_view() const;
+  /// return a mutable view of the active discrete real variables
+  RealVector discrete_real_variables_view() const;
 
   /// return the active continuous variable labels
   StringMultiArrayConstView continuous_variable_labels() const;
@@ -574,6 +590,35 @@ inline void Variables::discrete_real_variables(const RealVector& dr_vars)
 {
   if (variablesRep) variablesRep->discreteRealVars.assign(dr_vars);
   else              discreteRealVars.assign(dr_vars);
+}
+
+
+inline RealVector Variables::continuous_variables_view() const
+{
+  return (variablesRep) ?
+    RealVector(Teuchos::View, variablesRep->continuousVars.values(),
+	       variablesRep->continuousVars.length()) :
+    RealVector(Teuchos::View, continuousVars.values(), continuousVars.length());
+}
+
+
+inline IntVector Variables::discrete_int_variables_view() const
+{
+  return (variablesRep) ?
+    IntVector(Teuchos::View, variablesRep->discreteIntVars.values(),
+	      variablesRep->discreteIntVars.length()) :
+    IntVector(Teuchos::View, discreteIntVars.values(),
+	      discreteIntVars.length());
+}
+
+
+inline RealVector Variables::discrete_real_variables_view() const
+{
+  return (variablesRep) ?
+    RealVector(Teuchos::View, variablesRep->discreteRealVars.values(),
+	       variablesRep->discreteRealVars.length()) :
+    RealVector(Teuchos::View, discreteRealVars.values(),
+	       discreteRealVars.length());
 }
 
 

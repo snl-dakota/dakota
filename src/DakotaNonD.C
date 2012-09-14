@@ -790,9 +790,8 @@ construct_lhs(Iterator& u_space_sampler, Model& u_model,
 /** Map the variables from iterator space (u) to simulation space (x). */
 void NonD::vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
 {
-  RealVector x;
+  RealVector x = x_vars.continuous_variables_view();
   nondInstance->natafTransform.trans_U_to_X(u_vars.continuous_variables(), x);
-  x_vars.continuous_variables(x);
 }
 
 
@@ -843,12 +842,10 @@ void NonD::
 resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
 		    const Response&  x_response, Response&        u_response)
 {
-  const RealVector&        x_rdv   = x_vars.continuous_variables();
-  SizetMultiArrayConstView cv_ids  = x_vars.continuous_variable_ids();
-  SizetMultiArrayConstView acv_ids = x_vars.all_continuous_variable_ids();
-  const RealVector&        x_fns   = x_response.function_values();
-  //const RealMatrix&  x_grads = x_response.function_gradients();
-  const RealSymMatrixArray& x_hessians = x_response.function_hessians();
+  const RealVector&         x_cv      = x_vars.continuous_variables();
+  SizetMultiArrayConstView  x_cv_ids  = x_vars.continuous_variable_ids();
+  SizetMultiArrayConstView  x_acv_ids = x_vars.all_continuous_variable_ids();
+  const RealVector&         x_fns     = x_response.function_values();
 
   // In this recasting, the inputs and outputs are mapped one-to-one, with no
   // reordering.  However, the x-space ASV may be augmented from the original
@@ -899,23 +896,21 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
 	 !( x_types[i] == Pecos::GAMMA  && u_types[i] == Pecos::STD_GAMMA ) )
       { nonlinear_vars_map = true; break; }
 
-  RealVector         fn_grad_x_rv, fn_grad_us_rv;
-  RealSymMatrix      fn_hess_u_rsdm, fn_hess_u_rm;
-  RealMatrix         jacobian_xu, jacobian_xs;
-  RealSymMatrixArray hessian_xu;
+  RealVector   fn_grad_x,  fn_grad_us; RealSymMatrix      fn_hess_us;
+  RealMatrix jacobian_xu, jacobian_xs; RealSymMatrixArray hessian_xu;
 
   if (map_derivs) {
     // The following transformation data is invariant w.r.t. the response fns
     // and is computed outside of the num_fns loop
     if (nondInstance->distParamDerivs)
-      nondInstance->natafTransform.jacobian_dX_dS(x_rdv, jacobian_xs,
-	cv_ids, acv_ids, nondInstance->primaryACVarMapIndices,
+      nondInstance->natafTransform.jacobian_dX_dS(x_cv, jacobian_xs,
+	x_cv_ids, x_acv_ids, nondInstance->primaryACVarMapIndices,
 	nondInstance->secondaryACVarMapTargets);
     else {
       if (u_grad_flag || u_hess_flag)
-	nondInstance->natafTransform.jacobian_dX_dU(x_rdv, jacobian_xu);
+	nondInstance->natafTransform.jacobian_dX_dU(x_cv, jacobian_xu);
       if (u_hess_flag && nonlinear_vars_map)
-	nondInstance->natafTransform.hessian_d2X_dU2(x_rdv, hessian_xu);
+	nondInstance->natafTransform.hessian_d2X_dU2(x_cv, hessian_xu);
     }
   }
 
@@ -934,33 +929,32 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
       u_response.function_value(x_fns[i], i);
     }
 
-    // manage data requirements for derivative transformations: if fn_grad_x_rv
+    // manage data requirements for derivative transformations: if fn_grad_x
     // is needed for Hessian x-form (nonlinear I/O mapping), then x_asv has been
     // augmented to include the gradient in RecastModel::asv_mapping().
-    if (map_derivs && (x_asv_val & 2))
-      fn_grad_x_rv = x_response.function_gradient_view(i);
+    if (x_asv_val & 2)
+      fn_grad_x = x_response.function_gradient_view(i);
 
     // map gradient dg/dx to dG/du
     if (u_asv_val & 2) {
       if ( !(x_asv_val & 2) ) {
-	Cerr << "Error: missing required sub-model data in NonD::"
+	Cerr << "Error: missing required gradient sub-model data in NonD::"
 	     << "resp_x_to_u_mapping()" << std::endl;
 	abort_handler(-1);
       }
       if (map_derivs) { // perform transformation
-
+	fn_grad_us = u_response.function_gradient_view(i);
 	if (nondInstance->distParamDerivs) // transform subset of components
-	  nondInstance->natafTransform.trans_grad_X_to_S(fn_grad_x_rv,
-	    fn_grad_us_rv, jacobian_xs, x_dvv, cv_ids, acv_ids,
+	  nondInstance->natafTransform.trans_grad_X_to_S(fn_grad_x,
+	    fn_grad_us, jacobian_xs, x_dvv, x_cv_ids, x_acv_ids,
 	    nondInstance->primaryACVarMapIndices,
 	    nondInstance->secondaryACVarMapTargets);
 	else   // transform subset of components
-	  nondInstance->natafTransform.trans_grad_X_to_U(fn_grad_x_rv,
-	    fn_grad_us_rv, jacobian_xu, x_dvv, cv_ids);
-	u_response.function_gradient(fn_grad_us_rv, i);
+	  nondInstance->natafTransform.trans_grad_X_to_U(fn_grad_x,
+	    fn_grad_us, jacobian_xu, x_dvv, x_cv_ids);
       }
       else // no transformation: dg/dx = dG/du
-	u_response.function_gradient(x_response.function_gradient_view(i), i);
+	u_response.function_gradient(fn_grad_x, i);
     }
 
     // map Hessian d^2g/dx^2 to d^2G/du^2
@@ -971,27 +965,25 @@ resp_x_to_u_mapping(const Variables& x_vars,     const Variables& u_vars,
 	     << "resp_x_to_u_mapping()" << std::endl;
 	abort_handler(-1);
       }
+      const RealSymMatrix& fn_hess_x = x_response.function_hessian(i);
       if (map_derivs) { // perform transformation
-        const RealSymMatrix& fn_hess_x_rsdm = x_hessians[i];
+	fn_hess_us = u_response.function_hessian_view(i);
 	if (nondInstance->distParamDerivs) { // transform subset of components
 	  Cerr << "Error: Hessians with respect to inserted variables not yet "
 	       << "supported." << std::endl;
-	  abort_handler(-1);;
-	  //nondInstance->natafTransform.trans_hess_X_to_S(fn_hess_x_rsdm,
-	  //  fn_hess_s_rsdm, jacobian_xs, hessian_xs, fn_grad_s_rdv, x_dvv,
-	  //  cv_ids, x_vars.all_continuous_variable_ids(),
+	  abort_handler(-1);
+	  //nondInstance->natafTransform.trans_hess_X_to_S(fn_hess_x,
+	  //  fn_hess_us, jacobian_xs, hessian_xs, fn_grad_s, x_dvv,
+	  //  x_cv_ids, x_vars.all_continuous_variable_ids(),
 	  //  nondInstance->primaryACVarMapIndices,
 	  //  nondInstance->secondaryACVarMapTargets);
 	}
 	else // transform subset of components
-	  nondInstance->natafTransform.trans_hess_X_to_U(fn_hess_x_rsdm,
-            fn_hess_u_rsdm, jacobian_xu, hessian_xu, fn_grad_x_rv, x_dvv,
-	    cv_ids);
-	fn_hess_u_rm = fn_hess_u_rsdm;
-	u_response.function_hessian(fn_hess_u_rm, i);
+	  nondInstance->natafTransform.trans_hess_X_to_U(fn_hess_x, fn_hess_us,
+	    jacobian_xu, hessian_xu, fn_grad_x, x_dvv, x_cv_ids);
       }
       else // no transformation: d^2g/dx^2 = d^2G/du^2
-	u_response.function_hessian(x_hessians[i], i);
+	u_response.function_hessian(fn_hess_x, i);
     }
   }
 
