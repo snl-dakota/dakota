@@ -980,7 +980,7 @@ update_partial(size_t start_index_target, size_t num_items,
 
 /** Reshape functionValues, functionGradients, and functionHessians
     according to num_fns, num_params, grad_flag, and hess_flag. */
-void ResponseRep::reshape(const size_t& num_fns, const size_t& num_params,
+void ResponseRep::reshape(size_t num_fns, size_t num_params,
 			  bool grad_flag, bool hess_flag)
 {
   if (responseActiveSet.request_vector().size()    != num_fns || 

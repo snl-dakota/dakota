@@ -35,12 +35,9 @@ using OPTPP::NLPGradient;
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include <algorithm>
 #include "data_io.h"
-#include "pecos_stat_util.hpp"
-using Pecos::phi;
-using Pecos::Phi;
-using Pecos::Phi_inverse;
 
 //#define MPP_CONVERGE_RATE
+#define DEBUG
 
 static const char rcsId[] = "@(#) $Id: NonDLocalReliability.C 4058 2006-10-25 01:39:40Z mseldre $";
 
@@ -52,6 +49,10 @@ extern PRPCache data_pairs; // global container
 // define special values for componentParallelMode
 //#define SURROGATE_MODEL 1
 #define TRUTH_MODEL 2
+
+
+// initialization of statics
+NonDLocalReliability* NonDLocalReliability::nondLocRelInstance(NULL);
 
 
 NonDLocalReliability::NonDLocalReliability(Model& model):
@@ -213,7 +214,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       //curr_vars.view(), curr_vars.variables_components(),
       //iteratedModel.current_response().active_set(),
       approx_type, approx_order, corr_type, corr_order, data_order,
-      sample_reuse), false);
+      sample_reuse, outputLevel), false);
 
     // transform g_hat_x_model from x-space to u-space
     transform_model(g_hat_x_model, uSpaceModel, true); // globally bounded
@@ -239,7 +240,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       //g_u_vars.view(), g_u_vars.variables_components(),
       //g_u_model.current_response().active_set(),
       approx_type, approx_order, corr_type, corr_order, data_order,
-      sample_reuse), false);
+      sample_reuse, outputLevel), false);
   }
   else if (mppSearchType == NO_APPROX) // Recast( iteratedModel )
     // Recast g(x) to G(u)
@@ -493,11 +494,11 @@ void NonDLocalReliability::initial_taylor_series()
     iteratedModel.continuous_variables(natafTransform.x_means());
     activeSet.request_vector(asrv);
     iteratedModel.compute_response(activeSet);
-    const Response& local_response = iteratedModel.current_response();
-    fnValsMeanX  = local_response.function_values();
-    fnGradsMeanX = local_response.function_gradients();
+    const Response& curr_resp = iteratedModel.current_response();
+    fnValsMeanX       = curr_resp.function_values();
+    fnGradsMeanX      = curr_resp.function_gradients();
     if (mode & 4)
-      fnHessiansMeanX = local_response.function_hessians();
+      fnHessiansMeanX = curr_resp.function_hessians();
 
     // compute the covariance matrix from the correlation matrix
     RealSymMatrix covariance;
@@ -636,8 +637,7 @@ void NonDLocalReliability::mean_value()
         beta = computedRelLevels[respFnCount][levelCount]
 	  = computedGenRelLevels[respFnCount][levelCount]
 	  = (cdfFlag) ? ratio : -ratio;
-        p = computedProbLevels[respFnCount][levelCount]
-	  = probability(beta, cdfFlag);
+        p = computedProbLevels[respFnCount][levelCount] = probability(beta);
       }
       else {
         if ( ( cdfFlag && mean <= z) ||
@@ -675,8 +675,7 @@ void NonDLocalReliability::mean_value()
 	= requestedProbLevels[respFnCount][i];
       // compute beta and z from p
       Real beta = computedRelLevels[respFnCount][levelCount]
-	= computedGenRelLevels[respFnCount][levelCount]
-	= reliability(p, cdfFlag);
+	= computedGenRelLevels[respFnCount][levelCount]	= reliability(p);
       Real z = computedRespLevels[respFnCount][levelCount] = (cdfFlag)
         ? mean - beta * std_dev : mean + beta * std_dev;
       finalStatistics.function_value(z, statCount);
@@ -698,8 +697,7 @@ void NonDLocalReliability::mean_value()
       computedRelLevels[respFnCount][levelCount]
 	= computedGenRelLevels[respFnCount][levelCount] = beta;
       // compute p and z from beta
-      Real p = computedProbLevels[respFnCount][levelCount]
-	= probability(beta, cdfFlag);
+      Real p = computedProbLevels[respFnCount][levelCount] = probability(beta);
       Real z = computedRespLevels[respFnCount][levelCount] = (cdfFlag)
         ? mean - beta * std_dev	: mean + beta * std_dev;
       finalStatistics.function_value(z, statCount);
@@ -720,8 +718,8 @@ void NonDLocalReliability::mean_value()
 void NonDLocalReliability::mpp_search()
 {
   // set the object instance pointer for use within the static member fns
-  NonDReliability* prev_instance = nondRelInstance;
-  nondRelInstance = this;
+  NonDLocalReliability* prev_instance = nondLocRelInstance;
+  nondLocRelInstance = this;
 
   // Initialize local arrays
   statCount = 0;
@@ -773,7 +771,7 @@ void NonDLocalReliability::mpp_search()
            pl_len = requestedProbLevels[respFnCount].length(),
            bl_len = requestedRelLevels[respFnCount].length(),
            gl_len = requestedGenRelLevels[respFnCount].length(),
-           num_levels = rl_len + pl_len + bl_len + gl_len;
+           index, num_levels = rl_len + pl_len + bl_len + gl_len;
 
     // Initialize (or warm-start for repeated reliability analyses) initialPtU,
     // mostProbPointX/U, computedRespLevel, fnGradX/U, and fnHessX/U.
@@ -787,34 +785,49 @@ void NonDLocalReliability::mpp_search()
       // The rl_len response levels are performed first using the RIA
       // formulation, followed by the pl_len probability levels and the
       // bl_len reliability levels using the PMA formulation.
-      bool ria_flag = (levelCount < rl_len) ? true : false;
+      bool ria_flag = (levelCount < rl_len),
+	pma2_flag = ( integrationOrder == 2 && ( levelCount < rl_len + pl_len ||
+		      levelCount >= rl_len + pl_len + bl_len ) );
       if (ria_flag) {
-        requestedRespLevel = requestedRespLevels[respFnCount][levelCount];
+        requestedTargetLevel = requestedRespLevels[respFnCount][levelCount];
 	Cout << "\n>>>>> Reliability Index Approach (RIA) for response level "
-	     << levelCount+1 << " = " << requestedRespLevel << '\n';
+	     << levelCount+1 << " = " << requestedTargetLevel << '\n';
       }
       else if (levelCount < rl_len + pl_len) { 
-	size_t index = levelCount - rl_len;
-	const Real& p = requestedProbLevels[respFnCount][index];
+	index  = levelCount - rl_len;
+	Real p = requestedProbLevels[respFnCount][index];
 	Cout << "\n>>>>> Performance Measure Approach (PMA) for probability "
 	     << "level " << index + 1 << " = " << p << '\n';
-	requestedCDFProbLevel = (cdfFlag) ? p : 1. - p;
-        requestedCDFRelLevel  = reliability(requestedCDFProbLevel, true);
+	// gen beta target for 2nd-order PMA; beta target for 1st-order PMA:
+	requestedTargetLevel = reliability(p);
+
+	// CDF probability < 0.5  -->  CDF beta > 0  -->  minimize g
+	// CDF probability > 0.5  -->  CDF beta < 0  -->  maximize g
+	// CDF probability = 0.5  -->  CDF beta = 0  -->  compute g
+	// Note: "compute g" means that min/max is irrelevant since there
+	// should only be one G(u) intersection when the circle of radius
+	// beta collapses to a pt.
+	Real p_cdf   = (cdfFlag) ? p : 1. - p;
+	pmaMaximizeG = (p_cdf > 0.5); // TO DO: update for 2nd-order PMA
       }
       else if (levelCount < rl_len + pl_len + bl_len) {
-	size_t index = levelCount - rl_len - pl_len;
-	const Real& rel = requestedRelLevels[respFnCount][index];
+	index = levelCount - rl_len - pl_len;
+	requestedTargetLevel = requestedRelLevels[respFnCount][index];
 	Cout << "\n>>>>> Performance Measure Approach (PMA) for reliability "
-	     << "level " << index + 1 << " = " << rel << '\n';
-	requestedCDFRelLevel = (cdfFlag) ? rel : -rel;
+	     << "level " << index + 1 << " = " << requestedTargetLevel << '\n';
+	Real beta_cdf = (cdfFlag) ?
+	  requestedTargetLevel : -requestedTargetLevel;
+	pmaMaximizeG = (beta_cdf < 0.);
       }
       else {
-	size_t index = levelCount - rl_len - pl_len - bl_len;
-	const Real& gen_rel = requestedGenRelLevels[respFnCount][index];
+	index = levelCount - rl_len - pl_len - bl_len;
+	requestedTargetLevel = requestedGenRelLevels[respFnCount][index];
 	Cout << "\n>>>>> Performance Measure Approach (PMA) for generalized "
-	     << "reliability level " << index + 1 << " = " << gen_rel << '\n';
-	requestedCDFProbLevel = (cdfFlag) ? Phi(-gen_rel) : Phi(gen_rel);
-	requestedCDFRelLevel  = reliability(requestedCDFProbLevel, true);
+	     << "reliability level " << index + 1 << " = "
+	     << requestedTargetLevel << '\n';
+	Real gen_beta_cdf = (cdfFlag) ?
+	  requestedTargetLevel : -requestedTargetLevel;
+	pmaMaximizeG = (gen_beta_cdf < 0.); // TO DO: update for 2nd-order PMA
       }
 
       // Assign cold/warm-start values for initialPtU, mostProbPointX/U,
@@ -851,25 +864,23 @@ void NonDLocalReliability::mpp_search()
 	    RIA_objective_eval, RIA_constraint_eval);
 	}
 	else { // PMA: g is in objective
-
-	  // If PMA SORM with p-level or generalized beta-level,
-	  // requestedCDFRelLevel must be updated using current grad/Hessian.
-	  void (*set_map) (const Variables& recast_vars,
-			   const ActiveSet& recast_set,
-			   ActiveSet& sub_model_set) =
-	    ( mppSearchType == NO_APPROX && integrationOrder == 2 &&
-	      ( levelCount <  rl_len + pl_len ||
-		levelCount >= rl_len + pl_len + bl_len ) ) ?
-	    PMA2_set_mapping : NULL;
-
 	  primary_resp_map.resize(1);   // one objective, one contributor
 	  primary_resp_map[0].resize(1);
 	  primary_resp_map[0][0] = respFnCount;
 	  secondary_resp_map.resize(1); // one constraint, no contributors
 	  nonlinear_resp_map[0] = BoolDeque(1, false);
-	  mpp_model_rep->initialize(vars_map, false, NULL, set_map,
-	    primary_resp_map, secondary_resp_map, nonlinear_resp_map,
-	    PMA_objective_eval, PMA_constraint_eval);
+	  // If 2nd-order PMA with p-level or generalized beta-level, use
+	  // PMA2_set_mapping() & PMA2_constraint_eval().  For approx-based
+	  // 2nd-order PMA, we utilize curvature of the surrogate (if any)
+	  // to update beta* 
+	  if (pma2_flag)
+	    mpp_model_rep->initialize(vars_map, false, NULL, PMA2_set_mapping,
+	      primary_resp_map, secondary_resp_map, nonlinear_resp_map,
+	      PMA_objective_eval, PMA2_constraint_eval);
+	  else
+	    mpp_model_rep->initialize(vars_map, false, NULL, NULL,
+	      primary_resp_map, secondary_resp_map, nonlinear_resp_map,
+	      PMA_objective_eval, PMA_constraint_eval);	    
 	}
 	mppModel.continuous_variables(initialPtU);
 
@@ -891,10 +902,11 @@ void NonDLocalReliability::mpp_search()
 	else {
 	  Cout << "PMA optimum             =\n                     "
 	       << std::setw(write_precision+7) << fns_star[0] << " [";
-	  if (requestedCDFRelLevel < 0.)
-	    Cout << '-';
+	  if (pmaMaximizeG) Cout << '-';
 	  Cout << "G(u)]\n                     " << std::setw(write_precision+7)
-	       << fns_star[1] << " [u'u - B^2]\n";
+	       << fns_star[1];
+	  if (pma2_flag) Cout << " [B* - bar-B*]\n";
+	  else           Cout << " [u'u - B^2]\n";
 	}
 
 	// Update MPP search data
@@ -918,7 +930,7 @@ void NonDLocalReliability::mpp_search()
   update_final_statistics();
 
   // restore in case of recursion
-  nondRelInstance = prev_instance;
+  nondLocRelInstance = prev_instance;
 }
 
 
@@ -990,8 +1002,6 @@ void NonDLocalReliability::initialize_class_data()
     data (computedRespLevel, fnGradX/U, and fnHessX/U). */
 void NonDLocalReliability::initialize_level_data()
 {
-  size_t i;
-
   // All reliability methods need initialization of initialPtU; AMV/AMV+/TANA
   // methods additionally need initialization of fnGradX/U; and AMV+/TANA
   // methods additionally need initialization of mostProbPointX/U and
@@ -1044,7 +1054,7 @@ void NonDLocalReliability::initialize_level_data()
       const RealVector& d_k_plus_1
 	= iteratedModel.inactive_continuous_variables(); // view
       Real grad_d_delta_d = 0., norm_grad_u_sq = 0.;
-      size_t num_icv = d_k_plus_1.length();
+      size_t i, num_icv = d_k_plus_1.length();
       for (i=0; i<num_icv; i++)
 	grad_d_delta_d += fn_grad_d[i]*( d_k_plus_1[i] - prevICVars[i] );
       for (i=0; i<numUncertainVars; i++)
@@ -1071,18 +1081,19 @@ void NonDLocalReliability::initialize_level_data()
       // set active/uncertain vars augmenting inactive design vars
       iteratedModel.continuous_variables(mostProbPointX);
       short mode = (taylorOrder == 2) ? 7 : 3;
-      activeSet.request_values(0);
-      activeSet.request_value(mode, respFnCount);
+      activeSet.request_values(0); activeSet.request_value(mode, respFnCount);
+
       iteratedModel.compute_response(activeSet);
+      const Response& curr_resp = iteratedModel.current_response();
+      computedRespLevel = curr_resp.function_value(respFnCount);
+      fnGradX = curr_resp.function_gradient_copy(respFnCount);
+
       SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
       SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-      const Response& local_resp = iteratedModel.current_response();
-      computedRespLevel = local_resp.function_value(respFnCount);
-      fnGradX = local_resp.function_gradient_copy(respFnCount);
       natafTransform.trans_grad_X_to_U(fnGradX, fnGradU, mostProbPointX,
 				       x_dvv, cv_ids);
       if (mode & 4) {
-	fnHessX = local_resp.function_hessian(respFnCount);
+	fnHessX = curr_resp.function_hessian(respFnCount);
 	natafTransform.trans_hess_X_to_U(fnHessX, fnHessU, mostProbPointX,
 					 fnGradX, x_dvv, cv_ids);
 	curvatureDataAvailable = true;
@@ -1191,7 +1202,8 @@ void NonDLocalReliability::initialize_mpp_search_data()
     // and computedRespLevel (not indexed by level)
 
     // Warm start initialPtU for the next level using a projection.
-    if (levelCount < requestedRespLevels[respFnCount].length()) {
+    size_t rl_len = requestedRespLevels[respFnCount].length();
+    if (levelCount < rl_len) {
       // For RIA case, project along fnGradU to next g level using
       // linear Taylor series:  g2 = g1 + dg/du^T (u2 - u1) where
       // u2 - u1 = alpha*dg/du gives alpha = (g2 - g1)/(dg/du^T dg/du).
@@ -1204,10 +1216,10 @@ void NonDLocalReliability::initialize_mpp_search_data()
       // (u + lamba*grad_g = 0 or grad_g + lambda*u = 0).
       Real norm_grad_u_sq = fnGradU.dot(fnGradU);
       if ( norm_grad_u_sq > 1.e-10 ) { // also handles NPSOL numerical case
-	Real alpha = (requestedRespLevel - 
+	Real alpha = (requestedTargetLevel - 
           requestedRespLevels[respFnCount][levelCount-1])/norm_grad_u_sq;
 	for (size_t i=0; i<numUncertainVars; i++)
-	  initialPtU[i] = mostProbPointU[i] + alpha*fnGradU[i];
+	  initialPtU[i] = mostProbPointU[i] + alpha * fnGradU[i];
       }
     }
     else {
@@ -1217,22 +1229,27 @@ void NonDLocalReliability::initialize_mpp_search_data()
       // an RIA/PMA switch (the observed reliability from the RIA soln is
       // scaled to the requested reliability of the next PMA level).
       // NOTE 2: requested and computed reliability levels should agree very
-      // closely in all cases since it is the g term that is linearized, not
-      // the u'u term (which defines beta).  However, if the optimizer fails
-      // to satisfy the constraint in PMA, then using the computed level is
-      // preferable.
+      // closely in all cases since it is the g term that is linearized, not the
+      // u'u term (which defines beta).  However, if the optimizer fails to
+      // satisfy the PMA constraint, then using the computed level is preferred.
       //Real prev_pl = (levelCount == rl_len)
       //  ? computedProbLevels[respFnCount][levelCount-1]
       //  : requestedProbLevels[respFnCount][levelCount-rl_len-1];
-      Real prev_bl = computedRelLevels[respFnCount][levelCount-1];
-      Real prev_cdf_bl = (cdfFlag) ? prev_bl : -prev_bl;
-      if ( std::fabs(prev_cdf_bl)          > 1.e-10 &&
-	   std::fabs(requestedCDFRelLevel) > 1.e-10 ) {
+      size_t pl_len = requestedProbLevels[respFnCount].length(),
+	     bl_len = requestedRelLevels[respFnCount].length();
+      Real prev_bl = ( integrationOrder == 2 &&
+		       ( levelCount < rl_len + pl_len ||
+			 levelCount >= rl_len + pl_len + bl_len ) ) ?
+	computedGenRelLevels[respFnCount][levelCount-1] :
+	computedRelLevels[respFnCount][levelCount-1];
+      // Note: scaling is applied to mppU, so we want best est of new beta
+      if ( std::fabs(prev_bl)              > 1.e-10 &&
+	   std::fabs(requestedTargetLevel) > 1.e-10 ) {
 	// CDF or CCDF does not matter for scale_factor so long as it is
 	// consistent (CDF/CDF or CCDF/CCDF).
-	Real scale_factor = requestedCDFRelLevel/prev_cdf_bl;
+	Real scale_factor = requestedTargetLevel / prev_bl;
 	for (size_t i=0; i<numUncertainVars; i++)
-	  initialPtU[i] = mostProbPointU[i]*scale_factor;
+	  initialPtU[i] = mostProbPointU[i] * scale_factor;
       }
     }
   }
@@ -1252,10 +1269,14 @@ void NonDLocalReliability::initialize_mpp_search_data()
 void NonDLocalReliability::
 update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
 {
-  // Update MPP arrays from optimization results
-  const RealVector& mpp_u = vars_star.continuous_variables(); // view
-  Real conv_metric;
+  size_t rl_len = requestedRespLevels[respFnCount].length(),
+         pl_len = requestedProbLevels[respFnCount].length(),
+         bl_len = requestedRelLevels[respFnCount].length();
+  bool ria_flag = (levelCount < rl_len);
 
+  // Update MPP arrays from optimization results
+  const RealVector&    mpp_u = vars_star.continuous_variables(); // view
+  Real conv_metric;
   switch (mppSearchType) {
   case AMV_PLUS_X: case AMV_PLUS_U: case TANA_X: case TANA_U:
     RealVector del_u(numUncertainVars, false);
@@ -1264,21 +1285,26 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     conv_metric = del_u.normFrobenius();
     break;
   }
-
   copy_data(mpp_u, mostProbPointU); // view -> copy
   natafTransform.trans_U_to_X(mostProbPointU, mostProbPointX);
 
-  // Set computedRespLevels to the current g(x) value by either performing
+  // set computedRelLevel after retrieving u'u from fns_star
+  const RealVector& fns_star = resp_star.function_values();
+  if (ria_flag)
+    computedRelLevel = signed_norm(std::sqrt(fns_star[0]));
+  else if (integrationOrder == 2) { // PMA SORM
+    // computed{Rel,GenRel}Level updated in PMA2_constraint_eval()
+  }
+  else { // PMA FORM
+    Real norm_u_sq = fns_star[1] + std::pow(requestedTargetLevel, 2);
+    computedRelLevel = signed_norm(std::sqrt(norm_u_sq));
+  }
+
+  // Set computedRespLevel to the current g(x) value by either performing
   // a validation function evaluation (AMV/AMV+) or retrieving data from
   // resp_star (FORM).  Also update approximations and convergence tols.
-  const RealVector& fns_star = resp_star.function_values();
-  size_t rl_len = requestedRespLevels[respFnCount].length(),
-         pl_len = requestedProbLevels[respFnCount].length(),
-         bl_len = requestedRelLevels[respFnCount].length();
-  bool ria_flag = (levelCount < rl_len) ? true : false;
   SizetMultiArrayConstView cv_ids = iteratedModel.continuous_variable_ids();
   SizetArray x_dvv; copy_data(cv_ids, x_dvv);
-
   switch (mppSearchType) {
   case AMV_X: case AMV_U: {
     approxConverged = true; // break out of while loop
@@ -1294,8 +1320,8 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     // Assess AMV+/TANA iteration convergence.  ||del_u|| is not a perfect
     // metric since cycling between MPP estimates can occur.  Therefore,
     // a maximum number of iterations is also enforced.
-    //conv_metric = std::fabs(local_fns[respFnCount] - requestedRespLevel);
-    approxIters++;
+    //conv_metric = std::fabs(fn_vals[respFnCount] - requestedRespLevel);
+    ++approxIters;
     if (conv_metric < convergenceTol)
       approxConverged = true;
     else if (approxIters >= maxIterations) {
@@ -1335,22 +1361,19 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     activeSet.request_value(mode, respFnCount);
     iteratedModel.continuous_variables(mostProbPointX);
     iteratedModel.compute_response(activeSet);
-    computedRespLevel
-      = iteratedModel.current_response().function_value(respFnCount);
+    const Response& curr_resp = iteratedModel.current_response();
+    computedRespLevel = curr_resp.function_value(respFnCount);
 #ifdef MPP_CONVERGE_RATE
     Cout << "u'u = "  << mostProbPointU.dot(mostProbPointU)
 	 << " G(u) = " << computedRespLevel << '\n';
 #endif // MPP_CONVERGE_RATE
     if (mode & 2) {
-      fnGradX
-        = iteratedModel.current_response().function_gradient_copy(respFnCount);
+      fnGradX = curr_resp.function_gradient_copy(respFnCount);
       natafTransform.trans_grad_X_to_U(fnGradX, fnGradU, mostProbPointX,
 				       x_dvv, cv_ids);
     }
     if (mode & 4) {
-      const RealSymMatrixArray& local_hessians
-	= iteratedModel.current_response().function_hessians();
-      fnHessX = local_hessians[respFnCount];
+      fnHessX = curr_resp.function_hessian(respFnCount);
       natafTransform.trans_hess_X_to_U(fnHessX, fnHessU, mostProbPointX,
 				       fnGradX, x_dvv, cv_ids);
       curvatureDataAvailable = true;
@@ -1359,12 +1382,15 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     // Update the limit state surrogate model
     update_limit_state_surrogate();
 
+    /*
     // Update requestedCDFRelLevel if PMA with second-order integrations
     // for specified probability level
     if ( !approxConverged && !ria_flag && integrationOrder == 2 && 
 	 ( levelCount <  rl_len + pl_len ||
 	   levelCount >= rl_len + pl_len + bl_len ) )
-      requestedCDFRelLevel = reliability(requestedCDFProbLevel, true);
+      requestedCDFRelLevel = reliability(requestedCDFProbLevel, true,
+                                         mostProbPointU, fnGradU, fnHessU);
+    */
     break;
   }
   case NO_APPROX: { // FORM/SORM
@@ -1372,10 +1398,9 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     // direct optimization converges to MPP: no new approximation to compute
     approxConverged = true; // break out of while loop
     if (ria_flag) // RIA computed response = eq_con_star + response target
-      computedRespLevel = fns_star[1] + requestedRespLevel;
+      computedRespLevel = fns_star[1] + requestedTargetLevel;
     else          // PMA computed response = +/- obj_fn_star
-      computedRespLevel // back out negation of g in PMA_objective_eval()
-	= (requestedCDFRelLevel >= 0.) ? fns_star[0] : -fns_star[0];
+      computedRespLevel = (pmaMaximizeG) ? -fns_star[0] : fns_star[0];
 
     // fnGradX/U needed for warm starting by projection, final_stat_grad, and/or
     // 2nd-order integration (for nonlinear transformations), and should be
@@ -1458,29 +1483,6 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     break;
   }
   }
-
-  // Set computedRelLevel after retrieving u'u from resp_star
-  Real norm_u_sq = (ria_flag) ? fns_star[0]
-                 : fns_star[1] + std::pow(requestedCDFRelLevel, 2);
-
-  // z>median: CDF p(g<=z)>0.5, CDF beta<0, CCDF p(g>z)<0.5, CCDF beta>0
-  // z<median: CDF p(g<=z)<0.5, CDF beta>0, CCDF p(g>z)>0.5, CCDF beta<0
-  // z=median: CDF p(g<=z) = CCDF p(g>z) = 0.5, CDF beta = CCDF beta = 0
-  //Real beta_cdf = (computedRespLevel > medianFnVals[respFnCount])
-  //              ? -std::sqrt(norm_u_sq) : std::sqrt(norm_u_sq);
-
-  // This approach avoids the need to evaluate medianFnVals.  Thanks to
-  // Barron Bichon for suggesting it.
-  // if <mppU, fnGradU> > 0, then G is increasing along u and G(u*) > G(0)
-  // if <mppU, fnGradU> < 0, then G is decreasing along u and G(u*) < G(0)
-  Real beta_cdf = (mostProbPointU.dot(fnGradU) > 0.)
-                ? -std::sqrt(norm_u_sq) : std::sqrt(norm_u_sq);
-#ifdef DEBUG
-  Cout << "\nSign of <mppU, fnGradU> is ";
-  if (mostProbPointU.dot(fnGradU) > 0.) Cout << " 1.\n\n";
-  else                                  Cout << "-1.\n\n";
-#endif
-  computedRelLevel = (cdfFlag) ? beta_cdf : -beta_cdf;
 }
 
 
@@ -1488,14 +1490,24 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     finalStatistics, warm start, and graphics data. */
 void NonDLocalReliability::update_level_data()
 {
+  bool ria_flag = (levelCount < requestedRespLevels[respFnCount].length());
+
   // Update computed Resp/Prob/Rel/GenRel levels arrays.  finalStatistics
   // is updated within update_final_statistics() for all resp fns & levels.
-  Real computed_prob_level = probability(computedRelLevel, cdfFlag),
-    computed_gen_rel_level = -Phi_inverse(computed_prob_level);
-  computedRespLevels[respFnCount][levelCount]   = computedRespLevel;
-  computedProbLevels[respFnCount][levelCount]   = computed_prob_level;
-  computedRelLevels[respFnCount][levelCount]    = computedRelLevel;
-  computedGenRelLevels[respFnCount][levelCount] = computed_gen_rel_level;
+  computedRespLevels[respFnCount][levelCount] = computedRespLevel;
+  computedRelLevels[respFnCount][levelCount]  = computedRelLevel;
+  Real computed_prob_level;
+  if (!ria_flag && integrationOrder == 2) {
+    computedGenRelLevels[respFnCount][levelCount] = computedGenRelLevel;
+    computedProbLevels[respFnCount][levelCount] = computed_prob_level =
+      probability(computedGenRelLevel);
+  }
+  else {
+    computedProbLevels[respFnCount][levelCount] = computed_prob_level =
+      probability(computedRelLevel, cdfFlag, mostProbPointU, fnGradU, fnHessU);
+    computedGenRelLevels[respFnCount][levelCount] =
+      reliability(computed_prob_level);
+  }
 
   // Final statistic gradients are dz/ds, dbeta/ds, or dp/ds
   const ShortArray& final_asv = finalStatistics.active_set_request_vector();
@@ -1524,70 +1536,21 @@ void NonDLocalReliability::update_level_data()
     //   dbeta*/ds    = -1/phi(-beta*) * dp_2/ds    (second-order)
     // PMA: sensitivity of g function w.r.t. inactive variables
     //   dz/ds        = dg/ds
-    bool ria_flag = (levelCount < requestedRespLevels[respFnCount].length());
     if (ria_flag) {
       // beta_cdf = -beta_ccdf, p_cdf = 1. - p_ccdf
       // -->> dbeta_cdf/ds = -dbeta_ccdf/ds, dp_cdf/ds = -dp_ccdf/ds
       Real norm_grad_u = fnGradU.normFrobenius();
       // factor for first-order dbeta/ds:
-      Real factor = (cdfFlag) ?  1./norm_grad_u : -1./norm_grad_u;
+      Real factor = (cdfFlag) ? 1./norm_grad_u : -1./norm_grad_u;
       if (integrationOrder == 2 && respLevelTarget != RELIABILITIES) {
-	if (secondOrderIntType == HONG) { // addtnl complexity not warranted
-	  Cerr << "\nError: final statistic gradients not implemented for Hong."
-	       << std::endl;
-	  abort_handler(-1);
-	}
-	// For beta < 0, beta_corr = -beta and p_corr = 1 - p:
-	// dp/ds = -dp_corr/ds = -(dp_corr/dbeta_corr * dbeta_corr/ds)
-	//       = -(dp_corr/dbeta_corr * -dbeta/ds)
-	//       = dp_corr/dbeta_corr * dbeta/ds
-	Real beta_corr
-	  = (computedRelLevel >= 0.) ? computedRelLevel : -computedRelLevel;
-	RealVector kappa = kappaU;
-	if ( ( cdfFlag && computedRelLevel <  0.) ||
-	     (!cdfFlag && computedRelLevel >= 0.) )
-	  kappa.scale(-1.);
-	bool apply_correction = true;
-	Real psi_m_beta, dpsi_m_beta_dbeta;
-	if (secondOrderIntType != BREITUNG) {
-	  psi_m_beta        = phi(-beta_corr) / Phi(-beta_corr);
-	  dpsi_m_beta_dbeta = psi_m_beta*(beta_corr + psi_m_beta);
-	}
-	Real sum = 0., ktk, prod1, prod2 = 1.;
-	Real kterm = (secondOrderIntType == BREITUNG) ? beta_corr : psi_m_beta;
-	size_t i, j, num_kappa = numUncertainVars - 1;
-	for (i=0; i<num_kappa; ++i)
-	  if (1. + kterm * kappa[i] <= curvatureThresh)
-	    apply_correction = false;
-	if (apply_correction) {
-	  for (i=0; i<num_kappa; ++i) {
-	    ktk = kterm * kappa[i];
-	    prod2 /= std::sqrt(1. + ktk);
-	    prod1 = 1.;
-	    for (j=0; j<num_kappa; ++j)
-	      if (j != i)
-		prod1 /= std::sqrt(1. + kterm * kappa[j]);
-	    prod1 *= kappa[i] / 2. / std::pow(1. + ktk, 1.5);
-	    if (secondOrderIntType != BREITUNG)
-	      prod1 *= dpsi_m_beta_dbeta;
-	    sum -= prod1;
-	  }
-	  // factor for second-order dp/ds:
-	  factor *= Phi(-beta_corr) * sum - phi(-beta_corr) * prod2;
-	  // factor for second-order dbeta*/ds
-	  if (respLevelTarget == GEN_RELIABILITIES)
-	    factor *= -1. / phi(-computed_gen_rel_level);
-	}
-	else {
-	  Cerr << "\nWarning: second-order probability sensitivity bypassed "
-	       << "due to numerical issues.\n";
-	  warningBits |= 2; // second warning in output summary
-	  if (respLevelTarget == PROBABILITIES) // factor for first-order dp/ds
-	    factor *= -phi(-computedRelLevel);
-	}
+	factor *= dp2_dbeta_factor(computedRelLevel, cdfFlag);
+	// factor for second-order dbeta*/ds
+	if (respLevelTarget == GEN_RELIABILITIES)
+	  factor *= -1. / Pecos::phi(-computedGenRelLevel);
       }
       else if (respLevelTarget == PROBABILITIES) // factor for first-order dp/ds
-	factor *= -phi(-computedRelLevel);
+	factor *= -Pecos::phi(-computedRelLevel);
+
       // apply factor:
       size_t i, num_final_grad_vars
 	= finalStatistics.active_set_derivative_vector().size();
@@ -1622,54 +1585,15 @@ void NonDLocalReliability::update_level_data()
 }
 
 
-/** For PMA SORM with prescribed p-level or prescribed generalized beta-level,
-    requestedCDFRelLevel must be updated.  This virtual function redefinition
-    is called from NonDReliability::PMA_constraint_eval(). */
-void NonDLocalReliability::update_pma_reliability_level()
-{
-  size_t rl_len = requestedRespLevels[respFnCount].length(),
-         pl_len = requestedProbLevels[respFnCount].length(),
-         bl_len = requestedRelLevels[respFnCount].length();
-  if ( mppSearchType == NO_APPROX && integrationOrder == 2 &&
-       ( ( levelCount >= rl_len && levelCount < rl_len + pl_len ) ||
-	 levelCount >= rl_len + pl_len + bl_len ) ) {
-    // In the NO_APPROX case, we know that uSpaceModel provides convenient
-    // access to u-space data without any approximations and that the u-space
-    // transformations have been applied to the iteratedModel response data.
-    const Variables& u_vars = uSpaceModel.current_variables();
-    const Response&  u_resp = uSpaceModel.current_response();
-    // mostProbPointU needed for alternate R0 initialization
-    copy_data(u_vars.continuous_variables(), mostProbPointU); // view -> copy
-    // grad/Hessian availability enforced by NonDReliability::PMA2_set_mapping()
-    fnGradU = u_resp.function_gradient_copy(respFnCount);
-    fnHessU = u_resp.function_hessian(respFnCount);
-    curvatureDataAvailable = true;
-    requestedCDFRelLevel   = reliability(requestedCDFProbLevel, true);
-  }
-}
-
-
 void NonDLocalReliability::update_limit_state_surrogate()
 {
-  RealVector mpp, fn_grad(fnGradX.length());
-  const RealSymMatrix* fn_hess_ptr = NULL;
-  if (mppSearchType ==  AMV_X || mppSearchType == AMV_PLUS_X ||
-      mppSearchType == TANA_X) {
-    mpp = mostProbPointX;
-    fn_grad = fnGradX;
-    if (taylorOrder == 2)
-      fn_hess_ptr = &fnHessX;
-  }
-  else { // AMV_U, AMV_PLUS_U, TANA_U
-    mpp = mostProbPointU;
-    fn_grad = fnGradU;
-    if (taylorOrder == 2)
-      fn_hess_ptr = &fnHessU;
-  }
+  bool x_space = (mppSearchType ==  AMV_X || mppSearchType == AMV_PLUS_X ||
+		  mppSearchType == TANA_X);
 
   // construct local Variables object
   Variables mpp_vars(iteratedModel.current_variables().shared_data());
-  mpp_vars.continuous_variables(mpp);
+  if (x_space) mpp_vars.continuous_variables(mostProbPointX);
+  else         mpp_vars.continuous_variables(mostProbPointU);
 
   // construct Response object
   ShortArray asv(numFunctions, 0);
@@ -1679,9 +1603,16 @@ void NonDLocalReliability::update_limit_state_surrogate()
   set.derivative_vector(iteratedModel.continuous_variable_ids());
   Response response(set);
   response.function_value(computedRespLevel, respFnCount);
-  response.function_gradient(fn_grad, respFnCount);
-  if (taylorOrder == 2)
-    response.function_hessian(*fn_hess_ptr, respFnCount);
+  if (x_space) {
+    response.function_gradient(fnGradX, respFnCount);
+    if (taylorOrder == 2)
+      response.function_hessian(fnHessX, respFnCount);
+  }
+  else {
+    response.function_gradient(fnGradU, respFnCount);
+    if (taylorOrder == 2)
+      response.function_hessian(fnHessU, respFnCount);
+  }
   IntResponsePair response_pr(0, response); // dummy eval id
 
   // After a design variable change, history data (e.g., TANA) needs
@@ -1709,6 +1640,285 @@ void NonDLocalReliability::assign_mean_data()
     natafTransform.trans_hess_X_to_U(fnHessX, fnHessU, x_means, fnGradX,
 				     x_dvv, cv_ids);
     //curvatureDataAvailable = true; // TO DO: test if this helps or not
+  }
+}
+
+
+/** This function recasts a G(u) response set (already transformed and
+    approximated in other recursions) into an RIA objective function. */
+void NonDLocalReliability::
+RIA_objective_eval(const Variables& sub_model_vars,
+		   const Variables& recast_vars,
+		   const Response& sub_model_response,
+		   Response& recast_response)
+{
+  // ----------------------------------------
+  // The RIA objective function is (norm u)^2
+  // ----------------------------------------
+
+  const ShortArray& recast_asv = recast_response.active_set_request_vector();
+  const RealVector& u = recast_vars.continuous_variables();
+  size_t i, num_vars = u.length();
+  short asv_val = recast_asv[0];
+  if (asv_val & 1) {
+    Real f = 0.;
+    for (i=0; i<num_vars; i++)
+      f += std::pow(u[i], 2); // f = u'u
+    recast_response.function_value(f, 0);
+  }
+  if (asv_val & 2) {
+    RealVector grad_f = recast_response.function_gradient_view(0);
+    for (i=0; i<num_vars; ++i)
+      grad_f[i] = 2.*u[i]; // grad f = 2u
+  }
+  if (asv_val & 4) {
+    RealSymMatrix hess_f = recast_response.function_hessian_view(0);
+    hess_f = 0.;
+    for (i=0; i<num_vars; i++)
+      hess_f(i,i) = 2.; // hess f = 2's on diagonal
+  }
+
+  // Using f = norm u is a poor choice, since grad f is undefined at u = 0.
+  //Real sqrt_sum_sq = std::sqrt(sum_sq);
+  //if (sqrt_sum_sq > 0.)
+  //  grad_f[i] = u[i]/sqrt_sum_sq;
+  //else // gradient undefined at origin, use 0. to keep optimizer happy
+  //  grad_f[i] = 0.;
+}
+
+
+/** This function recasts a G(u) response set (already transformed and
+    approximated in other recursions) into an RIA equality constraint. */
+void NonDLocalReliability::
+RIA_constraint_eval(const Variables& sub_model_vars,
+		    const Variables& recast_vars,
+		    const Response& sub_model_response,
+		    Response& recast_response)
+{
+  // --------------------------------------------------------
+  // The RIA equality constraint is G(u) - response level = 0
+  // --------------------------------------------------------
+
+  const ShortArray& recast_asv = recast_response.active_set_request_vector();
+  short asv_val = recast_asv[1]; //sub_model_asv[nondLRInstance->respFnCount];
+  int fn_count = nondLocRelInstance->respFnCount;
+  if (asv_val & 1) {
+    const Real& sub_model_fn = sub_model_response.function_value(fn_count);
+    recast_response.function_value(
+      sub_model_fn - nondLocRelInstance->requestedTargetLevel, 1);
+  }
+  if (asv_val & 2) // dG/du: no additional transformation needed
+    recast_response.function_gradient(
+      sub_model_response.function_gradient_view(fn_count), 1);
+  if (asv_val & 4) // d^2G/du^2: no additional transformation needed
+    recast_response.function_hessian(
+      sub_model_response.function_hessian(fn_count), 1);
+}
+
+
+/** This function recasts a G(u) response set (already transformed and
+    approximated in other recursions) into an PMA objective function. */
+void NonDLocalReliability::
+PMA_objective_eval(const Variables& sub_model_vars,
+		   const Variables& recast_vars,
+		   const Response& sub_model_response,
+		   Response& recast_response)
+{
+  // ----------------------------------
+  // The PMA objective function is G(u)
+  // ----------------------------------
+
+  const ShortArray& recast_asv = recast_response.active_set_request_vector();
+  short asv_val = recast_asv[0]; //sub_model_asv[nondLRInstance->respFnCount];
+
+  if (asv_val & 1) {
+    const Real& sub_model_fn = sub_model_response.function_value(
+      nondLocRelInstance->respFnCount);
+#ifdef DEBUG
+    Cout << "PMA_objective_eval(): sub_model_fn = " << sub_model_fn <<std::endl;
+#endif // DEBUG
+    if (nondLocRelInstance->pmaMaximizeG)
+      recast_response.function_value(-sub_model_fn, 0);
+    else
+      recast_response.function_value( sub_model_fn, 0);
+  }
+  if (asv_val & 2) { // dG/du: no additional transformation needed
+    RealVector sub_model_grad = sub_model_response.function_gradient_view(
+      nondLocRelInstance->respFnCount);
+#ifdef DEBUG
+    Cout << "PMA_objective_eval(): sub_model_grad:\n";
+    write_data(Cout, sub_model_grad);
+#endif // DEBUG
+    if (nondLocRelInstance->pmaMaximizeG) {
+      RealVector neg_sub_model_grad = recast_response.function_gradient_view(0);
+      size_t i, num_vars = sub_model_response.function_gradients().numRows();
+      for (i=0; i<num_vars; ++i)
+	neg_sub_model_grad[i] = -sub_model_grad[i];
+    }
+    else
+      recast_response.function_gradient(sub_model_grad, 0);
+  }
+  if (asv_val & 4) { // d^2G/du^2: no additional transformation needed
+    const RealSymMatrix& sub_model_hess
+      = sub_model_response.function_hessian(nondLocRelInstance->respFnCount);
+#ifdef DEBUG
+    Cout << "PMA_objective_eval(): sub_model_hess:\n";
+    write_data(Cout, sub_model_hess, true, true, true);
+#endif // DEBUG
+    if (nondLocRelInstance->pmaMaximizeG) {
+      RealSymMatrix neg_sub_model_hess
+	= recast_response.function_hessian_view(0);
+      size_t i, j, num_vars = sub_model_hess.numRows();
+      for (i=0; i<num_vars; ++i)
+	for (j=0; j<=i; ++j)
+	  neg_sub_model_hess(i,j) = -sub_model_hess(i,j);
+    }
+    else
+      recast_response.function_hessian(sub_model_hess, 0);
+  }
+}
+
+
+/** This function recasts a G(u) response set (already transformed and
+    approximated in other recursions) into a first-order PMA equality
+    constraint on reliability index beta. */
+void NonDLocalReliability::
+PMA_constraint_eval(const Variables& sub_model_vars,
+		    const Variables& recast_vars,
+		    const Response& sub_model_response,
+		    Response& recast_response)
+{
+  // ------------------------------------------------------
+  // The PMA equality constraint is (norm u)^2 - beta^2 = 0
+  // ------------------------------------------------------
+
+  const ShortArray& recast_asv = recast_response.active_set_request_vector();
+  const RealVector& u          = recast_vars.continuous_variables();
+  size_t i, num_vars = u.length();
+  short asv_val = recast_asv[1];
+  if (asv_val & 1) {
+    // calculate the reliability index (beta)
+    Real beta_sq = 0.;
+    for (i=0; i<num_vars; ++i)
+      beta_sq += std::pow(u[i], 2); //use beta^2 to avoid singular grad @ origin
+    // calculate the equality constraint: u'u - beta_target^2
+    Real c = beta_sq - std::pow(nondLocRelInstance->requestedTargetLevel, 2);
+    recast_response.function_value(c, 1);
+  }
+  if (asv_val & 2) {
+    RealVector grad_f = recast_response.function_gradient_view(1);
+    for (i=0; i<num_vars; ++i)
+      grad_f[i] = 2.*u[i]; // grad f = 2u
+  }
+  if (asv_val & 4) {
+    RealSymMatrix hess_f = recast_response.function_hessian_view(1);
+    hess_f = 0.;
+    for (i=0; i<num_vars; i++)
+      hess_f(i,i) = 2.; // hess f = 2's on diagonal
+  }
+}
+
+
+/** This function recasts a G(u) response set (already transformed and
+    approximated in other recursions) into a second-order PMA equality
+    constraint on generalized reliability index beta-star. */
+void NonDLocalReliability::
+PMA2_constraint_eval(const Variables& sub_model_vars,
+		     const Variables& recast_vars,
+		     const Response& sub_model_response,
+		     Response& recast_response)
+{
+  // -----------------------------------------------------
+  // The PMA SORM equality constraint is beta* = beta*-bar
+  // -----------------------------------------------------
+
+  const RealVector& u          = recast_vars.continuous_variables();
+  const ShortArray& recast_asv = recast_response.active_set_request_vector();
+  short             asv_val    = recast_asv[1];
+
+  const ShortArray& sm_asv = sub_model_response.active_set_request_vector();
+  int resp_fn = nondLocRelInstance->respFnCount;
+  short sm_asv_val = sm_asv[resp_fn];
+  RealVector fn_grad_u; RealSymMatrix fn_hess_u;
+  if (sm_asv_val & 2) {
+    fn_grad_u = sub_model_response.function_gradient_view(resp_fn);
+#ifdef DEBUG
+    Cout << "PMA_constraint_eval(): fn_grad_u:\n";
+    write_data(Cout, fn_grad_u);
+#endif // DEBUG
+  }
+  if (sm_asv_val & 4) {
+    fn_hess_u = sub_model_response.function_hessian_view(resp_fn);
+#ifdef DEBUG
+    Cout << "PMA_constraint_eval(): fn_hess_u:\n";
+    write_data(Cout, fn_hess_u, true, true, true);
+#endif // DEBUG
+    nondLocRelInstance->curvatureDataAvailable = true;
+  }
+
+  // calculate beta, then p, then beta*
+  bool cdf = nondLocRelInstance->cdfFlag;
+  Real comp_rel = nondLocRelInstance->computedRelLevel =
+    nondLocRelInstance->signed_norm(u, fn_grad_u, cdf);
+  Real computed_prob_level =
+    nondLocRelInstance->probability(comp_rel, cdf, u, fn_grad_u, fn_hess_u);
+  Real comp_gen_rel = nondLocRelInstance->computedGenRelLevel =
+    nondLocRelInstance->reliability(computed_prob_level);
+
+  if (asv_val & 1) { // calculate the equality constraint: beta* - bar-beta*
+    Real c = comp_gen_rel - nondLocRelInstance->requestedTargetLevel;
+#ifdef DEBUG
+    Cout << "In PMA2_constraint_eval, beta* = " << comp_gen_rel 
+	 << " bar-beta* = " << nondLocRelInstance->requestedTargetLevel
+	 << " eq constr = " << c << std::endl;
+#endif
+    recast_response.function_value(c, 1);
+  }
+  if (asv_val & 2) {
+    // Note: for second-order integrations, beta* is a function of p and
+    // kappa(u).  dbeta*/du involves dkappa/du, but these terms are neglected
+    // as in dbeta*/ds (design sensitivities).
+    //   dbeta/du_i  = u_i/beta (in factor below)
+    //   dp_2/du_i   = [Phi(-beta_corr)*sum - phi(-beta_corr)*prod] * dbeta/du_i
+    //                 (term in brackets computed in dp2_dbeta_factor())
+    //   dbeta*/du_i = -1/phi(-beta*) * dp_2/du (in factor below)
+    Real factor = -nondLocRelInstance->dp2_dbeta_factor(comp_rel, cdf)
+                / comp_rel / Pecos::phi(-comp_gen_rel);
+    size_t i, num_vars = u.length();
+    RealVector grad_f = recast_response.function_gradient_view(1);
+    for (i=0; i<num_vars; ++i)
+      grad_f[i] = factor * u[i];
+#ifdef DEBUG
+    Cout << "In PMA2_constraint_eval, gradient of beta*:\n";
+    write_data(Cout, grad_f);
+#endif
+  }
+  if (asv_val & 4) {
+    Cerr << "Error: Hessian data not supported in NonDLocalReliability::"
+	 << "PMA2_constraint_eval()" << std::endl;
+    abort_handler(-1);
+    /*
+    RealSymMatrix hess_f = recast_response.function_hessian_view(1);
+    hess_f = 0.;
+    for (i=0; i<num_vars; i++)
+      hess_f(i,i) = ;
+    */
+  }
+}
+
+
+void NonDLocalReliability::
+PMA2_set_mapping(const Variables& recast_vars, const ActiveSet& recast_set,
+		 ActiveSet& sub_model_set)
+{
+  // if the constraint value/grad is requested for second-order PMA, then
+  // the sub-model response grad/Hessian are required to update beta*
+  const ShortArray& recast_asv = recast_set.request_vector();
+  if (recast_asv[1] & 3) { // value/grad request requires fn_grad_u/fn_hess_u
+    int sm_index = nondLocRelInstance->respFnCount;
+    short sub_model_request = sub_model_set.request_value(sm_index);
+    sub_model_request |= 6;
+    sub_model_set.request_value(sub_model_request, sm_index);
   }
 }
 
@@ -1781,13 +1991,37 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
     if (secondaryACVarMapTargets.empty())
       final_stat_grad = curr_resp.function_gradient_copy(respFnCount);
     else {
-      const RealMatrix& local_grads = curr_resp.function_gradients();
+      const RealMatrix& fn_grads = curr_resp.function_gradients();
       size_t cntr = 0;
       for (i=0; i<num_final_grad_vars; i++)
 	if (secondaryACVarMapTargets[i] == Pecos::NO_TARGET)
-	  final_stat_grad[i] = local_grads(cntr++, respFnCount);
+	  final_stat_grad[i] = fn_grads(cntr++, respFnCount);
     }
   }
+}
+
+
+Real NonDLocalReliability::
+signed_norm(Real norm_mpp_u, const RealVector& mpp_u,
+	    const RealVector& fn_grad_u, bool cdf_flag)
+{
+  // z>median: CDF p(g<=z)>0.5, CDF beta<0, CCDF p(g>z)<0.5, CCDF beta>0
+  // z<median: CDF p(g<=z)<0.5, CDF beta>0, CCDF p(g>z)>0.5, CCDF beta<0
+  // z=median: CDF p(g<=z) = CCDF p(g>z) = 0.5, CDF beta = CCDF beta = 0
+  //Real beta_cdf = (computedRespLevel > medianFnVals[respFnCount])
+  //              ? -std::sqrt(norm_u_sq) : std::sqrt(norm_u_sq);
+
+  // This approach avoids the need to evaluate medianFnVals.  Thanks to
+  // Barron Bichon for suggesting it.
+  // if <mppU, fnGradU> > 0, then G is increasing along u and G(u*) > G(0)
+  // if <mppU, fnGradU> < 0, then G is decreasing along u and G(u*) < G(0)
+  Real beta_cdf = (mpp_u.dot(fn_grad_u) > 0.) ? -norm_mpp_u : norm_mpp_u;
+#ifdef DEBUG
+  Cout << "\nSign of <mppU, fnGradU> is ";
+  if (mpp_u.dot(fn_grad_u) > 0.) Cout << " 1.\n\n";
+  else                           Cout << "-1.\n\n";
+#endif
+  return (cdf_flag) ? beta_cdf : -beta_cdf;
 }
 
 
@@ -1796,15 +2030,21 @@ dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
     the principal curvatures at the MPP (using the approach in Ch. 8 of 
     Haldar & Mahadevan), and then applies correction formulations from the 
     literature (Breitung, Hohenbichler-Rackwitz, or Hong). */
-Real NonDLocalReliability::probability(const Real& beta, bool cdf_flag)
+Real NonDLocalReliability::
+probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
+	    const RealVector& fn_grad_u, const RealSymMatrix& fn_hess_u)
 {
-  Real p = Phi(-beta); // FORM approximation
-  Cout << "First-order p:  " << p << '\n';
+  Real p = probability(beta); // FORM approximation
+  int wpp7;
+  if (outputLevel > NORMAL_OUTPUT) {
+    wpp7 = write_precision+7;
+    Cout << "Probability: "//beta = " << beta
+	 << " first-order = " << std::setw(wpp7) << p;
+  }
 
   if (integrationOrder == 2 && curvatureDataAvailable) {
-    //Cout << "\nfnHessU:" << fnHessU;
 
-    principal_curvatures();
+    principal_curvatures(mpp_u, fn_grad_u, fn_hess_u, kappaU);
     int i, num_kappa = numUncertainVars - 1;
 
     // The correction to p is applied for beta >= 0 (FORM p <= 0.5).
@@ -1813,11 +2053,9 @@ Real NonDLocalReliability::probability(const Real& beta, bool cdf_flag)
     //   > p becomes complement
     //   > principal curvature sign convention defined for CDF beta > 0
     //     (negate for CDF beta < 0 or CCDF beta > 0, OK for CCDF beta < 0)
-    Real beta_corr = (beta >= 0.) ? beta : -beta;
-    Real p_corr    = (beta >= 0.) ? p    : 1. - p;
-    RealVector kappa = kappaU;
-    if ( (cdf_flag && beta < 0.) || (!cdf_flag && beta >= 0.) )
-      kappa.scale(-1.);
+    Real beta_corr = std::abs(beta);
+    Real p_corr    = (beta >= 0.) ? p : 1. - p;
+    RealVector kappa; scale_curvature(beta, cdf_flag, kappaU, kappa);
 
     // Test for numerical exceptions in sqrt.  Problematic kappa are large and
     // negative (kterm is always positive).  Skipping individual kappa means
@@ -1828,7 +2066,7 @@ Real NonDLocalReliability::probability(const Real& beta, bool cdf_flag)
     bool apply_correction = true;
     Real psi_m_beta;
     if (secondOrderIntType != BREITUNG)
-      psi_m_beta = phi(-beta_corr)/Phi(-beta_corr);
+      psi_m_beta = Pecos::phi(-beta_corr) / Pecos::Phi(-beta_corr);
     Real kterm = (secondOrderIntType == BREITUNG) ? beta_corr : psi_m_beta;
     for (i=0; i<num_kappa; i++) {
       //Cout << "1 + kterm*kappa = " << 1. + kterm * kappa[i] << std::endl;
@@ -1851,7 +2089,8 @@ Real NonDLocalReliability::probability(const Real& beta, bool cdf_flag)
 	p_corr /= std::sqrt(1. + ktk);
 	if (secondOrderIntType == HONG) {
 	  Real hterm = num_kappa * kappa[i] / 2. / (1. + ktk);
-	  C1 += Phi(-beta_corr-hterm) / Phi(-beta_corr)*exp(psi_m_beta*hterm);
+	  C1 += Pecos::Phi(-beta_corr-hterm) / Pecos::Phi(-beta_corr)
+	     *  exp(psi_m_beta*hterm);
 	}
       }
       if (secondOrderIntType == HONG) {
@@ -1860,7 +2099,8 @@ Real NonDLocalReliability::probability(const Real& beta, bool cdf_flag)
       }
       if (p_corr >= 0. && p_corr <= 1.) { // verify p_corr within valid range
 	p = (beta >= 0.) ? p_corr : 1. - p_corr;
-	Cout << "Second-order p: " << p << '\n';
+	if (outputLevel > NORMAL_OUTPUT)
+	  Cout << " second-order = " << std::setw(wpp7) << p;
       }
       else {
 	Cerr << "\nWarning: second-order probability integration bypassed due "
@@ -1879,39 +2119,139 @@ Real NonDLocalReliability::probability(const Real& beta, bool cdf_flag)
     // rep needed for access to functions not mapped to Iterator level
     NonDAdaptImpSampling* importance_sampler_rep
       = (NonDAdaptImpSampling*)importanceSampler.iterator_rep();
-    // copy mostProbPointU from Teuchos structure to RealVector
-    importance_sampler_rep->initialize(mostProbPointU, respFnCount, p, 
-				       requestedRespLevel);
+    importance_sampler_rep->
+      initialize(mpp_u, respFnCount, p, requestedTargetLevel);
     // no summary output since on-the-fly constructed:
     importanceSampler.run_iterator(Cout);
     p = importance_sampler_rep->get_probability();
-    Cout << "Refined p:      " << p << '\n';
+    if (outputLevel > NORMAL_OUTPUT)
+      Cout << " refined = " << std::setw(wpp7) << p;
   }
+  if (outputLevel > NORMAL_OUTPUT)
+    Cout << '\n';
 
   return p;
 }
 
 
-/** Converts a probability into a reliability using the inverse of the
-    first-order or second-order integrations implemented in
-    NonDLocalReliability::probability(). */
-Real NonDLocalReliability::reliability(const Real& p, bool cdf_flag)
+/** Compute sensitivity of second-order probability w.r.t. beta for use
+    in derivatives of p_2 or beta* w.r.t. auxilliary parameters s (design,
+    epistemic) or derivatives of beta* w.r.t. u in PMA2_constraint_eval(). */
+Real NonDLocalReliability::dp2_dbeta_factor(Real beta, bool cdf_flag)
 {
-  Real beta = -Phi_inverse(p); // FORM approximation
+  //   dp/ds     = -phi(-beta) * dbeta/ds
+  //               (fall back to first-order, if needed)
+  //   dp_2/ds   = [Phi(-beta_corr)*sum - phi(-beta_corr)*prod] * dbeta/ds
+  //               (this function computes term in brackets)
+  //   dbeta*/ds = -1/phi(-beta*) * dp_2/ds    (second-order)
 
-  // fnGradU, fnHessU, and possibly mostProbPointU (alternate R0 initialization)
-  // must be in synch and be a reasonable approximation to converged MPP data.
+  // For beta < 0, beta_corr = -beta and p_corr = 1 - p:
+  // dp/ds = -dp_corr/ds = -(dp_corr/dbeta_corr * dbeta_corr/ds)
+  //       = -(dp_corr/dbeta_corr * -dbeta/ds)
+  //       = dp_corr/dbeta_corr * dbeta/ds
+
+  bool apply_correction; size_t i, j, num_kappa;
+  Real kterm, dpsi_m_beta_dbeta, beta_corr; RealVector kappa;
+  if (curvatureDataAvailable) {
+    scale_curvature(beta, cdf_flag, kappaU, kappa);
+    beta_corr = (beta >= 0.) ? beta : -beta;
+
+    switch (secondOrderIntType) {
+    case HONG: // addtnl complexity not warranted
+      Cerr << "\nError: final statistic gradients not implemented for Hong."
+	   << std::endl;
+      abort_handler(-1); break;
+    case BREITUNG:
+      kterm = beta_corr; break;
+    case HOHENRACK:
+      kterm = Pecos::phi(-beta_corr) / Pecos::Phi(-beta_corr); // psi_m_beta
+      dpsi_m_beta_dbeta = kterm*(kterm - beta_corr);
+      break;
+    }
+
+    num_kappa = numUncertainVars - 1;
+    apply_correction = true;
+    for (i=0; i<num_kappa; ++i)
+      if (1. + kterm * kappa[i] <= curvatureThresh)
+	apply_correction = false;
+  }
+  else
+    apply_correction = false;
+
+  if (apply_correction) {
+    Real sum = 0., ktk, prod1, prod2 = 1.;
+    for (i=0; i<num_kappa; ++i) {
+      ktk = kterm * kappa[i];
+      prod2 /= std::sqrt(1. + ktk);
+      prod1 = 1.;
+      for (j=0; j<num_kappa; ++j)
+	if (j != i)
+	  prod1 /= std::sqrt(1. + kterm * kappa[j]);
+      prod1 *= kappa[i] / 2. / std::pow(1. + ktk, 1.5);
+      if (secondOrderIntType != BREITUNG)
+	prod1 *= dpsi_m_beta_dbeta;
+      sum -= prod1;
+    }
+
+    // TO DO: verify p_corr within (0,1) for consistency with probability()
+
+    // factor for second-order dp/ds:
+    return Pecos::Phi(-beta_corr) * sum - Pecos::phi(-beta_corr) * prod2;
+  }
+  else {
+    Cerr << "\nWarning: second-order probability sensitivity bypassed.\n";
+    warningBits |= 2; // second warning in output summary
+    return -Pecos::phi(-beta);
+  }
+}
+
+
+/* For PMA SORM with prescribed p-level or prescribed generalized beta-level,
+   requestedCDFRelLevel must be updated.  This virtual function redefinition
+   is called from NonDLocalReliability::PMA_constraint_eval().
+void NonDLocalReliability::update_pma_reliability_level()
+{
+  size_t rl_len = requestedRespLevels[respFnCount].length(),
+         pl_len = requestedProbLevels[respFnCount].length(),
+         bl_len = requestedRelLevels[respFnCount].length();
+  if ( mppSearchType == NO_APPROX && integrationOrder == 2 &&
+       ( ( levelCount >= rl_len && levelCount < rl_len + pl_len ) ||
+	 levelCount >= rl_len + pl_len + bl_len ) ) {
+    // In the NO_APPROX case, we know that uSpaceModel provides convenient
+    // access to u-space data without any approximations and that the u-space
+    // transformations have been applied to the iteratedModel response data.
+    const Variables& u_vars = uSpaceModel.current_variables();
+    const Response&  u_resp = uSpaceModel.current_response();
+    // mostProbPointU needed for alternate R0 initialization
+    copy_data(u_vars.continuous_variables(), mostProbPointU); // view -> copy
+    // grad/Hessian availability enforced by NonDLocalRel::PMA2_set_mapping()
+    fnGradU = u_resp.function_gradient_copy(respFnCount);
+    fnHessU = u_resp.function_hessian(respFnCount);
+    curvatureDataAvailable = true;
+    requestedCDFRelLevel   = reliability(requestedCDFProbLevel, true,
+                                         mostProbPointU, fnGradU, fnHessU);
+  }
+}
+
+
+// Converts a probability into a reliability using the inverse of the
+// first-order or second-order integrations implemented in
+// NonDLocalReliability::probability().
+Real NonDLocalReliability::
+reliability(Real p, bool cdf_flag, const RealVector& mpp_u,
+	    const RealVector& fn_grad_u, const RealSymMatrix& fn_hess_u)
+{
+  Real beta = reliability(p); // FORM approximation
+
   if (integrationOrder == 2 && curvatureDataAvailable) {
 
-    principal_curvatures();
+    principal_curvatures(mpp_u, fn_grad_u, fn_hess_u, kappaU);
 
     // NOTE: these conversions are currently done once.  It may be necessary
     // to redo them for each beta estimate (when inverting near beta = zero).
     Real beta_corr = (beta >= 0.) ? beta : -beta;
     Real p_corr    = (beta >= 0.) ? p    : 1. - p;
-    RealVector kappa = kappaU;
-    if ( (cdf_flag && beta < 0.) || (!cdf_flag && beta >= 0.) )
-      kappa.scale(-1.);
+    RealVector kappa; scale_curvature(beta, cdf_flag, kappaU, kappa);
 
     // SORM correction to FORM: direct inversion of the SORM formulas is
     // infeasible due to the multiple instances of beta on the RHS, even for
@@ -2007,7 +2347,7 @@ reliability_residual(const Real& p, const Real& beta,
   // this case.
   Real psi_m_beta;
   if (secondOrderIntType != BREITUNG)
-    psi_m_beta = phi(-beta) / Phi(-beta);
+    psi_m_beta = Pecos::phi(-beta) / Pecos::Phi(-beta);
   Real kterm = (secondOrderIntType == BREITUNG) ? beta : psi_m_beta;
   for (i=0; i<num_kappa; i++)
     if (1. + kterm * kappa[i] <= curvatureThresh) {
@@ -2027,13 +2367,14 @@ reliability_residual(const Real& p, const Real& beta,
     prod *= std::sqrt(1. + ktk);
     if (secondOrderIntType == HONG) {
       Real hterm = num_kappa * kappa[i] / 2. / (1. + ktk);
-      C1 += Phi(-beta - hterm) / Phi(-beta) * exp(psi_m_beta * hterm);
+      C1 += Pecos::Phi(-beta - hterm) / Pecos::Phi(-beta)
+	 *  exp(psi_m_beta * hterm);
     }
   }
   if (secondOrderIntType == HONG)
-    res = p * prod - C1 * Phi(-beta);
+    res = p * prod - C1 * Pecos::Phi(-beta);
   else
-    res = p * prod - Phi(-beta);
+    res = p * prod - Pecos::Phi(-beta);
 
   return false;
 }
@@ -2046,7 +2387,7 @@ reliability_residual_derivative(const Real& p, const Real& beta,
   int i, j, num_kappa = numUncertainVars - 1;
   Real psi_m_beta, dpsi_m_beta_dbeta;
   if (secondOrderIntType != BREITUNG) {
-    psi_m_beta = phi(-beta) / Phi(-beta);
+    psi_m_beta = Pecos::phi(-beta) / Pecos::Phi(-beta);
     dpsi_m_beta_dbeta = psi_m_beta*(beta + psi_m_beta);
   }
 
@@ -2070,37 +2411,43 @@ reliability_residual_derivative(const Real& p, const Real& beta,
     //dres_dbeta = p * sum + C1 * phi(-beta) - Phi(-beta) * dC1_dbeta;
   }
   else
-    dres_dbeta = p * sum + phi(-beta);
+    dres_dbeta = p * sum + Pecos::phi(-beta);
 
   return dres_dbeta;
 }
+*/
 
 
-void NonDLocalReliability::principal_curvatures()
+void NonDLocalReliability::
+principal_curvatures(const RealVector& mpp_u, const RealVector& fn_grad_u,
+		     const RealSymMatrix& fn_hess_u, RealVector& kappa_u)
 {
+  // fn_grad_u, fn_hess_u, and possibly mpp_u (alternate R0 initialization)
+  // must be in synch and be a reasonable approximation to converged MPP data.
+
   // compute R matrix
-  int i, j, k, num_kappa = numUncertainVars - 1;
-  RealMatrix R0(numUncertainVars, numUncertainVars);// init to 0
+  int i, j, k, num_vars = mpp_u.length(), num_kappa = num_vars - 1;
+  RealMatrix R0(num_vars, num_vars);// init to 0
   // initialize R0: last row values are direction cosines
   for (i=0; i<num_kappa; i++)
     R0(i, i) = 1.;
   // Haldar & Mahadevan, p.227: last row = unit gradient vector of limit state
-  Real norm_grad_u = fnGradU.normFrobenius();
+  Real norm_grad_u = fn_grad_u.normFrobenius();
   if (norm_grad_u > DBL_MIN)
-    for (i=0; i<numUncertainVars; i++)
-      R0(num_kappa, i) = fnGradU[i]/norm_grad_u;
+    for (i=0; i<num_vars; i++)
+      R0(num_kappa, i) = fn_grad_u[i]/norm_grad_u;
   else { // fallback: try to use +/- mPPU[i]/norm(mPPU)
-    Real norm_mpp_u = mostProbPointU.normFrobenius(); // unsigned beta
+    Real norm_mpp_u = mpp_u.normFrobenius(); // unsigned beta
     if (norm_mpp_u > DBL_MIN) {
-      // Can match the sign of fnGradU[i]/norm_grad_u in PMA case (align for
+      // Can match the sign of fn_grad_u[i]/norm_grad_u in PMA case (align for
       // max G, oppose for min G), but can't in general in RIA case (vectors
       // may align or oppose).  Fortunately, the R0 sign does not appear to
-      // matter since R is applied twice in R fnHessU R^T.
+      // matter since R is applied twice in R fn_hess_u R^T.
       bool pma_max = (levelCount >= requestedRespLevels[respFnCount].length() &&
-		      requestedCDFRelLevel < 0.) ? true : false;
-      for (i=0; i<numUncertainVars; i++)
-	R0(num_kappa, i) = (pma_max) ?  mostProbPointU[i]/norm_mpp_u  // aligned
-	                             : -mostProbPointU[i]/norm_mpp_u; // opposed
+		      pmaMaximizeG) ? true : false;
+      for (i=0; i<num_vars; i++)
+	R0(num_kappa, i) = (pma_max) ?  mpp_u[i]/norm_mpp_u  // aligned
+	                             : -mpp_u[i]/norm_mpp_u; // opposed
     }
     else {
       // Note: for Breitung, kappa_i do not matter if beta = 0.
@@ -2113,31 +2460,31 @@ void NonDLocalReliability::principal_curvatures()
 
   // orthogonalize using Gram-Schmidt
   RealMatrix R(R0);
-  for (i=numUncertainVars-2; i>=0; i--) {  // update the ith row vector
-    for (j=i+1; j<numUncertainVars; j++) { // orthogonalize to jth row vector
+  for (i=num_vars-2; i>=0; i--) {  // update the ith row vector
+    for (j=i+1; j<num_vars; j++) { // orthogonalize to jth row vector
       Real scale1 = 0., scale2 = 0.;
-      for (k=0; k<numUncertainVars; k++) { // kth column
+      for (k=0; k<num_vars; k++) { // kth column
 	scale1 += R(j, k) * R0(i, k);
 	scale2 += std::pow(R(j, k), 2);
       }
       Real scale = scale1 / scale2;
-      for (k=0; k<numUncertainVars; k++)   // kth column
+      for (k=0; k<num_vars; k++)   // kth column
 	R(i, k) -= scale * R(j, k);
     }
     // renormalize ith row vector to unit length
     Real len = 0.;
-    for (j=0; j<numUncertainVars; j++)
+    for (j=0; j<num_vars; j++)
       len += std::pow(R(i, j), 2);
     len = std::sqrt(len);
-    for (j=0; j<numUncertainVars; j++)
+    for (j=0; j<num_vars; j++)
       R(i, j) /= len;
   }
   //Cout << "\nR:" << R;
 
-  // compute A matrix = (R fnHessU R^T)/norm(fnGradU)
-  RealSymMatrix A(numUncertainVars, false);
-  Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, 1./norm_grad_u,
-			       fnHessU, R, A);
+  // compute A matrix = (R fn_hess_u R^T)/norm(fn_grad_u)
+  RealSymMatrix A(num_vars, false);
+  Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, 1./norm_grad_u, fn_hess_u,
+			       R, A);
   //Cout << "\nA:" << A;
   A.reshape(num_kappa); // upper left portion of matrix
   //Cout << "\nReshaped A:" << A;
@@ -2147,7 +2494,9 @@ void NonDLocalReliability::principal_curvatures()
   int info, lwork = 3*num_kappa - 1;
   double* work = new double [lwork];
   // LAPACK eigenvalue solution for real, symmetric A
-  la.SYEV('N', A.UPLO(), num_kappa, A.values(), A.stride(), kappaU.values(),
+  if (kappa_u.length() != num_kappa)
+    kappa_u.sizeUninitialized(num_kappa);
+  la.SYEV('N', A.UPLO(), num_kappa, A.values(), A.stride(), kappa_u.values(),
 	  work, lwork, &info);
   delete [] work;
   if (info) {
@@ -2155,7 +2504,7 @@ void NonDLocalReliability::principal_curvatures()
          << std::endl;
     abort_handler(-1);
   }
-  //Cout << "\nkappaU:" << kappaU;
+  //Cout << "\nkappa_u:" << kappa_u;
 }
 
 
@@ -2252,31 +2601,5 @@ void NonDLocalReliability::method_recourse()
     npsolFlag = false;
   }
 }
-
-
-/*
-void NonDLocalReliability::g_eval(int& mode, const RealVector& u)
-{
-    // ---------------------------
-    // FORM/SORM: no approximation
-    // ---------------------------
-
-#ifdef MPP_CONVERGE_RATE
-    Cout << "u'u = " << u.dot(u) << " G(u) = "
-         << iteratedModel.current_response().function_value(respFnCount)<< '\n';
-#endif // MPP_CONVERGE_RATE
-}
-
-
-void NonDLocalReliability::
-RIA_objective_eval(int mode, int n, const Teuchos::SerialDenseVector& u,
-		   double& f, Teuchos::SerialDenseVector& grad_f,
-		   int& result_mode)
-{
-  // In all OPT++ evaluator functions:
-  if (nondLocRelInstance->nipModeOverrideFlag)
-    mode |= 3; // allows consistent comparisons with SQP
-}
-*/
 
 } // namespace Dakota

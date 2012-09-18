@@ -156,7 +156,6 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
   const String& rng = probDescDB.get_string("method.random_number_generator");
   bool vary_pattern = false; // for consistency across outer loop invocations
   // get point samples file
-  short this_output_level = probDescDB.get_short("method.output");
   const String& pt_reuse_file
     = probDescDB.get_string("method.point_reuse_file");
   bool pt_file_annotated = probDescDB.get_bool("method.point_file_annotated");
@@ -199,7 +198,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
       //curr_vars.view(), curr_vars.variables_components(),
       //iteratedModel.current_response().active_set(),
       approx_type, approx_order, corr_type, corr_order, dataOrder, sample_reuse,
-      this_output_level, pt_reuse_file, pt_file_annotated), false);
+      outputLevel, pt_reuse_file, pt_file_annotated), false);
     g_hat_x_model.surrogate_function_indices(surr_fn_indices);
 
     // Recast g-hat(x) to G-hat(u)
@@ -241,7 +240,7 @@ NonDGlobalReliability::NonDGlobalReliability(Model& model):
       //g_u_vars.view(), g_u_vars.variables_components(),
       //g_u_model.current_response().active_set(),
       approx_type, approx_order, corr_type, corr_order, dataOrder, sample_reuse,
-      this_output_level, pt_reuse_file, pt_file_annotated), false);
+      outputLevel, pt_reuse_file, pt_file_annotated), false);
     uSpaceModel.surrogate_function_indices(surr_fn_indices);
   }
 
@@ -344,8 +343,7 @@ void NonDGlobalReliability::quantify_uncertainty()
 
   // set the object instance pointer for use within static member functions
   NonDGlobalReliability* prev_grel_instance = nondGlobRelInstance;
-  NonDReliability*       prev_rel_instance  = nondRelInstance;
-  nondRelInstance = nondGlobRelInstance = this;
+  nondGlobRelInstance = this;
 
   // Optimize the GP for all levels and then use MAIS for _all_ levels
   optimize_gaussian_process();
@@ -353,7 +351,6 @@ void NonDGlobalReliability::quantify_uncertainty()
   numRelAnalyses++;
 
   // restore in case of recursion
-  nondRelInstance     = prev_rel_instance;
   nondGlobRelInstance = prev_grel_instance;
 }
 
@@ -422,36 +419,35 @@ void NonDGlobalReliability::optimize_gaussian_process()
       // gl_len generalized reliability levels using the PMA formulation.
       bool ria_flag = (levelCount < rl_len) ? true : false;
       if (ria_flag) {
-        requestedRespLevel = requestedRespLevels[respFnCount][levelCount];
+        requestedTargetLevel = requestedRespLevels[respFnCount][levelCount];
 	Cout << "\n>>>>> Reliability Index Approach (RIA) for response level "
-	     << levelCount+1 << " = " << requestedRespLevel << '\n';
+	     << levelCount+1 << " = " << requestedTargetLevel << '\n';
       }
       else if (levelCount < rl_len + pl_len) { 
 	size_t index = levelCount-rl_len;
 	Real p = requestedProbLevels[respFnCount][index];
 	Cout << "\n>>>>> Performance Measure Approach (PMA) for probability "
 	     << "level " << index+1 << " = " << p << '\n';
-	requestedCDFProbLevel = (cdfFlag) ? p : 1.-p;
-        requestedCDFRelLevel  = -Pecos::Phi_inverse(requestedCDFProbLevel);
-	if (meritFunctionType == AUGMENTED_LAGRANGIAN_MERIT) {
-	  augLagrangeMult         = 0.;
-	  penaltyParameter        = 1.;
-	  lastConstraintViolation = DBL_MAX;
-	  lastIterateAccepted     = false;
-	}
+	requestedTargetLevel = -Pecos::Phi_inverse(p);
+	Real gen_beta_cdf = (cdfFlag) ?
+	  requestedTargetLevel : -requestedTargetLevel;
+	pmaMaximizeG = (gen_beta_cdf < 0.);
       }
       else {
 	size_t index = levelCount-rl_len-pl_len;
-	Real gen_beta = requestedGenRelLevels[respFnCount][index];
+	requestedTargetLevel = requestedGenRelLevels[respFnCount][index];
 	Cout << "\n>>>>> Performance Measure Approach (PMA) for reliability "
-	     << "level " << index+1 << " = " << gen_beta << '\n';
-        requestedCDFRelLevel = (cdfFlag) ? gen_beta : -gen_beta;
-	if (meritFunctionType == AUGMENTED_LAGRANGIAN_MERIT) {
-	  augLagrangeMult         = 0.;
-	  penaltyParameter        = 1.;
-	  lastConstraintViolation = DBL_MAX;
-	  lastIterateAccepted     = false;
-	}
+	     << "level " << index+1 << " = " << requestedTargetLevel << '\n';
+	Real gen_beta_cdf = (cdfFlag) ?
+	  requestedTargetLevel : -requestedTargetLevel;
+	pmaMaximizeG = (gen_beta_cdf < 0.);
+      }
+
+      bool pma_aug_lag_flag
+	= (!ria_flag && meritFunctionType == AUGMENTED_LAGRANGIAN_MERIT);
+      if (pma_aug_lag_flag) {
+	augLagrangeMult         = 0.;      penaltyParameter    = 1.;
+	lastConstraintViolation = DBL_MAX; lastIterateAccepted = false;
       }
 
       // Iterate until EGRA converges
@@ -534,48 +530,44 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	  = uSpaceModel.current_response().function_values();
 
 	// Re-evaluate the expected improvement/feasibility at vars_star
-	Real exp_fns_star = (ria_flag) ?
+	Real beta_star, exp_fns_star = (ria_flag) ?
 	  expected_feasibility(g_hat_fns, vars_star) :
 	  expected_improvement(g_hat_fns, vars_star);
     
-	// Calculate beta^2 for output (and aug_lag update)
-	Real beta_sq = 0.;
-	size_t i, num_cvars = c_vars_u.length();
-	for (i=0; i<num_cvars; i++)
-	  beta_sq += std::pow(c_vars_u[i],2);
-    
 	Cout << "\nResults of EGRA iteration:\nFinal point (u-space)   =\n";
 	write_data(Cout, c_vars_u);
-	if (ria_flag)
+	if (ria_flag) {
 	  Cout << "Expected Feasibility    =\n                     "
-	       << setw(write_precision+7)         << -exp_fns_star << "\n"
-	       << "                     "         << setw(write_precision+7)
-	       << g_hat_fns[respFnCount]-requestedRespLevel 
+	       << setw(write_precision+7) << -exp_fns_star << "\n"
+	       << "                     " << setw(write_precision+7)
+	       << g_hat_fns[respFnCount] - requestedTargetLevel
 	       << " [G_hat(u) - z]\n";
-	//     << "                     "         << setw(write_precision+7)
-	//     << beta_sq                         << " [beta^2]\n";
+	//     << "                     " << setw(write_precision+7)
+	//     << beta_star                 << " [beta*]\n";
 	//Cout << "RIA optimum             =\n                     "
 	//     << setw(write_precision+7) << exp_fns_star << " [u'u]\n"
 	//     << "                     " << setw(write_precision+7)
 	//     << exp_fns_star[1] << " [G(u) - z]\n";
-	else
+	}
+	else {
+	  // Calculate beta^2 for output (and aug_lag update)
 	  Cout << "Expected Improvement    =\n                     "
-	       << setw(write_precision+7)             << -exp_fns_star << "\n"
-	       << "                     "             << setw(write_precision+7)
-	       << beta_sq-std::pow(requestedCDFRelLevel,2) << " [u'u - B^2]\n"
-	       << "                     "             << setw(write_precision+7)
-	       << g_hat_fns[respFnCount]              << " [G_hat(u)]\n";
+	       << setw(write_precision+7)          << -exp_fns_star << "\n"
+	       << "                     "          << setw(write_precision+7)
+	       << beta_star - requestedTargetLevel << " [beta* - bar-beta*]\n"
+	       << "                     "          << setw(write_precision+7)
+	       << g_hat_fns[respFnCount]           << " [G_hat(u)]\n";
 	//Cout << "PMA optimum             =\n                     "
 	//     << setw(write_precision+7) << exp_fns_star << " [";
-	//if (requestedCDFRelLevel < 0.)
-	//  Cout << '-';
+	//if (pmaMaximizeG) Cout << '-';
 	//Cout << "G(u)]\n                     " << setw(write_precision+7)
 	//     << exp_fns_star[1] << " [u'u - B^2]\n";
+	}
 
 	// Update parameters for the augmented Lagrangian merit function
-	if (meritFunctionType == AUGMENTED_LAGRANGIAN_MERIT && !ria_flag) {
+	if (pma_aug_lag_flag) {
 	  // currently only used for PMA with EIF
-	  Real c_violation = beta_sq - std::pow(requestedCDFRelLevel,2);
+	  Real c_violation = beta_star - requestedTargetLevel;
 	  if (c_violation < lastConstraintViolation)
 	    lastIterateAccepted = true;
 	  lastConstraintViolation = c_violation;
@@ -607,9 +599,12 @@ void NonDGlobalReliability::optimize_gaussian_process()
 	}
       } // end approx convergence while loop
       
-      Cout << "\n<<<<< GP model has converged for response level "
-	   << levelCount+1 << " = " << requestedRespLevel << '\n';
-      
+      if (ria_flag)
+	Cout << "\n<<<<< GP model has converged for response level ";
+      else
+ 	Cout << "\n<<<<< GP model has converged for response level ";
+      Cout << levelCount+1 << " = " << requestedTargetLevel << '\n';
+     
     } // end loop over levels
 
     if (num_levels)
@@ -873,25 +868,13 @@ expected_improvement(const RealVector& expected_values,
   Real mean = expected_values[respFnCount];
   Real stdv = std::sqrt(variances[respFnCount]);
 
-  // Calculation of EI will have different form for the CDF/CCDF cases
-  // CDF probability <= 0.5  -->  CDF beta >= 0  -->  minimize g
-  // CDF probability >  0.5  -->  CDF beta <  0  -->  maximize g
-  bool positive = (requestedCDFRelLevel >= 0.);
-
   // Calculate and apply penalty to the mean
-  Real beta_sq = 0., penalized_mean;
-  // calculate the reliability index (beta)
-  const RealVector& u = recast_vars.continuous_variables();
-  size_t i, num_vars = u.length();
-  for (i=0; i<num_vars; i++)
-    beta_sq += std::pow(u[i],2);
-  // calculate the equality constraint: u'u - beta_target^2
-  Real cfn = beta_sq - std::pow(requestedCDFRelLevel, 2);
-  Real penalty = constraint_penalty(cfn, u);
-  if (positive)
-    penalized_mean = mean + penalty;
-  else
-    penalized_mean = mean - penalty;
+  Real beta_star = 0.; // TO DO
+  // calculate the equality constraint: beta* - bar-beta*
+  Real cfn = beta_star - requestedTargetLevel;
+  Real penalty = constraint_penalty(cfn, recast_vars.continuous_variables());
+  // Calculation of EI will have different form for the CDF/CCDF cases
+  Real penalized_mean = (pmaMaximizeG) ? mean - penalty : mean + penalty;
   
   // Calculate the expected improvement
   // Note: This is independent of the CDF/CCDF check
@@ -900,19 +883,16 @@ expected_improvement(const RealVector& expected_values,
   Real snv = (fnStar-penalized_mean); // not normalized yet
   if(std::fabs(snv)>=std::fabs(stdv)*50.0) {
     //this will trap the denominator=0.0 case even if numerator=0.0
-    pdf=0.0;
-    cdf=(snv>0.0)?1.0:0.0;
+    pdf = 0.;
+    cdf = (snv > 0.) ? 1. : 0.;
   }
   else{
-    snv/=stdv; // now snv is the standard normal variate
+    snv /= stdv; // now snv is the standard normal variate
     cdf = Pecos::Phi(snv);
     pdf = Pecos::phi(snv);
   }
-  if (positive)
-    ei = (fnStar - penalized_mean)*cdf      + stdv*pdf;
-  else
-    ei = (penalized_mean - fnStar)*(1.-cdf) + stdv*pdf;
-  
+  ei = (pmaMaximizeG) ? (penalized_mean - fnStar)*(1.-cdf) + stdv*pdf
+                      : (fnStar - penalized_mean)*cdf      + stdv*pdf;
   return -ei; // return -EI because we are maximizing EI
 }
 
@@ -935,29 +915,21 @@ expected_feasibility(const RealVector& expected_values,
   
   Real mean  = expected_values[respFnCount],
        stdv  = std::sqrt(variances[respFnCount]),
-       zbar  = requestedRespLevel,
+       zbar  = requestedTargetLevel,
        alpha = 2.; // may want to try values other than 2
 
   // calculate standard normal variate +/- alpha
   
   Real cdfz, pdfz, cdfp, pdfp, cdfm, pdfm;
   Real snvz = (zbar - mean);
-  if(std::fabs(snvz)>=std::fabs(stdv)*50.0) {
-    pdfm=pdfp=pdfz=0.0;
-    cdfm=cdfp=cdfz=(snvz>0.0)?1.0:0.0;
+  if (std::fabs(snvz) >= std::fabs(stdv)*50.) {
+    pdfm = pdfp = pdfz = 0.;
+    cdfm = cdfp = cdfz = (snvz > 0.) ? 1. : 0.;
   }
-  else{
-    using Pecos::phi;
-    using Pecos::Phi;
-    snvz/=stdv;
-    Real snvp = snvz + alpha;
-    Real snvm = snvz - alpha;
-    pdfz=phi(snvz);
-    cdfz=Phi(snvz);
-    pdfp=phi(snvp);
-    cdfp=Phi(snvp);
-    pdfm=phi(snvm);
-    cdfm=Phi(snvm);    
+  else {
+    snvz /= stdv;             pdfz = Pecos::phi(snvz); cdfz = Pecos::Phi(snvz);
+    Real snvp = snvz + alpha; pdfp = Pecos::phi(snvp); cdfp = Pecos::Phi(snvp);
+    Real snvm = snvz - alpha; pdfm = Pecos::phi(snvm); cdfm = Pecos::Phi(snvm);
   }
   // calculate expected feasibility function
   Real ef = (mean - zbar)*(2.*cdfz     -cdfm -cdfp)- //exploit
@@ -997,23 +969,18 @@ void NonDGlobalReliability::get_best_sample()
   }
 
   // Calculation of fnStar will have different form for CDF/CCDF cases
-  // CDF probability <= 0.5  -->  CDF beta >= 0  -->  minimize g
-  // CDF probability >  0.5  -->  CDF beta <  0  -->  maximize g
-  bool positive = (requestedCDFRelLevel >= 0.);
-  
   fnStar = DBL_MAX; IntRespMCIter it;
   for (i=0, it=true_responses.begin(); i<num_samples; i++, ++it) {
     // calculate the reliability index (beta)
-    Real beta_sq = 0., penalized_response;
-    for (j=0; j<num_vars; j++)
-      beta_sq += std::pow(true_c_vars_u[i][j],2);
+    Real beta_star = 0., penalized_response; // TO DO
     // calculate the equality constraint: u'u - beta_target^2
-    Real cfn = beta_sq - std::pow(requestedCDFRelLevel, 2);
+    Real cfn = beta_star - requestedTargetLevel;
     Real penalty = constraint_penalty(cfn, true_c_vars_u[i]);
-    penalized_response = (positive) ? it->second.function_value(0) + penalty :
-                                      it->second.function_value(0) - penalty;
-    if ( (positive && penalized_response < fnStar) || 
-        (!positive && penalized_response > fnStar) )
+    penalized_response = (pmaMaximizeG) ?
+      it->second.function_value(0) - penalty :
+      it->second.function_value(0) + penalty;
+    if ( ( pmaMaximizeG && penalized_response > fnStar) ||
+	 (!pmaMaximizeG && penalized_response < fnStar) )
       fnStar = penalized_response;
   }
 }

@@ -122,7 +122,7 @@ private:
 		      const ActiveSet& source_set, size_t start_index_source);
 
   /// rehapes response data arrays
-  void reshape(const size_t& num_fns, const size_t& num_params, bool grad_flag,
+  void reshape(size_t num_fns, size_t num_params, bool grad_flag,
 	       bool hess_flag);
 
   /// resets all response data to zero
@@ -249,24 +249,24 @@ public:
   const String& responses_id() const;
 
   /// return a response function identifier string
-  const String& function_label(const size_t& i) const;
+  const String& function_label(size_t i) const;
   /// return the response function identifier strings
   const StringArray& function_labels() const;
   /// set a response function identifier string
-  void function_label(const String& label, const size_t& i);
+  void function_label(const String& label, size_t i);
   /// set the response function identifier strings
   void function_labels(const StringArray& labels);
 
   /// return a function value
-  const Real& function_value(const size_t& i) const;
+  const Real& function_value(size_t i) const;
   /// return a "view" of a function value for updating in place
-  Real& function_value_view(const size_t& i);
+  Real& function_value_view(size_t i);
   /// return all function values
   const RealVector& function_values() const;
   /// return all function values as a view for updating in place
   RealVector function_values_view();
   /// set a function value
-  void function_value(const Real& function_val, const size_t& i);
+  void function_value(const Real& function_val, size_t i);
   /// set all function values
   void function_values(const RealVector& function_vals);
   
@@ -288,17 +288,17 @@ public:
   void function_gradients(const RealMatrix& function_grads);
 
   /// return the i-th function Hessian
-  const RealSymMatrix& function_hessian(const size_t& i) const;
+  const RealSymMatrix& function_hessian(size_t i) const;
   /// return the i-th function Hessian as a Teuchos::View (shallow copy)
   /// for updating in place
-  RealSymMatrix function_hessian_view(const size_t& i);
+  RealSymMatrix function_hessian_view(size_t i) const; // TO DO: retire const
   /// return all function Hessians
   const RealSymMatrixArray& function_hessians() const;
   /// return all function Hessians as Teuchos::Views (shallow copies)
   /// for updating in place
   RealSymMatrixArray function_hessians_view();
   /// set a function Hessian
-  void function_hessian(const RealSymMatrix& function_hessian, const size_t& i);
+  void function_hessian(const RealSymMatrix& function_hessian, size_t i);
   /// set all function Hessians
   void function_hessians(const RealSymMatrixArray& function_hessians);
 
@@ -362,7 +362,7 @@ public:
 		      const ActiveSet& source_set, size_t start_index_source);
 
   /// rehapes response data arrays
-  void reshape(const size_t& num_fns, const size_t& num_params, bool grad_flag,
+  void reshape(size_t num_fns, size_t num_params, bool grad_flag,
 	       bool hess_flag);
   /// handle class forward to corresponding body class member function
   void reset();
@@ -387,11 +387,11 @@ inline size_t Response::num_functions() const
 { return responseRep->functionValues.length(); }
 
 
-inline const Real& Response::function_value(const size_t& i) const
+inline const Real& Response::function_value(size_t i) const
 { return responseRep->functionValues[i]; }
 
 
-inline Real& Response::function_value_view(const size_t& i)
+inline Real& Response::function_value_view(size_t i)
 { return responseRep->functionValues[i]; }
 
 
@@ -406,7 +406,7 @@ inline RealVector Response::function_values_view()
 }
 
 
-inline void Response::function_value(const Real& function_val, const size_t& i)
+inline void Response::function_value(const Real& function_val, size_t i)
 { responseRep->functionValues[i] = function_val; }
 
 
@@ -447,11 +447,11 @@ inline void Response::function_gradients(const RealMatrix& function_grads)
 { responseRep->functionGradients = function_grads; }
 
 
-inline const RealSymMatrix& Response::function_hessian(const size_t& i) const
+inline const RealSymMatrix& Response::function_hessian(size_t i) const
 { return responseRep->functionHessians[i]; }
 
 
-inline RealSymMatrix Response::function_hessian_view(const size_t& i)
+inline RealSymMatrix Response::function_hessian_view(size_t i) const
 {
   return RealSymMatrix(Teuchos::View, responseRep->functionHessians[i],
 		       responseRep->functionHessians[i].numRows());
@@ -475,7 +475,7 @@ inline RealSymMatrixArray Response::function_hessians_view()
 
 
 inline void Response::
-function_hessian(const RealSymMatrix& function_hessian, const size_t& i)
+function_hessian(const RealSymMatrix& function_hessian, size_t i)
 { responseRep->functionHessians[i] = function_hessian; }
 
 
@@ -515,7 +515,7 @@ inline const String& Response::responses_id() const
 { return responseRep->responsesId; }
 
 
-inline const String& Response::function_label(const size_t& i) const
+inline const String& Response::function_label(size_t i) const
 { return responseRep->functionLabels[i]; }
 
 
@@ -523,7 +523,7 @@ inline const StringArray& Response::function_labels() const
 { return responseRep->functionLabels; }
 
 
-inline void Response::function_label(const String& label, const size_t& i)
+inline void Response::function_label(const String& label, size_t i)
 { responseRep->functionLabels[i] = label; }
 
 
@@ -591,8 +591,7 @@ update_partial(size_t start_index_target, size_t num_items,
 
 
 inline void Response::
-reshape(const size_t& num_fns, const size_t& num_params, bool grad_flag,
-	bool hess_flag)
+reshape(size_t num_fns, size_t num_params, bool grad_flag, bool hess_flag)
 { responseRep->reshape(num_fns, num_params, grad_flag, hess_flag); }
 
 
