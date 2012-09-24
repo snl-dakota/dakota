@@ -318,23 +318,19 @@ void Optimizer::print_results(std::ostream& s)
 
 
 /** Retrieve a MOO/NLS response based on the data returned by a single
-    objective optimizer by performing a data_pairs search. */
+    objective optimizer by performing a data_pairs search. This may
+    get called even for a single user-specified function, since we may
+    be recasting a single NLS residual into a squared objective. */
 void Optimizer::
 local_objective_recast_retrieve(const Variables& vars, Response& response) const
 {
-  // only needed for single objective transformations
-  if (numUserPrimaryFns <= 1)
-    Cerr << "Warning: local_objective_recast_retrieve() called for single "
-	 << "objective optimization." << std::endl;
-  else {
-    Response desired_resp;
-    if (lookup_by_val(data_pairs, iteratedModel.interface_id(), vars,
-		      response.active_set(), desired_resp))
-      response.update(desired_resp);
-    else
-      Cerr << "Warning: failure in recovery of final values for locally recast "
-	   << "optimization." << std::endl;
-  }
+  Response desired_resp;
+  if (lookup_by_val(data_pairs, iteratedModel.interface_id(), vars,
+		    response.active_set(), desired_resp))
+    response.update(desired_resp);
+  else
+    Cerr << "Warning: failure in recovery of final values for locally recast "
+	 << "optimization." << std::endl;
 }
 
 
@@ -403,12 +399,6 @@ void Optimizer::objective_reduction(const Response& full_response,
 				    const RealVector& full_wts, 
 				    Response& reduced_response) const
 {
-  if (numUserPrimaryFns <= 1) {
-    Cerr << "\nError: Optimizer::objective_reduction() reached with single "
-	 << "objective." << std::endl;
-    abort_handler(-1);
-  }
-
   if (outputLevel > NORMAL_OUTPUT)
     Cout << "Local single objective transformation:\n";
 
