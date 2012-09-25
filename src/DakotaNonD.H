@@ -336,6 +336,13 @@ private:
   /// response functions if a short-hand specification is employed.
   void distribute_levels(RealVectorArray& levels, bool ascending = true);
 
+  /// Write distribution mappings to a file for a single response
+  void distribution_mappings_file(size_t fn_index) const;
+
+  /// Print distribution mapping for a single response function to ostream
+  void print_distribution_map(size_t fn_index, std::ostream& s) const;
+
+
   //
   //- Heading: Data members
   //

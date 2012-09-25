@@ -17,6 +17,7 @@
 #include "DakotaNonD.H"
 #include "NonDLHSSampling.H"
 #include "ProblemDescDB.H"
+#include "tabular_io.h"
 #include "pecos_stat_util.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaNonD.C 7024 2010-10-16 01:24:42Z mseldre $";
@@ -1855,54 +1856,79 @@ void NonD::initialize_distribution_mappings()
   }
 }
 
-
+/// Print distribution mappings, including to file per response
 void NonD::print_distribution_mappings(std::ostream& s) const
 {
-  const StringArray& resp_labels = iteratedModel.response_labels();
-
   // output CDF/CCDF probabilities resulting from binning or CDF/CCDF
   // reliabilities resulting from number of std devs separating mean & target
   s << std::scientific << std::setprecision(write_precision)
     << "\nLevel mappings for each response function:\n";
-  size_t i, j, width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
-  for (i=0; i<numFunctions; ++i) {
+  size_t i;
+  for (i=0; i<numFunctions; ++i)
     if (!requestedRespLevels[i].empty() || !requestedProbLevels[i].empty() ||
 	!requestedRelLevels[i].empty()  || !requestedGenRelLevels[i].empty()) {
-      if (cdfFlag)
-	s << "Cumulative Distribution Function (CDF) for ";
-      else
-	s << "Complementary Cumulative Distribution Function (CCDF) for ";
-      s << resp_labels[i] << ":\n     Response Level  Probability Level  "
-	<< "Reliability Index  General Rel Index\n     --------------  "
-	<< "-----------------  -----------------  -----------------\n";
-      size_t num_resp_levels = requestedRespLevels[i].length();
-      for (j=0; j<num_resp_levels; j++) {
-	s << "  " << std::setw(width) << requestedRespLevels[i][j] << "  ";
-	switch (respLevelTarget) {
-	case PROBABILITIES:
-	  s << std::setw(width) << computedProbLevels[i][j]   << '\n'; break;
-	case RELIABILITIES:
-	  s << std::setw(w2p2)  << computedRelLevels[i][j]    << '\n'; break;
-	case GEN_RELIABILITIES:
-	  s << std::setw(w3p4)  << computedGenRelLevels[i][j] << '\n'; break;
-	}
-      }
-      size_t num_prob_levels = requestedProbLevels[i].length();
-      for (j=0; j<num_prob_levels; j++)
-	s << "  " << std::setw(width) << computedRespLevels[i][j]
-	  << "  " << std::setw(width) << requestedProbLevels[i][j] << '\n';
-      size_t num_rel_levels = requestedRelLevels[i].length(),
-	     offset = num_prob_levels;
-      for (j=0; j<num_rel_levels; j++)
-	s << "  " << std::setw(width) << computedRespLevels[i][j+offset]
-	  << "  " << std::setw(w2p2)  << requestedRelLevels[i][j] << '\n';
-      size_t num_gen_rel_levels = requestedGenRelLevels[i].length();
-      offset += num_rel_levels;
-      for (j=0; j<num_gen_rel_levels; j++)
-	s << "  " << std::setw(width) << computedRespLevels[i][j+offset]
-	  << "  " << std::setw(w3p4)  << requestedGenRelLevels[i][j] << '\n';
+      print_distribution_map(i, s);
+      // optionally write the distribution mapping to a .dist file
+      if (outputLevel >= VERBOSE_OUTPUT)
+	distribution_mappings_file(i);
+    }
+}
+
+/// Write distribution mappings to a file for a single response
+void NonD::distribution_mappings_file(size_t fn_index) const
+{
+  const StringArray& resp_labels = iteratedModel.response_labels();
+  std::string dist_filename(resp_labels[fn_index]);
+  dist_filename += ".dist";
+  std::ofstream dist_file;
+  TabularIO::open_file(dist_file, dist_filename, "Distribution Map Output"); 
+  dist_file << std::scientific << std::setprecision(write_precision);
+  print_distribution_map(fn_index, dist_file);
+}
+
+
+/** Print the distribution mapping for a single response function to
+    the passed output stream */
+void NonD::print_distribution_map(size_t fn_index, std::ostream& s) const
+{
+  const StringArray& resp_labels = iteratedModel.response_labels();
+
+  size_t i = fn_index, j;
+  size_t width = write_precision+7, w2p2 = 2*width+2, w3p4 = 3*width+4;
+
+  if (cdfFlag)
+    s << "Cumulative Distribution Function (CDF) for ";
+  else
+    s << "Complementary Cumulative Distribution Function (CCDF) for ";
+  s << resp_labels[i] << ":\n     Response Level  Probability Level  "
+    << "Reliability Index  General Rel Index\n     --------------  "
+    << "-----------------  -----------------  -----------------\n";
+  size_t num_resp_levels = requestedRespLevels[i].length();
+  for (j=0; j<num_resp_levels; j++) {
+    s << "  " << std::setw(width) << requestedRespLevels[i][j] << "  ";
+    switch (respLevelTarget) {
+    case PROBABILITIES:
+      s << std::setw(width) << computedProbLevels[i][j]   << '\n'; break;
+    case RELIABILITIES:
+      s << std::setw(w2p2)  << computedRelLevels[i][j]    << '\n'; break;
+    case GEN_RELIABILITIES:
+      s << std::setw(w3p4)  << computedGenRelLevels[i][j] << '\n'; break;
     }
   }
+  size_t num_prob_levels = requestedProbLevels[i].length();
+  for (j=0; j<num_prob_levels; j++)
+    s << "  " << std::setw(width) << computedRespLevels[i][j]
+      << "  " << std::setw(width) << requestedProbLevels[i][j] << '\n';
+  size_t num_rel_levels = requestedRelLevels[i].length(),
+    offset = num_prob_levels;
+  for (j=0; j<num_rel_levels; j++)
+    s << "  " << std::setw(width) << computedRespLevels[i][j+offset]
+      << "  " << std::setw(w2p2)  << requestedRelLevels[i][j] << '\n';
+  size_t num_gen_rel_levels = requestedGenRelLevels[i].length();
+  offset += num_rel_levels;
+  for (j=0; j<num_gen_rel_levels; j++)
+    s << "  " << std::setw(width) << computedRespLevels[i][j+offset]
+      << "  " << std::setw(w3p4)  << requestedGenRelLevels[i][j] << '\n';
 }
 
 
