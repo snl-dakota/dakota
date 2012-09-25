@@ -37,7 +37,7 @@ using OPTPP::NLPGradient;
 #include "data_io.h"
 
 //#define MPP_CONVERGE_RATE
-#define DEBUG
+//#define DEBUG
 
 static const char rcsId[] = "@(#) $Id: NonDLocalReliability.C 4058 2006-10-25 01:39:40Z mseldre $";
 
@@ -1273,9 +1273,10 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
          pl_len = requestedProbLevels[respFnCount].length(),
          bl_len = requestedRelLevels[respFnCount].length();
   bool ria_flag = (levelCount < rl_len);
+  const RealVector&    mpp_u = vars_star.continuous_variables(); // view
+  const RealVector& fns_star = resp_star.function_values();
 
   // Update MPP arrays from optimization results
-  const RealVector&    mpp_u = vars_star.continuous_variables(); // view
   Real conv_metric;
   switch (mppSearchType) {
   case AMV_PLUS_X: case AMV_PLUS_U: case TANA_X: case TANA_U:
@@ -1287,18 +1288,6 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
   }
   copy_data(mpp_u, mostProbPointU); // view -> copy
   natafTransform.trans_U_to_X(mostProbPointU, mostProbPointX);
-
-  // set computedRelLevel after retrieving u'u from fns_star
-  const RealVector& fns_star = resp_star.function_values();
-  if (ria_flag)
-    computedRelLevel = signed_norm(std::sqrt(fns_star[0]));
-  else if (integrationOrder == 2) { // PMA SORM
-    // computed{Rel,GenRel}Level updated in PMA2_constraint_eval()
-  }
-  else { // PMA FORM
-    Real norm_u_sq = fns_star[1] + std::pow(requestedTargetLevel, 2);
-    computedRelLevel = signed_norm(std::sqrt(norm_u_sq));
-  }
 
   // Set computedRespLevel to the current g(x) value by either performing
   // a validation function evaluation (AMV/AMV+) or retrieving data from
@@ -1482,6 +1471,17 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     }
     break;
   }
+  }
+
+  // set computedRelLevel using u'u from fns_star; must follow fnGradU update
+  if (ria_flag)
+    computedRelLevel = signed_norm(std::sqrt(fns_star[0]));
+  else if (integrationOrder == 2) { // second-order PMA
+    // no op: computed{Rel,GenRel}Level updated in PMA2_constraint_eval()
+  }
+  else { // first-order PMA
+    Real norm_u_sq = fns_star[1] + std::pow(requestedTargetLevel, 2);
+    computedRelLevel = signed_norm(std::sqrt(norm_u_sq));
   }
 }
 
