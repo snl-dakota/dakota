@@ -76,6 +76,8 @@ protected:
 
   /// compute 2-norm of change in response covariance
   virtual Real compute_covariance_metric();
+  /// compute 2-norm of change in final statistics
+  virtual Real compute_final_statistics_metric();
 
   //
   //- Heading: Virtual function redefinitions
@@ -197,9 +199,6 @@ private:
   Real increment_sets();
   /// finalization of adaptive refinement using generalized sparse grids
   void finalize_sets(bool converged_within_tol);
-
-  /// compute 2-norm of change in final statistics
-  Real compute_final_statistics_metric();
 
   /// calculate respCovariance
   void compute_covariance();

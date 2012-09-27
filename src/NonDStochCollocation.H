@@ -59,6 +59,7 @@ protected:
   //void print_coefficients(std::ostream& s);
 
   Real compute_covariance_metric();
+  Real compute_final_statistics_metric();
 
 private:
 

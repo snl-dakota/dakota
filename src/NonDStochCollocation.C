@@ -346,4 +346,49 @@ Real NonDStochCollocation::compute_covariance_metric()
     return NonDExpansion::compute_covariance_metric();
 }
 
+
+Real NonDStochCollocation::compute_final_statistics_metric()
+{
+  // From delta_mu(i) and delta_covariance(i,i), we can compute delta_sigma,
+  // delta_beta, and delta_z
+
+  /*
+  if ( sgBasisType == HIERARCHICAL_INTERPOLANT &&
+       ( (rl_len && respLevelTarget == RELIABILITIES) || bl_len ) ) {
+    size_t i, j;
+    RealSymMatrix delta_resp_covar(numFunctions, false);
+    bool warn_flag = false,
+      all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+    for (i=0; i<numFunctions; ++i) {
+      PecosApproximation* pa_rep_i
+	= (PecosApproximation*)poly_approxs[i].approx_rep();
+      if (pa_rep_i->expansion_coefficient_flag())
+	for (j=0; j<=i; ++j) {
+	  PecosApproximation* pa_rep_j
+	    = (PecosApproximation*)poly_approxs[j].approx_rep();
+	  if (pa_rep_j->expansion_coefficient_flag())
+	    delta_resp_covar(i,j) = (all_vars) ?
+	      pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
+	      pa_rep_i->delta_covariance(pa_rep_j);
+	  else
+	    { warn_flag = true; delta_resp_covar(i,j) = 0.; }
+	}
+      else {
+	warn_flag = true;
+	for (j=0; j<=i; ++j)
+	  delta_resp_covar(i,j) = 0.;
+      }
+    }
+    if (warn_flag)
+      Cerr << "Warning: expansion coefficients unavailable in NonDStoch"
+	   << "Collocation::compute_final_statistics_metric().\n         "
+	   << "Zeroing affected delta_covariance terms." << std::endl;
+    return delta_final_stats.normFrobenius();
+  }
+  else // use default implementation
+  */
+    return NonDExpansion::compute_final_statistics_metric();
+}
+
 } // namespace Dakota

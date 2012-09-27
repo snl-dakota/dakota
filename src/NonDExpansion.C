@@ -1079,17 +1079,23 @@ void NonDExpansion::compute_print_converged_results(bool print_override)
 }
 
 
+/** computes the default refinement metric based on change in respCovariance */
 Real NonDExpansion::compute_covariance_metric()
 {
+  // default implementation for use when direct (hierarchical) calculation
+  // of increments is not available
+
   RealSymMatrix delta_resp_covar = respCovariance; // deep copy
   compute_covariance();                            // update
   delta_resp_covar -= respCovariance;              // compute change
+
 #ifdef DEBUG
   Cout << "resp_covar_ref:\n"; write_data(Cout, resp_covar_ref,false,true,true);
   Cout << "respCovariance:\n"; write_data(Cout, respCovariance,false,true,true);
   Cout << "norm of delta_resp_covar = " << delta_resp_covar.normFrobenius()
        << std::endl;
 #endif // DEBUG
+
   return delta_resp_covar.normFrobenius();
 }
 
@@ -1097,9 +1103,13 @@ Real NonDExpansion::compute_covariance_metric()
 /** computes a "goal-oriented" refinement metric employing finalStatistics */
 Real NonDExpansion::compute_final_statistics_metric()
 {
+  // default implementation for use when direct (hierarchical) calculation
+  // of increments is not available
+
   RealVector delta_final_stats = finalStatistics.function_values(); // deep copy
   compute_statistics();                                             //    update
   delta_final_stats -= finalStatistics.function_values();      // compute change
+
 #ifdef DEBUG
   Cout << "final_stats_ref:\n" << final_stats_ref
        << "final_stats:\n" << finalStatistics.function_values()
