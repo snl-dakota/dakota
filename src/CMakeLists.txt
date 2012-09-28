@@ -362,7 +362,7 @@ set(constraint_src DakotaConstraints.C MixedVarConstraints.C
 set(interface_src DakotaInterface.C ApproximationInterface.C
     DakotaApproximation.C TaylorApproximation.C TANA3Approximation.C
     GaussProcApproximation.C PecosApproximation.C ApplicationInterface.C
-    SysCallApplicInterface.C DirectApplicInterface.C
+    SysCallApplicInterface.C DirectApplicInterface.C TestDriverInterface.C
     AnalysisCode.C SysCallAnalysisCode.C CommandShell.C)
 if(NOT MSVC)
   list(APPEND interface_src ForkApplicInterface.C ForkAnalysisCode.C)
@@ -375,10 +375,22 @@ if(HAVE_SURFPACK)
   list(APPEND TPL_LIBS surfpack surfpack_fortran)
 endif(HAVE_SURFPACK)
 
+if(DAKOTA_MATLAB)
+  list(APPEND interface_src MatlabInterface.C)
+endif()
+
+if(DAKOTA_PYTHON)
+  list(APPEND interface_src PythonInterface.C)
+endif()
+
 if(DAKOTA_PLUGIN)
   set(interface_src ${interface_src} PluginSerialDirectApplicInterface.C
       PluginParallelDirectApplicInterface.C)
 endif(DAKOTA_PLUGIN)
+
+if(DAKOTA_SCILAB)
+  list(APPEND interface_src ScilabInterface.C)
+endif()
 
 ## Strategy sources.
 set(strategy_src DakotaStrategy.C SingleMethodStrategy.C HybridStrategy.C

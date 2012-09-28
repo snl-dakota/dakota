@@ -1226,6 +1226,12 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
 	  ( direct {N_ifm(lit,interfaceType_direct)}
 	    [ processors_per_analysis INTEGER {N_ifm(pint,procsPerAnalysis)} ]
 	    )
+# TODO: processors_per_analysis?
+	  | matlab {N_ifm(lit,interfaceType_matlab)}
+#	  | modelcenter {N_ifm(lit,interfaceType_modelcenter)}
+#	  | plugin {N_ifm(lit,interfaceType_plugin)}
+	  | python {N_ifm(lit,interfaceType_python)}
+	  | scilab {N_ifm(lit,interfaceType_scilab)}
 	  | grid {N_ifm(lit,interfaceType_grid)}
 	  [ failure_capture {0}
 	    abort {N_ifm(lit,failAction_abort)}

@@ -89,6 +89,9 @@ INTERFACE_SRCS	= DakotaInterface.C		    \
 		  SysCallApplicInterface.C	    \
 		  ForkApplicInterface.C		    \
 		  DirectApplicInterface.C	    \
+		  TestDriverInterface.C		    \
+		  $(MATLAB_S)			    \
+		  $(PYTHON_S)			    \
 		  $(PLUGIN_S)			    \
 		  AnalysisCode.C		    \
 		  ForkAnalysisCode.C		    \
@@ -231,6 +234,9 @@ include_HEADERS = ParallelLibrary.H             \
 		  SysCallApplicInterface.H	\
 		  ForkApplicInterface.H		\
 		  DirectApplicInterface.H	\
+		  TestDriverInterface.H		\
+  		  $(MATLAB_H)			\
+  		  $(PYTHON_H)			\
 		  $(PLUGIN_H)			\
 		  $(DLL_H)			\
 		  AnalysisCode.H		\

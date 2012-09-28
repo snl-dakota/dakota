@@ -5016,6 +5016,9 @@ static Iface_mp_lit
 	MP2(interfaceType,direct),
 	MP2(interfaceType,fork),
 	MP2(interfaceType,grid),
+	MP2(interfaceType,matlab),
+	MP2(interfaceType,python),
+	MP2(interfaceType,scilab),
 	MP2(interfaceType,system),
 	MP2(asynchLocalEvalScheduling,self),
 	MP2(asynchLocalEvalScheduling,static);

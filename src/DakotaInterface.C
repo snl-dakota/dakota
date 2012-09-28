@@ -13,15 +13,29 @@
 #include "DakotaInterface.H"
 #include "ProblemDescDB.H"
 #include "DakotaVariables.H"
+
 #include "SysCallApplicInterface.H"
 #ifndef _MSC_VER
 #include "ForkApplicInterface.H"
 #endif // _MSC_VER
+
+// Direct interfaces
 #ifdef DAKOTA_GRID
 #include "GridApplicInterface.H"
 #endif // DAKOTA_GRID
-#include "DirectApplicInterface.H"
+#ifdef DAKOTA_MATLAB
+#include "MatlabInterface.H"
+#endif // DAKOTA_MATLAB
+#ifdef DAKOTA_PYTHON
+#include "PythonInterface.H"
+#endif // DAKOTA_PYTHON
+#ifdef DAKOTA_SCILAB
+#include "ScilabInterface.H"
+#endif // DAKOTA_SCILAB
+#include "TestDriverInterface.H"
+
 #include "ApproximationInterface.H"
+
 #ifdef HAVE_AMPL
 #undef NO // avoid name collision from UTILIB
 #include "ampl/asl.h"
@@ -216,7 +230,7 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
     return new ForkApplicInterface(problem_db);
 #endif // _MSC_VER
   else if (interf_type == "direct")
-    return new DirectApplicInterface(problem_db);
+    return new TestDriverInterface(problem_db);
   // Note: in the case of a plug-in direct interface, this object gets replaced
   // using Interface::assign_rep().  Error checking in DirectApplicInterface::
   // derived_map_ac() should catch if this replacement fails to occur properly.
@@ -224,6 +238,36 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
   else if (interf_type == "grid")
     return new GridApplicInterface(problem_db);
 #endif
+
+  else if (interf_type == "matlab") {
+#ifdef DAKOTA_MATLAB
+    return new MatlabInterface(problem_db);
+#else
+    Cerr << "Direct Matlab interface requested, but not enabled in this "
+	 << "DAKOTA executable." << std::endl;
+      return NULL;
+#endif
+  }
+  else if (interf_type == "python") {
+#ifdef DAKOTA_PYTHON
+    return new PythonInterface(problem_db);
+#else
+    Cerr << "Direct Python interface requested, but not enabled in this "
+	 << "DAKOTA executable." << std::endl;
+    return NULL;
+#endif
+  }
+
+  else if (interf_type == "scilab") {
+#ifdef DAKOTA_SCILAB
+    return new ScilabInterface(problem_db);
+#else
+    Cerr << "Direct Scilab interface requested, but not enabled in this "
+	 << "DAKOTA executable." << std::endl;
+    return NULL;
+#endif
+  }
+
   // Should not be needed since ApproximationInterface is plugged-in from
   // DataFitSurrModel using Interface::assign_rep().
   //else if (interf_type == "approximation")

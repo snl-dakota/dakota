@@ -244,6 +244,16 @@ if USE_XDR
   XDR_S         = dak_xdr_interface.c
 endif
 
+if WITH_MATLAB
+MATLAB_H = MatlabInterface.H
+MATLAB_S = MatlabInterface.C
+endif
+
+if WITH_PYTHON
+PYTHON_H = PythonInterface.H
+PYTHON_S = PythonInterface.C
+endif
+
 if WITH_PLUGIN
 PLUGIN_H        = PluginSerialDirectApplicInterface.H   \
 		  PluginParallelDirectApplicInterface.H

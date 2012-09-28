@@ -1,7 +1,7 @@
 
 namespace Dakota {
 
-/** 993 distinct keywords (plus 132 aliases) **/
+/** 996 distinct keywords (plus 132 aliases) **/
 
 static KeyWord
 	kw_1[3] = {
@@ -41,7 +41,7 @@ static KeyWord
 		{"verbatim",8,0,4,0,0,0.,0.,0,N_ifm(true,verbatimFlag)},
 		{"work_directory",8,7,8,0,kw_5,0.,0.,0,N_ifm(true,useWorkdir)}
 		},
-	kw_7[9] = {
+	kw_7[12] = {
 		{"analysis_components",15,0,1,0,0,0.,0.,0,N_ifm(str2D,analysisComponents)},
 		{"deactivate",8,3,6,0,kw_1},
 		{"direct",8,1,4,1,kw_2,0.,0.,0,N_ifm(lit,interfaceType_direct)},
@@ -49,7 +49,10 @@ static KeyWord
 		{"fork",8,8,4,1,kw_6,0.,0.,0,N_ifm(lit,interfaceType_fork)},
 		{"grid",8,0,4,1,0,0.,0.,0,N_ifm(lit,interfaceType_grid)},
 		{"input_filter",11,0,2,0,0,0.,0.,0,N_ifm(str,inputFilter)},
+		{"matlab",8,0,4,1,0,0.,0.,0,N_ifm(lit,interfaceType_matlab)},
 		{"output_filter",11,0,3,0,0,0.,0.,0,N_ifm(str,outputFilter)},
+		{"python",8,0,4,1,0,0.,0.,0,N_ifm(lit,interfaceType_python)},
+		{"scilab",8,0,4,1,0,0.,0.,0,N_ifm(lit,interfaceType_scilab)},
 		{"system",8,8,4,1,kw_6,0.,0.,0,N_ifm(lit,interfaceType_system)}
 		},
 	kw_8[4] = {
@@ -60,7 +63,7 @@ static KeyWord
 		},
 	kw_9[10] = {
 		{"algebraic_mappings",11,0,2,0,0,0.,0.,0,N_ifm(str,algebraicMappings)},
-		{"analysis_drivers",15,9,3,0,kw_7,0.,0.,0,N_ifm(strL,analysisDrivers)},
+		{"analysis_drivers",15,12,3,0,kw_7,0.,0.,0,N_ifm(strL,analysisDrivers)},
 		{"analysis_self_scheduling",8,0,8,0,0,0.,0.,0,N_ifm(lit,analysisScheduling_self)},
 		{"analysis_servers",9,0,7,0,0,0.,0.,0,N_ifm(pint,analysisServers)},
 		{"analysis_static_scheduling",8,0,8,0,0,0.,0.,0,N_ifm(lit,analysisScheduling_static)},

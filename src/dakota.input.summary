@@ -1552,6 +1552,9 @@ KEYWORD12 interface
 	  ( direct
 	    [ processors_per_analysis INTEGER ]
 	    )
+	  | matlab
+	  | python
+	  | scilab
 	  | grid
 	  [ failure_capture
 	    abort

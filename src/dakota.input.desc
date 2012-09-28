@@ -1860,6 +1860,9 @@ TAG "interface/analysis_drivers/direct"
 TAG "interface/analysis_drivers/direct/processors_per_analysis"
 	DESC "{Number of processors per analysis} InterfCommands.html#InterfApplicDF"
 
+TAG "interface/analysis_drivers/matlab"
+TAG "interface/analysis_drivers/python"
+TAG "interface/analysis_drivers/scilab"
 TAG "interface/analysis_drivers/grid"
 	DESC "{Grid interface } InterfCommands.html#InterfApplicG"
 

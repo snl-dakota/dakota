@@ -7,43 +7,26 @@
     _______________________________________________________________________ */
 
 //- Class:        DirectApplicInterface
-//- Description:  Derived class for the case when analysis code simulators are
-//-               linked into the code and may be invoked directly
-//- Owner:        Mike Eldred
+//- Description:  Derived interface class managing cases where analysis code
+//-               simulators are linked into the code and may be invoked 
+//-               directly. This manages parts common to all direct simulators.
+//- Owner:        Mike Eldred, Brian Adams
 //- Version: $Id: DirectApplicInterface.H 7024 2010-10-16 01:24:42Z mseldre $
 
 #ifndef DIRECT_APPLIC_INTERFACE_H
 #define DIRECT_APPLIC_INTERFACE_H
 
 #include "ApplicationInterface.H"
-//#include "DakotaVariables.H"
-//#include "DakotaActiveSet.H"
-//#include "DakotaResponse.H"
 //#ifndef OSF
 //#include <pthread.h>
 //#endif
 
-#ifdef DAKOTA_MATLAB
-#include "engine.h"
-//struct engine;  //forward declaration for engine pointer
-//struct mxArray; //forward declaration for mxArray argument
-#endif
-
-#ifdef DAKOTA_SCILAB
-#include <api_scilab.h>
-#include <call_scilab.h>
-#include <string.h>
-#endif
-
-#ifdef DAKOTA_PYTHON
-// The following to forward declare, but avoid clash with include
-#ifndef PyObject_HEAD
-struct _object;
-typedef _object PyObject;
-#endif
-#endif
-
 namespace Dakota {
+
+// BMA: Need another design for managing these enums as they (mostly)
+// belong in TestDriverInterface, but are primarily used in this
+// class. Consider the vision for using them in plug-in or service
+// interfaces like Matlab
 
 /// enumeration of possible variable types (to index to names)
 enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
@@ -58,7 +41,7 @@ enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
 //enum stc_var_t { STC_FS, STC_P1, STC_P2, STC_P3, STC_B, STC_D, STC_H,
 //		   STC_F0, STC_E }; // steel column
 
-/// enumeration of possible driver types (to index to names)
+/// enumeration of possible direct driver types (to index to names)
 enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
 		CYLINDER_HEAD, EXTENDED_ROSENBROCK, GENERALIZED_ROSENBROCK,
 		LF_ROSENBROCK, MF_ROSENBROCK, ROSENBROCK,
@@ -71,7 +54,7 @@ enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
 		TEXT_BOOK1, TEXT_BOOK2, TEXT_BOOK3, TEXT_BOOK_OUU,
 		SCALABLE_TEXT_BOOK, SCALABLE_MONOMIALS,
 		HERBIE, SMOOTH_HERBIE, SHUBERT,
-		SALINAS, MODELCENTER, MATLAB, SCILAB, PYTHON };
+		SALINAS, MODELCENTER};
 
 /// enumeration for how local variables are stored (values must employ
 /// a bit representation)
@@ -83,7 +66,6 @@ enum local_data_t { VARIABLES_MAP=1, VARIABLES_VECTOR=2 };
 
 /** DirectApplicInterface uses a few linkable simulation codes and several
     internal member functions to perform parameter to response mappings. */
-
 class DirectApplicInterface: public ApplicationInterface
 {
 public:
@@ -221,134 +203,6 @@ protected:
   /// (from the analysis_components interface specification)
   String2DArray analysisComponents;
 
-#ifdef DAKOTA_MATLAB
-  /// pointer to the MATLAB engine used for direct evaluations
-  engine *matlabEngine;
-#endif
-
-#ifdef DAKOTA_SCILAB
-  int scilabEngine;
-#endif
-
-private:
-
-  //
-  //- Heading: Simulators and test functions
-  //
-
-  int cantilever();   ///< scaled cantilever test function for optimization
-  int mod_cantilever(); ///< unscaled cantilever test function for UQ
-  int cyl_head();     ///< the cylinder head constrained optimization test fn
-  int multimodal();   ///< multimodal UQ test function
-  int log_ratio();    ///< the log_ratio UQ test function
-
-  int short_column(); ///< the short_column UQ/OUU test function
-  int lf_short_column(); ///< a low fidelity short_column test function
-  int mf_short_column(); ///< alternate short_column formulations for
-                         ///< multifidelity or model form studies
-  int alternate_short_column_forms(int form); ///< helper fn for alternate forms
-
-  int side_impact_cost(); ///< the side_impact_cost UQ/OUU test function
-  int side_impact_perf(); ///< the side_impact_perf UQ/OUU test function
-
-  int rosenbrock();  ///< the Rosenbrock optimization and least squares test fn
-  int generalized_rosenbrock(); ///< n-dimensional Rosenbrock (Schittkowski)
-  int extended_rosenbrock();    ///< n-dimensional Rosenbrock (Nocedal/Wright)
-  int lf_rosenbrock(); ///< a low fidelity version of the Rosenbrock function
-  int mf_rosenbrock(); ///< alternate Rosenbrock formulations for
-                       ///< multifidelity or model form studies
-
-  int gerstner(); ///< the isotropic/anisotropic Gerstner test function family
-  int scalable_gerstner(); ///< scalable versions of the Gerstner test family
-
-  int steel_column_cost(); ///< the steel_column_cost UQ/OUU test function
-  int steel_column_perf(); ///< the steel_column_perf UQ/OUU test function
-
-  int sobol_rational();   ///< Sobol SA rational test function
-  int sobol_g_function(); ///< Sobol SA discontinuous test function
-  int sobol_ishigami();   ///< Sobol SA transcendental test function
-
-  int text_book();     ///< the text_book constrained optimization test function
-  int text_book1();    ///< portion of text_book() evaluating the objective fn
-  int text_book2();    ///< portion of text_book() evaluating constraint 1
-  int text_book3();    ///< portion of text_book() evaluating constraint 2
-  int text_book_ouu(); ///< the text_book_ouu OUU test function
-  int scalable_text_book(); ///< scalable version of the text_book test function
-  int scalable_monomials(); ///< simple monomials for UQ exactness testing
-
-  // suite of separable test functions TODO add docs
-
-  /// 1D components of herbie function
-  void herbie1D(size_t der_mode, Real xc_loc, std::vector<Real> &w_and_ders);
-  /// 1D components of smooth_herbie function
-  void smooth_herbie1D(size_t der_mode, Real xc_loc,
-		       std::vector<Real> &w_and_ders);
-  /// 1D components of shubert function
-  void shubert1D(size_t der_mode, Real xc_loc, std::vector<Real> &w_and_ders);
-
-  int herbie();        ///< returns the N-D herbie function
-  int smooth_herbie(); ///< returns the N-D smooth herbie function
-  int shubert();       ///< returns the N-D shubert function
-
-  /// utility to combine components of separable fns
-  void separable_combine(Real mult_scale_factor, std::vector<Real> & w,
-			 std::vector<Real> & d1w, std::vector<Real> & d2w);
-#ifdef DAKOTA_SALINAS
-  int salinas(); ///< direct interface to the SALINAS structural dynamics code
-#endif // DAKOTA_SALINAS
-
-#ifdef DAKOTA_MODELCENTER
-  int mc_api_run(); ///< direct interface to ModelCenter via API, HKIM 4/3/03
-#endif // DAKOTA_MODELCENTER
-
-#ifdef DAKOTA_MATLAB
-  /// direct interface to Matlab via API, BMA 11/28/05
-  int matlab_engine_run();
-  /// check that the dakota_matlab strucutre has the specified field_name and
-  /// add if necessary; free structure memory in preparation for new alloc
-  int matlab_field_prep(mxArray* dakota_matlab, const char* field_name);
-#endif // DAKOTA_MATLAB
-
-#ifdef DAKOTA_SCILAB
-  int scilab_engine_run();
-#endif
-
-#ifdef DAKOTA_PYTHON
-  /// direct interface to Python via API, BMA 07/02/07
-  int python_run();
-  /// whether the user requested numpy data structures
-  bool userNumpyFlag;
-  /// convert arrays of integer types to Python list or numpy array
-  template<class ArrayT, class Size>
-  bool python_convert_int(const ArrayT& src, Size size, PyObject** dst);
-  /// convert RealVector to Python list or numpy array
-  bool python_convert(const RealVector& src, PyObject** dst);
-  /// convert RealVector + IntVector + RealVector to Python mixed list 
-  /// or numpy double array
-  bool python_convert(const RealVector& c_src, const IntVector& di_src,
-		      const RealVector& dr_src, PyObject** dst);
-  /// convert labels
-  bool python_convert(const StringMultiArray& src, PyObject** dst);
-  /// convert all labels to single list
-  bool python_convert(const StringMultiArray& c_src, 
-		      const StringMultiArray& di_src, 
-		      const StringMultiArray& dr_src, PyObject** dst);
-  /// convert python [list of int or float] or [numpy array of double] to 
-  /// RealVector (for fns)
-  bool python_convert(PyObject *pyv, RealVector& rv, const int& dim);
-  /// convert python [list of int or float] or [numpy array of double] to 
-  /// double[], for use as helper in converting gradients
-  bool python_convert(PyObject *pyv, double *rv, const int& dim);
-  /// convert python [list of lists of int or float] or [numpy array of dbl]
-  /// to RealMatrix (for gradients)
-  bool python_convert(PyObject *pym, RealMatrix &rm);
-  /// convert python [list of lists of int or float] or [numpy array of dbl]
-  /// to RealMatrix (used as helper in Hessian conversion)
-  bool python_convert(PyObject *pym, RealSymMatrix &rm);
-  /// convert python [list of lists of lists of int or float] or 
-  /// [numpy array of double] to RealSymMatrixArray (for Hessians)
-  bool python_convert(PyObject *pyma, RealSymMatrixArray &rma);
-#endif // DAKOTA_PYTHON
 };
 
 
