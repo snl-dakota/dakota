@@ -1,4 +1,7 @@
-function Dakota = rosenbrock(Dakota)
+function Dakota = rosenbrock(Dakota, optarg1)
+
+% optarg1 demonstrates passing a string from Dakota to Matlab
+% disp(optarg1);
 
 % possible convenience:
 % assign all fields from Dakota structure to current (base) workspace
@@ -10,7 +13,7 @@ function Dakota = rosenbrock(Dakota)
 
 Dakota.failure = 0;
 
-if ( Dakota.numVars ~= 2 | Dakota.numADIV | Dakota.numADRV | ( ~isempty( find(Dakota.directFnASM(2,:)) | find(Dakota.directFnASM(3,:)) ) & Dakota.numDerivVars ~= 2 ) )
+if ( Dakota.numVars ~= 2 | Dakota.numADIV | Dakota.numADRV )
   sprintf('Error: Bad number of variables in rosenbrock direct Matlab fn.\n');
   Dakota.failure = 1;
 elseif (Dakota.numFns > 2) 
@@ -19,6 +22,10 @@ elseif (Dakota.numFns > 2)
   Dakota.failure = 1;
 else
  
+  FUNCTION = 1;
+  GRADIENT = 2;
+  HESSIAN  = 4;
+
   if Dakota.numFns > 1 
     least_sq_flag = true;
   else
@@ -30,32 +37,32 @@ else
 
   % **** f:
   if (least_sq_flag) 
-    if Dakota.directFnASM(1,1)
+    if bitand(Dakota.directFnASV(1), FUNCTION)
       Dakota.fnVals(1) = 10*f0;
     end
-    if Dakota.directFnASM(1,2)
+    if bitand(Dakota.directFnASV(2), FUNCTION)
       Dakota.fnVals(2) = f1;
     end
   else
-    if Dakota.directFnASM(1,1)
+    if bitand(Dakota.directFnASV(1), FUNCTION)
       Dakota.fnVals(1) = 100.*f0*f0+f1*f1;
     end
   end
 
   % **** df/dx:
   if (least_sq_flag)
-    if Dakota.directFnASM(2,1)
+    if bitand(Dakota.directFnASV(1), GRADIENT)
       Dakota.fnGrads(1,1) = -20.*Dakota.xC(1);
       Dakota.fnGrads(1,2) =  10.;
     end
-    if Dakota.directFnASM(2,2)
+    if bitand(Dakota.directFnASV(2), GRADIENT)
       Dakota.fnGrads(2,1) = -1.;
       Dakota.fnGrads(2,2) =  0.;
     end
 
   else 
 
-    if Dakota.directFnASM(2,1)
+    if bitand(Dakota.directFnASV(1), GRADIENT)
       Dakota.fnGrads(1,1) = -400.*f0*Dakota.xC(1) - 2.*f1;
       Dakota.fnGrads(1,2) =  200.*f0;
     end
@@ -65,19 +72,19 @@ else
   % **** d^2f/dx^2:
   if (least_sq_flag)
     
-    if Dakota.directFnASM(3,1)
+    if bitand(Dakota.directFnASV(1), HESSIAN)
       Dakota.fnHessians(1,1,1) = -20.;
       Dakota.fnHessians(1,1,2) = 0.;
       Dakota.fnHessians(1,2,1) = 0.;
       Dakota.fnHessians(1,2,2) = 0.;
     end
-    if Dakota.directFnASM(3,2)
+    if bitand(Dakota.directFnASV(2), HESSIAN)
       Dakota.fnHessians(2,1:2,1:2) = 0.;
     end
     
   else
   
-    if Dakota.directFnASM(3,1) 
+    if bitand(Dakota.directFnASV(1), HESSIAN)
       fx = Dakota.xC(2) - 3.*Dakota.xC(1)*Dakota.xC(1);
       Dakota.fnHessians(1,1,1) = -400.*fx + 2.0;
       Dakota.fnHessians(1,1,2) = -400.*Dakota.xC(1); 

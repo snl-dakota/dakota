@@ -2,7 +2,8 @@
 
 method,                                         			
 	conmin_mfd
-#	optpp_q_newton                     		
+#	optpp_q_newton                 
+#	optpp_newton    		
 	  max_iterations = 50,                    			
 	  convergence_tolerance = 1e-4                          	
 
@@ -14,12 +15,13 @@ variables,
 	  cdv_descriptor       'x1'   'x2'
 
 interface,								
-	direct								
-	  analysis_driver = 'matlab'
-	  analysis_components = 'rosenbrock.m'
+	matlab								
+	  analysis_driver = 'rosenbrock.m'
+#	  analysis_components = 'anoptionalstring'
 
 responses,                                 
 	num_objective_functions = 1   		
 	analytic_gradients	 		
 	no_hessians
+#	analytic_hessians
 
