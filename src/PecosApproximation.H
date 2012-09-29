@@ -171,6 +171,19 @@ public:
   Real delta_covariance(const Pecos::RealVector& x,
 			PecosApproximation* pecos_approx_2);
 
+  /// return the change in mean between two response expansions,
+  /// treating all variables as random
+  Real delta_mean();
+  /// return the change in standard deviation between two response
+  /// expansions, treating all variables as random
+  Real delta_std_deviation();
+  /// return the change in reliability index (mapped from z_bar) between
+  /// two response expansions, treating all variables as random
+  Real delta_beta(bool cdf_flag, Real z_bar);
+  /// return the change in response level (mapped from beta_bar) between
+  /// two response expansions, treating a subset of the variables as random
+  Real delta_z(bool cdf_flag, Real beta_bar);
+
   /// compute moments up to the order supported by the Pecos
   /// polynomial approximation
   void compute_moments();
@@ -443,6 +456,22 @@ delta_covariance(PecosApproximation* pecos_approx_2)
 inline Real PecosApproximation::
 delta_covariance(const Pecos::RealVector& x, PecosApproximation* pecos_approx_2)
 { return polyApproxRep->delta_covariance(x, pecos_approx_2->polyApproxRep); }
+
+
+inline Real PecosApproximation::delta_mean()
+{ return polyApproxRep->delta_mean(); }
+
+
+inline Real PecosApproximation::delta_std_deviation()
+{ return polyApproxRep->delta_std_deviation(); }
+
+
+inline Real PecosApproximation::delta_beta(bool cdf_flag, Real z_bar)
+{ return polyApproxRep->delta_beta(cdf_flag, z_bar); }
+
+
+inline Real PecosApproximation::delta_z(bool cdf_flag, Real beta_bar)
+{ return polyApproxRep->delta_z(cdf_flag, beta_bar); }
 
 
 inline void PecosApproximation::compute_moments()

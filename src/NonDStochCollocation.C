@@ -21,6 +21,7 @@
 #include "InterpPolyApproximation.hpp"
 
 //#define ALLOW_GLOBAL_HERMITE_INTERPOLATION
+//#define DEBUG
 
 
 namespace Dakota {
@@ -349,45 +350,95 @@ Real NonDStochCollocation::compute_covariance_metric()
 
 Real NonDStochCollocation::compute_final_statistics_metric()
 {
-  // From delta_mu(i) and delta_covariance(i,i), we can compute delta_sigma,
-  // delta_beta, and delta_z
+  // combine delta_beta() and delta_z() from HierarchInterpPolyApproximation
+  // with default definition of delta-{p,beta*}
 
-  /*
-  if ( sgBasisType == HIERARCHICAL_INTERPOLANT &&
-       ( (rl_len && respLevelTarget == RELIABILITIES) || bl_len ) ) {
-    size_t i, j;
-    RealSymMatrix delta_resp_covar(numFunctions, false);
-    bool warn_flag = false,
-      all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-    std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+  if (sgBasisType == HIERARCHICAL_INTERPOLANT) {
+    // Note: from a generality perspective, it would be desirable to map through
+    // support for delta_mean() and delta_std_deviation().  But how to manage
+    // user requests (w/o nested response mappings)?  Since delta in response
+    // covariance (the default metric) is preferred to either delta-sigma or
+    // delta-mu, we will omit mean/std deviation for now.  With a finer-grained
+    // adaptivity specification, they could be readily added to the logic below.
+    bool beta_map = false, numerical_map = false; size_t i, j, cntr;
     for (i=0; i<numFunctions; ++i) {
-      PecosApproximation* pa_rep_i
-	= (PecosApproximation*)poly_approxs[i].approx_rep();
-      if (pa_rep_i->expansion_coefficient_flag())
-	for (j=0; j<=i; ++j) {
-	  PecosApproximation* pa_rep_j
-	    = (PecosApproximation*)poly_approxs[j].approx_rep();
-	  if (pa_rep_j->expansion_coefficient_flag())
-	    delta_resp_covar(i,j) = (all_vars) ?
-	      pa_rep_i->delta_covariance(initialPtU, pa_rep_j) :
-	      pa_rep_i->delta_covariance(pa_rep_j);
-	  else
-	    { warn_flag = true; delta_resp_covar(i,j) = 0.; }
-	}
-      else {
-	warn_flag = true;
-	for (j=0; j<=i; ++j)
-	  delta_resp_covar(i,j) = 0.;
-      }
+      if ( !requestedRelLevels[i].empty() || ( !requestedRespLevels[i].empty()
+	   && respLevelTarget == RELIABILITIES ) )
+	beta_map = true;
+      if ( !requestedProbLevels[i].empty() || !requestedGenRelLevels[i].empty()
+	   || ( !requestedRespLevels[i].empty() &&
+		respLevelTarget != RELIABILITIES ) )
+	numerical_map = true;
     }
-    if (warn_flag)
-      Cerr << "Warning: expansion coefficients unavailable in NonDStoch"
-	   << "Collocation::compute_final_statistics_metric().\n         "
-	   << "Zeroing affected delta_covariance terms." << std::endl;
-    return delta_final_stats.normFrobenius();
+    if (beta_map) { // hierarchical increments in beta-bar->z and z-bar->beta
+      RealVector delta_final_stats;
+      if (numerical_map) { // merge in z-bar->p,beta* & p-bar,beta*-bar->z
+        delta_final_stats  = finalStatistics.function_values(); // deep copy
+	compute_statistics();                                   // update
+	delta_final_stats -= finalStatistics.function_values(); // compute delta
+      }
+#ifdef DEBUG
+      else
+        delta_final_stats.size(finalStatistics.num_functions());
+#endif // DEBUG
+      bool warn_flag = false,
+	all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
+      std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
+      Real delta, sum_sq = 0.;
+      for (i=0, cntr=0; i<numFunctions; ++i) {
+	size_t rl_len = requestedRespLevels[i].length(),
+	       pl_len = requestedProbLevels[i].length(),
+	       bl_len = requestedRelLevels[i].length(),
+	       gl_len = requestedGenRelLevels[i].length();
+	PecosApproximation* pa_rep_i
+	  = (PecosApproximation*)poly_approxs[i].approx_rep();
+	cntr += 2; // skip moments
+	if (pa_rep_i->expansion_coefficient_flag()) {
+	  if (respLevelTarget == RELIABILITIES)
+	    for (j=0; j<rl_len; ++j, ++cntr) {
+	      delta = //(all_vars) ? pa_rep_i->delta_beta() :
+#ifdef DEBUG
+		delta_final_stats[cntr] =
+#endif // DEBUG
+		pa_rep_i->delta_beta(cdfFlag, requestedRespLevels[i][j]);
+	      sum_sq += delta * delta;
+	    }
+	  else
+	    for (j=0; j<rl_len; ++j, ++cntr)
+	      sum_sq += delta_final_stats[cntr] * delta_final_stats[cntr];
+	  for (j=0; j<pl_len; ++j, ++cntr)
+	    sum_sq += delta_final_stats[cntr] * delta_final_stats[cntr];
+	  for (j=0; j<bl_len; ++j, ++cntr) {
+	    delta = //delta_final_stats[cntr] = // (all_vars) ? :
+#ifdef DEBUG
+	      delta_final_stats[cntr] =
+#endif // DEBUG
+	      pa_rep_i->delta_z(cdfFlag, requestedRelLevels[i][j]);
+	    sum_sq += delta * delta;
+	  }
+	  for (j=0; j<gl_len; ++j, ++cntr)
+	    sum_sq += delta_final_stats[cntr] * delta_final_stats[cntr];
+	}
+	else {
+	  warn_flag = true;
+	  cntr += rl_len + pl_len + bl_len + gl_len;
+	}
+      }
+      if (warn_flag)
+	Cerr << "Warning: expansion coefficients unavailable in "
+	     << "NonDStochCollocation::compute_final_statistics_metric().\n"
+	     << "         Omitting affected final statistics." << std::endl;
+#ifdef DEBUG
+      Cout << "In compute_final_statistics_metric(), delta_final_stats =\n";
+      write_data(Cout, delta_final_stats);
+#endif // DEBUG
+      return std::sqrt(sum_sq); // neglect moment deltas
+      //return delta_final_stats.normFrobenius();
+    }
+    else // use default implementation if no beta-mapping increments
+      return NonDExpansion::compute_final_statistics_metric();
   }
-  else // use default implementation
-  */
+  else // use default implementation for Nodal
     return NonDExpansion::compute_final_statistics_metric();
 }
 
