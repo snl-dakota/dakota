@@ -41748,19 +41748,6 @@ Polynomial Chaos coefficients for response_fn_1:
 Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.0200000000e+02  1.0499552371e+03
-dakota_uq_rosenbrock_ivp_discrete.in
-Test Number 0 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 210 total (210 new, 0 duplicate)
-mean:  Min = 3.4615198127e+02  Max = 1.1533050900e+03
-std_dev:  Min = 1.0052201478e+03  Max = 2.5527136417e+03
-Test Number 1 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 567 total (546 new, 21 duplicate)
-mean:  Min = 3.0200131522e+02  Max = 1.6010000000e+03
-std_dev:  Min = 7.7606185691e+02  Max = 3.1217946761e+03
-Test Number 2 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 49980 total (44457 new, 5523 duplicate)
-mean:  Min = 3.0200260044e+02  Max = 1.6050000000e+03
-std_dev:  Min = 7.7895759933e+02  Max = 3.1243588142e+03
 dakota_uq_rosenbrock_global.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 49 total (49 new, 0 duplicate)
@@ -41811,6 +41798,47 @@ Moment-based statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
   expansion:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
   numerical:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
+  numerical:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      7.5106582206e-01
+   1.0000000000e+00                      7.4958204528e-01
+   5.0000000000e+01                      6.6879864304e-01
+   1.0000000000e+02                      5.8636659994e-01
+   5.0000000000e+02                     -7.3089744884e-02
+   1.0000000000e+03                     -8.9741017591e-01
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 33 total (33 new, 0 duplicate)
+Moment-based statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+  expansion:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
+  numerical:    4.5566666667e+02  6.0656024184e+02  2.0434437113e+00  4.0774724530e+00
+     Response Level  Probability Level  Reliability Index  General Rel Index
+     --------------  -----------------  -----------------  -----------------
+   1.0000000000e-01                      7.5106582206e-01
+   1.0000000000e+00                      7.4958204528e-01
+   5.0000000000e+01                      6.6879864304e-01
+   1.0000000000e+02                      5.8636659994e-01
+   5.0000000000e+02                     -7.3089744884e-02
+   1.0000000000e+03                     -8.9741017591e-01
+dakota_uq_rosenbrock_ivp_discrete.in
+Test Number 0 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 210 total (210 new, 0 duplicate)
+mean:  Min = 3.4615198127e+02  Max = 1.1533050900e+03
+std_dev:  Min = 1.0052201478e+03  Max = 2.5527136417e+03
+Test Number 1 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 567 total (546 new, 21 duplicate)
+mean:  Min = 3.0200131522e+02  Max = 1.6010000000e+03
+std_dev:  Min = 7.7606185691e+02  Max = 3.1217946761e+03
+Test Number 2 succeeded
+<<<<< Function evaluation summary (ALEAT_I): 49980 total (44457 new, 5523 duplicate)
+mean:  Min = 3.0200260044e+02  Max = 1.6050000000e+03
+std_dev:  Min = 7.7895759933e+02  Max = 3.1243588142e+03
 dakota_uq_rosenbrock_pce.in
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 15 total (15 new, 0 duplicate)
