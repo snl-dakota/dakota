@@ -524,6 +524,10 @@ int ScilabInterface::scilab_engine_run(const String& ac_name)
 
   testJob = SendScilabJob((char *)analysis_command.c_str()); 
 
+  char * env_scilab_postevalcmd = getenv("DAKOTA_SCILAB_POSTEVALCMD");
+  if (env_scilab_postevalcmd) 
+    SendScilabJob(env_scilab_postevalcmd); 
+
   if (testJob == -1) {
     Cerr << "Error (ScilabInterface): Call Scilab has not been able to write "
 	 << "the job into Scilab." << std::endl;
