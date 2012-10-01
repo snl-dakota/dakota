@@ -695,7 +695,7 @@ add_executable(dakota main.C)
 add_executable(dakota_restart_util restart_util.C)
 add_executable(dakota_library_mode library_mode.C)
   
-list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS})
+list(APPEND EXTRA_TPL_LIBS ${LAPACK_LIBS} ${BLAS_LIBS})
 
 if(DAKOTA_SCILAB)
   set_target_properties(dakota PROPERTIES LINK_FLAGS "${SCI_LINK_FLAGS}")
