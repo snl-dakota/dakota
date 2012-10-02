@@ -80,17 +80,17 @@ bool operator==(const SizetArray& sa, SizetMultiArrayConstView smav)
 Real rel_change_L2(const RealVector& curr_rv, const RealVector& prev_rv)
 {
   size_t i, rv_len = prev_rv.length();
-  Real norm = 0., tol = 1.e-50;
+  Real norm = 0.;
 
   // check previous vector for zeros
   bool zero_prev = false, zero_curr = false;
   for (i=0; i<rv_len; ++i)
-    if (std::abs(prev_rv[i]) < tol)
+    if (std::abs(prev_rv[i]) < Pecos::SMALL_NUMBER)
       { zero_prev = true; break; }
   // check current vector for zeros
   if (zero_prev)
     for (i=0; i<rv_len; ++i)
-      if (std::abs(curr_rv[i]) < tol)
+      if (std::abs(curr_rv[i]) < Pecos::SMALL_NUMBER)
 	{ zero_curr = true; break; }
 
   // Compute norm of relative change one of three ways
@@ -110,7 +110,8 @@ Real rel_change_L2(const RealVector& curr_rv, const RealVector& prev_rv)
       norm    += std::pow(curr_rv[i] - prev_rv[i], 2.);
       scaling += std::pow(prev_rv[i], 2.);
     }
-    return (scaling > tol) ? std::sqrt(norm / scaling) : std::sqrt(norm);
+    return (scaling > Pecos::SMALL_NUMBER) ?
+      std::sqrt(norm / scaling) : std::sqrt(norm);
   }
 }
 
@@ -121,12 +122,12 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
 {
   size_t i, rv1_len = prev_rv1.length(), iv_len = prev_iv.length(),
     rv2_len = prev_rv2.length();
-  Real norm = 0., tol = 1.e-50;
+  Real norm = 0.;
 
   // check previous vectors for zeros
   bool zero_prev = false, zero_curr = false;
   for (i=0; i<rv1_len; ++i)
-    if (std::abs(prev_rv1[i]) < tol)
+    if (std::abs(prev_rv1[i]) < Pecos::SMALL_NUMBER)
       { zero_prev = true; break; }
   if (!zero_prev)
     for (i=0; i<iv_len; ++i)
@@ -134,12 +135,12 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
 	{ zero_prev = true; break; }
   if (!zero_prev)
     for (i=0; i<rv2_len; ++i)
-      if (std::abs(prev_rv2[i]) < tol)
+      if (std::abs(prev_rv2[i]) < Pecos::SMALL_NUMBER)
 	{ zero_prev = true; break; }
   // check current vectors for zeros
   if (zero_prev) {
     for (i=0; i<rv1_len; ++i)
-      if (std::abs(curr_rv1[i]) < tol)
+      if (std::abs(curr_rv1[i]) < Pecos::SMALL_NUMBER)
 	{ zero_curr = true; break; }
     if (!zero_prev)
       for (i=0; i<iv_len; ++i)
@@ -147,7 +148,7 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
 	  { zero_curr = true; break; }
     if (!zero_prev)
       for (i=0; i<rv2_len; ++i)
-	if (std::abs(curr_rv2[i]) < tol)
+	if (std::abs(curr_rv2[i]) < Pecos::SMALL_NUMBER)
 	  { zero_curr = true; break; }
   }
 
@@ -184,7 +185,8 @@ Real rel_change_L2(const RealVector& curr_rv1, const RealVector& prev_rv1,
       norm    += std::pow(curr_rv2[i] - prev_rv2[i], 2.);
       scaling += prev_rv2[i] * prev_rv2[i];
     }
-    return (scaling > tol) ? std::sqrt(norm / scaling) : std::sqrt(norm);
+    return (scaling > Pecos::SMALL_NUMBER) ?
+      std::sqrt(norm / scaling) : std::sqrt(norm);
   }
 }
 

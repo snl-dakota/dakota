@@ -810,14 +810,14 @@ void NonDSampling::compute_distribution_mappings(const IntResponseMap& samples)
       case RELIABILITIES: // z -> beta (based on moment projection)
 	for (j=0; j<rl_len; j++) {
 	  const Real& z = requestedRespLevels[i][j];
-	  if (std_dev > 1.e-25) {
+	  if (std_dev > Pecos::SMALL_NUMBER) {
 	    Real ratio = (mean - z)/std_dev;
 	    computedRelLevels[i][j] = (cdfFlag) ? ratio : -ratio;
 	  }
 	  else
 	    computedRelLevels[i][j]
 	      = ( (cdfFlag && mean <= z) || (!cdfFlag && mean > z) )
-	      ? -1.e50 : 1.e50;
+	      ? -Pecos::LARGE_NUMBER : Pecos::LARGE_NUMBER;
 	}
 	break;
       }

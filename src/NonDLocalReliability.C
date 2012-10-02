@@ -37,7 +37,7 @@ using OPTPP::NLPGradient;
 #include "data_io.h"
 
 //#define MPP_CONVERGE_RATE
-//#define DEBUG
+#define DEBUG
 
 static const char rcsId[] = "@(#) $Id: NonDLocalReliability.C 4058 2006-10-25 01:39:40Z mseldre $";
 
@@ -610,7 +610,7 @@ void NonDLocalReliability::mean_value()
     statCount++;
 
     // if inputs are uncorrelated, compute importance factors
-    if (!natafTransform.x_correlation() && std_dev > 1.e-25) {
+    if (!natafTransform.x_correlation() && std_dev > Pecos::SMALL_NUMBER) {
       const Pecos::RealVector& x_std_devs = natafTransform.x_std_deviations();
       for (i=0; i<numUncertainVars; i++)
         impFactor(i,respFnCount) = std::pow(x_std_devs[i] / std_dev *
@@ -632,7 +632,7 @@ void NonDLocalReliability::mean_value()
 	= requestedRespLevels[respFnCount][levelCount];
       // compute beta and p from z
       Real beta, p;
-      if (std_dev > 1.e-25) {
+      if (std_dev > Pecos::SMALL_NUMBER) {
 	Real ratio = (mean - z)/std_dev;
         beta = computedRelLevels[respFnCount][levelCount]
 	  = computedGenRelLevels[respFnCount][levelCount]
@@ -643,12 +643,14 @@ void NonDLocalReliability::mean_value()
         if ( ( cdfFlag && mean <= z) ||
 	     (!cdfFlag && mean >  z) ) {
           beta = computedRelLevels[respFnCount][levelCount]
-	    = computedGenRelLevels[respFnCount][levelCount] = -1.e50;
+	    = computedGenRelLevels[respFnCount][levelCount]
+	    = -Pecos::LARGE_NUMBER;
           p = computedProbLevels[respFnCount][levelCount] = 1.;
 	}
 	else {
           beta = computedRelLevels[respFnCount][levelCount]
-	    = computedGenRelLevels[respFnCount][levelCount] = 1.e50;
+	    = computedGenRelLevels[respFnCount][levelCount]
+	    = Pecos::LARGE_NUMBER;
           p = computedProbLevels[respFnCount][levelCount] = 0.;
 	}
       }
@@ -1238,7 +1240,7 @@ void NonDLocalReliability::initialize_mpp_search_data()
       size_t pl_len = requestedProbLevels[respFnCount].length(),
 	     bl_len = requestedRelLevels[respFnCount].length();
       Real prev_bl = ( integrationOrder == 2 &&
-		       ( levelCount < rl_len + pl_len ||
+		       ( levelCount <  rl_len + pl_len ||
 			 levelCount >= rl_len + pl_len + bl_len ) ) ?
 	computedGenRelLevels[respFnCount][levelCount-1] :
 	computedRelLevels[respFnCount][levelCount-1];
@@ -2104,13 +2106,13 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
       }
       else {
 	Cerr << "\nWarning: second-order probability integration bypassed due "
-	     << "to numerical issues.\n";
+	     << "to numerical issues (corrected p outside [0,1]).\n";
 	warningBits |= 2; // second warning in output summary
       }
     }
     else {
       Cerr << "\nWarning: second-order probability integration bypassed due "
-	   << "to numerical issues.\n";
+	   << "to numerical issues (curvature threshold exceeded).\n";
       warningBits |= 2; // second warning in output summary
     }
   }
@@ -2165,7 +2167,7 @@ Real NonDLocalReliability::dp2_dbeta_factor(Real beta, bool cdf_flag)
       kterm = beta_corr; break;
     case HOHENRACK:
       kterm = Pecos::phi(-beta_corr) / Pecos::Phi(-beta_corr); // psi_m_beta
-      dpsi_m_beta_dbeta = kterm*(kterm - beta_corr);
+      dpsi_m_beta_dbeta = kterm*(kterm - beta_corr); // orig (kterm + beta_corr)
       break;
     }
 
@@ -2543,7 +2545,7 @@ void NonDLocalReliability::print_results(std::ostream& s)
       s << "  Approximate Mean Response                  = " << std::setw(width)
 	<< momentStats(0,i) << "\n  Approximate Standard Deviation of Response"
 	<< " = " << std::setw(width)<< std_dev << '\n';
-      if (natafTransform.x_correlation() || std_dev < 1.e-25)
+      if (natafTransform.x_correlation() || std_dev < Pecos::SMALL_NUMBER)
 	s << "  Importance Factors not available.\n";
       else
 	for (j=0; j<numUncertainVars; j++)
@@ -2557,7 +2559,7 @@ void NonDLocalReliability::print_results(std::ostream& s)
     // output CDF/CCDF response/probability pairs
     size_t num_levels = computedRespLevels[i].length();
     if (num_levels) {
-      if (!mppSearchType && momentStats(1,i) < 1.e-25)
+      if (!mppSearchType && momentStats(1,i) < Pecos::SMALL_NUMBER)
         s << "\nWarning: negligible standard deviation renders CDF results "
           << "suspect.\n\n";
       if (cdfFlag)

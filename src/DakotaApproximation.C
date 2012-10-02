@@ -24,7 +24,7 @@
 #endif // HAVE_SURFPACK
 #include "DakotaGraphics.H"
 
-#define DEBUG
+//#define DEBUG
 
 
 namespace Dakota {

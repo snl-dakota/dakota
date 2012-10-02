@@ -409,10 +409,10 @@ void NonDInterval::compute_evidence_statistics()
       }
       else {
 	Real beta;
-	if (prob < 1.e-50) // numerical safeguards for p=0,p=1 assignments above
-	  beta =  1.e50; // Phi(-Inf) = 0
-	else if (1.- prob < 1.e-50)
-	  beta = -1.e50; // Phi(+Inf) = 1
+	if (prob < Pecos::SMALL_NUMBER) // see p=0,p=1 assignments above
+	  beta =  Pecos::LARGE_NUMBER; // Phi(-Inf) = 0
+	else if (1.- prob < Pecos::SMALL_NUMBER)
+	  beta = -Pecos::LARGE_NUMBER; // Phi(+Inf) = 1
 	else
 	  beta = -Pecos::Phi_inverse(prob);
 	computedGenRelLevels[i].operator[](j) = beta;
@@ -438,10 +438,10 @@ void NonDInterval::compute_evidence_statistics()
       }
       else {
 	Real beta;
-	if (prob < 1.e-50) // numerical safeguards for p=0,p=1 assignments above
-	  beta =  1.e50; // Phi(-Inf) = 0
-	else if (1.- prob < 1.e-50)
-	  beta = -1.e50; // Phi(+Inf) = 1
+	if (prob < Pecos::SMALL_NUMBER) // see p=0,p=1 assignments above
+	  beta =  Pecos::LARGE_NUMBER; // Phi(-Inf) = 0
+	else if (1.- prob < Pecos::SMALL_NUMBER)
+	  beta = -Pecos::LARGE_NUMBER; // Phi(+Inf) = 1
 	else
 	  beta = -Pecos::Phi_inverse(prob);
 	computedGenRelLevels[i][j+rl_len] = beta;

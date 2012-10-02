@@ -824,7 +824,8 @@ void NonD::set_u_to_x_mapping(const Variables& u_vars, const ActiveSet& u_set,
 	  size_t cv_index = find_index(cv_ids, acv_id);
 	  if (cv_index != _NPOS) { // random var: check correlation
 	    for (j=0; j<num_cv; ++j) {
-	      if (cv_index != j && std::fabs(corr_x(cv_index, j)) > 1.e-25 &&
+	      if (cv_index != j &&
+		  std::fabs(corr_x(cv_index, j)) > Pecos::SMALL_NUMBER &&
 		  contains(u_dvv, cv_ids[j])) {
 		x_dvv.push_back(acv_id);
 		break;
@@ -1561,7 +1562,7 @@ void NonD::verify_correlation_support()
 	   x_types[i] == Pecos::LOGUNIFORM || x_types[i] == Pecos::TRIANGULAR ||
 	   x_types[i] == Pecos::BETA || x_types[i] == Pecos::HISTOGRAM_BIN )
 	for (j=numContDesVars; j<numContDesVars+numContAleatUncVars; ++j)
-	  if (i != j && std::fabs(x_corr(i, j)) > 1.e-25)
+	  if (i != j && std::fabs(x_corr(i, j)) > Pecos::SMALL_NUMBER)
 	    { distribution_error = true; break; }
       if (distribution_error) {
 	Cerr << "Error: correlation warping for Nataf variable transformation "

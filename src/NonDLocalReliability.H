@@ -381,11 +381,11 @@ inline Real NonDLocalReliability::reliability(Real p)
   if (p <= 0. || p >= 1.) { // warning or error
     if (p == 0.) {      // handle numerical exception
       Cerr << "\nWarning: zero probability passed in NonDLocalReliability::"
-	   << "reliability().\n"; return  1.e50;// DBL_MAX;
+	   << "reliability().\n"; return  Pecos::LARGE_NUMBER;// DBL_MAX;
     }
     else if (p == 1.) { // handle numerical exception
       Cerr << "\nWarning: unit probability passed in NonDLocalReliability::"
-	   << "reliability().\n"; return -1.e50;//-DBL_MAX;
+	   << "reliability().\n"; return -Pecos::LARGE_NUMBER;//-DBL_MAX;
     }
     else {              // trap error for p < 0 or p > 1
       Cerr << "\nError: invalid probability value in NonDLocalReliability::"

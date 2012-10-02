@@ -201,7 +201,8 @@ compute(const Variables& vars, const Response& truth_response,
       index = *it;
       Real numer = truthFnsPrevCenter[index] - beta_corr_fns[index];
       Real denom =     alpha_corr_fns[index] - beta_corr_fns[index];
-      combineFactors[index] = (std::fabs(denom) > 1.e-25) ? numer/denom : 1.;
+      combineFactors[index] = (std::fabs(denom) > Pecos::SMALL_NUMBER) ?
+	numer/denom : 1.;
 #ifdef DEBUG
       Cout << "truth prev = " << truthFnsPrevCenter[index]
 	   << " additive prev = " << alpha_corr_fns[index]
@@ -424,8 +425,9 @@ check_scaling(const RealVector& truth_fns, const RealVector& approx_fns)
   bool bad_scaling = false; int index; ISIter it;
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     index = *it;
-    if ( std::fabs(approx_fns[index]) < 1.e-25 ||
-	 ( correctionOrder == 0 && std::fabs(truth_fns[index]) < 1.e-25 ) )
+    if ( std::fabs(approx_fns[index]) < Pecos::SMALL_NUMBER ||
+	 ( correctionOrder == 0 &&
+	   std::fabs(truth_fns[index]) < Pecos::SMALL_NUMBER ) )
       { bad_scaling = true; break; }
   }
   if (bad_scaling)

@@ -147,7 +147,7 @@ void NonDExpansion::initialize(short u_space_type)
     for (i=numContDesVars; i<numContDesVars+numContAleatUncVars; ++i)
       if (u_types[i] != Pecos::STD_NORMAL)
 	for (j=numContDesVars; j<numContDesVars+numContAleatUncVars; ++j)
-	  if (i != j && std::fabs(x_corr(i, j)) > 1.e-25) {
+	  if (i != j && std::fabs(x_corr(i, j)) > Pecos::SMALL_NUMBER) {
 	    Cerr << "\nWarning: in NonDExpansion, u-space type for random "
 		 << "variable " << i-numContDesVars+1 << " changed to\n"
 		 << "         STD_NORMAL due to decorrelation requirements.\n";
@@ -1399,20 +1399,21 @@ void NonDExpansion::compute_statistics()
 	// *** beta
 	if (final_asv[cntr] & 1) {
 	  const Real& z_bar = requestedRespLevels[i][j];
-	  if (sigma > 1.e-25) {
+	  if (sigma > Pecos::SMALL_NUMBER) {
 	    Real ratio = (mu - z_bar)/sigma;
 	    computedRelLevels[i][j] = beta = (cdfFlag) ? ratio : -ratio;
 	  }
 	  else
-	    computedRelLevels[i][j] = beta = ( (cdfFlag && mu <= z_bar) ||
-	      (!cdfFlag && mu > z_bar) ) ? -1.e50 : 1.e50;
+	    computedRelLevels[i][j] = beta =
+	      ( (cdfFlag && mu <= z_bar) || (!cdfFlag && mu > z_bar) ) ?
+	      -Pecos::LARGE_NUMBER : Pecos::LARGE_NUMBER;
 	  finalStatistics.function_value(beta, cntr);
 	}
 	// *** beta gradient
 	if (final_asv[cntr] & 2) {
 	  if (final_stat_grad.empty())
 	    final_stat_grad.sizeUninitialized(num_final_grad_vars);
-	  if (sigma > 1.e-25) {
+	  if (sigma > Pecos::SMALL_NUMBER) {
 	    const Real& z_bar = requestedRespLevels[i][j];
 	    for (k=0; k<num_final_grad_vars; ++k) {
 	      Real dratio_dx = (sigma*mu_grad[k] - (mu - z_bar)*
@@ -1807,7 +1808,7 @@ void NonDExpansion::print_moments(std::ostream& s)
       s << '\n';
 
       /* COV has been removed:
-      if (std::abs(mean) > 1.e-25)
+      if (std::abs(mean) > Pecos::SMALL_NUMBER)
         s << "  " << std::setw(width)   << std_dev/mean << '\n';
       else
         s << "  " << std::setw(width+1) << "Undefined\n";
