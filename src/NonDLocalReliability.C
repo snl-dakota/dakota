@@ -1862,8 +1862,12 @@ PMA2_constraint_eval(const Variables& sub_model_vars,
   bool cdf = nondLocRelInstance->cdfFlag;
   Real comp_rel = nondLocRelInstance->computedRelLevel =
     nondLocRelInstance->signed_norm(u, fn_grad_u, cdf);
-  Real computed_prob_level =
-    nondLocRelInstance->probability(comp_rel, cdf, u, fn_grad_u, fn_hess_u);
+  // cannot apply curvature correction when nonlinear transformation induces
+  // additional curvature on top of a low-order approximation
+  Real computed_prob_level = (nondLocRelInstance->mppSearchType == NO_APPROX) ?
+    nondLocRelInstance->probability(comp_rel, cdf, u, fn_grad_u, fn_hess_u) :
+    nondLocRelInstance->probability(comp_rel, cdf, u,
+      nondLocRelInstance->fnGradU, nondLocRelInstance->fnHessU);
   Real comp_gen_rel = nondLocRelInstance->computedGenRelLevel =
     nondLocRelInstance->reliability(computed_prob_level);
 
@@ -2131,6 +2135,10 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
   }
   if (outputLevel > NORMAL_OUTPUT)
     Cout << '\n';
+#ifdef DEBUG
+  if (integrationOrder == 2 && curvatureDataAvailable)
+    { Cout << "In probability(), kappaU:\n"; write_data(Cout, kappaU); }
+#endif
 
   return p;
 }
