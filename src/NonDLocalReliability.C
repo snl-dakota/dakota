@@ -1222,6 +1222,8 @@ void NonDLocalReliability::initialize_mpp_search_data()
 	for (size_t i=0; i<numUncertainVars; i++)
 	  initialPtU[i] = mostProbPointU[i] + alpha * fnGradU[i];
       }
+      else
+	initialPtU = 1.;//mostProbPointU;// can cause premature conv w/ some opt
     }
     else {
       // For PMA case, scale mostProbPointU so that its magnitude equals
@@ -1244,14 +1246,22 @@ void NonDLocalReliability::initialize_mpp_search_data()
 	computedGenRelLevels[respFnCount][levelCount-1] :
 	computedRelLevels[respFnCount][levelCount-1];
       // Note: scaling is applied to mppU, so we want best est of new beta
-      if ( std::fabs(prev_bl)              > 1.e-10 &&
-	   std::fabs(requestedTargetLevel) > 1.e-10 ) {
+      if ( std::abs(prev_bl) > 1.e-3 && std::abs(prev_bl) < 1.e+3 &&
+	   std::abs(requestedTargetLevel) > 1.e-3 &&
+	   std::abs(requestedTargetLevel) < 1.e+3 ) {
 	// CDF or CCDF does not matter for scale_factor so long as it is
 	// consistent (CDF/CDF or CCDF/CCDF).
 	Real scale_factor = requestedTargetLevel / prev_bl;
+#ifdef DEBUG
+	Cout << "PMA warm start: previous = " << prev_bl
+	     << " current = " << requestedTargetLevel
+	     << " scale_factor = " << scale_factor << std::endl;
+#endif // DEBUG
 	for (size_t i=0; i<numUncertainVars; i++)
 	  initialPtU[i] = mostProbPointU[i] * scale_factor;
       }
+      else
+	initialPtU = 1.;//mostProbPointU;// can cause premature conv w/ some opt
     }
   }
   else { // cold start: reset to mean inputs/outputs
@@ -1758,7 +1768,8 @@ PMA_objective_eval(const Variables& sub_model_vars,
   if (sm_asv_val & 4)
     fn_hess_u = sub_model_response.function_hessian_view(resp_fn);
 
-  // Due to RecastModel, this fn always called 1st, before PMA2_constraint_eval
+  // Due to RecastModel, objective_eval always called before constraint_eval,
+  // so perform NO_APPROX updates here.
   if (nondLocRelInstance->mppSearchType == NO_APPROX &&
       nondLocRelInstance->integrationOrder == 2) {
     nondLocRelInstance->curvatureDataAvailable = true;
@@ -2189,6 +2200,12 @@ Real NonDLocalReliability::dp2_dbeta_factor(Real beta, bool cdf_flag)
   bool apply_correction; size_t i, j, num_kappa;
   Real kterm, dpsi_m_beta_dbeta, beta_corr; RealVector kappa;
   if (curvatureDataAvailable) {
+
+    //if (!kappaUpdated) { // should already be up to date
+    //  principal_curvatures(mpp_u, fn_grad_u, fn_hess_u, kappaU);
+    //  kappaUpdated = true;
+    //}
+
     scale_curvature(beta, cdf_flag, kappaU, kappa);
     beta_corr = (beta >= 0.) ? beta : -beta;
 
@@ -2210,35 +2227,34 @@ Real NonDLocalReliability::dp2_dbeta_factor(Real beta, bool cdf_flag)
     for (i=0; i<num_kappa; ++i)
       if (1. + kterm * kappa[i] <= curvatureThresh)
 	apply_correction = false;
-  }
-  else
-    apply_correction = false;
 
-  if (apply_correction) {
-    Real sum = 0., ktk, prod1, prod2 = 1.;
-    for (i=0; i<num_kappa; ++i) {
-      ktk = kterm * kappa[i];
-      prod2 /= std::sqrt(1. + ktk);
-      prod1 = 1.;
-      for (j=0; j<num_kappa; ++j)
-	if (j != i)
-	  prod1 /= std::sqrt(1. + kterm * kappa[j]);
-      prod1 *= kappa[i] / 2. / std::pow(1. + ktk, 1.5);
-      if (secondOrderIntType != BREITUNG)
-	prod1 *= dpsi_m_beta_dbeta;
-      sum -= prod1;
+    if (apply_correction) {
+      Real sum = 0., ktk, prod1, prod2 = 1.;
+      for (i=0; i<num_kappa; ++i) {
+	ktk = kterm * kappa[i];
+	prod2 /= std::sqrt(1. + ktk);
+	prod1 = 1.;
+	for (j=0; j<num_kappa; ++j)
+	  if (j != i)
+	    prod1 /= std::sqrt(1. + kterm * kappa[j]);
+	prod1 *= kappa[i] / 2. / std::pow(1. + ktk, 1.5);
+	if (secondOrderIntType != BREITUNG)
+	  prod1 *= dpsi_m_beta_dbeta;
+	sum -= prod1;
+      }
+
+      // verify p_corr within (0,1) for consistency with probability()
+      Real p1_corr = probability(beta_corr), p2_corr = p1_corr * prod2;
+      if (p2_corr >= 0. && p2_corr <= 1.) // factor for second-order dp/ds:
+	return p1_corr * sum - Pecos::phi(-beta_corr) * prod2;
     }
 
-    // TO DO: verify p_corr within (0,1) for consistency with probability()
-
-    // factor for second-order dp/ds:
-    return Pecos::Phi(-beta_corr) * sum - Pecos::phi(-beta_corr) * prod2;
-  }
-  else {
+    // if not returned, then there was an exception
     Cerr << "\nWarning: second-order probability sensitivity bypassed.\n";
     warningBits |= 2; // second warning in output summary
-    return -Pecos::phi(-beta);
   }
+
+  return -Pecos::phi(-beta);
 }
 
 
