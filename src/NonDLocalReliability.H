@@ -166,9 +166,10 @@ private:
   /// statistics following MPP convergence
   void update_level_data();
 
-  // update requestedCDFRelLevel from prescribed probabilities or prescribed
-  // generalized reliabilities by inverting second-order integrations
-  //void update_pma_reliability_level();
+  /// update pmaMaximizeG from prescribed probabilities or prescribed
+  /// generalized reliabilities by inverting second-order integrations
+  void update_pma_maximize(const RealVector& mpp_u, const RealVector& fn_grad_u,
+			   const RealSymMatrix& fn_hess_u);
 
   /// convenience function for passing the latest variables/response data
   /// to the data fit embedded within uSpaceModel
@@ -218,7 +219,6 @@ private:
   /// Convert probability to reliability using the inverse of a
   /// first-order integration
   Real reliability(Real p);
-  /*
   /// Convert probability to reliability using the inverse of a
   /// first-order or second-order integration
   Real reliability(Real p, bool cdf_flag, const RealVector& mpp_u,
@@ -231,7 +231,6 @@ private:
   /// probability corrections using Newton's method (called by reliability(p))
   Real reliability_residual_derivative(const Real& p, const Real& beta,
 				       const RealVector& kappa);
-  */
 
   /// Compute the kappaU vector of principal curvatures from fnHessU
   void principal_curvatures(const RealVector& mpp_u,
