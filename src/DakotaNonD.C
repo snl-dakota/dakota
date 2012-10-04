@@ -20,6 +20,8 @@
 #include "tabular_io.h"
 #include "pecos_stat_util.hpp"
 
+//#define DEBUG
+
 static const char rcsId[]="@(#) $Id: DakotaNonD.C 7024 2010-10-16 01:24:42Z mseldre $";
 
 namespace Dakota {

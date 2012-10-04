@@ -322,6 +322,8 @@ private:
   /// flag indicating that sufficient data (i.e., fnGradU, fnHessU,
   /// mostProbPointU) is available for computing principal curvatures
   bool curvatureDataAvailable;
+  /// track when kappaU requires updating via principal_curvatures()
+  bool kappaUpdated;
   /// integration order (1 or 2) provided by \c integration specification
   short integrationOrder;
   /// type of second-order integration: Breitung, Hohenbichler-Rackwitz, or Hong

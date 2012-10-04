@@ -37,7 +37,7 @@ using OPTPP::NLPGradient;
 #include "data_io.h"
 
 //#define MPP_CONVERGE_RATE
-#define DEBUG
+//#define DEBUG
 
 static const char rcsId[] = "@(#) $Id: NonDLocalReliability.C 4058 2006-10-25 01:39:40Z mseldre $";
 
@@ -57,8 +57,8 @@ NonDLocalReliability* NonDLocalReliability::nondLocRelInstance(NULL);
 
 NonDLocalReliability::NonDLocalReliability(Model& model):
   NonDReliability(model), warmStartFlag(true), nipModeOverrideFlag(true),
-  curvatureDataAvailable(false), secondOrderIntType(HOHENRACK),
-  curvatureThresh(1.e-10), warningBits(0)
+  curvatureDataAvailable(false), kappaUpdated(false),
+  secondOrderIntType(HOHENRACK), curvatureThresh(1.e-10), warningBits(0)
 {
   // check for suitable gradient and variables specifications
   if (gradientType == "none") {
@@ -1097,7 +1097,7 @@ void NonDLocalReliability::initialize_level_data()
 	fnHessX = curr_resp.function_hessian(respFnCount);
 	natafTransform.trans_hess_X_to_U(fnHessX, fnHessU, mostProbPointX,
 					 fnGradX, x_dvv, cv_ids);
-	curvatureDataAvailable = true;
+	curvatureDataAvailable = true; kappaUpdated = false;
       }
     }
   }
@@ -1366,7 +1366,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
       fnHessX = curr_resp.function_hessian(respFnCount);
       natafTransform.trans_hess_X_to_U(fnHessX, fnHessU, mostProbPointX,
 				       fnGradX, x_dvv, cv_ids);
-      curvatureDataAvailable = true;
+      curvatureDataAvailable = true; kappaUpdated = false;
     }
 
     // Update the limit state surrogate model
@@ -1463,7 +1463,7 @@ update_mpp_search_data(const Variables& vars_star, const Response& resp_star)
     if (mode & 4) {
       natafTransform.trans_hess_X_to_U(fnHessX, fnHessU, mostProbPointX,
 				       fnGradX, x_dvv, cv_ids);
-      curvatureDataAvailable = true;
+      curvatureDataAvailable = true; kappaUpdated = false;
     }
     break;
   }
@@ -1661,7 +1661,7 @@ void NonDLocalReliability::assign_mean_data()
     fnHessX = fnHessiansMeanX[respFnCount];
     natafTransform.trans_hess_X_to_U(fnHessX, fnHessU, x_means, fnGradX,
 				     x_dvv, cv_ids);
-    curvatureDataAvailable = true;
+    curvatureDataAvailable = true; kappaUpdated = false;
   }
 }
 
@@ -1750,34 +1750,30 @@ PMA_objective_eval(const Variables& sub_model_vars,
 
   short asv_val    = recast_response.active_set_request_vector()[0];
   int   resp_fn    = nondLocRelInstance->respFnCount;
+  bool  pma_max    = nondLocRelInstance->pmaMaximizeG;
   short sm_asv_val = sub_model_response.active_set_request_vector()[resp_fn];
-  RealVector fn_grad_u; RealSymMatrix fn_hess_u;
+  Real fn; RealVector fn_grad_u; RealSymMatrix fn_hess_u;
   if (sm_asv_val & 2)
     fn_grad_u = sub_model_response.function_gradient_view(resp_fn);
   if (sm_asv_val & 4)
     fn_hess_u = sub_model_response.function_hessian_view(resp_fn);
 
+  // Due to RecastModel, this fn always called 1st, before PMA2_constraint_eval
   if (nondLocRelInstance->mppSearchType == NO_APPROX &&
-      nondLocRelInstance->integrationOrder == 2)
+      nondLocRelInstance->integrationOrder == 2) {
+    nondLocRelInstance->curvatureDataAvailable = true;
+    nondLocRelInstance->kappaUpdated = false; // new fn_{grad,hess}_u data
     nondLocRelInstance->update_pma_maximize(recast_vars.continuous_variables(),
 					    fn_grad_u, fn_hess_u);
+  }
 
   if (asv_val & 1) {
-    Real sm_fn = sub_model_response.function_value(resp_fn);
-#ifdef DEBUG
-    Cout << "PMA_objective_eval(): sub-model function = " << sm_fn << std::endl;
-#endif // DEBUG
-    if (nondLocRelInstance->pmaMaximizeG)
-      recast_response.function_value(-sm_fn, 0);
-    else
-      recast_response.function_value( sm_fn, 0);
+    fn = sub_model_response.function_value(resp_fn);
+    if (pma_max) recast_response.function_value(-fn, 0);
+    else         recast_response.function_value( fn, 0);
   }
   if (asv_val & 2) { // dG/du: no additional transformation needed
-#ifdef DEBUG
-    Cout << "PMA_objective_eval(): sub-model gradient:\n";
-    write_data(Cout, fn_grad_u);
-#endif // DEBUG
-    if (nondLocRelInstance->pmaMaximizeG) {
+    if (pma_max) {
       RealVector recast_grad = recast_response.function_gradient_view(0);
       size_t i, num_vars = fn_grad_u.length();
       for (i=0; i<num_vars; ++i)
@@ -1787,11 +1783,7 @@ PMA_objective_eval(const Variables& sub_model_vars,
       recast_response.function_gradient(fn_grad_u, 0);
   }
   if (asv_val & 4) { // d^2G/du^2: no additional transformation needed
-#ifdef DEBUG
-    Cout << "PMA_objective_eval(): sub-model Hessian:\n";
-    write_data(Cout, fn_hess_u, true, true, true);
-#endif // DEBUG
-    if (nondLocRelInstance->pmaMaximizeG) {
+    if (pma_max) {
       RealSymMatrix recast_hess	= recast_response.function_hessian_view(0);
       size_t i, j, num_vars = fn_hess_u.numRows();
       for (i=0; i<num_vars; ++i)
@@ -1801,6 +1793,19 @@ PMA_objective_eval(const Variables& sub_model_vars,
     else
       recast_response.function_hessian(fn_hess_u, 0);
   }
+
+#ifdef DEBUG
+  if (asv_val & 1)
+    Cout << "PMA_objective_eval(): sub-model function = " << fn << std::endl;
+  if (asv_val & 2) { // dG/du: no additional transformation needed
+    Cout << "PMA_objective_eval(): sub-model gradient:\n";
+    write_data(Cout, fn_grad_u);
+  }
+  if (asv_val & 4) { // d^2G/du^2: no additional transformation needed
+    Cout << "PMA_objective_eval(): sub-model Hessian:\n";
+    write_data(Cout, fn_hess_u, true, true, true);
+  }
+#endif // DEBUG
 }
 
 
@@ -1862,34 +1867,21 @@ PMA2_constraint_eval(const Variables& sub_model_vars,
   short sm_asv_val = sub_model_response.active_set_request_vector()[resp_fn];
   bool         cdf = nondLocRelInstance->cdfFlag;
 
-  // calculate beta, then p, then beta*.
-  // We use up-to-date mpp/grad/Hessian info, including surrogate-based data,
-  // within signed_norm(), but disallow surrogate-based curvature corrections.
-  if ( !(sm_asv_val & 2) ) {
-    Cerr << "Error: u-space response gradient unavailable in "
-	 << "PMA2_constraint_eval()." << std::endl;
-    abort_handler(-1);
-  }
+  // Calculate beta --> p --> beta*.  Use up-to-date mpp/grad/Hessian info,
+  // including surrogate-based data, within signed_norm(), but disallow
+  // surrogate-based curvature corrections due to their sensitivity.  The
+  // presence of fn_grad_u/fn_hess_u data is enforced in PMA2_set_mapping().
   RealVector fn_grad_u = sub_model_response.function_gradient_view(resp_fn);
   Real comp_rel = nondLocRelInstance->computedRelLevel =
     nondLocRelInstance->signed_norm(u, fn_grad_u, cdf);
-  Real computed_prob_level;
-  if (nondLocRelInstance->mppSearchType == NO_APPROX) {
-    if ( !(sm_asv_val & 4) ) {
-      Cerr << "Error: u-space response Hessian unavailable in "
-	   << "PMA2_constraint_eval()." << std::endl;
-      abort_handler(-1);
-    }
-    nondLocRelInstance->curvatureDataAvailable = true;
-    computed_prob_level = nondLocRelInstance->probability(comp_rel, cdf,
-      u, fn_grad_u, sub_model_response.function_hessian(resp_fn));
-  }
-  // cannot apply curvature correction when nonlinear transformation
+  // Don't update curvature correction when nonlinear transformation
   // induces additional curvature on top of a low-order approximation.
   // Note: if linear transformation or u-space AMV^2+, then Hessian is
   // consistent with the previous truth and is constant over the surrogate.
-  else
-    computed_prob_level = nondLocRelInstance->probability(comp_rel, cdf,
+  Real computed_prob_level = (nondLocRelInstance->mppSearchType == NO_APPROX) ?
+    nondLocRelInstance->probability(comp_rel, cdf, u, fn_grad_u,
+      sub_model_response.function_hessian(resp_fn)) :
+    nondLocRelInstance->probability(comp_rel, cdf,
       nondLocRelInstance->mostProbPointU, nondLocRelInstance->fnGradU,
       nondLocRelInstance->fnHessU);
   Real comp_gen_rel = nondLocRelInstance->computedGenRelLevel =
@@ -2075,14 +2067,16 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
   int wpp7;
   if (outputLevel > NORMAL_OUTPUT) {
     wpp7 = write_precision+7;
-    Cout << "Probability: "//beta = " << beta
+    Cout << "Probability:"// << " beta = " << beta
 	 << " first-order = " << std::setw(wpp7) << p;
   }
 
   if (integrationOrder == 2 && curvatureDataAvailable) {
 
-    principal_curvatures(mpp_u, fn_grad_u, fn_hess_u, kappaU);
-    int i, num_kappa = numUncertainVars - 1;
+    if (!kappaUpdated) {
+      principal_curvatures(mpp_u, fn_grad_u, fn_hess_u, kappaU);
+      kappaUpdated = true;
+    }
 
     // The correction to p is applied for beta >= 0 (FORM p <= 0.5).
     // For beta < 0, apply correction to complementary problem (Tvedt 1990).
@@ -2105,6 +2099,7 @@ probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
     if (secondOrderIntType != BREITUNG)
       psi_m_beta = Pecos::phi(-beta_corr) / Pecos::Phi(-beta_corr);
     Real kterm = (secondOrderIntType == BREITUNG) ? beta_corr : psi_m_beta;
+    int i, num_kappa = numUncertainVars - 1;
     for (i=0; i<num_kappa; i++) {
       //Cout << "1 + kterm*kappa = " << 1. + kterm * kappa[i] << std::endl;
       // Numerical exception happens for 1+ktk <= 0., but inaccuracy can happen
@@ -2258,7 +2253,10 @@ reliability(Real p, bool cdf_flag, const RealVector& mpp_u,
 
   if (integrationOrder == 2 && curvatureDataAvailable) {
 
-    principal_curvatures(mpp_u, fn_grad_u, fn_hess_u, kappaU);
+    if (!kappaUpdated) {
+      principal_curvatures(mpp_u, fn_grad_u, fn_hess_u, kappaU);
+      kappaUpdated = true;
+    }
 
     // NOTE: these conversions are currently done once.  It may be necessary
     // to redo them for each beta estimate (when inverting near beta = zero).
