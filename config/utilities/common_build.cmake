@@ -4,6 +4,12 @@
 #
 ##############################################################################
 
+# Experimental controls for testing and packaging
+# Control for substeps in the process
+set(DAKOTA_DO_TEST ON)
+set(DAKOTA_DO_PACK OFF)
+set(DAKOTA_TEST_SBATCH OFF)
+
 #*****************************************************************
 # Check for required variables
 foreach( v
@@ -37,7 +43,7 @@ else ()
     	 "${CTEST_DASHBOARD_ROOT}/build")
   endif()
   if ( NOT CTEST_SOURCE_DIRECTORY )
-    set( CTEST_BINARY_DIRECTORY
+    set( CTEST_SOURCE_DIRECTORY
        	 "${CTEST_DASHBOARD_ROOT}/source" )
   endif()
 
@@ -62,10 +68,10 @@ if ( NOT CTEST_SITE )
 endif()
 
 #*****************************************************************
-# Set DAKOTA_CTEST_PROJET_TAG
+# Set DAKOTA_CTEST_PROJECT_TAG
 
-if ( NOT DAKOTA_CTEST_PROJET_TAG )
-   set( DAKOTA_CTEST_PROJET_TAG "Nightly" )
+if ( NOT DAKOTA_CTEST_PROJECT_TAG )
+   set( DAKOTA_CTEST_PROJECT_TAG "Nightly" )
 endif()
 
 #*****************************************************************
@@ -161,11 +167,12 @@ foreach(v
     )
   set(vars "${vars}  ${v}=[${${v}}]\n")
 endforeach(v)
+
 if ( DAKOTA_DEBUG )
-   file( WRITE ${CTEST_BINARY_DIRECTORY}/dakota_ctest_variables.out ${vars} )
+  file( WRITE ${CTEST_BINARY_DIRECTORY}/dakota_ctest_variables.out ${vars} )
 endif()
 list( APPEND CTEST_NOTES_FILES 
-      ${CTEST_BINARY_DIRECTORY}/dakota_ctest_variables.out )
+  ${CTEST_BINARY_DIRECTORY}/dakota_ctest_variables.out )
 message("Dashboard script configuration:\n${vars}\n")
 
 # Create a notes file to be submitted to the Dashboard
@@ -184,15 +191,15 @@ file( WRITE ${dakotaCtestResultsFile} "ctest_configure: ${ConfigStatus}\n" )
 if ( ${ConfigStatus} EQUAL 0 )
 
   ctest_build( RETURN_VALUE BuildStatus
-  	       NUMBER_ERRORS NumErr
-	       NUMBER_WARNINGS NumWarn)
+    NUMBER_ERRORS NumErr
+    NUMBER_WARNINGS NumWarn)
   message("ctest_build: Build return code: ${BuildStatus}; errors: ${NumErr}, warnings: ${NumWarn}")
   file( APPEND ${dakotaCtestResultsFile} "ctest_build: ${BuildStatus}\n" ) 
   file( APPEND ${dakotaCtestResultsFile} "ctest_build errors: ${NumErr}\n" ) 
   file( APPEND ${dakotaCtestResultsFile} "ctest_build warnings: ${NumWarn}\n" ) 
 
-  # Test if build is successful
-  if ( ${BuildStatus} EQUAL 0 )
+  # Perform tests if requested and build is successful
+  if ( DAKOTA_DO_TEST AND ${BuildStatus} EQUAL 0 )
 
     # default tests run are dakota_*
     if ( NOT DEFINED DAKOTA_CTEST_REGEXP )
@@ -200,15 +207,35 @@ if ( ${ConfigStatus} EQUAL 0 )
     endif()
     message("DAKOTA_CTESTREGEXP: ${DAKOTA_CTEST_REGEXP}")
     message("DAKOTA_CTEST_PARALLEL_LEVEL: ${DAKOTA_CTEST_PARALLEL_LEVEL} ")	
-    ctest_test(
-      INCLUDE ${DAKOTA_CTEST_REGEXP}
-      PARALLEL_LEVEL ${DAKOTA_CTEST_PARALLEL_LEVEL}
-      RETURN_VALUE CtestStatus )
+
+    if (DAKOTA_TEST_SBATCH)
+      # Generate files needed to submit tests to queue
+      configure_file(
+	${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_tests.sh.in
+	${CTEST_BINARY_DIRECTORY}/dakota_tests.sh @ONLY)
+      configure_file(
+	${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_tests.sbatch.in
+	${CTEST_BINARY_DIRECTORY}/dakota_tests.sbatch @ONLY)
+      configure_file(
+	${CTEST_SOURCE_DIRECTORY}/local/cmake/utilities/dakota_tests.cmake.in
+	${CTEST_BINARY_DIRECTORY}/dakota_tests.cmake)
+      # TODO: Propagate the exit code
+      message("Submitting tests to batch system.")
+      execute_process(COMMAND dakota_tests.sh 
+	WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
+	RESULT_VARIABLE CtestStatus)
+    else()
+      ctest_test(
+	INCLUDE ${DAKOTA_CTEST_REGEXP}
+	PARALLEL_LEVEL ${DAKOTA_CTEST_PARALLEL_LEVEL}
+	RETURN_VALUE CtestStatus 
+	)
+    endif()
     
     message("ctest_test: Test return code: ${CtestStatus}")
     file( APPEND ${dakotaCtestResultsFile} "ctest_test: ${CtestStatus}\n" ) 
 
-  endif()  # build successful
+  endif()  # perform tests
 
 endif()  # configure successful
 
@@ -223,4 +250,11 @@ message("processing test results")
 process_dakota_test_results( ${CTEST_BINARY_DIRECTORY} )
 message("done processing test results")
 
-
+if ( DAKOTA_DO_PACK AND ${CtestStatus} EQUAL 0 )
+  # TODO: Consider whether to do this with make package, make package_source?
+  #execute_process(COMMAND ${CMAKE_CPACK_COMMAND}
+  #  WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
+  #  )
+  ctest_build(TARGET package APPEND)
+  ctest_build(TARGET package_source APPEND)
+endif() # DAKOTA_DO_PACK
