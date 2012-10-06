@@ -45,13 +45,10 @@ DOTOptimizer::DOTOptimizer(Model& model): Optimizer(model),
     Cerr << "\nWarning: speculative method specification is ignored for"
 	 << "\n         vendor numerical gradients.\n\n";
 
-  const String& minmax = probDescDB.get_string("method.dot.minmax_type");
-  optimizationType = (minmax == "maximize") ? 1 : 0;
-
   if (outputLevel > NORMAL_OUTPUT) {
     printControl = 7;
     Cout << "DOT Method = " << dotMethod << std::endl;
-    Cout << "DOT optimization type = "  << minmax << std::endl;
+    Cout << "DOT maximization = "  << maximizeFlag << std::endl;
     Cout << "DOT print control = " << printControl << std::endl;
   }
   else
@@ -65,8 +62,7 @@ DOTOptimizer::DOTOptimizer(NoDBBaseConstructor, Model& model):
   Optimizer(NoDBBaseConstructor(), model),
   realCntlParmArray(20, 0.0), intCntlParmArray(20, 0)
 {
-  optimizationType = 0;
-  printControl     = 3;
+  printControl = 3;
   initialize(); // convenience fn for shared ctor code
 }
 
@@ -144,7 +140,7 @@ void DOTOptimizer::initialize()
     intCntlParmArray[0] = 1;
   else if (gradientType == "none") {
     Cerr << "\nError: gradientType = none is invalid with DOT.\n"
-         << "Please select numerical, analytic, or mixed gradients." << std::endl;
+         << "Please select numerical, analytic, or mixed gradients."<<std::endl;
     abort_handler(-1);
   }
   else { // Vendor numerical gradients
@@ -351,6 +347,9 @@ void DOTOptimizer::find_optimum()
   size_t i, j, fn_eval_cntr;
   int num_cv = numContinuousVars;
 
+  // MINMAX from DOT manual.  Values of 0 or -1 (minimize) or 1 (maximize).
+  int min_max = (maximizeFlag) ? 1 : 0;
+
   // Initialize local bounds and linear constraints
   const RealVector& lower_bnds = iteratedModel.continuous_lower_bounds();
   const RealVector& upper_bnds = iteratedModel.continuous_upper_bounds();
@@ -369,12 +368,11 @@ void DOTOptimizer::find_optimum()
     // calculating finite difference gradients, and is zero otherwise.
     dotFDSinfo = 0; // Vanderplaats: Initialize to 0 before DOT call
 
-    DOT_F77(dotInfo, dotFDSinfo, dotMethod, printControl, num_cv,
-	    numDotConstr, designVars.values(), lower_bnds.values(),
-	    upper_bnds.values(), objFnValue, optimizationType,
-	    constraintValues.values(), &realCntlParmArray[0],
-            &intCntlParmArray[0], &realWorkSpace[0], realWorkSpaceSize,
-            &intWorkSpace[0], intWorkSpaceSize);
+    DOT_F77(dotInfo, dotFDSinfo, dotMethod, printControl, num_cv, numDotConstr,
+	    designVars.values(), lower_bnds.values(), upper_bnds.values(),
+	    objFnValue, min_max, constraintValues.values(),
+	    &realCntlParmArray[0], &intCntlParmArray[0], &realWorkSpace[0],
+	    realWorkSpaceSize, &intWorkSpace[0], intWorkSpaceSize);
 
     if (dotInfo == 0) break;
 

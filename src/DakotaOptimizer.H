@@ -76,6 +76,10 @@ protected:
   /// number of objective functions (iterator view)
   size_t numObjectiveFns;
 
+  /// flag for switching the sense of the optimization to maximize the
+  /// objective function
+  bool maximizeFlag;
+
   /// flag indicating whether local recasting to a single objective is used
   bool localObjectiveRecast;
 
@@ -114,7 +118,7 @@ private:
 };
 
 
-inline Optimizer::Optimizer(): localObjectiveRecast(false)
+inline Optimizer::Optimizer(): maximizeFlag(false), localObjectiveRecast(false)
 { }
 
 

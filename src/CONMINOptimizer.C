@@ -77,7 +77,7 @@ void CONMINOptimizer::initialize()
   // Initialize CONMIN specific data
   NFDG   = 0;       // default finite difference flag
   IPRINT = 1;       // default flag to control amount of output info
-  ITMAX  = 100;      // default max number of iterations
+  ITMAX  = 100;     // default max number of iterations
   FDCH   =  1.0e-5; // default relative finite difference step size
   FDCHM  =  1.0e-5; // default absolute finite difference step size
   CT     = -0.1;    // default constraint thickness tolerance
@@ -285,7 +285,7 @@ void CONMINOptimizer::allocate_workspace()
   IC              = new int[N3];
 
   // Size the array that holds the constraint values.
-  // For CONMIN the minimize size of the vector of constraints is "N2"
+  // For CONMIN the minimum size of the vector of constraints is "N2"
   constraintValues.resize(N2);
 }
 
@@ -469,7 +469,7 @@ void CONMINOptimizer::find_optimum()
       const RealMatrix& local_fn_grads = local_response.function_gradients();
       const int  num_vars = local_fn_grads.numRows();
       for (j=0; j<num_vars; ++j)   // obj. fn. grad. always needed
-	DF[j] = local_fn_grads(j,0);
+	DF[j] = (maximizeFlag) ? -local_fn_grads(j, 0) : local_fn_grads(j, 0);
       // Return the gradients of the active constraints in the matrix "A".
       for (i=0; i<NAC; i++) {
 	// Populate CONMIN's active constraint gradient matrix "A".  For some
@@ -500,7 +500,7 @@ void CONMINOptimizer::find_optimum()
       // Get objective function and constraint values
       // note: no active/inactive distinction needed with constraints
       const RealVector& local_fn_vals = local_response.function_values();
-      objFnValue = local_fn_vals[0];
+      objFnValue = (maximizeFlag) ? -local_fn_vals[0] : local_fn_vals[0];
       // CONMIN constraint requests must be mapped to DAKOTA constraints and
       // offsets/multipliers must be applied.
       size_t conmin_constr, dakota_constr;
@@ -547,7 +547,7 @@ void CONMINOptimizer::find_optimum()
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
-    best_fns[0] = objFnValue;
+    best_fns[0] = (maximizeFlag) ? -objFnValue : objFnValue;
     // NOTE: best_fn_vals[i] may be recomputed multiple times, but this
     // should be OK so long as all of constraintValues is populated
     // (no active set deletions).

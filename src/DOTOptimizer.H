@@ -104,10 +104,6 @@ private:
   /** Values range from 0 (least output) to 7 (most output). */
   int printControl;
 
-  /// MINMAX from DOT manual (minimize or maximize)
-  /** Values of 0 or -1 (minimize) or 1 (maximize). */
-  int optimizationType;
-
   /// RPRM from DOT manual
   /** Array of real control parameters. */
   RealArray realCntlParmArray;

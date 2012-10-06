@@ -298,11 +298,17 @@ objective_eval(int& mode, int& n, double* x, double& f, double* gradf,
   
   const Response& local_response
     = npsolInstance->iteratedModel.current_response();
+  bool max = npsolInstance->maximizeFlag;
   if (asv_request & 1)
-    f = local_response.function_value(0);
+    f = (max) ? -local_response.function_value(0) :
+                 local_response.function_value(0);
   if (asv_request & 2) {
     const Real* local_grad = local_response.function_gradient(0);
-    std::copy(local_grad, local_grad + n, gradf);
+    if (max)
+      for (size_t i=0; i<n; ++i)
+	gradf[i] = -local_grad[i];
+    else
+      std::copy(local_grad, local_grad + n, gradf);
   }
 }
 
@@ -396,7 +402,7 @@ void NPSOLOptimizer::find_optimum_on_model()
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions, false);
-    best_fns[0] = local_f_val;
+    best_fns[0] = (maximizeFlag) ? -local_f_val : local_f_val;
     if (numNonlinearConstraints)
       //copy_data_partial(local_c_vals, best_fns, 1);
       std::copy(local_c_vals.values(),

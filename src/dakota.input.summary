@@ -148,6 +148,10 @@ KEYWORD12 method
 	  )
 	|
 	( conmin_frcg
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -158,8 +162,15 @@ KEYWORD12 method
 	  [ linear_equality_scale_types STRINGLIST ]
 	  [ linear_equality_scales REALLIST ]
 	  )
+	| conmin_mfd
 	|
-	( conmin_mfd
+	( conmin
+	  frcg
+	  | mfd
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -187,6 +198,10 @@ KEYWORD12 method
 	  [ verify_level INTEGER ]
 	  [ function_precision REAL ]
 	  [ linesearch_tolerance REAL ]
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -205,6 +220,10 @@ KEYWORD12 method
 	  [ verify_level INTEGER ]
 	  [ function_precision REAL ]
 	  [ linesearch_tolerance REAL ]
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -217,6 +236,10 @@ KEYWORD12 method
 	  )
 	|
 	( nlpql_sqp
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]

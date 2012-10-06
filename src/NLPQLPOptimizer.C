@@ -305,7 +305,7 @@ void NLPQLPOptimizer::find_optimum()
     // pack up the response function values
     if (IFAIL == 0 || IFAIL == -1) {
       const RealVector& local_fns = local_response.function_values();
-      F[0] = local_fns[0];
+      F[0] = (maximizeFlag) ? -local_fns[0] : local_fns[0];
       for (i=0; i<numEqConstraints; i++) {
 	if (i<num_nln_eq)                // nonlinear eq
 	  G[i] = local_fns[i+num_nln_ineq+1] - nln_eq_targets[i];
@@ -343,8 +343,12 @@ void NLPQLPOptimizer::find_optimum()
     if (IFAIL == 0 || IFAIL == -2) {
       const RealMatrix& local_grads = local_response.function_gradients();
       size_t index;
-      for (j=0; j<numContinuousVars; j++)
-	DF[j] = local_grads(j,0);
+      if (maximizeFlag)
+	for (j=0; j<numContinuousVars; j++)
+	  DF[j] = -local_grads(j,0);
+      else
+	for (j=0; j<numContinuousVars; j++)
+	  DF[j] =  local_grads(j,0);
       for (i=0; i<numEqConstraints; i++) {
 	if (ACTIVE[i]) {
 	  if (i<num_nln_eq) {              // nonlinear eq
@@ -435,7 +439,7 @@ void NLPQLPOptimizer::find_optimum()
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
-    best_fns[0] = F[0];
+    best_fns[0] = (maximizeFlag) ? -F[0] : F[0];
 
     StLIter i_iter;
     RLIter  m_iter, o_iter;

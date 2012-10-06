@@ -33,6 +33,7 @@ Optimizer* Optimizer::optimizerInstance(NULL);
     branch and performs sanity checking on gradient and constraint
     settings. */
 Optimizer::Optimizer(Model& model): Minimizer(model),
+  maximizeFlag(probDescDB.get_bool("method.maximize_flag")),
   numObjectiveFns(probDescDB.get_sizet("responses.num_objective_functions"))
 {
   // Check for bound constraint support/requirement in method selection
@@ -227,7 +228,7 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
 
 Optimizer::Optimizer(NoDBBaseConstructor, Model& model):
   Minimizer(NoDBBaseConstructor(), model), numObjectiveFns(numUserPrimaryFns),
-  localObjectiveRecast(false)
+  maximizeFlag(false), localObjectiveRecast(false)
 {
   if (numObjectiveFns > 1) {
     Cerr << "Error: on-the-fly Optimizer instantiations do not currently "
@@ -248,7 +249,7 @@ Optimizer(NoDBBaseConstructor, size_t num_cv, size_t num_div, size_t num_drv,
 	  size_t num_nln_eq):
   Minimizer(NoDBBaseConstructor(), num_lin_ineq, num_lin_eq, num_nln_ineq,
 	    num_nln_eq),
-  numObjectiveFns(1), localObjectiveRecast(false)
+  numObjectiveFns(1), maximizeFlag(false), localObjectiveRecast(false)
 {
   numContinuousVars   = num_cv;
   numDiscreteIntVars  = num_div;

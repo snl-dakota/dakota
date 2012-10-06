@@ -299,7 +299,7 @@ public:
 
   // DOT and CONMIN
   /// the \c optimization_type specification in \ref MethodDOTDC
-  String minMaxType;
+  bool maximizeFlag;
 
   // DL_SOLVER
 

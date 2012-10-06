@@ -36,7 +36,7 @@ DataMethodRep::DataMethodRep():
   // Branch and bound
   //branchBndNumSamplesRoot(0), branchBndNumSamplesNode(0),
   // DOT and CONMIN
-  minMaxType("minimize"),
+  maximizeFlag(false),
   // DL_SOLVER
   dlDetails(""), dlLib(NULL),
   // NPSOL
@@ -148,7 +148,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
   //<< branchBndNumSamplesRoot << branchBndNumSamplesNode
 
   // DOT and CONMIN
-  s << minMaxType;
+  s << maximizeFlag;
 
   // DL_SOLVER
   s << dlDetails;
@@ -255,7 +255,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
   //>> branchBndNumSamplesRoot >> branchBndNumSamplesNode
 
   // DOT and CONMIN
-  s >> minMaxType;
+  s >> maximizeFlag;
 
   // DL_SOLVER
   s >> dlDetails;
@@ -362,7 +362,7 @@ void DataMethodRep::write(std::ostream& s) const
   //<< branchBndNumSamplesRoot << branchBndNumSamplesNode
 
   // DOT and CONMIN
-  s << minMaxType;
+  s << maximizeFlag;
 
   // DL_SOLVER
   s << dlDetails;
