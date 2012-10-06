@@ -1245,10 +1245,14 @@ void NonDLocalReliability::initialize_mpp_search_data()
 			 levelCount >= rl_len + pl_len + bl_len ) ) ?
 	computedGenRelLevels[respFnCount][levelCount-1] :
 	computedRelLevels[respFnCount][levelCount-1];
-      // Note: scaling is applied to mppU, so we want best est of new beta
-      if ( std::abs(prev_bl) > 1.e-3 && std::abs(prev_bl) < 1.e+3 &&
-	   std::abs(requestedTargetLevel) > 1.e-3 &&
-	   std::abs(requestedTargetLevel) < 1.e+3 ) {
+      // Note: scaling is applied to mppU, so we want best est of new beta.
+      // Don't allow excessive init pt scaling if secant Hessian updating.
+      Real low_tol = ( ( taylorOrder == 2 || integrationOrder == 2) &&
+		       hessianType == "quasi") ? 1.e-3 : 1.e-10,
+	high_tol = 1.e+3;
+      if ( std::abs(prev_bl) > low_tol && std::abs(prev_bl) < high_tol &&
+	   std::abs(requestedTargetLevel) > low_tol &&
+	   std::abs(requestedTargetLevel) < high_tol ) {
 	// CDF or CCDF does not matter for scale_factor so long as it is
 	// consistent (CDF/CDF or CCDF/CCDF).
 	Real scale_factor = requestedTargetLevel / prev_bl;
