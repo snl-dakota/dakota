@@ -76,6 +76,10 @@ public:
   //
 
   /// publishes whether or not to do asynchronous evaluations
+  void set_maximize_flag(const bool maxFlag)
+  {maximizeFlag = maxFlag;}
+
+  /// publishes whether or not to do asynchronous evaluations
   void set_asynch_flag(const bool dakotaAsynchFlag)
   {modelAsynchFlag = dakotaAsynchFlag;}
 
@@ -103,6 +107,9 @@ private:
 
   /// reference to the APPSOptimizer's model passed in the constructor
   Model& iteratedModel;
+
+  /// flag for maximization of the objective
+  bool maximizeFlag;
 
   /// flag for asynchronous function evaluations
   bool modelAsynchFlag;

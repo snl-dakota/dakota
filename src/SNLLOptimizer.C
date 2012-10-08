@@ -547,7 +547,9 @@ nlf0_evaluator(int n, const RealVector& x, double& f, int& result_mode)
     lastFnEvalLocn = NLFEvaluator;
   }
 
-  f = snllOptInstance->iteratedModel.current_response().function_value(0);
+  f = (snllOptInstance->maximizeFlag) ?
+    -snllOptInstance->iteratedModel.current_response().function_value(0) :
+     snllOptInstance->iteratedModel.current_response().function_value(0);
   result_mode = NLPFunction;
 }
 
@@ -620,13 +622,16 @@ nlf1_evaluator(int mode, int n, const RealVector& x, double& f,
 
   const Response& local_response
     = snllOptInstance->iteratedModel.current_response();
+  bool max = snllOptInstance->maximizeFlag;
 
   if (mode & 1) { // 1st bit is present, mode = 1 or 3
-    f = local_response.function_value(0);
+    f = (max) ? -local_response.function_value(0) :
+                 local_response.function_value(0);
     result_mode = NLPFunction;
   }
   if (mode & 2) { // 2nd bit is present, mode = 2 or 3
     grad_f = local_response.function_gradient_copy(0);
+    if (max) grad_f *= -1.;
     result_mode |= NLPGradient;
   }
 }
@@ -704,17 +709,21 @@ nlf2_evaluator(int mode, int n, const RealVector& x, double& f,
 
   const Response& local_response
     = snllOptInstance->iteratedModel.current_response();
+  bool max = snllOptInstance->maximizeFlag;
 
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
-    f = local_response.function_value(0);
+    f = (max) ? -local_response.function_value(0) :
+                 local_response.function_value(0);
     result_mode = NLPFunction;
   }
   if (mode & 2) { // 2nd bit is present, mode = 2, 3, 6, or 7
     grad_f = local_response.function_gradient_copy(0);
+    if (max) grad_f *= -1.;
     result_mode |= NLPGradient;
   }
   if (mode & 4) { // 3rd bit is present, mode >= 4
     hess_f = local_response.function_hessian(0);
+    if (max) hess_f *= -1.;
     result_mode |= NLPHessian;
   }
 }
@@ -772,8 +781,9 @@ constraint1_evaluator(int mode, int n, const RealVector& x, RealVector& g,
   const Response& local_response
     = snllOptInstance->iteratedModel.current_response();
   if (mode & 1) { // 1st bit is present, mode = 1 or 3
-    snllOptInstance->copy_con_vals_dak_to_optpp(local_response.function_values(), g,
-				   snllOptInstance->numObjectiveFns);
+    snllOptInstance->
+      copy_con_vals_dak_to_optpp(local_response.function_values(), g,
+				 snllOptInstance->numObjectiveFns);
     result_mode = NLPFunction;
   }
   if (mode & 2) { // 2nd bit is present, mode = 2 or 3
@@ -810,8 +820,9 @@ constraint2_evaluator(int mode, int n, const RealVector& x, RealVector& g,
   const Response& local_response
     = snllOptInstance->iteratedModel.current_response();
   if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
-    snllOptInstance->copy_con_vals_dak_to_optpp(local_response.function_values(), g,
-				   snllOptInstance->numObjectiveFns);
+    snllOptInstance->
+      copy_con_vals_dak_to_optpp(local_response.function_values(), g,
+				 snllOptInstance->numObjectiveFns);
     result_mode = NLPFunction;
   }
   if (mode & 2) { // 2nd bit is present, mode = 2, 3, 6, or 7
@@ -900,7 +911,8 @@ void SNLLOptimizer::post_run(std::ostream& s)
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
-    best_fns[0] = nlfObjective->getF(); // see opt++/libopt/nlp.h
+    // see opt++/libopt/nlp.h
+    best_fns[0] = (maximizeFlag) ? -nlfObjective->getF() : nlfObjective->getF();
     // OPT++ expects nonlinear equations followed by nonlinear inequalities.
     // Therefore, reorder the constraint values.
     copy_con_vals_optpp_to_dak(nlfObjective->getConstraintValue(), best_fns, 1);

@@ -79,8 +79,7 @@ bool APPSEvalMgr::submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial
     // evaluations.
 
     iteratedModel.compute_response();
-    const RealVector& fns = iteratedModel.current_response().function_values();
-    functionList[apps_tag] = fns;
+    functionList[apps_tag] = iteratedModel.current_response().function_values();
   }
 
   return true;
@@ -124,7 +123,7 @@ int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
 	apps_f.resize(1);
 	apps_cEqs.resize(numNonlinearEqConstraints);
 	apps_cIneqs.resize(constrMapIndices.size()-numNonlinearEqConstraints);
-	apps_f[0] = local_fn_vals[0];
+	apps_f[0] = (maximizeFlag) ? -local_fn_vals[0] : local_fn_vals[0];
 	for (int i=0; i<apps_cEqs.size(); i++)
 	  apps_cEqs[i] = constrMapOffsets[i] +
 	    constrMapMultipliers[i]*local_fn_vals[constrMapIndices[i]+1];
@@ -158,7 +157,7 @@ int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
       apps_f.resize(1);
       apps_cEqs.resize(numNonlinearEqConstraints);
       apps_cIneqs.resize(constrMapIndices.size()-numNonlinearEqConstraints);
-      apps_f[0] = local_fn_vals[0];
+      apps_f[0] = (maximizeFlag) ? -local_fn_vals[0] : local_fn_vals[0];
       for (int i=0; i<apps_cEqs.size(); i++)
 	apps_cEqs[i] = constrMapOffsets[i] +
 	  constrMapMultipliers[i]*local_fn_vals[constrMapIndices[i]+1];

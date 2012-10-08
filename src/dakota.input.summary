@@ -254,6 +254,10 @@ KEYWORD12 method
 	( optpp_cg
 	  [ max_step REAL ]
 	  [ gradient_tolerance REAL ]
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -281,6 +285,10 @@ KEYWORD12 method
 	  [ centering_parameter REAL ]
 	  [ max_step REAL ]
 	  [ gradient_tolerance REAL ]
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -294,6 +302,10 @@ KEYWORD12 method
 	|
 	( optpp_pds
 	  [ search_scheme_size INTEGER ]
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -313,6 +325,10 @@ KEYWORD12 method
 	  [ synchronization
 	    blocking
 	    | nonblocking
+	    ]
+	  [ optimization_type
+	    minimize
+	    | maximize
 	    ]
 	  [ merit_function
 	    merit_max
@@ -1061,6 +1077,10 @@ KEYWORD12 method
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ min_boxsize_limit REAL ]
 	  [ volume_boxsize_limit REAL ]
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
 	  )
 	|
 	( local_evidence ALIAS nond_local_evidence

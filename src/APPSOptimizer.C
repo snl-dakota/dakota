@@ -81,6 +81,7 @@ void APPSOptimizer::find_optimum()
   // Tell the evalMgr whether or not to do asynchronous evaluations
   // and maximum available concurrency.
 
+  evalMgr->set_maximize_flag(maximizeFlag);
   evalMgr->set_asynch_flag(iteratedModel.asynch_flag());
   evalMgr->set_total_workers(iteratedModel.evaluation_capacity());
 
@@ -114,7 +115,7 @@ void APPSOptimizer::find_optimum()
     RealVector best_fns(numFunctions);
     std::vector<double> bestEqs(numNonlinearEqConstraints);
     std::vector<double> bestIneqs(constraintMapIndices.size()-numNonlinearEqConstraints);
-    best_fns[0] = optimizer.getBestF();
+    best_fns[0] = (maximizeFlag) ? -optimizer.getBestF() : optimizer.getBestF();
     if (numNonlinearEqConstraints > 0) {
       optimizer.getBestNonlEqs(bestEqs);
       for (int i=0; i<numNonlinearEqConstraints; i++)

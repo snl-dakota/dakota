@@ -181,10 +181,18 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      )
 	    [ max_step REAL {N_mdm(Real,maxStep)} ]
 	    [ gradient_tolerance REAL {N_mdm(Real,gradientTolerance)} ]
+	    [ optimization_type {0}
+	      minimize {N_mdm(false,maximizeFlag)}
+	      | maximize {N_mdm(true,maximizeFlag)}
+	      ]
 	    )
 	  |
 	  ( optpp_pds {N_mdm(lit,methodName_optpp_pds)}
 	    [ search_scheme_size INTEGER {N_mdm(int,searchSchemeSize)} ]
+	    [ optimization_type {0}
+	      minimize {N_mdm(false,maximizeFlag)}
+	      | maximize {N_mdm(true,maximizeFlag)}
+	      ]
 	    )
 	  |
 	  ( asynch_pattern_search ALIAS coliny_apps {N_mdm(lit,methodName_asynch_pattern_search)}
@@ -195,6 +203,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    [ synchronization {0}
 	      blocking {N_mdm(lit,evalSynchronize_blocking)}
 	      | nonblocking {N_mdm(lit,evalSynchronize_nonblocking)}
+	      ]
+	    [ optimization_type {0}
+	      minimize {N_mdm(false,maximizeFlag)}
+	      | maximize {N_mdm(true,maximizeFlag)}
 	      ]
 	    [ merit_function {0}
 	      merit_max {N_mdm(lit,meritFunction_merit_max)}
@@ -208,7 +220,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    [ constraint_penalty REAL {N_mdm(Real,constrPenalty)} ]
             [ smoothing_factor REAL {N_mdm(Real,smoothFactor)} ]
             )
-	    | ( ( moga {N_mdm3(moga_begin,0,moga_final)}
+	    |
+	    ( ( moga {N_mdm3(moga_begin,0,moga_final)}
 	      [ fitness_type {0}
 		layer_rank {N_mdm(lit,fitnessType_layer_rank)}
 		| domination_count {N_mdm(lit,fitnessType_domination_count)}
@@ -738,6 +751,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
 	  [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
 	  [ volume_boxsize_limit REAL {N_mdm(Real,volBoxSize)} ]
+	  [ optimization_type {0}
+	    minimize {N_mdm(false,maximizeFlag)}
+	    | maximize {N_mdm(true,maximizeFlag)}
+	    ]
 	  )
 	|
 	( local_evidence ALIAS nond_local_evidence {N_mdm(lit,methodName_nond_local_evidence)}

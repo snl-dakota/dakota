@@ -179,7 +179,8 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
   // DIRinfcn), and either submit for asynch evaluation or compute
   // synchronously
   RealVector local_des_vars(nx, false);
-  int pos = *start-1; // only used for second eval and beyond
+  int  pos = *start-1; // only used for second eval and beyond
+  bool max = ncsudirectInstance->maximizeFlag;
   for (int j=0; j<np; j++) {
 
     if (*start == 1)
@@ -209,9 +210,9 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
       else {
 	ncsudirectInstance->iteratedModel.compute_response();
 	// record the response in the function vector
-	const Response& local_response 
-	  = ncsudirectInstance->iteratedModel.current_response();
-	fvec[cnt+j] = local_response.function_value(0);
+	Real fn_val = ncsudirectInstance->
+	  iteratedModel.current_response().function_value(0);
+	fvec[cnt+j] = (max) ? -fn_val : fn_val;
 	fvec[cnt+j+(*maxfunc)] = feasible;
       }
 
@@ -234,7 +235,8 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
     // record the responses in the function vector
     IntRespMCIter r_cit = response_map.begin();
     for (int j=0; j<np; ++j, ++r_cit) {
-      fvec[cnt+j] = r_cit->second.function_value(0);
+      fvec[cnt+j] = (max) ? -r_cit->second.function_value(0) :
+	                     r_cit->second.function_value(0);
       fvec[cnt+j+(*maxfunc)] = feasible;
     }
   }
@@ -347,7 +349,7 @@ void NCSUOptimizer::find_optimum()
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
-    best_fns[0] = fmin;
+    best_fns[0] = (maximizeFlag) ? -fmin : fmin;
     bestResponseArray.front().function_values(best_fns);
   }
 
