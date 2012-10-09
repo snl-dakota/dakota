@@ -6,9 +6,6 @@
 
 # Experimental controls for testing and packaging
 # Control for substeps in the process
-set(DAKOTA_DO_TEST ON)
-set(DAKOTA_DO_PACK OFF)
-set(DAKOTA_TEST_SBATCH OFF)
 
 #*****************************************************************
 # Check for required variables
@@ -47,6 +44,18 @@ else ()
        	 "${CTEST_DASHBOARD_ROOT}/source" )
   endif()
 
+endif()
+
+if ( NOT DAKOTA_TEST_SBATCH )
+  set( DAKOTA_TEST_SBATCH OFF )
+endif()
+
+if ( NOT DAKOTA_DO_TEST )
+  set( DAKOTA_DO_TEST ON )
+endif()
+
+if ( NOT DAKOTA_DO_PACK )
+  set( DAKOTA_DO_PACK OFF )
 endif()
 
 #*****************************************************************
@@ -161,6 +170,9 @@ foreach(v
     DAKOTA_CTEST_PARALLEL_LEVEL
     DAKOTA_CTEST_REGEXP
     DAKOTA_DEBUG
+    DAKOTA_DO_TEST
+    DAKOTA_TEST_SBATCH
+    DAKOTA_DO_PACK
     DAKOTA_CONFIG_DIR
     DAKOTA_LOCAL_CONFIG_DIR
     dakotaCtestResultsFile
@@ -250,7 +262,7 @@ message("processing test results")
 process_dakota_test_results( ${CTEST_BINARY_DIRECTORY} )
 message("done processing test results")
 
-if ( DAKOTA_DO_PACK AND ${CtestStatus} EQUAL 0 )
+if ( DAKOTA_DO_PACK EQUAL "ON" AND ${CtestStatus} EQUAL 0 )
   # TODO: Consider whether to do this with make package, make package_source?
   #execute_process(COMMAND ${CMAKE_CPACK_COMMAND}
   #  WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
