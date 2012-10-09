@@ -87,6 +87,7 @@ DIST_SUBDIRS = $(SUBDIRS)
 MAINTAINERCLEANFILES = Makefile.in
 
 ## copy Boost headers to include directory
+if BUILD_BOOST_TPL
 install-data-local: ${srcdir}/boost
 ## No good: copies .svn directories if this is a checkout
 ##	cp -r $< $(DESTDIR)$(includedir)
@@ -96,3 +97,4 @@ install-data-local: ${srcdir}/boost
 ## usage differs between tar 1.14 and 1.14.90+; also simpler with rsync
 ## This seems to work for in- and out of-source builds; REQUIRES GNU tar
 	( cd ${srcdir}/boost && tar c --exclude ".svn" -f - boost | ( cd $(DESTDIR)$(includedir); tar xf - ) )
+endif
