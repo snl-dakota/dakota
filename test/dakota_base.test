@@ -3708,7 +3708,7 @@ Test Number 0 succeeded
 <<<<< Best objective function  =
                      -2.4610312954e+00
 <<<<< Best constraint values   =
-                     -1.5157146371e-16
+                     -1.1102230246e-16
                      -3.3471647504e-01
                       0.0000000000e+00
 <<<<< Best data captured at function evaluation 11
@@ -3722,7 +3722,7 @@ Test Number 1 succeeded
 <<<<< Best constraint values   =
                      -4.4086848028e-01
                      -3.3471647504e-01
-                      0.0000000000e+00
+                     -1.1102230246e-16
 <<<<< Best data captured at function evaluation 5
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 27 total (27 new, 0 duplicate)
@@ -3749,6 +3749,18 @@ Test Number 3 succeeded
                      -1.9999999975e-01
 <<<<< Best data captured at function evaluation 15
 Test Number 4 succeeded
+<<<<< Function evaluation summary: 16 total (16 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.0771825290e+00 intake_dia
+                      3.9999903218e+00 flatness
+<<<<< Best objective function  =
+                     -2.1065732047e+00
+<<<<< Best constraint values   =
+                     -2.5000000000e-01
+                     -1.4517306615e-06
+                     -2.4999999774e-01
+<<<<< Best data captured at function evaluation 16
+Test Number 5 succeeded
 <<<<< Function evaluation summary: 13 total (13 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.1223971196e+00 intake_dia
@@ -3760,7 +3772,7 @@ Test Number 4 succeeded
                      -3.3430432903e-01
                      -4.6160609764e-04
 <<<<< Best data captured at function evaluation 12
-Test Number 5 succeeded
+Test Number 6 succeeded
 <<<<< Function evaluation summary: 9 total (8 new, 1 duplicate)
 <<<<< Best parameters          =
                       1.9297980520e+00 intake_dia
@@ -3772,7 +3784,7 @@ Test Number 5 succeeded
                      -3.3446970779e-01
                      -2.7641501670e-04
 <<<<< Best data captured at function evaluation 8
-Test Number 6 succeeded
+Test Number 7 succeeded
 <<<<< Function evaluation summary: 9 total (8 new, 1 duplicate)
 <<<<< Best parameters          =
                       1.9295189347e+00 intake_dia
@@ -3784,7 +3796,7 @@ Test Number 6 succeeded
                      -3.3446970779e-01
                      -2.7641501670e-04
 <<<<< Best data captured at function evaluation 8
-Test Number 7 succeeded
+Test Number 8 succeeded
 <<<<< Function evaluation summary: 15 total (13 new, 2 duplicate)
 <<<<< Best parameters          =
                       2.1402385308e+00 intake_dia
@@ -3796,7 +3808,19 @@ Test Number 7 succeeded
                      -1.1447143216e-01
                      -1.9999999482e-01
 <<<<< Best data captured at function evaluation 14
-Test Number 8 succeeded
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 20 total (14 new, 6 duplicate)
+<<<<< Best parameters          =
+                      2.0774376508e+00 intake_dia
+                      3.8079606813e+00 flatness
+<<<<< Best objective function  =
+                     -2.1354889969e+00
+<<<<< Best constraint values   =
+                     -2.4914444323e-01
+                     -2.8805897801e-02
+                     -2.4368829782e-01
+<<<<< Best data captured at function evaluation 18
+Test Number 10 succeeded
 <<<<< Function evaluation summary: 35 total (33 new, 2 duplicate)
 <<<<< Best parameters          =
                       2.1224188266e+00 intake_dia
@@ -3808,7 +3832,7 @@ Test Number 8 succeeded
                      -3.3443497850e-01
                      -3.1530866626e-04
 <<<<< Best data captured at function evaluation 33
-Test Number 9 succeeded
+Test Number 11 succeeded
 <<<<< Function evaluation summary: 35 total (32 new, 3 duplicate)
 <<<<< Best parameters          =
                       1.9294695578e+00 intake_dia
@@ -3820,7 +3844,7 @@ Test Number 9 succeeded
                      -3.3442043367e-01
                      -3.3159695766e-04
 <<<<< Best data captured at function evaluation 32
-Test Number 10 succeeded
+Test Number 12 succeeded
 <<<<< Function evaluation summary: 37 total (13 new, 24 duplicate)
 <<<<< Best parameters          =
                       2.1129270701e+00 intake_dia
@@ -3832,7 +3856,7 @@ Test Number 10 succeeded
                      -3.6193906052e-01
                       3.1110816736e-02
 <<<<< Best data captured at function evaluation 12
-Test Number 11 succeeded
+Test Number 13 succeeded
 <<<<< Function evaluation summary: 35 total (8 new, 27 duplicate)
 <<<<< Best parameters          =
                       2.1132435825e+00 intake_dia
@@ -3844,7 +3868,19 @@ Test Number 11 succeeded
                      -1.7030328077e-01
                      -1.5926833169e-01
 <<<<< Best data captured at function evaluation 7
-Test Number 12 succeeded
+Test Number 14 succeeded
+<<<<< Function evaluation summary: 96 total (94 new, 2 duplicate)
+<<<<< Best parameters          =
+                      2.0771724826e+00 intake_dia
+                      3.9624570412e+00 flatness
+<<<<< Best objective function  =
+                     -2.1121988121e+00
+<<<<< Best constraint values   =
+                     -2.5003360741e-01
+                     -5.6314438126e-03
+                     -2.4945442557e-01
+<<<<< Best data captured at function evaluation 94
+Test Number 15 succeeded
 <<<<< Function evaluation summary: 12 total (12 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.1224188302e+00 intake_dia
@@ -3852,11 +3888,11 @@ Test Number 12 succeeded
 <<<<< Best objective function  =
                      -2.4610312937e+00
 <<<<< Best constraint values   =
-                     -1.7333019665e-08
+                     -1.7333019686e-08
                      -3.3471647418e-01
-                     -9.6000860592e-10
+                     -9.6000851713e-10
 <<<<< Best data captured at function evaluation 12
-Test Number 13 succeeded
+Test Number 16 succeeded
 <<<<< Function evaluation summary: 12 total (12 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.9314431635e+00 intake_dia
@@ -3866,9 +3902,9 @@ Test Number 13 succeeded
 <<<<< Best constraint values   =
                      -4.4086848180e-01
                      -3.3471647482e-01
-                     -2.4463832441e-10
+                     -2.4463830961e-10
 <<<<< Best data captured at function evaluation 12
-Test Number 14 succeeded
+Test Number 17 succeeded
 <<<<< Function evaluation summary: 13 total (13 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.9314431655e+00 intake_dia
@@ -3878,9 +3914,9 @@ Test Number 14 succeeded
 <<<<< Best constraint values   =
                      -4.4086848093e-01
                      -3.3471647482e-01
-                     -2.4559578075e-10
+                     -2.4559576595e-10
 <<<<< Best data captured at function evaluation 13
-Test Number 15 succeeded
+Test Number 18 succeeded
 <<<<< Function evaluation summary: 12 total (12 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.1402474140e+00 intake_dia
@@ -3892,6 +3928,18 @@ Test Number 15 succeeded
                      -1.1447142426e-01
                      -2.0000000000e-01
 <<<<< Best data captured at function evaluation 12
+Test Number 19 succeeded
+<<<<< Function evaluation summary: 86 total (86 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.0771825290e+00 intake_dia
+                      3.9999999995e+00 flatness
+<<<<< Best objective function  =
+                     -2.1065717531e+00
+<<<<< Best constraint values   =
+                     -2.5000000000e-01
+                     -7.7969186663e-11
+                     -2.5000000000e-01
+<<<<< Best data captured at function evaluation 81
 dakota_dace.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 49 total (49 new, 0 duplicate)
