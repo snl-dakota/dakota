@@ -99,6 +99,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    [ constraint_relax {0}
 	      homotopy {N_mdm(type,surrBasedLocalConstrRelax_HOMOTOPY)}
 	      ]
+	    [ optimization_type {0}
+	      minimize {N_mdm(false,maximizeFlag)}
+	      | maximize {N_mdm(true,maximizeFlag)}
+	      ]
 	    )
 	  |
 #	  ( branch_and_bound
@@ -302,6 +306,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		)
 	      [ mutation_rate REAL {N_mdm(litz,3mutationType_null_mutation)} ]
 	      ]
+	    [ optimization_type {0}
+	      minimize {N_mdm(false,maximizeFlag)}
+	      | maximize {N_mdm(true,maximizeFlag)}
+	      ]
 	    [ seed INTEGER {N_mdm(pint,randomSeed)} ]
 	    )
 	  [ linear_inequality_constraint_matrix REALLIST {N_mdm(RealDL,linearIneqConstraintCoeffs)} ]
@@ -424,6 +432,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  approx_method_name STRING {N_mdm(str,subMethodName)}
 	  | approx_method_pointer STRING {N_mdm(str,subMethodPointer)}
 	  [ replace_points {N_mdm(true,surrBasedGlobalReplacePts)} ]
+	  [ optimization_type {0}
+	    minimize {N_mdm(false,maximizeFlag)}
+	    | maximize {N_mdm(true,maximizeFlag)}
+	    ]
 	  )
 	|
 	( ( efficient_global {N_mdm(lit,methodName_efficient_global)}
@@ -436,6 +448,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
                  freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
               ] 
+	    [ optimization_type {0}
+	      minimize {N_mdm(false,maximizeFlag)}
+	      | maximize {N_mdm(true,maximizeFlag)}
+	      ]
 	    )
 	  |
 	  ( ( ( ( ( polynomial_chaos ALIAS nond_polynomial_chaos {N_mdm(lit,methodName_nond_polynomial_chaos)}

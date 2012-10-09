@@ -197,6 +197,10 @@ protected:
   /// number of objective functions or least squares terms in iterator's view
   size_t numIterPrimaryFns;
 
+  /// flag for switching the sense of an optimization to maximize the
+  /// objective function
+  bool maximizeFlag;
+
   /// convenience flag for denoting the presence of user-specified bound
   /// constraints.  Used for method selection and error checking.
   bool boundConstraintFlag;
@@ -242,7 +246,7 @@ private:
 };
 
 
-inline Minimizer::Minimizer(): scaleFlag(false)
+inline Minimizer::Minimizer(): maximizeFlag(false), scaleFlag(false)
 { }
 
 

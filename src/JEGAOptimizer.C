@@ -179,6 +179,9 @@ class JEGAOptimizer::Evaluator :
          */
         Model& _model;
 
+        /// flag for sense of optimization
+        bool _maximizeFlag;
+
     /*
     ===========================================================================
     Public Methods
@@ -420,7 +423,7 @@ class JEGAOptimizer::Evaluator :
             ) const
         {
             EDDY_FUNC_DEBUGSCOPE
-            return new Evaluator(*this, algorithm, _model);
+            return new Evaluator(*this, algorithm, _model, _maximizeFlag);
         }
 
 
@@ -441,10 +444,12 @@ class JEGAOptimizer::Evaluator :
          */
         Evaluator(
             GeneticAlgorithm& algorithm,
-            Model& model
+            Model& model,
+            bool max
             ) :
                 GeneticAlgorithmEvaluator(algorithm),
-                _model(model)
+                _model(model),
+                _maximizeFlag(max)
         {
             EDDY_FUNC_DEBUGSCOPE
         }
@@ -459,7 +464,8 @@ class JEGAOptimizer::Evaluator :
             const Evaluator& copy
             ) :
                 GeneticAlgorithmEvaluator(copy),
-                _model(copy._model)
+                _model(copy._model),
+                _maximizeFlag(copy._maximizeFlag)
         {
             EDDY_FUNC_DEBUGSCOPE
         }
@@ -477,10 +483,12 @@ class JEGAOptimizer::Evaluator :
         Evaluator(
             const Evaluator& copy,
             GeneticAlgorithm& algorithm,
-            Model& model
+            Model& model,
+            bool max
             ) :
                 GeneticAlgorithmEvaluator(copy, algorithm),
-                _model(model)
+                _model(model),
+                _maximizeFlag(max)
         {
             EDDY_FUNC_DEBUGSCOPE
         }
@@ -522,6 +530,12 @@ class JEGAOptimizer::EvaluatorCreator :
          */
         Model& _theModel;
 
+        /**
+         * \brief Flag determining sense of the optimization: minimize
+         *        or maximize.
+         */
+        bool _theMaximizeFlag;
+
     /*
     ===========================================================================
     Subclass Overridable Methods
@@ -546,7 +560,7 @@ class JEGAOptimizer::EvaluatorCreator :
             )
         {
             EDDY_FUNC_DEBUGSCOPE
-            return new Evaluator(alg, _theModel);
+	      return new Evaluator(alg, _theModel, _theMaximizeFlag);
         }
 
     /*
@@ -563,9 +577,11 @@ class JEGAOptimizer::EvaluatorCreator :
          *                 created evaluator.
          */
         EvaluatorCreator(
-            Model& theModel
+            Model& theModel,
+	    bool max
             ) :
-                _theModel(theModel)
+                _theModel(theModel),
+		_theMaximizeFlag(max)
         {
             EDDY_FUNC_DEBUGSCOPE
         }
@@ -997,7 +1013,7 @@ JEGAOptimizer::LoadDakotaResponses(
 
     RealVector fn_vals(this->numFunctions);
     for(size_t i=0; i<this->numObjectiveFns; i++)
-        fn_vals[i]= des.GetObjective(i);
+      fn_vals[i]= (maximizeFlag) ? -des.GetObjective(i) : des.GetObjective(i);
 
     // JEGA constraint ordering is nonlinear inequality, nonlinear equality,
     // linear inequality, linear equality
@@ -1847,7 +1863,7 @@ JEGAOptimizer::JEGAOptimizer(
 	= std::numeric_limits<std::size_t>::max(); // moga returns all Pareto
 
     // We only ever need one EvaluatorCreator so we can create it now.
-    this->_theEvalCreator = new EvaluatorCreator(iteratedModel);
+    this->_theEvalCreator = new EvaluatorCreator(iteratedModel, maximizeFlag);
 
     // The following is not performed in the Optimizer constructor since
     // maxConcurrency is updated above. The matching free_communicators()
@@ -1970,15 +1986,18 @@ JEGAOptimizer::Evaluator::RecordResponses(
     const size_t ncn = target.GetNCN();
 
     // record the objective functions first.
-    for(size_t i=0; i<nof; ++i) into.SetObjective(i, from[loc++]);
+    for(size_t i=0; i<nof; ++i, ++loc) {
+        Real obj_fn = (_maximizeFlag) ? -from[loc] : from[loc];
+        into.SetObjective(i, obj_fn);
+    }
 
     // now record the nonlinear constraints.  To do this,
     // we will need to know how many there are.  They will be the
     // first of the constraints in the design.
     const size_t num_nonlin_cn = this->GetNumberNonLinearConstraints();
-    for(size_t cn=0; cn<num_nonlin_cn && cn<ncn; ++cn)
+    for(size_t cn=0; cn<num_nonlin_cn && cn<ncn; ++cn, ++loc)
     {
-        into.SetConstraint(cn, from[loc++]);
+        into.SetConstraint(cn, from[loc]);
         cnis[cn]->RecordViolation(into);
     }
 }

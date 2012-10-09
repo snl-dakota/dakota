@@ -95,6 +95,10 @@ KEYWORD12 method
 	  [ constraint_relax
 	    homotopy
 	    ]
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -408,6 +412,10 @@ KEYWORD12 method
 	      )
 	    [ mutation_rate REAL ]
 	    ]
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
 	  [ seed INTEGER ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
@@ -471,6 +479,10 @@ KEYWORD12 method
 	      [ mutation_scale REAL ]
 	      )
 	    [ mutation_rate REAL ]
+	    ]
+	  [ optimization_type
+	    minimize
+	    | maximize
 	    ]
 	  [ seed INTEGER ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
@@ -615,6 +627,10 @@ KEYWORD12 method
 	  approx_method_name STRING
 	  | approx_method_pointer STRING
 	  [ replace_points ]
+	  [ optimization_type
+	    minimize
+	    | maximize
+	    ]
 	  )
 	|
 	( efficient_global
@@ -626,6 +642,10 @@ KEYWORD12 method
 	  [ points_file STRING
 	    [ annotated
 	    | freeform ]
+	    ]
+	  [ optimization_type
+	    minimize
+	    | maximize
 	    ]
 	  [ seed INTEGER ]
 	  )

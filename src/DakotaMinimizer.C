@@ -42,6 +42,7 @@ Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
 			  numNonlinearEqConstraints),
   numLinearConstraints(numLinearIneqConstraints + numLinearEqConstraints),
   numConstraints(numNonlinearConstraints + numLinearConstraints),
+  maximizeFlag(probDescDB.get_bool("method.maximize_flag")),
   boundConstraintFlag(false),
   speculativeFlag(probDescDB.get_bool("method.speculative")),
   scaleFlag(probDescDB.get_bool("method.scaling")), varsScaleFlag(false),
@@ -133,7 +134,7 @@ Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
   size_t i;
   const RealVector& c_l_bnds = model.continuous_lower_bounds();
   const RealVector& c_u_bnds = model.continuous_upper_bounds();
-  for (i=0; i<numContinuousVars; i++)
+  for (i=0; i<numContinuousVars; ++i)
     if (c_l_bnds[i] > -bigRealBoundSize || c_u_bnds[i] < bigRealBoundSize) {
       boundConstraintFlag = true;
       break;
@@ -145,12 +146,12 @@ Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
     const IntVector&  di_u_bnds = model.discrete_int_upper_bounds();
     const RealVector& dr_l_bnds = model.discrete_real_lower_bounds();
     const RealVector& dr_u_bnds = model.discrete_real_upper_bounds();
-    for (i=0; i<numDiscreteIntVars; i++)
+    for (i=0; i<numDiscreteIntVars; ++i)
       if (di_l_bnds[i] > -bigIntBoundSize || di_u_bnds[i] < bigIntBoundSize) {
 	boundConstraintFlag = true;  
 	break;
       }
-    for (i=0; i<numDiscreteRealVars; i++)
+    for (i=0; i<numDiscreteRealVars; ++i)
       if (dr_l_bnds[i] > -bigRealBoundSize || dr_u_bnds[i] < bigRealBoundSize) {
 	boundConstraintFlag = true;  
 	break;
@@ -183,8 +184,8 @@ Minimizer::Minimizer(NoDBBaseConstructor, Model& model):
   numLinearConstraints(numLinearIneqConstraints + numLinearEqConstraints),
   numConstraints(numNonlinearConstraints + numLinearConstraints),
   numUserPrimaryFns(numFunctions - numNonlinearConstraints),
-  boundConstraintFlag(false), speculativeFlag(false), scaleFlag(false),
-  varsScaleFlag(false), primaryRespScaleFlag(false),
+  maximizeFlag(false), boundConstraintFlag(false), speculativeFlag(false),
+  scaleFlag(false), varsScaleFlag(false), primaryRespScaleFlag(false),
   secondaryRespScaleFlag(false)
 {
   iteratedModel = model;
@@ -193,7 +194,7 @@ Minimizer::Minimizer(NoDBBaseConstructor, Model& model):
   size_t i;
   const RealVector&  c_l_bnds = model.continuous_lower_bounds();
   const RealVector&  c_u_bnds = model.continuous_upper_bounds();
-  for (i=0; i<numContinuousVars; i++)
+  for (i=0; i<numContinuousVars; ++i)
     if (c_l_bnds[i] > -bigRealBoundSize || c_u_bnds[i] < bigRealBoundSize) {
       boundConstraintFlag = true;
       break;
@@ -205,12 +206,12 @@ Minimizer::Minimizer(NoDBBaseConstructor, Model& model):
     const IntVector&  di_u_bnds = model.discrete_int_upper_bounds();
     const RealVector& dr_l_bnds = model.discrete_real_lower_bounds();
     const RealVector& dr_u_bnds = model.discrete_real_upper_bounds();
-    for (i=0; i<numDiscreteIntVars; i++)
+    for (i=0; i<numDiscreteIntVars; ++i)
       if (di_l_bnds[i] > -bigIntBoundSize || di_u_bnds[i] < bigIntBoundSize) {
 	boundConstraintFlag = true;  
 	break;
       }
-    for (i=0; i<numDiscreteRealVars; i++)
+    for (i=0; i<numDiscreteRealVars; ++i)
       if (dr_l_bnds[i] > -bigRealBoundSize || dr_u_bnds[i] < bigRealBoundSize) {
 	boundConstraintFlag = true;  
 	break;
@@ -241,9 +242,10 @@ Minimizer(NoDBBaseConstructor, size_t num_lin_ineq, size_t num_lin_eq,
   numNonlinearConstraints(num_nln_ineq + num_nln_eq),
   numLinearConstraints(num_lin_ineq + num_lin_eq),
   numConstraints(numNonlinearConstraints + numLinearConstraints),
-  numUserPrimaryFns(1), numIterPrimaryFns(1), boundConstraintFlag(false),
-  speculativeFlag(false), scaleFlag(false), varsScaleFlag(false),
-  primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
+  numUserPrimaryFns(1), numIterPrimaryFns(1), maximizeFlag(false),
+  boundConstraintFlag(false), speculativeFlag(false),
+  scaleFlag(false), varsScaleFlag(false), primaryRespScaleFlag(false),
+  secondaryRespScaleFlag(false)
 { }
 
 
@@ -350,7 +352,7 @@ void Minimizer::initialize_scaling()
 		  primary_scale_strings, primary_scales, tmp_types,
 		  tmp_multipliers, tmp_offsets);
 
-  for (int i=0; i<numUserPrimaryFns; i++) {
+  for (int i=0; i<numUserPrimaryFns; ++i) {
     responseScaleTypes[i]       = tmp_types[i];
     responseScaleMultipliers[i] = tmp_multipliers[i];
     responseScaleOffsets[i]     = 0;
@@ -372,7 +374,7 @@ void Minimizer::initialize_scaling()
 		  targets, nln_ineq_scale_strings, nln_ineq_scales, tmp_types,
 		  tmp_multipliers, tmp_offsets);
 
-  for (int i=0; i<numNonlinearIneqConstraints; i++) {
+  for (int i=0; i<numNonlinearIneqConstraints; ++i) {
     responseScaleTypes[numUserPrimaryFns+i]       = tmp_types[i];
     responseScaleMultipliers[numUserPrimaryFns+i] = tmp_multipliers[i];
     responseScaleOffsets[numUserPrimaryFns+i]     = tmp_offsets[i];
@@ -397,7 +399,7 @@ void Minimizer::initialize_scaling()
 		  lbs, ubs, targets, nln_eq_scale_strings, nln_eq_scales,
 		  tmp_types, tmp_multipliers, tmp_offsets);
 
-  for (int i=0; i<numNonlinearEqConstraints; i++) {
+  for (int i=0; i<numNonlinearEqConstraints; ++i) {
     responseScaleTypes[numUserPrimaryFns+numNonlinearIneqConstraints+i] 
       = tmp_types[i];
     responseScaleMultipliers[numUserPrimaryFns+numNonlinearIneqConstraints+i] 
@@ -451,7 +453,7 @@ void Minimizer::initialize_scaling()
     // compute A_i*cvScaleOffset for current constraint -- discrete variables
     // aren't scaled so don't contribute
     linearIneqScaleOffsets[i] = 0.0;
-    for (int j=0; j<numContinuousVars; j++)
+    for (int j=0; j<numContinuousVars; ++j)
       linearIneqScaleOffsets[i] += lin_ineq_coeffs(i,j)*cvScaleOffsets[j];
     
     lbs[i] -= linearIneqScaleOffsets[i];
@@ -501,7 +503,7 @@ void Minimizer::initialize_scaling()
   for (int i=0; i<numLinearEqConstraints; ++i) {
     // compute A_i*cvScaleOffset for current constraint
     linearEqScaleOffsets[i] = 0.0;
-    for (int j=0; j<numContinuousVars; j++)
+    for (int j=0; j<numContinuousVars; ++j)
       linearEqScaleOffsets[i] += lin_eq_coeffs(i,j)*cvScaleOffsets[j];
    
     targets[i] -= linearEqScaleOffsets[i];
@@ -549,7 +551,7 @@ compute_scaling(int object_type, // type of object being scaled
   scale_mults.resize(num_vars);
   scale_offsets.resize(num_vars);
 
-  for (int i=0; i<num_vars; i++) {
+  for (int i=0; i<num_vars; ++i) {
 
     //set defaults
     scale_types[i]   = SCALE_NONE;
@@ -733,7 +735,7 @@ bool Minimizer::
 need_resp_trans_byvars(const ShortArray& asv, int start_index, int num_resp) 
 {
   if (varsScaleFlag)
-    for (size_t i=start_index; i<start_index+num_resp; i++)
+    for (size_t i=start_index; i<start_index+num_resp; ++i)
       if (asv[i] & 2 || asv[i] & 4)
 	return(true);
   
@@ -748,7 +750,7 @@ modify_n2s(const RealVector& native_vars, const IntArray& scale_types,
 	   const RealVector& multipliers, const RealVector& offsets) const
 {
   RealVector scaled_vars(native_vars.length(), false);
-  for (int i=0; i<native_vars.length(); i++) {
+  for (int i=0; i<native_vars.length(); ++i) {
 
     if (scale_types[i] & SCALE_VALUE)
       scaled_vars[i] = (native_vars[i] - offsets[i]) / multipliers[i];
@@ -1041,7 +1043,7 @@ void Minimizer::response_modify_s2n(const Variables& native_vars,
       RealVector native_grad
 	= native_response.function_gradient_view(native_offset+ri);
       copy_data(scaled_grads[i], (int)num_deriv_vars, native_grad);
-      for (j=0; j<num_deriv_vars; j++) {
+      for (j=0; j<num_deriv_vars; ++j) {
 	size_t xj_index = find_index(var_ids, dvv[j]);
 
 	// first multiply by d(f)/d(f_scaled) based on scaling type
@@ -1223,8 +1225,8 @@ lin_coeffs_modify_n2s(const RealMatrix& src_coeffs,
 		      const RealVector& lin_multipliers) const
 {
   RealMatrix dest_coeffs(src_coeffs);
-  for (int i=0; i<lin_multipliers.length(); i++)
-    for (int j=0; j<cv_multipliers.length(); j++)
+  for (int i=0; i<lin_multipliers.length(); ++i)
+    for (int j=0; j<cv_multipliers.length(); ++j)
       dest_coeffs(i,j) *= cv_multipliers[j] / lin_multipliers[i];
 
   return(dest_coeffs);
@@ -1241,7 +1243,7 @@ void Minimizer::print_scaling(const String& info, const IntArray& scale_types,
   Cout << "scale type " << std::setw(write_precision+7) << "multiplier" << " "
        << std::setw(write_precision+7) << "offset"
        << (labels.empty() ? " constraint number" : " label") << std::endl; 
-  for (size_t i=0; i<scale_types.size(); i++) {
+  for (size_t i=0; i<scale_types.size(); ++i) {
     switch (scale_types[i]) {
     case SCALE_NONE: 
       Cout << "none       ";
@@ -1274,21 +1276,30 @@ objective(const RealVector& fn_vals, const RealVector& primary_wts) const
   Real obj_fn = 0.0;
   if (optimizationFlag) { // MOO
     if (primary_wts.empty()) {
-      for (size_t i=0; i<numUserPrimaryFns; i++)
-	obj_fn += fn_vals[i];
+      if (maximizeFlag)
+	for (size_t i=0; i<numUserPrimaryFns; ++i)
+	  obj_fn -= fn_vals[i];
+      else
+	for (size_t i=0; i<numUserPrimaryFns; ++i)
+	  obj_fn += fn_vals[i];
       if (numUserPrimaryFns > 1)
 	obj_fn /= (Real)numUserPrimaryFns; // default weight = 1/n
     }
-    else
-      for (size_t i=0; i<numUserPrimaryFns; i++)
-	obj_fn += primary_wts[i] * fn_vals[i];
+    else {
+      if (maximizeFlag)
+	for (size_t i=0; i<numUserPrimaryFns; ++i)
+	  obj_fn -= primary_wts[i] * fn_vals[i];
+      else
+	for (size_t i=0; i<numUserPrimaryFns; ++i)
+	  obj_fn += primary_wts[i] * fn_vals[i];
+    }
   }
   else { // NLS
     if (primary_wts.empty())
-      for (size_t i=0; i<numUserPrimaryFns; i++)
+      for (size_t i=0; i<numUserPrimaryFns; ++i)
 	obj_fn += std::pow(fn_vals[i], 2); // default weight = 1
     else
-      for (size_t i=0; i<numUserPrimaryFns; i++)
+      for (size_t i=0; i<numUserPrimaryFns; ++i)
 	obj_fn += primary_wts[i] * std::pow(fn_vals[i], 2);
   }
   return obj_fn;
@@ -1312,27 +1323,37 @@ objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
   obj_grad = 0.;
   if (optimizationFlag) { // MOO
     if (primary_wts.empty()) {
-      for (size_t j=0; j<numContinuousVars; j++) {
-	for (size_t i=0; i<numUserPrimaryFns; i++)
-	  obj_grad[j] += fn_grads[i][j];
-	obj_grad[j] /= (Real)numUserPrimaryFns; // default weight = 1/n
+      for (size_t i=0; i<numUserPrimaryFns; ++i) {
+	const Real* fn_grad_i = fn_grads[i];
+	if (maximizeFlag)
+	  for (size_t j=0; j<numContinuousVars; ++j)
+	    obj_grad[j] -= fn_grad_i[j];
+	else
+	  for (size_t j=0; j<numContinuousVars; ++j)
+	    obj_grad[j] += fn_grad_i[j];
       }
+      if (numUserPrimaryFns > 1)
+	obj_grad.scale(1./(Real)numUserPrimaryFns); // default weight = 1/n
     }
     else {
-      for (size_t i=0; i<numUserPrimaryFns; i++) {
+      for (size_t i=0; i<numUserPrimaryFns; ++i) {
 	const Real& wt_i      = primary_wts[i];
 	const Real* fn_grad_i = fn_grads[i];
-	for (size_t j=0; j<numContinuousVars; j++)
-	  obj_grad[j] += wt_i * fn_grad_i[j];
+	if (maximizeFlag)
+	  for (size_t j=0; j<numContinuousVars; ++j)
+	    obj_grad[j] -= wt_i * fn_grad_i[j];
+	else
+	  for (size_t j=0; j<numContinuousVars; ++j)
+	    obj_grad[j] += wt_i * fn_grad_i[j];
       }
     }
   }
   else { // NLS
-    for (size_t i=0; i<numUserPrimaryFns; i++) {
+    for (size_t i=0; i<numUserPrimaryFns; ++i) {
       Real wt_2_fn_val = 2. * fn_vals[i]; // default weight = 1
       if (!primary_wts.empty()) wt_2_fn_val *= primary_wts[i];
       const Real* fn_grad_i = fn_grads[i];
-      for (size_t j=0; j<numContinuousVars; j++)
+      for (size_t j=0; j<numContinuousVars; ++j)
 	obj_grad[j] += wt_2_fn_val * fn_grad_i[j];
     }
   }
@@ -1359,20 +1380,30 @@ objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
   obj_hess = 0.;
   size_t i, j, k;
   if (optimizationFlag) { // MOO
-    if (primary_wts.empty())
-      for (j=0; j<numContinuousVars; j++)
-	for (k=0; k<=j; k++) {
+    if (primary_wts.empty()) {
+      for (j=0; j<numContinuousVars; ++j)
+	for (k=0; k<=j; ++k) {
 	  Real& sum = obj_hess(j,k); sum = 0.;
-	  for (i=0; i<numUserPrimaryFns; i++)
-	    sum += fn_hessians[i](j,k);
-	  sum /= (Real)numUserPrimaryFns; // default weight = 1/n
+	  if (maximizeFlag)
+	    for (i=0; i<numUserPrimaryFns; ++i)
+	      sum -= fn_hessians[i](j,k);
+	  else
+	    for (i=0; i<numUserPrimaryFns; ++i)
+	      sum += fn_hessians[i](j,k);
 	}
+      if (numUserPrimaryFns > 1)
+	obj_hess *= 1./(Real)numUserPrimaryFns; // default weight = 1/n
+    }
     else
-      for (j=0; j<numContinuousVars; j++)
-	for (k=0; k<=j; k++) {
+      for (j=0; j<numContinuousVars; ++j)
+	for (k=0; k<=j; ++k) {
 	  Real& sum = obj_hess(j,k); sum = 0.;
-	  for (i=0; i<numUserPrimaryFns; i++)
-	    sum += fn_hessians[i](j,k) * primary_wts[i];
+	  if (maximizeFlag)
+	    for (i=0; i<numUserPrimaryFns; ++i)
+	      sum -= fn_hessians[i](j,k) * primary_wts[i];
+	  else
+	    for (i=0; i<numUserPrimaryFns; ++i)
+	      sum += fn_hessians[i](j,k) * primary_wts[i];
 	}
   }
   else { // NLS
