@@ -4,13 +4,9 @@
 #
 ##############################################################################
 
-# Experimental controls for testing and packaging
-# Control for substeps in the process
-
 #*****************************************************************
 # Check for required variables
 foreach( v
-    CTEST_DASHBOARD_ROOT
     CTEST_BUILD_CONFIGURATION
     DAKOTA_CMAKE_PLATFORM
     DAKOTA_CMAKE_BUILD_TYPE
@@ -24,6 +20,13 @@ endforeach()
 if ( NOT DAKOTA_JENKINS_BUILD AND NOT CTEST_BUILD_NAME )
   message( FATAL_ERROR "ERROR: CTEST_BUILD_NAME must be defined" )
 endif()
+message( "CTEST_BUILD_NAME defined") 
+
+# CTEST_DASHBOARD_ROOT is required for all non-Jenkins builds
+if ( NOT DAKOTA_JENKINS_BUILD AND NOT CTEST_DASHBOARD_ROOT )
+  message( FATAL_ERROR "ERROR: CTEST_DASHBORAD_ROOT must be defined" )
+endif()
+message( "CTEST_DASHBOARD_ROOT defined") 
 
 #*****************************************************************
 # Error checking on required variables
