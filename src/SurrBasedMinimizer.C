@@ -200,8 +200,9 @@ update_lagrange_multipliers(const RealVector& fn_vals,
 
     // form -{grad_f}
     RealVector m_grad_f;
-    const RealVector& wts = iteratedModel.primary_response_fn_weights();
-    objective_gradient(fn_vals, fn_grads, wts, m_grad_f);
+    const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
+    const RealVector&  wts = iteratedModel.primary_response_fn_weights();
+    objective_gradient(fn_vals, fn_grads, sense, wts, m_grad_f);
     for (j=0; j<numContinuousVars; ++j)
       m_grad_f[j] = -m_grad_f[j];
     //Cout << "[A]:\n" << A << "-{grad_f}:\n" << m_grad_f;
@@ -304,8 +305,10 @@ update_augmented_lagrange_multipliers(const RealVector& fn_vals)
 bool SurrBasedMinimizer::update_filter(const RealVector& fn_vals)
 {
   // test new point against current filter
-  const RealVector& wts = iteratedModel.primary_response_fn_weights();
-  Real new_f = objective(fn_vals, wts), new_g, filt_f, filt_g, beta, gamma;
+  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
+  const RealVector&  wts = iteratedModel.primary_response_fn_weights();
+  Real new_f = objective(fn_vals, sense, wts), new_g, filt_f, filt_g,
+    beta, gamma;
   if (numNonlinearConstraints) {
     new_g = constraint_violation(fn_vals, 0.);
     gamma = 1.e-5;
@@ -314,7 +317,7 @@ bool SurrBasedMinimizer::update_filter(const RealVector& fn_vals)
   RealVectorArray::iterator filt_it;
   std::vector<RealVectorArray::iterator> rm_list;
   for (filt_it = sbFilter.begin(); filt_it != sbFilter.end(); filt_it++) {
-    filt_f = objective(*filt_it, wts);
+    filt_f = objective(*filt_it, sense, wts);
     if (numNonlinearConstraints) {
       filt_g = constraint_violation(*filt_it, 0.);
 
@@ -364,7 +367,8 @@ bool SurrBasedMinimizer::update_filter(const RealVector& fn_vals)
 Real SurrBasedMinimizer::
 filter_merit(const RealVector& fns_center, const RealVector& fns_star)
 {
-  Real obj_delta = objective(fns_star, wts) - objective(fns_center, wts),
+  Real obj_delta = objective(fns_star, sense, wts)
+                 - objective(fns_center, sense, wts),
        cv_delta  = constraint_violation(fns_star,   0.)
                  - constraint_violation(fns_center, 0.);
 
@@ -388,7 +392,8 @@ filter_merit(const RealVector& fns_center, const RealVector& fns_star)
     Vanderplaats with g<=0 and h=0.  The bounds/targets passed in may
     reflect the original constraints or the relaxed constraints. */
 Real SurrBasedMinimizer::
-lagrangian_merit(const RealVector& fn_vals, const RealVector& primary_wts,
+lagrangian_merit(const RealVector& fn_vals, const BoolDeque& sense,
+		 const RealVector& primary_wts,
 		 const RealVector& nln_ineq_l_bnds,
 		 const RealVector& nln_ineq_u_bnds,
 		 const RealVector& nln_eq_tgts)
@@ -396,7 +401,7 @@ lagrangian_merit(const RealVector& fn_vals, const RealVector& primary_wts,
   size_t i, cntr = 0;
 
   // objective function portion
-  Real lag = objective(fn_vals, primary_wts);
+  Real lag = objective(fn_vals, sense, primary_wts);
 
   // inequality constraint portion
   Real g0;
@@ -434,7 +439,7 @@ lagrangian_merit(const RealVector& fn_vals, const RealVector& primary_wts,
 
 void SurrBasedMinimizer::
 lagrangian_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
-		    const RealVector& primary_wts,
+		    const BoolDeque& sense, const RealVector& primary_wts,
 		    const RealVector& nln_ineq_l_bnds,
 		    const RealVector& nln_ineq_u_bnds,
 		    const RealVector& nln_eq_tgts,
@@ -443,7 +448,7 @@ lagrangian_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
   size_t i, j, cntr = 0;
 
   // objective function portion
-  objective_gradient(fn_vals, fn_grads, primary_wts, lag_grad);
+  objective_gradient(fn_vals, fn_grads, sense, primary_wts, lag_grad);
 
   // inequality constraint portion
   for (i=0; i<numNonlinearIneqConstraints; i++) {
@@ -486,7 +491,7 @@ lagrangian_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
     Vanderplaats with g<=0 and h=0.  The bounds/targets passed in may
     reflect the original constraints or the relaxed constraints.*/
 Real SurrBasedMinimizer::
-augmented_lagrangian_merit(const RealVector& fn_vals,
+augmented_lagrangian_merit(const RealVector& fn_vals, const BoolDeque& sense,
 			   const RealVector& primary_wts,
 			   const RealVector& nln_ineq_l_bnds,
 			   const RealVector& nln_ineq_u_bnds,
@@ -495,7 +500,7 @@ augmented_lagrangian_merit(const RealVector& fn_vals,
   size_t i, cntr = 0;
 
   // objective function portion
-  Real aug_lag = objective(fn_vals, primary_wts);
+  Real aug_lag = objective(fn_vals, sense, primary_wts);
 
   // inequality constraint portion
   Real g0, psi;
@@ -531,6 +536,7 @@ augmented_lagrangian_merit(const RealVector& fn_vals,
 void SurrBasedMinimizer::
 augmented_lagrangian_gradient(const RealVector& fn_vals, 
 			      const RealMatrix& fn_grads,
+			      const BoolDeque&  sense,
 			      const RealVector& primary_wts,
 			      const RealVector& nln_ineq_l_bnds,
 			      const RealVector& nln_ineq_u_bnds,
@@ -540,7 +546,7 @@ augmented_lagrangian_gradient(const RealVector& fn_vals,
   size_t i, j, index, cntr = 0;
 
   // objective function portion
-  objective_gradient(fn_vals, fn_grads, primary_wts, alag_grad);
+  objective_gradient(fn_vals, fn_grads, sense, primary_wts, alag_grad);
 
   // inequality constraint portion
   Real g0;
@@ -589,21 +595,23 @@ augmented_lagrangian_gradient(const RealVector& fn_vals,
     any constraint violations and adds this to the objective function(s)
     p = f + r_p cv. */
 Real SurrBasedMinimizer::
-penalty_merit(const RealVector& fn_vals, const RealVector& primary_wts)
+penalty_merit(const RealVector& fn_vals, const BoolDeque& sense,
+	      const RealVector& primary_wts)
 {
-  return objective(fn_vals, primary_wts)
+  return objective(fn_vals, sense, primary_wts)
     + penaltyParameter * constraint_violation(fn_vals, constraintTol);
 }
 
 
 void SurrBasedMinimizer::
 penalty_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
-		 const RealVector& primary_wts, RealVector& pen_grad)
+		 const BoolDeque& sense, const RealVector& primary_wts,
+		 RealVector& pen_grad)
 {
   size_t i, j, index;
 
   // objective function portion
-  objective_gradient(fn_vals, fn_grads, primary_wts, pen_grad);
+  objective_gradient(fn_vals, fn_grads, sense, primary_wts, pen_grad);
 
   // inequality constraint portion
   for (i=0; i<numNonlinearIneqConstraints; i++) {

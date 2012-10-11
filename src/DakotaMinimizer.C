@@ -21,16 +21,14 @@
 
 static const char rcsId[]="@(#) $Id: DakotaMinimizer.C 7029 2010-10-22 00:17:02Z mseldre $";
 
-using std::log;
 
 namespace Dakota {
 
 // initialization of static needed by RecastModel
 Minimizer* Minimizer::minimizerInstance(NULL);
 
-/** This constructor extracts inherited data for the optimizer and
-    least squares branches and performs sanity checking on constraint
-    settings. */
+/** This constructor extracts inherited data for the optimizer and least
+    squares branches and performs sanity checking on constraint settings. */
 Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
   constraintTol(probDescDB.get_real("method.constraint_tolerance")),
   bigRealBoundSize(1.e+30), bigIntBoundSize(1000000000),
@@ -42,7 +40,6 @@ Minimizer::Minimizer(Model& model): Iterator(BaseConstructor(), model),
 			  numNonlinearEqConstraints),
   numLinearConstraints(numLinearIneqConstraints + numLinearEqConstraints),
   numConstraints(numNonlinearConstraints + numLinearConstraints),
-  maximizeFlag(probDescDB.get_bool("method.maximize_flag")),
   boundConstraintFlag(false),
   speculativeFlag(probDescDB.get_bool("method.speculative")),
   scaleFlag(probDescDB.get_bool("method.scaling")), varsScaleFlag(false),
@@ -184,8 +181,8 @@ Minimizer::Minimizer(NoDBBaseConstructor, Model& model):
   numLinearConstraints(numLinearIneqConstraints + numLinearEqConstraints),
   numConstraints(numNonlinearConstraints + numLinearConstraints),
   numUserPrimaryFns(numFunctions - numNonlinearConstraints),
-  maximizeFlag(false), boundConstraintFlag(false), speculativeFlag(false),
-  scaleFlag(false), varsScaleFlag(false), primaryRespScaleFlag(false),
+  boundConstraintFlag(false), speculativeFlag(false), scaleFlag(false),
+  varsScaleFlag(false), primaryRespScaleFlag(false),
   secondaryRespScaleFlag(false)
 {
   iteratedModel = model;
@@ -242,10 +239,9 @@ Minimizer(NoDBBaseConstructor, size_t num_lin_ineq, size_t num_lin_eq,
   numNonlinearConstraints(num_nln_ineq + num_nln_eq),
   numLinearConstraints(num_lin_ineq + num_lin_eq),
   numConstraints(numNonlinearConstraints + numLinearConstraints),
-  numUserPrimaryFns(1), numIterPrimaryFns(1), maximizeFlag(false),
-  boundConstraintFlag(false), speculativeFlag(false),
-  scaleFlag(false), varsScaleFlag(false), primaryRespScaleFlag(false),
-  secondaryRespScaleFlag(false)
+  numUserPrimaryFns(1), numIterPrimaryFns(1), boundConstraintFlag(false),
+  speculativeFlag(false), scaleFlag(false), varsScaleFlag(false),
+  primaryRespScaleFlag(false), secondaryRespScaleFlag(false)
 { }
 
 
@@ -645,17 +641,17 @@ compute_scaling(int object_type, // type of object being scaled
 	  if ( lbs[i] < SCALING_MIN_LOG )
 	    Cout << "Warning: scale_type 'log' used without positive lower "
 		 << "bound.\n";
-	  lbs[i] = log(lbs[i])/SCALING_LN_LOGBASE;
+	  lbs[i] = std::log(lbs[i])/SCALING_LN_LOGBASE;
 	}
 	if (ubs[i] < bigRealBoundSize) {
 	  if ( ubs[i] < SCALING_MIN_LOG )
 	    Cout << "Warning: scale_type 'log' used without positive upper "
 		 << "bound.\n";
-	  ubs[i] = log(ubs[i])/SCALING_LN_LOGBASE;
+	  ubs[i] = std::log(ubs[i])/SCALING_LN_LOGBASE;
 	}
       }
       else if (auto_type == TARGET) {
-	targets[i] = log(targets[i])/SCALING_LN_LOGBASE;
+	targets[i] = std::log(targets[i])/SCALING_LN_LOGBASE;
 	if ( targets[i] < SCALING_MIN_LOG )
 	  Cout << "Warning: scale_type 'log' used without positive target.\n";
       }
@@ -758,7 +754,7 @@ modify_n2s(const RealVector& native_vars, const IntArray& scale_types,
       scaled_vars[i] = native_vars[i];
 
     if (scale_types[i] & SCALE_LOG)
-      scaled_vars[i] = log(scaled_vars[i])/SCALING_LN_LOGBASE;
+      scaled_vars[i] = std::log(scaled_vars[i])/SCALING_LN_LOGBASE;
 
   }
 
@@ -842,7 +838,7 @@ void Minimizer::response_modify_n2s(const Variables& native_vars,
     if (asv[i] & 1) {
       // SCALE_LOG case here includes case of SCALE_LOG && SCALE_VALUE
       if (responseScaleTypes[i] & SCALE_LOG)
-	recast_val = log( (native_vals[i] - responseScaleOffsets[i]) / 
+	recast_val = std::log( (native_vals[i] - responseScaleOffsets[i]) / 
 	  responseScaleMultipliers[i] )/SCALING_LN_LOGBASE; 
       else if (responseScaleTypes[i] & SCALE_VALUE)
 	recast_val = (native_vals[i] - responseScaleOffsets[i]) / 
@@ -1271,27 +1267,23 @@ void Minimizer::print_scaling(const String& info, const IntArray& scale_types,
 /** The composite objective computation sums up the contributions from
     one of more primary functions using the primary response fn weights. */
 Real Minimizer::
-objective(const RealVector& fn_vals, const RealVector& primary_wts) const
+objective(const RealVector& fn_vals, const BoolDeque& max_sense,
+	  const RealVector& primary_wts) const
 {
   Real obj_fn = 0.0;
   if (optimizationFlag) { // MOO
+    bool use_sense = !max_sense.empty();
     if (primary_wts.empty()) {
-      if (maximizeFlag)
-	for (size_t i=0; i<numUserPrimaryFns; ++i)
-	  obj_fn -= fn_vals[i];
-      else
-	for (size_t i=0; i<numUserPrimaryFns; ++i)
-	  obj_fn += fn_vals[i];
+      for (size_t i=0; i<numUserPrimaryFns; ++i)
+	if (use_sense && max_sense[i]) obj_fn -= fn_vals[i];
+	else                           obj_fn += fn_vals[i];
       if (numUserPrimaryFns > 1)
 	obj_fn /= (Real)numUserPrimaryFns; // default weight = 1/n
     }
     else {
-      if (maximizeFlag)
-	for (size_t i=0; i<numUserPrimaryFns; ++i)
-	  obj_fn -= primary_wts[i] * fn_vals[i];
-      else
-	for (size_t i=0; i<numUserPrimaryFns; ++i)
-	  obj_fn += primary_wts[i] * fn_vals[i];
+      for (size_t i=0; i<numUserPrimaryFns; ++i)
+	if (use_sense && max_sense[i]) obj_fn -= primary_wts[i] * fn_vals[i];
+	else                           obj_fn += primary_wts[i] * fn_vals[i];
     }
   }
   else { // NLS
@@ -1316,16 +1308,18 @@ objective(const RealVector& fn_vals, const RealVector& primary_wts) const
     available when needed, based on nonlinearRespMapping settings. */
 void Minimizer::
 objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
-		   const RealVector& primary_wts, RealVector& obj_grad) const
+		   const BoolDeque& max_sense, const RealVector& primary_wts,
+		   RealVector& obj_grad) const
 {
   if (obj_grad.length() != numContinuousVars)
     obj_grad.sizeUninitialized(numContinuousVars);
   obj_grad = 0.;
   if (optimizationFlag) { // MOO
+    bool use_sense = !max_sense.empty();
     if (primary_wts.empty()) {
       for (size_t i=0; i<numUserPrimaryFns; ++i) {
 	const Real* fn_grad_i = fn_grads[i];
-	if (maximizeFlag)
+	if (use_sense && max_sense[i])
 	  for (size_t j=0; j<numContinuousVars; ++j)
 	    obj_grad[j] -= fn_grad_i[j];
 	else
@@ -1339,7 +1333,7 @@ objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
       for (size_t i=0; i<numUserPrimaryFns; ++i) {
 	const Real& wt_i      = primary_wts[i];
 	const Real* fn_grad_i = fn_grads[i];
-	if (maximizeFlag)
+	if (use_sense && max_sense[i])
 	  for (size_t j=0; j<numContinuousVars; ++j)
 	    obj_grad[j] -= wt_i * fn_grad_i[j];
 	else
@@ -1372,39 +1366,44 @@ objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
     available when needed, based on nonlinearRespMapping settings. */
 void Minimizer::
 objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
-		  const RealSymMatrixArray& fn_hessians,
-		  const RealVector& primary_wts, RealSymMatrix& obj_hess) const
+		  const RealSymMatrixArray& fn_hessians, 
+		  const BoolDeque& max_sense, const RealVector& primary_wts,
+		  RealSymMatrix& obj_hess) const
 {
   if (obj_hess.numRows() != numContinuousVars)
     obj_hess.shapeUninitialized(numContinuousVars);
   obj_hess = 0.;
   size_t i, j, k;
   if (optimizationFlag) { // MOO
+    bool use_sense = !max_sense.empty();
     if (primary_wts.empty()) {
-      for (j=0; j<numContinuousVars; ++j)
-	for (k=0; k<=j; ++k) {
-	  Real& sum = obj_hess(j,k); sum = 0.;
-	  if (maximizeFlag)
-	    for (i=0; i<numUserPrimaryFns; ++i)
-	      sum -= fn_hessians[i](j,k);
-	  else
-	    for (i=0; i<numUserPrimaryFns; ++i)
-	      sum += fn_hessians[i](j,k);
-	}
+      for (i=0; i<numUserPrimaryFns; ++i) {
+	const RealSymMatrix& fn_hess_i = fn_hessians[i];
+	if (use_sense && max_sense[i])
+	  for (j=0; j<numContinuousVars; ++j)
+	    for (k=0; k<=j; ++k)
+	      obj_hess(j,k) -= fn_hess_i(j,k);
+	else
+	  for (j=0; j<numContinuousVars; ++j)
+	    for (k=0; k<=j; ++k)
+	      obj_hess(j,k) += fn_hess_i(j,k);
+      }
       if (numUserPrimaryFns > 1)
 	obj_hess *= 1./(Real)numUserPrimaryFns; // default weight = 1/n
     }
     else
-      for (j=0; j<numContinuousVars; ++j)
-	for (k=0; k<=j; ++k) {
-	  Real& sum = obj_hess(j,k); sum = 0.;
-	  if (maximizeFlag)
-	    for (i=0; i<numUserPrimaryFns; ++i)
-	      sum -= fn_hessians[i](j,k) * primary_wts[i];
-	  else
-	    for (i=0; i<numUserPrimaryFns; ++i)
-	      sum += fn_hessians[i](j,k) * primary_wts[i];
-	}
+      for (i=0; i<numUserPrimaryFns; ++i) {
+	const RealSymMatrix& fn_hess_i = fn_hessians[i];
+	const Real&               wt_i = primary_wts[i];
+	if (use_sense && max_sense[i])
+	  for (j=0; j<numContinuousVars; ++j)
+	    for (k=0; k<=j; ++k)
+	      obj_hess(j,k) -= wt_i * fn_hess_i(j,k);
+	else
+	  for (j=0; j<numContinuousVars; ++j)
+	    for (k=0; k<=j; ++k)
+	      obj_hess(j,k) += wt_i * fn_hess_i(j,k);
+      }
   }
   else { // NLS
     if (fn_grads.empty()) {

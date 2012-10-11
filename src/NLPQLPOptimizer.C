@@ -267,6 +267,11 @@ void NLPQLPOptimizer::find_optimum()
   const RealVector& lin_eq_targets
     = iteratedModel.linear_eq_constraint_targets();
 
+  // Any MOO/NLS recasting is responsible for setting the scalar min/max
+  // sense within the recast.
+  const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+  bool max_flag = (!max_sense.empty() && max_sense[0]);
+
   // Prior to first call to NLPQLP, initialize X to initial guess,
   // IFAIL to 0, and F/G/DF/DG to objective/constraint values/gradients
   // (refer to p. 18 in NLPQLP20.pdf)
@@ -305,7 +310,7 @@ void NLPQLPOptimizer::find_optimum()
     // pack up the response function values
     if (IFAIL == 0 || IFAIL == -1) {
       const RealVector& local_fns = local_response.function_values();
-      F[0] = (maximizeFlag) ? -local_fns[0] : local_fns[0];
+      F[0] = (max_flag) ? -local_fns[0] : local_fns[0];
       for (i=0; i<numEqConstraints; i++) {
 	if (i<num_nln_eq)                // nonlinear eq
 	  G[i] = local_fns[i+num_nln_ineq+1] - nln_eq_targets[i];
@@ -343,7 +348,7 @@ void NLPQLPOptimizer::find_optimum()
     if (IFAIL == 0 || IFAIL == -2) {
       const RealMatrix& local_grads = local_response.function_gradients();
       size_t index;
-      if (maximizeFlag)
+      if (max_flag)
 	for (j=0; j<numContinuousVars; j++)
 	  DF[j] = -local_grads(j,0);
       else
@@ -439,7 +444,7 @@ void NLPQLPOptimizer::find_optimum()
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
-    best_fns[0] = (maximizeFlag) ? -F[0] : F[0];
+    best_fns[0] = (max_flag) ? -F[0] : F[0];
 
     StLIter i_iter;
     RLIter  m_iter, o_iter;

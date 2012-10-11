@@ -5353,7 +5353,6 @@ static bool
 	MP_(fixedSequenceFlag),
 	MP_(latinizeFlag),
 	MP_(mainEffectsFlag),
-	MP_(maximizeFlag),
 	MP_(methodScaling),
 	MP_(methodUseDerivsFlag),
 	MP_(mutationAdaptive),
@@ -5605,9 +5604,10 @@ static String
         MP_(idResponses);
 
 static StringArray
-	MP_(primaryRespFnScaleTypes),
 	MP_(nonlinearEqScaleTypes),
 	MP_(nonlinearIneqScaleTypes),
+	MP_(primaryRespFnScaleTypes),
+	MP_(primaryRespFnSense),
 	MP_(responseLabels);
 
 static bool

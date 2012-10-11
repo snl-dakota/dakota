@@ -966,10 +966,12 @@ hard_convergence_check(const Response& response_truth,
   // updates are computed directly from the objective/constraint gradients at
   // the current iterate.
   RealVector merit_fn_grad(numContinuousVars, true);
-  const RealVector& wts = iteratedModel.primary_response_fn_weights();
+  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
+  const RealVector&  wts = iteratedModel.primary_response_fn_weights();
   //if (meritFnType == LAGRANGIAN_MERIT)
-  lagrangian_gradient(fns_truth, grads_truth, wts, origNonlinIneqLowerBnds,
-    origNonlinIneqUpperBnds, origNonlinEqTargets, merit_fn_grad);
+  lagrangian_gradient(fns_truth, grads_truth, sense, wts,
+    origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets,
+    merit_fn_grad);
   //else if (meritFnType == AUGMENTED_LAGRANGIAN_MERIT)
   //  augmented_lagrangian_gradient(fns_truth, grads_truth, wts,
   //    origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets,
@@ -1039,7 +1041,8 @@ tr_ratio_check(const RealVector& c_vars_star,
 
   // Consolidate objective fn values and constraint violations into a
   // single merit fn value for center truth/approx and star truth/approx.
-  const RealVector& wts = iteratedModel.primary_response_fn_weights();
+  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
+  const RealVector&  wts = iteratedModel.primary_response_fn_weights();
   if (meritFnType == LAGRANGIAN_MERIT) { // penalty-free (like filter)
 
     // This approach has been observed to be ineffective since NNLS/BVLS
@@ -1048,13 +1051,13 @@ tr_ratio_check(const RealVector& c_vars_star,
 
     // evaluate each merit function with the same lagrangeMult estimates
     // (updated from responseCenterTruth in hard_convergence_check()).
-    merit_fn_center_truth = lagrangian_merit(fns_center_truth, wts,
+    merit_fn_center_truth = lagrangian_merit(fns_center_truth, sense, wts,
       origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets);
-    merit_fn_star_truth = lagrangian_merit(fns_star_truth, wts,
+    merit_fn_star_truth = lagrangian_merit(fns_star_truth, sense, wts,
       origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets);
-    merit_fn_center_approx = lagrangian_merit(fns_center_approx, wts,
+    merit_fn_center_approx = lagrangian_merit(fns_center_approx, sense, wts,
       origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets);
-    merit_fn_star_approx = lagrangian_merit(fns_star_approx, wts,
+    merit_fn_star_approx = lagrangian_merit(fns_star_approx, sense, wts,
       origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets);
 
     //IntRespMCIter d_it;
@@ -1076,14 +1079,17 @@ tr_ratio_check(const RealVector& c_vars_star,
     // (updated from fns_center_truth for sbIterNum == 1 and from
     // fns_star_truth for accepted steps) and penaltyParameter (updated if
     // no reduction in constraint violation).
-    merit_fn_center_truth = augmented_lagrangian_merit(fns_center_truth, wts,
+    merit_fn_center_truth = augmented_lagrangian_merit(fns_center_truth,
+      sense, wts, origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
+      origNonlinEqTargets);
+    merit_fn_star_truth = augmented_lagrangian_merit(fns_star_truth, sense, wts,
       origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets);
-    merit_fn_star_truth = augmented_lagrangian_merit(fns_star_truth, wts,
-      origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets);
-    merit_fn_center_approx = augmented_lagrangian_merit(fns_center_approx, wts,
-      origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets);
-    merit_fn_star_approx = augmented_lagrangian_merit(fns_star_approx, wts,
-      origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets);
+    merit_fn_center_approx = augmented_lagrangian_merit(fns_center_approx,
+      sense, wts, origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
+      origNonlinEqTargets);
+    merit_fn_star_approx = augmented_lagrangian_merit(fns_star_approx,
+      sense, wts, origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
+      origNonlinEqTargets);
   }
   //else if (meritFnType == FILTER_AREA) {
     // Early concept of filter area
@@ -1099,10 +1105,10 @@ tr_ratio_check(const RealVector& c_vars_star,
     update_penalty(fns_center_truth, fns_star_truth);
 
     // evaluate each merit function with updated/adapted penaltyParameter
-    merit_fn_center_truth  = penalty_merit(fns_center_truth, wts);
-    merit_fn_star_truth    = penalty_merit(fns_star_truth, wts);
-    merit_fn_center_approx = penalty_merit(fns_center_approx, wts);
-    merit_fn_star_approx   = penalty_merit(fns_star_approx, wts);
+    merit_fn_center_truth  = penalty_merit(fns_center_truth, sense, wts);
+    merit_fn_star_truth    = penalty_merit(fns_star_truth, sense, wts);
+    merit_fn_center_approx = penalty_merit(fns_center_approx, sense, wts);
+    merit_fn_star_approx   = penalty_merit(fns_star_approx, sense, wts);
   }
 
 #ifdef DEBUG
@@ -1301,9 +1307,10 @@ update_penalty(const RealVector& fns_center_truth,
     // and penalty value.  The penalty offset is _not_ updated in this case, and
     // the acceptance of these points becomes less likely as the iteration
     // progresses and the penalty ramps up.
-    const RealVector& wts = iteratedModel.primary_response_fn_weights();
-    Real obj_delta = objective(fns_star_truth,   wts)
-                   - objective(fns_center_truth, wts);
+    const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
+    const RealVector&  wts = iteratedModel.primary_response_fn_weights();
+    Real obj_delta = objective(fns_star_truth,   sense, wts)
+                   - objective(fns_center_truth, sense, wts);
     Real cv_delta  = constraint_violation(fns_star_truth,   constraintTol)
                    - constraint_violation(fns_center_truth, constraintTol);
     //Cout << "obj_delta = " << obj_delta << " cv_delta = " << cv_delta << '\n';
@@ -1392,6 +1399,8 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
     // recast without constraints.  In this case, relaxation is not active,
     // the approxSubProbModel has empty bounds/targets, and the original
     // bounds/targets are used.
+    const BoolDeque& sense
+      = sblmInstance->iteratedModel.primary_response_fn_sense();
     const RealVector& wts
       = sblmInstance->iteratedModel.primary_response_fn_weights();
     bool no_sub_prob_con = (sblmInstance->approxSubProbCon == NO_CONSTRAINTS);
@@ -1409,15 +1418,15 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
       Real recast_fn;
       switch (sblmInstance->approxSubProbObj) {
       case SINGLE_OBJECTIVE:
-	recast_fn = sblmInstance->objective(surrogate_fns, wts);
+	recast_fn = sblmInstance->objective(surrogate_fns, sense, wts);
 	break;
       case LAGRANGIAN_OBJECTIVE:
-	recast_fn = sblmInstance->lagrangian_merit(surrogate_fns, wts,
+	recast_fn = sblmInstance->lagrangian_merit(surrogate_fns, sense, wts,
 	  nln_ineq_l_bnds, nln_ineq_u_bnds, nln_eq_tgts);
 	break;
       case AUGMENTED_LAGRANGIAN_OBJECTIVE:
-	recast_fn = sblmInstance->augmented_lagrangian_merit(surrogate_fns, wts,
-          nln_ineq_l_bnds, nln_ineq_u_bnds, nln_eq_tgts);
+	recast_fn = sblmInstance->augmented_lagrangian_merit(surrogate_fns,
+	  sense, wts, nln_ineq_l_bnds, nln_ineq_u_bnds, nln_eq_tgts);
 	break;
       }
       recast_response.function_value(recast_fn, 0);
@@ -1427,17 +1436,17 @@ approx_subprob_objective_eval(const Variables& surrogate_vars,
       RealVector recast_grad;
       switch (sblmInstance->approxSubProbObj) {
       case SINGLE_OBJECTIVE:
-	sblmInstance->objective_gradient(surrogate_fns, surrogate_grads, wts,
-	  recast_grad);
+	sblmInstance->objective_gradient(surrogate_fns, surrogate_grads, sense,
+	  wts, recast_grad);
 	break;
       case LAGRANGIAN_OBJECTIVE:
-	sblmInstance->lagrangian_gradient(surrogate_fns, surrogate_grads, wts,
-	  nln_ineq_l_bnds, nln_ineq_u_bnds, nln_eq_tgts, recast_grad);
+	sblmInstance->lagrangian_gradient(surrogate_fns, surrogate_grads, sense,
+	  wts, nln_ineq_l_bnds, nln_ineq_u_bnds, nln_eq_tgts, recast_grad);
 	break;
       case AUGMENTED_LAGRANGIAN_OBJECTIVE:
 	sblmInstance->augmented_lagrangian_gradient(surrogate_fns,
-	  surrogate_grads, wts, nln_ineq_l_bnds, nln_ineq_u_bnds, nln_eq_tgts,
-	  recast_grad);
+	  surrogate_grads, sense, wts, nln_ineq_l_bnds, nln_ineq_u_bnds,
+	  nln_eq_tgts, recast_grad);
 	break;
       }
       recast_response.function_gradient(recast_grad, 0);

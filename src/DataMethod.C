@@ -35,8 +35,6 @@ DataMethodRep::DataMethodRep():
   surrBasedGlobalReplacePts(false),
   // Branch and bound
   //branchBndNumSamplesRoot(0), branchBndNumSamplesNode(0),
-  // DOT and CONMIN
-  maximizeFlag(false),
   // DL_SOLVER
   dlDetails(""), dlLib(NULL),
   // NPSOL
@@ -147,9 +145,6 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << surrBasedLocalConstrRelax << surrBasedGlobalReplacePts;
   //<< branchBndNumSamplesRoot << branchBndNumSamplesNode
 
-  // DOT and CONMIN
-  s << maximizeFlag;
-
   // DL_SOLVER
   s << dlDetails;
 
@@ -254,9 +249,6 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> surrBasedLocalConstrRelax >> surrBasedGlobalReplacePts;
   //>> branchBndNumSamplesRoot >> branchBndNumSamplesNode
 
-  // DOT and CONMIN
-  s >> maximizeFlag;
-
   // DL_SOLVER
   s >> dlDetails;
 
@@ -360,9 +352,6 @@ void DataMethodRep::write(std::ostream& s) const
     << surrBasedLocalMeritFn << surrBasedLocalAcceptLogic
     << surrBasedLocalConstrRelax << surrBasedGlobalReplacePts;
   //<< branchBndNumSamplesRoot << branchBndNumSamplesNode
-
-  // DOT and CONMIN
-  s << maximizeFlag;
 
   // DL_SOLVER
   s << dlDetails;

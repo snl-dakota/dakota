@@ -175,12 +175,17 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
   // if initial point, we have a single point to evaluate
   int np = (*start == 1) ? 1 : *maxI*2;
 
+  // Any MOO/NLS recasting is responsible for setting the scalar min/max
+  // sense within the recast.
+  const BoolDeque& max_sense
+    = ncsudirectInstance->iteratedModel.primary_response_fn_sense();
+  bool max_flag = (!max_sense.empty() && max_sense[0]);
+
   // loop over trial points, lift internal DIRECT scaling (mimics
   // DIRinfcn), and either submit for asynch evaluation or compute
   // synchronously
   RealVector local_des_vars(nx, false);
   int  pos = *start-1; // only used for second eval and beyond
-  bool max = ncsudirectInstance->maximizeFlag;
   for (int j=0; j<np; j++) {
 
     if (*start == 1)
@@ -212,7 +217,7 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
 	// record the response in the function vector
 	Real fn_val = ncsudirectInstance->
 	  iteratedModel.current_response().function_value(0);
-	fvec[cnt+j] = (max) ? -fn_val : fn_val;
+	fvec[cnt+j] = (max_flag) ? -fn_val : fn_val;
 	fvec[cnt+j+(*maxfunc)] = feasible;
       }
 
@@ -235,8 +240,8 @@ objective_eval(int *n, double c[], double l[], double u[], int point[],
     // record the responses in the function vector
     IntRespMCIter r_cit = response_map.begin();
     for (int j=0; j<np; ++j, ++r_cit) {
-      fvec[cnt+j] = (max) ? -r_cit->second.function_value(0) :
-	                     r_cit->second.function_value(0);
+      fvec[cnt+j] = (max_flag) ? -r_cit->second.function_value(0) :
+	                          r_cit->second.function_value(0);
       fvec[cnt+j+(*maxfunc)] = feasible;
     }
   }
@@ -349,7 +354,8 @@ void NCSUOptimizer::find_optimum()
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // is used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
-    best_fns[0] = (maximizeFlag) ? -fmin : fmin;
+    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+    best_fns[0] = (!max_sense.empty() && max_sense[0]) ? -fmin : fmin;
     bestResponseArray.front().function_values(best_fns);
   }
 

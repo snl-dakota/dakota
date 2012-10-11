@@ -351,6 +351,11 @@ void CONMINOptimizer::find_optimum()
   size_t i, j, fn_eval_cntr;
   int num_cv = numContinuousVars;
 
+  // Any MOO/NLS recasting is responsible for setting the scalar min/max
+  // sense within the recast.
+  const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+  bool max_flag = (!max_sense.empty() && max_sense[0]);
+
   // Initialize variables internal to CONMIN
   int NSIDE     = 0;   // flag for upper/lower var bounds: 1=bounds, 0=no bounds
   // NSIDE must be set to 0 for unbounded since CONMIN cannot handle having
@@ -469,7 +474,7 @@ void CONMINOptimizer::find_optimum()
       const RealMatrix& local_fn_grads = local_response.function_gradients();
       const int  num_vars = local_fn_grads.numRows();
       for (j=0; j<num_vars; ++j)   // obj. fn. grad. always needed
-	DF[j] = (maximizeFlag) ? -local_fn_grads(j, 0) : local_fn_grads(j, 0);
+	DF[j] = (max_flag) ? -local_fn_grads(j, 0) : local_fn_grads(j, 0);
       // Return the gradients of the active constraints in the matrix "A".
       for (i=0; i<NAC; i++) {
 	// Populate CONMIN's active constraint gradient matrix "A".  For some
@@ -500,7 +505,7 @@ void CONMINOptimizer::find_optimum()
       // Get objective function and constraint values
       // note: no active/inactive distinction needed with constraints
       const RealVector& local_fn_vals = local_response.function_values();
-      objFnValue = (maximizeFlag) ? -local_fn_vals[0] : local_fn_vals[0];
+      objFnValue = (max_flag) ? -local_fn_vals[0] : local_fn_vals[0];
       // CONMIN constraint requests must be mapped to DAKOTA constraints and
       // offsets/multipliers must be applied.
       size_t conmin_constr, dakota_constr;
@@ -547,7 +552,7 @@ void CONMINOptimizer::find_optimum()
   if (!localObjectiveRecast) { // else local_objective_recast_retrieve()
                                // used in Optimizer::post_run()
     RealVector best_fns(numFunctions);
-    best_fns[0] = (maximizeFlag) ? -objFnValue : objFnValue;
+    best_fns[0] = (max_flag) ? -objFnValue : objFnValue;
     // NOTE: best_fn_vals[i] may be recomputed multiple times, but this
     // should be OK so long as all of constraintValues is populated
     // (no active set deletions).

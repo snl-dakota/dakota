@@ -48,7 +48,6 @@ DOTOptimizer::DOTOptimizer(Model& model): Optimizer(model),
   if (outputLevel > NORMAL_OUTPUT) {
     printControl = 7;
     Cout << "DOT Method = " << dotMethod << std::endl;
-    Cout << "DOT maximization = "  << maximizeFlag << std::endl;
     Cout << "DOT print control = " << printControl << std::endl;
   }
   else
@@ -348,7 +347,10 @@ void DOTOptimizer::find_optimum()
   int num_cv = numContinuousVars;
 
   // MINMAX from DOT manual.  Values of 0 or -1 (minimize) or 1 (maximize).
-  int min_max = (maximizeFlag) ? 1 : 0;
+  // Any MOO/NLS recasting is responsible for setting the scalar min/max
+  // sense within the recast.
+  const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+  int min_max = (!max_sense.empty() && max_sense[0]) ? 1 : 0;
 
   // Initialize local bounds and linear constraints
   const RealVector& lower_bnds = iteratedModel.continuous_lower_bounds();

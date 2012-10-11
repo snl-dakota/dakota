@@ -101,7 +101,7 @@ private:
   /// forward mapping: maps multiple primary response functions to a single
   /// weighted objective for single-objective optimizers
   void objective_reduction(const Response& full_response,
-			   const RealVector& full_wts,
+			   const BoolDeque& sense, const RealVector& full_wts,
 			   Response& reduced_response) const;
 
   /// infers MOO/NLS solution from the solution of a single-objective optimizer

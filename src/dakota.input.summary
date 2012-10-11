@@ -95,10 +95,6 @@ KEYWORD12 method
 	  [ constraint_relax
 	    homotopy
 	    ]
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -111,10 +107,6 @@ KEYWORD12 method
 	  )
 	|
 	( dot_frcg
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -136,10 +128,6 @@ KEYWORD12 method
 	  | bfgs
 	  | slp
 	  | sqp
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -152,10 +140,6 @@ KEYWORD12 method
 	  )
 	|
 	( conmin_frcg
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -171,10 +155,6 @@ KEYWORD12 method
 	( conmin
 	  frcg
 	  | mfd
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -202,10 +182,6 @@ KEYWORD12 method
 	  [ verify_level INTEGER ]
 	  [ function_precision REAL ]
 	  [ linesearch_tolerance REAL ]
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -224,10 +200,6 @@ KEYWORD12 method
 	  [ verify_level INTEGER ]
 	  [ function_precision REAL ]
 	  [ linesearch_tolerance REAL ]
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -240,10 +212,6 @@ KEYWORD12 method
 	  )
 	|
 	( nlpql_sqp
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -258,10 +226,6 @@ KEYWORD12 method
 	( optpp_cg
 	  [ max_step REAL ]
 	  [ gradient_tolerance REAL ]
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -289,10 +253,6 @@ KEYWORD12 method
 	  [ centering_parameter REAL ]
 	  [ max_step REAL ]
 	  [ gradient_tolerance REAL ]
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -306,10 +266,6 @@ KEYWORD12 method
 	|
 	( optpp_pds
 	  [ search_scheme_size INTEGER ]
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -329,10 +285,6 @@ KEYWORD12 method
 	  [ synchronization
 	    blocking
 	    | nonblocking
-	    ]
-	  [ optimization_type
-	    minimize
-	    | maximize
 	    ]
 	  [ merit_function
 	    merit_max
@@ -412,10 +364,6 @@ KEYWORD12 method
 	      )
 	    [ mutation_rate REAL ]
 	    ]
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  [ seed INTEGER ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
@@ -479,10 +427,6 @@ KEYWORD12 method
 	      [ mutation_scale REAL ]
 	      )
 	    [ mutation_rate REAL ]
-	    ]
-	  [ optimization_type
-	    minimize
-	    | maximize
 	    ]
 	  [ seed INTEGER ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
@@ -627,10 +571,6 @@ KEYWORD12 method
 	  approx_method_name STRING
 	  | approx_method_pointer STRING
 	  [ replace_points ]
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  )
 	|
 	( efficient_global
@@ -642,10 +582,6 @@ KEYWORD12 method
 	  [ points_file STRING
 	    [ annotated
 	    | freeform ]
-	    ]
-	  [ optimization_type
-	    minimize
-	    | maximize
 	    ]
 	  [ seed INTEGER ]
 	  )
@@ -1097,10 +1033,6 @@ KEYWORD12 method
 	  [ solution_target ALIAS solution_accuracy REAL ]
 	  [ min_boxsize_limit REAL ]
 	  [ volume_boxsize_limit REAL ]
-	  [ optimization_type
-	    minimize
-	    | maximize
-	    ]
 	  )
 	|
 	( local_evidence ALIAS nond_local_evidence
@@ -1648,26 +1580,27 @@ KEYWORD12 responses
 	[ id_responses STRING ]
 	[ descriptors ALIAS response_descriptors STRINGLIST ]
 	( objective_functions ALIAS num_objective_functions INTEGER >= 0
-	  [ objective_function_scale_types STRINGLIST ]
-	  [ objective_function_scales REALLIST ]
-	  [ multi_objective_weights REALLIST ]
+	  [ sense STRINGLIST ]
+	  [ primary_scale_types ALIAS objective_function_scale_types STRINGLIST ]
+	  [ primary_scales ALIAS objective_function_scales REALLIST ]
+	  [ weights ALIAS multi_objective_weights REALLIST ]
 	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0
-	    [ nonlinear_inequality_lower_bounds REALLIST ]
-	    [ nonlinear_inequality_upper_bounds REALLIST ]
-	    [ nonlinear_inequality_scale_types STRINGLIST ]
-	    [ nonlinear_inequality_scales REALLIST ]
+	    [ lower_bounds ALIAS nonlinear_inequality_lower_bounds REALLIST ]
+	    [ upper_bounds ALIAS nonlinear_inequality_upper_bounds REALLIST ]
+	    [ scale_types ALIAS nonlinear_inequality_scale_types STRINGLIST ]
+	    [ scales ALIAS nonlinear_inequality_scales REALLIST ]
 	    ]
 	  [ nonlinear_equality_constraints ALIAS num_nonlinear_equality_constraints INTEGER >= 0
-	    [ nonlinear_equality_targets REALLIST ]
-	    [ nonlinear_equality_scale_types STRINGLIST ]
-	    [ nonlinear_equality_scales REALLIST ]
+	    [ targets ALIAS nonlinear_equality_targets REALLIST ]
+	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST ]
+	    [ scales ALIAS nonlinear_equality_scales REALLIST ]
 	    ]
 	  )
 	|
-	( calibration_terms ALIAS num_least_squares_terms INTEGER >= 0
-	  [ calibration_term_scale_types ALIAS least_squares_term_scale_types STRINGLIST ]
-	  [ calibration_term_scales ALIAS least_squares_term_scales REALLIST ]
-	  [ calibration_weights ALIAS least_squares_weights REALLIST ]
+	( calibration_terms ALIAS least_squares_terms ALIAS num_least_squares_terms INTEGER >= 0
+	  [ primary_scale_types ALIAS calibration_term_scale_types ALIAS least_squares_term_scale_types STRINGLIST ]
+	  [ primary_scales ALIAS calibration_term_scales ALIAS least_squares_term_scales REALLIST ]
+	  [ weights ALIAS calibration_weights ALIAS least_squares_weights REALLIST ]
 	  [ calibration_data_file ALIAS least_squares_data_file STRING
 	    [ num_experiments INTEGER >= 0 ]
 	    [ annotated
@@ -1676,15 +1609,15 @@ KEYWORD12 responses
 	    [ num_std_deviations INTEGER >= 0 ]
 	    ]
 	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0
-	    [ nonlinear_inequality_lower_bounds REALLIST ]
-	    [ nonlinear_inequality_upper_bounds REALLIST ]
-	    [ nonlinear_inequality_scale_types STRINGLIST ]
-	    [ nonlinear_inequality_scales REALLIST ]
+	    [ lower_bounds ALIAS nonlinear_inequality_lower_bounds REALLIST ]
+	    [ upper_bounds ALIAS nonlinear_inequality_upper_bounds REALLIST ]
+	    [ scale_types ALIAS nonlinear_inequality_scale_types STRINGLIST ]
+	    [ scales ALIAS nonlinear_inequality_scales REALLIST ]
 	    ]
 	  [ nonlinear_equality_constraints ALIAS num_nonlinear_equality_constraints INTEGER >= 0
-	    [ nonlinear_equality_targets REALLIST ]
-	    [ nonlinear_equality_scale_types STRINGLIST ]
-	    [ nonlinear_equality_scales REALLIST ]
+	    [ targets ALIAS nonlinear_equality_targets REALLIST ]
+	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST ]
+	    [ scales ALIAS nonlinear_equality_scales REALLIST ]
 	    ]
 	  )
 	| response_functions ALIAS num_response_functions INTEGER >= 0

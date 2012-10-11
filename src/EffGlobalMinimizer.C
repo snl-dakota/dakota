@@ -253,9 +253,10 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
     fHatModel.continuous_variables(c_vars);
     fHatModel.compute_response();
     const RealVector& mean = fHatModel.current_response().function_values();
-    const RealVector& wts  = iteratedModel.primary_response_fn_weights();
-    Real aug_lag = augmented_lagrangian_merit(mean, wts,
-      origNonlinIneqLowerBnds, origNonlinIneqUpperBnds, origNonlinEqTargets);
+    Real aug_lag = augmented_lagrangian_merit(mean,
+      iteratedModel.primary_response_fn_sense(),
+      iteratedModel.primary_response_fn_weights(), origNonlinIneqLowerBnds,
+      origNonlinIneqUpperBnds, origNonlinEqTargets);
 
     Cout << "\nResults of EGO iteration:\nFinal point =\n";
     write_data(Cout, c_vars);
@@ -408,8 +409,9 @@ void EffGlobalMinimizer::minimize_surrogates_on_model()
 		 << test_pt[1] << ' ' << std::setw(13) << variances[i];
 
 	  if (i==numFunctions-1) {
-	    const RealVector& wts = iteratedModel.primary_response_fn_weights();
-	    Real m = augmented_lagrangian_merit(gp_fn, wts,
+	    Real m = augmented_lagrangian_merit(gp_fn,
+	      iteratedModel.primary_response_fn_sense(),
+	      iteratedModel.primary_response_fn_weights(),
 	      origNonlinIneqLowerBnds, origNonlinIneqUpperBnds,
 	      origNonlinEqTargets);
 	    RealVector merit(1);
@@ -454,8 +456,8 @@ EIF_objective_eval(const Variables& sub_model_vars,
 Real EffGlobalMinimizer::
 expected_improvement(const RealVector& means, const RealVector& variances)
 {
-  Real mean = objective(means, iteratedModel.primary_response_fn_weights()),
-       stdv;
+  Real mean = objective(means, iteratedModel.primary_response_fn_sense(),
+			iteratedModel.primary_response_fn_weights()), stdv;
   //double dtemp1=-50.0;
   //double dtemp2=50.0;
   //printf("Phi(%g)=%22.16g phi(%g)=%22.16g\nPhi(%g)=%22.16g phi(%g)=%22.16g\n",
@@ -577,8 +579,9 @@ void EffGlobalMinimizer::get_best_sample()
     fHatModel.continuous_variables(sams);
     fHatModel.compute_response();
     const RealVector& f_hat = fHatModel.current_response().function_values();
-    const RealVector& wts   = iteratedModel.primary_response_fn_weights();
-    fn = augmented_lagrangian_merit(f_hat, wts, origNonlinIneqLowerBnds,
+    fn = augmented_lagrangian_merit(f_hat,
+      iteratedModel.primary_response_fn_sense(),
+      iteratedModel.primary_response_fn_weights(), origNonlinIneqLowerBnds,
       origNonlinIneqUpperBnds, origNonlinEqTargets);
 
     if (fn < fn_star) {

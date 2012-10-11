@@ -99,10 +99,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    [ constraint_relax {0}
 	      homotopy {N_mdm(type,surrBasedLocalConstrRelax_HOMOTOPY)}
 	      ]
-	    [ optimization_type {0}
-	      minimize {N_mdm(false,maximizeFlag)}
-	      | maximize {N_mdm(true,maximizeFlag)}
-	      ]
 	    )
 	  |
 #	  ( branch_and_bound
@@ -124,10 +120,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		| slp  {N_mdm(lit,methodName_dot_slp)}
 		| sqp {N_mdm(lit,methodName_dot_sqp)}
 		)
-	    [ optimization_type {0}
-	      minimize {N_mdm(false,maximizeFlag)}
-	      | maximize {N_mdm(true,maximizeFlag)}
-	      ]
 	    )
 	  |
 	  ( conmin_frcg {N_mdm(lit,methodName_conmin_frcg)}
@@ -136,10 +128,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		  frcg {N_mdm(lit,methodName_conmin_frcg)}
 	        | mfd {N_mdm(lit,methodName_conmin_mfd)}
 	      )
-	    [ optimization_type {0}
-	      minimize {N_mdm(false,maximizeFlag)}
-	      | maximize {N_mdm(true,maximizeFlag)}
-	      ]
 	    )
 	  | dl_solver STRING {N_mdm(slit2,3methodName_dl_solver)}
 	  |
@@ -152,18 +140,9 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    [ verify_level INTEGER {N_mdm(int,verifyLevel)} ]
 	    [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
 	    [ linesearch_tolerance REAL {N_mdm(Real,lineSearchTolerance)} ]
-	    [ optimization_type {0}
-	      minimize {N_mdm(false,maximizeFlag)}
-	      | maximize {N_mdm(true,maximizeFlag)}
-	      ]
 	    )
 	  |
-	  ( nlpql_sqp {N_mdm(lit,methodName_nlpql_sqp)}
-	    [ optimization_type {0}
-	      minimize {N_mdm(false,maximizeFlag)}
-	      | maximize {N_mdm(true,maximizeFlag)}
-	      ]
-	    )
+	  nlpql_sqp {N_mdm(lit,methodName_nlpql_sqp)}
 	  |
 #	  | reduced_sqp
 	  ( optpp_cg {N_mdm(lit,methodName_optpp_cg)}
@@ -185,18 +164,10 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	      )
 	    [ max_step REAL {N_mdm(Real,maxStep)} ]
 	    [ gradient_tolerance REAL {N_mdm(Real,gradientTolerance)} ]
-	    [ optimization_type {0}
-	      minimize {N_mdm(false,maximizeFlag)}
-	      | maximize {N_mdm(true,maximizeFlag)}
-	      ]
 	    )
 	  |
 	  ( optpp_pds {N_mdm(lit,methodName_optpp_pds)}
 	    [ search_scheme_size INTEGER {N_mdm(int,searchSchemeSize)} ]
-	    [ optimization_type {0}
-	      minimize {N_mdm(false,maximizeFlag)}
-	      | maximize {N_mdm(true,maximizeFlag)}
-	      ]
 	    )
 	  |
 	  ( asynch_pattern_search ALIAS coliny_apps {N_mdm(lit,methodName_asynch_pattern_search)}
@@ -207,10 +178,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	    [ synchronization {0}
 	      blocking {N_mdm(lit,evalSynchronize_blocking)}
 	      | nonblocking {N_mdm(lit,evalSynchronize_nonblocking)}
-	      ]
-	    [ optimization_type {0}
-	      minimize {N_mdm(false,maximizeFlag)}
-	      | maximize {N_mdm(true,maximizeFlag)}
 	      ]
 	    [ merit_function {0}
 	      merit_max {N_mdm(lit,meritFunction_merit_max)}
@@ -305,10 +272,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		[ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
 		)
 	      [ mutation_rate REAL {N_mdm(litz,3mutationType_null_mutation)} ]
-	      ]
-	    [ optimization_type {0}
-	      minimize {N_mdm(false,maximizeFlag)}
-	      | maximize {N_mdm(true,maximizeFlag)}
 	      ]
 	    [ seed INTEGER {N_mdm(pint,randomSeed)} ]
 	    )
@@ -432,10 +395,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  approx_method_name STRING {N_mdm(str,subMethodName)}
 	  | approx_method_pointer STRING {N_mdm(str,subMethodPointer)}
 	  [ replace_points {N_mdm(true,surrBasedGlobalReplacePts)} ]
-	  [ optimization_type {0}
-	    minimize {N_mdm(false,maximizeFlag)}
-	    | maximize {N_mdm(true,maximizeFlag)}
-	    ]
 	  )
 	|
 	( ( efficient_global {N_mdm(lit,methodName_efficient_global)}
@@ -448,10 +407,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
                [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
                  freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
               ] 
-	    [ optimization_type {0}
-	      minimize {N_mdm(false,maximizeFlag)}
-	      | maximize {N_mdm(true,maximizeFlag)}
-	      ]
 	    )
 	  |
 	  ( ( ( ( ( polynomial_chaos ALIAS nond_polynomial_chaos {N_mdm(lit,methodName_nond_polynomial_chaos)}
@@ -767,10 +722,6 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	  [ solution_target ALIAS solution_accuracy REAL {N_mdm(Real,solnTarget)} ]
 	  [ min_boxsize_limit REAL {N_mdm(Real,minBoxSize)} ]
 	  [ volume_boxsize_limit REAL {N_mdm(Real,volBoxSize)} ]
-	  [ optimization_type {0}
-	    minimize {N_mdm(false,maximizeFlag)}
-	    | maximize {N_mdm(true,maximizeFlag)}
-	    ]
 	  )
 	|
 	( local_evidence ALIAS nond_local_evidence {N_mdm(lit,methodName_nond_local_evidence)}
@@ -1314,27 +1265,31 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
 KEYWORD12 responses {N_rem3(start,0,stop)}
 	[ id_responses STRING {N_rem(str,idResponses)} ]
 	[ descriptors ALIAS response_descriptors STRINGLIST {N_rem(strL,responseLabels)} ]
+# Note: since NIDR does not support BOOLLIST or ENUMLIST, we employ one of two different alternation list approaches below:
+#       (1) id_* lists used when there are conditional sub-specifications (e.g., mixed grads, mixed Hessians)
+#       (2) STRINGLISTs used for alternation without conditional sub-specifications (e.g., scale_types)
 	( objective_functions ALIAS num_objective_functions INTEGER >= 0 {N_rem(nnintz,numObjectiveFunctions)}
-	  [ objective_function_scale_types STRINGLIST LEN1 objective_functions {N_rem(strL,primaryRespFnScaleTypes)} ]
-	  [ objective_function_scales REALLIST LEN1 objective_functions {N_rem(RealDL,primaryRespFnScales)} ]
-	  [ multi_objective_weights REALLIST LEN objective_functions {N_rem(RealDL,primaryRespFnWeights)} ]
+	  [ sense STRINGLIST LEN1 objective_functions {N_rem(strL,primaryRespFnSense)} ]
+	  [ primary_scale_types ALIAS objective_function_scale_types STRINGLIST LEN1 objective_functions {N_rem(strL,primaryRespFnScaleTypes)} ]
+	  [ primary_scales ALIAS objective_function_scales REALLIST LEN1 objective_functions {N_rem(RealDL,primaryRespFnScales)} ]
+	  [ weights ALIAS multi_objective_weights REALLIST LEN objective_functions {N_rem(RealDL,primaryRespFnWeights)} ]
 	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearIneqConstraints)}
-	    [ nonlinear_inequality_lower_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
-	    [ nonlinear_inequality_upper_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
-	    [ nonlinear_inequality_scale_types STRINGLIST LEN1 nonlinear_inequality_constraints {N_rem(strL,nonlinearIneqScaleTypes)} ]
-	    [ nonlinear_inequality_scales REALLIST LEN1 nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqScales)} ]
+	    [ lower_bounds ALIAS nonlinear_inequality_lower_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
+	    [ upper_bounds ALIAS nonlinear_inequality_upper_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
+	    [ scale_types ALIAS nonlinear_inequality_scale_types STRINGLIST LEN1 nonlinear_inequality_constraints {N_rem(strL,nonlinearIneqScaleTypes)} ]
+	    [ scales ALIAS nonlinear_inequality_scales REALLIST LEN1 nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqScales)} ]
 	    ]
 	  [ nonlinear_equality_constraints ALIAS num_nonlinear_equality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearEqConstraints)}
-	    [ nonlinear_equality_targets REALLIST LEN nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqTargets)} ]
-	    [ nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
-	    [ nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
+	    [ targets ALIAS nonlinear_equality_targets REALLIST LEN nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqTargets)} ]
+	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
+	    [ scales ALIAS nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
 	    ]
 	  )
 	|
-	( calibration_terms ALIAS num_least_squares_terms INTEGER >= 0 {N_rem(nnintz,numLeastSqTerms)}
-	  [ calibration_term_scale_types ALIAS least_squares_term_scale_types STRINGLIST LEN1 calibration_terms {N_rem(strL,primaryRespFnScaleTypes)} ]
-	  [ calibration_term_scales ALIAS least_squares_term_scales REALLIST LEN1 calibration_terms {N_rem(RealDL,primaryRespFnScales)} ]
-	  [ calibration_weights ALIAS least_squares_weights REALLIST LEN calibration_terms {N_rem(RealDL,primaryRespFnWeights)} ]
+	( calibration_terms ALIAS least_squares_terms ALIAS num_least_squares_terms INTEGER >= 0 {N_rem(nnintz,numLeastSqTerms)}
+	  [ primary_scale_types ALIAS calibration_term_scale_types ALIAS least_squares_term_scale_types STRINGLIST LEN1 calibration_terms {N_rem(strL,primaryRespFnScaleTypes)} ]
+	  [ primary_scales ALIAS calibration_term_scales ALIAS least_squares_term_scales REALLIST LEN1 calibration_terms {N_rem(RealDL,primaryRespFnScales)} ]
+	  [ weights ALIAS calibration_weights ALIAS least_squares_weights REALLIST LEN calibration_terms {N_rem(RealDL,primaryRespFnWeights)} ]
 	  [ 
 #           ( calibration_data_arrays {0}
 #             [ num_experiments INTEGER >= 0 {N_rem(nnintz,numExperiments)} ]
@@ -1353,15 +1308,15 @@ KEYWORD12 responses {N_rem3(start,0,stop)}
               )
             ]  
     	  [ nonlinear_inequality_constraints ALIAS num_nonlinear_inequality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearIneqConstraints)}
-  	    [ nonlinear_inequality_lower_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
-  	    [ nonlinear_inequality_upper_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
-  	    [ nonlinear_inequality_scale_types STRINGLIST LEN1 nonlinear_inequality_constraints {N_rem(strL,nonlinearIneqScaleTypes)} ]
-  	    [ nonlinear_inequality_scales REALLIST LEN1 nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqScales)} ]
+  	    [ lower_bounds ALIAS nonlinear_inequality_lower_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqLowerBnds)} ]
+  	    [ upper_bounds ALIAS nonlinear_inequality_upper_bounds REALLIST LEN nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqUpperBnds)} ]
+  	    [ scale_types ALIAS nonlinear_inequality_scale_types STRINGLIST LEN1 nonlinear_inequality_constraints {N_rem(strL,nonlinearIneqScaleTypes)} ]
+  	    [ scales ALIAS nonlinear_inequality_scales REALLIST LEN1 nonlinear_inequality_constraints {N_rem(RealDL,nonlinearIneqScales)} ]
   	    ]
   	  [ nonlinear_equality_constraints ALIAS num_nonlinear_equality_constraints INTEGER >= 0 {N_rem(nnintz,numNonlinearEqConstraints)}
-  	    [ nonlinear_equality_targets REALLIST LEN nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqTargets)} ]
-  	    [ nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
-  	    [ nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
+  	    [ targets ALIAS nonlinear_equality_targets REALLIST LEN nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqTargets)} ]
+  	    [ scale_types ALIAS nonlinear_equality_scale_types STRINGLIST LEN1 nonlinear_equality_constraints {N_rem(strL,nonlinearEqScaleTypes)} ]
+  	    [ scales ALIAS nonlinear_equality_scales REALLIST LEN1 nonlinear_equality_constraints {N_rem(RealDL,nonlinearEqScales)} ]
   	    ]
   	  )
   	| response_functions ALIAS num_response_functions INTEGER >= 0 {N_rem(nnintz,numResponseFunctions)}

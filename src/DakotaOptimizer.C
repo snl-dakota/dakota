@@ -216,6 +216,18 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
     if ( !( methodName == "optpp_pds" || methodName.begins("coliny_") ||
 	    methodName == "moga"      || methodName == "soga" ) )
       iteratedModel.init_communicators(maxConcurrency);
+
+    // an empty RecastModel::primaryRespFnSense would be sufficient
+    // (reflects the minimize default), but here we are explicit.
+    if (localObjectiveRecast) {
+      BoolDeque max_sense(1, false);
+      iteratedModel.primary_response_fn_sense(max_sense);
+    }
+    // Preserve sense through the scaling transformation
+    // TO DO: check for negative scaling, requiring flip of sense
+    else
+      iteratedModel.primary_response_fn_sense(
+	model.primary_response_fn_sense());
   }
   else
     iteratedModel = model;
@@ -366,19 +378,19 @@ primary_resp_recast(const Variables& native_vars, const Variables& scaled_vars,
     Response tmp_response = native_response.copy();
     optimizerInstance->response_modify_n2s(native_vars, native_response,
       tmp_response, 0, 0, optimizerInstance->numUserPrimaryFns);
-    const RealVector& native_wts = optimizerInstance->
-      iteratedModel.subordinate_model().primary_response_fn_weights();
-    optimizerInstance->objective_reduction(tmp_response, native_wts,
-					   iterator_response);
+    Model& sub_model = optimizerInstance->iteratedModel.subordinate_model();
+    optimizerInstance->objective_reduction(tmp_response,
+      sub_model.primary_response_fn_sense(),
+      sub_model.primary_response_fn_weights(), iterator_response);
   }
   else if (scale_transform_needed)
     optimizerInstance->response_modify_n2s(native_vars, native_response,
       iterator_response, 0, 0, optimizerInstance->numUserPrimaryFns);
   else if (optimizerInstance->localObjectiveRecast) {
-    const RealVector& native_wts = optimizerInstance->
-      iteratedModel.subordinate_model().primary_response_fn_weights();
-    optimizerInstance->objective_reduction(native_response, native_wts,
-					   iterator_response);
+    Model& sub_model = optimizerInstance->iteratedModel.subordinate_model();
+    optimizerInstance->objective_reduction(native_response,
+      sub_model.primary_response_fn_sense(),
+      sub_model.primary_response_fn_weights(), iterator_response);
   }
   else {
     // could reach this if variables are scaled and only functions are requested
@@ -396,6 +408,7 @@ primary_resp_recast(const Variables& native_vars, const Variables& scaled_vars,
     currently.  The weightings are used to scale function values,
     gradients, and Hessians as needed. */
 void Optimizer::objective_reduction(const Response& full_response,
+				    const BoolDeque& sense, 
 				    const RealVector& full_wts, 
 				    Response& reduced_response) const
 {
@@ -404,7 +417,7 @@ void Optimizer::objective_reduction(const Response& full_response,
 
   short reduced_asv0 = reduced_response.active_set_request_vector()[0];
   if (reduced_asv0 & 1) { // build objective fn from full_response functions
-    Real sum = objective(full_response.function_values(), full_wts);
+    Real sum = objective(full_response.function_values(), sense, full_wts);
     reduced_response.function_value(sum, 0);    
     if (outputLevel > NORMAL_OUTPUT)
       Cout << "                     " << std::setw(write_precision+7) << sum
@@ -414,7 +427,8 @@ void Optimizer::objective_reduction(const Response& full_response,
   if (reduced_asv0 & 2) { // build obj_grad from full_response gradients
     RealVector obj_grad = reduced_response.function_gradient_view(0);
     objective_gradient(full_response.function_values(),
-		       full_response.function_gradients(), full_wts, obj_grad);
+		       full_response.function_gradients(), sense, full_wts,
+		       obj_grad);
     if (outputLevel > NORMAL_OUTPUT) {
       write_col_vector_trans(Cout, 0, true, true, false,
 			     reduced_response.function_gradients());
@@ -426,7 +440,8 @@ void Optimizer::objective_reduction(const Response& full_response,
     RealSymMatrix obj_hessian = reduced_response.function_hessian_view(0);
     objective_hessian(full_response.function_values(),
 		      full_response.function_gradients(),
-		      full_response.function_hessians(), full_wts, obj_hessian);
+		      full_response.function_hessians(), sense, full_wts,
+		      obj_hessian);
     if (outputLevel > NORMAL_OUTPUT) {
       write_data(Cout, obj_hessian, true, true, false);
       Cout << " obj_fn Hessian\n";

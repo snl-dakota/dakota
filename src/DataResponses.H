@@ -46,6 +46,15 @@ public:
   //- Heading: Data
   //
 
+  /// string identifier for the responses specification data set
+  /// (from the \c id_responses specification in \ref RespSetId)
+  String idResponses;
+  /// the response labels array (from the \c response_descriptors
+  /// specification in \ref RespLabels)
+  StringArray responseLabels;
+
+  // counts
+
   /// number of objective functions (from the \c
   /// num_objective_functions specification in \ref RespFnOpt)
   size_t numObjectiveFunctions;
@@ -62,6 +71,27 @@ public:
   /// num_response_functions specification in \ref RespFnGen)
   size_t numResponseFunctions;
 
+  // response set weights, bounds, targets
+
+  /// optimization sense for each objective function: minimize or maximize
+  StringArray primaryRespFnSense;
+  /// vector of weightings for multiobjective optimization or weighted
+  /// nonlinear least squares (from the \c multi_objective_weights
+  /// specification in \ref RespFnOpt and the \c least_squares_weights
+  /// specification in \ref RespFnLS)
+  RealVector primaryRespFnWeights;
+  /// vector of nonlinear inequality constraint lower bounds (from the \c
+  /// nonlinear_inequality_lower_bounds specification in \ref RespFnOpt)
+  RealVector nonlinearIneqLowerBnds;
+  /// vector of nonlinear inequality constraint upper bounds (from the \c
+  /// nonlinear_inequality_upper_bounds specification in \ref RespFnOpt)
+  RealVector nonlinearIneqUpperBnds;
+  /// vector of nonlinear equality constraint targets (from the \c
+  /// nonlinear_equality_targets specification in \ref RespFnOpt)
+  RealVector nonlinearEqTargets;
+ 
+  // scaling data
+
   /// vector of primary response function scaling types (from the \c
   /// objective_function_scale_types specification in \ref RespFnOpt and
   /// the \c least_squares_term_scale_types specification in \ref RespFnLS)
@@ -70,26 +100,21 @@ public:
   /// objective_function_scales specification in \ref RespFnOpt and
   /// the \c least_squares_term_scales specification in \ref RespFnLS)
   RealVector primaryRespFnScales;
-  /// vector of weightings for multiobjective optimization or weighted
-  /// nonlinear least squares (from the \c multi_objective_weights
-  /// specification in \ref RespFnOpt and the \c least_squares_weights
-  /// specification in \ref RespFnLS)
-  RealVector primaryRespFnWeights;
+  /// vector of nonlinear inequality constraint scaling types (from the \c
+  /// nonlinear_inequality_scale_types specification in \ref RespFnOpt)
+  StringArray nonlinearIneqScaleTypes;
+  /// vector of nonlinear inequality constraint scaling factors (from the \c
+  /// nonlinear_inequality_scales specification in \ref RespFnOpt)
+  RealVector nonlinearIneqScales;
+  /// vector of nonlinear equality constraint scaling types (from the \c
+  /// nonlinear_equality_scale_types specification in \ref RespFnOpt)
+  StringArray nonlinearEqScaleTypes;
+  /// vector of nonlinear equality constraint scaling factors (from the \c
+  /// nonlinear_equality_scales specification in \ref RespFnOpt)
+  RealVector nonlinearEqScales;
 
   // experimental data (for least squares and Bayesian algorithms)
 
-  /// list of num_experiments x num_config_vars configuration variable values
-  RealVector expConfigVars;
-  /// list of num_calibration_terms observation data
-  RealVector expObservations;
-  /// list of 1 or num_calibration_terms observation standard deviations
-  RealVector expStdDeviations;
-
-  /// name of experimental data file containing response data (with
-  /// optional state variable and sigma data) to read
-  String expDataFileName;
-  /// whether the experimental data is in annotated format
-  bool expDataFileAnnotated;
   /// number of rows of experimental data (replicates or distinct experiments)
   size_t numExperiments;
   /// number of experimental configuration vars (state variables) in
@@ -98,29 +123,20 @@ public:
   /// whether to read num_responses standard deviations from each row
   /// of data file
   size_t numExpStdDeviations;
+  /// list of num_experiments x num_config_vars configuration variable values
+  RealVector expConfigVars;
+  /// list of num_calibration_terms observation data
+  RealVector expObservations;
+  /// list of 1 or num_calibration_terms observation standard deviations
+  RealVector expStdDeviations;
+  /// name of experimental data file containing response data (with
+  /// optional state variable and sigma data) to read
+  String expDataFileName;
+  /// whether the experimental data is in annotated format
+  bool expDataFileAnnotated;
 
-  /// vector of nonlinear inequality constraint lower bounds (from the \c
-  /// nonlinear_inequality_lower_bounds specification in \ref RespFnOpt)
-  RealVector nonlinearIneqLowerBnds;
-  /// vector of nonlinear inequality constraint upper bounds (from the \c
-  /// nonlinear_inequality_upper_bounds specification in \ref RespFnOpt)
-  RealVector nonlinearIneqUpperBnds;
-  /// vector of nonlinear inequality constraint scaling types (from the \c
-  /// nonlinear_inequality_scale_types specification in \ref RespFnOpt)
-  StringArray nonlinearIneqScaleTypes;
-  /// vector of nonlinear inequality constraint scaling factors (from the \c
-  /// nonlinear_inequality_scales specification in \ref RespFnOpt)
-  RealVector nonlinearIneqScales;
-  /// vector of nonlinear equality constraint targets (from the \c
-  /// nonlinear_equality_targets specification in \ref RespFnOpt)
-  RealVector nonlinearEqTargets;
-  /// vector of nonlinear equality constraint scaling types (from the \c
-  /// nonlinear_equality_scale_types specification in \ref RespFnOpt)
-  StringArray nonlinearEqScaleTypes;
-  /// vector of nonlinear equality constraint scaling factors (from the \c
-  /// nonlinear_equality_scales specification in \ref RespFnOpt)
-  RealVector nonlinearEqScales;
- 
+  // derivative settings
+
   /// gradient type: none, numerical, analytic, or mixed (from the \c
   /// no_gradients, \c numerical_gradients, \c analytic_gradients, and
   /// \c mixed_gradients specifications in \ref RespGrad)
@@ -171,12 +187,6 @@ public:
   /// mixed Hessian analytic identifiers (from the \c id_analytic_hessians
   /// specification in \ref RespHessMixed)
   IntList idAnalyticHessians;
-  /// string identifier for the responses specification data set
-  /// (from the \c id_responses specification in \ref RespSetId)
-  String idResponses;
-  /// the response labels array (from the \c response_descriptors
-  /// specification in \ref RespLabels)
-  StringArray responseLabels;
 
 private:
 

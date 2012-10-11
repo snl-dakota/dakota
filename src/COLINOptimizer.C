@@ -597,6 +597,22 @@ void COLINOptimizer::set_solver_parameters()
     total_pattern_size = 2*numContinuousVars;
   }
   else {
+
+    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+    bool use_sense = !max_sense.empty();
+    if (use_sense) {
+      if (numObjectiveFns == 1)
+	colinSolver->property("sense") = (max_sense[0]) ?
+	  colin::maximization : colin::minimization;
+      else {
+	std::vector<colin::optimizationSense> min_max(numObjectiveFns);
+	for (size_t i=0; i<numObjectiveFns; ++i)
+	  min_max[i] = (max_sense[i]) ?
+	    colin::maximization : colin::minimization;
+	colinSolver->property("sense") = min_max;
+      }
+    }
+
     // Previous COBYLA, Pattern Search, and Solis-Wets parameters.
 
     const Real& init_delta 
@@ -1103,8 +1119,8 @@ void COLINOptimizer::post_run(std::ostream& s)
       obj_fn_metric = DBL_MAX;
     else
       obj_fn_metric = (localObjectiveRecast) ?
-	objective(fn_vals, model_for_sort.primary_response_fn_weights()) :
-	fn_vals[0];
+	objective(fn_vals, model_for_sort.primary_response_fn_sense(),
+		  model_for_sort.primary_response_fn_weights()) : fn_vals[0];
 
     RealRealPair metrics(constraintViolation, obj_fn_metric);
 

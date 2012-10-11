@@ -99,7 +99,12 @@ int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
   // synchronize_nowait returns a fresh set of jobs (i.e., returned
   // completions are removed from DAKOTA's lists).
 
-  size_t numNonlinearEqConstraints = iteratedModel.num_nonlinear_eq_constraints();
+  size_t numNonlinearEqConstraints
+    = iteratedModel.num_nonlinear_eq_constraints();
+  // Any MOO/NLS recasting is responsible for setting the scalar min/max
+  // sense within the recast.
+  const BoolDeque& sense = iteratedModel.primary_response_fn_sense();
+  bool max_flag = (!sense.empty() && sense[0]);
 
   if (modelAsynchFlag) {
 
@@ -123,7 +128,7 @@ int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
 	apps_f.resize(1);
 	apps_cEqs.resize(numNonlinearEqConstraints);
 	apps_cIneqs.resize(constrMapIndices.size()-numNonlinearEqConstraints);
-	apps_f[0] = (maximizeFlag) ? -local_fn_vals[0] : local_fn_vals[0];
+	apps_f[0] = (max_flag) ? -local_fn_vals[0] : local_fn_vals[0];
 	for (int i=0; i<apps_cEqs.size(); i++)
 	  apps_cEqs[i] = constrMapOffsets[i] +
 	    constrMapMultipliers[i]*local_fn_vals[constrMapIndices[i]+1];
@@ -157,7 +162,7 @@ int APPSEvalMgr::recv(int& apps_tag, HOPSPACK::Vector& apps_f,
       apps_f.resize(1);
       apps_cEqs.resize(numNonlinearEqConstraints);
       apps_cIneqs.resize(constrMapIndices.size()-numNonlinearEqConstraints);
-      apps_f[0] = (maximizeFlag) ? -local_fn_vals[0] : local_fn_vals[0];
+      apps_f[0] = (max_flag) ? -local_fn_vals[0] : local_fn_vals[0];
       for (int i=0; i<apps_cEqs.size(); i++)
 	apps_cEqs[i] = constrMapOffsets[i] +
 	  constrMapMultipliers[i]*local_fn_vals[constrMapIndices[i]+1];

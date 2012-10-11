@@ -149,6 +149,28 @@ Model::Model(BaseConstructor, ProblemDescDB& problem_db):
   estDerivsFlag(false), evaluationCapacity(1), initCommsBcastFlag(false),
   modelAutoGraphicsFlag(false), modelRep(NULL), referenceCount(1)
 {
+  // Define primaryRespFnSense BoolDeque from DB StringArray
+  StringArray db_sense
+    = problem_db.get_sa("responses.primary_response_fn_sense");
+  if (!db_sense.empty()) {
+    size_t i, num_sense = db_sense.size(),
+      num_primary = currentResponse.num_functions()
+                  - userDefinedConstraints.num_nonlinear_ineq_constraints()
+                  - userDefinedConstraints.num_nonlinear_eq_constraints();
+    primaryRespFnSense.resize(num_primary);
+    if (num_sense == num_primary)
+      for (i=0; i<num_primary; ++i)
+	primaryRespFnSense[i] = db_sense[i].toLower().begins("max");
+    else if (num_sense == 1)
+      primaryRespFnSense.assign(num_primary, 
+				db_sense[0].toLower().begins("max"));
+    else {
+      Cerr << "Error: wrong length in sense array.  Expected 0, 1, or "
+	   << num_primary << " but saw " << num_sense << "." << std::endl;
+      abort_handler(-1);
+    }
+  }
+
   // Promote fdGradSS/fdHessByFnSS/fdHessByGradSS to defaults if needed.
   // Note: the fdSS arrays specialize by variable, whereas mixed grads/Hessians
   // specialize by function.

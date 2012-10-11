@@ -75,7 +75,7 @@ protected:
 
   /// compute a Lagrangian function from a set of function values
   Real lagrangian_merit(const RealVector& fn_vals,
-			const RealVector& primary_wts,
+			const BoolDeque&  sense, const RealVector& primary_wts,
 			const RealVector& nln_ineq_l_bnds,
 			const RealVector& nln_ineq_u_bnds,
 			const RealVector& nln_eq_tgts);
@@ -83,6 +83,7 @@ protected:
   /// compute the gradient of the Lagrangian function
   void lagrangian_gradient(const RealVector& fn_vals,
 			   const RealMatrix& fn_grads,
+			   const BoolDeque&  sense,
 			   const RealVector& primary_wts,
 			   const RealVector& nln_ineq_l_bnds,
 			   const RealVector& nln_ineq_u_bnds,
@@ -91,6 +92,7 @@ protected:
 
   /// compute an augmented Lagrangian function from a set of function values
   Real augmented_lagrangian_merit(const RealVector& fn_vals,
+				  const BoolDeque&  sense,
 				  const RealVector& primary_wts,
 				  const RealVector& nln_ineq_l_bnds,
 				  const RealVector& nln_ineq_u_bnds,
@@ -99,6 +101,7 @@ protected:
   /// compute the gradient of the augmented Lagrangian function
   void augmented_lagrangian_gradient(const RealVector& fn_vals,
 				     const RealMatrix& fn_grads,
+				     const BoolDeque&  sense,
 				     const RealVector& primary_wts,
 				     const RealVector& nln_ineq_l_bnds,
 				     const RealVector& nln_ineq_u_bnds,
@@ -106,11 +109,13 @@ protected:
 				     RealVector& alag_grad);
 
   /// compute a penalty function from a set of function values
-  Real penalty_merit(const RealVector& fn_vals, const RealVector& primary_wts);
+  Real penalty_merit(const RealVector& fn_vals, const BoolDeque& sense,
+		     const RealVector& primary_wts);
 
   /// compute the gradient of the penalty function
   void penalty_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
-			const RealVector& primary_wts, RealVector& pen_grad);
+			const BoolDeque& sense, const RealVector& primary_wts,
+			RealVector& pen_grad);
 
   /// compute the constraint violation from a set of function values
   Real constraint_violation(const RealVector& fn_vals,

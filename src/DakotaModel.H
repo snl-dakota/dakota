@@ -707,8 +707,12 @@ public:
   /// return the mixed Hessian analytic IDs (hessIdQuasi)
   const IntList& hessian_id_quasi() const;
 
+  /// set the optimization sense for multiple objective functions
+  void primary_response_fn_sense(const BoolDeque& sense);
+  /// get the optimization sense for multiple objective functions
+  const BoolDeque& primary_response_fn_sense() const;
   /// get the relative weightings for multiple objective functions or least
-  /// squares terms.  Used by ConcurrentStrategy for Pareto set optimization.
+  /// squares terms
   const RealVector& primary_response_fn_weights() const;
 
   /// indicates potential usage of estimate_derivatives() based on
@@ -911,6 +915,9 @@ protected:
   /// container for random variable distribution parameters
   Pecos::DistributionParams distParams;
 
+  /// array of flags (one per primary function) for switching the
+  /// sense to maximize the primary function (default is minimize)
+  BoolDeque primaryRespFnSense;
   /// primary response function weightings (either weights for
   /// multiobjective optimization or weighted least squares)
   RealVector primaryRespFnWts;
@@ -1013,27 +1020,21 @@ private:
   /// history of vars populated in asynch_compute_response() and used in
   /// synchronize().
   VariablesList varsList;
-
   /// if estimate_derivatives() is used, transfers ASVs from
   /// asynch_compute_response() to synchronize()
   std::list<ShortArray> asvList;
-
   /// if estimate_derivatives() is used, transfers ActiveSets from
   /// asynch_compute_response() to synchronize()
   std::list<ActiveSet> setList;
-
   /// transfers initial_map flag values from estimate_derivatives() to
   /// synchronize_derivatives()
   BoolList initialMapList;
-
   /// transfers db_capture flag values from estimate_derivatives() to
   /// synchronize_derivatives()
   BoolList dbCaptureList;
-
   /// transfers database captures from estimate_derivatives() to
   /// synchronize_derivatives()
   ResponseList dbResponseList;
-
   /// transfers deltas from estimate_derivatives() to synchronize_derivatives()
   RealList deltaList;
 
@@ -1041,7 +1042,6 @@ private:
   /// Used in synchronize() as a key for combining finite difference
   /// responses into numerical gradients.
   IntIntMap numFDEvalsMap;
-
   /// maps from the raw evaluation ids returned by derived_synchronize() and
   /// derived_synchronize_nowait() to the corresponding modelEvalCntr id.
   /// Used for rekeying responseMap.
@@ -1049,20 +1049,17 @@ private:
 
   /// previous parameter vectors used in computing s for quasi-Newton updates
   RealVectorArray xPrev;
-
   /// previous gradient vectors used in computing y for quasi-Newton updates
   RealMatrix fnGradsPrev;
 
   /// quasi-Newton Hessian approximations
   RealSymMatrixArray quasiHessians;
-
   /// number of quasi-Newton Hessian updates applied
   SizetArray numQuasiUpdates;
 
   /// used to return a map of responses for asynchronous evaluations in final
   /// concatenated form.  The similar map in Interface contains raw responses.
   IntResponseMap responseMap;
-
   /// used to cache the data returned from derived_synchronize_nowait() prior
   /// to sequential input into the graphics
   IntResponseMap graphicsRespMap;
@@ -2450,6 +2447,17 @@ inline const IntList& Model::hessian_id_numerical() const
 
 inline const IntList& Model::hessian_id_quasi() const
 { return (modelRep) ? modelRep->hessIdQuasi : hessIdQuasi; }
+
+
+inline void Model::primary_response_fn_sense(const BoolDeque& sense)
+{
+  if (modelRep) modelRep->primaryRespFnSense = sense;
+  else          primaryRespFnSense = sense;
+}
+
+
+inline const BoolDeque& Model::primary_response_fn_sense() const
+{ return (modelRep) ? modelRep->primaryRespFnSense : primaryRespFnSense; }
 
 
 inline const RealVector& Model::primary_response_fn_weights() const

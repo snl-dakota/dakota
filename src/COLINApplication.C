@@ -474,8 +474,6 @@ dakota_response_to_colin_response(const Response &dakota_response,
       break;
     }
     fnvals_v[i] = dakota_response.function_value(i);
-    //fnvals_v[i] = (maximizeFlag) ? -dakota_response.function_value(i) :
-    //                                dakota_response.function_value(i);
   }
   if (fns) {
     colin_responses.insert(make_pair(mf_info, fnvals));

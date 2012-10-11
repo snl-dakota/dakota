@@ -179,9 +179,6 @@ class JEGAOptimizer::Evaluator :
          */
         Model& _model;
 
-        /// flag for sense of optimization
-        bool _maximizeFlag;
-
     /*
     ===========================================================================
     Public Methods
@@ -423,7 +420,7 @@ class JEGAOptimizer::Evaluator :
             ) const
         {
             EDDY_FUNC_DEBUGSCOPE
-            return new Evaluator(*this, algorithm, _model, _maximizeFlag);
+            return new Evaluator(*this, algorithm, _model);
         }
 
 
@@ -444,12 +441,10 @@ class JEGAOptimizer::Evaluator :
          */
         Evaluator(
             GeneticAlgorithm& algorithm,
-            Model& model,
-            bool max
+            Model& model
             ) :
                 GeneticAlgorithmEvaluator(algorithm),
-                _model(model),
-                _maximizeFlag(max)
+                _model(model)
         {
             EDDY_FUNC_DEBUGSCOPE
         }
@@ -464,8 +459,7 @@ class JEGAOptimizer::Evaluator :
             const Evaluator& copy
             ) :
                 GeneticAlgorithmEvaluator(copy),
-                _model(copy._model),
-                _maximizeFlag(copy._maximizeFlag)
+                _model(copy._model)
         {
             EDDY_FUNC_DEBUGSCOPE
         }
@@ -483,12 +477,10 @@ class JEGAOptimizer::Evaluator :
         Evaluator(
             const Evaluator& copy,
             GeneticAlgorithm& algorithm,
-            Model& model,
-            bool max
+            Model& model
             ) :
                 GeneticAlgorithmEvaluator(copy, algorithm),
-                _model(model),
-                _maximizeFlag(max)
+                _model(model)
         {
             EDDY_FUNC_DEBUGSCOPE
         }
@@ -530,12 +522,6 @@ class JEGAOptimizer::EvaluatorCreator :
          */
         Model& _theModel;
 
-        /**
-         * \brief Flag determining sense of the optimization: minimize
-         *        or maximize.
-         */
-        bool _theMaximizeFlag;
-
     /*
     ===========================================================================
     Subclass Overridable Methods
@@ -560,7 +546,7 @@ class JEGAOptimizer::EvaluatorCreator :
             )
         {
             EDDY_FUNC_DEBUGSCOPE
-	      return new Evaluator(alg, _theModel, _theMaximizeFlag);
+	      return new Evaluator(alg, _theModel);
         }
 
     /*
@@ -577,11 +563,9 @@ class JEGAOptimizer::EvaluatorCreator :
          *                 created evaluator.
          */
         EvaluatorCreator(
-            Model& theModel,
-	    bool max
+            Model& theModel
             ) :
-                _theModel(theModel),
-		_theMaximizeFlag(max)
+                _theModel(theModel)
         {
             EDDY_FUNC_DEBUGSCOPE
         }
@@ -1013,7 +997,7 @@ JEGAOptimizer::LoadDakotaResponses(
 
     RealVector fn_vals(this->numFunctions);
     for(size_t i=0; i<this->numObjectiveFns; i++)
-      fn_vals[i]= (maximizeFlag) ? -des.GetObjective(i) : des.GetObjective(i);
+      fn_vals[i]= des.GetObjective(i);
 
     // JEGA constraint ordering is nonlinear inequality, nonlinear equality,
     // linear inequality, linear equality
@@ -1440,9 +1424,17 @@ JEGAOptimizer::LoadTheObjectiveFunctions(
     // Dakota will soon support mixed extremization schemes.
     // Dakota does not support labeling objectives.  Until it does,
     // we will create a label that looks like "Nature Type Index".
+    const StringArray&  labels = iteratedModel.response_labels();
+    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
+    bool use_sense = !max_sense.empty();
     for(size_t i=0; i<this->numObjectiveFns; ++i)
+      if (use_sense && max_sense[i])
+        pConfig.AddNonlinearMaximizeObjective(
+	    "Non-Linear Maximize " + labels[i]
+            );
+      else
         pConfig.AddNonlinearMinimizeObjective(
-            "Non-Linear Minimize " + asstring(i)
+            "Non-Linear Minimize " + labels[i]
             );
 
     // see to it that the numbers match up.
@@ -1863,7 +1855,7 @@ JEGAOptimizer::JEGAOptimizer(
 	= std::numeric_limits<std::size_t>::max(); // moga returns all Pareto
 
     // We only ever need one EvaluatorCreator so we can create it now.
-    this->_theEvalCreator = new EvaluatorCreator(iteratedModel, maximizeFlag);
+    this->_theEvalCreator = new EvaluatorCreator(iteratedModel);
 
     // The following is not performed in the Optimizer constructor since
     // maxConcurrency is updated above. The matching free_communicators()
@@ -1986,10 +1978,8 @@ JEGAOptimizer::Evaluator::RecordResponses(
     const size_t ncn = target.GetNCN();
 
     // record the objective functions first.
-    for(size_t i=0; i<nof; ++i, ++loc) {
-        Real obj_fn = (_maximizeFlag) ? -from[loc] : from[loc];
-        into.SetObjective(i, obj_fn);
-    }
+    for(size_t i=0; i<nof; ++i, ++loc)
+        into.SetObjective(i, from[loc]);
 
     // now record the nonlinear constraints.  To do this,
     // we will need to know how many there are.  They will be the

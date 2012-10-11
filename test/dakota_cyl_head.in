@@ -40,7 +40,6 @@ method,
 #	  linear_inequality_upper_bounds = 3.7		#1,#6,#11,#16,#21
 #	  linear_equality_constraint_matrix = 1. 1.	#2,#7,#12,#17,#22
 #	  linear_equality_targets = 3.7			#2,#7,#12,#17,#22
-#	  optimization maximize	    			#4,#9,#14,#19,#24
 
 variables,
 	continuous_design = 2
@@ -55,6 +54,7 @@ interface,
 
 responses,
 	objective_functions = 1
+#	sense = "maximize"				    #4,#9,#14,#19,#24
 	nonlinear_inequality_constraints = 3		    #0,#1,#2,#4,#5,#6,#7,#9,#10,#11,#12,#14,#15,#16,#17,#19,#20,#21,#22,#24
 #	nonlinear_inequality_lower_bounds = -.25 -.25 -.25  #4,#9,#14,#19,#24
 #	nonlinear_inequality_upper_bounds = 1e50 1e50 1e50  #4,#9,#14,#19,#24

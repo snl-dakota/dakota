@@ -627,6 +627,8 @@ void RecastModel::update_from_sub_model()
   else {
     // primary response function weights
     primaryRespFnWts = subModel.primary_response_fn_weights();
+    // primary response function sense (min or max)
+    primaryRespFnSense = subModel.primary_response_fn_sense();
 
     // primary response function labels
     const StringArray& sm_resp_labels = subModel.response_labels();

@@ -1712,7 +1712,8 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 	{ "labels", P responseLabels},
 	{ "nonlinear_equality_scale_types", P nonlinearEqScaleTypes},
 	{ "nonlinear_inequality_scale_types", P nonlinearIneqScaleTypes},
-	{ "primary_response_fn_scale_types", P primaryRespFnScaleTypes}};
+	{ "primary_response_fn_scale_types", P primaryRespFnScaleTypes},
+	{ "primary_response_fn_sense", P primaryRespFnSense}};
     #undef P
 
     KW<StringArray, DataResponsesRep> *kw;
@@ -2297,7 +2298,6 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 	{"fsu_quasi_mc.fixed_sequence", P fixedSequenceFlag},
 	{"latinize", P latinizeFlag},
 	{"main_effects", P mainEffectsFlag},
-	{"maximize_flag", P maximizeFlag},
 	{"mutation_adaptive", P mutationAdaptive},
 	{"nl2sol.regression_diagnostics", P regressDiag},
 	{"nond.piecewise_basis", P piecewiseBasis},

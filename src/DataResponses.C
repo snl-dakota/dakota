@@ -19,81 +19,82 @@ namespace Dakota {
 // Default constructor:
 DataResponsesRep::DataResponsesRep(): numObjectiveFunctions(0),
   numNonlinearIneqConstraints(0), numNonlinearEqConstraints(0),
-  numLeastSqTerms(0), numResponseFunctions(0), 
-  // Experimental data
-  expDataFileAnnotated(true), numExperiments(1), numExpConfigVars(0),
-  numExpStdDeviations(0),
-  ignoreBounds(false), centralHess(false),
-  methodSource("dakota"), intervalType("forward"), referenceCount(1)
+  numLeastSqTerms(0), numResponseFunctions(0), numExperiments(1),
+  numExpConfigVars(0), numExpStdDeviations(0), expDataFileAnnotated(true),
+  ignoreBounds(false), centralHess(false), methodSource("dakota"),
+  intervalType("forward"), referenceCount(1)
 { }
 
 
 void DataResponsesRep::write(MPIPackBuffer& s) const
 {
-  s << numObjectiveFunctions << numNonlinearIneqConstraints
+  s << idResponses << responseLabels
+    // counts
+    << numObjectiveFunctions << numNonlinearIneqConstraints
     << numNonlinearEqConstraints << numLeastSqTerms << numResponseFunctions
-    << primaryRespFnScaleTypes << primaryRespFnScales << primaryRespFnWeights
-
-    // Experimental data
-    << expConfigVars << expObservations << expStdDeviations
-    << expStdDeviations << expDataFileName << expDataFileAnnotated
+    // weights, bounds, targets
+    << primaryRespFnSense << primaryRespFnWeights << nonlinearIneqLowerBnds
+    << nonlinearIneqUpperBnds << nonlinearEqTargets
+    // scaling data
+    << primaryRespFnScaleTypes << primaryRespFnScales << nonlinearIneqScaleTypes
+    << nonlinearIneqScales << nonlinearEqScaleTypes << nonlinearEqScales 
+    // experimental data
     << numExperiments << numExpConfigVars << numExpStdDeviations
-
-    << nonlinearIneqLowerBnds << nonlinearIneqUpperBnds
-    << nonlinearIneqScaleTypes  << nonlinearIneqScales << nonlinearEqTargets
-    << nonlinearEqScaleTypes << nonlinearEqScales 
-    << gradientType << hessianType
-    << ignoreBounds << centralHess << quasiHessianType << methodSource 
-    << intervalType
-    << fdGradStepSize << fdHessStepSize << idNumericalGrads << idAnalyticGrads
-    << idNumericalHessians << idQuasiHessians << idAnalyticHessians
-    << idResponses << responseLabels;
+    << expConfigVars << expObservations << expStdDeviations << expDataFileName
+    << expDataFileAnnotated
+    // derivative settings
+    << gradientType << hessianType << ignoreBounds << centralHess
+    << quasiHessianType << methodSource << intervalType << fdGradStepSize
+    << fdHessStepSize << idNumericalGrads << idAnalyticGrads
+    << idNumericalHessians << idQuasiHessians << idAnalyticHessians;
 }
 
 
 void DataResponsesRep::read(MPIUnpackBuffer& s)
 {
-  s >> numObjectiveFunctions >> numNonlinearIneqConstraints
+  s >> idResponses >> responseLabels
+    // counts
+    >> numObjectiveFunctions >> numNonlinearIneqConstraints
     >> numNonlinearEqConstraints >> numLeastSqTerms >> numResponseFunctions
-    >> primaryRespFnScaleTypes >> primaryRespFnScales >> primaryRespFnWeights
-
-    // Experimental data
-    >> expConfigVars >> expObservations >> expStdDeviations
-    >> expStdDeviations >> expDataFileName >> expDataFileAnnotated
+    // weights, bounds, targets
+    >> primaryRespFnSense >> primaryRespFnWeights >> nonlinearIneqLowerBnds
+    >> nonlinearIneqUpperBnds >> nonlinearEqTargets
+    // scaling data
+    >> primaryRespFnScaleTypes >> primaryRespFnScales >> nonlinearIneqScaleTypes
+    >> nonlinearIneqScales >> nonlinearEqScaleTypes >> nonlinearEqScales 
+    // experimental data
     >> numExperiments >> numExpConfigVars >> numExpStdDeviations
-
-    >> nonlinearIneqLowerBnds >> nonlinearIneqUpperBnds
-    >> nonlinearIneqScaleTypes  >> nonlinearIneqScales >> nonlinearEqTargets
-    >> nonlinearEqScaleTypes >> nonlinearEqScales 
-    >> gradientType >> hessianType
-    >> ignoreBounds >> centralHess >> quasiHessianType >> methodSource
-    >> intervalType
-    >> fdGradStepSize >> fdHessStepSize >> idNumericalGrads >> idAnalyticGrads
-    >> idNumericalHessians >> idQuasiHessians >> idAnalyticHessians
-    >> idResponses >> responseLabels;
+    >> expConfigVars >> expObservations >> expStdDeviations >> expDataFileName
+    >> expDataFileAnnotated
+    // derivative settings
+    >> gradientType >> hessianType >> ignoreBounds >> centralHess
+    >> quasiHessianType >> methodSource >> intervalType >> fdGradStepSize
+    >> fdHessStepSize >> idNumericalGrads >> idAnalyticGrads
+    >> idNumericalHessians >> idQuasiHessians >> idAnalyticHessians;
 }
 
 
 void DataResponsesRep::write(std::ostream& s) const
 {
-  s << numObjectiveFunctions << numNonlinearIneqConstraints
+  s << idResponses << responseLabels
+    // counts
+    << numObjectiveFunctions << numNonlinearIneqConstraints
     << numNonlinearEqConstraints << numLeastSqTerms << numResponseFunctions
-    << primaryRespFnScaleTypes << primaryRespFnScales << primaryRespFnWeights
-
-    // Experimental data
-    << expConfigVars << expObservations << expStdDeviations
-    << expStdDeviations << expDataFileName << expDataFileAnnotated
+    // weights, bounds, targets
+    << primaryRespFnSense << primaryRespFnWeights << nonlinearIneqLowerBnds
+    << nonlinearIneqUpperBnds << nonlinearEqTargets
+    // scaling data
+    << primaryRespFnScaleTypes << primaryRespFnScales << nonlinearIneqScaleTypes
+    << nonlinearIneqScales << nonlinearEqScaleTypes << nonlinearEqScales 
+    // experimental data
     << numExperiments << numExpConfigVars << numExpStdDeviations
-
-    << nonlinearIneqLowerBnds << nonlinearIneqUpperBnds
-    << nonlinearIneqScaleTypes  << nonlinearIneqScales << nonlinearEqTargets
-    << nonlinearEqScaleTypes << nonlinearEqScales 
-    << gradientType << hessianType
-    << ignoreBounds << centralHess << quasiHessianType << methodSource
-    << intervalType
-    << fdGradStepSize << fdHessStepSize << idNumericalGrads << idAnalyticGrads
-    << idNumericalHessians << idQuasiHessians << idAnalyticHessians
-    << idResponses << responseLabels;
+    << expConfigVars << expObservations << expStdDeviations << expDataFileName
+    << expDataFileAnnotated
+    // derivative settings
+    << gradientType << hessianType << ignoreBounds << centralHess
+    << quasiHessianType << methodSource << intervalType << fdGradStepSize
+    << fdHessStepSize << idNumericalGrads << idAnalyticGrads
+    << idNumericalHessians << idQuasiHessians << idAnalyticHessians;
 }
 
 

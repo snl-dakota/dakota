@@ -297,10 +297,6 @@ public:
   // (from the \c num_samples_at_node specification in \ref MethodBandB)
   //int branchBndNumSamplesNode;
 
-  // DOT and CONMIN
-  /// the \c optimization_type specification in \ref MethodDOTDC
-  bool maximizeFlag;
-
   // DL_SOLVER
 
   /// string of options for a dynamically linked solver
