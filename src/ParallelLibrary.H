@@ -584,8 +584,12 @@ private:
   //- Heading: Convenience member functions
   //
 
-  /// convenience function for initializing from specific comm
-  void init_mpi_comm(MPI_Comm dakota_mpi_comm);
+  /// convenience function for initializing DAKOTA's top-level MPI
+  /// communicators, based on dakotaMPIComm
+  void init_mpi_comm();
+
+  /// initialize DAKOTA and UTILIB timers
+  void initialize_timers();
 
   /// split a parent communicator into child server communicators
   void init_communicators(const ParallelLevel& parent_pl,

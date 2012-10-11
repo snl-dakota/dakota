@@ -68,44 +68,92 @@ ParallelLibrary::ParallelLibrary(int& argc, char**& argv):
   // detect parallel launch of DAKOTA using mpirun/mpiexec/poe/etc.
   mpirunFlag = detect_parallel_launch(argc, argv);
 
-  // Initialize timers.  UTILIB start times are logged, rather than using
-  // InitializeTiming() & Elapsed functions, since this avoids conflicts w/
-  // other calls to these functions performed w/i SGOPT.  NOTES: 
-  // (1) local timer uses clock(), which returns the _sum_ of the user & system
-  //     times of the calling process _and_ its terminated child processes for
-  //     which it has executed the wait() function, the pclose() function, or 
-  //     the system() function.
-  // (2) utilib uses getrusage on Sun for CPU time.  getrusage records time 
-  //     used by the current process _or_ its terminated and waited-for child 
-  //     processes (RUSAGE_SELF or RUSAGE_CHILDREN).
-  // When no children (direct interface), local & UTILIB CPU times are the same.
-  startClock   = clock();
-#ifdef DAKOTA_UTILIB
-  utilib::exception_mngr::set_mode(utilib::exception_mngr::Standard);
-  startCPUTime = CPUSeconds();       // see utilib/src/sys/seconds.cpp
-  startWCTime  = WallClockSeconds(); // see utilib/src/sys/seconds.cpp
-#endif // DAKOTA_UTILIB
+  initialize_timers();
 
-  // Initialize MPI if and only if DAKOTA launched in parallel (mpirunFlag).
+#ifdef DAKOTA_HAVE_MPI
+  // Initialize MPI if and only if DAKOTA launched in parallel from
+  // the command-line (mpirunFlag).  Here DAKOTA owns MPI.
+  if (mpirunFlag) {
+    MPI_Init(&argc, &argv); // See comment above regarding argv and argc
+    ownMPIFlag = true; // own MPI_Init, so call MPI_Finalize in destructor 
+  }
+#endif
+
+  init_mpi_comm();
+}
+
+
+/** This constructor provides a library mode default ParallelLibrary.
+    It does not call MPI_Init, but rather gathers data from
+    MPI_COMM_WORLD if MPI_Init has been called elsewhere. */
+ParallelLibrary::ParallelLibrary(): dakotaMPIComm(MPI_COMM_WORLD), worldRank(0),
+  worldSize(1), mpirunFlag(false), ownMPIFlag(false), dummyFlag(false),
+  stdOutputToFile(false), stdErrorToFile(false), checkFlag(false),
+  preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false),
+  startClock(0), stopRestartEvals(0),
+  currPLIter(parallelLevels.end()), currPCIter(parallelConfigurations.end())
+{
+  initialize_timers();
+
+#ifdef DAKOTA_HAVE_MPI
+  // Do not initialize MPI, but check if initialized.
+  int initialized = 0;
+  MPI_Initialized(&initialized);
+  if (initialized)
+    mpirunFlag = true;
+#endif
+
+  init_mpi_comm();
+}
+
+
+/** This constructor provides a library mode ParallelLibrary,
+    accepting an MPI communicator that might not be MPI_COMM_WORLD.
+    It does not call MPI_Init, but rather gathers data from
+    dakota_mpi_comm if MPI_Init has been called elsewhere. */
+ParallelLibrary::ParallelLibrary(MPI_Comm dakota_mpi_comm): 
+  dakotaMPIComm(dakota_mpi_comm), worldRank(0), worldSize(1), 
+  mpirunFlag(false), ownMPIFlag(false), dummyFlag(false),
+  stdOutputToFile(false), stdErrorToFile(false), checkFlag(false),
+  preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false), 
+  startClock(0), stopRestartEvals(0),
+  currPLIter(parallelLevels.end()), currPCIter(parallelConfigurations.end())
+{
+  initialize_timers();
+
+#ifdef DAKOTA_HAVE_MPI
+  // Do not initialize MPI, but check if initialized.
+  int initialized = 0;
+  MPI_Initialized(&initialized);
+  if (initialized)
+    mpirunFlag = true;
+#endif
+
+  init_mpi_comm();
+}
+
+
+/// shared function for initializing based on passed MPI_Comm
+void ParallelLibrary::init_mpi_comm()
+{
+  // do not initialize MPI.  Get worldRank/worldSize if available
   ParallelLevel pl;
 #ifdef DAKOTA_HAVE_MPI // mpi available
   if (mpirunFlag) {
-    MPI_Init(&argc, &argv); // See comment above regarding argv and argc
-    MPI_Comm_rank(MPI_COMM_WORLD, &worldRank);
-    MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
+    MPI_Comm_rank(dakotaMPIComm, &worldRank);
+    MPI_Comm_size(dakotaMPIComm, &worldSize);
 
-    pl.serverIntraComm = MPI_COMM_WORLD;
+    pl.serverIntraComm = dakotaMPIComm;
     pl.serverCommRank  = worldRank;
     pl.serverCommSize  = worldSize;
 
-    ownMPIFlag = true; // own MPI_Init, so call MPI_Finalize in destructor 
     startMPITime = MPI_Wtime();
   }
   else
     pl.serverIntraComm = MPI_COMM_NULL;
 
   if (worldSize > 1) {
-    if (worldRank == 0)
+    if (worldRank==0)
       Cout << "Running MPI executable in parallel on " << worldSize 
            << " processors.\n";
   }
@@ -133,84 +181,25 @@ ParallelLibrary::ParallelLibrary(int& argc, char**& argv):
 }
 
 
-/** This constructor provides a library mode default ParallelLibrary.
-    It does not call MPI_Init, but rather gathers data from
-    MPI_COMM_WORLD if MPI_Init has been called elsewhere. */
-ParallelLibrary::ParallelLibrary(): dakotaMPIComm(MPI_COMM_WORLD), worldRank(0),
-  worldSize(1), mpirunFlag(false), ownMPIFlag(false), dummyFlag(false),
-  stdOutputToFile(false), stdErrorToFile(false), checkFlag(false),
-  preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false),
-  startClock(0), stopRestartEvals(0),
-  currPLIter(parallelLevels.end()), currPCIter(parallelConfigurations.end())
+void ParallelLibrary::initialize_timers()
 {
-  init_mpi_comm(dakotaMPIComm);
-}
-
-
-/** This constructor provides a library mode ParallelLibrary,
-    accepting an MPI communicator that might not be MPI_COMM_WORLD.
-    It does not call MPI_Init, but rather gathers data from
-    dakota_mpi_comm if MPI_Init has been called elsewhere. */
-ParallelLibrary::ParallelLibrary(MPI_Comm dakota_mpi_comm): 
-  dakotaMPIComm(dakota_mpi_comm), worldRank(0), worldSize(1), 
-  mpirunFlag(false), ownMPIFlag(false), dummyFlag(false),
-  stdOutputToFile(false), stdErrorToFile(false), checkFlag(false),
-  preRunFlag(true), runFlag(true), postRunFlag(true), userModesFlag(false), 
-  startClock(0), stopRestartEvals(0),
-  currPLIter(parallelLevels.end()), currPCIter(parallelConfigurations.end())
-{
-  init_mpi_comm(dakotaMPIComm);
-}
-
-
-/// shared function for initializing based on passed MPI_Comm
-void ParallelLibrary::init_mpi_comm(MPI_Comm dakota_mpi_comm)
-{
+  // Initialize timers.  UTILIB start times are logged, rather than using
+  // InitializeTiming() & Elapsed functions, since this avoids conflicts w/
+  // other calls to these functions performed w/i SGOPT.  NOTES: 
+  // (1) local timer uses clock(), which returns the _sum_ of the user & system
+  //     times of the calling process _and_ its terminated child processes for
+  //     which it has executed the wait() function, the pclose() function, or 
+  //     the system() function.
+  // (2) utilib uses getrusage on Sun for CPU time.  getrusage records time 
+  //     used by the current process _or_ its terminated and waited-for child 
+  //     processes (RUSAGE_SELF or RUSAGE_CHILDREN).
+  // When no children (direct interface), local & UTILIB CPU times are the same.
   startClock   = clock();
 #ifdef DAKOTA_UTILIB
   utilib::exception_mngr::set_mode(utilib::exception_mngr::Standard);
   startCPUTime = CPUSeconds();       // see utilib/src/sys/seconds.cpp
   startWCTime  = WallClockSeconds(); // see utilib/src/sys/seconds.cpp
 #endif // DAKOTA_UTILIB
-
-  // do not initialize MPI.  Get worldRank/worldSize if available
-  ParallelLevel pl;
-#ifdef DAKOTA_HAVE_MPI // mpi available
-  int initialized = 0;
-  MPI_Initialized(&initialized);
-  if (initialized) {
-    mpirunFlag = true;
-    MPI_Comm_rank(dakota_mpi_comm, &worldRank);
-    MPI_Comm_size(dakota_mpi_comm, &worldSize);
-
-    pl.serverIntraComm = dakota_mpi_comm;
-    pl.serverCommRank  = worldRank;
-    pl.serverCommSize  = worldSize;
-
-    startMPITime = MPI_Wtime();
-  }
-  else
-    pl.serverIntraComm = MPI_COMM_NULL;
-
-  if (worldSize > 1) {
-    if (worldRank==0)
-      Cout << "Running MPI executable in parallel on " << worldSize 
-           << " processors.\n";
-  }
-  else
-    Cout << "Running MPI executable in serial mode.\n";
-#else // mpi not available
-  pl.serverIntraComm = MPI_COMM_NULL;
-  Cout << "Running serial executable in serial mode.\n";
-#endif // DAKOTA_HAVE_MPI
-
-  parallelLevels.push_back(pl);
-  currPLIter = parallelLevels.begin();
-  increment_parallel_configuration();
-
-  Dak_pl = this;
-  if (!mpirunFlag)
-    start_dakota_heartbeat(-1); // -1 ==> take interval from $DAKOTA_HEARTBEAT
 }
 
 
