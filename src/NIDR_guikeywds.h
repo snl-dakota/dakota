@@ -1463,7 +1463,7 @@ static GuiKeyWord
 		{"objective_function_scales",0x806,0,3,0,1864,0,0.,0.,0.,0,0,0,"objective_functions"},
 		{"primary_scale_types",0x80f,0,2,0,1863,0,0.,0.,0.,0,0,0,"objective_functions"},
 		{"primary_scales",0x80e,0,3,0,1865,0,0.,0.,0.,0,0,0,"objective_functions"},
-		{"sense",0x80f,0,1,0,1861,0,0.,0.,0.,0,0,0,"objective_functions"},
+		{"sense",0x80f,0,1,0,1861,0,0.,0.,0.,0,"{Optimization sense} RespCommands.html#RespFnOpt",0,"objective_functions"},
 		{"weights",14,0,4,0,1867,0,0.,0.,0.,0,0,0,"objective_functions"}
 		},
 	kw_212[8] = {

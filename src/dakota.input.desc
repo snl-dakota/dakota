@@ -1925,6 +1925,8 @@ TAG "responses/objective_functions"
 	DESC "{Number of objective functions} RespCommands.html#RespFnOpt"
 
 TAG "responses/objective_functions/sense"
+	DESC "{Optimization sense} RespCommands.html#RespFnOpt"
+
 TAG "responses/objective_functions/primary_scale_types"
 TAG "responses/objective_functions/primary_scales"
 TAG "responses/objective_functions/weights"

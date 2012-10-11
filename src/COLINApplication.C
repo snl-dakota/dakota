@@ -149,14 +149,15 @@ void COLINApplication::set_problem(Model& model) {
  
   const BoolDeque& max_sense = model.primary_response_fn_sense();
   if (!max_sense.empty()) {
+    // COLINApplication derived from a (general) multi-objective problem type of
+    // Application<MO_MINLP2_problem>, so don't need to manage a scalar sense.
     //if (numObjectiveFns == 1)
-    //  colinProblem.second->property("sense") = (max_sense[0]) ?
-    //    colin::maximization : colin::minimization;
+    //  _sense = (max_sense[0]) ? colin::maximization : colin::minimization;
     //else {
     std::vector<colin::optimizationSense> min_max(numObj);
     for (size_t i=0; i<numObj; ++i)
       min_max[i] = (max_sense[i]) ? colin::maximization : colin::minimization;
-    property("sense") = min_max;
+    _sense = min_max;
     //}
   }
 
