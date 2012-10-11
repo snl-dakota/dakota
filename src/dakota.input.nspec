@@ -1265,7 +1265,7 @@ KEYWORD12 interface {N_ifm3(start,0,stop)}
 KEYWORD12 responses {N_rem3(start,0,stop)}
 	[ id_responses STRING {N_rem(str,idResponses)} ]
 	[ descriptors ALIAS response_descriptors STRINGLIST {N_rem(strL,responseLabels)} ]
-# Note: since NIDR does not support BOOLLIST or ENUMLIST, we employ one of two different alternation list approaches below:
+# Note: since NIDR does not support BOOLLIST or ENUMLIST, we employ one of two different approaches below for array alternation:
 #       (1) id_* lists used when there are conditional sub-specifications (e.g., mixed grads, mixed Hessians)
 #       (2) STRINGLISTs used for alternation without conditional sub-specifications (e.g., scale_types)
 	( objective_functions ALIAS num_objective_functions INTEGER >= 0 {N_rem(nnintz,numObjectiveFunctions)}

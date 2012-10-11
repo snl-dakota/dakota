@@ -1668,6 +1668,11 @@ void DataFitSurrModel::update_from_actual_model()
     }
   }
 
+  // weights and sense for primary response functions
+
+  primaryRespFnWts   = actualModel.primary_response_fn_weights();
+  primaryRespFnSense = actualModel.primary_response_fn_sense();
+
   // nonlinear constraints
 
   if (actualModel.num_nonlinear_ineq_constraints()) {

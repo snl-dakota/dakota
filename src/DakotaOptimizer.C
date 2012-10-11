@@ -218,13 +218,15 @@ Optimizer::Optimizer(Model& model): Minimizer(model),
       iteratedModel.init_communicators(maxConcurrency);
 
     // an empty RecastModel::primaryRespFnSense would be sufficient
-    // (reflects the minimize default), but here we are explicit.
+    // (reflects the minimize default), but might as well be explicit.
     if (localObjectiveRecast) {
       BoolDeque max_sense(1, false);
       iteratedModel.primary_response_fn_sense(max_sense);
     }
-    // Preserve sense through the scaling transformation
-    // TO DO: check for negative scaling, requiring flip of sense
+    // Preserve sense through the scaling transformation.
+    // Note: for a specification of negative scaling, we will assume that
+    // the user's intent is to overlay the scaling and sense as specified,
+    // such that we will not enforce a flip in sense for negative scaling. 
     else
       iteratedModel.primary_response_fn_sense(
 	model.primary_response_fn_sense());

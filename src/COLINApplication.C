@@ -141,8 +141,24 @@ void COLINApplication::set_problem(Model& model) {
   // For multiobjective, this will be taken from the RecastModel and
   // will be consistent with the COLIN iterator's view
 
-  _num_objectives = 
+  //_num_objectives = 
+  //  model.num_functions() - num_nonlinear_constraints.as<size_t>();
+  size_t numObj = 
     model.num_functions() - num_nonlinear_constraints.as<size_t>();
+  _num_objectives = numObj;
+ 
+  const BoolDeque& max_sense = model.primary_response_fn_sense();
+  if (!max_sense.empty()) {
+    //if (numObjectiveFns == 1)
+    //  colinProblem.second->property("sense") = (max_sense[0]) ?
+    //    colin::maximization : colin::minimization;
+    //else {
+    std::vector<colin::optimizationSense> min_max(numObj);
+    for (size_t i=0; i<numObj; ++i)
+      min_max[i] = (max_sense[i]) ? colin::maximization : colin::minimization;
+    property("sense") = min_max;
+    //}
+  }
 
   // Assemble nonlinear inequality constraints followed by equality
   // constraints.

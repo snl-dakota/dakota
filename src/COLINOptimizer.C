@@ -598,21 +598,6 @@ void COLINOptimizer::set_solver_parameters()
   }
   else {
 
-    const BoolDeque& max_sense = iteratedModel.primary_response_fn_sense();
-    bool use_sense = !max_sense.empty();
-    if (use_sense) {
-      if (numObjectiveFns == 1)
-	colinSolver->property("sense") = (max_sense[0]) ?
-	  colin::maximization : colin::minimization;
-      else {
-	std::vector<colin::optimizationSense> min_max(numObjectiveFns);
-	for (size_t i=0; i<numObjectiveFns; ++i)
-	  min_max[i] = (max_sense[i]) ?
-	    colin::maximization : colin::minimization;
-	colinSolver->property("sense") = min_max;
-      }
-    }
-
     // Previous COBYLA, Pattern Search, and Solis-Wets parameters.
 
     const Real& init_delta 

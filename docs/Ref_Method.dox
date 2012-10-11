@@ -533,8 +533,10 @@ scaled, linear constraints are not allowed.
 </ul>
 
 \ref T5d1 "Table 5.1" provides the specification detail for the method
-independent controls involving identifiers, pointers, tolerances,
-limits, output verbosity, speculative gradients, and scaling.
+independent controls involving identifiers, pointers, output
+verbosity, speculative gradients, and scaling, and \ref T5d2 "Table 5.2" 
+provides the specification detail for the method independent controls 
+involving convergence tolerances and iteration limits.
 
 \anchor T5d1
 <table>
@@ -543,8 +545,7 @@ limits, output verbosity, speculative gradients, and scaling.
 Table 5.1
 \endhtmlonly
 Specification detail for the method independent controls: identifiers, 
-pointers, tolerances, limits, output verbosity, speculative gradients, and 
-scaling
+pointers, output verbosity, speculative gradients, and scaling
 </caption>
 <tr>
 <td><b>Description</b>
@@ -577,6 +578,35 @@ scaling
 <td>Optional
 <td>\c normal
 <tr>
+<td>Final solutions
+<td>\c final_solutions
+<td>integer
+<td>Optional
+<td>1
+<tr>
+<td>Scaling flag
+<td>\c scaling
+<td>none
+<td>Optional
+<td>no scaling
+</table>
+
+\anchor T5d2
+<table>
+<caption align = "top">
+\htmlonly
+Table 5.2
+\endhtmlonly
+Specification detail for the method independent controls: convergence 
+tolerances and iteration limits
+</caption>
+<tr>
+<td><b>Description</b>
+<td><b>Keyword</b>
+<td><b>Associated Data</b>
+<td><b>Status</b>
+<td><b>Default</b>
+<tr>
 <td>Maximum iterations
 <td>\c max_iterations
 <td>integer
@@ -601,18 +631,6 @@ scaling
 <td>real
 <td>Optional
 <td>1.e-4
-<tr>
-<td>Final solutions
-<td>\c final_solutions
-<td>integer
-<td>Optional
-<td>1
-<tr>
-<td>Scaling flag
-<td>\c scaling
-<td>none
-<td>Optional
-<td>no scaling
 </table>
 
 Linear inequality constraints can be supplied with the \c
@@ -645,16 +663,15 @@ and the defaults for the equality constraint targets enforce a value
 of \c 0. for each constraint
 \f[Ax = 0.0\f]
 
-Currently, DOT, CONMIN, NPSOL, NLSSOL, and OPT++ all support
-specialized handling of linear constraints (either directly through
-the algorithm itself or indirectly through the DAKOTA wrapper). SCOLIB
-optimizers will support linear constraints in future releases.  Linear
-constraints need not be computed by the user's interface on every
-function evaluation; rather the coefficients, bounds, and targets of
-the linear constraints can be provided at start up, allowing the
-optimizers to track the linear constraints internally. It is important
-to recognize that linear constraints are those constraints that are
-linear in the \e design variables, e.g.:
+Currently, APPS, CONMIN, DOT, JEGA, NLSSOL, NLPQL, NPSOL, OPT++, and 
+SCOLIB all support specialized handling of linear constraints (either
+directly through the algorithm itself or indirectly through the DAKOTA
+wrapper).  Linear constraints need not be computed by the user's
+interface on every function evaluation; rather the coefficients,
+bounds, and targets of the linear constraints can be provided at start
+up, allowing the optimizers to track the linear constraints
+internally. It is important to recognize that linear constraints are
+those constraints that are linear in the \e design variables, e.g.:
 \f[0.0 \leq 3x_1 - 4x_2 + 2x_3 \leq 15.0\f]
 \f[x_1 + x_2 + x_3 \geq 2.0\f]
 \f[x_1 + x_2 - x_3 = 1.0\f]
@@ -707,14 +724,14 @@ continuous design variable scaling.  When automatic scaling is in use
 for linear constraints they are linearly scaled by a computed
 characteristic value, but not affinely to [0,1].
 
-\ref T5d2 "Table 5.2" provides the specification detail for the
+\ref T5d3 "Table 5.3" provides the specification detail for the
 method independent controls involving linear constraints.
 
-\anchor T5d2
+\anchor T5d3
 <table>
 <caption align = "top">
 \htmlonly
-Table 5.2
+Table 5.3
 \endhtmlonly
 Specification detail for the method independent controls: linear 
 inequality and equality constraints
@@ -848,40 +865,12 @@ studies. Lastly, specialized handling of linear constraints is
 supported with DOT; linear constraint coefficients, bounds, and
 targets can be provided to DOT at start-up and tracked
 internally. Specification detail for these method independent controls
-is provided in Tables \ref T5d1 "5.1" through \ref T5d2 "5.2".
+is provided in Tables \ref T5d1 "5.1" through \ref T5d3 "5.3".
 
 
 \subsubsection MethodDOTDC DOT method dependent controls
 
-DOT's only method dependent control is \c optimization_type which may
-be either \c minimize or \c maximize. DOT provides the only set of
-methods within DAKOTA which support this control; to convert a
-maximization problem into the minimization formulation assumed by
-other methods, simply change the sign on the objective function (i.e.,
-multiply by -1). \ref T5d3 "Table 5.3" provides the specification
-detail for the DOT methods and their method dependent controls.
-
-\anchor T5d3
-<table>
-<caption align = "top">
-\htmlonly
-Table 5.3
-\endhtmlonly
-Specification detail for the DOT methods
-</caption>
-<tr>
-<td><b>Description</b>
-<td><b>Keyword</b>
-<td><b>Associated Data</b>
-<td><b>Status</b>
-<td><b>Default</b>
-<tr>
-<td>Optimization type
-<td>\c optimization_type
-<td>\c minimize | \c maximize
-<td>Optional group
-<td>\c minimize
-</table>
+DOT does not currently support any method dependent controls. 
 
 
 \subsection MethodNPSOL NPSOL Method
@@ -953,7 +942,7 @@ linear equality constraints, this information can be provided to NPSOL
 at initialization and tracked internally, removing the need for the
 user to provide the values of the linear constraints on every function
 evaluation. Refer to \ref MethodIndControl for additional information
-and to Tables \ref T5d1 "5.1" through \ref T5d2 "5.2" for method
+and to Tables \ref T5d1 "5.1" through \ref T5d3 "5.3" for method
 independent control specification detail.
 
 
@@ -1118,7 +1107,7 @@ Newton methods (\c optpp_newton, \c optpp_q_newton, \c optpp_fd_newton,
 and \c optpp_g_newton); whereas \c optpp_cg must be unconstrained and
 \c optpp_pds can be, at most, bound-constrained. Specification detail 
 for the method independent controls is provided in Tables 
-\ref T5d1 "5.1" through \ref T5d2 "5.2".
+\ref T5d1 "5.1" through \ref T5d3 "5.3".
 
 
 \subsubsection MethodOPTPPDC OPT++ method dependent controls
@@ -1563,7 +1552,7 @@ parallel logic when the DAKOTA configuration supports
 parallelism. Lastly, neither \c speculative gradients nor linear
 constraints are currently supported with SCOLIB.  Specification detail
 for method independent controls is provided in Tables \ref T5d1 "5.1"
-through \ref T5d2 "5.2".
+through \ref T5d3 "5.3".
 
 Some SCOLIB methods exploit parallelism through the use of DAKOTA's
 concurrent function evaluations.  The nature of the algorithms,
