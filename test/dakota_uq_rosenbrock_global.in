@@ -1,6 +1,6 @@
 # DAKOTA INPUT FILE : dakota_uq_rosenbrock_global.in
 
-# timeout overrides: 0=TD180
+# timeout overrides: 0=TD180, 1=TD180
 
 strategy,
 	single_method #graphics
