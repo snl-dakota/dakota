@@ -58,6 +58,14 @@ ApplicationInterface(const ProblemDescDB& problem_db):
   failRecoveryFnVals(
     problem_db.get_rv("interface.failure_capture.recovery_fn_vals"))
 {
+  // set coreMappings flag based on presence of analysis_drivers specification
+  coreMappings = (numAnalysisDrivers > 0);
+  if (!coreMappings && !algebraicMappings) {
+    Cerr << "\nError: no parameter to response mapping defined in "
+	 << "ApplicationInterface.\n" << std::endl;
+    abort_handler(-1);
+  }
+
   // If the user has specified active_set_vector as off, then map() uses a
   // default ASV which is constant for all function evaluations (so that the
   // user need not check the content of the ASV on each evaluation).

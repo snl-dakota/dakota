@@ -21,7 +21,9 @@
 
 
 namespace Dakota {
+
 extern PRPCache data_pairs;
+
 ApproximationInterface::
 ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 		       bool am_cache, const String& am_interface_id,
@@ -40,7 +42,6 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   interfaceId   = "APPROX_INTERFACE";
   interfaceType = "approximation";
   algebraicMappings = false; // for now; *** TO DO ***
-  coreMappings      = true;
 
   // process approxFnIndices.  IntSets are sorted and unique.  Error checking
   // is performed in SurrogateModel and does not need to be replicated here.

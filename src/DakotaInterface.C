@@ -74,10 +74,6 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
     init_evaluation_counters(fnLabels.size());
   }
 
-  // set coreMappings flag based on presence of analysis_drivers specification
-  if (problem_db.get_sa("interface.application.analysis_drivers").empty())
-    coreMappings = false;
-
   // Process the algebraic_mappings file (an AMPL .nl file) to get the number
   // of variables/responses (currently, the tags are converted to index arrays
   // at evaluation time, using the passed vars and response).
@@ -144,13 +140,6 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
 	 << "library provided with the Acro package." << std::endl;
     abort_handler(-1);
 #endif // HAVE_AMPL
-  }
-
-  // this check also performed in IDRProblemDescDB::interface_kwhandler()
-  if (coreMappings == false && algebraicMappings == false) {
-    Cerr << "\nError: no parameter to response mapping defined in Interface.\n"
-	 << std::endl;
-    abort_handler(-1);
   }
 
 #ifdef REFCOUNT_DEBUG

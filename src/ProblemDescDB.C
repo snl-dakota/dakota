@@ -359,31 +359,47 @@ void ProblemDescDB::check_input()
     int num_errors = 0;
     //if (!strategyCntr) { // Allow strategy omission (default = single_method)
     //  Cerr << "No strategy specification found in input file.\n";
-    //  num_errors++;
+    //  ++num_errors;
     //}
     if (strategyCntr > 1) {
       Cerr << "Multiple strategy specifications not allowed in input file.\n";
-      num_errors++;
+      ++num_errors;
     }
     if (dataMethodList.empty()) {
       Cerr << "No method specification found in input file.\n";
-      num_errors++;
+      ++num_errors;
     } 
-    if (dataModelList.empty()) { // Allow model omission
-      DataModel data_model; // use defaults: modelType == "single"
-      dataModelList.push_back(data_model);
-    }
     if (dataVariablesList.empty()) {
       Cerr << "No variables specification found in input file.\n";
-      num_errors++;
+      ++num_errors;
     }
     if (dataInterfaceList.empty()) {
-      Cerr << "No interface specification found in input file.\n";
-      num_errors++;
+      // interface spec may be omitted in case of global data fits
+      bool interface_reqd = true;
+      std::list<DataModel>::iterator dm_iter;
+      for (dm_iter =dataModelList.begin();
+	   dm_iter!=dataModelList.end(); ++dm_iter)
+	if (dm_iter->dataModelRep->surrogateType.begins("global_"))
+	  interface_reqd = false;
+      if (interface_reqd) {
+	Cerr << "No interface specification found in input file.\n";
+	++num_errors;
+      }
+      else {
+	// needed for setting DB interface node to something; prevents errors
+	// in any interface spec data lookups (e.g., Interface base class ctor
+	// called from ApproximationInterface ctor)
+	DataInterface data_interface; // use defaults
+	dataInterfaceList.push_back(data_interface);
+      }
     }
     if (dataResponsesList.empty()) {
       Cerr << "No responses specification found in input file.\n";
-      num_errors++;
+      ++num_errors;
+    }
+    if (dataModelList.empty()) { // Allow model omission
+      DataModel data_model; // use defaults: modelType == "single"
+      dataModelList.push_back(data_model);
     }
 
     if (parallelLib.command_line_user_modes()) {
@@ -394,7 +410,7 @@ void ProblemDescDB::check_input()
       if (!parallelLib.command_line_pre_run_output().empty()) {
 	if (dataMethodList.size() > 1) {
 	  Cerr << "Error: pre-run output only allowed for single method.\n";
-	  num_errors++;
+	  ++num_errors;
 	}
 	else if (!dataMethodList.empty()) {
 	  // exactly one method
@@ -410,7 +426,7 @@ void ProblemDescDB::check_input()
 	    Cerr << "Error: pre-run output not supported for method "
 		 << method_name << "\n       (supported for LHS, "
 		 << "parameter study, DDACE, FSUDACE, and PSUADE methods)\n";
-	    num_errors++;
+	    ++num_errors;
 	  }
 	}
       }
@@ -424,7 +440,7 @@ void ProblemDescDB::check_input()
       if (!parallelLib.command_line_post_run_input().empty()) {
 	if (dataMethodList.size() > 1) {
 	  Cerr << "Error: post-run input only allowed for single method.\n";
-	  num_errors++;
+	  ++num_errors;
 	}
 	else if (!dataMethodList.empty()) {
 	  // exactly one method
@@ -440,7 +456,7 @@ void ProblemDescDB::check_input()
 	    Cerr << "Error: post-run input not supported for method "
 		 << method_name << "\n       (supported for LHS, "
 		 << "parameter study, DDACE, FSUDACE, and PSUADE methods)\n";
-	    num_errors++;
+	    ++num_errors;
 	  }
 	}
       }

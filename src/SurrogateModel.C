@@ -172,67 +172,27 @@ void SurrogateModel::check_submodel_compatibility(const Model& sub_model)
     changed since the last approximation build. */
 bool SurrogateModel::force_rebuild()
 {
-  Model&           actual_model = truth_model();
-  const Variables& actual_vars  = actual_model.current_variables();
-  short sub_model_active_view   = actual_vars.view().first,
-        approx_active_view      = currentVariables.view().first;
+  // force rebuild for change in inactive vars based on sub-model view.  It
+  // is assumed that any recastings within Model recursions do not affect the
+  // inactive variables (while RecastModel::variablesMapping has access to
+  // all of the vars, the convention is to modify only the active vars).
 
-  // define flag for change in inactive variable values based on sub-model view.
-  // It is assumed that any recastings within Model recursions do not affect the
-  // inactive variables (while RecastModel::variablesMapping has access to all
-  // of the vars, the convention is to modify only the active vars).
+  // for global surrogates, force rebuild for change in active bounds
+
+  Model& actual_model       = truth_model();
+  short  approx_active_view = currentVariables.view().first;
   if (actual_model.is_null()) {
-    // compare reference against current inactive top-level data
+    // compare reference vars against current inactive top-level data
     if ( referenceICVars  != currentVariables.inactive_continuous_variables() ||
 	 referenceIDIVars !=
 	 currentVariables.inactive_discrete_int_variables()                   ||
 	 referenceIDRVars !=
 	 currentVariables.inactive_discrete_real_variables() )
       return true;
-  }
-  else if ( approx_active_view == sub_model_active_view  &&
-	    approx_active_view >= RELAXED_DESIGN &&
-        // compare inactive top-level data against inactive sub-model data
-        ( referenceICVars != currentVariables.inactive_continuous_variables() ||
-	  referenceIDIVars !=
-	  currentVariables.inactive_discrete_int_variables()                  ||
-	  referenceIDRVars !=
-	  currentVariables.inactive_discrete_real_variables() ) )
-    return true;
-  else if ( ( approx_active_view == RELAXED_ALL ||
-	      approx_active_view == MIXED_ALL ) &&
-	    sub_model_active_view >= RELAXED_DESIGN ) {
-    // coerce top level data to sub-model view, but don't update sub-model
-    if (truthModelVars.is_null())
-      truthModelVars = actual_vars.copy();
-    truthModelVars.all_continuous_variables(
-      currentVariables.continuous_variables());
-    truthModelVars.all_discrete_int_variables(
-      currentVariables.discrete_int_variables());
-    truthModelVars.all_discrete_real_variables(
-      currentVariables.discrete_real_variables());
-    // perform check on inactive data at sub-model level
-    if ( referenceICVars  != truthModelVars.inactive_continuous_variables()   ||
-	 referenceIDIVars != truthModelVars.inactive_discrete_int_variables() ||
-	 referenceIDRVars != truthModelVars.inactive_discrete_real_variables() )
-      return true;
-  }
-  // TO DO: extend for aleatory/epistemic uncertain views
-  /*
-  Model sub_model = actual_model.subordinate_model();
-  while (sub_model.model_type() == "recast")
-    sub_model = sub_model.subordinate_model();
-  if ( referenceICVars != sub_model.inactive_continuous_variables()     ||
-       referenceIDIVars != sub_model.inactive_discrete_int_variables()  ||
-       referenceIDRVars != sub_model.inactive_discrete_real_variables() )
-    return true;
-  */
 
-  if ( surrogateType.begins("global_") ) {
-
-    if (actual_model.is_null()) {
-      // compare reference against current active top-level data
-      if ( referenceCLBnds != userDefinedConstraints.continuous_lower_bounds()||
+    if ( surrogateType.begins("global_") &&
+	 // compare reference bounds against current active top-level data
+	 ( referenceCLBnds != userDefinedConstraints.continuous_lower_bounds()||
 	   referenceCUBnds != userDefinedConstraints.continuous_upper_bounds()||
 	   referenceDILBnds !=
 	   userDefinedConstraints.discrete_int_lower_bounds()                 ||
@@ -241,184 +201,235 @@ bool SurrogateModel::force_rebuild()
 	   referenceDRLBnds !=
 	   userDefinedConstraints.discrete_real_lower_bounds()                ||
 	   referenceDRUBnds !=
-	   userDefinedConstraints.discrete_real_upper_bounds() )
+	   userDefinedConstraints.discrete_real_upper_bounds() ) )
 	return true;
-    }
-    else if (actual_model.model_type() == "recast") {
-      // check for internal changes within subModel definition since the
-      // SurrogateModel may be in a standard variable space (such that the
-      // outer level values/bounds do not reflect inner level updates).
+  }
+  else { // actual_model is defined
+    const Variables& actual_vars = actual_model.current_variables();
+    short sub_model_active_view  = actual_vars.view().first;
 
-      // force_rebuild() is called within the context of an approximate
-      // derived_compute_response(), whereas update_actual_model() and
-      // update_global() are called within the context of build_approximation().
-      // Therefore, one must be cautious with assuming that top-level updates
-      // have propagated to lower levels.  (The only current use case involves
-      // uSpaceModel.force_rebuild() within NonDExpansion::compute_expansion(),
-      // although it may prove useful for other u-space approximations within
-      // PCE/SC and local/global reliability).
-
-      // Dive through Model recursion to bypass recasting.  This is not readily
-      // handled within new Model virtual fns since the type of approximation
-      // (known here, but not w/i virtual fns) could dictate different checks.
-      Model sub_model = actual_model.subordinate_model();
-      while (sub_model.model_type() == "recast")
-	sub_model = sub_model.subordinate_model();
-
-      if (referenceCLBnds != sub_model.continuous_lower_bounds()     ||
-	  referenceCUBnds != sub_model.continuous_upper_bounds()     ||
-	  referenceDILBnds != sub_model.discrete_int_lower_bounds()  ||
-	  referenceDIUBnds != sub_model.discrete_int_upper_bounds()  ||
-	  referenceDRLBnds != sub_model.discrete_real_lower_bounds() ||
-	  referenceDRUBnds != sub_model.discrete_real_upper_bounds())
-	return true;
-    }
-    else if ( approx_active_view == sub_model_active_view && 
-	// compare active top-level data against active sub-model data
-	( referenceCLBnds != userDefinedConstraints.continuous_lower_bounds() ||
-	  referenceCUBnds != userDefinedConstraints.continuous_upper_bounds() ||
-	  referenceDILBnds !=
-	  userDefinedConstraints.discrete_int_lower_bounds()                  ||
-	  referenceDIUBnds !=
-	  userDefinedConstraints.discrete_int_upper_bounds()                  ||
-	  referenceDRLBnds !=
-	  userDefinedConstraints.discrete_real_lower_bounds()                 ||
-	  referenceDRUBnds !=
-	  userDefinedConstraints.discrete_real_upper_bounds() ) )
+    // compare reference vars against current inactive top-level data
+    if ( approx_active_view == sub_model_active_view  &&
+	 approx_active_view >= RELAXED_DESIGN &&
+	 // compare inactive top-level data against inactive sub-model data
+	 ( referenceICVars != currentVariables.inactive_continuous_variables()||
+	   referenceIDIVars !=
+	   currentVariables.inactive_discrete_int_variables()                 ||
+	   referenceIDRVars !=
+	   currentVariables.inactive_discrete_real_variables() ) )
       return true;
-    else if ( approx_active_view >= RELAXED_DESIGN &&
-	      ( sub_model_active_view == RELAXED_ALL ||
-		sub_model_active_view == MIXED_ALL ) && 
-	// compare top-level data in All view against active sub-model data
-        ( referenceCLBnds !=
-	  userDefinedConstraints.all_continuous_lower_bounds()     ||
-	  referenceCUBnds != 
-	  userDefinedConstraints.all_continuous_upper_bounds()     ||
-	  referenceDILBnds !=
-	  userDefinedConstraints.all_discrete_int_lower_bounds()   ||
-	  referenceDIUBnds !=
-	  userDefinedConstraints.all_discrete_int_upper_bounds()   ||
-	  referenceDRLBnds !=
-	  userDefinedConstraints.all_discrete_real_lower_bounds()  ||
-	  referenceDRUBnds !=
-	  userDefinedConstraints.all_discrete_real_upper_bounds() ) )
-      return true;
-    else if ( ( approx_active_view  == RELAXED_ALL ||
-		approx_active_view  == MIXED_ALL ) &&
+    else if ( ( approx_active_view == RELAXED_ALL ||
+		approx_active_view == MIXED_ALL ) &&
 	      sub_model_active_view >= RELAXED_DESIGN ) {
       // coerce top level data to sub-model view, but don't update sub-model
-      if (truthModelCons.is_null())
-	truthModelCons = actual_model.user_defined_constraints().copy();
-      truthModelCons.all_continuous_lower_bounds(
-	userDefinedConstraints.continuous_lower_bounds());
-      truthModelCons.all_continuous_upper_bounds(
-	userDefinedConstraints.continuous_upper_bounds());
-      truthModelCons.all_discrete_int_lower_bounds(
-	userDefinedConstraints.discrete_int_lower_bounds());
-      truthModelCons.all_discrete_int_upper_bounds(
-	userDefinedConstraints.discrete_int_upper_bounds());
-      truthModelCons.all_discrete_real_lower_bounds(
-	userDefinedConstraints.discrete_real_lower_bounds());
-      truthModelCons.all_discrete_real_upper_bounds(
-	userDefinedConstraints.discrete_real_upper_bounds());
-      // perform check on active data at sub-model level
-      if ( referenceCLBnds  != truthModelCons.continuous_lower_bounds()    ||
-	   referenceCUBnds  != truthModelCons.continuous_upper_bounds()    ||
-	   referenceDILBnds != truthModelCons.discrete_int_lower_bounds()  ||
-	   referenceDIUBnds != truthModelCons.discrete_int_upper_bounds()  ||
-	   referenceDRLBnds != truthModelCons.discrete_real_lower_bounds() ||
-	   referenceDRUBnds != truthModelCons.discrete_real_upper_bounds() )
+      if (truthModelVars.is_null())
+	truthModelVars = actual_vars.copy();
+      truthModelVars.all_continuous_variables(
+        currentVariables.continuous_variables());
+      truthModelVars.all_discrete_int_variables(
+        currentVariables.discrete_int_variables());
+      truthModelVars.all_discrete_real_variables(
+        currentVariables.discrete_real_variables());
+      // perform check on inactive data at sub-model level
+      if ( referenceICVars  != truthModelVars.inactive_continuous_variables() ||
+	   referenceIDIVars !=
+	   truthModelVars.inactive_discrete_int_variables() ||
+	   referenceIDRVars !=
+	   truthModelVars.inactive_discrete_real_variables() )
 	return true;
     }
-
+    // TO DO: extend for aleatory/epistemic uncertain views
     /*
-    // -----------------------COLLAPSED----------------------------------
-    if ( // SBO: rebuild over {d} for each new TR of {d}
-	 // OUU All view: rebuild over {u}+{d} for each new TR of {d}
-	 active_bounds_differ ||
-	 // OUU Distinct view: rebuild over {u} for each new instance of {d}
-	 ( sub_model_active_view >= RELAXED_DESIGN &&
-	   inactive_values_differ ) )
+    Model sub_model = actual_model.subordinate_model();
+    while (sub_model.model_type() == "recast")
+      sub_model = sub_model.subordinate_model();
+    if ( referenceICVars  != sub_model.inactive_continuous_variables()    ||
+         referenceIDIVars != sub_model.inactive_discrete_int_variables()  ||
+         referenceIDRVars != sub_model.inactive_discrete_real_variables() )
       return true;
+    */
 
-    // -----------------------EXPANDED-----------------------------------
-    if (approx_active_view == sub_model_active_view &&
-	approx_active_view >= RELAXED_DESIGN) { // Distinct to Distinct
-      // SBO: rebuild over {d} for each new TR of {d} 
-      // OUU: force rebuild over {u} for each new instance of {d}
-      // inactive bounds are irrelevant
-      if (active_bounds_differ || inactive_values_differ)
+    // compare reference bounds against current active top-level data
+    if ( surrogateType.begins("global_") ) {
+
+      if (actual_model.model_type() == "recast") {
+	// check for internal changes within subModel definition since the
+	// SurrogateModel may be in a standard variable space (such that the
+	// outer level values/bounds do not reflect inner level updates).
+
+	// force_rebuild() is called within the context of an approximate
+	// derived_compute_response(), whereas update_actual_model() and
+	// update_global() are called w/i the context of build_approximation().
+	// Therefore, one must be cautious with assuming that top-level updates
+	// have propagated to lower levels.  (The only current use case involves
+	// uSpaceModel.force_rebuild() w/i NonDExpansion::compute_expansion(),
+	// although it may prove useful for other u-space approximations within
+	// PCE/SC and local/global reliability).
+
+	// Dive through Model recursion to bypass recasting. This is not readily
+	// handled within new Model virtual fns since the type of approximation
+	// (known here, but not w/i virtual fns) could dictate different checks.
+	Model sub_model = actual_model.subordinate_model();
+	while (sub_model.model_type() == "recast")
+	  sub_model = sub_model.subordinate_model();
+
+	if (referenceCLBnds  != sub_model.continuous_lower_bounds()    ||
+	    referenceCUBnds  != sub_model.continuous_upper_bounds()    ||
+	    referenceDILBnds != sub_model.discrete_int_lower_bounds()  ||
+	    referenceDIUBnds != sub_model.discrete_int_upper_bounds()  ||
+	    referenceDRLBnds != sub_model.discrete_real_lower_bounds() ||
+	    referenceDRUBnds != sub_model.discrete_real_upper_bounds())
+	  return true;
+      }
+      else if ( approx_active_view == sub_model_active_view && 
+		// compare active top-level data against active sub-model data
+		( referenceCLBnds !=
+		  userDefinedConstraints.continuous_lower_bounds()    ||
+		  referenceCUBnds !=
+		  userDefinedConstraints.continuous_upper_bounds()    ||
+		  referenceDILBnds !=
+		  userDefinedConstraints.discrete_int_lower_bounds()  ||
+		  referenceDIUBnds !=
+		  userDefinedConstraints.discrete_int_upper_bounds()  ||
+		  referenceDRLBnds !=
+		  userDefinedConstraints.discrete_real_lower_bounds() ||
+		  referenceDRUBnds !=
+		  userDefinedConstraints.discrete_real_upper_bounds() ) )
 	return true;
+      else if ( approx_active_view >= RELAXED_DESIGN &&
+		( sub_model_active_view == RELAXED_ALL ||
+		  sub_model_active_view == MIXED_ALL ) && 
+		// compare top-level data in All view w/ active sub-model data
+		( referenceCLBnds !=
+		  userDefinedConstraints.all_continuous_lower_bounds()     ||
+		  referenceCUBnds != 
+		  userDefinedConstraints.all_continuous_upper_bounds()     ||
+		  referenceDILBnds !=
+		  userDefinedConstraints.all_discrete_int_lower_bounds()   ||
+		  referenceDIUBnds !=
+		  userDefinedConstraints.all_discrete_int_upper_bounds()   ||
+		  referenceDRLBnds !=
+		  userDefinedConstraints.all_discrete_real_lower_bounds()  ||
+		  referenceDRUBnds !=
+		  userDefinedConstraints.all_discrete_real_upper_bounds() ) )
+	return true;
+      else if ( ( approx_active_view  == RELAXED_ALL ||
+		  approx_active_view  == MIXED_ALL ) &&
+		sub_model_active_view >= RELAXED_DESIGN ) {
+	// coerce top level data to sub-model view, but don't update sub-model
+	if (truthModelCons.is_null())
+	  truthModelCons = actual_model.user_defined_constraints().copy();
+	truthModelCons.all_continuous_lower_bounds(
+	  userDefinedConstraints.continuous_lower_bounds());
+	truthModelCons.all_continuous_upper_bounds(
+	  userDefinedConstraints.continuous_upper_bounds());
+	truthModelCons.all_discrete_int_lower_bounds(
+	  userDefinedConstraints.discrete_int_lower_bounds());
+	truthModelCons.all_discrete_int_upper_bounds(
+	  userDefinedConstraints.discrete_int_upper_bounds());
+	truthModelCons.all_discrete_real_lower_bounds(
+	  userDefinedConstraints.discrete_real_lower_bounds());
+	truthModelCons.all_discrete_real_upper_bounds(
+	  userDefinedConstraints.discrete_real_upper_bounds());
+	// perform check on active data at sub-model level
+	if ( referenceCLBnds  != truthModelCons.continuous_lower_bounds()    ||
+	     referenceCUBnds  != truthModelCons.continuous_upper_bounds()    ||
+	     referenceDILBnds != truthModelCons.discrete_int_lower_bounds()  ||
+	     referenceDIUBnds != truthModelCons.discrete_int_upper_bounds()  ||
+	     referenceDRLBnds != truthModelCons.discrete_real_lower_bounds() ||
+	     referenceDRUBnds != truthModelCons.discrete_real_upper_bounds() )
+	  return true;
+      }
+
+      /*
+      // -----------------------COLLAPSED----------------------------------
+      if ( // SBO: rebuild over {d} for each new TR of {d}
+	   // OUU All view: rebuild over {u}+{d} for each new TR of {d}
+	   active_bounds_differ ||
+	   // OUU Distinct view: rebuild over {u} for each new instance of {d}
+	   ( sub_model_active_view >= RELAXED_DESIGN &&
+	     inactive_values_differ ) )
+        return true;
+
+      // -----------------------EXPANDED-----------------------------------
+      if (approx_active_view == sub_model_active_view &&
+	  approx_active_view >= RELAXED_DESIGN) { // Distinct to Distinct
+        // SBO: rebuild over {d} for each new TR of {d} 
+        // OUU: force rebuild over {u} for each new instance of {d}
+        // inactive bounds are irrelevant
+        if (active_bounds_differ || inactive_values_differ)
+	  return true;
+      }
+      else if ( approx_active_view   == sub_model_active_view &&
+                ( approx_active_view == RELAXED_ALL || 
+	          approx_active_view == MIXED_ALL ) ) { // All to All
+        // unusual case: Surrogate-based DACE,PStudy
+        // there are no inactive vars/bounds
+        if (active_bounds_differ)
+	  return true;
+      }
+      else if ( approx_active_view >= RELAXED_DESIGN &&
+                ( sub_model_active_view == RELAXED_ALL ||
+	          sub_model_active_view == MIXED_ALL ) ) { // Distinct to All
+        // OUU: force rebuild over {u}+{d} for each new TR of {d}
+        if (active_bounds_differ)
+	  return true;
+      }
+      else if ( ( approx_active_view  == RELAXED_ALL ||
+                  approx_active_view  == MIXED_ALL ) &&
+	        sub_model_active_view >= RELAXED_DESIGN ) { // All->Distinct
+        // unusual case: approx over subset of active top-level vars
+        if (active_bounds_differ || inactive_values_differ)
+	  return true;
+      }
+      */
     }
-    else if ( approx_active_view   == sub_model_active_view &&
-              ( approx_active_view == RELAXED_ALL || 
-	        approx_active_view == MIXED_ALL ) ) { // All to All
-      // unusual case: Surrogate-based DACE,PStudy
-      // there are no inactive vars/bounds
-      if (active_bounds_differ)
-	return true;
-    }
-    else if ( approx_active_view >= RELAXED_DESIGN &&
-              ( sub_model_active_view == RELAXED_ALL ||
-	        sub_model_active_view == MIXED_ALL ) ) { // Distinct to All
-      // OUU: force rebuild over {u}+{d} for each new TR of {d}
-      if (active_bounds_differ)
-	return true;
-    }
-    else if ( ( approx_active_view  == RELAXED_ALL ||
-                approx_active_view  == MIXED_ALL ) &&
-	      sub_model_active_view >= RELAXED_DESIGN ) { // All->Distinct
-      // unusual case: approx over subset of active top-level vars
-      if (active_bounds_differ || inactive_values_differ)
-	return true;
+    /*
+    else { // local, multipoint, hierarchical
+
+      // For local/multipoint/hierarchical, the approximation is not dependent
+      // on the bounds.  For an "All" sub-model view, the surrogate accounts for
+      // _all_ continuous variables and a rebuild never needs to be forced
+      // (although many surrogate-based algorithms will rebuild for each new
+      // approx region).  For a "Distinct" view, a rebuild is required for any
+      // change in inactive variable values.
+
+      // -------------------------COLLAPSED------------------------------
+      if ( // OUU Distinct view: rebuild over {u} for each new instance of {d}
+	   sub_model_active_view >= RELAXED_DESIGN &&
+	   inactive_values_differ )
+        return true;
+
+      // -------------------------EXPANDED-------------------------------
+      if (approx_active_view == sub_model_active_view &&
+	  approx_active_view >= RELAXED_DESIGN) { // Distinct to Distinct
+        // SBO: rebuild over {d} for each new TR of {d} 
+        // OUU: force rebuild over {u} for each new instance of {d}
+        // inactive bounds are irrelevant
+        if (inactive_values_differ)
+	  return true;
+      }
+      else if ( approx_active_view   == sub_model_active_view &&
+                ( approx_active_view == RELAXED_ALL || 
+	          approx_active_view == MIXED_ALL ) ) { // All to All
+        // unusual case: Surrogate-based DACE,PStudy
+        // there are no inactive vars
+      }
+      else if ( approx_active_view >= RELAXED_DESIGN &&
+                ( sub_model_active_view == RELAXED_ALL ||
+	          sub_model_active_view == MIXED_ALL ) ) { // Distinct to All
+        // OUU: force rebuild over {u}+{d} for each new TR of {d}
+      }
+      else if ( ( approx_active_view  == RELAXED_ALL ||
+                  approx_active_view  == MIXED_ALL ) &&
+	        sub_model_active_view >= RELAXED_DESIGN ) { // All->Distinct
+        // unusual case: approx over subset of active top-level vars
+        if (inactive_values_differ)
+	  return true;
+      }
     }
     */
   }
-  /*
-  else { // local, multipoint, hierarchical
-
-    // For local/multipoint/hierarchical, the approximation is not dependent
-    // on the bounds.  For an "All" sub-model view, the surrogate accounts for
-    // _all_ continuous variables and a rebuild never needs to be forced
-    // (although many surrogate-based algorithms will rebuild for each new
-    // approx region).  For a "Distinct" view, a rebuild is required for any
-    // change in inactive variable values.
-
-    // -------------------------COLLAPSED------------------------------
-    if ( // OUU Distinct view: rebuild over {u} for each new instance of {d}
-	 sub_model_active_view >= RELAXED_DESIGN &&
-	 inactive_values_differ )
-      return true;
-
-    // -------------------------EXPANDED-------------------------------
-    if (approx_active_view == sub_model_active_view &&
-	approx_active_view >= RELAXED_DESIGN) { // Distinct to Distinct
-      // SBO: rebuild over {d} for each new TR of {d} 
-      // OUU: force rebuild over {u} for each new instance of {d}
-      // inactive bounds are irrelevant
-      if (inactive_values_differ)
-	return true;
-    }
-    else if ( approx_active_view   == sub_model_active_view &&
-              ( approx_active_view == RELAXED_ALL || 
-	        approx_active_view == MIXED_ALL ) ) { // All to All
-      // unusual case: Surrogate-based DACE,PStudy
-      // there are no inactive vars
-    }
-    else if ( approx_active_view >= RELAXED_DESIGN &&
-              ( sub_model_active_view == RELAXED_ALL ||
-	        sub_model_active_view == MIXED_ALL ) ) { // Distinct to All
-      // OUU: force rebuild over {u}+{d} for each new TR of {d}
-    }
-    else if ( ( approx_active_view  == RELAXED_ALL ||
-                approx_active_view  == MIXED_ALL ) &&
-	      sub_model_active_view >= RELAXED_DESIGN ) { // All->Distinct
-      // unusual case: approx over subset of active top-level vars
-      if (inactive_values_differ)
-	return true;
-    }
-  }
-  */
 
   return false; // no rebuild required
 }
