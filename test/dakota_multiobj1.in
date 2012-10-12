@@ -16,12 +16,11 @@ strategy,
 	tabular_graphics_data
 
 method,
-	npsol_sqp		#0
-	  output verbose	#0
-#       optpp_newton		#1
-#	conmin_frcg		#2
-#	dot_bfgs		#3
-# 	dot_frcg		#4
+	npsol_sqp		#0,#5
+#       optpp_newton		#1,#6
+#	conmin_frcg		#2,#7
+#	dot_bfgs		#3,#8
+#	nlpql_sqp		#4,#9
 	  convergence_tolerance = 1.e-8
 
 variables,
@@ -37,6 +36,7 @@ interface,
 
 responses,
 	objective_functions = 3
+#	sense = "min" "max" "max"	#5,#6,#7,#8,#9
 	multi_objective_weights = .7 .2 .1
 #	multi_objective_weights = .333 .333 .333
 	analytic_gradients
@@ -44,5 +44,5 @@ responses,
 #	  method_source vendor
 #	  interval_type forward
 #	  fd_gradient_step_size = 1.e-6
-	no_hessians		#0,#2,#3,#4
-#	analytic_hessians	#1
+	no_hessians			#0,#2,#3,#4,#5,#7,#8,#9
+#	analytic_hessians		#1,#6

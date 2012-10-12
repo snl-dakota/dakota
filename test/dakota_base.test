@@ -6763,9 +6763,6 @@ Test Number 4 succeeded
 dakota_multiobj1.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 9 total (9 new, 0 duplicate)
-       obj_fn_1: 9 val (9 n, 0 d), 9 grad (9 n, 0 d), 0 Hess (0 n, 0 d)
-       obj_fn_2: 9 val (9 n, 0 d), 9 grad (9 n, 0 d), 0 Hess (0 n, 0 d)
-       obj_fn_3: 9 val (9 n, 0 d), 9 grad (9 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       5.9388064483e-01 x1
                       7.4158741198e-01 x2
@@ -6805,15 +6802,65 @@ Test Number 3 succeeded
                       2.5300922366e-01
 <<<<< Best data captured at function evaluation 26
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 36 total (36 new, 0 duplicate)
+<<<<< Function evaluation summary: 16 total (16 new, 0 duplicate)
 <<<<< Best parameters          =
-                      5.9387905392e-01 x1
-                      7.4157652421e-01 x2
+                      5.9388388499e-01 x1
+                      7.4158025709e-01 x2
 <<<<< Best objective functions =
-                      3.1663225929e-02
-                     -1.8095931421e-02
-                      2.5299621429e-01
-<<<<< Best data captured at function evaluation 36
+                      3.1661673864e-02
+                     -1.8092059696e-02
+                      2.5299933521e-01
+<<<<< Best data captured at function evaluation 15
+Test Number 5 succeeded
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.5942977391e+00 x1
+                      1.4007011246e+00 x2
+<<<<< Best objective functions =
+                      1.5052299708e-01
+                      1.8414347185e+00
+                      1.1648147709e+00
+<<<<< Best data captured at function evaluation 10
+Test Number 6 succeeded
+<<<<< Function evaluation summary: 18 total (18 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.5943005978e+00 x1
+                      1.4007101469e+00 x2
+<<<<< Best objective functions =
+                      1.5052771920e-01
+                      1.8414393226e+00
+                      1.1648386167e+00
+<<<<< Best data captured at function evaluation 17
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 43 total (41 new, 2 duplicate)
+<<<<< Best parameters          =
+                      1.5942974945e+00 x1
+                      1.4006978696e+00 x2
+<<<<< Best objective functions =
+                      1.5052195407e-01
+                      1.8414355662e+00
+                      1.1648057745e+00
+<<<<< Best data captured at function evaluation 43
+Test Number 8 succeeded
+<<<<< Function evaluation summary: 24 total (24 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.5942982879e+00 x1
+                      1.4006963497e+00 x2
+<<<<< Best objective functions =
+                      1.5052222904e-01
+                      1.8414388558e+00
+                      1.1648011202e+00
+<<<<< Best data captured at function evaluation 24
+Test Number 9 succeeded
+<<<<< Function evaluation summary: 19 total (19 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.5942993052e+00 x1
+                      1.4007020426e+00 x2
+<<<<< Best objective functions =
+                      1.5052454822e-01
+                      1.8414392531e+00
+                      1.1648165597e+00
+<<<<< Best data captured at function evaluation 18
 dakota_multiobj2.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 40 total (40 new, 0 duplicate)
@@ -6841,7 +6888,7 @@ Test Number 1 succeeded
 <<<<< Best data captured at function evaluation 21
 dakota_multiobj3.in 
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 141 (113 new, 28 duplicate)
+<<<<< Function evaluation summary: 147 total (109 new, 38 duplicate)
 <<<<< Best parameters          =
                       2.0722659375e+00 intake_dia
                       7.8125000000e-05 flatness
@@ -6851,6 +6898,75 @@ Test Number 0 succeeded
                      -5.9998828125e-01
                       3.4998242196e-01
 <<<<< Best data captured at function evaluation 143
+Test Number 1 succeeded
+<<<<< Function evaluation summary: 150 total (102 new, 48 duplicate)
+<<<<< Best parameters          =
+                      2.1639939062e+00 intake_dia
+                      7.8125000000e-05 flatness
+<<<<< Best objective functions =
+                     -2.7444482512e+00
+                      6.9238792685e-01
+                     -5.9998828125e-01
+                      3.4998242196e-01
+<<<<< Best data captured at function evaluation 147
+Test Number 2 succeeded
+<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
+<<<<< Best parameters          =
+                      2.1634452582e+00 intake_dia
+                      1.1005280838e-03 flatness
+<<<<< Best objective functions =
+                     -2.7440554372e+00
+                      6.7618961859e-01
+                     -5.9983492079e-01
+                      3.4975239821e-01
+<<<<< Best data captured at function evaluation 1757
+Test Number 3 succeeded
+<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
+<<<<< Best parameters          (set 1) =
+                      2.0016300000e+00 intake_dia
+                      1.3177140000e+00 flatness
+<<<<< Best objective functions (set 1) =
+                     -2.4759402813e+00
+                     -3.9304568961e-01
+                     -4.0234290000e-01
+                      7.9472284816e-02
+<<<<< Best data captured at function evaluation 1329
+<<<<< Best parameters          (set 2) =
+                      1.9850110000e+00 intake_dia
+                      1.3018040000e+00 flatness
+<<<<< Best objective functions (set 2) =
+                     -2.4710735353e+00
+                     -4.0826902078e-01
+                     -4.0472940000e-01
+                      8.2408028515e-02
+<<<<< Best data captured at function evaluation 1278
+<<<<< Best parameters          (set 3) =
+                      2.0013700000e+00 intake_dia
+                      1.1364276889e+00 flatness
+<<<<< Best objective functions (set 3) =
+                     -2.5030197528e+00
+                     -3.9331020125e-01
+                     -4.2953584666e-01
+                      1.1343227695e-01
+<<<<< Best data captured at function evaluation 1326
+<<<<< Best parameters          (set 4) =
+                      1.9588160000e+00 intake_dia
+                      1.1691222766e+00 flatness
+<<<<< Best objective functions (set 4) =
+                     -2.4795431697e+00
+                     -4.2670415978e-01
+                     -4.2463165852e-01
+                      1.0722589234e-01
+<<<<< Best data captured at function evaluation 1231
+<<<<< Best parameters          (set 5) =
+                      2.0014270000e+00 intake_dia
+                      1.0668120000e+00 flatness
+<<<<< Best objective functions (set 5) =
+                     -2.5134869834e+00
+                     -3.9325229060e-01
+                     -4.3997820000e-01
+                      1.2676548671e-01
+<<<<< Best data captured at function evaluation 1327
 dakota_multistart.in 
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
