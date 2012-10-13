@@ -547,7 +547,6 @@ void NonDExpansion::compute_expansion()
   // define ASV for u_space_sampler and expansion coefficient/gradient
   // data flags for PecosApproximation
   bool all_vars = (numContDesVars || numContEpistUncVars || numContStateVars);
-  ActiveSet sampler_set;
   ShortArray sampler_asv(numFunctions, 0);
   std::vector<Approximation>& poly_approxs = uSpaceModel.approximations();
   for (i=0; i<numFunctions; ++i) {
@@ -639,63 +638,69 @@ void NonDExpansion::compute_expansion()
 	{ all_approx = false; break; }
   }
   if (!all_approx || uSpaceModel.force_rebuild()) {
-    // Set the sampler ASV (defined from previous loop over numFunctions)
-    sampler_set.request_vector(sampler_asv);
 
-    // if required statistical sensitivities are not covered by All variables
-    // mode for augmented design variables, then the simulations must evaluate
-    // response sensitivities.
-    bool sampler_grad = false, dist_param_deriv = false;
-    if (final_stat_grad_flag) {
-      size_t i, num_outer_cv = secondaryACVarMapTargets.size();
-      for (i=0; i<num_outer_cv; ++i)
-	if (secondaryACVarMapTargets[i] != Pecos::NO_TARGET) // insertion
-	  { dist_param_deriv = true; break; }
-      sampler_grad = (all_vars) ? dist_param_deriv : true;
-    }
-    u_space_sampler_rep->distribution_parameter_derivatives(dist_param_deriv);
-    if (dist_param_deriv)
-      u_space_sampler.active_variable_mappings(primaryACVarMapIndices,
-	primaryADIVarMapIndices, primaryADRVarMapIndices,
-	secondaryACVarMapTargets, secondaryADIVarMapTargets,
-	secondaryADRVarMapTargets);
+    if (u_space_sampler_rep) {
 
-    // Set the u_space_sampler DVV, managing different gradient modes & their
-    // combinations.  The u_space_sampler's DVV may then be augmented for
-    // correlations in NonD::set_u_to_x_mapping().  Sources for DVV content
-    // include the model's continuous var ids and the final_dvv set by a
-    // NestedModel.  In the latter case, NestedModel::derived_compute_response()
-    // maps top-level optimizer derivative vars to sub-iterator derivative vars
-    // in NestedModel::set_mapping() and then sets this DVV within finalStats
-    // using subIterator.response_results_active_set().
-    if (useDerivs) {
-      SizetMultiArrayConstView cv_ids
-	= iteratedModel.continuous_variable_ids();
-      if (sampler_grad) { // merge cv_ids with final_dvv
-	SizetSet merged_set; SizetArray merged_dvv;
-	merged_set.insert(cv_ids.begin(), cv_ids.end());
-	merged_set.insert(final_dvv.begin(), final_dvv.end());
-	std::copy(merged_set.begin(), merged_set.end(), merged_dvv.begin());
-	sampler_set.derivative_vector(merged_dvv);
+      // Set the sampler ASV (defined from previous loop over numFunctions)
+      ActiveSet sampler_set;
+      sampler_set.request_vector(sampler_asv);
+
+      // if required statistical sensitivities are not covered by All variables
+      // mode for augmented design variables, then the simulations must evaluate
+      // response sensitivities.
+      bool sampler_grad = false, dist_param_deriv = false;
+      if (final_stat_grad_flag) {
+	size_t i, num_outer_cv = secondaryACVarMapTargets.size();
+	for (i=0; i<num_outer_cv; ++i)
+	  if (secondaryACVarMapTargets[i] != Pecos::NO_TARGET) // insertion
+	    { dist_param_deriv = true; break; }
+	sampler_grad = (all_vars) ? dist_param_deriv : true;
       }
-      else // assign cv_ids
-	sampler_set.derivative_vector(cv_ids);
-    }
-    else if (all_vars && sampler_grad) {//filter: retain only the insertion tgts
-      SizetArray filtered_final_dvv;
-      size_t num_cdv_cauv = numContDesVars+numContAleatUncVars;
-      for (i=0; i<num_final_grad_vars; ++i) {
-	size_t dvv_i = final_dvv[i];
-	if (dvv_i > numContDesVars && dvv_i <= num_cdv_cauv)
-	  filtered_final_dvv.push_back(dvv_i);
-      }
-      sampler_set.derivative_vector(filtered_final_dvv);
-    }
-    else // sampler_grad alone or placeholder default: assign final_dvv
-      sampler_set.derivative_vector(final_dvv);
+      u_space_sampler_rep->distribution_parameter_derivatives(dist_param_deriv);
+      if (dist_param_deriv)
+	u_space_sampler.active_variable_mappings(primaryACVarMapIndices,
+	  primaryADIVarMapIndices, primaryADRVarMapIndices,
+	  secondaryACVarMapTargets, secondaryADIVarMapTargets,
+	  secondaryADRVarMapTargets);
 
-    // Build the orthogonal/interpolation polynomial approximations:
-    u_space_sampler.active_set(sampler_set);
+      // Set the u_space_sampler DVV, managing different gradient modes & their
+      // combinations.  The u_space_sampler's DVV may then be augmented for
+      // correlations in NonD::set_u_to_x_mapping().  Sources for DVV content
+      // include the model's continuous var ids and the final_dvv set by a
+      // NestedModel.  In the latter case, NestedModel::derived_compute_response
+      // maps top-level optimizer derivative vars to sub-iterator derivative
+      // vars in NestedModel::set_mapping() and then sets this DVV within
+      // finalStats using subIterator.response_results_active_set().
+      if (useDerivs) {
+	SizetMultiArrayConstView cv_ids
+	  = iteratedModel.continuous_variable_ids();
+	if (sampler_grad) { // merge cv_ids with final_dvv
+	  SizetSet merged_set; SizetArray merged_dvv;
+	  merged_set.insert(cv_ids.begin(), cv_ids.end());
+	  merged_set.insert(final_dvv.begin(), final_dvv.end());
+	  std::copy(merged_set.begin(), merged_set.end(), merged_dvv.begin());
+	  sampler_set.derivative_vector(merged_dvv);
+	}
+	else // assign cv_ids
+	  sampler_set.derivative_vector(cv_ids);
+      }
+      else if (all_vars && sampler_grad) { // filter: retain only insertion tgts
+	SizetArray filtered_final_dvv;
+	size_t num_cdv_cauv = numContDesVars+numContAleatUncVars;
+	for (i=0; i<num_final_grad_vars; ++i) {
+	  size_t dvv_i = final_dvv[i];
+	  if (dvv_i > numContDesVars && dvv_i <= num_cdv_cauv)
+	    filtered_final_dvv.push_back(dvv_i);
+	}
+	sampler_set.derivative_vector(filtered_final_dvv);
+      }
+      else // sampler_grad alone or placeholder default: assign final_dvv
+	sampler_set.derivative_vector(final_dvv);
+
+      // Build the orthogonal/interpolation polynomial approximations:
+      u_space_sampler.active_set(sampler_set);
+    }
+
     uSpaceModel.build_approximation();
   }
 }

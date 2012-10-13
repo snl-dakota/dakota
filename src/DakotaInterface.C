@@ -130,9 +130,9 @@ Interface::Interface(BaseConstructor, const ProblemDescDB& problem_db):
     }
 
 #ifdef DEBUG
-    Cout << ">>>> algebraicVarTags =\n" << algebraicVarTags
-	 << "\n>>>> algebraicFnTags =\n" << algebraicFnTags
-	 << "\n>>>> algebraicFnTypes =\n" << algebraicFnTypes << std::endl;
+    Cout << ">>>>> algebraicVarTags =\n" << algebraicVarTags
+	 << "\n>>>>> algebraicFnTags =\n" << algebraicFnTags
+	 << "\n>>>>> algebraicFnTypes =\n" << algebraicFnTypes << std::endl;
 #endif
 
 #else
@@ -189,6 +189,8 @@ Interface::Interface(ProblemDescDB& problem_db): referenceCount(1)
 
   // Set the rep pointer to the appropriate interface type
   interfaceRep = get_interface(problem_db);
+  if (!interfaceRep) // bad type or insufficient memory
+    abort_handler(-1);
 }
 
 
@@ -196,45 +198,37 @@ Interface::Interface(ProblemDescDB& problem_db): referenceCount(1)
     to the appropriate derived type. */
 Interface* Interface::get_interface(ProblemDescDB& problem_db)
 {
-  // In the case where a derived interface type has been selected for managing
-  // analysis_drivers, then this determines the letter instantiation and any 
-  // algebraic mappings are overlayed by ApplicationInterface.  In the case
-  // where only algebraic mappings are used, then ApplicationInterface is the
-  // letter and no derived map functionality is needed.
-  const String& interf_type = problem_db.get_string("interface.type");
-  if (interf_type.empty()) {
-    Cerr << "Warning: NULL interfaceRep returned in Interface::get_interface()."
-	 << std::endl;
-    return NULL;
-  }
-
 #ifdef REFCOUNT_DEBUG
-  Cout << "Envelope instantiating letter: Getting interface " << interf_type 
+  Cout << "Envelope instantiating letter: Getting interface " << interface_type 
        << std::endl;
 #endif
 
+  // In the case where a derived interface type has been selected for managing
+  // analysis_drivers, then this determines the letter instantiation and any 
+  // algebraic mappings are overlayed by ApplicationInterface.
+  const String& interface_type = problem_db.get_string("interface.type");
   const String& algebraic_map_file
     = problem_db.get_string("interface.algebraic_mappings");
-  if (interf_type == "system")
+  if (interface_type == "system")
     return new SysCallApplicInterface(problem_db);
 
 #ifndef _MSC_VER
-  else if (interf_type == "fork")
+  else if (interface_type == "fork")
     return new ForkApplicInterface(problem_db);
 #endif // _MSC_VER
 
-  else if (interf_type == "direct")
+  else if (interface_type == "direct")
     return new TestDriverInterface(problem_db);
   // Note: in the case of a plug-in direct interface, this object gets replaced
   // using Interface::assign_rep().  Error checking in DirectApplicInterface::
   // derived_map_ac() should catch if this replacement fails to occur properly.
 
 #ifdef DAKOTA_GRID
-  else if (interf_type == "grid")
+  else if (interface_type == "grid")
     return new GridApplicInterface(problem_db);
 #endif
 
-  else if (interf_type == "matlab") {
+  else if (interface_type == "matlab") {
 #ifdef DAKOTA_MATLAB
     return new MatlabInterface(problem_db);
 #else
@@ -243,7 +237,7 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
       return NULL;
 #endif
   }
-  else if (interf_type == "python") {
+  else if (interface_type == "python") {
 #ifdef DAKOTA_PYTHON
     return new PythonInterface(problem_db);
 #else
@@ -253,7 +247,7 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
 #endif
   }
 
-  else if (interf_type == "scilab") {
+  else if (interface_type == "scilab") {
 #ifdef DAKOTA_SCILAB
     return new ScilabInterface(problem_db);
 #else
@@ -265,18 +259,29 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
 
   // Should not be needed since ApproximationInterface is plugged-in from
   // DataFitSurrModel using Interface::assign_rep().
-  //else if (interf_type == "approximation")
+  //else if (interface_type == "approximation")
   //  return new ApproximationInterface(problem_db, num_acv, num_fns);
 
+  // In the case where only algebraic mappings are used, then no derived map
+  // functionality is needed and ApplicationInterface is used for the letter.
   else if (!algebraic_map_file.empty()) {
+#ifdef DEBUG
     Cout << ">>>>> new ApplicationInterface: " << algebraic_map_file
+	 << std::endl;
+#endif // DEBUG
+    return new ApplicationInterface(problem_db);
+  }
+
+  // If the interface type is empty (e.g., from default DataInterface creation
+  // in ProblemDescDB::check_input()), then ApplicationInterface is the letter.
+  else if (interface_type.empty()) {
+    Cerr << "Warning: empty interface type in Interface::get_interface()."
 	 << std::endl;
     return new ApplicationInterface(problem_db);
   }
 
   else {
-    Cerr << "Invalid interface: " << interf_type << std::endl;
-    abort_handler(-1);
+    Cerr << "Invalid interface: " << interface_type << std::endl;
     return NULL;
   }
 }
@@ -678,7 +683,7 @@ algebraic_mappings(const Variables& vars, const ActiveSet& algebraic_set,
   delete [] nl_vars;
   algebraic_response.function_labels(algebraicFnTags);
 #ifdef DEBUG
-  Cout << ">>>> algebraic_response.fn_labels\n"
+  Cout << ">>>>> algebraic_response.fn_labels\n"
        << algebraic_response.function_labels() << std::endl;
 #endif // DEBUG
 

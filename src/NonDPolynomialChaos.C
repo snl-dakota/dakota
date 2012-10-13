@@ -111,11 +111,12 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	// reuse type/seed/rng settings intended for the expansion_sampler.
 	// Unlike expansion_sampler, allow sampling pattern to vary under
 	// unstructured grid refinement/replacement/augmentation.
-	construct_lhs(u_space_sampler, g_u_model,
-	  probDescDB.get_string("method.sample_type"), numSamplesOnModel,
-	  probDescDB.get_int("method.random_seed"),
-	  probDescDB.get_string("method.random_number_generator"),
-	  vary_pattern);
+	if (numSamplesOnModel)
+	  construct_lhs(u_space_sampler, g_u_model,
+	    probDescDB.get_string("method.sample_type"), numSamplesOnModel,
+	    probDescDB.get_int("method.random_seed"),
+	    probDescDB.get_string("method.random_number_generator"),
+	    vary_pattern);
       }
       else { // regression
 	if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
@@ -164,11 +165,12 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  // reuse type/seed/rng settings intended for the expansion_sampler.
 	  // Unlike expansion_sampler, allow sampling pattern to vary under
 	  // unstructured grid refinement/replacement/augmentation.
-	  construct_lhs(u_space_sampler, g_u_model,
-	    probDescDB.get_string("method.sample_type"), numSamplesOnModel,
-	    probDescDB.get_int("method.random_seed"),
-	    probDescDB.get_string("method.random_number_generator"),
-	    vary_pattern);
+	  if (numSamplesOnModel)
+	    construct_lhs(u_space_sampler, g_u_model,
+	      probDescDB.get_string("method.sample_type"), numSamplesOnModel,
+	      probDescDB.get_int("method.random_seed"),
+	      probDescDB.get_string("method.random_number_generator"),
+	      vary_pattern);
 	}
 	// TO DO:
 	//if (probDescDB.get_string("method.nond.expansion_sample_type")

@@ -60,7 +60,7 @@ ApplicationInterface(const ProblemDescDB& problem_db):
 {
   // set coreMappings flag based on presence of analysis_drivers specification
   coreMappings = (numAnalysisDrivers > 0);
-  if (!coreMappings && !algebraicMappings) {
+  if (!coreMappings && !algebraicMappings && !interfaceType.empty()) {
     Cerr << "\nError: no parameter to response mapping defined in "
 	 << "ApplicationInterface.\n" << std::endl;
     abort_handler(-1);
