@@ -404,8 +404,8 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
               ]
             [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
 	    [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
-               [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
-                 freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+              [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
+                freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
               ] 
 	    )
 	  |
@@ -431,20 +431,26 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 			  | non_nested {N_mdm(type,nestingOverride_NON_NESTED)} ]
 		    )
 		    | cubature_integrand INTEGER {N_mdm(ushint,cubIntOrder)}
-		    | ( ( collocation_points INTEGER {N_mdm(int,collocationPoints)}
-		        | collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
-			[ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
-		        [ reuse_points ALIAS reuse_samples {N_mdm(lit,collocPtReuse_all)} ]
-		        [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
-			[ tensor_grid {N_mdm(true,probCollocFlag)} ]
-#			[ compressed_sensing {0} # l1_regression () | l2_regression????
+		    | ( ( ( collocation_points INTEGER {N_mdm(int,collocationPoints)}
+		          | collocation_ratio REAL {N_mdm(Realp,collocationRatio)}
+			  [ ratio_order REAL {N_mdm(Realp,collocRatioTermsOrder)} ]
+		          [ reuse_points ALIAS reuse_samples {N_mdm(lit,collocPtReuse_all)} ]
+		          [ use_derivatives {N_mdm(true,methodUseDerivsFlag)} ]
+			  [ tensor_grid {N_mdm(true,probCollocFlag)} ]
+#			  [ compressed_sensing {0} # l1_regression () | l2_regression????
 # want different defaults for over/under-determined, so need an alternation, but don't preclude LASSO/LARS for CS
-#			  bpdn {N_(type,csAlgorithm_BPDN)}
-#			  | omp {N_(type,csAlgorithm_OMP)} ]
-		        )
-		    	| ( expansion_samples INTEGER {N_mdm(int,expansionSamples)}
-		          [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
+#			    bpdn {N_(type,csAlgorithm_BPDN)}
+#			    | omp {N_(type,csAlgorithm_OMP)} ]
 		          )
+		    	  |
+			  ( expansion_samples INTEGER {N_mdm(int,expansionSamples)}
+		            [ incremental_lhs {N_mdm(lit,expansionSampleType_incremental_lhs)} ]
+		          )
+	        	  [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
+                   	    [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
+                     	      freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+                   	    ]
+			)
 		    	| expansion_import_file STRING {N_mdm(str,expansionImportFile)}
 		      	expansion_order INTEGERLIST {N_mdm(usharray,expansionOrder)}
 		      	| expansion_terms INTEGER {N_mdm(int,expansionTerms)}
@@ -595,7 +601,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 	        [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
                    [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
                      freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
-                   ] 
+                   ]
 		[ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
 		  [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
 		  [ compute {0}
@@ -649,7 +655,7 @@ KEYWORD12 method {N_mdm3(start,0,stop)}
 		  [ emulator_samples INTEGER {N_mdm(int,emulatorSamples)} ]  
 	          [ points_file STRING {N_mdm(str,approxPointReuseFile)} 
                     [ annotated {N_mdm(true,approxPointFileAnnotated)} | 
-                    freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
+                      freeform  {N_mdm(false,approxPointFileAnnotated)} ] 
                     ]
                 ) |
 		( pce {N_mdm(type,emulatorType_POLYNOMIAL_CHAOS)}
@@ -957,8 +963,7 @@ KEYWORD model {N_mom3(start,0,stop)}
 	      ]
 	    [ points_file ALIAS samples_file STRING {N_mom(str,approxPointReuseFile)} 
               [ annotated {N_mom(true,approxPointFileAnnotated)} | 
-                freeform  {N_mom(false,approxPointFileAnnotated)} 
-                ]
+                freeform  {N_mom(false,approxPointFileAnnotated)} ]
               ]
 	    [ use_derivatives {N_mom(true,modelUseDerivsFlag)} ]
 	    [ correction {0}

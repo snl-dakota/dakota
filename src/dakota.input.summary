@@ -619,12 +619,20 @@ KEYWORD12 method
 	    [ reuse_points ALIAS reuse_samples ]
 	    [ use_derivatives ]
 	    [ tensor_grid ]
+	    [ points_file STRING
+	      [ annotated
+	      | freeform ]
+	      ]
 	    expansion_order INTEGERLIST
 	    | expansion_terms INTEGER
 	    )
 	  |
 	  ( expansion_samples INTEGER
 	    [ incremental_lhs ]
+	    [ points_file STRING
+	      [ annotated
+	      | freeform ]
+	      ]
 	    expansion_order INTEGERLIST
 	    | expansion_terms INTEGER
 	    )

@@ -131,7 +131,7 @@ DataFitSurrModel(Iterator& dace_iterator, Model& actual_model,
 		 //const SharedVariablesData& svd, const ActiveSet& set,
 		 const String& approx_type, const UShortArray& approx_order,
 		 short corr_type, short corr_order, short data_order,
-		 const String& point_reuse, short output_level,
+		 short output_level, const String& point_reuse,
 		 const String& point_reuse_file, bool point_file_annotated):
   SurrogateModel(actual_model.parallel_library(), //view, vars_comps, set,
 		 actual_model.current_variables().shared_data(),

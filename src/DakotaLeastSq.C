@@ -95,7 +95,7 @@ LeastSq::LeastSq(Model& model): Minimizer(model),
       }
       if (outputLevel >= NORMAL_OUTPUT)
 	Cout << "\nLeast squares: weighting least squares terms with 1 / square"
-	     << " of standard deviations " << "read from file." << std::endl;
+	     << " of standard deviations read from file." << std::endl;
       RealVector lsq_weights(numLeastSqTerms);
       if (num_sigma_read == 1) {
 	double sigma = 

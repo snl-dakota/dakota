@@ -65,7 +65,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     exp_order.resize(numContinuousVars);
     exp_order.assign(numContinuousVars, order);
   }
-  String pt_reuse; // empty default gets overridden for unstructured grids
+  String pt_reuse, pt_reuse_file; // empty defaults overridden for random grids
+  bool annotated_file = false;
   if (expansionImportFile.empty()) {
     const UShortArray& quad_order_spec
       = probDescDB.get_usa("method.nond.quadrature_order");
@@ -100,6 +101,13 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	}
 	numSamplesOnModel       = exp_samples;
 	expansionCoeffsApproach = Pecos::SAMPLING;
+
+	// get point samples file
+	pt_reuse_file = probDescDB.get_string("method.point_reuse_file");
+	annotated_file = probDescDB.get_bool("method.point_file_annotated");
+	if (!pt_reuse_file.empty())
+	  { numSamplesOnModel = 0; pt_reuse = "all"; }
+
 	// reuse type/seed/rng settings intended for the expansion_sampler.
 	// Unlike expansion_sampler, allow sampling pattern to vary under
 	// unstructured grid refinement/replacement/augmentation.
@@ -148,6 +156,11 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  // random numbers are generated for points within the grid (even if
 	  // the number of samples differs)
 	  vary_pattern = (refineType && !pt_reuse.empty());
+	  // get point samples file
+	  pt_reuse_file  = probDescDB.get_string("method.point_reuse_file");
+	  annotated_file = probDescDB.get_bool("method.point_file_annotated");
+	  if (!pt_reuse_file.empty())
+	    { numSamplesOnModel = 0; pt_reuse = "all"; }
 	  // reuse type/seed/rng settings intended for the expansion_sampler.
 	  // Unlike expansion_sampler, allow sampling pattern to vary under
 	  // unstructured grid refinement/replacement/augmentation.
@@ -162,6 +175,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	//    == "incremental_lhs"))
 	//  construct_incremental_lhs();
       }
+
       // maxConcurrency updated here for expansion samples and regression
       // and in initialize_u_space_model() for sparse/quad/cub
       if (numSamplesOnModel) // optional with default = 0
@@ -183,8 +197,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     //g_u_vars.view(), g_u_vars.variables_components(),
     //g_u_model.current_response().active_set(),
-    approx_type, exp_order, corr_type, corr_order, data_order, pt_reuse,
-    outputLevel), false);
+    approx_type, exp_order, corr_type, corr_order, data_order, outputLevel,
+    pt_reuse, pt_reuse_file, annotated_file), false);
   initialize_u_space_model();
 
   // -------------------------------------
@@ -253,8 +267,8 @@ NonDPolynomialChaos(Model& model, short exp_coeffs_approach,
     "piecewise_orthogonal_polynomial" : "global_orthogonal_polynomial";
   UShortArray exp_order; // empty for numerical integration approaches
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    approx_type, exp_order, corr_type, corr_order, data_order, pt_reuse,
-    outputLevel), false);
+    approx_type, exp_order, corr_type, corr_order, data_order, outputLevel,
+    pt_reuse), false);
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion

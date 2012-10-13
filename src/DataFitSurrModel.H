@@ -57,8 +57,7 @@ public:
 		   //const Sizet2DArray& vars_comps, const ActiveSet& set,
 		   const String& approx_type, const UShortArray& approx_order,
 		   short corr_type, short corr_order, short data_order,
-		   const String& point_reuse,
-		   short output_level = NORMAL_OUTPUT,
+		   short output_level, const String& point_reuse,
 		   const String& point_reuse_file = String(),
 		   bool point_file_annotated = true);
   /// destructor

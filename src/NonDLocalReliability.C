@@ -214,7 +214,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       //curr_vars.view(), curr_vars.variables_components(),
       //iteratedModel.current_response().active_set(),
       approx_type, approx_order, corr_type, corr_order, data_order,
-      sample_reuse, outputLevel), false);
+      outputLevel, sample_reuse), false);
 
     // transform g_hat_x_model from x-space to u-space
     transform_model(g_hat_x_model, uSpaceModel, true); // globally bounded
@@ -240,7 +240,7 @@ NonDLocalReliability::NonDLocalReliability(Model& model):
       //g_u_vars.view(), g_u_vars.variables_components(),
       //g_u_model.current_response().active_set(),
       approx_type, approx_order, corr_type, corr_order, data_order,
-      sample_reuse, outputLevel), false);
+      outputLevel, sample_reuse), false);
   }
   else if (mppSearchType == NO_APPROX) // Recast( iteratedModel )
     // Recast g(x) to G(u)

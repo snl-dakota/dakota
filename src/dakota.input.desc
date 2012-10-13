@@ -692,6 +692,9 @@ TAG "method/polynomial_chaos/expansion_samples"
 TAG "method/polynomial_chaos/expansion_samples/incremental_lhs"
 	DESC "{Use incremental LHS for expansion_samples} MethodCommands.html#MethodNonDPCE"
 
+TAG "method/polynomial_chaos/collocation_points/points_file"
+TAG "method/polynomial_chaos/collocation_points/points_file/annotated"
+TAG "method/polynomial_chaos/collocation_points/points_file/freeform"
 TAG "method/polynomial_chaos/expansion_import_file"
 	DESC "{PCE coeffs import file} MethodCommands.html#MethodNonDPCE"
 

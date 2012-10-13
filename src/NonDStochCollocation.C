@@ -118,8 +118,8 @@ NonDStochCollocation::NonDStochCollocation(Model& model):
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
     //g_u_vars.view(), g_u_vars.variables_components(),
     //g_u_model.current_response().active_set(),
-    approx_type, approx_order, corr_type, corr_order, data_order, pt_reuse,
-    outputLevel), false);
+    approx_type, approx_order, corr_type, corr_order, data_order,
+    outputLevel, pt_reuse), false);
   initialize_u_space_model();
 
   // -------------------------------
@@ -199,8 +199,8 @@ NonDStochCollocation(Model& model, short exp_coeffs_approach,
       "global_nodal_interpolation_polynomial";
   UShortArray approx_order; // empty
   uSpaceModel.assign_rep(new DataFitSurrModel(u_space_sampler, g_u_model,
-    approx_type, approx_order, corr_type, corr_order, data_order, pt_reuse,
-    outputLevel), false);
+    approx_type, approx_order, corr_type, corr_order, data_order,
+    outputLevel, pt_reuse), false);
   initialize_u_space_model();
 
   // no expansionSampler, no numSamplesOnExpansion

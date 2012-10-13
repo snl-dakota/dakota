@@ -189,8 +189,6 @@ Interface::Interface(ProblemDescDB& problem_db): referenceCount(1)
 
   // Set the rep pointer to the appropriate interface type
   interfaceRep = get_interface(problem_db);
-  if ( !interfaceRep ) // bad type or insufficient memory
-    abort_handler(-1);
 }
 
 
@@ -204,25 +202,33 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
   // where only algebraic mappings are used, then ApplicationInterface is the
   // letter and no derived map functionality is needed.
   const String& interf_type = problem_db.get_string("interface.type");
-  const String& algebraic_map_file
-    = problem_db.get_string("interface.algebraic_mappings");
+  if (interf_type.empty()) {
+    Cerr << "Warning: NULL interfaceRep returned in Interface::get_interface()."
+	 << std::endl;
+    return NULL;
+  }
 
 #ifdef REFCOUNT_DEBUG
   Cout << "Envelope instantiating letter: Getting interface " << interf_type 
        << std::endl;
 #endif
 
+  const String& algebraic_map_file
+    = problem_db.get_string("interface.algebraic_mappings");
   if (interf_type == "system")
     return new SysCallApplicInterface(problem_db);
+
 #ifndef _MSC_VER
   else if (interf_type == "fork")
     return new ForkApplicInterface(problem_db);
 #endif // _MSC_VER
+
   else if (interf_type == "direct")
     return new TestDriverInterface(problem_db);
   // Note: in the case of a plug-in direct interface, this object gets replaced
   // using Interface::assign_rep().  Error checking in DirectApplicInterface::
   // derived_map_ac() should catch if this replacement fails to occur properly.
+
 #ifdef DAKOTA_GRID
   else if (interf_type == "grid")
     return new GridApplicInterface(problem_db);
@@ -261,13 +267,16 @@ Interface* Interface::get_interface(ProblemDescDB& problem_db)
   // DataFitSurrModel using Interface::assign_rep().
   //else if (interf_type == "approximation")
   //  return new ApproximationInterface(problem_db, num_acv, num_fns);
+
   else if (!algebraic_map_file.empty()) {
     Cout << ">>>>> new ApplicationInterface: " << algebraic_map_file
 	 << std::endl;
     return new ApplicationInterface(problem_db);
   }
+
   else {
     Cerr << "Invalid interface: " << interf_type << std::endl;
+    abort_handler(-1);
     return NULL;
   }
 }

@@ -35,7 +35,7 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDGPImpSampling::NonDGPImpSampling(Model& model): NonDSampling(model)
-{ 
+{
   samplingVarsMode = ACTIVE_UNIFORM;
   String sample_reuse, approx_type("global_kriging");/*("global_kriging");*/
   UShortArray approx_order; // not used by GP/kriging
@@ -47,11 +47,12 @@ NonDGPImpSampling::NonDGPImpSampling(Model& model): NonDSampling(model)
   String sample_type("lhs"); // hard-wired for now
   bool vary_pattern = false; // for consistency across outer loop invocations
   // get point samples file
-  short this_output_level = probDescDB.get_short("method.output");
-  const String& point_reuse_file = probDescDB.get_string("method.point_reuse_file");
-  bool point_file_annotated = probDescDB.get_bool("method.point_file_annotated");
+  const String& sample_reuse_file
+    = probDescDB.get_string("method.point_reuse_file");
+  bool sample_file_annotated
+    = probDescDB.get_bool("method.point_file_annotated");
   int samples = numSamples;
-  if (!point_reuse_file.empty()){
+  if (!sample_reuse_file.empty()){
     samples = 0;
     sample_reuse = "all";
   }
@@ -65,8 +66,8 @@ NonDGPImpSampling::NonDGPImpSampling(Model& model): NonDSampling(model)
   //else.  Rho 0 is the nonminal distribution of the input variable
 
   gpModel.assign_rep(new DataFitSurrModel(gpBuild, iteratedModel, approx_type,
-    approx_order, corr_type, corr_order, data_order, sample_reuse, 
-    this_output_level, point_reuse_file, point_file_annotated), false);
+    approx_order, corr_type, corr_order, data_order, outputLevel, sample_reuse, 
+    sample_reuse_file, sample_file_annotated), false);
   vary_pattern = true; // allow seed to run among multiple approx sample sets
   // need to add to input spec
   numEmulEval = 10000;

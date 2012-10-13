@@ -376,11 +376,19 @@ void ProblemDescDB::check_input()
     if (dataInterfaceList.empty()) {
       // interface spec may be omitted in case of global data fits
       bool interface_reqd = true;
-      std::list<DataModel>::iterator dm_iter;
-      for (dm_iter =dataModelList.begin();
+      // global surrogate with data reuse from either restart or points_file
+      for (std::list<DataModel>::iterator dm_iter = dataModelList.begin();
 	   dm_iter!=dataModelList.end(); ++dm_iter)
-	if (dm_iter->dataModelRep->surrogateType.begins("global_"))
+	if ( dm_iter->dataModelRep->surrogateType.begins("global_") && 
+	     ( ( !dm_iter->dataModelRep->approxPointReuse.empty() &&
+		  dm_iter->dataModelRep->approxPointReuse != "none" ) ||
+	       !dm_iter->dataModelRep->approxPointReuseFile.empty() ) )
 	  interface_reqd = false;
+      if (interface_reqd)
+	for (std::list<DataMethod>::iterator dm_iter = dataMethodList.begin();
+	     dm_iter != dataMethodList.end(); ++dm_iter)
+	  if (!dm_iter->dataMethodRep->approxPointReuseFile.empty())
+	    interface_reqd = false;
       if (interface_reqd) {
 	Cerr << "No interface specification found in input file.\n";
 	++num_errors;

@@ -86,14 +86,11 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
         seed    = probDescDB.get_int("method.random_seed");
     const String& rng = probDescDB.get_string("method.random_number_generator");
     // get point samples file
-    short this_output_level = probDescDB.get_short("method.output");
     const String& pt_reuse_file
       = probDescDB.get_string("method.point_reuse_file");
     bool pt_file_annotated = probDescDB.get_bool("method.point_file_annotated");
-    if (!pt_reuse_file.empty()){
-      samples = 0;
-      sample_reuse = "all";
-    }
+    if (!pt_reuse_file.empty())
+      { samples = 0; sample_reuse = "all"; }
      
     // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
     Iterator lhs_iterator;
@@ -104,16 +101,14 @@ NonDBayesCalibration::NonDBayesCalibration(Model& model):
 	samples, seed, rng, true, ACTIVE_UNIFORM), false);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, g_u_model,
         approx_type, approx_order, corr_type, corr_order, data_order,
-        sample_reuse, this_output_level, pt_reuse_file, pt_file_annotated),
-	false);
+        outputLevel, sample_reuse, pt_reuse_file, pt_file_annotated), false);
     }
     else {
       lhs_iterator.assign_rep(new NonDLHSSampling(iteratedModel, sample_type,
 	samples, seed, rng, true, ACTIVE_UNIFORM), false);
       emulatorModel.assign_rep(new DataFitSurrModel(lhs_iterator, iteratedModel,
         approx_type, approx_order, corr_type, corr_order, data_order,
-        sample_reuse, this_output_level, pt_reuse_file, pt_file_annotated),
-	false);
+        outputLevel, sample_reuse, pt_reuse_file, pt_file_annotated), false);
     }
     emulatorModel.init_communicators(mcmc_concurrency);
     break;
