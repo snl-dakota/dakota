@@ -18,6 +18,9 @@
 #include "ProblemDescDB.H"
 #include "ParamResponsePair.H"
 #include "RecastModel.H"
+#ifdef __SUNPRO_CC
+#include <math.h>  // for std::log
+#endif // __SUNPRO_CC
 
 static const char rcsId[]="@(#) $Id: DakotaMinimizer.C 7029 2010-10-22 00:17:02Z mseldre $";
 
