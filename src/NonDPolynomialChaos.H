@@ -79,8 +79,6 @@ private:
 
   /// filename for import of chaos coefficients
   String expansionImportFile;
-  // user spec of reuse_points for regression-based PCE
-  //String collocPtReuse;
   /// user specification of PCE terms
   int expansionTerms;
   /// factor applied to expansionTerms^termsOrder in computing number of

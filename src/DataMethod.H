@@ -676,9 +676,10 @@ public:
   /// or computing the collocation ratio within regression PCE;
   /// based on the \c ratio_order specification in \ref MethodNonDPCE
   Real collocRatioTermsOrder;
-  /// allows for incremental PCE construction using the \c
-  /// reuse_points specification in \ref MethodNonDPCE
-  String collocPtReuse;
+  /// allows PCE construction to reuse points from previous sample
+  /// sets or data import using the \c reuse_points specification in
+  /// \ref MethodNonDPCE
+  String pointReuse;
   /// flag for usage of a filtered set of tensor-product grid points
   /// within regression PCE; based on the \c tensor_grid specification
   /// in \ref MethodNonDPCE

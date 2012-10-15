@@ -474,8 +474,10 @@ void NIDRProblemDescDB::
 iface_pint(const char *keyname, Values *val, void **g, void *v)
 {
   int n = *val->i;
-  if (n <= 0)
+#ifdef REDUNDANT_INT_CHECKS
+  if (n <= 0) /* now handled by INTEGER > 0 in the .nspec file */
     botch("%s must be positive", keyname);
+#endif
   (*(Iface_Info**)g)->di->**(int DataInterfaceRep::**)v = n;
 }
 
@@ -1069,17 +1071,19 @@ void NIDRProblemDescDB::
 method_nnint(const char *keyname, Values *val, void **g, void *v)
 {
   int n = *val->i;
-  if (n < 0)
+#ifdef REDUNDANT_INT_CHECKS
+  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
     botch("%s must be non-negative", keyname);
+#endif
   (*(Meth_Info**)g)->dme->**(int DataMethodRep::**)v = n;
 }
 
 void NIDRProblemDescDB::
 method_nnintz(const char *keyname, Values *val, void **g, void *v)
 {
-  int n = *val->i;
-#if 0
-  if (n < 0)
+  int n = *val->i; // test value as int, prior to storage as size_t
+#ifdef REDUNDANT_INT_CHECKS
+  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
     botch("%s must be non-negative", keyname);
 #endif
   (*(Meth_Info**)g)->dme->**(size_t DataMethodRep::**)v = n;
@@ -1120,17 +1124,19 @@ void NIDRProblemDescDB::
 method_pint(const char *keyname, Values *val, void **g, void *v)
 {
   int n = *val->i;
-  if (n <= 0)
+#ifdef REDUNDANT_INT_CHECKS
+  if (n <= 0) /* now handled by INTEGER > 0 in the .nspec file */
     botch("%s must be positive", keyname);
+#endif
   (*(Meth_Info**)g)->dme->**(int DataMethodRep::**)v = n;
 }
 
 void NIDRProblemDescDB::
 method_pintz(const char *keyname, Values *val, void **g, void *v)
 {
-  int n = *val->i;
-#if 0
-  if (n <= 0)
+  int n = *val->i; // test value as int, prior to storage as size_t
+#ifdef REDUNDANT_INT_CHECKS
+  if (n <= 0) /* now handled by INTEGER > 0 in the .nspec file */
     botch("%s must be positive", keyname);
 #endif
   (*(Meth_Info**)g)->dme->**(size_t DataMethodRep::**)v = n;
@@ -1475,9 +1481,9 @@ resp_lit(const char *keyname, Values *val, void **g, void *v)
 void NIDRProblemDescDB::
 resp_nnintz(const char *keyname, Values *val, void **g, void *v)
 {
-  int n = *val->i;
-#if 0
-  if (n < 0)
+  int n = *val->i; // test value as int, prior to storage as size_t
+#ifdef REDUNDANT_INT_CHECKS
+  if (n < 0) /* now handled by INTEGER >= 0 in the .nspec file */
     botch("%s must be non-negative", keyname);
 #endif
   (*(Resp_Info**)g)->dr->**(size_t DataResponsesRep::**)v = n;
@@ -1956,11 +1962,11 @@ var_ivec(const char *keyname, Values *val, void **g, void *v)
 }
 
 void NIDRProblemDescDB::
-var_intz(const char *keyname, Values *val, void **g, void *v)
+var_pintz(const char *keyname, Values *val, void **g, void *v)
 {
-  int n = *val->i;
-#if 0		/* now handled in the .nspec file */
-  if (n <= 0)
+  int n = *val->i; // test value as int, prior to storage as size_t
+#ifdef REDUNDANT_INT_CHECKS
+  if (n <= 0) /* now handled by INTEGER > 0 in the .nspec file */
     botch("%s must be positive", keyname);
 #endif
   (*(Var_Info**)g)->dv->**(size_t DataVariablesRep::**)v = n;
@@ -5095,7 +5101,6 @@ static Method_mp_ilit2z
 static Method_mp_lit
 	MP2(boxDivision,all_dimensions),
 	MP2(boxDivision,major_dimension),
-	MP2(collocPtReuse,all),
 	MP2(convergenceType,average_fitness_tracker),
 	MP2(convergenceType,best_fitness_tracker),
 	MP2(convergenceType,metric_tracker),
@@ -5190,6 +5195,7 @@ static Method_mp_lit
 	MP2(nondOptAlgorithm,sbo),
 	MP2(patternBasis,coordinate),
 	MP2(patternBasis,simplex),
+	MP2(pointReuse,all),
 	MP2(rejectionType,standard),
 	MP2(rejectionType,delayed),
 	MP2(reliabilityIntegration,first_order),

@@ -689,6 +689,7 @@ TAG "method/polynomial_chaos/collocation_points/tensor_grid"
 TAG "method/polynomial_chaos/expansion_samples"
 	DESC "{Number simulation samples to estimate coeffs} MethodCommands.html#MethodNonDPCE"
 
+TAG "method/polynomial_chaos/expansion_samples/reuse_points"
 TAG "method/polynomial_chaos/expansion_samples/incremental_lhs"
 	DESC "{Use incremental LHS for expansion_samples} MethodCommands.html#MethodNonDPCE"
 

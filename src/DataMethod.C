@@ -108,8 +108,8 @@ DataMethodRep::DataMethodRep():
   nestingOverride(Pecos::NO_NESTING_OVERRIDE),
   growthOverride(Pecos::NO_GROWTH_OVERRIDE), expansionType(EXTENDED_U),
   piecewiseBasis(false), sparseGridBasisType(DEFAULT_INTERPOLANT),
-  expansionTerms(0), expansionSamples(0), cubIntOrder(USHRT_MAX),
-  collocationPoints(0), collocationRatio(0.), collocRatioTermsOrder(1.),
+  expansionTerms(0), expansionSamples(-1), cubIntOrder(USHRT_MAX),
+  collocationPoints(-1), collocationRatio(0.), collocRatioTermsOrder(1.),
   probCollocFlag(false), //expansionSampleType("lhs"), sampleType("lhs"),
   distributionType(CUMULATIVE), responseLevelTarget(PROBABILITIES),
   responseLevelTargetReduce(COMPONENT), emulatorSamples(0),
@@ -208,7 +208,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << sparseGridBasisType << expansionTerms << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
-    << collocationRatio << collocRatioTermsOrder << collocPtReuse
+    << collocationRatio << collocRatioTermsOrder << pointReuse
     << probCollocFlag << expansionImportFile << sampleType
     << reliabilitySearchType << reliabilityIntegration << integrationRefine
     << nondOptAlgorithm << distributionType << responseLevelTarget
@@ -312,7 +312,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> sparseGridBasisType >> expansionTerms >> expansionOrder
     >> expansionSamples >> expansionSampleType >> quadratureOrder
     >> sparseGridLevel >> anisoGridDimPref >> cubIntOrder >> collocationPoints
-    >> collocationRatio >> collocRatioTermsOrder >> collocPtReuse
+    >> collocationRatio >> collocRatioTermsOrder >> pointReuse
     >> probCollocFlag >> expansionImportFile >> sampleType
     >> reliabilitySearchType >> reliabilityIntegration >> integrationRefine
     >> nondOptAlgorithm >> distributionType >> responseLevelTarget
@@ -416,7 +416,7 @@ void DataMethodRep::write(std::ostream& s) const
     << sparseGridBasisType << expansionTerms << expansionOrder
     << expansionSamples << expansionSampleType << quadratureOrder
     << sparseGridLevel << anisoGridDimPref << cubIntOrder << collocationPoints
-    << collocationRatio << collocRatioTermsOrder << collocPtReuse
+    << collocationRatio << collocRatioTermsOrder << pointReuse
     << probCollocFlag << expansionImportFile << sampleType
     << reliabilitySearchType << reliabilityIntegration << integrationRefine
     << nondOptAlgorithm << distributionType << responseLevelTarget

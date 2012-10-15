@@ -53,8 +53,8 @@ KEYWORD12 method
 	  | quiet
 	  | silent
 	  ]
-	[ max_iterations INTEGER ]
-	[ max_function_evaluations INTEGER ]
+	[ max_iterations INTEGER >= 0 ]
+	[ max_function_evaluations INTEGER >= 0 ]
 	[ speculative ]
 	[ convergence_tolerance REAL ]
 	[ constraint_tolerance REAL ]
@@ -334,7 +334,7 @@ KEYWORD12 method
 	  [ postprocessor_type
 	    orthogonal_distance REALLIST
 	    ]
-	  [ population_size INTEGER ]
+	  [ population_size INTEGER >= 0 ]
 	  [ log_file STRING ]
 	  [ print_each_pop ]
 	  [ initialization_type
@@ -364,7 +364,7 @@ KEYWORD12 method
 	      )
 	    [ mutation_rate REAL ]
 	    ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -398,7 +398,7 @@ KEYWORD12 method
 	      [ num_generations INTEGER >= 0 ]
 	      )
 	    ]
-	  [ population_size INTEGER ]
+	  [ population_size INTEGER >= 0 ]
 	  [ log_file STRING ]
 	  [ print_each_pop ]
 	  [ initialization_type
@@ -428,7 +428,7 @@ KEYWORD12 method
 	      )
 	    [ mutation_rate REAL ]
 	    ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  [ linear_inequality_constraint_matrix REALLIST ]
 	  [ linear_inequality_lower_bounds REALLIST ]
 	  [ linear_inequality_upper_bounds REALLIST ]
@@ -464,7 +464,7 @@ KEYWORD12 method
 	  initial_delta REAL
 	  threshold_delta REAL
 	  [ solution_target ALIAS solution_accuracy REAL ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
 	  [ misc_options STRINGLIST ]
 	  )
@@ -479,7 +479,7 @@ KEYWORD12 method
 	  initial_delta REAL
 	  threshold_delta REAL
 	  [ solution_target ALIAS solution_accuracy REAL ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
 	  [ misc_options STRINGLIST ]
 	  )
@@ -488,7 +488,7 @@ KEYWORD12 method
 	  initial_delta REAL
 	  threshold_delta REAL
 	  [ solution_target ALIAS solution_accuracy REAL ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
 	  [ misc_options STRINGLIST ]
 	  )
@@ -504,13 +504,13 @@ KEYWORD12 method
 	  [ min_boxsize_limit REAL ]
 	  [ constraint_penalty REAL ]
 	  [ solution_target ALIAS solution_accuracy REAL ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
 	  [ misc_options STRINGLIST ]
 	  )
 	|
 	( coliny_ea
-	  [ population_size INTEGER ]
+	  [ population_size INTEGER > 0 ]
 	  [ initialization_type
 	    simple_random
 	    | unique_random
@@ -546,7 +546,7 @@ KEYWORD12 method
 	    ]
 	  [ constraint_penalty REAL ]
 	  [ solution_target ALIAS solution_accuracy REAL ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  [ show_misc_options ]
 	  [ misc_options STRINGLIST ]
 	  )
@@ -583,7 +583,7 @@ KEYWORD12 method
 	    [ annotated
 	    | freeform ]
 	    ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  )
 	|
 	( polynomial_chaos ALIAS nond_polynomial_chaos
@@ -613,7 +613,7 @@ KEYWORD12 method
 	    )
 	  | cubature_integrand INTEGER
 	  |
-	  ( collocation_points INTEGER
+	  ( collocation_points INTEGER >= 0
 	    | collocation_ratio REAL
 	    [ ratio_order REAL ]
 	    [ reuse_points ALIAS reuse_samples ]
@@ -624,22 +624,23 @@ KEYWORD12 method
 	      | freeform ]
 	      ]
 	    expansion_order INTEGERLIST
-	    | expansion_terms INTEGER
+	    | expansion_terms INTEGER >= 0
 	    )
 	  |
-	  ( expansion_samples INTEGER
+	  ( expansion_samples INTEGER >= 0
+	    [ reuse_points ALIAS reuse_samples ]
 	    [ incremental_lhs ]
 	    [ points_file STRING
 	      [ annotated
 	      | freeform ]
 	      ]
 	    expansion_order INTEGERLIST
-	    | expansion_terms INTEGER
+	    | expansion_terms INTEGER >= 0
 	    )
 	  |
 	  ( expansion_import_file STRING
 	    expansion_order INTEGERLIST
-	    | expansion_terms INTEGER
+	    | expansion_terms INTEGER >= 0
 	    )
 	  [ variance_based_decomp
 	    [ univariate_effects ]
@@ -685,7 +686,7 @@ KEYWORD12 method
 	    | rnum2
 	    ]
 	  [ samples INTEGER ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  )
 	|
 	( stoch_collocation ALIAS nond_stoch_collocation
@@ -766,7 +767,7 @@ KEYWORD12 method
 	    | rnum2
 	    ]
 	  [ samples INTEGER ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  )
 	|
 	( sampling ALIAS nond_sampling
@@ -813,7 +814,7 @@ KEYWORD12 method
 	    | rnum2
 	    ]
 	  [ samples INTEGER ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  )
 	|
 	( importance_sampling ALIAS nond_importance_sampling
@@ -847,7 +848,7 @@ KEYWORD12 method
 	    | rnum2
 	    ]
 	  [ samples INTEGER ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  )
 	|
 	( adaptive_sampling ALIAS nond_adaptive_sampling
@@ -882,7 +883,7 @@ KEYWORD12 method
 	    | rnum2
 	    ]
 	  [ samples INTEGER ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  )
 	|
 	( global_evidence ALIAS nond_global_evidence
@@ -926,7 +927,7 @@ KEYWORD12 method
 	    | rnum2
 	    ]
 	  [ samples INTEGER ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  )
 	|
 	( global_interval_est ALIAS nond_global_interval_est
@@ -949,7 +950,7 @@ KEYWORD12 method
 	    | rnum2
 	    ]
 	  [ samples INTEGER ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  )
 	|
 	( bayes_calibration ALIAS nond_bayes_calibration
@@ -992,7 +993,7 @@ KEYWORD12 method
 	  [ proposal_covariance_scale REAL ]
 	  [ likelihood_scale REAL ]
 	  [ samples INTEGER ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  )
 	|
 	( dace
@@ -1011,7 +1012,7 @@ KEYWORD12 method
 	  [ fixed_seed ]
 	  [ symbols INTEGER ]
 	  [ samples INTEGER ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  )
 	|
 	( fsu_cvt
@@ -1028,13 +1029,13 @@ KEYWORD12 method
 	    ]
 	  [ num_trials INTEGER ]
 	  [ samples INTEGER ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  )
 	|
 	( psuade_moat
 	  [ partitions INTEGERLIST ]
 	  [ samples INTEGER ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  )
 	|
 	( ncsu_direct
@@ -1093,7 +1094,7 @@ KEYWORD12 method
 		| adapt_import
 		| mm_adapt_import
 		[ samples INTEGER ]
-		[ seed INTEGER ]
+		[ seed INTEGER > 0 ]
 		]
 	      ]
 	    ]
@@ -1135,7 +1136,7 @@ KEYWORD12 method
 	    | freeform ]
 	    ]
 	  [ use_derivatives ]
-	  [ seed INTEGER ]
+	  [ seed INTEGER > 0 ]
 	  [ rng
 	    mt19937
 	    | rnum2
@@ -1553,7 +1554,7 @@ KEYWORD12 interface
 	    )
 	  |
 	  ( direct
-	    [ processors_per_analysis INTEGER ]
+	    [ processors_per_analysis INTEGER > 0 ]
 	    )
 	  | matlab
 	  | python
@@ -1572,15 +1573,15 @@ KEYWORD12 interface
 	    ]
 	  ]
 	[ asynchronous
-	  [ evaluation_concurrency INTEGER ]
+	  [ evaluation_concurrency INTEGER > 0 ]
 	  [ local_evaluation_self_scheduling
 	  | local_evaluation_static_scheduling ]
-	  [ analysis_concurrency INTEGER ]
+	  [ analysis_concurrency INTEGER > 0 ]
 	  ]
-	[ evaluation_servers INTEGER ]
+	[ evaluation_servers INTEGER > 0 ]
 	[ evaluation_self_scheduling
 	| evaluation_static_scheduling ]
-	[ analysis_servers INTEGER ]
+	[ analysis_servers INTEGER > 0 ]
 	[ analysis_self_scheduling
 	| analysis_static_scheduling ]
 

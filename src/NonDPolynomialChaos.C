@@ -93,7 +93,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
       // but gets overridden below for unstructured grid refinement.
       bool vary_pattern = false;
       int exp_samples = probDescDB.get_int("method.nond.expansion_samples");
-      if (exp_samples > 0) { // expectation
+      if (exp_samples >= 0) { // expectation
 	if (refineType) { // no obvious logic for sample refinement
 	  Cerr << "Error: uniform/adaptive refinement of expansion_samples not "
 	       << "supported." << std::endl;
@@ -103,10 +103,11 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	expansionCoeffsApproach = Pecos::SAMPLING;
 
 	// get point samples file
-	pt_reuse_file = probDescDB.get_string("method.point_reuse_file");
+	pt_reuse       = probDescDB.get_string("method.nond.point_reuse");
+	pt_reuse_file  = probDescDB.get_string("method.point_reuse_file");
 	annotated_file = probDescDB.get_bool("method.point_file_annotated");
-	if (!pt_reuse_file.empty())
-	  { numSamplesOnModel = 0; pt_reuse = "all"; }
+	if (!pt_reuse_file.empty() && pt_reuse.empty())
+	  { /* numSamplesOnModel = 0; */ pt_reuse = "all"; }
 
 	// reuse type/seed/rng settings intended for the expansion_sampler.
 	// Unlike expansion_sampler, allow sampling pattern to vary under
@@ -132,7 +133,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	int colloc_pts = probDescDB.get_int("method.nond.collocation_points");
 	termsOrder
 	  = probDescDB.get_real("method.nond.collocation_ratio_terms_order");
-	if (colloc_pts > 0) {
+	if (colloc_pts >= 0) {
 	  numSamplesOnModel = colloc_pts;
 	  // define collocRatio for use in uniform refinement
 	  collocRatio
@@ -151,8 +152,7 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 			       dim_pref);
 	}
 	else {                 // "point collocation": LHS sampling
-	  pt_reuse
-	    = probDescDB.get_string("method.nond.collocation_point_reuse");
+	  pt_reuse = probDescDB.get_string("method.nond.point_reuse");
 	  // if reusing samples within a refinement strategy, ensure different
 	  // random numbers are generated for points within the grid (even if
 	  // the number of samples differs)
@@ -160,8 +160,8 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  // get point samples file
 	  pt_reuse_file  = probDescDB.get_string("method.point_reuse_file");
 	  annotated_file = probDescDB.get_bool("method.point_file_annotated");
-	  if (!pt_reuse_file.empty())
-	    { numSamplesOnModel = 0; pt_reuse = "all"; }
+	  if (!pt_reuse_file.empty() && pt_reuse.empty())
+	    { /* numSamplesOnModel = 0; */ pt_reuse = "all"; }
 	  // reuse type/seed/rng settings intended for the expansion_sampler.
 	  // Unlike expansion_sampler, allow sampling pattern to vary under
 	  // unstructured grid refinement/replacement/augmentation.
