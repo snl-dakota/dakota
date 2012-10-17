@@ -180,6 +180,9 @@ public:
   /// set the active discrete real variables
   void discrete_real_variables(const RealVector& dr_vars);
 
+  /// copy the active cv/div/drv variables from vars
+  void active_variables(const Variables& vars);
+
   /// return a mutable view of the active continuous variables
   RealVector continuous_variables_view() const;
   /// return a mutable view of the active discrete integer variables
@@ -590,6 +593,20 @@ inline void Variables::discrete_real_variables(const RealVector& dr_vars)
 {
   if (variablesRep) variablesRep->discreteRealVars.assign(dr_vars);
   else              discreteRealVars.assign(dr_vars);
+}
+
+
+inline void Variables::active_variables(const Variables& vars) 
+{
+  // Set active variables only, leaving remainder of data unchanged (e.g.,
+  // so that inactive vars can vary between iterators/models w/i a strategy).
+  if (variablesRep)
+    variablesRep->active_variables(vars);
+  else {
+    if (vars.cv())  continuous_variables(vars.continuous_variables());
+    if (vars.div()) discrete_int_variables(vars.discrete_int_variables());
+    if (vars.drv()) discrete_real_variables(vars.discrete_real_variables());
+  }
 }
 
 

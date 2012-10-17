@@ -12,6 +12,7 @@
 //- Checked by:
 
 #include "DataFitSurrModel.H"
+#include "RecastModel.H"
 #include "ApproximationInterface.H"
 #include "ParamResponsePair.H"
 #include "ProblemDescDB.H"
@@ -122,7 +123,6 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db):
 
   bool annotated = problem_db.get_bool("model.surrogate.point_file_annotated");
   import_points(annotated);
-
 }
 
 
@@ -756,16 +756,69 @@ void DataFitSurrModel::build_global()
     approxInterface.append_approximation(reuse_vars, reuse_responses);
  
     // Process the points_file
-    // Reused file-read responses go backward, so insert them
-    // separately, ordering variables and responses appropriately.
-    // The negative eval IDs mean DB lookups will appropriately fail
-    // on these which aren't in the cace.
+    // Reused file-read responses go backward, so insert them separately,
+    // ordering variables and responses appropriately.  Negative eval IDs mean
+    // DB lookups will appropriately fail on these which aren't in the cache.
     if (!pointReuseFile.empty()) {
+      // Test for any recasting or nesting within actualModel: we assume that
+      // user data import is post-nesting, but pre-recast.
+      // (1) data is imported at the user-space level but then must be applied
+      //     within the transformed space.  Transform imported data at run time
+      //     in order to capture latest initialize() calls to RecastModels.
+      // (2) stop the recursion if a nested model is encountered: we will apply
+      //     any recastings that occur following the last nesting. 
+      // (3) Additional surrogates in this recursion hierarchy are ignored.
+      ModelList& sub_models = subordinate_models();
+      ModelLIter ml_it; ModelLRevIter ml_rit;
+      size_t i, num_models = sub_models.size();
+      bool manage_recursion = false; BoolDeque recast_flags(num_models, false);
+      // detect recasting needs top down
+      for (ml_it=sub_models.begin(), i=0; ml_it!=sub_models.end(); ++ml_it, ++i)
+	if (ml_it->model_type()      == "recast")
+	  manage_recursion = recast_flags[i] = true;
+	else if (ml_it->model_type() == "nested")
+	  break;
+
+      // append the data to approxInterface
       VarsLIter v_it; RespLIter r_it; int cntr = -1;
       for (v_it  = reuseFileVars.begin(), r_it = reuseFileResponses.begin();
 	   v_it != reuseFileVars.end(); ++v_it, ++r_it, --cntr) {
-	if (inside(v_it->continuous_variables(), v_it->discrete_int_variables(),
-		   v_it->discrete_real_variables())) {
+	// apply any recastings for surrogate modeling at this level
+	if (manage_recursion) {
+	  Variables vars(*v_it); Response resp(*r_it); // shallow copies
+	  // apply recastings bottom up
+	  for (ml_rit =sub_models.rbegin(), i=num_models-1;
+	       ml_rit!=sub_models.rend(); ++ml_rit, --i)
+	    if (recast_flags[i]) {
+	      // utilize RecastModel::current{Variables,Response} to xform data
+	      Variables recast_vars = ml_rit->current_variables();//shallow copy
+	      Response  recast_resp = ml_rit->current_response(); //shallow copy
+	      // to propagate vars bottom up, inverse of std transform is reqd
+	      RecastModel* recast_model_rep = (RecastModel*)ml_rit->model_rep();
+	      recast_model_rep->inverse_transform_variables(vars, recast_vars);
+	      //recast_model_rep->inverse_transform_set(vars, set, recast_set);
+	      // to propagate response bottom up, std transform is used
+	      recast_model_rep->
+		transform_response(recast_vars, vars, resp, recast_resp);
+	      // reassign rep pointers (no actual data copying)
+	      vars = recast_vars; resp = recast_resp;
+	    }
+	  // Note: for NonD uses with u-space models, the global_bounds boolean
+	  // in NonD::transform_model() needs to be set in order to allow test
+	  // of transformed bounds in "region" reuse case.  For "all" reuse case
+	  // typically used with data import, this is not necessary.
+	  if (inside(vars.continuous_variables(), vars.discrete_int_variables(),
+		     vars.discrete_real_variables())) {
+	    // dummy eval id < 0 for file imports
+	    approxInterface.append_approximation(vars,
+						 std::make_pair(cntr, resp));
+	    ++reuse_points;
+	  }
+	}
+	// no recastings: imported data may be applied as is
+	else if (inside(v_it->continuous_variables(),
+			v_it->discrete_int_variables(),
+			v_it->discrete_real_variables())) {
 	  // dummy eval id < 0 for file imports
 	  approxInterface.append_approximation(*v_it,
 					       std::make_pair(cntr, *r_it));
@@ -773,7 +826,6 @@ void DataFitSurrModel::build_global()
 	}
       }
     }
-
   }
 
   // *******************************************
@@ -856,6 +908,69 @@ void DataFitSurrModel::build_global()
   Cout << "Constructing global approximations with " << anchor << " anchor, "
        << new_points << " DACE samples, and " << reuse_points
        << " reused points.\n";
+}
+
+
+bool DataFitSurrModel::
+inside(const RealVector& c_vars, const IntVector& di_vars,
+       const RealVector& dr_vars)
+{
+  bool inside = true;
+  if (pointReuse == "region") { // inside always = TRUE for "all"
+
+    size_t i, num_c_vars = c_vars.length(), num_di_vars = di_vars.length(),
+      num_dr_vars = dr_vars.length();
+
+    const RealVector& c_l_bnds = (actualModel.is_null()) ?
+      userDefinedConstraints.continuous_lower_bounds() :
+      actualModel.continuous_lower_bounds();
+    const RealVector& c_u_bnds = (actualModel.is_null()) ?
+      userDefinedConstraints.continuous_upper_bounds() :
+      actualModel.continuous_upper_bounds();
+    const IntVector&  di_l_bnds = (actualModel.is_null()) ?
+      userDefinedConstraints.discrete_int_lower_bounds() :
+      actualModel.discrete_int_lower_bounds();
+    const IntVector&  di_u_bnds = (actualModel.is_null()) ?
+      userDefinedConstraints.discrete_int_upper_bounds() :
+      actualModel.discrete_int_upper_bounds();
+    const RealVector& dr_l_bnds = (actualModel.is_null()) ?
+      userDefinedConstraints.discrete_real_lower_bounds() :
+      actualModel.discrete_real_lower_bounds();
+    const RealVector& dr_u_bnds = (actualModel.is_null()) ?
+      userDefinedConstraints.discrete_real_upper_bounds() :
+      actualModel.discrete_real_upper_bounds();
+    
+    if (c_l_bnds.length()  != num_c_vars  ||
+	c_u_bnds.length()  != num_c_vars  ||
+	di_l_bnds.length() != num_di_vars ||
+	di_u_bnds.length() != num_di_vars ||
+	dr_l_bnds.length() != num_dr_vars ||
+	dr_u_bnds.length() != num_dr_vars) {
+      Cerr << "Error: bad array lengths in DataFitSurrModel::inside()."
+	   << std::endl;
+      abort_handler(-1);
+    }
+
+    for (i=0; i<num_c_vars; i++) {
+      if (c_vars[i] < c_l_bnds[i] || c_vars[i] > c_u_bnds[i]) {
+	inside = false;
+	break;
+      }
+    }
+    for (i=0; i<num_di_vars; i++) {
+      if (di_vars[i] < di_l_bnds[i] || di_vars[i] > di_u_bnds[i]) {
+	inside = false;
+	break;
+      }
+    }
+    for (i=0; i<num_dr_vars; i++) {
+      if (dr_vars[i] < dr_l_bnds[i] || dr_vars[i] > dr_u_bnds[i]) {
+	inside = false;
+	break;
+      }
+    }
+  }
+  return inside;
 }
 
 

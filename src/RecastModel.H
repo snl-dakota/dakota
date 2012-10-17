@@ -94,6 +94,47 @@ public:
 					     const Response& sub_model_response,
 					     Response& recast_response));
 
+  /// provide optional inverse mappings
+  void inverse_mappings(
+    void (*inv_vars_map)     (const Variables& sub_model_vars,
+			      Variables& recast_vars),
+    void (*inv_set_map)      (const Variables& sub_model_vars,
+			      const ActiveSet& sub_model_set,
+			      ActiveSet& recast_set),
+    void (*inv_pri_resp_map) (const Variables& recast_vars,
+			      const Variables& sub_model_vars,
+			      const Response& recast_resp,
+			      Response& sub_model_resp),
+    void (*inv_sec_resp_map) (const Variables& recast_vars,
+			      const Variables& sub_model_vars,
+			      const Response& recast_resp,
+			      Response& sub_model_resp));
+
+  /// perform transformation of Variables (recast --> sub-model)
+  void transform_variables(const Variables& recast_vars,
+			   Variables& sub_model_vars);
+  /// into sub_model_set for use with subModel.
+  void transform_set(const Variables& recast_vars, const ActiveSet& recast_set,
+		     ActiveSet& sub_model_set);
+  /// perform transformation of Response (sub-model --> recast)
+  void transform_response(const Variables& recast_vars,
+			  const Variables& sub_model_vars,
+			  const Response& sub_model_resp,
+			  Response& recast_resp);
+
+  /// perform inverse transformation of Variables (sub-model --> recast)
+  void inverse_transform_variables(const Variables& sub_model_vars,
+				   Variables& recast_vars);
+  /// into sub_model_set for use with subModel.
+  void inverse_transform_set(const Variables& sub_model_vars,
+			     const ActiveSet& sub_model_set,
+			     ActiveSet& recast_set);
+  /// perform inverse transformation of Response (recast --> sub-model)
+  void inverse_transform_response(const Variables& sub_model_vars,
+				  const Variables& recast_vars,
+				  const Response& recast_resp,
+				  Response& sub_model_resp);
+
   /// override the submodel's derivative estimation behavior
   void submodel_supports_derivative_estimation(bool sed_flag);
 
@@ -249,11 +290,6 @@ private:
   /// code shared among constructors to initialize base class data from submodel
   void initialize_data_from_submodel();
 
-  /// Uses recastFnMap to convert incoming recast_set from iterator
-  /// into sub_model_set for use with subModel.
-  void set_mapping(const Variables& recast_vars, const ActiveSet& recast_set,
-		   ActiveSet& sub_model_set);
-
   /// update current variables/labels/bounds/targets from subModel
   void update_from_sub_model();
 
@@ -270,7 +306,7 @@ private:
   /// employed rather than a sparsely filled N_sm x N_r matrix)
   Sizet2DArray varsMapIndices;
   /// boolean set to true if the variables mapping involves a nonlinear
-  /// transformation.  Used in set_mapping() to manage the requirement for
+  /// transformation.  Used in transform_set() to manage the requirement for
   /// gradients within the Hessian transformations.  This does not require
   /// a BoolDeque for each individual variable, since response gradients and
   /// Hessians are managed per function, not per variable.
@@ -289,7 +325,7 @@ private:
   Sizet2DArray secondaryRespMapIndices;
   /// array of BoolDeques, one for each recast response function.  Each
   /// BoolDeque defines which subModel response functions contribute to the
-  /// recast function using a nonlinear mapping.  Used in set_mapping() to
+  /// recast function using a nonlinear mapping.  Used in transform_set() to
   /// augment the subModel function value/gradient requirements.
   BoolDequeArray nonlinearRespMapping;
 
@@ -327,6 +363,30 @@ private:
 				const Variables& recast_vars,
 				const Response& sub_model_response,
 				Response& recast_response);
+
+  // flag indicating that inverse mappings have been published
+  //bool inverseMapFlag;
+  /// holds pointer for optional inverse variables mapping function
+  /// passed in inverse_mappings()
+  void (*invVarsMapping)    (const Variables& sub_model_vars,
+			     Variables& recast_vars);
+  /// holds pointer for optional inverse set mapping function passed
+  /// in inverse_mappings()
+  void (*invSetMapping)     (const Variables& sub_model_vars,
+			     const ActiveSet& sub_model_set,
+			     ActiveSet& recast_set);
+  /// holds pointer for optional inverse primary response mapping
+  /// function passed in inverse_mappings()
+  void (*invPriRespMapping) (const Variables& recast_vars,
+			     const Variables& sub_model_vars,
+			     const Response& recast_resp,
+			     Response& sub_model_resp);
+  /// holds pointer for optional inverse secondary response mapping
+  /// function passed in inverse_mappings()
+  void (*invSecRespMapping) (const Variables& recast_vars,
+			     const Variables& sub_model_vars,
+			     const Response& recast_resp,
+			     Response& sub_model_resp);
 };
 
 

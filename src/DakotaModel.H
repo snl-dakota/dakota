@@ -656,8 +656,12 @@ public:
   // relaxed into a continuous array in currentVariables
   //const SizetArray& relaxed_discrete_ids() const;
 
-  /// return the current variables (currentVariables)
+  /// return the current variables (currentVariables) as const
+  /// reference (preferred)
   const Variables& current_variables() const;
+  /// return the current variables (currentVariables) in mutable form
+  /// (special cases)
+  Variables& current_variables();
   /// return the user-defined constraints (userDefinedConstraints)
   const Constraints& user_defined_constraints() const;
   /// return the current response (currentResponse)
@@ -1133,18 +1137,8 @@ inline size_t Model::adrv() const
 
 inline void Model::active_variables(const Variables& vars) 
 {
-  // Set active variables only.  Leave remainder of currentVariables unchanged
-  // (so that inactive vars can vary between iterators/models w/i a strategy).
-  if (modelRep)
-    modelRep->active_variables(vars);
-  else {
-    if (vars.cv())
-      currentVariables.continuous_variables(vars.continuous_variables());
-    if (vars.div())
-      currentVariables.discrete_int_variables(vars.discrete_int_variables());
-    if (vars.drv())
-      currentVariables.discrete_real_variables(vars.discrete_real_variables());
-  }
+  if (modelRep) modelRep->currentVariables.active_variables(vars);
+  else          currentVariables.active_variables(vars);
 }
 
 
@@ -2348,6 +2342,10 @@ nonlinear_eq_constraint_targets(const RealVector& nln_eq_targets)
 
 
 inline const Variables& Model::current_variables() const
+{ return (modelRep) ? modelRep->currentVariables : currentVariables; }
+
+
+inline Variables& Model::current_variables()
 { return (modelRep) ? modelRep->currentVariables : currentVariables; }
 
 

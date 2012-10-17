@@ -44,12 +44,22 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
   resolve_inputs(u_space_type, data_order);
   initialize(u_space_type);
 
+  // --------------------
+  // Data import settings
+  // --------------------
+  String pt_reuse = probDescDB.get_string("method.nond.point_reuse"),
+    pt_reuse_file = probDescDB.get_string("method.point_reuse_file");
+  if (!pt_reuse_file.empty() && pt_reuse.empty())
+    pt_reuse = "all"; // reassign default if data import
+
   // -------------------
   // Recast g(x) to G(u)
   // -------------------
   Model g_u_model;
+  // For data import, global bounds needed for DataFitSurrModel::inside()
   bool global_bnds
-    = (numContDesVars || numContEpistUncVars || numContStateVars);
+    = ( numContDesVars || numContEpistUncVars || numContStateVars ||
+	( !pt_reuse_file.empty() && pt_reuse == "region" ) );
   transform_model(iteratedModel, g_u_model, global_bnds);
 
   // -------------------------
@@ -65,7 +75,6 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
     exp_order.resize(numContinuousVars);
     exp_order.assign(numContinuousVars, order);
   }
-  String pt_reuse, pt_reuse_file; // empty defaults overridden for random grids
   bool annotated_file = false;
   if (expansionImportFile.empty()) {
     const UShortArray& quad_order_spec
@@ -102,13 +111,6 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	numSamplesOnModel       = exp_samples;
 	expansionCoeffsApproach = Pecos::SAMPLING;
 
-	// get point samples file
-	pt_reuse       = probDescDB.get_string("method.nond.point_reuse");
-	pt_reuse_file  = probDescDB.get_string("method.point_reuse_file");
-	annotated_file = probDescDB.get_bool("method.point_file_annotated");
-	if (!pt_reuse_file.empty() && pt_reuse.empty())
-	  { /* numSamplesOnModel = 0; */ pt_reuse = "all"; }
-
 	// reuse type/seed/rng settings intended for the expansion_sampler.
 	// Unlike expansion_sampler, allow sampling pattern to vary under
 	// unstructured grid refinement/replacement/augmentation.
@@ -118,6 +120,9 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	    probDescDB.get_int("method.random_seed"),
 	    probDescDB.get_string("method.random_number_generator"),
 	    vary_pattern);
+
+	if (!pt_reuse_file.empty())
+	  annotated_file = probDescDB.get_bool("method.point_file_annotated");
       }
       else { // regression
 	if (refineType && refineControl > Pecos::UNIFORM_CONTROL) {
@@ -150,18 +155,14 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	  RealVector dim_pref; // empty (not part of regression spec)
 	  construct_quadrature(u_space_sampler, g_u_model, numSamplesOnModel,
 			       dim_pref);
+	  // don't allow data import (currently permissible in input spec)
+	  pt_reuse.clear(); pt_reuse_file.clear();
 	}
 	else {                 // "point collocation": LHS sampling
-	  pt_reuse = probDescDB.get_string("method.nond.point_reuse");
 	  // if reusing samples within a refinement strategy, ensure different
 	  // random numbers are generated for points within the grid (even if
 	  // the number of samples differs)
 	  vary_pattern = (refineType && !pt_reuse.empty());
-	  // get point samples file
-	  pt_reuse_file  = probDescDB.get_string("method.point_reuse_file");
-	  annotated_file = probDescDB.get_bool("method.point_file_annotated");
-	  if (!pt_reuse_file.empty() && pt_reuse.empty())
-	    { /* numSamplesOnModel = 0; */ pt_reuse = "all"; }
 	  // reuse type/seed/rng settings intended for the expansion_sampler.
 	  // Unlike expansion_sampler, allow sampling pattern to vary under
 	  // unstructured grid refinement/replacement/augmentation.
@@ -171,6 +172,9 @@ NonDPolynomialChaos::NonDPolynomialChaos(Model& model): NonDExpansion(model),
 	      probDescDB.get_int("method.random_seed"),
 	      probDescDB.get_string("method.random_number_generator"),
 	      vary_pattern);
+
+	  if (!pt_reuse_file.empty())
+	    annotated_file = probDescDB.get_bool("method.point_file_annotated");
 	}
 	// TO DO:
 	//if (probDescDB.get_string("method.nond.expansion_sample_type")

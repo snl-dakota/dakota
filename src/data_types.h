@@ -139,6 +139,7 @@ typedef VariablesList::iterator                    VarsLIter;
 typedef InterfaceList::iterator                    InterfLIter;
 typedef ResponseList::iterator                     RespLIter;
 typedef ModelList::iterator                        ModelLIter;
+typedef ModelList::reverse_iterator                ModelLRevIter;
 typedef IteratorList::iterator                     IterLIter;
 typedef std::list<ParallelLevel>::iterator         ParLevLIter;
 typedef std::list<ParallelConfiguration>::iterator ParConfigLIter;

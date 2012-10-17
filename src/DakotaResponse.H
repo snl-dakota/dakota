@@ -555,10 +555,9 @@ inline void Response::update(const Response& response)
 
 
 inline void Response::
-update(const RealVector& source_fn_vals,
-	     const RealMatrix& source_fn_grads,
-	     const RealSymMatrixArray& source_fn_hessians,
-	     const ActiveSet& source_set)
+update(const RealVector& source_fn_vals, const RealMatrix& source_fn_grads,
+       const RealSymMatrixArray& source_fn_hessians,
+       const ActiveSet& source_set)
 {
   responseRep->update(source_fn_vals, source_fn_grads, source_fn_hessians,
 		      source_set);
@@ -567,7 +566,7 @@ update(const RealVector& source_fn_vals,
 
 inline void Response::
 update_partial(size_t start_index_target, size_t num_items,
-		     const Response& response, size_t start_index_source)
+	       const Response& response, size_t start_index_source)
 {
   responseRep->update_partial(start_index_target, num_items,
 			      response.function_values(),
@@ -579,10 +578,10 @@ update_partial(size_t start_index_target, size_t num_items,
 
 inline void Response::
 update_partial(size_t start_index_target, size_t num_items,
-		     const RealVector& source_fn_vals,
-		     const RealMatrix& source_fn_grads,
-		     const RealSymMatrixArray& source_fn_hessians,
-		     const ActiveSet& source_set, size_t start_index_source)
+	       const RealVector& source_fn_vals,
+	       const RealMatrix& source_fn_grads,
+	       const RealSymMatrixArray& source_fn_hessians,
+	       const ActiveSet& source_set, size_t start_index_source)
 {
   responseRep->update_partial(start_index_target, num_items, source_fn_vals,
 			      source_fn_grads, source_fn_hessians, source_set,

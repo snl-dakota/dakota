@@ -155,17 +155,20 @@ protected:
 		     const String& sample_type, int num_samples, int seed,
 		     const String& rng, bool vary_pattern);
 
-  /// static function for RecastModels used to map u-space variables
-  /// from NonD Iterators to x-space variables for Model evaluations.
+  /// static function for RecastModels used for forward mapping of u-space
+  /// variables from NonD Iterators to x-space variables for Model evaluations
   static void vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars);
+  /// static function for RecastModels used for inverse mapping of x-space
+  /// variables from data import to u-space variables for NonD Iterators
+  static void vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars);
 
   /// static function for RecastModels used to map u-space ActiveSets
-  /// from NonD Iterators to x-space ActiveSets for Model evaluations.
+  /// from NonD Iterators to x-space ActiveSets for Model evaluations
   static void set_u_to_x_mapping(const Variables& u_vars,
 				 const ActiveSet& u_set, ActiveSet& x_set);
 
   /// static function for RecastModels used to map x-space responses from
-  /// Model evaluations to u-space responses for return to NonD Iterators.
+  /// Model evaluations to u-space responses for return to NonD Iterator.
   static void resp_x_to_u_mapping(const Variables& x_vars,
 				  const Variables& u_vars,
 				  const Response& x_response,

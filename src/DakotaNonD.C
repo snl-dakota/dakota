@@ -564,11 +564,15 @@ transform_model(Model& x_model, Model& u_model, bool global_bounds, Real bound)
   // There is no additional response mapping beyond that required by the
   // nonlinear variables mapping.
   BoolDequeArray nonlinear_resp_map(numFunctions, BoolDeque(1, false));
-  u_model.assign_rep(new RecastModel(x_model, vars_map,
-    recast_vars_comps_total, nonlinear_vars_map,
-    vars_u_to_x_mapping, set_u_to_x_mapping, primary_resp_map,
-    secondary_resp_map, 0, nonlinear_resp_map, resp_x_to_u_mapping, NULL),
-    false);
+  RecastModel* recast_model = new RecastModel(x_model, vars_map,
+    recast_vars_comps_total, nonlinear_vars_map, vars_u_to_x_mapping,
+    set_u_to_x_mapping, primary_resp_map, secondary_resp_map, 0,
+    nonlinear_resp_map, resp_x_to_u_mapping, NULL);
+  u_model.assign_rep(recast_model, false);
+  // publish inverse mappings for use in data imports.  Since derivatives are
+  // not imported and response values are not transformed, an inverse variables
+  // transformation is sufficient for this purpose.
+  recast_model->inverse_mappings(vars_x_to_u_mapping, NULL, NULL, NULL);
 
   // Populate random variable distribution parameters for transformed u-space.
   // *** Note ***: For use with REGRESSION approaches, variable ordering in
@@ -795,6 +799,14 @@ void NonD::vars_u_to_x_mapping(const Variables& u_vars, Variables& x_vars)
 {
   RealVector x = x_vars.continuous_variables_view();
   nondInstance->natafTransform.trans_U_to_X(u_vars.continuous_variables(), x);
+}
+
+
+/** Map the variables from iterator space (u) to simulation space (x). */
+void NonD::vars_x_to_u_mapping(const Variables& x_vars, Variables& u_vars)
+{
+  RealVector u = u_vars.continuous_variables_view();
+  nondInstance->natafTransform.trans_X_to_U(x_vars.continuous_variables(), u);
 }
 
 

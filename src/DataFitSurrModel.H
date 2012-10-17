@@ -558,65 +558,6 @@ print_evaluation_summary(std::ostream& s, bool minimal_header,
   }
 }
 
-
-inline bool DataFitSurrModel::
-inside(const RealVector& c_vars, const IntVector& di_vars,
-       const RealVector& dr_vars)
-{
-  bool inside = true;
-  size_t i, num_c_vars = c_vars.length(), num_di_vars = di_vars.length(),
-    num_dr_vars = dr_vars.length();
-
-  const RealVector& c_l_bnds = (actualModel.is_null()) ?
-    userDefinedConstraints.continuous_lower_bounds() :
-    actualModel.continuous_lower_bounds();
-  const RealVector& c_u_bnds = (actualModel.is_null()) ?
-    userDefinedConstraints.continuous_upper_bounds() :
-    actualModel.continuous_upper_bounds();
-  const IntVector&  di_l_bnds = (actualModel.is_null()) ?
-    userDefinedConstraints.discrete_int_lower_bounds() :
-    actualModel.discrete_int_lower_bounds();
-  const IntVector&  di_u_bnds = (actualModel.is_null()) ?
-    userDefinedConstraints.discrete_int_upper_bounds() :
-    actualModel.discrete_int_upper_bounds();
-  const RealVector& dr_l_bnds = (actualModel.is_null()) ?
-    userDefinedConstraints.discrete_real_lower_bounds() :
-    actualModel.discrete_real_lower_bounds();
-  const RealVector& dr_u_bnds = (actualModel.is_null()) ?
-    userDefinedConstraints.discrete_real_upper_bounds() :
-    actualModel.discrete_real_upper_bounds();
-
-  if (c_l_bnds.length()  != num_c_vars  || c_u_bnds.length()  != num_c_vars ||
-      di_l_bnds.length() != num_di_vars || di_u_bnds.length() != num_di_vars ||
-      dr_l_bnds.length() != num_dr_vars || dr_u_bnds.length() != num_dr_vars) {
-    Cerr << "Error: bad array lengths in DataFitSurrModel::inside()."
-         << std::endl;
-    abort_handler(-1);
-  }
-
-  if (pointReuse == "region") { // inside always = TRUE for "all"
-    for (i=0; i<num_c_vars; i++) {
-      if (c_vars[i] < c_l_bnds[i] || c_vars[i] > c_u_bnds[i]) {
-	inside = false;
-	break;
-      }
-    }
-    for (i=0; i<num_di_vars; i++) {
-      if (di_vars[i] < di_l_bnds[i] || di_vars[i] > di_u_bnds[i]) {
-	inside = false;
-	break;
-      }
-    }
-    for (i=0; i<num_dr_vars; i++) {
-      if (dr_vars[i] < dr_l_bnds[i] || dr_vars[i] > dr_u_bnds[i]) {
-	inside = false;
-	break;
-      }
-    }
-  }
-  return inside;
-}
-
 } // namespace Dakota
 
 #endif
