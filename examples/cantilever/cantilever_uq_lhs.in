@@ -1,0 +1,36 @@
+
+strategy
+	single_method graphics
+
+method,
+	sampling
+	  sample_type lhs seed = 12347
+	  samples = 600
+	  num_probability_levels = 0 17 17		   
+	  probability_levels =
+	    .001 .01 .05 .1 .15 .2 .3 .4 .5 .6 .7 .8 .85 .9 .95 .99 .999
+	    .001 .01 .05 .1 .15 .2 .3 .4 .5 .6 .7 .8 .85 .9 .95 .99 .999
+	  cumulative distribution
+#	  output silent
+
+variables,
+	continuous_design = 2
+	  initial_point    2.5    2.5
+	  upper_bounds    10.0   10.0
+	  lower_bounds     1.0    1.0
+	  descriptors      'w'    't'
+#	  descriptors      'beam_width' 'beam_thickness'
+	normal_uncertain = 4
+	  means             =  40000. 29.E+6 500. 1000.
+	  std_deviations    =  2000. 1.45E+6 100. 100.
+	  descriptors       =  'R' 'E' 'X' 'Y'
+
+interface,
+	direct
+	  analysis_driver = 'mod_cantilever'
+
+responses,
+	descriptors = 'area' 'g_stress' 'g_displ'
+	num_response_functions = 3
+	no_gradients
+	no_hessians

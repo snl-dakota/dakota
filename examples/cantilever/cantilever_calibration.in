@@ -1,0 +1,26 @@
+# Calibrate to area, stress, and displacement data generated with 
+# E = 2.85e7, w = 2.5, t = 3.0
+method
+    convergence_tolerance 1e-006
+    nl2sol
+variables
+    continuous_design 3
+        initial_point 29000000 4 4
+        lower_bounds 27000000 1 1
+        upper_bounds 31000000 10 10
+        descriptors 'E' 'w' 't'
+# Fix at nominal
+    continuous_state 3
+        initial_state 40000 500 1000
+        descriptors 'R' 'X' 'Y'
+interface
+    analysis_drivers 'mod_cantilever'
+        direct
+responses
+#    least_squares_data_file = 'cantilever_witherror.dat'
+    descriptors 'area' 'stress' 'displacement'
+    num_least_squares_terms 3
+        least_squares_data_file 'cantilever_clean.dat'
+	freeform
+    analytic_gradients
+    no_hessians

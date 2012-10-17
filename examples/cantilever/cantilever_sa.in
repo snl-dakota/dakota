@@ -1,0 +1,27 @@
+strategy,    
+  single_method 
+    tabular_graphics_data    
+
+method,									 
+        sampling 
+        sample_type lhs
+        seed =52983
+        samples = 100
+        # variance_based_decomp
+
+variables,
+        uniform_uncertain = 6
+	  upper_bounds    48000.  45.E+6  700.  1200.  2.2   2.2
+          lower_bounds    32000.  15.E+6  300.  800.   2.0   2.0
+          descriptors     'R' 'E' 'X' 'Y' 'w' 't'
+
+interface,
+        direct
+          analysis_driver = 'mod_cantilever'
+
+responses,
+        num_response_functions = 3
+        response_descriptors = 'weight' 'stress' 'displ'
+        no_gradients
+        no_hessians
+
