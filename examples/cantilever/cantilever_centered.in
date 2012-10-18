@@ -9,6 +9,7 @@ method
 model
     single
 variables
+    active all
     continuous_design 2
         initial_point 1 1
         descriptors 'w' 't'
@@ -21,5 +22,6 @@ interface
 responses
     descriptors 'area' 'stress' 'displacement'
     objective_functions 3
+#   response_functions 3
     no_gradients
     no_hessians

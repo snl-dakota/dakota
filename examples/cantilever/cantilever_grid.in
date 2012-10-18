@@ -7,6 +7,7 @@ method,
     partitions = 9 6 0 0 0 0
 
 variables,
+  active all
   continuous_design = 2
     lower_bounds   1.0      1.0
     upper_bounds   4.0      4.0
@@ -21,7 +22,8 @@ interface,
     analysis_driver = 'mod_cantilever'
 
 responses,
-  num_objective_functions = 3
+  objective_functions = 3
+# response_functions = 3
     response_descriptors = 'area' 'stress' 'displacement'             
   no_gradients
   no_hessians
