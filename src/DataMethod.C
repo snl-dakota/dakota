@@ -81,15 +81,16 @@ DataMethodRep::DataMethodRep():
   randomizeOrderFlag(false),
   // JEGA
   numCrossPoints(2), numParents(2), numOffspring(2),
-  //replacementType("domination_count"),
-  convergenceType("max_evals_or_gens"), fitnessLimit(6.0),
+  convergenceType(""), fitnessLimit(6.0),
   shrinkagePercent(0.9), percentChange(0.1), numGenerations(15),
   nichingType("null_niching"),
   postProcessorType("null_postprocessor"),
   logFile("JEGAGlobal.log"),
   printPopFlag(false),
   // JEGA/COLINY
-  initializationType("unique_random"), populationSize(50), flatFile(),
+  initializationType("unique_random"), crossoverType(""),
+  mutationType(""), replacementType(""), fitnessType(""),
+  populationSize(50), flatFile(),
   // NCSU 
   volBoxSize(-1.),
   // DDACE

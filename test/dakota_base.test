@@ -6743,13 +6743,13 @@ Test Number 2 succeeded
                      -2.4534128254e+01
 <<<<< Best data captured at function evaluation 1622
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 3000 total (3000 new, 0 duplicate)
+<<<<< Function evaluation summary: 1452 total (1452 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.0503673622e-01 x1
-                      8.2009281038e-01 x2
+                      1.1103949462e+00 x1
+                      1.2337337644e+00 x2
 <<<<< Best objective function  =
-                      9.1182849371e-03
-<<<<< Best data captured at function evaluation 1872
+                      1.2244322981e-02
+<<<<< Best data captured at function evaluation 1147
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 87 total (87 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -6910,16 +6910,16 @@ Test Number 1 succeeded
                       3.4998242196e-01
 <<<<< Best data captured at function evaluation 147
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
+<<<<< Function evaluation summary: 1272 total (1272 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.1634452582e+00 intake_dia
-                      1.1005280838e-03 flatness
+                      5.4520126458e-03 flatness
 <<<<< Best objective functions =
-                     -2.7440554372e+00
+                     -2.7434027145e+00
                       6.7618961859e-01
-                     -5.9983492079e-01
-                      3.4975239821e-01
-<<<<< Best data captured at function evaluation 1757
+                     -5.9918219810e-01
+                      3.4877371525e-01
+<<<<< Best data captured at function evaluation 1237
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 2000 total (2000 new, 0 duplicate)
 <<<<< Best parameters          (set 1) =

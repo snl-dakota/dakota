@@ -2879,12 +2879,6 @@ output, initialization, mutation, and replacement
 <td>Optional
 <td>0.08
 <tr>
-<td>Replacement type
-<td>\c replacement_type
-<td>\c below_limit | \c roulette_wheel | \c unique_roulette_wheel | \c elitist
-<td>Required group
-<td>None
-<tr>
 <td>Below limit selection
 <td>\c below_limit
 <td>real
@@ -3153,7 +3147,7 @@ Specification detail for MOGA method controls
 <td>\c fitness_type
 <td>\c layer_rank | \c domination_count
 <td>Required group
-<td> None
+<td> domination_count
 <tr>
 <td>Niche pressure type
 <td>\c niching_type
@@ -3167,11 +3161,17 @@ Specification detail for MOGA method controls
 <td>Optional
 <td> 0.01 for all objectives
 <tr>
+<td>Replacement type
+<td>\c replacement_type
+<td>\c below_limit | \c roulette_wheel | \c unique_roulette_wheel | \c elitist
+<td>Required group
+<td>below_limit
+<tr>
 <td>Convergence type
 <td>\c metric_tracker
 <td>none
 <td>Optional group
-<td>Stopping criteria only
+<td>metric_tracker
 <tr>
 <td>Percent change limit for metric_tracker converger
 <td>\c percent_change
@@ -3270,15 +3270,15 @@ Specification detail for SOGA method controls
 <tr>
 <td>Replacement type
 <td>\c replacement_type
-<td>\c favor_feasible | \c unique_roulette_wheel | \c roulette_wheel
+<td>\c favor_feasible | \c unique_roulette_wheel | \c roulette_wheel | \c elitist
 <td>Required group
-<td>None
+<td>elitist
 <tr>
 <td>Convergence type
 <td>\c convergence_type
 <td>\c best_fitness_tracker | \c average_fitness_tracker
 <td>Optional
-<td>None
+<td>average_fitness_tracker
 <tr>
 <td>Number of generations (for convergence test) 
 <td>\c num_generations

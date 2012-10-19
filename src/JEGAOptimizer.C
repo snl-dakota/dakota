@@ -1136,10 +1136,15 @@ JEGAOptimizer::LoadTheParameterDatabase(
     // about it.
     const string& selector =
         this->probDescDB.get_string("method.replacement_type");
-
-    this->_theParamDB->AddStringParam(
-        "method.replacement_type", selector
-        );
+    if (selector != "")
+      this->_theParamDB->AddStringParam(
+	  "method.replacement_type", selector);
+    else if (this->methodName == SOGA_METHOD_TXT)
+      this->_theParamDB->AddStringParam(
+	  "method.replacement_type", "elitist");
+    else if (this->methodName == MOGA_METHOD_TXT)
+      this->_theParamDB->AddStringParam(
+	  "method.replacement_type", "below_limit");
     
     const string& fitness = this->probDescDB.get_string("method.fitness_type");
     if(selector == "favor_feasible")
@@ -1158,18 +1163,33 @@ JEGAOptimizer::LoadTheParameterDatabase(
     }
     else
     {
+      if (fitness != "")
         this->_theParamDB->AddStringParam("method.fitness_type", fitness);
+      else if (this->methodName == SOGA_METHOD_TXT)
+        this->_theParamDB->AddStringParam("method.fitness_type", "merit_function");
+      else if (this->methodName == MOGA_METHOD_TXT)
+        this->_theParamDB->AddStringParam("method.fitness_type", "domination_count");
     }
 
-    this->_theParamDB->AddStringParam(
-        "method.crossover_type",
-        this->probDescDB.get_string("method.crossover_type")
-        );
-    this->_theParamDB->AddStringParam(
-        "method.mutation_type",
-        this->probDescDB.get_string("method.mutation_type")
-        );
-    this->_theParamDB->AddIntegralParam(
+    const string& crossoverOperator =
+        this->probDescDB.get_string("method.crossover_type");
+    if (crossoverOperator != "")
+      this->_theParamDB->AddStringParam(
+	  "method.crossover_type", crossoverOperator);
+    else
+      this->_theParamDB->AddStringParam(
+	  "method.crossover_type", "shuffle_random");
+
+    const string& mutationOperator =
+        this->probDescDB.get_string("method.mutation_type");
+    if (mutationOperator != "")
+      this->_theParamDB->AddStringParam(
+	  "method.mutation_type", mutationOperator);
+    else
+      this->_theParamDB->AddStringParam(
+	  "method.mutation_type", "replace_uniform");
+ 
+   this->_theParamDB->AddIntegralParam(
         "method.output",
         this->probDescDB.get_short("method.output")
         );
@@ -1209,10 +1229,19 @@ JEGAOptimizer::LoadTheParameterDatabase(
         "method.log_file",
         log_file == "JEGAGlobal.log" ? "" : log_file
         );
-    this->_theParamDB->AddStringParam(
-        "method.jega.convergence_type",
-        this->probDescDB.get_string("method.jega.convergence_type")
-        );
+    const string& convergenceOperator =
+        this->probDescDB.get_string("method.jega.convergence_type");
+
+    if (convergenceOperator != "")
+      this->_theParamDB->AddStringParam(
+	  "method.jega.convergence_type", convergenceOperator);
+    else if (this->methodName == SOGA_METHOD_TXT)
+      this->_theParamDB->AddStringParam(
+	  "method.jega.convergence_type", "average_fitness_tracker");
+    else if (this->methodName == MOGA_METHOD_TXT)
+      this->_theParamDB->AddStringParam(
+	  "method.jega.convergence_type", "metric_tracker");
+
     this->_theParamDB->AddStringParam(
         "method.jega.niching_type",
         this->probDescDB.get_string("method.jega.niching_type")
